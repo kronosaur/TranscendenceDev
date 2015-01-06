@@ -1124,8 +1124,8 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 			//	Check the source subdirector first.
 
-			else if (pathExists("Source\\Transcendence.xml"))
-				Ctx.sFilespec = CONSTLIT("Source\\Transcendence.xml");
+			else if (pathExists("..\\TransCore\\Transcendence.xml"))
+				Ctx.sFilespec = CONSTLIT("..\\TransCore\\Transcendence.xml");
 
 			//	If we don't have it, then check the current directory for
 			//	backwards compatibility.
