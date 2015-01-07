@@ -72,15 +72,20 @@ class IHICommand
 class IHIController : public IHICommand
 	{
 	public:
-		IHIController (CHumanInterface &HI) : IHICommand(HI) { }
+		IHIController (void) : IHICommand(CreateHI()) { }
 		virtual ~IHIController (void) { }
 
-		ALERROR HIBoot (char *pszCommandLine, SHIOptions &Options) { return OnBoot(pszCommandLine, Options); }
+		ALERROR HIBoot (char *pszCommandLine, SHIOptions *retOptions) { return OnBoot(pszCommandLine, retOptions); }
+		bool HIClose (void) { return OnClose(); }
 		void HIShutdown (EHIShutdownReasons iShutdownCode) { OnShutdown(iShutdownCode); }
 
 	protected:
-		virtual ALERROR OnBoot (char *pszCommandLine, SHIOptions &Options);
+		virtual ALERROR OnBoot (char *pszCommandLine, SHIOptions *retOptions);
+		virtual bool OnClose (void) { return true; }
 		virtual void OnShutdown (EHIShutdownReasons iShutdownCode) { }
+
+	private:
+		static CHumanInterface &CreateHI (void);
 	};
 
 //	Background Task Objects ---------------------------------------------------
@@ -573,6 +578,9 @@ const int WM_HI_COMMAND =			(WM_USER+0x1001);
 struct SHIOptions
 	{
 	SHIOptions (void) :
+			sAppName(CONSTLIT("Transcendence")),
+			sClassName(CONSTLIT("transcendence_class")),
+			hIcon(NULL),
 			m_cxScreenDesired(1024),
 			m_cyScreenDesired(768),
 			m_iColorDepthDesired(16),
@@ -586,6 +594,11 @@ struct SHIOptions
 			m_iSoundVolume(DEFAULT_SOUND_VOLUME),
 			m_bDebugVideo(false)
 		{ }
+
+	//	App options
+	CString sAppName;					//	Human readable app name (e.g., "Transcendence")
+	CString sClassName;					//	Window class name (e.g., "transcendence_class")
+	HICON hIcon;						//	Application icon
 
 	//	Display options
 	int m_cxScreenDesired;				//	Ignored if not WindowedMode
@@ -617,8 +630,7 @@ class CHumanInterface
 			FLAG_LOW_PRIORITY =				0x00000001,
 			};
 
-		static bool Create (void);
-		static void Destroy (void);
+		static void Run (IHIController *pController, HINSTANCE hInst, int nCmdShow, LPSTR lpCmdLine);
 
 		//	Interface
 
@@ -654,27 +666,15 @@ class CHumanInterface
 		void OnAnimate (void);
 		void OnPostCommand (LPARAM pData);
 		void OnTaskComplete (DWORD dwID, LPARAM pData);
-		LONG WMActivateApp (bool bActivate);
-		LONG WMChar (char chChar, DWORD dwKeyData);
-		ALERROR WMCreate (HMODULE hModule, HWND hWnd, char *pszCommandLine, IHIController *pController);
-		void WMDestroy (void);
-		LONG WMDisplayChange (int iBitDepth, int cxWidth, int cyHeight);
-		LONG WMKeyDown (int iVirtKey, DWORD dwKeyData);
-		LONG WMKeyUp (int iVirtKey, DWORD dwKeyData);
-		LONG WMLButtonDblClick (int x, int y, DWORD dwFlags);
-		LONG WMLButtonDown (int x, int y, DWORD dwFlags);
-		LONG WMLButtonUp (int x, int y, DWORD dwFlags);
-		LONG WMMouseMove (int x, int y, DWORD dwFlags);
-		LONG WMMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
-		LONG WMMove (int x, int y);
-		LONG WMSize (int cxWidth, int cyHeight, int iSize);
-		LONG WMTimer (DWORD dwID);
 
 		//	Private, used by other HI classes
 		void BeginSessionPaint (CG16bitImage &Screen);
 		void BeginSessionUpdate (void);
 		void EndSessionPaint (CG16bitImage &Screen, bool bTopMost);
 		void EndSessionUpdate (bool bTopMost);
+
+		static bool Create (void);
+		static void Destroy (void);
 
 	private:
 		struct SPostCommand
@@ -692,6 +692,28 @@ class CHumanInterface
 		inline void FlipScreen (void) { m_ScreenMgr.Flip(); }
 		void HardCrash (const CString &sProgramState);
 		void PaintFrameRate (void);
+
+		bool CreateMainWindow (HINSTANCE hInst, int nCmdShow, LPSTR lpCmdLine, CString *retsError);
+		void MainLoop (void);
+
+		LONG WMActivateApp (bool bActivate);
+		LONG WMChar (char chChar, DWORD dwKeyData);
+		LONG WMClose (void);
+		bool WMCreate (HWND hWnd, CString *retsError);
+		void WMDestroy (void);
+		LONG WMDisplayChange (int iBitDepth, int cxWidth, int cyHeight);
+		LONG WMKeyDown (int iVirtKey, DWORD dwKeyData);
+		LONG WMKeyUp (int iVirtKey, DWORD dwKeyData);
+		LONG WMLButtonDblClick (int x, int y, DWORD dwFlags);
+		LONG WMLButtonDown (int x, int y, DWORD dwFlags);
+		LONG WMLButtonUp (int x, int y, DWORD dwFlags);
+		LONG WMMouseMove (int x, int y, DWORD dwFlags);
+		LONG WMMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
+		LONG WMMove (int x, int y);
+		LONG WMSize (int cxWidth, int cyHeight, int iSize);
+		LONG WMTimer (DWORD dwID);
+
+		static LONG APIENTRY MainWndProc (HWND hWnd, UINT message, UINT wParam, LONG lParam);
 
 		SHIOptions m_Options;
 		IHIController *m_pController;
