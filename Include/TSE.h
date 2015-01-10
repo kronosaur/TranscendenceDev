@@ -3202,7 +3202,8 @@ class CUniverse : public CObject
 				{ }
 
 			IHost *pHost;					//	Host
-			CString sFilespec;				//	Filespec of main XML file.
+			CString sFilespec;				//	Filespec of main TDB/XML file.
+			CString sSourceFilespec;		//	Filespec of main source XML file (for debugging).
 			CString sCollectionFolder;		//	If non-blank, use this as Collection folder (and remember it)
 			TArray<CString> ExtensionFolders;	//	Add these as extension folders.
 

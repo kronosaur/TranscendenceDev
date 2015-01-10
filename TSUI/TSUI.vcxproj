@@ -99,6 +99,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CBackgroundProcessor.cpp" />
+    <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />
     <ClCompile Include="CHumanInterface.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -107,8 +108,10 @@
     </ClCompile>
     <ClCompile Include="CListCollectionTask.cpp" />
     <ClCompile Include="CMCIMixer.cpp" />
+    <ClCompile Include="CMessageSession.cpp" />
     <ClCompile Include="CSoundtrackManager.cpp" />
     <ClCompile Include="CTimerRegistry.cpp" />
+    <ClCompile Include="CUserSettings.cpp" />
     <ClCompile Include="CVisualPalette.cpp" />
     <ClCompile Include="Dialogs.cpp" />
     <ClCompile Include="HardCrash.cpp" />
@@ -135,6 +138,8 @@
     <ClInclude Include="..\Include\Painters.h" />
     <ClInclude Include="..\Include\Soundtrack.h" />
     <ClInclude Include="..\Include\TSUI.h" />
+    <ClInclude Include="..\Include\TSUISessions.h" />
+    <ClInclude Include="..\Include\TSUISettings.h" />
     <ClInclude Include="..\Include\UIHelpers.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

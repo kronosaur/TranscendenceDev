@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Geometry.h" />
+    <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="..\Include\TSE.h" />
     <ClInclude Include="..\Include\TSEDesign.h" />

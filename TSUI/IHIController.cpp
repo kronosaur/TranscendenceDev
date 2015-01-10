@@ -16,7 +16,7 @@ CHumanInterface &IHIController::CreateHI (void)
 	return *g_pHI;
 	}
 
-ALERROR IHIController::OnBoot (char *pszCommandLine, SHIOptions *retOptions)
+ALERROR IHIController::OnBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError)
 
 //	OnBoot
 //

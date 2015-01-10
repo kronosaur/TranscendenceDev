@@ -275,6 +275,16 @@ void CHumanInterface::EndSessionUpdate (bool bTopMost)
 		FlipScreen();
 	}
 
+void CHumanInterface::Exit (void)
+
+//	Exit
+//
+//	Exit the game
+
+	{
+	::SendMessage(GetHWND(), WM_CLOSE, 0, 0);
+	}
+
 CReanimator &CHumanInterface::GetReanimator (void)
 
 //	GetReanimator

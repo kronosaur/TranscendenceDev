@@ -20,6 +20,7 @@ void CHumanInterface::Run (IHIController *pController, HINSTANCE hInst, int nCmd
 
 	{
 	ALERROR error;
+	CString sError;
 
 	ASSERT(pController);
 
@@ -30,10 +31,10 @@ void CHumanInterface::Run (IHIController *pController, HINSTANCE hInst, int nCmd
 	//	Boot the controller and get options from it.
 
 	g_pHI->m_pController = pController;
-	if (error = pController->HIBoot(lpCmdLine, &g_pHI->m_Options))
+	if (error = pController->HIBoot(lpCmdLine, &g_pHI->m_Options, &sError))
 		{
 		if (error != ERR_CANCEL)
-			::MessageBox(NULL, "Unable to initialize application controller.", "Human Interface", MB_OK);
+			::MessageBox(NULL, sError.GetASCIIZPointer(), g_pHI->m_Options.sAppName.GetASCIIZPointer(), MB_OK);
 
 		delete g_pHI->m_pController;
 		g_pHI->m_pController = NULL;
@@ -42,7 +43,6 @@ void CHumanInterface::Run (IHIController *pController, HINSTANCE hInst, int nCmd
 
 	//	Create the main window
 
-	CString sError;
 	if (!g_pHI->CreateMainWindow(hInst, nCmdShow, lpCmdLine, &sError))
 		{
 		::MessageBox(NULL, sError.GetASCIIZPointer(), g_pHI->m_Options.sAppName.GetASCIIZPointer(), MB_OK);
@@ -648,4 +648,3 @@ LONG CHumanInterface::WMTimer (DWORD dwID)
 
 	return 0;
 	}
-

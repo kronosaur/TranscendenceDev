@@ -1115,28 +1115,40 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 		//	If necessary, figure out where the main files are
 
+		CString sMainFilespec;
 		if (Ctx.sFilespec.IsBlank())
 			{
 			//	If we're always using the TDB, then just load that.
 
 			if (Ctx.bForceTDB)
-				Ctx.sFilespec = CONSTLIT("Transcendence.tdb");
+				sMainFilespec = CONSTLIT("Transcendence.tdb");
 
 			//	Check the source subdirector first.
 
 			else if (pathExists("..\\TransCore\\Transcendence.xml"))
-				Ctx.sFilespec = CONSTLIT("..\\TransCore\\Transcendence.xml");
+				sMainFilespec = CONSTLIT("..\\TransCore\\Transcendence.xml");
 
 			//	If we don't have it, then check the current directory for
 			//	backwards compatibility.
 
 			else if (pathExists("Transcendence.xml"))
-				Ctx.sFilespec = CONSTLIT("Transcendence.xml");
+				sMainFilespec = CONSTLIT("Transcendence.xml");
 
 			//	If nothing is found, then just load the TDB file.
 
 			else
-				Ctx.sFilespec = CONSTLIT("Transcendence.tdb");
+				sMainFilespec = CONSTLIT("Transcendence.tdb");
+			}
+		else
+			{
+			//	Unless we're forcing TDB usage, check sources
+
+			if (!Ctx.sSourceFilespec.IsBlank()
+					&& !Ctx.bForceTDB
+					&& pathExists(Ctx.sSourceFilespec))
+				sMainFilespec = Ctx.sSourceFilespec;
+			else
+				sMainFilespec = Ctx.sFilespec;
 			}
 
 		//	We only load adventure desc (no need to load the whole thing)
@@ -1155,7 +1167,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 		//	Load everything
 
-		if (error = m_Extensions.Load(Ctx.sFilespec, dwFlags, retsError))
+		if (error = m_Extensions.Load(sMainFilespec, dwFlags, retsError))
 			return error;
 
 		//	Figure out the adventure to bind to.

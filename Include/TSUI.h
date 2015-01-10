@@ -75,12 +75,12 @@ class IHIController : public IHICommand
 		IHIController (void) : IHICommand(CreateHI()) { }
 		virtual ~IHIController (void) { }
 
-		ALERROR HIBoot (char *pszCommandLine, SHIOptions *retOptions) { return OnBoot(pszCommandLine, retOptions); }
+		ALERROR HIBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError = NULL) { return OnBoot(pszCommandLine, retOptions, retsError); }
 		bool HIClose (void) { return OnClose(); }
 		void HIShutdown (EHIShutdownReasons iShutdownCode) { OnShutdown(iShutdownCode); }
 
 	protected:
-		virtual ALERROR OnBoot (char *pszCommandLine, SHIOptions *retOptions);
+		virtual ALERROR OnBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError);
 		virtual bool OnClose (void) { return true; }
 		virtual void OnShutdown (EHIShutdownReasons iShutdownCode) { }
 
@@ -580,6 +580,7 @@ struct SHIOptions
 	SHIOptions (void) :
 			sAppName(CONSTLIT("Transcendence")),
 			sClassName(CONSTLIT("transcendence_class")),
+			sAppData(CONSTLIT("Kronosaur\\Transcendence")),
 			hIcon(NULL),
 			m_cxScreenDesired(1024),
 			m_cyScreenDesired(768),
@@ -598,6 +599,7 @@ struct SHIOptions
 	//	App options
 	CString sAppName;					//	Human readable app name (e.g., "Transcendence")
 	CString sClassName;					//	Window class name (e.g., "transcendence_class")
+	CString sAppData;					//	Path under AppData (e.g., "Kronosaur\Transcendence")
 	HICON hIcon;						//	Application icon
 
 	//	Display options
@@ -635,6 +637,7 @@ class CHumanInterface
 		//	Interface
 
 		void ClosePopupSession (void);
+		void Exit (void);
 		inline HWND GetHWND (void) { return m_hWnd; }
 		inline const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
@@ -741,6 +744,8 @@ extern CHumanInterface *g_pHI;
 #include "CloudInterface.h"
 #include "Painters.h"
 #include "Soundtrack.h"
+#include "TSUISessions.h"
+#include "TSUISettings.h"
 #include "UIHelpers.h"
 
 //	Inlines

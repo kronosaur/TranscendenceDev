@@ -1186,7 +1186,10 @@ ALERROR CExtension::LoadImagesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Figure out if we've got a special folder for the images
 
-	Ctx.sFolder = pDesc->GetAttribute(FOLDER_ATTRIB);
+	CString sOldFolder = Ctx.sFolder;
+	CString sFolder = pDesc->GetAttribute(FOLDER_ATTRIB);
+	if (!sFolder.IsBlank())
+		Ctx.sFolder = pathAddComponent(Ctx.sFolder, sFolder);
 
 	//	Load all images
 
@@ -1200,7 +1203,7 @@ ALERROR CExtension::LoadImagesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Restore folder
 
-	Ctx.sFolder = NULL_STR;
+	Ctx.sFolder = sOldFolder;
 
 	return NOERROR;
 	}
@@ -1278,8 +1281,18 @@ ALERROR CExtension::LoadModuleElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	We are loading a module
 
 	bool bOldLoadModule = Ctx.bLoadModule;
-	CString sOldErrorFilespec = Ctx.sErrorFilespec;
 	Ctx.bLoadModule = true;
+
+	//	Look for resources relative to the module path
+
+	CString sOldFolder = Ctx.sFolder;
+	CString sFolder = pathGetPath(sFilename);
+	if (!sFolder.IsBlank() && Ctx.GetAPIVersion() >= 26)
+		Ctx.sFolder = pathAddComponent(Ctx.sFolder, sFolder);
+
+	//	Errors credited to this file.
+
+	CString sOldErrorFilespec = Ctx.sErrorFilespec;
 	if (strEquals(pathGetExtension(sOldErrorFilespec), FILESPEC_TDB_EXTENSION))
 		Ctx.sErrorFilespec = strPatternSubst(CONSTLIT("%s#%s"), sOldErrorFilespec, sFilename);
 	else
@@ -1292,6 +1305,7 @@ ALERROR CExtension::LoadModuleElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Clean up
 
+	Ctx.sFolder = sOldFolder;
 	Ctx.sErrorFilespec = sOldErrorFilespec;
 	Ctx.bLoadModule = bOldLoadModule;
 
@@ -1376,7 +1390,10 @@ ALERROR CExtension::LoadSoundsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Figure out if we've got a special folder for the resources
 
-	Ctx.sFolder = pDesc->GetAttribute(FOLDER_ATTRIB);
+	CString sOldFolder = Ctx.sFolder;
+	CString sFolder = pDesc->GetAttribute(FOLDER_ATTRIB);
+	if (!sFolder.IsBlank())
+		Ctx.sFolder = pathAddComponent(Ctx.sFolder, sFolder);
 
 	//	Loop over all sound resources
 
@@ -1390,7 +1407,7 @@ ALERROR CExtension::LoadSoundsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Restore folder
 
-	Ctx.sFolder = NULL_STR;
+	Ctx.sFolder = sOldFolder;
 
 	return NOERROR;
 	}
