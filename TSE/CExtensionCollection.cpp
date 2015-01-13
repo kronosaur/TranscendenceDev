@@ -11,6 +11,7 @@
 #define TRANSCENDENCE_LIBRARY_TAG					CONSTLIT("TranscendenceLibrary")
 #define TRANSCENDENCE_MODULE_TAG					CONSTLIT("TranscendenceModule")
 
+#define FILENAME_ATTRIB								CONSTLIT("filename")
 #define RELEASE_ATTRIB								CONSTLIT("release")
 #define UNID_ATTRIB									CONSTLIT("unid")
 
@@ -1153,6 +1154,17 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	if (Resources.IsUsingExternalResources())
 		kernelDebugLogMessage("Using external resource files");
 
+	//	Check the signature on the file to see if we should verify the
+	//	extensions loaded from the base file.
+	//
+	//	NOTE: Only TDB is verified; the XML is always considered unregistered.
+
+	CIntegerIP Digest;
+	Resources.ComputeFileDigest(&Digest);
+
+	CIntegerIP CorrectDigest(DIGEST_SIZE, g_BaseFileDigest);
+	bool bVerified = (Digest == CorrectDigest);
+
 	//	Load the main XML file. Since this is the base file we don't need any
 	//	additional entities. (But we do get a copy of the entities).
 
@@ -1177,47 +1189,134 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 
 	Ctx.bKeepXML = true;
 
-	//	Load it
-
-	TArray<CExtension *> ExtensionsCreated;
-	error = CExtension::CreateBaseFile(Ctx, pGameFile, pEntities, &ExtensionsCreated);
-
-	//	Compare signature against what we expect. If valid then set 
-	//	verification.
+	//	Load it.
 	//
-	//	NOTE: Only TDB is verified; the XML is always considered unregistered.
+	//	NOTE: CreateBaseFile takes ownership of pEntities on success (and 
+	//	attaches it to the pBase result).
 
-	CIntegerIP Digest;
-	Resources.ComputeFileDigest(&Digest);
-
-	CIntegerIP CorrectDigest(DIGEST_SIZE, g_BaseFileDigest);
-
-	if (Digest == CorrectDigest)
+	CExtension *pBase;
+	TArray<CXMLElement *> EmbeddedExtensions;
+	if (error = CExtension::CreateBaseFile(Ctx, pGameFile, pEntities, &pBase, &EmbeddedExtensions))
 		{
-		//	Everything we loaded is verified
-
-		for (i = 0; i < ExtensionsCreated.GetCount(); i++)
-			ExtensionsCreated[i]->SetVerified(true);
-		}
-
-	//	Clean up
-
-	delete pGameFile;
-
-	//	Error
-
-	if (error)
-		{
+		delete pGameFile;
 		delete pEntities;
 		return CExtension::ComposeLoadError(Ctx, retsError);
 		}
 
-	//	Add the extensions to our list
+	//	Add the base file. Note that this will set m_pBase correctly.
 
-	ASSERT(ExtensionsCreated.GetCount() > 0);
+	ASSERT(pBase->GetUNID() == 0);
+	pBase->SetVerified(bVerified);
+	AddOrReplace(pBase);
 
-	for (i = 0; i < ExtensionsCreated.GetCount(); i++)
-		AddOrReplace(ExtensionsCreated[i]);
+	//	Now we load any embedded extensions
+
+	for (i = 0; i < EmbeddedExtensions.GetCount(); i++)
+		{
+		CExtension *pExtension;
+		if (error = LoadEmbeddedExtension(Ctx, EmbeddedExtensions[i], &pExtension))
+			{
+			delete pGameFile;
+			return CExtension::ComposeLoadError(Ctx, retsError);
+			}
+
+		//	Verified
+
+		pExtension->SetVerified(bVerified);
+
+		//	Add to list
+
+		ASSERT(pExtension->GetUNID() != 0);
+		AddOrReplace(pExtension);
+		}
+
+	//	Done
+
+	delete pGameFile;
+	return NOERROR;
+	}
+
+ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExtension **retpExtension)
+
+//	LoadEmbeddedExtension
+//
+//	Loads an extension defined in the base file.
+
+	{
+	ALERROR error;
+
+	//	In some cases we need to load the extension XML from a separate file.
+	//	We need to free this when done.
+
+	CXMLElement *pRoot = NULL;
+
+	//	We also prepare an entity table which will get loaded with any
+	//	entities defined in the embedded extension.
+
+	CExternalEntityTable *pExtEntities = new CExternalEntityTable;
+	pExtEntities->SetParent(m_pBase->GetEntities());
+
+	//	If we have a filespec, then the extension is in a separate file inside
+	//	the base TDB (or XML directory).
+
+	CString sFilename;
+	if (pDesc->FindAttribute(FILENAME_ATTRIB, &sFilename))
+		{
+		//	This extension might refer to other embedded libraries, so we need
+		//	to give it a resolver
+
+		CLibraryResolver Resolver(*this);
+		Resolver.AddLibrary(m_pBase);
+		Resolver.ReportLibraryErrors();
+
+		//	Load the file
+
+		CString sError;
+		if (error = Ctx.pResDb->LoadEmbeddedGameFile(sFilename, &pRoot, &Resolver, pExtEntities, &sError))
+			{
+			delete pExtEntities;
+			Ctx.sError = strPatternSubst(CONSTLIT("Unable to load embedded file: %s"), sError);
+			return ERR_FAIL;
+			}
+
+		//	This is the actual extension XML.
+
+		pDesc = pRoot;
+		}
+
+	//	Create the extension
+
+	SDesignLoadCtx ExtCtx;
+	ExtCtx.sResDb = Ctx.sResDb;
+	ExtCtx.pResDb = Ctx.pResDb;
+	ExtCtx.bNoResources = Ctx.bNoResources;
+	ExtCtx.bKeepXML = Ctx.bKeepXML;
+	ExtCtx.bNoVersionCheck = true;	//	Obsolete now
+	ExtCtx.dwInheritAPIVersion = m_pBase->GetAPIVersion();
+	//	No need to set bBindAsNewGame because it is only useful during Bind.
+	//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;
+
+	//	We always load in full because we don't know how to load later.
+	ExtCtx.bLoadAdventureDesc = false;
+
+	//	Load the extension
+
+	CExtension *pExtension;
+	if (error = CExtension::CreateExtension(ExtCtx, pDesc, CExtension::folderBase, pExtEntities, &pExtension))
+		{
+		if (pRoot)
+			delete pRoot;
+		delete pExtEntities;
+		Ctx.sError = ExtCtx.sError;
+		return error;
+		}
+
+	//	Done
+
+	if (pRoot)
+		delete pRoot;
+
+	*retpExtension = pExtension;
 
 	return NOERROR;
 	}

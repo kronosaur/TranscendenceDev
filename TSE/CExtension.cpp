@@ -202,7 +202,7 @@ ALERROR CExtension::ComposeLoadError (SDesignLoadCtx &Ctx, CString *retsError)
 	return ERR_FAIL;
 	}
 
-ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExternalEntityTable *pEntities, TArray<CExtension *> *retExtensions)
+ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExternalEntityTable *pEntities, CExtension **retpBase, TArray<CXMLElement *> *retEmbedded)
 
 //	CreateBaseFile
 //
@@ -249,7 +249,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 
 	//	We return the base extension
 
-	retExtensions->Insert(pExtension);
+	*retpBase = pExtension;
 
 	//	Set up context
 
@@ -281,6 +281,11 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 		else if (strEquals(pItem->GetTag(), TRANSCENDENCE_ADVENTURE_TAG)
 				|| strEquals(pItem->GetTag(), TRANSCENDENCE_LIBRARY_TAG))
 			{
+			//	Return this as an embedded extension
+
+			retEmbedded->Insert(pItem);
+
+#if 0
 			//	Load an embedded adventure
 
 			//	Get the entities from the base file
@@ -320,6 +325,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 				Ctx.sError = AdvCtx.sError;
 				delete pAdvEntities;
 				}
+#endif
 			}
 
 		//	Other types

@@ -185,6 +185,7 @@ class CResourceDb
 		inline bool IsTDB (void) const { return (m_pDb != NULL); }
 		bool IsUsingExternalGameFile (void) const { return !m_bGameFileInDb; }
 		bool IsUsingExternalResources (void) const { return !m_bResourcesInDb; }
+		ALERROR LoadEmbeddedGameFile (const CString &sFilename, CXMLElement **retpData, IXMLParserController *pResolver, CExternalEntityTable *ioEntityTable, CString *retsError);
 		ALERROR LoadEntities (CString *retsError, CExternalEntityTable **retEntities = NULL);
 		ALERROR LoadGameFile (CXMLElement **retpData, IXMLParserController *pEntities, CString *retsError, CExternalEntityTable *ioEntityTable = NULL);
 		ALERROR LoadGameFileStub (CXMLElement **retpData, CExternalEntityTable *ioEntityTable, CString *retsError);
