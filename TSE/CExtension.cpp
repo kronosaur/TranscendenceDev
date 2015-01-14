@@ -93,6 +93,54 @@ CExtension::~CExtension (void)
 	CleanUp();
 	}
 
+void CExtension::AddDefaultLibraryReferences (SDesignLoadCtx &Ctx)
+
+//	AddDefaultLibraryReferences
+//
+//	Adds default references if we have no other libraries
+
+	{
+	if (GetLibraryCount() == 0)
+		{
+		//	Add compatibility library if we don't load anything else
+		//	(This should only happen for older extensions. All official 
+		//	extensions use either RPG or RTS libraries).
+
+		if (GetAPIVersion() < 26 && GetFolderType() != folderBase)
+			AddLibraryReference(Ctx, DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1);
+		}
+	}
+
+void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD dwRelease)
+
+//	AddLibraryReference
+//
+//	Adds a library reference.
+
+	{
+	//	The core types library is always the first library reference.
+
+	if (GetLibraryCount() == 0
+			&& GetUNID() != dwUNID)
+		{
+		SLibraryDesc *pLibrary = m_Libraries.Insert();
+		pLibrary->dwUNID = UNID_CORE_TYPES_LIBRARY;
+		pLibrary->dwRelease = 1;
+		}
+
+	//	Add the library.
+	//
+	//	NOTE: We can call this function with dwUNID == 0 if we're just trying
+	//	to add the core types library.
+
+	if (dwUNID)
+		{
+		SLibraryDesc *pLibrary = m_Libraries.Insert();
+		pLibrary->dwUNID = dwUNID;
+		pLibrary->dwRelease = dwRelease;
+		}
+	}
+
 bool CExtension::CanExtend (CExtension *pAdventure) const
 
 //	CanExtend
@@ -284,48 +332,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 			//	Return this as an embedded extension
 
 			retEmbedded->Insert(pItem);
-
-#if 0
-			//	Load an embedded adventure
-
-			//	Get the entities from the base file
-
-			CExternalEntityTable *pAdvEntities = new CExternalEntityTable;
-			pAdvEntities->SetParent(pEntities);
-
-			//	Create a load context
-
-			SDesignLoadCtx AdvCtx;
-			AdvCtx.sResDb = Ctx.sResDb;
-			AdvCtx.pResDb = Ctx.pResDb;
-			AdvCtx.bNoResources = Ctx.bNoResources;
-			AdvCtx.bKeepXML = Ctx.bKeepXML;
-			AdvCtx.bNoVersionCheck = true;	//	Obsolete now
-			AdvCtx.dwInheritAPIVersion = pExtension->GetAPIVersion();
-			//	No need to set bBindAsNewGame because it is only useful during Bind.
-			//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;
-
-			//	We always load in full because we don't know how to load later.
-			AdvCtx.bLoadAdventureDesc = false;
-
-			//	Load the extension
-
-			CExtension *pAdvExtension;
-			error = CExtension::CreateExtension(AdvCtx, pItem, CExtension::folderBase, pAdvEntities, &pAdvExtension);
-
-			//	If this worked, add to list of extensions
-
-			if (error == NOERROR)
-				retExtensions->Insert(pAdvExtension);
-
-			//	Otherwise, clean up
-
-			else
-				{
-				Ctx.sError = AdvCtx.sError;
-				delete pAdvEntities;
-				}
-#endif
+			error = NOERROR;
 			}
 
 		//	Other types
@@ -399,15 +406,7 @@ ALERROR CExtension::CreateExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, EF
 		return ERR_FAIL;
 		}
 
-	//	If we get this far and we have no libraries, then include the 
-	//	compatibility library.
-
-	if (pExtension->GetLibraryCount() == 0 && pExtension->GetFolderType() != folderBase)
-		{
-		SLibraryDesc *pLibrary = pExtension->m_Libraries.Insert();
-		pLibrary->dwUNID = DEFAULT_COMPATIBILITY_LIBRARY_UNID;
-		pLibrary->dwRelease = 1;
-		}
+	pExtension->AddDefaultLibraryReferences(Ctx);
 
 	//	Restore
 
@@ -936,12 +935,8 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	If we get this far and we have no libraries, then include the 
 			//	compatibility library.
 
-			if (m_iLoadState == loadComplete && GetLibraryCount() == 0 && GetFolderType() != folderBase)
-				{
-				SLibraryDesc *pLibrary = m_Libraries.Insert();
-				pLibrary->dwUNID = DEFAULT_COMPATIBILITY_LIBRARY_UNID;
-				pLibrary->dwRelease = 1;
-				}
+			if (m_iLoadState == loadComplete)
+				AddDefaultLibraryReferences(Ctx);
 
 			//	Debug output
 
@@ -1223,12 +1218,11 @@ ALERROR CExtension::LoadLibraryElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	{
 	ALERROR error;
 
-	SLibraryDesc *pLibrary = m_Libraries.Insert();
-
-	if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &pLibrary->dwUNID))
+	DWORD dwUNID;
+	if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &dwUNID))
 		return error;
 
-	pLibrary->dwRelease = pDesc->GetAttributeInteger(RELEASE_ATTRIB);
+	AddLibraryReference(Ctx, dwUNID, pDesc->GetAttributeInteger(RELEASE_ATTRIB));
 
 	return NOERROR;
 	}

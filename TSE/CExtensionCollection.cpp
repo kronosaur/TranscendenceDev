@@ -39,7 +39,10 @@ class CLibraryResolver : public IXMLParserController
 				m_bReportError(false)
 			{ }
 
-		inline void AddLibrary (CExtension *pLibrary) { m_Libraries.Insert(pLibrary); }
+		void AddDefaults (CExtension *pExtension);
+		ALERROR AddLibrary (DWORD dwUNID, DWORD dwRelease, CString *retsError);
+		inline void AddLibrary (CExtension *pLibrary) { m_Tables.Insert(pLibrary->GetEntities()); }
+		inline void AddTable (IXMLParserController *pTable) { m_Tables.Insert(pTable); }
 		inline void ReportLibraryErrors (void) { m_bReportError = true; }
 
 		//	IXMLParserController virtuals
@@ -49,7 +52,7 @@ class CLibraryResolver : public IXMLParserController
 	private:
 		CExtensionCollection &m_Extensions;
 
-		TArray<CExtension *> m_Libraries;
+		TArray<IXMLParserController *> m_Tables;
 		bool m_bReportError;				//	If TRUE, we report errors if we fail to load a library
 	};
 
@@ -168,8 +171,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	//	Create a resolver
 
 	CLibraryResolver Resolver(*this);
-	Resolver.AddLibrary(m_pBase);
-	Resolver.AddLibrary(pExtension);
+	Resolver.AddDefaults(pExtension);
 	Resolver.ReportLibraryErrors();
 
 	//	Make sure the extension is loaded completely.
@@ -1014,6 +1016,26 @@ void CExtensionCollection::InitEntityResolver (CExtension *pExtension, DWORD dwF
 
 	retResolver->AddResolver(m_pBase->GetEntities());
 
+	//	Always add core types
+
+	CExtension *pLibrary;
+	if (FindBestExtension(UNID_CORE_TYPES_LIBRARY, 1, dwFlags, &pLibrary))
+		retResolver->AddResolver(pLibrary->GetEntities());
+
+	//	If necessary, add compatible libraries
+
+	if (pExtension->GetAPIVersion() < 26)
+		{
+		if (FindBestExtension(UNID_RPG_LIBRARY, 1, dwFlags, &pLibrary))
+			retResolver->AddResolver(pLibrary->GetEntities());
+
+		if (FindBestExtension(UNID_UNIVERSE_LIBRARY, 1, dwFlags, &pLibrary))
+			retResolver->AddResolver(pLibrary->GetEntities());
+
+		if (FindBestExtension(UNID_HUMAN_SPACE_LIBRARY, 1, dwFlags, &pLibrary))
+			retResolver->AddResolver(pLibrary->GetEntities());
+		}
+
 	//	Next we add any libraries used by the extension
 
 	for (i = 0; i < pExtension->GetLibraryCount(); i++)
@@ -1107,8 +1129,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 		//	the base file and the extension itself.
 
 		CLibraryResolver Resolver(*this);
-		Resolver.AddLibrary(m_pBase);
-		Resolver.AddLibrary(pExtension);
+		Resolver.AddDefaults(pExtension);
 
 		if (error = pExtension->Load(CExtension::loadAdventureDesc, 
 				&Resolver, 
@@ -1248,6 +1269,9 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	//	In some cases we need to load the extension XML from a separate file.
 	//	We need to free this when done.
 
+	CLibraryResolver Resolver(*this);
+	IXMLParserController *pOldEntities = NULL;
+	bool bOldEntitiesFree = false;
 	CXMLElement *pRoot = NULL;
 
 	//	We also prepare an entity table which will get loaded with any
@@ -1265,7 +1289,6 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 		//	This extension might refer to other embedded libraries, so we need
 		//	to give it a resolver
 
-		CLibraryResolver Resolver(*this);
 		Resolver.AddLibrary(m_pBase);
 		Resolver.ReportLibraryErrors();
 
@@ -1278,6 +1301,16 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 			Ctx.sError = strPatternSubst(CONSTLIT("Unable to load embedded file: %s"), sError);
 			return ERR_FAIL;
 			}
+
+		//	Add the entities from the root to the resolver.
+
+		Resolver.AddTable(pExtEntities);
+
+		//	Now temporarily replace the entity table for the resource db to
+		//	use the resolver (so we can resolve entities in libraries, etc.)
+
+		pOldEntities = Ctx.pResDb->GetEntitiesHandoff(&bOldEntitiesFree);
+		Ctx.pResDb->SetEntities(&Resolver);
 
 		//	This is the actual extension XML.
 
@@ -1313,6 +1346,9 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 
 	//	Done
 
+	if (pOldEntities)
+		Ctx.pResDb->SetEntities(pOldEntities, bOldEntitiesFree);
+
 	if (pRoot)
 		delete pRoot;
 
@@ -1340,8 +1376,7 @@ ALERROR CExtensionCollection::LoadFile (const CString &sFilespec, CExtension::EF
 	//	the base file and the extension itself.
 
 	CLibraryResolver Resolver(*this);
-	Resolver.AddLibrary(m_pBase);
-	Resolver.AddLibrary(pExtension);
+	Resolver.AddDefaults(pExtension);
 
 	//	Load it
 
@@ -1708,6 +1743,85 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 
 //	CLibraryResolver -----------------------------------------------------------
 
+void CLibraryResolver::AddDefaults (CExtension *pExtension)
+
+//	AddDefault
+//
+//	Add default library references for the given extension.
+
+	{
+	CString sError;
+
+	//	Add the base extension first
+
+	AddLibrary(m_Extensions.GetBase());
+
+	//	Always add core types
+
+	if (AddLibrary(UNID_CORE_TYPES_LIBRARY, 1, &sError) != NOERROR)
+		::kernelDebugLogMessage("Core types library missing: %s", sError);
+
+	//	If this is an old extension, add the core libraries for backwards
+	//	compatibility.
+
+	if (pExtension->GetAPIVersion() < 26)
+		{
+		if (AddLibrary(UNID_RPG_LIBRARY, 1, &sError) != NOERROR)
+			::kernelDebugLogMessage("RPG library missing: %s", sError);
+
+		if (AddLibrary(UNID_UNIVERSE_LIBRARY, 1, &sError) != NOERROR)
+			::kernelDebugLogMessage("Universe library missing: %s", sError);
+
+		if (AddLibrary(UNID_HUMAN_SPACE_LIBRARY, 1, &sError) != NOERROR)
+			::kernelDebugLogMessage("Human Space library missing: %s", sError);
+		}
+
+	//	Add the extension's entity table
+
+	AddLibrary(pExtension);
+	}
+
+ALERROR CLibraryResolver::AddLibrary (DWORD dwUNID, DWORD dwRelease, CString *retsError)
+
+//	AddLibrary
+//
+//	Adds the library by UNID.
+
+	{
+	//	Get the best extension with this UNID. If we don't find it, then
+	//	continue (we will report an error later when we can't find
+	//	the entity).
+
+	CExtension *pLibrary;
+	if (!m_Extensions.FindBestExtension(dwUNID, dwRelease, (m_Extensions.LoadedInDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), &pLibrary))
+		{
+		*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
+		return ERR_FAIL;
+		}
+
+	//	Is this a library?
+
+	if (pLibrary->GetType() != extLibrary)
+		{
+		*retsError = strPatternSubst(CONSTLIT("Expected %s (%08x) to be a library"), pLibrary->GetName(), pLibrary->GetUNID());
+		return ERR_FAIL;
+		}
+
+	//	Must at least have stubs
+
+	if (pLibrary->GetLoadState() == CExtension::loadNone)
+		{
+		*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
+		return ERR_FAIL;
+		}
+
+	//	Add it to our list so that we can use it to resolve entities.
+
+	AddLibrary(pLibrary);
+
+	return NOERROR;
+	}
+
 ALERROR CLibraryResolver::OnOpenTag (CXMLElement *pElement, CString *retsError)
 
 //	OnOpenTag
@@ -1720,36 +1834,7 @@ ALERROR CLibraryResolver::OnOpenTag (CXMLElement *pElement, CString *retsError)
 		DWORD dwUNID = pElement->GetAttributeInteger(UNID_ATTRIB);
 		DWORD dwRelease = pElement->GetAttributeInteger(RELEASE_ATTRIB);
 
-		//	Get the best extension with this UNID. If we don't find it, then
-		//	continue (we will report an error later when we can't find
-		//	the entity).
-
-		CExtension *pLibrary;
-		if (!m_Extensions.FindBestExtension(dwUNID, dwRelease, (m_Extensions.LoadedInDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), &pLibrary))
-			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
-			return ERR_FAIL;
-			}
-
-		//	Is this a library?
-
-		if (pLibrary->GetType() != extLibrary)
-			{
-			*retsError = strPatternSubst(CONSTLIT("Expected %s (%08x) to be a library"), pLibrary->GetName(), pLibrary->GetUNID());
-			return ERR_FAIL;
-			}
-
-		//	Must at least have stubs
-
-		if (pLibrary->GetLoadState() == CExtension::loadNone)
-			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
-			return ERR_FAIL;
-			}
-
-		//	Add it to our list so that we can use it to resolve entities.
-
-		AddLibrary(pLibrary);
+		return AddLibrary(dwUNID, dwRelease, retsError);
 		}
 
 	return NOERROR;
@@ -1764,10 +1849,10 @@ CString CLibraryResolver::ResolveExternalEntity (const CString &sName, bool *ret
 	{
 	int i;
 
-	for (i = 0; i < m_Libraries.GetCount(); i++)
+	for (i = 0; i < m_Tables.GetCount(); i++)
 		{
 		bool bFound;
-		CString sResult = m_Libraries[i]->GetEntities()->ResolveExternalEntity(sName, &bFound);
+		CString sResult = m_Tables[i]->ResolveExternalEntity(sName, &bFound);
 		if (bFound)
 			{
 			if (retbFound)

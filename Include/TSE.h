@@ -179,6 +179,8 @@ class CResourceDb
 		~CResourceDb (void);
 
 		void ComputeFileDigest (CIntegerIP *retDigest);
+		IXMLParserController *GetEntities (void) const { return m_pEntities; }
+		IXMLParserController *GetEntitiesHandoff (bool *retbFree) { IXMLParserController *pEntities = m_pEntities; *retbFree = m_bFreeEntities; m_pEntities = NULL; m_bFreeEntities = false; return pEntities; }
 		const CString &GetFilespec (void) const { return m_sFilespec; }
 		CString GetRootTag (void);
 		bool ImageExists (const CString &sFolder, const CString &sFilename);
