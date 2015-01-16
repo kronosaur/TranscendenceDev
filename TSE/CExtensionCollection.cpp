@@ -19,6 +19,9 @@
 #define EXTENSION_TDB								CONSTLIT("tdb")
 #define EXTENSION_XML								CONSTLIT("xml")
 
+#define FILE_AMERICA								CONSTLIT("America")
+#define FILE_TRANSCENDENCE							CONSTLIT("Transcendence")
+
 #define FILESPEC_COLLECTION_FOLDER					CONSTLIT("Collection")
 #define FILESPEC_EXTENSIONS_FOLDER					CONSTLIT("Extensions")
 
@@ -57,6 +60,7 @@ class CLibraryResolver : public IXMLParserController
 	};
 
 CExtensionCollection::CExtensionCollection (void) :
+		m_iGame(gameUnknown),
 		m_sCollectionFolder(FILESPEC_COLLECTION_FOLDER),
 		m_pBase(NULL),
 		m_bReloadNeeded(true),
@@ -515,15 +519,21 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 
 	ClearAllMarks();
 
+	//	Make a list of core libraries and add them
+
+	TArray<CExtension *> CoreLibraries;
+	ComputeCoreLibraries(pAdventure, &CoreLibraries);
+
+	for (i = 0; i < CoreLibraries.GetCount(); i++)
+		{
+		CoreLibraries[i]->SetMarked();
+		retList->Insert(CoreLibraries[i]);
+		}
+
 	//	Make a list of all compatibility libraries
 
 	TArray<CExtension *> CompatibilityLibraries;
 	ComputeCompatibilityLibraries(pAdventure, dwFlags, &CompatibilityLibraries);
-
-	//	We always bind the base extension first
-
-	m_pBase->SetMarked();
-	retList->Insert(m_pBase);
 
 	//	Now add the adventure and any dependencies
 
@@ -611,6 +621,54 @@ void CExtensionCollection::ComputeCompatibilityLibraries (CExtension *pAdventure
 
 		if (pBest)
 			retList->Insert(pBest);
+		}
+	}
+
+void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<CExtension *> *retList)
+
+//	ComputeCoreLibraries
+//
+//	Compute the list of core libraries needed for the given extension.
+
+	{
+	//	We always need the base
+
+	retList->Insert(m_pBase);
+
+	//	Decide based on the game.
+
+	switch (m_iGame)
+		{
+		case gameAmerica:
+			break;
+
+		case gameTranscendence:
+			{
+			CExtension *pLibrary;
+
+			if (FindBestExtension(UNID_CORE_TYPES_LIBRARY, 1, 0, &pLibrary))
+				retList->Insert(pLibrary);
+
+			if (FindBestExtension(UNID_RPG_LIBRARY, 1, 0, &pLibrary))
+				retList->Insert(pLibrary);
+
+			if (FindBestExtension(UNID_UNIVERSE_LIBRARY, 1, 0, &pLibrary))
+				retList->Insert(pLibrary);
+
+			//	Prior to API 26 we expected these UNIDs to be defined, so we 
+			//	need to add them.
+
+			if (pExtension->GetAPIVersion() < 26)
+				{
+				if (FindBestExtension(UNID_HUMAN_SPACE_LIBRARY, 1, 0, &pLibrary))
+					retList->Insert(pLibrary);
+				}
+
+			break;
+			}
+
+		default:
+			ASSERT(false);
 		}
 	}
 
@@ -1012,29 +1070,13 @@ void CExtensionCollection::InitEntityResolver (CExtension *pExtension, DWORD dwF
 	{
 	int i;
 
-	//	Base extension is always added first
+	//	Add all core libraries
 
-	retResolver->AddResolver(m_pBase->GetEntities());
+	TArray<CExtension *> CoreLibraries;
+	ComputeCoreLibraries(pExtension, &CoreLibraries);
 
-	//	Always add core types
-
-	CExtension *pLibrary;
-	if (FindBestExtension(UNID_CORE_TYPES_LIBRARY, 1, dwFlags, &pLibrary))
-		retResolver->AddResolver(pLibrary->GetEntities());
-
-	//	If necessary, add compatible libraries
-
-	if (pExtension->GetAPIVersion() < 26)
-		{
-		if (FindBestExtension(UNID_RPG_LIBRARY, 1, dwFlags, &pLibrary))
-			retResolver->AddResolver(pLibrary->GetEntities());
-
-		if (FindBestExtension(UNID_UNIVERSE_LIBRARY, 1, dwFlags, &pLibrary))
-			retResolver->AddResolver(pLibrary->GetEntities());
-
-		if (FindBestExtension(UNID_HUMAN_SPACE_LIBRARY, 1, dwFlags, &pLibrary))
-			retResolver->AddResolver(pLibrary->GetEntities());
-		}
+	for (i = 0; i < CoreLibraries.GetCount(); i++)
+		retResolver->AddResolver(CoreLibraries[i]->GetEntities());
 
 	//	Next we add any libraries used by the extension
 
@@ -1170,10 +1212,23 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	//	Log whether or not we're using the XML or TDB files.
 
 	if (Resources.IsUsingExternalGameFile())
-		kernelDebugLogMessage("Using external Transcendence.xml");
+		kernelDebugLogMessage("Using external %s", sFilespec);
 
 	if (Resources.IsUsingExternalResources())
 		kernelDebugLogMessage("Using external resource files");
+
+	//	Figure out what game we're running.
+
+	CString sFilename = pathStripExtension(pathGetFilename(sFilespec));
+	if (strEquals(sFilename, FILE_TRANSCENDENCE))
+		m_iGame = gameTranscendence;
+	else if (strEquals(sFilename, FILE_AMERICA))
+		m_iGame = gameAmerica;
+	else
+		{
+		*retsError = strPatternSubst(CONSTLIT("Unexpected base file type: %s."), sFilespec);
+		return ERR_FAIL;
+		}
 
 	//	Check the signature on the file to see if we should verify the
 	//	extensions loaded from the base file.
@@ -1217,7 +1272,7 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 
 	CExtension *pBase;
 	TArray<CXMLElement *> EmbeddedExtensions;
-	if (error = CExtension::CreateBaseFile(Ctx, pGameFile, pEntities, &pBase, &EmbeddedExtensions))
+	if (error = CExtension::CreateBaseFile(Ctx, m_iGame, pGameFile, pEntities, &pBase, &EmbeddedExtensions))
 		{
 		delete pGameFile;
 		delete pEntities;
@@ -1763,31 +1818,14 @@ void CLibraryResolver::AddDefaults (CExtension *pExtension)
 //	Add default library references for the given extension.
 
 	{
+	int i;
 	CString sError;
 
-	//	Add the base extension first
+	TArray<CExtension *> CoreLibraries;
+	m_Extensions.ComputeCoreLibraries(pExtension, &CoreLibraries);
 
-	AddLibrary(m_Extensions.GetBase());
-
-	//	Always add core types
-
-	if (AddLibrary(UNID_CORE_TYPES_LIBRARY, 1, &sError) != NOERROR)
-		::kernelDebugLogMessage("Core types library missing: %s", sError);
-
-	//	If this is an old extension, add the core libraries for backwards
-	//	compatibility.
-
-	if (pExtension->GetAPIVersion() < 26)
-		{
-		if (AddLibrary(UNID_RPG_LIBRARY, 1, &sError) != NOERROR)
-			::kernelDebugLogMessage("RPG library missing: %s", sError);
-
-		if (AddLibrary(UNID_UNIVERSE_LIBRARY, 1, &sError) != NOERROR)
-			::kernelDebugLogMessage("Universe library missing: %s", sError);
-
-		if (AddLibrary(UNID_HUMAN_SPACE_LIBRARY, 1, &sError) != NOERROR)
-			::kernelDebugLogMessage("Human Space library missing: %s", sError);
-		}
+	for (i = 0; i < CoreLibraries.GetCount(); i++)
+		AddLibrary(CoreLibraries[i]);
 
 	//	Add the extension's entity table
 

@@ -6180,6 +6180,14 @@ enum EExtensionTypes
 	extExtension,
 	};
 
+enum EGameTypes
+	{
+	gameUnknown,
+
+	gameAmerica,							//	CSC America
+	gameTranscendence,						//	Transcendence
+	};
+
 class CExtension
 	{
 	public:
@@ -6210,7 +6218,7 @@ class CExtension
 		CExtension (void);
 		~CExtension (void);
 
-		static ALERROR CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExternalEntityTable *pEntities, CExtension **retpBase, TArray<CXMLElement *> *retEmbedded);
+		static ALERROR CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLElement *pDesc, CExternalEntityTable *pEntities, CExtension **retpBase, TArray<CXMLElement *> *retEmbedded);
 		static ALERROR CreateExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, EFolderTypes iFolder, CExternalEntityTable *pEntities, CExtension **retpExtension);
 		static ALERROR CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, CExtension **retpExtension, CString *retsError);
 
@@ -6288,6 +6296,7 @@ class CExtension
 
 		CString m_sFilespec;				//	Extension file
 		DWORD m_dwUNID;						//	UNID of extension
+		EGameTypes m_iGame;					//	Game that this extension belongs to
 		EExtensionTypes m_iType;			//	Either adventure, extension, or base
 
 		ELoadStates m_iLoadState;			//	Current load state
@@ -6365,6 +6374,7 @@ class CExtensionCollection
 		ALERROR ComputeAvailableAdventures (DWORD dwFlags, TArray<CExtension *> *retList, CString *retsError);
 		ALERROR ComputeAvailableExtensions (CExtension *pAdventure, DWORD dwFlags, const TArray<DWORD> &Extensions, TArray<CExtension *> *retList, CString *retsError);
 		ALERROR ComputeBindOrder (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags, TArray<CExtension *> *retList, CString *retsError);
+		void ComputeCoreLibraries (CExtension *pExtension, TArray<CExtension *> *retList);
 		void DebugDump (void);
 		bool FindAdventureFromDesc (DWORD dwUNID, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
 		bool FindBestExtension (DWORD dwUNID, DWORD dwRelease = 0, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
@@ -6372,6 +6382,7 @@ class CExtensionCollection
 		void FreeDeleted (void);
 		CExtension *GetBase (void) const { return m_pBase; }
 		CString GetExternalResourceFilespec (CExtension *pExtension, const CString &sFilename) const;
+		EGameTypes GetGame (void) const { return m_iGame; }
 		bool GetRequiredResources (TArray<CString> *retFilespecs);
 		void InitEntityResolver (CExtension *pExtension, DWORD dwFlags, CEntityResolverList *retResolver);
 		bool IsRegisteredGame (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags);
@@ -6397,6 +6408,7 @@ class CExtensionCollection
 		ALERROR LoadFolderStubsOnly (const CString &sFilespec, CExtension::EFolderTypes iFolder, DWORD dwFlags, CString *retsError);
 		bool ReloadDisabledExtensions (DWORD dwFlags);
 
+		EGameTypes m_iGame;					//	Game
 		CString m_sCollectionFolder;		//	Path to collection folder
 		TArray<CString> m_ExtensionFolders;	//	Paths to extension folders
 

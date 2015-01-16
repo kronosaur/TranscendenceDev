@@ -64,6 +64,7 @@ const int RIGHT_COVER_OFFSET =					256 + 160;
 
 CExtension::CExtension (void) :
 		m_dwUNID(0),
+		m_iGame(gameUnknown),
 		m_iType(extUnknown),
 		m_iLoadState(loadNone),
 		m_iFolderType(folderUnknown),
@@ -119,16 +120,6 @@ void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD d
 //	Adds a library reference.
 
 	{
-	//	The core types library is always the first library reference.
-
-	if (GetLibraryCount() == 0
-			&& GetUNID() != dwUNID)
-		{
-		SLibraryDesc *pLibrary = m_Libraries.Insert();
-		pLibrary->dwUNID = UNID_CORE_TYPES_LIBRARY;
-		pLibrary->dwRelease = 1;
-		}
-
 	//	Add the library.
 	//
 	//	NOTE: We can call this function with dwUNID == 0 if we're just trying
@@ -251,7 +242,7 @@ ALERROR CExtension::ComposeLoadError (SDesignLoadCtx &Ctx, CString *retsError)
 	return ERR_FAIL;
 	}
 
-ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExternalEntityTable *pEntities, CExtension **retpBase, TArray<CXMLElement *> *retEmbedded)
+ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLElement *pDesc, CExternalEntityTable *pEntities, CExtension **retpBase, TArray<CXMLElement *> *retEmbedded)
 
 //	CreateBaseFile
 //
@@ -266,6 +257,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 	CExtension *pExtension = new CExtension;
 	pExtension->m_sFilespec = Ctx.sResDb;
 	pExtension->m_dwUNID = 0;	//	Base is the only extension with 0 UNID.
+	pExtension->m_iGame = iGame;
 	pExtension->m_iType = extBase;
 	pExtension->m_iLoadState = loadEntities;
 	pExtension->m_iFolderType = folderBase;
@@ -292,7 +284,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 		{
 		pExtension->m_pEntities = NULL;	//	Let our parent clean up
 		delete pExtension;
-		Ctx.sError = CONSTLIT("Newer version of Transcendence.exe required.");
+		Ctx.sError = CONSTLIT("Newer version of the Transcendence engine is required.");
 		return ERR_FAIL;
 		}
 
@@ -444,12 +436,28 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 		}
 
 	if (strEquals(pDesc->GetTag(), TRANSCENDENCE_ADVENTURE_TAG))
+		{
+		pExtension->m_iGame = gameTranscendence;
 		pExtension->m_iType = extAdventure;
-	else if (strEquals(pDesc->GetTag(), TRANSCENDENCE_LIBRARY_TAG)
-				|| strEquals(pDesc->GetTag(), CORE_LIBRARY_TAG))
+		}
+	else if (strEquals(pDesc->GetTag(), TRANSCENDENCE_LIBRARY_TAG))
+		{
+		pExtension->m_iGame = gameTranscendence;
 		pExtension->m_iType = extLibrary;
+		}
 	else if (strEquals(pDesc->GetTag(), TRANSCENDENCE_EXTENSION_TAG))
+		{
+		pExtension->m_iGame = gameTranscendence;
 		pExtension->m_iType = extExtension;
+		}
+	else if (strEquals(pDesc->GetTag(), CORE_LIBRARY_TAG))
+		{
+		//	For core libraries, we don't care what game it is. It's always 
+		//	whatever game the base file is.
+
+		pExtension->m_iGame = gameUnknown;
+		pExtension->m_iType = extLibrary;
+		}
 	else
 		{
 		delete pExtension;
