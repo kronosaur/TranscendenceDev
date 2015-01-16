@@ -1272,6 +1272,7 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	CLibraryResolver Resolver(*this);
 	IXMLParserController *pOldEntities = NULL;
 	bool bOldEntitiesFree = false;
+	CString sRootFolder;
 	CXMLElement *pRoot = NULL;
 
 	//	We also prepare an entity table which will get loaded with any
@@ -1286,6 +1287,11 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	CString sFilename;
 	if (pDesc->FindAttribute(FILENAME_ATTRIB, &sFilename))
 		{
+		//	If we have a path, then we need to apply this to any resources 
+		//	loaded by this file.
+
+		sRootFolder = pathGetPath(sFilename);
+
 		//	This extension might refer to other embedded libraries, so we need
 		//	to give it a resolver
 
@@ -1331,6 +1337,13 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 
 	//	We always load in full because we don't know how to load later.
 	ExtCtx.bLoadAdventureDesc = false;
+
+	//	Root folder
+
+	if (!sRootFolder.IsBlank())
+		ExtCtx.sFolder = pathAddComponent(Ctx.sFolder, sRootFolder);
+	else
+		ExtCtx.sFolder = Ctx.sFolder;
 
 	//	Load the extension
 

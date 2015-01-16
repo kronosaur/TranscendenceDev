@@ -21,6 +21,7 @@
 #include "PreComp.h"
 
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
+#define CORE_LIBRARY_TAG						CONSTLIT("CoreLibrary")
 #define GLOBALS_TAG								CONSTLIT("Globals")
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGES_TAG								CONSTLIT("Images")
@@ -327,7 +328,8 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 		//	<TranscendenceAdventure>
 
 		else if (strEquals(pItem->GetTag(), TRANSCENDENCE_ADVENTURE_TAG)
-				|| strEquals(pItem->GetTag(), TRANSCENDENCE_LIBRARY_TAG))
+				|| strEquals(pItem->GetTag(), TRANSCENDENCE_LIBRARY_TAG)
+				|| strEquals(pItem->GetTag(), CORE_LIBRARY_TAG))
 			{
 			//	Return this as an embedded extension
 
@@ -443,7 +445,8 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 
 	if (strEquals(pDesc->GetTag(), TRANSCENDENCE_ADVENTURE_TAG))
 		pExtension->m_iType = extAdventure;
-	else if (strEquals(pDesc->GetTag(), TRANSCENDENCE_LIBRARY_TAG))
+	else if (strEquals(pDesc->GetTag(), TRANSCENDENCE_LIBRARY_TAG)
+				|| strEquals(pDesc->GetTag(), CORE_LIBRARY_TAG))
 		pExtension->m_iType = extLibrary;
 	else if (strEquals(pDesc->GetTag(), TRANSCENDENCE_EXTENSION_TAG))
 		pExtension->m_iType = extExtension;
@@ -1264,7 +1267,7 @@ ALERROR CExtension::LoadModuleElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Load the module XML
 
 	CXMLElement *pModuleXML;
-	if (error = Ctx.pResDb->LoadModule(NULL_STR, sFilename, &pModuleXML, &Ctx.sError))
+	if (error = Ctx.pResDb->LoadModule(Ctx.sFolder, sFilename, &pModuleXML, &Ctx.sError))
 		{
 		if (error == ERR_NOTFOUND)
 			Ctx.sError = strPatternSubst(CONSTLIT("%s: %s"), Ctx.pResDb->GetFilespec(), Ctx.sError);

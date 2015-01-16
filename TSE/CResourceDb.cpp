@@ -645,6 +645,73 @@ ALERROR CResourceDb::LoadModule (const CString &sFolder, const CString &sFilenam
 	return NOERROR;
 	}
 
+ALERROR CResourceDb::LoadModuleEntities (const CString &sFolder, const CString &sFilename, CExternalEntityTable **retpEntities, CString *retsError)
+
+//	LoadModuleEntities
+//
+//	Returns any entities defined in the given module.
+
+	{
+	ALERROR error;
+
+
+	if (m_bGameFileInDb && m_pDb)
+		{
+		CString sFilespec;
+		if (m_iVersion >= 11)
+			sFilespec = pathAddComponent(sFolder, sFilename);
+		else
+			sFilespec = sFilename;
+
+		//	Look up the file in the map
+
+		CString sGameFile;
+		if (error = ReadEntry(sFilespec, &sGameFile))
+			{
+			*retsError = strPatternSubst(CONSTLIT("%s: Unable to read entry %s."), m_sGameFile, sFilespec);
+			return error;
+			}
+
+		CExternalEntityTable *pEntities = new CExternalEntityTable;
+
+		//	Parse the XML file from the buffer
+
+		CBufferReadBlock GameFile(sGameFile);
+		CString sError;
+		TRY(CXMLElement::ParseEntityTable(&GameFile, pEntities, &sError));
+		if (error)
+			{
+			delete pEntities;
+			*retsError = strPatternSubst(CONSTLIT("%s: %s"), m_sGameFile, sError);
+			return error;
+			}
+
+		*retpEntities = pEntities;
+		}
+	else
+		{
+		CExternalEntityTable *pEntities = new CExternalEntityTable;
+
+		//	Parse the XML file on disk
+
+		CFileReadBlock DataFile(pathAddComponent(m_sRoot, pathAddComponent(sFolder, sFilename)));
+		CString sError;
+		if (error = CXMLElement::ParseEntityTable(&DataFile, pEntities, &sError))
+			{
+			delete pEntities;
+			if (error == ERR_NOTFOUND)
+				*retsError = strPatternSubst(CONSTLIT("Unable to open file: %s"), DataFile.GetFilename());
+			else
+				*retsError = strPatternSubst(CONSTLIT("%s: %s"), sFilename, sError);
+			return error;
+			}
+
+		*retpEntities = pEntities;
+		}
+
+	return NOERROR;
+	}
+
 ALERROR CResourceDb::LoadSound (CSoundMgr &SoundMgr, const CString &sFolder, const CString &sFilename, int *retiChannel)
 
 //	LoadSound
