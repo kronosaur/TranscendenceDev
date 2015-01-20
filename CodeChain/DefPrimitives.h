@@ -269,9 +269,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"   function\n"
 			"   int32\n"
 			"   list\n"
+			"   nil\n"
 			"   primitive\n"
 			"   string\n"
-			"   struct\n",
+			"   struct\n"
+			"   true\n",
 
 			"v",	0,	},
 
