@@ -505,11 +505,14 @@ void CVisualPalette::CreateImageButton (CAniSequencer *pContainer,
 	pStyle->SetPropertyString(PROP_TEXT_ALIGN_VERT, CONSTLIT("bottom"));
 	pButton->SetStyle(STYLE_TEXT, pStyle);
 
-	pStyle = new CAniRect;
-	pStyle->SetPropertyVector(PROP_POSITION, CVector((IMAGE_BUTTON_WIDTH - pImage->GetWidth()) / 2, IMAGE_BUTTON_IMAGE_PADDING_TOP));
-	pStyle->SetPropertyVector(PROP_SCALE, CVector(pImage->GetWidth(), pImage->GetHeight()));
-	pStyle->SetFillMethod(new CAniImageFill(pImage, false));
-	pButton->SetStyle(STYLE_IMAGE, pStyle);
+	if (pImage)
+		{
+		pStyle = new CAniRect;
+		pStyle->SetPropertyVector(PROP_POSITION, CVector((IMAGE_BUTTON_WIDTH - pImage->GetWidth()) / 2, IMAGE_BUTTON_IMAGE_PADDING_TOP));
+		pStyle->SetPropertyVector(PROP_SCALE, CVector(pImage->GetWidth(), pImage->GetHeight()));
+		pStyle->SetFillMethod(new CAniImageFill(pImage, false));
+		pButton->SetStyle(STYLE_IMAGE, pStyle);
+		}
 
 	//	Add
 

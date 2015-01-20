@@ -114,6 +114,10 @@ class CUIHelper
 			//	CreateClassInfo???
 			OPTION_ITEM_RIGHT_ALIGN =				0x00000001,
 
+			//	CreateSessionFrameBar
+			OPTION_FRAME_ALIGN_TOP =				0x00000001,
+			OPTION_FRAME_ALIGN_BOTTOM =				0x00000002,
+
 			//	CreateSessionTitle
 			OPTION_SESSION_OK_BUTTON =				0x00000001,
 			OPTION_SESSION_NO_CANCEL_BUTTON =		0x00000002,
@@ -124,12 +128,25 @@ class CUIHelper
 			OPTION_SELECTED =						0x00000001,
 			OPTION_NO_ICON =						0x00000002,
 			OPTION_TITLE =							0x00000004,
+
+			//	SMenuEntry flags
+			MENU_TEXT =								0x00000001,		//	Show on left-hand text menu
+			MENU_ALIGN_CENTER =						0x00000002,		//	Align center
+			MENU_ALIGN_LEFT =						0x00000004,		//	Align left
+			MENU_ALIGN_RIGHT =						0x00000008,		//	Align right
 			};
 
 		struct SMenuEntry
 			{
+			SMenuEntry (void) : 
+					pIcon(NULL),
+					dwFlags(0)
+				{ }
+
 			CString sLabel;
 			CString sCommand;
+			const CG16bitImage *pIcon;
+			DWORD dwFlags;
 			};
 
 		CUIHelper (CHumanInterface &HI) : m_HI(HI) { }
@@ -143,6 +160,7 @@ class CUIHelper
 		void CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, const CString &sExtraDesc, int *retcyHeight, IAnimatron **retpInfo) const;
 		void CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
 		void CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg = NULL) const;
+		void CreateSessionFrameBar (IHISession *pSession, const TArray<SMenuEntry> *pMenu, DWORD dwOptions, IAnimatron **retpControl) const;
 		void CreateSessionTitle (IHISession *pSession, 
 								 CCloudService &Service, 
 								 const CString &sTitle, 
@@ -162,6 +180,7 @@ class CUIHelper
 
 	private:
 		void CreateClassInfoSpecialItem (CItemType *pItemIcon, const CString &sText, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateBarButtons (CAniSequencer *pSeq, const RECT &rcRect, IHISession *pSession, const TArray<SMenuEntry> *pMenu, DWORD dwOptions) const;
 
 		CHumanInterface &m_HI;
 	};

@@ -14,6 +14,7 @@ const int ATTRIB_SPACING_Y =					2;
 
 const int BUTTON_HEIGHT =						96;
 const int BUTTON_WIDTH =						96;
+const int BUTTON_SPACING_X =					10;
 
 const int DAMAGE_ADJ_ICON_WIDTH =				16;
 const int DAMAGE_ADJ_ICON_HEIGHT =				16;
@@ -182,6 +183,183 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	return cyHeight;
 	}
 
+void CUIHelper::CreateBarButtons (CAniSequencer *pSeq, const RECT &rcRect, IHISession *pSession, const TArray<SMenuEntry> *pMenu, DWORD dwOptions) const
+
+//	CreateBarButtons
+//
+//	Creates buttons for a top or bottom bar. rcRect is the rect where the 
+//	buttons should go (relative to pSeq).
+
+	{
+	int i;
+
+	//	Nothing to do if no menu
+
+	if (pMenu == NULL)
+		return;
+
+	const CVisualPalette &VI = m_HI.GetVisuals();
+
+	//	Count the number of buttons in each part of the menu.
+
+	int iLeftButtons = 0;
+	int iCenterButtons = 0;
+	int iRightButtons = 0;
+	int iMenuLines = 0;
+
+	for (i = 0; i < pMenu->GetCount(); i++)
+		{
+		const SMenuEntry &Entry = pMenu->GetAt(i);
+		if (Entry.dwFlags & MENU_TEXT)
+			iMenuLines++;
+		else if (Entry.dwFlags & MENU_ALIGN_LEFT)
+			iLeftButtons++;
+		else if (Entry.dwFlags & MENU_ALIGN_CENTER)
+			iCenterButtons++;
+		else if (Entry.dwFlags & MENU_ALIGN_RIGHT)
+			iRightButtons++;
+		else
+			iCenterButtons++;
+		}
+
+	//	Create text menu
+
+	if (iMenuLines > 0)
+		{
+		//	Menu is to the left.
+
+		int xMenu = rcRect.left;
+		int yMenu = rcRect.top;
+
+		for (i = 0; i < pMenu->GetCount(); i++)
+			{
+			const SMenuEntry &Entry = pMenu->GetAt(i);
+			if (Entry.dwFlags & MENU_TEXT)
+				{
+				IAnimatron *pButton;
+				int cyHeight;
+
+				VI.CreateLink(pSeq, 
+						Entry.sCommand, 
+						xMenu, 
+						yMenu, 
+						Entry.sLabel, 
+						0, 
+						&pButton, 
+						NULL, 
+						&cyHeight);
+
+				pSession->RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, Entry.sCommand);
+
+				yMenu += cyHeight;
+				}
+			}
+		}
+
+	//	Create left buttons
+
+	else if (iLeftButtons > 0)
+		{
+		//	Compute the starting position (relative to the bar)
+
+		int xPos = rcRect.left;
+		int yPos = rcRect.top;
+
+		//	Create the buttons
+
+		for (i = 0; i < pMenu->GetCount(); i++)
+			{
+			const SMenuEntry &Entry = pMenu->GetAt(i);
+			if (Entry.dwFlags & MENU_ALIGN_LEFT)
+				{
+				IAnimatron *pButton;
+				VI.CreateImageButton(pSeq,
+						Entry.sCommand,
+						xPos,
+						yPos,
+						Entry.pIcon, 
+						Entry.sLabel,
+						0,
+						&pButton);
+
+				pSession->RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, Entry.sCommand);
+
+				xPos += BUTTON_WIDTH + BUTTON_SPACING_X;
+				}
+			}
+		}
+
+	//	Create center buttons
+
+	if (iCenterButtons > 0)
+		{
+		//	Compute the starting position (relative to the bar)
+
+		int cxButtons = (iCenterButtons * BUTTON_WIDTH) + ((iCenterButtons - 1) * BUTTON_SPACING_X);
+		int xPos = rcRect.left + (RectWidth(rcRect) - cxButtons) / 2;
+		int yPos = rcRect.top;
+
+		//	Create the buttons
+
+		for (i = 0; i < pMenu->GetCount(); i++)
+			{
+			const SMenuEntry &Entry = pMenu->GetAt(i);
+			if ((Entry.dwFlags & MENU_ALIGN_CENTER)
+					|| (Entry.dwFlags & (MENU_ALIGN_LEFT | MENU_ALIGN_RIGHT | MENU_TEXT)) == 0)
+				{
+				IAnimatron *pButton;
+				VI.CreateImageButton(pSeq,
+						Entry.sCommand,
+						xPos,
+						yPos,
+						Entry.pIcon, 
+						Entry.sLabel,
+						0,
+						&pButton);
+
+				pSession->RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, Entry.sCommand);
+
+				xPos += BUTTON_WIDTH + BUTTON_SPACING_X;
+				}
+			}
+		}
+
+	//	Create right buttons
+
+	if (iRightButtons > 0)
+		{
+		//	Compute the starting position (relative to the bar)
+
+		int cxButtons = (iCenterButtons * BUTTON_WIDTH) + ((iCenterButtons - 1) * BUTTON_SPACING_X);
+		int xPos = rcRect.right - cxButtons;
+		int yPos = rcRect.top;
+
+		//	Create the buttons
+
+		for (i = 0; i < pMenu->GetCount(); i++)
+			{
+			const SMenuEntry &Entry = pMenu->GetAt(i);
+			if (Entry.dwFlags & MENU_ALIGN_RIGHT)
+				{
+				IAnimatron *pButton;
+				VI.CreateImageButton(pSeq,
+						Entry.sCommand,
+						xPos,
+						yPos,
+						Entry.pIcon, 
+						Entry.sLabel,
+						0,
+						&pButton);
+
+				pSession->RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, Entry.sCommand);
+
+				xPos += BUTTON_WIDTH + BUTTON_SPACING_X;
+				}
+			}
+		}
+
+	}
+
 void CUIHelper::CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg) const
 
 //	CreateInputErrorMessage
@@ -287,6 +465,83 @@ void CUIHelper::CreateInputErrorMessage (IHISession *pSession, const RECT &rcRec
 
 	if (retpMsg)
 		*retpMsg = pMsg;
+	}
+
+void CUIHelper::CreateSessionFrameBar (IHISession *pSession, const TArray<SMenuEntry> *pMenu, DWORD dwOptions, IAnimatron **retpControl) const
+
+//	CreateSessionFrameBar
+//
+//	Creates a standard menu bar at the top or bottom of the session.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+
+	RECT rcCenter;
+	CG16bitImage &Screen = m_HI.GetScreen();
+	VI.GetWidescreenRect(Screen, &rcCenter);
+
+	//	Compute the rect of the entire bar
+
+	RECT rcBar;
+	rcBar.left = 0;
+	rcBar.right = Screen.GetWidth();
+	if (dwOptions & OPTION_FRAME_ALIGN_TOP)
+		{
+		rcBar.top = 0;
+		rcBar.bottom = rcCenter.top;
+		}
+	else
+		{
+		rcBar.top = rcCenter.bottom;
+		rcBar.bottom = Screen.GetHeight();
+		}
+
+	//	Create a sequencer to hold the bar
+
+	CAniSequencer *pRoot;
+	CAniSequencer::Create(CVector(rcBar.left, rcBar.top), &pRoot);
+
+	//	Rectangle for the entire bar background
+
+	IAnimatron *pItem = new CAniRect;
+	pItem->SetPropertyVector(PROP_POSITION, CVector(0, 0));
+	pItem->SetPropertyVector(PROP_SCALE, CVector(RectWidth(rcBar), RectHeight(rcBar)));
+	pItem->SetPropertyColor(PROP_COLOR, VI.GetColor(colorAreaDeep));
+	pItem->SetFillMethod(new CAniSolidFill);
+
+	pRoot->AddTrack(pItem, 0);
+
+	//	Rectangle for edge
+
+	pItem = new CAniRect;
+	if (dwOptions & OPTION_FRAME_ALIGN_TOP)
+		pItem->SetPropertyVector(PROP_POSITION, CVector(0, RectHeight(rcBar) - 1));
+	else
+		pItem->SetPropertyVector(PROP_POSITION, CVector(0, 0));
+	pItem->SetPropertyVector(PROP_SCALE, CVector(RectWidth(rcBar), 1));
+	pItem->SetPropertyColor(PROP_COLOR, VI.GetColor(colorLineFrame));
+	pItem->SetFillMethod(new CAniSolidFill);
+
+	pRoot->AddTrack(pItem, 0);
+
+	//	Figure out where the buttons should go
+
+	RECT rcButtons;
+	rcButtons.left = rcCenter.left;
+	rcButtons.right = rcCenter.right;
+	if (dwOptions & OPTION_FRAME_ALIGN_TOP)
+		rcButtons.top = rcBar.bottom - TITLE_BAR_HEIGHT + ((TITLE_BAR_HEIGHT - BUTTON_HEIGHT) / 2);
+	else
+		rcButtons.top = (TITLE_BAR_HEIGHT - BUTTON_HEIGHT) / 2;
+	rcButtons.bottom = rcBar.bottom;
+
+	//	Create the buttons
+
+	CreateBarButtons(pRoot, rcButtons, pSession, pMenu, dwOptions);
+
+	//	Done
+
+	*retpControl = pRoot;
 	}
 
 void CUIHelper::CreateSessionTitle (IHISession *pSession, 
