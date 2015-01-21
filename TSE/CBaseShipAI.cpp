@@ -261,7 +261,7 @@ CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric r
 	//	The player is a special case (because sometimes a station is angry at the 
 	//	player even though she is not an enemy)
 
-	CSpaceObject *pPlayer = m_pShip->GetPlayer();
+	CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
 	if (pPlayer 
 			&& pCenter->IsAngryAt(pPlayer)
 			&& pPlayer != pExcludeObj
@@ -308,7 +308,7 @@ CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric r
 
 	DEBUG_CATCH_CONTINUE
 
-	CSpaceObject *pPlayer = m_pShip->GetPlayer();
+	CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
 	::kernelDebugLogMessage("Player Ship: %s", CSpaceObject::DebugDescribe(pPlayer));
 
 	CSovereign *pSovereign = m_pShip->GetSovereignToDefend();
@@ -620,7 +620,7 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 
 	{
 	if (m_fIsPlayerWingman)
-		return g_pUniverse->GetPlayer();
+		return g_pUniverse->GetPlayerShip();
 
 	switch (GetCurrentOrder())
 		{
@@ -747,7 +747,7 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 //	we return the ship.
 
 	{
-	CSpaceObject *pPlayer = m_pShip->GetPlayer();
+	CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
 	if (pPlayer)
 		return pPlayer;
 	else
@@ -1098,7 +1098,7 @@ void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip)
 	{
 	//	Get the new player ship
 
-	CSpaceObject *pPlayerShip = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayerShip = g_pUniverse->GetPlayerShip();
 	if (pPlayerShip == NULL)
 		{
 		ASSERT(false);

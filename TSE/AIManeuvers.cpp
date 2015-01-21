@@ -43,7 +43,7 @@ const Metric FLOCK_COMBAT_RANGE2 =		(FLOCK_COMBAT_RANGE * FLOCK_COMBAT_RANGE);
 
 
 #ifdef DEBUG_COMBAT
-#define DEBUG_COMBAT_OUTPUT(x)			{ if (g_pUniverse->GetPlayer()) g_pUniverse->GetPlayer()->SendMessage(pShip, strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(x))); }
+#define DEBUG_COMBAT_OUTPUT(x)			{ if (g_pUniverse->GetPlayerShip()) g_pUniverse->GetPlayerShip()->SendMessage(pShip, strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(x))); }
 #else
 #define DEBUG_COMBAT_OUTPUT(x)
 #endif

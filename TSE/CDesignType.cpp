@@ -1926,7 +1926,7 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError)
 
 	{
 	CString sError = strPatternSubst(CONSTLIT("%s [%x]: %s"), sEvent, m_dwUNID, pError->GetStringValue());
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer)
 		pPlayer->SendMessage(NULL, sError);
 

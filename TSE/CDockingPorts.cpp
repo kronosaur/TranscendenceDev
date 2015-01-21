@@ -621,7 +621,7 @@ bool CDockingPorts::RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int i
 	//
 	//	[We also make an exception for any ship that the player is escorting.]
 
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (iEmptyPortsLeft < 2
 			&& pPlayer
 			&& pObj != pPlayer
@@ -807,7 +807,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 
 	Metric rDelta2 = vDelta.Length2();
 	if (rDelta2 < DOCKING_THRESHOLD2 
-			&& (pShip == g_pUniverse->GetPlayer() || pShip->IsPointingTo(Port.iRotation)))
+			&& (pShip == g_pUniverse->GetPlayerShip() || pShip->IsPointingTo(Port.iRotation)))
 		{
 		pShip->Place(vDest);
 		pShip->UnfreezeControls();

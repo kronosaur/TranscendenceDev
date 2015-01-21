@@ -9165,7 +9165,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pTable == NULL)
 				return pCC->CreateNil();
 
-			pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pSystem->GetPlayer());
+			pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pSystem->GetPlayerShip());
 
 			return pCC->CreateTrue();
 			}
@@ -10883,7 +10883,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			//	Get the filter
 
 			if (pSource == NULL)
-				pSource = pSystem->GetPlayer();
+				pSource = pSystem->GetPlayerShip();
 			if (pSource == NULL)
 				pSource = g_pUniverse->GetPOV();
 

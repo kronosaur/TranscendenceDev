@@ -1251,7 +1251,7 @@ class CSystem : public CObject
 			m_ObjGrid.GetObjectsInBox(vUR, vLL, Result);
 			}
 		inline void GetObjectsInBox (const CVector &vUR, const CVector &vLL, CSpaceObjectList &Result) { m_ObjGrid.GetObjectsInBox(vUR, vLL, Result); }
-		CSpaceObject *GetPlayer (void) const;
+		CSpaceObject *GetPlayerShip (void) const;
 		static DWORD GetSaveVersion (void);
 		inline Metric GetSpaceScale (void) const { return m_rKlicksPerPixel; }
 		inline int GetTick (void) { return m_iTick; }
@@ -2343,7 +2343,7 @@ class CSpaceObject : public CObject
 		inline const CVector &GetOldPos (void) const { return m_vOldPos; }
 		CSpaceObject *GetOrderGiver (DestructionTypes iCause = killedNone);
 		inline CDesignType *GetOverride (void) { return m_pOverride; }
-		inline CSpaceObject *GetPlayer (void) const { return (m_pSystem ? m_pSystem->GetPlayer() : NULL); }
+		inline CSpaceObject *GetPlayerShip (void) const { return (m_pSystem ? m_pSystem->GetPlayerShip() : NULL); }
 		inline const CVector &GetPos (void) const { return m_vPos; }
 		CSovereign *GetSovereignToDefend (void) const;
 		const CString &GetStaticData (const CString &sAttrib);
@@ -3161,7 +3161,29 @@ class CListWrapper : public IListData
 #include "TSEMissions.h"
 #endif
 
+#ifndef INCL_TSE_PLAYER
+#include "TSEPlayer.h"
+#endif
+
 //	The Universe ---------------------------------------------------------------
+//
+//	CREATING THE UNIVERSE
+//
+//	1.	Call Init() to initialize the universe with the appropriate adventure
+//		and extensions. This will call Bind on all design types and initialize
+//		any dynamic types.
+//		[This may take a while, so it should be called on a background thread.]
+//
+//	2.	Call InitAdventure(), which calls OnGameStart on the adventure. This is
+//		required if you need to show the crawl screen and text, otherwise it may
+//		be skipped (e.g., for TransData).
+//		[This may be called synchronously.]
+///
+//	2.	Call InitGame() to initialize the topology, etc.
+//		[This should be called on a background thread.]
+//
+//	3.	Call StartGame(true) to start the game running.
+//		[This may be called	synchronously.]
 
 enum EInitFlags
 	{
@@ -3186,6 +3208,7 @@ class CUniverse : public CObject
 			{
 			public:
 				virtual void ConsoleOutput (const CString &sLine) { }
+				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
 				virtual void DebugOutput (const CString &sLine) { }
 				virtual void GameOutput (const CString &sLine) { }
 				virtual const CG16bitFont *GetFont (const CString &sFont) { return NULL; }
@@ -3247,7 +3270,9 @@ class CUniverse : public CObject
 		virtual ~CUniverse (void);
 
 		ALERROR Init (SInitDesc &Ctx, CString *retsError);
+		ALERROR InitAdventure (IPlayerController *pPlayer, CString *retsError);
 		ALERROR InitGame (DWORD dwStartingMap, CString *retsError);
+		ALERROR LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, DWORD *retdwPlayerID, CString *retsError);
 		void StartGame (bool bNewGame);
 
 		inline void AddAscendedObj (CSpaceObject *pObj) { m_AscendedObjects.Insert(pObj); }
@@ -3314,7 +3339,6 @@ class CUniverse : public CObject
 		bool IsGlobalResurrectPending (CDesignType **retpType);
 		inline bool IsRegistered (void) { return m_bRegistered; }
 		bool IsStatsPostingEnabled (void);
-		ALERROR LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, DWORD *retdwPlayerID, CString *retsError);
 		inline ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
 		inline bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
 		void PlaySound (CSpaceObject *pSource, int iChannel);
@@ -3329,7 +3353,7 @@ class CUniverse : public CObject
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem *pSystem, CShip *pPlayerShip, CSpaceObject *pPOV);
 		void SetPOV (CSpaceObject *pPOV);
-		void SetPlayer (CSpaceObject *pPlayer);
+		void SetPlayerShip (CSpaceObject *pPlayer);
 		inline void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }
 		inline void SetRegisteredExtensions (const CMultiverseCollection &Catalog, TArray<CMultiverseCatalogEntry *> *retNotFound) { m_Extensions.SetRegisteredExtensions(Catalog, retNotFound); }
 		inline void SetResurrectMode (bool bResurrect = true) { m_bResurrectMode = bResurrect; }
@@ -3370,7 +3394,8 @@ class CUniverse : public CObject
 		inline CSystem *GetCurrentSystem (void) { return m_pCurrentSystem; }
 		inline int GetPaintTick (void) { return m_iPaintTick; }
 		inline CSpaceObject *GetPOV (void) const { return m_pPOV; }
-		inline CSpaceObject *GetPlayer (void) const { return m_pPlayer; }
+		inline IPlayerController *GetPlayer (void) const { return m_pPlayer; }
+		inline CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
 		CSovereign *GetPlayerSovereign (void) const;
@@ -3437,7 +3462,6 @@ class CUniverse : public CObject
 
 		bool FindByUNID (CIDTable &Table, DWORD dwUNID, CObject **retpObj = NULL);
 		CObject *FindByUNID (CIDTable &Table, DWORD dwUNID);
-		IShipController *GetPlayerController (void) const;
 		ALERROR InitCodeChain (void);
 		ALERROR InitCodeChainPrimitives (void);
 		void InitDefaultHitEffects (void);
@@ -3449,6 +3473,7 @@ class CUniverse : public CObject
 		void NotifyMissionsOfNewSystem (CSystem *pSystem);
 		inline void SetCurrentAdventureDesc (CAdventureDesc *pAdventure) { m_pAdventure = pAdventure; }
 		void SetHost (IHost *pHost);
+		void SetPlayer (IPlayerController *pPlayer);
 		void UpdateMissions (int iTick, CSystem *pSystem);
 
 		//	Design data
@@ -3472,7 +3497,8 @@ class CUniverse : public CObject
 		CGameTimeKeeper m_Time;					//	Game time tracker
 		CAdventureDesc *m_pAdventure;			//	Current adventure
 		CSpaceObject *m_pPOV;					//	Point of view
-		CSpaceObject *m_pPlayer;				//	Player ship
+		IPlayerController *m_pPlayer;			//	Player controller
+		CSpaceObject *m_pPlayerShip;			//	Player ship
 		CSystem *m_pCurrentSystem;				//	Current star system (used by code)
 		CIDTable m_StarSystems;					//	Array of CSystem (indexed by ID)
 		CTimeDate m_StartTime;					//	Time when we started the game

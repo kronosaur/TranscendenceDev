@@ -1078,7 +1078,7 @@ void CStandardShipAI::OnBehavior (void)
 
 			if (m_pShip->IsDestinyTime(30))
 				{
-				CSpaceObject *pPlayer = m_pShip->GetPlayer();
+				CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
 				CSpaceObject *pDock = m_pShip->GetDockedObj();
 
 				//	(We treat the player as a special case because sometimes the

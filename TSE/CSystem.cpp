@@ -2394,14 +2394,14 @@ CNavigationPath *CSystem::GetNavPathByID (DWORD dwID)
 	return NULL;
 	}
 
-CSpaceObject *CSystem::GetPlayer (void) const
+CSpaceObject *CSystem::GetPlayerShip (void) const
 
-//	GetPlayer
+//	GetPlayerShip
 //
-//	Returns the player, if she is in the system (NULL otherwise)
+//	Returns the player ship, if she is in the system (NULL otherwise)
 
 	{
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer && pPlayer->GetSystem() == this)
 		return pPlayer;
 	else
@@ -3754,8 +3754,8 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 		{
 		//	If this was not the player, then set back to the player
 
-		if (Ctx.pObj != g_pUniverse->GetPlayer() && g_pUniverse->GetPlayer() && !g_pUniverse->GetPlayer()->IsDestroyed())
-			g_pUniverse->SetPOV(g_pUniverse->GetPlayer());
+		if (Ctx.pObj != g_pUniverse->GetPlayerShip() && g_pUniverse->GetPlayerShip() && !g_pUniverse->GetPlayerShip()->IsDestroyed())
+			g_pUniverse->SetPOV(g_pUniverse->GetPlayerShip());
 
 		//	Otherwise, set to a marker
 
@@ -4245,7 +4245,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx)
 
 	SUpdateCtx Ctx;
 	Ctx.pSystem = this;
-	Ctx.pPlayer = GetPlayer();
+	Ctx.pPlayer = GetPlayerShip();
 
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.
@@ -4298,7 +4298,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx)
 	//	create the universe.
 
 	SetProgramState(psUpdatingEvents);
-	if (!IsTimeStopped() && (g_pUniverse->GetPlayer() || SystemCtx.bForceEventFiring))
+	if (!IsTimeStopped() && (g_pUniverse->GetPlayerShip() || SystemCtx.bForceEventFiring))
 		m_TimedEvents.Update(m_iTick, this);
 
 	//	Add all objects to the grid so that we can do faster
@@ -4422,7 +4422,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx)
 	//	accumulated during update. For example, we use this to set the nearest
 	//	docking port.
 
-	CSpaceObject *pPlayer = GetPlayer();
+	CSpaceObject *pPlayer = GetPlayerShip();
 	if (pPlayer && !pPlayer->IsDestroyed())
 		pPlayer->UpdatePlayer(Ctx);
 
@@ -4584,7 +4584,7 @@ void CSystem::UpdateRandomEncounters (void)
 
 	//	No need for random encounters if the player isn't in the system
 
-	CSpaceObject *pPlayer = GetPlayer();
+	CSpaceObject *pPlayer = GetPlayerShip();
 	if (pPlayer == NULL || pPlayer->IsDestroyed())
 		return;
 

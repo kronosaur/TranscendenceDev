@@ -1267,7 +1267,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 				//	an event might set a target for the player and if the
 				//	target is destroyed, we would never get an OnObjDestroyed message
 
-				g_pUniverse->SetPlayer(NULL);
+				g_pUniverse->SetPlayerShip(NULL);
 
 				//	The player will be deleted at higher layers, but
 				//	it is out of the system now.
@@ -3566,7 +3566,7 @@ CSpaceObject *CSpaceObject::GetOrderGiver (DestructionTypes iCause)
 	{
 	if (iCause == killedByPlayerCreatedExplosion)
 		{
-		CSpaceObject *pPlayerShip = GetPlayer();
+		CSpaceObject *pPlayerShip = GetPlayerShip();
 		if (pPlayerShip)
 			return pPlayerShip;
 		else
@@ -3782,7 +3782,7 @@ WORD CSpaceObject::GetSymbolColor (void)
 //	Returns the color to paint this object in the player's scanner
 
 	{
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer == NULL)
 		return CG16bitImage::RGBValue(128, 128, 128);
 	else if (pPlayer == this)
@@ -3893,7 +3893,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 	//	The player is a special case (because sometimes a station is angry at the 
 	//	player even though she is not an enemy)
 
-	CSpaceObject *pPlayer = GetPlayer();
+	CSpaceObject *pPlayer = GetPlayerShip();
 	if (pPlayer 
 			&& pCenter->IsAngryAt(pPlayer)
 			&& pPlayer != pExcludeObj
@@ -4356,7 +4356,7 @@ bool CSpaceObject::IsPlayerEscortTarget (CSpaceObject *pPlayer)
 
 	if (pPlayer == NULL)
 		{
-		pPlayer = g_pUniverse->GetPlayer();
+		pPlayer = g_pUniverse->GetPlayerShip();
 		if (pPlayer == NULL)
 			return false;
 		}
@@ -4688,7 +4688,7 @@ void CSpaceObject::ItemsModified (void)
 
 	if (IsPlayerDocked())
 		{
-		CSpaceObject *pPlayer = GetPlayer();
+		CSpaceObject *pPlayer = GetPlayerShip();
 		if (pPlayer)
 			pPlayer->OnDockedObjChanged(this);
 		}
@@ -6088,7 +6088,7 @@ void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError)
 
 	{
 	CString sError = strPatternSubst(CONSTLIT("%s [%s]: %s"), sEvent, GetName(), pError->GetStringValue());
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer)
 		pPlayer->SendMessage(this, sError);
 

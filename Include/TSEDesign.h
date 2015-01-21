@@ -3154,8 +3154,6 @@ class IShipController
 		virtual int GetFireRateAdj (void) { return 10; }
 		virtual EManeuverTypes GetManeuver (void) = 0;
 		virtual CSpaceObject *GetOrderGiver (void) = 0;
-		virtual GenomeTypes GetPlayerGenome (void) { return genomeUnknown; }
-		virtual CString GetPlayerName (void) { return NULL_STR; }
 		virtual bool GetReverseThrust (void) = 0;
 		virtual CSpaceObject *GetShip (void) { return NULL; }
 		virtual bool GetStopThrust (void) = 0;

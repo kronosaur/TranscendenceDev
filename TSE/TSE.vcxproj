@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Geometry.h" />
+    <ClInclude Include="..\Include\TSEPlayer.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="..\Include\TSE.h" />
@@ -293,6 +294,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="IListData.cpp" />
+    <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="SFXLightningStorm.cpp" />
     <ClCompile Include="SFXOrb.cpp" />
     <ClCompile Include="SFXParticleJet.cpp" />

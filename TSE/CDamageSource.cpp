@@ -49,7 +49,7 @@ CSpaceObject *CDamageSource::GetObj (void) const
 	if (m_dwFlags & FLAG_IS_PLAYER)
 		{
 		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-		return (pSystem ? pSystem->GetPlayer() : NULL);
+		return (pSystem ? pSystem->GetPlayerShip() : NULL);
 		}
 
 	//	Otherwise, if we're a subordinate and our order giver
@@ -61,7 +61,7 @@ CSpaceObject *CDamageSource::GetObj (void) const
 				|| !pOrderGiver->IsPlayer()))
 		{
 		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-		return (pSystem ? pSystem->GetPlayer() : NULL);
+		return (pSystem ? pSystem->GetPlayerShip() : NULL);
 		}
 
 	//	Otherwise, return the source (even if NULL)

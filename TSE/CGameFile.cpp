@@ -863,19 +863,14 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 	//	that we've saved, so we need to set the adventure and other data in the
 	//	header.
 
-	CSpaceObject *pPlayerObj = Univ.GetPlayer();
-	CShip *pPlayerShip = (pPlayerObj ? pPlayerObj->AsShip() : NULL);
-	IShipController *pPlayerController = (pPlayerShip ? pPlayerShip->GetController() : NULL);
+	CSpaceObject *pPlayerObj = Univ.GetPlayerShip();
 
 	if (m_Header.dwAdventure == 0)
 		{
 		m_Header.dwAdventure = Univ.GetCurrentAdventureDesc()->GetExtensionUNID();
 
-		if (pPlayerController)
-			{
-			CString sPlayerName = pPlayerController->GetPlayerName();
-			lstrcpyn(m_Header.szPlayerName, pPlayerController->GetPlayerName().GetASCIIZPointer(), sizeof(m_Header.szPlayerName));
-			}
+		CString sPlayerName = Univ.GetPlayerName();
+		lstrcpyn(m_Header.szPlayerName, sPlayerName.GetASCIIZPointer(), sizeof(m_Header.szPlayerName));
 
 		bUpdateHeader = true;
 		}
@@ -888,9 +883,9 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 		bUpdateHeader = true;
 		}
 
-	if (pPlayerController && (DWORD)pPlayerController->GetPlayerGenome() != m_Header.dwGenome)
+	if (Univ.GetPlayerGenome() != m_Header.dwGenome)
 		{
-		m_Header.dwGenome = (DWORD)pPlayerController->GetPlayerGenome();
+		m_Header.dwGenome = (DWORD)Univ.GetPlayerGenome();
 		bUpdateHeader = true;
 		}
 

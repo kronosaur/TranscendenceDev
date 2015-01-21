@@ -1443,7 +1443,7 @@ CSpaceObject *CStation::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
 
 	//	Otherwise, see if the player is in range, if so, then it is our target.
 
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer == NULL)
 		return NULL;
 
@@ -3674,7 +3674,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		}
 	else if (strEquals(sName, PROPERTY_PLAYER_BACKLISTED))
 		{
-		CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+		CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 
 		if (pValue->IsNil())
 			ClearBlacklist(pPlayer);

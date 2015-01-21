@@ -107,6 +107,9 @@
     <ClInclude Include="..\Include\TSEUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -813,6 +816,9 @@
     </ClCompile>
     <ClCompile Include="SFXLightningStorm.cpp">
       <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="IPlayerController.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
