@@ -427,6 +427,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_ASCEND_OBJECT			25
 #define FN_SYS_DESCEND_OBJECT			26
 #define FN_SYS_MATCHES					27
+#define FN_SYS_SET_POV					28
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2264,6 +2265,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysSetKnown",					fnSystemGet,	FN_SYS_SET_KNOWN,
 			"(sysSetKNown [nodeID] [True/Nil]) -> True/Nil",
 			"*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"sysSetPOV",					fnSystemGet,	FN_SYS_SET_POV,
+			"(sysSetPOV vector) -> True/Nil",
+			"v",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysSetProperty",	fnSystemGet,	FN_SYS_SET_PROPERTY,
 			"(sysSetProperty [nodeID] property value) -> True/Nil\n\n"
@@ -10362,6 +10367,40 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Do it
 
 			pNode->SetKnown(bKnown);
+
+			//	Done
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_SYS_SET_POV:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			//	Get the new POV
+
+			CVector vCenter;
+			CSpaceObject *pObj;
+			if (!GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter, &pObj))
+				return pCC->CreateError(CONSTLIT("Expected vector or object"), pArgs->GetElement(0));
+
+			//	If we have an object, set the POV
+
+			if (pObj)
+				g_pUniverse->SetPOV(pObj);
+
+			//	Otherwise we create an auto-destroy marker
+
+			else
+				{
+				CPOVMarker *pMarker;
+				if (CPOVMarker::Create(pSystem, vCenter, NullVector, &pMarker) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Out of memory."));
+
+				g_pUniverse->SetPOV(pMarker);
+				}
 
 			//	Done
 
