@@ -3733,7 +3733,7 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 		if (iObjCat == CSpaceObject::catShip || iObjCat == CSpaceObject::catStation)
 			{
 			FireOnSystemObjDestroyed(Ctx);
-			g_pUniverse->FireOnGlobalObjDestroyed(Ctx);
+			g_pUniverse->NotifyOnObjDestroyed(Ctx);
 			}
 
 		DEBUG_RESTORE_PROGRAMSTATE;

@@ -1917,7 +1917,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		NotifyOnObjDestroyed(DestroyCtx);
 
 		GetSystem()->FireOnSystemObjDestroyed(DestroyCtx);
-		g_pUniverse->FireOnGlobalObjDestroyed(DestroyCtx);
+		g_pUniverse->NotifyOnObjDestroyed(DestroyCtx);
 
 		//	Alert others, if necessary
 

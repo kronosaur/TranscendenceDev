@@ -3214,6 +3214,12 @@ class CUniverse : public CObject
 				virtual const CG16bitFont *GetFont (const CString &sFont) { return NULL; }
 			};
 
+		class INotifications
+			{
+			public:
+				virtual void OnObjDestroyed (SDestroyCtx &Ctx) { }
+			};
+
 		struct SInitDesc
 			{
 			SInitDesc (void) :
@@ -3298,7 +3304,6 @@ class CUniverse : public CObject
 		inline CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }
 		CSpaceObject *FindObject (DWORD dwID);
 		inline bool FindObjects (const CString &sNodeID, const CDesignTypeCriteria &Criteria, TArray<CObjectTracker::SObjEntry> *retResult) { return m_Objects.Find(sNodeID, Criteria, retResult); }
-		inline void FireOnGlobalObjDestroyed (SDestroyCtx &Ctx) { m_Design.FireOnGlobalObjDestroyed(Ctx); }
 		inline void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane) { m_Design.FireOnGlobalPaneInit(pScreen, pRoot, sScreen, sPane); }
 		inline void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip) { m_Design.FireOnGlobalPlayerChangedShips(pOldShip); }
 		inline void FireOnGlobalPlayerEnteredSystem (void) { m_Design.FireOnGlobalPlayerEnteredSystem(); }
@@ -3339,11 +3344,13 @@ class CUniverse : public CObject
 		bool IsGlobalResurrectPending (CDesignType **retpType);
 		inline bool IsRegistered (void) { return m_bRegistered; }
 		bool IsStatsPostingEnabled (void);
+		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
 		inline ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
 		inline bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
 		void PlaySound (CSpaceObject *pSource, int iChannel);
 		void PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CTimedEventList &SavedEvents);
 		void RefreshCurrentMission (void);
+		inline void RegisterForNotifications (INotifications *pSubscriber) { m_Subscribers.Insert(pSubscriber); }
 		ALERROR Reinit (void);
 		inline CSpaceObject *RemoveAscendedObj (DWORD dwObjID) { return m_AscendedObjects.RemoveByID(dwObjID); }
 		ALERROR SaveDeviceStorage (void);
@@ -3361,7 +3368,9 @@ class CUniverse : public CObject
 		inline void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
 		CTimeSpan StopGameTime (void);
+		inline void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
 		static CString ValidatePlayerName (const CString &sName);
+
 		inline CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
 		CArmorClass *FindArmor (DWORD dwUNID);
 		CEffectCreator *FindDefaultHitEffect (DamageTypes iDamage);
@@ -3518,6 +3527,7 @@ class CUniverse : public CObject
 		CSoundMgr *m_pSoundMgr;
 		const CG16bitFont *m_FontTable[fontCount];
 		CG16bitFont m_DefaultFonts[fontCount];
+		TArray<INotifications *> m_Subscribers;
 
 		//	Debugging structures
 

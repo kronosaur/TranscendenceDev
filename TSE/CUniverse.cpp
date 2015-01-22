@@ -1513,6 +1513,32 @@ void CUniverse::NotifyMissionsOfNewSystem (CSystem *pSystem)
 		}
 	}
 
+void CUniverse::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
+
+//	NotifyOnObjDestroyed
+//
+//	Called when a ship or station has been destroyed. [This does NOT get called
+//	for effects or missiles being destroyed.]
+//
+//	NOTE: This includes cases where a station becomes abandoned. If the station
+//	gets destroyed after that, we this gets called a second time.
+
+	{
+	int i;
+
+	//	Call all subscribers
+	//
+	//	For performance, we don't deal with making a copy of the list before 
+	//	calling. Subscribers should NEVER delete themselves from inside a call.
+
+	for (i = 0; i < m_Subscribers.GetCount(); i++)
+		m_Subscribers[i]->OnObjDestroyed(Ctx);
+
+	//	Fire global event
+
+	m_Design.FireOnGlobalObjDestroyed(Ctx);
+	}
+
 bool CUniverse::IsGlobalResurrectPending (CDesignType **retpType)
 
 //	IsGlobalResurrectPending
