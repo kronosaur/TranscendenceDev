@@ -175,6 +175,16 @@ template <class VALUE> class TArray : public CArrayBase
 			DeleteBytes(0, GetSize());
 			}
 
+		void DeleteValue (const VALUE &ToDelete)
+			{
+			for (int i = 0; i < GetCount(); i++)
+				if (GetAt(i) == ToDelete)
+					{
+					Delete(i);
+					i--;
+					}
+			}
+
 		bool Find (const VALUE &ToFind, int *retiIndex = NULL) const
 			{
 			int iCount = GetCount();
