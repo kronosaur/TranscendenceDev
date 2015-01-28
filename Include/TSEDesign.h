@@ -1478,6 +1478,7 @@ class CCommunicationsHandler
 	public:
 		struct SMessage
 			{
+			CString sID;
 			CString sMessage;
 			CString sShortcut;
 
@@ -1492,14 +1493,16 @@ class CCommunicationsHandler
 		ALERROR InitFromXML (CXMLElement *pDesc, CString *retsError);
 
 		void DeleteAll (void);
-		int FindMessage (const CString &sMessage) const;
-		void FireInvoke (int iIndex, CSpaceObject *pObj, CSovereign *pSender);
+		bool FindMessage (const CString &sID, const SMessage **retpMessage = NULL) const;
+		int FindMessageByName (const CString &sMessage) const;
+		void FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender);
 		inline int GetCount (void) const { return m_Messages.GetCount(); }
 		inline const SMessage &GetMessage (int iIndex) { return m_Messages[iIndex]; }
 		void Merge (CCommunicationsHandler &New);
 
 	private:
-		int FindByShortcut (const CString &sShortcut, int *retiInsert = NULL);
+		bool FindMergePos (const SMessage &Msg, int *retiPos);
+
 		TArray<SMessage> m_Messages;
 	};
 

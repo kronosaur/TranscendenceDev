@@ -1462,7 +1462,7 @@ int CSpaceObject::FindCommsMessage (const CString &sName)
 	if (pHandler == NULL)
 		return -1;
 
-	return pHandler->FindMessage(sName);
+	return pHandler->FindMessageByName(sName);
 	}
 
 bool CSpaceObject::FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError)
