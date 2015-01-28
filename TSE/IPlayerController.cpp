@@ -5,6 +5,31 @@
 
 #include "PreComp.h"
 
+IPlayerController::IPlayerController (void) :
+		m_pSovereign(NULL)
+
+//	IPlayerController constructor
+
+	{
+	}
+
+CSovereign *IPlayerController::GetSovereign (void) const
+
+//	GetSovereign
+//
+//	Returns the player's sovereign
+
+	{
+	if (m_pSovereign == NULL)
+		{
+		m_pSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+		if (m_pSovereign == NULL)
+			kernelDebugLogMessage("ERROR: Unable to find player sovereign");
+		}
+
+	return m_pSovereign;
+	}
+
 void IPlayerController::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 //	ReadFromStream

@@ -2273,6 +2273,7 @@ class CSpaceObject : public CObject
 		void FireOnCreate (const SOnCreate &OnCreate);
 		void FireOnCreateOrders (CSpaceObject *pBase, CSpaceObject *pTarget);
 		void FireOnDamage (SDamageCtx &Ctx);
+		void FireOnDeselected (void);
 		void FireOnDestroy (const SDestroyCtx &Ctx);
 		bool FireOnDockObjAdj (CSpaceObject **retpObj);
 		void FireOnEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGate);
@@ -2296,6 +2297,7 @@ class CSpaceObject : public CObject
 		void FireOnPlayerBlacklisted (void);
 		InterSystemResults FireOnPlayerEnteredSystem (CSpaceObject *pPlayer);
 		InterSystemResults FireOnPlayerLeftSystem (CSpaceObject *pPlayer, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
+		void FireOnSelected (void);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
@@ -2320,6 +2322,7 @@ class CSpaceObject : public CObject
 		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		CDesignType *GetFirstDockScreen (CString *retsScreen, ICCItem **retpData);
+		inline const CString &GetHighlightText (void) const { return m_sHighlightText; }
 		Metric GetHitSize (void) const;
 		inline int GetHitSizeHalfAngle (Metric rDist) const { return Max((int)(180.0 * atan(0.5 * GetHitSize() / rDist) / g_Pi), 1); }
 		inline DWORD GetID (void) const { return m_dwID; }
@@ -3344,7 +3347,9 @@ class CUniverse : public CObject
 		bool IsGlobalResurrectPending (CDesignType **retpType);
 		inline bool IsRegistered (void) { return m_bRegistered; }
 		bool IsStatsPostingEnabled (void);
+		inline void NotifyOnObjDeselected (CSpaceObject *pObj) { pObj->FireOnDeselected(); }
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
+		inline void NotifyOnObjSelected (CSpaceObject *pObj) { pObj->FireOnSelected(); }
 		inline ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
 		inline bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
 		void PlaySound (CSpaceObject *pSource, int iChannel);
@@ -3404,9 +3409,9 @@ class CUniverse : public CObject
 		inline int GetPaintTick (void) { return m_iPaintTick; }
 		inline CSpaceObject *GetPOV (void) const { return m_pPOV; }
 		inline IPlayerController *GetPlayer (void) const { return m_pPlayer; }
-		inline CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
+		inline CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
 		CSovereign *GetPlayerSovereign (void) const;
 		inline int GetTicks (void) { return m_iTick; }
 

@@ -9,6 +9,7 @@
 class IPlayerController
 	{
 	public:
+		IPlayerController (void);
 		virtual ~IPlayerController (void) { }
 
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
@@ -19,6 +20,8 @@ class IPlayerController
 		virtual ICCItem *CreateGlobalRef (CCodeChain &CC) { return CC.CreateInteger((int)this); }
 		virtual GenomeTypes GetGenome (void) const { return genomeUnknown; }
 		virtual CString GetName (void) const { return NULL_STR; }
+		virtual CSovereign *GetSovereign (void) const;
+		virtual void OnMessageFromObj (CSpaceObject *pSender, const CString &sMessage) { }
 
 	protected:
 
@@ -26,6 +29,8 @@ class IPlayerController
 
 		void OnReadFromStream (SUniverseLoadCtx &Ctx) { }
 		void OnWriteToStream (IWriteStream *pStream) { }
+
+		mutable CSovereign *m_pSovereign;			//	Cached sovereign
 	};
 
 #endif

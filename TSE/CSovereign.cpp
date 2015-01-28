@@ -414,6 +414,33 @@ void CSovereign::InitRelationships (void)
 	DEBUG_CATCH
 	}
 
+void CSovereign::MessageFromObj (CSpaceObject *pSender, const CString &sText)
+
+//	MessageFromObj
+//
+//	Receive a message from the given (optional) object
+
+	{
+	//	If this is the player, then we let the player handle it.
+
+	if (GetUNID() == g_PlayerSovereignUNID)
+		{
+		IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+		if (pPlayer == NULL)
+			return;
+
+		pPlayer->OnMessageFromObj(pSender, sText);
+		}
+
+	//	Otherwise...
+
+	else
+		{
+		//	LATER: We should pass this to the sovereign and let it 
+		//	handle it (possibly inside an event).
+		}
+	}
+
 void CSovereign::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	OnAddTypesUsed

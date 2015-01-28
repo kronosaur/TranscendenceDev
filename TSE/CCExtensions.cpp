@@ -92,8 +92,9 @@ ICCItem *fnItemTypeSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_OBJ_SET_GLOBAL_DATA		8
 #define FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE	9
 
-ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_OBJ_NAME					1
 #define FN_OBJ_IS_SHIP				2
@@ -497,6 +498,8 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 #define FN_SOVEREIGN_DISPOSITION		0
 #define FN_SOVEREIGN_GET_DISPOSITION	1
+#define FN_SOVEREIGN_MESSAGE			2
+#define FN_SOVEREIGN_MESSAGE_FROM_OBJ	3
 
 #define DISP_NEUTRAL					CONSTLIT("neutral")
 #define DISP_ENEMY						CONSTLIT("enemy")
@@ -1590,9 +1593,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objResume obj [gateObj])",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objSendMessage",				fnObjSetOld,		FN_OBJ_MESSAGE,
-			"(objSendMessage obj sender msg)",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"objSendMessage",				fnObjSendMessage,		FN_OBJ_MESSAGE,
+			"(objSendMessage obj sender text) -> True/Nil",
+			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetData",					fnObjData,		FN_OBJ_SETDATA,
 			"(objSetData obj attrib data)",
@@ -2458,6 +2461,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sovGetDisposition",			fnSovereignSet,			FN_SOVEREIGN_GET_DISPOSITION,
 			"(sovGetDisposition sovereignID targetSovereignID) -> disposition of sovereign to target",
 			"ii",	0,	},
+
+		{	"sovMessage",					fnSovereignSet,			FN_SOVEREIGN_MESSAGE,
+			"(sovMessage sovereignID text) -> True/Nil",
+			"iv",	0,	},
+
+		{	"sovMessageFromObj",			fnSovereignSet,			FN_SOVEREIGN_MESSAGE_FROM_OBJ,
+			"(sovMessageFromObj sovereignID obj text) -> True/Nil",
+			"iiv",	0,	},
 
 		{	"sovSetDisposition",			fnSovereignSet,			FN_SOVEREIGN_DISPOSITION,
 			"(sovSetDisposition sovereignID targetSovereignID disposition)",
@@ -5869,6 +5880,59 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	return pResult;
 	}
 
+ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
+
+//	fnObjSendMessage
+//
+//	(objSendMessage ...)
+
+	{
+	CCodeChain *pCC = pEvalCtx->pCC;
+
+	//	Get the object (OK if nil)
+
+	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
+
+	//	Handle it
+
+	switch (dwData)
+		{
+		case FN_OBJ_MESSAGE:
+			{
+			//	Second param is the sender; third is message
+
+			CSpaceObject *pSender = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			CString sMessage = pArgs->GetElement(2)->GetStringValue();
+
+			//	If no message, nothing to do
+
+			if (sMessage.IsBlank())
+				return pCC->CreateNil();
+
+			//	If target is nil, then send to player
+
+			if (pObj == NULL)
+				{
+				IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+				if (pPlayer)
+					pPlayer->OnMessageFromObj(pSender, sMessage);
+				}
+
+			//	Otherwise, send to object (which might send it to the player or
+			//	whatever).
+
+			else
+				pObj->SendMessage(pSender, sMessage);
+
+			return pCC->CreateTrue();
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
+	}
+
 ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnObjSet
@@ -6702,26 +6766,6 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			if (pSubordinate)
 				{
 				pObj->AddSubordinate(pSubordinate);
-				pResult = pCC->CreateTrue();
-				}
-			else
-				pResult = pCC->CreateNil();
-			break;
-			}
-
-		case FN_OBJ_MESSAGE:
-			{
-			//	Second param is the sender; third is message
-
-			CSpaceObject *pSender = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			CString sMessage = pArgs->GetElement(2)->GetStringValue();
-			pArgs->Discard(pCC);
-
-			//	Do it
-
-			if (!sMessage.IsBlank())
-				{
-				pObj->SendMessage(pSender, sMessage);
 				pResult = pCC->CreateTrue();
 				}
 			else
@@ -8604,18 +8648,6 @@ ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
-		case FN_SOVEREIGN_GET_DISPOSITION:
-			{
-			//	Get the target sovereign and disposition
-
-			DWORD dwTargetID = pArgs->GetElement(1)->GetIntegerValue();
-			CSovereign *pTarget = g_pUniverse->FindSovereign(dwTargetID);
-			if (pTarget == NULL)
-				return pCC->CreateError(CONSTLIT("Invalid sovereign"), pArgs->GetElement(1));
-
-			return CreateDisposition(*pCC, pSovereign->GetDispositionTowards(pTarget));
-			}
-
 		case FN_SOVEREIGN_DISPOSITION:
 			{
 			//	Get the target sovereign and disposition
@@ -8644,6 +8676,43 @@ ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Do it
 
 			pSovereign->SetDispositionTowards(pTarget, iDisp);
+			return pCC->CreateTrue();
+			}
+
+		case FN_SOVEREIGN_GET_DISPOSITION:
+			{
+			//	Get the target sovereign and disposition
+
+			DWORD dwTargetID = pArgs->GetElement(1)->GetIntegerValue();
+			CSovereign *pTarget = g_pUniverse->FindSovereign(dwTargetID);
+			if (pTarget == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid sovereign"), pArgs->GetElement(1));
+
+			return CreateDisposition(*pCC, pSovereign->GetDispositionTowards(pTarget));
+			}
+
+		case FN_SOVEREIGN_MESSAGE:
+		case FN_SOVEREIGN_MESSAGE_FROM_OBJ:
+			{
+			int iArg = 1;
+			CSpaceObject *pSenderObj;
+
+			//	See if we have an obj sender
+
+			if (dwData == FN_SOVEREIGN_MESSAGE_FROM_OBJ)
+				pSenderObj = CreateObjFromItem(*pCC, pArgs->GetElement(iArg++));
+			else
+				pSenderObj = NULL;
+
+			//	Get the text.
+
+			CString sText = pArgs->GetElement(iArg)->GetStringValue();
+			if (sText.IsBlank())
+				return pCC->CreateNil();
+
+			//	Send the message
+
+			pSovereign->MessageFromObj(pSenderObj, sText);
 			return pCC->CreateTrue();
 			}
 

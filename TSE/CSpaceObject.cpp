@@ -45,6 +45,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_CREATE_ORDERS_EVENT					CONSTLIT("OnCreateOrders")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
+#define ON_DESELECTED_EVENT						CONSTLIT("OnDeselected")
 #define ON_DESTROY_EVENT						CONSTLIT("OnDestroy")
 #define ON_DOCK_OBJ_ADJ_EVENT					CONSTLIT("OnDockObjAdj")
 #define ON_ENTERED_GATE_EVENT					CONSTLIT("OnEnteredGate")
@@ -67,6 +68,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_PLAYER_ENTERED_SYSTEM_EVENT			CONSTLIT("OnPlayerEnteredSystem")
 #define ON_PLAYER_LEFT_SYSTEM_EVENT				CONSTLIT("OnPlayerLeftSystem")
 #define ON_RANDOM_ENCOUNTER_EVENT				CONSTLIT("OnRandomEncounter")
+#define ON_SELECTED_EVENT						CONSTLIT("OnSelected")
 #define ON_SYSTEM_EXPLOSION_EVENT				CONSTLIT("OnSystemExplosion")
 #define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
 #define ON_SYSTEM_WEAPON_FIRE_EVENT				CONSTLIT("OnSystemWeaponFire")
@@ -2090,6 +2092,31 @@ void CSpaceObject::FireOnDamage (SDamageCtx &Ctx)
 		}
 	}
 
+void CSpaceObject::FireOnDeselected (void)
+
+//	FireOnDeselected
+//
+//	Fire OnDeselected event
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_DESELECTED_EVENT, &Event))
+		{
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(this);
+		CCCtx.DefineInteger(CONSTLIT("aPlayer"), g_PlayerSovereignUNID);
+
+		//	Run code
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_DESELECTED_EVENT, pResult);
+		CCCtx.Discard(pResult);
+		}
+	}
+
 void CSpaceObject::FireOnDestroy (const SDestroyCtx &Ctx)
 
 //	FireOnDestroy
@@ -2696,6 +2723,31 @@ CSpaceObject::InterSystemResults CSpaceObject::FireOnPlayerLeftSystem (CSpaceObj
 		}
 
 	return interNoAction;
+	}
+
+void CSpaceObject::FireOnSelected (void)
+
+//	FireOnSelected
+//
+//	Fire OnSelected event
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_SELECTED_EVENT, &Event))
+		{
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(this);
+		CCCtx.DefineInteger(CONSTLIT("aPlayer"), g_PlayerSovereignUNID);
+
+		//	Run code
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_SELECTED_EVENT, pResult);
+		CCCtx.Discard(pResult);
+		}
 	}
 
 void CSpaceObject::FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID)

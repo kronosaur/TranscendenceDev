@@ -6241,7 +6241,14 @@ void CShip::SendMessage (CSpaceObject *pSender, const CString &sMsg)
 //	Receives a message from some other object
 
 	{
-	m_pController->OnMessage(pSender, sMsg);
+	//	Send this message to the player, if necessary
+
+	if (IsPlayer())
+		{
+		IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+		if (pPlayer)
+			pPlayer->OnMessageFromObj(pSender, sMsg);
+		}
 	}
 
 bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, int iDuration, DWORD dwOptions)

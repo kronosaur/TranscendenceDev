@@ -960,14 +960,10 @@ CSovereign *CUniverse::GetPlayerSovereign (void) const
 //	Returns the player's sovereign
 
 	{
-	CSovereign *pSovereign = FindSovereign(g_PlayerSovereignUNID);
-	if (pSovereign == NULL)
-		{
-		kernelDebugLogMessage("ERROR: Unable to find player sovereign");
+	if (m_pPlayer == NULL)
 		return NULL;
-		}
 
-	return pSovereign;
+	return m_pPlayer->GetSovereign();
 	}
 
 void CUniverse::GetRandomLevelEncounter (int iLevel, 

@@ -109,6 +109,35 @@ int CCommunicationsHandler::FindMessage (const CString &sMessage) const
 	return -1;
 	}
 
+void CCommunicationsHandler::FireInvoke (int iIndex, CSpaceObject *pObj, CSovereign *pSender)
+
+//	FireInvoke
+//
+//	Invoke the message
+
+	{
+	ASSERT(iIndex >= 0 && iIndex < GetCount());
+	const CCommunicationsHandler::SMessage &Msg = GetMessage(iIndex);
+
+	if (Msg.InvokeEvent.pCode)
+		{
+		CCodeChainCtx Ctx;
+
+		//	Define parameters
+
+		Ctx.SaveAndDefineSourceVar(pObj);
+		Ctx.DefineInteger(CONSTLIT("aPlayer"), pSender->GetUNID());
+
+		//	Execute
+
+		ICCItem *pResult = Ctx.Run(Msg.InvokeEvent);
+		if (pResult->IsError())
+			pSender->MessageFromObj(pObj, pResult->GetStringValue());
+
+		Ctx.Discard(pResult);
+		}
+	}
+
 ALERROR CCommunicationsHandler::InitFromXML (CXMLElement *pDesc, CString *retsError)
 
 //	InitFromXML

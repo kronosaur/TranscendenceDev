@@ -1493,6 +1493,7 @@ class CCommunicationsHandler
 
 		void DeleteAll (void);
 		int FindMessage (const CString &sMessage) const;
+		void FireInvoke (int iIndex, CSpaceObject *pObj, CSovereign *pSender);
 		inline int GetCount (void) const { return m_Messages.GetCount(); }
 		inline const SMessage &GetMessage (int iIndex) { return m_Messages[iIndex]; }
 		void Merge (CCommunicationsHandler &New);
@@ -3199,7 +3200,6 @@ class IShipController
 		virtual void OnItemInstalled (const CItem &Item) { }
 		virtual void OnItemUninstalled (const CItem &Item) { }
 		virtual void OnLifeSupportWarning (int iSecondsLeft) { }
-		virtual void OnMessage (CSpaceObject *pSender, const CString &sMsg) { }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) { }
 		virtual void OnNewSystem (CSystem *pSystem) { }
 		virtual void OnObjDamaged (const SDamageCtx &Ctx) { }
@@ -5417,6 +5417,7 @@ class CSovereign : public CDesignType
 		CString GetText (MessageTypes iMsg);
 		inline bool IsEnemy (CSovereign *pSovereign) { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispEnemy); }
 		inline bool IsFriend (CSovereign *pSovereign) { return (!m_bSelfRel && (pSovereign == this)) || (GetDispositionTowards(pSovereign) == dispFriend); }
+		void MessageFromObj (CSpaceObject *pSender, const CString &sText);
 		static Alignments ParseAlignment (const CString &sAlign);
 		void SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp);
 
