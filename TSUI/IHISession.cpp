@@ -326,6 +326,64 @@ void IHISession::HIPaint (CG16bitImage &Screen)
 		}
 	}
 
+void IHISession::HIRButtonDblClick (int x, int y, DWORD dwFlags)
+
+//	HIRButtonDblClick
+//
+//	Handle mouse input
+	
+	{
+	//	See if the animator will handle it
+
+	bool bCapture = false;
+	if (m_Reanimator.HandleRButtonDblClick(x, y, dwFlags, &bCapture))
+		{
+		if (bCapture)
+			::SetCapture(m_HI.GetHWND());
+		return;
+		}
+
+	OnRButtonDblClick(x, y, dwFlags); 
+	}
+
+void IHISession::HIRButtonDown (int x, int y, DWORD dwFlags)
+
+//	HIRButtonDown
+//
+//	Handle mouse input
+	
+	{
+	//	See if the animator will handle it
+
+	bool bCapture = false;
+	if (m_Reanimator.HandleRButtonDown(x, y, dwFlags, &bCapture))
+		{
+		if (bCapture)
+			::SetCapture(m_HI.GetHWND());
+		return;
+		}
+
+	OnRButtonDown(x, y, dwFlags);
+	}
+
+void IHISession::HIRButtonUp (int x, int y, DWORD dwFlags)
+
+//	HIRButtonUp
+//
+//	Handle mouse input
+	
+	{
+	if (::GetCapture() == m_HI.GetHWND())
+		::ReleaseCapture();
+
+	//	See if the animator will handle it
+
+	if (m_Reanimator.HandleRButtonUp(x, y, dwFlags))
+		return;
+
+	OnRButtonUp(x, y, dwFlags);
+	}
+
 bool IHISession::IsElementEnabled (const CString &sID)
 
 //	IsElementEnabled

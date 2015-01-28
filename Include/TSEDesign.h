@@ -1495,7 +1495,7 @@ class CCommunicationsHandler
 		void DeleteAll (void);
 		bool FindMessage (const CString &sID, const SMessage **retpMessage = NULL) const;
 		int FindMessageByName (const CString &sMessage) const;
-		void FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender);
+		void FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender, ICCItem *pData);
 		inline int GetCount (void) const { return m_Messages.GetCount(); }
 		inline const SMessage &GetMessage (int iIndex) { return m_Messages[iIndex]; }
 		void Merge (CCommunicationsHandler &New);

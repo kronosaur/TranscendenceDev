@@ -134,7 +134,7 @@ int CCommunicationsHandler::FindMessageByName (const CString &sMessage) const
 	return -1;
 	}
 
-void CCommunicationsHandler::FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender)
+void CCommunicationsHandler::FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender, ICCItem *pData)
 
 //	FireInvoke
 //
@@ -157,6 +157,7 @@ void CCommunicationsHandler::FireInvoke (const CString &sID, CSpaceObject *pObj,
 	//	Define parameters
 
 	Ctx.SaveAndDefineSourceVar(pObj);
+	Ctx.SaveAndDefineDataVar(pData);
 	Ctx.DefineInteger(CONSTLIT("aPlayer"), pSender->GetUNID());
 
 	//	Execute

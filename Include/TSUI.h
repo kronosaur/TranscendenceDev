@@ -138,6 +138,9 @@ class IHISession : public IHICommand, public IAniCommand
 		void HIMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
 		inline void HIMove (int x, int y) { OnMove(x, y); }
 		void HIPaint (CG16bitImage &Screen);
+		void HIRButtonDblClick (int x, int y, DWORD dwFlags);
+		void HIRButtonDown (int x, int y, DWORD dwFlags);
+		void HIRButtonUp (int x, int y, DWORD dwFlags);
 		inline void HIReportHardCrash (CString *retsMessage) { OnReportHardCrash(retsMessage); }
 		inline void HISize (int cxWidth, int cyHeight);
 		inline void HIUpdate (bool bTopMost) { OnUpdate(bTopMost); }
@@ -189,8 +192,11 @@ class IHISession : public IHICommand, public IAniCommand
 		virtual void OnMouseMove (int x, int y, DWORD dwFlags) { }
 		virtual void OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags) { }
 		virtual void OnMove (int x, int y) { }
-		virtual void OnReportHardCrash (CString *retsMessage) { }
 		virtual void OnPaint (CG16bitImage &Screen, const RECT &rcInvalid) { }
+		virtual void OnRButtonDblClick (int x, int y, DWORD dwFlags) { }
+		virtual void OnRButtonDown (int x, int y, DWORD dwFlags) { }
+		virtual void OnRButtonUp (int x, int y, DWORD dwFlags) { }
+		virtual void OnReportHardCrash (CString *retsMessage) { }
 		virtual void OnSize (int cxWidth, int cyHeight) { }
 		virtual void OnUpdate (bool bTopMost) { }
 
@@ -713,6 +719,9 @@ class CHumanInterface
 		LONG WMMouseMove (int x, int y, DWORD dwFlags);
 		LONG WMMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
 		LONG WMMove (int x, int y);
+		LONG WMRButtonDblClick (int x, int y, DWORD dwFlags);
+		LONG WMRButtonDown (int x, int y, DWORD dwFlags);
+		LONG WMRButtonUp (int x, int y, DWORD dwFlags);
 		LONG WMSize (int cxWidth, int cyHeight, int iSize);
 		LONG WMTimer (DWORD dwID);
 
