@@ -444,6 +444,92 @@ bool CReanimator::HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 	return m_pInputFocus->HandleMouseWheel(iDelta, x, y, dwFlags);
 	}
 
+bool CReanimator::HandleRButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture)
+
+//	HandleRButtonDblClick
+//
+//	Right button double click
+
+	{
+	IAnimatron *pHit = HitTest(x, y);
+	if (pHit)
+		{
+		bool bFocus;
+		pHit->HandleRButtonDblClick(x, y, dwFlags, retbCapture, &bFocus);
+		if (*retbCapture)
+			m_pMouseCapture = pHit;
+
+		if (bFocus)
+			SetInputFocus(pHit);
+
+		return true;
+		}
+
+	return false;
+	}
+
+bool CReanimator::HandleRButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture)
+
+//	HandleRButtonDown
+//
+//	Right button down
+
+	{
+	IAnimatron *pHit = HitTest(x, y);
+	if (pHit)
+		{
+		bool bFocus;
+		pHit->HandleRButtonDown(x, y, dwFlags, retbCapture, &bFocus);
+		if (*retbCapture)
+			m_pMouseCapture = pHit;
+
+		if (bFocus)
+			SetInputFocus(pHit);
+
+		return true;
+		}
+
+	return false;
+	}
+
+bool CReanimator::HandleRButtonUp (int x, int y, DWORD dwFlags)
+
+//	HandleRButtonUp
+//
+//	Right button up
+
+	{
+	IAnimatron *pHit = HitTest(x, y);
+
+	if (m_pMouseCapture)
+		{
+		//	If we're not over the element that captured the mouse then we need
+		//	to send a mouse enter event
+
+		if (pHit && pHit != m_pMouseCapture)
+			{
+			m_pHover = pHit;
+			m_pHover->HandleMouseEnter();
+			}
+
+		//	Keep the element that we hit on the stack because the event might
+		//	destroy everything.
+
+		pHit = m_pMouseCapture;
+		m_pMouseCapture = NULL;
+
+		pHit->HandleRButtonUp(x, y, dwFlags);
+		return true;
+		}
+	else if (pHit)
+		{
+		pHit->HandleRButtonUp(x, y, dwFlags);
+		return true;
+		}
+	else
+		return false;
+	}
+
 IAnimatron *CReanimator::HitTest (int x, int y)
 
 //	HitTest

@@ -301,6 +301,9 @@ class IAnimatron
 		virtual void HandleMouseLeave (void) { }
 		virtual void HandleMouseMove (int x, int y, DWORD dwFlags) { }
 		virtual bool HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags) { return false; }
+		virtual void HandleRButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) { *retbCapture = false; *retbFocus = false; }
+		virtual void HandleRButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) { *retbCapture = false; *retbFocus = false; }
+		virtual void HandleRButtonUp (int x, int y, DWORD dwFlags) { }
 		virtual IAnimatron *HitTest (const CXForm &ToDest, int x, int y) { return NULL; }
 		virtual void KillFocus (void) { }
 		virtual void Paint (SAniPaintCtx &Ctx) { }
@@ -393,6 +396,9 @@ class CReanimator
 		bool HandleLButtonUp (int x, int y, DWORD dwFlags);
 		bool HandleMouseMove (int x, int y, DWORD dwFlags);
 		bool HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
+		bool HandleRButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture);
+		bool HandleRButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture);
+		bool HandleRButtonUp (int x, int y, DWORD dwFlags);
 		bool PaintFrame (CG16bitImage &Dest);
 
 	private:

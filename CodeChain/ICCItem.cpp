@@ -160,6 +160,46 @@ void ICCItem::ResetItem (void)
 	m_bReadOnly = FALSE;
 	}
 
+void ICCItem::SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
+
+//	SetAt
+//
+//	Set key-value pair.
+
+	{
+	ICCItem *pKey = CC.CreateString(sKey);
+	AddEntry(&CC, pKey, pValue);
+	pKey->Discard(&CC);
+	}
+
+void ICCItem::SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue)
+
+//	SetIntegerAt
+//
+//	Set key-value pair.
+
+	{
+	ICCItem *pKey = CC.CreateString(sKey);
+	ICCItem *pValue = CC.CreateInteger(iValue);
+	AddEntry(&CC, pKey, pValue);
+	pKey->Discard(&CC);
+	pValue->Discard(&CC);
+	}
+
+void ICCItem::SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue)
+
+//	SetStringAt
+//
+//	Set key-value pair.
+
+	{
+	ICCItem *pKey = CC.CreateString(sKey);
+	ICCItem *pValue = CC.CreateString(sValue);
+	AddEntry(&CC, pKey, pValue);
+	pKey->Discard(&CC);
+	pValue->Discard(&CC);
+	}
+
 ICCItem *ICCItem::Stream (CCodeChain *pCC, IWriteStream *pStream)
 
 //	Stream

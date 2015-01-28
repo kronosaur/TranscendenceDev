@@ -163,6 +163,10 @@ class ICCItem : public CObject
 
 		//	Symbol/Atom table functions
 
+		void SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue);
+		void SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue);
+		void SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue);
+
 		virtual ICCItem *AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { return NotASymbolTable(pCC); }
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) { ASSERT(FALSE); }
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) { }
@@ -571,9 +575,12 @@ class CCSymbolTable : public ICCList
 		CCSymbolTable (void);
 
 		inline CString GetKey (int iIndex) { return m_Symbols.GetKey(iIndex); }
-		void SetIntegerValue (CCodeChain &CC, const CString &sKey, int iValue);
-		void SetStringValue (CCodeChain &CC, const CString &sKey, const CString &sValue);
-		void SetValue (CCodeChain &CC, const CString &sKey, ICCItem *pValue);
+
+		//	LATER: These are deprecated. Should remove them (and replace callers with SetAt versions).
+
+		inline void SetIntegerValue (CCodeChain &CC, const CString &sKey, int iValue) { SetIntegerAt(CC, sKey, iValue); }
+		inline void SetStringValue (CCodeChain &CC, const CString &sKey, const CString &sValue) { SetStringAt(CC, sKey, sValue); }
+		inline void SetValue (CCodeChain &CC, const CString &sKey, ICCItem *pValue) { SetAt(CC, sKey, pValue); }
 
 		//	ICCItem virtuals
 
