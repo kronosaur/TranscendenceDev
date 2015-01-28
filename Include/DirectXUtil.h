@@ -271,6 +271,8 @@ class CG16bitImage : public CObject
 		inline void DrawPlainLine (int x1, int y1, int x2, int y2, WORD wColor) { BresenhamLine(x1, y1, x2, y2, wColor); }
 		inline void DrawText (int x, int y, const CG16bitFont &Font, WORD wColor, CString sText, DWORD dwFlags = 0, int *retx = NULL);
 		void Fill (int x, int y, int cxWidth, int cyHeight, WORD wColor);
+		void FillAlpha (int x, int y, int cxWidth, int cyHeight, DWORD byOpacity);
+		void FillAlphaMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG16bitImage &Source, DWORD byOpacity, int xDest, int yDest);
 		void FillRGB (int x, int y, int cxWidth, int cyHeight, COLORREF rgbValue);
 		void FillColumn (int x, int y, int cyHeight, WORD wColor);
 		void FillColumnTrans (int x, int y, int cyHeight, WORD wColor, DWORD byOpacity);

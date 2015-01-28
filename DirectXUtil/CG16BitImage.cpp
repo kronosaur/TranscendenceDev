@@ -2608,6 +2608,100 @@ void CG16bitImage::Fill (int x, int y, int cxWidth, int cyHeight, WORD wColor)
 		}
 	}
 
+void CG16bitImage::FillAlpha (int x, int y, int cxWidth, int cyHeight, DWORD byOpacity)
+
+//	FillAlpha
+//
+//	Fills the alpha channel.
+
+	{
+	//	Must have alpha channel
+
+	if (m_pAlpha == NULL)
+		return;
+
+	//	Make sure we're in bounds
+
+	if (!AdjustCoords(NULL, NULL, 0, 0, 
+			&x, &y, 
+			&cxWidth, &cyHeight))
+		return;
+
+	//	Fill
+
+	BYTE byAlpha = (BYTE)byOpacity;
+	BYTE *pRow = GetAlphaValue(x, y);
+	BYTE *pRowEnd = GetAlphaValue(x, y + cyHeight);
+
+	while (pRow < pRowEnd)
+		{
+		BYTE *pPos = pRow;
+		BYTE *pPosEnd = pRow + cxWidth;
+
+		while (pPos < pPosEnd)
+			*pPos++ = byAlpha;
+
+		pRow = NextAlphaRow(pRow);
+		}
+	}
+
+void CG16bitImage::FillAlphaMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG16bitImage &Source, DWORD byOpacity, int xDest, int yDest)
+
+//	FillAlphaMask
+//
+//	Fills the alpha channel with the give value through the given mask.
+
+	{
+	//	Must have alpha channel
+
+	if (m_pAlpha == NULL)
+		return;
+
+	//	Make sure we're in bounds
+
+	if (!AdjustCoords(&xSrc, &ySrc, Source.m_cxWidth, Source.m_cyHeight, 
+			&xDest, &yDest,
+			&cxWidth, &cyHeight))
+		return;
+
+	//	Get the alpha mask
+
+	BYTE byAlpha = (BYTE)byOpacity;
+	BYTE *pDestRow = GetAlphaValue(xDest, yDest);
+
+	//	Fill through source mask
+
+	BYTE *pAlphaSrcRow = Source.GetAlphaValue(xSrc, ySrc);
+	BYTE *pAlphaSrcRowEnd = Source.GetAlphaValue(xSrc, ySrc + cyHeight);
+
+	while (pAlphaSrcRow < pAlphaSrcRowEnd)
+		{
+		BYTE *pAlphaPos = pAlphaSrcRow;
+		BYTE *pAlphaPosEnd = pAlphaPos + cxWidth;
+		BYTE *pDestPos = pDestRow;
+
+		while (pAlphaPos < pAlphaPosEnd)
+			if (*pAlphaPos == 0x00)
+				{
+				pDestPos++;
+				pAlphaPos++;
+				}
+			else if (*pAlphaPos == 0xff)
+				{
+				*pDestPos++ = byAlpha;
+				pAlphaPos++;
+				}
+			else
+				{
+				*pDestPos++ = byAlpha * (*pAlphaPos) / 255;
+				pAlphaPos++;
+				}
+
+		pDestRow = NextAlphaRow(pDestRow);
+		pAlphaSrcRow = Source.NextAlphaRow(pAlphaSrcRow);
+		}
+	}
+
 void CG16bitImage::FillRGB (int x, int y, int cxWidth, int cyHeight, COLORREF rgbValue)
 
 //	FillRGB
