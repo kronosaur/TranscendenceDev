@@ -252,6 +252,30 @@ void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, CSpaceOb
 	*retpPath = pNewPath;
 	}
 
+void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, const CVector &vStart, const CVector &vEnd, CNavigationPath **retpPath)
+
+//	Create
+//
+//	Creates a path from vStart to vEnd
+
+	{
+	CNavigationPath *pNewPath = new CNavigationPath;
+	pNewPath->m_dwID = g_pUniverse->CreateGlobalID();
+	pNewPath->m_pSovereign = pSovereign;
+	pNewPath->m_iStartIndex = -1;
+	pNewPath->m_iEndIndex = -1;
+
+	//	Compute the path
+
+	pNewPath->m_vStart = vStart;
+	pNewPath->m_iWaypointCount = ComputePath(pSystem, pSovereign, vStart, vEnd, &pNewPath->m_Waypoints);
+	ASSERT(pNewPath->m_iWaypointCount > 0);
+
+	//	Done
+
+	*retpPath = pNewPath;
+	}
+
 CString CNavigationPath::DebugDescribe (CSpaceObject *pObj, CNavigationPath *pNavPath)
 
 //	DebugDescribe
@@ -397,6 +421,9 @@ bool CNavigationPath::Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSp
 #endif
 
 	if (pSovereign && m_pSovereign && pSovereign != m_pSovereign)
+		return false;
+
+	if (m_iStartIndex == -1)
 		return false;
 
 	if (pStart->GetID() != m_iStartIndex)

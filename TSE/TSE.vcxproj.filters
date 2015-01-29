@@ -820,6 +820,9 @@
     <ClCompile Include="IPlayerController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CNavigateOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

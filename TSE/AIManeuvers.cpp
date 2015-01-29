@@ -41,6 +41,8 @@ const Metric FLOCK_SEPARATION_RANGE2 =	(FLOCK_SEPARATION_RANGE * FLOCK_SEPARATIO
 const Metric FLOCK_COMBAT_RANGE =		(300.0 * KLICKS_PER_PIXEL);
 const Metric FLOCK_COMBAT_RANGE2 =		(FLOCK_COMBAT_RANGE * FLOCK_COMBAT_RANGE);
 
+const Metric CLOSE_DELTA_V_RATIO =		0.1;
+const Metric MIN_SPEED_RATIO =			0.05;
 
 #ifdef DEBUG_COMBAT
 #define DEBUG_COMBAT_OUTPUT(x)			{ if (g_pUniverse->GetPlayerShip()) g_pUniverse->GetPlayerShip()->SendMessage(pShip, strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(x))); }
@@ -183,6 +185,101 @@ bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 		}
 	}
 
+bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip, 
+										  const CVector &vDestPos, 
+										  const CVector &vDestVel, 
+										  int iDestAngle, 
+										  CVector *retvRecommendedVel, 
+										  Metric *retrDeltaPos2,
+										  Metric *retrDeltaVel2)
+
+//	CalcFormationParams
+//
+//	Computes the parameters required to hold a formation.
+//
+//	retvRecommendedVel is the recommended velocity that we need to acchieve in
+//			order to reach the desired state.
+//
+//	retrDeltaPos2 is the current distance (^2) to the desired pos
+//	retrDelatVel2 is the magnitude (^2) of the recommended velocity
+//
+//	We return TRUE if the recommended velocity is a small enough fraction of 
+//	ship speed.
+
+	{
+	//	Figure out how far we are from where we want to be
+
+	CVector vDelta = vDestPos - pShip->GetPos();
+	CVector vDeltaVel = vDestVel - pShip->GetVel();
+
+	//	If our position and velocity are pretty close, then stay
+	//	where we are (though we cheat a little by adjusting our velocity
+	//	manually)
+
+	Metric rDelta2 = vDelta.Length2();
+	Metric rDeltaVel2 = vDeltaVel.Length2();
+	bool bCloseEnough = (rDelta2 < MAX_DELTA2);
+
+	//	Decompose our position delta along the axis of final direction
+	//	I.e., we figure out how far we are ahead or behind the destination
+	//	and how far we are to the left or right.
+
+	CVector vAxisY = PolarToVector(iDestAngle, 1.0);
+	CVector vAxisX = vAxisY.Perpendicular();
+	Metric rDeltaX = vDelta.Dot(vAxisX);
+	Metric rDeltaY = vDelta.Dot(vAxisY);
+
+	//	Our velocity towards the axis should be proportional to our
+	//	distance from it.
+
+	Metric rDesiredVelX;
+	if (bCloseEnough)
+		rDesiredVelX = 0.0;
+	else if (rDeltaX > 0.0)
+		rDesiredVelX = Max(MIN_SPEED_RATIO, (Min(MAX_DISTANCE, rDeltaX) / MAX_DISTANCE)) * pShip->GetMaxSpeed();
+	else
+		rDesiredVelX = Min(-MIN_SPEED_RATIO, (Max(-MAX_DISTANCE, rDeltaX) / MAX_DISTANCE)) * pShip->GetMaxSpeed();
+
+	//	Same with our velocity along the axis
+
+	Metric rDesiredVelY;
+	if (bCloseEnough)
+		rDesiredVelY = 0.0;
+	else if (rDeltaY > 0.0)
+		rDesiredVelY = Max(MIN_SPEED_RATIO, (Min(MAX_DISTANCE, rDeltaY) / MAX_DISTANCE)) * pShip->GetMaxSpeed();
+	else
+		rDesiredVelY = Min(-MIN_SPEED_RATIO, (Max(-MAX_DISTANCE, rDeltaY) / MAX_DISTANCE)) * pShip->GetMaxSpeed();
+
+	//	Recompose to our desired velocity
+
+	CVector vDesiredVel = (rDesiredVelX * vAxisX) + (rDesiredVelY * vAxisY);
+	vDesiredVel = vDesiredVel + vDestVel;
+
+	//	Figure out the delta v that we need to achieve our desired velocity
+
+	CVector vDiff = vDesiredVel - pShip->GetVel();
+	Metric rDiff2 = vDiff.Length2();
+
+	//	Return our calculations
+
+	if (retvRecommendedVel)
+		*retvRecommendedVel = vDiff;
+
+	if (retrDeltaPos2)
+		*retrDeltaPos2 = rDelta2;
+
+	if (retrDeltaVel2)
+		*retrDeltaVel2 = rDiff2;
+
+	//	If we're close enough to the velocity, cheat a little by
+	//	accelerating without using the main engine
+
+	Metric rCloseV = CLOSE_DELTA_V_RATIO * pShip->GetMaxSpeed();
+	Metric rCloseV2 = (rCloseV * rCloseV);
+
+	return (rDiff2 < rCloseV2);
+	}
+
 CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,
 												   CSpaceObject *pTarget, 
 												   const CVector &vTarget, 
@@ -267,66 +364,18 @@ CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest
 //	Returns the vector that the ship should move in to achieve the given formation
 
 	{
-	//	Figure out how far we are from where we want to be
+	//	Compute our formation parameters
 
-	CVector vDelta = vDest - pShip->GetPos();
-	CVector vDeltaVel = vDestVel - pShip->GetVel();
-
-	//	If our position and velocity are pretty close, then stay
-	//	where we are (though we cheat a little by adjusting our velocity
-	//	manually)
-
-	Metric rDelta2 = vDelta.Length2();
-	Metric rDeltaVel2 = vDeltaVel.Length2();
-	bool bCloseEnough = (rDelta2 < MAX_DELTA2);
-
-	//	Decompose our position delta along the axis of final direction
-	//	I.e., we figure out how far we are ahead or behind the destination
-	//	and how far we are to the left or right.
-
-	CVector vAxisY = PolarToVector(iDestFacing, 1.0);
-	CVector vAxisX = vAxisY.Perpendicular();
-	Metric rDeltaX = vDelta.Dot(vAxisX);
-	Metric rDeltaY = vDelta.Dot(vAxisY);
-
-	//	Our velocity towards the axis should be proportional to our
-	//	distance from it.
-
-	Metric rDesiredVelX;
-	if (bCloseEnough)
-		rDesiredVelX = 0.0;
-	else if (rDeltaX > 0.0)
-		rDesiredVelX = (Min(MAX_DISTANCE, rDeltaX) / MAX_DISTANCE) * pShip->GetMaxSpeed();
-	else
-		rDesiredVelX = (Max(-MAX_DISTANCE, rDeltaX) / MAX_DISTANCE) * pShip->GetMaxSpeed();
-
-	//	Same with our velocity along the axis
-
-	Metric rDesiredVelY;
-	if (bCloseEnough)
-		rDesiredVelY = 0.0;
-	else if (rDeltaY > 0.0)
-		rDesiredVelY = (Min(MAX_DISTANCE, rDeltaY) / MAX_DISTANCE) * pShip->GetMaxSpeed();
-	else
-		rDesiredVelY = (Max(-MAX_DISTANCE, rDeltaY) / MAX_DISTANCE) * pShip->GetMaxSpeed();
-
-	//	Recompose to our desired velocity
-
-	CVector vDesiredVel = (rDesiredVelX * vAxisX) + (rDesiredVelY * vAxisY);
-	vDesiredVel = vDesiredVel + vDestVel;
-
-	//	Figure out the delta v that we need to achieve our desired velocity
-
-	CVector vDiff = vDesiredVel - pShip->GetVel();
-	Metric rDiff2 = vDiff.Length2();
+	CVector vDeltaV;
+	bool bCloseEnough = CalcFormationParams(pShip, vDest, vDestVel, iDestFacing, &vDeltaV);
 
 	//	If we're close enough to the velocity, cheat a little by
 	//	accelerating without using the main engine
 
-	if (rDiff2 < MAX_DELTA_VEL2)
+	if (bCloseEnough)
 		{
 		if (!pShip->IsParalyzed())
-			pShip->Accelerate(vDiff * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
+			pShip->Accelerate(vDeltaV * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
 #if 0
 		ImplementTurnTo(iDestFacing);
 #endif
@@ -337,7 +386,7 @@ CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest
 
 	else
 		{
-		int iAngle = VectorToPolar(vDiff);
+		int iAngle = VectorToPolar(vDeltaV);
 		return PolarToVector(iAngle, 5.0 * LIGHT_SECOND);
 		}
 	}
@@ -1442,66 +1491,20 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 //	NOTE: iDestFacing must be aligned to one of the ship's rotation angles
 
 	{
-	//	Figure out how far we are from where we want to be
+	//	Compute our formation parameters
 
-	CVector vDelta = vDest - pShip->GetPos();
-	CVector vDeltaVel = vDestVel - pShip->GetVel();
-
-	//	If our position and velocity are pretty close, then stay
-	//	where we are (though we cheat a little by adjusting our velocity
-	//	manually)
-
-	Metric rDelta2 = vDelta.Length2();
-	Metric rDeltaVel2 = vDeltaVel.Length2();
-	bool bCloseEnough = (rDelta2 < MAX_DELTA2);
-
-	//	Decompose our position delta along the axis of final direction
-	//	I.e., we figure out how far we are ahead or behind the destination
-	//	and how far we are to the left or right.
-
-	CVector vAxisY = PolarToVector(iDestFacing, 1.0);
-	CVector vAxisX = vAxisY.Perpendicular();
-	Metric rDeltaX = vDelta.Dot(vAxisX);
-	Metric rDeltaY = vDelta.Dot(vAxisY);
-
-	//	Our velocity towards the axis should be proportional to our
-	//	distance from it.
-
-	Metric rDesiredVelX;
-	if (bCloseEnough)
-		rDesiredVelX = 0.0;
-	else if (rDeltaX > 0.0)
-		rDesiredVelX = (Min(MAX_DISTANCE, rDeltaX) / MAX_DISTANCE) * pShip->GetMaxSpeed();
-	else
-		rDesiredVelX = (Max(-MAX_DISTANCE, rDeltaX) / MAX_DISTANCE) * pShip->GetMaxSpeed();
-
-	//	Same with our velocity along the axis
-
-	Metric rDesiredVelY;
-	if (bCloseEnough)
-		rDesiredVelY = 0.0;
-	else if (rDeltaY > 0.0)
-		rDesiredVelY = (Min(MAX_DISTANCE, rDeltaY) / MAX_DISTANCE) * pShip->GetMaxSpeed();
-	else
-		rDesiredVelY = (Max(-MAX_DISTANCE, rDeltaY) / MAX_DISTANCE) * pShip->GetMaxSpeed();
-
-	//	Recompose to our desired velocity
-
-	CVector vDesiredVel = (rDesiredVelX * vAxisX) + (rDesiredVelY * vAxisY);
-	vDesiredVel = vDesiredVel + vDestVel;
-
-	//	Figure out the delta v that we need to achieve our desired velocity
-
-	CVector vDiff = vDesiredVel - pShip->GetVel();
-	Metric rDiff2 = vDiff.Length2();
+	CVector vDeltaV;
+	Metric rDeltaPos2;
+	Metric rDeltaV2;
+	bool bCloseEnough = CalcFormationParams(pShip, vDest, vDestVel, iDestFacing, &vDeltaV, &rDeltaPos2, &rDeltaV2);
 
 	//	If we're close enough to the velocity, cheat a little by
 	//	accelerating without using the main engine
 
-	if (rDiff2 < MAX_DELTA_VEL2)
+	if (bCloseEnough)
 		{
 		if (!pShip->IsParalyzed())
-			pShip->Accelerate(vDiff * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
+			pShip->Accelerate(vDeltaV * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
 
 		ImplementTurnTo(pShip, iDestFacing);
 		}
@@ -1512,7 +1515,7 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 		{
 		//	Figure out which direction we need to thrust in to achieve the delta v
 
-		int iAngle = VectorToPolar(vDiff);
+		int iAngle = VectorToPolar(vDeltaV);
 
 		//	Turn towards the angle
 
@@ -1528,8 +1531,8 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 
 	if (retbInFormation)
 		*retbInFormation = (pShip->IsPointingTo(iDestFacing)
-				&& (rDelta2 < MAX_IN_FORMATION_DELTA2)
-				&& (rDiff2 < MAX_DELTA_VEL2));
+				&& (rDeltaPos2 < MAX_IN_FORMATION_DELTA2)
+				&& (rDeltaV2 < MAX_DELTA_VEL2));
 	}
 
 void CAIBehaviorCtx::ImplementGating (CShip *pShip, CSpaceObject *pTarget)

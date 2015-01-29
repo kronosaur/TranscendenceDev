@@ -102,6 +102,9 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderFireEvent:
 			return new CFireEventOrder;
 
+		case IShipController::orderGoToPos:
+			return new CNavigateOrder(iOrder);
+
 		case IShipController::orderSendMessage:
 			return new CSendMessageOrder;
 

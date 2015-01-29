@@ -211,6 +211,54 @@ class CGuardOrder : public IOrderModule
 		CSpaceObject *m_pBase;					//	Object that we're guarding
 	};
 
+class CNavigateOrder : public IOrderModule
+	{
+	public:
+		CNavigateOrder (IShipController::OrderTypes iOrder);
+
+	protected:
+
+		//	IOrderModule virtuals
+
+		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx);
+		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data);
+		virtual IShipController::OrderTypes OnGetOrder (void) { return IShipController::orderApproach; }
+		virtual void OnReadFromStream (SLoadCtx &Ctx);
+		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream);
+
+	private:
+		enum Objs
+			{
+			objDest =		0,
+			objTarget =		1,
+
+			objCount =		2,
+			};
+
+		enum States
+			{
+			stateOnCourseViaNavPath,
+			stateApproachingPos,
+			};
+
+		IShipController::OrderTypes m_iOrder;
+		States m_iState;						//	Current behavior state
+		CVector m_vDest;						//	Destination
+		int m_iDestFacing;						//	Ship should face at this angle
+		Metric m_rMinDist2;						//	Minimum distance to target
+
+		DWORD m_fTargetVector:1;				//	Destination is m_vDest
+		DWORD m_fTargetObj:1;					//	Destination is objDest
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:24;
+	};
+
 class CSendMessageOrder : public IOrderModule
 	{
 	public:

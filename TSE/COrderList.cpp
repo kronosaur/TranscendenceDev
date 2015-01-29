@@ -60,6 +60,14 @@ void COrderList::CleanUp (SOrderEntry *pEntry)
 				pEntry->dwData = 0;
 				}
 			break;
+
+		case IShipController::dataVector:
+			if (pEntry->dwData)
+				{
+				delete (CVector *)pEntry->dwData;
+				pEntry->dwData = 0;
+				}
+			break;
 		}
 	}
 
@@ -92,6 +100,10 @@ IShipController::OrderTypes COrderList::GetCurrentOrder (CSpaceObject **retpTarg
 
 			case IShipController::dataString:
 				retData->sData = (pEntry->dwData ? *(CString *)pEntry->dwData : NULL_STR);
+				break;
+
+			case IShipController::dataVector:
+				retData->vData = (pEntry->dwData ? *(CVector *)pEntry->dwData : NullVector);
 				break;
 			}
 		}
@@ -296,6 +308,14 @@ void COrderList::ReadFromStream (SLoadCtx &Ctx)
 					pEntry->dwData = (DWORD)pString;
 					break;
 					}
+
+				case IShipController::dataVector:
+					{
+					CVector *pVector = new CVector;
+					Ctx.pStream->Read((char *)pVector, sizeof(CVector));
+					pEntry->dwData = (DWORD)pVector;
+					break;
+					}
 				}
 			}
 		}
@@ -352,6 +372,10 @@ void COrderList::SetEntryData (SOrderEntry *pEntry, const IShipController::SData
 			pEntry->dwData = (DWORD)(new CString(Data.sData));
 			break;
 
+		case IShipController::dataVector:
+			pEntry->dwData = (DWORD)(new CVector(Data.vData));
+			break;
+
 		default:
 			pEntry->dwData = 0;
 		}
@@ -405,6 +429,16 @@ void COrderList::WriteToStream (IWriteStream *pStream, CSystem *pSystem)
 					CString sNull;
 					sNull.WriteToStream(pStream);
 					}
+				break;
+				}
+
+			case IShipController::dataVector:
+				{
+				CVector *pVector = (CVector *)pEntry->dwData;
+				if (pVector)
+					pStream->Write((char *)pVector, sizeof(CVector));
+				else
+					pStream->Write((char *)&NullVector, sizeof(CVector));
 				break;
 				}
 			}

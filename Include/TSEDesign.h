@@ -3055,6 +3055,7 @@ class IShipController
 			dataInteger,					//	dwData is a 32-bit integer
 			dataPair,						//	dwData is two 16-bit integers
 			dataString,						//	dwData is a pointer to a CString
+			dataVector,						//	dwData is a pointer to a CVector
 			};
 
 		struct SData
@@ -3075,6 +3076,10 @@ class IShipController
 					sData(sDataArg)
 				{ }
 
+			SData (const CVector &vDataArg) : iDataType(dataVector),
+					vData(vDataArg)
+				{ }
+
 			DWORD AsInteger (void) const { if (iDataType == dataInteger || iDataType == dataPair) return dwData1; else return 0; }
 			DWORD AsInteger2 (void) const { if (iDataType == dataPair) return dwData2; else return 0; }
 
@@ -3083,6 +3088,7 @@ class IShipController
 			DWORD dwData1;
 			DWORD dwData2;
 			CString sData;
+			CVector vData;
 			};
 
 		//	When adding a new order, also add to:
@@ -3137,6 +3143,7 @@ class IShipController
 
 			orderAttackArea,			//	pTarget = center; dwData1 = radius (light-seconds); dwData2 = timer.
 			orderHoldAndAttack,			//	pTarget = target to destroy; dwData = timer.
+			orderGoToPos,				//	dwData = vector destination
 			};
 
 		virtual ~IShipController (void) { }

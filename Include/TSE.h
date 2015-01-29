@@ -553,6 +553,7 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		~CNavigationPath (void);
 
 		static void Create (CSystem *pSystem, CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd, CNavigationPath **retpPath);
+		static void Create (CSystem *pSystem, CSovereign *pSovereign, const CVector &vStart, const CVector &vEnd, CNavigationPath **retpPath);
 
 		Metric ComputePathLength (CSystem *pSystem) const;
 		CVector ComputePointOnPath (CSystem *pSystem, Metric rDist) const;
@@ -3572,6 +3573,7 @@ CString GetOrderName (IShipController::OrderTypes iOrder);
 IShipController::OrderTypes GetOrderType (const CString &sString);
 int OrderGetDataCount (IShipController::OrderTypes iOrder);
 bool OrderHasDataString (IShipController::OrderTypes iOrder);
+bool OrderHasDataVector (IShipController::OrderTypes iOrder);
 bool OrderHasTarget (IShipController::OrderTypes iOrder, bool *retbRequired = NULL);
 bool ParseOrderString (const CString &sValue, IShipController::OrderTypes *retiOrder, IShipController::SData *retData = NULL);
 

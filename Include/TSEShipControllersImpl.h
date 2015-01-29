@@ -36,11 +36,12 @@ class CAIBehaviorCtx
 	{
 	public:
 		CAIBehaviorCtx (void);
+		~CAIBehaviorCtx (void);
 
 		inline bool AscendOnGate (void) const { return m_AISettings.AscendOnGate(); }
 		inline bool AvoidsExplodingStations (void) const { return m_fAvoidExplodingStations; }
 		inline void ClearBestWeapon (void) { m_fRecalcBestWeapon = true; }
-		inline void ClearNavPath (void) { m_pNavPath = NULL; m_iNavPathPos = -1; }
+		void ClearNavPath (void);
 		void DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		inline CString GetAISetting (const CString &sSetting) { return m_AISettings.GetValue(sSetting); }
 		inline const CAISettings &GetAISettings (void) const { return m_AISettings; }
@@ -94,7 +95,7 @@ class CAIBehaviorCtx
 		inline void SetLastTurnCount (int iCount) { m_iLastTurnCount = iCount; }
 		inline void SetManeuver (EManeuverTypes iManeuver) { m_ShipControls.SetManeuver(iManeuver); }
 		inline void SetManeuverCounter (int iCount) { m_iManeuverCounter = iCount; }
-		inline void SetNavPath (CNavigationPath *pNavPath, int iNavPathPos) { m_pNavPath = pNavPath; m_iNavPathPos = iNavPathPos; }
+		inline void SetNavPath (CNavigationPath *pNavPath, int iNavPathPos, bool bOwned = false) { ClearNavPath(); m_pNavPath = pNavPath; m_iNavPathPos = iNavPathPos; m_fFreeNavPath = bOwned; }
 		inline void SetPotential (const CVector &vVec) { m_vPotential = vVec; }
 		inline void SetThrust (bool bThrust) { m_ShipControls.SetThrust(bThrust); }
 		inline void SetThrustDir (int iDir) { m_ShipControls.SetThrustDir(iDir); }
@@ -132,14 +133,16 @@ class CAIBehaviorCtx
 		void ImplementTurnTo (CShip *pShip, int iRotation);
 
 		//	Helpers
+		bool CalcFormationParams (CShip *pShip, const CVector &vDestPos, const CVector &vDestVel, int iDestAngle, CVector *retvRecommendedVel, Metric *retrDeltaPos2 = NULL, Metric *retrDeltaVel2 = NULL);
 		void CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget);
 		void CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric rTargetDist2);
 		bool CalcFlockingFormation (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		void CalcInvariants (CShip *pShip);
 		bool CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget, CSpaceObject *pNewTarget) const;
+		bool CalcNavPath (CShip *pShip, const CVector &vTo);
 		bool CalcNavPath (CShip *pShip, CSpaceObject *pTo);
 		void CalcNavPath (CShip *pShip, CSpaceObject *pFrom, CSpaceObject *pTo);
-		void CalcNavPath (CShip *pShip, CNavigationPath *pPath);
+		void CalcNavPath (CShip *pShip, CNavigationPath *pPath, bool bOwned = false);
 		void CalcShieldState (CShip *pShip);
 		int CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2);
 		void CancelDocking (CShip *pShip, CSpaceObject *pBase);
@@ -193,7 +196,7 @@ class CAIBehaviorCtx
 		DWORD m_fHasEscorts:1;					//	TRUE if ship has escorts
 
 		DWORD m_fHasMultiplePrimaries:1;		//	TRUE if ship has multiple primary weapons (non-launchers)
-		DWORD m_fSpare2:1;
+		DWORD m_fFreeNavPath:1;					//	TRUE if we own the nav path object
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;

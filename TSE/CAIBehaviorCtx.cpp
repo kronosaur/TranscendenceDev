@@ -17,6 +17,8 @@ const Metric WALL_RANGE2 =				(WALL_RANGE * WALL_RANGE);
 const Metric MAX_NAV_START_DIST =		(20.0 * LIGHT_SECOND);
 const Metric MAX_NAV_START_DIST2 =		(MAX_NAV_START_DIST * MAX_NAV_START_DIST);
 
+const DWORD NAV_PATH_ID_OWNED =			0xffffffff;
+
 CAIBehaviorCtx::CAIBehaviorCtx (void) :
 		m_iLastTurn(NoRotation),
 		m_iLastTurnCount(0),
@@ -34,11 +36,20 @@ CAIBehaviorCtx::CAIBehaviorCtx (void) :
 		m_fHasSecondaryWeapons(false),
 		m_fHasMultiplePrimaries(false),
 		m_fRecalcBestWeapon(true),
-		m_fHasEscorts(false)
+		m_fHasEscorts(false),
+		m_fFreeNavPath(false)
 
 //	CAIBehaviorCtx constructor
 
 	{
+	}
+
+CAIBehaviorCtx::~CAIBehaviorCtx (void)
+
+//	CAIBehaviorCtx destructor
+
+	{
+	ClearNavPath();
 	}
 
 void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
@@ -451,6 +462,24 @@ bool CAIBehaviorCtx::CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget,
 		}
 	}
 
+bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, const CVector &vTo)
+
+//	CalcNavPath
+//
+//	Initializes m_pNavPath and m_iNavPathPos.
+
+	{
+	//	We always create a new nav path
+
+	CNavigationPath *pPath;
+	CNavigationPath::Create(pShip->GetSystem(), pShip->GetSovereign(), pShip->GetPos(), vTo, &pPath);
+
+	//	Done (we own this nav path, so we pass TRUE).
+
+	SetNavPath(pPath, 0, true);
+	return true;
+	}
+
 bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 
 //	CalcNavPath
@@ -544,7 +573,7 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pFrom, CSpaceObjec
 	CalcNavPath(pShip, pPath);
 	}
 
-void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath)
+void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath, bool bOwned)
 
 //	CalcNavPath
 //
@@ -555,10 +584,6 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath)
 
 	ASSERT(pPath);
 
-	//	Set the path
-
-	m_pNavPath = pPath;
-
 	//	Figure out which nav position we are closest to
 
 	const Metric CLOSE_ENOUGH_DIST = (LIGHT_SECOND * 10.0);
@@ -566,9 +591,9 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath)
 	Metric rBestDist2 = (g_InfiniteDistance * g_InfiniteDistance);
 	int iBestPoint = -1;
 
-	for (i = 0; i < m_pNavPath->GetNavPointCount(); i++)
+	for (i = 0; i < pPath->GetNavPointCount(); i++)
 		{
-		CVector vDist = m_pNavPath->GetNavPoint(i) - pShip->GetPos();
+		CVector vDist = pPath->GetNavPoint(i) - pShip->GetPos();
 		Metric rDist2 = vDist.Length2();
 
 		if (rDist2 < rBestDist2)
@@ -587,7 +612,7 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath)
 	if (iBestPoint == -1)
 		iBestPoint = 0;
 
-	m_iNavPathPos = iBestPoint;
+	SetNavPath(pPath, iBestPoint, bOwned);
 	}
 
 void CAIBehaviorCtx::CalcShieldState (CShip *pShip)
@@ -789,6 +814,24 @@ void CAIBehaviorCtx::CancelDocking (CShip *pShip, CSpaceObject *pBase)
 	SetDockingRequested(false);
 	}
 
+void CAIBehaviorCtx::ClearNavPath (void)
+
+//	ClearNavPath
+//
+//	Clears the nav path
+	
+	{
+	if (m_pNavPath)
+		{
+		if (m_fFreeNavPath)
+			delete m_pNavPath;
+
+		m_pNavPath = NULL;
+		m_iNavPathPos = -1;
+		m_fFreeNavPath = false;
+		}
+	}
+
 void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
 
 //	CommunicateWithEscorts
@@ -874,14 +917,30 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 	//	Nav path
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	if (dwLoad)
-		m_pNavPath = Ctx.pSystem->GetNavPathByID(dwLoad);
-	else
+	if (dwLoad == 0)
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		m_pNavPath = NULL;
-
-	Ctx.pStream->Read((char *)&m_iNavPathPos, sizeof(DWORD));
-	if (m_pNavPath == NULL)
 		m_iNavPathPos = -1;
+		m_fFreeNavPath = false;
+		}
+	else if (dwLoad == NAV_PATH_ID_OWNED)
+		{
+		Ctx.pStream->Read((char *)&m_iNavPathPos, sizeof(DWORD));
+
+		m_pNavPath = new CNavigationPath;
+		m_pNavPath->OnReadFromStream(Ctx);
+		m_fFreeNavPath = true;
+		}
+	else
+		{
+		Ctx.pStream->Read((char *)&m_iNavPathPos, sizeof(DWORD));
+
+		m_pNavPath = Ctx.pSystem->GetNavPathByID(dwLoad);
+		if (m_pNavPath == NULL)
+			m_iNavPathPos = -1;
+		m_fFreeNavPath = false;
+		}
 
 	//	Flags
 
@@ -960,11 +1019,34 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	pStream->Write((char *)&m_iLastAttack, sizeof(DWORD));
 	pStream->Write((char *)&m_vPotential, sizeof(CVector));
 
-	//	Nav path
+	//	If we don't have a nav path, just write out 0
 
-	dwSave = (m_pNavPath ? m_pNavPath->GetID() : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	pStream->Write((char *)&m_iNavPathPos, sizeof(DWORD));
+	if (m_pNavPath == NULL)
+		{
+		dwSave = 0;
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write((char *)&m_iNavPathPos, sizeof(DWORD));
+		}
+
+	//	If we have a shared nav path, write out the nav path ID
+
+	else if (!m_fFreeNavPath)
+		{
+		dwSave = (m_pNavPath ? m_pNavPath->GetID() : 0);
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write((char *)&m_iNavPathPos, sizeof(DWORD));
+		}
+
+	//	Otherwise we need to save the nav path here.
+
+	else
+		{
+		dwSave = NAV_PATH_ID_OWNED;
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write((char *)&m_iNavPathPos, sizeof(DWORD));
+
+		m_pNavPath->OnWriteToStream(pSystem, pStream);
+		}
 
 	//	Flags
 

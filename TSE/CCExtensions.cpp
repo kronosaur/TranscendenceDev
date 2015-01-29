@@ -7581,6 +7581,14 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				case IShipController::dataString:
 					pList->AppendStringValue(pCC, Data.sData);
 					break;
+
+				case IShipController::dataVector:
+					{
+					ICCItem *pVector = ::CreateListFromVector(*pCC, Data.vData);
+					pList->Append(pCC, pVector);
+					pVector->Discard(pCC);
+					break;
+					}
 				}
 
 			//	Done
@@ -7961,6 +7969,11 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					Data.iDataType = IShipController::dataString;
 					Data.sData = pArgs->GetElement(iArg)->GetStringValue();
+					}
+				else if (OrderHasDataVector(iOrder))
+					{
+					Data.iDataType = IShipController::dataVector;
+					Data.vData = ::CreateVectorFromList(*pCC, pArgs->GetElement(iArg));
 					}
 				else
 					{

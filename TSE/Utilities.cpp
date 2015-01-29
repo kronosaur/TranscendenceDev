@@ -98,6 +98,7 @@ struct SOrderTypeData
 	//	i		integer (may be optional)
 	//	2		two integers (encoded in a DWORD)
 	//  s		string data
+	//	v		vector data
 
 	DWORD dwFlags;
 	};
@@ -151,6 +152,7 @@ static const SOrderTypeData g_OrderTypes[] =
 
 		{	"attackArea",				"o",	"2",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"holdAndAttack",			"o",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
+		{	"gotoPos",					"-",	"v",	0 },
 	};
 
 #define ORDER_TYPES_COUNT		(sizeof(g_OrderTypes) / sizeof(g_OrderTypes[0]))
@@ -1986,6 +1988,16 @@ bool OrderHasDataString (IShipController::OrderTypes iOrder)
 
 	{
 	return (*g_OrderTypes[iOrder].szData == 's');
+	}
+
+bool OrderHasDataVector (IShipController::OrderTypes iOrder)
+
+//	OrderHasDataVector
+//
+//	Returns TRUE if the given order requires string data
+
+	{
+	return (*g_OrderTypes[iOrder].szData == 'v');
 	}
 
 bool OrderHasTarget (IShipController::OrderTypes iOrder, bool *retbRequired)
