@@ -2290,6 +2290,7 @@ class CSpaceObject : public CObject
 		void FireOnObjDestroyed (const SDestroyCtx &Ctx);
 		void FireOnObjDocked (CSpaceObject *pObj, CSpaceObject *pDockTarget);
 		void FireOnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
+		bool FireOnObjGate (CSpaceObject *pObj);
 		void FireOnObjJumped (CSpaceObject *pObj);
 		bool FireOnObjJumpPosAdj (CSpaceObject *pObj, CVector *iovPos);
 		void FireOnObjReconned (CSpaceObject *pObj);

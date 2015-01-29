@@ -4701,7 +4701,9 @@ class COverlayType : public CDesignType
 		enum ECounterDisplay
 			{
 			counterNone,						//	Do not show a counter
-			counterProgress,					//	Show as progress bar
+
+			counterCommandBarProgress,			//	Show as progress bar in command bar
+			counterProgress,					//	Show as progress bar on object
 			counterRadius,						//	Show as circle of given radius (pixels)
 			};
 

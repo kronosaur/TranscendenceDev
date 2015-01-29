@@ -947,6 +947,12 @@ void CBaseShipAI::OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEnt
 	else if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate)
 		m_pShip->Suspend();
 
+	//	Ask the target what to do. If it handles it, then we do nothing.
+
+	else if (pStargate 
+			&& pStargate->FireOnObjGate(m_pShip))
+		{ }
+
 	//	Otherwise, we destroy ourselves
 
 	else

@@ -27,6 +27,7 @@
 #define BONUS_ADJ_ATTRIB						CONSTLIT("weaponBonusAdj")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
 
+#define COUNTER_COMMAND_BAR_PROGRESS			CONSTLIT("commandBarProgress")
 #define COUNTER_PROGRESS						CONSTLIT("progress")
 #define COUNTER_RADIUS							CONSTLIT("radius")
 
@@ -269,10 +270,16 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pCounter)
 		{
 		CString sStyle = pCounter->GetAttribute(STYLE_ATTRIB);
-		if (strEquals(sStyle, COUNTER_PROGRESS))
+
+		if (strEquals(sStyle, COUNTER_COMMAND_BAR_PROGRESS))
+			m_iCounterType = counterCommandBarProgress;
+
+		else if (strEquals(sStyle, COUNTER_PROGRESS))
 			m_iCounterType = counterProgress;
+
 		else if (strEquals(sStyle, COUNTER_RADIUS))
 			m_iCounterType = counterRadius;
+
 		else
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unknown counter style: %s"), sStyle);

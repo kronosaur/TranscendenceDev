@@ -56,6 +56,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_OBJ_DESTROYED_EVENT					CONSTLIT("OnObjDestroyed")
 #define ON_OBJ_DOCKED_EVENT						CONSTLIT("OnObjDocked")
 #define ON_OBJ_ENTERED_GATE_EVENT				CONSTLIT("OnObjEnteredGate")
+#define ON_OBJ_GATE_EVENT						CONSTLIT("OnObjGate")
 #define ON_OBJ_JUMPED_EVENT						CONSTLIT("OnObjJumped")
 #define ON_OBJ_JUMP_POS_ADJ_EVENT				CONSTLIT("OnObjJumpPosAdj")
 #define ON_OBJ_RECONNED_EVENT					CONSTLIT("OnObjReconned")
@@ -2498,6 +2499,44 @@ void CSpaceObject::FireOnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDes
 			ReportEventError(ON_OBJ_ENTERED_GATE_EVENT, pResult);
 		Ctx.Discard(pResult);
 		}
+	}
+
+bool CSpaceObject::FireOnObjGate (CSpaceObject *pObj)
+
+//	FireOnObjGate
+//
+//	Fire OnObjGate event. Allows us to manipulate the object that gated. We
+//	return TRUE if we handled gating. Otherwise, we return FALSE and the default
+//	behavior is to destroy the object inside the gate.
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_OBJ_GATE_EVENT, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
+
+		bool bResult;
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			{
+			ReportEventError(ON_OBJ_GATE_EVENT, pResult);
+			bResult = false;
+			}
+		else if (pResult->IsNil())
+			bResult = false;
+		else
+			bResult = true;
+
+		Ctx.Discard(pResult);
+
+		return bResult;
+		}
+
+	return false;
 	}
 
 void CSpaceObject::FireOnObjJumped (CSpaceObject *pObj)
