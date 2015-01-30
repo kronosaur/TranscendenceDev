@@ -46,12 +46,30 @@ CG16bitImage::CG16bitImage (void) : CObject(NULL),
 	m_rcClip.bottom = 0;
 	}
 
+CG16bitImage::CG16bitImage (const CG16bitImage &Src) : CObject(NULL)
+
+//	CG16bitImage copy constructor
+
+	{
+	CopyData(Src);
+	}
+
 CG16bitImage::~CG16bitImage (void)
 
 //	CG16bitImage destructor
 
 	{
 	DeleteData();
+	}
+
+CG16bitImage &CG16bitImage::operator= (const CG16bitImage &Src)
+
+//	CG16bitImage operator =
+
+	{
+	DeleteData();
+	CopyData(Src);
+	return *this;
 	}
 
 bool CG16bitImage::AdjustCoords (int *xSrc, int *ySrc, int cxSrc, int cySrc,
@@ -1733,6 +1751,68 @@ void CG16bitImage::CopyAlpha (int xSrc, int ySrc, int cxWidth, int cyHeight, con
 		}
 	}
 
+void CG16bitImage::CopyData (const CG16bitImage &Src)
+
+//	CopyData
+//
+//	Copies Src to this image. We assume that our image is initialized.
+
+	{
+	m_cxWidth = Src.m_cxWidth;
+	m_cyHeight = Src.m_cyHeight;
+	m_iRGBRowSize = Src.m_iRGBRowSize;
+	m_iAlphaRowSize = Src.m_iAlphaRowSize;
+
+	m_wBackColor = Src.m_wBackColor;
+	m_bHasMask = Src.m_bHasMask;
+	m_rcClip = Src.m_rcClip;
+
+	if (Src.m_pRGB)
+		{
+		int iRGBSize = m_cyHeight * m_iRGBRowSize * sizeof(DWORD);
+		m_pRGB = (DWORD *)::MemAlloc(iRGBSize);
+		::utlMemCopy((char *)Src.m_pRGB, (char *)m_pRGB, iRGBSize);
+		}
+	else
+		m_pRGB = NULL;
+
+	if (Src.m_pAlpha)
+		{
+		int iAlphaSize = m_cyHeight * m_iAlphaRowSize * sizeof(DWORD);
+		m_pAlpha = (DWORD *)::MemAlloc(iAlphaSize);
+		::utlMemCopy((char *)Src.m_pAlpha, (char *)m_pAlpha, iAlphaSize);
+		}
+	else
+		m_pAlpha = NULL;
+
+	if (Src.m_pRedAlphaTable)
+		{
+		m_pRedAlphaTable = (WORD *)MemAlloc(2 * 32 * 32);
+		::utlMemCopy((char *)Src.m_pRedAlphaTable, (char *)m_pRedAlphaTable, 2 * 32 * 32);
+		m_pGreenAlphaTable = (WORD *)MemAlloc(2 * 64 * 64);
+		::utlMemCopy((char *)Src.m_pGreenAlphaTable, (char *)m_pGreenAlphaTable, 2 * 32 * 32);
+		m_pBlueAlphaTable = (WORD *)MemAlloc(2 * 32 * 32);
+		::utlMemCopy((char *)Src.m_pBlueAlphaTable, (char *)m_pBlueAlphaTable, 2 * 32 * 32);
+		}
+	else
+		{
+		m_pRedAlphaTable = NULL;
+		m_pGreenAlphaTable = NULL;
+		m_pBlueAlphaTable = NULL;
+		}
+
+	//	LATER: Deal with sprites
+
+	ASSERT(Src.m_pSprite == NULL);
+	m_pSprite = NULL;
+
+	//	LATER: Deal with surfaces
+
+	ASSERT(Src.m_pSurface == NULL);
+	m_pSurface = NULL;
+	m_pBMI = NULL;
+	}
+
 ALERROR CG16bitImage::CopyToClipboard (void)
 
 //	CopyToClipboard
@@ -2329,41 +2409,7 @@ ALERROR CG16bitImage::CreateFromImage (const CG16bitImage &Image)
 
 	{
 	DeleteData();
-
-	//	Copy basic info
-
-	m_cxWidth = Image.m_cxWidth;
-	m_cyHeight = Image.m_cyHeight;
-	m_iRGBRowSize = Image.m_iRGBRowSize;			//	Number of DWORDs in an image row
-	m_iAlphaRowSize = Image.m_iAlphaRowSize;		//	Number of DWORDs in an alpha mask row
-	m_wBackColor = Image.m_wBackColor;			//	Back color is transparent
-	m_bHasMask = Image.m_bHasMask;			//	TRUE if image has m_pAlpha (or used to have m_pAlpha, but was optimized)
-	m_rcClip = Image.m_rcClip;				//	Clip rect
-
-	if (Image.m_pRGB)
-		{
-		m_pRGB = (DWORD *)MemAlloc(m_iRGBRowSize * m_cyHeight * sizeof(DWORD));
-		utlMemCopy((char *)Image.m_pRGB, (char *)m_pRGB, m_iRGBRowSize * m_cyHeight * sizeof(DWORD));
-		}
-
-	if (Image.m_pAlpha)
-		{
-		m_pAlpha = (DWORD *)MemAlloc(m_iAlphaRowSize * m_cyHeight * sizeof(DWORD));
-		utlMemCopy((char *)Image.m_pAlpha, (char *)m_pAlpha, m_iAlphaRowSize * m_cyHeight * sizeof(DWORD));
-		}
-
-	if (Image.m_pRedAlphaTable)
-		{
-		m_pRedAlphaTable = (WORD *)MemAlloc(2 * 32 * 32);
-		utlMemCopy((char *)Image.m_pRedAlphaTable, (char *)m_pRedAlphaTable, 2 * 32 * 32);
-		m_pGreenAlphaTable = (WORD *)MemAlloc(2 * 64 * 64);
-		utlMemCopy((char *)Image.m_pGreenAlphaTable, (char *)m_pGreenAlphaTable, 2 * 32 * 32);
-		m_pBlueAlphaTable = (WORD *)MemAlloc(2 * 32 * 32);
-		utlMemCopy((char *)Image.m_pBlueAlphaTable, (char *)m_pBlueAlphaTable, 2 * 32 * 32);
-		}
-
-	ASSERT(Image.m_pSprite == NULL);	//	Not yet supported
-	ASSERT(Image.m_pSurface == NULL);	//	Not yet supported
+	CopyData(Image);
 
 	return NOERROR;
 	}

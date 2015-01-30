@@ -206,7 +206,10 @@ class CG16bitImage : public CObject
 		typedef void (*DRAWLINEPROC)(SDrawLineCtx *pCtx);
 
 		CG16bitImage (void);
+		CG16bitImage (const CG16bitImage &Src);
 		virtual ~CG16bitImage (void);
+
+		CG16bitImage &operator= (const CG16bitImage &Src);
 
 		bool AdjustCoords (int *xSrc, int *ySrc, int cxSrc, int cySrc,
 						   int *xDest, int *yDest,
@@ -361,6 +364,7 @@ class CG16bitImage : public CObject
 				     int iWidth,
 					 WORD wColor1);
 
+		void CopyData (const CG16bitImage &Src);
 		void DeleteData (void);
 		inline DWORD DoublePixelFromRGB (COLORREF rgb) { return PixelFromRGB(rgb) | (PixelFromRGB(rgb) << 16); }
 		inline DWORD *GetPixelDW (DWORD *pRowStart, int x, bool *retbOdd) const { *retbOdd = ((x % 2) == 1); return pRowStart + (x / 2); }
@@ -541,6 +545,8 @@ void DrawGradientRectHorz (CG16bitImage &Dest,
 		WORD wEndColor,
 		DWORD dwStartOpacity,
 		DWORD dwEndOpacity);
+void DrawOctaRectOutline (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iCorner, int iLineWidth, WORD wColor);
+void DrawOctaRectOutlineAlpha (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iCorner, int iLineWidth, BYTE byAlpha);
 void DrawRectDotted (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, WORD wColor);
 void DrawRoundedRect (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, WORD wColor);
 void DrawRoundedRectOutline (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, int iLineWidth, WORD wColor);
