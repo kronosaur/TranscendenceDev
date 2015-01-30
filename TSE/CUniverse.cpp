@@ -2019,7 +2019,7 @@ void CUniverse::PaintPOV (CG16bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 	m_iPaintTick++;
 	}
 
-void CUniverse::PaintPOVLRS (CG16bitImage &Dest, const RECT &rcView, bool *retbNewEnemies)
+void CUniverse::PaintPOVLRS (CG16bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies)
 
 //	PaintPOVLRS
 //
@@ -2027,7 +2027,7 @@ void CUniverse::PaintPOVLRS (CG16bitImage &Dest, const RECT &rcView, bool *retbN
 
 	{
 	if (m_pPOV)
-		m_pPOV->GetSystem()->PaintViewportLRS(Dest, rcView, m_pPOV, retbNewEnemies);
+		m_pPOV->GetSystem()->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
 	}
 
 void CUniverse::PaintPOVMap (CG16bitImage &Dest, const RECT &rcView, Metric rMapScale)

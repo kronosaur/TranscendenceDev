@@ -3260,7 +3260,7 @@ void CSystem::PaintViewportObject (CG16bitImage &Dest, const RECT &rcView, CSpac
 		}
 	}
 
-void CSystem::PaintViewportLRS (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, bool *retbNewEnemies)
+void CSystem::PaintViewportLRS (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rScale, DWORD dwFlags, bool *retbNewEnemies)
 
 //	PaintViewportLRS
 //
@@ -3269,7 +3269,7 @@ void CSystem::PaintViewportLRS (CG16bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	{
 	int i;
-	Metric rKlicksPerPixel = g_LRSRange * 2 / RectWidth(rcView);
+	Metric rKlicksPerPixel = rScale;
 
 	//	Figure out the boundary of the viewport in system coordinates. We generate
 	//	a viewport for each detection range 1-5.
