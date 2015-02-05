@@ -44,7 +44,7 @@ const Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL * KLICKS_PER_PIXEL * 25.0);
 
 extern int g_iDebugLine;
 
-CBaseShipAI::CBaseShipAI (IObjectClass *pClass) : CObject(pClass),
+CBaseShipAI::CBaseShipAI (void) : 
 		m_pShip(NULL),
 		m_pCommandCode(NULL),
 		m_pOrderModule(NULL),
@@ -466,7 +466,11 @@ CString CBaseShipAI::DebugCrashInfo (void)
 	//	If we have an order module then let it dump its data.
 
 	if (m_pOrderModule)
-		return m_pOrderModule->DebugCrashInfo();
+		{
+		CString sResult = OnDebugCrashInfo();
+		sResult.Append(m_pOrderModule->DebugCrashInfo());
+		return sResult;
+		}
 
 	//	Otherwise, let our descendant output
 
@@ -892,7 +896,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
 
 	//	Remember the last time we were attacked (debounce quick hits)
 
-	m_AICtx.SetLastAttack(m_pShip->GetSystem()->GetTick());
+	m_AICtx.SetLastAttack(g_pUniverse->GetTicks());
 
 	DEBUG_CATCH
 	}
@@ -1207,7 +1211,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 //
 //	Reads controller data from stream
 //
-//	DWORD		Controller ObjID
+//	DWORD		Controller class
 //	DWORD		ship class UNID (needed to set AISettings)
 //	DWORD		m_pShip (CSpaceObject ref)
 //	DWORD		m_Blacklist
@@ -1226,6 +1230,9 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	{
 	DWORD dwLoad;
+
+	//	We already read the controller class (we need it to construct the 
+	//	object).
 
 	//	Read stuff
 
@@ -1647,7 +1654,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 //
 //	Save the AI data to a stream
 //
-//	DWORD		Controller ObjID
+//	CString		Controller class
 //	DWORD		ship class UNID (needed to set AISettings)
 //	DWORD		m_pShip (CSpaceObject ref)
 //	DWORD		m_Blacklist
@@ -1669,8 +1676,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 	{
 	DWORD dwSave;
 
-	dwSave = (DWORD)GetClass()->GetObjID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	GetClass().WriteToStream(pStream);
 
 	dwSave = m_pShip->GetClass()->GetUNID();
 	pStream->Write((char *)&dwSave, sizeof(DWORD));

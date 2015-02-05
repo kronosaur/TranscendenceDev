@@ -80,6 +80,16 @@ const int ATTACK_THRESHOLD =					90;
 const int TRADE_UPDATE_FREQUENCY =				1801;		//	Interval for checking trade
 const int INVENTORY_REFRESHED_PER_UPDATE =		20;			//	% of inventory refreshed on each update frequency
 
+const DWORD CONTROLLER_STANDARDAI =				0x100000 + 8;
+const DWORD CONTROLLER_FLEETSHIPAI =			0x100000 + 21;
+const DWORD CONTROLLER_FERIANSHIPAI =			0x100000 + 23;
+const DWORD CONTROLLER_AUTONAI =				0x100000 + 24;
+const DWORD CONTROLLER_GLADIATORAI =			0x100000 + 27;
+const DWORD CONTROLLER_FLEETCOMMANDAI =			0x100000 + 28;
+const DWORD CONTROLLER_GAIANPROCESSORAI =		0x100000 + 29;
+const DWORD CONTROLLER_ZOANTHROPEAI =			0x100000 + 31;
+const DWORD CONTROLLER_PLAYERSHIP =				0x100000 + 100;
+
 CShip::CShip (void) : CSpaceObject(&g_Class),
 		m_pDocked(NULL),
 		m_pDriveDesc(NULL),
@@ -4863,12 +4873,64 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Controller
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	if (dwLoad)
+	if (Ctx.dwVersion >= 108)
 		{
-		m_pController = dynamic_cast<IShipController *>(CObjectClassFactory::Create((OBJCLASSID)dwLoad));
-		m_pController->ReadFromStream(Ctx, this);
+		CString sAI;
+		sAI.ReadFromStream(Ctx.pStream);
+		m_pController = g_pUniverse->CreateShipController(sAI);
 		}
+	else
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+
+		//	In previous versions we saved the object ID, so we need to convert:
+
+		switch (dwLoad)
+			{
+			case CONTROLLER_STANDARDAI:
+				m_pController = new CStandardShipAI;
+				break;
+
+			case CONTROLLER_FLEETSHIPAI:
+				m_pController = new CFleetShipAI;
+				break;
+
+			case CONTROLLER_FERIANSHIPAI:
+				m_pController = new CFerianShipAI;
+				break;
+
+			case CONTROLLER_AUTONAI:
+				m_pController = new CAutonAI;
+				break;
+
+			case CONTROLLER_GLADIATORAI:
+				m_pController = new CGladiatorAI;
+				break;
+
+			case CONTROLLER_FLEETCOMMANDAI:
+				m_pController = new CFleetCommandAI;
+				break;
+
+			case CONTROLLER_GAIANPROCESSORAI:
+				m_pController = new CGaianProcessorAI;
+				break;
+
+			case CONTROLLER_ZOANTHROPEAI:
+				m_pController = new CZoanthropeAI;
+				break;
+
+			case CONTROLLER_PLAYERSHIP:
+				m_pController = g_pUniverse->CreateShipController(CONSTLIT("player"));
+				break;
+
+			default:
+				::kernelDebugLogMessage("Unable to find AI controller: %x.", dwLoad);
+				m_pController = NULL;
+				ASSERT(false);
+			}
+		}
+
+	m_pController->ReadFromStream(Ctx, this);
 
 	//	Initialize effects
 

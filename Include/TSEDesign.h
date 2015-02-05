@@ -3124,7 +3124,7 @@ class IShipController
 			orderFollow,				//	pTarget = target to follow (like escort, but no defense)
 
 			orderNavPath,				//	dwData = nav path ID to follow
-			orderGoTo,					//	Go to the given object (generally a marker)
+			orderGoTo,					//	Get within dwData ls of pTarget (0 = 1 light-second)
 			orderWaitForTarget,			//	Hold until pTarget is in range; dwData1 = radius (0 = LRS range); dwData2 = timer
 			orderWaitForEnemy,			//	Hold until any enemy is in LRS range (or dwData timer expires)
 			orderBombard,				//	Hold and attack target from here; pTarget = target; dwData = time
@@ -3156,6 +3156,7 @@ class IShipController
 		virtual CString GetAISetting (const CString &sSetting) { return NULL_STR; }
 		virtual const CAISettings *GetAISettings (void) { return NULL; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
+		virtual CString GetClass (void) { return NULL_STR; }
 		virtual int GetCombatPower (void) = 0;
 		virtual CCurrencyBlock *GetCurrencyBlock (void) { return NULL; }
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
@@ -6620,7 +6621,6 @@ class CDesignCollection
 
 //	Utility functions
 
-IShipController *CreateShipController (const CString &sAI);
 DWORD ExtensionVersionToInteger (DWORD dwVersion);
 CString GenerateLevelFrequency (const CString &sLevelFrequency, int iCenterLevel);
 CString GenerateRandomName (const CString &sList, const CString &sSubst);

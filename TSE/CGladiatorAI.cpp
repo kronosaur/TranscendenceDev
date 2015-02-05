@@ -13,9 +13,7 @@
 #define SEPARATION_RANGE2				(SEPARATION_RANGE * SEPARATION_RANGE)
 #define ATTACK_RANGE					(g_KlicksPerPixel * 600.0)
 
-static CObjectClass<CGladiatorAI>g_Class(OBJID_CGLADIATORAI, NULL);
-
-CGladiatorAI::CGladiatorAI (void) : CBaseShipAI(&g_Class),
+CGladiatorAI::CGladiatorAI (void) : 
 		m_State(stateNone),
 		m_pDest(NULL),
 		m_pTarget(NULL)

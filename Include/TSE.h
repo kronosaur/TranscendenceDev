@@ -3214,6 +3214,7 @@ class CUniverse : public CObject
 			public:
 				virtual void ConsoleOutput (const CString &sLine) { }
 				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
+				virtual IShipController *CreateShipController (const CString &sController) { return NULL; }
 				virtual void DebugOutput (const CString &sLine) { }
 				virtual void GameOutput (const CString &sLine) { }
 				virtual const CG16bitFont *GetFont (const CString &sFont) { return NULL; }
@@ -3302,6 +3303,7 @@ class CUniverse : public CObject
 								  const CString &sLevelFrequency,
 								  CItem *retItem);
 		ALERROR CreateRandomMission (const TArray<CMissionType *> &Types, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError);
+		IShipController *CreateShipController (const CString &sAI);
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		inline void DeleteObject (CSpaceObject *pObj) { m_Objects.Delete(pObj); }

@@ -9,9 +9,7 @@
 #define MAX_FOLLOW_DISTANCE				(g_KlicksPerPixel * 350.0)
 #define ATTACK_RANGE					(g_KlicksPerPixel * 600.0)
 
-static CObjectClass<CAutonAI>g_Class(OBJID_CAUTONAI, NULL);
-
-CAutonAI::CAutonAI (void) : CBaseShipAI(&g_Class),
+CAutonAI::CAutonAI (void) : 
 		m_State(stateNone),
 		m_pDest(NULL),
 		m_pTarget(NULL)

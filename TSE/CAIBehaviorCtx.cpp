@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+const int ATTACK_TIME_THRESHOLD =		150;
 const Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
 const Metric MIN_TARGET_DIST =			(5.0 * LIGHT_SECOND);
 const int MULTI_HIT_WINDOW =			20;
@@ -877,6 +878,29 @@ void CAIBehaviorCtx::DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewport
 	if (m_pNavPath)
 		m_pNavPath->DebugPaintInfo(Dest, x, y, Ctx.XForm);
 #endif
+	}
+
+bool CAIBehaviorCtx::IsBeingAttacked (int iThreshold) const 
+
+//	IsBeingAttacked
+//
+//	Returns TRUE if we've been attacked recently.
+
+	{
+	return (g_pUniverse->GetTicks() - m_iLastAttack) <= iThreshold;
+	}
+
+bool CAIBehaviorCtx::IsSecondAttack (void) const
+
+//	IsSecondAttack
+//
+//	This is called when we are attacked. We return TRUE if this is the second
+//	attack within a certain period of time and if it is not too close to the
+//	previous attack (so it is a deliberate second hit).
+
+	{
+	int iInterval = g_pUniverse->GetTicks() - GetLastAttack();
+	return (iInterval > MULTI_HIT_WINDOW && iInterval < 3 * ATTACK_TIME_THRESHOLD);
 	}
 
 void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)

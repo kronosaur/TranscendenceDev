@@ -107,14 +107,12 @@ const Metric LONG_THREAT_RANGE2 =		(LONG_THREAT_RANGE * LONG_THREAT_RANGE);
 
 #define SPACE_OBJ_SCAVENGE_DATA			CONSTLIT("$scavenge")
 
-static CObjectClass<CStandardShipAI>g_Class(OBJID_CSTANDARDSHIPAI, NULL);
-
 static CShip *g_pDebugShip = NULL;
 int g_iDebugLine = 0;
 
 bool EnemyStationsAtBearing (CSpaceObject *pShip, int iBearing, Metric rRange);
 
-CStandardShipAI::CStandardShipAI (void) : CBaseShipAI(&g_Class),
+CStandardShipAI::CStandardShipAI (void) : 
 		m_State(stateNone),
 		m_pTarget(NULL),
 		m_pDest(NULL),
@@ -184,7 +182,6 @@ void CStandardShipAI::OnBehavior (void)
 				Metric rMinRange2 = max(0.0, (LIGHT_SECOND * iDistance) - PATROL_SENSOR_RANGE);
 				rMinRange2 = rMinRange2 * rMinRange2;
 
-				int iTick = m_pShip->GetSystem()->GetTick();
 				CVector vRange = pCenter->GetPos() - m_pShip->GetPos();
 				Metric rDistance2 = vRange.Dot(vRange);
 
@@ -192,7 +189,7 @@ void CStandardShipAI::OnBehavior (void)
 				//	been hit in a while then stop the attack
 
 				if ((rDistance2 > rMaxRange2 || rDistance2 < rMinRange2)
-						&& (iTick - m_AICtx.GetLastAttack()) > ATTACK_TIME_THRESHOLD)
+						&& !m_AICtx.IsBeingAttacked())
 					{
 					SetState(stateNone);
 					DEBUG_COMBAT_OUTPUT("Patrol: End attack");
@@ -363,7 +360,6 @@ void CStandardShipAI::OnBehavior (void)
 			if (m_pShip->IsDestinyTime(20))
 				{
 				CSpaceObject *pPrincipal = GetCurrentOrderTarget();
-				int iTick = m_pShip->GetSystem()->GetTick();
 				CVector vRange = pPrincipal->GetPos() - m_pShip->GetPos();
 				Metric rDistance2 = vRange.Dot(vRange);
 
@@ -371,7 +367,7 @@ void CStandardShipAI::OnBehavior (void)
 				//	been hit in a while then stop the attack.
 
 				if (rDistance2 > (PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE)
-						&& (iTick - m_AICtx.GetLastAttack()) > ATTACK_TIME_THRESHOLD)
+						&& !m_AICtx.IsBeingAttacked())
 					SetState(stateNone);
 				}
 
@@ -408,7 +404,7 @@ void CStandardShipAI::OnBehavior (void)
 			//	Check to see if target has hit back. If not, stop the attack
 
 			if (m_pShip->IsDestinyTime(20)
-					&& (m_pShip->GetSystem()->GetTick() - m_AICtx.GetLastAttack()) > 6 * ATTACK_TIME_THRESHOLD)
+					&& !m_AICtx.IsBeingAttacked(6 * ATTACK_TIME_THRESHOLD))
 				SetState(stateNone);
 
 			break;
@@ -426,7 +422,7 @@ void CStandardShipAI::OnBehavior (void)
 			//	Check to see if target has hit back. If not, stop the attack
 
 			if (m_pShip->IsDestinyTime(20)
-					&& (m_pShip->GetSystem()->GetTick() - m_AICtx.GetLastAttack()) > 3 * ATTACK_TIME_THRESHOLD)
+					&& !m_AICtx.IsBeingAttacked(3 * ATTACK_TIME_THRESHOLD))
 				SetState(stateNone);
 
 			//	See if we're done holding
@@ -456,7 +452,7 @@ void CStandardShipAI::OnBehavior (void)
 			//	Check to see if target has hit back. If not, stop the attack
 
 			if (m_pShip->IsDestinyTime(20)
-					&& (m_pShip->GetSystem()->GetTick() - m_AICtx.GetLastAttack()) > 3 * ATTACK_TIME_THRESHOLD)
+					&& !m_AICtx.IsBeingAttacked(3 * ATTACK_TIME_THRESHOLD))
 				{
 				CSpaceObject *pDest = m_pDest;
 				SetState(stateOnCourseForLootDocking);
@@ -1678,17 +1674,6 @@ void CStandardShipAI::CommunicateWithEscorts (MessageTypes iMessage, CSpaceObjec
 	m_AICtx.CommunicateWithEscorts(m_pShip, iMessage, pParam1, dwParam2);
 	}
 
-bool CStandardShipAI::IsBeingAttacked (void)
-
-//	IsBeingAttacked
-//
-//	Returns TRUE if we've been attacked recently. This debounces multishot weapons.
-
-	{
-	int iInterval = m_pShip->GetSystem()->GetTick() - m_AICtx.GetLastAttack();
-	return (iInterval > MULTI_HIT_WINDOW && iInterval < 3 * ATTACK_TIME_THRESHOLD);
-	}
-
 void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const DamageDesc &Damage)
 
 //	OnAttackedNotify
@@ -1825,7 +1810,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const DamageDes
 					//	If we were attacked twice (excluding multi-shot weapons)
 					//	then we tell our station about this
 
-					if (IsBeingAttacked())
+					if (m_AICtx.IsSecondAttack())
 						{
 						CSpaceObject *pBase = GetCurrentOrderTarget();
 						if (!pBase->IsEnemy(pAttacker)
@@ -1840,7 +1825,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const DamageDes
 					{
 					//	If we're waiting for an enemy, then we've found one
 
-					if (IsBeingAttacked())
+					if (m_AICtx.IsSecondAttack())
 						CancelCurrentOrder();
 					break;
 					}
@@ -1850,7 +1835,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const DamageDes
 					//	If we're waiting for a target and the target attacked us
 					//	then we've found it
 					//
-					//	We don't debouce hits (with IsBeingAttacked) because even
+					//	We don't debouce hits (with IsSecondAttack) because even
 					//	a stray shot from the target means that the target is here.
 
 					if (pAttacker == GetCurrentOrderTarget()
@@ -2102,12 +2087,15 @@ CString CStandardShipAI::OnDebugCrashInfo (void)
 	{
 	CString sResult;
 
-	sResult.Append(CONSTLIT("CStandardShipAI\r\n"));
-	sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)GetCurrentOrder()));
-	sResult.Append(strPatternSubst(CONSTLIT("m_State: %d\r\n"), m_State));
-	sResult.Append(strPatternSubst(CONSTLIT("m_pDest: %s\r\n"), CSpaceObject::DebugDescribe(m_pDest)));
-	sResult.Append(strPatternSubst(CONSTLIT("m_pTarget: %s\r\n"), CSpaceObject::DebugDescribe(m_pTarget)));
-	sResult.Append(strPatternSubst(CONSTLIT("m_pNavPath: %s\r\n"), CNavigationPath::DebugDescribe(m_pShip, m_AICtx.GetNavPath())));
+	if (m_pOrderModule == NULL)
+		{
+		sResult.Append(CONSTLIT("CStandardShipAI\r\n"));
+		sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)GetCurrentOrder()));
+		sResult.Append(strPatternSubst(CONSTLIT("m_State: %d\r\n"), m_State));
+		sResult.Append(strPatternSubst(CONSTLIT("m_pDest: %s\r\n"), CSpaceObject::DebugDescribe(m_pDest)));
+		sResult.Append(strPatternSubst(CONSTLIT("m_pTarget: %s\r\n"), CSpaceObject::DebugDescribe(m_pTarget)));
+		sResult.Append(strPatternSubst(CONSTLIT("m_pNavPath: %s\r\n"), CNavigationPath::DebugDescribe(m_pShip, m_AICtx.GetNavPath())));
+		}
 
 	return sResult;
 	}

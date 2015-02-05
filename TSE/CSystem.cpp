@@ -337,7 +337,13 @@
 //		m_EncounterRecord in CStationType changed.
 //
 //	107: 1.5
-//		m_fExtrenal flag in CInstalledDevice
+//		m_fExternal flag in CInstalledDevice
+//
+//	108: 1.6
+//		Store ship controller name instead of CObject ID.
+//
+//	109: 1.6
+//		m_rDistance in CWaitOrder
 //
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 

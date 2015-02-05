@@ -17,9 +17,7 @@
 #define COMBAT_RANGE2					(COMBAT_RANGE * COMBAT_RANGE)
 #define TAME_CHANCE						50
 
-static CObjectClass<CZoanthropeAI>g_Class(OBJID_CZOANTHROPEAI, NULL);
-
-CZoanthropeAI::CZoanthropeAI (void) : CBaseShipAI(&g_Class),
+CZoanthropeAI::CZoanthropeAI (void) : 
 		m_State(stateNone),
 		m_pTarget(NULL),
 		m_pBase(NULL)
@@ -452,7 +450,7 @@ void CZoanthropeAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damag
 
 	//	Remember the last time we were attacked (debounce quick hits)
 
-	m_AICtx.SetLastAttack(m_pShip->GetSystem()->GetTick());
+	m_AICtx.SetLastAttack(g_pUniverse->GetTicks());
 
 	DEBUG_CATCH
 	}

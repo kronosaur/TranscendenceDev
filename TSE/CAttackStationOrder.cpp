@@ -105,7 +105,8 @@ void CAttackStationOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 				//	If we're outside of our patrol range and if we haven't
 				//	been hit in a while then stop the attack.
 
-				if (rDistance2 > PATROL_SENSOR_RANGE2 && Ctx.IsBeingAttacked(pShip->GetSystem()->GetTick()))
+				if (rDistance2 > PATROL_SENSOR_RANGE2 
+						&& !Ctx.IsBeingAttacked())
 					{
 					m_iState = stateAttackingTarget;
 					m_Objs[objDefender] = NULL;

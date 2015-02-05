@@ -26,9 +26,7 @@
 #define BREAK_CHARGE_RANGE				(20.0 * LIGHT_SECOND)
 #define CHARGE_ATTACK_RANGE				(200.0 * LIGHT_SECOND)
 
-static CObjectClass<CFleetCommandAI>g_Class(OBJID_CFLEETCOMMANDAI, NULL);
-
-CFleetCommandAI::CFleetCommandAI (void) : CBaseShipAI(&g_Class),
+CFleetCommandAI::CFleetCommandAI (void) : 
 		m_State(stateNone),
 		m_pObjective(NULL),
 		m_pTarget(NULL),

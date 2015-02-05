@@ -52,14 +52,6 @@
 #define VERSION_100							(CONSTLIT("1.0"))
 #define VERSION_110							(CONSTLIT("1.1"))
 
-#define CONTROLLER_FLEET					CONSTLIT("fleet")
-#define CONTROLLER_FERIAN					CONSTLIT("ferian")
-#define CONTROLLER_AUTON					CONSTLIT("auton")
-#define CONTROLLER_GLADIATOR				CONSTLIT("gladiator")
-#define CONTROLLER_FLEET_COMMAND			CONSTLIT("fleetcommand")
-#define CONTROLLER_GAIAN_PROCESSOR			CONSTLIT("gaianprocessor")
-#define CONTROLLER_ZOANTHROPE				CONSTLIT("zoanthrope")
-
 #define INTER_SYSTEM_FOLLOW_PLAYER			CONSTLIT("followPlayer")
 #define INTER_SYSTEM_WAIT_FOR_PLAYER		CONSTLIT("waitForPlayer")
 
@@ -126,7 +118,7 @@ static const SOrderTypeData g_OrderTypes[] =
 		{	"wander",					"-",	"-",	0 },
 		{	"loot",						"o",	"-",	0 },
 
-		{	"hold",						"-",	"i",	0 },
+		{	"hold",						"-",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"mine",						"o",	"-",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"waitForPlayer",			"-",	"-",	0 },
 		{	"attackPlayerOnReturn",		"-",	"-",	0 },
@@ -1229,44 +1221,6 @@ CVector ConvertObjectPos2Pos (int iAngle, Metric rRadius, Metric rHeight, Metric
 	return vPos * (g_KlicksPerPixel * rImageSize / CAMERA_FIELD);
 	}
 #endif
-
-IShipController *CreateShipController (const CString &sAI)
-
-//	CreateShipController
-//
-//	Creates the appropriate controller
-//
-//	The following controllers are valid:
-//
-//	""				The standard AI
-//	"auton"			Auton AI
-//	"ferian"		Ferian ship AI
-//	"fleet"			The fleet controller for formation flying
-//	"fleetcommand"	Controller for commanding a fleet
-//	"gaianprocessor"Controller for Gaian processor
-//	"gladiator"		DEPRECATED
-//	"zoanthrope"	Zoanthrope AI
-
-	{
-	if (sAI.IsBlank())
-		return new CStandardShipAI;
-	else if (strEquals(sAI, CONTROLLER_FLEET))
-		return new CFleetShipAI;
-	else if (strEquals(sAI, CONTROLLER_FERIAN))
-		return new CFerianShipAI;
-	else if (strEquals(sAI, CONTROLLER_AUTON))
-		return new CAutonAI;
-	else if (strEquals(sAI, CONTROLLER_GLADIATOR))
-		return new CStandardShipAI;
-	else if (strEquals(sAI, CONTROLLER_FLEET_COMMAND))
-		return new CFleetCommandAI;
-	else if (strEquals(sAI, CONTROLLER_GAIAN_PROCESSOR))
-		return new CGaianProcessorAI;
-	else if (strEquals(sAI, CONTROLLER_ZOANTHROPE))
-		return new CZoanthropeAI;
-	else
-		return NULL;
-	}
 
 DWORD ExtensionVersionToInteger (DWORD dwVersion)
 

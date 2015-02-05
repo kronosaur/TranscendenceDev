@@ -2270,7 +2270,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysSetPOV",					fnSystemGet,	FN_SYS_SET_POV,
-			"(sysSetPOV vector) -> True/Nil",
+			"(sysSetPOV obj|vector) -> True/Nil",
 			"v",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysSetProperty",	fnSystemGet,	FN_SYS_SET_PROPERTY,
@@ -8469,7 +8469,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CString sController;
 			if (pArgs->GetCount() > 1 && !pArgs->GetElement(1)->IsNil())
 				sController = pArgs->GetElement(1)->GetStringValue();
-			IShipController *pController = CreateShipController(sController);
+			IShipController *pController = g_pUniverse->CreateShipController(sController);
 			pArgs->Discard(pCC);
 
 			if (pController)
@@ -9721,7 +9721,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD 
 	if (pArgs->GetCount() > 3)
 		{
 		if (pArgs->GetElement(3)->IsIdentifier())
-			pController = CreateShipController(pArgs->GetElement(3)->GetStringValue());
+			pController = g_pUniverse->CreateShipController(pArgs->GetElement(3)->GetStringValue());
 		else
 			pOverride = g_pUniverse->FindDesignType(pArgs->GetElement(3)->GetIntegerValue());
 		}

@@ -80,6 +80,15 @@
 
 #include "PreComp.h"
 
+#define CONTROLLER_AUTON					CONSTLIT("auton")
+#define CONTROLLER_CREW						CONSTLIT("crew")
+#define CONTROLLER_FERIAN					CONSTLIT("ferian")
+#define CONTROLLER_FLEET					CONSTLIT("fleet")
+#define CONTROLLER_FLEET_COMMAND			CONSTLIT("fleetcommand")
+#define CONTROLLER_GAIAN_PROCESSOR			CONSTLIT("gaianprocessor")
+#define CONTROLLER_GLADIATOR				CONSTLIT("gladiator")
+#define CONTROLLER_ZOANTHROPE				CONSTLIT("zoanthrope")
+
 struct SExtensionSaveDesc
 	{
 	DWORD dwUNID;
@@ -392,6 +401,43 @@ ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CSp
 	//	If no mission was created, then done
 
 	return ERR_NOTFOUND;
+	}
+
+IShipController *CUniverse::CreateShipController (const CString &sAI)
+
+//	CreateShipController
+//
+//	Creates a ship controller given the AI name
+
+	{
+	//	First ask the host if it knows how to create the controller
+
+	IShipController *pController;
+	if (pController = m_pHost->CreateShipController(sAI))
+		return pController;
+
+	//	Otherwise, we create a controller that we know about.
+
+	if (sAI.IsBlank())
+		return new CStandardShipAI;
+	else if (strEquals(sAI, CONTROLLER_AUTON))
+		return new CAutonAI;
+	else if (strEquals(sAI, CONTROLLER_CREW))
+		return new CCrewAI;
+	else if (strEquals(sAI, CONTROLLER_FERIAN))
+		return new CFerianShipAI;
+	else if (strEquals(sAI, CONTROLLER_FLEET))
+		return new CFleetShipAI;
+	else if (strEquals(sAI, CONTROLLER_FLEET_COMMAND))
+		return new CFleetCommandAI;
+	else if (strEquals(sAI, CONTROLLER_GAIAN_PROCESSOR))
+		return new CGaianProcessorAI;
+	else if (strEquals(sAI, CONTROLLER_GLADIATOR))
+		return new CStandardShipAI;
+	else if (strEquals(sAI, CONTROLLER_ZOANTHROPE))
+		return new CZoanthropeAI;
+	else
+		return NULL;
 	}
 
 ALERROR CUniverse::CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError, CSystemCreateStats *pStats)

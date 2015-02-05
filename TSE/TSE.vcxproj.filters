@@ -823,6 +823,9 @@
     <ClCompile Include="CNavigateOrder.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
+    <ClCompile Include="CCrewAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

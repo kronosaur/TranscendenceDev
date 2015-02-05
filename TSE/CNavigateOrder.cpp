@@ -13,21 +13,63 @@ const Metric NAV_PATH_THRESHOLD =		(2.0 * PATROL_SENSOR_RANGE);
 const Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 
 CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCount),
-		m_iOrder(iOrder)
+		m_iOrder(iOrder),
+		m_fTargetObj(false),
+		m_fTargetVector(false),
+		m_fIsFollowingNavPath(false),
+		m_fDockAtDestination(false),
+		m_fVariableMinDist(false),
+		m_fNavPathOnly(false),
+		m_fGateAtDestination(false)
 
 //	CNavigateOrder constructor
 
 	{
 	switch (m_iOrder)
 		{
+		case IShipController::orderDock:
+			m_fDockAtDestination = true;
+			m_fTargetObj = true;
+			break;
+
+		case IShipController::orderGate:
+			m_fGateAtDestination = true;
+			m_fTargetObj = true;
+			break;
+
+		case IShipController::orderGoTo:
+			m_fTargetObj = true;
+			m_fVariableMinDist = true;
+			break;
+
 		case IShipController::orderGoToPos:
 			m_fTargetVector = true;
-			m_fTargetObj = false;
+			break;
+
+		case IShipController::orderNavPath:
+			m_fTargetObj = true;
+			m_fNavPathOnly = true;
 			break;
 
 		default:
 			ASSERT(false);
 		}
+	}
+
+void CNavigateOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire)
+
+//	OnAttacked
+//
+//	Deal with attacks.
+
+	{
+	//	If we get attacked, at least attack back.
+
+	if (pAttacker
+			&& pAttacker->CanAttack()
+			&& !bFriendlyFire
+			&& m_Objs[objTarget] == NULL)
+		m_Objs[objTarget] = pAttacker;
 	}
 
 void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
@@ -37,46 +79,76 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Behavior
 
 	{
-	switch (m_iState)
+	//	If we're following a nav path, then do it
+
+	if (m_fIsFollowingNavPath)
 		{
-		case stateOnCourseViaNavPath:
+		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
+		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+
+		bool bAtDest;
+		Ctx.ImplementFollowNavPath(pShip, &bAtDest);
+		if (bAtDest)
 			{
-			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+			Ctx.ClearNavPath();
+			m_fIsFollowingNavPath = false;
 
-			bool bAtDest;
-			Ctx.ImplementFollowNavPath(pShip, &bAtDest);
-			if (bAtDest)
-				{
-				Ctx.ClearNavPath();
-				m_iState = stateApproachingPos;
-				}
+			//	In some cases, we're done
 
-			break;
-			}
-
-		case stateApproachingPos:
-			{
-			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-
-			//	Maneuver
-
-			CVector vTarget = m_vDest - pShip->GetPos();
-			Metric rTargetDist2 = vTarget.Dot(vTarget);
-
-			//	If we're close enough, we're done
-
-			if (rTargetDist2 < m_rMinDist2)
+			if (m_fNavPathOnly)
 				pShip->CancelCurrentOrder();
-
-			//	Otherwise, we use formation flying
-
-			else
-				Ctx.ImplementFormationManeuver(pShip, m_vDest, NullVector, m_iDestFacing);
-
-			break;
 			}
+		}
+
+	//	If we're docking, then dock
+
+	else if (m_fDockAtDestination)
+		{
+		//	If we're docked already, then we're done
+
+		if (pShip->GetDockedObj() == m_Objs[objDest])
+			pShip->CancelCurrentOrder();
+
+		//	Navigate
+
+		else
+			{
+			Ctx.ImplementDocking(pShip, m_Objs[objDest]);
+			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget], m_Objs[objDest]);
+			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget], m_Objs[objDest]);
+			}
+		}
+
+	//	If we're gating, then gate
+
+	else if (m_fGateAtDestination)
+		{
+		Ctx.ImplementGating(pShip, m_Objs[objDest]);
+		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
+		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+		}
+
+	//	Otherwise, continue
+
+	else
+		{
+		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
+		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+
+		//	Maneuver
+
+		CVector vTarget = m_vDest - pShip->GetPos();
+		Metric rTargetDist2 = vTarget.Dot(vTarget);
+
+		//	If we're close enough, we're done
+
+		if (rTargetDist2 < m_rMinDist2)
+			pShip->CancelCurrentOrder();
+
+		//	Otherwise, we use formation flying
+
+		else
+			Ctx.ImplementFormationManeuver(pShip, m_vDest, NullVector, m_iDestFacing);
 		}
 	}
 
@@ -87,6 +159,15 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 //	Start behavior
 
 	{
+	//	If we want to dock and are already docked, then nothing else to do.
+
+	if (m_fDockAtDestination
+			&& pShip->GetDockedObj() == pOrderTarget)
+		{
+		pShip->CancelCurrentOrder();
+		return;
+		}
+
 	//	Make sure we're undocked because we're going flying
 
 	Ctx.Undock(pShip);
@@ -104,11 +185,12 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 			m_vDest = Data.vData;
 		else
 			m_vDest = pShip->GetPos();
-
-		rMinDist = LIGHT_SECOND;
 		}
 	else
 		{
+		if (pOrderTarget == NULL && m_fGateAtDestination)
+			pOrderTarget = pShip->GetNearestStargate(true);
+
 		if (pOrderTarget)
 			{
 			m_Objs[objDest] = pOrderTarget;
@@ -116,9 +198,14 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 			}
 		else
 			m_vDest = pShip->GetPos();
-
-		rMinDist = LIGHT_SECOND * Max(1, (int)Data.AsInteger());
 		}
+
+	//	Get the minimum distance
+
+	if (m_fVariableMinDist)
+		rMinDist = LIGHT_SECOND * Max(1, (int)Data.AsInteger());
+	else
+		rMinDist = LIGHT_SECOND;
 
 	m_rMinDist2 = (rMinDist * rMinDist);
 	m_iDestFacing = ::VectorToPolar(m_vDest - pShip->GetPos());
@@ -126,14 +213,47 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 	//	See if we should take a nav path
 
 	Metric rCurDist2 = (m_vDest - pShip->GetPos()).Length2();
-	if (rCurDist2 > NAV_PATH_THRESHOLD2
-			&& Ctx.CalcNavPath(pShip, m_vDest))
-		m_iState = stateOnCourseViaNavPath;
+	if (rCurDist2 > NAV_PATH_THRESHOLD2)
+		{
+		//	If we have a destination object, then calculate a nav path to it.
 
-	//	Otherwise, go there
+		if (m_Objs[objDest])
+			m_fIsFollowingNavPath = Ctx.CalcNavPath(pShip, m_Objs[objDest]);
 
+		//	If we don't have a destination object, then we calculate a nav path
+		//	based on a position
+
+		else
+			m_fIsFollowingNavPath = Ctx.CalcNavPath(pShip, m_vDest);
+		}
+	}
+
+CSpaceObject *CNavigateOrder::OnGetBase (void)
+
+//	OnGetBase
+//
+//	Returns our base
+
+	{
+	if (m_fDockAtDestination)
+		return m_Objs[objDest];
 	else
-		m_iState = stateApproachingPos;
+		return NULL;
+	}
+
+void CNavigateOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)
+
+//	OnObjDestroyed
+//
+//	And object was destroyed.
+
+	{
+	//	If our gate got destroyed (for some reason) then we cancel the order. We
+	//	need to do this explicitly because sometimes we pick a gate ourselves and
+	//	so the gate is not encoded in the order.
+
+	if (m_fGateAtDestination && iObj == objDest)
+		*retbCancelOrder = true;
 	}
 
 void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx)
@@ -145,12 +265,14 @@ void CNavigateOrder::OnReadFromStream (SLoadCtx &Ctx)
 	{
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_iState = (States)dwLoad;
-
 	Ctx.pStream->Read((char *)&m_vDest, sizeof(CVector));
 	Ctx.pStream->Read((char *)&m_iDestFacing, sizeof(DWORD));
 	Ctx.pStream->Read((char *)&m_rMinDist2, sizeof(Metric));
+
+	//	Flags
+
+	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	m_fIsFollowingNavPath = ((dwLoad & 0x00000001) ? true : false);
 	}
 
 void CNavigateOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
@@ -160,10 +282,15 @@ void CNavigateOrder::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 //	Write
 
 	{
-	DWORD dwSave = (DWORD)m_iState;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	DWORD dwSave;
 
 	pStream->Write((char *)&m_vDest, sizeof(CVector));
 	pStream->Write((char *)&m_iDestFacing, sizeof(DWORD));
 	pStream->Write((char *)&m_rMinDist2, sizeof(Metric));
+
+	//	Flags
+
+	dwSave = 0;
+	dwSave |= (m_fIsFollowingNavPath ? 0x00000001 : 0);
+	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
