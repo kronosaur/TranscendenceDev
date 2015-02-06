@@ -565,6 +565,24 @@ bool CBaseShipAI::FollowsObjThroughGate (CSpaceObject *pLeader)
 	return (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate);
 	}
 
+CString CBaseShipAI::GetAISettingString (const CString &sSetting)
+
+//	GetAISettingString
+//
+//	Returns the given setting
+	
+	{
+	//	First ask our subclass
+
+	CString sValue;
+	if (OnGetAISettingString(sSetting, &sValue))
+		return sValue;
+
+	//	Basic settings
+
+	return m_AICtx.GetAISetting(sSetting); 
+	}
+
 CSpaceObject *CBaseShipAI::GetBase (void) const
 
 //	GetBase
@@ -1415,6 +1433,25 @@ void CBaseShipAI::ResetBehavior (void)
 
 	m_pShip->ClearAllTriggered();
 	m_Blacklist.Update(g_pUniverse->GetTicks());
+	}
+
+CString CBaseShipAI::SetAISettingString (const CString &sSetting, const CString &sValue)
+
+//	SetAISettingString
+//
+//	Sets an AI setting
+
+	{
+	//	Let our sub-classes handle it first.
+
+	if (OnSetAISettingString(sSetting, sValue))
+		return sValue;
+
+	//	Otherwise, this is a basic setting
+
+	CString sNew = m_AICtx.SetAISetting(sSetting, sValue);
+	m_AICtx.CalcInvariants(m_pShip);
+	return sNew; 
 	}
 
 void CBaseShipAI::SetCommandCode (ICCItem *pCode)

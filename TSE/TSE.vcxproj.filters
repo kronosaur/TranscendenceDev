@@ -110,13 +110,13 @@
     <ClInclude Include="OrderModuleImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\SFXImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TopologyProcessorsImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\TSEGeometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SFXImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TopologyProcessorsImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -833,6 +833,9 @@
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
     <ClCompile Include="CCrewAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CCrewPsyche.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
   </ItemGroup>

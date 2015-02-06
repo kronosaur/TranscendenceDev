@@ -160,14 +160,14 @@
     <ClInclude Include="..\Include\TSEMissions.h" />
     <ClInclude Include="..\Include\TSEMultiverse.h" />
     <ClInclude Include="..\Include\TSEPaint.h" />
-    <ClInclude Include="..\Include\SFXImpl.h" />
     <ClInclude Include="..\Include\TSESpaceObjectsImpl.h" />
     <ClInclude Include="..\Include\TSEStorage.h" />
-    <ClInclude Include="..\Include\TopologyProcessorsImpl.h" />
     <ClInclude Include="..\Include\TSETransLisp.h" />
     <ClInclude Include="..\Include\TSETypes.h" />
     <ClInclude Include="OrderModuleImpl.h" />
+    <ClInclude Include="SFXImpl.h" />
     <ClInclude Include="ShipAIImpl.h" />
+    <ClInclude Include="TopologyProcessorsImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp" />
@@ -190,6 +190,7 @@
     <ClCompile Include="CCompositeImageModifiers.cpp" />
     <ClCompile Include="CCreatePainterCtx.cpp" />
     <ClCompile Include="CCrewAI.cpp" />
+    <ClCompile Include="CCrewPsyche.cpp" />
     <ClCompile Include="CCXMLWrapper.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">

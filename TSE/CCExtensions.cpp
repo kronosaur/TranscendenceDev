@@ -7461,7 +7461,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_SHIP_AI_SETTING:
 			{
-			CString sValue = pShip->GetController()->GetAISetting(pArgs->GetElement(1)->GetStringValue());
+			CString sValue = pShip->GetController()->GetAISettingString(pArgs->GetElement(1)->GetStringValue());
 			if (sValue.IsBlank())
 				return pCC->CreateNil();
 			else
@@ -7823,7 +7823,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (!pArgs->GetElement(2)->IsNil())
 				sValue = pArgs->GetElement(2)->GetStringValue();
 
-			CString sNewValue = pShip->GetController()->SetAISetting(pArgs->GetElement(1)->GetStringValue(), sValue);
+			CString sNewValue = pShip->GetController()->SetAISettingString(pArgs->GetElement(1)->GetStringValue(), sValue);
 			if (sNewValue.IsBlank())
 				return pCC->CreateNil();
 			else

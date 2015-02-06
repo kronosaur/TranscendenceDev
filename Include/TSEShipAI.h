@@ -123,7 +123,7 @@ class IShipController
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual void DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader) { return false; }
-		virtual CString GetAISetting (const CString &sSetting) { return NULL_STR; }
+		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
 		virtual const CAISettings *GetAISettings (void) { return NULL; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual CString GetClass (void) { return NULL_STR; }
@@ -146,7 +146,7 @@ class IShipController
 		virtual bool IsPlayer (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) { ASSERT(false); }
-		virtual CString SetAISetting (const CString &sSetting, const CString &sValue) { return NULL_STR; }
+		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetCommandCode (ICCItem *pCode) { }
 		virtual void SetManeuver (EManeuverTypes iManeuver) { }
 		virtual void SetShipToControl (CShip *pShip) { }
