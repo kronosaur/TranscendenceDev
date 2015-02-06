@@ -3873,14 +3873,12 @@ WORD CSpaceObject::GetSymbolColor (void)
 //	Returns the color to paint this object in the player's scanner
 
 	{
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
-	if (pPlayer == NULL)
-		return CG16bitImage::RGBValue(128, 128, 128);
-	else if (pPlayer == this)
+	CSovereign *pPlayer = g_pUniverse->GetPlayerSovereign();
+	if (GetSovereign() == pPlayer)
 		return CG16bitImage::RGBValue(255, 255, 255);
 	else if (IsWreck())
 		return CG16bitImage::RGBValue(0, 192, 0);
-	else if (IsEnemy(pPlayer))
+	else if (GetSovereign()->IsEnemy(pPlayer))
 		return CG16bitImage::RGBValue(255, 80, 80);
 	else if (GetCategory() == CSpaceObject::catShip)
 		return CG16bitImage::RGBValue(80, 255, 80);
