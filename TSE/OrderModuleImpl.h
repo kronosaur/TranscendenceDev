@@ -1,4 +1,4 @@
-//	TSEOrderModuleImpl.h
+//	OrderModuleImpl.h
 //
 //	Transcendence IOrderModule classes
 

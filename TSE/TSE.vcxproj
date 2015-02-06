@@ -147,24 +147,27 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\Geometry.h" />
+    <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEPlayer.h" />
+    <ClInclude Include="..\Include\TSEShipAI.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
+    <ClInclude Include="CrewAIImpl.h" />
+    <ClInclude Include="LegacyAIImpl.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="..\Include\TSE.h" />
     <ClInclude Include="..\Include\TSEDesign.h" />
     <ClInclude Include="..\Include\TSEDeviceClassesImpl.h" />
     <ClInclude Include="..\Include\TSEMissions.h" />
     <ClInclude Include="..\Include\TSEMultiverse.h" />
-    <ClInclude Include="..\Include\TSEOrderModuleImpl.h" />
     <ClInclude Include="..\Include\TSEPaint.h" />
-    <ClInclude Include="..\Include\TSESFXImpl.h" />
-    <ClInclude Include="..\Include\TSEShipControllersImpl.h" />
+    <ClInclude Include="..\Include\SFXImpl.h" />
     <ClInclude Include="..\Include\TSESpaceObjectsImpl.h" />
     <ClInclude Include="..\Include\TSEStorage.h" />
-    <ClInclude Include="..\Include\TSETopologyProcessorsImpl.h" />
+    <ClInclude Include="..\Include\TopologyProcessorsImpl.h" />
     <ClInclude Include="..\Include\TSETransLisp.h" />
     <ClInclude Include="..\Include\TSETypes.h" />
+    <ClInclude Include="OrderModuleImpl.h" />
+    <ClInclude Include="ShipAIImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp" />

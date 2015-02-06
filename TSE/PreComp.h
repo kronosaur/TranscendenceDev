@@ -6,9 +6,18 @@
 #include "DirectXUtil.h"
 #include "TSE.h"
 
-#include "TSESFXImpl.h"
-#include "TSEDeviceClassesImpl.h"
-#include "TSESpaceObjectsImpl.h"
-#include "TSEShipControllersImpl.h"
-#include "TSEOrderModuleImpl.h"
-#include "TSETopologyProcessorsImpl.h"
+//	SFX
+
+#include "SFXImpl.h"
+
+//	Ship AI
+
+#include "ShipAIImpl.h"
+#include "OrderModuleImpl.h"
+
+#include "CrewAIImpl.h"
+#include "LegacyAIImpl.h"
+
+//	Topology
+
+#include "TopologyProcessorsImpl.h"

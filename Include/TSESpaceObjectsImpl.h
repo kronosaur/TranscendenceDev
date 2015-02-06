@@ -760,38 +760,6 @@ class CRadiusDamage : public CSpaceObject
 	friend CObjectClass<CRadiusDamage>;
 	};
 
-class CSequencerEffect : public CSpaceObject
-	{
-	public:
-		static ALERROR Create (CSystem *pSystem,
-							   CEffectSequencerCreator *pType,
-							   CSpaceObject *pAnchor,
-							   const CVector &vPos,
-							   const CVector &vVel,
-							   CSequencerEffect **retpEffect);
-
-	protected:
-		//	CSpaceObject virtuals
-		virtual bool CanHit (CSpaceObject *pObj) { return false; }
-		virtual CString GetObjClassName (void) { return CONSTLIT("CSequencerEffect"); }
-		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
-		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
-
-	private:
-		CSequencerEffect (void);
-
-		CEffectSequencerCreator *m_pType;
-		CSpaceObject *m_pAnchor;
-		CVector m_vAnchorOffset;
-		int m_iStartTime;
-		int m_iTimeCursor;
-
-	friend CObjectClass<CSequencerEffect>;
-	};
-
 class CShip : public CSpaceObject
 	{
 	public:

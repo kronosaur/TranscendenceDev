@@ -42,7 +42,7 @@
 #endif
 
 #ifndef INCL_TSE_GEOMETRY
-#include "Geometry.h"
+#include "TSEGeometry.h"
 #endif
 
 #define LEVEL_ROMAN_NUMERALS
@@ -3138,28 +3138,12 @@ class CListWrapper : public IListData
 
 //	Implementations ------------------------------------------------------------
 
-#ifndef INCL_TSE_SFX
-#include "TSESFXImpl.h"
-#endif
-
 #ifndef INCL_TSE_DEVICE_CLASSES
 #include "TSEDeviceClassesImpl.h"
 #endif
 
 #ifndef INCL_TSE_SPACE_OBJECTS
 #include "TSESpaceObjectsImpl.h"
-#endif
-
-#ifndef INCL_TSE_SHIP_CONTROLLERS
-#include "TSEShipControllersImpl.h"
-#endif
-
-#ifndef INCL_TSE_ORDER_MODULES
-#include "TSEOrderModuleImpl.h"
-#endif
-
-#ifndef INCL_TSE_TOPOLOGY_PROCESSORS
-#include "TSETopologyProcessorsImpl.h"
 #endif
 
 #ifndef INCL_TSE_MISSIONS
