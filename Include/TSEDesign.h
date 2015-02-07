@@ -972,9 +972,11 @@ class CObjectImageArray : public CObject
 		int m_iViewportSize;				//	Size of 3D viewport in pixels (default to image width)
 		int m_iFramesPerColumn;				//	Rotation frames spread out over multiple columns
 
-		//	Glow effect
+		//	Cached images
+
 		mutable CG16bitImage *m_pGlowImages;
 		mutable CG16bitImage *m_pScaledImages;
+		mutable int m_cxScaledImage;
 
 	friend CObjectClass<CObjectImageArray>;
 	};

@@ -52,6 +52,7 @@ CObjectImageArray::CObjectImageArray (void) : CObject(&g_Class),
 		m_pRotationOffset(NULL),
 		m_pGlowImages(NULL),
 		m_pScaledImages(NULL),
+		m_cxScaledImage(-1),
 		m_dwBitmapUNID(0)
 
 //	CObjectImageArray constructor
@@ -108,6 +109,7 @@ void CObjectImageArray::CleanUp (void)
 		{
 		delete [] m_pScaledImages;
 		m_pScaledImages = NULL;
+		m_cxScaledImage = -1;
 		}
 
 	if (m_pImage && m_dwBitmapUNID == 0)
@@ -259,6 +261,7 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 	m_iViewportSize = Source.m_iViewportSize;
 	m_pGlowImages = NULL;
 	m_pScaledImages = NULL;
+	m_cxScaledImage = -1;
 
 	m_iRotationOffset = Source.m_iRotationOffset;
 	if (Source.m_pRotationOffset)
@@ -424,13 +427,19 @@ void CObjectImageArray::GenerateScaledImages (int iRotation, int cxWidth, int cy
 
 	//	Allocate the array of images (if not already allocated)
 
-	if (m_pScaledImages == NULL)
+	if (m_pScaledImages == NULL || cxWidth != m_cxScaledImage)
+		{
+		if (m_pScaledImages)
+			delete [] m_pScaledImages;
+
 		m_pScaledImages = new CG16bitImage [m_iRotationCount];
+		m_cxScaledImage = cxWidth;
+		}
 
 	//	If the image for this rotation has already been initialized, then
 	//	we're done
 
-	else if (m_pScaledImages[iRotation].HasRGB())
+	else if (m_pScaledImages[iRotation].HasRGB() && m_cxScaledImage)
 		return;
 
 	//	Get the extent of the source image
@@ -1469,6 +1478,7 @@ void CObjectImageArray::SetRotationCount (int iRotationCount)
 			{
 			delete [] m_pScaledImages;
 			m_pScaledImages = NULL;
+			m_cxScaledImage = -1;
 			}
 		}
 	}
@@ -1491,7 +1501,9 @@ void CObjectImageArray::TakeHandoff (CObjectImageArray &Source)
 	Source.m_pGlowImages = NULL;
 
 	m_pScaledImages = Source.m_pScaledImages;
+	m_cxScaledImage = Source.m_cxScaledImage;
 	Source.m_pScaledImages = NULL;
+	Source.m_cxScaledImage = -1;
 
 	m_pRotationOffset = Source.m_pRotationOffset;
 	Source.m_pRotationOffset = NULL;
