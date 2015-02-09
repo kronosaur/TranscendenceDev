@@ -919,6 +919,8 @@ class CShip : public CSpaceObject
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return m_pClass->FindDeviceSlotDesc(Item, retDesc); }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader);
 		virtual AbilityStatus GetAbility (Abilities iAbility);
+		virtual int GetAISettingInteger (const CString &sSetting) { return m_pController->GetAISettingInteger(sSetting); }
+		virtual CString GetAISettingString (const CString &sSetting) { return m_pController->GetAISettingString(sSetting); }
 		virtual CurrencyValue GetBalance (DWORD dwEconomyUNID);
 		virtual CSpaceObject *GetBase (void) const;
 		virtual Metric GetCargoSpaceLeft (void);
@@ -1030,6 +1032,8 @@ class CShip : public CSpaceObject
 		virtual void Resume (void) { m_fManualSuspended = false; if (!IsInGate()) ClearCannotBeHit(); m_pController->OnStatsChanged(); }
 		virtual void SendMessage (CSpaceObject *pSender, const CString &sMsg);
 		virtual bool SetAbility (Abilities iAbility, AbilityModifications iModification, int iDuration, DWORD dwOptions);
+		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return m_pController->SetAISettingInteger(sSetting, iValue); }
+		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return m_pController->SetAISettingString(sSetting, sValue); }
 		virtual void SetFireDelay (CInstalledDevice *pWeapon, int iDelay = -1);
 		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) { m_pClass->SetGlobalData(sAttribute, sData); }
 		virtual void SetIdentified (bool bIdentified = true) { m_fIdentified = bIdentified; }

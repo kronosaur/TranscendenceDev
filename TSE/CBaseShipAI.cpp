@@ -565,6 +565,24 @@ bool CBaseShipAI::FollowsObjThroughGate (CSpaceObject *pLeader)
 	return (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate);
 	}
 
+int CBaseShipAI::GetAISettingInteger (const CString &sSetting)
+
+//	GetAISettingInteger
+//
+//	Returns the given value
+	
+	{
+	//	First ask our subclass
+
+	int iValue;
+	if (OnGetAISettingInteger(sSetting, &iValue))
+		return iValue;
+
+	//	Basic settings
+
+	return strToInt(m_AICtx.GetAISetting(sSetting), 0); 
+	}
+
 CString CBaseShipAI::GetAISettingString (const CString &sSetting)
 
 //	GetAISettingString
@@ -577,6 +595,14 @@ CString CBaseShipAI::GetAISettingString (const CString &sSetting)
 	CString sValue;
 	if (OnGetAISettingString(sSetting, &sValue))
 		return sValue;
+
+	//	We convert integer values to strings (because CCExtensions.cpp expects 
+	//	this). In the future CCExtensions should call a new function that
+	//	returns an ICCItem
+
+	int iValue;
+	if (OnGetAISettingInteger(sSetting, &iValue))
+		return strFromInt(iValue);
 
 	//	Basic settings
 
@@ -1433,6 +1459,25 @@ void CBaseShipAI::ResetBehavior (void)
 
 	m_pShip->ClearAllTriggered();
 	m_Blacklist.Update(g_pUniverse->GetTicks());
+	}
+
+int CBaseShipAI::SetAISettingInteger (const CString &sSetting, int iValue)
+
+//	SetAISettingInteger
+//
+//	Sets an AI setting
+
+	{
+	//	Let our sub-classes handle it first.
+
+	if (OnSetAISettingInteger(sSetting, iValue))
+		return iValue;
+
+	//	Otherwise, this is a basic setting
+
+	CString sNew = m_AICtx.SetAISetting(sSetting, strFromInt(iValue));
+	m_AICtx.CalcInvariants(m_pShip);
+	return strToInt(sNew, 0);
 	}
 
 CString CBaseShipAI::SetAISettingString (const CString &sSetting, const CString &sValue)

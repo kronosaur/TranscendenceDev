@@ -2636,6 +2636,8 @@ class CSpaceObject : public CObject
 		virtual CInstalledArmor *FindArmor (const CItem &Item) { return NULL; }
 		virtual CInstalledDevice *FindDevice (const CItem &Item) { return NULL; }
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
+		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
+		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
 		virtual CurrencyValue GetBalance (DWORD dwEconomyUNID) { return 0; }
 		virtual Metric GetCargoSpaceLeft (void) { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
@@ -2706,6 +2708,8 @@ class CSpaceObject : public CObject
 		virtual void ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) { }
 		virtual void RemoveOverlay (DWORD dwID) { }
 		virtual void SendMessage (CSpaceObject *pSender, const CString &sMsg) { }
+		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
+		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetIdentified (bool bIdentified = true) { }
 		virtual void SetMapLabelPos (int x, int y) { }
 		virtual void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { }

@@ -1079,7 +1079,7 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 			}
 
 		CCLinkedList *pList = (CCLinkedList *)pArgs;
-		pList->Append(&CC, pItem, NULL);
+		pList->Append(CC, pItem);
 
 		//	Apply the function to the arg list
 
@@ -2199,14 +2199,14 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 	//	Next integer is the item UNID
 
 	pInt = CC.CreateInteger(GetType()->GetUNID());
-	pList->Append(&CC, pInt, NULL);
+	pList->Append(CC, pInt);
 	pInt->Discard(&CC);
 
 	//	Next is the count, flags, and installed
 
 	DWORD *pSource = (DWORD *)this;
 	pInt = CC.CreateInteger(pSource[1]);
-	pList->Append(&CC, pInt, NULL);
+	pList->Append(CC, pInt);
 	pInt->Discard(&CC);
 
 	//	Save extra
@@ -2216,19 +2216,19 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		//	Save the version (starting in v45)
 
 		pInt = CC.CreateInteger(CSystem::GetSaveVersion());
-		pList->Append(&CC, pInt, NULL);
+		pList->Append(CC, pInt);
 		pInt->Discard(&CC);
 
 		//	Charges
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwCharges);
-		pList->Append(&CC, pInt, NULL);
+		pList->Append(CC, pInt);
 		pInt->Discard(&CC);
 
 		//	Condition
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwVariant);
-		pList->Append(&CC, pInt, NULL);
+		pList->Append(CC, pInt);
 		pInt->Discard(&CC);
 
 		//	Mods
@@ -2239,7 +2239,7 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		Stream.Close();
 
 		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
-		pList->Append(&CC, pInt, NULL);
+		pList->Append(CC, pInt);
 		pInt->Discard(&CC);
 
 		//	Attribute data block
@@ -2249,13 +2249,13 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		Stream.Close();
 
 		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
-		pList->Append(&CC, pInt, NULL);
+		pList->Append(CC, pInt);
 		pInt->Discard(&CC);
 
 		//	Disrupted time
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwDisruptedTime);
-		pList->Append(&CC, pInt, NULL);
+		pList->Append(CC, pInt);
 		pInt->Discard(&CC);
 		}
 

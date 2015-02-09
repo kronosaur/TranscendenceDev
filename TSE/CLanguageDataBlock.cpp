@@ -101,7 +101,7 @@ ICCItem *CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, con
 		for (i = 0; i < pValue->GetCount(); i++)
 			{
 			ICCItem *pElement = ComposeCCItem(CC, pValue->GetElement(i), sPlayerName, iPlayerGenome);
-			pList->Append(&CC, pElement);
+			pList->Append(CC, pElement);
 			pElement->Discard(&CC);
 			}
 
@@ -378,7 +378,7 @@ bool CLanguageDataBlock::Translate (CSpaceObject *pObj, const CString &sID, ICCI
 
 			CCLinkedList *pList = (CCLinkedList *)(*retpResult);
 			for (i = 0; i < List.GetCount(); i++)
-				pList->AppendStringValue(&g_pUniverse->GetCC(), List[i]);
+				pList->AppendString(g_pUniverse->GetCC(), List[i]);
 
 			return true;
 			}

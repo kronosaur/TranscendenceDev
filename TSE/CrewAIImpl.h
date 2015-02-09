@@ -64,13 +64,18 @@ class CCrewAI : public CBaseShipAI
 
 		//	CBaseShipAI overrides
 
+		virtual bool OnGetAISettingInteger (const CString &sSetting, int *retiValue);
 		virtual bool OnGetAISettingString (const CString &sSetting, CString *retsValue);
 		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
+		virtual bool OnSetAISettingInteger (const CString &sSetting, int iValue);
 		virtual bool OnSetAISettingString (const CString &sSetting, const CString &sValue);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
 	private:
-		CCrewPsyche m_Psyche;
+		CCrewPsyche m_Psyche;				//	Controls response to orders and situations
+
+		CString m_sCommandGroup;			//	Units in the same group can be commanded as a group
+		int m_iCommandRank;					//	Highest rank in a group is responsible for orders
 	};
 

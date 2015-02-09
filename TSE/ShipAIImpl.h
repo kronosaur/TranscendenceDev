@@ -310,6 +310,7 @@ class CBaseShipAI : public IShipController
 		virtual CString DebugCrashInfo (void);
 		virtual void DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader);
+		virtual int GetAISettingInteger (const CString &sSetting);
 		virtual CString GetAISettingString (const CString &sSetting);
 		virtual const CAISettings *GetAISettings (void) { return &m_AICtx.GetAISettings(); }
 		virtual CSpaceObject *GetBase (void) const;
@@ -340,6 +341,7 @@ class CBaseShipAI : public IShipController
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx);
 		virtual void OnStatsChanged (void) { m_AICtx.CalcInvariants(m_pShip); }
 		virtual void OnSystemLoaded (void) { m_AICtx.CalcInvariants(m_pShip); OnSystemLoadedNotify(); }
+		virtual int SetAISettingInteger (const CString &sSetting, int iValue);
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue);
 		virtual void SetCommandCode (ICCItem *pCode);
 		virtual void SetManeuver (EManeuverTypes iManeuver) { m_AICtx.SetManeuver(iManeuver); }
@@ -389,6 +391,7 @@ class CBaseShipAI : public IShipController
 		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
 		virtual CString OnDebugCrashInfo (void) { return NULL_STR; }
 		virtual void OnDockedEvent (CSpaceObject *pObj) { }
+		virtual bool OnGetAISettingInteger (const CString &sSetting, int *retiValue) { return false; }
 		virtual bool OnGetAISettingString (const CString &sSetting, CString *retsValue) { return false; }
 		virtual CSpaceObject *OnGetBase (void) const { return NULL; }
 		virtual CSpaceObject *OnGetTarget (bool bNoAutoTarget = false) const { return NULL; }
@@ -396,6 +399,7 @@ class CBaseShipAI : public IShipController
 		virtual void OnOrderChanged (void) { }
 		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
+		virtual bool OnSetAISettingInteger (const CString &sSetting, int iValue) { return false; }
 		virtual bool OnSetAISettingString (const CString &sSetting, const CString &sValue) { return false; }
 		virtual void OnSystemLoadedNotify (void) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) { }

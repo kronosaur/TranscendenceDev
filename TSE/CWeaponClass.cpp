@@ -1901,8 +1901,8 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
 			CCLinkedList *pList = (CCLinkedList *)pResult;
 
-			pList->AppendIntegerValue(&CC, iMinFireArc);
-			pList->AppendIntegerValue(&CC, iMaxFireArc);
+			pList->AppendInteger(CC, iMinFireArc);
+			pList->AppendInteger(CC, iMaxFireArc);
 
 			return pResult;
 			}
@@ -1938,11 +1938,11 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 		//	Add options
 
 		if (dwOptions & CDeviceClass::lkfAlways)
-			pList->AppendStringValue(&CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfAlways));
+			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfAlways));
 		else if (dwOptions & CDeviceClass::lkfTargetInRange)
-			pList->AppendStringValue(&CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfTargetInRange));
+			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfTargetInRange));
 		else if (dwOptions & CDeviceClass::lkfEnemyInRange)
-			pList->AppendStringValue(&CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfEnemyInRange));
+			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfEnemyInRange));
 
 		//	Done
 
