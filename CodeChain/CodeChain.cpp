@@ -835,7 +835,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 
 		//	Add the result to the list
 
-		pEvalList->Append(this, pResult, NULL);
+		pEvalList->Append(*this, pResult);
 		pResult->Discard(this);
 
 		//	Next validation sequence (note that *pValidation can never
@@ -1074,7 +1074,7 @@ ICCItem *CCodeChain::PoolUsage (void)
 
 		//	Add the item to the list
 
-		pList->Append(this, pItem, NULL);
+		pList->Append(*this, pItem);
 		pItem->Discard(this);
 		}
 

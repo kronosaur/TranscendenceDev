@@ -186,7 +186,6 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 			if (pArg)
 				{
 				int j;
-				ICCItem *pError;
 				CCLinkedList *pList;
 
 				//	Create a list
@@ -210,16 +209,8 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 					else
 						pResult = pCC->Eval(pCtx, pArg);
 
-					pList->Append(pCC, pResult, &pError);
+					pList->Append(*pCC, pResult);
 					pResult->Discard(pCC);
-					if (pError->IsError())
-						{
-						pVarArgs->Discard(pCC);
-						pLocalSymbols->Discard(pCC);
-						return pError;
-						}
-
-					pError->Discard(pCC);
 					}
 				}
 			else

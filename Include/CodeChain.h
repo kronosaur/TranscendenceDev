@@ -100,6 +100,10 @@ class ICCItem : public CObject
 
 		//	List interface
 
+		void AppendInteger (CCodeChain &CC, int iValue);
+		void AppendString (CCodeChain &CC, const CString &sValue);
+
+		virtual void Append (CCodeChain &CC, ICCItem *pValue) { }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) = 0;
 		virtual int GetCount (void) = 0;
 		virtual ICCItem *GetElement (int iIndex) = 0;
@@ -463,9 +467,6 @@ class CCLinkedList : public ICCList
 		CCLinkedList (void);
 		virtual ~CCLinkedList (void);
 
-		void Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
-		void AppendIntegerValue (CCodeChain *pCC, int iValue, ICCItem **retpError = NULL);
-		void AppendStringValue (CCodeChain *pCC, const CString &sString, ICCItem **retpError = NULL);
 		void CreateIndex (void);
 		void RemoveElement (CCodeChain *pCC, int iIndex);
 		void ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewItem);
@@ -474,6 +475,7 @@ class CCLinkedList : public ICCList
 
 		//	ICCItem virtuals
 
+		virtual void Append (CCodeChain &CC, ICCItem *pValue);
 		virtual ICCItem *Clone (CCodeChain *pCC);
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode);
 		virtual int GetCount (void) { return m_iCount; }

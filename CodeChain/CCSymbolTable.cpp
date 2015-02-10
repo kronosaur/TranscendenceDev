@@ -331,10 +331,10 @@ ICCItem *CCSymbolTable::GetElement (CCodeChain *pCC, int iIndex)
 	CCLinkedList *pList = (CCLinkedList *)pCC->CreateLinkedList();
 	
 	ICCItem *pKey = pCC->CreateString(m_Symbols.GetKey(iIndex));
-	pList->Append(pCC, pKey);
+	pList->Append(*pCC, pKey);
 	pKey->Discard(pCC);
 
-	pList->Append(pCC, GetElement(iIndex));
+	pList->Append(*pCC, GetElement(iIndex));
 
 	//	Done
 
@@ -378,7 +378,7 @@ ICCItem *CCSymbolTable::ListSymbols (CCodeChain *pCC)
 
 			//	Add the item to the list
 
-			pList->Append(pCC, pItem, NULL);
+			pList->Append(*pCC, pItem);
 			pItem->Discard(pCC);
 			}
 

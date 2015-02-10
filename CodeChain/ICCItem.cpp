@@ -21,6 +21,30 @@ ICCItem::ICCItem (IObjectClass *pClass) : CObject(pClass)
 	ResetItem();
 	}
 
+void ICCItem::AppendInteger (CCodeChain &CC, int iValue)
+
+//	AppendInteger
+//
+//	Inserts an element in a list
+
+	{
+	ICCItem *pItem = CC.CreateInteger(iValue);
+	Append(CC, pItem);
+	pItem->Discard(&CC);
+	}
+
+void ICCItem::AppendString (CCodeChain &CC, const CString &sValue)
+
+//	AppendString
+//
+//	Inserts an element in a list
+
+	{
+	ICCItem *pItem = CC.CreateString(sValue);
+	Append(CC, pItem);
+	pItem->Discard(&CC);
+	}
+
 void ICCItem::CloneItem (ICCItem *pItem)
 
 //	CloneItem
