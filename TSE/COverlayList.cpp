@@ -296,6 +296,30 @@ void COverlayList::GetList (TArray<COverlay *> *retList)
 		}
 	}
 
+void COverlayList::GetListOfCommandPaneCounters (TArray<COverlay *> *retList)
+
+//	GetListOfCommandPaneCounters
+//
+//	Returns the list of overlays that should be displayed as counters on the
+//	command pane.
+
+	{
+	retList->DeleteAll();
+
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		COverlayType *pType;
+
+		if (!pField->IsDestroyed()
+				&& (pType = pField->GetType())
+				&& pType->GetCounterStyle() == COverlayType::counterCommandBarProgress)
+			retList->Insert(pField);
+
+		pField = pField->GetNext();
+		}
+	}
+
 COverlay *COverlayList::GetOverlay (DWORD dwID) const
 
 //	GetOverlay

@@ -1962,6 +1962,7 @@ class COverlayList
 		const CString &GetData (DWORD dwID, const CString &sAttrib);
 		void GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const;
 		void GetList (TArray<COverlay *> *retList);
+		void GetListOfCommandPaneCounters (TArray<COverlay *> *retList);
 		COverlay *GetOverlay (DWORD dwID) const;
 		CVector GetPos (CSpaceObject *pSource, DWORD dwID);
 		ICCItem *GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName);
@@ -2537,6 +2538,25 @@ class CSpaceObject : public CObject
 		inline void InvalidateItemListState (void) { m_fItemEventsValid = false; }
 		void ItemsModified (void);
 
+		//	Overlays
+
+		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL) { if (retdwID) *retdwID = 0; }
+		inline COverlay *GetOverlay (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetOverlay(dwID) : NULL); }
+		virtual COverlayList *GetOverlays (void) { return NULL; }
+		inline const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetData(dwID, sAttrib) : NULL_STR); }
+		inline void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->GetImpact(this, retImpact); else *retImpact = COverlayList::SImpactDesc(); }
+		inline void GetOverlayList (TArray<COverlay *> *retList) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->GetList(retList); else retList->DeleteAll(); }
+		inline CVector GetOverlayPos (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetPos(this, dwID) : GetPos()); }
+		ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName);
+		inline int GetOverlayRotation (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetRotation(dwID) : -1); }
+		inline COverlayType *GetOverlayType(DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetType(dwID) : NULL); }
+		virtual void RemoveOverlay (DWORD dwID) { }
+		inline void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetData(dwID, sAttribute, sData); }
+		inline bool SetOverlayEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->SetEffectProperty(dwID, sProperty, pValue) : false); }
+		inline void SetOverlayPos (DWORD dwID, const CVector &vPos) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetPos(this, dwID, vPos); }
+		inline bool SetOverlayProperty (DWORD dwID, const CString &sName, ICCItem *pValue, CString *retsError) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->SetProperty(this, dwID, sName, pValue) : false); }
+		inline void SetOverlayRotation (DWORD dwID, int iRotation) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetRotation(dwID, iRotation); }
+
 		//	Statics
 
 		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
@@ -2622,7 +2642,6 @@ class CSpaceObject : public CObject
 		virtual void SetSovereign (CSovereign *pSovereign) { }
 
 		//	...for active/intelligent objects (ships, stations, etc.)
-		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL) { if (retdwID) *retdwID = 0; }
 		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
 		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
 		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue) { return 0; }
@@ -2659,14 +2678,6 @@ class CSpaceObject : public CObject
 		virtual int GetMaxLightDistance (void) { return 0; }
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
 		virtual int GetOpenDockingPortCount (void) { return 0; }
-		virtual COverlay *GetOverlay (DWORD dwID) const { return NULL; }
-		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return NULL_STR; }
-		virtual void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { *retImpact = COverlayList::SImpactDesc(); }
-		virtual void GetOverlayList (TArray<COverlay *> *retList) { retList->DeleteAll(); }
-		virtual CVector GetOverlayPos (DWORD dwID) { return GetPos(); }
-		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName);
-		virtual int GetOverlayRotation (DWORD dwID) { return -1; }
-		virtual COverlayType *GetOverlayType(DWORD dwID) { return NULL; }
 		virtual int GetPerception (void) { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
@@ -2706,17 +2717,11 @@ class CSpaceObject : public CObject
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) { }
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) { }
 		virtual void ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) { }
-		virtual void RemoveOverlay (DWORD dwID) { }
 		virtual void SendMessage (CSpaceObject *pSender, const CString &sMsg) { }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetIdentified (bool bIdentified = true) { }
 		virtual void SetMapLabelPos (int x, int y) { }
-		virtual void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { }
-		virtual bool SetOverlayEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue) { return false; }
-		virtual void SetOverlayPos (DWORD dwID, const CVector &vPos) { }
-		virtual bool SetOverlayProperty (DWORD dwID, const CString &sName, ICCItem *pValue, CString *retsError) { return false; }
-		virtual void SetOverlayRotation (DWORD dwID, int iRotation) { }
 		virtual void UpdateArmorItems (void) { }
 
 		//	...for objects that can bounce

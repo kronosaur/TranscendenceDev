@@ -3674,8 +3674,14 @@ ICCItem *CSpaceObject::GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, co
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-	return CC.CreateNil();
+	COverlayList *pOverlays = GetOverlays();
+	if (pOverlays)
+		return pOverlays->GetProperty(pCCCtx, this, dwID, sName);
+	else
+		{
+		CCodeChain &CC = g_pUniverse->GetCC();
+		return CC.CreateNil();
+		}
 	}
 
 ICCItem *CSpaceObject::GetProperty (const CString &sName)
