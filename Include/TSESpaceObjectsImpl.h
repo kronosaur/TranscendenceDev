@@ -953,14 +953,14 @@ class CShip : public CSpaceObject
 		virtual int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CShip"); }
 		virtual int GetOpenDockingPortCount (void) { return m_DockingPorts.GetPortCount(this) - m_DockingPorts.GetPortsInUseCount(this); }
-		virtual COverlay *GetOverlay (DWORD dwID) const { return m_EnergyFields.GetOverlay(dwID); }
-		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return m_EnergyFields.GetData(dwID, sAttrib); }
-		virtual void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { m_EnergyFields.GetImpact(this, retImpact); }
-		virtual void GetOverlayList (TArray<COverlay *> &List) { m_EnergyFields.GetList(List); }
-		virtual CVector GetOverlayPos (DWORD dwID) { return m_EnergyFields.GetPos(this, dwID); }
-		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName) { return m_EnergyFields.GetProperty(pCCCtx, this, dwID, sName); }
-		virtual int GetOverlayRotation (DWORD dwID) { return m_EnergyFields.GetRotation(dwID); }
-		virtual COverlayType *GetOverlayType (DWORD dwID) { return m_EnergyFields.GetType(dwID); }
+		virtual COverlay *GetOverlay (DWORD dwID) const { return m_Overlays.GetOverlay(dwID); }
+		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return m_Overlays.GetData(dwID, sAttrib); }
+		virtual void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { m_Overlays.GetImpact(this, retImpact); }
+		virtual void GetOverlayList (TArray<COverlay *> *retList) { m_Overlays.GetList(retList); }
+		virtual CVector GetOverlayPos (DWORD dwID) { return m_Overlays.GetPos(this, dwID); }
+		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName) { return m_Overlays.GetProperty(pCCCtx, this, dwID, sName); }
+		virtual int GetOverlayRotation (DWORD dwID) { return m_Overlays.GetRotation(dwID); }
+		virtual COverlayType *GetOverlayType (DWORD dwID) { return m_Overlays.GetType(dwID); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerShips; }
 		virtual int GetPerception (void);
 		virtual ICCItem *GetProperty (const CString &sName);
@@ -1039,11 +1039,11 @@ class CShip : public CSpaceObject
 		virtual void SetIdentified (bool bIdentified = true) { m_fIdentified = bIdentified; }
 		virtual void SetKnown (bool bKnown = true) { m_fKnown = bKnown; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) { m_sName = sName; m_dwNameFlags = dwFlags; }
-		virtual void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { m_EnergyFields.SetData(dwID, sAttribute, sData); }
-		virtual bool SetOverlayEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue) { return m_EnergyFields.SetEffectProperty(dwID, sProperty, pValue); }
-		virtual void SetOverlayPos (DWORD dwID, const CVector &vPos) { m_EnergyFields.SetPos(this, dwID, vPos); }
-		virtual bool SetOverlayProperty (DWORD dwID, const CString &sName, ICCItem *pValue, CString *retsError) { return m_EnergyFields.SetProperty(this, dwID, sName, pValue); }
-		virtual void SetOverlayRotation (DWORD dwID, int iRotation) { m_EnergyFields.SetRotation(dwID, iRotation); }
+		virtual void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { m_Overlays.SetData(dwID, sAttribute, sData); }
+		virtual bool SetOverlayEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue) { return m_Overlays.SetEffectProperty(dwID, sProperty, pValue); }
+		virtual void SetOverlayPos (DWORD dwID, const CVector &vPos) { m_Overlays.SetPos(this, dwID, vPos); }
+		virtual bool SetOverlayProperty (DWORD dwID, const CString &sName, ICCItem *pValue, CString *retsError) { return m_Overlays.SetProperty(this, dwID, sName, pValue); }
+		virtual void SetOverlayRotation (DWORD dwID, int iRotation) { m_Overlays.SetRotation(dwID, iRotation); }
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual void SetSovereign (CSovereign *pSovereign) { m_pSovereign = pSovereign; }
 		virtual void Suspend (void) { m_fManualSuspended = true; SetCannotBeHit(); }
@@ -1119,7 +1119,7 @@ class CShip : public CSpaceObject
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
-		COverlayList m_EnergyFields;		//	List of energy fields
+		COverlayList m_Overlays;		//	List of energy fields
 		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
 		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
 		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
@@ -1299,7 +1299,7 @@ class CStation : public CSpaceObject
 		virtual COverlay *GetOverlay (DWORD dwID) const { return m_Overlays.GetOverlay(dwID); }
 		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return m_Overlays.GetData(dwID, sAttrib); }
 		virtual void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { m_Overlays.GetImpact(this, retImpact); }
-		virtual void GetOverlayList (TArray<COverlay *> &List) { m_Overlays.GetList(List); }
+		virtual void GetOverlayList (TArray<COverlay *> *retList) { m_Overlays.GetList(retList); }
 		virtual CVector GetOverlayPos (DWORD dwID) { return m_Overlays.GetPos(this, dwID); }
 		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName) { return m_Overlays.GetProperty(pCCCtx, this, dwID, sName); }
 		virtual int GetOverlayRotation (DWORD dwID) { return m_Overlays.GetRotation(dwID); }

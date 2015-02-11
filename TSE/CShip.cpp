@@ -159,7 +159,7 @@ void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int 
 //	Adds an overlay to the ship
 
 	{
-	m_EnergyFields.AddField(this, pType, iPosAngle, iPosRadius, iRotation, iLifeLeft, retdwID);
+	m_Overlays.AddField(this, pType, iPosAngle, iPosRadius, iRotation, iLifeLeft, retdwID);
 
 	//	Recalc bonuses, etc.
 
@@ -295,7 +295,7 @@ void CShip::CalcBounds (void)
 
 	//	Overlay bounds
 
-	m_EnergyFields.AccumulateBounds(this, &rcBounds);
+	m_Overlays.AccumulateBounds(this, &rcBounds);
 
 	//	Set bounds
 
@@ -358,7 +358,7 @@ void CShip::CalcDeviceBonus (void)
 					{
 					//	Overlays add a bonus
 
-					int iBonus = m_EnergyFields.GetWeaponBonus(&m_Devices[i], this);
+					int iBonus = m_Overlays.GetWeaponBonus(&m_Devices[i], this);
 					if (iBonus != 0)
 						pEnhancements->InsertHPBonus(iBonus);
 					break;
@@ -724,7 +724,7 @@ void CShip::CalcOverlayImpact (void)
 
 	{
 	COverlayList::SImpactDesc Impact;
-	m_EnergyFields.GetImpact(this, &Impact);
+	m_Overlays.GetImpact(this, &Impact);
 
 	//	Update our cache
 
@@ -1438,7 +1438,7 @@ void CShip::DamageCargo (SDamageCtx &Ctx)
 	DWORD dwDamageUNID = (mathRandom(1, 100) <= 20 ? UNID_DAMAGED_SITE_SMALL : UNID_DEPREZ_SITE_SMALL);
 	COverlayType *pOverlayType = g_pUniverse->FindOverlayType(dwDamageUNID);
 	if (pOverlayType
-			&& m_EnergyFields.GetCountOfType(pOverlayType) < MAX_DAMAGE_OVERLAY_COUNT)
+			&& m_Overlays.GetCountOfType(pOverlayType) < MAX_DAMAGE_OVERLAY_COUNT)
 		{
 		//	Convert from a hit position to an overlay pos
 
@@ -1502,7 +1502,7 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 
 		COverlayType *pOverlayType = g_pUniverse->FindOverlayType(UNID_DAMAGED_SITE_MEDIUM);
 		if (pOverlayType
-				&& m_EnergyFields.GetCountOfType(pOverlayType) < MAX_DRIVE_DAMAGE_OVERLAY_COUNT)
+				&& m_Overlays.GetCountOfType(pOverlayType) < MAX_DRIVE_DAMAGE_OVERLAY_COUNT)
 			CSpaceObject::AddOverlay(pOverlayType, Ctx.vHitPos, 180, iDamageTime);
 
 		//	Update effects
@@ -3785,7 +3785,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	See if the damage is blocked by some external defense
 
-	if (m_EnergyFields.AbsorbDamage(this, Ctx))
+	if (m_Overlays.AbsorbDamage(this, Ctx))
 		{
 		if (IsDestroyed())
 			return damageDestroyed;
@@ -3830,7 +3830,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Let any overlays take damage
 
-	if (m_EnergyFields.Damage(this, Ctx))
+	if (m_Overlays.Damage(this, Ctx))
 		{
 		if (IsDestroyed())
 			return damageDestroyed;
@@ -4014,7 +4014,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 	//	them a chance to do something before the object does; e.g., some objects
 	//	destroy item on their OnDestroy).
 
-	m_EnergyFields.FireOnObjDestroyed(this, Ctx);
+	m_Overlays.FireOnObjDestroyed(this, Ctx);
 	FireOnItemObjDestroyed(Ctx);
 	FireOnDestroy(Ctx);
 
@@ -4363,7 +4363,7 @@ void CShip::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	//	Paints overlay background
 
-	m_EnergyFields.PaintBackground(Dest, x, y, Ctx);
+	m_Overlays.PaintBackground(Dest, x, y, Ctx);
 
 	//	Paint all effects behind the ship
 
@@ -4396,7 +4396,7 @@ void CShip::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	//	Paint energy fields
 
-	m_EnergyFields.Paint(Dest, pImage->GetImageViewportSize(), x, y, Ctx);
+	m_Overlays.Paint(Dest, pImage->GetImageViewportSize(), x, y, Ctx);
 
 	//	If paralyzed, draw energy arcs
 
@@ -4469,7 +4469,7 @@ void CShip::OnPaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaint
 //	Paint additional annotations.
 
 	{
-	m_EnergyFields.PaintAnnotations(Dest, x, y, Ctx);
+	m_Overlays.PaintAnnotations(Dest, x, y, Ctx);
 	}
 
 void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y)
@@ -4792,7 +4792,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Energy fields
 
-	m_EnergyFields.ReadFromStream(Ctx, this);
+	m_Overlays.ReadFromStream(Ctx, this);
 
 	//	Ship interior
 
@@ -5233,7 +5233,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	drag coefficient from the overlay list.)
 
 		COverlayList::SImpactDesc Impact;
-		m_EnergyFields.GetImpact(this, &Impact);
+		m_Overlays.GetImpact(this, &Impact);
 
 		SetVel(CVector(GetVel().GetX() * Impact.rDrag, GetVel().GetY() * Impact.rDrag));
 		}
@@ -5406,10 +5406,10 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Energy fields
 
-	if (!m_EnergyFields.IsEmpty())
+	if (!m_Overlays.IsEmpty())
 		{
 		bool bModified;
-		m_EnergyFields.Update(this, &bModified);
+		m_Overlays.Update(this, &bModified);
 		if (CSpaceObject::IsDestroyedInUpdate())
 			return;
 		else if (bModified)
@@ -5651,7 +5651,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	//	Energy fields
 
-	m_EnergyFields.WriteToStream(pStream);
+	m_Overlays.WriteToStream(pStream);
 
 	//	Ship interior
 
@@ -6150,7 +6150,7 @@ void CShip::RemoveOverlay (DWORD dwID)
 //	Removes an overlay from the ship
 	
 	{
-	m_EnergyFields.RemoveField(this, dwID);
+	m_Overlays.RemoveField(this, dwID);
 
 	//	NOTE: No need to recalc bonuses or overlap impact because the overlay
 	//	is not actually removed until Update (at which point we recalc).
@@ -6907,7 +6907,7 @@ bool CShip::ShieldsAbsorbFire (CInstalledDevice *pWeapon)
 
 	//	Now check to see if energy fields prevent firing
 
-	if (m_EnergyFields.AbsorbsWeaponFire(pWeapon))
+	if (m_Overlays.AbsorbsWeaponFire(pWeapon))
 		return true;
 
 	//	Done

@@ -1961,7 +1961,7 @@ class COverlayList
 		int GetCountOfType (COverlayType *pType);
 		const CString &GetData (DWORD dwID, const CString &sAttrib);
 		void GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const;
-		void GetList (TArray<COverlay *> &List);
+		void GetList (TArray<COverlay *> *retList);
 		COverlay *GetOverlay (DWORD dwID) const;
 		CVector GetPos (CSpaceObject *pSource, DWORD dwID);
 		ICCItem *GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName);
@@ -2662,7 +2662,7 @@ class CSpaceObject : public CObject
 		virtual COverlay *GetOverlay (DWORD dwID) const { return NULL; }
 		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return NULL_STR; }
 		virtual void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { *retImpact = COverlayList::SImpactDesc(); }
-		virtual void GetOverlayList (TArray<COverlay *> &List) { List.DeleteAll(); }
+		virtual void GetOverlayList (TArray<COverlay *> *retList) { retList->DeleteAll(); }
 		virtual CVector GetOverlayPos (DWORD dwID) { return GetPos(); }
 		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName);
 		virtual int GetOverlayRotation (DWORD dwID) { return -1; }

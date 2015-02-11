@@ -277,20 +277,20 @@ const CString &COverlayList::GetData (DWORD dwID, const CString &sAttrib)
 	return NULL_STR;
 	}
 
-void COverlayList::GetList (TArray<COverlay *> &List)
+void COverlayList::GetList (TArray<COverlay *> *retList)
 
 //	GetList
 //
 //	Returns all the fields in an array
 
 	{
-	List.DeleteAll();
+	retList->DeleteAll();
 
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
-			List.Insert(pField);
+			retList->Insert(pField);
 
 		pField = pField->GetNext();
 		}
