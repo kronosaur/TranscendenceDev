@@ -1746,7 +1746,7 @@ void CSpaceObject::FireCustomOverlayEvent (const CString &sEvent, DWORD dwOverla
 
 	//	Find the overlay
 
-	CEnergyField *pOverlay = GetOverlay(dwOverlayID);
+	COverlay *pOverlay = GetOverlay(dwOverlayID);
 	if (pOverlay == NULL)
 		{
 		if (retpResult)

@@ -141,7 +141,7 @@ void CInstalledDevice::FinishInstall (CSpaceObject *pSource)
 		DWORD dwID;
 		pSource->AddOverlay(pOverlayType, GetPosAngle(), GetPosRadius(), 0, -1, &dwID);
 
-		CEnergyField *pOverlay = pSource->GetOverlay(dwID);
+		COverlay *pOverlay = pSource->GetOverlay(dwID);
 		if (pOverlay)
 			{
 			pOverlay->SetDevice(GetDeviceSlot());

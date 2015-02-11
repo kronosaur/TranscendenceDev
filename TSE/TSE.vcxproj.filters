@@ -130,12 +130,6 @@
     <ClCompile Include="CDockingPorts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CEnergyField.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CEnergyFieldList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CGameFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -837,6 +831,12 @@
     </ClCompile>
     <ClCompile Include="CCrewPsyche.cpp">
       <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlayList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlay.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

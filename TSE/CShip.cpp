@@ -723,7 +723,7 @@ void CShip::CalcOverlayImpact (void)
 //	whenever the set of overlays changes.
 
 	{
-	CEnergyFieldList::SImpactDesc Impact;
+	COverlayList::SImpactDesc Impact;
 	m_EnergyFields.GetImpact(this, &Impact);
 
 	//	Update our cache
@@ -5232,7 +5232,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	penalty. But if necessary we have add a special function to just get the
 		//	drag coefficient from the overlay list.)
 
-		CEnergyFieldList::SImpactDesc Impact;
+		COverlayList::SImpactDesc Impact;
 		m_EnergyFields.GetImpact(this, &Impact);
 
 		SetVel(CVector(GetVel().GetX() * Impact.rDrag, GetVel().GetY() * Impact.rDrag));

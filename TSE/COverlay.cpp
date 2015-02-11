@@ -1,6 +1,6 @@
-//	CEnergyField.cpp
+//	COverlay.cpp
 //
-//	CEnergyField class
+//	COverlay class
 
 #include "PreComp.h"
 
@@ -23,7 +23,7 @@
 
 const int ANNOTATION_INNER_SPACING_Y =			2;
 
-CEnergyField::CEnergyField (void) : 
+COverlay::COverlay (void) : 
 		m_pType(NULL),
 		m_iCounter(0),
 		m_pPainter(NULL),
@@ -31,14 +31,14 @@ CEnergyField::CEnergyField (void) :
 		m_fDestroyed(false),
 		m_pNext(NULL)
 
-//	CEnergyField constructor
+//	COverlay constructor
 
 	{
 	}
 
-CEnergyField::~CEnergyField (void)
+COverlay::~COverlay (void)
 
-//	CEnergyField destructor
+//	COverlay destructor
 
 	{
 	if (m_pPainter)
@@ -48,7 +48,7 @@ CEnergyField::~CEnergyField (void)
 		m_pHitPainter->Delete();
 	}
 
-bool CEnergyField::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
+bool COverlay::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 //	AbsorbDamage
 //
@@ -130,7 +130,7 @@ bool CEnergyField::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 		}
 	}
 
-void CEnergyField::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
+void COverlay::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
 
 //	AccumulateBounds
 //
@@ -153,7 +153,7 @@ void CEnergyField::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
 		}
 	}
 
-void CEnergyField::CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx)
+void COverlay::CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 //	CreateHitEffect
 //
@@ -195,12 +195,12 @@ void CEnergyField::CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx)
 		}
 	}
 
-void CEnergyField::CreateFromType (COverlayType *pType, 
+void COverlay::CreateFromType (COverlayType *pType, 
 								   int iPosAngle,
 								   int iPosRadius,
 								   int iRotation,
 								   int iLifeLeft, 
-								   CEnergyField **retpField)
+								   COverlay **retpField)
 
 //	CreateFromType
 //
@@ -209,7 +209,7 @@ void CEnergyField::CreateFromType (COverlayType *pType,
 	{
 	ASSERT(pType);
 
-	CEnergyField *pField = new CEnergyField;
+	COverlay *pField = new COverlay;
 
 	pField->m_pType = pType;
 	pField->m_dwID = g_pUniverse->CreateGlobalID();
@@ -236,7 +236,7 @@ void CEnergyField::CreateFromType (COverlayType *pType,
 	*retpField = pField;
 	}
 
-void CEnergyField::Destroy (CSpaceObject *pSource)
+void COverlay::Destroy (CSpaceObject *pSource)
 
 //	Destroy
 //
@@ -248,13 +248,13 @@ void CEnergyField::Destroy (CSpaceObject *pSource)
 		FireOnDestroy(pSource);
 
 		//	Mark the field as destroyed.
-		//	It will be deleted in CEnergyFieldList::Update
+		//	It will be deleted in COverlayList::Update
 
 		m_fDestroyed = true;
 		}
 	}
 
-void CEnergyField::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, ICCItem *pData, ICCItem **retpResult)
+void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, ICCItem *pData, ICCItem **retpResult)
 
 //	FireCustomEvent
 //
@@ -287,7 +287,7 @@ void CEnergyField::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent
 		*retpResult = g_pUniverse->GetCC().CreateNil();
 	}
 
-void CEnergyField::FireOnCreate (CSpaceObject *pSource)
+void COverlay::FireOnCreate (CSpaceObject *pSource)
 
 //	FireOnCreate
 //
@@ -317,7 +317,7 @@ void CEnergyField::FireOnCreate (CSpaceObject *pSource)
 		}
 	}
 
-bool CEnergyField::FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
+bool COverlay::FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 //	FireOnDamage
 //
@@ -370,7 +370,7 @@ bool CEnergyField::FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 		return false;
 	}
 
-void CEnergyField::FireOnDestroy (CSpaceObject *pSource)
+void COverlay::FireOnDestroy (CSpaceObject *pSource)
 
 //	FireOnDestroy
 //
@@ -400,7 +400,7 @@ void CEnergyField::FireOnDestroy (CSpaceObject *pSource)
 		}
 	}
 
-void CEnergyField::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const
+void COverlay::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const
 
 //	FireOnObjDestroyed
 //
@@ -435,7 +435,7 @@ void CEnergyField::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx 
 		}
 	}
 
-void CEnergyField::FireOnUpdate (CSpaceObject *pSource)
+void COverlay::FireOnUpdate (CSpaceObject *pSource)
 
 //	FireOnUpdate
 //
@@ -465,7 +465,7 @@ void CEnergyField::FireOnUpdate (CSpaceObject *pSource)
 		}
 	}
 
-CVector CEnergyField::GetPos (CSpaceObject *pSource)
+CVector COverlay::GetPos (CSpaceObject *pSource)
 
 //	GetPos
 //
@@ -481,7 +481,7 @@ CVector CEnergyField::GetPos (CSpaceObject *pSource)
 		return pSource->GetPos();
 	}
 
-ICCItem *CEnergyField::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, const CString &sName)
+ICCItem *COverlay::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, const CString &sName)
 
 //	GetProperty
 //
@@ -509,7 +509,7 @@ ICCItem *CEnergyField::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource
 		return CC.CreateNil();
 	}
 
-void CEnergyField::Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
+void COverlay::Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -557,7 +557,7 @@ void CEnergyField::Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewpor
 	Ctx.iRotation = iSavedRotation;
 	}
 
-void CEnergyField::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COverlay::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintAnnotations
 //
@@ -590,7 +590,7 @@ void CEnergyField::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewport
 		}
 	}
 
-void CEnergyField::PaintBackground (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COverlay::PaintBackground (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintBackground
 //
@@ -627,7 +627,7 @@ void CEnergyField::PaintBackground (CG16bitImage &Dest, int x, int y, SViewportP
 		}
 	}
 
-void CEnergyField::ReadFromStream (SLoadCtx &Ctx)
+void COverlay::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
 //
@@ -708,7 +708,7 @@ void CEnergyField::ReadFromStream (SLoadCtx &Ctx)
 	m_fDestroyed = ((dwFlags & 0x00000001) ? true : false);
 	}
 
-bool CEnergyField::SetEffectProperty (const CString &sProperty, ICCItem *pValue)
+bool COverlay::SetEffectProperty (const CString &sProperty, ICCItem *pValue)
 
 //	SetEffectProperty
 //
@@ -721,7 +721,7 @@ bool CEnergyField::SetEffectProperty (const CString &sProperty, ICCItem *pValue)
 	return false;
 	}
 
-void CEnergyField::SetPos (CSpaceObject *pSource, const CVector &vPos)
+void COverlay::SetPos (CSpaceObject *pSource, const CVector &vPos)
 
 //	SetPos
 //
@@ -735,7 +735,7 @@ void CEnergyField::SetPos (CSpaceObject *pSource, const CVector &vPos)
 	m_iPosRadius = (int)(rRadius / g_KlicksPerPixel);
 	}
 
-bool CEnergyField::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue)
+bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue)
 
 //	SetProperty
 //
@@ -782,7 +782,7 @@ bool CEnergyField::SetProperty (CSpaceObject *pSource, const CString &sName, ICC
 	return true;
 	}
 
-void CEnergyField::Update (CSpaceObject *pSource)
+void COverlay::Update (CSpaceObject *pSource)
 
 //	Update
 //
@@ -841,7 +841,7 @@ void CEnergyField::Update (CSpaceObject *pSource)
 		}
 	}
 
-void CEnergyField::WriteToStream (IWriteStream *pStream)
+void COverlay::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //

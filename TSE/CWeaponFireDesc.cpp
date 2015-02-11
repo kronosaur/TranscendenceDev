@@ -569,7 +569,7 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx)
 		return false;
 	}
 
-bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, CEnergyField *pOverlay)
+bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 
 //	FireOnDamageOverlay
 //

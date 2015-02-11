@@ -953,10 +953,10 @@ class CShip : public CSpaceObject
 		virtual int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CShip"); }
 		virtual int GetOpenDockingPortCount (void) { return m_DockingPorts.GetPortCount(this) - m_DockingPorts.GetPortsInUseCount(this); }
-		virtual CEnergyField *GetOverlay (DWORD dwID) const { return m_EnergyFields.GetOverlay(dwID); }
+		virtual COverlay *GetOverlay (DWORD dwID) const { return m_EnergyFields.GetOverlay(dwID); }
 		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return m_EnergyFields.GetData(dwID, sAttrib); }
-		virtual void GetOverlayImpact (CEnergyFieldList::SImpactDesc *retImpact) { m_EnergyFields.GetImpact(this, retImpact); }
-		virtual void GetOverlayList (TArray<CEnergyField *> &List) { m_EnergyFields.GetList(List); }
+		virtual void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { m_EnergyFields.GetImpact(this, retImpact); }
+		virtual void GetOverlayList (TArray<COverlay *> &List) { m_EnergyFields.GetList(List); }
 		virtual CVector GetOverlayPos (DWORD dwID) { return m_EnergyFields.GetPos(this, dwID); }
 		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName) { return m_EnergyFields.GetProperty(pCCCtx, this, dwID, sName); }
 		virtual int GetOverlayRotation (DWORD dwID) { return m_EnergyFields.GetRotation(dwID); }
@@ -1119,7 +1119,7 @@ class CShip : public CSpaceObject
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
-		CEnergyFieldList m_EnergyFields;		//	List of energy fields
+		COverlayList m_EnergyFields;		//	List of energy fields
 		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
 		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
 		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
@@ -1296,10 +1296,10 @@ class CStation : public CSpaceObject
 		virtual int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CStation"); }
 		virtual int GetOpenDockingPortCount (void) { return m_DockingPorts.GetPortCount(this) - m_DockingPorts.GetPortsInUseCount(this); }
-		virtual CEnergyField *GetOverlay (DWORD dwID) const { return m_Overlays.GetOverlay(dwID); }
+		virtual COverlay *GetOverlay (DWORD dwID) const { return m_Overlays.GetOverlay(dwID); }
 		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return m_Overlays.GetData(dwID, sAttrib); }
-		virtual void GetOverlayImpact (CEnergyFieldList::SImpactDesc *retImpact) { m_Overlays.GetImpact(this, retImpact); }
-		virtual void GetOverlayList (TArray<CEnergyField *> &List) { m_Overlays.GetList(List); }
+		virtual void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { m_Overlays.GetImpact(this, retImpact); }
+		virtual void GetOverlayList (TArray<COverlay *> &List) { m_Overlays.GetList(List); }
 		virtual CVector GetOverlayPos (DWORD dwID) { return m_Overlays.GetPos(this, dwID); }
 		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName) { return m_Overlays.GetProperty(pCCCtx, this, dwID, sName); }
 		virtual int GetOverlayRotation (DWORD dwID) { return m_Overlays.GetRotation(dwID); }
@@ -1448,7 +1448,7 @@ class CStation : public CSpaceObject
 		int m_iMaxStructuralHP;					//	Max structural hp
 
 		CInstalledDevice *m_pDevices;			//	Array of devices
-		CEnergyFieldList m_Overlays;			//	List of overlays
+		COverlayList m_Overlays;			//	List of overlays
 		CDockingPorts m_DockingPorts;			//	Docking ports
 
 		CSpaceObject *m_pTarget;				//	Target to hit (by our weapons)

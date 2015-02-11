@@ -205,8 +205,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CEffectParamDesc.cpp" />
-    <ClCompile Include="CEnergyField.cpp" />
-    <ClCompile Include="CEnergyFieldList.cpp" />
+    <ClCompile Include="COverlay.cpp" />
+    <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
     <ClCompile Include="CFireEventOrder.cpp" />
     <ClCompile Include="CGameFile.cpp" />

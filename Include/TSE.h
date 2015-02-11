@@ -105,7 +105,7 @@ class CBoundaryMarker;
 class CDeviceClass;
 class CDockScreenType;
 class CEffectCreator;
-class CEnergyField;
+class COverlay;
 class COverlayType;
 class CInstalledDevice;
 class CItem;
@@ -386,7 +386,7 @@ class CWeaponFireDesc
 		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, char **retpPos = NULL);
 		static CWeaponFireDesc *FindWeaponFireDescFromFullUNID (const CString &sUNID);
 		bool FireOnDamageArmor (SDamageCtx &Ctx);
-		bool FireOnDamageOverlay (SDamageCtx &Ctx, CEnergyField *pOverlay);
+		bool FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay);
 		bool FireOnDamageShields (SDamageCtx &Ctx, int iDevice);
 		bool FireOnFragment (const CDamageSource &Source, CSpaceObject *pShot, const CVector &vHitPos, CSpaceObject *pNearestObj, CSpaceObject *pTarget);
 		inline CItemType *GetAmmoType (void) const { return m_pAmmoType; }
@@ -1845,17 +1845,17 @@ class CItemEventDispatcher
 
 //	Ship classes and types
 
-class CEnergyField
+class COverlay
 	{
 	public:
-		CEnergyField (void);
-		~CEnergyField (void);
+		COverlay (void);
+		~COverlay (void);
 		static void CreateFromType (COverlayType *pType, 
 									int iPosAngle,
 									int iPosRadius,
 									int iRotation,
 									int iLifeLeft, 
-									CEnergyField **retpField);
+									COverlay **retpField);
 
 		bool AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		void AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds);
@@ -1870,7 +1870,7 @@ class CEnergyField
 		inline int GetDevice (void) const { return m_iDevice; }
 		inline Metric GetDrag (CSpaceObject *pSource) const { return m_pType->GetDrag(); }
 		inline DWORD GetID (void) const { return m_dwID; }
-		inline CEnergyField *GetNext (void) const { return m_pNext; }
+		inline COverlay *GetNext (void) const { return m_pNext; }
 		CVector GetPos (CSpaceObject *pSource);
 		ICCItem *GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, const CString &sName);
 		inline int GetRotation (void) const { return m_iRotation; }
@@ -1886,7 +1886,7 @@ class CEnergyField
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
 		inline void SetDevice (int iDev) { m_iDevice = iDev; }
 		bool SetEffectProperty (const CString &sProperty, ICCItem *pValue);
-		inline void SetNext (CEnergyField *pNext) { m_pNext = pNext; }
+		inline void SetNext (COverlay *pNext) { m_pNext = pNext; }
 		void SetPos (CSpaceObject *pSource, const CVector &vPos);
 		bool SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue);
 		inline void SetRotation (int iRotation) { m_iRotation = iRotation; }
@@ -1919,10 +1919,10 @@ class CEnergyField
 
 		DWORD m_fDestroyed:1;					//	TRUE if field should be destroyed
 
-		CEnergyField *m_pNext;					//	Next energy field associated with this object
+		COverlay *m_pNext;					//	Next energy field associated with this object
 	};
 
-class CEnergyFieldList
+class COverlayList
 	{
 	public:
 		struct SImpactDesc
@@ -1943,8 +1943,8 @@ class CEnergyFieldList
 			Metric rDrag;					//	Drag coefficient (1.0 = no drag)
 			};
 
-		CEnergyFieldList (void);
-		~CEnergyFieldList (void);
+		COverlayList (void);
+		~COverlayList (void);
 
 		void AddField (CSpaceObject *pSource, 
 					   COverlayType *pType,
@@ -1961,8 +1961,8 @@ class CEnergyFieldList
 		int GetCountOfType (COverlayType *pType);
 		const CString &GetData (DWORD dwID, const CString &sAttrib);
 		void GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const;
-		void GetList (TArray<CEnergyField *> &List);
-		CEnergyField *GetOverlay (DWORD dwID) const;
+		void GetList (TArray<COverlay *> &List);
+		COverlay *GetOverlay (DWORD dwID) const;
 		CVector GetPos (CSpaceObject *pSource, DWORD dwID);
 		ICCItem *GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName);
 		int GetRotation (DWORD dwID);
@@ -1983,7 +1983,7 @@ class CEnergyFieldList
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
-		CEnergyField *m_pFirst;
+		COverlay *m_pFirst;
 	};
 
 //	Particle Field Type
@@ -2659,10 +2659,10 @@ class CSpaceObject : public CObject
 		virtual int GetMaxLightDistance (void) { return 0; }
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
 		virtual int GetOpenDockingPortCount (void) { return 0; }
-		virtual CEnergyField *GetOverlay (DWORD dwID) const { return NULL; }
+		virtual COverlay *GetOverlay (DWORD dwID) const { return NULL; }
 		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return NULL_STR; }
-		virtual void GetOverlayImpact (CEnergyFieldList::SImpactDesc *retImpact) { *retImpact = CEnergyFieldList::SImpactDesc(); }
-		virtual void GetOverlayList (TArray<CEnergyField *> &List) { List.DeleteAll(); }
+		virtual void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { *retImpact = COverlayList::SImpactDesc(); }
+		virtual void GetOverlayList (TArray<COverlay *> &List) { List.DeleteAll(); }
 		virtual CVector GetOverlayPos (DWORD dwID) { return GetPos(); }
 		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName);
 		virtual int GetOverlayRotation (DWORD dwID) { return -1; }
@@ -2965,7 +2965,7 @@ class CSpaceObject : public CObject
 
 		//	Empty list of overlays
 
-		static CEnergyFieldList m_NullOverlays;
+		static COverlayList m_NullOverlays;
 
 	friend CObjectClass<CSpaceObject>;
 	};

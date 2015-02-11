@@ -5317,7 +5317,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_OVERLAYS:
 			{
-			TArray<CEnergyField *> List;
+			TArray<COverlay *> List;
 			pObj->GetOverlayList(List);
 
 			if (List.GetCount() == 0)

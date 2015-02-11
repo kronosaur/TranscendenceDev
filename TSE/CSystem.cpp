@@ -117,11 +117,11 @@
 //		m_pTrade in CStation
 //
 //	38: 1.0 RC1
-//		m_dwID in CEnergyField
-//		m_iPosAngle, m_iPosRadius, m_iRotation in CEnergyField
+//		m_dwID in COverlay
+//		m_iPosAngle, m_iPosRadius, m_iRotation in COverlay
 //
 //	39: 1.0 RC1
-//		m_Data in CEnergyField
+//		m_Data in COverlay
 //
 //	40: 1.0 RC1
 //		Save class with IEffectPainter
@@ -196,7 +196,7 @@
 //		CCurrencyBlock saves CEconomyType UNIDs instead of strings
 //
 //	63: 1.06
-//		Added m_iDevice to CEnergyField
+//		Added m_iDevice to COverlay
 //		Added m_UIMsgs to CPlayerShipController
 //
 //	64: 1.06
@@ -318,14 +318,14 @@
 //		m_iOrder in CPlayerShipController
 //
 //	101: 1.4
-//		Flags in CEnergyField
+//		Flags in COverlay
 //
 //	102: 1.4
 //		iHPDamaged in SItemTypeStats
 //
 //	103: 1.4
-//		m_iCounter in CEnergyField
-//		m_sMessage in CEnergyField
+//		m_iCounter in COverlay
+//		m_sMessage in COverlay
 //
 //	104: 1.4
 //		m_iFramesPerColumn in CObjectImageArray

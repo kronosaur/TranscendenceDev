@@ -290,7 +290,7 @@ void CStation::CalcOverlayImpact (void)
 //	whenever the set of overlays changes.
 
 	{
-	CEnergyFieldList::SImpactDesc Impact;
+	COverlayList::SImpactDesc Impact;
 	m_Overlays.GetImpact(this, &Impact);
 
 	//	Update our cache

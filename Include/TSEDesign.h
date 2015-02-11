@@ -5796,7 +5796,7 @@ class CInstalledDevice
 		DWORD GetLinkedFireOptions (void) const;
 		inline int GetMinFireArc (void) const { return m_iMinFireArc; }
 		inline int GetMaxFireArc (void) const { return m_iMaxFireArc; }
-		inline CEnergyField *GetOverlay (void) const { return m_pOverlay; }
+		inline COverlay *GetOverlay (void) const { return m_pOverlay; }
 		inline int GetPosAngle (void) const { return m_iPosAngle; }
 		inline int GetPosRadius (void) const { return m_iPosRadius; }
 		inline int GetPosZ (void) const { return m_iPosZ; }
@@ -5830,7 +5830,7 @@ class CInstalledDevice
 		inline void SetOmniDirectional (bool bOmnidirectional = true) { m_fOmniDirectional = bOmnidirectional; }
 		inline void SetOptimized (bool bOptimized) { m_fOptimized = bOptimized; }
 		inline void SetOverdrive (bool bOverdrive) { m_fOverdrive = bOverdrive; }
-		inline void SetOverlay (CEnergyField *pOverlay) { m_pOverlay = pOverlay; }
+		inline void SetOverlay (COverlay *pOverlay) { m_pOverlay = pOverlay; }
 		inline void SetPosAngle (int iAngle) { m_iPosAngle = iAngle; }
 		inline void SetPosRadius (int iRadius) { m_iPosRadius = iRadius; }
 		inline void SetPosZ (int iZ) { m_iPosZ = iZ; m_f3DPosition = (iZ != 0); }
@@ -5912,7 +5912,7 @@ class CInstalledDevice
 	private:
 		CItem *m_pItem;							//	Item installed in this slot
 		CDeviceClassRef m_pClass;				//	The device class that is installed here
-		CEnergyField *m_pOverlay;				//	Overlay (if associated)
+		COverlay *m_pOverlay;				//	Overlay (if associated)
 		DWORD m_dwTargetID;						//	ObjID of target (for tracking secondary weapons)
 		CItemEnhancementStack *m_pEnhancements;	//	List of enhancements (may be NULL)
 
