@@ -20,8 +20,14 @@ class IPlayerController
 		virtual ICCItem *CreateGlobalRef (CCodeChain &CC) { return CC.CreateInteger((int)this); }
 		virtual GenomeTypes GetGenome (void) const { return genomeUnknown; }
 		virtual CString GetName (void) const { return NULL_STR; }
+		virtual bool GetPropertyInteger (const CString &sProperty, int *retiValue) { return false; }
+		virtual bool GetPropertyItemList (const CString &sProperty, CItemList *retItemList) { return false; }
+		virtual bool GetPropertyString (const CString &sProperty, CString *retsValue) { return false; }
 		virtual CSovereign *GetSovereign (void) const;
 		virtual void OnMessageFromObj (CSpaceObject *pSender, const CString &sMessage) { }
+		virtual bool SetPropertyInteger (const CString &sProperty, int iValue) { return false; }
+		virtual bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList) { return false; }
+		virtual bool SetPropertyString (const CString &sProperty, const CString &sValue) { return false; }
 
 	protected:
 
