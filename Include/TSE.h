@@ -1866,10 +1866,12 @@ class COverlay
 		bool FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		void FireOnDestroy (CSpaceObject *pSource);
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
+		inline int GetCounter (void) const { return m_iCounter; }
 		inline const CString &GetData (const CString &sAttrib) { return m_Data.GetData(sAttrib); }
 		inline int GetDevice (void) const { return m_iDevice; }
 		inline Metric GetDrag (CSpaceObject *pSource) const { return m_pType->GetDrag(); }
 		inline DWORD GetID (void) const { return m_dwID; }
+		inline const CString &GetMessage (void) const { return m_sMessage; }
 		inline COverlay *GetNext (void) const { return m_pNext; }
 		CVector GetPos (CSpaceObject *pSource);
 		ICCItem *GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, const CString &sName);
@@ -2541,16 +2543,18 @@ class CSpaceObject : public CObject
 		//	Overlays
 
 		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL) { if (retdwID) *retdwID = 0; }
-		inline COverlay *GetOverlay (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetOverlay(dwID) : NULL); }
 		virtual COverlayList *GetOverlays (void) { return NULL; }
+		virtual void RemoveOverlay (DWORD dwID) { }
+
+		inline COverlay *GetOverlay (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetOverlay(dwID) : NULL); }
 		inline const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetData(dwID, sAttrib) : NULL_STR); }
 		inline void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->GetImpact(this, retImpact); else *retImpact = COverlayList::SImpactDesc(); }
 		inline void GetOverlayList (TArray<COverlay *> *retList) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->GetList(retList); else retList->DeleteAll(); }
+		inline void GetOverlayListOfCommandPaneCounters (TArray<COverlay *> *retList) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->GetListOfCommandPaneCounters(retList); else retList->DeleteAll(); }
 		inline CVector GetOverlayPos (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetPos(this, dwID) : GetPos()); }
 		ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName);
 		inline int GetOverlayRotation (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetRotation(dwID) : -1); }
 		inline COverlayType *GetOverlayType(DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetType(dwID) : NULL); }
-		virtual void RemoveOverlay (DWORD dwID) { }
 		inline void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetData(dwID, sAttribute, sData); }
 		inline bool SetOverlayEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->SetEffectProperty(dwID, sProperty, pValue) : false); }
 		inline void SetOverlayPos (DWORD dwID, const CVector &vPos) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetPos(this, dwID, vPos); }
