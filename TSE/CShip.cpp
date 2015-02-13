@@ -1078,6 +1078,9 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	int i;
 	CUniverse *pUniv = pSystem->GetUniverse();
 
+	ASSERT(pClass);
+	ASSERT(pController);
+
 	pShip = new CShip;
 	if (pShip == NULL)
 		return ERR_MEMORY;
