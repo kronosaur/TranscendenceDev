@@ -579,6 +579,9 @@ class CG16bitFont : public CObject
 			};
 
 		CG16bitFont (void);
+		CG16bitFont (const CG16bitFont &Src);
+
+		CG16bitFont &operator= (const CG16bitFont &Src);
 
 		ALERROR Create (const CString &sTypeface, int iSize, bool bBold = false, bool bItalic = false, bool bUnderline = false);
 		ALERROR CreateFromFont (HFONT hFont);

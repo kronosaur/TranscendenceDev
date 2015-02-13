@@ -24,6 +24,24 @@ CG16bitFont::CG16bitFont (void) : CObject(NULL),
 	{
 	}
 
+CG16bitFont::CG16bitFont (const CG16bitFont &Src) : CObject(NULL),
+		m_Metrics(sizeof(CharMetrics), g_iCharCount)
+
+	{
+	//	Not Yet Implemented
+	ASSERT(false); 
+	}
+
+CG16bitFont &CG16bitFont:: operator= (const CG16bitFont &Src)
+
+//	CG16bitFont operator =
+
+	{
+	//	Not Yet Implemented
+	ASSERT(false);
+	return *this;
+	}
+
 int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *retLines, DWORD dwFlags) const
 
 //	BreakText
