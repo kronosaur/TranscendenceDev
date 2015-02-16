@@ -287,7 +287,7 @@ ICCItem *CCodeChain::CreateLinkedList (void)
 	return pItem->Reference();
 	}
 
-ICCItem *CCodeChain::CreatePrimitive (PRIMITIVEPROCDEF *pDef)
+ICCItem *CCodeChain::CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)
 
 //	CreatePrimitive
 //
@@ -302,7 +302,7 @@ ICCItem *CCodeChain::CreatePrimitive (PRIMITIVEPROCDEF *pDef)
 		return pItem;
 
 	pPrimitive = dynamic_cast<CCPrimitive *>(pItem);
-	pPrimitive->SetProc(pDef);
+	pPrimitive->SetProc(pDef, pImpl);
 	return pPrimitive->Reference();
 	}
 
@@ -1102,7 +1102,7 @@ ICCItem *CCodeChain::TopLevel (ICCItem *pItem, LPVOID pExternalCtx)
 	return Eval(&EvalCtx, pItem);
 	}
 
-ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef)
+ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)
 
 //	RegisterPrimitive
 //
@@ -1114,7 +1114,7 @@ ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef)
 
 	//	Create a primitive definition
 
-	pDefinition = CreatePrimitive(pDef);
+	pDefinition = CreatePrimitive(pDef, pImpl);
 	if (pDefinition->IsError())
 		{
 		pDefinition->Discard(this);

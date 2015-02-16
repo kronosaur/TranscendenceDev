@@ -65,7 +65,10 @@ ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	bool bReportError = false;
 	try
 		{
-		pResult = m_pfFunction(pCtx, pEvalArgs, m_dwData);
+		if (m_dwFlags | PPFLAG_METHOD_INVOKE)
+			pResult = ((IPrimitiveImpl *)m_pfFunction)->InvokeCCPrimitive(pCtx, pEvalArgs, m_dwData);
+		else
+			pResult = ((PRIMITIVEPROC)m_pfFunction)(pCtx, pEvalArgs, m_dwData);
 		}
 	catch (...)
 		{
@@ -120,7 +123,7 @@ void CCPrimitive::Reset (void)
 	ASSERT(FALSE);
 	}
 
-void CCPrimitive::SetProc (PRIMITIVEPROCDEF *pDef)
+void CCPrimitive::SetProc (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)
 
 //	SetProc
 //
@@ -128,7 +131,6 @@ void CCPrimitive::SetProc (PRIMITIVEPROCDEF *pDef)
 
 	{
 	m_sName = LITERAL(pDef->pszName);
-	m_pfFunction = pDef->pfFunction;
 	m_dwData = pDef->dwData;
 	m_dwFlags = pDef->dwFlags;
 
@@ -143,6 +145,16 @@ void CCPrimitive::SetProc (PRIMITIVEPROCDEF *pDef)
 		m_sArgPattern = LITERAL(pDef->pszArguments);
 	else
 		m_dwFlags |= PPFLAG_CUSTOM_ARG_EVAL;
+
+	//	Function
+
+	if (pImpl)
+		{
+		m_pfFunction = pImpl;
+		m_dwFlags |= PPFLAG_METHOD_INVOKE;
+		}
+	else
+		m_pfFunction = pDef->pfFunction;
 	}
 
 ICCItem *CCPrimitive::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
