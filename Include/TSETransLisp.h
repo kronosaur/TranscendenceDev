@@ -48,6 +48,7 @@ class CCodeChainCtx
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		inline CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		inline SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
+		inline CUniverse &GetUniverse (void) { return *g_pUniverse; }
 		bool InEvent (ECodeChainEvents iEvent) const;
 		inline ICCItem *Link (const CString &sString, int iOffset, int *retiLinked) { return m_CC.Link(sString, iOffset, retiLinked); }
 		void RestoreVars (void);

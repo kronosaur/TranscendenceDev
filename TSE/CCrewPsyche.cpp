@@ -4,6 +4,7 @@
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include "PsycheDefs.h"
 
 CCrewPsyche::CCrewPsyche (void) :
 		m_dwArchetype(archetypeNone),

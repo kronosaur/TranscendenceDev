@@ -119,6 +119,9 @@
     <ClInclude Include="TopologyProcessorsImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PsycheDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">

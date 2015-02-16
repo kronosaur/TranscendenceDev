@@ -5,6 +5,9 @@
 
 #pragma once
 
+//	This is the list of supported archetypes. The order and number must match
+//	the ARCHETYPE_DEFS array in PsycheDefs.h
+
 enum ECrewArchetypes
 	{
 	archetypeNone =							0,
@@ -78,4 +81,3 @@ class CCrewAI : public CBaseShipAI
 		CString m_sCommandGroup;			//	Units in the same group can be commanded as a group
 		int m_iCommandRank;					//	Highest rank in a group is responsible for orders
 	};
-
