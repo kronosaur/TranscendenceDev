@@ -65,7 +65,7 @@ ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	bool bReportError = false;
 	try
 		{
-		if (m_dwFlags | PPFLAG_METHOD_INVOKE)
+		if (m_dwFlags & PPFLAG_METHOD_INVOKE)
 			pResult = ((IPrimitiveImpl *)m_pfFunction)->InvokeCCPrimitive(pCtx, pEvalArgs, m_dwData);
 		else
 			pResult = ((PRIMITIVEPROC)m_pfFunction)(pCtx, pEvalArgs, m_dwData);
