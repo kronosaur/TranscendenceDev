@@ -86,6 +86,8 @@ class ICCItem : public CObject
 			List,
 			Function,
 			Complex,
+			Float,
+			Vector
 			};
 
 		ICCItem (IObjectClass *pClass);
@@ -451,6 +453,23 @@ class ICCList : public ICCItem
 		virtual BOOL IsNil (void) { return (GetCount() == 0); }
 	};
 
+//	A vector of numeric items (integers, floats, complex numbers)
+
+class ICCVector : public ICCItem
+{
+public:
+	ICCVector(IObjectClass *pClass) : ICCItem(pClass) { }
+
+	//	ICCItem virtuals
+
+	virtual ValueTypes GetValueType(void) { return List; }
+	virtual BOOL IsAtom(void) { return FALSE; }
+	virtual BOOL IsFunction(void) { return FALSE; }
+	virtual BOOL IsIdentifier(void) { return FALSE; }
+	virtual BOOL IsInteger(void) { return FALSE; }
+	virtual BOOL IsNil(void) { return (GetCount() == 0); }
+};
+
 //	This is a linked-list implementation of a list
 
 class CCLinkedList : public ICCList
@@ -498,27 +517,70 @@ class CCLinkedList : public ICCList
 	};
 
 //	This is an array of 32-bit integers
+class CCVectorOld : public ICCList
+{
+public:
+	CCVectorOld(void);
+	CCVectorOld(CCodeChain *pCC);
+	virtual ~CCVectorOld(void);
 
-class CCVector : public ICCList
+	int *GetArray(void);
+	BOOL SetElement(int iIndex, int iElement);
+	ICCItem *SetSize(CCodeChain *pCC, int iNewSize);
+
+	//	ICCItem virtuals
+
+	virtual ICCItem *Clone(CCodeChain *pCC);
+	virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
+	virtual int GetCount(void) { return m_iCount; }
+	virtual ICCItem *GetElement(int iIndex);
+	virtual ICCItem *Head(CCodeChain *pCC) { return GetElement(0); }
+	virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
+	virtual ICCItem *Tail(CCodeChain *pCC);
+	virtual void Reset(void);
+
+protected:
+	virtual void DestroyItem(CCodeChain *pCC);
+	virtual ICCItem *StreamItem(CCodeChain *pCC, IWriteStream *pStream);
+	virtual ICCItem *UnstreamItem(CCodeChain *pCC, IReadStream *pStream);
+
+private:
+	CCodeChain *m_pCC;						//	CodeChain
+	int m_iCount;							//	Number of elements
+	int *m_pData;							//	Array of elements
+};
+
+//	**UNDER CONSTRUCTION**
+class CCVector : public ICCVector
 	{
 	public:
 		CCVector (void);
 		CCVector (CCodeChain *pCC);
 		virtual ~CCVector (void);
 
-		int *GetArray (void);
+		CIntArray *GetArray (void);
 		BOOL SetElement (int iIndex, int iElement);
-		ICCItem *SetSize (CCodeChain *pCC, int iNewSize);
+		void SetDataType(int iDataType);
+		int *GetShape (void);
+		ICCItem *SetArraySize(CCodeChain *pCC, int iNewSize);
+		ICCItem *SetShape (CCodeChain *pCC, CIntArray *pNewShape);
+
+		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
+		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
 
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC);
-		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode);
-		virtual int GetCount (void) { return m_iCount; }
+		virtual int GetCount (void) { return m_pData->GetCount(); }
+		virtual int GetStridesCount(void) { return m_pStrides->GetCount(); }
+		virtual int GetShapeCount(void) { return m_pShape->GetCount(); }
+		virtual int GetDimension(void) { return m_pShape->GetCount(); }
+		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
 		virtual ICCItem *GetElement (int iIndex);
-		virtual ICCItem *Head (CCodeChain *pCC) { return GetElement(0); }
+		virtual ICCItem *IndexVector (CCLinkedList *pIndices);
+		virtual ICCItem *Head(CCodeChain *pCC) { return GetElement(0); }
 		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
-		virtual ICCItem *Tail (CCodeChain *pCC);
+		virtual ICCItem *Tail(CCodeChain *pCC);
 		virtual void Reset (void);
 
 	protected:
@@ -528,8 +590,12 @@ class CCVector : public ICCList
 
 	private:
 		CCodeChain *m_pCC;						//	CodeChain
-		int m_iCount;							//	Number of elements
-		int *m_pData;							//	Array of elements
+		CIntArray *m_pData;						//	Array of elements
+		CIntArray *m_pShape;					//  Shape
+		CIntArray *m_pStrides;					//  Strides
+		int m_iDtype;							//  Data type: 
+												//		(-1=uninitialized, 0=int, 
+												//		1=float, 2=complex)
 	};
 
 //	This is an atom table object
@@ -705,7 +771,8 @@ class CCodeChain : public CObject
 		ICCItem *CreateSymbolTable (void);
 		ICCItem *CreateSystemError (ALERROR error);
 		inline ICCItem *CreateTrue (void) { return m_pTrue->Reference(); }
-		ICCItem *CreateVector (int iSize);
+		ICCItem *CreateVectorOld (int iSize);
+		ICCItem *CreateVector(int iDtype, CIntArray *pShape);
 		inline void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(this, pItem); }
 		inline void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
 		inline void DestroyInteger (ICCItem *pItem) { m_IntegerPool.DestroyItem(this, pItem); }
@@ -714,7 +781,8 @@ class CCodeChain : public CObject
 		inline void DestroyPrimitive (ICCItem *pItem) { m_PrimitivePool.DestroyItem(this, pItem); }
 		inline void DestroyString (ICCItem *pItem) { m_StringPool.DestroyItem(this, pItem); }
 		inline void DestroySymbolTable (ICCItem *pItem) { m_SymbolTablePool.DestroyItem(this, pItem); }
-		inline void DestroyVector (ICCItem *pItem) { delete pItem; }
+		inline void DestroyVectorOld (ICCItem *pItem) { delete pItem; }
+		inline void DestroyVector(ICCItem *pItem) { delete pItem; }
 
 		//	Load/save routines
 

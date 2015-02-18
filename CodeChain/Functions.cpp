@@ -21,7 +21,6 @@
 #include "Kernel.h"
 #include "KernelObjID.h"
 #include "CodeChain.h"
-
 #include "Functions.h"
 
 //	Forwards
@@ -3764,7 +3763,7 @@ ICCItem *fnSysInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		}
 	}
 
-ICCItem *fnVecCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnVecCreateOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 //	fnVecCreate
 //
@@ -3787,7 +3786,7 @@ ICCItem *fnVecCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Create the table
 
-	pVector = pCC->CreateVector(pArgs->Head(pCC)->GetIntegerValue());
+	pVector = pCC->CreateVectorOld(pArgs->Head(pCC)->GetIntegerValue());
 
 	//	Done
 
@@ -3795,7 +3794,75 @@ ICCItem *fnVecCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	return pVector;
 	}
 
-ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+
+//	fnVecCreate
+//
+//	Creates a new vector of a given size
+//
+//	(vector dTypeString (list dim1size, dim2size, ...)) -> vector
+//
+//	All elements of the vector are initialized to 0
+
+{
+	int i;
+	int iDtype;
+	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pArgs;
+	ICCItem *pVector;
+	ICCItem *pDtypeString;
+	ICCItem *pShapeList;
+	ICCItem *pDim;
+	//	Evaluate the argument
+
+	pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("sk"));
+	if (pArgs->IsError())
+		return pArgs;
+
+	pDtypeString = pArgs->Head(pCtx->pCC);
+
+	if (strCompare(pDtypeString->GetStringValue(), "int"))
+	{
+		iDtype = 0;
+	}
+	else
+	{
+		ICCItem *pError = pCC->CreateError(CONSTLIT("Shape list must only contain integers."), pArgs->GetElement(i));
+		pArgs->Discard(pCC);
+		return pError;
+	};
+	pShapeList = pArgs->Tail(pCtx->pCC);
+
+	//  no need to make sure there are any other things in pArgs, 
+	//  because EvaluateArgs did that for us (recall "sk" validation string)
+
+	CIntArray *pShape = &(CIntArray());
+	for (i = 0; i < pShapeList->GetCount(); i++)
+	{
+		pDim = pShapeList->GetElement(i);
+		if (pDim->IsInteger())
+		{
+			pShape->InsertElement(pDim->GetIntegerValue(), NULL);
+		}
+		else
+		{
+			ICCItem *pError = pCC->CreateError(CONSTLIT("Shape list must only contain integers."), pArgs->GetElement(i));
+			pArgs->Discard(pCC);
+			return pError;
+		};
+	};
+	
+
+	//	Create the table
+	pVector = pCC->CreateVector(iDtype, pShape);
+
+	//	Done
+
+	pArgs->Discard(pCC);
+	return pVector;
+}
+
+ICCItem *fnVectorOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 //	fnVector
 //
@@ -3806,7 +3873,7 @@ ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	{
 	CCodeChain *pCC = pCtx->pCC;
 	ICCItem *pArgs;
-	CCVector *pVector;
+	CCVectorOld *pVector;
 	BOOL bOk;
 
 	//	Evaluate the arguments
@@ -3817,7 +3884,7 @@ ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Get the vector
 
-	pVector = dynamic_cast<CCVector *>(pArgs->GetElement(0));
+	pVector = dynamic_cast<CCVectorOld *>(pArgs->GetElement(0));
 	if (pVector == NULL)
 		{
 		ICCItem *pError = pCC->CreateError(CONSTLIT("Vector expected"), pArgs->GetElement(0));
@@ -3841,6 +3908,54 @@ ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	pArgs->Discard(pCC);
 	return pCC->CreateTrue();
 	}
+
+ICCItem *fnVector(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+
+//	fnVector
+//
+//	Vector functions
+//
+//	(vecSetShape vector shapeList)
+//  (vecSetData vector
+
+{
+	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pArgs;
+	CCVectorOld *pVector;
+	BOOL bOk;
+
+	//	Evaluate the arguments
+
+	pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("vvv"));
+	if (pArgs->IsError())
+		return pArgs;
+
+	//	Get the vector
+
+	pVector = dynamic_cast<CCVectorOld *>(pArgs->GetElement(0));
+	if (pVector == NULL)
+	{
+		ICCItem *pError = pCC->CreateError(CONSTLIT("Vector expected"), pArgs->GetElement(0));
+		pArgs->Discard(pCC);
+		return pError;
+	}
+
+	//	Set the element
+
+	bOk = pVector->SetElement(pArgs->GetElement(1)->GetIntegerValue(),
+		pArgs->GetElement(2)->GetIntegerValue());
+
+	if (!bOk)
+	{
+		pArgs->Discard(pCC);
+		return pCC->CreateError(CONSTLIT("Unable to set vector element"), NULL);
+	}
+
+	//	Done
+
+	pArgs->Discard(pCC);
+	return pCC->CreateTrue();
+}
 
 //	Helper Functions -----------------------------------------------------------
 

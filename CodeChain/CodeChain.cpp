@@ -6,7 +6,6 @@
 #include "Kernel.h"
 #include "KernelObjID.h"
 #include "CodeChain.h"
-
 #include "Functions.h"
 #include "DefPrimitives.h"
 
@@ -357,17 +356,17 @@ ICCItem *CCodeChain::CreateSystemError (ALERROR error)
 	return pError;
 	}
 
-ICCItem *CCodeChain::CreateVector (int iSize)
+ICCItem *CCodeChain::CreateVectorOld (int iSize)
 
-//	CreateVector
+//	CreateVectorOld
 //
 //	Creates a vector of the given number of elements
 
 	{
-	CCVector *pVector;
+	CCVectorOld *pVector;
 	ICCItem *pError;
 
-	pVector = new CCVector(this);
+	pVector = new CCVectorOld(this);
 	if (pVector == NULL)
 		return CreateMemoryError();
 
@@ -384,6 +383,50 @@ ICCItem *CCodeChain::CreateVector (int iSize)
 
 	return pVector->Reference();
 	}
+
+ICCItem *CCodeChain::CreateVector(int iDtype, CIntArray *pShape)
+
+//	CreateVector
+//
+//	Creates a vector of the given number of elements
+
+{
+	int i;
+	int iSize = 0;
+	CCVector *pVector;
+	ICCItem *pError;
+
+	for (i = 0; i < pShape->GetCount(); i++)
+	{
+		iSize = iSize + pShape->GetElement(i);
+	};
+
+	pVector = new CCVector(this);
+	if (pVector == NULL)
+		return CreateMemoryError();
+
+	pError = pVector->SetArraySize(this, iSize);
+	if (pError->IsError())
+	{
+		delete pVector;
+		return pError;
+	}
+
+	pError = pVector->SetShape(this, pShape);
+	if (pError->IsError())
+	{
+		delete pVector;
+		return pError;
+	}
+
+	pError->Discard(this);
+	
+	//	Done
+	//  if we have gotten this far, then it is safe to set the data type
+	pVector->SetDataType(iDtype);
+	return pVector->Reference();
+}
+
 
 ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)
 
@@ -1205,12 +1248,18 @@ ICCItem *CCodeChain::UnstreamItem (IReadStream *pStream)
 		pItem = m_LambdaPool.CreateItem(this);
 	else if (dwClass == OBJID_CCATOMTABLE)
 		pItem = m_AtomTablePool.CreateItem(this);
-	else if (dwClass == OBJID_CCVECTOR)
+	else if (dwClass == OBJID_CCVectorOld)
 		{
-		pItem = new CCVector(this);
+		pItem = new CCVectorOld(this);
 		if (pItem == NULL)
 			pItem = CreateMemoryError();
 		}
+	else if (dwClass == OBJID_CCVector)
+	{
+		pItem = new CCVectorOld(this);
+		if (pItem == NULL)
+			pItem = CreateMemoryError();
+	}
 	else
 		return CreateError(LITERAL("Unknown item type"), NULL);
 
