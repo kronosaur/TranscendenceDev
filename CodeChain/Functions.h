@@ -24,7 +24,7 @@
 #define FN_ATMTABLE_LOOKUP				20
 #define FN_ATMTABLE_LIST				21
 #define FN_SET_SET						22
-#define FN_VECTOR_SETELEMENT			23
+#define FN_VECTOR_SETELEMENT_OLD		23
 #define FN_EQUALITY_LESSER				24
 #define FN_EQUALITY_LESSER_EQ			25
 #define FN_EQUALITY_GREATER				26
@@ -60,6 +60,12 @@
 #define FN_RANDOM_GAUSSIAN				56
 #define FN_ITEM_TYPE					57
 #define FN_EQUALITY_NEQ					58
+#define FN_VECCREATE_EMPTY              59
+#define FN_VECCREATE                    60
+#define FN_VECTOR_ADD                   61
+#define FN_VECTOR_SCALMUL               62
+#define FN_VECTOR_DOT                   63
+#define FN_VECTOR_EMUL                  64
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
@@ -110,3 +116,4 @@ ICCItem *fnSymTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSysInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnVecMath (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

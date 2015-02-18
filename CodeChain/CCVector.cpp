@@ -159,7 +159,7 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 
 		//Copy
 
-		pDest->InsertRange(pSource, 0, m_pData->GetCount() - 1, 0);
+		pDest->InsertRange(pSource, 0, m_pData->GetCount()-1, 0);
 	}
 
 	if (m_pShape)
@@ -169,7 +169,7 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 
 		// Copy
 
-		pDest->InsertRange(pSource, 0, m_pShape->GetCount() - 1, 0);
+		pDest->InsertRange(pSource, 0, m_pShape->GetCount()-1, 0);
 	}
 
 	if (m_pStrides)
@@ -179,7 +179,7 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 
 		// Copy
 
-		pDest->InsertRange(pSource, 0, m_pStrides->GetCount() - 1, 0);
+		pDest->InsertRange(pSource, 0, m_pStrides->GetCount()-1, 0);
 	}
 
 	//	Done
@@ -443,22 +443,42 @@ ICCItem *CCVector::SetArraySize(CCodeChain *pCC, int iNewSize)
 //	Sets the size of the vector, preserving any previous data
 
 	{
+	ALERROR allocationError;
 	int iExpansion;
 
 	int iCurrentSize = m_pData->GetCount();
 
 	if (iNewSize <= iCurrentSize)
-	{
-		return pCC->CreateNil();
-	}
+		{
+			return pCC->CreateNil();
+		}
 	else
-	{
-		iExpansion = iNewSize - iCurrentSize;
-	};
+		{
+			iExpansion = iNewSize - iCurrentSize;
+		};
 
-	m_pData->ExpandArray(-1, iExpansion);
-	return pCC->CreateTrue();
+	allocationError = m_pData->ExpandArray(-1, iExpansion);;
+	if (allocationError = NOERROR)
+		{
+			return pCC->CreateTrue();
+		}
+	else
+		{
+			return pCC->CreateMemoryError();
+		};
 	}
+
+ICCItem *CCVector::SetArrayData(CCodeChain *pCC, CIntArray *pNewData)
+//	SetArrayData
+//
+//	Set the vector data pointer to a new location.
+
+	{
+
+	m_pData = pNewData;
+
+	}
+
 
 ICCItem *CCVectorOld::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
 

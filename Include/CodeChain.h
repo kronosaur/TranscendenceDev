@@ -486,7 +486,8 @@ class CCLinkedList : public ICCList
 		void ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewItem);
 		void Shuffle (CCodeChain *pCC);
 		void Sort (CCodeChain *pCC, int iOrder, int iIndex = -1);
-
+		ICCItem *IsValidVectorContent (CCodeChain *pCC);
+		
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC);
@@ -562,8 +563,9 @@ class CCVector : public ICCVector
 		BOOL SetElement (int iIndex, int iElement);
 		void SetDataType(int iDataType);
 		int *GetShape (void);
-		ICCItem *SetArraySize(CCodeChain *pCC, int iNewSize);
+		ICCItem *SetArraySize (CCodeChain *pCC, int iNewSize);
 		ICCItem *SetShape (CCodeChain *pCC, CIntArray *pNewShape);
+		ICCItem *SetArrayData (CCodeChain *pCC, CIntArray *pNewData);
 
 		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -772,7 +774,8 @@ class CCodeChain : public CObject
 		ICCItem *CreateSystemError (ALERROR error);
 		inline ICCItem *CreateTrue (void) { return m_pTrue->Reference(); }
 		ICCItem *CreateVectorOld (int iSize);
-		ICCItem *CreateVector(int iDtype, CIntArray *pShape);
+		ICCItem *CreateEmptyVector(int iDtype, CIntArray *pShape);
+		ICCItem *CreateVector(int iDtype, CIntArray *pShape, CCLinkedList *pDataList);
 		inline void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(this, pItem); }
 		inline void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
 		inline void DestroyInteger (ICCItem *pItem) { m_IntegerPool.DestroyItem(this, pItem); }

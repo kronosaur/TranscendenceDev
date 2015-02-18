@@ -245,6 +245,103 @@ ICCItem *CCLinkedList::GetElement (int iIndex)
 		return NULL;
 	}
 
+ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
+
+//  IsValidVectorContent
+//
+//  Determines if contents of list are suitable for representation as vector.
+//
+//  If a list is suitable for storage as vector, its elements will be numeric or 
+//  linked list type, and its dimensions will be "uniform". 
+//
+//  If the linked list is valid vector content, then its "shape" will be returned,
+//  otherwise an error will be returned. 
+
+{
+	int i;
+	int headcount;
+	ICCItem *pHead;
+	CCLinkedList *pShapeList;
+	CCLinkedList *pListElement;
+	ICCItem *pResult;
+
+	pHead = Head(pCC);
+
+	if (pHead->GetValueType() == ICCItem::List)
+	{
+		headcount = pHead->GetCount();
+		pShapeList->AppendIntegerValue(pCC, headcount, NULL);
+
+		for (i = 1; i < headcount; i++)
+		{
+			if (GetElement(i)->GetValueType() != ICCItem::List)
+			{
+				ICCItem *error = pCC->CreateError(CONSTLIT("Content list data type is not homogeneous."), NULL);
+				pHead->Discard(pCC);
+				pListElement->Discard(pCC);
+				pShapeList->Discard(pCC);
+				return error;
+			};
+
+			pListElement = dynamic_cast<CCLinkedList *> (GetElement(i));
+
+			if (pListElement->GetCount() != headcount)
+			{
+				ICCItem *error = pCC->CreateError(CONSTLIT("Content list data is not of the same size."), NULL);
+				pHead->Discard(pCC);
+				pListElement->Discard(pCC);
+				pShapeList->Discard(pCC);
+				return error;
+			};
+
+			// check if the list element itself is valid vector content
+			pResult = pListElement->IsValidVectorContent(pCC);
+			if (pResult->IsError())
+			{
+				pHead->Discard(pCC);
+				pListElement->Discard(pCC);
+				pShapeList->Discard(pCC);
+				return pResult;
+			};
+		};
+
+		// Done
+		pHead->Discard(pCC);
+		pListElement->Discard(pCC);
+		pShapeList->Append(pCC, pResult, NULL);
+		return pShapeList;
+	}
+	else if (pHead->GetValueType() == ICCItem::Integer)
+	{
+		for (i = 1; i < GetCount(); i++)
+		{
+			if (GetElement(i)->GetValueType != ICCItem::Integer)
+			{
+				ICCItem *error = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);
+				pHead->Discard(pCC);
+				pListElement->Discard(pCC);
+				pShapeList->Discard(pCC);
+				return error;
+			};
+		};
+
+		// Done
+		pHead->Discard(pCC);
+		pListElement->Discard(pCC);
+		pShapeList->AppendIntegerValue(pCC, GetCount(), NULL);
+		return pShapeList;
+	}
+	else
+	{
+		ICCItem *error = pCC->CreateError(CONSTLIT("Content list contains non-numeric or non-list types."), head);
+		pHead->Discard(pCC);
+		pListElement->Discard(pCC);
+		pShapeList->Discard(pCC);
+		return error;
+	};
+
+};
+
 CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
 
 //	Print

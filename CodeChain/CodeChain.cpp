@@ -384,11 +384,11 @@ ICCItem *CCodeChain::CreateVectorOld (int iSize)
 	return pVector->Reference();
 	}
 
-ICCItem *CCodeChain::CreateVector(int iDtype, CIntArray *pShape)
+ICCItem *CCodeChain::CreateEmptyVector(int iDtype, CIntArray *pShape)
 
-//	CreateVector
+//	CreateEmptyVector
 //
-//	Creates a vector of the given number of elements
+//	Creates an empty vector with the given shape
 
 {
 	int i;
@@ -427,6 +427,60 @@ ICCItem *CCodeChain::CreateVector(int iDtype, CIntArray *pShape)
 	return pVector->Reference();
 }
 
+ICCItem *CCodeChain::CreateVector(int iDtype, CIntArray *pShape, CCLinkedList *pDataList)
+
+//	CreateVector
+//
+//	Creates a vector with given shape and elements
+
+{
+	int i;
+	int iSize = 0;
+	CCVector *pVector;
+	ICCItem *pError;
+
+	for (i = 0; i < pShape->GetCount(); i++)
+	{
+		iSize = iSize + pShape->GetElement(i);
+	};
+
+	pVector = new CCVector(this);
+	if (pVector == NULL)
+		return CreateMemoryError();
+
+	pError = pVector->SetArraySize(this, iSize);
+	if (pError->IsError())
+	{
+		delete pVector;
+		return pError;
+	}
+
+	pError = pVector->SetShape(this, pShape);
+	if (pError->IsError())
+	{
+		delete pVector;
+		return pError;
+	}
+
+	CIntArray *pDataArray = &(CIntArray());
+	for (i = 0; i < pDataList->GetCount(); i++)
+	{
+		pDataArray->AppendElement(pDataList->GetElement(i)->GetIntegerValue(), NULL);
+	};
+
+	pError = pVector->SetArrayData(this, pDataArray);
+	if (pError->IsError())
+	{
+		delete pVector;
+		return pError;
+	};
+
+	//	Done
+	//  if we have gotten this far, then it is safe to set the data type
+	pError->Discard(this);
+	pVector->SetDataType(iDtype);
+	return pVector->Reference();
+}
 
 ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)
 

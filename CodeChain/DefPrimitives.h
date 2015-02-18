@@ -276,7 +276,14 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v",	0,	},
 
 		{	"vecVector",		fnVecCreate,	0,						"",		NULL,	0,	},
-		{	"vecSetElement",	fnVector,		FN_VECTOR_SETELEMENT,	"",		NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"vecSetElement",	fnVector,		FN_VECTOR_SETELEMENT_OLD,	"",		NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{ "emptyvector", fnVecCreate, FN_VECCREATE_EMPTY, "(vector dtype shapelist) -> empty vector", NULL, 0, },
+		{ "vector", fnVecCreate, FN_VECCREATE, "(vector dtype contentlist) -> vector", NULL, 0, },
+		{ "vadd", fnVecMath, FN_VECTOR_ADD, "(vadd vec1 vec2)", NULL, 0, },
+		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(vdot vec1 vec2)", NULL, 0, },
+		{ "vscalmul", fnVecMath, FN_VECTOR_SCALMUL, "(vscalmul scalar vec1)", NULL, 0, },
+		{ "vemul", fnVecMath, FN_VECTOR_EMUL, "(vemul vec1 vec2)", NULL, 0, },
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))
