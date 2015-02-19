@@ -24,12 +24,12 @@ DWORD CCrewPsyche::GenerateNormalLevel (void)
 //	Generates a random level that clusters around neutral.
 
 	{
-	double rValue = NEUTRAL_LEVEL + (mathRandomGaussian() * (NEUTRAL_HIGH_LEVEL - NEUTRAL_LOW_LEVEL));
+	double rValue = SCrewMetrics::NEUTRAL_LEVEL + (mathRandomGaussian() * (SCrewMetrics::NEUTRAL_HIGH_LEVEL - SCrewMetrics::NEUTRAL_LOW_LEVEL));
 
-	if (rValue <= (double)MIN_LEVEL)
+	if (rValue <= (double)SCrewMetrics::MIN_LEVEL)
 		return 0;
-	else if (rValue >= (double)MAX_LEVEL)
-		return MAX_LEVEL;
+	else if (rValue >= (double)SCrewMetrics::MAX_LEVEL)
+		return SCrewMetrics::MAX_LEVEL;
 	else
 		return (DWORD)rValue;
 	}
@@ -70,7 +70,7 @@ void CCrewPsyche::SetArchetype (ECrewArchetypes iArchetype)
 		case archetypeBrotherhood:
 			m_dwArchetype = archetypeBrotherhood;
 			m_dwBelief = GenerateNormalLevel();
-			m_dwCohesion = HIGH_LEVEL;
+			m_dwCohesion = SCrewMetrics::HIGH_LEVEL;
 			m_dwLoyalty = GenerateNormalLevel();
 			break;
 
@@ -78,12 +78,12 @@ void CCrewPsyche::SetArchetype (ECrewArchetypes iArchetype)
 			m_dwArchetype = archetypeOrder;
 			m_dwBelief = GenerateNormalLevel();
 			m_dwCohesion = GenerateNormalLevel();
-			m_dwLoyalty = HIGH_LEVEL;
+			m_dwLoyalty = SCrewMetrics::HIGH_LEVEL;
 			break;
 
 		case archetypeVengeance:
 			m_dwArchetype = archetypeVengeance;
-			m_dwBelief = HIGH_LEVEL;
+			m_dwBelief = SCrewMetrics::HIGH_LEVEL;
 			m_dwCohesion = GenerateNormalLevel();
 			m_dwLoyalty = GenerateNormalLevel();
 			break;

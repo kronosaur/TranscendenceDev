@@ -5,6 +5,33 @@
 
 #pragma once
 
+struct SCrewMetrics
+	{
+	enum EConstants
+		{
+		MIN_LEVEL =						  0,	//	Min
+		LOW_LEVEL =						 50,	//	Low
+		NEUTRAL_LOW_LEVEL =				 85,
+		NEUTRAL_LEVEL =					100,	//	Normal
+		NEUTRAL_HIGH_LEVEL =			115,
+		HIGH_LEVEL =					150,	//	High
+		PEAK_LEVEL =					180,	//	Peak
+		MAX_LEVEL =						200,	//	Max
+		};
+
+	SCrewMetrics (void) :
+			iCrewCount(0),
+			iBelief(0),
+			iCohesion(0),
+			iLoyalty(0)
+		{ }
+
+	int iCrewCount;							//	Total number of crew members
+	int iBelief;							//	Belief for all crew members
+	int iCohesion;							//	Cohesion for all crew members
+	int iLoyalty;							//	Loyalty for all crew members
+	};
+
 //	IShipController ------------------------------------------------------------
 //
 //	This abstract class is the root of all ship AI classes.
@@ -118,6 +145,7 @@ class IShipController
 
 		virtual ~IShipController (void) { }
 
+		virtual void AccumulateCrewMetrics (SCrewMetrics &Metrics) { }
 		virtual void Behavior (void) { }
 		virtual void CancelDocking (void) { }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }

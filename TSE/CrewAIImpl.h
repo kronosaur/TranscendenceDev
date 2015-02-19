@@ -20,17 +20,6 @@ enum ECrewArchetypes
 class CCrewPsyche
 	{
 	public:
-		enum EConstants
-			{
-			MIN_LEVEL =						  0,	//	Min
-			LOW_LEVEL =						 50,	//	Low
-			NEUTRAL_LOW_LEVEL =				 85,
-			NEUTRAL_LEVEL =					100,	//	Normal
-			NEUTRAL_HIGH_LEVEL =			115,
-			HIGH_LEVEL =					150,	//	High
-			MAX_LEVEL =						200,	//	Max
-			};
-
 		CCrewPsyche (void);
 
 		inline ECrewArchetypes GetArchetype (void) const { return (ECrewArchetypes)m_dwArchetype; }
@@ -60,6 +49,7 @@ class CCrewAI : public CBaseShipAI
 
 		//	IShipController virtuals
 
+		virtual void AccumulateCrewMetrics (SCrewMetrics &Metrics);
 		virtual CString DebugCrashInfo (void);
 		virtual CString GetClass (void) { return CONSTLIT("crew"); }
 

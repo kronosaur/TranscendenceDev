@@ -13,6 +13,7 @@ class IPlayerController
 		virtual ~IPlayerController (void) { }
 
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
+		void Update (SUpdateCtx &UpdateCtx) { OnUpdate(UpdateCtx); }
 		void WriteToStream (IWriteStream *pStream);
 
 		//	IPlayerController interface
@@ -33,8 +34,9 @@ class IPlayerController
 
 		//	IPlayerController interface
 
-		void OnReadFromStream (SUniverseLoadCtx &Ctx) { }
-		void OnWriteToStream (IWriteStream *pStream) { }
+		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) { }
+		virtual void OnUpdate (SUpdateCtx &UpdateCtx) { }
+		virtual void OnWriteToStream (IWriteStream *pStream) { }
 
 		mutable CSovereign *m_pSovereign;			//	Cached sovereign
 	};

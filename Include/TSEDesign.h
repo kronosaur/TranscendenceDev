@@ -25,6 +25,7 @@ class CTopology;
 class CTopologyDescTable;
 class CTradingDesc;
 class IDeviceGenerator;
+class IPlayerController;
 struct SDestroyCtx;
 struct SSystemCreateCtx;
 
@@ -5237,14 +5238,21 @@ class CSovereign : public CDesignType
 
 		void DeleteRelationships (void);
 		inline void FlushEnemyObjectCache (void) { m_pEnemyObjectsSystem = NULL; }
+		IPlayerController *GetController (void);
 		Disposition GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent = true);
 		inline const CSpaceObjectList &GetEnemyObjectList (CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
+		bool GetPropertyInteger (const CString &sProperty, int *retiValue);
+		bool GetPropertyItemList (const CString &sProperty, CItemList *retItemList);
+		bool GetPropertyString (const CString &sProperty, CString *retsValue);
 		CString GetText (MessageTypes iMsg);
 		inline bool IsEnemy (CSovereign *pSovereign) { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispEnemy); }
 		inline bool IsFriend (CSovereign *pSovereign) { return (!m_bSelfRel && (pSovereign == this)) || (GetDispositionTowards(pSovereign) == dispFriend); }
 		void MessageFromObj (CSpaceObject *pSender, const CString &sText);
 		static Alignments ParseAlignment (const CString &sAlign);
 		void SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp);
+		bool SetPropertyInteger (const CString &sProperty, int iValue);
+		bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList);
+		bool SetPropertyString (const CString &sProperty, const CString &sValue);
 
 		//	CDesignType overrides
 		static CSovereign *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSovereign) ? (CSovereign *)pType : NULL); }

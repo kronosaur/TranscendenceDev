@@ -4366,6 +4366,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx)
 
 	m_BarrierObjects.SetAllocSize(GetObjectCount());
 	m_GravityObjects.SetAllocSize(GetObjectCount());
+	bool bTrackPlayerShips = (Ctx.pPlayer == NULL);
 
 	//	Make a list of all barrier and gravity objects
 
@@ -4379,6 +4380,16 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx)
 
 			if (pObj->HasGravity())
 				m_GravityObjects.FastAdd(pObj);
+
+			//	If necessary, keep track of objects that belong to the player
+
+			CSovereign *pSovereign;
+			if (bTrackPlayerShips
+					&& (pSovereign = pObj->GetSovereign())
+					&& pSovereign->GetUNID() == g_PlayerSovereignUNID
+					&& (pObj->GetCategory() == CSpaceObject::catShip
+							|| pObj->GetCategory() == CSpaceObject::catStation))
+				Ctx.PlayerObjs.Insert(pObj);
 			}
 		}
 
@@ -4423,6 +4434,12 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx)
 	if (IsTimeStopped())
 		if (m_iTimeStopped > 0 && --m_iTimeStopped == 0)
 			RestartTime();
+
+	//	Update the player controller
+
+	IPlayerController *pPlayerController = g_pUniverse->GetPlayer();
+	if (pPlayerController)
+		pPlayerController->Update(Ctx);
 
 	//	Give the player ship a chance to do something with data that we've
 	//	accumulated during update. For example, we use this to set the nearest

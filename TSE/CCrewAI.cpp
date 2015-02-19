@@ -24,6 +24,19 @@ CCrewAI::CCrewAI (void) :
 	{
 	}
 
+void CCrewAI::AccumulateCrewMetrics (SCrewMetrics &Metrics)
+
+//	AccumulateCrewMetrics
+//
+//	Accumulates crew metrics
+
+	{
+	Metrics.iCrewCount++;
+	Metrics.iBelief += m_Psyche.GetBelief();
+	Metrics.iCohesion += m_Psyche.GetCohesion();
+	Metrics.iLoyalty += m_Psyche.GetLoyalty();
+	}
+
 CString CCrewAI::DebugCrashInfo (void)
 
 //	DebugCrashInfo

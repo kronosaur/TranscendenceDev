@@ -256,6 +256,7 @@ struct SUpdateCtx
 
 	CSystem *pSystem;					//	Current system
 	CSpaceObject *pPlayer;				//	The player
+	TArray<CSpaceObject *> PlayerObjs;	//	List of player objects, if pPlayer == NULL
 
 	//	Used to compute nearest docking port to player
 
