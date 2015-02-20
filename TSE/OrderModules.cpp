@@ -84,6 +84,9 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 	{
 	switch (iOrder)
 		{
+		case IShipController::orderNone:
+			return NULL;
+
 		case IShipController::orderApproach:
 			return new CApproachOrder;
 

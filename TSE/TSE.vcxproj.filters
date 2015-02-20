@@ -841,6 +841,9 @@
     <ClCompile Include="COverlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CSystemSpacePainter.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

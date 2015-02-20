@@ -3437,10 +3437,6 @@ ALERROR CSystem::CreateEmpty (CUniverse *pUniv, CTopologyNode *pTopology, CSyste
 
 	pSystem->m_iTick = pUniv->GetTicks();
 
-	//	Create the background star field
-
-	pSystem->ResetStarField();
-
 	//	Set the name
 
 	if (pTopology)

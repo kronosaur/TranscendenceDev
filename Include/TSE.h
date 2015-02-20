@@ -1061,6 +1061,35 @@ class CMapGridPainter
 		bool m_bRecalcNeeded;
 	};
 
+class CSystemSpacePainter
+	{
+	public:
+		CSystemSpacePainter (void);
+
+		void CleanUp (void);
+		void PaintViewport (CG16bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx);
+
+	private:
+		struct SStar
+			{
+			int x;
+			int y;
+			WORD wColor;
+			WORD wDistance;
+
+			bool bBrightStar;
+			WORD wSpikeColor;
+			};
+
+		void CreateStarfield (int cxField, int cyField);
+		void GenerateSquareDist (int iTotalCount, int iMinValue, int iMaxValue, int *Dist);
+		void PaintStarfield (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rKlicksPerPixel, WORD wSpaceColor);
+
+		TArray<SStar> m_Starfield;
+		int m_cxStarfield;
+		int m_cyStarfield;
+	};
+
 struct SObjCreateCtx
 	{
 	SObjCreateCtx (void) :
@@ -1326,17 +1355,6 @@ class CSystem : public CObject
 		static void ReadSovereignRefFromStream (SLoadCtx &Ctx, CSovereign **retpSovereign);
 
 	private:
-		struct CStar
-			{
-			int x;
-			int y;
-			WORD wColor;
-			WORD wDistance;
-
-			bool bBrightStar;
-			WORD wSpikeColor;
-			};
-
 		CSystem (void);
 		CSystem (CUniverse *pUniv, CTopologyNode *pTopology);
 
@@ -1344,7 +1362,6 @@ class CSystem : public CObject
 		void ComputeMapLabels (void);
 		void ComputeRandomEncounters (void);
 		void ComputeStars (void);
-		ALERROR CreateStarField (int cxFieldWidth, int cyFieldHeight);
 		ALERROR CreateStationInt (SSystemCreateCtx *pCtx,
 								  CStationType *pType,
 								  SObjCreateCtx &CreateCtx,
@@ -1355,8 +1372,6 @@ class CSystem : public CObject
 		inline CTimedEvent *GetTimedEvent (int iIndex) { return m_TimedEvents.GetEvent(iIndex); }
 		void InitSpaceEnvironment (void) const;
 		void PaintDestinationMarker (SViewportPaintCtx &Ctx, CG16bitImage &Dest, int x, int y, CSpaceObject *pObj);
-		void PaintStarField(CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rKlicksPerPixel, WORD wSpaceColor);
-		void ResetStarField (void);
 		void UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj);
 		void UpdateRandomEncounters (void);
 
@@ -1397,7 +1412,6 @@ class CSystem : public CObject
 
 		//	Support structures
 
-		CStructArray m_StarField;				//	Star field
 		CSpaceObjectList m_EncounterObjs;		//	List of objects that generate encounters
 		CSpaceObjectList m_BarrierObjects;		//	List of barrier objects
 		CSpaceObjectList m_GravityObjects;		//	List of objects that have gravity
@@ -1409,6 +1423,7 @@ class CSystem : public CObject
 		CSpaceObjectList m_BackgroundObjs;		//	List of background objects to paint in viewport
 		CSpaceObjectList m_ForegroundObjs;		//	List of foreground objects to paint in viewport
 		CSpaceObjectList m_DeferredOnCreate;	//	Ordered list of objects that need an OnSystemCreated call
+		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
 
 		static const Metric g_MetersPerKlick;

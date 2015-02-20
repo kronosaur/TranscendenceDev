@@ -399,15 +399,6 @@ struct SLabelEntry
 	int iNewPosition;
 	};
 
-const int STARFIELD_COUNT =						5000;
-const int STARFIELD_DENSITY =					300;	//	Lower is denser (0 is invalid)
-const int MIN_STAR_DISTANCE =					2;
-const int MAX_STAR_DISTANCE =					20;
-const int BRIGHT_STAR_CHANCE =					20;
-
-const int g_iStarFieldWidth = 1200;
-const int g_iStarFieldHeight = 1200;
-
 const COLORREF g_rgbSpaceColor = RGB(0,0,8);
 //const COLORREF g_rgbSpaceColor = RGB(0,0,0);
 const Metric g_MetersPerKlick = 1000.0;
@@ -443,7 +434,6 @@ CSystem::CSystem (void) : CObject(&g_Class),
 		m_iLastUpdated(-1),
 		m_fInCreate(false),
 		m_fEncounterTableValid(false),
-		m_StarField(sizeof(CStar), STARFIELD_COUNT),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER),
 		m_fEnemiesInLRS(false),
 		m_fEnemiesInSRS(false),
@@ -469,7 +459,6 @@ CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) : CObject(&g_Class
 		m_fInCreate(false),
 		m_fEncounterTableValid(false),
 		m_fUseDefaultTerritories(true),
-		m_StarField(sizeof(CStar), STARFIELD_COUNT),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 
 //	CSystem constructor
@@ -1263,7 +1252,7 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 
 	//	Create the background star field
 
-	Ctx.pSystem->ResetStarField();
+	Ctx.pSystem->m_SpacePainter.CleanUp();
 
 	//	Compute some tables
 
@@ -1579,62 +1568,6 @@ void GenerateSquareDist (int iTotalCount, int iMinValue, int iMaxValue, int *Dis
 		Dist[i] = iBucketCount;
 		iLeft -= iBucketCount;
 		}
-	}
-
-ALERROR CSystem::CreateStarField (int cxFieldWidth, int cyFieldHeight)
-
-//	CreateStarField
-//
-//	Create the system's background star field
-
-	{
-	ALERROR error;
-	int i, j;
-
-	if (g_cxStarField == cxFieldWidth && g_cyStarField == cyFieldHeight)
-		return NOERROR;
-
-	//	Compute count
-
-	int iStarCount = cxFieldWidth * cyFieldHeight / STARFIELD_DENSITY;
-
-	//	Figure out how many stars at each distance
-
-	int DistCount[MAX_STAR_DISTANCE + 1];
-	GenerateSquareDist(iStarCount, MIN_STAR_DISTANCE, MAX_STAR_DISTANCE, DistCount);
-
-	//	Generate stars at each distance
-
-	int iBrightAdj = 180 / MAX_STAR_DISTANCE;
-	for (i = 0; i < MAX_STAR_DISTANCE + 1; i++)
-		for (j = 0; j < DistCount[i]; j++)
-			{
-			CStar Star;
-
-			Star.x = mathRandom(0, cxFieldWidth);
-			Star.y = mathRandom(0, cyFieldHeight);
-
-			Star.wDistance = i;
-
-			int iBrightness = 225 - i * iBrightAdj;
-			int iBlueAdj = 2 * Min(25, MAX_STAR_DISTANCE - i);
-			int iRedAdj = 2 * Min(25, i);
-
-			Star.wColor = CG16bitImage::RGBValue(iBrightness + mathRandom(-25 + iRedAdj, 25),
-					iBrightness + mathRandom(-5, 5),
-					iBrightness + mathRandom(-25 + iBlueAdj, 25));
-
-			if (Star.bBrightStar = (mathRandom(1, 100) <= BRIGHT_STAR_CHANCE))
-				Star.wSpikeColor = CG16bitImage::BlendPixel(0, Star.wColor, 128);
-
-			if (error = m_StarField.AppendStruct(&Star, NULL))
-				return error;
-			}
-
-	g_cxStarField = cxFieldWidth;
-	g_cyStarField = cyFieldHeight;
-
-	return NOERROR;
 	}
 
 ALERROR CSystem::CreateStargate (CStationType *pType,
@@ -2772,93 +2705,6 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG16bitImage &Dest
 	pObj->PaintHighlightText(Dest, xText, yText, Ctx, (AlignmentStyles)iAlign, wColor);
 	}
 
-void CSystem::PaintStarField(CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rKlicksPerPixel, WORD wSpaceColor)
-
-//	PaintStarField
-//
-//	Paints the system star field
-
-	{
-	int i;
-
-	int cxField = RectWidth(rcView);
-	int cyField = RectHeight(rcView);
-
-	//	Make sure the star field is created to fit the viewport
-
-	CreateStarField(cxField, cyField);
-
-	//	Compute the minimum brightness to paint
-
-	WORD wMaxColor = (WORD)(Max(Max(CG16bitImage::RedValue(wSpaceColor), CG16bitImage::GreenValue(wSpaceColor)), CG16bitImage::BlueValue(wSpaceColor)));
-	WORD wSpaceValue = CG16bitImage::RGBValue(wMaxColor, wMaxColor, wMaxColor);
-
-	//	Get the absolute position of the center
-
-	int xCenter = (int)(pCenter->GetPos().GetX() / rKlicksPerPixel);
-	int yCenter = (int)(pCenter->GetPos().GetY() / rKlicksPerPixel);
-
-	//	Precompute the star distance adj
-
-	int xDistAdj[MAX_STAR_DISTANCE + 1];
-	int yDistAdj[MAX_STAR_DISTANCE + 1];
-	xDistAdj[0] = 1;
-	yDistAdj[0] = 1;
-	for (i = 1; i < MAX_STAR_DISTANCE + 1; i++)
-		{
-		xDistAdj[i] = 4 * xCenter / (i * i);
-		yDistAdj[i] = 4 * yCenter / (i * i);
-		}
-
-	//	Paint each star
-
-	WORD *pStart = Dest.GetRowStart(0);
-	int cyRow = Dest.GetRowStart(1) - pStart;
-
-	pStart += cyRow * rcView.top + rcView.left;
-
-	for (i = 0; i < m_StarField.GetCount(); i++)
-		{
-		CStar *pStar = (CStar *)m_StarField.GetStruct(i);
-
-		//	Adjust the coordinates of the star based on the position
-		//	of the center and the distance
-
-		int x = (pStar->x - xDistAdj[pStar->wDistance]) % cxField;
-		if (x < 0)
-			x += cxField;
-		int y = (pStar->y + yDistAdj[pStar->wDistance]) % cyField;
-		if (y < 0)
-			y += cyField;
-
-		//	Blt the star
-
-		WORD *pPixel = pStart + cyRow * y + x;
-
-		//	Cheap (if inaccurate) test to see if the star is brighter than background
-
-		if (wSpaceValue < pStar->wColor)
-			{
-			if (pStar->bBrightStar && wSpaceValue < pStar->wSpikeColor)
-				{
-				if (y < cyField - 1)
-					{
-					*(pPixel + 1) = pStar->wSpikeColor;
-					*(pPixel + cyRow) = pStar->wSpikeColor;
-					}
-
-				if (y > 0)
-					{
-					*(pPixel - 1) = pStar->wSpikeColor;
-					*(pPixel - cyRow) = pStar->wSpikeColor;
-					}
-				}
-
-			*pPixel = pStar->wColor;
-			}
-		}
-	}
-
 void CSystem::PaintViewport (CG16bitImage &Dest, 
 							 const RECT &rcView, 
 							 CSpaceObject *pCenter, 
@@ -2878,20 +2724,15 @@ void CSystem::PaintViewport (CG16bitImage &Dest,
 
 	SViewportPaintCtx Ctx;
 	CalcViewportCtx(Ctx, rcView, pCenter, dwFlags);
+	Dest.SetClipRect(rcView);
 
 	//	Keep track of the player object because sometimes we do special processing
 
 	CSpaceObject *pPlayerCenter = (pCenter->IsPlayer() ? pCenter : NULL);
 
-	//	Clear the rect
+	//	Paint the background
 
-	Dest.SetClipRect(rcView);
-	Dest.Fill(rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), Ctx.wSpaceColor);
-
-	//	Paint the star field
-
-	if (!Ctx.fNoStarfield)
-		PaintStarField(Dest, rcView, pCenter, g_KlicksPerPixel, Ctx.wSpaceColor);
+	m_SpacePainter.PaintViewport(Dest, GetType(), Ctx);
 
 	//	Compute the bounds relative to the center
 
@@ -3824,19 +3665,6 @@ void CSystem::RemoveTimersForObj (CSpaceObject *pObj)
 		if (pEvent->OnObjDestroyed(pObj))
 			pEvent->SetDestroyed();
 		}
-	}
-
-void CSystem::ResetStarField (void)
-
-//	ResetStarField
-//
-//	Reset the star field
-
-	{
-	g_cxStarField = -1;
-	g_cyStarField = -1;
-
-	m_StarField.RemoveAll();
 	}
 
 void CSystem::RestartTime (void)

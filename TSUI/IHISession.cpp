@@ -256,9 +256,20 @@ void IHISession::HILButtonDown (int x, int y, DWORD dwFlags)
 		return;
 		}
 
-	OnLButtonDown(x, y, dwFlags, &m_bCapture);
-	if (m_bCapture)
+	bool bSessionCapture = false;
+	OnLButtonDown(x, y, dwFlags, &bSessionCapture);
+
+	//	If the session wants to capture the mouse, set it.
+	//
+	//	NOTE: We can't assume that the session will be valid after OnLButtonDown,
+	//	so we use a temporary variable. We do assume that if a session captures
+	//	the mouse, it doesn't also destroy itself.
+
+	if (bSessionCapture)
+		{
+		m_bCapture = bSessionCapture;
 		::SetCapture(m_HI.GetHWND());
+		}
 	}
 
 void IHISession::HILButtonUp (int x, int y, DWORD dwFlags)
