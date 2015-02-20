@@ -224,7 +224,7 @@ class CNavigateOrder : public IOrderModule
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx);
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data);
 		virtual CSpaceObject *OnGetBase (void);
-		virtual IShipController::OrderTypes OnGetOrder (void) { return IShipController::orderApproach; }
+		virtual IShipController::OrderTypes OnGetOrder (void) { return m_iOrder; }
 		virtual CSpaceObject *OnGetTarget (void) { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
