@@ -12,7 +12,7 @@ class CHardCrashSession : public IHISession
 
 		//	IHISession virtuals
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData);
-		virtual void OnLButtonDown (int x, int y, DWORD dwFlags) { m_HI.Shutdown(HIShutdownByHardCrash); }
+		virtual void OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) { m_HI.Shutdown(HIShutdownByHardCrash); }
 		virtual void OnPaint (CG16bitImage &Screen, const RECT &rcInvalid);
 
 	private:

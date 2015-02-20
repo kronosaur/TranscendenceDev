@@ -14,7 +14,8 @@
 
 IHISession::IHISession (CHumanInterface &HI) : IHICommand(HI),
 		m_bNoCursor(false),
-		m_bTransparent(false)
+		m_bTransparent(false),
+		m_bCapture(false)
 
 //	IHISession constructor
 	
@@ -240,6 +241,11 @@ void IHISession::HILButtonDown (int x, int y, DWORD dwFlags)
 //	Handle mouse input
 	
 	{
+	//	This is only set to TRUE if the session itself captures the mouse
+	//	(as opposed to Reanimator).
+
+	m_bCapture = false;
+
 	//	See if the animator will handle it
 
 	bool bCapture = false;
@@ -250,7 +256,9 @@ void IHISession::HILButtonDown (int x, int y, DWORD dwFlags)
 		return;
 		}
 
-	OnLButtonDown(x, y, dwFlags);
+	OnLButtonDown(x, y, dwFlags, &m_bCapture);
+	if (m_bCapture)
+		::SetCapture(m_HI.GetHWND());
 	}
 
 void IHISession::HILButtonUp (int x, int y, DWORD dwFlags)
@@ -265,10 +273,12 @@ void IHISession::HILButtonUp (int x, int y, DWORD dwFlags)
 
 	//	See if the animator will handle it
 
-	if (m_Reanimator.HandleLButtonUp(x, y, dwFlags))
+	if (!m_bCapture
+			&& m_Reanimator.HandleLButtonUp(x, y, dwFlags))
 		return;
 
 	OnLButtonUp(x, y, dwFlags);
+	m_bCapture = false;
 	}
 
 void IHISession::HIMouseMove (int x, int y, DWORD dwFlags)
@@ -280,7 +290,8 @@ void IHISession::HIMouseMove (int x, int y, DWORD dwFlags)
 	{
 	//	See if the animator will handle it
 
-	if (m_Reanimator.HandleMouseMove(x, y, dwFlags))
+	if (!m_bCapture
+			&& m_Reanimator.HandleMouseMove(x, y, dwFlags))
 		return;
 
 	OnMouseMove(x, y, dwFlags);

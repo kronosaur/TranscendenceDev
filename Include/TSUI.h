@@ -187,7 +187,7 @@ class IHISession : public IHICommand, public IAniCommand
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData) { }
 		virtual void OnKeyUp (int iVirtKey, DWORD dwKeyData) { }
 		virtual void OnLButtonDblClick (int x, int y, DWORD dwFlags) { }
-		virtual void OnLButtonDown (int x, int y, DWORD dwFlags) { }
+		virtual void OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) { }
 		virtual void OnLButtonUp (int x, int y, DWORD dwFlags) { }
 		virtual void OnMouseMove (int x, int y, DWORD dwFlags) { }
 		virtual void OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags) { }
@@ -213,6 +213,7 @@ class IHISession : public IHICommand, public IAniCommand
 
 		bool m_bNoCursor;						//	If TRUE, we hide the cursor when we show the session.
 		bool m_bTransparent;					//	If TRUE, session below this one shows through.
+		bool m_bCapture;						//	If TRUE, mouse is captured by session subclass (not Reanimator)
 		CReanimator m_Reanimator;
 	};
 
