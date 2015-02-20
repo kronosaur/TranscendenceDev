@@ -12,8 +12,11 @@ const int MAX_STAR_DISTANCE =					20;
 const int BRIGHT_STAR_CHANCE =					20;
 
 CSystemSpacePainter::CSystemSpacePainter (void) :
+		m_bInitialized(false),
 		m_cxStarfield(-1),
-		m_cyStarfield(-1)
+		m_cyStarfield(-1),
+		m_dwBackgroundUNID(0),
+		m_pBackgroundImage(NULL)
 
 //	CSystemSpacePainter constructor
 
@@ -27,10 +30,32 @@ void CSystemSpacePainter::CleanUp (void)
 //	Resets all caches
 
 	{
-	m_cxStarfield = -1;
-	m_cyStarfield = -1;
+	m_bInitialized = false;
 
 	m_Starfield.DeleteAll();
+	m_pBackgroundImage = NULL;
+	}
+
+void CSystemSpacePainter::CreateSpaceBackground (DWORD dwBackgroundUNID)
+
+//	CreateSpaceBackground
+//
+//	Initializes the (optional) system background image
+
+	{
+	//	If we don't have a background image, then we're done
+
+	if (dwBackgroundUNID == 0
+			|| (m_pBackgroundImage = g_pUniverse->GetLibraryBitmap(dwBackgroundUNID)) == NULL)
+		{
+		m_dwBackgroundUNID = 0;
+		m_pBackgroundImage = NULL;
+		return;
+		}
+
+	//	Otherwise, we have an image
+
+	m_dwBackgroundUNID = dwBackgroundUNID;
 	}
 
 void CSystemSpacePainter::CreateStarfield (int cxField, int cyField)
@@ -42,8 +67,7 @@ void CSystemSpacePainter::CreateStarfield (int cxField, int cyField)
 	{
 	int i, j;
 
-	if (m_cxStarfield == cxField && m_cyStarfield == cyField)
-		return;
+	ASSERT(!m_bInitialized);
 
 	//	Compute count
 
@@ -131,24 +155,55 @@ void CSystemSpacePainter::GenerateSquareDist (int iTotalCount, int iMinValue, in
 		}
 	}
 
-void CSystemSpacePainter::PaintViewport (CG16bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx)
+void CSystemSpacePainter::PaintSpaceBackground (CG16bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx)
 
-//	PaintViewport
+//	PaintSpaceBackground
 //
-//	Paint the system space background.
+//	Paints the background image
 
 	{
-	//	Clear the rect
+	ASSERT(m_pBackgroundImage);
 
-	Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), Ctx.wSpaceColor);
+	int cxImage = m_pBackgroundImage->GetWidth();
+	int cyImage = m_pBackgroundImage->GetHeight();
 
-	//	Paint the star field
+	//	Compute the paint positions
 
-	if (!Ctx.fNoStarfield)
-		PaintStarfield(Dest, Ctx.rcView, Ctx.pCenter, g_KlicksPerPixel, Ctx.wSpaceColor);
+	int xOffset = ClockMod(xCenter / 4, cxImage);
+	int yOffset = ClockMod(-yCenter / 4, cyImage);
+
+	//	Tile across the entire screen
+
+	int ySrc = yOffset;
+	int cySrc = cyImage - ySrc;
+
+	int yDest = Ctx.rcView.top;
+	int yDestEnd = Ctx.rcView.bottom;
+
+	while (yDest < yDestEnd)
+		{
+		int xSrc = xOffset;
+		int cxSrc = cxImage - xSrc;
+
+		int xDest = Ctx.rcView.left;
+		int xDestEnd = Ctx.rcView.right;
+
+		while (xDest < xDestEnd)
+			{
+			Dest.Blt(xSrc, ySrc, cxSrc, cySrc, *m_pBackgroundImage, xDest, yDest);
+
+			xDest += cxSrc;
+			xSrc = 0;
+			cxSrc = cxImage;
+			}
+
+		yDest += cySrc;
+		ySrc = 0;
+		cySrc = cyImage;
+		}
 	}
 
-void CSystemSpacePainter::PaintStarfield (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rKlicksPerPixel, WORD wSpaceColor)
+void CSystemSpacePainter::PaintStarfield (CG16bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, WORD wSpaceColor)
 
 //	PaintStarfield
 //
@@ -160,19 +215,10 @@ void CSystemSpacePainter::PaintStarfield (CG16bitImage &Dest, const RECT &rcView
 	int cxField = RectWidth(rcView);
 	int cyField = RectHeight(rcView);
 
-	//	Make sure the star field is created to fit the viewport
-
-	CreateStarfield(cxField, cyField);
-
 	//	Compute the minimum brightness to paint
 
 	WORD wMaxColor = (WORD)(Max(Max(CG16bitImage::RedValue(wSpaceColor), CG16bitImage::GreenValue(wSpaceColor)), CG16bitImage::BlueValue(wSpaceColor)));
 	WORD wSpaceValue = CG16bitImage::RGBValue(wMaxColor, wMaxColor, wMaxColor);
-
-	//	Get the absolute position of the center
-
-	int xCenter = (int)(pCenter->GetPos().GetX() / rKlicksPerPixel);
-	int yCenter = (int)(pCenter->GetPos().GetY() / rKlicksPerPixel);
 
 	//	Precompute the star distance adj
 
@@ -231,6 +277,57 @@ void CSystemSpacePainter::PaintStarfield (CG16bitImage &Dest, const RECT &rcView
 				}
 
 			*pPixel = pStar->wColor;
+			}
+		}
+	}
+
+void CSystemSpacePainter::PaintViewport (CG16bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx)
+
+//	PaintViewport
+//
+//	Paint the system space background.
+
+	{
+	//	If we don't want a starfield then we just clear the rect
+
+	if (Ctx.fNoStarfield)
+		Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), Ctx.wSpaceColor);
+
+	//	Otherwise, we paint a space background
+
+	else
+		{
+		//	If we haven't yet initialized, do it now
+
+		if (!m_bInitialized)
+			{
+			CreateStarfield(RectWidth(Ctx.rcView), RectHeight(Ctx.rcView));
+			CreateSpaceBackground(pType ? pType->GetBackgroundUNID() : 0);
+
+			m_bInitialized = true;
+			}
+
+		//	Get the absolute position of the center. This is just to get our
+		//	parallax offset. It's OK if we overflow an integer (because we want
+		//	to wrap around anyways).
+
+		int xCenter = (int)(Ctx.pCenter->GetPos().GetX() / g_KlicksPerPixel);
+		int yCenter = (int)(Ctx.pCenter->GetPos().GetY() / g_KlicksPerPixel);
+
+		//	If we have an system background image, paint that.
+
+		if (m_pBackgroundImage)
+			PaintSpaceBackground(Dest, xCenter, yCenter, Ctx);
+
+		//	Otherwise we just clear the rect with the space color
+
+		else
+			{
+			Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), Ctx.wSpaceColor);
+
+			//	Paint the star field on top
+
+			PaintStarfield(Dest, Ctx.rcView, xCenter, yCenter, Ctx.wSpaceColor);
 			}
 		}
 	}

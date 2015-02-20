@@ -1081,13 +1081,20 @@ class CSystemSpacePainter
 			WORD wSpikeColor;
 			};
 
+		void CreateSpaceBackground (DWORD dwBackgroundUNID);
 		void CreateStarfield (int cxField, int cyField);
 		void GenerateSquareDist (int iTotalCount, int iMinValue, int iMaxValue, int *Dist);
-		void PaintStarfield (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rKlicksPerPixel, WORD wSpaceColor);
+		void PaintSpaceBackground (CG16bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx);
+		void PaintStarfield (CG16bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, WORD wSpaceColor);
+
+		bool m_bInitialized;
 
 		TArray<SStar> m_Starfield;
 		int m_cxStarfield;
 		int m_cyStarfield;
+
+		DWORD m_dwBackgroundUNID;
+		CG16bitImage *m_pBackgroundImage;
 	};
 
 struct SObjCreateCtx
