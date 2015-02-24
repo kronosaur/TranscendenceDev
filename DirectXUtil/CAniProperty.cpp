@@ -176,9 +176,23 @@ void CAniProperty::Set (Types iType, DWORD dwValue)
 	{
 	Clear();
 
-	ASSERT(iType == typeColor || iType == typeOpacity || iType == typeInteger);
+	ASSERT(iType == typeOpacity || iType == typeInteger);
 	m_iType = iType;
 	m_Value.dwValue = dwValue;
+	}
+
+void CAniProperty::Set (Types iType, CG32bitPixel rgbValue)
+
+//	Set
+//
+//	Set CG32bitPixel value
+
+	{
+	Clear();
+
+	ASSERT(iType == typeColor);
+	m_iType = iType;
+	m_Value.dwValue = rgbValue.AsDWORD();
 	}
 
 void CAniProperty::Set (Types iType, Metric rValue)

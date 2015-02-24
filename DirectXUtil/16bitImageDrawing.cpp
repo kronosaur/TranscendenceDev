@@ -8,6 +8,7 @@
 #include "DirectXUtil.h"
 #include <math.h>
 #include <stdio.h>
+#include "DrawImpl.h"
 
 #define SMALL_SQUARE_SIZE					2
 #define MEDIUM_SQUARE_SIZE					4

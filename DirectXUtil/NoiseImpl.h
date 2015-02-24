@@ -5,6 +5,8 @@
 
 //	Noise ----------------------------------------------------------------------
 
+#pragma once
+
 const int PERM_TABLE_SIZE =					256;	//	Must be power of 2
 const int PERM_TABLE_MASK =					(PERM_TABLE_SIZE - 1);
 

@@ -7,14 +7,14 @@
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 
-#define RGB_CURSOR								(CG16bitImage::RGBValue(255,255,255))
+#define RGB_CURSOR								(CG32bitPixel(255,255,255))
 
 CGTextArea::CGTextArea (void) : 
 		m_bEditable(false),
 		m_dwStyles(alignLeft),
 		m_cyLineSpacing(0),
 		m_pFont(NULL),
-		m_Color(CG16bitImage::RGBValue(255,255,255)),
+		m_rgbColor(CG32bitPixel(255,255,255)),
 		m_bRTFInvalid(true),
 		m_pFontTable(NULL),
 		m_cxJustifyWidth(0),
@@ -44,7 +44,7 @@ void CGTextArea::FormatRTF (const RECT &rcRect)
 		BlockFormat.iVertAlign = alignTop;
 		BlockFormat.iExtraLineSpacing = m_cyLineSpacing;
 
-		BlockFormat.DefaultFormat.wColor = m_Color;
+		BlockFormat.DefaultFormat.rgbColor = m_rgbColor;
 		BlockFormat.DefaultFormat.pFont = m_pFont;
 
 		m_RichText.InitFromRTF(m_sRTF, *m_pFontTable, BlockFormat);
@@ -84,7 +84,7 @@ int CGTextArea::Justify (const RECT &rcRect)
 		}
 	}
 
-void CGTextArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
+void CGTextArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 //	Paint
 //
@@ -95,8 +95,8 @@ void CGTextArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
 
 	if (m_bEditable)
 		{
-		WORD wBorderColor = CG16bitImage::BlendPixel(CG16bitImage::RGBValue(0, 0, 0), m_Color, 128);
-		DrawRectDotted(Dest, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), wBorderColor);
+		CG32bitPixel rgbBorderColor = CG32bitPixel::Blend(CG32bitPixel(0, 0, 0), m_rgbColor, (BYTE)128);
+		CGDraw::RectOutlineDotted(Dest, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), rgbBorderColor);
 		}
 
 	//	Paint the content
@@ -107,7 +107,7 @@ void CGTextArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
 		PaintRTF(Dest, rcRect);
 	}
 
-void CGTextArea::PaintRTF (CG16bitImage &Dest, const RECT &rcRect)
+void CGTextArea::PaintRTF (CG32bitImage &Dest, const RECT &rcRect)
 
 //	PaintRTF
 //
@@ -130,18 +130,16 @@ void CGTextArea::PaintRTF (CG16bitImage &Dest, const RECT &rcRect)
 	for (i = 0; i < m_RichText.GetFormattedSpanCount(); i++)
 		{
 		const SFormattedTextSpan &Span = m_RichText.GetFormattedSpan(i);
-		DWORD dwOpacity = 255;
 
 		Span.Format.pFont->DrawText(Dest,
 				rcRect.left + Span.x,
 				rcRect.top + Span.y,
-				Span.Format.wColor,
-				dwOpacity,
+				Span.Format.rgbColor,
 				Span.sText);
 		}
 	}
 
-void CGTextArea::PaintText (CG16bitImage &Dest, const RECT &rcRect)
+void CGTextArea::PaintText (CG32bitImage &Dest, const RECT &rcRect)
 
 //	PaintText
 //
@@ -221,9 +219,9 @@ void CGTextArea::PaintText (CG16bitImage &Dest, const RECT &rcRect)
 			//	Paint
 
 			if (HasEffects())
-				m_pFont->DrawTextEffect(Dest, xLine, y, m_Color, sLine, GetEffectCount(), GetEffects());
+				m_pFont->DrawTextEffect(Dest, xLine, y, m_rgbColor, sLine, GetEffectCount(), GetEffects());
 			else
-				Dest.DrawText(xLine, y, *m_pFont, m_Color, sLine);
+				Dest.DrawText(xLine, y, *m_pFont, m_rgbColor, sLine);
 
 			//	Next
 

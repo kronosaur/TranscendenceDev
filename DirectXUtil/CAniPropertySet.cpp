@@ -170,7 +170,7 @@ bool CAniPropertySet::GetBool (const CString &sName) const
 		return false;
 	}
 
-WORD CAniPropertySet::GetColor (const CString &sName) const
+CG32bitPixel CAniPropertySet::GetColor (const CString &sName) const
 
 //	GetColor
 
@@ -428,7 +428,7 @@ void CAniPropertySet::SetBool (const CString &sName, bool bValue, int *retiIndex
 	pProp->CurrentValue.Set(CAniProperty::typeBool, bValue);
 	}
 
-void CAniPropertySet::SetColor (const CString &sName, WORD wValue, int *retiIndex)
+void CAniPropertySet::SetColor (const CString &sName, CG32bitPixel rgbValue, int *retiIndex)
 
 //	SetColor
 //
@@ -436,8 +436,8 @@ void CAniPropertySet::SetColor (const CString &sName, WORD wValue, int *retiInde
 
 	{
 	SProperty *pProp = FindOrAdd(sName, retiIndex);
-	pProp->InitialValue.Set(CAniProperty::typeColor, (DWORD)wValue);
-	pProp->CurrentValue.Set(CAniProperty::typeColor, (DWORD)wValue);
+	pProp->InitialValue.Set(CAniProperty::typeColor, rgbValue);
+	pProp->CurrentValue.Set(CAniProperty::typeColor, rgbValue);
 	}
 
 void CAniPropertySet::SetFont (const CString &sName, const CG16bitFont *pFont, int *retiIndex)
