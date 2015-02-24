@@ -345,6 +345,9 @@
 //	109: 1.6
 //		m_rDistance in CWaitOrder
 //
+//	110: 1.6
+//		New 32-bit colors.
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -399,12 +402,11 @@ struct SLabelEntry
 	int iNewPosition;
 	};
 
-const COLORREF g_rgbSpaceColor = RGB(0,0,8);
-//const COLORREF g_rgbSpaceColor = RGB(0,0,0);
+const CG32bitPixel g_rgbSpaceColor = CG32bitPixel(0,0,8);
 const Metric g_MetersPerKlick = 1000.0;
 const Metric MAP_VERTICAL_ADJUST =						1.4;
 
-const WORD RGB_GRID_LINE =								CG16bitImage::RGBValue(65, 68, 77);
+const CG32bitPixel RGB_GRID_LINE =						CG32bitPixel(65, 68, 77);
 
 const int LABEL_SPACING_X =								8;
 const int LABEL_SPACING_Y =								4;
@@ -714,7 +716,7 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &C
 	return iWeight;
 	}
 
-WORD CSystem::CalculateSpaceColor (CSpaceObject *pPOV)
+CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV)
 
 //	CalculateSpaceColor
 //
@@ -724,17 +726,13 @@ WORD CSystem::CalculateSpaceColor (CSpaceObject *pPOV)
 	CSpaceObject *pStar;
 	int iPercent = CalculateLightIntensity(pPOV->GetPos(), &pStar);
 
-	COLORREF rgbStarColor = (pStar ? pStar->GetSpaceColor() : 0);
+	CG32bitPixel rgbStarColor = (pStar ? pStar->GetSpaceColor() : 0);
 
-	int iRed = GetRValue(rgbStarColor) * iPercent / 100;
-	int iGreen = GetGValue(rgbStarColor) * iPercent / 100;
-	int iBlue = GetBValue(rgbStarColor) * iPercent / 100;
+	int iRed = rgbStarColor.GetRed() * iPercent / 100;
+	int iGreen = rgbStarColor.GetGreen() * iPercent / 100;
+	int iBlue = rgbStarColor.GetBlue() * iPercent / 100;
 
-	COLORREF rgbSpaceColor = RGB(iRed, iGreen, iBlue);
-
-	return CG16bitImage::RGBValue(GetRValue(rgbSpaceColor),
-			GetGValue(rgbSpaceColor),
-			GetBValue(rgbSpaceColor));
+	return CG32bitPixel((BYTE)iRed, (BYTE)iGreen, (BYTE)iBlue);
 	}
 
 void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags)
@@ -783,7 +781,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
 
-	Ctx.wSpaceColor = CalculateSpaceColor(pCenter);
+	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter);
 
 	//	Compute the radius of the circle on which we'll show target indicators
 	//	(in pixels)
@@ -2668,7 +2666,7 @@ CVector CSystem::OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos)
 	return vPos;
 	}
 
-void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG16bitImage &Dest, int x, int y, CSpaceObject *pObj)
+void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj)
 
 //	PaintDestinationMarker
 //
@@ -2680,11 +2678,11 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG16bitImage &Dest
 	//	Figure out the bearing for the destination object.
 
 	int iBearing = VectorToPolar(pObj->GetPos() - Ctx.pCenter->GetPos());
-	WORD wColor = pObj->GetSymbolColor();
+	CG32bitPixel rgbColor = pObj->GetSymbolColor();
 
 	//	Paint the arrow
 
-	CPaintHelper::PaintArrow(Dest, x, y, iBearing, wColor);
+	CPaintHelper::PaintArrow(Dest, x, y, iBearing, rgbColor);
 
 	//	Paint the text
 
@@ -2702,10 +2700,10 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG16bitImage &Dest
 		iAlign |= alignBottom;
 		}
 
-	pObj->PaintHighlightText(Dest, xText, yText, Ctx, (AlignmentStyles)iAlign, wColor);
+	pObj->PaintHighlightText(Dest, xText, yText, Ctx, (AlignmentStyles)iAlign, rgbColor);
 	}
 
-void CSystem::PaintViewport (CG16bitImage &Dest, 
+void CSystem::PaintViewport (CG32bitImage &Dest, 
 							 const RECT &rcView, 
 							 CSpaceObject *pCenter, 
 							 DWORD dwFlags)
@@ -2982,13 +2980,13 @@ void CSystem::PaintViewport (CG16bitImage &Dest,
 
 			//	Draw the indicator
 
-			WORD wColor = pObj->GetSymbolColor();
+			CG32bitPixel rgbColor = pObj->GetSymbolColor();
 
 			Dest.Fill(Ctx.xCenter + x - (ENHANCED_SRS_BLOCK_SIZE / 2), 
 					Ctx.yCenter + y - (ENHANCED_SRS_BLOCK_SIZE / 2),
 					ENHANCED_SRS_BLOCK_SIZE, 
 					ENHANCED_SRS_BLOCK_SIZE, 
-					wColor);
+					rgbColor);
 			}
 		}
 
@@ -3001,7 +2999,7 @@ void CSystem::PaintViewport (CG16bitImage &Dest,
 	Dest.ResetClipRect();
 	}
 
-void CSystem::PaintViewportGrid (CMapViewportCtx &Ctx, CG16bitImage &Dest, Metric rGridSize)
+void CSystem::PaintViewportGrid (CMapViewportCtx &Ctx, CG32bitImage &Dest, Metric rGridSize)
 
 //	PaintViewportGrid
 //
@@ -3064,7 +3062,7 @@ void CSystem::PaintViewportGrid (CMapViewportCtx &Ctx, CG16bitImage &Dest, Metri
 		}
 	}
 
-void CSystem::PaintViewportObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj)
+void CSystem::PaintViewportObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj)
 
 //	PaintViewportObject
 //
@@ -3084,7 +3082,7 @@ void CSystem::PaintViewportObject (CG16bitImage &Dest, const RECT &rcView, CSpac
 	//	Compute the transformation to map world coordinates to the viewport
 
 	SViewportPaintCtx Ctx;
-	Ctx.wSpaceColor = CalculateSpaceColor(pCenter);
+	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter);
 	Ctx.XForm = ViewportTransform(pCenter->GetPos(), g_KlicksPerPixel, xCenter, yCenter);
 	Ctx.XFormRel = Ctx.XForm;
 
@@ -3107,7 +3105,7 @@ void CSystem::PaintViewportObject (CG16bitImage &Dest, const RECT &rcView, CSpac
 		}
 	}
 
-void CSystem::PaintViewportLRS (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rScale, DWORD dwFlags, bool *retbNewEnemies)
+void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rScale, DWORD dwFlags, bool *retbNewEnemies)
 
 //	PaintViewportLRS
 //
@@ -3242,7 +3240,7 @@ void CSystem::PaintViewportLRS (CG16bitImage &Dest, const RECT &rcView, CSpaceOb
 		*retbNewEnemies = bNewEnemies;
 	}
 
-void CSystem::PaintViewportMap (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale)
+void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale)
 
 //	PaintViewportMap
 //
@@ -3269,7 +3267,7 @@ void CSystem::PaintViewportMap (CG16bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Clear the rect
 
-	Dest.FillRGB(rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), g_rgbSpaceColor);
+	Dest.Fill(rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), g_rgbSpaceColor);
 
 	//	Paint space environment
 
@@ -3291,7 +3289,7 @@ void CSystem::PaintViewportMap (CG16bitImage &Dest, const RECT &rcView, CSpaceOb
 		Ctx.Transform(pStar->GetPos(), &x, &y);
 		int iGlowRadius = (int)((pStar->GetMaxLightDistance() * LIGHT_SECOND) / rMapScale);
 
-		DrawAlphaGradientCircle(Dest, x, y, iGlowRadius, (WORD)CG16bitImage::PixelFromRGB(pStar->GetSpaceColor()));
+		CGDraw::CircleGradient(Dest, x, y, iGlowRadius, pStar->GetSpaceColor());
 		}
 
 	//	Paint all planets and stars first
@@ -3359,7 +3357,7 @@ void CSystem::PaintViewportMap (CG16bitImage &Dest, const RECT &rcView, CSpaceOb
 	pCenter->PaintMap(Ctx, Dest, x, y);
 	}
 
-void CSystem::PaintViewportMapObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj)
+void CSystem::PaintViewportMapObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj)
 
 //	PaintViewportMapObject
 //

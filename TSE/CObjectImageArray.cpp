@@ -274,7 +274,7 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 		m_pRotationOffset = NULL;
 	}
 
-void CObjectImageArray::CopyImage (CG16bitImage &Dest, int x, int y, int iFrame, int iRotation) const
+void CObjectImageArray::CopyImage (CG32bitImage &Dest, int x, int y, int iFrame, int iRotation) const
 
 //	CopyImage
 //
@@ -283,7 +283,7 @@ void CObjectImageArray::CopyImage (CG16bitImage &Dest, int x, int y, int iFrame,
 	{
 	if (m_pImage)
 		{
-		CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -291,15 +291,7 @@ void CObjectImageArray::CopyImage (CG16bitImage &Dest, int x, int y, int iFrame,
 		int ySrc;
 		ComputeSourceXY(iFrame, iRotation, &xSrc, &ySrc);
 
-		Dest.Blt(xSrc,
-				ySrc,
-				RectWidth(m_rcImage),
-				RectHeight(m_rcImage),
-				*pSource,
-				x,
-				y);
-
-		Dest.CopyAlpha(xSrc,
+		Dest.Copy(xSrc,
 				ySrc,
 				RectWidth(m_rcImage),
 				RectHeight(m_rcImage),
@@ -325,21 +317,19 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 	if (m_pImage == NULL)
 		return;
 
-	CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 	if (pSource == NULL)
 		return;
-
-	WORD wBackColor = pSource->GetBackColor();
 
 	//	Allocate the array of images (if not already allocated)
 
 	if (m_pGlowImages == NULL)
-		m_pGlowImages = new CG16bitImage [m_iRotationCount];
+		m_pGlowImages = new CG8bitImage [m_iRotationCount];
 
 	//	If the image for this rotation has already been initialized, then
 	//	we're done
 
-	if (m_pGlowImages[iRotation].HasAlpha())
+	if (!m_pGlowImages[iRotation].IsEmpty())
 		return;
 
 	//	Otherwise we need to create the glow mask. The glow image is larger
@@ -349,7 +339,7 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 	int cySrcHeight = RectHeight(m_rcImage);
 	int cxGlowWidth = cxSrcWidth + 2 * GLOW_SIZE;
 	int cyGlowHeight = cySrcHeight + 2 * GLOW_SIZE;
-	m_pGlowImages[iRotation].CreateBlankAlpha(cxGlowWidth, cyGlowHeight);
+	m_pGlowImages[iRotation].Create(cxGlowWidth, cyGlowHeight);
 
 	//	Get the extent of the source image
 
@@ -360,8 +350,8 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 
 	//	Loop over every pixel of the destination
 
-	BYTE *pDestRow = m_pGlowImages[iRotation].GetAlphaRow(0);
-	BYTE *pDestRowEnd = m_pGlowImages[iRotation].GetAlphaRow(cyGlowHeight);
+	BYTE *pDestRow = m_pGlowImages[iRotation].GetPixelPos(0, 0);
+	BYTE *pDestRowEnd = m_pGlowImages[iRotation].GetPixelPos(0, cyGlowHeight);
 	int ySrc = rcSrc.top - GLOW_SIZE;
 	while (pDestRow < pDestRowEnd)
 		{
@@ -373,14 +363,11 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 			//	If the source image is using this pixel then we don't
 			//	do anything.
 
-			WORD wValue;
+			CG32bitPixel rgbColor;
 			if ((xSrc >= rcSrc.left && xSrc < rcSrc.right && ySrc >= rcSrc.top && ySrc < rcSrc.bottom)
-					&& ((wValue = *(pSource->GetRowStart(ySrc) + xSrc)) != wBackColor))
+					&& ((rgbColor = pSource->GetPixel(xSrc, ySrc)).GetAlpha()))
 				{
-				DWORD dwGray = (CG16bitImage::RedValue(wValue)
-						+ CG16bitImage::GreenValue(wValue)
-						+ CG16bitImage::BlueValue(wValue)) / 3;
-				if (dwGray < 0x40)
+				if (CG32bitPixel::Desaturate(rgbColor).GetRed() < 0x40)
 					*pDest = 0x60;
 				else
 					*pDest = 0x00;
@@ -398,7 +385,7 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 				int iTotal = 0;
 				for (int i = yStart; i < yEnd; i++)
 					for (int j = xStart; j < xEnd; j++)
-						if (*(pSource->GetRowStart(ySrc + g_FilterOffset[i]) + xSrc + g_FilterOffset[j]) != wBackColor)
+						if (pSource->GetPixel(xSrc + g_FilterOffset[j], ySrc + g_FilterOffset[i]).GetAlpha())
 							iTotal += g_Filter[i][j];
 
 				int iValue = (512 * iTotal / FIXED_POINT);
@@ -411,7 +398,7 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 			xSrc++;
 			}
 
-		pDestRow = m_pGlowImages[iRotation].NextAlphaRow(pDestRow);
+		pDestRow = m_pGlowImages[iRotation].NextRow(pDestRow);
 		ySrc++;
 		}
 	}
@@ -432,14 +419,14 @@ void CObjectImageArray::GenerateScaledImages (int iRotation, int cxWidth, int cy
 		if (m_pScaledImages)
 			delete [] m_pScaledImages;
 
-		m_pScaledImages = new CG16bitImage [m_iRotationCount];
+		m_pScaledImages = new CG32bitImage [m_iRotationCount];
 		m_cxScaledImage = cxWidth;
 		}
 
 	//	If the image for this rotation has already been initialized, then
 	//	we're done
 
-	else if (m_pScaledImages[iRotation].HasRGB() && m_cxScaledImage)
+	else if (!m_pScaledImages[iRotation].IsEmpty())
 		return;
 
 	//	Get the extent of the source image
@@ -447,7 +434,7 @@ void CObjectImageArray::GenerateScaledImages (int iRotation, int cxWidth, int cy
 	int cxSrcWidth = RectWidth(m_rcImage);
 	int cySrcHeight = RectHeight(m_rcImage);
 
-	CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 	if (pSource == NULL || cxSrcWidth == 0 || cySrcHeight == 0)
 		return;
 
@@ -633,154 +620,44 @@ bool CObjectImageArray::ImagesIntersect (int iTick, int iRotation, int x, int y,
 
 	//	Images
 
-	CG16bitImage *pSrc1 = m_pImage->GetImage(NULL_STR);
-	CG16bitImage *pSrc2 = Image2.m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSrc1 = m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSrc2 = Image2.m_pImage->GetImage(NULL_STR);
 	if (pSrc1 == NULL || pSrc2 == NULL)
 		return false;
 
-	//	If both rectangles have a mask
+	//	Now iterate over the intersection area and see if there
+	//	are any pixels in common.
 
-	if (pSrc1->HasAlpha() && pSrc2->HasAlpha())
+	CG32bitPixel *pRow = pSrc1->GetPixelPos(rcRectInt.left, rcRectInt.top);
+	CG32bitPixel *pRowEnd = pSrc1->GetPixelPos(rcRectInt.left, rcRectInt.bottom);
+	CG32bitPixel *pRow2 = pSrc2->GetPixelPos(rcRectInt2.left, rcRectInt2.top);
+
+	int cxWidthInt = RectWidth(rcRectInt);
+	while (pRow < pRowEnd)
 		{
-		//	Now iterate over the intersection area and see if there
-		//	are any pixels in common.
+		CG32bitPixel *pPos = pRow;
+		CG32bitPixel *pEnd = pPos + cxWidthInt;
+		CG32bitPixel *pPos2 = pRow2;
 
-		BYTE *pRow = pSrc1->GetAlphaRow(rcRectInt.top) + rcRectInt.left;
-		BYTE *pRowEnd = pSrc1->GetAlphaRow(rcRectInt.bottom) + rcRectInt.left;
-		BYTE *pRow2 = pSrc2->GetAlphaRow(rcRectInt2.top) + rcRectInt2.left;
-
-		int cxWidthInt = RectWidth(rcRectInt);
-		while (pRow < pRowEnd)
+		while (pPos < pEnd)
 			{
-			BYTE *pPos = pRow;
-			BYTE *pEnd = pPos + cxWidthInt;
-			BYTE *pPos2 = pRow2;
+			if (pPos->GetAlpha() && pPos2->GetAlpha())
+				return true;
 
-			while (pPos < pEnd)
-				{
-				if (*pPos && *pPos2)
-					return true;
-
-				pPos++;
-				pPos2++;
-				}
-
-			pRow = pSrc1->NextAlphaRow(pRow);
-			pRow2 = pSrc2->NextAlphaRow(pRow2);
+			pPos++;
+			pPos2++;
 			}
+
+		pRow = pSrc1->NextRow(pRow);
+		pRow2 = pSrc2->NextRow(pRow2);
 		}
-
-	//	If neither has a mask
-
-	else if (!pSrc1->HasAlpha() && !pSrc2->HasAlpha())
-		{
-		//	Now iterate over the intersection area and see if there
-		//	are any pixels in common.
-
-		WORD *pRow = pSrc1->GetRowStart(rcRectInt.top) + rcRectInt.left;
-		WORD *pRowEnd = pSrc1->GetRowStart(rcRectInt.bottom) + rcRectInt.left;
-		WORD *pRow2 = pSrc2->GetRowStart(rcRectInt2.top) + rcRectInt2.left;
-		WORD wBackColor1 = pSrc1->GetBackColor();
-		WORD wBackColor2 = pSrc2->GetBackColor();
-
-		int cxWidthInt = RectWidth(rcRectInt);
-		while (pRow < pRowEnd)
-			{
-			WORD *pPos = pRow;
-			WORD *pEnd = pPos + cxWidthInt;
-			WORD *pPos2 = pRow2;
-
-			while (pPos < pEnd)
-				{
-				if (*pPos != wBackColor1 && *pPos2 != wBackColor2)
-					return true;
-
-				pPos++;
-				pPos2++;
-				}
-
-			pRow = pSrc1->NextRow(pRow);
-			pRow2 = pSrc2->NextRow(pRow2);
-			}
-		}
-
-	//	If src1 has a mask and src2 does not
-
-	else if (pSrc1->HasAlpha() && !pSrc2->HasAlpha())
-		{
-		//	Now iterate over the intersection area and see if there
-		//	are any pixels in common.
-
-		BYTE *pRow = pSrc1->GetAlphaRow(rcRectInt.top) + rcRectInt.left;
-		BYTE *pRowEnd = pSrc1->GetAlphaRow(rcRectInt.bottom) + rcRectInt.left;
-		WORD *pRow2 = pSrc2->GetRowStart(rcRectInt2.top) + rcRectInt2.left;
-		WORD wBackColor2 = pSrc2->GetBackColor();
-
-		int cxWidthInt = RectWidth(rcRectInt);
-		while (pRow < pRowEnd)
-			{
-			BYTE *pPos = pRow;
-			BYTE *pEnd = pPos + cxWidthInt;
-			WORD *pPos2 = pRow2;
-
-			while (pPos < pEnd)
-				{
-				if (*pPos && *pPos2 != wBackColor2)
-					return true;
-
-				pPos++;
-				pPos2++;
-				}
-
-			pRow = pSrc1->NextAlphaRow(pRow);
-			pRow2 = pSrc2->NextRow(pRow2);
-			}
-		}
-
-	//	If src1 has no mask and src2 does
-
-	else if (!pSrc1->HasAlpha() && pSrc2->HasAlpha())
-		{
-		//	Now iterate over the intersection area and see if there
-		//	are any pixels in common.
-
-		WORD *pRow = pSrc1->GetRowStart(rcRectInt.top) + rcRectInt.left;
-		WORD *pRowEnd = pSrc1->GetRowStart(rcRectInt.bottom) + rcRectInt.left;
-		BYTE *pRow2 = pSrc2->GetAlphaRow(rcRectInt2.top) + rcRectInt2.left;
-		WORD wBackColor1 = pSrc1->GetBackColor();
-
-		int cxWidthInt = RectWidth(rcRectInt);
-		while (pRow < pRowEnd)
-			{
-			WORD *pPos = pRow;
-			WORD *pEnd = pPos + cxWidthInt;
-			BYTE *pPos2 = pRow2;
-
-			while (pPos < pEnd)
-				{
-				if (*pPos != wBackColor1 && *pPos2)
-					return true;
-
-				pPos++;
-				pPos2++;
-				}
-
-			pRow = pSrc1->NextRow(pRow);
-			pRow2 = pSrc2->NextAlphaRow(pRow2);
-			}
-		}
-
-	//	Can't happen
-
-	else
-		return false;
 
 	//	If we get this far then we did not intersect
 
 	return false;
 	}
 
-ALERROR CObjectImageArray::Init (CG16bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap)
+ALERROR CObjectImageArray::Init (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap)
 
 //	Init
 //
@@ -955,7 +832,7 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CObjectImageArray::PaintImage (CG16bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite) const
+void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite) const
 
 //	PaintImage
 //
@@ -964,7 +841,7 @@ void CObjectImageArray::PaintImage (CG16bitImage &Dest, int x, int y, int iTick,
 	{
 	if (m_pImage)
 		{
-		CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -980,7 +857,7 @@ void CObjectImageArray::PaintImage (CG16bitImage &Dest, int x, int y, int iTick,
 
 		if (bComposite)
 			{
-			Dest.CompositeTransBlt(xSrc,
+			Dest.Composite(xSrc,
 					ySrc,
 					RectWidth(m_rcImage),
 					RectHeight(m_rcImage),
@@ -991,18 +868,18 @@ void CObjectImageArray::PaintImage (CG16bitImage &Dest, int x, int y, int iTick,
 			}
 		else if (m_iBlending == blendLighten)
 			{
-			Dest.BltLighten(xSrc,
+			CGDraw::BltLighten(Dest,
+					x - (RectWidth(m_rcImage) / 2),
+					y - (RectHeight(m_rcImage) / 2),
+					*pSource,
+					xSrc,
 					ySrc,
 					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
-					255,
-					*pSource,
-					x - (RectWidth(m_rcImage) / 2),
-					y - (RectHeight(m_rcImage) / 2));
+					RectHeight(m_rcImage));
 			}
 		else
 			{
-			Dest.ColorTransBlt(xSrc,
+			Dest.Blt(xSrc,
 					ySrc,
 					RectWidth(m_rcImage),
 					RectHeight(m_rcImage),
@@ -1014,7 +891,7 @@ void CObjectImageArray::PaintImage (CG16bitImage &Dest, int x, int y, int iTick,
 		}
 	}
 
-void CObjectImageArray::PaintImageShimmering (CG16bitImage &Dest, int x, int y, int iTick, int iRotation, DWORD byOpacity) const
+void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, DWORD byOpacity) const
 
 //	PaintImageShimmering
 //
@@ -1026,7 +903,7 @@ void CObjectImageArray::PaintImageShimmering (CG16bitImage &Dest, int x, int y, 
 	{
 	if (m_pImage)
 		{
-		CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -1040,20 +917,20 @@ void CObjectImageArray::PaintImageShimmering (CG16bitImage &Dest, int x, int y, 
 			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
 			}
 
-		DrawBltShimmer(Dest,
+		CGDraw::BltShimmer(Dest,
 				x - (RectWidth(m_rcImage) / 2),
 				y - (RectHeight(m_rcImage) / 2),
+				*pSource,
 				RectWidth(m_rcImage),
 				RectHeight(m_rcImage),
-				*pSource,
 				xSrc,
 				ySrc,
-				byOpacity,
+				(BYTE)byOpacity,
 				iTick);
 		}
 	}
 
-void CObjectImageArray::PaintImageGrayed (CG16bitImage &Dest, int x, int y, int iTick, int iRotation) const
+void CObjectImageArray::PaintImageGrayed (CG32bitImage &Dest, int x, int y, int iTick, int iRotation) const
 
 //	PaintImageGrayed
 //
@@ -1062,7 +939,7 @@ void CObjectImageArray::PaintImageGrayed (CG16bitImage &Dest, int x, int y, int 
 	{
 	if (m_pImage)
 		{
-		CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -1076,18 +953,19 @@ void CObjectImageArray::PaintImageGrayed (CG16bitImage &Dest, int x, int y, int 
 			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
 			}
 
-		Dest.BltGray(xSrc,
+		CGDraw::BltGray(Dest,
+				x - (RectWidth(m_rcImage) / 2),
+				y - (RectHeight(m_rcImage) / 2),
+				*pSource,
+				xSrc,
 				ySrc,
 				RectWidth(m_rcImage),
 				RectHeight(m_rcImage),
-				128,
-				*pSource,
-				x - (RectWidth(m_rcImage) / 2),
-				y - (RectHeight(m_rcImage) / 2));
+				128);
 		}
 	}
 
-void CObjectImageArray::PaintImageUL (CG16bitImage &Dest, int x, int y, int iTick, int iRotation) const
+void CObjectImageArray::PaintImageUL (CG32bitImage &Dest, int x, int y, int iTick, int iRotation) const
 
 //	PaintImageUL
 //
@@ -1098,7 +976,7 @@ void CObjectImageArray::PaintImageUL (CG16bitImage &Dest, int x, int y, int iTic
 	{
 	if (m_pImage)
 		{
-		CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -1108,18 +986,18 @@ void CObjectImageArray::PaintImageUL (CG16bitImage &Dest, int x, int y, int iTic
 
 		if (m_iBlending == blendLighten)
 			{
-			Dest.BltLighten(xSrc,
+			CGDraw::BltLighten(Dest,
+					x,
+					y,
+					*pSource,
+					xSrc,
 					ySrc,
 					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
-					255,
-					*pSource,
-					x,
-					y);
+					RectHeight(m_rcImage));
 			}
 		else
 			{
-			Dest.ColorTransBlt(xSrc,
+			Dest.Blt(xSrc,
 					ySrc,
 					RectWidth(m_rcImage),
 					RectHeight(m_rcImage),
@@ -1131,12 +1009,12 @@ void CObjectImageArray::PaintImageUL (CG16bitImage &Dest, int x, int y, int iTic
 		}
 	}
 
-void CObjectImageArray::PaintImageWithGlow (CG16bitImage &Dest,
+void CObjectImageArray::PaintImageWithGlow (CG32bitImage &Dest,
 											int x,
 											int y,
 											int iTick,
 											int iRotation,
-											COLORREF rgbGlowColor) const
+											CG32bitPixel rgbGlowColor) const
 
 //	PaintImageWithGlow
 //
@@ -1173,13 +1051,12 @@ void CObjectImageArray::PaintImageWithGlow (CG16bitImage &Dest,
 			RectWidth(m_rcImage) + 2 * GLOW_SIZE,
 			RectHeight(m_rcImage) + 2 * GLOW_SIZE,
 			m_pGlowImages[iRotation],
-			(WORD)CG16bitImage::PixelFromRGB(rgbGlowColor),
+			CG32bitPixel(rgbGlowColor, (BYTE)iStrength),
 			x - (RectWidth(m_rcImage) / 2) - GLOW_SIZE,
-			y - (RectHeight(m_rcImage) / 2) - GLOW_SIZE,
-			(BYTE)iStrength);
+			y - (RectHeight(m_rcImage) / 2) - GLOW_SIZE);
 	}
 
-void CObjectImageArray::PaintRotatedImage (CG16bitImage &Dest,
+void CObjectImageArray::PaintRotatedImage (CG32bitImage &Dest,
 										   int x,
 										   int y,
 										   int iTick,
@@ -1194,7 +1071,7 @@ void CObjectImageArray::PaintRotatedImage (CG16bitImage &Dest,
 	if (m_pImage == NULL)
 		return;
 
-	CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 	if (pSource == NULL)
 		return;
 
@@ -1220,18 +1097,10 @@ void CObjectImageArray::PaintRotatedImage (CG16bitImage &Dest,
 
 	//	Blt
 
-	DrawBltRotated(Dest,
-			x,
-			y,
-			iRotation,
-			*pSource,
-			xSrc,
-			ySrc,
-			cxSrc,
-			cySrc);
+	CGDraw::BltTransformed(Dest, x, y, 1.0, 1.0, iRotation, *pSource, xSrc, ySrc, cxSrc, cySrc);
 	}
 
-void CObjectImageArray::PaintScaledImage (CG16bitImage &Dest,
+void CObjectImageArray::PaintScaledImage (CG32bitImage &Dest,
 										  int x,
 										  int y,
 										  int iTick,
@@ -1251,7 +1120,7 @@ void CObjectImageArray::PaintScaledImage (CG16bitImage &Dest,
 
 	//	Paint the image
 
-	Dest.ColorTransBlt(0,
+	Dest.Blt(0,
 			0,
 			cxWidth,
 			cyHeight,
@@ -1261,12 +1130,12 @@ void CObjectImageArray::PaintScaledImage (CG16bitImage &Dest,
 			y - (cyHeight / 2));
 	}
 
-void CObjectImageArray::PaintSilhoutte (CG16bitImage &Dest,
+void CObjectImageArray::PaintSilhoutte (CG32bitImage &Dest,
 										int x,
 										int y,
 										int iTick,
 										int iRotation,
-										WORD wColor) const
+										CG32bitPixel rgbColor) const
 
 //	PaintSilhouette
 //
@@ -1275,7 +1144,7 @@ void CObjectImageArray::PaintSilhoutte (CG16bitImage &Dest,
 	{
 	if (m_pImage)
 		{
-		CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -1294,7 +1163,7 @@ void CObjectImageArray::PaintSilhoutte (CG16bitImage &Dest,
 				RectWidth(m_rcImage),
 				RectHeight(m_rcImage),
 				*pSource,
-				wColor,
+				rgbColor,
 				x - (RectWidth(m_rcImage) / 2),
 				y - (RectHeight(m_rcImage) / 2));
 		}
@@ -1310,7 +1179,7 @@ bool CObjectImageArray::PointInImage (int x, int y, int iTick, int iRotation) co
 	{
 	if (m_pImage)
 		{
-		CG16bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
 		if (pSource == NULL)
 			return false;
 
@@ -1343,7 +1212,7 @@ bool CObjectImageArray::PointInImage (int x, int y, int iTick, int iRotation) co
 
 		//	Check to see if the point is inside or outside the mask
 
-		return (pSource->GetPixelAlpha(x, y) != 0);
+		return (pSource->GetPixel(x, y).GetAlpha() != 0);
 		}
 	else
 		return false;
@@ -1370,7 +1239,7 @@ bool CObjectImageArray::PointInImage (SPointInObjectCtx &Ctx, int x, int y) cons
 
 		//	Check to see if the point is inside or outside the mask
 
-		return (Ctx.pImage->GetPixelAlpha(x, y) != 0);
+		return (Ctx.pImage->GetPixel(x, y).GetAlpha() != 0);
 		}
 	else
 		return false;

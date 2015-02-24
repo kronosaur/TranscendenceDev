@@ -83,7 +83,7 @@ class CCompositeEntry : public IImageEntry
 		TArray<IImageEntry *> m_Layers;
 
 		CObjectImageArray m_Image;
-		CG16bitImage *m_pImageCache;
+		CG32bitImage *m_pImageCache;
 	};
 
 class CEffectEntry : public IImageEntry
@@ -125,7 +125,7 @@ class CFilterColorizeEntry : public IImageEntry
 		IImageEntry *m_pSource;
 		DWORD m_dwHue;
 		DWORD m_dwSaturation;
-		WORD m_wColor;
+		CG32bitPixel m_rgbColor;
 	};
 
 class CImageEntry : public IImageEntry
@@ -534,9 +534,8 @@ void CCompositeEntry::GetImage (const CCompositeImageSelector &Selector, CObject
 		return;
 		}
 
-	CG16bitImage *pComp = new CG16bitImage;
-	pComp->CreateBlank(cxWidth, cyHeight, false);
-	pComp->SetTransparentColor();
+	CG32bitImage *pComp = new CG32bitImage;
+	pComp->Create(cxWidth, cyHeight, CG32bitImage::alpha1);
 
 	int xCenter = cxWidth / 2;
 	int yCenter = cyHeight / 2;
@@ -731,8 +730,8 @@ void CEffectEntry::GetImage (const CCompositeImageSelector &Selector, CObjectIma
 
 	//	Create a resulting image
 
-	CG16bitImage *pDest = new CG16bitImage;
-	pDest->CreateBlank(cxWidth, cyHeight, true, 0x00, (bCanComposite ? 0x00 : 0xff));
+	CG32bitImage *pDest = new CG32bitImage;
+	pDest->Create(cxWidth, cyHeight, CG32bitImage::alpha8, (bCanComposite ? CG32bitPixel::Null() : CG32bitPixel(0)));
 
 	//	Set up paint context
 
@@ -856,7 +855,7 @@ void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, CO
 	CObjectImageArray Source;
 	m_pSource->GetImage(Selector, &Source);
 	const RECT &rcSource = Source.GetImageRect();
-	CG16bitImage &SourceImage = Source.GetImage(NULL_STR);
+	CG32bitImage &SourceImage = Source.GetImage(NULL_STR);
 	int cxWidth = RectWidth(rcSource);
 	int cyHeight = RectHeight(rcSource);
 	if (!Source.IsLoaded() || cxWidth == 0 || cyHeight == 0)
@@ -867,23 +866,21 @@ void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, CO
 
 	//	Create the destination image
 
-	CG16bitImage *pDest = new CG16bitImage;
-	pDest->CreateBlank(cxWidth, cyHeight, SourceImage.HasAlpha());
-	if (!SourceImage.HasAlpha())
-		pDest->SetTransparentColor();
+	CG32bitImage *pDest = new CG32bitImage;
+	pDest->Create(cxWidth, cyHeight, SourceImage.GetAlphaType());
 
 	//	Blt the to the destination with colorization
 
-	CopyBltColorize(*pDest,
+	CGDraw::CopyColorize(*pDest,
 			0,
 			0,
-			cxWidth,
-			cyHeight,
 			SourceImage,
 			rcSource.left,
 			rcSource.top,
-			m_dwHue,
-			m_dwSaturation);
+			cxWidth,
+			cyHeight,
+			(REALPIXEL)m_dwHue,
+			(REALPIXEL)m_dwSaturation / 100.0);
 
 	//	Initialize an image
 
@@ -928,10 +925,10 @@ ALERROR CFilterColorizeEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGe
 	CString sColor;
 	if (pDesc->FindAttribute(COLOR_ATTRIB, &sColor))
 		{
-		COLORREF rgbColor = LoadCOLORREF(sColor);
-		SColorHSB hsbColor = CG16bitPixel::RGBToHSB(CG16bitPixel::RGBToRGBReal(rgbColor));
-		m_dwHue = (DWORD)hsbColor.rHue;
-		m_dwSaturation = (DWORD)(hsbColor.rSaturation * 100.0);
+		CG32bitPixel rgbColor = ::LoadRGBColor(sColor);
+		CGRealHSB hsbColor = CGRealHSB::FromRGB(rgbColor);
+		m_dwHue = (DWORD)hsbColor.GetHue();
+		m_dwSaturation = (DWORD)(hsbColor.GetSaturation() * 100.0);
 		}
 	else
 		{

@@ -25,10 +25,10 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual void OnBeginFade (void);
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged);
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintComposite (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintFade (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 		virtual void SetVariants (int iVariants);
 
@@ -258,7 +258,7 @@ void CEffectGroupPainter::OnWriteToStream (IWriteStream *pStream)
 		CEffectCreator::WritePainterToStream(pStream, m_Painters[i]);
 	}
 
-void CEffectGroupPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CEffectGroupPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -273,7 +273,7 @@ void CEffectGroupPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPain
 			m_Painters[i]->Paint(Dest, x, y, *pCtx);
 	}
 
-void CEffectGroupPainter::PaintComposite (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CEffectGroupPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintComposite
 //
@@ -288,7 +288,7 @@ void CEffectGroupPainter::PaintComposite (CG16bitImage &Dest, int x, int y, SVie
 			m_Painters[i]->PaintComposite(Dest, x, y, *pCtx);
 	}
 
-void CEffectGroupPainter::PaintFade (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CEffectGroupPainter::PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintFade
 //
@@ -303,7 +303,7 @@ void CEffectGroupPainter::PaintFade (CG16bitImage &Dest, int x, int y, SViewport
 			m_Painters[i]->PaintFade(Dest, x, y, *pCtx);
 	}
 
-void CEffectGroupPainter::PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)
+void CEffectGroupPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)
 
 //	PaintHit
 //

@@ -60,9 +60,9 @@ const Metric MAX_ATTACK_DISTANCE2 =				MAX_ATTACK_DISTANCE * MAX_ATTACK_DISTANCE
 #define MAX_ANGER						1800
 #define ANGER_INC						30
 
-const WORD RGB_SIGN_COLOR =				CG16bitImage::RGBValue(196, 223, 155);
-const COLORREF RGB_ORBIT_LINE =			RGB(115, 149, 229);
-const WORD RGB_MAP_LABEL =				CG16bitImage::RGBValue(255, 217, 128);
+const CG32bitPixel RGB_SIGN_COLOR =		CG32bitPixel(196, 223, 155);
+const CG32bitPixel RGB_ORBIT_LINE =		CG32bitPixel(115, 149, 229);
+const CG32bitPixel RGB_MAP_LABEL =		CG32bitPixel(255, 217, 128);
 
 static CObjectClass<CStation>g_Class(OBJID_CSTATION);
 
@@ -881,8 +881,6 @@ ALERROR CStation::CreateMapImage (void)
 //	Creates a small version of the station image
 
 	{
-	ALERROR error;
-
 	//	Only do this for stars and planets
 
 	if (m_Scale != scaleStar && m_Scale != scaleWorld)
@@ -900,10 +898,10 @@ ALERROR CStation::CreateMapImage (void)
 	if (!Image.IsLoaded())
 		return NOERROR;
 
-	CG16bitImage &BmpImage = Image.GetImage(strFromInt(m_pType->GetUNID()));
+	CG32bitImage &BmpImage = Image.GetImage(strFromInt(m_pType->GetUNID()));
 	const RECT &rcImage = Image.GetImageRect();
 
-	if (error = m_MapImage.CreateFromImageTransformed(BmpImage,
+	if (!m_MapImage.CreateFromImageTransformed(BmpImage,
 			rcImage.left,
 			rcImage.top + RectHeight(rcImage) * iRotation,
 			RectWidth(rcImage),
@@ -911,7 +909,7 @@ ALERROR CStation::CreateMapImage (void)
 			rScale,
 			rScale,
 			0.0))
-		return error;
+		return ERR_FAIL;
 
 	return NOERROR;
 	}
@@ -2160,7 +2158,7 @@ void CStation::OnComponentChanged (ObjectComponentTypes iComponent)
 		}
 	}
 
-void CStation::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -2301,7 +2299,7 @@ void CStation::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 			yTop, 
 			xRight - xLeft, 
 			yBottom - yTop, 
-			CG16bitImage::RGBValue(220,220,220));
+			CG32bitPixel(220,220,220));
 	}
 #endif
 
@@ -2310,12 +2308,12 @@ void CStation::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		{
 		int x, y;
 		Ctx.XForm.Transform(m_DockingPorts.GetPortPos(this, i, NULL), &x, &y);
-		Dest.Fill(x - 2, y - 2, 4, 4, CG16bitImage::RGBValue(0, 255, 0));
+		Dest.Fill(x - 2, y - 2, 4, 4, CG32bitPixel(0, 255, 0));
 		}
 #endif
 	}
 
-void CStation::OnPaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CStation::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaintAnnotations
 //
@@ -2375,7 +2373,7 @@ void CStation::OnObjLeaveGate (CSpaceObject *pObj)
 		}
 	}
 
-void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y)
+void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 //	OnPaintMap
 //
@@ -2393,26 +2391,27 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int 
 	//	Draw the station
 
 	if (m_Scale == scaleWorld)
-		Dest.ColorTransBlt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
+		Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
 				m_MapImage,
 				x - (m_MapImage.GetWidth() / 2),
 				y - (m_MapImage.GetHeight() / 2));
 
 	else if (m_Scale == scaleStar)
-		Dest.BltLighten(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
-				m_MapImage,
+		CGDraw::BltLighten(Dest,
 				x - (m_MapImage.GetWidth() / 2),
-				y - (m_MapImage.GetHeight() / 2));
+				y - (m_MapImage.GetHeight() / 2),
+				m_MapImage,
+				0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight());
 
 	else if (m_pType->ShowsMapIcon() && m_fKnown)
 		{
 		//	Figure out the color
 
-		WORD wColor;
+		CG32bitPixel rgbColor;
 		if (IsEnemy(GetUniverse()->GetPOV()))
-			wColor = CG16bitImage::RGBValue(255, 0, 0);
+			rgbColor = CG32bitPixel(255, 0, 0);
 		else
-			wColor = CG16bitImage::RGBValue(0, 192, 0);
+			rgbColor = CG32bitPixel(0, 192, 0);
 
 		//	Paint the marker
 
@@ -2420,24 +2419,24 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int 
 			{
 			if (IsActiveStargate())
 				{
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerMediumCross);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerMediumCross);
 				}
 			else if (!IsAbandoned() || IsImmutable())
 				{
-				Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallFilledSquare);
+				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
 				}
 			else
 				{
-				Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallSquare);
+				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 				}
 			}
 		else
 			Dest.DrawDot(x, y, 
-					wColor, 
-					CG16bitImage::markerSmallRound);
+					rgbColor, 
+					markerSmallRound);
 
 		//	Paint the label
 
@@ -3132,7 +3131,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
-void CStation::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CStation::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //
@@ -3150,7 +3149,7 @@ void CStation::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransfo
 
 	if (m_Scale == scaleWorld || m_Scale == scaleStar)
 		{
-		Dest.ColorTransBlt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
+		Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
 				m_MapImage,
 				x - (m_MapImage.GetWidth() / 2),
 				y - (m_MapImage.GetHeight() / 2));
@@ -3162,35 +3161,35 @@ void CStation::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransfo
 		{
 		//	Paint red if enemy, green otherwise
 
-		WORD wColor = GetSymbolColor();
+		CG32bitPixel rgbColor = GetSymbolColor();
 		if (m_Scale == scaleStructure && m_rMass > 100000.0)
 			{
 			if (IsActiveStargate())
 				{
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerMediumCross);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerMediumCross);
 				}
 			else if (!IsAbandoned() || IsImmutable())
 				{
-				Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallFilledSquare);
+				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
 				}
 			else
 				{
-				Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallSquare);
+				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 				}
 			}
 		else
 			{
 			if (!m_pType->ShowsMapIcon() && m_fExplored)
 				Dest.DrawDot(x, y, 
-						CG16bitImage::RGBValue(128, 128, 128), 
-						CG16bitImage::markerTinyCircle);
+						CG32bitPixel(128, 128, 128), 
+						markerTinyCircle);
 			else
 				Dest.DrawDot(x, y, 
-						wColor, 
-						CG16bitImage::markerTinyCircle);
+						rgbColor, 
+						markerTinyCircle);
 			}
 		}
 	}

@@ -123,7 +123,7 @@ void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos)
 		ComputeLightningPoints(iCount - iMiddle, pPoints + iMiddle, rChaos);
 	}
 
-void DrawItemTypeIcon (CG16bitImage &Dest, int x, int y, CItemType *pType, int cxSize, int cySize, bool bGray)
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, CItemType *pType, int cxSize, int cySize, bool bGray)
 
 //	DrawItemTypeIcon
 //
@@ -138,16 +138,17 @@ void DrawItemTypeIcon (CG16bitImage &Dest, int x, int y, CItemType *pType, int c
 		if (cxSize <= 0 || cySize <= 0)
 			{
 			if (bGray)
-				Dest.BltGray(rcImage.left,
+				CGDraw::BltGray(Dest,
+						x,
+						y,
+						Image.GetImage(NULL_STR),
+						rcImage.left,
 						rcImage.top,
 						RectWidth(rcImage),
 						RectHeight(rcImage),
-						128,
-						Image.GetImage(NULL_STR),
-						x,
-						y);
+						128);
 			else
-				Dest.ColorTransBlt(rcImage.left,
+				Dest.Blt(rcImage.left,
 						rcImage.top,
 						RectWidth(rcImage),
 						RectHeight(rcImage),
@@ -159,7 +160,7 @@ void DrawItemTypeIcon (CG16bitImage &Dest, int x, int y, CItemType *pType, int c
 		else
 			{
 			if (bGray)
-				DrawBltTransformedGray(Dest,
+				CGDraw::BltTransformedGray(Dest,
 						x + (cxSize / 2),
 						y + (cySize / 2),
 						(Metric)cxSize / (Metric)RectWidth(rcImage),
@@ -169,9 +170,10 @@ void DrawItemTypeIcon (CG16bitImage &Dest, int x, int y, CItemType *pType, int c
 						rcImage.left,
 						rcImage.top,
 						RectWidth(rcImage),
-						RectHeight(rcImage));
+						RectHeight(rcImage),
+						128);
 			else
-				DrawBltTransformed(Dest,
+				CGDraw::BltTransformed(Dest,
 						x + (cxSize / 2),
 						y + (cySize / 2),
 						(Metric)cxSize / (Metric)RectWidth(rcImage),
@@ -186,10 +188,10 @@ void DrawItemTypeIcon (CG16bitImage &Dest, int x, int y, CItemType *pType, int c
 		}
 	}
 
-void DrawLightning (CG16bitImage &Dest,
+void DrawLightning (CG32bitImage &Dest,
 					int xFrom, int yFrom,
 					int xTo, int yTo,
-					WORD wColor,
+					CG32bitPixel rgbColor,
 					int iPoints,
 					Metric rChaos)
 
@@ -217,7 +219,7 @@ void DrawLightning (CG16bitImage &Dest,
 		Dest.DrawLine((int)pxPos[i], (int)pyPos[i],
 				(int)pxPos[i+1], (int)pyPos[i+1],
 				1,
-				wColor);
+				rgbColor);
 		}
 
 	//	Done
@@ -226,9 +228,9 @@ void DrawLightning (CG16bitImage &Dest,
 	delete [] pyPos;
 	}
 
-void DrawParticle (CG16bitImage &Dest,
+void DrawParticle (CG32bitImage &Dest,
 				   int x, int y,
-				   WORD wColor,
+				   CG32bitPixel rgbColor,
 				   int iSize,
 				   DWORD byOpacity)
 
@@ -242,49 +244,48 @@ void DrawParticle (CG16bitImage &Dest,
 	switch (iSize)
 		{
 		case 0:
-			Dest.DrawPixelTrans(x, y, wColor, (BYTE)byOpacity);
+			Dest.SetPixelTrans(x, y, rgbColor, (BYTE)byOpacity);
 			break;
 
 		case 1:
-			Dest.DrawPixelTrans(x, y, wColor, (BYTE)byOpacity);
-			Dest.DrawPixelTrans(x + 1, y, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x, y + 1, wColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x, y, rgbColor, (BYTE)byOpacity);
+			Dest.SetPixelTrans(x + 1, y, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x, y + 1, rgbColor, (BYTE)byOpacity2);
 			break;
 
 		case 2:
-			Dest.DrawPixelTrans(x, y, wColor, (BYTE)byOpacity);
-			Dest.DrawPixelTrans(x + 1, y, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x, y + 1, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x - 1, y, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x, y - 1, wColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x, y, rgbColor, (BYTE)byOpacity);
+			Dest.SetPixelTrans(x + 1, y, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x, y + 1, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x - 1, y, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x, y - 1, rgbColor, (BYTE)byOpacity2);
 			break;
 
 		case 3:
-			Dest.DrawPixelTrans(x, y, wColor, (BYTE)byOpacity);
-			Dest.DrawPixelTrans(x + 1, y, wColor, (BYTE)byOpacity);
-			Dest.DrawPixelTrans(x, y + 1, wColor, (BYTE)byOpacity);
-			Dest.DrawPixelTrans(x - 1, y, wColor, (BYTE)byOpacity);
-			Dest.DrawPixelTrans(x, y - 1, wColor, (BYTE)byOpacity);
-			Dest.DrawPixelTrans(x + 1, y + 1, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x + 1, y - 1, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x - 1, y + 1, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x - 1, y - 1, wColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x, y, rgbColor, (BYTE)byOpacity);
+			Dest.SetPixelTrans(x + 1, y, rgbColor, (BYTE)byOpacity);
+			Dest.SetPixelTrans(x, y + 1, rgbColor, (BYTE)byOpacity);
+			Dest.SetPixelTrans(x - 1, y, rgbColor, (BYTE)byOpacity);
+			Dest.SetPixelTrans(x, y - 1, rgbColor, (BYTE)byOpacity);
+			Dest.SetPixelTrans(x + 1, y + 1, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x + 1, y - 1, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x - 1, y + 1, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x - 1, y - 1, rgbColor, (BYTE)byOpacity2);
 			break;
 
 		case 4:
 		default:
 			{
-			Dest.FillTrans(x - 1,
+			Dest.Fill(x - 1,
 					y - 1,
 					3,
 					3,
-					wColor,
-					(BYTE)byOpacity);
+					CG32bitPixel(rgbColor, (BYTE)byOpacity));
 
-			Dest.DrawPixelTrans(x + 2, y, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x, y + 2, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x - 2, y, wColor, (BYTE)byOpacity2);
-			Dest.DrawPixelTrans(x, y - 2, wColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x + 2, y, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x, y + 2, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x - 2, y, rgbColor, (BYTE)byOpacity2);
+			Dest.SetPixelTrans(x, y - 2, rgbColor, (BYTE)byOpacity2);
 			}
 		}
 	}

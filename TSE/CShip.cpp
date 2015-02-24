@@ -68,7 +68,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_SELECTED_WEAPON				CONSTLIT("selectedWeapon")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 
-const WORD RGB_MAP_LABEL =						CG16bitImage::RGBValue(255, 217, 128);
+const CG32bitPixel RGB_MAP_LABEL =				CG32bitPixel(255, 217, 128);
 
 const Metric MAX_AUTO_TARGET_DISTANCE =			(LIGHT_SECOND * 30.0);
 
@@ -4319,7 +4319,7 @@ void CShip::OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, cons
 	m_pController->OnObjEnteredGate(pObj, pDestNode, sDestEntryPoint, pStargate);
 	}
 
-void CShip::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -4427,7 +4427,7 @@ void CShip::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 					(int)vFrom.GetY() + y,
 					(int)vTo.GetX() + x,
 					(int)vTo.GetY() + y,
-					CG16bitImage::RGBValue(0x00, 0xa9, 0xff),
+					CG32bitPixel(0x00, 0xa9, 0xff),
 					16,
 					0.4);
 			}
@@ -4459,13 +4459,13 @@ void CShip::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 			int xPos, yPos;
 			Ctx.XForm.Transform(vPos, &xPos, &yPos);
 
-			Dest.DrawDot(xPos, yPos, CG16bitImage::RGBValue(255, 255, 0), CG16bitImage::markerMediumCross);
+			Dest.DrawDot(xPos, yPos, CG32bitPixel(255, 255, 0), markerMediumCross);
 			}
 		}
 #endif
 	}
 
-void CShip::OnPaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CShip::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaintAnnotations
 //
@@ -4475,7 +4475,7 @@ void CShip::OnPaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaint
 	m_Overlays.PaintAnnotations(Dest, x, y, Ctx);
 	}
 
-void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y)
+void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 //	Paint
 //
@@ -4504,14 +4504,14 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y)
 
 	else if (m_fKnown && m_pClass->HasDockingPorts())
 		{
-		WORD wColor;
+		CG32bitPixel rgbColor;
 		if (IsEnemy(GetUniverse()->GetPOV()))
-			wColor = CG16bitImage::RGBValue(255, 0, 0);
+			rgbColor = CG32bitPixel(255, 0, 0);
 		else
-			wColor = CG16bitImage::RGBValue(0, 192, 0);
+			rgbColor = CG32bitPixel(0, 192, 0);
 
-		Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-		Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallFilledSquare);
+		Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+		Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
 
 		if (m_sMapLabel.IsBlank())
 			{
@@ -5710,7 +5710,7 @@ bool CShip::OrientationChanged (void)
 	return false;
 	}
 
-void CShip::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CShip::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //
@@ -5722,10 +5722,10 @@ void CShip::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform 
 
 	//	Paint red if enemy, blue otherwise
 
-	WORD wColor = GetSymbolColor();
+	CG32bitPixel rgbColor = GetSymbolColor();
 	Dest.DrawDot(x, y, 
-			wColor, 
-			CG16bitImage::markerSmallRound);
+			rgbColor, 
+			markerSmallRound);
 
 	//	Identified
 

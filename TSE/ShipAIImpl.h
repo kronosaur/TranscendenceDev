@@ -42,7 +42,7 @@ class CAIBehaviorCtx
 		inline bool AvoidsExplodingStations (void) const { return m_fAvoidExplodingStations; }
 		inline void ClearBestWeapon (void) { m_fRecalcBestWeapon = true; }
 		void ClearNavPath (void);
-		void DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		inline CString GetAISetting (const CString &sSetting) { return m_AISettings.GetValue(sSetting); }
 		inline const CAISettings &GetAISettings (void) const { return m_AISettings; }
 		inline CInstalledDevice *GetBestWeapon (void) const { return (m_iBestWeapon != devNone ? m_pBestWeapon : NULL); }
@@ -308,7 +308,7 @@ class CBaseShipAI : public IShipController
 		//	IShipController virtuals
 		virtual void Behavior (void);
 		virtual CString DebugCrashInfo (void);
-		virtual void DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader);
 		virtual int GetAISettingInteger (const CString &sSetting);
 		virtual CString GetAISettingString (const CString &sSetting);

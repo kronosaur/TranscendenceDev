@@ -305,16 +305,16 @@ class CAStarPathFinder
 
 void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos);
 void CreateBlasterShape (int iAngle, int iLength, int iWidth, SPoint *Poly);
-void DrawItemTypeIcon (CG16bitImage &Dest, int x, int y, CItemType *pType, int cxSize = 0, int cySize = 0, bool bGray = false);
-void DrawLightning (CG16bitImage &Dest,
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, CItemType *pType, int cxSize = 0, int cySize = 0, bool bGray = false);
+void DrawLightning (CG32bitImage &Dest,
 					int xFrom, int yFrom,
 					int xTo, int yTo,
-					WORD wColor,
+					CG32bitPixel rgbColor,
 					int iPoints,
 					Metric rChaos);
-void DrawParticle (CG16bitImage &Dest,
+void DrawParticle (CG32bitImage &Dest,
 				   int x, int y,
-				   WORD wColor,
+				   CG32bitPixel rgbColor,
 				   int iSize,
 				   DWORD byOpacity);
 
@@ -422,7 +422,7 @@ class CWeaponFireDesc
 		inline int GetPassthrough (void) const { return m_iPassthrough; }
 		inline int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		inline Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
-		inline WORD GetVaporTrailColor (void) const { return m_wVaporTrailColor; }
+		inline CG32bitPixel GetVaporTrailColor (void) const { return m_rgbVaporTrailColor; }
 		inline int GetVaporTrailLength (void) const { return m_iVaporTrailLength; }
 		inline int GetVaporTrailWidth (void) const { return m_iVaporTrailWidth; }
 		inline int GetVaporTrailWidthInc (void) const { return m_iVaporTrailWidthInc; }
@@ -493,8 +493,7 @@ class CWeaponFireDesc
 		int m_iVaporTrailWidth;				//	Width of vapor trail (0 = none)
 		int m_iVaporTrailLength;			//	Number of segments
 		int m_iVaporTrailWidthInc;			//	Width increment in 100ths of a pixel
-		WORD m_wVaporTrailColor;			//	Color of vapor trail
-		WORD m_wSpare;
+		CG32bitPixel m_rgbVaporTrailColor;	//	Color of vapor trail
 		CSoundRef m_FireSound;				//	Sound when weapon is fired
 
 		//	Missile stuff (m_iFireType == ftMissile)
@@ -558,8 +557,8 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		Metric ComputePathLength (CSystem *pSystem) const;
 		CVector ComputePointOnPath (CSystem *pSystem, Metric rDist) const;
 		static CString DebugDescribe (CSpaceObject *pObj, CNavigationPath *pNavPath);
-		void DebugPaintInfo (CG16bitImage &Dest, int x, int y, ViewportTransform &Xform);
-		void DebugPaintInfo (CG16bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx);
+		void DebugPaintInfo (CG32bitImage &Dest, int x, int y, ViewportTransform &Xform);
+		void DebugPaintInfo (CG32bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx);
 		inline DWORD GetID (void) const { return m_dwID; }
 		inline int GetNavPointCount (void) const { return m_iWaypointCount; }
 		CVector GetNavPoint (int iIndex) const;
@@ -629,7 +628,7 @@ class COrbit
 		inline const Metric &GetRotation (void) const { return m_rRotation; }
 		inline const Metric &GetSemiMajorAxis (void) const { return m_rSemiMajorAxis; }
 		inline bool IsNull (void) const { return (m_rSemiMajorAxis == 0.0); }
-		void Paint (CMapViewportCtx &Ctx, CG16bitImage &Dest, COLORREF rgbColor);
+		void Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor);
 
 	private:
 		CVector m_vFocus;				//	Focus of orbit
@@ -1001,8 +1000,8 @@ class CEnvironmentGrid
 		CSpaceEnvironmentType *GetTileType (int xTile, int yTile, DWORD *retdwEdgeMask = NULL);
 		inline bool HasMoreTiles (STileMapEnumerator &i) const { return m_Map.HasMore(i); }
 		void MarkImages (void);
-		void Paint (CG16bitImage &Dest, SViewportPaintCtx &Ctx, const CVector &vUR, const CVector &vLL);
-		void PaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest);
+		void Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx, const CVector &vUR, const CVector &vLL);
+		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetTileType (int xTile, int yTile, CSpaceEnvironmentType *pEnv);
 		CVector TileToVector (int x, int y) const;
@@ -1038,7 +1037,7 @@ class CMapGridPainter
 	public:
 		void AddRegion (const CVector &vCenter, Metric rWidth, Metric rHeight);
 		inline bool IsEmpty (void) const { return (m_HorzLines.GetCount() == 0); }
-		void Paint (CG16bitImage &Dest, CMapViewportCtx &PaintCtx);
+		void Paint (CG32bitImage &Dest, CMapViewportCtx &PaintCtx);
 
 	private:
 		struct SLine
@@ -1053,7 +1052,7 @@ class CMapGridPainter
 
 		void AddLines (const TArray<SLine> &NewLines, TArray<SLine> *retLines);
 		bool FindKey (const TArray<SLine> &Lines, int xyKey, int *retiIndex);
-		void Paint (CG16bitImage &Dest, CMapViewportCtx &PaintCtx, const TArray<SLine> &Lines);
+		void Paint (CG32bitImage &Dest, CMapViewportCtx &PaintCtx, const TArray<SLine> &Lines);
 		void RecalcGrid (void);
 
 		TArray<SLine> m_HorzLines;
@@ -1067,25 +1066,24 @@ class CSystemSpacePainter
 		CSystemSpacePainter (void);
 
 		void CleanUp (void);
-		void PaintViewport (CG16bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx);
+		void PaintViewport (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx);
 
 	private:
 		struct SStar
 			{
 			int x;
 			int y;
-			WORD wColor;
+			CG32bitPixel rgbColor;
+			CG32bitPixel rgbSpikeColor;
 			WORD wDistance;
-
 			bool bBrightStar;
-			WORD wSpikeColor;
 			};
 
 		void CreateSpaceBackground (DWORD dwBackgroundUNID);
 		void CreateStarfield (int cxField, int cyField);
 		void GenerateSquareDist (int iTotalCount, int iMinValue, int iMaxValue, int *Dist);
-		void PaintSpaceBackground (CG16bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx);
-		void PaintStarfield (CG16bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, WORD wSpaceColor);
+		void PaintSpaceBackground (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx);
+		void PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor);
 
 		bool m_bInitialized;
 
@@ -1094,7 +1092,7 @@ class CSystemSpacePainter
 		int m_cyStarfield;
 
 		DWORD m_dwBackgroundUNID;
-		CG16bitImage *m_pBackgroundImage;
+		CG32bitImage *m_pBackgroundImage;
 	};
 
 struct SObjCreateCtx
@@ -1243,7 +1241,7 @@ class CSystem : public CObject
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
 		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL);
 		inline int CalcMatchStrength (const CAttributeCriteria &Criteria) { return (m_pTopology ? m_pTopology->CalcMatchStrength(Criteria) : (Criteria.MatchesAll() ? 1000 : 0)); }
-		WORD CalculateSpaceColor (CSpaceObject *pPOV);
+		CG32bitPixel CalculateSpaceColor (CSpaceObject *pPOV);
 		void CancelTimedEvent (CSpaceObject *pSource, const CString &sEvent, bool bInDoEvent = false);
 		void CancelTimedEvent (CDesignType *pSource, const CString &sEvent, bool bInDoEvent = false);
 		bool DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **retpObj = NULL, CString *retsError = NULL);
@@ -1309,12 +1307,12 @@ class CSystem : public CObject
 		void MarkImages (void);
 		void NameObject (const CString &sName, CSpaceObject *pObj);
 		CVector OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos);
-		void PaintViewport (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
-		void PaintViewportGrid (CMapViewportCtx &Ctx, CG16bitImage &Dest, Metric rGridSize);
-		void PaintViewportObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj);
-		void PaintViewportLRS (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rScale, DWORD dwFlags, bool *retbNewEnemies);
-		void PaintViewportMap (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale);
-		void PaintViewportMapObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj);
+		void PaintViewport (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
+		void PaintViewportGrid (CMapViewportCtx &Ctx, CG32bitImage &Dest, Metric rGridSize);
+		void PaintViewportObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj);
+		void PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rScale, DWORD dwFlags, bool *retbNewEnemies);
+		void PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale);
+		void PaintViewportMapObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj);
 		void PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate);
 		void PlayerEntered (CSpaceObject *pPlayer);
 		void RegisterEventHandler (CSpaceObject *pObj, Metric rRange);
@@ -1378,7 +1376,7 @@ class CSystem : public CObject
 		inline int GetTimedEventCount (void) { return m_TimedEvents.GetCount(); }
 		inline CTimedEvent *GetTimedEvent (int iIndex) { return m_TimedEvents.GetEvent(iIndex); }
 		void InitSpaceEnvironment (void) const;
-		void PaintDestinationMarker (SViewportPaintCtx &Ctx, CG16bitImage &Dest, int x, int y, CSpaceObject *pObj);
+		void PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj);
 		void UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj);
 		void UpdateRandomEncounters (void);
 
@@ -1476,12 +1474,12 @@ class CParticleArray
 		inline const CVector &GetOrigin (void) const { return m_vOrigin; }
 		void Init (int iMaxCount, const CVector &vOrigin = NullVector);
 		void Move (const CVector &vMove);
-		void Paint (CG16bitImage &Dest,
+		void Paint (CG32bitImage &Dest,
 					int xPos,
 					int yPos,
 					SViewportPaintCtx &Ctx,
 					SParticlePaintDesc &Desc);
-		void Paint (CG16bitImage &Dest,
+		void Paint (CG32bitImage &Dest,
 					int xPos,
 					int yPos,
 					SViewportPaintCtx &Ctx,
@@ -1496,7 +1494,7 @@ class CParticleArray
 
 	private:
 		void CleanUp (void);
-		void PaintFireAndSmoke (CG16bitImage &Dest, 
+		void PaintFireAndSmoke (CG32bitImage &Dest, 
 								int xPos, 
 								int yPos, 
 								SViewportPaintCtx &Ctx, 
@@ -1507,21 +1505,21 @@ class CParticleArray
 								int iFlame,
 								int iSmoke,
 								int iSmokeBrightness);
-		void PaintGaseous (CG16bitImage &Dest,
+		void PaintGaseous (CG32bitImage &Dest,
 						   int xPos,
 						   int yPos,
 						   SViewportPaintCtx &Ctx,
 						   int iMaxLifetime,
 						   int iMinWidth,
 						   int iMaxWidth,
-						   WORD wPrimaryColor,
-						   WORD wSecondaryColor);
-		void PaintImage (CG16bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
-		void PaintLine (CG16bitImage &Dest,
+						   CG32bitPixel rgbPrimaryColor,
+						   CG32bitPixel rgbSecondaryColor);
+		void PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
+		void PaintLine (CG32bitImage &Dest,
 						int xPos,
 						int yPos,
 						SViewportPaintCtx &Ctx,
-						WORD wPrimaryColor);
+						CG32bitPixel rgbPrimaryColor);
 		void PosToXY (const CVector &xy, int *retx, int *rety);
 		void UseRealCoords (void);
 		CVector XYToPos (int x, int y);
@@ -1902,9 +1900,9 @@ class COverlay
 		inline bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
 		inline bool IsShieldOverlay (void) const { return m_pType->IsShieldOverlay(); }
 		inline bool IsShipScreenDisabled (void) const { return m_pType->IsShipScreenDisabled(); }
-		void Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintBackground (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		inline bool Paralyzes (CSpaceObject *pSource) const { return m_pType->Paralyzes(); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
@@ -1994,9 +1992,9 @@ class COverlayList
 		COverlayType *GetType(DWORD dwID);
 		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		inline bool IsEmpty (void) { return (m_pFirst == NULL); }
-		void Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintBackground (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource);
 		void RemoveField (CSpaceObject *pSource, DWORD dwID);
 		void SetData (DWORD dwID, const CString &sAttrib, const CString &sData);
@@ -2019,7 +2017,7 @@ class CParticleGroup;
 class IParticleAppearance
 	{
 	public:
-		virtual void Paint (CG16bitImage &Dest,
+		virtual void Paint (CG32bitImage &Dest,
 							const ViewportTransform &Trans,
 							CParticleGroup *pGroup) = 0;
 	};
@@ -2072,7 +2070,7 @@ class CParticleGroup
 									   CParticleGroup **retpGroup);
 		~CParticleGroup (void);
 
-		void Paint (CG16bitImage &Dest, const ViewportTransform &Trans);
+		void Paint (CG32bitImage &Dest, const ViewportTransform &Trans);
 
 	private:
 		CParticleGroup (void);
@@ -2377,7 +2375,7 @@ class CSpaceObject : public CObject
 		inline const CVector &GetPos (void) const { return m_vPos; }
 		CSovereign *GetSovereignToDefend (void) const;
 		const CString &GetStaticData (const CString &sAttrib);
-		WORD GetSymbolColor (void);
+		CG32bitPixel GetSymbolColor (void);
 		inline CSystem *GetSystem (void) const { return m_pSystem; }
 		inline CUniverse *GetUniverse (void) const { return m_pSystem->GetUniverse(); }
 		inline const CVector &GetVel (void) const { return m_vVel; }
@@ -2456,10 +2454,10 @@ class CSpaceObject : public CObject
 		void NotifyOnObjDocked (CSpaceObject *pDockTarget);
 		inline bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
-		void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, WORD wColor, int *retcyHeight = NULL);
-		void PaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y);
-		inline void PaintSRSEnhancements (CG16bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }
+		void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight = NULL);
+		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
+		inline void PaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }
 		inline void Place (const CVector &vPos, const CVector &vVel = NullVector) { m_vPos = vPos; m_vOldPos = vPos; m_vVel = vVel; }
 		inline bool PosInBox (const CVector &vUR, const CVector &vLL) const
 			{ return (vUR.GetX() > m_vPos.GetX()) 
@@ -2528,10 +2526,10 @@ class CSpaceObject : public CObject
 		static void SetCriteriaSource (Criteria &Crit, CSpaceObject *pSource);
 
 #ifdef DEBUG_VECTOR
-		void PaintDebugVector (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		inline void SetDebugVector (const CVector &vVector) { m_vDebugVector = vVector; }
 #else
-		inline void PaintDebugVector (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
+		inline void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		inline void SetDebugVector (const CVector &vVector) { }
 #endif
 
@@ -2655,7 +2653,7 @@ class CSpaceObject : public CObject
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip) { }
 		virtual void OnSystemCreated (void) { }
 		virtual void OnSystemLoaded (void) { }
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) { return false; }
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) { return PointInObject(vObjPos, vPointPos); }
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) { }
@@ -2708,7 +2706,7 @@ class CSpaceObject : public CObject
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
 		virtual int GetShieldLevel (void) { return -1; }
-		virtual COLORREF GetSpaceColor (void) { return 0; }
+		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual CString GetStargateID (void) const { return NULL_STR; }
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual CTradingDesc *GetTradeDescOverride (void) { return NULL; }
@@ -2832,10 +2830,10 @@ class CSpaceObject : public CObject
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }
 		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime) { }
 		virtual void OnUpdatePlayer (SUpdateCtx &Ctx) { }
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
-		virtual void OnPaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
-		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y) { }
-		virtual void OnPaintSRSEnhancements (CG16bitImage &Dest, SViewportPaintCtx &Ctx) { }
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
+		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
+		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) { }
+		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) { }
@@ -2860,9 +2858,9 @@ class CSpaceObject : public CObject
 		inline bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }
 		inline void ItemEnhancementModified (CItemListManipulator &ItemList) { OnItemEnhanced(ItemList); }
 		bool MissileCanHitObj (CSpaceObject *pObj, CSpaceObject *pSource, CWeaponFireDesc *pDesc);
-		void PaintEffects (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintHighlight (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintTargetHighlight (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		inline void SetObjectDestructionHook (void) { m_fHookObjectDestruction = true; }
 		inline void SetCannotBeHit (void) { m_fCannotBeHit = true; }
 		inline void SetCannotMove (void) { m_fCannotMove = true; }
@@ -3159,7 +3157,7 @@ class CListWrapper : public IListData
 		virtual bool IsCursorValid (void) { return (m_iCursor != -1); }
 		virtual bool MoveCursorBack (void);
 		virtual bool MoveCursorForward (void);
-		virtual void PaintImageAtCursor (CG16bitImage &Dest, int x, int y);
+		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y);
 		virtual void ResetCursor (void) { m_iCursor = -1; }
 		virtual void SetCursor (int iCursor) { m_iCursor = Min(Max(-1, iCursor), GetCount() - 1); }
 		virtual void SyncCursor (void);
@@ -3441,10 +3439,10 @@ class CUniverse : public CObject
 		inline void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); }
 		void GarbageCollectLibraryBitmaps (void);
 		inline CObjectImage *FindLibraryImage (DWORD dwUNID) { return CObjectImage::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CG16bitImage *GetLibraryBitmap (DWORD dwUNID, DWORD dwFlags = 0) { return m_Design.GetImage(dwUNID, dwFlags); }
-		inline CG16bitImage *GetLibraryBitmapCopy (DWORD dwUNID) { return m_Design.GetImage(dwUNID, CDesignCollection::FLAG_IMAGE_COPY); }
+		inline CG32bitImage *GetLibraryBitmap (DWORD dwUNID, DWORD dwFlags = 0) { return m_Design.GetImage(dwUNID, dwFlags); }
+		inline CG32bitImage *GetLibraryBitmapCopy (DWORD dwUNID) { return m_Design.GetImage(dwUNID, CDesignCollection::FLAG_IMAGE_COPY); }
 		inline void MarkLibraryBitmaps (void) { m_Design.MarkGlobalImages(); if (m_pCurrentSystem) m_pCurrentSystem->MarkImages(); }
-		inline void ReleaseLibraryBitmap (CG16bitImage *pBitmap) { }
+		inline void ReleaseLibraryBitmap (CG32bitImage *pBitmap) { }
 		inline void SweepLibraryBitmaps (void) { m_Extensions.SweepImages(); m_Design.SweepImages(); }
 
 		inline CDesignCollection &GetDesignCollection (void) { return m_Design; }
@@ -3468,11 +3466,11 @@ class CUniverse : public CObject
 		inline CTopologyNode *GetTopologyNode (int iIndex) { return m_Topology.GetTopologyNode(iIndex); }
 		inline int GetTopologyNodeCount (void) { return m_Topology.GetTopologyNodeCount(); }
 
-		void PaintPOV (CG16bitImage &Dest, const RECT &rcView, DWORD dwFlags);
-		void PaintPOVLRS (CG16bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
-		void PaintPOVMap (CG16bitImage &Dest, const RECT &rcView, Metric rMapScale);
-		void PaintObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
-		void PaintObjectMap (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
+		void PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags);
+		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
+		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale);
+		void PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
+		void PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		inline void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
 		void Update (SSystemUpdateCtx &Ctx);
 		void UpdateExtended (void);
@@ -3644,7 +3642,7 @@ CInstalledDevice *GetDeviceFromItem (CCodeChain &CC, CSpaceObject *pObj, ICCItem
 CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem);
 CEconomyType *GetEconomyTypeFromString (const CString &sCurrency);
 ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNID);
-void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG16bitImage **retpBitmap, RECT *retrcRect);
+void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
 CItem GetItemFromArg (CCodeChain &CC, ICCItem *pArg);
 CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg);
 bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsError);

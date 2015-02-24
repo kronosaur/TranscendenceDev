@@ -165,7 +165,7 @@ ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, CString *retsError)
 	return NOERROR;
 	}
 
-CG16bitImage *CSystemMap::CreateBackgroundImage (void)
+CG32bitImage *CSystemMap::CreateBackgroundImage (void)
 
 //	CreateBackgroundImage
 //
@@ -175,7 +175,7 @@ CG16bitImage *CSystemMap::CreateBackgroundImage (void)
 	{
 	int i;
 
-	CG16bitImage *pImage = g_pUniverse->GetLibraryBitmapCopy(m_dwBackgroundImage);
+	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmapCopy(m_dwBackgroundImage);
 	if (pImage == NULL)
 		return NULL;
 
@@ -202,12 +202,12 @@ CG16bitImage *CSystemMap::CreateBackgroundImage (void)
 #ifdef DEBUG
 #if 0
 	//	Test noise function
-	CG16bitImage Alpha;
+	CG32bitImage Alpha;
 	Alpha.CreateBlankAlpha(pImage->GetWidth(), pImage->GetHeight());
 	DrawNebulosity8bit(Alpha, 0, 0, pImage->GetWidth(), pImage->GetHeight(), 256, 0, 255);
 
 	pImage->Fill(0, 0, pImage->GetWidth(), pImage->GetHeight(), 0);
-	pImage->FillMask(0, 0, pImage->GetWidth(), pImage->GetHeight(), Alpha, CG16bitImage::RGBValue(255, 255, 255), 0, 0);
+	pImage->FillMask(0, 0, pImage->GetWidth(), pImage->GetHeight(), Alpha, CG32bitPixel(255, 255, 255), 0, 0);
 #endif
 #endif
 
@@ -268,7 +268,7 @@ void CSystemMap::GetBackgroundImageSize (int *retcx, int *retcy)
 //	Returns the size of the background image
 
 	{
-	CG16bitImage *pImage = g_pUniverse->GetLibraryBitmap(m_dwBackgroundImage);
+	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmap(m_dwBackgroundImage);
 	if (pImage)
 		{
 		*retcx = pImage->GetWidth();

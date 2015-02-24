@@ -145,7 +145,7 @@ class CUIHelper
 
 			CString sLabel;
 			CString sCommand;
-			const CG16bitImage *pIcon;
+			const CG32bitImage *pIcon;
 			DWORD dwFlags;
 			};
 
@@ -173,10 +173,10 @@ class CUIHelper
 
 		void GenerateDockScreenRTF (const CString &sText, CString *retsRTF) const;
 
-		void PaintDisplayAttributes (CG16bitImage &Dest, TArray<SDisplayAttribute> &Attribs) const;
-		void PaintItemEntry (CG16bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, DWORD dwOptions) const;
-		void PaintReferenceDamageAdj (CG16bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj) const;
-		void PaintReferenceDamageType (CG16bitImage &Dest, int x, int y, int iDamageType, const CString &sRef) const;
+		void PaintDisplayAttributes (CG32bitImage &Dest, TArray<SDisplayAttribute> &Attribs) const;
+		void PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, DWORD dwOptions) const;
+		void PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj) const;
+		void PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef) const;
 
 	private:
 		void CreateClassInfoSpecialItem (CItemType *pItemIcon, const CString &sText, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;

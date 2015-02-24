@@ -22,7 +22,7 @@ IHISession::IHISession (CHumanInterface &HI) : IHICommand(HI),
 	{
 	}
 
-void IHISession::DefaultOnAnimate (CG16bitImage &Screen, bool bTopMost)
+void IHISession::DefaultOnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 //	DefaultOnAnimate
 //
@@ -323,7 +323,7 @@ void IHISession::HIMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 	OnMouseWheel(iDelta, x, y, dwFlags);
 	}
 
-void IHISession::HIPaint (CG16bitImage &Screen)
+void IHISession::HIPaint (CG32bitImage &Screen)
 
 //	HIPaint
 //

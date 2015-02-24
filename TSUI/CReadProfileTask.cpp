@@ -36,9 +36,9 @@ const int SCORE_AREA_WIDTH =					320;
 
 const int MAX_HIGH_SCORES =						10;
 
-const WORD RGB_MAIN_DARK =						CG16bitImage::RGBValue(27, 27, 27);
-const WORD RGB_MAIN_LIGHT =						CG16bitImage::RGBValue(38, 38, 38);
-const WORD RGB_TITLE_BAR_BACK =					CG16bitImage::RGBValue(77, 77, 77);
+const CG32bitPixel RGB_MAIN_DARK =				CG32bitPixel(27, 27, 27);
+const CG32bitPixel RGB_MAIN_LIGHT =				CG32bitPixel(38, 38, 38);
+const CG32bitPixel RGB_TITLE_BAR_BACK =			CG32bitPixel(77, 77, 77);
 
 #define STR_NO_GAMES_ON_RECORD					CONSTLIT("No games on record")
 #define STR_NO_GAMES_DESC						CONSTLIT("You have not yet completed any games.")
@@ -133,7 +133,7 @@ void CReadProfileTask::CreateAdventureRecordDisplay (CAdventureRecord &Record, i
 
 	CExtension *pAdventure;
 	CString sAdventureTitle;
-	CG16bitImage *pIcon;
+	CG32bitImage *pIcon;
 	if (g_pUniverse->FindExtension(Record.GetAdventureUNID(), 0, &pAdventure))
 		{
 		sAdventureTitle = pAdventure->GetName();

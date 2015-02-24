@@ -22,7 +22,7 @@
 #define MULTIPLY_OP							CONSTLIT("Multiply")
 #define NOISE_OP							CONSTLIT("Noise")
 
-ALERROR CZoneGrid::ApplyZoneOperation (CXMLElement *pOp, CG16bitImage &DestMap)
+ALERROR CZoneGrid::ApplyZoneOperation (CXMLElement *pOp, CG8bitImage &DestMap)
 
 //	ApplyZoneOperation
 //
@@ -142,7 +142,7 @@ ALERROR CZoneGrid::CreateZone (int cxSize, int cySize, int iCellSize)
 	return NOERROR;
 	}
 
-ALERROR CZoneGrid::CreateZoneMap (CG16bitImage &ZoneMap)
+ALERROR CZoneGrid::CreateZoneMap (CG8bitImage &ZoneMap)
 
 //	CreateZoneMap
 //
@@ -153,7 +153,7 @@ ALERROR CZoneGrid::CreateZoneMap (CG16bitImage &ZoneMap)
 
 	int cxAlloc = AlignUp(m_cxSize, m_iCellSize) / m_iCellSize;
 	int cyAlloc = AlignUp(m_cySize, m_iCellSize) / m_iCellSize;
-	return ZoneMap.CreateBlankAlpha(cxAlloc, cyAlloc);
+	return ZoneMap.Create(cxAlloc, cyAlloc);
 	}
 
 int CZoneGrid::GetValue (int x, int y) const
@@ -168,8 +168,7 @@ int CZoneGrid::GetValue (int x, int y) const
 	if (xMap < 0 || xMap >= m_ZoneMap.GetWidth() || yMap < 0 || yMap >= m_ZoneMap.GetHeight())
 		return 0;
 
-	BYTE *pPos = m_ZoneMap.GetAlphaRow(yMap) + xMap;
-	return (int)*pPos;
+	return (int)m_ZoneMap.GetPixel(xMap, yMap);
 	}
 
 int CZoneGrid::GetValueRaw (int x, int y) const
@@ -182,8 +181,7 @@ int CZoneGrid::GetValueRaw (int x, int y) const
 	{
 	int xMap, yMap;
 	MapCoord(x, y, &xMap, &yMap);
-	BYTE *pPos = m_ZoneMap.GetAlphaRow(yMap) + xMap;
-	return (int)*pPos;
+	return (int)m_ZoneMap.GetPixel(xMap, yMap);
 	}
 
 ALERROR CZoneGrid::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -215,7 +213,7 @@ void CZoneGrid::MapCoord (int x, int y, int *retx, int *rety) const
 	*rety = ((m_cySize / 2) - y) / m_iCellSize;
 	}
 
-ALERROR CZoneGrid::ZoneOpCircle (CXMLElement *pOp, CG16bitImage &DestMap)
+ALERROR CZoneGrid::ZoneOpCircle (CXMLElement *pOp, CG8bitImage &DestMap)
 
 //	ZoneOpCircle
 //
@@ -229,13 +227,13 @@ ALERROR CZoneGrid::ZoneOpCircle (CXMLElement *pOp, CG16bitImage &DestMap)
 	BYTE byFore = pOp->GetAttributeIntegerBounded(FOREGROUND_ATTRIB, 0, 100);
 	BYTE byBack = pOp->GetAttributeIntegerBounded(BACKGROUND_ATTRIB, 0, 100);
 
-	::DrawFilledRect8bit(DestMap, 0, 0, DestMap.GetWidth(), DestMap.GetHeight(), byBack);
-	::DrawFilledCircle8bit(DestMap, xCenter, yCenter, iRadius, byFore);
+	DestMap.Fill(0, 0, DestMap.GetWidth(), DestMap.GetHeight(), byBack);
+	CGDraw::Circle(DestMap, xCenter, yCenter, iRadius, byFore);
 
 	return NOERROR;
 	}
 
-ALERROR CZoneGrid::ZoneOpCircleGradient (CXMLElement *pOp, CG16bitImage &DestMap)
+ALERROR CZoneGrid::ZoneOpCircleGradient (CXMLElement *pOp, CG8bitImage &DestMap)
 
 //	ZoneOpCircleGradient
 //
@@ -249,13 +247,13 @@ ALERROR CZoneGrid::ZoneOpCircleGradient (CXMLElement *pOp, CG16bitImage &DestMap
 	BYTE byCenter = pOp->GetAttributeIntegerBounded(CENTER_ATTRIB, 0, 100);
 	BYTE byEdge = pOp->GetAttributeIntegerBounded(EDGE_ATTRIB, 0, 100);
 
-	::DrawFilledRect8bit(DestMap, 0, 0, DestMap.GetWidth(), DestMap.GetHeight(), byEdge);
-	::DrawGradientCircle8bit(DestMap, xCenter, yCenter, iRadius, byCenter, byEdge);
+	DestMap.Fill(0, 0, DestMap.GetWidth(), DestMap.GetHeight(), byEdge);
+	CGDraw::CircleGradient(DestMap, xCenter, yCenter, iRadius, byCenter, byEdge);
 
 	return NOERROR;
 	}
 
-ALERROR CZoneGrid::ZoneOpMultiply (CXMLElement *pOp, CG16bitImage &DestMap)
+ALERROR CZoneGrid::ZoneOpMultiply (CXMLElement *pOp, CG8bitImage &DestMap)
 
 //	ZoneOpMultiply
 //
@@ -279,7 +277,7 @@ ALERROR CZoneGrid::ZoneOpMultiply (CXMLElement *pOp, CG16bitImage &DestMap)
 		{
 		CXMLElement *pSubOp = pOp->GetContentElement(i);
 
-		CG16bitImage NewMap;
+		CG8bitImage NewMap;
 		if (error = CreateZoneMap(NewMap))
 			return error;
 
@@ -288,9 +286,9 @@ ALERROR CZoneGrid::ZoneOpMultiply (CXMLElement *pOp, CG16bitImage &DestMap)
 
 		//	Multiply with destination
 
-		BYTE *pSrc = NewMap.GetAlphaRow(0);
-		BYTE *pDest = DestMap.GetAlphaRow(0);
-		BYTE *pDestEnd = DestMap.GetAlphaRow(DestMap.GetHeight());
+		BYTE *pSrc = NewMap.GetPixelPos(0, 0);
+		BYTE *pDest = DestMap.GetPixelPos(0, 0);
+		BYTE *pDestEnd = DestMap.GetPixelPos(0, DestMap.GetHeight());
 		while (pDest < pDestEnd)
 			{
 			DWORD dwResult = ((DWORD)(*pSrc) * (DWORD)(*pDest)) / 100;
@@ -302,7 +300,7 @@ ALERROR CZoneGrid::ZoneOpMultiply (CXMLElement *pOp, CG16bitImage &DestMap)
 	return NOERROR;
 	}
 
-ALERROR CZoneGrid::ZoneOpNoise (CXMLElement *pOp, CG16bitImage &DestMap)
+ALERROR CZoneGrid::ZoneOpNoise (CXMLElement *pOp, CG8bitImage &DestMap)
 
 //	ZoneOpNoise
 //

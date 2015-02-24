@@ -67,7 +67,7 @@ ALERROR CStaticEffect::Create (CEffectCreator *pType,
 	return NOERROR;
 	}
 
-void CStaticEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CStaticEffect::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //

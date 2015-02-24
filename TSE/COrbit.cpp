@@ -54,16 +54,16 @@ CVector COrbit::GetPointCircular (Metric rAngle) const
 	return m_vFocus + CVector(cos(rAngle) * m_rSemiMajorAxis, sin(rAngle) * m_rSemiMajorAxis);
 	}
 
-void COrbit::Paint (CMapViewportCtx &Ctx, CG16bitImage &Dest, COLORREF rgbColor)
+void COrbit::Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor)
 
 //	Paint
 //
 //	Paint the orbit
 
 	{
-	DWORD redValue = GetRValue(rgbColor);
-	DWORD greenValue = GetGValue(rgbColor);
-	DWORD blueValue = GetBValue(rgbColor);
+	DWORD redValue = rgbColor.GetRed();
+	DWORD greenValue = rgbColor.GetGreen();
+	DWORD blueValue = rgbColor.GetBlue();
 
 	//	Paint circular orbits in a single color; eccentric orbits change color
 	//	since they are not equidistant from the sun
@@ -73,15 +73,15 @@ void COrbit::Paint (CMapViewportCtx &Ctx, CG16bitImage &Dest, COLORREF rgbColor)
 		Metric rAngle;
 		const Metric rIncrement = g_Pi / 90.0;
 		int xPrev, yPrev;
-		WORD wColor;
+		CG32bitPixel rgbColor;
 
 		//	The orbit color fades depending on the distance from the sun
 
 		Metric rFade = 0.25 + (LIGHT_SECOND * 180.0 / m_rSemiMajorAxis);
 		if (rFade < 1.0)
-			wColor = CG16bitImage::RGBValue((int)(redValue * rFade), (int)(greenValue * rFade), (int)(blueValue * rFade));
+			rgbColor = CG32bitPixel((BYTE)(redValue * rFade), (BYTE)(greenValue * rFade), (BYTE)(blueValue * rFade));
 		else
-			wColor = CG16bitImage::RGBValue((WORD)redValue, (WORD)greenValue, (WORD)blueValue);
+			rgbColor = CG32bitPixel((BYTE)redValue, (BYTE)greenValue, (BYTE)blueValue);
 
 		//	Compute the position of the starting point
 
@@ -98,7 +98,7 @@ void COrbit::Paint (CMapViewportCtx &Ctx, CG16bitImage &Dest, COLORREF rgbColor)
 
 			//	Draw a line segment
 
-			Dest.DrawLine(xPrev, yPrev, x, y, 1, wColor);
+			Dest.DrawLine(xPrev, yPrev, x, y, 1, rgbColor);
 
 			//	Next point
 
@@ -122,7 +122,7 @@ void COrbit::Paint (CMapViewportCtx &Ctx, CG16bitImage &Dest, COLORREF rgbColor)
 			{
 			Metric rRadius;
 			CVector vPos = GetPointAndRadius(rAngle, &rRadius);
-			WORD wColor;
+			CG32bitPixel rgbColor;
 
 			//	Compute the end point
 
@@ -133,13 +133,13 @@ void COrbit::Paint (CMapViewportCtx &Ctx, CG16bitImage &Dest, COLORREF rgbColor)
 
 			Metric rFade = 0.25 + (LIGHT_SECOND * 180.0 / rRadius);
 			if (rFade < 1.0)
-				wColor = CG16bitImage::RGBValue((int)(redValue * rFade), (int)(greenValue * rFade), (int)(blueValue * rFade));
+				rgbColor = CG32bitPixel((BYTE)(redValue * rFade), (BYTE)(greenValue * rFade), (BYTE)(blueValue * rFade));
 			else
-				wColor = CG16bitImage::RGBValue((WORD)redValue, (WORD)greenValue, (WORD)blueValue);
+				rgbColor = CG32bitPixel((BYTE)redValue, (BYTE)greenValue, (BYTE)blueValue);
 
 			//	Draw a line segment
 
-			Dest.DrawLine(xPrev, yPrev, x, y, 1, wColor);
+			Dest.DrawLine(xPrev, yPrev, x, y, 1, rgbColor);
 
 			//	Next point
 

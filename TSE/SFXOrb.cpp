@@ -27,8 +27,8 @@ class COrbEffectPainter : public IEffectPainter
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
 		virtual bool GetParamList (TArray<CString> *retList) const;
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintComposite (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
@@ -57,8 +57,8 @@ class COrbEffectPainter : public IEffectPainter
 		int m_iRadius;
 		EOrbStyles m_iStyle;
 		int m_iIntensity;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 
 		int m_iLifetime;
 		EAnimationTypes m_iAnimation;
@@ -66,9 +66,7 @@ class COrbEffectPainter : public IEffectPainter
 		//	Temporary variables based on shape/style/etc.
 
 		bool m_bInitialized;				//	TRUE if values are valid
-
-		WORD *m_pColorTable;
-		BYTE *m_pOpacityTable;
+		TArray<CG32bitPixel> m_ColorTable;
 	};
 
 static LPSTR ANIMATION_TABLE[] =
@@ -208,13 +206,11 @@ COrbEffectPainter::COrbEffectPainter (CEffectCreator *pCreator) :
 		m_iRadius((int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL)),
 		m_iStyle(styleSmooth),
 		m_iIntensity(50),
-		m_wPrimaryColor(CG16bitImage::RGBValue(255, 255, 255)),
-		m_wSecondaryColor(CG16bitImage::RGBValue(128, 128, 128)),
+		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
+		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
 		m_iLifetime(0),
 		m_iAnimation(animateNone),
-		m_bInitialized(false),
-		m_pColorTable(NULL),
-		m_pOpacityTable(NULL)
+		m_bInitialized(false)
 
 //	COrbEffectCreator constructor
 
@@ -235,7 +231,7 @@ void COrbEffectPainter::CalcSphericalTables (void)
 
 //	CalcSphericalTables
 //
-//	Computes m_pColorTable and m_pOpacityTable
+//	Computes m_ColorTable
 
 	{
 	int i;
@@ -248,8 +244,8 @@ void COrbEffectPainter::CalcSphericalTables (void)
 
 		//	Allocate tables
 
-		m_pColorTable = new WORD [m_iRadius];
-		m_pOpacityTable = new BYTE [m_iRadius];
+		m_ColorTable.DeleteAll();
+		m_ColorTable.InsertEmpty(m_iRadius);
 
 		//	Compute some temporaries
 
@@ -263,30 +259,23 @@ void COrbEffectPainter::CalcSphericalTables (void)
 		for (i = 0; i < m_iRadius; i++)
 			{
 			if (i < iBlownRadius)
-				{
-				m_pColorTable[i] = CG16bitImage::RGBValue(255, 255, 255);
-				m_pOpacityTable[i] = 255;
-				}
+				m_ColorTable[i] = CG32bitPixel(255, 255, 255);
+
 			else if (i < iFringeMaxRadius && iFringeWidth > 0)
 				{
 				int iStep = (i - iBlownRadius);
 				DWORD dwOpacity = iStep * 255 / iFringeWidth;
-				m_pColorTable[i] = CG16bitImage::BlendPixel(CG16bitImage::RGBValue(255, 255, 255), m_wPrimaryColor, dwOpacity);
-				m_pOpacityTable[i] = 255;
+				m_ColorTable[i] = CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), m_rgbPrimaryColor, (BYTE)dwOpacity);
 				}
 			else if (iFadeWidth > 0)
 				{
 				int iStep = (i - iFringeMaxRadius);
 				Metric rOpacity = 255.0 - (iStep * 255.0 / iFadeWidth);
 				rOpacity = (rOpacity * rOpacity) / 255.0;
-				m_pColorTable[i] = m_wSecondaryColor;
-				m_pOpacityTable[i] = (BYTE)(DWORD)rOpacity;
+				m_ColorTable[i] = CG32bitPixel(m_rgbSecondaryColor, (BYTE)(DWORD)rOpacity);
 				}
 			else
-				{
-				m_pColorTable[i] = 0;
-				m_pOpacityTable[i] = 0;
-				}
+				m_ColorTable[i] = CG32bitPixel::Null();
 			}
 
 		m_bInitialized = true;
@@ -310,13 +299,13 @@ void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 		retValue->InitInteger(m_iLifetime);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		retValue->InitColor(m_wPrimaryColor);
+		retValue->InitColor(m_rgbPrimaryColor);
 
 	else if (strEquals(sParam, RADIUS_ATTRIB))
 		retValue->InitInteger(m_iRadius);
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		retValue->InitColor(m_wSecondaryColor);
+		retValue->InitColor(m_rgbSecondaryColor);
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		retValue->InitInteger(m_iStyle);
@@ -367,22 +356,11 @@ void COrbEffectPainter::Invalidate (void)
 //	Free up temporaries
 
 	{
-	if (m_pColorTable)
-		{
-		delete [] m_pColorTable;
-		m_pColorTable = NULL;
-		}
-
-	if (m_pOpacityTable)
-		{
-		delete [] m_pOpacityTable;
-		m_pOpacityTable = NULL;
-		}
-
+	m_ColorTable.DeleteAll();
 	m_bInitialized = false;
 	}
 
-void COrbEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -390,10 +368,10 @@ void COrbEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintC
 
 	{
 	CalcSphericalTables();
-	DrawFilledCircle(Dest, x, y, m_iRadius, m_pColorTable, m_pOpacityTable);
+	CGDraw::Circle(Dest, x, y, m_iRadius, m_ColorTable);
 	}
 
-void COrbEffectPainter::PaintComposite (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintComposite
 //
@@ -401,7 +379,7 @@ void COrbEffectPainter::PaintComposite (CG16bitImage &Dest, int x, int y, SViewp
 
 	{
 	CalcSphericalTables();
-	CompositeFilledCircle(Dest, x, y, m_iRadius, m_pColorTable, m_pOpacityTable, true);
+	CGComposite::Circle(Dest, x, y, m_iRadius, m_ColorTable);
 	}
 
 bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const
@@ -435,13 +413,13 @@ void COrbEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam,
 		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_wPrimaryColor = Value.EvalColor(Ctx);
+		m_rgbPrimaryColor = Value.EvalColor(Ctx);
 
 	else if (strEquals(sParam, RADIUS_ATTRIB))
 		m_iRadius = Value.EvalIntegerBounded(Ctx, 1, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_wSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor(Ctx);
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (EOrbStyles)Value.EvalIdentifier(Ctx, STYLE_TABLE, styleMax, styleSmooth);

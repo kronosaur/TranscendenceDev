@@ -509,7 +509,7 @@ ICCItem *COverlay::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, co
 		return CC.CreateNil();
 	}
 
-void COverlay::Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
+void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -557,7 +557,7 @@ void COverlay::Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewportPai
 	Ctx.iRotation = iSavedRotation;
 	}
 
-void COverlay::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintAnnotations
 //
@@ -570,15 +570,15 @@ void COverlay::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPain
 			{
 			int cyHeight;
 
-			WORD wColor = m_pType->GetCounterColor();
-			if (wColor == 0 && Ctx.pObj)
-				wColor = Ctx.pObj->GetSymbolColor();
+			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			if (rgbColor.IsEmpty() && Ctx.pObj)
+				rgbColor = Ctx.pObj->GetSymbolColor();
 
 			CPaintHelper::PaintStatusBar(Dest,
 					x,
 					Ctx.yAnnotations,
 					g_pUniverse->GetPaintTick(),
-					wColor,
+					rgbColor,
 					(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel()),
 					Min(Max(0, m_iCounter), m_pType->GetCounterMax()),
 					m_pType->GetCounterMax(),
@@ -590,7 +590,7 @@ void COverlay::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPain
 		}
 	}
 
-void COverlay::PaintBackground (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintBackground
 //
@@ -601,25 +601,25 @@ void COverlay::PaintBackground (CG16bitImage &Dest, int x, int y, SViewportPaint
 		{
 		case COverlayType::counterRadius:
 			{
-			WORD wColor = m_pType->GetCounterColor();
-			if (wColor == 0 && Ctx.pObj)
-				wColor = Ctx.pObj->GetSymbolColor();
+			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			if (rgbColor.IsEmpty() && Ctx.pObj)
+				rgbColor = Ctx.pObj->GetSymbolColor();
 
 			if (m_iCounter > 0)
-				DrawFilledCircleTrans(Dest, x, y, m_iCounter, wColor, 64);
+				CGDraw::Circle(Dest, x, y, m_iCounter, CG32bitPixel(rgbColor, (BYTE)64));
 
 			//	Paint the label
 
 			if (!m_sMessage.IsBlank())
 				{
 				const CG16bitFont *pTextFont = g_pUniverse->GetFont(CONSTLIT("SubTitle"));
-				WORD wTextColor = CG16bitImage::BlendPixel(wColor, CG16bitImage::RGBValue(255, 255, 255), 128);
+				CG32bitPixel rgbTextColor = CG32bitPixel::Blend(rgbColor, CG32bitPixel(255, 255, 255), (BYTE)128);
 
 				int yText = y + (m_iCounter / 2) - pTextFont->GetHeight();
 				if (yText + pTextFont->GetHeight() > Ctx.rcView.bottom)
 					yText = y - (m_iCounter / 2);
 
-				Dest.DrawText(x, yText, *pTextFont, wTextColor, m_sMessage, CG16bitFont::AlignCenter);
+				Dest.DrawText(x, yText, *pTextFont, rgbTextColor, m_sMessage, CG16bitFont::AlignCenter);
 				}
 
 			break;

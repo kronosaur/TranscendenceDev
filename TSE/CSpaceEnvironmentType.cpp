@@ -199,8 +199,8 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 	{
 	int x, y;
-	CG16bitImage Mask;
-	Mask.CreateBlankAlpha(m_iTileSize, m_iTileSize, 0);
+	CG8bitImage Mask;
+	Mask.Create(m_iTileSize, m_iTileSize, 0);
 
 	switch (EdgeDesc.iType)
 		{
@@ -216,7 +216,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlphaRow = Mask.GetAlphaRow(y);
+				BYTE *pAlphaRow = Mask.GetPixelPos(0, y);
 				for (x = 0; x < m_iTileSize; x++)
 					{
 					BYTE *pAlpha = pAlphaRow + x;
@@ -282,7 +282,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlphaRow = Mask.GetAlphaRow(y);
+				BYTE *pAlphaRow = Mask.GetPixelPos(0, y);
 				for (x = 0; x < m_iTileSize; x++)
 					{
 					BYTE *pAlpha = pAlphaRow + x;
@@ -352,7 +352,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlphaRow = Mask.GetAlphaRow(y);
+				BYTE *pAlphaRow = Mask.GetPixelPos(0, y);
 				for (x = 0; x < m_iTileSize; x++)
 					{
 					BYTE *pAlpha = pAlphaRow + x;
@@ -416,7 +416,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlphaRow = Mask.GetAlphaRow(y);
+				BYTE *pAlphaRow = Mask.GetPixelPos(0, y);
 				for (x = 0; x < m_iTileSize; x++)
 					{
 					BYTE *pAlpha = pAlphaRow + x;
@@ -493,7 +493,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 			{
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlpha = Mask.GetAlphaRow(y);
+				BYTE *pAlpha = Mask.GetPixelPos(0, y);
 				BYTE *pAlphaEnd = pAlpha + m_iTileSize;
 				while (pAlpha < pAlphaEnd)
 					*pAlpha++ = 0x80;
@@ -519,7 +519,7 @@ void CSpaceEnvironmentType::CreateTileSet (const CObjectImageArray &Edges)
 
 	for (i = 0; i < m_iVariantCount; i++)
 		{
-		CG16bitImage &EdgesImage = Edges.GetImage(CONSTLIT("Create tile set"));
+		CG32bitImage &EdgesImage = Edges.GetImage(CONSTLIT("Create tile set"));
 
 		for (j = 0; j < TILES_IN_TILE_SET; j++)
 			{
@@ -621,9 +621,9 @@ ALERROR CSpaceEnvironmentType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement
 
 	CString sMapColor;
 	if (pDesc->FindAttribute(MAP_COLOR_ATTRIB, &sMapColor))
-		m_rgbMapColor = LoadCOLORREF(sMapColor);
+		m_rgbMapColor = ::LoadRGBColor(sMapColor);
 	else
-		m_rgbMapColor = RGB(0x80, 0x00, 0x80);
+		m_rgbMapColor = CG32bitPixel(0x80, 0x00, 0x80);
 
 	m_dwOpacity = pDesc->GetAttributeIntegerBounded(OPACITY_ATTRIB, 0, 255, 255);
 
@@ -672,7 +672,7 @@ void CSpaceEnvironmentType::OnMarkImages (void)
 		}
 	}
 
-void CSpaceEnvironmentType::Paint (CG16bitImage &Dest, int x, int y, int xTile, int yTile, DWORD dwEdgeMask)
+void CSpaceEnvironmentType::Paint (CG32bitImage &Dest, int x, int y, int xTile, int yTile, DWORD dwEdgeMask)
 
 //	Paint
 //
@@ -681,7 +681,7 @@ void CSpaceEnvironmentType::Paint (CG16bitImage &Dest, int x, int y, int xTile, 
 	{
 	//	Get the image
 
-	CG16bitImage &TileImage = m_Image.GetImage(CONSTLIT("Paint space environment"));
+	CG32bitImage &TileImage = m_Image.GetImage(CONSTLIT("Paint space environment"));
 	if (TileImage.IsEmpty())
 		return;
 
@@ -709,11 +709,11 @@ void CSpaceEnvironmentType::Paint (CG16bitImage &Dest, int x, int y, int xTile, 
 
 	if (dwEdgeMask == 0x0F || m_TileSet.GetCount() == 0)
 		{
-		Dest.ColorTransBlt(rcTileSource.left,
+		Dest.Blt(rcTileSource.left,
 				rcTileSource.top,
 				RectWidth(rcTileSource),
 				RectHeight(rcTileSource),
-				m_dwOpacity,
+				(BYTE)m_dwOpacity,
 				TileImage,
 				x - xCenter,
 				y - yCenter);
@@ -725,7 +725,7 @@ void CSpaceEnvironmentType::Paint (CG16bitImage &Dest, int x, int y, int xTile, 
 		{
 		STileDesc &Desc = m_TileSet[(int)dwEdgeMask];
 
-		Desc.Region.ColorTransBlt(Dest,
+		Desc.Region.Blt(Dest,
 				x - xCenter,
 				y - yCenter,
 				TileImage,
@@ -736,7 +736,7 @@ void CSpaceEnvironmentType::Paint (CG16bitImage &Dest, int x, int y, int xTile, 
 		}
 	}
 
-void CSpaceEnvironmentType::PaintLRS (CG16bitImage &Dest, int x, int y)
+void CSpaceEnvironmentType::PaintLRS (CG32bitImage &Dest, int x, int y)
 
 //	PaintLRS
 //
@@ -754,11 +754,11 @@ void CSpaceEnvironmentType::PaintLRS (CG16bitImage &Dest, int x, int y)
 		int g = 100 + mathRandom(-20, 20);
 		int b = 90 + mathRandom(-18, 18);
 
-		Dest.DrawPixel(x1, y1, CG16bitImage::RGBValue(r,g,b));
+		Dest.SetPixel(x1, y1, CG32bitPixel(r,g,b));
 		}
 	}
 
-void CSpaceEnvironmentType::PaintMap (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, DWORD dwFade, DWORD dwEdgeMask)
+void CSpaceEnvironmentType::PaintMap (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, DWORD dwFade, DWORD dwEdgeMask)
 
 //	PaintMap
 //
@@ -767,60 +767,60 @@ void CSpaceEnvironmentType::PaintMap (CG16bitImage &Dest, int x, int y, int cxWi
 	{
 	int cxHalfWidth = cxWidth / 2;
 	int cyHalfHeight = cyHeight / 2;
-	WORD wColor = CG16bitImage::BlendPixel((WORD)CG16bitImage::PixelFromRGB(m_rgbMapColor), 0, dwFade);
+	CG32bitPixel rgbColor = CG32bitPixel::Blend(m_rgbMapColor, 0, (BYTE)dwFade);
 
 	switch (dwEdgeMask)
 		{
 		case 0:
-			DrawFilledCircle(Dest, x + cxHalfWidth, y + cyHalfHeight, Min(cxHalfWidth, cyHalfHeight), wColor);
+			CGDraw::Circle(Dest, x + cxHalfWidth, y + cyHalfHeight, Min(cxHalfWidth, cyHalfHeight), rgbColor);
 			break;
 
 		case 1:
-			DrawFilledCircle(Dest, x + cyHalfHeight, y + cyHalfHeight, cyHalfHeight, wColor);
-			Dest.Fill(x + cyHalfHeight, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, wColor);
+			CGDraw::Circle(Dest, x + cyHalfHeight, y + cyHalfHeight, cyHalfHeight, rgbColor);
+			Dest.Fill(x + cyHalfHeight, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, rgbColor);
 			break;
 
 		case 2:
-			DrawFilledCircle(Dest, x + cxHalfWidth, y + cyHeight - cxHalfWidth, cxHalfWidth, wColor);
-			Dest.Fill(x, y, cxWidth + 1, cyHeight - cxHalfWidth + 1, wColor);
+			CGDraw::Circle(Dest, x + cxHalfWidth, y + cyHeight - cxHalfWidth, cxHalfWidth, rgbColor);
+			Dest.Fill(x, y, cxWidth + 1, cyHeight - cxHalfWidth + 1, rgbColor);
 			break;
 
 		case 3:
-			DrawFilledCircle(Dest, x + cyHalfHeight, y + cyHalfHeight, cyHalfHeight, wColor);
-			Dest.Fill(x + cyHalfHeight, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, wColor);
-			Dest.Fill(x, y, cyHalfHeight + 1, cyHalfHeight + 1, wColor);
+			CGDraw::Circle(Dest, x + cyHalfHeight, y + cyHalfHeight, cyHalfHeight, rgbColor);
+			Dest.Fill(x + cyHalfHeight, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, rgbColor);
+			Dest.Fill(x, y, cyHalfHeight + 1, cyHalfHeight + 1, rgbColor);
 			break;
 
 		case 4:
-			DrawFilledCircle(Dest, x + cxWidth - cyHalfHeight, y + cyHalfHeight, cyHalfHeight, wColor);
-			Dest.Fill(x, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, wColor);
+			CGDraw::Circle(Dest, x + cxWidth - cyHalfHeight, y + cyHalfHeight, cyHalfHeight, rgbColor);
+			Dest.Fill(x, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, rgbColor);
 			break;
 
 		case 6:
-			DrawFilledCircle(Dest, x + cxWidth - cyHalfHeight, y + cyHalfHeight, cyHalfHeight, wColor);
-			Dest.Fill(x, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, wColor);
-			Dest.Fill(x + cxWidth - cyHalfHeight, y, cyHalfHeight + 1, cyHalfHeight + 1, wColor);
+			CGDraw::Circle(Dest, x + cxWidth - cyHalfHeight, y + cyHalfHeight, cyHalfHeight, rgbColor);
+			Dest.Fill(x, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, rgbColor);
+			Dest.Fill(x + cxWidth - cyHalfHeight, y, cyHalfHeight + 1, cyHalfHeight + 1, rgbColor);
 			break;
 
 		case 8:
-			DrawFilledCircle(Dest, x + cxHalfWidth, y + cxHalfWidth, cxHalfWidth, wColor);
-			Dest.Fill(x, y + cxHalfWidth, cxWidth + 1, cyHeight - cxHalfWidth + 1, wColor);
+			CGDraw::Circle(Dest, x + cxHalfWidth, y + cxHalfWidth, cxHalfWidth, rgbColor);
+			Dest.Fill(x, y + cxHalfWidth, cxWidth + 1, cyHeight - cxHalfWidth + 1, rgbColor);
 			break;
 
 		case 9:
-			DrawFilledCircle(Dest, x + cyHalfHeight, y + cyHalfHeight, cyHalfHeight, wColor);
-			Dest.Fill(x + cyHalfHeight, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, wColor);
-			Dest.Fill(x, y + cyHalfHeight, cyHalfHeight + 1, cyHalfHeight + 1, wColor);
+			CGDraw::Circle(Dest, x + cyHalfHeight, y + cyHalfHeight, cyHalfHeight, rgbColor);
+			Dest.Fill(x + cyHalfHeight, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, rgbColor);
+			Dest.Fill(x, y + cyHalfHeight, cyHalfHeight + 1, cyHalfHeight + 1, rgbColor);
 			break;
 
 		case 12:
-			DrawFilledCircle(Dest, x + cxWidth - cyHalfHeight, y + cyHalfHeight, cyHalfHeight, wColor);
-			Dest.Fill(x, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, wColor);
-			Dest.Fill(x + cxWidth - cyHalfHeight, y + cyHalfHeight, cyHalfHeight + 1, cyHalfHeight + 1, wColor);
+			CGDraw::Circle(Dest, x + cxWidth - cyHalfHeight, y + cyHalfHeight, cyHalfHeight, rgbColor);
+			Dest.Fill(x, y, cxWidth - cyHalfHeight + 1, cyHeight + 1, rgbColor);
+			Dest.Fill(x + cxWidth - cyHalfHeight, y + cyHalfHeight, cyHalfHeight + 1, cyHalfHeight + 1, rgbColor);
 			break;
 
 		default:
-			Dest.Fill(x, y, cxWidth + 1, cyHeight + 1, wColor);
+			Dest.Fill(x, y, cxWidth + 1, cyHeight + 1, rgbColor);
 		}
 	}
 

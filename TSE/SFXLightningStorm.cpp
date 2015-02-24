@@ -39,7 +39,7 @@ class CLightningStormEffectPainter : public IEffectPainter
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
 		virtual bool GetParamList (TArray<CString> *retList) const;
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
@@ -61,16 +61,16 @@ class CLightningStormEffectPainter : public IEffectPainter
 											//		in pixels.
 			};
 
-		void CalcMetrics (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void CalcMetrics (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void Invalidate (void);
-		void PaintObjectArcs (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintObjectArcs (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 
 		CEffectCreator *m_pCreator;
 
 		EStyles m_iStyle;
 		int m_iIntensity;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 
 		int m_iLifetime;
 
@@ -199,8 +199,8 @@ CLightningStormEffectPainter::CLightningStormEffectPainter (CEffectCreator *pCre
 		m_pCreator(pCreator),
 		m_iStyle(styleObjectArcs),
 		m_iIntensity(50),
-		m_wPrimaryColor(CG16bitImage::RGBValue(255, 255, 255)),
-		m_wSecondaryColor(CG16bitImage::RGBValue(128, 128, 128)),
+		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
+		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
 		m_iLifetime(0),
 		m_bInitialized(false)
 
@@ -219,7 +219,7 @@ CLightningStormEffectPainter::~CLightningStormEffectPainter (void)
 	Invalidate();
 	}
 
-void CLightningStormEffectPainter::CalcMetrics (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CLightningStormEffectPainter::CalcMetrics (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	CalcMetrics
 //
@@ -282,10 +282,10 @@ void CLightningStormEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitInteger(m_iLifetime);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		retValue->InitColor(m_wPrimaryColor);
+		retValue->InitColor(m_rgbPrimaryColor);
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		retValue->InitColor(m_wSecondaryColor);
+		retValue->InitColor(m_rgbSecondaryColor);
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		retValue->InitInteger(m_iStyle);
@@ -338,7 +338,7 @@ void CLightningStormEffectPainter::Invalidate (void)
 	m_Bolts.DeleteAll();
 	}
 
-void CLightningStormEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CLightningStormEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -360,7 +360,7 @@ void CLightningStormEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SVie
 		}
 	}
 
-void CLightningStormEffectPainter::PaintObjectArcs (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CLightningStormEffectPainter::PaintObjectArcs (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintObjectArcs
 //
@@ -445,7 +445,7 @@ void CLightningStormEffectPainter::PaintObjectArcs (CG16bitImage &Dest, int x, i
 				yCenter - (int)vStart.GetY(),
 				xCenter + (int)vEnd.GetX(),
 				yCenter - (int)vEnd.GetY(),
-				m_wPrimaryColor,
+				m_rgbPrimaryColor,
 				16,
 				0.4);
 
@@ -483,10 +483,10 @@ void CLightningStormEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CStri
 		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_wPrimaryColor = Value.EvalColor(Ctx);
+		m_rgbPrimaryColor = Value.EvalColor(Ctx);
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_wSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor(Ctx);
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (EStyles)Value.EvalIdentifier(Ctx, STYLE_TABLE, styleMax, styleObjectArcs);

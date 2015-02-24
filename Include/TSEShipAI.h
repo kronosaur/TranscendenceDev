@@ -149,7 +149,7 @@ class IShipController
 		virtual void Behavior (void) { }
 		virtual void CancelDocking (void) { }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
-		virtual void DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
+		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader) { return false; }
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
@@ -216,7 +216,7 @@ class IShipController
 		virtual void OnObjDamaged (const SDamageCtx &Ctx) { }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) { }
-		virtual void OnPaintSRSEnhancements (CG16bitImage &Dest, SViewportPaintCtx &Ctx) { }
+		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip) { }
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) { }
 		virtual void OnProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) { }

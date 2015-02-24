@@ -22,10 +22,8 @@ CObjectImage::CObjectImage (void) :
 	{
 	}
 
-CObjectImage::CObjectImage (CG16bitImage *pBitmap, bool bFreeBitmap) :
+CObjectImage::CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap) :
 		m_pBitmap(pBitmap),
-		m_bTransColor(false),
-		m_bSprite(false),
 		m_bPreMult(false),
 		m_bLoadOnUse(false),
 		m_bFreeBitmap(bFreeBitmap),
@@ -50,7 +48,7 @@ CObjectImage::~CObjectImage (void)
 		delete m_pBitmap;
 	}
 
-CG16bitImage *CObjectImage::CreateCopy (CString *retsError)
+CG32bitImage *CObjectImage::CreateCopy (CString *retsError)
 
 //	CreateCopy
 //
@@ -62,17 +60,11 @@ CG16bitImage *CObjectImage::CreateCopy (CString *retsError)
 	//	If we have the image, the we need to make a copy
 
 	if (m_pBitmap)
-		{
-		CG16bitImage *pResult = new CG16bitImage;
-		if (pResult->CreateFromImage(*m_pBitmap) != NOERROR)
-			return NULL;
-
-		return pResult;
-		}
+		return new CG32bitImage(*m_pBitmap);
 
 	//	Otherwise, we load a copy
 
-	CG16bitImage *pResult = GetImage(NULL_STR, retsError);
+	CG32bitImage *pResult = GetImage(NULL_STR, retsError);
 	m_pBitmap = NULL;	//	Clear out because we don't keep a copy
 
 	return pResult;
@@ -112,7 +104,7 @@ bool CObjectImage::FindDataField (const CString &sField, CString *retsValue)
 	{
 	if (strEquals(sField, FIELD_IMAGE_DESC))
 		{
-		CG16bitImage *pImage = GetImage(CONSTLIT("data field"));
+		CG32bitImage *pImage = GetImage(CONSTLIT("data field"));
 		if (pImage == NULL)
 			{
 			*retsValue = NULL_STR;
@@ -130,7 +122,7 @@ bool CObjectImage::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
-CG16bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsError)
+CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsError)
 
 //	GetImage
 //
@@ -161,7 +153,7 @@ CG16bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsE
 		}
 	}
 
-CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError)
+CG32bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError)
 
 //	GetImage
 //
@@ -206,9 +198,9 @@ CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 			}
 		}
 
-	//	Create a new CG16BitImage
+	//	Create a new CG32BitImage
 
-	m_pBitmap = new CG16bitImage;
+	m_pBitmap = new CG32bitImage;
 	if (m_pBitmap == NULL)
 		{
 		if (retsError)
@@ -216,7 +208,7 @@ CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 		return NULL;
 		}
 
-	error = m_pBitmap->CreateFromBitmap(hDIB, hBitmask, (m_bPreMult ? CG16bitImage::cfbPreMultAlpha : 0));
+	bool bSuccess = m_pBitmap->CreateFromBitmap(hDIB, hBitmask, iMaskType, (m_bPreMult ? 0 : CG32bitImage::FLAG_NO_PRE_MULT_ALPHA));
 
 	//	We don't need these bitmaps anymore
 
@@ -234,7 +226,7 @@ CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 
 	//	Check for error
 
-	if (error)
+	if (!bSuccess)
 		{
 		delete m_pBitmap;
 		m_pBitmap = NULL;
@@ -242,21 +234,6 @@ CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 			*retsError = strPatternSubst(CONSTLIT("Unable to create bitmap from image: '%s'"), m_sBitmap);
 		return NULL;
 		}
-
-	//	Transparent color
-
-	if (m_bTransColor)
-		m_pBitmap->SetTransparentColor(m_wTransColor);
-
-	//	If we have a monochrom mask, then we assume black is the background color
-
-	else if (iMaskType == bitmapMonochrome)
-		m_pBitmap->SetTransparentColor();
-
-	//	Convert to sprite
-
-	if (m_bSprite)
-		m_pBitmap->ConvertToSprite();
 
 	m_bFreeBitmap = true;
 	return m_pBitmap;
@@ -271,7 +248,7 @@ ALERROR CObjectImage::Lock (SDesignLoadCtx &Ctx)
 	//	assume that Ctx has the proper resource database. Thus
 	//	we have to open it ourselves.
 
-	CG16bitImage *pImage = GetImage(NULL_STR, &Ctx.sError);
+	CG32bitImage *pImage = GetImage(NULL_STR, &Ctx.sError);
 	if (pImage == NULL)
 		return ERR_FAIL;
 
@@ -315,12 +292,13 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Transparent color
 
 	CString sTransColor;
-	if (m_bTransColor = pDesc->FindAttribute(BACK_COLOR_ATTRIB, &sTransColor))
-		m_wTransColor = LoadRGBColor(sTransColor);
+	if (pDesc->FindAttribute(BACK_COLOR_ATTRIB, &sTransColor))
+		::kernelDebugLogMessage("backColor not yet supported.");
 
 	//	Sprite
 
-	m_bSprite = pDesc->GetAttributeBool(SPRITE_ATTRIB);
+	if (pDesc->GetAttributeBool(SPRITE_ATTRIB))
+		::kernelDebugLogMessage("Sprites not yet supported.");
 
 	//	Pre-multiply transparency
 

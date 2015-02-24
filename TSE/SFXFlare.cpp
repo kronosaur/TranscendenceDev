@@ -16,7 +16,7 @@
 
 const int MAIN_SPIKE_COUNT =					3;
 const int MAIN_SPIKE_WIDTH_RATIO =				32;
-const DWORD MAIN_SPIKE_OPACITY =				128;
+const BYTE MAIN_SPIKE_OPACITY =					128;
 
 class CFlarePainter : public IEffectPainter
 	{
@@ -27,14 +27,14 @@ class CFlarePainter : public IEffectPainter
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
 		virtual void GetRect (RECT *retRect) const;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) { m_iTick++; }
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
 	private:
-		void PaintFlare (CG16bitImage &Dest, int x, int y, int iRadius, WORD wColor, bool bSpikes, SViewportPaintCtx &Ctx);
+		void PaintFlare (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, bool bSpikes, SViewportPaintCtx &Ctx);
 
 		CFlareEffectCreator *m_pCreator;
 		int m_iTick;
@@ -108,13 +108,13 @@ ALERROR CFlareEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 
 	m_iRadius = pDesc->GetAttributeIntegerBounded(RADIUS_ATTRIB, 0, -1, 100);
 	m_iLifetime = pDesc->GetAttributeIntegerBounded(LIFETIME_ATTRIB, 0, -1, 1);
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
 
 	CString sAttrib;
 	if (pDesc->FindAttribute(SECONDARY_COLOR_ATTRIB, &sAttrib))
-		m_wSecondaryColor = ::LoadRGBColor(sAttrib);
+		m_rgbSecondaryColor = ::LoadRGBColor(sAttrib);
 	else
-		m_wSecondaryColor = m_wPrimaryColor;
+		m_rgbSecondaryColor = m_rgbPrimaryColor;
 
 	return NOERROR;
 	}
@@ -164,7 +164,7 @@ void CFlarePainter::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iTick, sizeof(DWORD));
 	}
 
-void CFlarePainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CFlarePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -201,22 +201,22 @@ void CFlarePainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &
 
 			//	Color moves from primary to secondary
 
-			WORD wColor;
+			CG32bitPixel rgbColor;
 			if (m_pCreator->GetPrimaryColor() != m_pCreator->GetSecondaryColor())
-				wColor = CG16bitImage::FadeColor(m_pCreator->GetPrimaryColor(), m_pCreator->GetSecondaryColor(), 100 * m_iTick / iTotalLifetime);
+				rgbColor = CG32bitPixel::Fade(m_pCreator->GetPrimaryColor(), m_pCreator->GetSecondaryColor(), 100 * m_iTick / iTotalLifetime);
 			else
-				wColor = m_pCreator->GetPrimaryColor();
+				rgbColor = m_pCreator->GetPrimaryColor();
 
 			//	Paint
 
-			PaintFlare(Dest, x, y, iRadius, wColor, true, Ctx);
+			PaintFlare(Dest, x, y, iRadius, rgbColor, true, Ctx);
 
 			break;
 			}
 		}
 	}
 
-void CFlarePainter::PaintFlare (CG16bitImage &Dest, int x, int y, int iRadius, WORD wColor, bool bSpikes, SViewportPaintCtx &Ctx)
+void CFlarePainter::PaintFlare (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, bool bSpikes, SViewportPaintCtx &Ctx)
 
 //	PaintFlare
 //
@@ -239,16 +239,12 @@ void CFlarePainter::PaintFlare (CG16bitImage &Dest, int x, int y, int iRadius, W
 
 				CG16bitBinaryRegion Region;
 				Region.CreateFromSimplePolygon(4, Spike);
-				Region.FillTrans(Dest, x, y, wColor, MAIN_SPIKE_OPACITY);
+				Region.Fill(Dest, x, y, CG32bitPixel(rgbColor, MAIN_SPIKE_OPACITY));
 				}
 			}
 
 		//	Paint the extended glow
 
-		DrawAlphaGradientCircle(Dest,
-				x,
-				y,
-				iRadius,
-				wColor);
+		CGDraw::CircleGradient(Dest, x, y, iRadius, rgbColor);
 		}
 	}

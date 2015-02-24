@@ -1044,7 +1044,7 @@ void CDesignCollection::GetEnabledExtensions (TArray<CExtension *> *retExtension
 		}
 	}
 
-CG16bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags)
+CG32bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags)
 
 //	GetImage
 //
@@ -1064,7 +1064,7 @@ CG16bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags)
 	else
 		{
 		CString sError;
-		CG16bitImage *pRawImage = pImage->GetImage(strFromInt(dwUNID), &sError);
+		CG32bitImage *pRawImage = pImage->GetImage(strFromInt(dwUNID), &sError);
 
 		if (pRawImage == NULL)
 			kernelDebugLogMessage(sError);

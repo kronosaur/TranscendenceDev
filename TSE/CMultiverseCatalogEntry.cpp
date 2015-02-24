@@ -183,7 +183,7 @@ bool CMultiverseCatalogEntry::IsValid (void)
 	return true;
 	}
 
-void CMultiverseCatalogEntry::SetIcon (CG16bitImage *pImage)
+void CMultiverseCatalogEntry::SetIcon (CG32bitImage *pImage)
 
 //	SetIcon
 //

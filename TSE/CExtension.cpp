@@ -614,7 +614,7 @@ ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes 
 	return NOERROR;
 	}
 
-void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon) const
+void CExtension::CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const
 
 //	CreateIcon
 //
@@ -624,12 +624,12 @@ void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon)
 	{
 	//	Load the image
 
-	CG16bitImage *pBackground = GetCoverImage();
+	CG32bitImage *pBackground = GetCoverImage();
 	if (pBackground == NULL || pBackground->GetWidth() == 0 || pBackground->GetHeight() == 0)
 		{
 		int cxSize = Min(cxWidth, cyHeight);
-		*retpIcon = new CG16bitImage;
-		(*retpIcon)->CreateBlank(cxSize, cxSize, false);
+		*retpIcon = new CG32bitImage;
+		(*retpIcon)->Create(cxSize, cxSize);
 		return;
 		}
 
@@ -638,7 +638,7 @@ void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon)
 	//
 	//	If the background is larger than the icon size then we need to scale it.
 
-	CG16bitImage *pIcon;
+	CG32bitImage *pIcon;
 	if (pBackground->GetWidth() > cxWidth || pBackground->GetHeight() > cyHeight)
 		{
 		int xSrc, ySrc, cxSrc, cySrc;
@@ -671,7 +671,7 @@ void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon)
 
 		//	Create the icon
 
-		pIcon = new CG16bitImage;
+		pIcon = new CG32bitImage;
 		pIcon->CreateFromImageTransformed(*pBackground,
 				xSrc,
 				ySrc,
@@ -688,8 +688,8 @@ void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon)
 		{
 		//	Create the icon
 
-		pIcon = new CG16bitImage;
-		pIcon->CreateBlank(cxWidth, cyHeight, false);
+		pIcon = new CG32bitImage;
+		pIcon->Create(cxWidth, cyHeight);
 
 		//	Blt
 
@@ -778,7 +778,7 @@ ALERROR CExtension::ExecuteGlobals (SDesignLoadCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-CG16bitImage *CExtension::GetCoverImage (void) const
+CG32bitImage *CExtension::GetCoverImage (void) const
 
 //	GetCoverImage
 //

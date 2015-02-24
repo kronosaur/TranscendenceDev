@@ -188,7 +188,7 @@ static char g_DeviceIDAttrib[] = "deviceID";
 
 static char g_FireRateAttrib[] = "fireRate";
 
-static CG16bitImage *g_pDamageBitmap = NULL;
+static CG32bitImage *g_pDamageBitmap = NULL;
 static CStationType *g_pWreckDesc = NULL;
 
 const int DOCK_OFFSET_STD_SIZE =				64;
@@ -1540,7 +1540,7 @@ void CShipClass::CreateWreckImage (void)
 
 	//	Create the bitmap
 
-	m_WreckBitmap.CreateBlank(cxWidth, cyHeight * WRECK_IMAGE_VARIANTS, true);
+	m_WreckBitmap.Create(cxWidth, cyHeight * WRECK_IMAGE_VARIANTS, m_Image.GetImage(NULL_STR).GetAlphaType());
 
 	//	Blt the images
 
@@ -1559,7 +1559,7 @@ void CShipClass::CreateWreckImage (void)
 		int iCount = cxWidth * 2;
 		for (int j = 0; j < iCount; j++)
 			{
-			m_WreckBitmap.ColorTransBlt(DAMAGE_IMAGE_WIDTH * mathRandom(0, DAMAGE_IMAGE_COUNT-1),
+			m_WreckBitmap.Blt(DAMAGE_IMAGE_WIDTH * mathRandom(0, DAMAGE_IMAGE_COUNT-1),
 					0,
 					DAMAGE_IMAGE_WIDTH,
 					DAMAGE_IMAGE_COUNT,
@@ -1569,9 +1569,6 @@ void CShipClass::CreateWreckImage (void)
 					(i * cyHeight) + mathRandom(0, cyHeight-1) - (DAMAGE_IMAGE_HEIGHT / 2));
 			}
 		}
-
-	if (!m_Image.HasAlpha())
-		m_WreckBitmap.SetTransparentColor();
 
 	//	Initialize an image
 
@@ -3429,7 +3426,7 @@ void CShipClass::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iShipName, sizeof(DWORD));
 	}
 
-void CShipClass::Paint (CG16bitImage &Dest, 
+void CShipClass::Paint (CG32bitImage &Dest, 
 						int x, 
 						int y, 
 						const ViewportTransform &Trans, 
@@ -3471,23 +3468,23 @@ void CShipClass::Paint (CG16bitImage &Dest,
 		{
 		int xP, yP;
 		IntPolarToVector(i, 24, &xP, &yP);
-		Dest.DrawPixel(x + xP, y + yP, CG16bitImage::RGBValue(0, 0, 255));
+		Dest.SetPixel(x + xP, y + yP, CG32bitPixel(0, 0, 255));
 
 		C3DConversion::CalcCoord(iScale, i, 8, 0, &xP, &yP);
-		Dest.DrawPixel(x + xP, y + yP, CG16bitImage::RGBValue(255, 255, 0));
+		Dest.SetPixel(x + xP, y + yP, CG32bitPixel(255, 255, 0));
 
 		C3DConversion::CalcCoord(iScale, i, 16, 0, &xP, &yP);
-		Dest.DrawPixel(x + xP, y + yP, CG16bitImage::RGBValue(255, 255, 0));
+		Dest.SetPixel(x + xP, y + yP, CG32bitPixel(255, 255, 0));
 
 		C3DConversion::CalcCoord(iScale, i, 24, 0, &xP, &yP);
-		Dest.DrawPixel(x + xP, y + yP, CG16bitImage::RGBValue(255, 255, 0));
+		Dest.SetPixel(x + xP, y + yP, CG32bitPixel(255, 255, 0));
 		}
 	}
 #endif
 	}
 
 void CShipClass::PaintMap (CMapViewportCtx &Ctx, 
-						CG16bitImage &Dest, 
+						CG32bitImage &Dest, 
 						int x, 
 						int y, 
 						int iDirection, 
@@ -3503,7 +3500,7 @@ void CShipClass::PaintMap (CMapViewportCtx &Ctx,
 	m_Image.PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24);
 	}
 
-void CShipClass::PaintThrust (CG16bitImage &Dest, 
+void CShipClass::PaintThrust (CG32bitImage &Dest, 
 							  int x, 
 							  int y, 
 							  const ViewportTransform &Trans, 

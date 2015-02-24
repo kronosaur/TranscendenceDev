@@ -95,12 +95,12 @@ void CSystemSpacePainter::CreateStarfield (int cxField, int cyField)
 			int iBlueAdj = 2 * Min(25, MAX_STAR_DISTANCE - i);
 			int iRedAdj = 2 * Min(25, i);
 
-			pStar->wColor = CG16bitImage::RGBValue(iBrightness + mathRandom(-25 + iRedAdj, 25),
+			pStar->rgbColor = CG32bitPixel(iBrightness + mathRandom(-25 + iRedAdj, 25),
 					iBrightness + mathRandom(-5, 5),
 					iBrightness + mathRandom(-25 + iBlueAdj, 25));
 
 			if (pStar->bBrightStar = (mathRandom(1, 100) <= BRIGHT_STAR_CHANCE))
-				pStar->wSpikeColor = CG16bitImage::BlendPixel(0, pStar->wColor, 128);
+				pStar->rgbSpikeColor = CG32bitPixel::Blend(0, pStar->rgbColor, (BYTE)128);
 			}
 
 	m_cxStarfield = cxField;
@@ -155,7 +155,7 @@ void CSystemSpacePainter::GenerateSquareDist (int iTotalCount, int iMinValue, in
 		}
 	}
 
-void CSystemSpacePainter::PaintSpaceBackground (CG16bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx)
+void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx)
 
 //	PaintSpaceBackground
 //
@@ -203,7 +203,7 @@ void CSystemSpacePainter::PaintSpaceBackground (CG16bitImage &Dest, int xCenter,
 		}
 	}
 
-void CSystemSpacePainter::PaintStarfield (CG16bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, WORD wSpaceColor)
+void CSystemSpacePainter::PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor)
 
 //	PaintStarfield
 //
@@ -217,8 +217,7 @@ void CSystemSpacePainter::PaintStarfield (CG16bitImage &Dest, const RECT &rcView
 
 	//	Compute the minimum brightness to paint
 
-	WORD wMaxColor = (WORD)(Max(Max(CG16bitImage::RedValue(wSpaceColor), CG16bitImage::GreenValue(wSpaceColor)), CG16bitImage::BlueValue(wSpaceColor)));
-	WORD wSpaceValue = CG16bitImage::RGBValue(wMaxColor, wMaxColor, wMaxColor);
+	BYTE byMaxSpaceValue = rgbSpaceColor.GetMax();
 
 	//	Precompute the star distance adj
 
@@ -234,8 +233,8 @@ void CSystemSpacePainter::PaintStarfield (CG16bitImage &Dest, const RECT &rcView
 
 	//	Paint each star
 
-	WORD *pStart = Dest.GetRowStart(0);
-	int cyRow = Dest.GetRowStart(1) - pStart;
+	CG32bitPixel *pStart = Dest.GetPixelPos(0, 0);
+	int cyRow = Dest.GetPixelPos(0, 1) - pStart;
 
 	pStart += cyRow * rcView.top + rcView.left;
 
@@ -255,33 +254,33 @@ void CSystemSpacePainter::PaintStarfield (CG16bitImage &Dest, const RECT &rcView
 
 		//	Blt the star
 
-		WORD *pPixel = pStart + cyRow * y + x;
+		CG32bitPixel *pPixel = pStart + cyRow * y + x;
 
-		//	Cheap (if inaccurate) test to see if the star is brighter than background
+		//	Test to see if the star is brighter than background
 
-		if (wSpaceValue < pStar->wColor)
+		if (pStar->rgbColor.GetMax() > byMaxSpaceValue)
 			{
-			if (pStar->bBrightStar && wSpaceValue < pStar->wSpikeColor)
+			if (pStar->bBrightStar && byMaxSpaceValue < pStar->rgbSpikeColor.GetMax())
 				{
 				if (y < cyField - 1)
 					{
-					*(pPixel + 1) = pStar->wSpikeColor;
-					*(pPixel + cyRow) = pStar->wSpikeColor;
+					*(pPixel + 1) = pStar->rgbSpikeColor;
+					*(pPixel + cyRow) = pStar->rgbSpikeColor;
 					}
 
 				if (y > 0)
 					{
-					*(pPixel - 1) = pStar->wSpikeColor;
-					*(pPixel - cyRow) = pStar->wSpikeColor;
+					*(pPixel - 1) = pStar->rgbSpikeColor;
+					*(pPixel - cyRow) = pStar->rgbSpikeColor;
 					}
 				}
 
-			*pPixel = pStar->wColor;
+			*pPixel = pStar->rgbColor;
 			}
 		}
 	}
 
-void CSystemSpacePainter::PaintViewport (CG16bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx)
+void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx)
 
 //	PaintViewport
 //
@@ -291,7 +290,7 @@ void CSystemSpacePainter::PaintViewport (CG16bitImage &Dest, CSystemType *pType,
 	//	If we don't want a starfield then we just clear the rect
 
 	if (Ctx.fNoStarfield)
-		Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), Ctx.wSpaceColor);
+		Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), Ctx.rgbSpaceColor);
 
 	//	Otherwise, we paint a space background
 
@@ -323,11 +322,11 @@ void CSystemSpacePainter::PaintViewport (CG16bitImage &Dest, CSystemType *pType,
 
 		else
 			{
-			Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), Ctx.wSpaceColor);
+			Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), Ctx.rgbSpaceColor);
 
 			//	Paint the star field on top
 
-			PaintStarfield(Dest, Ctx.rcView, xCenter, yCenter, Ctx.wSpaceColor);
+			PaintStarfield(Dest, Ctx.rcView, xCenter, yCenter, Ctx.rgbSpaceColor);
 			}
 		}
 	}

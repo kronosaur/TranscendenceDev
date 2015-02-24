@@ -11,7 +11,7 @@ const int STATUS_BAR_WIDTH =					100;
 const int STATUS_BAR_HEIGHT =					15;
 
 
-void CPaintHelper::PaintArrow (CG16bitImage &Dest, int x, int y, int iDirection, WORD wColor)
+void CPaintHelper::PaintArrow (CG32bitImage &Dest, int x, int y, int iDirection, CG32bitPixel rgbColor)
 
 //	PaintArrow
 //
@@ -54,10 +54,10 @@ void CPaintHelper::PaintArrow (CG16bitImage &Dest, int x, int y, int iDirection,
 
 	CG16bitBinaryRegion Region;
 	Region.CreateFromConvexPolygon(5, Poly);
-	Region.Fill(Dest, x, y, wColor);
+	Region.Fill(Dest, x, y, rgbColor);
 	}
 
-void CPaintHelper::PaintStatusBar (CG16bitImage &Dest, int x, int y, int iTick, WORD wColor, const CString &sLabel, int iPos, int iMaxPos, int *retcyHeight)
+void CPaintHelper::PaintStatusBar (CG32bitImage &Dest, int x, int y, int iTick, CG32bitPixel rgbColor, const CString &sLabel, int iPos, int iMaxPos, int *retcyHeight)
 
 //	PaintStatusBar
 //
@@ -67,8 +67,9 @@ void CPaintHelper::PaintStatusBar (CG16bitImage &Dest, int x, int y, int iTick, 
 	if (iMaxPos == 0)
 		return;
 
-	DWORD dwOpacity = 220;
-	DWORD dwDarkOpacity = 128;
+	CG32bitPixel rgbNormal = CG32bitPixel(rgbColor, (BYTE)220);
+	CG32bitPixel rgbDark = CG32bitPixel(rgbColor, (BYTE)128);
+	CG32bitPixel rgbBlack = CG32bitPixel(CG32bitPixel(0), (BYTE)128);
 
 	int xStart = x - (STATUS_BAR_WIDTH / 2);
 	int yStart = y;
@@ -77,21 +78,21 @@ void CPaintHelper::PaintStatusBar (CG16bitImage &Dest, int x, int y, int iTick, 
 
 	//	Draw
 
-	Dest.FillTrans(xStart, yStart + 1, iFill, STATUS_BAR_HEIGHT - 2, wColor, dwOpacity);
-	Dest.FillTrans(xStart + iFill, yStart + 1, STATUS_BAR_WIDTH - iFill, STATUS_BAR_HEIGHT - 2, 0, dwDarkOpacity);
+	Dest.Fill(xStart, yStart + 1, iFill, STATUS_BAR_HEIGHT - 2, rgbNormal);
+	Dest.Fill(xStart + iFill, yStart + 1, STATUS_BAR_WIDTH - iFill, STATUS_BAR_HEIGHT - 2, rgbBlack);
 
-	Dest.DrawLineTrans(xStart, yStart, xStart + STATUS_BAR_WIDTH, yStart, 1, wColor, dwDarkOpacity);
-	Dest.DrawLineTrans(xStart, yStart + STATUS_BAR_HEIGHT - 1, xStart + STATUS_BAR_WIDTH, yStart + STATUS_BAR_HEIGHT - 1, 1, wColor, dwDarkOpacity);
-	Dest.DrawLineTrans(xStart - 1, yStart, xStart - 1, yStart + STATUS_BAR_HEIGHT, 1, wColor, dwDarkOpacity);
-	Dest.DrawLineTrans(xStart + STATUS_BAR_WIDTH, yStart, xStart + STATUS_BAR_WIDTH, yStart + STATUS_BAR_HEIGHT, 1, wColor, dwDarkOpacity);
+	Dest.DrawLine(xStart, yStart, xStart + STATUS_BAR_WIDTH, yStart, 1, rgbDark);
+	Dest.DrawLine(xStart, yStart + STATUS_BAR_HEIGHT - 1, xStart + STATUS_BAR_WIDTH, yStart + STATUS_BAR_HEIGHT - 1, 1, rgbDark);
+	Dest.DrawLine(xStart - 1, yStart, xStart - 1, yStart + STATUS_BAR_HEIGHT, 1, rgbDark);
+	Dest.DrawLine(xStart + STATUS_BAR_WIDTH, yStart, xStart + STATUS_BAR_WIDTH, yStart + STATUS_BAR_HEIGHT, 1, rgbDark);
 
 	//	Draw the label
 
 	if (!sLabel.IsBlank())
 		{
 		const CG16bitFont &Font = g_pUniverse->GetNamedFont(CUniverse::fontSRSObjCounter);
-		WORD wLabelColor = CG16bitImage::RGBValue(255, 255, 255);
-		Font.DrawText(Dest, x, y, wLabelColor, sLabel, CG16bitFont::AlignCenter);
+		CG32bitPixel rgbLabelColor = CG32bitPixel(255, 255, 255);
+		Font.DrawText(Dest, x, y, rgbLabelColor, sLabel, CG16bitFont::AlignCenter);
 		}
 
 	//	Return height
@@ -100,7 +101,7 @@ void CPaintHelper::PaintStatusBar (CG16bitImage &Dest, int x, int y, int iTick, 
 		*retcyHeight = STATUS_BAR_HEIGHT;
 	}
 
-void CPaintHelper::PaintTargetHighlight (CG16bitImage &Dest, int x, int y, int iTick, int iRadius, int iRingSpacing, int iDelay, WORD wColor)
+void CPaintHelper::PaintTargetHighlight (CG32bitImage &Dest, int x, int y, int iTick, int iRadius, int iRingSpacing, int iDelay, CG32bitPixel rgbColor)
 
 //	PaintTargetHighlight
 //
@@ -111,8 +112,8 @@ void CPaintHelper::PaintTargetHighlight (CG16bitImage &Dest, int x, int y, int i
 
 	int iExpand = ((iTick / iDelay) % iRingSpacing);
 	int iOpacityStep = iExpand * (80 / iRingSpacing);
-	DrawGlowRing(Dest, x, y, iRadius, 6, wColor);
-	DrawGlowRing(Dest, x, y, iRadius + iExpand, 3, wColor, 240 - iOpacityStep);
-	DrawGlowRing(Dest, x, y, iRadius + iRingSpacing + iExpand, 2, wColor, 160 - iOpacityStep);
-	DrawGlowRing(Dest, x, y, iRadius + 2 * iRingSpacing + iExpand, 1, wColor, 80 - iOpacityStep);
+	CGDraw::RingGlowing(Dest, x, y, iRadius, 6, rgbColor);
+	CGDraw::RingGlowing(Dest, x, y, iRadius + iExpand, 3, CG32bitPixel(rgbColor, (BYTE)(240 - iOpacityStep)));
+	CGDraw::RingGlowing(Dest, x, y, iRadius + iRingSpacing + iExpand, 2, CG32bitPixel(rgbColor, (BYTE)(160 - iOpacityStep)));
+	CGDraw::RingGlowing(Dest, x, y, iRadius + 2 * iRingSpacing + iExpand, 1, CG32bitPixel(rgbColor, (BYTE)(80 - iOpacityStep)));
 	}

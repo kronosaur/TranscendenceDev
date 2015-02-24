@@ -48,7 +48,7 @@ ALERROR CEllipseEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLE
 	m_rEccentricity = (pDesc->GetAttributeIntegerBounded(ECCENTRICITY_ATTRIB, 0, 99, 0)) / 100.0;
 	m_rRotation = AngleToRadians(pDesc->GetAttributeIntegerBounded(ROTATION_ATTRIB, 0, -1, 0) % 360);
 
-	m_wLineColor = ::LoadRGBColor(pDesc->GetAttribute(LINE_COLOR_ATTRIB));
+	m_rgbLineColor = ::LoadRGBColor(pDesc->GetAttribute(LINE_COLOR_ATTRIB));
 	m_iLineWidth = pDesc->GetAttributeIntegerBounded(LINE_WIDTH_ATTRIB, 1, -1, 1);
 	m_sLineStyle = pDesc->GetAttribute(LINE_STYLE_ATTRIB);
 	if (m_sLineStyle.IsBlank())
@@ -57,7 +57,7 @@ ALERROR CEllipseEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLE
 	return NOERROR;
 	}
 
-void CEllipseEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CEllipseEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -67,7 +67,7 @@ void CEllipseEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPa
 	int iRadius = (int)m_rSemiMajorAxis;
 	if (iRadius == 0)
 		{
-		Dest.DrawPixel(x, y, m_wLineColor);
+		Dest.SetPixel(x, y, m_rgbLineColor);
 		return;
 		}
 
@@ -100,7 +100,7 @@ void CEllipseEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPa
 			int xEnd = (int)vEnd.GetX();
 			int yEnd = (int)vEnd.GetY();
 
-			Dest.DrawLine(x + xStart, y + yStart, x + xEnd, y + yEnd, m_iLineWidth, m_wLineColor);
+			Dest.DrawLine(x + xStart, y + yStart, x + xEnd, y + yEnd, m_iLineWidth, m_rgbLineColor);
 
 			xStart = xEnd;
 			yStart = yEnd;

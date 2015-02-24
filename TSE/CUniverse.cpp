@@ -2030,7 +2030,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	return NOERROR;
 	}
 
-void CUniverse::PaintObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
+void CUniverse::PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
 
 //	PaintObject
 //
@@ -2041,7 +2041,7 @@ void CUniverse::PaintObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObjec
 		m_pPOV->GetSystem()->PaintViewportObject(Dest, rcView, m_pPOV, pObj);
 	}
 
-void CUniverse::PaintObjectMap (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
+void CUniverse::PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
 
 //	PaintObjectMap
 //
@@ -2052,7 +2052,7 @@ void CUniverse::PaintObjectMap (CG16bitImage &Dest, const RECT &rcView, CSpaceOb
 		m_pPOV->GetSystem()->PaintViewportMapObject(Dest, rcView, m_pPOV, pObj);
 	}
 
-void CUniverse::PaintPOV (CG16bitImage &Dest, const RECT &rcView, DWORD dwFlags)
+void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 
 //	PaintPOV
 //
@@ -2065,7 +2065,7 @@ void CUniverse::PaintPOV (CG16bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 	m_iPaintTick++;
 	}
 
-void CUniverse::PaintPOVLRS (CG16bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies)
+void CUniverse::PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies)
 
 //	PaintPOVLRS
 //
@@ -2076,7 +2076,7 @@ void CUniverse::PaintPOVLRS (CG16bitImage &Dest, const RECT &rcView, Metric rSca
 		m_pPOV->GetSystem()->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
 	}
 
-void CUniverse::PaintPOVMap (CG16bitImage &Dest, const RECT &rcView, Metric rMapScale)
+void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale)
 
 //	PaintPOVMap
 //

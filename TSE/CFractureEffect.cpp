@@ -102,7 +102,7 @@ void CFractureEffect::InitParticleArray (void)
 
 	//	Get the source image and metrics
 
-	CG16bitImage &Source = m_Image.GetImage(NULL_STR);
+	CG32bitImage &Source = m_Image.GetImage(NULL_STR);
 	int xCenter, yCenter;
 	RECT rcSource = m_Image.GetImageRect(m_iImageTick, m_iImageRotation, &xCenter, &yCenter);
 
@@ -183,7 +183,7 @@ void CFractureEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 		m_pAttractor = NULL;
 	}
 
-void CFractureEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CFractureEffect::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -194,7 +194,7 @@ void CFractureEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintC
 		{
 		//	Get the source image and metrics
 
-		CG16bitImage &Source = m_Image.GetImage(NULL_STR);
+		CG32bitImage &Source = m_Image.GetImage(NULL_STR);
 		//int xCenter, yCenter;
 		//RECT rcSource = m_Image.GetImageRect(m_iImageTick, m_iImageRotation, &xCenter, &yCenter);
 
@@ -206,7 +206,7 @@ void CFractureEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintC
 			{
 			if (pParticle->iShape != -1)
 				{
-				Dest.ColorTransBlt(pParticle->xSrc,
+				Dest.Blt(pParticle->xSrc,
 						pParticle->ySrc,
 						m_iCellSize,
 						m_iCellSize,

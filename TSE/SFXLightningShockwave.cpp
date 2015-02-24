@@ -21,7 +21,7 @@ class CLightningShockwavePainter : public IEffectPainter
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
 		virtual void GetRect (RECT *retRect) const;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) { m_iRadius += m_pCreator->GetSpeed(); }
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
@@ -107,26 +107,17 @@ void CLightningShockwavePainter::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iRadius, sizeof(DWORD));
 	}
 
-void CLightningShockwavePainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CLightningShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
 //	Paint
 
 	{
-	CG16bitImage &Image = m_pCreator->GetImage().GetImage();
+	CG32bitImage &Image = m_pCreator->GetImage().GetImage();
 	RECT rcImage = m_pCreator->GetImage().GetImageRect();
 
-	DrawBltCircle(Dest, 
-			x, 
-			y, 
-			m_iRadius, 
-			Image, 
-			rcImage.left, 
-			rcImage.top, 
-			RectWidth(rcImage), 
-			RectHeight(rcImage),
-			255);
+	CGDraw::CircleImage(Dest, x, y, m_iRadius, 255, Image, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
 	}
 
 #endif
