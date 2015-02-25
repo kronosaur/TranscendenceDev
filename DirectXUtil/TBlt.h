@@ -50,6 +50,9 @@ template <class PAINTER> class TBlt
 					pDest++;
 					pSrc++;
 					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = Dest.NextRow(pDestRow);
 				}
 			}
 
@@ -289,6 +292,9 @@ template <class PAINTER> class TBlt
 					pDest++;
 					pSrc++;
 					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = Dest.NextRow(pDestRow);
 				}
 			}
 
@@ -318,6 +324,9 @@ template <class PAINTER> class TBlt
 					pDest++;
 					pSrc++;
 					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = Dest.NextRow(pDestRow);
 				}
 			}
 

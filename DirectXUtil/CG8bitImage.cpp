@@ -119,6 +119,128 @@ bool CG8bitImage::Create (int cxWidth, int cyHeight, BYTE InitialValue)
 	return true;
 	}
 
+bool CG8bitImage::CreateChannel (ChannelTypes iChannel, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
+
+//	CreateChannel
+//
+//	Creates from a channel
+
+	{
+	CleanUp();
+
+	if (cxSrc == -1)
+		cxSrc = Src.GetWidth();
+
+	if (cySrc == -1)
+		cySrc = Src.GetHeight();
+
+	//	Make sure we're in bounds
+
+	if (!Src.AdjustCoords(NULL, NULL, 0, 0, 
+			&xSrc, &ySrc,
+			&cxSrc, &cySrc))
+		return true;
+
+	//	Allocate a new buffer
+
+	int iSize = CalcBufferSize(cxSrc, cySrc);
+	m_pChannel = new BYTE [iSize];
+	m_cxWidth = cxSrc;
+	m_cyHeight = cySrc;
+	ResetClipRect();
+
+	//	Copy data from the channel
+
+	CG32bitPixel *pSrcRow = Src.GetPixelPos(xSrc, ySrc);
+	CG32bitPixel *pSrcRowEnd = Src.GetPixelPos(xSrc, ySrc + cySrc);
+	BYTE *pDestRow = GetPixelPos(0, 0);
+
+	switch (iChannel)
+		{
+		case channelAlpha:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				BYTE *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					*pDestPos = pSrcPos->GetAlpha();
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelRed:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				BYTE *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					*pDestPos = pSrcPos->GetRed();
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelGreen:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				BYTE *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					*pDestPos = pSrcPos->GetGreen();
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelBlue:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				BYTE *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					*pDestPos = pSrcPos->GetBlue();
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+		}
+
+	return true;
+	}
+
 bool CG8bitImage::CreateRoundedRect (int cxWidth, int cyHeight, int iRadius, BYTE Foreground, BYTE Background)
 
 //	CreateRoundedRect

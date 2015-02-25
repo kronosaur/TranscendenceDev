@@ -101,7 +101,7 @@ class CG32bitImage : public CGImagePlane
 			{
 			//	CreateFromBitmap
 
-			FLAG_NO_PRE_MULT_ALPHA =		0x00000001,
+			FLAG_PRE_MULT_ALPHA =			0x00000001,
 			};
 
 		CG32bitImage (void);
@@ -139,6 +139,9 @@ class CG32bitImage : public CGImagePlane
 		inline void FillColumn (int x, int y, int cyHeight, CG32bitPixel Value) { Fill(x, y, 1, cyHeight, Value); }
 		inline void FillLine (int x, int y, int cxWidth, CG32bitPixel Value) { Fill(x, y, cxWidth, 1, Value); }
 		void FillMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, CG32bitPixel rgbColor, int xDest, int yDest);
+		void Set (CG32bitPixel Value);
+		void Set (int x, int y, int cxWidth, int cyHeight, CG32bitPixel Value);
+		void SetMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, CG32bitPixel rgbColor, int xDest, int yDest);
 		inline void SetPixel (int x, int y, CG32bitPixel rgbColor) 
 			{ if (x >= m_rcClip.left && y >= m_rcClip.top && x < m_rcClip.right && y < m_rcClip.bottom) *GetPixelPos(x, y) = rgbColor; }
 		inline void SetPixelTrans (int x, int y, CG32bitPixel rgbColor, BYTE byOpacity)
@@ -151,6 +154,7 @@ class CG32bitImage : public CGImagePlane
 
 		//	8-bit Drawing Functions
 
+		void CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int cxWidth, int cyHeight, const CG8bitImage &Source, int xDest, int yDest);
 		void FillMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG8bitImage &Source, CG32bitPixel rgbColor, int xDest, int yDest);
 		void IntersectMask (int xMask, int yMask, int cxMask, int cyMask, const CG8bitImage &Mask, int xDest, int yDest);
 
@@ -198,6 +202,7 @@ class CGDraw
 		static void BltShimmer (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity, DWORD dwSeed);
 		static void BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
 		static void BltTransformedGray (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
+		static void BltWithBackColor (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG32bitPixel rgbBackColor);
 		static void CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, REALPIXEL rHue, REALPIXEL rSaturation);
 
 		//	Lines

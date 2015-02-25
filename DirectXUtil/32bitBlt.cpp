@@ -690,6 +690,108 @@ void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int c
 		}
 	}
 
+void CG32bitImage::CopyChannel (ChannelTypes iChannel, int xSrc, int ySrc, int cxWidth, int cyHeight, const CG8bitImage &Source, int xDest, int yDest)
+
+//	CopyChannel
+//
+//	Copies a channel
+
+	{
+	//	Make sure we're in bounds
+
+	if (!AdjustCoords(&xSrc, &ySrc, Source.GetWidth(), Source.GetHeight(), 
+			&xDest, &yDest,
+			&cxWidth, &cyHeight))
+		return;
+
+	BYTE *pSrcRow = Source.GetPixelPos(xSrc, ySrc);
+	BYTE *pSrcRowEnd = Source.GetPixelPos(xSrc, ySrc + cyHeight);
+	CG32bitPixel *pDestRow = GetPixelPos(xDest, yDest);
+
+	switch (iChannel)
+		{
+		case channelAlpha:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				BYTE *pSrcPos = pSrcRow;
+				BYTE *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetAlpha(*pSrcPos);
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelRed:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				BYTE *pSrcPos = pSrcRow;
+				BYTE *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetRed(*pSrcPos);
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelGreen:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				BYTE *pSrcPos = pSrcRow;
+				BYTE *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetGreen(*pSrcPos);
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelBlue:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				BYTE *pSrcPos = pSrcRow;
+				BYTE *pSrcPosEnd = pSrcRow + cxWidth;
+				CG32bitPixel *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					pDestPos->SetBlue(*pSrcPos);
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Source.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+		}
+	}
+
 void CG32bitImage::IntersectMask (int xMask, int yMask, int cxMask, int cyMask, const CG8bitImage &Mask, int xDest, int yDest)
 
 //	IntersectMask
@@ -813,6 +915,18 @@ void CGDraw::BltTransformedGray (CG32bitImage &Dest, Metric rX, Metric rY, Metri
 		CFilterDesaturateTrans Filter(byOpacity);
 		Filter.BltTransformed(Dest, rX, rY, rScaleX, rScaleY, rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
 		}
+	}
+
+void CGDraw::BltWithBackColor (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG32bitPixel rgbBackColor)
+	
+	{
+	if (Src.GetAlphaType() == CG32bitImage::alphaNone)
+		{
+		CFilterBackColor Filter(rgbBackColor);
+		Filter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+		}
+	else
+		Dest.Blt(xSrc, ySrc, cxSrc, cySrc, Src, xDest, yDest);
 	}
 
 void CGDraw::CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, REALPIXEL rHue, REALPIXEL rSaturation)

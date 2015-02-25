@@ -38,6 +38,24 @@ class CFilterNormal : public TBlt<CFilterNormal>
 		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const { return rgbSrc; }
 	};
 
+class CFilterBackColor : public TBlt<CFilterBackColor>
+	{
+	public:
+		CFilterBackColor (CG32bitPixel rgbBackColor) : m_rgbBackColor(rgbBackColor)
+			{ }
+
+		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+			{
+			if (rgbSrc.GetRed() <= 0x01 && rgbSrc.GetGreen() <= 0x01 && rgbSrc.GetBlue() <= 0x01)
+				return CG32bitPixel::Null();
+			else
+				return rgbSrc;
+			}
+
+	private:
+		CG32bitPixel m_rgbBackColor;
+	};
+
 class CFilterTrans : public TBlt<CFilterTrans>
 	{
 	public:
@@ -259,7 +277,7 @@ class CRadialCirclePainter : public TRadialPainter32<CRadialCirclePainter>
 	public:
 		CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult = false);
 
-		inline CG32bitPixel GetColorAt (int iRadius) const { return m_ColorRamp[iRadius]; }
+		inline CG32bitPixel GetColorAt (int iRadius) const { return m_pColorRamp->GetAt(iRadius); }
 
 	private:
 		const TArray<CG32bitPixel> *m_pColorRamp;

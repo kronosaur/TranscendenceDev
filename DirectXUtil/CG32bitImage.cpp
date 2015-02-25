@@ -502,9 +502,9 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 
 				while (pDest < pDestEnd)
 					{
-					BYTE byRed = *pSrc++;
-					BYTE byGreen = *pSrc++;
 					BYTE byBlue = *pSrc++;
+					BYTE byGreen = *pSrc++;
+					BYTE byRed = *pSrc++;
 
 					*pDest++ = CG32bitPixel(byRed, byGreen, byBlue);
 					}
@@ -533,11 +533,11 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 			{
 			//	Handle pre-multiplication
 
-			if (!(dwFlags & FLAG_NO_PRE_MULT_ALPHA) && iMaskType == bitmapAlpha)
+			if ((dwFlags & FLAG_PRE_MULT_ALPHA) && iMaskType == bitmapAlpha)
 				{
 				CG32bitPixel *pDestRow = m_pRGBA;
 				CG32bitPixel *pDestRowEnd = pDestRow + iSize;
-				WORD *pSrcRow = (WORD *)pImageBase;
+				WORD *pSrcRow = (WORD *)pMaskBase;
 
 				while (pDestRow < pDestRowEnd)
 					{
@@ -556,11 +556,12 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 
 						*pDest++ = CG32bitPixel(byRed, byGreen, byBlue, byAlpha);
 
+						pDest++;
 						pSrc++;
 						}
 
 					pDestRow = NextRow(pDestRow);
-					pSrcRow = (WORD *)(((char *)pSrcRow) + iImageStride);
+					pSrcRow = (WORD *)(((char *)pSrcRow) + iMaskStride);
 					}
 
 				m_AlphaType = alpha8;
@@ -572,7 +573,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 				{
 				CG32bitPixel *pDestRow = m_pRGBA;
 				CG32bitPixel *pDestRowEnd = pDestRow + iSize;
-				WORD *pSrcRow = (WORD *)pImageBase;
+				WORD *pSrcRow = (WORD *)pMaskBase;
 
 				while (pDestRow < pDestRowEnd)
 					{
@@ -589,7 +590,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 						}
 
 					pDestRow = NextRow(pDestRow);
-					pSrcRow = (WORD *)(((char *)pSrcRow) + iImageStride);
+					pSrcRow = (WORD *)(((char *)pSrcRow) + iMaskStride);
 					}
 
 				m_AlphaType = (iMaskType == bitmapAlpha ? alpha8 : alpha1);
@@ -602,11 +603,11 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 			{
 			//	Handle pre-multiplication
 
-			if (!(dwFlags & FLAG_NO_PRE_MULT_ALPHA) && iMaskType == bitmapAlpha)
+			if ((dwFlags & FLAG_PRE_MULT_ALPHA) && iMaskType == bitmapAlpha)
 				{
 				CG32bitPixel *pDestRow = m_pRGBA;
 				CG32bitPixel *pDestRowEnd = pDestRow + iSize;
-				BYTE *pSrcRow = (BYTE *)pImageBase;
+				BYTE *pSrcRow = (BYTE *)pMaskBase;
 
 				while (pDestRow < pDestRowEnd)
 					{
@@ -629,7 +630,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 						}
 
 					pDestRow = NextRow(pDestRow);
-					pSrcRow += iImageStride;
+					pSrcRow += iMaskStride;
 					}
 
 				m_AlphaType = alpha8;
@@ -641,7 +642,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 				{
 				CG32bitPixel *pDestRow = m_pRGBA;
 				CG32bitPixel *pDestRowEnd = pDestRow + iSize;
-				BYTE *pSrcRow = (BYTE *)pImageBase;
+				BYTE *pSrcRow = (BYTE *)pMaskBase;
 
 				while (pDestRow < pDestRowEnd)
 					{
@@ -661,7 +662,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 						}
 
 					pDestRow = NextRow(pDestRow);
-					pSrcRow += iImageStride;
+					pSrcRow += iMaskStride;
 					}
 
 				m_AlphaType = (iMaskType == bitmapAlpha ? alpha8 : alpha1);

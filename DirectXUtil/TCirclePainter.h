@@ -561,7 +561,7 @@ template <class PAINTER> class TRadialPainter32
 
 					//	Draw lines
 
-					DrawLine(x, y);
+					CompositeLine(x, y);
 					iLastDraw = y;
 
 					//	Next
@@ -667,7 +667,7 @@ template <class PAINTER> class TRadialPainter32
 
 				//	If transparent, skip
 
-				if (byOpacity = rgbColor.GetAlpha() == 0x00)
+				if ((byOpacity = rgbColor.GetAlpha()) == 0x00)
 					{
 					//	Skip
 					}
@@ -701,7 +701,6 @@ template <class PAINTER> class TRadialPainter32
 					WORD wRed = rgbColor.GetRed();
 					WORD wGreen = rgbColor.GetGreen();
 					WORD wBlue = rgbColor.GetBlue();
-					BYTE byAlpha = rgbColor.GetAlpha();
 
 					//	Draw transparent
 
@@ -710,7 +709,7 @@ template <class PAINTER> class TRadialPainter32
 						BYTE byRedResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetRed()] + wRed)); \
 						BYTE byGreenResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetGreen()] + wGreen)); \
 						BYTE byBlueResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetBlue()] + wBlue)); \
-						BYTE byAlphaResult = CG32bitPixel::CompositeAlpha((pos)->GetAlpha(), byAlpha); \
+						BYTE byAlphaResult = CG32bitPixel::CompositeAlpha((pos)->GetAlpha(), byOpacity); \
 						\
 						*(pos) = CG32bitPixel(byRedResult, byGreenResult, byBlueResult, byAlphaResult); \
 						}
