@@ -921,10 +921,10 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 				x - (RectWidth(m_rcImage) / 2),
 				y - (RectHeight(m_rcImage) / 2),
 				*pSource,
-				RectWidth(m_rcImage),
-				RectHeight(m_rcImage),
 				xSrc,
 				ySrc,
+				RectWidth(m_rcImage),
+				RectHeight(m_rcImage),
 				(BYTE)byOpacity,
 				iTick);
 		}
