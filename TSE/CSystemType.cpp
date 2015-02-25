@@ -158,10 +158,17 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	{
 	ALERROR error;
 
-	//	Load the background image UNID
+	//	Load the background image UNID. If we have an explicit definition, then
+	//	take it, even if it is 0. Otherwise, we default to the core background.
 
-	if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(BACKGROUND_ID_ATTRIB), &m_dwBackgroundUNID))
-		return error;
+	CString sAttrib;
+	if (pDesc->FindAttribute(BACKGROUND_ID_ATTRIB, &sAttrib))
+		{
+		if (error = ::LoadUNID(Ctx, sAttrib, &m_dwBackgroundUNID))
+			return error;
+		}
+	else
+		m_dwBackgroundUNID = UNID_DEFAULT_SYSTEM_BACKGROUND;
 
 	//	Options
 

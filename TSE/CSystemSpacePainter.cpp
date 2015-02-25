@@ -301,7 +301,7 @@ void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType,
 		if (!m_bInitialized)
 			{
 			CreateStarfield(RectWidth(Ctx.rcView), RectHeight(Ctx.rcView));
-			CreateSpaceBackground(pType ? pType->GetBackgroundUNID() : 0);
+			CreateSpaceBackground(pType ? pType->GetBackgroundUNID() : UNID_DEFAULT_SYSTEM_BACKGROUND);
 
 			m_bInitialized = true;
 			}
