@@ -231,7 +231,7 @@ class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter>
 			ASSERT(iRadius >= 0 && iRadius <= m_iRadius);
 
 			int yOffset = m_iRadius - iRadius;
-			if (yOffset >= m_cxSrc || m_byOpacity == 0x00)
+			if (yOffset >= m_cySrc || m_byOpacity == 0x00)
 				return CG32bitPixel::Null();
 
 			CG32bitPixel rgbImage = *m_Src.GetPixelPos(m_xSrc + iAngle, m_ySrc + yOffset);

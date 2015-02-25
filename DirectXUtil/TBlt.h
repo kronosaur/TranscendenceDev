@@ -168,7 +168,7 @@ template <class PAINTER> class TBlt
 					if (xSrcPos >= xSrc && xSrcPos + 1 < xSrcEnd
 							&& ySrcPos >= ySrc && ySrcPos + 1< ySrcEnd)
 						{
-						CG32bitPixel *pSrcPos = Src.GetPixelPos(xSrc, ySrcPos);
+						CG32bitPixel *pSrcPos = Src.GetPixelPos(xSrcPos, ySrcPos);
 
 						CG32bitPixel rgbA = FILTER(*pSrcPos, pDestPos);
 						BYTE byAlpha = rgbA.GetAlpha();
