@@ -5,6 +5,48 @@
 
 #include "PreComp.h"
 
+void CGDraw::OctaRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iCorner, int iLineWidth, CG32bitPixel rgbColor)
+
+//	DrawOctaRectOutline
+//
+//	Draw the frame of an octagonal rectangle.
+
+	{
+	int i;
+
+	//	Range checking
+
+	if (iLineWidth <= 0)
+		return;
+
+	iCorner = Min(Min(Max(0, iCorner), cxWidth / 2), cyHeight / 2);
+
+	//	Paint the straight edges first
+
+	Dest.Fill(x + iCorner, y, cxWidth - (2 * iCorner), iLineWidth, rgbColor);
+	Dest.Fill(x + iCorner, y + cyHeight - iLineWidth, cxWidth - (2 * iCorner), iLineWidth, rgbColor);
+	Dest.Fill(x, y + iCorner, iLineWidth, cyHeight - (2 * iCorner), rgbColor);
+	Dest.Fill(x + cxWidth - iLineWidth, y + iCorner, iLineWidth, cyHeight - (2 * iCorner), rgbColor);
+
+	//	Now paint the corners
+
+	int cxCornerLine = (int)((1.414 * iLineWidth) + 0.5);
+	int cyRows = iCorner + (cxCornerLine - iLineWidth);
+	for (i = 0; i < cyRows; i++)
+		{
+		int xOffset = iCorner - i;
+		int xLineEnd = Min(xOffset + cxCornerLine, cxWidth - iCorner);
+		xOffset = Max(0, xOffset);
+		int cxLine = xLineEnd - xOffset;
+
+		Dest.FillLine(x + xOffset, y + i, cxLine, rgbColor);
+		Dest.FillLine(x + xOffset, y + cyHeight - 1 - i, cxLine, rgbColor);
+
+		Dest.FillLine(x + cxWidth - cxLine - xOffset, y + i, cxLine, rgbColor);
+		Dest.FillLine(x + cxWidth - cxLine - xOffset, y + cyHeight - 1 - i, cxLine, rgbColor);
+		}
+	}
+
 void CGDraw::RectGradient (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitPixel rgbStart, CG32bitPixel rgbEnd, GradientDirections iDir)
 
 //	RectGradient
