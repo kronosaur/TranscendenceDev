@@ -244,7 +244,7 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 			Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), GetColor(colorAreaDialog));
 			}
 		else
-			Screen.Fill(0, 0, cxScreen, cyScreen, rgbBackgroundColor);
+			Screen.Set(rgbBackgroundColor);
 		}
 
 	//	Paint the frame

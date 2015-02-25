@@ -466,7 +466,7 @@ void CHumanInterface::OnAnimate (void)
 		}
 	else
 		{
-		GetScreen().Fill(0, 0, GetScreen().GetWidth(), GetScreen().GetHeight(), CG32bitPixel(0, 0, 0));
+		GetScreen().Set(CG32bitPixel(0, 0, 0));
 		BltScreen();
 		FlipScreen();
 		}

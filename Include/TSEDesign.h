@@ -851,7 +851,7 @@ class CObjectImage : public CDesignType
 		CString m_sResourceDb;			//	Resource db
 		CString m_sBitmap;				//	Bitmap resource within db
 		CString m_sBitmask;				//	Bitmask resource within db
-		bool m_bPreMult;				//	If TRUE, image is premultiplied with alpha
+		bool m_bPreMult;				//	If TRUE, image needs to be premultiplied with mask on load.
 		bool m_bLoadOnUse;				//	If TRUE, image is only loaded when needed
 		bool m_bFreeBitmap;				//	If TRUE, we free the bitmap when done
 

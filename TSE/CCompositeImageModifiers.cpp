@@ -39,6 +39,12 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 		if (pNewDest == NULL)
 			pNewDest = CreateCopy(retImage, &rcNewImage);
 
+		//	Keep our original mask, because the damage painting routines will
+		//	destroy it.
+
+		CG8bitImage Mask;
+		Mask.CreateChannel(channelAlpha, *pNewDest);
+
 		//	Add some large damage
 
 		int iCount = (pNewDest->GetWidth() / 32) * (pNewDest->GetHeight() / 32);
@@ -48,6 +54,10 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 		iCount = (pNewDest->GetWidth() / 4) + (pNewDest->GetHeight() / 4);
 		PaintDamage(*pNewDest, rcNewImage, iCount, g_pMediumDamage);
+
+		//	Reapply the mask to our image
+
+		pNewDest->CopyChannel(channelAlpha, 0, 0, Mask.GetWidth(), Mask.GetHeight(), Mask, 0, 0);
 		}
 
 	//	Apply wash on top
@@ -75,11 +85,6 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	if (pNewDest)
 		{
-#ifdef HD_LATER
-		if (!retImage->HasAlpha())
-			pNewDest->SetTransparentColor();
-#endif
-
 		retImage->Init(pNewDest, rcNewImage, 0, 0, true);
 		}
 	}

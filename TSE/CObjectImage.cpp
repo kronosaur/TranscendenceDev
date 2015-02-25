@@ -208,7 +208,7 @@ CG32bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 		return NULL;
 		}
 
-	bool bSuccess = m_pBitmap->CreateFromBitmap(hDIB, hBitmask, iMaskType, (m_bPreMult ? 0 : CG32bitImage::FLAG_NO_PRE_MULT_ALPHA));
+	bool bSuccess = m_pBitmap->CreateFromBitmap(hDIB, hBitmask, iMaskType, (m_bPreMult ? CG32bitImage::FLAG_PRE_MULT_ALPHA : 0));
 
 	//	We don't need these bitmaps anymore
 
@@ -300,9 +300,12 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pDesc->GetAttributeBool(SPRITE_ATTRIB))
 		::kernelDebugLogMessage("Sprites not yet supported.");
 
-	//	Pre-multiply transparency
+	//	Pre-multiply transparency.
+	//
+	//	NOTE: The noPM="true" parameter means that the image has not been
+	//	pre-multiplied. Thus we need to premultiply it when we load it.
 
-	m_bPreMult = !pDesc->GetAttributeBool(NO_PM_ATTRIB);
+	m_bPreMult = pDesc->GetAttributeBool(NO_PM_ATTRIB);
 
 	//	Initialize
 

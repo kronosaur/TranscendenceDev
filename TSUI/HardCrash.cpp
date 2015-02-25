@@ -63,7 +63,7 @@ void CHardCrashSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 	const CG16bitFont &TitleFont = VI.GetFont(fontSubTitle);
 	const CG16bitFont &DescFont = VI.GetFont(fontHeader);
 
-	Screen.Fill(0, 0, Screen.GetWidth(), Screen.GetHeight(), 0);
+	Screen.Set(CG32bitPixel(0, 0, 0));
 
 	const int FRAME_WIDTH = 512;
 	const int FRAME_HEIGHT = 256;
