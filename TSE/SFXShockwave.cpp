@@ -29,7 +29,7 @@ class CShockwavePainter : public IEffectPainter
 		virtual void GetRect (RECT *retRect) const;
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL);
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void SetParamMetric (const CString &sParam, Metric rValue);
 
 	protected:
@@ -46,9 +46,7 @@ class CShockwavePainter : public IEffectPainter
 
 //	CShockwaveEffectCreator object
 
-CShockwaveEffectCreator::CShockwaveEffectCreator (void) :
-		m_wColorGradient(NULL),
-		m_byOpacityGradient(NULL)
+CShockwaveEffectCreator::CShockwaveEffectCreator (void)
 
 //	CShockwaveEffectCreator constructor
 
@@ -60,14 +58,9 @@ CShockwaveEffectCreator::~CShockwaveEffectCreator (void)
 //	CShockwaveEffectCreator destructor
 
 	{
-	if (m_wColorGradient)
-		delete [] m_wColorGradient;
-
-	if (m_byOpacityGradient)
-		delete [] m_byOpacityGradient;
 	}
 
-void CShockwaveEffectCreator::CreateGlowGradient (int iSolidWidth, int iGlowWidth, WORD wSolidColor, WORD wGlowColor)
+void CShockwaveEffectCreator::CreateGlowGradient (int iSolidWidth, int iGlowWidth, CG32bitPixel rgbSolidColor, CG32bitPixel rgbGlowColor)
 
 //	CreateGlowGradient
 //
@@ -76,15 +69,16 @@ void CShockwaveEffectCreator::CreateGlowGradient (int iSolidWidth, int iGlowWidt
 	{
 	int i;
 
-	ASSERT(m_wColorGradient == NULL);
-	ASSERT(m_byOpacityGradient == NULL);
 	ASSERT(iSolidWidth >= 0);
 	ASSERT(iGlowWidth >= 0);
 	ASSERT(iSolidWidth + iGlowWidth > 0);
 
 	m_iGradientCount = iSolidWidth + 2 * iGlowWidth;
-	m_wColorGradient = new WORD [m_iGradientCount];
-	m_byOpacityGradient = new DWORD [m_iGradientCount];
+	m_ColorGradient.DeleteAll();
+	if (m_iGradientCount <= 0)
+		return;
+
+	m_ColorGradient.InsertEmpty(m_iGradientCount);
 
 	//	Add glow ramp
 
@@ -92,21 +86,15 @@ void CShockwaveEffectCreator::CreateGlowGradient (int iSolidWidth, int iGlowWidt
 		{
 		int iFade = (256 * (i + 1) / (iGlowWidth + 1));
 
-		m_byOpacityGradient[i] = iFade;
-		m_byOpacityGradient[m_iGradientCount - (i + 1)] = iFade;
-
-		WORD wColor = CG16bitImage::BlendPixel(wGlowColor, wSolidColor, (DWORD)iFade);
-		m_wColorGradient[i] = wColor;
-		m_wColorGradient[m_iGradientCount - (i + 1)] = wColor;
+		CG32bitPixel rgbColor = CG32bitPixel::Blend(rgbGlowColor, rgbSolidColor, (BYTE)iFade);
+		m_ColorGradient[i] = CG32bitPixel(rgbColor, (BYTE)iFade);
+		m_ColorGradient[m_iGradientCount - (i + 1)] = CG32bitPixel(rgbColor, (BYTE)iFade);
 		}
 
 	//	Add the solid color in the center
 
 	for (i = 0; i < iSolidWidth; i++)
-		{
-		m_wColorGradient[iGlowWidth + i] = wSolidColor;
-		m_byOpacityGradient[iGlowWidth + i] = 255;
-		}
+		m_ColorGradient[iGlowWidth + i] = rgbSolidColor;
 	}
 
 IEffectPainter *CShockwaveEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
@@ -162,8 +150,8 @@ ALERROR CShockwaveEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXM
 	//	Load other stuff
 
 	m_iLifetime = pDesc->GetAttributeIntegerBounded(LIFETIME_ATTRIB, 0, -1, 1);
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
-	m_wSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
 
 	if (pDesc->FindAttribute(FADE_START_ATTRIB, &sAttrib))
 		m_iFadeStart = strToInt(sAttrib, 100);
@@ -186,7 +174,7 @@ ALERROR CShockwaveEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXM
 			return ERR_FAIL;
 			}
 
-		CreateGlowGradient(m_iWidth, m_iGlowWidth, m_wPrimaryColor, m_wSecondaryColor);
+		CreateGlowGradient(m_iWidth, m_iGlowWidth, m_rgbPrimaryColor, m_rgbSecondaryColor);
 		}
 
 	return NOERROR;
@@ -325,7 +313,7 @@ void CShockwavePainter::OnWriteToStream (IWriteStream *pStream)
 	m_HitTest.WriteToStream(pStream);
 	}
 
-void CShockwavePainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -346,45 +334,16 @@ void CShockwavePainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintC
 		{
 		case CShockwaveEffectCreator::styleImage:
 			{
-			CG16bitImage &Image = m_pCreator->GetImage().GetImage(m_pCreator->GetUNIDString());
+			CG32bitImage &Image = m_pCreator->GetImage().GetImage(m_pCreator->GetUNIDString());
 			RECT rcImage = m_pCreator->GetImage().GetImageRect();
 
-			DrawBltCircle(Dest, 
-					x, 
-					y, 
-					m_iRadius, 
-					Image, 
-					rcImage.left, 
-					rcImage.top, 
-					RectWidth(rcImage), 
-					RectHeight(rcImage),
-					byOpacity);
+			CGDraw::CircleImage(Dest, x, y, m_iRadius, (BYTE)byOpacity, Image, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
 			break;
 			}
 
 		case CShockwaveEffectCreator::styleGlowRing:
 			{
-			DWORD *pOpacity = m_pCreator->GetOpacityGradient();
-			DWORD *pComputedOpacity = NULL;
-			if (byOpacity != 255)
-				{
-				pComputedOpacity = new DWORD [m_pCreator->GetRingThickness()];
-				for (int i = 0; i < m_pCreator->GetRingThickness(); i++)
-					pComputedOpacity[i] = pOpacity[i] * byOpacity / 255;
-
-				pOpacity = pComputedOpacity;
-				}
-
-			DrawGlowRing(Dest,
-					x,
-					y,
-					m_iRadius,
-					m_pCreator->GetRingThickness(),
-					m_pCreator->GetColorGradient(),
-					pOpacity);
-
-			if (pComputedOpacity)
-				delete pComputedOpacity;
+			CGDraw::RingGlowing(Dest, x, y, m_iRadius, m_pCreator->GetRingThickness(), m_pCreator->GetColorGradient(), (BYTE)byOpacity);
 			break;
 			}
 

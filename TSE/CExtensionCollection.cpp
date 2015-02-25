@@ -1796,7 +1796,7 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 
 			//	Set the icon
 
-			CG16bitImage *pIcon;
+			CG32bitImage *pIcon;
 			pExtension->CreateIcon(cxIconSize, cyIconSize, &pIcon);
 			pEntry->SetIcon(pIcon);
 			pEntry->SetVersion(pExtension->GetVersion());

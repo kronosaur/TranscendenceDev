@@ -5,51 +5,48 @@
 #include "PreComp.h"
 
 const int FIXED_POINT =							256;
-const WORD FLAME_CORE_COLOR =					CG16bitImage::RGBValue(255,241,230);
-const WORD FLAME_MIDDLE_COLOR =					CG16bitImage::RGBValue(255,208,0);
-const WORD FLAME_OUTER_COLOR =					CG16bitImage::RGBValue(255,59,27);
-//const WORD FLAME_MIDDLE_COLOR =					CG16bitImage::RGBValue(248,200,12);
-//const WORD FLAME_OUTER_COLOR =					CG16bitImage::RGBValue(189,30,0);
+const CG32bitPixel FLAME_CORE_COLOR =			CG32bitPixel(255,241,230);
+const CG32bitPixel FLAME_MIDDLE_COLOR =			CG32bitPixel(255,208,0);
+const CG32bitPixel FLAME_OUTER_COLOR =			CG32bitPixel(255,59,27);
+//const WORD FLAME_MIDDLE_COLOR =					CG32bitPixel(248,200,12);
+//const WORD FLAME_OUTER_COLOR =					CG32bitPixel(189,30,0);
 
-#define PAINT_GASEOUS_PARTICLE(Dest,x,y,iWidth,wColor,iFade,iFade2)	\
+#define PAINT_GASEOUS_PARTICLE(Dest,x,y,iWidth,rgbColor,iFade,iFade2)	\
 	{	\
 	switch (iWidth)	\
 		{	\
 		case 0:	\
-			Dest.DrawPixelTrans((x), (y), (wColor), (iFade));	\
+			Dest.SetPixelTrans((x), (y), (rgbColor), (BYTE)(iFade));	\
 			break;	\
 \
 		case 1:	\
-			Dest.DrawPixelTrans((x), (y), (wColor), (iFade));	\
-			Dest.DrawPixelTrans((x) + 1, (y), (wColor), (iFade2));	\
-			Dest.DrawPixelTrans((x), (y) + 1, (wColor), (iFade2));	\
+			Dest.SetPixelTrans((x), (y), (rgbColor), (BYTE)(iFade));	\
+			Dest.SetPixelTrans((x) + 1, (y), (rgbColor), (BYTE)(iFade2));	\
+			Dest.SetPixelTrans((x), (y) + 1, (rgbColor), (BYTE)(iFade2));	\
 			break;	\
 \
 		case 2:	\
-			Dest.DrawPixelTrans((x), (y), (wColor), (iFade));	\
-			Dest.DrawPixelTrans((x) + 1, (y), (wColor), (iFade2));	\
-			Dest.DrawPixelTrans((x), (y) + 1, (wColor), (iFade2));	\
-			Dest.DrawPixelTrans((x) - 1, (y), (wColor), (iFade2));	\
-			Dest.DrawPixelTrans((x), (y) - 1, (wColor), (iFade2));	\
+			Dest.SetPixelTrans((x), (y), (rgbColor), (BYTE)(iFade));	\
+			Dest.SetPixelTrans((x) + 1, (y), (rgbColor), (BYTE)(iFade2));	\
+			Dest.SetPixelTrans((x), (y) + 1, (rgbColor), (BYTE)(iFade2));	\
+			Dest.SetPixelTrans((x) - 1, (y), (rgbColor), (BYTE)(iFade2));	\
+			Dest.SetPixelTrans((x), (y) - 1, (rgbColor), (BYTE)(iFade2));	\
 			break;	\
 \
 		case 3:	\
-			Dest.DrawPixelTrans((x), (y), (wColor), (iFade));	\
-			Dest.DrawPixelTrans((x) + 1, (y), (wColor), (iFade));	\
-			Dest.DrawPixelTrans((x), (y) + 1, (wColor), (iFade));	\
-			Dest.DrawPixelTrans((x) - 1, (y), (wColor), (iFade));	\
-			Dest.DrawPixelTrans((x), (y) - 1, (wColor), (iFade));	\
-			Dest.DrawPixelTrans((x) + 1, (y) + 1, (wColor), (iFade2));	\
-			Dest.DrawPixelTrans((x) + 1, (y) - 1, (wColor), (iFade2));	\
-			Dest.DrawPixelTrans((x) - 1, (y) + 1, (wColor), (iFade2));	\
-			Dest.DrawPixelTrans((x) - 1, (y) - 1, (wColor), (iFade2));	\
+			Dest.SetPixelTrans((x), (y), (rgbColor), (BYTE)(iFade));	\
+			Dest.SetPixelTrans((x) + 1, (y), (rgbColor), (BYTE)(iFade));	\
+			Dest.SetPixelTrans((x), (y) + 1, (rgbColor), (BYTE)(iFade));	\
+			Dest.SetPixelTrans((x) - 1, (y), (rgbColor), (BYTE)(iFade));	\
+			Dest.SetPixelTrans((x), (y) - 1, (rgbColor), (BYTE)(iFade));	\
+			Dest.SetPixelTrans((x) + 1, (y) + 1, (rgbColor), (BYTE)(iFade2));	\
+			Dest.SetPixelTrans((x) + 1, (y) - 1, (rgbColor), (BYTE)(iFade2));	\
+			Dest.SetPixelTrans((x) - 1, (y) + 1, (rgbColor), (BYTE)(iFade2));	\
+			Dest.SetPixelTrans((x) - 1, (y) - 1, (rgbColor), (BYTE)(iFade2));	\
 			break;	\
 \
 		default:	\
-			if (CG16bitImage::IsGrayscaleValue(wColor))	\
-				DrawFilledCircleGray(Dest, (x), (y), ((iWidth) + 1) / 2, (wColor), (iFade));	\
-			else	\
-				DrawFilledCircleTrans(Dest, (x), (y), ((iWidth) + 1) / 2, (wColor), (iFade));	\
+			CGDraw::Circle(Dest, (x), (y), ((iWidth) + 1) / 2, CG32bitPixel((rgbColor), (BYTE)(iFade)));	\
 			break;	\
 		}	\
 	}
@@ -268,7 +265,7 @@ void CParticleArray::Move (const CVector &vMove)
 	m_vCenterOfMass = (iParticleCount > 0 ? vTotalPos / (Metric)iParticleCount : NullVector);
 	}
 
-void CParticleArray::Paint (CG16bitImage &Dest,
+void CParticleArray::Paint (CG32bitImage &Dest,
 							int xPos,
 							int yPos,
 							SViewportPaintCtx &Ctx,
@@ -308,7 +305,7 @@ void CParticleArray::Paint (CG16bitImage &Dest,
 			break;
 
 		case paintLine:
-			PaintLine(Dest, xPos, yPos, Ctx, Desc.wPrimaryColor);
+			PaintLine(Dest, xPos, yPos, Ctx, Desc.rgbPrimaryColor);
 			break;
 
 		case paintSmoke:
@@ -338,13 +335,13 @@ void CParticleArray::Paint (CG16bitImage &Dest,
 					Desc.iMaxLifetime,
 					Desc.iMinWidth,
 					Desc.iMaxWidth,
-					Desc.wPrimaryColor,
-					Desc.wSecondaryColor);
+					Desc.rgbPrimaryColor,
+					Desc.rgbSecondaryColor);
 			break;
 		}
 	}
 
-void CParticleArray::Paint (CG16bitImage &Dest,
+void CParticleArray::Paint (CG32bitImage &Dest,
 							int xPos,
 							int yPos,
 							SViewportPaintCtx &Ctx,
@@ -386,7 +383,7 @@ void CParticleArray::Paint (CG16bitImage &Dest,
 	Ctx.iRotation = iSavedRotation;
 	}
 
-void CParticleArray::PaintFireAndSmoke (CG16bitImage &Dest, 
+void CParticleArray::PaintFireAndSmoke (CG32bitImage &Dest, 
 										int xPos, 
 										int yPos, 
 										SViewportPaintCtx &Ctx, 
@@ -429,7 +426,7 @@ void CParticleArray::PaintFireAndSmoke (CG16bitImage &Dest,
 
 			//	Compute properties of the particle based on its life
 
-			WORD wColor = 0;
+			CG32bitPixel rgbColor = 0;
 			int iFade = 0;
 			int iFade2 = 0;
 			int iWidth = 0;
@@ -448,32 +445,32 @@ void CParticleArray::PaintFireAndSmoke (CG16bitImage &Dest,
 				//	Smoke color
 
 				int iDarkness = Min(255, iSmokeBrightness + (2 * (pParticle->iDestiny % 25)));
-				WORD wSmokeColor = CG16bitImage::GrayscaleValue(iDarkness);
+				CG32bitPixel rgbSmokeColor = CG32bitPixel::FromGrayscale(iDarkness);
 
 				//	Some particles are gray
 
-				WORD wFadeColor;
+				CG32bitPixel rgbFadeColor;
 				if ((pParticle->iDestiny % 4) != 0)
-					wFadeColor = FLAME_OUTER_COLOR;
+					rgbFadeColor = FLAME_OUTER_COLOR;
 				else
-					wFadeColor = wSmokeColor;
+					rgbFadeColor = rgbSmokeColor;
 
 				//	Particle color changes over time
 
 				if (iAge <= iCore)
-					wColor = CG16bitImage::FadeColor(FLAME_CORE_COLOR,
+					rgbColor = CG32bitPixel::Fade(FLAME_CORE_COLOR,
 							FLAME_MIDDLE_COLOR,
 							100 * iAge / iCore);
 				else if (iAge <= iFlame)
-					wColor = CG16bitImage::FadeColor(FLAME_MIDDLE_COLOR,
-							wFadeColor,
+					rgbColor = CG32bitPixel::Fade(FLAME_MIDDLE_COLOR,
+							rgbFadeColor,
 							100 * (iAge - iCore) / (iFlame - iCore));
 				else if (iAge <= iSmoke)
-					wColor = CG16bitImage::FadeColor(wFadeColor,
-							wSmokeColor,
+					rgbColor = CG32bitPixel::Fade(rgbFadeColor,
+							rgbSmokeColor,
 							100 * (iAge - iFlame) / (iSmoke - iFlame));
 				else
-					wColor = wSmokeColor;
+					rgbColor = rgbSmokeColor;
 				}
 
 			//	Compute the position of the particle
@@ -483,7 +480,7 @@ void CParticleArray::PaintFireAndSmoke (CG16bitImage &Dest,
 
 			//	Paint the particle
 
-			PAINT_GASEOUS_PARTICLE(Dest, x, y, iWidth, wColor, iFade, iFade2);
+			PAINT_GASEOUS_PARTICLE(Dest, x, y, iWidth, rgbColor, iFade, iFade2);
 			}
 
 		//	Next
@@ -492,15 +489,15 @@ void CParticleArray::PaintFireAndSmoke (CG16bitImage &Dest,
 		}
 	}
 
-void CParticleArray::PaintGaseous (CG16bitImage &Dest,
+void CParticleArray::PaintGaseous (CG32bitImage &Dest,
 								   int xPos,
 								   int yPos,
 								   SViewportPaintCtx &Ctx,
 								   int iMaxLifetime,
 								   int iMinWidth,
 								   int iMaxWidth,
-								   WORD wPrimaryColor,
-								   WORD wSecondaryColor)
+								   CG32bitPixel rgbPrimaryColor,
+								   CG32bitPixel rgbSecondaryColor)
 
 //	PaintGaseous
 //
@@ -525,7 +522,7 @@ void CParticleArray::PaintGaseous (CG16bitImage &Dest,
 
 			//	Compute properties of the particle based on its life
 
-			WORD wColor = 0;
+			CG32bitPixel rgbColor = 0;
 			int iFade = 0;
 			int iFade2 = 0;
 			int iWidth = 0;
@@ -543,7 +540,7 @@ void CParticleArray::PaintGaseous (CG16bitImage &Dest,
 
 				//	Particle color fades from primary to secondary
 
-				wColor = CG16bitImage::FadeColor(wPrimaryColor, wSecondaryColor, 100 * iAge / iMaxLifetime);
+				rgbColor = CG32bitPixel::Fade(rgbPrimaryColor, rgbSecondaryColor, 100 * iAge / iMaxLifetime);
 				}
 
 			//	Compute the position of the particle
@@ -553,7 +550,7 @@ void CParticleArray::PaintGaseous (CG16bitImage &Dest,
 
 			//	Paint the particle
 
-			PAINT_GASEOUS_PARTICLE(Dest, x, y, iWidth, wColor, iFade, iFade2);
+			PAINT_GASEOUS_PARTICLE(Dest, x, y, iWidth, rgbColor, iFade, iFade2);
 			}
 
 		//	Next
@@ -562,7 +559,7 @@ void CParticleArray::PaintGaseous (CG16bitImage &Dest,
 		}
 	}
 
-void CParticleArray::PaintImage (CG16bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+void CParticleArray::PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
 
 //	Paint
 //
@@ -608,11 +605,11 @@ void CParticleArray::PaintImage (CG16bitImage &Dest, int xPos, int yPos, SViewpo
 		}
 	}
 
-void CParticleArray::PaintLine (CG16bitImage &Dest,
+void CParticleArray::PaintLine (CG32bitImage &Dest,
 								int xPos,
 								int yPos,
 								SViewportPaintCtx &Ctx,
-								WORD wPrimaryColor)
+								CG32bitPixel rgbPrimaryColor)
 
 //	PaintLine
 //
@@ -648,7 +645,7 @@ void CParticleArray::PaintLine (CG16bitImage &Dest,
 			Dest.DrawLine(xFrom, yFrom,
 					xTo, yTo,
 					1,
-					wPrimaryColor);
+					rgbPrimaryColor);
 			}
 
 		//	Next

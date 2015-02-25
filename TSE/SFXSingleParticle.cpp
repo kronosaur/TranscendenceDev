@@ -26,7 +26,7 @@ class CSingleParticlePainter : public IEffectPainter
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
 		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc);
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { };
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { };
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
@@ -93,8 +93,8 @@ ALERROR CSingleParticleEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx
 
 	//	Colors
 
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
-	m_wSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
 
 	return NOERROR;
 	}
@@ -121,8 +121,8 @@ bool CSingleParticlePainter::GetParticlePaintDesc (SParticlePaintDesc *retDesc)
 	retDesc->iStyle = m_pCreator->GetStyle();
 	retDesc->iMinWidth = m_iMinWidth;
 	retDesc->iMaxWidth = m_iMaxWidth;
-	retDesc->wPrimaryColor = m_pCreator->GetPrimaryColor();
-	retDesc->wSecondaryColor = m_pCreator->GetSecondaryColor();
+	retDesc->rgbPrimaryColor = m_pCreator->GetPrimaryColor();
+	retDesc->rgbSecondaryColor = m_pCreator->GetSecondaryColor();
 
 	return true;
 	}

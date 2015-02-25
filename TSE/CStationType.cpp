@@ -1600,7 +1600,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Stellar objects
 
-	m_rgbSpaceColor = LoadCOLORREF(pDesc->GetAttribute(SPACE_COLOR_ATTRIB));
+	m_rgbSpaceColor = ::LoadRGBColor(pDesc->GetAttribute(SPACE_COLOR_ATTRIB));
 	m_iMaxLightDistance = pDesc->GetAttributeIntegerBounded(MAX_LIGHT_DISTANCE, 1, -1, 500);
 
 	int iGravity;
@@ -1764,7 +1764,7 @@ void CStationType::OnWriteToStream (IWriteStream *pStream)
 	m_EncounterRecord.WriteToStream(pStream);
 	}
 
-void CStationType::PaintAnimations (CG16bitImage &Dest, int x, int y, int iTick)
+void CStationType::PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick)
 
 //	PaintAnimations
 //
@@ -1783,7 +1783,7 @@ void CStationType::PaintAnimations (CG16bitImage &Dest, int x, int y, int iTick)
 		}
 	}
 
-void CStationType::PaintDockPortPositions (CG16bitImage &Dest, int x, int y)
+void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 
 //	PaintDockPortPositions
 //
@@ -1807,8 +1807,8 @@ void CStationType::PaintDockPortPositions (CG16bitImage &Dest, int x, int y)
 
 		//	Colors
 
-		WORD wArrowColor = (bInFront ? CG16bitImage::RGBValue(0x00, 0x40, 0x80) : CG16bitImage::RGBValue(0x80, 0x40, 0x00));
-		WORD wCenterColor = (bInFront ? CG16bitImage::RGBValue(0x00, 0x7f, 0xff) : CG16bitImage::RGBValue(0xff, 0x7f, 0x00));
+		CG32bitPixel rgbArrowColor = (bInFront ? CG32bitPixel(0x00, 0x40, 0x80) : CG32bitPixel(0x80, 0x40, 0x00));
+		CG32bitPixel rgbCenterColor = (bInFront ? CG32bitPixel(0x00, 0x7f, 0xff) : CG32bitPixel(0xff, 0x7f, 0x00));
 
 		//	Get the position
 
@@ -1817,11 +1817,11 @@ void CStationType::PaintDockPortPositions (CG16bitImage &Dest, int x, int y)
 
 		//	Paint arrow
 
-		CPaintHelper::PaintArrow(Dest, xPos, yPos, iRotation, wArrowColor);
+		CPaintHelper::PaintArrow(Dest, xPos, yPos, iRotation, rgbArrowColor);
 
 		//	Paint center crosshairs
 
-		Dest.DrawDot(xPos, yPos, wCenterColor, CG16bitImage::markerMediumCross);
+		Dest.DrawDot(xPos, yPos, rgbCenterColor, markerMediumCross);
 		}
 	}
 

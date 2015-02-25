@@ -473,7 +473,7 @@ void CEnvironmentGrid::MarkImages (void)
 		}
 	}
 
-void CEnvironmentGrid::Paint (CG16bitImage &Dest, SViewportPaintCtx &Ctx, const CVector &vUR, const CVector &vLL)
+void CEnvironmentGrid::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx, const CVector &vUR, const CVector &vLL)
 
 //	Paint
 //
@@ -510,7 +510,7 @@ void CEnvironmentGrid::Paint (CG16bitImage &Dest, SViewportPaintCtx &Ctx, const 
 	DEBUG_CATCH
 	}
 
-void CEnvironmentGrid::PaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest)
+void CEnvironmentGrid::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest)
 
 //	PaintMap
 //

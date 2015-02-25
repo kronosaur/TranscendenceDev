@@ -704,7 +704,7 @@ struct SViewportPaintCtx
 			yCenter(0),
 			pObj(NULL),
 			iPerception(4),				//	LATER: Same as CSpaceObject::perceptNormal (but we haven't included it yet).
-			wSpaceColor(0),
+			rgbSpaceColor(0),
 			fNoSelection(false),
 			fNoRecon(false),
 			fNoDockedShips(false),
@@ -742,8 +742,7 @@ struct SViewportPaintCtx
 
 	int iPerception;					//	Perception
 	Metric rIndicatorRadius;			//	Radius of circle to show target indicators (in pixels)
-	WORD wSpaceColor;					//	Space color
-	WORD wSpare;
+	CG32bitPixel rgbSpaceColor;			//	Space color
 
 	//	Options
 
@@ -812,7 +811,7 @@ struct SPointInObjectCtx
 	const CObjectImageArray *pObjImage;
 
 	//	Used by CObjectImageArray
-	CG16bitImage *pImage;				//	Image
+	CG32bitImage *pImage;				//	Image
 	RECT rcImage;						//	RECT of valid image
 	int xImageOffset;					//	Offset to convert from point coords to image coords
 	int yImageOffset;
@@ -822,15 +821,15 @@ class CObjectImage : public CDesignType
 	{
 	public:
 		CObjectImage (void);
-		CObjectImage (CG16bitImage *pBitmap, bool bFreeBitmap = false);
+		CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap = false);
 		~CObjectImage (void);
 
-		CG16bitImage *CreateCopy (CString *retsError = NULL);
+		CG32bitImage *CreateCopy (CString *retsError = NULL);
 		ALERROR Exists (SDesignLoadCtx &Ctx);
-		CG16bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL);
-		CG16bitImage *GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL);
+		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL);
+		CG32bitImage *GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL);
 		inline CString GetImageFilename (void) { return m_sBitmap; }
-		inline bool HasAlpha (void) { return (m_pBitmap ? m_pBitmap->HasAlpha() : false); }
+		inline bool HasAlpha (void) { return (m_pBitmap ? (m_pBitmap->GetAlphaType() == CG32bitImage::alpha8) : false); }
 
 		inline void ClearMark (void) { m_bMarked = false; }
 		ALERROR Lock (SDesignLoadCtx &Ctx);
@@ -852,14 +851,11 @@ class CObjectImage : public CDesignType
 		CString m_sResourceDb;			//	Resource db
 		CString m_sBitmap;				//	Bitmap resource within db
 		CString m_sBitmask;				//	Bitmask resource within db
-		bool m_bTransColor;				//	If TRUE, m_wTransColor is valid
-		WORD m_wTransColor;				//	Transparent color
-		bool m_bSprite;					//	If TRUE, convert to sprite after loading
-		bool m_bPreMult;				//	If TRUE, image is premultiplied with alpha
+		bool m_bPreMult;				//	If TRUE, image needs to be premultiplied with mask on load.
 		bool m_bLoadOnUse;				//	If TRUE, image is only loaded when needed
 		bool m_bFreeBitmap;				//	If TRUE, we free the bitmap when done
 
-		CG16bitImage *m_pBitmap;		//	Loaded image (NULL if not loaded)
+		CG32bitImage *m_pBitmap;		//	Loaded image (NULL if not loaded)
 		bool m_bMarked;					//	Marked
 		bool m_bLocked;					//	Image is never unloaded
 	};
@@ -872,18 +868,18 @@ class CObjectImageArray : public CObject
 		~CObjectImageArray (void);
 		CObjectImageArray &operator= (const CObjectImageArray &Source);
 
-		ALERROR Init (CG16bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap);
+		ALERROR Init (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap);
 		ALERROR Init (DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame);
 		ALERROR InitFromXML (CXMLElement *pDesc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
 		void CleanUp (void);
-		void CopyImage (CG16bitImage &Dest, int x, int y, int iFrame, int iRotation) const;
+		void CopyImage (CG32bitImage &Dest, int x, int y, int iFrame, int iRotation) const;
 		inline DWORD GetBitmapUNID (void) const { return m_dwBitmapUNID; }
 		CString GetFilename (void) const;
 		inline int GetFrameCount (void) const { return m_iFrameCount; }
-		inline CG16bitImage &GetImage (const CString &sLoadReason) const { return *(m_pImage->GetImage(sLoadReason)); }
+		inline CG32bitImage &GetImage (const CString &sLoadReason) const { return *(m_pImage->GetImage(sLoadReason)); }
 		inline const RECT &GetImageRect (void) const { return m_rcImage; }
 		RECT GetImageRect (int iTick, int iRotation, int *retxCenter = NULL, int *retyCenter = NULL) const;
 		RECT GetImageRectAtPoint (int x, int y) const;
@@ -896,28 +892,28 @@ class CObjectImageArray : public CObject
 		inline bool IsEmpty (void) const { return ((m_pImage == NULL) && (m_dwBitmapUNID == 0)); }
 		inline bool IsLoaded (void) const { return (m_pImage != NULL); }
 		void MarkImage (void);
-		void PaintImage (CG16bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false) const;
-		void PaintImageGrayed (CG16bitImage &Dest, int x, int y, int iTick, int iRotation) const;
-		void PaintImageShimmering (CG16bitImage &Dest,
+		void PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false) const;
+		void PaintImageGrayed (CG32bitImage &Dest, int x, int y, int iTick, int iRotation) const;
+		void PaintImageShimmering (CG32bitImage &Dest,
 								   int x,
 								   int y,
 								   int iTick,
 								   int iRotation,
 								   DWORD byOpacity) const;
-		void PaintImageUL (CG16bitImage &Dest, int x, int y, int iTick, int iRotation) const;
-		void PaintImageWithGlow (CG16bitImage &Dest,
+		void PaintImageUL (CG32bitImage &Dest, int x, int y, int iTick, int iRotation) const;
+		void PaintImageWithGlow (CG32bitImage &Dest,
 								 int x,
 								 int y,
 								 int iTick,
 								 int iRotation,
-								 COLORREF rgbGlowColor) const;
-		void PaintRotatedImage (CG16bitImage &Dest,
+								 CG32bitPixel rgbGlowColor) const;
+		void PaintRotatedImage (CG32bitImage &Dest,
 								int x,
 								int y,
 								int iTick,
 								int iRotation,
 								bool bComposite = false) const;
-		void PaintScaledImage (CG16bitImage &Dest,
+		void PaintScaledImage (CG32bitImage &Dest,
 							   int x,
 							   int y,
 							   int iTick,
@@ -925,12 +921,12 @@ class CObjectImageArray : public CObject
 							   int cxWidth,
 							   int cyHeight,
 							   bool bComposite = false) const;
-		void PaintSilhoutte (CG16bitImage &Dest,
+		void PaintSilhoutte (CG32bitImage &Dest,
 							 int x,
 							 int y,
 							 int iTick,
 							 int iRotation,
-							 WORD wColor) const;
+							 CG32bitPixel rgbColor) const;
 		bool PointInImage (int x, int y, int iTick, int iRotation) const;
 		bool PointInImage (SPointInObjectCtx &Ctx, int x, int y) const;
 		void PointInImageInit (SPointInObjectCtx &Ctx, int iTick, int iRotation) const;
@@ -975,8 +971,8 @@ class CObjectImageArray : public CObject
 
 		//	Cached images
 
-		mutable CG16bitImage *m_pGlowImages;
-		mutable CG16bitImage *m_pScaledImages;
+		mutable CG8bitImage *m_pGlowImages;
+		mutable CG32bitImage *m_pScaledImages;
 		mutable int m_cxScaledImage;
 
 	friend CObjectClass<CObjectImageArray>;
@@ -1064,7 +1060,7 @@ class CCompositeImageModifiers
 	{
 	public:
 		CCompositeImageModifiers (void) :
-				m_wFadeColor(0),
+				m_rgbFadeColor(0),
 				m_wFadeOpacity(0),
 				m_fStationDamage(false)
 			{ }
@@ -1073,18 +1069,18 @@ class CCompositeImageModifiers
 
 		void Apply (CObjectImageArray *retImage) const;
 		inline bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_fStationDamage); }
-		inline void SetFadeColor (WORD wColor, DWORD dwOpacity) { m_wFadeColor = wColor; m_wFadeOpacity = (WORD)dwOpacity; }
+		inline void SetFadeColor (CG32bitPixel rgbColor, DWORD dwOpacity) { m_rgbFadeColor = rgbColor; m_wFadeOpacity = (WORD)dwOpacity; }
 		inline void SetStationDamage (bool bValue = true) { m_fStationDamage = bValue; }
 
 		static void Reinit (void);
 
 	private:
 		static void InitDamagePainters (void);
-		static void PaintDamage (CG16bitImage &Dest, const RECT &rcDest, int iCount, IEffectPainter *pPainter);
+		static void PaintDamage (CG32bitImage &Dest, const RECT &rcDest, int iCount, IEffectPainter *pPainter);
 
-		CG16bitImage *CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const;
+		CG32bitImage *CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const;
 
-		WORD m_wFadeColor;					//	Apply a wash on top of image
+		CG32bitPixel m_rgbFadeColor;		//	Apply a wash on top of image
 		WORD m_wFadeOpacity;				//		0 = no wash
 
 		DWORD m_fStationDamage:1;			//	Apply station damage to image
@@ -3021,8 +3017,8 @@ class CObjectEffectList
 		void AccumulateBounds (CSpaceObject *pObj, const CObjectEffectDesc &Desc, int iRotation, RECT *ioBounds);
 		void Init (const CObjectEffectDesc &Desc, const TArray<IEffectPainter *> &Painters);
 		void Move (CSpaceObject *pObj, const CVector &vOldPos, bool *retbBoundsChanged = NULL);
-		void Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, DWORD dwEffects, CG16bitImage &Dest, int x, int y);
-		void PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, CG16bitImage &Dest, int x, int y);
+		void Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, DWORD dwEffects, CG32bitImage &Dest, int x, int y);
+		void PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, CG32bitImage &Dest, int x, int y);
 		void Update (CSpaceObject *pObj, const CObjectEffectDesc &Desc, int iRotation, DWORD dwEffects);
 
 	private:
@@ -3095,8 +3091,8 @@ struct SParticlePaintDesc
 		iMinWidth = 4;
 		iMaxWidth = 4;
 
-		wPrimaryColor = CG16bitImage::RGBValue(255, 255, 255);
-		wSecondaryColor = CG16bitImage::RGBValue(0, 0, 0);
+		rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		rgbSecondaryColor = CG32bitPixel(0, 0, 0);
 		}
 
 	ParticlePaintStyles iStyle;
@@ -3110,8 +3106,8 @@ struct SParticlePaintDesc
 	int iMinWidth;								//	Min width of particle
 	int iMaxWidth;								//	Max width of particle
 
-	WORD wPrimaryColor;							//	Primary color 
-	WORD wSecondaryColor;						//	Secondary color
+	CG32bitPixel rgbPrimaryColor;				//	Primary color 
+	CG32bitPixel rgbSecondaryColor;						//	Secondary color
 	};
 
 struct SEffectHitDesc
@@ -3198,7 +3194,7 @@ class CEffectParamDesc
 		~CEffectParamDesc (void);
 
 		bool EvalBool (CCreatePainterCtx &Ctx) const;
-		WORD EvalColor (CCreatePainterCtx &Ctx) const;
+		CG32bitPixel EvalColor (CCreatePainterCtx &Ctx) const;
 		DiceRange EvalDiceRange (CCreatePainterCtx &Ctx, int iDefault = -1) const;
 		int EvalIdentifier (CCreatePainterCtx &Ctx, LPSTR *pIDMap, int iMax, int iDefault = 0) const;
 		int EvalInteger (CCreatePainterCtx &Ctx) const;
@@ -3207,7 +3203,7 @@ class CEffectParamDesc
 		CVector EvalVector (CCreatePainterCtx &Ctx) const;
 		inline EDataTypes GetType (void) const { return m_iType; }
 		inline void InitBool (bool bValue) { CleanUp(); m_dwData = (bValue ? 1 : 0); m_iType = typeBoolConstant; }
-		inline void InitColor (WORD wValue) { CleanUp(); m_dwData = wValue; m_iType = typeColorConstant; }
+		inline void InitColor (CG32bitPixel rgbValue) { CleanUp(); m_dwData = rgbValue.AsDWORD(); m_iType = typeColorConstant; }
 		inline void InitDiceRange (const DiceRange &Value) { CleanUp(); m_DiceRange = Value; m_iType = typeIntegerDiceRange; }
 		inline void InitInteger (int iValue) { CleanUp(); m_dwData = iValue; m_iType = typeIntegerConstant; }
 		inline void InitNull (void) { CleanUp(); }
@@ -3279,10 +3275,10 @@ class IEffectPainter
 		virtual void OnBeginFade (void) { }
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) { if (retbBoundsChanged) *retbBoundsChanged = false; }
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) { }
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) = 0;
-		virtual void PaintComposite (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
-		virtual void PaintFade (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
-		virtual void PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { }
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) = 0;
+		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { }
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const { return false; }
 		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) { }
 		virtual void SetParamMetric (const CString &sParam, Metric rValue) { }
@@ -3991,7 +3987,7 @@ class CItemType : public CDesignType
 		CWeaponFireDesc *m_pMissile;			//	Missile desc (may be NULL)
 
 		//	Flotsam
-		CG16bitImage m_FlotsamBitmap;			//	Image used for flotsam
+		CG32bitImage m_FlotsamBitmap;			//	Image used for flotsam
 		CObjectImageArray m_FlotsamImage;		//	Image used for flotsam
 
 		DWORD m_fRandomDamaged:1;				//	Randomly damaged when found
@@ -4184,7 +4180,7 @@ class CShipClass : public CDesignType
 		inline bool IsShownAtNewGame (void) { return (m_pPlayerSettings && m_pPlayerSettings->IsInitialClass() && !IsVirtual()); }
 		inline bool IsTimeStopImmune (void) { return (m_fTimeStopImmune ? true : false); }
 		void MarkImages (bool bMarkDevices);
-		void Paint (CG16bitImage &Dest, 
+		void Paint (CG32bitImage &Dest, 
 					int x, 
 					int y, 
 					const ViewportTransform &Trans, 
@@ -4194,7 +4190,7 @@ class CShipClass : public CDesignType
 					bool bRadioactive = false,
 					DWORD byInvisible = 0);
 		void PaintMap (CMapViewportCtx &Ctx, 
-					CG16bitImage &Dest, 
+					CG32bitImage &Dest, 
 					int x, 
 					int y, 
 					int iDirection, 
@@ -4272,7 +4268,7 @@ class CShipClass : public CDesignType
 		CPlayerSettings *GetPlayerSettingsInherited (void) const;
 		CStationType *GetWreckDesc (void);
 		void InitShipNamesIndices (void);
-		void PaintThrust (CG16bitImage &Dest, 
+		void PaintThrust (CG32bitImage &Dest, 
 						int x, 
 						int y, 
 						const ViewportTransform &Trans, 
@@ -4345,7 +4341,7 @@ class CShipClass : public CDesignType
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
 		//	Wreck image
-		CG16bitImage m_WreckBitmap;				//	Image to use when ship is wrecked
+		CG32bitImage m_WreckBitmap;				//	Image to use when ship is wrecked
 		CObjectImageArray m_WreckImage;			//	Image to use when ship is wrecked
 
 		//	Explosion
@@ -4526,7 +4522,7 @@ class COverlayType : public CDesignType
 
 		bool AbsorbsWeaponFire (CInstalledDevice *pWeapon);
 		inline bool Disarms (void) const { return m_fDisarmShip; }
-		inline WORD GetCounterColor (void) const { return m_wCounterColor; }
+		inline CG32bitPixel GetCounterColor (void) const { return m_rgbCounterColor; }
 		inline const CString &GetCounterLabel (void) const { return m_sCounterLabel; }
 		inline int GetCounterMax (void) const { return m_iCounterMax; }
 		inline ECounterDisplay GetCounterStyle (void) const { return m_iCounterType; }
@@ -4567,7 +4563,7 @@ class COverlayType : public CDesignType
 		ECounterDisplay m_iCounterType;			//	Type of counter to paint
 		CString m_sCounterLabel;				//	Label for counter
 		int m_iCounterMax;						//	Max value of counter (for progress bar)
-		WORD m_wCounterColor;					//	Counter color
+		CG32bitPixel m_rgbCounterColor;					//	Counter color
 
 		DWORD m_fHasOnUpdateEvent:1;			//	TRUE if we have OnUpdate
 		DWORD m_fAltHitEffect:1;				//	If TRUE, hit effect replaces normal effect
@@ -4934,7 +4930,7 @@ class CStationType : public CDesignType
 		inline int GetShipConstructionRate (void) { return m_iShipConstructionRate; }
 		inline const CRegenDesc &GetShipRegenDesc (void) { return m_ShipRegen; }
 		inline CSovereign *GetSovereign (void) const { return m_pSovereign; }
-		inline COLORREF GetSpaceColor (void) { return m_rgbSpaceColor; }
+		inline CG32bitPixel GetSpaceColor (void) { return m_rgbSpaceColor; }
 		inline int GetStealth (void) const { return m_iStealth; }
 		inline int GetStructuralHitPoints (void) { return m_iStructuralHP; }
 		inline int GetTempChance (void) const { return m_iChance; }
@@ -4961,8 +4957,8 @@ class CStationType : public CDesignType
 		inline bool IsUniqueInSystem (void) const { return m_RandomPlacement.IsUniqueInSystem(); }
 		inline bool IsWall (void) { return (m_fWall ? true : false); }
 		void MarkImages (const CCompositeImageSelector &Selector);
-		void PaintAnimations (CG16bitImage &Dest, int x, int y, int iTick);
-		void PaintDockPortPositions (CG16bitImage &Dest, int x, int y);
+		void PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick);
+		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y);
 		void SetImageSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
 		inline void SetEncountered (CSystem *pSystem) { m_EncounterRecord.AddEncounter(pSystem); }
 		inline void SetTempChance (int iChance) { m_iChance = iChance; }
@@ -5128,7 +5124,7 @@ class CStationType : public CDesignType
 		CWeaponFireDescRef m_pEjectaType;				//	Type of ejecta generated
 
 		//	Stellar objects
-		COLORREF m_rgbSpaceColor;						//	Space color
+		CG32bitPixel m_rgbSpaceColor;					//	Space color
 		int m_iMaxLightDistance;						//	Max distance at which there is no (effective) light from star
 		Metric m_rGravityRadius;						//	Gravity radius
 
@@ -5348,9 +5344,9 @@ class CSpaceEnvironmentType : public CDesignType
 		inline bool IsLRSJammer (void) { return m_bLRSJammer; }
 		inline bool IsShieldJammer (void) { return m_bShieldJammer; }
 		inline bool IsSRSJammer (void) { return m_bSRSJammer; }
-		void Paint (CG16bitImage &Dest, int x, int y, int xTile, int yTile, DWORD dwEdgeMask);
-		void PaintLRS (CG16bitImage &Dest, int x, int y);
-		void PaintMap (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, DWORD dwFade, DWORD dwEdgeMask);
+		void Paint (CG32bitImage &Dest, int x, int y, int xTile, int yTile, DWORD dwEdgeMask);
+		void PaintLRS (CG32bitImage &Dest, int x, int y);
+		void PaintMap (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, DWORD dwFade, DWORD dwEdgeMask);
 
 		//	CDesignType overrides
 		static CSpaceEnvironmentType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSpaceEnvironmentType) ? (CSpaceEnvironmentType *)pType : NULL); }
@@ -5413,7 +5409,7 @@ class CSpaceEnvironmentType : public CDesignType
 		CObjectImageArray m_Image;
 		CObjectImageArray m_EdgeMask;
 		int m_iImageTileCount;			//	Tiles in m_Image
-		COLORREF m_rgbMapColor;			//	Color of tile on map
+		CG32bitPixel m_rgbMapColor;		//	Color of tile on map
 		DWORD m_dwOpacity;				//	Opacity (0-255)
 
 		bool m_bLRSJammer;				//	If TRUE, LRS is disabled
@@ -5659,7 +5655,7 @@ class CSystemMap : public CDesignType
 		void AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL);
 		ALERROR AddFixedTopology (CTopology &Topology, CString *retsError);
 		bool DebugShowAttributes (void) const { return m_bDebugShowAttributes; }
-		CG16bitImage *CreateBackgroundImage (void);
+		CG32bitImage *CreateBackgroundImage (void);
 		void GetBackgroundImageSize (int *retcx, int *retcy);
 		inline CSystemMap *GetDisplayMap (void) { return (m_pPrimaryMap != NULL ? m_pPrimaryMap : this); }
 		inline const CString &GetName (void) const { return m_sName; }
@@ -6056,12 +6052,12 @@ class CExtension
 
 		bool CanExtend (CExtension *pAdventure) const;
 		void CleanUp (void);
-		void CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon) const;
+		void CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const;
 		ALERROR ExecuteGlobals (SDesignLoadCtx &Ctx);
 		inline CAdventureDesc *GetAdventureDesc (void) const { return m_pAdventureDesc; }
 		inline DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
 		inline DWORD GetAutoIncludeAPIVersion (void) const { return m_dwAutoIncludeAPIVersion; }
-		CG16bitImage *GetCoverImage (void) const;
+		CG32bitImage *GetCoverImage (void) const;
 		inline const TArray<CString> &GetCredits (void) const { return m_Credits; }
 		inline const CString &GetDisabledReason (void) const { return m_sDisabledReason; }
 		inline CString GetDesc (void) { return (m_pAdventureDesc ? m_pAdventureDesc->GetDesc() : NULL_STR); }
@@ -6159,7 +6155,7 @@ class CExtension
 		CXMLElement *m_pRootXML;			//	Root XML representation (may be NULL)
 		TSortMap<CString, CXMLElement *> m_ModuleXML;	//	XML for modules
 
-		mutable CG16bitImage *m_pCoverImage;	//	Large cover image
+		mutable CG32bitImage *m_pCoverImage;	//	Large cover image
 
 		CAdventureDesc *m_pAdventureDesc;	//	If extAdventure, this is the descriptor
 
@@ -6393,7 +6389,7 @@ class CDesignCollection
 		inline CDesignType *GetEntry (DesignTypes iType, int iIndex) const { return m_ByType[iType].GetEntry(iIndex); }
 		inline CExtension *GetExtension (int iIndex) { return m_BoundExtensions[iIndex]; }
 		inline int GetExtensionCount (void) { return m_BoundExtensions.GetCount(); }
-		CG16bitImage *GetImage (DWORD dwUNID, DWORD dwFlags = 0);
+		CG32bitImage *GetImage (DWORD dwUNID, DWORD dwFlags = 0);
 		CString GetStartingNodeID (void);
 		CTopologyDescTable *GetTopologyDesc (void) const { return m_pTopology; }
 		inline bool HasDynamicTypes (void) { return (m_DynamicTypes.GetCount() > 0); }
@@ -6456,12 +6452,11 @@ CString GetItemCategoryName (ItemCategories iCategory);
 bool IsConstantName (const CString &sList);
 bool IsEnergyDamage (DamageTypes iType);
 bool IsMatterDamage (DamageTypes iType);
-COLORREF LoadCOLORREF (const CString &sString);
 ALERROR LoadDamageAdj (CXMLElement *pItem, const CString &sAttrib, int *retiAdj, int *retiCount = NULL);
 DamageTypes LoadDamageTypeFromXML (const CString &sAttrib);
 DWORD LoadExtensionVersion (const CString &sVersion);
 DWORD LoadNameFlags (CXMLElement *pDesc);
-WORD LoadRGBColor (const CString &sString);
+CG32bitPixel LoadRGBColor (const CString &sString);
 ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sString, DWORD *retdwUNID);
 bool SetFrequencyByLevel (CString &sLevelFrequency, int iLevel, int iFreq);
 

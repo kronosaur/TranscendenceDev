@@ -31,9 +31,9 @@ class CSmokeTrailPainter : public IEffectPainter
 		virtual void GetRect (RECT *retRect) const;
 		virtual void OnBeginFade (void) { m_iEmitLifetime = 0; }
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintFade (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
-		virtual void PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
@@ -311,7 +311,7 @@ void CSmokeTrailPainter::OnWriteToStream (IWriteStream *pStream)
 	CEffectCreator::WritePainterToStream(pStream, m_pParticlePainter);
 	}
 
-void CSmokeTrailPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSmokeTrailPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //

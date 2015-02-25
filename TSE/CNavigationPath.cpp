@@ -340,7 +340,7 @@ CString CNavigationPath::DebugDescribe (CSpaceObject *pObj, CNavigationPath *pNa
 		}
 	}
 
-void CNavigationPath::DebugPaintInfo (CG16bitImage &Dest, int x, int y, ViewportTransform &Xform)
+void CNavigationPath::DebugPaintInfo (CG32bitImage &Dest, int x, int y, ViewportTransform &Xform)
 
 //	DebugPaintInfo
 //
@@ -362,14 +362,14 @@ void CNavigationPath::DebugPaintInfo (CG16bitImage &Dest, int x, int y, Viewport
 		Dest.DrawLine(xFrom, yFrom,
 				xTo, yTo,
 				3,
-				CG16bitImage::RGBValue(0,255,0));
+				CG32bitPixel(0,255,0));
 
 		xFrom = xTo;
 		yFrom = yTo;
 		}
 	}
 
-void CNavigationPath::DebugPaintInfo (CG16bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx)
+void CNavigationPath::DebugPaintInfo (CG32bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx)
 
 //	DebugPaintInfo
 //
@@ -391,7 +391,7 @@ void CNavigationPath::DebugPaintInfo (CG16bitImage &Dest, int x, int y, const CM
 		Dest.DrawLine(xFrom, yFrom,
 				xTo, yTo,
 				3,
-				CG16bitImage::RGBValue(0,255,0));
+				CG32bitPixel(0,255,0));
 
 		xFrom = xTo;
 		yFrom = yTo;

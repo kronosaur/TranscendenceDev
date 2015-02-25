@@ -60,7 +60,7 @@ DWORD CHumanInterface::AddTimer (DWORD dwMilliseconds, IHICommand *pListener, co
 			bRecurring);
 	}
 
-void CHumanInterface::BeginSessionPaint (CG16bitImage &Screen)
+void CHumanInterface::BeginSessionPaint (CG32bitImage &Screen)
 
 //	BeginSessionPaint
 //
@@ -237,7 +237,7 @@ void CHumanInterface::Destroy (void)
 		}
 	}
 
-void CHumanInterface::EndSessionPaint (CG16bitImage &Screen, bool bTopMost)
+void CHumanInterface::EndSessionPaint (CG32bitImage &Screen, bool bTopMost)
 
 //	EndSessionPatin
 //
@@ -466,7 +466,7 @@ void CHumanInterface::OnAnimate (void)
 		}
 	else
 		{
-		GetScreen().Fill(0, 0, GetScreen().GetWidth(), GetScreen().GetHeight(), CG16bitImage::RGBValue(0, 0, 0));
+		GetScreen().Set(CG32bitPixel(0, 0, 0));
 		BltScreen();
 		FlipScreen();
 		}
@@ -575,7 +575,7 @@ void CHumanInterface::PaintFrameRate (void)
 	rcRect.right = GetScreen().GetWidth();
 	rcRect.top = 0;
 	rcRect.bottom = TitleFont.GetHeight();
-	TitleFont.DrawText(GetScreen(), rcRect, CG16bitImage::RGBValue(128,128,128), sText);
+	TitleFont.DrawText(GetScreen(), rcRect, CG32bitPixel(128,128,128), sText);
 
 	//	LATER: This should move to EndSessionUpdate
 	if (m_pCurSession)

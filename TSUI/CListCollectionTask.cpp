@@ -102,7 +102,7 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 
 	//	Add the icon
 
-	CG16bitImage *pIcon = pCatalogEntry->GetIconHandoff();
+	CG32bitImage *pIcon = pCatalogEntry->GetIconHandoff();
 	if (pIcon)
 		{
 		int xOffset = (ENTRY_ICON_WIDTH - pIcon->GetWidth()) / 2;

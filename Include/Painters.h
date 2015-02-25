@@ -15,10 +15,10 @@ class CGalacticMapPainter
 		inline int GetHeight (void) { return m_cyMap; }
 		void GetPos (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety);
 		inline int GetWidth (void) { return m_cxMap; }
-		void Paint (CG16bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, int iScale);
+		void Paint (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, int iScale);
 
 	private:
-		void DrawNode (CG16bitImage &Dest, CTopologyNode *pNode, int x, int y, WORD wColor);
+		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor);
 		void Init (void);
 
 		const CVisualPalette &m_VI;
@@ -27,6 +27,6 @@ class CGalacticMapPainter
 		int m_cxMap;
 		int m_cyMap;
 
-		CG16bitImage *m_pImage;
+		CG32bitImage *m_pImage;
 		bool m_bFreeImage;
 	};

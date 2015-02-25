@@ -11,7 +11,7 @@ class CPolyflashPainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
@@ -68,7 +68,7 @@ void CPolyflashPainter::OnWriteToStream (IWriteStream *pStream)
 	{
 	}
 
-void CPolyflashPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CPolyflashPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -82,13 +82,13 @@ void CPolyflashPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintC
 
 	CreateFlame(Ctx.iRotation, 40, Poly);
 	Region.CreateFromConvexPolygon(6, Poly);
-	Region.FillTrans(Dest, x, y, CG16bitImage::RGBValue(0xff, 0x80, 0x40), 0x80);
+	Region.Fill(Dest, x, y, CG32bitPixel(0xff, 0x80, 0x40, 0x80));
 
 	//	Create the central bright area
 
 	CreateFlame(Ctx.iRotation, 30, Poly);
 	Region.CreateFromConvexPolygon(6, Poly);
-	Region.Fill(Dest, x, y, CG16bitImage::RGBValue(0xff, 0xff, 0xa0));
+	Region.Fill(Dest, x, y, CG32bitPixel(0xff, 0xff, 0xa0));
 	}
 
 void CPolyflashPainter::CreateFlame (int iAngle, 

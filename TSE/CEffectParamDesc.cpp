@@ -53,7 +53,7 @@ bool CEffectParamDesc::EvalBool (CCreatePainterCtx &Ctx) const
 		}
 	}
 
-WORD CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx) const
+CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx) const
 
 //	EvalColor
 //
@@ -63,7 +63,7 @@ WORD CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx) const
 	switch (m_iType)
 		{
 		case typeColorConstant:
-			return (WORD)m_dwData;
+			return CG32bitPixel::FromDWORD(m_dwData);
 
 		default:
 			return 0;
@@ -232,7 +232,7 @@ ALERROR CEffectParamDesc::InitColorFromXML (SDesignLoadCtx &Ctx, const CString &
 	if (!sValue.IsBlank())
 		{
 		m_iType = typeColorConstant;
-		m_dwData = ::LoadRGBColor(sValue);
+		m_dwData = ::LoadRGBColor(sValue).AsDWORD();
 		}
 
 	return NOERROR;

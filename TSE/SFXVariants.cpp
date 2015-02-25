@@ -15,7 +15,7 @@ class CEffectVariantPainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 
 	private:
 		CEffectVariantCreator *m_pCreator;
@@ -224,7 +224,7 @@ CEffectVariantPainter::~CEffectVariantPainter (void)
 		m_Cache[i].Delete();
 	}
 
-void CEffectVariantPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CEffectVariantPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //

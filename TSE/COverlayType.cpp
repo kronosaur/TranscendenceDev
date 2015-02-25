@@ -288,13 +288,13 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		m_sCounterLabel = pCounter->GetAttribute(LABEL_ATTRIB);
 		m_iCounterMax = pCounter->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, 100);
-		m_wCounterColor = ::LoadRGBColor(pCounter->GetAttribute(COLOR_ATTRIB));
+		m_rgbCounterColor = ::LoadRGBColor(pCounter->GetAttribute(COLOR_ATTRIB));
 		}
 	else
 		{
 		m_iCounterType = counterNone;
 		m_iCounterMax = 0;
-		m_wCounterColor = 0;
+		m_rgbCounterColor = CG32bitPixel::Null();
 		}
 
 	//	Options

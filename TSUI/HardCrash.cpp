@@ -13,7 +13,7 @@ class CHardCrashSession : public IHISession
 		//	IHISession virtuals
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData);
 		virtual void OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) { m_HI.Shutdown(HIShutdownByHardCrash); }
-		virtual void OnPaint (CG16bitImage &Screen, const RECT &rcInvalid);
+		virtual void OnPaint (CG32bitImage &Screen, const RECT &rcInvalid);
 
 	private:
 		CString m_sTitle;
@@ -52,7 +52,7 @@ void CHardCrashSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 		}
 	}
 
-void CHardCrashSession::OnPaint (CG16bitImage &Screen, const RECT &rcInvalid)
+void CHardCrashSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 
 //	OnPaint
 //
@@ -63,14 +63,14 @@ void CHardCrashSession::OnPaint (CG16bitImage &Screen, const RECT &rcInvalid)
 	const CG16bitFont &TitleFont = VI.GetFont(fontSubTitle);
 	const CG16bitFont &DescFont = VI.GetFont(fontHeader);
 
-	Screen.Fill(0, 0, Screen.GetWidth(), Screen.GetHeight(), 0);
+	Screen.Set(CG32bitPixel(0, 0, 0));
 
 	const int FRAME_WIDTH = 512;
 	const int FRAME_HEIGHT = 256;
 	const int FRAME_INNER_MARGIN = 20;
-	const WORD RGB_FRAME_HEADER = CG16bitImage::RGBValue(72, 72, 72);
-	const WORD RGB_FRAME_BACKGROUND = CG16bitImage::RGBValue(64, 64, 64);
-	const WORD RGB_TITLE = CG16bitImage::RGBValue(0, 0, 0);
+	const CG32bitPixel RGB_FRAME_HEADER = CG32bitPixel(72, 72, 72);
+	const CG32bitPixel RGB_FRAME_BACKGROUND = CG32bitPixel(64, 64, 64);
+	const CG32bitPixel RGB_TITLE = CG32bitPixel(0, 0, 0);
 
 	//	Measure out the description
 

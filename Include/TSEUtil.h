@@ -165,7 +165,7 @@ inline void DebugStopTimer (char *szTiming) { }
 const DWORD API_VERSION =								26;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
 const DWORD UNIVERSE_SAVE_VERSION =						26;
-const DWORD SYSTEM_SAVE_VERSION =						109;	//	See: CSystem.cpp
+const DWORD SYSTEM_SAVE_VERSION =						110;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{
@@ -1173,15 +1173,15 @@ class CZoneGrid
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 
 	private:
-		ALERROR ApplyZoneOperation (CXMLElement *pOp, CG16bitImage &DestMap);
-		ALERROR CreateZoneMap (CG16bitImage &ZoneMap);
+		ALERROR ApplyZoneOperation (CXMLElement *pOp, CG8bitImage &DestMap);
+		ALERROR CreateZoneMap (CG8bitImage &ZoneMap);
 		int GetValueRaw (int x, int y) const;
 		void MapCoord (int x, int y, int *retx, int *rety) const;
 		inline int MapDim (int x) const { return x / m_iCellSize; }
-		ALERROR ZoneOpCircle (CXMLElement *pOp, CG16bitImage &DestMap);
-		ALERROR ZoneOpCircleGradient (CXMLElement *pOp, CG16bitImage &DestMap);
-		ALERROR ZoneOpMultiply (CXMLElement *pOp, CG16bitImage &DestMap);
-		ALERROR ZoneOpNoise (CXMLElement *pOp, CG16bitImage &DestMap);
+		ALERROR ZoneOpCircle (CXMLElement *pOp, CG8bitImage &DestMap);
+		ALERROR ZoneOpCircleGradient (CXMLElement *pOp, CG8bitImage &DestMap);
+		ALERROR ZoneOpMultiply (CXMLElement *pOp, CG8bitImage &DestMap);
+		ALERROR ZoneOpNoise (CXMLElement *pOp, CG8bitImage &DestMap);
 
 		CString m_sName;
 		int m_cxSize;						//	Size of grid in virtual units
@@ -1189,7 +1189,7 @@ class CZoneGrid
 		int m_iCellSize;					//	Cell size in virtual units
 											//		(1 cell = 1 pixel in m_ZoneMap)
 
-		CG16bitImage m_ZoneMap;				//	Alpha channel used as a BYTE grid
+		CG8bitImage m_ZoneMap;				//	Alpha channel used as a BYTE grid
 
 		CXMLElement *m_pDesc;
 	};
@@ -1400,7 +1400,7 @@ class IListData
 		virtual bool IsCursorValid (void) { return false; }
 		virtual bool MoveCursorBack (void) { return false; }
 		virtual bool MoveCursorForward (void) { return false; }
-		virtual void PaintImageAtCursor (CG16bitImage &Dest, int x, int y) { }
+		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y) { }
 		virtual void ResetCursor (void) { }
 		virtual void SetCursor (int iCursor) { }
 		virtual void SetFilter (const CItemCriteria &Filter) { }

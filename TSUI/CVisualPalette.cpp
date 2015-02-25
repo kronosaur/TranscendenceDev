@@ -18,53 +18,53 @@ const int WIDESCREEN_HEIGHT_MAX =			512;
 struct SColorInitTable
 	{
 	char *pszName;									//	Name of color
-	WORD wColor;									//	16-bit color value
+	CG32bitPixel rgbColor;							//	16-bit color value
 	};
 
 static SColorInitTable COLOR_TABLE[] =
 	{
 		{	"Unknown",				0 },
 
-		{	"AreaDeep",					CG16bitImage::RGBValue(0, 2, 10) },
-		{	"AreaDialog",				CG16bitImage::RGBValue(28, 33, 39) },
-		{	"AreaDialogHighlight",		CG16bitImage::RGBValue(237, 137, 36) },
-		{	"AreaDialogInput",			CG16bitImage::RGBValue(28, 33, 39) },
-		{	"AreaDialogInputFocus",		CG16bitImage::RGBValue(42, 49, 57) },
+		{	"AreaDeep",					CG32bitPixel(0, 2, 10) },
+		{	"AreaDialog",				CG32bitPixel(28, 33, 39) },
+		{	"AreaDialogHighlight",		CG32bitPixel(237, 137, 36) },
+		{	"AreaDialogInput",			CG32bitPixel(28, 33, 39) },
+		{	"AreaDialogInputFocus",		CG32bitPixel(42, 49, 57) },
 		
-		{	"AreaDialogTitle",			CG16bitImage::RGBValue(32, 48, 64) },
-		{	"AreaInfoMsg",				CG16bitImage::RGBValue(28, 33, 39) },
-		{	"AreaWarningMsg",			CG16bitImage::RGBValue(255, 239, 215) },
-		{	"LineDialogFrame",			CG16bitImage::RGBValue(163,191,219) },
-		{	"LineFrame",				CG16bitImage::RGBValue(80,80,80) },
+		{	"AreaDialogTitle",			CG32bitPixel(32, 48, 64) },
+		{	"AreaInfoMsg",				CG32bitPixel(28, 33, 39) },
+		{	"AreaWarningMsg",			CG32bitPixel(255, 239, 215) },
+		{	"LineDialogFrame",			CG32bitPixel(163,191,219) },
+		{	"LineFrame",				CG32bitPixel(80,80,80) },
 
-		{	"TextHighlight",			CG16bitImage::RGBValue(218, 235, 255) },
-		{	"TextNormal",				CG16bitImage::RGBValue(191, 196, 201) },
-		{	"TextFade",					CG16bitImage::RGBValue(120, 129, 140) },
-		{	"TextAltHighlight",			CG16bitImage::RGBValue(255, 239, 215) },
-		{	"TextAltNormal",			CG16bitImage::RGBValue(204, 200, 194) },
+		{	"TextHighlight",			CG32bitPixel(218, 235, 255) },
+		{	"TextNormal",				CG32bitPixel(191, 196, 201) },
+		{	"TextFade",					CG32bitPixel(120, 129, 140) },
+		{	"TextAltHighlight",			CG32bitPixel(255, 239, 215) },
+		{	"TextAltNormal",			CG32bitPixel(204, 200, 194) },
 
-		{	"TextAltFade",				CG16bitImage::RGBValue(140, 131, 118) },
-		{	"TextWarningMsg",			CG16bitImage::RGBValue(40, 40, 40) },
-		{	"TextDialogInput",			CG16bitImage::RGBValue(218, 235, 255) },
-		{	"TextDialogLabel",			CG16bitImage::RGBValue(115, 134, 153) },
-		{	"TextDialogLink",			CG16bitImage::RGBValue(218, 235, 255) },
+		{	"TextAltFade",				CG32bitPixel(140, 131, 118) },
+		{	"TextWarningMsg",			CG32bitPixel(40, 40, 40) },
+		{	"TextDialogInput",			CG32bitPixel(218, 235, 255) },
+		{	"TextDialogLabel",			CG32bitPixel(115, 134, 153) },
+		{	"TextDialogLink",			CG32bitPixel(218, 235, 255) },
 
-		{	"TextDialogTitle",			CG16bitImage::RGBValue(115, 134, 153) },
-		{	"TextDialogWarning",		CG16bitImage::RGBValue(255, 127, 0) },
-		{	"AreaDockTitle",			CG16bitImage::RGBValue(0x37, 0x3f, 0x47) },	//	H:210 S:23 B:28
-		{	"TextDockAction",			CG16bitImage::RGBValue(218, 235, 255) },
-		{	"TextDockActionHotKey",		CG16bitImage::RGBValue(218, 235, 255) },
+		{	"TextDialogTitle",			CG32bitPixel(115, 134, 153) },
+		{	"TextDialogWarning",		CG32bitPixel(255, 127, 0) },
+		{	"AreaDockTitle",			CG32bitPixel(0x37, 0x3f, 0x47) },	//	H:210 S:23 B:28
+		{	"TextDockAction",			CG32bitPixel(218, 235, 255) },
+		{	"TextDockActionHotKey",		CG32bitPixel(218, 235, 255) },
 
-		{	"TextDockText",				CG16bitImage::RGBValue(0xAF, 0xB7, 0xBF) },	//	H:210 S:8   B:75
-		{	"TextDockTitle",			CG16bitImage::RGBValue(0xE7, 0xF3, 0xFF) },	//	H:210 S:9   B:100
-		{	"TextDockTextWarning",		CG16bitImage::RGBValue(0xFF, 0x33, 0x33) },	//	H:0   S:80  B:100
-		{	"AreaAdvantage",			CG16bitImage::RGBValue(0x00, 0x53, 0xA6) },
-		{	"AreaDisadvantage",			CG16bitImage::RGBValue(0xA6, 0x21, 0x21) },
+		{	"TextDockText",				CG32bitPixel(0xAF, 0xB7, 0xBF) },	//	H:210 S:8   B:75
+		{	"TextDockTitle",			CG32bitPixel(0xE7, 0xF3, 0xFF) },	//	H:210 S:9   B:100
+		{	"TextDockTextWarning",		CG32bitPixel(0xFF, 0x33, 0x33) },	//	H:0   S:80  B:100
+		{	"AreaAdvantage",			CG32bitPixel(0x00, 0x53, 0xA6) },
+		{	"AreaDisadvantage",			CG32bitPixel(0xA6, 0x21, 0x21) },
 
-		{	"AreaShields",				CG16bitImage::RGBValue(0x45, 0x73, 0x17) },
-		{	"TextAdvantage",			CG16bitImage::RGBValue(0xCC, 0xE5, 0xFF) },
-		{	"TextDisadvantage",			CG16bitImage::RGBValue(0xFF, 0xCC, 0xCC) },
-		{	"TextShields",				CG16bitImage::RGBValue(0xE5, 0xFF, 0xCC) },
+		{	"AreaShields",				CG32bitPixel(0x45, 0x73, 0x17) },
+		{	"TextAdvantage",			CG32bitPixel(0xCC, 0xE5, 0xFF) },
+		{	"TextDisadvantage",			CG32bitPixel(0xFF, 0xCC, 0xCC) },
+		{	"TextShields",				CG32bitPixel(0xE5, 0xFF, 0xCC) },
 	};
 
 struct SFontInitTable
@@ -158,14 +158,14 @@ class CResourceImageCache
 		CResourceImageCache (HMODULE hModule) : m_hModule(hModule) { }
 		~CResourceImageCache (void);
 
-		CG16bitImage *GetImage (const CString &sImage, const CString &sMask);
+		CG32bitImage *GetImage (const CString &sImage, const CString &sMask);
 
 	private:
 		HMODULE m_hModule;
-		TSortMap<CString, CG16bitImage> m_Cache;
+		TSortMap<CString, CG32bitImage> m_Cache;
 	};
 
-void CVisualPalette::DrawDamageTypeIcon (CG16bitImage &Screen, int x, int y, DamageTypes iDamageType) const
+void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType) const
 
 //	DrawDamageTypeIcon
 //
@@ -175,7 +175,7 @@ void CVisualPalette::DrawDamageTypeIcon (CG16bitImage &Screen, int x, int y, Dam
 	if (iDamageType == damageGeneric)
 		return;
 
-	Screen.ColorTransBlt((int)iDamageType * DAMAGE_TYPE_ICON_WIDTH,
+	Screen.Blt((int)iDamageType * DAMAGE_TYPE_ICON_WIDTH,
 			0,
 			DAMAGE_TYPE_ICON_WIDTH,
 			DAMAGE_TYPE_ICON_HEIGHT,
@@ -185,7 +185,7 @@ void CVisualPalette::DrawDamageTypeIcon (CG16bitImage &Screen, int x, int y, Dam
 			y);
 	}
 
-void CVisualPalette::DrawSessionBackground (CG16bitImage &Screen, const CG16bitImage &Background, DWORD dwFlags, RECT *retrcCenter) const
+void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, DWORD dwFlags, RECT *retrcCenter) const
 
 //	DrawSessionBackground
 //
@@ -200,8 +200,8 @@ void CVisualPalette::DrawSessionBackground (CG16bitImage &Screen, const CG16bitI
 	RECT rcCenter;
 	RECT rcFull;
 	GetWidescreenRect(Screen, &rcCenter, &rcFull);
-	WORD wBackgroundColor = GetColor(colorAreaDeep);
-	WORD wLineColor = GetColor(colorLineFrame);
+	CG32bitPixel rgbBackgroundColor = GetColor(colorAreaDeep);
+	CG32bitPixel rgbLineColor = GetColor(colorLineFrame);
 	int cyCenter = RectHeight(rcCenter);
 
 	if (!Background.IsEmpty())
@@ -219,10 +219,10 @@ void CVisualPalette::DrawSessionBackground (CG16bitImage &Screen, const CG16bitI
 
 		//	Paint everything except the background image
 
-		Screen.Fill(0, 0, cxScreen, rcBackgroundDest.top, wBackgroundColor);
-		Screen.Fill(0, rcBackgroundDest.top, rcBackgroundDest.left, cyBackground, wBackgroundColor);
-		Screen.Fill(rcBackgroundDest.right, rcBackgroundDest.top, cxScreen - rcBackgroundDest.right, cyBackground, wBackgroundColor);
-		Screen.Fill(0, rcBackgroundDest.bottom, cxScreen, cyScreen - rcBackgroundDest.bottom, wBackgroundColor);
+		Screen.Fill(0, 0, cxScreen, rcBackgroundDest.top, rgbBackgroundColor);
+		Screen.Fill(0, rcBackgroundDest.top, rcBackgroundDest.left, cyBackground, rgbBackgroundColor);
+		Screen.Fill(rcBackgroundDest.right, rcBackgroundDest.top, cxScreen - rcBackgroundDest.right, cyBackground, rgbBackgroundColor);
+		Screen.Fill(0, rcBackgroundDest.bottom, cxScreen, cyScreen - rcBackgroundDest.bottom, rgbBackgroundColor);
 
 		//	Now paint the background image
 
@@ -238,20 +238,20 @@ void CVisualPalette::DrawSessionBackground (CG16bitImage &Screen, const CG16bitI
 		{
 		if (dwFlags & OPTION_SESSION_DLG_BACKGROUND)
 			{
-			Screen.Fill(rcFull.left, 0, RectWidth(rcFull), rcFull.top, wBackgroundColor);
-			Screen.Fill(rcFull.left, rcFull.bottom, RectWidth(rcFull), cyScreen - rcFull.bottom, wBackgroundColor);
+			Screen.Fill(rcFull.left, 0, RectWidth(rcFull), rcFull.top, rgbBackgroundColor);
+			Screen.Fill(rcFull.left, rcFull.bottom, RectWidth(rcFull), cyScreen - rcFull.bottom, rgbBackgroundColor);
 
 			Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), GetColor(colorAreaDialog));
 			}
 		else
-			Screen.Fill(0, 0, cxScreen, cyScreen, wBackgroundColor);
+			Screen.Set(rgbBackgroundColor);
 		}
 
 	//	Paint the frame
 
 	int yLine = (cyScreen - cyCenter) / 2;
-	Screen.FillLine(0, yLine - 1, cxScreen, wLineColor);
-	Screen.FillLine(0, yLine + cyCenter, cxScreen, wLineColor);
+	Screen.FillLine(0, yLine - 1, cxScreen, rgbLineColor);
+	Screen.FillLine(0, yLine + cyCenter, cxScreen, rgbLineColor);
 
 	//	Done
 
@@ -297,7 +297,7 @@ const CG16bitFont &CVisualPalette::GetFont (const CString &sName, bool *retFound
 		}
 	}
 
-void CVisualPalette::GetWidescreenRect (CG16bitImage &Screen, RECT *retrcCenter, RECT *retrcFull) const
+void CVisualPalette::GetWidescreenRect (CG32bitImage &Screen, RECT *retrcCenter, RECT *retrcFull) const
 
 //	GetWidescreenRect
 //
@@ -347,7 +347,7 @@ ALERROR CVisualPalette::Init (HMODULE hModule, CString *retsError)
 	//	Initialize colors
 
 	for (i = 0; i < colorCount; i++)
-		m_Color[i] = COLOR_TABLE[i].wColor;
+		m_Color[i] = COLOR_TABLE[i].rgbColor;
 
 	//	Initialize fonts
 
@@ -388,7 +388,7 @@ ALERROR CVisualPalette::Init (HMODULE hModule, CString *retsError)
 		{
 		//	Load the image
 
-		CG16bitImage *pSource = ImageCache.GetImage(CString(IMAGE_TABLE[i].pszJPEGResID), CString(IMAGE_TABLE[i].pszMaskResID));
+		CG32bitImage *pSource = ImageCache.GetImage(CString(IMAGE_TABLE[i].pszJPEGResID), CString(IMAGE_TABLE[i].pszMaskResID));
 		if (pSource == NULL)
 			continue;
 
@@ -399,13 +399,11 @@ ALERROR CVisualPalette::Init (HMODULE hModule, CString *retsError)
 
 		//	Create the destination
 
-		m_Image[i].CreateBlank(cx, cy, pSource->HasAlpha());
+		m_Image[i].Create(cx, cy, pSource->GetAlphaType());
 
 		//	Copy from the appropriate position
 
-		m_Image[i].Blt(IMAGE_TABLE[i].x, IMAGE_TABLE[i].y, cx, cy, *pSource, 0, 0);
-		if (pSource->HasAlpha())
-			m_Image[i].CopyAlpha(IMAGE_TABLE[i].x, IMAGE_TABLE[i].y, cx, cy, *pSource, 0, 0);
+		m_Image[i].Copy(IMAGE_TABLE[i].x, IMAGE_TABLE[i].y, cx, cy, *pSource, 0, 0);
 		}
 
 	return NOERROR;
@@ -418,14 +416,14 @@ CResourceImageCache::~CResourceImageCache (void)
 	{
 	}
 
-CG16bitImage *CResourceImageCache::GetImage (const CString &sImage, const CString &sMask)
+CG32bitImage *CResourceImageCache::GetImage (const CString &sImage, const CString &sMask)
 
 //	GetImage
 //
 //	Returns the image
 
 	{
-	CG16bitImage *pImage = m_Cache.GetAt(sImage);
+	CG32bitImage *pImage = m_Cache.GetAt(sImage);
 	if (pImage)
 		return pImage;
 
@@ -438,11 +436,13 @@ CG16bitImage *CResourceImageCache::GetImage (const CString &sImage, const CStrin
 		return NULL;
 	
 	HBITMAP hMask = NULL;
+	EBitmapTypes iMaskType = bitmapNone;
 	if (!sMask.IsBlank())
 		{
 		if (dibLoadFromResource(m_hModule,
 				sMask.GetASCIIZPointer(),
-				&hMask) != NOERROR)
+				&hMask,
+				&iMaskType) != NOERROR)
 			{
 			::DeleteObject(hImage);
 			return NULL;
@@ -450,7 +450,7 @@ CG16bitImage *CResourceImageCache::GetImage (const CString &sImage, const CStrin
 		}
 
 	pImage = m_Cache.Insert(sImage);
-	if (pImage->CreateFromBitmap(hImage, hMask) != NOERROR)
+	if (!pImage->CreateFromBitmap(hImage, hMask, iMaskType))
 		return NULL;
 
 	if (hMask)

@@ -38,9 +38,9 @@ class CParticleJetEffectPainter : public IEffectPainter
 		virtual void GetRect (RECT *retRect) const;
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL);
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintFade (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
-		virtual void PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
 		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 		virtual void SetPos (const CVector &vPos) { m_Particles.SetOrigin(vPos); }
 
@@ -697,7 +697,7 @@ void CParticleJetEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 		m_iCurDirection = -1;
 	}
 
-void CParticleJetEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CParticleJetEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //

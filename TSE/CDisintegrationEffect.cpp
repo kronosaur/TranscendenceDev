@@ -9,8 +9,8 @@
 #define LIFETIME								180
 #define DISPERSE_POINT							(LIFETIME / 2)
 
-#define RGB_BASE_COLOR							(CG16bitImage::RGBValue(0x80, 0xff, 0xff))
-#define RGB_PARTICLE_COLOR						(CG16bitImage::RGBValue(0x80, 0xff, 0xff))
+#define RGB_BASE_COLOR							(CG32bitPixel(0x80, 0xff, 0xff))
+#define RGB_PARTICLE_COLOR						(CG32bitPixel(0x80, 0xff, 0xff))
 
 #define FIXED_POINT								256
 
@@ -111,7 +111,7 @@ void CDisintegrationEffect::InitParticle (SParticle *pParticle)
 			&pParticle->yV);
 
 	int iFade = mathRandom(25, 100);
-	pParticle->wColor = CG16bitImage::RGBValue(
+	pParticle->rgbColor = CG32bitPixel(
 			(iFade * 0x80 / 100),
 			(iFade * 0xff / 100),
 			(iFade * 0xff / 100));
@@ -135,7 +135,7 @@ void CDisintegrationEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	}
 
-void CDisintegrationEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CDisintegrationEffect::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -150,11 +150,11 @@ void CDisintegrationEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewport
 			&& (m_iTick % 2))
 		{
 		int iFade = 100 - ((m_iTick * 100) / (DISPERSE_POINT / 2));
-		WORD wColor = CG16bitImage::RGBValue(
+		CG32bitPixel rgbColor = CG32bitPixel(
 				iFade * 0x80 / 100,
 				iFade * 0xff / 100,
 				iFade * 0xff / 100);
-		m_MaskImage.PaintSilhoutte(Dest, x, y, m_iMaskTick, m_iMaskRotation, wColor);
+		m_MaskImage.PaintSilhoutte(Dest, x, y, m_iMaskTick, m_iMaskRotation, rgbColor);
 		}
 
 	//	Paint the noise
@@ -165,9 +165,9 @@ void CDisintegrationEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewport
 		for (i = 0; i < m_iParticleCount; i++, pParticle++)
 			if (pParticle->iTicksLeft > 0
 					&& m_MaskImage.PointInImage(pParticle->x / FIXED_POINT, pParticle->y / FIXED_POINT, m_iMaskTick, m_iMaskRotation))
-				Dest.DrawPixel(x + (pParticle->x / FIXED_POINT),
+				Dest.SetPixel(x + (pParticle->x / FIXED_POINT),
 						y + (pParticle->y / FIXED_POINT),
-						pParticle->wColor);
+						pParticle->rgbColor);
 		}
 	else if (m_iTick == DISPERSE_POINT)
 		{
@@ -175,9 +175,9 @@ void CDisintegrationEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewport
 		for (i = 0; i < m_iParticleCount; i++, pParticle++)
 			if (pParticle->iTicksLeft > 0
 					&& m_MaskImage.PointInImage(pParticle->x / FIXED_POINT, pParticle->y / FIXED_POINT, m_iMaskTick, m_iMaskRotation))
-				Dest.DrawPixel(x + (pParticle->x / FIXED_POINT),
+				Dest.SetPixel(x + (pParticle->x / FIXED_POINT),
 						y + (pParticle->y / FIXED_POINT),
-						pParticle->wColor);
+						pParticle->rgbColor);
 			else
 				pParticle->iTicksLeft = 0;
 		}
@@ -186,9 +186,9 @@ void CDisintegrationEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewport
 		SParticle *pParticle = m_pParticles;
 		for (i = 0; i < m_iParticleCount; i++, pParticle++)
 			if (pParticle->iTicksLeft > 0)
-				Dest.DrawPixel(x + (pParticle->x / FIXED_POINT),
+				Dest.SetPixel(x + (pParticle->x / FIXED_POINT),
 						y + (pParticle->y / FIXED_POINT),
-						pParticle->wColor);
+						pParticle->rgbColor);
 		}
 	}
 

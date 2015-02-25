@@ -75,8 +75,8 @@ ALERROR CMoltenBoltEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CX
 	m_iWidth = pDesc->GetAttributeInteger(WIDTH_ATTRIB);
 	m_iLength = pDesc->GetAttributeInteger(LENGTH_ATTRIB);
 	m_iGrowth = pDesc->GetAttributeInteger(GROWTH_ATTRIB);
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
-	m_wSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
 
 	if (m_iLength == 0)
 		m_iLength = m_iGrowth;
@@ -84,7 +84,7 @@ ALERROR CMoltenBoltEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CX
 	return NOERROR;
 	}
 
-void CMoltenBoltEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CMoltenBoltEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -103,9 +103,9 @@ void CMoltenBoltEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewpor
 	//	Paint
 
 	CG16bitBinaryRegion Region;
-	WORD wColor = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 200);
+	CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, (BYTE)200);
 	Region.CreateFromConvexPolygon(SHAPE_COUNT, Poly);
-	Region.Fill(Dest, x, y, wColor);
+	Region.Fill(Dest, x, y, rgbColor);
 
 	//	Create the inner shape
 
@@ -114,7 +114,7 @@ void CMoltenBoltEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewpor
 	//	Paint
 
 	Region.CreateFromConvexPolygon(SHAPE_COUNT, Poly);
-	Region.Fill(Dest, x, y, m_wPrimaryColor);
+	Region.Fill(Dest, x, y, m_rgbPrimaryColor);
 	}
 
 bool CMoltenBoltEffectCreator::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const

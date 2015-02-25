@@ -3872,7 +3872,7 @@ const CString &CSpaceObject::GetStaticData (const CString &sAttrib)
 	return NULL_STR;
 	}
 
-WORD CSpaceObject::GetSymbolColor (void)
+CG32bitPixel CSpaceObject::GetSymbolColor (void)
 
 //	GetSymbolColor
 //
@@ -3881,15 +3881,15 @@ WORD CSpaceObject::GetSymbolColor (void)
 	{
 	CSovereign *pPlayer = g_pUniverse->GetPlayerSovereign();
 	if (GetSovereign() == pPlayer)
-		return CG16bitImage::RGBValue(255, 255, 255);
+		return CG32bitPixel(255, 255, 255);
 	else if (IsWreck())
-		return CG16bitImage::RGBValue(0, 192, 0);
+		return CG32bitPixel(0, 192, 0);
 	else if (GetSovereign()->IsEnemy(pPlayer))
-		return CG16bitImage::RGBValue(255, 80, 80);
+		return CG32bitPixel(255, 80, 80);
 	else if (GetCategory() == CSpaceObject::catShip)
-		return CG16bitImage::RGBValue(80, 255, 80);
+		return CG32bitPixel(80, 255, 80);
 	else
-		return CG16bitImage::RGBValue(0, 192, 0);
+		return CG32bitPixel(0, 192, 0);
 	}
 
 void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *retList, CSpaceObject *pExcludeObj)
@@ -5328,7 +5328,7 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 	m_SubscribedObjs.Remove(Ctx.pObj);
 	}
 
-void CSpaceObject::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -5400,7 +5400,7 @@ void CSpaceObject::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &C
 	ClearPaintNeeded();
 	}
 
-void CSpaceObject::PaintEffects (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintEffects
 //
@@ -5424,7 +5424,7 @@ void CSpaceObject::PaintEffects (CG16bitImage &Dest, int x, int y, SViewportPain
 		}
 	}
 
-void CSpaceObject::PaintHighlight (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintHighlight
 //
@@ -5433,53 +5433,53 @@ void CSpaceObject::PaintHighlight (CG16bitImage &Dest, int x, int y, SViewportPa
 	{
 	//	Figure out the color of the highlight
 
-	WORD wColor = GetSymbolColor();
+	CG32bitPixel rgbColor = GetSymbolColor();
 
 	//	Paint the corners
 
 	Dest.DrawLine(Ctx.rcObjBounds.left, Ctx.rcObjBounds.top,
 			Ctx.rcObjBounds.left + HIGHLIGHT_CORNER_WIDTH, Ctx.rcObjBounds.top,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.left, Ctx.rcObjBounds.top,
 			Ctx.rcObjBounds.left, Ctx.rcObjBounds.top + HIGHLIGHT_CORNER_HEIGHT,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.right, Ctx.rcObjBounds.top,
 			Ctx.rcObjBounds.right - HIGHLIGHT_CORNER_WIDTH, Ctx.rcObjBounds.top,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.right, Ctx.rcObjBounds.top,
 			Ctx.rcObjBounds.right, Ctx.rcObjBounds.top + HIGHLIGHT_CORNER_HEIGHT,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.left, Ctx.rcObjBounds.bottom,
 			Ctx.rcObjBounds.left, Ctx.rcObjBounds.bottom - HIGHLIGHT_CORNER_HEIGHT,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.left, Ctx.rcObjBounds.bottom,
 			Ctx.rcObjBounds.left + HIGHLIGHT_CORNER_WIDTH, Ctx.rcObjBounds.bottom,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.right, Ctx.rcObjBounds.bottom,
 			Ctx.rcObjBounds.right - HIGHLIGHT_CORNER_WIDTH, Ctx.rcObjBounds.bottom,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.right, Ctx.rcObjBounds.bottom,
 			Ctx.rcObjBounds.right, Ctx.rcObjBounds.bottom - HIGHLIGHT_CORNER_HEIGHT,
-			1, wColor);
+			1, rgbColor);
 
 	//	Paint message, if we have one
 
 	if (!m_sHighlightText.IsBlank() || m_iHighlightChar)
 		{
 		int cyHeight;
-		PaintHighlightText(Dest, x, Ctx.yAnnotations, Ctx, alignCenter, wColor, &cyHeight);
+		PaintHighlightText(Dest, x, Ctx.yAnnotations, Ctx, alignCenter, rgbColor, &cyHeight);
 		Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
 		}
 	}
 
-void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, WORD wColor, int *retcyHeight)
+void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight)
 
 //	PaintHighlightText
 //
@@ -5501,6 +5501,12 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 				+ (m_iHighlightChar ? KEY_BOX_SIZE + 2 : 0);
 		}
 
+	DWORD dwFontFlags = CG16bitFont::AdjustToFit;
+	if (iAlign & alignCenter)
+		dwFontFlags |= CG16bitFont::AlignCenter;
+	else if (iAlign & alignRight)
+		dwFontFlags |= CG16bitFont::AlignRight;
+
 	//	Figure out what name to paint
 
 	CString sName;
@@ -5514,10 +5520,11 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 	//	Paint it
 
 	NameFont.DrawText(Dest, 
-			Dest.AdjustTextX(NameFont, sName, iAlign, x),
+			x,
 			y,
-			wColor, 
-			sName);
+			rgbColor, 
+			sName,
+			dwFontFlags);
 	y += NameFont.GetHeight();
 
 	//	Paint distance and bearing, if required
@@ -5527,10 +5534,11 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 		Metric rDist = (GetPos() - Ctx.pCenter->GetPos()).Length();
 		CString sText = strPatternSubst(CONSTLIT("Distance: %d"), (int)(rDist / LIGHT_SECOND));
 		NameFont.DrawText(Dest,
-				Dest.AdjustTextX(NameFont, sText, iAlign, x),
+				x,
 				y,
-				wColor,
-				sText);
+				rgbColor,
+				sText,
+				dwFontFlags);
 
 		y += NameFont.GetHeight();
 		}
@@ -5541,11 +5549,11 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 		{
 		//	Paint message
 
-		WORD wMessageColor;
+		CG32bitPixel rgbMessageColor;
 		if (m_iHighlightCountdown > HIGHLIGHT_BLINK)
-			wMessageColor = CG16bitImage::BlendPixel(wColor, 0xffff, 255 * (m_iHighlightCountdown - HIGHLIGHT_BLINK) / (HIGHLIGHT_TIMER - HIGHLIGHT_BLINK));
+			rgbMessageColor = CG32bitPixel::Blend(rgbColor, 0xffff, (BYTE)(255 * (m_iHighlightCountdown - HIGHLIGHT_BLINK) / (HIGHLIGHT_TIMER - HIGHLIGHT_BLINK)));
 		else
-			wMessageColor = wColor;
+			rgbMessageColor = rgbColor;
 
 		DWORD dwOpacity;
 		if (m_iHighlightCountdown < HIGHLIGHT_FADE)
@@ -5554,11 +5562,12 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 			dwOpacity = 255;
 
 		MessageFont.DrawText(Dest, 
-				Dest.AdjustTextX(MessageFont, m_sHighlightText, iAlign, x),
+				x,
 				y, 
-				wMessageColor, 
-				dwOpacity, 
-				m_sHighlightText);
+				CG32bitPixel(rgbMessageColor, (BYTE)dwOpacity),
+				m_sHighlightText,
+				dwFontFlags);
+
 		y += MessageFont.GetHeight();
 		}
 
@@ -5572,7 +5581,7 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 
 		y += ANNOTATION_INNER_SPACING_Y;
 
-		Dest.Fill(x - KEY_BOX_SIZE / 2, y, KEY_BOX_SIZE, KEY_BOX_SIZE, wColor);
+		Dest.Fill(x - KEY_BOX_SIZE / 2, y, KEY_BOX_SIZE, KEY_BOX_SIZE, rgbColor);
 
 		int xText = x - (KeyFont.MeasureText(sKey) / 2);
 		int yText = y + (KEY_BOX_SIZE / 2) - (KeyFont.GetHeight() / 2);
@@ -5592,7 +5601,7 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 		*retcyHeight = y - yOriginal;
 	}
 
-void CSpaceObject::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CSpaceObject::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //
@@ -5600,11 +5609,11 @@ void CSpaceObject::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTra
 
 	{
 	Dest.DrawDot(x, y, 
-			CG16bitImage::RGBValue(255, 255, 0), 
-			CG16bitImage::markerSmallRound);
+			CG32bitPixel(255, 255, 0), 
+			markerSmallRound);
 	}
 
-void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y)
+void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 //	PaintMap
 //
@@ -5618,13 +5627,13 @@ void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, in
 		int iTick = g_pUniverse->GetPaintTick();
 		int iRadius = 10;
 		int iRingSpacing = 4;
-		WORD wColor = GetSymbolColor();
+		CG32bitPixel rgbColor = GetSymbolColor();
 
-		CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 6, wColor);
+		CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 6, rgbColor);
 		}
 	}
 
-void CSpaceObject::PaintTargetHighlight (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintTargetHighlight
 //
@@ -5634,9 +5643,9 @@ void CSpaceObject::PaintTargetHighlight (CG16bitImage &Dest, int x, int y, SView
 	int iTick = g_pUniverse->GetPaintTick();
 	int iRadius = (int)(0.5 * GetHitSize() / g_KlicksPerPixel);
 	int iRingSpacing = 10;
-	WORD wColor = GetSymbolColor();
+	CG32bitPixel rgbColor = GetSymbolColor();
 
-	CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 3, wColor);
+	CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 3, rgbColor);
 	}
 
 void CSpaceObject::ParseCriteria (CSpaceObject *pSource, const CString &sCriteria, Criteria *retCriteria)
@@ -6966,7 +6975,7 @@ CString ParseParam (char **ioPos)
 
 #ifdef DEBUG_VECTOR
 
-void CSpaceObject::PaintDebugVector (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	{
 	if (!m_vDebugVector.IsNull())
 		{
@@ -6977,7 +6986,7 @@ void CSpaceObject::PaintDebugVector (CG16bitImage &Dest, int x, int y, SViewport
 		Dest.DrawLine(x, y,
 				xDest, yDest,
 				3,
-				CG16bitImage::RGBValue(0,255,0));
+				CG32bitPixel(0,255,0));
 		}
 	}
 

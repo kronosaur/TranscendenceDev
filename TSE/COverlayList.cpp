@@ -438,7 +438,7 @@ int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 	return iBonus;
 	}
 
-void COverlayList::Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
+void COverlayList::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -455,7 +455,7 @@ void COverlayList::Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewpor
 		}
 	}
 
-void COverlayList::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COverlayList::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintAnnotations
 //
@@ -472,7 +472,7 @@ void COverlayList::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewport
 		}
 	}
 
-void COverlayList::PaintBackground (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COverlayList::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintBackground
 //

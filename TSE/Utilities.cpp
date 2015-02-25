@@ -2222,7 +2222,7 @@ DWORD LoadNameFlags (CXMLElement *pDesc)
 	return dwFlags;
 	}
 
-WORD LoadRGBColor (const CString &sString)
+CG32bitPixel LoadRGBColor (const CString &sString)
 
 //	LoadRGBColor
 //
@@ -2234,7 +2234,7 @@ WORD LoadRGBColor (const CString &sString)
 	//	Null
 
 	if (*pPos == '\0')
-		return 0;
+		return CG32bitPixel::Null();
 
 	//	If it starts with a # we expect an RGB DWORD
 
@@ -2242,7 +2242,7 @@ WORD LoadRGBColor (const CString &sString)
 		{
 		pPos++;
 		DWORD dwColor = strParseIntOfBase(pPos, 16, 0);
-		return CG16bitImage::RGBValue((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF);
+		return CG32bitPixel((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF);
 		}
 
 	//	Otherwise, we expect three comma-separated values
@@ -2253,37 +2253,7 @@ WORD LoadRGBColor (const CString &sString)
 		int iGreen = strParseInt(pPos, 0, &pPos, NULL); if (*pPos) pPos++;
 		int iBlue = strParseInt(pPos, 0, &pPos, NULL);
 
-		return CG16bitImage::RGBValue(iRed, iGreen, iBlue);
-		}
-	}
-
-COLORREF LoadCOLORREF (const CString &sString)
-
-//	LoadCOLORREF
-//
-//	Returns a 32-bit color from an RGB triplet
-
-	{
-	char *pPos = sString.GetASCIIZPointer();
-
-	//	If it starts with a # we expect an RGB DWORD
-
-	if (*pPos == '#')
-		{
-		pPos++;
-		DWORD dwColor = strParseIntOfBase(pPos, 16, 0);
-		return RGB((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF);
-		}
-
-	//	Otherwise, we expect three comma-separated values
-
-	else
-		{
-		int iRed = strParseInt(pPos, 0, &pPos, NULL); if (*pPos) pPos++;
-		int iGreen = strParseInt(pPos, 0, &pPos, NULL); if (*pPos) pPos++;
-		int iBlue = strParseInt(pPos, 0, &pPos, NULL);
-
-		return RGB(iRed, iGreen, iBlue);
+		return CG32bitPixel(iRed, iGreen, iBlue);
 		}
 	}
 

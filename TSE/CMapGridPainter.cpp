@@ -6,7 +6,7 @@
 #include "PreComp.h"
 
 const Metric GRID_SIZE =								100.0 * LIGHT_SECOND;
-const WORD RGB_GRID_LINE =								CG16bitImage::RGBValue(43, 45, 51);
+const CG32bitPixel RGB_GRID_LINE =						CG32bitPixel(43, 45, 51);
 
 void CMapGridPainter::AddLines (const TArray<SLine> &NewLines, TArray<SLine> *retLines)
 
@@ -188,7 +188,7 @@ bool CMapGridPainter::FindKey (const TArray<SLine> &Lines, int xyKey, int *retiI
 	return false;
 	}
 
-void CMapGridPainter::Paint (CG16bitImage &Dest, CMapViewportCtx &PaintCtx)
+void CMapGridPainter::Paint (CG32bitImage &Dest, CMapViewportCtx &PaintCtx)
 
 //	Paint
 //
@@ -208,7 +208,7 @@ void CMapGridPainter::Paint (CG16bitImage &Dest, CMapViewportCtx &PaintCtx)
 	Paint(Dest, PaintCtx, m_VertLines);
 	}
 
-void CMapGridPainter::Paint (CG16bitImage &Dest, CMapViewportCtx &PaintCtx, const TArray<SLine> &Lines)
+void CMapGridPainter::Paint (CG32bitImage &Dest, CMapViewportCtx &PaintCtx, const TArray<SLine> &Lines)
 
 //	Paint
 //

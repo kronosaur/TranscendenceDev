@@ -13,7 +13,7 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 //	operator ==
 
 	{
-	return (m_wFadeColor == Val.m_wFadeColor
+	return (m_rgbFadeColor == Val.m_rgbFadeColor
 			&& m_wFadeOpacity == Val.m_wFadeOpacity
 			&& m_fStationDamage == Val.m_fStationDamage);
 	}
@@ -26,7 +26,7 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	{
 	RECT rcNewImage;
-	CG16bitImage *pNewDest = NULL;
+	CG32bitImage *pNewDest = NULL;
 
 	//	Station damage
 
@@ -39,6 +39,12 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 		if (pNewDest == NULL)
 			pNewDest = CreateCopy(retImage, &rcNewImage);
 
+		//	Keep our original mask, because the damage painting routines will
+		//	destroy it.
+
+		CG8bitImage Mask;
+		Mask.CreateChannel(channelAlpha, *pNewDest);
+
 		//	Add some large damage
 
 		int iCount = (pNewDest->GetWidth() / 32) * (pNewDest->GetHeight() / 32);
@@ -48,6 +54,10 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 		iCount = (pNewDest->GetWidth() / 4) + (pNewDest->GetHeight() / 4);
 		PaintDamage(*pNewDest, rcNewImage, iCount, g_pMediumDamage);
+
+		//	Reapply the mask to our image
+
+		pNewDest->CopyChannel(channelAlpha, 0, 0, Mask.GetWidth(), Mask.GetHeight(), Mask, 0, 0);
 		}
 
 	//	Apply wash on top
@@ -66,24 +76,20 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 				pNewDest->GetWidth(),
 				pNewDest->GetHeight(),
 				*pNewDest,
-				m_wFadeColor,
+				CG32bitPixel(m_rgbFadeColor, (BYTE)m_wFadeOpacity),
 				0,
-				0,
-				(BYTE)m_wFadeOpacity);
+				0);
 		}
 
 	//	Replace the image (the result takes ownership of our image).
 
 	if (pNewDest)
 		{
-		if (!retImage->HasAlpha())
-			pNewDest->SetTransparentColor();
-
 		retImage->Init(pNewDest, rcNewImage, 0, 0, true);
 		}
 	}
 
-CG16bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const
+CG32bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const
 
 //	CreateCopy
 //
@@ -93,8 +99,8 @@ CG16bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, R
 	RECT rcImage = pImage->GetImageRect();
 	int cxWidth = RectWidth(rcImage);
 	int cyHeight = RectHeight(rcImage);
-	CG16bitImage *pNewImage = new CG16bitImage;
-	pNewImage->CreateBlank(cxWidth, cyHeight, true);
+	CG32bitImage *pNewImage = new CG32bitImage;
+	pNewImage->Create(cxWidth, cyHeight, CG32bitImage::alpha8);
 
 	rcImage.left = 0;
 	rcImage.top = 0;
@@ -137,7 +143,7 @@ void CCompositeImageModifiers::InitDamagePainters (void)
 		}
 	}
 
-void CCompositeImageModifiers::PaintDamage (CG16bitImage &Dest, const RECT &rcDest, int iCount, IEffectPainter *pPainter)
+void CCompositeImageModifiers::PaintDamage (CG32bitImage &Dest, const RECT &rcDest, int iCount, IEffectPainter *pPainter)
 
 //	PaintDamage
 //

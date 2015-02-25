@@ -478,7 +478,7 @@ CString CBaseShipAI::DebugCrashInfo (void)
 		return OnDebugCrashInfo();
 	}
 
-void CBaseShipAI::DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CBaseShipAI::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	DebugPaintInfo
 //

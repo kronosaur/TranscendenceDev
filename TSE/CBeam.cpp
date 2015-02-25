@@ -12,14 +12,14 @@ struct SBeamDrawCtx
 	int yTo;
 
 	int iIntensity;
-	WORD wBackgroundColor;
-	WORD wPrimaryColor;
-	WORD wSecondaryColor;
+	CG32bitPixel rgbBackgroundColor;
+	CG32bitPixel rgbPrimaryColor;
+	CG32bitPixel rgbSecondaryColor;
 	};
 
 static CObjectClass<CBeam>g_Class(OBJID_CBEAM, NULL);
 
-void DrawLaserBeam (CG16bitImage &Dest, const SBeamDrawCtx &Ctx);
+void DrawLaserBeam (CG32bitImage &Dest, const SBeamDrawCtx &Ctx);
 
 CBeam::CBeam (void) : CSpaceObject(&g_Class),
 //		m_xPaintFrom(0),
@@ -122,7 +122,7 @@ void CBeam::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 		m_pHit = NULL;
 	}
 
-void CBeam::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -142,9 +142,9 @@ void CBeam::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 		BeamCtx.yTo = y + m_yToOffset;
 		}
 	BeamCtx.iIntensity = 1;
-	BeamCtx.wBackgroundColor = Ctx.wSpaceColor;
-	BeamCtx.wPrimaryColor = CG16bitImage::RGBValue(0xf1, 0x5f, 0x2a);
-	BeamCtx.wSecondaryColor = CG16bitImage::RGBValue(0xff, 0x00, 0x00);
+	BeamCtx.rgbBackgroundColor = Ctx.rgbSpaceColor;
+	BeamCtx.rgbPrimaryColor = CG32bitPixel(0xf1, 0x5f, 0x2a);
+	BeamCtx.rgbSecondaryColor = CG32bitPixel(0xff, 0x00, 0x00);
 
 	//	Paint a line
 
@@ -296,22 +296,22 @@ void CBeam::OnWriteToStream (IWriteStream *pStream)
 
 //	Beam Drawing Routines -----------------------------------------------------
 
-void DrawLaserBeam (CG16bitImage &Dest, const SBeamDrawCtx &Ctx)
+void DrawLaserBeam (CG32bitImage &Dest, const SBeamDrawCtx &Ctx)
 
 //	DrawLaserBeam
 //
 //	Draws a simple laser beam
 
 	{
-	WORD wGlow = CG16bitImage::BlendPixel(Ctx.wBackgroundColor, Ctx.wSecondaryColor, 100);
+	CG32bitPixel rgbGlow = CG32bitPixel::Blend(Ctx.rgbBackgroundColor, Ctx.rgbSecondaryColor, (BYTE)100);
 
 	Dest.DrawLine(Ctx.xFrom, Ctx.yFrom,
 			Ctx.xTo, Ctx.yTo,
 			3,
-			wGlow);
+			rgbGlow);
 
 	Dest.DrawLine(Ctx.xFrom, Ctx.yFrom,
 			Ctx.xTo, Ctx.yTo,
 			1,
-			Ctx.wPrimaryColor);
+			Ctx.rgbPrimaryColor);
 	}

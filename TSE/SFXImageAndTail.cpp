@@ -33,8 +33,8 @@ ALERROR CImageAndTailEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, 
 
 	m_iLength = pDesc->GetAttributeInteger(LENGTH_ATTRIB);
 	m_iWidth = pDesc->GetAttributeInteger(WIDTH_ATTRIB);
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
-	m_wSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
 
 	return NOERROR;
 	}
@@ -54,7 +54,7 @@ ALERROR CImageAndTailEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CImageAndTailEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CImageAndTailEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -67,7 +67,7 @@ void CImageAndTailEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewp
 
 	//	Paint the tail
 
-	WORD wStart, wEnd;
+	CG32bitPixel rgbStart, rgbEnd;
 	int xStart, yStart;
 	CVector vTail = PolarToVector(Ctx.iRotation, m_iLength);
 
@@ -76,26 +76,18 @@ void CImageAndTailEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewp
 		xStart = x - (int)(vTail.GetX() + 0.5);
 		yStart = y + (int)(vTail.GetY() + 0.5);
 
-		wStart = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 155);
-		wEnd = Ctx.wSpaceColor;
-		Dest.DrawBiColorLine(xStart, yStart,
-				x, y,
-				m_iWidth,
-				wEnd,
-				wStart);
+		rgbStart = CG32bitPixel(m_rgbSecondaryColor, (BYTE)155);
+		rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)0);
+		CGDraw::LineGradient(Dest, xStart, yStart, x, y, m_iWidth, rgbEnd, rgbStart);
 		}
 
 	vTail = vTail / 2.0;
 	xStart = x - (int)(vTail.GetX() + 0.5);
 	yStart = y + (int)(vTail.GetY() + 0.5);
 
-	wStart = m_wPrimaryColor;
-	wEnd = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 200);
-	Dest.DrawBiColorLine(xStart, yStart,
-			x, y,
-			Max(1, m_iWidth / 2),
-			wEnd,
-			wStart);
+	rgbStart = m_rgbPrimaryColor;
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)200);
+	CGDraw::LineGradient(Dest, xStart, yStart, x, y, Max(1, m_iWidth / 2), rgbEnd, rgbStart);
 
 	//	Paint the image
 

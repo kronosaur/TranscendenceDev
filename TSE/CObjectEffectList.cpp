@@ -109,7 +109,7 @@ void CObjectEffectList::Move (CSpaceObject *pObj, const CVector &vOldPos, bool *
 		*retbBoundsChanged = bBoundsChanged;
 	}
 
-void CObjectEffectList::Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, DWORD dwEffects, CG16bitImage &Dest, int x, int y)
+void CObjectEffectList::Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, DWORD dwEffects, CG32bitImage &Dest, int x, int y)
 
 //	Paint
 //
@@ -161,7 +161,7 @@ void CObjectEffectList::Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &
 	Ctx.iRotation = iObjRotation;
 	}
 
-void CObjectEffectList::PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, CG16bitImage &Dest, int x, int y)
+void CObjectEffectList::PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, CG32bitImage &Dest, int x, int y)
 
 //	PaintAll
 //
