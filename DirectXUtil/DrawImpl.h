@@ -191,17 +191,22 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 	public:
 		CFilterShimmer (BYTE byOpacity, DWORD dwSeed) :
 				m_byOpacity(byOpacity),
-				m_dwRnd(LARGE_PRIME2 * dwSeed)
+				m_dwRnd(LARGE_PRIME2 * (1 + dwSeed))
 			{
 			NoiseInit();
 			}
 
 		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
-			if (PERM((DWORD)pDest * LARGE_PRIME2 + m_dwRnd) < m_byOpacity)
+			if (PERM(((DWORD)pDest >> 2) * LARGE_PRIME2 + m_dwRnd) < m_byOpacity)
 				return rgbSrc;
 			else
 				return CG32bitPixel::Null();
+			}
+
+		inline void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest)
+			{
+			m_dwRnd *= LARGE_PRIME1;
 			}
 
 	private:

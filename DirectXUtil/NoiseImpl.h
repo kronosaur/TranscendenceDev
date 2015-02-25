@@ -17,7 +17,7 @@ inline float RANDF (void) { return (float)::rand() / (float)RAND_MAX; }
 inline float LERP (float t, float x0, float x1) { return (x0 + t * (x1 - x0)); }
 inline float SMOOTHSTEP (float x) { return x * x * (3.0f - 2.0f * x); }
 
-inline BYTE PERM (int x) { return g_perm[x & PERM_TABLE_MASK]; }
+inline BYTE PERM (DWORD x) { return g_perm[x & PERM_TABLE_MASK]; }
 inline BYTE INDEX2D (int x, int y) { return PERM(x + PERM(y)); }
 inline BYTE INDEX3D (int x, int y, int z) { return PERM(x + PERM(y + PERM(z))); }
 inline float RANDVECTOR2D (int x, int y, float fx, float fy)

@@ -27,6 +27,8 @@ template <class PAINTER> class TBlt
 				CG32bitPixel *pSrcEnd = pSrc + cxSrc;
 				CG32bitPixel *pDest = pDestRow;
 
+				START_ROW(pSrc, pDest);
+
 				while (pSrc < pSrcEnd)
 					{
 					CG32bitPixel rgbResult = FILTER(*pSrc, pDest);
@@ -267,6 +269,8 @@ template <class PAINTER> class TBlt
 				CG32bitPixel *pSrcEnd = pSrc + cxSrc;
 				CG32bitPixel *pDest = pDestRow;
 
+				START_ROW(pSrc, pDest);
+
 				while (pSrc < pSrcEnd)
 					{
 					CG32bitPixel rgbResult = FILTER(*pSrc, pDest);
@@ -317,6 +321,8 @@ template <class PAINTER> class TBlt
 				CG32bitPixel *pSrcEnd = pSrc + cxSrc;
 				CG32bitPixel *pDest = pDestRow;
 
+				START_ROW(pSrc, pDest);
+
 				while (pSrc < pSrcEnd)
 					{
 					*pDest = FILTER(*pSrc, pDest);
@@ -332,4 +338,7 @@ template <class PAINTER> class TBlt
 
 	private:
 		inline CG32bitPixel FILTER (CG32bitPixel rgbSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->Filter(rgbSrc, pDest); }
+		inline void START_ROW (CG32bitPixel *pSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->StartRow(pSrc, pDest); }
+
+		inline void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest) { }
 	};
