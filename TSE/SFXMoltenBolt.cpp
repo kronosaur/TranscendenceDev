@@ -103,7 +103,7 @@ void CMoltenBoltEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewpor
 	//	Paint
 
 	CG16bitBinaryRegion Region;
-	CG32bitPixel rgbColor = CG32bitPixel::Blend(Ctx.rgbSpaceColor, m_rgbSecondaryColor, (BYTE)200);
+	CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, (BYTE)200);
 	Region.CreateFromConvexPolygon(SHAPE_COUNT, Poly);
 	Region.Fill(Dest, x, y, rgbColor);
 

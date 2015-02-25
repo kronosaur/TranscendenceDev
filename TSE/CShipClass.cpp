@@ -1511,6 +1511,8 @@ void CShipClass::CreateWreckImage (void)
 //	Creates a wreck image randomly
 
 	{
+	int i;
+
 	if (!m_Image.IsLoaded())
 		return;
 
@@ -1545,12 +1547,14 @@ void CShipClass::CreateWreckImage (void)
 
 	//	Blt the images
 
-	for (int i = 0; i < WRECK_IMAGE_VARIANTS; i++)
+	TArray<int> Rotations;
+	Rotations.InsertEmpty(WRECK_IMAGE_VARIANTS);
+
+	for (i = 0; i < WRECK_IMAGE_VARIANTS; i++)
 		{
 		//	Pick a random rotation
 
-		int iRotation = mathRandom(0, m_RotationDesc.GetFrameCount() - 1);
-		RECT rcSrc = m_Image.GetImageRect(0, iRotation);
+		Rotations[i] = mathRandom(0, m_RotationDesc.GetFrameCount() - 1);
 
 		//	Copy the frame
 
@@ -1558,7 +1562,7 @@ void CShipClass::CreateWreckImage (void)
 				0,
 				i * cyHeight,
 				0,
-				iRotation);
+				Rotations[i]);
 
 		//	Add some destruction
 
@@ -1575,9 +1579,14 @@ void CShipClass::CreateWreckImage (void)
 					(i * cyHeight) + mathRandom(0, cyHeight-1) - (DAMAGE_IMAGE_HEIGHT / 2));
 			}
 
-		//	Copy the mask back to the image because we blew it away painting
-		//	the damage.
+		}
 
+	//	Copy the mask back to the image because we blew it away painting
+	//	the damage.
+
+	for (i = 0; i < WRECK_IMAGE_VARIANTS; i++)
+		{
+		RECT rcSrc = m_Image.GetImageRect(0, Rotations[i]);
 		m_WreckBitmap.CopyChannel(channelAlpha, rcSrc.left, rcSrc.top, cxWidth, cyHeight, SourceImage, 0, i * cyHeight);
 		}
 

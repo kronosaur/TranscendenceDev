@@ -294,7 +294,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		m_iCounterType = counterNone;
 		m_iCounterMax = 0;
-		m_rgbCounterColor = 0;
+		m_rgbCounterColor = CG32bitPixel::Null();
 		}
 
 	//	Options

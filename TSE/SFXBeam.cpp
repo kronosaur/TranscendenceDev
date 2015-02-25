@@ -166,7 +166,7 @@ void CBeamEffectCreator::DrawBeamHeavyBlaster (CG32bitImage &Dest, SLineDesc &Li
 
 	//	Paint the outer-most glow
 
-	CG32bitPixel rgbColor = CG32bitPixel::Blend(Ctx.rgbSpaceColor, m_rgbSecondaryColor, (BYTE)100);
+	CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, (BYTE)100);
 	CreateBlasterShape(iAngle, 4 * iLengthUnit, 3 * iWidthUnit / 2, Poly);
 	Region.CreateFromConvexPolygon(8, Poly);
 	Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
@@ -174,7 +174,7 @@ void CBeamEffectCreator::DrawBeamHeavyBlaster (CG32bitImage &Dest, SLineDesc &Li
 	//	Paint the inner transition
 
 	rgbColor = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, (BYTE)128);
-	rgbColor = CG32bitPixel::Blend(Ctx.rgbSpaceColor, rgbColor, (BYTE)200);
+	rgbColor = CG32bitPixel(rgbColor, (BYTE)200);
 	CreateBlasterShape(iAngle, 3 * iLengthUnit, iWidthUnit, Poly);
 	Region.CreateFromConvexPolygon(8, Poly);
 	Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
@@ -222,7 +222,7 @@ void CBeamEffectCreator::DrawBeamLaser (CG32bitImage &Dest, SLineDesc &Line, SVi
 //	Draws the appropriate beam
 
 	{
-	CG32bitPixel rgbGlow = CG32bitPixel::Blend(Ctx.rgbSpaceColor, m_rgbSecondaryColor, (BYTE)100);
+	CG32bitPixel rgbGlow = CG32bitPixel(m_rgbSecondaryColor, (BYTE)100);
 
 	Dest.DrawLine(Line.xFrom, Line.yFrom,
 			Line.xTo, Line.yTo,
@@ -284,7 +284,7 @@ void CBeamEffectCreator::DrawBeamLightning (CG32bitImage &Dest, SLineDesc &Line,
 
 		//	Paint the outer-most glow
 
-		CG32bitPixel rgbColor = CG32bitPixel::Blend(Ctx.rgbSpaceColor, m_rgbSecondaryColor, (BYTE)100);
+		CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, (BYTE)100);
 		CreateBlasterShape(iAngle, iRadius, iRadius / 6, Poly);
 		Region.CreateFromConvexPolygon(8, Poly);
 		Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
@@ -292,7 +292,7 @@ void CBeamEffectCreator::DrawBeamLightning (CG32bitImage &Dest, SLineDesc &Line,
 		//	Paint the inner transition
 
 		rgbColor = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, (BYTE)128);
-		rgbColor = CG32bitPixel::Blend(Ctx.rgbSpaceColor, rgbColor, (BYTE)200);
+		rgbColor = CG32bitPixel(rgbColor, (BYTE)200);
 		CreateBlasterShape(iAngle, iRadius * 2 / 3, iRadius / 7, Poly);
 		Region.CreateFromConvexPolygon(8, Poly);
 		Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
@@ -548,16 +548,16 @@ void CBeamEffectCreator::DrawBeamStarBlaster (CG32bitImage &Dest, SLineDesc &Lin
 	{
 	CG32bitPixel rgbStart, rgbEnd;
 
-	rgbStart = CG32bitPixel::Blend(m_rgbPrimaryColor, (BYTE)155);
-	rgbEnd = CG32bitPixel::Blend(m_rgbPrimaryColor, (BYTE)0);
+	rgbStart = CG32bitPixel(m_rgbPrimaryColor, (BYTE)155);
+	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, (BYTE)0);
 	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, rgbStart);
 
-	rgbEnd = CG32bitPixel::Blend(m_rgbPrimaryColor, (BYTE)155);
-	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, m_rgbSecondaryColor);
+	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, (BYTE)155);
+	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 1, rgbEnd, m_rgbSecondaryColor);
 
 	//	Draw starburst
 
-	rgbEnd = CG32bitPixel::Blend(m_rgbSecondaryColor, (BYTE)0);
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)0);
 
 	int iCount = (m_iIntensity / 2) + mathRandom(4, 9);
 	for (int i = 0; i < iCount; i++)
@@ -620,8 +620,8 @@ ALERROR CBeamEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElem
 			break;
 
 		case beamBlaster:
-			if (m_rgbPrimaryColor.IsEmpty()) m_rgbPrimaryColor = CG32bitPixel(255, 255, 0);
-			if (m_rgbSecondaryColor.IsEmpty()) m_rgbSecondaryColor = CG32bitPixel(255, 0, 0);
+			if (m_rgbPrimaryColor.IsNull()) m_rgbPrimaryColor = CG32bitPixel(255, 255, 0);
+			if (m_rgbSecondaryColor.IsNull()) m_rgbSecondaryColor = CG32bitPixel(255, 0, 0);
 			break;
 		}
 

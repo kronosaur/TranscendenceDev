@@ -571,7 +571,7 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 			int cyHeight;
 
 			CG32bitPixel rgbColor = m_pType->GetCounterColor();
-			if (rgbColor.IsEmpty() && Ctx.pObj)
+			if (rgbColor.IsNull() && Ctx.pObj)
 				rgbColor = Ctx.pObj->GetSymbolColor();
 
 			CPaintHelper::PaintStatusBar(Dest,
@@ -602,7 +602,7 @@ void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaint
 		case COverlayType::counterRadius:
 			{
 			CG32bitPixel rgbColor = m_pType->GetCounterColor();
-			if (rgbColor.IsEmpty() && Ctx.pObj)
+			if (rgbColor.IsNull() && Ctx.pObj)
 				rgbColor = Ctx.pObj->GetSymbolColor();
 
 			if (m_iCounter > 0)
