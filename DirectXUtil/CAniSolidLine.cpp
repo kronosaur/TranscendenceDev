@@ -76,41 +76,41 @@ void CAniSolidLine::Arc (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadiu
 		if (iSolidWidth > 0)
 			{
 			if (bUpperRight)
-				Ctx.Dest.FillLine(xCenter + iSolidOuter - iSolidWidth, yCenter - 1 - iRow, iSolidWidth, m_wColor);
+				Ctx.Dest.FillLine(xCenter + iSolidOuter - iSolidWidth, yCenter - 1 - iRow, iSolidWidth, m_rgbColor);
 			if (bLowerRight)
-				Ctx.Dest.FillLine(xCenter + iSolidOuter - iSolidWidth, yCenter + iRow, iSolidWidth, m_wColor);
+				Ctx.Dest.FillLine(xCenter + iSolidOuter - iSolidWidth, yCenter + iRow, iSolidWidth, m_rgbColor);
 			if (bUpperLeft)
-				Ctx.Dest.FillLine(xCenter - iSolidOuter, yCenter - 1 - iRow, iSolidWidth, m_wColor);
+				Ctx.Dest.FillLine(xCenter - iSolidOuter, yCenter - 1 - iRow, iSolidWidth, m_rgbColor);
 			if (bLowerLeft)
-				Ctx.Dest.FillLine(xCenter - iSolidOuter, yCenter + iRow, iSolidWidth, m_wColor);
+				Ctx.Dest.FillLine(xCenter - iSolidOuter, yCenter + iRow, iSolidWidth, m_rgbColor);
 			}
 
 		//	Paint the edges
 
-		DWORD byOuterEdge = (DWORD)(255 * rOuterFraction);
+		BYTE byOuterEdge = (BYTE)(DWORD)(255 * rOuterFraction);
 		if (byOuterEdge)
 			{
 			if (bUpperRight)
-				Ctx.Dest.SetPixelTrans(xCenter + iSolidOuter, yCenter - 1 - iRow, m_wColor, byOuterEdge);
+				Ctx.Dest.SetPixelTrans(xCenter + iSolidOuter, yCenter - 1 - iRow, m_rgbColor, byOuterEdge);
 			if (bLowerRight)
-				Ctx.Dest.SetPixelTrans(xCenter + iSolidOuter, yCenter + iRow, m_wColor, byOuterEdge);
+				Ctx.Dest.SetPixelTrans(xCenter + iSolidOuter, yCenter + iRow, m_rgbColor, byOuterEdge);
 			if (bUpperLeft)
-				Ctx.Dest.SetPixelTrans(xCenter - iSolidOuter - 1, yCenter - 1 - iRow, m_wColor, byOuterEdge);
+				Ctx.Dest.SetPixelTrans(xCenter - iSolidOuter - 1, yCenter - 1 - iRow, m_rgbColor, byOuterEdge);
 			if (bLowerLeft)
-				Ctx.Dest.SetPixelTrans(xCenter - iSolidOuter - 1, yCenter + iRow, m_wColor, byOuterEdge);
+				Ctx.Dest.SetPixelTrans(xCenter - iSolidOuter - 1, yCenter + iRow, m_rgbColor, byOuterEdge);
 			}
 
-		DWORD byInnerEdge = (DWORD)(255 * rInnerFraction);
+		BYTE byInnerEdge = (BYTE)(DWORD)(255 * rInnerFraction);
 		if (byInnerEdge)
 			{
 			if (bUpperRight)
-				Ctx.Dest.SetPixelTrans(xCenter + iSolidOuter - iSolidWidth - 1, yCenter - 1 - iRow, m_wColor, byInnerEdge);
+				Ctx.Dest.SetPixelTrans(xCenter + iSolidOuter - iSolidWidth - 1, yCenter - 1 - iRow, m_rgbColor, byInnerEdge);
 			if (bLowerRight)
-				Ctx.Dest.SetPixelTrans(xCenter + iSolidOuter - iSolidWidth - 1, yCenter + iRow, m_wColor, byInnerEdge);
+				Ctx.Dest.SetPixelTrans(xCenter + iSolidOuter - iSolidWidth - 1, yCenter + iRow, m_rgbColor, byInnerEdge);
 			if (bUpperLeft)
-				Ctx.Dest.SetPixelTrans(xCenter - iSolidOuter + iSolidWidth, yCenter - 1 - iRow, m_wColor, byInnerEdge);
+				Ctx.Dest.SetPixelTrans(xCenter - iSolidOuter + iSolidWidth, yCenter - 1 - iRow, m_rgbColor, byInnerEdge);
 			if (bLowerLeft)
-				Ctx.Dest.SetPixelTrans(xCenter - iSolidOuter + iSolidWidth, yCenter + iRow, m_wColor, byInnerEdge);
+				Ctx.Dest.SetPixelTrans(xCenter - iSolidOuter + iSolidWidth, yCenter + iRow, m_rgbColor, byInnerEdge);
 			}
 
 		//	Next
@@ -128,7 +128,7 @@ void CAniSolidLine::Corner (SAniPaintCtx &Ctx, int xCenter, int yCenter)
 
 	{
 	int iHalfWidth = m_iWidth / 2;
-	Ctx.Dest.Fill(xCenter - iHalfWidth, yCenter - iHalfWidth, m_iWidth, m_iWidth, m_wColor);
+	Ctx.Dest.Fill(xCenter - iHalfWidth, yCenter - iHalfWidth, m_iWidth, m_iWidth, m_rgbColor);
 	}
 
 void CAniSolidLine::InitDefaults (CAniPropertySet &Properties)
@@ -152,7 +152,7 @@ void CAniSolidLine::InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAni
 //	Initialize paint context
 
 	{
-	m_wColor = Properties.GetColor(PROP_LINE_COLOR);
+	m_rgbColor = Properties.GetColor(PROP_LINE_COLOR);
 	m_iWidth = Properties.GetInteger(PROP_LINE_WIDTH);
 	}
 
@@ -168,25 +168,25 @@ void CAniSolidLine::Line (SAniPaintCtx &Ctx, int xFrom, int yFrom, int xTo, int 
 	else if (m_iWidth == 1)
 		{
 		if (xFrom == xTo)
-			Ctx.Dest.FillColumn(xFrom, yFrom, yTo - yFrom, m_wColor);
+			Ctx.Dest.FillColumn(xFrom, yFrom, yTo - yFrom, m_rgbColor);
 		else if (yFrom == yTo)
-			Ctx.Dest.FillLine(xFrom, yFrom, xTo - xFrom, m_wColor);
+			Ctx.Dest.FillLine(xFrom, yFrom, xTo - xFrom, m_rgbColor);
 		else
-			Ctx.Dest.DrawLine(xFrom, yFrom, xTo, yTo, m_iWidth, m_wColor);
+			Ctx.Dest.DrawLine(xFrom, yFrom, xTo, yTo, m_iWidth, m_rgbColor);
 		}
 	else
 		{
 		if (xFrom == xTo)
 			{
 			int iHalfWidth = m_iWidth / 2;
-			Ctx.Dest.Fill(xFrom - iHalfWidth, yFrom, m_iWidth, yTo - yFrom, m_wColor);
+			Ctx.Dest.Fill(xFrom - iHalfWidth, yFrom, m_iWidth, yTo - yFrom, m_rgbColor);
 			}
 		else if (yFrom == yTo)
 			{
 			int iHalfWidth = m_iWidth / 2;
-			Ctx.Dest.Fill(xFrom, yFrom - iHalfWidth, xTo - xFrom, m_iWidth, m_wColor);
+			Ctx.Dest.Fill(xFrom, yFrom - iHalfWidth, xTo - xFrom, m_iWidth, m_rgbColor);
 			}
 		else
-			Ctx.Dest.DrawLine(xFrom, yFrom, xTo, yTo, m_iWidth, m_wColor);
+			Ctx.Dest.DrawLine(xFrom, yFrom, xTo, yTo, m_iWidth, m_rgbColor);
 		}
 	}

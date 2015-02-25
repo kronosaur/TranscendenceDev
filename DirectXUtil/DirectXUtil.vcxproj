@@ -152,9 +152,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\DirectXUtil.h" />
+    <ClInclude Include="..\Include\DXImage16.h" />
+    <ClInclude Include="..\Include\DXImage32.h" />
+    <ClInclude Include="..\Include\DXImage8.h" />
+    <ClInclude Include="..\Include\DXImageReal.h" />
+    <ClInclude Include="..\Include\DXUI.h" />
     <ClInclude Include="..\Include\Reanimator.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
+    <ClInclude Include="DrawImpl.h" />
     <ClInclude Include="NoiseImpl.h" />
+    <ClInclude Include="PixelMacros.h" />
+    <ClInclude Include="PreComp.h" />
+    <ClInclude Include="TBlt.h" />
+    <ClInclude Include="TCirclePainter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="16bitBlt.cpp" />
@@ -169,6 +179,8 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="32bitBlt.cpp" />
+    <ClCompile Include="32bitFill.cpp" />
     <ClCompile Include="8bitDrawCircle.cpp" />
     <ClCompile Include="8bitImageDrawing.cpp" />
     <ClCompile Include="8bitNoise.cpp" />
@@ -190,7 +202,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="CBresenhamIterator.cpp" />
     <ClCompile Include="CFrameRateCounter.cpp" />
     <ClCompile Include="CG16bitFont.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -211,7 +222,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CG16bitLinePainter.cpp" />
-    <ClCompile Include="CG16bitPixel.cpp" />
     <ClCompile Include="CG16bitRealRegion.cpp" />
     <ClCompile Include="CG16bitBinaryRegion.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -224,6 +234,9 @@
     </ClCompile>
     <ClCompile Include="CG16bitSprite.cpp" />
     <ClCompile Include="CG16bitRegion.cpp" />
+    <ClCompile Include="CG32bitImage.cpp" />
+    <ClCompile Include="CG32bitPixel.cpp" />
+    <ClCompile Include="CG8bitImage.cpp" />
     <ClCompile Include="CGButtonArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -242,6 +255,8 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CGImagePlane.cpp" />
+    <ClCompile Include="CGlowingRingPainter.cpp" />
     <ClCompile Include="CGImageArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -251,6 +266,8 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CGRealHSB.cpp" />
+    <ClCompile Include="CGRealRGB.cpp" />
     <ClCompile Include="CGTextArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -260,7 +277,9 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CLinePainter.cpp" />
     <ClCompile Include="CNoiseGenerator.cpp" />
+    <ClCompile Include="CompositeCircle.cpp" />
     <ClCompile Include="CScreenMgr.cpp" />
     <ClCompile Include="Debug.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -280,10 +299,15 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="DrawCircle.cpp" />
+    <ClCompile Include="DrawLine.cpp" />
+    <ClCompile Include="DrawRect.cpp" />
+    <ClCompile Include="Files.cpp" />
     <ClCompile Include="IPropertyAnimator.cpp" />
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="PolygonSimple.cpp" />
+    <ClCompile Include="RasterizeLine.cpp" />
     <ClCompile Include="Sound.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

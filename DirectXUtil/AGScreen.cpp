@@ -31,7 +31,7 @@ AGScreen::AGScreen (HWND hWnd, const RECT &rcRect) : CObject(NULL),
 		m_pController(NULL),
 		m_pMouseCapture(NULL),
 		m_pMouseOver(NULL),
-		m_wBackgroundColor(0)
+		m_rgbBackgroundColor(0)
 
 //	AGScreen constructor
 
@@ -322,7 +322,7 @@ void AGScreen::OnAreaSetRect (void)
 	{
 	}
 
-void AGScreen::Paint (CG16bitImage &Dest)
+void AGScreen::Paint (CG32bitImage &Dest)
 
 //	Paint
 //
@@ -347,7 +347,7 @@ void AGScreen::Paint (CG16bitImage &Dest)
 
 		//	Blank the screen
 
-		Dest.Fill(rcUpdate.left, rcUpdate.top, RectWidth(rcUpdate), RectHeight(rcUpdate), m_wBackgroundColor);
+		Dest.Fill(rcUpdate.left, rcUpdate.top, RectWidth(rcUpdate), RectHeight(rcUpdate), m_rgbBackgroundColor);
 
 		//	Let each area paint
 

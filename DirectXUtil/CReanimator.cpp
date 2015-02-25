@@ -583,7 +583,7 @@ bool CReanimator::IsRunning (void)
 	return false;
 	}
 
-bool CReanimator::PaintFrame (CG16bitImage &Dest)
+bool CReanimator::PaintFrame (CG32bitImage &Dest)
 
 //	PaintFrame
 //

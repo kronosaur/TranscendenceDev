@@ -13,7 +13,7 @@ CScreenMgr::CScreenMgr (void) :
 		m_hWnd(NULL),
 		m_pDD(NULL),
 		m_pPrimary(NULL),
-		m_PrimaryType(CG16bitImage::stUnknown),
+		m_PrimaryType(stUnknown),
 		m_pBack(NULL),
 		m_pCurrent(NULL),
 		m_pClipper(NULL),
@@ -111,8 +111,6 @@ void CScreenMgr::Blt (void)
 //	Blts the given image to the screen. Image must be of the same size as the screen
 
 	{
-	CG16bitImage *pBuffer = &m_Screen;
-
 	if (m_pDD)
 		{
 		//	Make sure the surfaces are OK
@@ -144,7 +142,7 @@ void CScreenMgr::Blt (void)
 		}
 	}
 
-void CScreenMgr::BltToPrimary (CG16bitImage &Image)
+void CScreenMgr::BltToPrimary (CG32bitImage &Image)
 
 //	BltToPrimary
 //
@@ -171,7 +169,7 @@ void CScreenMgr::BltToPrimary (CG16bitImage &Image)
 	m_pPrimary->Blt(&rcDest, m_pBack, &rcSrc, DDBLT_ASYNC, NULL);
 	}
 
-void CScreenMgr::BltToScreen (CG16bitImage &Image)
+void CScreenMgr::BltToScreen (CG32bitImage &Image)
 
 //	BltToScreen
 //
@@ -315,7 +313,7 @@ void CScreenMgr::DebugOutputStats (void)
 		if (m_bExclusiveMode)
 			kernelDebugLogMessage("exclusive mode");
 		kernelDebugLogMessage("Screen: %d x %d (%d-bit color)", m_cxScreen, m_cyScreen, m_iColorDepth);
-		if (m_PrimaryType == CG16bitImage::r5g5b5)
+		if (m_PrimaryType == r5g5b5)
 			kernelDebugLogMessage("Pixels: 5-5-5");
 		else
 			kernelDebugLogMessage("Pixels: 5-6-5");
@@ -592,10 +590,10 @@ ALERROR CScreenMgr::Init (SScreenMgrOptions &Options, CString *retsError)
 
 		//	Figure out whether our surface is 5-5-5 or 5-6-5.
 
-		if (m_PrimaryType == CG16bitImage::stUnknown)
+		if (m_PrimaryType == stUnknown)
 			{
 			kernelDebugLogMessage("Unknown pixel format");
-			m_PrimaryType = CG16bitImage::r5g5b5;
+			m_PrimaryType = r5g5b5;
 			}
 
 		//	If we're windowed, create a clipper object
@@ -654,7 +652,7 @@ ALERROR CScreenMgr::Init (SScreenMgrOptions &Options, CString *retsError)
 
 	//	Create an off-screen bitmap
 
-	if (m_Screen.CreateBlank(m_cxScreen, m_cyScreen, false) != NOERROR)
+	if (!m_Screen.Create(m_cxScreen, m_cyScreen))
 		{
 		*retsError = CONSTLIT("Unable to create off-screen bitmap.");
 		CleanUp();
@@ -669,7 +667,7 @@ ALERROR CScreenMgr::Init (SScreenMgrOptions &Options, CString *retsError)
 		{
 		//	We need a secondary window
 
-		if (m_Secondary.CreateBlank(m_cxScreen, m_cyScreen, false) != NOERROR)
+		if (!m_Secondary.Create(m_cxScreen, m_cyScreen))
 			{
 			*retsError = CONSTLIT("Unable to create off-screen bitmap.");
 			CleanUp();

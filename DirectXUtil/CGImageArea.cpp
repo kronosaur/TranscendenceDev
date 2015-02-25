@@ -17,7 +17,7 @@ CGImageArea::CGImageArea (void) : m_pImage(NULL),
 	{
 	}
 
-void CGImageArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
+void CGImageArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 //	Paint
 //
@@ -25,7 +25,7 @@ void CGImageArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
 
 	{
 	if (!m_bTransBackground)
-		Dest.FillRGB(rcRect.left,
+		Dest.Fill(rcRect.left,
 				rcRect.top,
 				RectWidth(rcRect),
 				RectHeight(rcRect),
@@ -53,27 +53,14 @@ void CGImageArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
 
 		//	Blt
 
-		if (m_bTransBackground)
-			{
-			Dest.ColorTransBlt(m_rcImage.left,
-					m_rcImage.top,
-					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
-					255,
-					*m_pImage,
-					x,
-					y);
-			}
-		else
-			{
-			Dest.Blt(m_rcImage.left,
-					m_rcImage.top,
-					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
-					*m_pImage,
-					x,
-					y);
-			}
+		Dest.Blt(m_rcImage.left,
+				m_rcImage.top,
+				RectWidth(m_rcImage),
+				RectHeight(m_rcImage),
+				255,
+				*m_pImage,
+				x,
+				y);
 		}
 	}
 

@@ -23,9 +23,7 @@ AlphaArray5 g_Alpha5 [256];
 AlphaArray6 g_Alpha6 [256];
 bool g_bInit = InitBlendPixelTables();
 
-CG16bitImage::CG16bitImage (void) : CObject(NULL),
-		m_cxWidth(0),
-		m_cyHeight(0),
+CG16bitImage::CG16bitImage (void) : 
 		m_pRGB(NULL),
 		m_pAlpha(NULL),
 		m_wBackColor(0),
@@ -40,13 +38,9 @@ CG16bitImage::CG16bitImage (void) : CObject(NULL),
 //	CG16bitImage constructor
 
 	{
-	m_rcClip.left = 0;
-	m_rcClip.top = 0;
-	m_rcClip.right = 0;
-	m_rcClip.bottom = 0;
 	}
 
-CG16bitImage::CG16bitImage (const CG16bitImage &Src) : CObject(NULL)
+CG16bitImage::CG16bitImage (const CG16bitImage &Src)
 
 //	CG16bitImage copy constructor
 
@@ -70,105 +64,6 @@ CG16bitImage &CG16bitImage::operator= (const CG16bitImage &Src)
 	DeleteData();
 	CopyData(Src);
 	return *this;
-	}
-
-bool CG16bitImage::AdjustCoords (int *xSrc, int *ySrc, int cxSrc, int cySrc,
-								 int *xDest, int *yDest,
-								 int *cxWidth, int *cyHeight) const
-
-//	AdjustCoords
-//
-//	Make sure that the coordinates are in range and adjust
-//	them if they are not.
-
-	{
-	if (xSrc && *xSrc < 0)
-		{
-		*cxWidth += *xSrc;
-		*xDest -= *xSrc;
-		*xSrc = 0;
-		}
-
-	if (ySrc && *ySrc < 0)
-		{
-		*cyHeight += *ySrc;
-		*yDest -= *ySrc;
-		*ySrc = 0;
-		}
-
-	if (*xDest < m_rcClip.left)
-		{
-		*cxWidth += (*xDest - m_rcClip.left);
-		if (xSrc) *xSrc -= (*xDest - m_rcClip.left);
-		*xDest = m_rcClip.left;
-		}
-
-	if (*yDest < m_rcClip.top)
-		{
-		*cyHeight += (*yDest - m_rcClip.top);
-		if (ySrc) *ySrc -= (*yDest - m_rcClip.top);
-		*yDest = m_rcClip.top;
-		}
-
-	*cxWidth = min(*cxWidth, m_rcClip.right - *xDest);
-	if (xSrc)
-		*cxWidth = min(*cxWidth, cxSrc - *xSrc);
-
-	*cyHeight = min(*cyHeight, m_rcClip.bottom - *yDest);
-	if (ySrc)
-		*cyHeight = min(*cyHeight, cySrc - *ySrc);
-
-	return (*cxWidth > 0 && *cyHeight > 0);
-	}
-
-bool CG16bitImage::AdjustScaledCoords (Metric *xSrc, Metric *ySrc, int cxSrc, int cySrc,
-									   Metric xSrcInc, Metric ySrcInc,
-									   int *xDest, int *yDest,
-									   int *cxDest, int *cyDest)
-
-//	AdjustCoords
-//
-//	Make sure that the coordinates are in range and adjust
-//	them if they are not.
-
-	{
-	if (xSrc && *xSrc < 0.0)
-		{
-		*cxDest += (int)(*xSrc / xSrcInc);
-		*xDest -= (int)(*xSrc / xSrcInc);
-		*xSrc = 0.0;
-		}
-
-	if (ySrc && *ySrc < 0)
-		{
-		*cyDest += (int)(*ySrc / ySrcInc);
-		*yDest -= (int)(*ySrc / ySrcInc);
-		*ySrc = 0.0;
-		}
-
-	if (*xDest < m_rcClip.left)
-		{
-		*cxDest += (*xDest - m_rcClip.left);
-		if (xSrc) *xSrc -= (*xDest - m_rcClip.left);
-		*xDest = m_rcClip.left;
-		}
-
-	if (*yDest < m_rcClip.top)
-		{
-		*cyDest += (*yDest - m_rcClip.top);
-		if (ySrc) *ySrc -= (*yDest - m_rcClip.top);
-		*yDest = m_rcClip.top;
-		}
-
-	*cxDest = Min(*cxDest, (int)(m_rcClip.right - *xDest));
-	if (xSrc)
-		*cxDest = Min(*cxDest, (int)((cxSrc - *xSrc) / xSrcInc));
-
-	*cyDest = Min(*cyDest, (int)(m_rcClip.bottom - *yDest));
-	if (ySrc)
-		*cyDest = min(*cyDest, (int)((cySrc - *ySrc) / ySrcInc));
-
-	return (*cxDest > 0 && *cyDest > 0);
 	}
 
 int CG16bitImage::AdjustTextX (const CG16bitFont &Font, const CString &sText, AlignmentStyles iAlign, int x)
@@ -3285,7 +3180,7 @@ void CG16bitImage::FillTransRGB (int x, int y, int cxWidth, int cyHeight, COLORR
 		}
 	}
 
-CG16bitImage::SurfaceTypes CG16bitImage::GetSurfaceType (LPDIRECTDRAWSURFACE7 pSurface)
+SurfaceTypes CG16bitImage::GetSurfaceType (LPDIRECTDRAWSURFACE7 pSurface)
 
 //	GetSurfaceType
 //
@@ -3297,13 +3192,13 @@ CG16bitImage::SurfaceTypes CG16bitImage::GetSurfaceType (LPDIRECTDRAWSURFACE7 pS
 	desc.dwSize = sizeof(desc);
 	HRESULT hr = pSurface->GetSurfaceDesc(&desc);
 	if (desc.ddpfPixelFormat.dwRBitMask == 0x7c00)
-		return CG16bitImage::r5g5b5;
+		return r5g5b5;
 	else if (desc.ddpfPixelFormat.dwRBitMask == 0xf800)
-		return CG16bitImage::r5g6b5;
+		return r5g6b5;
 	else if (desc.ddpfPixelFormat.dwRBitMask == 0x00ff0000)
-		return CG16bitImage::r8g8b8;
+		return r8g8b8;
 	else
-		return CG16bitImage::stUnknown;
+		return stUnknown;
 	}
 
 WORD CG16bitImage::GetPixelAlpha (int x, int y)
@@ -3350,9 +3245,9 @@ CG16bitImage::RealPixel CG16bitImage::GetRealPixel (const RECT &rcRange, Metric 
 		if (retbBlack)
 			*retbBlack = (IntPixel == m_wBackColor);
 
-		Pixel.rRed = (RealPixelChannel)((IntPixel & 0xf800) >> 11) / 31.0f;
-		Pixel.rGreen = (RealPixelChannel)((IntPixel & 0x7e0) >> 5) / 63.0f;
-		Pixel.rBlue = (RealPixelChannel)(IntPixel & 0x1f) / 31.0f;
+		Pixel.rRed = (REALPIXEL)((IntPixel & 0xf800) >> 11) / 31.0f;
+		Pixel.rGreen = (REALPIXEL)((IntPixel & 0x7e0) >> 5) / 63.0f;
+		Pixel.rBlue = (REALPIXEL)(IntPixel & 0x1f) / 31.0f;
 
 		return Pixel;
 		}
@@ -3574,19 +3469,6 @@ ALERROR CG16bitImage::ReadFromStream (IReadStream *pStream)
 	return NOERROR;
 	}
 
-void CG16bitImage::ResetClipRect (void)
-
-//	ResetClipRect
-//
-//	Clears the clip rect
-
-	{
-	m_rcClip.left = 0;
-	m_rcClip.top = 0;
-	m_rcClip.right = m_cxWidth;
-	m_rcClip.bottom = m_cyHeight;
-	}
-
 ALERROR CG16bitImage::SaveAsWindowsBMP (const CString &sFilespec)
 
 //	SaveAsWindowsBMP
@@ -3604,19 +3486,6 @@ ALERROR CG16bitImage::SaveAsWindowsBMP (const CString &sFilespec)
 	OutputFile.Close();
 
 	return NOERROR;
-	}
-
-void CG16bitImage::SetClipRect (const RECT &rcClip)
-
-//	SetClipRect
-//
-//	Sets the clip rect
-
-	{
-	m_rcClip.left = min(max(0, rcClip.left), m_cxWidth);
-	m_rcClip.top = min(max(0, rcClip.top), m_cyHeight);
-	m_rcClip.right = min(max(m_rcClip.left, rcClip.right), m_cxWidth);
-	m_rcClip.bottom = min(max(m_rcClip.top, rcClip.bottom), m_cyHeight);
 	}
 
 void CG16bitImage::SetRealPixel (Metric rX, Metric rY, const RealPixel &Value, bool bNotBlack)
@@ -3979,7 +3848,7 @@ class Test
 				{
 				WORD *pRow = AlphaSource.GetRowStart(i);
 				WORD *pRowEnd = pRow + 256;
-				WORD wColor = CG16bitImage::RGBValue(255, 0, 0);
+				WORD wColor = CG32bitPixel(255, 0, 0);
 				BYTE *pRowAlpha = AlphaSource.GetAlphaRow(i);
 				BYTE byTrans = 0;
 

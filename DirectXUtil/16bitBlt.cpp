@@ -289,10 +289,10 @@ void CopyBltColorize (CG16bitImage &Dest,
 	{
 	//	Compute the color
 
-	COLORREF rgbBlack = RGB(0, 0, 0);
-	COLORREF rgbWhite = RGB(255, 255, 255);
-	COLORREF rgbHue = CG16bitPixel::RGBRealToRGB(CG16bitPixel::HSBToRGB(SColorHSB(dwHue, 1.0, 1.0)));
-	COLORREF rgbColor = CG16bitPixel::Blend(RGB(128, 128, 128), rgbHue, dwSaturation / 100.0);
+	CG32bitPixel rgbBlack = CG32bitPixel(0, 0, 0);
+	CG32bitPixel rgbWhite = CG32bitPixel(255, 255, 255);
+	CG32bitPixel rgbHue = CGRealRGB::FromHSB(CGRealHSB((REALPIXEL)dwHue, 1.0, 1.0));
+	CG32bitPixel rgbColor = CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbHue, dwSaturation / 100.0);
 
 	//	Different code paths depending on whether we have alpha values or not
 
@@ -317,10 +317,10 @@ void CopyBltColorize (CG16bitImage &Dest,
 				//	Convert color
 				
 				WORD wSrc = *pSrcPos;
-				DWORD srcBrightness = GetRValue(CG16bitPixel::Desaturate(CG16bitPixel::PixelToRGB(wSrc)));
+				DWORD srcBrightness = CG32bitPixel::Desaturate(CG32bitPixel(wSrc)).GetRed();
 				double rB = srcBrightness / 255.0;
 
-				COLORREF rgbResult = CG16bitPixel::Blend(rgbBlack, rgbColor, rgbWhite, 2.0 * (rB - 1.0) + 1.0);
+				CG32bitPixel rgbResult = CG32bitPixel::Blend3(rgbBlack, rgbColor, rgbWhite, 2.0 * (rB - 1.0) + 1.0);
 				*pDestPos = CG16bitPixel::RGBToPixel(rgbResult);
 
 				//	Copy alpha value
@@ -363,10 +363,10 @@ void CopyBltColorize (CG16bitImage &Dest,
 					*pDestPos = wDestBackColor;
 				else
 					{
-					DWORD srcBrightness = GetRValue(CG16bitPixel::Desaturate(CG16bitPixel::PixelToRGB(wSrc)));
+					DWORD srcBrightness = CG32bitPixel::Desaturate(CG32bitPixel(wSrc)).GetRed();
 					double rB = srcBrightness / 255.0;
 
-					COLORREF rgbResult = CG16bitPixel::Blend(rgbBlack, rgbColor, rgbWhite, 2.0 * (rB - 1.0) + 1.0);
+					CG32bitPixel rgbResult = CG32bitPixel::Blend3(rgbBlack, rgbColor, rgbWhite, 2.0 * (rB - 1.0) + 1.0);
 					*pDestPos = CG16bitPixel::RGBToPixel(rgbResult);
 					}
 

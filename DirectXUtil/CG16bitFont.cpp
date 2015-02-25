@@ -475,15 +475,27 @@ void CG16bitFont::DrawText (CG16bitImage &Dest,
 	char *pEndPos = pPos + sText.GetLength();
 	int xPos = x;
 
+	int cxWidth = -1;
 	if (dwFlags & AlignCenter)
 		{
-		int cxWidth = MeasureText(sText);
+		cxWidth = MeasureText(sText);
 		xPos -= cxWidth / 2;
 		}
 	else if (dwFlags & AlignRight)
 		{
-		int cxWidth = MeasureText(sText);
+		cxWidth = MeasureText(sText);
 		xPos -= cxWidth;
+		}
+	else if (dwFlags & AdjustToFit)
+		cxWidth = MeasureText(sText);
+
+	//	If necessary, adjust our position so we can fit inside the clip region 
+	//	of the destination.
+
+	if (dwFlags & AdjustToFit)
+		{
+		const RECT &rcClip = Dest.GetClipRect();
+		xPos = Min(Max((int)rcClip.left, xPos), (int)rcClip.right - cxWidth);
 		}
 
 	bool bInQuotes = false;
@@ -560,6 +572,118 @@ void CG16bitFont::DrawText (CG16bitImage &Dest,
 		*retcyHeight = y - rcRect.top;
 	}
 
+void CG16bitFont::DrawText (CG32bitImage &Dest, 
+							int x, 
+							int y, 
+							CG32bitPixel rgbColor, 
+							const CString &sText,
+							DWORD dwFlags,
+							int *retx) const
+
+//	DrawText
+//
+//	Draws a line of text on the given image
+
+	{
+	char *pPos = sText.GetASCIIZPointer();
+	char *pEndPos = pPos + sText.GetLength();
+	int xPos = x;
+
+	int cxWidth = -1;
+	if (dwFlags & AlignCenter)
+		{
+		cxWidth = MeasureText(sText);
+		xPos -= cxWidth / 2;
+		}
+	else if (dwFlags & AlignRight)
+		{
+		cxWidth = MeasureText(sText);
+		xPos -= cxWidth;
+		}
+	else if (dwFlags & AdjustToFit)
+		cxWidth = MeasureText(sText);
+
+	//	If necessary, adjust our position so we can fit inside the clip region 
+	//	of the destination.
+
+	if (dwFlags & AdjustToFit)
+		{
+		const RECT &rcClip = Dest.GetClipRect();
+		xPos = Min(Max((int)rcClip.left, xPos), (int)rcClip.right - cxWidth);
+		}
+
+	bool bInQuotes = false;
+	while (pPos < pEndPos)
+		{
+		//	Get metrics
+
+		int iIndex = (int)(BYTE)(*pPos) - g_iStartChar;
+		iIndex = max(0, iIndex);
+
+		CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(iIndex);
+
+		//	Paint
+
+		Dest.FillMask(0,
+				iIndex * m_cyHeight,
+				pMetrics->cxWidth,
+				m_cyHeight,
+				m_FontImage,
+				rgbColor,
+				xPos,
+				y);
+
+		pPos++;
+		xPos += pMetrics->cxAdvance;
+		}
+	
+	if (retx)
+		*retx = xPos;
+	}
+
+void CG16bitFont::DrawText (CG32bitImage &Dest, 
+							const RECT &rcRect, 
+							CG32bitPixel rgbColor,
+							const CString &sText, 
+							int iLineAdj, 
+							DWORD dwFlags,
+							int *retcyHeight) const
+
+//	Draw
+//
+//	Draws wrapped text
+
+	{
+	int i;
+	TArray<CString> Lines;
+
+	BreakText(sText, RectWidth(rcRect), &Lines, dwFlags);
+	int y = rcRect.top;
+	for (i = 0; i < Lines.GetCount(); i++)
+		{
+		int x = rcRect.left;
+
+		if (dwFlags & AlignCenter)
+			{
+			int cxWidth = MeasureText(Lines[i]);
+			x = rcRect.left + (RectWidth(rcRect) - cxWidth) / 2;
+			}
+		else if (dwFlags & AlignRight)
+			{
+			int cxWidth = MeasureText(Lines[i]);
+			x = rcRect.right - cxWidth;
+			}
+
+		if (!(dwFlags & MeasureOnly))
+			DrawText(Dest, x, y, rgbColor, Lines[i]);
+
+		y += m_cyHeight + iLineAdj;
+		}
+
+	if (retcyHeight)
+		*retcyHeight = y - rcRect.top;
+	}
+
 void CG16bitFont::DrawTextEffect (CG16bitImage &Dest,
 								  int x,
 								  int y,
@@ -602,6 +726,50 @@ void CG16bitFont::DrawTextEffect (CG16bitImage &Dest,
 	//	Paint
 
 	DrawText(Dest, x, y, wColor, sText, dwFlags, retx);
+	}
+
+void CG16bitFont::DrawTextEffect (CG32bitImage &Dest,
+								  int x,
+								  int y,
+								  CG32bitPixel rgbColor,
+								  const CString &sText,
+								  int iEffectsCount,
+								  const SEffectDesc *pEffects,
+								  DWORD dwFlags,
+								  int *retx) const
+
+//	DrawTextEffect
+//
+//	Draw text with effect
+
+	{
+	int i;
+
+	//	Paint background effects
+
+	for (i = 0; i < iEffectsCount; i++)
+		{
+		switch (pEffects[i].iType)
+			{
+			case effectShadow:
+				{
+				int xOffset = m_cyHeight / 16;
+				int yOffset = m_cyHeight / 16;
+
+				DrawText(Dest,
+						x + xOffset,
+						y + yOffset, 
+						CG32bitPixel(0, 0, 0),
+						sText,
+						dwFlags);
+				break;
+				}
+			}
+		}
+
+	//	Paint
+
+	DrawText(Dest, x, y, rgbColor, sText, dwFlags, retx);
 	}
 
 int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight) const

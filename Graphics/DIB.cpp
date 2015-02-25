@@ -406,7 +406,7 @@ ALERROR dibLoadFromBlock (IReadBlock &Data, HBITMAP *rethDIB, EBitmapTypes *reti
 
 	//	Create a DIBSection.
 
-	if (error = dibCreate16bitDIB(bi.biWidth, bi.biHeight, &hDIB, NULL))
+	if (error = dibCreate24bitDIB(bi.biWidth, bi.biHeight, 0, &hDIB, NULL))
 		{
 		GlobalFree(hFileData);
 		return error;

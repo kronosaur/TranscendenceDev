@@ -389,7 +389,7 @@ bool CTextBlock::InitFromRTF (const CString &RTF, const IFontTable &FontTable, c
 
 	STextFormatDesc Desc;
 	Desc.pFont = BlockFormat.DefaultFormat.pFont;
-	Desc.wColor = BlockFormat.DefaultFormat.wColor;
+	Desc.rgbColor = BlockFormat.DefaultFormat.rgbColor;
 	Desc.dwOpacity = BlockFormat.DefaultFormat.dwOpacity;
 
 	CString sError;
@@ -404,7 +404,7 @@ bool CTextBlock::InitFromRTF (const CString &RTF, const IFontTable &FontTable, c
 		STextSpan *pText = m_Text.Insert();
 		pText->sText = sError;
 		pText->Format.dwOpacity = 255;
-		pText->Format.wColor = CG16bitImage::RGBValue(255, 255, 0);
+		pText->Format.rgbColor = CG32bitPixel(255, 255, 0);
 		pText->Format.pFont = FontTable.GetFont(Desc);
 		pText->bEoP = false;
 		}
@@ -459,7 +459,7 @@ void CRTFParser::AddSpan (const CString &sText, const STextFormatDesc &Desc, boo
 	STextFormat Format;
 
 	Format.pFont = (Desc.pFont ? Desc.pFont : m_FontTable.GetFont(Desc));
-	Format.wColor = Desc.wColor;
+	Format.rgbColor = Desc.rgbColor;
 	Format.dwOpacity = Desc.dwOpacity;
 
 	m_pOutput->AddTextSpan(sText, Format, bEoP);
@@ -520,7 +520,7 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 				else if (strEquals(sCode, CODE_COLOR))
 					{
 					DWORD dwRGB = (DWORD)strToInt(sParam, 0);
-					Format.wColor = CG16bitImage::RGBValue(GetRValue(dwRGB), GetGValue(dwRGB), GetBValue(dwRGB));
+					Format.rgbColor = CG32bitPixel(GetRValue(dwRGB), GetGValue(dwRGB), GetBValue(dwRGB));
 					}
 				else if (strEquals(sCode, CODE_TYPEFACE))
 					{

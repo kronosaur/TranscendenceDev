@@ -2,8 +2,7 @@
 //
 //	Text format representation
 
-#ifndef INCL_TEXT_FORMAT
-#define INCL_TEXT_FORMAT
+#pragma once
 
 //	Text Format Structures -----------------------------------------------------
 //
@@ -17,7 +16,7 @@ struct STextFormatDesc
 			iFontSize(10),
 			bBold(false),
 			bItalic(false),
-			wColor(0),
+			rgbColor(0),
 			dwOpacity(255)
 		{ }
 
@@ -27,7 +26,7 @@ struct STextFormatDesc
 	bool bBold;							//	Bold
 	bool bItalic;						//	Italic
 
-	WORD wColor;						//	16-bit color
+	CG32bitPixel rgbColor;				//	32-bit color
 	DWORD dwOpacity;					//	8-bit alpha value
 	};
 
@@ -48,12 +47,12 @@ struct STextFormat
 	{
 	STextFormat (void) :
 			pFont(NULL),
-			wColor(0),
+			rgbColor(0),
 			dwOpacity(255)
 		{ }
 
 	const CG16bitFont *pFont;
-	WORD wColor;
+	CG32bitPixel rgbColor;
 	DWORD dwOpacity;
 	};
 
@@ -117,5 +116,3 @@ class CTextBlock
 		TArray<STextSpan> m_Text;
 		TArray<SFormattedTextSpan> m_Formatted;
 	};
-
-#endif

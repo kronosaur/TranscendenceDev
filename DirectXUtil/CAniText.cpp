@@ -69,7 +69,7 @@ void CAniText::Create (const CString &sText,
 					   const CVector &vPos,
 					   const CG16bitFont *pFont,
 					   DWORD dwFontFlags,
-					   WORD wColor,
+					   CG32bitPixel rgbColor,
 					   IAnimatron **retpAni)
 
 //	Create
@@ -82,7 +82,7 @@ void CAniText::Create (const CString &sText,
 	pText->SetPropertyVector(PROP_POSITION, vPos);
 	pText->SetPropertyFont(PROP_FONT, pFont);
 	pText->SetFontFlags(dwFontFlags);
-	pText->SetPropertyColor(PROP_COLOR, wColor);
+	pText->SetPropertyColor(PROP_COLOR, rgbColor);
 
 	if (dwFontFlags & CG16bitFont::AlignCenter)
 		pText->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_CENTER);
@@ -160,7 +160,7 @@ void CAniText::Paint (SAniPaintCtx &Ctx)
 
 	//	Get color & opacity
 
-	WORD wColor = m_Properties[INDEX_COLOR].GetColor();
+	CG32bitPixel rgbColor = m_Properties[INDEX_COLOR].GetColor();
 	DWORD dwOpacity = m_Properties[INDEX_OPACITY].GetOpacity() * Ctx.dwOpacityToDest / 255;
 
 	//	Get the font flags
@@ -215,8 +215,7 @@ void CAniText::Paint (SAniPaintCtx &Ctx)
 			pFont->DrawText(Ctx.Dest,
 					x,
 					y,
-					wColor,
-					dwOpacity,
+					CG32bitPixel(rgbColor, (BYTE)dwOpacity),
 					Lines[i],
 					dwFlags);
 
@@ -232,8 +231,7 @@ void CAniText::Paint (SAniPaintCtx &Ctx)
 			pFont->DrawText(Ctx.Dest, 
 					x, 
 					y,
-					wColor, 
-					dwOpacity, 
+					CG32bitPixel(rgbColor, (BYTE)dwOpacity),
 					Lines[i], 
 					dwFlags);
 
