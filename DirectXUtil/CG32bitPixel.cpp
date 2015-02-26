@@ -181,7 +181,7 @@ CG32bitPixel CG32bitPixel::PreMult (CG32bitPixel rgbColor, BYTE byAlpha)
 	if (byAlpha == 0x00)
 		return CG32bitPixel::Null();
 	else if (byAlpha == 0xff)
-		return CG32bitPixel(rgbColor, (BYTE)0xff);
+		return CG32bitPixel(rgbColor, 0xff);
 	else
 		{
 		BYTE *pAlpha = CG32bitPixel::AlphaTable(byAlpha);

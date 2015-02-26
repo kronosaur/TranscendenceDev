@@ -24,9 +24,6 @@ class CG32bitPixel
 		CG32bitPixel (const CG32bitPixel &Src, BYTE byNewAlpha)
 			{ m_dwPixel = (byNewAlpha << 24) | (Src.m_dwPixel & 0x00ffffff); }
 
-		CG32bitPixel (const CG32bitPixel &Src, DWORD dwNewAlphaPixel)
-			{ m_dwPixel = dwNewAlphaPixel | (Src.m_dwPixel & 0x00ffffff); }
-
 		CG32bitPixel (WORD wPixel);
 		CG32bitPixel (const CGRealRGB &rgbColor);
 

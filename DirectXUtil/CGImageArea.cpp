@@ -52,15 +52,19 @@ void CGImageArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 			y = rcRect.top;
 
 		//	Blt
+		//
+		//	For compatibility with previous (Transcendence) releases, we assume
+		//	black is transparent if the image has no alpha channel.
 
-		Dest.Blt(m_rcImage.left,
+		CGDraw::BltWithBackColor(Dest,
+				x,
+				y,
+				*m_pImage,
+				m_rcImage.left,
 				m_rcImage.top,
 				RectWidth(m_rcImage),
 				RectHeight(m_rcImage),
-				255,
-				*m_pImage,
-				x,
-				y);
+				CG32bitPixel(0, 0, 0));
 		}
 	}
 
