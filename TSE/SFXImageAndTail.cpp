@@ -76,8 +76,8 @@ void CImageAndTailEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewp
 		xStart = x - (int)(vTail.GetX() + 0.5);
 		yStart = y + (int)(vTail.GetY() + 0.5);
 
-		rgbStart = CG32bitPixel(m_rgbSecondaryColor, (BYTE)155);
-		rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)0);
+		rgbStart = CG32bitPixel(m_rgbSecondaryColor, 155);
+		rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
 		CGDraw::LineGradient(Dest, xStart, yStart, x, y, m_iWidth, rgbEnd, rgbStart);
 		}
 
@@ -86,7 +86,7 @@ void CImageAndTailEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewp
 	yStart = y + (int)(vTail.GetY() + 0.5);
 
 	rgbStart = m_rgbPrimaryColor;
-	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)200);
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 200);
 	CGDraw::LineGradient(Dest, xStart, yStart, x, y, Max(1, m_iWidth / 2), rgbEnd, rgbStart);
 
 	//	Paint the image

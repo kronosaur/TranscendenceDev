@@ -188,7 +188,7 @@ void CStarburstEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewport
 						x + xDest, y + yDest,
 						1,
 						m_rgbPrimaryColor,
-						CG32bitPixel(m_rgbPrimaryColor, (BYTE)0));
+						CG32bitPixel(m_rgbPrimaryColor, 0));
 
 				iAngle += iSeparation;
 				}
@@ -274,7 +274,7 @@ void CStarburstEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewport
 						x + xDest, y + yDest,
 						1,
 						m_rgbPrimaryColor,
-						CG32bitPixel(m_rgbPrimaryColor, (BYTE)0));
+						CG32bitPixel(m_rgbPrimaryColor, 0));
 
 				iAngle += iSeparation;
 				}

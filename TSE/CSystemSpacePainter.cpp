@@ -11,6 +11,8 @@ const int MIN_STAR_DISTANCE =					2;
 const int MAX_STAR_DISTANCE =					20;
 const int BRIGHT_STAR_CHANCE =					20;
 
+const CG32bitPixel RGB_DEFAULT_SPACE_COLOR =	CG32bitPixel(0,0,8);
+
 CSystemSpacePainter::CSystemSpacePainter (void) :
 		m_bInitialized(false),
 		m_cxStarfield(-1),
@@ -174,33 +176,7 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 
 	//	Tile across the entire screen
 
-	int ySrc = yOffset;
-	int cySrc = cyImage - ySrc;
-
-	int yDest = Ctx.rcView.top;
-	int yDestEnd = Ctx.rcView.bottom;
-
-	while (yDest < yDestEnd)
-		{
-		int xSrc = xOffset;
-		int cxSrc = cxImage - xSrc;
-
-		int xDest = Ctx.rcView.left;
-		int xDestEnd = Ctx.rcView.right;
-
-		while (xDest < xDestEnd)
-			{
-			Dest.Blt(xSrc, ySrc, cxSrc, cySrc, *m_pBackgroundImage, xDest, yDest);
-
-			xDest += cxSrc;
-			xSrc = 0;
-			cxSrc = cxImage;
-			}
-
-		yDest += cySrc;
-		ySrc = 0;
-		cySrc = cyImage;
-		}
+	PaintTiledBackground(Dest, Ctx.rcView, *m_pBackgroundImage, xOffset, yOffset);
 	}
 
 void CSystemSpacePainter::PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor)
@@ -328,6 +304,73 @@ void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType,
 
 			PaintStarfield(Dest, Ctx.rcView, xCenter, yCenter, Ctx.rgbSpaceColor);
 			}
+		}
+	}
+
+void CSystemSpacePainter::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, Metric rMapScale)
+
+//	PaintViewportMap
+//
+//	Paints the map background
+
+	{
+	//	If we haven't yet initialized, do it now
+
+	if (!m_bInitialized)
+		{
+		CreateSpaceBackground(pType ? pType->GetBackgroundUNID() : UNID_DEFAULT_SYSTEM_BACKGROUND);
+		m_bInitialized = true;
+		}
+
+	//	If we have a system background image, paint it.
+
+	if (m_pBackgroundImage)
+		PaintTiledBackground(Dest, rcView, *m_pBackgroundImage, 0, 0);
+
+	//	Otherwise, default fill
+
+	else
+		Dest.Fill(rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), RGB_DEFAULT_SPACE_COLOR);
+	}
+
+void CSystemSpacePainter::PaintTiledBackground (CG32bitImage &Dest, const RECT &rcView, CG32bitImage &Src, int xOffset, int yOffset)
+
+//	PaintTiledBackground
+//
+//	Paints a tiled background
+
+	{
+	int cxImage = Src.GetWidth();
+	int cyImage = Src.GetHeight();
+
+	//	Tile across the entire screen
+
+	int ySrc = yOffset;
+	int cySrc = cyImage - ySrc;
+
+	int yDest = rcView.top;
+	int yDestEnd = rcView.bottom;
+
+	while (yDest < yDestEnd)
+		{
+		int xSrc = xOffset;
+		int cxSrc = cxImage - xSrc;
+
+		int xDest = rcView.left;
+		int xDestEnd = rcView.right;
+
+		while (xDest < xDestEnd)
+			{
+			Dest.Blt(xSrc, ySrc, cxSrc, cySrc, Src, xDest, yDest);
+
+			xDest += cxSrc;
+			xSrc = 0;
+			cxSrc = cxImage;
+			}
+
+		yDest += cySrc;
+		ySrc = 0;
+		cySrc = cyImage;
 		}
 	}
 

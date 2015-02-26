@@ -3267,7 +3267,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Clear the rect
 
-	Dest.Fill(rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), g_rgbSpaceColor);
+	m_SpacePainter.PaintViewportMap(Dest, rcView, GetType(), rMapScale);
 
 	//	Paint space environment
 

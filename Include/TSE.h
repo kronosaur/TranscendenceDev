@@ -1067,6 +1067,7 @@ class CSystemSpacePainter
 
 		void CleanUp (void);
 		void PaintViewport (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx);
+		void PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, Metric rMapScale);
 
 	private:
 		struct SStar
@@ -1084,6 +1085,7 @@ class CSystemSpacePainter
 		void GenerateSquareDist (int iTotalCount, int iMinValue, int iMaxValue, int *Dist);
 		void PaintSpaceBackground (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx);
 		void PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor);
+		void PaintTiledBackground (CG32bitImage &Dest, const RECT &rcView, CG32bitImage &Src, int xOffset, int yOffset);
 
 		bool m_bInitialized;
 

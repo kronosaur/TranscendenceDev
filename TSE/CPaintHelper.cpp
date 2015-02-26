@@ -67,9 +67,9 @@ void CPaintHelper::PaintStatusBar (CG32bitImage &Dest, int x, int y, int iTick, 
 	if (iMaxPos == 0)
 		return;
 
-	CG32bitPixel rgbNormal = CG32bitPixel(rgbColor, (BYTE)220);
-	CG32bitPixel rgbDark = CG32bitPixel(rgbColor, (BYTE)128);
-	CG32bitPixel rgbBlack = CG32bitPixel(CG32bitPixel(0), (BYTE)128);
+	CG32bitPixel rgbNormal = CG32bitPixel(rgbColor, 220);
+	CG32bitPixel rgbDark = CG32bitPixel(rgbColor, 128);
+	CG32bitPixel rgbBlack = CG32bitPixel(CG32bitPixel(0), 128);
 
 	int xStart = x - (STATUS_BAR_WIDTH / 2);
 	int yStart = y;

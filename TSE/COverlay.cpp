@@ -606,7 +606,7 @@ void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaint
 				rgbColor = Ctx.pObj->GetSymbolColor();
 
 			if (m_iCounter > 0)
-				CGDraw::Circle(Dest, x, y, m_iCounter, CG32bitPixel(rgbColor, (BYTE)64));
+				CGDraw::Circle(Dest, x, y, m_iCounter, CG32bitPixel(rgbColor, 64));
 
 			//	Paint the label
 

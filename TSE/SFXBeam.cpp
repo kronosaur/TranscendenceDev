@@ -124,16 +124,16 @@ void CBeamEffectCreator::DrawBeamBlaster (CG32bitImage &Dest, SLineDesc &Line, S
 	{
 	CG32bitPixel rgbStart, rgbEnd;
 
-	rgbStart = CG32bitPixel(m_rgbSecondaryColor, (BYTE)155);
-	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)0);
+	rgbStart = CG32bitPixel(m_rgbSecondaryColor, 155);
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
 	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, m_iIntensity + 4, rgbEnd, rgbStart);
 
 	rgbStart = m_rgbSecondaryColor;
-	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)0);
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
 	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, m_iIntensity + 2, rgbEnd, rgbStart);
 
 	rgbStart = m_rgbPrimaryColor;
-	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, (BYTE)155);
+	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 155);
 	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, m_iIntensity, rgbEnd, rgbStart);
 	}
 
@@ -166,7 +166,7 @@ void CBeamEffectCreator::DrawBeamHeavyBlaster (CG32bitImage &Dest, SLineDesc &Li
 
 	//	Paint the outer-most glow
 
-	CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, (BYTE)100);
+	CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, 100);
 	CreateBlasterShape(iAngle, 4 * iLengthUnit, 3 * iWidthUnit / 2, Poly);
 	Region.CreateFromConvexPolygon(8, Poly);
 	Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
@@ -174,7 +174,7 @@ void CBeamEffectCreator::DrawBeamHeavyBlaster (CG32bitImage &Dest, SLineDesc &Li
 	//	Paint the inner transition
 
 	rgbColor = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, (BYTE)128);
-	rgbColor = CG32bitPixel(rgbColor, (BYTE)200);
+	rgbColor = CG32bitPixel(rgbColor, 200);
 	CreateBlasterShape(iAngle, 3 * iLengthUnit, iWidthUnit, Poly);
 	Region.CreateFromConvexPolygon(8, Poly);
 	Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
@@ -222,7 +222,7 @@ void CBeamEffectCreator::DrawBeamLaser (CG32bitImage &Dest, SLineDesc &Line, SVi
 //	Draws the appropriate beam
 
 	{
-	CG32bitPixel rgbGlow = CG32bitPixel(m_rgbSecondaryColor, (BYTE)100);
+	CG32bitPixel rgbGlow = CG32bitPixel(m_rgbSecondaryColor, 100);
 
 	Dest.DrawLine(Line.xFrom, Line.yFrom,
 			Line.xTo, Line.yTo,
@@ -247,22 +247,22 @@ void CBeamEffectCreator::DrawBeamLightning (CG32bitImage &Dest, SLineDesc &Line,
 
 	if (m_iIntensity < 4)
 		{
-		CG32bitPixel rgbStart = CG32bitPixel(m_rgbPrimaryColor, (BYTE)128);
-		CG32bitPixel rgbEnd = CG32bitPixel(m_rgbPrimaryColor, (BYTE)0);
+		CG32bitPixel rgbStart = CG32bitPixel(m_rgbPrimaryColor, 128);
+		CG32bitPixel rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 0);
 		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, rgbStart);
 
-		rgbEnd = CG32bitPixel(m_rgbPrimaryColor, (BYTE)155);
+		rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 155);
 		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 1, rgbEnd, m_rgbPrimaryColor);
 		}
 	else if (m_iIntensity < 10)
 		{
-		CG32bitPixel rgbStart = CG32bitPixel(m_rgbSecondaryColor, (BYTE)155);
-		CG32bitPixel rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)0);
+		CG32bitPixel rgbStart = CG32bitPixel(m_rgbSecondaryColor, 155);
+		CG32bitPixel rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
 		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 5, rgbEnd, rgbStart);
 
 		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, m_rgbSecondaryColor);
 
-		rgbEnd = CG32bitPixel(m_rgbPrimaryColor, (BYTE)155);
+		rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 155);
 		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, m_rgbPrimaryColor);
 		}
 	else
@@ -284,7 +284,7 @@ void CBeamEffectCreator::DrawBeamLightning (CG32bitImage &Dest, SLineDesc &Line,
 
 		//	Paint the outer-most glow
 
-		CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, (BYTE)100);
+		CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, 100);
 		CreateBlasterShape(iAngle, iRadius, iRadius / 6, Poly);
 		Region.CreateFromConvexPolygon(8, Poly);
 		Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
@@ -292,7 +292,7 @@ void CBeamEffectCreator::DrawBeamLightning (CG32bitImage &Dest, SLineDesc &Line,
 		//	Paint the inner transition
 
 		rgbColor = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, (BYTE)128);
-		rgbColor = CG32bitPixel(rgbColor, (BYTE)200);
+		rgbColor = CG32bitPixel(rgbColor, 200);
 		CreateBlasterShape(iAngle, iRadius * 2 / 3, iRadius / 7, Poly);
 		Region.CreateFromConvexPolygon(8, Poly);
 		Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
@@ -424,7 +424,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG32bitImage &Dest, SLineDesc &L
 
 			//	Paint the glow
 
-			GlowRegion.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, (BYTE)128));
+			GlowRegion.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, 128));
 
 			//	Paint the main bolt
 
@@ -468,8 +468,8 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG32bitImage &Dest, SLineDesc &L
 
 			//	Paint the glow
 
-			GlowRegion1.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, (BYTE)48));
-			GlowRegion2.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, (BYTE)96));
+			GlowRegion1.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, 48));
+			GlowRegion2.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, 96));
 
 			//	Paint the main bolt
 
@@ -548,16 +548,16 @@ void CBeamEffectCreator::DrawBeamStarBlaster (CG32bitImage &Dest, SLineDesc &Lin
 	{
 	CG32bitPixel rgbStart, rgbEnd;
 
-	rgbStart = CG32bitPixel(m_rgbPrimaryColor, (BYTE)155);
-	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, (BYTE)0);
+	rgbStart = CG32bitPixel(m_rgbPrimaryColor, 155);
+	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 0);
 	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, rgbStart);
 
-	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, (BYTE)155);
+	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 155);
 	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 1, rgbEnd, m_rgbSecondaryColor);
 
 	//	Draw starburst
 
-	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, (BYTE)0);
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
 
 	int iCount = (m_iIntensity / 2) + mathRandom(4, 9);
 	for (int i = 0; i < iCount; i++)

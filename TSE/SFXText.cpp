@@ -192,7 +192,7 @@ void CTextPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 
 	CG32bitPixel rgbColor = (m_pCreator ? m_pCreator->GetPrimaryColor() : 0xFFFF);
 	DWORD dwFlags = (m_pCreator ? m_pCreator->GetFontFlags() : 0);
-	DWORD byOpacity = (m_pCreator ? m_pCreator->GetOpacity() : 255);
+	BYTE byOpacity = (m_pCreator ? (BYTE)m_pCreator->GetOpacity() : 255);
 
 	//	Compute the rect to paint
 
