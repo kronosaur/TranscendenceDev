@@ -72,6 +72,9 @@
     <ClInclude Include="TBlt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\DXSparseMask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="8bitDrawCircle.cpp">
@@ -279,6 +282,9 @@
       <Filter>Source Files\16bit</Filter>
     </ClCompile>
     <ClCompile Include="CG8bitImage.cpp">
+      <Filter>Source Files\8bit</Filter>
+    </ClCompile>
+    <ClCompile Include="CG8bitSparseImage.cpp">
       <Filter>Source Files\8bit</Filter>
     </ClCompile>
   </ItemGroup>

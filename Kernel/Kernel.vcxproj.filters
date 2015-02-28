@@ -192,6 +192,12 @@
     <ClCompile Include="ZipArchive.cpp">
       <Filter>Source Files\Zip</Filter>
     </ClCompile>
+    <ClCompile Include="CManualEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CThreadPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">

@@ -52,7 +52,7 @@ class CG32bitPixel
 		static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc, BYTE bySrcAlpha);
 		static CG32bitPixel Blend (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade);
 		static CG32bitPixel Blend3 (CG32bitPixel rgbNegative, CG32bitPixel rgbCenter, CG32bitPixel rgbPositive, double rFade);
-		static BYTE BlendAlpha (BYTE byDest, BYTE bySrc) { return (BYTE)((DWORD)byDest * (DWORD)bySrc / 255); }
+		inline static BYTE BlendAlpha (BYTE byDest, BYTE bySrc) { return (BYTE)((DWORD)byDest * (DWORD)bySrc / 255); }
 		inline static BYTE CompositeAlpha (BYTE byDest, BYTE bySrc) { return (BYTE)255 - (BYTE)(((DWORD)(255 - byDest) * (DWORD)(255 - bySrc)) / 255); }
 		static CG32bitPixel Darken (CG32bitPixel rgbSource, BYTE byOpacity);
 		static CG32bitPixel Desaturate (CG32bitPixel rgbColor);
@@ -133,11 +133,13 @@ class CG32bitImage : public CGImagePlane
 		inline void DrawLine (int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor);
 		inline void DrawText (int x, int y, const CG16bitFont &Font, CG32bitPixel rgbColor, CString sText, DWORD dwFlags = 0, int *retx = NULL);
 		void Fill (int x, int y, int cxWidth, int cyHeight, CG32bitPixel Value);
+		void Fill (CG32bitPixel Value);
 		inline void FillColumn (int x, int y, int cyHeight, CG32bitPixel Value) { Fill(x, y, 1, cyHeight, Value); }
 		inline void FillLine (int x, int y, int cxWidth, CG32bitPixel Value) { Fill(x, y, cxWidth, 1, Value); }
 		void FillMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, CG32bitPixel rgbColor, int xDest, int yDest);
 		void Set (CG32bitPixel Value);
 		void Set (int x, int y, int cxWidth, int cyHeight, CG32bitPixel Value);
+		void Set (CG32bitImage &Src);
 		void SetMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, CG32bitPixel rgbColor, int xDest, int yDest);
 		inline void SetPixel (int x, int y, CG32bitPixel rgbColor) 
 			{ if (x >= m_rcClip.left && y >= m_rcClip.top && x < m_rcClip.right && y < m_rcClip.bottom) *GetPixelPos(x, y) = rgbColor; }

@@ -156,6 +156,7 @@
     <ClInclude Include="..\Include\DXImage32.h" />
     <ClInclude Include="..\Include\DXImage8.h" />
     <ClInclude Include="..\Include\DXImageReal.h" />
+    <ClInclude Include="..\Include\DXSparseMask.h" />
     <ClInclude Include="..\Include\DXUI.h" />
     <ClInclude Include="..\Include\Reanimator.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
@@ -237,6 +238,7 @@
     <ClCompile Include="CG32bitImage.cpp" />
     <ClCompile Include="CG32bitPixel.cpp" />
     <ClCompile Include="CG8bitImage.cpp" />
+    <ClCompile Include="CG8bitSparseImage.cpp" />
     <ClCompile Include="CGButtonArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

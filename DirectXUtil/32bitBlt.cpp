@@ -37,11 +37,31 @@ void CG32bitImage::Blt (int xSrc, int ySrc, int cxWidth, int cyHeight, BYTE byOp
 			//	If no alpha, then we just copy values directly
 
 			case alphaNone:
+				{
+				DWORD dwWidth8 = (cxWidth / 8) * 8;
+
 				while (pSrcRow < pSrcRowEnd)
 					{
 					CG32bitPixel *pSrcPos = pSrcRow;
+					CG32bitPixel *pSrcPosBlockEnd = pSrcRow + dwWidth8;
 					CG32bitPixel *pSrcPosEnd = pSrcRow + cxWidth;
 					CG32bitPixel *pDestPos = pDestRow;
+
+					//	Unrolled loop
+
+					while (pSrcPos < pSrcPosBlockEnd)
+						{
+						*pDestPos++ = *pSrcPos++;
+						*pDestPos++ = *pSrcPos++;
+						*pDestPos++ = *pSrcPos++;
+						*pDestPos++ = *pSrcPos++;
+						*pDestPos++ = *pSrcPos++;
+						*pDestPos++ = *pSrcPos++;
+						*pDestPos++ = *pSrcPos++;
+						*pDestPos++ = *pSrcPos++;
+						}
+
+					//	Fill the remainder
 
 					while (pSrcPos < pSrcPosEnd)
 						*pDestPos++ = *pSrcPos++;
@@ -50,6 +70,7 @@ void CG32bitImage::Blt (int xSrc, int ySrc, int cxWidth, int cyHeight, BYTE byOp
 					pDestRow = NextRow(pDestRow);
 					}
 				break;
+				}
 
 			//	If 1-bit alpha, then we check
 

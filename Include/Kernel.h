@@ -405,6 +405,31 @@ class CSmartLock
 		CCriticalSection &m_cs;
 	};
 
+class COSObject
+	{
+	public:
+		COSObject (void) : m_hHandle(INVALID_HANDLE_VALUE) { }
+		~COSObject (void) { if (m_hHandle != INVALID_HANDLE_VALUE) ::CloseHandle(m_hHandle); }
+
+		inline void Close (void) { if (m_hHandle != INVALID_HANDLE_VALUE) { ::CloseHandle(m_hHandle); m_hHandle = INVALID_HANDLE_VALUE; } }
+		inline HANDLE GetWaitObject (void) const { return m_hHandle; }
+		inline void TakeHandoff (COSObject &Obj) { Close(); m_hHandle = Obj.m_hHandle; Obj.m_hHandle = INVALID_HANDLE_VALUE; }
+		inline bool Wait (DWORD dwTimeout = INFINITE) const { return (::WaitForSingleObject(m_hHandle, dwTimeout) != WAIT_TIMEOUT); }
+
+	protected:
+		HANDLE m_hHandle;
+	};
+
+class CManualEvent : public COSObject
+	{
+	public:
+		void Create (void);
+		void Create (const CString &sName, bool *retbExists = NULL);
+		inline bool IsSet (void) { return (::WaitForSingleObject(m_hHandle, 0) == WAIT_OBJECT_0); }
+		inline void Reset (void) { ::ResetEvent(m_hHandle); }
+		inline void Set (void) { ::SetEvent(m_hHandle); }
+	};
+
 //	CINTDynamicArray. Implementation of a dynamic array.
 //	(NOTE: To save space, this class does not have a virtual
 //	destructor. Do not sub-class this class without taking that into account).
@@ -1353,6 +1378,48 @@ class CRegKey
 		void CleanUp (void);
 
 		HKEY m_hKey;
+	};
+
+//	Thread pool
+
+class IThreadPoolTask
+	{
+	public:
+		virtual ~IThreadPoolTask (void) { }
+		virtual void Run (void) { }
+	};
+
+class CThreadPool
+	{
+	public:
+		inline ~CThreadPool (void) { CleanUp(); }
+
+		void AddTask (IThreadPoolTask *pTask);
+		bool Boot (int iThreadCount);
+		void CleanUp (void);
+		inline int GetThreadCount (void) const { return m_Threads.GetCount() + 1; }
+		void Run (void);
+
+	private:
+		struct SThreadDesc
+			{
+			HANDLE hThread;
+			};
+
+		IThreadPoolTask *GetTaskToRun (void);
+		void RunTask (IThreadPoolTask *pTask);
+		void WorkerThread (void);
+
+		inline static DWORD WINAPI WorkerThreadStub (LPVOID pData) { ((CThreadPool *)pData)->WorkerThread(); return 0; }
+
+		CCriticalSection m_cs;
+		TArray<SThreadDesc> m_Threads;
+		TQueue<IThreadPoolTask *> m_Tasks;
+		int m_iTasksRemaining;
+		TArray<IThreadPoolTask *> m_Completed;
+		CManualEvent m_WorkAvail;
+		CManualEvent m_WorkCompleted;
+		CManualEvent m_Quit;
 	};
 
 extern char g_LowerCaseAbsoluteTable[256];

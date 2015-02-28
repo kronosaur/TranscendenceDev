@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+const int TABLE_FILL_THRESHOLD = 32768;
+
 void CG32bitImage::Fill (int x, int y, int cxWidth, int cyHeight, CG32bitPixel Value)
 
 //	Fill
@@ -12,6 +14,8 @@ void CG32bitImage::Fill (int x, int y, int cxWidth, int cyHeight, CG32bitPixel V
 //	Fill the buffer
 
 	{
+	int i;
+
 	//	Make sure we're in bounds
 
 	if (!AdjustCoords(NULL, NULL, 0, 0, 
@@ -27,13 +31,32 @@ void CG32bitImage::Fill (int x, int y, int cxWidth, int cyHeight, CG32bitPixel V
 
 	if (byOpacity == 0xff)
 		{
+		DWORD dwWidth8 = (cxWidth / 8) * 8;
+
 		CG32bitPixel *pDestRow = GetPixelPos(x, y);
 		CG32bitPixel *pDestRowEnd = GetPixelPos(x, y + cyHeight);
 
 		while (pDestRow < pDestRowEnd)
 			{
 			CG32bitPixel *pDest = pDestRow;
+			CG32bitPixel *pDestBlockEnd = pDestRow + dwWidth8;
 			CG32bitPixel *pDestEnd = pDestRow + cxWidth;
+
+			//	Unrolled loop
+
+			while (pDest < pDestBlockEnd)
+				{
+				*pDest++ = Value;
+				*pDest++ = Value;
+				*pDest++ = Value;
+				*pDest++ = Value;
+				*pDest++ = Value;
+				*pDest++ = Value;
+				*pDest++ = Value;
+				*pDest++ = Value;
+				}
+
+			//	Remainder
 
 			while (pDest < pDestEnd)
 				*pDest++ = Value;
@@ -44,8 +67,15 @@ void CG32bitImage::Fill (int x, int y, int cxWidth, int cyHeight, CG32bitPixel V
 
 	//	Transparent Fill
 
-	else
+	else if (cxWidth * cyHeight < TABLE_FILL_THRESHOLD)
 		{
+		BYTE *pAlpha = CG32bitPixel::AlphaTable(byOpacity);
+		BYTE byRed = pAlpha[Value.GetRed()];
+		BYTE byGreen = pAlpha[Value.GetGreen()];
+		BYTE byBlue = pAlpha[Value.GetBlue()];
+
+		BYTE *pAlphaInv = CG32bitPixel::AlphaTable(byOpacity ^ 0xff);	//	Equivalent to 255 - byAlpha
+
 		CG32bitPixel *pDestRow = GetPixelPos(x, y);
 		CG32bitPixel *pDestRowEnd = GetPixelPos(x, y + cyHeight);
 
@@ -56,12 +86,151 @@ void CG32bitImage::Fill (int x, int y, int cxWidth, int cyHeight, CG32bitPixel V
 
 			while (pDest < pDestEnd)
 				{
-				*pDest = CG32bitPixel::Blend(*pDest, Value);
-				pDest++;
+				BYTE byRedResult = pAlphaInv[pDest->GetRed()] + byRed;
+				BYTE byGreenResult = pAlphaInv[pDest->GetGreen()] + byGreen;
+				BYTE byBlueResult = pAlphaInv[pDest->GetBlue()] + byBlue;
+
+				*pDest++ = CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
 				}
 
 			pDestRow = NextRow(pDestRow);
 			}
+		}
+
+	//	If we're filling TABLE_FILL_THRESHOLD or more blended colors, then it's faster
+	//	to build a table first.
+
+	else
+		{
+		BYTE byRedTable[256];
+		BYTE byGreenTable[256];
+		BYTE byBlueTable[256];
+
+		BYTE *pAlpha = CG32bitPixel::AlphaTable(byOpacity);
+		BYTE byRed = pAlpha[Value.GetRed()];
+		BYTE byGreen = pAlpha[Value.GetGreen()];
+		BYTE byBlue = pAlpha[Value.GetBlue()];
+
+		BYTE *pAlphaInv = CG32bitPixel::AlphaTable(byOpacity ^ 0xff);	//	Equivalent to 255 - byAlpha
+
+		for (i = 0; i < 256; i++)
+			{
+			byRedTable[i] = pAlphaInv[i] + byRed;
+			byGreenTable[i] = pAlphaInv[i] + byGreen;
+			byBlueTable[i] = pAlphaInv[i] + byBlue;
+			}
+
+		CG32bitPixel *pDestRow = GetPixelPos(x, y);
+		CG32bitPixel *pDestRowEnd = GetPixelPos(x, y + cyHeight);
+
+		while (pDestRow < pDestRowEnd)
+			{
+			CG32bitPixel *pDest = pDestRow;
+			CG32bitPixel *pDestEnd = pDestRow + cxWidth;
+
+			while (pDest < pDestEnd)
+				*pDest++ = CG32bitPixel(byRedTable[pDest->GetRed()], byGreenTable[pDest->GetGreen()], byBlueTable[pDest->GetBlue()]);
+
+			pDestRow = NextRow(pDestRow);
+			}
+		}
+	}
+
+void CG32bitImage::Fill (CG32bitPixel Value)
+
+//	Fill
+//
+//	Fills the entire buffer buffer
+
+	{
+	int i;
+
+	BYTE byOpacity = Value.GetAlpha();
+	if (byOpacity == 0x00)
+		return;
+
+	//	Solid Fill
+
+	if (byOpacity == 0xff)
+		{
+		CG32bitPixel *pDest = GetPixelPos(0, 0);
+		CG32bitPixel *pDestEnd = GetPixelPos(0, GetHeight());
+		DWORD dwBlock = ((pDestEnd - pDest) / 8) * 8;
+		CG32bitPixel *pDestBlockEnd = pDest + dwBlock;
+
+		//	Unrolled
+
+		while (pDest < pDestBlockEnd)
+			{
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			}
+
+		//	Remainder
+
+		while (pDest < pDestEnd)
+			*pDest++ = Value;
+		}
+
+	//	Transparent Fill
+
+	else if (GetWidth() * GetHeight() < TABLE_FILL_THRESHOLD)
+		{
+		BYTE *pAlpha = CG32bitPixel::AlphaTable(byOpacity);
+		BYTE byRed = pAlpha[Value.GetRed()];
+		BYTE byGreen = pAlpha[Value.GetGreen()];
+		BYTE byBlue = pAlpha[Value.GetBlue()];
+
+		BYTE *pAlphaInv = CG32bitPixel::AlphaTable(byOpacity ^ 0xff);	//	Equivalent to 255 - byAlpha
+
+		CG32bitPixel *pDest = GetPixelPos(0, 0);
+		CG32bitPixel *pDestEnd = GetPixelPos(0, GetHeight());
+
+		while (pDest < pDestEnd)
+			{
+			BYTE byRedResult = pAlphaInv[pDest->GetRed()] + byRed;
+			BYTE byGreenResult = pAlphaInv[pDest->GetGreen()] + byGreen;
+			BYTE byBlueResult = pAlphaInv[pDest->GetBlue()] + byBlue;
+
+			*pDest++ = CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
+			}
+		}
+
+	//	If we're filling TABLE_FILL_THRESHOLD or more blended colors, then it's faster
+	//	to build a table first.
+
+	else
+		{
+		BYTE byRedTable[256];
+		BYTE byGreenTable[256];
+		BYTE byBlueTable[256];
+
+		BYTE *pAlpha = CG32bitPixel::AlphaTable(byOpacity);
+		BYTE byRed = pAlpha[Value.GetRed()];
+		BYTE byGreen = pAlpha[Value.GetGreen()];
+		BYTE byBlue = pAlpha[Value.GetBlue()];
+
+		BYTE *pAlphaInv = CG32bitPixel::AlphaTable(byOpacity ^ 0xff);	//	Equivalent to 255 - byAlpha
+
+		for (i = 0; i < 256; i++)
+			{
+			byRedTable[i] = pAlphaInv[i] + byRed;
+			byGreenTable[i] = pAlphaInv[i] + byGreen;
+			byBlueTable[i] = pAlphaInv[i] + byBlue;
+			}
+
+		//	Fill
+
+		CG32bitPixel *pDest = GetPixelPos(0, 0);
+		CG32bitPixel *pDestEnd = GetPixelPos(0, GetHeight());
+		while (pDest < pDestEnd)
+			*pDest++ = CG32bitPixel(byRedTable[pDest->GetRed()], byGreenTable[pDest->GetGreen()], byBlueTable[pDest->GetBlue()]);
 		}
 	}
 
@@ -577,6 +746,25 @@ void CG32bitImage::Set (CG32bitPixel Value)
 	CG32bitPixel *pDest = GetPixelPos(0, 0);
 	CG32bitPixel *pDestEnd = GetPixelPos(0, m_cyHeight);
 
+	DWORD dwBlock = ((pDestEnd - pDest) / 8) * 8;
+	CG32bitPixel *pDestBlockEnd = pDest + dwBlock;
+
+	//	Unrolled
+
+	while (pDest < pDestBlockEnd)
+		{
+		*pDest++ = Value;
+		*pDest++ = Value;
+		*pDest++ = Value;
+		*pDest++ = Value;
+		*pDest++ = Value;
+		*pDest++ = Value;
+		*pDest++ = Value;
+		*pDest++ = Value;
+		}
+
+	//	Remainder
+
 	while (pDest < pDestEnd)
 		*pDest++ = Value;
 	}
@@ -590,17 +778,74 @@ void CG32bitImage::Set (int x, int y, int cxWidth, int cyHeight, CG32bitPixel Va
 	{
 	CG32bitPixel *pDestRow = GetPixelPos(x, y);
 	CG32bitPixel *pDestRowEnd = GetPixelPos(x, y + cyHeight);
+	DWORD dwBlock = (cxWidth / 8) * 8;
 
 	while (pDestRow < pDestRowEnd)
 		{
 		CG32bitPixel *pDest = pDestRow;
+		CG32bitPixel *pDestBlockEnd = pDestRow + dwBlock;
 		CG32bitPixel *pDestEnd = pDestRow + cxWidth;
+
+		//	Unrolled
+
+		while (pDest < pDestBlockEnd)
+			{
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			*pDest++ = Value;
+			}
+
+		//	Remainder
 
 		while (pDest < pDestEnd)
 			*pDest++ = Value;
 
 		pDestRow = NextRow(pDestRow);
 		}
+	}
+
+void CG32bitImage::Set (CG32bitImage &Src)
+
+//	Set
+//
+//	Copies all the pixels from Src. This is an optimized version of Blt in which
+//	we assume that the images are of the same dimension.
+
+	{
+	if (Src.GetWidth() != GetWidth()
+			|| Src.GetHeight() != GetHeight())
+		return;
+
+	CG32bitPixel *pSrc = Src.GetPixelPos(0, 0);
+	CG32bitPixel *pDest = GetPixelPos(0, 0);
+	CG32bitPixel *pDestEnd = GetPixelPos(0, m_cyHeight);
+
+	DWORD dwBlock = ((pDestEnd - pDest) / 8) * 8;
+	CG32bitPixel *pDestBlockEnd = pDest + dwBlock;
+
+	//	Unrolled
+
+	while (pDest < pDestBlockEnd)
+		{
+		*pDest++ = *pSrc++;
+		*pDest++ = *pSrc++;
+		*pDest++ = *pSrc++;
+		*pDest++ = *pSrc++;
+		*pDest++ = *pSrc++;
+		*pDest++ = *pSrc++;
+		*pDest++ = *pSrc++;
+		*pDest++ = *pSrc++;
+		}
+
+	//	Remainder
+
+	while (pDest < pDestEnd)
+		*pDest++ = *pSrc++;
 	}
 
 void CG32bitImage::SetMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG32bitImage &Source, CG32bitPixel rgbColor, int xDest, int yDest)

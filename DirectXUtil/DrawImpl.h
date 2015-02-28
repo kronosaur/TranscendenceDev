@@ -5,6 +5,12 @@
 
 #pragma once
 
+#include "TBlt.h"
+#include "TCirclePainter.h"
+#include "NoiseImpl.h"
+
+//	Glow Ring Painter ----------------------------------------------------------
+
 class CGlowingRingPainter
 	{
 	public:
@@ -29,8 +35,6 @@ class CGlowingRingPainter
 
 //	Blt Painters ---------------------------------------------------------------
 
-#include "TBlt.h"
-#include "NoiseImpl.h"
 
 class CFilterNormal : public TBlt<CFilterNormal>
 	{
@@ -222,8 +226,6 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 	};
 
 //	Circle Painters ------------------------------------------------------------
-
-#include "TCirclePainter.h"
 
 class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter>
 	{

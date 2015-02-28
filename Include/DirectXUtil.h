@@ -183,6 +183,7 @@ inline float CNoiseGenerator::GetAt (SNoisePos &x, SNoisePos &y)
 
 #include "TextFormat.h"
 #include "DXUI.h"
+#include "DXSparseMask.h"
 
 //	Utility Functions ---------------------------------------------------------
 
