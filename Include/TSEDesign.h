@@ -705,6 +705,7 @@ struct SViewportPaintCtx
 			pObj(NULL),
 			iPerception(4),				//	LATER: Same as CSpaceObject::perceptNormal (but we haven't included it yet).
 			rgbSpaceColor(CG32bitPixel::Null()),
+			pStar(NULL),
 			pVolumetricMask(NULL),
 			fNoSelection(false),
 			fNoRecon(false),
@@ -744,6 +745,7 @@ struct SViewportPaintCtx
 	int iPerception;					//	Perception
 	Metric rIndicatorRadius;			//	Radius of circle to show target indicators (in pixels)
 	CG32bitPixel rgbSpaceColor;			//	Starshine color
+	CSpaceObject *pStar;				//	Nearest star to POV
 	const CG8bitSparseImage *pVolumetricMask;	//	Volumetric mask for starshine
 
 	//	Options
@@ -867,6 +869,7 @@ class CObjectImage : public CDesignType
 		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL);
 		CG32bitImage *GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL);
 		inline CString GetImageFilename (void) { return m_sBitmap; }
+		CG32bitImage *GetShadowMask (void);
 		inline bool HasAlpha (void) { return (m_pBitmap ? (m_pBitmap->GetAlphaType() == CG32bitImage::alpha8) : false); }
 
 		inline void ClearMark (void) { m_bMarked = false; }
@@ -889,11 +892,13 @@ class CObjectImage : public CDesignType
 		CString m_sResourceDb;			//	Resource db
 		CString m_sBitmap;				//	Bitmap resource within db
 		CString m_sBitmask;				//	Bitmask resource within db
+		CString m_sShadowMask;			//	Optional mask to use to generate volumetric shadow
 		bool m_bPreMult;				//	If TRUE, image needs to be premultiplied with mask on load.
 		bool m_bLoadOnUse;				//	If TRUE, image is only loaded when needed
 		bool m_bFreeBitmap;				//	If TRUE, we free the bitmap when done
 
 		CG32bitImage *m_pBitmap;		//	Loaded image (NULL if not loaded)
+		CG32bitImage *m_pShadowMask;	//	NULL if not loaded
 		bool m_bMarked;					//	Marked
 		bool m_bLocked;					//	Image is never unloaded
 	};

@@ -725,7 +725,7 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &C
 	return iWeight;
 	}
 
-CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, const CG8bitSparseImage **retpVolumetricMask)
+CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
 
 //	CalculateSpaceColor
 //
@@ -740,6 +740,9 @@ CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, const CG8bitSpars
 	CG32bitPixel rgbStarColor = pStar->GetSpaceColor();
 	if (rgbStarColor.IsNull())
 		return rgbStarColor;
+
+	if (retpStar)
+		*retpStar = pStar;
 
 	return CG32bitPixel(rgbStarColor, (BYTE)(MAX_SPACE_OPACITY * iPercent / 100));
 	}
@@ -790,7 +793,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
 
-	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter, &Ctx.pVolumetricMask);
+	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter, &Ctx.pStar, &Ctx.pVolumetricMask);
 
 	//	Compute the radius of the circle on which we'll show target indicators
 	//	(in pixels)
@@ -809,9 +812,14 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 	{
 	int i;
 
-	Metric rMaxDist = pStar->GetMaxLightDistance() * LIGHT_SECOND * 1.1;
+	Metric rMaxDist = (pStar->GetMaxLightDistance() + 100) * LIGHT_SECOND;
 	int iSize = (int)(2.0 * rMaxDist / g_KlicksPerPixel);
 	VolumetricMask.Create(iSize, iSize, 0xff);
+
+	//	Star offset
+
+	int xStar = (int)(pStar->GetPos().GetX() / g_KlicksPerPixel);
+	int yStar = (int)(pStar->GetPos().GetY() / g_KlicksPerPixel);
 
 	//	Loop over all planets/asteroids and generate a shadow
 
@@ -833,11 +841,11 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 
 		//	Add the shadow
 
-		CalcVolumetricShadow(pObj, iStarAngle, VolumetricMask);
+		CalcVolumetricShadow(pObj, xStar, yStar, iStarAngle, VolumetricMask);
 		}
 	}
 
-void CSystem::CalcVolumetricShadow (CSpaceObject *pObj, int iStarAngle, CG8bitSparseImage &VolumetricMask)
+void CSystem::CalcVolumetricShadow (CSpaceObject *pObj, int xStar, int yStar, int iStarAngle, CG8bitSparseImage &VolumetricMask)
 
 //	CalcVolumetricShadow
 //
@@ -850,8 +858,8 @@ void CSystem::CalcVolumetricShadow (CSpaceObject *pObj, int iStarAngle, CG8bitSp
 
 	//	Compute the center of the object relative to the volumetric mask
 
-	CVector ObjCenter((VolumetricMask.GetWidth() / 2) + (pObj->GetPos().GetX() / g_KlicksPerPixel),
-			(VolumetricMask.GetHeight() / 2) - (pObj->GetPos().GetY() / g_KlicksPerPixel));
+	CVector ObjCenter((VolumetricMask.GetWidth() / 2) + (pObj->GetPos().GetX() / g_KlicksPerPixel) - xStar,
+			(VolumetricMask.GetHeight() / 2) - (pObj->GetPos().GetY() / g_KlicksPerPixel) + yStar);
 
 	//	Get the origin, width, and length of the shadow from the object
 

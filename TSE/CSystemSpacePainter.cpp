@@ -236,11 +236,14 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 		int cyChunk = cyLeft / m_Threads.GetThreadCount();
 		int yStart = 0;
 
+		int xStarCenter = (int)(Ctx.pStar->GetPos().GetX() / g_KlicksPerPixel);
+		int yStarCenter = (int)(Ctx.pStar->GetPos().GetY() / g_KlicksPerPixel);
+
 		//	Compute the coordinates of the destination rect with respect to the
 		//	volumetric mask.
 
-		int xMask = (Ctx.pVolumetricMask->GetWidth() / 2) + xCenter - (RectWidth(Ctx.rcView) / 2);
-		int yMask = (Ctx.pVolumetricMask->GetHeight() / 2) - yCenter - (RectHeight(Ctx.rcView) / 2);
+		int xMask = (Ctx.pVolumetricMask->GetWidth() / 2) + xCenter - (RectWidth(Ctx.rcView) / 2) - xStarCenter;
+		int yMask = (Ctx.pVolumetricMask->GetHeight() / 2) - yCenter - (RectHeight(Ctx.rcView) / 2) + yStarCenter;
 
 		//	Start asynchronous tasks
 

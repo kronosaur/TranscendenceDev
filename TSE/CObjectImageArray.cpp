@@ -98,7 +98,17 @@ bool CObjectImageArray::CalcVolumetricShadowLine (SLightingCtx &Ctx, int iTick, 
 	if (m_pImage == NULL)
 		return false;
 
-	CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+	//	First see if we have a dedicated shadow mask. If so, we use that.
+
+	CG32bitImage *pSource = m_pImage->GetShadowMask();
+
+	//	If we don't then use the normal image
+
+	if (pSource == NULL)
+		pSource = m_pImage->GetImage(NULL_STR);
+
+	//	If we still can't find an image, then no shadow
+
 	if (pSource == NULL)
 		return false;
 

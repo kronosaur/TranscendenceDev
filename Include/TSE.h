@@ -1246,7 +1246,7 @@ class CSystem : public CObject
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
 		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL);
 		inline int CalcMatchStrength (const CAttributeCriteria &Criteria) { return (m_pTopology ? m_pTopology->CalcMatchStrength(Criteria) : (Criteria.MatchesAll() ? 1000 : 0)); }
-		CG32bitPixel CalculateSpaceColor (CSpaceObject *pPOV, const CG8bitSparseImage **retpVolumetricMask = NULL);
+		CG32bitPixel CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL);
 		void CancelTimedEvent (CSpaceObject *pSource, const CString &sEvent, bool bInDoEvent = false);
 		void CancelTimedEvent (CDesignType *pSource, const CString &sEvent, bool bInDoEvent = false);
 		bool DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **retpObj = NULL, CString *retsError = NULL);
@@ -1380,7 +1380,7 @@ class CSystem : public CObject
 
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
 		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
-		void CalcVolumetricShadow (CSpaceObject *pObj, int iStarAngle, CG8bitSparseImage &VolumetricMask);
+		void CalcVolumetricShadow (CSpaceObject *pObj, int xStar, int yStar, int iStarAngle, CG8bitSparseImage &VolumetricMask);
 		void ComputeMapLabels (void);
 		void ComputeRandomEncounters (void);
 		void ComputeStars (void);
