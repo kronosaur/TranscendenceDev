@@ -188,9 +188,13 @@ void CHumanInterface::MainLoop (void)
 
 		DWORD dwNow = timeGetTime();
 		DWORD dwNextFrame = dwStartTime + FRAME_DELAY;
+
+		//	Wait
+
 		if (dwNextFrame > dwNow)
 			{
 			::Sleep(dwNextFrame - dwNow);
+
 			dwStartTime = dwNextFrame;
 			}
 		else

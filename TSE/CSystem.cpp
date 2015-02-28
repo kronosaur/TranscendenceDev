@@ -366,6 +366,8 @@ const Metric MAX_ENCOUNTER_DIST	=				30.0 * LIGHT_MINUTE;
 const Metric GRAVITY_WARNING_THRESHOLD =		40.0;	//	Acceleration value at which we start warning
 const Metric TIDAL_KILL_THRESHOLD =				7250.0;	//	Acceleration at which we get ripped apart
 
+const BYTE MAX_SPACE_OPACITY =					128;
+
 #define ON_CREATE_EVENT					CONSTLIT("OnCreate")
 #define ON_OBJ_JUMP_POS_ADJ				CONSTLIT("OnObjJumpPosAdj")
 
@@ -595,7 +597,7 @@ bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
 	return true;
 	}
 
-int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar)
+int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
 
 //	CalculateLightIntensity
 //
@@ -609,47 +611,54 @@ int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpSt
 	//	there is only a single star in the system.
 
 	int iBestDist;
-	CSpaceObject *pBestObj;
+	SStarDesc *pBestStar = NULL;
 
 	if (m_Stars.GetCount() == 1)
 		{
-		pBestObj = m_Stars.GetObj(0);
+		pBestStar = &m_Stars[0];
 		iBestDist = (int)(vPos.Longest() / LIGHT_SECOND);
 		}
 	else
 		{
-		pBestObj = NULL;
+		pBestStar = NULL;
 		iBestDist = 100000000;
 
 		for (i = 0; i < m_Stars.GetCount(); i++)
 			{
-			CSpaceObject *pStar = m_Stars.GetObj(i);
+			CSpaceObject *pStar = m_Stars[i].pStarObj;
 			CVector vDist = vPos - pStar->GetPos();
 
 			int iDistFromCenter = (int)(vDist.Longest() / LIGHT_SECOND);
 			if (iDistFromCenter < iBestDist)
 				{
 				iBestDist = iDistFromCenter;
-				pBestObj = pStar;
+				pBestStar = &m_Stars[i];
 				}
 			}
 
-		if (pBestObj == NULL)
+		if (pBestStar == NULL)
 			{
 			if (retpStar)
 				*retpStar = NULL;
+
+			if (retpVolumetricMask)
+				*retpVolumetricMask = NULL;
+
 			return 0;
 			}
 		}
 
 	//	Compute the percentage
 
-	int iMaxDist = pBestObj->GetMaxLightDistance();
+	int iMaxDist = pBestStar->pStarObj->GetMaxLightDistance();
 	int iDistFromCenter = (iBestDist < 15 ? 0 : iBestDist - 15);
 	int iPercent = 100 - (iDistFromCenter * 100 / iMaxDist);
 
 	if (retpStar)
-		*retpStar = pBestObj;
+		*retpStar = pBestStar->pStarObj;
+
+	if (retpVolumetricMask)
+		*retpVolumetricMask = &pBestStar->VolumetricMask;
 
 	return Max(0, iPercent);
 	}
@@ -716,7 +725,7 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &C
 	return iWeight;
 	}
 
-CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV)
+CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, const CG8bitSparseImage **retpVolumetricMask)
 
 //	CalculateSpaceColor
 //
@@ -724,15 +733,15 @@ CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV)
 
 	{
 	CSpaceObject *pStar;
-	int iPercent = CalculateLightIntensity(pPOV->GetPos(), &pStar);
+	int iPercent = CalculateLightIntensity(pPOV->GetPos(), &pStar, retpVolumetricMask);
+	if (pStar == NULL || iPercent == 0)
+		return CG32bitPixel::Null();
 
-	CG32bitPixel rgbStarColor = (pStar ? pStar->GetSpaceColor() : 0);
+	CG32bitPixel rgbStarColor = pStar->GetSpaceColor();
+	if (rgbStarColor.IsNull())
+		return rgbStarColor;
 
-	int iRed = rgbStarColor.GetRed() * iPercent / 100;
-	int iGreen = rgbStarColor.GetGreen() * iPercent / 100;
-	int iBlue = rgbStarColor.GetBlue() * iPercent / 100;
-
-	return CG32bitPixel((BYTE)iRed, (BYTE)iGreen, (BYTE)iBlue);
+	return CG32bitPixel(rgbStarColor, (BYTE)(MAX_SPACE_OPACITY * iPercent / 100));
 	}
 
 void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags)
@@ -781,7 +790,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
 
-	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter);
+	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter, &Ctx.pVolumetricMask);
 
 	//	Compute the radius of the circle on which we'll show target indicators
 	//	(in pixels)
@@ -789,6 +798,210 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	Ctx.rIndicatorRadius = Min(RectWidth(rcView), RectHeight(rcView)) / 2.0;
 
 	DEBUG_CATCH
+	}
+
+void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask)
+
+//	CalcVolumetricMask
+//
+//	Initializes the volumetric mask for the given star
+
+	{
+	int i;
+
+	Metric rMaxDist = pStar->GetMaxLightDistance() * LIGHT_SECOND * 1.1;
+	int iSize = (int)(2.0 * rMaxDist / g_KlicksPerPixel);
+	VolumetricMask.Create(iSize, iSize, 0xff);
+
+	//	Loop over all planets/asteroids and generate a shadow
+
+	for (i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL
+				|| pObj->IsDestroyed()
+				|| pObj->GetScale() != scaleWorld)
+			continue;
+
+		//	Compute the angle of the object with respect to the star
+		//	And skip any objects that are outside the star's light radius.
+
+		Metric rStarDist;
+		int iStarAngle = ::VectorToPolar(pObj->GetPos() - pStar->GetPos(), &rStarDist);
+		if (rStarDist > rMaxDist)
+			continue;
+
+		//	Add the shadow
+
+		CalcVolumetricShadow(pObj, iStarAngle, VolumetricMask);
+		}
+	}
+
+void CSystem::CalcVolumetricShadow (CSpaceObject *pObj, int iStarAngle, CG8bitSparseImage &VolumetricMask)
+
+//	CalcVolumetricShadow
+//
+//	Adds the object's shadow to the volumetric mask
+
+	{
+	int i;
+
+	SLightingCtx Ctx(iStarAngle);
+
+	//	Compute the center of the object relative to the volumetric mask
+
+	CVector ObjCenter((VolumetricMask.GetWidth() / 2) + (pObj->GetPos().GetX() / g_KlicksPerPixel),
+			(VolumetricMask.GetHeight() / 2) - (pObj->GetPos().GetY() / g_KlicksPerPixel));
+
+	//	Get the origin, width, and length of the shadow from the object
+
+	int xCenter;
+	int yCenter;
+	int iShadowWidth;
+	int iShadowLength;
+	if (!pObj->CalcVolumetricShadowLine(Ctx, &xCenter, &yCenter, &iShadowWidth, &iShadowLength))
+		return;
+
+	CVector vShadowObjOrigin = CVector(xCenter, yCenter);
+	Metric rShadowWidth = iShadowWidth;
+	Metric rShadowLength = iShadowLength;
+	Metric rShadowHalfWidth = 0.5 * rShadowWidth;
+	Metric rShadowHalfLength = 0.5 * rShadowLength;
+
+	//	Compute the origin of the shadow in mask coordinates
+
+	CVector vShadowOrigin = ObjCenter + vShadowObjOrigin;
+
+	//	Compute the four corners of the shadow box in mask coordinates.
+
+	CVector Vertex[4];
+	Vertex[0] = vShadowOrigin + (Ctx.vSw * 0.5 * rShadowWidth);
+	Vertex[1] = vShadowOrigin - (Ctx.vSw * 0.5 * rShadowWidth);
+
+	//	Now compute the other two points of the shadow box.
+
+	Vertex[2] = Vertex[1] + Ctx.vSl * rShadowLength;
+	Vertex[3] = Vertex[0] + Ctx.vSl * rShadowLength;
+
+	//	Compute the four corners of a rect containing the entire shadow (in
+	//	mask coordinates)
+
+	CVector vUL = Vertex[0];
+	CVector vLR = Vertex[0];
+	for (i = 1; i < 4; i++)
+		{
+		if (Vertex[i].GetX() < vUL.GetX())
+			vUL.SetX(Vertex[i].GetX());
+
+		if (Vertex[i].GetX() > vLR.GetX())
+			vLR.SetX(Vertex[i].GetX());
+
+		if (Vertex[i].GetY() < vUL.GetY())
+			vUL.SetY(Vertex[i].GetY());
+
+		if (Vertex[i].GetY() > vLR.GetY())
+			vLR.SetY(Vertex[i].GetY());
+		}
+
+	//	Compute the upper-left corner of the box in shadow coordinates
+
+	CVector vULRelativeToShadowOrigin = vUL - vShadowOrigin;
+	CVector vShadowRow = CVector(vULRelativeToShadowOrigin.Dot(Ctx.vSw), vULRelativeToShadowOrigin.Dot(Ctx.vSl));
+
+	//	Allocate a temporary byte array to store the a row
+
+	int cxRow = (int)vLR.GetX() - (int)vUL.GetX();
+	BYTE *pSrcRow = new BYTE [cxRow];
+
+	//	Loop over all rows in the shadow box
+
+	int yPos = (int)vUL.GetY();
+	int yPosEnd = (int)vLR.GetY();
+	while (yPos < yPosEnd)
+		{
+		int xPos = (int)vUL.GetX();
+		CVector vShadowPos = vShadowRow;
+
+		BYTE *pSrcPos = pSrcRow;
+		BYTE *pSrcPosEnd = pSrcRow + cxRow;
+
+		while (pSrcPos < pSrcPosEnd)
+			{
+			//	rWFrac is the position of this pixel along the width of the 
+			//	shadow.
+			//
+			//	0.0 = at the center of the shadow.
+			//	1.0 = at one of the edges.
+
+			Metric rWFrac = Absolute(vShadowPos.GetX()) / rShadowHalfWidth;
+			if (rWFrac < 1.0)
+				{
+				//	rLFrac is the position of this pixel along the length of 
+				//	the shadow.
+				//
+				//	0.0 is at the beginning (near the planet)
+				//	1.0 is at the end of the shadow
+
+				Metric rLFrac = vShadowPos.GetY() / rShadowLength;
+
+				if (rLFrac > 0.0 && rLFrac < 1.0)
+					{
+					//	rUFrac is the size of the umbra at this point
+					//	(measured along the shadow width axis from the center
+					//	of the shadow.
+					//
+					//	rUFrac is ~1.0 near the beginning of the shadow.
+					//	it is ~0.0 near the end of the shadow.
+
+					Metric rUFrac = 1.0 - rLFrac;
+
+					//	Inside the umbra?
+
+					if (rWFrac < rUFrac)
+						{
+						if (rLFrac < 0.5)
+							*pSrcPos = 0x00;
+						else
+							*pSrcPos = (BYTE)((rLFrac - 0.5) * 510);
+						}
+
+					//	In the penumbra
+
+					else
+						{
+						//	rPFrac is the pixel's position in the penumbra along
+						//	the shadow width axis.
+						//
+						//	0.0 is at the edge of the umbra.
+						//	1.0 is at the edge of the shadow.
+
+						Metric rPFrac = (rWFrac - rUFrac) / rLFrac;
+
+						if (rLFrac < 0.5)
+							*pSrcPos = (BYTE)(0xff * rPFrac);
+						else
+							*pSrcPos = (BYTE)(0xff * (1.0 - ((1.0 - ((rLFrac - 0.5) * 2.0)) * (1.0 - rPFrac))));
+						}
+					}
+				else
+					*pSrcPos = 0xff;
+				}
+			else
+				*pSrcPos = 0xff;
+
+			pSrcPos++;
+			vShadowPos = vShadowPos + Ctx.vIncX;
+			}
+
+		//	Apply the row to the mask
+
+		VolumetricMask.FillLine(xPos, yPos, cxRow, pSrcRow);
+
+		vShadowRow = vShadowRow + Ctx.vIncY;
+		yPos++;
+		}
+
+	delete [] pSrcRow;
 	}
 
 void CSystem::CancelTimedEvent (CSpaceObject *pSource, const CString &sEvent, bool bInDoEvent)
@@ -955,7 +1168,7 @@ void CSystem::ComputeStars (void)
 	{
 	int i;
 
-	m_Stars.RemoveAll();
+	m_Stars.DeleteAll();
 
 	for (i = 0; i < GetObjectCount(); i++)
 		{
@@ -964,7 +1177,12 @@ void CSystem::ComputeStars (void)
 		if (pObj 
 				&& pObj->GetScale() == scaleStar
 				&& !pObj->IsDestroyed())
-			m_Stars.Add(pObj);
+			{
+			SStarDesc *pNewStar = m_Stars.Insert();
+			pNewStar->pStarObj = pObj;
+
+			CalcVolumetricMask(pObj, pNewStar->VolumetricMask);
+			}
 		}
 	}
 
@@ -2578,7 +2796,7 @@ bool CSystem::IsStarAtPos (const CVector &vPos)
 
 	for (i = 0; i < m_Stars.GetCount(); i++)
 		{
-		CSpaceObject *pStar = m_Stars.GetObj(i);
+		CSpaceObject *pStar = m_Stars[i].pStarObj;
 		CVector vDist = vPos - pStar->GetPos();
 		if (vDist.Length2() < SAME_POS_THRESHOLD2)
 			return true;
@@ -2634,6 +2852,12 @@ void CSystem::MarkImages (void)
 
 	if (m_pEnvironment)
 		m_pEnvironment->MarkImages();
+
+	//	Mark system type images
+
+	m_pType->MarkImages();
+
+	//	Done
 
 	g_pUniverse->SetLogImageLoad(true);
 	}
@@ -3260,7 +3484,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 		{
 		for (i = 0; i < m_Stars.GetCount(); i++)
 			{
-			CSpaceObject *pStar = m_Stars.GetObj(i);
+			CSpaceObject *pStar = m_Stars[i].pStarObj;
 			m_GridPainter.AddRegion(pStar->GetPos(), MAP_GRID_SIZE, MAP_GRID_SIZE);
 			}
 		}
@@ -3282,7 +3506,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	for (i = 0; i < m_Stars.GetCount(); i++)
 		{
-		CSpaceObject *pStar = m_Stars.GetObj(i);
+		CSpaceObject *pStar = m_Stars[i].pStarObj;
 
 		//	Paint glow
 

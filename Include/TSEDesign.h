@@ -704,7 +704,8 @@ struct SViewportPaintCtx
 			yCenter(0),
 			pObj(NULL),
 			iPerception(4),				//	LATER: Same as CSpaceObject::perceptNormal (but we haven't included it yet).
-			rgbSpaceColor(0),
+			rgbSpaceColor(CG32bitPixel::Null()),
+			pVolumetricMask(NULL),
 			fNoSelection(false),
 			fNoRecon(false),
 			fNoDockedShips(false),
@@ -742,7 +743,8 @@ struct SViewportPaintCtx
 
 	int iPerception;					//	Perception
 	Metric rIndicatorRadius;			//	Radius of circle to show target indicators (in pixels)
-	CG32bitPixel rgbSpaceColor;			//	Space color
+	CG32bitPixel rgbSpaceColor;			//	Starshine color
+	const CG8bitSparseImage *pVolumetricMask;	//	Volumetric mask for starshine
 
 	//	Options
 
@@ -817,6 +819,42 @@ struct SPointInObjectCtx
 	int yImageOffset;
 	};
 
+struct SLightingCtx
+	{
+	SLightingCtx (int iStarAngleArg) :
+			iStarAngle(iStarAngleArg),
+			vRight(1.0, 0.0),
+			vDown(0.0, 1.0)
+		{
+		vSl = ::PolarToVector(iStarAngle, 1.0);
+		vSw = vSl.Perpendicular();
+		vSl.SetY(-vSl.GetY());
+		vSw.SetY(-vSw.GetY());
+
+		vIncX = CVector(vSw.Dot(vRight), vSl.Dot(vRight));
+		vIncY = CVector(vSw.Dot(vDown), vSl.Dot(vDown));
+		}
+
+	int iStarAngle;						//	Angle towards which light is shining
+
+	//	Image space unit vectors
+
+	CVector vRight;
+	CVector vDown;
+
+	//	Two orthogonal unit vectors along the lighting path
+	//	(In image coordinates)
+
+	CVector vSl;
+	CVector vSw;
+
+	//	Two orthogonal vectors to map lighting space to image
+	//	space coordinates.
+
+	CVector vIncX;
+	CVector vIncY;
+	};
+
 class CObjectImage : public CDesignType
 	{
 	public:
@@ -874,6 +912,7 @@ class CObjectImageArray : public CObject
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
+		bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int iTick, int iRotation, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) const;
 		void CleanUp (void);
 		void CopyImage (CG32bitImage &Dest, int x, int y, int iFrame, int iRotation) const;
 		inline DWORD GetBitmapUNID (void) const { return m_dwBitmapUNID; }
@@ -4612,6 +4651,7 @@ class CSystemType : public CDesignType
 		//	CDesignType overrides
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		virtual void OnMarkImages (void);
 
 	private:
 		DWORD m_dwBackgroundUNID;

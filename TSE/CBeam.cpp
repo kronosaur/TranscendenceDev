@@ -142,7 +142,7 @@ void CBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 		BeamCtx.yTo = y + m_yToOffset;
 		}
 	BeamCtx.iIntensity = 1;
-	BeamCtx.rgbBackgroundColor = Ctx.rgbSpaceColor;
+	BeamCtx.rgbBackgroundColor = CG32bitPixel::Null();
 	BeamCtx.rgbPrimaryColor = CG32bitPixel(0xf1, 0x5f, 0x2a);
 	BeamCtx.rgbSecondaryColor = CG32bitPixel(0xff, 0x00, 0x00);
 
@@ -303,7 +303,7 @@ void DrawLaserBeam (CG32bitImage &Dest, const SBeamDrawCtx &Ctx)
 //	Draws a simple laser beam
 
 	{
-	CG32bitPixel rgbGlow = CG32bitPixel::Blend(Ctx.rgbBackgroundColor, Ctx.rgbSecondaryColor, (BYTE)100);
+	CG32bitPixel rgbGlow = CG32bitPixel(Ctx.rgbSecondaryColor, 100);
 
 	Dest.DrawLine(Ctx.xFrom, Ctx.yFrom,
 			Ctx.xTo, Ctx.yTo,

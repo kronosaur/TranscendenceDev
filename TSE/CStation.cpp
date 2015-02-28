@@ -299,6 +299,23 @@ void CStation::CalcOverlayImpact (void)
 	m_fParalyzedByOverlay = Impact.bParalyze;
 	}
 
+bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength)
+
+//	CalcVolumetricShadowLine
+//
+//	Computes the line shadow line for the object.
+
+	{
+	//	Get the image
+
+	int iTick, iVariant;
+	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
+
+	//	Get the shadow line from the image
+
+	return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
+	}
+
 bool CStation::CanAttack (void) const
 
 //	CanAttack

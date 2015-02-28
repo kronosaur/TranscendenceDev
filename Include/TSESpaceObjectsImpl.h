@@ -1252,6 +1252,7 @@ class CStation : public CSpaceObject
 		virtual void AddSubordinate (CSpaceObject *pSubordinate);
 		virtual CTradingDesc *AllocTradeDescOverride (void);
 		virtual CStation *AsStation (void) { return this; }
+		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength);
 		virtual bool CanAttack (void) const;
 		virtual bool CanBeDestroyed (void) { return (m_iStructuralHP > 0); }
 		virtual bool CanBlock (CSpaceObject *pObj);

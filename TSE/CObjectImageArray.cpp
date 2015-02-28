@@ -86,6 +86,145 @@ CObjectImageArray &CObjectImageArray::operator= (const CObjectImageArray &Source
 	return *this;
 	}
 
+bool CObjectImageArray::CalcVolumetricShadowLine (SLightingCtx &Ctx, int iTick, int iRotation, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) const
+
+//	CalcVolumetricShadowLine
+//
+//	Computes the shadow line for this image.
+
+	{
+	int i;
+
+	if (m_pImage == NULL)
+		return false;
+
+	CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+	if (pSource == NULL)
+		return false;
+
+	//	Compute the position of the frame
+
+	int cxWidth = RectWidth(m_rcImage);
+	int cyHeight = RectHeight(m_rcImage);
+	int xSrc;
+	int ySrc;
+	ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
+
+	//	Compute the center point of the object in image coordinates
+
+	int xObjCenter = xSrc + (cxWidth / 2);
+	int yObjCenter = ySrc + (cyHeight / 2);
+
+	//	Adjust for rotation
+
+	if (m_pRotationOffset)
+		{
+		xObjCenter -= m_pRotationOffset[iRotation % m_iRotationCount].x;
+		yObjCenter += m_pRotationOffset[iRotation % m_iRotationCount].y;
+		}
+
+	//	Compute the upper-left corner of the image rect in lighting coordinates
+
+	CVector vUL(xSrc, ySrc);
+	CVector vObjCenter(xObjCenter, yObjCenter);
+
+	CVector vULRelativeToObjCenter = vUL - vObjCenter;
+	CVector vLightingRow = CVector(vULRelativeToObjCenter.Dot(Ctx.vSw), vULRelativeToObjCenter.Dot(Ctx.vSl));
+
+	//	Keep track of each line perpendicular to the lighting axis
+
+	struct SLine
+		{
+		SLine (void) :
+				rMin(0.0),
+				rMax(0.0)
+			{ }
+
+		CVector vMin;
+		Metric rMin;
+
+		CVector vMax;
+		Metric rMax;
+		};
+
+	TSortMap<int, SLine> Slices;
+	
+	//	Loop over all the pixels in the image
+
+	int yRow = ySrc;
+	CG32bitPixel *pRow = pSource->GetPixelPos(xSrc, ySrc);
+	CG32bitPixel *pRowEnd = pSource->GetPixelPos(xSrc, ySrc + cyHeight);
+	while (pRow < pRowEnd)
+		{
+		int xPos = xSrc;
+		CG32bitPixel *pPos = pRow;
+		CG32bitPixel *pPosEnd = pRow + cxWidth;
+		CVector vLightingPos = vLightingRow;
+
+		while (pPos < pPosEnd)
+			{
+			if (pPos->GetAlpha() >= 0x80)
+				{
+				SLine *pSlice = Slices.SetAt((int)vLightingPos.GetY());
+
+				Metric rDist = vLightingPos.GetX();
+				if (rDist > pSlice->rMax)
+					{
+					pSlice->vMax = CVector(xPos, yRow);
+					pSlice->rMax = rDist;
+					}
+				else if (rDist < pSlice->rMin)
+					{
+					pSlice->vMin = CVector(xPos, yRow);
+					pSlice->rMin = rDist;
+					}
+				}
+
+			xPos++;
+			pPos++;
+			vLightingPos = vLightingPos + Ctx.vIncX;
+			}
+
+		yRow++;
+		pRow = pSource->NextRow(pRow);
+		vLightingRow = vLightingRow + Ctx.vIncY;
+		}
+
+	//	Find the widest slice
+
+	Metric rBestSize = 0.0;
+	SLine *pBestSlice = NULL;
+	for (i = 0; i < Slices.GetCount(); i++)
+		{
+		SLine *pSlice = &Slices[i];
+		if (pBestSlice == NULL || (pSlice->rMax - pSlice->rMin) > rBestSize)
+			{
+			pBestSlice = pSlice;
+			rBestSize = (pSlice->rMax - pSlice->rMin);
+			}
+		}
+
+	//	Make sure we succeed.
+
+	if (pBestSlice == NULL)
+		return false;
+
+	//	Compute the center point of the winning line (relative to the object center)
+
+	CVector vLineCenter = ((pBestSlice->vMax + pBestSlice->vMin) / 2) - vObjCenter;
+
+	//	Return data
+
+	*retxCenter = (int)vLineCenter.GetX();
+	*retyCenter = (int)vLineCenter.GetY();
+	*retiWidth = (int)(pBestSlice->vMax - pBestSlice->vMin).Length();
+	*retiLength = (*retiWidth) * 8;
+
+	//	Done
+
+	return true;
+	}
+
 void CObjectImageArray::CleanUp (void)
 
 //	CleanUp

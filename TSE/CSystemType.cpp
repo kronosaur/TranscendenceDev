@@ -197,3 +197,18 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	return NOERROR;
 	}
+
+void CSystemType::OnMarkImages (void)
+
+//	OnMarkImages
+//
+//	Mark images for the system
+
+	{
+	if (m_dwBackgroundUNID != 0)
+		{
+		CObjectImage *pImage = g_pUniverse->FindLibraryImage(m_dwBackgroundUNID);
+		if (pImage)
+			pImage->Mark();
+		}
+	}

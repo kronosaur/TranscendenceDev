@@ -1080,21 +1080,24 @@ class CSystemSpacePainter
 			bool bBrightStar;
 			};
 
-		void CreateSpaceBackground (DWORD dwBackgroundUNID);
 		void CreateStarfield (int cxField, int cyField);
 		void GenerateSquareDist (int iTotalCount, int iMinValue, int iMaxValue, int *Dist);
+		void InitSpaceBackground (DWORD dwBackgroundUNID, CG32bitPixel rgbSpaceColor);
 		void PaintSpaceBackground (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx);
 		void PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor);
 		void PaintTiledBackground (CG32bitImage &Dest, const RECT &rcView, CG32bitImage &Src, int xOffset, int yOffset);
 
 		bool m_bInitialized;
+		bool m_bStarshineEnabled;
 
 		TArray<SStar> m_Starfield;
 		int m_cxStarfield;
 		int m_cyStarfield;
 
-		DWORD m_dwBackgroundUNID;
-		CG32bitImage *m_pBackgroundImage;
+		CG32bitImage *m_pBackground;
+		DWORD m_dwCurBackgroundUNID;
+
+		CThreadPool m_Threads;
 	};
 
 struct SObjCreateCtx
@@ -1241,9 +1244,9 @@ class CSystem : public CObject
 		inline void AddToDeleteList (CSpaceObject *pObj) { m_DeletedObjects.FastAdd(pObj); }
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
-		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL);
+		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL);
 		inline int CalcMatchStrength (const CAttributeCriteria &Criteria) { return (m_pTopology ? m_pTopology->CalcMatchStrength(Criteria) : (Criteria.MatchesAll() ? 1000 : 0)); }
-		CG32bitPixel CalculateSpaceColor (CSpaceObject *pPOV);
+		CG32bitPixel CalculateSpaceColor (CSpaceObject *pPOV, const CG8bitSparseImage **retpVolumetricMask = NULL);
 		void CancelTimedEvent (CSpaceObject *pSource, const CString &sEvent, bool bInDoEvent = false);
 		void CancelTimedEvent (CDesignType *pSource, const CString &sEvent, bool bInDoEvent = false);
 		bool DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **retpObj = NULL, CString *retsError = NULL);
@@ -1362,10 +1365,22 @@ class CSystem : public CObject
 		static void ReadSovereignRefFromStream (SLoadCtx &Ctx, CSovereign **retpSovereign);
 
 	private:
+		struct SStarDesc
+			{
+			SStarDesc (void) : 
+					pStarObj(NULL)
+				{ }
+
+			CSpaceObject *pStarObj;
+			CG8bitSparseImage VolumetricMask;
+			};
+
 		CSystem (void);
 		CSystem (CUniverse *pUniv, CTopologyNode *pTopology);
 
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
+		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
+		void CalcVolumetricShadow (CSpaceObject *pObj, int iStarAngle, CG8bitSparseImage &VolumetricMask);
 		void ComputeMapLabels (void);
 		void ComputeRandomEncounters (void);
 		void ComputeStars (void);
@@ -1422,7 +1437,7 @@ class CSystem : public CObject
 		CSpaceObjectList m_EncounterObjs;		//	List of objects that generate encounters
 		CSpaceObjectList m_BarrierObjects;		//	List of barrier objects
 		CSpaceObjectList m_GravityObjects;		//	List of objects that have gravity
-		CSpaceObjectList m_Stars;				//	List of stars in the system
+		TArray<SStarDesc> m_Stars;				//	List of stars in the system
 		CSpaceObjectGrid m_ObjGrid;				//	Grid to help us hit test
 		CSpaceObjectList m_DeletedObjects;		//	List of objects deleted in the current update
 		CSpaceObjectList m_LayerObjs[layerCount];	//	List of objects by layer
@@ -2611,6 +2626,7 @@ class CSpaceObject : public CObject
 		virtual CMission *AsMission (void) { return NULL; }
 		virtual CShip *AsShip (void) { return NULL; }
 		virtual CStation *AsStation (void) { return NULL; }
+		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) { return false; }
 		virtual bool CanAttack (void) const { return false; }
 		virtual bool CanBeDestroyed (void) { return true; }
 		virtual bool CanBeHitBy (const DamageDesc &Damage) { return true; }
