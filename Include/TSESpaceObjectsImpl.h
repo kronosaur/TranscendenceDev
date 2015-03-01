@@ -1306,6 +1306,7 @@ class CStation : public CSpaceObject
 		virtual CDesignType *GetWreckType (void) const;
 		virtual bool HasAttribute (const CString &sAttribute) const;
 		virtual bool HasMapLabel (void);
+		virtual bool HasVolumetricShadow (void) const { return (GetScale() == scaleWorld && !IsOutOfPlaneObj()); }
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos);
 		virtual bool IsAbandoned (void) const { return (m_iHitPoints == 0 && !IsImmutable()); }
 		virtual bool IsActiveStargate (void) const { return !m_sStargateDestNode.IsBlank() && m_fActive; }

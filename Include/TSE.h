@@ -2659,6 +2659,7 @@ class CSpaceObject : public CObject
 		virtual CDesignType *GetWreckType (void) const { return NULL; }
 		virtual bool HasAttribute (const CString &sAttribute) const { return sAttribute.IsBlank(); }
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const;
+		virtual bool HasVolumetricShadow (void) const { return false; }
 		virtual bool IsExplored (void) { return true; }
 		virtual bool IsImmutable (void) const { return false; }
 		virtual bool IsKnown (void) { return true; }

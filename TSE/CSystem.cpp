@@ -828,7 +828,7 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj == NULL
 				|| pObj->IsDestroyed()
-				|| pObj->GetScale() != scaleWorld)
+				|| !pObj->HasVolumetricShadow())
 			continue;
 
 		//	Compute the angle of the object with respect to the star
