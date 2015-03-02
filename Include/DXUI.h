@@ -223,12 +223,15 @@ class CGTextArea : public AGArea
 		CGTextArea (void);
 
 		inline const CString &GetText (void) { return m_sText; }
+		inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		inline void SetBorderRadius (int iRadius) { m_iBorderRadius = iRadius; }
 		inline void SetColor (CG32bitPixel rgbColor) { m_rgbColor = rgbColor; }
 		inline void SetCursor (int iLine, int iCol = 0) { m_iCursorLine = iLine; m_iCursorPos = iCol; }
 		inline void SetEditable (bool bEditable = true) { m_bEditable = bEditable; }
 		inline void SetFont (const CG16bitFont *pFont) { m_pFont = pFont; m_cxJustifyWidth = 0; }
 		inline void SetFontTable (const IFontTable *pFontTable) { m_pFontTable = pFontTable; }
 		inline void SetLineSpacing (int cySpacing) { m_cyLineSpacing = cySpacing; m_cxJustifyWidth = 0; }
+		inline void SetPadding (int iPadding) { m_rcPadding.left = iPadding; m_rcPadding.top = iPadding; m_rcPadding.right = iPadding; m_rcPadding.bottom = iPadding; }
 		inline void SetRichText (const CString &sRTF) { m_sRTF = sRTF; m_sText = NULL_STR; m_bRTFInvalid = true; Invalidate(); }
 		inline void SetStyles (DWORD dwStyles) { m_dwStyles = dwStyles; m_cxJustifyWidth = 0; }
 		inline void SetText (const CString &sText) { m_sText = sText; m_sRTF = NULL_STR; m_cxJustifyWidth = 0; Invalidate(); }
@@ -239,6 +242,7 @@ class CGTextArea : public AGArea
 		virtual void Update (void) { m_iTick++; }
 
 	private:
+		RECT CalcTextRect (const RECT &rcRect);
 		void FormatRTF (const RECT &rcRect);
 		void PaintRTF (CG32bitImage &Dest, const RECT &rcRect);
 		void PaintText (CG32bitImage &Dest, const RECT &rcRect);
@@ -248,9 +252,12 @@ class CGTextArea : public AGArea
 
 		bool m_bEditable;						//	TRUE if editable
 		DWORD m_dwStyles;						//	AlignmentStyles
+		RECT m_rcPadding;						//	Padding around the text
 		int m_cyLineSpacing;					//	Extra spacing between lines
+		int m_iBorderRadius;
 		const CG16bitFont *m_pFont;
 		CG32bitPixel m_rgbColor;
+		CG32bitPixel m_rgbBackColor;
 
 		bool m_bRTFInvalid;						//	TRUE if we need to format rich text
 		CTextBlock m_RichText;					//	Rich text to draw (only if m_sText is blank)

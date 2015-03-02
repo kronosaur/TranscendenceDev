@@ -13,8 +13,10 @@ CGTextArea::CGTextArea (void) :
 		m_bEditable(false),
 		m_dwStyles(alignLeft),
 		m_cyLineSpacing(0),
+		m_iBorderRadius(0),
 		m_pFont(NULL),
 		m_rgbColor(CG32bitPixel(255,255,255)),
+		m_rgbBackColor(CG32bitPixel::Null()),
 		m_bRTFInvalid(true),
 		m_pFontTable(NULL),
 		m_cxJustifyWidth(0),
@@ -25,6 +27,26 @@ CGTextArea::CGTextArea (void) :
 //	CGTextArea constructor
 
 	{
+	m_rcPadding.left = 0;
+	m_rcPadding.top = 0;
+	m_rcPadding.right = 0;
+	m_rcPadding.bottom = 0;
+	}
+
+RECT CGTextArea::CalcTextRect (const RECT &rcRect)
+
+//	CalcTextRect
+//
+//	Calculates the text rect given the control rect
+
+	{
+	RECT rcText = rcRect;
+	rcText.left += m_rcPadding.left;
+	rcText.top += m_rcPadding.top;
+	rcText.right -= m_rcPadding.right;
+	rcText.bottom -= m_rcPadding.bottom;
+
+	return rcText;
 	}
 
 void CGTextArea::FormatRTF (const RECT &rcRect)
@@ -60,27 +82,29 @@ int CGTextArea::Justify (const RECT &rcRect)
 //	Justify the text and return the height (in pixels)
 
 	{
+	RECT rcText = CalcTextRect(rcRect);
+
 	if (!m_sText.IsBlank())
 		{
 		if (m_pFont == NULL)
 			return 0;
 
-		if (m_cxJustifyWidth != RectWidth(rcRect))
+		if (m_cxJustifyWidth != RectWidth(rcText))
 			{
-			m_cxJustifyWidth = RectWidth(rcRect);
+			m_cxJustifyWidth = RectWidth(rcText);
 			m_Lines.DeleteAll();
 			m_pFont->BreakText(m_sText, m_cxJustifyWidth, &m_Lines, CG16bitFont::SmartQuotes);
 			}
 
-		return m_Lines.GetCount() * m_pFont->GetHeight() + (m_Lines.GetCount() - 1) * m_cyLineSpacing;
+		return m_rcPadding.top + (m_Lines.GetCount() * m_pFont->GetHeight() + (m_Lines.GetCount() - 1) * m_cyLineSpacing) + m_rcPadding.bottom;
 		}
 	else
 		{
-		FormatRTF(rcRect);
+		FormatRTF(rcText);
 
 		RECT rcBounds;
 		m_RichText.GetBounds(&rcBounds);
-		return RectHeight(rcBounds);
+		return m_rcPadding.top + RectHeight(rcBounds) + m_rcPadding.bottom;
 		}
 	}
 
@@ -91,6 +115,15 @@ void CGTextArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 //	Handle paint
 
 	{
+	RECT rcText = CalcTextRect(rcRect);
+
+	//	Paint the background
+
+	if (m_iBorderRadius > 0)
+		CGDraw::RoundedRect(Dest, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), m_iBorderRadius, m_rgbBackColor);
+	else
+		Dest.Fill(rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), m_rgbBackColor);
+
 	//	Paint the editable box
 
 	if (m_bEditable)
@@ -102,9 +135,9 @@ void CGTextArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	//	Paint the content
 
 	if (!m_sText.IsBlank())
-		PaintText(Dest, rcRect);
+		PaintText(Dest, rcText);
 	else
-		PaintRTF(Dest, rcRect);
+		PaintRTF(Dest, rcText);
 	}
 
 void CGTextArea::PaintRTF (CG32bitImage &Dest, const RECT &rcRect)
