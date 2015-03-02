@@ -123,9 +123,17 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	else if (m_fGateAtDestination)
 		{
-		Ctx.ImplementGating(pShip, m_Objs[objDest]);
-		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
-		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+		//	Make sure we have a valid gate. Note that we don't cancel the order
+		//	because gating is one of the orders we add if we have no other 
+		//	orders. Sometimes this gets added in the intro screen (where we have 
+		//	no gates).
+
+		if (m_Objs[objDest] != NULL)
+			{
+			Ctx.ImplementGating(pShip, m_Objs[objDest]);
+			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
+			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+			}
 		}
 
 	//	Otherwise, continue

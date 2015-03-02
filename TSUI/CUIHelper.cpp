@@ -40,6 +40,8 @@ const int ITEM_TEXT_MARGIN_X =					4;
 const int ITEM_TEXT_MARGIN_BOTTOM =				10;
 const int ITEM_DEFAULT_HEIGHT =					96;
 const int ITEM_TITLE_EXTRA_MARGIN =				4;
+const int ITEM_LEFT_PADDING =					8;
+const int ITEM_RIGHT_PADDING =					8;
 
 const int PADDING_LEFT =						20;
 
@@ -113,9 +115,9 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	RECT rcDrawRect = rcRect;
 	rcDrawRect.left += ITEM_TEXT_MARGIN_X;
-	rcDrawRect.right -= ITEM_TEXT_MARGIN_X;
+	rcDrawRect.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
 	if (!bNoIcon)
-		rcDrawRect.left += ICON_WIDTH;
+		rcDrawRect.left += ITEM_LEFT_PADDING + ICON_WIDTH;
 
 	int iLevel = pType->GetApparentLevel();
 
@@ -966,15 +968,15 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 	RECT rcDrawRect = rcRect;
 	rcDrawRect.left += ITEM_TEXT_MARGIN_X;
-	rcDrawRect.right -= ITEM_TEXT_MARGIN_X;
+	rcDrawRect.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
 	rcDrawRect.top += ITEM_TEXT_MARGIN_Y;
 
 	//	Paint the image
 
 	if (!bNoIcon)
 		{
-		DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pItemType);
-		rcDrawRect.left += ICON_WIDTH;
+		DrawItemTypeIcon(Dest, rcRect.left + ITEM_LEFT_PADDING, rcRect.top, pItemType);
+		rcDrawRect.left += ITEM_LEFT_PADDING + ICON_WIDTH;
 		}
 
 	//	Paint the item name
