@@ -332,14 +332,7 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 	ALERROR error;
 
 	IImageEntry *pEntry;
-	if (strEquals(pDesc->GetTag(), IMAGE_TAG))
-		{
-		if (pDesc->GetContentElementCount() == 0)
-			pEntry = new CImageEntry;
-		else
-			return InitEntryFromXML(Ctx, pDesc->GetContentElement(0), IDGen, retpEntry);
-		}
-	else if (strEquals(pDesc->GetTag(), IMAGE_COMPOSITE_TAG) || strEquals(pDesc->GetTag(), COMPOSITE_TAG))
+	if (strEquals(pDesc->GetTag(), IMAGE_COMPOSITE_TAG) || strEquals(pDesc->GetTag(), COMPOSITE_TAG))
 		pEntry = new CCompositeEntry;
 	else if (strEquals(pDesc->GetTag(), IMAGE_EFFECT_TAG) || strEquals(pDesc->GetTag(), EFFECT_TAG))
 		pEntry = new CEffectEntry;
@@ -349,10 +342,16 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 		pEntry = new CFilterColorizeEntry;
 	else if (strEquals(pDesc->GetTag(), LOCATION_CRITERIA_TABLE_TAG))
 		pEntry = new CLocationCriteriaTableEntry;
+
+	//	Otherwise, assume that this is either a plain image or an arbitrary tag with
+	//	content elements representing the actual image composition.
+
 	else
 		{
-		Ctx.sError = strPatternSubst(CONSTLIT("Unknown image tag: %s"), pDesc->GetTag());
-		return ERR_FAIL;
+		if (pDesc->GetContentElementCount() == 0)
+			pEntry = new CImageEntry;
+		else
+			return InitEntryFromXML(Ctx, pDesc->GetContentElement(0), IDGen, retpEntry);
 		}
 
 	//	Init

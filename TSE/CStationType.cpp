@@ -12,6 +12,7 @@
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
 #define ENCOUNTERS_TAG							CONSTLIT("Encounters")
 #define EVENTS_TAG								CONSTLIT("Events")
+#define HERO_IMAGE_TAG							CONSTLIT("HeroImage")
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGE_EFFECT_TAG						CONSTLIT("ImageEffect")
 #define IMAGE_VARIANTS_TAG						CONSTLIT("ImageVariants")
@@ -988,6 +989,10 @@ void CStationType::MarkImages (const CCompositeImageSelector &Selector)
 
 	if (m_pGateEffect)
 		m_pGateEffect->MarkImages();
+
+	//	NOTE: We don't bother marking the hero image because we don't need it
+	//	to paint the main screen. [We only needed when docking, and it's OK to
+	//	delay slightly.]
 	}
 
 void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -1013,6 +1018,7 @@ void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_pItems->AddTypesUsed(retTypesUsed);
 
 	m_Image.AddTypesUsed(retTypesUsed);
+	m_HeroImage.AddTypesUsed(retTypesUsed);
 
 	for (i = 0; i < m_ShipWrecks.GetCount(); i++)
 		retTypesUsed->SetAt(m_ShipWrecks.GetElement(i), true);
@@ -1059,6 +1065,9 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Images
 
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
+		goto Fail;
+
+	if (error = m_HeroImage.OnDesignLoadComplete(Ctx))
 		goto Fail;
 
 	for (i = 0; i < m_iAnimationsCount; i++)
@@ -1454,6 +1463,17 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			}
 		}
 
+	//	Load hero image
+
+	if (pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG))
+		{
+		if (error = m_HeroImage.InitFromXML(Ctx, pImage))
+			{
+			Ctx.sError = ComposeLoadError(Ctx.sError);
+			return error;
+			}
+		}
+
 	//	Load animations
 
 	CXMLElement *pAnimations = pDesc->GetContentElementByTag(ANIMATIONS_TAG);
@@ -1731,6 +1751,7 @@ void CStationType::OnReinit (void)
 	{
 	m_EncounterRecord.Reinit(m_RandomPlacement);
 	m_Image.Reinit();
+	m_HeroImage.Reinit();
 	}
 
 void CStationType::OnTopologyInitialized (void)

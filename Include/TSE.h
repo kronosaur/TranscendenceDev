@@ -2640,6 +2640,7 @@ class CSpaceObject : public CObject
 		virtual DWORD GetClassUNID (void) { return 0; }
 		virtual const CString &GetGlobalData (const CString &sAttribute) { return NULL_STR; }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
+		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
 		virtual const CObjectImageArray &GetImage (void) const;
 		virtual int GetInteraction (void) { return 100; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }

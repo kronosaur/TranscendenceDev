@@ -4946,6 +4946,7 @@ class CStationType : public CDesignType
 		inline int GetFrequencyForSystem (CSystem *pSystem) { return m_EncounterRecord.GetFrequencyForSystem(pSystem, this, m_RandomPlacement); }
 		inline CEffectCreator *GetGateEffect (void) { return m_pGateEffect; }
 		inline Metric GetGravityRadius (void) const { return m_rGravityRadius; }
+		inline const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(Selector, Modifiers, retiRotation); }
 		inline const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_Image.GetImage(Selector, Modifiers, retiRotation); }
 		inline IImageEntry *GetImageRoot (void) const { return m_Image.GetRoot(); }
 		inline int GetImageVariants (void) { return m_iImageVariants; }
@@ -5128,6 +5129,7 @@ class CStationType : public CDesignType
 		CIntArray m_ShipWrecks;							//	Class IDs to use as image (for shipwrecks)
 		int m_iAnimationsCount;							//	Number of animation sections
 		SAnimationSection *m_pAnimations;				//	Animation sections (may be NULL)
+		CCompositeImageDesc m_HeroImage;				//	For use in dock screens and covers
 
 		//	Docking
 		CDockScreenTypeRef m_pFirstDockScreen;			//	First screen (may be NULL)
