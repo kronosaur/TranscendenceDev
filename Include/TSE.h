@@ -1393,6 +1393,7 @@ class CSystem : public CObject
 		inline int GetTimedEventCount (void) { return m_TimedEvents.GetCount(); }
 		inline CTimedEvent *GetTimedEvent (int iIndex) { return m_TimedEvents.GetEvent(iIndex); }
 		void InitSpaceEnvironment (void) const;
+		void InitVolumetricMask (void);
 		void PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj);
 		void UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj);
 		void UpdateRandomEncounters (void);

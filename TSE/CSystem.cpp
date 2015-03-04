@@ -1188,8 +1188,6 @@ void CSystem::ComputeStars (void)
 			{
 			SStarDesc *pNewStar = m_Stars.Insert();
 			pNewStar->pStarObj = pObj;
-
-			CalcVolumetricMask(pObj, pNewStar->VolumetricMask);
 			}
 		}
 	}
@@ -2720,6 +2718,22 @@ void CSystem::InitSpaceEnvironment (void) const
 		m_pEnvironment = new CEnvironmentGrid(m_pType->GetAPIVersion());
 	}
 
+void CSystem::InitVolumetricMask (void)
+
+//	InitVolumetricMask
+//
+//	Initializes the volumetric mask for all stars
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stars.GetCount(); i++)
+		{
+		if (m_Stars[i].VolumetricMask.IsEmpty())
+			CalcVolumetricMask(m_Stars[i].pStarObj, m_Stars[i].VolumetricMask);
+		}
+	}
+
 bool CSystem::IsAreaClear (const CVector &vPos, Metric rRadius, DWORD dwFlags, CStationType *pType)
 
 //	IsAreaClear
@@ -2864,6 +2878,10 @@ void CSystem::MarkImages (void)
 	//	Mark system type images
 
 	m_pType->MarkImages();
+
+	//	Initialize the volumetric mask
+
+	InitVolumetricMask();
 
 	//	Done
 
@@ -3858,7 +3876,10 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 	//	If this was a star then recalc the list of stars
 
 	if (Ctx.pObj->GetScale() == scaleStar)
+		{
 		ComputeStars();
+		InitVolumetricMask();
+		}
 
 	//	Debug code to see if we ever delete a barrier in the middle of move
 
