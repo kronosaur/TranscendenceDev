@@ -1212,7 +1212,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	0,	},
 
 		{	"objGetBuyPrice",				fnObjGet,		FN_OBJ_GET_BUY_PRICE,	
-			"(objGetBuyPrice obj item [options]) -> price\n\n"
+			"(objGetBuyPrice obj item [options]) -> price (at which obj sells item)\n\n"
 			
 			"options:\n\n"
 			
@@ -1461,7 +1461,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",		0,	},
 
 		{	"objGetSellPrice",				fnObjGet,		FN_OBJ_GET_SELL_PRICE,	
-			"(objGetSellPrice obj item ['noInventoryCheck]) -> price",
+			"(objGetSellPrice obj item ['noInventoryCheck]) -> price (at which obj sells item)",
 			"il*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetShieldLevel",			fnObjGetOld,		FN_OBJ_SHIELD_LEVEL,

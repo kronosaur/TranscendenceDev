@@ -275,6 +275,8 @@ struct SUpdateCtx
 	int iMinFireArc;					//	Fire arc of primary weapon
 	int iMaxFireArc;
 
+	//	Misc flags
+
 	bool bGravityWarning;				//	Player in a dangerous gravity field
 	};
 
