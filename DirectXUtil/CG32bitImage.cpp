@@ -762,7 +762,7 @@ bool CG32bitImage::CreateFromImageTransformed (const CG32bitImage &Source, int x
 	rcDest.right = RectWidth(rcDestXForm);
 	rcDest.bottom = RectHeight(rcDestXForm);
 
-	//	Create the destination image (not need to initialize, since we will copy
+	//	Create the destination image (no need to initialize, since we will copy
 	//	over it).
 
 	m_cxWidth = RectWidth(rcDest);
