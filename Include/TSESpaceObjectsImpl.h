@@ -1169,7 +1169,7 @@ class CShip : public CSpaceObject
 		DWORD m_fDisarmedByOverlay:1;			//	TRUE if one or more overlays disarmed the ship.
 		DWORD m_fSpinningByOverlay:1;			//	TRUE if we should spin wildly
 		DWORD m_fDragByOverlay:1;				//	TRUE if overlay imposes drag
-		DWORD m_fSpare8:1;
+		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
 
 		DWORD m_dwSpare:8;
 

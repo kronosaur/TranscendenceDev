@@ -45,6 +45,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define FIELD_SHIELD_UNID						CONSTLIT("shieldsUNID")
 #define FIELD_THRUST_TO_WEIGHT					CONSTLIT("thrustToWeight")
 
+#define PROPERTY_ALWAYS_LEAVE_WRECK				CONSTLIT("alwaysLeaveWreck")
 #define PROPERTY_AVAILABLE_NON_WEAPON_SLOTS		CONSTLIT("availableNonWeaponSlots")
 #define PROPERTY_AVAILABLE_WEAPON_SLOTS			CONSTLIT("availableWeaponSlots")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
@@ -1141,6 +1142,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fDisarmedByOverlay = false;
 	pShip->m_fSpinningByOverlay = false;
 	pShip->m_fDragByOverlay = false;
+	pShip->m_fAlwaysLeaveWreck = false;
 	pShip->m_dwSpare = 0;
 
 	//	Shouldn't be able to hit a virtual ship
@@ -2689,7 +2691,10 @@ ICCItem *CShip::GetProperty (const CString &sName)
 	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_AVAILABLE_NON_WEAPON_SLOTS))
+	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
+		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
+
+	else if (strEquals(sName, PROPERTY_AVAILABLE_NON_WEAPON_SLOTS))
 		{
 		int iNonWeapon;
 		int iAll = CalcDeviceSlotsInUse(NULL, &iNonWeapon);
@@ -4005,6 +4010,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 			&& (Ctx.bResurrectPending
 				|| Ctx.iCause == killedByRadiationPoisoning
 				|| Ctx.iCause == killedByRunningOutOfFuel
+				|| m_fAlwaysLeaveWreck
 				|| mathRandom(1, 100) <= m_pClass->GetWreckChance());
 
 	//	Create wreck (Note: CreateWreck may not create a wreck
@@ -4734,6 +4740,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fDisarmedByOverlay =		((dwLoad & 0x00100000) ? true : false);
 	m_fSpinningByOverlay =		((dwLoad & 0x00200000) ? true : false);
 	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
+	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
 
 	//	OK to recompute
 	m_fRecalcRotationAccel = true;
@@ -5624,6 +5631,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fDisarmedByOverlay ?	0x00100000 : 0);
 	dwSave |= (m_fSpinningByOverlay ?	0x00200000 : 0);
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
+	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Armor
@@ -6756,7 +6764,12 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_DOCKING_ENABLED))
+	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
+		{
+		m_fAlwaysLeaveWreck = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_DOCKING_ENABLED))
 		{
 		m_fDockingDisabled = pValue->IsNil();
 		return true;
