@@ -24,9 +24,9 @@ CObjectImage::CObjectImage (void) :
 	{
 	}
 
-CObjectImage::CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap) :
+CObjectImage::CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap, CG32bitImage *pShadowMask) :
 		m_pBitmap(pBitmap),
-		m_pShadowMask(NULL),
+		m_pShadowMask(pShadowMask),
 		m_bPreMult(false),
 		m_bLoadOnUse(false),
 		m_bFreeBitmap(bFreeBitmap),

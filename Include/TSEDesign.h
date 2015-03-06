@@ -861,7 +861,7 @@ class CObjectImage : public CDesignType
 	{
 	public:
 		CObjectImage (void);
-		CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap = false);
+		CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap = false, CG32bitImage *pShadowMask = NULL);
 		~CObjectImage (void);
 
 		CG32bitImage *CreateCopy (CString *retsError = NULL);
@@ -913,6 +913,7 @@ class CObjectImageArray : public CObject
 
 		ALERROR Init (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap);
 		ALERROR Init (DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame);
+		ALERROR InitFromRotated (const CObjectImageArray &Source, int iTick, int iVariant, int iRotation);
 		ALERROR InitFromXML (CXMLElement *pDesc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);

@@ -839,6 +839,10 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 		if (rStarDist > rMaxDist)
 			continue;
 
+		//	Generate an image lit from the proper angle
+
+		pObj->CreateStarlightImage(iStarAngle, rStarDist);
+
 		//	Add the shadow
 
 		CalcVolumetricShadow(pObj, xStar, yStar, iStarAngle, VolumetricMask);

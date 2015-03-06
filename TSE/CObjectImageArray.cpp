@@ -860,6 +860,52 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iF
 	return NOERROR;
 	}
 
+ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int iTick, int iVariant, int iRotation)
+
+//	InitFromRotated
+//
+//	Creates a new image from the source
+
+	{
+	CG32bitImage &SourceImage = Source.GetImage(CONSTLIT("Rotated image"));
+	RECT rcSrc = Source.GetImageRect(iTick, iVariant);
+
+	//	If we have a shadow mask, make a copy
+
+	CG32bitImage *pShadowMask = NULL;
+	if (Source.m_pImage->GetShadowMask())
+		pShadowMask = new CG32bitImage(*Source.m_pImage->GetShadowMask());
+
+	//	Create a rotated image
+
+	CG32bitImage *pDest = new CG32bitImage;
+	pDest->CreateFromImageTransformed(SourceImage, rcSrc.left, rcSrc.top, RectWidth(rcSrc), RectHeight(rcSrc), 1.0, 1.0, iRotation);
+
+	//	Clean up
+
+	CleanUp();
+
+	//	Initialize
+
+	m_dwBitmapUNID = 0;
+	m_pImage = new CObjectImage(pDest, true, pShadowMask);
+	m_rcImage.left = 0;
+	m_rcImage.top = 0;
+	m_rcImage.right = pDest->GetWidth();
+	m_rcImage.bottom = pDest->GetHeight();
+	m_iFrameCount = 1;
+	m_iRotationCount = 1;
+	m_iFramesPerColumn = 1;
+	m_iTicksPerFrame = 0;
+	m_iFlashTicks = 0;
+	m_iRotationOffset = 0;
+	m_pRotationOffset = NULL;
+	m_iBlending = blendNormal;
+	m_iViewportSize = RectWidth(m_rcImage);
+
+	return NOERROR;
+	}
+
 ALERROR CObjectImageArray::InitFromXML (CXMLElement *pDesc)
 
 //	InitFromXML

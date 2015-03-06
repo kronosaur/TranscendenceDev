@@ -1261,6 +1261,7 @@ class CStation : public CSpaceObject
 		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		virtual bool ClassCanAttack (void);
 		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, int iCount = 1);
+		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist);
 		virtual CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		virtual CString DebugCrashInfo (void);
 		virtual void Decontaminate (void) { m_fRadioactive = false; }
@@ -1467,6 +1468,8 @@ class CStation : public CSpaceObject
 
 		CG32bitImage m_MapImage;				//	Image for the map (if star or world)
 		CString m_sMapLabel;					//	Label for map
+
+		CObjectImageArray m_StarlightImage;		//	Image rotated for proper lighting.
 
 	friend CObjectClass<CStation>;
 	};

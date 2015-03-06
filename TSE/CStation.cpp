@@ -306,14 +306,20 @@ bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int
 //	Computes the line shadow line for the object.
 
 	{
-	//	Get the image
+	if (!m_StarlightImage.IsEmpty())
+		return m_StarlightImage.CalcVolumetricShadowLine(Ctx, 0, 0, retxCenter, retyCenter, retiWidth, retiLength);
 
-	int iTick, iVariant;
-	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
+	else
+		{
+		//	Get the image
 
-	//	Get the shadow line from the image
+		int iTick, iVariant;
+		const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
 
-	return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
+		//	Get the shadow line from the image
+
+		return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
+		}
 	}
 
 bool CStation::CanAttack (void) const
@@ -838,10 +844,6 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	if (pTrade)
 		pTrade->RefreshInventory(pStation);
 
-	//	If this is a world or a star, create a small image
-
-	pStation->CreateMapImage();
-
 	//	This type has now been encountered
 
 	pType->SetEncountered(pSystem);
@@ -908,25 +910,45 @@ ALERROR CStation::CreateMapImage (void)
 
 	Metric rScale = g_KlicksPerPixel / (0.3 * LIGHT_SECOND);
 
-	//	Make sure we have an image
+	//	Get it from the starlight image, if we have it.
 
-	int iTick, iRotation;
-	const CObjectImageArray &Image = GetImage(false, &iTick, &iRotation);
-	if (!Image.IsLoaded())
-		return NOERROR;
+	CG32bitImage *pBmpImage = NULL;
+	RECT rcBmpImage;
+	if (!m_StarlightImage.IsEmpty())
+		{
+		pBmpImage = &m_StarlightImage.GetImage(strFromInt(m_pType->GetUNID()));
+		rcBmpImage = m_StarlightImage.GetImageRect();
+		}
 
-	CG32bitImage &BmpImage = Image.GetImage(strFromInt(m_pType->GetUNID()));
-	const RECT &rcImage = Image.GetImageRect();
+	//	Otherwise, from the main image
 
-	if (!m_MapImage.CreateFromImageTransformed(BmpImage,
-			rcImage.left,
-			rcImage.top + RectHeight(rcImage) * iRotation,
-			RectWidth(rcImage),
-			RectHeight(rcImage),
-			rScale,
-			rScale,
-			0.0))
-		return ERR_FAIL;
+	else
+		{
+		//	Make sure we have an image
+
+		int iTick, iRotation;
+		const CObjectImageArray &Image = GetImage(false, &iTick, &iRotation);
+		if (!Image.IsLoaded())
+			return NOERROR;
+
+		pBmpImage = &Image.GetImage(strFromInt(m_pType->GetUNID()));
+		rcBmpImage = Image.GetImageRect(iTick, iRotation);
+		}
+
+	//	Create the image
+
+	if (pBmpImage)
+		{
+		if (!m_MapImage.CreateFromImageTransformed(*pBmpImage,
+				rcBmpImage.left,
+				rcBmpImage.top,
+				RectWidth(rcBmpImage),
+				RectHeight(rcBmpImage),
+				rScale,
+				rScale,
+				0.0))
+			return ERR_FAIL;
+		}
 
 	return NOERROR;
 	}
@@ -953,6 +975,32 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, int iCou
 
 	for (i = 0; i < iCount; i++)
 		pShipGenerator->CreateShips(Ctx);
+	}
+
+void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
+
+//	CreateStarlightImage
+//
+//	Creates an image of the object rotated so it's shadow faces towards 
+//	iStarAngle.
+
+	{
+	//	Figure out the rotation
+
+	int iRotation = iStarAngle - 315;
+
+	//	Get the source image
+
+	int iTick, iVariant;
+	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
+
+	//	Create a rotated image
+
+	m_StarlightImage.InitFromRotated(Image, iTick, iVariant, iRotation);
+
+	//	While we're here, create the map image
+
+	CreateMapImage();
 	}
 
 void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
@@ -2241,8 +2289,13 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	int iTick, iVariant;
 	const CObjectImageArray &Image = GetImage(true, &iTick, &iVariant);
-	if (m_fRadioactive)
+
+	if (!m_StarlightImage.IsEmpty())
+		m_StarlightImage.PaintImage(Dest, x, y, 0, 0);
+
+	else if (m_fRadioactive)
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, RGB(0, 255, 0));
+
 	else
 		Image.PaintImage(Dest, x, y, iTick, iVariant);
 
@@ -2408,18 +2461,26 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 	//	Draw the station
 
 	if (m_Scale == scaleWorld)
+		{
+		if (m_MapImage.IsEmpty())
+			CreateMapImage();
+
 		Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
 				m_MapImage,
 				x - (m_MapImage.GetWidth() / 2),
 				y - (m_MapImage.GetHeight() / 2));
-
+		}
 	else if (m_Scale == scaleStar)
+		{
+		if (m_MapImage.IsEmpty())
+			CreateMapImage();
+
 		CGDraw::BltLighten(Dest,
 				x - (m_MapImage.GetWidth() / 2),
 				y - (m_MapImage.GetHeight() / 2),
 				m_MapImage,
 				0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight());
-
+		}
 	else if (m_pType->ShowsMapIcon() && m_fKnown)
 		{
 		//	Figure out the color
@@ -2841,10 +2902,6 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 				&& m_pType->GetEjectaAdj() != 0)
 			m_fImmutable = m_pType->IsImmutable();
 		}
-
-	//	If this is a world or a star, create a small image
-
-	CreateMapImage();
 	}
 
 void CStation::OnSetEventFlags (void)

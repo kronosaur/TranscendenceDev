@@ -2636,6 +2636,7 @@ class CSpaceObject : public CObject
 		virtual bool CanHit (CSpaceObject *pObj) { return true; }
 		virtual bool CanMove (void) { return false; }
 		virtual bool ClassCanAttack (void) { return false; }
+		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) { }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual AbilityStatus GetAbility (Abilities iAbility) { return ablUninstalled; }
