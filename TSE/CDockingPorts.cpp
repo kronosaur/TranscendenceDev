@@ -496,9 +496,35 @@ void CDockingPorts::OnDestroyed (void)
 
 	for (int i = 0; i < m_iPortCount; i++)
 		if (m_pPort[i].iStatus == psDocking)
+			{
 			m_pPort[i].pObj->UnfreezeControls();
 
+			m_pPort[i].iStatus = psEmpty;
+			m_pPort[i].pObj = NULL;
+			}
+
 	DEBUG_CATCH
+	}
+
+void CDockingPorts::OnNewSystem (CSystem *pNewSystem)
+
+//	OnNewSystem
+//
+//	If we've entered a new system, then release any objects in the previous
+//	system.
+//
+//	NOTE: pNewSystem could be NULL in the case where we're ascending an object.
+
+	{
+	for (int i = 0; i < m_iPortCount; i++)
+		if (m_pPort[i].pObj != NULL
+				&& m_pPort[i].pObj->GetSystem() != pNewSystem)
+			{
+			m_pPort[i].pObj->UnfreezeControls();
+
+			m_pPort[i].iStatus = psEmpty;
+			m_pPort[i].pObj = NULL;
+			}
 	}
 
 void CDockingPorts::OnObjDestroyed (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbDestroyed)
@@ -748,7 +774,12 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 		//	the docking port.
 
 		if (m_pPort[i].iStatus == psDocking)
-			UpdateDockingManeuvers(pOwner, m_pPort[i]);
+			{
+			if (m_pPort[i].pObj)
+				UpdateDockingManeuvers(pOwner, m_pPort[i]);
+			else
+				m_pPort[i].iStatus = psEmpty;
+			}
 
 		//	Otherwise, if the port is open, see if this is the nearest port to
 		//	the current player position.

@@ -3648,6 +3648,7 @@ void CShip::OnAscended (void)
 	//	Clear out docking variables (we've already undocked, because we've 
 	//	already sent an EnterGate message to all other objects in the system).
 
+	m_DockingPorts.OnNewSystem(NULL);
 	m_pDocked = NULL;
 	m_pExitGate = NULL;
 	}
@@ -4304,6 +4305,12 @@ void CShip::OnNewSystem (CSystem *pSystem)
 //	Ship has moved from one system to another
 
 	{
+	//	If we have any objects docked with us, then remove them.
+
+	m_DockingPorts.OnNewSystem(pSystem);
+
+	//	Let the controller handle it.
+
 	m_pController->OnNewSystem(pSystem);
 	}
 

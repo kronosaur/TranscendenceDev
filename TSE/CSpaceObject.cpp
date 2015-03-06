@@ -5285,6 +5285,32 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 	ClearPainted();
 	}
 
+void CSpaceObject::NotifyOnNewSystem (CSystem *pNewSystem)
+
+//	NotifyOnNewSystem
+//
+//	The object has been moved to a new system (this is commonly done for wingmen
+//	and other followers of the player). We guarantee that the old system is 
+//	still loaded at this point.
+
+	{
+	int i;
+
+	//	If any objects in the old system subscribe to us, then we need to
+	//	cancel the subscription.
+
+	for (i = 0; i < m_SubscribedObjs.GetCount(); i++)
+		if (m_SubscribedObjs.GetObj(i)->GetSystem() != pNewSystem)
+			{
+			m_SubscribedObjs.Remove(i);
+			i--;
+			}
+
+	//	Let our subclasses handle it
+
+	OnNewSystem(pNewSystem);
+	}
+
 void CSpaceObject::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 
 //	NotifyOnObjDestroyed

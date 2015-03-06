@@ -1760,6 +1760,7 @@ class CDockingPorts
 		inline bool IsObjDockedOrDocking (CSpaceObject *pObj) { return IsDockedOrDocking(pObj); }
 		void MoveAll (CSpaceObject *pOwner);
 		void OnDestroyed (void);
+		void OnNewSystem (CSystem *pNewSystem);
 		void OnObjDestroyed (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbDestroyed = NULL);
 		void ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx);
 		void RepairAll (CSpaceObject *pOwner, int iRepairRate);
@@ -2468,6 +2469,7 @@ class CSpaceObject : public CObject
 		void Jump (const CVector &vPos);
 		inline void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void Move (const CSpaceObjectList &Barriers, Metric rSeconds);
+		void NotifyOnNewSystem (CSystem *pNewSystem);
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
 		void NotifyOnObjDocked (CSpaceObject *pDockTarget);
 		inline bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
@@ -2755,7 +2757,6 @@ class CSpaceObject : public CObject
 		virtual void OnHitByDeviceDisruptDamage (DWORD dwDuration) { }
 		virtual void OnHitByRadioactiveDamage (SDamageCtx &Ctx) { }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) { }
-		virtual void OnNewSystem (CSystem *pSystem) { }
 		virtual void OnObjDamaged (SDamageCtx &Ctx) { }
 		virtual void OnObjDestroyedNotify (SDestroyCtx &Ctx) { FireOnObjDestroyed(Ctx); }
 		virtual void OnObjLeaveGate (CSpaceObject *pObj) { }
@@ -2847,16 +2848,17 @@ class CSpaceObject : public CObject
 		virtual CSpaceObject *OnGetOrderGiver (void) { return this; }
 		virtual void OnItemEnhanced (CItemListManipulator &ItemList) { }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) { }
+		virtual void OnNewSystem (CSystem *pSystem) { }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) { }
-		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }
-		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime) { }
-		virtual void OnUpdatePlayer (SUpdateCtx &Ctx) { }
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) { }
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
 		virtual void OnSetEventFlags (void) { }
+		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }
+		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime) { }
+		virtual void OnUpdatePlayer (SUpdateCtx &Ctx) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) { }
 		virtual bool OrientationChanged (void) { return false; }
 		virtual void RevertOrientationChange (void) { }
