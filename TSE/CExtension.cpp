@@ -113,6 +113,27 @@ void CExtension::AddDefaultLibraryReferences (SDesignLoadCtx &Ctx)
 		}
 	}
 
+void CExtension::AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD, CString> *retMap) const
+
+//	AddEntityNames
+//
+//	Adds entity names to the given map
+
+	{
+	int i;
+
+	for (i = 0; i < pEntities->GetCount(); i++)
+		{
+		CString sEntity, sValue;
+		pEntities->GetEntity(i, &sEntity, &sValue);
+
+		//	Add to the list
+
+		DWORD dwUNID = strToInt(sValue, 0);
+		retMap->SetAt(dwUNID, sEntity);
+		}
+	}
+
 void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD dwRelease)
 
 //	AddLibraryReference
@@ -815,6 +836,32 @@ CG32bitImage *CExtension::GetCoverImage (void) const
 	//	Done
 
 	return m_pCoverImage;
+	}
+
+CString CExtension::GetEntityName (DWORD dwUNID) const
+
+//	GetEntityName
+//
+//	Returns the entity name of the given UNID (or NULL_STR if we don't have it).
+
+	{
+	//	Must have entities
+
+	if (m_pEntities == NULL)
+		return NULL_STR;
+
+	//	If we don't yet have it, create a reverse lookup
+
+	if (m_UNID2EntityName.GetCount() == 0)
+		AddEntityNames(m_pEntities, &m_UNID2EntityName);
+
+	//	Return it
+
+	CString *pName = m_UNID2EntityName.GetAt(dwUNID);
+	if (pName == NULL)
+		return NULL_STR;
+
+	return *pName;
 	}
 
 ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pResolver, bool bNoResources, bool bKeepXML, CString *retsError)

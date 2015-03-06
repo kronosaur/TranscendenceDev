@@ -378,6 +378,7 @@ class CDesignType
 		inline CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return m_DisplayAttribs; }
+		CString GetEntityName (void) const;
 		ICCItem *GetEventHandler (const CString &sEvent) const;
 		void GetEventHandlers (const CEventHandler **retHandlers, TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers);
 		CExtension *GetExtension (void) const { return m_pExtension; }
@@ -6112,6 +6113,7 @@ class CExtension
 		inline const CDesignTable &GetDesignTypes (void) { return m_DesignTypes; }
 		inline const CIntegerIP &GetDigest (void) const { return m_Digest; }
 		inline CExternalEntityTable *GetEntities (void) { return m_pEntities; }
+		CString GetEntityName (DWORD dwUNID) const;
 		inline const TArray<CString> &GetExternalResources (void) const { return m_Externals; }
 		inline const CString &GetFilespec (void) const { return m_sFilespec; }
 		inline EFolderTypes GetFolderType (void) const { return m_iFolderType; }
@@ -6155,6 +6157,7 @@ class CExtension
 
 		static ALERROR CreateExtensionFromRoot (const CString &sFilespec, CXMLElement *pDesc, EFolderTypes iFolder, CExternalEntityTable *pEntities, DWORD dwInheritAPIVersion, CExtension **retpExtension, CString *retsError);
 
+		void AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD, CString> *retMap) const;
 		void AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID = 0, DWORD dwRelease = 0);
 		void AddDefaultLibraryReferences (SDesignLoadCtx &Ctx);
 		void CleanUpXML (void);
@@ -6206,6 +6209,8 @@ class CExtension
 		mutable CG32bitImage *m_pCoverImage;	//	Large cover image
 
 		CAdventureDesc *m_pAdventureDesc;	//	If extAdventure, this is the descriptor
+
+		mutable TSortMap<DWORD, CString> m_UNID2EntityName;
 
 		bool m_bMarked;						//	Used by CExtensionCollection for various things
 		bool m_bDebugOnly;					//	Only load in debug mode
