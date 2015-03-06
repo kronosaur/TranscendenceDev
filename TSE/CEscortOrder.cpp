@@ -109,8 +109,7 @@ void CEscortOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 				//	If we're outside of our patrol range and if we haven't
 				//	been hit in a while then stop the attack.
 
-				if (rDistance2 > (PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE)
-						&& !Ctx.IsBeingAttacked())
+				if (rDistance2 > (PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE))
 					m_iState = stateEscorting;
 				}
 
