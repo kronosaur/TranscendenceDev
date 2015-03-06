@@ -1039,9 +1039,19 @@ void CAIBehaviorCtx::ImplementDocking (CShip *pShip, CSpaceObject *pTarget)
 	CVector vTarget = pTarget->GetPos() - pShip->GetPos();
 	Metric rTargetDist2 = vTarget.Dot(vTarget);
 
-	if (rTargetDist2 > (MAX_DOCK_DISTANCE * MAX_DOCK_DISTANCE))
+	//	If we've requested docking, then we don't need to do anything
+
+	if (IsDockingRequested())
+		{ }
+
+	//	If we're still far from our target, then approach it
+
+	else if (rTargetDist2 > (MAX_DOCK_DISTANCE * MAX_DOCK_DISTANCE))
 		ImplementCloseOnImmobileTarget(pShip, pTarget, vTarget, rTargetDist2);
-	else if (!IsDockingRequested() && pShip->IsDestinyTime(20))
+
+	//	Otherwise, if we're within range, then request docking
+
+	else if (pShip->IsDestinyTime(20))
 		{
 		if (pTarget->RequestDock(pShip))
 			SetDockingRequested(true);
