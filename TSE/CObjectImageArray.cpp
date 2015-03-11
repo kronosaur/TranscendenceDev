@@ -874,7 +874,10 @@ ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int
 
 	CG32bitImage *pShadowMask = NULL;
 	if (Source.m_pImage->GetShadowMask())
-		pShadowMask = new CG32bitImage(*Source.m_pImage->GetShadowMask());
+		{
+		pShadowMask = new CG32bitImage;
+		pShadowMask->CreateFromImageTransformed(*Source.m_pImage->GetShadowMask(), rcSrc.left, rcSrc.top, RectWidth(rcSrc), RectHeight(rcSrc), 1.0, 1.0, iRotation);
+		}
 
 	//	Create a rotated image
 
