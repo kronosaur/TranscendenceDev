@@ -14,14 +14,15 @@
 
 IHISession::IHISession (CHumanInterface &HI) : IHICommand(HI),
 		m_bNoCursor(false),
-		m_bTransparent(false)
+		m_bTransparent(false),
+		m_bCapture(false)
 
 //	IHISession constructor
 	
 	{
 	}
 
-void IHISession::DefaultOnAnimate (CG16bitImage &Screen, bool bTopMost)
+void IHISession::DefaultOnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 //	DefaultOnAnimate
 //
@@ -240,6 +241,11 @@ void IHISession::HILButtonDown (int x, int y, DWORD dwFlags)
 //	Handle mouse input
 	
 	{
+	//	This is only set to TRUE if the session itself captures the mouse
+	//	(as opposed to Reanimator).
+
+	m_bCapture = false;
+
 	//	See if the animator will handle it
 
 	bool bCapture = false;
@@ -250,7 +256,20 @@ void IHISession::HILButtonDown (int x, int y, DWORD dwFlags)
 		return;
 		}
 
-	OnLButtonDown(x, y, dwFlags);
+	bool bSessionCapture = false;
+	OnLButtonDown(x, y, dwFlags, &bSessionCapture);
+
+	//	If the session wants to capture the mouse, set it.
+	//
+	//	NOTE: We can't assume that the session will be valid after OnLButtonDown,
+	//	so we use a temporary variable. We do assume that if a session captures
+	//	the mouse, it doesn't also destroy itself.
+
+	if (bSessionCapture)
+		{
+		m_bCapture = bSessionCapture;
+		::SetCapture(m_HI.GetHWND());
+		}
 	}
 
 void IHISession::HILButtonUp (int x, int y, DWORD dwFlags)
@@ -265,10 +284,12 @@ void IHISession::HILButtonUp (int x, int y, DWORD dwFlags)
 
 	//	See if the animator will handle it
 
-	if (m_Reanimator.HandleLButtonUp(x, y, dwFlags))
+	if (!m_bCapture
+			&& m_Reanimator.HandleLButtonUp(x, y, dwFlags))
 		return;
 
 	OnLButtonUp(x, y, dwFlags);
+	m_bCapture = false;
 	}
 
 void IHISession::HIMouseMove (int x, int y, DWORD dwFlags)
@@ -280,7 +301,8 @@ void IHISession::HIMouseMove (int x, int y, DWORD dwFlags)
 	{
 	//	See if the animator will handle it
 
-	if (m_Reanimator.HandleMouseMove(x, y, dwFlags))
+	if (!m_bCapture
+			&& m_Reanimator.HandleMouseMove(x, y, dwFlags))
 		return;
 
 	OnMouseMove(x, y, dwFlags);
@@ -301,7 +323,7 @@ void IHISession::HIMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 	OnMouseWheel(iDelta, x, y, dwFlags);
 	}
 
-void IHISession::HIPaint (CG16bitImage &Screen)
+void IHISession::HIPaint (CG32bitImage &Screen)
 
 //	HIPaint
 //
@@ -324,6 +346,64 @@ void IHISession::HIPaint (CG16bitImage &Screen)
 		m_HI.GetScreenMgr().Validate();
 		Screen.ResetClipRect();
 		}
+	}
+
+void IHISession::HIRButtonDblClick (int x, int y, DWORD dwFlags)
+
+//	HIRButtonDblClick
+//
+//	Handle mouse input
+	
+	{
+	//	See if the animator will handle it
+
+	bool bCapture = false;
+	if (m_Reanimator.HandleRButtonDblClick(x, y, dwFlags, &bCapture))
+		{
+		if (bCapture)
+			::SetCapture(m_HI.GetHWND());
+		return;
+		}
+
+	OnRButtonDblClick(x, y, dwFlags); 
+	}
+
+void IHISession::HIRButtonDown (int x, int y, DWORD dwFlags)
+
+//	HIRButtonDown
+//
+//	Handle mouse input
+	
+	{
+	//	See if the animator will handle it
+
+	bool bCapture = false;
+	if (m_Reanimator.HandleRButtonDown(x, y, dwFlags, &bCapture))
+		{
+		if (bCapture)
+			::SetCapture(m_HI.GetHWND());
+		return;
+		}
+
+	OnRButtonDown(x, y, dwFlags);
+	}
+
+void IHISession::HIRButtonUp (int x, int y, DWORD dwFlags)
+
+//	HIRButtonUp
+//
+//	Handle mouse input
+	
+	{
+	if (::GetCapture() == m_HI.GetHWND())
+		::ReleaseCapture();
+
+	//	See if the animator will handle it
+
+	if (m_Reanimator.HandleRButtonUp(x, y, dwFlags))
+		return;
+
+	OnRButtonUp(x, y, dwFlags);
 	}
 
 bool IHISession::IsElementEnabled (const CString &sID)

@@ -127,7 +127,7 @@ ALERROR CParticleEffect::Create (CSystem *pSystem,
 
 	//	Set the image
 
-	pType->wColor = CG16bitImage::RGBValue(0, 255, 0);
+	pType->rgbColor = CG32bitPixel(0, 255, 0);
 	CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
 	if (pImage)
 		{
@@ -446,7 +446,7 @@ void CParticleEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 		m_pAnchor = NULL;
 	}
 
-void CParticleEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CParticleEffect::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -493,7 +493,7 @@ void CParticleEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintC
 
 			default:
 				{
-				WORD wColor = CG16bitImage::RGBValue(0, 255, 0);
+				CG32bitPixel rgbColor = CG32bitPixel(0, 255, 0);
 
 				SParticle *pParticle = pGroup->pParticles;
 				SParticle *pEnd = pParticle + pGroup->iCount;
@@ -504,7 +504,7 @@ void CParticleEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintC
 						int x, y;
 
 						Ctx.XForm.Transform(GetPos() + pParticle->vPos, &x, &y);
-						Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallRound);
+						Dest.DrawDot(x, y, rgbColor, markerSmallRound);
 						}
 
 					pParticle++;
@@ -527,7 +527,7 @@ void CParticleEffect::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	DWORD		type: iPaintStyle (or 0xffffffff if no more groups)
 //	Image		type: Image
-//	DWORD		type: wColor
+//	DWORD		type: rgbColor
 //	DWORD		type: iRegenerationTimer
 //	DWORD		type: iLifespan
 //	Metric		type: rAveSpeed
@@ -572,8 +572,13 @@ void CParticleEffect::OnReadFromStream (SLoadCtx &Ctx)
 		pGroup->pType = new SParticleType;
 		pGroup->pType->iPaintStyle = dwNext;
 		pGroup->pType->Image.ReadFromStream(Ctx);
+
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		pGroup->pType->wColor = (WORD)dwLoad;
+		if (Ctx.dwVersion >= 110)
+			pGroup->pType->rgbColor = CG32bitPixel::FromDWORD(dwLoad);
+		else
+			pGroup->pType->rgbColor = CG32bitPixel((WORD)dwLoad);
+
 		Ctx.pStream->Read((char *)&pGroup->pType->iRegenerationTimer, sizeof(DWORD));
 		Ctx.pStream->Read((char *)&pGroup->pType->iLifespan, sizeof(DWORD));
 		Ctx.pStream->Read((char *)&pGroup->pType->rAveSpeed, sizeof(Metric));
@@ -909,7 +914,7 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
 	}
 
-void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintFlameParticles
 //
@@ -925,7 +930,7 @@ void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG16bitImage 
 			{
 			//	Compute color based on particle's lifetime
 
-			WORD wColor;
+			CG32bitPixel rgbColor;
 			int iColor = 0;
 			int iFade = 0;
 			int iFade2 = 0;
@@ -937,15 +942,15 @@ void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG16bitImage 
 				}
 
 			if (iColor <= 50)
-				wColor = CG16bitImage::FadeColor(CG16bitImage::RGBValue(255, 255, 255),
-						CG16bitImage::RGBValue(255, 228, 110),
+				rgbColor = CG32bitPixel::Fade(CG32bitPixel(255, 255, 255),
+						CG32bitPixel(255, 228, 110),
 						2 * iColor);
 			else if (iColor <= 150)
-				wColor = CG16bitImage::FadeColor(CG16bitImage::RGBValue(255, 228, 110),
-						CG16bitImage::RGBValue(255, 59, 27),
+				rgbColor = CG32bitPixel::Fade(CG32bitPixel(255, 228, 110),
+						CG32bitPixel(255, 59, 27),
 						iColor - 50);
 			else
-				wColor = CG16bitImage::RGBValue(255, 59, 27);
+				rgbColor = CG32bitPixel(255, 59, 27);
 
 			//	Compute the size
 
@@ -961,49 +966,48 @@ void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG16bitImage 
 			switch (iSize)
 				{
 				case 0:
-					Dest.DrawPixelTrans(x, y, wColor, iFade);
+					Dest.SetPixelTrans(x, y, rgbColor, iFade);
 					break;
 
 				case 1:
-					Dest.DrawPixelTrans(x, y, wColor, iFade);
-					Dest.DrawPixelTrans(x + 1, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y + 1, wColor, iFade2);
+					Dest.SetPixelTrans(x, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, iFade2);
 					break;
 
 				case 2:
-					Dest.DrawPixelTrans(x, y, wColor, iFade);
-					Dest.DrawPixelTrans(x + 1, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y + 1, wColor, iFade2);
-					Dest.DrawPixelTrans(x - 1, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y - 1, wColor, iFade2);
+					Dest.SetPixelTrans(x, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, iFade2);
+					Dest.SetPixelTrans(x - 1, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y - 1, rgbColor, iFade2);
 					break;
 
 				case 3:
-					Dest.DrawPixelTrans(x, y, wColor, iFade);
-					Dest.DrawPixelTrans(x + 1, y, wColor, iFade);
-					Dest.DrawPixelTrans(x, y + 1, wColor, iFade);
-					Dest.DrawPixelTrans(x - 1, y, wColor, iFade);
-					Dest.DrawPixelTrans(x, y - 1, wColor, iFade);
-					Dest.DrawPixelTrans(x + 1, y + 1, wColor, iFade2);
-					Dest.DrawPixelTrans(x + 1, y - 1, wColor, iFade2);
-					Dest.DrawPixelTrans(x - 1, y + 1, wColor, iFade2);
-					Dest.DrawPixelTrans(x - 1, y - 1, wColor, iFade2);
+					Dest.SetPixelTrans(x, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, iFade);
+					Dest.SetPixelTrans(x - 1, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x, y - 1, rgbColor, iFade);
+					Dest.SetPixelTrans(x + 1, y + 1, rgbColor, iFade2);
+					Dest.SetPixelTrans(x + 1, y - 1, rgbColor, iFade2);
+					Dest.SetPixelTrans(x - 1, y + 1, rgbColor, iFade2);
+					Dest.SetPixelTrans(x - 1, y - 1, rgbColor, iFade2);
 					break;
 
 				case 4:
 				default:
 					{
-					Dest.FillTrans(x - 1,
+					Dest.Fill(x - 1,
 							y - 1,
 							3,
 							3,
-							wColor,
-							iFade);
+							CG32bitPixel(rgbColor, (BYTE)iFade));
 
-					Dest.DrawPixelTrans(x + 2, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y + 2, wColor, iFade2);
-					Dest.DrawPixelTrans(x - 2, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y - 2, wColor, iFade2);
+					Dest.SetPixelTrans(x + 2, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y + 2, rgbColor, iFade2);
+					Dest.SetPixelTrans(x - 2, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y - 2, rgbColor, iFade2);
 					}
 				}
 			}
@@ -1012,7 +1016,7 @@ void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG16bitImage 
 		}
 	}
 
-void CParticleEffect::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CParticleEffect::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //
@@ -1022,7 +1026,7 @@ void CParticleEffect::PaintLRS (CG16bitImage &Dest, int x, int y, const Viewport
 	SParticleArray *pGroup = m_pFirstGroup;
 	while (pGroup)
 		{
-		WORD wColor = CG16bitImage::RGBValue(128, 128, 128);
+		CG32bitPixel rgbColor = CG32bitPixel(128, 128, 128);
 
 		for (int i = 0; i < pGroup->iCount; i++)
 			if ((i % 10) == 0
@@ -1031,14 +1035,14 @@ void CParticleEffect::PaintLRS (CG16bitImage &Dest, int x, int y, const Viewport
 			int x, y;
 
 			Trans.Transform(GetPos() + pGroup->pParticles[i].vPos, &x, &y);
-			Dest.DrawPixel(x, y, wColor);
+			Dest.SetPixel(x, y, rgbColor);
 			}
 
 		pGroup = pGroup->pNext;
 		}
 	}
 
-void CParticleEffect::PaintSmokeParticles (SParticleArray *pGroup, CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CParticleEffect::PaintSmokeParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintSmokeParticles
 //
@@ -1055,7 +1059,7 @@ void CParticleEffect::PaintSmokeParticles (SParticleArray *pGroup, CG16bitImage 
 			//	Compute color
 
 			int iColor = 64 + (pParticle->iDestiny % 192);
-			WORD wColor = CG16bitImage::RGBValue(iColor, iColor, iColor);
+			CG32bitPixel rgbColor = CG32bitPixel(iColor, iColor, iColor);
 
 			//	Compute how much to fade out the smoke
 
@@ -1079,49 +1083,48 @@ void CParticleEffect::PaintSmokeParticles (SParticleArray *pGroup, CG16bitImage 
 			switch (iSize)
 				{
 				case 0:
-					Dest.DrawPixelTrans(x, y, wColor, iFade);
+					Dest.SetPixelTrans(x, y, rgbColor, iFade);
 					break;
 
 				case 1:
-					Dest.DrawPixelTrans(x, y, wColor, iFade);
-					Dest.DrawPixelTrans(x + 1, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y + 1, wColor, iFade2);
+					Dest.SetPixelTrans(x, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, iFade2);
 					break;
 
 				case 2:
-					Dest.DrawPixelTrans(x, y, wColor, iFade);
-					Dest.DrawPixelTrans(x + 1, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y + 1, wColor, iFade2);
-					Dest.DrawPixelTrans(x - 1, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y - 1, wColor, iFade2);
+					Dest.SetPixelTrans(x, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, iFade2);
+					Dest.SetPixelTrans(x - 1, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y - 1, rgbColor, iFade2);
 					break;
 
 				case 3:
-					Dest.DrawPixelTrans(x, y, wColor, iFade);
-					Dest.DrawPixelTrans(x + 1, y, wColor, iFade);
-					Dest.DrawPixelTrans(x, y + 1, wColor, iFade);
-					Dest.DrawPixelTrans(x - 1, y, wColor, iFade);
-					Dest.DrawPixelTrans(x, y - 1, wColor, iFade);
-					Dest.DrawPixelTrans(x + 1, y + 1, wColor, iFade2);
-					Dest.DrawPixelTrans(x + 1, y - 1, wColor, iFade2);
-					Dest.DrawPixelTrans(x - 1, y + 1, wColor, iFade2);
-					Dest.DrawPixelTrans(x - 1, y - 1, wColor, iFade2);
+					Dest.SetPixelTrans(x, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, iFade);
+					Dest.SetPixelTrans(x - 1, y, rgbColor, iFade);
+					Dest.SetPixelTrans(x, y - 1, rgbColor, iFade);
+					Dest.SetPixelTrans(x + 1, y + 1, rgbColor, iFade2);
+					Dest.SetPixelTrans(x + 1, y - 1, rgbColor, iFade2);
+					Dest.SetPixelTrans(x - 1, y + 1, rgbColor, iFade2);
+					Dest.SetPixelTrans(x - 1, y - 1, rgbColor, iFade2);
 					break;
 
 				case 4:
 				default:
 					{
-					Dest.FillTransRGB(x - 1,
+					Dest.Fill(x - 1,
 							y - 1,
 							3,
 							3,
-							RGB(192, 192, 192),
-							iFade);
+							CG32bitPixel(192, 192, 192, iFade));
 
-					Dest.DrawPixelTrans(x + 2, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y + 2, wColor, iFade2);
-					Dest.DrawPixelTrans(x - 2, y, wColor, iFade2);
-					Dest.DrawPixelTrans(x, y - 2, wColor, iFade2);
+					Dest.SetPixelTrans(x + 2, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y + 2, rgbColor, iFade2);
+					Dest.SetPixelTrans(x - 2, y, rgbColor, iFade2);
+					Dest.SetPixelTrans(x, y - 2, rgbColor, iFade2);
 					}
 				}
 			}
@@ -1207,8 +1210,10 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 
 		pStream->Write((char *)&pType->iPaintStyle, sizeof(DWORD));
 		pType->Image.WriteToStream(pStream);
-		dwSave = pType->wColor;
+
+		dwSave = pType->rgbColor.AsDWORD();
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
+
 		pStream->Write((char *)&pType->iRegenerationTimer, sizeof(DWORD));
 		pStream->Write((char *)&pType->iLifespan, sizeof(DWORD));
 		pStream->Write((char *)&pType->rAveSpeed, sizeof(Metric));

@@ -26,9 +26,7 @@
 #define BREAK_CHARGE_RANGE				(20.0 * LIGHT_SECOND)
 #define CHARGE_ATTACK_RANGE				(200.0 * LIGHT_SECOND)
 
-static CObjectClass<CFleetCommandAI>g_Class(OBJID_CFLEETCOMMANDAI, NULL);
-
-CFleetCommandAI::CFleetCommandAI (void) : CBaseShipAI(&g_Class),
+CFleetCommandAI::CFleetCommandAI (void) : 
 		m_State(stateNone),
 		m_pObjective(NULL),
 		m_pTarget(NULL),
@@ -575,7 +573,7 @@ void CFleetCommandAI::ImplementChargeInFormation (void)
 	if (rDist < BREAK_CHARGE_RANGE)
 		{
 #ifdef DEBUG_FLEET_COMMAND
-		g_pUniverse->GetPlayer()->SendMessage(m_pShip, CONSTLIT("Break charge range reached!"));
+		g_pUniverse->GetPlayerShip()->SendMessage(m_pShip, CONSTLIT("Break charge range reached!"));
 #endif
 
 		//	Order fleet to break and attack targets
@@ -600,7 +598,7 @@ void CFleetCommandAI::ImplementChargeInFormation (void)
 		if (!m_fOpenFireOrdered)
 			{
 #ifdef DEBUG_FLEET_COMMAND
-			g_pUniverse->GetPlayer()->SendMessage(m_pShip, CONSTLIT("Open fire!"));
+			g_pUniverse->GetPlayerShip()->SendMessage(m_pShip, CONSTLIT("Open fire!"));
 #endif
 
 			OrderAllOpenFire();
@@ -654,7 +652,7 @@ void CFleetCommandAI::ImplementFormAtRallyPoint (void)
 			}
 
 #ifdef DEBUG_FLEET_COMMAND
-		g_pUniverse->GetPlayer()->SendMessage(m_pShip, CONSTLIT("Rally point reached"));
+		g_pUniverse->GetPlayerShip()->SendMessage(m_pShip, CONSTLIT("Rally point reached"));
 #endif
 		}
 	}

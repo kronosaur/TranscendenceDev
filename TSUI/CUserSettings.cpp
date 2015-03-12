@@ -15,6 +15,34 @@
 #define PATH_ATTRIB								CONSTLIT("path")
 #define VALUE_ATTRIB							CONSTLIT("value")
 
+bool CUserSettings::GetValueBoolean (const CString &sID) const
+
+//	GetValueBoolean
+//
+//	Returns a boolean option
+
+	{
+	SOption *pOption = m_Options.GetAt(sID);
+	if (pOption == NULL)
+		return false;
+
+	switch (pOption->iType)
+		{
+		case optionBoolean:
+			return pOption->bValue;
+
+		case optionInteger:
+			return (pOption->iValue > 0);
+
+		case optionString:
+			return (!pOption->sValue.IsBlank());
+
+		default:
+			ASSERT(false);
+			return false;
+		}
+	}
+
 ALERROR CUserSettings::Load (CHumanInterface &HI, const CString &sFilespec, SOptionDef *pDefinitions, CString *retsError)
 
 //	Load

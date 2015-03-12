@@ -70,6 +70,17 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 					&& !IntersectRect(vUR, vLL, vTo))
 				AStar.AddObstacle(vUR, vLL);
 			}
+		else if (pObj->HasGravity())
+			{
+			CVector vUR = pObj->GetPos() + CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
+			CVector vLL = pObj->GetPos() - CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
+
+			//	Only add obstacles if start and end are outside the obstacle
+
+			if (!IntersectRect(vUR, vLL, vFrom)
+					&& !IntersectRect(vUR, vLL, vTo))
+				AStar.AddObstacle(vUR, vLL);
+			}
 		else if (pObj->BlocksShips())
 			{
 			CVector vUR;
@@ -252,6 +263,30 @@ void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, CSpaceOb
 	*retpPath = pNewPath;
 	}
 
+void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, const CVector &vStart, const CVector &vEnd, CNavigationPath **retpPath)
+
+//	Create
+//
+//	Creates a path from vStart to vEnd
+
+	{
+	CNavigationPath *pNewPath = new CNavigationPath;
+	pNewPath->m_dwID = g_pUniverse->CreateGlobalID();
+	pNewPath->m_pSovereign = pSovereign;
+	pNewPath->m_iStartIndex = -1;
+	pNewPath->m_iEndIndex = -1;
+
+	//	Compute the path
+
+	pNewPath->m_vStart = vStart;
+	pNewPath->m_iWaypointCount = ComputePath(pSystem, pSovereign, vStart, vEnd, &pNewPath->m_Waypoints);
+	ASSERT(pNewPath->m_iWaypointCount > 0);
+
+	//	Done
+
+	*retpPath = pNewPath;
+	}
+
 CString CNavigationPath::DebugDescribe (CSpaceObject *pObj, CNavigationPath *pNavPath)
 
 //	DebugDescribe
@@ -316,7 +351,7 @@ CString CNavigationPath::DebugDescribe (CSpaceObject *pObj, CNavigationPath *pNa
 		}
 	}
 
-void CNavigationPath::DebugPaintInfo (CG16bitImage &Dest, int x, int y, ViewportTransform &Xform)
+void CNavigationPath::DebugPaintInfo (CG32bitImage &Dest, int x, int y, ViewportTransform &Xform)
 
 //	DebugPaintInfo
 //
@@ -338,14 +373,14 @@ void CNavigationPath::DebugPaintInfo (CG16bitImage &Dest, int x, int y, Viewport
 		Dest.DrawLine(xFrom, yFrom,
 				xTo, yTo,
 				3,
-				CG16bitImage::RGBValue(0,255,0));
+				CG32bitPixel(0,255,0));
 
 		xFrom = xTo;
 		yFrom = yTo;
 		}
 	}
 
-void CNavigationPath::DebugPaintInfo (CG16bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx)
+void CNavigationPath::DebugPaintInfo (CG32bitImage &Dest, int x, int y, const CMapViewportCtx &Ctx)
 
 //	DebugPaintInfo
 //
@@ -367,7 +402,7 @@ void CNavigationPath::DebugPaintInfo (CG16bitImage &Dest, int x, int y, const CM
 		Dest.DrawLine(xFrom, yFrom,
 				xTo, yTo,
 				3,
-				CG16bitImage::RGBValue(0,255,0));
+				CG32bitPixel(0,255,0));
 
 		xFrom = xTo;
 		yFrom = yTo;
@@ -381,8 +416,19 @@ CVector CNavigationPath::GetNavPoint (int iIndex) const
 //	Return the nav point at the given index
 
 	{
-	iIndex = Min(iIndex, m_iWaypointCount - 1);
-	return m_Waypoints[iIndex];
+	if (iIndex == -1)
+		{
+		CSpaceObject *pStart = g_pUniverse->FindObject(m_iStartIndex);
+		if (pStart)
+			return pStart->GetPos();
+		else
+			return m_Waypoints[0];
+		}
+	else
+		{
+		iIndex = Min(iIndex, m_iWaypointCount - 1);
+		return m_Waypoints[iIndex];
+		}
 	}
 
 bool CNavigationPath::Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd)
@@ -397,6 +443,9 @@ bool CNavigationPath::Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSp
 #endif
 
 	if (pSovereign && m_pSovereign && pSovereign != m_pSovereign)
+		return false;
+
+	if (m_iStartIndex == -1)
 		return false;
 
 	if (pStart->GetID() != m_iStartIndex)

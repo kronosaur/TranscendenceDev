@@ -103,15 +103,13 @@ void CEscortOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 			if (pShip->IsDestinyTime(20))
 				{
-				int iTick = pShip->GetSystem()->GetTick();
 				CVector vRange = m_Objs[objPrincipal]->GetPos() - pShip->GetPos();
 				Metric rDistance2 = vRange.Dot(vRange);
 
 				//	If we're outside of our patrol range and if we haven't
 				//	been hit in a while then stop the attack.
 
-				if (rDistance2 > (PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE)
-						&& (iTick - Ctx.GetLastAttack()) > ATTACK_TIME_THRESHOLD)
+				if (rDistance2 > (PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE))
 					m_iState = stateEscorting;
 				}
 

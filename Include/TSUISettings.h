@@ -51,6 +51,8 @@ class CUserSettings
 				m_bModified(false)
 			{ }
 
+		bool GetValueBoolean (const CString &sID) const;
+		inline const CString &GetUserFolder (void) const { return m_sUserRoot; }
 		ALERROR Load (CHumanInterface &HI, const CString &sFilespec, SOptionDef *pDefinitions, CString *retsError = NULL);
 		ALERROR LoadCommandLine (char *pszCmdLine, CString *retsError = NULL);
 

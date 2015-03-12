@@ -265,7 +265,7 @@ void CItemDataAnimatron::Paint (SAniPaintCtx &Ctx)
 
 	//	Get color & opacity
 
-	WORD wColor = m_Properties[INDEX_COLOR].GetColor();
+	CG32bitPixel rgbColor = m_Properties[INDEX_COLOR].GetColor();
 	DWORD dwOpacity = m_Properties[INDEX_OPACITY].GetOpacity() * Ctx.dwOpacityToDest / 255;
 
 	//	Paint
@@ -290,7 +290,7 @@ void CItemDataAnimatron::Paint (SAniPaintCtx &Ctx)
 		//	Paint the text
 
 		if (!pCell->sText.IsBlank())
-			pFont->DrawText(Ctx.Dest, x, y, wColor, dwOpacity, pCell->sText, 0, &x);
+			pFont->DrawText(Ctx.Dest, x, y, CG32bitPixel(rgbColor, (BYTE)dwOpacity), pCell->sText, 0, &x);
 		}
 	}
 

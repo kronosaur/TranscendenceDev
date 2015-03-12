@@ -144,7 +144,7 @@ bool CListWrapper::MoveCursorForward (void)
 		}
 	}
 
-void CListWrapper::PaintImageAtCursor (CG16bitImage &Dest, int x, int y)
+void CListWrapper::PaintImageAtCursor (CG32bitImage &Dest, int x, int y)
 
 //	PaintImageAtCursor
 //
@@ -162,11 +162,11 @@ void CListWrapper::PaintImageAtCursor (CG16bitImage &Dest, int x, int y)
 	if (pIcon->GetCount() < IMAGE_ELEMENTS)
 		return;
 
-	CG16bitImage *pImage = g_pUniverse->GetLibraryBitmap(pIcon->GetElement(IMAGE_UNID_INDEX)->GetIntegerValue());
+	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmap(pIcon->GetElement(IMAGE_UNID_INDEX)->GetIntegerValue());
 	if (pImage == NULL)
 		return;
 
-	Dest.ColorTransBlt(pIcon->GetElement(IMAGE_X_INDEX)->GetIntegerValue(),
+	Dest.Blt(pIcon->GetElement(IMAGE_X_INDEX)->GetIntegerValue(),
 			pIcon->GetElement(IMAGE_Y_INDEX)->GetIntegerValue(),
 			ICON_WIDTH,
 			ICON_HEIGHT,

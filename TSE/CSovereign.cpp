@@ -265,6 +265,19 @@ CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSovereign,
 	return pRel;
 	}
 
+IPlayerController *CSovereign::GetController (void)
+
+//	GetController
+//
+//	Returns the controller for this sovereign
+
+	{
+	if (GetUNID() == g_PlayerSovereignUNID)
+		return g_pUniverse->GetPlayer();
+	else
+		return NULL;
+	}
+
 CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent)
 
 //	GetDispositionTowards
@@ -292,6 +305,51 @@ CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereig
 	//	Consult the table
 
 	return g_DispositionTable[iOurDispClass][iTheirDispClass];
+	}
+
+bool CSovereign::GetPropertyInteger (const CString &sProperty, int *retiValue)
+
+//	GetPropertyInteger
+//
+//	Returns an integer property
+
+	{
+	IPlayerController *pController;
+
+	if (pController = GetController())
+		return pController->GetPropertyInteger(sProperty, retiValue);
+	else
+		return false;
+	}
+
+bool CSovereign::GetPropertyItemList (const CString &sProperty, CItemList *retItemList)
+
+//	GetPropertyItemList
+//
+//	Returns an item list property
+
+	{
+	IPlayerController *pController;
+
+	if (pController = GetController())
+		return pController->GetPropertyItemList(sProperty, retItemList);
+	else
+		return false;
+	}
+
+bool CSovereign::GetPropertyString (const CString &sProperty, CString *retsValue)
+
+//	GetPropertyString
+//
+//	Returns a string property
+
+	{
+	IPlayerController *pController;
+
+	if (pController = GetController())
+		return pController->GetPropertyString(sProperty, retsValue);
+	else
+		return false;
 	}
 
 CString CSovereign::GetText (MessageTypes iMsg)
@@ -412,6 +470,33 @@ void CSovereign::InitRelationships (void)
 		}
 
 	DEBUG_CATCH
+	}
+
+void CSovereign::MessageFromObj (CSpaceObject *pSender, const CString &sText)
+
+//	MessageFromObj
+//
+//	Receive a message from the given (optional) object
+
+	{
+	//	If this is the player, then we let the player handle it.
+
+	if (GetUNID() == g_PlayerSovereignUNID)
+		{
+		IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+		if (pPlayer == NULL)
+			return;
+
+		pPlayer->OnMessageFromObj(pSender, sText);
+		}
+
+	//	Otherwise...
+
+	else
+		{
+		//	LATER: We should pass this to the sovereign and let it 
+		//	handle it (possibly inside an event).
+		}
 	}
 
 void CSovereign::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -658,3 +743,47 @@ void CSovereign::SetDispositionTowards (CSovereign *pSovereign, Disposition iDis
 		m_bSelfRel = true;
 	}
 
+bool CSovereign::SetPropertyInteger (const CString &sProperty, int iValue)
+
+//	SetPropertyInteger
+//
+//	Sets an integer property
+
+	{
+	IPlayerController *pController;
+
+	if (pController = GetController())
+		return pController->SetPropertyInteger(sProperty, iValue);
+	else
+		return false;
+	}
+
+bool CSovereign::SetPropertyItemList (const CString &sProperty, const CItemList &ItemList)
+
+//	SetPropertyItemList
+//
+//	Sets an item list property
+
+	{
+	IPlayerController *pController;
+
+	if (pController = GetController())
+		return pController->SetPropertyItemList(sProperty, ItemList);
+	else
+		return false;
+	}
+
+bool CSovereign::SetPropertyString (const CString &sProperty, const CString &sValue)
+
+//	SetPropertyString
+//
+//	Sets a string property
+
+	{
+	IPlayerController *pController;
+
+	if (pController = GetController())
+		return pController->SetPropertyString(sProperty, sValue);
+	else
+		return false;
+	}

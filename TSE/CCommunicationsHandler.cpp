@@ -9,8 +9,9 @@
 #define CODE_TAG									CONSTLIT("Code")
 #define INVOKE_TAG									CONSTLIT("Invoke")
 
-#define NAME_ATTRIB									CONSTLIT("name")
+#define ID_ATTRIB									CONSTLIT("id")
 #define KEY_ATTRIB									CONSTLIT("key")
+#define NAME_ATTRIB									CONSTLIT("name")
 
 CCommunicationsHandler::CCommunicationsHandler (void)
 
@@ -69,35 +70,59 @@ void CCommunicationsHandler::DeleteAll (void)
 	m_Messages.DeleteAll(); 
 	}
 
-int CCommunicationsHandler::FindByShortcut (const CString &sShortcut, int *retiInsert)
+bool CCommunicationsHandler::FindMergePos (const SMessage &Msg, int *retiPos)
 
-//	FindByShortcut
+//	FindMergePos
 //
-//	Returns the index of the message with the given shortcut (or -1)
-//	If not found, retiIndex returns the index at which the new shortcut should be inserted
+//	If the given message does not already exist (by ID) then we return
+//	the position at which it should be inserted.
+
+	{
+	int i;
+
+	//	If we already have this message, then we don't need to insert it.
+
+	for (i = 0; i < GetCount(); i++)
+		if (strEquals(m_Messages[i].sID, Msg.sID))
+			return false;
+
+	//	Figure out where to insert it (by shortcut order)
+
+	if (retiPos)
+		{
+		i = 0;
+		while (i < GetCount() && strCompare(Msg.sShortcut, m_Messages[i].sShortcut) != 1)
+			i++;
+
+		*retiPos = i;
+		}
+
+	return true;
+	}
+
+bool CCommunicationsHandler::FindMessage (const CString &sID, const SMessage **retpMessage) const
+
+//	FindMessage
+//
+//	Finds the message by ID
 
 	{
 	int i;
 
 	for (i = 0; i < GetCount(); i++)
-		if (strEquals(m_Messages[i].sShortcut, sShortcut))
-			return i;
+		if (strEquals(m_Messages[i].sID, sID))
+			{
+			if (retpMessage)
+				*retpMessage = &m_Messages[i];
+			return true;
+			}
 
-	if (retiInsert)
-		{
-		i = 0;
-		while (i < GetCount() && strCompare(sShortcut, m_Messages[i].sShortcut) != 1)
-			i++;
-
-		*retiInsert = i;
-		}
-
-	return -1;
+	return false;
 	}
 
-int CCommunicationsHandler::FindMessage (const CString &sMessage) const
+int CCommunicationsHandler::FindMessageByName (const CString &sMessage) const
 
-//	FindMessage
+//	FindMessageByName
 //
 //	Finds the message by name
 
@@ -107,6 +132,41 @@ int CCommunicationsHandler::FindMessage (const CString &sMessage) const
 			return i;
 
 	return -1;
+	}
+
+void CCommunicationsHandler::FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender, ICCItem *pData)
+
+//	FireInvoke
+//
+//	Invoke the message
+
+	{
+	//	Get the code
+
+	const SMessage *pMsg;
+	if (!FindMessage(sID, &pMsg))
+		return;
+
+	if (pMsg->InvokeEvent.pCode == NULL)
+		return;
+
+	//	Run
+
+	CCodeChainCtx Ctx;
+
+	//	Define parameters
+
+	Ctx.SaveAndDefineSourceVar(pObj);
+	Ctx.SaveAndDefineDataVar(pData);
+	Ctx.DefineInteger(CONSTLIT("aPlayer"), pSender->GetUNID());
+
+	//	Execute
+
+	ICCItem *pResult = Ctx.Run(pMsg->InvokeEvent);
+	if (pResult->IsError())
+		pSender->MessageFromObj(pObj, pResult->GetStringValue());
+
+	Ctx.Discard(pResult);
 	}
 
 ALERROR CCommunicationsHandler::InitFromXML (CXMLElement *pDesc, CString *retsError)
@@ -131,10 +191,24 @@ ALERROR CCommunicationsHandler::InitFromXML (CXMLElement *pDesc, CString *retsEr
 		{
 		CXMLElement *pMessage = pDesc->GetContentElement(i);
 
+		//	ID
+
+		m_Messages[i].sID = pMessage->GetAttribute(ID_ATTRIB);
+
 		//	Get the name
 
 		m_Messages[i].sMessage = pMessage->GetAttribute(NAME_ATTRIB);
 		m_Messages[i].sShortcut = pMessage->GetAttribute(KEY_ATTRIB);
+
+		//	If the ID is blank, then use the shortcut; if that's missing, use the ordinal value.
+
+		if (m_Messages[i].sID.IsBlank())
+			{
+			if (!m_Messages[i].sShortcut.IsBlank())
+				m_Messages[i].sID = m_Messages[i].sShortcut;
+			else
+				m_Messages[i].sID = strFromInt(i);
+			}
 
 		//	If no sub elements, just get the code from the content
 
@@ -214,10 +288,11 @@ void CCommunicationsHandler::Merge (CCommunicationsHandler &New)
 	for (i = 0; i < New.GetCount(); i++)
 		{
 		int iInsert;
-		if (FindByShortcut(New.m_Messages[i].sShortcut, &iInsert) == -1)
+		if (FindMergePos(New.m_Messages[i], &iInsert))
 			{
 			SMessage *pMsg = m_Messages.InsertAt(iInsert);
 
+			pMsg->sID = New.m_Messages[i].sID;
 			pMsg->sMessage = New.m_Messages[i].sMessage;
 			pMsg->sShortcut = New.m_Messages[i].sShortcut;
 

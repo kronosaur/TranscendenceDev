@@ -8,24 +8,28 @@
 #define BITMAP_ATTRIB						CONSTLIT("bitmap")
 #define BITMASK_ATTRIB						CONSTLIT("bitmask")
 #define BACK_COLOR_ATTRIB					CONSTLIT("backColor")
+#define HIT_MASK_ATTRIB						CONSTLIT("hitMask")
 #define LOAD_ON_USE_ATTRIB					CONSTLIT("loadOnUse")
 #define NO_PM_ATTRIB						CONSTLIT("noPM")
+#define SHADOW_MASK_ATTRIB					CONSTLIT("shadowMask")
 #define SPRITE_ATTRIB						CONSTLIT("sprite")
 
 #define FIELD_IMAGE_DESC					CONSTLIT("imageDesc")
 
 CObjectImage::CObjectImage (void) : 
-		m_pBitmap(NULL)
+		m_pBitmap(NULL),
+		m_pHitMask(NULL),
+		m_pShadowMask(NULL)
 
 //	CObjectImage constructor
 
 	{
 	}
 
-CObjectImage::CObjectImage (CG16bitImage *pBitmap, bool bFreeBitmap) :
+CObjectImage::CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap, CG32bitImage *pShadowMask) :
 		m_pBitmap(pBitmap),
-		m_bTransColor(false),
-		m_bSprite(false),
+		m_pHitMask(NULL),
+		m_pShadowMask(pShadowMask),
 		m_bPreMult(false),
 		m_bLoadOnUse(false),
 		m_bFreeBitmap(bFreeBitmap),
@@ -43,14 +47,23 @@ CObjectImage::~CObjectImage (void)
 //	CObjectImage destructor
 
 	{
-	//	If we get created with an UNID of 0 it means that someone else owns the bitmap
-	//	This is needed by CObjectImageArray.
+	//	LATER: For now we assume that either all or not of the bitmaps are
+	//	owned by us.
 
-	if (m_pBitmap && m_bFreeBitmap)
-		delete m_pBitmap;
+	if (m_bFreeBitmap)
+		{
+		if (m_pBitmap)
+			delete m_pBitmap;
+
+		if (m_pHitMask)
+			delete m_pHitMask;
+
+		if (m_pShadowMask)
+			delete m_pShadowMask;
+		}
 	}
 
-CG16bitImage *CObjectImage::CreateCopy (CString *retsError)
+CG32bitImage *CObjectImage::CreateCopy (CString *retsError)
 
 //	CreateCopy
 //
@@ -62,17 +75,11 @@ CG16bitImage *CObjectImage::CreateCopy (CString *retsError)
 	//	If we have the image, the we need to make a copy
 
 	if (m_pBitmap)
-		{
-		CG16bitImage *pResult = new CG16bitImage;
-		if (pResult->CreateFromImage(*m_pBitmap) != NOERROR)
-			return NULL;
-
-		return pResult;
-		}
+		return new CG32bitImage(*m_pBitmap);
 
 	//	Otherwise, we load a copy
 
-	CG16bitImage *pResult = GetImage(NULL_STR, retsError);
+	CG32bitImage *pResult = GetImage(NULL_STR, retsError);
 	m_pBitmap = NULL;	//	Clear out because we don't keep a copy
 
 	return pResult;
@@ -100,6 +107,18 @@ ALERROR CObjectImage::Exists (SDesignLoadCtx &Ctx)
 		return ERR_FAIL;
 		}
 
+	if (!m_sHitMask.IsBlank() && !Ctx.pResDb->ImageExists(NULL_STR, m_sHitMask))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Unable to find image: '%s'"), m_sHitMask);
+		return ERR_FAIL;
+		}
+
+	if (!m_sShadowMask.IsBlank() && !Ctx.pResDb->ImageExists(NULL_STR, m_sShadowMask))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Unable to find image: '%s'"), m_sShadowMask);
+		return ERR_FAIL;
+		}
+
 	return NOERROR;
 	}
 
@@ -112,7 +131,7 @@ bool CObjectImage::FindDataField (const CString &sField, CString *retsValue)
 	{
 	if (strEquals(sField, FIELD_IMAGE_DESC))
 		{
-		CG16bitImage *pImage = GetImage(CONSTLIT("data field"));
+		CG32bitImage *pImage = GetImage(CONSTLIT("data field"));
 		if (pImage == NULL)
 			{
 			*retsValue = NULL_STR;
@@ -130,7 +149,32 @@ bool CObjectImage::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
-CG16bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsError)
+CG32bitImage *CObjectImage::GetHitMask (void)
+
+//	GetHitMask
+//
+//	Returns the hit mask image, if we have one. Otherwise, we return NULL.
+
+	{
+	//	If we have the image, we're done
+
+	if (m_pHitMask)
+		return m_pHitMask;
+
+	//	If no shadow mask, nothing to do
+
+	if (m_sHitMask.IsBlank())
+		return NULL;
+
+	//	Otherwise, load it
+
+	if (!LoadMask(m_sHitMask, &m_pHitMask))
+		return NULL;
+
+	return m_pHitMask;
+	}
+
+CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsError)
 
 //	GetImage
 //
@@ -161,7 +205,7 @@ CG16bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsE
 		}
 	}
 
-CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError)
+CG32bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError)
 
 //	GetImage
 //
@@ -206,9 +250,9 @@ CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 			}
 		}
 
-	//	Create a new CG16BitImage
+	//	Create a new CG32BitImage
 
-	m_pBitmap = new CG16bitImage;
+	m_pBitmap = new CG32bitImage;
 	if (m_pBitmap == NULL)
 		{
 		if (retsError)
@@ -216,7 +260,7 @@ CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 		return NULL;
 		}
 
-	error = m_pBitmap->CreateFromBitmap(hDIB, hBitmask, (m_bPreMult ? CG16bitImage::cfbPreMultAlpha : 0));
+	bool bSuccess = m_pBitmap->CreateFromBitmap(hDIB, hBitmask, iMaskType, (m_bPreMult ? CG32bitImage::FLAG_PRE_MULT_ALPHA : 0));
 
 	//	We don't need these bitmaps anymore
 
@@ -234,7 +278,7 @@ CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 
 	//	Check for error
 
-	if (error)
+	if (!bSuccess)
 		{
 		delete m_pBitmap;
 		m_pBitmap = NULL;
@@ -243,23 +287,96 @@ CG16bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 		return NULL;
 		}
 
-	//	Transparent color
-
-	if (m_bTransColor)
-		m_pBitmap->SetTransparentColor(m_wTransColor);
-
-	//	If we have a monochrom mask, then we assume black is the background color
-
-	else if (iMaskType == bitmapMonochrome)
-		m_pBitmap->SetTransparentColor();
-
-	//	Convert to sprite
-
-	if (m_bSprite)
-		m_pBitmap->ConvertToSprite();
-
 	m_bFreeBitmap = true;
 	return m_pBitmap;
+	}
+
+CG32bitImage *CObjectImage::GetShadowMask (void)
+
+//	GetShadowMask
+//
+//	Returns the shadow mask image, if we have one. Otherwise, we return NULL.
+
+	{
+	//	If we have the image, we're done
+
+	if (m_pShadowMask)
+		return m_pShadowMask;
+
+	//	If no shadow mask, nothing to do
+
+	if (m_sShadowMask.IsBlank())
+		return NULL;
+
+	//	Otherwise, load it
+
+	if (!LoadMask(m_sShadowMask, &m_pShadowMask))
+		return NULL;
+
+	return m_pShadowMask;
+	}
+
+bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
+
+//	LoadMask
+//
+//	Loads a mask image. Returns TRUE if we succeed.
+
+	{
+	CString sError;
+
+	try
+		{
+		//	Open the database
+
+		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
+		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
+			{
+			::kernelDebugLogMessage("Unable to load %s: %s", sFilespec, sError);
+			return false;
+			}
+
+		//	Load the mask
+
+		HBITMAP hDIB = NULL;
+		EBitmapTypes iMaskType;
+		if (ResDb.LoadImage(NULL_STR, sFilespec, &hDIB, &iMaskType))
+			{
+			::kernelDebugLogMessage("Unable to load %s.", sFilespec);
+			return false;
+			}
+
+		//	Create a new CG32BitImage
+
+		CG32bitImage *pMask = new CG32bitImage;
+		if (pMask == NULL)
+			{
+			::kernelDebugLogMessage("Out of memory loading mask.");
+			return false;
+			}
+
+		bool bSuccess = pMask->CreateFromBitmap(NULL, hDIB, iMaskType, 0);
+		::DeleteObject(hDIB);
+
+		//	Check for error
+
+		if (!bSuccess)
+			{
+			delete pMask;
+			::kernelDebugLogMessage("Unable to create %s image.", sFilespec);
+			return false;
+			}
+
+		//	Return
+
+		*retpImage = pMask;
+		return true;
+		}
+	catch (...)
+		{
+		::kernelDebugLogMessage("Crash loading %s.", sFilespec);
+		return false;
+		}
 	}
 
 ALERROR CObjectImage::Lock (SDesignLoadCtx &Ctx)
@@ -271,7 +388,7 @@ ALERROR CObjectImage::Lock (SDesignLoadCtx &Ctx)
 	//	assume that Ctx has the proper resource database. Thus
 	//	we have to open it ourselves.
 
-	CG16bitImage *pImage = GetImage(NULL_STR, &Ctx.sError);
+	CG32bitImage *pImage = GetImage(NULL_STR, &Ctx.sError);
 	if (pImage == NULL)
 		return ERR_FAIL;
 
@@ -301,6 +418,8 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		m_sBitmap = pDesc->GetAttribute(BITMAP_ATTRIB);
 		m_sBitmask = pDesc->GetAttribute(BITMASK_ATTRIB);
+		m_sHitMask = pDesc->GetAttribute(HIT_MASK_ATTRIB);
+		m_sShadowMask = pDesc->GetAttribute(SHADOW_MASK_ATTRIB);
 		}
 	else
 		{
@@ -310,27 +429,39 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		if (pDesc->FindAttribute(BITMASK_ATTRIB, &sFilespec))
 			m_sBitmask = pathAddComponent(Ctx.sFolder, sFilespec);
+
+		if (pDesc->FindAttribute(HIT_MASK_ATTRIB, &sFilespec))
+			m_sHitMask = pathAddComponent(Ctx.sFolder, sFilespec);
+
+		if (pDesc->FindAttribute(SHADOW_MASK_ATTRIB, &sFilespec))
+			m_sShadowMask = pathAddComponent(Ctx.sFolder, sFilespec);
 		}
 
 	//	Transparent color
 
 	CString sTransColor;
-	if (m_bTransColor = pDesc->FindAttribute(BACK_COLOR_ATTRIB, &sTransColor))
-		m_wTransColor = LoadRGBColor(sTransColor);
+	if (pDesc->FindAttribute(BACK_COLOR_ATTRIB, &sTransColor))
+		::kernelDebugLogMessage("backColor not yet supported.");
 
 	//	Sprite
 
-	m_bSprite = pDesc->GetAttributeBool(SPRITE_ATTRIB);
+	if (pDesc->GetAttributeBool(SPRITE_ATTRIB))
+		::kernelDebugLogMessage("Sprites not yet supported.");
 
-	//	Pre-multiply transparency
+	//	Pre-multiply transparency.
+	//
+	//	NOTE: The noPM="true" parameter means that the image has not been
+	//	pre-multiplied. Thus we need to premultiply it when we load it.
 
-	m_bPreMult = !pDesc->GetAttributeBool(NO_PM_ATTRIB);
+	m_bPreMult = pDesc->GetAttributeBool(NO_PM_ATTRIB);
 
 	//	Initialize
 
 	m_bMarked = false;
 	m_bLocked = false;
 	m_pBitmap = NULL;
+	m_pHitMask = NULL;
+	m_pShadowMask = NULL;
 
 	//	If we're loading on use, make sure the image exists. For other
 	//	images we don't bother checking because we will load them
@@ -379,11 +510,26 @@ void CObjectImage::OnUnbindDesign (void)
 //	Free our image
 
 	{
-	if (m_pBitmap && m_bLoadOnUse)
+	if (m_bLoadOnUse)
 		{
-		delete m_pBitmap;
-		m_pBitmap = NULL;
-		m_bLocked = false;
+		if (m_pBitmap)
+			{
+			delete m_pBitmap;
+			m_pBitmap = NULL;
+			m_bLocked = false;
+			}
+
+		if (m_pHitMask)
+			{
+			delete m_pHitMask;
+			m_pHitMask = NULL;
+			}
+
+		if (m_pShadowMask)
+			{
+			delete m_pShadowMask;
+			m_pShadowMask = NULL;
+			}
 		}
 	}
 
@@ -394,9 +540,24 @@ void CObjectImage::Sweep (void)
 //	Garbage collect the image, if it is not marked (i.e., in use)
 
 	{
-	if (!m_bLocked && !m_bMarked && m_pBitmap)
+	if (!m_bLocked && !m_bMarked)
 		{
-		delete m_pBitmap;
-		m_pBitmap = NULL;
+		if (m_pBitmap)
+			{
+			delete m_pBitmap;
+			m_pBitmap = NULL;
+			}
+
+		if (m_pHitMask)
+			{
+			delete m_pHitMask;
+			m_pHitMask = NULL;
+			}
+
+		if (m_pShadowMask)
+			{
+			delete m_pShadowMask;
+			m_pShadowMask = NULL;
+			}
 		}
 	}

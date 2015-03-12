@@ -14,9 +14,7 @@
 #define MAX_CHARGES						200
 #define CHARGE_INCREASE					8
 
-static CObjectClass<CGaianProcessorAI>g_Class(OBJID_CGAIANPROCESSORAI, NULL);
-
-CGaianProcessorAI::CGaianProcessorAI (void) : CBaseShipAI(&g_Class),
+CGaianProcessorAI::CGaianProcessorAI (void) : 
 		m_State(stateNone),
 		m_pTarget(NULL),
 		m_pDest(NULL),

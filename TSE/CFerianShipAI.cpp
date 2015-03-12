@@ -28,9 +28,7 @@ const int MINE_CYCLE_DELAY =					37;
 
 #define ATTRIBUTE_ASTEROID						(CONSTLIT("asteroid"))
 
-static CObjectClass<CFerianShipAI>g_Class(OBJID_CFERIANSHIPAI, NULL);
-
-CFerianShipAI::CFerianShipAI (void) : CBaseShipAI(&g_Class),
+CFerianShipAI::CFerianShipAI (void) : 
 		m_State(stateNone),
 		m_pTarget(NULL),
 		m_pBase(NULL)

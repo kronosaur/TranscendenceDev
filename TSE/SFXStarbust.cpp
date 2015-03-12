@@ -92,15 +92,15 @@ ALERROR CStarburstEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXM
 	if (error = m_SpikeLength.LoadFromXML(pDesc->GetAttribute(SPIKE_LENGTH_ATTRIB)))
 		return error;
 
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
-	m_wSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
 
 	m_iLifetime = pDesc->GetAttributeInteger(LIFETIME_ATTRIB);
 
 	return NOERROR;
 	}
 
-void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CStarburstEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -123,11 +123,7 @@ void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewport
 			{
 			//	Paint the glowing orb
 
-			DrawAlphaGradientCircle(Dest,
-					x,
-					y,
-					2 * m_SpikeLength.GetMaxValue(),
-					m_wSecondaryColor);
+			CGDraw::CircleGradient(Dest, x, y, 2 * m_SpikeLength.GetMaxValue(), m_rgbSecondaryColor);
 
 			//	Paint concentric lightning
 
@@ -153,7 +149,7 @@ void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewport
 						y + y1,
 						x + x2,
 						y + y2,
-						m_wPrimaryColor,
+						m_rgbPrimaryColor,
 						8,
 						0.4);
 
@@ -162,7 +158,7 @@ void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewport
 						y + y2,
 						x + x3,
 						y + y3,
-						m_wPrimaryColor,
+						m_rgbPrimaryColor,
 						8,
 						0.4);
 
@@ -187,24 +183,19 @@ void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewport
 				int xDest, yDest;
 				IntPolarToVector(iAngle, rLength, &xDest, &yDest);
 
-				Dest.DrawBiColorLine(x, y,
-						x + xDest,
-						y + yDest,
+				CGDraw::LineGradient(Dest,
+						x, y,
+						x + xDest, y + yDest,
 						1,
-						m_wPrimaryColor,
-						Ctx.wSpaceColor);
+						m_rgbPrimaryColor,
+						CG32bitPixel(m_rgbPrimaryColor, 0));
 
 				iAngle += iSeparation;
 				}
 
 			//	Paint the glowing orb
 
-			DrawAlphaGradientCircle(Dest,
-					x,
-					y,
-					m_SpikeLength.GetMinValue(),
-					m_wSecondaryColor);
-
+			CGDraw::CircleGradient(Dest, x, y, m_SpikeLength.GetMinValue(), m_rgbSecondaryColor);
 			break;
 			}
 
@@ -223,7 +214,7 @@ void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewport
 						yStart,
 						x,
 						y,
-						m_wPrimaryColor,
+						m_rgbPrimaryColor,
 						16,
 						0.4);
 				}
@@ -238,16 +229,12 @@ void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewport
 
 				CG16bitBinaryRegion Region;
 				Region.CreateFromConvexPolygon(4, Spike);
-				Region.Fill(Dest, x, y, m_wSecondaryColor);
+				Region.Fill(Dest, x, y, m_rgbSecondaryColor);
 				}
 
 			//	Paint the glowing orb
 
-			DrawAlphaGradientCircle(Dest,
-					x,
-					y,
-					m_SpikeLength.GetMaxValue() / 2,
-					m_wPrimaryColor);
+			CGDraw::CircleGradient(Dest, x, y, m_SpikeLength.GetMaxValue() / 2, m_rgbPrimaryColor);
 			break;
 			}
 
@@ -263,16 +250,12 @@ void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewport
 
 				CG16bitBinaryRegion Region;
 				Region.CreateFromConvexPolygon(4, Spike);
-				Region.Fill(Dest, x, y, m_wSecondaryColor);
+				Region.Fill(Dest, x, y, m_rgbSecondaryColor);
 				}
 
 			//	Paint the glowing orb
 
-			DrawAlphaGradientCircle(Dest,
-					x,
-					y,
-					m_SpikeLength.GetMaxValue(),
-					m_wPrimaryColor);
+			CGDraw::CircleGradient(Dest, x, y, m_SpikeLength.GetMaxValue(), m_rgbPrimaryColor);
 			break;
 			}
 
@@ -286,12 +269,12 @@ void CStarburstEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewport
 				int xDest, yDest;
 				IntPolarToVector(iAngle, (Metric)m_SpikeLength.Roll(), &xDest, &yDest);
 
-				Dest.DrawBiColorLine(x, y,
-						x + xDest,
-						y + yDest,
+				CGDraw::LineGradient(Dest,
+						x, y,
+						x + xDest, y + yDest,
 						1,
-						m_wPrimaryColor,
-						Ctx.wSpaceColor);
+						m_rgbPrimaryColor,
+						CG32bitPixel(m_rgbPrimaryColor, 0));
 
 				iAngle += iSeparation;
 				}

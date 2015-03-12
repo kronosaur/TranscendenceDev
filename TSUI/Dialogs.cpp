@@ -200,16 +200,16 @@ void CVisualPalette::CreateCheckbox (CAniSequencer *pContainer,
 
 	{
 	const CG16bitFont *pLabelFont;
-	WORD wLabelColor;
+	CG32bitPixel rgbLabelColor;
 	if (dwOptions & OPTION_CHECKBOX_LARGE_FONT)
 		{
 		pLabelFont = &GetFont(fontLarge);
-		wLabelColor = GetColor(colorTextDialogInput);
+		rgbLabelColor = GetColor(colorTextDialogInput);
 		}
 	else
 		{
 		pLabelFont = &GetFont(fontMedium);
-		wLabelColor = GetColor(colorTextDialogLabel);
+		rgbLabelColor = GetColor(colorTextDialogLabel);
 		}
 
 	CAniButton *pButton = new CAniButton(CAniButton::typeCheckbox);
@@ -261,7 +261,7 @@ void CVisualPalette::CreateCheckbox (CAniSequencer *pContainer,
 	pButton->SetStyle(STYLE_DISABLED, pStyle);
 
 	pStyle = new CAniText;
-	pStyle->SetPropertyColor(PROP_COLOR, wLabelColor);
+	pStyle->SetPropertyColor(PROP_COLOR, rgbLabelColor);
 	pStyle->SetPropertyFont(PROP_FONT, pLabelFont);
 	pStyle->SetPropertyString(PROP_TEXT_ALIGN_VERT, CONSTLIT("center"));
 	pButton->SetStyle(STYLE_TEXT, pStyle);
@@ -432,7 +432,7 @@ void CVisualPalette::CreateImageButton (CAniSequencer *pContainer,
 										const CString &sID,
 										int x,
 										int y,
-										const CG16bitImage *pImage,
+										const CG32bitImage *pImage,
 										const CString &sLabel,
 										DWORD dwOptions,
 										IAnimatron **retpControl) const
@@ -505,11 +505,14 @@ void CVisualPalette::CreateImageButton (CAniSequencer *pContainer,
 	pStyle->SetPropertyString(PROP_TEXT_ALIGN_VERT, CONSTLIT("bottom"));
 	pButton->SetStyle(STYLE_TEXT, pStyle);
 
-	pStyle = new CAniRect;
-	pStyle->SetPropertyVector(PROP_POSITION, CVector((IMAGE_BUTTON_WIDTH - pImage->GetWidth()) / 2, IMAGE_BUTTON_IMAGE_PADDING_TOP));
-	pStyle->SetPropertyVector(PROP_SCALE, CVector(pImage->GetWidth(), pImage->GetHeight()));
-	pStyle->SetFillMethod(new CAniImageFill(pImage, false));
-	pButton->SetStyle(STYLE_IMAGE, pStyle);
+	if (pImage)
+		{
+		pStyle = new CAniRect;
+		pStyle->SetPropertyVector(PROP_POSITION, CVector((IMAGE_BUTTON_WIDTH - pImage->GetWidth()) / 2, IMAGE_BUTTON_IMAGE_PADDING_TOP));
+		pStyle->SetPropertyVector(PROP_SCALE, CVector(pImage->GetWidth(), pImage->GetHeight()));
+		pStyle->SetFillMethod(new CAniImageFill(pImage, false));
+		pButton->SetStyle(STYLE_IMAGE, pStyle);
+		}
 
 	//	Add
 
@@ -526,7 +529,7 @@ void CVisualPalette::CreateImageButtonSmall (CAniSequencer *pContainer,
 											 const CString &sID,
 											 int x,
 											 int y,
-											 const CG16bitImage *pImage,
+											 const CG32bitImage *pImage,
 											 DWORD dwOptions,
 											 IAnimatron **retpControl) const
 

@@ -75,6 +75,7 @@
 #define PROPERTY_CLASS							CONSTLIT("class")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 
+#define FIELD_ENTITY							CONSTLIT("entity")
 #define FIELD_EXTENSION_UNID					CONSTLIT("extensionUNID")
 #define FIELD_NAME								CONSTLIT("name")
 #define FIELD_UNID								CONSTLIT("unid")
@@ -522,7 +523,9 @@ bool CDesignType::FindDataField (const CString &sField, CString *retsValue)
 	{
 	int i;
 
-	if (strEquals(sField, FIELD_EXTENSION_UNID))
+	if (strEquals(sField, FIELD_ENTITY))
+		*retsValue = GetEntityName();
+	else if (strEquals(sField, FIELD_EXTENSION_UNID))
 		*retsValue = strPatternSubst("0x%08x", (m_pExtension ? m_pExtension->GetUNID() : 0));
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = strPatternSubst("%s 0x%08x", GetTypeClassName(), m_dwUNID);
@@ -1343,6 +1346,23 @@ void CDesignType::FireOnRandomEncounter (CSpaceObject *pObj)
 		}
 	}
 
+CString CDesignType::GetEntityName (void) const
+
+//	GetEntityName
+//
+//	Returns the entity name of this type
+
+	{
+	//	If we don't have an extension, then we can't figure it out
+
+	if (m_pExtension == NULL)
+		return NULL_STR;
+
+	//	Ask the extension
+
+	return m_pExtension->GetEntityName(GetUNID());
+	}
+
 ICCItem *CDesignType::GetEventHandler (const CString &sEvent) const
 
 //	GetEventHandler
@@ -1926,7 +1946,7 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError)
 
 	{
 	CString sError = strPatternSubst(CONSTLIT("%s [%x]: %s"), sEvent, m_dwUNID, pError->GetStringValue());
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer)
 		pPlayer->SendMessage(NULL, sError);
 

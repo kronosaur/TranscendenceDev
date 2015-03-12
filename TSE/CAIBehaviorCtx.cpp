@@ -5,17 +5,23 @@
 
 #include "PreComp.h"
 
+const int ATTACK_TIME_THRESHOLD =		150;
 const Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
 const Metric MIN_TARGET_DIST =			(5.0 * LIGHT_SECOND);
 const int MULTI_HIT_WINDOW =			20;
-const Metric WALL_RANGE =				(KLICKS_PER_PIXEL * 700.0);
+const Metric WALL_RANGE =				(KLICKS_PER_PIXEL * 300.0);
 
 const Metric MIN_STATION_TARGET_DIST2 =	(MIN_STATION_TARGET_DIST * MIN_STATION_TARGET_DIST);
 const Metric MIN_TARGET_DIST2 =			(MIN_TARGET_DIST * MIN_TARGET_DIST);
 const Metric WALL_RANGE2 =				(WALL_RANGE * WALL_RANGE);
 
+const Metric GRAVITY_WELL_RANGE =		(KLICKS_PER_PIXEL * 800.0);
+const Metric GRAVITY_WELL_RANGE2 =		(GRAVITY_WELL_RANGE * GRAVITY_WELL_RANGE);
+
 const Metric MAX_NAV_START_DIST =		(20.0 * LIGHT_SECOND);
 const Metric MAX_NAV_START_DIST2 =		(MAX_NAV_START_DIST * MAX_NAV_START_DIST);
+
+const DWORD NAV_PATH_ID_OWNED =			0xffffffff;
 
 CAIBehaviorCtx::CAIBehaviorCtx (void) :
 		m_iLastTurn(NoRotation),
@@ -24,6 +30,7 @@ CAIBehaviorCtx::CAIBehaviorCtx (void) :
 		m_iLastAttack(0),
 		m_pNavPath(NULL),
 		m_iNavPathPos(-1),
+		m_iBarrierClock(-1),
 		m_pShields(NULL),
 		m_iBestWeapon(devNone),
 		m_fDockingRequested(false),
@@ -34,11 +41,20 @@ CAIBehaviorCtx::CAIBehaviorCtx (void) :
 		m_fHasSecondaryWeapons(false),
 		m_fHasMultiplePrimaries(false),
 		m_fRecalcBestWeapon(true),
-		m_fHasEscorts(false)
+		m_fHasEscorts(false),
+		m_fFreeNavPath(false)
 
 //	CAIBehaviorCtx constructor
 
 	{
+	}
+
+CAIBehaviorCtx::~CAIBehaviorCtx (void)
+
+//	CAIBehaviorCtx destructor
+
+	{
+	ClearNavPath();
 	}
 
 void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
@@ -60,7 +76,7 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 
 		CSystem *pSystem = pShip->GetSystem();
 		SSpaceObjectGridEnumerator i;
-		pSystem->EnumObjectsInBoxStart(i, pShip->GetPos(), WALL_RANGE, gridNoBoxCheck);
+		pSystem->EnumObjectsInBoxStart(i, pShip->GetPos(), Max(GRAVITY_WELL_RANGE, WALL_RANGE), gridNoBoxCheck);
 
 		while (pSystem->EnumObjectsInBoxHasMore(i))
 			{
@@ -75,11 +91,11 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 
 				//	There is a sharp potential away from gravity wells
 
-				if (rTargetDist2 < WALL_RANGE2)
+				if (rTargetDist2 < GRAVITY_WELL_RANGE2)
 					{
 					CVector vTargetN = vTarget.Normal(&rDist);
 					if (rDist > 0.0)
-						vPotential = vPotential - (vTargetN * 500.0 * g_KlicksPerPixel * (WALL_RANGE / rDist));
+						vPotential = vPotential - (vTargetN * 500.0 * g_KlicksPerPixel * (GRAVITY_WELL_RANGE / rDist));
 					}
 				}
 			else if (pObj->Blocks(pShip))
@@ -91,9 +107,35 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 
 				if (rTargetDist2 < WALL_RANGE2)
 					{
-					CVector vTargetN = vTarget.Normal(&rDist);
-					if (rDist > 0.0)
-						vPotential = vPotential - (vTargetN * 50.0 * g_KlicksPerPixel * (WALL_RANGE / rDist));
+					//	If we've hit a wall, then we need more precise computations because 
+					//	moving aways from the center of the wall might not help.
+
+					if (m_iBarrierClock != -1)
+						{
+						int iRange;
+						int iAngle;
+						for (iRange = 1; iRange < 8; iRange++)
+							{
+							Metric rRange = g_KlicksPerPixel * iRange * 10.0;
+							Metric rStrength = g_KlicksPerPixel * (8 - iRange) * 10.0;
+
+							for (iAngle = 0; iAngle < 360; iAngle += 30)
+								{
+								CVector vTest = PolarToVector(iAngle, 1.0);
+								if (pObj->PointInObject(pObj->GetPos(), pShip->GetPos() + (rRange * vTest)))
+									vPotential = vPotential - (rStrength * vTest);
+								}
+							}
+						}
+
+					//	Otherwise, move away from the center of the wall
+
+					else
+						{
+						CVector vTargetN = vTarget.Normal(&rDist);
+						if (rDist > 0.0)
+							vPotential = vPotential - (vTargetN * 50.0 * g_KlicksPerPixel * (WALL_RANGE / rDist));
+						}
 					}
 				}
 			else if (pObj->GetCategory() == CSpaceObject::catShip)
@@ -451,6 +493,24 @@ bool CAIBehaviorCtx::CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget,
 		}
 	}
 
+bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, const CVector &vTo)
+
+//	CalcNavPath
+//
+//	Initializes m_pNavPath and m_iNavPathPos.
+
+	{
+	//	We always create a new nav path
+
+	CNavigationPath *pPath;
+	CNavigationPath::Create(pShip->GetSystem(), pShip->GetSovereign(), pShip->GetPos(), vTo, &pPath);
+
+	//	Done (we own this nav path, so we pass TRUE).
+
+	SetNavPath(pPath, 0, true);
+	return true;
+	}
+
 bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 
 //	CalcNavPath
@@ -480,7 +540,7 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 						&& !pObj->IsInactive()
 						&& !pObj->IsVirtual()
 						&& pObj->SupportsDocking()
-						&& pObj->IsFriend(pShip))))
+						&& (pObj->IsFriend(pShip) || !pObj->CanAttack()))))
 			{
 			Metric rDist2 = (pObj->GetPos() - pShip->GetPos()).Length2();
 			if (rDist2 < rBestDist2)
@@ -544,7 +604,7 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pFrom, CSpaceObjec
 	CalcNavPath(pShip, pPath);
 	}
 
-void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath)
+void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath, bool bOwned)
 
 //	CalcNavPath
 //
@@ -555,10 +615,6 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath)
 
 	ASSERT(pPath);
 
-	//	Set the path
-
-	m_pNavPath = pPath;
-
 	//	Figure out which nav position we are closest to
 
 	const Metric CLOSE_ENOUGH_DIST = (LIGHT_SECOND * 10.0);
@@ -566,9 +622,9 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath)
 	Metric rBestDist2 = (g_InfiniteDistance * g_InfiniteDistance);
 	int iBestPoint = -1;
 
-	for (i = 0; i < m_pNavPath->GetNavPointCount(); i++)
+	for (i = 0; i < pPath->GetNavPointCount(); i++)
 		{
-		CVector vDist = m_pNavPath->GetNavPoint(i) - pShip->GetPos();
+		CVector vDist = pPath->GetNavPoint(i) - pShip->GetPos();
 		Metric rDist2 = vDist.Length2();
 
 		if (rDist2 < rBestDist2)
@@ -587,7 +643,7 @@ void CAIBehaviorCtx::CalcNavPath (CShip *pShip, CNavigationPath *pPath)
 	if (iBestPoint == -1)
 		iBestPoint = 0;
 
-	m_iNavPathPos = iBestPoint;
+	SetNavPath(pPath, iBestPoint, bOwned);
 	}
 
 void CAIBehaviorCtx::CalcShieldState (CShip *pShip)
@@ -789,6 +845,24 @@ void CAIBehaviorCtx::CancelDocking (CShip *pShip, CSpaceObject *pBase)
 	SetDockingRequested(false);
 	}
 
+void CAIBehaviorCtx::ClearNavPath (void)
+
+//	ClearNavPath
+//
+//	Clears the nav path
+	
+	{
+	if (m_pNavPath)
+		{
+		if (m_fFreeNavPath)
+			delete m_pNavPath;
+
+		m_pNavPath = NULL;
+		m_iNavPathPos = -1;
+		m_fFreeNavPath = false;
+		}
+	}
+
 void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
 
 //	CommunicateWithEscorts
@@ -823,7 +897,7 @@ void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage
 		}
 	}
 
-void CAIBehaviorCtx::DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CAIBehaviorCtx::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	DebugPaintInfo
 //
@@ -834,6 +908,29 @@ void CAIBehaviorCtx::DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewport
 	if (m_pNavPath)
 		m_pNavPath->DebugPaintInfo(Dest, x, y, Ctx.XForm);
 #endif
+	}
+
+bool CAIBehaviorCtx::IsBeingAttacked (int iThreshold) const 
+
+//	IsBeingAttacked
+//
+//	Returns TRUE if we've been attacked recently.
+
+	{
+	return (g_pUniverse->GetTicks() - m_iLastAttack) <= iThreshold;
+	}
+
+bool CAIBehaviorCtx::IsSecondAttack (void) const
+
+//	IsSecondAttack
+//
+//	This is called when we are attacked. We return TRUE if this is the second
+//	attack within a certain period of time and if it is not too close to the
+//	previous attack (so it is a deliberate second hit).
+
+	{
+	int iInterval = g_pUniverse->GetTicks() - GetLastAttack();
+	return (iInterval > MULTI_HIT_WINDOW && iInterval < 3 * ATTACK_TIME_THRESHOLD);
 	}
 
 void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
@@ -871,17 +968,44 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&m_iLastAttack, sizeof(DWORD));
 	Ctx.pStream->Read((char *)&m_vPotential, sizeof(CVector));
 
+	if (Ctx.dwVersion >= 112)
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_iBarrierClock = (int)dwLoad;
+		}
+	else
+		m_iBarrierClock = -1;
+
 	//	Nav path
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	if (dwLoad)
-		m_pNavPath = Ctx.pSystem->GetNavPathByID(dwLoad);
-	else
+	if (dwLoad == 0)
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		m_pNavPath = NULL;
-
-	Ctx.pStream->Read((char *)&m_iNavPathPos, sizeof(DWORD));
-	if (m_pNavPath == NULL)
 		m_iNavPathPos = -1;
+		m_fFreeNavPath = false;
+		}
+	else if (dwLoad == NAV_PATH_ID_OWNED)
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_iNavPathPos = (int)dwLoad;
+
+		m_pNavPath = new CNavigationPath;
+		m_pNavPath->OnReadFromStream(Ctx);
+		m_fFreeNavPath = true;
+		}
+	else
+		{
+		DWORD dwNavPathPos;
+		Ctx.pStream->Read((char *)&dwNavPathPos, sizeof(DWORD));
+		m_iNavPathPos = (int)dwNavPathPos;
+
+		m_pNavPath = Ctx.pSystem->GetNavPathByID(dwLoad);
+		if (m_pNavPath == NULL)
+			m_iNavPathPos = -1;
+		m_fFreeNavPath = false;
+		}
 
 	//	Flags
 
@@ -893,6 +1017,25 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 	//	These flags do not need to be saved
 
 	m_fRecalcBestWeapon = true;
+	}
+
+void CAIBehaviorCtx::SetBarrierClock (CShip *pShip)
+
+//	SetBarrierClock
+//
+//	This gets called when we hit a barrier.
+
+	{
+	//	If our clock is already set, we're still trying to deal with the 
+	//	barrier from the last hit.
+
+	if (m_iBarrierClock != -1)
+		return;
+
+	//	Set our clock
+
+	int iFullRotationTime = Max(1, pShip->GetClass()->GetRotationDesc().GetMaxRotationTimeTicks());
+	m_iBarrierClock = 30 + iFullRotationTime;
 	}
 
 void CAIBehaviorCtx::SetLastAttack (int iTick)
@@ -925,6 +1068,23 @@ void CAIBehaviorCtx::Undock (CShip *pShip)
 		pShip->Undock();
 	}
 
+void CAIBehaviorCtx::Update (void)
+
+//	Update
+//
+//	Called before we start processing
+
+	{
+	if (!IsDockingRequested())
+		{
+		SetManeuver(NoRotation);
+		SetThrustDir(CAIShipControls::constNeverThrust);
+		}
+
+	if (m_iBarrierClock != -1)
+		m_iBarrierClock--;
+	}
+
 void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	WriteToStream
@@ -939,6 +1099,7 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 //	DWORD		m_iManeuverCounter
 //	DWORD		m_iLastAttack
 //	CVector		m_vPotential
+//	DWORD		m_iBarrierClock
 //	DWORD		m_pNavPath (ID)
 //	DWORD		m_iNavPathPos
 //
@@ -960,11 +1121,40 @@ void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	pStream->Write((char *)&m_iLastAttack, sizeof(DWORD));
 	pStream->Write((char *)&m_vPotential, sizeof(CVector));
 
-	//	Nav path
-
-	dwSave = (m_pNavPath ? m_pNavPath->GetID() : 0);
+	dwSave = m_iBarrierClock;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	pStream->Write((char *)&m_iNavPathPos, sizeof(DWORD));
+
+	//	If we don't have a nav path, just write out 0
+
+	if (m_pNavPath == NULL)
+		{
+		dwSave = 0;
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		dwSave = m_iNavPathPos;
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		}
+
+	//	If we have a shared nav path, write out the nav path ID
+
+	else if (!m_fFreeNavPath)
+		{
+		dwSave = (m_pNavPath ? m_pNavPath->GetID() : 0);
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		dwSave = m_iNavPathPos;
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		}
+
+	//	Otherwise we need to save the nav path here.
+
+	else
+		{
+		dwSave = NAV_PATH_ID_OWNED;
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		dwSave = m_iNavPathPos;
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+		m_pNavPath->OnWriteToStream(pSystem, pStream);
+		}
 
 	//	Flags
 

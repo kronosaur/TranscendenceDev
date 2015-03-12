@@ -14,7 +14,7 @@ class CMessageSession : public IHISession
 		virtual ALERROR OnCommand (const CString &sCmd, void *pData = NULL);
 		virtual ALERROR OnInit (CString *retsError);
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData);
-		virtual void OnPaint (CG16bitImage &Screen, const RECT &rcInvalid);
+		virtual void OnPaint (CG32bitImage &Screen, const RECT &rcInvalid);
 		virtual void OnReportHardCrash (CString *retsMessage);
 
 	private:

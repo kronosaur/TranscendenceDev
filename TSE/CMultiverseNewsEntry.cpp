@@ -30,7 +30,7 @@ CMultiverseNewsEntry::CMultiverseNewsEntry (const CMultiverseNewsEntry &Src)
 
 	m_sImageFilespec = Src.m_sImageFilespec;
 	m_sImageMaskFilespec = Src.m_sImageMaskFilespec;
-	m_Image.CreateFromImage(Src.m_Image);
+	m_Image = Src.m_Image;
 
 	m_bShown = Src.m_bShown;
 	}
@@ -109,7 +109,7 @@ void CMultiverseNewsEntry::FindImages (const CString &sCacheFilespec, TSortMap<C
 			retDownloads);
 	}
 
-CG16bitImage *CMultiverseNewsEntry::LoadImage (void)
+CG32bitImage *CMultiverseNewsEntry::LoadImage (void)
 
 //	LoadImage
 //
@@ -125,15 +125,8 @@ CG16bitImage *CMultiverseNewsEntry::LoadImage (void)
 		if (m_sImageFilespec.IsBlank())
 			return NULL;
 
-		try
-			{
-			m_Image.CreateFromFile(m_sImageFilespec, m_sImageMaskFilespec, 0);
-			}
-		catch (...)
-			{
-			::kernelDebugLogMessage("Crash loading image: %s.", m_sImageFilespec);
+		if (!m_Image.CreateFromFile(m_sImageFilespec, m_sImageMaskFilespec))
 			return NULL;
-			}
 		}
 
 	//	Done
@@ -141,7 +134,7 @@ CG16bitImage *CMultiverseNewsEntry::LoadImage (void)
 	return &m_Image;
 	}
 
-CG16bitImage *CMultiverseNewsEntry::LoadImageHandoff (void)
+CG32bitImage *CMultiverseNewsEntry::LoadImageHandoff (void)
 
 //	LoadImageHandoff
 //
@@ -156,20 +149,12 @@ CG16bitImage *CMultiverseNewsEntry::LoadImageHandoff (void)
 
 	//	Load the image.
 
-	try
+	CG32bitImage *pImage = new CG32bitImage;
+	if (!pImage->CreateFromFile(m_sImageFilespec, m_sImageMaskFilespec))
 		{
-		CG16bitImage *pImage = new CG16bitImage;
-		if (pImage->CreateFromFile(m_sImageFilespec, m_sImageMaskFilespec, 0) != NOERROR)
-			{
-			delete pImage;
-			return NULL;
-			}
-
-		return pImage;
-		}
-	catch (...)
-		{
-		::kernelDebugLogMessage("Crash loading image: %s.", m_sImageFilespec);
+		delete pImage;
 		return NULL;
 		}
+
+	return pImage;
 	}

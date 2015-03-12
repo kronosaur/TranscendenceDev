@@ -45,6 +45,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_CREATE_ORDERS_EVENT					CONSTLIT("OnCreateOrders")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
+#define ON_DESELECTED_EVENT						CONSTLIT("OnDeselected")
 #define ON_DESTROY_EVENT						CONSTLIT("OnDestroy")
 #define ON_DOCK_OBJ_ADJ_EVENT					CONSTLIT("OnDockObjAdj")
 #define ON_ENTERED_GATE_EVENT					CONSTLIT("OnEnteredGate")
@@ -55,6 +56,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_OBJ_DESTROYED_EVENT					CONSTLIT("OnObjDestroyed")
 #define ON_OBJ_DOCKED_EVENT						CONSTLIT("OnObjDocked")
 #define ON_OBJ_ENTERED_GATE_EVENT				CONSTLIT("OnObjEnteredGate")
+#define ON_OBJ_GATE_EVENT						CONSTLIT("OnObjGate")
 #define ON_OBJ_JUMPED_EVENT						CONSTLIT("OnObjJumped")
 #define ON_OBJ_JUMP_POS_ADJ_EVENT				CONSTLIT("OnObjJumpPosAdj")
 #define ON_OBJ_RECONNED_EVENT					CONSTLIT("OnObjReconned")
@@ -67,6 +69,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_PLAYER_ENTERED_SYSTEM_EVENT			CONSTLIT("OnPlayerEnteredSystem")
 #define ON_PLAYER_LEFT_SYSTEM_EVENT				CONSTLIT("OnPlayerLeftSystem")
 #define ON_RANDOM_ENCOUNTER_EVENT				CONSTLIT("OnRandomEncounter")
+#define ON_SELECTED_EVENT						CONSTLIT("OnSelected")
 #define ON_SYSTEM_EXPLOSION_EVENT				CONSTLIT("OnSystemExplosion")
 #define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
 #define ON_SYSTEM_WEAPON_FIRE_EVENT				CONSTLIT("OnSystemWeaponFire")
@@ -86,6 +89,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_INSTALL_DEVICE_PRICE			CONSTLIT("installDevicePrice")
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL							CONSTLIT("level")
+#define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
@@ -1267,7 +1271,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 				//	an event might set a target for the player and if the
 				//	target is destroyed, we would never get an OnObjDestroyed message
 
-				g_pUniverse->SetPlayer(NULL);
+				g_pUniverse->SetPlayerShip(NULL);
 
 				//	The player will be deleted at higher layers, but
 				//	it is out of the system now.
@@ -1460,7 +1464,7 @@ int CSpaceObject::FindCommsMessage (const CString &sName)
 	if (pHandler == NULL)
 		return -1;
 
-	return pHandler->FindMessage(sName);
+	return pHandler->FindMessageByName(sName);
 	}
 
 bool CSpaceObject::FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError)
@@ -1743,7 +1747,7 @@ void CSpaceObject::FireCustomOverlayEvent (const CString &sEvent, DWORD dwOverla
 
 	//	Find the overlay
 
-	CEnergyField *pOverlay = GetOverlay(dwOverlayID);
+	COverlay *pOverlay = GetOverlay(dwOverlayID);
 	if (pOverlay == NULL)
 		{
 		if (retpResult)
@@ -2086,6 +2090,31 @@ void CSpaceObject::FireOnDamage (SDamageCtx &Ctx)
 		//	Result is the amount of damage
 
 		Ctx.iDamage = pResult->GetIntegerValue();
+		CCCtx.Discard(pResult);
+		}
+	}
+
+void CSpaceObject::FireOnDeselected (void)
+
+//	FireOnDeselected
+//
+//	Fire OnDeselected event
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_DESELECTED_EVENT, &Event))
+		{
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(this);
+		CCCtx.DefineInteger(CONSTLIT("aPlayer"), g_PlayerSovereignUNID);
+
+		//	Run code
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_DESELECTED_EVENT, pResult);
 		CCCtx.Discard(pResult);
 		}
 	}
@@ -2473,6 +2502,44 @@ void CSpaceObject::FireOnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDes
 		}
 	}
 
+bool CSpaceObject::FireOnObjGate (CSpaceObject *pObj)
+
+//	FireOnObjGate
+//
+//	Fire OnObjGate event. Allows us to manipulate the object that gated. We
+//	return TRUE if we handled gating. Otherwise, we return FALSE and the default
+//	behavior is to destroy the object inside the gate.
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_OBJ_GATE_EVENT, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
+
+		bool bResult;
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			{
+			ReportEventError(ON_OBJ_GATE_EVENT, pResult);
+			bResult = false;
+			}
+		else if (pResult->IsNil())
+			bResult = false;
+		else
+			bResult = true;
+
+		Ctx.Discard(pResult);
+
+		return bResult;
+		}
+
+	return false;
+	}
+
 void CSpaceObject::FireOnObjJumped (CSpaceObject *pObj)
 
 //	FireOnObjJumped
@@ -2696,6 +2763,31 @@ CSpaceObject::InterSystemResults CSpaceObject::FireOnPlayerLeftSystem (CSpaceObj
 		}
 
 	return interNoAction;
+	}
+
+void CSpaceObject::FireOnSelected (void)
+
+//	FireOnSelected
+//
+//	Fire OnSelected event
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_SELECTED_EVENT, &Event))
+		{
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(this);
+		CCCtx.DefineInteger(CONSTLIT("aPlayer"), g_PlayerSovereignUNID);
+
+		//	Run code
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_SELECTED_EVENT, pResult);
+		CCCtx.Discard(pResult);
+		}
 	}
 
 void CSpaceObject::FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID)
@@ -3566,7 +3658,7 @@ CSpaceObject *CSpaceObject::GetOrderGiver (DestructionTypes iCause)
 	{
 	if (iCause == killedByPlayerCreatedExplosion)
 		{
-		CSpaceObject *pPlayerShip = GetPlayer();
+		CSpaceObject *pPlayerShip = GetPlayerShip();
 		if (pPlayerShip)
 			return pPlayerShip;
 		else
@@ -3583,8 +3675,14 @@ ICCItem *CSpaceObject::GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, co
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-	return CC.CreateNil();
+	COverlayList *pOverlays = GetOverlays();
+	if (pOverlays)
+		return pOverlays->GetProperty(pCCCtx, this, dwID, sName);
+	else
+		{
+		CCodeChain &CC = g_pUniverse->GetCC();
+		return CC.CreateNil();
+		}
 	}
 
 ICCItem *CSpaceObject::GetProperty (const CString &sName)
@@ -3674,6 +3772,9 @@ ICCItem *CSpaceObject::GetProperty (const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_LEVEL))
 		return CC.CreateInteger(GetLevel());
+
+	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
+		return CC.CreateString(GetPaintLayerID(GetPaintLayer()));
 
 	else if (strEquals(sName, PROPERTY_PLAYER_MISSIONS_GIVEN))
 		{
@@ -3775,26 +3876,24 @@ const CString &CSpaceObject::GetStaticData (const CString &sAttrib)
 	return NULL_STR;
 	}
 
-WORD CSpaceObject::GetSymbolColor (void)
+CG32bitPixel CSpaceObject::GetSymbolColor (void)
 
 //	GetSymbolColor
 //
 //	Returns the color to paint this object in the player's scanner
 
 	{
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
-	if (pPlayer == NULL)
-		return CG16bitImage::RGBValue(128, 128, 128);
-	else if (pPlayer == this)
-		return CG16bitImage::RGBValue(255, 255, 255);
+	CSovereign *pPlayer = g_pUniverse->GetPlayerSovereign();
+	if (GetSovereign() == pPlayer)
+		return CG32bitPixel(255, 255, 255);
 	else if (IsWreck())
-		return CG16bitImage::RGBValue(0, 192, 0);
-	else if (IsEnemy(pPlayer))
-		return CG16bitImage::RGBValue(255, 80, 80);
+		return CG32bitPixel(0, 192, 0);
+	else if (GetSovereign()->IsEnemy(pPlayer))
+		return CG32bitPixel(255, 80, 80);
 	else if (GetCategory() == CSpaceObject::catShip)
-		return CG16bitImage::RGBValue(80, 255, 80);
+		return CG32bitPixel(80, 255, 80);
 	else
-		return CG16bitImage::RGBValue(0, 192, 0);
+		return CG32bitPixel(0, 192, 0);
 	}
 
 void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *retList, CSpaceObject *pExcludeObj)
@@ -3893,7 +3992,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 	//	The player is a special case (because sometimes a station is angry at the 
 	//	player even though she is not an enemy)
 
-	CSpaceObject *pPlayer = GetPlayer();
+	CSpaceObject *pPlayer = GetPlayerShip();
 	if (pPlayer 
 			&& pCenter->IsAngryAt(pPlayer)
 			&& pPlayer != pExcludeObj
@@ -4356,7 +4455,7 @@ bool CSpaceObject::IsPlayerEscortTarget (CSpaceObject *pPlayer)
 
 	if (pPlayer == NULL)
 		{
-		pPlayer = g_pUniverse->GetPlayer();
+		pPlayer = g_pUniverse->GetPlayerShip();
 		if (pPlayer == NULL)
 			return false;
 		}
@@ -4688,7 +4787,7 @@ void CSpaceObject::ItemsModified (void)
 
 	if (IsPlayerDocked())
 		{
-		CSpaceObject *pPlayer = GetPlayer();
+		CSpaceObject *pPlayer = GetPlayerShip();
 		if (pPlayer)
 			pPlayer->OnDockedObjChanged(this);
 		}
@@ -5190,6 +5289,32 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 	ClearPainted();
 	}
 
+void CSpaceObject::NotifyOnNewSystem (CSystem *pNewSystem)
+
+//	NotifyOnNewSystem
+//
+//	The object has been moved to a new system (this is commonly done for wingmen
+//	and other followers of the player). We guarantee that the old system is 
+//	still loaded at this point.
+
+	{
+	int i;
+
+	//	If any objects in the old system subscribe to us, then we need to
+	//	cancel the subscription.
+
+	for (i = 0; i < m_SubscribedObjs.GetCount(); i++)
+		if (m_SubscribedObjs.GetObj(i)->GetSystem() != pNewSystem)
+			{
+			m_SubscribedObjs.Remove(i);
+			i--;
+			}
+
+	//	Let our subclasses handle it
+
+	OnNewSystem(pNewSystem);
+	}
+
 void CSpaceObject::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 
 //	NotifyOnObjDestroyed
@@ -5233,7 +5358,7 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 	m_SubscribedObjs.Remove(Ctx.pObj);
 	}
 
-void CSpaceObject::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -5305,7 +5430,7 @@ void CSpaceObject::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &C
 	ClearPaintNeeded();
 	}
 
-void CSpaceObject::PaintEffects (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintEffects
 //
@@ -5329,7 +5454,7 @@ void CSpaceObject::PaintEffects (CG16bitImage &Dest, int x, int y, SViewportPain
 		}
 	}
 
-void CSpaceObject::PaintHighlight (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintHighlight
 //
@@ -5338,53 +5463,53 @@ void CSpaceObject::PaintHighlight (CG16bitImage &Dest, int x, int y, SViewportPa
 	{
 	//	Figure out the color of the highlight
 
-	WORD wColor = GetSymbolColor();
+	CG32bitPixel rgbColor = GetSymbolColor();
 
 	//	Paint the corners
 
 	Dest.DrawLine(Ctx.rcObjBounds.left, Ctx.rcObjBounds.top,
 			Ctx.rcObjBounds.left + HIGHLIGHT_CORNER_WIDTH, Ctx.rcObjBounds.top,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.left, Ctx.rcObjBounds.top,
 			Ctx.rcObjBounds.left, Ctx.rcObjBounds.top + HIGHLIGHT_CORNER_HEIGHT,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.right, Ctx.rcObjBounds.top,
 			Ctx.rcObjBounds.right - HIGHLIGHT_CORNER_WIDTH, Ctx.rcObjBounds.top,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.right, Ctx.rcObjBounds.top,
 			Ctx.rcObjBounds.right, Ctx.rcObjBounds.top + HIGHLIGHT_CORNER_HEIGHT,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.left, Ctx.rcObjBounds.bottom,
 			Ctx.rcObjBounds.left, Ctx.rcObjBounds.bottom - HIGHLIGHT_CORNER_HEIGHT,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.left, Ctx.rcObjBounds.bottom,
 			Ctx.rcObjBounds.left + HIGHLIGHT_CORNER_WIDTH, Ctx.rcObjBounds.bottom,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.right, Ctx.rcObjBounds.bottom,
 			Ctx.rcObjBounds.right - HIGHLIGHT_CORNER_WIDTH, Ctx.rcObjBounds.bottom,
-			1, wColor);
+			1, rgbColor);
 
 	Dest.DrawLine(Ctx.rcObjBounds.right, Ctx.rcObjBounds.bottom,
 			Ctx.rcObjBounds.right, Ctx.rcObjBounds.bottom - HIGHLIGHT_CORNER_HEIGHT,
-			1, wColor);
+			1, rgbColor);
 
 	//	Paint message, if we have one
 
 	if (!m_sHighlightText.IsBlank() || m_iHighlightChar)
 		{
 		int cyHeight;
-		PaintHighlightText(Dest, x, Ctx.yAnnotations, Ctx, alignCenter, wColor, &cyHeight);
+		PaintHighlightText(Dest, x, Ctx.yAnnotations, Ctx, alignCenter, rgbColor, &cyHeight);
 		Ctx.yAnnotations += cyHeight + ANNOTATION_INNER_SPACING_Y;
 		}
 	}
 
-void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, WORD wColor, int *retcyHeight)
+void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight)
 
 //	PaintHighlightText
 //
@@ -5406,6 +5531,12 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 				+ (m_iHighlightChar ? KEY_BOX_SIZE + 2 : 0);
 		}
 
+	DWORD dwFontFlags = CG16bitFont::AdjustToFit;
+	if (iAlign & alignCenter)
+		dwFontFlags |= CG16bitFont::AlignCenter;
+	else if (iAlign & alignRight)
+		dwFontFlags |= CG16bitFont::AlignRight;
+
 	//	Figure out what name to paint
 
 	CString sName;
@@ -5419,10 +5550,11 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 	//	Paint it
 
 	NameFont.DrawText(Dest, 
-			Dest.AdjustTextX(NameFont, sName, iAlign, x),
+			x,
 			y,
-			wColor, 
-			sName);
+			rgbColor, 
+			sName,
+			dwFontFlags);
 	y += NameFont.GetHeight();
 
 	//	Paint distance and bearing, if required
@@ -5432,10 +5564,11 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 		Metric rDist = (GetPos() - Ctx.pCenter->GetPos()).Length();
 		CString sText = strPatternSubst(CONSTLIT("Distance: %d"), (int)(rDist / LIGHT_SECOND));
 		NameFont.DrawText(Dest,
-				Dest.AdjustTextX(NameFont, sText, iAlign, x),
+				x,
 				y,
-				wColor,
-				sText);
+				rgbColor,
+				sText,
+				dwFontFlags);
 
 		y += NameFont.GetHeight();
 		}
@@ -5446,11 +5579,11 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 		{
 		//	Paint message
 
-		WORD wMessageColor;
+		CG32bitPixel rgbMessageColor;
 		if (m_iHighlightCountdown > HIGHLIGHT_BLINK)
-			wMessageColor = CG16bitImage::BlendPixel(wColor, 0xffff, 255 * (m_iHighlightCountdown - HIGHLIGHT_BLINK) / (HIGHLIGHT_TIMER - HIGHLIGHT_BLINK));
+			rgbMessageColor = CG32bitPixel::Blend(rgbColor, 0xffff, (BYTE)(255 * (m_iHighlightCountdown - HIGHLIGHT_BLINK) / (HIGHLIGHT_TIMER - HIGHLIGHT_BLINK)));
 		else
-			wMessageColor = wColor;
+			rgbMessageColor = rgbColor;
 
 		DWORD dwOpacity;
 		if (m_iHighlightCountdown < HIGHLIGHT_FADE)
@@ -5459,11 +5592,12 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 			dwOpacity = 255;
 
 		MessageFont.DrawText(Dest, 
-				Dest.AdjustTextX(MessageFont, m_sHighlightText, iAlign, x),
+				x,
 				y, 
-				wMessageColor, 
-				dwOpacity, 
-				m_sHighlightText);
+				CG32bitPixel(rgbMessageColor, (BYTE)dwOpacity),
+				m_sHighlightText,
+				dwFontFlags);
+
 		y += MessageFont.GetHeight();
 		}
 
@@ -5477,7 +5611,7 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 
 		y += ANNOTATION_INNER_SPACING_Y;
 
-		Dest.Fill(x - KEY_BOX_SIZE / 2, y, KEY_BOX_SIZE, KEY_BOX_SIZE, wColor);
+		Dest.Fill(x - KEY_BOX_SIZE / 2, y, KEY_BOX_SIZE, KEY_BOX_SIZE, rgbColor);
 
 		int xText = x - (KeyFont.MeasureText(sKey) / 2);
 		int yText = y + (KEY_BOX_SIZE / 2) - (KeyFont.GetHeight() / 2);
@@ -5497,7 +5631,7 @@ void CSpaceObject::PaintHighlightText (CG16bitImage &Dest, int x, int y, SViewpo
 		*retcyHeight = y - yOriginal;
 	}
 
-void CSpaceObject::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CSpaceObject::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //
@@ -5505,11 +5639,11 @@ void CSpaceObject::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTra
 
 	{
 	Dest.DrawDot(x, y, 
-			CG16bitImage::RGBValue(255, 255, 0), 
-			CG16bitImage::markerSmallRound);
+			CG32bitPixel(255, 255, 0), 
+			markerSmallRound);
 	}
 
-void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y)
+void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 //	PaintMap
 //
@@ -5523,13 +5657,13 @@ void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, in
 		int iTick = g_pUniverse->GetPaintTick();
 		int iRadius = 10;
 		int iRingSpacing = 4;
-		WORD wColor = GetSymbolColor();
+		CG32bitPixel rgbColor = GetSymbolColor();
 
-		CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 6, wColor);
+		CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 6, rgbColor);
 		}
 	}
 
-void CSpaceObject::PaintTargetHighlight (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintTargetHighlight
 //
@@ -5539,9 +5673,9 @@ void CSpaceObject::PaintTargetHighlight (CG16bitImage &Dest, int x, int y, SView
 	int iTick = g_pUniverse->GetPaintTick();
 	int iRadius = (int)(0.5 * GetHitSize() / g_KlicksPerPixel);
 	int iRingSpacing = 10;
-	WORD wColor = GetSymbolColor();
+	CG32bitPixel rgbColor = GetSymbolColor();
 
-	CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 3, wColor);
+	CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 3, rgbColor);
 	}
 
 void CSpaceObject::ParseCriteria (CSpaceObject *pSource, const CString &sCriteria, Criteria *retCriteria)
@@ -6088,7 +6222,7 @@ void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError)
 
 	{
 	CString sError = strPatternSubst(CONSTLIT("%s [%s]: %s"), sEvent, GetName(), pError->GetStringValue());
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer)
 		pPlayer->SendMessage(this, sError);
 
@@ -6871,7 +7005,7 @@ CString ParseParam (char **ioPos)
 
 #ifdef DEBUG_VECTOR
 
-void CSpaceObject::PaintDebugVector (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CSpaceObject::PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	{
 	if (!m_vDebugVector.IsNull())
 		{
@@ -6882,7 +7016,7 @@ void CSpaceObject::PaintDebugVector (CG16bitImage &Dest, int x, int y, SViewport
 		Dest.DrawLine(x, y,
 				xDest, yDest,
 				3,
-				CG16bitImage::RGBValue(0,255,0));
+				CG32bitPixel(0,255,0));
 		}
 	}
 

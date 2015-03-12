@@ -99,7 +99,7 @@ ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Add to list
 
 			for (i = 0; i < Catalog.GetCount(); i++)
-				pList->AppendStringValue(pCC, pathMakeRelative(Catalog[i], g_pHI->GetOptions().m_sMusicFolder, true));
+				pList->AppendString(*pCC, pathMakeRelative(Catalog[i], g_pHI->GetOptions().m_sMusicFolder, true));
 
 			return pResult;
 			}
@@ -124,10 +124,10 @@ ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Add to list
 
-			pList->AppendStringValue(pCC, CONSTLIT("playing"));
-			pList->AppendStringValue(pCC, pathMakeRelative(State.sFilename, g_pHI->GetOptions().m_sMusicFolder, true));
-			pList->AppendIntegerValue(pCC, State.iPos);
-			pList->AppendIntegerValue(pCC, State.iLength);
+			pList->AppendString(*pCC, CONSTLIT("playing"));
+			pList->AppendString(*pCC, pathMakeRelative(State.sFilename, g_pHI->GetOptions().m_sMusicFolder, true));
+			pList->AppendInteger(*pCC, State.iPos);
+			pList->AppendInteger(*pCC, State.iLength);
 
 			return pResult;
 			}

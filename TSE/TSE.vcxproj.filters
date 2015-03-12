@@ -59,9 +59,6 @@
     <ClInclude Include="PreComp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Geometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\TSE.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -77,25 +74,13 @@
     <ClInclude Include="..\Include\TSEMultiverse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\TSEOrderModuleImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\TSEPaint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TSESFXImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TSEShipControllersImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\TSESpaceObjectsImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\TSEStorage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\TSETopologyProcessorsImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\TSETransLisp.h">
@@ -107,6 +92,36 @@
     <ClInclude Include="..\Include\TSEUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LegacyAIImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CrewAIImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEShipAI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShipAIImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OrderModuleImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEGeometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SFXImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TopologyProcessorsImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PsycheDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -116,12 +131,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CDockingPorts.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CEnergyField.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CEnergyFieldList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CGameFile.cpp">
@@ -813,6 +822,27 @@
     </ClCompile>
     <ClCompile Include="SFXLightningStorm.cpp">
       <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="IPlayerController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CNavigateOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CCrewAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CCrewPsyche.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlayList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemSpacePainter.cpp">
+      <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

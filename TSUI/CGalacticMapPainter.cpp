@@ -64,21 +64,20 @@ void CGalacticMapPainter::AdjustCenter (const RECT &rcView, int xCenter, int yCe
 		*retyCenter = (cyHeight / 2) - yMapCenter;
 	}
 
-void CGalacticMapPainter::DrawNode (CG16bitImage &Dest, CTopologyNode *pNode, int x, int y, WORD wColor)
+void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor)
 
 //	DrawNode
 //
 //	Draws a topology node
 
 	{
-	DrawAlphaGradientCircle(Dest, x + 2, y + 2, NODE_RADIUS + 1, 0);
-	DrawFilledCircle(Dest, x, y, NODE_RADIUS, wColor);
-	DrawAlphaGradientCircle(Dest, x - 2, y - 2, NODE_RADIUS - 3, CG16bitImage::RGBValue(255, 255, 255));
+	CGDraw::CircleGradient(Dest, x + 2, y + 2, NODE_RADIUS + 1, 0);
+	CGDraw::Circle(Dest, x, y, NODE_RADIUS, rgbColor);
+	CGDraw::CircleGradient(Dest, x - 2, y - 2, NODE_RADIUS - 3, CG32bitPixel(0xff, 0xff, 0xff));
 
 	m_VI.GetFont(fontMediumBold).DrawText(Dest,
 			x, y + NODE_RADIUS + 2,
-			CG16bitImage::RGBValue(255, 255, 255),
-			255,
+			CG32bitPixel(255, 255, 255),
 			pNode->GetSystemName(),
 			CG16bitFont::AlignCenter);
 
@@ -96,8 +95,7 @@ void CGalacticMapPainter::DrawNode (CG16bitImage &Dest, CTopologyNode *pNode, in
 		m_VI.GetFont(fontMedium).DrawText(Dest,
 				x,
 				y + NODE_RADIUS + 2 + m_VI.GetFont(fontMediumBold).GetHeight(),
-				CG16bitImage::RGBValue(128, 128, 128),
-				255,
+				CG32bitPixel(128, 128, 128),
 				sLine,
 				CG16bitFont::AlignCenter);
 		}
@@ -170,7 +168,7 @@ void CGalacticMapPainter::Init (void)
 		}
 	}
 
-void CGalacticMapPainter::Paint (CG16bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, int iScale)
+void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, int iScale)
 
 //	Paint
 //
@@ -197,8 +195,8 @@ void CGalacticMapPainter::Paint (CG16bitImage &Dest, const RECT &rcView, int xCe
 		{
 		//	Compute some metrics
 
-		WORD wNodeColor = CG16bitImage::RGBValue(255, 200, 128);
-		WORD wStargateColor = CG16bitImage::RGBValue(160, 255, 128);
+		CG32bitPixel rgbNodeColor = CG32bitPixel(255, 200, 128);
+		CG32bitPixel rgbStargateColor = CG32bitPixel(160, 255, 128);
 
 		int cxWidth = (m_pImage ? m_pImage->GetWidth() : 0);
 		int cyHeight = (m_pImage ? m_pImage->GetHeight() : 0);
@@ -243,8 +241,7 @@ void CGalacticMapPainter::Paint (CG16bitImage &Dest, const RECT &rcView, int xCe
 		//	Blt
 
 		if (m_pImage)
-			DrawBltScaledFast(Dest, rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView),
-					*m_pImage, xMap, yMap, cxMap, cyMap);
+			CGDraw::BltScaled(Dest, rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView),	*m_pImage, xMap, yMap, cxMap, cyMap);
 
 		//	Loop over all nodes and clear marks on the ones that we need to draw
 
@@ -286,14 +283,14 @@ void CGalacticMapPainter::Paint (CG16bitImage &Dest, const RECT &rcView, int xCe
 						int xDest = xViewCenter + iScale * (xPos - xCenter) / 100;
 						int yDest = yViewCenter + iScale * (yCenter - yPos) / 100;
 
-						Dest.DrawLine(x, y, xDest, yDest, STARGATE_LINE_WIDTH, wStargateColor);
+						Dest.DrawLine(x, y, xDest, yDest, STARGATE_LINE_WIDTH, rgbStargateColor);
 						}
 					}
 
 				//	Draw star system
 
 				if (x >= rcView.left && x < rcView.right && y >= rcView.top && y < rcView.bottom)
-					DrawNode(Dest, pNode, x, y, wNodeColor);
+					DrawNode(Dest, pNode, x, y, rgbNodeColor);
 
 				pNode->SetMarked();
 				}

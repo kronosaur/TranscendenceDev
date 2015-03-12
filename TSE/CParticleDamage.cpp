@@ -268,7 +268,7 @@ void CParticleDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 		m_pTarget = NULL;
 	}
 
-void CParticleDamage::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CParticleDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //

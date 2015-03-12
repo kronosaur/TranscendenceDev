@@ -21,6 +21,7 @@
 #include "PreComp.h"
 
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
+#define CORE_LIBRARY_TAG						CONSTLIT("CoreLibrary")
 #define GLOBALS_TAG								CONSTLIT("Globals")
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGES_TAG								CONSTLIT("Images")
@@ -63,6 +64,7 @@ const int RIGHT_COVER_OFFSET =					256 + 160;
 
 CExtension::CExtension (void) :
 		m_dwUNID(0),
+		m_iGame(gameUnknown),
 		m_iType(extUnknown),
 		m_iLoadState(loadNone),
 		m_iFolderType(folderUnknown),
@@ -91,6 +93,65 @@ CExtension::~CExtension (void)
 
 	{
 	CleanUp();
+	}
+
+void CExtension::AddDefaultLibraryReferences (SDesignLoadCtx &Ctx)
+
+//	AddDefaultLibraryReferences
+//
+//	Adds default references if we have no other libraries
+
+	{
+	if (GetLibraryCount() == 0)
+		{
+		//	Add compatibility library if we don't load anything else
+		//	(This should only happen for older extensions. All official 
+		//	extensions use either RPG or RTS libraries).
+
+		if (GetAPIVersion() < 26 && GetFolderType() != folderBase)
+			AddLibraryReference(Ctx, DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1);
+		}
+	}
+
+void CExtension::AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD, CString> *retMap) const
+
+//	AddEntityNames
+//
+//	Adds entity names to the given map
+
+	{
+	int i;
+
+	for (i = 0; i < pEntities->GetCount(); i++)
+		{
+		CString sEntity, sValue;
+		pEntities->GetEntity(i, &sEntity, &sValue);
+
+		//	Add to the list
+
+		DWORD dwUNID = strToInt(sValue, 0);
+		retMap->SetAt(dwUNID, sEntity);
+		}
+	}
+
+void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD dwRelease)
+
+//	AddLibraryReference
+//
+//	Adds a library reference.
+
+	{
+	//	Add the library.
+	//
+	//	NOTE: We can call this function with dwUNID == 0 if we're just trying
+	//	to add the core types library.
+
+	if (dwUNID)
+		{
+		SLibraryDesc *pLibrary = m_Libraries.Insert();
+		pLibrary->dwUNID = dwUNID;
+		pLibrary->dwRelease = dwRelease;
+		}
 	}
 
 bool CExtension::CanExtend (CExtension *pAdventure) const
@@ -202,7 +263,7 @@ ALERROR CExtension::ComposeLoadError (SDesignLoadCtx &Ctx, CString *retsError)
 	return ERR_FAIL;
 	}
 
-ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExternalEntityTable *pEntities, TArray<CExtension *> *retExtensions)
+ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLElement *pDesc, CExternalEntityTable *pEntities, CExtension **retpBase, TArray<CXMLElement *> *retEmbedded)
 
 //	CreateBaseFile
 //
@@ -217,6 +278,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 	CExtension *pExtension = new CExtension;
 	pExtension->m_sFilespec = Ctx.sResDb;
 	pExtension->m_dwUNID = 0;	//	Base is the only extension with 0 UNID.
+	pExtension->m_iGame = iGame;
 	pExtension->m_iType = extBase;
 	pExtension->m_iLoadState = loadEntities;
 	pExtension->m_iFolderType = folderBase;
@@ -243,13 +305,13 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 		{
 		pExtension->m_pEntities = NULL;	//	Let our parent clean up
 		delete pExtension;
-		Ctx.sError = CONSTLIT("Newer version of Transcendence.exe required.");
+		Ctx.sError = CONSTLIT("Newer version of the Transcendence engine is required.");
 		return ERR_FAIL;
 		}
 
 	//	We return the base extension
 
-	retExtensions->Insert(pExtension);
+	*retpBase = pExtension;
 
 	//	Set up context
 
@@ -279,47 +341,13 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEx
 		//	<TranscendenceAdventure>
 
 		else if (strEquals(pItem->GetTag(), TRANSCENDENCE_ADVENTURE_TAG)
-				|| strEquals(pItem->GetTag(), TRANSCENDENCE_LIBRARY_TAG))
+				|| strEquals(pItem->GetTag(), TRANSCENDENCE_LIBRARY_TAG)
+				|| strEquals(pItem->GetTag(), CORE_LIBRARY_TAG))
 			{
-			//	Load an embedded adventure
+			//	Return this as an embedded extension
 
-			//	Get the entities from the base file
-
-			CExternalEntityTable *pAdvEntities = new CExternalEntityTable;
-			pAdvEntities->SetParent(pEntities);
-
-			//	Create a load context
-
-			SDesignLoadCtx AdvCtx;
-			AdvCtx.sResDb = Ctx.sResDb;
-			AdvCtx.pResDb = Ctx.pResDb;
-			AdvCtx.bNoResources = Ctx.bNoResources;
-			AdvCtx.bKeepXML = Ctx.bKeepXML;
-			AdvCtx.bNoVersionCheck = true;	//	Obsolete now
-			AdvCtx.dwInheritAPIVersion = pExtension->GetAPIVersion();
-			//	No need to set bBindAsNewGame because it is only useful during Bind.
-			//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;
-
-			//	We always load in full because we don't know how to load later.
-			AdvCtx.bLoadAdventureDesc = false;
-
-			//	Load the extension
-
-			CExtension *pAdvExtension;
-			error = CExtension::CreateExtension(AdvCtx, pItem, CExtension::folderBase, pAdvEntities, &pAdvExtension);
-
-			//	If this worked, add to list of extensions
-
-			if (error == NOERROR)
-				retExtensions->Insert(pAdvExtension);
-
-			//	Otherwise, clean up
-
-			else
-				{
-				Ctx.sError = AdvCtx.sError;
-				delete pAdvEntities;
-				}
+			retEmbedded->Insert(pItem);
+			error = NOERROR;
 			}
 
 		//	Other types
@@ -393,15 +421,7 @@ ALERROR CExtension::CreateExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, EF
 		return ERR_FAIL;
 		}
 
-	//	If we get this far and we have no libraries, then include the 
-	//	compatibility library.
-
-	if (pExtension->GetLibraryCount() == 0 && pExtension->GetFolderType() != folderBase)
-		{
-		SLibraryDesc *pLibrary = pExtension->m_Libraries.Insert();
-		pLibrary->dwUNID = DEFAULT_COMPATIBILITY_LIBRARY_UNID;
-		pLibrary->dwRelease = 1;
-		}
+	pExtension->AddDefaultLibraryReferences(Ctx);
 
 	//	Restore
 
@@ -437,11 +457,28 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 		}
 
 	if (strEquals(pDesc->GetTag(), TRANSCENDENCE_ADVENTURE_TAG))
+		{
+		pExtension->m_iGame = gameTranscendence;
 		pExtension->m_iType = extAdventure;
+		}
 	else if (strEquals(pDesc->GetTag(), TRANSCENDENCE_LIBRARY_TAG))
+		{
+		pExtension->m_iGame = gameTranscendence;
 		pExtension->m_iType = extLibrary;
+		}
 	else if (strEquals(pDesc->GetTag(), TRANSCENDENCE_EXTENSION_TAG))
+		{
+		pExtension->m_iGame = gameTranscendence;
 		pExtension->m_iType = extExtension;
+		}
+	else if (strEquals(pDesc->GetTag(), CORE_LIBRARY_TAG))
+		{
+		//	For core libraries, we don't care what game it is. It's always 
+		//	whatever game the base file is.
+
+		pExtension->m_iGame = gameUnknown;
+		pExtension->m_iType = extLibrary;
+		}
 	else
 		{
 		delete pExtension;
@@ -598,7 +635,7 @@ ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes 
 	return NOERROR;
 	}
 
-void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon) const
+void CExtension::CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const
 
 //	CreateIcon
 //
@@ -608,12 +645,12 @@ void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon)
 	{
 	//	Load the image
 
-	CG16bitImage *pBackground = GetCoverImage();
+	CG32bitImage *pBackground = GetCoverImage();
 	if (pBackground == NULL || pBackground->GetWidth() == 0 || pBackground->GetHeight() == 0)
 		{
 		int cxSize = Min(cxWidth, cyHeight);
-		*retpIcon = new CG16bitImage;
-		(*retpIcon)->CreateBlank(cxSize, cxSize, false);
+		*retpIcon = new CG32bitImage;
+		(*retpIcon)->Create(cxSize, cxSize);
 		return;
 		}
 
@@ -622,7 +659,7 @@ void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon)
 	//
 	//	If the background is larger than the icon size then we need to scale it.
 
-	CG16bitImage *pIcon;
+	CG32bitImage *pIcon;
 	if (pBackground->GetWidth() > cxWidth || pBackground->GetHeight() > cyHeight)
 		{
 		int xSrc, ySrc, cxSrc, cySrc;
@@ -655,7 +692,7 @@ void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon)
 
 		//	Create the icon
 
-		pIcon = new CG16bitImage;
+		pIcon = new CG32bitImage;
 		pIcon->CreateFromImageTransformed(*pBackground,
 				xSrc,
 				ySrc,
@@ -672,8 +709,8 @@ void CExtension::CreateIcon (int cxWidth, int cyHeight, CG16bitImage **retpIcon)
 		{
 		//	Create the icon
 
-		pIcon = new CG16bitImage;
-		pIcon->CreateBlank(cxWidth, cyHeight, false);
+		pIcon = new CG32bitImage;
+		pIcon->Create(cxWidth, cyHeight);
 
 		//	Blt
 
@@ -762,7 +799,7 @@ ALERROR CExtension::ExecuteGlobals (SDesignLoadCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-CG16bitImage *CExtension::GetCoverImage (void) const
+CG32bitImage *CExtension::GetCoverImage (void) const
 
 //	GetCoverImage
 //
@@ -799,6 +836,32 @@ CG16bitImage *CExtension::GetCoverImage (void) const
 	//	Done
 
 	return m_pCoverImage;
+	}
+
+CString CExtension::GetEntityName (DWORD dwUNID) const
+
+//	GetEntityName
+//
+//	Returns the entity name of the given UNID (or NULL_STR if we don't have it).
+
+	{
+	//	Must have entities
+
+	if (m_pEntities == NULL)
+		return NULL_STR;
+
+	//	If we don't yet have it, create a reverse lookup
+
+	if (m_UNID2EntityName.GetCount() == 0)
+		AddEntityNames(m_pEntities, &m_UNID2EntityName);
+
+	//	Return it
+
+	CString *pName = m_UNID2EntityName.GetAt(dwUNID);
+	if (pName == NULL)
+		return NULL_STR;
+
+	return *pName;
 	}
 
 ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pResolver, bool bNoResources, bool bKeepXML, CString *retsError)
@@ -930,12 +993,8 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	If we get this far and we have no libraries, then include the 
 			//	compatibility library.
 
-			if (m_iLoadState == loadComplete && GetLibraryCount() == 0 && GetFolderType() != folderBase)
-				{
-				SLibraryDesc *pLibrary = m_Libraries.Insert();
-				pLibrary->dwUNID = DEFAULT_COMPATIBILITY_LIBRARY_UNID;
-				pLibrary->dwRelease = 1;
-				}
+			if (m_iLoadState == loadComplete)
+				AddDefaultLibraryReferences(Ctx);
 
 			//	Debug output
 
@@ -1217,12 +1276,11 @@ ALERROR CExtension::LoadLibraryElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	{
 	ALERROR error;
 
-	SLibraryDesc *pLibrary = m_Libraries.Insert();
-
-	if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &pLibrary->dwUNID))
+	DWORD dwUNID;
+	if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &dwUNID))
 		return error;
 
-	pLibrary->dwRelease = pDesc->GetAttributeInteger(RELEASE_ATTRIB);
+	AddLibraryReference(Ctx, dwUNID, pDesc->GetAttributeInteger(RELEASE_ATTRIB));
 
 	return NOERROR;
 	}
@@ -1264,7 +1322,7 @@ ALERROR CExtension::LoadModuleElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Load the module XML
 
 	CXMLElement *pModuleXML;
-	if (error = Ctx.pResDb->LoadModule(NULL_STR, sFilename, &pModuleXML, &Ctx.sError))
+	if (error = Ctx.pResDb->LoadModule(Ctx.sFolder, sFilename, &pModuleXML, &Ctx.sError))
 		{
 		if (error == ERR_NOTFOUND)
 			Ctx.sError = strPatternSubst(CONSTLIT("%s: %s"), Ctx.pResDb->GetFilespec(), Ctx.sError);

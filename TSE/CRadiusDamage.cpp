@@ -217,7 +217,7 @@ void CRadiusDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 		m_pTarget = NULL;
 	}
 
-void CRadiusDamage::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CRadiusDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //

@@ -157,7 +157,7 @@ void CAreaDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	m_Source.OnObjDestroyed(Ctx.pObj);
 	}
 
-void CAreaDamage::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CAreaDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -336,7 +336,7 @@ void CAreaDamage::OnWriteToStream (IWriteStream *pStream)
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 	}
 
-void CAreaDamage::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CAreaDamage::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //
@@ -357,8 +357,8 @@ void CAreaDamage::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTran
 
 			int iColor = mathRandom(128, 255);
 			Dest.DrawDot(x, y, 
-					CG16bitImage::RGBValue(iColor, iColor, 0), 
-					CG16bitImage::markerSmallRound);
+					CG32bitPixel(iColor, iColor, 0), 
+					markerSmallRound);
 			}
 		}
 	}

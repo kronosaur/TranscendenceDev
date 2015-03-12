@@ -43,11 +43,12 @@ class CCodeChainCtx
 		inline void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);
 		DWORD GetAPIVersion (void) const;
-		inline CG16bitImage *GetCanvas (void) const { return m_pCanvas; }
+		inline CG32bitImage *GetCanvas (void) const { return m_pCanvas; }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		inline CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		inline SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
+		inline CUniverse &GetUniverse (void) { return *g_pUniverse; }
 		bool InEvent (ECodeChainEvents iEvent) const;
 		inline ICCItem *Link (const CString &sString, int iOffset, int *retiLinked) { return m_CC.Link(sString, iOffset, retiLinked); }
 		void RestoreVars (void);
@@ -62,7 +63,7 @@ class CCodeChainCtx
 		void SaveItemVar (void);
 		void SaveSourceVar (void);
 		inline void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }
-		inline void SetCanvas (CG16bitImage *pCanvas) { m_pCanvas = pCanvas; }
+		inline void SetCanvas (CG32bitImage *pCanvas) { m_pCanvas = pCanvas; }
 		inline void SetEvent (ECodeChainEvents iEvent) { m_iEvent = iEvent; }
 		inline void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 		void SetGlobalDefineWrapper (CExtension *pExtension);
@@ -90,7 +91,7 @@ class CCodeChainCtx
 		CCodeChain &m_CC;					//	CodeChain
 		ECodeChainEvents m_iEvent;			//	Event raised
 		void *m_pScreen;					//	Cast to CDockScreen by upper-levels (may be NULL)
-		CG16bitImage *m_pCanvas;			//	Used for dock screen canvas (may be NULL)
+		CG32bitImage *m_pCanvas;			//	Used for dock screen canvas (may be NULL)
 		CItemType *m_pItemType;				//	Used for item events (may be NULL)
 		CDesignType *m_pScreensRoot;		//	Used to resolve local screens (may be NULL)
 		SSystemCreateCtx *m_pSysCreateCtx;	//	Used during system create (may be NULL)

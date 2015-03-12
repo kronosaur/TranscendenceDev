@@ -44,7 +44,7 @@ const Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL * KLICKS_PER_PIXEL * 25.0);
 
 extern int g_iDebugLine;
 
-CBaseShipAI::CBaseShipAI (IObjectClass *pClass) : CObject(pClass),
+CBaseShipAI::CBaseShipAI (void) : 
 		m_pShip(NULL),
 		m_pCommandCode(NULL),
 		m_pOrderModule(NULL),
@@ -261,7 +261,7 @@ CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric r
 	//	The player is a special case (because sometimes a station is angry at the 
 	//	player even though she is not an enemy)
 
-	CSpaceObject *pPlayer = m_pShip->GetPlayer();
+	CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
 	if (pPlayer 
 			&& pCenter->IsAngryAt(pPlayer)
 			&& pPlayer != pExcludeObj
@@ -308,7 +308,7 @@ CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric r
 
 	DEBUG_CATCH_CONTINUE
 
-	CSpaceObject *pPlayer = m_pShip->GetPlayer();
+	CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
 	::kernelDebugLogMessage("Player Ship: %s", CSpaceObject::DebugDescribe(pPlayer));
 
 	CSovereign *pSovereign = m_pShip->GetSovereignToDefend();
@@ -466,7 +466,11 @@ CString CBaseShipAI::DebugCrashInfo (void)
 	//	If we have an order module then let it dump its data.
 
 	if (m_pOrderModule)
-		return m_pOrderModule->DebugCrashInfo();
+		{
+		CString sResult = OnDebugCrashInfo();
+		sResult.Append(m_pOrderModule->DebugCrashInfo());
+		return sResult;
+		}
 
 	//	Otherwise, let our descendant output
 
@@ -474,7 +478,7 @@ CString CBaseShipAI::DebugCrashInfo (void)
 		return OnDebugCrashInfo();
 	}
 
-void CBaseShipAI::DebugPaintInfo (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CBaseShipAI::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	DebugPaintInfo
 //
@@ -561,6 +565,50 @@ bool CBaseShipAI::FollowsObjThroughGate (CSpaceObject *pLeader)
 	return (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate);
 	}
 
+int CBaseShipAI::GetAISettingInteger (const CString &sSetting)
+
+//	GetAISettingInteger
+//
+//	Returns the given value
+	
+	{
+	//	First ask our subclass
+
+	int iValue;
+	if (OnGetAISettingInteger(sSetting, &iValue))
+		return iValue;
+
+	//	Basic settings
+
+	return strToInt(m_AICtx.GetAISetting(sSetting), 0); 
+	}
+
+CString CBaseShipAI::GetAISettingString (const CString &sSetting)
+
+//	GetAISettingString
+//
+//	Returns the given setting
+	
+	{
+	//	First ask our subclass
+
+	CString sValue;
+	if (OnGetAISettingString(sSetting, &sValue))
+		return sValue;
+
+	//	We convert integer values to strings (because CCExtensions.cpp expects 
+	//	this). In the future CCExtensions should call a new function that
+	//	returns an ICCItem
+
+	int iValue;
+	if (OnGetAISettingInteger(sSetting, &iValue))
+		return strFromInt(iValue);
+
+	//	Basic settings
+
+	return m_AICtx.GetAISetting(sSetting); 
+	}
+
 CSpaceObject *CBaseShipAI::GetBase (void) const
 
 //	GetBase
@@ -620,7 +668,7 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 
 	{
 	if (m_fIsPlayerWingman)
-		return g_pUniverse->GetPlayer();
+		return g_pUniverse->GetPlayerShip();
 
 	switch (GetCurrentOrder())
 		{
@@ -747,7 +795,7 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 //	we return the ship.
 
 	{
-	CSpaceObject *pPlayer = m_pShip->GetPlayer();
+	CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
 	if (pPlayer)
 		return pPlayer;
 	else
@@ -892,7 +940,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
 
 	//	Remember the last time we were attacked (debounce quick hits)
 
-	m_AICtx.SetLastAttack(m_pShip->GetSystem()->GetTick());
+	m_AICtx.SetLastAttack(g_pUniverse->GetTicks());
 
 	DEBUG_CATCH
 	}
@@ -947,10 +995,26 @@ void CBaseShipAI::OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEnt
 	else if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate)
 		m_pShip->Suspend();
 
+	//	Ask the target what to do. If it handles it, then we do nothing.
+
+	else if (pStargate 
+			&& pStargate->FireOnObjGate(m_pShip))
+		{ }
+
 	//	Otherwise, we destroy ourselves
 
 	else
 		m_pShip->SetDestroyInGate();
+	}
+
+void CBaseShipAI::OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos)
+
+//	OnHitBarrier
+//
+//	The ship hit a barrier
+
+	{
+	m_AICtx.SetBarrierClock(m_pShip);
 	}
 
 void CBaseShipAI::OnNewSystem (CSystem *pSystem)
@@ -1098,7 +1162,7 @@ void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip)
 	{
 	//	Get the new player ship
 
-	CSpaceObject *pPlayerShip = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayerShip = g_pUniverse->GetPlayerShip();
 	if (pPlayerShip == NULL)
 		{
 		ASSERT(false);
@@ -1201,7 +1265,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 //
 //	Reads controller data from stream
 //
-//	DWORD		Controller ObjID
+//	DWORD		Controller class
 //	DWORD		ship class UNID (needed to set AISettings)
 //	DWORD		m_pShip (CSpaceObject ref)
 //	DWORD		m_Blacklist
@@ -1220,6 +1284,9 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	{
 	DWORD dwLoad;
+
+	//	We already read the controller class (we need it to construct the 
+	//	object).
 
 	//	Read stuff
 
@@ -1394,14 +1461,47 @@ void CBaseShipAI::ResetBehavior (void)
 //	Resets fire and motion
 
 	{
-	if (!IsDockingRequested())
-		{
-		m_AICtx.SetManeuver(NoRotation);
-		m_AICtx.SetThrustDir(CAIShipControls::constNeverThrust);
-		}
-
+	m_AICtx.Update();
 	m_pShip->ClearAllTriggered();
 	m_Blacklist.Update(g_pUniverse->GetTicks());
+	}
+
+int CBaseShipAI::SetAISettingInteger (const CString &sSetting, int iValue)
+
+//	SetAISettingInteger
+//
+//	Sets an AI setting
+
+	{
+	//	Let our sub-classes handle it first.
+
+	if (OnSetAISettingInteger(sSetting, iValue))
+		return iValue;
+
+	//	Otherwise, this is a basic setting
+
+	CString sNew = m_AICtx.SetAISetting(sSetting, strFromInt(iValue));
+	m_AICtx.CalcInvariants(m_pShip);
+	return strToInt(sNew, 0);
+	}
+
+CString CBaseShipAI::SetAISettingString (const CString &sSetting, const CString &sValue)
+
+//	SetAISettingString
+//
+//	Sets an AI setting
+
+	{
+	//	Let our sub-classes handle it first.
+
+	if (OnSetAISettingString(sSetting, sValue))
+		return sValue;
+
+	//	Otherwise, this is a basic setting
+
+	CString sNew = m_AICtx.SetAISetting(sSetting, sValue);
+	m_AICtx.CalcInvariants(m_pShip);
+	return sNew; 
 	}
 
 void CBaseShipAI::SetCommandCode (ICCItem *pCode)
@@ -1641,7 +1741,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 //
 //	Save the AI data to a stream
 //
-//	DWORD		Controller ObjID
+//	CString		Controller class
 //	DWORD		ship class UNID (needed to set AISettings)
 //	DWORD		m_pShip (CSpaceObject ref)
 //	DWORD		m_Blacklist
@@ -1663,8 +1763,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 	{
 	DWORD dwSave;
 
-	dwSave = (DWORD)GetClass()->GetObjID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	GetClass().WriteToStream(pStream);
 
 	dwSave = m_pShip->GetClass()->GetUNID();
 	pStream->Write((char *)&dwSave, sizeof(DWORD));

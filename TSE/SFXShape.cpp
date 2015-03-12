@@ -24,7 +24,7 @@ class CShapeEffectPainter : public IEffectPainter
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -81,7 +81,7 @@ ALERROR CShapeEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 	m_bDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
 	m_iWidthInc = pDesc->GetAttributeInteger(SCALE_WIDTH_INC_ATTRIB);
 	m_iLengthInc = pDesc->GetAttributeInteger(SCALE_LENGTH_INC_ATTRIB);
-	m_wColor = ::LoadRGBColor(pDesc->GetAttribute(COLOR_ATTRIB));
+	m_rgbColor = ::LoadRGBColor(pDesc->GetAttribute(COLOR_ATTRIB));
 
 	if (pDesc->FindAttribute(OPACITY_ATTRIB, &sAttrib))
 		m_byOpacity = strToInt(sAttrib, 255);
@@ -220,7 +220,7 @@ void CShapeEffectPainter::OnWriteToStream (IWriteStream *pStream)
 	{
 	}
 
-void CShapeEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CShapeEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -239,13 +239,9 @@ void CShapeEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPain
 
 	//	Paint
 
-	DWORD byOpacity = m_pCreator->GetOpacity();
-	WORD wColor = m_pCreator->GetColor();
-
-	if (byOpacity == 255)
-		m_CachedRegion.Fill(Dest, x, y, wColor);
-	else
-		m_CachedRegion.FillTrans(Dest, x, y, wColor, byOpacity);
+	BYTE byOpacity = (BYTE)m_pCreator->GetOpacity();
+	CG32bitPixel rgbColor = m_pCreator->GetColor();
+	m_CachedRegion.Fill(Dest, x, y, CG32bitPixel(rgbColor, byOpacity));
 	}
 
 bool CShapeEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const

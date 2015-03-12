@@ -28,8 +28,8 @@ class CRayEffectPainter : public IEffectPainter
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
 		virtual bool GetParamList (TArray<CString> *retList) const;
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
@@ -67,7 +67,7 @@ class CRayEffectPainter : public IEffectPainter
 			};
 
 		typedef TArray<BYTE> OpacityArray;
-		typedef TArray<WORD> ColorArray;
+		typedef TArray<CG32bitPixel> ColorArray;
 
 		void CalcCone (TArray<Metric> &AdjArray);
 		void CalcDiamond (TArray<Metric> &AdjArray);
@@ -75,7 +75,7 @@ class CRayEffectPainter : public IEffectPainter
 		void CalcOval (TArray<Metric> &AdjArray);
 		void CalcTaper (TArray<Metric> &AdjArray);
 		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
-		void PaintRay (CG16bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
+		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 
 		CEffectCreator *m_pCreator;
 
@@ -84,8 +84,8 @@ class CRayEffectPainter : public IEffectPainter
 		ERayShapes m_iShape;
 		ERayStyles m_iStyle;
 		int m_iIntensity;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 
 		int m_iXformRotation;
 
@@ -286,8 +286,8 @@ CRayEffectPainter::CRayEffectPainter (CEffectCreator *pCreator) :
 		m_iShape(shapeStraight),
 		m_iStyle(styleGlow),
 		m_iIntensity(50),
-		m_wPrimaryColor(CG16bitImage::RGBValue(255, 255, 255)),
-		m_wSecondaryColor(CG16bitImage::RGBValue(128, 128, 128)),
+		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
+		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
 		m_iXformRotation(0),
 		m_iLifetime(0),
 		m_iOpacityAnimation(animateNone),
@@ -562,18 +562,18 @@ void CRayEffectPainter::CalcIntermediates (void)
 
 				//	The center blends towards white
 
-				WORD wCenter = CG16bitImage::BlendPixel(m_wPrimaryColor, CG16bitImage::RGBValue(255, 255, 255), (DWORD)(255.0 * Min(50, m_iIntensity) / 50.0));
+				CG32bitPixel rgbCenter = CG32bitPixel::Blend(m_rgbPrimaryColor, CG32bitPixel(255, 255, 255), Min(50, m_iIntensity) / 50.0);
 
 				int iBrightPoint = (int)(BRIGHT_FACTOR * m_iWidthCount * m_iIntensity);
 				for (i = 0; i < iBrightPoint; i++)
-					m_ColorMap[0][i] = wCenter;
+					m_ColorMap[0][i] = rgbCenter;
 
 				//	The rest fades (linearly) from primary color to secondary color
 
 				Metric rFadeInc = (m_iWidthCount > 0 ? (1.0 / (m_iWidthCount - iBrightPoint)) : 0.0);
 				Metric rFade = 1.0;
 				for (i = iBrightPoint; i < m_iWidthCount; i++, rFade -= rFadeInc)
-					m_ColorMap[0][i] = CG16bitImage::BlendPixel(m_wSecondaryColor, m_wPrimaryColor, (DWORD)(255.0 * rFade));
+					m_ColorMap[0][i] = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, rFade);
 
 				break;
 				}
@@ -961,10 +961,10 @@ void CRayEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 		retValue->InitInteger(m_iLifetime);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		retValue->InitColor(m_wPrimaryColor);
+		retValue->InitColor(m_rgbPrimaryColor);
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		retValue->InitColor(m_wSecondaryColor);
+		retValue->InitColor(m_rgbSecondaryColor);
 	
 	else if (strEquals(sParam, SHAPE_ATTRIB))
 		retValue->InitInteger(m_iShape);
@@ -1020,7 +1020,7 @@ void CRayEffectPainter::GetRect (RECT *retRect) const
 	retRect->bottom = iSize;
 	}
 
-void CRayEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -1049,7 +1049,7 @@ void CRayEffectPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintC
 	DEBUG_CATCH
 	}
 
-void CRayEffectPainter::PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)
+void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)
 
 //	PaintHit
 //
@@ -1076,7 +1076,7 @@ void CRayEffectPainter::PaintHit (CG16bitImage &Dest, int x, int y, const CVecto
 	PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
 	}
 
-void CRayEffectPainter::PaintRay (CG16bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx)
+void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx)
 
 //	PaintRay
 //
@@ -1089,16 +1089,8 @@ void CRayEffectPainter::PaintRay (CG16bitImage &Dest, int xFrom, int yFrom, int 
 
 	//	Rasterize the line
 
-	CG16bitLinePainter LinePainter;
-	TArray<CG16bitLinePainter::SPixelDesc> Pixels;
-
-	LinePainter.Rasterize(Dest,
-			xFrom,
-			yFrom,
-			xTo,
-			yTo,
-			m_iWidth,
-			&Pixels);
+	TArray<CGRasterize::SLinePixel> Pixels;
+	CGRasterize::Line(Dest, xFrom, yFrom, xTo, yTo, m_iWidth, &Pixels);
 
 	//	Compute opacity animation
 
@@ -1127,7 +1119,7 @@ void CRayEffectPainter::PaintRay (CG16bitImage &Dest, int xFrom, int yFrom, int 
 
 	for (i = 0; i < Pixels.GetCount(); i++)
 		{
-		CG16bitLinePainter::SPixelDesc &Pixel = Pixels[i];
+		CGRasterize::SLinePixel &Pixel = Pixels[i];
 
 		//	Scale v and w to map to our array sizes
 
@@ -1176,44 +1168,44 @@ void CRayEffectPainter::PaintRay (CG16bitImage &Dest, int xFrom, int yFrom, int 
 		//	Adjust opacity, if necessary
 
 		if (m_OpacityMap.GetCount() == 1)
-			Pixel.dwOpacity = m_OpacityMap[0][w];
+			Pixel.byAlpha = m_OpacityMap[0][w];
 
 		else if (m_OpacityMap.GetCount() > 1)
-			Pixel.dwOpacity = m_OpacityMap[v][w];
+			Pixel.byAlpha = m_OpacityMap[v][w];
 
 		//	Compute color
 
-		WORD wColor;
+		CG32bitPixel rgbColor;
 		if (m_ColorMap.GetCount() == 1)
 			{
-			wColor = m_ColorMap[0][w];
+			rgbColor = m_ColorMap[0][w];
 			if (w > 0)
 				{
-				WORD wAAColor = m_ColorMap[0][w - 1];
-				wColor = CG16bitImage::BlendPixel(wAAColor, wColor, (DWORD)(255.0 * (rW - (Metric)w)));
+				CG32bitPixel rgbAAColor = m_ColorMap[0][w - 1];
+				rgbColor = CG32bitPixel::Blend(rgbAAColor, rgbColor, rW - (Metric)w);
 				}
 			}
 
 		else if (m_ColorMap.GetCount() > 1)
-			wColor = m_ColorMap[v][w];
+			rgbColor = m_ColorMap[v][w];
 
 		else
-			wColor = m_wPrimaryColor;
+			rgbColor = m_rgbPrimaryColor;
 
 		//	Apply opacity, if necessary
 
 		if (dwOpacity != 255)
-			Pixel.dwOpacity = Pixel.dwOpacity * dwOpacity / 255;
+			Pixel.byAlpha = (BYTE)(Pixel.byAlpha * dwOpacity / 255);
 
 		//	Draw
 
-		if (Pixel.dwOpacity == 0)
+		if (Pixel.byAlpha == 0x00)
 			;
-		else if (Pixel.dwOpacity == 255)
-			*(Pixel.pPos) = wColor;
+		else if (Pixel.byAlpha == 0xff)
+			*(Pixel.pPos) = rgbColor;
 		else
 			{
-			*(Pixel.pPos) = CG16bitImage::BlendPixel(*(Pixel.pPos), wColor, Pixel.dwOpacity);
+			*(Pixel.pPos) = CG32bitPixel::Blend(*(Pixel.pPos), rgbColor, Pixel.byAlpha);
 			}
 		}
 
@@ -1254,10 +1246,10 @@ void CRayEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam,
 		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_wPrimaryColor = Value.EvalColor(Ctx);
+		m_rgbPrimaryColor = Value.EvalColor(Ctx);
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_wSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor(Ctx);
 	
 	else if (strEquals(sParam, SHAPE_ATTRIB))
 		m_iShape = (ERayShapes)Value.EvalIdentifier(Ctx, SHAPE_TABLE, shapeMax, shapeStraight);

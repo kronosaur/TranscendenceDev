@@ -23,7 +23,10 @@
 #define SHIPWRECK_UNID_ATTRIB					CONSTLIT("shipwreckID")
 #define NAME_ATTRIB								CONSTLIT("name")
 
+#define PAINT_LAYER_OVERHANG					CONSTLIT("overhang")
+
 #define PROPERTY_ABANDONED						CONSTLIT("abandoned")
+#define PROPERTY_BARRIER						CONSTLIT("barrier")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
@@ -32,6 +35,7 @@
 #define PROPERTY_MAX_STRUCTURAL_HP				CONSTLIT("maxStructuralHP")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
 #define PROPERTY_ORBIT							CONSTLIT("orbit")
+#define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PARALLAX						CONSTLIT("parallax")
 #define PROPERTY_PLAYER_BACKLISTED				CONSTLIT("playerBlacklisted")
 #define PROPERTY_SHIP_CONSTRUCTION_ENABLED		CONSTLIT("shipConstructionEnabled")
@@ -60,9 +64,9 @@ const Metric MAX_ATTACK_DISTANCE2 =				MAX_ATTACK_DISTANCE * MAX_ATTACK_DISTANCE
 #define MAX_ANGER						1800
 #define ANGER_INC						30
 
-const WORD RGB_SIGN_COLOR =				CG16bitImage::RGBValue(196, 223, 155);
-const COLORREF RGB_ORBIT_LINE =			RGB(115, 149, 229);
-const WORD RGB_MAP_LABEL =				CG16bitImage::RGBValue(255, 217, 128);
+const CG32bitPixel RGB_SIGN_COLOR =		CG32bitPixel(196, 223, 155);
+const CG32bitPixel RGB_ORBIT_LINE =		CG32bitPixel(115, 149, 229);
+const CG32bitPixel RGB_MAP_LABEL =		CG32bitPixel(255, 217, 128);
 
 static CObjectClass<CStation>g_Class(OBJID_CSTATION);
 
@@ -290,13 +294,36 @@ void CStation::CalcOverlayImpact (void)
 //	whenever the set of overlays changes.
 
 	{
-	CEnergyFieldList::SImpactDesc Impact;
+	COverlayList::SImpactDesc Impact;
 	m_Overlays.GetImpact(this, &Impact);
 
 	//	Update our cache
 
 	m_fDisarmedByOverlay = Impact.bDisarm;
 	m_fParalyzedByOverlay = Impact.bParalyze;
+	}
+
+bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength)
+
+//	CalcVolumetricShadowLine
+//
+//	Computes the line shadow line for the object.
+
+	{
+	if (!m_StarlightImage.IsEmpty())
+		return m_StarlightImage.CalcVolumetricShadowLine(Ctx, 0, 0, retxCenter, retyCenter, retiWidth, retiLength);
+
+	else
+		{
+		//	Get the image
+
+		int iTick, iVariant;
+		const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
+
+		//	Get the shadow line from the image
+
+		return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
+		}
 	}
 
 bool CStation::CanAttack (void) const
@@ -319,7 +346,7 @@ bool CStation::CanBlock (CSpaceObject *pObj)
 //	Returns TRUE if this object can block the given object
 
 	{
-	return (m_pType->IsWall() 
+	return (m_fBlocksShips 
 			|| (pObj->GetCategory() == catStation && pObj->IsMobile()));
 	}
 
@@ -627,6 +654,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_fParalyzedByOverlay = false;
 	pStation->m_fNoBlacklist = false;
 	pStation->SetHasGravity(pType->HasGravity());
+	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
 
 	//	We generally don't move
 
@@ -684,6 +712,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_pArmorClass = pType->GetArmorClass();
 	pStation->m_iMaxStructuralHP = pType->GetMaxStructuralHitPoints();
 	pStation->m_iStructuralHP = pType->GetStructuralHitPoints();
+	pStation->m_fBlocksShips = pType->IsWall();
 
 	//	Pick an appropriate image. This call will set the shipwreck image, if
 	//	necessary or the variant (if appropriate).
@@ -821,10 +850,6 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	if (pTrade)
 		pTrade->RefreshInventory(pStation);
 
-	//	If this is a world or a star, create a small image
-
-	pStation->CreateMapImage();
-
 	//	This type has now been encountered
 
 	pType->SetEncountered(pSystem);
@@ -881,8 +906,6 @@ ALERROR CStation::CreateMapImage (void)
 //	Creates a small version of the station image
 
 	{
-	ALERROR error;
-
 	//	Only do this for stars and planets
 
 	if (m_Scale != scaleStar && m_Scale != scaleWorld)
@@ -893,25 +916,45 @@ ALERROR CStation::CreateMapImage (void)
 
 	Metric rScale = g_KlicksPerPixel / (0.3 * LIGHT_SECOND);
 
-	//	Make sure we have an image
+	//	Get it from the starlight image, if we have it.
 
-	int iTick, iRotation;
-	const CObjectImageArray &Image = GetImage(false, &iTick, &iRotation);
-	if (!Image.IsLoaded())
-		return NOERROR;
+	CG32bitImage *pBmpImage = NULL;
+	RECT rcBmpImage;
+	if (!m_StarlightImage.IsEmpty())
+		{
+		pBmpImage = &m_StarlightImage.GetImage(strFromInt(m_pType->GetUNID()));
+		rcBmpImage = m_StarlightImage.GetImageRect();
+		}
 
-	CG16bitImage &BmpImage = Image.GetImage(strFromInt(m_pType->GetUNID()));
-	const RECT &rcImage = Image.GetImageRect();
+	//	Otherwise, from the main image
 
-	if (error = m_MapImage.CreateFromImageTransformed(BmpImage,
-			rcImage.left,
-			rcImage.top + RectHeight(rcImage) * iRotation,
-			RectWidth(rcImage),
-			RectHeight(rcImage),
-			rScale,
-			rScale,
-			0.0))
-		return error;
+	else
+		{
+		//	Make sure we have an image
+
+		int iTick, iRotation;
+		const CObjectImageArray &Image = GetImage(false, &iTick, &iRotation);
+		if (!Image.IsLoaded())
+			return NOERROR;
+
+		pBmpImage = &Image.GetImage(strFromInt(m_pType->GetUNID()));
+		rcBmpImage = Image.GetImageRect(iTick, iRotation);
+		}
+
+	//	Create the image
+
+	if (pBmpImage)
+		{
+		if (!m_MapImage.CreateFromImageTransformed(*pBmpImage,
+				rcBmpImage.left,
+				rcBmpImage.top,
+				RectWidth(rcBmpImage),
+				RectHeight(rcBmpImage),
+				rScale,
+				rScale,
+				0.0))
+			return ERR_FAIL;
+		}
 
 	return NOERROR;
 	}
@@ -938,6 +981,32 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, int iCou
 
 	for (i = 0; i < iCount; i++)
 		pShipGenerator->CreateShips(Ctx);
+	}
+
+void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
+
+//	CreateStarlightImage
+//
+//	Creates an image of the object rotated so it's shadow faces towards 
+//	iStarAngle.
+
+	{
+	//	Figure out the rotation
+
+	int iRotation = iStarAngle - 315;
+
+	//	Get the source image
+
+	int iTick, iVariant;
+	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
+
+	//	Create a rotated image
+
+	m_StarlightImage.InitFromRotated(Image, iTick, iVariant, iRotation);
+
+	//	While we're here, create the map image
+
+	CreateMapImage();
 	}
 
 void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
@@ -1320,6 +1389,11 @@ CSystem::LayerEnum CStation::GetPaintLayer (void)
 //	Returns the layer on which we should paint
 	
 	{
+	//	Overrides
+
+	if (m_fPaintOverhang)
+		return CSystem::layerOverhang;
+
 	switch (m_Scale)
 		{
 		case scaleStar:
@@ -1349,6 +1423,9 @@ ICCItem *CStation::GetProperty (const CString &sName)
 
 	if (strEquals(sName, PROPERTY_ABANDONED))
 		return CC.CreateBool(IsAbandoned());
+
+	else if (strEquals(sName, PROPERTY_BARRIER))
+		return CC.CreateBool(m_fBlocksShips);
 
 	else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
@@ -1443,7 +1520,7 @@ CSpaceObject *CStation::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
 
 	//	Otherwise, see if the player is in range, if so, then it is our target.
 
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer == NULL)
 		return NULL;
 
@@ -1917,7 +1994,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		NotifyOnObjDestroyed(DestroyCtx);
 
 		GetSystem()->FireOnSystemObjDestroyed(DestroyCtx);
-		g_pUniverse->FireOnGlobalObjDestroyed(DestroyCtx);
+		g_pUniverse->NotifyOnObjDestroyed(DestroyCtx);
 
 		//	Alert others, if necessary
 
@@ -2160,7 +2237,7 @@ void CStation::OnComponentChanged (ObjectComponentTypes iComponent)
 		}
 	}
 
-void CStation::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -2226,8 +2303,13 @@ void CStation::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	int iTick, iVariant;
 	const CObjectImageArray &Image = GetImage(true, &iTick, &iVariant);
-	if (m_fRadioactive)
+
+	if (!m_StarlightImage.IsEmpty())
+		m_StarlightImage.PaintImage(Dest, x, y, 0, 0);
+
+	else if (m_fRadioactive)
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, RGB(0, 255, 0));
+
 	else
 		Image.PaintImage(Dest, x, y, iTick, iVariant);
 
@@ -2301,7 +2383,7 @@ void CStation::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 			yTop, 
 			xRight - xLeft, 
 			yBottom - yTop, 
-			CG16bitImage::RGBValue(220,220,220));
+			CG32bitPixel(220,220,220));
 	}
 #endif
 
@@ -2310,12 +2392,12 @@ void CStation::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		{
 		int x, y;
 		Ctx.XForm.Transform(m_DockingPorts.GetPortPos(this, i, NULL), &x, &y);
-		Dest.Fill(x - 2, y - 2, 4, 4, CG16bitImage::RGBValue(0, 255, 0));
+		Dest.Fill(x - 2, y - 2, 4, 4, CG32bitPixel(0, 255, 0));
 		}
 #endif
 	}
 
-void CStation::OnPaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CStation::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaintAnnotations
 //
@@ -2375,7 +2457,7 @@ void CStation::OnObjLeaveGate (CSpaceObject *pObj)
 		}
 	}
 
-void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y)
+void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 //	OnPaintMap
 //
@@ -2393,26 +2475,35 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int 
 	//	Draw the station
 
 	if (m_Scale == scaleWorld)
-		Dest.ColorTransBlt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
+		{
+		if (m_MapImage.IsEmpty())
+			CreateMapImage();
+
+		Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
 				m_MapImage,
 				x - (m_MapImage.GetWidth() / 2),
 				y - (m_MapImage.GetHeight() / 2));
-
+		}
 	else if (m_Scale == scaleStar)
-		Dest.BltLighten(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
-				m_MapImage,
-				x - (m_MapImage.GetWidth() / 2),
-				y - (m_MapImage.GetHeight() / 2));
+		{
+		if (m_MapImage.IsEmpty())
+			CreateMapImage();
 
+		CGDraw::BltLighten(Dest,
+				x - (m_MapImage.GetWidth() / 2),
+				y - (m_MapImage.GetHeight() / 2),
+				m_MapImage,
+				0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight());
+		}
 	else if (m_pType->ShowsMapIcon() && m_fKnown)
 		{
 		//	Figure out the color
 
-		WORD wColor;
+		CG32bitPixel rgbColor;
 		if (IsEnemy(GetUniverse()->GetPOV()))
-			wColor = CG16bitImage::RGBValue(255, 0, 0);
+			rgbColor = CG32bitPixel(255, 0, 0);
 		else
-			wColor = CG16bitImage::RGBValue(0, 192, 0);
+			rgbColor = CG32bitPixel(0, 192, 0);
 
 		//	Paint the marker
 
@@ -2420,24 +2511,24 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int 
 			{
 			if (IsActiveStargate())
 				{
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerMediumCross);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerMediumCross);
 				}
 			else if (!IsAbandoned() || IsImmutable())
 				{
-				Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallFilledSquare);
+				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
 				}
 			else
 				{
-				Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallSquare);
+				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 				}
 			}
 		else
 			Dest.DrawDot(x, y, 
-					wColor, 
-					CG16bitImage::markerSmallRound);
+					rgbColor, 
+					markerSmallRound);
 
 		//	Paint the label
 
@@ -2798,6 +2889,8 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fParalyzedByOverlay =	((dwLoad & 0x00002000) ? true : false);
 	m_fNoBlacklist =		((dwLoad & 0x00004000) ? true : false);
 	m_fNoConstruction =		((dwLoad & 0x00008000) ? true : false);
+	m_fBlocksShips =		((dwLoad & 0x00010000) ? true : false);
+	m_fPaintOverhang =		((dwLoad & 0x00020000) ? true : false);
 
 	//	Init name flags
 
@@ -2816,6 +2909,11 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 77)
 		m_fImmutable = m_pType->IsImmutable();
 
+	//	Previous versions did not store m_fBlocksShips
+
+	if (Ctx.dwVersion < 111)
+		m_fBlocksShips = m_pType->IsWall();
+
 	//	Fix a bug in version 94 in which asteroids were inadvertently marked
 	//	as immutable.
 
@@ -2825,10 +2923,6 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 				&& m_pType->GetEjectaAdj() != 0)
 			m_fImmutable = m_pType->IsImmutable();
 		}
-
-	//	If this is a world or a star, create a small image
-
-	CreateMapImage();
 	}
 
 void CStation::OnSetEventFlags (void)
@@ -3129,10 +3223,12 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fParalyzedByOverlay ?	0x00002000 : 0);
 	dwSave |= (m_fNoBlacklist ?			0x00004000 : 0);
 	dwSave |= (m_fNoConstruction ?		0x00008000 : 0);
+	dwSave |= (m_fBlocksShips ?			0x00010000 : 0);
+	dwSave |= (m_fPaintOverhang ?		0x00020000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
-void CStation::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CStation::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //
@@ -3150,7 +3246,7 @@ void CStation::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransfo
 
 	if (m_Scale == scaleWorld || m_Scale == scaleStar)
 		{
-		Dest.ColorTransBlt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
+		Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
 				m_MapImage,
 				x - (m_MapImage.GetWidth() / 2),
 				y - (m_MapImage.GetHeight() / 2));
@@ -3162,35 +3258,35 @@ void CStation::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransfo
 		{
 		//	Paint red if enemy, green otherwise
 
-		WORD wColor = GetSymbolColor();
+		CG32bitPixel rgbColor = GetSymbolColor();
 		if (m_Scale == scaleStructure && m_rMass > 100000.0)
 			{
 			if (IsActiveStargate())
 				{
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerMediumCross);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerMediumCross);
 				}
 			else if (!IsAbandoned() || IsImmutable())
 				{
-				Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallFilledSquare);
+				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
 				}
 			else
 				{
-				Dest.DrawDot(x+1, y+1, 0, CG16bitImage::markerSmallSquare);
-				Dest.DrawDot(x, y, wColor, CG16bitImage::markerSmallSquare);
+				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 				}
 			}
 		else
 			{
 			if (!m_pType->ShowsMapIcon() && m_fExplored)
 				Dest.DrawDot(x, y, 
-						CG16bitImage::RGBValue(128, 128, 128), 
-						CG16bitImage::markerTinyCircle);
+						CG32bitPixel(128, 128, 128), 
+						markerTinyCircle);
 			else
 				Dest.DrawDot(x, y, 
-						wColor, 
-						CG16bitImage::markerTinyCircle);
+						rgbColor, 
+						markerTinyCircle);
 			}
 		}
 	}
@@ -3581,7 +3677,12 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
+	if (strEquals(sName, PROPERTY_BARRIER))
+		{
+		m_fBlocksShips = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
 		{
 		m_fNoBlacklist = !pValue->IsNil();
 		return true;
@@ -3599,6 +3700,20 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_IMMUTABLE))
 		{
 		m_fImmutable = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
+		{
+		if (pValue->IsNil())
+			m_fPaintOverhang = false;
+		else if (strEquals(pValue->GetStringValue(), PAINT_LAYER_OVERHANG))
+			m_fPaintOverhang = true;
+		else
+			{
+			*retsError = strPatternSubst(CONSTLIT("Unable to set paint layer: %s"), pValue->GetStringValue());
+			return false;
+			}
+
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_PARALLAX))
@@ -3674,7 +3789,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		}
 	else if (strEquals(sName, PROPERTY_PLAYER_BACKLISTED))
 		{
-		CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+		CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 
 		if (pValue->IsNil())
 			ClearBlacklist(pPlayer);

@@ -146,7 +146,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 		{
 		//	Adventure icon
 
-		CG16bitImage *pIcon;
+		CG32bitImage *pIcon;
 		pAdventure->CreateIcon(ADVENTURE_ICON_WIDTH, ADVENTURE_ICON_HEIGHT, &pIcon);
 
 		if (pIcon)
@@ -183,14 +183,14 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 		if (ObjImage.IsLoaded())
 			{
 			RECT rcRect = ObjImage.GetImageRect();
-			CG16bitImage &Image = ObjImage.GetImage(NULL_STR);
+			CG32bitImage &Image = ObjImage.GetImage(NULL_STR);
 			int cxImage = RectWidth(rcRect);
 			int cyImage = RectHeight(rcRect);
 
 			int cxNewWidth = Min(SHIP_IMAGE_WIDTH, cxImage);
 			int cyNewHeight = cxNewWidth;
 
-			CG16bitImage *pNewImage = new CG16bitImage;
+			CG32bitImage *pNewImage = new CG32bitImage;
 			pNewImage->CreateFromImageTransformed(Image, 
 					rcRect.left, 
 					rcRect.top, 

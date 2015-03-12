@@ -166,13 +166,13 @@ ALERROR CParticleCometEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx,
 	//	Note: We need to increase the width because the template is not full width
 	m_iWidth = 18 * pDesc->GetAttributeInteger(WIDTH_ATTRIB) / 8;
 
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
 
 	CString sAttrib;
 	if (pDesc->FindAttribute(SECONDARY_COLOR_ATTRIB, &sAttrib))
-		m_wSecondaryColor = ::LoadRGBColor(sAttrib);
+		m_rgbSecondaryColor = ::LoadRGBColor(sAttrib);
 	else
-		m_wSecondaryColor = m_wPrimaryColor;
+		m_rgbSecondaryColor = m_rgbPrimaryColor;
 
 	//	Compute arrays
 
@@ -182,7 +182,7 @@ ALERROR CParticleCometEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx,
 	return NOERROR;
 	}
 
-void CParticleCometEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CParticleCometEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -196,19 +196,19 @@ void CParticleCometEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SView
 
 	//	If we fade the color then we need a different loop
 
-	if (m_wPrimaryColor != m_wSecondaryColor)
+	if (m_rgbPrimaryColor != m_rgbSecondaryColor)
 		{
 		for (i = 0; i < GetParticleCount(); i++)
 			{
 			int iAge;
 			CVector vPos = GetParticlePos(i, Ctx.iTick, Ctx.iRotation, &iAge);
 			DWORD dwOpacity = 255 - (iAge * 255 / iMaxAge);
-			WORD wColor = CG16bitImage::FadeColor(m_wPrimaryColor, m_wSecondaryColor, 100 * iAge / iMaxAge);
+			CG32bitPixel rgbColor = CG32bitPixel::Fade(m_rgbPrimaryColor, m_rgbSecondaryColor, 100 * iAge / iMaxAge);
 
 			DrawParticle(Dest,
 					x + (int)vPos.GetX(),
 					y - (int)vPos.GetY(),
-					wColor,
+					rgbColor,
 					iParticleSize,
 					dwOpacity);
 			}
@@ -227,7 +227,7 @@ void CParticleCometEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SView
 			DrawParticle(Dest,
 					x + (int)vPos.GetX(),
 					y - (int)vPos.GetY(),
-					m_wPrimaryColor,
+					m_rgbPrimaryColor,
 					iParticleSize,
 					dwOpacity);
 			}

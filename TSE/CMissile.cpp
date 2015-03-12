@@ -718,7 +718,7 @@ void CMissile::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 		m_pTarget = NULL;
 	}
 
-void CMissile::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //
@@ -805,7 +805,7 @@ void CMissile::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 		for (int i = iStart; i < iCount; i++)
 			{
-			m_pVaporTrailRegions[i].FillTrans(Dest, x, y, m_pDesc->GetVaporTrailColor(), iOpacity);
+			m_pVaporTrailRegions[i].Fill(Dest, x, y, CG32bitPixel(m_pDesc->GetVaporTrailColor(), (BYTE)iOpacity));
 			iOpacity -= iFadeStep;
 			if (iOpacity <= 0)
 				break;
@@ -1289,7 +1289,7 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 	}
 
-void CMissile::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CMissile::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //
@@ -1298,8 +1298,8 @@ void CMissile::PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransfo
 	{
 	if (!m_fDestroyed)
 		Dest.DrawDot(x, y, 
-				CG16bitImage::RGBValue(255, 255, 0), 
-				CG16bitImage::markerSmallRound);
+				CG32bitPixel(255, 255, 0), 
+				markerSmallRound);
 	}
 
 bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos)

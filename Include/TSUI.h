@@ -124,7 +124,7 @@ class IHISession : public IHICommand, public IAniCommand
 		IHISession (CHumanInterface &HI);
 		virtual ~IHISession (void) { }
 
-		inline void HIAnimate (CG16bitImage &Screen, bool bTopMost) { OnAnimate(Screen, bTopMost); }
+		inline void HIAnimate (CG32bitImage &Screen, bool bTopMost) { OnAnimate(Screen, bTopMost); }
 		void HIChar (char chChar, DWORD dwKeyData);
 		inline CReanimator &HIGetReanimator (void) { return GetReanimator(); }
 		inline void HIInvalidate (const RECT &rcRect);
@@ -137,7 +137,10 @@ class IHISession : public IHICommand, public IAniCommand
 		void HIMouseMove (int x, int y, DWORD dwFlags);
 		void HIMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
 		inline void HIMove (int x, int y) { OnMove(x, y); }
-		void HIPaint (CG16bitImage &Screen);
+		void HIPaint (CG32bitImage &Screen);
+		void HIRButtonDblClick (int x, int y, DWORD dwFlags);
+		void HIRButtonDown (int x, int y, DWORD dwFlags);
+		void HIRButtonUp (int x, int y, DWORD dwFlags);
 		inline void HIReportHardCrash (CString *retsMessage) { OnReportHardCrash(retsMessage); }
 		inline void HISize (int cxWidth, int cyHeight);
 		inline void HIUpdate (bool bTopMost) { OnUpdate(bTopMost); }
@@ -152,7 +155,7 @@ class IHISession : public IHICommand, public IAniCommand
 		inline IAnimatron *GetElement (const CString &sID) { return m_Reanimator.GetElement(sID); }
 		inline IAnimatron *GetPerformance (const CString &sID, int *retiFrame = NULL) { return m_Reanimator.GetPerformance(sID, retiFrame); }
 		inline bool GetPropertyBool (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyBool(sID, sProp); }
-		inline WORD GetPropertyColor (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyColor(sID, sProp); }
+		inline CG32bitPixel GetPropertyColor (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyColor(sID, sProp); }
 		inline int GetPropertyInteger (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyInteger(sID, sProp); }
 		inline Metric GetPropertyMetric (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyMetric(sID, sProp); }
 		inline DWORD GetPropertyOpacity (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyOpacity(sID, sProp); }
@@ -161,7 +164,7 @@ class IHISession : public IHICommand, public IAniCommand
 		bool IsElementEnabled (const CString &sID);
 		inline void SetInputFocus (const CString &sID) { IAnimatron *pFocus = GetElement(sID); if (pFocus) m_Reanimator.SetInputFocus(pFocus); }
 		inline void SetPropertyBool (const CString &sID, const CString &sProp, bool bValue) { m_Reanimator.SetPropertyBool(sID, sProp, bValue); }
-		inline void SetPropertyColor (const CString &sID, const CString &sProp, WORD wValue) { m_Reanimator.SetPropertyColor(sID, sProp, wValue); }
+		inline void SetPropertyColor (const CString &sID, const CString &sProp, CG32bitPixel rgbValue) { m_Reanimator.SetPropertyColor(sID, sProp, rgbValue); }
 		inline void SetPropertyInteger (const CString &sID, const CString &sProp, int iValue) { m_Reanimator.SetPropertyInteger(sID, sProp, iValue); }
 		inline void SetPropertyMetric (const CString &sID, const CString &sProp, Metric rValue) { m_Reanimator.SetPropertyMetric(sID, sProp, rValue); }
 		inline void SetPropertyOpacity (const CString &sID, const CString &sProp, DWORD dwValue) { m_Reanimator.SetPropertyOpacity(sID, sProp, dwValue); }
@@ -179,18 +182,21 @@ class IHISession : public IHICommand, public IAniCommand
 			};
 
 		virtual CReanimator &GetReanimator (void) { return m_Reanimator; }
-		virtual void OnAnimate (CG16bitImage &Screen, bool bTopMost) { DefaultOnAnimate(Screen, bTopMost); }
+		virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) { DefaultOnAnimate(Screen, bTopMost); }
 		virtual void OnChar (char chChar, DWORD dwKeyData) { }
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData) { }
 		virtual void OnKeyUp (int iVirtKey, DWORD dwKeyData) { }
 		virtual void OnLButtonDblClick (int x, int y, DWORD dwFlags) { }
-		virtual void OnLButtonDown (int x, int y, DWORD dwFlags) { }
+		virtual void OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) { }
 		virtual void OnLButtonUp (int x, int y, DWORD dwFlags) { }
 		virtual void OnMouseMove (int x, int y, DWORD dwFlags) { }
 		virtual void OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags) { }
 		virtual void OnMove (int x, int y) { }
+		virtual void OnPaint (CG32bitImage &Screen, const RECT &rcInvalid) { }
+		virtual void OnRButtonDblClick (int x, int y, DWORD dwFlags) { }
+		virtual void OnRButtonDown (int x, int y, DWORD dwFlags) { }
+		virtual void OnRButtonUp (int x, int y, DWORD dwFlags) { }
 		virtual void OnReportHardCrash (CString *retsMessage) { }
-		virtual void OnPaint (CG16bitImage &Screen, const RECT &rcInvalid) { }
 		virtual void OnSize (int cxWidth, int cyHeight) { }
 		virtual void OnUpdate (bool bTopMost) { }
 
@@ -203,10 +209,11 @@ class IHISession : public IHICommand, public IAniCommand
 		//	IAniCommand virtuals
 		virtual void OnAniCommand (const CString &sID, const CString &sEvent, const CString &sCmd, DWORD dwData);
 
-		void DefaultOnAnimate (CG16bitImage &Screen, bool bTopMost);
+		void DefaultOnAnimate (CG32bitImage &Screen, bool bTopMost);
 
 		bool m_bNoCursor;						//	If TRUE, we hide the cursor when we show the session.
 		bool m_bTransparent;					//	If TRUE, session below this one shows through.
+		bool m_bCapture;						//	If TRUE, mouse is captured by session subclass (not Reanimator)
 		CReanimator m_Reanimator;
 	};
 
@@ -475,16 +482,16 @@ class CVisualPalette : public IFontTable
 
 		//	Low-level palette elements
 
-		inline WORD GetColor (int iIndex) const { return m_Color[iIndex]; }
+		inline CG32bitPixel GetColor (int iIndex) const { return m_Color[iIndex]; }
 		inline const CG16bitFont &GetFont (int iIndex) const { return m_Font[iIndex]; }
 		const CG16bitFont &GetFont (const CString &sName, bool *retFound = NULL) const;
-		inline const CG16bitImage &GetImage (int iIndex) const { return m_Image[iIndex]; }
-		void GetWidescreenRect (CG16bitImage &Screen, RECT *retrcCenter, RECT *retrcFull = NULL) const;
+		inline const CG32bitImage &GetImage (int iIndex) const { return m_Image[iIndex]; }
+		void GetWidescreenRect (CG32bitImage &Screen, RECT *retrcCenter, RECT *retrcFull = NULL) const;
 
 		//	Draw functions
 
-		void DrawDamageTypeIcon (CG16bitImage &Screen, int x, int y, DamageTypes iDamageType) const;
-		void DrawSessionBackground (CG16bitImage &Screen, const CG16bitImage &Background, DWORD dwFlags, RECT *retrcCenter = NULL) const;
+		void DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType) const;
+		void DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, DWORD dwFlags, RECT *retrcCenter = NULL) const;
 
 		//	Reanimator objects
 
@@ -527,7 +534,7 @@ class CVisualPalette : public IFontTable
 								const CString &sID,
 								int x,
 								int y,
-								const CG16bitImage *pImage,
+								const CG32bitImage *pImage,
 								const CString &sLabel,
 								DWORD dwOptions,
 								IAnimatron **retpControl) const;
@@ -535,7 +542,7 @@ class CVisualPalette : public IFontTable
 									 const CString &sID,
 									 int x,
 									 int y,
-									 const CG16bitImage *pImage,
+									 const CG32bitImage *pImage,
 									 DWORD dwOptions,
 									 IAnimatron **retpControl) const;
 		void CreateLink (CAniSequencer *pContainer,
@@ -564,9 +571,9 @@ class CVisualPalette : public IFontTable
 
 	private:
 
-		WORD m_Color[colorCount];
+		CG32bitPixel m_Color[colorCount];
 		CG16bitFont m_Font[fontCount];
-		CG16bitImage m_Image[imageCount];
+		CG32bitImage m_Image[imageCount];
 	};
 
 //	CHumanInterface -----------------------------------------------------------
@@ -641,7 +648,7 @@ class CHumanInterface
 		inline HWND GetHWND (void) { return m_hWnd; }
 		inline const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
-		inline CG16bitImage &GetScreen (void) { return m_ScreenMgr.GetScreen(); }
+		inline CG32bitImage &GetScreen (void) { return m_ScreenMgr.GetScreen(); }
 		inline CScreenMgr &GetScreenMgr (void) { return m_ScreenMgr; }
 		inline IHISession *GetSession (void) { return m_pCurSession; }
 		inline CSoundMgr &GetSoundMgr (void) { return m_SoundMgr; }
@@ -671,9 +678,9 @@ class CHumanInterface
 		void OnTaskComplete (DWORD dwID, LPARAM pData);
 
 		//	Private, used by other HI classes
-		void BeginSessionPaint (CG16bitImage &Screen);
+		void BeginSessionPaint (CG32bitImage &Screen);
 		void BeginSessionUpdate (void);
-		void EndSessionPaint (CG16bitImage &Screen, bool bTopMost);
+		void EndSessionPaint (CG32bitImage &Screen, bool bTopMost);
 		void EndSessionUpdate (bool bTopMost);
 
 		static bool Create (void);
@@ -713,6 +720,9 @@ class CHumanInterface
 		LONG WMMouseMove (int x, int y, DWORD dwFlags);
 		LONG WMMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
 		LONG WMMove (int x, int y);
+		LONG WMRButtonDblClick (int x, int y, DWORD dwFlags);
+		LONG WMRButtonDown (int x, int y, DWORD dwFlags);
+		LONG WMRButtonUp (int x, int y, DWORD dwFlags);
 		LONG WMSize (int cxWidth, int cyHeight, int iSize);
 		LONG WMTimer (DWORD dwID);
 

@@ -141,7 +141,7 @@ void CEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 		m_pAnchor = NULL;
 	}
 
-void CEffect::OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CEffect::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	OnPaint
 //

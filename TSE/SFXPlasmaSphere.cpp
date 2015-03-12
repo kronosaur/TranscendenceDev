@@ -49,13 +49,13 @@ ALERROR CPlasmaSphereEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, 
 	if (error = m_SpikeLength.LoadFromXML(pDesc->GetAttribute(SPIKE_LENGTH_ATTRIB)))
 		return error;
 
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
-	m_wSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
 
 	return NOERROR;
 	}
 
-void CPlasmaSphereEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CPlasmaSphereEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -65,11 +65,7 @@ void CPlasmaSphereEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewp
 	int i;
 
 	int iRadius = m_Radius.Roll();
-	DrawAlphaGradientCircle(Dest,
-			x,
-			y,
-			iRadius,
-			m_wPrimaryColor);
+	CGDraw::CircleGradient(Dest, x, y, iRadius, m_rgbPrimaryColor);
 
 	//	Paint the spikes
 
@@ -87,7 +83,7 @@ void CPlasmaSphereEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewp
 			DrawLightning(Dest,
 					x, y,
 					x + xDest, y + yDest,
-					m_wSecondaryColor,
+					m_rgbSecondaryColor,
 					16,	//	Must be a power of 2
 					0.5);
 

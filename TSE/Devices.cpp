@@ -420,10 +420,10 @@ ICCItem *CDeviceClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
 		//	List contains angle, radius, and optional z
 
-		pList->AppendIntegerValue(&CC, pDevice->GetPosAngle());
-		pList->AppendIntegerValue(&CC, pDevice->GetPosRadius());
+		pList->AppendInteger(CC, pDevice->GetPosAngle());
+		pList->AppendInteger(CC, pDevice->GetPosRadius());
 		if (pDevice->GetPosZ() != 0)
-			pList->AppendIntegerValue(&CC, pDevice->GetPosZ());
+			pList->AppendInteger(CC, pDevice->GetPosZ());
 
 		//	Done
 

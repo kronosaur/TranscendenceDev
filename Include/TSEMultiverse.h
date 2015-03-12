@@ -55,8 +55,8 @@ class CMultiverseCatalogEntry
 		static ALERROR CreateFromJSON (const CJSONValue &Entry, CMultiverseCatalogEntry **retpEntry, CString *retsResult);
 
 		inline const CString &GetDesc (void) const { return m_sDesc; }
-		inline CG16bitImage *GetIcon (void) const { return m_pIcon; }
-		inline CG16bitImage *GetIconHandoff (void) { CG16bitImage *pIcon = m_pIcon; m_pIcon = NULL; return pIcon; }
+		inline CG32bitImage *GetIcon (void) const { return m_pIcon; }
+		inline CG32bitImage *GetIconHandoff (void) { CG32bitImage *pIcon = m_pIcon; m_pIcon = NULL; return pIcon; }
 		inline ELicenseTypes GetLicenseType (void) const { return m_iLicenseType; }
 		inline const CString &GetName (void) const { return m_sName; }
 		inline DWORD GetRelease (void) const { return m_dwRelease; }
@@ -69,7 +69,7 @@ class CMultiverseCatalogEntry
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline const CString &GetVersion (void) const { return m_sVersion; }
 		bool IsValid (void);
-		void SetIcon (CG16bitImage *pImage);
+		void SetIcon (CG32bitImage *pImage);
 		inline void SetStatus (ELocalStatus iStatus, const CString &sStatus = NULL_STR) { m_iStatus = iStatus; m_sStatus = sStatus; }
 		inline void SetVersion (const CString &sVersion) { m_sVersion = sVersion; }
 
@@ -96,7 +96,7 @@ class CMultiverseCatalogEntry
 		DWORD m_dwUNID;						//	UNID
 		ELocalStatus m_iStatus;				//	Current status
 		CString m_sStatus;					//	Status message
-		CG16bitImage *m_pIcon;				//	200x100 image
+		CG32bitImage *m_pIcon;				//	200x100 image
 	};
 
 class CMultiverseCollection
@@ -133,8 +133,8 @@ class CMultiverseNewsEntry
 		inline const TArray<DWORD> &GetRequiredUNIDs (void) const { return m_RequiredUNIDs; }
 		inline const CString &GetTitle (void) const { return m_sTitle; }
 		inline bool IsShown (void) const { return m_bShown; }
-		CG16bitImage *LoadImage (void);
-		CG16bitImage *LoadImageHandoff (void);
+		CG32bitImage *LoadImage (void);
+		CG32bitImage *LoadImageHandoff (void);
 		inline void SetShown (bool bShown = true) { m_bShown = bShown; }
 
 	private:
@@ -162,7 +162,7 @@ class CMultiverseNewsEntry
 
 		CString m_sImageFilespec;			//	Local path to image (blank if download needed)
 		CString m_sImageMaskFilespec;		//	Local path to mask (blank if download needed)
-		CG16bitImage m_Image;
+		CG32bitImage m_Image;
 
 		//	News entry state
 

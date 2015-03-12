@@ -188,9 +188,13 @@ void CHumanInterface::MainLoop (void)
 
 		DWORD dwNow = timeGetTime();
 		DWORD dwNextFrame = dwStartTime + FRAME_DELAY;
+
+		//	Wait
+
 		if (dwNextFrame > dwNow)
 			{
 			::Sleep(dwNextFrame - dwNow);
+
 			dwStartTime = dwNextFrame;
 			}
 		else
@@ -283,12 +287,6 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 		case WM_LBUTTONUP:
 			return (g_pHI ? g_pHI->WMLButtonUp((int)LOWORD(lParam), (int)HIWORD(lParam), wParam) : 0);
 
-		case MCIWNDM_NOTIFYMODE:
-			return (g_pHI ? g_pHI->MCINotifyMode((int)lParam) : 0);
-
-		case MCIWNDM_NOTIFYPOS:
-			return 0;
-
 		case WM_MOUSEMOVE:
 			return g_pHI->WMMouseMove((int)LOWORD(lParam), (int)HIWORD(lParam), wParam);
 
@@ -307,11 +305,26 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			return 0;
 			}
 
+		case WM_RBUTTONDBLCLK:
+			return g_pHI->WMRButtonDblClick((int)LOWORD(lParam), (int)HIWORD(lParam), wParam);
+
+		case WM_RBUTTONDOWN:
+			return g_pHI->WMRButtonDown((int)LOWORD(lParam), (int)HIWORD(lParam), wParam);
+
+		case WM_RBUTTONUP:
+			return (g_pHI ? g_pHI->WMRButtonUp((int)LOWORD(lParam), (int)HIWORD(lParam), wParam) : 0);
+
 		case WM_SIZE:
 			return g_pHI->WMSize((int)LOWORD(lParam), (int)HIWORD(lParam), (int)wParam);
 
 		case WM_TIMER:
 			return g_pHI->WMTimer((DWORD)wParam);
+
+		case MCIWNDM_NOTIFYMODE:
+			return (g_pHI ? g_pHI->MCINotifyMode((int)lParam) : 0);
+
+		case MCIWNDM_NOTIFYPOS:
+			return 0;
 
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
@@ -618,6 +631,59 @@ LONG CHumanInterface::WMMove (int x, int y)
 
 	if (m_pCurSession)
 		m_pCurSession->HISize(GetScreen().GetWidth(), GetScreen().GetHeight());
+
+	return 0;
+	}
+
+LONG CHumanInterface::WMRButtonDblClick (int x, int y, DWORD dwFlags)
+
+//	WMRButtonDblClick
+//
+//	Handle WM_RBUTTONDBLCLICK message
+
+	{
+	if (m_pCurSession)
+		{
+		int xLocal, yLocal;
+
+		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_pCurSession->HIRButtonDblClick(xLocal, yLocal, dwFlags);
+		}
+
+	return 0;
+	}
+LONG CHumanInterface::WMRButtonDown (int x, int y, DWORD dwFlags)
+
+//	WMRButtonDown
+//
+//	Handle WM_RBUTTONDOWN message
+
+	{
+	if (m_pCurSession)
+		{
+		int xLocal, yLocal;
+
+		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_pCurSession->HIRButtonDown(xLocal, yLocal, dwFlags);
+		}
+
+	return 0;
+	}
+
+LONG CHumanInterface::WMRButtonUp (int x, int y, DWORD dwFlags)
+
+//	WMRButtonUp
+//
+//	Handle WM_RBUTTONUP message
+
+	{
+	if (m_pCurSession)
+		{
+		int xLocal, yLocal;
+
+		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_pCurSession->HIRButtonUp(xLocal, yLocal, dwFlags);
+		}
 
 	return 0;
 	}

@@ -23,8 +23,8 @@ class CBeamEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -62,22 +62,22 @@ class CBeamEffectCreator : public CEffectCreator,
 			};
 
 		void CreateLightningGlow (SLineDesc &Line, int iPointCount, CVector *pPoints, int iSize, CG16bitBinaryRegion *retRegion);
-		void DrawBeam (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamBlaster (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamHeavyBlaster (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamJaggedBolt (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamLaser (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamLightning (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamParticle (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamStarBlaster (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeam (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeamBlaster (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeamHeavyBlaster (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeamJaggedBolt (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeamLaser (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeamLightning (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeamLightningBolt (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeamParticle (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
+		void DrawBeamStarBlaster (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
 
 		static BeamTypes ParseBeamType (const CString &sValue);
 
 		BeamTypes m_iType;
 		int m_iIntensity;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 	};
 
 class CBoltEffectCreator : public CEffectCreator,
@@ -97,7 +97,7 @@ class CBoltEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -107,8 +107,8 @@ class CBoltEffectCreator : public CEffectCreator,
 	private:
 		int m_iLength;
 		int m_iWidth;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 	};
 
 class CEffectGroupCreator : public CEffectCreator
@@ -267,7 +267,7 @@ class CEllipseEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -280,7 +280,7 @@ class CEllipseEffectCreator : public CEffectCreator,
 		Metric m_rEccentricity;
 		Metric m_rRotation;
 
-		WORD m_wLineColor;
+		CG32bitPixel m_rgbLineColor;
 		int m_iLineWidth;
 		CString m_sLineStyle;
 
@@ -302,9 +302,9 @@ class CFlareEffectCreator : public CEffectCreator
 
 		void CreateFlareSpike (int iAngle, int iLength, int iWidth, SPoint *Poly);
 		inline int GetLifetime (void) const { return m_iLifetime; }
-		inline WORD GetPrimaryColor (void) const { return m_wPrimaryColor; }
+		inline CG32bitPixel GetPrimaryColor (void) const { return m_rgbPrimaryColor; }
 		inline int GetRadius (void) const { return m_iRadius; }
-		inline WORD GetSecondaryColor (void) const { return m_wSecondaryColor; }
+		inline CG32bitPixel GetSecondaryColor (void) const { return m_rgbSecondaryColor; }
 		inline Styles GetStyle (void) const { return m_iStyle; }
 
 		//	CEffectCreator virtuals
@@ -319,8 +319,8 @@ class CFlareEffectCreator : public CEffectCreator
 		Styles m_iStyle;
 		int m_iRadius;									//	Radius in pixels
 		int m_iLifetime;								//	Lifetime (ticks)
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 	};
 
 class CImageEffectCreator : public CEffectCreator,
@@ -349,8 +349,8 @@ class CImageEffectCreator : public CEffectCreator,
 		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc);
 		virtual void GetRect (RECT *retRect) const;
 		virtual int GetVariants (void) const { return m_iVariants; }
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintComposite (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -385,7 +385,7 @@ class CImageAndTailEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
 		virtual void GetRect (RECT *retRect) const { *retRect = m_Image.GetImageRect(); }
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -401,8 +401,8 @@ class CImageAndTailEffectCreator : public CEffectCreator,
 
 		int m_iLength;
 		int m_iWidth;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 	};
 
 class CImageFractureEffectCreator : public CEffectCreator
@@ -476,7 +476,7 @@ class CMoltenBoltEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -488,8 +488,8 @@ class CMoltenBoltEffectCreator : public CEffectCreator,
 		int m_iWidth;
 		int m_iLength;
 		int m_iGrowth;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 	};
 
 class CNullEffectCreator : public CEffectCreator,
@@ -508,7 +508,7 @@ class CNullEffectCreator : public CEffectCreator,
 
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 	};
 
 class COrbEffectCreator : public CEffectCreator
@@ -630,7 +630,7 @@ class CParticleCometEffectCreator : public CEffectCreator,
 
 		CVector GetParticlePos (int iParticle, int iTick, int iDirection, int *retiAge = NULL);
 		inline int GetParticleCount (void) { return m_iParticleCount; }
-		inline WORD GetPrimaryColor (void) { return m_wPrimaryColor; }
+		inline CG32bitPixel GetPrimaryColor (void) { return m_rgbPrimaryColor; }
 		inline int GetMaxAge (void) { return POINT_COUNT-1; }
 
 		//	CEffectCreator virtuals
@@ -640,7 +640,7 @@ class CParticleCometEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 
 	protected:
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
@@ -663,8 +663,8 @@ class CParticleCometEffectCreator : public CEffectCreator,
 		int m_iParticleCount;
 		int m_iWidth;
 		int m_iLength;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 
 		CVector *m_vPoints;
 		SParticle *m_Particles;
@@ -754,7 +754,7 @@ class CPlasmaSphereEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -764,8 +764,8 @@ class CPlasmaSphereEffectCreator : public CEffectCreator,
 		DiceRange m_Radius;
 		DiceRange m_SpikeCount;
 		DiceRange m_SpikeLength;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 	};
 
 class CPolyflashEffectCreator : public CEffectCreator
@@ -825,7 +825,7 @@ class CShapeEffectCreator : public CEffectCreator
 		virtual CString GetTag (void) { return GetClassTag(); }
 
 		void CreateShapeRegion (int iAngle, int iLength, int iWidth, CG16bitBinaryRegion *pRegion);
-		inline WORD GetColor (void) const { return m_wColor; }
+		inline CG32bitPixel GetColor (void) const { return m_rgbColor; }
 		inline int GetLength (void) const { return m_iLength; }
 		inline int GetLengthInc (void) const { return m_iLengthInc; }
 		inline DWORD GetOpacity (void) const { return m_byOpacity; }
@@ -849,7 +849,7 @@ class CShapeEffectCreator : public CEffectCreator
 		int m_iWidthInc;							//	Increment width every tick
 		int m_iLengthInc;							//	Increment length every tick
 
-		WORD m_wColor;								//	Shape color
+		CG32bitPixel m_rgbColor;								//	Shape color
 		DWORD m_byOpacity;							//	Shape opacity
 
 		int m_iPointCount;
@@ -873,12 +873,11 @@ class CShockwaveEffectCreator : public CEffectCreator
 		static CString GetClassTag (void) { return CONSTLIT("Shockwave"); }
 		virtual CString GetTag (void) { return GetClassTag(); }
 
-		inline WORD *GetColorGradient (void) { return m_wColorGradient; }
+		inline const TArray<CG32bitPixel> &GetColorGradient (void) { return m_ColorGradient; }
 		inline int GetFadeStart (void) { return m_iFadeStart; }
 		inline const CObjectImageArray &GetImage (void) { return m_Image; }
-		inline DWORD *GetOpacityGradient (void) { return m_byOpacityGradient; }
-		inline WORD GetPrimaryColor (void) const { return m_wPrimaryColor; }
-		inline WORD GetSecondaryColor (void) const { return m_wSecondaryColor; }
+		inline CG32bitPixel GetPrimaryColor (void) const { return m_rgbPrimaryColor; }
+		inline CG32bitPixel GetSecondaryColor (void) const { return m_rgbSecondaryColor; }
 		inline int GetRingThickness (void) { return m_iGradientCount; }
 		inline int GetSpeed (void) { return Max(1, (int)((m_Speed.Roll() * LIGHT_SPEED * g_SecondsPerUpdate / (g_KlicksPerPixel * 100.0)) + 0.5)); }
 		inline Styles GetStyle (void) const { return m_iStyle; }
@@ -894,7 +893,7 @@ class CShockwaveEffectCreator : public CEffectCreator
 		virtual void OnMarkImages (void) { m_Image.MarkImage(); }
 
 	private:
-		void CreateGlowGradient (int iSolidWidth, int iGlowWidth, WORD wSolidColor, WORD wGlowColor);
+		void CreateGlowGradient (int iSolidWidth, int iGlowWidth, CG32bitPixel rgbSolidColor, CG32bitPixel rgbGlowColor);
 
 		Styles m_iStyle;								//	Style of effect
 		CObjectImageArray m_Image;						//	Shockwave image
@@ -905,12 +904,11 @@ class CShockwaveEffectCreator : public CEffectCreator
 		int m_iWidth;									//	Width of central ring
 		int m_iGlowWidth;								//	Glow width
 
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 
 		int m_iGradientCount;
-		WORD *m_wColorGradient;
-		DWORD *m_byOpacityGradient;
+		TArray<CG32bitPixel> m_ColorGradient;
 	};
 
 class CSingleParticleEffectCreator : public CEffectCreator
@@ -922,8 +920,8 @@ class CSingleParticleEffectCreator : public CEffectCreator
 		inline ParticlePaintStyles GetStyle (void) const { return m_iStyle; }
 		inline int GetMaxWidth (void) const { return m_MaxWidth.Roll(); }
 		inline int GetMinWidth (void) const { return m_MinWidth.Roll(); }
-		inline WORD GetPrimaryColor (void) const { return m_wPrimaryColor; }
-		inline WORD GetSecondaryColor (void) const { return m_wSecondaryColor; }
+		inline CG32bitPixel GetPrimaryColor (void) const { return m_rgbPrimaryColor; }
+		inline CG32bitPixel GetSecondaryColor (void) const { return m_rgbSecondaryColor; }
 
 		//	CEffectCreator virtuals
 		virtual IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx);
@@ -935,8 +933,8 @@ class CSingleParticleEffectCreator : public CEffectCreator
 		ParticlePaintStyles m_iStyle;
 		DiceRange m_MinWidth;
 		DiceRange m_MaxWidth;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 	};
 
 class CSmokeTrailEffectCreator : public CEffectCreator
@@ -995,7 +993,7 @@ class CStarburstEffectCreator : public CEffectCreator,
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return this; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -1016,8 +1014,8 @@ class CStarburstEffectCreator : public CEffectCreator,
 		Styles m_iStyle;
 		DiceRange m_SpikeCount;
 		DiceRange m_SpikeLength;
-		WORD m_wPrimaryColor;
-		WORD m_wSecondaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
+		CG32bitPixel m_rgbSecondaryColor;
 		int m_iLifetime;
 	};
 
@@ -1030,7 +1028,7 @@ class CTextEffectCreator : public CEffectCreator
 		inline const CG16bitFont *GetFont (void) { return m_pFont; }
 		inline DWORD GetFontFlags (void) { return m_dwAlignment; }
 		inline DWORD GetOpacity (void) { return m_byOpacity; }
-		inline WORD GetPrimaryColor (void) { return m_wPrimaryColor; }
+		inline CG32bitPixel GetPrimaryColor (void) { return m_rgbPrimaryColor; }
 
 		//	CEffectCreator virtuals
 		virtual IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx);
@@ -1043,11 +1041,45 @@ class CTextEffectCreator : public CEffectCreator
 		CString m_sDefaultText;
 
 		const CG16bitFont *m_pFont;
-		WORD m_wPrimaryColor;
+		CG32bitPixel m_rgbPrimaryColor;
 		DWORD m_byOpacity;
 		DWORD m_dwAlignment;
 
 		int m_iLifetime;
+	};
+
+//	Space Object Implementations -----------------------------------------------
+
+class CSequencerEffect : public CSpaceObject
+	{
+	public:
+		static ALERROR Create (CSystem *pSystem,
+							   CEffectSequencerCreator *pType,
+							   CSpaceObject *pAnchor,
+							   const CVector &vPos,
+							   const CVector &vVel,
+							   CSequencerEffect **retpEffect);
+
+	protected:
+		//	CSpaceObject virtuals
+		virtual bool CanHit (CSpaceObject *pObj) { return false; }
+		virtual CString GetObjClassName (void) { return CONSTLIT("CSequencerEffect"); }
+		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
+		virtual void OnReadFromStream (SLoadCtx &Ctx);
+		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+
+	private:
+		CSequencerEffect (void);
+
+		CEffectSequencerCreator *m_pType;
+		CSpaceObject *m_pAnchor;
+		CVector m_vAnchorOffset;
+		int m_iStartTime;
+		int m_iTimeCursor;
+
+	friend CObjectClass<CSequencerEffect>;
 	};
 
 #endif

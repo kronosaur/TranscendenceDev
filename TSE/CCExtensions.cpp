@@ -92,8 +92,9 @@ ICCItem *fnItemTypeSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_OBJ_SET_GLOBAL_DATA		8
 #define FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE	9
 
-ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_OBJ_NAME					1
 #define FN_OBJ_IS_SHIP				2
@@ -427,6 +428,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_ASCEND_OBJECT			25
 #define FN_SYS_DESCEND_OBJECT			26
 #define FN_SYS_MATCHES					27
+#define FN_SYS_SET_POV					28
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -496,6 +498,8 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 #define FN_SOVEREIGN_DISPOSITION		0
 #define FN_SOVEREIGN_GET_DISPOSITION	1
+#define FN_SOVEREIGN_MESSAGE			2
+#define FN_SOVEREIGN_MESSAGE_FROM_OBJ	3
 
 #define DISP_NEUTRAL					CONSTLIT("neutral")
 #define DISP_ENEMY						CONSTLIT("enemy")
@@ -1208,7 +1212,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	0,	},
 
 		{	"objGetBuyPrice",				fnObjGet,		FN_OBJ_GET_BUY_PRICE,	
-			"(objGetBuyPrice obj item [options]) -> price\n\n"
+			"(objGetBuyPrice obj item [options]) -> price (at which obj sells item)\n\n"
 			
 			"options:\n\n"
 			
@@ -1402,11 +1406,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'hasDockingPorts\n"
 			"   'id\n"
 			"   'known\n"
+			"   'paintLayer\n"
 			"   'playerMissionsGiven\n"
 			"   'underAttack\n"
 			"\n"
 			"property (ships)\n\n"
 			
+			"   'alwaysLeaveWreck\n"
 			"   'availableNonWeaponSlots\n"
 			"   'availableWeaponSlots\n"
 			"   'blindingImmune\n"
@@ -1432,6 +1438,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (stations)\n\n"
 
 			"   'abandoned\n"
+			"   'barrier\n"
 			"   'dockingPortCount\n"
 			"   'hp\n"
 			"   'ignoreFriendlyFire\n"
@@ -1457,7 +1464,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",		0,	},
 
 		{	"objGetSellPrice",				fnObjGet,		FN_OBJ_GET_SELL_PRICE,	
-			"(objGetSellPrice obj item ['noInventoryCheck]) -> price",
+			"(objGetSellPrice obj item ['noInventoryCheck]) -> price (at which obj sells item)",
 			"il*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetShieldLevel",			fnObjGetOld,		FN_OBJ_SHIELD_LEVEL,
@@ -1589,9 +1596,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objResume obj [gateObj])",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objSendMessage",				fnObjSetOld,		FN_OBJ_MESSAGE,
-			"(objSendMessage obj sender msg)",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"objSendMessage",				fnObjSendMessage,		FN_OBJ_MESSAGE,
+			"(objSendMessage obj sender text) -> True/Nil",
+			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetData",					fnObjData,		FN_OBJ_SETDATA,
 			"(objSetData obj attrib data)",
@@ -1692,6 +1699,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property (ships)\n\n"
 
+			"   'alwaysLeaveWreck True|Nil\n"
 			"   'dockingEnabled True|Nil\n"
 			"   'commsKey key\n"
 			"   'known True|Nil\n"
@@ -1702,6 +1710,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"\n"
 			"property (stations)\n\n"
 
+			"   'barrier True|Nil\n"
 			"   'ignoreFriendlyFire True|Nil\n"
 			"   'hp hitPoints\n"
 			"   'immutable True|Nil\n"
@@ -1709,6 +1718,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'maxHP hitPoints\n"
 			"   'maxStructuralHP hitPoints\n"
 			"   'orbit orbit|Nil\n"
+			"   'paintLayer 'overhang|Nil\n"
 			"   'parallax factor\n"
 			"   'playerBlacklisted True|Nil\n"
 			"   'shipConstructionEnabled True|Nil\n"
@@ -2265,6 +2275,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysSetKNown [nodeID] [True/Nil]) -> True/Nil",
 			"*",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"sysSetPOV",					fnSystemGet,	FN_SYS_SET_POV,
+			"(sysSetPOV obj|vector) -> True/Nil",
+			"v",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"sysSetProperty",	fnSystemGet,	FN_SYS_SET_PROPERTY,
 			"(sysSetProperty [nodeID] property value) -> True/Nil\n\n"
 			
@@ -2453,6 +2467,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sovGetDisposition",			fnSovereignSet,			FN_SOVEREIGN_GET_DISPOSITION,
 			"(sovGetDisposition sovereignID targetSovereignID) -> disposition of sovereign to target",
 			"ii",	0,	},
+
+		{	"sovMessage",					fnSovereignSet,			FN_SOVEREIGN_MESSAGE,
+			"(sovMessage sovereignID text) -> True/Nil",
+			"iv",	0,	},
+
+		{	"sovMessageFromObj",			fnSovereignSet,			FN_SOVEREIGN_MESSAGE_FROM_OBJ,
+			"(sovMessageFromObj sovereignID obj text) -> True/Nil",
+			"iiv",	0,	},
 
 		{	"sovSetDisposition",			fnSovereignSet,			FN_SOVEREIGN_DISPOSITION,
 			"(sovSetDisposition sovereignID targetSovereignID disposition)",
@@ -3120,7 +3142,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		if (pType->MatchesCriteria(Criteria))
 			{
 			ICCItem *pUNID = pCC->CreateInteger(pType->GetUNID());
-			pList->Append(pCC, pUNID, NULL);
+			pList->Append(*pCC, pUNID);
 			pUNID->Discard(pCC);
 			}
 		}
@@ -3554,7 +3576,7 @@ ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		if (Item.MatchesCriteria(Criteria))
 			{
 			ICCItem *pItem = pCC->CreateInteger(pType->GetUNID());
-			pList->Append(pCC, pItem, NULL);
+			pList->Append(*pCC, pItem);
 			pItem->Discard(pCC);
 			}
 		}
@@ -4961,13 +4983,13 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pResult;
 
 			CCLinkedList *pList = (CCLinkedList *)pResult;
-			pList->Append(pCC, pCC->CreateBool(bCanInstall));
-			pList->AppendStringValue(pCC, CSpaceObject::ConvertToID(iResult));
-			pList->AppendStringValue(pCC, sResult);
+			pList->Append(*pCC, pCC->CreateBool(bCanInstall));
+			pList->AppendString(*pCC, CSpaceObject::ConvertToID(iResult));
+			pList->AppendString(*pCC, sResult);
 			if (ItemToReplace.GetType())
 				{
 				ICCItem *pItem = CreateListFromItem(*pCC, ItemToReplace);
-				pList->Append(pCC, pItem);
+				pList->Append(*pCC, pItem);
 				pItem->Discard(pCC);
 				}
 
@@ -5212,7 +5234,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(*pCC, theItem);
-						pList->Append(pCC, pItem, NULL);
+						pList->Append(*pCC, pItem);
 						pItem->Discard(pCC);
 						}
 					}
@@ -5222,7 +5244,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					if (theItem.GetType())
 						{
 						ICCItem *pItem = CreateListFromItem(*pCC, theItem);
-						pList->Append(pCC, pItem, NULL);
+						pList->Append(*pCC, pItem);
 						pItem->Discard(pCC);
 						}
 					}
@@ -5242,7 +5264,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 								if (ItemList.SetCursorAtItem(theItem))
 									{
 									ICCItem *pItem = CreateListFromItem(*pCC, theItem);
-									pList->Append(pCC, pItem, NULL);
+									pList->Append(*pCC, pItem);
 									pItem->Discard(pCC);
 									}
 								}
@@ -5252,7 +5274,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 								if (theItem.GetType())
 									{
 									ICCItem *pItem = CreateListFromItem(*pCC, theItem);
-									pList->Append(pCC, CreateListFromItem(*pCC, theItem), NULL);
+									pList->Append(*pCC, CreateListFromItem(*pCC, theItem));
 									pItem->Discard(pCC);
 									}
 								}
@@ -5301,8 +5323,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_OVERLAYS:
 			{
-			TArray<CEnergyField *> List;
-			pObj->GetOverlayList(List);
+			TArray<COverlay *> List;
+			pObj->GetOverlayList(&List);
 
 			if (List.GetCount() == 0)
 				return pCC->CreateNil();
@@ -5316,7 +5338,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				for (int i = 0; i < List.GetCount(); i++)
 					{
 					ICCItem *pItem = pCC->CreateInteger(List[i]->GetID());
-					pList->Append(pCC, pItem, NULL);
+					pList->Append(*pCC, pItem);
 					pItem->Discard(pCC);
 					}
 
@@ -5377,12 +5399,12 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			ASSERT(pFuelType);
 			ICCItem *pFuelItem = CreateListFromItem(*pCC, CItem(pFuelType, 1));
-			pList->Append(pCC, pFuelItem);
+			pList->Append(*pCC, pFuelItem);
 			pFuelItem->Discard(pCC);
 
 			//	Add the price
 
-			pList->AppendIntegerValue(pCC, iPrice);
+			pList->AppendInteger(*pCC, iPrice);
 
 			//	Done
 
@@ -5862,6 +5884,59 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		}
 
 	return pResult;
+	}
+
+ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
+
+//	fnObjSendMessage
+//
+//	(objSendMessage ...)
+
+	{
+	CCodeChain *pCC = pEvalCtx->pCC;
+
+	//	Get the object (OK if nil)
+
+	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
+
+	//	Handle it
+
+	switch (dwData)
+		{
+		case FN_OBJ_MESSAGE:
+			{
+			//	Second param is the sender; third is message
+
+			CSpaceObject *pSender = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			CString sMessage = pArgs->GetElement(2)->GetStringValue();
+
+			//	If no message, nothing to do
+
+			if (sMessage.IsBlank())
+				return pCC->CreateNil();
+
+			//	If target is nil, then send to player
+
+			if (pObj == NULL)
+				{
+				IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+				if (pPlayer)
+					pPlayer->OnMessageFromObj(pSender, sMessage);
+				}
+
+			//	Otherwise, send to object (which might send it to the player or
+			//	whatever).
+
+			else
+				pObj->SendMessage(pSender, sMessage);
+
+			return pCC->CreateTrue();
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
 	}
 
 ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
@@ -6704,26 +6779,6 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 			}
 
-		case FN_OBJ_MESSAGE:
-			{
-			//	Second param is the sender; third is message
-
-			CSpaceObject *pSender = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			CString sMessage = pArgs->GetElement(2)->GetStringValue();
-			pArgs->Discard(pCC);
-
-			//	Do it
-
-			if (!sMessage.IsBlank())
-				{
-				pObj->SendMessage(pSender, sMessage);
-				pResult = pCC->CreateTrue();
-				}
-			else
-				pResult = pCC->CreateNil();
-			break;
-			}
-
 		case FN_OBJ_NAME:
 			{
 			//	Third parameter is (optional) flags
@@ -6941,7 +6996,7 @@ ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 				if (ObjList.GetItemAtCursor().MatchesCriteria(Criteria))
 					{
 					ICCItem *pItem = CreateListFromItem(*pCC, ObjList.GetItemAtCursor());
-					pList->Append(pCC, pItem, NULL);
+					pList->Append(*pCC, pItem);
 					pItem->Discard(pCC);
 					}
 				}
@@ -7117,7 +7172,7 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CCLinkedList *pList = (CCLinkedList *)pResult;
 			for (i = 0; i < List.GetCount(); i++)
-				pList->AppendIntegerValue(pCC, (int)List[i]);
+				pList->AppendInteger(*pCC, (int)List[i]);
 
 			//	Done
 
@@ -7412,7 +7467,11 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_SHIP_AI_SETTING:
 			{
-			CString sValue = pShip->GetController()->GetAISetting(pArgs->GetElement(1)->GetStringValue());
+			//	LATER: For now the controller is responsible for returning all
+			//	settings as strings (even if they are integers). In the future
+			//	we should be smarter about this.
+
+			CString sValue = pShip->GetController()->GetAISettingString(pArgs->GetElement(1)->GetStringValue());
 			if (sValue.IsBlank())
 				return pCC->CreateNil();
 			else
@@ -7504,7 +7563,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Add order name
 
 			ICCItem *pItem = pCC->CreateString(GetOrderName(iOrder));
-			pList->Append(pCC, pItem, NULL);
+			pList->Append(*pCC, pItem);
 			pItem->Discard(pCC);
 
 			//	Add the target
@@ -7512,7 +7571,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (::OrderHasTarget(iOrder))
 				{
 				pItem = pCC->CreateInteger((int)pTarget);
-				pList->Append(pCC, pItem, NULL);
+				pList->Append(*pCC, pItem);
 				pItem->Discard(pCC);
 				}
 
@@ -7521,17 +7580,25 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			switch (Data.iDataType)
 				{
 				case IShipController::dataInteger:
-					pList->AppendIntegerValue(pCC, Data.dwData1);
+					pList->AppendInteger(*pCC, Data.dwData1);
 					break;
 
 				case IShipController::dataPair:
-					pList->AppendIntegerValue(pCC, Data.dwData1);
-					pList->AppendIntegerValue(pCC, Data.dwData2);
+					pList->AppendInteger(*pCC, Data.dwData1);
+					pList->AppendInteger(*pCC, Data.dwData2);
 					break;
 
 				case IShipController::dataString:
-					pList->AppendStringValue(pCC, Data.sData);
+					pList->AppendString(*pCC, Data.sData);
 					break;
+
+				case IShipController::dataVector:
+					{
+					ICCItem *pVector = ::CreateListFromVector(*pCC, Data.vData);
+					pList->Append(*pCC, pVector);
+					pVector->Discard(pCC);
+					break;
+					}
 				}
 
 			//	Done
@@ -7762,21 +7829,28 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_SHIP_AI_SETTING:
 			{
-			CString sValue;
-			if (!pArgs->GetElement(2)->IsNil())
-				sValue = pArgs->GetElement(2)->GetStringValue();
+			CString sSetting = pArgs->GetElement(1)->GetStringValue();
+			ICCItem *pValue = pArgs->GetElement(2);
 
-			CString sNewValue = pShip->GetController()->SetAISetting(pArgs->GetElement(1)->GetStringValue(), sValue);
-			if (sNewValue.IsBlank())
-				return pCC->CreateNil();
+			if (pValue->IsInteger())
+				{
+				int iNewValue = pShip->SetAISettingInteger(sSetting, pValue->GetIntegerValue());
+				return pCC->CreateInteger(iNewValue);
+				}
 			else
 				{
-				bool bFailed;
-				int iValue = strToInt(sNewValue, 0, &bFailed);
-				if (!bFailed)
-					return pCC->CreateInteger(iValue);
+				CString sNewValue = pShip->SetAISettingString(sSetting, (pValue->IsNil() ? NULL_STR : pValue->GetStringValue()));
+				if (sNewValue.IsBlank())
+					return pCC->CreateNil();
 				else
-					return pCC->CreateString(sNewValue);
+					{
+					bool bFailed;
+					int iValue = strToInt(sNewValue, 0, &bFailed);
+					if (!bFailed)
+						return pCC->CreateInteger(iValue);
+					else
+						return pCC->CreateString(sNewValue);
+					}
 				}
 			}
 
@@ -7912,6 +7986,11 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					Data.iDataType = IShipController::dataString;
 					Data.sData = pArgs->GetElement(iArg)->GetStringValue();
+					}
+				else if (OrderHasDataVector(iOrder))
+					{
+					Data.iDataType = IShipController::dataVector;
+					Data.vData = ::CreateVectorFromList(*pCC, pArgs->GetElement(iArg));
 					}
 				else
 					{
@@ -8407,7 +8486,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CString sController;
 			if (pArgs->GetCount() > 1 && !pArgs->GetElement(1)->IsNil())
 				sController = pArgs->GetElement(1)->GetStringValue();
-			IShipController *pController = CreateShipController(sController);
+			IShipController *pController = g_pUniverse->CreateShipController(sController);
 			pArgs->Discard(pCC);
 
 			if (pController)
@@ -8599,18 +8678,6 @@ ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
-		case FN_SOVEREIGN_GET_DISPOSITION:
-			{
-			//	Get the target sovereign and disposition
-
-			DWORD dwTargetID = pArgs->GetElement(1)->GetIntegerValue();
-			CSovereign *pTarget = g_pUniverse->FindSovereign(dwTargetID);
-			if (pTarget == NULL)
-				return pCC->CreateError(CONSTLIT("Invalid sovereign"), pArgs->GetElement(1));
-
-			return CreateDisposition(*pCC, pSovereign->GetDispositionTowards(pTarget));
-			}
-
 		case FN_SOVEREIGN_DISPOSITION:
 			{
 			//	Get the target sovereign and disposition
@@ -8639,6 +8706,43 @@ ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Do it
 
 			pSovereign->SetDispositionTowards(pTarget, iDisp);
+			return pCC->CreateTrue();
+			}
+
+		case FN_SOVEREIGN_GET_DISPOSITION:
+			{
+			//	Get the target sovereign and disposition
+
+			DWORD dwTargetID = pArgs->GetElement(1)->GetIntegerValue();
+			CSovereign *pTarget = g_pUniverse->FindSovereign(dwTargetID);
+			if (pTarget == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid sovereign"), pArgs->GetElement(1));
+
+			return CreateDisposition(*pCC, pSovereign->GetDispositionTowards(pTarget));
+			}
+
+		case FN_SOVEREIGN_MESSAGE:
+		case FN_SOVEREIGN_MESSAGE_FROM_OBJ:
+			{
+			int iArg = 1;
+			CSpaceObject *pSenderObj;
+
+			//	See if we have an obj sender
+
+			if (dwData == FN_SOVEREIGN_MESSAGE_FROM_OBJ)
+				pSenderObj = CreateObjFromItem(*pCC, pArgs->GetElement(iArg++));
+			else
+				pSenderObj = NULL;
+
+			//	Get the text.
+
+			CString sText = pArgs->GetElement(iArg)->GetStringValue();
+			if (sText.IsBlank())
+				return pCC->CreateNil();
+
+			//	Send the message
+
+			pSovereign->MessageFromObj(pSenderObj, sText);
 			return pCC->CreateTrue();
 			}
 
@@ -8733,7 +8837,7 @@ ICCItem *fnStationGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 				if (pShip)
 					{
 					ICCItem *pInt = pCC->CreateInteger((int)pShip);
-					pList->Append(pCC, pInt, NULL);
+					pList->Append(*pCC, pInt);
 					pInt->Discard(pCC);
 					}
 				}
@@ -8757,7 +8861,7 @@ ICCItem *fnStationGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 				if (pShip)
 					{
 					ICCItem *pInt = pCC->CreateInteger((int)pShip);
-					pList->Append(pCC, pInt, NULL);
+					pList->Append(*pCC, pInt);
 					pInt->Discard(pCC);
 					}
 				}
@@ -9165,7 +9269,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pTable == NULL)
 				return pCC->CreateNil();
 
-			pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pSystem->GetPlayer());
+			pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pSystem->GetPlayerShip());
 
 			return pCC->CreateTrue();
 			}
@@ -9634,7 +9738,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD 
 	if (pArgs->GetCount() > 3)
 		{
 		if (pArgs->GetElement(3)->IsIdentifier())
-			pController = CreateShipController(pArgs->GetElement(3)->GetStringValue());
+			pController = g_pUniverse->CreateShipController(pArgs->GetElement(3)->GetStringValue());
 		else
 			pOverride = g_pUniverse->FindDesignType(pArgs->GetElement(3)->GetIntegerValue());
 		}
@@ -9699,7 +9803,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD 
 		CCLinkedList *pList = (CCLinkedList *)pResult;
 
 		for (i = 0; i < ShipsCreated.GetCount(); i++)
-			pList->AppendIntegerValue(pCC, (int)ShipsCreated.GetObj(i));
+			pList->AppendInteger(*pCC, (int)ShipsCreated.GetObj(i));
 
 		return pResult;
 		}
@@ -9933,7 +10037,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				&& !pObj->IsInactive())
 			{
 			if (bGenerateOurOwnList)
-				pList->AppendIntegerValue(pCC, (int)pObj);
+				pList->AppendInteger(*pCC, (int)pObj);
 			}
 		}
 
@@ -9955,7 +10059,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	else if (!bGenerateOurOwnList)
 		{
 		for (i = 0; i < Ctx.DistSort.GetCount(); i++)
-			pList->AppendIntegerValue(pCC, (int)Ctx.DistSort[i]);
+			pList->AppendInteger(*pCC, (int)Ctx.DistSort[i]);
 
 		return pResult;
 		}
@@ -10368,6 +10472,40 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_SYS_SET_POV:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			//	Get the new POV
+
+			CVector vCenter;
+			CSpaceObject *pObj;
+			if (!GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter, &pObj))
+				return pCC->CreateError(CONSTLIT("Expected vector or object"), pArgs->GetElement(0));
+
+			//	If we have an object, set the POV
+
+			if (pObj)
+				g_pUniverse->SetPOV(pObj);
+
+			//	Otherwise we create an auto-destroy marker
+
+			else
+				{
+				CPOVMarker *pMarker;
+				if (CPOVMarker::Create(pSystem, vCenter, NullVector, &pMarker) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Out of memory."));
+
+				g_pUniverse->SetPOV(pMarker);
+				}
+
+			//	Done
+
+			return pCC->CreateTrue();
+			}
+
 		case FN_SYS_SYSTEM_TYPE:
 			{
 			CTopologyNode *pNode;
@@ -10404,7 +10542,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			for (int i = 0; i < pNode->GetStargateCount(); i++)
 				{
 				ICCItem *pValue = pCC->CreateString(pNode->GetStargate(i));
-				pList->Append(pCC, pValue, NULL);
+				pList->Append(*pCC, pValue);
 				pValue->Discard(pCC);
 				}
 
@@ -10440,8 +10578,8 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pResult;
 
 			CCLinkedList *pList = (CCLinkedList *)pResult;
-			pList->AppendStringValue(pCC, sDestNode);
-			pList->AppendStringValue(pCC, sDestEntryPoint);
+			pList->AppendString(*pCC, sDestNode);
+			pList->AppendString(*pCC, sDestEntryPoint);
 
 			//	Done
 
@@ -10573,7 +10711,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					continue;
 
 				ICCItem *pValue = pCC->CreateString(pNode->GetID());
-				pList->Append(pCC, pValue, NULL);
+				pList->Append(*pCC, pValue);
 				pValue->Discard(pCC);
 				}
 
@@ -10883,7 +11021,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			//	Get the filter
 
 			if (pSource == NULL)
-				pSource = pSystem->GetPlayer();
+				pSource = pSystem->GetPlayerShip();
 			if (pSource == NULL)
 				pSource = g_pUniverse->GetPOV();
 
@@ -11144,13 +11282,13 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					}
 
 				CCLinkedList *pEntryList = (CCLinkedList *)pEntry;
-				pEntryList->AppendIntegerValue(pCC, Result[i].dwObjID);
-				pEntryList->AppendIntegerValue(pCC, Result[i].pType->GetUNID());
-				pEntryList->AppendStringValue(pCC, Result[i].pNode->GetID());
-				pEntryList->AppendStringValue(pCC, Result[i].sName);
-				pEntryList->AppendIntegerValue(pCC, Result[i].dwNameFlags);
+				pEntryList->AppendInteger(*pCC, Result[i].dwObjID);
+				pEntryList->AppendInteger(*pCC, Result[i].pType->GetUNID());
+				pEntryList->AppendString(*pCC, Result[i].pNode->GetID());
+				pEntryList->AppendString(*pCC, Result[i].sName);
+				pEntryList->AppendInteger(*pCC, Result[i].dwNameFlags);
 
-				pList->Append(pCC, pEntry);
+				pList->Append(*pCC, pEntry);
 				pEntry->Discard(pCC);
 				}
 
@@ -11192,15 +11330,15 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CCLinkedList *pList = (CCLinkedList *)pResult;
 
 			ICCItem *pValue = pCC->CreateInteger(Date.Year());
-			pList->Append(pCC, pValue, NULL);
+			pList->Append(*pCC, pValue);
 			pValue->Discard(pCC);
 
 			pValue = pCC->CreateInteger(Date.Month());
-			pList->Append(pCC, pValue, NULL);
+			pList->Append(*pCC, pValue);
 			pValue->Discard(pCC);
 
 			pValue = pCC->CreateInteger(Date.Day());
-			pList->Append(pCC, pValue, NULL);
+			pList->Append(*pCC, pValue);
 			pValue->Discard(pCC);
 			break;
 			}
@@ -11313,15 +11451,15 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					ASSERT(false);
 
 				ICCItem *pValue = pCC->CreateInteger(dwUNID);
-				pList->Append(pCC, pValue, NULL);
+				pList->Append(*pCC, pValue);
 				pValue->Discard(pCC);
 
 				pValue = pCC->CreateString(sType);
-				pList->Append(pCC, pValue, NULL);
+				pList->Append(*pCC, pValue);
 				pValue->Discard(pCC);
 
 				pValue = pCC->CreateString(sName);
-				pList->Append(pCC, pValue, NULL);
+				pList->Append(*pCC, pValue);
 				pValue->Discard(pCC);
 				}
 			else
@@ -11464,7 +11602,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CCLinkedList *pList = (CCLinkedList *)pResult;
 			for (i = 0; i < pXML->GetAttributeCount(); i++)
-				pList->AppendStringValue(pCC, pXML->GetAttributeName(i));
+				pList->AppendString(*pCC, pXML->GetAttributeName(i));
 
 			return pResult;
 			}
@@ -11519,7 +11657,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					if (strEquals(pSub->GetTag(), sTag))
 						{
 						CCXMLWrapper *pNewItem = new CCXMLWrapper(pSub, pWrapper);
-						pList->Append(pCC, pNewItem);
+						pList->Append(*pCC, pNewItem);
 						pNewItem->Discard(pCC);
 						}
 					}
@@ -11533,7 +11671,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					CXMLElement *pSub = pXML->GetContentElement(i);
 					CCXMLWrapper *pNewItem = new CCXMLWrapper(pSub, pWrapper);
-					pList->Append(pCC, pNewItem);
+					pList->Append(*pCC, pNewItem);
 					pNewItem->Discard(pCC);
 					}
 				}

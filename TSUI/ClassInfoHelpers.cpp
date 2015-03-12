@@ -93,11 +93,11 @@ void CUIHelper::CreateClassInfoCargo (CShipClass *pClass, const CDeviceDescList 
 	//	Text
 
 	CString sText = strPatternSubst(CONSTLIT("{/rtf {/f:LargeBold;/c:%d; %s} {/f:MediumBold;/c:%d; %s}\n{/f:Medium;/c:%d; %s}}"),
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			strFromInt(iCargoSpace),
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogInput)),
+			(COLORREF)VI.GetColor(colorTextDialogInput),
 			(pCargoExtension ? strPatternSubst(CONSTLIT("ton %s"), CTextBlock::Escape(pCargoExtension->GetItemType()->GetNounPhrase(nounActual))) : CONSTLIT("ton cargo hold")),
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			(iCargoSpace < pClass->GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), pClass->GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
@@ -178,11 +178,11 @@ void CUIHelper::CreateClassInfoDeviceSlots (CShipClass *pClass, const CDeviceDes
 	int cyText = 0;
 
 	CString sText = strPatternSubst(CONSTLIT("{/rtf {/f:LargeBold;/c:%d; %s} {/f:MediumBold;/c:%d; %s}\n{/f:Medium;/c:%d; %s}}"),
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			sNumber,
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogInput)),
+			(COLORREF)VI.GetColor(colorTextDialogInput),
 			sHeader,
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			sDesc);
 
 	//	Add the text item
@@ -286,16 +286,16 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 			"{/f:LargeBold;/c:%d; %s} maneuverability\n"
 			"(turning speed)}"),
 
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			sSpeedNumber,
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogInput)),
+			(COLORREF)VI.GetColor(colorTextDialogInput),
 			sSpeedHeader,
 
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			sThrustNumber,
 
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			sManeuverNumber);
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
@@ -348,7 +348,7 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	RECT rcImage = Image.GetImageRect();
 	if (Image.IsLoaded())
 		{
-		CG16bitImage *pIcon = new CG16bitImage;
+		CG32bitImage *pIcon = new CG32bitImage;
 		pIcon->CreateFromImageTransformed(Image.GetImage(pType->GetName(0)), 
 				rcImage.left, 
 				rcImage.top, 
@@ -465,9 +465,9 @@ void CUIHelper::CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescLis
 	//	Create the info
 
 	CString sText = strPatternSubst(CONSTLIT("{/rtf {/f:LargeBold;/c:%d; %s} {/f:MediumBold;/c:%d; %s}}"),
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogLabel)),
+			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			CTextBlock::Escape(ReactorPower2String(pReactorDesc->iMaxPower)),
-			CG16bitImage::RGBFromPixel(VI.GetColor(colorTextDialogInput)),
+			(COLORREF)VI.GetColor(colorTextDialogInput),
 			(pReactor ? CTextBlock::Escape(pReactor->GetItemType()->GetNounPhrase()) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(pClass->GetShortName()))));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
@@ -507,7 +507,7 @@ void CUIHelper::CreateClassInfoSpecialItem (CItemType *pItemIcon, const CString 
 		RECT rcImage = Image.GetImageRect();
 		if (Image.IsLoaded())
 			{
-			CG16bitImage *pIcon = new CG16bitImage;
+			CG32bitImage *pIcon = new CG32bitImage;
 			pIcon->CreateFromImageTransformed(Image.GetImage(pItemIcon->GetName(0)), 
 					rcImage.left, 
 					rcImage.top, 

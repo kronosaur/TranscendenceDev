@@ -99,6 +99,7 @@
 #define OBJ_NAME_ATTRIB					CONSTLIT("objName")
 #define OFFSET_ATTRIB					CONSTLIT("offset")
 #define ORDERS_ATTRIB					CONSTLIT("orders")
+#define PAINT_LAYER_ATTRIB				CONSTLIT("paintLayer")
 #define PATCHES_ATTRIB					CONSTLIT("patchType")
 #define PATCH_FREQUENCY_ATTRIB			CONSTLIT("patchFrequency")
 #define PERCENT_ENEMIES_ATTRIB			CONSTLIT("percentEnemies")
@@ -3352,6 +3353,13 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 	if (pDesc->FindAttributeInteger(IMAGE_VARIANT_ATTRIB, &iVariant))
 		pStation->SetImageVariant(iVariant);
 
+	//	Paint layer
+
+	CString sPaintLayer;
+	if (pDesc->FindAttribute(PAINT_LAYER_ATTRIB, &sPaintLayer) 
+			&& strEquals(sPaintLayer, CONSTLIT("overhang")))
+		pStation->SetPaintOverhang();
+
 	//	If this station is a gate entry-point, then add it to
 	//	the table in the system.
 
@@ -3436,10 +3444,6 @@ ALERROR CSystem::CreateEmpty (CUniverse *pUniv, CTopologyNode *pTopology, CSyste
 	//	Initialize
 
 	pSystem->m_iTick = pUniv->GetTicks();
-
-	//	Create the background star field
-
-	pSystem->ResetStarField();
 
 	//	Set the name
 
@@ -4140,7 +4144,6 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CVector vPos(OrbitDesc.GetObjectPos());
 	if (x != 0 || y != 0)
 		vPos = vPos + CVector(x * g_KlicksPerPixel, y * g_KlicksPerPixel);
-
 
 	//	Set up parameters for station creation
 

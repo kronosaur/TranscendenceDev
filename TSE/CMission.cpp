@@ -108,7 +108,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 
 			//	Tell the player that we failed
 
-			CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+			CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 			if (pPlayer)
 				{
 				CString sMessage;
@@ -136,7 +136,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 
 			//	Tell the player that we succeeded
 
-			CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+			CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 			if (pPlayer)
 				{
 				CString sMessage;
@@ -1381,7 +1381,7 @@ void CMission::UpdateExpiration (int iTick)
 		{
 		//	But only if the player is not docked with the mission object
 
-		CSpaceObject *pPlayer = g_pUniverse->GetPlayer();
+		CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 		if (pPlayer && !m_pOwner.IsEmpty() && m_pOwner->IsObjDocked(pPlayer))
 			return;
 

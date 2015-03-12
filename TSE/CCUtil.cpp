@@ -189,7 +189,7 @@ ICCItem *CreateListFromBinary (CCodeChain &CC, const CString &sClass, void const
 	//	Add a class, if provided
 
 	if (!sClass.IsBlank())
-		pList->AppendStringValue(&CC, sClass);
+		pList->AppendString(CC, sClass);
 
 	//	Add binary bytes in DWORD chunks.
 
@@ -199,7 +199,7 @@ ICCItem *CreateListFromBinary (CCodeChain &CC, const CString &sClass, void const
 	for (int i = 0; i < iCount; i++)
 		{
 		ICCItem *pInt = CC.CreateInteger(*pSource++);
-		pList->Append(&CC, pInt, NULL);
+		pList->Append(CC, pInt);
 		pInt->Discard(&CC);
 		}
 
@@ -222,7 +222,7 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 	//	Add the bitmap UNID
 
 	ICCItem *pValue = CC.CreateInteger(Image.GetBitmapUNID());
-	pList->Append(&CC, pValue, NULL);
+	pList->Append(CC, pValue);
 	pValue->Discard(&CC);
 
 	//	Get the rect
@@ -232,25 +232,25 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 	//	Add the x coordinate
 
 	pValue = CC.CreateInteger(rcRect.left);
-	pList->Append(&CC, pValue, NULL);
+	pList->Append(CC, pValue);
 	pValue->Discard(&CC);
 
 	//	Add the y coordinate
 
 	pValue = CC.CreateInteger(rcRect.top);
-	pList->Append(&CC, pValue, NULL);
+	pList->Append(CC, pValue);
 	pValue->Discard(&CC);
 
 	//	Add width
 
 	pValue = CC.CreateInteger(RectWidth(rcRect));
-	pList->Append(&CC, pValue, NULL);
+	pList->Append(CC, pValue);
 	pValue->Discard(&CC);
 
 	//	Add height
 
 	pValue = CC.CreateInteger(RectHeight(rcRect));
-	pList->Append(&CC, pValue, NULL);
+	pList->Append(CC, pValue);
 	pValue->Discard(&CC);
 
 	//	Done
@@ -685,7 +685,7 @@ ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNI
 	return NOERROR;
 	}
 
-void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG16bitImage **retpBitmap, RECT *retrcRect)
+void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect)
 
 //	GetImageDescFromList
 //

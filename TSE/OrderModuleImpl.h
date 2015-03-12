@@ -1,4 +1,4 @@
-//	TSEOrderModuleImpl.h
+//	OrderModuleImpl.h
 //
 //	Transcendence IOrderModule classes
 
@@ -211,6 +211,51 @@ class CGuardOrder : public IOrderModule
 		CSpaceObject *m_pBase;					//	Object that we're guarding
 	};
 
+class CNavigateOrder : public IOrderModule
+	{
+	public:
+		CNavigateOrder (IShipController::OrderTypes iOrder);
+
+	protected:
+
+		//	IOrderModule virtuals
+
+		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire);
+		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx);
+		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data);
+		virtual CSpaceObject *OnGetBase (void);
+		virtual IShipController::OrderTypes OnGetOrder (void) { return m_iOrder; }
+		virtual CSpaceObject *OnGetTarget (void) { return m_Objs[objTarget]; }
+		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder);
+		virtual void OnReadFromStream (SLoadCtx &Ctx);
+		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream);
+
+	private:
+		enum Objs
+			{
+			objDest =		0,
+			objTarget =		1,
+
+			objCount =		2,
+			};
+
+		IShipController::OrderTypes m_iOrder;
+		CVector m_vDest;						//	Destination
+		int m_iDestFacing;						//	Ship should face at this angle
+		Metric m_rMinDist2;						//	Minimum distance to target
+
+		DWORD m_fTargetVector:1;				//	Destination is m_vDest
+		DWORD m_fTargetObj:1;					//	Destination is objDest
+		DWORD m_fIsFollowingNavPath:1;			//	We're following the current nav path
+		DWORD m_fDockAtDestination:1;			//	When we reach our destination, dock
+		DWORD m_fVariableMinDist:1;				//	If TRUE, order parameter specifies min distance
+		DWORD m_fNavPathOnly:1;					//	If TRUE, we're done as soon as the nav path completes
+		DWORD m_fGateAtDestination:1;			//	When we reach our destination, gate
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:24;
+	};
+
 class CSendMessageOrder : public IOrderModule
 	{
 	public:
@@ -231,28 +276,48 @@ class CWaitOrder : public IOrderModule
 			waitForUndock,					//	Wait for objTarget to undock
 			};
 
-		CWaitOrder (EWaitTypes iType) : IOrderModule(objCount),
-				m_iType(iType)
-			{ }
+		CWaitOrder (IShipController::OrderTypes iOrder);
 
 	protected:
+
 		//	IOrderModule virtuals
+
+		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire);
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx);
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data);
-		virtual IShipController::OrderTypes OnGetOrder (void) { return IShipController::orderWaitForUndock; }
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
+		virtual IShipController::OrderTypes OnGetOrder (void) { return m_iOrder; }
+		virtual CSpaceObject *OnGetTarget (void) { return m_Objs[objTarget]; }
+		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 	private:
 		enum Objs
 			{
-			objTarget =		0,
+			objLeader =		0,
+			objTarget =		1,
 
-			objCount =		1,
+			objCount =		2,
 			};
 
-		EWaitTypes m_iType;						//	Type of wait
+		void AttackEnemies (CShip *pShip, CAIBehaviorCtx &Ctx, bool bReady);
+		bool IsLeaderInRange (CShip *pShip);
+
+		IShipController::OrderTypes m_iOrder;
 		int m_iCountdown;						//	Stop after this time
+		Metric m_rDistance;						//	Required leader distance
+
+		DWORD m_fWaitUntilLeaderUndocks:1;
+		DWORD m_fWaitForLeaderToApproach:1;
+		DWORD m_fAttackEnemies:1;
+		DWORD m_fWaitForEnemy:1;
+		DWORD m_fDeterEnemies:1;
+		DWORD m_fIsDeterring:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:24;
 	};
 
 #endif

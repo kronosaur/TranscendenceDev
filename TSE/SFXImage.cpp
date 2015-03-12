@@ -19,7 +19,7 @@ class CImagePainter : public IEffectPainter
 		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc);
 		virtual void GetRect (RECT *retRect) const;
 		virtual int GetVariants (void) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
@@ -127,7 +127,7 @@ ALERROR CImageEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CImageEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CImageEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -150,7 +150,7 @@ void CImageEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPain
 		}
 	}
 
-void CImageEffectCreator::PaintComposite (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CImageEffectCreator::PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -277,7 +277,7 @@ void CImagePainter::OnWriteToStream (IWriteStream *pStream)
 	m_Sel.WriteToStream(pStream);
 	}
 
-void CImagePainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CImagePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //

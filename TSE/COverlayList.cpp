@@ -1,32 +1,32 @@
-//	CEnergyFieldList.cpp
+//	COverlayList.cpp
 //
-//	CEnergyFieldList class
+//	COverlayList class
 
 #include "PreComp.h"
 
-CEnergyFieldList::CEnergyFieldList (void) :
+COverlayList::COverlayList (void) :
 		m_pFirst(NULL)
 
-//	CEnergyFieldList constructor
+//	COverlayList constructor
 
 	{
 	}
 
-CEnergyFieldList::~CEnergyFieldList (void)
+COverlayList::~COverlayList (void)
 
-//	CEnergyFieldList destructor
+//	COverlayList destructor
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
-		CEnergyField *pDelete = pField;
+		COverlay *pDelete = pField;
 		pField = pField->GetNext();
 		delete pDelete;
 		}
 	}
 
-bool CEnergyFieldList::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
+bool COverlayList::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 //	AbsorbDamage
 //
@@ -37,7 +37,7 @@ bool CEnergyFieldList::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 	bool bDamageAbsorbed = false;
 
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed()
@@ -55,14 +55,14 @@ bool CEnergyFieldList::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-bool CEnergyFieldList::AbsorbsWeaponFire (CInstalledDevice *pDevice)
+bool COverlayList::AbsorbsWeaponFire (CInstalledDevice *pDevice)
 
 //	AbsorbWeaponFire
 //
 //	Returns TRUE if the field prevents the ship from firing the given weapon
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -77,14 +77,14 @@ bool CEnergyFieldList::AbsorbsWeaponFire (CInstalledDevice *pDevice)
 	return false;
 	}
 
-void CEnergyFieldList::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
+void COverlayList::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
 
 //	AccumulateBounds
 //
 //	Adds to bounds
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -94,7 +94,7 @@ void CEnergyFieldList::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
 		}
 	}
 
-bool CEnergyFieldList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
+bool COverlayList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 //	Damage
 //
@@ -105,7 +105,7 @@ bool CEnergyFieldList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 	bool bDamageAbsorbed = false;
 
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed()
@@ -123,7 +123,7 @@ bool CEnergyFieldList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-int CEnergyFieldList::GetCountOfType (COverlayType *pType)
+int COverlayList::GetCountOfType (COverlayType *pType)
 
 //	GetCountOfType
 //
@@ -131,7 +131,7 @@ int CEnergyFieldList::GetCountOfType (COverlayType *pType)
 
 	{
 	int iCount = 0;
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetType() == pType)
@@ -143,14 +143,14 @@ int CEnergyFieldList::GetCountOfType (COverlayType *pType)
 	return iCount;
 	}
 
-void CEnergyFieldList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const
+void COverlayList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const
 
 //	GetImpact
 //
 //	Returns the impact of this set of overlays on the source.
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		//	Do we disarm the source?
@@ -185,7 +185,7 @@ void CEnergyFieldList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact)
 		}
 	}
 
-void CEnergyFieldList::AddField (CSpaceObject *pSource, 
+void COverlayList::AddField (CSpaceObject *pSource, 
 								 COverlayType *pType,
 								 int iPosAngle,
 								 int iPosRadius,
@@ -198,8 +198,8 @@ void CEnergyFieldList::AddField (CSpaceObject *pSource,
 //	Adds a field of the given type to the head of the list
 
 	{
-	CEnergyField *pField;
-	CEnergyField::CreateFromType(pType, 
+	COverlay *pField;
+	COverlay::CreateFromType(pType, 
 			iPosAngle, 
 			iPosRadius, 
 			iRotation, 
@@ -219,7 +219,7 @@ void CEnergyFieldList::AddField (CSpaceObject *pSource,
 
 	if (pField->IsDestroyed())
 		{
-		CEnergyField *pNext = pField->GetNext();
+		COverlay *pNext = pField->GetNext();
 		m_pFirst = pNext;
 		delete pField;
 
@@ -234,7 +234,7 @@ void CEnergyFieldList::AddField (CSpaceObject *pSource,
 		*retdwID = pField->GetID();
 	}
 
-void CEnergyFieldList::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const
+void COverlayList::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const
 
 //	FireOnObjDestroyed
 //
@@ -243,7 +243,7 @@ void CEnergyFieldList::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroy
 	{
 	DEBUG_TRY
 
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -255,14 +255,14 @@ void CEnergyFieldList::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroy
 	DEBUG_CATCH
 	}
 
-const CString &CEnergyFieldList::GetData (DWORD dwID, const CString &sAttrib)
+const CString &COverlayList::GetData (DWORD dwID, const CString &sAttrib)
 
 //	GetData
 //
 //	Returns opaque data for the given energy field
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -277,33 +277,57 @@ const CString &CEnergyFieldList::GetData (DWORD dwID, const CString &sAttrib)
 	return NULL_STR;
 	}
 
-void CEnergyFieldList::GetList (TArray<CEnergyField *> &List)
+void COverlayList::GetList (TArray<COverlay *> *retList)
 
 //	GetList
 //
 //	Returns all the fields in an array
 
 	{
-	List.DeleteAll();
+	retList->DeleteAll();
 
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
-			List.Insert(pField);
+			retList->Insert(pField);
 
 		pField = pField->GetNext();
 		}
 	}
 
-CEnergyField *CEnergyFieldList::GetOverlay (DWORD dwID) const
+void COverlayList::GetListOfCommandPaneCounters (TArray<COverlay *> *retList)
+
+//	GetListOfCommandPaneCounters
+//
+//	Returns the list of overlays that should be displayed as counters on the
+//	command pane.
+
+	{
+	retList->DeleteAll();
+
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		COverlayType *pType;
+
+		if (!pField->IsDestroyed()
+				&& (pType = pField->GetType())
+				&& pType->GetCounterStyle() == COverlayType::counterCommandBarProgress)
+			retList->Insert(pField);
+
+		pField = pField->GetNext();
+		}
+	}
+
+COverlay *COverlayList::GetOverlay (DWORD dwID) const
 
 //	GetOverlay
 //
 //	Returns the overlay with the given ID (or NULL)
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
@@ -315,14 +339,14 @@ CEnergyField *CEnergyFieldList::GetOverlay (DWORD dwID) const
 	return NULL;
 	}
 
-CVector CEnergyFieldList::GetPos (CSpaceObject *pSource, DWORD dwID)
+CVector COverlayList::GetPos (CSpaceObject *pSource, DWORD dwID)
 
 //	GetPos
 //
 //	Returns the current (absolute) position of the overlay
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 
@@ -335,14 +359,14 @@ CVector CEnergyFieldList::GetPos (CSpaceObject *pSource, DWORD dwID)
 	return CVector();
 	}
 
-ICCItem *CEnergyFieldList::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName)
+ICCItem *COverlayList::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName)
 
 //	GetProperty
 //
 //	Returns the property
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 
@@ -355,14 +379,14 @@ ICCItem *CEnergyFieldList::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSo
 	return g_pUniverse->GetCC().CreateNil();
 	}
 
-int CEnergyFieldList::GetRotation (DWORD dwID)
+int COverlayList::GetRotation (DWORD dwID)
 
 //	GetRotation
 //
 //	Returns the rotation of the given overlay
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
@@ -374,14 +398,14 @@ int CEnergyFieldList::GetRotation (DWORD dwID)
 	return -1;
 	}
 
-COverlayType *CEnergyFieldList::GetType (DWORD dwID)
+COverlayType *COverlayList::GetType (DWORD dwID)
 
 //	GetType
 //
 //	Returns the type of overlay
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
@@ -393,7 +417,7 @@ COverlayType *CEnergyFieldList::GetType (DWORD dwID)
 	return NULL;
 	}
 
-int CEnergyFieldList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	GetWeaponBonus
 //
@@ -402,7 +426,7 @@ int CEnergyFieldList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *p
 	{
 	int iBonus = 0;
 
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -414,14 +438,14 @@ int CEnergyFieldList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *p
 	return iBonus;
 	}
 
-void CEnergyFieldList::Paint (CG16bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
+void COverlayList::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
 //	Paints all fields
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -431,14 +455,14 @@ void CEnergyFieldList::Paint (CG16bitImage &Dest, int iScale, int x, int y, SVie
 		}
 	}
 
-void CEnergyFieldList::PaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COverlayList::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintAnnotations
 //
 //	Paints all field annotations
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -448,14 +472,14 @@ void CEnergyFieldList::PaintAnnotations (CG16bitImage &Dest, int x, int y, SView
 		}
 	}
 
-void CEnergyFieldList::PaintBackground (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void COverlayList::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintBackground
 //
 //	Paints all field backgrounds
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -465,24 +489,24 @@ void CEnergyFieldList::PaintBackground (CG16bitImage &Dest, int x, int y, SViewp
 		}
 	}
 
-void CEnergyFieldList::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource)
+void COverlayList::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource)
 
 //	ReadFromStream
 //
 //	DWORD		no of fields
-//	CEnergyField array
+//	COverlay array
 
 	{
 	DWORD dwCount;
 
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	CEnergyField *pPrevField = NULL;
+	COverlay *pPrevField = NULL;
 	while (dwCount)
 		{
 		//	Allocate the overlay and connect it to
 		//	the linked list.
 
-		CEnergyField *pField = new CEnergyField;
+		COverlay *pField = new COverlay;
 		if (pPrevField)
 			pPrevField->SetNext(pField);
 		else
@@ -512,7 +536,7 @@ void CEnergyFieldList::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource)
 		}
 	}
 
-void CEnergyFieldList::RemoveField (CSpaceObject *pSource, DWORD dwID)
+void COverlayList::RemoveField (CSpaceObject *pSource, DWORD dwID)
 
 //	RemoveField
 //
@@ -521,7 +545,7 @@ void CEnergyFieldList::RemoveField (CSpaceObject *pSource, DWORD dwID)
 	{
 	//	Mark the field as destroyed. The field will be deleted in Update
 
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID)
@@ -534,14 +558,14 @@ void CEnergyFieldList::RemoveField (CSpaceObject *pSource, DWORD dwID)
 		}
 	}
 
-void CEnergyFieldList::SetData (DWORD dwID, const CString &sAttrib, const CString &sData)
+void COverlayList::SetData (DWORD dwID, const CString &sAttrib, const CString &sData)
 
 //	SetData
 //
 //	Sets opaque data
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
@@ -551,14 +575,14 @@ void CEnergyFieldList::SetData (DWORD dwID, const CString &sAttrib, const CStrin
 		}
 	}
 
-bool CEnergyFieldList::SetEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue)
+bool COverlayList::SetEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue)
 
 //	SetEffectProperty
 //
 //	Sets a property on the effect
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
@@ -570,14 +594,14 @@ bool CEnergyFieldList::SetEffectProperty (DWORD dwID, const CString &sProperty, 
 	return false;
 	}
 
-void CEnergyFieldList::SetPos (CSpaceObject *pSource, DWORD dwID, const CVector &vPos)
+void COverlayList::SetPos (CSpaceObject *pSource, DWORD dwID, const CVector &vPos)
 
 //	SetPosition
 //
 //	Sets the position of the overlay
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
@@ -587,14 +611,14 @@ void CEnergyFieldList::SetPos (CSpaceObject *pSource, DWORD dwID, const CVector 
 		}
 	}
 
-bool CEnergyFieldList::SetProperty (CSpaceObject *pSource, DWORD dwID, const CString &sName, ICCItem *pValue)
+bool COverlayList::SetProperty (CSpaceObject *pSource, DWORD dwID, const CString &sName, ICCItem *pValue)
 
 //	SetProperty
 //
 //	Sets a property.
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
@@ -606,14 +630,14 @@ bool CEnergyFieldList::SetProperty (CSpaceObject *pSource, DWORD dwID, const CSt
 	return false;
 	}
 
-void CEnergyFieldList::SetRotation (DWORD dwID, int iRotation)
+void COverlayList::SetRotation (DWORD dwID, int iRotation)
 
 //	SetRotation
 //
 //	Sets the rotation of an overlay
 
 	{
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
@@ -623,7 +647,7 @@ void CEnergyFieldList::SetRotation (DWORD dwID, int iRotation)
 		}
 	}
 
-void CEnergyFieldList::Update (CSpaceObject *pSource, bool *retbModified)
+void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 
 //	Update
 //
@@ -633,7 +657,7 @@ void CEnergyFieldList::Update (CSpaceObject *pSource, bool *retbModified)
 	{
 	//	First update all fields
 
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
@@ -654,10 +678,10 @@ void CEnergyFieldList::Update (CSpaceObject *pSource, bool *retbModified)
 	bool bModified = false;
 
 	pField = m_pFirst;
-	CEnergyField *pPrevField = NULL;
+	COverlay *pPrevField = NULL;
 	while (pField)
 		{
-		CEnergyField *pNext = pField->GetNext();
+		COverlay *pNext = pField->GetNext();
 
 		//	If this overlay was destroyed, handle that now
 
@@ -683,20 +707,20 @@ void CEnergyFieldList::Update (CSpaceObject *pSource, bool *retbModified)
 	*retbModified = bModified;
 	}
 
-void CEnergyFieldList::WriteToStream (IWriteStream *pStream)
+void COverlayList::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //	ReadFromStream
 //
 //	DWORD		no of fields
-//	CEnergyField array
+//	COverlay array
 
 	{
 	//	NOTE: We have to saved destroyed overlays because we need to run some 
 	//	code when removing an overlay (e.g., see CShip::CalcOverlayImpact).
 
 	DWORD dwSave = 0;
-	CEnergyField *pField = m_pFirst;
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		dwSave++;

@@ -22,8 +22,6 @@ struct SFormationDesc
 	int iCount;
 	};
 
-static CObjectClass<CFleetShipAI>g_Class(OBJID_CFLEETSHIPAI, NULL);
-
 static SFormationPlace g_ArrowFormation[] =
 	{
 		{	120,	80	},
@@ -146,7 +144,7 @@ SFormationDesc g_Formations[] =
 
 #define FORMATIONS_COUNT						(sizeof(g_Formations) / sizeof(g_Formations[0]))
 
-CFleetShipAI::CFleetShipAI (void) : CBaseShipAI(&g_Class),
+CFleetShipAI::CFleetShipAI (void) : 
 		m_State(stateNone),
 		m_pLeader(NULL),
 		m_pTarget(NULL),

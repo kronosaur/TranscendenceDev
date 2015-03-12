@@ -1,4 +1,4 @@
-//	Geometry.h
+//	TSEGeometry.h
 //
 //	Transcendence Space Engine geometry
 

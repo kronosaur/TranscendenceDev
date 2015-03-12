@@ -72,7 +72,7 @@ void CBeamEffectCreator::CreateLightningGlow (SLineDesc &Line, int iPointCount, 
 	delete [] pPolygon;
 	}
 
-void CBeamEffectCreator::DrawBeam (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeam (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeam
 //
@@ -115,41 +115,29 @@ void CBeamEffectCreator::DrawBeam (CG16bitImage &Dest, SLineDesc &Line, SViewpor
 		}
 	}
 
-void CBeamEffectCreator::DrawBeamBlaster (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeamBlaster (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeamBlaster
 //
 //	Draws the appropriate beam
 
 	{
-	WORD wStart, wEnd;
+	CG32bitPixel rgbStart, rgbEnd;
 
-	wStart = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 155);
-	wEnd = Ctx.wSpaceColor;
-	Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-			Line.xTo, Line.yTo,
-			m_iIntensity + 4,
-			wEnd,
-			wStart);
+	rgbStart = CG32bitPixel(m_rgbSecondaryColor, 155);
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
+	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, m_iIntensity + 4, rgbEnd, rgbStart);
 
-	wStart = m_wSecondaryColor;
-	wEnd = Ctx.wSpaceColor;
-	Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-			Line.xTo, Line.yTo,
-			m_iIntensity + 2,
-			wEnd,
-			wStart);
+	rgbStart = m_rgbSecondaryColor;
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
+	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, m_iIntensity + 2, rgbEnd, rgbStart);
 
-	wStart = m_wPrimaryColor;
-	wEnd = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 155);
-	Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-			Line.xTo, Line.yTo,
-			m_iIntensity,
-			wEnd,
-			wStart);
+	rgbStart = m_rgbPrimaryColor;
+	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 155);
+	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, m_iIntensity, rgbEnd, rgbStart);
 	}
 
-void CBeamEffectCreator::DrawBeamHeavyBlaster (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeamHeavyBlaster (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeamHeavyBlaster
 //
@@ -178,27 +166,27 @@ void CBeamEffectCreator::DrawBeamHeavyBlaster (CG16bitImage &Dest, SLineDesc &Li
 
 	//	Paint the outer-most glow
 
-	WORD wColor = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 100);
+	CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, 100);
 	CreateBlasterShape(iAngle, 4 * iLengthUnit, 3 * iWidthUnit / 2, Poly);
 	Region.CreateFromConvexPolygon(8, Poly);
-	Region.Fill(Dest, Line.xTo, Line.yTo, wColor);
+	Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
 
 	//	Paint the inner transition
 
-	wColor = CG16bitImage::BlendPixel(m_wSecondaryColor, m_wPrimaryColor, 128);
-	wColor = CG16bitImage::BlendPixel(Ctx.wSpaceColor, wColor, 200);
+	rgbColor = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, (BYTE)128);
+	rgbColor = CG32bitPixel(rgbColor, 200);
 	CreateBlasterShape(iAngle, 3 * iLengthUnit, iWidthUnit, Poly);
 	Region.CreateFromConvexPolygon(8, Poly);
-	Region.Fill(Dest, Line.xTo, Line.yTo, wColor);
+	Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
 
 	//	Paint the inner core
 
 	CreateBlasterShape(iAngle, iLengthUnit, iWidthUnit - 1, Poly);
 	Region.CreateFromConvexPolygon(8, Poly);
-	Region.Fill(Dest, Line.xTo, Line.yTo, m_wPrimaryColor);
+	Region.Fill(Dest, Line.xTo, Line.yTo, m_rgbPrimaryColor);
 	}
 
-void CBeamEffectCreator::DrawBeamJaggedBolt (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeamJaggedBolt (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeamJaggedBolt
 //
@@ -209,55 +197,45 @@ void CBeamEffectCreator::DrawBeamJaggedBolt (CG16bitImage &Dest, SLineDesc &Line
 
 	//	Rasterize the line
 
-	CG16bitLinePainter LinePainter;
-	TArray<CG16bitLinePainter::SPixelDesc> Pixels;
-
-	LinePainter.Rasterize(Dest,
-			Line.xFrom,
-			Line.yFrom,
-			Line.xTo,
-			Line.yTo,
-			m_iIntensity,
-			&Pixels);
+	TArray<CGRasterize::SLinePixel> Pixels;
+	CGRasterize::Line(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, m_iIntensity, &Pixels);
 
 	for (i = 0; i < Pixels.GetCount(); i++)
 		{
-		const CG16bitLinePainter::SPixelDesc &Pixel = Pixels[i];
+		const CGRasterize::SLinePixel &Pixel = Pixels[i];
 
-		DWORD dwOpacity = Min(Max(0, (int)(255.0 * (1.0 - Absolute(Pixel.rW)))), 255);
-		if (Pixel.dwOpacity != 255)
-			dwOpacity = dwOpacity * Pixel.dwOpacity / 255;
+		BYTE byOpacity = (BYTE)Min(Max(0, (int)(255.0 * (1.0 - Absolute(Pixel.rW)))), 255);
+		if (Pixel.byAlpha != 0xff)
+			byOpacity = (BYTE)(byOpacity * Pixel.byAlpha / 255);
 
-		if (dwOpacity == 255)
-			*(Pixel.pPos) = m_wPrimaryColor;
+		if (byOpacity == 0xff)
+			*(Pixel.pPos) = m_rgbPrimaryColor;
 		else
-			{
-			*(Pixel.pPos) = CG16bitImage::BlendPixel(*(Pixel.pPos), m_wPrimaryColor, dwOpacity);
-			}
+			*(Pixel.pPos) = CG32bitPixel::Blend(*(Pixel.pPos), m_rgbPrimaryColor, byOpacity);
 		}
 	}
 
-void CBeamEffectCreator::DrawBeamLaser (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeamLaser (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeamLaser
 //
 //	Draws the appropriate beam
 
 	{
-	WORD wGlow = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 100);
+	CG32bitPixel rgbGlow = CG32bitPixel(m_rgbSecondaryColor, 100);
 
 	Dest.DrawLine(Line.xFrom, Line.yFrom,
 			Line.xTo, Line.yTo,
 			m_iIntensity + 2,
-			wGlow);
+			rgbGlow);
 
 	Dest.DrawLine(Line.xFrom, Line.yFrom,
 			Line.xTo, Line.yTo,
 			m_iIntensity,
-			m_wPrimaryColor);
+			m_rgbPrimaryColor);
 	}
 
-void CBeamEffectCreator::DrawBeamLightning (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeamLightning (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeamLightning
 //
@@ -269,41 +247,23 @@ void CBeamEffectCreator::DrawBeamLightning (CG16bitImage &Dest, SLineDesc &Line,
 
 	if (m_iIntensity < 4)
 		{
-		WORD wStart = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wPrimaryColor, 128);
-		Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-				Line.xTo, Line.yTo,
-				3,
-				Ctx.wSpaceColor,
-				wStart);
+		CG32bitPixel rgbStart = CG32bitPixel(m_rgbPrimaryColor, 128);
+		CG32bitPixel rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 0);
+		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, rgbStart);
 
-		WORD wEnd = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wPrimaryColor, 155);
-		Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-				Line.xTo, Line.yTo,
-				1,
-				wEnd,
-				m_wPrimaryColor);
+		rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 155);
+		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 1, rgbEnd, m_rgbPrimaryColor);
 		}
 	else if (m_iIntensity < 10)
 		{
-		WORD wStart = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 155);
-		Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-				Line.xTo, Line.yTo,
-				5,
-				Ctx.wSpaceColor,
-				wStart);
+		CG32bitPixel rgbStart = CG32bitPixel(m_rgbSecondaryColor, 155);
+		CG32bitPixel rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
+		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 5, rgbEnd, rgbStart);
 
-		Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-				Line.xTo, Line.yTo,
-				3,
-				Ctx.wSpaceColor,
-				m_wSecondaryColor);
+		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, m_rgbSecondaryColor);
 
-		WORD wEnd = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wPrimaryColor, 155);
-		Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-				Line.xTo, Line.yTo,
-				1,
-				wEnd,
-				m_wPrimaryColor);
+		rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 155);
+		CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, m_rgbPrimaryColor);
 		}
 	else
 		{
@@ -324,24 +284,24 @@ void CBeamEffectCreator::DrawBeamLightning (CG16bitImage &Dest, SLineDesc &Line,
 
 		//	Paint the outer-most glow
 
-		WORD wColor = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wSecondaryColor, 100);
+		CG32bitPixel rgbColor = CG32bitPixel(m_rgbSecondaryColor, 100);
 		CreateBlasterShape(iAngle, iRadius, iRadius / 6, Poly);
 		Region.CreateFromConvexPolygon(8, Poly);
-		Region.Fill(Dest, Line.xTo, Line.yTo, wColor);
+		Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
 
 		//	Paint the inner transition
 
-		wColor = CG16bitImage::BlendPixel(m_wSecondaryColor, m_wPrimaryColor, 128);
-		wColor = CG16bitImage::BlendPixel(Ctx.wSpaceColor, wColor, 200);
+		rgbColor = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, (BYTE)128);
+		rgbColor = CG32bitPixel(rgbColor, 200);
 		CreateBlasterShape(iAngle, iRadius * 2 / 3, iRadius / 7, Poly);
 		Region.CreateFromConvexPolygon(8, Poly);
-		Region.Fill(Dest, Line.xTo, Line.yTo, wColor);
+		Region.Fill(Dest, Line.xTo, Line.yTo, rgbColor);
 
 		//	Paint the inner core
 
 		CreateBlasterShape(iAngle, iRadius / 2, iRadius / 8, Poly);
 		Region.CreateFromConvexPolygon(8, Poly);
-		Region.Fill(Dest, Line.xTo, Line.yTo, m_wPrimaryColor);
+		Region.Fill(Dest, Line.xTo, Line.yTo, m_rgbPrimaryColor);
 		}
 
 	//	Compute the half-way point
@@ -359,7 +319,7 @@ void CBeamEffectCreator::DrawBeamLightning (CG16bitImage &Dest, SLineDesc &Line,
 					yHalf, 
 					Line.xTo, 
 					Line.yTo, 
-					m_wPrimaryColor, 
+					m_rgbPrimaryColor, 
 					LIGHTNING_POINT_COUNT, 
 					0.5);
 		else
@@ -368,12 +328,12 @@ void CBeamEffectCreator::DrawBeamLightning (CG16bitImage &Dest, SLineDesc &Line,
 					Line.yFrom, 
 					Line.xTo, 
 					Line.yTo, 
-					m_wSecondaryColor, 
+					m_rgbSecondaryColor, 
 					LIGHTNING_POINT_COUNT, 
 					0.3);
 	}
 
-void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeamLightningBolt (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeamLightningBolt
 //
@@ -413,7 +373,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 				Dest.DrawLine((int)vFrom.GetX(), (int)vFrom.GetY(),
 						(int)vTo.GetX(), (int)vTo.GetY(),
 						m_iIntensity,
-						m_wPrimaryColor);
+						m_rgbPrimaryColor);
 				}
 			break;
 			}
@@ -431,7 +391,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 				Dest.DrawLine((int)vFrom.GetX(), (int)vFrom.GetY(),
 						(int)vTo.GetX(), (int)vTo.GetY(),
 						m_iIntensity,
-						m_wSecondaryColor);
+						m_rgbSecondaryColor);
 				}
 
 			for (i = 0; i < iPointCount-1; i++)
@@ -442,7 +402,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 				Dest.DrawLine((int)vFrom.GetX(), (int)vFrom.GetY(),
 						(int)vTo.GetX(), (int)vTo.GetY(),
 						m_iIntensity - 2,
-						m_wPrimaryColor);
+						m_rgbPrimaryColor);
 				}
 			break;
 			}
@@ -464,7 +424,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 
 			//	Paint the glow
 
-			GlowRegion.FillTrans(Dest, 0, 0, m_wSecondaryColor, 128);
+			GlowRegion.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, 128));
 
 			//	Paint the main bolt
 
@@ -476,7 +436,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 				Dest.DrawLine((int)vFrom.GetX(), (int)vFrom.GetY(),
 						(int)vTo.GetX(), (int)vTo.GetY(),
 						4,
-						m_wSecondaryColor);
+						m_rgbSecondaryColor);
 				}
 
 			for (i = 0; i < iPointCount-1; i++)
@@ -487,7 +447,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 				Dest.DrawLine((int)vFrom.GetX(), (int)vFrom.GetY(),
 						(int)vTo.GetX(), (int)vTo.GetY(),
 						2,
-						m_wPrimaryColor);
+						m_rgbPrimaryColor);
 				}
 
 			break;
@@ -508,8 +468,8 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 
 			//	Paint the glow
 
-			GlowRegion1.FillTrans(Dest, 0, 0, m_wSecondaryColor, 48);
-			GlowRegion2.FillTrans(Dest, 0, 0, m_wSecondaryColor, 96);
+			GlowRegion1.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, 48));
+			GlowRegion2.Fill(Dest, 0, 0, CG32bitPixel(m_rgbSecondaryColor, 96));
 
 			//	Paint the main bolt
 
@@ -521,7 +481,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 				Dest.DrawLine((int)vFrom.GetX(), (int)vFrom.GetY(),
 						(int)vTo.GetX(), (int)vTo.GetY(),
 						4,
-						m_wSecondaryColor);
+						m_rgbSecondaryColor);
 				}
 
 			for (i = 0; i < iPointCount-1; i++)
@@ -532,7 +492,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 				Dest.DrawLine((int)vFrom.GetX(), (int)vFrom.GetY(),
 						(int)vTo.GetX(), (int)vTo.GetY(),
 						2,
-						m_wPrimaryColor);
+						m_rgbPrimaryColor);
 				}
 
 			break;
@@ -544,7 +504,7 @@ void CBeamEffectCreator::DrawBeamLightningBolt (CG16bitImage &Dest, SLineDesc &L
 	delete [] pPoints;
 	}
 
-void CBeamEffectCreator::DrawBeamParticle (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeamParticle (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeamParticle
 //
@@ -564,14 +524,14 @@ void CBeamEffectCreator::DrawBeamParticle (CG16bitImage &Dest, SLineDesc &Line, 
 		int y = ((int)yPaint);
 
 		if (mathRandom(1,3) == 1)
-			Dest.DrawDot(x, y, m_wPrimaryColor, CG16bitImage::markerSmallRound);
+			Dest.DrawDot(x, y, m_rgbPrimaryColor, markerSmallRound);
 		else
 			{
 			for (j = 0; j < m_iIntensity; j++)
 				Dest.DrawDot(x + mathRandom(-m_iIntensity, m_iIntensity),
 						y + mathRandom(-m_iIntensity, m_iIntensity),
-						m_wSecondaryColor,
-						CG16bitImage::markerPixel);
+						m_rgbSecondaryColor,
+						markerPixel);
 			}
 
 		xPaint += xStep;
@@ -579,43 +539,32 @@ void CBeamEffectCreator::DrawBeamParticle (CG16bitImage &Dest, SLineDesc &Line, 
 		}
 	}
 
-void CBeamEffectCreator::DrawBeamStarBlaster (CG16bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::DrawBeamStarBlaster (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
 
 //	DrawBeamStarBlaster
 //
 //	Draws the appropriate beam
 
 	{
-	WORD wStart, wEnd;
+	CG32bitPixel rgbStart, rgbEnd;
 
-	wStart = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wPrimaryColor, 155);
-	wEnd = Ctx.wSpaceColor;
-	Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-			Line.xTo, Line.yTo,
-			3,
-			wEnd,
-			wStart);
+	rgbStart = CG32bitPixel(m_rgbPrimaryColor, 155);
+	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 0);
+	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 3, rgbEnd, rgbStart);
 
-	wStart = m_wSecondaryColor;
-	wEnd = CG16bitImage::BlendPixel(Ctx.wSpaceColor, m_wPrimaryColor, 155);
-	Dest.DrawBiColorLine(Line.xFrom, Line.yFrom,
-			Line.xTo, Line.yTo,
-			1,
-			wEnd,
-			wStart);
+	rgbEnd = CG32bitPixel(m_rgbPrimaryColor, 155);
+	CGDraw::LineGradient(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, 1, rgbEnd, m_rgbSecondaryColor);
 
 	//	Draw starburst
+
+	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
 
 	int iCount = (m_iIntensity / 2) + mathRandom(4, 9);
 	for (int i = 0; i < iCount; i++)
 		{
 		CVector vLine(Line.xTo, Line.yTo);
 		vLine = vLine + PolarToVector(mathRandom(0,359), 4 * m_iIntensity + mathRandom(1, 11));
-		Dest.DrawBiColorLine(Line.xTo, Line.yTo,
-				(int)vLine.GetX(), (int)vLine.GetY(),
-				1,
-				wStart,
-				Ctx.wSpaceColor);
+		CGDraw::LineGradient(Dest, Line.xTo, Line.yTo, (int)vLine.GetX(), (int)vLine.GetY(), 1, m_rgbSecondaryColor, rgbEnd);
 		}
 	}
 
@@ -650,8 +599,8 @@ ALERROR CBeamEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElem
 
 	//	Load colors and intensity
 
-	m_wPrimaryColor = LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
-	m_wSecondaryColor = LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbSecondaryColor = LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
 	m_iIntensity = pDesc->GetAttributeIntegerBounded(INTENSITY_ATTRIB, 0, -1, 1);
 
 	//	For backward compatibility, some old types are converted
@@ -660,19 +609,19 @@ ALERROR CBeamEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElem
 		{
 		case beamGreenParticle:
 			m_iType = beamParticle;
-			m_wPrimaryColor = CG16bitImage::RGBValue(95,241,42);
-			m_wSecondaryColor = CG16bitImage::RGBValue(95,241,42);
+			m_rgbPrimaryColor = CG32bitPixel(95,241,42);
+			m_rgbSecondaryColor = CG32bitPixel(95,241,42);
 			break;
 
 		case beamBlueParticle:
 			m_iType = beamParticle;
-			m_wPrimaryColor = CG16bitImage::RGBValue(255, 255, 255);
-			m_wSecondaryColor = CG16bitImage::RGBValue(64, 83, 255);
+			m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+			m_rgbSecondaryColor = CG32bitPixel(64, 83, 255);
 			break;
 
 		case beamBlaster:
-			if (m_wPrimaryColor == 0) m_wPrimaryColor = CG16bitImage::RGBValue(255, 255, 0);
-			if (m_wSecondaryColor == 0) m_wSecondaryColor = CG16bitImage::RGBValue(255, 0, 0);
+			if (m_rgbPrimaryColor.IsNull()) m_rgbPrimaryColor = CG32bitPixel(255, 255, 0);
+			if (m_rgbSecondaryColor.IsNull()) m_rgbSecondaryColor = CG32bitPixel(255, 0, 0);
 			break;
 		}
 
@@ -689,7 +638,7 @@ ALERROR CBeamEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CBeamEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -712,7 +661,7 @@ void CBeamEffectCreator::Paint (CG16bitImage &Dest, int x, int y, SViewportPaint
 	DrawBeam(Dest, Line, Ctx);
 	}
 
-void CBeamEffectCreator::PaintHit (CG16bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)
+void CBeamEffectCreator::PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)
 
 //	PaintHit
 //

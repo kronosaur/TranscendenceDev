@@ -11,12 +11,16 @@
 #define TRANSCENDENCE_LIBRARY_TAG					CONSTLIT("TranscendenceLibrary")
 #define TRANSCENDENCE_MODULE_TAG					CONSTLIT("TranscendenceModule")
 
+#define FILENAME_ATTRIB								CONSTLIT("filename")
 #define RELEASE_ATTRIB								CONSTLIT("release")
 #define UNID_ATTRIB									CONSTLIT("unid")
 
 #define EXTENSIONS_FILTER							CONSTLIT("*.*")
 #define EXTENSION_TDB								CONSTLIT("tdb")
 #define EXTENSION_XML								CONSTLIT("xml")
+
+#define FILE_AMERICA								CONSTLIT("America")
+#define FILE_TRANSCENDENCE							CONSTLIT("Transcendence")
 
 #define FILESPEC_COLLECTION_FOLDER					CONSTLIT("Collection")
 #define FILESPEC_EXTENSIONS_FOLDER					CONSTLIT("Extensions")
@@ -38,7 +42,10 @@ class CLibraryResolver : public IXMLParserController
 				m_bReportError(false)
 			{ }
 
-		inline void AddLibrary (CExtension *pLibrary) { m_Libraries.Insert(pLibrary); }
+		void AddDefaults (CExtension *pExtension);
+		ALERROR AddLibrary (DWORD dwUNID, DWORD dwRelease, CString *retsError);
+		inline void AddLibrary (CExtension *pLibrary) { m_Tables.Insert(pLibrary->GetEntities()); }
+		inline void AddTable (IXMLParserController *pTable) { m_Tables.Insert(pTable); }
 		inline void ReportLibraryErrors (void) { m_bReportError = true; }
 
 		//	IXMLParserController virtuals
@@ -48,11 +55,12 @@ class CLibraryResolver : public IXMLParserController
 	private:
 		CExtensionCollection &m_Extensions;
 
-		TArray<CExtension *> m_Libraries;
+		TArray<IXMLParserController *> m_Tables;
 		bool m_bReportError;				//	If TRUE, we report errors if we fail to load a library
 	};
 
 CExtensionCollection::CExtensionCollection (void) :
+		m_iGame(gameUnknown),
 		m_sCollectionFolder(FILESPEC_COLLECTION_FOLDER),
 		m_pBase(NULL),
 		m_bReloadNeeded(true),
@@ -167,8 +175,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	//	Create a resolver
 
 	CLibraryResolver Resolver(*this);
-	Resolver.AddLibrary(m_pBase);
-	Resolver.AddLibrary(pExtension);
+	Resolver.AddDefaults(pExtension);
 	Resolver.ReportLibraryErrors();
 
 	//	Make sure the extension is loaded completely.
@@ -512,15 +519,21 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 
 	ClearAllMarks();
 
+	//	Make a list of core libraries and add them
+
+	TArray<CExtension *> CoreLibraries;
+	ComputeCoreLibraries(pAdventure, &CoreLibraries);
+
+	for (i = 0; i < CoreLibraries.GetCount(); i++)
+		{
+		CoreLibraries[i]->SetMarked();
+		retList->Insert(CoreLibraries[i]);
+		}
+
 	//	Make a list of all compatibility libraries
 
 	TArray<CExtension *> CompatibilityLibraries;
 	ComputeCompatibilityLibraries(pAdventure, dwFlags, &CompatibilityLibraries);
-
-	//	We always bind the base extension first
-
-	m_pBase->SetMarked();
-	retList->Insert(m_pBase);
 
 	//	Now add the adventure and any dependencies
 
@@ -608,6 +621,54 @@ void CExtensionCollection::ComputeCompatibilityLibraries (CExtension *pAdventure
 
 		if (pBest)
 			retList->Insert(pBest);
+		}
+	}
+
+void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<CExtension *> *retList)
+
+//	ComputeCoreLibraries
+//
+//	Compute the list of core libraries needed for the given extension.
+
+	{
+	//	We always need the base
+
+	retList->Insert(m_pBase);
+
+	//	Decide based on the game.
+
+	switch (m_iGame)
+		{
+		case gameAmerica:
+			break;
+
+		case gameTranscendence:
+			{
+			CExtension *pLibrary;
+
+			if (FindBestExtension(UNID_CORE_TYPES_LIBRARY, 1, 0, &pLibrary))
+				retList->Insert(pLibrary);
+
+			if (FindBestExtension(UNID_RPG_LIBRARY, 1, 0, &pLibrary))
+				retList->Insert(pLibrary);
+
+			if (FindBestExtension(UNID_UNIVERSE_LIBRARY, 1, 0, &pLibrary))
+				retList->Insert(pLibrary);
+
+			//	Prior to API 26 we expected these UNIDs to be defined, so we 
+			//	need to add them.
+
+			if (pExtension->GetAPIVersion() < 26)
+				{
+				if (FindBestExtension(UNID_HUMAN_SPACE_LIBRARY, 1, 0, &pLibrary))
+					retList->Insert(pLibrary);
+				}
+
+			break;
+			}
+
+		default:
+			ASSERT(false);
 		}
 	}
 
@@ -1009,9 +1070,13 @@ void CExtensionCollection::InitEntityResolver (CExtension *pExtension, DWORD dwF
 	{
 	int i;
 
-	//	Base extension is always added first
+	//	Add all core libraries
 
-	retResolver->AddResolver(m_pBase->GetEntities());
+	TArray<CExtension *> CoreLibraries;
+	ComputeCoreLibraries(pExtension, &CoreLibraries);
+
+	for (i = 0; i < CoreLibraries.GetCount(); i++)
+		retResolver->AddResolver(CoreLibraries[i]->GetEntities());
 
 	//	Next we add any libraries used by the extension
 
@@ -1106,8 +1171,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 		//	the base file and the extension itself.
 
 		CLibraryResolver Resolver(*this);
-		Resolver.AddLibrary(m_pBase);
-		Resolver.AddLibrary(pExtension);
+		Resolver.AddDefaults(pExtension);
 
 		if (error = pExtension->Load(CExtension::loadAdventureDesc, 
 				&Resolver, 
@@ -1148,10 +1212,34 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	//	Log whether or not we're using the XML or TDB files.
 
 	if (Resources.IsUsingExternalGameFile())
-		kernelDebugLogMessage("Using external Transcendence.xml");
+		kernelDebugLogMessage("Using external %s", sFilespec);
 
 	if (Resources.IsUsingExternalResources())
 		kernelDebugLogMessage("Using external resource files");
+
+	//	Figure out what game we're running.
+
+	CString sFilename = pathStripExtension(pathGetFilename(sFilespec));
+	if (strEquals(sFilename, FILE_TRANSCENDENCE))
+		m_iGame = gameTranscendence;
+	else if (strEquals(sFilename, FILE_AMERICA))
+		m_iGame = gameAmerica;
+	else
+		{
+		*retsError = strPatternSubst(CONSTLIT("Unexpected base file type: %s."), sFilespec);
+		return ERR_FAIL;
+		}
+
+	//	Check the signature on the file to see if we should verify the
+	//	extensions loaded from the base file.
+	//
+	//	NOTE: Only TDB is verified; the XML is always considered unregistered.
+
+	CIntegerIP Digest;
+	Resources.ComputeFileDigest(&Digest);
+
+	CIntegerIP CorrectDigest(DIGEST_SIZE, g_BaseFileDigest);
+	bool bVerified = (Digest == CorrectDigest);
 
 	//	Load the main XML file. Since this is the base file we don't need any
 	//	additional entities. (But we do get a copy of the entities).
@@ -1177,47 +1265,162 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 
 	Ctx.bKeepXML = true;
 
-	//	Load it
-
-	TArray<CExtension *> ExtensionsCreated;
-	error = CExtension::CreateBaseFile(Ctx, pGameFile, pEntities, &ExtensionsCreated);
-
-	//	Compare signature against what we expect. If valid then set 
-	//	verification.
+	//	Load it.
 	//
-	//	NOTE: Only TDB is verified; the XML is always considered unregistered.
+	//	NOTE: CreateBaseFile takes ownership of pEntities on success (and 
+	//	attaches it to the pBase result).
 
-	CIntegerIP Digest;
-	Resources.ComputeFileDigest(&Digest);
-
-	CIntegerIP CorrectDigest(DIGEST_SIZE, g_BaseFileDigest);
-
-	if (Digest == CorrectDigest)
+	CExtension *pBase;
+	TArray<CXMLElement *> EmbeddedExtensions;
+	if (error = CExtension::CreateBaseFile(Ctx, m_iGame, pGameFile, pEntities, &pBase, &EmbeddedExtensions))
 		{
-		//	Everything we loaded is verified
-
-		for (i = 0; i < ExtensionsCreated.GetCount(); i++)
-			ExtensionsCreated[i]->SetVerified(true);
-		}
-
-	//	Clean up
-
-	delete pGameFile;
-
-	//	Error
-
-	if (error)
-		{
+		delete pGameFile;
 		delete pEntities;
 		return CExtension::ComposeLoadError(Ctx, retsError);
 		}
 
-	//	Add the extensions to our list
+	//	Add the base file. Note that this will set m_pBase correctly.
 
-	ASSERT(ExtensionsCreated.GetCount() > 0);
+	ASSERT(pBase->GetUNID() == 0);
+	pBase->SetVerified(bVerified);
+	AddOrReplace(pBase);
 
-	for (i = 0; i < ExtensionsCreated.GetCount(); i++)
-		AddOrReplace(ExtensionsCreated[i]);
+	//	Now we load any embedded extensions
+
+	for (i = 0; i < EmbeddedExtensions.GetCount(); i++)
+		{
+		CExtension *pExtension;
+		if (error = LoadEmbeddedExtension(Ctx, EmbeddedExtensions[i], &pExtension))
+			{
+			delete pGameFile;
+			return CExtension::ComposeLoadError(Ctx, retsError);
+			}
+
+		//	Verified
+
+		pExtension->SetVerified(bVerified);
+
+		//	Add to list
+
+		ASSERT(pExtension->GetUNID() != 0);
+		AddOrReplace(pExtension);
+		}
+
+	//	Done
+
+	delete pGameFile;
+	return NOERROR;
+	}
+
+ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExtension **retpExtension)
+
+//	LoadEmbeddedExtension
+//
+//	Loads an extension defined in the base file.
+
+	{
+	ALERROR error;
+
+	//	In some cases we need to load the extension XML from a separate file.
+	//	We need to free this when done.
+
+	CLibraryResolver Resolver(*this);
+	IXMLParserController *pOldEntities = NULL;
+	bool bOldEntitiesFree = false;
+	CString sRootFolder;
+	CXMLElement *pRoot = NULL;
+
+	//	We also prepare an entity table which will get loaded with any
+	//	entities defined in the embedded extension.
+
+	CExternalEntityTable *pExtEntities = new CExternalEntityTable;
+	pExtEntities->SetParent(m_pBase->GetEntities());
+
+	//	If we have a filespec, then the extension is in a separate file inside
+	//	the base TDB (or XML directory).
+
+	CString sFilename;
+	if (pDesc->FindAttribute(FILENAME_ATTRIB, &sFilename))
+		{
+		//	If we have a path, then we need to apply this to any resources 
+		//	loaded by this file.
+
+		sRootFolder = pathGetPath(sFilename);
+
+		//	This extension might refer to other embedded libraries, so we need
+		//	to give it a resolver
+
+		Resolver.AddLibrary(m_pBase);
+		Resolver.ReportLibraryErrors();
+
+		//	Load the file
+
+		CString sError;
+		if (error = Ctx.pResDb->LoadEmbeddedGameFile(sFilename, &pRoot, &Resolver, pExtEntities, &sError))
+			{
+			delete pExtEntities;
+			Ctx.sError = strPatternSubst(CONSTLIT("Unable to load embedded file: %s"), sError);
+			return ERR_FAIL;
+			}
+
+		//	Add the entities from the root to the resolver.
+
+		Resolver.AddTable(pExtEntities);
+
+		//	Now temporarily replace the entity table for the resource db to
+		//	use the resolver (so we can resolve entities in libraries, etc.)
+
+		pOldEntities = Ctx.pResDb->GetEntitiesHandoff(&bOldEntitiesFree);
+		Ctx.pResDb->SetEntities(&Resolver);
+
+		//	This is the actual extension XML.
+
+		pDesc = pRoot;
+		}
+
+	//	Create the extension
+
+	SDesignLoadCtx ExtCtx;
+	ExtCtx.sResDb = Ctx.sResDb;
+	ExtCtx.pResDb = Ctx.pResDb;
+	ExtCtx.bNoResources = Ctx.bNoResources;
+	ExtCtx.bKeepXML = Ctx.bKeepXML;
+	ExtCtx.bNoVersionCheck = true;	//	Obsolete now
+	ExtCtx.dwInheritAPIVersion = m_pBase->GetAPIVersion();
+	//	No need to set bBindAsNewGame because it is only useful during Bind.
+	//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;
+
+	//	We always load in full because we don't know how to load later.
+	ExtCtx.bLoadAdventureDesc = false;
+
+	//	Root folder
+
+	if (!sRootFolder.IsBlank())
+		ExtCtx.sFolder = pathAddComponent(Ctx.sFolder, sRootFolder);
+	else
+		ExtCtx.sFolder = Ctx.sFolder;
+
+	//	Load the extension
+
+	CExtension *pExtension;
+	if (error = CExtension::CreateExtension(ExtCtx, pDesc, CExtension::folderBase, pExtEntities, &pExtension))
+		{
+		if (pRoot)
+			delete pRoot;
+		delete pExtEntities;
+		Ctx.sError = ExtCtx.sError;
+		return error;
+		}
+
+	//	Done
+
+	if (pOldEntities)
+		Ctx.pResDb->SetEntities(pOldEntities, bOldEntitiesFree);
+
+	if (pRoot)
+		delete pRoot;
+
+	*retpExtension = pExtension;
 
 	return NOERROR;
 	}
@@ -1241,8 +1444,7 @@ ALERROR CExtensionCollection::LoadFile (const CString &sFilespec, CExtension::EF
 	//	the base file and the extension itself.
 
 	CLibraryResolver Resolver(*this);
-	Resolver.AddLibrary(m_pBase);
-	Resolver.AddLibrary(pExtension);
+	Resolver.AddDefaults(pExtension);
 
 	//	Load it
 
@@ -1594,7 +1796,7 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 
 			//	Set the icon
 
-			CG16bitImage *pIcon;
+			CG32bitImage *pIcon;
 			pExtension->CreateIcon(cxIconSize, cyIconSize, &pIcon);
 			pEntry->SetIcon(pIcon);
 			pEntry->SetVersion(pExtension->GetVersion());
@@ -1609,6 +1811,68 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 
 //	CLibraryResolver -----------------------------------------------------------
 
+void CLibraryResolver::AddDefaults (CExtension *pExtension)
+
+//	AddDefault
+//
+//	Add default library references for the given extension.
+
+	{
+	int i;
+	CString sError;
+
+	TArray<CExtension *> CoreLibraries;
+	m_Extensions.ComputeCoreLibraries(pExtension, &CoreLibraries);
+
+	for (i = 0; i < CoreLibraries.GetCount(); i++)
+		AddLibrary(CoreLibraries[i]);
+
+	//	Add the extension's entity table
+
+	AddLibrary(pExtension);
+	}
+
+ALERROR CLibraryResolver::AddLibrary (DWORD dwUNID, DWORD dwRelease, CString *retsError)
+
+//	AddLibrary
+//
+//	Adds the library by UNID.
+
+	{
+	//	Get the best extension with this UNID. If we don't find it, then
+	//	continue (we will report an error later when we can't find
+	//	the entity).
+
+	CExtension *pLibrary;
+	if (!m_Extensions.FindBestExtension(dwUNID, dwRelease, (m_Extensions.LoadedInDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), &pLibrary))
+		{
+		*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
+		return ERR_FAIL;
+		}
+
+	//	Is this a library?
+
+	if (pLibrary->GetType() != extLibrary)
+		{
+		*retsError = strPatternSubst(CONSTLIT("Expected %s (%08x) to be a library"), pLibrary->GetName(), pLibrary->GetUNID());
+		return ERR_FAIL;
+		}
+
+	//	Must at least have stubs
+
+	if (pLibrary->GetLoadState() == CExtension::loadNone)
+		{
+		*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
+		return ERR_FAIL;
+		}
+
+	//	Add it to our list so that we can use it to resolve entities.
+
+	AddLibrary(pLibrary);
+
+	return NOERROR;
+	}
+
 ALERROR CLibraryResolver::OnOpenTag (CXMLElement *pElement, CString *retsError)
 
 //	OnOpenTag
@@ -1621,36 +1885,7 @@ ALERROR CLibraryResolver::OnOpenTag (CXMLElement *pElement, CString *retsError)
 		DWORD dwUNID = pElement->GetAttributeInteger(UNID_ATTRIB);
 		DWORD dwRelease = pElement->GetAttributeInteger(RELEASE_ATTRIB);
 
-		//	Get the best extension with this UNID. If we don't find it, then
-		//	continue (we will report an error later when we can't find
-		//	the entity).
-
-		CExtension *pLibrary;
-		if (!m_Extensions.FindBestExtension(dwUNID, dwRelease, (m_Extensions.LoadedInDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), &pLibrary))
-			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
-			return ERR_FAIL;
-			}
-
-		//	Is this a library?
-
-		if (pLibrary->GetType() != extLibrary)
-			{
-			*retsError = strPatternSubst(CONSTLIT("Expected %s (%08x) to be a library"), pLibrary->GetName(), pLibrary->GetUNID());
-			return ERR_FAIL;
-			}
-
-		//	Must at least have stubs
-
-		if (pLibrary->GetLoadState() == CExtension::loadNone)
-			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
-			return ERR_FAIL;
-			}
-
-		//	Add it to our list so that we can use it to resolve entities.
-
-		AddLibrary(pLibrary);
+		return AddLibrary(dwUNID, dwRelease, retsError);
 		}
 
 	return NOERROR;
@@ -1665,10 +1900,10 @@ CString CLibraryResolver::ResolveExternalEntity (const CString &sName, bool *ret
 	{
 	int i;
 
-	for (i = 0; i < m_Libraries.GetCount(); i++)
+	for (i = 0; i < m_Tables.GetCount(); i++)
 		{
 		bool bFound;
-		CString sResult = m_Libraries[i]->GetEntities()->ResolveExternalEntity(sName, &bFound);
+		CString sResult = m_Tables[i]->ResolveExternalEntity(sName, &bFound);
 		if (bFound)
 			{
 			if (retbFound)

@@ -681,7 +681,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	//	Get the controller
 
-	IShipController *pController = ::CreateShipController(m_sController);
+	IShipController *pController = g_pUniverse->CreateShipController(m_sController);
 	if (pController == NULL)
 		{
 		kernelDebugLogMessage("Cannot create ship %x; invalid controller: %s", dwClass, m_sController);

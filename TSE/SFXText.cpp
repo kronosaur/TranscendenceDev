@@ -24,7 +24,7 @@ class CTextPainter : public IEffectPainter
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
 		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 		virtual bool SetParamString (const CString &sParam, const CString &sValue);
 		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue);
@@ -76,7 +76,7 @@ ALERROR CTextEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElem
 		return ERR_FAIL;
 		}
 
-	m_wPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
+	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
 	m_byOpacity = pDesc->GetAttributeIntegerBounded(OPACITY_ATTRIB, 0, 255, 255);
 
 	//	Alignment
@@ -177,7 +177,7 @@ void CTextPainter::OnWriteToStream (IWriteStream *pStream)
 	m_sText.WriteToStream(pStream);
 	}
 
-void CTextPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CTextPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -190,9 +190,9 @@ void CTextPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &C
 	if (pFont == NULL)
 		return;
 
-	WORD wColor = (m_pCreator ? m_pCreator->GetPrimaryColor() : 0xFFFF);
+	CG32bitPixel rgbColor = (m_pCreator ? m_pCreator->GetPrimaryColor() : 0xFFFF);
 	DWORD dwFlags = (m_pCreator ? m_pCreator->GetFontFlags() : 0);
-	DWORD byOpacity = (m_pCreator ? m_pCreator->GetOpacity() : 255);
+	BYTE byOpacity = (m_pCreator ? (BYTE)m_pCreator->GetOpacity() : 255);
 
 	//	Compute the rect to paint
 
@@ -219,7 +219,7 @@ void CTextPainter::Paint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &C
 
 	//	Paint
 
-	pFont->DrawText(Dest, rcRect, wColor, byOpacity, m_sText, 0, dwFlags);
+	pFont->DrawText(Dest, rcRect, CG32bitPixel(rgbColor, byOpacity), m_sText, 0, dwFlags);
 	}
 
 bool CTextPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const

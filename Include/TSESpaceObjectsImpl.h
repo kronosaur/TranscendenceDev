@@ -31,7 +31,7 @@ class CAreaDamage : public CSpaceObject
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds);
 		virtual void OnSystemLoaded (void);
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 
 	protected:
@@ -39,7 +39,7 @@ class CAreaDamage : public CSpaceObject
 		virtual bool CanHit (CSpaceObject *pObj) { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnWriteToStream (IWriteStream *pStream);
@@ -86,7 +86,7 @@ class CBeam : public CSpaceObject
 		virtual bool CanHit (CSpaceObject *pObj) { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnWriteToStream (IWriteStream *pStream);
@@ -138,7 +138,7 @@ class CBoundaryMarker : public CSpaceObject
 		virtual CString GetObjClassName (void) { return CONSTLIT("CBoundaryMarker"); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (IWriteStream *pStream);
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	private:
 		CBoundaryMarker (void);
@@ -170,7 +170,7 @@ class CDisintegrationEffect : public CSpaceObject
 		//	CSpaceObject virtuals
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime);
@@ -185,7 +185,7 @@ class CDisintegrationEffect : public CSpaceObject
 			int xV;							//	Velocity in 256th of a pixel
 			int yV;							//	per tick
 			int iTicksLeft;
-			WORD wColor;
+			CG32bitPixel rgbColor;
 			WORD wSpare;
 			};
 
@@ -227,7 +227,7 @@ class CEffect : public CSpaceObject
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds);
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime);
@@ -277,7 +277,7 @@ class CFractureEffect : public CSpaceObject
 		//	CSpaceObject virtuals
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime);
@@ -338,7 +338,7 @@ class CMarker : public CSpaceObject
 		virtual CString GetObjClassName (void) { return CONSTLIT("CMarker"); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (IWriteStream *pStream);
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	private:
 		CMarker (void);
@@ -388,7 +388,7 @@ class CMissile : public CSpaceObject
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return m_pDesc; }
 		virtual bool HasAttribute (const CString &sAttribute) const;
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds);
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
@@ -399,7 +399,7 @@ class CMissile : public CSpaceObject
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx);
 		virtual void OnDestroyed (SDestroyCtx &Ctx);
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnWriteToStream (IWriteStream *pStream);
@@ -480,7 +480,7 @@ class CParticleDamage : public CSpaceObject
 		virtual bool CanHit (CSpaceObject *pObj) { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnWriteToStream (IWriteStream *pStream);
@@ -527,7 +527,7 @@ class CParticleEffect : public CSpaceObject
 			{
 			SParticleType (void) :
 					iPaintStyle(paintDot),
-					wColor(0xffff),
+					rgbColor(CG32bitPixel(0xff, 0xff, 0xff)),
 					iRegenerationTimer(0),
 					iLifespan(0),
 					rAveSpeed(0.0),
@@ -553,7 +553,7 @@ class CParticleEffect : public CSpaceObject
 
 			int iPaintStyle;			//	Painting style
 			CObjectImageArray Image;	//	Image for each particle
-			WORD wColor;				//	Color of particle
+			CG32bitPixel rgbColor;		//	Color of particle
 
 			int iRegenerationTimer;		//	Max lifespan of entire group
 			int iLifespan;				//	Max lifespan (in ticks)
@@ -617,7 +617,7 @@ class CParticleEffect : public CSpaceObject
 		virtual CString GetName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CString GetObjClassName (void) { return CONSTLIT("CParticleEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerSpace; }
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 
 	protected:
 
@@ -625,7 +625,7 @@ class CParticleEffect : public CSpaceObject
 		virtual bool CanHit (CSpaceObject *pObj) { return false; }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx);
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnWriteToStream (IWriteStream *pStream);
@@ -672,8 +672,8 @@ class CParticleEffect : public CSpaceObject
 		CParticleEffect (void);
 
 		void CreateGroup (SParticleType *pType, int iCount, SParticleArray **retpGroup);
-		void PaintFlameParticles (SParticleArray *pGroup, CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintSmokeParticles (SParticleArray *pGroup, CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintFlameParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintSmokeParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void SetParticleSpeed (SParticleType *pType, SParticle *pParticle);
 
 		CString m_sName;
@@ -696,7 +696,7 @@ class CPOVMarker : public CSpaceObject
 		virtual CSovereign *GetSovereign (void) const;
 		virtual void OnLosePOV (void);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CPOVMarker"); }
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	private:
 		CPOVMarker (void);
@@ -739,7 +739,7 @@ class CRadiusDamage : public CSpaceObject
 		virtual bool CanHit (CSpaceObject *pObj) { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
 		virtual void OnWriteToStream (IWriteStream *pStream);
@@ -758,38 +758,6 @@ class CRadiusDamage : public CSpaceObject
 		CSovereign *m_pSovereign;				//	Sovereign
 
 	friend CObjectClass<CRadiusDamage>;
-	};
-
-class CSequencerEffect : public CSpaceObject
-	{
-	public:
-		static ALERROR Create (CSystem *pSystem,
-							   CEffectSequencerCreator *pType,
-							   CSpaceObject *pAnchor,
-							   const CVector &vPos,
-							   const CVector &vVel,
-							   CSequencerEffect **retpEffect);
-
-	protected:
-		//	CSpaceObject virtuals
-		virtual bool CanHit (CSpaceObject *pObj) { return false; }
-		virtual CString GetObjClassName (void) { return CONSTLIT("CSequencerEffect"); }
-		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
-		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
-
-	private:
-		CSequencerEffect (void);
-
-		CEffectSequencerCreator *m_pType;
-		CSpaceObject *m_pAnchor;
-		CVector m_vAnchorOffset;
-		int m_iStartTime;
-		int m_iTimeCursor;
-
-	friend CObjectClass<CSequencerEffect>;
 	};
 
 class CShip : public CSpaceObject
@@ -951,6 +919,8 @@ class CShip : public CSpaceObject
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return m_pClass->FindDeviceSlotDesc(Item, retDesc); }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader);
 		virtual AbilityStatus GetAbility (Abilities iAbility);
+		virtual int GetAISettingInteger (const CString &sSetting) { return m_pController->GetAISettingInteger(sSetting); }
+		virtual CString GetAISettingString (const CString &sSetting) { return m_pController->GetAISettingString(sSetting); }
 		virtual CurrencyValue GetBalance (DWORD dwEconomyUNID);
 		virtual CSpaceObject *GetBase (void) const;
 		virtual Metric GetCargoSpaceLeft (void);
@@ -983,14 +953,7 @@ class CShip : public CSpaceObject
 		virtual int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CShip"); }
 		virtual int GetOpenDockingPortCount (void) { return m_DockingPorts.GetPortCount(this) - m_DockingPorts.GetPortsInUseCount(this); }
-		virtual CEnergyField *GetOverlay (DWORD dwID) const { return m_EnergyFields.GetOverlay(dwID); }
-		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return m_EnergyFields.GetData(dwID, sAttrib); }
-		virtual void GetOverlayImpact (CEnergyFieldList::SImpactDesc *retImpact) { m_EnergyFields.GetImpact(this, retImpact); }
-		virtual void GetOverlayList (TArray<CEnergyField *> &List) { m_EnergyFields.GetList(List); }
-		virtual CVector GetOverlayPos (DWORD dwID) { return m_EnergyFields.GetPos(this, dwID); }
-		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName) { return m_EnergyFields.GetProperty(pCCCtx, this, dwID, sName); }
-		virtual int GetOverlayRotation (DWORD dwID) { return m_EnergyFields.GetRotation(dwID); }
-		virtual COverlayType *GetOverlayType (DWORD dwID) { return m_EnergyFields.GetType(dwID); }
+		virtual COverlayList *GetOverlays (void) { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerShips; }
 		virtual int GetPerception (void);
 		virtual ICCItem *GetProperty (const CString &sName);
@@ -1049,7 +1012,7 @@ class CShip : public CSpaceObject
 		virtual void MakeBlind (int iTickCount = -1);
 		virtual void MakeParalyzed (int iTickCount = -1);
 		virtual void MakeRadioactive (void);
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos);
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx);
@@ -1062,16 +1025,13 @@ class CShip : public CSpaceObject
 		virtual void Resume (void) { m_fManualSuspended = false; if (!IsInGate()) ClearCannotBeHit(); m_pController->OnStatsChanged(); }
 		virtual void SendMessage (CSpaceObject *pSender, const CString &sMsg);
 		virtual bool SetAbility (Abilities iAbility, AbilityModifications iModification, int iDuration, DWORD dwOptions);
+		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return m_pController->SetAISettingInteger(sSetting, iValue); }
+		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return m_pController->SetAISettingString(sSetting, sValue); }
 		virtual void SetFireDelay (CInstalledDevice *pWeapon, int iDelay = -1);
 		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) { m_pClass->SetGlobalData(sAttribute, sData); }
 		virtual void SetIdentified (bool bIdentified = true) { m_fIdentified = bIdentified; }
 		virtual void SetKnown (bool bKnown = true) { m_fKnown = bKnown; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) { m_sName = sName; m_dwNameFlags = dwFlags; }
-		virtual void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { m_EnergyFields.SetData(dwID, sAttribute, sData); }
-		virtual bool SetOverlayEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue) { return m_EnergyFields.SetEffectProperty(dwID, sProperty, pValue); }
-		virtual void SetOverlayPos (DWORD dwID, const CVector &vPos) { m_EnergyFields.SetPos(this, dwID, vPos); }
-		virtual bool SetOverlayProperty (DWORD dwID, const CString &sName, ICCItem *pValue, CString *retsError) { return m_EnergyFields.SetProperty(this, dwID, sName, pValue); }
-		virtual void SetOverlayRotation (DWORD dwID, int iRotation) { m_EnergyFields.SetRotation(dwID, iRotation); }
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual void SetSovereign (CSovereign *pSovereign) { m_pSovereign = pSovereign; }
 		virtual void Suspend (void) { m_fManualSuspended = true; SetCannotBeHit(); }
@@ -1090,10 +1050,10 @@ class CShip : public CSpaceObject
 		virtual void OnDestroyed (SDestroyCtx &Ctx);
 		virtual CSpaceObject *OnGetOrderGiver (void);
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void OnPaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y);
-		virtual void OnPaintSRSEnhancements (CG16bitImage &Dest, SViewportPaintCtx &Ctx) { m_pController->OnPaintSRSEnhancements(Dest, Ctx); }
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
+		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { m_pController->OnPaintSRSEnhancements(Dest, Ctx); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnSetEventFlags (void);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
@@ -1147,7 +1107,7 @@ class CShip : public CSpaceObject
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
-		CEnergyFieldList m_EnergyFields;		//	List of energy fields
+		COverlayList m_Overlays;		//	List of energy fields
 		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
 		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
 		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
@@ -1209,7 +1169,7 @@ class CShip : public CSpaceObject
 		DWORD m_fDisarmedByOverlay:1;			//	TRUE if one or more overlays disarmed the ship.
 		DWORD m_fSpinningByOverlay:1;			//	TRUE if we should spin wildly
 		DWORD m_fDragByOverlay:1;				//	TRUE if overlay imposes drag
-		DWORD m_fSpare8:1;
+		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
 
 		DWORD m_dwSpare:8;
 
@@ -1228,14 +1188,14 @@ class CStaticEffect : public CSpaceObject
 		//	CSpaceObject virtuals
 		virtual CString GetObjClassName (void) { return CONSTLIT("CStaticEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerEffects; }
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	protected:
 
 		//	CSpaceObject virtuals
 		virtual bool CanHit (CSpaceObject *pObj) { return false; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
@@ -1280,6 +1240,7 @@ class CStation : public CSpaceObject
 		inline void SetNoConstruction (void) { m_fNoConstruction = true; }
 		inline void SetNoMapLabel (void) { m_fNoMapLabel = true; }
 		inline void SetNoReinforcements (void) { m_fNoReinforcements = true; }
+		inline void SetPaintOverhang (bool bOverhang = true) { m_fPaintOverhang = bOverhang; }
 		inline void SetReconned (void) { m_fReconned = true; }
 		inline void SetShowMapLabel (bool bShow = true) { m_fNoMapLabel = !bShow; }
 		void SetStargate (const CString &sDestNode, const CString &sDestEntryPoint);
@@ -1292,14 +1253,16 @@ class CStation : public CSpaceObject
 		virtual void AddSubordinate (CSpaceObject *pSubordinate);
 		virtual CTradingDesc *AllocTradeDescOverride (void);
 		virtual CStation *AsStation (void) { return this; }
+		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength);
 		virtual bool CanAttack (void) const;
 		virtual bool CanBeDestroyed (void) { return (m_iStructuralHP > 0); }
 		virtual bool CanBlock (CSpaceObject *pObj);
-		virtual bool CanBlockShips (void) { return m_pType->IsWall(); }
+		virtual bool CanBlockShips (void) { return m_fBlocksShips; }
 		virtual bool CanMove (void) { return IsMobile(); }
 		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		virtual bool ClassCanAttack (void);
 		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, int iCount = 1);
+		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist);
 		virtual CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		virtual CString DebugCrashInfo (void);
 		virtual void Decontaminate (void) { m_fRadioactive = false; }
@@ -1315,6 +1278,7 @@ class CStation : public CSpaceObject
 		virtual CStationType *GetEncounterInfo (void) { return m_pType; }
 		virtual const CString &GetGlobalData (const CString &sAttribute) { return m_pType->GetGlobalData(sAttribute); }
 		virtual Metric GetGravity (Metric *retrRadius) const;
+		virtual const CObjectImageArray &GetHeroImage (void) const { return m_pType->GetHeroImage(m_ImageSelector, CCompositeImageModifiers()); }
 		virtual const CObjectImageArray &GetImage (void) const { return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
 		virtual int GetLevel (void) const { return m_pType->GetLevel(); }
 		virtual const COrbit *GetMapOrbit (void) const { return m_pMapOrbit; }
@@ -1324,14 +1288,7 @@ class CStation : public CSpaceObject
 		virtual int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CStation"); }
 		virtual int GetOpenDockingPortCount (void) { return m_DockingPorts.GetPortCount(this) - m_DockingPorts.GetPortsInUseCount(this); }
-		virtual CEnergyField *GetOverlay (DWORD dwID) const { return m_Overlays.GetOverlay(dwID); }
-		virtual const CString &GetOverlayData (DWORD dwID, const CString &sAttrib) { return m_Overlays.GetData(dwID, sAttrib); }
-		virtual void GetOverlayImpact (CEnergyFieldList::SImpactDesc *retImpact) { m_Overlays.GetImpact(this, retImpact); }
-		virtual void GetOverlayList (TArray<CEnergyField *> &List) { m_Overlays.GetList(List); }
-		virtual CVector GetOverlayPos (DWORD dwID) { return m_Overlays.GetPos(this, dwID); }
-		virtual ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName) { return m_Overlays.GetProperty(pCCCtx, this, dwID, sName); }
-		virtual int GetOverlayRotation (DWORD dwID) { return m_Overlays.GetRotation(dwID); }
-		virtual COverlayType *GetOverlayType (DWORD dwID) { return m_Overlays.GetType(dwID); }
+		virtual COverlayList *GetOverlays (void) { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void);
 		virtual Metric GetParallaxDist (void) { return m_rParallaxDist; }
 		virtual EDamageResults GetPassthroughDefault (void);
@@ -1341,7 +1298,7 @@ class CStation : public CSpaceObject
 		virtual ScaleTypes GetScale (void) const { return m_Scale; }
 		virtual CXMLElement *GetScreen (const CString &sName) { return m_pType->GetScreen(sName); }
 		virtual CSovereign *GetSovereign (void) const { return m_pSovereign; }
-		virtual COLORREF GetSpaceColor (void) { return m_pType->GetSpaceColor(); }
+		virtual CG32bitPixel GetSpaceColor (void) { return m_pType->GetSpaceColor(); }
 		virtual CString GetStargateID (void) const;
 		virtual int GetStealth (void) const { return ((m_fKnown && !IsMobile()) ? stealthMin : m_pType->GetStealth()); }
 		virtual Metric GetStellarMass (void) const { return (GetScale() == scaleStar ? m_rMass : 0.0); }
@@ -1352,6 +1309,7 @@ class CStation : public CSpaceObject
 		virtual CDesignType *GetWreckType (void) const;
 		virtual bool HasAttribute (const CString &sAttribute) const;
 		virtual bool HasMapLabel (void);
+		virtual bool HasVolumetricShadow (void) const { return (GetScale() == scaleWorld && !IsOutOfPlaneObj()); }
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos);
 		virtual bool IsAbandoned (void) const { return (m_iHitPoints == 0 && !IsImmutable()); }
 		virtual bool IsActiveStargate (void) const { return !m_sStargateDestNode.IsBlank() && m_fActive; }
@@ -1379,7 +1337,7 @@ class CStation : public CSpaceObject
 		virtual void OnPlayerObj (CSpaceObject *pPlayer);
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx);
 		virtual void OnSystemCreated (void);
-		virtual void PaintLRS (CG16bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual void PlaceAtRandomDockPort (CSpaceObject *pObj) { m_DockingPorts.DockAtRandomPort(this, pObj); }
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos);
@@ -1394,11 +1352,6 @@ class CStation : public CSpaceObject
 		virtual void SetKnown (bool bKnown = true);
 		virtual void SetMapLabelPos (int x, int y) { m_xMapLabel = x; m_yMapLabel = y; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0);
-		virtual void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { m_Overlays.SetData(dwID, sAttribute, sData); }
-		virtual bool SetOverlayEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue) { return m_Overlays.SetEffectProperty(dwID, sProperty, pValue); }
-		virtual void SetOverlayPos (DWORD dwID, const CVector &vPos) { m_Overlays.SetPos(this, dwID, vPos); }
-		virtual bool SetOverlayProperty (DWORD dwID, const CString &sName, ICCItem *pValue, CString *retsError) { return m_Overlays.SetProperty(this, dwID, sName, pValue); }
-		virtual void SetOverlayRotation (DWORD dwID, int iRotation) { m_Overlays.SetRotation(dwID, iRotation); }
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual void SetSovereign (CSovereign *pSovereign) { m_pSovereign = pSovereign; }
 		virtual bool SupportsGating (void) { return IsActiveStargate(); }
@@ -1414,9 +1367,9 @@ class CStation : public CSpaceObject
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx);
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
-		virtual void OnPaint (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void OnPaintAnnotations (CG16bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG16bitImage &Dest, int x, int y);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnSetEventFlags (void);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
@@ -1476,7 +1429,7 @@ class CStation : public CSpaceObject
 		int m_iMaxStructuralHP;					//	Max structural hp
 
 		CInstalledDevice *m_pDevices;			//	Array of devices
-		CEnergyFieldList m_Overlays;			//	List of overlays
+		COverlayList m_Overlays;			//	List of overlays
 		CDockingPorts m_DockingPorts;			//	Docking ports
 
 		CSpaceObject *m_pTarget;				//	Target to hit (by our weapons)
@@ -1506,16 +1459,18 @@ class CStation : public CSpaceObject
 		DWORD m_fParalyzedByOverlay:1;			//	If TRUE, an overlay has paralyzed us
 		DWORD m_fNoBlacklist:1;					//	If TRUE, do not blacklist player on friendly fire
 		DWORD m_fNoConstruction:1;				//	Do not build new ships
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
+		DWORD m_fBlocksShips:1;					//	TRUE if we block ships
+		DWORD m_fPaintOverhang:1;				//	If TRUE, paint above player ship
 
 		DWORD m_dwSpare:16;
 
 		//	Wreck image
 		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)
 
-		CG16bitImage m_MapImage;				//	Image for the map (if star or world)
+		CG32bitImage m_MapImage;				//	Image for the map (if star or world)
 		CString m_sMapLabel;					//	Label for map
+
+		CObjectImageArray m_StarlightImage;		//	Image rotated for proper lighting.
 
 	friend CObjectClass<CStation>;
 	};

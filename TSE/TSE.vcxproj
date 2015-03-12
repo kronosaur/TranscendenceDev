@@ -147,23 +147,28 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\Geometry.h" />
+    <ClInclude Include="..\Include\TSEGeometry.h" />
+    <ClInclude Include="..\Include\TSEPlayer.h" />
+    <ClInclude Include="..\Include\TSEShipAI.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
+    <ClInclude Include="CrewAIImpl.h" />
+    <ClInclude Include="LegacyAIImpl.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="..\Include\TSE.h" />
     <ClInclude Include="..\Include\TSEDesign.h" />
     <ClInclude Include="..\Include\TSEDeviceClassesImpl.h" />
     <ClInclude Include="..\Include\TSEMissions.h" />
     <ClInclude Include="..\Include\TSEMultiverse.h" />
-    <ClInclude Include="..\Include\TSEOrderModuleImpl.h" />
     <ClInclude Include="..\Include\TSEPaint.h" />
-    <ClInclude Include="..\Include\TSESFXImpl.h" />
-    <ClInclude Include="..\Include\TSEShipControllersImpl.h" />
     <ClInclude Include="..\Include\TSESpaceObjectsImpl.h" />
     <ClInclude Include="..\Include\TSEStorage.h" />
-    <ClInclude Include="..\Include\TSETopologyProcessorsImpl.h" />
     <ClInclude Include="..\Include\TSETransLisp.h" />
     <ClInclude Include="..\Include\TSETypes.h" />
+    <ClInclude Include="OrderModuleImpl.h" />
+    <ClInclude Include="PsycheDefs.h" />
+    <ClInclude Include="SFXImpl.h" />
+    <ClInclude Include="ShipAIImpl.h" />
+    <ClInclude Include="TopologyProcessorsImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp" />
@@ -185,6 +190,8 @@
     </ClCompile>
     <ClCompile Include="CCompositeImageModifiers.cpp" />
     <ClCompile Include="CCreatePainterCtx.cpp" />
+    <ClCompile Include="CCrewAI.cpp" />
+    <ClCompile Include="CCrewPsyche.cpp" />
     <ClCompile Include="CCXMLWrapper.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">
@@ -199,8 +206,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CEffectParamDesc.cpp" />
-    <ClCompile Include="CEnergyField.cpp" />
-    <ClCompile Include="CEnergyFieldList.cpp" />
+    <ClCompile Include="COverlay.cpp" />
+    <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
     <ClCompile Include="CFireEventOrder.cpp" />
     <ClCompile Include="CGameFile.cpp" />
@@ -219,6 +226,7 @@
     <ClCompile Include="CMoveCtx.cpp" />
     <ClCompile Include="CMultiverseNews.cpp" />
     <ClCompile Include="CMultiverseNewsEntry.cpp" />
+    <ClCompile Include="CNavigateOrder.cpp" />
     <ClCompile Include="CObjectEffectDesc.cpp" />
     <ClCompile Include="CObjectEffectList.cpp" />
     <ClCompile Include="CObjectStats.cpp" />
@@ -251,6 +259,7 @@
     <ClCompile Include="CStationEncounterCtx.cpp" />
     <ClCompile Include="CStationEncounterDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />
+    <ClCompile Include="CSystemSpacePainter.cpp" />
     <ClCompile Include="CTimedEventList.cpp" />
     <ClCompile Include="CTimedMissionEvent.cpp" />
     <ClCompile Include="CTradingDesc.cpp" />
@@ -293,6 +302,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="IListData.cpp" />
+    <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="SFXLightningStorm.cpp" />
     <ClCompile Include="SFXOrb.cpp" />
     <ClCompile Include="SFXParticleJet.cpp" />

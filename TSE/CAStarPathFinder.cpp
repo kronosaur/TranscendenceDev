@@ -4,7 +4,7 @@
 
 #include "PreComp.h"
 
-const int ADJACENT_NODE_AXIS_COST =						6;
+const int ADJACENT_NODE_AXIS_COST =						8;
 
 const int ADJACENT_NODE_DIAG_COST =						(int)((1.4142 * ADJACENT_NODE_AXIS_COST) + 0.5);
 const Metric ADJACENT_NODE_DIST =						(ADJACENT_NODE_AXIS_COST * LIGHT_SECOND);
@@ -260,7 +260,7 @@ void CAStarPathFinder::DeleteList (SNodeRoot &pRoot)
 	pRoot = NULL;
 	}
 
-int CAStarPathFinder::FindPath (const CVector &vStart, const CVector &vEnd, CVector **retPathList)
+int CAStarPathFinder::FindPath (const CVector &vStart, const CVector &vEnd, CVector **retPathList, bool bTryReverse)
 
 //	FindPath
 //
@@ -299,7 +299,7 @@ int CAStarPathFinder::FindPath (const CVector &vStart, const CVector &vEnd, CVec
 
 		//	Are we there yet?
 
-		if (IsPathClear(pCurrent->vPos, vEnd) || iLoopCount >= MAX_LOOP_COUNT)
+		if (IsPathClear(pCurrent->vPos, vEnd))
 			{
 #ifdef DEBUG_ASTAR_PERF
 			char szBuffer[1024];
@@ -313,6 +313,35 @@ int CAStarPathFinder::FindPath (const CVector &vStart, const CVector &vEnd, CVec
 #endif
 
 			return OptimizePath(vEnd, pCurrent, retPathList);
+			}
+
+		//	Otherwise, if we hit the loop limit then see if we have better 
+		//	luck reversing the direction. This works sometimes because if we're 
+		//	trying to get into a tight spot, it's easier to get out than get
+		//	in.
+
+		else if (iLoopCount >= MAX_LOOP_COUNT)
+			{
+			if (bTryReverse)
+				{
+				CVector *pReversed;
+				int iCount = FindPath(vEnd, vStart, &pReversed, false);
+				if (iCount == -1)
+					return -1;
+
+				CVector *pResult = new CVector [iCount];
+				for (i = 0; i < iCount; i++)
+					pResult[i] = pReversed[iCount - i - 1];
+
+				delete [] pReversed;
+				*retPathList = pResult;
+				return iCount;
+				}
+
+			//	Otherwise, we just make do with what we've got.
+
+			else
+				return OptimizePath(vEnd, pCurrent, retPathList);
 			}
 
 		//	If not, keep searching
@@ -337,7 +366,7 @@ int CAStarPathFinder::FindPath (const CVector &vStart, const CVector &vEnd, CVec
 		//	Create a nav beacon so we know the path
 		CStationType *pType = g_pUniverse->FindStationType(0x2004);
 		CStation *pBeacon;
-		g_pUniverse->GetCurrentSystem()->CreateStation(pType, pCurrent->vPos, (CSpaceObject **)&pBeacon);
+		g_pUniverse->GetCurrentSystem()->CreateStation(pType, NULL, pCurrent->vPos, (CSpaceObject **)&pBeacon);
 		pBeacon->SetName(strPatternSubst(CONSTLIT("Path %d"), iLoopCount));
 #endif
 		}

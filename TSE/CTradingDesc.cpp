@@ -214,7 +214,7 @@ int CTradingDesc::ComputePrice (CSpaceObject *pObj, CEconomyType *pCurrency, con
 	if (bPlayerAdj 
 			&& g_pUniverse->GetDesignCollection().FireGetGlobalPlayerPriceAdj(Commodity.iService, pObj, Item, NULL, &iPlayerPriceAdj))
 		{
-		if (iPlayerPriceAdj <= 0)
+		if (iPlayerPriceAdj < 0)
 			return -1;
 
 		iPrice = iPlayerPriceAdj * iPrice / 100;

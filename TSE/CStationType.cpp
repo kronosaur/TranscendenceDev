@@ -12,6 +12,7 @@
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
 #define ENCOUNTERS_TAG							CONSTLIT("Encounters")
 #define EVENTS_TAG								CONSTLIT("Events")
+#define HERO_IMAGE_TAG							CONSTLIT("HeroImage")
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGE_EFFECT_TAG						CONSTLIT("ImageEffect")
 #define IMAGE_VARIANTS_TAG						CONSTLIT("ImageVariants")
@@ -71,6 +72,7 @@
 #define NO_FRIENDLY_FIRE_ATTRIB					CONSTLIT("noFriendlyFire")
 #define NO_FRIENDLY_TARGET_ATTRIB				CONSTLIT("noFriendlyTarget")
 #define NO_MAP_ICON_ATTRIB						CONSTLIT("noMapIcon")
+#define PAINT_LAYER_ATTRIB						CONSTLIT("paintLayer")
 #define RADIOACTIVE_ATTRIB						CONSTLIT("radioactive")
 #define RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("randomEncounters")
 #define REGEN_ATTRIB							CONSTLIT("regen")
@@ -988,6 +990,10 @@ void CStationType::MarkImages (const CCompositeImageSelector &Selector)
 
 	if (m_pGateEffect)
 		m_pGateEffect->MarkImages();
+
+	//	NOTE: We don't bother marking the hero image because we don't need it
+	//	to paint the main screen. [We only needed when docking, and it's OK to
+	//	delay slightly.]
 	}
 
 void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -1013,6 +1019,7 @@ void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_pItems->AddTypesUsed(retTypesUsed);
 
 	m_Image.AddTypesUsed(retTypesUsed);
+	m_HeroImage.AddTypesUsed(retTypesUsed);
 
 	for (i = 0; i < m_ShipWrecks.GetCount(); i++)
 		retTypesUsed->SetAt(m_ShipWrecks.GetElement(i), true);
@@ -1059,6 +1066,9 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Images
 
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
+		goto Fail;
+
+	if (error = m_HeroImage.OnDesignLoadComplete(Ctx))
 		goto Fail;
 
 	for (i = 0; i < m_iAnimationsCount; i++)
@@ -1239,6 +1249,13 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iAlertWhenDestroyed = pDesc->GetAttributeInteger(ALERT_WHEN_DESTROYED_ATTRIB);
 	m_rMaxAttackDistance = MAX_ATTACK_DISTANCE;
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
+
+	CString sLayer;
+	if (pDesc->FindAttribute(PAINT_LAYER_ATTRIB, &sLayer)
+			&& strEquals(sLayer, CONSTLIT("overhang")))
+		m_fPaintOverhang = true;
+	else
+		m_fPaintOverhang = false;
 
 	//	Repair rate
 
@@ -1454,6 +1471,17 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			}
 		}
 
+	//	Load hero image
+
+	if (pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG))
+		{
+		if (error = m_HeroImage.InitFromXML(Ctx, pImage))
+			{
+			Ctx.sError = ComposeLoadError(Ctx.sError);
+			return error;
+			}
+		}
+
 	//	Load animations
 
 	CXMLElement *pAnimations = pDesc->GetContentElementByTag(ANIMATIONS_TAG);
@@ -1600,7 +1628,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Stellar objects
 
-	m_rgbSpaceColor = LoadCOLORREF(pDesc->GetAttribute(SPACE_COLOR_ATTRIB));
+	m_rgbSpaceColor = ::LoadRGBColor(pDesc->GetAttribute(SPACE_COLOR_ATTRIB));
 	m_iMaxLightDistance = pDesc->GetAttributeIntegerBounded(MAX_LIGHT_DISTANCE, 1, -1, 500);
 
 	int iGravity;
@@ -1731,6 +1759,7 @@ void CStationType::OnReinit (void)
 	{
 	m_EncounterRecord.Reinit(m_RandomPlacement);
 	m_Image.Reinit();
+	m_HeroImage.Reinit();
 	}
 
 void CStationType::OnTopologyInitialized (void)
@@ -1764,7 +1793,7 @@ void CStationType::OnWriteToStream (IWriteStream *pStream)
 	m_EncounterRecord.WriteToStream(pStream);
 	}
 
-void CStationType::PaintAnimations (CG16bitImage &Dest, int x, int y, int iTick)
+void CStationType::PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick)
 
 //	PaintAnimations
 //
@@ -1783,7 +1812,7 @@ void CStationType::PaintAnimations (CG16bitImage &Dest, int x, int y, int iTick)
 		}
 	}
 
-void CStationType::PaintDockPortPositions (CG16bitImage &Dest, int x, int y)
+void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 
 //	PaintDockPortPositions
 //
@@ -1807,8 +1836,8 @@ void CStationType::PaintDockPortPositions (CG16bitImage &Dest, int x, int y)
 
 		//	Colors
 
-		WORD wArrowColor = (bInFront ? CG16bitImage::RGBValue(0x00, 0x40, 0x80) : CG16bitImage::RGBValue(0x80, 0x40, 0x00));
-		WORD wCenterColor = (bInFront ? CG16bitImage::RGBValue(0x00, 0x7f, 0xff) : CG16bitImage::RGBValue(0xff, 0x7f, 0x00));
+		CG32bitPixel rgbArrowColor = (bInFront ? CG32bitPixel(0x00, 0x40, 0x80) : CG32bitPixel(0x80, 0x40, 0x00));
+		CG32bitPixel rgbCenterColor = (bInFront ? CG32bitPixel(0x00, 0x7f, 0xff) : CG32bitPixel(0xff, 0x7f, 0x00));
 
 		//	Get the position
 
@@ -1817,11 +1846,11 @@ void CStationType::PaintDockPortPositions (CG16bitImage &Dest, int x, int y)
 
 		//	Paint arrow
 
-		CPaintHelper::PaintArrow(Dest, xPos, yPos, iRotation, wArrowColor);
+		CPaintHelper::PaintArrow(Dest, xPos, yPos, iRotation, rgbArrowColor);
 
 		//	Paint center crosshairs
 
-		Dest.DrawDot(xPos, yPos, wCenterColor, CG16bitImage::markerMediumCross);
+		Dest.DrawDot(xPos, yPos, rgbCenterColor, markerMediumCross);
 		}
 	}
 

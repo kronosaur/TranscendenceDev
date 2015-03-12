@@ -73,10 +73,21 @@
 //		Added m_iAccepted to CMissionType
 //		Added m_sAttributes to CTopologyNode
 //		Added m_AscendedObjects to CUniverse
+//
+//	26: Save and restore m_pPlayer (IPlayerController)
 
 //	See: TSEUtil.h for definition of UNIVERSE_SAVE_VERSION
 
 #include "PreComp.h"
+
+#define CONTROLLER_AUTON					CONSTLIT("auton")
+#define CONTROLLER_CREW						CONSTLIT("crew")
+#define CONTROLLER_FERIAN					CONSTLIT("ferian")
+#define CONTROLLER_FLEET					CONSTLIT("fleet")
+#define CONTROLLER_FLEET_COMMAND			CONSTLIT("fleetcommand")
+#define CONTROLLER_GAIAN_PROCESSOR			CONSTLIT("gaianprocessor")
+#define CONTROLLER_GLADIATOR				CONSTLIT("gladiator")
+#define CONTROLLER_ZOANTHROPE				CONSTLIT("zoanthrope")
 
 struct SExtensionSaveDesc
 	{
@@ -84,6 +95,7 @@ struct SExtensionSaveDesc
 	DWORD dwRelease;
 	};
 
+#define STR_G_PLAYER						CONSTLIT("gPlayer")
 #define STR_G_PLAYER_SHIP					CONSTLIT("gPlayerShip")
 
 const DWORD UNIVERSE_VERSION_MARKER =					0xffffffff;
@@ -134,6 +146,7 @@ CUniverse::CUniverse (void) : CObject(&g_Class),
 		m_pAdventure(NULL),
 		m_pPOV(NULL),
 		m_pPlayer(NULL),
+		m_pPlayerShip(NULL),
 		m_pCurrentSystem(NULL),
 		m_StarSystems(TRUE, FALSE),
 		m_dwNextID(1),
@@ -167,7 +180,7 @@ CUniverse::~CUniverse (void)
 
 	{
 	SetPOV(NULL);
-	m_pPlayer = NULL;
+	m_pPlayerShip = NULL;
 
 	//	Destroy all star systems. We do this here because we want to
 	//	guarantee that we destroy all objects before we destruct
@@ -179,6 +192,11 @@ CUniverse::~CUniverse (void)
 
 	m_Design.CleanUp();
 	m_Extensions.CleanUp();
+
+	//	We own m_pPlayer;
+
+	if (m_pPlayer)
+		delete m_pPlayer;
 
 	//	Done
 
@@ -383,6 +401,43 @@ ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CSp
 	//	If no mission was created, then done
 
 	return ERR_NOTFOUND;
+	}
+
+IShipController *CUniverse::CreateShipController (const CString &sAI)
+
+//	CreateShipController
+//
+//	Creates a ship controller given the AI name
+
+	{
+	//	First ask the host if it knows how to create the controller
+
+	IShipController *pController;
+	if (pController = m_pHost->CreateShipController(sAI))
+		return pController;
+
+	//	Otherwise, we create a controller that we know about.
+
+	if (sAI.IsBlank())
+		return new CStandardShipAI;
+	else if (strEquals(sAI, CONTROLLER_AUTON))
+		return new CAutonAI;
+	else if (strEquals(sAI, CONTROLLER_CREW))
+		return new CCrewAI;
+	else if (strEquals(sAI, CONTROLLER_FERIAN))
+		return new CFerianShipAI;
+	else if (strEquals(sAI, CONTROLLER_FLEET))
+		return new CFleetShipAI;
+	else if (strEquals(sAI, CONTROLLER_FLEET_COMMAND))
+		return new CFleetCommandAI;
+	else if (strEquals(sAI, CONTROLLER_GAIAN_PROCESSOR))
+		return new CGaianProcessorAI;
+	else if (strEquals(sAI, CONTROLLER_GLADIATOR))
+		return new CStandardShipAI;
+	else if (strEquals(sAI, CONTROLLER_ZOANTHROPE))
+		return new CZoanthropeAI;
+	else
+		return NULL;
 	}
 
 ALERROR CUniverse::CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError, CSystemCreateStats *pStats)
@@ -918,24 +973,6 @@ CTopologyNode *CUniverse::GetFirstTopologyNode (void)
 	return FindTopologyNode(sNodeID);
 	}
 
-IShipController *CUniverse::GetPlayerController (void) const
-
-//	GetPlayerController
-//
-//	Returns the player's controller
-
-	{
-	CSpaceObject *pPlayer = GetPlayer();
-	if (pPlayer == NULL)
-		return NULL;
-
-	CShip *pPlayerShip = pPlayer->AsShip();
-	if (pPlayerShip == NULL)
-		return NULL;
-
-	return pPlayerShip->GetController();
-	}
-
 GenomeTypes CUniverse::GetPlayerGenome (void) const
 
 //	GetPlayerGenome
@@ -943,11 +980,10 @@ GenomeTypes CUniverse::GetPlayerGenome (void) const
 //	Returns the player's genome
 
 	{
-	IShipController *pController = GetPlayerController();
-	if (pController == NULL)
+	if (m_pPlayer == NULL)
 		return genomeUnknown;
 
-	return pController->GetPlayerGenome();
+	return m_pPlayer->GetGenome();
 	}
 
 CString CUniverse::GetPlayerName (void) const
@@ -957,11 +993,10 @@ CString CUniverse::GetPlayerName (void) const
 //	Returns the player's name
 
 	{
-	IShipController *pController = GetPlayerController();
-	if (pController == NULL)
+	if (m_pPlayer == NULL)
 		return NULL_STR;
 
-	return pController->GetPlayerName();
+	return m_pPlayer->GetName();
 	}
 
 CSovereign *CUniverse::GetPlayerSovereign (void) const
@@ -971,14 +1006,10 @@ CSovereign *CUniverse::GetPlayerSovereign (void) const
 //	Returns the player's sovereign
 
 	{
-	CSovereign *pSovereign = FindSovereign(g_PlayerSovereignUNID);
-	if (pSovereign == NULL)
-		{
-		kernelDebugLogMessage("ERROR: Unable to find player sovereign");
+	if (m_pPlayer == NULL)
 		return NULL;
-		}
 
-	return pSovereign;
+	return m_pPlayer->GetSovereign();
 	}
 
 void CUniverse::GetRandomLevelEncounter (int iLevel, 
@@ -1284,6 +1315,45 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		}
 	}
 
+ALERROR CUniverse::InitAdventure (IPlayerController *pPlayer, CString *retsError)
+
+//	InitAdventure
+//
+//	Initializes the adventure and stores the player controller. Note that we 
+//	take ownership of pPlayer.
+
+	{
+	ASSERT(pPlayer);
+	ASSERT(m_pPlayer == NULL);
+
+	//	Define globals for OnGameStart (only gPlayer is defined)
+	//	We need this because script may want to reference gPlayer
+	//	to get genome information.
+	//
+	//	The rest of the variables will be set in m_Universe.SetPlayerShip
+
+	SetPlayer(pPlayer);
+
+	//	Invoke Adventure OnGameStart
+	//	NOTE: The proper adventure is set by a call to InitAdventure,
+	//	when the adventure is chosen.
+
+	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
+	if (pAdventure == NULL)
+		{
+		*retsError = CONSTLIT("Must have an adventure.");
+		return ERR_FAIL;
+		}
+
+	SetLogImageLoad(false);
+	pAdventure->FireOnGameStart();
+	SetLogImageLoad(true);
+
+	//	Done
+
+	return NOERROR;
+	}
+
 void CUniverse::InitDefaultHitEffects (void)
 
 //	InitDefaultHitEffects
@@ -1485,6 +1555,32 @@ void CUniverse::NotifyMissionsOfNewSystem (CSystem *pSystem)
 		}
 	}
 
+void CUniverse::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
+
+//	NotifyOnObjDestroyed
+//
+//	Called when a ship or station has been destroyed. [This does NOT get called
+//	for effects or missiles being destroyed.]
+//
+//	NOTE: This includes cases where a station becomes abandoned. If the station
+//	gets destroyed after that, we this gets called a second time.
+
+	{
+	int i;
+
+	//	Call all subscribers
+	//
+	//	For performance, we don't deal with making a copy of the list before 
+	//	calling. Subscribers should NEVER delete themselves from inside a call.
+
+	for (i = 0; i < m_Subscribers.GetCount(); i++)
+		m_Subscribers[i]->OnObjDestroyed(Ctx);
+
+	//	Fire global event
+
+	m_Design.FireOnGlobalObjDestroyed(Ctx);
+	}
+
 bool CUniverse::IsGlobalResurrectPending (CDesignType **retpType)
 
 //	IsGlobalResurrectPending
@@ -1570,6 +1666,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 //	DWORD		index of POV (0xffffffff if none)
 //	CTimeSpan	time that we've spent playing the game
 //
+//	IPlayerController m_pPlayer
 //	CMissionList	m_AllMissions
 //	CAscendedObjectList	m_AscendedObjects;
 //	CTimedEventList	m_Events
@@ -1778,6 +1875,17 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	CTimeDate Now(CTimeDate::Now);
 	m_StartTime = timeSubtractTime(Now, Time);
 
+	//	Load the player controller
+
+	m_pPlayer = m_pHost->CreatePlayerController();
+	if (Ctx.dwVersion >= 26)
+		{
+		pStream->Read((char *)&dwCount, sizeof(DWORD));
+		ASSERT(dwCount == 1);
+
+		m_pPlayer->ReadFromStream(Ctx);
+		}
+
 	//	Global missions and events
 
 	if (Ctx.dwVersion >= 17)
@@ -1922,7 +2030,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	return NOERROR;
 	}
 
-void CUniverse::PaintObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
+void CUniverse::PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
 
 //	PaintObject
 //
@@ -1933,7 +2041,7 @@ void CUniverse::PaintObject (CG16bitImage &Dest, const RECT &rcView, CSpaceObjec
 		m_pPOV->GetSystem()->PaintViewportObject(Dest, rcView, m_pPOV, pObj);
 	}
 
-void CUniverse::PaintObjectMap (CG16bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
+void CUniverse::PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
 
 //	PaintObjectMap
 //
@@ -1944,7 +2052,7 @@ void CUniverse::PaintObjectMap (CG16bitImage &Dest, const RECT &rcView, CSpaceOb
 		m_pPOV->GetSystem()->PaintViewportMapObject(Dest, rcView, m_pPOV, pObj);
 	}
 
-void CUniverse::PaintPOV (CG16bitImage &Dest, const RECT &rcView, DWORD dwFlags)
+void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 
 //	PaintPOV
 //
@@ -1957,7 +2065,7 @@ void CUniverse::PaintPOV (CG16bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 	m_iPaintTick++;
 	}
 
-void CUniverse::PaintPOVLRS (CG16bitImage &Dest, const RECT &rcView, bool *retbNewEnemies)
+void CUniverse::PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies)
 
 //	PaintPOVLRS
 //
@@ -1965,10 +2073,10 @@ void CUniverse::PaintPOVLRS (CG16bitImage &Dest, const RECT &rcView, bool *retbN
 
 	{
 	if (m_pPOV)
-		m_pPOV->GetSystem()->PaintViewportLRS(Dest, rcView, m_pPOV, retbNewEnemies);
+		m_pPOV->GetSystem()->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
 	}
 
-void CUniverse::PaintPOVMap (CG16bitImage &Dest, const RECT &rcView, Metric rMapScale)
+void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale)
 
 //	PaintPOVMap
 //
@@ -2142,6 +2250,7 @@ ALERROR CUniverse::Reinit (void)
 	//	Clear out player variables
 
 	SetPlayer(NULL);
+	SetPlayerShip(NULL);
 
 	//	Reinitialize noise randomness
 
@@ -2177,6 +2286,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 //	DWORD		index of POV (0xffffffff if none)
 //	DWORD		milliseconds that we've spent playing the game
 //
+//	IPlayerController m_pPlayer
 //	CMissionList	m_AllMissions
 //	CAscendedObjectList	m_AscendedObjects
 //	CTimedEventList	m_Events
@@ -2269,6 +2379,13 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	CTimeSpan GameLength = StopGameTime();
 	GameLength.WriteToStream(pStream);
+
+	//	Save out the player data (we start by writing out the number of players
+	//	and then write out the only player).
+
+	dwSave = 1;
+	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	m_pPlayer->WriteToStream(pStream);
 
 	//	Save out the global mission data
 
@@ -2422,54 +2539,34 @@ void CUniverse::SetNewSystem (CSystem *pSystem, CShip *pPlayerShip, CSpaceObject
 	pSystem->SetPOVLRS(pPOV);
 	}
 
-void CUniverse::SetPlayer (CSpaceObject *pPlayer)
+void CUniverse::SetPlayer (IPlayerController *pPlayer)
 
 //	SetPlayer
 //
-//	Sets the current player
+//	Sets the player
 
 	{
-	if (pPlayer == NULL)
-		{
-		CCodeChain &CC = GetCC();
-		CC.DefineGlobal(CONSTLIT("gPlayer"), CC.CreateNil());
-		CC.DefineGlobal(CONSTLIT("gPlayerShip"), CC.CreateNil());
-		m_pPlayer = NULL;
-		}
-	else
-		{
-		CShip *pPlayerShip = pPlayer->AsShip();
-		if (pPlayerShip == NULL)
-			{
-			ASSERT(false);
-			return;
-			}
+	CCodeChain &CC = GetCC();
 
-		IShipController *pController = pPlayerShip->GetController();
-		if (pController == NULL)
-			{
-			ASSERT(false);
-			return;
-			}
+	if (m_pPlayer)
+		delete m_pPlayer;
 
-		if (!pController->IsPlayer())
-			{
-			ASSERT(false);
-			return;
-			}
+	m_pPlayer = pPlayer;
 
-		CObject *pControllerObj = dynamic_cast<CObject *>(pController);
-		if (pControllerObj == NULL)
-			{
-			ASSERT(false);
-			return;
-			}
+	CC.DefineGlobal(STR_G_PLAYER, (m_pPlayer ? m_pPlayer->CreateGlobalRef(CC) : CC.CreateNil()));
+	}
 
-		CCodeChain &CC = GetCC();
-		CC.DefineGlobal(CONSTLIT("gPlayer"), CC.CreateInteger((int)pControllerObj));
-		CC.DefineGlobal(CONSTLIT("gPlayerShip"), CC.CreateInteger((int)pPlayer));
-		m_pPlayer = pPlayer;
-		}
+void CUniverse::SetPlayerShip (CSpaceObject *pPlayer)
+
+//	SetPlayerShip
+//
+//	Sets the current player ship
+
+	{
+	CCodeChain &CC = GetCC();
+
+	m_pPlayerShip = pPlayer;
+	CC.DefineGlobal(STR_G_PLAYER_SHIP, (m_pPlayerShip ? CC.CreateInteger((int)m_pPlayerShip) : CC.CreateNil()));
 	}
 
 void CUniverse::SetPOV (CSpaceObject *pPOV)
@@ -2502,6 +2599,13 @@ void CUniverse::StartGame (bool bNewGame)
 //	Starts a game (either new or continued)
 
 	{
+	CCodeChain &CC = GetCC();
+
+	//	At this point we can define the player variables
+
+	CC.DefineGlobal(STR_G_PLAYER, (m_pPlayer ? m_pPlayer->CreateGlobalRef(CC) : CC.CreateNil()));
+	CC.DefineGlobal(STR_G_PLAYER_SHIP, (m_pPlayerShip ? CC.CreateInteger((int)m_pPlayerShip) : CC.CreateNil()));
+
 	//	Load images necessary for the system
 
 	MarkLibraryBitmaps();
@@ -2511,7 +2615,7 @@ void CUniverse::StartGame (bool bNewGame)
 	if (bNewGame)
 		{
 		//	Tell all types that the universe have been created.
-		//	This must be after m_Universe.SetPlayer, which sets up
+		//	This must be after m_Universe.SetPlayerShip, which sets up
 		//	gPlayerShip.
 
 		FireOnGlobalUniverseCreated();
@@ -2523,13 +2627,13 @@ void CUniverse::StartGame (bool bNewGame)
 		//	If we have a player then tell objects that the player has entered
 		//	the system.
 
-		if (m_pPlayer)
+		if (m_pPlayerShip)
 			{
 			FireOnGlobalPlayerEnteredSystem();
 
 			//	Tell all objects that the player has entered the system
 
-			GetCurrentSystem()->PlayerEntered(m_pPlayer);
+			GetCurrentSystem()->PlayerEntered(m_pPlayerShip);
 			}
 		}
 

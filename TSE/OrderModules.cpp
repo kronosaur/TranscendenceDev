@@ -84,12 +84,15 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 	{
 	switch (iOrder)
 		{
+		case IShipController::orderNone:
+			return NULL;
+
 		case IShipController::orderApproach:
 			return new CApproachOrder;
 
-		case IShipController::orderAttackArea:
-		case IShipController::orderAttackNearestEnemy:
 		case IShipController::orderDestroyTarget:
+		case IShipController::orderAttackNearestEnemy:
+		case IShipController::orderAttackArea:
 		case IShipController::orderHoldAndAttack:
 			return new CAttackOrder(iOrder);
 
@@ -102,13 +105,46 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderFireEvent:
 			return new CFireEventOrder;
 
+		case IShipController::orderDock:
+		case IShipController::orderGate:
+		case IShipController::orderGoTo:
+		case IShipController::orderGoToPos:
+		case IShipController::orderNavPath:
+			return new CNavigateOrder(iOrder);
+
 		case IShipController::orderSendMessage:
 			return new CSendMessageOrder;
 
+		case IShipController::orderHold:
+		case IShipController::orderWait:
+		case IShipController::orderWaitForEnemy:
+		case IShipController::orderWaitForPlayer:
+		case IShipController::orderWaitForTarget:
 		case IShipController::orderWaitForUndock:
-			return new CWaitOrder(CWaitOrder::waitForUndock);
+			return new CWaitOrder(iOrder);
+
+		case IShipController::orderGuard:
+		case IShipController::orderGateOnThreat:
+		case IShipController::orderGateOnStationDestroyed:
+		case IShipController::orderPatrol:
+		case IShipController::orderScavenge:
+		case IShipController::orderFollowPlayerThroughGate:
+		case IShipController::orderTradeRoute:
+		case IShipController::orderWander:
+		case IShipController::orderLoot:
+		case IShipController::orderMine:
+		case IShipController::orderDestroyPlayerOnReturn:
+		case IShipController::orderFollow:
+		case IShipController::orderBombard:
+		case IShipController::orderAimAtTarget:
+		case IShipController::orderOrbit:
+		case IShipController::orderHoldCourse:
+		case IShipController::orderTurnTo:
+		case IShipController::orderDestroyTargetHold:
+			return NULL;
 
 		default:
+			ASSERT(false);
 			return NULL;
 		}
 	}

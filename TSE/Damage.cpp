@@ -885,17 +885,17 @@ static void AddEffectItem (CCodeChain &CC, CCLinkedList *pList, const CString &s
 		}
 
 	ICCItem *pField = CC.CreateString(sEffect);
-	pNewItem->Append(&CC, pField);
+	pNewItem->Append(CC, pField);
 	pField->Discard(&CC);
 
 	if (iTime != -1)
 		{
 		pField = CC.CreateInteger(iTime);
-		pNewItem->Append(&CC, pField);
+		pNewItem->Append(CC, pField);
 		pField->Discard(&CC);
 		}
 
-	pList->Append(&CC, pNewItem);
+	pList->Append(CC, pNewItem);
 	pNewItem->Discard(&CC);
 	}
 

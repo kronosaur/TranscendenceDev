@@ -52,14 +52,6 @@
 #define VERSION_100							(CONSTLIT("1.0"))
 #define VERSION_110							(CONSTLIT("1.1"))
 
-#define CONTROLLER_FLEET					CONSTLIT("fleet")
-#define CONTROLLER_FERIAN					CONSTLIT("ferian")
-#define CONTROLLER_AUTON					CONSTLIT("auton")
-#define CONTROLLER_GLADIATOR				CONSTLIT("gladiator")
-#define CONTROLLER_FLEET_COMMAND			CONSTLIT("fleetcommand")
-#define CONTROLLER_GAIAN_PROCESSOR			CONSTLIT("gaianprocessor")
-#define CONTROLLER_ZOANTHROPE				CONSTLIT("zoanthrope")
-
 #define INTER_SYSTEM_FOLLOW_PLAYER			CONSTLIT("followPlayer")
 #define INTER_SYSTEM_WAIT_FOR_PLAYER		CONSTLIT("waitForPlayer")
 
@@ -98,6 +90,7 @@ struct SOrderTypeData
 	//	i		integer (may be optional)
 	//	2		two integers (encoded in a DWORD)
 	//  s		string data
+	//	v		vector data
 
 	DWORD dwFlags;
 	};
@@ -125,7 +118,7 @@ static const SOrderTypeData g_OrderTypes[] =
 		{	"wander",					"-",	"-",	0 },
 		{	"loot",						"o",	"-",	0 },
 
-		{	"hold",						"-",	"i",	0 },
+		{	"hold",						"-",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"mine",						"o",	"-",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"waitForPlayer",			"-",	"-",	0 },
 		{	"attackPlayerOnReturn",		"-",	"-",	0 },
@@ -151,6 +144,7 @@ static const SOrderTypeData g_OrderTypes[] =
 
 		{	"attackArea",				"o",	"2",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"holdAndAttack",			"o",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
+		{	"gotoPos",					"-",	"v",	0 },
 	};
 
 #define ORDER_TYPES_COUNT		(sizeof(g_OrderTypes) / sizeof(g_OrderTypes[0]))
@@ -1228,44 +1222,6 @@ CVector ConvertObjectPos2Pos (int iAngle, Metric rRadius, Metric rHeight, Metric
 	}
 #endif
 
-IShipController *CreateShipController (const CString &sAI)
-
-//	CreateShipController
-//
-//	Creates the appropriate controller
-//
-//	The following controllers are valid:
-//
-//	""				The standard AI
-//	"auton"			Auton AI
-//	"ferian"		Ferian ship AI
-//	"fleet"			The fleet controller for formation flying
-//	"fleetcommand"	Controller for commanding a fleet
-//	"gaianprocessor"Controller for Gaian processor
-//	"gladiator"		DEPRECATED
-//	"zoanthrope"	Zoanthrope AI
-
-	{
-	if (sAI.IsBlank())
-		return new CStandardShipAI;
-	else if (strEquals(sAI, CONTROLLER_FLEET))
-		return new CFleetShipAI;
-	else if (strEquals(sAI, CONTROLLER_FERIAN))
-		return new CFerianShipAI;
-	else if (strEquals(sAI, CONTROLLER_AUTON))
-		return new CAutonAI;
-	else if (strEquals(sAI, CONTROLLER_GLADIATOR))
-		return new CStandardShipAI;
-	else if (strEquals(sAI, CONTROLLER_FLEET_COMMAND))
-		return new CFleetCommandAI;
-	else if (strEquals(sAI, CONTROLLER_GAIAN_PROCESSOR))
-		return new CGaianProcessorAI;
-	else if (strEquals(sAI, CONTROLLER_ZOANTHROPE))
-		return new CZoanthropeAI;
-	else
-		return NULL;
-	}
-
 DWORD ExtensionVersionToInteger (DWORD dwVersion)
 
 //	ExtensionVersionToInteger
@@ -1954,6 +1910,38 @@ CString GetOrderName (IShipController::OrderTypes iOrder)
 	return CString(g_OrderTypes[iOrder].szName);
 	}
 
+CString GetPaintLayerID (CSystem::LayerEnum iPaintLayer)
+
+//	GetPaintLayerID
+//
+//	Returns the paint layer ID
+
+	{
+	switch (iPaintLayer)
+		{
+		case CSystem::layerBackground:
+			return CONSTLIT("background");
+
+		case CSystem::layerSpace:
+			return CONSTLIT("space");
+
+		case CSystem::layerStations:
+			return CONSTLIT("stations");
+
+		case CSystem::layerShips:
+			return CONSTLIT("ships");
+
+		case CSystem::layerEffects:
+			return CONSTLIT("effects");
+
+		case CSystem::layerOverhang:
+			return CONSTLIT("overhang");
+
+		default:
+			return NULL_STR;
+		}
+	}
+
 int OrderGetDataCount (IShipController::OrderTypes iOrder)
 
 //	OrderGetDataCount
@@ -1986,6 +1974,16 @@ bool OrderHasDataString (IShipController::OrderTypes iOrder)
 
 	{
 	return (*g_OrderTypes[iOrder].szData == 's');
+	}
+
+bool OrderHasDataVector (IShipController::OrderTypes iOrder)
+
+//	OrderHasDataVector
+//
+//	Returns TRUE if the given order requires string data
+
+	{
+	return (*g_OrderTypes[iOrder].szData == 'v');
 	}
 
 bool OrderHasTarget (IShipController::OrderTypes iOrder, bool *retbRequired)
@@ -2256,7 +2254,7 @@ DWORD LoadNameFlags (CXMLElement *pDesc)
 	return dwFlags;
 	}
 
-WORD LoadRGBColor (const CString &sString)
+CG32bitPixel LoadRGBColor (const CString &sString)
 
 //	LoadRGBColor
 //
@@ -2268,7 +2266,7 @@ WORD LoadRGBColor (const CString &sString)
 	//	Null
 
 	if (*pPos == '\0')
-		return 0;
+		return CG32bitPixel::Null();
 
 	//	If it starts with a # we expect an RGB DWORD
 
@@ -2276,7 +2274,7 @@ WORD LoadRGBColor (const CString &sString)
 		{
 		pPos++;
 		DWORD dwColor = strParseIntOfBase(pPos, 16, 0);
-		return CG16bitImage::RGBValue((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF);
+		return CG32bitPixel((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF);
 		}
 
 	//	Otherwise, we expect three comma-separated values
@@ -2287,37 +2285,7 @@ WORD LoadRGBColor (const CString &sString)
 		int iGreen = strParseInt(pPos, 0, &pPos, NULL); if (*pPos) pPos++;
 		int iBlue = strParseInt(pPos, 0, &pPos, NULL);
 
-		return CG16bitImage::RGBValue(iRed, iGreen, iBlue);
-		}
-	}
-
-COLORREF LoadCOLORREF (const CString &sString)
-
-//	LoadCOLORREF
-//
-//	Returns a 32-bit color from an RGB triplet
-
-	{
-	char *pPos = sString.GetASCIIZPointer();
-
-	//	If it starts with a # we expect an RGB DWORD
-
-	if (*pPos == '#')
-		{
-		pPos++;
-		DWORD dwColor = strParseIntOfBase(pPos, 16, 0);
-		return RGB((dwColor >> 16) & 0xFF, (dwColor >> 8) & 0xFF, dwColor & 0xFF);
-		}
-
-	//	Otherwise, we expect three comma-separated values
-
-	else
-		{
-		int iRed = strParseInt(pPos, 0, &pPos, NULL); if (*pPos) pPos++;
-		int iGreen = strParseInt(pPos, 0, &pPos, NULL); if (*pPos) pPos++;
-		int iBlue = strParseInt(pPos, 0, &pPos, NULL);
-
-		return RGB(iRed, iGreen, iBlue);
+		return CG32bitPixel(iRed, iGreen, iBlue);
 		}
 	}
 
@@ -3093,6 +3061,29 @@ bool ParseOrderString (const CString &sValue, IShipController::OrderTypes *retiO
 
 	*retiOrder = iOrder;
 	return true;
+	}
+
+CSystem::LayerEnum ParsePaintLayerID (const CString &sID)
+
+//	ParsePaintLayerID
+//
+//	Parses a paint layer ID
+
+	{
+	if (strEquals(sID, CONSTLIT("background")))
+		return CSystem::layerBackground;
+	else if (strEquals(sID, CONSTLIT("space")))
+		return CSystem::layerSpace;
+	else if (strEquals(sID, CONSTLIT("stations")))
+		return CSystem::layerStations;
+	else if (strEquals(sID, CONSTLIT("ships")))
+		return CSystem::layerShips;
+	else if (strEquals(sID, CONSTLIT("effects")))
+		return CSystem::layerSpace;
+	else if (strEquals(sID, CONSTLIT("overhang")))
+		return CSystem::layerOverhang;
+	else
+		return CSystem::layerBackground;
 	}
 
 EStorageScopes ParseStorageScopeID (const CString &sID)
