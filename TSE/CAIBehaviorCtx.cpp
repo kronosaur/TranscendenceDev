@@ -551,30 +551,15 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 			}
 		}
 
-	//	If we couldn't find a suitable object, create a marker
+	//	If we couldn't find a suitable object, then we just create a private
+	//	nav path (which we need to delete later).
 
 	if (pBestObj == NULL)
-		{
-#ifdef NAV_PATH_MARKER
-		CMarker *pMarker;
-		if (CMarker::Create(pSystem,
-				pShip->GetSovereign(),
-				pShip->GetPos(),
-				NullVector,
-				strPatternSubst(CONSTLIT("NavPath-%x-%x"), pShip->GetID(), g_pUniverse->GetTicks()),
-				&pMarker) != NOERROR)
-			return false;
-
-		pBestObj = pMarker;
-#else
-		return false;
-#endif
-		}
-
-	CSpaceObject *pFrom = pBestObj;
+		return CalcNavPath(pShip, pTo->GetPos());
 
 	//	Get the appropriate nav path from the system
 
+	CSpaceObject *pFrom = pBestObj;
 	CNavigationPath *pPath = pSystem->GetNavPath(pShip->GetSovereign(), pFrom, pTo);
 
 	//	Done
