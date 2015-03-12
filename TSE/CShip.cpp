@@ -1659,10 +1659,20 @@ CString CShip::DebugCrashInfo (void)
 //	Return info that might be useful in a crash.
 
 	{
+	int i;
 	CString sResult;
 
 	sResult.Append(strPatternSubst(CONSTLIT("m_pDocked: %s\r\n"), CSpaceObject::DebugDescribe(m_pDocked)));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pExitGate: %s\r\n"), CSpaceObject::DebugDescribe(m_pExitGate)));
+
+	for (i = 0; i < m_DockingPorts.GetPortCount(this); i++)
+		{
+		CSpaceObject *pDockedObj = m_DockingPorts.GetPortObj(this, i);
+		if (pDockedObj)
+			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(pDockedObj)));
+		else if (!m_DockingPorts.DebugIsPortEmpty(this, i))
+			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: Not empty, but NULL object!\r\n"), i));
+		}
 
 	try
 		{

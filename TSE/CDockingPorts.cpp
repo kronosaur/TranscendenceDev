@@ -475,6 +475,8 @@ void CDockingPorts::MoveAll (CSpaceObject *pOwner)
 //	Move all docked objects to follow the owner
 
 	{
+	DEBUG_TRY
+
 	CVector vVel = pOwner->GetVel();
 
 	for (int i = 0; i < m_iPortCount; i++)
@@ -483,6 +485,8 @@ void CDockingPorts::MoveAll (CSpaceObject *pOwner)
 			m_pPort[i].pObj->SetPos(GetPortPos(pOwner, m_pPort[i], m_pPort[i].pObj));
 			m_pPort[i].pObj->SetVel(vVel);
 			}
+
+	DEBUG_CATCH
 	}
 
 void CDockingPorts::OnDestroyed (void)

@@ -1128,6 +1128,8 @@ CString CStation::DebugCrashInfo (void)
 		CSpaceObject *pDockedObj = m_DockingPorts.GetPortObj(this, i);
 		if (pDockedObj)
 			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(pDockedObj)));
+		else if (!m_DockingPorts.DebugIsPortEmpty(this, i))
+			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: Not empty, but NULL object!\r\n"), i));
 		}
 
 	return sResult;

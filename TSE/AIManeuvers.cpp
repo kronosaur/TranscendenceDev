@@ -41,8 +41,8 @@ const Metric FLOCK_SEPARATION_RANGE2 =	(FLOCK_SEPARATION_RANGE * FLOCK_SEPARATIO
 const Metric FLOCK_COMBAT_RANGE =		(300.0 * KLICKS_PER_PIXEL);
 const Metric FLOCK_COMBAT_RANGE2 =		(FLOCK_COMBAT_RANGE * FLOCK_COMBAT_RANGE);
 
-const Metric CLOSE_DELTA_V_RATIO =		0.1;
-const Metric MIN_SPEED_RATIO =			0.05;
+const Metric CLOSE_DELTA_V_RATIO =		0.12;
+const Metric MIN_SPEED_RATIO =			0.01;
 
 #ifdef DEBUG_COMBAT
 #define DEBUG_COMBAT_OUTPUT(x)			{ if (g_pUniverse->GetPlayerShip()) g_pUniverse->GetPlayerShip()->SendMessage(pShip, strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(x))); }
@@ -197,7 +197,7 @@ bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip,
 //
 //	Computes the parameters required to hold a formation.
 //
-//	retvRecommendedVel is the recommended velocity that we need to acchieve in
+//	retvRecommendedVel is the recommended velocity that we need to achieve in
 //			order to reach the desired state.
 //
 //	retrDeltaPos2 is the current distance (^2) to the desired pos
