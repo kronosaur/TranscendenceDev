@@ -3364,14 +3364,7 @@ bool CShip::IsFuelCompatible (const CItem &Item)
 
 	//	If we have no installed reactor, we determine this ourselves
 
-	if (m_pReactorDesc->pFuelCriteria)
-		return Item.MatchesCriteria(*m_pReactorDesc->pFuelCriteria);
-	else
-		{
-		int iLevel = Item.GetType()->GetLevel();
-		return (iLevel >= m_pReactorDesc->iMinFuelLevel 
-				&& iLevel <= m_pReactorDesc->iMaxFuelLevel);
-		}
+	return CReactorClass::IsFuelCompatible(*m_pReactorDesc, Item);
 	}
 
 bool CShip::IsPlayer (void) const

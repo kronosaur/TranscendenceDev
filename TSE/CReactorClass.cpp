@@ -194,20 +194,27 @@ ALERROR CReactorClass::InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 	return NOERROR;
 	}
 
-bool CReactorClass::IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem)
+bool CReactorClass::IsFuelCompatible (const ReactorDesc &Desc, const CItem &FuelItem)
 
 //	IsFuelCompatible
 //
-//	Returns TRUE if the given fuel item is compatible with this reactor
+//	Returns TRUE if compatible with the given fuel.
 
 	{
-	if (m_Desc.pFuelCriteria)
-		return FuelItem.MatchesCriteria(*m_Desc.pFuelCriteria);
+	if (Desc.pFuelCriteria)
+		return FuelItem.MatchesCriteria(*Desc.pFuelCriteria);
 	else
 		{
+		//	Must be fuel
+
+		if (!FuelItem.GetType()->IsFuel())
+			return false;
+
+		//	Make sure we're the correct level
+
 		int iLevel = FuelItem.GetType()->GetLevel();
-		return (iLevel >= m_Desc.iMinFuelLevel 
-				&& iLevel <= m_Desc.iMaxFuelLevel);
+		return (iLevel >= Desc.iMinFuelLevel 
+				&& iLevel <= Desc.iMaxFuelLevel);
 		}
 	}
 

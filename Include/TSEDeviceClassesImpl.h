@@ -204,8 +204,9 @@ class CReactorClass : public CDeviceClass
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
 
-		static ALERROR InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc, ReactorDesc *retDesc, bool bShipClass = false);
 		static bool FindDataField (const ReactorDesc &Desc, const CString &sField, CString *retsValue);
+		static ALERROR InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc, ReactorDesc *retDesc, bool bShipClass = false);
+		static bool IsFuelCompatible (const ReactorDesc &Desc, const CItem &FuelItem);
 
 		//	CDeviceClass virtuals
 
@@ -213,7 +214,7 @@ class CReactorClass : public CDeviceClass
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
 		virtual ItemCategories GetCategory (void) const { return itemcatReactor; }
 		virtual const ReactorDesc *GetReactorDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL);
-		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem);
+		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return IsFuelCompatible(m_Desc, FuelItem); }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList);
 
 	private:
