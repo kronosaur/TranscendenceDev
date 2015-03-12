@@ -867,6 +867,7 @@ class CObjectImage : public CDesignType
 
 		CG32bitImage *CreateCopy (CString *retsError = NULL);
 		ALERROR Exists (SDesignLoadCtx &Ctx);
+		CG32bitImage *GetHitMask (void);
 		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL);
 		CG32bitImage *GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL);
 		inline CString GetImageFilename (void) { return m_sBitmap; }
@@ -890,15 +891,19 @@ class CObjectImage : public CDesignType
 		virtual void OnUnbindDesign (void);
 
 	private:
+		bool LoadMask(const CString &sFilespec, CG32bitImage **retpImage);
+
 		CString m_sResourceDb;			//	Resource db
 		CString m_sBitmap;				//	Bitmap resource within db
 		CString m_sBitmask;				//	Bitmask resource within db
+		CString m_sHitMask;				//	Optional mask to use for hit testing
 		CString m_sShadowMask;			//	Optional mask to use to generate volumetric shadow
 		bool m_bPreMult;				//	If TRUE, image needs to be premultiplied with mask on load.
 		bool m_bLoadOnUse;				//	If TRUE, image is only loaded when needed
 		bool m_bFreeBitmap;				//	If TRUE, we free the bitmap when done
 
 		CG32bitImage *m_pBitmap;		//	Loaded image (NULL if not loaded)
+		CG32bitImage *m_pHitMask;		//	NULL if not loaded
 		CG32bitImage *m_pShadowMask;	//	NULL if not loaded
 		bool m_bMarked;					//	Marked
 		bool m_bLocked;					//	Image is never unloaded
@@ -1001,6 +1006,7 @@ class CObjectImageArray : public CObject
 		void CopyFrom (const CObjectImageArray &Source);
 		void GenerateGlowImage (int iRotation) const;
 		void GenerateScaledImages (int iRotation, int cxWidth, int cyHeight) const;
+		CG32bitImage *GetHitMask (void) const;
 
 		DWORD m_dwBitmapUNID;				//	UNID of bitmap (0 if none)
 		CObjectImage *m_pImage;				//	Image (if UNID is 0, we own this structure)
@@ -4996,6 +5002,7 @@ class CStationType : public CDesignType
 		inline bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
 		inline bool IsMultiHull (void) { return (m_fMultiHull ? true : false); }
 		inline bool IsMobile (void) const { return (m_fMobile ? true : false); }
+		inline bool IsPaintLayerOverhang (void) const { return (m_fPaintOverhang ? true : false); }
 		inline bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
 		inline bool IsSign (void) { return (m_fSign ? true : false); }
 		bool IsSizeClass (ESizeClass iClass) const;
@@ -5119,7 +5126,7 @@ class CStationType : public CDesignType
 		DWORD m_fOutOfPlane:1;							//	Background or foreground object
 		DWORD m_fNoFriendlyTarget:1;					//	Station cannot be hit by friends
 		DWORD m_fVirtual:1;								//	Virtual stations do not show up
-		DWORD m_fSpare6:1;
+		DWORD m_fPaintOverhang:1;						//	If TRUE, paint in overhang layer
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 

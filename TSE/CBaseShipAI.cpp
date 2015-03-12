@@ -1007,6 +1007,16 @@ void CBaseShipAI::OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEnt
 		m_pShip->SetDestroyInGate();
 	}
 
+void CBaseShipAI::OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos)
+
+//	OnHitBarrier
+//
+//	The ship hit a barrier
+
+	{
+	m_AICtx.SetBarrierClock(m_pShip);
+	}
+
 void CBaseShipAI::OnNewSystem (CSystem *pSystem)
 
 //	OnNewSystem
@@ -1451,12 +1461,7 @@ void CBaseShipAI::ResetBehavior (void)
 //	Resets fire and motion
 
 	{
-	if (!IsDockingRequested())
-		{
-		m_AICtx.SetManeuver(NoRotation);
-		m_AICtx.SetThrustDir(CAIShipControls::constNeverThrust);
-		}
-
+	m_AICtx.Update();
 	m_pShip->ClearAllTriggered();
 	m_Blacklist.Update(g_pUniverse->GetTicks());
 	}

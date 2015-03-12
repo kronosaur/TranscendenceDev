@@ -23,7 +23,10 @@
 #define SHIPWRECK_UNID_ATTRIB					CONSTLIT("shipwreckID")
 #define NAME_ATTRIB								CONSTLIT("name")
 
+#define PAINT_LAYER_OVERHANG					CONSTLIT("overhang")
+
 #define PROPERTY_ABANDONED						CONSTLIT("abandoned")
+#define PROPERTY_BARRIER						CONSTLIT("barrier")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
@@ -32,6 +35,7 @@
 #define PROPERTY_MAX_STRUCTURAL_HP				CONSTLIT("maxStructuralHP")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
 #define PROPERTY_ORBIT							CONSTLIT("orbit")
+#define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PARALLAX						CONSTLIT("parallax")
 #define PROPERTY_PLAYER_BACKLISTED				CONSTLIT("playerBlacklisted")
 #define PROPERTY_SHIP_CONSTRUCTION_ENABLED		CONSTLIT("shipConstructionEnabled")
@@ -342,7 +346,7 @@ bool CStation::CanBlock (CSpaceObject *pObj)
 //	Returns TRUE if this object can block the given object
 
 	{
-	return (m_pType->IsWall() 
+	return (m_fBlocksShips 
 			|| (pObj->GetCategory() == catStation && pObj->IsMobile()));
 	}
 
@@ -650,6 +654,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_fParalyzedByOverlay = false;
 	pStation->m_fNoBlacklist = false;
 	pStation->SetHasGravity(pType->HasGravity());
+	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
 
 	//	We generally don't move
 
@@ -707,6 +712,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_pArmorClass = pType->GetArmorClass();
 	pStation->m_iMaxStructuralHP = pType->GetMaxStructuralHitPoints();
 	pStation->m_iStructuralHP = pType->GetStructuralHitPoints();
+	pStation->m_fBlocksShips = pType->IsWall();
 
 	//	Pick an appropriate image. This call will set the shipwreck image, if
 	//	necessary or the variant (if appropriate).
@@ -1383,6 +1389,11 @@ CSystem::LayerEnum CStation::GetPaintLayer (void)
 //	Returns the layer on which we should paint
 	
 	{
+	//	Overrides
+
+	if (m_fPaintOverhang)
+		return CSystem::layerOverhang;
+
 	switch (m_Scale)
 		{
 		case scaleStar:
@@ -1412,6 +1423,9 @@ ICCItem *CStation::GetProperty (const CString &sName)
 
 	if (strEquals(sName, PROPERTY_ABANDONED))
 		return CC.CreateBool(IsAbandoned());
+
+	else if (strEquals(sName, PROPERTY_BARRIER))
+		return CC.CreateBool(m_fBlocksShips);
 
 	else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
@@ -2875,6 +2889,8 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fParalyzedByOverlay =	((dwLoad & 0x00002000) ? true : false);
 	m_fNoBlacklist =		((dwLoad & 0x00004000) ? true : false);
 	m_fNoConstruction =		((dwLoad & 0x00008000) ? true : false);
+	m_fBlocksShips =		((dwLoad & 0x00010000) ? true : false);
+	m_fPaintOverhang =		((dwLoad & 0x00020000) ? true : false);
 
 	//	Init name flags
 
@@ -2892,6 +2908,11 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion < 77)
 		m_fImmutable = m_pType->IsImmutable();
+
+	//	Previous versions did not store m_fBlocksShips
+
+	if (Ctx.dwVersion < 111)
+		m_fBlocksShips = m_pType->IsWall();
 
 	//	Fix a bug in version 94 in which asteroids were inadvertently marked
 	//	as immutable.
@@ -3202,6 +3223,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fParalyzedByOverlay ?	0x00002000 : 0);
 	dwSave |= (m_fNoBlacklist ?			0x00004000 : 0);
 	dwSave |= (m_fNoConstruction ?		0x00008000 : 0);
+	dwSave |= (m_fBlocksShips ?			0x00010000 : 0);
+	dwSave |= (m_fPaintOverhang ?		0x00020000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
@@ -3654,7 +3677,12 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
+	if (strEquals(sName, PROPERTY_BARRIER))
+		{
+		m_fBlocksShips = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
 		{
 		m_fNoBlacklist = !pValue->IsNil();
 		return true;
@@ -3672,6 +3700,20 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_IMMUTABLE))
 		{
 		m_fImmutable = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
+		{
+		if (pValue->IsNil())
+			m_fPaintOverhang = false;
+		else if (strEquals(pValue->GetStringValue(), PAINT_LAYER_OVERHANG))
+			m_fPaintOverhang = true;
+		else
+			{
+			*retsError = strPatternSubst(CONSTLIT("Unable to set paint layer: %s"), pValue->GetStringValue());
+			return false;
+			}
+
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_PARALLAX))

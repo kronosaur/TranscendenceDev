@@ -72,6 +72,7 @@
 #define NO_FRIENDLY_FIRE_ATTRIB					CONSTLIT("noFriendlyFire")
 #define NO_FRIENDLY_TARGET_ATTRIB				CONSTLIT("noFriendlyTarget")
 #define NO_MAP_ICON_ATTRIB						CONSTLIT("noMapIcon")
+#define PAINT_LAYER_ATTRIB						CONSTLIT("paintLayer")
 #define RADIOACTIVE_ATTRIB						CONSTLIT("radioactive")
 #define RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("randomEncounters")
 #define REGEN_ATTRIB							CONSTLIT("regen")
@@ -1248,6 +1249,13 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iAlertWhenDestroyed = pDesc->GetAttributeInteger(ALERT_WHEN_DESTROYED_ATTRIB);
 	m_rMaxAttackDistance = MAX_ATTACK_DISTANCE;
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
+
+	CString sLayer;
+	if (pDesc->FindAttribute(PAINT_LAYER_ATTRIB, &sLayer)
+			&& strEquals(sLayer, CONSTLIT("overhang")))
+		m_fPaintOverhang = true;
+	else
+		m_fPaintOverhang = false;
 
 	//	Repair rate
 

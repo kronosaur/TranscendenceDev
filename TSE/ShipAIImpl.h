@@ -89,6 +89,7 @@ class CAIBehaviorCtx
 		inline void ReadFromStreamAISettings (SLoadCtx &Ctx) { m_AISettings.ReadFromStream(Ctx); }
 		inline CString SetAISetting (const CString &sSetting, const CString &sValue) { return m_AISettings.SetValue(sSetting, sValue); }
 		inline void SetAISettings (const CAISettings &Source) { m_AISettings = Source; }
+		void SetBarrierClock (CShip *pShip);
 		inline void SetDockingRequested (bool bValue = true) { m_fDockingRequested = bValue; }
 		inline void SetHasEscorts (bool bValue = true) { m_fHasEscorts = bValue; }
 		void SetLastAttack (int iTick);
@@ -102,6 +103,7 @@ class CAIBehaviorCtx
 		inline void SetThrustDir (int iDir) { m_ShipControls.SetThrustDir(iDir); }
 		inline void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
 		inline bool ThrustsThroughTurn (void) const { return m_fThrustThroughTurn; }
+		void Update (void);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 		//	Maneuvers
@@ -169,7 +171,8 @@ class CAIBehaviorCtx
 		int m_iLastAttack;						//	Tick of last attack on us
 		CVector m_vPotential;					//	Avoid potential
 		CNavigationPath *m_pNavPath;			//	Current navigation path
-		int m_iNavPathPos;						//	-1 = not in nav path
+		int m_iNavPathPos:16;					//	-1 = not in nav path
+		int m_iBarrierClock:16;					//	We've hit a barrier, so try to recover
 
 		DWORD m_fDockingRequested:1;			//	TRUE if we've requested docking
 		DWORD m_fWaitForShieldsToRegen:1;		//	TRUE if ship is waiting for shields to regen
@@ -395,6 +398,7 @@ class CBaseShipAI : public IShipController
 		virtual bool OnGetAISettingString (const CString &sSetting, CString *retsValue) { return false; }
 		virtual CSpaceObject *OnGetBase (void) const { return NULL; }
 		virtual CSpaceObject *OnGetTarget (bool bNoAutoTarget = false) const { return NULL; }
+		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos);
 		virtual void OnNewSystemNotify (void) { }
 		virtual void OnOrderChanged (void) { }
 		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) { }

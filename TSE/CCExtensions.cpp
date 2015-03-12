@@ -1406,6 +1406,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'hasDockingPorts\n"
 			"   'id\n"
 			"   'known\n"
+			"   'paintLayer\n"
 			"   'playerMissionsGiven\n"
 			"   'underAttack\n"
 			"\n"
@@ -1437,6 +1438,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (stations)\n\n"
 
 			"   'abandoned\n"
+			"   'barrier\n"
 			"   'dockingPortCount\n"
 			"   'hp\n"
 			"   'ignoreFriendlyFire\n"
@@ -1708,6 +1710,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"\n"
 			"property (stations)\n\n"
 
+			"   'barrier True|Nil\n"
 			"   'ignoreFriendlyFire True|Nil\n"
 			"   'hp hitPoints\n"
 			"   'immutable True|Nil\n"
@@ -1715,6 +1718,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'maxHP hitPoints\n"
 			"   'maxStructuralHP hitPoints\n"
 			"   'orbit orbit|Nil\n"
+			"   'paintLayer 'overhang|Nil\n"
 			"   'parallax factor\n"
 			"   'playerBlacklisted True|Nil\n"
 			"   'shipConstructionEnabled True|Nil\n"

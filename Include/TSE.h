@@ -64,7 +64,7 @@
 //#define DEBUG_COMBAT
 //#define DEBUG_COMBAT_AI
 //#define DEBUG_DOCK_PORT_POS
-#define DEBUG_ENCOUNTER_COUNTS
+//#define DEBUG_ENCOUNTER_COUNTS
 //#define DEBUG_FIRE_ON_OPPORTUNITY
 //#define DEBUG_HENCHMAN
 //#define DEBUG_LOAD
@@ -247,7 +247,7 @@ class CAStarPathFinder
 		~CAStarPathFinder (void);
 
 		void AddObstacle (const CVector &vUR, const CVector &vLL);
-		int FindPath (const CVector &vStart, const CVector &vEnd, CVector **retPathList);
+		int FindPath (const CVector &vStart, const CVector &vEnd, CVector **retPathList, bool bTryReverse = true);
 
 	private:
 		struct SObstacle
@@ -1133,7 +1133,7 @@ class CSystem : public CObject
 		//	Other defines
 
 		enum LayerEnum
-				{
+			{
 			layerFirst = 0,
 
 			layerBackground = 0,
@@ -1141,8 +1141,9 @@ class CSystem : public CObject
 			layerStations = 2,
 			layerShips = 3,
 			layerEffects = 4,
+			layerOverhang = 5,
 
-			layerCount = 5
+			layerCount = 6
 			};
 
 		enum Flags
@@ -3606,6 +3607,9 @@ CString GetDestructionName (DestructionTypes iCause);
 CString GetGenomeID (GenomeTypes iGenome);
 CString GetGenomeName (GenomeTypes iGenome);
 GenomeTypes ParseGenomeID (const CString &sText);
+
+CString GetPaintLayerID (CSystem::LayerEnum iPaintLayer);
+CSystem::LayerEnum ParsePaintLayerID (const CString &sID);
 
 MessageTypes GetMessageFromID (const CString &sID);
 CString GetMessageID (MessageTypes iMessage);

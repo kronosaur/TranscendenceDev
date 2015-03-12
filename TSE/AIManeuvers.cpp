@@ -1458,33 +1458,48 @@ void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestinati
 	//	Figure out our next point along the path
 
 	CVector vTarget = m_pNavPath->GetNavPoint(m_iNavPathPos) - pShip->GetPos();
-
-	//	Are we at our target? If so, then we move on to
-	//	the next nav point
-
 	Metric rTargetDist2 = vTarget.Length2();
-	if (rTargetDist2 < HIT_NAV_POINT_DIST2)
+
+	//	If we've hit a wall, back up a little bit
+
+	if (m_iBarrierClock != -1)
 		{
-		//	If we're at the last nav point, then we've reached our
-		//	destination.
+		vTarget = vTarget.Normal() * g_KlicksPerPixel * -30.0;
+		Metric rTargetDist2 = vTarget.Length2();
 
-		if (m_iNavPathPos + 1 >= m_pNavPath->GetNavPointCount())
-			{
-			if (retbAtDestination)
-				*retbAtDestination = true;
-			return;
-			}
-
-		//	Otherwise, we go to the next nav point
-
-		m_iNavPathPos++;
-		vTarget = m_pNavPath->GetNavPoint(m_iNavPathPos) - pShip->GetPos();
-		rTargetDist2 = vTarget.Length2();
+		ImplementCloseOnImmobileTarget(pShip, NULL, vTarget, rTargetDist2, pShip->GetMaxSpeed() / 4.0);
 		}
 
-	//	Navigate towards the next nav point
+	//	Otherwise continue
 
-	ImplementCloseOnImmobileTarget(pShip, NULL, vTarget, rTargetDist2, pShip->GetMaxSpeed() / 2.0);
+	else
+		{
+		//	Are we at our target? If so, then we move on to
+		//	the next nav point
+
+		if (rTargetDist2 < HIT_NAV_POINT_DIST2)
+			{
+			//	If we're at the last nav point, then we've reached our
+			//	destination.
+
+			if (m_iNavPathPos + 1 >= m_pNavPath->GetNavPointCount())
+				{
+				if (retbAtDestination)
+					*retbAtDestination = true;
+				return;
+				}
+
+			//	Otherwise, we go to the next nav point
+
+			m_iNavPathPos++;
+			vTarget = m_pNavPath->GetNavPoint(m_iNavPathPos) - pShip->GetPos();
+			rTargetDist2 = vTarget.Length2();
+			}
+
+		//	Navigate towards the next nav point
+
+		ImplementCloseOnImmobileTarget(pShip, NULL, vTarget, rTargetDist2, pShip->GetMaxSpeed() / 2.0);
+		}
 
 	//	Done
 

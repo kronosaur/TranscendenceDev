@@ -70,6 +70,17 @@ int CNavigationPath::ComputePath (CSystem *pSystem, CSovereign *pSovereign, cons
 					&& !IntersectRect(vUR, vLL, vTo))
 				AStar.AddObstacle(vUR, vLL);
 			}
+		else if (pObj->HasGravity())
+			{
+			CVector vUR = pObj->GetPos() + CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
+			CVector vLL = pObj->GetPos() - CVector(MAX_SAFE_DIST, MAX_SAFE_DIST);
+
+			//	Only add obstacles if start and end are outside the obstacle
+
+			if (!IntersectRect(vUR, vLL, vFrom)
+					&& !IntersectRect(vUR, vLL, vTo))
+				AStar.AddObstacle(vUR, vLL);
+			}
 		else if (pObj->BlocksShips())
 			{
 			CVector vUR;
@@ -405,8 +416,19 @@ CVector CNavigationPath::GetNavPoint (int iIndex) const
 //	Return the nav point at the given index
 
 	{
-	iIndex = Min(iIndex, m_iWaypointCount - 1);
-	return m_Waypoints[iIndex];
+	if (iIndex == -1)
+		{
+		CSpaceObject *pStart = g_pUniverse->FindObject(m_iStartIndex);
+		if (pStart)
+			return pStart->GetPos();
+		else
+			return m_Waypoints[0];
+		}
+	else
+		{
+		iIndex = Min(iIndex, m_iWaypointCount - 1);
+		return m_Waypoints[iIndex];
+		}
 	}
 
 bool CNavigationPath::Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd)

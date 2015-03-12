@@ -348,6 +348,12 @@
 //	110: 1.6
 //		New 32-bit colors.
 //
+//	111: 1.6
+//		m_fIsBarrier in CStation
+//
+//	112: 1.6
+//		m_iBarrierClock in CAIBehaviorCtx
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

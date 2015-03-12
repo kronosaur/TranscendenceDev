@@ -3665,7 +3665,7 @@ void CShip::OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos)
 //	Ship hit a barrier
 
 	{
-	m_pController->CancelDocking();
+	m_pController->OnHitBarrier(pBarrierObj, vPos);
 	}
 
 DWORD CShip::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)

@@ -1910,6 +1910,38 @@ CString GetOrderName (IShipController::OrderTypes iOrder)
 	return CString(g_OrderTypes[iOrder].szName);
 	}
 
+CString GetPaintLayerID (CSystem::LayerEnum iPaintLayer)
+
+//	GetPaintLayerID
+//
+//	Returns the paint layer ID
+
+	{
+	switch (iPaintLayer)
+		{
+		case CSystem::layerBackground:
+			return CONSTLIT("background");
+
+		case CSystem::layerSpace:
+			return CONSTLIT("space");
+
+		case CSystem::layerStations:
+			return CONSTLIT("stations");
+
+		case CSystem::layerShips:
+			return CONSTLIT("ships");
+
+		case CSystem::layerEffects:
+			return CONSTLIT("effects");
+
+		case CSystem::layerOverhang:
+			return CONSTLIT("overhang");
+
+		default:
+			return NULL_STR;
+		}
+	}
+
 int OrderGetDataCount (IShipController::OrderTypes iOrder)
 
 //	OrderGetDataCount
@@ -3029,6 +3061,29 @@ bool ParseOrderString (const CString &sValue, IShipController::OrderTypes *retiO
 
 	*retiOrder = iOrder;
 	return true;
+	}
+
+CSystem::LayerEnum ParsePaintLayerID (const CString &sID)
+
+//	ParsePaintLayerID
+//
+//	Parses a paint layer ID
+
+	{
+	if (strEquals(sID, CONSTLIT("background")))
+		return CSystem::layerBackground;
+	else if (strEquals(sID, CONSTLIT("space")))
+		return CSystem::layerSpace;
+	else if (strEquals(sID, CONSTLIT("stations")))
+		return CSystem::layerStations;
+	else if (strEquals(sID, CONSTLIT("ships")))
+		return CSystem::layerShips;
+	else if (strEquals(sID, CONSTLIT("effects")))
+		return CSystem::layerSpace;
+	else if (strEquals(sID, CONSTLIT("overhang")))
+		return CSystem::layerOverhang;
+	else
+		return CSystem::layerBackground;
 	}
 
 EStorageScopes ParseStorageScopeID (const CString &sID)

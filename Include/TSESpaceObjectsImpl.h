@@ -1240,6 +1240,7 @@ class CStation : public CSpaceObject
 		inline void SetNoConstruction (void) { m_fNoConstruction = true; }
 		inline void SetNoMapLabel (void) { m_fNoMapLabel = true; }
 		inline void SetNoReinforcements (void) { m_fNoReinforcements = true; }
+		inline void SetPaintOverhang (bool bOverhang = true) { m_fPaintOverhang = bOverhang; }
 		inline void SetReconned (void) { m_fReconned = true; }
 		inline void SetShowMapLabel (bool bShow = true) { m_fNoMapLabel = !bShow; }
 		void SetStargate (const CString &sDestNode, const CString &sDestEntryPoint);
@@ -1256,7 +1257,7 @@ class CStation : public CSpaceObject
 		virtual bool CanAttack (void) const;
 		virtual bool CanBeDestroyed (void) { return (m_iStructuralHP > 0); }
 		virtual bool CanBlock (CSpaceObject *pObj);
-		virtual bool CanBlockShips (void) { return m_pType->IsWall(); }
+		virtual bool CanBlockShips (void) { return m_fBlocksShips; }
 		virtual bool CanMove (void) { return IsMobile(); }
 		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		virtual bool ClassCanAttack (void);
@@ -1458,8 +1459,8 @@ class CStation : public CSpaceObject
 		DWORD m_fParalyzedByOverlay:1;			//	If TRUE, an overlay has paralyzed us
 		DWORD m_fNoBlacklist:1;					//	If TRUE, do not blacklist player on friendly fire
 		DWORD m_fNoConstruction:1;				//	Do not build new ships
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
+		DWORD m_fBlocksShips:1;					//	TRUE if we block ships
+		DWORD m_fPaintOverhang:1;				//	If TRUE, paint above player ship
 
 		DWORD m_dwSpare:16;
 

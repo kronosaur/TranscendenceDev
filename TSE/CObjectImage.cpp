@@ -8,6 +8,7 @@
 #define BITMAP_ATTRIB						CONSTLIT("bitmap")
 #define BITMASK_ATTRIB						CONSTLIT("bitmask")
 #define BACK_COLOR_ATTRIB					CONSTLIT("backColor")
+#define HIT_MASK_ATTRIB						CONSTLIT("hitMask")
 #define LOAD_ON_USE_ATTRIB					CONSTLIT("loadOnUse")
 #define NO_PM_ATTRIB						CONSTLIT("noPM")
 #define SHADOW_MASK_ATTRIB					CONSTLIT("shadowMask")
@@ -17,6 +18,7 @@
 
 CObjectImage::CObjectImage (void) : 
 		m_pBitmap(NULL),
+		m_pHitMask(NULL),
 		m_pShadowMask(NULL)
 
 //	CObjectImage constructor
@@ -26,6 +28,7 @@ CObjectImage::CObjectImage (void) :
 
 CObjectImage::CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap, CG32bitImage *pShadowMask) :
 		m_pBitmap(pBitmap),
+		m_pHitMask(NULL),
 		m_pShadowMask(pShadowMask),
 		m_bPreMult(false),
 		m_bLoadOnUse(false),
@@ -44,14 +47,20 @@ CObjectImage::~CObjectImage (void)
 //	CObjectImage destructor
 
 	{
-	//	If we get created with an UNID of 0 it means that someone else owns the bitmap
-	//	This is needed by CObjectImageArray.
+	//	LATER: For now we assume that either all or not of the bitmaps are
+	//	owned by us.
 
-	if (m_pBitmap && m_bFreeBitmap)
-		delete m_pBitmap;
+	if (m_bFreeBitmap)
+		{
+		if (m_pBitmap)
+			delete m_pBitmap;
 
-	if (m_pShadowMask && m_bFreeBitmap)
-		delete m_pShadowMask;
+		if (m_pHitMask)
+			delete m_pHitMask;
+
+		if (m_pShadowMask)
+			delete m_pShadowMask;
+		}
 	}
 
 CG32bitImage *CObjectImage::CreateCopy (CString *retsError)
@@ -98,6 +107,12 @@ ALERROR CObjectImage::Exists (SDesignLoadCtx &Ctx)
 		return ERR_FAIL;
 		}
 
+	if (!m_sHitMask.IsBlank() && !Ctx.pResDb->ImageExists(NULL_STR, m_sHitMask))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Unable to find image: '%s'"), m_sHitMask);
+		return ERR_FAIL;
+		}
+
 	if (!m_sShadowMask.IsBlank() && !Ctx.pResDb->ImageExists(NULL_STR, m_sShadowMask))
 		{
 		Ctx.sError = strPatternSubst(CONSTLIT("Unable to find image: '%s'"), m_sShadowMask);
@@ -132,6 +147,31 @@ bool CObjectImage::FindDataField (const CString &sField, CString *retsValue)
 		return false;
 
 	return true;
+	}
+
+CG32bitImage *CObjectImage::GetHitMask (void)
+
+//	GetHitMask
+//
+//	Returns the hit mask image, if we have one. Otherwise, we return NULL.
+
+	{
+	//	If we have the image, we're done
+
+	if (m_pHitMask)
+		return m_pHitMask;
+
+	//	If no shadow mask, nothing to do
+
+	if (m_sHitMask.IsBlank())
+		return NULL;
+
+	//	Otherwise, load it
+
+	if (!LoadMask(m_sHitMask, &m_pHitMask))
+		return NULL;
+
+	return m_pHitMask;
 	}
 
 CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsError)
@@ -258,67 +298,84 @@ CG32bitImage *CObjectImage::GetShadowMask (void)
 //	Returns the shadow mask image, if we have one. Otherwise, we return NULL.
 
 	{
+	//	If we have the image, we're done
+
+	if (m_pShadowMask)
+		return m_pShadowMask;
+
+	//	If no shadow mask, nothing to do
+
+	if (m_sShadowMask.IsBlank())
+		return NULL;
+
+	//	Otherwise, load it
+
+	if (!LoadMask(m_sShadowMask, &m_pShadowMask))
+		return NULL;
+
+	return m_pShadowMask;
+	}
+
+bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
+
+//	LoadMask
+//
+//	Loads a mask image. Returns TRUE if we succeed.
+
+	{
 	CString sError;
 
 	try
 		{
-		//	If we have the image, we're done
-
-		if (m_pShadowMask)
-			return m_pShadowMask;
-
-		//	If no shadow mask, nothing to do
-
-		if (m_sShadowMask.IsBlank())
-			return NULL;
-
 		//	Open the database
 
 		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
 		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
 			{
-			::kernelDebugLogMessage("Unable to load shadow mask: %s", sError);
-			return NULL;
+			::kernelDebugLogMessage("Unable to load %s: %s", sFilespec, sError);
+			return false;
 			}
 
-		//	Load the image
+		//	Load the mask
 
 		HBITMAP hDIB = NULL;
 		EBitmapTypes iMaskType;
-		if (ResDb.LoadImage(NULL_STR, m_sShadowMask, &hDIB, &iMaskType))
+		if (ResDb.LoadImage(NULL_STR, sFilespec, &hDIB, &iMaskType))
 			{
-			::kernelDebugLogMessage("Unable to load shadow mask: %s", m_sShadowMask);
-			return NULL;
+			::kernelDebugLogMessage("Unable to load %s.", sFilespec);
+			return false;
 			}
 
 		//	Create a new CG32BitImage
 
-		m_pShadowMask = new CG32bitImage;
-		if (m_pShadowMask == NULL)
+		CG32bitImage *pMask = new CG32bitImage;
+		if (pMask == NULL)
 			{
-			::kernelDebugLogMessage("Out of memory creating shadow mask.");
-			return NULL;
+			::kernelDebugLogMessage("Out of memory loading mask.");
+			return false;
 			}
 
-		bool bSuccess = m_pShadowMask->CreateFromBitmap(NULL, hDIB, iMaskType, 0);
+		bool bSuccess = pMask->CreateFromBitmap(NULL, hDIB, iMaskType, 0);
 		::DeleteObject(hDIB);
 
 		//	Check for error
 
 		if (!bSuccess)
 			{
-			delete m_pShadowMask;
-			m_pShadowMask = NULL;
-			::kernelDebugLogMessage("Unable to create shadow mask image.");
-			return NULL;
+			delete pMask;
+			::kernelDebugLogMessage("Unable to create %s image.", sFilespec);
+			return false;
 			}
 
-		return m_pShadowMask;
+		//	Return
+
+		*retpImage = pMask;
+		return true;
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash loading shadow mask.");
-		return NULL;
+		::kernelDebugLogMessage("Crash loading %s.", sFilespec);
+		return false;
 		}
 	}
 
@@ -361,6 +418,7 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		m_sBitmap = pDesc->GetAttribute(BITMAP_ATTRIB);
 		m_sBitmask = pDesc->GetAttribute(BITMASK_ATTRIB);
+		m_sHitMask = pDesc->GetAttribute(HIT_MASK_ATTRIB);
 		m_sShadowMask = pDesc->GetAttribute(SHADOW_MASK_ATTRIB);
 		}
 	else
@@ -371,6 +429,9 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		if (pDesc->FindAttribute(BITMASK_ATTRIB, &sFilespec))
 			m_sBitmask = pathAddComponent(Ctx.sFolder, sFilespec);
+
+		if (pDesc->FindAttribute(HIT_MASK_ATTRIB, &sFilespec))
+			m_sHitMask = pathAddComponent(Ctx.sFolder, sFilespec);
 
 		if (pDesc->FindAttribute(SHADOW_MASK_ATTRIB, &sFilespec))
 			m_sShadowMask = pathAddComponent(Ctx.sFolder, sFilespec);
@@ -399,6 +460,7 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_bMarked = false;
 	m_bLocked = false;
 	m_pBitmap = NULL;
+	m_pHitMask = NULL;
 	m_pShadowMask = NULL;
 
 	//	If we're loading on use, make sure the image exists. For other
@@ -457,6 +519,12 @@ void CObjectImage::OnUnbindDesign (void)
 			m_bLocked = false;
 			}
 
+		if (m_pHitMask)
+			{
+			delete m_pHitMask;
+			m_pHitMask = NULL;
+			}
+
 		if (m_pShadowMask)
 			{
 			delete m_pShadowMask;
@@ -478,6 +546,12 @@ void CObjectImage::Sweep (void)
 			{
 			delete m_pBitmap;
 			m_pBitmap = NULL;
+			}
+
+		if (m_pHitMask)
+			{
+			delete m_pHitMask;
+			m_pHitMask = NULL;
 			}
 
 		if (m_pShadowMask)

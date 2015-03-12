@@ -617,6 +617,20 @@ CString CObjectImageArray::GetFilename (void) const
 	return m_pImage->GetImageFilename();
 	}
 
+CG32bitImage *CObjectImageArray::GetHitMask (void) const
+
+//	GetHitMask
+//
+//	Returns the hit mask to use.
+
+	{
+	CG32bitImage *pSource = m_pImage->GetHitMask();
+	if (pSource == NULL)
+		pSource = m_pImage->GetImage(CONSTLIT("PointInImage"));
+
+	return pSource;
+	}
+
 bool CObjectImageArray::GetImageOffset (int iTick, int iRotation, int *retx, int *rety) const
 
 //	GetImageOffset
@@ -769,8 +783,8 @@ bool CObjectImageArray::ImagesIntersect (int iTick, int iRotation, int x, int y,
 
 	//	Images
 
-	CG32bitImage *pSrc1 = m_pImage->GetImage(NULL_STR);
-	CG32bitImage *pSrc2 = Image2.m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSrc1 = GetHitMask();
+	CG32bitImage *pSrc2 = Image2.GetHitMask();
 	if (pSrc1 == NULL || pSrc2 == NULL)
 		return false;
 
@@ -1377,7 +1391,10 @@ bool CObjectImageArray::PointInImage (int x, int y, int iTick, int iRotation) co
 	{
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		//	Get the hit mask. If we don't have a specific hit mask, then we use
+		//	the image.
+
+		CG32bitImage *pSource = GetHitMask();
 		if (pSource == NULL)
 			return false;
 
@@ -1452,7 +1469,7 @@ void CObjectImageArray::PointInImageInit (SPointInObjectCtx &Ctx, int iTick, int
 	{
 	if (m_pImage)
 		{
-		Ctx.pImage = m_pImage->GetImage(NULL_STR);
+		Ctx.pImage = GetHitMask();
 		if (Ctx.pImage == NULL)
 			return;
 

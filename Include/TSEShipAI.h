@@ -206,6 +206,7 @@ class IShipController
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { }
 		virtual void OnFuelLowWarning (int iSeq) { }
+		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) { CancelDocking(); }
 		virtual void OnItemDamaged (const CItem &Item, int iHP) { }
 		virtual void OnItemFired (const CItem &Item) { }
 		virtual void OnItemInstalled (const CItem &Item) { }

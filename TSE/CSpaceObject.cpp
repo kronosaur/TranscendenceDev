@@ -89,6 +89,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_INSTALL_DEVICE_PRICE			CONSTLIT("installDevicePrice")
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL							CONSTLIT("level")
+#define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
@@ -3771,6 +3772,9 @@ ICCItem *CSpaceObject::GetProperty (const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_LEVEL))
 		return CC.CreateInteger(GetLevel());
+
+	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
+		return CC.CreateString(GetPaintLayerID(GetPaintLayer()));
 
 	else if (strEquals(sName, PROPERTY_PLAYER_MISSIONS_GIVEN))
 		{
