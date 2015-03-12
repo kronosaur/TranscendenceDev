@@ -21,6 +21,30 @@ ICCItem::ICCItem (IObjectClass *pClass) : CObject(pClass)
 	ResetItem();
 	}
 
+void ICCItem::AppendInteger (CCodeChain &CC, int iValue)
+
+//	AppendInteger
+//
+//	Inserts an element in a list
+
+	{
+	ICCItem *pItem = CC.CreateInteger(iValue);
+	Append(CC, pItem);
+	pItem->Discard(&CC);
+	}
+
+void ICCItem::AppendString (CCodeChain &CC, const CString &sValue)
+
+//	AppendString
+//
+//	Inserts an element in a list
+
+	{
+	ICCItem *pItem = CC.CreateString(sValue);
+	Append(CC, pItem);
+	pItem->Discard(&CC);
+	}
+
 void ICCItem::CloneItem (ICCItem *pItem)
 
 //	CloneItem
@@ -158,6 +182,46 @@ void ICCItem::ResetItem (void)
 	m_bModified = FALSE;
 	m_bNoRefCount = FALSE;
 	m_bReadOnly = FALSE;
+	}
+
+void ICCItem::SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
+
+//	SetAt
+//
+//	Set key-value pair.
+
+	{
+	ICCItem *pKey = CC.CreateString(sKey);
+	AddEntry(&CC, pKey, pValue);
+	pKey->Discard(&CC);
+	}
+
+void ICCItem::SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue)
+
+//	SetIntegerAt
+//
+//	Set key-value pair.
+
+	{
+	ICCItem *pKey = CC.CreateString(sKey);
+	ICCItem *pValue = CC.CreateInteger(iValue);
+	AddEntry(&CC, pKey, pValue);
+	pKey->Discard(&CC);
+	pValue->Discard(&CC);
+	}
+
+void ICCItem::SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue)
+
+//	SetStringAt
+//
+//	Set key-value pair.
+
+	{
+	ICCItem *pKey = CC.CreateString(sKey);
+	ICCItem *pValue = CC.CreateString(sValue);
+	AddEntry(&CC, pKey, pValue);
+	pKey->Discard(&CC);
+	pValue->Discard(&CC);
 	}
 
 ICCItem *ICCItem::Stream (CCodeChain *pCC, IWriteStream *pStream)

@@ -101,7 +101,7 @@ ICCItem *CCodeChain::Link (const CString &sString, int iOffset, int *retiLinked,
 
 				//	Add the item to the list
 
-				pList->Append(this, pItem, NULL);
+				pList->Append(*this, pItem);
 				pItem->Discard(this);
 
 				//	Move the position

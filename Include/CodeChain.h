@@ -25,10 +25,18 @@ class ICCItem;
 
 typedef ICCItem *(*PRIMITIVEPROC)(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 
+class IPrimitiveImpl
+	{
+	public:
+		virtual ICCItem *InvokeCCPrimitive (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData) { return NULL; }
+		virtual bool RegisterCCPrimitives (CCodeChain &CC) { return true; }
+	};
+
 #define PPFLAG_SIDEEFFECTS						0x00000001	//	Function has side-effects
 #define PPFLAG_NOERRORS							0x00000002	//	Function never returns errors
 #define PPFLAG_SYNONYM							0x00000004	//	Function is a synonym (pszDescription is name of function)
 #define PPFLAG_CUSTOM_ARG_EVAL					0x00000008	//	Raw args are passed to the function (before evaluation)
+#define PPFLAG_METHOD_INVOKE					0x00000010	//	pfFunction points to IPrimitiveImpl
 
 typedef struct
 	{
@@ -100,6 +108,10 @@ class ICCItem : public CObject
 
 		//	List interface
 
+		void AppendInteger (CCodeChain &CC, int iValue);
+		void AppendString (CCodeChain &CC, const CString &sValue);
+
+		virtual void Append (CCodeChain &CC, ICCItem *pValue) { }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) = 0;
 		virtual int GetCount (void) = 0;
 		virtual ICCItem *GetElement (int iIndex) = 0;
@@ -162,6 +174,10 @@ class ICCItem : public CObject
 		void ResetItem (void);
 
 		//	Symbol/Atom table functions
+
+		void SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue);
+		void SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue);
+		void SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue);
 
 		virtual ICCItem *AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { return NotASymbolTable(pCC); }
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) { ASSERT(FALSE); }
@@ -372,7 +388,7 @@ class CCPrimitive : public ICCAtom
 	public:
 		CCPrimitive (void);
 
-		void SetProc (PRIMITIVEPROCDEF *pDef);
+		void SetProc (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl);
 
 		//	ICCItem virtuals
 
@@ -394,7 +410,7 @@ class CCPrimitive : public ICCAtom
 
 	private:
 		CString m_sName;
-		PRIMITIVEPROC m_pfFunction;
+		void *m_pfFunction;
 		CString m_sArgPattern;
 		CString m_sDesc;
 		DWORD m_dwData;
@@ -459,9 +475,6 @@ class CCLinkedList : public ICCList
 		CCLinkedList (void);
 		virtual ~CCLinkedList (void);
 
-		void Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
-		void AppendIntegerValue (CCodeChain *pCC, int iValue, ICCItem **retpError = NULL);
-		void AppendStringValue (CCodeChain *pCC, const CString &sString, ICCItem **retpError = NULL);
 		void CreateIndex (void);
 		void RemoveElement (CCodeChain *pCC, int iIndex);
 		void ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewItem);
@@ -470,6 +483,7 @@ class CCLinkedList : public ICCList
 
 		//	ICCItem virtuals
 
+		virtual void Append (CCodeChain &CC, ICCItem *pValue);
 		virtual ICCItem *Clone (CCodeChain *pCC);
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode);
 		virtual int GetCount (void) { return m_iCount; }
@@ -571,9 +585,12 @@ class CCSymbolTable : public ICCList
 		CCSymbolTable (void);
 
 		inline CString GetKey (int iIndex) { return m_Symbols.GetKey(iIndex); }
-		void SetIntegerValue (CCodeChain &CC, const CString &sKey, int iValue);
-		void SetStringValue (CCodeChain &CC, const CString &sKey, const CString &sValue);
-		void SetValue (CCodeChain &CC, const CString &sKey, ICCItem *pValue);
+
+		//	LATER: These are deprecated. Should remove them (and replace callers with SetAt versions).
+
+		inline void SetIntegerValue (CCodeChain &CC, const CString &sKey, int iValue) { SetIntegerAt(CC, sKey, iValue); }
+		inline void SetStringValue (CCodeChain &CC, const CString &sKey, const CString &sValue) { SetStringAt(CC, sKey, sValue); }
+		inline void SetValue (CCodeChain &CC, const CString &sKey, ICCItem *pValue) { SetAt(CC, sKey, pValue); }
 
 		//	ICCItem virtuals
 
@@ -700,7 +717,7 @@ class CCodeChain : public CObject
 		ICCItem *CreateLinkedList (void);
 		inline ICCItem *CreateMemoryError (void) { return m_sMemoryError.Reference(); }
 		inline ICCItem *CreateNil (void) { return m_pNil->Reference(); }
-		ICCItem *CreatePrimitive (PRIMITIVEPROCDEF *pDef);
+		ICCItem *CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl);
 		ICCItem *CreateString (const CString &sString);
 		ICCItem *CreateSymbolTable (void);
 		ICCItem *CreateSystemError (ALERROR error);
@@ -746,7 +763,7 @@ class CCodeChain : public CObject
 		ICCItem *ListGlobals (void);
 		ICCItem *LookupFunction (CEvalContext *pCtx, ICCItem *pName);
 		ICCItem *PoolUsage (void);
-		ALERROR RegisterPrimitive (PRIMITIVEPROCDEF *pDef);
+		ALERROR RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl = NULL);
 		inline void SetGlobalDefineHook (IItemTransform *pHook) { m_pGlobalSymbols->SetDefineHook(pHook); }
 
 		//	Miscellaneous

@@ -73,7 +73,7 @@ class CAniProperty
 		CAniProperty &operator= (const CAniProperty &Obj);
 
 		inline bool GetBool (void) const { return (m_iType == typeBool ? (m_Value.dwValue == 1) : false); }
-		inline WORD GetColor (void) const { return (m_iType == typeColor ? (WORD)m_Value.dwValue : 0); }
+		inline CG32bitPixel GetColor (void) const { return (m_iType == typeColor ? CG32bitPixel::FromDWORD(m_Value.dwValue) : CG32bitPixel(0)); }
 		inline const CG16bitFont *GetFont (void) const { return (m_iType == typeFont ? (const CG16bitFont *)m_Value.pValue : NULL); }
 		inline int GetInteger (void) const { return (m_iType == typeInteger ? (int)m_Value.dwValue : 0); }
 		inline Metric GetMetric (void) const { return (m_iType == typeMetric ? m_Value.rValue : 0.0); }
@@ -85,6 +85,7 @@ class CAniProperty
 		void Set (Types iType, const CG16bitFont *pFont);
 		void Set (Types iType, int iValue);
 		void Set (Types iType, DWORD dwValue);
+		void Set (Types iType, CG32bitPixel rgbValue);
 		void Set (Types iType, Metric rValue);
 		void Set (Types iType, const CString &sValue);
 		void Set (Types iType, const CVector &vValue);
@@ -140,7 +141,7 @@ class CAniPropertySet
 		bool FindAnimator (const CString &sID, IPropertyAnimator **retpAnimator);
 		inline int FindProperty (const CString &sProperty) const { int iIndex; Find(sProperty, &iIndex); return iIndex; }
 		bool GetBool (const CString &sName) const;
-		WORD GetColor (const CString &sName) const;
+		CG32bitPixel GetColor (const CString &sName) const;
 		int GetDuration (void);
 		const CG16bitFont *GetFont (const CString &sName) const;
 		int GetInteger (const CString &sName) const;
@@ -153,7 +154,7 @@ class CAniPropertySet
 		void GoToStart (void);
 		void Set (const CString &sName, const CAniProperty &Value, int *retiIndex = NULL);
 		void SetBool (const CString &sName, bool bValue, int *retiIndex = NULL);
-		void SetColor (const CString &sName, WORD wValue, int *retiIndex = NULL);
+		void SetColor (const CString &sName, CG32bitPixel rgbValue, int *retiIndex = NULL);
 		void SetFont (const CString &sName, const CG16bitFont *pFont, int *retiIndex = NULL);
 		void SetInteger (const CString &sName, int iValue, int *retiIndex = NULL);
 		void SetMetric (const CString &sName, Metric rValue, int *retiIndex = NULL);
@@ -191,14 +192,14 @@ class CAniPropertySet
 
 struct SAniPaintCtx
 	{
-	SAniPaintCtx (CG16bitImage &DestArg, const CXForm &ToDestArg, DWORD dwOpacityToDestArg, int iFrameArg) :
+	SAniPaintCtx (CG32bitImage &DestArg, const CXForm &ToDestArg, DWORD dwOpacityToDestArg, int iFrameArg) :
 			Dest(DestArg),
 			ToDest(ToDestArg),
 			dwOpacityToDest(dwOpacityToDestArg),
 			iFrame(iFrameArg)
 		{ }
 
-	CG16bitImage &Dest;
+	CG32bitImage &Dest;
 	const CXForm &ToDest;
 	DWORD dwOpacityToDest;
 	int iFrame;
@@ -261,7 +262,7 @@ class IAnimatron
 
 		inline const CString &GetID (void) { return m_sID; }
 		inline bool GetPropertyBool (const CString &sName) const { bool bValue; if (FindDynamicPropertyBool(sName, &bValue)) return bValue; return m_Properties.GetBool(sName); }
-		inline WORD GetPropertyColor (const CString &sName) const { WORD wValue; if (FindDynamicPropertyColor(sName, &wValue)) return wValue; return m_Properties.GetColor(sName); }
+		inline CG32bitPixel GetPropertyColor (const CString &sName) const { CG32bitPixel rgbValue; if (FindDynamicPropertyColor(sName, &rgbValue)) return rgbValue; return m_Properties.GetColor(sName); }
 		inline const CG16bitFont *GetPropertyFont (const CString &sName) const { return m_Properties.GetFont(sName); }
 		inline int GetPropertyInteger (const CString &sName) const { int iValue; if (FindDynamicPropertyInteger(sName, &iValue)) return iValue; return m_Properties.GetInteger(sName); }
 		inline Metric GetPropertyMetric (const CString &sName) const { Metric rValue; if (FindDynamicPropertyMetric(sName, &rValue)) return rValue; return m_Properties.GetMetric(sName); }
@@ -272,7 +273,7 @@ class IAnimatron
 		inline void SetID (const CString &sID) { m_sID = sID; }
 		inline void SetProperty (const CString &sName, const CAniProperty &Value) { m_Properties.Set(sName, Value); OnPropertyChanged(sName); }
 		inline void SetPropertyBool (const CString &sName, bool bValue) { m_Properties.SetBool(sName, bValue); OnPropertyChanged(sName); }
-		inline void SetPropertyColor (const CString &sName, WORD wValue) { m_Properties.SetColor(sName, wValue); OnPropertyChanged(sName); }
+		inline void SetPropertyColor (const CString &sName, CG32bitPixel rgbValue) { m_Properties.SetColor(sName, rgbValue); OnPropertyChanged(sName); }
 		inline void SetPropertyFont (const CString &sName, const CG16bitFont *pFont) { m_Properties.SetFont(sName, pFont); OnPropertyChanged(sName); }
 		inline void SetPropertyInteger (const CString &sName, int iValue) { m_Properties.SetInteger(sName, iValue); OnPropertyChanged(sName); }
 		inline void SetPropertyMetric (const CString &sName, Metric rValue) { m_Properties.SetMetric(sName, rValue); OnPropertyChanged(sName); }
@@ -301,6 +302,9 @@ class IAnimatron
 		virtual void HandleMouseLeave (void) { }
 		virtual void HandleMouseMove (int x, int y, DWORD dwFlags) { }
 		virtual bool HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags) { return false; }
+		virtual void HandleRButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) { *retbCapture = false; *retbFocus = false; }
+		virtual void HandleRButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) { *retbCapture = false; *retbFocus = false; }
+		virtual void HandleRButtonUp (int x, int y, DWORD dwFlags) { }
 		virtual IAnimatron *HitTest (const CXForm &ToDest, int x, int y) { return NULL; }
 		virtual void KillFocus (void) { }
 		virtual void Paint (SAniPaintCtx &Ctx) { }
@@ -325,7 +329,7 @@ class IAnimatron
 
 	protected:
 		virtual bool FindDynamicPropertyBool (const CString &sName, bool *retbValue) const { return false; }
-		virtual bool FindDynamicPropertyColor (const CString &sName, WORD *retwValue) const { return false; }
+		virtual bool FindDynamicPropertyColor (const CString &sName, CG32bitPixel *retwValue) const { return false; }
 		virtual bool FindDynamicPropertyInteger (const CString &sName, int *retiValue) const { return false; }
 		virtual bool FindDynamicPropertyMetric (const CString &sName, Metric *retrValue) const { return false; }
 		virtual bool FindDynamicPropertyString (const CString &sName, CString *retsValue) const { return false; }
@@ -353,7 +357,7 @@ class CReanimator
 		void DeleteElement (const CString &sID);
 		static const CG16bitFont &GetDefaultFont (void);
 		inline bool GetPropertyBool (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyBool(sProp) : false); }
-		inline WORD GetPropertyColor (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyColor(sProp) : 0); }
+		inline CG32bitPixel GetPropertyColor (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyColor(sProp) : 0); }
 		inline const CG16bitFont *GetPropertyFont (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyFont(sProp) : 0); }
 		inline int GetPropertyInteger (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyInteger(sProp) : 0); }
 		inline Metric GetPropertyMetric (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyMetric(sProp) : 0.0); }
@@ -372,7 +376,7 @@ class CReanimator
 		void Resume (void) { m_iPlaySpeed = 1; m_iFastPlayCounter = -1; }
 		void SetInputFocus (IAnimatron *pFocus);
 		inline void SetPropertyBool (const CString &sID, const CString &sProp, bool bValue) { IAnimatron *pAni = GetElement(sID); if (pAni) pAni->SetPropertyBool(sProp, bValue); }
-		inline void SetPropertyColor (const CString &sID, const CString &sProp, WORD wValue) { IAnimatron *pAni = GetElement(sID); if (pAni) pAni->SetPropertyColor(sProp, wValue); }
+		inline void SetPropertyColor (const CString &sID, const CString &sProp, CG32bitPixel rgbValue) { IAnimatron *pAni = GetElement(sID); if (pAni) pAni->SetPropertyColor(sProp, rgbValue); }
 		inline void SetPropertyFont (const CString &sID, const CString &sProp, const CG16bitFont *pFont) { IAnimatron *pAni = GetElement(sID); if (pAni) pAni->SetPropertyFont(sProp, pFont); }
 		inline void SetPropertyInteger (const CString &sID, const CString &sProp, int iValue) { IAnimatron *pAni = GetElement(sID); if (pAni) pAni->SetPropertyInteger(sProp, iValue); }
 		inline void SetPropertyMetric (const CString &sID, const CString &sProp, Metric rValue) { IAnimatron *pAni = GetElement(sID); if (pAni) pAni->SetPropertyMetric(sProp, rValue); }
@@ -393,7 +397,10 @@ class CReanimator
 		bool HandleLButtonUp (int x, int y, DWORD dwFlags);
 		bool HandleMouseMove (int x, int y, DWORD dwFlags);
 		bool HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
-		bool PaintFrame (CG16bitImage &Dest);
+		bool HandleRButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture);
+		bool HandleRButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture);
+		bool HandleRButtonUp (int x, int y, DWORD dwFlags);
+		bool PaintFrame (CG32bitImage &Dest);
 
 	private:
 		struct SPerformance
@@ -478,7 +485,7 @@ class CAniVScroller : public IAnimatron
 		virtual ~CAniVScroller (void);
 
 		void AddLine (IAnimatron *pAni);
-		void AddTextLine (const CString &sText, const CG16bitFont *pFont, WORD wColor, DWORD dwFlags, int cyExtra = 0);
+		void AddTextLine (const CString &sText, const CG16bitFont *pFont, CG32bitPixel rgbColor, DWORD dwFlags, int cyExtra = 0);
 		void AnimateLinearScroll (Metric rRate);
 		inline Metric GetHeight (void) const { return m_cyEnd; }
 
@@ -545,7 +552,7 @@ class CAniText : public IAnimatron
 							const CVector &vPos,
 							const CG16bitFont *pFont,
 							DWORD dwFontFlags,
-							WORD wColor,
+							CG32bitPixel rgbColor,
 							IAnimatron **retpAni);
 
 		inline void SetFontFlags (DWORD dwFlags) { m_dwFontFlags = dwFlags; }
@@ -603,7 +610,7 @@ class CAniRect : public CAniShape
 
 		static void Create (const CVector &vPos,
 							const CVector &vSize,
-							WORD wColor,
+							CG32bitPixel rgbColor,
 							DWORD dwOpacity,
 							IAnimatron **retpAni);
 
@@ -621,7 +628,7 @@ class CAniRoundedRect : public CAniShape
 
 		static void Create (const CVector &vPos,
 							const CVector &vSize,
-							WORD wColor,
+							CG32bitPixel rgbColor,
 							DWORD dwOpacity,
 							IAnimatron **retpAni);
 
@@ -979,7 +986,7 @@ class CAniNullFill : public IAniFillMethod
 class CAniImageFill : public IAniFillMethod
 	{
 	public:
-		CAniImageFill (const CG16bitImage *pImage, bool bFreeImage);
+		CAniImageFill (const CG32bitImage *pImage, bool bFreeImage);
 		virtual ~CAniImageFill (void);
 
 		//	IAniFillMethod
@@ -992,7 +999,7 @@ class CAniImageFill : public IAniFillMethod
 	private:
 		void CalcTile (int x, int y, int *retxTile, int *retyTile);
 
-		const CG16bitImage *m_pImage;
+		const CG32bitImage *m_pImage;
 		bool m_bFreeImage;
 
 		DWORD m_dwOpacity;
@@ -1011,7 +1018,7 @@ class CAniSolidFill : public IAniFillMethod
 		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties);
 
 	private:
-		WORD m_wColor;
+		CG32bitPixel m_rgbColor;
 		DWORD m_dwOpacity;
 	};
 
@@ -1032,7 +1039,7 @@ class CAniSolidLine : public IAniLineMethod
 		virtual void Line (SAniPaintCtx &Ctx, int xFrom, int yFrom, int xTo, int yTo);
 
 	private:
-		WORD m_wColor;
+		CG32bitPixel m_rgbColor;
 		int m_iWidth;
 	};
 

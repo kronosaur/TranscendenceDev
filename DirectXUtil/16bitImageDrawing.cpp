@@ -8,6 +8,7 @@
 #include "DirectXUtil.h"
 #include <math.h>
 #include <stdio.h>
+#include "DrawImpl.h"
 
 #define SMALL_SQUARE_SIZE					2
 #define MEDIUM_SQUARE_SIZE					4
@@ -1472,6 +1473,90 @@ void DrawDottedLine (CG16bitImage &Dest, int x1, int y1, int x2, int y2, WORD wC
 			y = y + sy;
 			d = d + ax;
 			}
+		}
+	}
+
+void DrawOctaRectOutline (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iCorner, int iLineWidth, WORD wColor)
+
+//	DrawOctaRectOutline
+//
+//	Draw the frame of an octagonal rectangle.
+
+	{
+	int i;
+
+	//	Range checking
+
+	if (iLineWidth <= 0)
+		return;
+
+	iCorner = Min(Min(Max(0, iCorner), cxWidth / 2), cyHeight / 2);
+
+	//	Paint the straight edges first
+
+	Dest.Fill(x + iCorner, y, cxWidth - (2 * iCorner), iLineWidth, wColor);
+	Dest.Fill(x + iCorner, y + cyHeight - iLineWidth, cxWidth - (2 * iCorner), iLineWidth, wColor);
+	Dest.Fill(x, y + iCorner, iLineWidth, cyHeight - (2 * iCorner), wColor);
+	Dest.Fill(x + cxWidth - iLineWidth, y + iCorner, iLineWidth, cyHeight - (2 * iCorner), wColor);
+
+	//	Now paint the corners
+
+	int cxCornerLine = (int)((1.414 * iLineWidth) + 0.5);
+	int cyRows = iCorner + (cxCornerLine - iLineWidth);
+	for (i = 0; i < cyRows; i++)
+		{
+		int xOffset = iCorner - i;
+		int xLineEnd = Min(xOffset + cxCornerLine, cxWidth - iCorner);
+		xOffset = Max(0, xOffset);
+		int cxLine = xLineEnd - xOffset;
+
+		Dest.FillLine(x + xOffset, y + i, cxLine, wColor);
+		Dest.FillLine(x + xOffset, y + cyHeight - 1 - i, cxLine, wColor);
+
+		Dest.FillLine(x + cxWidth - cxLine - xOffset, y + i, cxLine, wColor);
+		Dest.FillLine(x + cxWidth - cxLine - xOffset, y + cyHeight - 1 - i, cxLine, wColor);
+		}
+	}
+
+void DrawOctaRectOutlineAlpha (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iCorner, int iLineWidth, BYTE byAlpha)
+
+//	DrawOctaRectOutlineAlpha
+//
+//	Draws an octagonal rect frame in the alpha channel.
+
+	{
+	int i;
+
+	//	Range checking
+
+	if (iLineWidth <= 0)
+		return;
+
+	iCorner = Min(Min(Max(0, iCorner), cxWidth / 2), cyHeight / 2);
+
+	//	Paint the straight edges first
+
+	Dest.FillAlpha(x + iCorner, y, cxWidth - (2 * iCorner), iLineWidth, byAlpha);
+	Dest.FillAlpha(x + iCorner, y + cyHeight - iLineWidth, cxWidth - (2 * iCorner), iLineWidth, byAlpha);
+	Dest.FillAlpha(x, y + iCorner, iLineWidth, cyHeight - (2 * iCorner), byAlpha);
+	Dest.FillAlpha(x + cxWidth - iLineWidth, y + iCorner, iLineWidth, cyHeight - (2 * iCorner), byAlpha);
+
+	//	Now paint the corners
+
+	int cxCornerLine = (int)((1.414 * iLineWidth) + 0.5);
+	int cyRows = iCorner + (cxCornerLine - iLineWidth);
+	for (i = 0; i < cyRows; i++)
+		{
+		int xOffset = iCorner - i;
+		int xLineEnd = Min(xOffset + cxCornerLine, cxWidth - iCorner);
+		xOffset = Max(0, xOffset);
+		int cxLine = xLineEnd - xOffset;
+
+		Dest.FillAlpha(x + xOffset, y + i, cxLine, 1, byAlpha);
+		Dest.FillAlpha(x + xOffset, y + cyHeight - 1 - i, cxLine, 1, byAlpha);
+
+		Dest.FillAlpha(x + cxWidth - cxLine - xOffset, y + i, cxLine, 1, byAlpha);
+		Dest.FillAlpha(x + cxWidth - cxLine - xOffset, y + cyHeight - 1 - i, cxLine, 1, byAlpha);
 		}
 	}
 

@@ -123,7 +123,7 @@ ICCItem *CCAtomTable::ListSymbols (CCodeChain *pCC)
 
 			//	Add the item to the list
 
-			pList->Append(pCC, pItem, NULL);
+			pList->Append(*pCC, pItem);
 			pItem->Discard(pCC);
 			}
 

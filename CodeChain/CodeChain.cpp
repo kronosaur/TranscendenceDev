@@ -287,7 +287,7 @@ ICCItem *CCodeChain::CreateLinkedList (void)
 	return pItem->Reference();
 	}
 
-ICCItem *CCodeChain::CreatePrimitive (PRIMITIVEPROCDEF *pDef)
+ICCItem *CCodeChain::CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)
 
 //	CreatePrimitive
 //
@@ -302,7 +302,7 @@ ICCItem *CCodeChain::CreatePrimitive (PRIMITIVEPROCDEF *pDef)
 		return pItem;
 
 	pPrimitive = dynamic_cast<CCPrimitive *>(pItem);
-	pPrimitive->SetProc(pDef);
+	pPrimitive->SetProc(pDef, pImpl);
 	return pPrimitive->Reference();
 	}
 
@@ -835,7 +835,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 
 		//	Add the result to the list
 
-		pEvalList->Append(this, pResult, NULL);
+		pEvalList->Append(*this, pResult);
 		pResult->Discard(this);
 
 		//	Next validation sequence (note that *pValidation can never
@@ -1074,7 +1074,7 @@ ICCItem *CCodeChain::PoolUsage (void)
 
 		//	Add the item to the list
 
-		pList->Append(this, pItem, NULL);
+		pList->Append(*this, pItem);
 		pItem->Discard(this);
 		}
 
@@ -1102,7 +1102,7 @@ ICCItem *CCodeChain::TopLevel (ICCItem *pItem, LPVOID pExternalCtx)
 	return Eval(&EvalCtx, pItem);
 	}
 
-ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef)
+ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)
 
 //	RegisterPrimitive
 //
@@ -1114,7 +1114,7 @@ ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef)
 
 	//	Create a primitive definition
 
-	pDefinition = CreatePrimitive(pDef);
+	pDefinition = CreatePrimitive(pDef, pImpl);
 	if (pDefinition->IsError())
 		{
 		pDefinition->Discard(this);

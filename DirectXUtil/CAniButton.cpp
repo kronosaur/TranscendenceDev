@@ -62,33 +62,33 @@ CAniButton::CAniButton (EButtonTypes iType) :
 	m_Properties.SetBool(PROP_CHECKED, false);
 
 	IAnimatron *pStyle = new CAniRect;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(255, 255, 255));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(255, 255, 255));
 	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
 	SetStyle(styleDown, pStyle);
 
 	pStyle = new CAniRect;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(255, 255, 255));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(255, 255, 255));
 	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
 	SetStyle(styleHover, pStyle);
 
 	pStyle = new CAniRect;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(128, 128, 128));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(128, 128, 128));
 	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
 	SetStyle(styleNormal, pStyle);
 
 	pStyle = new CAniRect;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(128, 128, 128));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(128, 128, 128));
 	pStyle->SetPropertyOpacity(PROP_OPACITY, 128);
 	SetStyle(styleDisabled, pStyle);
 
 	pStyle = new CAniText;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(0, 0, 0));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(0, 0, 0));
 	pStyle->SetPropertyString(CONSTLIT("textAlignHorz"), CONSTLIT("center"));
 	pStyle->SetPropertyString(CONSTLIT("textAlignVert"), CONSTLIT("center"));
 	SetStyle(styleText, pStyle);
 
 	pStyle = new CAniText;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(0, 0, 0));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(0, 0, 0));
 	pStyle->SetPropertyString(CONSTLIT("textAlignHorz"), CONSTLIT("center"));
 	pStyle->SetPropertyString(CONSTLIT("textAlignVert"), CONSTLIT("center"));
 	SetStyle(styleCheck, pStyle);

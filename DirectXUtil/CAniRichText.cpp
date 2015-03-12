@@ -92,7 +92,7 @@ void CAniRichText::Format (int cxWidth, int cyHeight)
 		else
 			BlockFormat.iVertAlign = alignTop;
 
-		BlockFormat.DefaultFormat.wColor = m_Properties[INDEX_COLOR].GetColor();
+		BlockFormat.DefaultFormat.rgbColor = m_Properties[INDEX_COLOR].GetColor();
 		BlockFormat.DefaultFormat.pFont = m_Properties[INDEX_FONT].GetFont();
 
 		m_Text.InitFromRTF(m_Properties[INDEX_TEXT].GetString(), m_FontTable, BlockFormat);
@@ -159,8 +159,7 @@ void CAniRichText::Paint (SAniPaintCtx &Ctx)
 		Span.Format.pFont->DrawText(Ctx.Dest,
 				x + Span.x,
 				y + Span.y,
-				Span.Format.wColor,
-				dwOpacity,
+				CG32bitPixel(Span.Format.rgbColor, (BYTE)dwOpacity),
 				Span.sText);
 		}
 	}

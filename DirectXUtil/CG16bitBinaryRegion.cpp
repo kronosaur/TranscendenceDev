@@ -330,6 +330,88 @@ void CG16bitBinaryRegion::GetBounds (RECT *retrcRect) const
 	retrcRect->bottom = yMax + 1;
 	}
 
+void CG16bitBinaryRegion::Fill (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const
+
+//	Fill
+//
+//	Draws the region to the destination
+
+	{
+	if (m_pList == NULL)
+		return;
+
+	const RECT &rcClip = Dest.GetClipRect();
+	BYTE byOpacity = rgbColor.GetAlpha();
+
+	//	Solid color
+
+	if (byOpacity == 0xff)
+		{
+		SRun *pRun = m_pList;
+		SRun *pRunEnd = pRun + m_iCount;
+		for (; pRun < pRunEnd; pRun++)
+			{
+			int yAdj = y + pRun->y;
+			int xStartAdj = x + pRun->xStart;
+			int xEndAdj = x + pRun->xEnd;
+
+			//	Make sure this row is in range
+
+			if (yAdj < rcClip.top || yAdj >= rcClip.bottom
+					|| xEndAdj <= rcClip.left || xStartAdj >= rcClip.right)
+				continue;
+
+			int xStart = Max(xStartAdj, (int)rcClip.left);
+			int xEnd = Min(xEndAdj, (int)rcClip.right);
+
+			//	Get the pointers
+
+			CG32bitPixel *pRow = Dest.GetPixelPos(0, yAdj);
+			CG32bitPixel *pPos = pRow + xStart;
+			CG32bitPixel *pEnd = pRow + xEnd;
+
+			//	Fill
+
+			while (pPos < pEnd)
+				*pPos++ = rgbColor;
+			}
+		}
+	else
+		{
+		SRun *pRun = m_pList;
+		SRun *pRunEnd = pRun + m_iCount;
+		for (; pRun < pRunEnd; pRun++)
+			{
+			int yAdj = y + pRun->y;
+			int xStartAdj = x + pRun->xStart;
+			int xEndAdj = x + pRun->xEnd;
+
+			//	Make sure this row is in range
+
+			if (yAdj < rcClip.top || yAdj >= rcClip.bottom
+					|| xEndAdj <= rcClip.left || xStartAdj >= rcClip.right)
+				continue;
+
+			int xStart = Max(xStartAdj, (int)rcClip.left);
+			int xEnd = Min(xEndAdj, (int)rcClip.right);
+
+			//	Get the pointers
+
+			CG32bitPixel *pRow = Dest.GetPixelPos(0, yAdj);
+			CG32bitPixel *pPos = pRow + xStart;
+			CG32bitPixel *pEnd = pRow + xEnd;
+
+			//	Fill
+
+			while (pPos < pEnd)
+				{
+				*pPos = CG32bitPixel::Blend(*pPos, rgbColor);
+				pPos++;
+				}
+			}
+		}
+	}
+
 void CG16bitBinaryRegion::Fill (CG16bitImage &Dest, int x, int y, WORD wColor) const
 
 //	Fill

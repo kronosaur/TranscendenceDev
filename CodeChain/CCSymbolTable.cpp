@@ -331,10 +331,10 @@ ICCItem *CCSymbolTable::GetElement (CCodeChain *pCC, int iIndex)
 	CCLinkedList *pList = (CCLinkedList *)pCC->CreateLinkedList();
 	
 	ICCItem *pKey = pCC->CreateString(m_Symbols.GetKey(iIndex));
-	pList->Append(pCC, pKey);
+	pList->Append(*pCC, pKey);
 	pKey->Discard(pCC);
 
-	pList->Append(pCC, GetElement(iIndex));
+	pList->Append(*pCC, GetElement(iIndex));
 
 	//	Done
 
@@ -378,7 +378,7 @@ ICCItem *CCSymbolTable::ListSymbols (CCodeChain *pCC)
 
 			//	Add the item to the list
 
-			pList->Append(pCC, pItem, NULL);
+			pList->Append(*pCC, pItem);
 			pItem->Discard(pCC);
 			}
 
@@ -504,46 +504,6 @@ void CCSymbolTable::Reset (void)
 	m_pParent = NULL;
 	m_bLocalFrame = FALSE;
 	m_pDefineHook = NULL;
-	}
-
-void CCSymbolTable::SetIntegerValue (CCodeChain &CC, const CString &sKey, int iValue)
-
-//	SetIntegerValue
-//
-//	Sets an integer value
-
-	{
-	ICCItem *pKey = CC.CreateString(sKey);
-	ICCItem *pValue = CC.CreateInteger(iValue);
-	AddEntry(&CC, pKey, pValue);
-	pKey->Discard(&CC);
-	pValue->Discard(&CC);
-	}
-
-void CCSymbolTable::SetStringValue (CCodeChain &CC, const CString &sKey, const CString &sValue)
-
-//	SetStringValue
-//
-//	Sets a string value
-
-	{
-	ICCItem *pKey = CC.CreateString(sKey);
-	ICCItem *pValue = CC.CreateString(sValue);
-	AddEntry(&CC, pKey, pValue);
-	pKey->Discard(&CC);
-	pValue->Discard(&CC);
-	}
-
-void CCSymbolTable::SetValue (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
-
-//	SetValue
-//
-//	Sets a value.
-
-	{
-	ICCItem *pKey = CC.CreateString(sKey);
-	AddEntry(&CC, pKey, pValue);
-	pKey->Discard(&CC);
 	}
 
 ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, BOOL *retbFound, int *retiOffset)

@@ -7,7 +7,7 @@
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 
-#define RGB_DISABLED_TEXT						(CG16bitImage::RGBValue(128,128,128))
+#define RGB_DISABLED_TEXT						(CG32bitPixel(128,128,128))
 
 CGButtonArea::CGButtonArea (void) : m_pLabelFont(NULL),
 		m_bMouseOver(false),
@@ -17,7 +17,7 @@ CGButtonArea::CGButtonArea (void) : m_pLabelFont(NULL),
 //	CGButtonArea constructor
 
 	{
-	m_wLabelColor = CG16bitImage::RGBValue(255,255,255);
+	m_rgbLabelColor = CG32bitPixel(255,255,255);
 	}
 
 void CGButtonArea::LButtonUp (int x, int y)
@@ -63,7 +63,7 @@ void CGButtonArea::OnSetRect (void)
 	//	If the mouse is over our area, then set state
 	}
 
-void CGButtonArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
+void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 //	Paint
 //
@@ -74,7 +74,7 @@ void CGButtonArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
 		{
 		if (m_bMouseOver && !m_bDisabled)
 			{
-			Dest.Fill(rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), CG16bitImage::RGBValue(128,128,128));
+			Dest.Fill(rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), CG32bitPixel(128,128,128));
 			}
 
 		//	If we're disabled, paint gray
@@ -94,16 +94,16 @@ void CGButtonArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
 			int x = rcRect.left;
 
 			if (m_iAccelerator > 0)
-				Dest.DrawText(x, rcRect.top, *m_pLabelFont, m_wLabelColor, CString(pPos, m_iAccelerator, true), 0, &x);
+				Dest.DrawText(x, rcRect.top, *m_pLabelFont, m_rgbLabelColor, CString(pPos, m_iAccelerator, true), 0, &x);
 
-			Dest.DrawText(x, rcRect.top, *m_pLabelFont, CG16bitImage::RGBValue(255,255,0), CString(pPos + m_iAccelerator, 1, true), 0, &x);
-			Dest.DrawText(x, rcRect.top, *m_pLabelFont, m_wLabelColor, CString(pPos + m_iAccelerator + 1, m_sLabel.GetLength() - m_iAccelerator - 1, true));
+			Dest.DrawText(x, rcRect.top, *m_pLabelFont, CG32bitPixel(255,255,0), CString(pPos + m_iAccelerator, 1, true), 0, &x);
+			Dest.DrawText(x, rcRect.top, *m_pLabelFont, m_rgbLabelColor, CString(pPos + m_iAccelerator + 1, m_sLabel.GetLength() - m_iAccelerator - 1, true));
 			}
 		else
 			Dest.DrawText(rcRect.left,
 					rcRect.top,
 					*m_pLabelFont,
-					m_wLabelColor,
+					m_rgbLabelColor,
 					m_sLabel);
 		}
 	}
