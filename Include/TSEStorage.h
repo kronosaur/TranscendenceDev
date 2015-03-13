@@ -36,6 +36,7 @@ class CGameFile
 		CString GetSystemName (void) const;
 		inline CString GetUsername (void) { return CString(m_Header.szUsername); }
 		inline bool IsDebug (void) const { return ((m_Header.dwFlags & GAME_FLAG_DEBUG) ? true : false); }
+		inline bool IsEndGame (void) const { return ((m_Header.dwFlags & GAME_FLAG_END_GAME) ? true : false); }
 		inline bool IsGameResurrect (void) { return ((m_Header.dwFlags & GAME_FLAG_RESURRECT) ? true : false); }
 		inline bool IsOpen (void) const { return (m_pFile != NULL); }
 		inline bool IsRegistered (void) const { return ((m_Header.dwFlags & GAME_FLAG_REGISTERED) ? true : false); }
@@ -49,7 +50,7 @@ class CGameFile
 		ALERROR SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags = 0);
 		ALERROR SaveUniverse (CUniverse &Univ, DWORD dwFlags);
 		ALERROR SetGameResurrect (void);
-		ALERROR SetGameStatus (int iScore, const CString &sEpitaph);
+		ALERROR SetGameStatus (int iScore, const CString &sEpitaph, bool bEndGame = false);
 
 	private:
 		enum GameFlags
@@ -58,6 +59,7 @@ class CGameFile
 			GAME_FLAG_DEBUG =						0x00000002,	//	This is a debug game
 			GAME_FLAG_IN_STARGATE =					0x00000004,	//	We are in the middle of entering a stargate
 			GAME_FLAG_REGISTERED =					0x00000008,	//	This is a registered game
+			GAME_FLAG_END_GAME =					0x00000010,	//	This game is done and cannot be continued
 			};
 
 		enum Consts

@@ -1019,7 +1019,7 @@ ALERROR CGameFile::SetGameResurrect (void)
 	return NOERROR;
 	}
 
-ALERROR CGameFile::SetGameStatus (int iScore, const CString &sEpitaph)
+ALERROR CGameFile::SetGameStatus (int iScore, const CString &sEpitaph, bool bEndGame)
 
 //	SetGameStatus
 //
@@ -1032,6 +1032,11 @@ ALERROR CGameFile::SetGameStatus (int iScore, const CString &sEpitaph)
 
 	m_Header.dwScore = iScore;
 	lstrcpyn(m_Header.szEpitaph, sEpitaph.GetASCIIZPointer(), sizeof(m_Header.szEpitaph));
+
+	//	If this is an end game state, mark it
+
+	if (bEndGame)
+		m_Header.dwFlags |= GAME_FLAG_END_GAME;
 
 	//	Save the header
 
