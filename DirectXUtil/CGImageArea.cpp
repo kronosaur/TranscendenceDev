@@ -8,7 +8,7 @@
 #include "DirectXUtil.h"
 
 CGImageArea::CGImageArea (void) : m_pImage(NULL),
-		m_rgbBackColor(RGB(0,0,0)),
+		m_rgbBackColor(CG32bitPixel(0,0,0)),
 		m_bTransBackground(false),
 		m_dwStyles(alignLeft | alignTop)
 
