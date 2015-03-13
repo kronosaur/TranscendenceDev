@@ -12,6 +12,9 @@ const Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
 const Metric NAV_PATH_THRESHOLD =		(2.0 * PATROL_SENSOR_RANGE);
 const Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
 
+const Metric NAV_PATH_MOVE_THRESHOLD =	(10.0 * LIGHT_SECOND);
+const Metric NAV_PATH_MOVE_THRESHOLD2 =	(NAV_PATH_MOVE_THRESHOLD * NAV_PATH_MOVE_THRESHOLD);
+
 CNavigateOrder::CNavigateOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCount),
 		m_iOrder(iOrder),
 		m_fTargetObj(false),
@@ -86,8 +89,17 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
 		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
 
-		bool bAtDest;
-		Ctx.ImplementFollowNavPath(pShip, &bAtDest);
+		//	Check to see if our destination has moved. If it has, then we stop
+		//	following the nav path. This can happen if we pick a ship as a 
+		//	destination.
+
+		bool bAtDest = false;
+		if (m_Objs[objDest] 
+				&& (m_Objs[objDest]->GetPos() - m_vDest).Length2() > NAV_PATH_MOVE_THRESHOLD2)
+			bAtDest = true;
+		else
+			Ctx.ImplementFollowNavPath(pShip, &bAtDest);
+
 		if (bAtDest)
 			{
 			Ctx.ClearNavPath();
