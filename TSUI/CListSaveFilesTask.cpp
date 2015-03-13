@@ -113,7 +113,9 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 	CString sGenome = strCapitalize(GetGenomeName(GameFile.GetPlayerGenome()));
 
 	CString sState;
-	if (GameFile.IsGameResurrect())
+	if (GameFile.IsEndGame())
+		sState = strPatternSubst(CONSTLIT("Ended the game in the %s System"), GameFile.GetSystemName());
+	else if (GameFile.IsGameResurrect())
 		sState = strPatternSubst(CONSTLIT("Resurrect in the %s System"), GameFile.GetSystemName());
 	else
 		sState = strPatternSubst(CONSTLIT("Continue in the %s System"), GameFile.GetSystemName());
