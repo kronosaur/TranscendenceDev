@@ -3471,7 +3471,7 @@ void CShipClass::Paint (CG32bitImage &Dest,
 	if (byInvisible)
 		m_Image.PaintImageShimmering(Dest, x, y, iTick, iDirection, byInvisible);
 	else if (bRadioactive)
-		m_Image.PaintImageWithGlow(Dest, x, y, iTick, iDirection, RGB(0, 255, 0));
+		m_Image.PaintImageWithGlow(Dest, x, y, iTick, iDirection, CG32bitPixel(0, 255, 0));
 	else
 		m_Image.PaintImage(Dest, x, y, iTick, iDirection);
 

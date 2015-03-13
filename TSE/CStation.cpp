@@ -2310,7 +2310,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		m_StarlightImage.PaintImage(Dest, x, y, 0, 0);
 
 	else if (m_fRadioactive)
-		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, RGB(0, 255, 0));
+		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, CG32bitPixel(0, 255, 0));
 
 	else
 		Image.PaintImage(Dest, x, y, iTick, iVariant);
