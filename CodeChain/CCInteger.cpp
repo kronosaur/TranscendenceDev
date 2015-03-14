@@ -6,11 +6,69 @@
 #include "Kernel.h"
 #include "KernelObjID.h"
 #include "CodeChain.h"
+#include <math.h>
 
 static CObjectClass<CCInteger>g_Class(OBJID_CCINTEGER, NULL);
 
-CCInteger::CCInteger (void) : ICCInteger(&g_Class),
-		m_iValue(0)
+CCNumeral *addNumerals(CCNumeral *num1, CCNumeral *num2)
+{
+	if (num1->IsInteger() && num2->IsInteger())
+	{
+		CCInteger *pResult = &(CCInteger());
+		pResult->SetValue(num1->GetIntegerValue() + num2->GetIntegerValue());
+		return pResult;
+	};
+
+	CCDouble *pResult = &(CCDouble()); 
+	pResult->SetValue(num1->GetDoubleValue() + num2->GetDoubleValue());
+	return pResult;
+};
+
+CCNumeral *multiplyNumerals(CCNumeral *num1, CCNumeral *num2)
+{
+	if (num1->IsInteger())
+	{
+		CCInteger *pResult = &(CCInteger());
+		pResult->SetValue(num1->GetIntegerValue() * num2->GetIntegerValue());
+		return pResult;
+	};
+
+	CCDouble *pResult = &(CCDouble());
+	pResult->SetValue(num1->GetDoubleValue() * num2->GetDoubleValue());
+	return pResult;
+};
+
+CCNumeral *divideNumerals(CCNumeral *num, CCNumeral *den)
+{
+	if (num->IsInteger() && den->IsInteger())
+	{
+		CCInteger *pResult = &(CCInteger());
+		pResult->SetValue(num->GetIntegerValue() / den->GetIntegerValue());
+		return pResult;
+	};
+
+	CCDouble *pResult = &(CCDouble());
+	pResult->SetValue(num->GetDoubleValue() / den->GetDoubleValue());
+	return pResult;
+};
+
+CCNumeral *moduloNumerals(CCNumeral *num, CCNumeral *den)
+{
+	if (num->IsInteger() && den->IsInteger())
+	{
+		CCInteger *pResult = &(CCInteger());
+		pResult->SetValue(num->GetIntegerValue() % den->GetIntegerValue());
+		return pResult;
+	};
+
+	CCDouble *pResult = &(CCDouble());
+	pResult->SetValue(fmod(num->GetDoubleValue(), den->GetDoubleValue()));
+	return pResult;
+};
+
+
+CCInteger::CCInteger(void) : ICCInteger(&g_Class),
+m_iValue(0)
 
 //	CCInteger constructor
 
@@ -36,6 +94,26 @@ ICCItem *CCInteger::Clone (CCodeChain *pCC)
 
 	return pClone;
 	}
+
+ICCItem *CCIntegerOld::Clone(CCodeChain *pCC)
+
+//	Clone
+//
+//	Returns a new item with a single ref-count
+
+{
+	ICCItem *pResult;
+	CCInteger *pClone;
+
+	pResult = pCC->CreateInteger(m_iValue);
+	if (pResult->IsError())
+		return pResult;
+
+	pClone = (CCInteger *)pResult;
+	pClone->CloneItem(this);
+
+	return pClone;
+}
 
 void CCInteger::DestroyItem (CCodeChain *pCC)
 

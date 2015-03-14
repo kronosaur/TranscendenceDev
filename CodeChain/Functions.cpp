@@ -6,8 +6,11 @@
 //
 //		f	function expression
 //		i	Integer
-//		k	A linked-list
+//      d   Double		// new 
+//      e   A vEctor    // new
+//		k	a linKed-list
 //		l	List
+//      n   Numeral		// new
 //		q	Quoted identifier
 //		s	String
 //		u	Any item (not evaluated)
@@ -27,6 +30,63 @@
 
 double GetFractionArg (ICCItem *pArg, double *retrDenom = NULL);
 ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem **retpError);
+
+CCNumeral *AddNumerals(CCNumeral *num1, CCNumeral *num2)
+{
+	if (num1->IsInteger() && num2->IsInteger())
+	{
+		CCInteger *pResult = &(CCInteger());
+		pResult->SetValue(num1->GetIntegerValue() + num2->GetIntegerValue());
+		return pResult;
+	};
+
+	CCDouble *pResult = &(CCDouble());
+	pResult->SetValue(num1->GetDoubleValue() + num2->GetDoubleValue());
+	return pResult;
+};
+
+CCNumeral *MultiplyNumerals(CCNumeral *num1, CCNumeral *num2)
+{
+	if (num1->IsInteger())
+	{
+		CCInteger *pResult = &(CCInteger());
+		pResult->SetValue(num1->GetIntegerValue() * num2->GetIntegerValue());
+
+		return pResult;
+	};
+
+	CCDouble *pResult = &(CCDouble());
+	pResult->SetValue(num1->GetDoubleValue() * num2->GetDoubleValue());
+	return pResult;
+};
+
+CCNumeral *DivideNumerals(CCNumeral *num, CCNumeral *den)
+{
+	if (num->IsInteger() && den->IsInteger())
+	{
+		CCInteger *pResult = &(CCInteger());
+		pResult->SetValue(num->GetIntegerValue() / den->GetIntegerValue());
+		return pResult;
+	};
+
+	CCDouble *pResult = &(CCDouble());
+	pResult->SetValue(num->GetDoubleValue() / den->GetDoubleValue());
+	return pResult;
+};
+
+CCNumeral *ModuloNumerals(CCNumeral *num, CCNumeral *den)
+{
+	if (num->IsInteger() && den->IsInteger())
+	{
+		CCInteger *pResult = &(CCInteger());
+		pResult->SetValue(num->GetIntegerValue() % den->GetIntegerValue());
+		return pResult;
+	};
+
+	CCDouble *pResult = &(CCDouble());
+	pResult->SetValue(fmod(num->GetDoubleValue(), den->GetDoubleValue()));
+	return pResult;
+};
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
@@ -747,9 +807,9 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	return pResult;
 	}
 
-ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnEqualityOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
-//	fnEquality
+//	fnEqualityOld
 //
 //	Equality and inequality
 //
@@ -798,7 +858,7 @@ ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 					bOk = (pPrev->IsNil() && pExp->IsNil());
 				else
 					{
-					int iResult = HelperCompareItems(pPrev, pExp);
+					int iResult = HelperCompareItemsOld(pPrev, pExp);
 					bOk = (iResult == 0);
 					}
 				}
@@ -857,6 +917,118 @@ ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	//	Done
 
 	return pResult;
+	}
+
+	ICCItem *fnEquality(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+
+		//	fnEquality
+		//
+		//	Equality and inequality
+		//
+		//	(eq exp1 exp2 ... expn)
+		//	(neq exp1 exp2 ... expn)
+		//	(> exp1 exp2 ... expn)
+		//	(>= exp1 exp2 ... expn)
+		//	(< exp1 exp2 ... expn)
+		//	(<= exp1 exp2 ... expn)
+
+	{
+		CCodeChain *pCC = pCtx->pCC;
+		ICCItem *pResult;
+		ICCItem *pExp;
+		ICCItem *pPrev = NULL;
+		ICCItem *pArgs;
+		int i;
+
+		//	Evaluate the arguments and validate them
+
+		pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("*"));
+		if (pArgs->IsError())
+			return pArgs;
+
+		//	Loop over all arguments
+
+		bool bOk = true;
+		for (i = 0; i < pArgs->GetCount(); i++)
+		{
+			pExp = pArgs->GetElement(i);
+			if (pExp->IsError())
+			{
+				pExp->Reference();
+				pArgs->Discard(pCC);
+				return pExp;
+			}
+
+			if (pPrev)
+			{
+				//	Special case for eq because we don't want compares
+				//	to Nil to equal 0
+
+				if ((dwData == FN_EQUALITY_EQ) || (dwData == FN_EQUALITY_NEQ))
+				{
+					if (pPrev->IsNil() || pExp->IsNil())
+						bOk = (pPrev->IsNil() && pExp->IsNil());
+					else
+					{
+						int iResult = HelperCompareItems(pPrev, pExp);
+						bOk = (iResult == 0);
+					}
+				}
+
+				//	For other comparisons, we coerce datatypes and we
+				//	treat Nil as 0 (if necessary)
+
+				else
+				{
+					int iResult = HelperCompareItems(pPrev, pExp);
+
+					switch (dwData)
+					{
+					case FN_EQUALITY_LESSER:
+						bOk = (iResult < 0);
+						break;
+
+					case FN_EQUALITY_LESSER_EQ:
+						bOk = (iResult <= 0);
+						break;
+
+					case FN_EQUALITY_GREATER:
+						bOk = (iResult > 0);
+						break;
+
+					case FN_EQUALITY_GREATER_EQ:
+						bOk = (iResult >= 0);
+						break;
+
+					default:
+						ASSERT(FALSE);
+					}
+				}
+
+				//	If we don't have a match, return
+
+				if (!bOk)
+					break;
+			}
+
+			//	Remember the previous element so that we can compare
+
+			pPrev = pExp;
+		}
+
+		//	Negate, if necessary
+
+		if (dwData == FN_EQUALITY_NEQ)
+			bOk = !bOk;
+
+		//	If we get here, then all items are ok
+
+		pArgs->Discard(pCC);
+		pResult = pCC->CreateBool(bOk);
+
+		//	Done
+
+		return pResult;
 	}
 
 ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
@@ -2571,7 +2743,7 @@ ICCItem *fnMatch (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		return pCC->CreateNil();
 	}
 
-ICCItem *fnMathList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
+ICCItem *fnMathListOld (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnMathList
 //
@@ -2649,7 +2821,170 @@ ICCItem *fnMathList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		}
 	}
 
-ICCItem *fnMath (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
+ICCItem *fnMathList(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
+	//	fnMathList (new)
+	//
+	//	Simple numeric (integer or double) functions
+	//
+	//	(add x1 x2 ... xn) -> z
+	//	(max x1 x2 ... xn) -> z
+	//	(min x1 x2 ... xn) -> z
+	//	(multiply x1 x2 .. .xn) -> z
+
+	{
+		int i;
+		int iResultType;		// 0 for integer, 1 for double
+		ICCItem *pElement;
+		CCodeChain *pCC = pCtx->pCC;
+
+		//	Get the list
+
+		ICCItem *pList;
+		if (pArgs->GetCount() == 1 && pArgs->GetElement(0)->IsList())
+		{
+			pList = pArgs->GetElement(0);
+
+			if (pList->GetCount() < 1)
+				return pCC->CreateInteger(0);
+		}
+		else
+			pList = pArgs;
+
+		//	Do the computation
+
+		switch (dwData)
+		{
+		case FN_MATH_ADD:
+		{
+			int iResult = 0;
+			double dResult = 0;
+
+			for (i = 0; i < pList->GetCount(); i++)
+			{
+				pElement = pList->GetElement(i);
+
+				if (iResultType == 0)
+				{
+					if (pElement->GetValueType() == ICCItem::Double)
+					{
+						iResultType == 1;
+						dResult = iResult + pElement->GetDoubleValue();
+						continue;
+					}
+					else
+					{
+						iResult += pElement->GetIntegerValue();
+						continue;
+					};
+				};
+
+				dResult += pElement->GetDoubleValue();
+			};
+
+			if (iResultType == 0)
+			{
+				return pCC->CreateInteger(iResult);
+			}
+			else
+			{
+				return pCC->CreateDouble(dResult);
+			};
+		}
+
+		case FN_MATH_MULTIPLY:
+		{
+			int iResult = 0;
+			double dResult = 0;
+
+			for (i = 0; i < pList->GetCount(); i++)
+			{
+				pElement = pList->GetElement(i);
+
+				if (iResultType == 0)
+				{
+					if (pElement->GetValueType() == ICCItem::Double)
+					{
+						iResultType == 1;
+						dResult = iResult * pElement->GetDoubleValue();
+						continue;
+					}
+					else
+					{
+						iResult *= pElement->GetIntegerValue();
+						continue;
+					};
+				};
+
+				dResult *= pElement->GetDoubleValue();
+			};
+
+			if (iResultType == 0)
+			{
+				return pCC->CreateInteger(iResult);
+			}
+			else
+			{
+				return pCC->CreateDouble(dResult);
+			};
+		}
+
+		case FN_MATH_MAX:
+		{
+			int iResultIndex = 0;
+			double dResult = pList->GetElement(i)->GetDoubleValue();
+
+			for (i = 1; i < pList->GetCount(); i++)
+			{
+				double dVal = pList->GetElement(i)->GetDoubleValue();
+				if (dVal > dResult)
+				{
+					iResultIndex = i;
+					dResult = dVal;
+				};
+			}
+
+			if (pList->GetElement(iResultIndex)->IsInteger())
+			{
+				return pCC->CreateInteger(int(dResult));
+			}
+			else
+			{
+				return pCC->CreateDouble(dResult);
+			};
+		}
+
+		case FN_MATH_MIN:
+		{
+			int iResultIndex = 0;
+			double dResult = pList->GetElement(i)->GetDoubleValue();
+
+			for (i = 1; i < pList->GetCount(); i++)
+			{
+				double dVal = pList->GetElement(i)->GetDoubleValue();
+				if (dVal < dResult)
+				{
+					iResultIndex = i;
+					dResult = dVal;
+				};	
+			}
+
+			if (pList->GetElement(iResultIndex)->IsInteger())
+			{
+				return pCC->CreateInteger(int(dResult));
+			}
+			else
+			{
+				return pCC->CreateDouble(dResult);
+			};
+		}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
+	}
+
+ICCItem *fnMathOld (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnMath
 //
@@ -2719,6 +3054,105 @@ ICCItem *fnMath (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateNil();
 		}
 	}
+
+ICCItem *fnMath(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
+//	fnMath (new)
+//
+//	Simple arithmetic
+//
+//	(modulo ['degrees] int1 int2)
+//	(sqrt int1)
+
+{
+	ICCItem *pNumber;
+	ICCItem *pOp1;
+	ICCItem *pOp2;
+	double dOp1;
+	double dOp2;
+	CCodeChain *pCC = pCtx->pCC;
+
+	//	Compute
+
+	switch (dwData)
+	{
+	case FN_MATH_ABSOLUTE:
+		pNumber = pArgs->GetElement(0);
+		if (pNumber->IsInteger())
+		{
+			return pCC->CreateInteger(Absolute(pNumber->GetIntegerValue()));
+		}
+		else
+		{
+			return pCC->CreateDouble(Absolute(pNumber->GetDoubleValue()));
+		};
+
+	case FN_MATH_MODULUS:
+	{
+		int iArg = 0;
+
+		bool bClock = false;
+		if (pArgs->GetCount() > 0 && pArgs->GetElement(iArg)->IsIdentifier())
+		{
+			if (strEquals(pArgs->GetElement(iArg)->GetStringValue(), CONSTLIT("degrees")))
+				bClock = true;
+			else
+				return pCC->CreateError(CONSTLIT("Unknown option"), pArgs->GetElement(iArg));
+
+			iArg++;
+		}
+
+		if (pArgs->GetCount() < (iArg + 2))
+			return pCC->CreateError(CONSTLIT("Insufficient arguments"), pArgs);
+
+		pOp1 = pArgs->GetElement(iArg++);
+		pOp2 = pArgs->GetElement(iArg++);
+		dOp1 = pOp1->GetDoubleValue();
+		dOp2 = pOp2->GetDoubleValue();
+		double dResult = fmod(dOp1, dOp2);
+
+		if (dOp2 == 0)
+			return pCC->CreateError(CONSTLIT("Division by zero"), pArgs);
+
+		if (bClock)
+		{
+			if (dResult < 0)
+			{
+				if (pOp1->IsInteger() && pOp2->IsInteger())
+					return pCC->CreateInteger(dResult + dOp2);
+				else
+					return pCC->CreateDouble(dResult + dOp2);
+			}
+			else
+			{
+				if (pOp1->IsInteger() && pOp2->IsInteger())
+					return pCC->CreateInteger(dResult);
+				else
+					return pCC->CreateDouble(dResult);
+			};
+		}
+		else
+		{
+			if (pOp1->IsInteger() && pOp2->IsInteger())
+				return pCC->CreateInteger(dResult);
+			else
+				return pCC->CreateDouble(dResult);
+		};
+	}
+
+	case FN_MATH_SQRT:
+	{
+		int iValue = pArgs->GetElement(0)->GetIntegerValue();
+		if (iValue >= 0)
+			return pCC->CreateInteger(mathSqrt(iValue));
+		else
+			return pCC->CreateError(CONSTLIT("Imaginary number"), pArgs->GetElement(0));
+	}
+
+	default:
+		ASSERT(false);
+		return pCC->CreateNil();
+	}
+}
 
 double GetFractionArg (ICCItem *pArg, double *retrDenom)
 	{
@@ -3809,7 +4243,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	CCodeChain *pCC = pCtx->pCC;
 	ICCItem *pArgs;
 	ICCItem *pVector;
-	ICCItem *pDtypeString;
+	ICCItem *pDTypeString;
 	CCLinkedList *pShapeList;
 	CCLinkedList *pContentList;
 	ICCItem *pDim;
@@ -3820,15 +4254,15 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	if (pArgs->IsError())
 		return pArgs;
 
-	pDtypeString = pArgs->Head(pCtx->pCC);
+	pDTypeString = pArgs->Head(pCtx->pCC);
 
-	if (strCompare(pDtypeString->GetStringValue(), "int"))
+	if (strCompare(pDTypeString->GetStringValue(), "int"))
 	{
 		iDtype = 0;
 	}
 	else
 	{
-		ICCItem *pError = pCC->CreateError(CONSTLIT("Only 'int' allowed for dtypeString."), pDtypeString->GetStringValue());
+		ICCItem *pError = pCC->CreateError(CONSTLIT("Only 'int' allowed for dtypeString."), pDTypeString);
 		pArgs->Discard(pCC);
 		return pError;
 	};
@@ -3840,13 +4274,13 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		//  no need to make sure there are any other things in pArgs, 
 		//  because EvaluateArgs did that for us (recall "sk" validation string)
 
-		CIntArray *pShape = &(CIntArray());
+		TArray <int> *pShape = &(TArray <int>());
 		for (i = 0; i < pShapeList->GetCount(); i++)
 		{
 			pDim = pShapeList->GetElement(i);
 			if (pDim->IsInteger())
 			{
-				pShape->InsertElement(pDim->GetIntegerValue(), NULL);
+				pShape->Insert(pDim->GetIntegerValue());
 			}
 			else
 			{
@@ -3882,13 +4316,13 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		pShapeList = dynamic_cast<CCLinkedList *> (result);
 
-		CIntArray *pShape = &(CIntArray());
+		TArray <int> *pShape = &(TArray <int> ());
 		for (i = 0; i < pShapeList->GetCount(); i++)
 		{
 			pDim = pShapeList->GetElement(i);
 			if (pDim->IsInteger())
 			{
-				pShape->InsertElement(pDim->GetIntegerValue(), NULL);
+				pShape->Insert(pDim->GetIntegerValue());
 			}
 			else
 			{
@@ -3955,23 +4389,299 @@ ICCItem *fnVectorOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	return pCC->CreateTrue();
 	}
 
+BOOL CompareShapeArrays(TArray <int> *arr0, TArray <int> *arr1)
+{
+	int i;
+	int numElements0 = arr0->GetCount();
+	int numElements1 = arr1->GetCount();
+
+	if (numElements0 != numElements1)
+	{
+		return bool(0);
+	};
+
+	for (i; i < numElements0; i++)
+	{
+		if (arr0->GetAt(i) != arr1->GetAt(i))
+		{
+			return bool(0);
+		};
+	};
+
+	return bool(1);
+};
+
 ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
-//	fnVector
+//	fnVecMath
 //
-//	Vector functions
-//
-//	(vecSetShape vector shapeList)
-//  (vecSetData vector
+//	Vector Math functions
+//  
+//  (vscalmul scalar vector)
+//  (vemul vector1 vector2)
+//  (vsum vector1 vector2)
+//	(vdot vector1 vector2)
+//  (vadd vector1 vector2)
+//  
 
 {
+	int i;
+	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pArgs;
+	ICCItem *pRef;
+
+	if (dwData == FN_VECTOR_SCALMUL)
+	{
+		//  Evaluate arguments
+		pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("ne"));
+		if (pArgs->IsError())
+			return pArgs;
+
+		CCNumeral *pNumeral = dynamic_cast <CCNumeral *> (pArgs->GetElement(0));
+		CCVector *pVector = dynamic_cast <CCVector *> (pArgs->GetElement(1)->Clone(pCC));
+
+		int iVectorDType = pVector->GetDataType();
+		int iResultVectorDType = int(pNumeral->IsDouble() || iVectorDType);
+
+		pRef = pCC->CreateVector(iResultVectorDType, pVector->GetShapeArray());
+		if (pRef->IsError())
+		{
+			pArgs->Discard(pCC);
+			return pRef;
+		}
+		CCVector *pResultVector = dynamic_cast <CCVector *> (pRef);
+
+		for (i = 0; i < pVector->GetCount(); i++)
+		{
+			pRef = pVector->GetElement(i);
+			if (pRef->IsError())
+			{
+				pArgs->Discard(pCC);
+				return pRef;
+			}
+
+			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNumeral, dynamic_cast <CCNumeral *> (pRef)));
+			if (pSuccess->IsNil())
+			{
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
+				pArgs->Discard(pCC);
+				pResultVector->Discard(pCC);
+				pSuccess->Discard(pCC);
+				return pError;
+			}
+			else
+			{
+				pSuccess->Discard(pCC);
+			};
+		};
+	};
+	if (dwData == FN_VECTOR_DOT)
+	{
+		//  Evaluate arguments
+		pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("ee"));
+		if (pArgs->IsError())
+			return pArgs;
+
+		CCVector *pVector0 = dynamic_cast <CCVector *> (pArgs->GetElement(0));
+		CCVector *pVector1 = dynamic_cast <CCVector *> (pArgs->GetElement(1));
+
+		int iDimVec0 = pVector0->GetShapeCount();
+		int iDimVec1 = pVector1->GetShapeCount();
+
+		if (iDimVec0 > 1 || iDimVec1 > 1)
+		{
+			ICCItem *pError = pCC->CreateError(CONSTLIT("Vectors are not 1 or 2 dimensional"), NULL);
+			pArgs->Discard(pCC);
+			return pError;
+		};
+
+		if (!CompareShapeArrays(pVector0->GetShapeArray(), pVector1->GetShapeArray()))
+		{
+			ICCItem *pError = pCC->CreateError(CONSTLIT("Vectors do not have the same size"));
+		};
+		
+		int iResultVectorDType = int(pVector0->GetDataType() || pVector1->GetDataType());
+
+		pRef = pCC->CreateVector(iResultVectorDType, pVector0->GetShapeArray());
+		if (pRef->IsError())
+		{
+			pArgs->Discard(pCC);
+			return pRef;
+		}
+		CCVector *pResultVector = dynamic_cast <CCVector *> (pRef);
+		pResultVector->SetDataType(iResultVectorDType);
+
+		for (i = 0; i < pResultVector->GetShapeArray->GetElement(0); i++)
+		{
+			CCNumeral *pNum1 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
+			CCNumeral *pNum2 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
+
+			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNum1, pNum2));
+			if (pSuccess->IsNil())
+			{
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
+				pArgs->Discard(pCC);
+				pResultVector->Discard(pCC);
+				pSuccess->Discard(pCC);
+				return pError;
+			}
+			else
+			{
+				pSuccess->Discard(pCC);
+			};
+		};
+		
+	};
+
+	if (dwData == FN_VECTOR_ADD)
+	{
+		//  Evaluate arguments
+		pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("ee"));
+		if (pArgs->IsError())
+			return pArgs;
+
+		CCVector *pVector0 = dynamic_cast <CCVector *> (pArgs->GetElement(0));
+		CCVector *pVector1 = dynamic_cast <CCVector *> (pArgs->GetElement(1));
+
+		if (!CompareShapeArrays(pVector0->GetShapeArray(), pVector1->GetShapeArray()))
+		{
+			ICCItem *pError = pCC->CreateError(CONSTLIT("Vectors do not have the same size"));
+		};
+
+		int iResultVectorDType = int(pVector0->GetDataType() || pVector1->GetDataType());
+
+		pRef = pCC->CreateVector(iResultVectorDType, pVector0->GetShapeArray());
+		if (pRef->IsError())
+		{
+			pArgs->Discard(pCC);
+			return pRef;
+		}
+		CCVector *pResultVector = dynamic_cast <CCVector *> (pRef);
+		pResultVector->SetDataType(iResultVectorDType);
+
+		for (i = 0; i < pResultVector->GetCount(); i++)
+		{
+			CCNumeral *pNum0 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
+			CCNumeral *pNum1 = dynamic_cast <CCNumeral *> (pVector1->GetElement(i));
+
+			ICCItem *pSuccess = pResultVector->SetElement(i, AddNumerals(pNum0, pNum1));
+			if (pSuccess->IsNil())
+			{
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
+				pArgs->Discard(pCC);
+				pResultVector->Discard(pCC);
+				pSuccess->Discard(pCC);
+				return pError;
+			}
+			else
+			{
+				pSuccess->Discard(pCC);
+			};
+		};
+
+	};
+
+	if (dwData == FN_VECTOR_EMUL)
+	{
+		//  Evaluate arguments
+		pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("ee"));
+		if (pArgs->IsError())
+			return pArgs;
+
+		CCVector *pVector0 = dynamic_cast <CCVector *> (pArgs->GetElement(0));
+		CCVector *pVector1 = dynamic_cast <CCVector *> (pArgs->GetElement(1));
+
+		if (!CompareShapeArrays(pVector0->GetShapeArray(), pVector1->GetShapeArray()))
+		{
+			ICCItem *pError = pCC->CreateError(CONSTLIT("Vectors do not have the same size"));
+		};
+
+		int iResultVectorDType = int(pVector0->GetDataType() || pVector1->GetDataType());
+
+		pRef = pCC->CreateVector(iResultVectorDType, pVector0->GetShapeArray());
+		if (pRef->IsError())
+		{
+			pArgs->Discard(pCC);
+			return pRef;
+		}
+		CCVector *pResultVector = dynamic_cast <CCVector *> (pRef);
+		pResultVector->SetDataType(iResultVectorDType);
+
+		for (i = 0; i < pResultVector->GetCount(); i++)
+		{
+			CCNumeral *pNum0 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
+			CCNumeral *pNum1 = dynamic_cast <CCNumeral *> (pVector1->GetElement(i));
+
+			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNum0, pNum1));
+			if (pSuccess->IsNil())
+			{
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
+				pArgs->Discard(pCC);
+				pResultVector->Discard(pCC);
+				pSuccess->Discard(pCC);
+				return pError;
+			}
+			else
+			{
+				pSuccess->Discard(pCC);
+			};
+		};
+
+		if (dwData == FN_VECTOR_ESUM)
+		{
+			//  Evaluate arguments
+			pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("ee"));
+			if (pArgs->IsError())
+				return pArgs;
+
+			CCVector *pVector0 = dynamic_cast <CCVector *> (pArgs->GetElement(0));
+			CCVector *pVector1 = dynamic_cast <CCVector *> (pArgs->GetElement(1));
+
+			if (!CompareShapeArrays(pVector0->GetShapeArray(), pVector1->GetShapeArray()))
+			{
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Vectors do not have the same size"));
+			};
+
+			int iResultVectorDType = int(pVector0->GetDataType() || pVector1->GetDataType());
+
+			pRef = pCC->CreateVector(iResultVectorDType, pVector0->GetShapeArray());
+			if (pRef->IsError())
+			{
+				pArgs->Discard(pCC);
+				return pRef;
+			}
+			CCVector *pResultVector = dynamic_cast <CCVector *> (pRef);
+			pResultVector->SetDataType(iResultVectorDType);
+
+			for (i = 0; i < pResultVector->GetCount(); i++)
+			{
+				CCNumeral *pNum0 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
+				CCNumeral *pNum1 = dynamic_cast <CCNumeral *> (pVector1->GetElement(i));
+
+				ICCItem *pSuccess = pResultVector->SetElement(i, AddNumerals(pNum0, pNum1));
+				if (pSuccess->IsNil())
+				{
+					ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
+					pArgs->Discard(pCC);
+					pResultVector->Discard(pCC);
+					pSuccess->Discard(pCC);
+					return pError;
+				}
+				else
+				{
+					pSuccess->Discard(pCC);
+				};
+			};
+	};
+
+	// pArgs->Head(pCtx->pCC);
 }
 
 //	Helper Functions -----------------------------------------------------------
 
-int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce)
+int HelperCompareItemsOld (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce)
 
-//	HelperCompareItems
+//	HelperCompareItemsOld
 //
 //	Compares two items and returns:
 //
@@ -3999,16 +4709,24 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce)
 
 			case ICCItem::Integer:
 				{
-				if (pFirst->GetIntegerValue() == pSecond->GetIntegerValue())
-					return 0;
-				else if (pFirst->GetIntegerValue() > pSecond->GetIntegerValue())
-					return 1;
-				else
-					return -1;
+					if (pFirst->GetIntegerValue() == pSecond->GetIntegerValue())
+					{
+						return 0;
+					}
+					else if (pFirst->GetIntegerValue() > pSecond->GetIntegerValue())
+					{
+						return 1;
+					}
+					else
+					{
+						return -1;
+					}
 				}
 
 			case ICCItem::String:
+			{
 				return strCompare(pFirst->GetStringValue(), pSecond->GetStringValue());
+			}
 
 			case ICCItem::List:
 				{
@@ -4022,7 +4740,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce)
 						ICCItem *pItem2 = pSecond->GetElement(i);
 						int iCompare;
 
-						iCompare = HelperCompareItems(pItem1, pItem2);
+						iCompare = HelperCompareItemsOld(pItem1, pItem2);
 						if (iCompare != 0)
 							return iCompare;
 						}
@@ -4068,7 +4786,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce)
 			}
 		else if (pSecond->IsNil())
 			{
-			int iResult = HelperCompareItems(pSecond, pFirst, bCoerce);
+			int iResult = HelperCompareItemsOld(pSecond, pFirst, bCoerce);
 			if (iResult == -1)
 				return 1;
 			else if (iResult == 1)
@@ -4083,12 +4801,148 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce)
 		return -2;
 	}
 
-int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce)
+int HelperCompareItems(ICCItem *pFirst, ICCItem *pSecond, bool bCoerce)
+
+		//	HelperCompareItems
+		//
+		//	Compares two items and returns:
+		//
+		//		1	if pFirst > pSecond
+		//		0	if pFirst = pSecond
+		//		-1	if pFirst < pSecond
+		//		-2	if pFirst is not the same type as pSecond
+
 	{
+		//	Compare this with the first expression
+
+		if (pFirst->GetValueType() == pSecond->GetValueType())
+		{
+			switch (pFirst->GetValueType())
+			{
+			case ICCItem::Boolean:
+			{
+				if (pFirst->IsNil() == pSecond->IsNil())
+					return 0;
+				else if (pFirst->IsNil())
+					return -1;
+				else
+					return 1;
+			}
+
+			case ICCItem::Numeral:
+			{
+				double dFirst = pFirst->GetDoubleValue();
+				double dSecond = pSecond->GetDoubleValue();
+
+				if (dFirst == dSecond)
+					return 0;
+				else if (dFirst > dSecond)
+					return 1;
+				else
+					return -1;
+			}
+
+			case ICCItem::String:
+			{
+				return strCompare(pFirst->GetStringValue(), pSecond->GetStringValue());
+			}
+
+			case ICCItem::List:
+			{
+				if (pFirst->GetCount() == pSecond->GetCount())
+				{
+					int i;
+
+					for (i = 0; i < pFirst->GetCount(); i++)
+					{
+						ICCItem *pItem1 = pFirst->GetElement(i);
+						ICCItem *pItem2 = pSecond->GetElement(i);
+						int iCompare;
+
+						iCompare = HelperCompareItems(pItem1, pItem2);
+						if (iCompare != 0)
+							return iCompare;
+					}
+
+					return 0;
+				}
+				else if (pFirst->GetCount() > pSecond->GetCount())
+					return 1;
+				else
+					return -1;
+				break;
+			}
+
+			default:
+				return -2;
+			}
+		}
+		else if (bCoerce)
+		{
+			if (pFirst->IsNil())
+			{
+				switch (pSecond->GetValueType())
+				{
+				case ICCItem::Integer:
+				{
+					if (0 == pSecond->GetIntegerValue())
+						return 0;
+					else if (0 > pSecond->GetIntegerValue())
+						return 1;
+					else
+						return -1;
+				}
+
+				case ICCItem::String:
+					return -1;
+
+				case ICCItem::List:
+					return (pSecond->GetCount() == 0 ? 0 : -1);
+
+				default:
+					return -2;
+				}
+			}
+			else if (pSecond->IsNil())
+			{
+				int iResult = HelperCompareItems(pSecond, pFirst, bCoerce);
+				if (iResult == -1)
+					return 1;
+				else if (iResult == 1)
+					return -1;
+				else
+					return iResult;
+			}
+			else
+				return -2;
+		}
+		else
+			return -2;
+	}
+
+int HelperCompareItemsListsOld (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce)
+	{
+	if (pFirst->GetCount() > iKeyIndex && pSecond->GetCount() > iKeyIndex)
+		return HelperCompareItemsOld(pFirst->GetElement(iKeyIndex), pSecond->GetElement(iKeyIndex), bCoerce);
+	else
+		{
+		CCNil TempNil;
+
+		if (pFirst->GetCount() > iKeyIndex)
+			return HelperCompareItemsOld(pFirst->GetElement(iKeyIndex), &TempNil, bCoerce);
+		else if (pSecond->GetCount() > iKeyIndex)
+			return HelperCompareItemsOld(&TempNil, pSecond->GetElement(iKeyIndex), bCoerce);
+		else
+			return 0;
+		}
+	}
+
+int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce)
+{
 	if (pFirst->GetCount() > iKeyIndex && pSecond->GetCount() > iKeyIndex)
 		return HelperCompareItems(pFirst->GetElement(iKeyIndex), pSecond->GetElement(iKeyIndex), bCoerce);
 	else
-		{
+	{
 		CCNil TempNil;
 
 		if (pFirst->GetCount() > iKeyIndex)
@@ -4097,8 +4951,8 @@ int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, b
 			return HelperCompareItems(&TempNil, pSecond->GetElement(iKeyIndex), bCoerce);
 		else
 			return 0;
-		}
 	}
+}
 
 ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem **retpError)
 	{

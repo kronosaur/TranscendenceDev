@@ -86,8 +86,9 @@ class ICCItem : public CObject
 			List,
 			Function,
 			Complex,
-			Float,
-			Vector
+			Double,
+			Vector,
+			Numeral 
 			};
 
 		ICCItem (IObjectClass *pClass);
@@ -137,6 +138,7 @@ class ICCItem : public CObject
 		virtual ICCItem *GetFunctionBinding (void) { return NULL; }
 		virtual CString GetHelp (void) { return NULL_STR; }
 		virtual int GetIntegerValue (void) { return 0; }
+		virtual double GetDoubleValue (void) { return 0.; }
 		virtual CString GetStringValue (void) { return LITERAL(""); }
 		virtual ValueTypes GetValueType (void) = 0;
 		virtual CString GetTypeOf (void);
@@ -146,6 +148,7 @@ class ICCItem : public CObject
 		virtual BOOL IsFunction (void) = 0;
 		virtual BOOL IsIdentifier (void) = 0;
 		virtual BOOL IsInteger (void) = 0;
+		virtual BOOL IsDouble (void) = 0;
 		virtual bool IsLambdaFunction (void) { return false; }
 		virtual BOOL IsNil (void) = 0;
 		virtual BOOL IsPrimitive (void) { return FALSE; }
@@ -221,28 +224,59 @@ class ICCAtom : public ICCItem
 		virtual ICCItem *Head (CCodeChain *pCC) { return Reference(); }
 		virtual BOOL IsAtom (void) { return TRUE; }
 		virtual BOOL IsInteger (void) { return FALSE; }
+		virtual BOOL IsDouble(void) { return FALSE; }
 		virtual BOOL IsNil (void) { return FALSE; }
 		virtual ICCItem *Tail (CCodeChain *pCC);
 	};
 
-//	An integer is an atom that represents a natural number
 
-class ICCInteger : public ICCAtom
+//  A numeral is an atom that represents a double or an integer
+class ICCNumeral : public ICCAtom
 	{
 	public:
-		ICCInteger (IObjectClass *pClass) : ICCAtom(pClass) { }
+		ICCNumeral(IObjectClass *pClass) : ICCAtom(pClass) { }
 
-		//	ICCItem virtuals
+		//  ICCItem virtuals
 
-		virtual ValueTypes GetValueType (void) { return Integer; }
+		virtual ValueTypes GetValueType (void);
 		virtual BOOL IsIdentifier (void) { return FALSE; }
-		virtual BOOL IsInteger (void) { return TRUE; }
 		virtual BOOL IsFunction (void) { return FALSE; }
+		virtual BOOL IsInteger (void);
+		virtual BOOL IsDouble (void);
+
+		// ICCNumeral virtuals
+		virtual void SetValue (int iNewVal);
+		virtual void SetValue (double dNewVal);
+
+		CCInteger *GetIntegerObject (void);
+		CCDouble *GetDoubleObject (void);
 	};
 
-//	This is a standard implementation of an integer
+//	Implementation of a Numeral
 
-class CCInteger : public ICCInteger
+class CCNumeral : public ICCNumeral
+	{
+	public:
+		CCNumeral (void);
+
+		// ICCItem virtuals
+		virtual ICCItem *Clone(CCodeChain *pCC);
+		virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
+		virtual void Reset(void);
+		virtual BOOL IsInteger(void);
+		virtual BOOL IsInteger(void);
+
+		//ICCNumeral virtuals
+		virtual void SetValue (int iNewVal);
+		virtual void SetValue (double dNewVal);
+
+	protected:
+		virtual void DestroyItem(CCodeChain *pCC);
+		virtual ICCItem *StreamItem(CCodeChain *pCC, IWriteStream *pStream);
+		virtual ICCItem *UnstreamItem(CCodeChain *pCC, IReadStream *pStream);
+	};
+
+class CCInteger : public CCNumeral
 	{
 	public:
 		CCInteger (void);
@@ -251,20 +285,38 @@ class CCInteger : public ICCInteger
 		inline void SetValue (int iValue) { m_iValue = iValue; }
 
 		//	ICCItem virtuals
-
-		virtual ICCItem *Clone (CCodeChain *pCC);
+		BOOL IsInteger(void) { return TRUE; }
+		BOOL IsDouble(void) { return FALSE; }
 		virtual int GetIntegerValue (void) { return m_iValue; }
+		virtual double GetDoubleValue(void) { return double(m_iValue); }
 		virtual CString GetStringValue (void) { return strFromInt(m_iValue); }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
-		virtual void Reset (void);
-
-	protected:
-		virtual void DestroyItem (CCodeChain *pCC);
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream);
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream);
-
+		
+		CCInteger *GetIntegerObject(void) { return this; }
 	private:
 		int m_iValue;							//	Value of 32-bit integer
+	};
+
+//	This is a standard implementation of a double
+
+class CCDouble : public CCNumeral
+	{
+	public:
+		CCDouble(void);
+
+		inline int GetValue(void) { return m_dValue; }
+		inline void SetValue(double dValue) { m_dValue = dValue; }
+
+		//	ICCItem virtuals
+		BOOL IsInteger(void) { return FALSE; }
+		BOOL IsDouble(void) { return TRUE; }
+		virtual int GetIntegerValue(void) { return int(m_dValue); }
+		virtual double GetDoubleValue(void) { return m_dValue; }
+		virtual CString GetStringValue(void) { return strFromInt(m_dValue); }
+
+		CCDouble *GetDoubleObject(void) { return this; }
+
+	private:
+		int m_dValue;							//	Value of double
 	};
 
 //	Nil class
@@ -283,6 +335,7 @@ class CCNil : public ICCAtom
 		virtual ValueTypes GetValueType (void) { return Boolean; }
 		virtual BOOL IsIdentifier (void) { return FALSE; }
 		virtual BOOL IsInteger (void) { return TRUE; }
+		virtual BOOL IsDouble(void) { return FALSE; }
 		virtual BOOL IsFunction (void) { return FALSE; }
 		virtual BOOL IsNil (void) { return TRUE; }
 		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) { return LITERAL("Nil"); }
@@ -450,25 +503,9 @@ class ICCList : public ICCItem
 		virtual BOOL IsFunction (void) { return FALSE; }
 		virtual BOOL IsIdentifier (void) { return FALSE; }
 		virtual BOOL IsInteger (void) { return FALSE; }
+		virtual BOOL IsDouble(void) { return FALSE; }
 		virtual BOOL IsNil (void) { return (GetCount() == 0); }
 	};
-
-//	A vector of numeric items (integers, floats, complex numbers)
-
-class ICCVector : public ICCItem
-{
-public:
-	ICCVector(IObjectClass *pClass) : ICCItem(pClass) { }
-
-	//	ICCItem virtuals
-
-	virtual ValueTypes GetValueType(void) { return List; }
-	virtual BOOL IsAtom(void) { return FALSE; }
-	virtual BOOL IsFunction(void) { return FALSE; }
-	virtual BOOL IsIdentifier(void) { return FALSE; }
-	virtual BOOL IsInteger(void) { return FALSE; }
-	virtual BOOL IsNil(void) { return (GetCount() == 0); }
-};
 
 //	This is a linked-list implementation of a list
 
@@ -486,6 +523,7 @@ class CCLinkedList : public ICCList
 		void ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewItem);
 		void Shuffle (CCodeChain *pCC);
 		void Sort (CCodeChain *pCC, int iOrder, int iIndex = -1);
+		CCLinkedList *GetFlattened(CCodeChain *pCC, CCLinkedList *pResult);
 		ICCItem *IsValidVectorContent (CCodeChain *pCC);
 		
 		//	ICCItem virtuals
@@ -552,6 +590,24 @@ private:
 };
 
 //	**UNDER CONSTRUCTION**
+//	A vector of Numeral items
+
+class ICCVector : public ICCItem
+{
+public:
+	ICCVector(IObjectClass *pClass) : ICCItem(pClass) { }
+
+	//	ICCItem virtuals
+
+	virtual ValueTypes GetValueType(void) { return Vector; }
+	virtual BOOL IsAtom(void) { return FALSE; }
+	virtual BOOL IsFunction(void) { return FALSE; }
+	virtual BOOL IsIdentifier(void) { return FALSE; }
+	virtual BOOL IsInteger(void) { return FALSE; }
+	virtual BOOL IsDouble(void) { return FALSE; }
+	virtual BOOL IsNil(void) { return (GetCount() == 0); }
+};
+
 class CCVector : public ICCVector
 	{
 	public:
@@ -559,13 +615,14 @@ class CCVector : public ICCVector
 		CCVector (CCodeChain *pCC);
 		virtual ~CCVector (void);
 
-		CIntArray *GetArray (void);
-		BOOL SetElement (int iIndex, int iElement);
+		TArray<CCNumeral> *GetDataArray(void) { return m_pData; }
+		TArray<int> *GetShapeArray(void) { return m_pShape; }
+		ICCItem *SetElementsByIndex(CCLinkedList *pIndices, CCLinkedList *pData);
 		void SetDataType(int iDataType);
-		int *GetShape (void);
+		int GetDataType(void) { return m_iDtype; }
 		ICCItem *SetArraySize (CCodeChain *pCC, int iNewSize);
-		ICCItem *SetShape (CCodeChain *pCC, CIntArray *pNewShape);
-		ICCItem *SetArrayData (CCodeChain *pCC, CIntArray *pNewData);
+		ICCItem *SetShape(CCodeChain *pCC, TArray<int> *pNewShape);
+		ICCItem *SetArrayData(CCodeChain *pCC, TArray<CCNumeral> *pNewData);
 
 		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -574,12 +631,12 @@ class CCVector : public ICCVector
 
 		virtual ICCItem *Clone (CCodeChain *pCC);
 		virtual int GetCount (void) { return m_pData->GetCount(); }
-		virtual int GetStridesCount(void) { return m_pStrides->GetCount(); }
 		virtual int GetShapeCount(void) { return m_pShape->GetCount(); }
 		virtual int GetDimension(void) { return m_pShape->GetCount(); }
 		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
 		virtual ICCItem *GetElement (int iIndex);
-		virtual ICCItem *IndexVector (CCLinkedList *pIndices);
+		virtual ICCItem *SetElement (int iIndex, CCNumeral *pNumeral);
+		virtual ICCItem *IndexVector (CCodeChain *pCC, CCLinkedList *pIndices);
 		virtual ICCItem *Head(CCodeChain *pCC) { return GetElement(0); }
 		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
 		virtual ICCItem *Tail(CCodeChain *pCC);
@@ -592,12 +649,11 @@ class CCVector : public ICCVector
 
 	private:
 		CCodeChain *m_pCC;						//	CodeChain
-		CIntArray *m_pData;						//	Array of elements
-		CIntArray *m_pShape;					//  Shape
-		CIntArray *m_pStrides;					//  Strides
+		TArray<CCNumeral> *m_pData;				//	Array of elements
+		TArray<int> *m_pShape;					//  Shape
 		int m_iDtype;							//  Data type: 
 												//		(-1=uninitialized, 0=int, 
-												//		1=float, 2=complex)
+												//		1=double)
 	};
 
 //	This is an atom table object
@@ -764,6 +820,7 @@ class CCodeChain : public CObject
 		ICCItem *CreateError (const CString &sError, ICCItem *pData = NULL);
 		ICCItem *CreateErrorCode (int iErrorCode);
 		ICCItem *CreateInteger (int iValue);
+		ICCItem *CreateDouble (double dValue);
 		ICCItem *CreateLambda (ICCItem *pList, BOOL bArgsOnly);
 		ICCItem *CreateLinkedList (void);
 		inline ICCItem *CreateMemoryError (void) { return m_sMemoryError.Reference(); }
@@ -774,11 +831,12 @@ class CCodeChain : public CObject
 		ICCItem *CreateSystemError (ALERROR error);
 		inline ICCItem *CreateTrue (void) { return m_pTrue->Reference(); }
 		ICCItem *CreateVectorOld (int iSize);
-		ICCItem *CreateEmptyVector(int iDtype, CIntArray *pShape);
-		ICCItem *CreateVector(int iDtype, CIntArray *pShape, CCLinkedList *pDataList);
+		ICCItem *CreateEmptyVector(int iDtype, TArray<int> *pShape);
+		ICCItem *CreateVector(int iDtype, TArray<int> *pShape);
 		inline void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(this, pItem); }
 		inline void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
 		inline void DestroyInteger (ICCItem *pItem) { m_IntegerPool.DestroyItem(this, pItem); }
+		inline void DestroyDouble (ICCItem *pItem) { m_DoublePool.DestroyItem(this, pItem); }
 		inline void DestroyLambda (ICCItem *pItem) { m_LambdaPool.DestroyItem(this, pItem); }
 		inline void DestroyLinkedList (ICCItem *pItem) { m_ListPool.DestroyItem(this, pItem); }
 		inline void DestroyPrimitive (ICCItem *pItem) { m_PrimitivePool.DestroyItem(this, pItem); }
@@ -832,12 +890,14 @@ class CCodeChain : public CObject
 		char *SkipWhiteSpace (char *pPos, int *ioiLine);
 
 		CCItemPool<CCInteger> m_IntegerPool;
+		CCItemPool<CCDouble> m_DoublePool;
 		CCItemPool<CCString> m_StringPool;
 		CCItemPool<CCLinkedList> m_ListPool;
 		CCItemPool<CCPrimitive> m_PrimitivePool;
 		CCItemPool<CCAtomTable> m_AtomTablePool;
 		CCItemPool<CCSymbolTable> m_SymbolTablePool;
 		CCItemPool<CCLambda> m_LambdaPool;
+		CCItemPool<CCVector> m_VectorPool;
 		CConsPool m_ConsPool;
 		ICCItem *m_pNil;
 		ICCItem *m_pTrue;

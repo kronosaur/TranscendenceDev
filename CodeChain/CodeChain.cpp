@@ -16,8 +16,10 @@
 #define SYMBOLTABLE_POOL							4
 #define LAMBDA_POOL									5
 #define ATOMTABLE_POOL								6
+#define VECTOR_POOL									7
+#define DOUBLE_POOL									8
 
-#define POOL_COUNT									7
+#define POOL_COUNT									9
 
 static CObjectClass<CCodeChain>g_Class(OBJID_CCODECHAIN, NULL);
 
@@ -211,6 +213,27 @@ ICCItem *CCodeChain::CreateErrorCode (int iErrorCode)
 	return pError;
 	}
 
+ICCItem *CCodeChain::CreateDouble(double dValue)
+
+//	CreateDouble
+//
+//	Creates a double
+
+	{
+	ICCItem *pItem;
+	CCDouble *pDouble;
+
+	pItem = m_DoublePool.CreateItem(this);
+	if (pItem->IsError())
+		return pItem;
+
+	pDouble = dynamic_cast<CCDouble *>(pItem);
+	pDouble->Reset();
+	pDouble->SetValue(dValue);
+
+	return pDouble->Reference();
+	}
+
 ICCItem *CCodeChain::CreateInteger (int iValue)
 
 //	CreateInteger
@@ -384,7 +407,7 @@ ICCItem *CCodeChain::CreateVectorOld (int iSize)
 	return pVector->Reference();
 	}
 
-ICCItem *CCodeChain::CreateEmptyVector(int iDtype, CIntArray *pShape)
+ICCItem *CCodeChain::CreateEmptyVector(int iDtype, TArray<int> *pShape)
 
 //	CreateEmptyVector
 //
@@ -398,7 +421,7 @@ ICCItem *CCodeChain::CreateEmptyVector(int iDtype, CIntArray *pShape)
 
 	for (i = 0; i < pShape->GetCount(); i++)
 	{
-		iSize = iSize + pShape->GetElement(i);
+		iSize = iSize + pShape->GetAt(i);
 	};
 
 	pVector = new CCVector(this);
@@ -427,7 +450,7 @@ ICCItem *CCodeChain::CreateEmptyVector(int iDtype, CIntArray *pShape)
 	return pVector->Reference();
 }
 
-ICCItem *CCodeChain::CreateVector(int iDtype, CIntArray *pShape, CCLinkedList *pDataList)
+ICCItem *CCodeChain::CreateVector(int iDtype, TArray<int> *pShape)
 
 //	CreateVector
 //
@@ -441,7 +464,7 @@ ICCItem *CCodeChain::CreateVector(int iDtype, CIntArray *pShape, CCLinkedList *p
 
 	for (i = 0; i < pShape->GetCount(); i++)
 	{
-		iSize = iSize + pShape->GetElement(i);
+		iSize = iSize * pShape->GetAt(i);
 	};
 
 	pVector = new CCVector(this);
@@ -462,13 +485,9 @@ ICCItem *CCodeChain::CreateVector(int iDtype, CIntArray *pShape, CCLinkedList *p
 		return pError;
 	}
 
-	CIntArray *pDataArray = &(CIntArray());
-	for (i = 0; i < pDataList->GetCount(); i++)
-	{
-		pDataArray->AppendElement(pDataList->GetElement(i)->GetIntegerValue(), NULL);
-	};
-
+	TArray<CCNumeral> *pDataArray = &(TArray<CCNumeral>());
 	pError = pVector->SetArrayData(this, pDataArray);
+
 	if (pError->IsError())
 	{
 		delete pVector;
@@ -479,6 +498,7 @@ ICCItem *CCodeChain::CreateVector(int iDtype, CIntArray *pShape, CCLinkedList *p
 	//  if we have gotten this far, then it is safe to set the data type
 	pError->Discard(this);
 	pVector->SetDataType(iDtype);
+
 	return pVector->Reference();
 }
 
@@ -833,6 +853,32 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				break;
 				}
 
+			//  We expect a double...
+			case 'd':
+			{
+				if (!pResult->IsDouble())
+				{
+					pError = CreateError(LITERAL("Double expected"), pResult);
+					pResult->Discard(this);
+					pEvalList->Discard(this);
+					return pError;
+				}
+				break;
+			}
+
+			//  We expect a vEctor...
+			case 'e':
+			{
+				if (!(pResult->GetValueType() == ICCItem::Vector))
+				{
+					pError = CreateError(LITERAL("Vector expected"), pResult);
+					pResult->Discard(this);
+					pEvalList->Discard(this);
+					return pError;
+				}
+				break;
+			}
+
 			//	We expect a linked list
 
 			case 'k':
@@ -861,6 +907,18 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				break;
 				}
 
+			//  We expect a numeral...
+			case 'n':
+			{
+				if (!pResult->IsDouble() || !pResult->IsInteger())
+				{
+					pError = CreateError(LITERAL("Numeral expected"), pResult);
+					pResult->Discard(this);
+					pEvalList->Discard(this);
+					return pError;
+				}
+				break;
+			}
 			//	We expect an identifier
 
 			case 's':
@@ -1152,6 +1210,8 @@ ICCItem *CCodeChain::PoolUsage (void)
 	iPoolCount[SYMBOLTABLE_POOL] = m_SymbolTablePool.GetCount();
 	iPoolCount[LAMBDA_POOL] = m_LambdaPool.GetCount();
 	iPoolCount[ATOMTABLE_POOL] = m_AtomTablePool.GetCount();
+	iPoolCount[VECTOR_POOL] = m_VectorPool.GetCount();
+	iPoolCount[DOUBLE_POOL] = m_DoublePool.GetCount();
 
 	//	Create
 
@@ -1286,6 +1346,8 @@ ICCItem *CCodeChain::UnstreamItem (IReadStream *pStream)
 
 	if (dwClass == OBJID_CCINTEGER)
 		pItem = m_IntegerPool.CreateItem(this);
+	if (dwClass == OBJID_CCDOUBLE)
+		pItem = m_DoublePool.CreateItem(this);
 	else if (dwClass == OBJID_CCSTRING)
 		pItem = m_StringPool.CreateItem(this);
 	else if (dwClass == OBJID_CCLINKEDLIST)
@@ -1302,18 +1364,14 @@ ICCItem *CCodeChain::UnstreamItem (IReadStream *pStream)
 		pItem = m_LambdaPool.CreateItem(this);
 	else if (dwClass == OBJID_CCATOMTABLE)
 		pItem = m_AtomTablePool.CreateItem(this);
-	else if (dwClass == OBJID_CCVectorOld)
+	else if (dwClass == OBJID_CCVECTOROLD)
 		{
 		pItem = new CCVectorOld(this);
 		if (pItem == NULL)
 			pItem = CreateMemoryError();
 		}
-	else if (dwClass == OBJID_CCVector)
-	{
-		pItem = new CCVectorOld(this);
-		if (pItem == NULL)
-			pItem = CreateMemoryError();
-	}
+	else if (dwClass == OBJID_CCVECTOR)
+		pItem = m_VectorPool.CreateItem(this);
 	else
 		return CreateError(LITERAL("Unknown item type"), NULL);
 
@@ -1343,4 +1401,3 @@ ICCItem *CCodeChain::UnstreamItem (IReadStream *pStream)
 
 	return pItem;
 	}
-

@@ -66,6 +66,7 @@
 #define FN_VECTOR_SCALMUL               62
 #define FN_VECTOR_DOT                   63
 #define FN_VECTOR_EMUL                  64
+#define FN_VECTOR_ESUM					65
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
@@ -75,6 +76,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnCat (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnCount (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnEqualityOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
@@ -117,3 +119,4 @@ ICCItem *fnSysInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecMath (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnVecIndex (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

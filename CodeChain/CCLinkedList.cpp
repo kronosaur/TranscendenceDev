@@ -245,6 +245,38 @@ ICCItem *CCLinkedList::GetElement (int iIndex)
 		return NULL;
 	}
 
+CCLinkedList *CCLinkedList::GetFlattened(CCodeChain *pCC, CCLinkedList *pResult = NULL)
+
+//	GetFlattened
+// 
+//	Returns a flattened representation of this list. 
+//
+
+{
+	int i;
+	ICCItem *pCurrentElement;
+	if (pResult == NULL)
+	{
+		pResult = &(CCLinkedList());
+	};
+
+
+	for (i = 0; i < this->GetCount(); i++)
+	{
+		pCurrentElement = this->GetElement(i);
+		if (pCurrentElement->IsList())
+		{
+			(dynamic_cast <CCLinkedList *> (pCurrentElement))->GetFlattened(pCC, pResult = pResult);
+		}
+		else
+		{
+			pResult->Append(pCC, pCurrentElement);
+		};
+	};
+
+	return pResult
+};
+
 ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 
 //  IsValidVectorContent

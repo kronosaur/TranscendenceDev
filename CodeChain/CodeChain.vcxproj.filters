@@ -81,6 +81,9 @@
     <ClCompile Include="CTextFilePage.cpp">
       <Filter>Source Files\Pages</Filter>
     </ClCompile>
+    <ClCompile Include="CCNumeral.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DefPrimitives.h">
