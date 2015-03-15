@@ -615,7 +615,7 @@ class CCVector : public ICCVector
 		CCVector (CCodeChain *pCC);
 		virtual ~CCVector (void);
 
-		TArray<CCNumeral> *GetDataArray(void) { return m_pData; }
+		TArray<double> *GetDataArray(void) { return m_pData; }
 		TArray<int> *GetShapeArray(void) { return m_pShape; }
 		ICCItem *SetElementsByIndex(CCLinkedList *pIndices, CCLinkedList *pData);
 		void SetDataType(int iDataType);
@@ -649,7 +649,7 @@ class CCVector : public ICCVector
 
 	private:
 		CCodeChain *m_pCC;						//	CodeChain
-		TArray<CCNumeral> *m_pData;				//	Array of elements
+		TArray<double> *m_pData;				//	Array of elements
 		TArray<int> *m_pShape;					//  Shape
 		int m_iDtype;							//  Data type: 
 												//		(-1=uninitialized, 0=int, 

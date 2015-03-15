@@ -60,32 +60,95 @@ CCNumeral *MultiplyNumerals(CCNumeral *num1, CCNumeral *num2)
 	return pResult;
 };
 
-CCNumeral *DivideNumerals(CCNumeral *num, CCNumeral *den)
+CCNumeral *DivideNumerals(CCNumeral *pNum, CCNumeral *pDen)
 {
-	if (num->IsInteger() && den->IsInteger())
+	if (pNum->IsInteger() && pDen->IsInteger())
 	{
 		CCInteger *pResult = &(CCInteger());
-		pResult->SetValue(num->GetIntegerValue() / den->GetIntegerValue());
+		pResult->SetValue(pNum->GetIntegerValue() / pDen->GetIntegerValue());
 		return pResult;
 	};
 
 	CCDouble *pResult = &(CCDouble());
-	pResult->SetValue(num->GetDoubleValue() / den->GetDoubleValue());
+	pResult->SetValue(pNum->GetDoubleValue() / pDen->GetDoubleValue());
 	return pResult;
 };
 
-CCNumeral *ModuloNumerals(CCNumeral *num, CCNumeral *den)
+CCNumeral *ModuloNumerals(CCNumeral *pNum, CCNumeral *pDen, bool bClock)
 {
-	if (num->IsInteger() && den->IsInteger())
+	int iIntResultFlag = 0;
+	CCNumeral *pResult;
+
+	if (pNum->IsInteger() && pDen->IsInteger())
 	{
-		CCInteger *pResult = &(CCInteger());
-		pResult->SetValue(num->GetIntegerValue() % den->GetIntegerValue());
-		return pResult;
+		iIntResultFlag = 1;
+		CCInteger *pIntResult = &(CCInteger());
+		pResult->SetValue(pNum->GetIntegerValue() % pDen->GetIntegerValue());
+		pResult = pIntResult;
+	}
+	else
+	{
+		CCDouble *pDoubleResult = &(CCDouble());
+		pResult->SetValue(fmod(pNum->GetDoubleValue(), pDen->GetDoubleValue()));
+		pResult = pDoubleResult;
 	};
 
-	CCDouble *pResult = &(CCDouble());
-	pResult->SetValue(fmod(num->GetDoubleValue(), den->GetDoubleValue()));
-	return pResult;
+	if (bClock && pResult->GetDoubleValue() < 0)
+	{
+		return AddNumerals(pResult, pDen);
+	}
+	else
+	{
+		return pResult;
+	};
+};
+
+CCNumeral *MaxNumerals(CCNumeral *num1, CCNumeral *num2)
+{
+	double dNum1 = num1->GetDoubleValue();
+	double dNum2 = num2->GetDoubleValue();
+
+	if (dNum1 > dNum2)
+	{
+		return num1;
+	}
+	else
+	{
+		return num2;
+	};
+};
+
+CCNumeral *MinNumerals(CCNumeral *num1, CCNumeral *num2)
+{
+	double dNum1 = num1->GetDoubleValue();
+	double dNum2 = num2->GetDoubleValue();
+
+	if (dNum1 < dNum2)
+	{
+		return num1;
+	}
+	else
+	{
+		return num2;
+	};
+};
+
+CCNumeral *SqrtNumeral(CCNumeral *pNum)
+{
+	double dResult = sqrt(pNum->GetDoubleValue());
+
+	if (int(dResult) == dResult && pNum->IsInteger())
+	{
+		CCNumeral *pResult = &(CCInteger());
+		pResult->SetValue(int(dResult));
+		return pResult;
+	}
+	else
+	{
+		CCNumeral *pResult = &(CCDouble());
+		pResult->SetValue(dResult);
+		return pResult;
+	};
 };
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
@@ -2833,7 +2896,7 @@ ICCItem *fnMathList(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 		int i;
-		int iResultType;		// 0 for integer, 1 for double
+		CCNumeral* pNumResult;
 		ICCItem *pElement;
 		CCodeChain *pCC = pCtx->pCC;
 
@@ -2856,125 +2919,100 @@ ICCItem *fnMathList(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_MATH_ADD:
 		{
-			int iResult = 0;
-			double dResult = 0;
+			//	TOCHECK: Do I need to check to make sure that all the elements of 
+			//	this list are numerals?
 
 			for (i = 0; i < pList->GetCount(); i++)
 			{
-				pElement = pList->GetElement(i);
-
-				if (iResultType == 0)
+				if (i == 0)
 				{
-					if (pElement->GetValueType() == ICCItem::Double)
-					{
-						iResultType == 1;
-						dResult = iResult + pElement->GetDoubleValue();
-						continue;
-					}
-					else
-					{
-						iResult += pElement->GetIntegerValue();
-						continue;
-					};
+					pNumResult = dynamic_cast <CCNumeral *> (pList->GetElement(i));
+				}
+				else
+				{
+					pNumResult = AddNumerals(pNumResult, dynamic_cast <CCNumeral *> (pList->GetElement(i)));
 				};
-
-				dResult += pElement->GetDoubleValue();
 			};
 
-			if (iResultType == 0)
+			if (pNumResult->IsInteger())
 			{
-				return pCC->CreateInteger(iResult);
+				return pCC->CreateInteger(pNumResult->GetIntegerValue());
 			}
 			else
 			{
-				return pCC->CreateDouble(dResult);
+				return pCC->CreateDouble(pNumResult->GetDoubleValue());
 			};
 		}
 
 		case FN_MATH_MULTIPLY:
 		{
-			int iResult = 0;
-			double dResult = 0;
-
 			for (i = 0; i < pList->GetCount(); i++)
 			{
-				pElement = pList->GetElement(i);
-
-				if (iResultType == 0)
+				if (i == 0)
 				{
-					if (pElement->GetValueType() == ICCItem::Double)
-					{
-						iResultType == 1;
-						dResult = iResult * pElement->GetDoubleValue();
-						continue;
-					}
-					else
-					{
-						iResult *= pElement->GetIntegerValue();
-						continue;
-					};
+					pNumResult = dynamic_cast <CCNumeral *> (pList->GetElement(i));
+				}
+				else
+				{
+					pNumResult = MultiplyNumerals(pNumResult, dynamic_cast <CCNumeral *> (pList->GetElement(i)));
 				};
-
-				dResult *= pElement->GetDoubleValue();
 			};
 
-			if (iResultType == 0)
+			if (pNumResult->IsInteger())
 			{
-				return pCC->CreateInteger(iResult);
+				return pCC->CreateInteger(pNumResult->GetIntegerValue());
 			}
 			else
 			{
-				return pCC->CreateDouble(dResult);
+				return pCC->CreateDouble(pNumResult->GetDoubleValue());
 			};
 		}
 
 		case FN_MATH_MAX:
 		{
-			int iResultIndex = 0;
-			double dResult = pList->GetElement(i)->GetDoubleValue();
-
-			for (i = 1; i < pList->GetCount(); i++)
+			for (i = 0; i < pList->GetCount(); i++)
 			{
-				double dVal = pList->GetElement(i)->GetDoubleValue();
-				if (dVal > dResult)
+				if (i == 0)
 				{
-					iResultIndex = i;
-					dResult = dVal;
+					pNumResult = dynamic_cast <CCNumeral *> (pList->GetElement(i));
+				}
+				else
+				{
+					pNumResult = MaxNumerals(pNumResult, dynamic_cast <CCNumeral *> (pList->GetElement(i)));
 				};
-			}
+			};
 
-			if (pList->GetElement(iResultIndex)->IsInteger())
+			if (pNumResult->IsInteger())
 			{
-				return pCC->CreateInteger(int(dResult));
+				return pCC->CreateInteger(pNumResult->GetIntegerValue());
 			}
 			else
 			{
-				return pCC->CreateDouble(dResult);
+				return pCC->CreateDouble(pNumResult->GetDoubleValue());
 			};
 		}
 
 		case FN_MATH_MIN:
 		{
-			int iResultIndex = 0;
-			double dResult = pList->GetElement(i)->GetDoubleValue();
-
-			for (i = 1; i < pList->GetCount(); i++)
+			for (i = 0; i < pList->GetCount(); i++)
 			{
-				double dVal = pList->GetElement(i)->GetDoubleValue();
-				if (dVal < dResult)
+				if (i == 0)
 				{
-					iResultIndex = i;
-					dResult = dVal;
-				};	
-			}
+					pNumResult = dynamic_cast <CCNumeral *> (pList->GetElement(i));
+				}
+				else
+				{
+					pNumResult = MinNumerals(pNumResult, dynamic_cast <CCNumeral *> (pList->GetElement(i)));
+				};
+			};
 
-			if (pList->GetElement(iResultIndex)->IsInteger())
+			if (pNumResult->IsInteger())
 			{
-				return pCC->CreateInteger(int(dResult));
+				return pCC->CreateInteger(pNumResult->GetIntegerValue());
 			}
 			else
 			{
-				return pCC->CreateDouble(dResult);
+				return pCC->CreateDouble(pNumResult->GetDoubleValue());
 			};
 		}
 
@@ -3064,11 +3102,9 @@ ICCItem *fnMath(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 //	(sqrt int1)
 
 {
-	ICCItem *pNumber;
-	ICCItem *pOp1;
-	ICCItem *pOp2;
-	double dOp1;
-	double dOp2;
+	CCNumeral *pNumeral;
+	CCNumeral *pOp1;
+	CCNumeral *pOp2;
 	CCodeChain *pCC = pCtx->pCC;
 
 	//	Compute
@@ -3104,48 +3140,39 @@ ICCItem *fnMath(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		if (pArgs->GetCount() < (iArg + 2))
 			return pCC->CreateError(CONSTLIT("Insufficient arguments"), pArgs);
 
-		pOp1 = pArgs->GetElement(iArg++);
-		pOp2 = pArgs->GetElement(iArg++);
-		dOp1 = pOp1->GetDoubleValue();
-		dOp2 = pOp2->GetDoubleValue();
-		double dResult = fmod(dOp1, dOp2);
+		pOp1 = dynamic_cast <CCNumeral *> (pArgs->GetElement(iArg));
+		pOp2 = dynamic_cast <CCNumeral *> (pArgs->GetElement(iArg++));
 
-		if (dOp2 == 0)
-			return pCC->CreateError(CONSTLIT("Division by zero"), pArgs);
-
-		if (bClock)
+		if (pOp2->GetDoubleValue() == 0)
 		{
-			if (dResult < 0)
-			{
-				if (pOp1->IsInteger() && pOp2->IsInteger())
-					return pCC->CreateInteger(dResult + dOp2);
-				else
-					return pCC->CreateDouble(dResult + dOp2);
-			}
-			else
-			{
-				if (pOp1->IsInteger() && pOp2->IsInteger())
-					return pCC->CreateInteger(dResult);
-				else
-					return pCC->CreateDouble(dResult);
-			};
+			return pCC->CreateError(CONSTLIT("Division by zero"), pArgs);
 		}
 		else
 		{
-			if (pOp1->IsInteger() && pOp2->IsInteger())
-				return pCC->CreateInteger(dResult);
+			pNumeral = ModuloNumerals(pOp1, pOp2, bClock);
+			if (pNumeral->IsInteger())
+				return pCC->CreateInteger(pNumeral->GetIntegerValue());
 			else
-				return pCC->CreateDouble(dResult);
+				return pCC->CreateDouble(pNumeral->GetDoubleValue());
 		};
+
 	}
 
 	case FN_MATH_SQRT:
 	{
-		int iValue = pArgs->GetElement(0)->GetIntegerValue();
-		if (iValue >= 0)
-			return pCC->CreateInteger(mathSqrt(iValue));
+		pNumber = pArgs->GetElement(0);
+		if (pNumber->GetDoubleValue() < 0)
+		{
+			return pCC->CreateError(CONSTLIT("Imaginary result"), pArgs);
+		}
 		else
-			return pCC->CreateError(CONSTLIT("Imaginary number"), pArgs->GetElement(0));
+		{
+			pNumeral = SqrtNumeral(pNumber);
+			if (pNumeral->IsInteger())
+				return pCC->CreateInteger(pNumeral->GetIntegerValue());
+			else
+				return pCC->CreateDouble(pNumeral->GetDoubleValue());
+		};
 	}
 
 	default:
