@@ -450,7 +450,7 @@ ICCItem *CCodeChain::CreateEmptyVector(int iDtype, TArray<int> *pShape)
 	return pVector->Reference();
 }
 
-ICCItem *CCodeChain::CreateVector(int iDtype, TArray<int> *pShape)
+ICCItem *CCodeChain::CreateVector(int iDtype, TArray<int> *pShape, CCLinkedList *pContentList)
 
 //	CreateVector
 //
@@ -485,7 +485,13 @@ ICCItem *CCodeChain::CreateVector(int iDtype, TArray<int> *pShape)
 		return pError;
 	}
 
-	TArray<CCNumeral> *pDataArray = &(TArray<CCNumeral>());
+	TArray<double> *pDataArray = &(TArray<double>());
+	CCLinkedList *pFlattenedContentList = pContentList->GetFlattened(this, NULL);
+	for (i = 0; i < pFlattenedContentList->GetCount(); i++)
+	{
+		double dElement = pFlattenedContentList->GetElement(i)->GetDoubleValue();
+		pDataArray->Insert(&dElement, i);
+	};
 	pError = pVector->SetArrayData(this, pDataArray);
 
 	if (pError->IsError())

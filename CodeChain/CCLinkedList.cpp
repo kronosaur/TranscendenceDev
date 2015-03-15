@@ -304,11 +304,9 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 	int i;
 	int j;
 	int iHeadCount;
-	int iLowerLevelShapeListCount;
 	ICCItem *pHead;
 	CCLinkedList *pShapeList = &(CCLinkedList());
 	CCLinkedList *pLowerLevelShapeList;
-	CCLinkedList *pOtherLowerLevelShapeList;
 	CCLinkedList *pListElement;
 	ICCItem *pResult;
 
@@ -384,13 +382,10 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 	{
 		for (i = 1; i < GetCount(); i++)
 		{
-			if (GetElement(i)->GetValueType != ICCItem::Numeral)
+			if (GetElement(i)->GetValueType() != ICCItem::Numeral)
 			{
-				ICCItem *error = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);
-				pHead->Discard(pCC);
-				pListElement->Discard(pCC);
-				pShapeList->Discard(pCC);
-				return error;
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);
+				return pError;
 			};
 		};
 

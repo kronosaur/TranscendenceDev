@@ -247,9 +247,6 @@ class ICCNumeral : public ICCAtom
 		// ICCNumeral virtuals
 		virtual void SetValue (int iNewVal);
 		virtual void SetValue (double dNewVal);
-
-		CCInteger *GetIntegerObject (void);
-		CCDouble *GetDoubleObject (void);
 	};
 
 //	Implementation of a Numeral
@@ -263,7 +260,6 @@ class CCNumeral : public ICCNumeral
 		virtual ICCItem *Clone(CCodeChain *pCC);
 		virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
 		virtual void Reset(void);
-		virtual BOOL IsInteger(void);
 		virtual BOOL IsInteger(void);
 
 		//ICCNumeral virtuals
@@ -290,8 +286,7 @@ class CCInteger : public CCNumeral
 		virtual int GetIntegerValue (void) { return m_iValue; }
 		virtual double GetDoubleValue(void) { return double(m_iValue); }
 		virtual CString GetStringValue (void) { return strFromInt(m_iValue); }
-		
-		CCInteger *GetIntegerObject(void) { return this; }
+
 	private:
 		int m_iValue;							//	Value of 32-bit integer
 	};
@@ -303,7 +298,7 @@ class CCDouble : public CCNumeral
 	public:
 		CCDouble(void);
 
-		inline int GetValue(void) { return m_dValue; }
+		inline double GetValue(void) { return m_dValue; }
 		inline void SetValue(double dValue) { m_dValue = dValue; }
 
 		//	ICCItem virtuals
@@ -311,12 +306,10 @@ class CCDouble : public CCNumeral
 		BOOL IsDouble(void) { return TRUE; }
 		virtual int GetIntegerValue(void) { return int(m_dValue); }
 		virtual double GetDoubleValue(void) { return m_dValue; }
-		virtual CString GetStringValue(void) { return strFromInt(m_dValue); }
-
-		CCDouble *GetDoubleObject(void) { return this; }
+		virtual CString GetStringValue(void) { return strFromDouble(m_dValue); }
 
 	private:
-		int m_dValue;							//	Value of double
+		double m_dValue;							//	Value of double
 	};
 
 //	Nil class
@@ -622,7 +615,7 @@ class CCVector : public ICCVector
 		int GetDataType(void) { return m_iDtype; }
 		ICCItem *SetArraySize (CCodeChain *pCC, int iNewSize);
 		ICCItem *SetShape(CCodeChain *pCC, TArray<int> *pNewShape);
-		ICCItem *SetArrayData(CCodeChain *pCC, TArray<CCNumeral> *pNewData);
+		ICCItem *SetArrayData(CCodeChain *pCC, TArray<double> *pNewData);
 
 		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -832,7 +825,7 @@ class CCodeChain : public CObject
 		inline ICCItem *CreateTrue (void) { return m_pTrue->Reference(); }
 		ICCItem *CreateVectorOld (int iSize);
 		ICCItem *CreateEmptyVector(int iDtype, TArray<int> *pShape);
-		ICCItem *CreateVector(int iDtype, TArray<int> *pShape);
+		ICCItem *CreateVector(int iDtype, TArray<int> *pShape, CCLinkedList *pContentList);
 		inline void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(this, pItem); }
 		inline void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
 		inline void DestroyInteger (ICCItem *pItem) { m_IntegerPool.DestroyItem(this, pItem); }
@@ -913,6 +906,8 @@ ALERROR pageLibraryInit (CCodeChain &CC);
 //	Utilities
 
 int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
-int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
+int HelperCompareItemsOld (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
+int HelperCompareItemsLists(ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
+int HelperCompareItemsListsOld (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
 
 #endif

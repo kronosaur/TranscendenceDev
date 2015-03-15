@@ -97,6 +97,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"if",				fnIf,			0,						"",		NULL,	0,	},
 		{	"int",				fnItemInfo,		FN_ITEMINFO_ASINT,		"",		NULL,	0,	},
+		{	"double",			fnItemInfo,		FN_ITEMINFO_ASDOUBLE,	"",		NULL,	0,  },
 		{	"isatom",			fnItemInfo,		FN_ITEMINFO_ISATOM,		"",		NULL,	0,	},
 		{	"iserror",			fnItemInfo,		FN_ITEMINFO_ISERROR,	"",		NULL,	0,	},
 		{	"isint",			fnItemInfo,		FN_ITEMINFO_ISINT,		"",		NULL,	0,	},

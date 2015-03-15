@@ -8,7 +8,7 @@
 #include "KernelObjID.h"
 #include "CodeChain.h"
 
-static CObjectClass<CCVectorOld>g_Class(OBJID_CCVECTOROLD, NULL);
+static CObjectClass<CCVectorOld>g_ClassOLD(OBJID_CCVECTOROLD, NULL);
 
 static CObjectClass<CCVector>g_Class(OBJID_CCVECTOR, NULL);
 
@@ -22,7 +22,7 @@ CCVector::CCVector(void) : ICCVector(&g_Class),
 {
 }
 
-CCVectorOld::CCVectorOld(void) : ICCList(&g_Class),
+CCVectorOld::CCVectorOld(void) : ICCList(&g_ClassOLD),
 		m_pCC(NULL),
 		m_iCount(0),
 		m_pData(NULL)
@@ -150,8 +150,8 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 
 	if (m_pData)
 	{
-		TArray<CCNumeral> *pSource = m_pData;
-		TArray<CCNumeral> *pDest = pNewVector->m_pData;
+		TArray<double> *pSource = m_pData;
+		TArray<double> *pDest = pNewVector->m_pData;
 
 		//Copy
 
@@ -250,16 +250,6 @@ int *CCVectorOld::GetArray (void)
 	return m_pData;
 	}
 
-TArray<CCNumeral> *CCVector::GetDataArray(void)
-
-//	GetArray
-//
-//	
-
-{
-	return this->m_pData;
-}
-
 ICCItem *CCVectorOld::GetElement (int iIndex)
 
 //	GetElement
@@ -283,16 +273,16 @@ ICCItem *CCVector::GetElement(int iIndex)
 
 {
 	ASSERT(m_pCC);
-	ICCItem *pItem;
+	double *pElement;
 
 	if (iIndex < 0 || iIndex >= m_pData->GetCount())
 		return m_pCC->CreateNil();
 
-	pItem = &m_pData->GetAt(iIndex);
-	if (pItem->GetValueType() == ICCItem::Integer)
-		return m_pCC->CreateInteger(pItem->GetIntegerValue());
-	if (pItem->GetValueType() == ICCItem::Double)
-		return m_pCC->CreateDouble(pItem->GetDoubleValue());
+	pElement = &m_pData->GetAt(iIndex);
+	if (this->GetDataType() == 0)
+		return m_pCC->CreateInteger(int(*pElement));
+	else
+		return m_pCC->CreateDouble(*pElement);
 }
 
 ICCItem *CCVector::SetElement(int iIndex, CCNumeral *pNumeral)
@@ -308,7 +298,7 @@ ICCItem *CCVector::SetElement(int iIndex, CCNumeral *pNumeral)
 	if (iIndex < 0 || iIndex >= m_pData->GetCount())
 		return m_pCC->CreateNil();
 
-	*(this->m_pData->InsertAt(iIndex)) = *(pNumeral);
+	*(this->m_pData->InsertAt(iIndex)) = (pNumeral->GetDoubleValue());
 	return m_pCC->CreateTrue();
 }
 
@@ -340,7 +330,7 @@ ICCItem *GetExtractionIndices(CCodeChain *pCC, TArray <int> *pShape, CCLinkedLis
 		return pCC->CreateError(CONSTLIT("Too many indices."));
 	};
 
-	if (iCurrentOrd > pIndices->GetCount - 1)
+	if (iCurrentOrd > pIndices->GetCount() - 1)
 	{
 		if (bIsChild == FALSE)
 		{
@@ -348,7 +338,7 @@ ICCItem *GetExtractionIndices(CCodeChain *pCC, TArray <int> *pShape, CCLinkedLis
 		}
 		else
 		{
-			if (pShape->GetCount > 0)
+			if (pShape->GetCount() > 0)
 			{
 				pIndices->Append(pCC, pCC->CreateNil());
 			}
@@ -436,7 +426,6 @@ int GetExtractedVectorShape(CCodeChain *pCC, TArray <int> *pShape, CCLinkedList 
 {
 	int i;
 	int iLenIndices = pIndices->GetCount();
-	TArray <int> *pResultShape = &(TArray <int> ());
 
 	for (i = 0; i < pShape->GetCount(); i++)
 	{
@@ -504,12 +493,12 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 		return pCC->CreateError(CONSTLIT("Error determining shape of extracted vector."));
 
 	pExtractionIndices = (dynamic_cast <CCLinkedList *> (pIndexExtractionResult))->GetFlattened(pCC, NULL);
-	TArray<CCNumeral> *pData = pResultVector->GetDataArray();
+	TArray<double> *pData = pResultVector->GetDataArray();
 	for (i = 0; i < pExtractionIndices->GetCount(); i++)
 	{
-		CCNumeral *pNumber = pData->Insert();
-		ICCItem *pElementClone = (this->m_pData->GetAt(pExtractionIndices->GetElement(i)->GetIntegerValue())).Clone(pCC);
-		pNumber = dynamic_cast <CCNumeral *> (pElementClone);
+		double *pNumber = pData->Insert();
+		double *pElement = &(this->m_pData->GetAt(pExtractionIndices->GetElement(i)->GetIntegerValue()));
+		pNumber = pElement;
 	};
 
 	// set two remaining data objects
@@ -652,7 +641,7 @@ ICCItem *CCVector::SetArraySize(CCodeChain *pCC, int iNewSize)
 		};
 	}
 
-ICCItem *CCVector::SetArrayData(CCodeChain *pCC, TArray<CCNumeral> *pNewData)
+ICCItem *CCVector::SetArrayData(CCodeChain *pCC, TArray<double> *pNewData)
 //	SetArrayData
 //
 //	Set the vector data pointer to a new location.
@@ -716,7 +705,6 @@ ICCItem *CCVector::Tail(CCodeChain *pCC)
 //	Tail
 //
 //	Returns the tail of the vector
-
 {
 	return pCC->CreateNil();
 }

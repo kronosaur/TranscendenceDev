@@ -84,6 +84,9 @@
     <ClCompile Include="CCNumeral.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CCDouble.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DefPrimitives.h">
