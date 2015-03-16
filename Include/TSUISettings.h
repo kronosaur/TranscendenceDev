@@ -10,7 +10,7 @@
 class CExtensionListMap
 	{
 	public:
-		void GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList);
+		void GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const;
 		void SetList (DWORD dwAdventure, bool bDebugMode, const TArray<DWORD> &List);
 		ALERROR ReadFromXML (CXMLElement *pDesc);
 		ALERROR WriteAsXML (IWriteStream *pOutput);

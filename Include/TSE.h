@@ -1161,7 +1161,6 @@ class CSystem : public CObject
 			//	PaintViewport flags
 			VWP_ENHANCED_DISPLAY =			0x00000001,	//	Show enhanced display markers
 			VWP_NO_STAR_FIELD =				0x00000002,	//	Do not paint star field background
-			VWP_SHOW_MANEUVER_EFFECTS =		0x00000004,	//	Show maneuvering thrusters
 			};
 
 		//	System methods
@@ -3248,7 +3247,7 @@ enum EStorageScopes
 	storeServiceUser			= 2,
 	};
 
-class CUniverse : public CObject
+class CSFXOptions
 	{
 	public:
 		enum ESFXQuality
@@ -3259,6 +3258,31 @@ class CUniverse : public CObject
 			sfxMaximum			= 2,
 			};
 
+		CSFXOptions (void) { SetSFXQuality(sfxMaximum); }
+
+		inline bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
+		inline bool IsManeuveringEffectEnabled (void) const { return m_bManeuveringEffect; }
+		inline bool IsSpaceBackgroundEnabled (void) const { return m_bSpaceBackground; }
+		inline bool IsStarGlowEnabled (void) const { return m_bStarGlow; }
+		inline bool IsStarshineEnabled (void) const { return m_bStarshine; }
+		inline void Set3DSystemMapEnabled (bool bEnabled = true) { m_b3DSystemMap = bEnabled; }
+		inline void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
+		void SetSFXQuality (ESFXQuality iQuality);
+		void SetSFXQualityAuto (void);
+
+	private:
+		ESFXQuality m_iQuality;
+
+		bool m_b3DSystemMap;				//	3D effect on system map
+		bool m_bManeuveringEffect;			//	Show maneuvering thruster effects
+		bool m_bSpaceBackground;			//	Show system image background
+		bool m_bStarGlow;					//	Show star glow in system map
+		bool m_bStarshine;					//	Show starshine effect
+	};
+
+class CUniverse : public CObject
+	{
+	public:
 		class IHost
 			{
 			public:
@@ -3392,7 +3416,7 @@ class CUniverse : public CObject
 		inline CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
 		void GetRandomLevelEncounter (int iLevel, CDesignType **retpType, IShipGenerator **retpTable, CSovereign **retpBaseSovereign);
 		inline CString GetResourceDb (void) { return m_sResourceDb; }
-		inline ESFXQuality GetSFXQuality (void) const { return m_iSFXQuality; }
+		inline CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const;
 		inline CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
 		DWORD GetSoundUNID (int iChannel);
@@ -3424,8 +3448,6 @@ class CUniverse : public CObject
 		inline void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }
 		inline void SetRegisteredExtensions (const CMultiverseCollection &Catalog, TArray<CMultiverseCatalogEntry *> *retNotFound) { m_Extensions.SetRegisteredExtensions(Catalog, retNotFound); }
 		inline void SetResurrectMode (bool bResurrect = true) { m_bResurrectMode = bResurrect; }
-		inline void SetSFXQuality (ESFXQuality iQuality) { m_iSFXQuality = iQuality; }
-		void SetSFXQualityAuto (void);
 		inline void SetSound (bool bSound = true) { m_bNoSound = !bSound; }
 		inline void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
@@ -3590,7 +3612,7 @@ class CUniverse : public CObject
 		const CG16bitFont *m_FontTable[fontCount];
 		CG16bitFont m_DefaultFonts[fontCount];
 		TArray<INotifications *> m_Subscribers;
-		ESFXQuality m_iSFXQuality;
+		CSFXOptions m_SFXOptions;
 
 		//	Debugging structures
 

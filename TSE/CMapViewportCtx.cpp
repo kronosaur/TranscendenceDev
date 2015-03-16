@@ -6,14 +6,12 @@
 #include "PreComp.h"
 #include "math.h"
 
-#define USE_3D
-
 const int VIEWPORT_EXTRA =								256;
-const Metric MAP_VERTICAL_ADJUST =						1.4;
 const CG32bitPixel RGB_GRID_LINE =						CG32bitPixel(43, 45, 51);
 
 CMapViewportCtx::CMapViewportCtx (void) :
-		m_bNoSpaceBackground(false)
+		m_bNoSpaceBackground(false),
+		m_b3DMap(true)
 
 //	CMapViewportCtx constructor
 
@@ -31,7 +29,9 @@ CMapViewportCtx::CMapViewportCtx (void) :
 
 CMapViewportCtx::CMapViewportCtx (const CVector &vCenter, const RECT &rcView, Metric rMapScale) :
 		m_rcView(rcView),
-		m_rMapScale(rMapScale)
+		m_rMapScale(rMapScale),
+		m_bNoSpaceBackground(false),
+		m_b3DMap(true)
 
 //	CMapViewportCtx constructor
 
@@ -46,7 +46,7 @@ CMapViewportCtx::CMapViewportCtx (const CVector &vCenter, const RECT &rcView, Me
 	m_yCenter = m_rcView.top + RectHeight(m_rcView) / 2;
 
 	CVector vDiagonal(m_rMapScale * (Metric)(RectWidth(rcView) + VIEWPORT_EXTRA) / 2,
-				m_rMapScale * MAP_VERTICAL_ADJUST * (Metric)(RectHeight(rcView) + VIEWPORT_EXTRA) / 2);
+				m_rMapScale * (Metric)(RectHeight(rcView) + VIEWPORT_EXTRA) / 2);
 	m_vUR = m_vCenter + vDiagonal;
 	m_vLL = m_vCenter - vDiagonal;
 
@@ -54,7 +54,7 @@ CMapViewportCtx::CMapViewportCtx (const CVector &vCenter, const RECT &rcView, Me
 
 	m_Trans = ViewportTransform(m_vCenter, 
 			m_rMapScale, 
-			m_rMapScale * MAP_VERTICAL_ADJUST,
+			m_rMapScale,
 			m_xCenter,
 			m_yCenter);
 	}
@@ -76,15 +76,16 @@ void CMapViewportCtx::Transform (const CVector &vPos, int *retx, int *rety) cons
 //	Transforms a global coordinate point to a screen coordinate.
 
 	{
-#ifdef USE_3D
-	Metric rScale = RectWidth(m_rcView) * m_rMapScale / 2.0;
+	if (m_b3DMap)
+		{
+		Metric rScale = RectWidth(m_rcView) * m_rMapScale / 2.0;
 
-	CVector vTrans;
-	C3DConversion::CalcCoord(rScale, vPos - m_vCenter, 0.0, &vTrans);
+		CVector vTrans;
+		C3DConversion::CalcCoord(rScale, vPos - m_vCenter, 0.0, &vTrans);
 
-	*retx = (int)(m_xCenter + (vTrans.GetX() / m_rMapScale));
-	*rety = (int)(m_yCenter - (vTrans.GetY() / m_rMapScale));
-#else
-	return m_Trans.Transform(vPos, retx, rety);
-#endif
+		*retx = (int)(m_xCenter + (vTrans.GetX() / m_rMapScale));
+		*rety = (int)(m_yCenter - (vTrans.GetY() / m_rMapScale));
+		}
+	else
+		return m_Trans.Transform(vPos, retx, rety);
 	}

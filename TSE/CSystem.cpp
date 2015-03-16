@@ -794,24 +794,9 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	Ctx.fEnhancedDisplay = ((dwFlags & VWP_ENHANCED_DISPLAY) ? true : false);
 	Ctx.fNoStarfield = ((dwFlags & VWP_NO_STAR_FIELD) ? true : false);
-	Ctx.fShowManeuverEffects = ((dwFlags & VWP_SHOW_MANEUVER_EFFECTS) ? true : false);
-
-	//	Initialize graphics quality options
-
-	switch (g_pUniverse->GetSFXQuality())
-		{
-		case CUniverse::sfxMaximum:
-			break;
-
-		case CUniverse::sfxStandard:
-			Ctx.fNoStarshine = true;
-			break;
-
-		case CUniverse::sfxMinimum:
-			Ctx.fNoStarshine = true;
-			Ctx.fNoSpaceBackground = true;
-			break;
-		}
+	Ctx.fShowManeuverEffects = g_pUniverse->GetSFXOptions().IsManeuveringEffectEnabled();
+	Ctx.fNoStarshine = !g_pUniverse->GetSFXOptions().IsStarshineEnabled();
+	Ctx.fNoSpaceBackground = !g_pUniverse->GetSFXOptions().IsSpaceBackgroundEnabled();
 
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
@@ -2908,7 +2893,7 @@ void CSystem::MarkImages (void)
 
 	//	Initialize the volumetric mask
 
-	if (g_pUniverse->GetSFXQuality() == CUniverse::sfxMaximum)
+	if (g_pUniverse->GetSFXOptions().IsStarshineEnabled())
 		InitVolumetricMask();
 
 	//	Done
@@ -3531,7 +3516,8 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	//	Initialize context
 
 	CMapViewportCtx Ctx(pCenter->GetPos(), rcView, rMapScale);
-	Ctx.SetSpaceBackgroundEabled(g_pUniverse->GetSFXQuality() != CUniverse::sfxMinimum);
+	Ctx.Set3DMapEnabled(g_pUniverse->GetSFXOptions().Is3DSystemMapEnabled());
+	Ctx.SetSpaceBackgroundEnabled(g_pUniverse->GetSFXOptions().IsSpaceBackgroundEnabled());
 
 	//	Make sure we've initialized the grid
 
@@ -3559,7 +3545,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Paint the glow from all stars
 
-	if (g_pUniverse->GetSFXQuality() != CUniverse::sfxMinimum)
+	if (g_pUniverse->GetSFXOptions().IsStarGlowEnabled())
 		{
 		for (i = 0; i < m_Stars.GetCount(); i++)
 			{

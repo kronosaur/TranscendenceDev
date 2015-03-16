@@ -155,7 +155,6 @@ CUniverse::CUniverse (void) : CObject(&g_Class),
 		m_pSoundMgr(NULL),
 
 		m_pHost(&g_DefaultHost),
-		m_iSFXQuality(sfxMaximum),
 
 		m_bDebugMode(false),
 		m_bNoSound(false),
@@ -2592,63 +2591,6 @@ void CUniverse::SetPOV (CSpaceObject *pPOV)
 		SetCurrentSystem(m_pPOV->GetSystem());
 	else
 		SetCurrentSystem(NULL);
-	}
-
-void CUniverse::SetSFXQualityAuto (void)
-
-//	SetSFXQualityAuto
-//
-//	Tests the graphics performance of the system and then sets the graphics 
-//	quality based on the result. This call takes a few 100 ms to run.
-
-	{
-	int i;
-	const int IMAGE_SIZE = 1000;
-	const int ITERATION_COUNT = 6;
-
-	//	Create a 1 megapixel image and do tests on it.
-
-	CG32bitImage TestImage;
-	TestImage.Create(IMAGE_SIZE, IMAGE_SIZE, CG32bitImage::alpha8);
-
-	//	Start timing
-
-	DWORDLONG dwStart = ::GetTickCount64();
-
-	//	Paint some gradient circles to test speed
-
-	for (i = 0; i < ITERATION_COUNT; i++)
-		CGDraw::CircleGradient(TestImage, IMAGE_SIZE / 2, IMAGE_SIZE / 2, IMAGE_SIZE / 2, CG32bitPixel(255, 255, 255, 128));
-
-	//	Timing
-
-	DWORDLONG dwElapsed = ::GetTickCount64() - dwStart;
-	int iProcCount = ::sysGetProcessorCount();
-
-	//	If more than 500 ms, then we go to minimum quality
-
-	if (dwElapsed > 500)
-		{
-		m_iSFXQuality = sfxMinimum;
-		::kernelDebugLogMessage("Graphics quality minimum (max performance): %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
-		}
-
-	//	If more than 200 ms, or if we have less than four processors, then
-	//	go to standard quality.
-
-	else if (dwElapsed > 200 || iProcCount < 4)
-		{
-		m_iSFXQuality = sfxStandard;
-		::kernelDebugLogMessage("Graphics quality standard (balanced performance): %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
-		}
-
-	//	Otherwise, we go to 11
-
-	else
-		{
-		m_iSFXQuality = sfxMaximum;
-		::kernelDebugLogMessage("Graphics quality maximum: %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
-		}
 	}
 
 void CUniverse::StartGame (bool bNewGame)

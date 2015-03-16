@@ -792,7 +792,8 @@ class CMapViewportCtx
 		inline ViewportTransform &GetXform (void) { return m_Trans; }
 		bool IsInViewport (CSpaceObject *pObj) const;
 		inline bool IsSpaceBackgroundEnabled (void) const { return !m_bNoSpaceBackground; }
-		inline void SetSpaceBackgroundEabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
+		inline void Set3DMapEnabled (bool bEnabled = true) { m_b3DMap = bEnabled; }
+		inline void SetSpaceBackgroundEnabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
 		void Transform (const CVector &vPos, int *retx, int *rety) const;
 
 	private:
@@ -807,6 +808,7 @@ class CMapViewportCtx
 
 		ViewportTransform m_Trans;		//	Transform
 
+		bool m_b3DMap;					//	Use standard 3D projection
 		bool m_bNoSpaceBackground;		//	Do not paint a space background
 	};
 

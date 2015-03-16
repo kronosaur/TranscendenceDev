@@ -844,6 +844,9 @@
     <ClCompile Include="CSystemSpacePainter.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
+    <ClCompile Include="CSFXOptions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

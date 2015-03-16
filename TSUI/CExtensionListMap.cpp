@@ -8,7 +8,7 @@
 #define DEBUG_MODE_ATTRIB					CONSTLIT("debugMode")
 #define UNID_ATTRIB							CONSTLIT("unid")
 
-void CExtensionListMap::GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList)
+void CExtensionListMap::GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const
 
 //	GetList
 //

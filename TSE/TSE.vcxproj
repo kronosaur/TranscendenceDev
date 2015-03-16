@@ -248,6 +248,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CSendMessageOrder.cpp" />
+    <ClCompile Include="CSFXOptions.cpp" />
     <ClCompile Include="CShipInterior.cpp" />
     <ClCompile Include="CShipInteriorDesc.cpp" />
     <ClCompile Include="CShipTable.cpp" />
