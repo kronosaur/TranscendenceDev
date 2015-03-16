@@ -714,6 +714,8 @@ struct SViewportPaintCtx
 			fEnhancedDisplay(false),
 			fNoStarfield(false),
 			fShowManeuverEffects(false),
+			fNoStarshine(false),
+			fNoSpaceBackground(false),
 			bInFront(false),
 			bFade(false),
 			iTick(0),
@@ -757,8 +759,8 @@ struct SViewportPaintCtx
 	DWORD fEnhancedDisplay:1;
 	DWORD fNoStarfield:1;
 	DWORD fShowManeuverEffects:1;
-	DWORD fSpare7:1;
-	DWORD fSpare8:1;
+	DWORD fNoStarshine:1;
+	DWORD fNoSpaceBackground:1;
 
 	DWORD dwSpare:24;
 
@@ -789,6 +791,8 @@ class CMapViewportCtx
 		inline const RECT &GetViewportRect (void) const { return m_rcView; }
 		inline ViewportTransform &GetXform (void) { return m_Trans; }
 		bool IsInViewport (CSpaceObject *pObj) const;
+		inline bool IsSpaceBackgroundEnabled (void) const { return !m_bNoSpaceBackground; }
+		inline void SetSpaceBackgroundEabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
 		void Transform (const CVector &vPos, int *retx, int *rety) const;
 
 	private:
@@ -802,6 +806,8 @@ class CMapViewportCtx
 		int m_yCenter;					//		(in viewport coordinate)
 
 		ViewportTransform m_Trans;		//	Transform
+
+		bool m_bNoSpaceBackground;		//	Do not paint a space background
 	};
 
 struct SPointInObjectCtx

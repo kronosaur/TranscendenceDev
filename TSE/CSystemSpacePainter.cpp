@@ -54,7 +54,6 @@ class CStarshinePainter : public IThreadPoolTask
 //	CSystemSpacePainter --------------------------------------------------------
 
 CSystemSpacePainter::CSystemSpacePainter (void) :
-		m_bStarshineEnabled(true),
 		m_bInitialized(false),
 		m_cxStarfield(-1),
 		m_cyStarfield(-1),
@@ -228,7 +227,7 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 
 	//	Starshine
 
-	if (m_bStarshineEnabled 
+	if (!Ctx.fNoStarshine
 			&& Ctx.rgbSpaceColor.GetAlpha() != 0
 			&& Ctx.pVolumetricMask)
 		{
@@ -373,7 +372,7 @@ void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType,
 
 		//	If we have an system background image, paint that.
 
-		if (m_pBackground)
+		if (m_pBackground && !Ctx.fNoSpaceBackground)
 			PaintSpaceBackground(Dest, xCenter, yCenter, Ctx);
 
 		//	Otherwise we just clear the rect with the space color
@@ -401,7 +400,7 @@ void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType,
 		}
 	}
 
-void CSystemSpacePainter::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, Metric rMapScale)
+void CSystemSpacePainter::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, CMapViewportCtx &Ctx)
 
 //	PaintViewportMap
 //
@@ -410,7 +409,7 @@ void CSystemSpacePainter::PaintViewportMap (CG32bitImage &Dest, const RECT &rcVi
 	{
 	//	If we have a system background image, paint it.
 
-	if (m_pBackground)
+	if (m_pBackground && Ctx.IsSpaceBackgroundEnabled())
 		PaintTiledBackground(Dest, rcView, *m_pBackground, 0, 0);
 
 	//	Otherwise, default fill

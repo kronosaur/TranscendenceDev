@@ -796,6 +796,23 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	Ctx.fNoStarfield = ((dwFlags & VWP_NO_STAR_FIELD) ? true : false);
 	Ctx.fShowManeuverEffects = ((dwFlags & VWP_SHOW_MANEUVER_EFFECTS) ? true : false);
 
+	//	Initialize graphics quality options
+
+	switch (g_pUniverse->GetSFXQuality())
+		{
+		case CUniverse::sfxMaximum:
+			break;
+
+		case CUniverse::sfxStandard:
+			Ctx.fNoStarshine = true;
+			break;
+
+		case CUniverse::sfxMinimum:
+			Ctx.fNoStarshine = true;
+			Ctx.fNoSpaceBackground = true;
+			break;
+		}
+
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
 
@@ -2891,7 +2908,8 @@ void CSystem::MarkImages (void)
 
 	//	Initialize the volumetric mask
 
-	InitVolumetricMask();
+	if (g_pUniverse->GetSFXQuality() == CUniverse::sfxMaximum)
+		InitVolumetricMask();
 
 	//	Done
 
@@ -3513,6 +3531,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	//	Initialize context
 
 	CMapViewportCtx Ctx(pCenter->GetPos(), rcView, rMapScale);
+	Ctx.SetSpaceBackgroundEabled(g_pUniverse->GetSFXQuality() != CUniverse::sfxMinimum);
 
 	//	Make sure we've initialized the grid
 
@@ -3527,7 +3546,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Clear the rect
 
-	m_SpacePainter.PaintViewportMap(Dest, rcView, GetType(), rMapScale);
+	m_SpacePainter.PaintViewportMap(Dest, rcView, GetType(), Ctx);
 
 	//	Paint space environment
 
@@ -3540,16 +3559,19 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Paint the glow from all stars
 
-	for (i = 0; i < m_Stars.GetCount(); i++)
+	if (g_pUniverse->GetSFXQuality() != CUniverse::sfxMinimum)
 		{
-		CSpaceObject *pStar = m_Stars[i].pStarObj;
+		for (i = 0; i < m_Stars.GetCount(); i++)
+			{
+			CSpaceObject *pStar = m_Stars[i].pStarObj;
 
-		//	Paint glow
+			//	Paint glow
 
-		Ctx.Transform(pStar->GetPos(), &x, &y);
-		int iGlowRadius = (int)((pStar->GetMaxLightDistance() * LIGHT_SECOND) / rMapScale);
+			Ctx.Transform(pStar->GetPos(), &x, &y);
+			int iGlowRadius = (int)((pStar->GetMaxLightDistance() * LIGHT_SECOND) / rMapScale);
 
-		CGDraw::CircleGradient(Dest, x, y, iGlowRadius, pStar->GetSpaceColor());
+			CGDraw::CircleGradient(Dest, x, y, iGlowRadius, pStar->GetSpaceColor());
+			}
 		}
 
 	//	Paint all planets and stars first

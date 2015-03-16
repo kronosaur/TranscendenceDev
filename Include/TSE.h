@@ -1067,7 +1067,7 @@ class CSystemSpacePainter
 
 		void CleanUp (void);
 		void PaintViewport (CG32bitImage &Dest, CSystemType *pType, SViewportPaintCtx &Ctx);
-		void PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, Metric rMapScale);
+		void PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, CMapViewportCtx &Ctx);
 
 	private:
 		struct SStar
@@ -1088,7 +1088,6 @@ class CSystemSpacePainter
 		void PaintTiledBackground (CG32bitImage &Dest, const RECT &rcView, CG32bitImage &Src, int xOffset, int yOffset);
 
 		bool m_bInitialized;
-		bool m_bStarshineEnabled;
 
 		TArray<SStar> m_Starfield;
 		int m_cxStarfield;
@@ -3252,6 +3251,14 @@ enum EStorageScopes
 class CUniverse : public CObject
 	{
 	public:
+		enum ESFXQuality
+			{
+			sfxUnknown			= -1,
+			sfxMinimum			= 0,
+			sfxStandard			= 1,
+			sfxMaximum			= 2,
+			};
+
 		class IHost
 			{
 			public:
@@ -3385,6 +3392,7 @@ class CUniverse : public CObject
 		inline CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
 		void GetRandomLevelEncounter (int iLevel, CDesignType **retpType, IShipGenerator **retpTable, CSovereign **retpBaseSovereign);
 		inline CString GetResourceDb (void) { return m_sResourceDb; }
+		inline ESFXQuality GetSFXQuality (void) const { return m_iSFXQuality; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const;
 		inline CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
 		DWORD GetSoundUNID (int iChannel);
@@ -3416,6 +3424,8 @@ class CUniverse : public CObject
 		inline void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }
 		inline void SetRegisteredExtensions (const CMultiverseCollection &Catalog, TArray<CMultiverseCatalogEntry *> *retNotFound) { m_Extensions.SetRegisteredExtensions(Catalog, retNotFound); }
 		inline void SetResurrectMode (bool bResurrect = true) { m_bResurrectMode = bResurrect; }
+		inline void SetSFXQuality (ESFXQuality iQuality) { m_iSFXQuality = iQuality; }
+		void SetSFXQualityAuto (void);
 		inline void SetSound (bool bSound = true) { m_bNoSound = !bSound; }
 		inline void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
@@ -3580,6 +3590,7 @@ class CUniverse : public CObject
 		const CG16bitFont *m_FontTable[fontCount];
 		CG16bitFont m_DefaultFonts[fontCount];
 		TArray<INotifications *> m_Subscribers;
+		ESFXQuality m_iSFXQuality;
 
 		//	Debugging structures
 

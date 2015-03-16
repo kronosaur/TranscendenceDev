@@ -12,7 +12,8 @@ const int VIEWPORT_EXTRA =								256;
 const Metric MAP_VERTICAL_ADJUST =						1.4;
 const CG32bitPixel RGB_GRID_LINE =						CG32bitPixel(43, 45, 51);
 
-CMapViewportCtx::CMapViewportCtx (void)
+CMapViewportCtx::CMapViewportCtx (void) :
+		m_bNoSpaceBackground(false)
 
 //	CMapViewportCtx constructor
 
