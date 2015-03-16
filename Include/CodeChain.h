@@ -610,7 +610,7 @@ class CCVector : public ICCVector
 
 		TArray<double> *GetDataArray(void) { return m_pData; }
 		TArray<int> *GetShapeArray(void) { return m_pShape; }
-		ICCItem *SetElementsByIndex(CCLinkedList *pIndices, CCLinkedList *pData);
+		ICCItem *SetElementsByIndices(CCodeChain *pCC, CCLinkedList *pIndices, CCLinkedList *pData);
 		void SetDataType(int iDataType);
 		int GetDataType(void) { return m_iDtype; }
 		ICCItem *SetArraySize (CCodeChain *pCC, int iNewSize);
@@ -628,7 +628,7 @@ class CCVector : public ICCVector
 		virtual int GetDimension(void) { return m_pShape->GetCount(); }
 		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
 		virtual ICCItem *GetElement (int iIndex);
-		virtual ICCItem *SetElement (int iIndex, CCNumeral *pNumeral);
+		virtual ICCItem *SetElement (int iIndex, double dValue);
 		virtual ICCItem *IndexVector (CCodeChain *pCC, CCLinkedList *pIndices);
 		virtual ICCItem *Head(CCodeChain *pCC) { return GetElement(0); }
 		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
@@ -825,7 +825,8 @@ class CCodeChain : public CObject
 		inline ICCItem *CreateTrue (void) { return m_pTrue->Reference(); }
 		ICCItem *CreateVectorOld (int iSize);
 		ICCItem *CreateEmptyVector(int iDtype, TArray<int> *pShape);
-		ICCItem *CreateVector(int iDtype, TArray<int> *pShape, CCLinkedList *pContentList);
+		ICCItem *CreateVectorGivenContent(int iDtype, TArray<int> *pShape, CCLinkedList *pContentList);
+		ICCItem *CreateVectorUsingAnother(CCVector *pVector);
 		inline void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(this, pItem); }
 		inline void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
 		inline void DestroyInteger (ICCItem *pItem) { m_IntegerPool.DestroyItem(this, pItem); }

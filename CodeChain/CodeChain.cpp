@@ -450,11 +450,11 @@ ICCItem *CCodeChain::CreateEmptyVector(int iDtype, TArray<int> *pShape)
 	return pVector->Reference();
 }
 
-ICCItem *CCodeChain::CreateVector(int iDtype, TArray<int> *pShape, CCLinkedList *pContentList)
+ICCItem *CCodeChain::CreateVectorGivenContent(int iDtype, TArray<int> *pShape, CCLinkedList *pContentList)
 
-//	CreateVector
+//	CreateVectorGivenContent (new)
 //
-//	Creates a vector with given shape and elements
+//	Creates a vector with given shape and content
 
 {
 	int i;
@@ -506,6 +506,61 @@ ICCItem *CCodeChain::CreateVector(int iDtype, TArray<int> *pShape, CCLinkedList 
 	pVector->SetDataType(iDtype);
 
 	return pVector->Reference();
+}
+
+ICCItem *CCodeChain::CreateVectorUsingAnother(CCVector *pVector)
+
+//	CreateVectorUsingAnother (new)
+//
+//	Creates a vector using an existing vector
+
+{
+	int i;
+	int iSize = pVector->GetCount();
+	CCVector *pNewVector;
+	ICCItem *pError;
+
+	pNewVector = new CCVector(this);
+	if (pNewVector == NULL)
+		return CreateMemoryError();
+
+	pError = pNewVector->SetArraySize(this, iSize);
+	if (pError->IsError())
+	{
+		delete pNewVector;
+		return pError;
+	}
+
+	pError = pVector->SetShape(this, pVector->GetShapeArray());
+	if (pError->IsError())
+	{
+		delete pNewVector;
+		return pError;
+	}
+
+	TArray<double> *pSourceData = pVector->GetDataArray();
+	TArray<double> *pDestData = pNewVector->GetDataArray();
+
+	//	TOCHECK: is this the right way to copy data?
+	//	Copy
+	try
+	{
+		pDestData->Insert(pSourceData);
+	}
+	catch (...)
+	{
+		ICCItem *pError = this->CreateError(CONSTLIT("Error creating new vector using some existing vector."));
+		return pError;
+	}
+
+
+	//	Done
+
+	//  if we have gotten this far, then it is safe to set the data type
+	pError->Discard(this);
+	pNewVector->SetDataType(pVector->GetDataType());
+
+	return pNewVector->Reference();
 }
 
 ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)

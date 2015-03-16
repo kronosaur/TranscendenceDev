@@ -4206,7 +4206,7 @@ ICCItem *fnVecCreateOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
-//	fnVecCreate
+//	fnVecCreate (new)
 //
 //	Creates a new vector of a given size
 //
@@ -4365,6 +4365,51 @@ ICCItem *fnVectorOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	}
 
 ICCItem *fnVector(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+//	fnVector
+//
+//	Vector functions
+//
+//	(vecset vector indexlist contentlist)
+//	(vecget vector indexlist)
+
+{
+	CCodeChain *pCC = pCtx->pCC;
+	ICCItem *pArgs;
+
+	if (dwData == FN_VECTOR_SET)
+	{
+		//  Evaluate arguments
+		pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("ekk"));
+		if (pArgs->IsError())
+			return pArgs;
+
+		CCVector *pVector = dynamic_cast <CCVector *> (pArgs->GetElement(0));
+		CCLinkedList *pIndices = dynamic_cast <CCLinkedList *> (pArgs->GetElement(1));
+		CCLinkedList *pData = dynamic_cast <CCLinkedList *> (pArgs->GetElement(2));
+
+		return pVector->SetElementsByIndices(pCC, pIndices, pData);
+	}
+	else if (dwData == FN_VECTOR_GET)
+	{
+		//  Evaluate arguments
+		pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("ek"));
+		if (pArgs->IsError())
+			return pArgs;
+
+		CCVector *pSourceVector = dynamic_cast <CCVector *> (pArgs->GetElement(0));
+		CCLinkedList *pIndexList = dynamic_cast <CCLinkedList *> (pArgs->GetElement(1));
+		
+		ICCItem *pResult = pSourceVector->IndexVector(pCC, pIndexList));
+		if (pResult->IsError())
+		{
+			return pResult;
+		};
+
+		return pCC->CreateVectorUsingAnother(dynamic_cast <CCVector *> (pResult));
+	};
+}
+
+ICCItem *fnVectorOld(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 //	fnVector
 //

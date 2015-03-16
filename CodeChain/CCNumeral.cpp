@@ -16,6 +16,8 @@ CCNumeral::CCNumeral(void) : ICCNumeral(&g_Class)
 
 }
 
+
+ICCItem *CCNumeral::Clone(CCodeChain *pCC)
 //	Clone
 //
 //	Returns a new item with a single ref-count

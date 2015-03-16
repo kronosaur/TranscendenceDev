@@ -285,6 +285,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(vdot vec1 vec2)", NULL, 0, },
 		{ "vscalmul", fnVecMath, FN_VECTOR_SCALMUL, "(vscalmul scalar vec1)", NULL, 0, },
 		{ "vemul", fnVecMath, FN_VECTOR_EMUL, "(vemul vec1 vec2)", NULL, 0, },
+		{ "vecset", fnVector, FN_VECTOR_SET, "(vecset vector indexlist datalist)", NULL, PPFLAG_SIDEEFFECTS, },
+		{ "vecget", fnVector, FN_VECTOR_GET, "(vecget vector indexlist)", NULL, 0, }
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))

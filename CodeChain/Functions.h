@@ -68,6 +68,8 @@
 #define FN_VECTOR_EMUL                  64
 #define FN_VECTOR_ESUM					65
 #define FN_ITEMINFO_ASDOUBLE            66
+#define FN_VECTOR_SET					67
+#define FN_VECTOR_GET					68
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

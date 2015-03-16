@@ -8,6 +8,120 @@
 #include "KernelObjID.h"
 #include "CodeChain.h"
 
+//	================ HELPER FUNCTIONS ====================
+
+ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> *pShape, CCLinkedList *pIndices, int iCurrentOrd = 0, int iCurrentMarker = 0, bool bIsChild = FALSE)
+
+//	GetRelevantArrayIndices
+//
+//	Based on the index list, determines which array elements of the data array are being referred to.
+//
+
+{
+	int i;
+	ICCItem *pCurrentIndex;
+	ICCItem *pResult;
+	int iSumRemainingShape = 0;
+	CCLinkedList *pRelevantIndices = &(CCLinkedList());
+
+	//	optimization for 1D lists
+	if (pShape->GetCount() == 1 && pIndices->GetCount() == 1 && bIsChild == FALSE)
+	{
+		return pIndices;
+	};
+
+	if (pIndices->GetCount() > pShape->GetCount())
+	{
+		return pCC->CreateError(CONSTLIT("Too many indices."));
+	};
+
+	if (iCurrentOrd > pIndices->GetCount() - 1)
+	{
+		if (bIsChild == FALSE)
+		{
+			return pCC->CreateError(CONSTLIT("Index array was empty."));
+		}
+		else
+		{
+			if (pShape->GetCount() > 0)
+			{
+				pIndices->Append(pCC, pCC->CreateNil());
+			}
+			else
+			{
+				pRelevantIndices->AppendIntegerValue(pCC, iCurrentMarker);
+				return pRelevantIndices;
+			};
+		};
+	};
+
+	pCurrentIndex = pIndices->GetElement(iCurrentOrd);
+
+	for (i = iCurrentOrd + 1; i < pShape->GetCount(); i++)
+	{
+		iSumRemainingShape += pShape->GetAt(i);
+	};
+
+	if (iSumRemainingShape == 0)
+	{
+		iSumRemainingShape = 1;
+	};
+
+	if (pCurrentIndex->IsNil())
+	{
+		for (i = 0; i < pShape->GetAt(iCurrentOrd); i++)
+		{
+			pResult = GetRelevantArrayIndices(pCC, pShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + i*iSumRemainingShape, bIsChild = TRUE);
+			if (pResult->IsError())
+			{
+				return pResult;
+			};
+
+			pRelevantIndices->Append(pCC, pResult);
+		};
+
+		return pRelevantIndices;
+	};
+
+	if (pCurrentIndex->IsList())
+	{
+		for (i = 0; i < pCurrentIndex->GetCount(); i++)
+		{
+			pResult = GetRelevantArrayIndices(pCC, pShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + i*iSumRemainingShape, bIsChild = TRUE);
+			if (pResult->IsError())
+			{
+				return pResult;
+			};
+
+			pRelevantIndices->Append(pCC, pResult);
+		};
+
+		return pRelevantIndices;
+	};
+
+	if (pCurrentIndex->IsInteger())
+	{
+		int iCurrentIndex = pCurrentIndex->GetIntegerValue();
+
+		if (iCurrentIndex >= pShape->GetAt(iCurrentOrd))
+		{
+			return pCC->CreateError(CONSTLIT("Index is out of bounds."));
+		};
+
+		pResult = GetRelevantArrayIndices(pCC, pShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + iCurrentIndex*iSumRemainingShape, bIsChild = TRUE);
+		if (pResult->IsError())
+		{
+			return pResult;
+		};
+
+		pRelevantIndices->Append(pCC, pResult);
+		return pRelevantIndices;
+	};
+
+};
+
+//	======================================================
+
 static CObjectClass<CCVectorOld>g_ClassOLD(OBJID_CCVECTOROLD, NULL);
 
 static CObjectClass<CCVector>g_Class(OBJID_CCVECTOR, NULL);
@@ -150,6 +264,8 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 
 	if (m_pData)
 	{
+		//	TOCHECK: Is this the correct way to copy array data?
+
 		TArray<double> *pSource = m_pData;
 		TArray<double> *pDest = pNewVector->m_pData;
 
@@ -285,7 +401,7 @@ ICCItem *CCVector::GetElement(int iIndex)
 		return m_pCC->CreateDouble(*pElement);
 }
 
-ICCItem *CCVector::SetElement(int iIndex, CCNumeral *pNumeral)
+ICCItem *CCVector::SetElement(int iIndex, double dValue)
 
 //	SetElement
 //
@@ -298,122 +414,46 @@ ICCItem *CCVector::SetElement(int iIndex, CCNumeral *pNumeral)
 	if (iIndex < 0 || iIndex >= m_pData->GetCount())
 		return m_pCC->CreateNil();
 
-	*(this->m_pData->InsertAt(iIndex)) = (pNumeral->GetDoubleValue());
+	*(this->m_pData->InsertAt(iIndex)) = dValue;
 	return m_pCC->CreateTrue();
 }
 
-ICCItem *CCVector::SetElementsByIndex(CCLinkedList *pIndices, CCLinkedList *pData)
-{};
+ICCItem *CCVector::SetElementsByIndices(CCodeChain *pCC, CCLinkedList *pIndices, CCLinkedList *pData)
 
-ICCItem *GetExtractionIndices(CCodeChain *pCC, TArray <int> *pShape, CCLinkedList *pIndices, int iCurrentOrd = 0, int iCurrentMarker = 0, bool bIsChild = FALSE)
-
-//	GetExtractionIndices
-//
-//	Based on the index list, determines which indices from the vector being indexed will form the new vector.
-//
+//	
+//	SetElementsByIndices
+//	
+//	Sets elements using the given data, based on the given indices. Returns an ICCItem representing 
+//	True if successful, and an Error otherwise. This ICCItem must be discarded by the caller.
+//	
 
 {
 	int i;
-	ICCItem *pCurrentIndex;
-	ICCItem *pResult;
-	int iSumRemainingShape = 0;
-	CCLinkedList *pExtractionIndices = &(CCLinkedList());
+	ICCItem *pResult = GetRelevantArrayIndices(pCC, this->GetShapeArray(), pIndices);
 
-	//	optimization for 1D lists
-	if (pShape->GetCount() == 1 && pIndices->GetCount() == 1 && bIsChild == FALSE)
-	{
-		return pIndices;
-	};
+	if (pResult->IsError())
+		return pCC->CreateError(CONSTLIT("Error understanding list of indices."));
+	if (pResult->GetCount() != pData->GetCount())
+		return pCC->CreateError(CONSTLIT("Number of indices in given index list do not match number of elements in given data."));
 
-	if (pIndices->GetCount() > pShape->GetCount())
+	ICCItem *pElement;
+	for (i = 0; i < pResult->GetCount(); i++)
 	{
-		return pCC->CreateError(CONSTLIT("Too many indices."));
-	};
-
-	if (iCurrentOrd > pIndices->GetCount() - 1)
-	{
-		if (bIsChild == FALSE)
+		pElement = pData->GetElement(i);
+		if (pElement->IsInteger() || pElement->IsDouble())
 		{
-			return pCC->CreateError(CONSTLIT("Index array was empty."));
+			this->SetElement(pResult->GetElement(i)->GetIntegerValue(), pElement->GetDoubleValue());
 		}
 		else
 		{
-			if (pShape->GetCount() > 0)
-			{
-				pIndices->Append(pCC, pCC->CreateNil());
-			}
-			else
-			{
-				pExtractionIndices->AppendIntegerValue(pCC, iCurrentMarker);
-				return pExtractionIndices;
-			};
+			return pCC->CreateError(CONSTLIT("A given data element is not a numeral."));
 		};
+			
 	};
 
-	pCurrentIndex = pIndices->GetElement(iCurrentOrd);
-
-	for (i = iCurrentOrd + 1; i < pShape->GetCount(); i++)
-	{
-		iSumRemainingShape += pShape->GetAt(i);
-	};
-
-	if (iSumRemainingShape == 0)
-	{
-		iSumRemainingShape = 1;
-	};
-
-	if (pCurrentIndex->IsNil())
-	{
-		for (i = 0; i < pShape->GetAt(iCurrentOrd); i++)
-		{
-			pResult = GetExtractionIndices(pCC, pShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + i*iSumRemainingShape, bIsChild = TRUE);
-			if (pResult->IsError())
-			{
-				return pResult;
-			};
-
-			pExtractionIndices->Append(pCC, pResult);
-		};
-
-		return pExtractionIndices;
-	};
-
-	if (pCurrentIndex->IsList())
-	{
-		for (i = 0; i < pCurrentIndex->GetCount(); i++)
-		{
-			pResult = GetExtractionIndices(pCC, pShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + i*iSumRemainingShape, bIsChild = TRUE);
-			if (pResult->IsError())
-			{
-				return pResult;
-			};
-
-			pExtractionIndices->Append(pCC, pResult);
-		};
-
-		return pExtractionIndices;
-	};
-
-	if (pCurrentIndex->IsInteger())
-	{
-		int iCurrentIndex = pCurrentIndex->GetIntegerValue();
-
-		if (iCurrentIndex >= pShape->GetAt(iCurrentOrd))
-		{
-			return pCC->CreateError(CONSTLIT("Index is out of bounds."));
-		};
-
-		pResult = GetExtractionIndices(pCC, pShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + iCurrentIndex*iSumRemainingShape, bIsChild = TRUE);
-		if (pResult->IsError())
-		{
-			return pResult;
-		};
-
-		pExtractionIndices->Append(pCC, pResult);
-		return pExtractionIndices;
-	};
-
+	return pCC->CreateTrue();
 };
+
 
 int GetExtractedVectorShape(CCodeChain *pCC, TArray <int> *pShape, CCLinkedList *pIndices, TArray <int> *pResultShape)
 
@@ -473,8 +513,8 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 {
 	CCVector *pResultVector = &(CCVector());
 	pResultVector->SetDataType(m_iDtype);
-	ICCItem *pIndexExtractionResult = GetExtractionIndices(pCC, this->GetShapeArray(), pIndices);
-	CCLinkedList *pExtractionIndices;
+	ICCItem *pIndexExtractionResult = GetRelevantArrayIndices(pCC, this->GetShapeArray(), pIndices);
+	CCLinkedList *pRelevantIndices;
 	int i;
 
 	if (pIndexExtractionResult->IsError())
@@ -492,12 +532,12 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 	if (iResult == 0)
 		return pCC->CreateError(CONSTLIT("Error determining shape of extracted vector."));
 
-	pExtractionIndices = (dynamic_cast <CCLinkedList *> (pIndexExtractionResult))->GetFlattened(pCC, NULL);
+	pRelevantIndices = (dynamic_cast <CCLinkedList *> (pIndexExtractionResult))->GetFlattened(pCC, NULL);
 	TArray<double> *pData = pResultVector->GetDataArray();
-	for (i = 0; i < pExtractionIndices->GetCount(); i++)
+	for (i = 0; i < pRelevantIndices->GetCount(); i++)
 	{
 		double *pNumber = pData->Insert();
-		double *pElement = &(this->m_pData->GetAt(pExtractionIndices->GetElement(i)->GetIntegerValue()));
+		double *pElement = &(this->m_pData->GetAt(pRelevantIndices->GetElement(i)->GetIntegerValue()));
 		pNumber = pElement;
 	};
 
