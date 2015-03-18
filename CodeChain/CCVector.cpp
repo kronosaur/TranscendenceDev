@@ -554,8 +554,10 @@ CString CCVectorOld::Print (CCodeChain *pCC, DWORD dwFlags)
 //
 //	Print a user-visible message
 
+// TODO: get this function to print out shape of the vector instead
+
 	{
-	return strPatternSubst(LITERAL("[vector of %d elements]"), m_iCount);
+	return strPatternSubst(LITERAL("[vector with (%d) elements]"), m_iCount);
 	}
 
 void CCVectorOld::Reset (void)

@@ -4308,7 +4308,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		};
 
 		//	Create the vector
-		pVector = pCC->CreateVector(iDtype, pShape, pContentList);
+		pVector = pCC->CreateVectorGivenContent(iDtype, pShape, pContentList);
 
 		//	Done
 		pArgs->Discard(pCC);
@@ -4399,7 +4399,7 @@ ICCItem *fnVector(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		CCVector *pSourceVector = dynamic_cast <CCVector *> (pArgs->GetElement(0));
 		CCLinkedList *pIndexList = dynamic_cast <CCLinkedList *> (pArgs->GetElement(1));
 		
-		ICCItem *pResult = pSourceVector->IndexVector(pCC, pIndexList));
+		ICCItem *pResult = pSourceVector->IndexVector(pCC, pIndexList);
 		if (pResult->IsError())
 		{
 			return pResult;
@@ -4527,7 +4527,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				return pRef;
 			}
 
-			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNumeral, dynamic_cast <CCNumeral *> (pRef)));
+			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNumeral, dynamic_cast <CCNumeral *> (pRef))->GetDoubleValue());
 			if (pSuccess->IsNil())
 			{
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
@@ -4583,7 +4583,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			CCNumeral *pNum1 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
 			CCNumeral *pNum2 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
 
-			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNum1, pNum2));
+			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNum1, pNum2)->GetDoubleValue());
 			if (pSuccess->IsNil())
 			{
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
@@ -4631,7 +4631,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			CCNumeral *pNum0 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
 			CCNumeral *pNum1 = dynamic_cast <CCNumeral *> (pVector1->GetElement(i));
 
-			ICCItem *pSuccess = pResultVector->SetElement(i, AddNumerals(pNum0, pNum1));
+			ICCItem *pSuccess = pResultVector->SetElement(i, AddNumerals(pNum0, pNum1)->GetDoubleValue());
 			if (pSuccess->IsNil())
 			{
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
@@ -4679,7 +4679,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			CCNumeral *pNum0 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
 			CCNumeral *pNum1 = dynamic_cast <CCNumeral *> (pVector1->GetElement(i));
 
-			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNum0, pNum1));
+			ICCItem *pSuccess = pResultVector->SetElement(i, MultiplyNumerals(pNum0, pNum1)->GetDoubleValue());
 			if (pSuccess->IsNil())
 			{
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
@@ -4725,7 +4725,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				CCNumeral *pNum0 = dynamic_cast <CCNumeral *> (pVector0->GetElement(i));
 				CCNumeral *pNum1 = dynamic_cast <CCNumeral *> (pVector1->GetElement(i));
 
-				ICCItem *pSuccess = pResultVector->SetElement(i, AddNumerals(pNum0, pNum1));
+				ICCItem *pSuccess = pResultVector->SetElement(i, AddNumerals(pNum0, pNum1)->GetDoubleValue());
 				if (pSuccess->IsNil())
 				{
 					ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));

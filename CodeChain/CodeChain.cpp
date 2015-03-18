@@ -515,7 +515,6 @@ ICCItem *CCodeChain::CreateVectorUsingAnother(CCVector *pVector)
 //	Creates a vector using an existing vector
 
 {
-	int i;
 	int iSize = pVector->GetCount();
 	CCVector *pNewVector;
 	ICCItem *pError;
