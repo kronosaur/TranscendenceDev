@@ -5105,7 +5105,13 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CSpaceObject *pSource, 
 		//	If we can damage our source, then we don't need to check further
 
 		if (pDesc->m_bCanDamageSource)
-			return pDesc->CanHit(pObj);
+			return
+				//	We cannot hit another beam/missile from the same source
+				//	(otherwise we get fratricide on fragmentation weapons).
+				(pObj->GetSource() != pSource)
+
+				//	See if the missile has rules about what it cannot hit
+				&& pDesc->CanHit(pObj);
 
 		//	Otherwise, we can only hit if we're not hitting our source, etc.
 
