@@ -261,6 +261,11 @@ void CShipInterior::SetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, i
 	for (i = 0; i < m_Compartments.GetCount(); i++)
 		iMaxHP += Desc.GetCompartment(i).iMaxHP;
 
+	//	If no HP, then we're done
+
+	if (iMaxHP == 0)
+		return;
+
 	//	We can't exceed maximum
 
 	iHP = Max(0, Min(iMaxHP, iHP));
