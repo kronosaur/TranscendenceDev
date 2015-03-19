@@ -2615,7 +2615,7 @@ class CSpaceObject : public CObject
 		int GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount = NULL);
 		CEconomyType *GetDefaultEconomy (void);
 		DWORD GetDefaultEconomyUNID (void);
-		bool GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice);
+		bool GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL);
 		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice);
 		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
 		int GetSellPrice (const CItem &Item, DWORD dwFlags);

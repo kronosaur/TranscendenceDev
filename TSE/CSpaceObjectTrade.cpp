@@ -181,27 +181,36 @@ DWORD CSpaceObject::GetDefaultEconomyUNID (void)
 	return DEFAULT_ECONOMY_UNID;
 	}
 
-bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice)
+bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason)
 
 //	GetDeviceInstallPrice
 //
 //	Returns the price to install the given device
 
 	{
+	//	Defaults to no reason
+
+	if (retsReason)
+		*retsReason = NULL_STR;
+
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice))
+	if (pTradeOverride && pTradeOverride->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice, retsReason))
 		return true;
 
 	//	Otherwise, ask our design type
 
 	CDesignType *pType = GetType();
 	if (pType == NULL)
+		{
+		if (retsReason)
+			*retsReason = CONSTLIT("Unknown item.");
 		return false;
+		}
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice))
+	if (pTrade && pTrade->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice, retsReason))
 		return true;
 
 	//	Otherwise, we do not install

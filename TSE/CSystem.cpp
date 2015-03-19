@@ -354,6 +354,9 @@
 //	112: 1.6
 //		m_iBarrierClock in CAIBehaviorCtx
 //
+//	113: 1.6
+//		sMessageID in CTradingDesc::SServiceDesc
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

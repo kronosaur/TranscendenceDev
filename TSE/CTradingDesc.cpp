@@ -20,6 +20,7 @@
 #define INVENTORY_ADJ_ATTRIB					CONSTLIT("inventoryAdj")
 #define ITEM_ATTRIB								CONSTLIT("item")
 #define MAX_ATTRIB								CONSTLIT("max")
+#define MESSAGE_ID_ATTRIB						CONSTLIT("messageID")
 #define PRICE_ADJ_ATTRIB						CONSTLIT("priceAdj")
 #define REPLENISH_ATTRIB						CONSTLIT("replenish")
 
@@ -277,6 +278,10 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CT
 			if (error = pCommodity->InventoryAdj.InitFromString(Ctx, pLine->GetAttribute(INVENTORY_ADJ_ATTRIB)))
 				return error;
 
+			//	Message ID
+
+			pCommodity->sMessageID = pLine->GetAttribute(MESSAGE_ID_ATTRIB);
+
 			//	Service
 
 			pCommodity->iService = serviceNone;
@@ -469,7 +474,7 @@ bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, const CItem &Item, i
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice) const
+bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
 
 //	GetDeviceInstallPrice
 //
@@ -488,12 +493,19 @@ bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item,
 
 			int iPrice = ComputePrice(pObj, Item, 1, m_List[i], dwFlags);
 			if (iPrice < 0)
+				{
+				if (retsReason)
+					*retsReason = m_List[i].sMessageID;
 				return false;
+				}
 
 			//	Done
 
 			if (retiPrice)
 				*retiPrice = iPrice;
+
+			if (retsReason)
+				*retsReason = m_List[i].sMessageID;
 
 			return true;
 			}
@@ -717,6 +729,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 //	CString			ItemCriteria
 //	CFormulaText	PriceAdj
 //	CFormulaText	InventoryAdj
+//	CString			sMessageID
 //	DWORD			dwFlags
 
 	{
@@ -775,6 +788,9 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 				Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 				Commodity.PriceAdj.SetInteger(dwLoad);
 				}
+
+			if (Ctx.dwVersion >= 113)
+				Commodity.sMessageID.ReadFromStream(Ctx.pStream);
 
 			Ctx.pStream->Read((char *)&Commodity.dwFlags, sizeof(DWORD));
 
@@ -962,6 +978,7 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 //	CString			ItemCriteria
 //	CFormulaText	PriceAdj
 //	CFormulaText	InventoryAdj
+//	CString			sMessageID
 //	DWORD			dwFlags
 
 	{
@@ -994,6 +1011,8 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 
 		Commodity.PriceAdj.WriteToStream(pStream);
 		Commodity.InventoryAdj.WriteToStream(pStream);
+
+		Commodity.sMessageID.WriteToStream(pStream);
 
 		pStream->Write((char *)&Commodity.dwFlags, sizeof(DWORD));
 		}

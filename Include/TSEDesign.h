@@ -4820,7 +4820,7 @@ class CTradingDesc
 		int Charge (CSpaceObject *pObj, int iCharge);
 		bool GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice) const;
 		bool GetArmorRepairPrice (CSpaceObject *pObj, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
-		bool GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice) const;
+		bool GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
 		bool GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice) const;
 		inline CEconomyType *GetEconomyType (void) { return m_pCurrency; }
 		inline int GetMaxCurrency (void) { return m_iMaxCurrency; }
@@ -4869,6 +4869,8 @@ class CTradingDesc
 
 			CFormulaText PriceAdj;				//	Price adjustment
 			CFormulaText InventoryAdj;			//	% of item count found at any one time
+
+			CString sMessageID;					//	ID of language element to return if we match.
 
 			DWORD dwFlags;						//	Flags
 			};
