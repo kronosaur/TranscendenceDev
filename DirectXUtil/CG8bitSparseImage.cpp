@@ -200,6 +200,13 @@ void CG8bitSparseImage::Fill (int x, int y, int cxWidth, int cyHeight, BYTE Valu
 //	Fills a rect
 
 	{
+	//	Make sure we're in bounds
+
+	if (!AdjustCoords(NULL, NULL, 0, 0, 
+			&x, &y, 
+			&cxWidth, &cyHeight))
+		return;
+
 	int yPos = y;
 	int yPosEnd = y + cyHeight;
 	int yTile = yPos / m_cyTile;
@@ -310,6 +317,31 @@ void CG8bitSparseImage::FillLine (int x, int y, int cxWidth, BYTE *pValues)
 //	operation.
 
 	{
+	//	Make sure we're in bounds
+
+	if (y < m_rcClip.top || y >= m_rcClip.bottom)
+		return;
+
+	if (x < m_rcClip.left)
+		{
+		int xDiff = m_rcClip.left - x;
+		if (xDiff >= cxWidth)
+			return;
+
+		x = m_rcClip.left;
+		cxWidth -= xDiff;
+		pValues += xDiff;
+		}
+
+	if (x + cxWidth > m_rcClip.right)
+		{
+		cxWidth = m_rcClip.right - x;
+		if (cxWidth <= 0)
+			return;
+		}
+
+	//	Compute tiles
+
 	int yTile = y / m_cyTile;
 	int yOffset = ClockMod(y, m_cyTile);
 
