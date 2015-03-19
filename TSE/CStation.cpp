@@ -1734,6 +1734,12 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		{
 		EDamageResults iResult = damageNoDamageNoPassthrough;
 
+		//	Let custom weapons get a chance
+
+		Ctx.pDesc->FireOnDamageAbandoned(Ctx);
+		if (IsDestroyed())
+			return damageDestroyed;
+
 		//	If this is a paralysis attack then no damage
 
 		int iEMP = Ctx.Damage.GetEMPDamage();

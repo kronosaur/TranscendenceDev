@@ -78,12 +78,14 @@
 #define ON_DAMAGE_OVERLAY_EVENT					CONSTLIT("OnDamageOverlay")
 #define ON_DAMAGE_SHIELDS_EVENT					CONSTLIT("OnDamageShields")
 #define ON_DAMAGE_ARMOR_EVENT					CONSTLIT("OnDamageArmor")
+#define ON_DAMAGE_ABANDONED_EVENT				CONSTLIT("OnDamageAbandoned")
 #define ON_FRAGMENT_EVENT						CONSTLIT("OnFragment")
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 	{
+		"OnDamageAbandoned",
 		"OnDamageArmor",
 		"OnDamageOverlay",
 		"OnDamageShields",
@@ -516,6 +518,56 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 
 	else
 		return NULL;
+	}
+
+bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
+
+//	FireOnDamageAbandoned
+//
+//	Fire OnDamageAbandoned event. Returns TRUE if we should skip further armor damage
+
+	{
+	SEventHandlerDesc Event;
+	if (FindEventHandler(evtOnDamageAbandoned, &Event))
+		{
+		//	Setup arguments
+
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
+		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
+		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
+		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
+		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
+		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
+		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			Ctx.pObj->ReportEventError(ON_DAMAGE_ABANDONED_EVENT, pResult);
+
+		//	If we return Nil, then we continue processing
+
+		bool bResult;
+		if (pResult->IsNil())
+			bResult = false;
+
+		//	Otherwise, the result is the damage left
+
+		else
+			{
+			Ctx.iDamage = pResult->GetIntegerValue();
+			bResult = true;
+			}
+
+		CCCtx.Discard(pResult);
+
+		return bResult;
+		}
+	else
+		return false;
 	}
 
 bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx)

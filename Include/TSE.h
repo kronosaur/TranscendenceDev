@@ -352,12 +352,13 @@ class CWeaponFireDesc
 	public:
 		enum ECachedHandlers
 			{
-			evtOnDamageArmor			= 0,
-			evtOnDamageOverlay			= 1,
-			evtOnDamageShields			= 2,
-			evtOnFragment				= 3,
+			evtOnDamageAbandoned		= 0,
+			evtOnDamageArmor			= 1,
+			evtOnDamageOverlay			= 2,
+			evtOnDamageShields			= 3,
+			evtOnFragment				= 4,
 
-			evtCount					= 4,
+			evtCount					= 5,
 			};
 
 		struct SFragmentDesc
@@ -385,6 +386,7 @@ class CWeaponFireDesc
 		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, char **retpPos = NULL);
 		static CWeaponFireDesc *FindWeaponFireDescFromFullUNID (const CString &sUNID);
+		bool FireOnDamageAbandoned (SDamageCtx &Ctx);
 		bool FireOnDamageArmor (SDamageCtx &Ctx);
 		bool FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay);
 		bool FireOnDamageShields (SDamageCtx &Ctx, int iDevice);
