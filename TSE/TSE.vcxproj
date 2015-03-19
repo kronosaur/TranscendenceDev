@@ -278,6 +278,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CUserProfile.cpp" />
+    <ClCompile Include="CVolumetricShadowPainter.cpp" />
     <ClCompile Include="CWaitOrder.cpp" />
     <ClCompile Include="CWaveGenerator.cpp" />
     <ClCompile Include="Damage.cpp">

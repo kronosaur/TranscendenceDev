@@ -1381,7 +1381,6 @@ class CSystem : public CObject
 
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
 		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
-		void CalcVolumetricShadow (CSpaceObject *pObj, int xStar, int yStar, int iStarAngle, CG8bitSparseImage &VolumetricMask);
 		void ComputeMapLabels (void);
 		void ComputeRandomEncounters (void);
 		void ComputeStars (void);
@@ -1396,6 +1395,7 @@ class CSystem : public CObject
 		void InitSpaceEnvironment (void) const;
 		void InitVolumetricMask (void);
 		void PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj);
+		void RemoveVolumetricShadow (CSpaceObject *pObj);
 		void UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj);
 		void UpdateRandomEncounters (void);
 

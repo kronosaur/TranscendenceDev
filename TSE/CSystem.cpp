@@ -856,175 +856,9 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 
 		//	Add the shadow
 
-		CalcVolumetricShadow(pObj, xStar, yStar, iStarAngle, VolumetricMask);
+		CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
+		Painter.PaintShadow();
 		}
-	}
-
-void CSystem::CalcVolumetricShadow (CSpaceObject *pObj, int xStar, int yStar, int iStarAngle, CG8bitSparseImage &VolumetricMask)
-
-//	CalcVolumetricShadow
-//
-//	Adds the object's shadow to the volumetric mask
-
-	{
-	int i;
-
-	SLightingCtx Ctx(iStarAngle);
-
-	//	Compute the center of the object relative to the volumetric mask
-
-	CVector ObjCenter((VolumetricMask.GetWidth() / 2) + (pObj->GetPos().GetX() / g_KlicksPerPixel) - xStar,
-			(VolumetricMask.GetHeight() / 2) - (pObj->GetPos().GetY() / g_KlicksPerPixel) + yStar);
-
-	//	Get the origin, width, and length of the shadow from the object
-
-	int xCenter;
-	int yCenter;
-	int iShadowWidth;
-	int iShadowLength;
-	if (!pObj->CalcVolumetricShadowLine(Ctx, &xCenter, &yCenter, &iShadowWidth, &iShadowLength))
-		return;
-
-	CVector vShadowObjOrigin = CVector(xCenter, yCenter);
-	Metric rShadowWidth = iShadowWidth;
-	Metric rShadowLength = iShadowLength;
-	Metric rShadowHalfWidth = 0.5 * rShadowWidth;
-	Metric rShadowHalfLength = 0.5 * rShadowLength;
-
-	//	Compute the origin of the shadow in mask coordinates
-
-	CVector vShadowOrigin = ObjCenter + vShadowObjOrigin;
-
-	//	Compute the four corners of the shadow box in mask coordinates.
-
-	CVector Vertex[4];
-	Vertex[0] = vShadowOrigin + (Ctx.vSw * 0.5 * rShadowWidth);
-	Vertex[1] = vShadowOrigin - (Ctx.vSw * 0.5 * rShadowWidth);
-
-	//	Now compute the other two points of the shadow box.
-
-	Vertex[2] = Vertex[1] + Ctx.vSl * rShadowLength;
-	Vertex[3] = Vertex[0] + Ctx.vSl * rShadowLength;
-
-	//	Compute the four corners of a rect containing the entire shadow (in
-	//	mask coordinates)
-
-	CVector vUL = Vertex[0];
-	CVector vLR = Vertex[0];
-	for (i = 1; i < 4; i++)
-		{
-		if (Vertex[i].GetX() < vUL.GetX())
-			vUL.SetX(Vertex[i].GetX());
-
-		if (Vertex[i].GetX() > vLR.GetX())
-			vLR.SetX(Vertex[i].GetX());
-
-		if (Vertex[i].GetY() < vUL.GetY())
-			vUL.SetY(Vertex[i].GetY());
-
-		if (Vertex[i].GetY() > vLR.GetY())
-			vLR.SetY(Vertex[i].GetY());
-		}
-
-	//	Compute the upper-left corner of the box in shadow coordinates
-
-	CVector vULRelativeToShadowOrigin = vUL - vShadowOrigin;
-	CVector vShadowRow = CVector(vULRelativeToShadowOrigin.Dot(Ctx.vSw), vULRelativeToShadowOrigin.Dot(Ctx.vSl));
-
-	//	Allocate a temporary byte array to store the a row
-
-	int cxRow = (int)vLR.GetX() - (int)vUL.GetX();
-	BYTE *pSrcRow = new BYTE [cxRow];
-
-	//	Loop over all rows in the shadow box
-
-	int yPos = (int)vUL.GetY();
-	int yPosEnd = (int)vLR.GetY();
-	while (yPos < yPosEnd)
-		{
-		int xPos = (int)vUL.GetX();
-		CVector vShadowPos = vShadowRow;
-
-		BYTE *pSrcPos = pSrcRow;
-		BYTE *pSrcPosEnd = pSrcRow + cxRow;
-
-		while (pSrcPos < pSrcPosEnd)
-			{
-			//	rWFrac is the position of this pixel along the width of the 
-			//	shadow.
-			//
-			//	0.0 = at the center of the shadow.
-			//	1.0 = at one of the edges.
-
-			Metric rWFrac = Absolute(vShadowPos.GetX()) / rShadowHalfWidth;
-			if (rWFrac < 1.0)
-				{
-				//	rLFrac is the position of this pixel along the length of 
-				//	the shadow.
-				//
-				//	0.0 is at the beginning (near the planet)
-				//	1.0 is at the end of the shadow
-
-				Metric rLFrac = vShadowPos.GetY() / rShadowLength;
-
-				if (rLFrac > 0.0 && rLFrac < 1.0)
-					{
-					//	rUFrac is the size of the umbra at this point
-					//	(measured along the shadow width axis from the center
-					//	of the shadow.
-					//
-					//	rUFrac is ~1.0 near the beginning of the shadow.
-					//	it is ~0.0 near the end of the shadow.
-
-					Metric rUFrac = 1.0 - rLFrac;
-
-					//	Inside the umbra?
-
-					if (rWFrac < rUFrac)
-						{
-						if (rLFrac < 0.5)
-							*pSrcPos = 0x00;
-						else
-							*pSrcPos = (BYTE)((rLFrac - 0.5) * 510);
-						}
-
-					//	In the penumbra
-
-					else
-						{
-						//	rPFrac is the pixel's position in the penumbra along
-						//	the shadow width axis.
-						//
-						//	0.0 is at the edge of the umbra.
-						//	1.0 is at the edge of the shadow.
-
-						Metric rPFrac = (rWFrac - rUFrac) / rLFrac;
-
-						if (rLFrac < 0.5)
-							*pSrcPos = (BYTE)(0xff * rPFrac);
-						else
-							*pSrcPos = (BYTE)(0xff * (1.0 - ((1.0 - ((rLFrac - 0.5) * 2.0)) * (1.0 - rPFrac))));
-						}
-					}
-				else
-					*pSrcPos = 0xff;
-				}
-			else
-				*pSrcPos = 0xff;
-
-			pSrcPos++;
-			vShadowPos = vShadowPos + Ctx.vIncX;
-			}
-
-		//	Apply the row to the mask
-
-		VolumetricMask.FillLine(xPos, yPos, cxRow, pSrcRow);
-
-		vShadowRow = vShadowRow + Ctx.vIncY;
-		yPos++;
-		}
-
-	delete [] pSrcRow;
 	}
 
 void CSystem::CancelTimedEvent (CSpaceObject *pSource, const CString &sEvent, bool bInDoEvent)
@@ -3899,8 +3733,15 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 	if (Ctx.pObj->GetScale() == scaleStar)
 		{
 		ComputeStars();
-		InitVolumetricMask();
+		if (g_pUniverse->GetSFXOptions().IsStarshineEnabled())
+			InitVolumetricMask();
 		}
+
+	//	If this object has a volumetric shadow, then we need to remove it.
+
+	if (Ctx.pObj->HasVolumetricShadow()
+			&& g_pUniverse->GetSFXOptions().IsStarshineEnabled())
+		RemoveVolumetricShadow(Ctx.pObj);
 
 	//	Debug code to see if we ever delete a barrier in the middle of move
 
@@ -3936,6 +3777,97 @@ void CSystem::RemoveTimersForObj (CSpaceObject *pObj)
 		CTimedEvent *pEvent = GetTimedEvent(i);
 		if (pEvent->OnObjDestroyed(pObj))
 			pEvent->SetDestroyed();
+		}
+	}
+
+void CSystem::RemoveVolumetricShadow (CSpaceObject *pObj)
+
+//	RemoveVolumetricShadow
+//
+//	Removes the object's volumetric shadow from the mask. We call this when we
+//	delete an object at runtime.
+
+	{
+	int i, j;
+
+	//	Loop over all stars
+
+	for (i = 0; i < m_Stars.GetCount(); i++)
+		{
+		CSpaceObject *pStar = m_Stars[i].pStarObj;
+		int xStar = (int)(pStar->GetPos().GetX() / g_KlicksPerPixel);
+		int yStar = (int)(pStar->GetPos().GetY() / g_KlicksPerPixel);
+		Metric rMaxDist = (pStar->GetMaxLightDistance() + 100) * LIGHT_SECOND;
+
+		//	Compute the angle of the object with respect to the star
+		//	And skip any objects that are outside the star's light radius.
+
+		Metric rStarDist;
+		int iStarAngle = ::VectorToPolar(pObj->GetPos() - pStar->GetPos(), &rStarDist);
+		if (rStarDist > rMaxDist)
+			continue;
+
+		//	Figure out the rect that encloses the shadow for this object (relative to
+		//	the mask for the star).
+
+		CVolumetricShadowPainter ObjShadowPainter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, m_Stars[i].VolumetricMask);
+		RECT rcRect;
+		ObjShadowPainter.GetShadowRect(&rcRect);
+
+		//	Erase the rect
+
+		m_Stars[i].VolumetricMask.Fill(rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), 0xff);
+
+		//	Mask out everything outside the rect so we can redraw the shadows just
+		//	inside the rect.
+
+		m_Stars[i].VolumetricMask.SetClipRect(rcRect);
+
+		//	Draw all remaining objects that intersect with the rect.
+
+		for (j = 0; j < GetObjectCount(); j++)
+			{
+			CSpaceObject *pPrevObj = GetObject(j);
+			if (pPrevObj == NULL
+					|| pPrevObj->IsDestroyed()
+					|| !pPrevObj->HasVolumetricShadow())
+				continue;
+
+			//	Compute the largest possible shadow we could have (this is a rough
+			//	heuristic so we don't have to compute the full shadow shape).
+
+			Metric rMaxShadow = g_KlicksPerPixel * ((10 * RectWidth(pPrevObj->GetImage().GetImageRect())) + RectWidth(rcRect));
+			Metric rMaxShadow2 = rMaxShadow * rMaxShadow;
+
+			//	If any object is further than this from us, then we can safely ignore it.
+
+			if ((pPrevObj->GetPos() - pObj->GetPos()).Length2() > rMaxShadow2)
+				continue;
+
+			//	Compute the angle of the object with respect to the star
+			//	And skip any objects that are outside the star's light radius.
+
+			Metric rStarDist;
+			int iStarAngle = ::VectorToPolar(pPrevObj->GetPos() - pStar->GetPos(), &rStarDist);
+			if (rStarDist > rMaxDist)
+				continue;
+
+			//	Compute the shadow rect
+
+			CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pPrevObj, m_Stars[i].VolumetricMask);
+			RECT rcPrevShadow;
+			Painter.GetShadowRect(&rcPrevShadow);
+
+			//	If this rect overlaps with the rect that we erased, then we need 
+			//	to redraw the shadow
+
+			if (::RectsIntersect(rcPrevShadow, rcRect))
+				Painter.PaintShadow();
+			}
+
+		//	Done
+
+		m_Stars[i].VolumetricMask.ResetClipRect();
 		}
 	}
 
