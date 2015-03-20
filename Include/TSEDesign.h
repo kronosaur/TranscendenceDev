@@ -4181,6 +4181,7 @@ class CShipClass : public CDesignType
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
 		inline int GetCyberDefenseLevel (void) { return m_iCyberDefenseLevel; }
 		inline DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
+		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
 		inline int GetDockingPortCount (void) { return m_DockingPorts.GetCount(); }
 		CVector GetDockingPortOffset (int iRotation);
 		inline const TArray<CVector> &GetDockingPortPositions (void) { return m_DockingPorts; }
@@ -4340,6 +4341,7 @@ class CShipClass : public CDesignType
 		CString m_sName;						//	Class name
 		CString m_sTypeName;					//	Name of type
 		DWORD m_dwClassNameFlags;				//	Flags for class name
+		CSovereignRef m_pDefaultSovereign;		//	Sovereign
 
 		CString m_sShipNames;					//	Names to use for individual ship
 		DWORD m_dwShipNameFlags;				//	Flags for ship name

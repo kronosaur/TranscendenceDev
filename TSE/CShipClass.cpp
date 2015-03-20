@@ -42,6 +42,7 @@
 #define CYBER_DEFENSE_LEVEL_ATTRIB				CONSTLIT("cyberDefenseLevel")
 #define DEBUG_ONLY_ATTRIB						CONSTLIT("debugOnly")
 #define DEFAULT_BACKGROUND_ID_ATTRIB			CONSTLIT("defaultBackgroundID")
+#define DEFAULT_SOVEREIGN_ATTRIB				CONSTLIT("defaultSovereign")
 #define DESC_ATTRIB								CONSTLIT("desc")
 #define DEST_X_ATTRIB							CONSTLIT("destX")
 #define DEST_Y_ATTRIB							CONSTLIT("destY")
@@ -2539,6 +2540,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	{
 	int i;
 
+	retTypesUsed->SetAt(m_pDefaultSovereign.GetUNID(), true);
 	retTypesUsed->SetAt(m_pWreckType.GetUNID(), true);
 
 	for (i = 0; i < GetHullSectionCount(); i++)
@@ -2573,6 +2575,9 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	{
 	ALERROR error;
 	int i;
+
+	if (error = m_pDefaultSovereign.Bind(Ctx))
+		goto Fail;
 
 	//	Image
 
@@ -2752,6 +2757,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 		return;
 		}
 
+	m_pDefaultSovereign = pClass->m_pDefaultSovereign;
 	m_sManufacturer = pClass->m_sManufacturer;
 	m_sName = pClass->m_sName;
 	m_sTypeName = pClass->m_sTypeName;
@@ -2875,6 +2881,9 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_dwClassNameFlags = LoadNameFlags(pDesc);
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
 	m_fInheritedPlayerSettings = false;
+
+	if (error = m_pDefaultSovereign.LoadUNID(Ctx, pDesc->GetAttribute(DEFAULT_SOVEREIGN_ATTRIB)))
+		return error;
 
 	//	Score and level
 
