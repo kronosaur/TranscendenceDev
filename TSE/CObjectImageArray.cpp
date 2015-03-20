@@ -399,7 +399,13 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 	if (m_dwBitmapUNID || Source.m_pImage == NULL)
 		m_pImage = Source.m_pImage;
 	else
-		m_pImage = new CObjectImage(Source.m_pImage->GetImage(NULL_STR));
+		{
+		if (Source.m_pImage->FreesBitmap())
+			m_pImage = new CObjectImage(Source.m_pImage->CreateCopy(), true);
+		else
+			m_pImage = new CObjectImage(Source.m_pImage->GetImage(NULL_STR));
+		}
+
 	m_rcImage = Source.m_rcImage;
 	m_iFrameCount = Source.m_iFrameCount;
 	m_iRotationCount = Source.m_iRotationCount;

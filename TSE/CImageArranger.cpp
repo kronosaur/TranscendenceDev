@@ -53,7 +53,8 @@ void CImageArranger::ArrangeByRow (const SArrangeDesc &Desc, const TArray<SCellD
 			{
 			int cxSize = Cells[iNext].cxWidth;
 			int cySize = Cells[iNext].cyHeight;
-			if (cxSize > cxWidthLeft && iStart != iNext)
+			if ((cxSize > cxWidthLeft || Cells[iNext].bStartNewRow)
+					&& iStart != iNext)
 				break;
 
 			int cxCell = Max(cxSize + cxInternalSpacing, Desc.cxSpacing);

@@ -19,9 +19,16 @@ class CImageArranger
 
 		struct SCellDesc
 			{
+			SCellDesc (void) :
+					cxWidth(0),
+					cyHeight(0),
+					bStartNewRow(false)
+				{ }
+
 			int cxWidth;
 			int cyHeight;
 			CString sText;
+			bool bStartNewRow;
 			};
 
 		CImageArranger (void);

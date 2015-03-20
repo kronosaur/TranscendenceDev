@@ -875,6 +875,7 @@ class CObjectImage : public CDesignType
 
 		CG32bitImage *CreateCopy (CString *retsError = NULL);
 		ALERROR Exists (SDesignLoadCtx &Ctx);
+		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
 		CG32bitImage *GetHitMask (void);
 		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL);
 		CG32bitImage *GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL);
