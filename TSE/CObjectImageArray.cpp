@@ -6,6 +6,7 @@
 
 static CObjectClass<CObjectImageArray>g_Class(OBJID_COBJECTIMAGEARRAY, NULL);
 
+#define ANIMATION_COLUMNS_ATTRIB		CONSTLIT("animationColumns")
 #define FLASH_TICKS_ATTRIB				CONSTLIT("flashTicks")
 #define ROTATE_OFFSET_ATTRIB			CONSTLIT("rotationOffset")
 #define BLENDING_ATTRIB					CONSTLIT("blend")
@@ -292,9 +293,20 @@ void CObjectImageArray::ComputeSourceXY (int iTick, int iRotation, int *retxSrc,
 		else
 			iFrame = ((iTick / m_iTicksPerFrame) % m_iFrameCount);
 
+		//	If we've got multi-row animations, then we deal with that.
+
+		if (m_iFramesPerRow != m_iFrameCount)
+			{
+			int iFrameCol = (iFrame / m_iFramesPerRow);
+			int iFrameRow = (iFrame % m_iFramesPerRow);
+
+			*retxSrc = m_rcImage.left + (iFrameCol * RectWidth(m_rcImage));
+			*retySrc = m_rcImage.top + (iFrameRow * RectHeight(m_rcImage));
+			}
+
 		//	If we've got multi-column rotations, then we need to deal with that.
 
-		if (m_iRotationCount != m_iFramesPerColumn)
+		else if (m_iRotationCount != m_iFramesPerColumn)
 			{
 			int iColsPerFrame = (m_iRotationCount + m_iFramesPerColumn - 1) / m_iFramesPerColumn;
 			int iRotationCol = (iRotation / m_iFramesPerColumn);
@@ -410,6 +422,7 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 	m_iFrameCount = Source.m_iFrameCount;
 	m_iRotationCount = Source.m_iRotationCount;
 	m_iFramesPerColumn = Source.m_iFramesPerColumn;
+	m_iFramesPerRow = Source.m_iFramesPerRow;
 	m_iTicksPerFrame = Source.m_iTicksPerFrame;
 	m_iFlashTicks = Source.m_iFlashTicks;
 	m_iBlending = Source.m_iBlending;
@@ -843,6 +856,7 @@ ALERROR CObjectImageArray::Init (CG32bitImage *pBitmap, const RECT &rcImage, int
 	m_iFrameCount = iFrameCount;
 	m_iRotationCount = STD_ROTATION_COUNT;
 	m_iFramesPerColumn = m_iRotationCount;
+	m_iFramesPerRow = iFrameCount;
 	m_iTicksPerFrame = iTicksPerFrame;
 	m_iFlashTicks = 0;
 	m_iRotationOffset = 0;
@@ -870,6 +884,7 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iF
 	m_iFrameCount = iFrameCount;
 	m_iRotationCount = STD_ROTATION_COUNT;
 	m_iFramesPerColumn = m_iRotationCount;
+	m_iFramesPerRow = iFrameCount;
 	m_iTicksPerFrame = iTicksPerFrame;
 	m_iFlashTicks = 0;
 	m_iRotationOffset = 0;
@@ -919,6 +934,7 @@ ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int
 	m_iFrameCount = 1;
 	m_iRotationCount = 1;
 	m_iFramesPerColumn = 1;
+	m_iFramesPerRow = 1;
 	m_iTicksPerFrame = 0;
 	m_iFlashTicks = 0;
 	m_iRotationOffset = 0;
@@ -964,6 +980,12 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 		m_iFramesPerColumn = (m_iRotationCount + iRotationCols - 1) / iRotationCols;
 	else
 		m_iFramesPerColumn = m_iRotationCount;
+
+	int iAnimationCols = pDesc->GetAttributeIntegerBounded(ANIMATION_COLUMNS_ATTRIB, 0, m_iFrameCount, 0);
+	if (iAnimationCols > 0)
+		m_iFramesPerRow = (m_iFrameCount + iAnimationCols - 1) / iAnimationCols;
+	else
+		m_iFramesPerRow = m_iFrameCount;
 
 	m_iTicksPerFrame = pDesc->GetAttributeInteger(CONSTLIT(g_ImageTicksPerFrameAttrib));
 	if (m_iTicksPerFrame <= 0 && m_iFrameCount > 1)
@@ -1530,6 +1552,11 @@ void CObjectImageArray::ReadFromStream (SLoadCtx &Ctx)
 	else
 		m_iFramesPerColumn = m_iRotationCount;
 
+	if (Ctx.dwVersion >= 114)
+		Ctx.pStream->Read((char *)&m_iFramesPerRow, sizeof(DWORD));
+	else
+		m_iFramesPerRow = m_iFrameCount;
+
 	if (Ctx.dwVersion >= 90)
 		Ctx.pStream->Read((char *)&m_iViewportSize, sizeof(DWORD));
 	else
@@ -1605,6 +1632,7 @@ void CObjectImageArray::TakeHandoff (CObjectImageArray &Source)
 	m_iFrameCount = Source.m_iFrameCount;
 	m_iRotationCount = Source.m_iRotationCount;
 	m_iFramesPerColumn = Source.m_iFramesPerColumn;
+	m_iFramesPerRow = Source.m_iFramesPerRow;
 	m_iTicksPerFrame = Source.m_iTicksPerFrame;
 	m_iFlashTicks = Source.m_iFlashTicks;
 	m_iBlending = Source.m_iBlending;
@@ -1626,6 +1654,7 @@ void CObjectImageArray::WriteToStream (IWriteStream *pStream) const
 //	DWORD		m_iBlending
 //	DWORD		m_iRotationCount
 //	DWORD		m_iFramesPerColumns
+//	DWORD		m_iFramesPerRow
 //	DWORD		m_iViewportSize
 
 //	DWORD		No of rotation offsets
@@ -1642,6 +1671,7 @@ void CObjectImageArray::WriteToStream (IWriteStream *pStream) const
 	pStream->Write((char *)&m_iBlending, sizeof(DWORD));
 	pStream->Write((char *)&m_iRotationCount, sizeof(DWORD));
 	pStream->Write((char *)&m_iFramesPerColumn, sizeof(DWORD));
+	pStream->Write((char *)&m_iFramesPerRow, sizeof(DWORD));
 	pStream->Write((char *)&m_iViewportSize, sizeof(DWORD));
 
 	if (m_pRotationOffset)

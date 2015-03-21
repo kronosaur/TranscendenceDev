@@ -357,6 +357,9 @@
 //	113: 1.6
 //		sMessageID in CTradingDesc::SServiceDesc
 //
+//	114: 1.6
+//		m_iFramesPerRow in CObjectImageArray
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

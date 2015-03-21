@@ -1029,6 +1029,7 @@ class CObjectImageArray : public CObject
 		int m_iBlending;
 		int m_iViewportSize;				//	Size of 3D viewport in pixels (default to image width)
 		int m_iFramesPerColumn;				//	Rotation frames spread out over multiple columns
+		int m_iFramesPerRow;				//	Animation frames spread out over multiple rows
 
 		//	Cached images
 
