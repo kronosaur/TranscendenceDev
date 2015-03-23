@@ -5807,6 +5807,10 @@ void CSpaceObject::ParseCriteria (CSpaceObject *pSource, const CString &sCriteri
 		{
 		switch (*pPos)
 			{
+			case '*':
+				retCriteria->dwCategories = 0xffffffff;
+				break;
+
 			case 'A':
 				retCriteria->bActiveObjectsOnly = true;
 				break;
