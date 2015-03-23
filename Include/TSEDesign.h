@@ -5027,6 +5027,7 @@ class CStationType : public CDesignType
 		inline bool IsWall (void) { return (m_fWall ? true : false); }
 		void MarkImages (const CCompositeImageSelector &Selector);
 		void PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick);
+		void PaintDevicePositions (CG32bitImage &Dest, int x, int y);
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y);
 		void SetImageSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
 		inline void SetEncountered (CSystem *pSystem) { m_EncounterRecord.AddEncounter(pSystem); }
@@ -5879,6 +5880,7 @@ class CInstalledDevice
 		inline int GetSlotPosIndex (void) const { return m_iSlotPosIndex; }
 		inline int GetTemperature (void) const { return m_iTemperature; }
 		inline int GetTimeUntilReady (void) const { return m_iTimeUntilReady; }
+		inline bool Has3DPos (void) const { return m_f3DPosition; }
 		inline void IncTemperature (int iChange) { m_iTemperature += iChange; }
 		inline bool IsDirectional (void) const { return (m_iMinFireArc != m_iMaxFireArc); }
 		inline bool IsEmpty (void) const { return m_pClass == NULL; }

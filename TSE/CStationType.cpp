@@ -1812,6 +1812,36 @@ void CStationType::PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick)
 		}
 	}
 
+void CStationType::PaintDevicePositions (CG32bitImage &Dest, int x, int y)
+
+//	PaintDevicePositions
+//
+//	Paints the position of all the devices
+
+	{
+	int i;
+
+	SSelectorInitCtx InitCtx;
+	CCompositeImageSelector Selector;
+	m_Image.InitSelector(InitCtx, &Selector);
+
+	int iScale = GetImage(Selector, CCompositeImageModifiers()).GetImageViewportSize();
+
+	for (i = 0; i < m_iDevicesCount; i++)
+		{
+		CInstalledDevice &Device = m_Devices[i];
+
+		int xPos;
+		int yPos;
+		if (Device.Has3DPos())
+			C3DConversion::CalcCoord(iScale, Device.GetPosAngle(), Device.GetPosRadius(), Device.GetPosZ(), &xPos, &yPos);
+		else
+			C3DConversion::CalcCoordCompatible(Device.GetPosAngle(), Device.GetPosRadius(), &xPos, &yPos);
+
+		Dest.DrawDot(x + xPos, y + yPos, CG32bitPixel(255, 255, 0), markerMediumCross);
+		}
+	}
+
 void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 
 //	PaintDockPortPositions
