@@ -1224,7 +1224,7 @@ void CAIBehaviorCtx::ImplementFireWeapon (CShip *pShip, DeviceNames iDev)
 	if (pWeapon && pWeapon->IsReady())
 		{
 		int iFireAngle = pWeapon->GetDefaultFireAngle(pShip);
-		if (CheckForFriendsInLineOfFire(pShip, pWeapon, NULL, iFireAngle, DEFAULT_DIST_CHECK))
+		if (CheckForFriendsInLineOfFire(pShip, pWeapon, NULL, iFireAngle, Max(pWeapon->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK)))
 			pShip->SetWeaponTriggered(pWeapon);
 		}
 	}
@@ -1364,7 +1364,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 
 			if (iWeaponToFire == devPrimaryWeapon)
 				{
-				if (CheckForFriendsInLineOfFire(pShip, pWeapon, pTarget, iFireAngle, DEFAULT_DIST_CHECK))
+				if (CheckForFriendsInLineOfFire(pShip, pWeapon, pTarget, iFireAngle, Max(pWeapon->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK)))
 					{
 					if (!bDoNotShoot)
 						pShip->SetWeaponTriggered(pWeapon);
@@ -1375,7 +1375,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 				}
 			else
 				{
-				if (CheckForFriendsInLineOfFire(pShip, pWeapon, pTarget, iFireAngle, DEFAULT_DIST_CHECK))
+				if (CheckForFriendsInLineOfFire(pShip, pWeapon, pTarget, iFireAngle, Max(pWeapon->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK)))
 					{
 					if (!bDoNotShoot)
 						pShip->SetWeaponTriggered(pWeapon);
@@ -1400,28 +1400,6 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 			g_pUniverse->DebugOutput("Face target at distance: %d moving at: %d%%c", 
 					(int)(vTarget.Length() / LIGHT_SECOND),
 					(int)(100.0 * 0 / LIGHT_SPEED));
-#endif
-
-		//	If the primary weapon happens to be aligned then
-		//	fire it.
-
-#if 0
-		if (iWeaponToFire != devPrimaryWeapon)
-			{
-			int iDummy;
-			int iFireAngle;
-			if (pShip->IsWeaponAligned(devPrimaryWeapon,
-					pTarget, 
-					&iDummy,
-					&iFireAngle))
-				{
-				if (pShip->GetWeaponIsReady(devPrimaryWeapon))
-					{
-					if (pShip->IsLineOfFireClear(pShip->GetPos(), pTarget, iFireAngle))
-						SetFireWeaponFlag(devPrimaryWeapon);
-					}
-				}
-			}
 #endif
 		}
 
