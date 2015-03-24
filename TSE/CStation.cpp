@@ -1414,7 +1414,7 @@ CSystem::LayerEnum CStation::GetPaintLayer (void)
 		}
 	}
 
-ICCItem *CStation::GetProperty (const CString &sName)
+ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 //	GetProperty
 //
@@ -1469,7 +1469,7 @@ ICCItem *CStation::GetProperty (const CString &sName)
 		return CC.CreateInteger(m_iStructuralHP);
 
 	else
-		return CSpaceObject::GetProperty(sName);
+		return CSpaceObject::GetProperty(Ctx, sName);
 	}
 
 IShipGenerator *CStation::GetRandomEncounterTable (int *retiFrequency) const

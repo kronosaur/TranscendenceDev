@@ -4271,6 +4271,7 @@ class CShipClass : public CDesignType
 		virtual CString GetTypeName (DWORD *retdwFlags = NULL) { return GetName(retdwFlags); }
 		virtual bool IsVirtual (void) const { return (m_fVirtual ? true : false); }
 
+		static Metric GetStdCombatStrength (int iLevel);
 		static void UnbindGlobal (void);
 
 	protected:
@@ -4280,6 +4281,7 @@ class CShipClass : public CDesignType
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID);
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx);
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const;
 		virtual void OnInitFromClone (CDesignType *pSource);
 		virtual void OnMarkImages (void) { MarkImages(true); }

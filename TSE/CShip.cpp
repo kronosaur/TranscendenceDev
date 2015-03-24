@@ -2691,7 +2691,7 @@ int CShip::GetPowerConsumption (void)
 		return 1;
 	}
 
-ICCItem *CShip::GetProperty (const CString &sName)
+ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 //	GetProperty
 //
@@ -2888,7 +2888,7 @@ ICCItem *CShip::GetProperty (const CString &sName)
 		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
 		}
 	else
-		return CSpaceObject::GetProperty(sName);
+		return CSpaceObject::GetProperty(Ctx, sName);
 	}
 
 CString CShip::GetReactorName (void)

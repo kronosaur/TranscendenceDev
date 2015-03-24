@@ -80,7 +80,7 @@ class CMission : public CSpaceObject
 
 		virtual CMission *AsMission (void) { return this; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
-		virtual ICCItem *GetProperty (const CString &sName);
+		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
 		virtual CDesignType *GetType (void) const { return m_pType; }
 		virtual bool HasAttribute (const CString &sAttribute) const { return m_pType->HasLiteralAttribute(sAttribute); }
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const;

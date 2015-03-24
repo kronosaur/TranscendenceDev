@@ -378,7 +378,7 @@ class CMissile : public CSpaceObject
 		virtual CString GetName (DWORD *retdwFlags = NULL);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CMissile"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
-		virtual ICCItem *GetProperty (const CString &sName);
+		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
 		virtual int GetRotation (void) const { return m_iRotation; }
 		virtual CSpaceObject *GetSecondarySource (void) { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const { return m_pSovereign; }
@@ -956,7 +956,7 @@ class CShip : public CSpaceObject
 		virtual COverlayList *GetOverlays (void) { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerShips; }
 		virtual int GetPerception (void);
-		virtual ICCItem *GetProperty (const CString &sName);
+		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
 		virtual int GetRotation (void) const { return m_Rotation.GetRotationAngle(m_pClass->GetRotationDesc()); }
 		virtual ScaleTypes GetScale (void) const { return scaleShip; }
 		virtual int GetScore (void) { return m_pClass->GetScore(); }
@@ -1293,7 +1293,7 @@ class CStation : public CSpaceObject
 		virtual Metric GetParallaxDist (void) { return m_rParallaxDist; }
 		virtual EDamageResults GetPassthroughDefault (void);
 		virtual int GetPlanetarySize (void) const { return (GetScale() == scaleWorld ? m_pType->GetSize() : 0); }
-		virtual ICCItem *GetProperty (const CString &sName);
+		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const;
 		virtual ScaleTypes GetScale (void) const { return m_Scale; }
 		virtual CXMLElement *GetScreen (const CString &sName) { return m_pType->GetScreen(sName); }

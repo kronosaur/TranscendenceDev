@@ -3712,7 +3712,7 @@ ICCItem *CSpaceObject::GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, co
 		}
 	}
 
-ICCItem *CSpaceObject::GetProperty (const CString &sName)
+ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 //	GetProperty
 //
@@ -3844,7 +3844,7 @@ ICCItem *CSpaceObject::GetProperty (const CString &sName)
 		return CC.CreateBool(IsUnderAttack());
 
 	else if (pType = GetType())
-		return CreateResultFromDataField(CC, pType->GetDataField(sName));
+		return pType->GetProperty(Ctx, sName);
 
 	else
 		return CC.CreateNil();
@@ -4158,7 +4158,8 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 		{
 		CString sProperty = strSubString(sAttrib, SPECIAL_PROPERTY.GetLength());
 
-		ICCItem *pValue = ((CSpaceObject *)this)->GetProperty(sProperty);
+		CCodeChainCtx Ctx;
+		ICCItem *pValue = ((CSpaceObject *)this)->GetProperty(Ctx, sProperty);
 		bool bResult = !pValue->IsNil();
 		pValue->Discard(&g_pUniverse->GetCC());
 
@@ -5685,7 +5686,7 @@ void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, in
 	{
 	OnPaintMap(Ctx, Dest, x, y);
 
-	if (IsPlayerDestination())
+	if (IsPlayerDestination() || (IsHighlighted() && !m_sHighlightText.IsBlank()))
 		{
 		int iTick = g_pUniverse->GetPaintTick();
 		int iRadius = 10;
@@ -5693,6 +5694,12 @@ void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, in
 		CG32bitPixel rgbColor = GetSymbolColor();
 
 		CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 6, rgbColor);
+
+		if (IsHighlighted() && !m_sHighlightText.IsBlank())
+			{
+			SViewportPaintCtx ViewportCtx;
+			PaintHighlightText(Dest, x, y, ViewportCtx, alignCenter, rgbColor);
+			}
 		}
 	}
 

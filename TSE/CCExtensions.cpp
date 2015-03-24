@@ -429,6 +429,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_DESCEND_OBJECT			26
 #define FN_SYS_MATCHES					27
 #define FN_SYS_SET_POV					28
+#define FN_SYS_GET_STD_COMBAT_STRENGTH	29
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -1456,7 +1457,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'shipReinforcementEnabled\n"
 			"   'structuralHP\n"
 			"\n"
-			"NOTE: All data fields (accessed via objGetDataField) are also valid properties.\n",
+			"NOTE: All type properties (accessed via typGetProperty) are also valid object properties.\n",
 
 			"is",	0,	},
 
@@ -2013,6 +2014,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysCalcFireSolution targetPos targetVel speed) -> angle to shoot (Nil, if no solution)",
 			"vvv",	0,	},
 
+		{	"sysCalcStdCombatStrength",			fnSystemGet,	FN_SYS_GET_STD_COMBAT_STRENGTH,
+			"(sysCalcStdCombatStrength level) -> standard combat strength for level",
+			"i",	0,	},
+
 		{	"sysCalcTravelDistance",			fnSystemGet,	FN_SYS_GET_TRAVEL_DISTANCE,
 			"(sysCalcTravelDistance speed time) -> distance in light-seconds",
 			"vi",	0,	},
@@ -2408,11 +2413,71 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"typGetProperty",				fnDesignGet,		FN_DESIGN_GET_PROPERTY,
 			"(typGetProperty unid property) -> value\n\n"
 			
-			"property:\n\n"
+			"property (all):\n\n"
 			
 			"   'apiVersion\n"
 			"   'class\n"
-			"   'extension\n",
+			"   'extension\n\n"
+			
+			"property (player ships):\n\n"
+
+			"   'dockServicesScreen\n"
+			"   'shipStatusScreen\n"
+			"   'startingSystem\n\n"
+
+			"property (ships):\n\n"
+
+			"   'armorCount\n"
+			"   'armorHP\n"
+			"   'armorItems\n"
+			"   'balanceType\n"
+			"   'cargoSpace\n"
+			"   'combatStrength\n"
+			"   'damage\n"
+			"   'defaultSovereign\n"
+			"   'defenseStrength\n"
+			"   'deviceSlots\n"
+			"   'deviceSlotsNonWeapons\n"
+			"   'deviceSlotsWeapons\n"
+			"   'deviceItems\n"
+			"   'dodgeRate\n"
+			"   'driveImage\n"
+			"   'explosionType\n"
+			"   'fireAccuracy\n"
+			"   'fireRangeAdj\n"
+			"   'fireRateAdj\n"
+			"   'genericName\n"
+			"   'hp\n"
+			"   'hullMass\n"
+			"   'installDeviceMaxLevel\n"
+			"   'launcher\n"
+			"   'launcherUNID\n"
+			"   'level\n"
+			"   'maneuver\n"
+			"   'manufacturer\n"
+			"   'mass\n"
+			"   'maxArmorMass\n"
+			"   'maxCargoSpace\n"
+			"   'maxRotation\n"
+			"   'maxSpeed\n"
+			"   'name\n"
+			"   'primaryArmor\n"
+			"   'primaryArmorUNID\n"
+			"   'primaryWeapon\n"
+			"   'primaryWeaponRange\n"
+			"   'primaryWeaponRangeAdj\n"
+			"   'primaryWeaponUNID\n"
+			"   'regen\n"
+			"   'score\n"
+			"   'size\n"
+			"   'shield\n"
+			"   'shieldsUNID\n"
+			"   'thrust\n"
+			"   'thrustToWeight\n"
+			"   'thrusterPower\n"
+			"   'treasureValue\n"
+			"   'wreckChance\n"
+			"\n",
 
 			"is",	0,	},
 
@@ -5375,7 +5440,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_OBJ_GET_PROPERTY:
-			return pObj->GetProperty(pArgs->GetElement(1)->GetStringValue());
+			return pObj->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue());
 
 		case FN_OBJ_GET_REFUEL_ITEM:
 			{
@@ -10220,6 +10285,15 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Get the property
 
 			return pNode->GetProperty(sProperty);
+			}
+
+		case FN_SYS_GET_STD_COMBAT_STRENGTH:
+			{
+			int iLevel = pArgs->GetElement(0)->GetIntegerValue();
+			if (iLevel <= 0 || iLevel > MAX_SYSTEM_LEVEL)
+				return pCC->CreateNil();
+
+			return pCC->CreateInteger((int)(CShipClass::GetStdCombatStrength(iLevel) + 0.5));
 			}
 
 		case FN_SYS_SET_PROPERTY:

@@ -2658,7 +2658,7 @@ class CSpaceObject : public CObject
 		virtual Metric GetParallaxDist (void) { return 0.0; }
 		virtual EDamageResults GetPassthroughDefault (void) { return damageNoDamage; }
 		virtual int GetPlanetarySize (void) const { return 0; }
-		virtual ICCItem *GetProperty (const CString &sName);
+		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
 		virtual ScaleTypes GetScale (void) const { return scaleFlotsam; }
 		virtual CSovereign *GetSovereign (void) const { return NULL; }
 		virtual Metric GetStellarMass (void) const { return 0.0; }

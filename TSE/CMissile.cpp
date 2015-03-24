@@ -513,7 +513,7 @@ CString CMissile::GetName (DWORD *retdwFlags)
 	return strPatternSubst(CONSTLIT("%s damage"), GetDamageShortName(m_pDesc->m_Damage.GetDamageType()));
 	}
 
-ICCItem *CMissile::GetProperty (const CString &sName)
+ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 //	GetProperty
 //
@@ -526,7 +526,7 @@ ICCItem *CMissile::GetProperty (const CString &sName)
 		return CC.CreateInteger(GetRotation());
 
 	else
-		return CSpaceObject::GetProperty(sName);
+		return CSpaceObject::GetProperty(Ctx, sName);
 	}
 
 int CMissile::GetStealth (void) const

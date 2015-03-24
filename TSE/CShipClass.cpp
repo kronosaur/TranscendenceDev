@@ -162,6 +162,8 @@
 #define ERR_UNKNOWN_EQUIPMENT					CONSTLIT("unknown equipment: %s")
 #define ERR_UNKNOWN_EQUIPMENT_DIRECTIVE			CONSTLIT("unknown equipment directive: %s")
 
+#define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
+
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
 #define SPECIAL_MANUFACTURER					CONSTLIT("manufacturer:")
 
@@ -279,6 +281,18 @@ CShipClass::~CShipClass (void)
 		delete m_pTrade;
 	}
 
+Metric CShipClass::GetStdCombatStrength (int iLevel)
+
+//	GetStdCombatStrength
+//
+//	Returns the standard combat strength for a ship of the given level.
+
+	{
+	const Metric k0 = 1.4;
+	const Metric k1 = 8.0;
+	return k1 * pow(k0, iLevel - 1);
+	}
+
 CShipClass::EBalanceTypes CShipClass::CalcBalanceType (CString *retsDesc) const
 
 //	CalcBalanceType
@@ -295,9 +309,7 @@ CShipClass::EBalanceTypes CShipClass::CalcBalanceType (CString *retsDesc) const
 
 	//	Calculate the standard combat strength for ships of this level.
 
-	const Metric k0 = 1.4;
-	const Metric k1 = 8.0;
-	Metric rStdCombat = k1 * pow(k0, iLevel - 1);
+	Metric rStdCombat = GetStdCombatStrength(iLevel);
 
 	//	If we're less than 1/4 standard then we're too weak to be a minion
 
@@ -3274,6 +3286,21 @@ CEffectCreator *CShipClass::OnFindEffectCreator (const CString &sUNID)
 		default:
 			return NULL;
 		}
+	}
+
+ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+
+//	OnGetProperty
+//
+//	Returns a property of the ship class
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
+		return (m_pDefaultSovereign.GetUNID() ? CC.CreateInteger(m_pDefaultSovereign.GetUNID()) : CC.CreateNil());
+	else
+		return NULL;
 	}
 
 bool CShipClass::OnHasSpecialAttribute (const CString &sAttrib) const
