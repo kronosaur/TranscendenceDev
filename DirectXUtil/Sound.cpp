@@ -109,7 +109,7 @@ bool CSoundMgr::CanPlayMusic (const CString &sFilename)
 
 	//	Open the device
 
-	if (MCIWndOpen(m_hMusic, sFilename.GetASCIIZPointer(), 0) != 0)
+	if (MCIWndOpen(m_hMusic, sFilename.GetASCIIZPointer(), MCI_OPEN_SHAREABLE) != 0)
 		return false;
 
 	//	Can play it?
@@ -638,7 +638,7 @@ bool CSoundMgr::PlayMusic (const CString &sFilename, int iPos, CString *retsErro
 
 		//	Open new file
 
-		if (MCIWndOpen(m_hMusic, sFilename.GetASCIIZPointer(), 0) != 0)
+		if (MCIWndOpen(m_hMusic, sFilename.GetASCIIZPointer(), MCI_OPEN_SHAREABLE) != 0)
 			{
 			if (retsError)
 				{
