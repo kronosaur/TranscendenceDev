@@ -1812,11 +1812,11 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		{
 		if (m_pExplosionType)
 			{
-			DWORD dwUNID = (DWORD)strToInt(m_pExplosionType->m_sUNID, 0);
-			CWeaponClass *pClass = (CWeaponClass *)g_pUniverse->FindDeviceClass(dwUNID);
-			if (pClass)
+			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(m_pExplosionType->m_sUNID, 0));
+			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
+			if (pWeapon)
 				{
-				*retsValue = pClass->GetItemType()->GetNounPhrase();
+				*retsValue = pWeapon->GetItemType()->GetNounPhrase();
 				return true;
 				}
 			}

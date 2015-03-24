@@ -912,9 +912,10 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 	//	If this is a device, we expect it to be a weapon
 
 	CWeaponFireDesc *pMissileDesc;
-	CWeaponClass *pClass;
+	CDeviceClass *pDeviceClass = pItemType->GetDeviceClass();
+	CWeaponClass *pClass = (pDeviceClass ? pDeviceClass->AsWeaponClass() : NULL);
 
-	if (pClass = (CWeaponClass *)pItemType->GetDeviceClass())
+	if (pClass)
 		{
 		ASSERT(*pPos == '/');
 		pPos++;

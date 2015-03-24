@@ -923,7 +923,7 @@ CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg)
 				int iWeaponVariant;
 				if ((iWeaponVariant = pClass->GetAmmoVariant(pType)) != -1)
 					{
-					CWeaponClass *pWeapon = dynamic_cast<CWeaponClass *>(pClass);
+					CWeaponClass *pWeapon = pClass->AsWeaponClass();
 					if (pWeapon)
 						return pWeapon->GetVariant(iWeaponVariant);
 					}
