@@ -6,6 +6,7 @@
 
 #define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
 
+#define CATEGORY_ATTRIB							CONSTLIT("category")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define DEVICE_SLOT_CATEGORY_ATTRIB				CONSTLIT("deviceSlotCategory")
 #define DEVICE_SLOTS_ATTRIB						CONSTLIT("deviceSlots")
@@ -189,7 +190,8 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	//	Slot type
 
 	CString sSlotType;
-	if (pDesc->FindAttribute(DEVICE_SLOT_CATEGORY_ATTRIB, &sSlotType))
+	if (pDesc->FindAttribute(CATEGORY_ATTRIB, &sSlotType) 
+			|| pDesc->FindAttribute(DEVICE_SLOT_CATEGORY_ATTRIB, &sSlotType))
 		{
 		if (!CItemType::ParseItemCategory(sSlotType, &m_iSlotCategory))
 			{

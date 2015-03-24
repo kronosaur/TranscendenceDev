@@ -257,7 +257,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = GetItemCategory(GetCategory());
 	
 	else if (strEquals(sField, FIELD_SLOT_CATEGORY))
-		*retsValue = GetItemCategory(GetSlotCategory());
+		*retsValue = GetItemCategory(GetCategory());
 	
 	else if (strEquals(sField, FIELD_FREQUENCY))
 		{
@@ -716,20 +716,6 @@ CString CItemType::GetSortName (void) const
 		return m_sUnknownName;
 	else
 		return m_sSortName;
-	}
-
-ItemCategories CItemType::GetSlotCategory (void) const
-
-//	GetSlotCategory
-//
-//	Returns the slot category for device install purposes
-	
-	{
-	CDeviceClass *pDevice = GetDeviceClass();
-	if (pDevice)
-		return pDevice->GetSlotCategory();
-
-	return GetCategory();
 	}
 
 CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)

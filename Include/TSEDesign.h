@@ -2258,6 +2258,7 @@ class CDeviceClass : public CObject
 		inline CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		inline bool FindEventHandlerDeviceClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 		COverlayType *FireGetOverlayType(CItemCtx &Ctx) const;
+		inline ItemCategories GetCategory (void) const { return (m_iSlotCategory == itemcatNone ? GetImplCategory() : m_iSlotCategory); }
 		inline CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		inline CItemType *GetItemType (void) { return m_pItemType; }
@@ -2266,7 +2267,6 @@ class CDeviceClass : public CObject
 		inline CString GetName (void);
 		inline COverlayType *GetOverlayType(void) const { return m_pOverlayType; }
 		CString GetReferencePower (CItemCtx &Ctx);
-		inline ItemCategories GetSlotCategory (void) const { return (m_iSlotCategory == itemcatNone ? GetCategory() : m_iSlotCategory); }
 		inline int GetSlotsRequired (void) { return m_iSlots; }
 		inline DWORD GetUNID (void);
 		inline void MarkImages (void) { OnMarkImages(); }
@@ -2291,7 +2291,6 @@ class CDeviceClass : public CObject
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual int GetAmmoVariant (const CItemType *pItem) const { return -1; }
 		virtual int GetCargoSpace (void) { return 0; }
-		virtual ItemCategories GetCategory (void) const = 0;
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) { return 0; }
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return NULL; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
@@ -2348,6 +2347,7 @@ class CDeviceClass : public CObject
 
 	protected:
 		inline ItemCategories GetDefinedSlotCategory (void) { return m_iSlotCategory; }
+		virtual ItemCategories GetImplCategory (void) const = 0;
 		ALERROR InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
 
 		virtual bool OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return false; }
@@ -3958,7 +3958,6 @@ class CItemType : public CDesignType
 		CString GetName (DWORD *retdwFlags, bool bActualName = false) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0) const;
-		ItemCategories GetSlotCategory (void) const;
 		CString GetSortName (void) const;
 		inline CItemType *GetUnknownType (void) { return m_pUnknownType; }
 		inline ICCItem *GetUseCode (void) const { return m_pUseCode; }
@@ -5957,7 +5956,6 @@ class CInstalledDevice
 											int *retiAmmoLeft,
 											CItemType **retpType = NULL)
 			{ m_pClass->GetSelectedVariantInfo(pSource, this, retsLabel, retiAmmoLeft, retpType); }
-		inline ItemCategories GetSlotCategory (void) const { return m_pClass->GetSlotCategory(); }
 		inline void GetStatus (CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { m_pClass->GetStatus(this, pSource, retiStatus, retiMaxStatus); }
 		inline CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		inline int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }

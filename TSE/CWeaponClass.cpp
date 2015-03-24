@@ -1759,9 +1759,9 @@ int CWeaponClass::GetAmmoVariant (const CItemType *pItem) const
 	return -1;
 	}
 
-ItemCategories CWeaponClass::GetCategory (void) const
+ItemCategories CWeaponClass::GetImplCategory (void) const
 
-//	GetCategory
+//	GetImplCategory
 //
 //	Returns the weapon class category
 

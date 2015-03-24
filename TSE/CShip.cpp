@@ -424,8 +424,8 @@ int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
 			int iSlots = pDevice->GetClass()->GetSlotsRequired();
 			iAll += iSlots;
 
-			if (pDevice->GetSlotCategory() == itemcatWeapon 
-					|| pDevice->GetSlotCategory() == itemcatLauncher)
+			if (pDevice->GetCategory() == itemcatWeapon 
+					|| pDevice->GetCategory() == itemcatLauncher)
 				iWeapons += iSlots;
 			else
 				iNonWeapons += iSlots;
@@ -527,15 +527,14 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 		return insNotInstallable;
 
 	ItemCategories iCategory = pDevice->GetCategory();
-	ItemCategories iSlotCategory = pDevice->GetSlotCategory();
 
 	//	See if if this is a device with an assigned slot (like a shield generator
 	//	or cargo hold, etc.) and the slot is in use, then we need to replace it.
 
-	if (IsSingletonDevice(iSlotCategory)
-			&& !IsDeviceSlotAvailable(iSlotCategory, retiSlot))
+	if (IsSingletonDevice(iCategory)
+			&& !IsDeviceSlotAvailable(iCategory, retiSlot))
 		{
-		switch (iSlotCategory)
+		switch (iCategory)
 			{
 			case itemcatLauncher:
 				return insReplaceLauncher;
@@ -569,8 +568,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	//	Otherwise, check to make sure that we have enough slots.
 
-	bool bIsWeapon = (iSlotCategory == itemcatWeapon || iSlotCategory == itemcatLauncher);
-	bool bIsMisc = (iSlotCategory == itemcatMiscDevice);
+	bool bIsWeapon = (iCategory == itemcatWeapon || iCategory == itemcatLauncher);
+	bool bIsMisc = (iCategory == itemcatMiscDevice);
 
 	//	Count the number of slots being used up currently
 
@@ -614,8 +613,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			CInstalledDevice *pDevice = GetDevice(i);
 			if (!pDevice->IsEmpty())
 				{
-				bool bThisIsWeapon = (pDevice->GetSlotCategory() == itemcatWeapon || pDevice->GetSlotCategory() == itemcatLauncher);
-				bool bThisIsMisc = (pDevice->GetSlotCategory() == itemcatMiscDevice);
+				bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
+				bool bThisIsMisc = (pDevice->GetCategory() == itemcatMiscDevice);
 				int iAllSlotsFreed = pDevice->GetClass()->GetSlotsRequired();
 				int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
 				int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
@@ -837,7 +836,6 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		CDeviceClass *pDevice = Item.GetType()->GetDeviceClass();
 		ItemCategories iCategory = pDevice->GetCategory();
-		ItemCategories iSlotCategory = pDevice->GetSlotCategory();
 
 		//	Fire CanBeInstalled to check for custom conditions
 
@@ -2455,7 +2453,7 @@ CString CShip::GetInstallationPhrase (const CItem &Item) const
 	{
 	if (Item.IsInstalled())
 		{
-		switch (Item.GetType()->GetSlotCategory())
+		switch (Item.GetType()->GetCategory())
 			{
 			case itemcatArmor:
 				{
@@ -3342,7 +3340,7 @@ bool CShip::IsDeviceSlotAvailable (ItemCategories iItemCat, int *retiSlot)
 
 			for (i = 0; i < GetDeviceCount(); i++)
 				if (!m_Devices[i].IsEmpty()
-						&& m_Devices[i].GetSlotCategory() == iItemCat)
+						&& m_Devices[i].GetCategory() == iItemCat)
 					{
 					if (retiSlot)
 						*retiSlot = i;
