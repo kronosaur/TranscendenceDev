@@ -59,7 +59,7 @@ class CMCIMixer
 		void CreateParentWindow (void);
 		void EnqueueRequest (ERequestType iType, CSoundType *pTrack = NULL, int iPos = 0);
 		bool FindChannel (HWND hMCI, SChannel **retpChannel = NULL);
-		void LogError (HWND hMCI, const CString &sFilespec = NULL_STR);
+		void LogError (HWND hMCI, const CString &sState, const CString &sFilespec = NULL_STR);
 		LONG OnNotifyMode (HWND hWnd, int iMode);
 		LONG OnNotifyPos (HWND hWnd, int iPos);
 		void ProcessFadeIn (const SRequest &Request);

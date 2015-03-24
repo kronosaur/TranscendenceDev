@@ -210,7 +210,7 @@ int CMCIMixer::GetCurrentPlayPos (void) const
 	return MCIWndGetPosition(hMCI);
 	}
 
-void CMCIMixer::LogError (HWND hMCI, const CString &sFilespec)
+void CMCIMixer::LogError (HWND hMCI, const CString &sState, const CString &sFilespec)
 
 //	LogError
 //
@@ -223,9 +223,9 @@ void CMCIMixer::LogError (HWND hMCI, const CString &sFilespec)
 	sError.Truncate(lstrlen(pDest));
 
 	if (!sFilespec.IsBlank())
-		::kernelDebugLogMessage("MCI ERROR [%s]: %s", sFilespec, sError);
+		::kernelDebugLogMessage("MCI ERROR %s [%s]: %s", sState, sFilespec, sError);
 	else
-		::kernelDebugLogMessage("MCI ERROR: %s", sError);
+		::kernelDebugLogMessage("MCI ERROR %s: %s", sState, sError);
 	}
 
 LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
@@ -387,9 +387,9 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 	//	Open new file
 
 	CString sFilespec = Request.pTrack->GetFilespec();
-	if (MCIWndOpen(hMCI, sFilespec.GetASCIIZPointer(), 0) != 0)
+	if (MCIWndOpen(hMCI, sFilespec.GetASCIIZPointer(), MCI_OPEN_SHAREABLE) != 0)
 		{
-		LogError(hMCI, sFilespec);
+		LogError(hMCI, CONSTLIT("ProcessFadeIn MCIWndOpen"), sFilespec);
 		return;
 		}
 
@@ -407,7 +407,7 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 	MCIWndSetVolume(hMCI, 0);
 	if (MCIWndPlay(hMCI) != 0)
 		{
-		LogError(hMCI, sFilespec);
+		LogError(hMCI, CONSTLIT("ProcessFadeIn MCIWndPlay"), sFilespec);
 		return;
 		}
 
@@ -505,9 +505,9 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 	//	Open new file
 
 	CString sFilespec = Request.pTrack->GetFilespec();
-	if (MCIWndOpen(hMCI, sFilespec.GetASCIIZPointer(), 0) != 0)
+	if (MCIWndOpen(hMCI, sFilespec.GetASCIIZPointer(), MCI_OPEN_SHAREABLE) != 0)
 		{
-		LogError(hMCI, sFilespec);
+		LogError(hMCI, CONSTLIT("ProcessPlay MCIWndOpen"), sFilespec);
 		return;
 		}
 
@@ -525,7 +525,7 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 	MCIWndSetVolume(hMCI, m_iDefaultVolume);
 	if (MCIWndPlay(hMCI) != 0)
 		{
-		LogError(hMCI, sFilespec);
+		LogError(hMCI, CONSTLIT("ProcessPlay MCIWndPlay"), sFilespec);
 		return;
 		}
 	}
