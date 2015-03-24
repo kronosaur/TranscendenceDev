@@ -1851,7 +1851,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			//	Tell our guards that we were attacked
 
 			for (int i = 0; i < m_Subordinates.GetCount(); i++)
-				Communicate(m_Subordinates.GetObj(i), msgAttackDeter, Ctx.Attacker.GetObj());
+				Communicate(m_Subordinates.GetObj(i), msgAttackDeter, pOrderGiver);
 
 			//	Alert other stations
 
