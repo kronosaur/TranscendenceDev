@@ -33,6 +33,11 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 				Ctx.ClearNavPath();
 				m_iState = stateApproaching;
 				}
+			else if ((m_Objs[objDest]->GetPos() - pShip->GetPos()).Length2() < m_rMinDist2)
+				{
+				Ctx.ClearNavPath();
+				pShip->CancelCurrentOrder();
+				}
 
 			break;
 			}
