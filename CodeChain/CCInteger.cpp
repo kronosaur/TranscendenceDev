@@ -8,4 +8,8 @@
 #include "CodeChain.h"
 #include <math.h>
 
-static CObjectClass<CCInteger>g_Class(OBJID_CCINTEGER, NULL);
+CCInteger::CCInteger(void) : CCNumeral()
+//	CCNumeral constructor
+{
+
+}

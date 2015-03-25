@@ -118,6 +118,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> *pShape, CCLinked
 		return pRelevantIndices;
 	};
 
+	return pCC->CreateError(CONSTLIT("All control structures passed in GetRelevantIndices."));
 };
 
 //	======================================================
@@ -241,7 +242,6 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 
 {
 	CCVector *pNewVector;
-	ICCItem *pError;
 
 	//	Create new vector
 
@@ -250,18 +250,9 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 		return pCC->CreateMemoryError();
 
 	//	Initialize
-
-	pError = pNewVector->SetShape(pCC, m_pShape);
-	if (pError->IsError())
-	{
-		delete pNewVector;
-		return pError;
-	}
-
-	pError->Discard(pCC);
+	pNewVector->SetShape(pCC, m_pShape);
 
 	//	Copy the vector
-
 	if (m_pData)
 	{
 		//	TOCHECK: Is this the correct way to copy array data?
@@ -395,10 +386,7 @@ ICCItem *CCVector::GetElement(int iIndex)
 		return m_pCC->CreateNil();
 
 	pElement = &m_pData->GetAt(iIndex);
-	if (this->GetDataType() == 0)
-		return m_pCC->CreateInteger(int(*pElement));
-	else
-		return m_pCC->CreateDouble(*pElement);
+	return m_pCC->CreateDouble(*pElement);
 }
 
 ICCItem *CCVector::SetElement(int iIndex, double dValue)
@@ -560,6 +548,30 @@ CString CCVectorOld::Print (CCodeChain *pCC, DWORD dwFlags)
 	return strPatternSubst(LITERAL("[vector with (%d) elements]"), m_iCount);
 	}
 
+CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
+
+//	Print
+//
+//	Print a user-visible message
+
+// TODO: get this function to print out shape of the vector instead
+
+{
+	int i;
+	CString sPrintedVector = LITERAL("(");
+
+	for (i = 0; i < this->GetShapeCount(); i++)
+	{
+		sPrintedVector.Append(strPatternSubst(LITERAL("%d"), this->m_pShape->GetAt(i)));
+		if (i != 0)
+			sPrintedVector.Append(LITERAL(", "));
+	};
+	
+	sPrintedVector.Append(LITERAL(")"));
+
+	return sPrintedVector;
+}
+
 void CCVectorOld::Reset (void)
 
 //	Reset
@@ -568,6 +580,15 @@ void CCVectorOld::Reset (void)
 
 	{
 	}
+
+void CCVector::Reset(void)
+
+//	Reset
+//
+//	Reset
+
+{
+}
 
 BOOL CCVectorOld::SetElement (int iIndex, int iElement)
 
@@ -651,10 +672,10 @@ ICCItem *CCVectorOld::SetSize (CCodeChain *pCC, int iNewSize)
 	return pCC->CreateTrue();
 	}
 
-ICCItem *CCVector::SetArraySize(CCodeChain *pCC, int iNewSize)
-//	SetArraySize
+ICCItem *CCVector::SetDataArraySize(CCodeChain *pCC, int iNewSize)
+//	SetDataArraySize
 //
-//	Sets the size of the vector, preserving any previous data
+//	Sets the size of the data vector, preserving any previous data
 
 	{
 	ALERROR allocationError;
@@ -683,17 +704,37 @@ ICCItem *CCVector::SetArraySize(CCodeChain *pCC, int iNewSize)
 		};
 	}
 
-ICCItem *CCVector::SetArrayData(CCodeChain *pCC, TArray<double> *pNewData)
-//	SetArrayData
+ICCItem *CCVector::SetShapeArraySize(CCodeChain *pCC, int iNewSize)
+//	SetShapeArraySize
 //
-//	Set the vector data pointer to a new location.
+//	Sets the size of the shape vector, preserving any previous data
 
+{
+	ALERROR allocationError;
+	int iExpansion;
+
+	int iCurrentSize = m_pShape->GetCount();
+
+	if (iNewSize <= iCurrentSize)
 	{
-
-	m_pData = pNewData;
-
+		return pCC->CreateNil();
 	}
+	else
+	{
+		iExpansion = iNewSize - iCurrentSize;
+	};
 
+	//  confirm that this is the right function to use
+	m_pShape->InsertEmpty(iExpansion);
+	if (allocationError = NOERROR)
+	{
+		return pCC->CreateTrue();
+	}
+	else
+	{
+		return pCC->CreateMemoryError();
+	};
+}
 
 ICCItem *CCVectorOld::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
 
@@ -722,15 +763,47 @@ ICCItem *CCVectorOld::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
 	return pCC->CreateTrue();
 	}
 
-ICCItem *CCVectorOld::Tail (CCodeChain *pCC)
+ICCItem *CCVector::StreamItem(CCodeChain *pCC, IWriteStream *pStream)
 
-//	Tail
+//	StreamItem
 //
-//	Returns the tail of the vector
+//	Streams the vector to a stream
 
-	{
-	return pCC->CreateNil();
+{
+	ALERROR error;
+	int iDataCount = this->GetCount();
+	int iShapeCount = this->GetShapeCount();
+
+	//  Write out the shape count
+	if (error = pStream->Write((char *)&iShapeCount, sizeof(iShapeCount), NULL))
+		return pCC->CreateSystemError(error);
+
+	//	Write out the data count
+	if (error = pStream->Write((char *)&iDataCount, sizeof(iDataCount), NULL))
+		return pCC->CreateSystemError(error);
+
+	//  Write out the data type integer
+	if (error = pStream->Write((char *)&m_iDtype, sizeof(m_iDtype), NULL))
+		return pCC->CreateSystemError(error);
+
+	//	Write out the shape
+	if (m_pShape)
+	{ 
+		if (error = pStream->Write((char *)m_pData, (iDataCount * sizeof(int), NULL)))
+			return pCC->CreateSystemError(error);
 	}
+
+	//	Write out the data
+	if (m_pData && m_pShape)
+	{
+		if (error = pStream->Write((char *)m_pData, (iDataCount * sizeof(double), NULL)))
+			return pCC->CreateSystemError(error);
+	}
+
+	//	Done
+
+	return pCC->CreateTrue();
+}
 
 ICCItem *CCVectorOld::Tail(CCodeChain *pCC)
 
@@ -789,3 +862,61 @@ ICCItem *CCVectorOld::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
 
 	return pCC->CreateTrue();
 	}
+
+ICCItem *CCVector::UnstreamItem(CCodeChain *pCC, IReadStream *pStream)
+
+//	UnstreamItem
+//
+//	Reads the vector from a stream
+
+{
+	ALERROR error;
+	int iDataCount;
+	int iShapeCount;
+	int iDataType;
+	ICCItem *pError;
+
+	//	Read the shape count
+	if (error = pStream->Read((char *)&iShapeCount, sizeof(iShapeCount), NULL))
+		return pCC->CreateSystemError(error);
+
+	//	Read the data count
+	if (error = pStream->Read((char *)&iDataCount, sizeof(iDataCount), NULL))
+		return pCC->CreateSystemError(error);
+
+	//	Read the data type integer
+	if (error = pStream->Read((char *)&iDataType, sizeof(iDataType), NULL))
+		return pCC->CreateSystemError(error);
+
+	//  Set size of the shape array
+	pError = this->SetShapeArraySize(pCC, iShapeCount);
+	if (pError->IsError())
+		return pError;
+	
+	pError->Discard(pCC);
+
+	//	Read the data
+	if (m_pData)
+	{
+		if (error = pStream->Read((char *)m_pShape, iDataCount * sizeof(int), NULL))
+			return pCC->CreateSystemError(error);
+	}
+
+	//	Set size of the data array
+	pError = this->SetDataArraySize(pCC, iDataCount);
+	if (pError->IsError())
+		return pError;
+
+	pError->Discard(pCC);
+
+	//	Read the data
+	if (m_pData)
+	{
+		if (error = pStream->Read((char *)m_pData, iDataCount * sizeof(double), NULL))
+			return pCC->CreateSystemError(error);
+	}
+
+	//	Done
+
+	return pCC->CreateTrue();
+}

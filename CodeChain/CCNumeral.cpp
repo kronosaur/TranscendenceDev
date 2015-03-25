@@ -16,7 +16,6 @@ CCNumeral::CCNumeral(void) : ICCNumeral(&g_Class)
 
 }
 
-
 ICCItem *CCNumeral::Clone(CCodeChain *pCC)
 //	Clone
 //
@@ -73,25 +72,20 @@ CString CCNumeral::Print(CCodeChain *pCC, DWORD dwFlags)
 	if (IsError())
 	{
 		int iErrCode = this->GetIntegerValue();
-
-		if (iErrCode)
+		switch (iErrCode)
 		{
-			int iNumValue = this->GetIntegerValue();
-			switch (iNumValue)
-			{
-			case CCRESULT_NOTFOUND:
-				return strPatternSubst(LITERAL("[%d] Item not found."), iErrCode);
+		case CCRESULT_NOTFOUND:
+			return strPatternSubst(LITERAL("[%d] Item not found."), iErrCode);
 
-			case CCRESULT_CANCEL:
-				return strPatternSubst(LITERAL("[%d] Operation canceled."), iErrCode);
+		case CCRESULT_CANCEL:
+			return strPatternSubst(LITERAL("[%d] Operation canceled."), iErrCode);
 
-			case CCRESULT_DISKERROR:
-				return strPatternSubst(LITERAL("[%d] Disk error."), iErrCode);
+		case CCRESULT_DISKERROR:
+			return strPatternSubst(LITERAL("[%d] Disk error."), iErrCode);
 
-			default:
-				return strPatternSubst(LITERAL("[%d] Unknown error."), iErrCode);
-			}
-		};
+		default:
+			return strPatternSubst(LITERAL("[%d] Unknown error."), iErrCode);
+		}
 	}
 
 	//	Otherwise, just print the integer value

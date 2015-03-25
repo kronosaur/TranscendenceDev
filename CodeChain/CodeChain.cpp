@@ -428,20 +428,14 @@ ICCItem *CCodeChain::CreateEmptyVector(int iDtype, TArray<int> *pShape)
 	if (pVector == NULL)
 		return CreateMemoryError();
 
-	pError = pVector->SetArraySize(this, iSize);
+	pError = pVector->SetDataArraySize(this, iSize);
 	if (pError->IsError())
 	{
 		delete pVector;
 		return pError;
 	}
 
-	pError = pVector->SetShape(this, pShape);
-	if (pError->IsError())
-	{
-		delete pVector;
-		return pError;
-	}
-
+	pVector->SetShape(this, pShape);
 	pError->Discard(this);
 	
 	//	Done
@@ -471,19 +465,14 @@ ICCItem *CCodeChain::CreateVectorGivenContent(int iDtype, TArray<int> *pShape, C
 	if (pVector == NULL)
 		return CreateMemoryError();
 
-	pError = pVector->SetArraySize(this, iSize);
+	pError = pVector->SetDataArraySize(this, iSize);
 	if (pError->IsError())
 	{
 		delete pVector;
 		return pError;
 	}
 
-	pError = pVector->SetShape(this, pShape);
-	if (pError->IsError())
-	{
-		delete pVector;
-		return pError;
-	}
+	pVector->SetShape(this, pShape);
 
 	TArray<double> *pDataArray = &(TArray<double>());
 	CCLinkedList *pFlattenedContentList = pContentList->GetFlattened(this, NULL);
@@ -492,13 +481,7 @@ ICCItem *CCodeChain::CreateVectorGivenContent(int iDtype, TArray<int> *pShape, C
 		double dElement = pFlattenedContentList->GetElement(i)->GetDoubleValue();
 		pDataArray->Insert(&dElement, i);
 	};
-	pError = pVector->SetArrayData(this, pDataArray);
-
-	if (pError->IsError())
-	{
-		delete pVector;
-		return pError;
-	};
+	pVector->SetArrayData(this, pDataArray);
 
 	//	Done
 	//  if we have gotten this far, then it is safe to set the data type
@@ -523,19 +506,14 @@ ICCItem *CCodeChain::CreateVectorUsingAnother(CCVector *pVector)
 	if (pNewVector == NULL)
 		return CreateMemoryError();
 
-	pError = pNewVector->SetArraySize(this, iSize);
+	pError = pNewVector->SetDataArraySize(this, iSize);
 	if (pError->IsError())
 	{
 		delete pNewVector;
 		return pError;
 	}
 
-	pError = pVector->SetShape(this, pVector->GetShapeArray());
-	if (pError->IsError())
-	{
-		delete pNewVector;
-		return pError;
-	}
+	pVector->SetShape(this, pVector->GetShapeArray());
 
 	TArray<double> *pSourceData = pVector->GetDataArray();
 	TArray<double> *pDestData = pNewVector->GetDataArray();

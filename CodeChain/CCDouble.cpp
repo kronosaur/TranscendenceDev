@@ -8,4 +8,8 @@
 #include "CodeChain.h"
 #include <math.h>
 
-static CObjectClass<CCDouble>g_Class(OBJID_CCDOUBLE, NULL);
+CCDouble::CCDouble(void) : CCNumeral()
+//	CCNumeral constructor
+{
+
+}

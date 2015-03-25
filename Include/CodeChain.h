@@ -254,17 +254,18 @@ class ICCNumeral : public ICCAtom
 class CCNumeral : public ICCNumeral
 	{
 	public:
-		CCNumeral (void);
+		CCNumeral(void);
 
 		// ICCItem virtuals
 		virtual ICCItem *Clone(CCodeChain *pCC);
 		virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
 		virtual void Reset(void);
-		virtual BOOL IsInteger(void);
+		virtual BOOL IsInteger(void) { return FALSE; }
+		virtual BOOL IsDouble(void) { return FALSE;  }
 
 		//ICCNumeral virtuals
-		virtual void SetValue (int iNewVal);
-		virtual void SetValue (double dNewVal);
+		virtual void SetValue(int iNewVal) { ; }
+		virtual void SetValue(double dNewVal) { ; }
 
 	protected:
 		virtual void DestroyItem(CCodeChain *pCC);
@@ -277,6 +278,7 @@ class CCInteger : public CCNumeral
 	public:
 		CCInteger (void);
 
+		inline ValueTypes GetValueType(void) { return Integer;  }
 		inline int GetValue (void) { return m_iValue; }
 		inline void SetValue (int iValue) { m_iValue = iValue; }
 
@@ -298,6 +300,7 @@ class CCDouble : public CCNumeral
 	public:
 		CCDouble(void);
 
+		inline ValueTypes GetValueType(void) { return Double;  }
 		inline double GetValue(void) { return m_dValue; }
 		inline void SetValue(double dValue) { m_dValue = dValue; }
 
@@ -613,9 +616,10 @@ class CCVector : public ICCVector
 		ICCItem *SetElementsByIndices(CCodeChain *pCC, CCLinkedList *pIndices, CCLinkedList *pData);
 		void SetDataType(int iDataType);
 		int GetDataType(void) { return m_iDtype; }
-		ICCItem *SetArraySize (CCodeChain *pCC, int iNewSize);
-		ICCItem *SetShape(CCodeChain *pCC, TArray<int> *pNewShape);
-		ICCItem *SetArrayData(CCodeChain *pCC, TArray<double> *pNewData);
+		ICCItem *SetDataArraySize (CCodeChain *pCC, int iNewSize);
+		ICCItem *SetShapeArraySize (CCodeChain *pCC, int iNewSize);
+		void SetShape(CCodeChain *pCC, TArray<int> *pNewShape) { m_pShape = pNewShape; }
+		void SetArrayData(CCodeChain *pCC, TArray<double> *pNewData) { m_pData = pNewData; }
 
 		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -908,7 +912,7 @@ ALERROR pageLibraryInit (CCodeChain &CC);
 
 int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
 int HelperCompareItemsOld (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
-int HelperCompareItemsLists(ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
+int HelperCompareItemsLists(ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
 int HelperCompareItemsListsOld (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
 
 #endif
