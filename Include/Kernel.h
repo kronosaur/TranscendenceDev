@@ -88,6 +88,15 @@ inline int Absolute (int iValue) { return (iValue < 0 ? -iValue : iValue); }
 inline double Absolute (double rValue) { return (rValue < 0.0 ? -rValue : rValue); }
 inline int AlignUp (int iValue, int iGranularity) { return ((iValue + (iGranularity - 1)) / iGranularity) * iGranularity; }
 inline int ClockMod (int iValue, int iDivisor) { int iResult = (iValue % iDivisor); return (iResult < 0 ? iResult + iDivisor : iResult); }
+inline int ClockDiff (int iValue, int iOrigin, int iDivisor)
+	{
+	int iDiff = ClockMod(iValue - iOrigin, iDivisor);
+	int iHalfDiv = iDivisor / 2;
+	if (iDiff <= iHalfDiv)
+		return iDiff;
+	else
+		return iDiff - iDivisor;
+	}
 inline BOOL IsShiftDown (void) { return (GetAsyncKeyState(VK_SHIFT) & 0x8000) ? TRUE : FALSE; }
 inline BOOL IsControlDown (void) { return (GetAsyncKeyState(VK_CONTROL) & 0x8000) ? TRUE : FALSE; }
 inline int Sign (int iValue) { return (iValue == 0 ? 0 : (iValue > 0 ? 1 : -1)); }
