@@ -3019,7 +3019,8 @@ class CIntegralRotation
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
-		int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const;
+		int CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed, const CIntegralRotationDesc &Desc) const;
+		inline int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const { return CalcFinalRotationFrame(m_iRotationFrame, m_iRotationSpeed, Desc); }
 		inline int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
 
 		int m_iRotationFrame;				//	Current rotation (in 1/1000ths of a rotation)

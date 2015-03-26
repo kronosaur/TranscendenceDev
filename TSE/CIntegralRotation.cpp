@@ -17,7 +17,7 @@ CIntegralRotation::~CIntegralRotation (void)
 	{
 	}
 
-int CIntegralRotation::CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const
+int CIntegralRotation::CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed, const CIntegralRotationDesc &Desc) const
 
 //	CalcFinalRotationFrame
 //
@@ -25,9 +25,6 @@ int CIntegralRotation::CalcFinalRotationFrame (const CIntegralRotationDesc &Desc
 //	thrusting and turned on inertia only.
 
 	{
-	int iRotationFrame = m_iRotationFrame;
-	int iRotationSpeed = m_iRotationSpeed;
-
 	while (iRotationSpeed > m_iRotationAccelStop || iRotationSpeed < -m_iRotationAccelStop)
 		{
 		if (iRotationSpeed > 0)
@@ -62,29 +59,80 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 	int iCurrentFrameIndex = GetFrameIndex(CalcFinalRotationFrame(Desc));
 	int iDesiredFrameIndex = Desc.GetFrameIndex(iAngle);
 
-	//	See if we need to rotate
+	//	If we're going to be in the right spot by doing nothing, then just stop
+	//	rotating.
 
 	if (iCurrentFrameIndex == iDesiredFrameIndex)
 		return NoRotation;
-	else
+
+	//	Otherwise, figure out how many frames we need to turn (and the 
+	//	direction).
+
+	int iFrameDiff = ClockDiff(iDesiredFrameIndex, iCurrentFrameIndex, Desc.GetFrameCount());
+
+	//	Are we turning right?
+
+	int iNewRotationSpeed;
+	int iMaxFrameRot = (Desc.GetMaxRotationSpeed() / CIntegralRotationDesc::ROTATION_FRACTION);
+	if (iFrameDiff > 0)
 		{
-		int iHalfFrames = Desc.GetFrameCount() / 2;
-		int iDiff = iDesiredFrameIndex - iCurrentFrameIndex;
-		if (iDiff > 0)
+		//	If we have a ways to go, then just turn
+
+		if (iFrameDiff > iMaxFrameRot)
+			return RotateRight;
+
+		//	Otherwise we need to calculate better. Figure out what our new
+		//	rotation speed will be if we turn right.
+
+		iNewRotationSpeed = m_iRotationSpeed;
+		if (iNewRotationSpeed < m_iMaxRotationRate)
 			{
-			if (iDiff <= iHalfFrames)
-				return RotateRight;
+			if (iNewRotationSpeed < 0)
+				iNewRotationSpeed = Min(m_iMaxRotationRate, iNewRotationSpeed + m_iRotationAccelStop);
 			else
-				return RotateLeft;
-			}
-		else
-			{
-			if (-iDiff <= iHalfFrames)
-				return RotateLeft;
-			else
-				return RotateRight;
+				iNewRotationSpeed = Min(m_iMaxRotationRate, iNewRotationSpeed + m_iRotationAccel);
 			}
 		}
+
+	//	Or left
+
+	else
+		{
+		//	If we have a ways to go, then just turn
+
+		if (-iFrameDiff > iMaxFrameRot)
+			return RotateLeft;
+
+		//	Otherwise we need a better calculation. Figure out what our new
+		//	rotation speed will be if we turn left.
+
+		iNewRotationSpeed = m_iRotationSpeed;
+		if (iNewRotationSpeed > -m_iMaxRotationRate)
+			{
+			if (iNewRotationSpeed > 0)
+				iNewRotationSpeed = Max(-m_iMaxRotationRate, iNewRotationSpeed - m_iRotationAccelStop);
+			else
+				iNewRotationSpeed = Max(-m_iMaxRotationRate, iNewRotationSpeed - m_iRotationAccel);
+			}
+		}
+
+	//	Figure out where we will end up next tick given our new rotation speed.
+
+	int iNewRotationFrame = m_iRotationFrame;
+	int iFrameMax = Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION;
+	iNewRotationFrame = (iNewRotationFrame + iNewRotationSpeed) % iFrameMax;
+	if (iNewRotationFrame < 0)
+		iNewRotationFrame += iFrameMax;
+
+	int iNewFrameIndex = GetFrameIndex(CalcFinalRotationFrame(iNewRotationFrame, iNewRotationSpeed, Desc));
+	int iNewFrameDiff = ClockDiff(iDesiredFrameIndex, iNewFrameIndex, Desc.GetFrameCount());
+
+	//	If we're closer to the target, then do it.
+
+	if (Absolute(iNewFrameDiff) < Absolute(iFrameDiff))
+		return (iFrameDiff < 0 ? RotateLeft : RotateRight);
+	else
+		return NoRotation;
 	}
 
 int CIntegralRotation::GetRotationAngle (const CIntegralRotationDesc &Desc) const
