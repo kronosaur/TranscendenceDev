@@ -2530,10 +2530,6 @@ void CUniverse::SetNewSystem (CSystem *pSystem, CShip *pPlayerShip, CSpaceObject
 	SetProgramState(psStargateUpdateExtended);
 	UpdateExtended();
 
-	//	Gate effect
-
-	pPOV->OnObjLeaveGate(pPlayerShip);
-
 	//	Clear the POVLRS flag for all objects (so that we don't get the
 	//	"Enemy Ships Detected" message when entering a system
 

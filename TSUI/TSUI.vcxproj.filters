@@ -102,6 +102,9 @@
     <ClCompile Include="CMessageSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CStargateEffectPainter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
