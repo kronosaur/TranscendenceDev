@@ -3265,6 +3265,7 @@ class CSFXOptions
 		inline bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
 		inline bool IsManeuveringEffectEnabled (void) const { return m_bManeuveringEffect; }
 		inline bool IsSpaceBackgroundEnabled (void) const { return m_bSpaceBackground; }
+		inline bool IsStargateTravelEffectEnabled (void) const { return m_bStargateTravelEffect; }
 		inline bool IsStarGlowEnabled (void) const { return m_bStarGlow; }
 		inline bool IsStarshineEnabled (void) const { return m_bStarshine; }
 		inline void Set3DSystemMapEnabled (bool bEnabled = true) { m_b3DSystemMap = bEnabled; }
@@ -3278,6 +3279,7 @@ class CSFXOptions
 		bool m_b3DSystemMap;				//	3D effect on system map
 		bool m_bManeuveringEffect;			//	Show maneuvering thruster effects
 		bool m_bSpaceBackground;			//	Show system image background
+		bool m_bStargateTravelEffect;		//	Show effect when changing systems
 		bool m_bStarGlow;					//	Show star glow in system map
 		bool m_bStarshine;					//	Show starshine effect
 	};

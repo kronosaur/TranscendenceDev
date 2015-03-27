@@ -24,18 +24,21 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 		{
 		case sfxMaximum:
 			m_bSpaceBackground = true;
+			m_bStargateTravelEffect = true;
 			m_bStarGlow = true;
 			m_bStarshine = true;
 			break;
 
 		case sfxStandard:
 			m_bSpaceBackground = true;
+			m_bStargateTravelEffect = true;
 			m_bStarGlow = true;
 			m_bStarshine = false;
 			break;
 
 		case sfxMinimum:
 			m_bSpaceBackground = false;
+			m_bStargateTravelEffect = false;
 			m_bStarGlow = false;
 			m_bStarshine = false;
 			break;
