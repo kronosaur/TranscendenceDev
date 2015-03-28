@@ -24,7 +24,7 @@
 #define FN_ATMTABLE_LOOKUP				20
 #define FN_ATMTABLE_LIST				21
 #define FN_SET_SET						22
-#define FN_VECTOR_SETELEMENT			23
+#define FN_VECTOR_SETELEMENT_OLD		23
 #define FN_EQUALITY_LESSER				24
 #define FN_EQUALITY_LESSER_EQ			25
 #define FN_EQUALITY_GREATER				26
@@ -60,6 +60,32 @@
 #define FN_RANDOM_GAUSSIAN				56
 #define FN_ITEM_TYPE					57
 #define FN_EQUALITY_NEQ					58
+#define FN_VECCREATE_EMPTY              59
+#define FN_VECCREATE                    60
+#define FN_VECTOR_ADD                   61
+#define FN_VECTOR_SCALMUL               62
+#define FN_VECTOR_DOT                   63
+#define FN_VECTOR_EMUL                  64
+#define FN_VECTOR_ESUM					65
+#define FN_ITEMINFO_ASDOUBLE            66
+#define FN_VECTOR_SET					67
+#define FN_VECTOR_GET					68
+#define FN_MATH_ADD_NUMERALS			69
+#define FN_MATH_DIVIDE_NUMERALS			70
+#define FN_MATH_MULTIPLY_NUMERALS		71
+#define FN_MATH_SUBTRACT_NUMERALS		72
+#define FN_MATH_MODULUS_NUMERALS		73
+#define FN_MATH_MIN_NUMERALS			74
+#define FN_MATH_MAX_NUMERALS			75
+#define FN_MATH_POWER_NUMERALS			76
+#define FN_MATH_SQRT_NUMERALS			77
+#define FN_MATH_ABSOLUTE_NUMERALS		78
+#define FN_EQUALITY_EQ_NUMERALS			79
+#define FN_EQUALITY_LESSER_NUMERALS		80
+#define FN_EQUALITY_LESSER_EQ_NUMERALS	81
+#define FN_EQUALITY_GREATER_NUMERALS	82
+#define FN_EQUALITY_GREATER_EQ_NUMERALS	83
+#define FN_EQUALITY_NEQ_NUMERALS		84
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
@@ -70,6 +96,7 @@ ICCItem *fnCat (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnCount (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnEqualityNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
@@ -87,10 +114,12 @@ ICCItem *fnLogical (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMatch (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
-ICCItem *fnMath (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMathFractions (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMathList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
-ICCItem *fnMathOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnMathListNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
+ICCItem *fnMathOld(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnMath (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnRandom (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnRandomTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnRegEx (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
@@ -110,3 +139,5 @@ ICCItem *fnSymTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSysInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVecCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnVector (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnVecMath (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnVecIndex (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

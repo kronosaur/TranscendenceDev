@@ -13,6 +13,7 @@
 #pragma warning (disable : 4660)
 
 template class CCItemPool<CCInteger>;
+template class CCItemPool<CCDouble>;
 template class CCItemPool<CCString>;
 template class CCItemPool<CCLinkedList>;
 template class CCItemPool<CCPrimitive>;
@@ -21,6 +22,7 @@ template class CCItemPool<CCTrue>;
 template class CCItemPool<CCSymbolTable>;
 template class CCItemPool<CCLambda>;
 template class CCItemPool<CCAtomTable>;
+template class CCItemPool<CCVector>;
 
 template <class ItemClass>CCItemPool<ItemClass>::CCItemPool (void) :
 		m_pFreeList(NULL),
