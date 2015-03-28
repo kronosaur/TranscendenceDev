@@ -231,27 +231,7 @@ class ICCAtom : public ICCItem
 
 
 //  A numeral is an atom that represents a double or an integer
-class ICCNumeral : public ICCAtom
-	{
-	public:
-		ICCNumeral(IObjectClass *pClass) : ICCAtom(pClass) { }
-
-		//  ICCItem virtuals
-
-		virtual ValueTypes GetValueType (void);
-		virtual BOOL IsIdentifier (void) { return FALSE; }
-		virtual BOOL IsFunction (void) { return FALSE; }
-		virtual BOOL IsInteger (void);
-		virtual BOOL IsDouble (void);
-
-		// ICCNumeral virtuals
-		virtual void SetValue (int iNewVal);
-		virtual void SetValue (double dNewVal);
-	};
-
-//	Implementation of a Numeral
-
-class CCNumeral : public ICCNumeral
+class CCNumeral : public ICCAtom
 	{
 	public:
 		CCNumeral(void);
@@ -260,8 +240,11 @@ class CCNumeral : public ICCNumeral
 		virtual ICCItem *Clone(CCodeChain *pCC);
 		virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
 		virtual void Reset(void);
-		virtual BOOL IsInteger(void) { return FALSE; }
+		virtual BOOL IsIdentifier(void) { return FALSE; }
+		virtual BOOL IsFunction(void) { return FALSE; }
+		virtual BOOL IsInteger(void) { return FALSE;  }
 		virtual BOOL IsDouble(void) { return FALSE;  }
+		virtual ValueTypes GetValueType(void) { return Numeral;  }
 
 		//ICCNumeral virtuals
 		virtual void SetValue(int iNewVal) { ; }
@@ -611,15 +594,13 @@ class CCVector : public ICCVector
 		CCVector (CCodeChain *pCC);
 		virtual ~CCVector (void);
 
-		TArray<double> *GetDataArray(void) { return m_pData; }
-		TArray<int> *GetShapeArray(void) { return m_pShape; }
+		TArray<double> GetDataArray(void) { return m_vData; }
+		TArray<int> GetShapeArray(void) { return m_vShape; }
 		ICCItem *SetElementsByIndices(CCodeChain *pCC, CCLinkedList *pIndices, CCLinkedList *pData);
-		void SetDataType(int iDataType);
-		int GetDataType(void) { return m_iDtype; }
 		ICCItem *SetDataArraySize (CCodeChain *pCC, int iNewSize);
 		ICCItem *SetShapeArraySize (CCodeChain *pCC, int iNewSize);
-		void SetShape(CCodeChain *pCC, TArray<int> *pNewShape) { m_pShape = pNewShape; }
-		void SetArrayData(CCodeChain *pCC, TArray<double> *pNewData) { m_pData = pNewData; }
+		void SetShape(CCodeChain *pCC, TArray<int> pNewShape) { m_vShape = pNewShape; }
+		void SetArrayData(CCodeChain *pCC, TArray<double> pNewData) { m_vData = pNewData; }
 
 		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -627,9 +608,9 @@ class CCVector : public ICCVector
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC);
-		virtual int GetCount (void) { return m_pData->GetCount(); }
-		virtual int GetShapeCount(void) { return m_pShape->GetCount(); }
-		virtual int GetDimension(void) { return m_pShape->GetCount(); }
+		virtual int GetCount (void) { return m_vData.GetCount(); }
+		virtual int GetShapeCount(void) { return m_vShape.GetCount(); }
+		virtual int GetDimension(void) { return m_vShape.GetCount(); }
 		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
 		virtual ICCItem *GetElement (int iIndex);
 		virtual ICCItem *SetElement (int iIndex, double dValue);
@@ -646,11 +627,8 @@ class CCVector : public ICCVector
 
 	private:
 		CCodeChain *m_pCC;						//	CodeChain
-		TArray<double> *m_pData;				//	Array of elements
-		TArray<int> *m_pShape;					//  Shape
-		int m_iDtype;							//  Data type: 
-												//		(-1=uninitialized, 0=int, 
-												//		1=double)
+		TArray<double> m_vData;				//	Array of elements
+		TArray<int> m_vShape;					//  Shape
 	};
 
 //	This is an atom table object
@@ -828,8 +806,8 @@ class CCodeChain : public CObject
 		ICCItem *CreateSystemError (ALERROR error);
 		inline ICCItem *CreateTrue (void) { return m_pTrue->Reference(); }
 		ICCItem *CreateVectorOld (int iSize);
-		ICCItem *CreateEmptyVector(int iDtype, TArray<int> *pShape);
-		ICCItem *CreateVectorGivenContent(int iDtype, TArray<int> *pShape, CCLinkedList *pContentList);
+		ICCItem *CreateEmptyVector(TArray<int> vShape);
+		ICCItem *CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *pContentList);
 		ICCItem *CreateVectorUsingAnother(CCVector *pVector);
 		inline void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(this, pItem); }
 		inline void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
@@ -910,9 +888,9 @@ ALERROR pageLibraryInit (CCodeChain &CC);
 
 //	Utilities
 
+int HelperCompareItemsNumerals (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
 int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
-int HelperCompareItemsOld (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
-int HelperCompareItemsLists(ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
-int HelperCompareItemsListsOld (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
+int HelperCompareItemsListsNumerals(ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
+int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
 
 #endif

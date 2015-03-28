@@ -293,22 +293,22 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 {
 	//	TOCHECK: confirm that pHead does NOT have to be discarded when exiting
 	//		(current understanding is that pHead does not have to be discarded)
-	//
-	//	TOCHECK: pShapeList (what is returned by this function when there are no
-	//	errors) does not have to be discarded because it is not tied down to a pCC 
-	//	object. On the other hand, if an error occurs, then this function 
-	//	returns a pError object that IS tied down to a pCC object. So, sometimes this
-	//	function returns a result that is not tied down to a pCC object, and sometimes
-	//	it returns a result that is tied down. Is this a problem?
-	//		(maybe another way to think about this is: is it a problem if a pCC object )
 	int i;
 	int j;
 	int iHeadCount;
 	ICCItem *pHead;
-	CCLinkedList *pShapeList = &(CCLinkedList());
+	ICCItem *pTemp;
+	CCLinkedList *pShapeList;
 	CCLinkedList *pLowerLevelShapeList;
 	CCLinkedList *pListElement;
 	ICCItem *pResult;
+
+	pTemp = pCC->CreateLinkedList();
+	if (pTemp->IsError())
+	{
+		return pTemp;
+	};
+	pShapeList = dynamic_cast <CCLinkedList *> (pTemp);
 
 	pHead = this->Head(pCC);
 
@@ -331,6 +331,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			//	in the hierarchy is not uniform
 			if (GetElement(i)->GetValueType() != ICCItem::List)
 			{
+				pShapeList->Discard(pCC);
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data type is not homogeneous."), NULL);
 				return pError;
 			};
@@ -340,6 +341,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			//	head, then this is not valid vector content
 			if (pListElement->GetCount() != iHeadCount)
 			{
+				pShapeList->Discard(pCC);
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 				return pError;
 			};
@@ -348,6 +350,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			pResult = pListElement->IsValidVectorContent(pCC);
 			if (pResult->IsError())
 			{
+				pShapeList->Discard(pCC);
 				return pResult;
 			};
 
@@ -365,6 +368,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			}
 			else
 			{
+				pShapeList->Discard(pCC);
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 				return pError;
 			};
@@ -384,6 +388,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 		{
 			if (GetElement(i)->GetValueType() != ICCItem::Numeral)
 			{
+				pShapeList->Discard(pCC);
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);
 				return pError;
 			};
@@ -395,6 +400,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 	}
 	else
 	{
+		pShapeList->Discard(pCC);
 		ICCItem *pError = pCC->CreateError(CONSTLIT("Content list contains non-numeric or non-list types."), pHead);
 		return pError;
 	};

@@ -407,7 +407,7 @@ ICCItem *CCodeChain::CreateVectorOld (int iSize)
 	return pVector->Reference();
 	}
 
-ICCItem *CCodeChain::CreateEmptyVector(int iDtype, TArray<int> *pShape)
+ICCItem *CCodeChain::CreateEmptyVector(TArray<int> vShape)
 
 //	CreateEmptyVector
 //
@@ -419,9 +419,9 @@ ICCItem *CCodeChain::CreateEmptyVector(int iDtype, TArray<int> *pShape)
 	CCVector *pVector;
 	ICCItem *pError;
 
-	for (i = 0; i < pShape->GetCount(); i++)
+	for (i = 0; i < vShape.GetCount(); i++)
 	{
-		iSize = iSize + pShape->GetAt(i);
+		iSize = iSize + vShape[i];
 	};
 
 	pVector = new CCVector(this);
@@ -435,16 +435,14 @@ ICCItem *CCodeChain::CreateEmptyVector(int iDtype, TArray<int> *pShape)
 		return pError;
 	}
 
-	pVector->SetShape(this, pShape);
+	pVector->SetShape(this, vShape);
 	pError->Discard(this);
 	
 	//	Done
-	//  if we have gotten this far, then it is safe to set the data type
-	pVector->SetDataType(iDtype);
 	return pVector->Reference();
 }
 
-ICCItem *CCodeChain::CreateVectorGivenContent(int iDtype, TArray<int> *pShape, CCLinkedList *pContentList)
+ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *pContentList)
 
 //	CreateVectorGivenContent (new)
 //
@@ -456,9 +454,9 @@ ICCItem *CCodeChain::CreateVectorGivenContent(int iDtype, TArray<int> *pShape, C
 	CCVector *pVector;
 	ICCItem *pError;
 
-	for (i = 0; i < pShape->GetCount(); i++)
+	for (i = 0; i < vShape.GetCount(); i++)
 	{
-		iSize = iSize * pShape->GetAt(i);
+		iSize = iSize * vShape[i];
 	};
 
 	pVector = new CCVector(this);
@@ -472,22 +470,19 @@ ICCItem *CCodeChain::CreateVectorGivenContent(int iDtype, TArray<int> *pShape, C
 		return pError;
 	}
 
-	pVector->SetShape(this, pShape);
+	pVector->SetShape(this, vShape);
 
-	TArray<double> *pDataArray = &(TArray<double>());
+	TArray<double> *pDataArray = new TArray <double>;
 	CCLinkedList *pFlattenedContentList = pContentList->GetFlattened(this, NULL);
 	for (i = 0; i < pFlattenedContentList->GetCount(); i++)
 	{
 		double dElement = pFlattenedContentList->GetElement(i)->GetDoubleValue();
 		pDataArray->Insert(&dElement, i);
 	};
-	pVector->SetArrayData(this, pDataArray);
+	pVector->SetArrayData(this, &pDataArray);
 
 	//	Done
-	//  if we have gotten this far, then it is safe to set the data type
 	pError->Discard(this);
-	pVector->SetDataType(iDtype);
-
 	return pVector->Reference();
 }
 
@@ -513,30 +508,30 @@ ICCItem *CCodeChain::CreateVectorUsingAnother(CCVector *pVector)
 		return pError;
 	}
 
-	pVector->SetShape(this, pVector->GetShapeArray());
-
-	TArray<double> *pSourceData = pVector->GetDataArray();
-	TArray<double> *pDestData = pNewVector->GetDataArray();
-
-	//	TOCHECK: is this the right way to copy data?
-	//	Copy
 	try
 	{
-		pDestData->Insert(pSourceData);
+		pNewVector->SetShape(this, pVector->GetShapeArray());
 	}
 	catch (...)
 	{
-		ICCItem *pError = this->CreateError(CONSTLIT("Error creating new vector using some existing vector."));
+		ICCItem *pError = this->CreateError(CONSTLIT("Error transferring shape of existing vector to new vector."));
+		return pError;
+	}
+	
+	try
+	{
+		pNewVector->SetArrayData(this, pVector->GetDataArray());
+	}
+	catch (...)
+	{
+		ICCItem *pError = this->CreateError(CONSTLIT("Error transferring data of existing vector to new vector."));
 		return pError;
 	}
 
-
 	//	Done
 
-	//  if we have gotten this far, then it is safe to set the data type
+	//  if we have gotten this far, then we are all done
 	pError->Discard(this);
-	pNewVector->SetDataType(pVector->GetDataType());
-
 	return pNewVector->Reference();
 }
 

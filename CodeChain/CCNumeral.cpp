@@ -10,7 +10,7 @@
 
 static CObjectClass<CCNumeral>g_Class(OBJID_CCNUMERAL, NULL);
 
-CCNumeral::CCNumeral(void) : ICCNumeral(&g_Class)
+CCNumeral::CCNumeral(void) : ICCAtom(&g_Class)
 //	CCNumeral constructor
 {
 

@@ -356,7 +356,9 @@ ICCItem *CCodeChain::Link (const CString &sString, int iOffset, int *retiLinked,
 		char *pStartString;
 		CString sIdentifier;
 		int iInt;
+		double dDouble;
 		bool bNotInteger;
+		bool bNotDouble;
 
 		pStartString = pPos;
 
@@ -402,14 +404,31 @@ ICCItem *CCodeChain::Link (const CString &sString, int iOffset, int *retiLinked,
 				pResult = CreateTrue();
 			else
 				{
-				//	If this is an integer, create an integer; otherwise
-				//	create a string
+					//	If this is an integer, create an integer;
+					//	If this is a double, create a double;
+					//	otherwise create a string
 
-				iInt = strToInt(sIdentifier, 0, &bNotInteger);
-				if (bNotInteger)
-					pResult = CreateString(sIdentifier);
-				else
-					pResult = CreateInteger(iInt);
+					if (strFind(sIdentifier, LITERAL(".")))
+					{
+						dDouble = strToDouble(sIdentifier, 0, &bNotDouble);
+					}
+					else
+					{
+						iInt = strToInt(sIdentifier, 0, &bNotInteger);
+					}
+
+					if (bNotInteger && bNotDouble)
+					{
+						pResult = CreateString(sIdentifier);
+					}	
+					else if (bNotDouble)
+					{
+						pResult = CreateInteger(iInt);
+					}
+					else
+					{
+						pResult = CreateDouble(dDouble);
+					}					
 				}
 			}
 		}
