@@ -10,6 +10,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "NoiseImpl.h"
+#include "DrawImpl.h"
 
 const DWORD RED_BLUE_COUNT =						(1 << 5);
 const DWORD GREEN_COUNT =							(1 << 6);
@@ -18,7 +19,10 @@ BYTE STOCHASTIC_OPACITY[STOCHASTIC_SIZE][256];
 
 static bool g_bStochasticInit = false;
 
-//	Template Function ---------------------------------------------------------
+//	DrawFilledCircle
+//
+//	This template function calls a painter class for filled circles. The painter
+//	class must have a GetRadius function and a DrawLine function.
 
 template <class PAINTER> void DrawFilledCircle (PAINTER &Painter)
 	{

@@ -231,7 +231,7 @@ void CGFrameArea::OnAreaSetRect (void)
 	{
 	}
 
-void CGFrameArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
+void CGFrameArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 //	Paint
 //

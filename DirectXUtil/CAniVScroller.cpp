@@ -104,7 +104,7 @@ void CAniVScroller::AddLine (IAnimatron *pAni)
 		m_cyEnd = yEnd;
 	}
 
-void CAniVScroller::AddTextLine (const CString &sText, const CG16bitFont *pFont, WORD wColor, DWORD dwFlags, int cyExtra)
+void CAniVScroller::AddTextLine (const CString &sText, const CG16bitFont *pFont, CG32bitPixel rgbColor, DWORD dwFlags, int cyExtra)
 
 //	AddTextLine
 //
@@ -114,7 +114,7 @@ void CAniVScroller::AddTextLine (const CString &sText, const CG16bitFont *pFont,
 	CAniText *pLine = new CAniText;
 	pLine->SetPropertyVector(PROP_POSITION, CVector(0.0, m_cyEnd + cyExtra));
 	pLine->SetPropertyString(PROP_TEXT, sText);
-	pLine->SetPropertyColor(PROP_COLOR, wColor);
+	pLine->SetPropertyColor(PROP_COLOR, rgbColor);
 	pLine->SetPropertyFont(PROP_FONT, pFont);
 	pLine->SetFontFlags(dwFlags);
 

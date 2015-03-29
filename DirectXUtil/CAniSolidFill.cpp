@@ -23,9 +23,9 @@ void CAniSolidFill::Fill (SAniPaintCtx &Ctx, int x, int y, int cxWidth, int cyHe
 
 	{
 	if (m_dwOpacity == 255)
-		Ctx.Dest.Fill(x, y, cxWidth, cyHeight, m_wColor);
+		Ctx.Dest.Fill(x, y, cxWidth, cyHeight, m_rgbColor);
 	else if (m_dwOpacity > 0)
-		Ctx.Dest.FillTrans(x, y, cxWidth, cyHeight, m_wColor, m_dwOpacity);
+		Ctx.Dest.Fill(x, y, cxWidth, cyHeight, CG32bitPixel(m_rgbColor, (BYTE)m_dwOpacity));
 	}
 
 void CAniSolidFill::Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleRasterLine> &Lines)
@@ -42,11 +42,11 @@ void CAniSolidFill::Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleR
 		{
 		while (pLine < pLineEnd)
 			{
-			Ctx.Dest.FillLine(x + pLine->x, y + pLine->y, pLine->cxLength, m_wColor);
+			Ctx.Dest.FillLine(x + pLine->x, y + pLine->y, pLine->cxLength, m_rgbColor);
 			if (pLine->byLeftEdge)
-				Ctx.Dest.SetPixelTrans(x + pLine->x - 1, y + pLine->y, m_wColor, pLine->byLeftEdge);
+				Ctx.Dest.SetPixelTrans(x + pLine->x - 1, y + pLine->y, m_rgbColor, pLine->byLeftEdge);
 			if (pLine->byRightEdge)
-				Ctx.Dest.SetPixelTrans(x + pLine->x + pLine->cxLength, y + pLine->y, m_wColor, pLine->byRightEdge);
+				Ctx.Dest.SetPixelTrans(x + pLine->x + pLine->cxLength, y + pLine->y, m_rgbColor, pLine->byRightEdge);
 
 			pLine++;
 			}
@@ -55,18 +55,18 @@ void CAniSolidFill::Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleR
 		{
 		while (pLine < pLineEnd)
 			{
-			Ctx.Dest.FillLineTrans(x + pLine->x, y + pLine->y, pLine->cxLength, m_wColor, m_dwOpacity);
+			Ctx.Dest.FillLine(x + pLine->x, y + pLine->y, pLine->cxLength, CG32bitPixel(m_rgbColor, (BYTE)m_dwOpacity));
 
 			if (pLine->byLeftEdge)
 				{
 				DWORD dwOpacity = m_dwOpacity * pLine->byLeftEdge / 255;
-				Ctx.Dest.SetPixelTrans(x + pLine->x - 1, y + pLine->y, m_wColor, dwOpacity);
+				Ctx.Dest.SetPixelTrans(x + pLine->x - 1, y + pLine->y, m_rgbColor, (BYTE)dwOpacity);
 				}
 
 			if (pLine->byRightEdge)
 				{
 				DWORD dwOpacity = m_dwOpacity * pLine->byRightEdge / 255;
-				Ctx.Dest.SetPixelTrans(x + pLine->x + pLine->cxLength, y + pLine->y, m_wColor, dwOpacity);
+				Ctx.Dest.SetPixelTrans(x + pLine->x + pLine->cxLength, y + pLine->y, m_rgbColor, (BYTE)dwOpacity);
 				}
 
 			pLine++;
@@ -81,10 +81,7 @@ void CAniSolidFill::Fill (SAniPaintCtx &Ctx, int x, int y, const CG16bitBinaryRe
 //	Fills the region
 
 	{
-	if (m_dwOpacity == 255)
-		Region.Fill(Ctx.Dest, x, y, m_wColor);
-	else
-		Region.FillTrans(Ctx.Dest, x, y, m_wColor, m_dwOpacity);
+	Region.Fill(Ctx.Dest, x, y, CG32bitPixel(m_rgbColor, (BYTE)m_dwOpacity));
 	}
 
 void CAniSolidFill::InitDefaults (CAniPropertySet &Properties)
@@ -108,7 +105,7 @@ void CAniSolidFill::InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAni
 //	Initializes internal cache from properties
 
 	{
-	m_wColor = Properties.GetColor(PROP_COLOR);
+	m_rgbColor = Properties.GetColor(PROP_COLOR);
 	m_dwOpacity = Properties.GetOpacity(PROP_OPACITY) * Ctx.dwOpacityToDest / 255;
 	}
 

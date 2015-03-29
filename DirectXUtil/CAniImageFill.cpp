@@ -14,7 +14,7 @@
 
 #define PROP_OPACITY						CONSTLIT("opacity")
 
-CAniImageFill::CAniImageFill (const CG16bitImage *pImage, bool bFreeImage) :
+CAniImageFill::CAniImageFill (const CG32bitImage *pImage, bool bFreeImage) :
 		m_pImage(pImage),
 		m_bFreeImage(bFreeImage),
 		m_dwOpacity(255),
@@ -96,7 +96,7 @@ void CAniImageFill::Fill (SAniPaintCtx &Ctx, int x, int y, int cxWidth, int cyHe
 			{
 			int cxTile = Min(xLeft, m_pImage->GetWidth() - xTile);
 
-			Ctx.Dest.ColorTransBlt(xTile, yTile, cxTile, cyTile, m_dwOpacity, *m_pImage, xDest, yDest);
+			Ctx.Dest.Blt(xTile, yTile, cxTile, cyTile, (BYTE)m_dwOpacity, *m_pImage, xDest, yDest);
 
 			xDest += cxTile;
 			xLeft -= cxTile;
@@ -137,7 +137,7 @@ void CAniImageFill::Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleR
 			{
 			int cxTile = Min(xLeft, m_pImage->GetWidth() - xTile);
 
-			Ctx.Dest.ColorTransBlt(xSolidTile, yTile, cxTile, 1, m_dwOpacity, *m_pImage, xDest, yDest);
+			Ctx.Dest.Blt(xSolidTile, yTile, cxTile, 1, (BYTE)m_dwOpacity, *m_pImage, xDest, yDest);
 
 			xDest += cxTile;
 			xLeft -= cxTile;
@@ -151,8 +151,8 @@ void CAniImageFill::Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleR
 			int xSrc = (xTile > 0 ? xTile - 1 : m_pImage->GetWidth() - 1);
 
 			DWORD dwOpacity = m_dwOpacity * pLine->byLeftEdge / 255;
-			WORD wColor = *m_pImage->GetPixel(m_pImage->GetRowStart(yTile), xSrc);
-			Ctx.Dest.SetPixelTrans(x + pLine->x - 1, yDest, wColor, dwOpacity);
+			CG32bitPixel rgbColor = m_pImage->GetPixel(xSrc, yTile);
+			Ctx.Dest.SetPixelTrans(x + pLine->x - 1, yDest, rgbColor, (BYTE)dwOpacity);
 			}
 
 		if (pLine->byRightEdge)
@@ -160,8 +160,8 @@ void CAniImageFill::Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleR
 			int xSrc = (x + pLine->cxLength) % m_pImage->GetWidth();
 
 			DWORD dwOpacity = m_dwOpacity * pLine->byRightEdge / 255;
-			WORD wColor = *m_pImage->GetPixel(m_pImage->GetRowStart(yTile), xSrc);
-			Ctx.Dest.SetPixelTrans(x + pLine->x + pLine->cxLength, yDest, wColor, dwOpacity);
+			CG32bitPixel rgbColor = m_pImage->GetPixel(xSrc, yTile);
+			Ctx.Dest.SetPixelTrans(x + pLine->x + pLine->cxLength, yDest, rgbColor, (BYTE)dwOpacity);
 			}
 
 		pLine++;

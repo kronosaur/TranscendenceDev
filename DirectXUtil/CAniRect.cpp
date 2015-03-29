@@ -53,7 +53,7 @@ CAniRect::CAniRect (void)
 
 void CAniRect::Create (const CVector &vPos,
 					   const CVector &vSize,
-					   WORD wColor,
+					   CG32bitPixel rgbColor,
 					   DWORD dwOpacity,
 					   IAnimatron **retpAni)
 
@@ -65,7 +65,7 @@ void CAniRect::Create (const CVector &vPos,
 	CAniRect *pRect = new CAniRect;
 	pRect->SetPropertyVector(PROP_POSITION, vPos);
 	pRect->SetPropertyVector(PROP_SCALE, vSize);
-	pRect->SetPropertyColor(PROP_COLOR, wColor);
+	pRect->SetPropertyColor(PROP_COLOR, rgbColor);
 	pRect->SetPropertyOpacity(PROP_OPACITY, dwOpacity);
 
 	*retpAni = pRect;

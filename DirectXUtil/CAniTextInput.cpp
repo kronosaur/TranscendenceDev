@@ -89,17 +89,17 @@ CAniTextInput::CAniTextInput (void) :
 	m_Properties.SetColor(PROP_LABEL_COLOR, 0xffff);
 
 	IAnimatron *pStyle = new CAniRect;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(64, 64, 64));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(64, 64, 64));
 	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
 	SetStyle(styleFrame, pStyle);
 
 	pStyle = new CAniRect;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(128, 128, 128));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(128, 128, 128));
 	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
 	SetStyle(styleFrameFocus, pStyle);
 
 	pStyle = new CAniRect;
-	pStyle->SetPropertyColor(PROP_COLOR, CG16bitImage::RGBValue(64, 64, 64));
+	pStyle->SetPropertyColor(PROP_COLOR, CG32bitPixel(64, 64, 64));
 	pStyle->SetPropertyOpacity(PROP_OPACITY, 128);
 	SetStyle(styleFrameDisabled, pStyle);
 	}
@@ -362,7 +362,7 @@ void CAniTextInput::Paint (SAniPaintCtx &Ctx)
 
 	//	Get color & opacity
 
-	WORD wColor = m_Properties[INDEX_COLOR].GetColor();
+	CG32bitPixel rgbColor = m_Properties[INDEX_COLOR].GetColor();
 	DWORD dwOpacity = m_Properties[INDEX_OPACITY].GetOpacity() * Ctx.dwOpacityToDest / 255;
 	if (!bEnabled)
 		dwOpacity = dwOpacity / 2;
@@ -375,8 +375,7 @@ void CAniTextInput::Paint (SAniPaintCtx &Ctx)
 		pLabelFont->DrawText(Ctx.Dest, 
 				xLabel, 
 				yLabel,
-				m_Properties[INDEX_LABEL_COLOR].GetColor(), 
-				dwOpacity, 
+				CG32bitPixel(m_Properties[INDEX_LABEL_COLOR].GetColor(), (BYTE)dwOpacity),
 				sLabel, 
 				0);
 		}
@@ -415,8 +414,7 @@ void CAniTextInput::Paint (SAniPaintCtx &Ctx)
 	pFont->DrawText(Ctx.Dest, 
 			xText, 
 			yText,
-			wColor, 
-			dwOpacity, 
+			CG32bitPixel(rgbColor, (BYTE)dwOpacity),
 			sText, 
 			0,
 			&xPos);
@@ -425,14 +423,14 @@ void CAniTextInput::Paint (SAniPaintCtx &Ctx)
 
 	if (m_bFocus && bEnabled)
 		{
-		WORD wFocusColor = m_Properties[INDEX_FOCUS_BORDER_COLOR].GetColor();
-		Ctx.Dest.Fill(xField, yField, FOCUS_BRACKET_WIDTH, FOCUS_BRACKET_THICKNESS, wFocusColor);
-		Ctx.Dest.Fill(xField, yField, FOCUS_BRACKET_THICKNESS, cyField, wFocusColor);
-		Ctx.Dest.Fill(xField, yField + cyField - FOCUS_BRACKET_THICKNESS, FOCUS_BRACKET_WIDTH, FOCUS_BRACKET_THICKNESS, wFocusColor);
+		CG32bitPixel rgbFocusColor = m_Properties[INDEX_FOCUS_BORDER_COLOR].GetColor();
+		Ctx.Dest.Fill(xField, yField, FOCUS_BRACKET_WIDTH, FOCUS_BRACKET_THICKNESS, rgbFocusColor);
+		Ctx.Dest.Fill(xField, yField, FOCUS_BRACKET_THICKNESS, cyField, rgbFocusColor);
+		Ctx.Dest.Fill(xField, yField + cyField - FOCUS_BRACKET_THICKNESS, FOCUS_BRACKET_WIDTH, FOCUS_BRACKET_THICKNESS, rgbFocusColor);
 
-		Ctx.Dest.Fill(xField + cxField - FOCUS_BRACKET_WIDTH, yField, FOCUS_BRACKET_WIDTH, FOCUS_BRACKET_THICKNESS, wFocusColor);
-		Ctx.Dest.Fill(xField + cxField - FOCUS_BRACKET_THICKNESS, yField, FOCUS_BRACKET_THICKNESS, cyField, wFocusColor);
-		Ctx.Dest.Fill(xField + cxField - FOCUS_BRACKET_WIDTH, yField + cyField - FOCUS_BRACKET_THICKNESS, FOCUS_BRACKET_WIDTH, FOCUS_BRACKET_THICKNESS, wFocusColor);
+		Ctx.Dest.Fill(xField + cxField - FOCUS_BRACKET_WIDTH, yField, FOCUS_BRACKET_WIDTH, FOCUS_BRACKET_THICKNESS, rgbFocusColor);
+		Ctx.Dest.Fill(xField + cxField - FOCUS_BRACKET_THICKNESS, yField, FOCUS_BRACKET_THICKNESS, cyField, rgbFocusColor);
+		Ctx.Dest.Fill(xField + cxField - FOCUS_BRACKET_WIDTH, yField + cyField - FOCUS_BRACKET_THICKNESS, FOCUS_BRACKET_WIDTH, FOCUS_BRACKET_THICKNESS, rgbFocusColor);
 
 #if 0
 		DrawRectDotted(Ctx.Dest, 
@@ -446,6 +444,6 @@ void CAniTextInput::Paint (SAniPaintCtx &Ctx)
 		//	Paint cursor
 
 		if ((Ctx.iFrame / CURSOR_BLINK_RATE) % 2)
-			Ctx.Dest.Fill(xPos, yText, CURSOR_WIDTH, cyText, wColor);
+			Ctx.Dest.Fill(xPos, yText, CURSOR_WIDTH, cyText, rgbColor);
 		}
 	}

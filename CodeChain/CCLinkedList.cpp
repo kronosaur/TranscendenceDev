@@ -29,7 +29,7 @@ CCLinkedList::~CCLinkedList (void)
 	{
 	}
 
-void CCLinkedList::Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError)
+void CCLinkedList::Append (CCodeChain &CC, ICCItem *pValue)
 
 //	Append
 //
@@ -40,15 +40,11 @@ void CCLinkedList::Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError)
 
 	//	Create a new cons
 
-	pCons = pCC->CreateCons();
+	pCons = CC.CreateCons();
 	if (pCons == NULL)
-		{
-		if (retpError)
-			*retpError = pCC->CreateMemoryError();
 		return;
-		}
 
-	pCons->m_pItem = pItem->Reference();
+	pCons->m_pItem = pValue->Reference();
 	pCons->m_pNext = NULL;
 
 	//	Link it to the rest of the list
@@ -69,36 +65,21 @@ void CCLinkedList::Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError)
 		delete [] m_pIndex;
 		m_pIndex = NULL;
 		}
+	}
 
-	//	Done
+#if 0
+void CCLinkedList::Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError)
 
+//	Append
+//
+//	Appends the item to the list
+
+	{
+	Append(*pCC, pItem);
 	if (retpError)
 		*retpError = pCC->CreateTrue();
 	}
-
-void CCLinkedList::AppendIntegerValue (CCodeChain *pCC, int iValue, ICCItem **retpError)
-
-//	AppendIntegerValue
-//
-//	Appends an integer
-
-	{
-	ICCItem *pItem = pCC->CreateInteger(iValue);
-	Append(pCC, pItem, retpError);
-	pItem->Discard(pCC);
-	}
-
-void CCLinkedList::AppendStringValue (CCodeChain *pCC, const CString &sString, ICCItem **retpError)
-
-//	AppendStringValue
-//
-//	Append a string
-
-	{
-	ICCItem *pItem = pCC->CreateString(sString);
-	Append(pCC, pItem, retpError);
-	pItem->Discard(pCC);
-	}
+#endif
 
 ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 
@@ -123,7 +104,7 @@ ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 	pCons = m_pFirst;
 	while (pCons)
 		{
-		pClone->Append(pCC, pCons->m_pItem, NULL);
+		pClone->Append(*pCC, pCons->m_pItem);
 		pCons = pCons->m_pNext;
 		}
 
@@ -270,7 +251,7 @@ CCLinkedList *CCLinkedList::GetFlattened(CCodeChain *pCC, CCLinkedList *pResult 
 		}
 		else
 		{
-			pResult->Append(pCC, pCurrentElement);
+			pResult->Append(*pCC, pCurrentElement);
 		};
 	};
 
@@ -375,10 +356,10 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 		};
 
 		//	we have passed all the checks, so now we create pShapeList
-		pShapeList->AppendIntegerValue(pCC, iHeadCount);
+		pShapeList->AppendInteger(*pCC, iHeadCount);
 		for (i = 0; i < pLowerLevelShapeList->GetCount(); i++)
 		{
-			pShapeList->AppendIntegerValue(pCC, pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
+			pShapeList->AppendInteger(*pCC, pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
 		};
 		return pShapeList;
 	}
@@ -395,7 +376,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 		};
 
 		//	Done -- so put a value into pShapeList
-		pShapeList->AppendIntegerValue(pCC, this->GetCount(), NULL);
+		pShapeList->AppendInteger(*pCC, this->GetCount());
 		return pShapeList;
 	}
 	else
@@ -868,7 +849,7 @@ ICCItem *CCLinkedList::Tail (CCodeChain *pCC)
 
 		while (pNext)
 			{
-			pTail->Append(pCC, pNext->m_pItem, NULL);
+			pTail->Append(*pCC, pNext->m_pItem);
 			pNext = pNext->m_pNext;
 			}
 
@@ -906,7 +887,7 @@ ICCItem *CCLinkedList::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
 
 		//	Append the item to the list
 
-		Append(pCC, pItem, NULL);
+		Append(*pCC, pItem);
 		pItem->Discard(pCC);
 		}
 

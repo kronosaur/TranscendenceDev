@@ -7,14 +7,16 @@
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 
-#define RGB_CURSOR								(CG16bitImage::RGBValue(255,255,255))
+#define RGB_CURSOR								(CG32bitPixel(255,255,255))
 
 CGTextArea::CGTextArea (void) : 
 		m_bEditable(false),
 		m_dwStyles(alignLeft),
 		m_cyLineSpacing(0),
+		m_iBorderRadius(0),
 		m_pFont(NULL),
-		m_Color(CG16bitImage::RGBValue(255,255,255)),
+		m_rgbColor(CG32bitPixel(255,255,255)),
+		m_rgbBackColor(CG32bitPixel::Null()),
 		m_bRTFInvalid(true),
 		m_pFontTable(NULL),
 		m_cxJustifyWidth(0),
@@ -25,6 +27,26 @@ CGTextArea::CGTextArea (void) :
 //	CGTextArea constructor
 
 	{
+	m_rcPadding.left = 0;
+	m_rcPadding.top = 0;
+	m_rcPadding.right = 0;
+	m_rcPadding.bottom = 0;
+	}
+
+RECT CGTextArea::CalcTextRect (const RECT &rcRect)
+
+//	CalcTextRect
+//
+//	Calculates the text rect given the control rect
+
+	{
+	RECT rcText = rcRect;
+	rcText.left += m_rcPadding.left;
+	rcText.top += m_rcPadding.top;
+	rcText.right -= m_rcPadding.right;
+	rcText.bottom -= m_rcPadding.bottom;
+
+	return rcText;
 	}
 
 void CGTextArea::FormatRTF (const RECT &rcRect)
@@ -44,7 +66,7 @@ void CGTextArea::FormatRTF (const RECT &rcRect)
 		BlockFormat.iVertAlign = alignTop;
 		BlockFormat.iExtraLineSpacing = m_cyLineSpacing;
 
-		BlockFormat.DefaultFormat.wColor = m_Color;
+		BlockFormat.DefaultFormat.rgbColor = m_rgbColor;
 		BlockFormat.DefaultFormat.pFont = m_pFont;
 
 		m_RichText.InitFromRTF(m_sRTF, *m_pFontTable, BlockFormat);
@@ -60,54 +82,65 @@ int CGTextArea::Justify (const RECT &rcRect)
 //	Justify the text and return the height (in pixels)
 
 	{
+	RECT rcText = CalcTextRect(rcRect);
+
 	if (!m_sText.IsBlank())
 		{
 		if (m_pFont == NULL)
 			return 0;
 
-		if (m_cxJustifyWidth != RectWidth(rcRect))
+		if (m_cxJustifyWidth != RectWidth(rcText))
 			{
-			m_cxJustifyWidth = RectWidth(rcRect);
+			m_cxJustifyWidth = RectWidth(rcText);
 			m_Lines.DeleteAll();
 			m_pFont->BreakText(m_sText, m_cxJustifyWidth, &m_Lines, CG16bitFont::SmartQuotes);
 			}
 
-		return m_Lines.GetCount() * m_pFont->GetHeight() + (m_Lines.GetCount() - 1) * m_cyLineSpacing;
+		return m_rcPadding.top + (m_Lines.GetCount() * m_pFont->GetHeight() + (m_Lines.GetCount() - 1) * m_cyLineSpacing) + m_rcPadding.bottom;
 		}
 	else
 		{
-		FormatRTF(rcRect);
+		FormatRTF(rcText);
 
 		RECT rcBounds;
 		m_RichText.GetBounds(&rcBounds);
-		return RectHeight(rcBounds);
+		return m_rcPadding.top + RectHeight(rcBounds) + m_rcPadding.bottom;
 		}
 	}
 
-void CGTextArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
+void CGTextArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 //	Paint
 //
 //	Handle paint
 
 	{
+	RECT rcText = CalcTextRect(rcRect);
+
+	//	Paint the background
+
+	if (m_iBorderRadius > 0)
+		CGDraw::RoundedRect(Dest, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), m_iBorderRadius, m_rgbBackColor);
+	else
+		Dest.Fill(rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), m_rgbBackColor);
+
 	//	Paint the editable box
 
 	if (m_bEditable)
 		{
-		WORD wBorderColor = CG16bitImage::BlendPixel(CG16bitImage::RGBValue(0, 0, 0), m_Color, 128);
-		DrawRectDotted(Dest, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), wBorderColor);
+		CG32bitPixel rgbBorderColor = CG32bitPixel::Blend(CG32bitPixel(0, 0, 0), m_rgbColor, (BYTE)128);
+		CGDraw::RectOutlineDotted(Dest, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), rgbBorderColor);
 		}
 
 	//	Paint the content
 
 	if (!m_sText.IsBlank())
-		PaintText(Dest, rcRect);
+		PaintText(Dest, rcText);
 	else
-		PaintRTF(Dest, rcRect);
+		PaintRTF(Dest, rcText);
 	}
 
-void CGTextArea::PaintRTF (CG16bitImage &Dest, const RECT &rcRect)
+void CGTextArea::PaintRTF (CG32bitImage &Dest, const RECT &rcRect)
 
 //	PaintRTF
 //
@@ -130,18 +163,16 @@ void CGTextArea::PaintRTF (CG16bitImage &Dest, const RECT &rcRect)
 	for (i = 0; i < m_RichText.GetFormattedSpanCount(); i++)
 		{
 		const SFormattedTextSpan &Span = m_RichText.GetFormattedSpan(i);
-		DWORD dwOpacity = 255;
 
 		Span.Format.pFont->DrawText(Dest,
 				rcRect.left + Span.x,
 				rcRect.top + Span.y,
-				Span.Format.wColor,
-				dwOpacity,
+				Span.Format.rgbColor,
 				Span.sText);
 		}
 	}
 
-void CGTextArea::PaintText (CG16bitImage &Dest, const RECT &rcRect)
+void CGTextArea::PaintText (CG32bitImage &Dest, const RECT &rcRect)
 
 //	PaintText
 //
@@ -221,9 +252,9 @@ void CGTextArea::PaintText (CG16bitImage &Dest, const RECT &rcRect)
 			//	Paint
 
 			if (HasEffects())
-				m_pFont->DrawTextEffect(Dest, xLine, y, m_Color, sLine, GetEffectCount(), GetEffects());
+				m_pFont->DrawTextEffect(Dest, xLine, y, m_rgbColor, sLine, GetEffectCount(), GetEffects());
 			else
-				Dest.DrawText(xLine, y, *m_pFont, m_Color, sLine);
+				Dest.DrawText(xLine, y, *m_pFont, m_rgbColor, sLine);
 
 			//	Next
 

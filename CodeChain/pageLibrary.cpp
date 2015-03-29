@@ -147,7 +147,7 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		//	item in the result
 
 		if (!bExcludeNil || !pMapped->IsNil())
-			pList->Append(pCC, pMapped, NULL);
+			pList->Append(*pCC, pMapped);
 
 		pItem->Discard(pCC);
 		pMapped->Discard(pCC);
@@ -229,7 +229,7 @@ ICCItem *fnPageGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		if (iStart == 0)
 			{
-			pList->Append(pCC, pItem, NULL);
+			pList->Append(*pCC, pItem);
 			iCount--;
 			}
 		else

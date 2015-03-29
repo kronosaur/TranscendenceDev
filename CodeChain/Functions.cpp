@@ -177,14 +177,14 @@ ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	If the item is a symbol table, then treat it like an atom
 
 		if (pItem->IsSymbolTable())
-			pList->Append(pCC, pItem, NULL);
+			pList->Append(*pCC, pItem);
 
 		//	Otherwise, add each of the elements
 
 		else
 			{
 			for (j = 0; j < pItem->GetCount(); j++)
-				pList->Append(pCC, pItem->GetElement(j), NULL);
+				pList->Append(*pCC, pItem->GetElement(j));
 			}
 		}
 
@@ -251,32 +251,12 @@ ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	//	Add each of the arguments except the last
 
 	for (i = 1; i < pArgs->GetCount() - 1; i++)
-		{
-		pList->Append(pCC, pArgs->GetElement(i), &pResult);
-		if (pResult->IsError())
-			{
-			pList->Discard(pCC);
-			pArgs->Discard(pCC);
-			return pResult;
-			}
-
-		pResult->Discard(pCC);
-		}
+		pList->Append(*pCC, pArgs->GetElement(i));
 
 	//	Add each of the elements of the last list
 
 	for (i = 0; i < pLast->GetCount(); i++)
-		{
-		pList->Append(pCC, pLast->GetElement(i), &pResult);
-		if (pResult->IsError())
-			{
-			pList->Discard(pCC);
-			pArgs->Discard(pCC);
-			return pResult;
-			}
-
-		pResult->Discard(pCC);
-		}
+		pList->Append(*pCC, pLast->GetElement(i));
 
 	//	Set the literal flag to indicate that the arguments should
 	//	not be evaluated.
@@ -865,7 +845,7 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
-//	fnEqualityOld
+//	fnEquality
 //
 //	Equality and inequality
 //
@@ -1202,7 +1182,7 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	item in the result
 
 		if (!pSelect->IsNil())
-			pList->Append(pCC, pItem, NULL);
+			pList->Append(*pCC, pItem);
 
 		pSelect->Discard(pCC);
 		}
@@ -2287,18 +2267,7 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Copy the elements
 
 		for (i = 0; i < pList->GetCount(); i++)
-			{
-			ICCItem *pError;
-			pLinkedList->Append(pCC, pList->GetElement(i), &pError);
-			if (pError->IsError())
-				{
-				pList->Discard(pCC);
-				pLinkedList->Discard(pCC);
-				return pError;
-				}
-			else
-				pError->Discard(pCC);
-			}
+			pLinkedList->Append(*pCC, pList->GetElement(i));
 
 		//	Done with the original list
 
@@ -2310,16 +2279,7 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Append the item
 
-	ICCItem *pError;
-	pLinkedList->Append(pCC, pArgs->GetElement(1), &pError);
-	if (pError->IsError())
-		{
-		pLinkedList->Discard(pCC);
-		return pError;
-		}
-	else
-		pError->Discard(pCC);
-
+	pLinkedList->Append(*pCC, pArgs->GetElement(1));
 	return pLinkedList;
 	}
 
@@ -2663,9 +2623,9 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		else
 			{
 			if (bOriginal)
-				pList->Append(pCC, pItem);
+				pList->Append(*pCC, pItem);
 			else
-				pList->Append(pCC, pMapped);
+				pList->Append(*pCC, pMapped);
 			}
 
 		//	Next
@@ -3117,7 +3077,6 @@ ICCItem *fnMathNumerals(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pNum1 = pArgs->GetElement(0);
 				ICCItem *pNum2 = pArgs->GetElement(1);
 
-				int iIntFlat = 0;
 				if (pNum1->IsInteger() || pNum2->IsInteger())
 				{
 					return pCC->CreateInteger(pNum1->GetIntegerValue() - pNum2->GetIntegerValue());
@@ -3288,8 +3247,8 @@ ICCItem *fnMathFractions (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pResult = pCC->CreateLinkedList();
 				CCLinkedList *pList = (CCLinkedList *)pResult;
 
-				pList->AppendIntegerValue(pCC, (int)((rResult * rResultDenom) + 0.5));
-				pList->AppendIntegerValue(pCC, (int)(rResultDenom + 0.5));
+				pList->AppendInteger(*pCC, (int)((rResult * rResultDenom) + 0.5));
+				pList->AppendInteger(*pCC, (int)(rResultDenom + 0.5));
 
 				return pResult;
 				}
@@ -3633,7 +3592,7 @@ ICCItem *fnRegEx (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Loop over all arguments and add to result list
 
 		for (i = 0; i < Result.GetCount(); i++)
-			pList->AppendStringValue(pCC, Result[i].sMatch);
+			pList->AppendString(*pCC, Result[i].sMatch);
 
 		return pResult;
 		}
@@ -3756,7 +3715,7 @@ ICCItem *fnShuffle (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	ICCItem *pSource = pArgs->GetElement(0);
 	for (i = 0; i < pSource->GetCount(); i++)
-		pList->Append(pCC, pSource->GetElement(i), NULL);
+		pList->Append(*pCC, pSource->GetElement(i));
 
 	//	Shuffle the new list
 
@@ -3817,7 +3776,7 @@ ICCItem *fnSort (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			//	Copy the list
 
 			for (i = 0; i < pSource->GetCount(); i++)
-				pList->Append(pCC, pSource->GetElement(i), NULL);
+				pList->Append(*pCC, pSource->GetElement(i));
 
 			//	Sort the list
 
@@ -3918,7 +3877,7 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			if (bIsDelimeter)
 				{
-				pList->AppendStringValue(pCC, CString(pStart, (int)(pPos - pStart)));
+				pList->AppendString(*pCC, CString(pStart, (int)(pPos - pStart)));
 				bInWord = false;
 				}
 			}
@@ -3939,7 +3898,7 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	//	Last word
 
 	if (bInWord)
-		pList->AppendStringValue(pCC, CString(pStart, (int)(pPos - pStart)));
+		pList->AppendString(*pCC, CString(pStart, (int)(pPos - pStart)));
 
 	//	Done
 
@@ -4036,7 +3995,7 @@ ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Loop and add to result list
 
 		for (i = iStart; i < iStart + iCount; i++)
-			pList->Append(pCC, pSource->GetElement(i), NULL);
+			pList->Append(*pCC, pSource->GetElement(i));
 
 		//	Done
 

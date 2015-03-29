@@ -8,7 +8,7 @@
 #include "DirectXUtil.h"
 
 CGImageArea::CGImageArea (void) : m_pImage(NULL),
-		m_rgbBackColor(RGB(0,0,0)),
+		m_rgbBackColor(CG32bitPixel(0,0,0)),
 		m_bTransBackground(false),
 		m_dwStyles(alignLeft | alignTop)
 
@@ -17,7 +17,7 @@ CGImageArea::CGImageArea (void) : m_pImage(NULL),
 	{
 	}
 
-void CGImageArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
+void CGImageArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 //	Paint
 //
@@ -25,7 +25,7 @@ void CGImageArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
 
 	{
 	if (!m_bTransBackground)
-		Dest.FillRGB(rcRect.left,
+		Dest.Fill(rcRect.left,
 				rcRect.top,
 				RectWidth(rcRect),
 				RectHeight(rcRect),
@@ -52,28 +52,19 @@ void CGImageArea::Paint (CG16bitImage &Dest, const RECT &rcRect)
 			y = rcRect.top;
 
 		//	Blt
+		//
+		//	For compatibility with previous (Transcendence) releases, we assume
+		//	black is transparent if the image has no alpha channel.
 
-		if (m_bTransBackground)
-			{
-			Dest.ColorTransBlt(m_rcImage.left,
-					m_rcImage.top,
-					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
-					255,
-					*m_pImage,
-					x,
-					y);
-			}
-		else
-			{
-			Dest.Blt(m_rcImage.left,
-					m_rcImage.top,
-					RectWidth(m_rcImage),
-					RectHeight(m_rcImage),
-					*m_pImage,
-					x,
-					y);
-			}
+		CGDraw::BltWithBackColor(Dest,
+				x,
+				y,
+				*m_pImage,
+				m_rcImage.left,
+				m_rcImage.top,
+				RectWidth(m_rcImage),
+				RectHeight(m_rcImage),
+				CG32bitPixel(0, 0, 0));
 		}
 	}
 
