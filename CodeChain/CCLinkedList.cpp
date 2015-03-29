@@ -251,7 +251,7 @@ CCLinkedList *CCLinkedList::GetFlattened(CCodeChain *pCC, CCLinkedList *pResult 
 		}
 		else
 		{
-			pResult->Append(pCC, pCurrentElement);
+			pResult->Append(*pCC, pCurrentElement);
 		};
 	};
 
@@ -356,10 +356,10 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 		};
 
 		//	we have passed all the checks, so now we create pShapeList
-		pShapeList->AppendIntegerValue(pCC, iHeadCount);
+		pShapeList->AppendInteger(*pCC, iHeadCount);
 		for (i = 0; i < pLowerLevelShapeList->GetCount(); i++)
 		{
-			pShapeList->AppendIntegerValue(pCC, pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
+			pShapeList->AppendInteger(*pCC, pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
 		};
 		return pShapeList;
 	}
@@ -376,7 +376,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 		};
 
 		//	Done -- so put a value into pShapeList
-		pShapeList->AppendIntegerValue(pCC, this->GetCount(), NULL);
+		pShapeList->AppendInteger(*pCC, this->GetCount());
 		return pShapeList;
 	}
 	else

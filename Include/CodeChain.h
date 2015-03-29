@@ -245,31 +245,18 @@ class ICCAtom : public ICCItem
 		virtual ICCItem *Tail (CCodeChain *pCC);
 	};
 
-
 //  A numeral is an atom that represents a double or an integer
+
 class CCNumeral : public ICCAtom
 	{
 	public:
 		CCNumeral(void);
 
 		// ICCItem virtuals
-		virtual ICCItem *Clone(CCodeChain *pCC);
-		virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
-		virtual void Reset(void);
 		virtual BOOL IsIdentifier(void) { return FALSE; }
 		virtual BOOL IsFunction(void) { return FALSE; }
 		virtual BOOL IsInteger(void) { return FALSE;  }
 		virtual BOOL IsDouble(void) { return FALSE;  }
-		virtual ValueTypes GetValueType(void) { return Numeral;  }
-
-		//ICCNumeral virtuals
-		virtual void SetValue(int iNewVal) { ; }
-		virtual void SetValue(double dNewVal) { ; }
-
-	protected:
-		virtual void DestroyItem(CCodeChain *pCC);
-		virtual ICCItem *StreamItem(CCodeChain *pCC, IWriteStream *pStream);
-		virtual ICCItem *UnstreamItem(CCodeChain *pCC, IReadStream *pStream);
 	};
 
 class CCInteger : public CCNumeral
@@ -282,11 +269,19 @@ class CCInteger : public CCNumeral
 		inline void SetValue (int iValue) { m_iValue = iValue; }
 
 		//	ICCItem virtuals
-		BOOL IsInteger(void) { return TRUE; }
-		BOOL IsDouble(void) { return FALSE; }
+		virtual ICCItem *Clone(CCodeChain *pCC);
+		virtual BOOL IsInteger(void) { return TRUE; }
+		virtual BOOL IsDouble(void) { return FALSE; }
 		virtual int GetIntegerValue (void) { return m_iValue; }
 		virtual double GetDoubleValue(void) { return double(m_iValue); }
 		virtual CString GetStringValue (void) { return strFromInt(m_iValue); }
+		virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
+		virtual void Reset(void);
+
+	protected:
+		virtual void DestroyItem(CCodeChain *pCC);
+		virtual ICCItem *StreamItem(CCodeChain *pCC, IWriteStream *pStream);
+		virtual ICCItem *UnstreamItem(CCodeChain *pCC, IReadStream *pStream);
 
 	private:
 		int m_iValue;							//	Value of 32-bit integer
@@ -304,11 +299,19 @@ class CCDouble : public CCNumeral
 		inline void SetValue(double dValue) { m_dValue = dValue; }
 
 		//	ICCItem virtuals
-		BOOL IsInteger(void) { return FALSE; }
-		BOOL IsDouble(void) { return TRUE; }
+		virtual ICCItem *Clone(CCodeChain *pCC);
+		virtual BOOL IsInteger(void) { return FALSE; }
+		virtual BOOL IsDouble(void) { return TRUE; }
 		virtual int GetIntegerValue(void) { return int(m_dValue); }
 		virtual double GetDoubleValue(void) { return m_dValue; }
 		virtual CString GetStringValue(void) { return strFromDouble(m_dValue); }
+		virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
+		virtual void Reset(void);
+
+	protected:
+		virtual void DestroyItem(CCodeChain *pCC);
+		virtual ICCItem *StreamItem(CCodeChain *pCC, IWriteStream *pStream);
+		virtual ICCItem *UnstreamItem(CCodeChain *pCC, IReadStream *pStream);
 
 	private:
 		double m_dValue;							//	Value of double

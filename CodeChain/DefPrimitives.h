@@ -197,8 +197,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(modulo ['degrees] x y) -> z",
 			"*",	0,	},
 
-		{	"%",			fnMathNumerals,			FN_MATH_MODULUS_NUMERALS,
-			"(% ['degrees] x y) -> z",
+		{	"mod",			fnMathNumerals,			FN_MATH_MODULUS_NUMERALS,
+			"(mod ['degrees] x y) -> z",
 			"*",	0,	},
 
 		{	"multiply",			fnMathList,			FN_MATH_MULTIPLY,
@@ -210,7 +210,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v*",	0,	},
 
 		{	"neq",				fnEquality,		FN_EQUALITY_NEQ,			"",		NULL,	0,	},
-		{ "neqn", fnEqualityNumerals, FN_EQUALITY_NEQ_NUMERALS, "", NULL, 0, },
+
+		{	"!=", fnEqualityNumerals, FN_EQUALITY_NEQ_NUMERALS, "", NULL, 0, },
 
 		{	"not",				fnLogical,		FN_LOGICAL_NOT,
 			"(not exp) -> True/Nil",
@@ -224,8 +225,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(power x y) -> z",
 			"vv",	0,	},
 
-		{	"pown",			fnMathNumerals,		FN_MATH_POWER_NUMERALS,
-			"(pown x y) -> z",
+		{	"pow",			fnMathNumerals,		FN_MATH_POWER_NUMERALS,
+			"(pow x y) -> z",
 			"vv",	0,	},
 
 		{	"regex",			fnRegEx,			0,
@@ -335,6 +336,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v",	0,	},
 
 		{	"vecSetElement",	fnVector,		FN_VECTOR_SETELEMENT_OLD,	"",		NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"vecCreate",		fnVecCreateOld,	0,	
+			"(vecCreate) -> empty vector", 
+			NULL, 0, },
 
 		{ "emptyvector", fnVecCreate, FN_VECCREATE_EMPTY, "(vector dtype shapelist) -> empty vector", NULL, 0, },
 		{ "vector", fnVecCreate, FN_VECCREATE, "(vector dtype contentlist) -> vector", NULL, 0, },

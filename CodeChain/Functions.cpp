@@ -845,7 +845,7 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 ICCItem *fnEquality (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
-//	fnEqualityOld
+//	fnEquality
 //
 //	Equality and inequality
 //
@@ -3077,7 +3077,6 @@ ICCItem *fnMathNumerals(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pNum1 = pArgs->GetElement(0);
 				ICCItem *pNum2 = pArgs->GetElement(1);
 
-				int iIntFlat = 0;
 				if (pNum1->IsInteger() || pNum2->IsInteger())
 				{
 					return pCC->CreateInteger(pNum1->GetIntegerValue() - pNum2->GetIntegerValue());

@@ -1,7 +1,6 @@
-//	CCVectorOld.cpp
+//	CCVector.cpp
 //
-//	Implements CCVectorOld class
-//  Implements CCVectorOld class
+//	Implements CCVector class
 
 #include <windows.h>
 #include "Kernel.h"
@@ -45,11 +44,11 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, CCLinkedL
 		{
 			if (vShape.GetCount() > 0)
 			{
-				pIndices->Append(pCC, pCC->CreateNil());
+				pIndices->Append(*pCC, pCC->CreateNil());
 			}
 			else
 			{
-				pRelevantIndices->AppendIntegerValue(pCC, iCurrentMarker);
+				pRelevantIndices->AppendInteger(*pCC, iCurrentMarker);
 				return pRelevantIndices;
 			};
 		};
@@ -77,7 +76,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, CCLinkedL
 				return pResult;
 			};
 
-			pRelevantIndices->Append(pCC, pResult);
+			pRelevantIndices->Append(*pCC, pResult);
 		};
 
 		return pRelevantIndices;
@@ -93,7 +92,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, CCLinkedL
 				return pResult;
 			};
 
-			pRelevantIndices->Append(pCC, pResult);
+			pRelevantIndices->Append(*pCC, pResult);
 		};
 
 		return pRelevantIndices;
@@ -114,7 +113,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, CCLinkedL
 			return pResult;
 		};
 
-		pRelevantIndices->Append(pCC, pResult);
+		pRelevantIndices->Append(*pCC, pResult);
 		return pRelevantIndices;
 	};
 
