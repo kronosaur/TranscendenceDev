@@ -1,6 +1,6 @@
-//	CCInteger.cpp
+//	CCDouble.cpp
 //
-//	Implements CCInteger class
+//	Implements CCDouble class
 
 #include <windows.h>
 #include "Kernel.h"
@@ -8,7 +8,7 @@
 #include "CodeChain.h"
 #include <math.h>
 
-CCInteger::CCInteger(void) : CCNumeral()
+CCDouble::CCDouble(void) : CCNumeral()
 //	CCNumeral constructor
 {
 

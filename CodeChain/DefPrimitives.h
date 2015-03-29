@@ -9,9 +9,17 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(ls a b) -> True if a < b",
 			NULL,	0,	},
 
+		{	"lsn",				fnEqualityNumerals,		FN_EQUALITY_LESSER_NUMERALS,		
+			"(lsn a b) -> True if a < b",
+			NULL,	0,	},
+
 		{	"<=",				fnEquality,		FN_EQUALITY_LESSER_EQ,	"",		NULL,	0,	},
 		{	"leq",				fnEquality,		FN_EQUALITY_LESSER_EQ,
 			"(leq a b) -> True if a <= b",
+			NULL,	0,	},
+
+		{	"leqn",				fnEqualityNumerals,		FN_EQUALITY_LESSER_EQ_NUMERALS,
+			"(leqn a b) -> True if a <= b",
 			NULL,	0,	},
 
 		{	">",				fnEquality,		FN_EQUALITY_GREATER,	"",		NULL,	0,	},
@@ -19,17 +27,32 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(gr a b) -> True if a > b",
 			NULL,	0,	},
 
+		{	"grn",				fnEqualityNumerals,		FN_EQUALITY_GREATER_NUMERALS,
+			"(grn a b) -> True if a > b",
+			NULL,	0,	},
+
 		{	">=",				fnEquality,		FN_EQUALITY_GREATER_EQ,	"",		NULL,	0,	},
 		{	"geq",				fnEquality,		FN_EQUALITY_GREATER_EQ,
 			"(geq a b) -> True if a >= b",		NULL,	0,	},
+
+		{	"geqn",				fnEqualityNumerals,		FN_EQUALITY_GREATER_EQ_NUMERALS,
+			"(geqn a b) -> True if a >= b",		NULL,	0,	},
 
 		{	"add",				fnMathList,		FN_MATH_ADD,
 			"(add x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
+		{	"+",				fnMathListNumerals,		FN_MATH_ADD_NUMERALS,
+			"(+ x1 x2 ... xn) -> z",
+			"v*",	0,	},
+
 		{	"abs",				fnMath,			FN_MATH_ABSOLUTE,
 			"(abs x) -> z",
-			"i",	0,	},
+			"n",	0,	},
+
+		{	"absn",				fnMathNumerals,			FN_MATH_ABSOLUTE_NUMERALS,
+			"(absn x) -> z",
+			"n",	0,	},
 
 		{	"and",				fnLogical,		FN_LOGICAL_AND,
 			"(and exp1 exp2 ... expn) -> True/Nil",
@@ -59,6 +82,9 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"divide",			fnMathOld,			FN_MATH_DIVIDE,
 			"(divide x y) -> z",		NULL,	0,	},
 
+		{	"/",			fnMathNumerals,			FN_MATH_DIVIDE_NUMERALS,
+			"(/ x y) -> z",		NULL,	0,	},
+
 		{	"enum",				fnEnum,			0,
 			"(enum list itemVar exp)",
 			NULL,	0,	},
@@ -74,6 +100,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s",	0,	},
 
 		{	"eq",				fnEquality,		FN_EQUALITY_EQ,			"",		NULL,	0,	},
+		{ "=", fnEqualityNumerals, FN_EQUALITY_EQ_NUMERALS, "", NULL, 0, },
 		{	"eval",				fnEval,			0,						"",		NULL,	0,	},
 		{	"filter",			fnFilter,		0,
 			"(filter list var boolean-exp) -> filtered list",
@@ -97,6 +124,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"if",				fnIf,			0,						"",		NULL,	0,	},
 		{	"int",				fnItemInfo,		FN_ITEMINFO_ASINT,		"",		NULL,	0,	},
+		{	"double",			fnItemInfo,		FN_ITEMINFO_ASDOUBLE,	"",		NULL,	0,  },
 		{	"isatom",			fnItemInfo,		FN_ITEMINFO_ISATOM,		"",		NULL,	0,	},
 		{	"iserror",			fnItemInfo,		FN_ITEMINFO_ISERROR,	"",		NULL,	0,	},
 		{	"isint",			fnItemInfo,		FN_ITEMINFO_ISINT,		"",		NULL,	0,	},
@@ -153,19 +181,36 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(max x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
+		{	"maxn",				fnMathListNumerals,			FN_MATH_MAX_NUMERALS,
+			"(maxn x1 x2 ... xn) -> z",
+			"v*",	0,	},
+
 		{	"min",				fnMathList,			FN_MATH_MIN,
 			"(min x1 x2 ... xn) -> z",
+			"v*",	0,	},
+
+		{	"minn",				fnMathListNumerals,			FN_MATH_MIN_NUMERALS,
+			"(minn x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
 		{	"modulo",			fnMath,			FN_MATH_MODULUS,
 			"(modulo ['degrees] x y) -> z",
 			"*",	0,	},
 
+		{	"%",			fnMathNumerals,			FN_MATH_MODULUS_NUMERALS,
+			"(% ['degrees] x y) -> z",
+			"*",	0,	},
+
 		{	"multiply",			fnMathList,			FN_MATH_MULTIPLY,
 			"(multiply x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
+		{	"*",			fnMathListNumerals,			FN_MATH_MULTIPLY_NUMERALS,
+			"(* x1 x2 ... xn) -> z",
+			"v*",	0,	},
+
 		{	"neq",				fnEquality,		FN_EQUALITY_NEQ,			"",		NULL,	0,	},
+		{ "neqn", fnEqualityNumerals, FN_EQUALITY_NEQ_NUMERALS, "", NULL, 0, },
 
 		{	"not",				fnLogical,		FN_LOGICAL_NOT,
 			"(not exp) -> True/Nil",
@@ -177,6 +222,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"power",			fnMathFractions,		FN_MATH_POWER,
 			"(power x y) -> z",
+			"vv",	0,	},
+
+		{	"pown",			fnMathNumerals,		FN_MATH_POWER_NUMERALS,
+			"(pown x y) -> z",
 			"vv",	0,	},
 
 		{	"regex",			fnRegEx,			0,
@@ -193,7 +242,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"randomGaussian",		fnRandom,		FN_RANDOM_GAUSSIAN,
 			"(randomGaussian low mid high) -> random number between low and high",
-			"iii",	0,	},
+			"nnn",	0,	},
 
 		{	"randomTable",		fnRandomTable,		0,
 			"(randomTable chance1 exp1 chance2 exp2 ... chancen expn) -> exp",
@@ -201,7 +250,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"seededRandom",		fnSeededRandom,		0,
 			"(seededRandom seed from to)\n(seededRandom seed list)",
-			"i*",	0,	},
+			"n*",	0,	},
 
 		{	"set",				fnSet,			FN_SET_SET,				"",		NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -232,6 +281,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(sqrt x) -> z",
 			"v",	0,	},
 
+		{	"sqrtn",				fnMathNumerals,			FN_MATH_SQRT_NUMERALS,
+			"(sqrtn x) -> z",
+			"v",	0,	},
+
 		{	"strCapitalize",	fnStrCapitalize,0,
 			"(strCapitalize string) -> string",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
@@ -250,6 +303,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"subtract",			fnMathOld,			FN_MATH_SUBTRACT,
 			"(subtract x y) -> z",
+			NULL,	0,	},
+
+		{	"-",			fnMathNumerals,			FN_MATH_SUBTRACT_NUMERALS,
+			"(- x y) -> z",
 			NULL,	0,	},
 
 		{	"switch",			fnSwitch,		0,						"",		NULL,	0,	},
@@ -275,8 +332,17 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 			"v",	0,	},
 
-		{	"vecVector",		fnVecCreate,	0,						"",		NULL,	0,	},
-		{	"vecSetElement",	fnVector,		FN_VECTOR_SETELEMENT,	"",		NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"vecSetElement",	fnVector,		FN_VECTOR_SETELEMENT_OLD,	"",		NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{ "emptyvector", fnVecCreate, FN_VECCREATE_EMPTY, "(vector dtype shapelist) -> empty vector", NULL, 0, },
+		{ "vector", fnVecCreate, FN_VECCREATE, "(vector dtype contentlist) -> vector", NULL, 0, },
+		{ "vadd", fnVecMath, FN_VECTOR_ADD, "(vadd vec1 vec2)", NULL, 0, },
+		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(vdot vec1 vec2)", NULL, 0, },
+		{ "vscalmul", fnVecMath, FN_VECTOR_SCALMUL, "(vscalmul scalar vec1)", NULL, 0, },
+		{ "vemul", fnVecMath, FN_VECTOR_EMUL, "(vemul vec1 vec2)", NULL, 0, },
+		{ "veadd", fnVecMath, FN_VECTOR_ESUM, "(veadd vec1 vec2)", NULL, 0, },
+		{ "vecset", fnVector, FN_VECTOR_SET, "(vecset vector indexlist datalist)", NULL, PPFLAG_SIDEEFFECTS, },
+		{ "vecget", fnVector, FN_VECTOR_GET, "(vecget vector indexlist)", NULL, 0, }
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))

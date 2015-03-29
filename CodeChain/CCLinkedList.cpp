@@ -245,6 +245,168 @@ ICCItem *CCLinkedList::GetElement (int iIndex)
 		return NULL;
 	}
 
+CCLinkedList *CCLinkedList::GetFlattened(CCodeChain *pCC, CCLinkedList *pResult = NULL)
+
+//	GetFlattened
+// 
+//	Returns a flattened representation of this list. 
+//
+
+{
+	int i;
+	ICCItem *pCurrentElement;
+	if (pResult == NULL)
+	{
+		pResult = &(CCLinkedList());
+	};
+
+
+	for (i = 0; i < this->GetCount(); i++)
+	{
+		pCurrentElement = this->GetElement(i);
+		if (pCurrentElement->IsList())
+		{
+			(dynamic_cast <CCLinkedList *> (pCurrentElement))->GetFlattened(pCC, pResult = pResult);
+		}
+		else
+		{
+			pResult->Append(pCC, pCurrentElement);
+		};
+	};
+
+	return pResult;
+};
+
+ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
+
+//  IsValidVectorContent
+//
+//  Determines if contents of list are suitable for representation as vector.
+//
+//  If a list is suitable for storage as vector, its elements will be numeric or 
+//  linked list type, and its dimensions will be "uniform" -- that is, the size
+//	of each element at a particular hierarchy level should be the same. 
+//
+//  If the linked list is valid vector content, then its "shape" will be returned,
+//  otherwise an error will be returned. 
+
+{
+	//	TOCHECK: confirm that pHead does NOT have to be discarded when exiting
+	//		(current understanding is that pHead does not have to be discarded)
+	int i;
+	int j;
+	int iHeadCount;
+	ICCItem *pHead;
+	ICCItem *pTemp;
+	CCLinkedList *pShapeList;
+	CCLinkedList *pLowerLevelShapeList;
+	CCLinkedList *pListElement;
+	ICCItem *pResult;
+
+	pTemp = pCC->CreateLinkedList();
+	if (pTemp->IsError())
+	{
+		return pTemp;
+	};
+	pShapeList = dynamic_cast <CCLinkedList *> (pTemp);
+
+	pHead = this->Head(pCC);
+
+	if (pHead->GetValueType() == ICCItem::List)
+	{
+		iHeadCount = pHead->GetCount();
+		pResult = (dynamic_cast <CCLinkedList *> (pHead))->IsValidVectorContent(pCC);
+		if (pResult->IsError())
+		{
+			return pResult;
+		};
+		pLowerLevelShapeList = dynamic_cast <CCLinkedList *> (pResult);
+
+		//	now we go through every other element apart from head, 
+		//	at this hierarchy level
+		for (i = 1; i < this->GetCount(); i++)
+		{
+			//	recall that head is a list, so if the following items are not lists
+			//	then we automatically know that size of the elements at this level
+			//	in the hierarchy is not uniform
+			if (GetElement(i)->GetValueType() != ICCItem::List)
+			{
+				pShapeList->Discard(pCC);
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data type is not homogeneous."), NULL);
+				return pError;
+			};
+
+			pListElement = dynamic_cast<CCLinkedList *> (GetElement(i));
+			//	some element after head is a list, but if its size is not the same as
+			//	head, then this is not valid vector content
+			if (pListElement->GetCount() != iHeadCount)
+			{
+				pShapeList->Discard(pCC);
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
+				return pError;
+			};
+
+			// check if the list element itself is valid vector content
+			pResult = pListElement->IsValidVectorContent(pCC);
+			if (pResult->IsError())
+			{
+				pShapeList->Discard(pCC);
+				return pResult;
+			};
+
+			//	compare the LowerLevelShapeList of this element with that of the head
+			if (pResult->GetCount() == pLowerLevelShapeList->GetCount())
+			{
+				for (j = 0; j < pLowerLevelShapeList->GetCount(); j++)
+				{
+					if (pResult->GetElement(i)->GetIntegerValue() != pLowerLevelShapeList->GetElement(i)->GetIntegerValue())
+					{
+						ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
+						return pError;
+					};
+				};
+			}
+			else
+			{
+				pShapeList->Discard(pCC);
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
+				return pError;
+			};
+		};
+
+		//	we have passed all the checks, so now we create pShapeList
+		pShapeList->AppendIntegerValue(pCC, iHeadCount);
+		for (i = 0; i < pLowerLevelShapeList->GetCount(); i++)
+		{
+			pShapeList->AppendIntegerValue(pCC, pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
+		};
+		return pShapeList;
+	}
+	else if (pHead->GetValueType() == ICCItem::Numeral)
+	{
+		for (i = 1; i < GetCount(); i++)
+		{
+			if (GetElement(i)->GetValueType() != ICCItem::Numeral)
+			{
+				pShapeList->Discard(pCC);
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);
+				return pError;
+			};
+		};
+
+		//	Done -- so put a value into pShapeList
+		pShapeList->AppendIntegerValue(pCC, this->GetCount(), NULL);
+		return pShapeList;
+	}
+	else
+	{
+		pShapeList->Discard(pCC);
+		ICCItem *pError = pCC->CreateError(CONSTLIT("Content list contains non-numeric or non-list types."), pHead);
+		return pError;
+	};
+
+};
+
 CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
 
 //	Print
