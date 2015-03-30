@@ -942,16 +942,17 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 
 			//  We expect a numeral...
 			case 'n':
-			{
-				if (!pResult->IsDouble() || !pResult->IsInteger())
 				{
+				if (!pResult->IsDouble() && !pResult->IsInteger())
+					{
 					pError = CreateError(LITERAL("Numeral expected"), pResult);
 					pResult->Discard(this);
 					pEvalList->Discard(this);
 					return pError;
-				}
+					}
 				break;
-			}
+				}
+
 			//	We expect an identifier
 
 			case 's':
