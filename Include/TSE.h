@@ -2837,8 +2837,8 @@ class CSpaceObject : public CObject
 	protected:
 
 		//	Virtuals to be overridden
-		virtual bool CanBlock (CSpaceObject *pObj) { return true; }
-		virtual bool CanBlockShips (void) { return true; }
+		virtual bool CanBlock (CSpaceObject *pObj) { return false; }
+		virtual bool CanBlockShips (void) { return false; }
 		virtual bool CanFireOn (CSpaceObject *pObj) { return true; }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { Destroy(removedFromSystem, CDamageSource()); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
