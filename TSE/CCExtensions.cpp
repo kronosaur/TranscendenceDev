@@ -1441,6 +1441,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'abandoned\n"
 			"   'barrier\n"
+			"   'destNodeID\n"
+			"   'destStargateID\n"
 			"   'dockingPortCount\n"
 			"   'hp\n"
 			"   'ignoreFriendlyFire\n"
@@ -1455,6 +1457,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'repairArmorMaxLevel\n"
 			"   'shipConstructionEnabled\n"
 			"   'shipReinforcementEnabled\n"
+			"   'stargateID\n"
 			"   'structuralHP\n"
 			"\n"
 			"NOTE: All type properties (accessed via typGetProperty) are also valid object properties.\n",

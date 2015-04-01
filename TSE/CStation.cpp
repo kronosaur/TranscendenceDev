@@ -27,6 +27,8 @@
 
 #define PROPERTY_ABANDONED						CONSTLIT("abandoned")
 #define PROPERTY_BARRIER						CONSTLIT("barrier")
+#define PROPERTY_DEST_NODE_ID					CONSTLIT("destNodeID")
+#define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
@@ -40,6 +42,7 @@
 #define PROPERTY_PLAYER_BACKLISTED				CONSTLIT("playerBlacklisted")
 #define PROPERTY_SHIP_CONSTRUCTION_ENABLED		CONSTLIT("shipConstructionEnabled")
 #define PROPERTY_SHIP_REINFORCEMENT_ENABLED		CONSTLIT("shipReinforcementEnabled")
+#define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
 
 #define STR_TRUE								CONSTLIT("true")
@@ -1429,6 +1432,12 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_BARRIER))
 		return CC.CreateBool(m_fBlocksShips);
 
+	else if (strEquals(sName, PROPERTY_DEST_NODE_ID))
+		return (IsStargate() ? CC.CreateString(m_sStargateDestNode) : CC.CreateNil());
+
+	else if (strEquals(sName, PROPERTY_DEST_STARGATE_ID))
+		return (IsStargate() ? CC.CreateString(m_sStargateDestEntryPoint) : CC.CreateNil());
+
 	else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
 
@@ -1464,6 +1473,18 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SHIP_REINFORCEMENT_ENABLED))
 		return CC.CreateBool(m_fNoReinforcements);
+
+	else if (strEquals(sName, PROPERTY_STARGATE_ID))
+		{
+		CSystem *pSystem;
+		CString sGateID;
+		if (!IsStargate() 
+				|| (pSystem = GetSystem()) == NULL
+				|| !pSystem->FindObjectName(this, &sGateID))
+			return CC.CreateNil();
+
+		return CC.CreateString(sGateID);
+		}
 
 	else if (strEquals(sName, PROPERTY_STRUCTURAL_HP))
 		return CC.CreateInteger(m_iStructuralHP);
