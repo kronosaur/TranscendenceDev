@@ -6,7 +6,7 @@
 #include "PreComp.h"
 
 #ifdef DEBUG
-#define DEBUG_PAINT_TIMINGS
+//#define DEBUG_PAINT_TIMINGS
 #endif
 
 const int STARFIELD_COUNT =						5000;

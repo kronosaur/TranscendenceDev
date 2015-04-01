@@ -1534,7 +1534,11 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 	//	Load images, if necessary
 
 	if (!IsCreationInProgress())
+		{
+		g_pUniverse->SetLogImageLoad(false);
 		pShip->MarkImages();
+		g_pUniverse->SetLogImageLoad(true);
+		}
 
 	//	Create escorts, if necessary
 
@@ -2718,7 +2722,7 @@ void CSystem::MarkImages (void)
 		{
 		CSpaceObject *pObj = GetObject(i);
 
-		if (pObj)
+		if (pObj && !pObj->IsDestroyed())
 			pObj->MarkImages();
 		}
 
@@ -2728,13 +2732,46 @@ void CSystem::MarkImages (void)
 		m_pEnvironment->MarkImages();
 
 	//	Mark system type images
+	//	[The intro screen does not have a type.]
 
-	m_pType->MarkImages();
+	if (m_pType)
+		m_pType->MarkImages();
+	else
+		{
+		//	If we have no type, then mark the default space background because
+		//	we use it by default for the intro.
+
+		CObjectImage *pDefault = g_pUniverse->FindLibraryImage(UNID_DEFAULT_SYSTEM_BACKGROUND);
+		if (pDefault)
+			pDefault->Mark();
+		}
 
 	//	Initialize the volumetric mask
 
 	if (g_pUniverse->GetSFXOptions().IsStarshineEnabled())
 		InitVolumetricMask();
+
+	//	We mark some default effects, which are very commonly used (e.g., for
+	//	ship explosions).
+
+	CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_LargeExplosionUNID);
+	if (pEffect)
+		pEffect->MarkImages();
+
+	pEffect = g_pUniverse->FindEffectType(g_ExplosionUNID);
+	if (pEffect)
+		pEffect->MarkImages();
+
+	CObjectImage *pImage = g_pUniverse->FindLibraryImage(g_ShipExplosionParticlesUNID);
+	if (pImage)
+		pImage->Mark();
+
+	for (i = 0; i < damageCount; i++)
+		{
+		CEffectCreator *pEffect = g_pUniverse->FindDefaultHitEffect((DamageTypes)i);
+		if (pEffect)
+			pEffect->MarkImages();
+		}
 
 	//	Done
 

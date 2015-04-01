@@ -1523,6 +1523,13 @@ void CWeaponFireDesc::MarkImages (void)
 
 	if (m_pFireEffect)
 		m_pFireEffect->MarkImages();
+
+	SFragmentDesc *pFragment = m_pFirstFragment;
+	while (pFragment)
+		{
+		pFragment->pDesc->MarkImages();
+		pFragment = pFragment->pNext;
+		}
 	}
 
 ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
