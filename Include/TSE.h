@@ -1087,7 +1087,6 @@ class CSystemSpacePainter
 		void InitSpaceBackground (DWORD dwBackgroundUNID, CG32bitPixel rgbSpaceColor);
 		void PaintSpaceBackground (CG32bitImage &Dest, int xCenter, int yCenter, SViewportPaintCtx &Ctx);
 		void PaintStarfield (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, CG32bitPixel rgbSpaceColor);
-		void PaintTiledBackground (CG32bitImage &Dest, const RECT &rcView, CG32bitImage &Src, int xOffset, int yOffset);
 
 		bool m_bInitialized;
 

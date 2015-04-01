@@ -6,7 +6,7 @@
 #include "PreComp.h"
 
 #ifdef DEBUG
-//#define DEBUG_PAINT_TIMINGS
+#define DEBUG_PAINT_TIMINGS
 #endif
 
 const int STARFIELD_COUNT =						5000;
@@ -17,6 +17,8 @@ const int BRIGHT_STAR_CHANCE =					20;
 
 const CG32bitPixel RGB_DEFAULT_SPACE_COLOR =	CG32bitPixel(0,0,8);
 
+const int MAX_THREAD_COUNT =					16;
+
 #ifdef DEBUG_PAINT_TIMINGS
 static int g_iTimingCount = 0;
 static DWORD g_dwTotalTime = 0;
@@ -25,30 +27,76 @@ static DWORD g_dwTotalTime = 0;
 class CStarshinePainter : public IThreadPoolTask
 	{
 	public:
-		CStarshinePainter (CG32bitImage &Dest, int yStart, int cyHeight, const CG8bitSparseImage &Mask, int xMask, int yMask, CG32bitPixel rgbSpaceColor) :
+		struct SCtx
+			{
+			SCtx (void) :
+					xDest(0),
+					yDest(0),
+					cxWidth(0),
+					cyHeight(0),
+					pBackground(NULL),
+					xBackground(0),
+					yBackground(0),
+					pMask(NULL),
+					xMask(0),
+					yMask(0),
+					rgbStarshine(0x00, 0x00, 0x00)
+				{ }
+
+			int xDest;
+			int yDest;
+			int cxWidth;
+			int cyHeight;
+
+			const CG32bitImage *pBackground;
+			int xBackground;
+			int yBackground;
+
+			const CG8bitSparseImage *pMask;
+			int xMask;
+			int yMask;
+			CG32bitPixel rgbStarshine;
+			};
+
+		CStarshinePainter (CG32bitImage &Dest, int y, int cyHeight, SCtx &Ctx) :
 				m_Dest(Dest),
-				m_yStart(yStart),
+				m_y(y),
 				m_cyHeight(cyHeight),
-				m_rgbSpaceColor(rgbSpaceColor),
-				m_Mask(Mask),
-				m_xMask(xMask),
-				m_yMask(yMask)
+				m_Ctx(Ctx)
 			{ }
 
 		virtual void Run (void)
 			{
-			m_Mask.MaskFill(m_Dest, 0, m_yStart, m_Dest.GetWidth(), m_cyHeight, m_xMask, m_yMask, m_rgbSpaceColor);
+			if (m_Ctx.pBackground)
+				CGDraw::BltTiled(m_Dest,
+						m_Ctx.xDest,
+						m_Ctx.yDest + m_y,
+						m_Ctx.cxWidth,
+						m_cyHeight,
+						*m_Ctx.pBackground,
+						0,
+						0,
+						-1,
+						-1,
+						m_Ctx.xBackground,
+						m_Ctx.yBackground + m_y);
+
+			if (m_Ctx.pMask)
+				m_Ctx.pMask->MaskFill(m_Dest, 
+						m_Ctx.xDest, 
+						m_Ctx.yDest + m_y, 
+						m_Ctx.cxWidth, 
+						m_cyHeight, 
+						m_Ctx.xMask, 
+						m_Ctx.yMask + m_y, 
+						m_Ctx.rgbStarshine);
 			};
 
 	private:
+		SCtx &m_Ctx;
 		CG32bitImage &m_Dest;
-		int m_yStart;
+		int m_y;
 		int m_cyHeight;
-		CG32bitPixel m_rgbSpaceColor;
-
-		const CG8bitSparseImage &m_Mask;
-		int m_xMask;
-		int m_yMask;
 	};
 
 //	CSystemSpacePainter --------------------------------------------------------
@@ -63,7 +111,7 @@ CSystemSpacePainter::CSystemSpacePainter (void) :
 //	CSystemSpacePainter constructor
 
 	{
-	m_Threads.Boot(sysGetProcessorCount());
+	m_Threads.Boot(Min(MAX_THREAD_COUNT, sysGetProcessorCount()));
 	}
 
 void CSystemSpacePainter::CleanUp (void)
@@ -213,17 +261,20 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 	DWORD dwStart = ::GetTickCount();
 #endif
 
+	CStarshinePainter::SCtx StarshineCtx;
+	StarshineCtx.xDest = Ctx.rcView.left;
+	StarshineCtx.yDest = Ctx.rcView.top;
+	StarshineCtx.cxWidth = RectWidth(Ctx.rcView);
+	StarshineCtx.cyHeight = RectHeight(Ctx.rcView);
+
+	//	Compute the background parallax
+
 	int cxImage = m_pBackground->GetWidth();
 	int cyImage = m_pBackground->GetHeight();
 
-	//	Compute the paint positions
-
-	int xOffset = ClockMod(xCenter / 4, cxImage);
-	int yOffset = ClockMod(-yCenter / 4, cyImage);
-
-	//	Tile across the entire screen
-
-	PaintTiledBackground(Dest, Ctx.rcView, *m_pBackground, xOffset, yOffset);
+	StarshineCtx.pBackground = m_pBackground;
+	StarshineCtx.xBackground = ClockMod(xCenter / 4, cxImage);
+	StarshineCtx.yBackground = ClockMod(-yCenter / 4, cyImage);
 
 	//	Starshine
 
@@ -231,31 +282,35 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 			&& Ctx.rgbSpaceColor.GetAlpha() != 0
 			&& Ctx.pVolumetricMask)
 		{
-		int cyLeft = Dest.GetHeight();
-		int cyChunk = cyLeft / m_Threads.GetThreadCount();
-		int yStart = 0;
+		//	Compute the volumetric mask data
 
 		int xStarCenter = (int)(Ctx.pStar->GetPos().GetX() / g_KlicksPerPixel);
 		int yStarCenter = (int)(Ctx.pStar->GetPos().GetY() / g_KlicksPerPixel);
 
-		//	Compute the coordinates of the destination rect with respect to the
-		//	volumetric mask.
-
-		int xMask = (Ctx.pVolumetricMask->GetWidth() / 2) + xCenter - (RectWidth(Ctx.rcView) / 2) - xStarCenter;
-		int yMask = (Ctx.pVolumetricMask->GetHeight() / 2) - yCenter - (RectHeight(Ctx.rcView) / 2) + yStarCenter;
-
-		//	Start asynchronous tasks
-
-		while (yStart < Dest.GetHeight())
-			{
-			int cyHeight = Min(Dest.GetHeight() - yStart, cyChunk);
-			m_Threads.AddTask(new CStarshinePainter(Dest, yStart, cyHeight, *Ctx.pVolumetricMask, xMask, yMask + yStart, Ctx.rgbSpaceColor));
-
-			yStart += cyHeight;
-			}
-
-		m_Threads.Run();
+		StarshineCtx.pMask = Ctx.pVolumetricMask;
+		StarshineCtx.xMask = (Ctx.pVolumetricMask->GetWidth() / 2) + xCenter - (RectWidth(Ctx.rcView) / 2) - xStarCenter;
+		StarshineCtx.yMask = (Ctx.pVolumetricMask->GetHeight() / 2) - yCenter - (RectHeight(Ctx.rcView) / 2) + yStarCenter;
+		StarshineCtx.rgbStarshine = Ctx.rgbSpaceColor;
 		}
+
+	//	Compute the chunks
+
+	int cyLeft = RectHeight(Ctx.rcView);
+	int cyChunk = cyLeft / m_Threads.GetThreadCount();
+	int yStart = 0;
+
+	//	Start asynchronous tasks
+
+	while (cyLeft > 0)
+		{
+		int cyHeight = Min((int)cyLeft, cyChunk);
+		m_Threads.AddTask(new CStarshinePainter(Dest, yStart, cyHeight, StarshineCtx));
+
+		yStart += cyHeight;
+		cyLeft -= cyHeight;
+		}
+
+	m_Threads.Run();
 
 #ifdef DEBUG_PAINT_TIMINGS
 	g_dwTotalTime += ::GetTickCount() - dwStart;
@@ -410,51 +465,10 @@ void CSystemSpacePainter::PaintViewportMap (CG32bitImage &Dest, const RECT &rcVi
 	//	If we have a system background image, paint it.
 
 	if (m_pBackground && Ctx.IsSpaceBackgroundEnabled())
-		PaintTiledBackground(Dest, rcView, *m_pBackground, 0, 0);
+		CGDraw::BltTiled(Dest, rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), *m_pBackground);
 
 	//	Otherwise, default fill
 
 	else
 		Dest.Fill(rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), RGB_DEFAULT_SPACE_COLOR);
-	}
-
-void CSystemSpacePainter::PaintTiledBackground (CG32bitImage &Dest, const RECT &rcView, CG32bitImage &Src, int xOffset, int yOffset)
-
-//	PaintTiledBackground
-//
-//	Paints a tiled background
-
-	{
-	int cxImage = Src.GetWidth();
-	int cyImage = Src.GetHeight();
-
-	//	Tile across the entire screen
-
-	int ySrc = yOffset;
-	int cySrc = cyImage - ySrc;
-
-	int yDest = rcView.top;
-	int yDestEnd = rcView.bottom;
-
-	while (yDest < yDestEnd)
-		{
-		int xSrc = xOffset;
-		int cxSrc = cxImage - xSrc;
-
-		int xDest = rcView.left;
-		int xDestEnd = rcView.right;
-
-		while (xDest < xDestEnd)
-			{
-			Dest.Blt(xSrc, ySrc, cxSrc, cySrc, Src, xDest, yDest);
-
-			xDest += cxSrc;
-			xSrc = 0;
-			cxSrc = cxImage;
-			}
-
-		yDest += cySrc;
-		ySrc = 0;
-		cySrc = cyImage;
-		}
 	}
