@@ -1616,6 +1616,7 @@ void UncompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput);
 //	System functions
 
 DWORD sysGetAPIFlags (void);
+DWORD sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow = NULL);
 int sysGetProcessorCount (void);
 CString sysGetUserName (void);
 bool sysIsBigEndian (void);

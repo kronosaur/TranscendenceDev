@@ -363,11 +363,11 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 		};
 		return pShapeList;
 	}
-	else if (pHead->GetValueType() == ICCItem::Numeral)
+	else if (pHead->GetValueType() == ICCItem::Double)
 	{
 		for (i = 1; i < GetCount(); i++)
 		{
-			if (GetElement(i)->GetValueType() != ICCItem::Numeral)
+			if (GetElement(i)->GetValueType() != ICCItem::Double)
 			{
 				pShapeList->Discard(pCC);
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);

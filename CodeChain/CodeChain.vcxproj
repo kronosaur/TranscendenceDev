@@ -342,6 +342,7 @@
     <ClInclude Include="DefPrimitives.h" />
     <ClInclude Include="Functions.h" />
     <ClInclude Include="Pages.h" />
+    <ClInclude Include="TMathList.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kernel\Kernel.vcxproj">

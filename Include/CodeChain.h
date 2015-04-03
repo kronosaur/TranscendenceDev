@@ -96,7 +96,6 @@ class ICCItem : public CObject
 			Complex,
 			Double,
 			Vector,
-			Numeral 
 			};
 
 		ICCItem (IObjectClass *pClass);
@@ -908,9 +907,10 @@ ALERROR pageLibraryInit (CCodeChain &CC);
 
 //	Utilities
 
-int HelperCompareItemsNumerals (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
-int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, bool bCoerce = true);
-int HelperCompareItemsListsNumerals(ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
+#define HELPER_COMPARE_COERCE_COMPATIBLE		0x00000001
+#define HELPER_COMPARE_COERCE_FULL				0x00000002
+
+int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags = HELPER_COMPARE_COERCE_COMPATIBLE);
 int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
 
 #endif

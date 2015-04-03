@@ -101,5 +101,8 @@
     <ClInclude Include="..\Include\CodeChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TMathList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

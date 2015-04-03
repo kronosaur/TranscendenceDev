@@ -4,54 +4,35 @@
 
 static PRIMITIVEPROCDEF g_DefPrimitives[] =
 	{
-		{	"<",				fnEquality,		FN_EQUALITY_LESSER,		"",		NULL,	0,	},
+		{	"<",				fnEqualityNumerals,		FN_EQUALITY_LESSER,		"",		NULL,	0,	},
 		{	"ls",				fnEquality,		FN_EQUALITY_LESSER,		
 			"(ls a b) -> True if a < b",
 			NULL,	0,	},
 
-		{	"lsn",				fnEqualityNumerals,		FN_EQUALITY_LESSER_NUMERALS,		
-			"(lsn a b) -> True if a < b",
-			NULL,	0,	},
-
-		{	"<=",				fnEquality,		FN_EQUALITY_LESSER_EQ,	"",		NULL,	0,	},
+		{	"<=",				fnEqualityNumerals,		FN_EQUALITY_LESSER_EQ,	"",		NULL,	0,	},
 		{	"leq",				fnEquality,		FN_EQUALITY_LESSER_EQ,
 			"(leq a b) -> True if a <= b",
 			NULL,	0,	},
 
-		{	"leqn",				fnEqualityNumerals,		FN_EQUALITY_LESSER_EQ_NUMERALS,
-			"(leqn a b) -> True if a <= b",
-			NULL,	0,	},
-
-		{	">",				fnEquality,		FN_EQUALITY_GREATER,	"",		NULL,	0,	},
+		{	">",				fnEqualityNumerals,		FN_EQUALITY_GREATER,	"",		NULL,	0,	},
 		{	"gr",				fnEquality,		FN_EQUALITY_GREATER,
 			"(gr a b) -> True if a > b",
 			NULL,	0,	},
 
-		{	"grn",				fnEqualityNumerals,		FN_EQUALITY_GREATER_NUMERALS,
-			"(grn a b) -> True if a > b",
-			NULL,	0,	},
-
-		{	">=",				fnEquality,		FN_EQUALITY_GREATER_EQ,	"",		NULL,	0,	},
+		{	">=",				fnEqualityNumerals,		FN_EQUALITY_GREATER_EQ,	"",		NULL,	0,	},
 		{	"geq",				fnEquality,		FN_EQUALITY_GREATER_EQ,
 			"(geq a b) -> True if a >= b",		NULL,	0,	},
-
-		{	"geqn",				fnEqualityNumerals,		FN_EQUALITY_GREATER_EQ_NUMERALS,
-			"(geqn a b) -> True if a >= b",		NULL,	0,	},
 
 		{	"add",				fnMathList,		FN_MATH_ADD,
 			"(add x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
-		{	"+",				fnMathListNumerals,		FN_MATH_ADD_NUMERALS,
+		{	"+",				fnMathList,		FN_MATH_ADD,
 			"(+ x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
 		{	"abs",				fnMath,			FN_MATH_ABSOLUTE,
 			"(abs x) -> z",
-			"n",	0,	},
-
-		{	"absn",				fnMathNumerals,			FN_MATH_ABSOLUTE_NUMERALS,
-			"(absn x) -> z",
 			"n",	0,	},
 
 		{	"and",				fnLogical,		FN_LOGICAL_AND,
@@ -82,7 +63,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"divide",			fnMathOld,			FN_MATH_DIVIDE,
 			"(divide x y) -> z",		NULL,	0,	},
 
-		{	"/",			fnMathNumerals,			FN_MATH_DIVIDE_NUMERALS,
+		{	"/",				fnMathNumerals,			FN_MATH_DIVIDE,
 			"(/ x y) -> z",		NULL,	0,	},
 
 		{	"enum",				fnEnum,			0,
@@ -100,7 +81,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s",	0,	},
 
 		{	"eq",				fnEquality,		FN_EQUALITY_EQ,			"",		NULL,	0,	},
-		{ "=", fnEqualityNumerals, FN_EQUALITY_EQ_NUMERALS, "", NULL, 0, },
+		{	"=",				fnEqualityNumerals, FN_EQUALITY_EQ,		"", NULL, 0, },
 		{	"eval",				fnEval,			0,						"",		NULL,	0,	},
 		{	"filter",			fnFilter,		0,
 			"(filter list var boolean-exp) -> filtered list",
@@ -181,23 +162,15 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(max x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
-		{	"maxn",				fnMathListNumerals,			FN_MATH_MAX_NUMERALS,
-			"(maxn x1 x2 ... xn) -> z",
-			"v*",	0,	},
-
 		{	"min",				fnMathList,			FN_MATH_MIN,
 			"(min x1 x2 ... xn) -> z",
-			"v*",	0,	},
-
-		{	"minn",				fnMathListNumerals,			FN_MATH_MIN_NUMERALS,
-			"(minn x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
 		{	"modulo",			fnMath,			FN_MATH_MODULUS,
 			"(modulo ['degrees] x y) -> z",
 			"*",	0,	},
 
-		{	"mod",			fnMathNumerals,			FN_MATH_MODULUS_NUMERALS,
+		{	"mod",			fnMath,			FN_MATH_MODULUS_NUMERALS,
 			"(mod ['degrees] x y) -> z",
 			"*",	0,	},
 
@@ -205,13 +178,13 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(multiply x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
-		{	"*",			fnMathListNumerals,			FN_MATH_MULTIPLY_NUMERALS,
+		{	"*",				fnMathList,			FN_MATH_MULTIPLY,
 			"(* x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
 		{	"neq",				fnEquality,		FN_EQUALITY_NEQ,			"",		NULL,	0,	},
 
-		{	"!=", fnEqualityNumerals, FN_EQUALITY_NEQ_NUMERALS, "", NULL, 0, },
+		{	"!=",				fnEqualityNumerals,	FN_EQUALITY_NEQ, "", NULL, 0, },
 
 		{	"not",				fnLogical,		FN_LOGICAL_NOT,
 			"(not exp) -> True/Nil",
@@ -225,7 +198,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(power x y) -> z",
 			"vv",	0,	},
 
-		{	"pow",			fnMathNumerals,		FN_MATH_POWER_NUMERALS,
+		{	"pow",				fnMath,		FN_MATH_POWER_NUMERALS,
 			"(pow x y) -> z",
 			"vv",	0,	},
 
@@ -243,7 +216,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"randomGaussian",		fnRandom,		FN_RANDOM_GAUSSIAN,
 			"(randomGaussian low mid high) -> random number between low and high",
-			"nnn",	0,	},
+			"iii",	0,	},
 
 		{	"randomTable",		fnRandomTable,		0,
 			"(randomTable chance1 exp1 chance2 exp2 ... chancen expn) -> exp",
@@ -251,7 +224,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"seededRandom",		fnSeededRandom,		0,
 			"(seededRandom seed from to)\n(seededRandom seed list)",
-			"n*",	0,	},
+			"i*",	0,	},
 
 		{	"set",				fnSet,			FN_SET_SET,				"",		NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -282,7 +255,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(sqrt x) -> z",
 			"v",	0,	},
 
-		{	"sqrtn",				fnMathNumerals,			FN_MATH_SQRT_NUMERALS,
+		{	"sqrtn",				fnMath,			FN_MATH_SQRT_NUMERALS,
 			"(sqrtn x) -> z",
 			"v",	0,	},
 
@@ -306,7 +279,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(subtract x y) -> z",
 			NULL,	0,	},
 
-		{	"-",			fnMathNumerals,			FN_MATH_SUBTRACT_NUMERALS,
+		{	"-",				fnMathList,			FN_MATH_SUBTRACT,
 			"(- x y) -> z",
 			NULL,	0,	},
 
