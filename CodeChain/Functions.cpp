@@ -3153,20 +3153,11 @@ ICCItem *fnMath (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_MATH_SQRT:
 			{
 			ICCItem *pX = pArgs->GetElement(0);
-			if (pX->IsDouble())
-				{
-				double rX = pX->GetDoubleValue();
-				if (rX >= 0.0)
-					return pCC->CreateDouble(sqrt(rX));
-				}
-			else
-				{
-				int iX = pX->GetIntegerValue();
-				if (iX > 0)
-					return pCC->CreateInteger(mathSqrt(iX));
-				}
+			int iX = pX->GetIntegerValue();
+			if (iX < 0)
+				return pCC->CreateError(CONSTLIT("Imaginary number"), pArgs->GetElement(0));
 
-			return pCC->CreateError(CONSTLIT("Imaginary number"), pArgs->GetElement(0));
+			return pCC->CreateInteger(mathSqrt(iX));
 			}
 
 		case FN_MATH_SQRT_NUMERALS:
