@@ -3275,6 +3275,9 @@ void CStation::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransfo
 
 	if (m_Scale == scaleWorld || m_Scale == scaleStar)
 		{
+		if (m_MapImage.IsEmpty())
+			CreateMapImage();
+
 		Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
 				m_MapImage,
 				x - (m_MapImage.GetWidth() / 2),

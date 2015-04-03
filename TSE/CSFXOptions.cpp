@@ -67,7 +67,7 @@ void CSFXOptions::SetSFXQualityAuto (void)
 
 	//	Start timing
 
-	DWORDLONG dwStart = ::GetTickCount64();
+	DWORD dwStart = ::GetTickCount();
 
 	//	Paint some gradient circles to test speed
 
@@ -76,7 +76,7 @@ void CSFXOptions::SetSFXQualityAuto (void)
 
 	//	Timing
 
-	DWORDLONG dwElapsed = ::GetTickCount64() - dwStart;
+	DWORD dwElapsed = sysGetTicksElapsed(dwStart);
 	int iProcCount = ::sysGetProcessorCount();
 
 	//	If more than 500 ms, then we go to minimum quality
@@ -90,7 +90,7 @@ void CSFXOptions::SetSFXQualityAuto (void)
 	//	If more than 200 ms, or if we have less than four processors, then
 	//	go to standard quality.
 
-	else if (dwElapsed > 200 || iProcCount < 4)
+	else if (dwElapsed > 200 || iProcCount < 2)
 		{
 		SetSFXQuality(sfxStandard);
 		::kernelDebugLogMessage("Graphics quality standard (balanced performance): %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
