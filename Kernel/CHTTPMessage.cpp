@@ -310,7 +310,7 @@ bool CHTTPMessage::ParseHTTPStartLine (IReadStream &Stream, CString *retsError)
 
 	CString sLine;
 	if (!ReadLine(Stream, &sLine))
-		return ERR_FAIL;
+		return false;
 
 	//	If this starts with HTTP then this is a response.
 

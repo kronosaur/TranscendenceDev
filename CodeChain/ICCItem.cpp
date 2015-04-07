@@ -122,6 +122,8 @@ CString ICCItem::GetTypeOf (void)
 		return CONSTLIT("nil");
 	else if (IsInteger())
 		return CONSTLIT("int32");
+	else if (IsDouble())
+		return CONSTLIT("real");
 	else if (IsPrimitive())
 		return CONSTLIT("primitive");
 	else if (IsLambdaFunction())

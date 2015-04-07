@@ -557,7 +557,6 @@ void CG32bitImage::BltMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const
 		}
 	}
 
-
 void CG32bitImage::Composite (int xSrc, int ySrc, int cxWidth, int cyHeight, BYTE byOpacity, const CG32bitImage &Source, int xDest, int yDest)
 
 //	Composite
@@ -914,6 +913,50 @@ void CGDraw::BltShimmer (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage 
 	{
 	CFilterShimmer Filter(byOpacity, dwSeed);
 	Filter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+	}
+
+void CGDraw::BltTiled (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, int xSrcOffset, int ySrcOffset)
+
+	{
+	if (Src.IsEmpty())
+		return;
+
+	if (cxSrc <= 0)
+		cxSrc = Src.GetWidth();
+
+	if (cySrc <= 0)
+		cySrc = Src.GetHeight();
+
+	xSrcOffset = xSrcOffset % cxSrc;
+	ySrcOffset = ySrcOffset % cySrc;
+
+	int cyLeft = cyDest;
+	int yDestRow = yDest;
+	int ySrcRow = ySrc + ySrcOffset;
+	int cyRow = Min(cyDest, cySrc - ySrcOffset);
+
+	while (cyLeft > 0)
+		{
+		int cxLeft = cxDest;
+		int xDestTile = xDest;
+		int xSrcTile = xSrc + xSrcOffset;
+		int cxTile = Min(cxLeft, cxSrc - xSrcOffset);
+
+		while (cxLeft > 0)
+			{
+			Dest.Blt(xSrcTile, ySrcRow, cxTile, cyRow, Src, xDestTile, yDestRow);
+
+			xDestTile += cxTile;
+			cxLeft -= cxTile;
+			xSrcTile = xSrc;
+			cxTile = Min(cxLeft, cxSrc);
+			}
+
+		yDestRow += cyRow;
+		cyLeft -= cyRow;
+		ySrcRow = ySrc;
+		cyRow = Min(cyLeft, cySrc);
+		}
 	}
 
 void CGDraw::BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)

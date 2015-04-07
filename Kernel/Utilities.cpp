@@ -4,6 +4,23 @@
 
 #include "Kernel.h"
 
+DWORD sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow)
+
+//	sysGetTicksElapsed
+//
+//	Returns the number of milliseconds since the given tick count
+
+	{
+	DWORD dwNow = ::GetTickCount();
+	if (retdwNow)
+		*retdwNow = dwNow;
+
+	if (dwNow < dwTick)
+		return (0xffffffff - dwTick) + dwNow + 1;
+	else
+		return dwNow - dwTick;
+	}
+
 int sysGetProcessorCount (void)
 
 //	sysGetProcessorCount

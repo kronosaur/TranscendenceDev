@@ -4,6 +4,7 @@
 
 #include "Kernel.h"
 #include "KernelObjID.h"
+#include <float.h>
 
 #define STORE_SIZE_INIT						256
 #define STORE_SIZE_INCREMENT				256
@@ -2158,89 +2159,18 @@ double strToDouble (const CString &sString, double rFailResult, bool *retbFailed
 //	Converts a string to a double
 
 	{
-	//	Preset
+	double rResult = ::atof(sString.GetASCIIZPointer());
+	if (_isnan(rResult))
+		{
+		if (retbFailed)
+			*retbFailed = true;
+		return rFailResult;
+		}
 
 	if (retbFailed)
 		*retbFailed = false;
 
-	char *pPos = sString.GetASCIIZPointer();
-	bool bNegative = false;
-	bool bFoundNumber = false;
-	bool bDecimal = false;
-	double rDecimal = 0.0;
-	double rDecimalPlaces = 1.0;
-	double rValue = 0.0;
-
-	//	Skip whitespace
-
-	while (::strIsWhitespace(pPos))
-		pPos++;
-
-	//	If NULL, then we're done
-
-	if (*pPos == '\0')
-		{
-		if (retbFailed)
-			*retbFailed = true;
-
-		return rFailResult;
-		}
-
-	//	If negative, remember it
-
-	if (*pPos == '-')
-		{
-		bNegative = true;
-		pPos++;
-		}
-	else if (*pPos == '+')
-		pPos++;
-
-	//	Now parse for numbers
-
-	bool bDone = false;
-	while (*pPos != '\0' && !bDone) 
-		{
-		if (*pPos >= '0' && *pPos <= '9')
-			{
-			if (bDecimal)
-				{
-				rDecimal = (10.0 * rDecimal) + (double)(*pPos - '0');
-				rDecimalPlaces *= 10.0;
-				}
-			else
-				rValue = (10.0 * rValue) + (double)(*pPos - '0');
-
-			pPos++;
-			bFoundNumber = true;
-			}
-		else if (*pPos == '.' && !bDecimal)
-			{
-			bDecimal = true;
-			pPos++;
-			}
-		else
-			bDone = true;
-		}
-
-	//	Done?
-
-	if (bFoundNumber)
-		rValue = rValue + (rDecimal / rDecimalPlaces);
-	else
-		{
-		if (retbFailed)
-			*retbFailed = true;
-
-		return rFailResult;
-		}
-
-	//	Done!
-
-	if (bNegative)
-		return -rValue;
-	else
-		return rValue;
+	return rResult;
 	}
 
 CString strToFilename (const CString &sString)

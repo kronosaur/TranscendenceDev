@@ -872,13 +872,19 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				break;
 				}
 
-			//	We expect an integer...
+			//  We expect a numeral...
+			//
+			//	NOTE: We treat integer the same a numeral because it's not always
+			//	clear to the user when they've created a double or an integer.
+			//	It is up to the actual function to use the integer or double 
+			//	value appropriately.
 
 			case 'i':
+			case 'n':
 				{
-				if (!pResult->IsInteger())
+				if (!pResult->IsDouble() && !pResult->IsInteger())
 					{
-					pError = CreateError(LITERAL("Integer expected"), pResult);
+					pError = CreateError(LITERAL("Numeral expected"), pResult);
 					pResult->Discard(this);
 					pEvalList->Discard(this);
 					return pError;
@@ -887,30 +893,32 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				}
 
 			//  We expect a double...
+
 			case 'd':
-			{
-				if (!pResult->IsDouble())
 				{
+				if (!pResult->IsDouble())
+					{
 					pError = CreateError(LITERAL("Double expected"), pResult);
 					pResult->Discard(this);
 					pEvalList->Discard(this);
 					return pError;
-				}
+					}
 				break;
-			}
+				}
 
 			//  We expect a vEctor...
+
 			case 'e':
-			{
-				if (!(pResult->GetValueType() == ICCItem::Vector))
 				{
+				if (!(pResult->GetValueType() == ICCItem::Vector))
+					{
 					pError = CreateError(LITERAL("Vector expected"), pResult);
 					pResult->Discard(this);
 					pEvalList->Discard(this);
 					return pError;
-				}
+					}
 				break;
-			}
+				}
 
 			//	We expect a linked list
 
@@ -933,19 +941,6 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (!pResult->IsList())
 					{
 					pError = CreateError(LITERAL("List expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
-					return pError;
-					}
-				break;
-				}
-
-			//  We expect a numeral...
-			case 'n':
-				{
-				if (!pResult->IsDouble() && !pResult->IsInteger())
-					{
-					pError = CreateError(LITERAL("Numeral expected"), pResult);
 					pResult->Discard(this);
 					pEvalList->Discard(this);
 					return pError;

@@ -774,6 +774,9 @@ CString pathStripExtension (const CString &sPath)
 		iLength--;
 		}
 
+	if (iLength == 0)
+		return sPath;
+
 	//	Return everything except the extension
 
 	return strSubString(sPath, 0, iLength);

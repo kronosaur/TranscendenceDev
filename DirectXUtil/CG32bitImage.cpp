@@ -435,6 +435,10 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 		else
 			return false;
 
+		//	Do we have an 8-bit mask?
+
+		bool bHas8BitMask = (iMaskType == bitmapAlpha || iMaskType == bitmapRGB);
+
 		//	Allocate the image
 
 		int iSize = CalcBufferSize(cxWidth, cyHeight);
@@ -533,7 +537,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 			{
 			//	Handle pre-multiplication
 
-			if ((dwFlags & FLAG_PRE_MULT_ALPHA) && iMaskType == bitmapAlpha)
+			if ((dwFlags & FLAG_PRE_MULT_ALPHA) && bHas8BitMask)
 				{
 				CG32bitPixel *pDestRow = m_pRGBA;
 				CG32bitPixel *pDestRowEnd = pDestRow + iSize;
@@ -593,7 +597,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 					pSrcRow = (WORD *)(((char *)pSrcRow) + iMaskStride);
 					}
 
-				m_AlphaType = (iMaskType == bitmapAlpha ? alpha8 : alpha1);
+				m_AlphaType = (bHas8BitMask ? alpha8 : alpha1);
 				}
 			}
 
@@ -603,7 +607,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 			{
 			//	Handle pre-multiplication
 
-			if ((dwFlags & FLAG_PRE_MULT_ALPHA) && iMaskType == bitmapAlpha)
+			if ((dwFlags & FLAG_PRE_MULT_ALPHA) && bHas8BitMask)
 				{
 				CG32bitPixel *pDestRow = m_pRGBA;
 				CG32bitPixel *pDestRowEnd = pDestRow + iSize;
@@ -665,7 +669,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 					pSrcRow += iMaskStride;
 					}
 
-				m_AlphaType = (iMaskType == bitmapAlpha ? alpha8 : alpha1);
+				m_AlphaType = (bHas8BitMask ? alpha8 : alpha1);
 				}
 			}
 
