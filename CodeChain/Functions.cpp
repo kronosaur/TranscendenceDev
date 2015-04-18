@@ -33,77 +33,6 @@ double GetFractionArg (ICCItem *pArg, double *retrDenom = NULL);
 ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem **retpError);
 ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, DWORD dwCoerceFlags);
 
-ICCItem *AddNumerals(CCodeChain *pCC, CCNumeral *num1, CCNumeral *num2)
-{
-	if (num1->IsInteger() && num2->IsInteger())
-	{
-		return pCC->CreateInteger(num1->GetIntegerValue() + num2->GetIntegerValue());
-	};
-
-	return pCC->CreateDouble(num1->GetDoubleValue() + num2->GetDoubleValue());
-};
-
-ICCItem *MultiplyNumerals(CCodeChain *pCC, CCNumeral *num1, CCNumeral *num2)
-{
-	if (num1->IsInteger() && num2->IsInteger())
-	{
-		return pCC->CreateInteger(num1->GetIntegerValue() * num2->GetIntegerValue());
-	};
-
-	return pCC->CreateDouble(num1->GetDoubleValue() * num2->GetDoubleValue());
-};
-
-ICCItem *DivideNumerals(CCodeChain *pCC, CCNumeral *pNum, CCNumeral *pDen)
-{
-	if (pNum->IsInteger() && pDen->IsInteger())
-	{
-		return pCC->CreateInteger(pNum->GetIntegerValue() / pDen->GetIntegerValue());
-	};
-
-	return pCC->CreateDouble(pNum->GetDoubleValue() / pDen->GetDoubleValue());
-};
-
-ICCItem *ModuloNumerals (CCodeChain *pCC, ICCItem *pNum, ICCItem *pDen, bool bClock)
-	{
-	if (pNum->IsInteger() && pDen->IsInteger())
-		{
-		int iDen = pDen->GetIntegerValue();
-		if (iDen == 0)
-			return pCC->CreateError(CONSTLIT("Division by zero"), pDen);
-
-		int iNum = pNum->GetIntegerValue();
-		if (bClock)
-			{
-			int iResult = iNum % iDen;
-
-			if (iResult < 0)
-				return pCC->CreateInteger(iDen + iResult);
-			else
-				return pCC->CreateInteger(iResult);
-			}
-		else
-			return pCC->CreateInteger(iNum % iDen);
-		}
-	else
-		{
-		double rDen = pDen->GetDoubleValue();
-		if (rDen == 0.0)
-			return pCC->CreateError(CONSTLIT("Division by zero"), pDen);
-
-		double rNum = pNum->GetDoubleValue();
-		if (bClock)
-			{
-			double rResult = fmod(rNum, rDen);
-
-			if (rResult < 0.0)
-				return pCC->CreateDouble(rDen + rResult);
-			else
-				return pCC->CreateDouble(rResult);
-			}
-		else
-			return pCC->CreateDouble(fmod(rNum, rDen));
-		}
-	}
 
 ICCItem *MaxNumerals(CCodeChain *pCC, CCNumeral *num1, CCNumeral *num2)
 {
@@ -2980,10 +2909,89 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateDouble(rNum / rDen);
 			}
 
+		case FN_MATH_MODULUS_NUMERALS:
+		{
+			int iArg = 0;
+
+			bool bClock = false;
+			if (pArgs->GetCount() > 0 && pArgs->GetElement(iArg)->IsIdentifier())
+			{
+				if (strEquals(pArgs->GetElement(iArg)->GetStringValue(), CONSTLIT("degrees")))
+					bClock = true;
+				else
+					return pCC->CreateError(CONSTLIT("Unknown option"), pArgs->GetElement(iArg));
+
+				iArg++;
+			}
+
+			if (pArgs->GetCount() < (iArg + 2))
+				return pCC->CreateError(CONSTLIT("Insufficient arguments"), pArgs);
+
+			ICCItem *pOp1 = pArgs->GetElement(iArg++);
+			ICCItem *pOp2 = pArgs->GetElement(iArg++);
+
+			if (pOp1->IsDouble() || pOp2->IsDouble())
+			{
+				double dOp1 = pOp1->GetDoubleValue();
+				double dOp2 = pOp2->GetDoubleValue();
+
+				if (dOp2 == 0.0)
+					return pCC->CreateError(CONSTLIT("Division by zero"), pArgs);
+
+				if (bClock)
+				{
+					double dResult = fmod(dOp1, dOp2);
+
+					if (dResult < 0)
+						return pCC->CreateDouble(dOp2 + dResult);
+					else
+						return pCC->CreateDouble(dResult);
+				}
+				else
+					return pCC->CreateDouble(fmod(dOp1, dOp2));
+			}
+			else
+			{
+				int iOp1 = pOp1->GetIntegerValue();
+				int iOp2 = pOp2->GetIntegerValue();
+
+				if (iOp2 == 0)
+					return pCC->CreateError(CONSTLIT("Division by zero"), pArgs);
+
+				if (bClock)
+				{
+					int iResult = iOp1 % iOp2;
+
+					if (iResult < 0)
+						return pCC->CreateInteger(iOp2 + iResult);
+					else
+						return pCC->CreateInteger(iResult);
+				}
+				else
+					return pCC->CreateInteger(iOp1 % iOp2);
+			}
+		}
+
+		case FN_MATH_POWER_NUMERALS:
+		{
+			double rX = pArgs->GetElement(0)->GetDoubleValue();
+			double rY = pArgs->GetElement(1)->GetDoubleValue();
+			return pCC->CreateDouble(pow(rX, rY));
+		}
+
+		case FN_MATH_SQRT_NUMERALS:
+		{
+			double rX = pArgs->GetElement(0)->GetDoubleValue();
+			if (rX < 0.0)
+				return pCC->CreateError(CONSTLIT("Imaginary result"), pArgs);
+
+			return pCC->CreateDouble(sqrt(rX));
+		}
+
 		default:
 			ASSERT(false);
 			return pCC->CreateNil();
-		}
+	}
 	}
 
 double GetFractionArg (ICCItem *pArg, double *retrDenom)
@@ -3119,37 +3127,6 @@ ICCItem *fnMath (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateInteger(iOp1 % iOp2);
 			}
 
-		case FN_MATH_MODULUS_NUMERALS:
-			{
-			int iArg = 0;
-
-			bool bClock = false;
-			if (pArgs->GetCount() > 0 && pArgs->GetElement(iArg)->IsIdentifier())
-				{
-				if (strEquals(pArgs->GetElement(iArg)->GetStringValue(), CONSTLIT("degrees")))
-					bClock = true;
-				else
-					return pCC->CreateError(CONSTLIT("Unknown option"), pArgs->GetElement(iArg));
-
-				iArg++;
-				}
-
-			if (pArgs->GetCount() < (iArg + 2))
-				return pCC->CreateError(CONSTLIT("Insufficient arguments"), pArgs);
-
-			ICCItem *pOp1 = pArgs->GetElement(iArg++);
-			ICCItem *pOp2 = pArgs->GetElement(iArg++);
-
-			return ModuloNumerals(pCC, pOp1, pOp2, bClock);
-			}
-
-		case FN_MATH_POWER_NUMERALS:
-			{
-			double rX = pArgs->GetElement(0)->GetDoubleValue();
-			double rY = pArgs->GetElement(1)->GetDoubleValue();
-			return pCC->CreateDouble(pow(rX, rY));
-			}
-
 		case FN_MATH_SQRT:
 			{
 			ICCItem *pX = pArgs->GetElement(0);
@@ -3158,15 +3135,6 @@ ICCItem *fnMath (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Imaginary number"), pArgs->GetElement(0));
 
 			return pCC->CreateInteger(mathSqrt(iX));
-			}
-
-		case FN_MATH_SQRT_NUMERALS:
-			{
-			double rX = pArgs->GetElement(0)->GetDoubleValue();
-			if (rX < 0.0)
-				return pCC->CreateError(CONSTLIT("Imaginary result"), pArgs);
-
-			return pCC->CreateDouble(sqrt(rX));
 			}
 
 		default:

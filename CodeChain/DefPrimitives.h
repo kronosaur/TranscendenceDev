@@ -170,7 +170,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(modulo ['degrees] x y) -> z",
 			"*",	0,	},
 
-		{	"mod",			fnMath,			FN_MATH_MODULUS_NUMERALS,
+		{	"mod",			fnMathNumerals,			FN_MATH_MODULUS_NUMERALS,
 			"(mod ['degrees] x y) -> z",
 			"*",	0,	},
 
@@ -198,7 +198,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(power x y) -> z",
 			"vv",	0,	},
 
-		{	"pow",				fnMath,		FN_MATH_POWER_NUMERALS,
+		{	"pow",				fnMathNumerals,		FN_MATH_POWER_NUMERALS,
 			"(pow x y) -> z",
 			"vv",	0,	},
 
@@ -255,7 +255,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(sqrt x) -> z",
 			"v",	0,	},
 
-		{	"sqrtn",				fnMath,			FN_MATH_SQRT_NUMERALS,
+		{	"sqrtn",				fnMathNumerals,			FN_MATH_SQRT_NUMERALS,
 			"(sqrtn x) -> z",
 			"v",	0,	},
 
