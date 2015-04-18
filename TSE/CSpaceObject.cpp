@@ -5576,6 +5576,8 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 	CString sName;
 	if (IsIdentified())
 		sName = GetNounPhrase(0);
+	else if (Ctx.pCenter == NULL)
+		sName = CONSTLIT("Unknown Object");
 	else if (Ctx.pCenter->IsEnemy(this))
 		sName = CONSTLIT("Unknown Hostile");
 	else
@@ -5593,7 +5595,7 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 
 	//	Paint distance and bearing, if required
 
-	if (IsShowingDistanceAndBearing())
+	if (IsShowingDistanceAndBearing() && Ctx.pCenter)
 		{
 		Metric rDist = (GetPos() - Ctx.pCenter->GetPos()).Length();
 		CString sText = strPatternSubst(CONSTLIT("Distance: %d"), (int)(rDist / LIGHT_SECOND));
@@ -5698,6 +5700,8 @@ void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, in
 		if (IsHighlighted() && !m_sHighlightText.IsBlank())
 			{
 			SViewportPaintCtx ViewportCtx;
+			ViewportCtx.pCenter = Ctx.GetCenterObj();
+
 			PaintHighlightText(Dest, x, y, ViewportCtx, alignCenter, rgbColor);
 			}
 		}

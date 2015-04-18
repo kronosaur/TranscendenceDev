@@ -10,6 +10,7 @@ const int VIEWPORT_EXTRA =								256;
 const CG32bitPixel RGB_GRID_LINE =						CG32bitPixel(43, 45, 51);
 
 CMapViewportCtx::CMapViewportCtx (void) :
+		m_pCenter(NULL),
 		m_bNoSpaceBackground(false),
 		m_b3DMap(true)
 
@@ -27,7 +28,8 @@ CMapViewportCtx::CMapViewportCtx (void) :
 	m_yCenter = 0;
 	}
 
-CMapViewportCtx::CMapViewportCtx (const CVector &vCenter, const RECT &rcView, Metric rMapScale) :
+CMapViewportCtx::CMapViewportCtx (CSpaceObject *pCenter, const RECT &rcView, Metric rMapScale) :
+		m_pCenter(pCenter),
 		m_rcView(rcView),
 		m_rMapScale(rMapScale),
 		m_bNoSpaceBackground(false),
@@ -36,6 +38,8 @@ CMapViewportCtx::CMapViewportCtx (const CVector &vCenter, const RECT &rcView, Me
 //	CMapViewportCtx constructor
 
 	{
+	CVector vCenter = (m_pCenter ? m_pCenter->GetPos() : NullVector);
+
 	//	Round the center on a pixel boundary
 
 	m_vCenter = CVector(floor(vCenter.GetX() / rMapScale) * rMapScale, floor(vCenter.GetY() / rMapScale) * rMapScale);

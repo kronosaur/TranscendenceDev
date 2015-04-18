@@ -2817,7 +2817,7 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest
 
 	//	Figure out the bearing for the destination object.
 
-	int iBearing = VectorToPolar(pObj->GetPos() - Ctx.pCenter->GetPos());
+	int iBearing = VectorToPolar(pObj->GetPos() - (Ctx.pCenter ? Ctx.pCenter->GetPos() : NullVector));
 	CG32bitPixel rgbColor = pObj->GetSymbolColor();
 
 	//	Paint the arrow
@@ -3222,6 +3222,7 @@ void CSystem::PaintViewportObject (CG32bitImage &Dest, const RECT &rcView, CSpac
 	//	Compute the transformation to map world coordinates to the viewport
 
 	SViewportPaintCtx Ctx;
+	Ctx.pCenter = pCenter;
 	Ctx.rgbSpaceColor = CalculateSpaceColor(pCenter);
 	Ctx.XForm = ViewportTransform(pCenter->GetPos(), g_KlicksPerPixel, xCenter, yCenter);
 	Ctx.XFormRel = Ctx.XForm;
@@ -3392,7 +3393,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Initialize context
 
-	CMapViewportCtx Ctx(pCenter->GetPos(), rcView, rMapScale);
+	CMapViewportCtx Ctx(pCenter, rcView, rMapScale);
 	Ctx.Set3DMapEnabled(g_pUniverse->GetSFXOptions().Is3DSystemMapEnabled());
 	Ctx.SetSpaceBackgroundEnabled(g_pUniverse->GetSFXOptions().IsSpaceBackgroundEnabled());
 
@@ -3513,7 +3514,7 @@ void CSystem::PaintViewportMapObject (CG32bitImage &Dest, const RECT &rcView, CS
 
 	//	Initialize context
 
-	CMapViewportCtx Ctx(pCenter->GetPos(), rcView, g_KlicksPerPixel);
+	CMapViewportCtx Ctx(pCenter, rcView, g_KlicksPerPixel);
 
 	//	Paint the obj
 

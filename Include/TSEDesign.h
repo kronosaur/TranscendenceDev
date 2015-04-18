@@ -785,8 +785,9 @@ class CMapViewportCtx
 	{
 	public:
 		CMapViewportCtx (void);
-		CMapViewportCtx (const CVector &vCenter, const RECT &rcView, Metric rMapScale);
+		CMapViewportCtx (CSpaceObject *pCenter, const RECT &rcView, Metric rMapScale);
 
+		inline CSpaceObject *GetCenterObj (void) const { return m_pCenter; }
 		inline const CVector &GetCenterPos (void) const { return m_vCenter; }
 		inline const RECT &GetViewportRect (void) const { return m_rcView; }
 		inline ViewportTransform &GetXform (void) { return m_Trans; }
@@ -797,6 +798,7 @@ class CMapViewportCtx
 		void Transform (const CVector &vPos, int *retx, int *rety) const;
 
 	private:
+		CSpaceObject *m_pCenter;		//	Center of viewport (may be NULL)
 		CVector m_vCenter;				//	Center of viewport in global coordinate
 		RECT m_rcView;					//	RECT of viewport
 		Metric m_rMapScale;				//	Map scale (klicks per pixel)
