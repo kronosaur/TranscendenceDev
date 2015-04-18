@@ -6169,6 +6169,7 @@ class CExtension
 		inline void SetName (const CString &sName) { m_sName = sName; }
 		inline void SetVerified (bool bVerified = true) { m_bVerified = bVerified; }
 		void SweepImages (void);
+		inline bool UsesCompatibilityLibrary (void) const { return m_bUsesCompatibilityLibrary; }
 		inline bool UsesXML (void) const { return m_bUsesXML; }
 
 		static ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, CString *retsError);
@@ -6247,6 +6248,7 @@ class CExtension
 		bool m_bDeleted;
 		bool m_bAutoInclude;				//	Extension should always be included (if appropriate)
 		bool m_bUsesXML;					//	Extension uses XML from other extensions
+		bool m_bUsesCompatibilityLibrary;	//	Extension needs the compatibility library
 	};
 
 class CExtensionCollection
@@ -6304,6 +6306,7 @@ class CExtensionCollection
 		static int Compare (CExtension *pExt1, CExtension *pExt2, bool bDebugMode);
 
 	private:
+		ALERROR AddCompatibilityLibrary (CExtension *pAdventure, const TArray<CExtension *> &Extensions, DWORD dwFlags, const TArray<CExtension *> &Compatibility, TArray<CExtension *> *retList, CString *retsError);
 		void AddOrReplace (CExtension *pExtension);
 		ALERROR AddToBindList (CExtension *pExtension, DWORD dwFlags, const TArray<CExtension *> &Compatibility, TArray<CExtension *> *retList, CString *retsError);
 		void ClearAllMarks (void);

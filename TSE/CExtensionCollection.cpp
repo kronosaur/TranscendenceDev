@@ -80,6 +80,45 @@ CExtensionCollection::~CExtensionCollection (void)
 	CleanUp();
 	}
 
+ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, const TArray<CExtension *> &Extensions, DWORD dwFlags, const TArray<CExtension *> &Compatibility, TArray<CExtension *> *retList, CString *retsError)
+
+//	AddCompatibilityLibrary
+//
+//	Examines the adventure and extensions and, if necessary, adds the compatibility
+//	library to the bind list.
+
+	{
+	int i;
+
+	bool bNeedLibrary = pAdventure->UsesCompatibilityLibrary();
+	if (!bNeedLibrary)
+		{
+		for (i = 0; i < Extensions.GetCount(); i++)
+			if (Extensions[i]->UsesCompatibilityLibrary())
+				{
+				bNeedLibrary = true;
+				break;
+				}
+		}
+
+	if (!bNeedLibrary)
+		return NOERROR;
+
+	//	Add the library
+
+	CExtension *pLibrary;
+	if (!FindBestExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1, dwFlags, &pLibrary))
+		{
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find compatibility library: %08x"), DEFAULT_COMPATIBILITY_LIBRARY_UNID);
+		return ERR_FAIL;
+		}
+
+	if (AddToBindList(pLibrary, dwFlags, Compatibility, retList, retsError) != NOERROR)
+		return ERR_FAIL;
+
+	return NOERROR;
+	}
+
 void CExtensionCollection::AddOrReplace (CExtension *pExtension)
 
 //	AddOrReplace
@@ -534,6 +573,11 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 
 	TArray<CExtension *> CompatibilityLibraries;
 	ComputeCompatibilityLibraries(pAdventure, dwFlags, &CompatibilityLibraries);
+
+	//	See if we need the compatibility library
+
+	if (error = AddCompatibilityLibrary(pAdventure, DesiredExtensions, dwFlags, CompatibilityLibraries, retList, retsError))
+		return error;
 
 	//	Now add the adventure and any dependencies
 

@@ -80,7 +80,8 @@ CExtension::CExtension (void) :
 		m_bVerified(false),
 		m_bDisabled(false),
 		m_bDeleted(false),
-		m_bUsesXML(false)
+		m_bUsesXML(false),
+		m_bUsesCompatibilityLibrary(false)
 
 //	CExtension constructor
 
@@ -109,7 +110,7 @@ void CExtension::AddDefaultLibraryReferences (SDesignLoadCtx &Ctx)
 		//	extensions use either RPG or RTS libraries).
 
 		if (GetAPIVersion() < 26 && GetFolderType() != folderBase)
-			AddLibraryReference(Ctx, DEFAULT_COMPATIBILITY_LIBRARY_UNID, 1);
+			m_bUsesCompatibilityLibrary = true;
 		}
 	}
 
@@ -288,6 +289,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 	pExtension->m_bPrivate = true;
 	pExtension->m_bAutoInclude = true;
 	pExtension->m_bUsesXML = false;
+	pExtension->m_bUsesCompatibilityLibrary = false;
 
 	//	Load the apiVersion
 
