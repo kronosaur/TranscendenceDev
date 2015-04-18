@@ -659,6 +659,11 @@ void CEnvironmentGrid::SetTileType (int xTile, int yTile, CSpaceEnvironmentType 
 	{
 	int i;
 
+	//	We cannot overwrite a previous tile because the edges won't look right.
+
+	if (m_Map.GetTile(xTile, yTile) != 0)
+		return;
+
 	//	For now there is no way to delete a tile.
 
 	ASSERT(pEnv);
