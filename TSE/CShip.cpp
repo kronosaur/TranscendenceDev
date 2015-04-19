@@ -2668,11 +2668,6 @@ int CShip::GetPerception (void)
 
 	int iPerception = m_pClass->GetAISettings().GetPerception();
 
-	//	If we're in a nebula, then our perception drops
-
-	if (IsLRSBlind())
-		iPerception -= 4;
-
 	return Max((int)perceptMin, iPerception);
 	}
 
@@ -5454,6 +5449,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				MakeLRSBlind(ENVIRONMENT_ON_UPDATE_CYCLE);
 				m_fHiddenByNebula = true;
 				}
+			else
+				m_fHiddenByNebula = false;
 
 			//	See if the environment causes drag
 

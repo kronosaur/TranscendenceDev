@@ -562,7 +562,7 @@ void CEnvironmentGrid::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest)
 		//	Fade out based on distance
 
 		int iDist = Max(Absolute(xTile - cxHalfTileCount), Absolute(yTile - cyHalfTileCount));
-		DWORD dwFade = (iDist > 5 ? Min(8 * (iDist - 5), 0xC0) : 0);
+		DWORD dwFade = (iDist > 20 ? Min(2 * (iDist - 20), 0x80) : 0);
 
 		//	Transform to map coords
 
