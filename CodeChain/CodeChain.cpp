@@ -418,15 +418,18 @@ ICCItem *CCodeChain::CreateEmptyVector(TArray<int> vShape)
 	int iSize = 0;
 	CCVector *pVector;
 	ICCItem *pError;
+	ICCItem *pItem;
 
 	for (i = 0; i < vShape.GetCount(); i++)
 	{
 		iSize = iSize + vShape[i];
 	};
 
-	pVector = new CCVector(this);
-	if (pVector == NULL)
-		return CreateMemoryError();
+	pItem = m_VectorPool.CreateItem(this);
+	if (pItem->IsError())
+		return pItem;
+	pItem->Reset();
+	pVector = dynamic_cast<CCVector *>(pItem);
 
 	pError = pVector->SetDataArraySize(this, iSize);
 	if (pError->IsError())
@@ -472,12 +475,12 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *
 
 	pVector->SetShape(this, vShape);
 
-	TArray<double> *pDataArray = new TArray <double>;
+	TArray<double> pDataArray;
 	CCLinkedList *pFlattenedContentList = pContentList->GetFlattened(this, NULL);
 	for (i = 0; i < pFlattenedContentList->GetCount(); i++)
 	{
 		double dElement = pFlattenedContentList->GetElement(i)->GetDoubleValue();
-		pDataArray->Insert(&dElement, i);
+		pDataArray.Insert(&dElement, i);
 	};
 	pVector->SetArrayData(this, &pDataArray);
 

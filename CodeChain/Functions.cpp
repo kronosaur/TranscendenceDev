@@ -4160,7 +4160,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	CCodeChain *pCC = pCtx->pCC;
 	ICCItem *pArgs;
 	ICCItem *pVector;
-	CCLinkedList *pShapeList;
+	ICCItem *pShapeList;
 	CCLinkedList *pContentList;
 	ICCItem *pDim;
 
@@ -4173,18 +4173,18 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	{
 		case FN_VECCREATE_EMPTY:
 		{
-			pShapeList = dynamic_cast<CCLinkedList *> (pArgs->Tail(pCtx->pCC));
+			pShapeList = pArgs->GetElement(0);
 
 			//  no need to make sure there are any other things in pArgs, 
 			//  because EvaluateArgs did that for us (recall "sk" validation string)
 
-			TArray <int> *pShape = new TArray <int>;
+			TArray <int> pShape;
 			for (i = 0; i < pShapeList->GetCount(); i++)
 			{
 				pDim = pShapeList->GetElement(i);
 				if (pDim->IsInteger())
 				{
-					pShape->Insert(pDim->GetIntegerValue());
+					pShape.Insert(pDim->GetIntegerValue());
 				}
 				else
 				{
@@ -4195,7 +4195,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			};
 
 			//	Create the vector
-			pVector = pCC->CreateEmptyVector(&pShape);
+			pVector = pCC->CreateEmptyVector(pShape);
 
 			//	Done
 

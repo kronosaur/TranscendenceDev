@@ -314,8 +314,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(vecCreate) -> empty vector", 
 			NULL, 0, },
 
-		{ "emptyvector", fnVecCreate, FN_VECCREATE_EMPTY, "(vector dtype shapelist) -> empty vector", NULL, 0, },
-		{ "vector", fnVecCreate, FN_VECCREATE, "(vector dtype contentlist) -> vector", NULL, 0, },
+		{ "emptyvector", fnVecCreate, FN_VECCREATE_EMPTY, "(vector shapelist) -> empty vector", NULL, 0, },
+		{ "vector", fnVecCreate, FN_VECCREATE, "(vector contentlist) -> vector", NULL, 0, },
 		{ "vadd", fnVecMath, FN_VECTOR_ADD, "(vadd vec1 vec2)", NULL, 0, },
 		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(vdot vec1 vec2)", NULL, 0, },
 		{ "vscalmul", fnVecMath, FN_VECTOR_SCALMUL, "(vscalmul scalar vec1)", NULL, 0, },

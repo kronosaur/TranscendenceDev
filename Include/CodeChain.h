@@ -615,7 +615,7 @@ class CCVector : public ICCVector
 		ICCItem *SetElementsByIndices(CCodeChain *pCC, CCLinkedList *pIndices, CCLinkedList *pData);
 		ICCItem *SetDataArraySize (CCodeChain *pCC, int iNewSize);
 		ICCItem *SetShapeArraySize (CCodeChain *pCC, int iNewSize);
-		void SetShape(CCodeChain *pCC, TArray<int> pNewShape) { m_vShape = pNewShape; }
+		void SetShape(CCodeChain *pCC, TArray<int> vNewShape) { m_vShape = vNewShape; }
 		void SetArrayData(CCodeChain *pCC, TArray<double> pNewData) { m_vData = pNewData; }
 
 		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
