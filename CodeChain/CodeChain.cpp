@@ -407,11 +407,11 @@ ICCItem *CCodeChain::CreateVectorOld (int iSize)
 	return pVector->Reference();
 	}
 
-ICCItem *CCodeChain::CreateEmptyVector(TArray<int> vShape)
+ICCItem *CCodeChain::CreateFilledVector(double dScalar, TArray<int> vShape)
 
-//	CreateEmptyVector
+//	CreateFilledVector
 //
-//	Creates an empty vector with the given shape
+//	Creates a vector filled with the given scalar
 
 {
 	int i;
@@ -431,6 +431,9 @@ ICCItem *CCodeChain::CreateEmptyVector(TArray<int> vShape)
 	pItem->Reset();
 	pVector = dynamic_cast<CCVector *>(pItem);
 
+	pVector->SetContext(this);
+	pVector->SetShape(this, vShape);
+
 	pError = pVector->SetDataArraySize(this, iSize);
 	if (pError->IsError())
 	{
@@ -438,9 +441,15 @@ ICCItem *CCodeChain::CreateEmptyVector(TArray<int> vShape)
 		return pError;
 	}
 
-	pVector->SetShape(this, vShape);
-	pError->Discard(this);
+	TArray<double> vContentArray = pVector->GetDataArray();
+	for (i = 0; i < iSize; i++)
+	{
+		vContentArray[i] = dScalar;
+	};
+	pVector->SetArrayData(this, vContentArray);
+
 	
+	pError->Discard(this);
 	//	Done
 	return pVector->Reference();
 }
@@ -453,18 +462,63 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *
 
 {
 	int i;
+	CCVector *pVector;
+	ICCItem *pItem;
+
+	pItem = m_VectorPool.CreateItem(this);
+	if (pItem->IsError())
+		return pItem;
+	pItem->Reset();
+
+	pVector = dynamic_cast<CCVector *>(pItem);
+	pVector->SetContext(this);
+
+	pVector->SetShape(this, vShape);
+
+	pItem = pContentList->GetFlattened(this, NULL);
+	if (pItem->IsError())
+	{ 
+		pVector->Discard(this);
+		return pItem;
+	};
+	CCLinkedList *pFlattenedContentList = dynamic_cast<CCLinkedList *>(pItem);
+
+	TArray<double> vDataArray;
+	for (i = 0; i < pFlattenedContentList->GetCount(); i++)
+	{
+		vDataArray.Insert(pFlattenedContentList->GetElement(i)->GetDoubleValue());
+	};
+	pVector->SetArrayData(this, vDataArray);
+
+	//	Done
+	pFlattenedContentList->Discard(this);
+	return pVector->Reference();
+}
+
+ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, TArray<double> vContentArray)
+
+//	CreateVectorGivenContent (new)
+//
+//	Creates a vector with given shape and content
+
+{
+	int i;
 	int iSize = 0;
 	CCVector *pVector;
 	ICCItem *pError;
+	ICCItem *pItem;
 
 	for (i = 0; i < vShape.GetCount(); i++)
 	{
 		iSize = iSize * vShape[i];
 	};
 
-	pVector = new CCVector(this);
-	if (pVector == NULL)
-		return CreateMemoryError();
+	pItem = m_VectorPool.CreateItem(this);
+	if (pItem->IsError())
+		return pItem;
+	pItem->Reset();
+	pVector = dynamic_cast<CCVector *>(pItem);
+	pVector->SetContext(this);
 
 	pError = pVector->SetDataArraySize(this, iSize);
 	if (pError->IsError())
@@ -475,14 +529,7 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *
 
 	pVector->SetShape(this, vShape);
 
-	TArray<double> pDataArray;
-	CCLinkedList *pFlattenedContentList = pContentList->GetFlattened(this, NULL);
-	for (i = 0; i < pFlattenedContentList->GetCount(); i++)
-	{
-		double dElement = pFlattenedContentList->GetElement(i)->GetDoubleValue();
-		pDataArray.Insert(&dElement, i);
-	};
-	pVector->SetArrayData(this, &pDataArray);
+	pVector->SetArrayData(this, vContentArray);
 
 	//	Done
 	pError->Discard(this);

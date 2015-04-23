@@ -517,7 +517,7 @@ class CCLinkedList : public ICCList
 		void ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewItem);
 		void Shuffle (CCodeChain *pCC);
 		void Sort (CCodeChain *pCC, int iOrder, int iIndex = -1);
-		CCLinkedList *GetFlattened(CCodeChain *pCC, CCLinkedList *pResult);
+		ICCItem *GetFlattened(CCodeChain *pCC, ICCItem *pResult);
 		ICCItem *IsValidVectorContent (CCodeChain *pCC);
 		
 		//	ICCItem virtuals
@@ -615,9 +615,10 @@ class CCVector : public ICCVector
 		ICCItem *SetElementsByIndices(CCodeChain *pCC, CCLinkedList *pIndices, CCLinkedList *pData);
 		ICCItem *SetDataArraySize (CCodeChain *pCC, int iNewSize);
 		ICCItem *SetShapeArraySize (CCodeChain *pCC, int iNewSize);
+		void SetContext(CCodeChain *pCC) { m_pCC = pCC;  }
 		void SetShape(CCodeChain *pCC, TArray<int> vNewShape) { m_vShape = vNewShape; }
-		void SetArrayData(CCodeChain *pCC, TArray<double> pNewData) { m_vData = pNewData; }
-
+		void SetArrayData(CCodeChain *pCC, TArray<double> vNewData) { m_vData = vNewData; }
+		
 		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
 
@@ -628,7 +629,7 @@ class CCVector : public ICCVector
 		virtual int GetShapeCount(void) { return m_vShape.GetCount(); }
 		virtual int GetDimension(void) { return m_vShape.GetCount(); }
 		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
-		virtual ICCItem *GetElement (int iIndex);
+		virtual ICCItem *GetElement(int iIndex);
 		virtual ICCItem *SetElement (int iIndex, double dValue);
 		virtual ICCItem *IndexVector (CCodeChain *pCC, CCLinkedList *pIndices);
 		virtual ICCItem *Head(CCodeChain *pCC) { return GetElement(0); }
@@ -825,8 +826,9 @@ class CCodeChain : public CObject
 		ICCItem *CreateSystemError (ALERROR error);
 		inline ICCItem *CreateTrue (void) { return m_pTrue->Reference(); }
 		ICCItem *CreateVectorOld (int iSize);
-		ICCItem *CreateEmptyVector(TArray<int> vShape);
+		ICCItem *CreateFilledVector(double dScalar, TArray<int> vShape);
 		ICCItem *CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *pContentList);
+		ICCItem *CreateVectorGivenContent(TArray<int> vShape, TArray<double> vContentList);
 		ICCItem *CreateVectorUsingAnother(CCVector *pVector);
 		inline void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(this, pItem); }
 		inline void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
@@ -838,7 +840,7 @@ class CCodeChain : public CObject
 		inline void DestroyString (ICCItem *pItem) { m_StringPool.DestroyItem(this, pItem); }
 		inline void DestroySymbolTable (ICCItem *pItem) { m_SymbolTablePool.DestroyItem(this, pItem); }
 		inline void DestroyVectorOld (ICCItem *pItem) { delete pItem; }
-		inline void DestroyVector(ICCItem *pItem) { delete pItem; }
+		inline void DestroyVector(ICCItem *pItem) { m_VectorPool.DestroyItem(this, pItem); }
 
 		//	Load/save routines
 

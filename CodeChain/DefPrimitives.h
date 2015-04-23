@@ -314,15 +314,15 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(vecCreate) -> empty vector", 
 			NULL, 0, },
 
-		{ "emptyvector", fnVecCreate, FN_VECCREATE_EMPTY, "(vector shapelist) -> empty vector", NULL, 0, },
-		{ "vector", fnVecCreate, FN_VECCREATE, "(vector contentlist) -> vector", NULL, 0, },
-		{ "vadd", fnVecMath, FN_VECTOR_ADD, "(vadd vec1 vec2)", NULL, 0, },
-		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(vdot vec1 vec2)", NULL, 0, },
-		{ "vscalmul", fnVecMath, FN_VECTOR_SCALMUL, "(vscalmul scalar vec1)", NULL, 0, },
-		{ "vemul", fnVecMath, FN_VECTOR_EMUL, "(vemul vec1 vec2)", NULL, 0, },
-		{ "veadd", fnVecMath, FN_VECTOR_ESUM, "(veadd vec1 vec2)", NULL, 0, },
-		{ "vecset", fnVector, FN_VECTOR_SET, "(vecset vector indexlist datalist)", NULL, PPFLAG_SIDEEFFECTS, },
-		{ "vecget", fnVector, FN_VECTOR_GET, "(vecget vector indexlist)", NULL, 0, }
+		{ "vectorfilled", fnVecCreate, FN_VECREATE_FILLED, "(vectorfilled scalar shapelist) -> vector filled with scalar's value", NULL, 0, },
+		{ "vector", fnVecCreate, FN_VECCREATE, "(vector contentlist) -> vector form of contentlist", NULL, 0, },
+		{ "v+", fnVecMath, FN_VECTOR_ADD, "(v+ vec1 vec2) -> result of vector addition of vec1 and vec2", NULL, 0, },
+		{ "v.", fnVecMath, FN_VECTOR_DOT, "(v. vec1 vec2) -> result of vector dot product of vec1 and vec2", NULL, 0, },
+		{ "v*", fnVecMath, FN_VECTOR_SCALMUL, "(v* scalar vec1) -> result of scalar multiplication of scalar and vec1", NULL, 0, },
+		{ "v^", fnVecMath, FN_VECTOR_EMUL, "(v^ vec1 vec2) -> result of element-wise multiplication of vec1 and vec2", NULL, 0, },
+		{ "v<-", fnVector, FN_VECTOR_SET, "(v<- vec1 indexlist datalist) -> set the elements of vec1 with datalist based on the indices in indexlist", NULL, PPFLAG_SIDEEFFECTS, },
+		{ "v->", fnVector, FN_VECTOR_GET, "(v-> vec1 indexlist) -> get the elements of vec1 based on indexlist", NULL, 0, },
+		{ "v==", fnVecMath, FN_VECTOR_EQ, "(v= vec1 vec2) -> compare vec1 and vec2 for equality", NULL, 0, }
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))

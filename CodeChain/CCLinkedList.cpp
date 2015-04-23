@@ -226,7 +226,7 @@ ICCItem *CCLinkedList::GetElement (int iIndex)
 		return NULL;
 	}
 
-CCLinkedList *CCLinkedList::GetFlattened(CCodeChain *pCC, CCLinkedList *pResult = NULL)
+ICCItem *CCLinkedList::GetFlattened(CCodeChain *pCC, ICCItem *pResult = NULL)
 
 //	GetFlattened
 // 
@@ -238,7 +238,7 @@ CCLinkedList *CCLinkedList::GetFlattened(CCodeChain *pCC, CCLinkedList *pResult 
 	ICCItem *pCurrentElement;
 	if (pResult == NULL)
 	{
-		pResult = &(CCLinkedList());
+		pResult = pCC->CreateLinkedList();
 	};
 
 
@@ -363,11 +363,13 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 		};
 		return pShapeList;
 	}
-	else if (pHead->GetValueType() == ICCItem::Double)
+	else if (pHead->GetValueType() == ICCItem::Integer || pHead->GetValueType() == ICCItem::Double)
 	{
-		for (i = 1; i < GetCount(); i++)
+		ValueTypes elementValueType;
+		for (i = 1; i < this->GetCount(); i++)
 		{
-			if (GetElement(i)->GetValueType() != ICCItem::Double)
+			elementValueType = this->GetElement(i)->GetValueType();
+			if (elementValueType != ICCItem::Integer && elementValueType != ICCItem::Double)
 			{
 				pShapeList->Discard(pCC);
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);

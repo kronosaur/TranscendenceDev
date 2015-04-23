@@ -127,9 +127,7 @@ static CObjectClass<CCVectorOld>g_ClassOLD(OBJID_CCVECTOROLD, NULL);
 static CObjectClass<CCVector>g_Class(OBJID_CCVECTOR, NULL);
 
 CCVector::CCVector(void) : ICCVector(&g_Class),
-	m_pCC(NULL),
-	m_vData(new TArray <double>),
-	m_vShape(new TArray <int>)
+	m_pCC(NULL)
 	//	CCVector constructor
 
 	{
@@ -156,10 +154,7 @@ CCVectorOld::CCVectorOld (CCodeChain *pCC) : ICCList(&g_Class),
 	}
 
 CCVector::CCVector(CCodeChain *pCC) : ICCVector(&g_Class),
-	m_pCC(NULL),
-	m_vData(new TArray <double>),
-	m_vShape(new TArray <int>)
-
+	m_pCC(pCC)
 	//	CCVector constructor
 	{
 	}
@@ -178,9 +173,6 @@ CCVector::~CCVector(void)
 //	CCVectorOld destructor
 
 {
-	//	TODO: confirm that new and delete were used correctly in the constructor/destructor
-	delete &m_vData;
-	delete &m_vShape;
 }
 
 ICCItem *CCVectorOld::Clone (CCodeChain *pCC)
@@ -291,10 +283,10 @@ void CCVector::DestroyItem(CCodeChain *pCC)
 //	Destroy this item
 
 {
-	//	Free the vector
-	delete &m_vData;
-	delete &m_vShape;
+	//	No need to call delete on members of CCVector, because
+	//	none were allocated using new
 
+	//	We need to destroy the reference to the vector in pCC though
 	pCC->DestroyVector(this);
 }
 
@@ -423,7 +415,7 @@ TArray <int> GetExtractedVectorShape(CCodeChain *pCC, TArray <int> vShape, CCLin
 
 {
 	int i;
-	TArray <int> vResultShape = new TArray <int> ;
+	TArray <int> vResultShape;
 	int iLenIndices = pIndices->GetCount();
 
 	for (i = 0; i < vShape.GetCount(); i++)
@@ -470,9 +462,11 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 //
 
 {
-	CCVector *pResultVector = &(CCVector());
+	ICCItem *pItem;
+
 	ICCItem *pIndexExtractionResult = GetRelevantArrayIndices(pCC, this->GetShapeArray(), pIndices);
 	CCLinkedList *pRelevantIndices;
+	
 	int i;
 
 	if (pIndexExtractionResult->IsError())
@@ -490,19 +484,37 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 	if ((vNewShape.GetCount()) == 0 && (pIndices->GetCount() != 0))
 		return pCC->CreateError(CONSTLIT("Error determining shape of extracted vector."));
 
-	pRelevantIndices = (dynamic_cast <CCLinkedList *> (pIndexExtractionResult))->GetFlattened(pCC, NULL);
-	TArray<double> vResultData = pResultVector->GetDataArray();
-	for (i = 0; i < pRelevantIndices->GetCount(); i++)
+	pItem = (dynamic_cast <CCLinkedList *> (pIndexExtractionResult))->GetFlattened(pCC, NULL);
+	if (pItem->IsError())
 	{
-		double *pNumber = vResultData.Insert();
-		double *pElement = &(this->m_vData[pRelevantIndices->GetElement(i)->GetIntegerValue()]);
-		pNumber = pElement;
-	};
+		pItem->Discard(pCC);
+		return pCC->CreateError(("Unable to flatten extracted indices."));
+	}
+	pRelevantIndices = dynamic_cast<CCLinkedList *> (pItem);
 
-	// set pCC
-	pResultVector->m_pCC = this->m_pCC;
+	if (pRelevantIndices->GetCount() != 1)
+	{
+		TArray<double> vContentArray;
+		for (i = 0; i < pRelevantIndices->GetCount(); i++)
+		{
+			vContentArray.Insert(this->m_vData[pRelevantIndices->GetElement(i)->GetIntegerValue()]);
+		};
 
-	return pResultVector;
+		pRelevantIndices->Discard(pCC);
+
+		pItem = pCC->CreateVectorGivenContent(vNewShape, vContentArray);
+		if (pItem->IsError())
+			return pItem;
+		pItem->Reset();
+
+		return pItem;
+	}
+	else
+	{
+		pItem = GetElement(pRelevantIndices->Head(pCC)->GetIntegerValue());
+		pRelevantIndices->Discard(pCC);
+		return pItem;
+	}
 }
 
 CString CCVectorOld::Print (CCodeChain *pCC, DWORD dwFlags)
@@ -528,11 +540,12 @@ CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
 {
 	int i;
 	CString sPrintedVector = LITERAL("(");
+	int iNumElements = this->GetShapeCount();
 
-	for (i = 0; i < this->GetShapeCount(); i++)
+	for (i = 0; i < iNumElements; i++)
 	{
 		sPrintedVector.Append(strPatternSubst(LITERAL("%d"), this->m_vShape[i]));
-		if (i != 0)
+		if (i != (iNumElements-1))
 			sPrintedVector.Append(LITERAL(", "));
 	};
 	
@@ -639,7 +652,6 @@ ICCItem *CCVector::SetDataArraySize(CCodeChain *pCC, int iNewSize)
 //	Sets the size of the data vector, preserving any previous data
 
 	{
-	ALERROR allocationError;
 	int iExpansion;
 
 	int iCurrentSize = m_vData.GetCount();
@@ -653,15 +665,16 @@ ICCItem *CCVector::SetDataArraySize(CCodeChain *pCC, int iNewSize)
 			iExpansion = iNewSize - iCurrentSize;
 		};
 
-	m_vData.InsertEmpty(iExpansion);
-	if (allocationError = NOERROR)
-		{
-			return pCC->CreateTrue();
+	try
+		{ 
+			m_vData.InsertEmpty(iExpansion);
 		}
-	else
+	catch (...)
 		{
 			return pCC->CreateMemoryError();
-		};
+		}
+	
+	return pCC->CreateTrue();
 	}
 
 ICCItem *CCVector::SetShapeArraySize(CCodeChain *pCC, int iNewSize)
