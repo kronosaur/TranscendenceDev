@@ -272,36 +272,33 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 //  otherwise an error will be returned. 
 
 {
-	//	TOCHECK: confirm that pHead does NOT have to be discarded when exiting
-	//		(current understanding is that pHead does not have to be discarded)
 	int i;
 	int j;
 	int iHeadCount;
 	ICCItem *pHead;
-	ICCItem *pTemp;
-	CCLinkedList *pShapeList;
-	CCLinkedList *pLowerLevelShapeList;
-	CCLinkedList *pListElement;
-	ICCItem *pResult;
+	ICCItem *pItem;
+	ICCItem *pShapeList;
+	ICCItem *pLowerLevelShapeList;
+	ICCItem *pListElement;
+	ICCItem *pListElementShapeList;
 
-	pTemp = pCC->CreateLinkedList();
-	if (pTemp->IsError())
+	pShapeList = pCC->CreateLinkedList();
+	if (pShapeList->IsError())
 	{
-		return pTemp;
+		return pShapeList;
 	};
-	pShapeList = dynamic_cast <CCLinkedList *> (pTemp);
 
 	pHead = this->Head(pCC);
 
 	if (pHead->GetValueType() == ICCItem::List)
 	{
 		iHeadCount = pHead->GetCount();
-		pResult = (dynamic_cast <CCLinkedList *> (pHead))->IsValidVectorContent(pCC);
-		if (pResult->IsError())
+		pItem = (dynamic_cast <CCLinkedList *> (pHead))->IsValidVectorContent(pCC);
+		if (pItem->IsError())
 		{
-			return pResult;
+			return pItem;
 		};
-		pLowerLevelShapeList = dynamic_cast <CCLinkedList *> (pResult);
+		pLowerLevelShapeList = pItem;
 
 		//	now we go through every other element apart from head, 
 		//	at this hierarchy level
@@ -313,34 +310,40 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			if (GetElement(i)->GetValueType() != ICCItem::List)
 			{
 				pShapeList->Discard(pCC);
+				pLowerLevelShapeList->Discard(pCC);
+
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data type is not homogeneous."), NULL);
 				return pError;
 			};
 
-			pListElement = dynamic_cast<CCLinkedList *> (GetElement(i));
+			pListElement = GetElement(i);
 			//	some element after head is a list, but if its size is not the same as
 			//	head, then this is not valid vector content
 			if (pListElement->GetCount() != iHeadCount)
 			{
 				pShapeList->Discard(pCC);
+				pLowerLevelShapeList->Discard(pCC);
+
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 				return pError;
 			};
 
 			// check if the list element itself is valid vector content
-			pResult = pListElement->IsValidVectorContent(pCC);
-			if (pResult->IsError())
+			pListElementShapeList = (dynamic_cast <CCLinkedList *> (pListElement))->IsValidVectorContent(pCC);
+			if (pListElementShapeList->IsError())
 			{
 				pShapeList->Discard(pCC);
-				return pResult;
+				pLowerLevelShapeList->Discard(pCC);
+
+				return pListElementShapeList;
 			};
 
 			//	compare the LowerLevelShapeList of this element with that of the head
-			if (pResult->GetCount() == pLowerLevelShapeList->GetCount())
+			if (pListElementShapeList->GetCount() == pLowerLevelShapeList->GetCount())
 			{
 				for (j = 0; j < pLowerLevelShapeList->GetCount(); j++)
 				{
-					if (pResult->GetElement(i)->GetIntegerValue() != pLowerLevelShapeList->GetElement(i)->GetIntegerValue())
+					if (pListElementShapeList->GetElement(j)->GetIntegerValue() != pLowerLevelShapeList->GetElement(j)->GetIntegerValue())
 					{
 						ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 						return pError;
@@ -350,6 +353,8 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			else
 			{
 				pShapeList->Discard(pCC);
+				pLowerLevelShapeList->Discard(pCC);
+				pListElementShapeList->Discard(pCC);
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 				return pError;
 			};

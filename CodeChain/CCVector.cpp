@@ -21,7 +21,12 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, CCLinkedL
 	ICCItem *pCurrentIndex;
 	ICCItem *pResult;
 	int iSumRemainingShape = 0;
-	CCLinkedList *pRelevantIndices = &(CCLinkedList());
+
+	ICCItem *pRelevantIndices = pCC->CreateLinkedList();
+	if (pRelevantIndices->IsError())
+	{
+		return pRelevantIndices;
+	}
 
 	//	optimization for 1D lists
 	if (vShape.GetCount() == 1 && pIndices->GetCount() == 1 && bIsChild == FALSE)

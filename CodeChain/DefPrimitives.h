@@ -314,7 +314,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(vecCreate) -> empty vector", 
 			NULL, 0, },
 
-		{ "vectorfilled", fnVecCreate, FN_VECREATE_FILLED, "(vectorfilled scalar shapelist) -> vector filled with scalar's value", NULL, 0, },
+		{ "vfilled", fnVecCreate, FN_VECREATE_FILLED, "(vectorfilled scalar shapelist) -> vector filled with scalar's value", NULL, 0, },
 		{ "vector", fnVecCreate, FN_VECCREATE, "(vector contentlist) -> vector form of contentlist", NULL, 0, },
 		{ "v+", fnVecMath, FN_VECTOR_ADD, "(v+ vec1 vec2) -> result of vector addition of vec1 and vec2", NULL, 0, },
 		{ "v.", fnVecMath, FN_VECTOR_DOT, "(v. vec1 vec2) -> result of vector dot product of vec1 and vec2", NULL, 0, },
@@ -322,7 +322,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{ "v^", fnVecMath, FN_VECTOR_EMUL, "(v^ vec1 vec2) -> result of element-wise multiplication of vec1 and vec2", NULL, 0, },
 		{ "v<-", fnVector, FN_VECTOR_SET, "(v<- vec1 indexlist datalist) -> set the elements of vec1 with datalist based on the indices in indexlist", NULL, PPFLAG_SIDEEFFECTS, },
 		{ "v->", fnVector, FN_VECTOR_GET, "(v-> vec1 indexlist) -> get the elements of vec1 based on indexlist", NULL, 0, },
-		{ "v==", fnVecMath, FN_VECTOR_EQ, "(v= vec1 vec2) -> compare vec1 and vec2 for equality", NULL, 0, }
+		{ "v=", fnVecMath, FN_VECTOR_EQ, "(v= vec1 vec2) -> compare vec1 and vec2 for equality", NULL, 0, }
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))
