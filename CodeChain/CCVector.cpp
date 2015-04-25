@@ -9,121 +9,124 @@
 
 //	================ HELPER FUNCTIONS ====================
 
-ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, CCLinkedList *pIndices, int iCurrentOrd = 0, int iCurrentMarker = 0, bool bIsChild = FALSE)
+ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *pIndices, int iShapeCursor = 0, int iIndicesCursor = 0, int iArrayCursor = 0)
 
-//	GetRelevantArrayIndices
-//
-//	Based on the index list, determines which array elements of the data array are being referred to.
-//
+	//	GetRelevantArrayIndices
+	//
+	//	Based on the index list, determines which array elements of the data array are being referred to.
+	//
+	//	Throughout the documentation, frequent references are made to "hiearchy". Hierarchy refers to 
+	//	the levels in the recursive structure of a vector, where every element could possibly be a 
+	//	a vector itself.
+	//	
 
-{
+	{
 	int i;
-	ICCItem *pCurrentIndex;
-	ICCItem *pResult;
-	int iSumRemainingShape = 0;
+	ICCItem *pError;
+
+	if (pIndices->IsNil())
+	{
+		pError = pCC->CreateError(CONSTLIT("Empty index list."));
+		return pError;
+	}
 
 	ICCItem *pRelevantIndices = pCC->CreateLinkedList();
 	if (pRelevantIndices->IsError())
+		return pCC->CreateMemoryError();
+
+	//	If pIndices has less elements than the dimension at the current hierarchy
+	//	then we assume that the remaining elements are Nil
+	if (pIndices->GetCount() - iIndicesCursor < vShape.GetCount() && !(pIndices->GetElement(iIndicesCursor)->IsNil()))
 	{
-		return pRelevantIndices;
+		for (i = pIndices->GetCount() - iIndicesCursor; i < vShape[iShapeCursor]; i++)
+		{
+			pIndices->Append(*pCC, pCC->CreateNil());
+		}
 	}
 
-	//	optimization for 1D lists
-	if (vShape.GetCount() == 1 && pIndices->GetCount() == 1 && bIsChild == FALSE)
-	{
-		return pIndices;
-	};
 
-	if (pIndices->GetCount() > vShape.GetCount())
-	{
-		return pCC->CreateError(CONSTLIT("Too many indices."));
-	};
-
-	if (iCurrentOrd > pIndices->GetCount() - 1)
-	{
-		if (bIsChild == FALSE)
+	//	Base case: we are at the lowest level in the hierarchy
+	if (vShape.GetCount() - iShapeCursor == 1)
 		{
-			return pCC->CreateError(CONSTLIT("Index array was empty."));
-		}
-		else
-		{
-			if (vShape.GetCount() > 0)
+		//	if an index is Nil, that is the same as saying "take every element on this hierarchy level"
+		if (pIndices->GetElement(iIndicesCursor)->IsNil())
 			{
-				pIndices->Append(*pCC, pCC->CreateNil());
+			for (i = 0; i < vShape[iShapeCursor]; i++)
+				{
+				pRelevantIndices->AppendInteger(*pCC, iArrayCursor + i);
+				};
 			}
+		else
+			{
+			for (i = 0; i < pIndices->GetCount(); i++)
+				{
+				ICCItem *pElement = pIndices->GetElement(i);
+				if (!(pElement->IsInteger()))
+					{
+					pRelevantIndices->Discard(pCC);
+					pError = pCC->CreateError(CONSTLIT("Something wasn't a list, a number, or nil inside the index list."));
+					}
+
+				pRelevantIndices->AppendInteger(*pCC, iArrayCursor + pElement->GetIntegerValue());
+				};
+			}
+		return pRelevantIndices;
+		}
+	//	Non-base case: we are at any level in the hierarchy apart from the lowest one
+	else if (vShape.GetCount() - iShapeCursor > 1)
+		{
+		//	If we are at the lowest level in the hierarchy, then we just have to increment by one array element to reach the neighbour element
+		//	However, we are not at the lowest level in the hierarchy, so we have to increment by the product of the size of the hierachies below this level
+		int iSkipCount = 1;
+		for (i = iShapeCursor + 1; i < vShape.GetCount(); i++)
+			{
+				iSkipCount *= vShape[iShapeCursor];
+			};
+
+		//	if an index is Nil, that is the same as saying "take every element on this hierarchy level"
+		if (pIndices->GetElement(iIndicesCursor)->IsNil())
+			{
+			for (i = 0; i < vShape[iShapeCursor]; i++)
+				{
+				pRelevantIndices->Append(*pCC, GetRelevantArrayIndices(pCC, vShape, pIndices, iShapeCursor + 1, iIndicesCursor + 1, iArrayCursor = iArrayCursor + i*iSkipCount));
+				};
+			}
+		else
+			{
+			ICCItem *pElement = pIndices->GetElement(iIndicesCursor);
+			if (!(pElement->IsInteger()))
+				{
+				if (pElement->GetValueType() == ICCItem::List)
+					{
+						for (i = 0; i < pElement->GetCount(); i++)
+							{
+							ICCItem *pSubElement = pElement->GetElement(i);
+							if (pSubElement->IsInteger())
+								pRelevantIndices->Append(*pCC, GetRelevantArrayIndices(pCC, vShape, pIndices, iShapeCursor + 1, iIndicesCursor + 1, iArrayCursor + pSubElement->GetIntegerValue()*iSkipCount));
+							else
+								pRelevantIndices->Discard(pCC);
+								pCC->CreateError("Either too much hierarchy was provided in index list, or something wasn't a list, a number, or Nil.");
+							};
+					}
+				else
+					{
+					pRelevantIndices->Discard(pCC);
+					pError = pCC->CreateError(CONSTLIT("Something wasn't a list, a number, or Nil inside the index list."));
+					}
+				}
 			else
-			{
-				pRelevantIndices->AppendInteger(*pCC, iCurrentMarker);
-				return pRelevantIndices;
-			};
-		};
-	};
-
-	pCurrentIndex = pIndices->GetElement(iCurrentOrd);
-
-	for (i = iCurrentOrd + 1; i < vShape.GetCount(); i++)
-	{
-		iSumRemainingShape += vShape[i];
-	};
-
-	if (iSumRemainingShape == 0)
-	{
-		iSumRemainingShape = 1;
-	};
-
-	if (pCurrentIndex->IsNil())
-	{
-		for (i = 0; i < vShape[iCurrentOrd]; i++)
-		{
-			pResult = GetRelevantArrayIndices(pCC, vShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + i*iSumRemainingShape, bIsChild = TRUE);
-			if (pResult->IsError())
-			{
-				return pResult;
-			};
-
-			pRelevantIndices->Append(*pCC, pResult);
-		};
-
+				{
+				pRelevantIndices->Append(*pCC, GetRelevantArrayIndices(pCC, vShape, pIndices, iShapeCursor + 1, iIndicesCursor + 1, iArrayCursor + pElement->GetIntegerValue()*iSkipCount));
+				}
+			}
 		return pRelevantIndices;
-	};
-
-	if (pCurrentIndex->IsList())
-	{
-		for (i = 0; i < pCurrentIndex->GetCount(); i++)
+		}
+	else
 		{
-			pResult = GetRelevantArrayIndices(pCC, vShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + i*iSumRemainingShape, bIsChild = TRUE);
-			if (pResult->IsError())
-			{
-				return pResult;
-			};
-
-			pRelevantIndices->Append(*pCC, pResult);
-		};
-
-		return pRelevantIndices;
+		pRelevantIndices->Discard(pCC);
+		return pCC->CreateError(CONSTLIT("Vector is empty, thus cannot be set."));
+		}
 	};
-
-	if (pCurrentIndex->IsInteger())
-	{
-		int iCurrentIndex = pCurrentIndex->GetIntegerValue();
-
-		if (iCurrentIndex >= vShape[iCurrentOrd])
-		{
-			return pCC->CreateError(CONSTLIT("Index is out of bounds."));
-		};
-
-		pResult = GetRelevantArrayIndices(pCC, vShape, pIndices, iCurrentOrd = iCurrentOrd + 1, iCurrentMarker = iCurrentMarker + iCurrentIndex*iSumRemainingShape, bIsChild = TRUE);
-		if (pResult->IsError())
-		{
-			return pResult;
-		};
-
-		pRelevantIndices->Append(*pCC, pResult);
-		return pRelevantIndices;
-	};
-
-	return pCC->CreateError(CONSTLIT("All control structures passed in GetRelevantIndices."));
-};
 
 //	======================================================
 
@@ -175,10 +178,10 @@ CCVectorOld::~CCVectorOld (void)
 
 CCVector::~CCVector(void)
 
-//	CCVectorOld destructor
+	//	CCVectorOld destructor
 
-{
-}
+	{
+	}
 
 ICCItem *CCVectorOld::Clone (CCodeChain *pCC)
 
@@ -187,7 +190,7 @@ ICCItem *CCVectorOld::Clone (CCodeChain *pCC)
 //	Clone this item
 
 	{
-		CCVectorOld *pNewVector;
+	CCVectorOld *pNewVector;
 	ICCItem *pError;
 
 	//	Create new vector
@@ -228,11 +231,11 @@ ICCItem *CCVectorOld::Clone (CCodeChain *pCC)
 
 ICCItem *CCVector::Clone(CCodeChain *pCC)
 
-//	Clone
-//
-//	Clone this item
+	//	Clone
+	//
+	//	Clone this item
 
-{
+	{
 	CCVector *pNewVector;
 
 	//	Create new vector
@@ -246,20 +249,20 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 
 	//	Copy the vector
 	if (&m_vData)
-	{
+		{
 		//	TODO: Is this the correct way to copy array data?
 		pNewVector->m_vData = this->m_vData;
-	}
+		}
 
 	if (&m_vShape)
-	{
+		{
 		pNewVector->m_vShape = this->m_vShape;
-	}
+		}
 
 	//	Done
 
 	return pNewVector;
-}
+	}
 
 void CCVectorOld::DestroyItem (CCodeChain *pCC)
 
@@ -421,45 +424,29 @@ TArray <int> GetExtractedVectorShape(CCodeChain *pCC, TArray <int> vShape, CCLin
 {
 	int i;
 	TArray <int> vResultShape;
-	int iLenIndices = pIndices->GetCount();
+	ICCItem *pElement;
 
-	for (i = 0; i < vShape.GetCount(); i++)
-	{
-		if (i >= iLenIndices)
+	bool bLastWasInteger = FALSE;
+	for (i = 0; i < pIndices->GetCount(); i++)
 		{
+		pElement = pIndices->GetElement(i);
+		if (pElement->IsNil())
+			{
 			vResultShape.Insert(vShape[i]);
-			continue;
+			}
+		else if (pElement->IsInteger())
+			{
+			bLastWasInteger = TRUE;
+			}
+		else if (pElement->IsList())
+			{
+			vResultShape.Insert(pElement->GetCount());
+			}
 		};
-
-		ICCItem *pCurrentItem = pIndices->GetElement(i);
-
-		if (pCurrentItem->IsList())
-		{
-			vResultShape.Insert(pCurrentItem->GetCount());
-			continue;
-		};
-
-		if (pCurrentItem->IsNil())
-		{
-			vResultShape.Insert(vShape[i]);
-			continue;
-		};
-
-		if (pCurrentItem->IsInteger())
-		{
-			int *pInt = vResultShape.Insert();
-			*pInt = pCurrentItem->GetIntegerValue();
-			continue;
-		};
-
-		//	If we got here, then something is wrong -- deleting everything inside vResultShape
-		vResultShape.DeleteAll();
-		return vResultShape;
-	};
 
 	return vResultShape;
 };
-ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
+ICCItem *CCVector::IndexVector(CCodeChain *pCC, ICCItem *pIndices)
 
 //	IndexVector
 //
@@ -473,6 +460,7 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 	CCLinkedList *pRelevantIndices;
 	
 	int i;
+	int iIndex;
 
 	if (pIndexExtractionResult->IsError())
 	{
@@ -484,9 +472,8 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 		return pCC->CreateError(CONSTLIT("Unable to determine list of extraction of indices."));
 	};
 
-	// we pass in the pointer to the shape array of the result vector to GetExtractedVectorShape
-	TArray <int> vNewShape = GetExtractedVectorShape(pCC, this->GetShapeArray(), pIndices);
-	if ((vNewShape.GetCount()) == 0 && (pIndices->GetCount() != 0))
+	TArray <int> vNewShape = GetExtractedVectorShape(pCC, this->GetShapeArray(), dynamic_cast <CCLinkedList *> (pIndices));
+	if ((vNewShape.GetCount() == 0) && (pIndices->GetCount() != 0))
 		return pCC->CreateError(CONSTLIT("Error determining shape of extracted vector."));
 
 	pItem = (dynamic_cast <CCLinkedList *> (pIndexExtractionResult))->GetFlattened(pCC, NULL);
@@ -502,7 +489,8 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 		TArray<double> vContentArray;
 		for (i = 0; i < pRelevantIndices->GetCount(); i++)
 		{
-			vContentArray.Insert(this->m_vData[pRelevantIndices->GetElement(i)->GetIntegerValue()]);
+			iIndex = pRelevantIndices->GetElement(i)->GetIntegerValue();
+			vContentArray.Insert(this->m_vData[iIndex]);
 		};
 
 		pRelevantIndices->Discard(pCC);
@@ -510,7 +498,6 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, CCLinkedList *pIndices)
 		pItem = pCC->CreateVectorGivenContent(vNewShape, vContentArray);
 		if (pItem->IsError())
 			return pItem;
-		pItem->Reset();
 
 		return pItem;
 	}
@@ -544,19 +531,65 @@ CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
 
 {
 	int i;
-	CString sPrintedVector = LITERAL("(");
-	int iNumElements = this->GetShapeCount();
+	double dData;
+	CString sPrintedVector;
 
-	for (i = 0; i < iNumElements; i++)
+	if (GetShapeCount() == 1)
 	{
-		sPrintedVector.Append(strPatternSubst(LITERAL("%d"), this->m_vShape[i]));
-		if (i != (iNumElements-1))
-			sPrintedVector.Append(LITERAL(", "));
-	};
-	
-	sPrintedVector.Append(LITERAL(")"));
+		sPrintedVector.Append(LITERAL("("));
+		for (i = 0; i < m_vShape[0]; i++)
+		{
+			dData = m_vData[i];
+			sPrintedVector.Append(strPatternSubst(LITERAL("%s"), strFromDouble(dData)));
 
-	return sPrintedVector;
+			if (i != m_vShape[0] - 1)
+				sPrintedVector.Append(LITERAL(", "));
+
+		};
+		sPrintedVector.Append(LITERAL(")"));
+
+		return sPrintedVector;
+	}
+	else if (GetShapeCount() > 1)
+	{
+		ICCItem *pIndices = pCC->CreateLinkedList();
+		if (pIndices->IsError())
+		{
+			return LITERAL("Error printing vector.");
+		};
+
+		sPrintedVector.Append(LITERAL("( "));
+		for (i = 0; i < m_vShape[0]; i++)
+		{
+			ICCItem *pIndices = pCC->CreateLinkedList();
+			if (pIndices->IsError())
+			{
+				return LITERAL("Error printing vector: memory could not be allocated for temporary index list.");
+			};
+			pIndices->AppendInteger(*pCC, i);
+
+			ICCItem *pSubVector = IndexVector(pCC, pIndices);
+			if (pSubVector->IsError())
+				{
+				pIndices->Discard(pCC);
+				return LITERAL("Error printing vector: subvectors could not be extracted.");
+				}
+			CString sPrintedSubVector = pSubVector->Print(pCC);
+			sPrintedVector.Append(strPatternSubst(LITERAL("%s"), sPrintedSubVector));
+			if (i != m_vShape[0] - 1)
+				sPrintedVector.Append(LITERAL(", "));
+
+			pSubVector->Discard(pCC);
+			pIndices->Discard(pCC);
+		};
+		sPrintedVector.Append(LITERAL(" )"));
+
+		return sPrintedVector;
+	}
+	else
+	{
+		return LITERAL("Empty vector.");
+	}
 }
 
 void CCVectorOld::Reset (void)

@@ -631,7 +631,7 @@ class CCVector : public ICCVector
 		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
 		virtual ICCItem *GetElement(int iIndex);
 		virtual ICCItem *SetElement (int iIndex, double dValue);
-		virtual ICCItem *IndexVector (CCodeChain *pCC, CCLinkedList *pIndices);
+		virtual ICCItem *IndexVector (CCodeChain *pCC, ICCItem *pIndices);
 		virtual ICCItem *Head(CCodeChain *pCC) { return GetElement(0); }
 		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
 		virtual ICCItem *Tail(CCodeChain *pCC);
