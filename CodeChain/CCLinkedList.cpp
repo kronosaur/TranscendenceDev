@@ -361,11 +361,13 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 		};
 
 		//	we have passed all the checks, so now we create pShapeList
-		pShapeList->AppendInteger(*pCC, iHeadCount);
+		pShapeList->AppendInteger(*pCC, this->GetCount());
 		for (i = 0; i < pLowerLevelShapeList->GetCount(); i++)
 		{
 			pShapeList->AppendInteger(*pCC, pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
 		};
+
+		pLowerLevelShapeList->Discard(pCC);
 		return pShapeList;
 	}
 	else if (pHead->GetValueType() == ICCItem::Integer || pHead->GetValueType() == ICCItem::Double)

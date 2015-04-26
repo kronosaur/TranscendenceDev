@@ -4389,18 +4389,18 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 //
 //	Vector Math functions
 //  
-//  (vscalmul scalar vector)
-//  (vemul vector1 vector2)
-//  (vsum vector1 vector2)
+//  (v* scalar vector)
+//  (v^ vector1 vector2)
 //	(vdot vector1 vector2)
-//  (vadd vector1 vector2)
-//  (veq vector 1 vector2)
+//  (v+ vector1 vector2)
+//  (v= vector 1 vector2)
 
 {
 	int i;
 	CCodeChain *pCC = pCtx->pCC;
 	ICCItem *pArgs;
 	ICCItem *pItem;
+	ICCItem *pError;
 
 	switch (dwData)
 	{
@@ -4415,7 +4415,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			double dScalar = pNumeral->GetDoubleValue();
 			CCVector *pVector = dynamic_cast <CCVector *> (pArgs->GetElement(1)->Clone(pCC));
 
-			pItem = pCC->CreateFilledVector(0.0, pVector->GetShapeArray());
+			pItem = pVector->Clone(pCC);
 			if (pItem->IsError())
 			{
 				pArgs->Discard(pCC);
@@ -4443,7 +4443,6 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				}
 				else
 				{
-					pItem->Discard(pCC);
 					pSuccess->Discard(pCC);
 				};
 			};
@@ -4463,52 +4462,37 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			CCVector *pVector1 = dynamic_cast <CCVector *> (pArgs->GetElement(1));
 
 			int iDimVec0 = pVector0->GetShapeCount();
-			int iDimVec1 = pVector1->GetShapeCount();
 
-			if (iDimVec0 > 1 || iDimVec1 > 1)
+			if (!CompareShapeArrays(pVector0->GetShapeArray(), pVector1->GetShapeArray()))
 			{
-				ICCItem *pError = pCC->CreateError(CONSTLIT("Vectors are not 1 or 2 dimensional"), NULL);
+				pError = pCC->CreateError(CONSTLIT("Dot product is undefined for vectors that do not have the same shape."));
 				pArgs->Discard(pCC);
 				return pError;
 			};
 
-			if (!CompareShapeArrays(pVector0->GetShapeArray(), pVector1->GetShapeArray()))
+			if (iDimVec0 == 1)
 			{
-				ICCItem *pError = pCC->CreateError(CONSTLIT("Vectors do not have the same size"));
-			};
+				double dResult = 0;
+				for (i = 0; i < pVector0->GetCount(); i++)
+				{
+					dResult += pVector0->GetElement(i)->GetDoubleValue()*pVector1->GetElement(i)->GetDoubleValue();
+				}
 
-			pItem = pCC->CreateFilledVector(0.0, pVector0->GetShapeArray());
+				pArgs->Discard(pCC);
+				return pCC->CreateDouble(dResult);
+			}
+			else
+			{
+				ICCItem *pError = pCC->CreateError(CONSTLIT("Dot product is only defined for rank 1 vectors (write function in TLisp for dot product of rank 2 vectors, or tensor product of rank 3 vectors and above."), NULL);
+				pArgs->Discard(pCC);
+				return pError;
+			}
+			
 			if (pItem->IsError())
 			{
 				pArgs->Discard(pCC);
 				return pItem;
 			}
-			CCVector *pResultVector = dynamic_cast <CCVector *> (pItem);
-
-			for (i = 0; i < pVector0->GetCount(); i++)
-			{
-				ICCItem *pNum0 = pVector0->GetElement(i);
-				ICCItem *pNum1 = pVector0->GetElement(i);
-
-				ICCItem *pSuccess = pResultVector->SetElement(i, pNum0->GetDoubleValue()*pNum1->GetDoubleValue());
-				if (pSuccess->IsNil())
-				{
-					ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
-					pArgs->Discard(pCC);
-					pResultVector->Discard(pCC);
-					pSuccess->Discard(pCC);
-					return pError;
-				}
-				else
-				{
-					pNum0->Discard(pCC);
-					pNum1->Discard(pCC);
-					pSuccess->Discard(pCC);
-				};
-			};
-
-			pArgs->Discard(pCC);
-			return pResultVector;
 		}
 
 		case FN_VECTOR_ADD:

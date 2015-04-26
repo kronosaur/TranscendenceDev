@@ -317,7 +317,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{ "vfilled", fnVecCreate, FN_VECREATE_FILLED, "(vectorfilled scalar shapelist) -> vector filled with scalar's value", NULL, 0, },
 		{ "vector", fnVecCreate, FN_VECCREATE, "(vector contentlist) -> vector form of contentlist", NULL, 0, },
 		{ "v+", fnVecMath, FN_VECTOR_ADD, "(v+ vec1 vec2) -> result of vector addition of vec1 and vec2", NULL, 0, },
-		{ "v.", fnVecMath, FN_VECTOR_DOT, "(v. vec1 vec2) -> result of vector dot product of vec1 and vec2", NULL, 0, },
+		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(v. vec1 vec2) -> result of vector dot product of vec1 and vec2", NULL, 0, },
 		{ "v*", fnVecMath, FN_VECTOR_SCALMUL, "(v* scalar vec1) -> result of scalar multiplication of scalar and vec1", NULL, 0, },
 		{ "v^", fnVecMath, FN_VECTOR_EMUL, "(v^ vec1 vec2) -> result of element-wise multiplication of vec1 and vec2", NULL, 0, },
 		{ "v<-", fnVector, FN_VECTOR_SET, "(v<- vec1 indexlist datalist) -> set the elements of vec1 with datalist based on the indices in indexlist", NULL, PPFLAG_SIDEEFFECTS, },
