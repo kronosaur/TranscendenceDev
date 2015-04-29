@@ -472,7 +472,7 @@ ICCItem *CCVector::SetElementsByIndices(CCodeChain *pCC, CCLinkedList *pIndices,
 			
 	};
 
-	return pCC->CreateTrue();
+	return this;
 };
 
 
