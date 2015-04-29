@@ -60,13 +60,13 @@
 #define FN_RANDOM_GAUSSIAN				56
 #define FN_ITEM_TYPE					57
 #define FN_EQUALITY_NEQ					58
-#define FN_VECCREATE_EMPTY              59
+#define FN_VECREATE_FILLED              59
 #define FN_VECCREATE                    60
 #define FN_VECTOR_ADD                   61
 #define FN_VECTOR_SCALMUL               62
 #define FN_VECTOR_DOT                   63
 #define FN_VECTOR_EMUL                  64
-#define FN_VECTOR_ESUM					65
+#define FN_VECTOR_EADD					65
 #define FN_ITEMINFO_ASDOUBLE            66
 #define FN_VECTOR_SET					67
 #define FN_VECTOR_GET					68
@@ -86,6 +86,7 @@
 #define FN_EQUALITY_GREATER_NUMERALS	82
 #define FN_EQUALITY_GREATER_EQ_NUMERALS	83
 #define FN_EQUALITY_NEQ_NUMERALS		84
+#define FN_VECTOR_EQ					85
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

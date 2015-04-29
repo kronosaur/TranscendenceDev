@@ -170,7 +170,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(modulo ['degrees] x y) -> z",
 			"*",	0,	},
 
-		{	"mod",			fnMath,			FN_MATH_MODULUS_NUMERALS,
+		{	"mod",			fnMathNumerals,			FN_MATH_MODULUS_NUMERALS,
 			"(mod ['degrees] x y) -> z",
 			"*",	0,	},
 
@@ -198,7 +198,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(power x y) -> z",
 			"vv",	0,	},
 
-		{	"pow",				fnMath,		FN_MATH_POWER_NUMERALS,
+		{	"pow",				fnMathNumerals,		FN_MATH_POWER_NUMERALS,
 			"(pow x y) -> z",
 			"vv",	0,	},
 
@@ -255,7 +255,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(sqrt x) -> z",
 			"v",	0,	},
 
-		{	"sqrtn",				fnMath,			FN_MATH_SQRT_NUMERALS,
+		{	"sqrtn",				fnMathNumerals,			FN_MATH_SQRT_NUMERALS,
 			"(sqrtn x) -> z",
 			"v",	0,	},
 
@@ -280,7 +280,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"-",				fnMathList,			FN_MATH_SUBTRACT,
-			"(- x y) -> z",
+			"(- x y) -> z\n (- x) -> -x",
 			NULL,	0,	},
 
 		{	"switch",			fnSwitch,		0,						"",		NULL,	0,	},
@@ -314,15 +314,15 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(vecCreate) -> empty vector", 
 			NULL, 0, },
 
-		{ "emptyvector", fnVecCreate, FN_VECCREATE_EMPTY, "(vector dtype shapelist) -> empty vector", NULL, 0, },
-		{ "vector", fnVecCreate, FN_VECCREATE, "(vector dtype contentlist) -> vector", NULL, 0, },
-		{ "vadd", fnVecMath, FN_VECTOR_ADD, "(vadd vec1 vec2)", NULL, 0, },
-		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(vdot vec1 vec2)", NULL, 0, },
-		{ "vscalmul", fnVecMath, FN_VECTOR_SCALMUL, "(vscalmul scalar vec1)", NULL, 0, },
-		{ "vemul", fnVecMath, FN_VECTOR_EMUL, "(vemul vec1 vec2)", NULL, 0, },
-		{ "veadd", fnVecMath, FN_VECTOR_ESUM, "(veadd vec1 vec2)", NULL, 0, },
-		{ "vecset", fnVector, FN_VECTOR_SET, "(vecset vector indexlist datalist)", NULL, PPFLAG_SIDEEFFECTS, },
-		{ "vecget", fnVector, FN_VECTOR_GET, "(vecget vector indexlist)", NULL, 0, }
+		{ "vfilled", fnVecCreate, FN_VECREATE_FILLED, "(vfilled scalar shapelist) -> vector filled with scalar's value", NULL, 0, },
+		{ "vector", fnVecCreate, FN_VECCREATE, "(vector contentlist) -> vector form of contentlist", NULL, 0, },
+		{ "v+", fnVecMath, FN_VECTOR_ADD, "(v+ vec1 vec2) -> result of vector addition of vec1 and vec2", NULL, 0, },
+		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(vdot vec1 vec2) -> result of vector dot product of vec1 and vec2", NULL, 0, },
+		{ "v*", fnVecMath, FN_VECTOR_SCALMUL, "(v* scalar vec1) -> result of scalar multiplication of scalar and vec1", NULL, 0, },
+		{ "v^", fnVecMath, FN_VECTOR_EMUL, "(v^ vec1 vec2) -> result of element-wise multiplication of vec1 and vec2", NULL, 0, },
+		{ "v<-", fnVector, FN_VECTOR_SET, "(v<- vec1 indexlist datalist) -> set the elements of vec1 with datalist based on the indices in indexlist", NULL, PPFLAG_SIDEEFFECTS, },
+		{ "v->", fnVector, FN_VECTOR_GET, "(v-> vec1 indexlist) -> get the elements of vec1 based on indexlist", NULL, 0, },
+		{ "v=", fnVecMath, FN_VECTOR_EQ, "(v= vec1 vec2) -> compare vec1 and vec2 for equality", NULL, 0, }
 	};
 
 #define DEFPRIMITIVES_COUNT		(sizeof(g_DefPrimitives) / sizeof(g_DefPrimitives[0]))
