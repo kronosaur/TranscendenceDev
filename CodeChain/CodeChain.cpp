@@ -407,26 +407,35 @@ ICCItem *CCodeChain::CreateVectorOld (int iSize)
 	return pVector->Reference();
 	}
 
-ICCItem *CCodeChain::CreateEmptyVector(TArray<int> vShape)
+ICCItem *CCodeChain::CreateFilledVector(double dScalar, TArray<int> vShape)
 
-//	CreateEmptyVector
+//	CreateFilledVector
 //
-//	Creates an empty vector with the given shape
+//	Creates a vector filled with the given scalar
 
 {
 	int i;
 	int iSize = 0;
 	CCVector *pVector;
 	ICCItem *pError;
+	ICCItem *pItem;
 
 	for (i = 0; i < vShape.GetCount(); i++)
 	{
-		iSize = iSize + vShape[i];
+		if (i == 0)
+			iSize = vShape[0];
+		else
+			iSize = iSize*vShape[i];
 	};
 
-	pVector = new CCVector(this);
-	if (pVector == NULL)
-		return CreateMemoryError();
+	pItem = m_VectorPool.CreateItem(this);
+	if (pItem->IsError())
+		return pItem;
+	pItem->Reset();
+	pVector = dynamic_cast<CCVector *>(pItem);
+
+	pVector->SetContext(this);
+	pVector->SetShape(this, vShape);
 
 	pError = pVector->SetDataArraySize(this, iSize);
 	if (pError->IsError())
@@ -435,9 +444,15 @@ ICCItem *CCodeChain::CreateEmptyVector(TArray<int> vShape)
 		return pError;
 	}
 
-	pVector->SetShape(this, vShape);
-	pError->Discard(this);
+	TArray<double> vContentArray = pVector->GetDataArray();
+	for (i = 0; i < iSize; i++)
+	{
+		vContentArray[i] = dScalar;
+	};
+	pVector->SetArrayData(this, vContentArray);
+
 	
+	pError->Discard(this);
 	//	Done
 	return pVector->Reference();
 }
@@ -450,18 +465,63 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *
 
 {
 	int i;
+	CCVector *pVector;
+	ICCItem *pItem;
+
+	pItem = m_VectorPool.CreateItem(this);
+	if (pItem->IsError())
+		return pItem;
+	pItem->Reset();
+
+	pVector = dynamic_cast<CCVector *>(pItem);
+	pVector->SetContext(this);
+
+	pVector->SetShape(this, vShape);
+
+	pItem = pContentList->GetFlattened(this, NULL);
+	if (pItem->IsError())
+	{ 
+		pVector->Discard(this);
+		return pItem;
+	};
+	CCLinkedList *pFlattenedContentList = dynamic_cast<CCLinkedList *>(pItem);
+
+	TArray<double> vDataArray;
+	for (i = 0; i < pFlattenedContentList->GetCount(); i++)
+	{
+		vDataArray.Insert(pFlattenedContentList->GetElement(i)->GetDoubleValue());
+	};
+	pVector->SetArrayData(this, vDataArray);
+
+	//	Done
+	pFlattenedContentList->Discard(this);
+	return pVector->Reference();
+}
+
+ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, TArray<double> vContentArray)
+
+//	CreateVectorGivenContent (new)
+//
+//	Creates a vector with given shape and content
+
+{
+	int i;
 	int iSize = 0;
 	CCVector *pVector;
 	ICCItem *pError;
+	ICCItem *pItem;
 
 	for (i = 0; i < vShape.GetCount(); i++)
 	{
 		iSize = iSize * vShape[i];
 	};
 
-	pVector = new CCVector(this);
-	if (pVector == NULL)
-		return CreateMemoryError();
+	pItem = m_VectorPool.CreateItem(this);
+	if (pItem->IsError())
+		return pItem;
+	pItem->Reset();
+	pVector = dynamic_cast<CCVector *>(pItem);
+	pVector->SetContext(this);
 
 	pError = pVector->SetDataArraySize(this, iSize);
 	if (pError->IsError())
@@ -472,67 +532,11 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *
 
 	pVector->SetShape(this, vShape);
 
-	TArray<double> *pDataArray = new TArray <double>;
-	CCLinkedList *pFlattenedContentList = pContentList->GetFlattened(this, NULL);
-	for (i = 0; i < pFlattenedContentList->GetCount(); i++)
-	{
-		double dElement = pFlattenedContentList->GetElement(i)->GetDoubleValue();
-		pDataArray->Insert(&dElement, i);
-	};
-	pVector->SetArrayData(this, &pDataArray);
+	pVector->SetArrayData(this, vContentArray);
 
 	//	Done
 	pError->Discard(this);
 	return pVector->Reference();
-}
-
-ICCItem *CCodeChain::CreateVectorUsingAnother(CCVector *pVector)
-
-//	CreateVectorUsingAnother (new)
-//
-//	Creates a vector using an existing vector
-
-{
-	int iSize = pVector->GetCount();
-	CCVector *pNewVector;
-	ICCItem *pError;
-
-	pNewVector = new CCVector(this);
-	if (pNewVector == NULL)
-		return CreateMemoryError();
-
-	pError = pNewVector->SetDataArraySize(this, iSize);
-	if (pError->IsError())
-	{
-		delete pNewVector;
-		return pError;
-	}
-
-	try
-	{
-		pNewVector->SetShape(this, pVector->GetShapeArray());
-	}
-	catch (...)
-	{
-		ICCItem *pError = this->CreateError(CONSTLIT("Error transferring shape of existing vector to new vector."));
-		return pError;
-	}
-	
-	try
-	{
-		pNewVector->SetArrayData(this, pVector->GetDataArray());
-	}
-	catch (...)
-	{
-		ICCItem *pError = this->CreateError(CONSTLIT("Error transferring data of existing vector to new vector."));
-		return pError;
-	}
-
-	//	Done
-
-	//  if we have gotten this far, then we are all done
-	pError->Discard(this);
-	return pNewVector->Reference();
 }
 
 ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)
