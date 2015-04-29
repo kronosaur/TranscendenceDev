@@ -2695,10 +2695,10 @@ ICCItem *fnMathListNumerals(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	//
 	//	Simple numeric (integer or double) functions
 	//
-	//	(add x1 x2 ... xn) -> z
+	//	(+ x1 x2 ... xn) -> z
 	//	(max x1 x2 ... xn) -> z
 	//	(min x1 x2 ... xn) -> z
-	//	(multiply x1 x2 .. .xn) -> z
+	//	(* x1 x2 .. .xn) -> z
 
 	{
 		int i;
@@ -4179,13 +4179,13 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			//  no need to make sure there are any other things in pArgs, 
 			//  because EvaluateArgs did that for us (recall "sk" validation string)
 
-			TArray <int> pShape;
+			TArray <int> vShape;
 			for (i = 0; i < pShapeList->GetCount(); i++)
 			{
 				pDim = pShapeList->GetElement(i);
 				if (pDim->IsInteger())
 				{
-					pShape.Insert(pDim->GetIntegerValue());
+					vShape.Insert(pDim->GetIntegerValue());
 				}
 				else
 				{
@@ -4196,7 +4196,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			};
 
 			//	Create the vector
-			pVector = pCC->CreateFilledVector(pScalar->GetDoubleValue(), pShape);
+			pVector = pCC->CreateFilledVector(pScalar->GetDoubleValue(), vShape);
 
 			//	Done
 
@@ -4413,7 +4413,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			CCNumeral *pNumeral = dynamic_cast <CCNumeral *> (pArgs->GetElement(0));
 			double dScalar = pNumeral->GetDoubleValue();
-			CCVector *pVector = dynamic_cast <CCVector *> (pArgs->GetElement(1)->Clone(pCC));
+			CCVector *pVector = dynamic_cast <CCVector *> (pArgs->GetElement(1));
 
 			pItem = pVector->Clone(pCC);
 			if (pItem->IsError())

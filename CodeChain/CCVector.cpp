@@ -37,6 +37,11 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 		pError = pCC->CreateError(CONSTLIT("Empty index list."));
 		return pError;
 		}
+	else if (pIndices->GetCount() > vShape.GetCount())
+		{
+		pError = pCC->CreateError(CONSTLIT("Too many indices provided."));
+		return pError;
+		}
 
 	if (pIndices->GetCount() < vShape.GetCount())
 		{
@@ -280,32 +285,47 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 	//	Clone this item
 
 	{
-	CCVector *pNewVector;
+		int iSize = this->GetCount();
+		CCVector *pNewVector;
+		ICCItem *pError;
 
-	//	Create new vector
+		pNewVector = new CCVector(m_pCC);
+		if (pNewVector == NULL)
+			return m_pCC->CreateMemoryError();
+		pNewVector->SetContext(m_pCC);
 
-	pNewVector = new CCVector(pCC);
-	if (pNewVector == NULL)
-		return pCC->CreateMemoryError();
-
-	//	Initialize
-	pNewVector->SetShape(pCC, m_vShape);
-
-	//	Copy the vector
-	if (&m_vData)
+		pError = pNewVector->SetDataArraySize(m_pCC, iSize);
+		if (pError->IsError())
 		{
-		//	TODO: Is this the correct way to copy array data?
-		pNewVector->m_vData = this->m_vData;
+			delete pNewVector;
+			return pError;
 		}
 
-	if (&m_vShape)
+		try
 		{
-		pNewVector->m_vShape = this->m_vShape;
+			pNewVector->SetShape(m_pCC, this->GetShapeArray());
+		}
+		catch (...)
+		{
+			ICCItem *pError = m_pCC->CreateError(CONSTLIT("Error transferring shape of existing vector to new vector."));
+			return pError;
 		}
 
-	//	Done
+		try
+		{
+			pNewVector->SetArrayData(m_pCC, this->GetDataArray());
+		}
+		catch (...)
+		{
+			ICCItem *pError = m_pCC->CreateError(CONSTLIT("Error transferring data of existing vector to new vector."));
+			return pError;
+		}
 
-	return pNewVector;
+		//	Done
+
+		//  if we have gotten this far, then we are all done
+		pError->Discard(m_pCC);
+		return pNewVector->Reference();
 	}
 
 void CCVectorOld::DestroyItem (CCodeChain *pCC)
@@ -565,33 +585,11 @@ CString CCVectorOld::Print (CCodeChain *pCC, DWORD dwFlags)
 	return strPatternSubst(LITERAL("[vector with (%d) elements]"), m_iCount);
 	}
 
-CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
-
-//	Print
-//
-//	Print a user-visible message
-
-// TODO: get this function to print out shape of the vector instead
-
+CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags)
 {
 	int i;
 	double dData;
 	CString sPrintedVector;
-
-	if (dwFlags == 0)
-	{
-		sPrintedVector.Append(LITERAL("shape:  ("));
-		for (i = 0; i < m_vShape.GetCount(); i++)
-		{
-			sPrintedVector.Append(strPatternSubst(LITERAL("%d"), m_vShape[i]));
-			if (i != m_vShape.GetCount() - 1)
-			{
-				sPrintedVector.Append(LITERAL(", "));
-			}
-		}
-		sPrintedVector.Append(LITERAL(")\n"));
-	}
-	
 
 	if (GetShapeCount() == 1)
 	{
@@ -623,14 +621,21 @@ CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
 
 			ICCItem *pSubVector = IndexVector(pCC, pIndices);
 			if (pSubVector->IsError())
-				{
+			{
 				pIndices->Discard(pCC);
 				sPrintedVector = strPatternSubst(LITERAL("Error printing vector: %s"), pSubVector->GetStringValue());
 				pSubVector->Discard(pCC);
 				return sPrintedVector;
-				}
-			CString sPrintedSubVector = pSubVector->Print(pCC, 1);
+			}
+
+			CString sPrintedSubVector;
+			if (pSubVector->IsDouble())
+				sPrintedSubVector = pSubVector->Print(pCC, dwFlags);
+			else
+				sPrintedSubVector = (dynamic_cast <CCVector *> (pSubVector))->PrintWithoutShape(pCC, dwFlags);
+
 			sPrintedVector.Append(sPrintedSubVector);
+
 			if (i != m_vShape[0] - 1)
 				sPrintedVector.Append(LITERAL(", "));
 
@@ -645,6 +650,33 @@ CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
 	{
 		return LITERAL("Empty vector.");
 	}
+}
+CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
+
+//	Print
+//
+//	Print a user-visible message
+
+// TODO: get this function to print out shape of the vector instead
+
+{
+	int i;
+	CString sPrintedVector;
+
+	sPrintedVector.Append(LITERAL("shape:  ("));
+	for (i = 0; i < m_vShape.GetCount(); i++)
+	{
+		sPrintedVector.Append(strPatternSubst(LITERAL("%d"), m_vShape[i]));
+		if (i != m_vShape.GetCount() - 1)
+		{
+			sPrintedVector.Append(LITERAL(", "));
+		}
+	}
+	sPrintedVector.Append(LITERAL(")\n"));
+	
+	sPrintedVector.Append(this->PrintWithoutShape(pCC, dwFlags));
+
+	return sPrintedVector;
 }
 
 void CCVectorOld::Reset (void)

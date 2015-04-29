@@ -618,6 +618,7 @@ class CCVector : public ICCVector
 		void SetContext(CCodeChain *pCC) { m_pCC = pCC;  }
 		void SetShape(CCodeChain *pCC, TArray<int> vNewShape) { m_vShape = vNewShape; }
 		void SetArrayData(CCodeChain *pCC, TArray<double> vNewData) { m_vData = vNewData; }
+		CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags);
 		
 		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -829,7 +830,6 @@ class CCodeChain : public CObject
 		ICCItem *CreateFilledVector(double dScalar, TArray<int> vShape);
 		ICCItem *CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *pContentList);
 		ICCItem *CreateVectorGivenContent(TArray<int> vShape, TArray<double> vContentList);
-		ICCItem *CreateVectorUsingAnother(CCVector *pVector);
 		inline void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(this, pItem); }
 		inline void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
 		inline void DestroyInteger (ICCItem *pItem) { m_IntegerPool.DestroyItem(this, pItem); }

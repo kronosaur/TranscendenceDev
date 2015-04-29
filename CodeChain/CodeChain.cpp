@@ -422,7 +422,10 @@ ICCItem *CCodeChain::CreateFilledVector(double dScalar, TArray<int> vShape)
 
 	for (i = 0; i < vShape.GetCount(); i++)
 	{
-		iSize = iSize + vShape[i];
+		if (i == 0)
+			iSize = vShape[0];
+		else
+			iSize = iSize*vShape[i];
 	};
 
 	pItem = m_VectorPool.CreateItem(this);
@@ -534,55 +537,6 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, TArray<double>
 	//	Done
 	pError->Discard(this);
 	return pVector->Reference();
-}
-
-ICCItem *CCodeChain::CreateVectorUsingAnother(CCVector *pVector)
-
-//	CreateVectorUsingAnother (new)
-//
-//	Creates a vector using an existing vector
-
-{
-	int iSize = pVector->GetCount();
-	CCVector *pNewVector;
-	ICCItem *pError;
-
-	pNewVector = new CCVector(this);
-	if (pNewVector == NULL)
-		return CreateMemoryError();
-
-	pError = pNewVector->SetDataArraySize(this, iSize);
-	if (pError->IsError())
-	{
-		delete pNewVector;
-		return pError;
-	}
-
-	try
-	{
-		pNewVector->SetShape(this, pVector->GetShapeArray());
-	}
-	catch (...)
-	{
-		ICCItem *pError = this->CreateError(CONSTLIT("Error transferring shape of existing vector to new vector."));
-		return pError;
-	}
-	
-	try
-	{
-		pNewVector->SetArrayData(this, pVector->GetDataArray());
-	}
-	catch (...)
-	{
-		ICCItem *pError = this->CreateError(CONSTLIT("Error transferring data of existing vector to new vector."));
-		return pError;
-	}
-
-	//	Done
-
-	//  if we have gotten this far, then we are all done
-	pError->Discard(this);
-	return pNewVector->Reference();
 }
 
 ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)

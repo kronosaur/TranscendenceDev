@@ -280,7 +280,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"-",				fnMathList,			FN_MATH_SUBTRACT,
-			"(- x y) -> z",
+			"(- x y) -> z\n (- x) -> -x",
 			NULL,	0,	},
 
 		{	"switch",			fnSwitch,		0,						"",		NULL,	0,	},
