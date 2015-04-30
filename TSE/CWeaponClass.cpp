@@ -2471,10 +2471,14 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 
 	if (pTarget && pShot->m_Damage.GetEMPDamage() > 0)
 		{
-		if (pTarget->IsParalyzed())
-			iScore -= 50;
-		else
-			iScore += 100;
+		//	If the target is already ionized, or if the target is a station
+		//	(which cannot be paralyzed) then don't use this weapon.
+
+		if (pTarget->IsParalyzed() 
+				|| pTarget->GetCategory() != CSpaceObject::catShip)
+			return -100;
+
+		iScore += 100;
 		}
 
 	//	If the weapon has blinding damage and the target is not blind then
@@ -2482,10 +2486,14 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 
 	if (pTarget && pShot->m_Damage.GetBlindingDamage() > 0)
 		{
-		if (pTarget->IsBlind())
-			iScore -= 50;
-		else
-			iScore += 100;
+		//	If the target is already blind, or if the target is a station, then
+		//	don't bother with this weapon.
+
+		if (pTarget->IsBlind()
+				|| pTarget->GetCategory() != CSpaceObject::catShip)
+			return -100;
+
+		iScore += 100;
 		}
 
 	//	Score
