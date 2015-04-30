@@ -700,6 +700,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'installed\n"
 			"   'omnidirectional\n"
 			"   'radiationImmune\n"
+			"   'repairCost\n"
+			"   'repairLevel\n"
 			"   'shatterImmune\n",
 
 			"vs",	0,	},

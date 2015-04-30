@@ -54,6 +54,8 @@
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
+#define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
+#define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 
 static CObjectClass<CArmorClass>g_Class(OBJID_CARMORCLASS, NULL);
@@ -1077,6 +1079,12 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
 		return CC.CreateBool(IsRadiationImmune(Ctx));
+
+	else if (strEquals(sName, PROPERTY_REPAIR_COST))
+		return CC.CreateInteger(GetRepairCost());
+
+	else if (strEquals(sName, PROPERTY_REPAIR_LEVEL))
+		return CC.CreateInteger(GetRepairTech());
 
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return CC.CreateBool(IsShatterImmune(Ctx));
