@@ -194,27 +194,30 @@ void CTextPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 	DWORD dwFlags = (m_pCreator ? m_pCreator->GetFontFlags() : 0);
 	BYTE byOpacity = (m_pCreator ? (BYTE)m_pCreator->GetOpacity() : 255);
 
+	int cxRectWidth = 1000;
+	int cyRectHeight = 1000;
+
 	//	Compute the rect to paint
 
 	RECT rcRect;
 	rcRect.top = y;
-	rcRect.bottom = Dest.GetHeight();
+	rcRect.bottom = rcRect.top + cyRectHeight;
 
 	if (dwFlags & CG16bitFont::AlignCenter)
 		{
-		int cxHalfWidth = Min(x, Dest.GetWidth() - x);
+		int cxHalfWidth = cxRectWidth / 2;
 		rcRect.left = x - cxHalfWidth;
 		rcRect.right = x + cxHalfWidth;
 		}
 	else if (dwFlags & CG16bitFont::AlignRight)
 		{
-		rcRect.left = 0;
+		rcRect.left = x - cxRectWidth;
 		rcRect.right = x;
 		}
 	else
 		{
 		rcRect.left = x;
-		rcRect.right = Dest.GetWidth();
+		rcRect.right = x + cxRectWidth;
 		}
 
 	//	Paint
