@@ -1455,7 +1455,7 @@ bool CObjectImageArray::PointInImage (int x, int y, int iTick, int iRotation) co
 
 		//	Check to see if the point is inside or outside the mask
 
-		return (pSource->GetPixel(x, y).GetAlpha() != 0);
+		return (pSource->GetPixel(x, y).GetAlpha() >= 200);
 		}
 	else
 		return false;

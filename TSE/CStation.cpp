@@ -259,6 +259,30 @@ void CStation::CalcBounds (void)
 	SetBounds(rcBounds, GetParallaxDist());
 	}
 
+void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick)
+
+//	CalcImageModifier
+//
+//	Compute the modifiers for the station
+
+	{
+	//	Modifiers (such as station damage)
+
+	CCompositeImageModifiers Modifiers;
+	if (ShowWreckImage())
+		Modifiers.SetStationDamage(true);
+
+	//	Tick
+
+	if (retiTick)
+		{
+		if (m_fActive && !IsTimeStopped())
+			*retiTick = GetSystem()->GetTick() + GetDestiny();
+		else
+			*retiTick = 0;
+		}
+	}
+
 int CStation::CalcNumberOfShips (void)
 
 //	CalcNumberOfShips
@@ -1318,21 +1342,10 @@ const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *ret
 //	Returns the image of this station
 
 	{
-	//	Tick
-
-	if (retiTick)
-		{
-		if (m_fActive && !IsTimeStopped())
-			*retiTick = GetSystem()->GetTick() + GetDestiny();
-		else
-			*retiTick = 0;
-		}
-
-	//	Modifiers (such as station damage)
-
 	CCompositeImageModifiers Modifiers;
-	if (ShowWreckImage())
-		Modifiers.SetStationDamage(true);
+	CalcImageModifiers(&Modifiers, retiTick);
+
+	//	Apply fading
 
 #ifdef DISTANCE_FADE
 	if (bFade
@@ -2686,7 +2699,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	else
 		{
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		IImageEntry *pRoot = m_pType->GetImageRoot();
+		IImageEntry *pRoot = m_pType->GetImage().GetRoot();
 		DWORD dwID = (pRoot ? pRoot->GetID() : DEFAULT_SELECTOR_ID);
 		m_ImageSelector.AddVariant(dwID, dwLoad);
 		}
@@ -3569,7 +3582,7 @@ int CStation::GetImageVariant (void)
 //	Returns the current image variant
 
 	{
-	IImageEntry *pRoot = m_pType->GetImageRoot();
+	IImageEntry *pRoot = m_pType->GetImage().GetRoot();
 	DWORD dwID = (pRoot ? pRoot->GetID() : DEFAULT_SELECTOR_ID);
 	return m_ImageSelector.GetVariant(dwID);
 	}
@@ -3581,7 +3594,7 @@ void CStation::SetImageVariant (int iVariant)
 //	Sets the given variant
 	
 	{
-	IImageEntry *pRoot = m_pType->GetImageRoot();
+	IImageEntry *pRoot = m_pType->GetImage().GetRoot();
 	DWORD dwID = (pRoot ? pRoot->GetID() : DEFAULT_SELECTOR_ID);
 
 	m_ImageSelector.DeleteAll();

@@ -945,9 +945,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(shpInstallArmor ship item armorSegment)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"shpInstallDevice",				fnShipSetOld,		FN_SHIP_INSTALL_DEVICE,
-			"(shpInstallDevice ship item)",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
+			"(shpInstallDevice ship item [deviceSlot])",
+			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpIsBlind",					fnShipGetOld,		FN_SHIP_BLINDNESS,
 			"(shpIsBlind ship)",
@@ -1091,7 +1091,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	0,	},
 
 		{	"objCanInstallItem",				fnObjGet,			FN_OBJ_CAN_INSTALL_ITEM,
-			"(objCanInstallItem obj item [armorSeg]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
+			"(objCanInstallItem obj item [armorSeg|deviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
 			
 			"resultCode\n\n"
 			
@@ -5040,6 +5040,21 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			int iSlot = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : -1);
 
+			//	Validate the slot
+
+			if (iSlot != -1)
+				{
+				CShip *pShip = pObj->AsShip();
+				if (Item.IsArmor() 
+						&& pShip 
+						&& (iSlot < 0 || iSlot >= pShip->GetArmorSectionCount()))
+					return pCC->CreateError(CONSTLIT("Invalid armor segment"), pArgs->GetElement(2));
+				if (Item.IsDevice()
+						&& pShip
+						&& (iSlot < 0 || iSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iSlot)->IsEmpty()))
+					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+				}
+
 			//	Ask the object
 
 			CSpaceObject::InstallItemResults iResult;
@@ -8017,6 +8032,48 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_SHIP_INSTALL_DEVICE:
+			{
+			CItemListManipulator ItemList(pShip->GetItemList());
+
+			//	If the argument is a list then it is an item (which means we have to find
+			//	the item in the manipulator).
+
+			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
+			if (!ItemList.SetCursorAtItem(Item))
+				{
+				pArgs->Discard(pCC);
+				if (pCtx->GetAPIVersion() >= 18)
+					return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+				else
+					return pCC->CreateNil();
+				}
+
+			//	Make sure the item is in the proper state
+
+			if (ItemList.GetItemAtCursor().IsInstalled())
+				return pCC->CreateNil();
+
+			//	See if we passed in a device slot
+
+			int iSlot = -1;
+			if (pArgs->GetCount() >= 3
+					&& (iSlot = pArgs->GetElement(2)->GetIntegerValue()) != -1)
+				{
+				if (Item.IsDevice()
+						&& (iSlot < 0 || iSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iSlot)->IsEmpty()))
+					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+				}
+
+			//	Otherwise, install or remove
+
+			pShip->InstallItemAsDevice(ItemList, iSlot);
+
+			//	Done
+
+			return CreateListFromItem(*pCC, ItemList.GetItemAtCursor());
+			}
+
 		case FN_SHIP_ORDER:
 		case FN_SHIP_ORDER_IMMEDIATE:
 			{
@@ -8155,7 +8212,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 	//	Evaluate the arguments and validate them
 
-	if (dwData == FN_SHIP_INSTALL_DEVICE || dwData == FN_SHIP_REMOVE_DEVICE 
+	if (dwData == FN_SHIP_REMOVE_DEVICE 
 			|| dwData == FN_SHIP_ITEM_CHARGES 
 			|| dwData == FN_SHIP_DAMAGE_ITEM)
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iv"));
@@ -8221,7 +8278,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			break;
 			}
 
-		case FN_SHIP_INSTALL_DEVICE:
 		case FN_SHIP_REMOVE_DEVICE:
 			{
 			CItemListManipulator *pItemList = NULL;
@@ -8262,13 +8318,8 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			//	Otherwise, install or remove
 
-			if (dwData == FN_SHIP_INSTALL_DEVICE)
-				pShip->InstallItemAsDevice(*pItemList);
-			else
-				{
-				if (pShip->RemoveItemAsDevice(*pItemList) != NOERROR)
-					return pCC->CreateNil();
-				}
+			if (pShip->RemoveItemAsDevice(*pItemList) != NOERROR)
+				return pCC->CreateNil();
 
 			//	Done
 

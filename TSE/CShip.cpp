@@ -505,7 +505,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		}
 	}
 
-CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, int *retiSlot)
+CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot)
 
 //	CalcDeviceToReplace
 //
@@ -597,17 +597,39 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			&& iNonWeaponSlotsNeeded <= 0)
 		return insOK;
 
+	int iSlotToReplace = -1;
+
+	//	If we passed in a slot to replace, see if freeing that device gives us
+	//	enough room.
+
+	if (iSuggestedSlot != -1)
+		{
+		CInstalledDevice *pDevice = GetDevice(iSuggestedSlot);
+		if (!pDevice->IsEmpty())
+			{
+			bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
+			bool bThisIsMisc = (pDevice->GetCategory() == itemcatMiscDevice);
+			int iAllSlotsFreed = pDevice->GetClass()->GetSlotsRequired();
+			int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
+			int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
+
+			if (iAllSlotsFreed >= iAllSlotsNeeded
+					&& iWeaponSlotsFreed >= iWeaponSlotsNeeded
+					&& iNonWeaponSlotsFreed >= iNonWeaponSlotsNeeded)
+				iSlotToReplace = iSuggestedSlot;
+			}
+		}
+
 	//	If we need more space, check to see if we replace an existing device.
 	//
 	//	NOTE: We only do this for non-player ship; players need to handle this
 	//	manually.
 
-	int iSlotToReplace = -1;
-	int iBestLevel;
-	int iBestType;
-
-	if (!IsPlayer())
+	if (iSlotToReplace == -1 && !IsPlayer())
 		{
+		int iBestLevel;
+		int iBestType;
+
 		for (i = 0; i < GetDeviceCount(); i++)
 			{
 			CInstalledDevice *pDevice = GetDevice(i);
@@ -865,21 +887,30 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		else
 			{
-			int iSlot;
-			iResult = CalcDeviceToReplace(Item, &iSlot);
+			int iRecommendedSlot;
+			iResult = CalcDeviceToReplace(Item, iSlot, &iRecommendedSlot);
 			switch (iResult)
 				{
 				case insOK:
+					//	We use whatever slot we passed in.
+					bCanInstall = true;
+					break;
+
 				case insReplaceCargo:
 				case insReplaceDrive:
 				case insReplaceLauncher:
 				case insReplaceOther:
 				case insReplaceReactor:
 				case insReplaceShields:
+					//	If we're replacing a singleton device, then we always use the
+					//	recommended slot, regardless of what the caller pass in.
+
+					iSlot = iRecommendedSlot;
 					bCanInstall = true;
 					break;
 
 				default:
+					iSlot = -1;
 					bCanInstall = false;
 				}
 
@@ -892,7 +923,8 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 				//	See if the item can be removed. If not, then error
 
 				if (bCanInstall 
-						&& CanRemoveDevice(ItemToReplace, &sResult) != remOK)
+						&& (!ItemList.IsCursorValid()
+							|| CanRemoveDevice(ItemToReplace, &sResult) != remOK))
 					{
 					bCanInstall = false;
 					iResult = insCannotInstall;
@@ -3191,7 +3223,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	//	If necessary, remove previous item in a slot
 
 	int iSlotToReplace;
-	CalcDeviceToReplace(ItemList.GetItemAtCursor(), &iSlotToReplace);
+	CalcDeviceToReplace(ItemList.GetItemAtCursor(), iDeviceSlot, &iSlotToReplace);
 	if (iSlotToReplace != -1)
 		{
 		//	If we're upgrading/downgrading a reactor, then remember the old fuel level

@@ -4973,8 +4973,8 @@ class CStationType : public CDesignType
 		inline CEffectCreator *GetGateEffect (void) { return m_pGateEffect; }
 		inline Metric GetGravityRadius (void) const { return m_rGravityRadius; }
 		inline const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(Selector, Modifiers, retiRotation); }
+		inline const CCompositeImageDesc &GetImage (void) { return m_Image; }
 		inline const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_Image.GetImage(Selector, Modifiers, retiRotation); }
-		inline IImageEntry *GetImageRoot (void) const { return m_Image.GetRoot(); }
 		inline int GetImageVariants (void) { return m_iImageVariants; }
 		inline int GetInitialHitPoints (void) { return m_iHitPoints; }
 		inline IShipGenerator *GetInitialShips (int iDestiny, int *retiCount) { *retiCount = (!m_ShipsCount.IsEmpty() ? m_ShipsCount.RollSeeded(iDestiny) : 1); return m_pInitialShips; }

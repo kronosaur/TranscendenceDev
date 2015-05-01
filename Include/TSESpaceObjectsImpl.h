@@ -1071,7 +1071,7 @@ class CShip : public CSpaceObject
 		void CalcDeviceBonus (void);
 		int CalcDeviceSlotsInUse (int *retiWeaponSlots = NULL, int *retiNonWeapon = NULL) const;
 		bool CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution);
-		InstallItemResults CalcDeviceToReplace (const CItem &Item, int *retiSlot = NULL);
+		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
 		void CalcOverlayImpact (void);
 		void CalcReactorStats (void);
@@ -1387,6 +1387,7 @@ class CStation : public CSpaceObject
 
 		void Blacklist (CSpaceObject *pObj);
 		void CalcBounds (void);
+		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL);
 		int CalcNumberOfShips (void);
 		void CalcOverlayImpact (void);
 		void ClearBlacklist (CSpaceObject *pObj);

@@ -1595,7 +1595,7 @@ bool CSpaceObject::FireCanInstallItem (const CItem &Item, int iSlot, CString *re
 
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Item);
-		if (iSlot != -1)
+		if (iSlot != -1 && Item.IsArmor())
 			Ctx.DefineInteger(CONSTLIT("aArmorSeg"), iSlot);
 		else
 			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
