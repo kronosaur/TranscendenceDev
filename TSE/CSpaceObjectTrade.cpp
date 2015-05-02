@@ -29,7 +29,7 @@ void CSpaceObject::AddSellOrder (CItemType *pType, const CString &sCriteria, int
 	pTrade->AddSellOrder(pType, sCriteria, iPriceAdj);
 	}
 
-bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice)
+bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason)
 
 //	GetArmorInstallPrice
 //
@@ -49,7 +49,7 @@ bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetArmorInstallPrice(this, Item, dwFlags, retiPrice))
+	if (pTrade && pTrade->GetArmorInstallPrice(this, Item, dwFlags, retiPrice, retsReason))
 		return true;
 
 	//	For compatibility, any ship prior to version 23 has a default.

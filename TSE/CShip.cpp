@@ -559,7 +559,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	//	If we have no limitation on slots, then we can continue.
 
-	if (m_pClass->GetMaxDevices() == -1)
+	if (m_pClass->GetMaxDevices() == -1
+			&& iSuggestedSlot == -1)
 		return insOK;
 
 	//	See how many device slots we need
@@ -594,7 +595,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	if (iAllSlotsNeeded <= 0
 			&& iWeaponSlotsNeeded <= 0
-			&& iNonWeaponSlotsNeeded <= 0)
+			&& iNonWeaponSlotsNeeded <= 0
+			&& iSuggestedSlot == -1)
 		return insOK;
 
 	int iSlotToReplace = -1;

@@ -410,7 +410,7 @@ bool CTradingDesc::FindService (ETradeServiceTypes iService, const CItem &Item, 
 	return false;
 	}
 
-bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice) const
+bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
 
 //	GetArmorInstallPrice
 //
@@ -429,12 +429,19 @@ bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, 
 
 			int iPrice = ComputePrice(pObj, Item, 1, m_List[i], dwFlags);
 			if (iPrice < 0)
+				{
+				if (retsReason)
+					*retsReason = m_List[i].sMessageID;
 				return false;
+				}
 
 			//	Done
 
 			if (retiPrice)
 				*retiPrice = iPrice;
+
+			if (retsReason)
+				*retsReason = m_List[i].sMessageID;
 
 			return true;
 			}

@@ -92,6 +92,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_INSTALL_DEVICE_MAX_LEVEL		CONSTLIT("installDeviceMaxLevel")
 #define PROPERTY_INSTALL_DEVICE_PRICE			CONSTLIT("installDevicePrice")
 #define PROPERTY_INSTALL_DEVICE_STATUS			CONSTLIT("installDeviceStatus")
+#define PROPERTY_INSTALL_ITEM_STATUS			CONSTLIT("installItemStatus")
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL							CONSTLIT("level")
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
@@ -3229,6 +3230,34 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 		CString sMessageID;
 		int iPrice;
 		bool bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID);
+
+		//	Create the structure
+
+		ICCItem *pResult = CC.CreateSymbolTable();
+		pResult->SetAt(CC, FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
+		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
+		if (!sMessageID.IsBlank())
+			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
+
+		return pResult;
+		}
+	else if (strEquals(sName, PROPERTY_INSTALL_ITEM_STATUS))
+		{
+		//	We return a structure with the following fields:
+		//
+		//	canInstall: True or Nil
+		//	price: Install price
+		//	descID: Message ID for description of install attempt
+
+		CString sMessageID;
+		int iPrice;
+		bool bCanInstall;
+		if (Item.IsArmor())
+			bCanInstall = GetArmorInstallPrice(Item, 0, &iPrice, &sMessageID);
+		else if (Item.IsDevice())
+			bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID);
+		else
+			bCanInstall = false;
 
 		//	Create the structure
 

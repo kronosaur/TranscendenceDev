@@ -1304,7 +1304,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'enabled\n"
 			"   'fireArc\n"
 			"   'installDevicePrice\n"
-			"   'installDeviceStatus\n"
+			"   'installItemStatus\n"
 			"   'linkedFireOptions\n"
 			"   'pos\n"
 			"   'removeDevicePrice\n"
