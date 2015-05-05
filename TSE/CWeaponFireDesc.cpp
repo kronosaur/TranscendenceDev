@@ -483,7 +483,7 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 		//	Otherwise, see if this is a missile
 
 		else if (pMissileDesc = pItemType->GetMissileDesc())
-			return pMissileDesc;
+			return pMissileDesc->FindWeaponFireDesc(CString(pPos));
 
 		//	Nothing
 
