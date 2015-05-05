@@ -15,6 +15,8 @@
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 
+#define STR_NONE								CONSTLIT("none")
+
 static char *CACHED_EVENTS[CSystemType::evtCount] =
 	{
 		"OnObjJumpPosAdj",
@@ -164,8 +166,14 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CString sAttrib;
 	if (pDesc->FindAttribute(BACKGROUND_ID_ATTRIB, &sAttrib))
 		{
-		if (error = ::LoadUNID(Ctx, sAttrib, &m_dwBackgroundUNID))
-			return error;
+		if (strEquals(sAttrib, STR_NONE)
+				|| strToInt(sAttrib, -1) == 0)
+			m_dwBackgroundUNID = 0;
+		else
+			{
+			if (error = ::LoadUNID(Ctx, sAttrib, &m_dwBackgroundUNID))
+				return error;
+			}
 		}
 	else
 		m_dwBackgroundUNID = UNID_DEFAULT_SYSTEM_BACKGROUND;
