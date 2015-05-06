@@ -1211,6 +1211,12 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 		{
 		CExtension *pExtension = m_Extensions[i];
 
+		//	If this extension is already disabled (possibly because it requires 
+		//	a future API) then we don't bother trying to load.
+
+		if (pExtension->IsDisabled())
+			continue;
+
 		//	Generate a resolver so that we can look up entities. We always add
 		//	the base file and the extension itself.
 
