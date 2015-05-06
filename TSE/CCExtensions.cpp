@@ -6427,7 +6427,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Set it
 
 			CString sError;
-			if (pObj->SetItemProperty(Item, CONSTLIT("incCharges"), pValue, iCount, &Item, &sError))
+			if (!pObj->SetItemProperty(Item, CONSTLIT("incCharges"), pValue, iCount, &Item, &sError))
 				{
 				if (sError.IsBlank())
 					return pCC->CreateNil();
