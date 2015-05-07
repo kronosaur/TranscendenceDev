@@ -408,8 +408,12 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 			int iAngle = 360 / m_iPortCount;
 
 			//	We need the image scale to adjust coordinates
+			//
+			//	NOTE: Sometimes we don't have an image yet. For example, when
+			//	creating a wreck, we're still inside CStation::CreateFromType 
+			//	and have not yet assigned an image.
 
-			int iScale = (pOwner ? pOwner->GetImage().GetImageViewportSize() : 512);
+			int iScale = ((pOwner && !pOwner->GetImage().IsEmpty()) ? pOwner->GetImage().GetImageViewportSize() : 512);
 
 			//	Initialize ports
 
