@@ -268,9 +268,11 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 	{
 	//	Modifiers (such as station damage)
 
-	CCompositeImageModifiers Modifiers;
-	if (ShowWreckImage())
-		Modifiers.SetStationDamage(true);
+	if (retModifiers)
+		{
+		if (ShowWreckImage())
+			retModifiers->SetStationDamage(true);
+		}
 
 	//	Tick
 
