@@ -430,7 +430,7 @@ CVector CAIBehaviorCtx::CalcManeuverSpiralOut (CShip *pShip, const CVector &vTar
 	return PolarToVector(iAngle + iTrajectory, rRadius);
 	}
 
-void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRange, CSpaceObject **iopTarget, CSpaceObject *pExcludeObj)
+void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRange, CSpaceObject **iopTarget, CSpaceObject *pExcludeObj, bool bTurn)
 
 //	ImplementAttackNearestTarget
 //
@@ -456,12 +456,23 @@ void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRang
 			return;
 			}
 
-		ImplementFireWeaponOnTarget(pShip, -1, -1, *iopTarget, vTarget, rTargetDist2);
+		int iFireDir;
+		ImplementFireWeaponOnTarget(pShip, -1, -1, *iopTarget, vTarget, rTargetDist2, &iFireDir);
 
 		//	If we don't have a good weapon, then don't go after this target
 
 		if (GetBestWeapon() == NULL)
+			{
 			(*iopTarget) = NULL;
+			return;
+			}
+
+		//	If we have a fire direction, try to turn towards the target
+
+		if (bTurn
+				&& iFireDir != -1
+				&& !NoDogfights())
+			ImplementManeuver(pShip, iFireDir, false);
 		}
 
 	DEBUG_CATCH
@@ -1674,29 +1685,32 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 			//	If we're turning in a new direction now, then reset
 			//	our counter
 
-			if (GetManeuver() != m_iLastTurn)
+			if (GetManeuver() != NoRotation)
 				{
-				m_iLastTurn = GetManeuver();
-				m_iLastTurnCount = 0;
-				}
-			else
-				{
-				m_iLastTurnCount++;
-
-				//	If we've been turning in the same direction
-				//	for a while, then arbitrarily turn in the opposite
-				//	direction for a while.
-
-				if (m_iLastTurnCount > m_iMaxTurnCount)
+				if (GetManeuver() != m_iLastTurn)
 					{
-					if (GetManeuver() == RotateRight)
-						SetManeuver(RotateLeft);
-					else
-						SetManeuver(RotateRight);
+					m_iLastTurn = GetManeuver();
+					m_iLastTurnCount = 0;
+					}
+				else
+					{
+					m_iLastTurnCount++;
+
+					//	If we've been turning in the same direction
+					//	for a while, then arbitrarily turn in the opposite
+					//	direction for a while.
+
+					if (m_iLastTurnCount > m_iMaxTurnCount)
+						{
+						if (GetManeuver() == RotateRight)
+							SetManeuver(RotateLeft);
+						else
+							SetManeuver(RotateRight);
 #ifdef DEBUG_SHIP
-					if (bDebug)
-						g_pUniverse->DebugOutput("Reverse direction");
+						if (bDebug)
+							g_pUniverse->DebugOutput("Reverse direction");
 #endif
+						}
 					}
 				}
 

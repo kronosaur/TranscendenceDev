@@ -58,7 +58,7 @@ void CWaitOrder::AttackEnemies (CShip *pShip, CAIBehaviorCtx &Ctx, bool bReady)
 			&& m_Objs[objTarget])
 		{
 		if (bReady)
-			Ctx.ImplementAttackNearestTarget(pShip, ATTACK_RANGE, &m_Objs[objTarget]);
+			Ctx.ImplementAttackNearestTarget(pShip, ATTACK_RANGE, &m_Objs[objTarget], NULL, true);
 
 		//	Check to see if target has hit back. If not, stop the attack
 

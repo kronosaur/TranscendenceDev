@@ -111,7 +111,7 @@ class CAIBehaviorCtx
 		CVector CalcManeuverFormation (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing);
 		CVector CalcManeuverSpiralIn (CShip *pShip, const CVector &vTarget, int iTrajectory = 30);
 		CVector CalcManeuverSpiralOut (CShip *pShip, const CVector &vTarget, int iTrajectory = 30);
-		void ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRange, CSpaceObject **iopTarget, CSpaceObject *pExcludeObj = NULL);
+		void ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRange, CSpaceObject **iopTarget, CSpaceObject *pExcludeObj = NULL, bool bTurn = false);
 		void ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget, bool bMaintainCourse = false, bool bDoNotShoot = false);
 		void ImplementCloseOnImmobileTarget (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, Metric rTargetSpeed = 0.0);
 		void ImplementCloseOnTarget (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, bool bFlank = false);
