@@ -3529,9 +3529,11 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 				if (iCount < iMaxEnemies)
 					iCount++;
 
-				//	New worst dist
+				//	Otherwise, we have a new worst distance, since we've filled 
+				//	the list with objects that are at least this close.
 
-				rWorstDist2 = pList[iCount-1].rDist2;
+				else
+					rWorstDist2 = pList[iCount-1].rDist2;
 				}
 			}
 		}
