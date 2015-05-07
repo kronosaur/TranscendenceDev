@@ -370,10 +370,9 @@
 
 #define LEVEL_ENCOUNTER_CHANCE			10
 
-#define MAX_TARGET_RANGE				(24.0 * LIGHT_SECOND)
-
 const Metric MAX_AUTO_TARGET_DISTANCE =			30.0 * LIGHT_SECOND;
 const Metric MAX_ENCOUNTER_DIST	=				30.0 * LIGHT_MINUTE;
+const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
 
 const Metric GRAVITY_WARNING_THRESHOLD =		40.0;	//	Acceleration value at which we start warning
 const Metric TIDAL_KILL_THRESHOLD =				7250.0;	//	Acceleration at which we get ripped apart
@@ -1939,14 +1938,20 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 		int iFragmentCount = pFragDesc->Count.Roll();
 		if (iFragmentCount > 0)
 			{
-			int *iAngle = new int [iFragmentCount];
+			TArray<int> Angles;
+			Angles.InsertEmpty(iFragmentCount);
+			TArray<CSpaceObject *> Targets;
+			Targets.InsertEmpty(iFragmentCount);
 
 			//	If we have lots of fragments then we just pick random angles
 
 			if (iFragmentCount > 90)
 				{
 				for (i = 0; i < iFragmentCount; i++)
-					iAngle[i] = mathRandom(0, 359);
+					{
+					Angles[i] = mathRandom(0, 359);
+					Targets[i] = pTarget;
+					}
 				}
 
 			//	Otherwise, we try to distribute evenly
@@ -1960,7 +1965,10 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 
 				int iAngleInc = 360 / iFragmentCount;
 				for (i = 0; i < iFragmentCount; i++)
-					iAngle[i] = (360 + iAngleOffset + (iAngleInc * i) + mathRandom(-iAngleVar, iAngleVar)) % 360;
+					{
+					Angles[i] = (360 + iAngleOffset + (iAngleInc * i) + mathRandom(-iAngleVar, iAngleVar)) % 360;
+					Targets[i] = pTarget;
+					}
 				}
 
 			//	For multitargets, we need to find a target 
@@ -1973,10 +1981,10 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 				if (pMissileSource)
 					{
 					int iFound = pMissileSource->GetNearestVisibleEnemies(iFragmentCount, 
-							MAX_TARGET_RANGE, 
+							MAX_MIRV_TARGET_RANGE, 
 							&TargetList, 
 							NULL, 
-							FLAG_INCLUDE_NON_AGGRESSORS);
+							FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS);
 
 					Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
@@ -1985,13 +1993,29 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 						for (i = 0; i < iFragmentCount; i++)
 							{
 							CSpaceObject *pTarget = TargetList[i % iFound];
+							Targets[i] = pTarget;
 
 							//	Calculate direction to fire in
 
 							CVector vTarget = pTarget->GetPos() - vPos;
 							Metric rTimeToIntercept = CalcInterceptTime(vTarget, pTarget->GetVel(), rSpeed);
 							CVector vInterceptPoint = vTarget + pTarget->GetVel() * rTimeToIntercept;
-							iAngle[i] = VectorToPolar(vInterceptPoint, NULL);
+
+							//	If fragments can maneuver, then fire angle jitters a bit.
+
+							if (pFragDesc->pDesc->IsTracking())
+								Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-24, 24));
+
+							//	If we've got multiple fragments to the same target, then
+							//	jitter a bit.
+
+							else if (i >= iFound)
+								Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-6, 6));
+
+							//	Otherwise, head straight for the target
+
+							else
+								Angles[i] = VectorToPolar(vInterceptPoint, NULL);
 							}
 						}
 					}
@@ -2016,9 +2040,9 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 						iCause,
 						Source,
 						vPos + CVector(mathRandom(-10, 10) * g_KlicksPerPixel / 10.0, mathRandom(-10, 10) * g_KlicksPerPixel / 10.0),
-						vInitVel + PolarToVector(iAngle[i], rSpeed),
-						iAngle[i],
-						pTarget,
+						vInitVel + PolarToVector(Angles[i], rSpeed),
+						Angles[i],
+						Targets[i],
 						CSystem::CWF_FRAGMENT,
 						&pNewObj))
 					return error;
@@ -2028,8 +2052,6 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 				if (pMissileSource && pMissileSource->IsAutomatedWeapon())
 					pNewObj->SetAutomatedWeapon();
 				}
-
-			delete [] iAngle;
 			}
 
 		pFragDesc = pFragDesc->pNext;
