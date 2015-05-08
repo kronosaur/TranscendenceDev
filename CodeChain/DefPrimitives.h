@@ -64,7 +64,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(divide x y) -> z",		NULL,	0,	},
 
 		{	"/",				fnMathNumerals,			FN_MATH_DIVIDE,
-			"(/ x y) -> z",		NULL,	0,	},
+			"(/ x y) -> z",		
+			"nn",	0,	},
 
 		{	"enum",				fnEnum,			0,
 			"(enum list itemVar exp)",
@@ -200,7 +201,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"pow",				fnMathNumerals,		FN_MATH_POWER_NUMERALS,
 			"(pow x y) -> z",
-			"vv",	0,	},
+			"nn",	0,	},
 
 		{	"regex",			fnRegEx,			0,
 			"(regex source pattern ['offset|'subex]) -> result",
@@ -257,7 +258,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"sqrtn",				fnMathNumerals,			FN_MATH_SQRT_NUMERALS,
 			"(sqrtn x) -> z",
-			"v",	0,	},
+			"n",	0,	},
 
 		{	"strCapitalize",	fnStrCapitalize,0,
 			"(strCapitalize string) -> string",
