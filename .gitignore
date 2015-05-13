@@ -16,12 +16,15 @@
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+[Ss]team[Dd]ebug/
+[Ss]team[Rr]elease/
 x64/
 x86/
 build/
 bld/
 [Bb]in/
 [Oo]bj/
+*.tlog
 
 # Roslyn cache directories
 *.ide/
