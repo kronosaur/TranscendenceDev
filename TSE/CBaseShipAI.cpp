@@ -562,7 +562,15 @@ bool CBaseShipAI::FollowsObjThroughGate (CSpaceObject *pLeader)
 //	Returns true if we will follow the leader through a gate
 
 	{
-	return (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate);
+	//	If the leader is the player, then we see if we're following
+
+	if (pLeader == NULL || pLeader->IsPlayer())
+		return (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate);
+
+	//	Otherwise, not
+
+	else
+		return false;
 	}
 
 int CBaseShipAI::GetAISettingInteger (const CString &sSetting)
@@ -1119,11 +1127,12 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 		return;
 
 	//	If we're following the player through a gate and the object
-	//	got destroyed because it is passing through a gate, then we
-	//	do nothing.
+	//	got destroyed because it is also following the player, then we don't
+	//	need to do anything.
 
 	if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate
-			&& Ctx.iCause == enteredStargate)
+			&& Ctx.iCause == enteredStargate
+			&& Ctx.pObj->FollowsObjThroughGate(NULL))
 		return;
 
 	//	If we are following an object and it is about to be resurrected,

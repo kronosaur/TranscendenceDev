@@ -2804,7 +2804,7 @@ class CSpaceObject : public CObject
 		//	...for ships
 		virtual void Behavior (SUpdateCtx &Ctx) { }
 		virtual void ConsumeFuel (int iFuel) { }
-		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader) { return false; }
+		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
 		virtual bool IsInactive (void) const { return IsSuspended(); }

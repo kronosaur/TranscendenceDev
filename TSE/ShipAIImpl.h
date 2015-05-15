@@ -312,7 +312,7 @@ class CBaseShipAI : public IShipController
 		virtual void Behavior (void);
 		virtual CString DebugCrashInfo (void);
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader);
+		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL);
 		virtual int GetAISettingInteger (const CString &sSetting);
 		virtual CString GetAISettingString (const CString &sSetting);
 		virtual const CAISettings *GetAISettings (void) { return &m_AICtx.GetAISettings(); }

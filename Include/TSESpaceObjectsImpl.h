@@ -785,7 +785,7 @@ class CShip : public CSpaceObject
 
 		//	Orders
 		inline void CancelCurrentOrder (void) { m_pController->CancelCurrentOrder(); }
-		inline IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget, IShipController::SData *retData = NULL) { return m_pController->GetCurrentOrderEx(retpTarget, retData); }
+		inline IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) { return m_pController->GetCurrentOrderEx(retpTarget, retData); }
 		inline DWORD GetCurrentOrderData (void) { return m_pController->GetCurrentOrderData(); }
 
 		//	Armor methods
@@ -878,7 +878,7 @@ class CShip : public CSpaceObject
 		inline Metric GetThrust (void) { return (IsMainDriveDamaged() ? (m_iThrust / 2) : m_iThrust); }
 		inline bool IsInertialess (void) { return (m_pDriveDesc->fInertialess ? true : false); }
 		inline bool IsMainDriveDamaged (void) const { return m_iDriveDamagedTimer != 0; }
-		bool IsPointingTo (int iAngle);
+		inline bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_pClass->GetRotationDesc(), iAngle); }
 		inline void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; }
 		inline void ResetMaxSpeed (void) { m_fHalfSpeed = false; }
 
@@ -917,7 +917,7 @@ class CShip : public CSpaceObject
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
 		virtual CInstalledDevice *FindDevice (const CItem &Item);
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return m_pClass->FindDeviceSlotDesc(Item, retDesc); }
-		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader);
+		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL);
 		virtual AbilityStatus GetAbility (Abilities iAbility);
 		virtual int GetAISettingInteger (const CString &sSetting) { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) { return m_pController->GetAISettingString(sSetting); }

@@ -1544,9 +1544,9 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 	//	See if we're in formation
 
 	if (retbInFormation)
-		*retbInFormation = (pShip->IsPointingTo(iDestFacing)
-				&& (rDeltaPos2 < MAX_IN_FORMATION_DELTA2)
-				&& (rDeltaV2 < MAX_DELTA_VEL2));
+		*retbInFormation = ((rDeltaPos2 < MAX_IN_FORMATION_DELTA2)
+				&& (rDeltaV2 < MAX_DELTA_VEL2)
+				&& pShip->IsPointingTo(iDestFacing));
 	}
 
 void CAIBehaviorCtx::ImplementGating (CShip *pShip, CSpaceObject *pTarget)
@@ -1678,9 +1678,10 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 		//	If we're within a few degrees of where we want to be, then
 		//	don't bother changing
 
-		if (!pShip->IsPointingTo(iDir))
+		EManeuverTypes iNewManeuver = pShip->GetManeuverToFace(iDir);
+		if (iNewManeuver != NoRotation)
 			{
-			SetManeuver(pShip->GetManeuverToFace(iDir));
+			SetManeuver(iNewManeuver);
 
 			//	If we're turning in a new direction now, then reset
 			//	our counter

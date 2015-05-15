@@ -3568,7 +3568,7 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncl
 
 	CSovereign *pSovereign = GetSovereignToDefend();
 	if (pSovereign == NULL || GetSystem() == NULL)
-		return 0;
+		return NULL;
 
 	//	Get the list of enemy objects
 
