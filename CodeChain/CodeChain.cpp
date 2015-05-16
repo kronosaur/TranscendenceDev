@@ -1328,6 +1328,25 @@ ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *p
 	return NOERROR;
 	}
 
+ALERROR CCodeChain::RegisterPrimitives (const SPrimitiveDefTable &Table)
+
+//	RegisterPrimitives
+//
+//	Registers all primitives in the table
+
+	{
+	ALERROR error;
+	int i;
+
+	for (i = 0; i < Table.iCount; i++)
+		{
+		if (error = RegisterPrimitive(&Table.pTable[i]))
+			return error;
+		}
+
+	return NOERROR;
+	}
+
 ICCItem *CCodeChain::StreamItem (ICCItem *pItem, IWriteStream *pStream)
 
 //	StreamItem

@@ -151,6 +151,7 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 		pNewTable->m_pParent = NULL;
 
 	pNewTable->m_bLocalFrame = m_bLocalFrame;
+	pNewTable->m_pDefineHook = m_pDefineHook;
 
 	return pNewTable;
 	}

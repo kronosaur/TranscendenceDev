@@ -48,6 +48,12 @@ typedef struct
 	DWORD dwFlags;
 	} PRIMITIVEPROCDEF, *PPRIMITIVEPROCDEF;
 
+struct SPrimitiveDefTable
+	{
+	PRIMITIVEPROCDEF *pTable;
+	int iCount;
+	};
+
 //	Error Definitions. These are common result codes returned by basic
 //	primitives.
 
@@ -873,7 +879,9 @@ class CCodeChain : public CObject
 		ICCItem *LookupFunction (CEvalContext *pCtx, ICCItem *pName);
 		ICCItem *PoolUsage (void);
 		ALERROR RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl = NULL);
+		ALERROR RegisterPrimitives (const SPrimitiveDefTable &Table);
 		inline void SetGlobalDefineHook (IItemTransform *pHook) { m_pGlobalSymbols->SetDefineHook(pHook); }
+		inline void SetGlobals (ICCItem *pGlobals) { m_pGlobalSymbols->Discard(this); m_pGlobalSymbols = pGlobals->Reference(); }
 
 		//	Miscellaneous
 
