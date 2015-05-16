@@ -4230,6 +4230,8 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 //	to some target, then retiHitDir = -1 and retvHitPos is the nearest point.
 
 	{
+	DEBUG_TRY
+
 	const int iSteps = 25;
 	const int iMaxList = 1024;
 	int iShortListCount = 0;
@@ -4375,6 +4377,8 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 		}
 
 	return NULL;
+
+	DEBUG_CATCH
 	}
 
 bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
@@ -5202,6 +5206,8 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 //	velocity
 
 	{
+	DEBUG_TRY
+
 	//	Remember the old position
 
 	m_vOldPos = m_vPos;
@@ -5352,6 +5358,8 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 	//	Clear painted (until the next tick)
 
 	ClearPainted();
+
+	DEBUG_CATCH;
 	}
 
 void CSpaceObject::NotifyOnNewSystem (CSystem *pNewSystem)

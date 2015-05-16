@@ -630,6 +630,8 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 //	Move our points
 
 	{
+	DEBUG_TRY
+
 	//	Update the painter motion
 	//	Note that we do this even if we're destroyed because we might have
 	//	some fading particles.
@@ -698,6 +700,8 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 		m_fPassthrough = true;
 	else
 		m_fPassthrough = false;
+
+	DEBUG_CATCH
 	}
 
 void CMissile::ObjectDestroyedHook (const SDestroyCtx &Ctx)
@@ -1309,6 +1313,8 @@ bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
 //	Returns TRUE if the given point is inside the object
 
 	{
+	DEBUG_TRY
+
 	if (m_fDestroyed)
 		return false;
 
@@ -1323,6 +1329,8 @@ bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
 		return m_pPainter->PointInImage(x, y, m_iTick, 0, m_iRotation);
 	else
 		return m_pDesc->m_Image.PointInImage(x, y, m_iTick, (m_pDesc->m_bDirectional ? Angle2Direction(m_iRotation, g_RotationRange) : 0));
+
+	DEBUG_CATCH
 	}
 
 bool CMissile::SetMissileFade (void)

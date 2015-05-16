@@ -3367,6 +3367,8 @@ bool CStation::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, co
 //	Returns TRUE if the given point is inside the object
 
 	{
+	DEBUG_TRY
+
 	//	Figure out the coordinates of vPos relative to the center of the
 	//	ship, in pixels.
 
@@ -3375,6 +3377,8 @@ bool CStation::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, co
 	int y = -(int)((vOffset.GetY() / g_KlicksPerPixel) + 0.5);
 
 	return Ctx.pObjImage->PointInImage(Ctx, x, y);
+
+	DEBUG_CATCH
 	}
 
 void CStation::PointInObjectInit (SPointInObjectCtx &Ctx)

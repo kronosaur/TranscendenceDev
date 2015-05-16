@@ -1589,12 +1589,13 @@ ALERROR CSystem::CreateShipwreck (CShipClass *pClass,
 //	Creates an empty ship wreck of the given class
 
 	{
-	pClass->CreateEmptyWreck(this,
+	if (!pClass->CreateEmptyWreck(this,
 			NULL,
 			vPos,
 			vVel,
 			pSovereign,
-			retpWreck);
+			retpWreck))
+		return ERR_FAIL;
 
 	return NOERROR;
 	}

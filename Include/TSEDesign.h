@@ -4173,9 +4173,9 @@ class CShipClass : public CDesignType
 		inline int AlignToRotationAngle (int iAngle) const { return m_RotationDesc.GetRotationAngle(m_RotationDesc.GetFrameIndex(iAngle)); }
 		Metric CalcMass (const CDeviceDescList &Devices) const;
 		int CalcScore (void);
-		void CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
+		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
 		void CreateExplosion (CShip *pShip, CSpaceObject *pWreck = NULL);
-		void CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
+		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
 		inline bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(Item, retDesc) : false); }
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
 		CString GenerateShipName (DWORD *retdwFlags);

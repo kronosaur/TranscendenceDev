@@ -1252,7 +1252,7 @@ int CShipClass::ComputeScore (const CDeviceDescList &Devices,
 	return iScore;
 	}
 
-void CShipClass::CreateEmptyWreck (CSystem *pSystem, 
+bool CShipClass::CreateEmptyWreck (CSystem *pSystem, 
 								   CShip *pShip,
 								   const CVector &vPos, 
 								   const CVector &vVel,
@@ -1271,10 +1271,11 @@ void CShipClass::CreateEmptyWreck (CSystem *pSystem,
 	//	Create the wreck
 
 	CStation *pWreck;
-	CStation::CreateFromType(pSystem,
+	if (CStation::CreateFromType(pSystem,
 			GetWreckDesc(),
 			CreateCtx,
-			&pWreck);
+			&pWreck) != NOERROR)
+		return false;
 
 	//	Set properties of the wreck
 
@@ -1286,6 +1287,8 @@ void CShipClass::CreateEmptyWreck (CSystem *pSystem,
 
 	if (retpWreck)
 		*retpWreck = pWreck;
+
+	return true;
 	}
 
 void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
@@ -1397,7 +1400,7 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 	DEBUG_CATCH
 	}
 
-void CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
+bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 
 //	CreateWreck
 //
@@ -1409,12 +1412,13 @@ void CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 	//	Create the wreck
 
 	CStation *pWreck;
-	CreateEmptyWreck(pShip->GetSystem(),
+	if (!CreateEmptyWreck(pShip->GetSystem(),
 			pShip,
 			pShip->GetPos(),
 			pShip->GetVel(),
 			pShip->GetSovereign(),
-			&pWreck);
+			&pWreck))
+		return false;
 
 	//	The chance that an installed item survives is related to
 	//	the wreck chance.
@@ -1513,6 +1517,8 @@ void CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 
 	if (retpWreck)
 		*retpWreck = pWreck;
+
+	return true;
 
 	DEBUG_CATCH
 	}
