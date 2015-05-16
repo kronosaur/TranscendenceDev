@@ -52,7 +52,7 @@ static char g_BitmapAttrib[] = "bitmap";
 static char g_BitmaskAttrib[] = "bitmask";
 static char g_TransColorAttrib[] = "backColor";
 
-ALERROR CUniverse::InitCodeChain (void)
+ALERROR CUniverse::InitCodeChain (const TArray<SPrimitiveDefTable> &CCPrimitives)
 
 //	InitCodeChain
 //
@@ -60,6 +60,7 @@ ALERROR CUniverse::InitCodeChain (void)
 
 	{
 	ALERROR error;
+	int i;
 
 	//	Initialize code chain
 
@@ -68,6 +69,20 @@ ALERROR CUniverse::InitCodeChain (void)
 
 	if (error = InitCodeChainPrimitives())
 		return error;
+
+	//	Register all additional primitives
+
+	for (i = 0; i < CCPrimitives.GetCount(); i++)
+		{
+		if (error = m_CC.RegisterPrimitives(CCPrimitives[i]))
+			return error;
+		}
+
+	//	Now that we've defined all primitives, we create a clone of the global
+	//	symbol table. We restore back to this pristine state before each bind.
+
+	ASSERT(m_pSavedGlobalSymbols == NULL);
+	m_pSavedGlobalSymbols = m_CC.GetGlobals()->Clone(&m_CC);
 
 	return NOERROR;
 	}

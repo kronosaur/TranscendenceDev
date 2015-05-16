@@ -3318,6 +3318,7 @@ class CUniverse : public CObject
 				{ }
 
 			IHost *pHost;					//	Host
+			TArray<SPrimitiveDefTable> CCPrimitives;	//	Additional primitives to define
 			CString sFilespec;				//	Filespec of main TDB/XML file.
 			CString sSourceFilespec;		//	Filespec of main source XML file (for debugging).
 			CString sCollectionFolder;		//	If non-blank, use this as Collection folder (and remember it)
@@ -3558,7 +3559,7 @@ class CUniverse : public CObject
 
 		bool FindByUNID (CIDTable &Table, DWORD dwUNID, CObject **retpObj = NULL);
 		CObject *FindByUNID (CIDTable &Table, DWORD dwUNID);
-		ALERROR InitCodeChain (void);
+		ALERROR InitCodeChain (const TArray<SPrimitiveDefTable> &CCPrimitives);
 		ALERROR InitCodeChainPrimitives (void);
 		void InitDefaultHitEffects (void);
 		ALERROR InitDeviceStorage (CString *retsError);
@@ -3611,6 +3612,7 @@ class CUniverse : public CObject
 		CCriticalSection m_cs;
 		IHost *m_pHost;
 		CCodeChain m_CC;
+		ICCItem *m_pSavedGlobalSymbols;
 		CSoundMgr *m_pSoundMgr;
 		const CG16bitFont *m_FontTable[fontCount];
 		CG16bitFont m_DefaultFonts[fontCount];

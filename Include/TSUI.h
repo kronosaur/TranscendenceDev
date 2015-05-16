@@ -645,6 +645,7 @@ class CHumanInterface
 
 		void ClosePopupSession (void);
 		void Exit (void);
+		void GetCodeChainPrimitives (SPrimitiveDefTable *retTable);
 		inline HWND GetHWND (void) { return m_hWnd; }
 		inline const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
@@ -656,7 +657,6 @@ class CHumanInterface
 		inline const CVisualPalette &GetVisuals (void) { return m_Visuals; }
 		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return m_pController->HICommand(sCmd, pData); }
 		void HIPostCommand (const CString &sCmd, void *pData = NULL);
-		ALERROR InitCodeChainPrimitives (CCodeChain &CC);
 		inline bool IsWindowedMode (void) const { return m_Options.m_bWindowedMode; }
 		ALERROR OpenPopupSession (IHISession *pSession, CString *retsError = NULL);
 		void ShowHardCrashSession (const CString &sTitle, const CString &sDescription);

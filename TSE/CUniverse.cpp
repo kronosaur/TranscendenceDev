@@ -155,6 +155,7 @@ CUniverse::CUniverse (void) : CObject(&g_Class),
 		m_pSoundMgr(NULL),
 
 		m_pHost(&g_DefaultHost),
+		m_pSavedGlobalSymbols(NULL),
 
 		m_bDebugMode(false),
 		m_bNoSound(false),
@@ -182,6 +183,9 @@ CUniverse::~CUniverse (void)
 	{
 	SetPOV(NULL);
 	m_pPlayerShip = NULL;
+
+	if (m_pSavedGlobalSymbols)
+		m_pSavedGlobalSymbols->Discard(&m_CC);
 
 	//	Destroy all star systems. We do this here because we want to
 	//	guarantee that we destroy all objects before we destruct
@@ -1103,6 +1107,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 		//	Boot up
 
+		bool bFirstInit = !m_bBasicInit;
 		if (!m_bBasicInit)
 			{
 			//	Set the host (OK if Ctx.pHost is NULL)
@@ -1111,7 +1116,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 			//	Initialize CodeChain
 
-			if (error = InitCodeChain())
+			if (error = InitCodeChain(Ctx.CCPrimitives))
 				{
 				*retsError = CONSTLIT("Unable to initialize CodeChain.");
 				return error;
@@ -1139,6 +1144,19 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 				m_Extensions.AddExtensionFolder(Ctx.ExtensionFolders[i]);
 
 			m_bBasicInit = true;
+			}
+
+		//	Otherwise, reinitialize some stuff
+
+		else
+			{
+			//	If this is not the first time we've initialized, then clean up any 
+			//	global definitions that our extensions might have done (in case they
+			//	overrode any primitives).
+
+			ICCItem *pNewGlobals = m_pSavedGlobalSymbols->Clone(&m_CC);
+			m_CC.SetGlobals(pNewGlobals);
+			pNewGlobals->Discard(&m_CC);
 			}
 
 		//	Initialize some stuff

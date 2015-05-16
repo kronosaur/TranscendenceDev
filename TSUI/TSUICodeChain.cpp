@@ -41,21 +41,15 @@ static PRIMITIVEPROCDEF g_Primitives[] =
 
 #define PRIMITIVE_COUNT		(sizeof(g_Primitives) / sizeof(g_Primitives[0]))
 
-ALERROR CHumanInterface::InitCodeChainPrimitives (CCodeChain &CC)
+void CHumanInterface::GetCodeChainPrimitives (SPrimitiveDefTable *retTable)
 
-//	InitCodeChainPrimitives
+//	GetCodeChainPrimitives
 //
-//	Registers extensions
+//	Returns a table of primitives
 
 	{
-	ALERROR error;
-	int i;
-
-	for (i = 0; i < PRIMITIVE_COUNT; i++)
-		if (error = CC.RegisterPrimitive(&g_Primitives[i]))
-			return error;
-
-	return NOERROR;
+	retTable->pTable = g_Primitives;
+	retTable->iCount = PRIMITIVE_COUNT;
 	}
 
 ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
