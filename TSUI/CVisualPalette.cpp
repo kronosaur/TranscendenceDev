@@ -33,7 +33,7 @@ static SColorInitTable COLOR_TABLE[] =
 		
 		{	"AreaDialogTitle",			CG32bitPixel(32, 48, 64) },
 		{	"AreaInfoMsg",				CG32bitPixel(28, 33, 39) },
-		{	"AreaWarningMsg",			CG32bitPixel(255, 239, 215) },
+		{	"AreaWarningMsg",			CG32bitPixel(229, 229, 92) },		//	H:60 S:60 B:90
 		{	"LineDialogFrame",			CG32bitPixel(163,191,219) },
 		{	"LineFrame",				CG32bitPixel(80,80,80) },
 
@@ -44,7 +44,7 @@ static SColorInitTable COLOR_TABLE[] =
 		{	"TextAltNormal",			CG32bitPixel(204, 200, 194) },
 
 		{	"TextAltFade",				CG32bitPixel(140, 131, 118) },
-		{	"TextWarningMsg",			CG32bitPixel(40, 40, 40) },
+		{	"TextWarningMsg",			CG32bitPixel(38,  45,  51) },	//	H:210 S:25   B:20
 		{	"TextDialogInput",			CG32bitPixel(218, 235, 255) },
 		{	"TextDialogLabel",			CG32bitPixel(115, 134, 153) },
 		{	"TextDialogLink",			CG32bitPixel(218, 235, 255) },
