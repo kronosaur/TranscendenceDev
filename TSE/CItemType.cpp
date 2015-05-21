@@ -1235,11 +1235,11 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		if (dwLauncher == 0 || !IsMissile())
 			return false;
 
-		CDeviceClass *pDevice = GetAmmoLauncher();
+		CDeviceClass *pDevice = g_pUniverse->FindDeviceClass(dwLauncher);
 		if (pDevice == NULL)
 			return false;
 
-		return (pDevice->GetUNID() == dwLauncher);
+		return (pDevice->GetAmmoVariant(this) != -1);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_PROPERTY))
 		{
