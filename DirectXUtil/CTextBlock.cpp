@@ -473,6 +473,18 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 //	the end of the block.
 
 	{
+	//	Keep track of the current format and text
+
+	STextFormatDesc Format = InitFormat;
+
+	//	If blank, just do an empty line
+
+	if (*m_pInput == '\0')
+		{
+		AddSpan(NULL_STR, Format);
+		return true;
+		}
+
 	//	Better be the beginning of a block
 
 	if (*m_pInput++ != '{')
@@ -480,10 +492,6 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 		*retsError = ERR_BRACE_EXPECTED;
 		return false;
 		}
-
-	//	Keep track of the current format and text
-
-	STextFormatDesc Format = InitFormat;
 
 	//	Keep looping until we hit the end of the block
 

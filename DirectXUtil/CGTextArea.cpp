@@ -98,7 +98,7 @@ int CGTextArea::Justify (const RECT &rcRect)
 
 		return m_rcPadding.top + (m_Lines.GetCount() * m_pFont->GetHeight() + (m_Lines.GetCount() - 1) * m_cyLineSpacing) + m_rcPadding.bottom;
 		}
-	else
+	else if (!m_sRTF.IsBlank())
 		{
 		FormatRTF(rcText);
 
@@ -106,6 +106,8 @@ int CGTextArea::Justify (const RECT &rcRect)
 		m_RichText.GetBounds(&rcBounds);
 		return m_rcPadding.top + RectHeight(rcBounds) + m_rcPadding.bottom;
 		}
+	else
+		return 0;
 	}
 
 void CGTextArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
