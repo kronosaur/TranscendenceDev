@@ -499,6 +499,8 @@ void CDesignCollection::ClearImageMarks (void)
 //	Clears marks on all images
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	for (i = 0; i < GetCount(designImage); i++)
@@ -506,6 +508,8 @@ void CDesignCollection::ClearImageMarks (void)
 		CObjectImage *pImage = CObjectImage::AsType(GetEntry(designImage, i));
 		pImage->ClearMark();
 		}
+
+	DEBUG_CATCH
 	}
 
 ALERROR CDesignCollection::CreateTemplateTypes (SDesignLoadCtx &Ctx)
@@ -1292,6 +1296,8 @@ void CDesignCollection::SweepImages (void)
 //	Frees any images that are not marked
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	for (i = 0; i < GetCount(designImage); i++)
@@ -1299,6 +1305,8 @@ void CDesignCollection::SweepImages (void)
 		CObjectImage *pImage = CObjectImage::AsType(GetEntry(designImage, i));
 		pImage->Sweep();
 		}
+
+	DEBUG_CATCH
 	}
 
 void CDesignCollection::WriteDynamicTypes (IWriteStream *pStream)

@@ -2735,6 +2735,8 @@ void CSystem::MarkImages (void)
 //	Mark images in use
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	g_pUniverse->SetLogImageLoad(false);
@@ -2799,6 +2801,8 @@ void CSystem::MarkImages (void)
 	//	Done
 
 	g_pUniverse->SetLogImageLoad(true);
+
+	DEBUG_CATCH
 	}
 
 void CSystem::NameObject (const CString &sName, CSpaceObject *pObj)

@@ -30,8 +30,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    241, 229, 146, 117, 121,  55, 173,  83, 189, 144,
-    122,  96,  87,  32, 131, 167, 205, 137, 146, 191,
+    142, 253, 223, 198, 221, 165, 116, 130,  21,  19,
+    127,  49, 254, 240,  68,  65, 192,  72,  29, 152,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -1803,11 +1803,15 @@ void CExtensionCollection::SweepImages (void)
 //	Frees images that we're no longer using.
 
 	{
+	DEBUG_TRY
+
 	CSmartLock Lock(m_cs);
 	int i;
 
 	for (i = 0; i < m_Extensions.GetCount(); i++)
 		m_Extensions[i]->SweepImages();
+
+	DEBUG_CATCH
 	}
 
 void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collection, int cxIconSize, int cyIconSize)
