@@ -82,6 +82,8 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Behavior
 
 	{
+	DEBUG_TRY
+
 	//	If we're following a nav path, then do it
 
 	if (m_fIsFollowingNavPath)
@@ -170,6 +172,8 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		else
 			Ctx.ImplementFormationManeuver(pShip, m_vDest, NullVector, m_iDestFacing);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
@@ -179,6 +183,8 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 //	Start behavior
 
 	{
+	DEBUG_TRY
+
 	//	If we want to dock and are already docked, then nothing else to do.
 
 	if (m_fDockAtDestination
@@ -246,6 +252,8 @@ void CNavigateOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 		else
 			m_fIsFollowingNavPath = Ctx.CalcNavPath(pShip, m_vDest);
 		}
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CNavigateOrder::OnGetBase (void)

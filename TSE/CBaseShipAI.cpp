@@ -139,6 +139,8 @@ void CBaseShipAI::Behavior (void)
 //	we should be able to delete the standard controller.]
 
 	{
+	DEBUG_TRY
+
 	//	Reset
 
 	ResetBehavior();
@@ -233,6 +235,8 @@ void CBaseShipAI::Behavior (void)
 	//	Implement orders
 
 	m_pOrderModule->Behavior(m_pShip, m_AICtx);
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric rRange, CSpaceObject *pExcludeObj)

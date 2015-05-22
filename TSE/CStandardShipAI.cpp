@@ -137,6 +137,8 @@ void CStandardShipAI::OnBehavior (void)
 //	Fly, fight, die
 
 	{
+	DEBUG_TRY
+
 #ifdef DEBUG
 	bool bDebug = m_pShip->IsSelected();
 #endif
@@ -1094,6 +1096,8 @@ void CStandardShipAI::OnBehavior (void)
 		default:
 			ASSERT(false);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CStandardShipAI::BehaviorStart (void)

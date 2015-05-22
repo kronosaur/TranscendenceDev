@@ -1471,6 +1471,8 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 //	Updates the armor. This should be called once every 10 ticks
 
 	{
+	DEBUG_TRY
+
 	bool bModified = false;
 
 	//	Compute total regeneration by adding mods to intrinsic
@@ -1576,4 +1578,6 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	//	Done
 
 	*retbModified = bModified;
+
+	DEBUG_CATCH
 	}

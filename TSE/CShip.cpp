@@ -205,6 +205,8 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 //	Implements behavior
 
 	{
+	DEBUG_TRY
+
 	if (!IsInactive() && !m_fControllerDisabled)
 		{
 		m_pController->Behavior();
@@ -219,6 +221,8 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 				&& (pTarget == Ctx.pPlayer || pTarget->IsPlayerEscortTarget(Ctx.pPlayer)))
 			Ctx.pSystem->SetPlayerUnderAttack();
 		}
+
+	DEBUG_CATCH
 	}
 
 void CShip::CalcArmorBonus (void)
@@ -458,6 +462,8 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 //	don't always fire if they have no target).
 
 	{
+	DEBUG_TRY
+
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
 
 	//	For primary weapons, the target is the controller target.
@@ -503,6 +509,8 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 			return (*retpTarget != NULL);
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot)

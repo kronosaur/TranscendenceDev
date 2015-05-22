@@ -12,6 +12,8 @@ void CFireEventOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Do it
 
 	{
+	DEBUG_TRY
+
 	//	Get the current order data
 
 	CSpaceObject *pListener;
@@ -28,5 +30,7 @@ void CFireEventOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	if (pListener && !Data.sData.IsBlank())
 		pListener->FireCustomShipOrderEvent(Data.sData, pShip);
+
+	DEBUG_CATCH
 	}
 

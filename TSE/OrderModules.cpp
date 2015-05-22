@@ -82,6 +82,8 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 //	Creates an order module
 
 	{
+	DEBUG_TRY
+
 	switch (iOrder)
 		{
 		case IShipController::orderNone:
@@ -147,6 +149,8 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 			ASSERT(false);
 			return NULL;
 		}
+
+	DEBUG_CATCH
 	}
 
 CString IOrderModule::DebugCrashInfo (void)

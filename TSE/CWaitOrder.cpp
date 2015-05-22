@@ -163,6 +163,8 @@ void CWaitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Do it
 
 	{
+	DEBUG_TRY
+
 	//	Handle waiting
 
 	bool bInPlace;
@@ -197,6 +199,8 @@ void CWaitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			&& pShip->IsDestinyTime(17)
 			&& pShip->GetNearestVisibleEnemy())
 		pShip->CancelCurrentOrder();
+
+	DEBUG_CATCH
 	}
 
 void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
@@ -206,6 +210,8 @@ void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObjec
 //	Initialize order module
 
 	{
+	DEBUG_TRY
+
 	DWORD dwTimer;
 
 	//	Waiting for leader to undock: we need a leader and an optional timer.
@@ -238,6 +244,8 @@ void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObjec
 	//	Set the timer in ticks
 
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
+
+	DEBUG_CATCH
 	}
 
 DWORD CWaitOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)

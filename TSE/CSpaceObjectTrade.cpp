@@ -434,6 +434,8 @@ void CSpaceObject::UpdateTrade (SUpdateCtx &Ctx, int iInventoryRefreshed)
 //	Updates trading directives. This creates new inventory, if necessary.
 
 	{
+	DEBUG_TRY
+
 	//	Update override first
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
@@ -467,6 +469,8 @@ void CSpaceObject::UpdateTrade (SUpdateCtx &Ctx, int iInventoryRefreshed)
 		if (!IsPlayerDocked())
 			pTrade->RefreshInventory(this, iInventoryRefreshed);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObject::UpdateTradeExtended (const CTimeSpan &ExtraTime)

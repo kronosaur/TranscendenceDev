@@ -72,6 +72,8 @@ void CAttackStationOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Do it
 
 	{
+	DEBUG_TRY
+
 	//	See if our timer has expired
 
 	if (m_iCountdown != -1 && m_iCountdown-- == 0)
@@ -132,6 +134,8 @@ void CAttackStationOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			break;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
@@ -141,6 +145,8 @@ void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CS
 //	Initialize order module
 
 	{
+	DEBUG_TRY
+
 	//	Make sure we're undocked because we're going flying
 
 	Ctx.Undock(pShip);
@@ -175,6 +181,8 @@ void CAttackStationOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CS
 
 	DWORD dwTimer = Data.AsInteger();
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
+
+	DEBUG_CATCH
 	}
 
 CString CAttackStationOrder::OnDebugCrashInfo (void)

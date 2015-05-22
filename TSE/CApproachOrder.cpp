@@ -19,6 +19,8 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Behavior
 
 	{
+	DEBUG_TRY
+
 	switch (m_iState)
 		{
 		case stateOnCourseViaNavPath:
@@ -70,6 +72,8 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			break;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
@@ -79,6 +83,8 @@ void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 //	Start behavior
 
 	{
+	DEBUG_TRY
+
 	ASSERT(pOrderTarget);
 
 	//	Make sure we're undocked because we're going flying
@@ -102,6 +108,8 @@ void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 
 	else
 		m_iState = stateApproaching;
+
+	DEBUG_CATCH
 	}
 
 void CApproachOrder::OnReadFromStream (SLoadCtx &Ctx)

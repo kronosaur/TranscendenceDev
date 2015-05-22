@@ -2379,6 +2379,8 @@ void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 //	Initializes effects (like thrust, etc.)
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	CObjectEffectDesc &Effects = GetEffectsDesc();
@@ -2460,6 +2462,8 @@ void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 
 		retEffects->Init(Effects, Painters);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CShipClass::InitShipNamesIndices (void)

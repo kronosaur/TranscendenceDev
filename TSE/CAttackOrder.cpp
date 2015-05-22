@@ -213,6 +213,8 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Do it
 
 	{
+	DEBUG_TRY
+
 	switch (m_iState)
 		{
 		case stateAttackingTargetAndAvoiding:
@@ -349,6 +351,8 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			break;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAttackOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
@@ -358,6 +362,8 @@ void CAttackOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 //	Initialize order module
 
 	{
+	DEBUG_TRY
+
 	//	Make sure we're undocked because we're going flying
 
 	Ctx.Undock(pShip);
@@ -392,6 +398,8 @@ void CAttackOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 
 	DWORD dwTimer = (m_fInRangeOfObject ? Data.AsInteger2() : Data.AsInteger());
 	m_iCountdown = (dwTimer ? 1 + (g_TicksPerSecond * dwTimer) : -1);
+
+	DEBUG_CATCH
 	}
 
 CString CAttackOrder::OnDebugCrashInfo (void)

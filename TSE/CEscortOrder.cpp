@@ -48,6 +48,8 @@ void CEscortOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 //	Do it
 
 	{
+	DEBUG_TRY
+
 	switch (m_iState)
 		{
 		case stateEscorting:
@@ -123,6 +125,8 @@ void CEscortOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			break;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CEscortOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data)
@@ -132,6 +136,8 @@ void CEscortOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 //	Initialize order module
 
 	{
+	DEBUG_TRY
+
 	ASSERT(pOrderTarget);
 
 	//	Set state
@@ -142,6 +148,8 @@ void CEscortOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 
 	m_Objs[objPrincipal] = pOrderTarget;
 	pShip->Communicate(pOrderTarget, msgEscortReportingIn, pShip);
+
+	DEBUG_CATCH
 	}
 
 DWORD CEscortOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
