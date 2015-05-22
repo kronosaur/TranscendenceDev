@@ -21,7 +21,8 @@ CMCIMixer::CMCIMixer (int iChannels) :
 		m_pNowPlaying(NULL),
 		m_hProcessingThread(INVALID_HANDLE_VALUE),
 		m_hWorkEvent(INVALID_HANDLE_VALUE),
-		m_hQuitEvent(INVALID_HANDLE_VALUE)
+		m_hQuitEvent(INVALID_HANDLE_VALUE),
+		m_bNoStopNotify(false)
 
 //	CMCIMixer constructor
 
@@ -272,7 +273,7 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 
 			//	Notify that we're done with this track
 
-			if (g_pHI)
+			if (g_pHI && !m_bNoStopNotify)
 				g_pHI->HICommand(CMD_SOUNDTRACK_DONE);
 			break;
 		}
@@ -378,7 +379,7 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 
 	//	Stop all channels
 
-	ProcessStop(Request);
+	ProcessStop(Request, true);
 
 	//	Play on some channel
 
@@ -496,7 +497,7 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 
 	//	Stop all channels
 
-	ProcessStop(Request);
+	ProcessStop(Request, true);
 
 	//	Play on some channel
 
@@ -528,6 +529,10 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 		LogError(hMCI, CONSTLIT("ProcessPlay MCIWndPlay"), sFilespec);
 		return;
 		}
+
+#ifdef DEBUG_SOUNDTRACK
+	kernelDebugLogMessage("ProcessPlay done");
+#endif
 	}
 
 void CMCIMixer::ProcessPlayPause (const SRequest &Request)
@@ -607,6 +612,10 @@ bool CMCIMixer::ProcessRequest (void)
 			break;
 
 		case typeStop:
+#ifdef DEBUG_SOUNDTRACK
+		kernelDebugLogMessage("ProcessStop requested.");
+
+#endif
 			ProcessStop(Request);
 			break;
 
@@ -650,7 +659,7 @@ void CMCIMixer::ProcessSetPlayPaused (const SRequest &Request)
 		}
 	}
 
-void CMCIMixer::ProcessStop (const SRequest &Request)
+void CMCIMixer::ProcessStop (const SRequest &Request, bool bNoNotify)
 
 //	ProcessStop
 //
@@ -658,6 +667,10 @@ void CMCIMixer::ProcessStop (const SRequest &Request)
 
 	{
 	int i;
+
+	bool bOldNotify = m_bNoStopNotify;
+	if (bNoNotify)
+		m_bNoStopNotify = true;
 
 	for (i = 0; i < m_Channels.GetCount(); i++)
 		if (m_Channels[i].iState == statePlaying)
@@ -669,6 +682,7 @@ void CMCIMixer::ProcessStop (const SRequest &Request)
 			MCIWndStop(m_Channels[i].hMCI);
 			}
 
+	m_bNoStopNotify = bOldNotify;
 	m_pNowPlaying = NULL;
 	}
 

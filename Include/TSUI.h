@@ -672,7 +672,6 @@ class CHumanInterface
 		inline void DeleteTimer (DWORD dwID) { m_Timers.DeleteTimer(m_hWnd, dwID); }
 
 		//	Message Handlers
-		LONG MCINotifyMode (int iMode);
 		void OnAnimate (void);
 		void OnPostCommand (LPARAM pData);
 		void OnTaskComplete (DWORD dwID, LPARAM pData);

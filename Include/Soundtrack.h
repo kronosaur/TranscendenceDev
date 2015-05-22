@@ -68,7 +68,7 @@ class CMCIMixer
 		void ProcessPlayPause (const SRequest &Request);
 		bool ProcessRequest (void);
 		void ProcessSetPlayPaused (const SRequest &Request);
-		void ProcessStop (const SRequest &Request);
+		void ProcessStop (const SRequest &Request, bool bNoNotify = false);
 		void ProcessWaitForPos (const SRequest &Request);
 		bool Wait (DWORD dwTimeout);
 
@@ -89,6 +89,7 @@ class CMCIMixer
 		HANDLE m_hQuitEvent;				//	Tell thread to quit
 		HANDLE m_hWorkEvent;				//	Tell thread to work
 		HANDLE m_hAbortEvent;				//	Tell thread to stop
+		bool m_bNoStopNotify;
 	};
 
 class CSoundtrackManager

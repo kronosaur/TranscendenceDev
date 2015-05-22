@@ -320,12 +320,6 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 		case WM_TIMER:
 			return g_pHI->WMTimer((DWORD)wParam);
 
-		case MCIWNDM_NOTIFYMODE:
-			return (g_pHI ? g_pHI->MCINotifyMode((int)lParam) : 0);
-
-		case MCIWNDM_NOTIFYPOS:
-			return 0;
-
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}

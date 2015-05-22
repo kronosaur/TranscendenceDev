@@ -383,41 +383,6 @@ void CHumanInterface::HIPostCommand (const CString &sCmd, void *pData)
 		::kernelDebugLogMessage("Unable to send post HICommand (PostMessage failed): %s.", sCmd);
 	}
 
-LONG CHumanInterface::MCINotifyMode (int iMode)
-
-//	MCIWNDM_NOTIFYMODE
-//
-//	Notification that MCI playback mode has changed.
-
-	{
-	switch (iMode)
-		{
-		case MCI_MODE_NOT_READY:
-			break;
-
-		case MCI_MODE_OPEN:
-			break;
-
-		case MCI_MODE_PAUSE:
-			break;
-
-		case MCI_MODE_PLAY:
-			break;
-
-		case MCI_MODE_RECORD:
-			break;
-
-		case MCI_MODE_SEEK:
-			break;
-
-		case MCI_MODE_STOP:
-			HICommand(CMD_SOUNDTRACK_DONE);
-			break;
-		}
-
-	return 0;
-	}
-
 void CHumanInterface::OnAnimate (void)
 
 //	OnAnimate

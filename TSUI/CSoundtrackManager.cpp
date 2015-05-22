@@ -252,7 +252,7 @@ CSoundType *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 	CSoundType *pResult = Table.GetAt(Table.RollPos());
 
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("State: %d: Found %d tracks in priority %d table.", m_iGameState, Table[0].GetCount(), Table.GetKey(0));
+	kernelDebugLogMessage("State: %d: Found %d tracks in priority table.", m_iGameState, Table.GetCount());
 	kernelDebugLogMessage("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
 #endif
 
