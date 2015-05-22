@@ -330,9 +330,17 @@ int CExtensionCollection::Compare (CExtension *pExt1, CExtension *pExt2, bool bD
 	else if (pExt2 == NULL)
 		return 1;
 
+	//	Disabled adventures always lose
+
+	if (!pExt1->IsDisabled() && pExt2->IsDisabled())
+		return 1;
+
+	else if (pExt1->IsDisabled() && !pExt2->IsDisabled())
+		return -1;
+
 	//	A later release always wins
 
-	if (pExt1->GetRelease() > pExt2->GetRelease())
+	else if (pExt1->GetRelease() > pExt2->GetRelease())
 		return 1;
 
 	//	A lesser release always loses
@@ -414,6 +422,11 @@ ALERROR CExtensionCollection::ComputeAvailableAdventures (DWORD dwFlags, TArray<
 			//	If this is debug only and we're not in debug mode then skip.
 
 			if (ExtensionList[j]->IsDebugOnly() && !bDebugMode)
+				continue;
+
+			//	If we're disabled and we're not in debug mode, then skip
+
+			if (ExtensionList[j]->IsDisabled() && !bDebugMode)
 				continue;
 
 			//	Compute the best extension out of the list.
