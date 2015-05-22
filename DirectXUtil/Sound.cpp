@@ -259,7 +259,10 @@ ALERROR CSoundMgr::Init (HWND hWnd)
 		}
 
 	//	Initialize MCI
+	//
+	//	LATER: We should switch to using CSoundtrackManager instead.
 
+#if 0
 	m_hMusic = ::MCIWndCreate(hWnd, 
 			(HINSTANCE)::GetWindowLong(hWnd, GWL_HINSTANCE),
 			WS_OVERLAPPED | WS_CHILD | MCIWNDF_NOERRORDLG | MCIWNDF_NOMENU | MCIWNDF_NOPLAYBAR | MCIWNDF_NOTIFYALL,
@@ -271,6 +274,9 @@ ALERROR CSoundMgr::Init (HWND hWnd)
 	//	Set the time format to milliseconds
 
 	MCIWndUseTime(m_hMusic);
+#else
+	m_hMusic = NULL;
+#endif
 
 	return NOERROR;
 	}
