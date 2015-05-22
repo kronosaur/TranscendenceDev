@@ -690,7 +690,13 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	if (!pType->IsMobile())
 		pStation->SetCannotMove();
 	else
+		{
+		//	Mobile objects cannot have a mass of 0 (otherwise the bouncing routines
+		//	might fail).
+
+		pStation->m_rMass = Max(1.0, pStation->m_rMass);
 		pStation->SetCanBounce();
+		}
 
 	//	Background objects cannot be hit
 
@@ -2182,10 +2188,14 @@ bool CStation::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, con
 //	Returns TRUE if the given object intersects this object
 
 	{
+	DEBUG_TRY
+
 	int iTick, iVariant;
 	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
 
 	return pObj2->ImageInObject(vObj2Pos, Image, iTick, iVariant, vObj1Pos);
+
+	DEBUG_CATCH
 	}
 
 DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
@@ -3345,6 +3355,8 @@ bool CStation::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
 //	Returns TRUE if the given point is inside the object
 
 	{
+	DEBUG_TRY
+
 	//	Figure out the coordinates of vPos relative to the center of the
 	//	ship, in pixels.
 
@@ -3358,6 +3370,8 @@ bool CStation::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
 	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
 
 	return Image.PointInImage(x, y, iTick, iVariant);
+
+	DEBUG_CATCH
 	}
 
 bool CStation::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos)
@@ -3705,8 +3719,9 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 		}
 
 	//	Set the mass
+	//	NOTE: Mass cannot be 0 or else the bouncing routines might fail.
 
-	SetMass(pWreckClass->GetHullMass());
+	SetMass(Max(1.0, (Metric)pWreckClass->GetHullMass()));
 
 	//	Set hit points for the structure
 
