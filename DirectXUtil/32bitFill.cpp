@@ -736,6 +736,137 @@ void CG32bitImage::FillMask (int xSrc, int ySrc, int cxWidth, int cyHeight, cons
 		}
 	}
 
+void CG32bitImage::FillMaskScaled (int xSrc, int ySrc, int cxSrc, int cySrc, const CG8bitImage &Source, CG32bitPixel rgbColor, int xDest, int yDest, int cxDest, int cyDest)
+
+//	FillMaskScaled
+//
+//	Fills the source mask with the given color
+
+	{
+	if (cxDest <= 0 || cyDest <= 0 || cxSrc <= 0 || cySrc <= 0)
+		return;
+
+	//	Compute opacity
+
+	BYTE byOpacity = rgbColor.GetAlpha();
+	if (byOpacity == 0x00)
+		return;
+
+	BYTE colorRed = rgbColor.GetRed();
+	BYTE colorGreen = rgbColor.GetGreen();
+	BYTE colorBlue = rgbColor.GetBlue();
+
+	//	Compute the increment on the source to cover the entire destination
+
+	Metric xSrcInc = (Metric)cxSrc / (Metric)cxDest;
+	Metric ySrcInc = (Metric)cySrc / (Metric)cyDest;
+
+	//	Make sure we're in bounds
+
+	Metric xSrcStart = (Metric)xSrc;
+	Metric ySrcStart = (Metric)ySrc;
+	if (!AdjustScaledCoords(&xSrcStart, &ySrcStart, Source.GetWidth(), Source.GetHeight(), 
+			xSrcInc, ySrcInc,
+			&xDest, &yDest,
+			&cxDest, &cyDest))
+		return;
+
+	//	Do the blt
+
+	CG32bitPixel *pDestRow = GetPixelPos(xDest, yDest);
+	CG32bitPixel *pDestRowEnd = GetPixelPos(xDest, yDest + cyDest);
+
+	//	If full opacity, then optimize
+
+	if (byOpacity == 0xff)
+		{
+		Metric y = ySrcStart;
+		while (pDestRow < pDestRowEnd)
+			{
+			CG32bitPixel *pDestPos = pDestRow;
+			CG32bitPixel *pDestPosEnd = pDestPos + cxDest;
+
+			BYTE *pSrcRow = Source.GetPixelPos((int)xSrcStart, (int)y);
+			Metric xOffset = 0.0;
+
+			while (pDestPos < pDestPosEnd)
+				{
+				BYTE byAlpha = *(pSrcRow + (int)xOffset);
+
+				if (byAlpha == 0x00)
+					;
+				else if (byAlpha == 0xff)
+					*pDestPos = rgbColor;
+				else
+					{
+					BYTE *pAlpha = CG32bitPixel::AlphaTable(byAlpha);
+					BYTE *pAlphaInv = CG32bitPixel::AlphaTable(byAlpha ^ 0xff);	//	Equivalent to 255 - byAlpha
+
+					BYTE byRedResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[pDestPos->GetRed()] + (WORD)pAlpha[colorRed]));
+					BYTE byGreenResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[pDestPos->GetGreen()] + (WORD)pAlpha[colorGreen]));
+					BYTE byBlueResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[pDestPos->GetBlue()] + (WORD)pAlpha[colorBlue]));
+
+					*pDestPos = CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
+					}
+
+				pDestPos++;
+				xOffset += xSrcInc;
+				}
+
+			y += ySrcInc;
+			pDestRow = NextRow(pDestRow);
+			}
+		}
+	else
+		{
+		BYTE *pOpacityMap[256];
+		BYTE *pOpacityInvMap[256];
+		for (DWORD i = 0; i < 256; i++)
+			{
+			BYTE byAlpha = (BYTE)((i * byOpacity) / 255);
+			BYTE byAlphaInv = (byAlpha ^ 0xff);
+
+			pOpacityMap[i] = CG32bitPixel::AlphaTable(byAlpha);
+			pOpacityInvMap[i] = CG32bitPixel::AlphaTable(byAlphaInv);
+			}
+
+		Metric y = ySrcStart;
+		while (pDestRow < pDestRowEnd)
+			{
+			CG32bitPixel *pDestPos = pDestRow;
+			CG32bitPixel *pDestPosEnd = pDestPos + cxDest;
+
+			BYTE *pSrcRow = Source.GetPixelPos((int)xSrcStart, (int)y);
+			Metric xOffset = 0.0;
+
+			while (pDestPos < pDestPosEnd)
+				{
+				BYTE byAlpha = *(pSrcRow + (int)xOffset);
+
+				if (byAlpha == 0x00)
+					;
+				else
+					{
+					BYTE *pAlpha = pOpacityMap[byAlpha];
+					BYTE *pAlphaInv = pOpacityInvMap[byAlpha];
+
+					BYTE byRedResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[pDestPos->GetRed()] + (WORD)pAlpha[colorRed]));
+					BYTE byGreenResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[pDestPos->GetGreen()] + (WORD)pAlpha[colorGreen]));
+					BYTE byBlueResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[pDestPos->GetBlue()] + (WORD)pAlpha[colorBlue]));
+
+					*pDestPos = CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
+					}
+
+				pDestPos++;
+				xOffset += xSrcInc;
+				}
+
+			y += ySrcInc;
+			pDestRow = NextRow(pDestRow);
+			}
+		}
+	}
+
 void CG32bitImage::Set (CG32bitPixel Value)
 
 //	Set

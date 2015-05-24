@@ -185,6 +185,8 @@ class ICCItem : public CObject
 
 		//	Symbol/Atom table functions
 
+		int GetIntegerAt (const CString &sKey, int iDefault = 0);
+		CString GetStringAt (const CString &sKey, const CString &sDefault = NULL_STR);
 		void SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue);
 		void SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue);
 		void SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue);

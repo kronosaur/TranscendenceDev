@@ -109,6 +109,34 @@ ICCItem *ICCItem::GetElement (CCodeChain *pCC, int iIndex)
 	return pItem->Reference();
 	}
 
+int ICCItem::GetIntegerAt (const CString &sKey, int iDefault)
+
+//	GetIntegerAt
+//
+//	Returns an integer (0 if not found)
+
+	{
+	ICCItem *pItem = GetElement(sKey);
+	if (pItem == NULL || pItem->IsNil())
+		return iDefault;
+
+	return pItem->GetIntegerValue();
+	}
+
+CString ICCItem::GetStringAt (const CString &sKey, const CString &sDefault)
+
+//	GetStringAt
+//
+//	Returns a string (NULL_STR if not found)
+
+	{
+	ICCItem *pItem = GetElement(sKey);
+	if (pItem == NULL || pItem->IsNil())
+		return sDefault;
+
+	return pItem->GetStringValue();
+	}
+
 CString ICCItem::GetTypeOf (void)
 
 //	GetTypeOf
