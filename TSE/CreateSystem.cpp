@@ -73,6 +73,7 @@
 #define DISTRIBUTION_ATTRIB				CONSTLIT("distribution")
 #define ECCENTRICITY_ATTRIB				CONSTLIT("eccentricity")
 #define ENCOUNTERS_ATTRIB				CONSTLIT("encountersCount")
+#define ERODE_ATTRIB					CONSTLIT("erode")
 #define EXCLUSION_RADIUS_ATTRIB			CONSTLIT("exclusionRadius")
 #define ID_ATTRIB						CONSTLIT("id")
 #define IMAGE_VARIANT_ATTRIB			CONSTLIT("imageVariant")
@@ -2032,6 +2033,7 @@ ALERROR CreateSpaceEnvironment (SSystemCreateCtx *pCtx, CXMLElement *pDesc, cons
 		{
 		CreateCtx.rWidth = GetDiceCountFromAttribute(pDesc->GetAttribute(WIDTH_ATTRIB)) * LIGHT_SECOND;
 		CreateCtx.iWidthVariation = GetDiceCountFromAttribute(pDesc->GetAttribute(WIDTH_VARIATION_ATTRIB));
+		CreateCtx.iErode = GetDiceCountFromAttribute(pDesc->GetAttribute(ERODE_ATTRIB));
 
 		pEnvironment->CreateCircularNebula(CreateCtx, &NebulaTiles);
 		}
@@ -2040,6 +2042,7 @@ ALERROR CreateSpaceEnvironment (SSystemCreateCtx *pCtx, CXMLElement *pDesc, cons
 		CreateCtx.rWidth = GetDiceCountFromAttribute(pDesc->GetAttribute(WIDTH_ATTRIB)) * LIGHT_SECOND;
 		CreateCtx.iWidthVariation = GetDiceCountFromAttribute(pDesc->GetAttribute(WIDTH_VARIATION_ATTRIB));
 		CreateCtx.iSpan = GetDiceCountFromAttribute(pDesc->GetAttribute(SPAN_ATTRIB));
+		CreateCtx.iErode = GetDiceCountFromAttribute(pDesc->GetAttribute(ERODE_ATTRIB));
 
 		pEnvironment->CreateArcNebula(CreateCtx, &NebulaTiles);
 		}

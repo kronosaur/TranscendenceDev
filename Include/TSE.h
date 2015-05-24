@@ -978,7 +978,8 @@ class CEnvironmentGrid
 					rWidth(0.0),
 					rHeight(0.0),
 					iWidthVariation(0),
-					iSpan(0)
+					iSpan(0),
+					iErode(0)
 				{ }
 
 			CSystem *pSystem;
@@ -990,9 +991,10 @@ class CEnvironmentGrid
 			Metric rHeight;
 			int iWidthVariation;			//	0-100
 			int iSpan;
+			int iErode;						//	0-100
 			};
 
-		CEnvironmentGrid (DWORD dwAPIVersion);
+		CEnvironmentGrid (CSystemType::ETileSize iTileSize);
 
 		void CreateArcNebula (SCreateCtx &Ctx, TArray<STileDesc> *retTiles);
 		void CreateCircularNebula (SCreateCtx &Ctx, TArray<STileDesc> *retTiles);
@@ -1002,7 +1004,7 @@ class CEnvironmentGrid
 		CSpaceEnvironmentType *GetTileType (int xTile, int yTile, DWORD *retdwEdgeMask = NULL);
 		inline bool HasMoreTiles (STileMapEnumerator &i) const { return m_Map.HasMore(i); }
 		void MarkImages (void);
-		void Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx, const CVector &vUR, const CVector &vLL);
+		void Paint (SViewportPaintCtx &Ctx, CG32bitImage &Dest);
 		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetTileType (int xTile, int yTile, CSpaceEnvironmentType *pEnv);
@@ -1022,8 +1024,16 @@ class CEnvironmentGrid
 			tileSizeCompatible =			512,	//	Tile size in pixels (pre version 88, when we stored it)
 			};
 
+		struct SConfig
+			{
+			int iScale;						//	Number of levels (levels = scale + 1)
+			int iLevelSize;					//	Size of each level (no. of tiles/sub-levels)
+			int iTileSize;					//	Tile size in pixels
+			};
+
 		DWORD AddEdgeFlag (DWORD dwTile, DWORD dwEdgeFlag) const;
 		void ConvertSpaceEnvironmentToPointers (CTileMap &UNIDs);
+		bool ErodeCheck (Metric rErode, Metric rRadius, Metric rInnerRadius, Metric rMidRadius, Metric rOuterRadius);
 		CSpaceEnvironmentType *GetSpaceEnvironmentFromTileDWORD (DWORD dwTile) const;
 		inline bool InBounds (int xTile, int yTile) const { return (xTile >= 0 && xTile < m_iTileCount && yTile >= 0 && yTile <= m_iTileCount); }
 		DWORD MakeTileDWORD (CSpaceEnvironmentType *pEnv, DWORD dwEdgeMask);
@@ -1032,6 +1042,8 @@ class CEnvironmentGrid
 		TSortMap<CSpaceEnvironmentType *, bool> m_EnvList;
 		int m_iTileSize;					//	Size of tile (in pixels)
 		int m_iTileCount;					//	Size of grid in tiles
+
+		static SConfig CONFIG_DATA[CSystemType::sizeCount];
 	};
 
 class CMapGridPainter
@@ -1096,8 +1108,6 @@ class CSystemSpacePainter
 
 		CG32bitImage *m_pBackground;
 		DWORD m_dwCurBackgroundUNID;
-
-		CThreadPool m_Threads;
 	};
 
 struct SObjCreateCtx
@@ -1435,6 +1445,7 @@ class CSystem : public CObject
 
 		//	Support structures
 
+		CThreadPool *m_pThreadPool;				//	Thread pool for painting
 		CSpaceObjectList m_EncounterObjs;		//	List of objects that generate encounters
 		CSpaceObjectList m_BarrierObjects;		//	List of barrier objects
 		CSpaceObjectList m_GravityObjects;		//	List of objects that have gravity

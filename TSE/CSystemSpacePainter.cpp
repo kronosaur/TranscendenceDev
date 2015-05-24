@@ -111,7 +111,6 @@ CSystemSpacePainter::CSystemSpacePainter (void) :
 //	CSystemSpacePainter constructor
 
 	{
-	m_Threads.Boot(Min(MAX_THREAD_COUNT, sysGetProcessorCount()));
 	}
 
 void CSystemSpacePainter::CleanUp (void)
@@ -296,7 +295,7 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 	//	Compute the chunks
 
 	int cyLeft = RectHeight(Ctx.rcView);
-	int cyChunk = cyLeft / m_Threads.GetThreadCount();
+	int cyChunk = cyLeft / Ctx.pThreadPool->GetThreadCount();
 	int yStart = 0;
 
 	//	Start asynchronous tasks
@@ -304,13 +303,13 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 	while (cyLeft > 0)
 		{
 		int cyHeight = Min((int)cyLeft, cyChunk);
-		m_Threads.AddTask(new CStarshinePainter(Dest, yStart, cyHeight, StarshineCtx));
+		Ctx.pThreadPool->AddTask(new CStarshinePainter(Dest, yStart, cyHeight, StarshineCtx));
 
 		yStart += cyHeight;
 		cyLeft -= cyHeight;
 		}
 
-	m_Threads.Run();
+	Ctx.pThreadPool->Run();
 
 #ifdef DEBUG_PAINT_TIMINGS
 	g_dwTotalTime += ::GetTickCount() - dwStart;

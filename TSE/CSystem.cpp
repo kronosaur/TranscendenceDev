@@ -379,6 +379,8 @@ const Metric TIDAL_KILL_THRESHOLD =				7250.0;	//	Acceleration at which we get r
 
 const BYTE MAX_SPACE_OPACITY =					128;
 
+const int MAX_THREAD_COUNT =					16;
+
 #define ON_CREATE_EVENT					CONSTLIT("OnCreate")
 #define ON_OBJ_JUMP_POS_ADJ				CONSTLIT("OnObjJumpPosAdj")
 
@@ -452,7 +454,8 @@ CSystem::CSystem (void) : CObject(&g_Class),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER),
 		m_fEnemiesInLRS(false),
 		m_fEnemiesInSRS(false),
-		m_fPlayerUnderAttack(false)
+		m_fPlayerUnderAttack(false),
+		m_pThreadPool(NULL)
 
 //	CSystem constructor
 
@@ -474,6 +477,7 @@ CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) : CObject(&g_Class
 		m_fInCreate(false),
 		m_fEncounterTableValid(false),
 		m_fUseDefaultTerritories(true),
+		m_pThreadPool(NULL),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 
 //	CSystem constructor
@@ -496,6 +500,9 @@ CSystem::~CSystem (void)
 
 	if (m_pEnvironment)
 		delete m_pEnvironment;
+
+	if (m_pThreadPool)
+		delete m_pThreadPool;
 	}
 
 ALERROR CSystem::AddTerritory (CTerritoryDef *pTerritory)
@@ -812,6 +819,16 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	//	(in pixels)
 
 	Ctx.rIndicatorRadius = Min(RectWidth(rcView), RectHeight(rcView)) / 2.0;
+
+	//	If we don't have a thread pool yet, create it
+
+	if (m_pThreadPool == NULL)
+		{
+		m_pThreadPool = new CThreadPool;
+		m_pThreadPool->Boot(Min(MAX_THREAD_COUNT, sysGetProcessorCount()));
+		}
+
+	Ctx.pThreadPool = m_pThreadPool;
 
 	DEBUG_CATCH
 	}
@@ -1307,7 +1324,7 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
 	if (dwCount)
 		{
-		Ctx.pSystem->m_pEnvironment = new CEnvironmentGrid(0);
+		Ctx.pSystem->m_pEnvironment = new CEnvironmentGrid(CSystemType::sizeUnknown);
 		Ctx.pSystem->m_pEnvironment->ReadFromStream(Ctx);
 		}
 	else
@@ -2594,7 +2611,7 @@ void CSystem::InitSpaceEnvironment (void) const
 
 	{
 	if (m_pEnvironment == NULL)
-		m_pEnvironment = new CEnvironmentGrid(m_pType->GetAPIVersion());
+		m_pEnvironment = new CEnvironmentGrid(m_pType->GetSpaceEnvironmentTileSize());
 	}
 
 void CSystem::InitVolumetricMask (void)
@@ -3020,7 +3037,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Paint any space environment
 
 	if (m_pEnvironment)
-		m_pEnvironment->Paint(Dest, Ctx, Ctx.vUR, Ctx.vLL);
+		m_pEnvironment->Paint(Ctx, Dest);
 
 	//	Paint all the objects by layer
 

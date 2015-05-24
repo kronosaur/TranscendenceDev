@@ -503,11 +503,8 @@ void CDesignCollection::ClearImageMarks (void)
 
 	int i;
 
-	for (i = 0; i < GetCount(designImage); i++)
-		{
-		CObjectImage *pImage = CObjectImage::AsType(GetEntry(designImage, i));
-		pImage->ClearMark();
-		}
+	for (i = 0; i < GetCount(); i++)
+		GetEntry(i)->ClearMark();
 
 	DEBUG_CATCH
 	}
@@ -1300,11 +1297,9 @@ void CDesignCollection::SweepImages (void)
 
 	int i;
 
-	for (i = 0; i < GetCount(designImage); i++)
-		{
-		CObjectImage *pImage = CObjectImage::AsType(GetEntry(designImage, i));
-		pImage->Sweep();
-		}
+	CString sError;
+	for (i = 0; i < GetCount(); i++)
+		GetEntry(i)->Sweep();
 
 	DEBUG_CATCH
 	}

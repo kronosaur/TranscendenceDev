@@ -21,6 +21,14 @@
 
 const int TILES_IN_TILE_SET =					15;
 
+const int PERMUTE_COUNT =						25;
+const int VARIANT_PERMUTE[PERMUTE_COUNT] =
+	{	181, 339, 172,   8,  60,
+		 21, 249,  91, 110, 193,
+		263, 104,  65, 268, 116,
+		 84, 143, 321,  79,   1,
+		215, 154, 138, 163, 299 };
+
 CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_SET] =
 	{
 		//	EDGE 0: Cloud
@@ -199,8 +207,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 	{
 	int x, y;
-	CG8bitImage Mask;
-	Mask.Create(m_iTileSize, m_iTileSize, 0);
+	retTile->Mask.Create(m_iTileSize, m_iTileSize, 0);
 
 	switch (EdgeDesc.iType)
 		{
@@ -216,7 +223,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlphaRow = Mask.GetPixelPos(0, y);
+				BYTE *pAlphaRow = retTile->Mask.GetPixelPos(0, y);
 				for (x = 0; x < m_iTileSize; x++)
 					{
 					BYTE *pAlpha = pAlphaRow + x;
@@ -282,7 +289,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlphaRow = Mask.GetPixelPos(0, y);
+				BYTE *pAlphaRow = retTile->Mask.GetPixelPos(0, y);
 				for (x = 0; x < m_iTileSize; x++)
 					{
 					BYTE *pAlpha = pAlphaRow + x;
@@ -352,7 +359,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlphaRow = Mask.GetPixelPos(0, y);
+				BYTE *pAlphaRow = retTile->Mask.GetPixelPos(0, y);
 				for (x = 0; x < m_iTileSize; x++)
 					{
 					BYTE *pAlpha = pAlphaRow + x;
@@ -416,7 +423,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlphaRow = Mask.GetPixelPos(0, y);
+				BYTE *pAlphaRow = retTile->Mask.GetPixelPos(0, y);
 				for (x = 0; x < m_iTileSize; x++)
 					{
 					BYTE *pAlpha = pAlphaRow + x;
@@ -493,7 +500,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 			{
 			for (y = 0; y < m_iTileSize; y++)
 				{
-				BYTE *pAlpha = Mask.GetPixelPos(0, y);
+				BYTE *pAlpha = retTile->Mask.GetPixelPos(0, y);
 				BYTE *pAlphaEnd = pAlpha + m_iTileSize;
 				while (pAlpha < pAlphaEnd)
 					*pAlpha++ = 0x80;
@@ -501,7 +508,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 			}
 		}
 
-	retTile->Region.CreateFromMask(Mask, 0, 0, Mask.GetWidth(), Mask.GetHeight());
+	retTile->Region.CreateFromMask(retTile->Mask, 0, 0, retTile->Mask.GetWidth(), retTile->Mask.GetHeight());
 	}
 
 void CSpaceEnvironmentType::CreateTileSet (const CObjectImageArray &Edges)
@@ -526,7 +533,8 @@ void CSpaceEnvironmentType::CreateTileSet (const CObjectImageArray &Edges)
 			int iIndex = (i * TILES_IN_TILE_SET) + j;
 			RECT rcRect = Edges.GetImageRect(i, j);
 
-			m_TileSet[iIndex].Region.CreateFromMask(EdgesImage, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect));
+			m_TileSet[iIndex].Mask.CreateChannel(channelAlpha, EdgesImage, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect));
+			m_TileSet[iIndex].Region.CreateFromMask(m_TileSet[iIndex].Mask, 0, 0, RectWidth(rcRect), RectHeight(rcRect));
 			}
 		}
 	}
@@ -557,6 +565,20 @@ ALERROR CSpaceEnvironmentType::FireOnUpdate (CSpaceObject *pObj, CString *retsEr
 		}
 
 	return NOERROR;
+	}
+
+int CSpaceEnvironmentType::GetVariantOffset (int xTile, int yTile)
+
+//	GetVariantOffset
+//
+//	Returns an offset into m_TileSet where the edge mask for this tile starts
+//	(if there are multiple variant).
+
+	{
+	if (m_iVariantCount <= 1)
+		return 0;
+
+	return TILES_IN_TILE_SET * (VARIANT_PERMUTE[(xTile + 100 * yTile) % PERMUTE_COUNT] % m_iVariantCount);
 	}
 
 ALERROR CSpaceEnvironmentType::OnBindDesign (SDesignLoadCtx &Ctx)
@@ -648,9 +670,18 @@ void CSpaceEnvironmentType::OnMarkImages (void)
 	//	Ask the system for the tile size
 
 	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-	m_iTileSize = (pSystem ? pSystem->GetTileSize() : 512);
+	int iTileSize = (pSystem ? pSystem->GetTileSize() : 512);
 
-	//	If we a large tile then we assume that it consists of multiple,
+	//	If we have a different tile size, then we need to recreate all the
+	//	edges.
+
+	if (iTileSize != m_iTileSize)
+		{
+		m_TileSet.DeleteAll();
+		m_iTileSize = iTileSize;
+		}
+
+	//	If we have a large tile then we assume that it consists of multiple,
 	//	compatible tiles.
 
 	RECT rcImage = m_Image.GetImageRect();
@@ -669,6 +700,22 @@ void CSpaceEnvironmentType::OnMarkImages (void)
 			CreateAutoTileSet(1);
 		else if (m_EdgeMask.IsLoaded())
 			CreateTileSet(m_EdgeMask);
+		}
+
+	m_bMarked = true;
+	}
+
+void CSpaceEnvironmentType::OnSweep (void)
+
+//	OnSweep
+//
+//	Delete images
+
+	{
+	if (!m_bMarked)
+		{
+		m_TileSet.DeleteAll();
+		m_iTileSize = 0;
 		}
 	}
 
@@ -723,7 +770,7 @@ void CSpaceEnvironmentType::Paint (CG32bitImage &Dest, int x, int y, int xTile, 
 
 	else
 		{
-		STileDesc &Desc = m_TileSet[(int)dwEdgeMask];
+		STileDesc &Desc = m_TileSet[GetVariantOffset(xTile, yTile) + (int)dwEdgeMask];
 
 		Desc.Region.Blt(Dest,
 				x - xCenter,
@@ -758,16 +805,48 @@ void CSpaceEnvironmentType::PaintLRS (CG32bitImage &Dest, int x, int y)
 		}
 	}
 
-void CSpaceEnvironmentType::PaintMap (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, DWORD dwFade, DWORD dwEdgeMask)
+void CSpaceEnvironmentType::PaintMap (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, DWORD dwFade, int xTile, int yTile, DWORD dwEdgeMask)
 
 //	PaintMap
 //
 //	Paints a map tile.
 
 	{
+	CG32bitPixel rgbColor = CG32bitPixel::Blend(0, m_rgbMapColor, (BYTE)(0xff - dwFade));
+
+#ifndef OLD_METHOD
+
+	//	If this is a solid tile, paint it
+
+	if (dwEdgeMask == 0x0F || m_TileSet.GetCount() == 0)
+		{
+		Dest.Fill(x,
+				y,
+				cxWidth,
+				cyHeight,
+				rgbColor);
+		}
+
+	//	Otherwise, paint edge through a mask
+
+	else
+		{
+		STileDesc &Desc = m_TileSet[GetVariantOffset(xTile, yTile) + (int)dwEdgeMask];
+
+		Dest.FillMaskScaled(0,
+				0,
+				m_iTileSize,
+				m_iTileSize,
+				Desc.Mask,
+				rgbColor,
+				x,
+				y,
+				cxWidth,
+				cyHeight);
+		}
+#else
 	int cxHalfWidth = cxWidth / 2;
 	int cyHalfHeight = cyHeight / 2;
-	CG32bitPixel rgbColor = CG32bitPixel::Blend(m_rgbMapColor, 0, (BYTE)dwFade);
 
 	switch (dwEdgeMask)
 		{
@@ -822,5 +901,6 @@ void CSpaceEnvironmentType::PaintMap (CG32bitImage &Dest, int x, int y, int cxWi
 		default:
 			Dest.Fill(x, y, cxWidth + 1, cyHeight + 1, rgbColor);
 		}
+#endif
 	}
 

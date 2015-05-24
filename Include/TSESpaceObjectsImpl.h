@@ -436,7 +436,7 @@ class CMissile : public CSpaceObject
 		int m_iSavedRotationsCount;				//	Number of saved rotations
 		int *m_pSavedRotations;					//	Array of saved rotation angles
 
-		DWORD m_fDestroyed:1;					//	TRUE if destroyed (only around to paint effect)
+		DWORD m_fDestroyOnAnimationDone:1;		//	TRUE if destroyed (only around to paint effect)
 		DWORD m_fReflection:1;					//	TRUE if this is a reflection
 		DWORD m_fDetonate:1;					//	TRUE if we should detonate on next update
 		DWORD m_fPassthrough:1;					//	TRUE if shot passed through

@@ -5,6 +5,10 @@
 
 #include "PreComp.h"
 
+#ifdef DEBUG
+//#define DEBUG_PAINT_TIMINGS
+#endif
+
 struct SEdgeDesc
 	{
 	DWORD dwFlag;
@@ -23,14 +27,71 @@ static SEdgeDesc EDGE_DATA[EDGE_COUNT] =
 		{	CEnvironmentGrid::edgeBottom,	 0,	+1,	CEnvironmentGrid::edgeTop		},
 	};
 
-CEnvironmentGrid::CEnvironmentGrid (DWORD dwAPIVersion) : 
-		m_Map((dwAPIVersion >= 14 ? defaultSize : sizeCompatible), (dwAPIVersion >= 14 ? defaultScale : scaleCompatibile))
+CEnvironmentGrid::SConfig CEnvironmentGrid::CONFIG_DATA[CSystemType::sizeCount] =
+	{
+		{	2,	12,	128		},
+		{	2,	8,	256		},
+		{	1,	16,	512		},
+		{	1,	12,	1024	},
+	};
+
+#ifdef DEBUG_PAINT_TIMINGS
+static int g_iTimingCount = 0;
+static DWORD g_dwTotalTime = 0;
+#endif
+
+class CTilePainter : public IThreadPoolTask
+	{
+	public:
+		CTilePainter (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CEnvironmentGrid *pGrid, int x1, int y1, int x2, int y2) :
+				m_Ctx(Ctx),
+				m_Dest(Dest),
+				m_pGrid(pGrid),
+				m_x1(x1),
+				m_y1(y1),
+				m_x2(x2),
+				m_y2(y2)
+			{ }
+
+		virtual void Run (void)
+			{
+			int x, y;
+
+			for (x = m_x1; x < m_x2; x++)
+				for (y = m_y1; y < m_y2; y++)
+					{
+					DWORD dwEdgeMask;
+					CSpaceEnvironmentType *pEnv = m_pGrid->GetTileType(x, y, &dwEdgeMask);
+					if (pEnv)
+						{
+						int xCenter, yCenter;
+						CVector vCenter = m_pGrid->TileToVector(x, y);
+						m_Ctx.XForm.Transform(vCenter, &xCenter, &yCenter);
+
+						pEnv->Paint(m_Dest, xCenter, yCenter, x, y, dwEdgeMask);
+						}
+					}
+			};
+
+	private:
+		SViewportPaintCtx &m_Ctx;
+		CG32bitImage &m_Dest;
+		CEnvironmentGrid *m_pGrid;
+		int m_x1;
+		int m_y1;
+		int m_x2;
+		int m_y2;
+	};
+
+CEnvironmentGrid::CEnvironmentGrid (CSystemType::ETileSize iTileSize) : 
+		m_Map((iTileSize == CSystemType::sizeUnknown ? CONFIG_DATA[CSystemType::sizeHuge].iLevelSize : CONFIG_DATA[iTileSize].iLevelSize), (iTileSize == CSystemType::sizeUnknown ? CONFIG_DATA[CSystemType::sizeHuge].iScale : CONFIG_DATA[iTileSize].iScale))
 
 //	CEnvironmentGrid constructor
 
 	{
 	m_iTileCount = m_Map.GetTotalSize();
-	m_iTileSize = (dwAPIVersion >= 14 ? defaultTileSize : tileSizeCompatible);
+	m_iTileSize = (iTileSize == CSystemType::sizeUnknown ? CONFIG_DATA[CSystemType::sizeHuge].iTileSize : CONFIG_DATA[iTileSize].iTileSize);
+//	m_iTileSize = (dwAPIVersion >= 14 ? defaultTileSize : tileSizeCompatible);
 	}
 
 DWORD CEnvironmentGrid::AddEdgeFlag (DWORD dwTile, DWORD dwEdgeFlag) const
@@ -89,6 +150,8 @@ void CEnvironmentGrid::CreateArcNebula (SCreateCtx &Ctx, TArray<STileDesc> *retT
 	Metric rMaxVariation = Ctx.iWidthVariation * rHalfWidth / 100.0;
 	Metric rHalfVariation = rMaxVariation / 2.0;
 	Metric rHalfSpan = g_Pi * Ctx.iSpan / 360.0;
+
+	Metric rErode = Max(0, Min(Ctx.iErode, 100)) / 100.0;
 
 	//	Shape of the arc
 
@@ -188,6 +251,13 @@ void CEnvironmentGrid::CreateArcNebula (SCreateCtx &Ctx, TArray<STileDesc> *retT
 
 			if (rRadius > rInnerRadius && rRadius < rOuterRadius)
 				{
+				//	Check erode parameters
+
+				if (rErode > 0.0 && ErodeCheck(rErode, rRadius, rInnerRadius, rMidRadius, rOuterRadius))
+					continue;
+
+				//	Set the tile
+
 				SetTileType(x, y, Ctx.pEnv);
 
 				//	Add to list of tiles
@@ -216,6 +286,8 @@ void CEnvironmentGrid::CreateCircularNebula (SCreateCtx &Ctx, TArray<STileDesc> 
 	{
 	if (Ctx.pEnv == NULL || Ctx.pOrbitDesc == NULL || Ctx.rWidth == 0.0)
 		return;
+
+	Metric rErode = Max(0, Min(Ctx.iErode, 100)) / 100.0;
 
 	//	Compute some constants
 
@@ -297,6 +369,13 @@ void CEnvironmentGrid::CreateCircularNebula (SCreateCtx &Ctx, TArray<STileDesc> 
 
 			if (rRadius > rInnerRadius && rRadius < rOuterRadius)
 				{
+				//	Check erode parameters
+
+				if (rErode > 0.0 && ErodeCheck(rErode, rRadius, rInnerRadius, rMidRadius, rOuterRadius))
+					continue;
+
+				//	Set the tile
+
 				SetTileType(x, y, Ctx.pEnv);
 
 				//	Add to list of tiles
@@ -370,6 +449,29 @@ void CEnvironmentGrid::CreateSquareNebula (SCreateCtx &Ctx, TArray<STileDesc> *r
 				pNewTile->dwEdgeMask = 0;
 				}
 			}
+	}
+
+bool CEnvironmentGrid::ErodeCheck (Metric rErode, Metric rRadius, Metric rInnerRadius, Metric rMidRadius, Metric rOuterRadius)
+
+//	ErodeCheck
+//
+//	Returns TRUE if we skip creating a tile at this position.
+
+	{
+	Metric rChance;
+
+	if (rRadius > rMidRadius && rOuterRadius > rMidRadius)
+		rChance = rErode * (rRadius - rMidRadius) / (rOuterRadius - rMidRadius);
+
+	else if (rInnerRadius < rMidRadius)
+		rChance = rErode * (rMidRadius - rRadius) / (rMidRadius - rInnerRadius);
+
+	else
+		return false;
+
+	//	If eroded, skip
+
+	return (rChance > 0 && mathRandom(1, 100) <= (100.0 * rChance));
 	}
 
 void CEnvironmentGrid::GetNextTileType (STileMapEnumerator &i, int *retx, int *rety, CSpaceEnvironmentType **retpEnv, DWORD *retdwEdgeMask) const
@@ -473,7 +575,7 @@ void CEnvironmentGrid::MarkImages (void)
 		}
 	}
 
-void CEnvironmentGrid::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx, const CVector &vUR, const CVector &vLL)
+void CEnvironmentGrid::Paint (SViewportPaintCtx &Ctx, CG32bitImage &Dest)
 
 //	Paint
 //
@@ -482,30 +584,47 @@ void CEnvironmentGrid::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx, const 
 	{
 	DEBUG_TRY
 
-	int x, y, x1, y1, x2, y2;
+#ifdef DEBUG_PAINT_TIMINGS
+	DWORD dwStart = ::GetTickCount();
+#endif
 
-	VectorToTile(vUR, &x2, &y1);
-	VectorToTile(vLL, &x1, &y2);
+	int x1, y1, x2, y2;
+
+	VectorToTile(Ctx.vUR, &x2, &y1);
+	VectorToTile(Ctx.vLL, &x1, &y2);
 		
 	//	Increase bounds (so we can paint the edges)
 
-	x1--; y1--;
-	x2++; y2++;
+	int xStart = x1 - 1;
+	int yStart = y1 - 1;
+	int xEnd = x2 + 2;	//	+1 to expand and +1 because this is AFTER last tile.
+	int yEnd = y2 + 2;
 
-	for (x = x1; x <= x2; x++)
-		for (y = y1; y <= y2; y++)
-			{
-			DWORD dwEdgeMask;
-			CSpaceEnvironmentType *pEnv = GetTileType(x, y, &dwEdgeMask);
-			if (pEnv)
-				{
-				int xCenter, yCenter;
-				CVector vCenter = TileToVector(x, y);
-				Ctx.XForm.Transform(vCenter, &xCenter, &yCenter);
+	//	Figure out how high each horizontal chunk is
 
-				pEnv->Paint(Dest, xCenter, yCenter, x, y, dwEdgeMask);
-				}
-			}
+	int cyTotal = yEnd - yStart;
+	int cyChunk = Max(1, cyTotal / Ctx.pThreadPool->GetThreadCount());
+
+	//	Start async tasks
+
+	int y = yStart;
+	while (y < yEnd)
+		{
+		int yChunkEnd = Min(yEnd, y + cyChunk);
+		Ctx.pThreadPool->AddTask(new CTilePainter(Ctx, Dest, this, xStart, y, xEnd, yChunkEnd));
+
+		y = yChunkEnd;
+		}
+
+	Ctx.pThreadPool->Run();
+
+#ifdef DEBUG_PAINT_TIMINGS
+	g_dwTotalTime += ::GetTickCount() - dwStart;
+	g_iTimingCount++;
+
+	if ((g_iTimingCount % 100) == 0)
+		::kernelDebugLogMessage("Nebula paint time: %d.%02d", g_dwTotalTime / g_iTimingCount, (100 * g_dwTotalTime / g_iTimingCount) % 100);
+#endif
 
 	DEBUG_CATCH
 	}
@@ -520,24 +639,11 @@ void CEnvironmentGrid::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest)
 	int cxHalfTileCount = m_iTileCount / 2;
 	int cyHalfTileCount = m_iTileCount / 2;
 
-	//	Compute the size of each tile.
+	//	Compute the offset from center of tile to various corners
 
-	int cxOrigin;
-	int cyOrigin;
-	Ctx.Transform(Ctx.GetCenterPos(), &cxOrigin, &cyOrigin);
-
-	int cxTile;
-	int cyTile;
-	CVector vTile(m_iTileSize * g_KlicksPerPixel, m_iTileSize * g_KlicksPerPixel);
-	Ctx.Transform(Ctx.GetCenterPos() + vTile, &cxTile, &cyTile);
-
-	//	+1 because the floating-point conversion is sometimes off.
-
-	cxTile = AlignUp(Absolute(cxTile - cxOrigin), 2) + 1;
-	cyTile = AlignUp(Absolute(cyTile - cyOrigin), 2) + 1;
-
-	int cxHalfTile = cxTile / 2;
-	int cyHalfTile = cyTile / 2;
+	CVector vULOffset = CVector(-(m_iTileSize / 2) * g_KlicksPerPixel, (m_iTileSize / 2) * g_KlicksPerPixel);
+	CVector vLROffset = CVector((m_iTileSize / 2) * g_KlicksPerPixel, -(m_iTileSize / 2) * g_KlicksPerPixel);
+	CVector vUROffset = CVector((m_iTileSize / 2) * g_KlicksPerPixel, (m_iTileSize / 2) * g_KlicksPerPixel);
 
 	//	Paint all tiles
 
@@ -555,24 +661,40 @@ void CEnvironmentGrid::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest)
 		if (pEnv == NULL)
 			continue;
 
-		//	Get the position of the tile
+		//	Get the corners of the tile in global coordinates
 
-		CVector vPos = TileToVector(xTile, yTile);
+		CVector vCenter = TileToVector(xTile, yTile);
+		CVector vUL = vCenter + vULOffset;
+		CVector vLR = vCenter + vLROffset;
+		CVector vUR = vCenter + vUROffset;
+
+		//	Compute the position and size of the tile in map coordinates.
+		//	Since the map uses a projection, the size of the tile changes size 
+		//	depending on the position.
+
+		int x;
+		int y;
+		Ctx.Transform(vUL, &x, &y);
+
+		int x2;
+		int y2;
+		Ctx.Transform(vLR, &x2, &y2);
+
+		int x3;
+		int y3;
+		Ctx.Transform(vUR, &x3, &y3);
+
+		int cxTile = Max(x2 - x, x3 - x);
+		int cyTile = y2 - y;
 
 		//	Fade out based on distance
 
 		int iDist = Max(Absolute(xTile - cxHalfTileCount), Absolute(yTile - cyHalfTileCount));
 		DWORD dwFade = (iDist > 20 ? Min(2 * (iDist - 20), 0x80) : 0);
 
-		//	Transform to map coords
-
-		int x;
-		int y;
-		Ctx.Transform(vPos, &x, &y);
-
 		//	Paint the tile
 
-		pEnv->PaintMap(Dest, x, y, cxTile, cyTile, dwFade, dwEdgeMask);
+		pEnv->PaintMap(Dest, x, y, cxTile, cyTile, dwFade, xTile, yTile, dwEdgeMask);
 		}
 	}
 

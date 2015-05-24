@@ -503,20 +503,19 @@ ALERROR CObjectImage::OnPrepareBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CObjectImage::OnUnbindDesign (void)
+void CObjectImage::OnSweep (void)
 
-//	OnUnbindDesign
+//	OnSweep
 //
-//	Free our image
+//	Garbage collect the image, if it is not marked (i.e., in use)
 
 	{
-	if (m_bLoadOnUse)
+	if (!m_bLocked && !m_bMarked)
 		{
 		if (m_pBitmap)
 			{
 			delete m_pBitmap;
 			m_pBitmap = NULL;
-			m_bLocked = false;
 			}
 
 		if (m_pHitMask)
@@ -533,19 +532,20 @@ void CObjectImage::OnUnbindDesign (void)
 		}
 	}
 
-void CObjectImage::Sweep (void)
+void CObjectImage::OnUnbindDesign (void)
 
-//	Sweep
+//	OnUnbindDesign
 //
-//	Garbage collect the image, if it is not marked (i.e., in use)
+//	Free our image
 
 	{
-	if (!m_bLocked && !m_bMarked)
+	if (m_bLoadOnUse)
 		{
 		if (m_pBitmap)
 			{
 			delete m_pBitmap;
 			m_pBitmap = NULL;
+			m_bLocked = false;
 			}
 
 		if (m_pHitMask)

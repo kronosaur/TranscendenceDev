@@ -345,6 +345,7 @@ class CDesignType
 		inline void AddExternals (TArray<CString> *retExternals) { OnAddExternals(retExternals); }
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		static CDesignType *AsType (CDesignType *pType) { return pType; }
+		inline void ClearMark (void) { OnClearMark(); }
 		inline CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		bool FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const;
 		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_EventsCache[iEvent]; return (m_EventsCache[iEvent].pCode != NULL); }
@@ -402,6 +403,7 @@ class CDesignType
 		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { m_GlobalData.SetData(sAttrib, sData); }
 		inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
 		inline void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
+		inline void Sweep (void) { OnSweep(); }
 		inline void TopologyInitialized (void) { OnTopologyInitialized(); }
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult);
 		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText);
@@ -427,6 +429,7 @@ class CDesignType
 		virtual void OnAddExternals (TArray<CString> *retExternals) { }
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
+		virtual void OnClearMark (void) { }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const { return false; }
@@ -440,6 +443,7 @@ class CDesignType
 		virtual void OnPrepareReinit (void) { }
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) { }
 		virtual void OnReinit (void) { }
+		virtual void OnSweep (void) { }
 		virtual void OnTopologyInitialized (void) { }
 		virtual void OnUnbindDesign (void) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) { }
@@ -708,6 +712,7 @@ struct SViewportPaintCtx
 			rgbSpaceColor(CG32bitPixel::Null()),
 			pStar(NULL),
 			pVolumetricMask(NULL),
+			pThreadPool(NULL),
 			fNoSelection(false),
 			fNoRecon(false),
 			fNoDockedShips(false),
@@ -750,6 +755,8 @@ struct SViewportPaintCtx
 	CG32bitPixel rgbSpaceColor;			//	Starshine color
 	CSpaceObject *pStar;				//	Nearest star to POV
 	const CG8bitSparseImage *pVolumetricMask;	//	Volumetric mask for starshine
+
+	CThreadPool *pThreadPool;			//	Thread pool for painting.
 
 	//	Options
 
@@ -885,10 +892,8 @@ class CObjectImage : public CDesignType
 		CG32bitImage *GetShadowMask (void);
 		inline bool HasAlpha (void) { return (m_pBitmap ? (m_pBitmap->GetAlphaType() == CG32bitImage::alpha8) : false); }
 
-		inline void ClearMark (void) { m_bMarked = false; }
 		ALERROR Lock (SDesignLoadCtx &Ctx);
 		inline void Mark (void) { GetImage(NULL_STR); m_bMarked = true; }
-		void Sweep (void);
 
 		//	CDesignType overrides
 		static CObjectImage *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designImage) ? (CObjectImage *)pType : NULL); }
@@ -897,8 +902,10 @@ class CObjectImage : public CDesignType
 
 	protected:
 		//	CDesignType overrides
+		virtual void OnClearMark (void) { m_bMarked = false; }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx);
+		virtual void OnSweep (void);
 		virtual void OnUnbindDesign (void);
 
 	private:
@@ -4651,6 +4658,18 @@ class COverlayType : public CDesignType
 class CSystemType : public CDesignType
 	{
 	public:
+		enum ETileSize
+			{
+			sizeUnknown =					-1,
+
+			sizeSmall =						0,		//	128 pixels per tile
+			sizeMedium =					1,		//	256 pixels per tile
+			sizeLarge =						2,		//	512 pixels per tile
+			sizeHuge =						3,		//	1024 pixels per tile
+
+			sizeCount =						4,
+			};
+
 		enum ECachedHandlers
 			{
 			evtOnObjJumpPosAdj			= 0,
@@ -4668,6 +4687,7 @@ class CSystemType : public CDesignType
 		inline DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
 		inline CXMLElement *GetDesc (void) { return m_pDesc; }
 		inline CXMLElement *GetLocalSystemTables (void) { return m_pLocalTables; }
+		inline ETileSize GetSpaceEnvironmentTileSize (void) const { return m_iTileSize; }
 		inline Metric GetSpaceScale (void) const { return m_rSpaceScale; }
 		inline Metric GetTimeScale (void) const { return m_rTimeScale; }
 		inline bool HasExtraEncounters (void) const { return !m_bNoExtraEncounters; }
@@ -4687,6 +4707,7 @@ class CSystemType : public CDesignType
 		DWORD m_dwBackgroundUNID;
 		Metric m_rSpaceScale;				//	Klicks per pixel
 		Metric m_rTimeScale;				//	Seconds of game time per real time
+		ETileSize m_iTileSize;				//	Tile size for environment
 
 		CXMLElement *m_pDesc;				//	System definition
 		CXMLElement *m_pLocalTables;		//	Local system tables
@@ -5412,7 +5433,7 @@ class CPower : public CDesignType
 class CSpaceEnvironmentType : public CDesignType
 	{
 	public:
-		CSpaceEnvironmentType (void) { }
+		CSpaceEnvironmentType (void) : m_iTileSize(0), m_bMarked(false) { }
 
 		ALERROR FireOnUpdate (CSpaceObject *pObj, CString *retsError = NULL);
 		inline Metric GetDragFactor (void) { return m_rDragFactor; }
@@ -5422,7 +5443,7 @@ class CSpaceEnvironmentType : public CDesignType
 		inline bool IsSRSJammer (void) { return m_bSRSJammer; }
 		void Paint (CG32bitImage &Dest, int x, int y, int xTile, int yTile, DWORD dwEdgeMask);
 		void PaintLRS (CG32bitImage &Dest, int x, int y);
-		void PaintMap (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, DWORD dwFade, DWORD dwEdgeMask);
+		void PaintMap (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, DWORD dwFade, int xTile, int yTile, DWORD dwEdgeMask);
 
 		//	CDesignType overrides
 		static CSpaceEnvironmentType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSpaceEnvironmentType) ? (CSpaceEnvironmentType *)pType : NULL); }
@@ -5431,8 +5452,10 @@ class CSpaceEnvironmentType : public CDesignType
 	protected:
 		//	CDesignType overrides
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
+		virtual void OnClearMark (void) { m_bMarked = false; }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual void OnMarkImages (void);
+		virtual void OnSweep (void);
 
 	private:
 		enum EConstants
@@ -5442,7 +5465,8 @@ class CSpaceEnvironmentType : public CDesignType
 
 		struct STileDesc
 			{
-			CG16bitRegion Region;
+			CG8bitImage Mask;			//	Mask for edges
+			CG16bitRegion Region;		//	Region created from mask
 			};
 
 		enum EEdgeTypes
@@ -5481,6 +5505,7 @@ class CSpaceEnvironmentType : public CDesignType
 		void CreateAutoTileSet (int iVariants);
 		void CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc *retTile);
 		void CreateTileSet (const CObjectImageArray &Edges);
+		int GetVariantOffset (int xTile, int yTile);
 
 		CObjectImageArray m_Image;
 		CObjectImageArray m_EdgeMask;
@@ -5503,6 +5528,7 @@ class CSpaceEnvironmentType : public CDesignType
 		int m_iTileSize;				//	Size of tiles (in pixels)
 		int m_iVariantCount;			//	Number of variants
 		TArray<STileDesc> m_TileSet;
+		bool m_bMarked;					//	Currently in use
 
 		static SEdgeDesc EDGE_DATA[TILES_IN_TILE_SET];
 	};

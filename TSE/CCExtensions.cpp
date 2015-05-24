@@ -528,12 +528,14 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_ANGLE_OFFSET				CONSTLIT("angleOffset")
 #define FIELD_ARC_OFFSET				CONSTLIT("arcOffset")
 #define FIELD_CENTER					CONSTLIT("center")
+#define FIELD_ERODE						CONSTLIT("erode")
 #define FIELD_HEIGHT					CONSTLIT("height")
 #define FIELD_LENGTH					CONSTLIT("length")
 #define FIELD_ORBIT						CONSTLIT("orbit")
 #define FIELD_RADIUS_OFFSET				CONSTLIT("radiusOffset")
 #define FIELD_ROTATION					CONSTLIT("rotation")
 #define FIELD_WIDTH						CONSTLIT("width")
+#define FIELD_WIDTH_VARIATION			CONSTLIT("widthVariation")
 
 #define SHAPE_ARC						CONSTLIT("arc")
 #define SHAPE_ORBITAL					CONSTLIT("orbital")
@@ -9432,8 +9434,9 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid orbit object"), pOptions->GetElement(FIELD_ORBIT));
 
 				CreateCtx.pOrbitDesc = &OrbitDesc;
-				CreateCtx.rWidth = pOptions->GetElement(FIELD_WIDTH)->GetIntegerValue() * LIGHT_SECOND;
-				CreateCtx.iWidthVariation = 100;
+				CreateCtx.rWidth = pOptions->GetIntegerAt(FIELD_WIDTH) * LIGHT_SECOND;
+				CreateCtx.iWidthVariation = pOptions->GetIntegerAt(FIELD_WIDTH_VARIATION, 100);
+				CreateCtx.iErode = pOptions->GetIntegerAt(FIELD_ERODE);
 
 				pEnvironment->CreateCircularNebula(CreateCtx, NULL);
 				}
@@ -9444,9 +9447,10 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid orbit object"), pOptions->GetElement(FIELD_ORBIT));
 
 				CreateCtx.pOrbitDesc = &OrbitDesc;
-				CreateCtx.rWidth = pOptions->GetElement(FIELD_WIDTH)->GetIntegerValue() * LIGHT_SECOND;
-				CreateCtx.iWidthVariation = 100;
-				CreateCtx.iSpan = pOptions->GetElement(FIELD_LENGTH)->GetIntegerValue();
+				CreateCtx.rWidth = pOptions->GetIntegerAt(FIELD_WIDTH) * LIGHT_SECOND;
+				CreateCtx.iWidthVariation = pOptions->GetIntegerAt(FIELD_WIDTH_VARIATION, 100);
+				CreateCtx.iSpan = pOptions->GetIntegerAt(FIELD_LENGTH);
+				CreateCtx.iErode = pOptions->GetIntegerAt(FIELD_ERODE);
 
 				pEnvironment->CreateArcNebula(CreateCtx, NULL);
 				}
@@ -9458,8 +9462,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				COrbit OrbitDesc(vPos, 0.0);
 
 				CreateCtx.pOrbitDesc = &OrbitDesc;
-				CreateCtx.rWidth = pOptions->GetElement(FIELD_WIDTH)->GetIntegerValue() * LIGHT_SECOND;
-				CreateCtx.rHeight = pOptions->GetElement(FIELD_HEIGHT)->GetIntegerValue() * LIGHT_SECOND;
+				CreateCtx.rWidth = pOptions->GetIntegerAt(FIELD_WIDTH) * LIGHT_SECOND;
+				CreateCtx.rHeight = pOptions->GetIntegerAt(FIELD_HEIGHT) * LIGHT_SECOND;
 
 				pEnvironment->CreateSquareNebula(CreateCtx, NULL);
 				}

@@ -11,9 +11,15 @@
 #define NO_EXTRA_ENCOUNTERS_ATTRIB				CONSTLIT("noExtraEncounters")
 #define NO_RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("noRandomEncounters")
 #define SPACE_SCALE_ATTRIB						CONSTLIT("spaceScale")
+#define SPACE_ENVIRONMENT_TILE_SIZE_ATTRIB		CONSTLIT("spaceEnvironmentTileSize")
 #define TIME_SCALE_ATTRIB						CONSTLIT("timeScale")
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
+
+#define SIZE_SMALL								CONSTLIT("small")
+#define SIZE_MEDIUM								CONSTLIT("medium")
+#define SIZE_LARGE								CONSTLIT("large")
+#define SIZE_HUGE								CONSTLIT("huge")
 
 #define STR_NONE								CONSTLIT("none")
 
@@ -177,6 +183,24 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 	else
 		m_dwBackgroundUNID = UNID_DEFAULT_SYSTEM_BACKGROUND;
+
+	//	Tile size
+
+	if (pDesc->FindAttribute(SPACE_ENVIRONMENT_TILE_SIZE_ATTRIB, &sAttrib))
+		{
+		if (strEquals(sAttrib, SIZE_SMALL))
+			m_iTileSize = sizeSmall;
+		else if (strEquals(sAttrib, SIZE_MEDIUM))
+			m_iTileSize = sizeMedium;
+		else if (strEquals(sAttrib, SIZE_LARGE))
+			m_iTileSize = sizeLarge;
+		else if (strEquals(sAttrib, SIZE_HUGE))
+			m_iTileSize = sizeHuge;
+		else
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Invalid spaceEnvironmentTileSize: %s."), sAttrib));
+		}
+	else
+		m_iTileSize = (GetAPIVersion() >= 14 ? sizeSmall : sizeLarge);
 
 	//	Options
 

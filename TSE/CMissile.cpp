@@ -259,7 +259,7 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	pMissile->m_pHit = NULL;
 	pMissile->m_iRotation = iRotation;
 	pMissile->m_pTarget = pTarget;
-	pMissile->m_fDestroyed = false;
+	pMissile->m_fDestroyOnAnimationDone = false;
 	pMissile->m_fReflection = false;
 	pMissile->m_fDetonate = false;
 	pMissile->m_fPassthrough = false;
@@ -411,8 +411,8 @@ CString CMissile::DebugCrashInfo (void)
 	{
 	CString sResult;
 
-	if (m_fDestroyed)
-		sResult.Append(CONSTLIT("m_fDestroyed: true\r\n"));
+	if (m_fDestroyOnAnimationDone)
+		sResult.Append(CONSTLIT("m_fDestroyOnAnimationDone: true\r\n"));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pDesc: %s\r\n"), m_pDesc->m_sUNID));
 	sResult.Append(strPatternSubst(CONSTLIT("m_Source: %s\r\n"), CSpaceObject::DebugDescribe(m_Source.GetObj())));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pHit: %s\r\n"), CSpaceObject::DebugDescribe(m_pHit)));
@@ -654,7 +654,7 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 	//	If we're destroyed, then no further processing is needed
 
-	if (m_fDestroyed)
+	if (m_fDestroyOnAnimationDone)
 		{
 		//	Clear m_pHit so that we can tell the difference between the single
 		//	frame in which we hit and any subsequent frames (when we're painting
@@ -739,7 +739,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		Ctx.iDestiny = GetDestiny();
 		Ctx.iMaxLength = (int)((g_SecondsPerUpdate * Max(1, m_iTick) * m_pDesc->GetRatedSpeed()) / g_KlicksPerPixel);
 
-		if (!m_fDestroyed && (m_pHit == NULL || m_fPassthrough))
+		if (!m_fDestroyOnAnimationDone && (m_pHit == NULL || m_fPassthrough))
 			m_pPainter->Paint(Dest, x, y, Ctx);
 		else if (m_pHit)
 			m_pPainter->PaintHit(Dest, x, y, m_vHitPos, Ctx);
@@ -762,7 +762,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Paint image (deprecated method)
 
-	if (m_pPainter == NULL && !m_fDestroyed && m_pHit == NULL)
+	if (m_pPainter == NULL && !m_fDestroyOnAnimationDone && m_pHit == NULL)
 		{
 		m_pDesc->m_Image.PaintImage(Dest,
 				x,
@@ -797,7 +797,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		int iCount = ComputeVaporTrail();
 		int iFadeStep = (VAPOR_TRAIL_OPACITY / m_pDesc->GetVaporTrailLength());
 		int iFade = Max(0, m_pDesc->GetVaporTrailLength() - (m_iHitDir - m_iLifeLeft));
-		int iOpacity = (!m_fDestroyed ? VAPOR_TRAIL_OPACITY : (iFadeStep * iFade));
+		int iOpacity = (!m_fDestroyOnAnimationDone ? VAPOR_TRAIL_OPACITY : (iFadeStep * iFade));
 
 		//	HACK: We store the maximum life left in m_iHitDir after the missile
 		//	is destroyed. This saves us from having to do a new variable.
@@ -805,7 +805,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		//	NOTE: We still check to make sure we don't go negative so we don't
 		//	overflow the array.
 
-		int iStart = Max(0, (!m_fDestroyed ? 0 : 1 + (m_iHitDir - m_iLifeLeft)));
+		int iStart = Max(0, (!m_fDestroyOnAnimationDone ? 0 : 1 + (m_iHitDir - m_iLifeLeft)));
 
 		for (int i = iStart; i < iCount; i++)
 			{
@@ -932,7 +932,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 1)
 		{
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_fDestroyed =		((dwLoad & 0x00000001) ? true : false);
+		m_fDestroyOnAnimationDone =		((dwLoad & 0x00000001) ? true : false);
 		m_fReflection =		((dwLoad & 0x00000002) ? true : false);
 		m_fDetonate =		((dwLoad & 0x00000004) ? true : false);
 		m_fPassthrough =	((dwLoad & 0x00000008) ? true : false);
@@ -964,7 +964,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	//	If we're already destroyed, then just update the timer until the
 	//	vapor trail fades out
 
-	if (m_fDestroyed)
+	if (m_fDestroyOnAnimationDone)
 		{
 		//	Update the painter
 
@@ -1275,7 +1275,7 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	//	Flags
 
 	dwSave = 0;
-	dwSave |= (m_fDestroyed ?	0x00000001 : 0);
+	dwSave |= (m_fDestroyOnAnimationDone ?	0x00000001 : 0);
 	dwSave |= (m_fReflection ?	0x00000002 : 0);
 	dwSave |= (m_fDetonate ?	0x00000004 : 0);
 	dwSave |= (m_fPassthrough ? 0x00000008 : 0);
@@ -1300,7 +1300,7 @@ void CMissile::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransfo
 //	Paints the object on an LRS
 
 	{
-	if (!m_fDestroyed)
+	if (!m_fDestroyOnAnimationDone)
 		Dest.DrawDot(x, y, 
 				CG32bitPixel(255, 255, 0), 
 				markerSmallRound);
@@ -1315,7 +1315,7 @@ bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
 	{
 	DEBUG_TRY
 
-	if (m_fDestroyed)
+	if (m_fDestroyOnAnimationDone)
 		return false;
 
 	//	Figure out the coordinates of vPos relative to the center of the
@@ -1365,7 +1365,7 @@ bool CMissile::SetMissileFade (void)
 
 	//	Otherwise, mark destroyed and remember fade time
 
-	m_fDestroyed = true;
+	m_fDestroyOnAnimationDone = true;
 	m_iLifeLeft = iFadeLife;
 
 	//	HACK: We use m_iHitDir to remember the maximum fade life (we need this

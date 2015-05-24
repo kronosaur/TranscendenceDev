@@ -319,7 +319,7 @@ bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc)
 	{
 	//	Nil means default orbit
 
-	if (pList->IsNil())
+	if (pList == NULL || pList->IsNil())
 		{
 		*retOrbitDesc = COrbit();
 		return true;
