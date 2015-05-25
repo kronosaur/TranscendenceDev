@@ -2701,6 +2701,24 @@ class CSpaceObject : public CObject
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual void SetSovereign (CSovereign *pSovereign) { }
 
+		//	A hidden object is not painted.
+
+		virtual bool IsHidden (void) const { return false; }
+
+		//	An inactive object is no longer considered to be in the system. 
+		//	A ship inside a gate (but not yet removed) is inactive. A suspended object 
+		//	is also inactive. A missile object which is dead but still painting exhaust
+		//	is inactive.
+		//
+		//	NOTE: An object could be inactive but not hidden (e.g., a missile).
+
+		virtual bool IsInactive (void) const { return IsSuspended(); }
+
+		//	A suspended object is out of the system but may at some point return.
+		//	For example, a ship that has returned to a carrier is suspended.
+
+		virtual bool IsSuspended (void) const { return false; }
+
 		//	...for active/intelligent objects (ships, stations, etc.)
 		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
 		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
@@ -2818,8 +2836,6 @@ class CSpaceObject : public CObject
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
-		virtual bool IsInactive (void) const { return IsSuspended(); }
-		virtual bool IsSuspended (void) const { return false; }
 		virtual void OnDocked (CSpaceObject *pObj) { }
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
 		virtual void Refuel (int iFuel) { }

@@ -387,6 +387,7 @@ class CMissile : public CSpaceObject
 		virtual CDesignType *GetType (void) const { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return m_pDesc; }
 		virtual bool HasAttribute (const CString &sAttribute) const;
+		virtual bool IsInactive (void) const { return (m_fDestroyOnAnimationDone); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds);
 		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
@@ -974,6 +975,7 @@ class CShip : public CSpaceObject
 		virtual bool IsAngryAt (CSpaceObject *pObj);
 		virtual bool IsBlind (void) { return m_iBlindnessTimer != 0; }
 		virtual bool IsDisarmed (void) { return m_fDisarmedByOverlay || m_iDisarmedTimer != 0; }
+		virtual bool IsHidden (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsIdentified (void) { return m_fIdentified; }
 		virtual bool IsInactive (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsKnown (void) { return m_fKnown; }

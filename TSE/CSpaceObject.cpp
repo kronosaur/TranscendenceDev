@@ -5438,7 +5438,7 @@ void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 //	Paint the object
 
 	{
-	if (IsInactive())
+	if (IsHidden())
 		{
 		SetPainted();
 		ClearPaintNeeded();
