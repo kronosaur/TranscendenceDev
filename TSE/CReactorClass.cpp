@@ -149,7 +149,7 @@ ALERROR CReactorClass::InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 
 	if (bShipClass)
 		{
-		retDesc->iMaxPower = pDesc->GetAttributeIntegerBounded(REACTOR_POWER_ATTRIB, 0, -1, 100);
+		retDesc->iMaxPower = pDesc->GetAttributeIntegerBounded(REACTOR_POWER_ATTRIB, 0, -1, 0);
 		retDesc->iMaxFuel = pDesc->GetAttributeIntegerBounded(FUEL_CAPACITY_ATTRIB, 0, -1, retDesc->iMaxPower * 250);
 		retDesc->iPowerPerFuelUnit = pDesc->GetAttributeIntegerBounded(REACTOR_EFFICIENCY_ATTRIB, 0, -1, g_MWPerFuelUnit);
 		}
