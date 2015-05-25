@@ -110,13 +110,13 @@ static const SOrderTypeData g_OrderTypes[] =
 		{	"gateOnStationDestroyed",	"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"patrol",					"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
 		{	"escort",					"o",	"2",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP	},
-		{	"scavenge",					"-",	"-",	0 },
+		{	"scavenge",					"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 
 		{	"followPlayerThroughGate",	"o",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
 		{	"attackNearestEnemy",		"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"tradeRoute",				"-",	"-",	0 },
-		{	"wander",					"-",	"-",	0 },
-		{	"loot",						"o",	"-",	0 },
+		{	"tradeRoute",				"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
+		{	"wander",					"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
+		{	"loot",						"o",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 
 		{	"hold",						"-",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"mine",						"o",	"-",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
@@ -139,7 +139,7 @@ static const SOrderTypeData g_OrderTypes[] =
 		{	"attackHold",				"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
 		{	"attackStation",			"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED },
 		{	"fireEvent",				"o",	"s",	0 },
-		{	"waitForUndock",			"o",	"i",	0 },
+		{	"waitForUndock",			"o",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 		{	"sendMessage",				"o",	"s",	0 },
 
 		{	"attackArea",				"o",	"2",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },

@@ -443,11 +443,9 @@ void CStandardShipAI::OnBehavior (void)
 		case stateDeterTargetWhileLootDocking:
 			{
 			ASSERT(m_pTarget);
+			ASSERT(m_pDest);
 
-			CVector vDest = m_pDest->GetPos() - m_pShip->GetPos();
-			Metric rDestDist2 = vDest.Dot(vDest);
-			m_AICtx.ImplementCloseOnImmobileTarget(m_pShip, m_pDest, vDest, rDestDist2);
-
+			m_AICtx.ImplementDocking(m_pShip, m_pDest);
 			m_AICtx.ImplementAttackTarget(m_pShip, m_pTarget, true);
 			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip, m_pTarget);
 
