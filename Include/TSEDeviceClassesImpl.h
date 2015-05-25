@@ -44,6 +44,7 @@ class CAutoDefenseClass : public CDeviceClass
 
 		TargetingSystemTypes m_iTargeting;
 		CSpaceObject::Criteria m_TargetCriteria;
+		Metric m_rInterceptRange;
 
 		int m_iRechargeTicks;
 		CDeviceClassRef m_pWeapon;

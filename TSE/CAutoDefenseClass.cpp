@@ -7,13 +7,14 @@
 
 #define RECHARGE_TIME_ATTRIB					CONSTLIT("rechargeTime")
 #define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
+#define INTERCEPT_RANGE_ATTRIB					CONSTLIT("interceptRange")
 #define TARGET_ATTRIB							CONSTLIT("target")
 #define TARGET_CRITERIA_ATTRIB					CONSTLIT("targetCriteria")
 #define WEAPON_ATTRIB							CONSTLIT("weapon")
 
 #define MISSILES_TARGET							CONSTLIT("missiles")
 
-#define MAX_INTERCEPT_DISTANCE					(10.0 * LIGHT_SECOND)
+const int DEFAULT_INTERCEPT_RANGE =				10;
 
 CAutoDefenseClass::CAutoDefenseClass (void) : CDeviceClass(NULL)
 
@@ -161,7 +162,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice,
 
 			case trgMissiles:
 				{
-				Metric rBestDist2 = MAX_INTERCEPT_DISTANCE * MAX_INTERCEPT_DISTANCE;
+				Metric rBestDist2 = m_rInterceptRange * m_rInterceptRange;
 
 				for (i = 0; i < pSystem->GetObjectCount(); i++)
 					{
@@ -202,7 +203,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice,
 				if (m_TargetCriteria.rMaxRadius < g_InfiniteDistance)
 					rBestDist2 = (m_TargetCriteria.rMaxRadius * m_TargetCriteria.rMaxRadius);
 				else
-					rBestDist2 = MAX_INTERCEPT_DISTANCE * MAX_INTERCEPT_DISTANCE;
+					rBestDist2 = m_rInterceptRange * m_rInterceptRange;
 
 				//	Now look for the nearest object
 
@@ -311,6 +312,11 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 			return ERR_FAIL;
 			}
 		}
+
+	//	Intercept range
+
+	int iInterceptRange = pDesc->GetAttributeIntegerBounded(INTERCEPT_RANGE_ATTRIB, 0, -1, DEFAULT_INTERCEPT_RANGE);
+	pDevice->m_rInterceptRange = (Metric)(iInterceptRange * LIGHT_SECOND);
 
 	//	Done
 
