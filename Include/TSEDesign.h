@@ -4839,6 +4839,11 @@ class CTradingDesc
 			FLAG_NO_PLAYER_ADJ =		0x00000004,	//	Do not compute special player adjs
 			};
 
+		enum PriceFlags
+			{
+			PRICE_UPGRADE_INSTALL_ONLY =	0x00000001,	//	Install available only if you buy item
+			};
+
 		CTradingDesc (void);
 		~CTradingDesc (void);
 
@@ -4850,8 +4855,8 @@ class CTradingDesc
 		int Charge (CSpaceObject *pObj, int iCharge);
 		bool GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
 		bool GetArmorRepairPrice (CSpaceObject *pObj, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
-		bool GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
-		bool GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice) const;
+		bool GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
+		bool GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
 		inline CEconomyType *GetEconomyType (void) { return m_pCurrency; }
 		inline int GetMaxCurrency (void) { return m_iMaxCurrency; }
 		int GetMaxLevelMatched (ETradeServiceTypes iService) const;
@@ -4880,6 +4885,7 @@ class CTradingDesc
 
 			FLAG_ACTUAL_PRICE =			0x00000004,	//	TRUE if we compute actual price
 			FLAG_INVENTORY_ADJ =		0x00000008,	//	TRUE if we adjust the inventory
+			FLAG_UPGRADE_INSTALL_ONLY =	0x00000020,	//	TRUE if we must purchase an item to install
 
 			//	DEPRECATED: We don't store these flags, but we require the values
 			//	for older versions.

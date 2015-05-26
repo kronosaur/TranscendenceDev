@@ -23,6 +23,7 @@
 #define MESSAGE_ID_ATTRIB						CONSTLIT("messageID")
 #define PRICE_ADJ_ATTRIB						CONSTLIT("priceAdj")
 #define REPLENISH_ATTRIB						CONSTLIT("replenish")
+#define UPGRADE_INSTALL_ONLY_ATTRIB				CONSTLIT("upgradeInstallOnly")
 
 #define CONSTANT_PREFIX							CONSTLIT("constant")
 #define UNAVAILABLE_PREFIX						CONSTLIT("unavailable")
@@ -309,6 +310,9 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CT
 			if (!pCommodity->InventoryAdj.IsEmpty())
 				pCommodity->dwFlags |= FLAG_INVENTORY_ADJ;
 
+			if (pLine->GetAttributeBool(UPGRADE_INSTALL_ONLY_ATTRIB))
+				pCommodity->dwFlags |= FLAG_UPGRADE_INSTALL_ONLY;
+
 			//	Set ID
 
 			pCommodity->sID = pTrade->ComputeID(pCommodity->iService, pCommodity->pItemType.GetUNID(), sCriteria, pCommodity->dwFlags);
@@ -481,7 +485,7 @@ bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, const CItem &Item, i
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
+bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
 
 //	GetDeviceInstallPrice
 //
@@ -514,13 +518,20 @@ bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item,
 			if (retsReason)
 				*retsReason = m_List[i].sMessageID;
 
+			if (retdwPriceFlags)
+				{
+				(*retdwPriceFlags) = 0;
+				if (m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY)
+					(*retdwPriceFlags) |= PRICE_UPGRADE_INSTALL_ONLY;
+				}
+
 			return true;
 			}
 
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice) const
+bool CTradingDesc::GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
 
 //	GetDeviceRemovePrice
 //
@@ -545,6 +556,13 @@ bool CTradingDesc::GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, 
 
 			if (retiPrice)
 				*retiPrice = iPrice;
+
+			if (retdwPriceFlags)
+				{
+				(*retdwPriceFlags) = 0;
+				if (m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY)
+					(*retdwPriceFlags) |= PRICE_UPGRADE_INSTALL_ONLY;
+				}
 
 			return true;
 			}

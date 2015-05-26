@@ -78,6 +78,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define FIELD_DESC_ID							CONSTLIT("descID")
 #define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
 #define FIELD_PRICE								CONSTLIT("price")
+#define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
 #define ORDER_DOCKED							CONSTLIT("docked")
 
@@ -3226,10 +3227,12 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 		//	canInstall: True or Nil
 		//	price: Install price
 		//	descID: Message ID for description of install attempt
+		//	upgradeInstallOnly: True if we only install on upgrade
 
 		CString sMessageID;
 		int iPrice;
-		bool bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID);
+		DWORD dwPriceFlags;
+		bool bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID, &dwPriceFlags);
 
 		//	Create the structure
 
@@ -3238,6 +3241,8 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
 		if (!sMessageID.IsBlank())
 			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
+		if (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY)
+			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
 
 		return pResult;
 		}
@@ -3248,14 +3253,16 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 		//	canInstall: True or Nil
 		//	price: Install price
 		//	descID: Message ID for description of install attempt
+		//	upgradeInstallOnly: True if we only install on upgrade
 
 		CString sMessageID;
 		int iPrice;
 		bool bCanInstall;
+		DWORD dwPriceFlags = 0;
 		if (Item.IsArmor())
 			bCanInstall = GetArmorInstallPrice(Item, 0, &iPrice, &sMessageID);
 		else if (Item.IsDevice())
-			bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID);
+			bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID, &dwPriceFlags);
 		else
 			bCanInstall = false;
 
@@ -3266,6 +3273,8 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
 		if (!sMessageID.IsBlank())
 			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
+		if (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY)
+			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
 
 		return pResult;
 		}

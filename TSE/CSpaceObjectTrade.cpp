@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+#define STR_STATION_DESTROYED					CONSTLIT("abandoned")
+
 const int DAYS_TO_REFRESH_INVENTORY =	5;
 
 void CSpaceObject::AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
@@ -36,6 +38,9 @@ bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *
 //	Returns the price to install the given armor
 
 	{
+	if (IsAbandoned())
+		return false;
+
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
@@ -76,6 +81,9 @@ bool CSpaceObject::GetArmorRepairPrice (const CItem &Item, int iHPToRepair, DWOR
 //	Returns the price to repair the given number of HP for the given armor item.
 
 	{
+	if (IsAbandoned())
+		return false;
+
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
@@ -121,6 +129,9 @@ int CSpaceObject::GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCou
 
 	{
 	int iPrice;
+
+	if (IsAbandoned())
+		return false;
 
 	//	First see if we have an override
 
@@ -181,7 +192,7 @@ DWORD CSpaceObject::GetDefaultEconomyUNID (void)
 	return DEFAULT_ECONOMY_UNID;
 	}
 
-bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason)
+bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags)
 
 //	GetDeviceInstallPrice
 //
@@ -193,10 +204,13 @@ bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int 
 	if (retsReason)
 		*retsReason = NULL_STR;
 
+	if (IsAbandoned())
+		return false;
+
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice, retsReason))
+	if (pTradeOverride && pTradeOverride->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice, retsReason, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -210,7 +224,7 @@ bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int 
 		}
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice, retsReason))
+	if (pTrade && pTrade->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice, retsReason, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, we do not install
@@ -218,17 +232,20 @@ bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int 
 	return false;
 	}
 
-bool CSpaceObject::GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice)
+bool CSpaceObject::GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags)
 
 //	GetDeviceRemovePrice
 //
 //	Returns the price to install the given device
 
 	{
+	if (IsAbandoned())
+		return false;
+
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetDeviceRemovePrice(this, Item, dwFlags, retiPrice))
+	if (pTradeOverride && pTradeOverride->GetDeviceRemovePrice(this, Item, dwFlags, retiPrice, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -238,7 +255,7 @@ bool CSpaceObject::GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetDeviceRemovePrice(this, Item, dwFlags, retiPrice))
+	if (pTrade && pTrade->GetDeviceRemovePrice(this, Item, dwFlags, retiPrice, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, we do not remove
@@ -255,6 +272,9 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 
 	{
 	int i;
+
+	if (IsAbandoned())
+		return false;
 
 	//	See if we have an override
 
@@ -346,6 +366,9 @@ int CSpaceObject::GetSellPrice (const CItem &Item, DWORD dwFlags)
 	{
 	bool bHasTradeDirective = false;
 	int iPrice = -1;
+
+	if (IsAbandoned())
+		return false;
 
 	//	See if we have an override price
 
