@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+#define PANES_TAG					CONSTLIT("Panes")
+
 CDockScreenType::CDockScreenType (void) : 
 		m_pDesc(NULL)
 
@@ -19,6 +21,35 @@ CDockScreenType::~CDockScreenType (void)
 	{
 	if (m_pDesc)
 		delete m_pDesc;
+	}
+
+CXMLElement *CDockScreenType::GetPane (const CString &sPane)
+
+//	GetPane
+//
+//	Returns a dock screen pane
+
+	{
+	//	First check to see if we have it.
+
+	CXMLElement *pPanes;
+	if (m_pDesc
+			&& (pPanes = m_pDesc->GetContentElementByTag(PANES_TAG)))
+		{
+		CXMLElement *pPane = pPanes->GetContentElementByTag(sPane);
+		if (pPane)
+			return pPane;
+		}
+
+	//	Otherwise, see if a base class has it.
+
+	CDockScreenType *pBaseClass = CDockScreenType::AsType(GetInheritFrom());
+	if (pBaseClass)
+		return pBaseClass->GetPane(sPane);
+
+	//	Otherwise, not found
+
+	return NULL;
 	}
 
 CString CDockScreenType::GetStringUNID (CDesignType *pRoot, const CString &sScreen)

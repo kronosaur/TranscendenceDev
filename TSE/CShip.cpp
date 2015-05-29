@@ -2331,38 +2331,6 @@ Metric CShip::GetCargoSpaceLeft (void)
 	return Max(0.0, rCargoSpace - GetCargoMass());
 	}
 
-ItemCategories CShip::GetCategoryForNamedDevice (DeviceNames iDev)
-
-//	GetCategoryForNamedDevice
-//
-//	Returns the device category that is selected for
-//	this named device slot
-
-	{
-	switch (iDev)
-		{
-		case devPrimaryWeapon:
-			return itemcatWeapon;
-
-		case devMissileWeapon:
-			return itemcatLauncher;
-
-		case devShields:
-			return itemcatShields;
-
-		case devDrive:
-			return itemcatDrive;
-
-		case devCargo:
-			return itemcatCargoHold;
-
-		case devReactor:
-			return itemcatReactor;
-		}
-
-	return itemcatMiscDevice;
-	}
-
 int CShip::GetCombatPower (void)
 
 //	GetCombatPower
@@ -3218,7 +3186,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	m_pController->OnArmorRepaired(iSect);
 	}
 
-void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot)
+void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot, int iSlotPosIndex)
 
 //	InstallItemAsDevice
 //
@@ -3236,6 +3204,13 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	CalcDeviceToReplace(ItemList.GetItemAtCursor(), iDeviceSlot, &iSlotToReplace);
 	if (iSlotToReplace != -1)
 		{
+		//	If we're replacing a device, remember the slot position so that
+		//	we can preserve it for the new device.
+		//	(But only if we're the same kind of device).
+
+		if (m_Devices[iSlotToReplace].GetCategory() == ItemList.GetItemAtCursor().GetType()->GetCategory())
+			iSlotPosIndex = m_Devices[iSlotToReplace].GetSlotPosIndex();
+
 		//	If we're upgrading/downgrading a reactor, then remember the old fuel level
 
 		int iOldFuel = -1;
@@ -3275,6 +3250,11 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	//	Update the structure
 
 	pDevice->Install(this, ItemList, iDeviceSlot);
+
+	//	If we have a slot positing index, set it now
+
+	if (iSlotPosIndex != -1)
+		pDevice->SetSlotPosIndex(iSlotPosIndex);
 
 	//	Adjust the named devices
 

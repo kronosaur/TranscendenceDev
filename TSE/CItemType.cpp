@@ -469,6 +469,38 @@ ItemCategories CItemType::GetCategory (void) const
 		}
 	}
 
+ItemCategories CItemType::GetCategoryForNamedDevice (DeviceNames iDev)
+
+//	GetCategoryForNamedDevice
+//
+//	Returns the device category that is selected for
+//	this named device slot
+
+	{
+	switch (iDev)
+		{
+		case devPrimaryWeapon:
+			return itemcatWeapon;
+
+		case devMissileWeapon:
+			return itemcatLauncher;
+
+		case devShields:
+			return itemcatShields;
+
+		case devDrive:
+			return itemcatDrive;
+
+		case devCargo:
+			return itemcatCargoHold;
+
+		case devReactor:
+			return itemcatReactor;
+		}
+
+	return itemcatMiscDevice;
+	}
+
 const CString &CItemType::GetDesc (void) const
 
 //	GetDesc

@@ -430,6 +430,39 @@ int CSpaceObject::GetSellPrice (const CItem &Item, DWORD dwFlags)
 	return iPrice;
 	}
 
+int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService)
+
+//	GetTradeMaxLevel
+//
+//	Returns the max tech level for this service.
+
+	{
+	int iMaxLevel = -1;
+
+	//	See if we have an override
+
+	CTradingDesc *pTradeOverride = GetTradeDescOverride();
+	if (pTradeOverride)
+		{
+		int iLevel = pTradeOverride->GetMaxLevelMatched(iService);
+		if (iLevel > iMaxLevel)
+			iMaxLevel = iLevel;
+		}
+
+	//	Ask base type
+
+	CDesignType *pType = GetType();
+	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
+	if (pTrade)
+		{
+		int iLevel = pTrade->GetMaxLevelMatched(iService);
+		if (iLevel > iMaxLevel)
+			iMaxLevel = iLevel;
+		}
+
+	return iMaxLevel;
+	}
+
 void CSpaceObject::SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency)
 
 //	SetTradeDesc

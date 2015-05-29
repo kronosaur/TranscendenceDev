@@ -586,6 +586,11 @@ int CTradingDesc::GetMaxLevelMatched (ETradeServiceTypes iService) const
 	for (i = 0; i < m_List.GetCount(); i++)
 		if (m_List[i].iService == iService)
 			{
+			CString sPrefix;
+			int iPriceAdj = m_List[i].PriceAdj.EvalAsInteger(NULL, &sPrefix);
+			if (strEquals(sPrefix, UNAVAILABLE_PREFIX))
+				continue;
+
 			int iLevel;
 			if (m_List[i].pItemType)
 				iLevel = m_List[i].pItemType->GetLevel();

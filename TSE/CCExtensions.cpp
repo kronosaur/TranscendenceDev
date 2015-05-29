@@ -528,12 +528,14 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_ANGLE_OFFSET				CONSTLIT("angleOffset")
 #define FIELD_ARC_OFFSET				CONSTLIT("arcOffset")
 #define FIELD_CENTER					CONSTLIT("center")
+#define FIELD_DEVICE_SLOT				CONSTLIT("deviceSlot")
 #define FIELD_ERODE						CONSTLIT("erode")
 #define FIELD_HEIGHT					CONSTLIT("height")
 #define FIELD_LENGTH					CONSTLIT("length")
 #define FIELD_ORBIT						CONSTLIT("orbit")
 #define FIELD_RADIUS_OFFSET				CONSTLIT("radiusOffset")
 #define FIELD_ROTATION					CONSTLIT("rotation")
+#define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex")
 #define FIELD_WIDTH						CONSTLIT("width")
 #define FIELD_WIDTH_VARIATION			CONSTLIT("widthVariation")
 
@@ -1310,6 +1312,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'linkedFireOptions\n"
 			"   'pos\n"
 			"   'removeDevicePrice\n"
+			"   'removeDeviceStatus\n"
 			"   'secondary\n"
 			"\n"
 			"All properties for itmGetProperty are also valid.\n",
@@ -1451,6 +1454,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'hp\n"
 			"   'ignoreFriendlyFire\n"
 			"   'immutable\n"
+			"   'installArmorMaxLevel\n"
 			"   'installDeviceMaxLevel\n"
 			"   'maxHP\n"
 			"   'maxStructuralHP\n"
@@ -8058,18 +8062,35 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	See if we passed in a device slot
 
-			int iSlot = -1;
-			if (pArgs->GetCount() >= 3
-					&& (iSlot = pArgs->GetElement(2)->GetIntegerValue()) != -1)
+			int iDeviceSlot = -1;
+			int iSlotPosIndex = -1;
+			if (pArgs->GetCount() >= 3)
 				{
-				if (Item.IsDevice()
-						&& (iSlot < 0 || iSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iSlot)->IsEmpty()))
-					return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+				ICCItem *pOptions = pArgs->GetElement(2);
+				if (pOptions->IsInteger())
+					iDeviceSlot = pOptions->GetIntegerValue();
+				else
+					{
+					ICCItem *pDeviceSlot = pOptions->GetElement(FIELD_DEVICE_SLOT);
+					if (pDeviceSlot && !pDeviceSlot->IsNil())
+						iDeviceSlot = pDeviceSlot->GetIntegerValue();
+
+					ICCItem *pSlotPosIndex = pOptions->GetElement(FIELD_SLOT_POS_INDEX);
+					if (pSlotPosIndex && !pSlotPosIndex->IsNil())
+						iSlotPosIndex = pSlotPosIndex->GetIntegerValue();
+					}
+
+				if (iDeviceSlot != -1)
+					{
+					if (Item.IsDevice()
+							&& (iDeviceSlot < 0 || iDeviceSlot >= pShip->GetDeviceCount() || pShip->GetDevice(iDeviceSlot)->IsEmpty()))
+						return pCC->CreateError(CONSTLIT("Invalid device slot"), pArgs->GetElement(2));
+					}
 				}
 
 			//	Otherwise, install or remove
 
-			pShip->InstallItemAsDevice(ItemList, iSlot);
+			pShip->InstallItemAsDevice(ItemList, iDeviceSlot, iSlotPosIndex);
 
 			//	Done
 

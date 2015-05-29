@@ -77,6 +77,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 
 #define FIELD_DESC_ID							CONSTLIT("descID")
 #define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
+#define FIELD_CAN_REMOVE						CONSTLIT("canRemove")
 #define FIELD_PRICE								CONSTLIT("price")
 #define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
@@ -90,6 +91,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_HAS_DOCKING_PORTS				CONSTLIT("hasDockingPorts")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_ID								CONSTLIT("id")
+#define PROPERTY_INSTALL_ARMOR_MAX_LEVEL		CONSTLIT("installArmorMaxLevel")
 #define PROPERTY_INSTALL_DEVICE_MAX_LEVEL		CONSTLIT("installDeviceMaxLevel")
 #define PROPERTY_INSTALL_DEVICE_PRICE			CONSTLIT("installDevicePrice")
 #define PROPERTY_INSTALL_DEVICE_STATUS			CONSTLIT("installDeviceStatus")
@@ -99,6 +101,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
+#define PROPERTY_REMOVE_ITEM_STATUS				CONSTLIT("removeItemStatus")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
 
@@ -3286,6 +3289,36 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 
 		return CC.CreateInteger(iPrice);
 		}
+	else if (strEquals(sName, PROPERTY_REMOVE_ITEM_STATUS))
+		{
+		//	We return a structure with the following fields:
+		//
+		//	canRemove: True or Nil
+		//	price: Remove price
+		//	descID: Message ID for description of remove attempt
+		//	upgradeInstallOnly: True if we only install/remove on upgrade
+
+		CString sMessageID;
+		int iPrice;
+		bool bCanRemove;
+		DWORD dwPriceFlags = 0;
+		if (Item.IsDevice())
+			bCanRemove = GetDeviceRemovePrice(Item, 0, &iPrice, &dwPriceFlags);
+		else
+			bCanRemove = false;
+
+		//	Create the structure
+
+		ICCItem *pResult = CC.CreateSymbolTable();
+		pResult->SetAt(CC, FIELD_CAN_REMOVE, (bCanRemove ? CC.CreateTrue() : CC.CreateNil()));
+		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanRemove ? iPrice : -1));
+		if (!sMessageID.IsBlank())
+			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
+		if (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY)
+			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+
+		return pResult;
+		}
 	else
 		{
 		//	Select the item (to make sure that it is part of the object)
@@ -3806,31 +3839,15 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_ID))
 		return CC.CreateInteger(GetID());
 
+	else if (strEquals(sName, PROPERTY_INSTALL_ARMOR_MAX_LEVEL))
+		{
+		int iMaxLevel = GetTradeMaxLevel(serviceReplaceArmor);
+		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
+		}
+
 	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_MAX_LEVEL))
 		{
-		int iMaxLevel = -1;
-
-		//	See if we have an override
-
-		CTradingDesc *pTradeOverride = GetTradeDescOverride();
-		if (pTradeOverride)
-			{
-			int iLevel = pTradeOverride->GetMaxLevelMatched(serviceInstallDevice);
-			if (iLevel > iMaxLevel)
-				iMaxLevel = iLevel;
-			}
-
-		//	Ask base type
-
-		CDesignType *pType = GetType();
-		CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-		if (pTrade)
-			{
-			int iLevel = pTrade->GetMaxLevelMatched(serviceInstallDevice);
-			if (iLevel > iMaxLevel)
-				iMaxLevel = iLevel;
-			}
-
+		int iMaxLevel = GetTradeMaxLevel(serviceInstallDevice);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 
@@ -3854,29 +3871,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_REPAIR_ARMOR_MAX_LEVEL))
 		{
-		int iMaxLevel = -1;
-
-		//	See if we have an override
-
-		CTradingDesc *pTradeOverride = GetTradeDescOverride();
-		if (pTradeOverride)
-			{
-			int iLevel = pTradeOverride->GetMaxLevelMatched(serviceRepairArmor);
-			if (iLevel > iMaxLevel)
-				iMaxLevel = iLevel;
-			}
-
-		//	Ask base type
-
-		CDesignType *pType = GetType();
-		CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-		if (pTrade)
-			{
-			int iLevel = pTrade->GetMaxLevelMatched(serviceRepairArmor);
-			if (iLevel > iMaxLevel)
-				iMaxLevel = iLevel;
-			}
-
+		int iMaxLevel = GetTradeMaxLevel(serviceRepairArmor);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 

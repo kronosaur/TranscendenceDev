@@ -2258,6 +2258,31 @@ CPlayerSettings *CShipClass::GetPlayerSettingsInherited (void) const
 		return NULL;
 	}
 
+CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos)
+
+//	GetPosOffset
+//
+//	Returns a vector offset
+
+	{
+	if (b3DPos)
+		{
+		int iScale = GetImage().GetImageViewportSize();
+
+		CVector vOffset;
+		C3DConversion::CalcCoord(iScale, 90 + iAngle, iRadius, iPosZ, &vOffset);
+
+		return vOffset;
+		}
+	else if (iRadius)
+		{
+		return PolarToVector((iAngle + 90) % 360,
+					iRadius * g_KlicksPerPixel);
+		}
+	else
+		return CVector();
+	}
+
 const SReactorImageDesc *CShipClass::GetReactorDescInherited (void)
 
 //	GetReactorDescInherited

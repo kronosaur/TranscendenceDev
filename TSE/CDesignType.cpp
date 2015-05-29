@@ -1880,7 +1880,7 @@ ALERROR CDesignType::PrepareBindDesign (SDesignLoadCtx &Ctx)
 		if (m_pInheritFrom == NULL)
 			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown inherit design type: %x"), m_dwInheritFrom));
 
-		if (m_pInheritFrom->GetType() != GetType())
+		if (m_pInheritFrom->GetType() != GetType() && m_pInheritFrom->GetType() != designGenericType)
 			return ComposeLoadError(Ctx, CONSTLIT("Cannot inherit from a different type."));
 
 		//	Make sure we are not in an inheritance loop

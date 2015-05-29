@@ -143,6 +143,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
+		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc);
 		virtual bool FindDefaultDesc (const CItem &Item, SDeviceDesc *retDesc);
 
 	private:
@@ -806,6 +807,30 @@ void CGroupOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
+	}
+
+bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc)
+
+//	FindDefaultDesc
+//
+//	Looks for a slot descriptor that might take the named device. Note that
+//	this is somewhat inaccurate, since we're not guaranteed that any particular
+//	item category would be accepted.
+
+	{
+	int i;
+
+	ItemCategories Category = CItemType::GetCategoryForNamedDevice(iDev);
+	for (i = 0; i < m_SlotDesc.GetCount(); i++)
+		{
+		if (m_SlotDesc[i].Criteria.dwItemCategories & Category)
+			{
+			*retDesc = m_SlotDesc[i].DefaultDesc;
+			return true;
+			}
+		}
+
+	return false;
 	}
 
 bool CGroupOfDeviceGenerators::FindDefaultDesc (const CItem &Item, SDeviceDesc *retDesc)

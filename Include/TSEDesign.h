@@ -2526,6 +2526,7 @@ class IDeviceGenerator
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
+		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) { return false; }
 		virtual bool FindDefaultDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
 
 		static ALERROR InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SDeviceDesc *retDesc);
@@ -4001,6 +4002,7 @@ class CItemType : public CDesignType
 		virtual DesignTypes GetType (void) const { return designItemType; }
 		virtual bool IsVirtual (void) const { return (m_fVirtual ? true : false); }
 
+		static ItemCategories GetCategoryForNamedDevice (DeviceNames iDev);
 		static CString GetItemCategory (ItemCategories iCategory);
 		static bool ParseItemCategory (const CString &sCategory, ItemCategories *retCategory = NULL);
 
@@ -4183,6 +4185,7 @@ class CShipClass : public CDesignType
 		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
 		void CreateExplosion (CShip *pShip, CSpaceObject *pWreck = NULL);
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
+		inline bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(iDev, retDesc) : false); }
 		inline bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(Item, retDesc) : false); }
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
 		CString GenerateShipName (DWORD *retdwFlags);
@@ -4222,6 +4225,7 @@ class CShipClass : public CDesignType
 		CString GetName (DWORD *retdwFlags = NULL);
 		CString GetNounPhrase (DWORD dwFlags);
 		inline const CPlayerSettings *GetPlayerSettings (void) const { return m_pPlayerSettings; }
+		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
 		inline const ReactorDesc *GetReactorDesc (void) { return &m_ReactorDesc; }
 		const SReactorImageDesc *GetReactorDescInherited (void);
@@ -4729,6 +4733,7 @@ class CDockScreenType : public CDesignType
 
 		static CString GetStringUNID (CDesignType *pRoot, const CString &sScreen);
 		inline CXMLElement *GetDesc (void) { return m_pDesc; }
+		CXMLElement *GetPane (const CString &sPane);
 		static CDesignType *ResolveScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual = NULL, bool *retbIsLocal = NULL);
 
 		//	CDesignType overrides

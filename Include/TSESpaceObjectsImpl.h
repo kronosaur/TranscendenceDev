@@ -802,6 +802,7 @@ class CShip : public CSpaceObject
 		void UninstallArmor (CItemListManipulator &ItemList);
 
 		//	Device methods
+		int CalcDeviceSlotsInUse (int *retiWeaponSlots = NULL, int *retiNonWeapon = NULL) const;
 		RemoveDeviceStatus CanRemoveDevice (const CItem &Item, CString *retsResult);
 		void ClearAllTriggered (void);
 		void DamageCargo (SDamageCtx &Ctx);
@@ -813,7 +814,7 @@ class CShip : public CSpaceObject
 		int GetItemDeviceName (const CItem &Item) const;
 		CItem GetNamedDeviceItem (DeviceNames iDev);
 		bool HasNamedDevice (DeviceNames iDev) const;
-		void InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot = -1);
+		void InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1);
 		bool IsDeviceSlotAvailable (ItemCategories iItemCat = itemcatNone, int *retiSlot = NULL);
 		void ReadyFirstWeapon (void);
 		void ReadyNextWeapon (int iDir = 1);
@@ -1071,7 +1072,6 @@ class CShip : public CSpaceObject
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		int CalcDeviceSlotsInUse (int *retiWeaponSlots = NULL, int *retiNonWeapon = NULL) const;
 		bool CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution);
 		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
@@ -1084,7 +1084,6 @@ class CShip : public CSpaceObject
 		int FindRandomDevice (bool bEnabledOnly = false);
 		void FinishCreation (SShipGeneratorCtx *pCtx = NULL);
 		Metric GetCargoMass (void);
-		ItemCategories GetCategoryForNamedDevice (DeviceNames iDev);
 		Metric GetItemMass (void);
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void ReactorOverload (void);
