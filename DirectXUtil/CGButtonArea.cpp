@@ -9,15 +9,80 @@
 
 #define RGB_DISABLED_TEXT						(CG32bitPixel(128,128,128))
 
-CGButtonArea::CGButtonArea (void) : m_pLabelFont(NULL),
+CGButtonArea::CGButtonArea (void) : 
+		m_rgbLabelColor(CG32bitPixel(255,255,255)),
+		m_pLabelFont(NULL),
+		m_iAccelerator(-1),
+
+		m_rgbDescColor(CG32bitPixel(255,255,255)),
+		m_pDescFont(NULL),
+		m_cxJustifyWidth(0),
+
+		m_iBorderRadius(0),
+		m_rgbBorderColor(CG32bitPixel::Null()),
+		m_rgbBackColor(CG32bitPixel::Null()),
+		m_rgbBackColorHover(CG32bitPixel::Null()),
+
 		m_bMouseOver(false),
-		m_bDisabled(false),
-		m_iAccelerator(-1)
+		m_bDisabled(false)
 
 //	CGButtonArea constructor
 
 	{
-	m_rgbLabelColor = CG32bitPixel(255,255,255);
+	m_rcPadding.left = 0;
+	m_rcPadding.top = 0;
+	m_rcPadding.right = 0;
+	m_rcPadding.bottom = 0;
+	}
+
+RECT CGButtonArea::CalcTextRect (const RECT &rcRect)
+
+//	CalcTextRect
+//
+//	Calculates the text rect given the control rect
+
+	{
+	RECT rcText = rcRect;
+	rcText.left += m_rcPadding.left;
+	rcText.top += m_rcPadding.top;
+	rcText.right -= m_rcPadding.right;
+	rcText.bottom -= m_rcPadding.bottom;
+
+	return rcText;
+	}
+
+int CGButtonArea::Justify (const RECT &rcRect)
+
+//	Justify
+//
+//	Justify the text and return the height (in pixels)
+
+	{
+	RECT rcText = CalcTextRect(rcRect);
+
+	//	For now, the label is always one line
+
+	int cyHeight = (m_pLabelFont ? m_pLabelFont->GetHeight() : 0);
+
+	//	Add the height of the description, if we have one
+
+	if (!m_sDesc.IsBlank() && m_pDescFont)
+		{
+		if (m_cxJustifyWidth != RectWidth(rcText))
+			{
+			m_cxJustifyWidth = RectWidth(rcText);
+			m_Lines.DeleteAll();
+			m_pDescFont->BreakText(m_sDesc, m_cxJustifyWidth, &m_Lines, CG16bitFont::SmartQuotes);
+			}
+
+		cyHeight += (m_Lines.GetCount() * m_pDescFont->GetHeight());
+		}
+
+	//	Add padding
+
+	cyHeight += m_rcPadding.top + m_rcPadding.bottom;
+
+	return cyHeight;
 	}
 
 void CGButtonArea::LButtonUp (int x, int y)
@@ -70,18 +135,33 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 //	Handle paint
 
 	{
+	int i;
+
+	//	Paint the background
+
+	CG32bitPixel rgbBackColor = ((m_bMouseOver && !m_bDisabled) ? m_rgbBackColorHover : (m_bDisabled ? CG32bitPixel(m_rgbBackColor, 0xC0) : m_rgbBackColor));
+	if (!rgbBackColor.IsNull())
+		{
+		if (m_iBorderRadius > 0)
+			{
+			CGDraw::RoundedRect(Dest, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), m_iBorderRadius, rgbBackColor);
+			CGDraw::RoundedRectOutline(Dest, rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), m_iBorderRadius, 1, m_rgbBorderColor);
+			}
+		else
+			Dest.Fill(rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), rgbBackColor);
+		}
+
+	//	Paint the label
+
+	int xPaint = rcRect.left + m_rcPadding.left;
+	int yPaint = rcRect.top + m_rcPadding.top;
 	if (m_pLabelFont)
 		{
-		if (m_bMouseOver && !m_bDisabled)
-			{
-			Dest.Fill(rcRect.left, rcRect.top, RectWidth(rcRect), RectHeight(rcRect), CG32bitPixel(128,128,128));
-			}
-
 		//	If we're disabled, paint gray
 
 		if (m_bDisabled)
-			Dest.DrawText(rcRect.left,
-					rcRect.top,
+			Dest.DrawText(xPaint,
+					yPaint,
 					*m_pLabelFont,
 					RGB_DISABLED_TEXT,
 					m_sLabel);
@@ -91,20 +171,38 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 		else if (m_iAccelerator != -1)
 			{
 			char *pPos = m_sLabel.GetASCIIZPointer();
-			int x = rcRect.left;
+			int x = xPaint;
 
 			if (m_iAccelerator > 0)
-				Dest.DrawText(x, rcRect.top, *m_pLabelFont, m_rgbLabelColor, CString(pPos, m_iAccelerator, true), 0, &x);
+				Dest.DrawText(x, yPaint, *m_pLabelFont, m_rgbLabelColor, CString(pPos, m_iAccelerator, true), 0, &x);
 
-			Dest.DrawText(x, rcRect.top, *m_pLabelFont, CG32bitPixel(255,255,0), CString(pPos + m_iAccelerator, 1, true), 0, &x);
-			Dest.DrawText(x, rcRect.top, *m_pLabelFont, m_rgbLabelColor, CString(pPos + m_iAccelerator + 1, m_sLabel.GetLength() - m_iAccelerator - 1, true));
+			Dest.DrawText(x, yPaint, *m_pLabelFont, CG32bitPixel(255,255,0), CString(pPos + m_iAccelerator, 1, true), 0, &x);
+			Dest.DrawText(x, yPaint, *m_pLabelFont, m_rgbLabelColor, CString(pPos + m_iAccelerator + 1, m_sLabel.GetLength() - m_iAccelerator - 1, true));
 			}
 		else
-			Dest.DrawText(rcRect.left,
-					rcRect.top,
+			Dest.DrawText(xPaint,
+					yPaint,
 					*m_pLabelFont,
 					m_rgbLabelColor,
 					m_sLabel);
+
+		yPaint += m_pLabelFont->GetHeight();
+		}
+
+	//	Paint the description
+
+	if (m_pDescFont)
+		{
+		for (i = 0; i < m_Lines.GetCount(); i++)
+			{
+			Dest.DrawText(xPaint,
+					yPaint,
+					*m_pDescFont,
+					m_rgbDescColor,
+					m_Lines[i]);
+
+			yPaint += m_pDescFont->GetHeight();
+			}
 		}
 	}
 

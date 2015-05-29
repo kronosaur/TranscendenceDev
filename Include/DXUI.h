@@ -168,13 +168,22 @@ class CGButtonArea : public AGArea
 
 		inline CString GetLabelAccelerator (void) { return (m_iAccelerator != -1 ? CString(m_sLabel.GetASCIIZPointer() + m_iAccelerator, 1) : NULL_STR); }
 		inline bool IsDisabled (void) { return m_bDisabled; }
+		inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		inline void SetBackColorHover (CG32bitPixel rgbColor) { m_rgbBackColorHover = rgbColor; }
+		inline void SetBorderColor (CG32bitPixel rgbColor) { m_rgbBorderColor = rgbColor; }
+		inline void SetBorderRadius (int iRadius) { m_iBorderRadius = iRadius; }
+		inline void SetDesc (const CString &sDesc) { m_sDesc = sDesc; }
+		inline void SetDescColor (CG32bitPixel rgbColor) { m_rgbDescColor = rgbColor; }
+		inline void SetDescFont (const CG16bitFont *pFont) { m_pDescFont = pFont; }
 		inline void SetDisabled (bool bDisabled = true) { m_bDisabled = bDisabled; }
 		inline void SetLabel (const CString &sText) { m_sLabel = sText; m_iAccelerator = -1; }
 		void SetLabelAccelerator (const CString &sKey);
 		inline void SetLabelColor (CG32bitPixel rgbColor) { m_rgbLabelColor = rgbColor; }
 		inline void SetLabelFont (const CG16bitFont *pFont) { m_pLabelFont = pFont; }
+		inline void SetPadding (int iPadding) { m_rcPadding.left = iPadding; m_rcPadding.top = iPadding; m_rcPadding.right = iPadding; m_rcPadding.bottom = iPadding; }
 
 		//	AGArea virtuals
+		virtual int Justify (const RECT &rcRect);
 		virtual void LButtonUp (int x, int y);
 		virtual void MouseEnter (void);
 		virtual void MouseLeave (void);
@@ -185,10 +194,26 @@ class CGButtonArea : public AGArea
 		virtual void OnSetRect (void);
 
 	private:
+		RECT CalcTextRect (const RECT &rcRect);
+
 		CString m_sLabel;
 		CG32bitPixel m_rgbLabelColor;
 		const CG16bitFont *m_pLabelFont;
 		int m_iAccelerator;
+
+		CString m_sDesc;
+		CG32bitPixel m_rgbDescColor;
+		const CG16bitFont *m_pDescFont;
+
+		RECT m_rcPadding;						//	Padding around the text
+		int m_iBorderRadius;
+		CG32bitPixel m_rgbBorderColor;
+		CG32bitPixel m_rgbBackColor;
+		CG32bitPixel m_rgbBackColorHover;
+
+		TArray<CString> m_Lines;				//	Justified lines of text
+		int m_cxJustifyWidth;					//	Width (in pixels) for which m_Lines
+												//		was justified.
 
 		bool m_bMouseOver;
 		bool m_bDisabled;

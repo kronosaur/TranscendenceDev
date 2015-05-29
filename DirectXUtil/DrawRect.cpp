@@ -218,7 +218,8 @@ void CGDraw::RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, 
 	{
 	//	Range checking
 
-	if (iLineWidth <= 0)
+	if (iLineWidth <= 0
+			|| rgbColor.IsNull())
 		return;
 
 	iRadius = Min(Min(Max(0, iRadius), cxWidth / 2), cyHeight / 2);
