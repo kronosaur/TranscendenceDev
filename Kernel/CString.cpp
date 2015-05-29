@@ -85,6 +85,105 @@ CString::CString (char *pString, int iLength) :
 		Transcribe(pString, iLength);
 	}
 
+CString::CString (CharacterSets iCharSet, const char *pString) :
+		CObject(&g_Class),
+		m_pStore(NULL)
+
+//	CString constructor
+
+	{
+	switch (iCharSet)
+		{
+		case csUTF8:
+			{
+			int iUTF8Len = strlen(pString);
+
+			//	Optimistically assume that we can fit each character into a Unicode
+			//	character.
+
+			int iUnicodeLen = iUTF8Len;
+			WCHAR *szUnicode = new WCHAR [iUnicodeLen + 1];
+			int iResult = ::MultiByteToWideChar(CP_UTF8, 0, pString, iUTF8Len, szUnicode, iUnicodeLen);
+
+			//	Deal with failure
+
+			if (iResult == 0)
+				{
+				if (::GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+					{
+					delete [] szUnicode;
+
+					//	Figure out how big the buffer should be and allocate appropriately
+					//	And redo the conversion.
+
+					iUnicodeLen = ::MultiByteToWideChar(CP_UTF8, 0, pString, iUTF8Len, NULL, 0);
+					if (iUnicodeLen == 0)
+						return;
+
+					szUnicode = new WCHAR [iUnicodeLen + 1];
+					iResult = ::MultiByteToWideChar(CP_UTF8, 0, pString, iUTF8Len, szUnicode, iUnicodeLen);
+					}
+				else
+					{
+					delete [] szUnicode;
+					return;
+					}
+				}
+
+			iUnicodeLen = iResult;
+
+			//	Now convert back to system code page
+
+			if (!Size(iUnicodeLen, FALSE))
+				{
+				delete [] szUnicode;
+				return;
+				}
+
+			iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iUnicodeLen, NULL, NULL);
+
+			//	Deal with failure
+
+			if (iResult == 0)
+				{
+				if (::GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+					{
+					//	Figure out how big the buffer should be and allocate appropriately
+					//	And redo the conversion.
+
+					int iSystemLen = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, NULL, 0, NULL, NULL);
+					if (iSystemLen == 0)
+						{
+						delete [] szUnicode;
+						Truncate(0);
+						return;
+						}
+
+					Size(iSystemLen, FALSE);
+					iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iSystemLen, NULL, NULL);
+					}
+				else
+					{
+					delete [] szUnicode;
+					Truncate(0);
+					return;
+					}
+				}
+
+			delete [] szUnicode;
+			m_pStore->iLength = iResult;
+			m_pStore->pString[m_pStore->iLength] = '\0';
+			break;
+			}
+
+		default:
+			{
+			if (pString)
+				Transcribe(pString, -1);
+			}
+		}
+	}
+
 CString::CString (char *pString, int iLength, BOOL bExternal) :
 		CObject(&g_Class),
 		m_pStore(NULL)
