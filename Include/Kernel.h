@@ -639,8 +639,17 @@ class CString : public CObject
 			capFirstLetter,
 			};
 
+		enum CharacterSets
+			{
+			csUnknown,
+
+			csSystem,
+			csUTF8,
+			};
+
 		CString (void);
 		CString (const char *pString);
+		CString (CharacterSets iCharSet, const char *pString);
 		CString (char *pString, int iLength);
 		CString (char *pString, int iLength, BOOL bExternal);
 		virtual ~CString (void);
