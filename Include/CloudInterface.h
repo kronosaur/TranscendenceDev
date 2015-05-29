@@ -96,6 +96,7 @@ class CCloudService
 
 		~CCloudService (void);
 
+		inline void AddService (ICIService *pService) { if (pService) m_Boot.Insert(pService); }
 		void CleanUp (void);
 		CString GetDefaultUsername (void);
 		CString GetUsername (void);
@@ -127,6 +128,7 @@ class CCloudService
 
 		CHumanInterface *m_pHI;
 		TArray<ICIService *> m_Services;
+		TArray<ICIService *> m_Boot;
 	};
 
 //	Default Services -----------------------------------------------------------

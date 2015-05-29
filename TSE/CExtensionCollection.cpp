@@ -211,6 +211,12 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 
 	pExtension->SetMarked();
 
+	//	If the extension is already disabled (probably because it is a later version)
+	//	then we exclude it.
+
+	if (pExtension->IsDisabled())
+		return NOERROR;
+
 	//	Create a resolver
 
 	CLibraryResolver Resolver(*this);
