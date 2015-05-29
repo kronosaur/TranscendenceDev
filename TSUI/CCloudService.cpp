@@ -69,6 +69,11 @@ void CCloudService::CleanUp (void)
 		delete m_Services[i];
 
 	m_Services.DeleteAll();
+
+	for (i = 0; i < m_Boot.GetCount(); i++)
+		delete m_Boot[i];
+
+	m_Boot.DeleteAll();
 	}
 
 ALERROR CCloudService::DownloadUpgrade (ITaskProcessor *pProcessor, const CString &sDownloadURL, CString *retsResult)
@@ -180,6 +185,41 @@ ALERROR CCloudService::InitFromXML (CHumanInterface &HI, CXMLElement *pDesc, boo
 	ASSERT(m_Services.GetCount() == 0);
 	m_pHI = &HI;
 
+	//	If we don't have any settings, then we use defaults and save out
+
+	bool bModified = (pDesc == NULL);
+	*retbModified = bModified;
+
+	//	Add each of the services from our boot list
+
+	for (i = 0; i < m_Boot.GetCount(); i++)
+		{
+		if (error = m_Boot[i]->InitFromXML((pDesc ? pDesc->GetContentElementByTag(m_Boot[i]->GetTag()) : NULL), &bModified))
+			{
+			::kernelDebugLogMessage("Error initializing service: %s", m_Boot[i]->GetTag());
+			continue;
+			}
+
+		if (bModified)
+			*retbModified = true;
+
+		//	We take ownership of the service.
+
+		m_Services.Insert(m_Boot[i]);
+		m_Boot[i] = NULL;
+		}
+
+	//	Clean up any services that failed.
+
+	for (i = 0; i < m_Boot.GetCount(); i++)
+		{
+		if (m_Boot[i])
+			delete m_Boot[i];
+		}
+
+	m_Boot.DeleteAll();
+
+#if 0
 	//	Get the list of default services
 
 	CHexarcServiceFactory HexarcService;
@@ -210,6 +250,7 @@ ALERROR CCloudService::InitFromXML (CHumanInterface &HI, CXMLElement *pDesc, boo
 			m_Services.Insert(pService);
 			}
 		}
+#endif
 
 	//	Done
 
