@@ -1433,6 +1433,7 @@ struct SDamageCtx
 	int iShieldDamage;							//	Damage taken by shields
 	int iOriginalAbsorb;						//	Computed absorb value, if shot had not been reflected
 	int iOriginalShieldDamage;					//	Computed shield damage value, if shot had not been reflected
+	int iUnadjustedDamage;						//	HP hit on armor before damage type adjustment
 
 	//	Damage effects
 	bool bBlind;								//	If true, shot will blind the target
@@ -2084,13 +2085,16 @@ class CInstalledArmor
 	{
 	public:
 		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
+		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void FinishInstall (CSpaceObject *pSource);
+		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		inline CArmorClass *GetClass (void) const { return m_pArmorClass; }
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
 		inline int GetMaxHP (CSpaceObject *pSource);
 		inline const CItemEnhancement &GetMods (void) { return m_pItem->GetMods(); }
 		inline int GetSect (void) const { return m_iSect; }
+		int IncCharges (CSpaceObject *pSource, int iChange);
 		inline int IncHitPoints (int iChange) { m_iHitPoints += iChange; return m_iHitPoints; }
 		void Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
 		inline bool IsComplete (void) const { return (m_fComplete ? true : false); }
@@ -2124,6 +2128,7 @@ class CArmorClass : public CObject
 			};
 
 		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
+		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (void);
@@ -2186,6 +2191,11 @@ class CArmorClass : public CObject
 		int m_iStealth;							//	Stealth level
 		int m_iPowerUse;						//	Power consumed (1/10 MWs)
 		int m_iMaxHPBonus;						//	Max HP bonus allowed for this armor
+
+		CString m_sEnhancementType;				//	Type of enhancements
+		int m_iDeviceBonus;						//	Bonus to devices
+		CItemCriteria m_DeviceCriteria;			//	Only enhances devices that match criteria
+
 		CRegenDesc m_Regen;						//	Regeneration desc
 		CRegenDesc m_Decay;						//	Decay desc
 		
@@ -2202,8 +2212,8 @@ class CArmorClass : public CObject
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
 		DWORD m_fDisintegrationImmune:1;		//	TRUE if immune to disintegration
 		DWORD m_fShatterImmune:1;				//	TRUE if immune to shatter
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
+		DWORD m_fChargeRepair:1;				//	If TRUE, we regenerage while we have charges left
+		DWORD m_fChargeDecay:1;					//	If TRUE, we decay while we have charges left
 
 		DWORD m_dwSpare:24;
 

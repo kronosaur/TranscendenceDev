@@ -6,13 +6,18 @@
 
 #define BLINDING_DAMAGE_ADJ_ATTRIB				CONSTLIT("blindingDamageAdj")
 #define BLINDING_IMMUNE_ATTRIB					CONSTLIT("blindingImmune")
+#define CHARGE_DECAY_ATTRIB						CONSTLIT("chargeDecay")
+#define CHARGE_REGEN_ATTRIB						CONSTLIT("chargeRegen")
 #define COMPLETE_BONUS_ATTRIB					CONSTLIT("completeBonus")
 #define DAMAGE_ADJ_LEVEL_ATTRIB					CONSTLIT("damageAdjLevel")
 #define DECAY_ATTRIB							CONSTLIT("decay")
 #define DECAY_RATE_ATTRIB						CONSTLIT("decayRate")
+#define DEVICE_CRITERIA_ATTRIB					CONSTLIT("deviceCriteria")
 #define DEVICE_DAMAGE_ADJ_ATTRIB				CONSTLIT("deviceDamageAdj")
 #define DEVICE_DAMAGE_IMMUNE_ATTRIB				CONSTLIT("deviceDamageImmune")
+#define DEVICE_HP_BONUS_ATTRIB					CONSTLIT("deviceHPBonus")
 #define DISINTEGRATION_IMMUNE_ATTRIB			CONSTLIT("disintegrationImmune")
+#define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
 #define INSTALL_COST_ATTRIB						CONSTLIT("installCost")
@@ -53,6 +58,7 @@
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
 #define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
 #define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
@@ -267,6 +273,45 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	DEBUG_CATCH
 	}
 
+bool CArmorClass::AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
+
+//	AccumulateEnhancements
+//
+//	Adds enhancements to installed devices
+
+	{
+	//	See if we give HP bonus to devices
+
+	if (m_iDeviceBonus != 0)
+		{
+		CInstalledArmor *pArmor = ItemCtx.GetArmor();
+		CSpaceObject *pSource = ItemCtx.GetSource();
+
+		//	If the target item does not match our criteria, then no enhancement
+
+		if (pSource 
+				&& pTarget
+				&& !pSource->GetItemForDevice(pTarget).MatchesCriteria(m_DeviceCriteria))
+			return false;
+
+		//	If this enhancement type has already been applied, then nothing
+
+		if (!m_sEnhancementType.IsBlank()
+				&& EnhancementIDs.Find(m_sEnhancementType))
+			return false;
+
+		//	Add HP bonus enhancements
+
+		pEnhancements->InsertHPBonus(m_iDeviceBonus);
+		if (!m_sEnhancementType.IsBlank())
+			EnhancementIDs.Insert(m_sEnhancementType);
+
+		return true;
+		}
+
+	return false;
+	}
+
 void CArmorClass::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	AddTypesUsed
@@ -284,6 +329,8 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	{
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+
+	Ctx.iUnadjustedDamage = Ctx.iDamage;
 
 	//	Adjust for special armor damage:
 	//
@@ -785,6 +832,8 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_fPhotoRepair = pDesc->GetAttributeBool(PHOTO_REPAIR_ATTRIB);
 	pArmor->m_fPhotoRecharge = pDesc->GetAttributeBool(PHOTO_RECHARGE_ATTRIB);
 	pArmor->m_fShieldInterference = pDesc->GetAttributeBool(SHIELD_INTERFERENCE_ATTRIB);
+	pArmor->m_fChargeRepair = pDesc->GetAttributeBool(CHARGE_REGEN_ATTRIB);
+	pArmor->m_fChargeDecay = pDesc->GetAttributeBool(CHARGE_DECAY_ATTRIB);
 
 	pArmor->m_iStealth = pDesc->GetAttributeInteger(STEALTH_ATTRIB);
 	if (pArmor->m_iStealth == 0)
@@ -797,6 +846,16 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	if (error = pArmor->m_Reflective.InitFromXML(pDesc->GetAttribute(REFLECT_ATTRIB)))
 		return error;
+
+	//	Device bonus
+
+	pArmor->m_sEnhancementType = pDesc->GetAttribute(ENHANCEMENT_TYPE_ATTRIB);
+	pArmor->m_iDeviceBonus = pDesc->GetAttributeInteger(DEVICE_HP_BONUS_ATTRIB);
+	CString sCriteria;
+	if (!pDesc->FindAttribute(DEVICE_CRITERIA_ATTRIB, &sCriteria))
+		sCriteria = CONSTLIT("s");
+
+	CItem::ParseCriteria(sCriteria, &pArmor->m_DeviceCriteria);
 
 	//	Done
 
@@ -941,6 +1000,7 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineDamageEffects(CONSTLIT("aDamageEffects"), Ctx);
+		CCCtx.DefineInteger(CONSTLIT("aFullDamageHP"), Ctx.iUnadjustedDamage);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
 		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
@@ -1075,6 +1135,15 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CC.CreateBool(IsEMPDamageImmune(Ctx));
 
 	else if (strEquals(sName, PROPERTY_HP))
+		{
+		CInstalledArmor *pArmor = Ctx.GetArmor();
+		if (pArmor)
+			return CC.CreateInteger(pArmor->GetHitPoints());
+		else
+			return CC.CreateInteger(GetMaxHP(Ctx));
+		}
+
+	else if (strEquals(sName, PROPERTY_MAX_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx));
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
@@ -1485,6 +1554,13 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 
 		int iHPNeeded = GetMaxHP(ItemCtx) - pArmor->GetHitPoints();
 
+		//	If we require charges, then we're limited to the charges we have
+
+		if (m_fChargeRepair)
+			iHPNeeded = Min(iHPNeeded, pArmor->GetCharges(pObj));
+
+		//	Regen
+
 		if (iHPNeeded > 0)
 			{
 			//	Combine all regeneration
@@ -1519,6 +1595,11 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 
 			if (iHP > 0)
 				{
+				//	If we require charges to regen, then consume charges
+
+				if (m_fChargeRepair)
+					pArmor->IncCharges(pObj, -iHP);
+
 				pArmor->IncHitPoints(iHP);
 				bModified = true;
 				}
@@ -1530,29 +1611,45 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	if (pArmor->GetHitPoints() > 0
 			&& (pArmor->GetMods().IsDecaying() || !m_Decay.IsEmpty()))
 		{
-		//	Combine decay with mod
+		//	If we require charges, then we're limited to the charges we have
 
-		CRegenDesc *pDecay;
-		CRegenDesc DecayWithMod;
-		if (pArmor->GetMods().IsDecaying())
+		int iMaxDecay = pArmor->GetHitPoints();
+		if (m_fChargeDecay)
+			iMaxDecay = Min(iMaxDecay, pArmor->GetCharges(pObj));
+
+		//	Decay
+
+		if (iMaxDecay > 0)
 			{
-			DecayWithMod.Init(4);
-			DecayWithMod.Add(m_Decay);
-			pDecay = &DecayWithMod;
-			}
-		else
-			pDecay = &m_Decay;
+			//	Combine decay with mod
 
-		//	Compute the HP that we decay this cycle
+			CRegenDesc *pDecay;
+			CRegenDesc DecayWithMod;
+			if (pArmor->GetMods().IsDecaying())
+				{
+				DecayWithMod.Init(4);
+				DecayWithMod.Add(m_Decay);
+				pDecay = &DecayWithMod;
+				}
+			else
+				pDecay = &m_Decay;
 
-		int iHP = Min(pArmor->GetHitPoints(), pDecay->GetRegen(iTick, TICKS_PER_UPDATE));
+			//	Compute the HP that we decay this cycle
 
-		//	Decrement
+			int iHP = Min(iMaxDecay, pDecay->GetRegen(iTick, TICKS_PER_UPDATE));
 
-		if (iHP > 0)
-			{
-			pArmor->IncHitPoints(-iHP);
-			bModified = true;
+			//	Decrement
+
+			if (iHP > 0)
+				{
+				//	Consume charges
+
+				if (m_fChargeDecay)
+					pArmor->IncCharges(pObj, -iHP);
+
+				pArmor->IncHitPoints(-iHP);
+				bModified = true;
+				}
 			}
 		}
 

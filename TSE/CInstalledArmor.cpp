@@ -4,6 +4,16 @@
 
 #include "PreComp.h"
 
+bool CInstalledArmor::AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
+
+//	AccumulateEnhancements
+//
+//	Accumulate enhancements on devices.
+
+	{
+	return m_pArmorClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements);
+	}
+
 void CInstalledArmor::FinishInstall (CSpaceObject *pSource)
 
 //	FinishInstall
@@ -18,6 +28,24 @@ void CInstalledArmor::FinishInstall (CSpaceObject *pSource)
 	CShip *pShip = pSource->AsShip();
 	if (pShip)
 		pShip->GetController()->OnItemInstalled(*m_pItem);
+	}
+
+int CInstalledArmor::IncCharges (CSpaceObject *pSource, int iChange)
+
+//	IncCharges
+//
+//	Increment charges
+
+	{
+	CShip *pShip = pSource->AsShip();
+	if (pShip == NULL)
+		return -1;
+
+	CItemListManipulator ItemList(pSource->GetItemList());
+	pShip->SetCursorAtArmor(ItemList, GetSect());
+	pShip->RechargeItem(ItemList, iChange);
+
+	return ItemList.GetItemAtCursor().GetCharges();
 	}
 
 void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iSect, bool bInCreate)

@@ -576,6 +576,11 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 		if (pDeviceClass->IsExternal() || (pDevice && pDevice->IsExternal()))
 			retList->Insert(SDisplayAttribute(attribNeutral, CONSTLIT("external")));
+
+		//	Non-standard slots
+
+		if (pDeviceClass->GetSlotsRequired() != 1)
+			retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("%d slots"), pDeviceClass->GetSlotsRequired())));
 		}
 
 	//	Military and Illegal attributes

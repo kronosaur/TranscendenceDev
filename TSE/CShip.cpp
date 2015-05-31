@@ -354,6 +354,18 @@ void CShip::CalcDeviceBonus (void)
 						}
 					}
 
+			//	Add enhancements from armor
+
+			for (j = 0; j < GetArmorSectionCount(); j++)
+				{
+				CInstalledArmor *pArmor = GetArmorSection(j);
+				if (pArmor->AccumulateEnhancements(this, &m_Devices[i], EnhancementIDs, pEnhancements))
+					{
+					if (IsPlayer())
+						pArmor->GetClass()->GetItemType()->SetKnown();
+					}
+				}
+
 			//	Deal with class specific stuff
 
 			switch (m_Devices[i].GetCategory())
@@ -6031,10 +6043,8 @@ void CShip::RechargeItem (CItemListManipulator &ItemList, int iCharges)
 
 	if (Item.IsInstalled())
 		{
-		int iDevSlot = Item.GetInstalled();
-		CInstalledDevice *pDevice = &m_Devices[iDevSlot];
-
-		CalcDeviceBonus();
+		if (Item.IsDevice())
+			CalcDeviceBonus();
 		}
 	}
 

@@ -388,8 +388,10 @@ enum EColorPalette
 	colorTextAdvantage =			32,		//	H:210 S:20  B:100
 	colorTextDisadvantage =			33,		//	H:0   S:20  B:100
 	colorTextShields =				34,		//	H:90  S:20  B:100
+	colorTextAccelerator =			35,		//	H:60  S:100 B:100
+	colorAreaAccelerator =			36,		//	H:60  S:100 B:80
 
-	colorCount =					35,
+	colorCount =					37,
 	};
 
 enum EFontScale

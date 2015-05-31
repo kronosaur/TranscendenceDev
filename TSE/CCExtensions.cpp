@@ -702,6 +702,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'EMPImmune\n"
 			"   'hp\n"
 			"   'installed\n"
+			"   'maxHP\n"
 			"   'omnidirectional\n"
 			"   'radiationImmune\n"
 			"   'repairCost\n"
@@ -2697,7 +2698,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"armGetHitPoints",				fnArmGet,		FN_ARM_HITPOINTS,
-			"DEPRECATED: Use (itmGetProperty item 'hp) instead.",
+			"DEPRECATED: Use (itmGetProperty item 'maxHP) instead.",
 			"v",	0,	},
 
 		{	"armGetName",					fnArmGet,		FN_ARM_NAME,
