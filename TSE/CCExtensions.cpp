@@ -8408,7 +8408,12 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 					iFuelPerItem = 1;
 
 				int iFuelNeeded = pShip->GetMaxFuel() - pShip->GetFuelLeft();
-				pResult = pCC->CreateInteger((iFuelNeeded / iFuelPerItem) + 1);
+				int iWhole = (iFuelNeeded / iFuelPerItem);
+				int iPartial = (iFuelNeeded % iFuelPerItem);
+				if (iPartial > (iFuelPerItem / 2))
+					iWhole++;
+
+				pResult = pCC->CreateInteger(iWhole);
 				}
 			else
 				{
