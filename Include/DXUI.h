@@ -168,6 +168,7 @@ class CGButtonArea : public AGArea
 
 		inline CString GetLabelAccelerator (void) { return (m_iAccelerator != -1 ? CString(m_sLabel.GetASCIIZPointer() + m_iAccelerator, 1) : NULL_STR); }
 		inline bool IsDisabled (void) { return m_bDisabled; }
+		inline void SetAcceleratorColor (CG32bitPixel rgbColor) { m_rgbAccelColor = rgbColor; }
 		inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
 		inline void SetBackColorHover (CG32bitPixel rgbColor) { m_rgbBackColorHover = rgbColor; }
 		inline void SetBorderColor (CG32bitPixel rgbColor) { m_rgbBorderColor = rgbColor; }
@@ -199,7 +200,10 @@ class CGButtonArea : public AGArea
 		CString m_sLabel;
 		CG32bitPixel m_rgbLabelColor;
 		const CG16bitFont *m_pLabelFont;
-		int m_iAccelerator;
+
+		int m_iAccelerator;						//	Index into label of accelerator (or -1)
+		CG32bitPixel m_rgbAccelColor;			//	Accelerator color
+		CString m_sAccelerator;					//	Text to draw in front of label
 
 		CString m_sDesc;
 		CG32bitPixel m_rgbDescColor;

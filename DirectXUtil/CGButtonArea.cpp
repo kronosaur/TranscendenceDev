@@ -9,9 +9,14 @@
 
 #define RGB_DISABLED_TEXT						(CG32bitPixel(128,128,128))
 
+const int ACCEL_INNER_PADDING =					2;
+const int ACCEL_BORDER_RADIUS =					2;
+
 CGButtonArea::CGButtonArea (void) : 
 		m_rgbLabelColor(CG32bitPixel(255,255,255)),
 		m_pLabelFont(NULL),
+
+		m_rgbAccelColor(CG32bitPixel(255,255,0)),
 		m_iAccelerator(-1),
 
 		m_rgbDescColor(CG32bitPixel(255,255,255)),
@@ -166,6 +171,30 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 					RGB_DISABLED_TEXT,
 					m_sLabel);
 
+		//	If we have a prefix accelerator, draw that
+
+		else if (!m_sAccelerator.IsBlank())
+			{
+			//	Measure the size of the accelerator
+
+			int cyAccel;
+			int cxAccel = m_pLabelFont->MeasureText(m_sAccelerator, &cyAccel);
+
+			//	We draw a rounded-rect box
+
+			int cxBox = cxAccel + (2 * ACCEL_INNER_PADDING);
+			int cyBox = cyAccel + 1;
+			CGDraw::RoundedRect(Dest, xPaint, yPaint, cxBox, cyBox, ACCEL_BORDER_RADIUS, m_rgbAccelColor);
+
+			//	Draw the text
+
+			Dest.DrawText(xPaint + ACCEL_INNER_PADDING, yPaint, *m_pLabelFont, CG32bitPixel(0, 0, 0), m_sAccelerator);
+
+			//	Now draw the rest of the label
+
+			Dest.DrawText(xPaint + cxBox + (2 * ACCEL_INNER_PADDING), yPaint, *m_pLabelFont, m_rgbLabelColor, m_sLabel);
+			}
+
 		//	If we have an accelerator, paint in pieces
 
 		else if (m_iAccelerator != -1)
@@ -176,7 +205,7 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 			if (m_iAccelerator > 0)
 				Dest.DrawText(x, yPaint, *m_pLabelFont, m_rgbLabelColor, CString(pPos, m_iAccelerator, true), 0, &x);
 
-			Dest.DrawText(x, yPaint, *m_pLabelFont, CG32bitPixel(255,255,0), CString(pPos + m_iAccelerator, 1, true), 0, &x);
+			Dest.DrawText(x, yPaint, *m_pLabelFont, m_rgbAccelColor, CString(pPos + m_iAccelerator, 1, true), 0, &x);
 			Dest.DrawText(x, yPaint, *m_pLabelFont, m_rgbLabelColor, CString(pPos + m_iAccelerator + 1, m_sLabel.GetLength() - m_iAccelerator - 1, true));
 			}
 		else
@@ -215,6 +244,10 @@ void CGButtonArea::SetLabelAccelerator (const CString &sKey)
 	{
 	if (sKey.IsBlank())
 		m_iAccelerator = -1;
+
+	else if (sKey.GetLength() > 1)
+		m_sAccelerator = sKey;
+
 	else
 		{
 		char *pStart = m_sLabel.GetASCIIZPointer();
