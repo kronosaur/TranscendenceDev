@@ -1423,6 +1423,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (ships)\n\n"
 			
 			"   'alwaysLeaveWreck\n"
+			"   'availableDeviceSlots\n"
 			"   'availableNonWeaponSlots\n"
 			"   'availableWeaponSlots\n"
 			"   'blindingImmune\n"

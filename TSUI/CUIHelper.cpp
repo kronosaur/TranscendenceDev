@@ -805,10 +805,16 @@ void CUIHelper::GenerateDockScreenRTF (const CString &sText, CString *retsRTF) c
 	if (Output.Create() != NOERROR)
 		return;
 
-	//	LATER: Get this from VI. We can't right now because it only stores
-	//	16-bit colors.
+	//	If the text already starts with the RTF prefix, then we assume it is
+	//	properly formed RTF.
 
-	DWORD wQuoteColor = RGB(178, 217, 255);	//	H:210 S:30 B:100
+	if (strStartsWith(sText, CONSTLIT("{/rtf ")))
+		{
+		*retsRTF = sText;
+		return;
+		}
+
+	CG32bitPixel rgbColor = g_pHI->GetVisuals().GetColor(colorTextQuote);
 	CString sCloseQuote = CONSTLIT("”}");
 
 	//	Start with the RTF open
@@ -830,7 +836,7 @@ void CUIHelper::GenerateDockScreenRTF (const CString &sText, CString *retsRTF) c
 				}
 			else
 				{
-				CString sQuoteStart = strPatternSubst(CONSTLIT("{/c:0x%08x; “"), wQuoteColor);
+				CString sQuoteStart = strPatternSubst(CONSTLIT("{/c:#%02x%02x%02x; “"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
 				Output.Write(sQuoteStart.GetASCIIZPointer(), sQuoteStart.GetLength());
 				bInQuotes = true;
 				}

@@ -46,9 +46,11 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define FIELD_THRUST_TO_WEIGHT					CONSTLIT("thrustToWeight")
 
 #define PROPERTY_ALWAYS_LEAVE_WRECK				CONSTLIT("alwaysLeaveWreck")
+#define PROPERTY_AVAILABLE_DEVICE_SLOTS			CONSTLIT("availableDeviceSlots")
 #define PROPERTY_AVAILABLE_NON_WEAPON_SLOTS		CONSTLIT("availableNonWeaponSlots")
 #define PROPERTY_AVAILABLE_WEAPON_SLOTS			CONSTLIT("availableWeaponSlots")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
+#define PROPERTY_CARGO_SPACE					CONSTLIT("cargoSpace")
 #define PROPERTY_CHARACTER						CONSTLIT("character")
 #define PROPERTY_CHARACTER_CLASS				CONSTLIT("characterClass")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
@@ -2719,6 +2721,12 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
 
+	else if (strEquals(sName, PROPERTY_AVAILABLE_DEVICE_SLOTS))
+		{
+		int iAll = CalcDeviceSlotsInUse();
+
+		return CC.CreateInteger(m_pClass->GetMaxDevices() - iAll);
+		}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_NON_WEAPON_SLOTS))
 		{
 		int iNonWeapon;
@@ -2744,6 +2752,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
 		}
+	else if (strEquals(sName, PROPERTY_CARGO_SPACE))
+		return CC.CreateInteger(CalcMaxCargoSpace());
+
 	else if (strEquals(sName, PROPERTY_CHARACTER))
 		{
 		CGenericType *pCharacter = m_pClass->GetCharacter();

@@ -40,6 +40,7 @@
 #define SEGMENT_ATTRIB							CONSTLIT("segment")
 #define SHIELD_EFFECT_ATTRIB					CONSTLIT("shieldLevelEffect")
 #define SHIP_SCREEN_ATTRIB						CONSTLIT("shipScreen")
+#define SHIP_CONFIG_SCREEN_ATTRIB				CONSTLIT("shipConfigScreen")
 #define STARTING_CREDITS_ATTRIB					CONSTLIT("startingCredits")
 #define STARTING_MAP_ATTRIB						CONSTLIT("startingMap")
 #define STARTING_POS_ATTRIB						CONSTLIT("startingPos")
@@ -84,6 +85,7 @@ CPlayerSettings &CPlayerSettings::operator= (const CPlayerSettings &Source)
 	m_sStartPos = Source.m_sStartPos;						//	Label of starting position (may be blank)
 	m_pShipScreen = Source.m_pShipScreen;			//	Ship screen
 	m_pDockServicesScreen = Source.m_pDockServicesScreen;
+	m_pShipConfigScreen = Source.m_pShipConfigScreen;
 
 	//	Armor
 
@@ -126,6 +128,7 @@ void CPlayerSettings::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_dwLargeImage, true);
 	retTypesUsed->SetAt(strToInt(m_pShipScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(strToInt(m_pDockServicesScreen.GetUNID(), 0), true);
+	retTypesUsed->SetAt(strToInt(m_pShipConfigScreen.GetUNID(), 0), true);
 
 	//	LATER: Add armor images, etc.
 	}
@@ -148,6 +151,9 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 		return error;
 
 	if (error = m_pDockServicesScreen.Bind(Ctx, pClass->GetLocalScreens()))
+		return error;
+
+	if (error = m_pShipConfigScreen.Bind(Ctx, pClass->GetLocalScreens()))
 		return error;
 
 	if (error = m_StartingCredits.Bind(Ctx))
@@ -371,6 +377,18 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 			sUNID = strFromInt(COMPATIBLE_DOCK_SERVICES_SCREEN, false);
 
 		m_pDockServicesScreen.LoadUNID(Ctx, sUNID);
+		}
+
+	if (pDesc->FindAttribute(SHIP_CONFIG_SCREEN_ATTRIB, &sUNID))
+		m_pShipConfigScreen.LoadUNID(Ctx, sUNID);
+	else
+		{
+		if (pClass->GetAPIVersion() >= 27)
+			sUNID = strFromInt(DEFAULT_DOCK_SERVICES_SCREEN, false);
+		else
+			sUNID = strFromInt(COMPATIBLE_SHIP_CONFIG_SCREEN, false);
+
+		m_pShipConfigScreen.LoadUNID(Ctx, sUNID);
 		}
 
 	//	Load the armor display data

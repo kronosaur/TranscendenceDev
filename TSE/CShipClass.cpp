@@ -128,6 +128,7 @@
 #define FIELD_MAX_ROTATION						CONSTLIT("maxRotation")
 #define FIELD_MAX_SPEED							CONSTLIT("maxSpeed")
 #define FIELD_NAME								CONSTLIT("name")
+#define FIELD_PLAYER_DESC						CONSTLIT("playerDesc")
 #define FIELD_PRIMARY_ARMOR						CONSTLIT("primaryArmor")
 #define FIELD_PRIMARY_ARMOR_UNID				CONSTLIT("primaryArmorUNID")
 #define FIELD_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
@@ -139,6 +140,7 @@
 #define FIELD_SIZE								CONSTLIT("size")
 #define FIELD_SHIELD							CONSTLIT("shield")
 #define FIELD_SHIELD_UNID						CONSTLIT("shieldsUNID")
+#define FIELD_SHIP_CONFIG_SCREEN				CONSTLIT("shipConfigScreen")
 #define FIELD_SHIP_STATUS_SCREEN				CONSTLIT("shipStatusScreen")
 #define FIELD_STARTING_SYSTEM					CONSTLIT("startingSystem")
 #define FIELD_THRUST							CONSTLIT("thrust")
@@ -1724,6 +1726,14 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = GetNounPhrase(0x00);
+	else if (strEquals(sField, FIELD_PLAYER_DESC))
+		{
+		const CPlayerSettings *pPlayer = GetPlayerSettings();
+		if (pPlayer)
+			*retsValue = pPlayer->GetDesc();
+		else
+			*retsValue = CONSTLIT("none");
+		}
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR))
 		{
 		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_ARMOR_UNID), 0));
@@ -1759,6 +1769,14 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		CDeviceClass *pDevice = m_AverageDevices.GetNamedDevice(devShields);
 		if (pDevice)
 			*retsValue = strFromInt(pDevice->GetUNID());
+		else
+			*retsValue = CONSTLIT("none");
+		}
+	else if (strEquals(sField, FIELD_SHIP_CONFIG_SCREEN))
+		{
+		const CPlayerSettings *pPlayer = GetPlayerSettings();
+		if (pPlayer)
+			*retsValue = pPlayer->GetShipConfigScreen().GetStringUNID(this);
 		else
 			*retsValue = CONSTLIT("none");
 		}
@@ -2147,8 +2165,18 @@ CString CShipClass::GetGenericName (DWORD *retdwFlags)
 		{
 		if (GetShipTypeName().IsBlank())
 			return GetClassName();
+
+		//	If we're asking for noun flags, then it likely means that we will 
+		//	use ComposeNounPhrase. In that case, return the short-name syntax.
+
+		else if (retdwFlags)
+			return strPatternSubst(CONSTLIT("%s[-class %s]"), GetClassName(), GetShipTypeName());
+
+		//	Otherwise, just the class name
+
 		else
 			return strPatternSubst(CONSTLIT("%s-class %s"), GetClassName(), GetShipTypeName());
+
 		}
 	}
 

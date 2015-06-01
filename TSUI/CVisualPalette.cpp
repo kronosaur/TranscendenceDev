@@ -68,6 +68,7 @@ static SColorInitTable COLOR_TABLE[] =
 		{	"TextAccelerator",			CG32bitPixel(0xFF, 0xFF, 0x00) },	//	H:60  S:100 B:100
 
 		{	"AreaAccelerator",			CG32bitPixel(0xCB, 0xCB, 0x00) },	//	H:60  S:100 B:80
+		{	"TextQuoteColor",			CG32bitPixel(0xB2, 0xD9, 0xFF) },	//	H:210 S:30  B:100
 	};
 
 struct SFontInitTable

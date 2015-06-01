@@ -616,11 +616,13 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 	if (pShipToRefuel == NULL)
 		return false;
 
+	int iMaxFuel = pShipToRefuel->GetMaxFuel();
+
 	for (i = 0; i < m_List.GetCount(); i++)
 		if (m_List[i].iService == serviceRefuel)
 			{
-			int iBestLevel = 0;
 			int iBestPrice = 0;
+			int iBestMetric = 0;
 			CItemType *pBestItem = NULL;
 
 			//	Find the highest-level item that matches the given criteria.
@@ -634,7 +636,22 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 				if (Item.MatchesCriteria(m_List[i].ItemCriteria)
 						&& pShipToRefuel->IsFuelCompatible(Item))
 					{
-					if (pBestItem == NULL || pType->GetLevel() > iBestLevel)
+					//	Compute how good this fuel is relative to others. Any fuel 
+					//	that requires at least 10 items to fill the ship is worth
+					//	100 points.
+					//
+					//	We add the item level to that base. We need to do this because
+					//	we don't want to refuel with in big chunks (or else we'll
+					//	think the ship is close enough to full).
+
+					int iFuelPerItem = strToInt(Item.GetType()->GetData(), 0, NULL);
+					if (iFuelPerItem == 0)
+						iFuelPerItem = 1;
+
+					int iItemsToFillShip = iMaxFuel / iFuelPerItem;
+
+					int iMetric = ((iItemsToFillShip >= 10) ? 100 : 0) + pType->GetLevel();
+					if (pBestItem == NULL || iMetric > iBestMetric)
 						{
 						//	Compute the price, because if we don't sell it, then we
 						//	skip it.
@@ -646,8 +663,8 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 						if (iPrice >= 0)
 							{
 							pBestItem = pType;
-							iBestLevel = pType->GetLevel();
 							iBestPrice = iPrice;
+							iBestMetric = iMetric;
 							}
 						}
 					}

@@ -2698,6 +2698,7 @@ class CPlayerSettings
 		inline DWORD GetLargeImage (void) const { return m_dwLargeImage; }
 		inline const SReactorImageDesc &GetReactorDesc (void) const { return (m_fHasReactorDesc ? m_ReactorDesc : *m_pReactorDescInherited); }
 		inline const SShieldImageDesc &GetShieldDesc (void) const { return (m_fHasShieldDesc ? m_ShieldDesc : *m_pShieldDescInherited); }
+		inline const CDockScreenTypeRef &GetShipConfigScreen (void) const { return m_pShipConfigScreen; }
 		inline const CDockScreenTypeRef &GetShipScreen (void) const { return m_pShipScreen; }
 		inline const CCurrencyAndRange &GetStartingCredits (void) const { return m_StartingCredits; }
 		inline DWORD GetStartingMap (void) const { return m_dwStartMap; }
@@ -2730,6 +2731,7 @@ class CPlayerSettings
 		CString m_sStartPos;						//	Label of starting position (may be blank)
 		CDockScreenTypeRef m_pShipScreen;			//	Ship screen
 		CDockScreenTypeRef m_pDockServicesScreen;	//	Screen used for ship upgrades (may be NULL)
+		CDockScreenTypeRef m_pShipConfigScreen;		//	Screen used to show ship configuration (may be NULL)
 
 		//	Armor
 		SArmorImageDesc m_ArmorDesc;
