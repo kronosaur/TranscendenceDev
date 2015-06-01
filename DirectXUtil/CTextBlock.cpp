@@ -527,7 +527,12 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 					Format.bBold = true;
 				else if (strEquals(sCode, CODE_COLOR))
 					{
-					DWORD dwRGB = (DWORD)strToInt(sParam, 0);
+					DWORD dwRGB;
+					if (*sParam.GetASCIIZPointer() == '#')
+						dwRGB = (DWORD)strToCOLORREF(sParam);
+					else
+						dwRGB = (DWORD)strToInt(sParam, 0);
+
 					Format.rgbColor = CG32bitPixel(GetRValue(dwRGB), GetGValue(dwRGB), GetBValue(dwRGB));
 					}
 				else if (strEquals(sCode, CODE_TYPEFACE))

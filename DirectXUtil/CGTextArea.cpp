@@ -62,7 +62,7 @@ void CGTextArea::FormatRTF (const RECT &rcRect)
 
 		BlockFormat.cxWidth = RectWidth(rcRect);
 		BlockFormat.cyHeight = -1;
-		BlockFormat.iHorzAlign = alignLeft;
+		BlockFormat.iHorzAlign = ((m_dwStyles & alignRight) ? alignRight : ((m_dwStyles & alignCenter) ? alignCenter : alignLeft));
 		BlockFormat.iVertAlign = alignTop;
 		BlockFormat.iExtraLineSpacing = m_cyLineSpacing;
 
