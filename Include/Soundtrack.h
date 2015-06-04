@@ -143,6 +143,7 @@ class CSoundtrackManager
 		CSoundType *CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const;
 		int GetLastPlayedRank (DWORD dwUNID) const;
 		bool IsPlayingCombatTrack (void) const;
+		bool InTransition (void) const;
 		void Play (CSoundType *pTrack);
 		void Reinit (void);
 		void TransitionTo (CSoundType *pTrack, int iPos, bool bFadeIn = false);
@@ -158,7 +159,7 @@ class CSoundtrackManager
 		TQueue<DWORD> m_LastPlayed;			//	UNID of tracks played.
 		bool m_bSystemTrackPlayed;			//	systemSoundtrack already played in system.
 		bool m_bStartCombatWhenUndocked;	//	If TRUE, we play combat music when we undock
-		bool m_bInTransition;				//	Transitioning to a new track
+		DWORD m_dwTransition;				//	Tick on which we started a transition
 		DWORD m_dwStartedCombat;			//	Millisecond on which we started combat
 		DWORD m_dwStartedTravel;			//	Millisecond on which we started travel mode
 

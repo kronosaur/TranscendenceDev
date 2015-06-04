@@ -11,6 +11,7 @@
 
 const DWORD MIN_COMBAT_LENGTH =					10000;	//	10 seconds
 const DWORD MIN_TRAVEL_LENGTH =					10000;	//	10 seconds
+const DWORD MAX_TRANSITION =					15000;
 
 //	VOLUME_LEVEL
 //
@@ -45,7 +46,7 @@ CSoundtrackManager::CSoundtrackManager (void) :
 		m_LastPlayed(10),
 		m_bSystemTrackPlayed(false),
 		m_bStartCombatWhenUndocked(false),
-		m_bInTransition(false),
+		m_dwTransition(0),
 		m_dwStartedCombat(0),
 		m_dwStartedTravel(0)
 
@@ -328,6 +329,16 @@ int CSoundtrackManager::GetLastPlayedRank (DWORD dwUNID) const
 	return -1;
 	}
 
+bool CSoundtrackManager::InTransition (void) const
+
+//	InTransition
+//
+//	Returns TRUE if we are in transition between tracks
+
+	{
+	return (m_dwTransition != 0 && ::sysGetTicksElapsed(m_dwTransition) < MAX_TRANSITION);
+	}
+
 bool CSoundtrackManager::IsPlayingCombatTrack (void) const
 
 //	IsPlayingCombatTrack
@@ -345,7 +356,7 @@ void CSoundtrackManager::NextTrack (void)
 //	Play the next track
 
 	{
-	if (m_bInTransition)
+	if (InTransition())
 		return;
 
 	if (m_bEnabled)
@@ -380,7 +391,7 @@ void CSoundtrackManager::NotifyEndCombat (void)
 	//	switch to travel. Otherwise, we stay in combat.
 
 	if (m_bEnabled
-			&& !m_bInTransition
+			&& !InTransition()
 			&& IsPlayingCombatTrack()
 			&& ::sysGetTicksElapsed(m_dwStartedCombat) > MIN_COMBAT_LENGTH)
 		TransitionToTravel();
@@ -468,7 +479,7 @@ void CSoundtrackManager::NotifyStartCombat (void)
 	//	then switch to combat immediately. Otherwise, we wait.
 
 	if (m_bEnabled
-			&& !m_bInTransition
+			&& !InTransition()
 			&& !IsPlayingCombatTrack()
 			&& ::sysGetTicksElapsed(m_dwStartedTravel) > MIN_TRAVEL_LENGTH)
 		TransitionToCombat();
@@ -500,7 +511,7 @@ void CSoundtrackManager::NotifyTrackDone (void)
 
 	//	If we're transitioning then we wait for a subsequent play.
 
-	if (m_bInTransition)
+	if (InTransition())
 		return;
 
 	//	Play another appropriate track
@@ -542,7 +553,7 @@ void CSoundtrackManager::NotifyTrackPlaying (CSoundType *pTrack)
 
 		//	Done with transition
 
-		m_bInTransition = false;
+		m_dwTransition = 0;
 		}
 	}
 
@@ -572,7 +583,7 @@ void CSoundtrackManager::NotifyUpdatePlayPos (int iPos)
 	//	of sync because we have to wait until we're done transitioning. Here we
 	//	take the opportunity to make sure we're in the right mode.
 
-	if (!m_bInTransition 
+	if (!InTransition()
 			&& m_bEnabled)
 		{
 		if (IsPlayingCombatTrack())
@@ -662,7 +673,7 @@ void CSoundtrackManager::PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScree
 			(m_pNowPlaying ? m_pNowPlaying->GetFilename() : CONSTLIT("none")), 
 			(IsPlayingCombatTrack() ? CONSTLIT(" [combat]") : NULL_STR)));
 
-	if (m_bInTransition)
+	if (InTransition())
 		DebugLines.Insert(CONSTLIT("IN TRANSITION"));
 	else
 		DebugLines.Insert(CONSTLIT("Ready"));
@@ -711,7 +722,7 @@ void CSoundtrackManager::Play (CSoundType *pTrack)
 			return;
 			}
 
-		m_bInTransition = true;
+		m_dwTransition = ::GetTickCount();
 		m_Mixer.Play(pTrack);
 		}
 	}
@@ -881,7 +892,7 @@ void CSoundtrackManager::TransitionTo (CSoundType *pTrack, int iPos, bool bFadeI
 
 	//	Remember that we're transitioning so we don't try to transition again.
 
-	m_bInTransition = true;
+	m_dwTransition = ::GetTickCount();
 
 	//	Now queue up the next track
 
