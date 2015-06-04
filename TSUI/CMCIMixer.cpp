@@ -229,8 +229,6 @@ void CMCIMixer::GetDebugInfo (TArray<CString> *retLines) const
 //	Returns debug information about our current state
 
 	{
-	int i;
-
 	//	Add the current state of the processing thread
 
 #ifdef DEBUG_SOUNDTRACK_STATE
