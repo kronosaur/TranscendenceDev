@@ -139,6 +139,19 @@ void CGFrameArea::LButtonUp (int x, int y)
 		}
 	}
 
+void CGFrameArea::MouseLeave (void)
+
+//	MouseLeave
+//
+//	Mouse leaves area
+
+	{
+	if (m_pMouseOver)
+		m_pMouseOver->MouseLeave();
+
+	m_pMouseOver = NULL;
+	}
+
 void CGFrameArea::MouseMove (int x, int y)
 
 //	MouseMove

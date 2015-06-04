@@ -145,6 +145,7 @@ class CGFrameArea : public AGArea, public IAreaContainer
 		virtual bool LButtonDoubleClick (int x, int y);
 		virtual bool LButtonDown (int x, int y);
 		virtual void LButtonUp (int x, int y);
+		virtual void MouseLeave (void);
 		virtual void MouseMove (int x, int y);
 		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect);
 		virtual void Update (void);
