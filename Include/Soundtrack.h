@@ -11,10 +11,12 @@ class CMCIMixer
 		CMCIMixer (int iChannels = 2);
 		~CMCIMixer (void);
 
+		void AbortAllRequests (void);
 		void FadeAtPos (int iPos);
 		void FadeNow (void);
 		int GetCurrentPlayLength (void) const;
 		int GetCurrentPlayPos (void) const;
+		void GetDebugInfo (TArray<CString> *retLines) const;
 		bool Play (CSoundType *pTrack, int iPos = 0);
 		bool PlayFadeIn (CSoundType *pTrack, int iPos = 0);
 		void SetPlayPaused (bool bPlay);
@@ -59,6 +61,7 @@ class CMCIMixer
 		void CreateParentWindow (void);
 		void EnqueueRequest (ERequestType iType, CSoundType *pTrack = NULL, int iPos = 0);
 		bool FindChannel (HWND hMCI, SChannel **retpChannel = NULL);
+		CString GetRequestDesc (const SRequest &Request) const;
 		void LogError (HWND hMCI, const CString &sState, const CString &sFilespec = NULL_STR);
 		LONG OnNotifyMode (HWND hWnd, int iMode);
 		LONG OnNotifyPos (HWND hWnd, int iPos);
@@ -83,13 +86,17 @@ class CMCIMixer
 
 		//	Synchronization
 
-		CCriticalSection m_cs;
+		mutable CCriticalSection m_cs;
 		TQueue<SRequest> m_Request;			//	Queue of requests
 		HANDLE m_hProcessingThread;			//	Processing thread handle
 		HANDLE m_hQuitEvent;				//	Tell thread to quit
 		HANDLE m_hWorkEvent;				//	Tell thread to work
 		HANDLE m_hAbortEvent;				//	Tell thread to stop
 		bool m_bNoStopNotify;
+
+#ifdef DEBUG_SOUNDTRACK_STATE
+		SRequest m_CurRequest;				//	Request being processed
+#endif
 	};
 
 class CSoundtrackManager
@@ -122,6 +129,7 @@ class CSoundtrackManager
 		void NotifyTrackPlaying (CSoundType *pTrack);
 		void NotifyUndocked (void);
 		void NotifyUpdatePlayPos (int iPos);
+		void PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen);
 		void SetGameState (EGameStates iNewState);
 		void SetGameState (EGameStates iNewState, CSoundType *pTrack);
 		void SetMusicEnabled (bool bEnabled = true);
@@ -151,9 +159,8 @@ class CSoundtrackManager
 		bool m_bSystemTrackPlayed;			//	systemSoundtrack already played in system.
 		bool m_bStartCombatWhenUndocked;	//	If TRUE, we play combat music when we undock
 		bool m_bInTransition;				//	Transitioning to a new track
-		DWORD m_dwHoldUntil;				//	Do not transition until this tick
-		DWORD m_dwStartedCombat;			//	Tick on which we started combat
-		DWORD m_dwStartedTravel;			//	Tick on which we started travel mode
+		DWORD m_dwStartedCombat;			//	Millisecond on which we started combat
+		DWORD m_dwStartedTravel;			//	Millisecond on which we started travel mode
 
 		CSoundType *m_pIntroTrack;			//	Track to play for intro.
 	};

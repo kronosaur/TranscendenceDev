@@ -9,8 +9,8 @@
 #define ATTRIB_SYSTEM_SOUNDTRACK				CONSTLIT("systemSoundtrack")
 #define ATTRIB_TRAVEL_SOUNDTRACK				CONSTLIT("travelSoundtrack")
 
-const DWORD MIN_COMBAT_LENGTH =					300;
-const DWORD MIN_TRAVEL_LENGTH =					300;
+const DWORD MIN_COMBAT_LENGTH =					10000;	//	10 seconds
+const DWORD MIN_TRAVEL_LENGTH =					10000;	//	10 seconds
 
 //	VOLUME_LEVEL
 //
@@ -46,7 +46,6 @@ CSoundtrackManager::CSoundtrackManager (void) :
 		m_bSystemTrackPlayed(false),
 		m_bStartCombatWhenUndocked(false),
 		m_bInTransition(false),
-		m_dwHoldUntil(0),
 		m_dwStartedCombat(0),
 		m_dwStartedTravel(0)
 
@@ -358,7 +357,6 @@ void CSoundtrackManager::NextTrack (void)
 		//	Transition
 
 		TransitionTo(pTrack, pTrack->GetNextPlayPos());
-		m_bInTransition = true;
 		}
 	}
 
@@ -381,21 +379,13 @@ void CSoundtrackManager::NotifyEndCombat (void)
 	//	If we've been in combat for longer than the minimum time, then
 	//	switch to travel. Otherwise, we stay in combat.
 
-	if (m_bEnabled)
-		{
-		DWORD dwTimeInCombat = g_pUniverse->GetTicks() - m_dwStartedCombat;
-		if (dwTimeInCombat < MIN_COMBAT_LENGTH)
-			m_dwHoldUntil = g_pUniverse->GetTicks() + (MIN_COMBAT_LENGTH - dwTimeInCombat);
-		else
-			{
-			m_dwHoldUntil = 0;
+	if (m_bEnabled
+			&& !m_bInTransition
+			&& IsPlayingCombatTrack()
+			&& ::sysGetTicksElapsed(m_dwStartedCombat) > MIN_COMBAT_LENGTH)
+		TransitionToTravel();
 
-			if (!m_bInTransition)
-				TransitionToTravel();
-			}
-		}
-
-	//	Remember our state
+	//	Regardless of whether we transition, remember our state
 
 	m_iGameState = stateGameTravel;
 	}
@@ -450,7 +440,7 @@ void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTim
 			return;
 
 		TransitionTo(pTrack, 0);
-		m_bInTransition = true;
+		m_dwStartedTravel = ::GetTickCount();
 		}
 
 	//	Remember our state
@@ -477,19 +467,11 @@ void CSoundtrackManager::NotifyStartCombat (void)
 	//	Figure out how long we've been in travel mode. If long enough,
 	//	then switch to combat immediately. Otherwise, we wait.
 
-	if (m_bEnabled)
-		{
-		DWORD dwTimeInTravel = g_pUniverse->GetTicks() - m_dwStartedTravel;
-		if (dwTimeInTravel < MIN_TRAVEL_LENGTH)
-			m_dwHoldUntil = g_pUniverse->GetTicks() + (MIN_TRAVEL_LENGTH - dwTimeInTravel);
-		else
-			{
-			m_dwHoldUntil = 0;
-
-			if (!m_bInTransition)
-				TransitionToCombat();
-			}
-		}
+	if (m_bEnabled
+			&& !m_bInTransition
+			&& !IsPlayingCombatTrack()
+			&& ::sysGetTicksElapsed(m_dwStartedTravel) > MIN_TRAVEL_LENGTH)
+		TransitionToCombat();
 
 	//	Set state
 
@@ -540,6 +522,10 @@ void CSoundtrackManager::NotifyTrackPlaying (CSoundType *pTrack)
 
 	if (pTrack)
 		{
+		//	Were we playing a combat tract?
+
+		bool bPrevCombat = IsPlayingCombatTrack();
+
 		//	Remember that we're playing
 
 		m_pNowPlaying = pTrack;
@@ -583,19 +569,19 @@ void CSoundtrackManager::NotifyUpdatePlayPos (int iPos)
 
 	{
 	//	Sometimes, if we transition in/out of combat too quickly, we get out
-	//	of synch because we have to wait until we're done transitioning. Here we
+	//	of sync because we have to wait until we're done transitioning. Here we
 	//	take the opportunity to make sure we're in the right mode.
 
 	if (!m_bInTransition 
-			&& m_bEnabled
-			&& (m_dwHoldUntil == 0 || (DWORD)g_pUniverse->GetTicks() > m_dwHoldUntil))
+			&& m_bEnabled)
 		{
 		if (IsPlayingCombatTrack())
 			{
 			//	If we're playing a combat track and we are not in combat, then
 			//	transition to travel music
 
-			if (m_iGameState == stateGameTravel)
+			if (m_iGameState == stateGameTravel
+					&& sysGetTicksElapsed(m_dwStartedCombat) > MIN_COMBAT_LENGTH)
 				TransitionToTravel();
 			}
 		else
@@ -603,11 +589,101 @@ void CSoundtrackManager::NotifyUpdatePlayPos (int iPos)
 			//	If we're playing a travel track and we're in combat, then 
 			//	transition to combat.
 
-			if (m_iGameState == stateGameCombat)
+			if (m_iGameState == stateGameCombat
+					&& sysGetTicksElapsed(m_dwStartedTravel) > MIN_TRAVEL_LENGTH)
 				TransitionToCombat();
 			}
+		}
+	}
 
-		m_dwHoldUntil = 0;
+void CSoundtrackManager::PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen)
+
+//	PaintDebugInfo
+//
+//	Paint debug information about our state
+
+	{
+	int i;
+
+	TArray<CString> DebugLines;
+
+	CSpaceObject *pObj = g_pUniverse->GetPlayerShip();
+	CShip *pPlayerShip = (pObj ? pObj->AsShip() : NULL);
+	IShipController *pController = (pPlayerShip ? pPlayerShip->GetController() : NULL);
+	
+	if (pController && !pController->GetAISettingString(CONSTLIT("underAttack")).IsBlank())
+		DebugLines.Insert(CONSTLIT("Combat: Under attack"));
+	else
+		DebugLines.Insert(CONSTLIT("Combat: None"));
+
+	DebugLines.Insert(strPatternSubst(CONSTLIT("Travel Time: %d"), (m_dwStartedTravel == 0 ? 0 : ::GetTickCount() - m_dwStartedTravel)));
+	DebugLines.Insert(strPatternSubst(CONSTLIT("Combat Time: %d"), (m_dwStartedCombat == 0 ? 0 : ::GetTickCount() - m_dwStartedCombat)));
+
+	//	Current state
+
+	switch (m_iGameState)
+		{
+		case stateProgramLoad:
+			DebugLines.Insert(CONSTLIT("State: program load"));
+			break;
+
+		case stateProgramIntro:
+			DebugLines.Insert(CONSTLIT("State: program intro"));
+			break;
+
+		case stateGamePrologue:
+			DebugLines.Insert(CONSTLIT("State: game prologue"));
+			break;
+
+		case stateGameTravel:
+			DebugLines.Insert(CONSTLIT("State: game travel"));
+			break;
+
+		case stateGameCombat:
+			DebugLines.Insert(CONSTLIT("State: game combat"));
+			break;
+
+		case stateGameEpitaph:
+			DebugLines.Insert(CONSTLIT("State: game epitaph"));
+			break;
+
+		case stateProgramQuit:
+			DebugLines.Insert(CONSTLIT("State: program quit"));
+			break;
+
+		default:
+			DebugLines.Insert(CONSTLIT("State: unknown"));
+			break;
+		}
+
+	//	Add our own debug info
+
+	DebugLines.Insert(strPatternSubst("m_pNowPlaying: %s%s", 
+			(m_pNowPlaying ? m_pNowPlaying->GetFilename() : CONSTLIT("none")), 
+			(IsPlayingCombatTrack() ? CONSTLIT(" [combat]") : NULL_STR)));
+
+	if (m_bInTransition)
+		DebugLines.Insert(CONSTLIT("IN TRANSITION"));
+	else
+		DebugLines.Insert(CONSTLIT("Ready"));
+
+	//	Get debug info from the mixer
+
+	m_Mixer.GetDebugInfo(&DebugLines);
+
+	//	Paint the lines
+
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &TextFont = VI.GetFont(fontMedium);
+	CG32bitPixel rgbColor = VI.GetColor(colorTextHighlight);
+
+	int y = rcScreen.top + RectHeight(rcScreen) / 2;
+	int x = rcScreen.left + 20;
+
+	for (i = 0; i < DebugLines.GetCount(); i++)
+		{
+		TextFont.DrawText(Dest, x, y, rgbColor, DebugLines[i]);
+		y += TextFont.GetHeight();
 		}
 	}
 
@@ -768,6 +844,14 @@ void CSoundtrackManager::TransitionTo (CSoundType *pTrack, int iPos, bool bFadeI
 //	necessary.
 
 	{
+	if (pTrack->HasAttribute(ATTRIB_COMBAT_SOUNDTRACK)
+			&& sysGetTicksElapsed(m_dwStartedTravel) < MIN_TRAVEL_LENGTH)
+		DebugBreak();
+
+	//	Kill the current queue because we don't want to deal with stale commands
+
+	m_Mixer.AbortAllRequests();
+
 	//	If we've got a current track, then we need to fade it out
 
 	if (m_pNowPlaying)
@@ -794,6 +878,10 @@ void CSoundtrackManager::TransitionTo (CSoundType *pTrack, int iPos, bool bFadeI
 		else
 			m_Mixer.FadeAtPos(iEndPos);
 		}
+
+	//	Remember that we're transitioning so we don't try to transition again.
+
+	m_bInTransition = true;
 
 	//	Now queue up the next track
 
@@ -827,8 +915,8 @@ void CSoundtrackManager::TransitionToCombat (void)
 	//	Transition
 
 	TransitionTo(pCombatTrack, pCombatTrack->GetNextPlayPos());
-	m_bInTransition = true;
-	m_dwStartedCombat = g_pUniverse->GetTicks();
+	m_dwStartedCombat = ::GetTickCount();
+	m_dwStartedTravel = 0;
 	}
 
 void CSoundtrackManager::TransitionToTravel (void)
@@ -858,7 +946,6 @@ void CSoundtrackManager::TransitionToTravel (void)
 	//	Transition
 
 	TransitionTo(pTrack, pTrack->GetNextPlayPos(), true);
-	m_bInTransition = true;
-	m_dwStartedTravel = g_pUniverse->GetTicks();
+	m_dwStartedTravel = ::GetTickCount();
+	m_dwStartedCombat = 0;
 	}
-

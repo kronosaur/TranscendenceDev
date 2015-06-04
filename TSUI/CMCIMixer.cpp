@@ -80,6 +80,17 @@ CMCIMixer::~CMCIMixer (void)
 	Shutdown();
 	}
 
+void CMCIMixer::AbortAllRequests (void)
+
+//	AbortAllRequests
+//
+//	Remove all requests
+
+	{
+	CSmartLock Lock(m_cs);
+	m_Request.DeleteAll();
+	}
+
 void CMCIMixer::CreateParentWindow (void)
 
 //	CreateParentWindow
@@ -209,6 +220,62 @@ int CMCIMixer::GetCurrentPlayPos (void) const
 	{
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
 	return MCIWndGetPosition(hMCI);
+	}
+
+void CMCIMixer::GetDebugInfo (TArray<CString> *retLines) const
+
+//	GetDebugInfo
+//
+//	Returns debug information about our current state
+
+	{
+	int i;
+
+	//	Add the current state of the processing thread
+
+#ifdef DEBUG_SOUNDTRACK_STATE
+	m_cs.Lock();
+	retLines->Insert(strPatternSubst(CONSTLIT("Mixer: %s"), GetRequestDesc(m_CurRequest)));
+	for (i = 0; i < m_Request.GetCount(); i++)
+		retLines->Insert(strPatternSubst(CONSTLIT("Queue[%02d]: %s"), i + 1, GetRequestDesc(m_Request.GetAt(i))));
+	m_cs.Unlock();
+#endif
+	}
+
+CString CMCIMixer::GetRequestDesc (const SRequest &Request) const
+
+//	GetRequestDesc
+//
+//	Returns a description of a request
+
+	{
+	switch (Request.iType)
+		{
+		case typePlay:
+			return strPatternSubst(CONSTLIT("ProcessPlay: %s"), Request.pTrack->GetFilespec());
+
+		case typeStop:
+			return CONSTLIT("ProcessStop");
+
+		case typePlayPause:
+			return CONSTLIT("ProcessPlayPause");
+
+		case typeWaitForPos:
+			return strPatternSubst(CONSTLIT("ProcessWaitForPos: %d"), Request.iPos);
+
+		case typeFadeIn:
+			return strPatternSubst(CONSTLIT("ProcessFadeIn: %s"), Request.pTrack->GetFilespec());
+
+		case typeFadeOut:
+			return CONSTLIT("ProcessFadeOut");
+
+		case typeSetPaused:
+		case typeSetUnpaused:
+			return CONSTLIT("ProcessSetPlayPaused");
+
+		default:
+			return CONSTLIT("Idle");
+		}
 	}
 
 void CMCIMixer::LogError (HWND hMCI, const CString &sState, const CString &sFilespec)
@@ -587,6 +654,10 @@ bool CMCIMixer::ProcessRequest (void)
 	else
 		bMoreEvents = true;
 
+#ifdef DEBUG_SOUNDTRACK_STATE
+	m_CurRequest = Request;
+#endif
+
 	//	Unlock so we can process the event
 
 	m_cs.Unlock();
@@ -613,7 +684,7 @@ bool CMCIMixer::ProcessRequest (void)
 
 		case typeStop:
 #ifdef DEBUG_SOUNDTRACK
-		kernelDebugLogMessage("ProcessStop requested.");
+			kernelDebugLogMessage("ProcessStop requested.");
 
 #endif
 			ProcessStop(Request);
@@ -628,6 +699,12 @@ bool CMCIMixer::ProcessRequest (void)
 			ProcessSetPlayPaused(Request);
 			break;
 		}
+
+#ifdef DEBUG_SOUNDTRACK_STATE
+	m_cs.Lock();
+	m_CurRequest.iType = typeNone;
+	m_cs.Unlock();
+#endif
 
 	//	Return whether we think there are more events in the queue. This is a
 	//	heuristic, because someone might have changed the queue from under us,

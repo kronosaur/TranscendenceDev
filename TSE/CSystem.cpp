@@ -3402,7 +3402,8 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 			//	If an enemy, keep track
 
-			if (pCenter->IsEnemy(pObj))
+			if (pCenter->IsEnemy(pObj)
+					&& pObj->CanAttack())
 				{
 				if (bNewInLRS 
 						&& pObj->GetCategory() == CSpaceObject::catShip)
