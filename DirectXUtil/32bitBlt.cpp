@@ -901,6 +901,13 @@ void CGDraw::BltLighten (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage 
 	Filter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
 	}
 
+void CGDraw::BltMask0 (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
+
+	{
+	CFilterMask0 Filter;
+	Filter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+	}
+
 void CGDraw::BltScaled (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
 
 	{

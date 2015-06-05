@@ -986,7 +986,7 @@ class CAniNullFill : public IAniFillMethod
 class CAniImageFill : public IAniFillMethod
 	{
 	public:
-		CAniImageFill (const CG32bitImage *pImage, bool bFreeImage);
+		CAniImageFill (const CG32bitImage *pImage, bool bFreeImage, bool bMask0 = false);
 		virtual ~CAniImageFill (void);
 
 		//	IAniFillMethod
@@ -1001,6 +1001,7 @@ class CAniImageFill : public IAniFillMethod
 
 		const CG32bitImage *m_pImage;
 		bool m_bFreeImage;
+		bool m_bMask0;
 
 		DWORD m_dwOpacity;
 		int m_xOrigin;

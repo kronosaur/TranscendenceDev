@@ -190,6 +190,18 @@ class CFilterLighten : public TBlt<CFilterLighten>
 
 	};
 
+class CFilterMask0 : public TBlt<CFilterMask0>
+	{
+	public:
+		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+			{
+			if (Max(Max(rgbSrc.GetRed(), rgbSrc.GetGreen()), rgbSrc.GetBlue()) <= 7)
+				return CG32bitPixel::Null();
+			else
+				return rgbSrc;
+			}
+	};
+
 class CFilterShimmer : public TBlt<CFilterShimmer>
 	{
 	public:
@@ -222,7 +234,6 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 
 		BYTE m_byOpacity;
 		DWORD m_dwRnd;
-
 	};
 
 //	Circle Painters ------------------------------------------------------------
