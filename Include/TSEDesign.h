@@ -2700,6 +2700,7 @@ class CPlayerSettings
 		inline const SShieldImageDesc &GetShieldDesc (void) const { return (m_fHasShieldDesc ? m_ShieldDesc : *m_pShieldDescInherited); }
 		inline const CDockScreenTypeRef &GetShipConfigScreen (void) const { return m_pShipConfigScreen; }
 		inline const CDockScreenTypeRef &GetShipScreen (void) const { return m_pShipScreen; }
+		inline int GetSortOrder (void) const { return m_iSortOrder; }
 		inline const CCurrencyAndRange &GetStartingCredits (void) const { return m_StartingCredits; }
 		inline DWORD GetStartingMap (void) const { return m_dwStartMap; }
 		inline const CString &GetStartingNode (void) const { return m_sStartNode; }
@@ -2723,6 +2724,7 @@ class CPlayerSettings
 
 		CString m_sDesc;							//	Description
 		DWORD m_dwLargeImage;						//	UNID of large image
+		int m_iSortOrder;							//	For setting order of appearence
 
 		//	Miscellaneous
 		CCurrencyAndRange m_StartingCredits;		//	Starting credits
@@ -4237,6 +4239,7 @@ class CShipClass : public CDesignType
 		CString GetName (DWORD *retdwFlags = NULL);
 		CString GetNounPhrase (DWORD dwFlags);
 		inline const CPlayerSettings *GetPlayerSettings (void) const { return m_pPlayerSettings; }
+		CString GetPlayerSortString (void) const;
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
 		inline const ReactorDesc *GetReactorDesc (void) { return &m_ReactorDesc; }
@@ -4247,10 +4250,10 @@ class CShipClass : public CDesignType
 		inline int GetScore (void) { return m_iScore; }
 		const SShieldImageDesc *GetShieldDescInherited (void);
 		inline DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
-		CString GetShortName (void);
-		inline const CString &GetClassName (void) { return m_sName; }
+		CString GetShortName (void) const;
+		inline const CString &GetClassName (void) const { return m_sName; }
 		inline const CString &GetManufacturerName (void) const { return m_sManufacturer; }
-		inline const CString &GetShipTypeName (void) { return m_sTypeName; }
+		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
 		const SWeaponImageDesc *GetWeaponDescInherited (void);
 		inline int GetWreckChance (void) { return m_iLeavesWreck; }
 		CObjectImageArray &GetWreckImage (void) { if (!m_WreckImage.IsLoaded()) CreateWreckImage(); return m_WreckImage; }
@@ -4263,7 +4266,7 @@ class CShipClass : public CDesignType
 		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
 		void InstallEquipment (CShip *pShip);
-		inline bool IsDebugOnly (void) { return (m_pPlayerSettings && m_pPlayerSettings->IsDebugOnly()); }
+		inline bool IsDebugOnly (void) const { return (m_pPlayerSettings && m_pPlayerSettings->IsDebugOnly()); }
 		inline bool IsIncludedInAllAdventures (void) { return (m_pPlayerSettings && m_pPlayerSettings->IsIncludedInAllAdventures()); }
 		inline bool IsPlayerShip (void) { return (m_pPlayerSettings != NULL); }
 		inline bool IsShownAtNewGame (void) { return (m_pPlayerSettings && m_pPlayerSettings->IsInitialClass() && !IsVirtual()); }
@@ -6208,6 +6211,7 @@ class CExtension
 		inline bool IsDisabled (void) const { return m_bDisabled; }
 		inline bool IsHidden (void) const { return m_bPrivate; }
 		inline bool IsMarked (void) const { return m_bMarked; }
+		inline bool IsOfficial (void) const { return ((m_dwUNID & 0xFF000000) < 0xA0000000); }
 		inline bool IsRegistered (void) const { return m_bRegistered; }
 		inline bool IsRegistrationVerified (void) { return (m_bRegistered && m_bVerified); }
 		ALERROR Load (ELoadStates iDesiredState, IXMLParserController *pResolver, bool bNoResources, bool bKeepXML, CString *retsError);

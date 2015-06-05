@@ -235,11 +235,7 @@ ALERROR CAdventureDesc::GetStartingShipClasses (TSortMap<CString, CShipClass *> 
 				&& IsValidStartingClass(pClass)
 				&& (!pClass->IsDebugOnly() || bShowDebugShips))
 			{
-			CString sKey = strPatternSubst(CONSTLIT("%d %s !%x"), 
-					(pClass->IsDebugOnly() ? 2 : 1),
-					pClass->GetName(), 
-					pClass->GetUNID());
-			retClasses->Insert(sKey, pClass);
+			retClasses->Insert(pClass->GetPlayerSortString(), pClass);
 			}
 		}
 

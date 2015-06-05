@@ -2286,6 +2286,48 @@ CPlayerSettings *CShipClass::GetPlayerSettingsInherited (void) const
 		return NULL;
 	}
 
+CString CShipClass::GetPlayerSortString (void) const
+
+//	GetPlayerSortString
+//
+//	Returns a sort string ordering the player ships by order in which they should
+//	be shown to the player.
+//
+//	Sort should be ascending.
+
+	{
+	CExtension *pExtension = GetExtension();
+	const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
+
+	//	Official extensions, followed by registered, followed by unregistered.
+
+	int iDomain;
+	if (IsDebugOnly())
+		iDomain = 9;
+	else if (pExtension)
+		{
+		if (pExtension->IsRegistered())
+			{
+			if (pExtension->IsOfficial())
+				iDomain = 1;
+			else
+				iDomain = 2;
+			}
+		else
+			iDomain = 5;
+		}
+	else
+		iDomain = 9;
+
+	//	Combine
+
+	return strPatternSubst(CONSTLIT("%d-%06d-%s-%08x"), 
+			iDomain, 
+			(pPlayerSettings ? pPlayerSettings->GetSortOrder() : 10000),
+			GetShortName(), 
+			GetUNID());
+	}
+
 CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos)
 
 //	GetPosOffset
@@ -2353,7 +2395,7 @@ const SShieldImageDesc *CShipClass::GetShieldDescInherited (void)
 		return NULL;
 	}
 
-CString CShipClass::GetShortName (void)
+CString CShipClass::GetShortName (void) const
 
 //	GetShortName
 //

@@ -41,6 +41,7 @@
 #define SHIELD_EFFECT_ATTRIB					CONSTLIT("shieldLevelEffect")
 #define SHIP_SCREEN_ATTRIB						CONSTLIT("shipScreen")
 #define SHIP_CONFIG_SCREEN_ATTRIB				CONSTLIT("shipConfigScreen")
+#define SORT_ORDER_ATTRIB						CONSTLIT("sortOrder")
 #define STARTING_CREDITS_ATTRIB					CONSTLIT("startingCredits")
 #define STARTING_MAP_ATTRIB						CONSTLIT("startingMap")
 #define STARTING_POS_ATTRIB						CONSTLIT("startingPos")
@@ -77,6 +78,7 @@ CPlayerSettings &CPlayerSettings::operator= (const CPlayerSettings &Source)
 
 	m_sDesc = Source.m_sDesc;
 	m_dwLargeImage = Source.m_dwLargeImage;
+	m_iSortOrder = Source.m_iSortOrder;
 
 	//	Miscellaneous
 
@@ -339,6 +341,8 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 	m_fHasReactorDesc = false;
 	m_fHasShieldDesc = false;
 	m_fHasWeaponDesc = false;
+
+	m_iSortOrder = pDesc->GetAttributeIntegerBounded(SORT_ORDER_ATTRIB, 0, -1, 100);
 
 	//	Load some miscellaneous data
 
