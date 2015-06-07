@@ -775,6 +775,7 @@ void CUIHelper::FormatDisplayAttributes (TArray<SDisplayAttribute> &Attribs, con
 		int cyText = (ATTRIB_PADDING_Y * 2) + Medium.GetHeight();
 		if (cxText > cxLeft && cxLeft != RectWidth(rcRect))
 			{
+			x = rcRect.left;
 			y += cyText + ATTRIB_SPACING_Y;
 			cxLeft = RectWidth(rcRect);
 			}
@@ -1033,7 +1034,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 		//	Paint the damage type reference
 
 		PaintReferenceDamageType(Dest,
-				rcDrawRect.left + DAMAGE_ADJ_SPACING_X,
+				rcDrawRect.left,
 				rcDrawRect.top,
 				iDamageType,
 				sDamageRef);
@@ -1259,8 +1260,10 @@ void CUIHelper::PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int 
 
 	//	Paint the icon first
 
-	if (iDamageType != damageError)
+	if (iDamageType != damageError
+			&& iDamageType != damageGeneric)
 		{
+		//x += DAMAGE_ADJ_SPACING_X;
 		g_pHI->GetVisuals().DrawDamageTypeIcon(Dest, x, y, (DamageTypes)iDamageType);
 		x += DAMAGE_TYPE_ICON_WIDTH + DAMAGE_ADJ_ICON_SPACING_X;
 		}

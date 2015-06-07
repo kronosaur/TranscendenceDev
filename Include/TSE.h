@@ -54,7 +54,7 @@
 //	Define some debugging symbols
 
 #ifdef DEBUG
-//#define DEBUG_ALL_ITEMS
+#define DEBUG_ALL_ITEMS
 //#define DEBUG_ALL_NODES
 //#define DEBUG_ASTAR_PATH
 //#define DEBUG_ASTAR_PERF
@@ -74,6 +74,7 @@
 //#define DEBUG_PROGRAM_UPGRADE
 //#define DEBUG_RANDOM_SEED
 //#define DEBUG_SHIP
+//#define DEBUG_SINGLETON_EFFECTS
 //#define DEBUG_SOUNDTRACK
 //#define DEBUG_SOUNDTRACK_STATE
 //#define DEBUG_SOURCE_LOAD_TRACE
@@ -81,7 +82,6 @@
 //#define DEBUG_TARGET_LIST
 #define DEBUG_VECTOR
 //#define DEBUG_WEAPON_POS
-//#define DEBUG_SINGLETON_EFFECTS
 #endif
 
 //	We leave this defined because we want to get traces in the field in case
@@ -396,7 +396,9 @@ class CWeaponFireDesc
 		inline int GetAreaDamageDensity (void) const { return m_AreaDamageDensity.Roll(); }
 		inline Metric GetAreaDamageDensityAverage (void) const { return m_AreaDamageDensity.GetAveValueFloat(); }
 		inline Metric GetAveDamage (void) const { return m_Damage.GetAverageDamage(); }
+		inline Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
+		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
 		inline int GetAveParticleCount (void) const { return m_ParticleCount.GetAveValue(); }
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }

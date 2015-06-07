@@ -1296,7 +1296,9 @@ class DamageDesc
 	public:
 		enum Flags 
 			{
-			flagAverageDamage = 0x00000001,
+			flagAverageDamage =		0x00000001,
+			flagNoDamageType =		0x00000002,
+			flagShockwaveDamage =	0x00000004,
 			};
 
 		DamageDesc (void) { }
@@ -1327,7 +1329,7 @@ class DamageDesc
 		inline void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		void AddEnhancements (CItemEnhancementStack *pEnhancements);
 		inline bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
-		inline Metric GetAverageDamage (void) const { return m_Damage.GetAveValueFloat(); }
+		Metric GetAverageDamage (bool bIncludeBonus = false) const;
 		inline DestructionTypes GetCause (void) const { return m_iCause; }
 		inline DamageTypes GetDamageType (void) const { return m_iType; }
 		CString GetDesc (DWORD dwFlags = 0);
@@ -1355,6 +1357,7 @@ class DamageDesc
 		inline int GetDisintegrationDamage (void) const { return (int)m_DisintegrationDamage; }
 		inline int GetEMPDamage (void) const { return (int)m_EMPDamage; }
 		inline int GetMassDestructionAdj (void) const { return (int)(m_MassDestructionAdj ? (2 * (m_MassDestructionAdj * m_MassDestructionAdj) + 2) : 0); }
+		inline int GetMassDestructionLevel (void) const { return (GetMassDestructionAdj() + 5) / 10; }
 		inline int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
 		inline int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
 		inline int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
@@ -2128,6 +2131,7 @@ class CArmorClass : public CObject
 			};
 
 		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
+		void AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList);
 		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
@@ -2263,14 +2267,10 @@ class CDeviceClass : public CObject
 			evtCount					= 1,
 			};
 
-		enum Flags
-			{
-			flagNoPowerReference =		0x00000001,
-			};
-
 		CDeviceClass (IObjectClass *pClass) : CObject(pClass), m_pItemType(NULL) { }
 		virtual ~CDeviceClass (void) { }
 
+		void AccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList);
 		bool AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
@@ -2285,6 +2285,7 @@ class CDeviceClass : public CObject
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void);
 		inline COverlayType *GetOverlayType(void) const { return m_pOverlayType; }
+		CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		CString GetReferencePower (CItemCtx &Ctx);
 		inline int GetSlotsRequired (void) { return m_iSlots; }
 		inline DWORD GetUNID (void);
@@ -2322,7 +2323,6 @@ class CDeviceClass : public CObject
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual int GetPowerRating (CItemCtx &Ctx) { return 0; }
 		virtual const ReactorDesc *GetReactorDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) { return NULL; }
-		virtual CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const { return false; }
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
@@ -2342,6 +2342,7 @@ class CDeviceClass : public CObject
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) { return false; }
 		virtual bool NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) { return false; }
+		virtual CString OnGetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0) { return NULL_STR; }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
 		virtual void OnUninstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus) { }
@@ -2369,6 +2370,7 @@ class CDeviceClass : public CObject
 		virtual ItemCategories GetImplCategory (void) const = 0;
 		ALERROR InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
 
+		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList) { }
 		virtual bool OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return false; }
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }

@@ -17,7 +17,6 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual ItemCategories GetImplCategory (void) const { return itemcatMiscDevice; }
 		virtual int GetDamageType (CInstalledDevice *pDevice = NULL, int iVariant = -1);
 		virtual int GetPowerRating (CItemCtx &Ctx);
-		virtual CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const;
 		virtual bool IsAutomatedWeapon (void) { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
@@ -29,6 +28,7 @@ class CAutoDefenseClass : public CDeviceClass
 
 	protected:
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
+		virtual CString OnGetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 
 	private:
 		enum TargetingSystemTypes
@@ -87,7 +87,6 @@ class CCyberDeckClass : public CDeviceClass
 		virtual ItemCategories GetImplCategory (void) const { return itemcatWeapon; }
 		virtual int GetDamageType (CInstalledDevice *pDevice = NULL, int iVariant = -1) { return damageGeneric; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget);
-		virtual CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
 											 CInstalledDevice *pDevice,
 											 CString *retsLabel,
@@ -100,6 +99,12 @@ class CCyberDeckClass : public CDeviceClass
 		virtual bool SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
 		virtual bool SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *pDevice, int iDir = 1) { return true; }
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
+
+	protected:
+
+		//	CDeviceClass virtuals
+
+		virtual CString OnGetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 
 	private:
 		CCyberDeckClass (void);
@@ -293,7 +298,6 @@ class CShieldClass : public CDeviceClass
 		virtual ItemCategories GetImplCategory (void) const { return itemcatShields; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		virtual int GetPowerRating (CItemCtx &Ctx);
-		virtual CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const;
 		virtual void GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
@@ -316,7 +320,9 @@ class CShieldClass : public CDeviceClass
 
 
 	protected:
+		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList);
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
+		virtual CString OnGetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		virtual void OnMarkImages (void);
 
 	private:
@@ -434,7 +440,6 @@ class CWeaponClass : public CDeviceClass
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx);
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget);
 		virtual int GetPowerRating (CItemCtx &Ctx);
-		virtual CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const;
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
 											 CInstalledDevice *pDevice,
@@ -457,7 +462,9 @@ class CWeaponClass : public CDeviceClass
 
 	protected:
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
+		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList);
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID);
+		virtual CString OnGetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		virtual void OnMarkImages (void);
 
 	private:

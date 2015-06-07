@@ -137,19 +137,6 @@ Metric CCyberDeckClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledD
 	return m_iRange * LIGHT_SECOND;
 	}
 
-CString CCyberDeckClass::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
-
-//	GetReference
-//
-//	Returns reference information
-
-	{
-	return strPatternSubst("%s (%d); %s", 
-			m_Program.sProgramName, 
-			m_Program.iAILevel,
-			GetReferencePower(Ctx));
-	}
-
 void CCyberDeckClass::GetSelectedVariantInfo (CSpaceObject *pSource, 
 											  CInstalledDevice *pDevice,
 											  CString *retsLabel,
@@ -237,3 +224,16 @@ bool CCyberDeckClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	return true;
 	}
+
+CString CCyberDeckClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+
+//	GetReference
+//
+//	Returns reference information
+
+	{
+	return strPatternSubst("%s (%d)", 
+			m_Program.sProgramName, 
+			m_Program.iAILevel);
+	}
+

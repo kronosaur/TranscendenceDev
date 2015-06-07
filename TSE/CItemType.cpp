@@ -721,15 +721,7 @@ CString CItemType::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags) con
 	//	If a missile, then get the reference from the weapon
 
 	else if (IsMissile() && (pDevice = GetAmmoLauncher(&iShotVariant)))
-		{
-		//	We only return reference for missiles (not for ammo, since that is already
-		//	accounted for in the weapon)
-
-		if (pDevice->GetCategory() == itemcatLauncher)
-			return pDevice->GetReference(Ctx, iShotVariant);
-		else
-			return NULL_STR;
-		}
+		return pDevice->GetReference(Ctx, iShotVariant);
 
 	//	Otherwise, nothing
 

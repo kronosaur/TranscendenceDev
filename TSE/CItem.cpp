@@ -565,23 +565,24 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 	if (m_pItemType->IsKnown())
 		g_pUniverse->GetAttributeDesc().AccumulateAttributes(*this, retList);
 
-	//	Add some device-specific attributes
+	CArmorClass *pArmor;
+	CDeviceClass *pDevice;
+	int iVariant;
 
-	CDeviceClass *pDeviceClass = m_pItemType->GetDeviceClass();
-	if (pDeviceClass)
-		{
-		CInstalledDevice *pDevice = Ctx.GetDevice();
+	//	Armor attributes
 
-		//	External devices
+	if (pArmor = m_pItemType->GetArmorClass())
+		pArmor->AccumulateAttributes(Ctx, retList);
 
-		if (pDeviceClass->IsExternal() || (pDevice && pDevice->IsExternal()))
-			retList->Insert(SDisplayAttribute(attribNeutral, CONSTLIT("external")));
+	//	Device attributes
 
-		//	Non-standard slots
+	else if (pDevice = m_pItemType->GetDeviceClass())
+		pDevice->AccumulateAttributes(Ctx, -1, retList);
 
-		if (pDeviceClass->GetSlotsRequired() != 1)
-			retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("%d slots"), pDeviceClass->GetSlotsRequired())));
-		}
+	//	Missile attributes
+
+	else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher(&iVariant)))
+		pDevice->AccumulateAttributes(Ctx, iVariant, retList);
 
 	//	Military and Illegal attributes
 
@@ -881,19 +882,11 @@ bool CItem::GetReferenceDamageType (CSpaceObject *pInstalled, int iVariant, DWOR
 
 	else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher(&iShotVariant)))
 		{
-		//	We only return damage type reference for missiles (not for ammo, since that is already
-		//	accounted for in the weapon)
-
-		if (pDevice->GetCategory() == itemcatLauncher)
-			{
-			CItemCtx Ctx(this, pInstalled, (CInstalledDevice *)NULL);
-			return pDevice->GetReferenceDamageType(Ctx, 
-					iShotVariant, 
-					retiDamage, 
-					retsReference);
-			}
-		else
-			return NULL;
+		CItemCtx Ctx(this, pInstalled, (CInstalledDevice *)NULL);
+		return pDevice->GetReferenceDamageType(Ctx, 
+				iShotVariant, 
+				retiDamage, 
+				retsReference);
 		}
 
 	//	Otherwise, nothing

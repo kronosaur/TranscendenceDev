@@ -42,7 +42,32 @@ static char *CACHED_EVENTS[CDeviceClass::evtCount] =
 		"GetOverlayType",
 	};
 
-//	CDeviceClass
+void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+
+//	AccumulateAttributes
+//
+//	Add display attributes to the list.
+
+	{
+	//	Add general device attributes. If we have a variant, then it means 
+	//	we're interested in the attributes for a missile/ammo of the device 
+	//	(not the device itself).
+
+	if (iVariant == -1)
+		{
+		CInstalledDevice *pDevice = ItemCtx.GetDevice();
+
+		//	Linked-fire
+
+		DWORD dwOptions = GetLinkedFireOptions(ItemCtx);
+		if (dwOptions != 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("linked-fire")));
+		}
+
+	//	Let our subclasses add their own attributes
+
+	OnAccumulateAttributes(ItemCtx, iVariant, retList);
+	}
 
 bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
 
@@ -473,7 +498,35 @@ CString CDeviceClass::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
 //	Returns reference string
 
 	{
-	return GetReferencePower(Ctx);
+	CString sReference;
+	
+	//	For a device we always add power and other properties.
+	//	(If iVariant != -1 then it means that we're looking for reference on a
+	//	missile or someting).
+	
+	if (iVariant == -1)
+		{
+		CInstalledDevice *pDevice = Ctx.GetDevice();
+
+		//	Start with power requirements
+
+		AppendReferenceString(&sReference, GetReferencePower(Ctx));
+
+		//	Non-standard slots
+
+		if (GetSlotsRequired() != 1)
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d Slots"), GetSlotsRequired()));
+
+		//	External devices
+
+		if (IsExternal() || (pDevice && pDevice->IsExternal()))
+			AppendReferenceString(&sReference, CONSTLIT("External"));
+		}
+
+	//	Combine with our subclass
+
+	AppendReferenceString(&sReference, OnGetReference(Ctx, iVariant, dwFlags));
+	return sReference;
 	}
 
 CString CDeviceClass::GetReferencePower (CItemCtx &Ctx)

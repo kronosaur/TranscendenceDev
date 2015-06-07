@@ -38,6 +38,8 @@ const int DEFAULT_DEVICE_DISRUPT_TIME =			(30 * g_TicksPerSecond);
 const int MAX_INTENSITY =						7;
 const int MAX_BINARY =							1;
 
+const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
+
 char *g_pszDamageTypes[damageCount] =
 	{
 	"laser",
@@ -232,6 +234,20 @@ SpecialDamageTypes DamageDesc::ConvertToSpecialDamageTypes (const CString &sValu
 		return specialNone;
 	}
 
+Metric DamageDesc::GetAverageDamage (bool bIncludeBonus) const
+
+//	GetAverageDamage
+//
+//	Returns the average damage
+	
+	{
+	Metric rDamage = m_Damage.GetAveValueFloat();
+	if (bIncludeBonus)
+		rDamage += rDamage * m_iBonus / 100.0;
+
+	return rDamage;
+	}
+
 int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial) const
 
 //	GetSpecialDamage
@@ -367,22 +383,30 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 //	laser 1-4 (+50%)
 
 	{
-	CString sDamageType = GetDamageShortName(m_iType);
+	CString sDamageType;
+	if (!(dwFlags & flagNoDamageType))
+		sDamageType = strPatternSubst(CONSTLIT("%s "), GetDamageShortName(m_iType));
 
 	if (dwFlags & flagAverageDamage)
 		{
-		Metric rDamage = GetAverageDamage();
-		rDamage += rDamage * m_iBonus / 100.0;
+		Metric rDamage = GetAverageDamage(true);
+
+		//	For shockwaves, we adjust for the fact that we might get hit multiple
+		//	times.
+
+		if (dwFlags & flagShockwaveDamage)
+			rDamage *= SHOCKWAVE_DAMAGE_FACTOR;
+
+		//	Compute result
 
 		int iDamage10 = (int)((rDamage * 10.0) + 0.5);
 		int iDamage = iDamage10 / 10;
 		int iDamageTenth = iDamage10 % 10;
 
-
 		if (iDamageTenth == 0)
-			return strPatternSubst(CONSTLIT("%s %d hp"), sDamageType, iDamage);
+			return strPatternSubst(CONSTLIT("%s%d hp"), sDamageType, iDamage);
 		else
-			return strPatternSubst(CONSTLIT("%s %d.%d hp"), sDamageType, iDamage, iDamageTenth);
+			return strPatternSubst(CONSTLIT("%s%d.%d hp"), sDamageType, iDamage, iDamageTenth);
 		}
 	else
 		{
@@ -394,9 +418,9 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 			{
 			int iLen;
 			if (iMin == iMax)
-				iLen = wsprintf(szBuffer, "%s %d", sDamageType, iMax);
+				iLen = wsprintf(szBuffer, "%s%d", sDamageType, iMax);
 			else
-				iLen = wsprintf(szBuffer, "%s %d-%d", sDamageType, iMin, iMax);
+				iLen = wsprintf(szBuffer, "%s%d-%d", sDamageType, iMin, iMax);
 
 			return CString(szBuffer, iLen);
 			}
@@ -404,9 +428,9 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 			{
 			int iLen;
 			if (iMin == iMax)
-				iLen = wsprintf(szBuffer, "%s %d (+%d%%)", sDamageType, iMax, m_iBonus);
+				iLen = wsprintf(szBuffer, "%s%d (+%d%%)", sDamageType, iMax, m_iBonus);
 			else
-				iLen = wsprintf(szBuffer, "%s %d-%d (+%d%%)", sDamageType, iMin, iMax, m_iBonus);
+				iLen = wsprintf(szBuffer, "%s%d-%d (+%d%%)", sDamageType, iMin, iMax, m_iBonus);
 
 			return CString(szBuffer, iLen);
 			}
@@ -414,9 +438,9 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 			{
 			int iLen;
 			if (iMin == iMax)
-				iLen = wsprintf(szBuffer, "%s %d (-%d%%)", sDamageType, iMax, -m_iBonus);
+				iLen = wsprintf(szBuffer, "%s%d (-%d%%)", sDamageType, iMax, -m_iBonus);
 			else
-				iLen = wsprintf(szBuffer, "%s %d-%d (-%d%%)", sDamageType, iMin, iMax, -m_iBonus);
+				iLen = wsprintf(szBuffer, "%s%d-%d (-%d%%)", sDamageType, iMin, iMax, -m_iBonus);
 
 			return CString(szBuffer, iLen);
 			}

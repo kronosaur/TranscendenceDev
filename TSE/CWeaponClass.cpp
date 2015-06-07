@@ -89,6 +89,10 @@ const int MAX_COUNTER =					100;
 
 const Metric STD_FIRE_RATE_SECS =		15.0;				//	Standard fire rate (secs)
 
+const Metric FRAGMENT_DAMAGE_FACTOR =			0.125;
+const Metric PARTICLE_CLOUD_DAMAGE_FACTOR =		0.75;
+const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
+
 struct SStdWeaponStats
 	{
 	int iDamage;								//	Average damage at this level
@@ -562,13 +566,15 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 			&& pShot->HasFragments()
 			&& pShot->GetFirstFragment()->Count.GetMaxValue() > 1)
 		{
-		int iMin = pShot->GetFirstFragment()->Count.GetMinValue();
-		int iMax = pShot->GetFirstFragment()->Count.GetMaxValue();
+		//	Multiply by the average
 
-		//	Compute the average, then divide by two (assume that at
-		//	most one third the fragments will hit)
+		rMult *= pShot->GetFirstFragment()->Count.GetAveValue();
 
-		rMult *= ((iMin + iMax) / 2) / 3.0;
+		//	If tracking, assume all will hit. Otherwise, we assume that
+		//	only a fraction will hit.
+
+		if (!pShot->GetFirstFragment()->pDesc->IsTracking())
+			rMult *= FRAGMENT_DAMAGE_FACTOR;
 		}
 
 	return rMult;
@@ -2048,106 +2054,6 @@ CString GetReferenceFireRate (int iFireRate)
 		return strPatternSubst(CONSTLIT(" @ %d.%d shots/sec"), iRate / 10, iRate % 10);
 	}
 
-CString CWeaponClass::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
-
-//	GetReference
-//
-//	Returns a string that describes the basic attributes
-//	of this weapon.
-//
-//	Example:
-//
-//		laser 1-4 (x2); tracking; 100MW
-
-	{
-	CString sReference;
-	const CItemEnhancement &Mods = Ctx.GetMods();
-
-	//	Power consumption
-
-	if (iVariant == -1 && !(dwFlags & flagNoPowerReference))
-		sReference = GetReferencePower(Ctx);
-
-	//	Additional properties
-
-	if (m_ShotData.GetCount() == 1 || iVariant != -1)
-		{
-		CWeaponFireDesc *pShot = GetReferenceShotData(GetVariant(iVariant != -1 ? iVariant : 0));
-		DamageDesc Damage = pShot->m_Damage;
-
-		//	Modify the damage based on any enhancements that the ship may have
-
-		CInstalledDevice *pDevice = Ctx.GetDevice();
-		if (pDevice)
-			Damage.AddEnhancements(pDevice->GetEnhancements());
-		else
-			Damage.AddBonus(Mods.GetHPBonus());
-
-		//	Area of effect
-
-		if (pShot->m_iFireType == ftArea)
-			AppendReferenceString(&sReference, CONSTLIT("shockwave"));
-		else if (pShot->m_iFireType == ftRadius)
-			AppendReferenceString(&sReference, CONSTLIT("area effect"));
-
-		//	Compute special abilities. Start with tracking
-
-		if (pShot->IsTracking())
-			AppendReferenceString(&sReference, CONSTLIT("tracking"));
-
-		//	Blinding
-
-		if (Damage.GetBlindingDamage() > 0)
-			AppendReferenceString(&sReference, CONSTLIT("blinding"));
-
-		//	Radiation
-
-		if (Damage.GetRadiationDamage() > 0)
-			AppendReferenceString(&sReference, CONSTLIT("radiation"));
-
-		//	EMP
-
-		if (Damage.GetEMPDamage() > 0)
-			AppendReferenceString(&sReference, CONSTLIT("EMP"));
-
-		//	Device damage
-
-		if (Damage.GetDeviceDamage() > 0)
-			AppendReferenceString(&sReference, CONSTLIT("device damage"));
-
-		if (Damage.GetDeviceDisruptDamage() > 0)
-			AppendReferenceString(&sReference, CONSTLIT("device disrupt"));
-
-		//	Disintegration
-
-		if (Damage.GetDisintegrationDamage() > 0)
-			AppendReferenceString(&sReference, CONSTLIT("disintegration"));
-
-		//	WMD
-
-		if (Damage.GetMassDestructionAdj() >= 95)
-			AppendReferenceString(&sReference, CONSTLIT("mass destruction"));
-		else if (Damage.GetMassDestructionAdj() >= 70)
-			AppendReferenceString(&sReference, CONSTLIT("heavy station damage"));
-		else if (Damage.GetMassDestructionAdj() >= 30)
-			AppendReferenceString(&sReference, CONSTLIT("medium station damage"));
-		else if (Damage.GetMassDestructionAdj() >= 10)
-			AppendReferenceString(&sReference, CONSTLIT("light station damage"));
-
-		//	Shields
-
-		if (Damage.GetShieldDamageLevel() > 0)
-			AppendReferenceString(&sReference, CONSTLIT("shield buster"));
-
-		//	Armor
-
-		if (Damage.GetArmorDamageLevel() > 0)
-			AppendReferenceString(&sReference, CONSTLIT("armor penetrator"));
-		}
-
-	return sReference;
-	}
-
 bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const
 
 //	GetReferenceDamageType
@@ -2177,7 +2083,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 
 	if (m_ShotData.GetCount() != 1 && iVariant == -1)
 		{
-		sReference = CONSTLIT("missile weapon");
+		sReference = CONSTLIT("missile launcher");
 
 		sReference.Append(sFireRate);
 		iDamageType = damageGeneric;
@@ -2187,7 +2093,8 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 		//	Get the damage
 
 		int iFragments;
-		CWeaponFireDesc *pShot = GetReferenceShotData(GetVariant(iVariant != -1 ? iVariant : 0), &iFragments);
+		CWeaponFireDesc *pRootShot = GetVariant(iVariant != -1 ? iVariant : 0);
+		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
 		DamageDesc Damage = pShot->m_Damage;
 		iDamageType = Damage.GetDamageType();
 
@@ -2198,24 +2105,116 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 		else
 			Damage.AddBonus(Mods.GetHPBonus());
 
-		//	Get description
+		//	For shockwaves...
 
-		CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage);
+		if (pShot->m_iFireType == ftArea)
+			{
+			//	Compute total damage. NOTE: For particle weapons the damage 
+			//	specified is the total damage if ALL particle were to hit.
 
-		//	Add the multiplier
+			Metric rDamage = SHOCKWAVE_DAMAGE_FACTOR * Damage.GetAverageDamage(true);
 
-		int iMult = (int)CalcConfigurationMultiplier(pShot);
-		if (iMult > 1)
-			sDamage.Append(strPatternSubst(CONSTLIT(" (x%d)"), iMult));
+			//	Calculate the radius of the shockwave
 
-		if (pShot->m_iFireType == ftParticles)
-			sDamage.Append(CONSTLIT(" (max)"));
+			int iRadius = (int)(((pShot->GetAveExpansionSpeed() * pShot->GetAveLifetime() * g_SecondsPerUpdate) / LIGHT_SECOND) + 0.5);
 
-		sReference.Append(sDamage);
+			//	Compute result
 
-		//	Compute fire rate
+			int iDamage10 = (int)((rDamage * 10.0) + 0.5);
+			int iDamage = iDamage10 / 10;
+			int iDamageTenth = iDamage10 % 10;
 
-		sReference.Append(sFireRate);
+			if (iDamageTenth == 0)
+				sReference = strPatternSubst(CONSTLIT("%s shockwave %d hp in %d ls radius%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iRadius, sFireRate);
+			else
+				sReference = strPatternSubst(CONSTLIT("%s shockwave %d.%d hp in %d ls radius%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, iRadius, sFireRate);
+			}
+
+		//	For area weapons...
+
+		else if (pShot->m_iFireType == ftRadius)
+			{
+			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage);
+
+			//	Calculate the radius
+
+			int iRadius = (int)((pShot->GetMaxRadius() / LIGHT_SECOND) + 0.5);
+
+			//	Compute result
+
+			sReference = strPatternSubst(CONSTLIT("%s in %d ls radius%s"), sDamage, iRadius, sFireRate);
+			}
+
+		//	For particles...
+
+		else if (pShot->m_iFireType == ftParticles)
+			{
+			//	Some weapons fire multiple shots (e.g., Avalanche cannon)
+
+			CString sMult;
+			int iMult = (int)CalcConfigurationMultiplier(pRootShot, false);
+			if (iMult != 1)
+				sMult = strPatternSubst(CONSTLIT(" (x%d)"), iMult);
+
+			//	Compute total damage. NOTE: For particle weapons the damage 
+			//	specified is the total damage if ALL particle were to hit.
+
+			Metric rDamage = PARTICLE_CLOUD_DAMAGE_FACTOR * Damage.GetAverageDamage(true);
+
+			//	Compute result
+
+			int iDamage10 = (int)((rDamage * 10.0) + 0.5);
+			int iDamage = iDamage10 / 10;
+			int iDamageTenth = iDamage10 % 10;
+
+			if (iDamageTenth == 0)
+				sReference = strPatternSubst(CONSTLIT("%s cloud %d hp%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, sMult, sFireRate);
+			else
+				sReference = strPatternSubst(CONSTLIT("%s cloud %d.%d hp%s%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, sMult, sFireRate);
+			}
+
+		//	For large number of fragments, we have a special description
+
+		else if (iFragments >= 8 && !pShot->IsTracking())
+			{
+			//	Compute total damage
+
+			Metric rDamage = FRAGMENT_DAMAGE_FACTOR * iFragments * Damage.GetAverageDamage(true);
+
+			//	Compute radius
+
+			int iRadius = (int)((pShot->GetRatedSpeed() * pShot->GetAveLifetime() * g_SecondsPerUpdate / LIGHT_SECOND) + 0.5);
+
+			//	Compute result
+
+			int iDamage10 = (int)((rDamage * 10.0) + 0.5);
+			int iDamage = iDamage10 / 10;
+			int iDamageTenth = iDamage10 % 10;
+
+			if (iDamageTenth == 0)
+				sReference = strPatternSubst(CONSTLIT("%s fragmentation %d hp in %d ls radius%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iRadius, sFireRate);
+			else
+				sReference = strPatternSubst(CONSTLIT("%s fragmentation %d.%d hp in %d ls radius%s"), GetDamageShortName(Damage.GetDamageType()), iDamage, iDamageTenth, iRadius, sFireRate);
+			}
+
+		//	Otherwise, a normal description
+
+		else
+			{
+			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage);
+
+			//	Add the multiplier
+
+			int iMult = (int)CalcConfigurationMultiplier(pRootShot);
+			if (iMult > 1)
+				sDamage.Append(strPatternSubst(CONSTLIT(" (x%d)"), iMult));
+
+			sReference.Append(sDamage);
+
+			//	Compute fire rate
+
+			sReference.Append(sFireRate);
+			}
 		}
 
 	//	Done
@@ -2238,19 +2237,21 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 
 	{
 	CWeaponFireDesc *pBestShot = pShot;
-	Metric rBestDamage = pShot->m_Damage.GetAverageDamage();
+	Metric rBestDamage = 0.0;	//	Fragments always take precedence
 	int iBestFragments = 1;
+	DamageTypes iBestDamageType = damageLaser;
 
 	CWeaponFireDesc::SFragmentDesc *pFragDesc = pShot->GetFirstFragment();
 	while (pFragDesc)
 		{
-		int iFragments = pFragDesc->Count.GetAveValue();
+		int iOriginalFragments = pFragDesc->Count.GetAveValue();
+		int iFragments = iOriginalFragments;
 		switch (pFragDesc->pDesc->m_iFireType)
 			{
 			//	Area damage counts as multiple hits
 
 			case ftArea:
-				iFragments *= 3;
+				iFragments = (int)(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
 				break;
 
 			//	Radius damage always hits (if in range)
@@ -2262,16 +2263,19 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 
 			default:
 				if (!pFragDesc->pDesc->IsTracking())
-					iFragments /= 8;
+					iFragments = (int)(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
 				break;
 			}
 
 		Metric rDamage = pFragDesc->pDesc->m_Damage.GetAverageDamage() * iFragments;
-		if (rDamage > rBestDamage)
+		DamageTypes iDamageType = pFragDesc->pDesc->m_Damage.GetDamageType();
+		if (iDamageType > iBestDamageType 
+				|| (iDamageType == iBestDamageType && rDamage >= rBestDamage))
 			{
 			pBestShot = pFragDesc->pDesc;
 			rBestDamage = rDamage;
-			iBestFragments = iFragments;
+			iBestFragments = iOriginalFragments;
+			iBestDamageType = iDamageType;
 			}
 
 		pFragDesc = pFragDesc->pNext;
@@ -2878,6 +2882,133 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 	return false;
 	}
 
+void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+
+//	OnAccumulateAttributes
+//
+//	Adds attributes of the weapon type
+
+	{
+	const CItemEnhancement &Mods = ItemCtx.GetMods();
+
+	//	Add omnidirectional and arc attributes
+
+	int iMinArc;
+	int iMaxArc;
+	if (CanRotate(ItemCtx, &iMinArc, &iMaxArc))
+		{
+		//	Omni
+
+		if (iMinArc == iMaxArc)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("omnidirectional")));
+		else
+			{
+			int iArc = AngleRange(iMinArc, iMaxArc);
+			if (iArc >= 150)
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("hemi-directional")));
+			else
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("swivel")));
+			}
+		}
+
+	//	These properties are valid either for an ammo-less weapon, or a specific
+	//	ammo/missile.
+
+	if (m_ShotData.GetCount() == 1 || iVariant != -1)
+		{
+		CWeaponFireDesc *pRootShot = GetVariant(iVariant != -1 ? iVariant : 0);
+
+		//	Sometimes the fragments do all the damage. In that case, we take 
+		//	the properties from the fragment.
+
+		int iFragments;
+		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
+		DamageDesc Damage = pShot->m_Damage;
+
+		//	Modify the damage based on any enhancements that the ship may have
+
+		CInstalledDevice *pDevice = ItemCtx.GetDevice();
+		if (pDevice)
+			Damage.AddEnhancements(pDevice->GetEnhancements());
+		else
+			Damage.AddBonus(Mods.GetHPBonus());
+
+		//	Compute special abilities.
+
+		if (pRootShot->IsTracking() || pShot->IsTracking())
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("tracking")));
+
+		//	Special damage delivery
+
+		if (pShot->m_iFireType == ftArea)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shockwave")));
+
+		else if (pShot->m_iFireType == ftRadius)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radius")));
+
+		//	For particles...
+
+		else if (pShot->m_iFireType == ftParticles)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("cloud")));
+
+		//	For large number of fragments, we have a special description
+
+		else if (iFragments >= 8 && !pShot->IsTracking())
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("fragmentation")));
+
+		//	Passthrough
+		//	
+		//	(We ignore passthrough for shockwaves, since that's already a 
+		//	property of them.)
+
+		if (pShot->GetPassthrough() >= 20 && pShot->m_iFireType != ftArea)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("passthrough")));
+
+		//	Blinding
+
+		if (Damage.GetBlindingDamage() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("blinding")));
+
+		//	Radiation
+
+		if (Damage.GetRadiationDamage() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radiation")));
+
+		//	EMP
+
+		if (Damage.GetEMPDamage() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("EMP")));
+
+		//	Device damage
+
+		if (Damage.GetDeviceDamage() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device damage")));
+
+		if (Damage.GetDeviceDisruptDamage() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device ionization")));
+
+		//	Disintegration
+
+		if (Damage.GetDisintegrationDamage() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("disintegration")));
+
+		//	Shields
+
+		if (Damage.GetShieldDamageLevel() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shield buster")));
+
+		//	Armor
+
+		if (Damage.GetArmorDamageLevel() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("armor penetrator")));
+
+		//	WMD
+
+		if (Damage.GetMassDestructionLevel() > 0)
+			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("WMD %d"), Damage.GetMassDestructionLevel())));
+		}
+	}
+
 void CWeaponClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	OnAddTypesUsed
@@ -2978,6 +3109,35 @@ CEffectCreator *CWeaponClass::OnFindEffectCreator (const CString &sUNID)
 
 	CWeaponFireDesc *pDesc = GetVariant(iOrdinal);
 	return pDesc->FindEffectCreator(CString(pPos));
+	}
+
+CString CWeaponClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+
+//	OnGetReference
+//
+//	Return reference
+
+	{
+	CString sReference;
+
+	//	For weapons
+
+	if (iVariant == -1)
+		{
+		//	For ammo weapons, we describe the kind of ammo we need.
+
+		CWeaponFireDesc *pShot;
+		CItemType *pAmmo;
+		if (!m_bLauncher
+				&& m_ShotData.GetCount() == 1
+				&& (pShot = GetVariant(0))
+				&& (pAmmo = pShot->GetAmmoType()))
+			{
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("Requires %s"), pAmmo->GetNounPhrase(0x02)));
+			}
+		}
+
+	return sReference;
 	}
 
 void CWeaponClass::OnMarkImages (void)

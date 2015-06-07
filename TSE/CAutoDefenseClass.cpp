@@ -78,26 +78,6 @@ int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx)
 		return 0;
 	}
 
-CString CAutoDefenseClass::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
-
-//	GetReference
-//
-//	Returns a string that describes the basic attributes
-//	of this weapon.
-
-	{
-	CDeviceClass *pWeapon = GetWeapon();
-	
-	if (pWeapon)
-		{
-		CString sReference = GetReferencePower(Ctx);
-		AppendReferenceString(&sReference, pWeapon->GetReference(Ctx, iVariant, flagNoPowerReference));
-		return sReference;
-		}
-	else
-		return GetReferencePower(Ctx);
-	}
-
 bool CAutoDefenseClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const
 
 //	GetReferenceDamageType
@@ -121,6 +101,22 @@ void CAutoDefenseClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	{
 	retTypesUsed->SetAt(m_pWeapon.GetUNID(), true);
+	}
+
+CString CAutoDefenseClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+
+//	OnGetReference
+//
+//	Returns a string that describes the basic attributes
+//	of this weapon.
+
+	{
+	CDeviceClass *pWeapon = GetWeapon();
+	
+	if (pWeapon)
+		return pWeapon->OnGetReference(Ctx, iVariant);
+	else
+		return NULL_STR;
 	}
 
 void CAutoDefenseClass::Update (CInstalledDevice *pDevice, 

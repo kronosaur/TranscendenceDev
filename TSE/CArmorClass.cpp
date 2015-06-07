@@ -273,6 +273,152 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	DEBUG_CATCH
 	}
 
+void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList)
+
+//	AccumulateAttributes
+//
+//	Returns list of display attributes
+
+	{
+	int i;
+
+	//	Get modifications
+
+	int iLevel = m_pItemType->GetLevel();
+	const CItemEnhancement &Mods = ItemCtx.GetMods();
+
+	//	If we require a higher level to repair
+
+	if (GetRepairTech() != iLevel)
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("repair level %d"), GetRepairTech())));
+
+	//	Radiation 
+
+	if (m_fRadiationImmune || Mods.IsRadiationImmune())
+		{
+		if (iLevel < RADIATION_IMMUNE_LEVEL)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radiation immune")));
+		}
+	else if (iLevel >= RADIATION_IMMUNE_LEVEL)
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("radiation vulnerable")));
+
+	//	If we're immune to blinding/EMP/device damage, then collapse
+	//	it all under a single entry
+
+	bool bCheckedBlind = false;
+	bool bCheckedEMP = false;
+	bool bCheckedDevice = false;
+
+	if ((m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
+			&& (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune())
+			&& (m_iDeviceDamageAdj < 100 || Mods.IsDeviceDamageImmune()))
+		{
+		if (iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ion-effect immune")));
+
+		bCheckedBlind = true;
+		bCheckedEMP = true;
+		bCheckedDevice = true;
+		}
+
+	//	Blindness
+
+	if (!bCheckedBlind)
+		{
+		if (m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
+			{
+			if (iLevel < BLIND_IMMUNE_LEVEL)
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("blind immune")));
+			}
+		else if (m_iBlindingDamageAdj < 100)
+			{
+			if (iLevel < BLIND_IMMUNE_LEVEL)
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("blind resistant")));
+			else
+				retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("blind vulnerable")));
+			}
+		else if (iLevel >= BLIND_IMMUNE_LEVEL)
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("blind vulnerable")));
+		}
+
+	//	EMP
+
+	if (!bCheckedEMP)
+		{
+		if (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune())
+			{
+			if (iLevel < EMP_IMMUNE_LEVEL)
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("EMP immune")));
+			}
+		else if (m_iEMPDamageAdj < 100)
+			{
+			if (iLevel < EMP_IMMUNE_LEVEL)
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("EMP resistant")));
+			else
+				retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("EMP vulnerable")));
+			}
+		else if (iLevel >= EMP_IMMUNE_LEVEL)
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("EMP vulnerable")));
+		}
+
+	//	Device damage
+
+	if (!bCheckedDevice)
+		{
+		if (m_iDeviceDamageAdj < 100 || Mods.IsDeviceDamageImmune())
+			{
+			if (iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device protecting")));
+			}
+		else if (iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL)
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("device vulnerable")));
+		}
+
+	//	Disintegration
+
+	if (m_fDisintegrationImmune || Mods.IsDisintegrationImmune())
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("disintegration immune")));
+
+	//	Shatter
+
+	if (IsShatterImmune(ItemCtx))
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shatter immune")));
+
+	//	Shield interference
+
+	if (m_fShieldInterference || Mods.IsShieldInterfering())
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("shield interfering")));
+
+	//	Photo repair
+
+	if (m_fPhotoRepair || Mods.IsPhotoRegenerating())
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("photo-repair")));
+
+	//	Solar power
+
+	if (m_fPhotoRecharge || Mods.IsPhotoRecharge())
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("solar")));
+
+	//	Regeneration
+
+	if ((!m_Regen.IsEmpty() && !m_fPhotoRepair) || Mods.IsRegenerating())
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("regenerating")));
+
+	//	Decay
+
+	if (!m_Decay.IsEmpty() || Mods.IsDecaying())
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("decaying")));
+
+	//	Reflection
+
+	for (i = 0; i < damageCount; i++)
+		{
+		if (m_Reflective.InSet((DamageTypes)i)
+				|| (Mods.IsReflective() && Mods.GetDamageType() == i))
+			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
+		}
+	}
+
 bool CArmorClass::AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
 
 //	AccumulateEnhancements
@@ -1209,165 +1355,7 @@ CString CArmorClass::GetReference (CItemCtx &Ctx, int iVariant)
 //		30 hp; laser-resistant; impact-resistant
 
 	{
-	int i;
-	CString sReference;
-
-	//	Get modifications
-
-	int iLevel = m_pItemType->GetLevel();
-	const CItemEnhancement &Mods = Ctx.GetMods();
-
-	//	Radiation 
-
-	if (m_fRadiationImmune || Mods.IsRadiationImmune())
-		{
-		if (iLevel < RADIATION_IMMUNE_LEVEL)
-			AppendReferenceString(&sReference, CONSTLIT("radiation-immune"));
-		}
-	else if (iLevel >= RADIATION_IMMUNE_LEVEL)
-		AppendReferenceString(&sReference, CONSTLIT("radiation-vulnerable"));
-
-	//	If we're immune to blinding/EMP/device damage, then collapse
-	//	it all under a single entry
-
-	bool bCheckedBlind = false;
-	bool bCheckedEMP = false;
-	bool bCheckedDevice = false;
-
-	if ((m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
-			&& (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune())
-			&& (m_iDeviceDamageAdj < 100 || Mods.IsDeviceDamageImmune()))
-		{
-		if (iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-			AppendReferenceString(&sReference, CONSTLIT("ion effect-immune"));
-
-		bCheckedBlind = true;
-		bCheckedEMP = true;
-		bCheckedDevice = true;
-		}
-
-	//	Collapse blind and EMP resistance
-
-	else if ((m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
-			&& (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune()))
-		{
-		if (iLevel < EMP_IMMUNE_LEVEL)
-			AppendReferenceString(&sReference, CONSTLIT("blind-, EMP-immune"));
-
-		bCheckedBlind = true;
-		bCheckedEMP = true;
-		}
-	else if ((m_iBlindingDamageAdj < 100) && (iLevel < BLIND_IMMUNE_LEVEL)
-			&& (m_iEMPDamageAdj < 100))
-		{
-		AppendReferenceString(&sReference, CONSTLIT("blind-, EMP-resistant"));
-
-		bCheckedBlind = true;
-		bCheckedEMP = true;
-		}
-
-	//	Otherwise, treat each separate
-	//
-	//	Blindness
-
-	if (!bCheckedBlind)
-		{
-		if (m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
-			{
-			if (iLevel < BLIND_IMMUNE_LEVEL)
-				AppendReferenceString(&sReference, CONSTLIT("blind-immune"));
-			}
-		else if (m_iBlindingDamageAdj < 100)
-			{
-			if (iLevel < BLIND_IMMUNE_LEVEL)
-				AppendReferenceString(&sReference, CONSTLIT("blind-resistant"));
-			else
-				AppendReferenceString(&sReference, CONSTLIT("blind-vulnerable"));
-			}
-		else if (iLevel >= BLIND_IMMUNE_LEVEL)
-			AppendReferenceString(&sReference, CONSTLIT("blind-vulnerable"));
-		}
-
-	//	EMP
-
-	if (!bCheckedEMP)
-		{
-		if (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune())
-			{
-			if (iLevel < EMP_IMMUNE_LEVEL)
-				AppendReferenceString(&sReference, CONSTLIT("EMP-immune"));
-			}
-		else if (m_iEMPDamageAdj < 100)
-			{
-			if (iLevel < EMP_IMMUNE_LEVEL)
-				AppendReferenceString(&sReference, CONSTLIT("EMP-resistant"));
-			else
-				AppendReferenceString(&sReference, CONSTLIT("EMP-vulnerable"));
-			}
-		else if (iLevel >= EMP_IMMUNE_LEVEL)
-			AppendReferenceString(&sReference, CONSTLIT("EMP-vulnerable"));
-		}
-
-	//	Device damage
-
-	if (!bCheckedDevice)
-		{
-		if (m_iDeviceDamageAdj < 100 || Mods.IsDeviceDamageImmune())
-			{
-			if (iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-				AppendReferenceString(&sReference, CONSTLIT("device-protect"));
-			}
-		else if (iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL)
-			AppendReferenceString(&sReference, CONSTLIT("device-vulnerable"));
-		}
-
-	//	Disintegration
-
-	if (m_fDisintegrationImmune || Mods.IsDisintegrationImmune())
-		AppendReferenceString(&sReference, CONSTLIT("disintegrate-immune"));
-
-	//	Shatter
-
-	if (IsShatterImmune(Ctx))
-		AppendReferenceString(&sReference, CONSTLIT("shatter-immune"));
-
-	//	Shield interference
-
-	if (m_fShieldInterference || Mods.IsShieldInterfering())
-		AppendReferenceString(&sReference, CONSTLIT("no-shields"));
-
-	//	Photo repair
-
-	if (m_fPhotoRepair || Mods.IsPhotoRegenerating())
-		AppendReferenceString(&sReference, CONSTLIT("photo-repair"));
-
-	//	Solar power
-
-	if (m_fPhotoRecharge || Mods.IsPhotoRecharge())
-		AppendReferenceString(&sReference, CONSTLIT("solar"));
-
-	//	Regeneration
-
-	if ((!m_Regen.IsEmpty() && !m_fPhotoRepair) || Mods.IsRegenerating())
-		AppendReferenceString(&sReference, CONSTLIT("regenerate"));
-
-	//	Decay
-
-	if (!m_Decay.IsEmpty() || Mods.IsDecaying())
-		AppendReferenceString(&sReference, CONSTLIT("decay"));
-
-	//	Reflection
-
-	for (i = 0; i < damageCount; i++)
-		{
-		if (m_Reflective.InSet((DamageTypes)i)
-				|| (Mods.IsReflective() && Mods.GetDamageType() == i))
-			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%s-reflecting"), GetDamageShortName((DamageTypes)i)));
-		}
-
-	//	Done
-
-	return sReference;
+	return NULL_STR;
 	}
 
 bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray)

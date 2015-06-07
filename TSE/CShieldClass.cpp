@@ -974,46 +974,6 @@ int CShieldClass::GetPowerRating (CItemCtx &Ctx)
 	return iPower;
 	}
 
-CString CShieldClass::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
-
-//	GetReference
-//
-//	Returns a string that describes the basic attributes
-//	of this shield
-//
-//	Example:
-//
-//		20 hp (average regen); 100MW
-
-	{
-	int i;
-
-	CString sReference;
-	const CItemEnhancement &Mods = Ctx.GetMods();
-
-	//	Compute the strength string
-
-	int iMin, iMax;
-	CalcMinMaxHP(Ctx, m_iMaxCharges, 0, 0, &iMin, &iMax);
-
-	//	Compute the regeneration
-
-	sReference = strPatternSubst("%s — regen @ %s", 
-			GetReferencePower(Ctx),
-			m_Regen.GetReferenceRate(CONSTLIT("hp/sec")));
-
-	//	Reflection
-
-	for (i = 0; i < damageCount; i++)
-		{
-		if (m_Reflective.InSet((DamageTypes)i)
-				|| (Mods.IsReflective() && Mods.GetDamageType() == i))
-			sReference.Append(strPatternSubst(CONSTLIT(" — %s-reflecting"), GetDamageShortName((DamageTypes)i)));
-		}
-
-	return sReference;
-	}
-
 bool CShieldClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const
 
 //	GetReferenceDamageAdj
@@ -1142,6 +1102,44 @@ bool CShieldClass::IsDepleted (CInstalledDevice *pDevice)
 	return ((int)pDevice->GetData() < 0); 
 	}
 
+void CShieldClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+
+//	OnAccumulateAttributes
+//
+//	Returns display attributes
+
+	{
+	int i;
+	const CItemEnhancement &Mods = ItemCtx.GetMods();
+
+	//	Reflection
+
+	for (i = 0; i < damageCount; i++)
+		{
+		if (m_Reflective.InSet((DamageTypes)i)
+				|| (Mods.IsReflective() && Mods.GetDamageType() == i))
+			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
+		}
+
+	//	Weapon suppress
+
+	for (i = 0; i < damageCount; i++)
+		{
+		if (m_WeaponSuppress.InSet((DamageTypes)i))
+			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("%s suppressing"), GetDamageShortName((DamageTypes)i))));
+		}
+	}
+
+void CShieldClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
+
+//	OnAddTypesUsed
+//
+//	Adds types used by this class
+
+	{
+	retTypesUsed->SetAt(m_pHitEffect.GetUNID(), true);
+	}
+
 ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 //	OnDesignLoadComplete
@@ -1201,14 +1199,32 @@ CEffectCreator *CShieldClass::OnFindEffectCreator (const CString &sUNID)
 		}
 	}
 
-void CShieldClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
+CString CShieldClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
 
-//	OnAddTypesUsed
+//	GetReference
 //
-//	Adds types used by this class
+//	Returns a string that describes the basic attributes
+//	of this shield
+//
+//	Example:
+//
+//		20 hp (average regen); 100MW
 
 	{
-	retTypesUsed->SetAt(m_pHitEffect.GetUNID(), true);
+	CString sReference;
+	const CItemEnhancement &Mods = Ctx.GetMods();
+
+	//	Compute the strength string
+
+	int iMin, iMax;
+	CalcMinMaxHP(Ctx, m_iMaxCharges, 0, 0, &iMin, &iMax);
+
+	//	Compute the regeneration
+
+	sReference = strPatternSubst("Regen @ %s", 
+			m_Regen.GetReferenceRate(CONSTLIT("hp/sec")));
+
+	return sReference;
 	}
 
 void CShieldClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList)
