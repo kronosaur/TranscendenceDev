@@ -3940,15 +3940,15 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_USE_SCREEN:
 			{
-			CXMLElement *pScreen = pType->GetUseScreen();
-			if (pScreen == NULL)
-				pResult = pCC->CreateNil();
-			else
+			CItemType::SUseDesc UseDesc;
+			if (pType->GetUseDesc(&UseDesc) && UseDesc.pScreenRoot)
 				{
 				//	We want the UNID, not the screen itself
 
-				pResult = pCC->CreateString(pScreen->GetAttribute(CONSTLIT("UNID")));
+				pResult = pCC->CreateInteger(UseDesc.pScreenRoot->GetUNID());
 				}
+			else
+				pResult = pCC->CreateNil();
 			break;
 			}
 

@@ -54,7 +54,7 @@
 //	Define some debugging symbols
 
 #ifdef DEBUG
-#define DEBUG_ALL_ITEMS
+//#define DEBUG_ALL_ITEMS
 //#define DEBUG_ALL_NODES
 //#define DEBUG_ASTAR_PATH
 //#define DEBUG_ASTAR_PERF

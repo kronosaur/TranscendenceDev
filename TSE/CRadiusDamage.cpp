@@ -119,6 +119,86 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 	return NOERROR;
 	}
 
+void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
+
+//	DamageAll
+//
+//	Damage all objects in the radius
+
+	{
+	Metric rMinRadius = m_pDesc->GetMinRadius();
+	Metric rMaxRadius = m_pDesc->GetMaxRadius();
+	Metric rRadiusRange = rMaxRadius - rMinRadius;
+
+	//	Get the list of objects inside the maximum radius
+
+	SSpaceObjectGridEnumerator i;
+	GetSystem()->EnumObjectsInBoxStart(i, GetPos(), rMaxRadius);
+
+	//	Loop over each object in the box
+
+	while (GetSystem()->EnumObjectsInBoxHasMore(i))
+		{
+		CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
+		if (!CanHit(pObj)
+				|| !pObj->CanBeHit()
+				|| !pObj->CanBeHitBy(m_pDesc->m_Damage)
+				|| pObj == this)
+			continue;
+
+		//	Compute the distance between this object and the center
+		//	of the blast
+
+		CVector vDist = (pObj->GetPos() - GetPos());
+		int iAngle = VectorToPolar(vDist);
+
+		//	Figure out where we hit this object
+
+		Metric rObjRadius = 0.5 * pObj->GetHitSize();
+		CVector vHitPos = pObj->GetPos() - PolarToVector(iAngle, rObjRadius);
+		CVector vInc = PolarToVector(iAngle, 2.0 * g_KlicksPerPixel);
+		int iMax = (int)((2.0 * rObjRadius / (2.0 * g_KlicksPerPixel)) + 0.5);
+		while (!pObj->PointInObject(pObj->GetPos(), vHitPos) && iMax-- > 0)
+			vHitPos = vHitPos + vInc;
+
+		//	The hit position is what we use to figure out damage
+
+		Metric rHitDist = (vHitPos - GetPos()).Length();
+		if (rHitDist > rMaxRadius)
+			continue;
+
+		//	Setup context
+
+		SDamageCtx Ctx;
+		Ctx.pObj = pObj;
+		Ctx.pDesc = m_pDesc;
+		Ctx.Damage = m_pDesc->m_Damage;
+		Ctx.Damage.AddEnhancements(m_pEnhancements);
+		Ctx.Damage.SetCause(m_iCause);
+		if (IsAutomatedWeapon())
+			Ctx.Damage.SetAutomatedWeapon();
+		Ctx.iDirection = (iAngle + 180) % 360;
+		Ctx.vHitPos = vHitPos;
+		Ctx.pCause = this;
+		Ctx.Attacker = m_Source;
+
+		//	If we're beyond the minimum radius, then decrease the damage
+		//	to account for distance
+
+		if (rHitDist > rMinRadius && rRadiusRange > 0.0)
+			{
+			Metric rMult = (rRadiusRange - (rHitDist - rMinRadius)) / rRadiusRange;
+
+			int iDamage = (int)(rMult * (Metric)Ctx.Damage.RollDamage() + 0.5);
+			Ctx.Damage.SetDamage(iDamage);
+			}
+
+		//	Do damage
+
+		pObj->Damage(Ctx);
+		}
+	}
+
 CString CRadiusDamage::DebugCrashInfo (void)
 
 //	DebugCrashInfo
@@ -311,86 +391,16 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update
 
 	{
-	int i;
 	bool bDestroy = false;
 
 	//	Do damage right away
 
 	if (m_iTick == 0)
 		{
-		Metric rMinRadius = m_pDesc->GetMinRadius();
-		Metric rMaxRadius = m_pDesc->GetMaxRadius();
-		Metric rRadiusRange = rMaxRadius - rMinRadius;
+		//	Damage all targets in radius
 
-		if (rMaxRadius > 0.0)
-			{
-			CVector vUR, vLL;
-			GetBoundingRect(&vUR, &vLL);
-
-			for (i = 0; i < GetSystem()->GetObjectCount(); i++)
-				{
-				CSpaceObject *pObj = GetSystem()->GetObject(i);
-				if (pObj 
-						&& !pObj->IsDestroyed()
-						&& CanHit(pObj)
-						&& pObj->CanBeHit()
-						&& pObj->InBox(vUR, vLL)
-						&& pObj->CanBeHitBy(m_pDesc->m_Damage)
-						&& pObj != this)
-					{
-					//	Compute the distance between this object and the center
-					//	of the blast
-
-					CVector vDist = (pObj->GetPos() - GetPos());
-					Metric rDist;
-					int iAngle = VectorToPolar(vDist, &rDist);
-
-					//	Adjust damage for distance
-
-					if (rDist < rMaxRadius)
-						{
-						//	Find the point where we hit the object
-
-						Metric rObjRadius = 0.5 * pObj->GetHitSize();
-						CVector vHitPos = pObj->GetPos() - PolarToVector(iAngle, rObjRadius);
-						CVector vInc = PolarToVector(iAngle, 2.0 * g_KlicksPerPixel);
-						int iMax = (int)((2.0 * rObjRadius / (2.0 * g_KlicksPerPixel)) + 0.5);
-						while (!pObj->PointInObject(pObj->GetPos(), vHitPos) && iMax-- > 0)
-							vHitPos = vHitPos + vInc;
-
-						//	Setup context
-
-						SDamageCtx Ctx;
-						Ctx.pObj = pObj;
-						Ctx.pDesc = m_pDesc;
-						Ctx.Damage = m_pDesc->m_Damage;
-						Ctx.Damage.AddEnhancements(m_pEnhancements);
-						Ctx.Damage.SetCause(m_iCause);
-						if (IsAutomatedWeapon())
-							Ctx.Damage.SetAutomatedWeapon();
-						Ctx.iDirection = (iAngle + 180) % 360;
-						Ctx.vHitPos = vHitPos;
-						Ctx.pCause = this;
-						Ctx.Attacker = m_Source;
-
-						//	If we're beyond the minimum radius, then decrease the damage
-						//	to account for distance
-
-						if (rDist > rMinRadius && rRadiusRange > 0.0)
-							{
-							Metric rMult = (rRadiusRange - (rDist - rMinRadius)) / rRadiusRange;
-
-							int iDamage = (int)(rMult * (Metric)Ctx.Damage.RollDamage() + 0.5);
-							Ctx.Damage.SetDamage(iDamage);
-							}
-
-						//	Do damage
-
-						pObj->Damage(Ctx);
-						}
-					}
-				}
-			}
+		if (m_pDesc->GetMaxRadius() > 0.0)
+			DamageAll(Ctx);
 
 		//	Spawn fragments, if necessary
 

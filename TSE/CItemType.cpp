@@ -755,6 +755,52 @@ CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)
 	return GetName(retdwFlags);
 	}
 
+bool CItemType::GetUseDesc (SUseDesc *retDesc) const
+
+//	GetUseDesc
+//
+//	Returns data about how the item can be used.
+
+	{
+	CDesignType *pInherit;
+
+	//	If we have information about usage, we return what we have.
+
+	if ((m_pUseCode != NULL) || (m_pUseScreen != NULL))
+		{
+		if (retDesc)
+			{
+			retDesc->pExtension = GetExtension();
+			retDesc->pCode = m_pUseCode;
+			retDesc->pScreenRoot = GetUseScreen(&retDesc->sScreenName);
+			retDesc->sUseKey = m_sUseKey;
+			retDesc->bUsable = true;
+			retDesc->bUsableInCockpit = (m_pUseCode != NULL);
+			retDesc->bOnlyIfEnabled = m_fUseEnabled;
+			retDesc->bOnlyIfInstalled = m_fUseInstalled;
+			retDesc->bOnlyIfUninstalled = m_fUseUninstalled;
+			}
+
+		return true;
+		}
+
+	//	Otherwise, see if our ancestor handles this
+
+	else if (pInherit = GetInheritFrom())
+		{
+		CItemType *pInheritItem = CItemType::AsType(pInherit);
+		if (pInheritItem == NULL)
+			return false;
+
+		return pInheritItem->GetUseDesc(retDesc);
+		}
+
+	//	Otherwise, nothing
+
+	else
+		return false;
+	}
+
 int CItemType::GetValue (CItemCtx &Ctx, bool bActual) const
 
 //	GetValue

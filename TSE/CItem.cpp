@@ -1195,7 +1195,8 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 	//	Check miscellaneous flags
 
-	if (Criteria.bUsableItemsOnly && m_pItemType->GetUseScreen() == NULL)
+	CItemType::SUseDesc UseDesc;
+	if (Criteria.bUsableItemsOnly && (!m_pItemType->GetUseDesc(&UseDesc) || UseDesc.pScreenRoot == NULL))
 		return false;
 
 	if (Criteria.bExcludeVirtual && m_pItemType->IsVirtual())

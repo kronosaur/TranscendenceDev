@@ -3954,6 +3954,32 @@ class CItemType : public CDesignType
 			evtCount					= 6,
 			};
 
+		struct SUseDesc
+			{
+			SUseDesc (void) :
+					pExtension(NULL),
+					pCode(NULL),
+					pScreenRoot(NULL),
+					bUsable(false),
+					bUsableInCockpit(false),
+					bOnlyIfEnabled(false),
+					bOnlyIfInstalled(false),
+					bOnlyIfUninstalled(false)
+				{ }
+
+			CExtension *pExtension;			//	Extension the code came from
+			ICCItem *pCode;					//	Use code
+			CDesignType *pScreenRoot;
+			CString sScreenName;
+
+			CString sUseKey;
+			bool bUsable;
+			bool bUsableInCockpit;
+			bool bOnlyIfEnabled;
+			bool bOnlyIfInstalled;
+			bool bOnlyIfUninstalled;
+			};
+
 		CItemType (void);
 		virtual ~CItemType (void);
 
@@ -3989,9 +4015,7 @@ class CItemType : public CDesignType
 		CString GetSortName (void) const;
 		inline CItemType *GetUnknownType (void) { return m_pUnknownType; }
 		inline ICCItem *GetUseCode (void) const { return m_pUseCode; }
-		inline const CString &GetUseKey (void) const { return m_sUseKey; }
-		inline CXMLElement *GetUseScreen (void) const;
-		inline CDesignType *GetUseScreen (CString *retsName);
+		bool GetUseDesc (SUseDesc *retDesc) const;
 		int GetValue (CItemCtx &Ctx, bool bActual = false) const;
 		inline bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		inline bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
@@ -4002,11 +4026,7 @@ class CItemType : public CDesignType
 		inline bool IsKnown (void) const { return (m_fKnown ? true : false); }
 		bool IsFuel (void) const;
 		bool IsMissile (void) const;
-		inline bool IsUsable (void) const { return ((m_pUseCode != NULL) || (m_pUseScreen != NULL)); }
-		inline bool IsUsableInCockpit (void) const { return (m_pUseCode != NULL); }
-		inline bool IsUsableOnlyIfEnabled (void) const { return (m_fUseEnabled ? true : false); }
-		inline bool IsUsableOnlyIfInstalled (void) const { return (m_fUseInstalled ? true : false); }
-		inline bool IsUsableOnlyIfUninstalled (void) const { return (m_fUseUninstalled ? true : false); }
+		inline bool IsUsable (void) const { return GetUseDesc(NULL); }
 		inline void SetKnown (void) { m_fKnown = true; }
 		inline void SetShowReference (void) { m_fReference = true; }
 		inline bool ShowReference (void) const { return (m_fReference ? true : false); }
@@ -4037,6 +4057,7 @@ class CItemType : public CDesignType
 		void CreateFlotsamImage (void);
 		CStationType *GetFlotsamStationType (void);
 		CString GetUnknownName (int iIndex, DWORD *retdwFlags = NULL);
+		inline CDesignType *GetUseScreen (CString *retsName) const;
 
 		CString m_sName;						//	Full name of item
 		DWORD m_dwNameFlags;					//	Name flags
@@ -6632,8 +6653,7 @@ inline int CDeviceClass::GetLevel (void) const { return m_pItemType->GetLevel();
 inline CString CDeviceClass::GetName (void) { return m_pItemType->GetName(NULL); }
 inline DWORD CDeviceClass::GetUNID (void) { return m_pItemType->GetUNID(); }
 
-inline CXMLElement *CItemType::GetUseScreen (void) const { return m_pUseScreen.GetDesc(); }
-inline CDesignType *CItemType::GetUseScreen (CString *retsName) { return m_pUseScreen.GetDockScreen(this, retsName); }
+inline CDesignType *CItemType::GetUseScreen (CString *retsName) const { return m_pUseScreen.GetDockScreen((CDesignType *)this, retsName); }
 
 inline bool DamageDesc::IsEnergyDamage (void) const { return ::IsEnergyDamage(m_iType); }
 inline bool DamageDesc::IsMatterDamage (void) const { return ::IsMatterDamage(m_iType); }

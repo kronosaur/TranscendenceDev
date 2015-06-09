@@ -748,6 +748,8 @@ class CRadiusDamage : public CSpaceObject
 	private:
 		CRadiusDamage (void);
 
+		void DamageAll (SUpdateCtx &Ctx);
+
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
 		DestructionTypes m_iCause;				//	Cause of damage

@@ -6903,24 +6903,21 @@ void CSpaceObject::UseItem (CItem &Item, CString *retsError)
 			}
 		}
 
-	//	Define parameters
+	//	Get the code from the item
 
-	Ctx.SaveAndDefineSourceVar(this);
-	Ctx.SaveAndDefineItemVar(Item);
-	Ctx.SetScreensRoot(Item.GetType());
-
-	//	The <Invoke> code is not a real event, so it cannot be inherited
-	//	currently, thus we know that it came from the item type itself.
-	//	LATER: If this ever changes, we will have to do better.
-
-	Ctx.SetExtension(Item.GetType()->GetExtension());
-
-	//	Execute
-
-	ICCItem *pCode = Item.GetType()->GetUseCode();
-	if (pCode)
+	CItemType::SUseDesc UseDesc;
+	if (Item.GetType()->GetUseDesc(&UseDesc) && UseDesc.pCode)
 		{
-		ICCItem *pResult = Ctx.Run(pCode);
+		//	Define parameters
+
+		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.SaveAndDefineItemVar(Item);
+		Ctx.SetScreensRoot(Item.GetType());
+		Ctx.SetExtension(UseDesc.pExtension);
+
+		//	Invoke
+
+		ICCItem *pResult = Ctx.Run(UseDesc.pCode);
 		if (retsError)
 			{
 			if (pResult->IsError())
