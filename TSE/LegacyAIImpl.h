@@ -69,6 +69,7 @@ class CFerianShipAI : public CBaseShipAI
 			{
 			stateNone,
 			stateOnCourseForMine,
+			stateOnCourseForTarget,
 			stateMining,
 			stateAttackingThreat,
 			stateOnCourseForStargate,

@@ -663,14 +663,12 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	pStation->m_pType = pType;
 	pStation->Place(CreateCtx.vPos, CreateCtx.vVel);
-	pStation->m_pMapOrbit = NULL;
 	pStation->m_pTrade = NULL;
 	pStation->m_iDestroyedAnimation = 0;
 	pStation->m_fKnown = false;
 	pStation->m_fReconned = false;
 	pStation->m_fExplored = false;
 	pStation->m_fFireReconEvent = false;
-	pStation->m_fNoMapLabel = false;
 	pStation->m_fActive = pType->IsActive();
 	pStation->m_fNoReinforcements = false;
 	pStation->m_fNoConstruction = false;
@@ -731,8 +729,15 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	pStation->m_Scale = pType->GetScale();
 
-	if (pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB))
-		pStation->m_fNoMapLabel = true;
+	//	Map
+
+	if (CreateCtx.pOrbit)
+		pStation->m_pMapOrbit = new COrbit(*CreateCtx.pOrbit);
+	else
+		pStation->m_pMapOrbit = NULL;
+
+	pStation->m_fShowMapOrbit = false;
+	pStation->m_fNoMapLabel = pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB);
 
 	//	We block others (CanBlock returns TRUE only for other stations)
 
@@ -1170,7 +1175,7 @@ CString CStation::DebugCrashInfo (void)
 	return sResult;
 	}
 
-void CStation::FinishCreation (void)
+void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 
 //	FinishCreation
 //
@@ -1208,7 +1213,10 @@ void CStation::FinishCreation (void)
 
 	//	Fire OnCreate
 
-	FireOnCreate();
+	CSpaceObject::SOnCreate OnCreate;
+	OnCreate.pCreateCtx = pSysCreateCtx;
+	OnCreate.pOrbit = m_pMapOrbit;
+	FireOnCreate(OnCreate);
 
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
@@ -2523,7 +2531,7 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 
 	//	Draw an orbit
 
-	if (m_pMapOrbit)
+	if (m_pMapOrbit && m_fShowMapOrbit)
 		m_pMapOrbit->Paint(Ctx, Dest, RGB_ORBIT_LINE);
 
 	//	Draw the station
@@ -2537,6 +2545,8 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 				m_MapImage,
 				x - (m_MapImage.GetWidth() / 2),
 				y - (m_MapImage.GetHeight() / 2));
+
+		m_Overlays.PaintMapAnnotations(Ctx, Dest, x, y);
 		}
 	else if (m_Scale == scaleStar)
 		{
@@ -2945,6 +2955,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fNoConstruction =		((dwLoad & 0x00008000) ? true : false);
 	m_fBlocksShips =		((dwLoad & 0x00010000) ? true : false);
 	m_fPaintOverhang =		((dwLoad & 0x00020000) ? true : false);
+	m_fShowMapOrbit =		((dwLoad & 0x00040000) ? true : false);
 
 	//	Init name flags
 
@@ -2997,14 +3008,14 @@ void CStation::OnStationDestroyed (const SDestroyCtx &Ctx)
 	{
 	}
 
-void CStation::OnSystemCreated (void)
+void CStation::OnSystemCreated (SSystemCreateCtx &CreateCtx)
 
 //	OnSystemCreated
 //
 //	Called when the system is created
 
 	{
-	FinishCreation();
+	FinishCreation(&CreateCtx);
 	}
 
 void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
@@ -3279,6 +3290,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoConstruction ?		0x00008000 : 0);
 	dwSave |= (m_fBlocksShips ?			0x00010000 : 0);
 	dwSave |= (m_fPaintOverhang ?		0x00020000 : 0);
+	dwSave |= (m_fShowMapOrbit ?		0x00040000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
@@ -3636,6 +3648,7 @@ void CStation::SetMapOrbit (const COrbit &oOrbit)
 		delete m_pMapOrbit;
 
 	m_pMapOrbit = new COrbit(oOrbit);
+	m_fShowMapOrbit = true;
 	}
 
 void CStation::SetName (const CString &sName, DWORD dwFlags)
@@ -3838,6 +3851,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 				m_pMapOrbit = NULL;
 				}
 
+			m_fShowMapOrbit = false;
 			return true;
 			}
 		else

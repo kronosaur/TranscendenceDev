@@ -2156,7 +2156,7 @@ int CShip::FindRandomDevice (bool bEnabledOnly)
 	return -1;
 	}
 
-void CShip::FinishCreation (SShipGeneratorCtx *pCtx)
+void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreateCtx)
 
 //	FinishCreation
 //
@@ -2167,6 +2167,7 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx)
 	//	Fire OnCreate
 
 	CSpaceObject::SOnCreate OnCreate;
+	OnCreate.pCreateCtx = pSysCreateCtx;
 	if (pCtx)
 		{
 		OnCreate.pBaseObj = pCtx->pBase;
@@ -4998,14 +4999,14 @@ void CShip::OnStationDestroyed (const SDestroyCtx &Ctx)
 	m_pController->OnStationDestroyed(Ctx);
 	}
 
-void CShip::OnSystemCreated (void)
+void CShip::OnSystemCreated (SSystemCreateCtx &CreateCtx)
 
 //	OnSystemCreated
 //
 //	The system has just been created
 
 	{
-	FinishCreation(m_pDeferredOrders);
+	FinishCreation(m_pDeferredOrders, &CreateCtx);
 	}
 
 void CShip::OnSystemLoaded (void)

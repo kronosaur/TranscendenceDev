@@ -22,6 +22,9 @@ const Metric MAX_MINING_RANGE2 =				(MAX_MINING_RANGE * MAX_MINING_RANGE);
 const Metric CLOSE_MINING_RANGE =				(10.0 * LIGHT_SECOND);
 const Metric CLOSE_MINING_RANGE2 =				(CLOSE_MINING_RANGE * CLOSE_MINING_RANGE);
 
+const Metric MAX_APPROACH_DIST =				(10.0 * LIGHT_SECOND);
+const Metric MAX_APPROACH_DIST2 =				(MAX_APPROACH_DIST * MAX_APPROACH_DIST);
+
 const int MAX_RANDOM_COUNT =					300;
 
 const int MINE_CYCLE_DELAY =					37;
@@ -136,6 +139,48 @@ void CFerianShipAI::Behavior (void)
 				{
 				if (m_pShip->IsDestinyTime(MINE_CYCLE_DELAY))
 					{
+					//	Pull some ore from the asteroid
+
+					if (m_pTarget && m_pTarget->HasAttribute(ATTRIBUTE_ASTEROID))
+						{
+						CItemListManipulator ObjList(m_pTarget->GetItemList());
+						while (ObjList.MoveCursorForward())
+							{
+							const CItem &Item = ObjList.GetItemAtCursor();
+							if (Item.GetType()->GetCategory() == itemcatMisc
+									&& !Item.IsInstalled()
+									&& Item.GetType()->HasAttribute(CONSTLIT("ore")))
+								{
+								int iOreToMine = Max(1, Min(Item.GetCount() / 4, 10));
+								CItem OreItem = Item;
+								OreItem.SetCount(iOreToMine);
+
+								//	Remove from asteroid
+
+								ObjList.DeleteAtCursor(iOreToMine);
+								m_pTarget->OnComponentChanged(comCargo);
+								m_pTarget->ItemsModified();
+								m_pTarget->InvalidateItemListAddRemove();
+
+								//	Add to our ship (but not 100% of the time, to
+								//	simulate the ferians consuming some ore).
+
+								if (mathRandom(1, 100) <= 25)
+									{
+									CItemListManipulator ShipList(m_pShip->GetItemList());
+									ShipList.AddItem(OreItem);
+									m_pShip->OnComponentChanged(comCargo);
+									m_pShip->ItemsModified();
+									m_pShip->InvalidateItemListAddRemove();
+									}
+
+								//	Done
+
+								break;
+								}
+							}
+						}
+
 					//	There's a chance that we stop mining and proceed to
 					//	another asteroid.
 
@@ -193,6 +238,20 @@ void CFerianShipAI::Behavior (void)
 			break;
 			}
 
+		case stateOnCourseForTarget:
+			{
+			CVector vDist = m_pTarget->GetPos() - m_pShip->GetPos();
+			Metric rDist2 = vDist.Length2();
+			if (rDist2 < MAX_APPROACH_DIST2)
+				CancelCurrentOrder();
+			else
+				{
+				m_AICtx.ImplementCloseOnTarget(m_pShip, m_pTarget, vDist, rDist2);
+				m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip);
+				}
+			break;
+			}
+
 		case stateOnCourseForStargate:
 			m_AICtx.ImplementGating(m_pShip, m_pBase);
 			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip);
@@ -217,6 +276,14 @@ void CFerianShipAI::BehaviorStart (void)
 			{
 			if (m_pShip->GetDockedObj() == NULL)
 				AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+			break;
+			}
+
+		case IShipController::orderApproach:
+			{
+			SetState(stateOnCourseForTarget);
+			m_pShip->ResetMaxSpeed();
+			m_pTarget = GetCurrentOrderTarget();
 			break;
 			}
 

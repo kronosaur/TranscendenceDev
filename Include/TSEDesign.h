@@ -4633,6 +4633,7 @@ class COverlayType : public CDesignType
 			counterCommandBarProgress,			//	Show as progress bar in command bar
 			counterProgress,					//	Show as progress bar on object
 			counterRadius,						//	Show as circle of given radius (pixels)
+			counterFlag,						//	Show a flag with counter and label
 			};
 
 		COverlayType(void);
@@ -4653,6 +4654,7 @@ class COverlayType : public CDesignType
 		inline bool IsHitEffectAlt (void) { return m_fAltHitEffect; }
 		inline bool IsShieldOverlay (void) { return m_fShieldOverlay; }
 		inline bool IsShipScreenDisabled (void) { return m_fDisableShipScreen; }
+		inline bool IsShownOnMap (void) { return m_fShowOnMap; }
 		inline bool Paralyzes (void) const { return m_fParalyzeShip; }
 		inline bool RotatesWithShip (void) { return m_fRotateWithShip; }
 		inline bool Spins (void) const { return m_fSpinShip; }
@@ -4692,7 +4694,16 @@ class COverlayType : public CDesignType
 		DWORD m_fDisableShipScreen:1;			//	If TRUE, player cannot bring up ship screen
 		DWORD m_fSpinShip:1;					//	If TRUE, ship spins uncontrollably
 
-		DWORD m_dwSpare:24;
+		DWORD m_fShowOnMap:1;					//	If TRUE, we show on the system map
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:16;
 	};
 
 //	CSystemType ---------------------------------------------------------------
@@ -5113,6 +5124,7 @@ class CStationType : public CDesignType
 		//	CDesignType overrides
 		static CStationType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designStationType) ? (CStationType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
+		virtual CCommunicationsHandler *GetCommsHandler (void);
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const;
 		virtual CTradingDesc *GetTradingDesc (void) { return m_pTrade; }
 		virtual DesignTypes GetType (void) const { return designStationType; }
@@ -5136,6 +5148,7 @@ class CStationType : public CDesignType
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx);
 		virtual void OnReinit (void);
 		virtual void OnTopologyInitialized (void);
+		virtual void OnUnbindDesign (void);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
 	private:
@@ -5152,7 +5165,6 @@ class CStationType : public CDesignType
 		int CalcHitsToDestroy (int iLevel);
 		Metric CalcTreasureValue (int iLevel);
 		Metric CalcWeaponStrength (int iLevel);
-		CString ComposeLoadError (const CString &sError);
 		void InitStationDamage (void);
 
 		CXMLElement *m_pDesc;
@@ -5217,7 +5229,7 @@ class CStationType : public CDesignType
 		DWORD m_fNoFriendlyTarget:1;					//	Station cannot be hit by friends
 		DWORD m_fVirtual:1;								//	Virtual stations do not show up
 		DWORD m_fPaintOverhang:1;						//	If TRUE, paint in overhang layer
-		DWORD m_fSpare7:1;
+		DWORD m_fCommsHandlerInit:1;					//	TRUE if comms handler has been initialized
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:8;
@@ -5239,6 +5251,9 @@ class CStationType : public CDesignType
 		int m_iAlertWhenAttacked;						//	Chance that station will warn others when attacked
 		int m_iAlertWhenDestroyed;						//	Chance that station will warn others when destroyed
 		Metric m_rMaxAttackDistance;					//	Max range at which station guns attack
+
+		CCommunicationsHandler m_OriginalCommsHandler;
+		CCommunicationsHandler m_CommsHandler;			//	Communications handler
 
 		//	Random occurrence
 		CStationEncounterDesc m_RandomPlacement;		//	Random encounter information

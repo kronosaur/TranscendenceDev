@@ -3670,7 +3670,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 		CSpaceObject *pObj = pSystem->m_DeferredOnCreate.GetObj(i);
 
 		if (pObj && !pObj->IsDestroyed())
-			pObj->OnSystemCreated();
+			pObj->OnSystemCreated(Ctx);
 		}
 
 	//	No need for this list anymore.
@@ -3734,7 +3734,7 @@ ALERROR CSystem::CreateLookup (SSystemCreateCtx *pCtx, const CString &sTable, co
 		if (pTableDesc == NULL)
 			{
 			pCtx->sError = strPatternSubst(CONSTLIT("Unable to find table in <Lookup>: %s"), sTable);
-			return ERR_FAIL;
+			return ERR_NOTFOUND;
 			}
 
 		//	Set the extension
@@ -3762,7 +3762,8 @@ ALERROR CSystem::CreateLookup (SSystemCreateCtx *pCtx, const CString &sTable, co
 
 	//	Restore
 
-	pCtx->LocalTables.Delete(0);
+	if (pSubTables)
+		pCtx->LocalTables.Delete(0);
 	pCtx->pExtension = pOldExtension;
 
 	PopDebugStack(pCtx);

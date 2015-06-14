@@ -39,6 +39,7 @@ class CAreaDamage : public CSpaceObject
 		virtual bool CanHit (CSpaceObject *pObj) { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
+		virtual void OnDestroyed (SDestroyCtx &Ctx);
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
@@ -328,6 +329,7 @@ class CMarker : public CSpaceObject
 							   CMarker **retpMarker);
 
 		//	CSpaceObject virtuals
+		virtual Categories GetCategory (void) const { return catMarker; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual bool IsMarker (void) { return true; }
 		virtual void OnObjLeaveGate (CSpaceObject *pObj);
@@ -481,6 +483,7 @@ class CParticleDamage : public CSpaceObject
 		virtual bool CanHit (CSpaceObject *pObj) { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
+		virtual void OnDestroyed (SDestroyCtx &Ctx);
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
@@ -740,6 +743,7 @@ class CRadiusDamage : public CSpaceObject
 		virtual bool CanHit (CSpaceObject *pObj) { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx);
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damagePassthrough; }
+		virtual void OnDestroyed (SDestroyCtx &Ctx);
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
@@ -1012,7 +1016,7 @@ class CShip : public CSpaceObject
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip);
 		virtual void OnPlayerObj (CSpaceObject *pPlayer);
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx);
-		virtual void OnSystemCreated (void);
+		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx);
 		virtual void OnSystemLoaded (void);
 		virtual void MakeBlind (int iTickCount = -1);
 		virtual void MakeParalyzed (int iTickCount = -1);
@@ -1022,6 +1026,7 @@ class CShip : public CSpaceObject
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos);
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx);
 		virtual void ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program);
+		virtual void RefreshBounds (void) { CalcBounds(); }
 		virtual void Refuel (int iFuel);
 		virtual void Refuel (const CItem &Fuel);
 		virtual void RemoveOverlay (DWORD dwID);
@@ -1084,7 +1089,7 @@ class CShip : public CSpaceObject
 		bool FindInstalledDeviceSlot (const CItem &Item, int *retiDev = NULL);
 		int FindNextDevice (int iStart, ItemCategories Category, int iDir = 1);
 		int FindRandomDevice (bool bEnabledOnly = false);
-		void FinishCreation (SShipGeneratorCtx *pCtx = NULL);
+		void FinishCreation (SShipGeneratorCtx *pCtx = NULL, SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetCargoMass (void);
 		Metric GetItemMass (void);
 		bool IsSingletonDevice (ItemCategories iItemCat);
@@ -1339,12 +1344,13 @@ class CStation : public CSpaceObject
 		virtual void OnObjLeaveGate (CSpaceObject *pObj);
 		virtual void OnPlayerObj (CSpaceObject *pPlayer);
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx);
-		virtual void OnSystemCreated (void);
+		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx);
 		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual void PlaceAtRandomDockPort (CSpaceObject *pObj) { m_DockingPorts.DockAtRandomPort(this, pObj); }
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos);
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx);
+		virtual void RefreshBounds (void) { CalcBounds(); }
 		virtual void RemoveOverlay (DWORD dwID);
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate);
 		virtual bool RequestDock (CSpaceObject *pObj, int iPort = -1);
@@ -1398,7 +1404,7 @@ class CStation : public CSpaceObject
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);
 		void CreateStructuralDestructionEffect (SDestroyCtx &Ctx);
 		ALERROR CreateMapImage (void);
-		void FinishCreation (void);
+		void FinishCreation (SSystemCreateCtx *pSysCreateCtx = NULL);
 		void FriendlyFire (CSpaceObject *pAttacker);
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick, int *retiRotation);
@@ -1466,7 +1472,16 @@ class CStation : public CSpaceObject
 		DWORD m_fBlocksShips:1;					//	TRUE if we block ships
 		DWORD m_fPaintOverhang:1;				//	If TRUE, paint above player ship
 
-		DWORD m_dwSpare:16;
+		DWORD m_fShowMapOrbit:1;				//	If TRUE, show orbit in map
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:8;
 
 		//	Wreck image
 		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)

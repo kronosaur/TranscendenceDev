@@ -353,13 +353,15 @@ class CWeaponFireDesc
 	public:
 		enum ECachedHandlers
 			{
-			evtOnDamageAbandoned		= 0,
-			evtOnDamageArmor			= 1,
-			evtOnDamageOverlay			= 2,
-			evtOnDamageShields			= 3,
-			evtOnFragment				= 4,
+			evtOnCreateShot				= 0,
+			evtOnDamageAbandoned		= 1,
+			evtOnDamageArmor			= 2,
+			evtOnDamageOverlay			= 3,
+			evtOnDamageShields			= 4,
+			evtOnDestroyShot			= 5,
+			evtOnFragment				= 6,
 
-			evtCount					= 5,
+			evtCount					= 7,
 			};
 
 		struct SFragmentDesc
@@ -387,11 +389,13 @@ class CWeaponFireDesc
 		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, char **retpPos = NULL);
 		static CWeaponFireDesc *FindWeaponFireDescFromFullUNID (const CString &sUNID);
+		void FireOnCreateShot (const CDamageSource &Source, CSpaceObject *pShot, CSpaceObject *pTarget);
 		bool FireOnDamageAbandoned (SDamageCtx &Ctx);
 		bool FireOnDamageArmor (SDamageCtx &Ctx);
 		bool FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay);
 		bool FireOnDamageShields (SDamageCtx &Ctx, int iDevice);
 		bool FireOnFragment (const CDamageSource &Source, CSpaceObject *pShot, const CVector &vHitPos, CSpaceObject *pNearestObj, CSpaceObject *pTarget);
+		void FireOnDestroyShot (CSpaceObject *pShot);
 		inline CItemType *GetAmmoType (void) const { return m_pAmmoType; }
 		inline int GetAreaDamageDensity (void) const { return m_AreaDamageDensity.Roll(); }
 		inline Metric GetAreaDamageDensityAverage (void) const { return m_AreaDamageDensity.GetAveValueFloat(); }
@@ -1937,6 +1941,7 @@ class COverlay
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		inline bool Paralyzes (CSpaceObject *pSource) const { return m_pType->Paralyzes(); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
@@ -2029,6 +2034,7 @@ class COverlayList
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource);
 		void RemoveField (CSpaceObject *pSource, DWORD dwID);
 		void SetData (DWORD dwID, const CString &sAttrib, const CString &sData);
@@ -2131,6 +2137,7 @@ class CSpaceObject : public CObject
 			catBeam =			0x00000004,
 			catMissile =		0x00000008,
 			catFractureEffect =	0x00000010,
+			catMarker =			0x00000020,
 			catOther =			0x80000000,
 			};
 
@@ -2257,16 +2264,20 @@ class CSpaceObject : public CObject
 		struct SOnCreate
 			{
 			SOnCreate (void) :
+					pCreateCtx(NULL),
 					pData(NULL),
 					pBaseObj(NULL),
 					pTargetObj(NULL),
-					pOwnerObj(NULL)
+					pOwnerObj(NULL),
+					pOrbit(NULL)
 				{ }
 
+			SSystemCreateCtx *pCreateCtx;
 			ICCItem *pData;
 			CSpaceObject *pBaseObj;
 			CSpaceObject *pTargetObj;
 			CSpaceObject *pOwnerObj;
+			const COrbit *pOrbit;
 			};
 
 		CSpaceObject (IObjectClass *pClass);
@@ -2691,12 +2702,13 @@ class CSpaceObject : public CObject
 		virtual bool IsWreck (void) const { return false; }
 		virtual void MarkImages (void) { }
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip) { }
-		virtual void OnSystemCreated (void) { }
+		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) { }
 		virtual void OnSystemLoaded (void) { }
 		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) { return false; }
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) { return PointInObject(vObjPos, vPointPos); }
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) { }
+		virtual void RefreshBounds (void) { }
 		virtual bool SetAbility (Abilities iAbility, AbilityModifications iModification, int iDuration, DWORD dwOptions) { return false; }
 		virtual void SetExplored (bool bExplored = true) { }
 		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) { }
@@ -3744,7 +3756,7 @@ void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBi
 CItem GetItemFromArg (CCodeChain &CC, ICCItem *pArg);
 CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg);
 bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsError);
-bool GetPosOrObject (CEvalContext *pEvalCtx, ICCItem *pArg, CVector *retvPos, CSpaceObject **retpObj = NULL, int *retiLocID = NULL);
+ALERROR GetPosOrObject (CEvalContext *pEvalCtx, ICCItem *pArg, CVector *retvPos, CSpaceObject **retpObj = NULL, int *retiLocID = NULL);
 CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg);
 ALERROR LoadCodeBlock (const CString &sCode, ICCItem **retpCode, CString *retsError = NULL);
 ICCItem *StdErrorNoSystem (CCodeChain &CC);

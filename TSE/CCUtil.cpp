@@ -764,11 +764,11 @@ bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsErro
 	return true;
 	}
 
-bool GetPosOrObject (CEvalContext *pEvalCtx, 
-					 ICCItem *pArg, 
-					 CVector *retvPos, 
-					 CSpaceObject **retpObj,
-					 int *retiLocID)
+ALERROR GetPosOrObject (CEvalContext *pEvalCtx, 
+						ICCItem *pArg, 
+						CVector *retvPos, 
+						CSpaceObject **retpObj,
+						int *retiLocID)
 
 //	GetPosOrObject
 //
@@ -781,33 +781,45 @@ bool GetPosOrObject (CEvalContext *pEvalCtx,
 	CSpaceObject *pObj = NULL;
 	int iLocID = -1;
 
-	if (pArg->IsNil())
+	if (pArg == NULL || pArg->IsNil())
 		NULL;
 	else if (pArg->IsList())
 		{
+		CString sTag = pArg->GetElement(0)->GetStringValue();
+
+		//	Is this an orbit?
+
+		if (strEquals(sTag, CLASS_CORBIT))
+			{
+			COrbit Orbit;
+			if (!CreateOrbitFromList(CC, pArg, &Orbit))
+				return ERR_FAIL;
+
+			vPos = Orbit.GetObjectPos();
+			}
+
 		//	Is this a location criteria?
 
-		CString sTag = pArg->GetElement(0)->GetStringValue();
-		if (strEquals(sTag, CONSTLIT("location")))
+		else if (strEquals(sTag, CONSTLIT("location")))
 			{
 			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 			if (pSystem == NULL)
-				return false;
+				return ERR_FAIL;
 
 			//	Get the criteria and parse it
 
 			CString sCriteria = (pArg->GetCount() > 1 ? pArg->GetElement(1)->GetStringValue() : NULL_STR);
 			if (sCriteria.IsBlank())
-				return false;
+				return ERR_FAIL;
 
 			SLocationCriteria Criteria;
 			if (Criteria.AttribCriteria.Parse(sCriteria) != NOERROR)
-				return false;
+				return ERR_FAIL;
 
 			//	Get a random location
 
 			if (!pSystem->FindRandomLocation(Criteria, 0, COrbit(), NULL, &iLocID))
-				return false;
+				return ERR_NOTFOUND;
 
 			//	Return the position
 
@@ -838,7 +850,7 @@ bool GetPosOrObject (CEvalContext *pEvalCtx,
 	if (retiLocID)
 		*retiLocID = iLocID;
 
-	return true;
+	return NOERROR;
 	}
 
 CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg)

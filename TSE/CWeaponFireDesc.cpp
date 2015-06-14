@@ -75,20 +75,24 @@
 #define FIRE_TYPE_PARTICLES						CONSTLIT("particles")
 #define FIRE_TYPE_RADIUS						CONSTLIT("radius")
 
+#define ON_CREATE_SHOT_EVENT					CONSTLIT("OnCreateShot")
 #define ON_DAMAGE_OVERLAY_EVENT					CONSTLIT("OnDamageOverlay")
 #define ON_DAMAGE_SHIELDS_EVENT					CONSTLIT("OnDamageShields")
 #define ON_DAMAGE_ARMOR_EVENT					CONSTLIT("OnDamageArmor")
 #define ON_DAMAGE_ABANDONED_EVENT				CONSTLIT("OnDamageAbandoned")
+#define ON_DESTROY_SHOT_EVENT					CONSTLIT("OnDestroyShot")
 #define ON_FRAGMENT_EVENT						CONSTLIT("OnFragment")
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 	{
+		"OnCreateShot",
 		"OnDamageAbandoned",
 		"OnDamageArmor",
 		"OnDamageOverlay",
 		"OnDamageShields",
+		"OnDestroyShot",
 		"OnFragment",
 	};
 
@@ -520,6 +524,34 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 		return NULL;
 	}
 
+void CWeaponFireDesc::FireOnCreateShot (const CDamageSource &Source, CSpaceObject *pShot, CSpaceObject *pTarget)
+
+//	FireOnCreateShot
+//
+//	Fire OnCreateShot
+
+	{
+	SEventHandlerDesc Event;
+	if (FindEventHandler(evtOnCreateShot, &Event))
+		{
+		//	Setup arguments
+
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(pShot);
+		CCCtx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
+		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Source.GetObj());
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Source.GetObj() ? Source.GetObj()->GetOrderGiver(Source.GetCause()) : NULL));
+		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			pShot->ReportEventError(ON_CREATE_SHOT_EVENT, pResult);
+
+		CCCtx.Discard(pResult);
+		}
+	}
+
 bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 
 //	FireOnDamageAbandoned
@@ -809,6 +841,33 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 		}
 	else
 		return false;
+	}
+
+void CWeaponFireDesc::FireOnDestroyShot (CSpaceObject *pShot)
+
+//	FireOnDestroyShot
+//
+//	Shot is done (either because it hit something or because of lifetime
+
+	{
+	SEventHandlerDesc Event;
+	if (FindEventHandler(evtOnDestroyShot, &Event))
+		{
+		//	Setup arguments
+
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(pShot);
+		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
+		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), pShot->GetSource());
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (pShot->GetSource() ? pShot->GetSource()->GetOrderGiver(pShot->GetDamageCauseType()) : NULL));
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			pShot->ReportEventError(ON_DESTROY_SHOT_EVENT, pResult);
+
+		CCCtx.Discard(pResult);
+		}
 	}
 
 bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject *pShot, const CVector &vHitPos, CSpaceObject *pNearestObj, CSpaceObject *pTarget)

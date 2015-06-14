@@ -123,6 +123,16 @@ CString CAreaDamage::GetName (DWORD *retdwFlags)
 	return CONSTLIT("enemy weapon");
 	}
 
+void CAreaDamage::OnDestroyed (SDestroyCtx &Ctx)
+
+//	OnDestroyed
+//
+//	Shot destroyed
+
+	{
+	m_pDesc->FireOnDestroyShot(this);
+	}
+
 void CAreaDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove

@@ -22,6 +22,7 @@
 #define PROPERTY_TYPE							CONSTLIT("type")
 
 const int ANNOTATION_INNER_SPACING_Y =			2;
+const int FLAG_INNER_SPACING_X =				4;
 
 COverlay::COverlay (void) : 
 		m_pType(NULL),
@@ -566,6 +567,38 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 	{
 	switch (m_pType->GetCounterStyle())
 		{
+		case COverlayType::counterFlag:
+			{
+			const CG16bitFont &CounterFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSMessage);
+			const CG16bitFont &LabelFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSObjCounter);
+
+			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+			if (rgbColor.IsNull() && Ctx.pObj)
+				rgbColor = Ctx.pObj->GetSymbolColor();
+
+			//	Get the size of the object we're painting on.
+
+			int cyHalfHeight = (RectHeight(Ctx.pObj->GetImage().GetImageRect())) / 2;
+			int cyMast = cyHalfHeight + LabelFont.GetHeight() + CounterFont.GetHeight();
+
+			//	Paint the mast
+
+			int yTop = y - cyMast;
+			Dest.DrawLine(x, yTop, x, y, 1, rgbColor);
+
+			//	Paint the counter
+
+			int xText = x + FLAG_INNER_SPACING_X;
+			CounterFont.DrawText(Dest, xText, yTop, rgbColor, strFromInt(m_iCounter));
+
+			//	Paint the label
+
+			yTop += CounterFont.GetHeight();
+			LabelFont.DrawText(Dest, xText, yTop, rgbColor, m_sMessage);
+
+			break;
+			}
+
 		case COverlayType::counterProgress:
 			{
 			int cyHeight;
@@ -622,6 +655,34 @@ void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaint
 				Dest.DrawText(x, yText, *pTextFont, rgbTextColor, m_sMessage, CG16bitFont::AlignCenter);
 				}
 
+			break;
+			}
+		}
+	}
+
+void COverlay::PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
+
+//	PaintMapAnnotations
+//
+//	Paints annotations on the system map
+
+	{
+	switch (m_pType->GetCounterStyle())
+		{
+		case COverlayType::counterFlag:
+			{
+			const CG16bitFont &CounterFont = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel);
+
+			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+
+			//	We paint the text to the right and vertically centered
+
+			int yTop = y - (CounterFont.GetHeight() / 2);
+			int xLeft = x + FLAG_INNER_SPACING_X;
+
+			//	Paint the counter
+
+			CounterFont.DrawText(Dest, xLeft, yTop, rgbColor, strFromInt(m_iCounter));
 			break;
 			}
 		}
@@ -752,6 +813,7 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 			{
 			Metric rRadius = ParseDistance(pValue->GetStringValue(), LIGHT_SECOND);
 			m_iCounter = (int)((rRadius / g_KlicksPerPixel) + 0.5);
+			pSource->RefreshBounds();
 			}
 
 		//	Otherwise, take the integer value

@@ -1898,9 +1898,21 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			pShot = NULL;
 		}
 
+	//	If no shot, then we're done
+
+	if (pShot == NULL)
+		{
+		if (retpShot) *retpShot = NULL;
+		return NOERROR;
+		}
+
+	//	Fire OnCreateShot event
+
+	pDesc->FireOnCreateShot(Source, pShot, pTarget);
+
 	//	Fire a system events, if we have any handlers
 
-	if (!m_EventHandlers.IsEmpty() && pShot)
+	if (!m_EventHandlers.IsEmpty())
 		{
 		//	Skip any fragments
 

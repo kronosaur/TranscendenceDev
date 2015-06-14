@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 #define ANIMATIONS_TAG							CONSTLIT("Animations")
+#define COMMUNICATIONS_TAG						CONSTLIT("Communications")
 #define COMPOSITE_TAG							CONSTLIT("ImageComposite")
 #define CONSTRUCTION_TAG						CONSTLIT("Construction")
 #define DEVICES_TAG								CONSTLIT("Devices")
@@ -683,18 +684,6 @@ Metric CStationType::CalcWeaponStrength (int iLevel)
 	return rTotal;
 	}
 
-CString CStationType::ComposeLoadError (const CString &sError)
-
-//	ComposeLoadError
-//
-//	Compose an error loading XML
-
-	{
-	return strPatternSubst(CONSTLIT("%s: %s"),
-			m_sName,
-			sError);
-	}
-
 bool CStationType::FindDataField (const CString &sField, CString *retsValue)
 
 //	FindDataField
@@ -808,6 +797,32 @@ CString CStationType::GenerateRandomName (const CString &sSubst, DWORD *retdwFla
 		*retdwFlags = m_dwRandomNameFlags;
 
 	return ::GenerateRandomName(m_sRandomNames, sSubst);
+	}
+
+CCommunicationsHandler *CStationType::GetCommsHandler (void)
+
+//	GetCommsHandler
+//
+//	Returns the comms handler to use
+
+	{
+	CDesignType *pParent = GetInheritFrom();
+	CCommunicationsHandler *pParentHandler;
+
+	if (pParent && (pParentHandler = pParent->GetCommsHandler()))
+		{
+		if (!m_fCommsHandlerInit)
+			{
+			m_CommsHandler.Merge(m_OriginalCommsHandler);
+			m_CommsHandler.Merge(*pParentHandler);
+
+			m_fCommsHandlerInit = true;
+			}
+
+		return (m_CommsHandler.GetCount() ? &m_CommsHandler : NULL);
+		}
+	else
+		return (m_OriginalCommsHandler.GetCount() ? &m_OriginalCommsHandler : NULL);
 	}
 
 CSovereign *CStationType::GetControllingSovereign (void)
@@ -1203,8 +1218,7 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 Fail:
 
-	Ctx.sError = ComposeLoadError(Ctx.sError);
-	return ERR_FAIL;
+	return ComposeLoadError(Ctx, Ctx.sError);
 	}
 
 ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -1443,16 +1457,10 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (pImage->AttributeExists(SHIPWRECK_UNID_ATTRIB))
 			{
 			if (error = pImage->GetAttributeIntegerList(SHIPWRECK_UNID_ATTRIB, &m_ShipWrecks))
-				{
-				Ctx.sError = ComposeLoadError(CONSTLIT("Unable to load ship wreck list"));
-				return error;
-				}
+				return ComposeLoadError(Ctx, CONSTLIT("Unable to load ship wreck list"));
 
 			if (m_ShipWrecks.GetCount() == 0)
-				{
-				Ctx.sError = ComposeLoadError(CONSTLIT("Expected ship wreck list"));
-				return ERR_FAIL;
-				}
+				return ComposeLoadError(Ctx, CONSTLIT("Expected ship wreck list"));
 
 			m_iImageVariants = 0;
 			}
@@ -1462,10 +1470,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		else
 			{
 			if (error = m_Image.InitFromXML(Ctx, pImage))
-				{
-				Ctx.sError = ComposeLoadError(Ctx.sError);
-				return error;
-				}
+				return ComposeLoadError(Ctx, Ctx.sError);
 
 			m_iImageVariants = m_Image.GetVariantCount();
 			}
@@ -1476,10 +1481,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG))
 		{
 		if (error = m_HeroImage.InitFromXML(Ctx, pImage))
-			{
-			Ctx.sError = ComposeLoadError(Ctx.sError);
-			return error;
-			}
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	//	Load animations
@@ -1500,10 +1502,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				{
 				CXMLElement *pImage = pSection->GetContentElement(0);
 				if (error = m_pAnimations[i].m_Image.InitFromXML(Ctx, pImage))
-					{
-					Ctx.sError = ComposeLoadError(CONSTLIT("Unable to load animation image"));
-					return error;
-					}
+					return ComposeLoadError(Ctx, CONSTLIT("Unable to load animation image"));
 				}
 			}
 		}
@@ -1518,16 +1517,22 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (error = LoadUNID(Ctx, pDesc->GetAttribute(DEFAULT_BACKGROUND_ID_ATTRIB), &m_dwDefaultBkgnd))
 		return error;
 	
+	//	Load communications
+
+	CXMLElement *pComms = pDesc->GetContentElementByTag(COMMUNICATIONS_TAG);
+	if (pComms)
+		if (error = m_OriginalCommsHandler.InitFromXML(pComms, &Ctx.sError))
+			return ComposeLoadError(Ctx, Ctx.sError);
+
+	m_fCommsHandlerInit = false;
+
 	//	Load initial ships
 
 	CXMLElement *pShips = pDesc->GetContentElementByTag(SHIPS_TAG);
 	if (pShips)
 		{
 		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pShips, &m_pInitialShips))
-			{
-			Ctx.sError = ComposeLoadError(strPatternSubst(CONSTLIT("<Ships>: %s"), Ctx.sError));
-			return error;
-			}
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Ships>: %s"), Ctx.sError));
 
 		//	If defined, we use this count to create initial ships AND reinforcements.
 
@@ -1535,10 +1540,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (pShips->FindAttribute(STANDING_COUNT_ATTRIB, &sCount))
 			{
 			if (error = m_ShipsCount.LoadFromXML(sCount))
-				{
-				Ctx.sError = ComposeLoadError(CONSTLIT("Invalid count attribute in <Ships>"));
-				return error;
-				}
+				return ComposeLoadError(Ctx, CONSTLIT("Invalid count attribute in <Ships>"));
 			}
 
 		//	Otherwise, see if we define minShips, in which case we use that value for
@@ -1554,10 +1556,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pReinforcements)
 		{
 		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pReinforcements, &m_pReinforcements))
-			{
-			Ctx.sError = ComposeLoadError(strPatternSubst(CONSTLIT("<Reinforcements>: %s"), Ctx.sError));
-			return error;
-			}
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Reinforcements>: %s"), Ctx.sError));
 
 		//	Figure out the minimum number of reinforcements at this base
 
@@ -1570,10 +1569,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pEncounters)
 		{
 		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pEncounters, &m_pEncounters))
-			{
-			Ctx.sError = ComposeLoadError(strPatternSubst(CONSTLIT("<Encounters>: %s"), Ctx.sError));
-			return error;
-			}
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Encounters>: %s"), Ctx.sError));
 
 		m_iEncounterFrequency = GetFrequency(pEncounters->GetAttribute(FREQUENCY_ATTRIB));
 		}
@@ -1592,10 +1588,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pConstruction)
 		{
 		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pConstruction, &m_pConstruction))
-			{
-			Ctx.sError = ComposeLoadError(strPatternSubst(CONSTLIT("<Construction>: %s"), Ctx.sError));
-			return error;
-			}
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Construction>: %s"), Ctx.sError));
 
 		m_iShipConstructionRate = pConstruction->GetAttributeInteger(CONSTRUCTION_RATE_ATTRIB);
 		m_iMaxConstruction = pConstruction->GetAttributeInteger(MAX_CONSTRUCTION_ATTRIB);
@@ -1773,6 +1766,20 @@ void CStationType::OnTopologyInitialized (void)
 	//	(now that we know the topology).
 
 	m_RandomPlacement.InitLevelFrequency();
+	}
+
+void CStationType::OnUnbindDesign (void)
+
+//	OnUnbindDesign
+//
+//	Undo binding
+
+	{
+	//	Reset comms handler because our inheritance chain might
+	//	have changed.
+
+	m_fCommsHandlerInit = false;
+	m_CommsHandler.DeleteAll();
 	}
 
 void CStationType::OnWriteToStream (IWriteStream *pStream)

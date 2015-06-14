@@ -114,6 +114,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 
 #define CATEGORY_BEAM							CONSTLIT("beam")
 #define CATEGORY_EFFECT							CONSTLIT("effect")
+#define CATEGORY_MARKER							CONSTLIT("marker")
 #define CATEGORY_MISSILE						CONSTLIT("missile")
 #define CATEGORY_SHIP							CONSTLIT("ship")
 #define CATEGORY_STATION						CONSTLIT("station")
@@ -2023,12 +2024,15 @@ void CSpaceObject::FireOnCreate (const SOnCreate &OnCreate)
 			&& FindEventHandler(ON_CREATE_EVENT, &Event))
 		{
 		CCodeChainCtx Ctx;
+		Ctx.SetSystemCreateCtx(OnCreate.pCreateCtx);
 
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(OnCreate.pData);
 		Ctx.DefineSpaceObject(CONSTLIT("aBaseObj"), OnCreate.pBaseObj);
 		Ctx.DefineSpaceObject(CONSTLIT("aOwnerObj"), OnCreate.pOwnerObj);
 		Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), OnCreate.pTargetObj);
+		if (OnCreate.pOrbit)
+			Ctx.DefineOrbit(CONSTLIT("aOrbit"), *OnCreate.pOrbit);
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
@@ -3810,6 +3814,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 			case catMissile:
 				return CC.CreateString(CATEGORY_MISSILE);
+
+			case catMarker:
+				return CC.CreateString(CATEGORY_MARKER);
 
 			default:
 				return CC.CreateString(CATEGORY_EFFECT);
@@ -5772,6 +5779,7 @@ void CSpaceObject::ParseCriteria (CSpaceObject *pSource, const CString &sCriteri
 //	Parses a string and returns criteria structure
 //
 //		b			Include beams
+//		k			Include markers
 //		m			Include missiles
 //		s			Include ships
 //		t			Include stations (including planets)
@@ -5920,6 +5928,10 @@ void CSpaceObject::ParseCriteria (CSpaceObject *pSource, const CString &sCriteri
 
 			case 'K':
 				retCriteria->bKilledObjectsOnly = true;
+				break;
+
+			case 'k':
+				retCriteria->dwCategories |= catMarker;
 				break;
 
 			case 'L':

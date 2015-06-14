@@ -21,6 +21,7 @@
 #define MAX_ATTRIB								CONSTLIT("max")
 #define PARALYZE_ATTRIB							CONSTLIT("paralyze")
 #define SHIELD_OVERLAY_ATTRIB					CONSTLIT("shieldOverlay")
+#define SHOW_ON_MAP_ATTRIB						CONSTLIT("showOnMap")
 #define SPIN_ATTRIB								CONSTLIT("spin")
 #define STYLE_ATTRIB							CONSTLIT("style")
 #define UNID_ATTRIB								CONSTLIT("UNID")
@@ -28,6 +29,7 @@
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
 
 #define COUNTER_COMMAND_BAR_PROGRESS			CONSTLIT("commandBarProgress")
+#define COUNTER_FLAG							CONSTLIT("flag")
 #define COUNTER_PROGRESS						CONSTLIT("progress")
 #define COUNTER_RADIUS							CONSTLIT("radius")
 
@@ -274,6 +276,9 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (strEquals(sStyle, COUNTER_COMMAND_BAR_PROGRESS))
 			m_iCounterType = counterCommandBarProgress;
 
+		else if (strEquals(sStyle, COUNTER_FLAG))
+			m_iCounterType = counterFlag;
+
 		else if (strEquals(sStyle, COUNTER_PROGRESS))
 			m_iCounterType = counterProgress;
 
@@ -289,12 +294,14 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_sCounterLabel = pCounter->GetAttribute(LABEL_ATTRIB);
 		m_iCounterMax = pCounter->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, 100);
 		m_rgbCounterColor = ::LoadRGBColor(pCounter->GetAttribute(COLOR_ATTRIB));
+		m_fShowOnMap = pCounter->GetAttributeBool(SHOW_ON_MAP_ATTRIB);
 		}
 	else
 		{
 		m_iCounterType = counterNone;
 		m_iCounterMax = 0;
 		m_rgbCounterColor = CG32bitPixel::Null();
+		m_fShowOnMap = false;
 		}
 
 	//	Options

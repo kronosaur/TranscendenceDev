@@ -260,6 +260,16 @@ CString CRadiusDamage::GetName (DWORD *retdwFlags)
 	return CONSTLIT("enemy weapon");
 	}
 
+void CRadiusDamage::OnDestroyed (SDestroyCtx &Ctx)
+
+//	OnDestroyed
+//
+//	Shot destroyed
+
+	{
+	m_pDesc->FireOnDestroyShot(this);
+	}
+
 void CRadiusDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove

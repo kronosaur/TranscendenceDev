@@ -430,6 +430,8 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_MATCHES					27
 #define FN_SYS_SET_POV					28
 #define FN_SYS_GET_STD_COMBAT_STRENGTH	29
+#define FN_SYS_RANDOM_LOCATION			30
+#define FN_SYS_ORBIT_CREATE				31
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -527,13 +529,16 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FIELD_ANGLE_OFFSET				CONSTLIT("angleOffset")
 #define FIELD_ARC_OFFSET				CONSTLIT("arcOffset")
+#define FIELD_ATTRIBS					CONSTLIT("attribs")
 #define FIELD_CENTER					CONSTLIT("center")
 #define FIELD_DEVICE_SLOT				CONSTLIT("deviceSlot")
 #define FIELD_ERODE						CONSTLIT("erode")
 #define FIELD_HEIGHT					CONSTLIT("height")
 #define FIELD_LENGTH					CONSTLIT("length")
 #define FIELD_ORBIT						CONSTLIT("orbit")
+#define FIELD_POS						CONSTLIT("pos")
 #define FIELD_RADIUS_OFFSET				CONSTLIT("radiusOffset")
+#define FIELD_REMOVE					CONSTLIT("remove")
 #define FIELD_ROTATION					CONSTLIT("rotation")
 #define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex")
 #define FIELD_WIDTH						CONSTLIT("width")
@@ -1257,7 +1262,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"objGetDisposition",			fnObjGet,		FN_OBJ_GET_DISPOSITION,
-			"(objGetDisposition obj targetObj) -> disposition of obj towards targetObj",
+			"(objGetDisposition obj targetObj) -> disposition of obj towards targetObj\n\n"
+			
+			"disposition:\n\n"
+			
+			"   'enemy\n"
+			"   'friend\n"
+			"   'neutral\n",
+
 			"ii",	0,	},
 
 		{	"objGetDistance",				fnObjGetOld,		FN_OBJ_DISTANCE,
@@ -2078,7 +2090,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//			"fleet"				= fleet member
 		//			"fleetcommand"		= fleet squad leader
 		//			"gaianprocessor"	= Gaian processor
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateShipwreck",			fnSystemCreate,		FN_SYS_CREATE_SHIPWRECK,
 			"(sysCreateShipwreck unid pos sovereignID) -> shipwreck",
@@ -2111,6 +2123,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"filter\n\n"
 			
 			"   b           Include beams\n"
+			"   k           Include markers\n"
 			"   m           Include missiles\n"
 			"   s           Include ships\n"
 			"   t           Include stations (including planets)\n"
@@ -2200,6 +2213,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"*s",	0,	},
 
+		{	"sysGetRandomLocation",	fnSystemGet,	FN_SYS_RANDOM_LOCATION,
+			"(sysGetRandomLocation criteria [options]) -> location or Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   'remove            If True, remove location\n\n"
+			
+			"location:\n\n"
+			
+			"   'attribs           The attributes for the location\n"
+			"   'orbit             The orbital parameters\n"
+			"   'pos               The location position\n",
+
+			"s*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"sysGetStargateDestination",	fnSystemGet,	FN_SYS_STARGATE_DESTINATION,
 			"(sysGetStargateDestination [nodeID] gateID) -> (nodeID gateID)",
 			"s*",	0,	},
@@ -2231,6 +2259,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysMatches",					fnSystemGet,	FN_SYS_MATCHES,
 			"(sysMatches [nodeID] criteria) -> True/Nil",
 			"*s",	0,	},
+
+		{	"sysOrbit",						fnSystemGet,	FN_SYS_ORBIT_CREATE,
+			"(sysOrbit center radius angle [eccentricity rotation]) -> orbit",
+
+			"vnn*",	0,	},
 
 		{	"sysOrbitPos",					fnSystemOrbit,	FN_SYS_ORBIT_POS,
 			"(sysOrbitPos orbit [options]) -> vector\n\n"
@@ -4209,7 +4242,9 @@ ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD
 
 	CItemListManipulator theList(pObj->GetItemList());
 	SItemAddCtx Ctx(theList);
+	Ctx.pSystem = pObj->GetSystem();
 	Ctx.iLevel = (pObj->GetSystem() ? pObj->GetSystem()->GetLevel() : 1);
+	Ctx.vPos = pObj->GetPos();
 
 	CItemTable *pTable = g_pUniverse->FindItemTable(dwTableID);
 	if (pTable == NULL)
@@ -6465,7 +6500,9 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Set vector
 
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+
 			pObj->Place(vPos, pObj->GetVel());
 
 			//	Set rotation
@@ -6515,7 +6552,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pArgs->GetCount() > 1)
 				{
-				GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, &pGate);
+				if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, &pGate) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
 				//	Place the object at the gate or position
 
@@ -6897,8 +6935,14 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			//	Second param is vector
 
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
+			ALERROR error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
 			pArgs->Discard(pCC);
+
+			if (error)
+				{
+				pResult = pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+				break;
+				}
 
 			//	Jump
 
@@ -6926,8 +6970,14 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			//	Second param is vector
 
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
+			ALERROR error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
 			pArgs->Discard(pCC);
+
+			if (error)
+				{
+				pResult = pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+				break;
+				}
 
 			//	Move the ship
 
@@ -9484,8 +9534,10 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else if (strEquals(sShape, SHAPE_SQUARE))
 				{
+				ICCItem *pCenter = pOptions->GetElement(FIELD_CENTER);
 				CVector vPos;
-				GetPosOrObject(pEvalCtx, pOptions->GetElement(FIELD_CENTER), &vPos);
+				if (GetPosOrObject(pEvalCtx, pCenter, &vPos) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Invalid pos"), pCenter);
 
 				COrbit OrbitDesc(vPos, 0.0);
 
@@ -9514,7 +9566,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unknown item type"), pArgs->GetElement(0));
 
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
 			CSovereign *pSovereign = g_pUniverse->FindSovereign(pArgs->GetElement(2)->GetIntegerValue());
 			if (pSovereign == NULL)
@@ -9535,8 +9588,12 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 			SSystemCreateCtx *pSysCreateCtx = pCtx->GetSystemCreateCtx();
+
+			//	We can't always control if we're called inside of system create or not,
+			//	so if we're NOT, then we fail without an error.
+
 			if (pSysCreateCtx == NULL)
-				return pCC->CreateError(CONSTLIT("sysCreateLookup only valid inside <SystemType> definition."));
+				return pCC->CreateNil();
 
 			CString sTableName = pArgs->GetElement(0)->GetStringValue();
 
@@ -9548,8 +9605,16 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Create
 
-			if (pSysCreateCtx->pSystem->CreateLookup(pSysCreateCtx, sTableName, OrbitDesc, NULL) != NOERROR)
-				return pCC->CreateError(pSysCreateCtx->sError);
+			if (error = pSysCreateCtx->pSystem->CreateLookup(pSysCreateCtx, sTableName, OrbitDesc, NULL))
+				{
+				//	If we can't find the table, we fail without an error (because
+				//	we might be creating an optional object).
+
+				if (error == ERR_NOTFOUND)
+					return pCC->CreateNil();
+				else
+					return pCC->CreateError(pSysCreateCtx->sError);
+				}
 
 			//	Done
 
@@ -9569,7 +9634,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unknown ship class ID"), pArgs->GetElement(0));
 
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
 			CSovereign *pSovereign = g_pUniverse->FindSovereign(pArgs->GetElement(2)->GetIntegerValue());
 			if (pSovereign == NULL)
@@ -9660,8 +9726,11 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unable to find specified weapon"));
 
 			CDamageSource Source = GetDamageSourceArg(*pCC, pArgs->GetElement(1));
+
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(2), &vPos);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(2), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(2));
+
 			Metric rSpeed = LIGHT_SPEED * pArgs->GetElement(4)->GetIntegerValue() / 100.0;
 			CSpaceObject *pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(5));
 			bool bDetonateNow = ((pArgs->GetCount() > 6) ? !pArgs->GetElement(6)->IsNil() : false);
@@ -9774,8 +9843,11 @@ ICCItem *fnSystemCreateEffect (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwD
 
 	DWORD dwUNID = pArgs->GetElement(0)->GetIntegerValue();
 	CSpaceObject *pAnchor = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+
 	CVector vPos;
-	GetPosOrObject(pEvalCtx, pArgs->GetElement(2), &vPos);
+	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(2), &vPos) != NOERROR)
+		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(2));
+
 	int iRotation = (pArgs->GetCount() > 3 ? pArgs->GetElement(3)->GetIntegerValue() : 0);
 	int iVariant = (pArgs->GetCount() > 4 ? pArgs->GetElement(4)->GetIntegerValue() : 0);
 
@@ -9827,7 +9899,8 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 	//	or an integer (in which case it is a gate object)
 
 	CVector vPos;
-	GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
+	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos) != NOERROR)
+		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
 	//	Sovereign
 
@@ -9856,7 +9929,7 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 	return pCC->CreateInteger((int)pObj);
 	}
 
-ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnSystemCreateShip
 //
@@ -9864,14 +9937,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD 
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
-	ICCItem *pArgs;
 	int i;
-
-	//	Evaluate the arguments and validate them
-
-	pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("ivi*"));
-	if (pArgs->IsError())
-		return pArgs;
 
 	//	Get the arguments
 
@@ -9883,7 +9949,8 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD 
 
 	CVector vPos;
 	CSpaceObject *pGate;
-	GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, &pGate);
+	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, &pGate) != NOERROR)
+		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
 	//	Controller
 
@@ -9910,8 +9977,6 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD 
 	CSovereign *pSovereign = g_pUniverse->FindSovereign(dwSovereignID);
 	if (pSovereign == NULL)
 		return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pArgs->GetElement(2));
-
-	pArgs->Discard(pCC);
 
 	//	Create
 
@@ -9971,6 +10036,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 //	(sysCreateStation unid pos) -> station
 
 	{
+	ALERROR error;
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	SSystemCreateCtx *pSysCreateCtx = pCtx->GetSystemCreateCtx();
@@ -9989,8 +10055,23 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 
 	CVector vPos;
 	int iLocID;
-	if (!GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, NULL, &iLocID))
-		return pCC->CreateNil();
+	if (error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, NULL, &iLocID))
+		{
+		//	If we couldn't find a location, then we abort, but return Nil
+		//	so that callers can recover.
+
+		if (error == ERR_NOTFOUND)
+			{
+			if (g_pUniverse->InDebugMode())
+				::kernelDebugLogMessage("WARNING: Unable to create station at %s (in %s)", pArgs->GetElement(1)->Print(pCC), pSystem->GetName());
+			return pCC->CreateNil();
+			}
+
+		//	Otherwise, this is a real error.
+
+		else
+			return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+		}
 
 	//	If we're creating a stargate, get some extra information
 
@@ -10296,7 +10377,8 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			DWORD dwObjID = pArgs->GetElement(0)->GetIntegerValue();
 
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
 			CSpaceObject *pObj;
 			if (!pSystem->DescendObject(dwObjID, vPos, &pObj))
@@ -10312,7 +10394,9 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return StdErrorNoSystem(*pCC);
 
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
 			CSpaceEnvironmentType *pEnvironment = pSystem->GetSpaceEnvironment(vPos);
 			if (pEnvironment)
 				return pCC->CreateInteger(pEnvironment->GetUNID());
@@ -10323,7 +10407,9 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SYS_GET_FIRE_SOLUTION:
 			{
 			CVector vPos;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
 			CVector vVel = CreateVectorFromList(*pCC, pArgs->GetElement(1));
 			Metric rSpeed;
 			if (pArgs->GetElement(2)->IsList())
@@ -10382,6 +10468,59 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			return pCC->CreateInteger((int)(CShipClass::GetStdCombatStrength(iLevel) + 0.5));
+			}
+
+		case FN_SYS_RANDOM_LOCATION:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			//	Get the criteria and parse it
+
+			CString sCriteria = pArgs->GetElement(0)->GetStringValue();
+			if (sCriteria.IsBlank())
+				return pCC->CreateNil();
+
+			SLocationCriteria Criteria;
+			if (Criteria.AttribCriteria.Parse(sCriteria) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid location criteria"), pArgs->GetElement(0));
+
+			//	Get some options
+
+			ICCItem *pOptions = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : NULL);
+			ICCItem *pRemove = (pOptions ? pOptions->GetElement(FIELD_REMOVE) : NULL);
+			bool bRemoveLoc = (pRemove && !pRemove->IsNil());
+
+			//	Get a random location. If we can't find one, we return Nil.
+
+			int iLocID;
+			if (!pSystem->FindRandomLocation(Criteria, 0, COrbit(), NULL, &iLocID))
+				return pCC->CreateNil();
+
+			//	Get the data
+
+			CLocationDef *pLoc = pSystem->GetLocation(iLocID);
+			ICCItem *pPos = CreateListFromVector(*pCC, pLoc->GetOrbit().GetObjectPos());
+			ICCItem *pOrbit = CreateListFromOrbit(*pCC, pLoc->GetOrbit());
+
+			//	Prepare a result
+
+			ICCItem *pResult = pCC->CreateSymbolTable();
+			pResult->SetStringAt(*pCC, FIELD_ATTRIBS, pLoc->GetAttributes());
+			pResult->SetAt(*pCC, FIELD_POS, pPos);
+			pPos->Discard(pCC);
+			pResult->SetAt(*pCC, FIELD_ORBIT, pOrbit);
+			pOrbit->Discard(pCC);
+
+			//	If necessary, remove the location
+
+			if (bRemoveLoc)
+				pLoc->SetBlocked();
+
+			//	Done
+
+			return pResult;
 			}
 
 		case FN_SYS_SET_PROPERTY:
@@ -10574,6 +10713,21 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateBool(pNode->MatchesCriteria(CriteriaCtx, Criteria));
 			}
 
+		case FN_SYS_ORBIT_CREATE:
+			{
+			CVector vCenter;
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
+			Metric rRadius = Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND);
+			Metric rAngle = mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue());
+			Metric rEccentricity = Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99));
+			Metric rRotation = (pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+
+			COrbit Orbit(vCenter, rRadius, rEccentricity, rRotation, rAngle);
+			return CreateListFromOrbit(*pCC, Orbit);
+			}
+
 		case FN_SYS_NAME:
 			{
 			if (pArgs->GetCount() == 0)
@@ -10645,7 +10799,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CVector vCenter;
 			CSpaceObject *pObj;
-			if (!GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter, &pObj))
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter, &pObj) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Expected vector or object"), pArgs->GetElement(0));
 
 			//	If we have an object, set the POV
@@ -11091,9 +11245,12 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		case FN_VECTOR_ADD:
 			{
 			CVector vPos1;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
 			CVector vPos2;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
 			return CreateListFromVector(*pCC, vPos1 + vPos2);
 			}
@@ -11101,7 +11258,8 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		case FN_VECTOR_ANGLE:
 			{
 			CVector vVec1;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vVec1);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vVec1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
 			//	If we have two vectors, then we return the bearing of vector 1
 			//	as seen from vector 2.
@@ -11109,7 +11267,9 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (pArgs->GetCount() > 1)
 				{
 				CVector vVec2;
-				GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vVec2);
+				if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vVec2) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+
 				return pCC->CreateInteger(VectorToPolar(vVec1 - vVec2));
 				}
 
@@ -11121,7 +11281,9 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		case FN_VECTOR_DIVIDE:
 			{
 			CVector vPos1;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
 			int iFactor = pArgs->GetElement(1)->GetIntegerValue();
 
 			if (iFactor == 0)
@@ -11133,7 +11295,9 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		case FN_VECTOR_MULTIPLY:
 			{
 			CVector vPos1;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
 			int iFactor = pArgs->GetElement(1)->GetIntegerValue();
 
 			return CreateListFromVector(*pCC, vPos1 * (Metric)iFactor);
@@ -11144,7 +11308,8 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			//	Get the center
 
 			CVector vCenter;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
 			//	Get the offset
 
@@ -11166,7 +11331,8 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			//	Get the center
 
 			CVector vCenter;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter, &pSource);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter, &pSource) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
 			//	Get the radius and separation
 
@@ -11259,9 +11425,12 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		case FN_VECTOR_SUBTRACT:
 			{
 			CVector vPos1;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
 			CVector vPos2;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
 			return CreateListFromVector(*pCC, vPos1 - vPos2);
 			}
@@ -11269,10 +11438,15 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		case FN_VECTOR_DISTANCE:
 			{
 			CVector vPos1;
-			GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1);
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
 			CVector vPos2;
 			if (pArgs->GetCount() > 1)
-				GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2);
+				{
+				if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+				}
 
 			CVector vDist = vPos1 - vPos2;
 			return pCC->CreateInteger((int)((vDist.Length() / LIGHT_SECOND) + 0.5));
@@ -11317,7 +11491,9 @@ ICCItem *fnSystemVectorOffset (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 	//	Get the arguments
 
 	CVector vCenter;
-	GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter);
+	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter) != NOERROR)
+		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
 	int iAngle = pArgs->GetElement(1)->GetIntegerValue();
 	Metric rRadius = LIGHT_SECOND * pArgs->GetElement(2)->GetIntegerValue();
 

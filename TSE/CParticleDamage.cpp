@@ -209,6 +209,16 @@ void CParticleDamage::InitParticles (int iCount, const CVector &vSource, const C
 		}
 	}
 
+void CParticleDamage::OnDestroyed (SDestroyCtx &Ctx)
+
+//	OnDestroyed
+//
+//	Shot destroyed
+
+	{
+	m_pDesc->FireOnDestroyShot(this);
+	}
+
 void CParticleDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove

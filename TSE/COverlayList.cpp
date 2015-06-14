@@ -489,6 +489,23 @@ void COverlayList::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportP
 		}
 	}
 
+void COverlayList::PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
+
+//	PaintMapAnnotations
+//
+//	Paints annotations on the system map
+
+	{
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed() && pField->GetType()->IsShownOnMap())
+			pField->PaintMapAnnotations(Ctx, Dest, x, y);
+
+		pField = pField->GetNext();
+		}
+	}
+
 void COverlayList::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource)
 
 //	ReadFromStream

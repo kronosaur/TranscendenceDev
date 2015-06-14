@@ -638,6 +638,10 @@ void CMissile::OnDestroyed (SDestroyCtx &Ctx)
 
 	if (Ctx.iCause == killedByWeaponMalfunction)
 		CreateFragments(GetPos());
+
+	//	Fire on destroyed
+
+	m_pDesc->FireOnDestroyShot(this);
 	}
 
 void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
