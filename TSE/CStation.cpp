@@ -339,20 +339,14 @@ bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int
 //	Computes the line shadow line for the object.
 
 	{
-	if (!m_StarlightImage.IsEmpty())
-		return m_StarlightImage.CalcVolumetricShadowLine(Ctx, 0, 0, retxCenter, retyCenter, retiWidth, retiLength);
+	//	Get the image
 
-	else
-		{
-		//	Get the image
+	int iTick, iVariant;
+	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
 
-		int iTick, iVariant;
-		const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
+	//	Get the shadow line from the image
 
-		//	Get the shadow line from the image
-
-		return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
-		}
+	return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
 	}
 
 bool CStation::CanAttack (void) const
@@ -956,30 +950,15 @@ ALERROR CStation::CreateMapImage (void)
 
 	Metric rScale = g_KlicksPerPixel / (0.3 * LIGHT_SECOND);
 
-	//	Get it from the starlight image, if we have it.
+	//	Get it from the image
 
-	CG32bitImage *pBmpImage = NULL;
-	RECT rcBmpImage;
-	if (!m_StarlightImage.IsEmpty())
-		{
-		pBmpImage = &m_StarlightImage.GetImage(strFromInt(m_pType->GetUNID()));
-		rcBmpImage = m_StarlightImage.GetImageRect();
-		}
+	int iTick, iRotation;
+	const CObjectImageArray &Image = GetImage(false, &iTick, &iRotation);
+	if (!Image.IsLoaded())
+		return NOERROR;
 
-	//	Otherwise, from the main image
-
-	else
-		{
-		//	Make sure we have an image
-
-		int iTick, iRotation;
-		const CObjectImageArray &Image = GetImage(false, &iTick, &iRotation);
-		if (!Image.IsLoaded())
-			return NOERROR;
-
-		pBmpImage = &Image.GetImage(strFromInt(m_pType->GetUNID()));
-		rcBmpImage = Image.GetImageRect(iTick, iRotation);
-		}
+	CG32bitImage *pBmpImage = &Image.GetImage(strFromInt(m_pType->GetUNID()));
+	RECT rcBmpImage = Image.GetImageRect(iTick, iRotation);
 
 	//	Create the image
 
@@ -1031,6 +1010,8 @@ void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
 //	iStarAngle.
 
 	{
+	ASSERT(m_StarlightImage.IsEmpty());
+
 	//	Figure out the rotation
 
 	int iRotation = iStarAngle - 315;
@@ -1358,30 +1339,30 @@ const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *ret
 //	Returns the image of this station
 
 	{
-	CCompositeImageModifiers Modifiers;
-	CalcImageModifiers(&Modifiers, retiTick);
+	//	If we have a rotated image, use that
 
-	//	Apply fading
-
-#ifdef DISTANCE_FADE
-	if (bFade
-			&& IsOutOfPlaneObj()
-			&& GetParallaxDist() > 1.0)
+	if (!m_StarlightImage.IsEmpty())
 		{
-		DWORD dwOpacity = Min(255, (int)(25.5 * (GetParallaxDist() - 1.0)));
-		if (dwOpacity != 0)
-			Modifiers.SetFadeColor(GetSystem()->CalculateSpaceColor(this), dwOpacity);
+		if (retiTick)
+			*retiTick = 0;
+
+		if (retiRotation)
+			*retiRotation = 0;
+
+		return m_StarlightImage;
 		}
-#elif defined(CONSTANT_FADE)
-	if (bFade
-			&& IsOutOfPlaneObj()
-			&& GetParallaxDist() > 1.0)
-		Modifiers.SetFadeColor(GetSystem()->CalculateSpaceColor(this), 128);
-#endif
 
-	//	Image
+	//	Otherwise get the image from the type
 
-	return m_pType->GetImage(m_ImageSelector, Modifiers, retiRotation);
+	else
+		{
+		CCompositeImageModifiers Modifiers;
+		CalcImageModifiers(&Modifiers, retiTick);
+
+		//	Image
+
+		return m_pType->GetImage(m_ImageSelector, Modifiers, retiRotation);
+		}
 	}
 
 CString CStation::GetName (DWORD *retdwFlags)
@@ -2366,10 +2347,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 	int iTick, iVariant;
 	const CObjectImageArray &Image = GetImage(true, &iTick, &iVariant);
 
-	if (!m_StarlightImage.IsEmpty())
-		m_StarlightImage.PaintImage(Dest, x, y, 0, 0);
-
-	else if (m_fRadioactive)
+	if (m_fRadioactive)
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, CG32bitPixel(0, 255, 0));
 
 	else
