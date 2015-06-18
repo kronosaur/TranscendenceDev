@@ -3543,7 +3543,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (iValue == 1)
 					return pCC->CreateString(strPatternSubst(CONSTLIT("1 %s"), pEcon->GetCurrencyNameSingular()));
 				else
-					return pCC->CreateString(strPatternSubst(CONSTLIT("%d %s"), iValue, pEcon->GetCurrencyNamePlural()));
+					return pCC->CreateString(strPatternSubst(CONSTLIT("%s %s"), strFormatInteger(iValue, -1, FORMAT_THOUSAND_SEPARATOR), pEcon->GetCurrencyNamePlural()));
 				}
 
 			//	If the second arg is Nil, then return singular
@@ -9726,6 +9726,9 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unable to find specified weapon"));
 
 			CDamageSource Source = GetDamageSourceArg(*pCC, pArgs->GetElement(1));
+			CSpaceObject *pSource = Source.GetObj();
+			if (pSource && pSource->IsDestroyed())
+				pSource = NULL;
 
 			CVector vPos;
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(2), &vPos) != NOERROR)
@@ -9765,6 +9768,12 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				iDir = AngleMod(pArgs->GetElement(3)->GetIntegerValue());
 
+			//	Create barrel flash effect
+
+			CEffectCreator *pFireEffect;
+			if (pFireEffect = pDesc->GetFireEffect())
+				pFireEffect->CreateEffect(pSystem, pSource, vPos, CVector(), iDir);
+
 			//	If we have a bonus, we need an enhancement stack
 
 			CItemEnhancementStack *pEnhancements = NULL;
@@ -9801,6 +9810,10 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (bDetonateNow)
 				pObj->DetonateNow(NULL);
+
+			//	Sound
+
+			pDesc->PlayFireSound(pObj);
 
 			//	DOne
 
