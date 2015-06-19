@@ -170,14 +170,18 @@ void CWaitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 	bool bInPlace;
 	Ctx.ImplementHold(pShip, &bInPlace);
 
-	//	If desired, use primary weapons to attack enemies
+	//	Attack while we wait?
 
 	if (m_fAttackEnemies)
+		{
+		//	If desired, use primary weapons to attack enemies
+
 		AttackEnemies(pShip, Ctx, bInPlace);
 
-	//	Use secondary weapons to attack enemies
+		//	Use secondary weapons to attack enemies
 
-	Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+		Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
+		}
 
 	//	See if our timer has expired
 
