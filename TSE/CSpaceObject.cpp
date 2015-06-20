@@ -100,6 +100,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_LEVEL							CONSTLIT("level")
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
+#define PROPERTY_REFUEL_MAX_LEVEL				CONSTLIT("refuelMaxLevel")
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
 #define PROPERTY_REMOVE_ITEM_STATUS				CONSTLIT("removeItemStatus")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
@@ -3874,6 +3875,12 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			return CC.CreateInteger(iCount);
 		else
 			return CC.CreateNil();
+		}
+
+	else if (strEquals(sName, PROPERTY_REFUEL_MAX_LEVEL))
+		{
+		int iMaxLevel = GetTradeMaxLevel(serviceRefuel);
+		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 
 	else if (strEquals(sName, PROPERTY_REPAIR_ARMOR_MAX_LEVEL))

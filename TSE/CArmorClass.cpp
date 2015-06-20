@@ -1355,7 +1355,16 @@ CString CArmorClass::GetReference (CItemCtx &Ctx, int iVariant)
 //		30 hp; laser-resistant; impact-resistant
 
 	{
-	return NULL_STR;
+	int iKg = m_pItemType->GetMassKg(Ctx);
+	int iTons = iKg / 1000;
+	int iKgExtra = iKg % 1000;
+
+	if (iTons == 1 && iKgExtra == 0)
+		return CONSTLIT("1 ton");
+	else if (iKgExtra == 0)
+		return strPatternSubst(CONSTLIT("%d tons"), iTons);
+	else
+		return strPatternSubst(CONSTLIT("%d.%d tons"), iTons, iKgExtra / 100);
 	}
 
 bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray)

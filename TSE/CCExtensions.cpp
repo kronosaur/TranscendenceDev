@@ -1476,6 +1476,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'orbit\n"
 			"   'parallax\n"
 			"   'playerBlacklisted\n"
+			"   'refuelMaxLevel\n"
 			"   'repairArmorMaxLevel\n"
 			"   'shipConstructionEnabled\n"
 			"   'shipReinforcementEnabled\n"
