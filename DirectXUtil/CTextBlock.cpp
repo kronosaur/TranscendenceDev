@@ -272,6 +272,13 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 					if (cyAscent > cyLineAscent)
 						cyLineAscent = cyAscent;
 
+					//	If this is the last span in the line, trim out any trailing
+					//	spaces (since we don't want include trailing spaces for purposes
+					//	of centering, etc.).
+
+					if (i == Line.GetCount() - 1)
+						Line[i].sText = strTrimWhitespace(Line[i].sText);
+
 					//	Compute the width of each span, the total width of the line
 					//	and the max height of the line.
 
