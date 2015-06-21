@@ -503,6 +503,9 @@ CDamageSource GetDamageSourceArg (CCodeChain &CC, ICCItem *pArg)
 
 	else if (pArg->IsInteger())
 		{
+		//	NOTE: CDamageSource knows how to deal with destroyed objects, so it
+		//	is OK if we don't bother checking here whether pSource is destroyed.
+
 		CSpaceObject *pSource = CreateObjFromItem(CC, pArg);
 		return CDamageSource(pSource, killedByDamage);
 		}

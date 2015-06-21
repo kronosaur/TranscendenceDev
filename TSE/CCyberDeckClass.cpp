@@ -34,6 +34,8 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 //	Activate device
 
 	{
+	DEBUG_TRY
+
 	//	Init
 
 	if (retbConsumedItems)
@@ -83,6 +85,8 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 		GetItemType()->SetKnown();
 
 	return true;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CCyberDeckClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice)

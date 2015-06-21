@@ -1474,6 +1474,8 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 //	pController is owned by the ship if this call is successful.
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 	CDesignType *pType = g_pUniverse->FindDesignType(dwClassID);
 
@@ -1593,6 +1595,8 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 		}
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CSystem::CreateShipwreck (CShipClass *pClass,
@@ -3310,6 +3314,8 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 //	the destination bitmap is already clear; we just draw on top of it.
 
 	{
+	DEBUG_TRY
+
 	int i;
 	Metric rKlicksPerPixel = rScale;
 
@@ -3436,6 +3442,8 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	if (retbNewEnemies)
 		*retbNewEnemies = bNewEnemies;
+
+	DEBUG_CATCH
 	}
 
 void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rMapScale)
@@ -3747,6 +3755,8 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 //	Removes the object from the system without destroying it
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Tell all other objects that the given object was destroyed
@@ -3859,6 +3869,8 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 			}
 		}
 #endif
+
+	DEBUG_CATCH
 	}
 
 void CSystem::RemoveTimersForObj (CSpaceObject *pObj)

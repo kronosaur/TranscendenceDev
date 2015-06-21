@@ -69,6 +69,8 @@ void CItemEventDispatcher::Init (CSpaceObject *pSource)
 //	Initializes the dispatcher from the item list
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	RemoveAll();
@@ -123,6 +125,8 @@ void CItemEventDispatcher::Init (CSpaceObject *pSource)
 				}
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvents iEvent)
@@ -132,6 +136,8 @@ void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvent
 //	Fires the given event
 
 	{
+	DEBUG_TRY
+
 	CCodeChainCtx Ctx;
 	bool bSavedVars = false;
 
@@ -165,6 +171,8 @@ void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvent
 
 		pEntry = pEntry->pNext;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CItemEventDispatcher::FireUpdateEventsFull (CSpaceObject *pSource)
@@ -174,6 +182,8 @@ void CItemEventDispatcher::FireUpdateEventsFull (CSpaceObject *pSource)
 //	Fires all events at item update time
 
 	{
+	DEBUG_TRY
+
 	CCodeChainCtx Ctx;
 	bool bSavedVars = false;
 
@@ -219,6 +229,8 @@ void CItemEventDispatcher::FireUpdateEventsFull (CSpaceObject *pSource)
 
 		pEntry = pEntry->pNext;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CItemEventDispatcher::RemoveAll (void)

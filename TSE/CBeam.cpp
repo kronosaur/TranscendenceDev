@@ -220,6 +220,8 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update the beam
 
 	{
+	DEBUG_TRY
+
 	bool bDestroy = false;
 
 	m_iTick++;
@@ -258,6 +260,8 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (bDestroy || --m_iLifeLeft <= 0)
 		Destroy(removedFromSystem, CDamageSource());
+
+	DEBUG_CATCH
 	}
 
 void CBeam::OnWriteToStream (IWriteStream *pStream)

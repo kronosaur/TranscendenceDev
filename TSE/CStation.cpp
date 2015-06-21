@@ -3007,6 +3007,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update
 
 	{
+	DEBUG_TRY
+
 	int i;
 	int iTick = GetSystem()->GetTick() + GetDestiny();
 
@@ -3086,6 +3088,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		else if (bModified)
 			CalcOverlayImpact();
 		}
+
+	DEBUG_CATCH
 	}
 
 void CStation::OnUpdateExtended (const CTimeSpan &ExtraTime)

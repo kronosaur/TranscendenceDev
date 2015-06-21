@@ -176,6 +176,8 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, i
 //	Updates the device
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	CShip *pShip = pSource->AsShip();
@@ -219,6 +221,8 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, i
 
 	if (retbConsumedItems)
 		*retbConsumedItems = false;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CRepairerClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)

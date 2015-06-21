@@ -457,6 +457,9 @@ void CStandardShipAI::OnBehavior (void)
 				CSpaceObject *pDest = m_pDest;
 				SetState(stateOnCourseForLootDocking);
 				m_pDest = pDest;
+#ifdef DEBUG_INVALID_DEST
+				SetDebugDest(m_pDest);
+#endif
 				}
 
 			break;
@@ -626,6 +629,9 @@ void CStandardShipAI::OnBehavior (void)
 					{
 					SetState(stateOnCourseForLootDocking);
 					m_pDest = pBestScrap;
+#ifdef DEBUG_INVALID_DEST
+					SetDebugDest(m_pDest);
+#endif
 					}
 
 				//	Otherwise, there is a small chance that we change orbits
@@ -2095,8 +2101,11 @@ CString CStandardShipAI::OnDebugCrashInfo (void)
 		sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)GetCurrentOrder()));
 		sResult.Append(strPatternSubst(CONSTLIT("m_State: %d\r\n"), m_State));
 		sResult.Append(strPatternSubst(CONSTLIT("m_pDest: %s\r\n"), CSpaceObject::DebugDescribe(m_pDest)));
+		if (!m_sDest.IsBlank())
+			sResult.Append(strPatternSubst(CONSTLIT("m_sDest: %s\r\n"), m_sDest));
 		sResult.Append(strPatternSubst(CONSTLIT("m_pTarget: %s\r\n"), CSpaceObject::DebugDescribe(m_pTarget)));
 		sResult.Append(strPatternSubst(CONSTLIT("m_pNavPath: %s\r\n"), CNavigationPath::DebugDescribe(m_pShip, m_AICtx.GetNavPath())));
+
 		}
 
 	return sResult;
@@ -2229,6 +2238,9 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 				CSpaceObject *pDest = m_pDest;
 				SetState(stateOnCourseForLootDocking);
 				m_pDest = pDest;
+#ifdef DEBUG_INVALID_DEST
+				SetDebugDest(m_pDest);
+#endif
 				break;
 				}
 			}
@@ -2332,6 +2344,7 @@ void CStandardShipAI::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_pDest (CSpaceObject ref)
 //	DWORD		m_pTarget (CSpaceObject ref)
 //	Metric		m_rDistance
+//	CString		m_sDest
 //
 //	DWORD		m_iCountdown
 //	DWORD		flags
@@ -2368,6 +2381,17 @@ void CStandardShipAI::OnReadFromStream (SLoadCtx &Ctx)
 		}
 
 	Ctx.pStream->Read((char *)&m_rDistance, sizeof(Metric));
+
+	if (Ctx.dwVersion >= 115)
+		{
+#ifdef DEBUG_INVALID_DEST
+		m_sDest.ReadFromStream(Ctx.pStream);
+#else
+		make sure this is the proper version only
+		CString sDummy;
+		sDummy.ReadFromStream(Ctx.pStream);
+#endif
+		}
 
 	//	In previous versions we didn't used to initialize m_rDistance 
 	//	for this state.
@@ -2418,6 +2442,7 @@ void CStandardShipAI::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_pDest (CSpaceObject ref)
 //	DWORD		m_pTarget (CSpaceObject ref)
 //	Metric		m_rDistance
+//	CString		m_sDest
 //
 //	DWORD		m_iCountdown
 //	DWORD		flags
@@ -2430,6 +2455,10 @@ void CStandardShipAI::OnWriteToStream (IWriteStream *pStream)
 	m_pShip->WriteObjRefToStream(m_pTarget, pStream);
 	pStream->Write((char *)&m_rDistance, sizeof(Metric));
 
+#ifdef DEBUG_INVALID_DEST
+	m_sDest.WriteToStream(pStream);
+#endif
+
 	pStream->Write((char *)&m_iCountdown, sizeof(DWORD));
 
 	dwSave = 0;
@@ -2441,6 +2470,18 @@ void CStandardShipAI::SetDebugShip (CShip *pShip)
 	{
 	g_pDebugShip = pShip;
 	}
+
+#ifdef DEBUG_INVALID_DEST
+void CStandardShipAI::SetDebugDest (CSpaceObject *pDest)
+
+//	SetDebugDest
+//
+//	Sets m_sDest to debug a problem with invalid objects
+
+	{
+	ReportCrashObj(&m_sDest, pDest);
+	}
+#endif
 
 void CStandardShipAI::SetState (StateTypes State)
 

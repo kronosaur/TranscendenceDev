@@ -193,6 +193,8 @@ void CEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update the effect
 
 	{
+	DEBUG_TRY
+
 	bool bDestroyEffect = false;
 
 	//	See if the effect has faded out
@@ -232,6 +234,8 @@ void CEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			return;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CEffect::OnUpdateExtended (const CTimeSpan &ExtraTime)

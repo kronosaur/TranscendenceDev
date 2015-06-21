@@ -672,6 +672,8 @@ void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 //	need to be recalculated.
 
 	{
+	DEBUG_TRY
+
 	//	First update all fields
 
 	COverlay *pField = m_pFirst;
@@ -722,6 +724,8 @@ void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 		}
 
 	*retbModified = bModified;
+
+	DEBUG_CATCH
 	}
 
 void COverlayList::WriteToStream (IWriteStream *pStream)

@@ -893,6 +893,8 @@ void CMission::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Active missions update every tick.
 
 	{
+	DEBUG_TRY
+
 	ASSERT(IsActive());
 
 	//	If we're out of the system then see if we've failed the mission.
@@ -919,6 +921,8 @@ void CMission::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				}
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CMission::OnWriteToStream (IWriteStream *pStream)

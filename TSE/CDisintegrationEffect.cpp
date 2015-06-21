@@ -229,6 +229,8 @@ void CDisintegrationEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update the effect
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	See if the effect has faded out
@@ -259,6 +261,8 @@ void CDisintegrationEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	//	If we're moving, slow down
 
 	SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
+
+	DEBUG_CATCH
 	}
 
 void CDisintegrationEffect::OnUpdateExtended (const CTimeSpan &ExtraTime)

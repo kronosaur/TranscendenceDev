@@ -684,6 +684,8 @@ bool CDesignType::FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, 
 //	Fire GetCreatePos event
 
 	{
+	DEBUG_TRY
+
 	SEventHandlerDesc Event;
 
 	if (FindEventHandler(GET_CREATE_POS_EVENT, &Event))
@@ -718,6 +720,8 @@ bool CDesignType::FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, 
 		}
 
 	return false;
+
+	DEBUG_CATCH
 	}
 
 void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)

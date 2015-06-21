@@ -282,6 +282,8 @@ void CShip::CalcBounds (void)
 //	bounds.
 
 	{
+	DEBUG_TRY
+
 	//	Start with image bounds
 
 	const CObjectImageArray &Image = m_pClass->GetImage();
@@ -307,6 +309,8 @@ void CShip::CalcBounds (void)
 	//	Set bounds
 
 	SetBounds(rcBounds);
+
+	DEBUG_CATCH
 	}
 
 void CShip::CalcDeviceBonus (void)
@@ -317,6 +321,8 @@ void CShip::CalcDeviceBonus (void)
 //	(particularly weapons)
 
 	{
+	DEBUG_TRY
+
 	int i, j;
 
 	//	Loop over all devices
@@ -418,6 +424,8 @@ void CShip::CalcDeviceBonus (void)
 
 	if (IsCreated())
 		m_pController->OnStatsChanged();
+
+	DEBUG_CATCH
 	}
 
 int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
@@ -769,6 +777,8 @@ void CShip::CalcOverlayImpact (void)
 //	whenever the set of overlays changes.
 
 	{
+	DEBUG_TRY
+
 	COverlayList::SImpactDesc Impact;
 	m_Overlays.GetImpact(this, &Impact);
 
@@ -778,6 +788,8 @@ void CShip::CalcOverlayImpact (void)
 	m_fParalyzedByOverlay = Impact.bParalyze;
 	m_fSpinningByOverlay = Impact.bSpin;
 	m_fDragByOverlay = (Impact.rDrag < 1.0);
+
+	DEBUG_CATCH
 	}
 
 void CShip::CalcReactorStats (void)
@@ -1128,6 +1140,8 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 //	pController is owned by the ship if this function is successful.
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 	CShip *pShip;
 	int i;
@@ -1464,6 +1478,8 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 		*retpShip = pShip;
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 CurrencyValue CShip::CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
@@ -5026,6 +5042,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update
 
 	{
+	DEBUG_TRY
+
 	int i;
 	bool bOverlaysChanged = false;
 	bool bWeaponStatusChanged = false;
@@ -5539,6 +5557,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (m_iMissileFireDelay > 0)
 		m_iMissileFireDelay--;
+
+	DEBUG_CATCH
 	}
 
 void CShip::OnWriteToStream (IWriteStream *pStream)
@@ -6670,31 +6690,29 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 					}
 				break;
 
+			case IShipController::orderDock:
+				pOrderTarget = ((Ctx.pBase && Ctx.pBase->SupportsDocking()) ? Ctx.pBase : NULL);
+				bDockWithBase = true;
+				break;
+
 			case IShipController::orderGuard:
-				{
 				pOrderTarget = Ctx.pBase;
 				bIsSubordinate = true;
 				bDockWithBase = true;
 				break;
-				}
 
 			case IShipController::orderMine:
-				{
 				pOrderTarget = Ctx.pBase;
 				bIsSubordinate = true;
 				break;
-				}
 
 			case IShipController::orderGateOnThreat:
-				{
 				pOrderTarget = Ctx.pBase;
 				bNeedsDockOrder = true;
 				bDockWithBase = true;
 				break;
-				}
 
 			case IShipController::orderGate:
-				{
 				//	For backwards compatibility...
 				if (Ctx.pBase)
 					{
@@ -6710,28 +6728,23 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 					}
 
 				break;
-				}
 
 			case IShipController::orderPatrol:
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:
-				{
 				//	NOTE: Ships on patrol are not considered subordinates. Why? I don't know
 				//	but I don't want to change it for fear of unintended consequences.
 
 				pOrderTarget = Ctx.pBase;
 				break;
-				}
 
 			case IShipController::orderDestroyTarget:
 			case IShipController::orderAimAtTarget:
 			case IShipController::orderDestroyTargetHold:
 			case IShipController::orderAttackStation:
 			case IShipController::orderBombard:
-				{
 				pOrderTarget = Ctx.pTarget;
 				break;
-				}
 			}
 
 		//	If we're creating a station and its ships and if we need to dock with 

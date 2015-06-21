@@ -193,6 +193,8 @@ void CObjectEffectList::Update (CSpaceObject *pObj, const CObjectEffectDesc &Des
 //	Update effects
 
 	{
+	DEBUG_TRY
+
 	int i;
 	SEffectUpdateCtx PainterCtx;
 	PainterCtx.pObj = pObj;
@@ -222,4 +224,6 @@ void CObjectEffectList::Update (CSpaceObject *pObj, const CObjectEffectDesc &Des
 
 			m_FixedEffects[i].pPainter->OnUpdate(PainterCtx);
 			}
+
+	DEBUG_CATCH
 	}

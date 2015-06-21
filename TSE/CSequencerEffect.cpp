@@ -134,6 +134,8 @@ void CSequencerEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	bool bFutureEvents = false;
@@ -179,4 +181,6 @@ void CSequencerEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (!bFutureEvents)
 		Destroy(removedFromSystem, CDamageSource());
+
+	DEBUG_CATCH
 	}

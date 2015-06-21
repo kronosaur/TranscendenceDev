@@ -401,6 +401,8 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update
 
 	{
+	DEBUG_TRY
+
 	bool bDestroy = false;
 
 	//	Do damage right away
@@ -438,6 +440,8 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (bDestroy || --m_iLifeLeft <= 0)
 		Destroy(removedFromSystem, CDamageSource());
+
+	DEBUG_CATCH
 	}
 
 void CRadiusDamage::OnWriteToStream (IWriteStream *pStream)

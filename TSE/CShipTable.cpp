@@ -611,6 +611,8 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 //	Creates a single ship
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	ASSERT(m_pShipClass);
@@ -740,6 +742,8 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	if (retpShip)
 		*retpShip = pShip;
+
+	DEBUG_CATCH_MSG1("Crash in CSingleShip::CreateShips: ship class: %08x", m_pShipClass.GetUNID());
 	}
 
 void CSingleShip::CreateShips (SShipCreateCtx &Ctx)

@@ -982,6 +982,8 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update the beam
 
 	{
+	DEBUG_TRY
+
 	//	If we're already destroyed, then just update the timer until the
 	//	vapor trail fades out
 
@@ -1219,6 +1221,8 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		}
 
 	m_iTick++;
+
+	DEBUG_CATCH
 	}
 
 void CMissile::OnWriteToStream (IWriteStream *pStream)

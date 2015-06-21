@@ -418,6 +418,8 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update
 
 	{
+	DEBUG_TRY
+
 	m_iTick++;
 
 	//	Update the single particle painter
@@ -464,6 +466,8 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				GetVel(),
 				m_iEmitDirection);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CParticleDamage::OnWriteToStream (IWriteStream *pStream)

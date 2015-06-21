@@ -274,6 +274,8 @@ void CAreaDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //	Update
 
 	{
+	DEBUG_TRY
+
 	if (m_iInitialDelay > 0)
 		{
 		m_iInitialDelay--;
@@ -308,6 +310,8 @@ void CAreaDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (EffectCtx.bDestroy || --m_iLifeLeft <= 0)
 		Destroy(removedFromSystem, CDamageSource());
+
+	DEBUG_CATCH
 	}
 
 void CAreaDamage::OnWriteToStream (IWriteStream *pStream)

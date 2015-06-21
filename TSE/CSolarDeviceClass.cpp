@@ -53,6 +53,8 @@ void CSolarDeviceClass::Update (CInstalledDevice *pDevice,
 //	Update device
 
 	{
+	DEBUG_TRY
+
 	if (((iTick + 7) % CYCLE_TIME) == 0)
 		{
 		int iIntensity = pSource->GetSystem()->CalculateLightIntensity(pSource->GetPos());
@@ -60,6 +62,8 @@ void CSolarDeviceClass::Update (CInstalledDevice *pDevice,
 			iIntensity = iIntensity / 2;
 		pSource->Refuel(iIntensity * m_iRefuel / 100);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSolarDeviceClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList)

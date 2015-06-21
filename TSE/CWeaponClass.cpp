@@ -178,6 +178,8 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 //	Activates the device (in this case, fires the weapon)
 
 	{
+	DEBUG_TRY
+
 	CItemCtx Ctx(pSource, pDevice);
 	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
 
@@ -254,6 +256,8 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 	//	Consume power
 
 	return true;
+
+	DEBUG_CATCH
 	}
 
 int CWeaponClass::CalcBalance (int iVariant)
@@ -3254,6 +3258,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 //	Update
 
 	{
+	DEBUG_TRY
+
 	CItemCtx Ctx(pSource, pDevice);
 
 	if (retbConsumedItems)
@@ -3325,6 +3331,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 		dwContinuous--;
 		SetContinuousFire(pDevice, dwContinuous);
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CWeaponClass::ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice)

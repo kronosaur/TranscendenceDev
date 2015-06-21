@@ -1332,6 +1332,8 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 //	Updates the shield
 
 	{
+	DEBUG_TRY
+
 	//	Initialize to not regenerating
 
 	pDevice->SetRegenerating(false);
@@ -1414,6 +1416,8 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 
 	if (retbConsumedItems)
 		*retbConsumedItems = false;
+
+	DEBUG_CATCH
 	}
 
 bool CShieldClass::UpdateDepleted (CInstalledDevice *pDevice)
