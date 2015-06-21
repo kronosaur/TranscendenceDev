@@ -855,10 +855,6 @@ void CSoundtrackManager::TransitionTo (CSoundType *pTrack, int iPos, bool bFadeI
 //	necessary.
 
 	{
-	if (pTrack->HasAttribute(ATTRIB_COMBAT_SOUNDTRACK)
-			&& sysGetTicksElapsed(m_dwStartedTravel) < MIN_TRAVEL_LENGTH)
-		DebugBreak();
-
 	//	Kill the current queue because we don't want to deal with stale commands
 
 	m_Mixer.AbortAllRequests();

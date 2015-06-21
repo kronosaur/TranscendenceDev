@@ -232,6 +232,7 @@ void CMCIMixer::GetDebugInfo (TArray<CString> *retLines) const
 	//	Add the current state of the processing thread
 
 #ifdef DEBUG_SOUNDTRACK_STATE
+	int i;
 	m_cs.Lock();
 	retLines->Insert(strPatternSubst(CONSTLIT("Mixer: %s"), GetRequestDesc(m_CurRequest)));
 	for (i = 0; i < m_Request.GetCount(); i++)
@@ -480,6 +481,7 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 	//	Fade in util we reach this position
 
 	int iFullVolPos = Request.iPos + FADE_LENGTH;
+	int iPrevPos = -1;
 	while (true)
 		{
 		//	Wait a little bit
@@ -491,7 +493,9 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 
 		int iCurPos = GetCurrentPlayPos();
 		int iPlaying = iCurPos - Request.iPos;
-		if (iPlaying <= 0 || iPlaying >= FADE_LENGTH)
+		if (iPlaying <= 0 
+				|| iPlaying >= FADE_LENGTH
+				|| iCurPos == iPrevPos)
 			{
 			MCIWndSetVolume(hMCI, m_iDefaultVolume);
 			return;
@@ -501,6 +505,10 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 
 		int iVolume = m_iDefaultVolume * iPlaying / FADE_LENGTH;
 		MCIWndSetVolume(hMCI, iVolume);
+
+		//	Remember our previous position to make sure we're making progress
+
+		iPrevPos = iCurPos;
 		}
 	}
 
@@ -525,6 +533,7 @@ void CMCIMixer::ProcessFadeOut (const SRequest &Request)
 	//	Loop until we've reached out desired position (or until the end of the
 	//	track).
 
+	int iPrevPos = -1;
 	while (true)
 		{
 		//	Wait a little bit
@@ -536,7 +545,8 @@ void CMCIMixer::ProcessFadeOut (const SRequest &Request)
 
 		int iCurPos = GetCurrentPlayPos();
 		int iLeft = Request.iPos - iCurPos;
-		if (iLeft <= 0)
+		if (iLeft <= 0 
+				|| iCurPos == iPrevPos)
 			{
 			MCIWndSetVolume(hMCI, 0);
 			return;
@@ -546,6 +556,10 @@ void CMCIMixer::ProcessFadeOut (const SRequest &Request)
 
 		int iVolume = m_iDefaultVolume * iLeft / iFadeLen;
 		MCIWndSetVolume(hMCI, iVolume);
+
+		//	Remember our previous position to make sure we're making progress
+
+		iPrevPos = iCurPos;
 		}
 	}
 
@@ -774,6 +788,7 @@ void CMCIMixer::ProcessWaitForPos (const SRequest &Request)
 
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
 
+	int iPrevPos = -1;
 	while (true)
 		{
 		//	Keep looping until we reach the given position or until we ask asked
@@ -788,7 +803,8 @@ void CMCIMixer::ProcessWaitForPos (const SRequest &Request)
 		//	Get our current position. If we reached the position, then we're done.
 
 		int iCurPos = MCIWndGetPosition(hMCI);
-		if (iCurPos >= Request.iPos)
+		if (iCurPos >= Request.iPos
+				|| iCurPos == iPrevPos)
 			return;
 
 		//	Otherwise, we wait for a little bit (and we check to see if someone
@@ -797,7 +813,10 @@ void CMCIMixer::ProcessWaitForPos (const SRequest &Request)
 		if (!Wait(CHECK_INTERVAL))
 			return;
 
-		//	Loop and check again
+		//	Loop and check again, but remember our current position 
+		//	to make sure we're making progress
+
+		iPrevPos = iCurPos;
 		}
 	}
 
