@@ -948,7 +948,7 @@ class CObjectImageArray : public CObject
 		inline DWORD GetBitmapUNID (void) const { return m_dwBitmapUNID; }
 		CString GetFilename (void) const;
 		inline int GetFrameCount (void) const { return m_iFrameCount; }
-		inline CG32bitImage &GetImage (const CString &sLoadReason) const { return *(m_pImage->GetImage(sLoadReason)); }
+		inline CG32bitImage &GetImage (const CString &sLoadReason) const { CG32bitImage *pBmp = m_pImage->GetImage(sLoadReason); return (pBmp ? *pBmp : m_NullImage); }
 		inline const RECT &GetImageRect (void) const { return m_rcImage; }
 		RECT GetImageRect (int iTick, int iRotation, int *retxCenter = NULL, int *retyCenter = NULL) const;
 		RECT GetImageRectAtPoint (int x, int y) const;
@@ -1045,6 +1045,8 @@ class CObjectImageArray : public CObject
 		mutable CG8bitImage *m_pGlowImages;
 		mutable CG32bitImage *m_pScaledImages;
 		mutable int m_cxScaledImage;
+
+		static CG32bitImage m_NullImage;
 
 	friend CObjectClass<CObjectImageArray>;
 	};
