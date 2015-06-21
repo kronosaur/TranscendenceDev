@@ -657,6 +657,7 @@ class CHumanInterface
 		inline IHISession *GetSession (void) { return m_pCurSession; }
 		inline CSoundMgr &GetSoundMgr (void) { return m_SoundMgr; }
 		IHISession *GetTopSession (bool bNonTransparentOnly = true);
+		inline CCriticalSection &GetUISem (void) { return m_cs; }
 		inline const CVisualPalette &GetVisuals (void) { return m_Visuals; }
 		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return m_pController->HICommand(sCmd, pData); }
 		void HIPostCommand (const CString &sCmd, void *pData = NULL);
@@ -743,12 +744,13 @@ class CHumanInterface
 		CTimerRegistry m_Timers;
 		CVisualPalette m_Visuals;
 		CFrameRateCounter m_FrameRate;
+		CCriticalSection m_cs;				//	Coordinate UI vs. Background
 
 		//	Sound
 		CSoundMgr m_SoundMgr;
 
 		char m_chKeyDown;
-		EHIShutdownReasons m_iShutdownCode;		//	Valid after call to Shutdown
+		EHIShutdownReasons m_iShutdownCode;	//	Valid after call to Shutdown
 	};
 
 extern CHumanInterface *g_pHI;
