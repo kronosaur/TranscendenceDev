@@ -1327,6 +1327,8 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 //	Enhances the item at cursor (either installed or in cargo hold)
 
 	{
+	DEBUG_TRY
+
 	//	Pre-init in case we exit early
 
 	if (retdwID)
@@ -1428,6 +1430,8 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 	//	Done
 
 	return iResult;
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend)
@@ -4050,7 +4054,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 //	Returns the first enemy that we find in range.
 
 	{
-	DEBUG_TRY
+	DEBUG_TRY_OBJ_LOOP
 
 	int i;
 	Metric rMaxRange2 = rMaxRange * rMaxRange;
@@ -4094,7 +4098,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 	int iCount = ObjList.GetCount();
 	for (i = 0; i < iCount; i++)
 		{
-		CSpaceObject *pObj = ObjList.GetObj(i);
+		pObj = ObjList.GetObj(i);
 
 		if ((pObj->GetCategory() == catShip
 					|| (bIncludeStations && pObj->GetCategory() == catStation))
@@ -4112,9 +4116,9 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 			}
 		}
 
-	DEBUG_CATCH
-
 	return NULL;
+
+	DEBUG_CATCH_OBJ_LOOP
 	}
 
 bool CSpaceObject::HasBeenHitLately (int iTicks)
@@ -4248,9 +4252,7 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 //	to some target, then retiHitDir = -1 and retvHitPos is the nearest point.
 
 	{
-	CSpaceObject *pObj = NULL;
-
-	try {
+	DEBUG_TRY_OBJ_LOOP
 
 	const int iSteps = 25;
 	const int iMaxList = 1024;
@@ -4400,22 +4402,7 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 
 	return NULL;
 
-	} catch (...)
-		{
-		kernelDebugLogMessage("Crash in %s", CString(__FUNCTION__));
-
-		if (pObj = NULL)
-			kernelDebugLogMessage("pObj = NULL");
-		else
-			{
-			CString sError;
-			ReportCrashObj(&sError, pObj);
-			kernelDebugLogMessage("pObj = ");
-			kernelDebugLogMessage(sError);
-			}
-
-		throw;
-		}
+	DEBUG_CATCH_OBJ_LOOP
 	}
 
 bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,
