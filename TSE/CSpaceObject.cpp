@@ -4248,7 +4248,9 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 //	to some target, then retiHitDir = -1 and retvHitPos is the nearest point.
 
 	{
-	DEBUG_TRY
+	CSpaceObject *pObj = NULL;
+
+	try {
 
 	const int iSteps = 25;
 	const int iMaxList = 1024;
@@ -4275,7 +4277,7 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	int j, k;
 	while (GetSystem()->EnumObjectsInBoxHasMore(i) && iShortListCount < iMaxList)
 		{
-		CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
+		pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
 
 		//	If the object is in the bounding box then remember
 		//	it so that we can do a more accurate calculation.
@@ -4297,6 +4299,8 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 				pShortList[iShortListCount++] = pObj;
 			}
 		}
+
+	pObj = NULL;
 
 	//	Step the object from the start to the current position to see
 	//	if it hit any of the objects in the short list.
@@ -4396,7 +4400,22 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 
 	return NULL;
 
-	DEBUG_CATCH
+	} catch (...)
+		{
+		kernelDebugLogMessage("Crash in %s", CString(__FUNCTION__));
+
+		if (pObj = NULL)
+			kernelDebugLogMessage("pObj = NULL");
+		else
+			{
+			CString sError;
+			ReportCrashObj(&sError, pObj);
+			kernelDebugLogMessage("pObj = ");
+			kernelDebugLogMessage(sError);
+			}
+
+		throw;
+		}
 	}
 
 bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1, int iRotation1, const CVector &vPos1,

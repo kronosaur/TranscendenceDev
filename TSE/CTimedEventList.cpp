@@ -118,6 +118,8 @@ void CTimedEventList::Update (DWORD dwTick, CSystem *pSystem)
 //	Fire events
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	for (i = 0; i < GetCount(); i++)
@@ -142,6 +144,8 @@ void CTimedEventList::Update (DWORD dwTick, CSystem *pSystem)
 			i--;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CTimedEventList::WriteToStream (CSystem *pSystem, IWriteStream *pStream)

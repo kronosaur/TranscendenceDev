@@ -41,6 +41,8 @@ void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 //	Run the event
 
 	{
+	DEBUG_TRY
+
 	if (m_pMission)
 		m_pMission->FireCustomEvent(m_sEvent, NULL);
 
@@ -48,6 +50,8 @@ void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		SetTick(dwTick + m_iInterval);
 	else
 		SetDestroyed();
+
+	DEBUG_CATCH
 	}
 
 void CTimedMissionEvent::OnReadFromStream (SLoadCtx &Ctx)

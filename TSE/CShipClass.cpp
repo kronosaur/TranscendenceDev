@@ -1266,6 +1266,8 @@ bool CShipClass::CreateEmptyWreck (CSystem *pSystem,
 //	Create an empty wreck of the given ship class
 
 	{
+	DEBUG_TRY
+
 	SObjCreateCtx CreateCtx;
 	CreateCtx.vPos = vPos;
 	CreateCtx.vVel = vVel;
@@ -1291,6 +1293,8 @@ bool CShipClass::CreateEmptyWreck (CSystem *pSystem,
 		*retpWreck = pWreck;
 
 	return true;
+
+	DEBUG_CATCH
 	}
 
 void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)

@@ -1141,6 +1141,8 @@ bool CParticleEffect::PointInObject (const CVector &vObjPos, const CVector &vPoi
 //	is probabilistic depending on the density of the field
 
 	{
+	DEBUG_TRY
+
 	CVector vDist = vPointPos - vObjPos;
 	Metric rDist2 = vDist.Length2();
 
@@ -1161,6 +1163,8 @@ bool CParticleEffect::PointInObject (const CVector &vObjPos, const CVector &vPoi
 		}
 
 	return false;
+
+	DEBUG_CATCH
 	}
 
 void CParticleEffect::OnWriteToStream (IWriteStream *pStream)

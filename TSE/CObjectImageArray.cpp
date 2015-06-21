@@ -478,6 +478,8 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 //	of the glow by ignoring 0 values)
 
 	{
+	DEBUG_TRY
+
 	ASSERT(iRotation >= 0 && iRotation < m_iRotationCount);
 
 	//	Source
@@ -569,6 +571,8 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 		pDestRow = m_pGlowImages[iRotation].NextRow(pDestRow);
 		ySrc++;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CObjectImageArray::GenerateScaledImages (int iRotation, int cxWidth, int cyHeight) const
@@ -1450,7 +1454,8 @@ bool CObjectImageArray::PointInImage (int x, int y, int iTick, int iRotation) co
 
 		//	Check bounds
 
-		if (x < xSrc || y < ySrc || x >= (xSrc + cxWidth) || y >= (ySrc + cyHeight))
+		if (x < xSrc || y < ySrc || x >= (xSrc + cxWidth) || y >= (ySrc + cyHeight)
+				|| x < 0 || x >= pSource->GetWidth() || y < 0 || y >= pSource->GetHeight())
 			return false;
 
 		//	Check to see if the point is inside or outside the mask
@@ -1477,7 +1482,10 @@ bool CObjectImageArray::PointInImage (SPointInObjectCtx &Ctx, int x, int y) cons
 
 		//	Check bounds
 
-		if (x < Ctx.rcImage.left || y < Ctx.rcImage.top || x >= Ctx.rcImage.right || y >= Ctx.rcImage.bottom)
+		if (x < Ctx.rcImage.left 
+				|| y < Ctx.rcImage.top 
+				|| x >= Ctx.rcImage.right 
+				|| y >= Ctx.rcImage.bottom)
 			return false;
 
 		//	Check to see if the point is inside or outside the mask
@@ -1520,6 +1528,15 @@ void CObjectImageArray::PointInImageInit (SPointInObjectCtx &Ctx, int iTick, int
 			{
 			Ctx.xImageOffset -= m_pRotationOffset[iRotation % m_iRotationCount].x;
 			Ctx.yImageOffset += m_pRotationOffset[iRotation % m_iRotationCount].y;
+			}
+
+		//	Make sure the image rect is inside the image
+
+		if (Ctx.rcImage.left < 0 || Ctx.rcImage.right > Ctx.pImage->GetWidth()
+				|| Ctx.rcImage.top < 0 || Ctx.rcImage.bottom > Ctx.pImage->GetHeight())
+			{
+			Ctx.pImage = NULL;
+			return;
 			}
 		}
 	}

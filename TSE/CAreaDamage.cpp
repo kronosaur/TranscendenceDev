@@ -380,6 +380,8 @@ bool CAreaDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPo
 //	Returns TRUE if the given point is in the object
 
 	{
+	DEBUG_TRY
+
 	if (m_pPainter)
 		{
 		RECT rcBounds;
@@ -394,4 +396,6 @@ bool CAreaDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPo
 		}
 	else
 		return false;
+
+	DEBUG_CATCH
 	}

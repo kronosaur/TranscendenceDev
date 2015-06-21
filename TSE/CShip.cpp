@@ -5802,6 +5802,8 @@ bool CShip::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const
 //	Returns TRUE if the given point is inside the object
 
 	{
+	DEBUG_TRY
+
 	//	Figure out the coordinates of vPos relative to the center of the
 	//	ship, in pixels.
 
@@ -5812,6 +5814,8 @@ bool CShip::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const
 	//	Ask the image if the point is inside or not
 
 	return m_pClass->GetImage().PointInImage(Ctx, x, y);
+
+	DEBUG_CATCH
 	}
 
 void CShip::PointInObjectInit (SPointInObjectCtx &Ctx)

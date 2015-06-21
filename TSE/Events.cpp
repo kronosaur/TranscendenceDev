@@ -129,6 +129,8 @@ void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 //	Do the actual event
 
 	{
+	DEBUG_TRY
+
 	CShipTable *pTable = g_pUniverse->FindEncounterTable(m_dwEncounterTableUNID);
 	if (pTable == NULL)
 		{
@@ -166,6 +168,8 @@ void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 	//	Delete the event
 
 	SetDestroyed();
+
+	DEBUG_CATCH
 	}
 
 bool CTimedEncounterEvent::OnObjDestroyed (CSpaceObject *pObj)
@@ -254,10 +258,14 @@ void CTimedCustomEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 //	Do the actual event
 
 	{
+	DEBUG_TRY
+
 	if (m_pObj)
 		m_pObj->FireCustomEvent(m_sEvent, eventDoEvent);
 
 	SetDestroyed();
+
+	DEBUG_CATCH
 	}
 
 bool CTimedCustomEvent::OnObjChangedSystems (CSpaceObject *pObj)
@@ -351,10 +359,14 @@ void CTimedRecurringEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 //	Do the actual event
 
 	{
+	DEBUG_TRY
+
 	if (m_pObj)
 		m_pObj->FireCustomEvent(m_sEvent, eventDoEvent);
 
 	SetTick(dwTick + m_iInterval);
+
+	DEBUG_CATCH
 	}
 
 bool CTimedRecurringEvent::OnObjChangedSystems (CSpaceObject *pObj)
@@ -454,6 +466,8 @@ void CTimedTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 //	Run the event
 
 	{
+	DEBUG_TRY
+
 	if (m_pType)
 		m_pType->FireCustomEvent(m_sEvent, eventDoEvent);
 
@@ -461,6 +475,8 @@ void CTimedTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		SetTick(dwTick + m_iInterval);
 	else
 		SetDestroyed();
+
+	DEBUG_CATCH
 	}
 
 void CTimedTypeEvent::OnReadFromStream (SLoadCtx &Ctx)

@@ -89,6 +89,8 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 //	Begins enumeration
 
 	{
+	DEBUG_TRY
+
 	//	Init params and options
 
 	i.vLL = vLL;
@@ -168,6 +170,8 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 
 		EnumGetNext(i);
 		}
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CSpaceObjectGrid::EnumGetNext (SSpaceObjectGridEnumerator &i)
@@ -178,6 +182,8 @@ CSpaceObject *CSpaceObjectGrid::EnumGetNext (SSpaceObjectGridEnumerator &i)
 //	to the next one
 
 	{
+	DEBUG_TRY
+
 	//	Get the current object
 
 	CSpaceObject *pCurrentObj = i.pObj;
@@ -215,6 +221,8 @@ CSpaceObject *CSpaceObjectGrid::EnumGetNext (SSpaceObjectGridEnumerator &i)
 			}
 		}
 	while (true);
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CSpaceObjectGrid::EnumGetNextInBoxPoint (SSpaceObjectGridEnumerator &i)

@@ -3976,6 +3976,8 @@ void CSystem::RestartTime (void)
 //	Restart time for all
 
 	{
+	DEBUG_TRY
+
 	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
@@ -3985,6 +3987,8 @@ void CSystem::RestartTime (void)
 		}
 
 	m_iTimeStopped = 0;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CSystem::SaveToStream (IWriteStream *pStream)

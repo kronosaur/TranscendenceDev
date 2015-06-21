@@ -631,6 +631,8 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 //	Creates a new station based on the type
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 	CStation *pStation;
 	CXMLElement *pDesc = pType->GetDesc();
@@ -931,6 +933,8 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 		*retpStation = pStation;
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CStation::CreateMapImage (void)
