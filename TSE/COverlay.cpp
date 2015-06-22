@@ -660,6 +660,34 @@ void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaint
 		}
 	}
 
+void COverlay::PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage &Dest, int x, int y)
+
+//	PaintLRSAnnotations
+//
+//	Paints annotations on the LRS
+
+	{
+	switch (m_pType->GetCounterStyle())
+		{
+		case COverlayType::counterFlag:
+			{
+			const CG16bitFont &CounterFont = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel);
+
+			CG32bitPixel rgbColor = m_pType->GetCounterColor();
+
+			//	We paint the text to the right and vertically centered
+
+			int yTop = y - (CounterFont.GetHeight() / 2);
+			int xLeft = x + FLAG_INNER_SPACING_X;
+
+			//	Paint the counter
+
+			CounterFont.DrawText(Dest, xLeft, yTop, rgbColor, strFromInt(m_iCounter));
+			break;
+			}
+		}
+	}
+
 void COverlay::PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 //	PaintMapAnnotations

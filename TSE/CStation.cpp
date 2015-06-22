@@ -3305,6 +3305,8 @@ void CStation::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransfo
 				m_MapImage,
 				x - (m_MapImage.GetWidth() / 2),
 				y - (m_MapImage.GetHeight() / 2));
+
+		m_Overlays.PaintLRSAnnotations(Trans, Dest, x, y);
 		}
 
 	//	Other kinds of stations are just dots
@@ -3342,6 +3344,26 @@ void CStation::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransfo
 				Dest.DrawDot(x, y, 
 						rgbColor, 
 						markerTinyCircle);
+			}
+
+		//	Paint the label
+
+		if (m_fKnown 
+				&& m_pType->ShowsMapIcon() 
+				&& !m_fNoMapLabel)
+			{
+			if (m_sMapLabel.IsBlank())
+				{
+				DWORD dwFlags;
+				CString sName = GetName(&dwFlags);
+				m_sMapLabel = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounTitleCapitalize);
+				}
+
+			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+					x + m_xMapLabel, 
+					y + m_yMapLabel, 
+					RGB_MAP_LABEL,
+					m_sMapLabel);
 			}
 		}
 	}

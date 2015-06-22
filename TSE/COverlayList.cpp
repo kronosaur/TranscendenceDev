@@ -489,6 +489,23 @@ void COverlayList::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportP
 		}
 	}
 
+void COverlayList::PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage &Dest, int x, int y)
+
+//	PaintLRSAnnotations
+//
+//	Paints annotations on the LRS
+
+	{
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed() && pField->GetType()->IsShownOnMap())
+			pField->PaintLRSAnnotations(Trans, Dest, x, y);
+
+		pField = pField->GetNext();
+		}
+	}
+
 void COverlayList::PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 //	PaintMapAnnotations

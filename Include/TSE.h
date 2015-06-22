@@ -1962,6 +1962,7 @@ class COverlay
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage &Dest, int x, int y);
 		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		inline bool Paralyzes (CSpaceObject *pSource) const { return m_pType->Paralyzes(); }
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -2055,6 +2056,7 @@ class COverlayList
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage &Dest, int x, int y);
 		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource);
 		void RemoveField (CSpaceObject *pSource, DWORD dwID);
