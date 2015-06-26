@@ -210,6 +210,10 @@ class CMultiverseModel
 			stateNoUser,					//	No user set
 			stateOffline,					//	User set, but not signed in.
 			stateOnline,					//	User signed in to Multiverse.
+
+#ifdef STEAM_BUILD
+			stateSteamOnline,				//	Connected to Steam
+#endif
 			};
 
 		CMultiverseModel (void);
@@ -217,7 +221,7 @@ class CMultiverseModel
 		ALERROR GetCollection (CMultiverseCollection *retCollection) const;
 		ALERROR GetEntry (DWORD dwUNID, DWORD dwRelease, CMultiverseCollection *retCollection) const;
 		CMultiverseNewsEntry *GetNextNewsEntry (void);
-		EOnlineStates GetOnlineState (CString *retsUsername = NULL) const;
+		EOnlineStates GetOnlineState (CString *retsUsername = NULL, CString *retsDesc = NULL) const;
 		bool GetResourceFileRefs (const TArray<CString> &Filespecs, TArray<CMultiverseFileRef> *retFileRefs) const;
 		inline const CString &GetServiceStatus (void) { return m_sLastStatus; }
 		const CString &GetUpgradeURL (void) const { return m_sUpgradeURL; }

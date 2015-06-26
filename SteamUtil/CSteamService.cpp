@@ -5,9 +5,13 @@
 
 #include "stdafx.h"
 
+#define ENABLED_ATTRIB							CONSTLIT("enabled")
+
+#define CMD_SERVICE_ACCOUNT_CHANGED				CONSTLIT("serviceAccountChanged")
+
 #define TAG_STEAM								CONSTLIT("Steam")
 
-CSteamService::CSteamService (CHumanInterface &HI) : ICIService(m_HI)
+CSteamService::CSteamService (CHumanInterface &HI) : ICIService(HI)
 
 //	CSteamService constructor
 
@@ -17,15 +21,14 @@ CSteamService::CSteamService (CHumanInterface &HI) : ICIService(m_HI)
 	if (!SteamAPI_Init())
 		{
 		::kernelDebugLogMessage("Unable to initialize Steam API.");
-		m_bEnabled = false;
+		m_bConnected = false;
 		return;
 		}
 
-	m_sUsername = CString(CString::csUTF8, SteamFriends()->GetPersonaName());
-
 	//	We're enabled
 
-	m_bEnabled = true;
+	m_sUsername = CString(CString::csUTF8, SteamFriends()->GetPersonaName());
+	m_bConnected = true;
 	}
 
 CSteamService::~CSteamService (void)
@@ -33,7 +36,7 @@ CSteamService::~CSteamService (void)
 //	CSteamService destructor
 
 	{
-	if (m_bEnabled)
+	if (m_bConnected)
 		SteamAPI_Shutdown();
 	}
 
@@ -54,7 +57,31 @@ bool CSteamService::HasCapability (DWORD dwCapability)
 //	Returns TRUE if we have the given capability.
 
 	{
-	return false;
+	switch (dwCapability)
+		{
+		case registerUser:
+		case userProfile:
+		case modExchange:
+		case canLoadNews:
+		case canPostCrashReport:
+			return false;
+
+		case autoLoginUser:
+		case canGetUserProfile:
+		case loginUser:
+			return m_bConnected;
+
+		case cachedUser:
+			return false;
+
+		case canDownloadExtension:
+		case canLoadUserCollection:
+		case canPostGameRecord:
+			return false;
+
+		default:
+			return false;
+		}
 	}
 
 ALERROR CSteamService::InitFromXML (CXMLElement *pDesc, bool *retbModified)
@@ -64,7 +91,19 @@ ALERROR CSteamService::InitFromXML (CXMLElement *pDesc, bool *retbModified)
 //	Initializes
 
 	{
-	*retbModified = false;
+	//	Load parameters
+
+	if (pDesc)
+		{
+		*retbModified = false;
+		SetEnabled(pDesc->GetAttributeBool(ENABLED_ATTRIB));
+		}
+	else
+		{
+		SetEnabled(true);
+		*retbModified = true;
+		}
+
 	return NOERROR;
 	}
 
@@ -75,6 +114,17 @@ ALERROR CSteamService::PostGameRecord (ITaskProcessor *pProcessor, const CGameRe
 //	Posts a game record
 
 	{
+	return NOERROR;
+	}
+
+ALERROR CSteamService::SignInUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, bool bAutoSignIn, CString *retsResult)
+
+//	SignInUser
+//
+//	Make sure the user is signed in.
+
+	{
+	m_HI.HIPostCommand(CMD_SERVICE_ACCOUNT_CHANGED);
 	return NOERROR;
 	}
 

@@ -14,12 +14,14 @@ class CSteamService : public ICIService
 		~CSteamService (void);
 
 		virtual CString GetTag (void);
+		virtual CString GetUsername (void) { return m_sUsername; }
 		virtual bool HasCapability (DWORD dwCapability);
 		virtual ALERROR InitFromXML (CXMLElement *pDesc, bool *retbModified);
 		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL);
+		virtual ALERROR SignInUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, bool bAutoSignIn, CString *retsResult = NULL);
 		virtual ALERROR WriteAsXML (IWriteStream *pOutput);
 
 	private:
-		bool m_bEnabled;					//	TRUE if this is enabled
+		bool m_bConnected;
 		CString m_sUsername;
 	};

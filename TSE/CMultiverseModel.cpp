@@ -224,7 +224,7 @@ CMultiverseNewsEntry *CMultiverseModel::GetNextNewsEntry (void)
 	return NULL;
 	}
 
-CMultiverseModel::EOnlineStates CMultiverseModel::GetOnlineState (CString *retsUsername) const
+CMultiverseModel::EOnlineStates CMultiverseModel::GetOnlineState (CString *retsUsername, CString *retsDesc) const
 
 //	GetOnlineState
 //
@@ -233,20 +233,38 @@ CMultiverseModel::EOnlineStates CMultiverseModel::GetOnlineState (CString *retsU
 	{
 	CSmartLock Lock(m_cs);
 
+	//	Figure out our state
+
 	if (m_fDisabled)
+		{
+		if (retsUsername) *retsUsername = CONSTLIT("Offline");
+#ifdef STEAM_BUILD
+		if (retsDesc) *retsDesc = CONSTLIT("Steam client is not running");
+#else
+		if (retsDesc) *retsDesc = CONSTLIT("Multiverse disabled");
+#endif
 		return stateDisabled;
+		}
 	else if (m_sUsername.IsBlank())
+		{
+		if (retsUsername) *retsUsername = CONSTLIT("Offline");
+		if (retsDesc) *retsDesc = CONSTLIT("Click to register a new account");
 		return stateNoUser;
+		}
 	else if (!m_fUserSignedIn)
 		{
-		if (retsUsername)
-			*retsUsername = m_sUsername;
+		if (retsUsername) *retsUsername = m_sUsername;
+		if (retsDesc) *retsDesc = CONSTLIT("Click to sign in");
 		return stateOffline;
 		}
 	else
 		{
-		if (retsUsername)
-			*retsUsername = m_sUsername;
+		if (retsUsername) *retsUsername = m_sUsername;
+#ifdef STEAM_BUILD
+		if (retsDesc) *retsDesc = CONSTLIT("Connected to Steam");
+#else
+		if (retsDesc) *retsDesc = CONSTLIT("Signed in to the Multiverse");
+#endif
 		return stateOnline;
 		}
 	}
