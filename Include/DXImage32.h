@@ -75,7 +75,7 @@ class CG32bitPixel
 		static bool m_bAlphaInitialized;
 	};
 
-//	CG16bitImage
+//	CG32bitImage
 //
 //	This class manages a 32-bit image. Each pixel has the following bit-pattern:
 //
