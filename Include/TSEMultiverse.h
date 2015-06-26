@@ -37,6 +37,7 @@ class CMultiverseCatalogEntry
 			licenseCore,
 			licenseFree,
 			licensePaid,
+			licenseSteam,
 			};
 
 		enum ELocalStatus
@@ -50,8 +51,18 @@ class CMultiverseCatalogEntry
 			statusError,					//	Could not load for some reason
 			};
 
+		struct SEntryCreate
+			{
+			DWORD dwUNID;
+			CString sName;
+			EExtensionTypes iType;
+			ELicenseTypes iLicense;
+			CString sDesc;
+			};
+
 		CMultiverseCatalogEntry (const CMultiverseCatalogEntry &Src);
 		~CMultiverseCatalogEntry (void);
+		static ALERROR CreateBasicEntry (const SEntryCreate &Create, CMultiverseCatalogEntry **retpEntry);
 		static ALERROR CreateFromJSON (const CJSONValue &Entry, CMultiverseCatalogEntry **retpEntry, CString *retsResult);
 
 		inline const CString &GetDesc (void) const { return m_sDesc; }
@@ -234,6 +245,7 @@ class CMultiverseModel
 		void OnUserSignedOut (void);
 		ALERROR Save (const CString &sCacheFilespec, CString *retsResult = NULL) { return m_News.Save(sCacheFilespec, retsResult); }
 		ALERROR SetCollection (const CJSONValue &Data, CString *retsResult);
+		ALERROR SetCollection (const TArray<CMultiverseCatalogEntry *> &NewCollection);
 		void SetDisabled (void);
 		ALERROR SetNews (const CJSONValue &Data, const CString &sCacheFilespec, TSortMap<CString, CString> *retDownloads, CString *retsResult);
 		void SetServiceStatus (const CString &sStatus) { m_sLastStatus = sStatus; }

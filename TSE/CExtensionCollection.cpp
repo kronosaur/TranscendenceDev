@@ -1792,10 +1792,14 @@ void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection 
 		CExtension *pExtension;
 		if (FindExtension(pEntry->GetUNID(), pEntry->GetRelease(), CExtension::folderCollection, &pExtension))
 			{
+			//	Steam versions are always verified
+			if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteam)
+				pExtension->SetVerified();
+
 			//	Compare the digests. If they match, then this is a registered
 			//	extension.
 
-			if (pEntry->GetTDBFileRef().GetDigest() == pExtension->GetDigest())
+			else if (pEntry->GetTDBFileRef().GetDigest() == pExtension->GetDigest())
 				pExtension->SetVerified();
 			
 			//	Otherwise we assume that we have an old version and ask to download

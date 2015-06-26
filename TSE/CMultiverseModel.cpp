@@ -415,6 +415,37 @@ void CMultiverseModel::OnUserSignedOut (void)
 	m_fUserSignedIn = false;
 	}
 
+ALERROR CMultiverseModel::SetCollection (const TArray<CMultiverseCatalogEntry *> &NewCollection)
+
+//	SetCollection
+//
+//	Sets the collection from a list of entries.
+//	NOTE: We take ownership of the catalog entries.
+
+	{
+	CSmartLock Lock(m_cs);
+	int i;
+
+	//	Replace our collection.
+
+	DeleteCollection();
+	for (i = 0; i < NewCollection.GetCount(); i++)
+		{
+		m_Collection.Insert(NewCollection[i]);
+
+		//	Get the resources in this entry and add them to our list
+
+		AddResources(*NewCollection[i]);
+		}
+
+	//	Done
+
+	m_fCollectionLoaded = true;
+	m_fLoadingCollection = false;
+
+	return NOERROR;
+	}
+
 ALERROR CMultiverseModel::SetCollection (const CJSONValue &Data, CString *retsResult)
 
 //	SetCollection
@@ -479,22 +510,7 @@ ALERROR CMultiverseModel::SetCollection (const CJSONValue &Data, CString *retsRe
 
 	//	Otherwise, replace our collection.
 
-	DeleteCollection();
-	for (i = 0; i < NewCollection.GetCount(); i++)
-		{
-		m_Collection.Insert(NewCollection[i]);
-
-		//	Get the resources in this entry and add them to our list
-
-		AddResources(*NewCollection[i]);
-		}
-
-	//	Done
-
-	m_fCollectionLoaded = true;
-	m_fLoadingCollection = false;
-
-	return NOERROR;
+	return SetCollection(NewCollection);
 	}
 
 void CMultiverseModel::SetDisabled (void)

@@ -167,6 +167,36 @@ ALERROR CMultiverseCatalogEntry::CreateFromJSON (const CJSONValue &Entry, CMulti
 	return NOERROR;
 	}
 
+ALERROR CMultiverseCatalogEntry::CreateBasicEntry (const SEntryCreate &Create, CMultiverseCatalogEntry **retpEntry)
+
+//	CreateBasicEntry
+//
+//	Creates a hard-coded catalog entry for Steam.
+
+	{
+	CMultiverseCatalogEntry *pNewEntry = new CMultiverseCatalogEntry;
+
+	pNewEntry->m_dwUNID = Create.dwUNID;
+	pNewEntry->m_sUNID = strPatternSubst(CONSTLIT("Transcendence:%08x"), Create.dwUNID);
+	pNewEntry->m_dwRelease = 1;
+	pNewEntry->m_dwVersion = 1;
+
+	pNewEntry->m_sName = Create.sName;
+	pNewEntry->m_sDesc = Create.sDesc;
+	pNewEntry->m_iType = Create.iType;
+	pNewEntry->m_iLicenseType = Create.iLicense;
+
+	//	Initialize status
+
+	pNewEntry->m_iStatus = statusUnknown;
+	pNewEntry->m_pIcon = NULL;
+
+	//	Done
+
+	*retpEntry = pNewEntry;
+	return NOERROR;
+	}
+
 bool CMultiverseCatalogEntry::IsValid (void)
 
 //	IsValid
