@@ -6367,6 +6367,7 @@ class CExtensionCollection
 			FLAG_INCLUDE_AUTO =		0x00000020,	//	Include extensions that are automatic
 			FLAG_AUTO_ONLY =		0x00000040,	//	Only include extensions that are automatic
 			FLAG_ACCUMULATE =		0x00000080,	//	Add to result list
+			FLAG_REGISTERED_ONLY =	0x00000100,	//	Only registered extensions
 			};
 
 		CExtensionCollection (void);

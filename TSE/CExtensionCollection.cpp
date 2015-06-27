@@ -404,6 +404,7 @@ ALERROR CExtensionCollection::ComputeAvailableAdventures (DWORD dwFlags, TArray<
 	//	Initialize
 
 	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	bool bRegisteredOnly = ((dwFlags & FLAG_REGISTERED_ONLY) == FLAG_REGISTERED_ONLY);
 	retList->DeleteAll();
 
 	//	Loop by UNID because we allow at most one of each UNID.
@@ -428,6 +429,11 @@ ALERROR CExtensionCollection::ComputeAvailableAdventures (DWORD dwFlags, TArray<
 			//	If this is debug only and we're not in debug mode then skip.
 
 			if (ExtensionList[j]->IsDebugOnly() && !bDebugMode)
+				continue;
+
+			//	Exclude unregistered if we want registered only
+
+			if (bRegisteredOnly && !ExtensionList[j]->IsRegistered())
 				continue;
 
 			//	If we're disabled and we're not in debug mode, then skip
@@ -472,6 +478,7 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 	bool bAllExtensions = (Extensions.GetCount() == 0);
 	bool bAutoOnly = ((dwFlags & FLAG_AUTO_ONLY) == FLAG_AUTO_ONLY);
 	bool bIncludeAuto = bAutoOnly || ((dwFlags & FLAG_INCLUDE_AUTO) == FLAG_INCLUDE_AUTO);
+	bool bRegisteredOnly = ((dwFlags & FLAG_REGISTERED_ONLY) == FLAG_REGISTERED_ONLY);
 
 	if (!(dwFlags & FLAG_ACCUMULATE))
 		retList->DeleteAll();
@@ -505,6 +512,11 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 			//	If this is debug only and we're not in debug mode then skip.
 
 			if (ExtensionList[j]->IsDebugOnly() && !bDebugMode)
+				continue;
+
+			//	Exclude unregistered if we want registered only
+
+			if (bRegisteredOnly && !ExtensionList[j]->IsRegistered())
 				continue;
 
 			//	If this is an auto extension, include it only if we ask for it.
