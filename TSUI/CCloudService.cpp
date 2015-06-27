@@ -399,6 +399,22 @@ ALERROR CCloudService::ProcessDownloads (ITaskProcessor *pProcessor, CString *re
 	return NOERROR;
 	}
 
+ALERROR CCloudService::ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult)
+
+//	ReadHighScoreList
+//
+//	Read the high score list for the given adventure
+
+	{
+	int i;
+
+	for (i = 0; i < m_Services.GetCount(); i++)
+		if (m_Services[i]->IsEnabled() && m_Services[i]->HasCapability(ICIService::canGetHighScores))
+			return m_Services[i]->ReadHighScoreList(pProcessor, dwAdventure, retHighScores, retsResult);
+
+	return NOERROR;
+	}
+
 ALERROR CCloudService::ReadProfile (ITaskProcessor *pProcessor, CUserProfile *retProfile, CString *retsResult)
 
 //	ReadProfile

@@ -3852,6 +3852,21 @@ class CGameStats
 		CString m_sDefaultSectionName;
 	};
 
+class CAdventureHighScoreList
+	{
+	public:
+		CAdventureHighScoreList (void) : m_dwAdventure(0)
+			{ }
+
+		inline int GetCount (void) const { return m_HighScores.GetCount(); }
+		ALERROR InitFromJSON (DWORD dwAdventureUNID, const CJSONValue &Value);
+		inline const CGameRecord &GetEntry (int iIndex) const { return m_HighScores[iIndex]; }
+
+	private:
+		DWORD m_dwAdventure;
+		TArray<CGameRecord> m_HighScores;
+	};
+
 class CAdventureRecord
 	{
 	public:

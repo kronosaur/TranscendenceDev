@@ -214,6 +214,7 @@
     <ClInclude Include="TopologyProcessorsImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAISettings.cpp" />
     <ClCompile Include="CApproachOrder.cpp" />

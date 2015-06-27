@@ -40,6 +40,7 @@ class ICIService
 			canDownloadExtension =		0x00000200,	//	We can download an extension from the multiverse
 			canPostCrashReport =		0x00000400,	//	We can post a crash report
 			canLoadNews =				0x00000800,	//	We can load news from the multiverse
+			canGetHighScores =			0x00001000,	//	We support high scores per adventure
 			};
 
 		ICIService (CHumanInterface &HI) : m_HI(HI), m_bEnabled(false), m_bModified(false) { }
@@ -61,6 +62,7 @@ class ICIService
 		virtual ALERROR PostCrashReport (ITaskProcessor *pProcessor, const CString &sCrash, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR ProcessDownloads (ITaskProcessor *pProcessor, CString *retsResult = NULL) { return NOERROR; }
+		virtual ALERROR ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR ReadProfile (ITaskProcessor *pProcessor, CUserProfile *retProfile, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR RegisterUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, const CString &sEmail, bool bAutoSignIn, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR RequestExtensionDownload (const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest) { return NOERROR; }
@@ -116,6 +118,7 @@ class CCloudService
 		ALERROR PostCrashReport (ITaskProcessor *pProcessor, const CString &sCrash, CString *retsResult = NULL);
 		ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL);
 		ALERROR ProcessDownloads (ITaskProcessor *pProcessor, CString *retsResult = NULL);
+		ALERROR ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult = NULL);
 		ALERROR ReadProfile (ITaskProcessor *pProcessor, CUserProfile *retProfile, CString *retsResult = NULL);
 		ALERROR RegisterUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, const CString &sEmail, bool bAutoSignIn, CString *retsResult = NULL);
 		ALERROR RequestExtensionDownload (const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest);
