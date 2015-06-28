@@ -3855,16 +3855,27 @@ class CGameStats
 class CAdventureHighScoreList
 	{
 	public:
-		CAdventureHighScoreList (void) : m_dwAdventure(0)
+		struct SSelect
+			{
+			DWORD dwAdventure;
+			CString sUsername;
+			int iScore;
+			};
+
+		CAdventureHighScoreList (void) : m_dwAdventure(0),
+				m_iSelection(-1)
 			{ }
 
 		inline int GetCount (void) const { return m_HighScores.GetCount(); }
+		inline int GetSelection (void) const { return m_iSelection; }
 		ALERROR InitFromJSON (DWORD dwAdventureUNID, const CJSONValue &Value);
 		inline const CGameRecord &GetEntry (int iIndex) const { return m_HighScores[iIndex]; }
+		void SetSelection (const CString &sUsername, int iScore);
 
 	private:
 		DWORD m_dwAdventure;
 		TArray<CGameRecord> m_HighScores;
+		int m_iSelection;
 	};
 
 class CAdventureRecord

@@ -28,3 +28,30 @@ ALERROR CAdventureHighScoreList::InitFromJSON (DWORD dwAdventureUNID, const CJSO
 
 	return NOERROR;
 	}
+
+void CAdventureHighScoreList::SetSelection (const CString &sUsername, int iScore)
+
+//	SetSelection
+//
+//	Selects the given entry
+
+	{
+	int i;
+
+	m_iSelection = -1;
+
+	//	Short-circuit
+
+	if (sUsername.IsBlank())
+		return;
+
+	//	Look for the selection
+
+	for (i = 0; i < m_HighScores.GetCount(); i++)
+		if (strEquals(sUsername, m_HighScores[i].GetUsername()) 
+				&& m_HighScores[i].GetScore() == iScore)
+			{
+			m_iSelection = i;
+			return;
+			}
+	}
