@@ -101,6 +101,7 @@
   <ItemGroup>
     <ClInclude Include="..\Include\SteamUtil.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="SteamUtilImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="steam\lib\win32\steam_api.lib">

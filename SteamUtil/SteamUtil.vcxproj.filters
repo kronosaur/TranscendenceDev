@@ -21,6 +21,9 @@
     <ClInclude Include="..\Include\SteamUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SteamUtilImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="steam\lib\win32\steam_api.lib" />

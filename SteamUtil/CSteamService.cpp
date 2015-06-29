@@ -9,6 +9,9 @@
 
 #define CMD_SERVICE_ACCOUNT_CHANGED				CONSTLIT("serviceAccountChanged")
 
+#define STATUS_POSTING_GAME_RECORD				CONSTLIT("Posting score to Steam...")
+#define STATUS_POST_SUCCESSFUL					CONSTLIT("Score posted to Steam.")
+
 #define TAG_STEAM								CONSTLIT("Steam")
 
 struct SSteamEntryCreate
@@ -132,8 +135,10 @@ bool CSteamService::HasCapability (DWORD dwCapability)
 
 		case loginUser:
 		case autoLoginUser:
+		case canGetHighScores:
 		case canGetUserProfile:
 		case canLoadUserCollection:
+		case canPostGameRecord:
 		case modExchange:
 			return m_bConnected;
 
@@ -141,7 +146,6 @@ bool CSteamService::HasCapability (DWORD dwCapability)
 			return false;
 
 		case canDownloadExtension:
-		case canPostGameRecord:
 			return false;
 
 		default:
@@ -234,6 +238,78 @@ ALERROR CSteamService::PostGameRecord (ITaskProcessor *pProcessor, const CGameRe
 //	Posts a game record
 
 	{
+	//	Don't bother is we got a score of 0 or if the game is in debug mode
+
+	if (Record.GetScore() == 0 || Record.IsDebug() || !m_bConnected)
+		return NOERROR;
+
+	SendServiceStatus(STATUS_POSTING_GAME_RECORD);
+
+	//	Generate a well-known name for the leaderboard
+
+	CString sName = strPatternSubst(CONSTLIT("unid-%08x"), Record.GetAdventureUNID());
+
+	//	Find or create the leaderboard
+
+	SteamLeaderboard_t hLeaderboard;
+	if (!CFindOrCreateLeaderboard().Call(sName, k_ELeaderboardSortMethodDescending, k_ELeaderboardDisplayTypeNumeric, &hLeaderboard))
+		{
+		if (retsResult) *retsResult = strPatternSubst(CONSTLIT("Unable to find leaderboard for adventure: %08x"), Record.GetAdventureUNID());
+		return ERR_FAIL;
+		}
+
+	//	Upload the score
+
+	if (!CUploadLeaderboardScore().Call(hLeaderboard, Record.GetScore()))
+		{
+		if (retsResult) *retsResult = strPatternSubst(CONSTLIT("Unable to upload score for adventure: %08x"), Record.GetAdventureUNID());
+		return ERR_FAIL;
+		}
+
+	//	Done
+
+	SendServiceStatus(STATUS_POST_SUCCESSFUL);
+	return NOERROR;
+	}
+
+ALERROR CSteamService::ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult)
+
+//	ReadHighScoreList
+//
+//	Returns the high score list for the given adventure. We return up to 100
+//	entries.
+
+	{
+	if (!m_bConnected)
+		return NOERROR;
+
+	//	Generate a well-known name for the leaderboard
+
+	CString sName = strPatternSubst(CONSTLIT("unid-%08x"), dwAdventure);
+
+	//	Find or create the leaderboard
+
+	SteamLeaderboard_t hLeaderboard;
+	if (!CFindOrCreateLeaderboard().Call(sName, k_ELeaderboardSortMethodDescending, k_ELeaderboardDisplayTypeNumeric, &hLeaderboard))
+		{
+		if (retsResult) *retsResult = strPatternSubst(CONSTLIT("Unable to find leaderboard for adventure: %08x"), dwAdventure);
+		return ERR_FAIL;
+		}
+
+	//	Create a high score list
+
+	*retHighScores = CAdventureHighScoreList(dwAdventure);
+
+	//	Download scores into it
+
+	if (!CDownloadLeaderboardScores().Call(hLeaderboard, retHighScores))
+		{
+		if (retsResult) *retsResult = strPatternSubst(CONSTLIT("Unable to download high scores for adventure: %08x"), dwAdventure);
+		return ERR_FAIL;
+		}
+
+	//	Done
+
 	return NOERROR;
 	}
 

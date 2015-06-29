@@ -3862,13 +3862,15 @@ class CAdventureHighScoreList
 			int iScore;
 			};
 
-		CAdventureHighScoreList (void) : m_dwAdventure(0),
+		CAdventureHighScoreList (DWORD dwAdventure = 0) : m_dwAdventure(dwAdventure),
 				m_iSelection(-1)
 			{ }
 
+		inline void DeleteAll (void) { m_HighScores.DeleteAll(); m_iSelection = -1; }
 		inline int GetCount (void) const { return m_HighScores.GetCount(); }
 		inline int GetSelection (void) const { return m_iSelection; }
 		ALERROR InitFromJSON (DWORD dwAdventureUNID, const CJSONValue &Value);
+		void InsertSimpleScore (const CString &sUsername, int iScore);
 		inline const CGameRecord &GetEntry (int iIndex) const { return m_HighScores[iIndex]; }
 		void SetSelection (const CString &sUsername, int iScore);
 

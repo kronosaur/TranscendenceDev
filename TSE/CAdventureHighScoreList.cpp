@@ -29,6 +29,18 @@ ALERROR CAdventureHighScoreList::InitFromJSON (DWORD dwAdventureUNID, const CJSO
 	return NOERROR;
 	}
 
+void CAdventureHighScoreList::InsertSimpleScore (const CString &sUsername, int iScore)
+
+//	InsertSimpleScore
+//
+//	Inserts a simple score (used by Steam integration)
+
+	{
+	CGameRecord *pRecord = m_HighScores.Insert();
+	pRecord->SetUsername(sUsername);
+	pRecord->SetScore(iScore);
+	}
+
 void CAdventureHighScoreList::SetSelection (const CString &sUsername, int iScore)
 
 //	SetSelection

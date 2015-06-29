@@ -8,3 +8,4 @@
 #include "SteamUtil.h"
 
 #include "steam/steam_api.h"
+#include "SteamUtilImpl.h"
