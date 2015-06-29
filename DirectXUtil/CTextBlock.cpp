@@ -277,7 +277,7 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 					//	of centering, etc.).
 
 					if (i == Line.GetCount() - 1)
-						Line[i].sText = strTrimWhitespace(Line[i].sText);
+						Line[i].sText = strTrimWhitespace(Line[i].sText, false, true);
 
 					//	Compute the width of each span, the total width of the line
 					//	and the max height of the line.

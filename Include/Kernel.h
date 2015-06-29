@@ -1528,7 +1528,7 @@ int strToInt (const CString &sString, int iFailResult, bool *retbFailed = NULL);
 CString strToLower (const CString &sString);
 CString strToUpper (const CString &sString);
 CString strToXMLText (const CString &sString, bool bInBody = false);
-CString strTrimWhitespace (const CString &sString);
+CString strTrimWhitespace (const CString &sString, bool bLeading = true, bool bTrailing = true);
 CString strWord (const CString &sString, int iWordPos);
 
 //	Path functions (Path.cpp)

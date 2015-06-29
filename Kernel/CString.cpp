@@ -2480,7 +2480,7 @@ CString strToXMLText (const CString &sText, bool bInBody)
 	return sResult;
 	}
 
-CString strTrimWhitespace (const CString &sString)
+CString strTrimWhitespace (const CString &sString, bool bLeading, bool bTrailing)
 
 //	strTrimWhitespace
 //
@@ -2491,11 +2491,18 @@ CString strTrimWhitespace (const CString &sString)
 	char *pStart;
 	char *pEnd;
 
-	strParseWhitespace(pPos, &pStart);
+	if (bLeading)
+		strParseWhitespace(pPos, &pStart);
+	else
+		pStart = pPos;
 
 	pEnd = pPos + sString.GetLength();
-	while (pEnd > pStart && strIsWhitespace(pEnd-1))
-		pEnd--;
+
+	if (bTrailing)
+		{
+		while (pEnd > pStart && strIsWhitespace(pEnd-1))
+			pEnd--;
+		}
 
 	return CString(pStart, pEnd - pStart);
 	}
