@@ -661,6 +661,7 @@ class CHumanInterface
 		inline const CVisualPalette &GetVisuals (void) { return m_Visuals; }
 		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return m_pController->HICommand(sCmd, pData); }
 		void HIPostCommand (const CString &sCmd, void *pData = NULL);
+		inline ALERROR HISessionCommand (const CString &sCmd, void *pData = NULL) { return (m_pCurSession ? m_pCurSession->HICommand(sCmd, pData) : NOERROR); }
 		inline bool IsWindowedMode (void) const { return m_Options.m_bWindowedMode; }
 		ALERROR OpenPopupSession (IHISession *pSession, CString *retsError = NULL);
 		void ShowHardCrashSession (const CString &sTitle, const CString &sDescription);
