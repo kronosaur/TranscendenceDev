@@ -2111,7 +2111,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"viiv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateWeaponFire",			fnSystemCreate,			FN_SYS_CREATE_WEAPON_FIRE,
-			"(sysCreateWeaponFire weaponID objSource pos dir speed objTarget [detonateNow] [bonus%]) -> obj",
+			"(sysCreateWeaponFire weaponID objSource pos dir speed objTarget [options] [bonus%]) -> obj\n\n"
+			
+			"options:\n\n"
+			
+			"   'detonateNow\n"
+			"   'fireEffect\n"
+			"   'soundEffect\n",
+
 			"vvviii*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysDescendObject",				fnSystemGet,	FN_SYS_DESCEND_OBJECT,
@@ -9737,7 +9744,42 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			Metric rSpeed = LIGHT_SPEED * pArgs->GetElement(4)->GetIntegerValue() / 100.0;
 			CSpaceObject *pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(5));
-			bool bDetonateNow = ((pArgs->GetCount() > 6) ? !pArgs->GetElement(6)->IsNil() : false);
+
+			//	Options
+
+			bool bDetonateNow = false;
+			bool bFireEffect = false;
+			bool bSoundEffect = false;
+
+			if (pArgs->GetCount() > 6)
+				{
+				ICCItem *pOptions = pArgs->GetElement(6);
+				if (pOptions->IsList())
+					{
+					for (i = 0; i < pOptions->GetCount(); i++)
+						{
+						if (strEquals(pOptions->GetElement(i)->GetStringValue(), CONSTLIT("detonateNow")))
+							bDetonateNow = true;
+						else if (strEquals(pOptions->GetElement(i)->GetStringValue(), CONSTLIT("fireEffect")))
+							bFireEffect = true;
+						else if (strEquals(pOptions->GetElement(i)->GetStringValue(), CONSTLIT("soundEffect")))
+							bSoundEffect = true;
+						else
+							return pCC->CreateError(CONSTLIT("Invalid option"), pOptions->GetElement(i));
+						}
+					}
+				else if (pOptions->IsIdentifier() && strEquals(pOptions->GetStringValue(), CONSTLIT("detonateNow")))
+					bDetonateNow = true;
+				else if (pOptions->IsIdentifier() && strEquals(pOptions->GetStringValue(), CONSTLIT("fireEffect")))
+					bFireEffect = true;
+				else if (pOptions->IsIdentifier() && strEquals(pOptions->GetStringValue(), CONSTLIT("soundEffect")))
+					bSoundEffect = true;
+				else if (!pOptions->IsNil())
+					bDetonateNow = true;
+				}
+
+			//	Bonus
+
 			int iBonus = ((pArgs->GetCount() > 7) ? pArgs->GetElement(7)->GetIntegerValue() : 0);
 
 			//	If direction is Nil then we compute intercept course
@@ -9771,9 +9813,12 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Create barrel flash effect
 
-			CEffectCreator *pFireEffect;
-			if (pFireEffect = pDesc->GetFireEffect())
-				pFireEffect->CreateEffect(pSystem, pSource, vPos, CVector(), iDir);
+			if (bFireEffect)
+				{
+				CEffectCreator *pFireEffect;
+				if (pFireEffect = pDesc->GetFireEffect())
+					pFireEffect->CreateEffect(pSystem, pSource, vPos, CVector(), iDir);
+				}
 
 			//	If we have a bonus, we need an enhancement stack
 
@@ -9814,7 +9859,8 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Sound
 
-			pDesc->PlayFireSound(pObj);
+			if (bSoundEffect)
+				pDesc->PlayFireSound(pObj);
 
 			//	DOne
 
