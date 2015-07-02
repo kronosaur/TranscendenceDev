@@ -2690,198 +2690,6 @@ ICCItem *fnMathList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		}
 	}
 
-ICCItem *fnMathListNumerals(CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
-	//	fnMathListNumerals
-	//
-	//	Simple numeric (integer or double) functions
-	//
-	//	(+ x1 x2 ... xn) -> z
-	//	(max x1 x2 ... xn) -> z
-	//	(min x1 x2 ... xn) -> z
-	//	(* x1 x2 .. .xn) -> z
-
-	{
-		int i;
-		CCodeChain *pCC = pCtx->pCC;
-
-		//	Get the list
-
-		ICCItem *pList;
-		if (pArgs->GetCount() == 1 && pArgs->GetElement(0)->IsList())
-		{
-			pList = pArgs->GetElement(0);
-
-			if (pList->GetCount() < 1)
-				return pCC->CreateInteger(0);
-		}
-		else
-			pList = pArgs;
-
-		//	Do the computation
-
-		switch (dwData)
-		{
-		case FN_MATH_ADD_NUMERALS:
-		{
-			double dSum = 0.;
-			ICCItem *pElement;
-			int iIntFlag = 1;
-
-			for (i = 0; i < pList->GetCount(); i++)
-			{
-				pElement = pList->GetElement(i);
-				
-				if (pElement->IsDouble())
-				{
-					iIntFlag = 0;
-				}
-				else if (!pElement->IsInteger())
-				{
-					pArgs->Discard(pCC);
-					return pCC->CreateError(CONSTLIT("All elements in list are not numeric."), NULL);
-				};
-
-				dSum += pList->GetElement(i)->GetDoubleValue();
-			};
-
-			if (iIntFlag)
-			{
-				return pCC->CreateInteger(int(dSum));
-			}
-			else
-			{
-				return pCC->CreateDouble(dSum);
-			};
-		}
-
-		case FN_MATH_MULTIPLY_NUMERALS:
-		{
-			double dProd = 1.;
-			ICCItem *pElement;
-			int iIntFlag = 1;
-
-			for (i = 0; i < pList->GetCount(); i++)
-			{
-				pElement = pList->GetElement(i);
-
-				if (pElement->IsDouble())
-				{
-					iIntFlag = 0;
-				}
-				else if (!pElement->IsInteger())
-				{
-					pArgs->Discard(pCC);
-					return pCC->CreateError(CONSTLIT("All elements in list are not numeric."), NULL);
-				};
-
-				dProd = dProd * pList->GetElement(i)->GetDoubleValue();
-			};
-
-			if (iIntFlag)
-			{
-				return pCC->CreateInteger(int(dProd));
-			}
-			else
-			{
-				return pCC->CreateDouble(dProd);
-			};
-		}
-
-		case FN_MATH_MAX_NUMERALS:
-		{
-			double dResult;
-			double dTemp;
-			ICCItem *pElement;
-			int iIntFlag = 1;
-
-			for (i = 0; i < pList->GetCount(); i++)
-			{
-				pElement = pList->GetElement(i);
-
-				if (pElement->IsDouble())
-				{
-					iIntFlag = 0;
-				}
-				else if (!pElement->IsInteger())
-				{
-					pArgs->Discard(pCC);
-					return pCC->CreateError(CONSTLIT("All elements in list are not numeric."), NULL);
-				};
-
-				dTemp = pElement->GetDoubleValue();
-				if (i == 0)
-				{
-					dResult = dTemp;
-				}
-				else
-				{
-					if (dTemp > dResult)
-					{
-						dResult = dTemp;
-					}
-				};
-			};
-
-			if (iIntFlag)
-			{
-				return pCC->CreateInteger(int(dResult));
-			}
-			else
-			{
-				return pCC->CreateDouble(dResult);
-			};
-		}
-
-		case FN_MATH_MIN_NUMERALS:
-		{
-			double dResult;
-			double dTemp;
-			ICCItem *pElement;
-			int iIntFlag = 1;
-
-			for (i = 0; i < pList->GetCount(); i++)
-			{
-				pElement = pList->GetElement(i);
-
-				if (pElement->IsDouble())
-				{
-					iIntFlag = 0;
-				}
-				else if (!pElement->IsInteger())
-				{
-					pArgs->Discard(pCC);
-					return pCC->CreateError(CONSTLIT("All elements in list are not numeric."), NULL);
-				};
-
-				dTemp = pElement->GetDoubleValue();
-				if (i == 0)
-				{
-					dResult = dTemp;
-				}
-				else
-				{
-					if (dTemp < dResult)
-					{
-						dResult = dTemp;
-					}
-				};
-			};
-
-			if (iIntFlag)
-			{
-				return pCC->CreateInteger(int(dResult));
-			}
-			else
-			{
-				return pCC->CreateDouble(dResult);
-			};		}
-
-		default:
-			ASSERT(false);
-			return pCC->CreateNil();
-		}
-	}
-
 ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnMathNumerals
@@ -2910,19 +2718,19 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_MATH_MODULUS_NUMERALS:
-		{
+			{
 			int iArg = 0;
 
 			bool bClock = false;
-			if (pArgs->GetCount() > 0 && pArgs->GetElement(iArg)->IsIdentifier())
-			{
+			if (pArgs->GetCount() > iArg && pArgs->GetElement(iArg)->IsIdentifier())
+				{
 				if (strEquals(pArgs->GetElement(iArg)->GetStringValue(), CONSTLIT("degrees")))
 					bClock = true;
 				else
 					return pCC->CreateError(CONSTLIT("Unknown option"), pArgs->GetElement(iArg));
 
 				iArg++;
-			}
+				}
 
 			if (pArgs->GetCount() < (iArg + 2))
 				return pCC->CreateError(CONSTLIT("Insufficient arguments"), pArgs);
@@ -2931,7 +2739,7 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pOp2 = pArgs->GetElement(iArg++);
 
 			if (pOp1->IsDouble() || pOp2->IsDouble())
-			{
+				{
 				double dOp1 = pOp1->GetDoubleValue();
 				double dOp2 = pOp2->GetDoubleValue();
 
@@ -2939,19 +2747,19 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Division by zero"), pArgs);
 
 				if (bClock)
-				{
+					{
 					double dResult = fmod(dOp1, dOp2);
 
 					if (dResult < 0)
 						return pCC->CreateDouble(dOp2 + dResult);
 					else
 						return pCC->CreateDouble(dResult);
-				}
+					}
 				else
 					return pCC->CreateDouble(fmod(dOp1, dOp2));
-			}
+				}
 			else
-			{
+				{
 				int iOp1 = pOp1->GetIntegerValue();
 				int iOp2 = pOp2->GetIntegerValue();
 
@@ -2959,39 +2767,39 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Division by zero"), pArgs);
 
 				if (bClock)
-				{
+					{
 					int iResult = iOp1 % iOp2;
 
 					if (iResult < 0)
 						return pCC->CreateInteger(iOp2 + iResult);
 					else
 						return pCC->CreateInteger(iResult);
-				}
+					}
 				else
 					return pCC->CreateInteger(iOp1 % iOp2);
+				}
 			}
-		}
 
 		case FN_MATH_POWER_NUMERALS:
-		{
+			{
 			double rX = pArgs->GetElement(0)->GetDoubleValue();
 			double rY = pArgs->GetElement(1)->GetDoubleValue();
 			return pCC->CreateDouble(pow(rX, rY));
-		}
+			}
 
 		case FN_MATH_SQRT_NUMERALS:
-		{
+			{
 			double rX = pArgs->GetElement(0)->GetDoubleValue();
 			if (rX < 0.0)
 				return pCC->CreateError(CONSTLIT("Imaginary result"), pArgs);
 
 			return pCC->CreateDouble(sqrt(rX));
-		}
+			}
 
 		default:
 			ASSERT(false);
 			return pCC->CreateNil();
-	}
+		}
 	}
 
 double GetFractionArg (ICCItem *pArg, double *retrDenom)

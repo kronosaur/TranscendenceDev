@@ -1398,7 +1398,7 @@ ICCItem *CCodeChain::UnstreamItem (IReadStream *pStream)
 
 	if (dwClass == OBJID_CCINTEGER)
 		pItem = m_IntegerPool.CreateItem(this);
-	if (dwClass == OBJID_CCDOUBLE)
+	else if (dwClass == OBJID_CCDOUBLE)
 		pItem = m_DoublePool.CreateItem(this);
 	else if (dwClass == OBJID_CCSTRING)
 		pItem = m_StringPool.CreateItem(this);
