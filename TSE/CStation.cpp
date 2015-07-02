@@ -3301,6 +3301,8 @@ void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewp
 //	Paints the object on an LRS
 
 	{
+	DEBUG_TRY
+
 	if (m_pType->IsVirtual())
 		return;
 
@@ -3341,6 +3343,8 @@ void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewp
 					m_sMapLabel);
 			}
 		}
+
+	DEBUG_CATCH_MSG1("Crash in CStation::PaintLRSBackground: type: %08x", m_pType->GetUNID());
 	}
 
 void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
@@ -3350,6 +3354,8 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 //	Paints the object on an LRS
 
 	{
+	DEBUG_TRY
+
 	if (m_pType->IsVirtual())
 		return;
 
@@ -3401,6 +3407,8 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 						markerTinyCircle);
 			}
 		}
+
+	DEBUG_CATCH_MSG1("Crash in CStation::PaintLRSForeground: type: %08x", m_pType->GetUNID());
 	}
 
 bool CStation::PointInObject (const CVector &vObjPos, const CVector &vPointPos)

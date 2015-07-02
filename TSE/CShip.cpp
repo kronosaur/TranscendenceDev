@@ -5782,6 +5782,8 @@ void CShip::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewport
 //	Paints the object on an LRS
 
 	{
+	DEBUG_TRY
+
 	if (IsInactive())
 		return;
 
@@ -5800,6 +5802,8 @@ void CShip::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewport
 				RGB_LRS_LABEL,
 				m_sMapLabel);
 		}
+
+	DEBUG_CATCH_MSG1("Crash in CShip::PaintLRSBackground: type: %08x", m_pClass->GetUNID());
 	}
 
 void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
@@ -5809,6 +5813,8 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 //	Paints the object on an LRS
 
 	{
+	DEBUG_TRY
+
 	if (IsInactive())
 		return;
 
@@ -5822,6 +5828,8 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	//	Identified
 
 	m_fIdentified = true;
+
+	DEBUG_CATCH_MSG1("Crash in CShip::PaintLRSForeground: type: %08x", m_pClass->GetUNID());
 	}
 
 bool CShip::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
