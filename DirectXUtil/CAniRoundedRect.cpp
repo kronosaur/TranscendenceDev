@@ -60,7 +60,7 @@ CAniRoundedRect::CAniRoundedRect (void)
 	m_Properties.SetInteger(PROP_UR_RADIUS, 10);
 	m_Properties.SetInteger(PROP_LL_RADIUS, 10);
 	m_Properties.SetInteger(PROP_LR_RADIUS, 10);
-	m_Properties.SetInteger(PROP_OPACITY, 255);
+	m_Properties.SetOpacity(PROP_OPACITY, 255);
 
 	//	Initialize corners
 

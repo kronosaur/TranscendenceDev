@@ -115,6 +115,8 @@ void CAniRect::Paint (SAniPaintCtx &Ctx)
 	CVector vPos2 = Ctx.ToDest.Transform(m_Properties[INDEX_POSITION].GetVector() + m_Properties[INDEX_SCALE].GetVector());
 	CVector vSize = vPos2 - vPos;
 
+	//	Get the size in integer values
+
 	int x = (int)vPos.GetX();
 	int y = (int)vPos.GetY();
 	int cxWidth = (int)vSize.GetX();

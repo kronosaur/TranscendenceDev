@@ -96,6 +96,32 @@ void CAniProperty::Clear (void)
 	m_iType = typeNone;
 	}
 
+DWORD CAniProperty::GetOpacity (void) const
+
+//	GetOpacity
+//
+//	Returns opacity value
+	
+	{
+	switch (m_iType)
+		{
+		case typeColor:
+			return CG32bitPixel::FromDWORD(m_Value.dwValue).GetAlpha();
+
+		case typeInteger:
+			return Min(m_Value.dwValue, (DWORD)0xff);
+
+		case typeMetric:
+			return (DWORD)(Max(0.0, Min(m_Value.rValue, 1.0)) * 255.0);
+
+		case typeOpacity:
+			return m_Value.dwValue;
+
+		default:
+			return 0;
+		}
+	}
+
 CString CAniProperty::GetString (void) const
 
 //	GetString

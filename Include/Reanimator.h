@@ -77,7 +77,7 @@ class CAniProperty
 		inline const CG16bitFont *GetFont (void) const { return (m_iType == typeFont ? (const CG16bitFont *)m_Value.pValue : NULL); }
 		inline int GetInteger (void) const { return (m_iType == typeInteger ? (int)m_Value.dwValue : 0); }
 		inline Metric GetMetric (void) const { return (m_iType == typeMetric ? m_Value.rValue : 0.0); }
-		inline DWORD GetOpacity (void) const { return (m_iType == typeOpacity ? m_Value.dwValue : 0); }
+		DWORD GetOpacity (void) const;
 		CString GetString (void) const;
 		inline Types GetType (void) const { return m_iType; }
 		const CVector &GetVector (void) const;
