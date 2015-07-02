@@ -40,11 +40,12 @@
 const int ENTRY_ICON_HEIGHT =					150;
 const int ENTRY_ICON_WIDTH =					300;
 
-const int ICON_SPACING_HORZ =					8;
+const int ICON_SPACING_HORZ =					16;
 const int INTER_LINE_SPACING =					20;
 const int MAJOR_PADDING_BOTTOM =				20;
 const int MAJOR_PADDING_TOP =					20;
 const int TYPE_CORNER_RADIUS =					3;
+const int ICON_RADIUS =							6;
 
 const int SELECTION_BORDER_WIDTH =				1;
 const int SELECTION_CORNER_RADIUS =				8;
@@ -106,9 +107,13 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 	if (pIcon)
 		{
 		int xOffset = (ENTRY_ICON_WIDTH - pIcon->GetWidth()) / 2;
-		IAnimatron *pIconAni = new CAniRect;
+		IAnimatron *pIconAni = new CAniRoundedRect;
 		pIconAni->SetPropertyVector(PROP_POSITION, CVector(x + xOffset, 0));
 		pIconAni->SetPropertyVector(PROP_SCALE, CVector(pIcon->GetWidth(), pIcon->GetHeight()));
+		pIconAni->SetPropertyInteger(PROP_UL_RADIUS, ICON_RADIUS);
+		pIconAni->SetPropertyInteger(PROP_UR_RADIUS, ICON_RADIUS);
+		pIconAni->SetPropertyInteger(PROP_LL_RADIUS, ICON_RADIUS);
+		pIconAni->SetPropertyInteger(PROP_LR_RADIUS, ICON_RADIUS);
 		pIconAni->SetFillMethod(new CAniImageFill(pIcon, true));
 
 		pRoot->AddTrack(pIconAni, 0);

@@ -22,15 +22,15 @@
 #define ALIGN_CENTER							CONSTLIT("center")
 #define ALIGN_RIGHT								CONSTLIT("right")
 
-const int FRAME_RADIUS =						10;
+const int FRAME_RADIUS =						8;
 const int ICON_AREA_HEIGHT =					240;
 const int ICON_AREA_WIDTH =						154;
-const int PADDING_LEFT =						8;
-const int PADDING_RIGHT =						8;
+const int PADDING_LEFT =						16;
+const int PADDING_RIGHT =						16;
 const int PADDING_TOP =							8;
 const int PADDING_BOTTOM =						16;
-const int MAJOR_PADDING_BOTTOM =				20;
-const int MAJOR_PADDING_TOP =					20;
+const int MAJOR_PADDING_BOTTOM =				24;
+const int MAJOR_PADDING_TOP =					24;
 const int TITLE_BAR_HEIGHT =					24;
 const int SCORE_AREA_WIDTH =					320;
 
@@ -134,34 +134,25 @@ void CReadProfileTask::CreateAdventureRecordDisplay (CAdventureRecord &Record, i
 	CExtension *pAdventure;
 	CString sAdventureTitle;
 	CG32bitImage *pIcon;
+	int cxIcon;
 	if (g_pUniverse->FindExtension(Record.GetAdventureUNID(), 0, &pAdventure))
 		{
 		sAdventureTitle = pAdventure->GetName();
 		pAdventure->CreateIcon(ICON_AREA_WIDTH, cyBody, &pIcon);
+		cxIcon = pIcon->GetWidth();
 		}
 	else
 		{
 		pAdventure = NULL;
 		sAdventureTitle = strPatternSubst(CONSTLIT("Adventure %x"), Record.GetAdventureUNID());
 		pIcon = NULL;
+		cxIcon = ICON_AREA_WIDTH;
 		}
 
 	//	Start with a sequencer
 
 	CAniSequencer *pRoot = new CAniSequencer;
 	pRoot->SetPropertyVector(PROP_POSITION, CVector(0, yStart));
-
-	//	Start with a title bar
-
-	IAnimatron *pTitleBar = new CAniRoundedRect;
-	pTitleBar->SetPropertyVector(PROP_POSITION, CVector());
-	pTitleBar->SetPropertyVector(PROP_SCALE, CVector(m_cxWidth, TITLE_BAR_HEIGHT));
-	pTitleBar->SetPropertyColor(PROP_COLOR, RGB_TITLE_BAR_BACK);
-	pTitleBar->SetPropertyInteger(PROP_UL_RADIUS, 0);
-	pTitleBar->SetPropertyInteger(PROP_UR_RADIUS, FRAME_RADIUS);
-	pTitleBar->SetPropertyInteger(PROP_LL_RADIUS, 0);
-	pTitleBar->SetPropertyInteger(PROP_LR_RADIUS, 0);
-	pRoot->AddTrack(pTitleBar, 0);
 
 	//	Adventure name
 
@@ -175,14 +166,20 @@ void CReadProfileTask::CreateAdventureRecordDisplay (CAdventureRecord &Record, i
 
 	//	Create the background body
 
-	IAnimatron *pIconArea = new CAniRect;
+	IAnimatron *pIconArea = new CAniRoundedRect;
 	pIconArea->SetPropertyVector(PROP_POSITION, CVector(0, TITLE_BAR_HEIGHT));
-	pIconArea->SetPropertyVector(PROP_SCALE, CVector(ICON_AREA_WIDTH, cyBody));
-	pIconArea->SetPropertyColor(PROP_COLOR, RGB_MAIN_DARK);
+	pIconArea->SetPropertyVector(PROP_SCALE, CVector(cxIcon, cyBody));
+	pIconArea->SetPropertyColor(PROP_COLOR, RGB_MAIN_LIGHT);
+	pIconArea->SetPropertyInteger(PROP_UL_RADIUS, FRAME_RADIUS);
+	pIconArea->SetPropertyInteger(PROP_UR_RADIUS, 0);
+	pIconArea->SetPropertyInteger(PROP_LL_RADIUS, FRAME_RADIUS);
+	pIconArea->SetPropertyInteger(PROP_LR_RADIUS, 0);
+	if (pIcon)
+		pIconArea->SetFillMethod(new CAniImageFill(pIcon, true));
 	pRoot->AddTrack(pIconArea, 0);
 
 	IAnimatron *pCenterArea = new CAniRect;
-	pCenterArea->SetPropertyVector(PROP_POSITION, CVector(ICON_AREA_WIDTH, TITLE_BAR_HEIGHT));
+	pCenterArea->SetPropertyVector(PROP_POSITION, CVector(cxIcon, TITLE_BAR_HEIGHT));
 	pCenterArea->SetPropertyVector(PROP_SCALE, CVector(cxCenterArea, cyBody));
 	pCenterArea->SetPropertyColor(PROP_COLOR, RGB_MAIN_LIGHT);
 	pRoot->AddTrack(pCenterArea, 0);
@@ -192,26 +189,15 @@ void CReadProfileTask::CreateAdventureRecordDisplay (CAdventureRecord &Record, i
 	pScoreArea->SetPropertyVector(PROP_SCALE, CVector(SCORE_AREA_WIDTH, cyBody));
 	pScoreArea->SetPropertyColor(PROP_COLOR, RGB_MAIN_DARK);
 	pScoreArea->SetPropertyInteger(PROP_UL_RADIUS, 0);
-	pScoreArea->SetPropertyInteger(PROP_UR_RADIUS, 0);
+	pScoreArea->SetPropertyInteger(PROP_UR_RADIUS, FRAME_RADIUS);
 	pScoreArea->SetPropertyInteger(PROP_LL_RADIUS, 0);
 	pScoreArea->SetPropertyInteger(PROP_LR_RADIUS, FRAME_RADIUS);
 	pRoot->AddTrack(pScoreArea, 0);
 
-	//	Adventure icon
-
-	if (pIcon)
-		{
-		IAnimatron *pIconAni = new CAniRect;
-		pIconAni->SetPropertyVector(PROP_POSITION, CVector(0, TITLE_BAR_HEIGHT));
-		pIconAni->SetPropertyVector(PROP_SCALE, CVector(pIcon->GetWidth(), pIcon->GetHeight()));
-		pIconAni->SetFillMethod(new CAniImageFill(pIcon, true));
-
-		pRoot->AddTrack(pIconAni, 0);
-		}
-
 	//	Create the appropriate records
 
-	int x = ICON_AREA_WIDTH + PADDING_LEFT;
+	bool bFoundRecord = false;
+	int x = cxIcon + PADDING_LEFT;
 	int y = TITLE_BAR_HEIGHT + PADDING_TOP;
 	int iEpitaph = 0;
 	for (i = 0; i < CAdventureRecord::specialIDCount; i++)
@@ -219,6 +205,8 @@ void CReadProfileTask::CreateAdventureRecordDisplay (CAdventureRecord &Record, i
 		CGameRecord &GameRecord = Record.GetRecordAt(CAdventureRecord::specialIDFirst + i);
 		if (GameRecord.GetScore())
 			{
+			bFoundRecord = true;
+
 			//	Title of the record
 
 			IAnimatron *pRecordTitle = new CAniText;
@@ -276,6 +264,21 @@ void CReadProfileTask::CreateAdventureRecordDisplay (CAdventureRecord &Record, i
 
 			y += PADDING_TOP;
 			}
+		}
+
+	//	If we didn't find any records, then say so
+
+	if (!bFoundRecord)
+		{
+		IAnimatron *pRecordTitle = new CAniText;
+		pRecordTitle->SetPropertyVector(PROP_POSITION, CVector(x, TITLE_BAR_HEIGHT + (cyBody / 2)));
+		pRecordTitle->SetPropertyVector(PROP_SCALE, CVector(cxCenterContent, cyBody));
+		pRecordTitle->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
+		pRecordTitle->SetPropertyFont(PROP_FONT, &MediumFont);
+		pRecordTitle->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_CENTER);
+		pRecordTitle->SetPropertyString(PROP_TEXT, CONSTLIT("No games yet completed."));
+
+		pRoot->AddTrack(pRecordTitle, 0);
 		}
 
 	//	Create the high scores
