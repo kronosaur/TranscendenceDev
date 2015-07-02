@@ -1087,3 +1087,61 @@ void CG32bitImage::SetMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const
 		}
 	}
 
+void CG32bitImage::SetMask (int xSrc, int ySrc, int cxWidth, int cyHeight, const CG8bitImage &Mask, CG32bitPixel rgbColor, int xDest, int yDest)
+
+//	SetMask
+//
+//	Sets all pixels in the source mask to the given color
+
+	{
+	//	Make sure we're in bounds
+
+	if (!AdjustCoords(&xSrc, &ySrc, Mask.GetWidth(), Mask.GetHeight(),
+			&xDest, &yDest,
+			&cxWidth, &cyHeight))
+		return;
+
+	//	Compute opacity
+
+	BYTE byOpacity = rgbColor.GetAlpha();
+
+	BYTE *pSrcRow = Mask.GetPixelPos(xSrc, ySrc);
+	BYTE *pSrcRowEnd = Mask.GetPixelPos(xSrc, ySrc + cyHeight);
+	CG32bitPixel *pDestRow = GetPixelPos(xDest, yDest);
+
+	//	Fill
+
+	BYTE colorAlpha = rgbColor.GetAlpha();
+	BYTE colorRed = rgbColor.GetRed();
+	BYTE colorGreen = rgbColor.GetGreen();
+	BYTE colorBlue = rgbColor.GetBlue();
+
+	while (pSrcRow < pSrcRowEnd)
+		{
+		BYTE *pSrcPos = pSrcRow;
+		BYTE *pSrcPosEnd = pSrcRow + cxWidth;
+		CG32bitPixel *pDestPos = pDestRow;
+
+		while (pSrcPos < pSrcPosEnd)
+			{
+			BYTE byAlpha = *pSrcPos;
+
+			if (byAlpha == 0x00)
+				;
+			else if (byAlpha == 0xff)
+				*pDestPos = rgbColor;
+			else
+				{
+				BYTE *pAlpha = CG32bitPixel::AlphaTable(byAlpha);
+				*pDestPos = CG32bitPixel(pAlpha[colorRed], pAlpha[colorGreen], pAlpha[colorBlue], pAlpha[colorAlpha]);
+				}
+
+			pSrcPos++;
+			pDestPos++;
+			}
+
+		pSrcRow = Mask.NextRow(pSrcRow);
+		pDestRow = NextRow(pDestRow);
+		}
+	}
+
