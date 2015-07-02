@@ -706,7 +706,7 @@ bool CDockingPorts::ShipsNearPort (CSpaceObject *pOwner, CSpaceObject *pRequesti
 	return false;
 	}
 
-void CDockingPorts::Undock (CSpaceObject *pOwner, CSpaceObject *pObj)
+void CDockingPorts::Undock (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbWasDocked)
 
 //	Undock
 //
@@ -715,10 +715,19 @@ void CDockingPorts::Undock (CSpaceObject *pOwner, CSpaceObject *pObj)
 	{
 	int i;
 
+	if (retbWasDocked)
+		*retbWasDocked = false;
+
 	for (i = 0; i < m_iPortCount; i++)
 		if (m_pPort[i].pObj == pObj)
 			{
+			//	If we were docked (not just requesting dock) then return it.
+
+			if (retbWasDocked && m_pPort[i].iStatus == psInUse)
+				*retbWasDocked = true;
+
 			//	Unfreeze controls if we're trying to dock
+
 			if (m_pPort[i].iStatus == psDocking)
 				pObj->UnfreezeControls();
 

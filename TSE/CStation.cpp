@@ -678,6 +678,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_fNoBlacklist = false;
 	pStation->SetHasGravity(pType->HasGravity());
 	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
+	pStation->m_fDestroyIfEmpty = false;
 
 	//	We generally don't move
 
@@ -2938,6 +2939,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fBlocksShips =		((dwLoad & 0x00010000) ? true : false);
 	m_fPaintOverhang =		((dwLoad & 0x00020000) ? true : false);
 	m_fShowMapOrbit =		((dwLoad & 0x00040000) ? true : false);
+	m_fDestroyIfEmpty =		((dwLoad & 0x00080000) ? true : false);
 
 	//	Init name flags
 
@@ -3011,6 +3013,16 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	int i;
 	int iTick = GetSystem()->GetTick() + GetDestiny();
+
+	//	If we need to destroy this station, do it now
+
+	if (m_fDestroyIfEmpty 
+			&& GetItemList().GetCount() == 0
+			&& m_DockingPorts.GetPortsInUseCount(this) == 0)
+		{
+		Destroy(removedFromSystem, CDamageSource());
+		return;
+		}
 
 	//	Basic update
 
@@ -3277,6 +3289,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fBlocksShips ?			0x00010000 : 0);
 	dwSave |= (m_fPaintOverhang ?		0x00020000 : 0);
 	dwSave |= (m_fShowMapOrbit ?		0x00040000 : 0);
+	dwSave |= (m_fDestroyIfEmpty ?		0x00080000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
@@ -3917,17 +3930,17 @@ void CStation::Undock (CSpaceObject *pObj)
 //	Undocks from the station
 
 	{
-	m_DockingPorts.Undock(this, pObj);
+	bool bWasDocked;
+	m_DockingPorts.Undock(this, pObj, &bWasDocked);
 
-	//	If we're set to destroy when empty AND we're empty
-	//	AND no one else is docked, then destroy the station
+	//	If we're set to destroy when empty AND we're empty AND no one else is 
+	//	docked, then destroy the station at the next update.
 
 	if (m_pType->IsDestroyWhenEmpty() 
+			&& bWasDocked
 			&& GetItemList().GetCount() == 0
 			&& m_DockingPorts.GetPortsInUseCount(this) == 0)
-		{
-		Destroy(removedFromSystem, CDamageSource());
-		}
+		m_fDestroyIfEmpty = true;
 	}
 
 void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)

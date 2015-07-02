@@ -1536,6 +1536,8 @@ void CShipClass::CreateWreckImage (void)
 //	Creates a wreck image randomly
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	if (!m_Image.IsLoaded())
@@ -1623,6 +1625,8 @@ void CShipClass::CreateWreckImage (void)
 	rcRect.right = cxWidth;
 	rcRect.bottom = cyHeight;
 	m_WreckImage.Init(&m_WreckBitmap, rcRect, 0, 0, false);
+
+	DEBUG_CATCH
 	}
 
 void CShipClass::FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpBestMissile) const
@@ -2624,6 +2628,8 @@ void CShipClass::MarkImages (bool bMarkDevices)
 //	Marks images used by the ship
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	m_Image.MarkImage();
@@ -2650,6 +2656,8 @@ void CShipClass::MarkImages (bool bMarkDevices)
 	//	Effects
 
 	m_Effects.MarkImages();
+
+	DEBUG_CATCH
 	}
 
 void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)

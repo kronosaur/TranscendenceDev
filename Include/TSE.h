@@ -84,8 +84,6 @@
 //#define DEBUG_WEAPON_POS
 #endif
 
-#define DEBUG_INVALID_DEST
-
 //	We leave this defined because we want to get traces in the field in case
 //	of a crash.
 #define DEBUG_PROGRAMSTATE
@@ -1805,7 +1803,7 @@ class CDockingPorts
 		void ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx);
 		void RepairAll (CSpaceObject *pOwner, int iRepairRate);
 		bool RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int iPort = -1);
-		void Undock (CSpaceObject *pOwner, CSpaceObject *pObj);
+		void Undock (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbWasDocked = NULL);
 		void UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner);
 		void WriteToStream (CSpaceObject *pOwner, IWriteStream *pStream);
 

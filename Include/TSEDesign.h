@@ -2291,7 +2291,7 @@ class CDeviceClass : public CObject
 		CString GetReferencePower (CItemCtx &Ctx);
 		inline int GetSlotsRequired (void) { return m_iSlots; }
 		inline DWORD GetUNID (void);
-		inline void MarkImages (void) { OnMarkImages(); }
+		inline void MarkImages (void) { DEBUG_TRY OnMarkImages(); DEBUG_CATCH }
 
 		virtual bool AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx) { Ctx.iAbsorb = 0; return false; }
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) { return false; }

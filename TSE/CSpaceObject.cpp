@@ -6269,6 +6269,8 @@ void CSpaceObject::RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID
 //	Removes the given item enhancement
 
 	{
+	DEBUG_TRY
+
 	//	Find the item
 
 	CItemListManipulator ItemList(GetItemList());
@@ -6309,6 +6311,8 @@ void CSpaceObject::RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID
 		CItem theEnhancement(pEnhancementType, 1);
 		theEnhancement.FireOnRemovedAsEnhancement(this, ItemList.GetItemAtCursor());
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObject::RepairItem (CItemListManipulator &ItemList)

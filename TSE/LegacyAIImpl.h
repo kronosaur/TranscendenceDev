@@ -415,19 +415,12 @@ class CStandardShipAI : public CBaseShipAI
 		void ImplementTactics (TacticsSet &Tactics, CVector &vTarget, Metric rTargetDist2);
 		void SetState (StateTypes State);
 
-#ifdef DEBUG_INVALID_DEST
-		void SetDebugDest (CSpaceObject *pDest);
-#endif
-
 		//	Orders and state
 		StateTypes m_State;						//	Ship's current state
 		CSpaceObject *m_pDest;					//	Destination
 		CSpaceObject *m_pTarget;				//	Ship's target
 		Metric m_rDistance;						//	Distance
 		int m_iCountdown;						//	Timer
-#ifdef DEBUG_INVALID_DEST
-		CString m_sDest;						//	Description of m_pDest to help debug
-#endif
 
 		//	Flags
 		DWORD m_fHasEscorts:1;					//	TRUE if ship has escorts

@@ -3600,6 +3600,8 @@ void CShip::MarkImages (void)
 //	Mark images that are in use.
 	
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Mark images, but do not mark default class devices (since we mark them
@@ -3613,6 +3615,8 @@ void CShip::MarkImages (void)
 	for (i = 0; i < GetDeviceCount(); i++)
 		if (!m_Devices[i].IsEmpty())
 			m_Devices[i].GetClass()->MarkImages();
+
+	DEBUG_CATCH
 	}
 
 void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)

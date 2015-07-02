@@ -1473,7 +1473,7 @@ class CStation : public CSpaceObject
 		DWORD m_fPaintOverhang:1;				//	If TRUE, paint above player ship
 
 		DWORD m_fShowMapOrbit:1;				//	If TRUE, show orbit in map
-		DWORD m_fSpare2:1;
+		DWORD m_fDestroyIfEmpty:1;				//	If TRUE, we destroy the station as soon as it is empty
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;

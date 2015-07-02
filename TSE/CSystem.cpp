@@ -3594,6 +3594,8 @@ void CSystem::PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate)
 //	Place the object at the gate
 
 	{
+	DEBUG_TRY
+
 	ASSERT(pGate);
 
 	CShip *pShip = pObj->AsShip();
@@ -3620,6 +3622,8 @@ void CSystem::PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate)
 		}
 	else
 		pShip->SetInGate(pGate, 0);
+
+	DEBUG_CATCH
 	}
 
 void CSystem::PlayerEntered (CSpaceObject *pPlayer)
@@ -4844,7 +4848,11 @@ void CSystem::UpdateRandomEncounters (void)
 
 	//	Next encounter
 
+#ifdef DEBUG
+	m_iNextEncounter = m_iTick + 30;
+#else
 	m_iNextEncounter = m_iTick + mathRandom(6000, 9000);
+#endif
 	}
 
 void CSystem::VectorToTile (const CVector &vPos, int *retx, int *rety) const
