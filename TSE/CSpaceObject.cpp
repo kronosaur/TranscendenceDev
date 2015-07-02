@@ -5730,9 +5730,9 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 		*retcyHeight = y - yOriginal;
 	}
 
-void CSpaceObject::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CSpaceObject::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
-//	PaintLRS
+//	PaintLRSForeground
 //
 //	Paints the object on an LRS
 

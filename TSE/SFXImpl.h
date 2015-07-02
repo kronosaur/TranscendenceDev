@@ -1068,7 +1068,8 @@ class CSequencerEffect : public CSpaceObject
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	private:
 		CSequencerEffect (void);

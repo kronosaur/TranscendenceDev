@@ -2725,7 +2725,8 @@ class CSpaceObject : public CObject
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip) { }
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) { }
 		virtual void OnSystemLoaded (void) { }
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) { return false; }
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) { return PointInObject(vObjPos, vPointPos); }
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) { }

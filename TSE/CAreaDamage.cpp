@@ -350,9 +350,9 @@ void CAreaDamage::OnWriteToStream (IWriteStream *pStream)
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 	}
 
-void CAreaDamage::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CAreaDamage::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
-//	PaintLRS
+//	PaintLRSForeground
 //
 //	Paints the object on an LRS
 

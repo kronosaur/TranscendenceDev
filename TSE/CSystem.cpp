@@ -3316,6 +3316,13 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	{
 	DEBUG_TRY
 
+	struct SPaintEntry
+		{
+		CSpaceObject *pObj;
+		int x;
+		int y;
+		};
+
 	int i;
 	Metric rKlicksPerPixel = rScale;
 
@@ -3386,7 +3393,11 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 				}
 		}
 
-	//	Loop over all objects
+	//	Loop over all objects and add them to a list for painting.
+	//	(We do two passes for painting, so we need to keep the object in a 
+	//	smaller list.)
+
+	TArray<SPaintEntry> PaintList(100);
 
 	m_fEnemiesInLRS = false;
 	bool bNewEnemies = false;
@@ -3405,14 +3416,14 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 					|| ((iRange = pObj->GetDetectionRangeIndex(iPerception)) < RANGE_INDEX_COUNT
 						&& pCenter->GetDistance2(pObj) <= rMaxDist2[iRange])))
 			{
+			//	Add to the list
+
+			SPaintEntry *pEntry = PaintList.Insert();
+			pEntry->pObj = pObj;
+
 			//	Figure out the position of the object in pixels
 
-			int x, y;
-			Trans.Transform(pObj->GetPos(), &x, &y);
-
-			//	Paint the object in the viewport
-
-			pObj->PaintLRS(Dest, x, y, Trans);
+			Trans.Transform(pObj->GetPos(), &pEntry->x, &pEntry->y);
 
 			//	This object is now in the LRS
 
@@ -3436,6 +3447,20 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 			pObj->ClearPOVLRS();
 			}
+		}
+
+	//	First we paint the background part of all objects
+
+	for (i = 0; i < PaintList.GetCount(); i++)
+		{
+		PaintList[i].pObj->PaintLRSBackground(Dest, PaintList[i].x, PaintList[i].y, Trans);
+		}
+
+	//	Then we paint the foreground part
+
+	for (i = 0; i < PaintList.GetCount(); i++)
+		{
+		PaintList[i].pObj->PaintLRSForeground(Dest, PaintList[i].x, PaintList[i].y, Trans);
 		}
 
 	//	If new enemies have appeared in LRS, tell the POV
@@ -4848,11 +4873,7 @@ void CSystem::UpdateRandomEncounters (void)
 
 	//	Next encounter
 
-#ifdef DEBUG
-	m_iNextEncounter = m_iTick + 30;
-#else
 	m_iNextEncounter = m_iTick + mathRandom(6000, 9000);
-#endif
 	}
 
 void CSystem::VectorToTile (const CVector &vPos, int *retx, int *rety) const

@@ -1318,9 +1318,9 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 	}
 
-void CMissile::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CMissile::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
-//	PaintLRS
+//	PaintLRSForeground
 //
 //	Paints the object on an LRS
 

@@ -31,7 +31,7 @@ class CAreaDamage : public CSpaceObject
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds);
 		virtual void OnSystemLoaded (void);
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 
 	protected:
@@ -139,7 +139,7 @@ class CBoundaryMarker : public CSpaceObject
 		virtual CString GetObjClassName (void) { return CONSTLIT("CBoundaryMarker"); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (IWriteStream *pStream);
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 
 	private:
 		CBoundaryMarker (void);
@@ -340,7 +340,7 @@ class CMarker : public CSpaceObject
 		virtual CString GetObjClassName (void) { return CONSTLIT("CMarker"); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (IWriteStream *pStream);
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	private:
 		CMarker (void);
@@ -391,7 +391,7 @@ class CMissile : public CSpaceObject
 		virtual bool HasAttribute (const CString &sAttribute) const;
 		virtual bool IsInactive (void) const { return (m_fDestroyOnAnimationDone); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds);
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
@@ -621,7 +621,7 @@ class CParticleEffect : public CSpaceObject
 		virtual CString GetName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CString GetObjClassName (void) { return CONSTLIT("CParticleEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerSpace; }
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 
 	protected:
 
@@ -700,7 +700,7 @@ class CPOVMarker : public CSpaceObject
 		virtual CSovereign *GetSovereign (void) const;
 		virtual void OnLosePOV (void);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CPOVMarker"); }
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	private:
 		CPOVMarker (void);
@@ -1021,7 +1021,8 @@ class CShip : public CSpaceObject
 		virtual void MakeBlind (int iTickCount = -1);
 		virtual void MakeParalyzed (int iTickCount = -1);
 		virtual void MakeRadioactive (void);
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos);
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx);
@@ -1196,7 +1197,7 @@ class CStaticEffect : public CSpaceObject
 		//	CSpaceObject virtuals
 		virtual CString GetObjClassName (void) { return CONSTLIT("CStaticEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerEffects; }
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	protected:
 
@@ -1345,7 +1346,8 @@ class CStation : public CSpaceObject
 		virtual void OnPlayerObj (CSpaceObject *pPlayer);
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx);
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx);
-		virtual void PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual void PlaceAtRandomDockPort (CSpaceObject *pObj) { m_DockingPorts.DockAtRandomPort(this, pObj); }
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos);

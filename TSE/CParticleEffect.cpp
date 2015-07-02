@@ -1016,9 +1016,9 @@ void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG32bitImage 
 		}
 	}
 
-void CParticleEffect::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CParticleEffect::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
-//	PaintLRS
+//	PaintLRSForeground
 //
 //	Paints the object on an LRS
 

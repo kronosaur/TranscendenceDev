@@ -72,6 +72,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 
 const CG32bitPixel RGB_MAP_LABEL =				CG32bitPixel(255, 217, 128);
+const CG32bitPixel RGB_LRS_LABEL =				CG32bitPixel(165, 140, 83);
 
 const Metric MAX_AUTO_TARGET_DISTANCE =			(LIGHT_SECOND * 30.0);
 
@@ -5774,7 +5775,34 @@ bool CShip::OrientationChanged (void)
 	return false;
 	}
 
-void CShip::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CShip::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+
+//	PaintLRSBackground
+//
+//	Paints the object on an LRS
+
+	{
+	if (IsInactive())
+		return;
+
+	if (m_fKnown && m_pClass->HasDockingPorts())
+		{
+		if (m_sMapLabel.IsBlank())
+			{
+			DWORD dwFlags;
+			CString sName = GetName(&dwFlags);
+			m_sMapLabel = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounTitleCapitalize);
+			}
+
+		g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+				x + MAP_LABEL_X, 
+				y + MAP_LABEL_Y, 
+				RGB_LRS_LABEL,
+				m_sMapLabel);
+		}
+	}
+
+void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRS
 //

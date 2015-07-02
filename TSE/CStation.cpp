@@ -70,6 +70,7 @@ const Metric MAX_ATTACK_DISTANCE2 =				MAX_ATTACK_DISTANCE * MAX_ATTACK_DISTANCE
 const CG32bitPixel RGB_SIGN_COLOR =		CG32bitPixel(196, 223, 155);
 const CG32bitPixel RGB_ORBIT_LINE =		CG32bitPixel(115, 149, 229);
 const CG32bitPixel RGB_MAP_LABEL =		CG32bitPixel(255, 217, 128);
+const CG32bitPixel RGB_LRS_LABEL =		CG32bitPixel(165, 140, 83);
 
 static CObjectClass<CStation>g_Class(OBJID_CSTATION);
 
@@ -3293,9 +3294,58 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
-void CStation::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
-//	PaintLRS
+//	PaintLRSBackground
+//
+//	Paints the object on an LRS
+
+	{
+	if (m_pType->IsVirtual())
+		return;
+
+	//	Paint worlds and stars fully (and always in the background)
+
+	if (m_Scale == scaleWorld || m_Scale == scaleStar)
+		{
+		if (m_MapImage.IsEmpty())
+			CreateMapImage();
+
+		Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
+				m_MapImage,
+				x - (m_MapImage.GetWidth() / 2),
+				y - (m_MapImage.GetHeight() / 2));
+		}
+
+	//	Other kinds of stations are just dots
+
+	else
+		{
+		//	Paint the label in the background
+
+		if (m_fKnown 
+				&& m_pType->ShowsMapIcon() 
+				&& !m_fNoMapLabel)
+			{
+			if (m_sMapLabel.IsBlank())
+				{
+				DWORD dwFlags;
+				CString sName = GetName(&dwFlags);
+				m_sMapLabel = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounTitleCapitalize);
+				}
+
+			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+					x + m_xMapLabel, 
+					y + m_yMapLabel, 
+					RGB_LRS_LABEL,
+					m_sMapLabel);
+			}
+		}
+	}
+
+void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
+
+//	PaintLRSForeground
 //
 //	Paints the object on an LRS
 
@@ -3307,18 +3357,10 @@ void CStation::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransfo
 
 	SetKnown();
 
-	//	Paint worlds and stars fully
+	//	We've already painted these, but paint annotations on top
 
 	if (m_Scale == scaleWorld || m_Scale == scaleStar)
 		{
-		if (m_MapImage.IsEmpty())
-			CreateMapImage();
-
-		Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
-				m_MapImage,
-				x - (m_MapImage.GetWidth() / 2),
-				y - (m_MapImage.GetHeight() / 2));
-
 		m_Overlays.PaintLRSAnnotations(Trans, Dest, x, y);
 		}
 
@@ -3357,26 +3399,6 @@ void CStation::PaintLRS (CG32bitImage &Dest, int x, int y, const ViewportTransfo
 				Dest.DrawDot(x, y, 
 						rgbColor, 
 						markerTinyCircle);
-			}
-
-		//	Paint the label
-
-		if (m_fKnown 
-				&& m_pType->ShowsMapIcon() 
-				&& !m_fNoMapLabel)
-			{
-			if (m_sMapLabel.IsBlank())
-				{
-				DWORD dwFlags;
-				CString sName = GetName(&dwFlags);
-				m_sMapLabel = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounTitleCapitalize);
-				}
-
-			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
-					x + m_xMapLabel, 
-					y + m_yMapLabel, 
-					RGB_MAP_LABEL,
-					m_sMapLabel);
 			}
 		}
 	}
