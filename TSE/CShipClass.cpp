@@ -127,6 +127,7 @@
 #define FIELD_MAX_CARGO_SPACE					CONSTLIT("maxCargoSpace")
 #define FIELD_MAX_ROTATION						CONSTLIT("maxRotation")
 #define FIELD_MAX_SPEED							CONSTLIT("maxSpeed")
+#define FIELD_MAX_STRUCTURAL_HP					CONSTLIT("maxStructuralHP")
 #define FIELD_NAME								CONSTLIT("name")
 #define FIELD_PLAYER_DESC						CONSTLIT("playerDesc")
 #define FIELD_PRIMARY_ARMOR						CONSTLIT("primaryArmor")
@@ -1732,6 +1733,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		GetDriveDesc(&Desc);
 		*retsValue = strFromInt((int)((100.0 * Desc.rMaxSpeed / LIGHT_SPEED) + 0.5));
 		}
+	else if (strEquals(sField, FIELD_MAX_STRUCTURAL_HP))
+		*retsValue = strFromInt(m_Interior.GetHitPoints());
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = GetNounPhrase(0x00);
 	else if (strEquals(sField, FIELD_PLAYER_DESC))
