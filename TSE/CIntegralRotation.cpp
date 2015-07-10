@@ -282,8 +282,9 @@ void CIntegralRotation::UpdateAccel (const CIntegralRotationDesc &Desc, Metric r
 
 	if (rHullMass == 0.0)
 		{
-		m_iMaxRotationRate = Desc.GetMaxRotationSpeed();
 		m_iRotationAccel = Desc.GetRotationAccel();
+		m_iRotationAccelStop = Desc.GetRotationAccelStop();
+		m_iMaxRotationRate = Desc.GetMaxRotationSpeed();
 		}
 
 	//	Otherwise we compute based on the mass
@@ -296,8 +297,9 @@ void CIntegralRotation::UpdateAccel (const CIntegralRotationDesc &Desc, Metric r
 
 		if (rExtraMass <= 0.0)
 			{
-			m_iMaxRotationRate = Desc.GetMaxRotationSpeed();
 			m_iRotationAccel = Desc.GetRotationAccel();
+			m_iRotationAccelStop = Desc.GetRotationAccelStop();
+			m_iMaxRotationRate = Desc.GetMaxRotationSpeed();
 			return;
 			}
 
