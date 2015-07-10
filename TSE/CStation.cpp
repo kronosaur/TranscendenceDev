@@ -991,8 +991,6 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, int iCou
 //	Creates all the ships that are registered at this station
 
 	{
-	int i;
-
 	SShipCreateCtx Ctx;
 
 	Ctx.pSystem = GetSystem();
@@ -1000,11 +998,12 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, int iCou
 	Ctx.vPos = GetPos();
 	//	1d8+1 light-second spread
 	Ctx.PosSpread = DiceRange(8, 1, 1);
-	Ctx.dwFlags = SShipCreateCtx::SHIPS_FOR_STATION;
+	Ctx.dwFlags = SShipCreateCtx::SHIPS_FOR_STATION | SShipCreateCtx::RETURN_RESULT;
 
-	//	Create the ships
+	//	Create the ships until we've gotten all we need
 
-	for (i = 0; i < iCount; i++)
+	int iMaxLoops = iCount;
+	while (iMaxLoops-- > 0 && Ctx.Result.GetCount() < iCount)
 		pShipGenerator->CreateShips(Ctx);
 	}
 
