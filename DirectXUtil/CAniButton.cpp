@@ -271,7 +271,7 @@ void CAniButton::Paint (SAniPaintCtx &Ctx)
 		iStyle = styleDisabled;
 	else if (m_bHover)
 		iStyle = styleHover;
-	else if (m_bDown)
+	else if (m_bHover && m_bDown)
 		iStyle = styleDown;
 	else
 		iStyle = styleNormal;

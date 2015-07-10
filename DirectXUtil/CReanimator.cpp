@@ -311,6 +311,14 @@ bool CReanimator::HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retb
 	IAnimatron *pHit = HitTest(x, y);
 	if (pHit)
 		{
+		//	If we haven't sent a MouseEnter event, then do it now.
+
+		if (pHit && pHit != m_pHover)
+			{
+			m_pHover = pHit;
+			m_pHover->HandleMouseEnter();
+			}
+
 		bool bFocus;
 		pHit->HandleLButtonDblClick(x, y, dwFlags, retbCapture, &bFocus);
 		if (*retbCapture)
@@ -335,6 +343,14 @@ bool CReanimator::HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapt
 	IAnimatron *pHit = HitTest(x, y);
 	if (pHit)
 		{
+		//	If we haven't sent a MouseEnter event, then do it now.
+
+		if (pHit && pHit != m_pHover)
+			{
+			m_pHover = pHit;
+			m_pHover->HandleMouseEnter();
+			}
+
 		bool bFocus;
 		pHit->HandleLButtonDown(x, y, dwFlags, retbCapture, &bFocus);
 		if (*retbCapture)
