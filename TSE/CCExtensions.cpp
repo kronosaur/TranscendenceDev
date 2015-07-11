@@ -8108,7 +8108,6 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
 			if (!ItemList.SetCursorAtItem(Item))
 				{
-				pArgs->Discard(pCC);
 				if (pCtx->GetAPIVersion() >= 18)
 					return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
 				else
