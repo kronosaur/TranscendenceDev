@@ -44,7 +44,10 @@ CCons *CConsPool::CreateCons (void)
 		{
 		m_pBackbone = new CCons *[BACKBONE_SIZE];
 		if (m_pBackbone == NULL)
+			{
+			::kernelDebugLogMessage("CCodeChain: Out of memory creating CConsPool backbone.");
 			return NULL;
+			}
 
 		m_iBackboneSize = 0;
 		}
@@ -57,11 +60,17 @@ CCons *CConsPool::CreateCons (void)
 		CCons *pSegment;
 
 		if (m_iBackboneSize == BACKBONE_SIZE)
+			{
+			::kernelDebugLogMessage("CCodeChain: CConsPool backbone filled up.");
 			return NULL;
+			}
 
 		pSegment = new CCons[SEGMENT_SIZE];
 		if (pSegment == NULL)
+			{
+			::kernelDebugLogMessage("CCodeChain: Out of memory creating CConsPool segment.");
 			return NULL;
+			}
 
 		m_pBackbone[m_iBackboneSize] = pSegment;
 		m_iBackboneSize++;

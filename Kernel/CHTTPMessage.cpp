@@ -96,7 +96,10 @@ ALERROR CHTTPMessage::InitFromStream (IReadStream &Stream, CString *retsError, b
 	//	Parse and interpret the start line
 
 	if (!ParseHTTPStartLine(Stream, retsError))
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to read HTTP status list");
 		return ERR_FAIL;
+		}
 
 	//	Parse the headers
 
@@ -104,7 +107,10 @@ ALERROR CHTTPMessage::InitFromStream (IReadStream &Stream, CString *retsError, b
 	do
 		{
 		if (!ReadLine(Stream, &sHeaderLine))
+			{
+			if (retsError) *retsError = CONSTLIT("Unable to read HTTP header");
 			return ERR_FAIL;
+			}
 
 		if (!sHeaderLine.IsBlank())
 			{
@@ -122,7 +128,10 @@ ALERROR CHTTPMessage::InitFromStream (IReadStream &Stream, CString *retsError, b
 			else
 				{
 				if (!ParseHTTPHeader(sHeaderLine, retsError))
+					{
+					if (retsError) *retsError = CONSTLIT("Unable to parse HTTP header");
 					return ERR_FAIL;
+					}
 				}
 			}
 		}
@@ -161,7 +170,10 @@ ALERROR CHTTPMessage::InitFromStream (IReadStream &Stream, CString *retsError, b
 		do
 			{
 			if (!ReadLine(Stream, &sChunkLen))
+				{
+				if (retsError) *retsError = CONSTLIT("Unable to read chunk line");
 				return ERR_FAIL;
+				}
 
 			DWORD dwChunkLen = strParseIntOfBase(sChunkLen.GetASCIIZPointer(), 16, 0);
 			if (dwChunkLen)
@@ -170,12 +182,14 @@ ALERROR CHTTPMessage::InitFromStream (IReadStream &Stream, CString *retsError, b
 				if (Stream.Read(pBuffer, dwChunkLen) != NOERROR)
 					{
 					delete [] pBuffer;
+					if (retsError) *retsError = CONSTLIT("Unable to read chunk");
 					return ERR_FAIL;
 					}
 
 				if (Body.Write(pBuffer, dwChunkLen) != NOERROR)
 					{
 					delete [] pBuffer;
+					if (retsError) *retsError = CONSTLIT("Out of memory");
 					return ERR_MEMORY;
 					}
 
@@ -185,7 +199,10 @@ ALERROR CHTTPMessage::InitFromStream (IReadStream &Stream, CString *retsError, b
 
 				CString sCRLF;
 				if (!ReadLine(Stream, &sCRLF))
+					{
+					if (retsError) *retsError = CONSTLIT("Unable to read chunk terminator");
 					return ERR_FAIL;
+					}
 				}
 			}
 		while (!sChunkLen.IsBlank());
@@ -208,7 +225,10 @@ ALERROR CHTTPMessage::InitFromStream (IReadStream &Stream, CString *retsError, b
 		CString sBody;
 		char *pPos = sBody.GetWritePointer(dwLength);
 		if (Stream.Read(pPos, dwLength) != NOERROR)
+			{
+			if (retsError) *retsError = CONSTLIT("Unable to read message body");
 			return ERR_FAIL;
+			}
 
 		CString sMediaType;
 		if (!FindHeader(CONSTLIT("Content-Type"), &sMediaType))

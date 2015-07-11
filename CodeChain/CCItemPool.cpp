@@ -58,7 +58,10 @@ template <class ItemClass> ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChai
 		{
 		m_pBackbone = new ItemClass *[BACKBONE_SIZE];
 		if (m_pBackbone == NULL)
+			{
+			::kernelDebugLogMessage("CCodeChain: Out of memory creating item.");
 			return pCC->CreateMemoryError();
+			}
 
 		m_iBackboneSize = 0;
 		}
@@ -71,11 +74,17 @@ template <class ItemClass> ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChai
 		ItemClass *pSegment;
 
 		if (m_iBackboneSize == BACKBONE_SIZE)
+			{
+			::kernelDebugLogMessage("CCodeChain: Backbone filled up.");
 			return pCC->CreateMemoryError();
+			}
 
 		pSegment = new ItemClass[SEGMENT_SIZE];
 		if (pSegment == NULL)
+			{
+			::kernelDebugLogMessage("CCodeChain: Out of memory creating segment.");
 			return pCC->CreateMemoryError();
+			}
 
 		m_pBackbone[m_iBackboneSize] = pSegment;
 		m_iBackboneSize++;
