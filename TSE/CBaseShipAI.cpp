@@ -472,7 +472,8 @@ CString CBaseShipAI::DebugCrashInfo (void)
 	if (m_pOrderModule)
 		{
 		CString sResult = OnDebugCrashInfo();
-		sResult.Append(m_pOrderModule->DebugCrashInfo());
+		sResult.Append(m_pOrderModule->DebugCrashInfo(m_pShip));
+		sResult.Append(strPatternSubst(CONSTLIT("m_pNavPath: %s\r\n"), CNavigationPath::DebugDescribe(m_pShip, m_AICtx.GetNavPath())));
 		return sResult;
 		}
 

@@ -1047,6 +1047,8 @@ void CAIBehaviorCtx::ImplementDocking (CShip *pShip, CSpaceObject *pTarget)
 //	Docks with target
 
 	{
+	DEBUG_TRY
+
 	CVector vTarget = pTarget->GetPos() - pShip->GetPos();
 	Metric rTargetDist2 = vTarget.Dot(vTarget);
 
@@ -1067,6 +1069,8 @@ void CAIBehaviorCtx::ImplementDocking (CShip *pShip, CSpaceObject *pTarget)
 		if (pTarget->RequestDock(pShip))
 			SetDockingRequested(true);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAIBehaviorCtx::ImplementEscort (CShip *pShip, CSpaceObject *pBase, CSpaceObject **iopTarget)
@@ -1444,6 +1448,8 @@ void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestinati
 //	Ship follows nav path to its destination
 
 	{
+	DEBUG_TRY
+
 	//	Figure out our next point along the path
 
 	CVector vTarget = m_pNavPath->GetNavPoint(m_iNavPathPos) - pShip->GetPos();
@@ -1494,6 +1500,8 @@ void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestinati
 
 	if (retbAtDestination)
 		*retbAtDestination = false;
+
+	DEBUG_CATCH
 	}
 
 void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing, bool *retbInFormation)
@@ -1505,6 +1513,8 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 //	NOTE: iDestFacing must be aligned to one of the ship's rotation angles
 
 	{
+	DEBUG_TRY
+
 	//	Compute our formation parameters
 
 	CVector vDeltaV;
@@ -1547,6 +1557,8 @@ void CAIBehaviorCtx::ImplementFormationManeuver (CShip *pShip, const CVector vDe
 		*retbInFormation = ((rDeltaPos2 < MAX_IN_FORMATION_DELTA2)
 				&& (rDeltaV2 < MAX_DELTA_VEL2)
 				&& pShip->IsPointingTo(iDestFacing));
+
+	DEBUG_CATCH
 	}
 
 void CAIBehaviorCtx::ImplementGating (CShip *pShip, CSpaceObject *pTarget)
@@ -1556,6 +1568,8 @@ void CAIBehaviorCtx::ImplementGating (CShip *pShip, CSpaceObject *pTarget)
 //	Implementing gating out
 
 	{
+	DEBUG_TRY
+
 	ASSERT(pTarget);
 	CVector vTarget = pTarget->GetPos() - pShip->GetPos();
 	Metric rTargetDist2 = vTarget.Dot(vTarget);
@@ -1569,6 +1583,8 @@ void CAIBehaviorCtx::ImplementGating (CShip *pShip, CSpaceObject *pTarget)
 		}
 	else
 		ImplementCloseOnImmobileTarget(pShip, pTarget, vTarget, rTargetDist2, pShip->GetMaxSpeed());
+
+	DEBUG_CATCH
 	}
 
 void CAIBehaviorCtx::ImplementHold (CShip *pShip, bool *retbInPlace)

@@ -224,7 +224,7 @@ class IOrderModule
 		inline void BehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { OnBehaviorStart(pShip, Ctx, pOrderTarget, Data); }
 		DWORD Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
 		static IOrderModule *Create (IShipController::OrderTypes iOrder);
-		CString DebugCrashInfo (void);
+		CString DebugCrashInfo (CShip *pShip);
 		inline CSpaceObject *GetBase (void) { return OnGetBase(); }
 		inline IShipController::OrderTypes GetOrder (void) { return OnGetOrder(); }
 		inline CSpaceObject *GetTarget (void) { return OnGetTarget(); }

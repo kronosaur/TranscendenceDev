@@ -2873,6 +2873,8 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest
 //	Paints a directional indicator
 
 	{
+	DEBUG_TRY
+
 	CVector vPos;
 
 	//	Figure out the bearing for the destination object.
@@ -2901,6 +2903,8 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest
 		}
 
 	pObj->PaintHighlightText(Dest, xText, yText, Ctx, (AlignmentStyles)iAlign, rgbColor);
+
+	DEBUG_CATCH
 	}
 
 void CSystem::PaintViewport (CG32bitImage &Dest, 
@@ -2913,6 +2917,8 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 //	Paints the system in the viewport
 
 	{
+	DEBUG_TRY
+
 	int i;
 	int iLayer;
 
@@ -3197,6 +3203,8 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Done
 
 	Dest.ResetClipRect();
+
+	DEBUG_CATCH
 	}
 
 void CSystem::PaintViewportGrid (CMapViewportCtx &Ctx, CG32bitImage &Dest, Metric rGridSize)

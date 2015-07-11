@@ -153,7 +153,7 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 	DEBUG_CATCH
 	}
 
-CString IOrderModule::DebugCrashInfo (void)
+CString IOrderModule::DebugCrashInfo (CShip *pShip)
 
 //	DebugCrashInfo
 //
@@ -165,6 +165,7 @@ CString IOrderModule::DebugCrashInfo (void)
 	CString sResult;
 
 	sResult.Append(CONSTLIT("IOrderModule\r\n"));
+	sResult.Append(strPatternSubst(CONSTLIT("Order: %d\r\n"), (int)pShip->GetCurrentOrder()));
 
 	for (i = 0; i < m_iObjCount; i++)
 		sResult.Append(strPatternSubst(CONSTLIT("m_Objs[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_Objs[i])));
