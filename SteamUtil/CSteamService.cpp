@@ -58,7 +58,7 @@ SSteamEntryCreate AVAILABLE_EXTENSIONS[] =
 			},
 
 		{	0x00830000,		364510,
-			"Human Space HD", extExtension, CMultiverseCatalogEntry::licenseSteam,
+			"The Stars of the Pilgrim HD", extExtension, CMultiverseCatalogEntry::licenseSteam,
 
 			"This extension adds full rotation frames for all large ships encountered in Human Space."
 			},
