@@ -3485,6 +3485,7 @@ class CUniverse : public CObject
 		inline CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
 		void GetRandomLevelEncounter (int iLevel, CDesignType **retpType, IShipGenerator **retpTable, CSovereign **retpBaseSovereign);
 		inline CString GetResourceDb (void) { return m_sResourceDb; }
+		inline CCriticalSection &GetSem (void) { return m_cs; }
 		inline CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const;
 		inline CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
@@ -3593,11 +3594,11 @@ class CUniverse : public CObject
 		inline CTopologyNode *GetTopologyNode (int iIndex) { return m_Topology.GetTopologyNode(iIndex); }
 		inline int GetTopologyNodeCount (void) { return m_Topology.GetTopologyNodeCount(); }
 
+		void PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
+		void PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		void PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags);
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
 		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale);
-		void PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
-		void PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		inline void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
 		void Update (SSystemUpdateCtx &Ctx);
 		void UpdateExtended (void);
