@@ -887,7 +887,6 @@ class CObjectImage : public CDesignType
 		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
 		CG32bitImage *GetHitMask (void);
 		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL);
-		CG32bitImage *GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL);
 		inline CString GetImageFilename (void) { return m_sBitmap; }
 		CG32bitImage *GetShadowMask (void);
 		inline bool HasAlpha (void) { return (m_pBitmap ? (m_pBitmap->GetAlphaType() == CG32bitImage::alpha8) : false); }
@@ -909,6 +908,7 @@ class CObjectImage : public CDesignType
 		virtual void OnUnbindDesign (void);
 
 	private:
+		CG32bitImage *LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL);
 		bool LoadMask(const CString &sFilespec, CG32bitImage **retpImage);
 
 		CString m_sResourceDb;			//	Resource db
@@ -925,6 +925,7 @@ class CObjectImage : public CDesignType
 		CG32bitImage *m_pShadowMask;	//	NULL if not loaded
 		bool m_bMarked;					//	Marked
 		bool m_bLocked;					//	Image is never unloaded
+		bool m_bLoadError;				//	If TRUE, load failed
 	};
 
 class CObjectImageArray : public CObject

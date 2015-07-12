@@ -19,7 +19,8 @@
 CObjectImage::CObjectImage (void) : 
 		m_pBitmap(NULL),
 		m_pHitMask(NULL),
-		m_pShadowMask(NULL)
+		m_pShadowMask(NULL),
+		m_bLoadError(false)
 
 //	CObjectImage constructor
 
@@ -34,7 +35,8 @@ CObjectImage::CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap, CG32bitImag
 		m_bLoadOnUse(false),
 		m_bFreeBitmap(bFreeBitmap),
 		m_bMarked(false),
-		m_bLocked(true)
+		m_bLocked(true),
+		m_bLoadError(false)
 
 //	CObjectImage constructor
 
@@ -188,13 +190,42 @@ CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsE
 		if (m_pBitmap)
 			return m_pBitmap;
 
+		//	If we have a load error, then don't bother trying again (otherwise we'll 
+		//	constantly be opening files).
+
+		if (m_bLoadError)
+			return NULL;
+
 		//	Open the database
 
 		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
 		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, retsError) != NOERROR)
+			{
+			::kernelDebugLogMessage("Unable to open resource db: %s", m_sResourceDb);
+			m_bLoadError = true;
 			return NULL;
+			}
 
-		return GetImage(ResDb, sLoadReason, retsError);
+		//	Load the image
+
+		CString sError;
+		m_pBitmap = LoadImageFromDb(ResDb, sLoadReason, &sError);
+		if (m_pBitmap == NULL)
+			{
+			::kernelDebugLogMessage(sError);
+			m_bLoadError = true;
+			if (retsError) *retsError = sError;
+			return NULL;
+			}
+
+		//	We need to free the bitmap
+
+		m_bFreeBitmap = true;
+		m_bLoadError = false;
+
+		//	Done
+
+		return m_pBitmap;
 		}
 	catch (...)
 		{
@@ -205,7 +236,32 @@ CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsE
 		}
 	}
 
-CG32bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError)
+CG32bitImage *CObjectImage::GetShadowMask (void)
+
+//	GetShadowMask
+//
+//	Returns the shadow mask image, if we have one. Otherwise, we return NULL.
+
+	{
+	//	If we have the image, we're done
+
+	if (m_pShadowMask)
+		return m_pShadowMask;
+
+	//	If no shadow mask, nothing to do
+
+	if (m_sShadowMask.IsBlank())
+		return NULL;
+
+	//	Otherwise, load it
+
+	if (!LoadMask(m_sShadowMask, &m_pShadowMask))
+		return NULL;
+
+	return m_pShadowMask;
+	}
+
+CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError)
 
 //	GetImage
 //
@@ -213,11 +269,6 @@ CG32bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 
 	{
 	ALERROR error;
-
-	//	If we have the image, we're done
-
-	if (m_pBitmap)
-		return m_pBitmap;
 
 	//	If necessary we log that we had to load an image (we generally do this
 	//	to debug issues with loading images in the middle of play).
@@ -252,15 +303,15 @@ CG32bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 
 	//	Create a new CG32BitImage
 
-	m_pBitmap = new CG32bitImage;
-	if (m_pBitmap == NULL)
+	CG32bitImage *pBitmap = new CG32bitImage;
+	if (pBitmap == NULL)
 		{
 		if (retsError)
 			*retsError = CONSTLIT("Out of memory");
 		return NULL;
 		}
 
-	bool bSuccess = m_pBitmap->CreateFromBitmap(hDIB, hBitmask, iMaskType, (m_bPreMult ? CG32bitImage::FLAG_PRE_MULT_ALPHA : 0));
+	bool bSuccess = pBitmap->CreateFromBitmap(hDIB, hBitmask, iMaskType, (m_bPreMult ? CG32bitImage::FLAG_PRE_MULT_ALPHA : 0));
 
 	//	We don't need these bitmaps anymore
 
@@ -280,40 +331,13 @@ CG32bitImage *CObjectImage::GetImage (CResourceDb &ResDb, const CString &sLoadRe
 
 	if (!bSuccess)
 		{
-		delete m_pBitmap;
-		m_pBitmap = NULL;
+		delete pBitmap;
 		if (retsError)
 			*retsError = strPatternSubst(CONSTLIT("Unable to create bitmap from image: '%s'"), m_sBitmap);
 		return NULL;
 		}
 
-	m_bFreeBitmap = true;
-	return m_pBitmap;
-	}
-
-CG32bitImage *CObjectImage::GetShadowMask (void)
-
-//	GetShadowMask
-//
-//	Returns the shadow mask image, if we have one. Otherwise, we return NULL.
-
-	{
-	//	If we have the image, we're done
-
-	if (m_pShadowMask)
-		return m_pShadowMask;
-
-	//	If no shadow mask, nothing to do
-
-	if (m_sShadowMask.IsBlank())
-		return NULL;
-
-	//	Otherwise, load it
-
-	if (!LoadMask(m_sShadowMask, &m_pShadowMask))
-		return NULL;
-
-	return m_pShadowMask;
+	return pBitmap;
 	}
 
 bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
