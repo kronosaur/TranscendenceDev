@@ -10,19 +10,27 @@
 class CExtensionListMap
 	{
 	public:
-		void GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const;
-		void SetList (DWORD dwAdventure, bool bDebugMode, const TArray<DWORD> &List);
+		void GetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, TArray<DWORD> *retList) const;
+		void SetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, const TArray<DWORD> &List);
 		ALERROR ReadFromXML (CXMLElement *pDesc);
 		ALERROR WriteAsXML (IWriteStream *pOutput);
 
 	private:
 		struct SEntry
 			{
-			TArray<DWORD> List;
-			TArray<DWORD> DebugList;
+			SEntry (void) :
+					m_bDisabledIfNotInList(false),
+					m_bDisabledIfNotInDebugList(false)
+				{ }
+
+			TSortMap<DWORD, bool> List;			//	State (enabled/disabled) for each extension
+			TSortMap<DWORD, bool> DebugList;	//	State for each extension when in debug mode
+			bool m_bDisabledIfNotInList;		//	If TRUE, extensions not in list should be disabled
+			bool m_bDisabledIfNotInDebugList;	//	If TRUE, extensions not in debug list should be disabled
 			};
 
-		ALERROR WriteList (IWriteStream *pOutput, DWORD dwAdventure, bool bDebugMode, const TArray<DWORD> &List);
+		ALERROR ReadList (const CString &sList, bool bEnabled, TSortMap<DWORD, bool> *retpList, bool *retbDisabledIfNotInList = NULL);
+		ALERROR WriteList (IWriteStream *pOutput, DWORD dwAdventure, bool bDebugMode, const TSortMap<DWORD, bool> &List, bool bDisabledIfNotInList = false);
 
 		TSortMap<DWORD, SEntry> m_Map;
 	};
