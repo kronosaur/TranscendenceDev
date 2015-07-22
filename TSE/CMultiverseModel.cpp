@@ -193,8 +193,9 @@ CMultiverseNewsEntry *CMultiverseModel::GetNextNewsEntry (void)
 	CSmartLock Lock(m_cs);
 	int i;
 
-	//	Loop over all entries in order
+	//	First make a list of all available news entries
 
+	TArray<CMultiverseNewsEntry *> Available;
 	for (i = 0; i < m_News.GetCount(); i++)
 		{
 		CMultiverseNewsEntry *pEntry = m_News.GetEntry(i);
@@ -212,16 +213,25 @@ CMultiverseNewsEntry *CMultiverseModel::GetNextNewsEntry (void)
 		if (!m_Collection.HasAllUNIDs(pEntry->GetRequiredUNIDs()))
 			continue;
 
-		//	Mark the entry as having been shown
-
-		m_News.ShowNews(pEntry);
-
-		//	return this entry
-
-		return new CMultiverseNewsEntry(*pEntry);
+		Available.Insert(pEntry);
 		}
-	
-	return NULL;
+
+	//	If none available, nothing
+
+	if (Available.GetCount() == 0)
+		return NULL;
+
+	//	Pick a random entry
+
+	CMultiverseNewsEntry *pEntry = Available[mathRandom(0, Available.GetCount() - 1)];
+
+	//	Mark the entry as having been shown
+
+	m_News.ShowNews(pEntry);
+
+	//	return this entry
+
+	return new CMultiverseNewsEntry(*pEntry);
 	}
 
 CMultiverseModel::EOnlineStates CMultiverseModel::GetOnlineState (CString *retsUsername, CString *retsDesc) const
