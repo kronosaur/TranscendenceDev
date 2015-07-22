@@ -8,9 +8,11 @@
 #include "DirectXUtil.h"
 
 const int EXCLUSIVE_BACK_BUFFERS = 2;
+const int MAX_SCREEN_HEIGHT = 1080;
 
 CScreenMgr::CScreenMgr (void) :
 		m_hWnd(NULL),
+		m_rScale(1.0),
 		m_pDD(NULL),
 		m_pPrimary(NULL),
 		m_PrimaryType(stUnknown),
@@ -267,6 +269,12 @@ void CScreenMgr::ClientToScreen (int x, int y, int *retx, int *rety)
 //	Converts from window client coordinates to screen manager coordinates
 
 	{
+	if (m_rScale != 1.0)
+		{
+		x = (int)(x * m_rScale);
+		y = (int)(y * m_rScale);
+		}
+
 	if (m_pDD && m_bWindowedMode)
 		{
 		RECT rcClient;
@@ -403,6 +411,19 @@ ALERROR CScreenMgr::Init (SScreenMgrOptions &Options, CString *retsError)
 	m_iColorDepth = Options.m_iColorDepth;
 	m_bMinimized = false;
 	m_bDebugVideo = Options.m_bDebugVideo;
+
+	//	If the screen is bigger than 1920 x 1080, we scale everything
+	//	(because the game is not really well-suited to super high-res.)
+
+	if (m_cyScreen > MAX_SCREEN_HEIGHT)
+		{
+		m_rScale = (Metric)MAX_SCREEN_HEIGHT / m_cyScreen;
+
+		m_cxScreen = (int)((m_rScale * m_cxScreen) + 0.5);
+		m_cyScreen = MAX_SCREEN_HEIGHT;
+		}
+	else
+		m_rScale = 1.0;
 
 	m_rcScreen.left = 0;
 	m_rcScreen.right = m_cxScreen;
@@ -792,6 +813,12 @@ void CScreenMgr::ScreenToClient (int x, int y, int *retx, int *rety)
 //	Converts from screen manager coordinates to client coordinate
 
 	{
+	if (m_rScale != 1.0)
+		{
+		x = (int)(x / m_rScale);
+		y = (int)(y / m_rScale);
+		}
+
 	if (m_pDD && m_bWindowedMode)
 		{
 		RECT rcClient;

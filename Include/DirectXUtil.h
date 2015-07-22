@@ -237,8 +237,10 @@ class CScreenMgr
 		void CleanUp (void);
 		void ClientToScreen (int x, int y, int *retx, int *rety);
 		inline void Flip (void) { if (m_bExclusiveMode && m_pDD) FlipInt(); }
+		inline int GetHeight (void) const { return m_cyScreen; }
 		inline bool GetInvalidRect (RECT *retrcRect) { *retrcRect = m_rcInvalid; return (::IsRectEmpty(&m_rcInvalid) != TRUE); }
 		inline CG32bitImage &GetScreen (void) { return m_Screen; }
+		inline int GetWidth (void) const { return m_cxScreen; }
 		void GlobalToLocal (int x, int y, int *retx, int *rety);
 		ALERROR Init (SScreenMgrOptions &Options, CString *retsError);
 		void Invalidate (void) { SetInvalidAll(&m_rcInvalid); SetInvalidAll(&m_rcInvalidSecondary); }
@@ -275,6 +277,7 @@ class CScreenMgr
 		RECT m_rcInvalid;				//	Current invalid area (relative to m_Screen)
 		RECT m_rcInvalidSecondary;		//	Invalid area of secondary screen
 
+		Metric m_rScale;				//	Downsample resolution for super hi-res screens (1.0 = normal)
 		RECT m_rcScreen;				//	RECT of screen area relative to window client coordinates
 		int m_cxScreen;					//	Width of screen area in pixels (if windowed, this is client area)
 		int m_cyScreen;					//	Height of screen area in pixels
