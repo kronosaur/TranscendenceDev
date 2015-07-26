@@ -625,49 +625,56 @@ bool CSoundMgr::PlayMusic (const CString &sFilename, int iPos, CString *retsErro
 //	Starts playing the given MP3 file
 
 	{
-	if (m_hMusic == NULL)
-		return false;
-
-	//	Figure out our current state
-
-	SMusicPlayState State;
-	GetMusicPlayState(&State);
-
-	//	If we're not already playing this file, open it
-
-	if (!strEquals(sFilename, State.sFilename))
+	try
 		{
-		//	Stop playing first
-
-		if (State.bPlaying || State.bPaused)
-			MCIWndStop(m_hMusic);
-
-		//	Open new file
-
-		if (MCIWndOpen(m_hMusic, sFilename.GetASCIIZPointer(), MCI_OPEN_SHAREABLE) != 0)
-			{
-			if (retsError)
-				{
-				char *pDest = retsError->GetWritePointer(1024);
-				MCIWndGetError(m_hMusic, pDest, retsError->GetLength());
-				retsError->Truncate(lstrlen(pDest));
-				}
+		if (m_hMusic == NULL)
 			return false;
+
+		//	Figure out our current state
+
+		SMusicPlayState State;
+		GetMusicPlayState(&State);
+
+		//	If we're not already playing this file, open it
+
+		if (!strEquals(sFilename, State.sFilename))
+			{
+			//	Stop playing first
+
+			if (State.bPlaying || State.bPaused)
+				MCIWndStop(m_hMusic);
+
+			//	Open new file
+
+			if (MCIWndOpen(m_hMusic, sFilename.GetASCIIZPointer(), MCI_OPEN_SHAREABLE) != 0)
+				{
+				if (retsError)
+					{
+					char *pDest = retsError->GetWritePointer(1024);
+					MCIWndGetError(m_hMusic, pDest, retsError->GetLength());
+					retsError->Truncate(lstrlen(pDest));
+					}
+				return false;
+				}
 			}
+
+		//	Seek to the proper position
+
+		MCIWndSeek(m_hMusic, Max(0, Min(iPos, State.iLength)));
+
+		//	Play it
+
+		if (MCIWndPlay(m_hMusic) != 0)
+			return false;
+
+		//	Done
+
+		return true;
 		}
-
-	//	Seek to the proper position
-
-	MCIWndSeek(m_hMusic, Max(0, Min(iPos, State.iLength)));
-
-	//	Play it
-
-	if (MCIWndPlay(m_hMusic) != 0)
+	catch (...)
+		{
 		return false;
-
-	//	Done
-
-	return true;
+		}
 	}
 
 int CSoundMgr::SetMusicVolume (int iVolumeLevel)
@@ -700,9 +707,15 @@ void CSoundMgr::TogglePlayPaused (void)
 //	Play/Pause
 
 	{
-	int iMode = MCIWndGetMode(m_hMusic, 0, NULL);
-	if (iMode == MCI_MODE_PLAY)
-		MCIWndPause(m_hMusic);
-	else if (iMode == MCI_MODE_PAUSE)
-		MCIWndPlay(m_hMusic);
+	try
+		{
+		int iMode = MCIWndGetMode(m_hMusic, 0, NULL);
+		if (iMode == MCI_MODE_PLAY)
+			MCIWndPause(m_hMusic);
+		else if (iMode == MCI_MODE_PAUSE)
+			MCIWndPlay(m_hMusic);
+		}
+	catch (...)
+		{
+		}
 	}

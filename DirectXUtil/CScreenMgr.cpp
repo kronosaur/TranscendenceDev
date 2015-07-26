@@ -8,7 +8,6 @@
 #include "DirectXUtil.h"
 
 const int EXCLUSIVE_BACK_BUFFERS = 2;
-const int MAX_SCREEN_HEIGHT = 1080;
 
 CScreenMgr::CScreenMgr (void) :
 		m_hWnd(NULL),
@@ -321,11 +320,19 @@ void CScreenMgr::DebugOutputStats (void)
 		if (m_bExclusiveMode)
 			kernelDebugLogMessage("exclusive mode");
 		kernelDebugLogMessage("Screen: %d x %d (%d-bit color)", m_cxScreen, m_cyScreen, m_iColorDepth);
+		kernelDebugLogMessage("Scale: %d.%02d", (int)m_rScale, (int)(((m_rScale - floor(m_rScale)) * 100.0) + 0.5));
 		if (m_PrimaryType == r5g5b5)
 			kernelDebugLogMessage("Pixels: 5-5-5");
 		else
 			kernelDebugLogMessage("Pixels: 5-6-5");
+
 		//kernelDebugLogMessage("Video Memory: %d", caps.dwVidMemTotal);
+
+		//	Output some stats about the DC
+
+		HDC hDC = ::GetDC(m_hWnd);
+		kernelDebugLogMessage("LogPixelsY: %d", ::GetDeviceCaps(hDC, LOGPIXELSY));
+		::ReleaseDC(m_hWnd, hDC);
 
 		//	Primary surface
 
@@ -415,12 +422,12 @@ ALERROR CScreenMgr::Init (SScreenMgrOptions &Options, CString *retsError)
 	//	If the screen is bigger than 1920 x 1080, we scale everything
 	//	(because the game is not really well-suited to super high-res.)
 
-	if (m_cyScreen > MAX_SCREEN_HEIGHT)
+	if (Options.m_cyMaxScreen != -1 && m_cyScreen > Options.m_cyMaxScreen)
 		{
-		m_rScale = (Metric)MAX_SCREEN_HEIGHT / m_cyScreen;
+		m_rScale = (Metric)Options.m_cyMaxScreen / m_cyScreen;
 
 		m_cxScreen = (int)((m_rScale * m_cxScreen) + 0.5);
-		m_cyScreen = MAX_SCREEN_HEIGHT;
+		m_cyScreen = Options.m_cyMaxScreen;
 		}
 	else
 		m_rScale = 1.0;
