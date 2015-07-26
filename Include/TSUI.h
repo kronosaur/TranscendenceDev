@@ -592,6 +592,7 @@ struct SHIOptions
 			sClassName(CONSTLIT("transcendence_class")),
 			sAppData(CONSTLIT("Kronosaur\\Transcendence")),
 			hIcon(NULL),
+			m_cyMaxScreen(-1),
 			m_cxScreenDesired(1024),
 			m_cyScreenDesired(768),
 			m_iColorDepthDesired(16),
@@ -613,6 +614,7 @@ struct SHIOptions
 	HICON hIcon;						//	Application icon
 
 	//	Display options
+	int m_cyMaxScreen;					//	Scales screen if we're bigger than this (-1 = no scaling)
 	int m_cxScreenDesired;				//	Ignored if not WindowedMode
 	int m_cyScreenDesired;				//	Ignored if not WindowedMode
 	int m_iColorDepthDesired;

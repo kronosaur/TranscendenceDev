@@ -674,42 +674,50 @@ bool CMCIMixer::ProcessRequest (void)
 
 	m_cs.Unlock();
 
-	//	Now process the event based on the type
+	//	Now process the event based on the type. We do this inside a try/catch
+	//	in case there are system problems with the music
 
-	switch (Request.iType)
+	try
 		{
-		case typeFadeIn:
-			ProcessFadeIn(Request);
-			break;
+		switch (Request.iType)
+			{
+			case typeFadeIn:
+				ProcessFadeIn(Request);
+				break;
 
-		case typeFadeOut:
-			ProcessFadeOut(Request);
-			break;
+			case typeFadeOut:
+				ProcessFadeOut(Request);
+				break;
 
-		case typePlay:
-			ProcessPlay(Request);
-			break;
+			case typePlay:
+				ProcessPlay(Request);
+				break;
 
-		case typePlayPause:
-			ProcessPlayPause(Request);
-			break;
+			case typePlayPause:
+				ProcessPlayPause(Request);
+				break;
 
-		case typeStop:
+			case typeStop:
 #ifdef DEBUG_SOUNDTRACK
-			kernelDebugLogMessage("ProcessStop requested.");
+				kernelDebugLogMessage("ProcessStop requested.");
 
 #endif
-			ProcessStop(Request);
-			break;
+				ProcessStop(Request);
+				break;
 
-		case typeWaitForPos:
-			ProcessWaitForPos(Request);
-			break;
+			case typeWaitForPos:
+				ProcessWaitForPos(Request);
+				break;
 
-		case typeSetPaused:
-		case typeSetUnpaused:
-			ProcessSetPlayPaused(Request);
-			break;
+			case typeSetPaused:
+			case typeSetUnpaused:
+				ProcessSetPlayPaused(Request);
+				break;
+			}
+		}
+	catch (...)
+		{
+		::kernelDebugLogMessage("Crash in CMCIMixer::ProcessRequest.");
 		}
 
 #ifdef DEBUG_SOUNDTRACK_STATE

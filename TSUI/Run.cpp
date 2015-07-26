@@ -8,6 +8,8 @@
 const DWORD ID_BACKGROUND_PROCESSOR =				1;
 const DWORD ID_LOW_PRIORITY_BACKGROUND_PROCESSOR =	2;
 
+const int MAX_SCREEN_HEIGHT =						1080;
+
 const int TIMER_RESOLUTION =						1;
 const int TICKS_PER_SECOND =						30;
 const int FRAME_DELAY =								(1000 / TICKS_PER_SECOND);		//	Delay in mSecs
@@ -411,6 +413,7 @@ bool CHumanInterface::WMCreate (HWND hWnd, CString *retsError)
 
 	SScreenMgrOptions ScreenOptions;
 	ScreenOptions.m_hWnd = m_hWnd;
+	ScreenOptions.m_cyMaxScreen = m_Options.m_cyMaxScreen;
 	ScreenOptions.m_cxScreen = m_Options.m_cxScreenDesired;
 	ScreenOptions.m_cyScreen = m_Options.m_cyScreenDesired;
 	ScreenOptions.m_iColorDepth = m_Options.m_iColorDepthDesired;
@@ -421,6 +424,7 @@ bool CHumanInterface::WMCreate (HWND hWnd, CString *retsError)
 	ScreenOptions.m_bForceExclusiveMode = m_Options.m_bForceExclusiveMode;
 	ScreenOptions.m_bForceNonExclusiveMode = m_Options.m_bForceNonExclusiveMode;
 	ScreenOptions.m_bForceScreenSize = m_Options.m_bForceScreenSize;
+	ScreenOptions.m_bDebugVideo = m_Options.m_bDebugVideo;
 
 	if (m_ScreenMgr.Init(ScreenOptions, retsError) != NOERROR)
 		return false;
