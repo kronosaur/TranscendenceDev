@@ -3,7 +3,6 @@
 //	Blt routines
 
 #include <windows.h>
-#include <ddraw.h>
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 

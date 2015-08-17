@@ -99,6 +99,7 @@ DWORD WINAPI CScreenMgr::BackgroundThread (LPVOID pData)
 			return 0;
 		else if (dwWait == WAIT_WORK_EVENT)
 			{
+			CSmartLock Lock(pThis->m_cs);
 			pThis->BltToPrimary(pThis->m_Secondary);
 			::ResetEvent(pThis->m_hWorkEvent);
 			}
@@ -128,6 +129,7 @@ void CScreenMgr::Blt (void)
 			m_Screen.BltToSurface(m_pCurrent, m_PrimaryType);
 		else if (m_bBackgroundBlt)
 			{
+			CSmartLock Lock(m_cs);
 			m_Screen.SwapBuffers(m_Secondary);
 			Swap(m_rcInvalid, m_rcInvalidSecondary);
 			::SetEvent(m_hWorkEvent);

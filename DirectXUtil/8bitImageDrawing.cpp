@@ -3,7 +3,6 @@
 //	Drawing routines for 8-bit masks
 
 #include <windows.h>
-#include <ddraw.h>
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 #include <math.h>

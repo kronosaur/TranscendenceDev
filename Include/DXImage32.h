@@ -112,13 +112,14 @@ class CG32bitImage : public CGImagePlane
 		void CleanUp (void);
 		bool Create (int cxWidth, int cyHeight, EAlphaTypes AlphaType = alphaNone, CG32bitPixel InitialValue = 0);
 		bool CreateFromBitmap (HBITMAP hImage, HBITMAP hMask = NULL, EBitmapTypes iMaskType = bitmapNone, DWORD dwFlags = 0);
+		bool CreateFromExternalBuffer (void *pBuffer, int cxWidth, int cyHeight, int iPitch, EAlphaTypes AlphaType = alphaNone);
 		bool CreateFromFile (const CString &sImageFilespec, const CString &sMaskFilespec = NULL_STR, DWORD dwFlags = 0);
 		bool CreateFromImageTransformed (const CG32bitImage &Source, int xSrc, int ySrc, int cxSrc, int cySrc, Metric rScaleX, Metric rScaleY, Metric rRotation = 0.0);
 		inline EAlphaTypes GetAlphaType (void) const { return m_AlphaType; }
 		inline CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
-		inline CG32bitPixel *GetPixelPos (int x, int y) const { return m_pRGBA + (y * m_cxWidth) + x; }
+		inline CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
 		inline bool IsEmpty (void) const { return (m_pRGBA == NULL); }
-		inline CG32bitPixel *NextRow (CG32bitPixel *pPos) const { return pPos + m_cxWidth; }
+		inline CG32bitPixel *NextRow (CG32bitPixel *pPos) const { return (CG32bitPixel *)((BYTE *)pPos + m_iPitch); }
 
 		//	Basic Drawing Interface
 
@@ -161,7 +162,7 @@ class CG32bitImage : public CGImagePlane
 
 		//	DX and Window Functions
 
-		void BltToDC (HDC hDC, int x, int y);
+		void BltToDC (HDC hDC, int x, int y) const;
 		void BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iType);
 		bool CopyToClipboard (void);
 		bool SaveAsWindowsBMP (const CString &sFilespec);
@@ -171,9 +172,11 @@ class CG32bitImage : public CGImagePlane
 	private:
 		static int CalcBufferSize (int cxWidth, int cyHeight) { return (cxWidth * cyHeight); }
 		void Copy (const CG32bitImage &Src);
-		void InitBMI (BITMAPINFO **retpbi);
+		void InitBMI (BITMAPINFO **retpbi) const;
 
 		CG32bitPixel *m_pRGBA;
+		bool m_bFreeRGBA;					//	If TRUE, we own the memory
+		int m_iPitch;						//	Bytes per row
 		EAlphaTypes m_AlphaType;
 
 		mutable BITMAPINFO *m_pBMI;			//	Used for blting to a DC

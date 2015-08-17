@@ -11,6 +11,8 @@
 
 CG32bitImage::CG32bitImage (void) :
 		m_pRGBA(NULL),
+		m_bFreeRGBA(false),
+		m_iPitch(0),
 		m_AlphaType(alphaNone),
 		m_pBMI(NULL)
 
@@ -45,7 +47,7 @@ CG32bitImage &CG32bitImage::operator= (const CG32bitImage &Src)
 	return *this;
 	}
 
-void CG32bitImage::BltToDC (HDC hDC, int x, int y)
+void CG32bitImage::BltToDC (HDC hDC, int x, int y) const
 
 //	BltToDC
 //
@@ -95,7 +97,7 @@ void CG32bitImage::BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iTy
 	int iLinesToBlt = min(m_cyHeight, (int)desc.dwHeight);
 	int iPixelSize = ((iType == r8g8b8) ? sizeof(DWORD) : sizeof(WORD));
 	int iDWORDsPerLine = AlignUp(min(m_cxWidth, (int)desc.dwWidth) * iPixelSize / sizeof(DWORD), sizeof(DWORD));
-	int iSourcePitch = m_cxWidth;
+	int iSourcePitch = m_iPitch / sizeof(DWORD);
 	int iDestPitch = desc.lPitch / sizeof(DWORD);
 
 	//	Blt the bitmap
@@ -180,7 +182,7 @@ void CG32bitImage::CleanUp (void)
 //	Clean up the bitmap
 
 	{
-	if (m_pRGBA)
+	if (m_pRGBA && m_bFreeRGBA)
 		{
 		delete [] m_pRGBA;
 		m_pRGBA = NULL;
@@ -188,6 +190,7 @@ void CG32bitImage::CleanUp (void)
 
 	m_cxWidth = 0;
 	m_cyHeight = 0;
+	m_iPitch = 0;
 	m_AlphaType = alphaNone;
 	ResetClipRect();
 
@@ -210,8 +213,9 @@ void CG32bitImage::Copy (const CG32bitImage &Src)
 
 	//	Copy the buffer
 
-	int iSize = CalcBufferSize(Src.m_cxWidth, Src.m_cyHeight);
+	int iSize = CalcBufferSize(Src.m_iPitch / sizeof(DWORD), Src.m_cyHeight);
 	m_pRGBA = new CG32bitPixel [iSize];
+	m_bFreeRGBA = true;
 
 	CG32bitPixel *pSrc = Src.m_pRGBA;
 	CG32bitPixel *pSrcEnd = pSrc + iSize;
@@ -224,6 +228,7 @@ void CG32bitImage::Copy (const CG32bitImage &Src)
 
 	m_cxWidth = Src.m_cxWidth;
 	m_cyHeight = Src.m_cyHeight;
+	m_iPitch = Src.m_iPitch;
 	m_AlphaType = Src.m_AlphaType;
 	m_rcClip = Src.m_rcClip;
 	m_pBMI = NULL;
@@ -355,8 +360,10 @@ bool CG32bitImage::Create (int cxWidth, int cyHeight, EAlphaTypes AlphaType, CG3
 
 	//	Allocate a new buffer
 
-	int iSize = CalcBufferSize(cxWidth, cyHeight);
+	m_iPitch = cxWidth * sizeof(DWORD);
+	int iSize = CalcBufferSize(m_iPitch / sizeof(DWORD), cyHeight);
 	m_pRGBA = new CG32bitPixel [iSize];
+	m_bFreeRGBA = true;
 
 	//	Initialize
 
@@ -441,8 +448,10 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 
 		//	Allocate the image
 
-		int iSize = CalcBufferSize(cxWidth, cyHeight);
+		m_iPitch = cxWidth * sizeof(DWORD);
+		int iSize = CalcBufferSize(m_iPitch / sizeof(DWORD), cyHeight);
 		m_pRGBA = new CG32bitPixel [iSize];
+		m_bFreeRGBA = true;
 		m_cxWidth = cxWidth;
 		m_cyHeight = cyHeight;
 		ResetClipRect();
@@ -682,6 +691,34 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 		}
 	}
 
+bool CG32bitImage::CreateFromExternalBuffer (void *pBuffer, int cxWidth, int cyHeight, int iPitch, EAlphaTypes AlphaType)
+
+//	CreateFromExternalBuffer
+//
+//	Creates from an external buffer which we do not control. Callers are
+//	responsible for lifetime management.
+
+	{
+	CleanUp();
+	if (cxWidth <= 0 || cyHeight <= 0)
+		return false;
+
+	//	Allocate a new buffer
+
+	m_iPitch = iPitch;
+	m_pRGBA = (CG32bitPixel *)pBuffer;
+	m_bFreeRGBA = false;
+
+	//	Other variables
+
+	m_cxWidth = cxWidth;
+	m_cyHeight = cyHeight;
+	m_AlphaType = AlphaType;
+	ResetClipRect();
+
+	return true;
+	}
+
 bool CG32bitImage::CreateFromFile (const CString &sImageFilespec, const CString &sMaskFilespec, DWORD dwFlags)
 
 //	CreateFromFile
@@ -771,8 +808,10 @@ bool CG32bitImage::CreateFromImageTransformed (const CG32bitImage &Source, int x
 
 	m_cxWidth = RectWidth(rcDest);
 	m_cyHeight = RectHeight(rcDest);
-	int iSize = CalcBufferSize(m_cxWidth, m_cyHeight);
+	m_iPitch = m_cxWidth * sizeof(DWORD);
+	int iSize = CalcBufferSize(m_iPitch / sizeof(DWORD), m_cyHeight);
 	m_pRGBA = new CG32bitPixel [iSize];
+	m_bFreeRGBA = true;
 	m_AlphaType = Source.GetAlphaType();
 	ResetClipRect();
 
@@ -1026,7 +1065,7 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 		}
 	}
 
-void CG32bitImage::InitBMI (BITMAPINFO **retpbi)
+void CG32bitImage::InitBMI (BITMAPINFO **retpbi) const
 
 //	InitBMP
 //

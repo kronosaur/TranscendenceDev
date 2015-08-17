@@ -4,7 +4,6 @@
 //	Copyright (c) 2010 by George Moromisato. All Rights Reserved.
 
 #include <windows.h>
-#include <ddraw.h>
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 

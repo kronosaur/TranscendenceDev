@@ -3,7 +3,6 @@
 //	Implementation of raw 16-bit image object
 
 #include <windows.h>
-#include <ddraw.h>
 #include "Alchemy.h"
 #include "JPEGUtil.h"
 #include "DirectXUtil.h"

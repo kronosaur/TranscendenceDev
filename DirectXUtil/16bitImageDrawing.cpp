@@ -3,7 +3,6 @@
 //	Drawing routines such as lines and text
 
 #include <windows.h>
-#include <ddraw.h>
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 #include <math.h>

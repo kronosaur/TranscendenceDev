@@ -3,7 +3,6 @@
 //	CAniText class
 
 #include <windows.h>
-#include <ddraw.h>
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 #include <math.h>

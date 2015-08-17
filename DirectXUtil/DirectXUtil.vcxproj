@@ -249,11 +249,14 @@
     <ClInclude Include="..\Include\DXImage32.h" />
     <ClInclude Include="..\Include\DXImage8.h" />
     <ClInclude Include="..\Include\DXImageReal.h" />
+    <ClInclude Include="..\Include\DXScreenMgr.h" />
+    <ClInclude Include="..\Include\DXScreenMgr3D.h" />
     <ClInclude Include="..\Include\DXSparseMask.h" />
     <ClInclude Include="..\Include\DXUI.h" />
     <ClInclude Include="..\Include\Reanimator.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
     <ClInclude Include="DrawImpl.h" />
+    <ClInclude Include="DX3DImpl.h" />
     <ClInclude Include="NoiseImpl.h" />
     <ClInclude Include="PixelMacros.h" />
     <ClInclude Include="PreComp.h" />
@@ -311,6 +314,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CDXBackgroundBlt.cpp" />
+    <ClCompile Include="CDXMatrix.cpp" />
     <ClCompile Include="CFrameRateCounter.cpp" />
     <ClCompile Include="CG16bitFont.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -425,7 +430,9 @@
     <ClCompile Include="CLinePainter.cpp" />
     <ClCompile Include="CNoiseGenerator.cpp" />
     <ClCompile Include="CompositeCircle.cpp" />
+    <ClCompile Include="CDXScreen.cpp" />
     <ClCompile Include="CScreenMgr.cpp" />
+    <ClCompile Include="CScreenMgr3D.cpp" />
     <ClCompile Include="Debug.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
