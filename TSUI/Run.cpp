@@ -188,6 +188,7 @@ void CHumanInterface::MainLoop (void)
 
 		//	Figure out how long until our next animation
 
+#ifndef DEBUG_MAX_FRAME_RATE
 		DWORD dwNow = timeGetTime();
 		DWORD dwNextFrame = dwStartTime + FRAME_DELAY;
 
@@ -201,6 +202,7 @@ void CHumanInterface::MainLoop (void)
 			}
 		else
 			dwStartTime = dwNow;
+#endif
 		}
 
 	timeEndPeriod(TIMER_RESOLUTION);

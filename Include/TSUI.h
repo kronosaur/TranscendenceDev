@@ -26,6 +26,13 @@
 #include "TSE.h"
 #endif
 
+#define USE_COMPOSITE_LAYERS
+
+#ifdef DEBUG
+//#define DEBUG_USE_DX7
+//#define DEBUG_MAX_FRAME_RATE
+#endif
+
 class CHumanInterface;
 struct SHIOptions;
 
@@ -655,7 +662,11 @@ class CHumanInterface
 		inline const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
 		inline CG32bitImage &GetScreen (void) { return m_ScreenMgr.GetScreen(); }
+#ifdef DEBUG_USE_DX7
 		inline CScreenMgr &GetScreenMgr (void) { return m_ScreenMgr; }
+#else
+		inline CScreenMgr3D &GetScreenMgr (void) { return m_ScreenMgr; }
+#endif
 		inline IHISession *GetSession (void) { return m_pCurSession; }
 		inline CSoundMgr &GetSoundMgr (void) { return m_SoundMgr; }
 		IHISession *GetTopSession (bool bNonTransparentOnly = true);
@@ -702,7 +713,7 @@ class CHumanInterface
 		CHumanInterface (void);
 		~CHumanInterface (void);
 
-		inline void BltScreen (void) { m_ScreenMgr.Blt(); }
+		inline void BltScreen (void) { m_ScreenMgr.Render(); }
 		void CalcBackgroundSessions (void);
 		void CleanUp (EHIShutdownReasons iShutdownCode);
 		inline void FlipScreen (void) { m_ScreenMgr.Flip(); }
@@ -741,7 +752,11 @@ class CHumanInterface
 		TArray<IHISession *> m_BackgroundSessions;
 
 		HWND m_hWnd;
+#ifdef DEBUG_USE_DX7
 		CScreenMgr m_ScreenMgr;
+#else
+		CScreenMgr3D m_ScreenMgr;
+#endif
 		CBackgroundProcessor m_Background;
 		CBackgroundProcessor m_BackgroundLowPriority;
 		CTimerRegistry m_Timers;
