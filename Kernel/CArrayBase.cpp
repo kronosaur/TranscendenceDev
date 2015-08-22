@@ -17,13 +17,7 @@ CArrayBase::CArrayBase (HANDLE hHeap, int iGranularity) : m_pBlock(NULL)
 	//	to allocate the block
 
 	if (hHeap != ::GetProcessHeap()	|| (iGranularity != DEFAULT_ARRAY_GRANULARITY))
-		{
-		m_pBlock = (SHeader *)::HeapAlloc(hHeap, 0, sizeof(SHeader));
-		m_pBlock->m_hHeap = hHeap;
-		m_pBlock->m_iAllocSize = sizeof(SHeader);
-		m_pBlock->m_iGranularity = iGranularity;
-		m_pBlock->m_iSize = 0;
-		}
+		AllocBlock(hHeap, iGranularity);
 	}
 
 CArrayBase::~CArrayBase (void)
@@ -33,6 +27,22 @@ CArrayBase::~CArrayBase (void)
 	{
 	if (m_pBlock)
 		::HeapFree(m_pBlock->m_hHeap, 0, m_pBlock);
+	}
+
+void CArrayBase::AllocBlock (HANDLE hHeap, int iGranularity)
+
+//	AllocBlock
+//
+//	Allocate the main block
+
+	{
+	ASSERT(m_pBlock == NULL);
+
+	m_pBlock = (SHeader *)::HeapAlloc(hHeap, 0, sizeof(SHeader));
+	m_pBlock->m_hHeap = hHeap;
+	m_pBlock->m_iAllocSize = sizeof(SHeader);
+	m_pBlock->m_iGranularity = iGranularity;
+	m_pBlock->m_iSize = 0;
 	}
 
 void CArrayBase::CopyOptions (const CArrayBase &Src)

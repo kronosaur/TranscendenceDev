@@ -492,6 +492,12 @@ template <class KEY, class VALUE> class TSortMap
 			*pValue = value;
 			}
 
+		void SetGranularity (int iGranularity)
+			{
+			m_Index.SetGranularity(iGranularity);
+			m_Array.SetGranularity(iGranularity);
+			}
+
 		//	Atom helper functions
 
 		void atom_Delete (DWORD dwAtom)

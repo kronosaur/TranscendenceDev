@@ -23,7 +23,7 @@ const int DEFAULT_ARRAY_GRANULARITY = 10;
 class CArrayBase
 	{
 	public:
-		inline void SetGranularity (int iGranularity) { if (m_pBlock) m_pBlock->m_iGranularity = iGranularity; }
+		inline void SetGranularity (int iGranularity) { if (m_pBlock == NULL) AllocBlock(::GetProcessHeap(), iGranularity); else m_pBlock->m_iGranularity = iGranularity; }
 
 	protected:
 		CArrayBase (HANDLE hHeap, int iGranularity);
@@ -47,6 +47,8 @@ class CArrayBase
 			int m_iAllocSize;			//	Current size of block
 			int m_iGranularity;			//	Used by descendants to resize block
 			};
+
+		void AllocBlock (HANDLE hHeap, int iGranularity);
 
 		SHeader *m_pBlock;
 	};
