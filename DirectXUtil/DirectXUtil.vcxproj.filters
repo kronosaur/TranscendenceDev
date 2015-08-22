@@ -28,6 +28,9 @@
     <Filter Include="Source Files\8bit">
       <UniqueIdentifier>{ce77a204-f8e2-4ada-81b7-24aff7af1aeb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\DX">
+      <UniqueIdentifier>{54f2d532-069c-4ac1-8ce0-1168120f05a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NoiseImpl.h">
@@ -117,9 +120,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CNoiseGenerator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CScreenMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Debug.cpp">
@@ -296,17 +296,20 @@
     <ClCompile Include="CG8bitSparseImage.cpp">
       <Filter>Source Files\8bit</Filter>
     </ClCompile>
-    <ClCompile Include="CScreenMgr3D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CDXScreen.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="CDXBackgroundBlt.cpp">
+      <Filter>Source Files\DX</Filter>
     </ClCompile>
     <ClCompile Include="CDXMatrix.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\DX</Filter>
     </ClCompile>
-    <ClCompile Include="CDXBackgroundBlt.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="CDXScreen.cpp">
+      <Filter>Source Files\DX</Filter>
+    </ClCompile>
+    <ClCompile Include="CScreenMgr3D.cpp">
+      <Filter>Source Files\DX</Filter>
+    </ClCompile>
+    <ClCompile Include="CScreenMgr.cpp">
+      <Filter>Source Files\DX</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

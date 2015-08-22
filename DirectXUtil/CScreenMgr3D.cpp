@@ -97,6 +97,24 @@ void CScreenMgr3D::ClientToScreen (int x, int y, int *retx, int *rety)
 		}
 	}
 
+void CScreenMgr3D::DebugOutputStats (void)
+
+//	DebugOutputStats
+//
+//	Output video status
+
+	{
+	::kernelDebugLogMessage("Direct3D");
+	::kernelDebugLogMessage("Screen: %d x %d%s", m_cxScreen, m_cyScreen, (m_bWindowedMode ? CONSTLIT(" (windowed)") : NULL_STR));
+	::kernelDebugLogMessage("Scale: %d.%02d", (int)m_rScale, (int)(m_rScale * 100.0) % 100);
+	::kernelDebugLogMessage("Background blt: %s", (m_Blitter.IsEnabled() ? CONSTLIT("Enabled") : CONSTLIT("Disabled")));
+	::kernelDebugLogMessage("Use textures: %s", (m_DX.IsUsingTextures() ? CONSTLIT("Enabled") : CONSTLIT("Disabled")));
+
+	HDC hDC = ::GetDC(m_hWnd);
+	kernelDebugLogMessage("LogPixelsY: %d", ::GetDeviceCaps(hDC, LOGPIXELSY));
+	::ReleaseDC(m_hWnd, hDC);
+	}
+
 void CScreenMgr3D::Flip (void)
 
 //	Flip
@@ -207,16 +225,7 @@ ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)
 	if (!m_DX.Init(m_hWnd, m_cxScreen, m_cyScreen, retsError))
 		return ERR_FAIL;
 
-	//	Create an off-screen bitmap
-
-	if (!m_Screen.Create(m_cxScreen, m_cyScreen))
-		{
-		if (retsError) *retsError = CONSTLIT("Unable to create off-screen bitmap.");
-		CleanUp();
-		return ERR_FAIL;
-		}
-
-	//	Initialize the blitter
+	//	Initialize the background blitter
 
 	if (!m_Blitter.Init(m_cxScreen, m_cyScreen, retsError))
 		{
@@ -234,6 +243,11 @@ ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)
 		CleanUp();
 		return ERR_FAIL;
 		}
+
+	//	Debug
+
+	if (m_bDebugVideo)
+		DebugOutputStats();
 
 	//	Done
 

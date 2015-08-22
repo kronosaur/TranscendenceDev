@@ -32,6 +32,7 @@ class CDXScreen
 		bool CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CString *retsError = NULL);
 		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return m_Layers[iLayerID].BackBuffer; }
 		bool Init (HWND hWnd, int cxWidth, int cyHeight, CString *retsError = NULL);
+		inline bool IsUsingTextures (void) const { return m_bUseTextures; }
 		void Render (void);
 		void SwapBuffers (void);
 
@@ -41,6 +42,7 @@ class CDXScreen
 			SLayer (void) :
 					pVertices(NULL),
 					pTexture(NULL),
+					pFrontBuffer(NULL),
 					pBackBuffer(NULL)
 				{ }
 
@@ -52,10 +54,14 @@ class CDXScreen
 				if (pTexture)
 					pTexture->Release();
 
+				if (pFrontBuffer)
+					pFrontBuffer->Release();
+
 				if (pBackBuffer)
 					pBackBuffer->Release();
 				}
 
+			CG32bitImage FrontBuffer;
 			CG32bitImage BackBuffer;
 
 			int cxWidth;
@@ -66,13 +72,25 @@ class CDXScreen
 
 			IDirect3DVertexBuffer9 *pVertices;
 			IDirect3DTexture9 *pTexture;
+			IDirect3DTexture9 *pFrontBuffer;
 			IDirect3DTexture9 *pBackBuffer;
 			};
 
-		void LayerUpdateTexture (SLayer &Layer);
+		void BltToSurface (const CG32bitImage &Src, IDirect3DSurface9 *pDest);
+		void BltToSurface (IDirect3DTexture9 *pSrc, IDirect3DSurface9 *pDest);
+		inline bool CanUseDynamicTextures (void) const { return ((m_DeviceCaps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) ? true : false); }
 
-		IDirect3D9 *m_pD3D;					// Used to create the D3DDevice
-		IDirect3DDevice9 *m_pD3DDevice;		// Our rendering device
+		IDirect3D9 *m_pD3D;					//	Used to create the D3DDevice
+		IDirect3DDevice9 *m_pD3DDevice;		//	Our rendering device
+		D3DCAPS9 m_DeviceCaps;				//	Device caps for current device
+
+		int m_cxTarget;						//	Width of target surface (usually the screen)
+		int m_cyTarget;						//	Height of target surface
+
+		int m_cxSource;						//	Width of source image (usually layer size)
+		int m_cySource;
+
+		bool m_bUseTextures;				//	Use textures for layers.
 
 		TArray<SLayer> m_Layers;
 		TSortMap<int, int> m_PaintOrder;
@@ -127,6 +145,7 @@ class CScreenMgr3D
 		void Validate (void);
 
 	private:
+		void DebugOutputStats (void);
 
 		//	DX state
 
@@ -139,8 +158,6 @@ class CScreenMgr3D
 
 		//	Buffer
 
-		CG32bitImage m_Screen;			//	This is the image that everyone will write to
-		CG32bitImage m_Secondary;		//	This is used to swap, when doing background blts
 		int m_cxScreen;					//	Size of the buffer; screen size may be different.
 		int m_cyScreen;
 		Metric m_rScale;				//	Downsample resolution for super hi-res screens (1.0 = normal)

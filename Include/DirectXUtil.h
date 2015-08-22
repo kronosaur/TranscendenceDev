@@ -28,6 +28,9 @@
 #include "Euclid.h"
 #endif
 
+#ifdef DEBUG
+//#define DEBUG_NO_DX_TEXTURES
+#endif
 
 #define BLT_RANGE_CHECK
 

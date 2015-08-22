@@ -20,6 +20,112 @@ CDXScreen::CDXScreen (void) :
 	{
 	}
 
+void CDXScreen::BltToSurface (const CG32bitImage &Src, IDirect3DSurface9 *pDest)
+
+//	BltToSurface
+//
+//	Blts from the source to destination
+
+	{
+	//	Get some metrics
+
+	D3DSURFACE_DESC DestDesc;
+	if (FAILED(pDest->GetDesc(&DestDesc)))
+		return;
+
+	int cxWidth = Min(Src.GetWidth(), (int)DestDesc.Width);
+	int cyHeight = Min(Src.GetHeight(), (int)DestDesc.Height);
+
+	//	Lock the surfaces
+
+	D3DLOCKED_RECT DestLocked;
+	if (FAILED(pDest->LockRect(&DestLocked, NULL, 0)))
+		return;
+
+	//	Blt
+
+	CG32bitPixel *pSrcRow = Src.GetPixelPos(0, 0);
+	CG32bitPixel *pSrcRowEnd = Src.GetPixelPos(0, cyHeight);
+	BYTE *pDestRow = (BYTE *)DestLocked.pBits;
+	while (pSrcRow < pSrcRowEnd)
+		{
+		DWORD *pSrc = (DWORD *)pSrcRow;
+		DWORD *pSrcEnd = (DWORD *)pSrcRow + cxWidth;
+		DWORD *pDest = (DWORD *)pDestRow;
+
+		while (pSrc < pSrcEnd)
+			*pDest++ = *pSrc++;
+
+		//	Next
+
+		pSrcRow = Src.NextRow(pSrcRow);
+		pDestRow += DestLocked.Pitch;
+		}
+
+	//	Done
+
+	pDest->UnlockRect();
+	}
+
+void CDXScreen::BltToSurface (IDirect3DTexture9 *pSrc, IDirect3DSurface9 *pDest)
+
+//	BltToSurface
+//
+//	Blts from the source to destination.
+
+	{
+	//	Get some metrics
+
+	D3DSURFACE_DESC SrcDesc;
+	if (FAILED(pSrc->GetLevelDesc(0, &SrcDesc)))
+		return;
+
+	D3DSURFACE_DESC DestDesc;
+	if (FAILED(pDest->GetDesc(&DestDesc)))
+		return;
+
+	int cxWidth = Min((int)SrcDesc.Width, (int)DestDesc.Width);
+	int cyHeight = Min((int)SrcDesc.Height, (int)DestDesc.Height);
+
+	//	Lock the surfaces
+
+	D3DLOCKED_RECT SrcLocked;
+	if (FAILED(pSrc->LockRect(0, &SrcLocked, NULL, 0)))
+		return;
+
+	D3DLOCKED_RECT DestLocked;
+	if (FAILED(pDest->LockRect(&DestLocked, NULL, 0)))
+		{
+		pSrc->UnlockRect(0);
+		return;
+		}
+
+	//	Blt
+
+	BYTE *pSrcRow = (BYTE *)SrcLocked.pBits;
+	BYTE *pSrcRowEnd = pSrcRow + (cyHeight * SrcLocked.Pitch);
+	BYTE *pDestRow = (BYTE *)DestLocked.pBits;
+	while (pSrcRow < pSrcRowEnd)
+		{
+		DWORD *pSrc = (DWORD *)pSrcRow;
+		DWORD *pSrcEnd = (DWORD *)pSrcRow + cxWidth;
+		DWORD *pDest = (DWORD *)pDestRow;
+
+		while (pSrc < pSrcEnd)
+			*pDest++ = *pSrc++;
+
+		//	Next
+
+		pSrcRow += SrcLocked.Pitch;
+		pDestRow += DestLocked.Pitch;
+		}
+
+	//	Done
+
+	pDest->UnlockRect();
+	pSrc->UnlockRect(0);
+	}
+
 void CDXScreen::CleanUp (void)
 
 //	CleanUp
@@ -70,93 +176,130 @@ bool CDXScreen::CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CSt
 	pLayer->yPos = Create.yPos;
 	pLayer->zPos = Create.zPos;
 
-	//	Create the vertices
+	//	If we're using textures, we need a vertex buffer and three textures.
 
-	if (FAILED(m_pD3DDevice->CreateVertexBuffer(4 * sizeof(SVertexFormatStd), 
-			D3DUSAGE_WRITEONLY,
-			D3DFVF_VERTEXFORMAT_STD, 
-			D3DPOOL_MANAGED, 
-			&pLayer->pVertices, 
-			NULL)))
+	if (m_bUseTextures)
 		{
-		if (retsError) *retsError = CONSTLIT("Unable to create vertex buffer.");
-		return false;
+		//	Create the vertices
+
+		if (FAILED(m_pD3DDevice->CreateVertexBuffer(4 * sizeof(SVertexFormatStd), 
+				D3DUSAGE_WRITEONLY,
+				D3DFVF_VERTEXFORMAT_STD, 
+				D3DPOOL_MANAGED, 
+				&pLayer->pVertices, 
+				NULL)))
+			{
+			if (retsError) *retsError = CONSTLIT("Unable to create vertex buffer.");
+			return false;
+			}
+
+		//	Initialize vertices
+
+		SVertexFormatStd *pVertexList;
+		if (FAILED(pLayer->pVertices->Lock(0, 4 * sizeof(SVertexFormatStd), (void **)&pVertexList, 0)))
+			{
+			m_Layers.Delete(iID);
+			if (retsError) *retsError = CONSTLIT("Unable to lock vertex buffer.");
+			return false;
+			}
+
+		//	Set all the colors to white
+
+		pVertexList[0].color = pVertexList[1].color = pVertexList[2].color = pVertexList[3].color = 0xffffffff;
+
+		//	Set positions and texture coordinates
+		//
+		//	NOTE: We offset by 0.5 to make the textures align on pixel boundaries.
+
+		pVertexList[0].x = pVertexList[3].x = -(Create.cxWidth / 2.0f) - 0.5f;
+		pVertexList[1].x = pVertexList[2].x = (Create.cxWidth / 2.0f) - 0.5f;
+
+		pVertexList[0].y = pVertexList[1].y = (Create.cyHeight / 2.0f) + 0.5f;
+		pVertexList[2].y = pVertexList[3].y = -(Create.cyHeight / 2.0f) + 0.5f;
+
+		pVertexList[0].z = pVertexList[1].z = pVertexList[2].z = pVertexList[3].z = 1.0f;
+
+		//	This positions and scales the texture across the target rectangle
+
+		pVertexList[1].u = pVertexList[2].u = 1.0f;
+		pVertexList[0].u = pVertexList[3].u = 0.0f;
+
+		pVertexList[0].v = pVertexList[1].v = 0.0f;
+		pVertexList[2].v = pVertexList[3].v = 1.0f;
+
+		pLayer->pVertices->Unlock();
+
+		//	Create a couple of textures
+
+		HRESULT hr;
+		if ((hr = m_pD3DDevice->CreateTexture(Create.cxWidth, 
+				Create.cyHeight, 
+				1,
+				0,
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_DEFAULT,
+				&pLayer->pTexture,
+				NULL)) != D3D_OK)
+			{
+			m_Layers.Delete(iID);
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to create device texture: %d."), hr);
+			return false;
+			}
+
+		if ((hr = m_pD3DDevice->CreateTexture(Create.cxWidth, 
+				Create.cyHeight, 
+				1,
+				(CanUseDynamicTextures() ? D3DUSAGE_DYNAMIC : 0),
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_SYSTEMMEM,
+				&pLayer->pFrontBuffer,
+				NULL)) != D3D_OK)
+			{
+			m_Layers.Delete(iID);
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to create front buffer texture: %d."), hr);
+			return false;
+			}
+
+		if ((hr = m_pD3DDevice->CreateTexture(Create.cxWidth, 
+				Create.cyHeight, 
+				1,
+				(CanUseDynamicTextures() ? D3DUSAGE_DYNAMIC : 0),
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_SYSTEMMEM,
+				&pLayer->pBackBuffer,
+				NULL)) != D3D_OK)
+			{
+			m_Layers.Delete(iID);
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to create back buffer texture: %d."), hr);
+			return false;
+			}
+
+		//	Create an image object that paints to the backbuffer texture. We leave
+		//	the backbuffer locked until we swap.
+
+		D3DLOCKED_RECT Locked;
+		if (FAILED(pLayer->pBackBuffer->LockRect(0, &Locked, NULL, (CanUseDynamicTextures() ? D3DLOCK_DISCARD : 0))))
+			{
+			m_Layers.Delete(iID);
+			if (retsError) *retsError = CONSTLIT("Unable to lock texture.");
+			return false;
+			}
+
+		//	We create a CG32bitImage object which points to the DX surface. We can do this
+		//	because we keep the surface locked and because we specified the proper
+		//	pixel depth (D3DFMT_A8R8G8B8) which happens to match CG32bitPixel.
+
+		pLayer->BackBuffer.CreateFromExternalBuffer(Locked.pBits, Create.cxWidth, Create.cyHeight, Locked.Pitch);
 		}
 
-	//	Initialize vertices
+	//	Otherwise, if we're not using textures then we just need to create some
+	//	Off-screen bitmaps
 
-	SVertexFormatStd *pVertexList;
-	if (FAILED(pLayer->pVertices->Lock(0, 4 * sizeof(SVertexFormatStd), (void **)&pVertexList, 0)))
+	else
 		{
-		m_Layers.Delete(iID);
-		if (retsError) *retsError = CONSTLIT("Unable to lock vertex buffer.");
-		return false;
+		pLayer->FrontBuffer.Create(Create.cxWidth, Create.cyHeight);
+		pLayer->BackBuffer.Create(Create.cxWidth, Create.cyHeight);
 		}
-
-	//	Set all the colors to white
-
-	pVertexList[0].color = pVertexList[1].color = pVertexList[2].color = pVertexList[3].color = 0xffffffff;
-
-	//	Set positions and texture coordinates
-
-	pVertexList[0].x = pVertexList[3].x = -Create.cxWidth / 2.0f;
-	pVertexList[1].x = pVertexList[2].x = Create.cxWidth / 2.0f;
-
-	pVertexList[0].y = pVertexList[1].y = Create.cyHeight / 2.0f;
-	pVertexList[2].y = pVertexList[3].y = -Create.cyHeight / 2.0f;
-
-	pVertexList[0].z = pVertexList[1].z = pVertexList[2].z = pVertexList[3].z = 1.0f;
-
-	pVertexList[1].u = pVertexList[2].u = 1.0f;
-	pVertexList[0].u = pVertexList[3].u = 0.0f;
-
-	pVertexList[0].v = pVertexList[1].v = 0.0f;
-	pVertexList[2].v = pVertexList[3].v = 1.0f;
-
-	pLayer->pVertices->Unlock();
-
-	//	Create a couple of textures
-
-	if (FAILED(m_pD3DDevice->CreateTexture(Create.cxWidth, 
-			Create.cyHeight, 
-			1,
-			D3DUSAGE_DYNAMIC,
-			D3DFMT_A8R8G8B8,
-			D3DPOOL_DEFAULT,
-			&pLayer->pTexture,
-			NULL)))
-		{
-		m_Layers.Delete(iID);
-		if (retsError) *retsError = CONSTLIT("Unable to create texture.");
-		return false;
-		}
-
-	if (FAILED(m_pD3DDevice->CreateTexture(Create.cxWidth, 
-			Create.cyHeight, 
-			1,
-			D3DUSAGE_DYNAMIC,
-			D3DFMT_A8R8G8B8,
-			D3DPOOL_DEFAULT,
-			&pLayer->pBackBuffer,
-			NULL)))
-		{
-		m_Layers.Delete(iID);
-		if (retsError) *retsError = CONSTLIT("Unable to create texture.");
-		return false;
-		}
-
-	//	Create an image object that paints to the backbuffer texture. We leave
-	//	the backbuffer locked until we swap.
-
-	D3DLOCKED_RECT Locked;
-	if (FAILED(pLayer->pBackBuffer->LockRect(0, &Locked, NULL, D3DLOCK_DISCARD)))
-		{
-		m_Layers.Delete(iID);
-		if (retsError) *retsError = CONSTLIT("Unable to lock texture.");
-		return false;
-		}
-
-	pLayer->BackBuffer.CreateFromExternalBuffer(Locked.pBits, Create.cxWidth, Create.cyHeight, Locked.Pitch);
 
 	//	Now that we've succeeded, add it to the paint order
 
@@ -177,6 +320,16 @@ bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, CString *retsError)
 //	Initialize
 
 	{
+	//	Initialize our metrics
+
+	m_cxSource = cxWidth;
+	m_cySource = cyHeight;
+
+	RECT rcClient;
+	::GetClientRect(hWnd, &rcClient);
+	m_cxTarget = RectWidth(rcClient);
+	m_cyTarget = RectHeight(rcClient);
+
     //	Create the D3D object, which is needed to create the D3DDevice.
 
     if ((m_pD3D = ::Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
@@ -218,6 +371,22 @@ bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, CString *retsError)
         return false;
 		}
 
+	//	Get device caps
+
+	if (FAILED(m_pD3DDevice->GetDeviceCaps(&m_DeviceCaps)))
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to get device caps.");
+        return false;
+		}
+
+	//	Set up some options
+
+#ifdef DEBUG_NO_DX_TEXTURES
+	m_bUseTextures = false;
+#else
+	m_bUseTextures = CanUseDynamicTextures();
+#endif
+
 	//	Set up our scene
 
     CDXMatrix Identity;
@@ -239,45 +408,6 @@ bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, CString *retsError)
 	return true;
 	}
 
-void CDXScreen::LayerUpdateTexture (SLayer &Layer)
-
-//	LayerUpdateTexture
-//
-//	Updates the texture from the layer's image
-
-	{
-#if 0
-	D3DLOCKED_RECT Locked;
-	if (FAILED(Layer.pTexture->LockRect(0, &Locked, NULL, D3DLOCK_DISCARD)))
-		return;
-
-	CG32bitPixel *pSrcRow = Layer.Primary.GetPixelPos(0, 0);
-	CG32bitPixel *pSrcRowEnd = Layer.Primary.GetPixelPos(0, Layer.Primary.GetHeight());
-	BYTE *pDestRow = (BYTE *)Locked.pBits;
-	while (pSrcRow < pSrcRowEnd)
-		{
-		CG32bitPixel *pSrc = pSrcRow;
-		CG32bitPixel *pSrcEnd = pSrcRow + Layer.Primary.GetWidth();
-		DWORD *pDest = (DWORD *)pDestRow;
-
-		while (pSrc < pSrcEnd)
-			{
-			*pDest = pSrc->AsDWORD();
-
-			pDest++;
-			pSrc++;
-			}
-
-		//	Next
-
-		pSrcRow = Layer.Primary.NextRow(pSrcRow);
-		pDestRow += Locked.Pitch;
-		}
-
-	Layer.pTexture->UnlockRect(0);
-#endif
-	}
-
 void CDXScreen::Render (void)
 
 //	Present
@@ -287,38 +417,80 @@ void CDXScreen::Render (void)
 	{
 	int i;
 
-    //	Begin the scene
+	//	If we're using textures, then we paint each layer as a texture
 
-    if (FAILED(m_pD3DDevice->BeginScene()))
-		return;
-
-	//	Render all layers in order (back to front)
-
-	for (i = 0; i < m_PaintOrder.GetCount(); i++)
+	if (m_bUseTextures)
 		{
-		SLayer &Layer = m_Layers[m_PaintOrder[i]];
+		//	Before we start the scene, update all the textures.
 
-		//	Copy the image bits to the texture
-
-		if (Layer.pTexture)
+		for (i = 0; i < m_PaintOrder.GetCount(); i++)
 			{
-//			LayerUpdateTexture(Layer);
-			m_pD3DDevice->SetTexture(0, Layer.pTexture);
-			m_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-
-			m_pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (i == 0 ? FALSE : TRUE));
-			m_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-			m_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+			SLayer &Layer = m_Layers[m_PaintOrder[i]];
+			if (Layer.pTexture)
+				m_pD3DDevice->UpdateTexture(Layer.pFrontBuffer, Layer.pTexture);
 			}
 
-		m_pD3DDevice->SetFVF(D3DFVF_VERTEXFORMAT_STD);
-		m_pD3DDevice->SetStreamSource(0, Layer.pVertices, 0, sizeof(SVertexFormatStd));
-		m_pD3DDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, 2);
+		//	Begin the scene
+
+		if (FAILED(m_pD3DDevice->BeginScene()))
+			return;
+
+		//	Render all layers in order (back to front)
+
+		for (i = 0; i < m_PaintOrder.GetCount(); i++)
+			{
+			SLayer &Layer = m_Layers[m_PaintOrder[i]];
+
+			//	Copy the image bits to the texture
+
+			if (Layer.pTexture)
+				{
+				m_pD3DDevice->SetTexture(0, Layer.pTexture);
+				m_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+
+				//	No looping texture
+
+				m_pD3DDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+				m_pD3DDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+
+				//	If necessary, we need to antialias the texture
+
+				m_pD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, (Layer.cxWidth < m_cxTarget ? D3DTEXF_LINEAR : D3DTEXF_POINT));
+
+				//	Blend with layer below us
+
+				m_pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (i == 0 ? FALSE : TRUE));
+				m_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+				m_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+				}
+
+			m_pD3DDevice->SetFVF(D3DFVF_VERTEXFORMAT_STD);
+			m_pD3DDevice->SetStreamSource(0, Layer.pVertices, 0, sizeof(SVertexFormatStd));
+			m_pD3DDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, 2);
+			}
+
+		//	End the scene
+
+		m_pD3DDevice->EndScene();
 		}
 
-	//	End the scene
+	//	Otherwise, we just blt directly to the back buffer. In this case, however, we
+	//	can only handle a single layer
 
-	m_pD3DDevice->EndScene();
+	else
+		{
+		if (m_PaintOrder.GetCount() >= 1)
+			{
+			IDirect3DSurface9 *pBackBuffer;
+			if (FAILED(m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
+				return;
+
+			SLayer &Layer = m_Layers[m_PaintOrder[0]];
+			BltToSurface(Layer.FrontBuffer, pBackBuffer);
+
+			pBackBuffer->Release();
+			}
+		}
 
     //	Let the GPU render
 
@@ -334,24 +506,35 @@ void CDXScreen::SwapBuffers (void)
 	{
 	int i;
 
-	for (i = 0; i < m_Layers.GetCount(); i++)
+	if (m_bUseTextures)
 		{
-		SLayer &Layer = m_Layers[i];
+		for (i = 0; i < m_Layers.GetCount(); i++)
+			{
+			SLayer &Layer = m_Layers[i];
 
-		//	Unlock the back buffer
+			//	Unlock the back buffer
 
-		Layer.pBackBuffer->UnlockRect(0);
+			Layer.pBackBuffer->UnlockRect(0);
 
-		//	Swap textures
+			//	Swap textures
 
-		Swap(Layer.pBackBuffer, Layer.pTexture);
+			Swap(Layer.pBackBuffer, Layer.pFrontBuffer);
 
-		//	Lock again
+			//	Lock again
 
-		D3DLOCKED_RECT Locked;
-		if (FAILED(Layer.pBackBuffer->LockRect(0, &Locked, NULL, D3DLOCK_DISCARD)))
-			continue;
+			D3DLOCKED_RECT Locked;
+			if (FAILED(Layer.pBackBuffer->LockRect(0, &Locked, NULL, (CanUseDynamicTextures() ? D3DLOCK_DISCARD : 0))))
+				continue;
 
-		Layer.BackBuffer.CreateFromExternalBuffer(Locked.pBits, Layer.cxWidth, Layer.cyHeight, Locked.Pitch);
+			Layer.BackBuffer.CreateFromExternalBuffer(Locked.pBits, Layer.cxWidth, Layer.cyHeight, Locked.Pitch);
+			}
+		}
+	else
+		{
+		for (i = 0; i < m_Layers.GetCount(); i++)
+			{
+			SLayer &Layer = m_Layers[i];
+			Layer.BackBuffer.SwapBuffers(Layer.FrontBuffer);
+			}
 		}
 	}
