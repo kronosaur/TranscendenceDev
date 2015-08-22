@@ -219,10 +219,14 @@ void CObjectTracker::Insert (CSpaceObject *pObj)
 	pList->ObjectIDs.Insert(pObj->GetID());
 
 	//	If the name of this object does not match the type, then we store it.
+	//
+	//	NOTE: We need to pass a flags var to GetTypeName because it has slightly 
+	//	different behavior if you omit them.
 
 	DWORD dwNameFlags;
+	DWORD dwDummyFlags;
 	CString sName = pObj->GetName(&dwNameFlags);
-	if (!strEquals(sName, pType->GetTypeName()))
+	if (!strEquals(sName, pType->GetTypeName(&dwDummyFlags)))
 		{
 		SObjName *pName = pList->ObjectNames.SetAt(pObj->GetID());
 		pName->sName = sName;
