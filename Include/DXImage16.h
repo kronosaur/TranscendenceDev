@@ -514,7 +514,7 @@ class CG16bitFont : public CObject
 		inline bool IsEmpty (void) const { return m_FontImage.IsEmpty(); }
 		inline bool IsItalic (void) const { return m_bItalic; }
 		inline bool IsUnderline (void) const { return m_bUnderline; }
-		int MeasureText (const CString &sText, int *retcyHeight = NULL) const;
+		int MeasureText (const CString &sText, int *retcyHeight = NULL, bool bAlwaysAdvance = false) const;
 		static bool ParseFontDesc (const CString &sDesc, CString *retsTypeface, int *retiSize, bool *retbBold, bool *retbItalic);
 		ALERROR ReadFromStream (IReadStream *pStream);
 		void WriteToStream (IWriteStream *pStream);

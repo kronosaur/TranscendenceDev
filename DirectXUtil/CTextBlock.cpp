@@ -190,9 +190,13 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 			while (pPos < pPosEnd && *pPos != ' ' && *pPos != '-')
 				pPos++;
 
-			//	Measure the length of the word
+			//	Measure the length of the word.
+			//
+			//	NOTE: We always use the advance width, even for the last character, because
+			//	otherwise we underestimate the width (sometimes the character width is less than
+			//	the advance width).
 
-			int cxWord = pSpan->Format.pFont->MeasureText(CString(pStart, (int)(pPos - pStart), TRUE));
+			int cxWord = pSpan->Format.pFont->MeasureText(CString(pStart, (int)(pPos - pStart), TRUE), NULL, true);
 
 			//	If the word fits, add it to the output
 
@@ -202,7 +206,7 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 
 				if (pPos < pPosEnd)
 					{
-					cxWord += pSpan->Format.pFont->MeasureText(CString(pPos, 1, TRUE));
+					cxWord += pSpan->Format.pFont->MeasureText(CString(pPos, 1, TRUE), NULL, true);
 					pPos++;
 					}
 

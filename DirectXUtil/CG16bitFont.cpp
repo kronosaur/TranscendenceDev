@@ -771,7 +771,7 @@ void CG16bitFont::DrawTextEffect (CG32bitImage &Dest,
 	DrawText(Dest, x, y, rgbColor, sText, dwFlags, retx);
 	}
 
-int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight) const
+int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight, bool bAlwaysAdvance) const
 
 //	MeasureText
 //
@@ -796,7 +796,7 @@ int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight) const
 		//	(Except for spaces, which should always use the advance width
 		//	otherwise, the cxWidth seems to be 0)
 
-		if (pPos == pEndPos && iIndex != 0)
+		if (pPos == pEndPos && iIndex != 0 && !bAlwaysAdvance)
 			cxWidth += pMetrics->cxWidth;
 		else
 			cxWidth += pMetrics->cxAdvance;
