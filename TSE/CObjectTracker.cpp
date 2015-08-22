@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+const int MAX_ALLOC_GRANULARITY =			10000;
+
 CObjectTracker::~CObjectTracker (void)
 
 //	CObjectTracker destructor
@@ -81,6 +83,8 @@ void CObjectTracker::Delete (CSpaceObject *pObj)
 			pList->ObjectIDs.Delete(i);
 			break;
 			}
+
+	pList->ObjectNames.DeleteAt(dwID);
 	}
 
 void CObjectTracker::DeleteAll (void)
@@ -220,7 +224,7 @@ void CObjectTracker::Insert (CSpaceObject *pObj)
 	CString sName = pObj->GetName(&dwNameFlags);
 	if (!strEquals(sName, pType->GetTypeName()))
 		{
-		SObjName *pName = pList->ObjectNames.Insert(pObj->GetID());
+		SObjName *pName = pList->ObjectNames.SetAt(pObj->GetID());
 		pName->sName = sName;
 		pName->dwNameFlags = dwNameFlags;
 		}
@@ -276,6 +280,8 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 		//	Get the appropriate table
 
 		SObjList *pList = (pNode && pType ? GetList(pNode, pType) : NULL);
+		if (pList)
+			pList->ObjectIDs.SetGranularity(Max(10, Min(iObjCount, MAX_ALLOC_GRANULARITY)));
 
 		//	Read all the objects
 
@@ -291,6 +297,8 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 		if (Ctx.dwVersion >= 21)
 			{
 			Ctx.pStream->Read((char *)&iObjCount, sizeof(DWORD));
+			if (pList)
+				pList->ObjectNames.SetGranularity(Max(10, Min(iObjCount, MAX_ALLOC_GRANULARITY)));
 
 			for (j = 0; j < iObjCount; j++)
 				{
@@ -299,8 +307,8 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 				if (pList)
 					{
-					SObjName *pName = pList->ObjectNames.Insert(dwObjID);
-			
+					SObjName *pName = pList->ObjectNames.SetAt(dwObjID);
+
 					Ctx.pStream->Read((char *)&pName->dwNameFlags, sizeof(DWORD));
 					pName->sName.ReadFromStream(Ctx.pStream);
 					}

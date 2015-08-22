@@ -5086,6 +5086,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				{
 				Remove(enteredStargate, CDamageSource());
 				AddToSystem(pSystem);
+				m_fDestroyInGate = false;
 				}
 			}
 		else
