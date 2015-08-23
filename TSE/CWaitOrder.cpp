@@ -218,6 +218,11 @@ void CWaitOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObjec
 
 	DWORD dwTimer;
 
+	//	If we're attacking enemies, then we can't be docked.
+
+	if (m_fAttackEnemies)
+		Ctx.Undock(pShip);
+
 	//	Waiting for leader to undock: we need a leader and an optional timer.
 
 	if (m_fWaitUntilLeaderUndocks)

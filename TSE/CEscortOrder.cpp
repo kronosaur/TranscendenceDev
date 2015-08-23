@@ -140,6 +140,10 @@ void CEscortOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObj
 
 	ASSERT(pOrderTarget);
 
+	//	Make sure we're undocked because we're going flying
+
+	Ctx.Undock(pShip);
+
 	//	Set state
 
 	m_iState = stateEscorting;
