@@ -77,8 +77,9 @@ class IShipController
 					vData(vDataArg)
 				{ }
 
-			DWORD AsInteger (void) const { if (iDataType == dataInteger || iDataType == dataPair) return dwData1; else return 0; }
-			DWORD AsInteger2 (void) const { if (iDataType == dataPair) return dwData2; else return 0; }
+			inline DWORD AsInteger (void) const { if (iDataType == dataInteger || iDataType == dataPair) return dwData1; else return 0; }
+			inline DWORD AsInteger2 (void) const { if (iDataType == dataPair) return dwData2; else return 0; }
+			inline bool IsIntegerOrPair (void) const { return (iDataType == dataInteger || iDataType == dataPair); }
 
 			EDataTypes iDataType;
 

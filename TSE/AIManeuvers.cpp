@@ -1122,11 +1122,12 @@ void CAIBehaviorCtx::ImplementEscortManeuvers (CShip *pShip, CSpaceObject *pTarg
 
 		//	Escort position is encoded in order data
 
-		DWORD dwData = pShip->GetCurrentOrderData();
-		if (dwData)
+		IShipController::SData Data;
+		pShip->GetCurrentOrder(NULL, &Data);
+		if (Data.IsIntegerOrPair())
 			{
-			int iAngle = LOWORD(dwData);
-			int iDistance = HIWORD(dwData);
+			int iAngle = Data.AsInteger();
+			int iDistance = Data.AsInteger2();
 			if (iDistance == 0)
 				iDistance = 6;
 
