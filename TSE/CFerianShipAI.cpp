@@ -68,8 +68,20 @@ void CFerianShipAI::Behavior (void)
 
 		case stateAttackingThreat:
 			{
-			ASSERT(m_pTarget);
 			ASSERT(m_pBase);
+
+			//	In previous versions there was a bug in which m_pTarget could end
+			//	up NULL. We handle it here.
+
+			if (m_pTarget == NULL)
+				{
+				ASSERT(false);
+				m_State = stateNone;
+				break;
+				}
+
+			//	Attack
+
 			m_AICtx.ImplementAttackTarget(m_pShip, m_pTarget);
 			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip, m_pTarget);
 
@@ -476,7 +488,9 @@ DWORD CFerianShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage
 		case msgAttackDeter:
 			{
 			if (GetCurrentOrder() == IShipController::orderMine
-					&& pSender == m_pBase)
+					&& pSender == m_pBase
+					&& pParam1
+					&& !pParam1->IsDestroyed())
 				{
 				SetState(stateAttackingThreat);
 				m_pTarget = pParam1;

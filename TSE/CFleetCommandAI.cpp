@@ -1051,6 +1051,9 @@ void CFleetCommandAI::OrderAttackTarget (CSpaceObject *pTarget)
 	{
 	int i;
 
+	if (pTarget == NULL)
+		return;
+
 	for (i = 0; i < m_iAssetCount; i++)
 		if (m_pAssets[i].pTarget == NULL)
 			{
