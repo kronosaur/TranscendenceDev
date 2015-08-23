@@ -766,7 +766,7 @@ bool CItemType::GetUseDesc (SUseDesc *retDesc) const
 
 	//	If we have information about usage, we return what we have.
 
-	if ((m_pUseCode != NULL) || (m_pUseScreen != NULL))
+	if ((m_pUseCode != NULL) || (!m_pUseScreen.IsEmpty()))
 		{
 		if (retDesc)
 			{

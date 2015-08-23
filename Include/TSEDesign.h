@@ -589,6 +589,7 @@ class CDockScreenTypeRef
 		CDesignType *GetDockScreen (CDesignType *pRoot, CString *retsName) const;
 		CString GetStringUNID (CDesignType *pRoot) const;
 		inline const CString &GetUNID (void) const { return m_sUNID; }
+		inline bool IsEmpty (void) const { return m_sUNID.IsBlank(); }
 		void LoadUNID (SDesignLoadCtx &Ctx, const CString &sUNID);
 
 		ALERROR Bind (CXMLElement *pLocalScreens = NULL);
