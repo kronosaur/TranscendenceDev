@@ -304,9 +304,22 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 	{
 	CSmartLock Lock(m_cs);
 
+#ifdef DEBUG_SOUNDTRACK
+	::kernelDebugLogMessage("OnNotifyMode[%x]: notify mode = %d.", (DWORD)hWnd, iMode);
+	CString sBuffer;
+	int iQueryMode = (int)MCIWndGetMode(hWnd, sBuffer.GetWritePointer(1024), 1024);
+	sBuffer.Truncate(lstrlen(sBuffer.GetASCIIZPointer()));
+	::kernelDebugLogMessage("OnNotifyMode[%x]: query mode = %d: %s.", (DWORD)hWnd, iQueryMode, sBuffer);
+#endif
+
 	SChannel *pChannel;
 	if (!FindChannel(hWnd, &pChannel))
+		{
+#ifdef DEBUG_SOUNDTRACK
+		::kernelDebugLogMessage("OnNotifyMode: Unable to find channel for hWnd: %x.", (DWORD)hWnd);
+#endif
 		return 0;
+		}
 
 	switch (iMode)
 		{
@@ -385,6 +398,9 @@ LONG APIENTRY CMCIMixer::ParentWndProc (HWND hWnd, UINT message, UINT wParam, LO
 
 		case MCIWNDM_NOTIFYMODE:
 			{
+#ifdef DEBUG_SOUNDTRACK
+			::kernelDebugLogMessage("MCIWNDM_NOTIFYMODE [%x]: wParam = %d lParam = %d test = %d", (DWORD)hWnd, wParam, lParam, 101);
+#endif
 			CMCIMixer *pThis = (CMCIMixer *)::GetWindowLong(hWnd, GWL_USERDATA);
 			return pThis->OnNotifyMode((HWND)wParam, (int)lParam);
 			}

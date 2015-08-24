@@ -8,7 +8,7 @@
 class CMCIMixer
 	{
 	public:
-		CMCIMixer (int iChannels = 2);
+		CMCIMixer (int iChannels = 1);
 		~CMCIMixer (void);
 
 		void AbortAllRequests (void);

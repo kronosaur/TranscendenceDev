@@ -426,6 +426,7 @@ bool CHumanInterface::WMCreate (HWND hWnd, CString *retsError)
 	ScreenOptions.m_bForceExclusiveMode = m_Options.m_bForceExclusiveMode;
 	ScreenOptions.m_bForceNonExclusiveMode = m_Options.m_bForceNonExclusiveMode;
 	ScreenOptions.m_bForceScreenSize = m_Options.m_bForceScreenSize;
+	ScreenOptions.m_bNoGPUAcceleration = m_Options.m_bNoGPUAcceleration;
 	ScreenOptions.m_bDebugVideo = m_Options.m_bDebugVideo;
 
 	if (m_ScreenMgr.Init(ScreenOptions, retsError) != NOERROR)

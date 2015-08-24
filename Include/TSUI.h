@@ -610,6 +610,7 @@ struct SHIOptions
 			m_bForceExclusiveMode(false),
 			m_bForceNonExclusiveMode(false),
 			m_bForceScreenSize(false),
+			m_bNoGPUAcceleration(false),
 			m_iSoundVolume(DEFAULT_SOUND_VOLUME),
 			m_bDebugVideo(false)
 		{ }
@@ -633,6 +634,7 @@ struct SHIOptions
 	bool m_bForceExclusiveMode;
 	bool m_bForceNonExclusiveMode;
 	bool m_bForceScreenSize;
+	bool m_bNoGPUAcceleration;
 
 	//	Sound options
 	int m_iSoundVolume;
