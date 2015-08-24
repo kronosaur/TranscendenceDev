@@ -113,6 +113,8 @@ void CScreenMgr3D::DebugOutputStats (void)
 	HDC hDC = ::GetDC(m_hWnd);
 	kernelDebugLogMessage("LogPixelsY: %d", ::GetDeviceCaps(hDC, LOGPIXELSY));
 	::ReleaseDC(m_hWnd, hDC);
+
+	m_DX.DebugOutputStats();
 	}
 
 void CScreenMgr3D::Flip (void)
@@ -222,7 +224,10 @@ ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)
 
 	//	Initialize DX
 
-	if (!m_DX.Init(m_hWnd, m_cxScreen, m_cyScreen, retsError))
+	DWORD dwFlags = 0;
+	dwFlags |= (Options.m_bNoGPUAcceleration ? CDXScreen::FLAG_NO_TEXTURES : 0);
+
+	if (!m_DX.Init(m_hWnd, m_cxScreen, m_cyScreen, dwFlags, retsError))
 		return ERR_FAIL;
 
 	//	Initialize the background blitter

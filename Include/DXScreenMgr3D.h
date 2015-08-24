@@ -25,13 +25,21 @@ struct SDXLayerCreate
 class CDXScreen
 	{
 	public:
+		enum EFlags
+			{
+			//	Init
+
+			FLAG_NO_TEXTURES =				0x00000001,
+			};
+
 		CDXScreen (void);
 		~CDXScreen (void) { CleanUp(); }
 
 		void CleanUp (void);
 		bool CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CString *retsError = NULL);
+		void DebugOutputStats (void);
 		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return m_Layers[iLayerID].BackBuffer; }
-		bool Init (HWND hWnd, int cxWidth, int cyHeight, CString *retsError = NULL);
+		bool Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError = NULL);
 		inline bool IsUsingTextures (void) const { return m_bUseTextures; }
 		void Render (void);
 		void SwapBuffers (void);

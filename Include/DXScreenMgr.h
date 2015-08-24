@@ -16,6 +16,7 @@ struct SScreenMgrOptions
 			m_bForceExclusiveMode(false),
 			m_bForceNonExclusiveMode(false),
 			m_bForceScreenSize(false),
+			m_bNoGPUAcceleration(false),
 			m_cyMaxScreen(-1),
 			m_cxScreen(1024),
 			m_cyScreen(768),
@@ -33,6 +34,7 @@ struct SScreenMgrOptions
 	bool m_bForceExclusiveMode;
 	bool m_bForceNonExclusiveMode;
 	bool m_bForceScreenSize;			//	If in exclusive mode, switch to desired res
+	bool m_bNoGPUAcceleration;
 
 	int m_cyMaxScreen;					//	Scales screen if we're bigger than this (-1 = no scaling)
 	int m_cxScreen;						//	Used if exclusive or windowed

@@ -313,7 +313,22 @@ bool CDXScreen::CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CSt
 	return true;
 	}
 
-bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, CString *retsError)
+void CDXScreen::DebugOutputStats (void)
+
+//	DebugOutputStats
+//
+//	Output stats about the DX stack
+
+	{
+	::kernelDebugLogMessage("DeviceType: %x", m_DeviceCaps.DeviceType);
+	::kernelDebugLogMessage("Caps: %x", m_DeviceCaps.Caps);
+	::kernelDebugLogMessage("Caps2: %x", m_DeviceCaps.Caps2);
+	::kernelDebugLogMessage("Caps3: %x", m_DeviceCaps.Caps3);
+	::kernelDebugLogMessage("DevCaps: %x", m_DeviceCaps.DevCaps);
+	::kernelDebugLogMessage("DevCaps2: %x", m_DeviceCaps.DevCaps2);
+	}
+
+bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError)
 
 //	Init
 //
@@ -384,7 +399,9 @@ bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, CString *retsError)
 #ifdef DEBUG_NO_DX_TEXTURES
 	m_bUseTextures = false;
 #else
-	m_bUseTextures = CanUseDynamicTextures();
+	m_bUseTextures = (!(dwFlags & FLAG_NO_TEXTURES)
+			&& CanUseDynamicTextures()
+			&& ((m_DeviceCaps.Caps3 & D3DCAPS3_COPY_TO_VIDMEM) == D3DCAPS3_COPY_TO_VIDMEM));
 #endif
 
 	//	Set up our scene
