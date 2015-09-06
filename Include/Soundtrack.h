@@ -14,8 +14,8 @@ class CMCIMixer
 		void AbortAllRequests (void);
 		void FadeAtPos (int iPos);
 		void FadeNow (void);
-		int GetCurrentPlayLength (void) const;
-		int GetCurrentPlayPos (void) const;
+		int GetCurrentPlayLength (void);
+		int GetCurrentPlayPos (void);
 		void GetDebugInfo (TArray<CString> *retLines) const;
 		bool Play (CSoundType *pTrack, int iPos = 0);
 		bool PlayFadeIn (CSoundType *pTrack, int iPos = 0);
@@ -49,6 +49,8 @@ class CMCIMixer
 			typeFadeOut,
 			typeSetPaused,
 			typeSetUnpaused,
+			typeGetPlayLength,
+			typeGetPlayPos,
 			};
 
 		struct SRequest
@@ -58,10 +60,18 @@ class CMCIMixer
 			int iPos;
 			};
 
-		void CreateParentWindow (void);
+		struct SResult
+			{
+			int iValue;
+			};
+
+		bool CreateParentWindow (void);
 		void EnqueueRequest (ERequestType iType, CSoundType *pTrack = NULL, int iPos = 0);
 		bool FindChannel (HWND hMCI, SChannel **retpChannel = NULL);
+		inline int GetPlayLength (HWND hMCI) { return MCIWndGetLength(hMCI); }
+		inline int GetPlayPos (HWND hMCI) { return MCIWndGetPosition(hMCI); }
 		CString GetRequestDesc (const SRequest &Request) const;
+		bool InitChannels (void);
 		void LogError (HWND hMCI, const CString &sState, const CString &sFilespec = NULL_STR);
 		LONG OnNotifyMode (HWND hWnd, int iMode);
 		LONG OnNotifyPos (HWND hWnd, int iPos);
@@ -88,9 +98,11 @@ class CMCIMixer
 
 		mutable CCriticalSection m_cs;
 		TQueue<SRequest> m_Request;			//	Queue of requests
+		SResult m_Result;
 		HANDLE m_hProcessingThread;			//	Processing thread handle
 		HANDLE m_hQuitEvent;				//	Tell thread to quit
 		HANDLE m_hWorkEvent;				//	Tell thread to work
+		HANDLE m_hResultEvent;				//	Thread has a result
 		HANDLE m_hAbortEvent;				//	Tell thread to stop
 		bool m_bNoStopNotify;
 
@@ -118,7 +130,7 @@ class CSoundtrackManager
 		CSoundtrackManager (void);
 		~CSoundtrackManager (void);
 
-		CSoundType *GetCurrentTrack (int *retiPos = NULL) const;
+		CSoundType *GetCurrentTrack (int *retiPos = NULL);
 		void NextTrack (void);
 		void NotifyEndCombat (void);
 		void NotifyEnterSystem (CTopologyNode *pNode = NULL, bool bFirstTime = true);
@@ -130,6 +142,7 @@ class CSoundtrackManager
 		void NotifyUndocked (void);
 		void NotifyUpdatePlayPos (int iPos);
 		void PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen);
+		inline void SetDebugMode (bool bDebugMode = true) { m_bDebugMode = bDebugMode; }
 		void SetGameState (EGameStates iNewState);
 		void SetGameState (EGameStates iNewState, CSoundType *pTrack);
 		void SetMusicEnabled (bool bEnabled = true);
@@ -138,6 +151,16 @@ class CSoundtrackManager
 		void TogglePlayPaused (void);
 
 	private:
+		struct STrackCriteria
+			{
+			STrackCriteria (void) :
+					pNode(NULL)
+				{ }
+
+			CTopologyNode *pNode;
+			CString sRequiredAttrib;
+			};
+
 		CSoundType *CalcGameTrackToPlay (CTopologyNode *pNode, const CString &sRequiredAttrib) const;
 		CSoundType *CalcRandomTrackToPlay (void) const;
 		CSoundType *CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const;
@@ -152,6 +175,7 @@ class CSoundtrackManager
 
 		CMCIMixer m_Mixer;					//	Music mixer
 		bool m_bEnabled;					//	Music is enabled
+		bool m_bDebugMode;					//	Output debug info
 		EGameStates m_iGameState;			//	Current soundtrack state
 		CSoundType *m_pNowPlaying;			//	What we've scheduled to play
 		CSoundType *m_pLastTravel;			//	Travel music track interrupted by combat
@@ -162,6 +186,8 @@ class CSoundtrackManager
 		DWORD m_dwTransition;				//	Tick on which we started a transition
 		DWORD m_dwStartedCombat;			//	Millisecond on which we started combat
 		DWORD m_dwStartedTravel;			//	Millisecond on which we started travel mode
+
+		mutable STrackCriteria m_NotFoundCache;		//	Remember that we couldn't find this criteria
 
 		CSoundType *m_pIntroTrack;			//	Track to play for intro.
 	};

@@ -40,6 +40,7 @@ const int SEGMENT_BOUNDARY_THRESHOLD =			5000;	//	5 seconds
 
 CSoundtrackManager::CSoundtrackManager (void) :
 		m_bEnabled(false),
+		m_bDebugMode(false),
 		m_iGameState(stateNone),
 		m_pNowPlaying(NULL),
 		m_pLastTravel(NULL),
@@ -76,6 +77,13 @@ CSoundType *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const
 
 	{
 	int i;
+
+	//	If we didn't find this criteria before, then we're not going to find it
+	//	now.
+
+	if (m_NotFoundCache.pNode == pNode
+			&& strEquals(m_NotFoundCache.sRequiredAttrib, sRequiredAttrib))
+		return NULL;
 
 	//	Create a probability table of tracks to play.
 
@@ -158,9 +166,11 @@ CSoundType *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const
 
 	if (Table.GetCount() == 0)
 		{
-#ifdef DEBUG_SOUNDTRACK
-		kernelDebugLogMessage("Unable to find soundtrack for state %d.", m_iGameState);
-#endif
+		if (m_bDebugMode)
+			::kernelDebugLogMessage("Unable to find soundtrack for state %d.", m_iGameState);
+
+		m_NotFoundCache.pNode = pNode;
+		m_NotFoundCache.sRequiredAttrib = sRequiredAttrib;
 		return NULL;
 		}
 
@@ -169,10 +179,16 @@ CSoundType *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const
 	TProbabilityTable<CSoundType *> &Entry = Table[0];
 	CSoundType *pResult = Entry.GetAt(Entry.RollPos());
 
-#ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("State: %d: Found %d tracks in priority %d table.", m_iGameState, Table[0].GetCount(), Table.GetKey(0));
-	kernelDebugLogMessage("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
-#endif
+	//	Clear the cache, since we found something
+
+	m_NotFoundCache.pNode = NULL;
+	m_NotFoundCache.sRequiredAttrib = NULL_STR;
+
+	if (m_bDebugMode)
+		{
+		::kernelDebugLogMessage("State: %d: Found %d tracks in priority %d table.", m_iGameState, Table[0].GetCount(), Table.GetKey(0));
+		::kernelDebugLogMessage("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
+		}
 
 	return pResult;
 	}
@@ -241,9 +257,9 @@ CSoundType *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 
 	if (Table.GetCount() == 0)
 		{
-#ifdef DEBUG_SOUNDTRACK
-		kernelDebugLogMessage("Unable to find soundtrack for state %d.", m_iGameState);
-#endif
+		if (m_bDebugMode)
+			::kernelDebugLogMessage("Unable to find soundtrack for state %d.", m_iGameState);
+
 		return NULL;
 		}
 
@@ -251,10 +267,11 @@ CSoundType *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 
 	CSoundType *pResult = Table.GetAt(Table.RollPos());
 
-#ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("State: %d: Found %d tracks in priority table.", m_iGameState, Table.GetCount());
-	kernelDebugLogMessage("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
-#endif
+	if (m_bDebugMode)
+		{
+		::kernelDebugLogMessage("State: %d: Found %d tracks in priority table.", m_iGameState, Table.GetCount());
+		::kernelDebugLogMessage("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
+		}
 
 	return pResult;
 	}
@@ -287,7 +304,7 @@ CSoundType *CSoundtrackManager::CalcTrackToPlay (CTopologyNode *pNode, EGameStat
 		}
 	}
 
-CSoundType *CSoundtrackManager::GetCurrentTrack (int *retiPos) const
+CSoundType *CSoundtrackManager::GetCurrentTrack (int *retiPos)
 
 //	GetCurrentTrack
 //
@@ -378,9 +395,8 @@ void CSoundtrackManager::NotifyEndCombat (void)
 //	Player is out of combat
 
 	{
-#ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("Combat done.");
-#endif
+	if (m_bDebugMode)
+		::kernelDebugLogMessage("Combat done.");
 
 	//	If we're not in combat, then nothing to do
 
@@ -411,9 +427,8 @@ void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTim
 //	transition music).
 
 	{
-#ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("Entered system.");
-#endif
+	if (m_bDebugMode)
+		::kernelDebugLogMessage("Entered system.");
 
 	//	If it's not the first time we've entered the system, then continue 
 	//	playing.
@@ -466,9 +481,8 @@ void CSoundtrackManager::NotifyStartCombat (void)
 //	Player has just entered combat.
 
 	{
-#ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("Combat started.");
-#endif
+	if (m_bDebugMode)
+		::kernelDebugLogMessage("Combat started.");
 
 	//	If we're already in combat, then nothing to do
 
@@ -505,9 +519,8 @@ void CSoundtrackManager::NotifyTrackDone (void)
 //	Done playing a track
 
 	{
-#ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("Track done: %s", (m_pNowPlaying ? m_pNowPlaying->GetFilespec() : CONSTLIT("(none)")));
-#endif
+	if (m_bDebugMode)
+		::kernelDebugLogMessage("Track done: %s", (m_pNowPlaying ? m_pNowPlaying->GetFilespec() : CONSTLIT("(none)")));
 
 	//	If we're transitioning then we wait for a subsequent play.
 
@@ -527,9 +540,8 @@ void CSoundtrackManager::NotifyTrackPlaying (CSoundType *pTrack)
 //	We're now playing this track
 
 	{
-#ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("Track playing: %s", (pTrack ? pTrack->GetFilespec() : CONSTLIT("(none)")));
-#endif
+	if (m_bDebugMode)
+		::kernelDebugLogMessage("Track playing: %s", (pTrack ? pTrack->GetFilespec() : CONSTLIT("(none)")));
 
 	if (pTrack)
 		{

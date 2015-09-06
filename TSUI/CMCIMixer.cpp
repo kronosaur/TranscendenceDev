@@ -21,53 +21,22 @@ CMCIMixer::CMCIMixer (int iChannels) :
 		m_pNowPlaying(NULL),
 		m_hProcessingThread(INVALID_HANDLE_VALUE),
 		m_hWorkEvent(INVALID_HANDLE_VALUE),
+		m_hResultEvent(INVALID_HANDLE_VALUE),
 		m_hQuitEvent(INVALID_HANDLE_VALUE),
 		m_bNoStopNotify(false)
 
 //	CMCIMixer constructor
 
 	{
-	int i;
-
-	ASSERT(iChannels > 0);
-
-	//	Create the parent window that will receive notifications.
-	//	
-	//	NOTE: If we could not create the window then something is wrong and we
-	//	disable everything.
-
-	CreateParentWindow();
-	if (m_hParent == NULL)
-		return;
-
-	//	Create all the MCI windows (one per channel).
-
-	m_Channels.InsertEmpty(iChannels);
-	for (i = 0; i < iChannels; i++)
-		{
-		m_Channels[i].hMCI = ::MCIWndCreate(m_hParent, 
-			NULL,
-			WS_OVERLAPPED | WS_CHILD | MCIWNDF_NOERRORDLG | MCIWNDF_NOMENU | MCIWNDF_NOPLAYBAR | MCIWNDF_NOTIFYALL,
-			NULL);
-
-		//	Abort if we can't do this
-
-		if (m_Channels[i].hMCI == NULL)
-			{
-			::DestroyWindow(m_hParent);
-			m_hParent = NULL;
-			return;
-			}
-
-		//	Initialize
-
-		m_Channels[i].iState = stateNone;
-		}
+#ifdef DEBUG_SOUNDTRACK
+	::kernelDebugLogMessage("[%x] Starting CMCIMixer.", ::GetCurrentThreadId());
+#endif
 
 	//	Start up a processing thread
 
 	m_hQuitEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hWorkEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+	m_hResultEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hAbortEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hProcessingThread = ::kernelCreateThread(ProcessingThread, this);
 	}
@@ -91,7 +60,7 @@ void CMCIMixer::AbortAllRequests (void)
 	m_Request.DeleteAll();
 	}
 
-void CMCIMixer::CreateParentWindow (void)
+bool CMCIMixer::CreateParentWindow (void)
 
 //	CreateParentWindow
 //
@@ -110,7 +79,7 @@ void CMCIMixer::CreateParentWindow (void)
 		wc.lpfnWndProc = ParentWndProc;
 		wc.lpszClassName = "TSUI_MCIParent";
 		if (!::RegisterClassEx(&wc))
-			return;
+			return false;
 
 		//	Create the window
 
@@ -126,7 +95,11 @@ void CMCIMixer::CreateParentWindow (void)
 				NULL,
 				NULL,
 				this);
+		if (m_hParent == NULL)
+			return false;
 		}
+
+	return true;
 	}
 
 void CMCIMixer::EnqueueRequest (ERequestType iType, CSoundType *pTrack, int iPos)
@@ -200,26 +173,66 @@ bool CMCIMixer::FindChannel (HWND hMCI, SChannel **retpChannel)
 	return false;
 	}
 
-int CMCIMixer::GetCurrentPlayLength (void) const
+int CMCIMixer::GetCurrentPlayLength (void)
 
 //	GetCurrentPlayLength
 //
 //	Returns the length of the current track.
+//
+//	NOTE: These can only be called by other threads. It should never be called by
+//	any processing functions because it will not return.
 
 	{
-	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
-	return MCIWndGetLength(hMCI);
+	if (m_hParent == NULL)
+		return 0;
+
+	//	Enqueue a request
+
+	::ResetEvent(m_hResultEvent);
+	EnqueueRequest(typeGetPlayLength);
+
+	//	Wait for result
+
+	if (::WaitForSingleObject(m_hResultEvent, 5000) == WAIT_TIMEOUT)
+		{
+#ifdef DEBUG_SOUNDTRACK
+		::kernelDebugLogMessage("[%x] GetCurrentPlayLength failed.", GetCurrentThreadId());
+#endif
+		return 0;
+		}
+
+	return m_Result.iValue;
 	}
 
-int CMCIMixer::GetCurrentPlayPos (void) const
+int CMCIMixer::GetCurrentPlayPos (void)
 
 //	GetCurrentPlayPos
 //
 //	Returns the position of the current track.
+//
+//	NOTE: These can only be called by other threads. It should never be called by
+//	any processing functions because it will not return.
 
 	{
-	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
-	return MCIWndGetPosition(hMCI);
+	if (m_hParent == NULL)
+		return 0;
+
+	//	Enqueue a request
+
+	::ResetEvent(m_hResultEvent);
+	EnqueueRequest(typeGetPlayPos);
+
+	//	Wait for result
+
+	if (::WaitForSingleObject(m_hResultEvent, 5000) == WAIT_TIMEOUT)
+		{
+#ifdef DEBUG_SOUNDTRACK
+		::kernelDebugLogMessage("[%x] GetCurrentPlayPos failed.", GetCurrentThreadId());
+#endif
+		return 0;
+		}
+
+	return m_Result.iValue;
 	}
 
 void CMCIMixer::GetDebugInfo (TArray<CString> *retLines) const
@@ -277,6 +290,58 @@ CString CMCIMixer::GetRequestDesc (const SRequest &Request) const
 		}
 	}
 
+bool CMCIMixer::InitChannels (void)
+
+//	InitChannels
+//
+//	Initializes all channels
+
+	{
+	CSmartLock Lock(m_cs);
+
+	int i;
+
+	ASSERT(m_hParent == NULL);
+	ASSERT(m_Channels.GetCount() == 0);
+
+	if (!CreateParentWindow())
+		return false;
+
+	//	For now we only support 1 channel
+
+	int iChannels = 1;
+
+	//	Create all the MCI windows (one per channel).
+
+	m_Channels.InsertEmpty(iChannels);
+	for (i = 0; i < iChannels; i++)
+		{
+		m_Channels[i].hMCI = ::MCIWndCreate(m_hParent, 
+				NULL,
+				WS_OVERLAPPED | WS_CHILD | MCIWNDF_NOERRORDLG | MCIWNDF_NOMENU | MCIWNDF_NOPLAYBAR | MCIWNDF_NOTIFYALL,
+				NULL);
+
+		//	Abort if we can't do this
+
+		if (m_Channels[i].hMCI == NULL)
+			{
+			::DestroyWindow(m_hParent);
+			m_hParent = NULL;
+			return false;
+			}
+
+		//	Initialize
+
+		m_Channels[i].iState = stateNone;
+
+#ifdef DEBUG_SOUNDTRACK
+		::kernelDebugLogMessage("[%x]: Created MCI Window for channel %d: %x", ::GetCurrentThreadId(), i, m_Channels[i].hMCI);
+#endif
+		}
+
+	return true;
+	}
+
 void CMCIMixer::LogError (HWND hMCI, const CString &sState, const CString &sFilespec)
 
 //	LogError
@@ -290,9 +355,9 @@ void CMCIMixer::LogError (HWND hMCI, const CString &sState, const CString &sFile
 	sError.Truncate(lstrlen(pDest));
 
 	if (!sFilespec.IsBlank())
-		::kernelDebugLogMessage("MCI ERROR %s [%s]: %s", sState, sFilespec, sError);
+		::kernelDebugLogMessage("[%x] MCI ERROR %s [%s]: %s", GetCurrentThreadId(), sState, sFilespec, sError);
 	else
-		::kernelDebugLogMessage("MCI ERROR %s: %s", sState, sError);
+		::kernelDebugLogMessage("[%x] MCI ERROR %s: %s", GetCurrentThreadId(), sState, sError);
 	}
 
 LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
@@ -305,7 +370,7 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 	CSmartLock Lock(m_cs);
 
 #ifdef DEBUG_SOUNDTRACK
-	::kernelDebugLogMessage("OnNotifyMode[%x]: notify mode = %d.", (DWORD)hWnd, iMode);
+	::kernelDebugLogMessage("[%x] OnNotifyMode[%x]: notify mode = %d.", ::GetCurrentThreadId(), (DWORD)hWnd, iMode);
 	CString sBuffer;
 	int iQueryMode = (int)MCIWndGetMode(hWnd, sBuffer.GetWritePointer(1024), 1024);
 	sBuffer.Truncate(lstrlen(sBuffer.GetASCIIZPointer()));
@@ -338,7 +403,7 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 			//	Notify that we're playing
 
 			if (g_pHI)
-				g_pHI->HICommand(CMD_SOUNDTRACK_NOW_PLAYING, m_pNowPlaying);
+				g_pHI->HIPostCommand(CMD_SOUNDTRACK_NOW_PLAYING, m_pNowPlaying);
 			break;
 
 		case MCI_MODE_RECORD:
@@ -353,7 +418,7 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 			//	Notify that we're done with this track
 
 			if (g_pHI && !m_bNoStopNotify)
-				g_pHI->HICommand(CMD_SOUNDTRACK_DONE);
+				g_pHI->HIPostCommand(CMD_SOUNDTRACK_DONE);
 			break;
 		}
 
@@ -374,7 +439,7 @@ LONG CMCIMixer::OnNotifyPos (HWND hWnd, int iPos)
 		return 0;
 
 	if (g_pHI)
-		g_pHI->HICommand(CMD_SOUNDTRACK_UPDATE_PLAY_POS, (void *)iPos);
+		g_pHI->HIPostCommand(CMD_SOUNDTRACK_UPDATE_PLAY_POS, (void *)iPos);
 
 	return 0;
 	}
@@ -398,9 +463,6 @@ LONG APIENTRY CMCIMixer::ParentWndProc (HWND hWnd, UINT message, UINT wParam, LO
 
 		case MCIWNDM_NOTIFYMODE:
 			{
-#ifdef DEBUG_SOUNDTRACK
-			::kernelDebugLogMessage("MCIWNDM_NOTIFYMODE [%x]: wParam = %d lParam = %d test = %d", (DWORD)hWnd, wParam, lParam, 101);
-#endif
 			CMCIMixer *pThis = (CMCIMixer *)::GetWindowLong(hWnd, GWL_USERDATA);
 			return pThis->OnNotifyMode((HWND)wParam, (int)lParam);
 			}
@@ -456,7 +518,7 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("ProcessFadeIn");
+	kernelDebugLogMessage("[%x] ProcessFadeIn", GetCurrentThreadId());
 #endif
 
 	//	Stop all channels
@@ -470,7 +532,7 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 	//	Open new file
 
 	CString sFilespec = Request.pTrack->GetFilespec();
-	if (MCIWndOpen(hMCI, sFilespec.GetASCIIZPointer(), MCI_OPEN_SHAREABLE) != 0)
+	if (MCIWndOpen(hMCI, sFilespec.GetASCIIZPointer(), 0) != 0)
 		{
 		LogError(hMCI, CONSTLIT("ProcessFadeIn MCIWndOpen"), sFilespec);
 		return;
@@ -507,7 +569,7 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 
 		//	How far into the fade
 
-		int iCurPos = GetCurrentPlayPos();
+		int iCurPos = GetPlayPos(hMCI);
 		int iPlaying = iCurPos - Request.iPos;
 		if (iPlaying <= 0 
 				|| iPlaying >= FADE_LENGTH
@@ -536,12 +598,12 @@ void CMCIMixer::ProcessFadeOut (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("ProcessFadeOut");
+	kernelDebugLogMessage("[%x] ProcessFadeOut", GetCurrentThreadId());
 #endif
 
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
 
-	int iStartPos = GetCurrentPlayPos();
+	int iStartPos = GetPlayPos(hMCI);
 	int iFadeLen = Request.iPos - iStartPos;
 	if (iFadeLen <= 0)
 		return;
@@ -559,7 +621,7 @@ void CMCIMixer::ProcessFadeOut (const SRequest &Request)
 
 		//	How much longer until we fade completely?
 
-		int iCurPos = GetCurrentPlayPos();
+		int iCurPos = GetPlayPos(hMCI);
 		int iLeft = Request.iPos - iCurPos;
 		if (iLeft <= 0 
 				|| iCurPos == iPrevPos)
@@ -587,7 +649,7 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("ProcessPlay: %s", Request.pTrack->GetFilespec());
+	kernelDebugLogMessage("[%x] ProcessPlay: %s", GetCurrentThreadId(), Request.pTrack->GetFilespec());
 #endif
 
 	//	Stop all channels
@@ -601,7 +663,7 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 	//	Open new file
 
 	CString sFilespec = Request.pTrack->GetFilespec();
-	if (MCIWndOpen(hMCI, sFilespec.GetASCIIZPointer(), MCI_OPEN_SHAREABLE) != 0)
+	if (MCIWndOpen(hMCI, sFilespec.GetASCIIZPointer(), 0) != 0)
 		{
 		LogError(hMCI, CONSTLIT("ProcessPlay MCIWndOpen"), sFilespec);
 		return;
@@ -626,7 +688,7 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 		}
 
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("ProcessPlay done");
+	kernelDebugLogMessage("[%x] ProcessPlay done", GetCurrentThreadId());
 #endif
 	}
 
@@ -638,7 +700,7 @@ void CMCIMixer::ProcessPlayPause (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("ProcessPlayPause");
+	kernelDebugLogMessage("[%x] ProcessPlayPause", GetCurrentThreadId());
 #endif
 
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
@@ -705,6 +767,16 @@ bool CMCIMixer::ProcessRequest (void)
 				ProcessFadeOut(Request);
 				break;
 
+			case typeGetPlayLength:
+				m_Result.iValue = GetPlayLength(m_Channels[m_iCurChannel].hMCI);
+				::SetEvent(m_hResultEvent);
+				break;
+
+			case typeGetPlayPos:
+				m_Result.iValue = GetPlayPos(m_Channels[m_iCurChannel].hMCI);
+				::SetEvent(m_hResultEvent);
+				break;
+
 			case typePlay:
 				ProcessPlay(Request);
 				break;
@@ -715,7 +787,7 @@ bool CMCIMixer::ProcessRequest (void)
 
 			case typeStop:
 #ifdef DEBUG_SOUNDTRACK
-				kernelDebugLogMessage("ProcessStop requested.");
+				kernelDebugLogMessage("[%x] ProcessStop requested.", GetCurrentThreadId());
 
 #endif
 				ProcessStop(Request);
@@ -789,10 +861,11 @@ void CMCIMixer::ProcessStop (const SRequest &Request, bool bNoNotify)
 		if (m_Channels[i].iState == statePlaying)
 			{
 #ifdef DEBUG_SOUNDTRACK
-			kernelDebugLogMessage("ProcessStop");
+			kernelDebugLogMessage("[%x] ProcessStop", GetCurrentThreadId());
 #endif
 
 			MCIWndStop(m_Channels[i].hMCI);
+			MCIWndClose(m_Channels[i].hMCI);
 			}
 
 	m_bNoStopNotify = bOldNotify;
@@ -807,7 +880,7 @@ void CMCIMixer::ProcessWaitForPos (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("ProcessWaitForPos");
+	kernelDebugLogMessage("[%x] ProcessWaitForPos", GetCurrentThreadId());
 #endif
 
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
@@ -853,6 +926,17 @@ DWORD WINAPI CMCIMixer::ProcessingThread (LPVOID pData)
 	{
 	CMCIMixer *pThis = (CMCIMixer *)pData;
 
+	//	Create the parent window that will receive notifications.
+	//	We do this in the background thread because this is the only thread that
+	//	will send messages to the MCI window.
+	//	
+	//	NOTE: If we could not create the window then something is wrong and we
+	//	disable everything.
+
+	pThis->InitChannels();
+
+	//	Loop until we're done
+
 	while (true)
 		{
 		HANDLE Handles[2];
@@ -860,10 +944,11 @@ DWORD WINAPI CMCIMixer::ProcessingThread (LPVOID pData)
 		const DWORD WAIT_QUIT_EVENT = (WAIT_OBJECT_0);
 		Handles[1] = pThis->m_hWorkEvent;
 		const DWORD WAIT_WORK_EVENT = (WAIT_OBJECT_0 + 1);
+		const DWORD WAIT_MESSAGES = (WAIT_OBJECT_0 + 2);
 
 		//	Wait for work to do
 
-		DWORD dwWait = ::WaitForMultipleObjects(2, Handles, FALSE, INFINITE);
+		DWORD dwWait = ::MsgWaitForMultipleObjects(2, Handles, FALSE, INFINITE, QS_ALLINPUT);
 
 		//	Do the work
 
@@ -883,6 +968,15 @@ DWORD WINAPI CMCIMixer::ProcessingThread (LPVOID pData)
 				}
 
 			//	Keep looping
+			}
+		else if (dwWait == WAIT_MESSAGES)
+			{
+			MSG msg;
+			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+				{
+		        TranslateMessage(&msg);
+		        DispatchMessage(&msg);
+				}
 			}
 		}
 
@@ -932,6 +1026,9 @@ void CMCIMixer::Shutdown (void)
 
 		::CloseHandle(m_hWorkEvent);
 		m_hWorkEvent = INVALID_HANDLE_VALUE;
+
+		::CloseHandle(m_hResultEvent);
+		m_hResultEvent = INVALID_HANDLE_VALUE;
 
 		::CloseHandle(m_hQuitEvent);
 		m_hQuitEvent = INVALID_HANDLE_VALUE;
