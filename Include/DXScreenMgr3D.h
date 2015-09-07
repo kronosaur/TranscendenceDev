@@ -30,6 +30,7 @@ class CDXScreen
 			//	Init
 
 			FLAG_NO_TEXTURES =				0x00000001,
+			FLAG_FORCE_GDI =				0x00000002,
 			};
 
 		CDXScreen (void);
@@ -84,12 +85,19 @@ class CDXScreen
 			IDirect3DTexture9 *pBackBuffer;
 			};
 
+		bool BeginScene (void);
 		void BltToSurface (const CG32bitImage &Src, IDirect3DSurface9 *pDest);
-		void BltToSurface (IDirect3DTexture9 *pSrc, IDirect3DSurface9 *pDest);
 		inline bool CanUseDynamicTextures (void) const { return ((m_DeviceCaps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) ? true : false); }
+		bool CreateLayerResources (SLayer &Layer, CString *retsError = NULL);
+		bool EndScene (void);
+		bool InitDevice (CString *retsError = NULL);
+		void RenderError (const CString &sError);
+		bool ResetDevice (void);
 
+		HWND m_hWnd;						//	Window
 		IDirect3D9 *m_pD3D;					//	Used to create the D3DDevice
 		IDirect3DDevice9 *m_pD3DDevice;		//	Our rendering device
+		D3DPRESENT_PARAMETERS m_Present;	//	Present parameters
 		D3DCAPS9 m_DeviceCaps;				//	Device caps for current device
 
 		int m_cxTarget;						//	Width of target surface (usually the screen)
@@ -98,7 +106,10 @@ class CDXScreen
 		int m_cxSource;						//	Width of source image (usually layer size)
 		int m_cySource;
 
+		bool m_bUseGDI;						//	Use GDI instead of Direct3D
+		bool m_bNoGPUAcceleration;			//	Do not use textures, even if available
 		bool m_bUseTextures;				//	Use textures for layers.
+		bool m_bErrorReported;				//	If TRUE, we've already reported an error
 
 		TArray<SLayer> m_Layers;
 		TSortMap<int, int> m_PaintOrder;

@@ -29,7 +29,7 @@
 #endif
 
 #ifdef DEBUG
-//#define DEBUG_NO_DX_TEXTURES
+//#define DEBUG_NO_DX_BLT_THREAD
 #endif
 
 #define BLT_RANGE_CHECK

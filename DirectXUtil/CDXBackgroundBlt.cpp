@@ -112,6 +112,7 @@ bool CDXBackgroundBlt::Init (int cxWidth, int cyHeight, CString *retsError)
 	//	If we have multiple CPU cores, then we create a thread to paint in the
 	//	background.
 
+#ifndef DEBUG_NO_DX_BLT_THREAD
 	if (::sysGetProcessorCount() > 1)
 		{
 		ASSERT(!IsEnabled());
@@ -120,6 +121,7 @@ bool CDXBackgroundBlt::Init (int cxWidth, int cyHeight, CString *retsError)
 		m_hWorkEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 		m_hBackgroundThread = ::kernelCreateThread(BackgroundThread, this);
 		}
+#endif
 
 	return true;
 	}

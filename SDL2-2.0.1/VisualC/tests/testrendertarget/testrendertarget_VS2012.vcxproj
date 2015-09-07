@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -24,27 +24,27 @@
     <RootNamespace>testrendertarget</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
- <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
@@ -110,7 +110,7 @@
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
 copy "$(SolutionDir)\..\test\icon.bmp" "$(TargetDir)\icon.bmp"
-copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>      
+copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy SDL and data files</Message>
@@ -146,7 +146,7 @@ copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
 copy "$(SolutionDir)\..\test\icon.bmp" "$(TargetDir)\icon.bmp"
-copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>      
+copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy SDL and data files</Message>
@@ -183,7 +183,7 @@ copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
 copy "$(SolutionDir)\..\test\icon.bmp" "$(TargetDir)\icon.bmp"
-copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>      
+copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy SDL and data files</Message>
@@ -219,7 +219,7 @@ copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
 copy "$(SolutionDir)\..\test\icon.bmp" "$(TargetDir)\icon.bmp"
-copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>      
+copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy SDL and data files</Message>
@@ -238,7 +238,7 @@ copy "$(SolutionDir)\..\test\sample.bmp" "$(TargetDir)\sample.bmp"</Command>
     <ProjectReference Include="..\..\SDL\SDL_VS2012.vcxproj">
       <Project>{81ce8daf-ebb2-4761-8e45-b71abcca8c68}</Project>
     </ProjectReference>
-  </ItemGroup>  
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
