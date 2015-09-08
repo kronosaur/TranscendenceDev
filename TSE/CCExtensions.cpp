@@ -951,9 +951,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetStargateID obj) -> gateID",
 			"i",	0,	},
 
-		{	"shpInstallArmor",				fnShipSetOld,		FN_SHIP_INSTALL_ARMOR,
+		{	"shpInstallArmor",				fnShipSet,			FN_SHIP_INSTALL_ARMOR,
 			"(shpInstallArmor ship item armorSegment)",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
 			"(shpInstallDevice ship item [deviceSlot])",
@@ -8098,6 +8098,42 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_SHIP_INSTALL_ARMOR:
+			{
+			CItem ArmorItem = GetItemFromArg(*pCC, pArgs->GetElement(1));
+			int iSegment = pArgs->GetElement(2)->GetIntegerValue();
+
+			//	Validate the armor item
+
+			CItemType *pArmorType = ArmorItem.GetType();
+			if (pArmorType == NULL
+					|| pArmorType->GetArmorClass() == NULL
+					|| ArmorItem.IsInstalled())
+				return pCC->CreateError(CONSTLIT("Invalid armor item."));
+
+			//	Make sure the segment is valid
+
+			if (iSegment < 0 || iSegment >= pShip->GetArmorSectionCount())
+				return pCC->CreateError(CONSTLIT("Invalid armor segment."));
+
+			//	Select the item in the ship (the item must be on the ship for
+			//	us to install it.
+
+			CItemListManipulator ItemList(pShip->GetItemList());
+			if (!ItemList.SetCursorAtItem(ArmorItem))
+				{
+				if (pCtx->GetAPIVersion() >= 18)
+					return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+				else
+					return pCC->CreateNil();
+				}
+
+			//	Install
+
+			pShip->InstallItemAsArmor(ItemList, iSegment);
+			return pCC->CreateTrue();
+			}
+
 		case FN_SHIP_INSTALL_DEVICE:
 			{
 			CItemListManipulator ItemList(pShip->GetItemList());
@@ -8186,13 +8222,27 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			IShipController::SData Data;
 			if (pArgs->GetCount() > (iArg + 1))
 				{
-				Data.iDataType = IShipController::dataPair;
-				Data.dwData1 = pArgs->GetElement(iArg)->GetIntegerValue();
-				Data.dwData2 = pArgs->GetElement(iArg+1)->GetIntegerValue();
+				if (pArgs->GetElement(iArg)->IsNil() && pArgs->GetElement(iArg+1)->IsNil())
+					{
+					//	If both arguments are Nil, then we omit them both. We do this
+					//	because some orders (like escort) behave differently depending
+					//	on whether arguments are nil or not.
+					}
+				else
+					{
+					Data.iDataType = IShipController::dataPair;
+					Data.dwData1 = pArgs->GetElement(iArg)->GetIntegerValue();
+					Data.dwData2 = pArgs->GetElement(iArg+1)->GetIntegerValue();
+					}
 				}
 			else if (pArgs->GetCount() > iArg)
 				{
-				if (OrderHasDataString(iOrder))
+				if (pArgs->GetElement(iArg)->IsNil())
+					{
+					//	Nil argument is empty. We treat this the same as if the
+					//	caller specified no argument.
+					}
+				else if (OrderHasDataString(iOrder))
 					{
 					Data.iDataType = IShipController::dataString;
 					Data.sData = pArgs->GetElement(iArg)->GetStringValue();
@@ -8298,8 +8348,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			|| dwData == FN_SHIP_ITEM_CHARGES 
 			|| dwData == FN_SHIP_DAMAGE_ITEM)
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iv"));
-	else if (dwData == FN_SHIP_INSTALL_ARMOR)
-		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("ivi"));
 	else if (dwData == FN_SHIP_ADD_ENERGY_FIELD)
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iii"));
 	else if (dwData == FN_SHIP_RECHARGE_ITEM)
@@ -8406,46 +8454,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			//	Done
 
 			pResult = CreateListFromItem(*pCC, pItemList->GetItemAtCursor());
-			break;
-			}
-
-		case FN_SHIP_INSTALL_ARMOR:
-			{
-			CItemListManipulator *pItemList = NULL;
-			CItemListManipulator ItemList(pShip->GetItemList());
-
-			//	If the argument is a list then it is an item (which means we have to find
-			//	the item in the manipulator). If the argument is an integer then we expect
-			//	an item list manipulator pointer.
-
-			if (pArgs->GetElement(1)->IsInteger())
-				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
-			else
-				{
-				CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-				if (!ItemList.SetCursorAtItem(Item))
-					{
-					pArgs->Discard(pCC);
-					if (pCtx->GetAPIVersion() >= 18)
-						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
-					else
-						return pCC->CreateNil();
-					}
-
-				pItemList = &ItemList;
-				}
-
-			int iSegment = pArgs->GetElement(2)->GetIntegerValue();
-			pArgs->Discard(pCC);
-
-			if (pItemList)
-				{
-				pShip->InstallItemAsArmor(*pItemList, iSegment);
-				pResult = pCC->CreateTrue();
-				}
-			else
-				pResult = pCC->CreateNil();
-
 			break;
 			}
 
