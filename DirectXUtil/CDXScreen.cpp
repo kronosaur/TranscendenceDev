@@ -50,6 +50,7 @@ bool CDXScreen::BeginScene (void)
 
 	//	Success!
 
+	m_bEndSceneNeeded = true;
 	return true;
 	}
 
@@ -365,39 +366,6 @@ void CDXScreen::DebugOutputStats (void)
 		}
 	}
 
-bool CDXScreen::EndScene (void)
-
-//	EndScene
-//
-//	Presents the scene
-
-	{
-	//	End the scene
-
-	m_pD3DDevice->EndScene();
-
-	//	See if we need to reset
-
-	HRESULT hr = m_pD3DDevice->TestCooperativeLevel();
-	if (hr == D3DERR_DEVICELOST)
-		//	We're reset later.
-		return true;
-	else if (hr == D3DERR_DEVICENOTRESET)
-		{
-		if (!ResetDevice())
-			return false;
-		}
-
-	//	Otherwise, present
-
-	if (FAILED(m_pD3DDevice->Present(NULL, NULL, NULL, NULL)))
-		return false;
-
-	//	Done
-
-	return true;
-	}
-
 bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError)
 
 //	Init
@@ -419,7 +387,8 @@ bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CStri
 	//	Options
 
 	m_bUseGDI = ((dwFlags & FLAG_FORCE_GDI) ? true : false);
-	m_bNoGPUAcceleration = ((dwFlags & FLAG_NO_TEXTURES) ? true : false);
+	m_bNoGPUAcceleration = m_bUseGDI || ((dwFlags & FLAG_NO_TEXTURES) ? true : false);
+	m_bEndSceneNeeded = false;
 	m_bErrorReported = false;
 
     //	Create the D3D object, which is needed to create the D3DDevice.
@@ -514,6 +483,43 @@ bool CDXScreen::InitDevice (CString *retsError)
 	return true;
 	}
 
+bool CDXScreen::Present (void)
+
+//	Present
+//
+//	Presents the scene.
+
+	{
+	//	End the scene
+
+	if (m_bEndSceneNeeded)
+		{
+		m_pD3DDevice->EndScene();
+		m_bEndSceneNeeded = false;
+		}
+
+	//	See if we need to reset
+
+	HRESULT hr = m_pD3DDevice->TestCooperativeLevel();
+	if (hr == D3DERR_DEVICELOST)
+		//	We're reset later.
+		return true;
+	else if (hr == D3DERR_DEVICENOTRESET)
+		{
+		if (!ResetDevice())
+			return false;
+		}
+
+	//	Otherwise, present
+
+	if (FAILED(m_pD3DDevice->Present(NULL, NULL, NULL, NULL)))
+		return false;
+
+	//	Done
+
+	return true;
+	}
+
 void CDXScreen::Render (void)
 
 //	Present
@@ -593,9 +599,10 @@ void CDXScreen::Render (void)
 			m_pD3DDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, 2);
 			}
 
-		//	Done
+		//	Present. NOTE: This will also end the scene (we don't need to call
+		//	it explicitly).
 
-		if (!EndScene())
+		if (!Present())
 			{
 			RenderError(CONSTLIT("Unable to end scene."));
 			return;
@@ -619,9 +626,13 @@ void CDXScreen::Render (void)
 			pBackBuffer->Release();
 			}
 
-		//	Let the GPU render
+		//	Done
 
-		m_pD3DDevice->Present(NULL, NULL, NULL, NULL);
+		if (!Present())
+			{
+			RenderError(CONSTLIT("Unable to end scene."));
+			return;
+			}
 		}
 	}
 

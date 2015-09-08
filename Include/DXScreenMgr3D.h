@@ -41,6 +41,7 @@ class CDXScreen
 		void DebugOutputStats (void);
 		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return m_Layers[iLayerID].BackBuffer; }
 		bool Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError = NULL);
+		inline bool IsUsingDirectX (void) const { return !m_bUseGDI; }
 		inline bool IsUsingTextures (void) const { return m_bUseTextures; }
 		void Render (void);
 		void SwapBuffers (void);
@@ -89,8 +90,8 @@ class CDXScreen
 		void BltToSurface (const CG32bitImage &Src, IDirect3DSurface9 *pDest);
 		inline bool CanUseDynamicTextures (void) const { return ((m_DeviceCaps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) ? true : false); }
 		bool CreateLayerResources (SLayer &Layer, CString *retsError = NULL);
-		bool EndScene (void);
 		bool InitDevice (CString *retsError = NULL);
+		bool Present (void);
 		void RenderError (const CString &sError);
 		bool ResetDevice (void);
 
@@ -109,6 +110,7 @@ class CDXScreen
 		bool m_bUseGDI;						//	Use GDI instead of Direct3D
 		bool m_bNoGPUAcceleration;			//	Do not use textures, even if available
 		bool m_bUseTextures;				//	Use textures for layers.
+		bool m_bEndSceneNeeded;				//	If TREU, we need an EndScene call
 		bool m_bErrorReported;				//	If TRUE, we've already reported an error
 
 		TArray<SLayer> m_Layers;

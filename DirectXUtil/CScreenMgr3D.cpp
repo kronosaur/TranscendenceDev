@@ -108,7 +108,8 @@ void CScreenMgr3D::DebugOutputStats (void)
 	::kernelDebugLogMessage("Screen: %d x %d%s", m_cxScreen, m_cyScreen, (m_bWindowedMode ? CONSTLIT(" (windowed)") : NULL_STR));
 	::kernelDebugLogMessage("Scale: %d.%02d", (int)m_rScale, (int)(m_rScale * 100.0) % 100);
 	::kernelDebugLogMessage("Background blt: %s", (m_Blitter.IsEnabled() ? CONSTLIT("Enabled") : CONSTLIT("Disabled")));
-	::kernelDebugLogMessage("Use textures: %s", (m_DX.IsUsingTextures() ? CONSTLIT("Enabled") : CONSTLIT("Disabled")));
+	::kernelDebugLogMessage("Use Direct X: %s", (m_DX.IsUsingDirectX() ? CONSTLIT("Enabled") : CONSTLIT("Disabled")));
+	::kernelDebugLogMessage("Use GPU compositing: %s", (m_DX.IsUsingTextures() ? CONSTLIT("Enabled") : CONSTLIT("Disabled")));
 
 	HDC hDC = ::GetDC(m_hWnd);
 	kernelDebugLogMessage("LogPixelsY: %d", ::GetDeviceCaps(hDC, LOGPIXELSY));
