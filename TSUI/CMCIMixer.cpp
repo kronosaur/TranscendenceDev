@@ -371,10 +371,6 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 
 #ifdef DEBUG_SOUNDTRACK
 	::kernelDebugLogMessage("[%x] OnNotifyMode[%x]: notify mode = %d.", ::GetCurrentThreadId(), (DWORD)hWnd, iMode);
-	CString sBuffer;
-	int iQueryMode = (int)MCIWndGetMode(hWnd, sBuffer.GetWritePointer(1024), 1024);
-	sBuffer.Truncate(lstrlen(sBuffer.GetASCIIZPointer()));
-	::kernelDebugLogMessage("OnNotifyMode[%x]: query mode = %d: %s.", (DWORD)hWnd, iQueryMode, sBuffer);
 #endif
 
 	SChannel *pChannel;
@@ -709,7 +705,7 @@ void CMCIMixer::ProcessPlayPause (const SRequest &Request)
 	if (iMode == MCI_MODE_PLAY)
 		MCIWndPause(hMCI);
 	else if (iMode == MCI_MODE_PAUSE)
-		MCIWndPlay(hMCI);
+		MCIWndResume(hMCI);
 	}
 
 bool CMCIMixer::ProcessRequest (void)
@@ -835,12 +831,22 @@ void CMCIMixer::ProcessSetPlayPaused (const SRequest &Request)
 	if (Request.iType == typeSetPaused)
 		{
 		if (iMode == MCI_MODE_PLAY)
+			{
+#ifdef DEBUG_SOUNDTRACK
+			kernelDebugLogMessage("[%x] ProcessSetPlayPaused: Pause", GetCurrentThreadId());
+#endif
 			MCIWndPause(hMCI);
+			}
 		}
 	else if (Request.iType == typeSetUnpaused)
 		{
 		if (iMode == MCI_MODE_PAUSE)
-			MCIWndPlay(hMCI);
+			{
+#ifdef DEBUG_SOUNDTRACK
+			kernelDebugLogMessage("[%x] ProcessSetPlayPaused: Resume", GetCurrentThreadId());
+#endif
+			MCIWndResume(hMCI);
+			}
 		}
 	}
 
