@@ -2619,6 +2619,108 @@ bool CSystem::HasAttribute (const CVector &vPos, const CString &sAttrib)
 		}
 	}
 
+CSpaceObject *CSystem::HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, CVector *retvHitPos)
+
+//	HitScan
+//
+//	Looks for the first object that intersects the ray from vStart to vEnd and 
+//	returns the point of intersection.
+//
+//	If no object is found, we return NULL.
+
+	{
+	//	Convert to a ray
+
+	CVector vLine = vEnd - vStart;
+	Metric rLineLen = vLine.Length();
+	if (rLineLen == 0)
+		return NULL;
+
+	CVector vRayN = vLine / rLineLen;
+	CVector vRayPixel = vRayN * g_KlicksPerPixel;
+	
+	//	Track the best object we've found
+
+	CSpaceObject *pHitObj = NULL;
+	CVector vHitPos;
+	Metric rHitLen = rLineLen;
+
+	//	Loop over all objects that are inside the box defined by the two line
+	//	endpoints.
+
+	SSpaceObjectGridEnumerator i;
+	CVector vLL = CVector(Min(vStart.GetX(), vEnd.GetX()), Min(vStart.GetY(), vEnd.GetY()));
+	CVector vUR = CVector(Max(vStart.GetX(), vEnd.GetX()), Max(vStart.GetY(), vEnd.GetY()));
+	EnumObjectsInBoxStart(i, vUR, vLL, gridNoBoxCheck);
+
+	while (EnumObjectsInBoxHasMore(i))
+		{
+		CSpaceObject *pObj = EnumObjectsInBoxGetNextFast(i);
+
+		//	Skip objects we don't care about
+
+		if (pObj->IsDestroyed()
+				|| pObj == pExclude
+				|| pObj->IsVirtual()
+				|| pObj->IsInactive()
+				|| (pObj->GetScale() != scaleStructure 
+					&& pObj->GetScale() != scaleShip))
+			continue;
+
+		//	Get the size of the object
+
+		CVector vObjUR;
+		CVector vObjLL;
+		pObj->GetHitRect(&vObjUR, &vObjLL);
+
+		//	Get the distance along the ray at which we intersect the given
+		//	object rectangle
+
+		Metric rObjHitFrac;
+		if (!IntersectRectAndRay(vObjUR, vObjLL, vStart, vEnd, NULL, &rObjHitFrac))
+			continue;
+
+		//	If the intersection point is after our current best hit pos, then
+		//	skip.
+
+		Metric rObjHitLen = rLineLen * rObjHitFrac;
+		if (rObjHitLen >= rHitLen)
+			continue;
+
+		//	Advance along the ray one pixel at a time to see where exactly we
+		//	touch the object.
+
+		SPointInObjectCtx Ctx;
+		pObj->PointInObjectInit(Ctx);
+
+		Metric rTestHitLen = rObjHitLen;
+		CVector vTestPos = vStart + (rTestHitLen * vRayN);
+		while (rTestHitLen < rHitLen)
+			{
+			if (pObj->PointInObject(Ctx, pObj->GetPos(), vTestPos))
+				{
+				pHitObj = pObj;
+				vHitPos = vTestPos;
+				rHitLen = rTestHitLen;
+				break;
+				}
+
+			rTestHitLen += g_KlicksPerPixel;
+			vTestPos = vTestPos + vRayPixel;
+			}
+		}
+
+	//	Done
+
+	if (pHitObj == NULL)
+		return NULL;
+
+	if (retvHitPos)
+		*retvHitPos = vHitPos;
+
+	return pHitObj;
+	}
+
 void CSystem::InitSpaceEnvironment (void) const
 
 //	InitSpaceEnvironment

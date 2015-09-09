@@ -3172,6 +3172,19 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **re
 	return GetDefaultDockScreen(retsScreen);
 	}
 
+void CSpaceObject::GetHitRect (CVector *retvUR, CVector *retvLL)
+
+//	GetHitRect
+//
+//	Returns the RECT that bounds the object's hit size.
+
+	{
+	Metric rHalfSize = 0.5 * GetHitSize();
+	CVector vDiag(rHalfSize, rHalfSize);
+	*retvUR = m_vPos + vDiag;
+	*retvLL = m_vPos - vDiag;
+	}
+
 Metric CSpaceObject::GetHitSize (void) const
 
 //	GetHitSize
@@ -5123,6 +5136,68 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 			return false;
 		}
 
+	//	Position checks
+
+	switch (Crit.iPosCheck)
+		{
+		case checkNone:
+			break;
+
+		case checkPosIntersect:
+			if (!PointInObject(GetPos(), Crit.vPos1))
+				return false;
+			break;
+
+		case checkLineIntersect:
+			{
+			//	Get the size of the object
+
+			CVector vObjUR;
+			CVector vObjLL;
+			GetHitRect(&vObjUR, &vObjLL);
+
+			//	Get the distance along the ray at which we intersect the given
+			//	object rectangle
+
+			Metric rObjHitFrac;
+			if (!IntersectRectAndRay(vObjUR, vObjLL, Crit.vPos1, Crit.vPos2, NULL, &rObjHitFrac))
+				return false;
+
+			//	See if we actually hit the object
+
+			CVector vLine = Crit.vPos2 - Crit.vPos1;
+			Metric rLineLen = vLine.Length();
+			if (rLineLen == 0.0)
+				return false;
+
+			CVector vRayN = vLine / rLineLen;
+			CVector vRayPixel = vRayN * g_KlicksPerPixel;
+			Metric rObjHitLen = rObjHitFrac * rLineLen;
+
+			SPointInObjectCtx Ctx;
+			PointInObjectInit(Ctx);
+
+			Metric rTestHitLen = rObjHitLen;
+			CVector vTestPos = Crit.vPos1 + (rTestHitLen * vRayN);
+			bool bHit = false;
+			while (rTestHitLen < rLineLen)
+				{
+				if (PointInObject(Ctx, GetPos(), vTestPos))
+					{
+					bHit = true;
+					break;
+					}
+
+				rTestHitLen += g_KlicksPerPixel;
+				vTestPos = vTestPos + vRayPixel;
+				}
+
+			if (!bHit)
+				return false;
+			break;
+			}
+		}
+
 	//	If we're looking for the nearest or farthest, do that computation now
 
 	if (Crit.bNearestOnly)
@@ -5872,6 +5947,7 @@ void CSpaceObject::ParseCriteria (CSpaceObject *pSource, const CString &sCriteri
 	retCriteria->iEqualToLevel = -1;
 	retCriteria->iGreaterThanLevel = -1;
 	retCriteria->iLessThanLevel = -1;
+	retCriteria->iPosCheck = checkNone;
 	retCriteria->iSort = sortNone;
 	retCriteria->iSortOrder = AscendingSort;
 

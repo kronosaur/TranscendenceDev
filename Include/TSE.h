@@ -1340,6 +1340,7 @@ class CSystem : public CObject
 		CTopologyNode *GetStargateDestination (const CString &sStargate, CString *retsEntryPoint);
 		inline CUniverse *GetUniverse (void) const { return g_pUniverse; }
 		bool HasAttribute (const CVector &vPos, const CString &sAttrib);
+		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, CVector *retvHitPos = NULL);
 		inline bool IsCreationInProgress (void) const { return (m_fInCreate ? true : false); }
 		inline bool IsPlayerUnderAttack (void) const { return m_fPlayerUnderAttack; }
 		bool IsStarAtPos (const CVector &vPos);
@@ -2212,6 +2213,13 @@ class CSpaceObject : public CObject
 			sortByDistance,
 			};
 
+		enum CriteriaPosCheckTypes
+			{
+			checkNone,
+			checkPosIntersect,
+			checkLineIntersect,
+			};
+
 		struct Criteria
 			{
 			CSpaceObject *pSource;				//	Source
@@ -2257,6 +2265,10 @@ class CSpaceObject : public CObject
 			int iEqualToLevel;					//	Objects of this level
 			int iGreaterThanLevel;
 			int iLessThanLevel;
+
+			CriteriaPosCheckTypes iPosCheck;
+			CVector vPos1;
+			CVector vPos2;
 
 			CriteriaSortTypes iSort;
 			ESortOptions iSortOrder;
@@ -2414,6 +2426,7 @@ class CSpaceObject : public CObject
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		CDesignType *GetFirstDockScreen (CString *retsScreen, ICCItem **retpData);
 		inline const CString &GetHighlightText (void) const { return m_sHighlightText; }
+		void GetHitRect (CVector *retvUR, CVector *retvLL);
 		Metric GetHitSize (void) const;
 		inline int GetHitSizeHalfAngle (Metric rDist) const { return Max((int)(180.0 * atan(0.5 * GetHitSize() / rDist) / g_Pi), 1); }
 		inline DWORD GetID (void) const { return m_dwID; }

@@ -249,6 +249,63 @@ bool IntersectRect (const CVector &vUR, const CVector &vLL, const CVector &vPoin
 			&& vLL.GetY() < vPoint.GetY());
 	}
 
+bool IntersectRectAndRay (const CVector &vUR, const CVector &vLL, const CVector &vStart, const CVector &vEnd, CVector *retvIntersection, Metric *retIntersectionFraction)
+
+//	IntersectRect
+//
+//	Returns TRUE if the given ray intersects the rect. We optionally return the
+//	point of intersection and the fractional distance along the ray where we 
+//	first intersect.
+
+	{
+	int iIntersections = 0;
+	Metric rBestFraction = 1.0;
+
+	if (IntersectLine(vStart, vEnd, vUR, CVector(vUR.GetX(), vLL.GetY()), NULL, &rBestFraction))
+		iIntersections++;
+
+	Metric rFraction;
+	if (IntersectLine(vStart, vEnd, CVector(vUR.GetX(), vLL.GetY()), vLL, NULL, &rFraction))
+		{
+		rBestFraction = Min(rBestFraction, rFraction);
+		iIntersections++;
+		}
+
+	if (IntersectLine(vStart, vEnd, vLL, CVector(vLL.GetX(), vUR.GetY()), NULL, &rFraction))
+		{
+		rBestFraction = Min(rBestFraction, rFraction);
+		iIntersections++;
+		}
+
+	if (IntersectLine(vStart, vEnd, CVector(vLL.GetX(), vUR.GetY()), vUR, NULL, &rFraction))
+		{
+		rBestFraction = Min(rBestFraction, rFraction);
+		iIntersections++;
+		}
+
+	//	If no intersections, then nothing.
+
+	if (iIntersections == 0)
+		return false;
+
+	//	If we have only 1 intersection, then it means that the ray is inside the
+	//	rectangle, so we count the intersection point as the beginning of the ray.
+
+	if (iIntersections == 1)
+		rBestFraction = 0.0;
+
+	if (retvIntersection)
+		*retvIntersection = CVector(
+				vStart.GetX() + rBestFraction * (vEnd.GetX() - vStart.GetX()),
+				vStart.GetY() + rBestFraction * (vEnd.GetY() - vStart.GetY())
+				);
+
+	if (retIntersectionFraction)
+		*retIntersectionFraction = rBestFraction;
+
+	return true;
+	}
+
 //	ViewportTransform ---------------------------------------------------------
 
 ViewportTransform::ViewportTransform (const CVector &vCenter, Metric xScale, Metric yScale, int xCenter, int yCenter)

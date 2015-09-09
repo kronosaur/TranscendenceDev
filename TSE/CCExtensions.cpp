@@ -356,7 +356,12 @@ ICCItem *fnSystemCreateEffect (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
+
+#define FN_SYS_FIND						0
+#define FN_SYS_FIND_AT_POS				1
+
 ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
+
 ICCItem *fnSystemGetObjectByName (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSystemVectorOffset (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -432,6 +437,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_GET_STD_COMBAT_STRENGTH	29
 #define FN_SYS_RANDOM_LOCATION			30
 #define FN_SYS_ORBIT_CREATE				31
+#define FN_SYS_HIT_SCAN					32
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2125,10 +2131,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysDescendObject objID pos) -> obj",
 			"iv",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"sysFindObject",				fnSystemFind,	0,	
+		{	"sysFindObject",				fnSystemFind,	FN_SYS_FIND,	
 			"(sysFindObject source filter) -> list of objects\n\n"
 			
-			"filter\n\n"
+			"criteria\n\n"
 			
 			"   b           Include beams\n"
 			"   k           Include markers\n"
@@ -2177,6 +2183,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   =n          Level comparisons\n",
 
 			"is",	0,	},
+
+		{	"sysFindObjectAtPos",			fnSystemFind,	FN_SYS_FIND_AT_POS,
+			"(sysFindObjectAtPos source criteria pos [destPos]) -> list of objects",
+			"isv*",	0,	},
 
 		{	"sysGetData",					fnSystemGet,	FN_SYS_GET_DATA,
 			"(sysGetData [nodeID] attrib) -> data",
@@ -2259,6 +2269,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysHasAttribute",				fnSystemGet,	FN_SYS_HAS_ATTRIBUTE,
 			"(sysHasAttribute [nodeID] attrib) -> True/Nil",
 			"s*",	0,	},
+
+		{	"sysHitScan",					fnSystemGet,	FN_SYS_HIT_SCAN,
+			"(sysHitScan [source] startPos endPos) -> (obj hitPos) or Nil",
+			"*vv",	0,	},
 
 		{	"sysIsKnown",					fnSystemGet,	FN_SYS_IS_KNOWN,
 			"(sysIsKnown [nodeID]) -> True/Nil",
@@ -10297,6 +10311,31 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	CSpaceObject::Criteria Criteria;
 	CSpaceObject::ParseCriteria(pSource, sFilter, &Criteria);
 
+	//	If we're checking for position, we need to do some extra work
+
+	if (dwData == FN_SYS_FIND_AT_POS)
+		{
+		if (GetPosOrObject(pEvalCtx, pArgs->GetElement(2), &Criteria.vPos1) != NOERROR)
+			return pCC->CreateError(CONSTLIT("Invalid position"), pArgs->GetElement(2));
+
+		//	If we have two position parameters, then this is a line intersection
+
+		if (pArgs->GetCount() >= 4)
+			{
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(3), &Criteria.vPos2) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid position"), pArgs->GetElement(3));
+
+			Criteria.iPosCheck = CSpaceObject::checkLineIntersect;
+			}
+
+		//	Otherwise, just a point intersection
+
+		else
+			{
+			Criteria.iPosCheck = CSpaceObject::checkPosIntersect;
+			}
+		}
+
 	//	Get the system
 
 	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
@@ -10535,6 +10574,48 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			return pCC->CreateInteger((int)(CShipClass::GetStdCombatStrength(iLevel) + 0.5));
+			}
+
+		case FN_SYS_HIT_SCAN:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			int iArg = -1;
+			CSpaceObject *pSource = NULL;
+			if (pArgs->GetCount() >= 3)
+				pSource = CreateObjFromItem(*pCC, pArgs->GetElement(++iArg));
+
+			//	Get ray
+
+			CVector vStart;
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(++iArg), &vStart) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(iArg));
+
+			CVector vEnd;
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(++iArg), &vEnd) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(iArg));
+
+			//	Hit test
+
+			CVector vHitPos;
+			CSpaceObject *pHitObj = pSystem->HitScan(pSource, vStart, vEnd, &vHitPos);
+			if (pHitObj == NULL)
+				return pCC->CreateNil();
+
+			//	Create a list
+
+			ICCItem *pResult = pCC->CreateLinkedList();
+			pResult->AppendInteger(*pCC, (int)pHitObj);
+
+			ICCItem *pVector = CreateListFromVector(*pCC, vHitPos);
+			pResult->Append(*pCC, pVector);
+			pVector->Discard(pCC);
+
+			//	Done
+
+			return pResult;
 			}
 
 		case FN_SYS_RANDOM_LOCATION:

@@ -33,5 +33,6 @@ bool IntersectLine (const CVector &vStart1, const CVector &vEnd1, const CVector 
 bool IntersectRect (const CVector &vUR1, const CVector &vLL1,
 					const CVector &vUR2, const CVector &vLL2);
 bool IntersectRect (const CVector &vUR, const CVector &vLL, const CVector &vPoint);
+bool IntersectRectAndRay (const CVector &vUR, const CVector &vLL, const CVector &vStart, const CVector &vEnd, CVector *retvIntersection = NULL, Metric *retIntersectionFraction = NULL);
 
 #endif
