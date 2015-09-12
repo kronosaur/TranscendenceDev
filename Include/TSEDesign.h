@@ -4051,7 +4051,6 @@ class CItemType : public CDesignType
 		int GetValue (CItemCtx &Ctx, bool bActual = false) const;
 		inline bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		inline bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
-		void InitRandomNames (void);
 		bool IsAmmunition (void) const;
 		inline bool IsArmor (void) const { return (m_pArmor != NULL); }
 		inline bool IsDevice (void) const { return (m_pDevice != NULL); }
@@ -4090,6 +4089,8 @@ class CItemType : public CDesignType
 		CStationType *GetFlotsamStationType (void);
 		CString GetUnknownName (int iIndex, DWORD *retdwFlags = NULL);
 		inline CDesignType *GetUseScreen (CString *retsName) const;
+		void InitRandomNames (void);
+		void InitComponents (void);
 
 		CString m_sName;						//	Full name of item
 		DWORD m_dwNameFlags;					//	Name flags
@@ -4110,6 +4111,10 @@ class CItemType : public CDesignType
 
 		int m_iExtraMassPerCharge;				//	Extra mass per charge (in kilos)
 		int m_iExtraValuePerCharge;				//	Extra value per charge (may be negative)
+
+		//	Components
+		IItemGenerator *m_pComponents;			//	Table to generate item components (may be NULL)
+		CItemList m_Components;					//	Components (may be empty)
 
 		//	Events
 		SEventHandlerDesc m_CachedEvents[evtCount];

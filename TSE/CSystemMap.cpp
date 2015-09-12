@@ -499,12 +499,7 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 		//	To load the painter we need to cons up an SLoadCtx. Fortunately.
 		//	we have the system version saved in the universe load ctx.
 
-		SLoadCtx SystemCtx;
-		SystemCtx.dwVersion = Ctx.dwSystemVersion;
-		SystemCtx.pStream = Ctx.pStream;
-		SystemCtx.pSystem = NULL;
-
-		m_Annotations[i].pPainter = CEffectCreator::CreatePainterFromStream(SystemCtx);
+		m_Annotations[i].pPainter = CEffectCreator::CreatePainterFromStream(SLoadCtx(Ctx));
 
 		//	Load remaining fields
 

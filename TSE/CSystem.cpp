@@ -360,6 +360,9 @@
 //	114: 1.6
 //		m_iFramesPerRow in CObjectImageArray
 //
+//	117: 1.7
+//		Added components to CItemType
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

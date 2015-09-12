@@ -11,6 +11,7 @@
 #include "PreComp.h"
 
 #define AVERAGE_VALUE_TAG						CONSTLIT("AverageValue")
+#define COMPONENTS_TAG							CONSTLIT("Components")
 #define GROUP_TAG								CONSTLIT("Group")
 #define ITEM_TAG								CONSTLIT("Item")
 #define ITEMS_TAG								CONSTLIT("Items")
@@ -247,6 +248,7 @@ ALERROR IItemGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	else if (strEquals(pDesc->GetTag(), RANDOM_ITEM_TAG))
 		pGenerator = new CRandomItems;
 	else if (strEquals(pDesc->GetTag(), GROUP_TAG) 
+			|| strEquals(pDesc->GetTag(), COMPONENTS_TAG)
 			|| strEquals(pDesc->GetTag(), ITEMS_TAG)
 			|| strEquals(pDesc->GetTag(), AVERAGE_VALUE_TAG))
 		pGenerator = new CGroupOfGenerators;

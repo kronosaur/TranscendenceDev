@@ -7,6 +7,7 @@
 #define ARMOR_TAG								CONSTLIT("Armor")
 #define AUTO_DEFENSE_CLASS_TAG					CONSTLIT("AutoDefenseDevice")
 #define CARGO_HOLD_CLASS_TAG					CONSTLIT("CargoHoldDevice")
+#define COMPONENTS_TAG							CONSTLIT("Components")
 #define CYBER_DECK_CLASS_TAG					CONSTLIT("CyberDeckDevice")
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
 #define DRIVE_CLASS_TAG							CONSTLIT("DriveDevice")
@@ -124,6 +125,7 @@ static CStationType *g_pFlotsamStationType = NULL;
 
 CItemType::CItemType (void) : 
 		m_dwSpare(0),
+		m_pComponents(NULL),
 		m_pUseCode(NULL),
 		m_pArmor(NULL),
 		m_pDevice(NULL),
@@ -139,6 +141,9 @@ CItemType::~CItemType (void)
 //	CItemType destructor
 
 	{
+	if (m_pComponents)
+		delete m_pComponents;
+
 	if (m_pUseCode)
 		m_pUseCode->Discard(&g_pUniverse->GetCC());
 
@@ -843,6 +848,24 @@ int CItemType::GetValue (CItemCtx &Ctx, bool bActual) const
 		return iValue;
 	}
 
+void CItemType::InitComponents (void)
+
+//	InitComponents
+//
+//	Initializes m_Components
+
+	{
+	m_Components.DeleteAll();
+	if (m_pComponents)
+		{
+		CItemListManipulator ItemList(m_Components);
+		SItemAddCtx Ctx(ItemList);
+		Ctx.iLevel = GetLevel();
+
+		m_pComponents->AddItems(Ctx);
+		}
+	}
+
 void CItemType::InitRandomNames (void)
 
 //	InitRandomNames
@@ -953,6 +976,9 @@ void CItemType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pUnknownType.GetUNID(), true);
 	retTypesUsed->SetAt(strToInt(m_pUseScreen.GetUNID(), 0), true);
 
+	if (m_pComponents)
+		m_pComponents->AddTypesUsed(retTypesUsed);
+
 	if (m_pArmor)
 		m_pArmor->AddTypesUsed(retTypesUsed);
 
@@ -997,6 +1023,14 @@ ALERROR CItemType::OnBindDesign (SDesignLoadCtx &Ctx)
 		return error;
 
 	//	Call contained objects
+
+	if (m_pComponents)
+		{
+		if (error = m_pComponents->OnDesignLoadComplete(Ctx))
+			return error;
+
+		InitComponents();
+		}
 
 	if (m_pDevice)
 		if (error = m_pDevice->Bind(Ctx))
@@ -1140,6 +1174,14 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			{
 			if (error = AddEventHandler(ON_REFUEL_TAG, pSubDesc->GetContentText(0), &Ctx.sError))
 				return ComposeLoadError(Ctx, CONSTLIT("Unable to load OnRefuel event"));
+			}
+
+		//	Components
+
+		else if (strEquals(pSubDesc->GetTag(), COMPONENTS_TAG))
+			{
+			if (error = IItemGenerator::CreateFromXML(Ctx, pSubDesc, &m_pComponents))
+				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unable to load Components: %s"), Ctx.sError));
 			}
 
 		//	Armor
@@ -1360,6 +1402,14 @@ void CItemType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 	if (m_pUnknownType == NULL)
 		m_fKnown = true;
+
+	//	Load components
+
+	if (Ctx.dwVersion >= 117)
+		{
+		m_Components.DeleteAll();
+		m_Components.ReadFromStream(SLoadCtx(Ctx));
+		}
 	}
 
 void CItemType::OnReinit (void)
@@ -1376,7 +1426,10 @@ void CItemType::OnReinit (void)
 
 	m_fReference = m_fDefaultReference;
 
+	//	Initialize some random elements
+
 	InitRandomNames();
+	InitComponents();
 	}
 
 void CItemType::OnWriteToStream (IWriteStream *pStream)
@@ -1387,6 +1440,7 @@ void CItemType::OnWriteToStream (IWriteStream *pStream)
 //
 //	DWORD		flags
 //	DWORD		m_sUnknownName
+//	CItemList	m_Components
 
 	{
 	DWORD dwSave;
@@ -1397,6 +1451,8 @@ void CItemType::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	m_sUnknownName.WriteToStream(pStream);
+
+	m_Components.WriteToStream(pStream);
 	}
 
 bool CItemType::ParseItemCategory (const CString &sCategory, ItemCategories *retCategory)
