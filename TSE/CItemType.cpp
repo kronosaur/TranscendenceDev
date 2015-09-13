@@ -1405,7 +1405,7 @@ void CItemType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 	//	Load components
 
-	if (Ctx.dwVersion >= 117)
+	if (Ctx.dwSystemVersion >= 117)
 		{
 		m_Components.DeleteAll();
 		m_Components.ReadFromStream(SLoadCtx(Ctx));
