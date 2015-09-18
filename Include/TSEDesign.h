@@ -4047,6 +4047,7 @@ class CItemType : public CDesignType
 		inline CArmorClass *GetArmorClass (void) const { return m_pArmor; }
 		ItemCategories GetCategory (void) const;
 		inline int GetCharges (void) const { return (m_fInstanceData ? m_InitDataValue.Roll() : 0); }
+		inline const CItemList &GetComponents (void) const { return m_Components; }
 		inline CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
 		inline const CString &GetData (void) const { return m_sData; }
 		const CString &GetDesc (void) const;

@@ -21,6 +21,7 @@
 
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_CHARGES						CONSTLIT("charges")
+#define PROPERTY_COMPONENTS						CONSTLIT("components")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
@@ -758,12 +759,30 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
+	int i;
 
 	if (strEquals(sName, PROPERTY_CATEGORY))
 		return CC.CreateString(GetItemCategoryID(m_pItemType->GetCategory()));
 
 	else if (strEquals(sName, PROPERTY_CHARGES))
 		return CC.CreateInteger(GetCharges());
+
+	else if (strEquals(sName, PROPERTY_COMPONENTS))
+		{
+		const CItemList &Components = m_pItemType->GetComponents();
+		if (Components.GetCount() == 0)
+			return CC.CreateNil();
+
+		ICCItem *pList = CC.CreateLinkedList();
+		for (i = 0; i < Components.GetCount(); i++)
+			{
+			ICCItem *pEntry = CreateListFromItem(CC, Components.GetItem(i));
+			pList->Append(CC, pEntry);
+			pEntry->Discard(&CC);
+			}
+
+		return pList;
+		}
 
 	else if (strEquals(sName, PROPERTY_DAMAGED))
 		return CC.CreateBool(IsDamaged());

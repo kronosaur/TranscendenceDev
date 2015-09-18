@@ -97,6 +97,7 @@
 
 #define SPECIAL_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged:")
 #define SPECIAL_DAMAGE_TYPE						CONSTLIT("damageType:")
+#define SPECIAL_HAS_COMPONENTS					CONSTLIT("hasComponents:")
 #define SPECIAL_IS_LAUNCHER						CONSTLIT("isLauncher:")
 #define SPECIAL_LAUNCHED_BY						CONSTLIT("launchedBy:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
@@ -1335,6 +1336,11 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 			return (true == bValue);
 		else
 			return (false == bValue);
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_HAS_COMPONENTS))
+		{
+		bool bValue = strEquals(strSubString(sAttrib, SPECIAL_HAS_COMPONENTS.GetLength(), -1), SPECIAL_TRUE);
+		return ((m_Components.GetCount() > 0) == bValue);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_IS_LAUNCHER))
 		{

@@ -704,6 +704,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'canBeDisabled\n"
 			"   'category\n"
 			"   'charges\n"
+			"   'components\n"
 			"   'damaged\n"
 			"   'description\n"
 			"   'deviceDamageImmune\n"
