@@ -16,6 +16,7 @@
 #define HERO_IMAGE_TAG							CONSTLIT("HeroImage")
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGE_EFFECT_TAG						CONSTLIT("ImageEffect")
+#define IMAGE_LOOKUP_TAG						CONSTLIT("ImageLookup")
 #define IMAGE_VARIANTS_TAG						CONSTLIT("ImageVariants")
 #define ITEMS_TAG								CONSTLIT("Items")
 #define NAMES_TAG								CONSTLIT("Names")
@@ -1446,6 +1447,8 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		pImage = pDesc->GetContentElementByTag(COMPOSITE_TAG);
 	if (pImage == NULL)
 		pImage = pDesc->GetContentElementByTag(IMAGE_EFFECT_TAG);
+	if (pImage == NULL)
+		pImage = pDesc->GetContentElementByTag(IMAGE_LOOKUP_TAG);
 
 	//	Load the image
 
@@ -1461,8 +1464,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 			if (m_ShipWrecks.GetCount() == 0)
 				return ComposeLoadError(Ctx, CONSTLIT("Expected ship wreck list"));
-
-			m_iImageVariants = 0;
 			}
 
 		//	Otherwise, load the image
@@ -1471,8 +1472,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			{
 			if (error = m_Image.InitFromXML(Ctx, pImage))
 				return ComposeLoadError(Ctx, Ctx.sError);
-
-			m_iImageVariants = m_Image.GetVariantCount();
 			}
 		}
 
@@ -1957,13 +1956,5 @@ void CStationType::SetImageSelector (SSelectorInitCtx &InitCtx, CCompositeImageS
 	else
 		{
 		m_Image.InitSelector(InitCtx, retSelector);
-
-#if 0
-		int iVariantCount = GetImageVariants();
-		if (iVariantCount)
-			retSelector->AddVariant(mathRandom(0, iVariantCount-1));
-		else
-			retSelector->AddVariant(0);
-#endif
 		}
 	}

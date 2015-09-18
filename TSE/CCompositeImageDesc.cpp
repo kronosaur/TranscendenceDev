@@ -22,6 +22,8 @@
 //		<{entry} criteria="..." />
 //	</LocationCriteriaTable>
 //
+//	<Lookup unid="..."/>
+//
 //	<Table>
 //		{set of entries}
 //	</Table>
@@ -52,8 +54,10 @@
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGE_COMPOSITE_TAG						CONSTLIT("ImageComposite")
 #define IMAGE_EFFECT_TAG						CONSTLIT("ImageEffect")
+#define IMAGE_LOOKUP_TAG						CONSTLIT("ImageLookup")
 #define IMAGE_VARIANTS_TAG						CONSTLIT("ImageVariants")
 #define LOCATION_CRITERIA_TABLE_TAG				CONSTLIT("LocationCriteriaTable")
+#define LOOKUP_TAG								CONSTLIT("Lookup")
 #define TABLE_TAG								CONSTLIT("Table")
 
 #define CHANCE_ATTRIB							CONSTLIT("chance")
@@ -61,6 +65,7 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
 #define HUE_ATTRIB								CONSTLIT("hue")
+#define IMAGE_ID_ATTRIB							CONSTLIT("imageID")
 #define SATURATION_ATTRIB						CONSTLIT("saturation")
 
 class CCompositeEntry : public IImageEntry
@@ -198,7 +203,9 @@ class CTableEntry : public IImageEntry
 
 static CObjectImageArray EMPTY_IMAGE;
 
-CCompositeImageDesc::CCompositeImageDesc (void) : m_pRoot(NULL)
+CCompositeImageDesc::CCompositeImageDesc (void) : 
+		m_pDesc(NULL),
+		m_pRoot(NULL)
 
 //	CCompositeImageDesc constructor
 
@@ -210,6 +217,9 @@ CCompositeImageDesc::~CCompositeImageDesc (void)
 //	CCompositeImageDesc destructor
 
 	{
+	if (m_pDesc)
+		delete m_pDesc;
+
 	if (m_pRoot)
 		delete m_pRoot;
 	}
@@ -342,6 +352,18 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 		pEntry = new CFilterColorizeEntry;
 	else if (strEquals(pDesc->GetTag(), LOCATION_CRITERIA_TABLE_TAG))
 		pEntry = new CLocationCriteriaTableEntry;
+	else if (strEquals(pDesc->GetTag(), LOOKUP_TAG) || strEquals(pDesc->GetTag(), IMAGE_LOOKUP_TAG))
+		{
+		DWORD dwUNID = pDesc->GetAttributeInteger(IMAGE_ID_ATTRIB);
+		CCompositeImageType *pEntry = g_pUniverse->FindCompositeImageType(dwUNID);
+		if (pEntry == NULL)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find composite image type: %08x."), dwUNID);
+			return ERR_FAIL;
+			}
+
+		return InitEntryFromXML(Ctx, pEntry->GetDesc(), IDGen, retpEntry);
+		}
 
 	//	Otherwise, assume that this is either a plain image or an arbitrary tag with
 	//	content elements representing the actual image composition.
@@ -371,15 +393,13 @@ ALERROR CCompositeImageDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 //	Initializes the desc from XML
 
 	{
-	ALERROR error;
-
 	ASSERT(m_pRoot == NULL);
 
-	CIDCounter IDGen;
-	if (error = InitEntryFromXML(Ctx, pDesc, IDGen, &m_pRoot))
-		return error;
+	//	Keep the XML around and parse it at Bind time. We need to do this to
+	//	support shared ImageComposite types, which may not be loaded yet at this
+	//	point.
 
-	m_bConstant = m_pRoot->IsConstant();
+	m_pDesc = pDesc->OrphanCopy();
 
 	return NOERROR;
 	}
@@ -429,8 +449,26 @@ ALERROR CCompositeImageDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	{
 	ALERROR error;
 
-	if (m_pRoot == NULL)
+	//	If no XML then this is an empty image (and that's OK).
+
+	if (m_pDesc == NULL)
 		return NOERROR;
+
+	//	Clean up our previous load, if necessary.
+
+	if (m_pRoot)
+		{
+		delete m_pRoot;
+		m_pRoot = NULL;
+		}
+
+	//	Now that all types are loaded, parse the directives
+
+	CIDCounter IDGen;
+	if (error = InitEntryFromXML(Ctx, m_pDesc, IDGen, &m_pRoot))
+		return error;
+
+	m_bConstant = m_pRoot->IsConstant();
 
 	//	Load
 	//
@@ -534,7 +572,7 @@ void CCompositeEntry::GetImage (const CCompositeImageSelector &Selector, CObject
 		}
 
 	CG32bitImage *pComp = new CG32bitImage;
-	pComp->Create(cxWidth, cyHeight, CG32bitImage::alpha1);
+	pComp->Create(cxWidth, cyHeight, CG32bitImage::alpha1, CG32bitPixel::Null());
 
 	int xCenter = cxWidth / 2;
 	int yCenter = cyHeight / 2;
@@ -607,7 +645,10 @@ ALERROR CCompositeEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CX
 
 	int iCount = pDesc->GetContentElementCount();
 	if (iCount == 0)
+		{
+		::kernelDebugLogMessage("Warning: No entries in composite image for %08x.", (Ctx.pType ? Ctx.pType->GetUNID() : 0));
 		return NOERROR;
+		}
 
 	m_Layers.InsertEmpty(iCount);
 	for (i = 0; i < iCount; i++)

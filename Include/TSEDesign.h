@@ -236,8 +236,9 @@ enum DesignTypes
 	designEconomyType =					20,
 	designTemplateType =				21,
 	designGenericType =					22,
+	designImageComposite =				23,
 
-	designCount	=						23, 
+	designCount	=						24, 
 
 	designSetAll =						0xffffffff,
 	charEconomyType =					'$',
@@ -255,7 +256,7 @@ enum DesignTypes
 	//	l
 	charImage =							'm',
 	charMissionType =					'n',
-	//	o
+	charImageComposite =				'o',
 	charPower =							'p',
 	charSystemTable =					'q',
 	//	r
@@ -950,7 +951,7 @@ class CObjectImageArray : public CObject
 		inline DWORD GetBitmapUNID (void) const { return m_dwBitmapUNID; }
 		CString GetFilename (void) const;
 		inline int GetFrameCount (void) const { return m_iFrameCount; }
-		inline CG32bitImage &GetImage (const CString &sLoadReason) const { CG32bitImage *pBmp = m_pImage->GetImage(sLoadReason); return (pBmp ? *pBmp : m_NullImage); }
+		inline CG32bitImage &GetImage (const CString &sLoadReason) const { CG32bitImage *pBmp = (m_pImage ? m_pImage->GetImage(sLoadReason) : NULL); return (pBmp ? *pBmp : m_NullImage); }
 		inline const RECT &GetImageRect (void) const { return m_rcImage; }
 		RECT GetImageRect (int iTick, int iRotation, int *retxCenter = NULL, int *retyCenter = NULL) const;
 		RECT GetImageRectAtPoint (int x, int y) const;
@@ -1193,9 +1194,30 @@ class CCompositeImageDesc
 
 		SCacheEntry *FindCacheEntry (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const;
 
+		CXMLElement *m_pDesc;
 		IImageEntry *m_pRoot;
 		bool m_bConstant;
 		mutable TArray<SCacheEntry> m_Cache;
+	};
+
+class CCompositeImageType : public CDesignType
+	{
+	public:
+		CCompositeImageType (void);
+		~CCompositeImageType (void);
+
+		inline CXMLElement *GetDesc (void) const { return m_pDesc; }
+
+		//	CDesignType overrides
+		static CCompositeImageType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designImageComposite) ? (CCompositeImageType *)pType : NULL); }
+		virtual DesignTypes GetType (void) const { return designImageComposite; }
+
+	protected:
+		//	CDesignType overrides
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+
+	private:
+		CXMLElement *m_pDesc;
 	};
 
 //	Sounds
@@ -5094,7 +5116,7 @@ class CStationType : public CDesignType
 		inline const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(Selector, Modifiers, retiRotation); }
 		inline const CCompositeImageDesc &GetImage (void) { return m_Image; }
 		inline const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_Image.GetImage(Selector, Modifiers, retiRotation); }
-		inline int GetImageVariants (void) { return m_iImageVariants; }
+		inline int GetImageVariants (void) { return m_Image.GetVariantCount(); }
 		inline int GetInitialHitPoints (void) { return m_iHitPoints; }
 		inline IShipGenerator *GetInitialShips (int iDestiny, int *retiCount) { *retiCount = (!m_ShipsCount.IsEmpty() ? m_ShipsCount.RollSeeded(iDestiny) : 1); return m_pInitialShips; }
 		Metric GetLevelStrength (int iLevel);
@@ -5273,7 +5295,6 @@ class CStationType : public CDesignType
 
 		//	Images
 		CCompositeImageDesc m_Image;
-		int m_iImageVariants;							//	Number of variants
 		CIntArray m_ShipWrecks;							//	Class IDs to use as image (for shipwrecks)
 		int m_iAnimationsCount;							//	Number of animation sections
 		SAnimationSection *m_pAnimations;				//	Animation sections (may be NULL)
@@ -5856,7 +5877,7 @@ class CSystemMap : public CDesignType
 		virtual ~CSystemMap (void);
 
 		void AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL);
-		ALERROR AddFixedTopology (CTopology &Topology, CString *retsError);
+		ALERROR AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
 		bool DebugShowAttributes (void) const { return m_bDebugShowAttributes; }
 		CG32bitImage *CreateBackgroundImage (void);
 		void GetBackgroundImageSize (int *retcx, int *retcy);
@@ -5865,6 +5886,7 @@ class CSystemMap : public CDesignType
 		inline void GetScale (int *retiInitial, int *retiMin, int *retiMax) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
 		inline const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
 		inline bool IsStartingMap (void) const { return m_bStartingMap; }
+		ALERROR ProcessTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
 
 		//	CDesignType overrides
 		static CSystemMap *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemMap) ? (CSystemMap *)pType : NULL); }
@@ -6645,6 +6667,10 @@ class CDesignCollection
 
 		CDynamicDesignTable m_DynamicTypes;
 		TSortMap<CString, CDesignType *> m_DynamicUNIDs;
+
+		//	State
+
+		bool m_bInBindDesign;
 	};
 
 //	Utility functions

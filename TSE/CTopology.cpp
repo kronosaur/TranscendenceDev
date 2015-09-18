@@ -1797,13 +1797,18 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 			}
 		}
 
+	//	Keep track of nodes added by display map, so that we can run the 
+	//	topology processors on them later.
+
+	TSortMap<DWORD, CTopologyNodeList> NodesAdded;
+
 	//	Let the maps add their topologies
 
 	for (i = 0; i < m_Design.GetCount(designSystemMap); i++)
 		{
 		CSystemMap *pMap = CSystemMap::AsType(m_Design.GetEntry(designSystemMap, i));
 
-		//	If this is a starting map and it is no the map that we're starting
+		//	If this is a starting map and it is not the map that we're starting
 		//	with, then skip it.
 
 		if (pMap->IsStartingMap() && pMap->GetUNID() != dwStartingMap)
@@ -1811,7 +1816,26 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 
 		//	Add topology
 
-		if (error = pMap->AddFixedTopology(m_Topology, retsError))
+		if (error = pMap->AddFixedTopology(m_Topology, NodesAdded, retsError))
+			return error;
+		}
+
+	//	Now process all topology elements.
+
+	for (i = 0; i < m_Design.GetCount(designSystemMap); i++)
+		{
+		CSystemMap *pMap = CSystemMap::AsType(m_Design.GetEntry(designSystemMap, i));
+		if (pMap->IsStartingMap() && pMap->GetUNID() != dwStartingMap)
+			continue;
+
+		//	If this map did not add any nodes, then skip.
+
+		if (NodesAdded.GetAt(pMap->GetUNID()) == NULL)
+			continue;
+
+		//	Process topology
+
+		if (error = pMap->ProcessTopology(m_Topology, NodesAdded, retsError))
 			return error;
 		}
 

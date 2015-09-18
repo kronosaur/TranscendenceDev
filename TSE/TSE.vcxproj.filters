@@ -853,6 +853,9 @@
     <ClCompile Include="CAdventureHighScoreList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CCompositeImageType.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

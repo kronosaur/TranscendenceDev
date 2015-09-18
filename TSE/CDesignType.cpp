@@ -16,6 +16,7 @@
 #define EVENTS_TAG								CONSTLIT("Events")
 #define GLOBAL_DATA_TAG							CONSTLIT("GlobalData")
 #define IMAGE_TAG								CONSTLIT("Image")
+#define IMAGE_COMPOSITE_TAG						CONSTLIT("ImageComposite")
 #define INITIAL_DATA_TAG						CONSTLIT("InitialData")
 #define ITEM_TABLE_TAG							CONSTLIT("ItemTable")
 #define ITEM_TYPE_TAG							CONSTLIT("ItemType")
@@ -110,6 +111,7 @@ static char DESIGN_CHAR[designCount] =
 		'$',
 		'_',
 		'x',
+		'o',
 	};
 
 static char *DESIGN_CLASS_NAME[designCount] =
@@ -139,6 +141,7 @@ static char *DESIGN_CLASS_NAME[designCount] =
 		"EconomyType",
 		"TemplateType",
 		"Type",
+		"ImageComposite",
 	};
 
 static char *CACHED_EVENTS[CDesignType::evtCount] =
@@ -444,6 +447,8 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			pType = new CTemplateType;
 		else if (strEquals(pDesc->GetTag(), TYPE_TAG))
 			pType = new CGenericType;
+		else if (strEquals(pDesc->GetTag(), IMAGE_COMPOSITE_TAG))
+			pType = new CCompositeImageType;
 		else if (strEquals(pDesc->GetTag(), ADVENTURE_DESC_TAG))
 			{
 			//	Only valid if we are inside an Adventure
@@ -2463,6 +2468,10 @@ ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTyp
 
 			case charImage:
 				retCriteria->m_dwTypeSet |= (1 << designImage);
+				break;
+
+			case charImageComposite:
+				retCriteria->m_dwTypeSet |= (1 << designImageComposite);
 				break;
 
 			case charMissionType:

@@ -37,7 +37,8 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 
 CDesignCollection::CDesignCollection (void) :
 		m_Base(true),	//	m_Base owns its types and will free them at the end
-		m_pAdventureDesc(NULL)
+		m_pAdventureDesc(NULL),
+		m_bInBindDesign(false)
 
 //	CDesignCollection construtor
 
@@ -193,17 +194,17 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 	ALERROR error;
 	int i;
 
-	//	Unbind everything
+	//	Remeber that we're in bind design
 
-	DEBUG_TRY
+	m_bInBindDesign = true;
+
+	//	Unbind everything
 
 	CShipClass::UnbindGlobal();
 
 	for (i = 0; i < m_AllTypes.GetCount(); i++)
 		m_AllTypes.GetEntry(i)->UnbindDesign();
 	m_AllTypes.DeleteAll();
-
-	DEBUG_CATCH_MSG("Crash unbinding types.");
 
 	//	Reset the bind tables
 
@@ -247,6 +248,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 		if (error = pExtension->ExecuteGlobals(Ctx))
 			{
+			m_bInBindDesign = false;
 			*retsError = Ctx.sError;
 			return error;
 			}
@@ -271,6 +273,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 		} catch (...)
 			{
+			m_bInBindDesign = false;
 			::kernelDebugLogMessage("Crash processing extension:");
 			CExtension::DebugDump(pExtension, true);
 			throw;
@@ -281,24 +284,22 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 	if (bNewGame)
 		{
-		DEBUG_TRY
-
 		m_DynamicUNIDs.DeleteAll();
 		m_DynamicTypes.DeleteAll();
 
 		if (error = FireOnGlobalTypesInit(Ctx))
 			{
+			m_bInBindDesign = false;
 			*retsError = Ctx.sError;
 			return error;
 			}
 
 		if (error = CreateTemplateTypes(Ctx))
 			{
+			m_bInBindDesign = false;
 			*retsError = Ctx.sError;
 			return error;
 			}
-
-		DEBUG_CATCH_MSG("Crash defining dynamic types.");
 		}
 
 	//	Add all the dynamic types. These came either from the saved game file or
@@ -310,19 +311,18 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 	if (error = ResolveOverrides(Ctx))
 		{
+		m_bInBindDesign = false;
 		*retsError = Ctx.sError;
 		return error;
 		}
 
 	//	Initialize the byType lists
 
-	DEBUG_TRY
 	for (i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pEntry = m_AllTypes.GetEntry(i);
 		m_ByType[pEntry->GetType()].AddEntry(pEntry);
 		}
-	DEBUG_CATCH_MSG("Crash initializing byType lists.");
 
 	//	Set our adventure desc as current; since adventure descs are always 
 	//	loaded this is the only thing that we can use to tell if we should
@@ -333,16 +333,13 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 	//
 	//	NOTE: m_pAdventureDesc can be NULL (e.g., in the intro screen).
 
-	DEBUG_TRY
 	if (m_pAdventureDesc)
 		m_pAdventureDesc->SetCurrentAdventure();
-	DEBUG_CATCH_MSG("Crash setting current adventure.");
 
 	//	Cache a map between currency name and economy type
 	//	We need to do this before Bind because some types will lookup
 	//	a currency name during Bind.
 
-	DEBUG_TRY
 	m_EconomyIndex.DeleteAll();
 	for (i = 0; i < GetCount(designEconomyType); i++)
 		{
@@ -354,13 +351,13 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 		if (!bUnique)
 			{
 			pEcon->ComposeLoadError(Ctx, CONSTLIT("Currency ID must be unique"));
+			m_bInBindDesign = false;
 			*retsError = Ctx.sError;
 			return ERR_FAIL;
 			}
 
 		*ppDest = pEcon;
 		}
-	DEBUG_CATCH_MSG("Crash initializing economies.");
 
 	//	Prepare to bind. This is used by design elements that need two passes
 	//	to bind. We also use it to set up the inheritence hierarchy, which means
@@ -368,12 +365,12 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 	m_DisplayAttribs.DeleteAll();
 
-	DEBUG_TRY
 	for (i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pEntry = m_AllTypes.GetEntry(i);
 		if (error = pEntry->PrepareBindDesign(Ctx))
 			{
+			m_bInBindDesign = false;
 			*retsError = Ctx.sError;
 			return error;
 			}
@@ -385,19 +382,18 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 		if (!Attribs.IsEmpty())
 			m_DisplayAttribs.Append(Attribs);
 		}
-	DEBUG_CATCH_MSG("Crash in PrepareBind.");
 
 	//	Now call Bind on all active design entries
 
 	for (i = 0; i < evtCount; i++)
 		m_EventsCache[i]->DeleteAll();
 
-	DEBUG_TRY
 	for (i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pEntry = m_AllTypes.GetEntry(i);
 		if (error = pEntry->BindDesign(Ctx))
 			{
+			m_bInBindDesign = false;
 			*retsError = Ctx.sError;
 			return error;
 			}
@@ -407,26 +403,25 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 		CacheGlobalEvents(pEntry);
 		}
-	DEBUG_CATCH_MSG("Crash in BindDesign.");
 
 	//	Finish binding. This pass is used by design elements
 	//	that need to do stuff after all designs are bound.
 
-	DEBUG_TRY
 	for (i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pEntry = m_AllTypes.GetEntry(i);
 		if (error = pEntry->FinishBindDesign(Ctx))
 			{
+			m_bInBindDesign = false;
 			*retsError = Ctx.sError;
 			return error;
 			}
 		}
-	DEBUG_CATCH_MSG("Crash in FinishBind.");
 
 	//	Remember what we bound
 
 	m_BoundExtensions = BindOrder;
+	m_bInBindDesign = false;
 
 	return NOERROR;
 

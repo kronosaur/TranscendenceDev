@@ -908,6 +908,9 @@ ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int
 //	Creates a new image from the source
 
 	{
+	if (Source.m_pImage == NULL)
+		return NOERROR;
+
 	CG32bitImage &SourceImage = Source.GetImage(CONSTLIT("Rotated image"));
 	RECT rcSrc = Source.GetImageRect(iTick, iVariant);
 

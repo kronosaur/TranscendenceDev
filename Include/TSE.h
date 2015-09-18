@@ -3539,6 +3539,7 @@ class CUniverse : public CObject
 		static CString ValidatePlayerName (const CString &sName);
 
 		CArmorClass *FindArmor (DWORD dwUNID);
+		inline CCompositeImageType *FindCompositeImageType (DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntry(dwUNID)); }
 		CEffectCreator *FindDefaultHitEffect (DamageTypes iDamage);
 		inline CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
