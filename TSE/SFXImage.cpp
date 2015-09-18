@@ -83,10 +83,7 @@ ALERROR CImageEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 	if (error = m_Image.InitFromXML(Ctx, pDesc))
 		return error;
 
-	m_iLifetime = m_Image.GetMaxLifetime();
-	if (m_iLifetime <= 0)
-		m_iLifetime = 1;
-
+	m_iLifetime = -1;	//	We don't know this until bind
 	m_bRandomStartFrame = pDesc->GetAttributeBool(RANDOM_START_FRAME_ATTRIB);
 
 	//	Variants & Rotation
@@ -123,6 +120,10 @@ ALERROR CImageEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
 		return error;
+
+	m_iLifetime = m_Image.GetMaxLifetime();
+	if (m_iLifetime <= 0)
+		m_iLifetime = 1;
 
 	return NOERROR;
 	}

@@ -203,6 +203,8 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	ALERROR error;
 	int i;
 
+	Ctx.pType = this;
+
 	//	Now that we've connected to our based classes, update the event cache
 	//	with events from our ancestors.
 
@@ -232,9 +234,11 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	catch (...)
 		{
 		::kernelDebugLogMessage("Crash in OnBindDesign [UNID: %08x]", m_dwUNID);
+		Ctx.pType = NULL;
 		throw;
 		}
 
+	Ctx.pType = NULL;
 	return error;
 	}
 
@@ -463,15 +467,18 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			}
 		else if (strEquals(pDesc->GetTag(), EFFECT_TAG))
 			{
+			//	Load UNID
+
+			DWORD dwUNID;
+			if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &dwUNID))
+				return error;
+
 			//	This is an old-style CEffectCreator for compatibility
 
 			if (error = CEffectCreator::CreateFromXML(Ctx, pDesc, NULL_STR, (CEffectCreator **)&pType))
 				return error;
 
-			//	Load UNID
-
-			if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &pType->m_dwUNID))
-				return error;
+			pType->m_dwUNID = dwUNID;
 
 			if (!pDesc->FindAttribute(ATTRIBUTES_ATTRIB, &pType->m_sAttributes))
 				pType->m_sAttributes = pDesc->GetAttribute(MODIFIERS_ATTRIB);

@@ -205,7 +205,8 @@ static CObjectImageArray EMPTY_IMAGE;
 
 CCompositeImageDesc::CCompositeImageDesc (void) : 
 		m_pDesc(NULL),
-		m_pRoot(NULL)
+		m_pRoot(NULL),
+		m_bConstant(false)
 
 //	CCompositeImageDesc constructor
 
