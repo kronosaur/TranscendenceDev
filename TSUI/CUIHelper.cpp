@@ -479,14 +479,13 @@ void CUIHelper::CreateSessionFrameBar (IHISession *pSession, const TArray<SMenuE
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
 	RECT rcCenter;
-	CG32bitImage &Screen = m_HI.GetScreen();
-	VI.GetWidescreenRect(Screen, &rcCenter);
+	VI.GetWidescreenRect(&rcCenter);
 
 	//	Compute the rect of the entire bar
 
 	RECT rcBar;
 	rcBar.left = 0;
-	rcBar.right = Screen.GetWidth();
+	rcBar.right = m_HI.GetScreenWidth();
 	if (dwOptions & OPTION_FRAME_ALIGN_TOP)
 		{
 		rcBar.top = 0;
@@ -495,7 +494,7 @@ void CUIHelper::CreateSessionFrameBar (IHISession *pSession, const TArray<SMenuE
 	else
 		{
 		rcBar.top = rcCenter.bottom;
-		rcBar.bottom = Screen.GetHeight();
+		rcBar.bottom = m_HI.GetScreenHeight();
 		}
 
 	//	Create a sequencer to hold the bar
@@ -568,7 +567,7 @@ void CUIHelper::CreateSessionTitle (IHISession *pSession,
 	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
 
 	RECT rcRect;
-	VI.GetWidescreenRect(m_HI.GetScreen(), &rcRect);
+	VI.GetWidescreenRect(&rcRect);
 
 	//	Create a sequencer to hold all the controls
 
@@ -714,7 +713,7 @@ void CUIHelper::CreateSessionWaitAnimation (const CString &sID, const CString &s
 	//	Compute some metrics
 
 	RECT rcRect;
-	VI.GetWidescreenRect(m_HI.GetScreen(), &rcRect);
+	VI.GetWidescreenRect(&rcRect);
 
 	//	Figure out the position of the ring animation
 

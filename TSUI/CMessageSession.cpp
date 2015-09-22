@@ -67,7 +67,7 @@ void CMessageSession::CreateDlgMessage (IAnimatron **retpDlg)
 	//	Figure out where the login dialog box will appear
 
 	RECT rcCenter;
-	VI.GetWidescreenRect(m_HI.GetScreen(), &rcCenter);
+	VI.GetWidescreenRect(&rcCenter);
 
 	RECT rcDlg = rcCenter;
 	int cyDlg = 10 * VI.GetFont(fontLarge).GetHeight();

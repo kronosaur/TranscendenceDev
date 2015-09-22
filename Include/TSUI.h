@@ -496,7 +496,7 @@ class CVisualPalette : public IFontTable
 		inline const CG16bitFont &GetFont (int iIndex) const { return m_Font[iIndex]; }
 		const CG16bitFont &GetFont (const CString &sName, bool *retFound = NULL) const;
 		inline const CG32bitImage &GetImage (int iIndex) const { return m_Image[iIndex]; }
-		void GetWidescreenRect (CG32bitImage &Screen, RECT *retrcCenter, RECT *retrcFull = NULL) const;
+		void GetWidescreenRect (RECT *retrcCenter, RECT *retrcFull = NULL) const;
 
 		//	Draw functions
 
@@ -669,6 +669,8 @@ class CHumanInterface
 #else
 		inline CScreenMgr3D &GetScreenMgr (void) { return m_ScreenMgr; }
 #endif
+		inline int GetScreenHeight (void) const { return m_ScreenMgr.GetHeight(); }
+		inline int GetScreenWidth (void) const { return m_ScreenMgr.GetWidth(); }
 		inline IHISession *GetSession (void) { return m_pCurSession; }
 		inline CSoundMgr &GetSoundMgr (void) { return m_SoundMgr; }
 		IHISession *GetTopSession (bool bNonTransparentOnly = true);

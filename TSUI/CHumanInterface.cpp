@@ -198,7 +198,7 @@ void CHumanInterface::ClosePopupSession (void)
 
 		//	Send size message
 
-		m_pCurSession->HISize(GetScreen().GetWidth(), GetScreen().GetHeight());
+		m_pCurSession->HISize(GetScreenWidth(), GetScreenHeight());
 
 		//	Remove from saved array
 
@@ -402,6 +402,10 @@ void CHumanInterface::OnAnimate (void)
 	if (!m_ScreenMgr.CheckIsReady())
 		return;
 
+	//	Get the screen. Remember that we need to release it when we're done.
+
+	CG32bitImage &Screen = GetScreen();
+
 	//	Paint the current session
 
 	if (m_pCurSession)
@@ -413,11 +417,11 @@ void CHumanInterface::OnAnimate (void)
 			//	Paint the background sessions
 
 			for (i = 0; i < m_BackgroundSessions.GetCount(); i++)
-				m_BackgroundSessions[i]->HIAnimate(GetScreen(), false);
+				m_BackgroundSessions[i]->HIAnimate(Screen, false);
 
 			//	Paint the current session
 
-			m_pCurSession->HIAnimate(GetScreen(), true);
+			m_pCurSession->HIAnimate(Screen, true);
 			}
 		catch (...)
 			{
@@ -431,7 +435,7 @@ void CHumanInterface::OnAnimate (void)
 		}
 	else
 		{
-		GetScreen().Set(CG32bitPixel(0, 0, 0));
+		Screen.Set(CG32bitPixel(0, 0, 0));
 		BltScreen();
 		FlipScreen();
 		}
@@ -510,7 +514,7 @@ ALERROR CHumanInterface::OpenPopupSession (IHISession *pSession, CString *retsEr
 
 	//	Send size message
 
-	m_pCurSession->HISize(GetScreen().GetWidth(), GetScreen().GetHeight());
+	m_pCurSession->HISize(GetScreenWidth(), GetScreenHeight());
 
 	//	Recompute paint order
 
@@ -531,16 +535,18 @@ void CHumanInterface::PaintFrameRate (void)
 //	Paints the current frame rate
 
 	{
+	CG32bitImage &Screen = GetScreen();
+
 	int iRate = (int)(m_FrameRate.GetFrameRate() + 0.5f);
 	CString sText = strPatternSubst(CONSTLIT("Frame rate: %d"), iRate);
 
 	const CG16bitFont &TitleFont = m_Visuals.GetFont(fontSubTitle);
 	RECT rcRect;
 	rcRect.left = 0;
-	rcRect.right = GetScreen().GetWidth();
+	rcRect.right = GetScreenWidth();
 	rcRect.top = 0;
 	rcRect.bottom = TitleFont.GetHeight();
-	TitleFont.DrawText(GetScreen(), rcRect, CG32bitPixel(128,128,128), sText);
+	TitleFont.DrawText(Screen, rcRect, CG32bitPixel(128,128,128), sText);
 
 	//	LATER: This should move to EndSessionUpdate
 	if (m_pCurSession)
@@ -605,7 +611,7 @@ ALERROR CHumanInterface::ShowSession (IHISession *pSession, CString *retsError)
 			{
 			//	Send size message
 
-			m_pCurSession->HISize(GetScreen().GetWidth(), GetScreen().GetHeight());
+			m_pCurSession->HISize(GetScreenWidth(), GetScreenHeight());
 
 			//	Show the cursor
 
