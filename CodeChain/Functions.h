@@ -87,6 +87,10 @@
 #define FN_EQUALITY_GREATER_EQ_NUMERALS	83
 #define FN_EQUALITY_NEQ_NUMERALS		84
 #define FN_VECTOR_EQ					85
+#define FN_MATH_ROUND					86
+#define FN_MATH_CEIL					87
+#define FN_MATH_FLOOR					88
+#define FN_ITEM_CONVERT_TO				89
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

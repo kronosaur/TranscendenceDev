@@ -2258,6 +2258,21 @@ double strToDouble (const CString &sString, double rFailResult, bool *retbFailed
 //	Converts a string to a double
 
 	{
+	//	Check to see if this is a hex integer
+
+	char *pPos = sString.GetASCIIZPointer();
+	if (sString.GetLength() > 2
+			&& pPos[0] == '0'
+			&& (pPos[1] == 'x' || pPos[1] == 'X'))
+		{
+		bool bFailed;
+		DWORD dwValue = strToInt(sString, 0, &bFailed);
+		if (retbFailed) *retbFailed = bFailed;
+		return (bFailed ? rFailResult : (double)dwValue);
+		}
+
+	//	Assume a float
+
 	double rResult = ::atof(sString.GetASCIIZPointer());
 	if (_isnan(rResult))
 		{

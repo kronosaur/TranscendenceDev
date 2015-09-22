@@ -406,6 +406,7 @@ class CCString : public ICCString
 
 		virtual ICCItem *Clone (CCodeChain *pCC);
 		virtual BOOL GetBinding (int *retiFrame, int *retiOffset);
+		virtual double GetDoubleValue (void) { return strToDouble(m_sValue, 0.0); }
 		virtual int GetIntegerValue (void) { return strToInt(m_sValue, 0); }
 		virtual ICCItem *GetFunctionBinding (void) { if (m_pBinding) return m_pBinding->Reference(); else return NULL; }
 		virtual CString GetStringValue (void) { return m_sValue; }

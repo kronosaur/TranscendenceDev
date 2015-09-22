@@ -56,6 +56,14 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"cat",				fnCat,			0,
 			"(cat s1 s2 ... sn) -> string",		NULL,	0,	},
 
+		{	"ceil",				fnMathNumerals,		FN_MATH_CEIL,
+			"(ceil x) -> y",
+			"n",	0,	},
+
+		{	"convertTo",		fnItem,			FN_ITEM_CONVERT_TO,
+			"(convertTo type value) -> result",
+			"sv",	0,	},
+
 		{	"count",			fnCount,		0,
 			"(count list) -> number of items",
 			NULL,	0,	},
@@ -91,6 +99,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"find",				fnFind,			FN_FIND,
 			"(find source target ['ascending|'descending] [keyIndex]) -> position of target in source (0-based)",
 			"vv*",	0,	},
+
+		{	"floor",			fnMathNumerals,		FN_MATH_FLOOR,
+			"(floor x) -> y",
+			"n",	0,	},
 
 		{	"fncHelp",			fnItemInfo,		FN_ITEMINFO_HELP,		"",		NULL,	0,	},
 
@@ -206,6 +218,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"regex",			fnRegEx,			0,
 			"(regex source pattern ['offset|'subex]) -> result",
 			"ss*",	0,	},
+
+		{	"round",			fnMathNumerals,		FN_MATH_ROUND,
+			"(round x) -> y",
+			"n",	0,	},
 
 		{	"quote",			fnSpecial,			FN_QUOTE,
 			"(quote exp) -> unevaluated exp",

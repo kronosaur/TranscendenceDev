@@ -1539,6 +1539,33 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			}
 
+		case FN_ITEM_CONVERT_TO:
+			{
+			CString sType = pArgs->GetElement(0)->GetStringValue();
+			ICCItem *pValue = pArgs->GetElement(1);
+
+			if (strEquals(sType, CONSTLIT("error")))
+				return pCC->CreateError(pValue->GetStringValue());
+			else if (strEquals(sType, CONSTLIT("nil")))
+				return pCC->CreateNil();
+			else if (strEquals(sType, CONSTLIT("int32")))
+				return pCC->CreateInteger(pValue->GetIntegerValue());
+			else if (strEquals(sType, CONSTLIT("real")))
+				return pCC->CreateDouble(pValue->GetDoubleValue());
+			else if (strEquals(sType, CONSTLIT("string")))
+				return pCC->CreateString(pValue->GetStringValue());
+			else if (strEquals(sType, CONSTLIT("list")))
+				{
+				ICCItem *pList = pCC->CreateLinkedList();
+				pList->Append(*pCC, pValue);
+				return pList;
+				}
+			else if (strEquals(sType, CONSTLIT("true")))
+				return pCC->CreateTrue();
+			else
+				return pCC->CreateError(CONSTLIT("Cannot convert to type"), pArgs->GetElement(0));
+			}
+
 		case FN_ITEM_TYPE:
 			{
 			ICCItem *pItem = pArgs->GetElement(0);
@@ -2706,6 +2733,9 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_MATH_CEIL:
+			return pCC->CreateDouble(ceil(pArgs->GetElement(0)->GetDoubleValue()));
+
 		case FN_MATH_DIVIDE:
 			{
 			double rNum = pArgs->GetElement(0)->GetDoubleValue();
@@ -2716,6 +2746,9 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			return pCC->CreateDouble(rNum / rDen);
 			}
+
+		case FN_MATH_FLOOR:
+			return pCC->CreateDouble(floor(pArgs->GetElement(0)->GetDoubleValue()));
 
 		case FN_MATH_MODULUS_NUMERALS:
 			{
@@ -2786,6 +2819,9 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			double rY = pArgs->GetElement(1)->GetDoubleValue();
 			return pCC->CreateDouble(pow(rX, rY));
 			}
+
+		case FN_MATH_ROUND:
+			return pCC->CreateDouble(round(pArgs->GetElement(0)->GetDoubleValue()));
 
 		case FN_MATH_SQRT_NUMERALS:
 			{
