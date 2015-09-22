@@ -162,7 +162,6 @@ class CScreenMgr3D
 		void OnWMDisplayChange (int iBitDepth, int cxWidth, int cyHeight);
 		void OnWMMove (int x, int y);
 		void OnWMSize (int cxWidth, int cyHeight, int iSize);
-		inline void ReleaseScreen (void) { }
 		void Render (void);
 		void StopDX (void);
 		void Validate (void);
