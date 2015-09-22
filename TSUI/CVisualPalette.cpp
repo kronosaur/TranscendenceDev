@@ -203,7 +203,7 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 
 	RECT rcCenter;
 	RECT rcFull;
-	GetWidescreenRect(Screen, &rcCenter, &rcFull);
+	GetWidescreenRect(&rcCenter, &rcFull);
 	CG32bitPixel rgbBackgroundColor = GetColor(colorAreaDeep);
 	CG32bitPixel rgbLineColor = GetColor(colorLineFrame);
 	int cyCenter = RectHeight(rcCenter);
@@ -301,15 +301,15 @@ const CG16bitFont &CVisualPalette::GetFont (const CString &sName, bool *retFound
 		}
 	}
 
-void CVisualPalette::GetWidescreenRect (CG32bitImage &Screen, RECT *retrcCenter, RECT *retrcFull) const
+void CVisualPalette::GetWidescreenRect (RECT *retrcCenter, RECT *retrcFull) const
 
 //	GetWidescreenRect
 //
 //	Returns the center widescreen rect
 
 	{
-	int cxScreen = Screen.GetWidth();
-	int cyScreen = Screen.GetHeight();
+	int cxScreen = g_pHI->GetScreenWidth();
+	int cyScreen = g_pHI->GetScreenHeight();
 
 	//	Compute the size of the center pane
 

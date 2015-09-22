@@ -631,7 +631,7 @@ LONG CHumanInterface::WMMove (int x, int y)
 	m_ScreenMgr.OnWMMove(x, y);
 
 	if (m_pCurSession)
-		m_pCurSession->HISize(GetScreen().GetWidth(), GetScreen().GetHeight());
+		m_pCurSession->HISize(GetScreenWidth(), GetScreenHeight());
 
 	return 0;
 	}
@@ -699,7 +699,7 @@ LONG CHumanInterface::WMSize (int cxWidth, int cyHeight, int iSize)
 	m_ScreenMgr.OnWMSize(cxWidth, cyHeight, iSize);
 
 	if (m_pCurSession)
-		m_pCurSession->HISize(GetScreen().GetWidth(), GetScreen().GetHeight());
+		m_pCurSession->HISize(GetScreenWidth(), GetScreenHeight());
 
 	return 0;
 	}
