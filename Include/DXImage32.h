@@ -107,6 +107,8 @@ class CG32bitImage : public CGImagePlane
 
 		CG32bitImage &operator= (const CG32bitImage &Src);
 
+		inline static CG32bitImage &Null (void) { return m_NullImage; }
+
 		//	Basic Interface
 
 		void CleanUp (void);
@@ -180,6 +182,7 @@ class CG32bitImage : public CGImagePlane
 		EAlphaTypes m_AlphaType;
 
 		mutable BITMAPINFO *m_pBMI;			//	Used for blting to a DC
+		static CG32bitImage m_NullImage;
 	};
 
 //	Drawing Classes ------------------------------------------------------------

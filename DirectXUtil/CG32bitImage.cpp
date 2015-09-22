@@ -9,6 +9,8 @@
 #define SMALL_SQUARE_SIZE					2
 #define MEDIUM_SQUARE_SIZE					4
 
+CG32bitImage CG32bitImage::m_NullImage;
+
 CG32bitImage::CG32bitImage (void) :
 		m_pRGBA(NULL),
 		m_bFreeRGBA(false),

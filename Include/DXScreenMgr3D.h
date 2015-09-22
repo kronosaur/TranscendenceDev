@@ -110,8 +110,9 @@ class CDXScreen
 		bool m_bUseGDI;						//	Use GDI instead of Direct3D
 		bool m_bNoGPUAcceleration;			//	Do not use textures, even if available
 		bool m_bUseTextures;				//	Use textures for layers.
-		bool m_bEndSceneNeeded;				//	If TREU, we need an EndScene call
+		bool m_bEndSceneNeeded;				//	If TRUE, we need an EndScene call
 		bool m_bErrorReported;				//	If TRUE, we've already reported an error
+		bool m_bDeviceLost;					//	If TRUE, we need to reset the device
 
 		TArray<SLayer> m_Layers;
 		TSortMap<int, int> m_PaintOrder;
