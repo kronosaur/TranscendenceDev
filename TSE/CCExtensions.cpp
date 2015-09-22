@@ -646,10 +646,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetData item attrib) -> data",
 			"vs",	0,	},
 
-		{	"itmGetDefaultCurrency",		fnItemTypeGet,	FN_ITEM_DEFAULT_CURRENCY,
-			"(itmGetDefaultCurrency item|type) -> currency",
-			"v",	0,	},
-
 		{	"itmGetFrequency",				fnItemTypeGet,		FN_ITEM_FREQUENCY,
 			"(itmGetFrequency item|type [level]) -> frequency",
 			"v*",	0,	},
@@ -705,6 +701,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'category\n"
 			"   'charges\n"
 			"   'components\n"
+			"   'currency\n"
 			"   'damaged\n"
 			"   'description\n"
 			"   'deviceDamageImmune\n"
@@ -2741,6 +2738,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"itmGetDefaultCurrency",		fnItemTypeGet,	FN_ITEM_DEFAULT_CURRENCY,
+			"DEPRECATED: Use (itmGetProperty item 'currency) instead.",
+			"v",	0,	},
 
 		{	"shpCanInstallArmor",			fnShipSet,			FN_SHIP_CAN_INSTALL_ARMOR,
 			"DEPRECATED: Use objCanInstallItem instead.",

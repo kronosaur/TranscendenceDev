@@ -22,6 +22,7 @@
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_CHARGES						CONSTLIT("charges")
 #define PROPERTY_COMPONENTS						CONSTLIT("components")
+#define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
@@ -783,6 +784,9 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 
 		return pList;
 		}
+
+	else if (strEquals(sName, PROPERTY_CURRENCY))
+		return CC.CreateInteger(m_pItemType->GetCurrencyType()->GetUNID());
 
 	else if (strEquals(sName, PROPERTY_DAMAGED))
 		return CC.CreateBool(IsDamaged());
