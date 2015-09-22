@@ -14,7 +14,8 @@
 CDXScreen::CDXScreen (void) :
 		m_hWnd(NULL),
 		m_pD3D(NULL),
-		m_pD3DDevice(NULL)
+		m_pD3DDevice(NULL),
+		m_bDeviceLost(false)
 
 //	CDXScreen constructor
 
@@ -28,6 +29,8 @@ bool CDXScreen::BeginScene (void)
 //	Start the scene. Must call EndScene when we're done.
 
 	{
+	ASSERT(!m_bDeviceLost);
+
 	HRESULT hr = m_pD3DDevice->BeginScene();
 	if (hr != D3D_OK)
 		{
@@ -35,11 +38,8 @@ bool CDXScreen::BeginScene (void)
 
 		if (hr == D3DERR_DEVICELOST)
 			{
-			if (!ResetDevice())
-				return false;
-
-			if (FAILED(m_pD3DDevice->BeginScene()))
-				return false;
+			m_bDeviceLost = true;
+			return false;
 			}
 
 		//	Otherwise, it's some error we can't handle
@@ -348,7 +348,7 @@ void CDXScreen::DebugOutputStats (void)
 		IDirect3DSurface9 *pBackBuffer;
 		if (FAILED(m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
 			{
-			::kernelDebugLogMessage("Unable to get back buffer surface.");
+			::kernelDebugLogMessage("[DX] Unable to get back buffer surface.");
 			return;
 			}
 
@@ -356,11 +356,11 @@ void CDXScreen::DebugOutputStats (void)
 		if (FAILED(pBackBuffer->GetDesc(&Desc)))
 			{
 			pBackBuffer->Release();
-			::kernelDebugLogMessage("Unable to back buffer descriptor.");
+			::kernelDebugLogMessage("[DX] Unable to back buffer descriptor.");
 			return;
 			}
 
-		::kernelDebugLogMessage("Buffer Format: %d", Desc.Format);
+		::kernelDebugLogMessage("[DX] Buffer Format: %d", Desc.Format);
 
 		pBackBuffer->Release();
 		}
@@ -490,6 +490,8 @@ bool CDXScreen::Present (void)
 //	Presents the scene.
 
 	{
+	ASSERT(!m_bDeviceLost);
+
 	//	End the scene
 
 	if (m_bEndSceneNeeded)
@@ -506,8 +508,8 @@ bool CDXScreen::Present (void)
 		return true;
 	else if (hr == D3DERR_DEVICENOTRESET)
 		{
-		if (!ResetDevice())
-			return false;
+		m_bDeviceLost = true;
+		return false;
 		}
 
 	//	Otherwise, present
@@ -543,6 +545,12 @@ void CDXScreen::Render (void)
 			::ReleaseDC(m_hWnd, hDC);
 			}
 		}
+
+	//	The remaining methods all use DX, so if we've lost the device, we can't
+	//	do anything.
+
+	else if (m_bDeviceLost)
+		return;
 
 	//	If we're using textures, then we paint each layer as a texture
 
@@ -646,7 +654,7 @@ void CDXScreen::RenderError (const CString &sError)
 	{
 	if (!m_bErrorReported)
 		{
-		::kernelDebugLogMessage(sError.GetASCIIZPointer());
+		::kernelDebugLogMessage("[DX] %s", sError);
 		m_bErrorReported = true;
 		}
 	}
@@ -703,17 +711,24 @@ bool CDXScreen::ResetDevice (void)
 		//	If the device is lost, don't worry, we'll keep on resetting
 
 		if (hr == D3DERR_DEVICELOST)
-			return true;
+			{
+			::kernelDebugLogMessage("[DX] Device lost after Rest.");
+			return false;
+			}
 
 		//	Otherwise, this is a real error.
 
+		::kernelDebugLogMessage("[DX] Device reset failed: %x", hr);
 		return false;
 		}
 
 	//	Reinitialize the render state
 
 	if (!InitDevice())
+		{
+		::kernelDebugLogMessage("[DX] InitDevice failed.");
 		return false;
+		}
 
 	//	Create all layer resources
 
@@ -723,11 +738,18 @@ bool CDXScreen::ResetDevice (void)
 			{
 			SLayer &Layer = m_Layers[i];
 			if (!CreateLayerResources(Layer))
+				{
+				::kernelDebugLogMessage("[DX] CreateLayerResources failed.");
 				return false;
+				}
 			}
 		}
 
 	//	Success
+
+	m_bDeviceLost = false;
+	m_bErrorReported = false;
+	::kernelDebugLogMessage("[DX] Device reset successfully.");
 
 	return true;
 	}
@@ -740,6 +762,27 @@ void CDXScreen::SwapBuffers (void)
 
 	{
 	int i;
+
+	//	This function is guaranteed to be called when no one else is touching 
+	//	the buffers (since we're swapping), so this is a safe place to reset the
+	//	device if necessary.
+
+	if (m_bDeviceLost)
+		{
+		//	See if we need to reset
+
+		HRESULT hr = m_pD3DDevice->TestCooperativeLevel();
+		if (hr == D3DERR_DEVICELOST
+				|| hr == D3DERR_DEVICENOTRESET)
+			{
+			if (!ResetDevice())
+				return;
+			}
+		else if (hr != D3D_OK)
+			return;
+		}
+
+	//	Swap
 
 	if (m_bUseTextures)
 		{
