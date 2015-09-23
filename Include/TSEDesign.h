@@ -1979,10 +1979,14 @@ class CItemList
 		void SortItems (void);
 		void WriteToStream (IWriteStream *pStream);
 
+		inline static CItemList &Null (void) { return m_Null; }
+
 	private:
 		void Copy (const CItemList &Src);
 
 		TArray<CItem *> m_List;
+
+		static CItemList m_Null;
 	};
 
 class CItemListManipulator

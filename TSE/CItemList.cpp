@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+CItemList CItemList::m_Null;
+
 CItemList::CItemList (void)
 
 //	CItemList constructor
