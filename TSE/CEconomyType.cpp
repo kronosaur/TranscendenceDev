@@ -12,6 +12,19 @@
 
 static CEconomyType *g_pDefaultEconomy = NULL;
 
+CEconomyType *CEconomyType::Default (void)
+
+//	Default
+//
+//	Returns the default economy (credits)
+
+	{
+	if (g_pDefaultEconomy == NULL)
+		g_pDefaultEconomy = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+
+	return g_pDefaultEconomy;
+	}
+
 CurrencyValue CEconomyType::Exchange (CEconomyType *pFrom, CurrencyValue iAmount)
 
 //	Exchange

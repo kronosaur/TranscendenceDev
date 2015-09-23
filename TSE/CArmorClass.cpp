@@ -29,6 +29,7 @@
 #define RADIATION_IMMUNE_ATTRIB					CONSTLIT("radiationImmune")
 #define REFLECT_ATTRIB							CONSTLIT("reflect")
 #define REGEN_ATTRIB							CONSTLIT("regen")
+#define REPAIR_COST_ATTRIB						CONSTLIT("repairCost")
 #define REPAIR_COST_ADJ_ATTRIB					CONSTLIT("repairCostAdj")
 #define REPAIR_RATE_ATTRIB						CONSTLIT("repairRate")
 #define REPAIR_TECH_ATTRIB						CONSTLIT("repairTech")
@@ -67,7 +68,6 @@
 static CObjectClass<CArmorClass>g_Class(OBJID_CARMORCLASS, NULL);
 
 static char g_HitPointsAttrib[] = "hitPoints";
-static char g_RepairCostAttrib[] = "repairCost";
 static char g_DamageAdjAttrib[] = "damageAdj";
 static char g_ItemIDAttrib[] = "itemID";
 #define MAX_REFLECTION_CHANCE		95
@@ -730,7 +730,7 @@ int CArmorClass::CalcBalance (void)
 	//	Repair cost
 
 	int iStdRepairCost = STD_STATS[m_iRepairTech - 1].iRepairCost;
-	int iDiff = iStdRepairCost - m_iRepairCost;
+	int iDiff = iStdRepairCost - (int)CEconomyType::Default()->Exchange(m_RepairCost);
 	if (iDiff < 0)
 		iBalance += Max(-8, 2 * iDiff / iStdRepairCost);
 	else if (iDiff > 0)
@@ -909,10 +909,19 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	if (error = pArmor->m_Decay.InitFromXML(Ctx, pDesc, DECAY_ATTRIB, DECAY_RATE_ATTRIB, NULL_STR, TICKS_PER_UPDATE))
 		return error;
 
-	//	Install cost based on level
+	//	We allow for explicit install cost (in which case we expect a currency).
+	//	If no cost specified, we take the default (which is in credits).
+	//	Either result is adjusted.
+
+	if (error = pArmor->m_InstallCost.InitFromXML(Ctx, pDesc->GetAttribute(INSTALL_COST_ATTRIB)))
+		return error;
+
+	if (pArmor->m_InstallCost.IsEmpty())
+		pArmor->m_InstallCost.Init(STD_STATS[iLevel - 1].iInstallCost);
 
 	int iInstallCostAdj = pDesc->GetAttributeIntegerBounded(INSTALL_COST_ADJ_ATTRIB, 0, -1, 100);
-	pArmor->m_iInstallCost = iInstallCostAdj * pDesc->GetAttributeIntegerBounded(INSTALL_COST_ATTRIB, 0, -1, STD_STATS[iLevel - 1].iInstallCost) / 100;
+	if (iInstallCostAdj != 100)
+		pArmor->m_InstallCost.Adjust(iInstallCostAdj);
 
 	//	Repair tech defaults to level
 
@@ -920,8 +929,15 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	//	Repair cost is based on repair tech
 
+	if (error = pArmor->m_RepairCost.InitFromXML(Ctx, pDesc->GetAttribute(REPAIR_COST_ATTRIB)))
+		return error;
+
+	if (pArmor->m_RepairCost.IsEmpty())
+		pArmor->m_RepairCost.Init(STD_STATS[pArmor->m_iRepairTech - 1].iRepairCost);
+
 	int iRepairCostAdj = pDesc->GetAttributeIntegerBounded(REPAIR_COST_ADJ_ATTRIB, 0, -1, 100);
-	pArmor->m_iRepairCost = iRepairCostAdj * pDesc->GetAttributeIntegerBounded(CONSTLIT(g_RepairCostAttrib), 0, -1, STD_STATS[pArmor->m_iRepairTech - 1].iRepairCost) / 100;
+	if (iRepairCostAdj != 100)
+		pArmor->m_RepairCost.Adjust(iRepairCostAdj);
 
 	//	Load the new damage adjustment structure
 
@@ -1076,11 +1092,11 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = sResult;
 		}
 	else if (strEquals(sField, FIELD_REPAIR_COST))
-		*retsValue = strFromInt(m_iRepairCost);
+		*retsValue = strFromInt(GetRepairCost());
 	else if (strEquals(sField, FIELD_REGEN))
 		*retsValue = strFromInt((int)m_Regen.GetHPPer180());
 	else if (strEquals(sField, FIELD_INSTALL_COST))
-		*retsValue = strFromInt(m_iInstallCost);
+		*retsValue = strFromInt(GetInstallCost());
 	else if (strEquals(sField, FIELD_SHIELD_INTERFERENCE))
 		{
 		if (m_fShieldInterference)
@@ -1520,6 +1536,14 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Compute armor damage adjustments
 
 	if (error = m_DamageAdj.Bind(Ctx, g_pUniverse->GetArmorDamageAdj(m_iDamageAdjLevel)))
+		return error;
+
+	//	Prices
+
+	if (error = m_InstallCost.Bind(Ctx))
+		return error;
+
+	if (error = m_RepairCost.Bind(Ctx))
 		return error;
 
 	//	Cache some events
