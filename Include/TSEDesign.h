@@ -610,6 +610,7 @@ class CEconomyTypeRef
 		inline CEconomyType * operator->() const { return m_pType; }
 
 		ALERROR Bind (SDesignLoadCtx &Ctx);
+		inline bool IsEmpty (void) const { return (m_sUNID.IsBlank() && m_pType == NULL); }
 		void LoadUNID (const CString &sUNID) { m_sUNID = sUNID; }
 		void Set (DWORD dwUNID);
 		inline void Set (CEconomyType *pType) { m_pType = pType; }
@@ -678,10 +679,13 @@ class CSystemMapRef : public CDesignTypeRef<CSystemMap>
 class CCurrencyAndValue
 	{
 	public:
+		inline void Adjust (int iAdj) { m_iValue = iAdj * m_iValue / 100; }
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		inline CEconomyType *GetCurrencyType (void) const { return m_pCurrency; }
 		inline CurrencyValue GetValue (void) const { return m_iValue; }
+		inline void Init (CurrencyValue iValue, const CString &sUNID = NULL_STR) { m_iValue = iValue; m_pCurrency.LoadUNID(sUNID); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sDesc);
+		inline bool IsEmpty (void) const { return (m_pCurrency.IsEmpty() && m_iValue == 0); }
 
 	private:
 		CurrencyValue m_iValue;
@@ -2153,7 +2157,7 @@ class CArmorClass : public CObject
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetDeviceDamageAdj (void) { return m_iDeviceDamageAdj; }
 		inline int GetEMPDamageAdj (void) { return m_iEMPDamageAdj; }
-		inline int GetInstallCost (void) { return m_iInstallCost; }
+		inline int GetInstallCost (void);
 		ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		inline CItemType *GetItemType (void) { return m_pItemType; }
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false);
@@ -2161,7 +2165,7 @@ class CArmorClass : public CObject
 		inline CString GetName (void);
 		CString GetReference (CItemCtx &Ctx, int iVariant = -1);
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
-		inline int GetRepairCost (void) { return m_iRepairCost; }
+		inline int GetRepairCost (void);
 		inline int GetRepairTech (void) { return m_iRepairTech; }
 		CString GetShortName (void);
 		inline int GetStealth (void) const { return m_iStealth; }
@@ -2192,8 +2196,8 @@ class CArmorClass : public CObject
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 
 		int m_iHitPoints;						//	Hit points for this armor class
-		int m_iRepairCost;						//	Cost per HP to repair
-		int m_iInstallCost;						//	Cost to install
+		CCurrencyAndValue m_RepairCost;			//	Cost per HP to repair
+		CCurrencyAndValue m_InstallCost;		//	Cost to install
 		int m_iRepairTech;						//	Tech required to repair
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
 		int m_iStealth;							//	Stealth level
@@ -5342,10 +5346,13 @@ class CEconomyType : public CDesignType
 		CEconomyType (void) { }
 
 		CurrencyValue Exchange (CEconomyType *pFrom, CurrencyValue iAmount);
+		inline CurrencyValue Exchange (const CCurrencyAndValue &Value) { return Exchange(Value.GetCurrencyType(), Value.GetValue()); }
 		inline const CString &GetCurrencyNamePlural (void) { return m_sCurrencyPlural; }
 		inline const CString &GetCurrencyNameSingular (void) { return m_sCurrencySingular; }
 		inline const CString &GetSID (void) { return m_sSID; }
 		inline bool IsCreditEquivalent (void) { return (m_iCreditConversion == 100); }
+
+		static CEconomyType *Default (void);
 		static CurrencyValue ExchangeToCredits (CEconomyType *pFrom, CurrencyValue iAmount);
 		static CString RinHackGet (CSpaceObject *pObj);
 		static CurrencyValue RinHackInc (CSpaceObject *pObj, CurrencyValue iInc);
@@ -6687,7 +6694,9 @@ inline CEconomyType *CItem::GetCurrencyType (void) const { return m_pItemType->G
 
 inline CDeviceClass *CDeviceDescList::GetDeviceClass (int iIndex) const { return m_List[iIndex].Item.GetType()->GetDeviceClass(); }
 
+inline int CArmorClass::GetInstallCost (void) { return (int)m_pItemType->GetCurrencyType()->Exchange(m_InstallCost); }
 inline CString CArmorClass::GetName (void) { return m_pItemType->GetNounPhrase(); }
+inline int CArmorClass::GetRepairCost (void) { return (int)m_pItemType->GetCurrencyType()->Exchange(m_RepairCost); }
 inline DWORD CArmorClass::GetUNID (void) { return m_pItemType->GetUNID(); }
 inline bool CArmorClass::IsBlindingDamageImmune (CItemCtx &ItemCtx) { return (m_iBlindingDamageAdj == 0 || ItemCtx.GetMods().IsBlindingImmune()); }
 inline bool CArmorClass::IsDeviceDamageImmune (CItemCtx &ItemCtx) { return (m_iDeviceDamageAdj == 0 || ItemCtx.GetMods().IsDeviceDamageImmune()); }
