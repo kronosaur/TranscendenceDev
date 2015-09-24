@@ -138,6 +138,96 @@ DWORD CItem::AddEnhancement (const CItemEnhancement &Enhancement)
 	return m_pExtra->m_Mods.GetID();
 	}
 
+CString CItem::CalcSortKey (void) const
+
+//	CalcSortKey
+//
+//	Returns a sort key
+
+	{
+	CItemType *pType = GetType();
+	if (pType == NULL)
+		return NULL_STR;
+
+	//	All installed items first
+
+	CString sInstalled;
+	if (IsInstalled())
+		sInstalled = CONSTLIT("0");
+	else
+		sInstalled = CONSTLIT("1");
+
+	//	Next, sort on category
+
+	CString sCat;
+	switch (pType->GetCategory())
+		{
+		case itemcatWeapon:
+		case itemcatLauncher:
+			sCat = CONSTLIT("0");
+			break;
+
+		case itemcatMissile:
+			sCat = CONSTLIT("1");
+			break;
+
+		case itemcatShields:
+			sCat = CONSTLIT("2");
+			break;
+
+		case itemcatReactor:
+			sCat = CONSTLIT("3");
+			break;
+
+		case itemcatDrive:
+			sCat = CONSTLIT("4");
+			break;
+
+		case itemcatCargoHold:
+			sCat = CONSTLIT("5");
+			break;
+
+		case itemcatMiscDevice:
+			sCat = CONSTLIT("6");
+			break;
+
+		case itemcatArmor:
+			sCat = CONSTLIT("7");
+			break;
+
+		case itemcatFuel:
+		case itemcatUseful:
+			sCat = CONSTLIT("8");
+			break;
+
+		default:
+			sCat = CONSTLIT("9");
+		}
+
+	//	Next, sort by install location
+
+	if (IsInstalled() && pType->GetArmorClass())
+		sCat.Append(strPatternSubst(CONSTLIT("%03d%08x"), GetInstalled(), pType->GetUNID()));
+	else
+		sCat.Append(CONSTLIT("99900000000"));
+
+	//	Within category, sort by level (highest first)
+
+	sCat.Append(strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - pType->GetApparentLevel()));
+
+	//	Enhanced items before others
+
+	if (IsEnhanced())
+		sCat.Append(CONSTLIT("0"));
+	else if (IsDamaged())
+		sCat.Append(CONSTLIT("2"));
+	else
+		sCat.Append(CONSTLIT("1"));
+
+	CString sName = pType->GetSortName();
+	return strPatternSubst(CONSTLIT("%s%s%s%d"), sInstalled, sCat, sName, ((DWORD)(int)this) % 0x10000);
+	}
+
 CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName)
 
 //	CreateItemByName

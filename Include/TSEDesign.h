@@ -1852,6 +1852,7 @@ class CItem
 		CItem &operator= (const CItem &Copy);
 
 		DWORD AddEnhancement (const CItemEnhancement &Enhancement);
+		CString CalcSortKey (void) const;
 		inline void ClearDamaged (void) { m_dwFlags &= ~flagDamaged; }
 		inline void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		inline void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }

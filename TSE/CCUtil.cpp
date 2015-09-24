@@ -293,6 +293,9 @@ ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector)
 
 CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem)
 	{
+	if (pItem == NULL)
+		return NULL;
+
 	int iArg = pItem->GetIntegerValue();
 	if (iArg == 0)
 		return NULL;
