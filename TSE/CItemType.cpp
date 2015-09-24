@@ -573,7 +573,7 @@ int CItemType::GetInstallCost (void) const
 	if (m_pArmor)
 		return m_pArmor->GetInstallCost();
 	else if (m_pDevice)
-		return 100 * (((GetApparentLevel() * GetApparentLevel()) + 4) / 5);
+		return m_pDevice->GetInstallCost();
 	else
 		return -1;
 	}

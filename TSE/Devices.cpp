@@ -37,10 +37,53 @@
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 
+struct SStdDeviceStats
+	{
+	int iInstallCost;							//	Cost to install (credits)
+	};
+
+static SStdDeviceStats STD_DEVICE_STATS[MAX_ITEM_LEVEL] =
+	{
+		//	Install
+		{	100,		}, 
+ 		{	210,		},  
+ 		{	430,		},  
+ 		{	860,		},  
+ 		{	1700,		},  
+ 		{	3400,		},  
+ 		{	6900,		},  
+ 		{	13000,		},  
+ 		{	27000,		},  
+ 		{	55000,		},  
+ 		{	110000,		},  
+ 		{	210000,		},  
+ 		{	450000,		},  
+ 		{	880000,		},  
+ 		{	1700000,	},  
+ 		{	3500000,	},  
+ 		{	7100000,	},  
+ 		{	14000000,	},  
+ 		{	28000000,	}, 
+ 		{	56000000,	},  
+ 		{	110000000,	},  
+ 		{	230000000,	},  
+ 		{	450000000,	},  
+ 		{	910000000,	},  
+ 		{	1800000000,	},
+	};
+
 static char *CACHED_EVENTS[CDeviceClass::evtCount] =
 	{
 		"GetOverlayType",
 	};
+
+inline const SStdDeviceStats *GetStdDeviceStats (int iLevel)
+	{
+	if (iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL)
+		return &STD_DEVICE_STATS[iLevel - 1];
+	else
+		return NULL;
+	}
 
 void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
 
@@ -189,6 +232,23 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 		}
 	else
 		return GetOverlayType();
+	}
+
+int CDeviceClass::GetInstallCost (void)
+
+//	GetInstallCost
+//
+//	Returns the standard install cost (in the default currency of the item).
+
+	{
+	if (m_pItemType == NULL)
+		return -1;
+
+	const SStdDeviceStats *pStats = GetStdDeviceStats(m_pItemType->GetApparentLevel());
+	if (pStats == NULL)
+		return -1;
+
+	return m_pItemType->GetCurrencyType()->Exchange(CEconomyType::Default(), pStats->iInstallCost);
 	}
 
 ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType)
