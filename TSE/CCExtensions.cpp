@@ -1257,10 +1257,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetDataField obj field) -> data",
 			"is",	0,	},
 
-		{	"objGetDefaultCurrency",		fnObjGet,		FN_OBJ_DEFAULT_CURRENCY,
-			"(objGetDefaultCurrency obj) -> currency",
-			"i",	0,	},
-
 		{	"objGetDestiny",				fnObjGetOld,		FN_OBJ_DESTINY,
 			"(objGetDestiny obj) -> 0-359",
 			NULL,	0,	},
@@ -1466,6 +1462,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'abandoned\n"
 			"   'barrier\n"
+			"   'currency\n"
 			"   'destNodeID\n"
 			"   'destStargateID\n"
 			"   'dockingPortCount\n"
@@ -2738,6 +2735,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"objGetDefaultCurrency",		fnObjGet,		FN_OBJ_DEFAULT_CURRENCY,
+			"DEPRECATED: Use (objGetProperty obj 'currency) instead.",
+			"i",	0,	},
 
 		{	"itmGetDefaultCurrency",		fnItemTypeGet,	FN_ITEM_DEFAULT_CURRENCY,
 			"DEPRECATED: Use (itmGetProperty item 'currency) instead.",
