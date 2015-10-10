@@ -23,6 +23,7 @@
 #define INSTALL_COST_ATTRIB						CONSTLIT("installCost")
 #define INSTALL_COST_ADJ_ATTRIB					CONSTLIT("installCostAdj")
 #define MAX_HP_BONUS_ATTRIB						CONSTLIT("maxHPBonus")
+#define MAX_SPEED_BONUS_ATTRIB					CONSTLIT("maxSpeedBonus")
 #define PHOTO_RECHARGE_ATTRIB					CONSTLIT("photoRecharge")
 #define PHOTO_REPAIR_ATTRIB						CONSTLIT("photoRepair")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
@@ -1018,6 +1019,10 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 		sCriteria = CONSTLIT("s");
 
 	CItem::ParseCriteria(sCriteria, &pArmor->m_DeviceCriteria);
+
+	//	Ship speed bonus
+
+	pArmor->m_rMaxSpeedBonus = pDesc->GetAttributeDoubleBounded(MAX_SPEED_BONUS_ATTRIB, -100.0, 1000.0, 0.0);
 
 	//	Done
 

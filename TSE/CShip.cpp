@@ -239,12 +239,14 @@ void CShip::CalcArmorBonus (void)
 	int i;
 	bool bComplete = true;
 
-	//	Figure out if the armor set is complete
+	//	Check to see if all segments are of the same type.
 
 	CArmorClass *pClass = NULL;
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
 		CInstalledArmor *pArmor = GetArmorSection(i);
+
+		//	Check to see if all segments are the same
 
 		if (pClass == NULL)
 			pClass = pArmor->GetClass();
@@ -257,7 +259,9 @@ void CShip::CalcArmorBonus (void)
 
 	//	Compute
 
-	int iStealth = stealthMax;
+	m_iStealth = stealthMax;
+	m_fHasSpeedAdjArmor = false;
+
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
 		CInstalledArmor *pArmor = GetArmorSection(i);
@@ -268,11 +272,14 @@ void CShip::CalcArmorBonus (void)
 
 		//	Compute stealth
 
-		if (pArmor->GetClass()->GetStealth() < iStealth)
-			iStealth = pArmor->GetClass()->GetStealth();
-		}
+		if (pArmor->GetClass()->GetStealth() < m_iStealth)
+			m_iStealth = pArmor->GetClass()->GetStealth();
 
-	m_iStealth = iStealth;
+		//	Check to see if any segment affects the max speed of the ship.
+
+		if (pArmor->GetClass()->GetMaxSpeedBonus() != 0.0)
+			m_fHasSpeedAdjArmor = true;
+		}
 	}
 
 void CShip::CalcBounds (void)
@@ -1184,7 +1191,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_iLastHitTime = 0;
 	pShip->m_rItemMass = 0.0;
 	pShip->m_rCargoMass = 0.0;
-	pShip->SetDriveDesc(NULL);
 	pShip->m_pReactorDesc = pClass->GetReactorDesc();
 	pShip->m_pTrade = NULL;
 
@@ -1212,7 +1218,9 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fSpinningByOverlay = false;
 	pShip->m_fDragByOverlay = false;
 	pShip->m_fAlwaysLeaveWreck = false;
-	pShip->m_dwSpare = 0;
+	pShip->m_fHasSpeedAdjArmor = false;
+
+	pShip->SetDriveDesc(NULL);
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -4785,6 +4793,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fSpinningByOverlay =		((dwLoad & 0x00200000) ? true : false);
 	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
+	m_fHasSpeedAdjArmor =		((dwLoad & 0x01000000) ? true : false);
 
 	//	OK to recompute
 	m_fRecalcRotationAccel = true;
@@ -5683,6 +5692,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fSpinningByOverlay ?	0x00200000 : 0);
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
+	dwSave |= (m_fHasSpeedAdjArmor ?	0x01000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Armor
@@ -6631,19 +6641,57 @@ void CShip::SetDriveDesc (const DriveDesc *pDesc)
 //	Sets the drive descriptor (or NULL to set back to class)
 
 	{
-	int iOldThrust = m_iThrust;
+	int i;
 
+	//	Compute any speed bonus due to armor
+
+	Metric rMaxSpeedAdj;
+	if (m_fHasSpeedAdjArmor)
+		{
+		Metric rTotalSpeedBonus = 0.0;
+
+		//	A segment's max speed bonus is based on having a complete set. For partial
+		//	sets we adjust accordingly.
+
+		Metric rSingleSegAdj = (GetArmorSectionCount() > 0 ? 1.0 / GetArmorSectionCount() : 1.0);
+
+		//	Loop over all segments
+
+		for (i = 0; i < GetArmorSectionCount(); i++)
+			{
+			CInstalledArmor *pArmor = GetArmorSection(i);
+			Metric rMaxSpeedBonus = pArmor->GetClass()->GetMaxSpeedBonus();
+
+			if (rMaxSpeedBonus != 0.0)
+				rTotalSpeedBonus += (rSingleSegAdj * rMaxSpeedBonus);
+			}
+
+		//	Convert to an adjustment
+
+		if (rTotalSpeedBonus <= -100.0)
+			rMaxSpeedAdj = 0.0;
+		else if (rTotalSpeedBonus != 0.0)
+			rMaxSpeedAdj = (100.0 + rTotalSpeedBonus) / 100.0;
+		else
+			rMaxSpeedAdj = 1.0;
+		}
+	else
+		rMaxSpeedAdj = 1.0;
+
+	//	Set the data based on device
+
+	int iOldThrust = m_iThrust;
 	if (pDesc)
 		{
 		m_pDriveDesc = pDesc;
 		m_iThrust = m_pClass->GetHullDriveDesc()->iThrust + m_pDriveDesc->iThrust;
-		m_rMaxSpeed = Max(m_pClass->GetHullDriveDesc()->rMaxSpeed, m_pDriveDesc->rMaxSpeed);
+		m_rMaxSpeed = rMaxSpeedAdj * Max(m_pClass->GetHullDriveDesc()->rMaxSpeed, m_pDriveDesc->rMaxSpeed);
 		}
 	else
 		{
 		m_pDriveDesc = m_pClass->GetHullDriveDesc();
 		m_iThrust = m_pDriveDesc->iThrust;
-		m_rMaxSpeed = m_pDriveDesc->rMaxSpeed;
+		m_rMaxSpeed = rMaxSpeedAdj * m_pDriveDesc->rMaxSpeed;
 		}
 
 	//	If we upgraded, then we reinitialize the effects

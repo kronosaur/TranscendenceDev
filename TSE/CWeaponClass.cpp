@@ -1059,6 +1059,13 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		pWeapon->m_ShotData[0].bOwned = true;
 		pWeapon->m_ShotData[0].pDesc = new CWeaponFireDesc;
 
+		//	See if we have ammo ID
+
+		if (error = pWeapon->m_ShotData[0].pAmmoType.LoadUNID(Ctx, pDesc->GetAttribute(AMMO_ID_ATTRIB)))
+			return error;
+
+		//	Load the definition from the root element
+
 		CString sUNID = strPatternSubst(CONSTLIT("%d/0"), pWeapon->GetUNID());
 		if (error = pWeapon->m_ShotData[0].pDesc->InitFromXML(Ctx, pDesc, sUNID))
 			return error;

@@ -2189,6 +2189,7 @@ class CArmorClass : public CObject
 		inline CItemType *GetItemType (void) { return m_pItemType; }
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false);
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
+		inline Metric GetMaxSpeedBonus (void) const { return m_rMaxSpeedBonus; }
 		inline CString GetName (void);
 		CString GetReference (CItemCtx &Ctx, int iVariant = -1);
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
@@ -2230,6 +2231,7 @@ class CArmorClass : public CObject
 		int m_iStealth;							//	Stealth level
 		int m_iPowerUse;						//	Power consumed (1/10 MWs)
 		int m_iMaxHPBonus;						//	Max HP bonus allowed for this armor
+		Metric m_rMaxSpeedBonus;				//	Bonus (or penalty) to ship's max speed (10 = 10% bonus)
 
 		CString m_sEnhancementType;				//	Type of enhancements
 		int m_iDeviceBonus;						//	Bonus to devices
