@@ -1431,23 +1431,6 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		m_rMinRadius = LIGHT_SECOND * (Metric)pDesc->GetAttributeInteger(MIN_RADIUS_ATTRIB);
 		m_rMaxRadius = LIGHT_SECOND * (Metric)pDesc->GetAttributeInteger(MAX_RADIUS_ATTRIB);
-
-		//	For radius, lifetime attribute is not required. We always set the lifetime
-		//	to the effect lifetime.
-
-		if (m_pEffect && iMaxLifetime == 0)
-			{
-			int iEffectLifetime = m_pEffect->GetLifetime();
-
-			//	If the effect lifetime is infinite then change it
-			//	to something more finite (this is technically an error condition)
-
-			if (iEffectLifetime == -1)
-				iEffectLifetime = 666;
-
-			m_Lifetime.SetConstant(iEffectLifetime);
-			iMaxLifetime = iEffectLifetime;
-			}
 		}
 	else if (!bDamageOnly)
 		{
@@ -1457,9 +1440,10 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	The effect should have the same lifetime as the shot
 	//	Note: For radius damage it is the other way around (we set iMaxLifetime based on
-	//	the effect--see above)
+	//	the effect)
 
-	if (m_pEffect)
+	if (m_pEffect
+			&& m_iFireType != ftRadius)
 		m_pEffect->SetLifetime(iMaxLifetime);
 
 	//	We initialize this with the UNID, and later resolve the reference
@@ -1568,6 +1552,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	if (m_iFireType == ftArea)
 		m_rMaxEffectiveRange = (m_ExpansionSpeed.GetAveValueFloat() * LIGHT_SECOND / 100.0) * Ticks2Seconds(iMaxLifetime) * 0.75;
+	else if (m_iFireType == ftRadius)
+		m_rMaxEffectiveRange = m_rMaxRadius;
 	else
 		{
 		Metric rEffectiveLifetime;
@@ -1578,12 +1564,12 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		Metric rSpeed = (m_rMissileSpeed + m_rMaxMissileSpeed) / 2;
 		m_rMaxEffectiveRange = rSpeed * rEffectiveLifetime;
-
-		//	If we have fragments, add to the effective range
-
-		if (m_pFirstFragment)
-			m_rMaxEffectiveRange += m_pFirstFragment->pDesc->m_rMaxEffectiveRange;
 		}
+
+	//	If we have fragments, add to the effective range
+
+	if (m_pFirstFragment)
+		m_rMaxEffectiveRange += m_pFirstFragment->pDesc->m_rMaxEffectiveRange;
 
 	//	Effects
 

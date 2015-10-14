@@ -59,7 +59,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();
 
-	pArea->m_iLifeLeft = pDesc->GetLifetime();
+	pArea->m_iLifeLeft = Max(1, pDesc->GetLifetime());
 	pArea->m_pDesc = pDesc;
 	pArea->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
 	pArea->m_iCause = iCause;
