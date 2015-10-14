@@ -3372,7 +3372,8 @@ class CEffectParamDesc
 class IEffectPainter
 	{
 	public:
-		IEffectPainter (bool bSingleton = false) : m_bSingleton(bSingleton)
+		IEffectPainter (bool bSingleton = false) : m_bSingleton(bSingleton),
+				m_bNoSound(false)
 			{ }
 
 		void GetBounds (RECT *retRect);
@@ -3382,6 +3383,7 @@ class IEffectPainter
 		inline void PlaySound (CSpaceObject *pSource);
 		inline void ReadFromStream (SLoadCtx &Ctx) { OnReadFromStream(Ctx); }
 		static CString ReadUNID (SLoadCtx &Ctx);
+		inline void SetNoSound (bool bNoSound = true) { m_bNoSound = bNoSound; }
 		inline void SetSingleton (bool bSingleton = true) { m_bSingleton = bSingleton; }
 		static ALERROR ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass);
 		void WriteToStream (IWriteStream *pStream);
@@ -3432,6 +3434,7 @@ class IEffectPainter
 		int GetInitialLifetime (void);
 
 		bool m_bSingleton;
+		bool m_bNoSound;
 	};
 
 class CEffectPainterRef
@@ -6769,7 +6772,7 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const { return m
 inline bool DamageDesc::IsEnergyDamage (void) const { return ::IsEnergyDamage(m_iType); }
 inline bool DamageDesc::IsMatterDamage (void) const { return ::IsMatterDamage(m_iType); }
 
-inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { GetCreator()->PlaySound(pSource); }
+inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { if (!m_bNoSound) GetCreator()->PlaySound(pSource); }
 
 inline CSystemMap *CTopologyNode::GetDisplayPos (int *retxPos, int *retyPos) { if (retxPos) *retxPos = m_xPos; if (retyPos) *retyPos = m_yPos; return (m_pMap ? m_pMap->GetDisplayMap() : NULL); }
 

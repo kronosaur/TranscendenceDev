@@ -27,6 +27,8 @@
 #define SOUND_ATTRIB							CONSTLIT("sound")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 
+#define FIELD_NO_SOUND							CONSTLIT("noSound")
+
 #define INSTANCE_CREATOR						CONSTLIT("creator")
 #define INSTANCE_GAME							CONSTLIT("game")
 #define INSTANCE_OWNER							CONSTLIT("owner")
@@ -528,29 +530,43 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 				{
 				CString sParam = pTable->GetKey(i);
 				ICCItem *pValue = pTable->GetElement(i);
-				CEffectParamDesc Value;
 
-				if (pValue->IsNil())
-					Value.InitNull();
-				else if (pValue->IsInteger())
-					Value.InitInteger(pValue->GetIntegerValue());
-				else if (pValue->IsIdentifier())
+				//	Some parameters are special (and valid for all parameterized
+				//	effects).
+				//
+				//	LATER: We should have the concept of inherited parameters
+
+				if (strEquals(sParam, FIELD_NO_SOUND))
+					pPainter->SetNoSound(!pValue->IsNil());
+
+				//	Otherwise, tell the painter to set the parameter
+
+				else
 					{
-					CString sValue = pValue->GetStringValue();
-					char *pPos = sValue.GetASCIIZPointer();
+					CEffectParamDesc Value;
 
-					//	If this is a color, parse it
+					if (pValue->IsNil())
+						Value.InitNull();
+					else if (pValue->IsInteger())
+						Value.InitInteger(pValue->GetIntegerValue());
+					else if (pValue->IsIdentifier())
+						{
+						CString sValue = pValue->GetStringValue();
+						char *pPos = sValue.GetASCIIZPointer();
 
-					if (*pPos == '#')
-						Value.InitColor(::LoadRGBColor(sValue));
+						//	If this is a color, parse it
 
-					//	Otherwise, a string
+						if (*pPos == '#')
+							Value.InitColor(::LoadRGBColor(sValue));
 
-					else
-						Value.InitString(sValue);
+						//	Otherwise, a string
+
+						else
+							Value.InitString(sValue);
+						}
+
+					pPainter->SetParam(Ctx, sParam, Value);
 					}
-
-				pPainter->SetParam(Ctx, sParam, Value);
 				}
 			}
 		else

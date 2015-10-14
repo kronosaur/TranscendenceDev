@@ -307,31 +307,6 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 		delete pPainter;
 		return;
 		}
-
-#if 0
-	//	See if this weapon has a hit effect
-
-	CEffectCreator *pHitEffect = m_pHitEffect;
-
-	//	If not, compute a default hit effect depending on the weapon damage type
-
-	if (pHitEffect == NULL)
-		pHitEffect = ;
-
-	//	If we could not come up with a hit effect then we're done.
-
-	if (pHitEffect == NULL)
-		return;
-
-	//	Create the effect
-
-	pHitEffect->CreateEffect(pSystem,
-			((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL),
-			DamageCtx.vHitPos,
-			(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),
-			DamageCtx.iDirection,
-			DamageCtx.iDamage);
-#endif
 	}
 
 bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue)
