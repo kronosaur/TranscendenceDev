@@ -7,6 +7,7 @@
 
 #define FIELD_ATTACKER					CONSTLIT("attacker")
 #define FIELD_ARMOR_SEG					CONSTLIT("armorSeg")
+#define FIELD_AVERAGE_DAMAGE_HP			CONSTLIT("averageDamageHP")
 #define FIELD_CAUSE						CONSTLIT("cause")
 #define FIELD_DAMAGE_HP					CONSTLIT("damageHP")
 #define FIELD_DAMAGE_TYPE				CONSTLIT("damageType")
@@ -66,7 +67,10 @@ ICCItem *CCreatePainterCtx::GetData (void)
 	if (m_pDamageCtx)
 		SetDamageCtxData(CC, pTable, *m_pDamageCtx);
 
-	if (m_pWeaponFireDesc)
+	//	NOTE: If we have a damage context, we don't set weaponfire data because
+	//	it might overwrite it.
+
+	else if (m_pWeaponFireDesc)
 		SetWeaponFireDescData(CC, pTable, m_pWeaponFireDesc);
 
 	//	Done
@@ -100,6 +104,7 @@ void CCreatePainterCtx::SetDamageCtxData (CCodeChain &CC, CCSymbolTable *pTable,
 
 	pTable->SetIntegerValue(CC, FIELD_HIT_DIR, DamageCtx.iDirection);
 	pTable->SetIntegerValue(CC, FIELD_DAMAGE_HP, DamageCtx.iDamage);
+	pTable->SetIntegerValue(CC, FIELD_AVERAGE_DAMAGE_HP, (int)(DamageCtx.pDesc->GetAveDamage() + 0.5));
 	pTable->SetStringValue(CC, FIELD_DAMAGE_TYPE, GetDamageShortName(DamageCtx.Damage.GetDamageType()));
 
 	CItemType *pWeapon = DamageCtx.pDesc->GetWeaponType();
