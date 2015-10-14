@@ -254,7 +254,10 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		{
 		//	Create a painter.
 
-		IEffectPainter *pPainter = CreateFireEffectPainter();
+		CCreatePainterCtx Ctx;
+		Ctx.SetWeaponFireDesc(this);
+
+		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, g_pUniverse->FindDefaultFireEffect(m_Damage.GetDamageType()));
 		if (pPainter == NULL)
 			return;
 
@@ -275,22 +278,6 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		}
 	}
 
-IEffectPainter *CWeaponFireDesc::CreateFireEffectPainter (void)
-
-//	CreateFireEffectPainter
-//
-//	Creates a fire effect. The caller is responsible for calling Delete on the
-//	result.
-//
-//	NOTE: We may return NULL if the weapon has no effect.
-
-	{
-	CCreatePainterCtx Ctx;
-	Ctx.SetWeaponFireDesc(this);
-
-	return m_pFireEffect.CreatePainter(Ctx, g_pUniverse->FindDefaultFireEffect(m_Damage.GetDamageType()));
-	}
-
 void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 
 //	CreateHitEffect
@@ -298,6 +285,30 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 //	Creates an effect when the weapon hits an object
 
 	{
+	//	Create the hit effect painter.
+
+	CCreatePainterCtx Ctx;
+	Ctx.SetWeaponFireDesc(this);
+	Ctx.SetDamageCtx(DamageCtx);
+
+	IEffectPainter *pPainter = m_pHitEffect.CreatePainter(Ctx, g_pUniverse->FindDefaultHitEffect(m_Damage.GetDamageType()));
+	if (pPainter == NULL)
+		return;
+
+	//	Now create the effect
+
+	if (CEffect::Create(pPainter,
+			pSystem,
+			((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL),
+			DamageCtx.vHitPos,
+			(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),
+			DamageCtx.iDamage) != NOERROR)
+		{
+		delete pPainter;
+		return;
+		}
+
+#if 0
 	//	See if this weapon has a hit effect
 
 	CEffectCreator *pHitEffect = m_pHitEffect;
@@ -305,7 +316,7 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 	//	If not, compute a default hit effect depending on the weapon damage type
 
 	if (pHitEffect == NULL)
-		pHitEffect = g_pUniverse->FindDefaultHitEffect(m_Damage.GetDamageType());
+		pHitEffect = ;
 
 	//	If we could not come up with a hit effect then we're done.
 
@@ -320,6 +331,7 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 			(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),
 			DamageCtx.iDirection,
 			DamageCtx.iDamage);
+#endif
 	}
 
 bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue)

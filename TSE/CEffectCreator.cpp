@@ -97,7 +97,15 @@ ALERROR CEffectCreator::CreateEffect (CSystem *pSystem,
 	ALERROR error;
 	CEffect *pEffect;
 
-	if (error = CEffect::Create(this,
+	//	Create a painter
+
+	IEffectPainter *pPainter = CreatePainter(CCreatePainterCtx());
+	if (pPainter == NULL)
+		return ERR_CANCEL;
+
+	//	Create the effect object
+
+	if (error = CEffect::Create(pPainter,
 			pSystem,
 			pAnchor,
 			vPos,

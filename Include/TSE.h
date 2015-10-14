@@ -502,7 +502,6 @@ class CWeaponFireDesc
 		CWeaponFireDesc *m_pEnhanced;		//	Data when weapon is enhanced
 
 	private:
-		IEffectPainter *CreateFireEffectPainter (void);
 		CEffectCreator *GetFireEffect (void) const;
 
 		CExtension *m_pExtension;			//	Extension that defines the weaponfiredesc

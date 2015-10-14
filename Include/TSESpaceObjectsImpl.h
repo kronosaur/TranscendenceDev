@@ -208,13 +208,13 @@ class CDisintegrationEffect : public CSpaceObject
 class CEffect : public CSpaceObject
 	{
 	public:
-		static ALERROR Create (CEffectCreator *pType,
+		static ALERROR Create (IEffectPainter *pPainter,
 				CSystem *pSystem,
 				CSpaceObject *pAnchor,
 				const CVector &vPos,
 				const CVector &vVel,
 				int iRotation,
-				CEffect **retpEffect);
+				CEffect **retpEffect = NULL);
 		virtual ~CEffect (void);
 
 		//	CSpaceObject virtuals

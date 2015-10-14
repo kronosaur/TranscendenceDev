@@ -4579,6 +4579,7 @@ class CCreatePainterCtx
 	public:
 		CCreatePainterCtx (void) :
 				m_iLifetime(0),
+				m_pDamageCtx(NULL),
 				m_pWeaponFireDesc(NULL),
 				m_bUseObjectCenter(false),
 				m_bTracking(false),
@@ -4588,9 +4589,11 @@ class CCreatePainterCtx
 		~CCreatePainterCtx (void);
 
 		void AddDataInteger (const CString &sField, int iValue);
+		inline SDamageCtx *GetDamageCtx (void) const { return m_pDamageCtx; }
 		ICCItem *GetData (void);
 		inline int GetLifetime (void) const { return m_iLifetime; }
 		inline bool IsTracking (void) const { return m_bTracking; }
+		inline void SetDamageCtx (SDamageCtx &Ctx) { m_pDamageCtx = &Ctx; }
 		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
 		inline void SetTrackingObject (bool bValue = true) { m_bTracking = bValue; }
 		inline void SetUseObjectCenter (bool bValue = true) { m_bUseObjectCenter = bValue; }
@@ -4607,6 +4610,7 @@ class CCreatePainterCtx
 		void SetWeaponFireDescData (CCodeChain &CC, CCSymbolTable *pTable, CWeaponFireDesc *pDesc);
 
 		int m_iLifetime;						//	Optional lifetime 0 = use creator defaults; -1 = infinite;
+		SDamageCtx *m_pDamageCtx;				//	Optional damage context
 		CWeaponFireDesc *m_pWeaponFireDesc;		//	Optional weapon fire desc
 		TArray<SDataEntry> m_Data;				//	Data to add
 

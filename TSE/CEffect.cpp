@@ -22,7 +22,7 @@ CEffect::~CEffect (void)
 		m_pPainter->Delete();
 	}
 
-ALERROR CEffect::Create (CEffectCreator *pType,
+ALERROR CEffect::Create (IEffectPainter *pPainter,
 				CSystem *pSystem,
 				CSpaceObject *pAnchor,
 				const CVector &vPos,
@@ -38,6 +38,13 @@ ALERROR CEffect::Create (CEffectCreator *pType,
 	ALERROR error;
 	CEffect *pEffect;
 
+	//	If no painter, then no effect
+
+	if (pPainter == NULL)
+		return ERR_CANCEL;
+
+	//	Create the effect object
+
 	pEffect = new CEffect;
 	if (pEffect == NULL)
 		return ERR_MEMORY;
@@ -45,10 +52,9 @@ ALERROR CEffect::Create (CEffectCreator *pType,
 	pEffect->Place(vPos, (pAnchor == NULL ? vVel : CVector()));
 	pEffect->SetObjectDestructionHook();
 
-	ASSERT(pType);
-	pEffect->m_pPainter = pType->CreatePainter(CCreatePainterCtx());
+	pEffect->m_pPainter = pPainter;
 	pEffect->m_pAnchor = pAnchor;
-	pEffect->m_iLifetime = pType->GetLifetime();
+	pEffect->m_iLifetime = pPainter->GetLifetime();
 	pEffect->m_iRotation = iRotation;
 	pEffect->m_iTick = 0;
 
@@ -56,6 +62,9 @@ ALERROR CEffect::Create (CEffectCreator *pType,
 
 	if (error = pEffect->AddToSystem(pSystem))
 		{
+		//	If we fail create, caller is responsible for free painter.
+
+		pEffect->m_pPainter = NULL;
 		delete pEffect;
 		return error;
 		}
@@ -70,7 +79,7 @@ ALERROR CEffect::Create (CEffectCreator *pType,
 
 	//	Play sound
 
-	pType->PlaySound(pEffect);
+	pPainter->PlaySound(pEffect);
 
 	//	Done
 
