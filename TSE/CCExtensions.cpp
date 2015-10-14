@@ -9838,11 +9838,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Create barrel flash effect
 
 			if (bFireEffect)
-				{
-				CEffectCreator *pFireEffect;
-				if (pFireEffect = pDesc->GetFireEffect())
-					pFireEffect->CreateEffect(pSystem, pSource, vPos, CVector(), iDir);
-				}
+				pDesc->CreateFireEffect(pSystem, pSource, vPos, CVector(), iDir);
 
 			//	If we have a bonus, we need an enhancement stack
 

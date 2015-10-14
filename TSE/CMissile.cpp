@@ -278,7 +278,7 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	//	Create a painter instance
 
 	bool bIsTracking = pTarget && pDesc->IsTracking();
-	pMissile->m_pPainter = pDesc->CreateEffect(bIsTracking, true);
+	pMissile->m_pPainter = pDesc->CreateEffectPainter(bIsTracking, true);
 	if (pMissile->m_pPainter)
 		pMissile->SetBounds(pMissile->m_pPainter);
 
@@ -359,24 +359,6 @@ void CMissile::CreateFragments (const CVector &vPos)
 
 	DEBUG_CATCH
 	}
-
-#if 0
-void CMissile::CreateHitEffect (const CVector &vPos, int iRotation)
-
-//	CreateHitEffect
-//
-//	Create hit effect
-
-	{
-	CEffectCreator *pEffect;
-	if (pEffect = m_pDesc->GetHitEffect())
-		pEffect->CreateEffect(GetSystem(),
-				(m_iHitDir == -1 ? NULL : m_pHit),
-				vPos,
-				CVector(),
-				iRotation);
-	}
-#endif
 
 void CMissile::CreateReflection (const CVector &vPos, int iDirection)
 

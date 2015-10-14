@@ -1572,11 +1572,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	if (!bFireSuppressed)
 		{
 		for (i = 0; i < iShotCount; i++)
-			{
-			IEffectPainter *pPainter = pShot->CreateFireEffect();
-			if (pPainter)
-				pSource->AddEffect(pPainter, ShotPos[i], 0, ShotDir[i]);
-			}
+			pShot->CreateFireEffect(pSource->GetSystem(), pSource, ShotPos[i], CVector(), ShotDir[i]);
 		}
 
 	//	Create all the shots

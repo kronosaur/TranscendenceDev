@@ -79,19 +79,9 @@ ALERROR CAreaDamage::Create (CSystem *pSystem,
 
 	//	Create a painter instance
 
-	CEffectCreator *pEffect;
-	if (pEffect = pDesc->GetEffect())
-		{
-		CCreatePainterCtx Ctx;
-		Ctx.SetWeaponFireDesc(pDesc);
-
-		pArea->m_pPainter = pEffect->CreatePainter(Ctx);
-
-		//	Set the expansion speed appropriately
-
-		if (pArea->m_pPainter)
-			pArea->m_pPainter->SetParamMetric(SPEED_PARAM, pDesc->GetExpansionSpeed());
-		}
+	pArea->m_pPainter = pDesc->CreateEffectPainter();
+	if (pArea->m_pPainter)
+		pArea->m_pPainter->SetParamMetric(SPEED_PARAM, pDesc->GetExpansionSpeed());
 
 	//	Add to system
 

@@ -85,14 +85,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 	//	Painter
 
-	CEffectCreator *pEffect;
-	if (pEffect = pDesc->GetEffect())
-		{
-		CCreatePainterCtx Ctx;
-		Ctx.SetWeaponFireDesc(pDesc);
-
-		pParticles->m_pPainter = pEffect->CreatePainter(Ctx);
-		}
+	pParticles->m_pPainter = pDesc->CreateEffectPainter();
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 

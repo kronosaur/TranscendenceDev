@@ -223,9 +223,9 @@ bool CWeaponFireDesc::CanHit (CSpaceObject *pObj) const
 	return true;
 	}
 
-IEffectPainter *CWeaponFireDesc::CreateEffect (bool bTrackingObj, bool bUseObjectCenter)
+IEffectPainter *CWeaponFireDesc::CreateEffectPainter (bool bTrackingObj, bool bUseObjectCenter)
 
-//	CreateEffect
+//	CreateEffectPainter
 //
 //	Creates an effect to paint the projectile. The caller is responsible for
 //	calling Delete on the result.
@@ -241,9 +241,43 @@ IEffectPainter *CWeaponFireDesc::CreateEffect (bool bTrackingObj, bool bUseObjec
 	return m_pEffect.CreatePainter(Ctx);
 	}
 
-IEffectPainter *CWeaponFireDesc::CreateFireEffect (void)
+void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir)
 
 //	CreateFireEffect
+//
+//	Creates a fire effect.
+
+	{
+	//	If we have a source, then we add the fire effect as an effect on the source.
+
+	if (pSource)
+		{
+		//	Create a painter.
+
+		IEffectPainter *pPainter = CreateFireEffectPainter();
+		if (pPainter == NULL)
+			return;
+
+		//	Add the effect
+
+		pSource->AddEffect(pPainter, vPos, 0, iDir);
+		}
+
+	//	Otherwise, we add a stand-alone effect
+
+	else
+		{
+		CEffectCreator *pFireEffect = GetFireEffect();
+		if (pFireEffect == NULL)
+			return;
+
+		pFireEffect->CreateEffect(pSystem, pSource, vPos, vVel, iDir);
+		}
+	}
+
+IEffectPainter *CWeaponFireDesc::CreateFireEffectPainter (void)
+
+//	CreateFireEffectPainter
 //
 //	Creates a fire effect. The caller is responsible for calling Delete on the
 //	result.

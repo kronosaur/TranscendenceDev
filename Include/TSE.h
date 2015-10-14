@@ -400,8 +400,8 @@ class CWeaponFireDesc
 		inline bool CanAutoTarget (void) const { return m_bAutoTarget; }
 		bool CanHit (CSpaceObject *pObj) const;
 		inline bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
-		IEffectPainter *CreateEffect (bool bTrackingObj, bool bUseObjectCenter);
-		IEffectPainter *CreateFireEffect (void);
+		IEffectPainter *CreateEffectPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
+		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir);
 		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx);
 		bool FindDataField (const CString &sField, CString *retsValue);
 		CEffectCreator *FindEffectCreator (const CString &sUNID);
@@ -428,8 +428,6 @@ class CWeaponFireDesc
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
-		CEffectCreator *GetFireEffect (void) const;
-		inline CEffectCreator *GetHitEffect (void) const { return m_pHitEffect; }
 		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
 		inline int GetInteraction (void) const { return m_iInteraction; }
@@ -504,6 +502,9 @@ class CWeaponFireDesc
 		CWeaponFireDesc *m_pEnhanced;		//	Data when weapon is enhanced
 
 	private:
+		IEffectPainter *CreateFireEffectPainter (void);
+		CEffectCreator *GetFireEffect (void) const;
+
 		CExtension *m_pExtension;			//	Extension that defines the weaponfiredesc
 
 		//	Basic properties

@@ -80,24 +80,17 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 
 	//	Create a painter instance
 
-	CEffectCreator *pEffect;
-	if (pEffect = pDesc->GetEffect())
+	pArea->m_pPainter = pDesc->CreateEffectPainter();
+	if (pArea->m_pPainter)
 		{
-		CCreatePainterCtx Ctx;
-		Ctx.SetWeaponFireDesc(pDesc);
+		//	Adjust lifetime of object based on the painter
 
-		pArea->m_pPainter = pEffect->CreatePainter(Ctx);
+		pArea->m_iLifeLeft = Max(pArea->m_pPainter->GetLifetime(), pArea->m_iLifeLeft);
 
-		//	The lifetime of the object is based on the painter
-
-		pArea->m_iLifeLeft = Max(pEffect->GetLifetime(), pArea->m_iLifeLeft);
-
-		//	The radius is also adjusted
+		//	Adjust radius of object based on the painter.
 
 		rRadius = Max(pArea->m_pPainter->GetRadius(), rRadius);
 		}
-	else
-		pArea->m_pPainter = NULL;
 
 	//	Our bounds are based on the max radius
 
