@@ -49,6 +49,33 @@ CG32bitPixel CG32bitPixel::Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 	return CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
 	}
 
+CG32bitPixel CG32bitPixel::Composite (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
+
+//	Composite
+//
+//	Combines two pixels, preserving alpha
+
+	{
+	BYTE bySrcAlpha = rgbSrc.GetAlpha();
+	BYTE byDestAlpha = rgbDest.GetAlpha();
+
+	if (bySrcAlpha == 0)
+		return rgbDest;
+	else if (bySrcAlpha == 0xff)
+		return rgbSrc;
+	else
+		{
+		BYTE *pAlpha = CG32bitPixel::AlphaTable(bySrcAlpha);	//	Equivalent to 255 - byAlpha
+		BYTE *pAlphaInv = CG32bitPixel::AlphaTable(bySrcAlpha ^ 0xff);	//	Equivalent to 255 - byAlpha
+
+		BYTE byRedResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[rgbDest.GetRed()] + (WORD)pAlpha[rgbSrc.GetRed()]));
+		BYTE byGreenResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[rgbDest.GetGreen()] + (WORD)pAlpha[rgbSrc.GetGreen()]));
+		BYTE byBlueResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[rgbDest.GetBlue()] + (WORD)pAlpha[rgbSrc.GetBlue()]));
+
+		return CG32bitPixel(byRedResult, byGreenResult, byBlueResult, CG32bitPixel::CompositeAlpha(byDestAlpha, bySrcAlpha));
+		}
+	}
+
 CG32bitPixel CG32bitPixel::Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc, BYTE bySrcAlpha)
 
 //	Blend
