@@ -2289,26 +2289,34 @@ ALERROR CEffectCreatorRef::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffectCreator *pDefaultCreator)
 
 //	CreatePainter
 //
 //	Use this call when we want to use a per-owner singleton.
 
 	{
-	if (m_pType == NULL)
-		return NULL;
-
 	//	If we have a singleton, then return that.
 
 	if (m_pSingleton)
 		return m_pSingleton;
 
-	IEffectPainter *pPainter = m_pType->CreatePainter(Ctx);
+	//	Figure out the creator
+
+	CEffectCreator *pCreator = m_pType;
+	if (pCreator == NULL)
+		pCreator = pDefaultCreator;
+
+	if (pCreator == NULL)
+		return NULL;
+
+	//	Create the painter
+
+	IEffectPainter *pPainter = pCreator->CreatePainter(Ctx);
 
 	//	If we're an owner singleton then we only need to create this once.
 
-	if (m_pType->GetInstance() == CEffectCreator::instOwner
+	if (pCreator->GetInstance() == CEffectCreator::instOwner
 			&& !pPainter->IsSingleton())
 		{
 		pPainter->SetSingleton(true);

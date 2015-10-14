@@ -363,6 +363,9 @@
 //	117: 1.7
 //		Added components to CItemType
 //
+//	118: 1.7
+//		Added m_iTick to COrbEffectPainter
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

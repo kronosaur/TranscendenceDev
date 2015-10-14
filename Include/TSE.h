@@ -401,6 +401,7 @@ class CWeaponFireDesc
 		bool CanHit (CSpaceObject *pObj) const;
 		inline bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		IEffectPainter *CreateEffect (bool bTrackingObj, bool bUseObjectCenter);
+		IEffectPainter *CreateFireEffect (void);
 		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx);
 		bool FindDataField (const CString &sField, CString *retsValue);
 		CEffectCreator *FindEffectCreator (const CString &sUNID);
@@ -427,7 +428,7 @@ class CWeaponFireDesc
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
-		inline CEffectCreator *GetFireEffect (void) const { return m_pFireEffect; }
+		CEffectCreator *GetFireEffect (void) const;
 		inline CEffectCreator *GetHitEffect (void) const { return m_pHitEffect; }
 		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
@@ -3540,6 +3541,7 @@ class CUniverse : public CObject
 
 		CArmorClass *FindArmor (DWORD dwUNID);
 		inline CCompositeImageType *FindCompositeImageType (DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntry(dwUNID)); }
+		CEffectCreator *FindDefaultFireEffect (DamageTypes iDamage);
 		CEffectCreator *FindDefaultHitEffect (DamageTypes iDamage);
 		inline CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
@@ -3641,7 +3643,7 @@ class CUniverse : public CObject
 		CObject *FindByUNID (CIDTable &Table, DWORD dwUNID);
 		ALERROR InitCodeChain (const TArray<SPrimitiveDefTable> &CCPrimitives);
 		ALERROR InitCodeChainPrimitives (void);
-		void InitDefaultHitEffects (void);
+		void InitDefaultEffects (void);
 		ALERROR InitDeviceStorage (CString *retsError);
 		ALERROR InitFonts (void);
 		ALERROR InitLevelEncounterTables (void);

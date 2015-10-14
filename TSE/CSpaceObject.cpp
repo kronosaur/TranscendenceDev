@@ -5616,10 +5616,7 @@ void CSpaceObject::PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPain
 	SEffectNode *pEffect = m_pFirstEffect;
 	while (pEffect)
 		{
-		Ctx.iTick = pEffect->iTick;
-		Ctx.iVariant = 0;
-		Ctx.iRotation = pEffect->iRotation;
-		Ctx.iDestiny = GetDestiny();
+		Ctx.Prepare(pEffect->iTick, 0, pEffect->iRotation, GetDestiny());
 
 		pEffect->pPainter->Paint(Dest, 
 				x + pEffect->xOffset,

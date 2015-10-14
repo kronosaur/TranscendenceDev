@@ -407,7 +407,7 @@ void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType,
 	//	If we don't want a starfield then we just clear the rect
 
 	if (Ctx.fNoStarfield)
-		Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), Ctx.rgbSpaceColor);
+		Dest.Fill(Ctx.rcView.left, Ctx.rcView.top, RectWidth(Ctx.rcView), RectHeight(Ctx.rcView), CG32bitPixel(Ctx.rgbSpaceColor, 0xff));
 
 	//	Otherwise, we paint a space background
 

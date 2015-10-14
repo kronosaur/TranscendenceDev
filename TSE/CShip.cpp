@@ -4399,10 +4399,10 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	//	Set up context
 
-	Ctx.iTick = (IsTimeStopped() ? GetDestiny() : g_pUniverse->GetTicks());
-	Ctx.iVariant = m_Rotation.GetFrameIndex();
-	Ctx.iDestiny = GetDestiny();
-	Ctx.iRotation = GetRotation();
+	Ctx.Prepare((IsTimeStopped() ? GetDestiny() : g_pUniverse->GetTicks()),
+			m_Rotation.GetFrameIndex(),
+			GetRotation(),
+			GetDestiny());
 
 	bool bPaintThrust = (m_pController->GetThrust() && !IsParalyzed() && ((Ctx.iTick + GetDestiny()) % 4) != 0);
 	const CObjectImageArray *pImage;

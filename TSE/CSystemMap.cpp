@@ -165,9 +165,7 @@ CG32bitImage *CSystemMap::CreateBackgroundImage (void)
 			{
 			SMapAnnotation *pAnnotation = &m_Annotations[i];
 
-			Ctx.iTick = pAnnotation->iTick;
-			Ctx.iRotation = pAnnotation->iRotation;
-
+			Ctx.Prepare(pAnnotation->iTick, 0, pAnnotation->iRotation, 0);
 			pAnnotation->pPainter->Paint(*pImage, xCenter + pAnnotation->xOffset, yCenter - pAnnotation->yOffset, Ctx);
 			}
 		}

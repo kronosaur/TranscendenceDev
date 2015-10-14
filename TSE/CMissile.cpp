@@ -754,11 +754,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	if (m_pPainter)
 		{
-		Ctx.iTick = m_iTick;
-		Ctx.iVariant = 0;
-		Ctx.iRotation = m_iRotation;
-		Ctx.iDestiny = GetDestiny();
-		Ctx.iMaxLength = (int)((g_SecondsPerUpdate * Max(1, m_iTick) * m_pDesc->GetRatedSpeed()) / g_KlicksPerPixel);
+		Ctx.Prepare(m_iTick, 0, m_iRotation, GetDestiny(), (int)((g_SecondsPerUpdate * Max(1, m_iTick) * m_pDesc->GetRatedSpeed()) / g_KlicksPerPixel));
 
 		if (!m_fDestroyOnAnimationDone && (m_pHit == NULL || m_fPassthrough))
 			m_pPainter->Paint(Dest, x, y, Ctx);

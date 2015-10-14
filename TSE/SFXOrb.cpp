@@ -13,6 +13,10 @@
 #define SECONDARY_COLOR_ATTRIB			CONSTLIT("secondaryColor")
 #define STYLE_ATTRIB					CONSTLIT("style")
 
+const int FLARE_MULITPLE =				4;
+const int FLARE_WIDTH_FRACTION =		32;
+const Metric BLOOM_FACTOR =				1.2;
+
 class COrbEffectPainter : public IEffectPainter
 	{
 	public:
@@ -45,12 +49,28 @@ class COrbEffectPainter : public IEffectPainter
 			styleUnknown =			0,
 
 			styleSmooth =			1,
+			styleFlare =			2,
 
-			styleMax =				1,
+			styleMax =				2,
 			};
 
-		void CalcSphericalTables (void);
+		inline CG32bitPixel CalcFlarePoint (CGRasterize::SLinePixel &Pixel)
+			{
+			Metric rDist = (1.0 - (2.0 * Absolute(Pixel.rV - 0.5)));
+			Metric rSpread = (1.0 - Absolute(Pixel.rW));
+			Metric rValue = BLOOM_FACTOR * (rDist * rDist) * (rSpread * rSpread);
+
+			BYTE byOpacity = (rValue >= 1.0 ? Pixel.byAlpha : (BYTE)(rValue * Pixel.byAlpha));
+
+			return CG32bitPixel(255, 255, 255, byOpacity);
+			}
+
+		bool CalcIntermediates (void);
+		void CalcSphericalColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, TArray<CG32bitPixel> *retColorTable);
+		void CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
+		inline bool HasFlares (void) const { return (m_iStyle == styleFlare); }
 		void Invalidate (void);
+		void PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 
 		CEffectCreator *m_pCreator;
 
@@ -66,7 +86,7 @@ class COrbEffectPainter : public IEffectPainter
 		//	Temporary variables based on shape/style/etc.
 
 		bool m_bInitialized;				//	TRUE if values are valid
-		TArray<CG32bitPixel> m_ColorTable;
+		TArray<TArray<CG32bitPixel>> m_ColorTable;
 	};
 
 static LPSTR ANIMATION_TABLE[] =
@@ -85,6 +105,7 @@ static LPSTR STYLE_TABLE[] =
 		"",
 
 		"smooth",
+		"flare",
 
 		NULL,
 	};
@@ -227,58 +248,168 @@ COrbEffectPainter::~COrbEffectPainter (void)
 	Invalidate();
 	}
 
-void COrbEffectPainter::CalcSphericalTables (void)
+bool COrbEffectPainter::CalcIntermediates (void)
 
-//	CalcSphericalTables
+//	CalcIntermediates
 //
-//	Computes m_ColorTable
+//	Computes m_ColorTable. Returns TRUE if we have at least one frame of 
+//	animation.
 
 	{
 	int i;
 
 	if (!m_bInitialized)
 		{
-		Invalidate();
-		if (m_iRadius <= 0)
-			return;
-
-		//	Allocate tables
-
 		m_ColorTable.DeleteAll();
-		m_ColorTable.InsertEmpty(m_iRadius);
 
-		//	Compute some temporaries
+		//	Initialized based on animation property
 
-		int iFringeMaxRadius = m_iRadius * m_iIntensity / 120;
-		int iFringeWidth = iFringeMaxRadius / 8;
-		int iBlownRadius = iFringeMaxRadius - iFringeWidth;
-		int iFadeWidth = m_iRadius - iFringeMaxRadius;
-
-		//	Initialize table
-
-		for (i = 0; i < m_iRadius; i++)
+		switch (m_iAnimation)
 			{
-			if (i < iBlownRadius)
-				m_ColorTable[i] = CG32bitPixel(255, 255, 255);
+			//	Standard fade decreases radius and intensity linearly over the
+			//	lifetime of the animation.
 
-			else if (i < iFringeMaxRadius && iFringeWidth > 0)
+			case animateFade:
 				{
-				int iStep = (i - iBlownRadius);
-				DWORD dwOpacity = iStep * 255 / iFringeWidth;
-				m_ColorTable[i] = CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), m_rgbPrimaryColor, (BYTE)dwOpacity);
+				int iLifetime = Max(1, m_iLifetime);
+
+				m_ColorTable.InsertEmpty(iLifetime);
+				for (i = 0; i < iLifetime; i++)
+					{
+					Metric rFade = (iLifetime - i) / (Metric)iLifetime;
+					int iRadius = (int)(rFade * m_iRadius);
+					int iIntensity = (int)(rFade * m_iIntensity);
+
+					CalcSphericalColorTable(iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, &m_ColorTable[i]);
+					}
+
+				break;
 				}
-			else if (iFadeWidth > 0)
-				{
-				int iStep = (i - iFringeMaxRadius);
-				Metric rOpacity = 255.0 - (iStep * 255.0 / iFadeWidth);
-				rOpacity = (rOpacity * rOpacity) / 255.0;
-				m_ColorTable[i] = CG32bitPixel(m_rgbSecondaryColor, (BYTE)(DWORD)rOpacity);
-				}
-			else
-				m_ColorTable[i] = CG32bitPixel::Null();
+
+			//	By default we only have a singe animation frame.
+
+			default:
+				m_ColorTable.InsertEmpty(1);
+				CalcSphericalColorTable(m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, &m_ColorTable[0]);
+				break;
 			}
 
 		m_bInitialized = true;
+		}
+
+	return (m_ColorTable.GetCount() > 0);
+	}
+
+void COrbEffectPainter::CalcSphericalColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, TArray<CG32bitPixel> *retColorTable)
+
+//	CalcSphericalColorTable
+//
+//	Calculates the color table given these parameters.
+
+	{
+	int i;
+
+	retColorTable->DeleteAll();
+	if (iRadius <= 0)
+		return;
+
+	//	Allocate tables
+
+	retColorTable->InsertEmpty(iRadius);
+
+	//	Table is based on style
+
+	switch (m_iStyle)
+		{
+		case styleSmooth:
+			{
+			int iFringeMaxRadius = iRadius * iIntensity / 120;
+			int iFringeWidth = iFringeMaxRadius / 8;
+			int iBlownRadius = iFringeMaxRadius - iFringeWidth;
+			int iFadeWidth = iRadius - iFringeMaxRadius;
+
+			//	Initialize table
+
+			for (i = 0; i < iRadius; i++)
+				{
+				if (i < iBlownRadius)
+					(*retColorTable)[i] = CG32bitPixel(255, 255, 255);
+
+				else if (i < iFringeMaxRadius && iFringeWidth > 0)
+					{
+					int iStep = (i - iBlownRadius);
+					DWORD dwOpacity = iStep * 255 / iFringeWidth;
+					(*retColorTable)[i] = CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), rgbPrimary, (BYTE)dwOpacity);
+					}
+				else if (iFadeWidth > 0)
+					{
+					int iStep = (i - iFringeMaxRadius);
+					Metric rOpacity = 255.0 - (iStep * 255.0 / iFadeWidth);
+					rOpacity = (rOpacity * rOpacity) / 255.0;
+					(*retColorTable)[i] = CG32bitPixel(rgbSecondary, (BYTE)(DWORD)rOpacity);
+					}
+				else
+					(*retColorTable)[i] = CG32bitPixel::Null();
+				}
+
+			break;
+			}
+
+		//	We progress from primary color (at the center) to secondary color
+		//	at the edge, and from full opacity to transparent.
+
+		case styleFlare:
+			{
+			CG32bitPixel rgbCenter = CG32bitPixel::Fade(rgbPrimary, CG32bitPixel(255, 255, 255), iIntensity);
+			CG32bitPixel rgbEdge = rgbSecondary;
+
+			for (i = 0; i < iRadius; i++)
+				{
+				Metric rFade = (Metric)i / (Metric)iRadius;
+				CG32bitPixel rgbColor = CG32bitPixel::Blend(rgbCenter, rgbEdge, rFade);
+				BYTE byAlpha = (BYTE)(255 - (i * 255 / iRadius));
+
+				(*retColorTable)[i] = CG32bitPixel(rgbColor, byAlpha);
+				}
+			break;
+			}
+		}
+	}
+
+void COrbEffectPainter::CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx)
+
+//	CompositeFlareRay
+//
+//	Paints a flare line
+
+	{
+	int i;
+
+	//	Compute the line
+
+	CVector vHalf = PolarToVector(iAngle, iLength / 2.0);
+	int xOffset = (int)vHalf.GetX();
+	int yOffset = (int)vHalf.GetY();
+
+	//	Rasterize the line
+
+	TArray<CGRasterize::SLinePixel> Pixels;
+	CGRasterize::Line(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth, &Pixels);
+
+	//	Now fill the line
+
+	for (i = 0; i < Pixels.GetCount(); i++)
+		{
+		CGRasterize::SLinePixel &Pixel = Pixels[i];
+
+		if (Pixel.rW < -1.0 || Pixel.rW > 1.0 || Pixel.rV < 0.0 || Pixel.rV > 1.0)
+			continue;
+
+		CG32bitPixel rgbValue = CalcFlarePoint(Pixel);
+
+		//	Draw
+
+		*(Pixel.pPos) = CG32bitPixel::Composite(*(Pixel.pPos), rgbValue);
 		}
 	}
 
@@ -342,6 +473,8 @@ void COrbEffectPainter::GetRect (RECT *retRect) const
 
 	{
 	int iSize = m_iRadius;
+	if (HasFlares())
+		iSize *= FLARE_MULITPLE / 2;
 
 	retRect->left = -iSize;
 	retRect->right = iSize;
@@ -367,8 +500,21 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 //	Paint the effect
 
 	{
-	CalcSphericalTables();
-	CGDraw::Circle(Dest, x, y, m_iRadius, m_ColorTable);
+	if (!CalcIntermediates())
+		return;
+
+	TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+	CGDraw::Circle(Dest, x, y, Table.GetCount(), Table);
+
+	if (HasFlares())
+		{
+		int iLength = Table.GetCount() * FLARE_MULITPLE;
+		int iWidth = Max(1, iLength / FLARE_WIDTH_FRACTION);
+
+		PaintFlareRay(Dest, x, y, iLength, iWidth, 0, m_iIntensity, Ctx);
+		PaintFlareRay(Dest, x, y, iLength, iWidth, 60, m_iIntensity, Ctx);
+		PaintFlareRay(Dest, x, y, iLength, iWidth, 120, m_iIntensity, Ctx);
+		}
 	}
 
 void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -378,8 +524,66 @@ void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewp
 //	Paint the effect
 
 	{
-	CalcSphericalTables();
-	CGComposite::Circle(Dest, x, y, m_iRadius, m_ColorTable);
+	if (!CalcIntermediates())
+		return;
+
+	TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+	CGComposite::Circle(Dest, x, y, Table.GetCount(), Table);
+
+	if (HasFlares())
+		{
+		int iLength = Table.GetCount() * FLARE_MULITPLE;
+		int iWidth = Max(1, iLength / FLARE_WIDTH_FRACTION);
+
+		CompositeFlareRay(Dest, x, y, iLength, iWidth, 0, m_iIntensity, Ctx);
+		CompositeFlareRay(Dest, x, y, iLength, iWidth, 60, m_iIntensity, Ctx);
+		CompositeFlareRay(Dest, x, y, iLength, iWidth, 120, m_iIntensity, Ctx);
+		}
+	}
+
+void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx)
+
+//	PaintFlareRay
+//
+//	Paints a flare line
+
+	{
+	int i;
+
+	//	Compute the line
+
+	CVector vHalf = PolarToVector(iAngle, iLength / 2.0);
+	int xOffset = (int)vHalf.GetX();
+	int yOffset = (int)vHalf.GetY();
+
+	//	Rasterize the line
+
+	TArray<CGRasterize::SLinePixel> Pixels;
+	CGRasterize::Line(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth, &Pixels);
+
+	//	Now fill the line
+
+	for (i = 0; i < Pixels.GetCount(); i++)
+		{
+		CGRasterize::SLinePixel &Pixel = Pixels[i];
+
+		if (Pixel.rW < -1.0 || Pixel.rW > 1.0 || Pixel.rV < 0.0 || Pixel.rV > 1.0)
+			continue;
+
+		//	Compute the brightness at this pixel
+
+		CG32bitPixel rgbValue = CalcFlarePoint(Pixel);
+		BYTE byOpacity = rgbValue.GetAlpha();
+
+		//	Draw
+
+		if (byOpacity == 0)
+			;
+		else if (byOpacity == 0xff)
+			*(Pixel.pPos) = rgbValue;
+		else
+			*(Pixel.pPos) = CG32bitPixel::Blend(*(Pixel.pPos), rgbValue, byOpacity);
+		}
 	}
 
 bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const

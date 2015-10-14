@@ -354,6 +354,9 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 	{
 	int iSavedDestiny = Ctx.iDestiny;
 	int iSavedRotation = Ctx.iRotation;
+	int iSavedMaxLength = Ctx.iMaxLength;
+
+	Ctx.iMaxLength = -1;
 
 	SParticle *pParticle = m_pArray;
 	SParticle *pEnd = pParticle + m_iCount;
@@ -381,6 +384,7 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 
 	Ctx.iDestiny = iSavedDestiny;
 	Ctx.iRotation = iSavedRotation;
+	Ctx.iMaxLength = iSavedMaxLength;
 	}
 
 void CParticleArray::PaintFireAndSmoke (CG32bitImage &Dest, 

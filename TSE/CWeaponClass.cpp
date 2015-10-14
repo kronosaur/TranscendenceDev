@@ -1569,17 +1569,13 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	//	Create barrel flash effect
 
-	CEffectCreator *pFireEffect;
-	if (!bFireSuppressed && (pFireEffect = pShot->GetFireEffect()))
+	if (!bFireSuppressed)
 		{
-		CCreatePainterCtx PainterCtx;
-		PainterCtx.SetWeaponFireDesc(pShot);
-
 		for (i = 0; i < iShotCount; i++)
 			{
-			IEffectPainter *pPainter = pFireEffect->CreatePainter(PainterCtx);
-
-			pSource->AddEffect(pPainter, ShotPos[i], 0, ShotDir[i]);
+			IEffectPainter *pPainter = pShot->CreateFireEffect();
+			if (pPainter)
+				pSource->AddEffect(pPainter, ShotPos[i], 0, ShotDir[i]);
 			}
 		}
 

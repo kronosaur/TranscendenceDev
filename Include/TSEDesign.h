@@ -632,7 +632,7 @@ class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		ALERROR CreateBeamEffect (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
-		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx);
+		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx, CEffectCreator *pDefaultCreator = NULL);
 		inline bool IsEmpty (void) const { return (m_dwUNID == 0 && m_pType == NULL); }
 		ALERROR LoadEffect (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc, const CString &sAttrib);
 		ALERROR LoadSimpleEffect (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc);
@@ -735,6 +735,15 @@ struct SViewportPaintCtx
 			iRotation(0),
 			iMaxLength(-1)
 		{ }
+
+	inline void Prepare (int iTickArg, int iVariantArg, int iRotationArg, int iDestinyArg, int iMaxLengthArg = -1)
+		{
+		iTick = iTickArg;
+		iVariant = iVariantArg;
+		iRotation = iRotationArg;
+		iDestiny = iDestinyArg;
+		iMaxLength = iMaxLengthArg;
+		}
 
 	//	Viewport metrics
 

@@ -74,9 +74,7 @@ void CStaticEffect::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx
 //	Paints the effect
 
 	{
-	Ctx.iTick = 0;
-	Ctx.iVariant = GetDestiny();
-	Ctx.iDestiny = GetDestiny();
+	Ctx.Prepare(0, GetDestiny(), 0, GetDestiny());
 	m_pPainter->Paint(Dest, x, y, Ctx);
 	}
 

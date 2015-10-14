@@ -2379,10 +2379,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Paint energy fields
 
-	Ctx.iTick = iTick;
-	Ctx.iVariant = 0;
-	Ctx.iDestiny = GetDestiny();
-	Ctx.iRotation = GetRotation();
+	Ctx.Prepare(iTick, 0, GetRotation(), GetDestiny());
 	m_Overlays.Paint(Dest, Image.GetImageViewportSize(), x, y, Ctx);
 
 	//	Now paint any object that are docked in front of us

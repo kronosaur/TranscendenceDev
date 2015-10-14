@@ -101,6 +101,7 @@ struct SExtensionSaveDesc
 const DWORD UNIVERSE_VERSION_MARKER =					0xffffffff;
 
 const DWORD UNID_FIRST_DEFAULT_EFFECT =					0x00000010;
+const DWORD UNID_FIRST_DEFAULT_FIRE_EFFECT =			0x00000070;
 
 CUniverse *g_pUniverse = NULL;
 Metric g_KlicksPerPixel = KLICKS_PER_PIXEL;
@@ -109,8 +110,9 @@ Metric g_SecondsPerUpdate =	g_TimeScale / g_TicksPerSecond;
 
 static CObjectClass<CUniverse>g_Class(OBJID_CUNIVERSE, NULL);
 
+CEffectCreator *g_DefaultFireEffect[damageCount];
 CEffectCreator *g_DefaultHitEffect[damageCount];
-bool g_bDefaultHitEffectsInit = false;
+bool g_bDefaultEffectsInit = false;
 
 #ifdef DEBUG_PROGRAMSTATE
 ProgramStates g_iProgramState = psUnknown;
@@ -641,6 +643,20 @@ CObject *CUniverse::FindByUNID (CIDTable &Table, DWORD dwUNID)
 		return NULL;
 	}
 
+CEffectCreator *CUniverse::FindDefaultFireEffect (DamageTypes iDamage)
+
+//	FindDefaultFireEffect
+//
+//	Returns the default hit effect for the given damage type
+
+	{
+	if (iDamage < damageLaser || iDamage >= damageCount)
+		return NULL;
+
+	InitDefaultEffects();
+	return g_DefaultFireEffect[iDamage];
+	}
+
 CEffectCreator *CUniverse::FindDefaultHitEffect (DamageTypes iDamage)
 
 //	FindDefaultHitEffect
@@ -651,7 +667,7 @@ CEffectCreator *CUniverse::FindDefaultHitEffect (DamageTypes iDamage)
 	if (iDamage < damageLaser || iDamage >= damageCount)
 		return FindEffectType(g_HitEffectUNID);
 
-	InitDefaultHitEffects();
+	InitDefaultEffects();
 	return g_DefaultHitEffect[iDamage];
 	}
 
@@ -1373,7 +1389,7 @@ ALERROR CUniverse::InitAdventure (IPlayerController *pPlayer, CString *retsError
 	return NOERROR;
 	}
 
-void CUniverse::InitDefaultHitEffects (void)
+void CUniverse::InitDefaultEffects (void)
 
 //	InitDefaultHitEffects
 //
@@ -1382,16 +1398,23 @@ void CUniverse::InitDefaultHitEffects (void)
 	{
 	int i;
 
-	if (!g_bDefaultHitEffectsInit)
+	if (!g_bDefaultEffectsInit)
 		{
 		for (i = 0; i < damageCount; i++)
 			{
+			//	Find a default hit effect. Default to some standard.
+
 			g_DefaultHitEffect[i] = FindEffectType(UNID_FIRST_DEFAULT_EFFECT + i);
 			if (g_DefaultHitEffect[i] == NULL)
 				g_DefaultHitEffect[i] = FindEffectType(g_HitEffectUNID);
+
+			//	Find a default fire effect. OK if NULL, we have no effect in that
+			//	case.
+
+			g_DefaultFireEffect[i] = FindEffectType(UNID_FIRST_DEFAULT_FIRE_EFFECT + i);
 			}
 
-		g_bDefaultHitEffectsInit = true;
+		g_bDefaultEffectsInit = true;
 		}
 	}
 
@@ -2260,7 +2283,7 @@ ALERROR CUniverse::Reinit (void)
 	//	Reinitialize types
 
 	m_Design.Reinit();
-	g_bDefaultHitEffectsInit = false;
+	g_bDefaultEffectsInit = false;
 
 	//	Clear the topology nodes
 

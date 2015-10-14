@@ -241,6 +241,22 @@ IEffectPainter *CWeaponFireDesc::CreateEffect (bool bTrackingObj, bool bUseObjec
 	return m_pEffect.CreatePainter(Ctx);
 	}
 
+IEffectPainter *CWeaponFireDesc::CreateFireEffect (void)
+
+//	CreateFireEffect
+//
+//	Creates a fire effect. The caller is responsible for calling Delete on the
+//	result.
+//
+//	NOTE: We may return NULL if the weapon has no effect.
+
+	{
+	CCreatePainterCtx Ctx;
+	Ctx.SetWeaponFireDesc(this);
+
+	return m_pFireEffect.CreatePainter(Ctx, g_pUniverse->FindDefaultFireEffect(m_Damage.GetDamageType()));
+	}
+
 void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 
 //	CreateHitEffect
@@ -932,6 +948,24 @@ Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
 		return (m_MissileSpeed.GetAveValueFloat() * LIGHT_SPEED / 100.0);
 	else
 		return GetRatedSpeed();
+	}
+
+CEffectCreator *CWeaponFireDesc::GetFireEffect (void) const
+
+//	GetFireEffect
+//
+//	Returns the fire effect creator (or NULL if there is none).
+	
+	{
+	//	If we have a custom fire effect, use that.
+
+	if (m_pFireEffect)
+		return m_pFireEffect; 
+
+	//	Otherwise, see if the universe has a default effect for this damage 
+	//	type.
+
+	return g_pUniverse->FindDefaultFireEffect(m_Damage.GetDamageType());
 	}
 
 Metric CWeaponFireDesc::GetInitialSpeed (void) const

@@ -248,7 +248,7 @@ int CDeviceClass::GetInstallCost (void)
 	if (pStats == NULL)
 		return -1;
 
-	return m_pItemType->GetCurrencyType()->Exchange(CEconomyType::Default(), pStats->iInstallCost);
+	return (int)m_pItemType->GetCurrencyType()->Exchange(CEconomyType::Default(), pStats->iInstallCost);
 	}
 
 ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType)
