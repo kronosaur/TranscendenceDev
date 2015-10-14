@@ -4607,6 +4607,7 @@ class CCreatePainterCtx
 			int iValue;
 			};
 
+		void SetDamageCtxData (CCodeChain &CC, CCSymbolTable *pTable, SDamageCtx &DamageCtx);
 		void SetWeaponFireDescData (CCodeChain &CC, CCSymbolTable *pTable, CWeaponFireDesc *pDesc);
 
 		int m_iLifetime;						//	Optional lifetime 0 = use creator defaults; -1 = infinite;
