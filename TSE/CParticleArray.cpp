@@ -305,7 +305,7 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 			break;
 
 		case paintLine:
-			PaintLine(Dest, xPos, yPos, Ctx, Desc.rgbPrimaryColor);
+			PaintLine(Dest, xPos, yPos, Ctx, Desc.rgbPrimaryColor, Desc.rgbSecondaryColor);
 			break;
 
 		case paintSmoke:
@@ -613,7 +613,8 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 								int xPos,
 								int yPos,
 								SViewportPaintCtx &Ctx,
-								CG32bitPixel rgbPrimaryColor)
+								CG32bitPixel rgbPrimaryColor,
+								CG32bitPixel rgbSecondaryColor)
 
 //	PaintLine
 //
@@ -626,6 +627,12 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 	int yVel = 0;
 	if (Ctx.pObj)
 		PosToXY(Ctx.pObj->GetVel(), &xVel, &yVel);
+
+	//	We want the tail to be transparent and the head to be full.
+	//	NOTE: We paint from head to tail.
+
+	CG32bitPixel rgbFrom = rgbPrimaryColor;
+	CG32bitPixel rgbTo = CG32bitPixel(rgbSecondaryColor, 0);
 
 	//	Paint all the particles
 
@@ -646,10 +653,7 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 
 			//	Paint the particle
 
-			Dest.DrawLine(xFrom, yFrom,
-					xTo, yTo,
-					1,
-					rgbPrimaryColor);
+			CGDraw::LineGradient(Dest, xFrom, yFrom, xTo, yTo, 1, rgbFrom, rgbTo);
 			}
 
 		//	Next

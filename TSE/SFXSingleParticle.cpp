@@ -95,6 +95,8 @@ ALERROR CSingleParticleEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx
 
 	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
 	m_rgbSecondaryColor = ::LoadRGBColor(pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB));
+	if (m_rgbSecondaryColor.IsNull())
+		m_rgbSecondaryColor = m_rgbPrimaryColor;
 
 	return NOERROR;
 	}

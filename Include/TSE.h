@@ -1576,7 +1576,8 @@ class CParticleArray
 						int xPos,
 						int yPos,
 						SViewportPaintCtx &Ctx,
-						CG32bitPixel rgbPrimaryColor);
+						CG32bitPixel rgbPrimaryColor,
+						CG32bitPixel rgbSecondaryColor);
 		void PosToXY (const CVector &xy, int *retx, int *rety);
 		void UseRealCoords (void);
 		CVector XYToPos (int x, int y);
