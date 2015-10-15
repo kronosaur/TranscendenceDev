@@ -922,6 +922,7 @@ void COverlay::Update (CSpaceObject *pSource)
 
 	if (m_pHitPainter)
 		{
+		UpdateCtx.iTick = m_iPaintHitTick;
 		m_pHitPainter->OnUpdate(UpdateCtx);
 		m_pHitPainter->OnMove(MoveCtx);
 		}

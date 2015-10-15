@@ -256,6 +256,16 @@ ALERROR CEffectCreator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	return NOERROR;
 	}
 
+IEffectPainter *CEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+
+//	CreatePainter
+//
+//	Creates the painter for this effect. Caller must call Delete.
+	
+	{
+	return OnCreatePainter(Ctx); 
+	}
+
 ALERROR CEffectCreator::CreateSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CEffectCreator **retpCreator)
 
 //	CreateSimpleFromXML

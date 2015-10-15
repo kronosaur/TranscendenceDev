@@ -424,8 +424,13 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	m_iTick++;
 
+	SEffectUpdateCtx EffectCtx;
+	EffectCtx.pSystem = GetSystem();
+	EffectCtx.pObj = this;
+	EffectCtx.iTick = m_iTick;
+
 	if (m_pPainter)
-		m_pPainter->OnUpdate();
+		m_pPainter->OnUpdate(EffectCtx);
 
 	//	Destroy
 

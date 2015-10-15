@@ -56,7 +56,7 @@ CShapeEffectCreator::~CShapeEffectCreator (void)
 		delete [] m_TransBuffer;
 	}
 
-IEffectPainter *CShapeEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CShapeEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

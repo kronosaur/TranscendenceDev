@@ -428,6 +428,7 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	SEffectUpdateCtx EffectCtx;
 	EffectCtx.pSystem = GetSystem();
 	EffectCtx.pObj = this;
+	EffectCtx.iTick = m_iTick;
 
 	EffectCtx.pDamageDesc = m_pDesc;
 	EffectCtx.iTotalParticleCount = m_iParticleCount;

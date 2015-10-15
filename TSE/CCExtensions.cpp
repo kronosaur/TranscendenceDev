@@ -1430,6 +1430,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'known\n"
 			"   'paintLayer\n"
 			"   'playerMissionsGiven\n"
+			"   'scale\n"
 			"   'underAttack\n"
 			"\n"
 			"property (ships)\n\n"

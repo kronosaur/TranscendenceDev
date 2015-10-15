@@ -86,7 +86,7 @@ ALERROR CEffectVariantCreator::CreateEffect (CSystem *pSystem,
 	return ChooseVariant(iVariant)->pEffect->CreateEffect(pSystem, pAnchor, vPos, vVel, iRotation, iVariant, retpEffect);
 	}
 
-IEffectPainter *CEffectVariantCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CEffectVariantCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

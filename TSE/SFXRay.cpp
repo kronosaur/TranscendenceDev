@@ -172,7 +172,7 @@ CRayEffectCreator::~CRayEffectCreator (void)
 		delete m_pSingleton;
 	}
 
-IEffectPainter *CRayEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CRayEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

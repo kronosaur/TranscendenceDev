@@ -89,7 +89,7 @@ CParticleCloudEffectCreator::~CParticleCloudEffectCreator (void)
 		delete m_pParticleEffect;
 	}
 
-IEffectPainter *CParticleCloudEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CParticleCloudEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

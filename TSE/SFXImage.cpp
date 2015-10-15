@@ -31,7 +31,7 @@ class CImagePainter : public IEffectPainter
 		CCompositeImageSelector m_Sel;
 	};
 
-IEffectPainter *CImageEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CImageEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

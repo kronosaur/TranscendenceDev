@@ -302,7 +302,7 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 			((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL),
 			DamageCtx.vHitPos,
 			(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),
-			DamageCtx.iDamage) != NOERROR)
+			DamageCtx.iDirection) != NOERROR)
 		{
 		delete pPainter;
 		return;

@@ -76,7 +76,7 @@ void CFlareEffectCreator::CreateFlareSpike (int iAngle, int iLength, int iWidth,
 	Poly[3].y = -(int)vPos.GetY();
 	}
 
-IEffectPainter *CFlareEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CFlareEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

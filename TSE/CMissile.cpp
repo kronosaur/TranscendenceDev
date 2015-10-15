@@ -974,6 +974,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			SEffectUpdateCtx PainterCtx;
 			PainterCtx.pObj = this;
+			PainterCtx.iTick = m_iTick;
 			PainterCtx.iRotation = GetRotation();
 			PainterCtx.bFade = true;
 
@@ -1088,6 +1089,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			SEffectUpdateCtx PainterCtx;
 			PainterCtx.pObj = this;
+			PainterCtx.iTick = m_iTick;
 			PainterCtx.iRotation = GetRotation();
 
 			m_pPainter->OnUpdate(PainterCtx);

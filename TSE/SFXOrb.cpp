@@ -127,7 +127,7 @@ COrbEffectCreator::~COrbEffectCreator (void)
 		delete m_pSingleton;
 	}
 
-IEffectPainter *COrbEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *COrbEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

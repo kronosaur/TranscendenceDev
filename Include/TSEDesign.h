@@ -3271,6 +3271,7 @@ struct SEffectUpdateCtx
 	SEffectUpdateCtx (void) : 
 			pSystem(NULL),
 			pObj(NULL),
+			iTick(0),
 			iRotation(0),
 			bFade(false),
 
@@ -3288,6 +3289,7 @@ struct SEffectUpdateCtx
 	//	Object context
 	CSystem *pSystem;							//	Current system
 	CSpaceObject *pObj;							//	The object that the effect is part of
+	int iTick;									//	Effect tick
 	int iRotation;								//	Rotation
 	CVector vEmitPos;							//	Emittion pos (if not center of effect)
 												//		Relative to center of effect.
@@ -4652,9 +4654,10 @@ class CEffectCreator : public CDesignType
 		static IEffectPainter *CreatePainterFromStream (SLoadCtx &Ctx, bool bNullCreator = false);
 		static IEffectPainter *CreatePainterFromStreamAndCreator (SLoadCtx &Ctx, CEffectCreator *pCreator);
 		static CEffectCreator *FindEffectCreator (const CString &sUNID);
-		inline bool FindEventHandlerEffectType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 		static void WritePainterToStream (IWriteStream *pStream, IEffectPainter *pPainter);
 
+		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx);
+		inline bool FindEventHandlerEffectType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 		inline CWeaponFireDesc *GetDamageDesc (void) { return m_pDamage; }
 		inline EInstanceTypes GetInstance (void) const { return m_iInstance; }
 		inline const CString &GetUNIDString (void) { return m_sUNID; }
@@ -4670,7 +4673,6 @@ class CEffectCreator : public CDesignType
 									  int iRotation,
 									  int iVariant = 0,
 									  CSpaceObject **retpEffect = NULL);
-		virtual IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx) = 0;
 		virtual int GetLifetime (void) { return 0; }
 		virtual CEffectCreator *GetSubEffect (int iIndex) { return NULL; }
 		virtual CString GetTag (void) = 0;
@@ -4682,6 +4684,7 @@ class CEffectCreator : public CDesignType
 		virtual DesignTypes GetType (void) const { return designEffectType; }
 
 	protected:
+
 		//	CDesignType overrides
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
@@ -4690,6 +4693,7 @@ class CEffectCreator : public CDesignType
 
 		//	CEffectCreator overrides
 
+		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) = 0;
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) { return NOERROR; }
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual void OnEffectPlaySound (CSpaceObject *pSource);

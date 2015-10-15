@@ -222,6 +222,7 @@ void CEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		SEffectUpdateCtx Ctx;
 		Ctx.pSystem = GetSystem();
 		Ctx.pObj = this;
+		Ctx.iTick = m_iTick;
 
 		Ctx.pDamageDesc = m_pPainter->GetCreator()->GetDamageDesc();
 		Ctx.iTotalParticleCount = m_pPainter->GetParticleCount();

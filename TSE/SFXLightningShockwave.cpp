@@ -34,7 +34,7 @@ class CLightningShockwavePainter : public IEffectPainter
 
 //	CLightningShockwaveEffectCreator object
 
-IEffectPainter *CLightningShockwaveEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CLightningShockwaveEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

@@ -105,6 +105,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
 #define PROPERTY_REMOVE_ITEM_STATUS				CONSTLIT("removeItemStatus")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
+#define PROPERTY_SCALE							CONSTLIT("scale")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
 
 #define SPECIAL_DATA							CONSTLIT("data:")
@@ -120,6 +121,12 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define CATEGORY_MISSILE						CONSTLIT("missile")
 #define CATEGORY_SHIP							CONSTLIT("ship")
 #define CATEGORY_STATION						CONSTLIT("station")
+
+#define SCALE_STAR								CONSTLIT("star")
+#define SCALE_WORLD								CONSTLIT("world")
+#define SCALE_STATION							CONSTLIT("station")
+#define SCALE_SHIP								CONSTLIT("ship")
+#define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
 static Metric g_rMaxPerceptionRange[CSpaceObject::perceptMax+1] =
 	{
@@ -3910,6 +3917,30 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 
+	else if (strEquals(sName, PROPERTY_SCALE))
+		{
+		switch (GetScale())
+			{
+			case scaleStar:
+				return CC.CreateString(SCALE_STAR);
+
+			case scaleWorld:
+				return CC.CreateString(SCALE_WORLD);
+
+			case scaleStructure:
+				return CC.CreateString(SCALE_STATION);
+
+			case scaleShip:
+				return CC.CreateString(SCALE_SHIP);
+
+			case scaleFlotsam:
+				return CC.CreateString(SCALE_FLOTSAM);
+
+			default:
+				return CC.CreateNil();
+			}
+		}
+
 	else if (strEquals(sName, PROPERTY_UNDER_ATTACK))
 		return CC.CreateBool(IsUnderAttack());
 
@@ -6863,6 +6894,10 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = this;
 
+	SEffectUpdateCtx UpdateCtx;
+	UpdateCtx.pSystem = GetSystem();
+	UpdateCtx.pObj = this;
+
 	//	Update the effects
 
 	SEffectNode *pEffect = m_pFirstEffect;
@@ -6883,7 +6918,10 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			}
 		else
 			{
-			pEffect->pPainter->OnUpdate();
+			UpdateCtx.iTick = pEffect->iTick;
+			UpdateCtx.iRotation = pEffect->iRotation;
+
+			pEffect->pPainter->OnUpdate(UpdateCtx);
 			pEffect->pPainter->OnMove(MoveCtx);
 
 			pPrev = pEffect;

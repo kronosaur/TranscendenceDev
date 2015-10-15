@@ -108,7 +108,7 @@ CLightningStormEffectCreator::~CLightningStormEffectCreator (void)
 		delete m_pSingleton;
 	}
 
-IEffectPainter *CLightningStormEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CLightningStormEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

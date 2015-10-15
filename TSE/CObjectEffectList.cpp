@@ -206,6 +206,7 @@ void CObjectEffectList::Update (CSpaceObject *pObj, const CObjectEffectDesc &Des
 	int i;
 	SEffectUpdateCtx PainterCtx;
 	PainterCtx.pObj = pObj;
+	PainterCtx.iTick = g_pUniverse->GetTicks();
 
 	for (i = 0; i < m_FixedEffects.GetCount(); i++)
 		if (m_FixedEffects[i].pPainter)

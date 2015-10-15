@@ -285,6 +285,7 @@ void CAreaDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	SEffectUpdateCtx EffectCtx;
 	EffectCtx.pSystem = GetSystem();
 	EffectCtx.pObj = this;
+	EffectCtx.iTick = m_iTick;
 
 	EffectCtx.pDamageDesc = m_pDesc;
 	EffectCtx.pEnhancements = m_pEnhancements;
