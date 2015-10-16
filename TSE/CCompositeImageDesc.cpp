@@ -920,8 +920,8 @@ void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, CO
 			rcSource.top,
 			cxWidth,
 			cyHeight,
-			(REALPIXEL)m_dwHue,
-			(REALPIXEL)m_dwSaturation / 100.0);
+			(Metric)m_dwHue,
+			(Metric)m_dwSaturation / 100.0);
 
 	//	Initialize an image
 

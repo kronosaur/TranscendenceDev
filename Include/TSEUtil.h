@@ -1240,18 +1240,18 @@ class I2DFunction
 
 		virtual ~I2DFunction (void) { }
 
-		inline float Eval (float x, float y) { return OnEval(x, y); }
+		inline Metric Eval (Metric x, Metric y) { return OnEval(x, y); }
 		inline ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return OnInitFromXML(Ctx, pDesc); }
 
 	protected:
-		virtual float OnEval (float x, float y) { return 0.0f; }
+		virtual Metric OnEval (Metric x, Metric y) { return 0.0f; }
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 	};
 
 class CNoise2DFunc : public I2DFunction
 	{
 	protected:
-		virtual float OnEval (float x, float y);
+		virtual Metric OnEval (Metric x, Metric y);
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 
 	private:

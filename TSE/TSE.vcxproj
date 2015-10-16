@@ -256,6 +256,7 @@
     <ClInclude Include="..\Include\TSETypes.h" />
     <ClInclude Include="OrderModuleImpl.h" />
     <ClInclude Include="PsycheDefs.h" />
+    <ClInclude Include="SFXExplosionImpl.h" />
     <ClInclude Include="SFXImpl.h" />
     <ClInclude Include="ShipAIImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
@@ -310,6 +311,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CEffectParamDesc.cpp" />
+    <ClCompile Include="CExplosionCirclePainter.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />

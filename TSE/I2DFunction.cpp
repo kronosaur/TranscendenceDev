@@ -42,7 +42,7 @@ ALERROR I2DFunction::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, I2D
 
 //	CNoise2DFunc ---------------------------------------------------------------
 
-float CNoise2DFunc::OnEval (float x, float y)
+Metric CNoise2DFunc::OnEval (Metric x, Metric y)
 
 //	OnEval
 //
@@ -51,28 +51,28 @@ float CNoise2DFunc::OnEval (float x, float y)
 	{
 	//	Apply scale
 
-	x = (x / (float)m_iScale);
-	y = (y / (float)m_iScale);
+	x = (x / (Metric)m_iScale);
+	y = (y / (Metric)m_iScale);
 
 	if ((m_iScale % 2) == 1)
 		{
-		x += (1.0f / (float)(2 * m_iScale));
-		y += (1.0f / (float)(2 * m_iScale));
+		x += (1.0f / (Metric)(2 * m_iScale));
+		y += (1.0f / (Metric)(2 * m_iScale));
 		}
 
 	//	Compute
 
-	float ix = floorf(x);
-	float fx0 = x - ix;
-	float fx1 = fx0 - 1.0f;
-	float wx = NoiseSmoothStep(fx0);
+	Metric ix = floor(x);
+	Metric fx0 = x - ix;
+	Metric fx1 = fx0 - 1.0f;
+	Metric wx = NoiseSmoothStep(fx0);
 
-	float iy = floorf(y);
-	float fy0 = y - iy;
-	float fy1 = fy0 - 1.0f;
-	float wy = NoiseSmoothStep(fy0);
+	Metric iy = floor(y);
+	Metric fy0 = y - iy;
+	Metric fy1 = fy0 - 1.0f;
+	Metric wy = NoiseSmoothStep(fy0);
 
-	float rNoise = Noise2D((int)ix, fx0, fx1, wx, (int)iy, fy0, fy1, wy);
+	Metric rNoise = Noise2D((int)ix, fx0, fx1, wx, (int)iy, fy0, fy1, wy);
 
 	//	Map to 0.0 to 1.0
 

@@ -142,11 +142,11 @@ class CLocateNodesProc : public ITopologyProcessor
 		struct SLocation
 			{
 			ITopologyProcessor *pProc;
-			float rMin;
-			float rMax;
+			Metric rMin;
+			Metric rMax;
 			};
 
-		ALERROR ParseRange (SDesignLoadCtx &Ctx, const CString &sRange, float *retrMin, float *retrMax);
+		ALERROR ParseRange (SDesignLoadCtx &Ctx, const CString &sRange, Metric *retrMin, Metric *retrMax);
 
 		CTopologyNode::SCriteria m_Criteria;
 		I2DFunction *m_pMapFunction;

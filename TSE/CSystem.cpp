@@ -364,7 +364,7 @@
 //		Added components to CItemType
 //
 //	118: 1.7
-//		Added m_iTick to COrbEffectPainter
+//		None
 //
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 

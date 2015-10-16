@@ -4,6 +4,7 @@
 //	Copyright (c) 2014 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include "SFXExplosionImpl.h"
 
 #define ANIMATE_ATTRIB					CONSTLIT("animate")
 #define INTENSITY_ATTRIB				CONSTLIT("intensity")
@@ -50,8 +51,15 @@ class COrbEffectPainter : public IEffectPainter
 
 			styleSmooth =			1,
 			styleFlare =			2,
+			styleCloud =			3,
 
-			styleMax =				2,
+			styleMax =				3,
+			};
+
+		struct SFlareDesc
+			{
+			int iLength;
+			int iWidth;
 			};
 
 		inline CG32bitPixel CalcFlarePoint (CGRasterize::SLinePixel &Pixel)
@@ -68,9 +76,11 @@ class COrbEffectPainter : public IEffectPainter
 		bool CalcIntermediates (void);
 		void CalcSphericalColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, TArray<CG32bitPixel> *retColorTable);
 		void CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
+		void CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
 		inline bool HasFlares (void) const { return (m_iStyle == styleFlare); }
 		void Invalidate (void);
 		void PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
+		void PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
 
 		CEffectCreator *m_pCreator;
 
@@ -86,7 +96,8 @@ class COrbEffectPainter : public IEffectPainter
 		//	Temporary variables based on shape/style/etc.
 
 		bool m_bInitialized;				//	TRUE if values are valid
-		TArray<TArray<CG32bitPixel>> m_ColorTable;
+		TArray<TArray<CG32bitPixel>> m_ColorTable;	//	Radial color table (per animation frame)
+		TArray<SFlareDesc> m_FlareDesc;		//	Flare spikes (per animation frame)
 	};
 
 static LPSTR ANIMATION_TABLE[] =
@@ -101,11 +112,12 @@ static LPSTR ANIMATION_TABLE[] =
 
 static LPSTR STYLE_TABLE[] =
 	{
-	//	Must be same order as ERayStyles
+	//	Must be same order as EOrbStyles
 		"",
 
 		"smooth",
 		"flare",
+		"cloud",
 
 		NULL,
 	};
@@ -261,6 +273,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 	if (!m_bInitialized)
 		{
 		m_ColorTable.DeleteAll();
+		m_FlareDesc.DeleteAll();
 
 		//	Initialized based on animation property
 
@@ -274,6 +287,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				int iLifetime = Max(1, m_iLifetime);
 
 				m_ColorTable.InsertEmpty(iLifetime);
+				m_FlareDesc.InsertEmpty(iLifetime);
 				for (i = 0; i < iLifetime; i++)
 					{
 					Metric rFade = (iLifetime - i) / (Metric)iLifetime;
@@ -281,6 +295,9 @@ bool COrbEffectPainter::CalcIntermediates (void)
 					int iIntensity = (int)(rFade * m_iIntensity);
 
 					CalcSphericalColorTable(iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, &m_ColorTable[i]);
+
+					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
+					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
 					}
 
 				break;
@@ -290,7 +307,11 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 			default:
 				m_ColorTable.InsertEmpty(1);
+				m_FlareDesc.InsertEmpty(1);
 				CalcSphericalColorTable(m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, &m_ColorTable[0]);
+
+				m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
+				m_FlareDesc[0].iWidth = Max(1, m_FlareDesc[0].iLength / FLARE_WIDTH_FRACTION);
 				break;
 			}
 
@@ -413,6 +434,18 @@ void COrbEffectPainter::CompositeFlareRay (CG32bitImage &Dest, int xCenter, int 
 		}
 	}
 
+void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
+
+//	CompositeFlares
+//
+//	Paints flares
+
+	{
+	CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, 0, m_iIntensity, Ctx);
+	CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, 60, m_iIntensity, Ctx);
+	CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, 120, m_iIntensity, Ctx);
+	}
+
 void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
 
 //	GetParam
@@ -503,17 +536,31 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	if (!CalcIntermediates())
 		return;
 
-	TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
-	CGDraw::Circle(Dest, x, y, Table.GetCount(), Table);
+	switch (m_iStyle)
+		{
+		case styleSmooth:
+		case styleFlare:
+			{
+			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			CGDraw::Circle(Dest, x, y, Table.GetCount(), Table);
+			break;
+			}
+
+		case styleCloud:
+			{
+			CExplosionCirclePainter Painter;
+			//CG8bitImage &Texture = Painter.GetTextureMap();
+			//Dest.FillMask(0, 0, Texture.GetWidth(), Texture.GetHeight(), Texture, CG32bitPixel(255, 255, 0), x, y);
+			Painter.SetFrame(Ctx.iTick);
+			Painter.Draw(Dest, x, y, Ctx.iTick);
+			break;
+			}
+		}
 
 	if (HasFlares())
 		{
-		int iLength = Table.GetCount() * FLARE_MULITPLE;
-		int iWidth = Max(1, iLength / FLARE_WIDTH_FRACTION);
-
-		PaintFlareRay(Dest, x, y, iLength, iWidth, 0, m_iIntensity, Ctx);
-		PaintFlareRay(Dest, x, y, iLength, iWidth, 60, m_iIntensity, Ctx);
-		PaintFlareRay(Dest, x, y, iLength, iWidth, 120, m_iIntensity, Ctx);
+		SFlareDesc &Flare = m_FlareDesc[Ctx.iTick % m_FlareDesc.GetCount()];
+		PaintFlares(Dest, x, y, Flare, Ctx);
 		}
 	}
 
@@ -527,17 +574,24 @@ void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewp
 	if (!CalcIntermediates())
 		return;
 
-	TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
-	CGComposite::Circle(Dest, x, y, Table.GetCount(), Table);
+	switch (m_iStyle)
+		{
+		case styleSmooth:
+		case styleFlare:
+			{
+			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			CGComposite::Circle(Dest, x, y, Table.GetCount(), Table);
+			break;
+			}
+
+		case styleCloud:
+			break;
+		}
 
 	if (HasFlares())
 		{
-		int iLength = Table.GetCount() * FLARE_MULITPLE;
-		int iWidth = Max(1, iLength / FLARE_WIDTH_FRACTION);
-
-		CompositeFlareRay(Dest, x, y, iLength, iWidth, 0, m_iIntensity, Ctx);
-		CompositeFlareRay(Dest, x, y, iLength, iWidth, 60, m_iIntensity, Ctx);
-		CompositeFlareRay(Dest, x, y, iLength, iWidth, 120, m_iIntensity, Ctx);
+		SFlareDesc &Flare = m_FlareDesc[Ctx.iTick % m_FlareDesc.GetCount()];
+		CompositeFlares(Dest, x, y, Flare, Ctx);
 		}
 	}
 
@@ -584,6 +638,18 @@ void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCen
 		else
 			*(Pixel.pPos) = CG32bitPixel::Blend(*(Pixel.pPos), rgbValue, byOpacity);
 		}
+	}
+
+void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
+
+//	PaintFlares
+//
+//	Paints flares
+
+	{
+	PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, 0, m_iIntensity, Ctx);
+	PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, 60, m_iIntensity, Ctx);
+	PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, 120, m_iIntensity, Ctx);
 	}
 
 bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const

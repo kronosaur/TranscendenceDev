@@ -122,6 +122,9 @@
     <ClInclude Include="PsycheDefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SFXExplosionImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -855,6 +858,9 @@
     </ClCompile>
     <ClCompile Include="CCompositeImageType.cpp">
       <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CExplosionCirclePainter.cpp">
+      <Filter>Source Files\SFX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

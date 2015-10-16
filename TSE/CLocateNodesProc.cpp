@@ -12,7 +12,7 @@
 struct SComputedNode
 	{
 	CTopologyNode *pNode;
-	float rValue;
+	Metric rValue;
 	};
 
 int KeyCompare (const SComputedNode &Key1, const SComputedNode &Key2)
@@ -199,7 +199,7 @@ ALERROR CLocateNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 			int x, y;
 			Results[i].pNode->GetDisplayPos(&x, &y);
 
-			Results[i].rValue = m_pMapFunction->Eval((float)x, (float)y);
+			Results[i].rValue = m_pMapFunction->Eval((Metric)x, (Metric)y);
 			}
 
 		//	Sort the list by ascending value
@@ -231,8 +231,8 @@ ALERROR CLocateNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 
 	for (i = 0; i < m_Locations.GetCount(); i++)
 		{
-		float rMin = m_Locations[i].rMin;
-		float rMax = m_Locations[i].rMax;
+		double rMin = m_Locations[i].rMin;
+		double rMax = m_Locations[i].rMax;
 
 		//	Generate a list of nodes that match this location
 
@@ -240,7 +240,7 @@ ALERROR CLocateNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 		for (j = 0; j < Results.GetCount(); j++)
 			{
 			CTopologyNode *pNode = Results[j].pNode;
-			float rPercentile = ((float)j + 0.5f) / (float)Results.GetCount();
+			double rPercentile = ((double)j + 0.5f) / (double)Results.GetCount();
 			if (pNode->IsMarked() && rPercentile >= rMin && rPercentile <= rMax)
 				{
 				pNode->SetMarked(false);
@@ -269,7 +269,7 @@ ALERROR CLocateNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 	return NOERROR;
 	}
 
-ALERROR CLocateNodesProc::ParseRange (SDesignLoadCtx &Ctx, const CString &sRange, float *retrMin, float *retrMax)
+ALERROR CLocateNodesProc::ParseRange (SDesignLoadCtx &Ctx, const CString &sRange, double *retrMin, double *retrMax)
 
 //	ParseRange
 //
@@ -306,11 +306,11 @@ ALERROR CLocateNodesProc::ParseRange (SDesignLoadCtx &Ctx, const CString &sRange
 			iSecond = strParseInt(pPos, 100, &pPos);
 			}
 
-		*retrMin = ((float)iFirst / 100.0f) - 0.005f;
+		*retrMin = ((double)iFirst / 100.0f) - 0.005f;
 		if (iSecond == -1)
 			*retrMax = *retrMin + 0.01f;
 		else
-			*retrMax = ((float)iSecond / 100.0f) + 0.005f;
+			*retrMax = ((double)iSecond / 100.0f) + 0.005f;
 		}
 
 	return NOERROR;
