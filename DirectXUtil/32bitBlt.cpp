@@ -1000,7 +1000,7 @@ void CGDraw::BltWithBackColor (CG32bitImage &Dest, int xDest, int yDest, CG32bit
 		Dest.Blt(xSrc, ySrc, cxSrc, cySrc, Src, xDest, yDest);
 	}
 
-void CGDraw::CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, REALPIXEL rHue, REALPIXEL rSaturation)
+void CGDraw::CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, Metric rHue, Metric rSaturation)
 
 	{
 	CFilterColorize Filter(rHue, rSaturation);

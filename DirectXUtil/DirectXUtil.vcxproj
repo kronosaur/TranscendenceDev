@@ -245,6 +245,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\DirectXUtil.h" />
+    <ClInclude Include="..\Include\DXFractal.h" />
     <ClInclude Include="..\Include\DXImage16.h" />
     <ClInclude Include="..\Include\DXImage32.h" />
     <ClInclude Include="..\Include\DXImage8.h" />
@@ -314,6 +315,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CCloudGenerator.cpp" />
     <ClCompile Include="CDXBackgroundBlt.cpp" />
     <ClCompile Include="CDXMatrix.cpp" />
     <ClCompile Include="CFrameRateCounter.cpp" />
@@ -381,6 +383,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CGCloudGenerator3D.cpp" />
     <ClCompile Include="CGFrameArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -462,6 +465,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="DrawCircle.cpp" />
+    <ClCompile Include="DrawClouds.cpp" />
     <ClCompile Include="DrawLine.cpp" />
     <ClCompile Include="DrawRect.cpp" />
     <ClCompile Include="Files.cpp" />

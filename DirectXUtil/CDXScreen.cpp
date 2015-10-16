@@ -468,7 +468,7 @@ bool CDXScreen::InitDevice (CString *retsError)
 	Identity.SetIdentity();
 
 	CDXMatrix Ortho2D;
-	Ortho2D.SetOrthoLH((float)m_cxSource, (float)m_cySource, 0.0f, 1.0f);
+	Ortho2D.SetOrthoLH((FLOAT)m_cxSource, (FLOAT)m_cySource, 0.0, 1.0);
     
     m_pD3DDevice->SetTransform(D3DTS_PROJECTION, Ortho2D);
     m_pD3DDevice->SetTransform(D3DTS_WORLD, Identity);

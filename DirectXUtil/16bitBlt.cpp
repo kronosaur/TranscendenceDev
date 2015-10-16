@@ -290,7 +290,7 @@ void CopyBltColorize (CG16bitImage &Dest,
 
 	CG32bitPixel rgbBlack = CG32bitPixel(0, 0, 0);
 	CG32bitPixel rgbWhite = CG32bitPixel(255, 255, 255);
-	CG32bitPixel rgbHue = CGRealRGB::FromHSB(CGRealHSB((REALPIXEL)dwHue, 1.0, 1.0));
+	CG32bitPixel rgbHue = CGRealRGB::FromHSB(CGRealHSB((Metric)dwHue, 1.0, 1.0));
 	CG32bitPixel rgbColor = CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbHue, dwSaturation / 100.0);
 
 	//	Different code paths depending on whether we have alpha values or not

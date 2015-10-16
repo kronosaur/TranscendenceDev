@@ -190,7 +190,7 @@ int mathRound (double x)
 //	Based on: http://ldesoras.free.fr/doc/articles/rounding_en.pdf
 
 	{
-	const float round_to_nearest = 0.5f;
+	const double round_to_nearest = 0.5;
 	int i;
 
 #ifndef __GNUC__

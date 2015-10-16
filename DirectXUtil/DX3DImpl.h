@@ -23,7 +23,7 @@ class CDXMatrix
 		inline operator const D3DMATRIX * () const { return &m_Matrix; }
 
 		void SetIdentity (void);
-		void SetOrthoLH (float rWidth, float rHeight, float rNear, float rFar);
+		void SetOrthoLH (FLOAT rWidth, FLOAT rHeight, FLOAT rNear, FLOAT rFar);
 
 	private:
 		D3DMATRIX m_Matrix;

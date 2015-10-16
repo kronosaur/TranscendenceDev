@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "TBlt.h"
-#include "TCirclePainter.h"
 #include "NoiseImpl.h"
 
 //	Glow Ring Painter ----------------------------------------------------------
@@ -126,7 +124,7 @@ class CFilterDesaturateTrans : public TBlt<CFilterDesaturate>
 class CFilterColorize : public TBlt<CFilterColorize>
 	{
 	public:
-		CFilterColorize (REALPIXEL rHue, REALPIXEL rSaturation) :
+		CFilterColorize (Metric rHue, Metric rSaturation) :
 				m_rHue(rHue),
 				m_rSaturation(rSaturation),
 				m_rgbBlack(CG32bitPixel(0, 0, 0)),
@@ -141,14 +139,14 @@ class CFilterColorize : public TBlt<CFilterColorize>
 			//	See: Computer Graphics, Foley & van Dam, p.593.
 
 			BYTE byBrightness = CG32bitPixel::Desaturate(rgbSrc).GetRed();
-			REALPIXEL rB = byBrightness / 255.0;
+			Metric rB = byBrightness / 255.0;
 
 			return CG32bitPixel::Blend3(m_rgbBlack, m_rgbColor, m_rgbWhite, 2.0 * (rB - 1.0) + 1.0);
 			}
 
 	private:
-		REALPIXEL m_rHue;
-		REALPIXEL m_rSaturation;
+		Metric m_rHue;
+		Metric m_rSaturation;
 
 		CG32bitPixel m_rgbBlack;
 		CG32bitPixel m_rgbWhite;

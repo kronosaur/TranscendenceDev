@@ -213,7 +213,7 @@ class CGDraw
 		static void BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
 		static void BltTransformedGray (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
 		static void BltWithBackColor (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG32bitPixel rgbBackColor);
-		static void CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, REALPIXEL rHue, REALPIXEL rSaturation);
+		static void CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, Metric rHue, Metric rSaturation);
 
 		//	Lines
 
@@ -286,6 +286,12 @@ class CGRasterize
 		static void Line (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, TArray<SLinePixel> *retPixels);
 	};
 
+//	Implementation Helpers -----------------------------------------------------
+
+#include "TBlt.h"
+#include "TCirclePainter.h"
+
 //	Inlines --------------------------------------------------------------------
 
 inline void CG32bitImage::DrawLine (int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor) { CGDraw::Line(*this, x1, y1, x2, y2, iWidth, rgbColor); }
+

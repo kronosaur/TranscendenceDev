@@ -31,6 +31,9 @@
     <Filter Include="Source Files\DX">
       <UniqueIdentifier>{54f2d532-069c-4ac1-8ce0-1168120f05a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Fractal">
+      <UniqueIdentifier>{1f7ee3f7-f80a-45a0-8976-f7b7714725ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NoiseImpl.h">
@@ -87,15 +90,15 @@
     <ClInclude Include="DX3DImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\DXFractal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="8bitDrawCircle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="8bitImageDrawing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="8bitNoise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AGArea.cpp">
@@ -117,9 +120,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CGTextArea.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CNoiseGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Debug.cpp">
@@ -310,6 +310,21 @@
     </ClCompile>
     <ClCompile Include="CScreenMgr.cpp">
       <Filter>Source Files\DX</Filter>
+    </ClCompile>
+    <ClCompile Include="8bitNoise.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="CNoiseGenerator.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawClouds.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="CCloudGenerator.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="CGCloudGenerator3D.cpp">
+      <Filter>Source Files\Fractal</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

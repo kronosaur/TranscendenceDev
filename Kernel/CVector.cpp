@@ -86,9 +86,9 @@ int IntVectorToPolar (int x, int y, int *retiRadius)
 		{
 		iRadius = mathSqrt(iSqrRadius);
 		if (x >= 0.0)
-			iAngle = (((int)(180 * asin((float)y / (float)iRadius) / g_Pi)) + 360) % 360;
+			iAngle = (((int)(180 * asin((double)y / (double)iRadius) / g_Pi)) + 360) % 360;
 		else
-			iAngle = 180 - ((int)(180 * asin((float)y / (float)iRadius) / g_Pi));
+			iAngle = 180 - ((int)(180 * asin((double)y / (double)iRadius) / g_Pi));
 		}
 
 	ASSERT(iAngle >= 0 && iAngle < 360);

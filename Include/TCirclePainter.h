@@ -22,9 +22,24 @@ template <class PAINTER> class TCirclePainter32
 			m_rcClip = NULL;
 			}
 
+		void Draw (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iAngleRange = 360)
+			{
+			m_pDest = &Dest;
+			m_rcClip = &Dest.GetClipRect();
+			m_xDest = xCenter;
+			m_yDest = yCenter;
+			m_iRadius = iRadius;
+			m_iAngleRange = iAngleRange;
+
+			DrawCircle();
+
+			m_pDest = NULL;
+			m_rcClip = NULL;
+			}
+
 	protected:
 
-		TCirclePainter32 (int iAngleRange, int iRadius) : 
+		TCirclePainter32 (int iAngleRange = 360, int iRadius = 100) : 
 				m_iAngleRange(iAngleRange),
 				m_iRadius(iRadius)
 			{

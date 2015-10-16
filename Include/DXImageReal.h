@@ -13,26 +13,26 @@ class CGRealHSB
 		CGRealHSB (void)
 			{ }
 
-		CGRealHSB (REALPIXEL rH, REALPIXEL rS, REALPIXEL rB, REALPIXEL rA = 1.0) :
+		CGRealHSB (Metric rH, Metric rS, Metric rB, Metric rA = 1.0) :
 				m_rH(rH),
 				m_rS(rS),
 				m_rB(rB),
 				m_rA(rA)
 			{ }
 
-		inline REALPIXEL GetAlpha (void) const { return m_rA; }
-		inline REALPIXEL GetBrightness (void) const { return m_rB; }
-		inline REALPIXEL GetHue (void) const { return m_rH; }
-		inline REALPIXEL GetSaturation (void) const { return m_rS; }
+		inline Metric GetAlpha (void) const { return m_rA; }
+		inline Metric GetBrightness (void) const { return m_rB; }
+		inline Metric GetHue (void) const { return m_rH; }
+		inline Metric GetSaturation (void) const { return m_rS; }
 
 		static CGRealHSB FromRGB (const CGRealRGB &rgbColor);
 		static CGRealHSB FromRGB (CG32bitPixel rgbColor);
 
 	private:
-		REALPIXEL m_rH;						//	Hue: 0-360
-		REALPIXEL m_rS;						//	Saturation: 0-1
-		REALPIXEL m_rB;						//	Brightness: 0-1
-		REALPIXEL m_rA;						//	Alpha: 0-1
+		Metric m_rH;						//	Hue: 0-360
+		Metric m_rS;						//	Saturation: 0-1
+		Metric m_rB;						//	Brightness: 0-1
+		Metric m_rA;						//	Alpha: 0-1
 	};
 
 class CGRealRGB
@@ -41,7 +41,7 @@ class CGRealRGB
 		CGRealRGB (void)
 			{ }
 
-		CGRealRGB (REALPIXEL rR, REALPIXEL rG, REALPIXEL rB, REALPIXEL rA = 1.0) :
+		CGRealRGB (Metric rR, Metric rG, Metric rB, Metric rA = 1.0) :
 				m_rR(rR),
 				m_rG(rG),
 				m_rB(rB),
@@ -50,16 +50,16 @@ class CGRealRGB
 
 		CGRealRGB (CG32bitPixel rgbColor);
 
-		inline REALPIXEL GetAlpha (void) const { return m_rA; }
-		inline REALPIXEL GetBlue (void) const { return m_rB; }
-		inline REALPIXEL GetGreen (void) const { return m_rG; }
-		inline REALPIXEL GetRed (void) const { return m_rR; }
+		inline Metric GetAlpha (void) const { return m_rA; }
+		inline Metric GetBlue (void) const { return m_rB; }
+		inline Metric GetGreen (void) const { return m_rG; }
+		inline Metric GetRed (void) const { return m_rR; }
 
 		static CGRealRGB FromHSB (const CGRealHSB &hsbColor);
 
 	private:
-		REALPIXEL m_rR;						//	Red: 0-1
-		REALPIXEL m_rG;						//	Green: 0-1
-		REALPIXEL m_rB;						//	Blue: 0-1
-		REALPIXEL m_rA;						//	Alpha: 0-1
+		Metric m_rR;						//	Red: 0-1
+		Metric m_rG;						//	Green: 0-1
+		Metric m_rB;						//	Blue: 0-1
+		Metric m_rA;						//	Alpha: 0-1
 	};

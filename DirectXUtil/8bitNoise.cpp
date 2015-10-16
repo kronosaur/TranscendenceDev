@@ -33,7 +33,7 @@ void DrawNebulosity8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHe
 	struct SFreq
 		{
 		int iFreq;
-		float Amplitude;
+		Metric Amplitude;
 		CNoiseGenerator *pNoise;
 		SNoisePos x;
 		SNoisePos y;
@@ -50,18 +50,18 @@ void DrawNebulosity8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHe
 	//	the result by this amplitude adjustment so that we get a greater
 	//	dynamic range.
 
-	float rAmplitudeAdj = 2.0f;
+	Metric rAmplitudeAdj = 2.0f;
 
 	//	As we get to smaller and smaller detail, the amplitude decreases
 	//	(by half for each frequency). But if there are too many levels of
 	//	detail, the amplitude decreases so much that it is invisible.
 	//	Thus we have a minimum amplitude.
 
-	float rMinAmplitude = (float)iScale / 32.0f;
+	Metric rMinAmplitude = (Metric)iScale / 32.0f;
 
 	//	Create noise generators are each frequency.
 
-	float rMaxValue = 0.0;
+	Metric rMaxValue = 0.0;
 	int iFreq = iScale;
 	while (iFreq >= iMinFreq)
 		{
@@ -69,7 +69,7 @@ void DrawNebulosity8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHe
 
 		pFreq->iFreq = iFreq;
 		pFreq->pNoise = new CNoiseGenerator(iFreq);
-		pFreq->Amplitude = rAmplitudeAdj * Max((float)iFreq, rMinAmplitude);
+		pFreq->Amplitude = rAmplitudeAdj * Max((Metric)iFreq, rMinAmplitude);
 
 		rMaxValue += (pFreq->Amplitude / rAmplitudeAdj);
 
@@ -78,8 +78,8 @@ void DrawNebulosity8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHe
 
 	//	Compute the factor to adjust the pixel value
 
-	float rRange = (float)(byMax - byMin) + 0.99999f;
-	float rFactor = rRange / (2.0f * rMaxValue);
+	Metric rRange = (Metric)(byMax - byMin) + 0.99999f;
+	Metric rFactor = rRange / (2.0f * rMaxValue);
 
 	int iFreqCount = FreqList.GetCount();
 
@@ -99,7 +99,7 @@ void DrawNebulosity8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHe
 		BYTE *pPosEnd = pRow + cxWidth;
 		while (pPos < pPosEnd)
 			{
-			float rValue = rMaxValue;
+			Metric rValue = rMaxValue;
 			for (i = 0; i < iFreqCount; i++)
 				{
 				SFreq *pFreq = &FreqList[i];
@@ -151,8 +151,8 @@ void DrawNoise8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight,
 	//	255.0 - 255.99999 to equal 255. We can't add more 9s because floating-point precision
 	//	will turn it into 256.0.
 
-	float rRange = (float)(byMax - byMin) + 0.99999f;
-	float rFactor = rRange / 2.0f;
+	Metric rRange = (Metric)(byMax - byMin) + 0.99999f;
+	Metric rFactor = rRange / 2.0f;
 
 	//	Prepare
 
@@ -173,7 +173,7 @@ void DrawNoise8bit (CG16bitImage &Dest, int x, int y, int cxWidth, int cyHeight,
 		BYTE *pPosEnd = pRow + cxWidth;
 		while (pPos < pPosEnd)
 			{
-			float rNoise = Noise.GetAt(xP, yP);
+			Metric rNoise = Noise.GetAt(xP, yP);
 			*pPos = byMin + (BYTE)(DWORD)(rFactor * (1.0f + rNoise));
 
 			//	Next pixel

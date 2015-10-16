@@ -23,8 +23,8 @@ CGRealHSB CGRealHSB::FromRGB (const CGRealRGB &rgbColor)
 	//	Figure out which is the primary (brightest) color
 
 	int iPrimary;
-	REALPIXEL rMax;
-	REALPIXEL rMin;
+	Metric rMax;
+	Metric rMin;
 
 	//	R G B
 	//	R B G
@@ -88,16 +88,16 @@ CGRealHSB CGRealHSB::FromRGB (const CGRealRGB &rgbColor)
 	
 	//	Brightness
 
-	REALPIXEL rBrightness = rMax;
+	Metric rBrightness = rMax;
 
 	//	Saturation
 
-	REALPIXEL rDelta = rMax - rMin;
-	REALPIXEL rSaturation = (rMax != 0.0 ? (rDelta / rMax) : 0.0);
+	Metric rDelta = rMax - rMin;
+	Metric rSaturation = (rMax != 0.0 ? (rDelta / rMax) : 0.0);
 
 	//	Hue
 
-	REALPIXEL rHue;
+	Metric rHue;
 	if (rSaturation == 0.0)
 		rHue = 0.0;	//	Undefined, but we just set it to 0
 	else

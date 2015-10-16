@@ -205,9 +205,9 @@ class CG16bitImage : public CGImagePlane
 	private:
 		struct RealPixel
 			{
-			REALPIXEL rRed;
-			REALPIXEL rGreen;
-			REALPIXEL rBlue;
+			Metric rRed;
+			Metric rGreen;
+			Metric rBlue;
 			};
 
 		void BresenhamLine (int x1, int y1, 

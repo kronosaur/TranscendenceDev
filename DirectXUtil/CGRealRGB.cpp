@@ -28,12 +28,12 @@ CGRealRGB CGRealRGB::FromHSB (const CGRealHSB &hsbColor)
 		return CGRealRGB(hsbColor.GetBrightness(), hsbColor.GetBrightness(), hsbColor.GetBrightness(), hsbColor.GetAlpha());
 	else
 		{
-		REALPIXEL rH = (hsbColor.GetHue() == 360.0 ? 0.0 : hsbColor.GetHue()) / 60.0;
-		REALPIXEL rI = floor(rH);
-		REALPIXEL rF = rH - rI;
-		REALPIXEL rP = hsbColor.GetBrightness() * (1.0 - hsbColor.GetSaturation());
-		REALPIXEL rQ = hsbColor.GetBrightness() * (1.0 - hsbColor.GetSaturation() * rF);
-		REALPIXEL rT = hsbColor.GetBrightness() * (1.0 - hsbColor.GetSaturation() * (1.0 - rF));
+		Metric rH = (hsbColor.GetHue() == 360.0 ? 0.0 : hsbColor.GetHue()) / 60.0;
+		Metric rI = floor(rH);
+		Metric rF = rH - rI;
+		Metric rP = hsbColor.GetBrightness() * (1.0 - hsbColor.GetSaturation());
+		Metric rQ = hsbColor.GetBrightness() * (1.0 - hsbColor.GetSaturation() * rF);
+		Metric rT = hsbColor.GetBrightness() * (1.0 - hsbColor.GetSaturation() * (1.0 - rF));
 
 		switch ((int)rI)
 			{

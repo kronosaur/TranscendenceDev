@@ -3244,9 +3244,9 @@ CG16bitImage::RealPixel CG16bitImage::GetRealPixel (const RECT &rcRange, Metric 
 		if (retbBlack)
 			*retbBlack = (IntPixel == m_wBackColor);
 
-		Pixel.rRed = (REALPIXEL)((IntPixel & 0xf800) >> 11) / 31.0f;
-		Pixel.rGreen = (REALPIXEL)((IntPixel & 0x7e0) >> 5) / 63.0f;
-		Pixel.rBlue = (REALPIXEL)(IntPixel & 0x1f) / 31.0f;
+		Pixel.rRed = (Metric)((IntPixel & 0xf800) >> 11) / 31.0f;
+		Pixel.rGreen = (Metric)((IntPixel & 0x7e0) >> 5) / 63.0f;
+		Pixel.rBlue = (Metric)(IntPixel & 0x1f) / 31.0f;
 
 		return Pixel;
 		}
