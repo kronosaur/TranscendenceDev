@@ -63,9 +63,6 @@
     <ClInclude Include="..\Include\DXImageReal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TCirclePainter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\DXImage16.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -73,9 +70,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\DXImage8.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TBlt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\DXSparseMask.h">
@@ -91,6 +85,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\DXFractal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TBlt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TCirclePainter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

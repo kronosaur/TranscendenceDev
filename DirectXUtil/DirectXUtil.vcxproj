@@ -255,14 +255,14 @@
     <ClInclude Include="..\Include\DXSparseMask.h" />
     <ClInclude Include="..\Include\DXUI.h" />
     <ClInclude Include="..\Include\Reanimator.h" />
+    <ClInclude Include="..\Include\TBlt.h" />
+    <ClInclude Include="..\Include\TCirclePainter.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
     <ClInclude Include="DrawImpl.h" />
     <ClInclude Include="DX3DImpl.h" />
     <ClInclude Include="NoiseImpl.h" />
     <ClInclude Include="PixelMacros.h" />
     <ClInclude Include="PreComp.h" />
-    <ClInclude Include="TBlt.h" />
-    <ClInclude Include="TCirclePainter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="16bitBlt.cpp" />

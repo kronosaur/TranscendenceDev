@@ -322,6 +322,34 @@ template <class VALUE> class TNumberSeries
 		VALUE m_Total;
 	};
 
+//	Miscellaneous
+
+class CStepIncrementor
+	{
+	public:
+		enum EStyle
+			{
+			styleNone,
+
+			styleLinear,
+			styleSquareRoot,				//	x^0.5
+			styleQuadRoot,					//	x^0.25
+			styleSquare,					//	x^2
+			styleQuad,						//	x^4
+			};
+
+		CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, int iSteps);
+		Metric GetAt (int iStep) const;
+
+	private:
+		EStyle m_iStyle;
+		Metric m_rStart;
+		int m_iSteps;
+
+		Metric m_rRange;
+		Metric m_rPower;
+	};
+
 //	Functions
 
 void EuclidInit (void);

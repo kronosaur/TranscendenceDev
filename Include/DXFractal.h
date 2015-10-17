@@ -50,11 +50,6 @@ class CGFractal
 		//	Spherical Textures
 
 		static void CreateSphericalCloudAnimation (int cxWidth, int cyHeight, int iScale, int iDetail, int iFrames, TArray<CG8bitImage> *retFrames);
-		inline static void CreateSphericalCloudMap (int cxWidth, int cyHeight, int iScale, int iDetail, CG8bitImage *retImage) { return CreateSphericalCloudMap(cxWidth, cyHeight, CGCloudGenerator3D(iScale), iDetail, 0.0, retImage); }
-
-	private:
-
-		//	Helpers
-
-		static void CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGenerator3D &Generator, int iDetail, Metric rOffset, CG8bitImage *retImage);
+		static void CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGenerator3D &Generator, int iDetail, Metric rContrast, Metric rOffset, CG8bitImage *retImage);
+		inline static void CreateSphericalCloudMap (int cxWidth, int cyHeight, int iScale, int iDetail, CG8bitImage *retImage) { return CreateSphericalCloudMap(cxWidth, cyHeight, CGCloudGenerator3D(iScale), iDetail, 1.0, 0.0, retImage); }
 	};

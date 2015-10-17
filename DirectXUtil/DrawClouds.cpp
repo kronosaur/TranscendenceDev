@@ -33,11 +33,11 @@ void CGFractal::CreateSphericalCloudAnimation (int cxWidth, int cyHeight, int iS
 	for (i = 0; i < iFrames; i++)
 		{
 		Metric rOffset = (Metric)i * rFactor;
-		CreateSphericalCloudMap(cxWidth, cyHeight, Generator, iDetail, rOffset, &retFrames->GetAt(i));
+		CreateSphericalCloudMap(cxWidth, cyHeight, Generator, iDetail, 1.0, rOffset, &retFrames->GetAt(i));
 		}
 	}
 
-void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGenerator3D &Generator, int iDetail, Metric rOffset, CG8bitImage *retImage)
+void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGenerator3D &Generator, int iDetail, Metric rContrast, Metric rOffset, CG8bitImage *retImage)
 
 //	CreateSphericalCloudMap
 //
@@ -61,6 +61,13 @@ void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGener
 
 	Metric rRange = (Metric)(255) + 0.99999;
 	Metric rFactor = rRange / (2.0 * Generator.GetMaxValue());
+	
+	//	The generator origin needs to be larger than the level of detail
+	//	so that we can always end up with positive numbers in GetAtPeriodic.
+	//	But we want it to be constant, if possible, so that different levels
+	//	of detail are centered.
+
+	int iOrigin = Max(10000, iDetail);
 
 	//	Loop
 
@@ -76,18 +83,18 @@ void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGener
 
 		while (pDest < pDestEnd)
 			{
-			//	Convert this to a 3D point on a unit sphere with center at 0.5,0.5,0.5
+			//	Convert this to a 3D point on a unit sphere with center at 0,0,0
 
-			Metric rX = 0.5 * (1.0 + cos((rV - 0.5) * 2.0 * g_Pi) * sin(rU * 2.0 * g_Pi));
-			Metric rY = 0.5 * (1.0 + cos((rV - 0.5) * 2.0 * g_Pi) * cos(rU * 2.0 * g_Pi));
-			Metric rZ = 0.5 * (1.0 + sin((rV - 0.5) * 2.0 * g_Pi));
+			Metric rX = cos((rV - 0.5) * 2.0 * g_Pi) * sin(rU * 2.0 * g_Pi);
+			Metric rY = cos((rV - 0.5) * 2.0 * g_Pi) * cos(rU * 2.0 * g_Pi);
+			Metric rZ = sin((rV - 0.5) * 2.0 * g_Pi);
 
 			//	Get a value from the generator. We use the periodic fuction, 
 			//	which uses frames (passed in to the generator) as the period.
 			//	The period is only on the Z-axis, so we don't multiply the Z
 			//	by detail (because we want smaller changes).
 			
-			Metric rValue = Generator.GetAtPeriodic((int)(rX * iDetail), (int)(rY * iDetail), (int)(rZ + rOffset));
+			Metric rValue = rContrast * Generator.GetAtPeriodic(iOrigin + (int)(rX * iDetail), iOrigin + (int)(rY * iDetail), iOrigin + (int)(rZ + rOffset));
 
 			//	Map to our range
 
