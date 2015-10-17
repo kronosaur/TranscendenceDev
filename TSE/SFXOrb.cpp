@@ -43,6 +43,9 @@ class COrbEffectPainter : public IEffectPainter
 			animateNone =			0,
 
 			animateFade =			1,
+			animateExplode =		2,
+
+			animateMax =			2,
 			};
 
 		enum EOrbStyles
@@ -52,8 +55,10 @@ class COrbEffectPainter : public IEffectPainter
 			styleSmooth =			1,
 			styleFlare =			2,
 			styleCloud =			3,
+			styleFireball =			4,
+			styleSmoke =			5,
 
-			styleMax =				3,
+			styleMax =				5,
 			};
 
 		struct SFlareDesc
@@ -74,13 +79,15 @@ class COrbEffectPainter : public IEffectPainter
 			}
 
 		bool CalcIntermediates (void);
-		void CalcSphericalColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, TArray<CG32bitPixel> *retColorTable);
+		void CalcSmokeColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
+		void CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
 		void CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
 		inline bool HasFlares (void) const { return (m_iStyle == styleFlare); }
 		void Invalidate (void);
 		void PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
+		inline bool UsesColorTable2 (void) const { return (m_iStyle == styleFireball); }
 
 		CEffectCreator *m_pCreator;
 
@@ -98,6 +105,9 @@ class COrbEffectPainter : public IEffectPainter
 		bool m_bInitialized;				//	TRUE if values are valid
 		TArray<TArray<CG32bitPixel>> m_ColorTable;	//	Radial color table (per animation frame)
 		TArray<SFlareDesc> m_FlareDesc;		//	Flare spikes (per animation frame)
+		TArray<Metric> m_Detail;			//	Detail level for each frame
+
+		TArray<TArray<CG32bitPixel>> m_ColorTable2;	//	Additional color table (used by fireball)
 	};
 
 static LPSTR ANIMATION_TABLE[] =
@@ -106,6 +116,7 @@ static LPSTR ANIMATION_TABLE[] =
 		"",
 
 		"fade",
+		"explode",
 
 		NULL
 	};
@@ -118,6 +129,8 @@ static LPSTR STYLE_TABLE[] =
 		"smooth",
 		"flare",
 		"cloud",
+		"fireball",
+		"smoke",
 
 		NULL,
 	};
@@ -221,6 +234,10 @@ ALERROR COrbEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 //	Resolve loading
 
 	{
+	//	Make sure explosion painter is initialized
+
+	CExplosionCirclePainter::Init();
+
 	//	Clean up, because we might want to recompute for next time.
 
 	if (m_pSingleton)
@@ -273,31 +290,91 @@ bool COrbEffectPainter::CalcIntermediates (void)
 	if (!m_bInitialized)
 		{
 		m_ColorTable.DeleteAll();
+		m_ColorTable2.DeleteAll();
 		m_FlareDesc.DeleteAll();
+		m_Detail.DeleteAll();
 
 		//	Initialized based on animation property
 
 		switch (m_iAnimation)
 			{
+			//	Increase radius up to maximum
+
+			case animateExplode:
+				{
+				int iLifetime = Max(1, m_iLifetime);
+				CStepIncrementor Radius(CStepIncrementor::styleQuadRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
+				CStepIncrementor Intensity(CStepIncrementor::styleSquare, Min(100, 2 * m_iIntensity), 0.0, iLifetime);
+				CStepIncrementor Detail(CStepIncrementor::styleLinear, 0.1, 0.025, iLifetime);
+
+				int iEndFade = iLifetime / 4;
+				int iEndFadeStart = iLifetime - iEndFade;
+
+				m_ColorTable.InsertEmpty(iLifetime);
+				m_FlareDesc.InsertEmpty(iLifetime);
+				m_Detail.InsertEmpty(iLifetime);
+
+				if (UsesColorTable2())
+					m_ColorTable2.InsertEmpty(iLifetime);
+
+				for (i = 0; i < iLifetime; i++)
+					{
+					int iRadius = (int)Radius.GetAt(i);
+					int iIntensity = (int)Intensity.GetAt(i);
+
+					BYTE byOpacity;
+					if (i > iEndFadeStart)
+						{
+						Metric rFade = (iEndFade - (i - iEndFadeStart)) / (Metric)iEndFade;
+						byOpacity = (BYTE)(255.0 * rFade);
+						}
+					else
+						byOpacity = 255;
+
+					CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, byOpacity, &m_ColorTable[i]);
+
+					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
+					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
+
+					m_Detail[i] = Detail.GetAt(i);
+
+					if (UsesColorTable2())
+						CalcSmokeColorTable(iRadius, iIntensity, byOpacity, &m_ColorTable2[i]);
+					}
+
+				break;
+				}
+
 			//	Standard fade decreases radius and intensity linearly over the
 			//	lifetime of the animation.
 
 			case animateFade:
 				{
 				int iLifetime = Max(1, m_iLifetime);
+				CStepIncrementor Detail(CStepIncrementor::styleLinear, 1.0, 0.0, iLifetime);
 
 				m_ColorTable.InsertEmpty(iLifetime);
 				m_FlareDesc.InsertEmpty(iLifetime);
+				m_Detail.InsertEmpty(iLifetime);
+
+				if (UsesColorTable2())
+					m_ColorTable2.InsertEmpty(iLifetime);
+
 				for (i = 0; i < iLifetime; i++)
 					{
 					Metric rFade = (iLifetime - i) / (Metric)iLifetime;
 					int iRadius = (int)(rFade * m_iRadius);
 					int iIntensity = (int)(rFade * m_iIntensity);
 
-					CalcSphericalColorTable(iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, &m_ColorTable[i]);
+					CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
 
 					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
 					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
+
+					m_Detail[i] = Detail.GetAt(i);
+
+					if (UsesColorTable2())
+						CalcSmokeColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
 					}
 
 				break;
@@ -308,10 +385,21 @@ bool COrbEffectPainter::CalcIntermediates (void)
 			default:
 				m_ColorTable.InsertEmpty(1);
 				m_FlareDesc.InsertEmpty(1);
-				CalcSphericalColorTable(m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, &m_ColorTable[0]);
+				m_Detail.InsertEmpty(1);
+				if (UsesColorTable2())
+					{
+					m_Detail.InsertEmpty(1);
+					CalcSmokeColorTable(m_iRadius, m_iIntensity, 255, &m_ColorTable2[0]);
+					}
+
+				CalcSphericalColorTable(m_iStyle, m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[0]);
 
 				m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
 				m_FlareDesc[0].iWidth = Max(1, m_FlareDesc[0].iLength / FLARE_WIDTH_FRACTION);
+
+				m_Detail[0] = 0.5;
+
+
 				break;
 			}
 
@@ -321,7 +409,26 @@ bool COrbEffectPainter::CalcIntermediates (void)
 	return (m_ColorTable.GetCount() > 0);
 	}
 
-void COrbEffectPainter::CalcSphericalColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, TArray<CG32bitPixel> *retColorTable)
+void COrbEffectPainter::CalcSmokeColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable)
+
+//	CalcSmokeColorTable
+//
+//	Calc smoke for fireball
+
+	{
+	CStepIncrementor Intensity(CStepIncrementor::styleLinear, 25, 75, 100);
+	int iFade = Min((int)Intensity.GetAt(iIntensity), 100);
+
+	CalcSphericalColorTable(styleSmoke, 
+			iRadius, 
+			iIntensity, 
+			CG32bitPixel::Fade(m_rgbPrimaryColor, CG32bitPixel(0, 0, 0), iFade),
+			CG32bitPixel::Fade(m_rgbSecondaryColor, CG32bitPixel(0, 0, 0), iFade), 
+			byOpacity,
+			retColorTable);
+	}
+
+void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable)
 
 //	CalcSphericalColorTable
 //
@@ -340,7 +447,7 @@ void COrbEffectPainter::CalcSphericalColorTable (int iRadius, int iIntensity, CG
 
 	//	Table is based on style
 
-	switch (m_iStyle)
+	switch (iStyle)
 		{
 		case styleSmooth:
 			{
@@ -354,19 +461,19 @@ void COrbEffectPainter::CalcSphericalColorTable (int iRadius, int iIntensity, CG
 			for (i = 0; i < iRadius; i++)
 				{
 				if (i < iBlownRadius)
-					(*retColorTable)[i] = CG32bitPixel(255, 255, 255);
+					(*retColorTable)[i] = CG32bitPixel(255, 255, 255, byOpacity);
 
 				else if (i < iFringeMaxRadius && iFringeWidth > 0)
 					{
 					int iStep = (i - iBlownRadius);
-					DWORD dwOpacity = iStep * 255 / iFringeWidth;
+					DWORD dwOpacity = iStep * byOpacity / iFringeWidth;
 					(*retColorTable)[i] = CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), rgbPrimary, (BYTE)dwOpacity);
 					}
 				else if (iFadeWidth > 0)
 					{
 					int iStep = (i - iFringeMaxRadius);
-					Metric rOpacity = 255.0 - (iStep * 255.0 / iFadeWidth);
-					rOpacity = (rOpacity * rOpacity) / 255.0;
+					Metric rOpacity = 1.0 - ((Metric)iStep / iFadeWidth);
+					rOpacity = (rOpacity * rOpacity) * byOpacity;
 					(*retColorTable)[i] = CG32bitPixel(rgbSecondary, (BYTE)(DWORD)rOpacity);
 					}
 				else
@@ -380,6 +487,7 @@ void COrbEffectPainter::CalcSphericalColorTable (int iRadius, int iIntensity, CG
 		//	at the edge, and from full opacity to transparent.
 
 		case styleFlare:
+		case styleCloud:
 			{
 			CG32bitPixel rgbCenter = CG32bitPixel::Fade(rgbPrimary, CG32bitPixel(255, 255, 255), iIntensity);
 			CG32bitPixel rgbEdge = rgbSecondary;
@@ -388,10 +496,68 @@ void COrbEffectPainter::CalcSphericalColorTable (int iRadius, int iIntensity, CG
 				{
 				Metric rFade = (Metric)i / (Metric)iRadius;
 				CG32bitPixel rgbColor = CG32bitPixel::Blend(rgbCenter, rgbEdge, rFade);
-				BYTE byAlpha = (BYTE)(255 - (i * 255 / iRadius));
+				BYTE byAlpha = (BYTE)(byOpacity - (i * byOpacity / iRadius));
 
 				(*retColorTable)[i] = CG32bitPixel(rgbColor, byAlpha);
 				}
+			break;
+			}
+
+		case styleFireball:
+			{
+			int iCoreRadius = iRadius * iIntensity / 120;
+			int iBlownRadius = iCoreRadius * 70 / 100;
+			int iFringeWidth = iCoreRadius - iBlownRadius;
+
+			int iFlameWidth = ((iRadius - iCoreRadius) / 2);
+			int iFlameRadius = iCoreRadius + iFlameWidth;
+
+			int iFadeWidth = (iRadius - iFlameRadius);
+
+			int iTransWidth = (iRadius - iCoreRadius);
+
+			CStepIncrementor Opacity(CStepIncrementor::styleSquare, byOpacity, 0.0, iRadius - iCoreRadius);
+
+			//	Initialize table
+
+			for (i = 0; i < iRadius; i++)
+				{
+				if (i < iBlownRadius)
+					(*retColorTable)[i] = CG32bitPixel(255, 255, 255, byOpacity);
+
+				else if (i < iCoreRadius && iFringeWidth > 0)
+					{
+					int iStep = (i - iBlownRadius);
+					DWORD dwBlend = iStep * 255 / iFringeWidth;
+					(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), rgbPrimary, (BYTE)dwBlend), byOpacity);
+					}
+				else if (i < iFlameRadius && iFlameWidth > 0)
+					{
+					int iStep = (i - iCoreRadius);
+					DWORD dwBlend = iStep * 255 / iFlameWidth;
+
+					(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(rgbPrimary, rgbSecondary, (BYTE)dwBlend), (BYTE)(DWORD)Opacity.GetAt(i - iCoreRadius));
+					}
+				else if (iTransWidth > 0)
+					{
+					(*retColorTable)[i] = CG32bitPixel(rgbSecondary, (BYTE)(DWORD)Opacity.GetAt(i - iCoreRadius));
+					}
+				else
+					(*retColorTable)[i] = CG32bitPixel::Null();
+				}
+
+			break;
+			}
+
+		case styleSmoke:
+			{
+			CStepIncrementor Opacity(CStepIncrementor::styleSquare, byOpacity, 0.0, iRadius);
+
+			for (i = 0; i < iRadius; i++)
+				{
+				(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(rgbPrimary, rgbSecondary, (Metric)i / iRadius), (BYTE)Opacity.GetAt(i));
+				}
+
 			break;
 			}
 		}
@@ -547,12 +713,22 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			}
 
 		case styleCloud:
+		case styleSmoke:
 			{
 			CExplosionCirclePainter Painter;
-			//CG8bitImage &Texture = Painter.GetTextureMap();
-			//Dest.FillMask(0, 0, Texture.GetWidth(), Texture.GetHeight(), Texture, CG32bitPixel(255, 255, 0), x, y);
-			Painter.SetFrame(Ctx.iTick);
-			Painter.Draw(Dest, x, y, Ctx.iTick);
+			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			Painter.DrawFrame(Dest, x, y, Table.GetCount(), m_Detail[Ctx.iTick % m_Detail.GetCount()], Table);
+			break;
+			}
+
+		case styleFireball:
+			{
+			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			CGDraw::Circle(Dest, x, y, Table.GetCount(), Table);
+
+			CExplosionCirclePainter Painter;
+			TArray<CG32bitPixel> &Table2 = m_ColorTable2[Ctx.iTick % m_ColorTable2.GetCount()];
+			Painter.DrawFrame(Dest, x, y, Table2.GetCount(), m_Detail[Ctx.iTick % m_Detail.GetCount()], Table2);
 			break;
 			}
 		}
@@ -674,7 +850,7 @@ void COrbEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam,
 
 	{
 	if (strEquals(sParam, ANIMATE_ATTRIB))
-		m_iAnimation = (EAnimationTypes)Value.EvalIntegerBounded(Ctx, 0, -1, animateNone);
+		m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
 
 	else if (strEquals(sParam, INTENSITY_ATTRIB))
 		m_iIntensity = Value.EvalIntegerBounded(Ctx, 0, 100, 50);

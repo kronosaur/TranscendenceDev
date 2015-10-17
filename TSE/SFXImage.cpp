@@ -122,8 +122,10 @@ ALERROR CImageEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 		return error;
 
 	m_iLifetime = m_Image.GetMaxLifetime();
+#if 0
 	if (m_iLifetime <= 0)
 		m_iLifetime = 1;
+#endif
 
 	return NOERROR;
 	}

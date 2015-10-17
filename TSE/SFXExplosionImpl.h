@@ -5,12 +5,12 @@
 
 #pragma once
 
-class CExplosionCirclePainter : public TCirclePainter32<CExplosionCirclePainter>
+class CExplosionCirclePainter : private TCirclePainter32<CExplosionCirclePainter>
 	{
 	public:
 		CExplosionCirclePainter (void);
 
-		inline CG8bitImage &GetTextureMap (void) { return m_CloudTextures[m_iCurFrame]; }
+		void DrawFrame (CG32bitImage &Dest, int x, int y, int iRadius, Metric rDetail, const TArray<CG32bitPixel> &ColorTable);
 
 		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
 
@@ -36,27 +36,32 @@ class CExplosionCirclePainter : public TCirclePainter32<CExplosionCirclePainter>
 			int xTexture = (int)(rLong * m_CloudTextures[m_iCurFrame].GetWidth());
 			int yTexture = (int)(rLat * m_CloudTextures[m_iCurFrame].GetHeight());
 
-			//	Compute the thickness of the sphere at this radius
+			//	Get the alpha value at the texture position.
 
-			Metric rDensity = sin(rACosR);
-			rDensity *= rDensity;
+			BYTE byAlpha = (BYTE)(m_CloudTextures[m_iCurFrame].GetPixel(xTexture, yTexture));
 
-			//	Adjust for texture
+			//	Look up the pixel in the color table
 
-			BYTE byAlpha = (BYTE)(rDensity * m_CloudTextures[m_iCurFrame].GetPixel(xTexture, yTexture));
+			CG32bitPixel rgbColor = (m_pColorTable ? m_pColorTable->GetAt(iRadius) : CG32bitPixel(0, 255, 255));
 
-			return CG32bitPixel::PreMult(CG32bitPixel(255, 255, 0, byAlpha));
+			//	Now combine the alpha.
+
+			byAlpha = CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), byAlpha);
+
+			//	Return the value (premultiplied)
+
+			return CG32bitPixel::PreMult(CG32bitPixel(rgbColor, byAlpha));
 			}
 
-		inline void SetFrame (int iFrame)
-			{
-			if (m_CloudTextures.GetCount() > 0)
-				m_iCurFrame = (iFrame % m_CloudTextures.GetCount());
-			}
-
+		static void Init (void);
 
 	private:
+		//	Run time parameters for drawing a single frame.
+
 		int m_iCurFrame;
+		const TArray<CG32bitPixel> *m_pColorTable;
+
+		//	Static textures
 
 		static TArray<CG8bitImage> m_CloudTextures;
 	};
