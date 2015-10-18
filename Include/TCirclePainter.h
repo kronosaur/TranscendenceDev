@@ -5,43 +5,59 @@
 
 #pragma once
 
-template <class PAINTER> class TCirclePainter32
+class ICirclePainter
+	{
+	public:
+		virtual ~ICirclePainter (void) { }
+
+		virtual void Draw (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius = -1, int iFrame = 0) = 0;
+	};
+
+template <class PAINTER> class TCirclePainter32 : public ICirclePainter
 	{
 	public:
 
-		void Draw (CG32bitImage &Dest, int xCenter, int yCenter)
+		virtual void Draw (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius = -1, int iFrame = 0)
 			{
 			m_pDest = &Dest;
 			m_rcClip = &Dest.GetClipRect();
 			m_xDest = xCenter;
 			m_yDest = yCenter;
+			if (iRadius != -1)
+				m_iRadius = iRadius;
+			m_iFrame = iFrame;
+
+			//	Give our specializations a chance to initialize
+
+			if (!BEGIN_DRAW())
+				{
+				m_pDest = NULL;
+				m_rcClip = NULL;
+				return;
+				}
+
+			//	Draw
 
 			DrawCircle();
 
+			//	Rest
+
+			END_DRAW();
 			m_pDest = NULL;
 			m_rcClip = NULL;
 			}
 
-		void Draw (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iAngleRange = 360)
-			{
-			m_pDest = &Dest;
-			m_rcClip = &Dest.GetClipRect();
-			m_xDest = xCenter;
-			m_yDest = yCenter;
-			m_iRadius = iRadius;
-			m_iAngleRange = iAngleRange;
+		//	Default implementation
 
-			DrawCircle();
-
-			m_pDest = NULL;
-			m_rcClip = NULL;
-			}
+		inline bool BeginDraw (void) { return true; }
+		inline void EndDraw (void) { }
 
 	protected:
 
 		TCirclePainter32 (int iAngleRange = 360, int iRadius = 100) : 
 				m_iAngleRange(iAngleRange),
-				m_iRadius(iRadius)
+				m_iRadius(iRadius),
+				m_pDest(NULL)
 			{
 			}
 
@@ -298,10 +314,14 @@ template <class PAINTER> class TCirclePainter32
 
 		inline CG32bitPixel GET_COLOR (int iAngle, int iRadius) { return ((PAINTER *)this)->GetColorAt(iAngle, iRadius); }
 
+		inline bool BEGIN_DRAW (void) { return ((PAINTER *)this)->BeginDraw(); }
+		inline void END_DRAW (void) { ((PAINTER *)this)->EndDraw(); }
+
 		CG32bitImage *m_pDest;
 		const RECT *m_rcClip;
 		int m_iAngleRange;
 		int m_iRadius;
+		int m_iFrame;
 		int m_xDest;
 		int m_yDest;
 	};
