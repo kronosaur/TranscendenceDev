@@ -3221,6 +3221,39 @@ class CAscendedObjectList
 		TArray<CSpaceObject *> m_List;
 	};
 
+//	Fractal Texture Library ----------------------------------------------------
+
+class CFractalTextureLibrary
+	{
+	public:
+		enum ETextureTypes
+			{
+			typeNone,
+
+			typeExplosion,
+			};
+
+		CFractalTextureLibrary (void) :
+				m_bInitialized(false)
+			{ }
+
+		const CG8bitImage &GetTexture (ETextureTypes iType, int iFrame) const;
+		int GetTextureCount (ETextureTypes iType) const;
+		inline int GetTextureIndex (ETextureTypes iType, Metric rFraction) const
+			{
+			int iMaxFrames = GetTextureCount(iType);
+			return Max(0, Min((int)(rFraction * iMaxFrames), iMaxFrames - 1));
+			}
+
+		void Init (void);
+
+	private:
+		void InitExplosionTextures (void);
+
+		bool m_bInitialized;
+		TArray<CG8bitImage> m_ExplosionTextures;
+	};
+
 //	IListData implementation ---------------------------------------------------
 
 class CItemListWrapper : public IListData
@@ -3491,6 +3524,7 @@ class CUniverse : public CObject
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
 		CTopologyNode *GetFirstTopologyNode (void);
 		inline const CG16bitFont *GetFont (const CString &sFont) { return m_pHost->GetFont(sFont); }
+		inline CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
 		inline IHost *GetHost (void) const { return m_pHost; }
 		inline CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		inline int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
@@ -3701,6 +3735,7 @@ class CUniverse : public CObject
 		CG16bitFont m_DefaultFonts[fontCount];
 		TArray<INotifications *> m_Subscribers;
 		CSFXOptions m_SFXOptions;
+		CFractalTextureLibrary m_FractalTextureLibrary;
 
 		//	Debugging structures
 

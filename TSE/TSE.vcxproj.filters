@@ -122,7 +122,7 @@
     <ClInclude Include="PsycheDefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SFXExplosionImpl.h">
+    <ClInclude Include="SFXFractalImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -859,7 +859,7 @@
     <ClCompile Include="CCompositeImageType.cpp">
       <Filter>Source Files\Images</Filter>
     </ClCompile>
-    <ClCompile Include="CExplosionCirclePainter.cpp">
+    <ClCompile Include="CFractalTextureLibrary.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
   </ItemGroup>

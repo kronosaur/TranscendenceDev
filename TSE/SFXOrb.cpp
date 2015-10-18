@@ -4,7 +4,7 @@
 //	Copyright (c) 2014 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
-#include "SFXExplosionImpl.h"
+#include "SFXFractalImpl.h"
 
 #define ANIMATE_ATTRIB					CONSTLIT("animate")
 #define INTENSITY_ATTRIB				CONSTLIT("intensity")
@@ -105,7 +105,8 @@ class COrbEffectPainter : public IEffectPainter
 		bool m_bInitialized;				//	TRUE if values are valid
 		TArray<TArray<CG32bitPixel>> m_ColorTable;	//	Radial color table (per animation frame)
 		TArray<SFlareDesc> m_FlareDesc;		//	Flare spikes (per animation frame)
-		TArray<Metric> m_Detail;			//	Detail level for each frame
+		CFractalTextureLibrary::ETextureTypes m_iTextureType;
+		TArray<int> m_TextureFrame;			//	Texture frame to use
 
 		TArray<TArray<CG32bitPixel>> m_ColorTable2;	//	Additional color table (used by fireball)
 	};
@@ -234,10 +235,6 @@ ALERROR COrbEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 //	Resolve loading
 
 	{
-	//	Make sure explosion painter is initialized
-
-	CExplosionCirclePainter::Init();
-
 	//	Clean up, because we might want to recompute for next time.
 
 	if (m_pSingleton)
@@ -292,7 +289,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 		m_ColorTable.DeleteAll();
 		m_ColorTable2.DeleteAll();
 		m_FlareDesc.DeleteAll();
-		m_Detail.DeleteAll();
+		m_TextureFrame.DeleteAll();
 
 		//	Initialized based on animation property
 
@@ -305,6 +302,8 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				int iLifetime = Max(1, m_iLifetime);
 				CStepIncrementor Radius(CStepIncrementor::styleQuadRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
 				CStepIncrementor Intensity(CStepIncrementor::styleSquare, Min(100, 2 * m_iIntensity), 0.0, iLifetime);
+
+				m_iTextureType = CFractalTextureLibrary::typeExplosion;
 				CStepIncrementor Detail(CStepIncrementor::styleLinear, 0.1, 0.025, iLifetime);
 
 				int iEndFade = iLifetime / 4;
@@ -312,7 +311,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 				m_ColorTable.InsertEmpty(iLifetime);
 				m_FlareDesc.InsertEmpty(iLifetime);
-				m_Detail.InsertEmpty(iLifetime);
+				m_TextureFrame.InsertEmpty(iLifetime);
 
 				if (UsesColorTable2())
 					m_ColorTable2.InsertEmpty(iLifetime);
@@ -336,7 +335,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
 					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
 
-					m_Detail[i] = Detail.GetAt(i);
+					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 					if (UsesColorTable2())
 						CalcSmokeColorTable(iRadius, iIntensity, byOpacity, &m_ColorTable2[i]);
@@ -351,11 +350,13 @@ bool COrbEffectPainter::CalcIntermediates (void)
 			case animateFade:
 				{
 				int iLifetime = Max(1, m_iLifetime);
+
+				m_iTextureType = CFractalTextureLibrary::typeExplosion;
 				CStepIncrementor Detail(CStepIncrementor::styleLinear, 1.0, 0.0, iLifetime);
 
 				m_ColorTable.InsertEmpty(iLifetime);
 				m_FlareDesc.InsertEmpty(iLifetime);
-				m_Detail.InsertEmpty(iLifetime);
+				m_TextureFrame.InsertEmpty(iLifetime);
 
 				if (UsesColorTable2())
 					m_ColorTable2.InsertEmpty(iLifetime);
@@ -371,7 +372,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
 					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
 
-					m_Detail[i] = Detail.GetAt(i);
+					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 					if (UsesColorTable2())
 						CalcSmokeColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
@@ -385,10 +386,10 @@ bool COrbEffectPainter::CalcIntermediates (void)
 			default:
 				m_ColorTable.InsertEmpty(1);
 				m_FlareDesc.InsertEmpty(1);
-				m_Detail.InsertEmpty(1);
+				m_TextureFrame.InsertEmpty(1);
 				if (UsesColorTable2())
 					{
-					m_Detail.InsertEmpty(1);
+					m_TextureFrame.InsertEmpty(1);
 					CalcSmokeColorTable(m_iRadius, m_iIntensity, 255, &m_ColorTable2[0]);
 					}
 
@@ -397,9 +398,9 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
 				m_FlareDesc[0].iWidth = Max(1, m_FlareDesc[0].iLength / FLARE_WIDTH_FRACTION);
 
-				m_Detail[0] = 0.5;
-
-
+				m_iTextureType = CFractalTextureLibrary::typeExplosion;
+				m_TextureFrame[0] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, 0.5);
+				
 				break;
 			}
 
@@ -715,20 +716,18 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		case styleCloud:
 		case styleSmoke:
 			{
-			CExplosionCirclePainter Painter;
 			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
-			Painter.DrawFrame(Dest, x, y, Table.GetCount(), m_Detail[Ctx.iTick % m_Detail.GetCount()], Table);
+			CCloudCirclePainter Painter(m_iTextureType, Table);
+			Painter.Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[Ctx.iTick % m_TextureFrame.GetCount()]);
 			break;
 			}
 
 		case styleFireball:
 			{
 			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
-			CGDraw::Circle(Dest, x, y, Table.GetCount(), Table);
-
-			CExplosionCirclePainter Painter;
 			TArray<CG32bitPixel> &Table2 = m_ColorTable2[Ctx.iTick % m_ColorTable2.GetCount()];
-			Painter.DrawFrame(Dest, x, y, Table2.GetCount(), m_Detail[Ctx.iTick % m_Detail.GetCount()], Table2);
+			CFireballCirclePainter Painter(m_iTextureType, Table, Table2);
+			Painter.Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[Ctx.iTick % m_TextureFrame.GetCount()]);
 			break;
 			}
 		}

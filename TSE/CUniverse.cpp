@@ -1175,6 +1175,11 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 			pNewGlobals->Discard(&m_CC);
 			}
 
+		//	Load texture library
+
+		if (!Ctx.bNoResources)
+			m_FractalTextureLibrary.Init();
+
 		//	Initialize some stuff
 
 		m_bDebugMode = Ctx.bDebugMode;
