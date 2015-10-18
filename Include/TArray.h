@@ -129,8 +129,9 @@ template <class VALUE> class TRawArray : public CArrayBase
 template <class VALUE> class TArray : public CArrayBase
 	{
 	public:
-		TArray (HANDLE hHeap = NULL) : CArrayBase(hHeap, DEFAULT_ARRAY_GRANULARITY) { }
-		TArray (int iGranularity) : CArrayBase(NULL, iGranularity) { }
+		TArray (void) : CArrayBase(NULL, DEFAULT_ARRAY_GRANULARITY) { }
+		explicit TArray (HANDLE hHeap) : CArrayBase(hHeap, DEFAULT_ARRAY_GRANULARITY) { }
+		explicit TArray (int iGranularity) : CArrayBase(NULL, iGranularity) { }
 		TArray (const TArray<VALUE> &Obj) : CArrayBase(Obj.GetHeap(), Obj.GetGranularity())
 			{
 			InsertBytes(0, NULL, Obj.GetCount() * sizeof(VALUE), GetGranularity() * sizeof(VALUE));
