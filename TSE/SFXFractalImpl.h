@@ -135,8 +135,9 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 class CFireballCirclePainter : public TCirclePainter32<CFireballCirclePainter>
 	{
 	public:
-		CFireballCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture) :
+		CFireballCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture, Metric rDistortion = 0.0) :
 				m_iTexture(iTexture),
+				m_rDistortion(rDistortion),
 				m_pExplosionTable(NULL),
 				m_pSmokeTable(NULL)
 			{
@@ -164,7 +165,7 @@ class CFireballCirclePainter : public TCirclePainter32<CFireballCirclePainter>
 
 			//	Initialize the disruptor
 
-			m_Disruptor.Init(0.5, m_iRadius, m_iAngleRange);
+			m_Disruptor.Init(m_rDistortion, m_iRadius, m_iAngleRange);
 
 			//	Success
 
@@ -202,6 +203,7 @@ class CFireballCirclePainter : public TCirclePainter32<CFireballCirclePainter>
 
 	private:
 		CFractalTextureLibrary::ETextureTypes m_iTexture;
+		Metric m_rDistortion;
 		const TArray<CG32bitPixel> *m_pExplosionTable;
 		const TArray<CG32bitPixel> *m_pSmokeTable;
 

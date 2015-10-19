@@ -43,8 +43,10 @@ void CCircleRadiusDisruptor::Init (Metric rDisruption, int iRadius, int iAngleRa
 				rMin = m_FullRadiusAdj[i];
 			}
 
+		//	NOTE: rRange can be 0.0 if rDisruption is 0.0
+
 		Metric rRange = rMax - rMin;
-		Metric rAdj = rDisruption / rRange;
+		Metric rAdj = (rRange > 0.0 ? rDisruption / rRange : 0.0);
 
 		//	Now adjust so that we end up with a value from 1.0 to 1.0 + disrupt
 

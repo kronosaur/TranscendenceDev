@@ -7,6 +7,7 @@
 #include "SFXFractalImpl.h"
 
 #define ANIMATE_ATTRIB					CONSTLIT("animate")
+#define DISTORTION_ATTRIB				CONSTLIT("distortion")
 #define INTENSITY_ATTRIB				CONSTLIT("intensity")
 #define LIFETIME_ATTRIB					CONSTLIT("lifetime")
 #define PRIMARY_COLOR_ATTRIB			CONSTLIT("primaryColor")
@@ -95,6 +96,7 @@ class COrbEffectPainter : public IEffectPainter
 		int m_iRadius;
 		EOrbStyles m_iStyle;
 		int m_iIntensity;
+		int m_iDistortion;
 		CG32bitPixel m_rgbPrimaryColor;
 		CG32bitPixel m_rgbSecondaryColor;
 
@@ -175,12 +177,13 @@ IEffectPainter *COrbEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 	//	Initialize the painter parameters
 
 	pPainter->SetParam(Ctx, ANIMATE_ATTRIB, m_Animate);
-	pPainter->SetParam(Ctx, RADIUS_ATTRIB, m_Radius);
-	pPainter->SetParam(Ctx, STYLE_ATTRIB, m_Style);
+	pPainter->SetParam(Ctx, DISTORTION_ATTRIB, m_Distortion);
 	pPainter->SetParam(Ctx, INTENSITY_ATTRIB, m_Intensity);
-	pPainter->SetParam(Ctx, PRIMARY_COLOR_ATTRIB, m_PrimaryColor);
-	pPainter->SetParam(Ctx, SECONDARY_COLOR_ATTRIB, m_SecondaryColor);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
+	pPainter->SetParam(Ctx, PRIMARY_COLOR_ATTRIB, m_PrimaryColor);
+	pPainter->SetParam(Ctx, RADIUS_ATTRIB, m_Radius);
+	pPainter->SetParam(Ctx, SECONDARY_COLOR_ATTRIB, m_SecondaryColor);
+	pPainter->SetParam(Ctx, STYLE_ATTRIB, m_Style);
 
 	//	Initialize via GetParameters, if necessary
 
@@ -209,22 +212,25 @@ ALERROR COrbEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	if (error = m_Animate.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(ANIMATE_ATTRIB), ANIMATION_TABLE))
 		return error;
 
-	if (error = m_Radius.InitIntegerFromXML(Ctx, pDesc->GetAttribute(RADIUS_ATTRIB)))
-		return error;
-
-	if (error = m_Style.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(STYLE_ATTRIB), STYLE_TABLE))
+	if (error = m_Distortion.InitIntegerFromXML(Ctx, pDesc->GetAttribute(DISTORTION_ATTRIB)))
 		return error;
 
 	if (error = m_Intensity.InitIntegerFromXML(Ctx, pDesc->GetAttribute(INTENSITY_ATTRIB)))
 		return error;
 
+	if (error = m_Lifetime.InitIntegerFromXML(Ctx, pDesc->GetAttribute(LIFETIME_ATTRIB)))
+		return error;
+
 	if (error = m_PrimaryColor.InitColorFromXML(Ctx, pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB)))
+		return error;
+
+	if (error = m_Radius.InitIntegerFromXML(Ctx, pDesc->GetAttribute(RADIUS_ATTRIB)))
 		return error;
 
 	if (error = m_SecondaryColor.InitColorFromXML(Ctx, pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB)))
 		return error;
 
-	if (error = m_Lifetime.InitIntegerFromXML(Ctx, pDesc->GetAttribute(LIFETIME_ATTRIB)))
+	if (error = m_Style.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(STYLE_ATTRIB), STYLE_TABLE))
 		return error;
 
 	return NOERROR;
@@ -255,6 +261,7 @@ COrbEffectPainter::COrbEffectPainter (CEffectCreator *pCreator) :
 		m_iRadius((int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL)),
 		m_iStyle(styleSmooth),
 		m_iIntensity(50),
+		m_iDistortion(0),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
 		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
 		m_iLifetime(0),
@@ -309,7 +316,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				m_iTextureType = CFractalTextureLibrary::typeExplosion;
 				CStepIncrementor Detail(CStepIncrementor::styleLinear, 0.5, 0.025, iLifetime);
 
-				int iEndFade = iLifetime / 4;
+				int iEndFade = iLifetime / 3;
 				int iEndFadeStart = iLifetime - iEndFade;
 
 				m_ColorTable.InsertEmpty(iLifetime);
@@ -430,7 +437,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				break;
 
 			case styleFireball:
-				m_pPainter = new CFireballCirclePainter(m_iTextureType);
+				m_pPainter = new CFireballCirclePainter(m_iTextureType, (Metric)m_iDistortion / 100.0);
 				break;
 			}
 
@@ -447,7 +454,7 @@ void COrbEffectPainter::CalcSmokeColorTable (int iRadius, int iIntensity, BYTE b
 //	Calc smoke for fireball
 
 	{
-	CStepIncrementor Intensity(CStepIncrementor::styleLinear, 25, 75, 100);
+	CStepIncrementor Intensity(CStepIncrementor::styleLinear, 100, 50, 100);
 	int iFade = Min((int)Intensity.GetAt(iIntensity), 100);
 
 	CalcSphericalColorTable(styleSmoke, 
@@ -536,42 +543,49 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 
 		case styleFireball:
 			{
-			int iCoreRadius = iRadius * iIntensity / 120;
+			CStepIncrementor CoreRadius(CStepIncrementor::styleLinear, 0.25, 0.9, 100);
+			int iCoreRadius = (int)(iRadius * CoreRadius.GetAt(iIntensity));
 			int iBlownRadius = iCoreRadius * 70 / 100;
 			int iFringeWidth = iCoreRadius - iBlownRadius;
 
-			int iFlameWidth = ((iRadius - iCoreRadius) / 2);
+			int iFlameWidth = (2 * (iRadius - iCoreRadius) / 3);
 			int iFlameRadius = iCoreRadius + iFlameWidth;
 
 			int iFadeWidth = (iRadius - iFlameRadius);
 
 			int iTransWidth = (iRadius - iCoreRadius);
 
-			CStepIncrementor Opacity(CStepIncrementor::styleSquare, byOpacity, 0.0, iRadius - iCoreRadius);
+			CStepIncrementor Opacity(CStepIncrementor::styleQuad, byOpacity, 0.0, iRadius - iCoreRadius);
+
+			//	Compute some colors
+
+			CG32bitPixel rgbCore = CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), rgbPrimary, (BYTE)(255 - byOpacity));
+			CG32bitPixel rgbFringe = CG32bitPixel::Blend(rgbPrimary, rgbSecondary, (BYTE)(255 - byOpacity));
+			CG32bitPixel rgbFade = CG32bitPixel::Blend(rgbSecondary, CG32bitPixel(0, 0, 0), (BYTE)(255 - byOpacity));
 
 			//	Initialize table
 
 			for (i = 0; i < iRadius; i++)
 				{
 				if (i < iBlownRadius)
-					(*retColorTable)[i] = CG32bitPixel(255, 255, 255, byOpacity);
+					(*retColorTable)[i] = CG32bitPixel(rgbCore, byOpacity);
 
 				else if (i < iCoreRadius && iFringeWidth > 0)
 					{
 					int iStep = (i - iBlownRadius);
 					DWORD dwBlend = iStep * 255 / iFringeWidth;
-					(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), rgbPrimary, (BYTE)dwBlend), byOpacity);
+					(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(rgbCore, rgbFringe, (BYTE)dwBlend), byOpacity);
 					}
 				else if (i < iFlameRadius && iFlameWidth > 0)
 					{
 					int iStep = (i - iCoreRadius);
 					DWORD dwBlend = iStep * 255 / iFlameWidth;
 
-					(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(rgbPrimary, rgbSecondary, (BYTE)dwBlend), (BYTE)(DWORD)Opacity.GetAt(i - iCoreRadius));
+					(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(rgbFringe, rgbFade, (BYTE)dwBlend), (BYTE)(DWORD)Opacity.GetAt(i - iCoreRadius));
 					}
 				else if (iTransWidth > 0)
 					{
-					(*retColorTable)[i] = CG32bitPixel(rgbSecondary, (BYTE)(DWORD)Opacity.GetAt(i - iCoreRadius));
+					(*retColorTable)[i] = CG32bitPixel(rgbFade, (BYTE)(DWORD)Opacity.GetAt(i - iCoreRadius));
 					}
 				else
 					(*retColorTable)[i] = CG32bitPixel::Null();
@@ -654,6 +668,9 @@ void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 	if (strEquals(sParam, ANIMATE_ATTRIB))
 		retValue->InitInteger(m_iAnimation);
 
+	else if (strEquals(sParam, DISTORTION_ATTRIB))
+		retValue->InitInteger(m_iDistortion);
+
 	else if (strEquals(sParam, INTENSITY_ATTRIB))
 		retValue->InitInteger(m_iIntensity);
 
@@ -684,14 +701,15 @@ bool COrbEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(7);
+	retList->InsertEmpty(8);
 	retList->GetAt(0) = ANIMATE_ATTRIB;
-	retList->GetAt(1) = INTENSITY_ATTRIB;
-	retList->GetAt(2) = LIFETIME_ATTRIB;
-	retList->GetAt(3) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(4) = RADIUS_ATTRIB;
-	retList->GetAt(5) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(6) = STYLE_ATTRIB;
+	retList->GetAt(1) = DISTORTION_ATTRIB;
+	retList->GetAt(2) = INTENSITY_ATTRIB;
+	retList->GetAt(3) = LIFETIME_ATTRIB;
+	retList->GetAt(4) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(5) = RADIUS_ATTRIB;
+	retList->GetAt(6) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(7) = STYLE_ATTRIB;
 
 	return true;
 	}
@@ -886,6 +904,9 @@ void COrbEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam,
 	{
 	if (strEquals(sParam, ANIMATE_ATTRIB))
 		m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
+
+	else if (strEquals(sParam, DISTORTION_ATTRIB))
+		m_iDistortion = Value.EvalIntegerBounded(Ctx, 0, 100, 0);
 
 	else if (strEquals(sParam, INTENSITY_ATTRIB))
 		m_iIntensity = Value.EvalIntegerBounded(Ctx, 0, 100, 50);

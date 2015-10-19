@@ -535,7 +535,8 @@ class COrbEffectCreator : public CEffectCreator
 	private:
 		CEffectParamDesc m_Radius;			//	radius: Radius of orb (pixels)
 		CEffectParamDesc m_Style;			//	style: Style of ray
-		CEffectParamDesc m_Intensity;		//	intensity: Intensity of ray
+		CEffectParamDesc m_Intensity;		//	intensity: Intensity of orb
+		CEffectParamDesc m_Distortion;		//	distortion: Distortion of orb (for explosions)
 		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
 		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
 
