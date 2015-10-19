@@ -20,6 +20,7 @@ CGCloudGenerator3D::CGCloudGenerator3D (int iScale, int iFrames, int iMaxLevels)
 
 	m_iScale = iScale;
 	m_iFrames = iFrames;
+	m_iMaxLevels = iMaxLevels;
 	int iMinFreq = 1;
 
 	//	In theory, the noise function returns values from -1.0 to 1.0, but

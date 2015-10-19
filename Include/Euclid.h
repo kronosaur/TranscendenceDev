@@ -332,10 +332,13 @@ class CStepIncrementor
 			styleNone,
 
 			styleLinear,
+
 			styleSquareRoot,				//	x^0.5
 			styleQuadRoot,					//	x^0.25
 			styleSquare,					//	x^2
 			styleQuad,						//	x^4
+			styleOct,						//	x^8
+			styleOctRoot,					//	x^0.125
 			};
 
 		CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, int iSteps);

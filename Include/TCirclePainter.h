@@ -11,6 +11,7 @@ class ICirclePainter
 		virtual ~ICirclePainter (void) { }
 
 		virtual void Draw (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius = -1, int iFrame = 0) = 0;
+		virtual void SetParam (const CString &sParam, const TArray<CG32bitPixel> &ColorTable) { }
 	};
 
 template <class PAINTER> class TCirclePainter32 : public ICirclePainter
@@ -991,3 +992,4 @@ template <class PAINTER> class TRadialPainter32
 		int m_xDest;
 		int m_yDest;
 	};
+

@@ -23,6 +23,16 @@ CStepIncrementor::CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, i
 			m_rRange = (rEnd - m_rStart) / iSteps;
 			break;
 
+		case styleOct:
+			m_rRange = (rEnd - m_rStart);
+			m_rPower = 8.0;
+			break;
+
+		case styleOctRoot:
+			m_rRange = (rEnd - m_rStart);
+			m_rPower = 0.125;
+			break;
+
 		case styleSquare:
 			m_rRange = (rEnd - m_rStart);
 			m_rPower = 2.0;
@@ -57,6 +67,8 @@ Metric CStepIncrementor::GetAt (int iStep) const
 		case styleLinear:
 			return m_rStart + (iStep * m_rRange);
 
+		case styleOct:
+		case styleOctRoot:
 		case styleQuad:
 		case styleQuadRoot:
 		case styleSquare:

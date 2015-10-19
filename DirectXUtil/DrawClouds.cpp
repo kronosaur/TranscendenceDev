@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-void CGFractal::CreateSphericalCloudAnimation (int cxWidth, int cyHeight, int iScale, int iDetail, int iFrames, TArray<CG8bitImage> *retFrames)
+void CGFractal::CreateSphericalCloudAnimation (int cxWidth, int cyHeight, const SGCloudDesc &Desc, int iFrames, bool bHemisphere, TArray<CG8bitImage> *retFrames)
 
 //	CreateSphericalCloudAnimation
 //
@@ -20,29 +20,35 @@ void CGFractal::CreateSphericalCloudAnimation (int cxWidth, int cyHeight, int iS
 	if (iFrames <= 0)
 		return;
 
-	//	Create a generator
+	//	Create our own cloud descriptor
+
+	SGCloudDesc CloudDesc(Desc);
+
+	//	Always create our own generator
 
 	int iRange = 2;
-	CGCloudGenerator3D Generator(iScale, iRange);
-
-	Metric rFactor = (Metric)(iScale * iRange) / iFrames;
+	CGCloudGenerator3D Generator(CloudDesc.iScale, iRange);
+	Metric rFactor = (Metric)(CloudDesc.iScale * iRange) / iFrames;
 
 	//	Build all frames
 
 	retFrames->InsertEmpty(iFrames);
 	for (i = 0; i < iFrames; i++)
 		{
-		Metric rOffset = (Metric)i * rFactor;
-		CreateSphericalCloudMap(cxWidth, cyHeight, Generator, iDetail, 1.0, rOffset, &retFrames->GetAt(i));
+		CloudDesc.rOffset = (Metric)i * rFactor;
+		CreateSphericalCloudMap(cxWidth, cyHeight, CloudDesc, Generator, bHemisphere, &retFrames->GetAt(i));
 		}
 	}
 
-void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGenerator3D &Generator, int iDetail, Metric rContrast, Metric rOffset, CG8bitImage *retImage)
+void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, const SGCloudDesc &Desc, CGCloudGenerator3D &Generator, bool bHemisphere, CG8bitImage *retImage)
 
 //	CreateSphericalCloudMap
 //
 //	Creates a image such that when wrapped on a sphere, it will display fractal
 //	clouds.
+//
+//	NOTE: We only return one half of the sphere texture (one pole) since we are 
+//	using this to paint to a 2D circle.
 //
 //	See: Texture & Modeling: A Procedural Approach pp.119-120.
 
@@ -54,12 +60,16 @@ void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGener
 
 	retImage->Create(cxWidth, cyHeight);
 
+	//	NOTE: Since we only ever paint half a sphere, we don't need the entire
+	//	bitmap, we only fill in the north half of the spehere (which is why we
+	//	multiply the height * 2 below.
+
 	Metric rUInc = 1.0 / (Metric)cxWidth;
-	Metric rVInc = 0.5 / (Metric)cyHeight;
+	Metric rVInc = 0.5 / (Metric)((bHemisphere ? 2 : 1) * cyHeight);
 
 	//	Compute the factor to adjust the pixel value
 
-	Metric rRange = (Metric)(255) + 0.99999;
+	Metric rRange = (Metric)(Desc.byMax - Desc.byMin) + 0.99999;
 	Metric rFactor = rRange / (2.0 * Generator.GetMaxValue());
 	
 	//	The generator origin needs to be larger than the level of detail
@@ -67,7 +77,7 @@ void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGener
 	//	But we want it to be constant, if possible, so that different levels
 	//	of detail are centered.
 
-	int iOrigin = Max(10000, iDetail);
+	int iOrigin = Max(10000, (int)Desc.rDetail);
 
 	//	Loop
 
@@ -94,11 +104,11 @@ void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGener
 			//	The period is only on the Z-axis, so we don't multiply the Z
 			//	by detail (because we want smaller changes).
 			
-			Metric rValue = rContrast * Generator.GetAtPeriodic(iOrigin + (int)(rX * iDetail), iOrigin + (int)(rY * iDetail), iOrigin + (int)(rZ + rOffset));
+			Metric rValue = Desc.rContrast * Generator.GetAtPeriodic(iOrigin + (int)(rX * Desc.rDetail), iOrigin + (int)(rY * Desc.rDetail), iOrigin + (int)(rZ + Desc.rOffset));
 
 			//	Map to our range
 
-			*pDest++ = (BYTE)Clamp((DWORD)(rFactor * (Generator.GetMaxValue() + rValue)), (DWORD)0, (DWORD)255);
+			*pDest++ = (BYTE)Clamp((DWORD)Desc.byMin + (DWORD)(rFactor * (Generator.GetMaxValue() + rValue)), (DWORD)Desc.byMin, (DWORD)Desc.byMax);
 
 			//	Next
 
@@ -110,7 +120,7 @@ void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, CGCloudGener
 		}
 	}
 
-void CGFractal::FillClouds (CG8bitImage &Dest, int xDest, int yDest, int cxWidth, int cyHeight, int iScale, BYTE byMin, BYTE byMax)
+void CGFractal::FillClouds (CG8bitImage &Dest, int xDest, int yDest, int cxWidth, int cyHeight, const SGCloudDesc &Desc)
 
 //	FillClouds
 //
@@ -124,13 +134,13 @@ void CGFractal::FillClouds (CG8bitImage &Dest, int xDest, int yDest, int cxWidth
 			&cxWidth, &cyHeight))
 		return;
 
-	//	Create a cloud generator
+	//	Create a cloud generator, if necessary
 
-	CCloudGenerator Generator(iScale);
+	CCloudGenerator Generator(Desc.iScale);
 
 	//	Compute the factor to adjust the pixel value
 
-	Metric rRange = (Metric)(byMax - byMin) + 0.99999;
+	Metric rRange = (Metric)(Desc.byMax - Desc.byMin) + 0.99999;
 	Metric rFactor = rRange / (2.0 * Generator.GetMaxValue());
 
 	//	Fill
@@ -153,7 +163,7 @@ void CGFractal::FillClouds (CG8bitImage &Dest, int xDest, int yDest, int cxWidth
 
 			//	Map to our range
 
-			*pDest++ = (BYTE)Clamp((DWORD)byMin + (DWORD)(rFactor * (Generator.GetMaxValue() + rValue)), (DWORD)byMin, (DWORD)byMax);
+			*pDest++ = (BYTE)Clamp((DWORD)Desc.byMin + (DWORD)(rFactor * (Generator.GetMaxValue() + rValue)), (DWORD)Desc.byMin, (DWORD)Desc.byMax);
 			}
 
 		pDestRow = Dest.NextRow(pDestRow);
