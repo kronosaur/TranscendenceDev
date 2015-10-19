@@ -862,6 +862,12 @@
     <ClCompile Include="CFractalTextureLibrary.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
+    <ClCompile Include="CSphericalTextureMapper.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CCircleRadiusDisruptor.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

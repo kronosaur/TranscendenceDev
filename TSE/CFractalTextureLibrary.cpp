@@ -6,12 +6,16 @@
 #include "PreComp.h"
 
 const int TEXTURE_WIDTH =					512;
-const int TEXTURE_HEIGHT =					256;
+const int TEXTURE_HEIGHT =					128;
 const int TEXTURE_SCALE =					16;
 const int TEXTURE_DETAIL_LEVELS =			64;
-const Metric TEXTURE_DETAIL_MAX =			500.0;
+const Metric TEXTURE_DETAIL_MAX =			250.0;
 const Metric TEXTURE_DETAIL_MIN =			50.0;
-const Metric TEXTURE_CONTRAST =				2.0;
+const Metric TEXTURE_CONTRAST =				1.5;
+
+const Metric TEXTURE_BOILING_CONTRAST =		1.0;
+const Metric TEXTURE_BOILING_DETAIL =		100.0;
+const int TEXTURE_BOILING_FRAMES =			32;
 
 static CG8bitImage NullImage;
 
@@ -24,6 +28,9 @@ const CG8bitImage &CFractalTextureLibrary::GetTexture (ETextureTypes iType, int 
 	{
 	switch (iType)
 		{
+		case typeBoilingClouds:
+			return ((iFrame >= 0 && iFrame < m_BoilingTextures.GetCount()) ? m_BoilingTextures[iFrame] : NullImage);
+
 		case typeExplosion:
 			return ((iFrame >= 0 && iFrame < m_ExplosionTextures.GetCount()) ? m_ExplosionTextures[iFrame] : NullImage);
 
@@ -41,6 +48,9 @@ int CFractalTextureLibrary::GetTextureCount (ETextureTypes iType) const
 	{
 	switch (iType)
 		{
+		case typeBoilingClouds:
+			return m_BoilingTextures.GetCount();
+
 		case typeExplosion:
 			return m_ExplosionTextures.GetCount();
 
@@ -62,6 +72,16 @@ void CFractalTextureLibrary::Init (void)
 		//	mapping to a sphere, with increasing detail levels.
 
 		InitExplosionTextures();
+
+		//	Boiling clouds are a cyclical animation
+
+		SGCloudDesc CloudDesc;
+		CloudDesc.rContrast = TEXTURE_BOILING_CONTRAST;
+		CloudDesc.rDetail = TEXTURE_BOILING_DETAIL;
+		CGFractal::CreateSphericalCloudAnimation(TEXTURE_WIDTH, TEXTURE_HEIGHT, CloudDesc, TEXTURE_BOILING_FRAMES, true, &m_BoilingTextures);
+
+		//	Done
+
 		m_bInitialized = true;
 		}
 	}
@@ -89,6 +109,11 @@ void CFractalTextureLibrary::InitExplosionTextures (void)
 
 		CGCloudGenerator3D Generator(TEXTURE_SCALE);
 
+		//	Create a cloud definition structure
+
+		SGCloudDesc CloudDesc;
+		CloudDesc.rContrast = TEXTURE_CONTRAST;
+
 		//	Build all frames. We decrease the detail at every step to simulate the
 		//	expansion of the explosion.
 
@@ -97,6 +122,9 @@ void CFractalTextureLibrary::InitExplosionTextures (void)
 		//	Generate all frames
 
 		for (i = 0; i < m_ExplosionTextures.GetCount(); i++)
-			CGFractal::CreateSphericalCloudMap(TEXTURE_WIDTH, TEXTURE_HEIGHT, Generator, (int)Detail.GetAt(i), TEXTURE_CONTRAST, 0.0, &m_ExplosionTextures[i]);
+			{
+			CloudDesc.rDetail = Detail.GetAt(i);
+			CGFractal::CreateSphericalCloudMap(TEXTURE_WIDTH, TEXTURE_HEIGHT, CloudDesc, Generator, true, &m_ExplosionTextures[i]);
+			}
 		}
 	}

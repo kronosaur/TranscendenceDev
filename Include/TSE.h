@@ -3230,6 +3230,7 @@ class CFractalTextureLibrary
 			{
 			typeNone,
 
+			typeBoilingClouds,
 			typeExplosion,
 			};
 
@@ -3252,6 +3253,7 @@ class CFractalTextureLibrary
 
 		bool m_bInitialized;
 		TArray<CG8bitImage> m_ExplosionTextures;
+		TArray<CG8bitImage> m_BoilingTextures;
 	};
 
 //	IListData implementation ---------------------------------------------------

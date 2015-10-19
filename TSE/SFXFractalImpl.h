@@ -5,6 +5,49 @@
 
 #pragma once
 
+//	CSphericalTextureMapper
+//
+//	This helper class is used to paint a spherical UV texture to the points in 
+//	a circle, given an angle and radius.
+
+class CSphericalTextureMapper
+	{
+	public:
+		CSphericalTextureMapper (void) :
+				m_pTexture(NULL)
+			{ }
+
+		inline BYTE GetPixel (int iAngle, int iRadius) const
+			{
+			return (m_pTexture ? m_pTexture->GetPixel(m_AngleToX[iAngle], m_RadiusToY[iRadius]) : 0);
+			}
+
+		void Init (CFractalTextureLibrary::ETextureTypes iTexture, int iFrame, int iRadius, int iAngleRange);
+
+	private:
+		const CG8bitImage *m_pTexture;
+		TArray<int> m_AngleToX;
+		TArray<int> m_RadiusToY;
+	};
+
+class CCircleRadiusDisruptor
+	{
+	public:
+		inline int GetAdjustedRadius (int iAngle, int iRadius) const
+			{
+			return (int)(m_RadiusAdj[iAngle] * iRadius);
+			}
+
+		void Init (Metric rDisruption, int iRadius, int iAngleRange);
+
+	private:
+		void InitSegment (int iStart, int iCount, Metric rEndAdj, Metric rDisruption);
+		inline Metric RandomPoint (Metric rRange) { return mathRandomGaussian() * rRange; }
+
+		TArray<Metric> m_RadiusAdj;
+		TArray<Metric> m_FullRadiusAdj;
+	};
+
 //	CCloudCirclePainter
 //
 //	We paint a spherical fractal cloud with a color table keyed to radius.
@@ -13,11 +56,16 @@
 class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 	{
 	public:
-		CCloudCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture, const TArray<CG32bitPixel> &ColorTable) :
+		CCloudCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture) :
 				m_iTexture(iTexture),
-				m_pColorTable(&ColorTable),
-				m_pTexture(NULL)
+				m_pColorTable(NULL)
 			{
+			}
+
+		virtual void SetParam (const CString &sParam, const TArray<CG32bitPixel> &ColorTable)
+			{
+			if (strEquals(sParam, CONSTLIT("colorTable")))
+				m_pColorTable = &ColorTable;
 			}
 
 	private:
@@ -30,16 +78,11 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 
 			//	Set the texture based on the frame
 
-			m_pTexture = &g_pUniverse->GetFractalTextureLibrary().GetTexture(m_iTexture, m_iFrame);
+			m_Texture.Init(m_iTexture, m_iFrame, m_iRadius, m_iAngleRange);
 
 			//	Success
 
 			return true;
-			}
-
-		void EndDraw (void)
-			{
-			m_pTexture = NULL;
 			}
 
 		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
@@ -50,25 +93,9 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 		//	return a pre-multiplied pixel.
 
 			{
-			Metric rRadius = (Metric)iRadius / m_iRadius;
-			Metric rACosR = acos(rRadius);
-
-			//	Map this point to an offset into a sphere map.
-			//
-			//	Lat goes from 0.0 (North Pole) to 1.0 (South Pole)
-			//	Long goes from 0.0 to 1.0 (around the circumference)
-
-			Metric rLat = 0.5 - (rACosR / g_Pi);
-			Metric rLong = (Metric)iAngle / m_iAngleRange;
-
-			//	Lookup in the cloud texture coordinates
-
-			int xTexture = (int)(rLong * m_pTexture->GetWidth());
-			int yTexture = (int)(rLat * m_pTexture->GetHeight());
-
 			//	Get the alpha value at the texture position.
 
-			BYTE byAlpha = (BYTE)(m_pTexture->GetPixel(xTexture, yTexture));
+			BYTE byAlpha = m_Texture.GetPixel(iAngle, iRadius);
 
 			//	Look up the pixel in the color table
 
@@ -90,7 +117,7 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 
 		//	Run time parameters for drawing a single frame.
 
-		const CG8bitImage *m_pTexture;
+		CSphericalTextureMapper m_Texture;
 
 		friend TCirclePainter32;
 	};
@@ -108,13 +135,19 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 class CFireballCirclePainter : public TCirclePainter32<CFireballCirclePainter>
 	{
 	public:
-		CFireballCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture, const TArray<CG32bitPixel> &ExplosionTable, const TArray<CG32bitPixel> &SmokeTable) :
+		CFireballCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture) :
 				m_iTexture(iTexture),
-				m_pExplosionTable(&ExplosionTable),
-				m_pSmokeTable(&SmokeTable),
-				m_pTexture(NULL)
+				m_pExplosionTable(NULL),
+				m_pSmokeTable(NULL)
 			{
-			ASSERT(ExplosionTable.GetCount() == SmokeTable.GetCount());
+			}
+
+		virtual void SetParam (const CString &sParam, const TArray<CG32bitPixel> &ColorTable)
+			{
+			if (strEquals(sParam, CONSTLIT("explosionTable")))
+				m_pExplosionTable = &ColorTable;
+			else if (strEquals(sParam, CONSTLIT("smokeTable")))
+				m_pSmokeTable = &ColorTable;
 			}
 
 	private:
@@ -127,16 +160,15 @@ class CFireballCirclePainter : public TCirclePainter32<CFireballCirclePainter>
 
 			//	Set the texture based on the frame
 
-			m_pTexture = &g_pUniverse->GetFractalTextureLibrary().GetTexture(m_iTexture, m_iFrame);
+			m_Texture.Init(m_iTexture, m_iFrame, m_iRadius, m_iAngleRange);
+
+			//	Initialize the disruptor
+
+			m_Disruptor.Init(0.5, m_iRadius, m_iAngleRange);
 
 			//	Success
 
 			return true;
-			}
-
-		void EndDraw (void)
-			{
-			m_pTexture = NULL;
 			}
 
 		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
@@ -147,31 +179,21 @@ class CFireballCirclePainter : public TCirclePainter32<CFireballCirclePainter>
 		//	return a pre-multiplied pixel.
 
 			{
-			Metric rRadius = (Metric)iRadius / m_iRadius;
-			Metric rACosR = acos(rRadius);
+			//	Adjust the radius based on the disruptor
 
-			//	Map this point to an offset into a sphere map.
-			//
-			//	Lat goes from 0.0 (North Pole) to 1.0 (South Pole)
-			//	Long goes from 0.0 to 1.0 (around the circumference)
-
-			Metric rLat = 0.5 - (rACosR / g_Pi);
-			Metric rLong = (Metric)iAngle / m_iAngleRange;
-
-			//	Lookup in the cloud texture coordinates
-
-			int xTexture = (int)(rLong * m_pTexture->GetWidth());
-			int yTexture = (int)(rLat * m_pTexture->GetHeight());
+			int iNewRadius = m_Disruptor.GetAdjustedRadius(iAngle, iRadius);
+			if (iNewRadius >= m_iRadius)
+				return CG32bitPixel::Null();
 
 			//	Get the alpha value at the texture position.
 
-			BYTE byAlpha = (BYTE)(m_pTexture->GetPixel(xTexture, yTexture));
+			BYTE byAlpha = m_Texture.GetPixel(iAngle, iNewRadius);
 
 			//	Combine the explosion with the smoke, using the texture as the
 			//	discriminator.
 
-			CG32bitPixel rgbSmoke = m_pSmokeTable->GetAt(iRadius);
-			CG32bitPixel rgbColor = CG32bitPixel::Composite(m_pExplosionTable->GetAt(iRadius), CG32bitPixel(rgbSmoke, CG32bitPixel::BlendAlpha(rgbSmoke.GetAlpha(), byAlpha)));
+			CG32bitPixel rgbSmoke = m_pSmokeTable->GetAt(iNewRadius);
+			CG32bitPixel rgbColor = CG32bitPixel::Composite(m_pExplosionTable->GetAt(iNewRadius), CG32bitPixel(rgbSmoke, CG32bitPixel::BlendAlpha(rgbSmoke.GetAlpha(), byAlpha)));
 				
 			//	Return the value (premultiplied)
 
@@ -185,7 +207,8 @@ class CFireballCirclePainter : public TCirclePainter32<CFireballCirclePainter>
 
 		//	Run time parameters for drawing a single frame.
 
-		const CG8bitImage *m_pTexture;
+		CSphericalTextureMapper m_Texture;
+		CCircleRadiusDisruptor m_Disruptor;
 
 		friend TCirclePainter32;
 	};
