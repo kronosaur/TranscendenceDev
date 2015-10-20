@@ -66,7 +66,7 @@ CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx) const
 			return CG32bitPixel::FromDWORD(m_dwData);
 
 		default:
-			return 0;
+			return CG32bitPixel::Null();
 		}
 	}
 

@@ -623,55 +623,32 @@ class CParticleCloudEffectCreator : public CEffectCreator
 		CEffectCreator *m_pParticleEffect;				//	Effect to use to paint particles
 	};
 
-class CParticleCometEffectCreator : public CEffectCreator,
-		public IEffectPainter
+class CParticleCometEffectCreator : public CEffectCreator
 	{
 	public:
 		CParticleCometEffectCreator (void);
 		virtual ~CParticleCometEffectCreator (void);
+
 		static CString GetClassTag (void) { return CONSTLIT("ParticleComet"); }
 		virtual CString GetTag (void) { return GetClassTag(); }
-
-		CVector GetParticlePos (int iParticle, int iTick, int iDirection, int *retiAge = NULL);
-		inline int GetParticleCount (void) { return m_iParticleCount; }
-		inline CG32bitPixel GetPrimaryColor (void) { return m_rgbPrimaryColor; }
-		inline int GetMaxAge (void) { return POINT_COUNT-1; }
 
 		//	CEffectCreator virtuals
 		virtual int GetLifetime (void) { return -1; }
 
-		//	IEffectPainter virtuals
-		virtual CEffectCreator *GetCreator (void) { return this; }
-		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-
 	protected:
-		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) { return this; }
+		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx);
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
+		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx);
 
 	private:
-		enum Constants
-			{
-			POINT_COUNT = 100,
-			};
+		CEffectParamDesc m_Length;
+		CEffectParamDesc m_Lifetime;
+		CEffectParamDesc m_ParticleCount;
+		CEffectParamDesc m_PrimaryColor;
+		CEffectParamDesc m_SecondaryColor;
+		CEffectParamDesc m_Width;
 
-		struct SParticle
-			{
-			int iPos;
-			CVector vScale;
-			};
-
-		void ComputeSplinePoints (void);
-		void CreateParticles (void);
-
-		int m_iParticleCount;
-		int m_iWidth;
-		int m_iLength;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
-
-		CVector *m_vPoints;
-		SParticle *m_Particles;
+		IEffectPainter *m_pSingleton;
 	};
 
 class CParticleExplosionEffectCreator : public CEffectCreator
