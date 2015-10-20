@@ -728,7 +728,7 @@ class CParticleJetEffectCreator : public CEffectCreator
 
 		CEffectParamDesc m_EmitRate;		//	Particles to create per tick
 		CEffectParamDesc m_EmitSpeed;		//	Particle speed (% of lightspeed)
-		CEffectParamDesc m_EmitStop;		//	Emissions stop after this time (in ticks)
+		CEffectParamDesc m_EmitLifetime;	//	Emissions lasts for this many ticks
 		CEffectParamDesc m_ParticleLifetime;//	In ticks
 		CEffectParamDesc m_SpreadAngle;		//	Full angle of spread
 		CEffectParamDesc m_TangentSpeed;	//	Trangental speed (if spread angle is omitted)

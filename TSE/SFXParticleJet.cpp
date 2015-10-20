@@ -10,7 +10,7 @@
 #define CUR_DIRECTION_ATTRIB					CONSTLIT("curDirection")
 #define EMIT_RATE_ATTRIB						CONSTLIT("emitRate")
 #define EMIT_SPEED_ATTRIB						CONSTLIT("emitSpeed")
-#define EMIT_STOP_ATTRIB						CONSTLIT("emitStop")
+#define EMIT_STOP_ATTRIB						CONSTLIT("emitLifetime")
 #define FIXED_POS_ATTRIB						CONSTLIT("fixedPos")
 #define IS_TRACKING_OBJECT_ATTRIB				CONSTLIT("isTrackingObject")
 #define PARTICLE_LIFETIME_ATTRIB				CONSTLIT("particleLifetime")
@@ -61,7 +61,7 @@ class CParticleJetEffectPainter : public IEffectPainter
 		DiceRange m_TangentSpeed;
 		DiceRange m_SpreadAngle;
 		
-		int m_iEmitStop;
+		int m_iEmitLifetime;
 		int m_iLifetime;
 		int m_iXformRotation;
 		Metric m_rXformTime;
@@ -120,7 +120,7 @@ IEffectPainter *CParticleJetEffectCreator::OnCreatePainter (CCreatePainterCtx &C
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
 	pPainter->SetParam(Ctx, XFORM_ROTATION_ATTRIB, m_XformRotation);
 	pPainter->SetParam(Ctx, XFORM_TIME_ATTRIB, m_XformTime);
-	pPainter->SetParam(Ctx, EMIT_STOP_ATTRIB, m_EmitStop);
+	pPainter->SetParam(Ctx, EMIT_STOP_ATTRIB, m_EmitLifetime);
 
 	if (!m_FixedPos.EvalBool(Ctx) || m_EmitSpeed.GetType() != CEffectParamDesc::typeNull)
 		pPainter->SetParam(Ctx, EMIT_SPEED_ATTRIB, m_EmitSpeed);
@@ -162,7 +162,7 @@ ALERROR CParticleJetEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, C
 	if (error = m_EmitSpeed.InitIntegerFromXML(Ctx, pDesc->GetAttribute(EMIT_SPEED_ATTRIB)))
 		return error;
 
-	if (error = m_EmitStop.InitIntegerFromXML(Ctx, pDesc->GetAttribute(EMIT_STOP_ATTRIB)))
+	if (error = m_EmitLifetime.InitIntegerFromXML(Ctx, pDesc->GetAttribute(EMIT_STOP_ATTRIB)))
 		return error;
 
 	if (error = m_ParticleLifetime.InitIntegerFromXML(Ctx, pDesc->GetAttribute(PARTICLE_LIFETIME_ATTRIB)))
@@ -522,7 +522,7 @@ void CParticleJetEffectPainter::GetParam (const CString &sParam, CEffectParamDes
 		retValue->InitDiceRange(m_EmitSpeed);
 
 	else if (strEquals(sParam, EMIT_STOP_ATTRIB))
-		retValue->InitInteger(m_iEmitStop);
+		retValue->InitInteger(m_iEmitLifetime);
 
 	else if (strEquals(sParam, FIXED_POS_ATTRIB))
 		retValue->InitBool(m_bUseObjectMotion);
@@ -697,7 +697,7 @@ void CParticleJetEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 
 	if (!Ctx.bFade)
 		{
-		if (m_iEmitStop <= 0 || Ctx.iTick < m_iEmitStop)
+		if (m_iEmitLifetime <= 0 || Ctx.iTick < m_iEmitLifetime)
 			CreateNewParticles(Ctx.pObj, m_EmitRate.Roll(), Ctx.vEmitPos, CalcInitialVel(Ctx.pObj));
 		}
 	else if (m_bUseObjectMotion && Ctx.pObj)
@@ -817,7 +817,7 @@ void CParticleJetEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString 
 		m_EmitSpeed = Value.EvalDiceRange(Ctx, 50);
 
 	else if (strEquals(sParam, EMIT_STOP_ATTRIB))
-		m_iEmitStop = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iEmitLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
 
 	else if (strEquals(sParam, FIXED_POS_ATTRIB))
 		m_bUseObjectMotion = Value.EvalBool(Ctx);
