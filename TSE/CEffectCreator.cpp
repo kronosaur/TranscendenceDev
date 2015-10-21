@@ -322,18 +322,16 @@ ALERROR CEffectCreator::CreateTypeFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 	ALERROR error;
 	CEffectCreator *pCreator;
 
-	//	Create the effect based on the child tag
+	//	Create the effect based on the child tag. If we have not <Effect> tag
+	//	then we assume that this will be a dynamically created group of effects.
 
 	CXMLElement *pEffect = pDesc->GetContentElementByTag(EFFECT_TAG);
 	if (pEffect == NULL)
-		{
-		Ctx.sError = CONSTLIT("<EffectType> must have an <Effect> sub-element.");
-		return ERR_FAIL;
-		}
+		pCreator = new CEffectGroupCreator;
 
 	//	If we've got no sub elements, then its a null creator
 
-	if (pEffect->GetContentElementCount() == 0)
+	else if (pEffect->GetContentElementCount() == 0)
 		pCreator = new CNullEffectCreator;
 
 	//	If we've got a single element, then we create a simple creator
@@ -475,6 +473,27 @@ IEffectPainter *CEffectCreator::CreatePainterFromStreamAndCreator (SLoadCtx &Ctx
 	return pPainter;
 	}
 
+IEffectPainter *CEffectCreator::CreatePainterFromTag (const CString &sTag)
+
+//	CreatePainterFromTag
+//
+//	Creates a raw painter. This only works for painters that are fully 
+//	parameterized.
+
+	{
+	CEffectCreator *pCreator;
+	if (CreateFromTag(sTag, &pCreator) != NOERROR)
+		return NULL;
+
+	CCreatePainterCtx Ctx;
+	Ctx.SetRawPainter(true);
+	IEffectPainter *pPainter = pCreator->CreatePainter(Ctx);
+
+	delete pCreator;
+
+	return pPainter;
+	}
+
 ALERROR CEffectCreator::InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitBasicsFromXML
@@ -537,47 +556,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 			CCSymbolTable *pTable = (CCSymbolTable *)pResult;
 
 			for (i = 0; i < pTable->GetCount(); i++)
-				{
-				CString sParam = pTable->GetKey(i);
-				ICCItem *pValue = pTable->GetElement(i);
-
-				//	Some parameters are special (and valid for all parameterized
-				//	effects).
-				//
-				//	LATER: We should have the concept of inherited parameters
-
-				if (strEquals(sParam, FIELD_NO_SOUND))
-					pPainter->SetNoSound(!pValue->IsNil());
-
-				//	Otherwise, tell the painter to set the parameter
-
-				else
-					{
-					CEffectParamDesc Value;
-
-					if (pValue->IsNil())
-						Value.InitNull();
-					else if (pValue->IsInteger())
-						Value.InitInteger(pValue->GetIntegerValue());
-					else if (pValue->IsIdentifier())
-						{
-						CString sValue = pValue->GetStringValue();
-						char *pPos = sValue.GetASCIIZPointer();
-
-						//	If this is a color, parse it
-
-						if (*pPos == '#')
-							Value.InitColor(::LoadRGBColor(sValue));
-
-						//	Otherwise, a string
-
-						else
-							Value.InitString(sValue);
-						}
-
-					pPainter->SetParam(Ctx, sParam, Value);
-					}
-				}
+				pPainter->SetParamFromItem(Ctx, pTable->GetKey(i), pTable->GetElement(i));
 			}
 		else
 			::kernelDebugLogMessage(CONSTLIT("EffectType %x GetParameters: Expected struct result."), GetUNID());
@@ -705,15 +684,11 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		return error;
 
 	//	Allow our subclass to initialize based on the effect
-	//	(We know we have one because we couldn't have gotten this far
-	//	without one. See CreateTypeFromXML.)
+	//	It is valid to not have an effect tag if we've got a dynamically
+	//	created group effect.
 
 	CXMLElement *pEffect = pDesc->GetContentElementByTag(EFFECT_TAG);
-	ASSERT(pEffect);
-
-	//	Continue
-
-	if (pEffect->GetContentElementCount() == 1)
+	if (pEffect && pEffect->GetContentElementCount() == 1)
 		{
 		CXMLElement *pEffectDesc = pEffect->GetContentElement(0);
 
@@ -1005,6 +980,54 @@ CString IEffectPainter::ReadUNID (SLoadCtx &Ctx)
 		}
 
 	return sUNID;
+	}
+
+void IEffectPainter::SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue)
+
+//	SetParamFromItem
+//
+//	Sets the parameter
+
+	{
+	//	Some parameters are special (and valid for all parameterized
+	//	effects).
+
+	if (strEquals(sParam, FIELD_NO_SOUND))
+		SetNoSound(!pValue->IsNil());
+
+	//	We treat structures specially
+
+	else if (pValue->IsSymbolTable())
+		SetParamStruct(Ctx, sParam, pValue);
+
+	//	Otherwise, tell the painter to set the parameter
+
+	else
+		{
+		CEffectParamDesc Value;
+
+		if (pValue->IsNil())
+			Value.InitNull();
+		else if (pValue->IsInteger())
+			Value.InitInteger(pValue->GetIntegerValue());
+		else if (pValue->IsIdentifier())
+			{
+			CString sValue = pValue->GetStringValue();
+			char *pPos = sValue.GetASCIIZPointer();
+
+			//	If this is a color, parse it
+
+			if (*pPos == '#')
+				Value.InitColor(::LoadRGBColor(sValue));
+
+			//	Otherwise, a string
+
+			else
+				Value.InitString(sValue);
+			}
+
+		SetParam(Ctx, sParam, Value);
+		}
 	}
 
 ALERROR IEffectPainter::ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass)

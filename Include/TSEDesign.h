@@ -3386,6 +3386,7 @@ class IEffectPainter
 		inline void ReadFromStream (SLoadCtx &Ctx) { OnReadFromStream(Ctx); }
 		static CString ReadUNID (SLoadCtx &Ctx);
 		inline void SetNoSound (bool bNoSound = true) { m_bNoSound = bNoSound; }
+		void SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue);
 		inline void SetSingleton (bool bSingleton = true) { m_bSingleton = bSingleton; }
 		static ALERROR ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass);
 		void WriteToStream (IWriteStream *pStream);
@@ -3424,6 +3425,7 @@ class IEffectPainter
 		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) { }
 		virtual void SetParamMetric (const CString &sParam, Metric rValue) { }
 		virtual bool SetParamString (const CString &sParam, const CString &sValue) { return false; }
+		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue) { }
 		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue) { return false; }
 		virtual void SetPos (const CVector &vPos) { }
 		virtual void SetVariants (int iVariants) { }
@@ -4588,6 +4590,7 @@ class CCreatePainterCtx
 				m_pWeaponFireDesc(NULL),
 				m_bUseObjectCenter(false),
 				m_bTracking(false),
+				m_bRaw(false),
 				m_pData(NULL)
 			{ }
 
@@ -4597,9 +4600,11 @@ class CCreatePainterCtx
 		inline SDamageCtx *GetDamageCtx (void) const { return m_pDamageCtx; }
 		ICCItem *GetData (void);
 		inline int GetLifetime (void) const { return m_iLifetime; }
+		inline bool IsRawPainter (void) const { return m_bRaw; }
 		inline bool IsTracking (void) const { return m_bTracking; }
 		inline void SetDamageCtx (SDamageCtx &Ctx) { m_pDamageCtx = &Ctx; }
 		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
+		inline void SetRawPainter (bool bValue = true) { m_bRaw = bValue; }
 		inline void SetTrackingObject (bool bValue = true) { m_bTracking = bValue; }
 		inline void SetUseObjectCenter (bool bValue = true) { m_bUseObjectCenter = bValue; }
 		inline void SetWeaponFireDesc (CWeaponFireDesc *pDesc) { m_pWeaponFireDesc = pDesc; }
@@ -4622,6 +4627,7 @@ class CCreatePainterCtx
 
 		bool m_bUseObjectCenter;				//	If TRUE, particle clouds always use the object as center
 		bool m_bTracking;						//	If TRUE, object sets velocity
+		bool m_bRaw;							//	We want a raw painter (default parameters).
 
 		ICCItem *m_pData;						//	Generated data
 	};
@@ -4653,6 +4659,7 @@ class CEffectCreator : public CDesignType
 		static ALERROR CreateFromTag (const CString &sTag, CEffectCreator **retpCreator);
 		static IEffectPainter *CreatePainterFromStream (SLoadCtx &Ctx, bool bNullCreator = false);
 		static IEffectPainter *CreatePainterFromStreamAndCreator (SLoadCtx &Ctx, CEffectCreator *pCreator);
+		static IEffectPainter *CreatePainterFromTag (const CString &sTag);
 		static CEffectCreator *FindEffectCreator (const CString &sUNID);
 		static void WritePainterToStream (IWriteStream *pStream, IEffectPainter *pPainter);
 

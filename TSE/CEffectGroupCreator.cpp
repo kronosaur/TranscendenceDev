@@ -7,6 +7,7 @@
 #define EFFECTS_TAG								CONSTLIT("Effects")
 
 #define ANGLE_OFFSET_ATTRIB						CONSTLIT("angleOffset")
+#define EFFECTS_ATTRIB							CONSTLIT("effects")
 #define RADIUS_OFFSET_ATTRIB					CONSTLIT("radiusOffset")
 #define ROTATION_ADJ_ATTRIB						CONSTLIT("rotationAdj")
 #define X_OFFSET_ATTRIB							CONSTLIT("xOffset")
@@ -33,6 +34,7 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
+		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue);
 		virtual void SetVariants (int iVariants);
 
 	protected:
@@ -363,6 +365,27 @@ bool CEffectGroupPainter::PointInImage (int x, int y, int iTick, int iVariant, i
 	return false;
 	}
 
+void CEffectGroupPainter::SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue)
+
+//	SetParamStruct
+//
+//	Sets special parameters
+
+	{
+	if (strEquals(sParam, EFFECTS_ATTRIB))
+		{
+		//	This allows us to programmatically create sub painters.
+		//	(But only if we don't have any.)
+
+		if (m_Painters.GetCount() != 0)
+			return;
+
+		//	LATER: Create a set of painters from the structures.
+		//	NOTE: We will need to save and load painters by tag (without
+		//	creators).
+		}
+	}
+
 void CEffectGroupPainter::SetVariants (int iVariants)
 
 //	SetVariants
@@ -377,7 +400,15 @@ void CEffectGroupPainter::SetVariants (int iVariants)
 
 //	CEffectGroupCreator --------------------------------------------------------
 
-CEffectGroupCreator::CEffectGroupCreator (void) : m_pCreators(NULL), m_iCount(0)
+CEffectGroupCreator::CEffectGroupCreator (void) : 
+		m_pCreators(NULL), 
+		m_iCount(0),
+		m_iAngleOffset(0),
+		m_iRadiusOffset(0),
+		m_xOffset(0),
+		m_yOffset(0),
+		m_iRotationAdj(0),
+		m_bHasOffsets(false)
 
 //	CEffectGroupCreator constructor
 
@@ -534,6 +565,12 @@ ALERROR CEffectGroupCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 
 	ASSERT(m_pCreators == NULL);
 
+	//	It's OK if we have a NULL pDesc. It just means that we are going to create
+	//	the group dynamically.
+
+	if (pDesc == NULL)
+		return NOERROR;
+
 	//	If we have the special tag <Effects> then we look there. We need this 
 	//	in case we want to also have an <Events> tag.
 
@@ -544,17 +581,17 @@ ALERROR CEffectGroupCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 	//	Allocate the creator array
 
 	m_iCount = pEffectList->GetContentElementCount();
-	if (m_iCount == 0)
-		return ERR_FAIL;
-
-	m_pCreators = new CEffectCreatorRef [m_iCount];
-
-	for (i = 0; i < m_iCount; i++)
+	if (m_iCount > 0)
 		{
-		CString sSubUNID = strPatternSubst(CONSTLIT("%s/%d"), sUNID, i);
+		m_pCreators = new CEffectCreatorRef [m_iCount];
 
-		if (error = m_pCreators[i].LoadSimpleEffect(Ctx, sSubUNID, pEffectList->GetContentElement(i)))
-			return error;
+		for (i = 0; i < m_iCount; i++)
+			{
+			CString sSubUNID = strPatternSubst(CONSTLIT("%s/%d"), sUNID, i);
+
+			if (error = m_pCreators[i].LoadSimpleEffect(Ctx, sSubUNID, pEffectList->GetContentElement(i)))
+				return error;
+			}
 		}
 
 	//	Load any offsets or transforms

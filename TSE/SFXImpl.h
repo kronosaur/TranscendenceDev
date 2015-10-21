@@ -539,6 +539,7 @@ class COrbEffectCreator : public CEffectCreator
 		CEffectParamDesc m_Distortion;		//	distortion: Distortion of orb (for explosions)
 		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
 		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
+		CEffectParamDesc m_SpikeCount;		//	spikeCount: Optional number of spikes (for flares)
 
 		CEffectParamDesc m_Animate;			//	animate: Animation styles
 		CEffectParamDesc m_Lifetime;		//	lifetime: Lifetime in ticks (optional)

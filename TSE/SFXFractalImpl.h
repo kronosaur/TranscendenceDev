@@ -153,6 +153,57 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 		friend TCirclePainter32;
 	};
 
+//	CDiffractionCirclePainter
+//
+//	We draw a set of dotted diffraction circles
+
+class CDiffractionCirclePainter : public TCirclePainter32<CDiffractionCirclePainter>
+	{
+	public:
+		CDiffractionCirclePainter (void) :
+				m_pColorTable(NULL)
+			{
+			}
+
+		virtual void SetParam (const CString &sParam, const TArray<CG32bitPixel> &ColorTable)
+			{
+			if (strEquals(sParam, CONSTLIT("colorTable")))
+				m_pColorTable = &ColorTable;
+			}
+
+	private:
+		bool BeginDraw (void)
+			{
+			return true;
+			}
+
+		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
+
+		//	GetColorAt
+		//
+		//	Returns the color at the given position in the circle. NOTE: We must
+		//	return a pre-multiplied pixel.
+
+			{
+			CG32bitPixel rgbColor = (m_pColorTable ? m_pColorTable->GetAt(iRadius) : CG32bitPixel(255, 0, 0));
+
+			//	We create concentric circles
+
+			if ((iRadius % 2) == 1)
+				rgbColor = CG32bitPixel(CG32bitPixel::Blend(CG32bitPixel(0, 0, 0), rgbColor, (BYTE)128), rgbColor.GetAlpha());
+			else
+				rgbColor = CG32bitPixel(CG32bitPixel::Blend(rgbColor, CG32bitPixel(255, 255, 255), (BYTE)128), rgbColor.GetAlpha());
+
+			//	Done
+
+			return CG32bitPixel::PreMult(rgbColor);
+			}
+
+		const TArray<CG32bitPixel> *m_pColorTable;
+
+		friend TCirclePainter32;
+	};
+
 //	CFireballCirclePainter
 //
 //	A fireball has two layers: the bottom layer is a radially symmetric glow 
