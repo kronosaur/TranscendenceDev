@@ -9,9 +9,9 @@ const int TEXTURE_WIDTH =					512;
 const int TEXTURE_HEIGHT =					128;
 const int TEXTURE_SCALE =					16;
 const int TEXTURE_DETAIL_LEVELS =			64;
-const Metric TEXTURE_DETAIL_MAX =			250.0;
-const Metric TEXTURE_DETAIL_MIN =			50.0;
-const Metric TEXTURE_CONTRAST =				1.5;
+const Metric TEXTURE_DETAIL_MAX =			200.0;
+const Metric TEXTURE_DETAIL_MIN =			20.0;
+const Metric TEXTURE_CONTRAST =				1.25;
 
 const Metric TEXTURE_BOILING_CONTRAST =		1.0;
 const Metric TEXTURE_BOILING_DETAIL =		100.0;

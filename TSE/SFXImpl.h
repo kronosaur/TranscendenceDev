@@ -536,6 +536,7 @@ class COrbEffectCreator : public CEffectCreator
 		CEffectParamDesc m_Radius;			//	radius: Radius of orb (pixels)
 		CEffectParamDesc m_Style;			//	style: Style of ray
 		CEffectParamDesc m_Intensity;		//	intensity: Intensity of orb
+		CEffectParamDesc m_Detail;			//	detail: Level of detail for explosions (0-100)
 		CEffectParamDesc m_Distortion;		//	distortion: Distortion of orb (for explosions)
 		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
 		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
@@ -668,7 +669,7 @@ class CParticleExplosionEffectCreator : public CEffectCreator
 									  CSpaceObject **retpEffect = NULL);
 
 	protected:
-		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) { ASSERT(false); return NULL; }
+		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) { return NULL; }
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx);
 		virtual void OnMarkImages (void) { m_Image.MarkImage(); }

@@ -485,6 +485,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_RESOURCE_CREATE_IMAGE_DESC	1
+#define FN_RESOURCE_COLOR_BLEND			2
 
 ICCItem *fnResourceGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2615,6 +2616,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	Resource functions
 		//	------------------
+
+		{	"resColorBlend",				fnResourceGet,	FN_RESOURCE_COLOR_BLEND,
+			"(resColorBlend rgbDest rgbSource srcOpacity) -> rgbColor",
+			"ssn",	0,	},
 
 		{	"resCreateImageDesc",			fnResourceGet,	FN_RESOURCE_CREATE_IMAGE_DESC,
 			"(resCreateImageDesc imageUNID x y width height) -> imageDesc",
@@ -7495,6 +7500,29 @@ ICCItem *fnResourceGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_RESOURCE_COLOR_BLEND:
+			{
+			CG32bitPixel rgbDest = ::LoadRGBColor(pArgs->GetElement(0)->GetStringValue());
+			CG32bitPixel rgbSrc = ::LoadRGBColor(pArgs->GetElement(1)->GetStringValue());
+			
+			//	The slider is either an integer from 0-255 or a double from 0-1.
+
+			Metric rFade;
+			if (pArgs->GetElement(2)->IsDouble())
+				rFade = pArgs->GetElement(2)->GetDoubleValue();
+			else
+				rFade = (Metric)pArgs->GetElement(2)->GetIntegerValue() / 255.0;
+
+			//	Make sure we're in range and generate the new color
+
+			rFade = Max(0.0, Min(rFade, 1.0));
+			CG32bitPixel rgbResult = CG32bitPixel::Blend(rgbDest, rgbSrc, rFade);
+
+			//	Return the color
+
+			return pCC->CreateString(GetRGBColor(rgbResult));
+			}
+
 		case FN_RESOURCE_CREATE_IMAGE_DESC:
 			//	For now, image descs are pretty simple
 			return pArgs->Reference();

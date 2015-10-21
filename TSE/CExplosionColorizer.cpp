@@ -12,8 +12,8 @@ const Metric SIGMA_MAX =					0.01;
 const Metric SIGMA_DECAY =					1.07;
 const Metric MAX_INTENSITY =				100.0;
 
-const Metric CORE_HEAT_LEVEL =				0.6;
-const Metric FRINGE_HEAT_LEVEL =			0.4;
+const Metric CORE_HEAT_LEVEL =				0.4;
+const Metric FRINGE_HEAT_LEVEL =			0.35;
 const Metric FRINGE_HEAT_RANGE =			(CORE_HEAT_LEVEL - FRINGE_HEAT_LEVEL);
 const Metric FLAME_HEAT_LEVEL =				0.15;
 const Metric FLAME_HEAT_RANGE =				(FRINGE_HEAT_LEVEL - FLAME_HEAT_LEVEL);
@@ -38,9 +38,12 @@ CG32bitPixel CExplosionColorizer::GetPixel (int iRadius, int iMaxRadius, int iIn
 	else if (rHeat > FRINGE_HEAT_LEVEL)
 		return CG32bitPixel::Blend(rgbPrimary, CG32bitPixel(255, 255, 255), (rHeat - FRINGE_HEAT_LEVEL) / FRINGE_HEAT_RANGE);
 	else if (rHeat > FLAME_HEAT_LEVEL)
-		return CG32bitPixel::Blend(rgbSecondary, rgbPrimary, (rHeat - FLAME_HEAT_LEVEL) / FLAME_HEAT_RANGE);
+		{
+		Metric rFade = pow((rHeat - FLAME_HEAT_LEVEL) / FLAME_HEAT_RANGE, 0.5);
+		return CG32bitPixel::Blend(rgbSecondary, rgbPrimary, rFade);
+		}
 	else
-		return CG32bitPixel::Blend(CG32bitPixel::Darken(rgbSecondary, 255), rgbSecondary, (rHeat - MIN_HEAT_LEVEL) / MIN_HEAT_RANGE);
+		return rgbSecondary;
 	}
 
 void CExplosionColorizer::Init (void)

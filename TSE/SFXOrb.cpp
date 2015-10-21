@@ -7,6 +7,7 @@
 #include "SFXFractalImpl.h"
 
 #define ANIMATE_ATTRIB					CONSTLIT("animate")
+#define DETAIL_ATTRIB					CONSTLIT("detail")
 #define DISTORTION_ATTRIB				CONSTLIT("distortion")
 #define INTENSITY_ATTRIB				CONSTLIT("intensity")
 #define LIFETIME_ATTRIB					CONSTLIT("lifetime")
@@ -57,11 +58,12 @@ class COrbEffectPainter : public IEffectPainter
 			styleSmooth =			1,
 			styleFlare =			2,
 			styleCloud =			3,
-			styleFireball =			4,
+			styleFireblast =		4,
 			styleSmoke =			5,
 			styleDiffraction =		6,
+			styleFirecloud =		7,
 
-			styleMax =				6,
+			styleMax =				7,
 			};
 
 		struct SFlareDesc
@@ -82,22 +84,23 @@ class COrbEffectPainter : public IEffectPainter
 			}
 
 		bool CalcIntermediates (void);
-		void CalcSmokeColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
+		void CalcSecondaryColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
 		void CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
 		void CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
-		inline bool HasFlares (void) const { return (m_iStyle == styleFlare || m_iStyle == styleDiffraction || m_iStyle == styleFireball); }
+		inline bool HasFlares (void) const { return (m_iStyle == styleFlare || m_iStyle == styleDiffraction || m_iStyle == styleFireblast); }
 		void Invalidate (void);
 		void PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
-		inline bool UsesColorTable2 (void) const { return (m_iStyle == styleFireball); }
-		inline bool UsesTextures (void) const { return (m_iStyle == styleCloud || m_iStyle == styleSmoke || m_iStyle == styleFireball); }
+		inline bool UsesColorTable2 (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke); }
+		inline bool UsesTextures (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke); }
 
 		CEffectCreator *m_pCreator;
 
 		int m_iRadius;
 		EOrbStyles m_iStyle;
 		int m_iIntensity;
+		int m_iDetail;
 		int m_iDistortion;
 		DiceRange m_SpikeCount;
 		CG32bitPixel m_rgbPrimaryColor;
@@ -115,7 +118,7 @@ class COrbEffectPainter : public IEffectPainter
 		CFractalTextureLibrary::ETextureTypes m_iTextureType;
 		TArray<int> m_TextureFrame;			//	Texture frame to use
 
-		TArray<TArray<CG32bitPixel>> m_ColorTable2;	//	Additional color table (used by fireball)
+		TArray<TArray<CG32bitPixel>> m_ColorTable2;	//	Additional color table (used by fireblast)
 
 		static CExplosionColorizer m_ExplosionColorizer;
 	};
@@ -139,9 +142,10 @@ static LPSTR STYLE_TABLE[] =
 		"smooth",
 		"flare",
 		"cloud",
-		"fireball",
+		"fireblast",
 		"smoke",
 		"diffraction",
+		"firecloud",
 
 		NULL,
 	};
@@ -183,6 +187,7 @@ IEffectPainter *COrbEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 	//	Initialize the painter parameters
 
 	pPainter->SetParam(Ctx, ANIMATE_ATTRIB, m_Animate);
+	pPainter->SetParam(Ctx, DETAIL_ATTRIB, m_Detail);
 	pPainter->SetParam(Ctx, DISTORTION_ATTRIB, m_Distortion);
 	pPainter->SetParam(Ctx, INTENSITY_ATTRIB, m_Intensity);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
@@ -217,6 +222,9 @@ ALERROR COrbEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	ALERROR error;
 
 	if (error = m_Animate.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(ANIMATE_ATTRIB), ANIMATION_TABLE))
+		return error;
+
+	if (error = m_Detail.InitIntegerFromXML(Ctx, pDesc->GetAttribute(DETAIL_ATTRIB)))
 		return error;
 
 	if (error = m_Distortion.InitIntegerFromXML(Ctx, pDesc->GetAttribute(DISTORTION_ATTRIB)))
@@ -273,6 +281,7 @@ COrbEffectPainter::COrbEffectPainter (CEffectCreator *pCreator) :
 		m_iRadius((int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL)),
 		m_iStyle(styleSmooth),
 		m_iIntensity(50),
+		m_iDetail(25),
 		m_iDistortion(0),
 		m_SpikeCount(0, 0, 6),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
@@ -327,8 +336,10 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				CStepIncrementor Radius(CStepIncrementor::styleSquareRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
 				CStepIncrementor Intensity(CStepIncrementor::styleLinear, m_iIntensity, 0.0, iLifetime);
 
+				Metric rDetail = (m_iDetail / 100.0);
+
 				m_iTextureType = CFractalTextureLibrary::typeExplosion;
-				CStepIncrementor Detail(CStepIncrementor::styleLinear, 0.25, 0.025, iLifetime);
+				CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
 
 				int iEndFade = iLifetime / 3;
 				int iEndFadeStart = iLifetime - iEndFade;
@@ -362,7 +373,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 					if (UsesColorTable2())
-						CalcSmokeColorTable(iRadius, iIntensity, byOpacity, &m_ColorTable2[i]);
+						CalcSecondaryColorTable(iRadius, iIntensity, byOpacity, &m_ColorTable2[i]);
 					}
 
 				break;
@@ -374,9 +385,10 @@ bool COrbEffectPainter::CalcIntermediates (void)
 			case animateFade:
 				{
 				int iLifetime = Max(1, m_iLifetime);
+				Metric rDetail = (m_iDetail / 100.0);
 
 				m_iTextureType = CFractalTextureLibrary::typeExplosion;
-				CStepIncrementor Detail(CStepIncrementor::styleLinear, 1.0, 0.0, iLifetime);
+				CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
 
 				m_ColorTable.InsertEmpty(iLifetime);
 				m_FlareDesc.InsertEmpty(iLifetime);
@@ -399,7 +411,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 					if (UsesColorTable2())
-						CalcSmokeColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
+						CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
 					}
 
 				break;
@@ -417,7 +429,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
 				m_FlareDesc[0].iWidth = Max(1, m_FlareDesc[0].iLength / FLARE_WIDTH_FRACTION);
 
-				//	For cloud and fireball we need a repeating animation
+				//	For cloud and Fireblast we need a repeating animation
 
 				if (UsesTextures())
 					{
@@ -429,12 +441,12 @@ bool COrbEffectPainter::CalcIntermediates (void)
 						m_TextureFrame[i] = i;
 					}
 
-				//	For fireball, we only need a single color table
+				//	For Fireblast, we only need a single color table
 
 				if (UsesColorTable2())
 					{
 					m_ColorTable2.InsertEmpty(1);
-					CalcSmokeColorTable(m_iRadius, m_iIntensity, 255, &m_ColorTable2[0]);
+					CalcSecondaryColorTable(m_iRadius, m_iIntensity, 255, &m_ColorTable2[0]);
 					}
 
 				break;
@@ -446,6 +458,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 		switch (m_iStyle)
 			{
 			case styleCloud:
+			case styleFirecloud:
 			case styleSmoke:
 				m_pPainter = new CCloudCirclePainter(m_iTextureType);
 				break;
@@ -454,8 +467,8 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				m_pPainter = new CDiffractionCirclePainter();
 				break;
 
-			case styleFireball:
-				m_pPainter = new CFireballCirclePainter(m_iTextureType, (Metric)m_iDistortion / 100.0);
+			case styleFireblast:
+				m_pPainter = new CFireblastCirclePainter(m_iTextureType, (Metric)m_iDistortion / 100.0);
 				break;
 			}
 
@@ -465,23 +478,58 @@ bool COrbEffectPainter::CalcIntermediates (void)
 	return (m_ColorTable.GetCount() > 0);
 	}
 
-void COrbEffectPainter::CalcSmokeColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable)
+void COrbEffectPainter::CalcSecondaryColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable)
 
-//	CalcSmokeColorTable
+//	CalcSecondaryColorTable
 //
-//	Calc smoke for fireball
+//	Calc smoke for Fireblast
 
 	{
-	CStepIncrementor Intensity(CStepIncrementor::styleLinear, 100, 50, 100);
-	int iFade = Min((int)Intensity.GetAt(iIntensity), 100);
+	int i;
 
-	CalcSphericalColorTable(styleSmoke, 
-			iRadius, 
-			iIntensity, 
-			m_rgbSecondaryColor,
-			CG32bitPixel::Fade(m_rgbSecondaryColor, CG32bitPixel(0, 0, 0), iFade), 
-			byOpacity,
-			retColorTable);
+	switch (m_iStyle)
+		{
+		//	For cloud and smoke the secondary table is a pixel table progressing
+		//	from primary to secondary colors.
+
+		case styleCloud:
+		case styleSmoke:
+			{
+			CStepIncrementor Color(CStepIncrementor::styleLinear, 0.0, 1.0, 256);
+			retColorTable->InsertEmpty(256);
+			for (i = 0; i < 256; i++)
+				(*retColorTable)[i] = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, Color.GetAt(i));
+
+			break;
+			}
+
+		case styleFireblast:
+			{
+			CStepIncrementor Intensity(CStepIncrementor::styleLinear, 100, 50, 100);
+			int iFade = Min((int)Intensity.GetAt(iIntensity), 100);
+
+			CalcSphericalColorTable(styleSmoke, 
+					iRadius, 
+					iIntensity, 
+					m_rgbSecondaryColor,
+					CG32bitPixel::Fade(m_rgbSecondaryColor, CG32bitPixel(0, 0, 0), iFade), 
+					byOpacity,
+					retColorTable);
+			break;
+			}
+
+		case styleFirecloud:
+			{
+			retColorTable->InsertEmpty(256);
+			for (i = 0; i < 256; i++)
+				(*retColorTable)[i] = m_ExplosionColorizer.GetPixel(i, 256, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor);
+
+			break;
+			}
+
+		default:
+			ASSERT(false);
+		}
 	}
 
 void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable)
@@ -539,10 +587,22 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 			break;
 			}
 
+		//	For cloud we only use this color table for the opacity. The actual
+		//	color information is in the second table (the pixel table).
+
+		case styleCloud:
+		case styleFirecloud:
+			{
+			CStepIncrementor Opacity(CStepIncrementor::styleSquare, byOpacity, 0.0, iRadius);
+			for (i = 0; i < iRadius; i++)
+				(*retColorTable)[i] = CG32bitPixel(255, 255, 255, (BYTE)Opacity.GetAt(i));
+
+			break;
+			}
+
 		//	We progress from primary color (at the center) to secondary color
 		//	at the edge, and from full opacity to transparent.
 
-		case styleCloud:
 		case styleDiffraction:
 		case styleFlare:
 			{
@@ -560,7 +620,7 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 			break;
 			}
 
-		case styleFireball:
+		case styleFireblast:
 			{
 			CStepIncrementor Opacity(CStepIncrementor::styleSquare, byOpacity, 0.0, iRadius);
 
@@ -653,6 +713,9 @@ void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 	if (strEquals(sParam, ANIMATE_ATTRIB))
 		retValue->InitInteger(m_iAnimation);
 
+	else if (strEquals(sParam, DETAIL_ATTRIB))
+		retValue->InitInteger(m_iDetail);
+
 	else if (strEquals(sParam, DISTORTION_ATTRIB))
 		retValue->InitInteger(m_iDistortion);
 
@@ -689,16 +752,17 @@ bool COrbEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(9);
+	retList->InsertEmpty(10);
 	retList->GetAt(0) = ANIMATE_ATTRIB;
-	retList->GetAt(1) = DISTORTION_ATTRIB;
-	retList->GetAt(2) = INTENSITY_ATTRIB;
-	retList->GetAt(3) = LIFETIME_ATTRIB;
-	retList->GetAt(4) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(5) = RADIUS_ATTRIB;
-	retList->GetAt(6) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(7) = SPIKE_COUNT_ATTRIB;
-	retList->GetAt(8) = STYLE_ATTRIB;
+	retList->GetAt(1) = DETAIL_ATTRIB;
+	retList->GetAt(2) = DISTORTION_ATTRIB;
+	retList->GetAt(3) = INTENSITY_ATTRIB;
+	retList->GetAt(4) = LIFETIME_ATTRIB;
+	retList->GetAt(5) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(6) = RADIUS_ATTRIB;
+	retList->GetAt(7) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(8) = SPIKE_COUNT_ATTRIB;
+	retList->GetAt(9) = STYLE_ATTRIB;
 
 	return true;
 	}
@@ -750,16 +814,32 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	switch (m_iStyle)
 		{
 		case styleCloud:
-		case styleDiffraction:
+		case styleFirecloud:
 		case styleSmoke:
 			{
 			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
-			m_pPainter->SetParam(CONSTLIT("colorTable"), Table);
+			m_pPainter->SetParam(CONSTLIT("radiusTable"), Table);
+			m_pPainter->SetParam(CONSTLIT("pixelTable"), m_ColorTable2[Ctx.iTick % m_ColorTable2.GetCount()]);
+
 			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[Ctx.iTick % m_TextureFrame.GetCount()]);
 			break;
 			}
 
-		case styleFireball:
+		case styleDiffraction:
+			{
+			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			m_pPainter->SetParam(CONSTLIT("colorTable"), Table);
+			if (UsesColorTable2())
+				{
+				const TArray<CG32bitPixel> &Table2 = m_ColorTable2[Ctx.iTick % m_ColorTable.GetCount()];
+				m_pPainter->SetParam(CONSTLIT("colorTable2"), Table2);
+				}
+
+			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[Ctx.iTick % m_TextureFrame.GetCount()]);
+			break;
+			}
+
+		case styleFireblast:
 			{
 			const TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
 			m_pPainter->SetParam(CONSTLIT("explosionTable"), Table);
@@ -905,6 +985,9 @@ void COrbEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam,
 	{
 	if (strEquals(sParam, ANIMATE_ATTRIB))
 		m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
+
+	else if (strEquals(sParam, DETAIL_ATTRIB))
+		m_iDetail = Value.EvalIntegerBounded(Ctx, 0, 100, 25);
 
 	else if (strEquals(sParam, DISTORTION_ATTRIB))
 		m_iDistortion = Value.EvalIntegerBounded(Ctx, 0, 100, 0);

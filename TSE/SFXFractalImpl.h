@@ -89,19 +89,27 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 	public:
 		CCloudCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture) :
 				m_iTexture(iTexture),
-				m_pColorTable(NULL)
+				m_pRadiusTable(NULL),
+				m_pPixelTable(NULL)
 			{
 			}
 
 		virtual void SetParam (const CString &sParam, const TArray<CG32bitPixel> &ColorTable)
 			{
-			if (strEquals(sParam, CONSTLIT("colorTable")))
-				m_pColorTable = &ColorTable;
+			if (strEquals(sParam, CONSTLIT("radiusTable")))
+				m_pRadiusTable = &ColorTable;
+			else if (strEquals(sParam, CONSTLIT("pixelTable")))
+				m_pPixelTable = &ColorTable;
 			}
 
 	private:
 		bool BeginDraw (void)
 			{
+			//	Must have both tables, or else this won't work.
+
+			if (m_pRadiusTable == NULL || m_pPixelTable == NULL || m_pPixelTable->GetCount() < 256)
+				return false;
+
 			//	We need enough angular resolution to reach the pixel level (but
 			//	no more).
 
@@ -128,23 +136,24 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 
 			BYTE byAlpha = m_Texture.GetPixel(iAngle, iRadius);
 
-			//	Look up the pixel in the color table
+			//	Get the color from the pixel table.
 
-			CG32bitPixel rgbColor = (m_pColorTable ? m_pColorTable->GetAt(iRadius) : CG32bitPixel(0, 255, 255));
+			CG32bitPixel rgbColor = m_pPixelTable->GetAt(byAlpha);
 
-			//	Now combine the alpha.
+			//	Blend with alpha from the radius table
 
-			byAlpha = CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), byAlpha);
+			rgbColor = CG32bitPixel(rgbColor, CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), m_pRadiusTable->GetAt(iRadius).GetAlpha()));
 
-			//	Return the value (premultiplied)
+			//	Done
 
-			return CG32bitPixel::PreMult(CG32bitPixel(rgbColor, byAlpha));
+			return CG32bitPixel::PreMult(rgbColor);
 			}
 
 		//	Context
 
 		CFractalTextureLibrary::ETextureTypes m_iTexture;
-		const TArray<CG32bitPixel> *m_pColorTable;
+		const TArray<CG32bitPixel> *m_pRadiusTable;
+		const TArray<CG32bitPixel> *m_pPixelTable;
 
 		//	Run time parameters for drawing a single frame.
 
@@ -204,7 +213,7 @@ class CDiffractionCirclePainter : public TCirclePainter32<CDiffractionCirclePain
 		friend TCirclePainter32;
 	};
 
-//	CFireballCirclePainter
+//	CFireblastCirclePainter
 //
 //	A fireball has two layers: the bottom layer is a radially symmetric glow 
 //	effect (using a given color table). On top we paint a fractal cloud wrapped
@@ -214,10 +223,10 @@ class CDiffractionCirclePainter : public TCirclePainter32<CDiffractionCirclePain
 //	For efficiency we paint both layers at the same time, using the fractal 
 //	cloud pattern as the discriminator.
 
-class CFireballCirclePainter : public TCirclePainter32<CFireballCirclePainter>
+class CFireblastCirclePainter : public TCirclePainter32<CFireblastCirclePainter>
 	{
 	public:
-		CFireballCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture, Metric rDistortion = 0.0) :
+		CFireblastCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture, Metric rDistortion = 0.0) :
 				m_iTexture(iTexture),
 				m_rDistortion(rDistortion),
 				m_pExplosionTable(NULL),

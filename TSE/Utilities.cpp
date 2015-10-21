@@ -1942,6 +1942,16 @@ CString GetPaintLayerID (CSystem::LayerEnum iPaintLayer)
 		}
 	}
 
+CString GetRGBColor (CG32bitPixel rgbColor)
+
+//	GetRGBColor
+//
+//	Returns a color string of the form "#rrggbb"
+
+	{
+	return strPatternSubst(CONSTLIT("#%02x%02x%02x"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
+	}
+
 int OrderGetDataCount (IShipController::OrderTypes iOrder)
 
 //	OrderGetDataCount

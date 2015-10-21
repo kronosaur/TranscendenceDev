@@ -6723,6 +6723,7 @@ DWORD ExtensionVersionToInteger (DWORD dwVersion);
 CString GenerateLevelFrequency (const CString &sLevelFrequency, int iCenterLevel);
 CString GenerateRandomName (const CString &sList, const CString &sSubst);
 CString GenerateRandomNameFromTemplate (const CString &sName, const CString &sSubst = NULL_STR);
+CString GetRGBColor (CG32bitPixel rgbColor);
 CString GetDamageName (DamageTypes iType);
 CString GetDamageShortName (DamageTypes iType);
 CString GetDamageType (DamageTypes iType);
