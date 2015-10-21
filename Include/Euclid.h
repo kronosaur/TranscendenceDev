@@ -331,14 +331,21 @@ class CStepIncrementor
 			{
 			styleNone,
 
+			//	Equal speed from start to end
+
 			styleLinear,
+
+			//	Start fast and then move slower
 
 			styleSquareRoot,				//	x^0.5
 			styleQuadRoot,					//	x^0.25
+			styleOctRoot,					//	x^0.125
+
+			//	Start slow and then move faster
+
 			styleSquare,					//	x^2
 			styleQuad,						//	x^4
 			styleOct,						//	x^8
-			styleOctRoot,					//	x^0.125
 			};
 
 		CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, int iSteps);
