@@ -30,6 +30,11 @@ class CSphericalTextureMapper
 		TArray<int> m_RadiusToY;
 	};
 
+//	CCircleRadiusDisruptor
+//
+//	This helper class is used to distort the edges of a circle by adjusting
+//	its radius at each angle.
+
 class CCircleRadiusDisruptor
 	{
 	public:
@@ -46,6 +51,32 @@ class CCircleRadiusDisruptor
 
 		TArray<Metric> m_RadiusAdj;
 		TArray<Metric> m_FullRadiusAdj;
+	};
+
+//	CExplosionColorizer
+//
+//	This helper class generates static tables for the color of an explosion 
+//	pixel at various radii and intensities.
+//
+//	We use a normal probability density function to simulate the distribution
+//	of heat across the explosion. That is, we start with a very narrow bell 
+//	curve (center is very hot) and proceed to wider and wider versions as the
+//	heat distributes to the rest of the fireball.
+
+class CExplosionColorizer
+	{
+	public:
+		CG32bitPixel GetPixel (int iRadius, int iMaxRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary) const;
+		void Init (void);
+
+	private:
+		enum EConstants
+			{
+			RADIUS_COUNT =		100,
+			INTENSITY_COUNT =	101,	//	0 to 100
+			};
+
+		TArray<TArray<Metric>> m_Heat;
 	};
 
 //	CCloudCirclePainter

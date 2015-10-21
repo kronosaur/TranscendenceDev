@@ -868,6 +868,9 @@
     <ClCompile Include="CCircleRadiusDisruptor.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
+    <ClCompile Include="CExplosionColorizer.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

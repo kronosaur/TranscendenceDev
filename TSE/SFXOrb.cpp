@@ -113,6 +113,8 @@ class COrbEffectPainter : public IEffectPainter
 		TArray<int> m_TextureFrame;			//	Texture frame to use
 
 		TArray<TArray<CG32bitPixel>> m_ColorTable2;	//	Additional color table (used by fireball)
+
+		static CExplosionColorizer m_ExplosionColorizer;
 	};
 
 static LPSTR ANIMATION_TABLE[] =
@@ -256,6 +258,8 @@ ALERROR COrbEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 //	COrbEffectPainter ----------------------------------------------------------
 
+CExplosionColorizer COrbEffectPainter::m_ExplosionColorizer;
+
 COrbEffectPainter::COrbEffectPainter (CEffectCreator *pCreator) : 
 		m_pCreator(pCreator),
 		m_iRadius((int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL)),
@@ -272,6 +276,7 @@ COrbEffectPainter::COrbEffectPainter (CEffectCreator *pCreator) :
 //	COrbEffectCreator constructor
 
 	{
+	m_ExplosionColorizer.Init();
 	}
 
 COrbEffectPainter::~COrbEffectPainter (void)
@@ -310,11 +315,11 @@ bool COrbEffectPainter::CalcIntermediates (void)
 			case animateExplode:
 				{
 				int iLifetime = Max(1, m_iLifetime);
-				CStepIncrementor Radius(CStepIncrementor::styleQuadRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
-				CStepIncrementor Intensity(CStepIncrementor::styleSquare, Min(100, 2 * m_iIntensity), 0.0, iLifetime);
+				CStepIncrementor Radius(CStepIncrementor::styleSquareRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
+				CStepIncrementor Intensity(CStepIncrementor::styleLinear, m_iIntensity, 0.0, iLifetime);
 
 				m_iTextureType = CFractalTextureLibrary::typeExplosion;
-				CStepIncrementor Detail(CStepIncrementor::styleLinear, 0.5, 0.025, iLifetime);
+				CStepIncrementor Detail(CStepIncrementor::styleLinear, 0.25, 0.025, iLifetime);
 
 				int iEndFade = iLifetime / 3;
 				int iEndFadeStart = iLifetime - iEndFade;
@@ -457,7 +462,7 @@ void COrbEffectPainter::CalcSmokeColorTable (int iRadius, int iIntensity, BYTE b
 	CStepIncrementor Intensity(CStepIncrementor::styleLinear, 100, 50, 100);
 	int iFade = Min((int)Intensity.GetAt(iIntensity), 100);
 
-	CalcSphericalColorTable(styleSmoke, 
+	CalcSphericalColorTable(styleCloud, 
 			iRadius, 
 			iIntensity, 
 			CG32bitPixel::Fade(m_rgbPrimaryColor, CG32bitPixel(0, 0, 0), iFade),
@@ -543,6 +548,7 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 
 		case styleFireball:
 			{
+#if 0
 			CStepIncrementor CoreRadius(CStepIncrementor::styleLinear, 0.25, 0.9, 100);
 			int iCoreRadius = (int)(iRadius * CoreRadius.GetAt(iIntensity));
 			int iBlownRadius = iCoreRadius * 70 / 100;
@@ -555,18 +561,23 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 
 			int iTransWidth = (iRadius - iCoreRadius);
 
-			CStepIncrementor Opacity(CStepIncrementor::styleQuad, byOpacity, 0.0, iRadius - iCoreRadius);
 
 			//	Compute some colors
 
 			CG32bitPixel rgbCore = CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), rgbPrimary, (BYTE)(255 - byOpacity));
 			CG32bitPixel rgbFringe = CG32bitPixel::Blend(rgbPrimary, rgbSecondary, (BYTE)(255 - byOpacity));
 			CG32bitPixel rgbFade = CG32bitPixel::Blend(rgbSecondary, CG32bitPixel(0, 0, 0), (BYTE)(255 - byOpacity));
+#endif
+
+			CStepIncrementor Opacity(CStepIncrementor::styleQuad, byOpacity, 0.0, iRadius);
 
 			//	Initialize table
 
 			for (i = 0; i < iRadius; i++)
 				{
+				(*retColorTable)[i] = CG32bitPixel(m_ExplosionColorizer.GetPixel(i, iRadius, iIntensity, rgbPrimary, rgbSecondary), (BYTE)Opacity.GetAt(i));
+
+#if 0
 				if (i < iBlownRadius)
 					(*retColorTable)[i] = CG32bitPixel(rgbCore, byOpacity);
 
@@ -589,6 +600,7 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 					}
 				else
 					(*retColorTable)[i] = CG32bitPixel::Null();
+#endif
 				}
 
 			break;
@@ -772,6 +784,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		case styleSmoke:
 			{
 			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			m_pPainter->SetParam(CONSTLIT("colorTable"), Table);
 			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[Ctx.iTick % m_TextureFrame.GetCount()]);
 			break;
 			}
