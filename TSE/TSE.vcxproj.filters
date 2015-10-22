@@ -778,9 +778,6 @@
     <ClCompile Include="CMapViewportCtx.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
-    <ClCompile Include="SFXParticleJet.cpp">
-      <Filter>Source Files\SFX</Filter>
-    </ClCompile>
     <ClCompile Include="CPaintHelper.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -869,6 +866,9 @@
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
     <ClCompile Include="CExplosionColorizer.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXParticleSystem.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
   </ItemGroup>

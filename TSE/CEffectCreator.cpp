@@ -135,8 +135,9 @@ ALERROR CEffectCreator::CreateFromTag (const CString &sTag, CEffectCreator **ret
 		pCreator = new CImageEffectCreator;
 	else if (strEquals(sTag, CRayEffectCreator::GetClassTag()))
 		pCreator = new CRayEffectCreator;
-	else if (strEquals(sTag, CParticleJetEffectCreator::GetClassTag()))
-		pCreator = new CParticleJetEffectCreator;
+	else if (strEquals(sTag, CParticleSystemEffectCreator::GetClassTag())
+			 || strEquals(sTag, CONSTLIT("ParticleJet")))
+		pCreator = new CParticleSystemEffectCreator;
 	else if (strEquals(sTag, COrbEffectCreator::GetClassTag()))
 		pCreator = new COrbEffectCreator;
 	else if (strEquals(sTag, CLightningStormEffectCreator::GetClassTag()))

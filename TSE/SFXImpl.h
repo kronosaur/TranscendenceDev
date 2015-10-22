@@ -682,11 +682,11 @@ class CParticleExplosionEffectCreator : public CEffectCreator
 		CObjectImageArray m_Image;						//	Images
 	};
 
-class CParticleJetEffectCreator : public CEffectCreator
+class CParticleSystemEffectCreator : public CEffectCreator
 	{
 	public:
-		CParticleJetEffectCreator (void);
-		~CParticleJetEffectCreator (void);
+		CParticleSystemEffectCreator (void);
+		~CParticleSystemEffectCreator (void);
 			
 		inline CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
 
@@ -695,7 +695,7 @@ class CParticleJetEffectCreator : public CEffectCreator
 		//	CEffectCreator virtuals
 		virtual int GetLifetime (void) { return 0; }
 
-		static CString GetClassTag (void) { return CONSTLIT("ParticleJet"); }
+		static CString GetClassTag (void) { return CONSTLIT("ParticleSystem"); }
 
 	protected:
 		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx);
@@ -703,6 +703,7 @@ class CParticleJetEffectCreator : public CEffectCreator
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx);
 
 	private:
+		CEffectParamDesc m_Style;			//	Particles fixed on background (not obj)
 		CEffectParamDesc m_FixedPos;		//	Particles fixed on background (not obj)
 
 		CEffectParamDesc m_EmitRate;		//	Particles to create per tick
