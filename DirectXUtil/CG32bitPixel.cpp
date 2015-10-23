@@ -134,6 +134,33 @@ CG32bitPixel CG32bitPixel::Blend3 (CG32bitPixel rgbNegative, CG32bitPixel rgbCen
 		return rgbCenter;
 	}
 
+CG32bitPixel CG32bitPixel::Composite (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade)
+
+//	Composite
+//
+//	Blends color and alpha by the given value (0.0 to 1.0)
+
+	{
+	if (rFade <= 0.0)
+		return rgbFrom;
+	else if (rFade >= 1.0)
+		return rgbTo;
+	else
+		{
+		int iRDiff = (int)(DWORD)rgbTo.GetRed() - (int)(DWORD)rgbFrom.GetRed();
+		int iGDiff = (int)(DWORD)rgbTo.GetGreen() - (int)(DWORD)rgbFrom.GetGreen();
+		int iBDiff = (int)(DWORD)rgbTo.GetBlue() - (int)(DWORD)rgbFrom.GetBlue();
+		int iADiff = (int)(DWORD)rgbTo.GetAlpha() - (int)(DWORD)rgbFrom.GetAlpha();
+
+		BYTE byRed = (BYTE)((int)(DWORD)rgbFrom.GetRed() + (iRDiff * rFade));
+		BYTE byGreen = (BYTE)((int)(DWORD)rgbFrom.GetGreen() + (iGDiff * rFade));
+		BYTE byBlue = (BYTE)((int)(DWORD)rgbFrom.GetBlue() + (iBDiff * rFade));
+		BYTE byAlpha = (BYTE)((int)(DWORD)rgbFrom.GetAlpha() + (iADiff * rFade));
+
+		return CG32bitPixel(byRed, byGreen, byBlue, byAlpha);
+		}
+	}
+
 CG32bitPixel CG32bitPixel::Darken (CG32bitPixel rgbSource, BYTE byOpacity)
 
 //	Darken
