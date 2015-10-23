@@ -159,7 +159,12 @@ void CEffect::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	{
 	if (m_pPainter)
 		{
-		Ctx.Prepare(m_iTick, 0, m_iRotation, GetDestiny());
+		CViewportPaintCtxSmartSave Save(Ctx);
+		Ctx.iTick = m_iTick;
+		Ctx.iVariant = 0;
+		Ctx.iRotation = m_iRotation;
+		Ctx.iDestiny = GetDestiny();
+
 		m_pPainter->Paint(Dest, x, y, Ctx);
 		}
 	}

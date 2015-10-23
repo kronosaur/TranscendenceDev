@@ -537,9 +537,6 @@ void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPai
 	int iSavedRotation = Ctx.iRotation;
 	Ctx.iRotation = (iRotationOrigin + m_iRotation) % 360;
 
-	int iSavedMaxedLength = Ctx.iMaxLength;
-	Ctx.iMaxLength = -1;
-
 	//	Paint
 
 	if (m_iPaintHit > 0 && m_pHitPainter)
@@ -559,7 +556,6 @@ void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPai
 	//	Done
 
 	Ctx.iRotation = iSavedRotation;
-	Ctx.iMaxLength = iSavedMaxedLength;
 	}
 
 void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)

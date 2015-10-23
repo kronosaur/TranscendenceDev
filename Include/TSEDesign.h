@@ -736,13 +736,36 @@ struct SViewportPaintCtx
 			iMaxLength(-1)
 		{ }
 
-	inline void Prepare (int iTickArg, int iVariantArg, int iRotationArg, int iDestinyArg, int iMaxLengthArg = -1)
+	inline void Save (void)
 		{
-		iTick = iTickArg;
-		iVariant = iVariantArg;
-		iRotation = iRotationArg;
-		iDestiny = iDestinyArg;
-		iMaxLength = iMaxLengthArg;
+		SVariants *pFrame = m_SaveStack.Insert();
+
+		pFrame->bFade = bFade;
+		pFrame->bInFront = bInFront;
+		pFrame->iDestiny = iDestiny;
+		pFrame->iMaxLength = iMaxLength;
+		pFrame->iRotation = iRotation;
+		pFrame->iTick = iTick;
+		pFrame->iVariant = iVariant;
+		}
+
+	inline void Restore (void)
+		{
+		int iLastIndex = m_SaveStack.GetCount() - 1;
+		if (iLastIndex >= 0)
+			{
+			SVariants *pFrame = &m_SaveStack[iLastIndex];
+
+			bFade = pFrame->bFade;
+			bInFront = pFrame->bInFront;
+			iDestiny = pFrame->iDestiny;
+			iMaxLength = pFrame->iMaxLength;
+			iRotation = pFrame->iRotation;
+			iTick = pFrame->iTick;
+			iVariant = pFrame->iVariant;
+
+			m_SaveStack.Delete(iLastIndex);
+			}
 		}
 
 	//	Viewport metrics
@@ -801,6 +824,39 @@ struct SViewportPaintCtx
 	int iDestiny;
 	int iRotation;						//	An angle 0-359
 	int iMaxLength;						//	Max length of object (used for projectiles); -1 == no limit
+
+	private:
+		struct SVariants
+			{
+			bool bInFront;
+			bool bFade;
+			int iTick;
+			int iVariant;
+			int iDestiny;
+			int iRotation;
+			int iMaxLength;
+			};
+
+		//	Stack of modifications
+
+		TArray<SVariants> m_SaveStack;
+	};
+
+class CViewportPaintCtxSmartSave
+	{
+	public:
+		CViewportPaintCtxSmartSave (SViewportPaintCtx &Ctx) : m_Ctx(Ctx)
+			{
+			m_Ctx.Save();
+			}
+
+		~CViewportPaintCtxSmartSave (void)
+			{
+			m_Ctx.Restore();
+			}
+
+	private:
+		SViewportPaintCtx &m_Ctx;
 	};
 
 class CMapViewportCtx
@@ -1368,6 +1424,7 @@ class DamageDesc
 		inline void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		void AddEnhancements (CItemEnhancementStack *pEnhancements);
 		inline bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
+		ICCItem *FindProperty (const CString &sName) const;
 		Metric GetAverageDamage (bool bIncludeBonus = false) const;
 		inline DestructionTypes GetCause (void) const { return m_iCause; }
 		inline DamageTypes GetDamageType (void) const { return m_iType; }
@@ -1403,6 +1460,7 @@ class DamageDesc
 		inline int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
 		inline int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
 
+		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
 
 	private:

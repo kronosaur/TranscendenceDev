@@ -309,7 +309,12 @@ void CRadiusDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx
 	{
 	if (m_pPainter)
 		{
-		Ctx.Prepare(m_iTick, 0, 0, GetDestiny());
+		CViewportPaintCtxSmartSave Save(Ctx);
+		Ctx.iTick = m_iTick;
+		Ctx.iVariant = 0;
+		Ctx.iRotation = 0;
+		Ctx.iDestiny = GetDestiny();
+
 		m_pPainter->Paint(Dest, x, y, Ctx);
 		}
 	}

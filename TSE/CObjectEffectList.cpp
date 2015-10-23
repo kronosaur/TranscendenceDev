@@ -118,9 +118,6 @@ void CObjectEffectList::Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &
 	{
 	int i;
 	int iObjRotation = Ctx.iRotation;
-	int iObjMaxLength = Ctx.iMaxLength;
-
-	Ctx.iMaxLength = -1;
 
 	for (i = 0; i < m_FixedEffects.GetCount(); i++)
 		{
@@ -162,7 +159,6 @@ void CObjectEffectList::Paint (SViewportPaintCtx &Ctx, const CObjectEffectDesc &
 		}
 
 	Ctx.iRotation = iObjRotation;
-	Ctx.iMaxLength = iObjMaxLength;
 	}
 
 void CObjectEffectList::PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDesc &Desc, CG32bitImage &Dest, int x, int y)
@@ -181,9 +177,6 @@ void CObjectEffectList::PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDes
 	int iOldTick = Ctx.iTick;
 	Ctx.iTick = 1;
 
-	int iOldMaxLength = Ctx.iMaxLength;
-	Ctx.iMaxLength = -1;
-
 	//	Paint
 
 	Paint(Ctx, Desc, dwAll,	Dest, x, y);
@@ -191,7 +184,6 @@ void CObjectEffectList::PaintAll (SViewportPaintCtx &Ctx, const CObjectEffectDes
 	//	Done
 
 	Ctx.iTick = iOldTick;
-	Ctx.iMaxLength = iOldMaxLength;
 	}
 
 void CObjectEffectList::Update (CSpaceObject *pObj, const CObjectEffectDesc &Desc, int iRotation, DWORD dwEffects)

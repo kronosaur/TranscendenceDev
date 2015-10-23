@@ -332,6 +332,12 @@ void DrawLightning (CG32bitImage &Dest,
 					CG32bitPixel rgbColor,
 					int iPoints,
 					Metric rChaos);
+void DrawLightning (CG32bitImage &Dest,
+					int xFrom, int yFrom,
+					int xTo, int yTo,
+					CG32bitPixel rgbFrom,
+					CG32bitPixel rgbTo,
+					Metric rChaos);
 void DrawParticle (CG32bitImage &Dest,
 				   int x, int y,
 				   CG32bitPixel rgbColor,

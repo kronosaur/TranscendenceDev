@@ -2310,6 +2310,19 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		m_fReconned = true;
 		}
 
+	//	Get the image
+
+	int iTick, iVariant;
+	const CObjectImageArray &Image = GetImage(true, &iTick, &iVariant);
+
+	//	Set some context
+
+	CViewportPaintCtxSmartSave Save(Ctx);
+	Ctx.iTick = iTick;
+	Ctx.iVariant = 0;
+	Ctx.iRotation = GetRotation();
+	Ctx.iDestiny = GetDestiny();
+
 	//	Paints overlay background
 
 	m_Overlays.PaintBackground(Dest, x, y, Ctx);
@@ -2349,9 +2362,6 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Paint
 
-	int iTick, iVariant;
-	const CObjectImageArray &Image = GetImage(true, &iTick, &iVariant);
-
 	if (m_fRadioactive)
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, CG32bitPixel(0, 255, 0));
 
@@ -2377,9 +2387,8 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		g_pUniverse->GetNamedFont(CUniverse::fontSign).DrawText(Dest, rcRect, RGB_SIGN_COLOR, GetName(), -2);
 		}
 
-	//	Paint energy fields
+	//	Paint overlays
 
-	Ctx.Prepare(iTick, 0, GetRotation(), GetDestiny());
 	m_Overlays.Paint(Dest, Image.GetImageViewportSize(), x, y, Ctx);
 
 	//	Now paint any object that are docked in front of us

@@ -280,11 +280,12 @@ void CParticleDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	{
 	if (m_pPainter)
 		{
-		Ctx.Prepare(m_iTick, 
-				0, 
-				0, 
-				GetDestiny(), 
-				Max(10, (int)((g_SecondsPerUpdate * (m_iTick - 1) * m_pDesc->GetRatedSpeed()) / g_KlicksPerPixel)));
+		CViewportPaintCtxSmartSave Save(Ctx);
+		Ctx.iTick = m_iTick;
+		Ctx.iVariant = 0;
+		Ctx.iRotation = 0;
+		Ctx.iDestiny = GetDestiny();
+		Ctx.iMaxLength = (int)((g_SecondsPerUpdate * Max(1, m_iTick) * m_pDesc->GetRatedSpeed()) / g_KlicksPerPixel);
 
 		//	Painting is relative to the origin
 

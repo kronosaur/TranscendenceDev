@@ -178,7 +178,10 @@ void CCompositeImageModifiers::PaintDamage (CG32bitImage &Dest, const RECT &rcDe
 
 		//	Set some parameters
 
-		Ctx.Prepare(mathRandom(0, iLifetime - 1), mathRandom(0, iVariantCount - 1), mathRandom(0, 359), mathRandom(0, 359));
+		Ctx.iTick = mathRandom(0, iLifetime - 1);
+		Ctx.iVariant = mathRandom(0, iVariantCount - 1);
+		Ctx.iRotation = mathRandom(0, 359);
+		Ctx.iDestiny = mathRandom(0, 359);
 
 		//	Paint
 

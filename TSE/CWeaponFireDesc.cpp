@@ -316,8 +316,26 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue)
 //	Returns data field for a weapon fire descriptor
 
 	{
+	ICCItem *pResult;
+
 	if (strEquals(sField, FIELD_SOUND))
 		*retsValue = (m_FireSound.GetSound() != -1 ? strFromInt(m_FireSound.GetUNID(), false) : NULL_STR);
+
+	//	Otherwise, see if the damage can handle this.
+	//
+	//	LATER: At some point we should move this code to the GetProperty side,
+	//	but for now we need it here since this is the only path that handles
+	//	missiles.
+
+	else if (pResult = m_Damage.FindProperty(sField))
+		{
+		CCodeChain &CC = g_pUniverse->GetCC();
+		*retsValue = pResult->GetStringValue();
+		pResult->Discard(&CC);
+		}
+
+	//	Otherwise, nothing
+
 	else
 		return false;
 

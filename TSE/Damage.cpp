@@ -40,6 +40,12 @@ const int MAX_BINARY =							1;
 
 const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
+struct SSpecialDamageData
+	{
+	char *pszSpecial;						//	Name as specified in a damage desc line
+	char *pszProperty;						//	Property for this special damage
+	};
+
 char *g_pszDamageTypes[damageCount] =
 	{
 	"laser",
@@ -98,6 +104,29 @@ char *g_pszShortDamageName[damageCount] =
 	"dark steel",
 	"dark lightning",
 	"dark fire",
+	};
+
+//	These must match the order in the SpecialDamageTypes enum.
+
+SSpecialDamageData SPECIAL_DAMAGE_DATA[] =
+	{
+		{	"radiation",		"damageRadiation" },
+		{	"blinding",			"damageBlinding" },
+		{	"EMP",				"damageEMP" },
+		{	"device",			"damageDeviceDestroy" },
+		{	"disintegration",	"damageDisintegration" },
+		{	"momentum",			"damageMomentum" },
+		{	"shield",			"damageShieldLevel" },
+		{	"WMD",				"damageWMD" },
+		{	"mining",			"damageMining" },
+
+		{	"deviceDisrupt",	"damageDeviceDisrupt" },
+		{	"wormhole",			"damageWormhole" },
+		{	"fuel",				"damageFuel" },
+		{	"shatter",			"damageShatter" },
+		{	"armor",			"damageArmorLevel" },
+
+		{	NULL,				NULL }
 	};
 
 //	Damage Types
@@ -232,6 +261,50 @@ SpecialDamageTypes DamageDesc::ConvertToSpecialDamageTypes (const CString &sValu
 		return specialWormhole;
 	else
 		return specialNone;
+	}
+
+SpecialDamageTypes DamageDesc::ConvertPropertyToSpecialDamageTypes (const CString &sValue)
+
+//	ConvertPropertyToSpecialDamageTypes
+//
+//	Converts
+
+	{
+	int iSpecial = 0;
+	SSpecialDamageData *pData = SPECIAL_DAMAGE_DATA;
+	while (pData->pszSpecial)
+		{
+		if (strEquals(CString(pData->pszProperty, -1, true), sValue))
+			return (SpecialDamageTypes)iSpecial;
+
+		pData++;
+		iSpecial++;
+		}
+
+	//	If we get this far, then we did not find it.
+
+	return specialNone;
+	}
+
+ICCItem *DamageDesc::FindProperty (const CString &sName) const
+
+//	FindProperty
+//
+//	Returns the given damage property (or NULL for unknown properties).
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	//	See if this is one of the special damage properties
+
+	SpecialDamageTypes iSpecial;
+	if ((iSpecial = ConvertPropertyToSpecialDamageTypes(sName)) != specialNone)
+		return CC.CreateInteger(GetSpecialDamage(iSpecial));
+
+	//	Otherwise, not found
+
+	else
+		return NULL;
 	}
 
 Metric DamageDesc::GetAverageDamage (bool bIncludeBonus) const
