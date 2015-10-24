@@ -483,7 +483,7 @@ void CParticleCometEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CStrin
 		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
 
 	else if (strEquals(sParam, PARTICLE_COUNT_ATTRIB))
-		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 100);
+		m_iParticleCount = Value.EvalIntegerBounded(Ctx, 0, -1, 100);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
 		m_rgbPrimaryColor = Value.EvalColor(Ctx);
