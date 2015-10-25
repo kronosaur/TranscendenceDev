@@ -360,11 +360,14 @@
 //	114: 1.6
 //		m_iFramesPerRow in CObjectImageArray
 //
-//	117: 1.7
+//	117: 1.7 Alpha 1
 //		Added components to CItemType
 //
-//	118: 1.7
+//	118: 1.7 Alpha 1
 //		None
+//
+//	119: 1.7 Alpha 1
+//		Added iGeneration to CParticleArray:SParticle
 //
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 

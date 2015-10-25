@@ -6,6 +6,7 @@
 
 #define POINT_TAG								(CONSTLIT("Point"))
 
+#define BLEND_MODE_ATTRIB						(CONSTLIT("blendMode"))
 #define SCALE_WIDTH_ATTRIB						(CONSTLIT("scaleWidth"))
 #define SCALE_LENGTH_ATTRIB						(CONSTLIT("scaleLength"))
 #define COLOR_ATTRIB							(CONSTLIT("color"))
@@ -87,6 +88,8 @@ ALERROR CShapeEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 		m_byOpacity = strToInt(sAttrib, 255);
 	else
 		m_byOpacity = 255;
+
+	m_iBlendMode = CGDraw::ParseBlendMode(pDesc->GetAttribute(BLEND_MODE_ATTRIB));
 
 	//	Initialize the points structure
 
@@ -241,7 +244,8 @@ void CShapeEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 
 	BYTE byOpacity = (BYTE)m_pCreator->GetOpacity();
 	CG32bitPixel rgbColor = m_pCreator->GetColor();
-	m_CachedRegion.Fill(Dest, x, y, CG32bitPixel(rgbColor, byOpacity));
+
+	CGDraw::Region(Dest, x, y, m_CachedRegion, CG32bitPixel(rgbColor, byOpacity), m_pCreator->GetBlendMode());
 	}
 
 bool CShapeEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const

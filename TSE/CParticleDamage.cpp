@@ -55,7 +55,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	if (pParticles == NULL)
 		return ERR_MEMORY;
 
-	pParticles->Place(vPos, vVel);
+	pParticles->Place(vPos, CVector());
 
 	//	Get notifications when other objects are destroyed
 	pParticles->SetObjectDestructionHook();
@@ -68,13 +68,41 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	pParticles->m_pTarget = pTarget;
 	pParticles->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
 	pParticles->m_iCause = iCause;
-	pParticles->m_iEmitDirection = iDirection;
-	pParticles->m_vEmitSourcePos = vPos;
-	pParticles->m_vEmitSourceVel = (Source.GetObj() ? Source.GetObj()->GetVel() : CVector());
 	pParticles->m_iEmitTime = Max(1, pDesc->GetParticleEmitTime());
 	pParticles->m_iLifeLeft = pDesc->GetMaxLifetime() + pParticles->m_iEmitTime;
-	pParticles->m_Source = Source;
 	pParticles->m_iTick = 0;
+
+	//	Keep track of where we emitted particles relative to the source. We
+	//	need this so we can continue to emit from this location later.
+
+	pParticles->m_Source = Source;
+	if (!Source.IsEmpty())
+		{
+		//	Decompose the source position/velocity so that we can continue to
+		//	emit later (after the source has changed).
+		//
+		//	We start by computing the emission offset relative to the source
+		//	object when it points at 0 degrees.
+
+		int iSourceRotation = Source.GetObj()->GetRotation();
+		CVector vPosOffset = (vPos - Source.GetObj()->GetPos()).Rotate(-iSourceRotation);
+		CVector vVelOffset = (vVel - Source.GetObj()->GetVel()).Rotate(-iSourceRotation);
+
+		//	Remember these values so we can add them to the new source 
+		//	position/velocity.
+
+		pParticles->m_iEmitDirection = iDirection - iSourceRotation;
+		pParticles->m_vEmitSourcePos = vPosOffset;
+		pParticles->m_vEmitSourceVel = vVelOffset;
+		}
+	else
+		{
+		pParticles->m_iEmitDirection = iDirection;
+		pParticles->m_vEmitSourcePos = CVector();
+		pParticles->m_vEmitSourceVel = CVector();
+		}
+
+	//	Damage
 
 	pParticles->m_iDamage = pDesc->m_Damage.RollDamage();
 
@@ -177,7 +205,7 @@ void CParticleDamage::InitParticles (int iCount, const CVector &vSource, const C
 
 		for (i = 0; i < iCount; i++)
 			{
-			Metric rPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
+			Metric rPlace = Absolute(((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0);
 			Metric rTangentPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
 	
 			CVector vPlace = PolarToVector(iDirection, rRadius * rPlace);
@@ -197,7 +225,7 @@ void CParticleDamage::InitParticles (int iCount, const CVector &vSource, const C
 
 			//	Create the particle
 
-			m_Particles.AddParticle(vPos, vVel, m_pDesc->GetLifetime(), iRotation);
+			m_Particles.AddParticle(vPos, vVel, m_pDesc->GetLifetime(), iRotation, -1, m_iTick);
 			}
 		}
 	}
@@ -243,7 +271,7 @@ void CParticleDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
 		return;
 		}
 
-	//	Set the position of the object base on the average particle position
+	//	Set the position of the object based on the average particle position
 
 	SetPos(m_Particles.GetOrigin() + vNewPos);
 
@@ -252,10 +280,6 @@ void CParticleDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 	RECT rcBounds = m_Particles.GetBounds();
 	SetBounds(g_KlicksPerPixel * Max(RectWidth(rcBounds), RectHeight(rcBounds)));
-
-	//	Update emit source position
-
-	m_vEmitSourcePos = m_vEmitSourcePos + m_vEmitSourceVel;
 	}
 
 void CParticleDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
@@ -304,7 +328,7 @@ void CParticleDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		//	Otherwise, we use the painter for each particle
 
 		else
-			m_Particles.Paint(Dest, xOrigin, yOrigin, Ctx, m_pPainter);
+			m_Particles.Paint(Dest, xOrigin, yOrigin, Ctx, m_pPainter, m_pDesc->GetRatedSpeed());
 		}
 	}
 
@@ -459,10 +483,18 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (m_iTick < m_iEmitTime && !m_Source.IsEmpty())
 		{
+		//	Rotate the offsets appropriately
+
+		int iRotation = m_Source.GetObj()->GetRotation();
+		CVector vPos = m_vEmitSourcePos.Rotate(iRotation);
+		CVector vVel = m_vEmitSourceVel.Rotate(iRotation);
+
+		//	Emit
+
 		InitParticles(m_pDesc->GetParticleCount(),
-				m_vEmitSourcePos - GetPos(),
-				GetVel(),
-				m_iEmitDirection);
+				m_Source.GetObj()->GetPos() + vPos - m_Particles.GetOrigin(),
+				m_Source.GetObj()->GetVel() + vVel,
+				AngleMod(iRotation + m_iEmitDirection));
 		}
 
 	DEBUG_CATCH

@@ -1517,6 +1517,7 @@ class CParticleArray
 			int yVel;							//		(screen-coords, in 256ths of pixels per tick)
 												//		(not valid if using real coordinates)
 
+			int iGeneration;					//	Created on this tick
 			int iLifeLeft;						//	Ticks of life left
 			int iDestiny;						//	Random number from 1-360
 			int iRotation;						//	Particle rotation
@@ -1529,7 +1530,7 @@ class CParticleArray
 		CParticleArray (void);
 		~CParticleArray (void);
 
-		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, DWORD dwData = 0);
+		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, DWORD dwData = 0);
 		const RECT &GetBounds (void) const { return m_rcBounds; }
 		void GetBounds (CVector *retvUR, CVector *retvLL);
 		inline int GetCount (void) const { return m_iCount; }
@@ -1546,7 +1547,8 @@ class CParticleArray
 					int xPos,
 					int yPos,
 					SViewportPaintCtx &Ctx,
-					IEffectPainter *pPainter);
+					IEffectPainter *pPainter,
+					Metric rRatedSpeed = 0.0);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
 		void Update (SEffectUpdateCtx &Ctx);

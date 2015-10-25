@@ -75,7 +75,7 @@ CParticleArray::~CParticleArray (void)
 		delete [] m_pArray;
 	}
 
-void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft, int iRotation, int iDestiny, DWORD dwData)
+void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft, int iRotation, int iDestiny, int iGeneration, DWORD dwData)
 
 //	AddParticle
 //
@@ -120,6 +120,7 @@ void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int 
 		PosToXY(vVel * g_SecondsPerUpdate, &pParticle->xVel, &pParticle->yVel);
 		}
 
+	pParticle->iGeneration = iGeneration;
 	pParticle->iLifeLeft = iLifeLeft;
 	pParticle->iDestiny = (iDestiny == -1 ? mathRandom(0, g_DestinyRange - 1) : iDestiny);
 	pParticle->iRotation = iRotation;
@@ -345,7 +346,8 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 							int xPos,
 							int yPos,
 							SViewportPaintCtx &Ctx,
-							IEffectPainter *pPainter)
+							IEffectPainter *pPainter,
+							Metric rRatedSpeed)
 
 //	Paint
 //
@@ -354,6 +356,17 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 	{
 	int iSavedDestiny = Ctx.iDestiny;
 	int iSavedRotation = Ctx.iRotation;
+	int iSavedMaxLength = Ctx.iMaxLength;
+
+	//	If necessary set the max length based on the rated speed at the current
+	//	tick count.
+
+	Metric rMaxLengthFactor = 0.0;
+	bool bNeedMaxLength = (rRatedSpeed > 0.0);
+	if (bNeedMaxLength)
+		rMaxLengthFactor = g_SecondsPerUpdate * rRatedSpeed / g_KlicksPerPixel;
+
+	//	Loop
 
 	SParticle *pParticle = m_pArray;
 	SParticle *pEnd = pParticle + m_iCount;
@@ -371,6 +384,9 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 
 			Ctx.iDestiny = pParticle->iDestiny;
 			Ctx.iRotation = pParticle->iRotation;
+			if (bNeedMaxLength)
+				Ctx.iMaxLength = (int)(Max(1, (Ctx.iTick - pParticle->iGeneration)) * rMaxLengthFactor);
+
 			pPainter->Paint(Dest, x, y, Ctx);
 			}
 
@@ -381,6 +397,7 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 
 	Ctx.iDestiny = iSavedDestiny;
 	Ctx.iRotation = iSavedRotation;
+	Ctx.iMaxLength = iSavedMaxLength;
 	}
 
 void CParticleArray::PaintFireAndSmoke (CG32bitImage &Dest, 
@@ -757,6 +774,27 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 				m_pArray[i].Pos = XYToPos(m_pArray[i].x, m_pArray[i].y);
 				m_pArray[i].Vel = XYToPos(m_pArray[i].xVel, m_pArray[i].yVel);
 				}
+			}
+		}
+	else if (Ctx.dwVersion < 119)
+		{
+		for (i = 0; i < m_iCount; i++)
+			{
+			Ctx.pStream->Read((char *)&m_pArray[i].Pos, sizeof(CVector));
+			Ctx.pStream->Read((char *)&m_pArray[i].Vel, sizeof(CVector));
+			Ctx.pStream->Read((char *)&m_pArray[i].x, sizeof(DWORD));
+			Ctx.pStream->Read((char *)&m_pArray[i].y, sizeof(DWORD));
+			Ctx.pStream->Read((char *)&m_pArray[i].xVel, sizeof(DWORD));
+			Ctx.pStream->Read((char *)&m_pArray[i].yVel, sizeof(DWORD));
+			m_pArray[i].iGeneration = 0;
+			Ctx.pStream->Read((char *)&m_pArray[i].iLifeLeft, sizeof(DWORD));
+			Ctx.pStream->Read((char *)&m_pArray[i].iDestiny, sizeof(DWORD));
+			Ctx.pStream->Read((char *)&m_pArray[i].iRotation, sizeof(DWORD));
+			Ctx.pStream->Read((char *)&m_pArray[i].dwData, sizeof(DWORD));
+
+			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+			m_pArray[i].fAlive = ((dwLoad & 0x00000001) ? true : false);
+			m_pArray[i].dwSpare = 0;
 			}
 		}
 	else

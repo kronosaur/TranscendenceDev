@@ -810,6 +810,7 @@ class CShapeEffectCreator : public CEffectCreator
 		virtual CString GetTag (void) { return GetClassTag(); }
 
 		void CreateShapeRegion (int iAngle, int iLength, int iWidth, CG16bitBinaryRegion *pRegion);
+		inline CGDraw::EBlendModes GetBlendMode (void) const { return m_iBlendMode; }
 		inline CG32bitPixel GetColor (void) const { return m_rgbColor; }
 		inline int GetLength (void) const { return m_iLength; }
 		inline int GetLengthInc (void) const { return m_iLengthInc; }
@@ -836,6 +837,7 @@ class CShapeEffectCreator : public CEffectCreator
 
 		CG32bitPixel m_rgbColor;								//	Shape color
 		DWORD m_byOpacity;							//	Shape opacity
+		CGDraw::EBlendModes m_iBlendMode;
 
 		int m_iPointCount;
 		SPoint *m_Points;
