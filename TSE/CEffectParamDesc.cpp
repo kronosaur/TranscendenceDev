@@ -238,7 +238,7 @@ ALERROR CEffectParamDesc::InitColorFromXML (SDesignLoadCtx &Ctx, const CString &
 	return NOERROR;
 	}
 
-bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWORD *retdwID) const
+bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWORD *retdwID)
 
 //	FindIdentifier
 //

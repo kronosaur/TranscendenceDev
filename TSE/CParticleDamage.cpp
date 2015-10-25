@@ -45,8 +45,16 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	{
 	ALERROR error;
 
+	//	We better have a particle description.
+
+	const CParticleSystemDesc *pSystemDesc = pDesc->GetParticleSystemDesc();
+	ASSERT(pSystemDesc);
+	if (pSystemDesc == NULL)
+		return ERR_FAIL;
+
 	//	Make sure we have a valid CWeaponFireDesc (otherwise we won't be
 	//	able to save the object).
+
 	ASSERT(!pDesc->m_sUNID.IsBlank());
 
 	//	Create the area
@@ -68,7 +76,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	pParticles->m_pTarget = pTarget;
 	pParticles->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
 	pParticles->m_iCause = iCause;
-	pParticles->m_iEmitTime = Max(1, pDesc->GetParticleEmitTime());
+	pParticles->m_iEmitTime = Max(1, pSystemDesc->GetEmitLifetime().Roll());
 	pParticles->m_iLifeLeft = pDesc->GetMaxLifetime() + pParticles->m_iEmitTime;
 	pParticles->m_iTick = 0;
 
@@ -86,14 +94,13 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 		int iSourceRotation = Source.GetObj()->GetRotation();
 		CVector vPosOffset = (vPos - Source.GetObj()->GetPos()).Rotate(-iSourceRotation);
-		CVector vVelOffset = (vVel - Source.GetObj()->GetVel()).Rotate(-iSourceRotation);
 
 		//	Remember these values so we can add them to the new source 
 		//	position/velocity.
 
 		pParticles->m_iEmitDirection = iDirection - iSourceRotation;
 		pParticles->m_vEmitSourcePos = vPosOffset;
-		pParticles->m_vEmitSourceVel = vVelOffset;
+		pParticles->m_vEmitSourceVel = CVector();
 		}
 	else
 		{
@@ -124,18 +131,26 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 	//	Compute the maximum number of particles that we might have
 
-	int iMaxCount = pParticles->m_iEmitTime * pDesc->GetMaxParticleCount();
-	pParticles->m_Particles.Init(iMaxCount, vPos);
+	int iMaxCount = pParticles->m_iEmitTime * pSystemDesc->GetEmitRate().GetMaxValue();
+	pParticles->m_Particles.Init(iMaxCount);
 
-	//	Create the initial particles
+	//	Create the initial particles.
+	//
+	//	NOTE: We use the source velocity (instead of vVel) because Emit expects
+	//	to add the particle velocity.
 
-	int iInitCount = pDesc->GetParticleCount();
-	pParticles->InitParticles(iInitCount, CVector(), vVel, iDirection);
+	int iInitCount;
+	pParticles->m_Particles.Emit(*pSystemDesc, 
+			vPos - pParticles->GetOrigin(), 
+			(!Source.IsEmpty() ? Source.GetObj()->GetVel() : CVector()), 
+			iDirection, 
+			0, 
+			&iInitCount);
 
 	//	Figure out the number of particles that will cause full damage
 
 	if (pParticles->m_iEmitTime > 1)
-		pParticles->m_iParticleCount = pParticles->m_iEmitTime * pDesc->GetAveParticleCount();
+		pParticles->m_iParticleCount = pParticles->m_iEmitTime * pSystemDesc->GetEmitRate().GetAveValue();
 	else
 		pParticles->m_iParticleCount = iInitCount;
 
@@ -180,6 +195,11 @@ void CParticleDamage::InitParticles (int iCount, const CVector &vSource, const C
 	{
 	int i;
 
+	const CParticleSystemDesc *pSystemDesc = m_pDesc->GetParticleSystemDesc();
+	ASSERT(pSystemDesc);
+	if (pSystemDesc == NULL)
+		return;
+
 	//	Generate the number of particles
 
 	if (iCount > 0)
@@ -188,7 +208,7 @@ void CParticleDamage::InitParticles (int iCount, const CVector &vSource, const C
 
 		Metric rRadius = (6.0 * m_pDesc->GetRatedSpeed());
 
-		int iSpreadAngle = m_pDesc->GetParticleSpreadAngle();
+		int iSpreadAngle = pSystemDesc->GetSpreadAngle().Roll();
 		if (iSpreadAngle > 0)
 			iSpreadAngle = (iSpreadAngle / 2) + 1;
 		bool bSpreadAngle = (iSpreadAngle > 0);
@@ -197,7 +217,7 @@ void CParticleDamage::InitParticles (int iCount, const CVector &vSource, const C
 		Metric rTangentV = (3.0 * vTemp.GetY());
 		int iTangentAngle = (iDirection + 90) % 360;
 
-		int iSpreadWidth = m_pDesc->GetParticleSpreadWidth();
+		int iSpreadWidth = pSystemDesc->GetEmitWidth().Roll();
 		Metric rSpreadWidth = iSpreadWidth * g_KlicksPerPixel;
 		bool bSpreadWidth = (iSpreadWidth > 0);
 
@@ -273,7 +293,7 @@ void CParticleDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 	//	Set the position of the object based on the average particle position
 
-	SetPos(m_Particles.GetOrigin() + vNewPos);
+	SetPos(vNewPos);
 
 	//	Set the bounds (note, we make the bounds twice as large to deal
 	//	with the fact that we're moving).
@@ -314,7 +334,7 @@ void CParticleDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		//	Painting is relative to the origin
 
 		int xOrigin, yOrigin;
-		Ctx.XForm.Transform(m_Particles.GetOrigin(), &xOrigin, &yOrigin);
+		Ctx.XForm.Transform(GetOrigin(), &xOrigin, &yOrigin);
 
 		//	If we can get a paint descriptor, use that because it is faster
 
@@ -441,6 +461,11 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	{
 	DEBUG_TRY
 
+	const CParticleSystemDesc *pSystemDesc = m_pDesc->GetParticleSystemDesc();
+	ASSERT(pSystemDesc);
+	if (pSystemDesc == NULL)
+		return;
+
 	m_iTick++;
 
 	//	Update the single particle painter
@@ -464,7 +489,7 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Update (includes doing damage)
 
-	m_Particles.Update(EffectCtx);
+	m_Particles.Update(*pSystemDesc, EffectCtx);
 
 	//	If we're tracking, change velocity to follow target
 
@@ -491,10 +516,11 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	Emit
 
-		InitParticles(m_pDesc->GetParticleCount(),
-				m_Source.GetObj()->GetPos() + vPos - m_Particles.GetOrigin(),
+		m_Particles.Emit(*pSystemDesc, 
+				m_Source.GetObj()->GetPos() + vPos - GetOrigin(), 
 				m_Source.GetObj()->GetVel() + vVel,
-				AngleMod(iRotation + m_iEmitDirection));
+				AngleMod(iRotation + m_iEmitDirection),
+				m_iTick);
 		}
 
 	DEBUG_CATCH

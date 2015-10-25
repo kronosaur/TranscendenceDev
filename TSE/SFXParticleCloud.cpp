@@ -576,7 +576,7 @@ void CParticleCloudPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 		{
 		//	Update
 
-		m_Particles.Update(Ctx);
+		m_Particles.Update(CParticleSystemDesc(), Ctx);
 		}
 
 	//	Create new particles

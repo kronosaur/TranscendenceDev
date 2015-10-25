@@ -1,9 +1,9 @@
 //	TSEDeviceClassesImpl.h
 //
 //	Transcendence Device Classes
+//	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_DEVICE_CLASSES
-#define INCL_TSE_DEVICE_CLASSES
+#pragma once
 
 class CAutoDefenseClass : public CDeviceClass
 	{
@@ -578,6 +578,4 @@ class CWeaponClass : public CDeviceClass
 
 	friend CObjectClass<CWeaponClass>;
 	};
-
-#endif
 

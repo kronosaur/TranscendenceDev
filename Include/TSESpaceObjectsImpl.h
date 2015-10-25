@@ -1,9 +1,9 @@
 //	TSESpaceObjectsImpl.h
 //
 //	Transcendence CSpaceObject classes
+//	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_SPACE_OBJECTS
-#define INCL_TSE_SPACE_OBJECTS
+#pragma once
 
 class CAreaDamage : public CSpaceObject
 	{
@@ -492,6 +492,17 @@ class CParticleDamage : public CSpaceObject
 	private:
 		CParticleDamage (void);
 
+		//	This is the origin of the particle array in object coordinates. We 
+		//	always use a fixed anchor because the motion of the particles 
+		//	determines the position of the particle damage object (and not vice
+		//	versa, as in SFXParticleSystem).
+		//
+		//	We use 0,0 as a fixed point, which works as long as we can still 
+		//	convert kilometers to pixels and still be in range. We're good for
+		//	at least 1,000 light-minutes. [But if we ever need to scale beyond 
+		//	that, then we should set the origin to the original shot position.]
+
+		inline const CVector &GetOrigin (void) const { return NullVector; }
 		void InitParticles (int iCount, const CVector &vPos, const CVector &vInitVel, int iDirection);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
@@ -1503,5 +1514,4 @@ class CStation : public CSpaceObject
 	friend CObjectClass<CStation>;
 	};
 
-#endif
 

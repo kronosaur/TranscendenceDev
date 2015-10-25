@@ -1,18 +1,20 @@
 //	CWeaponFireDesc.cpp
 //
 //	CWeaponFireDesc class
+//	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
-#define FRAGMENT_TAG							CONSTLIT("Fragment")
-#define ENHANCED_TAG							CONSTLIT("Enhanced")
-#define IMAGE_TAG								CONSTLIT("Image")
-#define MISSILE_EXHAUST_TAG						CONSTLIT("Exhaust")
-#define EFFECT_TAG								CONSTLIT("Effect")
-#define HIT_EFFECT_TAG							CONSTLIT("HitEffect")
-#define FIRE_EFFECT_TAG							CONSTLIT("FireEffect")
 #define DAMAGE_TAG								CONSTLIT("Damage")
+#define EFFECT_TAG								CONSTLIT("Effect")
+#define ENHANCED_TAG							CONSTLIT("Enhanced")
 #define EVENTS_TAG								CONSTLIT("Events")
+#define MISSILE_EXHAUST_TAG						CONSTLIT("Exhaust")
+#define FIRE_EFFECT_TAG							CONSTLIT("FireEffect")
+#define FRAGMENT_TAG							CONSTLIT("Fragment")
+#define HIT_EFFECT_TAG							CONSTLIT("HitEffect")
+#define IMAGE_TAG								CONSTLIT("Image")
+#define PARTICLE_SYSTEM_TAG						CONSTLIT("ParticleSystem")
 
 #define ACCELERATION_FACTOR_ATTRIB				CONSTLIT("accelerationFactor")
 #define AMMO_ID_ATTRIB							CONSTLIT("ammoID")
@@ -98,7 +100,8 @@ static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 
 CWeaponFireDesc::CWeaponFireDesc (void) : 
 		m_pExtension(NULL),
-		m_pEnhanced(NULL)
+		m_pEnhanced(NULL),
+		m_pParticleDesc(NULL)
 
 //	CWeaponFireDesc constructor
 
@@ -131,6 +134,9 @@ CWeaponFireDesc::CWeaponFireDesc (const CWeaponFireDesc &Desc)
 	if (pPrev)
 		pPrev->pNext = NULL;
 
+	if (Desc.m_pParticleDesc)
+		m_pParticleDesc = new CParticleSystemDesc(*Desc.m_pParticleDesc);
+
 	//	Other
 
 	if (Desc.m_pEnhanced)
@@ -153,6 +159,9 @@ CWeaponFireDesc::~CWeaponFireDesc (void)
 
 	if (m_pEnhanced)
 		delete m_pEnhanced;
+
+	if (m_pParticleDesc)
+		delete m_pParticleDesc;
 	}
 
 void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -1265,6 +1274,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		}
 	else
 		{
+		m_MissileSpeed.SetConstant(100);
 		m_fVariableInitialSpeed = false;
 		m_rMissileSpeed = LIGHT_SPEED;
 		}
@@ -1399,22 +1409,50 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		{
 		m_iFireType = ftParticles;
 
+		//	Initialize a particle system descriptor
+
+		m_pParticleDesc = new CParticleSystemDesc;
+
+		//	Look for a <ParticleSystem> definition. If we have it, then we let
+		//	it initialize from there.
+
+		CXMLElement *pParticleSystem = pDesc->GetContentElementByTag(PARTICLE_SYSTEM_TAG);
+		if (pParticleSystem)
+			{
+			if (error = m_pParticleDesc->InitFromXML(Ctx, pParticleSystem))
+				return error;
+
+			//	We take certain values from the particle system.
+
+			m_MissileSpeed = m_pParticleDesc->GetEmitSpeed();
+			m_Lifetime.SetConstant(m_pParticleDesc->GetParticleLifetime().GetMaxValue() + m_pParticleDesc->GetEmitLifetime().GetMaxValue());
+			iMaxLifetime = m_Lifetime.GetMaxValue();
+			m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
+			m_rMissileSpeed = m_MissileSpeed.GetAveValueFloat() * LIGHT_SPEED / 100.0;
+			m_iMissChance = m_pParticleDesc->GetMissChance();
+			m_iSplashChance = m_pParticleDesc->GetSplashChance();
+			}
+
+		//	Otherwise, we initialize from our root (in backwards compatible mode).
+
+		else
+			{
+			if (error = m_pParticleDesc->InitFromWeaponDescXML(Ctx, pDesc))
+				return error;
+
+			//	In this case we honor settings from pDesc, since we're in 
+			//	backwards compatible mode. [In the normal case we expect these
+			//	settings to be in the <ParticleSystem> element.]
+
+			m_pParticleDesc->SetEmitSpeed(m_MissileSpeed);
+			m_pParticleDesc->SetParticleLifetime(m_Lifetime);
+			m_pParticleDesc->SetMissChance(m_iMissChance);
+			m_pParticleDesc->SetSplashChance(m_iSplashChance);
+			}
+
+		//	Initialize other variables
+
 		m_rMaxMissileSpeed = m_rMissileSpeed;
-
-		if (error = m_ParticleCount.LoadFromXML(pDesc->GetAttribute(PARTICLE_COUNT_ATTRIB)))
-			{
-			Ctx.sError = CONSTLIT("Invalid particle count.");
-			return error;
-			}
-
-		if (error = m_ParticleEmitTime.LoadFromXML(pDesc->GetAttribute(PARTICLE_EMIT_TIME_ATTRIB)))
-			{
-			Ctx.sError = CONSTLIT("Invalid particle emit time.");
-			return error;
-			}
-
-		m_iParticleSpread = pDesc->GetAttributeInteger(PARTICLE_SPREAD_ANGLE_ATTRIB);
-		m_iParticleSpreadWidth = pDesc->GetAttributeInteger(PARTICLE_SPREAD_WIDTH_ATTRIB);
 		}
 	else if (strEquals(sValue, FIRE_TYPE_RADIUS))
 		{

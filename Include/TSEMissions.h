@@ -3,8 +3,7 @@
 //	CMission implementation
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_MISSIONS
-#define INCL_TSE_MISSIONS
+#pragma once
 
 class CMission : public CSpaceObject
 	{
@@ -193,4 +192,3 @@ class CTimedMissionEvent : public CTimedEvent
 		CString m_sEvent;
 	};
 
-#endif

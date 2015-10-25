@@ -370,7 +370,7 @@ void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pO
 
 //	CreateInterpolatedParticles
 //
-//	Creates particles interpolated between to directions.
+//	Creates particles interpolated between two directions.
 
 	{
 	int i;
@@ -791,14 +791,16 @@ void CParticleSystemEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 		if (m_iEmitLifetime <= 0 || Ctx.iTick < m_iEmitLifetime)
 			CreateNewParticles(Ctx.pObj, m_EmitRate.Roll(), Ctx.vEmitPos, CalcInitialVel(Ctx.pObj));
 		}
-	else if (m_bUseObjectMotion && Ctx.pObj)
-		m_vLastEmitPos = Ctx.pObj->GetPos();
+	else
+		{
+		if (m_bUseObjectMotion && Ctx.pObj)
+			m_vLastEmitPos = Ctx.pObj->GetPos();
 
-	//	If we're fading, reset direction (otherwise, when painting thruster 
-	//	effects we'll try to interpolate between stale directions).
+		//	If we're fading, reset direction (otherwise, when painting thruster 
+		//	effects we'll try to interpolate between stale directions).
 
-	if (Ctx.bFade)
 		m_iCurDirection = -1;
+		}
 	}
 
 void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)

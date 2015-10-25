@@ -147,6 +147,108 @@ void CParticleArray::CleanUp (void)
 	m_iCount = 0;
 	}
 
+void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, int *retiEmitted)
+
+//	Emit
+//
+//	Emit particles based on the descriptor.
+//
+//	vSource is relative to the particle array origin.
+//
+//	vSourceVel is the velocity of the source relative to the array origin.
+//		For some effects, in which the array origin moves with the effect, this
+//		should be Null. But for particle damage, which has a fixed array origin,
+//		this should be the motion of the ship/station that fired.
+
+	{
+	int iCount = Desc.GetEmitRate().Roll();
+	if (iCount <= 0)
+		return;
+
+	switch (Desc.GetStyle())
+		{
+		case CParticleSystemDesc::styleExhaust:
+			//	LATER: Same as CParticleSystemEffectPainter::CreateFixedParticles...
+			break;
+
+		case CParticleSystemDesc::styleJet:
+			//	LATER: Same as CParticleSystemEffectPainter
+			break;
+
+		case CParticleSystemDesc::styleRadiate:
+			//	LATER: Same as CParticleSystemEffectPainter
+			break;
+
+		case CParticleSystemDesc::styleSpray:
+			EmitSpray(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			break;
+		}
+
+	if (retiEmitted)
+		*retiEmitted = iCount;
+	}
+
+void CParticleArray::EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitSpray
+//
+//	Emits a directional spray (compatible with particle weapon effects).
+
+	{
+	int i;
+
+	//	Compute some basic stuff
+
+	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
+	Metric rCurRotation = AngleToRadians(Desc.GetXformRotation() + iDirection);
+
+	//	Compute the spread angle, in radians
+
+	Metric rSpread = AngleToRadians(Max(0, Desc.GetSpreadAngle().Roll()));
+	Metric rHalfSpread = 0.5 * rSpread;
+
+	//	Compute the average distance traveled in 1 tick (for random placement)
+
+	Metric rTravelRange = g_SecondsPerUpdate * Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SPEED / 100.0;
+	Metric rSpreadRange = Desc.GetEmitWidth().Roll() * g_KlicksPerPixel;
+	CVector vTangent = ::PolarToVectorRadians(rCurRotation + (0.5 * g_Pi), rSpreadRange);
+
+	//	Create the particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		//	Rotation
+
+		Metric rRotation = rCurRotation + (rHalfSpread * mathRandom(-1000, 1000) / 1000.0);
+
+		//	Place along the line of travel
+
+		Metric rPlace = Absolute(((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0);
+		CVector vPos = vSource + ::PolarToVectorRadians(rRotation, rTravelRange * rPlace);
+
+		//	Adjust for spread
+
+		if (rSpreadRange > 0.0)
+			{
+			Metric rTangentPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
+			vPos = vPos + (vTangent * rTangentPlace);
+			}
+
+		//	Generate a random velocity 
+
+		Metric rSpeed = Desc.GetXformTime() * Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
+		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500));
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation));
+		}
+	}
+
 void CParticleArray::GetBounds (CVector *retvUR, CVector *retvLL)
 
 //	GetBounds
@@ -801,7 +903,7 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
 	}
 
-void CParticleArray::Update (SEffectUpdateCtx &Ctx)
+void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
 
 //	Update
 //
@@ -816,8 +918,8 @@ void CParticleArray::Update (SEffectUpdateCtx &Ctx)
 
 	//	Compute some values
 
-	int iSplashChance = (Ctx.pDamageDesc ? Ctx.pDamageDesc->GetParticleSplashChance() : 0);
-	int iGhostChance = (Ctx.pDamageDesc ? Ctx.pDamageDesc->GetParticleMissChance() : 0);
+	int iSplashChance = Desc.GetSplashChance();
+	int iGhostChance = Desc.GetMissChance();
 
 	//	Compute the velocity of the effect object in Km/tick
 

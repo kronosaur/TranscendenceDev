@@ -429,7 +429,19 @@ class CWeaponFireDesc
 		inline Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
 		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
-		inline int GetAveParticleCount (void) const { return m_ParticleCount.GetAveValue(); }
+
+		inline const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
+#if 0
+		inline int GetAveParticleCount (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitRate().GetAveValue() : 0); }
+		inline int GetMaxParticleCount (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitRate().GetMaxValue() : 0); }
+		inline int GetParticleCount (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitRate().Roll() : 0); }
+		inline int GetParticleEmitTime (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitLifetime().Roll() : 0); }
+		inline int GetParticleMissChance (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetMissChance() : m_iMissChance); }
+		inline int GetParticleSplashChance (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetSplashChance() : m_iSplashChance); }
+		inline int GetParticleSpreadAngle (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetSpreadAngle().Roll() : 0); }
+		inline int GetParticleSpreadWidth (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitWidth().Roll() : 0); }
+#endif
+
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
@@ -443,15 +455,8 @@ class CWeaponFireDesc
 		inline int GetLifetime (void) const { return m_Lifetime.Roll(); }
 		inline int GetManeuverRate (void) const { return m_iManeuverRate; }
 		inline int GetMaxLifetime (void) const { return m_Lifetime.GetMaxValue(); }
-		inline int GetMaxParticleCount (void) const { return m_ParticleCount.GetMaxValue(); }
 		inline Metric GetMaxRadius (void) const { return m_rMaxRadius; }
 		inline Metric GetMinRadius (void) const { return m_rMinRadius; }
-		inline int GetParticleCount (void) const { return m_ParticleCount.Roll(); }
-		inline int GetParticleEmitTime (void) const { return m_ParticleEmitTime.Roll(); }
-		inline int GetParticleMissChance (void) const { return m_iMissChance; }
-		inline int GetParticleSplashChance (void) const { return m_iSplashChance; }
-		inline int GetParticleSpreadAngle (void) const { return m_iParticleSpread; }
-		inline int GetParticleSpreadWidth (void) const { return m_iParticleSpreadWidth; }
 		inline int GetPassthrough (void) const { return m_iPassthrough; }
 		inline int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		inline Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
@@ -538,10 +543,13 @@ class CWeaponFireDesc
 		int m_iManeuverRate;				//	Angle turned at each maneuverability point
 
 		//	Particles (m_iFireType == ftParticles)
+		CParticleSystemDesc *m_pParticleDesc;
+#if 0
 		DiceRange m_ParticleCount;			//	Number of new particles per tick
 		DiceRange m_ParticleEmitTime;		//	Emit new particles for this number of ticks (default = 1)
 		int m_iParticleSpreadWidth;			//	Width of spread
 		int m_iParticleSpread;				//	Angle of spread
+#endif
 		int m_iSplashChance;				//	Chance that particles will splash
 		int m_iMissChance;					//	Chance that particles will miss
 
@@ -1501,107 +1509,6 @@ class CSystem : public CObject
 
 //	Miscellaneous Structures & Classes
 
-class CParticleArray
-	{
-	public:
-		struct SParticle
-			{
-			CVector Pos;						//	Position. Valid if we use real coordinates
-			CVector Vel;						//	Velocity. Valid if we use real coordinates
-												//		NOTE: In Km per tick (unlike normal velocities)
-
-			int x;								//	Offset from center of particle cloud
-			int y;								//		(screen-coords, in 256ths of pixels)
-												//		(valid in all cases)
-			int xVel;							//	Velocity relative to particle cloud
-			int yVel;							//		(screen-coords, in 256ths of pixels per tick)
-												//		(not valid if using real coordinates)
-
-			int iGeneration;					//	Created on this tick
-			int iLifeLeft;						//	Ticks of life left
-			int iDestiny;						//	Random number from 1-360
-			int iRotation;						//	Particle rotation
-			DWORD dwData;						//	Miscellaneous data for particle
-
-			DWORD fAlive:1;						//	TRUE if particle is alive
-			DWORD dwSpare:31;					//	Spare
-			};
-
-		CParticleArray (void);
-		~CParticleArray (void);
-
-		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, DWORD dwData = 0);
-		const RECT &GetBounds (void) const { return m_rcBounds; }
-		void GetBounds (CVector *retvUR, CVector *retvLL);
-		inline int GetCount (void) const { return m_iCount; }
-		inline SParticle *GetArray (int *retiCount = NULL) const { if (retiCount) *retiCount = m_iCount; return m_pArray; }
-		inline const CVector &GetOrigin (void) const { return m_vOrigin; }
-		void Init (int iMaxCount, const CVector &vOrigin = NullVector);
-		void Move (const CVector &vMove);
-		void Paint (CG32bitImage &Dest,
-					int xPos,
-					int yPos,
-					SViewportPaintCtx &Ctx,
-					SParticlePaintDesc &Desc);
-		void Paint (CG32bitImage &Dest,
-					int xPos,
-					int yPos,
-					SViewportPaintCtx &Ctx,
-					IEffectPainter *pPainter,
-					Metric rRatedSpeed = 0.0);
-		void ReadFromStream (SLoadCtx &Ctx);
-		inline void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
-		void Update (SEffectUpdateCtx &Ctx);
-		void UpdateMotionLinear (bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
-		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
-		void UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate, Metric rMaxSpeed);
-		void WriteToStream (IWriteStream *pStream) const;
-
-	private:
-		void CleanUp (void);
-		void PaintFireAndSmoke (CG32bitImage &Dest, 
-								int xPos, 
-								int yPos, 
-								SViewportPaintCtx &Ctx, 
-								int iLifetime, 
-								int iMinWidth,
-								int iMaxWidth,
-								int iCore,
-								int iFlame,
-								int iSmoke,
-								int iSmokeBrightness);
-		void PaintGaseous (CG32bitImage &Dest,
-						   int xPos,
-						   int yPos,
-						   SViewportPaintCtx &Ctx,
-						   int iMaxLifetime,
-						   int iMinWidth,
-						   int iMaxWidth,
-						   CG32bitPixel rgbPrimaryColor,
-						   CG32bitPixel rgbSecondaryColor);
-		void PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
-		void PaintLine (CG32bitImage &Dest,
-						int xPos,
-						int yPos,
-						SViewportPaintCtx &Ctx,
-						CG32bitPixel rgbPrimaryColor,
-						CG32bitPixel rgbSecondaryColor);
-		void PosToXY (const CVector &xy, int *retx, int *rety);
-		void UseRealCoords (void);
-		CVector XYToPos (int x, int y);
-
-		int m_iCount;
-		SParticle *m_pArray;
-		RECT m_rcBounds;						//	Bounding box in pixels relative to center
-		CVector m_vOrigin;						//	Origin position
-		CVector m_vCenterOfMass;				//	Center of mass
-		CVector m_vUR;							//	Bounds
-		CVector m_vLL;							//	Bounds
-
-		int m_iLastAdded;						//	Index of last particle added
-		bool m_bUseRealCoords;					//	If TRUE, we keep real (instead of int) coordinates
-	};
-
 class CShockwaveHitTest
 	{
 	public:
@@ -2080,80 +1987,6 @@ class COverlayList
 	private:
 		COverlay *m_pFirst;
 	};
-
-//	Particle Field Type
-
-#if 0
-class CParticleGroup;
-
-class IParticleAppearance
-	{
-	public:
-		virtual void Paint (CG32bitImage &Dest,
-							const ViewportTransform &Trans,
-							CParticleGroup *pGroup) = 0;
-	};
-
-class IParticleBehavior
-	{
-	};
-
-class IParticleMotion
-	{
-	};
-
-class CParticleGroupType : public CObject
-	{
-	public:
-		static ALERROR CreateFromXML (CXMLElement *pDesc, CParticleGroupType **retpType);
-
-		inline IParticleAppearance *GetAppearance (void) { return m_pAppearance; }
-		inline IParticleBehavior *GetBehavior (void) { return m_pBehavior; }
-		inline IParticleMotion *GetMotion (void) { return m_pMotion; }
-		inline DWORD GetUNID (void) { return m_dwUNID; }
-
-	private:
-		CParticleGroupType (void);
-
-		DWORD m_dwUNID;
-
-		IParticleAppearance *m_pAppearance;
-		IParticleBehavior *m_pBehavior;
-		IParticleMotion *m_pMotion;
-
-	friend CObjectClass<CParticleGroupType>;
-	};
-
-struct SParticle
-	{
-	inline bool IsAlive (void) { return iLifeLeft != -1; }
-
-	int iDestiny;					//	Particle randomization
-	int iLifeLeft;					//	Ticks left in life (-1 if particle is dead)
-	CVector vPos;			//	Position of particle
-	CVector vVel;			//	Velocity of particle
-	};
-
-class CParticleGroup
-	{
-	public:
-		static ALERROR CreateFromType (CParticleGroupType *pType,
-									   CSpaceObject *pAnchor,
-									   CParticleGroup **retpGroup);
-		~CParticleGroup (void);
-
-		void Paint (CG32bitImage &Dest, const ViewportTransform &Trans);
-
-	private:
-		CParticleGroup (void);
-
-		CParticleGroupType *m_pType;	//	Type of particle group
-
-		int m_iCount;					//	Number of particles in the array
-		int m_iAlive;					//	Number of particles that are alive in the group
-		SParticle *m_pParticles;		//	Array of particles
-	};
-#endif
 
 //	Space Objects
 
@@ -3319,21 +3152,10 @@ class CListWrapper : public IListData
 
 //	Implementations ------------------------------------------------------------
 
-#ifndef INCL_TSE_DEVICE_CLASSES
 #include "TSEDeviceClassesImpl.h"
-#endif
-
-#ifndef INCL_TSE_SPACE_OBJECTS
 #include "TSESpaceObjectsImpl.h"
-#endif
-
-#ifndef INCL_TSE_MISSIONS
 #include "TSEMissions.h"
-#endif
-
-#ifndef INCL_TSE_PLAYER
 #include "TSEPlayer.h"
-#endif
 
 //	The Universe ---------------------------------------------------------------
 //

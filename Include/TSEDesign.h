@@ -1593,13 +1593,6 @@ enum FireTypes
 	ftRadius,
 	};
 
-enum ParticleTypes
-	{
-	particleImage,
-	particlePlasma,
-	particleBolt,
-	};
-
 //	Communications
 
 //	DO NOT CHANGE NUMBERS
@@ -3262,48 +3255,7 @@ struct SShipGeneratorCtx
 
 //	Effects
 
-enum ParticlePaintStyles
-	{
-	paintPlain,
-	paintFlame,
-	paintSmoke,
-	paintImage,
-	paintLine,
-	};
-
-struct SParticlePaintDesc
-	{
-	SParticlePaintDesc (void)
-		{
-		iStyle = paintPlain;
-
-		pImage = NULL;
-		iVariants = 0;
-		bRandomStartFrame = false;
-		bDirectional = false;
-
-		iMaxLifetime = -1;
-		iMinWidth = 4;
-		iMaxWidth = 4;
-
-		rgbPrimaryColor = CG32bitPixel(255, 255, 255);
-		rgbSecondaryColor = CG32bitPixel(0, 0, 0);
-		}
-
-	ParticlePaintStyles iStyle;
-
-	CObjectImageArray *pImage;					//	Image for each particle
-	int iVariants;								//	No of image variants
-	bool bRandomStartFrame;						//	Start at a random animation
-	bool bDirectional;							//	Different images for each direction
-
-	int iMaxLifetime;							//	Max lifetime for particles
-	int iMinWidth;								//	Min width of particle
-	int iMaxWidth;								//	Max width of particle
-
-	CG32bitPixel rgbPrimaryColor;				//	Primary color 
-	CG32bitPixel rgbSecondaryColor;						//	Secondary color
-	};
+#include "TSEParticleSystem.h"
 
 struct SEffectHitDesc
 	{
@@ -3414,9 +3366,10 @@ class CEffectParamDesc
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
+		static bool FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWORD *retdwID = NULL);
+
 	private:
 		void CleanUp (void);
-		bool FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWORD *retdwID = NULL) const;
 
 		EDataTypes m_iType;
 

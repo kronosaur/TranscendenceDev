@@ -54,6 +54,9 @@
     <Filter Include="Notes and Documents">
       <UniqueIdentifier>{bc46a20a-e8b5-477b-9bb2-1882b15ca0c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ParticleSystem">
+      <UniqueIdentifier>{f2098d42-18ad-4eec-b83d-44945622abff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -125,6 +128,9 @@
     <ClInclude Include="SFXFractalImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -146,9 +152,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CMoveCtx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CParticleArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CResourceDb.cpp">
@@ -607,12 +610,6 @@
     <ClCompile Include="CMissile.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
-    <ClCompile Include="CParticleDamage.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="CParticleEffect.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="CRadiusDamage.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
@@ -870,6 +867,18 @@
     </ClCompile>
     <ClCompile Include="SFXParticleSystem.cpp">
       <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleArray.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleSystemDesc.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleDamage.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleEffect.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
