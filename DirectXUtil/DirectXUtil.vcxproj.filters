@@ -93,6 +93,12 @@
     <ClInclude Include="..\Include\TCirclePainter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TRegionPainter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawRegionImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="8bitDrawCircle.cpp">
@@ -325,6 +331,12 @@
     </ClCompile>
     <ClCompile Include="CGCloudGenerator3D.cpp">
       <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawRegion.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="BlendModes.cpp">
+      <Filter>Source Files\32bit</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

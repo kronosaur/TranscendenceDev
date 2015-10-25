@@ -258,7 +258,9 @@
     <ClInclude Include="..\Include\TBlt.h" />
     <ClInclude Include="..\Include\TCirclePainter.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
+    <ClInclude Include="..\Include\TRegionPainter.h" />
     <ClInclude Include="DrawImpl.h" />
+    <ClInclude Include="DrawRegionImpl.h" />
     <ClInclude Include="DX3DImpl.h" />
     <ClInclude Include="NoiseImpl.h" />
     <ClInclude Include="PixelMacros.h" />
@@ -315,6 +317,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="BlendModes.cpp" />
     <ClCompile Include="CCloudGenerator.cpp" />
     <ClCompile Include="CDXBackgroundBlt.cpp" />
     <ClCompile Include="CDXMatrix.cpp" />
@@ -468,6 +471,7 @@
     <ClCompile Include="DrawClouds.cpp" />
     <ClCompile Include="DrawLine.cpp" />
     <ClCompile Include="DrawRect.cpp" />
+    <ClCompile Include="DrawRegion.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="IPropertyAnimator.cpp" />
     <ClCompile Include="Noise.cpp" />

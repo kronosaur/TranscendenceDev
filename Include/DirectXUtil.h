@@ -134,6 +134,8 @@ class CGImagePlane
 #include "DXImage16.h"
 #include "DXImage8.h"
 
+#include "TRegionPainter.h"
+
 //	 8-bit drawing functions (for masks) ---------------------------------------
 
 void DrawHorzLine8bit (CG16bitImage &Dest, int x, int y, int cxWidth, BYTE byValue);

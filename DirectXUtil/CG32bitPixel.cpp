@@ -247,3 +247,20 @@ CG32bitPixel CG32bitPixel::PreMult (CG32bitPixel rgbColor, BYTE byAlpha)
 		return CG32bitPixel(pAlpha[byRed], pAlpha[byGreen], pAlpha[byBlue], byAlpha);
 		}
 	}
+
+CG32bitPixel CG32bitPixel::Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
+
+//	Screen
+//
+//	Blends using screen mode.
+//
+//	NOTE: We assume that rgbDest and rgbSrc have no alpha. If necessary, 
+//	pre-multiply source and/or dest and combine the alpha separately.
+
+	{
+	BYTE redResult = 0xff - g_Alpha8[(0xff - rgbDest.GetRed())][(0xff - rgbSrc.GetRed())];
+	BYTE greenResult = 0xff - g_Alpha8[(0xff - rgbDest.GetGreen())][(0xff - rgbSrc.GetGreen())];
+	BYTE blueResult = 0xff - g_Alpha8[(0xff - rgbDest.GetBlue())][(0xff - rgbSrc.GetBlue())];
+
+	return CG32bitPixel(redResult, greenResult, blueResult);
+	}

@@ -9,6 +9,7 @@ class CG8bitImage;
 class CG16bitFont;
 class CG16bitImage;
 class CGRealRGB;
+class CG16bitBinaryRegion;
 
 class CG32bitPixel
 	{
@@ -66,6 +67,7 @@ class CG32bitPixel
 		inline static CG32bitPixel Null (void) { return CG32bitPixel(0, true); }
 		inline static CG32bitPixel PreMult (CG32bitPixel rgbColor) { return PreMult(rgbColor, rgbColor.GetAlpha()); }
 		static CG32bitPixel PreMult (CG32bitPixel rgbColor, BYTE byAlpha);
+		static CG32bitPixel Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
 
 	private:
 		CG32bitPixel (DWORD dwValue, bool bRaw) : m_dwPixel(dwValue) { }
@@ -203,6 +205,20 @@ class CGDraw
 	{
 	public:
 
+		enum EBlendModes
+			{
+			blendNone =					-1,
+
+			blendNormal =				0,	//	Normal drawing
+			blendMultiply =				1,	//	Darkens images
+			blendOverlay =				2,	//	Combine multiple/screen
+			blendScreen =				3,	//	Brightens images
+
+			//	See BlendModes.cpp to add new blend modes
+
+			blendModeCount =			4,
+			};
+
 		//	Blts
 
 		static void BltGray (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
@@ -235,6 +251,10 @@ class CGDraw
 		static void RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor);
 		static void RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, int iLineWidth, CG32bitPixel rgbColor);
 
+		//	Regions
+
+		static void Region (CG32bitImage &Dest, int x, int y, const CG16bitBinaryRegion &Region, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+
 		//	Circles
 
 		static void Circle (CG8bitImage &Dest, int x, int y, int iRadius, BYTE Value);
@@ -245,6 +265,10 @@ class CGDraw
 		static void CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, CG32bitPixel rgbColor);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, const TArray<CG32bitPixel> &ColorRamp, BYTE byOpacity = 0xff);
+
+		//	Miscellaneous
+
+		static EBlendModes ParseBlendMode (const CString &sValue);
 
 	private:
 		struct SGlowRingLineCtx
@@ -285,6 +309,26 @@ class CGRasterize
 			};
 
 		static void Line (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, TArray<SLinePixel> *retPixels);
+	};
+
+//	Blending Classes -----------------------------------------------------------
+
+class CGBlendBlend
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return CG32bitPixel::Blend(rgbDest, rgbSource); }
+	};
+
+class CGBlendCopy
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+	};
+
+class CGBlendScreen
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return CG32bitPixel::Screen(rgbDest, rgbSource); }
 	};
 
 //	Implementation Helpers -----------------------------------------------------
