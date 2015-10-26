@@ -83,6 +83,7 @@ class CParticleSystemDesc
 		inline EStyles GetStyle (void) const { return m_iStyle; }
 		inline int GetXformRotation (void) const { return m_iXformRotation; }
 		inline Metric GetXformTime (void) const { return m_rXformTime; }
+		inline bool IsSprayCompatible (void) const { return m_bSprayCompatible; }
 		inline void SetEmitLifetime (const DiceRange &Value) { m_EmitLifetime = Value; }
 		inline void SetEmitRate (const DiceRange &Value) { m_EmitRate = Value; }
 		inline void SetEmitSpeed (const DiceRange &Value) { m_EmitSpeed = Value; }
@@ -90,6 +91,7 @@ class CParticleSystemDesc
 		inline void SetParticleLifetime (const DiceRange &Value) { m_ParticleLifetime = Value; }
 		inline void SetMissChance (int iValue) { m_iMissChance = iValue; }
 		inline void SetSplashChance (int iValue) { m_iSplashChance = iValue; }
+		inline void SetSprayCompatible (bool bValue = true) { m_bSprayCompatible = bValue; }
 		inline void SetSpreadAngle (const DiceRange &Value) { m_SpreadAngle = Value; }
 		inline void SetStyle (EStyles iStyle) { m_iStyle = iStyle; }
 		inline void SetXformRotation (int iValue) { m_iXformRotation = iValue; }
@@ -113,6 +115,10 @@ class CParticleSystemDesc
 
 		int m_iSplashChance;					//	Chance of a particle bouncing off
 		int m_iMissChance;						//	Chance of a particle missing
+
+		//	Flags
+
+		bool m_bSprayCompatible;				//	In previous versions we used to vary speed.
 	};
 
 class CParticleArray
@@ -145,6 +151,7 @@ class CParticleArray
 		~CParticleArray (void);
 
 		void Emit (const CParticleSystemDesc &Desc, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, int *retiEmitted = NULL);
+		void Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest, int xPos, int yPos, IEffectPainter *pPainter, SViewportPaintCtx &Ctx);
 		void Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 
 		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, DWORD dwData = 0);
@@ -170,7 +177,6 @@ class CParticleArray
 		inline void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
 		void UpdateMotionLinear (bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
 		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
-		void UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate, Metric rMaxSpeed);
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
@@ -204,6 +210,8 @@ class CParticleArray
 						CG32bitPixel rgbPrimaryColor,
 						CG32bitPixel rgbSecondaryColor);
 		void PosToXY (const CVector &xy, int *retx, int *rety);
+		void UpdateCollisions (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
+		void UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate, Metric rMaxSpeed);
 		void UseRealCoords (void);
 		CVector XYToPos (int x, int y);
 
@@ -218,4 +226,3 @@ class CParticleArray
 		int m_iLastAdded;						//	Index of last particle added
 		bool m_bUseRealCoords;					//	If TRUE, we keep real (instead of int) coordinates
 	};
-

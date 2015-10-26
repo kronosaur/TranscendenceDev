@@ -223,8 +223,9 @@ void CParticleArray::EmitSpray (const CParticleSystemDesc &Desc, int iCount, con
 
 		//	Place along the line of travel
 
-		Metric rPlace = Absolute(((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0);
-		CVector vPos = vSource + ::PolarToVectorRadians(rRotation, rTravelRange * rPlace);
+		Metric rPlace = 3.0 * rTravelRange * Absolute(((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0);
+		CVector vPosOffset = ::PolarToVectorRadians(rRotation, rPlace);
+		CVector vPos = vSource + vPosOffset;
 
 		//	Adjust for spread
 
@@ -238,6 +239,12 @@ void CParticleArray::EmitSpray (const CParticleSystemDesc &Desc, int iCount, con
 
 		Metric rSpeed = Desc.GetXformTime() * Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
 		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500));
+
+		//	If previous versions we jittered speed. In later versions, however, 
+		//	we rely on variable speed definition.
+
+		if (Desc.IsSprayCompatible())
+			vVel = vVel + (0.05 * vPosOffset);
 
 		//	Lifetime
 
@@ -366,6 +373,31 @@ void CParticleArray::Move (const CVector &vMove)
 	//	Center of mass
 
 	m_vCenterOfMass = (iParticleCount > 0 ? vTotalPos / (Metric)iParticleCount : NullVector);
+	}
+
+void CParticleArray::Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest, int xPos, int yPos, IEffectPainter *pPainter, SViewportPaintCtx &Ctx)
+
+//	Paint
+//
+//	Paint all particles
+
+	{
+	if (pPainter == NULL)
+		return;
+
+	//	See if the painter has a paint descriptor (which is faster for us).
+
+	SParticlePaintDesc PaintDesc;
+	if (pPainter->GetParticlePaintDesc(&PaintDesc))
+		{
+		PaintDesc.iMaxLifetime = Desc.GetParticleLifetime().GetMaxValue();
+		Paint(Dest, xPos, yPos, Ctx, PaintDesc);
+		}
+
+	//	Otherwise, we use the painter for each particle
+
+	else
+		Paint(Dest, xPos, yPos, Ctx, pPainter, Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SECOND / 100.0);
 	}
 
 void CParticleArray::Paint (CG32bitImage &Dest,
@@ -908,6 +940,22 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 //	Update
 //
 //	Updates the array based on the context
+
+	{
+	if ((Ctx.pDamageDesc || Ctx.iWakePotential > 0) && Ctx.pSystem)
+		UpdateCollisions(Desc, Ctx);
+
+	//	If we're tracking, change velocity to follow target
+
+	if (Ctx.pTarget && Ctx.pDamageDesc && Ctx.pDamageDesc->IsTrackingTime(Ctx.iTick))
+		UpdateTrackTarget(Ctx.pTarget, Ctx.pDamageDesc->GetManeuverRate(), Ctx.pDamageDesc->GetRatedSpeed());
+	}
+
+void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
+
+//	UpdateCollisions
+//
+//	Update particle collisions, including damage
 
 	{
 	int i;

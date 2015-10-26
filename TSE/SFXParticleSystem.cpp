@@ -776,12 +776,9 @@ void CParticleSystemEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	Ctx.pDamageDesc = m_pCreator->GetDamageDesc();
 	Ctx.iWakePotential = m_pCreator->GetWakePotential();
 
-	if ((Ctx.pDamageDesc || Ctx.iWakePotential > 0) && Ctx.pSystem)
-		{
-		//	Update
+	//	Update
 
-		m_Particles.Update(Ctx);
-		}
+	m_Particles.Update(CParticleSystemDesc(), Ctx);
 #endif
 
 	//	Create new particles

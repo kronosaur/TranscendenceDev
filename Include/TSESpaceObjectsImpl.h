@@ -503,7 +503,6 @@ class CParticleDamage : public CSpaceObject
 		//	that, then we should set the origin to the original shot position.]
 
 		inline const CVector &GetOrigin (void) const { return NullVector; }
-		void InitParticles (int iCount, const CVector &vPos, const CVector &vInitVel, int iDirection);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements

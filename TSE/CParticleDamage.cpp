@@ -186,70 +186,6 @@ CString CParticleDamage::GetName (DWORD *retdwFlags)
 	return CONSTLIT("enemy weapon");
 	}
 
-void CParticleDamage::InitParticles (int iCount, const CVector &vSource, const CVector &vInitVel, int iDirection)
-
-//	InitParticles
-//
-//	Initialize particles
-
-	{
-	int i;
-
-	const CParticleSystemDesc *pSystemDesc = m_pDesc->GetParticleSystemDesc();
-	ASSERT(pSystemDesc);
-	if (pSystemDesc == NULL)
-		return;
-
-	//	Generate the number of particles
-
-	if (iCount > 0)
-		{
-		//	Calculate a few temporaries
-
-		Metric rRadius = (6.0 * m_pDesc->GetRatedSpeed());
-
-		int iSpreadAngle = pSystemDesc->GetSpreadAngle().Roll();
-		if (iSpreadAngle > 0)
-			iSpreadAngle = (iSpreadAngle / 2) + 1;
-		bool bSpreadAngle = (iSpreadAngle > 0);
-
-		CVector vTemp = PolarToVector(iSpreadAngle, m_pDesc->GetRatedSpeed());
-		Metric rTangentV = (3.0 * vTemp.GetY());
-		int iTangentAngle = (iDirection + 90) % 360;
-
-		int iSpreadWidth = pSystemDesc->GetEmitWidth().Roll();
-		Metric rSpreadWidth = iSpreadWidth * g_KlicksPerPixel;
-		bool bSpreadWidth = (iSpreadWidth > 0);
-
-		//	Create the particles with appropriate velocity
-
-		for (i = 0; i < iCount; i++)
-			{
-			Metric rPlace = Absolute(((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0);
-			Metric rTangentPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
-	
-			CVector vPlace = PolarToVector(iDirection, rRadius * rPlace);
-			CVector vVel = vInitVel
-					+ (0.05 * vPlace)
-					+ PolarToVector(iTangentAngle, rTangentV * rTangentPlace);
-
-			//	Compute the spread width
-
-			CVector vPos = vSource + vPlace;
-			if (bSpreadWidth)
-				vPos = vPos + PolarToVector(iTangentAngle, rSpreadWidth * rTangentPlace);
-
-			//	Compute the travel rotation for these particles
-
-			int iRotation = (bSpreadAngle ? VectorToPolar(GetVel() + vVel) : iDirection);
-
-			//	Create the particle
-
-			m_Particles.AddParticle(vPos, vVel, m_pDesc->GetLifetime(), iRotation, -1, m_iTick);
-			}
-		}
-	}
-
 void CParticleDamage::OnDestroyed (SDestroyCtx &Ctx)
 
 //	OnDestroyed
@@ -322,34 +258,26 @@ void CParticleDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 //	Paint
 
 	{
-	if (m_pPainter)
-		{
-		CViewportPaintCtxSmartSave Save(Ctx);
-		Ctx.iTick = m_iTick;
-		Ctx.iVariant = 0;
-		Ctx.iRotation = 0;
-		Ctx.iDestiny = GetDestiny();
-		Ctx.iMaxLength = (int)((g_SecondsPerUpdate * Max(1, m_iTick) * m_pDesc->GetRatedSpeed()) / g_KlicksPerPixel);
+	const CParticleSystemDesc *pSystemDesc = m_pDesc->GetParticleSystemDesc();
+	ASSERT(pSystemDesc);
+	if (pSystemDesc == NULL)
+		return;
 
-		//	Painting is relative to the origin
+	CViewportPaintCtxSmartSave Save(Ctx);
+	Ctx.iTick = m_iTick;
+	Ctx.iVariant = 0;
+	Ctx.iRotation = 0;
+	Ctx.iDestiny = GetDestiny();
+	Ctx.iMaxLength = (int)((g_SecondsPerUpdate * Max(1, m_iTick) * m_pDesc->GetRatedSpeed()) / g_KlicksPerPixel);
 
-		int xOrigin, yOrigin;
-		Ctx.XForm.Transform(GetOrigin(), &xOrigin, &yOrigin);
+	//	Painting is relative to the origin
 
-		//	If we can get a paint descriptor, use that because it is faster
+	int xOrigin, yOrigin;
+	Ctx.XForm.Transform(GetOrigin(), &xOrigin, &yOrigin);
 
-		SParticlePaintDesc Desc;
-		if (m_pPainter->GetParticlePaintDesc(&Desc))
-			{
-			Desc.iMaxLifetime = m_pDesc->GetMaxLifetime();
-			m_Particles.Paint(Dest, xOrigin, yOrigin, Ctx, Desc);
-			}
+	//	If we can get a paint descriptor, use that because it is faster
 
-		//	Otherwise, we use the painter for each particle
-
-		else
-			m_Particles.Paint(Dest, xOrigin, yOrigin, Ctx, m_pPainter, m_pDesc->GetRatedSpeed());
-		}
+	m_Particles.Paint(*pSystemDesc, Dest, xOrigin, yOrigin, m_pPainter, Ctx);
 	}
 
 void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
@@ -486,15 +414,11 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	EffectCtx.iCause = m_iCause;
 	EffectCtx.bAutomatedWeapon = IsAutomatedWeapon();
 	EffectCtx.Attacker = m_Source;
+	EffectCtx.pTarget = m_pTarget;
 
 	//	Update (includes doing damage)
 
 	m_Particles.Update(*pSystemDesc, EffectCtx);
-
-	//	If we're tracking, change velocity to follow target
-
-	if (m_pTarget && m_pDesc->IsTrackingTime(m_iTick))
-		m_Particles.UpdateTrackTarget(m_pTarget, m_pDesc->GetManeuverRate(), m_pDesc->GetRatedSpeed());
 
 	//	Expired?
 

@@ -3289,6 +3289,7 @@ struct SEffectUpdateCtx
 			pEnhancements(NULL),
 			iCause(killedByDamage),
 			bAutomatedWeapon(false),
+			pTarget(NULL),
 
 			iTotalParticleCount(1),
 			iWakePotential(0),
@@ -3311,6 +3312,7 @@ struct SEffectUpdateCtx
 	DestructionTypes iCause;					//	Cause of damage
 	bool bAutomatedWeapon;						//	TRUE if this is an automated attack
 	CDamageSource Attacker;						//	Attacker
+	CSpaceObject *pTarget;						//	Target
 
 	//	Particle context
 	int iTotalParticleCount;					//	Total particles

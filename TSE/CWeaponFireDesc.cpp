@@ -1448,6 +1448,10 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			m_pParticleDesc->SetParticleLifetime(m_Lifetime);
 			m_pParticleDesc->SetMissChance(m_iMissChance);
 			m_pParticleDesc->SetSplashChance(m_iSplashChance);
+
+			//	We always set the old compatibility behavior.
+
+			m_pParticleDesc->SetSprayCompatible();
 			}
 
 		//	Initialize other variables

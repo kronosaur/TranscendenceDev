@@ -48,7 +48,8 @@ CParticleSystemDesc::CParticleSystemDesc (void) :
 		m_iXformRotation(0),
 		m_rXformTime(1.0),
 		m_iSplashChance(0),
-		m_iMissChance(0)
+		m_iMissChance(0),
+		m_bSprayCompatible(false)
 
 //	CParticleSystemDesc constructor
 
