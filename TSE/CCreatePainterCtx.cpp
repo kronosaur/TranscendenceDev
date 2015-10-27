@@ -25,6 +25,9 @@ CCreatePainterCtx::~CCreatePainterCtx (void)
 	{
 	if (m_pData)
 		m_pData->Discard(&g_pUniverse->GetCC());
+
+	if (m_pDefaultParams)
+		delete m_pDefaultParams;
 	}
 
 void CCreatePainterCtx::AddDataInteger (const CString &sField, int iValue)
@@ -110,6 +113,19 @@ void CCreatePainterCtx::SetDamageCtxData (CCodeChain &CC, CCSymbolTable *pTable,
 	CItemType *pWeapon = DamageCtx.pDesc->GetWeaponType();
 	DWORD dwWeaponUNID = (pWeapon ? pWeapon->GetUNID() : 0);
 	pTable->SetIntegerValue(CC, FIELD_WEAPON_UNID, dwWeaponUNID);
+	}
+
+void CCreatePainterCtx::SetDefaultParam (const CString &sParam, const CEffectParamDesc &Value)
+
+//	SetDefaultParam
+//
+//	Sets a default parameter for the painter
+
+	{
+	if (m_pDefaultParams == NULL)
+		m_pDefaultParams = new CEffectParamSet;
+
+	m_pDefaultParams->AddParam(sParam, Value);
 	}
 
 void CCreatePainterCtx::SetWeaponFireDescData (CCodeChain &CC, CCSymbolTable *pTable, CWeaponFireDesc *pDesc)

@@ -7,6 +7,7 @@
 #include "SFXFractalImpl.h"
 
 #define ANIMATE_ATTRIB					CONSTLIT("animate")
+#define BLEND_MODE_ATTRIB				CONSTLIT("blendMode")
 #define DETAIL_ATTRIB					CONSTLIT("detail")
 #define DISTORTION_ATTRIB				CONSTLIT("distortion")
 #define INTENSITY_ATTRIB				CONSTLIT("intensity")
@@ -38,7 +39,9 @@ class COrbEffectPainter : public IEffectPainter
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
-		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+
+	protected:
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
 	private:
 		enum EAnimationTypes
@@ -105,6 +108,7 @@ class COrbEffectPainter : public IEffectPainter
 		DiceRange m_SpikeCount;
 		CG32bitPixel m_rgbPrimaryColor;
 		CG32bitPixel m_rgbSecondaryColor;
+		CGDraw::EBlendModes m_iBlendMode;
 
 		int m_iLifetime;
 		EAnimationTypes m_iAnimation;
@@ -187,6 +191,7 @@ IEffectPainter *COrbEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 	//	Initialize the painter parameters
 
 	pPainter->SetParam(Ctx, ANIMATE_ATTRIB, m_Animate);
+	pPainter->SetParam(Ctx, BLEND_MODE_ATTRIB, m_BlendMode);
 	pPainter->SetParam(Ctx, DETAIL_ATTRIB, m_Detail);
 	pPainter->SetParam(Ctx, DISTORTION_ATTRIB, m_Distortion);
 	pPainter->SetParam(Ctx, INTENSITY_ATTRIB, m_Intensity);
@@ -222,6 +227,9 @@ ALERROR COrbEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	ALERROR error;
 
 	if (error = m_Animate.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(ANIMATE_ATTRIB), ANIMATION_TABLE))
+		return error;
+
+	if (error = m_BlendMode.InitBlendModeFromXML(Ctx, pDesc->GetAttribute(BLEND_MODE_ATTRIB)))
 		return error;
 
 	if (error = m_Detail.InitIntegerFromXML(Ctx, pDesc->GetAttribute(DETAIL_ATTRIB)))
@@ -286,6 +294,7 @@ COrbEffectPainter::COrbEffectPainter (CEffectCreator *pCreator) :
 		m_SpikeCount(0, 0, 6),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
 		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
+		m_iBlendMode(CGDraw::blendNormal),
 		m_iLifetime(0),
 		m_iAnimation(animateNone),
 		m_pPainter(NULL),
@@ -713,6 +722,9 @@ void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 	if (strEquals(sParam, ANIMATE_ATTRIB))
 		retValue->InitInteger(m_iAnimation);
 
+	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
+		retValue->InitInteger(m_iBlendMode);
+
 	else if (strEquals(sParam, DETAIL_ATTRIB))
 		retValue->InitInteger(m_iDetail);
 
@@ -752,17 +764,18 @@ bool COrbEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(10);
+	retList->InsertEmpty(11);
 	retList->GetAt(0) = ANIMATE_ATTRIB;
-	retList->GetAt(1) = DETAIL_ATTRIB;
-	retList->GetAt(2) = DISTORTION_ATTRIB;
-	retList->GetAt(3) = INTENSITY_ATTRIB;
-	retList->GetAt(4) = LIFETIME_ATTRIB;
-	retList->GetAt(5) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(6) = RADIUS_ATTRIB;
-	retList->GetAt(7) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(8) = SPIKE_COUNT_ATTRIB;
-	retList->GetAt(9) = STYLE_ATTRIB;
+	retList->GetAt(1) = BLEND_MODE_ATTRIB;
+	retList->GetAt(2) = DETAIL_ATTRIB;
+	retList->GetAt(3) = DISTORTION_ATTRIB;
+	retList->GetAt(4) = INTENSITY_ATTRIB;
+	retList->GetAt(5) = LIFETIME_ATTRIB;
+	retList->GetAt(6) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(7) = RADIUS_ATTRIB;
+	retList->GetAt(8) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(9) = SPIKE_COUNT_ATTRIB;
+	retList->GetAt(10) = STYLE_ATTRIB;
 
 	return true;
 	}
@@ -852,7 +865,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		case styleSmooth:
 			{
 			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
-			CGDraw::Circle(Dest, x, y, Table.GetCount(), Table);
+			CGDraw::Circle(Dest, x, y, Table.GetCount(), Table, m_iBlendMode);
 			break;
 			}
 		}
@@ -976,7 +989,7 @@ bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void COrbEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+void COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //
@@ -985,6 +998,9 @@ void COrbEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam,
 	{
 	if (strEquals(sParam, ANIMATE_ATTRIB))
 		m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
+
+	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
+		m_iBlendMode = Value.EvalBlendMode(Ctx);
 
 	else if (strEquals(sParam, DETAIL_ATTRIB))
 		m_iDetail = Value.EvalIntegerBounded(Ctx, 0, 100, 25);

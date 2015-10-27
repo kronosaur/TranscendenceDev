@@ -30,7 +30,9 @@ class CParticleCometEffectPainter : public IEffectPainter
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
-		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+
+	protected:
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
 	private:
 		struct SParticle
@@ -469,7 +471,7 @@ bool CParticleCometEffectPainter::PointInImage (int x, int y, int iTick, int iVa
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void CParticleCometEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+void CParticleCometEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //

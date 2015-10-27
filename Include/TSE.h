@@ -429,19 +429,7 @@ class CWeaponFireDesc
 		inline Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
 		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
-
 		inline const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
-#if 0
-		inline int GetAveParticleCount (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitRate().GetAveValue() : 0); }
-		inline int GetMaxParticleCount (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitRate().GetMaxValue() : 0); }
-		inline int GetParticleCount (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitRate().Roll() : 0); }
-		inline int GetParticleEmitTime (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitLifetime().Roll() : 0); }
-		inline int GetParticleMissChance (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetMissChance() : m_iMissChance); }
-		inline int GetParticleSplashChance (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetSplashChance() : m_iSplashChance); }
-		inline int GetParticleSpreadAngle (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetSpreadAngle().Roll() : 0); }
-		inline int GetParticleSpreadWidth (void) const { return (m_pParticleDesc ? m_pParticleDesc->GetEmitWidth().Roll() : 0); }
-#endif
-
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }

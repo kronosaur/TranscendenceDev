@@ -40,7 +40,9 @@ static char *CACHED_EVENTS[CEffectCreator::evtCount] =
 		"GetParameters",
 	};
 
-CEffectCreator::CEffectCreator (void) : m_pDamage(NULL)
+CEffectCreator::CEffectCreator (void) : 
+		m_iInstance(instCreator),
+		m_pDamage(NULL)
 
 //	CEffectCreator constructor
 
@@ -289,7 +291,11 @@ ALERROR CEffectCreator::CreateSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *p
 		return ERR_MEMORY;
 
 	pCreator->m_sUNID = sUNID;
-	pCreator->m_iInstance = instCreator;
+
+	//	Instancing
+
+	if (error = pCreator->InitInstanceFromXML(Ctx, pDesc))
+		return error;
 
 	//	Load events
 
@@ -511,6 +517,21 @@ ALERROR CEffectCreator::InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 
 	//	Figure out what kind of instancing model we use
 
+	if (error = InitInstanceFromXML(Ctx, pDesc))
+		return error;
+
+	//	Done
+
+	return NOERROR;
+	}
+
+ALERROR CEffectCreator::InitInstanceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+//	InitInstanceFromXML
+//
+//	Initializes the instance model
+
+	{
 	CString sAttrib;
 	if (pDesc->FindAttribute(INSTANCE_ATTRIB, &sAttrib))
 		{
@@ -526,10 +547,6 @@ ALERROR CEffectCreator::InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 			return ERR_FAIL;
 			}
 		}
-	else
-		m_iInstance = instCreator;
-
-	//	Done
 
 	return NOERROR;
 	}

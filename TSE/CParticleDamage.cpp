@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+#define LIFETIME_ATTRIB					CONSTLIT("lifetime")
+
 static CObjectClass<CParticleDamage>g_Class(OBJID_CPARTICLEDAMAGE, NULL);
 
 CParticleDamage::CParticleDamage (void) : CSpaceObject(&g_Class),

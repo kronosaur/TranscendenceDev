@@ -41,7 +41,9 @@ class CLightningStormEffectPainter : public IEffectPainter
 		virtual void GetRect (RECT *retRect) const;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
-		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+
+	protected:
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
 	private:
 		enum EStyles
@@ -469,7 +471,7 @@ bool CLightningStormEffectPainter::PointInImage (int x, int y, int iTick, int iV
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void CLightningStormEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+void CLightningStormEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //

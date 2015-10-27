@@ -31,7 +31,9 @@ class CRayEffectPainter : public IEffectPainter
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
-		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+
+	protected:
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
 	private:
 		enum EAnimationTypes
@@ -1328,7 +1330,7 @@ bool CRayEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void CRayEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+void CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //

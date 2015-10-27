@@ -5,6 +5,26 @@
 
 #include "PreComp.h"
 
+CEffectParamDesc::CEffectParamDesc (EDataTypes iType, int iValue) : m_pItem(NULL)
+
+//	CEffectParamDesc constructor
+
+	{
+	switch (iType)
+		{
+		case typeColorConstant:
+		case typeIntegerConstant:
+			m_iType = iType;
+			m_dwData = (DWORD)iValue;
+			break;
+
+		default:
+			ASSERT(false);
+			m_iType = typeNull;
+			break;
+		}
+	}
+
 CEffectParamDesc::~CEffectParamDesc (void)
 
 //	CEffectParamDesc destructor
@@ -27,6 +47,67 @@ void CEffectParamDesc::CleanUp (void)
 		}
 
 	m_iType = typeNull;
+	}
+
+void CEffectParamDesc::Copy (const CEffectParamDesc &Src)
+
+//	Copy
+//
+//	Copies from the source. We assume that we are in a pristine state
+//	(otherwise, call CleanUp() first).
+
+	{
+	m_iType = Src.m_iType;
+
+	switch (Src.m_iType)
+		{
+		case typeBoolConstant:
+		case typeColorConstant:
+		case typeIntegerConstant:
+			m_dwData = Src.m_dwData;
+			break;
+
+		case typeIntegerDiceRange:
+			m_DiceRange = Src.m_DiceRange;
+			break;
+
+		case typeStringConstant:
+			m_sData = Src.m_sData;
+			break;
+
+		case typeVectorConstant:
+			m_vVector = Src.m_vVector;
+			break;
+		}
+	}
+
+CGDraw::EBlendModes CEffectParamDesc::EvalBlendMode (CCreatePainterCtx &Ctx, CGDraw::EBlendModes iDefault) const
+
+//	EvalBlendMode
+//
+//	Returns a blend mode
+
+	{
+	switch (m_iType)
+		{
+		case typeIntegerConstant:
+			return (CGDraw::EBlendModes)Max((int)CGDraw::blendNormal, Min((int)m_dwData, (int)CGDraw::blendModeCount - 1));
+
+		case typeIntegerDiceRange:
+			return (CGDraw::EBlendModes)Max((int)CGDraw::blendNormal, Min((int)m_DiceRange.Roll(), (int)CGDraw::blendModeCount - 1));
+
+		case typeStringConstant:
+			{
+			CGDraw::EBlendModes iMode = CGDraw::ParseBlendMode(m_sData);
+			if (iMode == CGDraw::blendNone)
+				return iDefault;
+
+			return iMode;
+			}
+
+		default:
+			return iDefault;
+		}
 	}
 
 bool CEffectParamDesc::EvalBool (CCreatePainterCtx &Ctx) const
@@ -268,6 +349,38 @@ bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWO
 	//	Not found
 
 	return false;
+	}
+
+ALERROR CEffectParamDesc::InitBlendModeFromXML (SDesignLoadCtx &Ctx, const CString &sValue)
+
+//	InitBlendModeFromXML
+//
+//	Initializes a blend mode
+
+	{
+	ASSERT(m_iType == typeNull);
+
+	//	If the value is blank, then we leave as defaults
+
+	if (sValue.IsBlank())
+		{
+		m_iType = typeNull;
+		return NOERROR;
+		}
+
+	//	Convert.
+
+	CGDraw::EBlendModes iMode = CGDraw::ParseBlendMode(sValue);
+	if (iMode == CGDraw::blendNone)
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid effect param blend mode: %s"), sValue);
+		return ERR_FAIL;
+		}
+
+	m_iType = typeIntegerConstant;
+	m_dwData = iMode;
+
+	return NOERROR;
 	}
 
 ALERROR CEffectParamDesc::InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CString &sValue, LPSTR *pIDMap)

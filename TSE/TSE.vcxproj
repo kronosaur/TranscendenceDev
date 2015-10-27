@@ -237,6 +237,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Include\TSEEffects.h" />
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEParticleSystem.h" />
     <ClInclude Include="..\Include\TSEPlayer.h" />

@@ -247,6 +247,14 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (bool bTrackingObj, bool bU
 	Ctx.SetTrackingObject(bTrackingObj);
 	Ctx.SetUseObjectCenter(bUseObjectCenter);
 
+	//	If this is particle damage, then the effect is per particle. In that
+	//	case, we set some default values for the effect.
+
+	if (m_iFireType == ftParticles)
+		{
+		Ctx.SetDefaultParam(LIFETIME_ATTRIB, CEffectParamDesc(m_pParticleDesc->GetParticleLifetime().GetMaxValue()));
+		}
+
 	return m_pEffect.CreatePainter(Ctx);
 	}
 

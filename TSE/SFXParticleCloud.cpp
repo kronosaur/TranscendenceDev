@@ -53,11 +53,11 @@ class CParticleCloudPainter : public IEffectPainter
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
-		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 		virtual void SetPos (const CVector &vPos) { m_Particles.SetOrigin(vPos); }
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
 	private:
@@ -703,7 +703,7 @@ void CParticleCloudPainter::SetLifetime (int iLifetime)
 		m_iEmitLifetime = (m_pCreator->GetEmitLifetime() == -1 ? 100 : m_pCreator->GetEmitLifetime()) * iLifetime / 100;
 	}
 
-void CParticleCloudPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+void CParticleCloudPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //
