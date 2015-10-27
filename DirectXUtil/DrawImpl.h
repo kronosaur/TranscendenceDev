@@ -288,16 +288,39 @@ class CRadialCirclePainter8 : public TRadialPainter8<CRadialCirclePainter8>
 		TArray<BYTE> m_Ramp;
 	};
 
-class CRadialCirclePainter : public TRadialPainter32<CRadialCirclePainter>
+template <class BLENDER> class CRadialCirclePainter : public TRadialPainter32<CRadialCirclePainter<BLENDER>, BLENDER>
 	{
 	public:
-		CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult = false);
+		CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult = false) : TRadialPainter32(iRadius)
+			{
+			int i;
 
-		inline CG32bitPixel GetColorAt (int iRadius) const { return m_pColorRamp->GetAt(iRadius); }
+			//	If the ramp is not pre-multiplied, then we need to do that now
+
+			if (!bPreMult)
+				{
+				//	Pre-multiply the color ramp
+
+				m_ColorRamp.InsertEmpty(ColorRamp.GetCount());
+				m_pColorRamp = &m_ColorRamp;
+
+				for (i = 0; i < m_ColorRamp.GetCount(); i++)
+					m_ColorRamp[i] = CG32bitPixel::PreMult(ColorRamp[i]);
+				}
+
+			//	Otherwise we just take the ramp we've been given
+
+			else
+				m_pColorRamp = &ColorRamp;
+			}
 
 	private:
+		inline CG32bitPixel GetColorAt (int iRadius) const { return m_pColorRamp->GetAt(iRadius); }
+
 		const TArray<CG32bitPixel> *m_pColorRamp;
 		TArray<CG32bitPixel> m_ColorRamp;
+
+		friend TRadialPainter32;
 	};
 
 //	Lines ----------------------------------------------------------------------

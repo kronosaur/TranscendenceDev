@@ -12,6 +12,6 @@ void CGComposite::Circle (CG32bitImage &Dest, int x, int y, int iRadius, const T
 //	Draws a circle with a color ramp
 
 	{
-	CRadialCirclePainter Painter(iRadius, ColorRamp);
+	CRadialCirclePainter<CGBlendComposite> Painter(iRadius, ColorRamp);
 	Painter.Composite(Dest, x, y);
 	}

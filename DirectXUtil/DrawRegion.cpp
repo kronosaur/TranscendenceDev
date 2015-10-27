@@ -32,11 +32,6 @@ void CGDraw::Region (CG32bitImage &Dest, int x, int y, const CG16bitBinaryRegion
 
 		case blendScreen:
 			{
-			//	If source has transparency, then pre-multiply
-
-			if (rgbColor.GetAlpha() != 0xff)
-				rgbColor = CG32bitPixel::PreMult(rgbColor);
-
 			TFillRegionSolid<CGBlendScreen> Painter(rgbColor);
 			Painter.Draw(Dest, x, y, Region);
 			break;

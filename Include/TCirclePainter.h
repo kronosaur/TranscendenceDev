@@ -522,7 +522,7 @@ template <class PAINTER> class TRadialPainter8
 		int m_yDest;
 	};
 
-template <class PAINTER> class TRadialPainter32
+template <class PAINTER, class BLENDER> class TRadialPainter32
 	{
 	public:
 
@@ -872,7 +872,7 @@ template <class PAINTER> class TRadialPainter32
 						&& bPaintTop
 						&& m_iRadius > 0)
 					{
-					*pCenterTop = CG32bitPixel::Blend(*pCenterTop, GET_COLOR(0));
+					BLENDER::SetBlendPreMult(pCenterTop, GET_COLOR(0));
 					}
 
 				//	Continue
@@ -926,58 +926,40 @@ template <class PAINTER> class TRadialPainter32
 					if (m_xDest - xPos < m_rcClip->right && m_xDest - xPos >= m_rcClip->left)
 						{
 						if (bPaintTop)
-							*(pCenterTop - xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterTop - xPos, rgbColor);
 
 						if (bPaintBottom)
-							*(pCenterBottom - xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterBottom - xPos, rgbColor);
 						}
 
 					if (xPos > 0 && m_xDest + xPos < m_rcClip->right && m_xDest + xPos >= m_rcClip->left)
 						{
 						if (bPaintTop)
-							*(pCenterTop + xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterTop + xPos, rgbColor);
 
 						if (bPaintBottom)
-							*(pCenterBottom + xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterBottom + xPos, rgbColor);
 						}
 					}
 				else
 					{
-					BYTE *pAlphaInv = CG32bitPixel::AlphaTable(byOpacity ^ 0xff);
-
-					WORD wRed = rgbColor.GetRed();
-					WORD wGreen = rgbColor.GetGreen();
-					WORD wBlue = rgbColor.GetBlue();
-
-					//	Draw transparent
-
-#define DRAW_PIXEL(pos)	\
-						{ \
-						BYTE byRedResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetRed()] + wRed)); \
-						BYTE byGreenResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetGreen()] + wGreen)); \
-						BYTE byBlueResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetBlue()] + wBlue)); \
-						\
-						*(pos) = CG32bitPixel(byRedResult, byGreenResult, byBlueResult); \
-						}
-
 					if (m_xDest - xPos < m_rcClip->right && m_xDest - xPos >= m_rcClip->left)
 						{
 						if (bPaintTop)
-							DRAW_PIXEL(pCenterTop - xPos);
+							BLENDER::SetBlendPreMult(pCenterTop - xPos, rgbColor);
 
 						if (bPaintBottom)
-							DRAW_PIXEL(pCenterBottom - xPos);
+							BLENDER::SetBlendPreMult(pCenterBottom - xPos, rgbColor);
 						}
 
 					if (xPos > 0 && m_xDest + xPos < m_rcClip->right && m_xDest + xPos >= m_rcClip->left)
 						{
 						if (bPaintTop)
-							DRAW_PIXEL(pCenterTop + xPos);
+							BLENDER::SetBlendPreMult(pCenterTop + xPos, rgbColor);
 
 						if (bPaintBottom)
-							DRAW_PIXEL(pCenterBottom + xPos);
+							BLENDER::SetBlendPreMult(pCenterBottom + xPos, rgbColor);
 						}
-#undef DRAW_PIXEL
 					}
 
 				xPos++;

@@ -259,10 +259,10 @@ class CGDraw
 
 		static void Circle (CG8bitImage &Dest, int x, int y, int iRadius, BYTE Value);
 		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor);
-		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp);
+		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp, EBlendModes iMode = blendNormal, bool bPreMult = false);
 		static void CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
 		static void CircleGradient (CG8bitImage &Dest, int x, int y, int iRadius, BYTE CenterValue, BYTE EdgeValue);
-		static void CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor);
+		static void CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, CG32bitPixel rgbColor);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, const TArray<CG32bitPixel> &ColorRamp, BYTE byOpacity = 0xff);
 
@@ -312,23 +312,81 @@ class CGRasterize
 	};
 
 //	Blending Classes -----------------------------------------------------------
+//
+//	The following methods are defined:
+//
+//	Blend: Combines two pixels where rgbSource may have alpha transparency (though it may be 0 or 0xff).
+//	BlendPreMult: Same as Blend but we assume that RGB of source has already been multiplied by its alpha.
+//	Copy: Combines two pixels where rgbSource is guaranteed to have alpha 0xff.
 
-class CGBlendBlend
+template <class BLENDER> class TBlendImpl
+	{
+	public:
+		inline static void SetBlend (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::Blend(*pDest, rgbSource); }
+		inline static void SetBlendPreMult (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::BlendPreMult(*pDest, rgbSource); }
+		inline static void SetCopy (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::Copy(*pDest, rgbSource); }
+	};
+
+class CGBlendBlend : public TBlendImpl<CGBlendBlend>
 	{
 	public:
 		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return CG32bitPixel::Blend(rgbDest, rgbSource); }
+
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) 
+			{
+			BYTE *pAlphaInv = CG32bitPixel::AlphaTable(rgbSource.GetAlpha() ^ 0xff);	//	Equivalent to 255 - rgbSrc.GetAlpha()
+
+			BYTE byRedResult = pAlphaInv[rgbDest.GetRed()] + rgbSource.GetRed();
+			BYTE byGreenResult = pAlphaInv[rgbDest.GetGreen()] + rgbSource.GetGreen();
+			BYTE byBlueResult = pAlphaInv[rgbDest.GetBlue()] + rgbSource.GetBlue();
+
+			return CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
+			}
+
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
 	};
 
-class CGBlendCopy
+class CGBlendComposite : public TBlendImpl<CGBlendComposite>
+	{
+	public:
+		//	LATER
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+	};
+
+class CGBlendCopy : public TBlendImpl<CGBlendCopy>
 	{
 	public:
 		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
 	};
 
-class CGBlendScreen
+class CGBlendScreen : public TBlendImpl<CGBlendScreen>
 	{
 	public:
-		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return CG32bitPixel::Screen(rgbDest, rgbSource); }
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) 
+			{
+			BYTE *pAlpha = CG32bitPixel::AlphaTable(rgbSource.GetAlpha());
+
+			BYTE redResult = 0xff - CG32bitPixel::AlphaTable(0xff - rgbDest.GetRed())[(0xff - pAlpha[rgbSource.GetRed()])];
+			BYTE greenResult = 0xff - CG32bitPixel::AlphaTable(0xff - rgbDest.GetGreen())[(0xff - pAlpha[rgbSource.GetGreen()])];
+			BYTE blueResult = 0xff - CG32bitPixel::AlphaTable(0xff - rgbDest.GetBlue())[(0xff - pAlpha[rgbSource.GetBlue()])];
+
+			return CG32bitPixel(redResult, greenResult, blueResult);
+			}
+
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			BYTE redResult = 0xff - CG32bitPixel::AlphaTable(0xff - rgbDest.GetRed())[(0xff - rgbSource.GetRed())];
+			BYTE greenResult = 0xff - CG32bitPixel::AlphaTable(0xff - rgbDest.GetGreen())[(0xff - rgbSource.GetGreen())];
+			BYTE blueResult = 0xff - CG32bitPixel::AlphaTable(0xff - rgbDest.GetBlue())[(0xff - rgbSource.GetBlue())];
+
+			return CG32bitPixel(redResult, greenResult, blueResult);
+			}
+
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return CG32bitPixel::Screen(rgbDest, rgbSource); }
 	};
 
 //	Implementation Helpers -----------------------------------------------------

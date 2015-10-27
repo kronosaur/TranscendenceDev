@@ -121,15 +121,29 @@ void CGDraw::Circle (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, 
 		}
 	}
 
-void CGDraw::Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp)
+void CGDraw::Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp, EBlendModes iMode, bool bPreMult)
 
 //	Circle
 //
 //	Draws a circle with a color ramp
 
 	{
-	CRadialCirclePainter Painter(iRadius, ColorRamp);
-	Painter.Draw(Dest, x, y);
+	switch (iMode)
+		{
+		case blendNormal:
+			{
+			CRadialCirclePainter<CGBlendBlend> Painter(iRadius, ColorRamp, bPreMult);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendScreen:
+			{
+			CRadialCirclePainter<CGBlendScreen> Painter(iRadius, ColorRamp, bPreMult);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+		}
 	}
 
 void CGDraw::CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, int xSrc, int ySrc, int cxSrc, int cySrc)
@@ -154,7 +168,7 @@ void CGDraw::CircleGradient (CG8bitImage &Dest, int x, int y, int iRadius, BYTE 
 	Painter.Draw(Dest, x, y);
 	}
 
-void CGDraw::CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor)
+void CGDraw::CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, EBlendModes iBlendMode)
 
 //	CircleGradient
 //
@@ -179,8 +193,7 @@ void CGDraw::CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32
 
 	//	Draw the circle
 
-	CRadialCirclePainter Painter(iRadius, ColorRamp, true);
-	Painter.Draw(Dest, x, y);
+	Circle(Dest, x, y, iRadius, ColorRamp, iBlendMode, true);
 	}
 
 void CGDraw::RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, CG32bitPixel rgbColor)
@@ -240,30 +253,3 @@ CRadialCirclePainter8::CRadialCirclePainter8 (int iRadius, BYTE CenterValue, BYT
 		m_Ramp[i] = (BYTE)(iStart + (iRange * i / iRadius));
 	}
 
-//	CRadialCirclePainter -------------------------------------------------------
-
-CRadialCirclePainter::CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult) : TRadialPainter32(iRadius)
-
-//	CCirclePainter constructor
-
-	{
-	int i;
-
-	//	If the ramp is not pre-multiplied, then we need to do that now
-
-	if (!bPreMult)
-		{
-		//	Pre-multiply the color ramp
-
-		m_ColorRamp.InsertEmpty(ColorRamp.GetCount());
-		m_pColorRamp = &m_ColorRamp;
-
-		for (i = 0; i < m_ColorRamp.GetCount(); i++)
-			m_ColorRamp[i] = CG32bitPixel::PreMult(ColorRamp[i]);
-		}
-
-	//	Otherwise we just take the ramp we've been given
-
-	else
-		m_pColorRamp = &ColorRamp;
-	}
