@@ -60,12 +60,13 @@ class CParticleSystemDesc
 			{
 			styleUnknown =					0,
 			
-			styleExhaust =					1,
-			styleJet =						2,
-			styleRadiate =					3,
-			styleSpray =					4,
+			styleAmorphous =				1,
+			styleExhaust =					2,
+			styleJet =						3,
+			styleRadiate =					4,
+			styleSpray =					5,
 
-			styleMax =						4,
+			styleMax =						5,
 			};
 
 		CParticleSystemDesc (void);
@@ -181,6 +182,7 @@ class CParticleArray
 
 	private:
 		void CleanUp (void);
+		void EmitAmorphous (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void PaintFireAndSmoke (CG32bitImage &Dest, 
 								int xPos, 

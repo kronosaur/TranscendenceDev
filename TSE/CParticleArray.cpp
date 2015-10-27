@@ -167,6 +167,10 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSour
 
 	switch (Desc.GetStyle())
 		{
+		case CParticleSystemDesc::styleAmorphous:
+			EmitAmorphous(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			break;
+
 		case CParticleSystemDesc::styleExhaust:
 			//	LATER: Same as CParticleSystemEffectPainter::CreateFixedParticles...
 			break;
@@ -186,6 +190,74 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSour
 
 	if (retiEmitted)
 		*retiEmitted = iCount;
+	}
+
+void CParticleArray::EmitAmorphous (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitAmorphous
+//
+//	Emits a directional stream of particles in the shape of a comet. The head
+//	of the comet will travel at maximum speed, while the tail will travel at
+//	minimum speed.
+
+	{
+	const Metric GAUSSIAN_SCALE = 0.5;
+
+	int i;
+
+	//	Compute some basic stuff
+
+	Metric rCurRotation = AngleToRadians(Desc.GetXformRotation() + iDirection);
+
+	//	Compute the range in speed
+
+	Metric rMaxSpeed = Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+	Metric rMinSpeed = Desc.GetEmitSpeed().GetMinValue() * LIGHT_SPEED / 100.0;
+	Metric rSpeedRange = Max(0.01 * LIGHT_SPEED, rMaxSpeed - rMinSpeed);
+
+	//	Compute the spread angle, in radians
+
+	Metric rSpread = AngleToRadians(Max(0, Desc.GetSpreadAngle().Roll()));
+	Metric rHalfSpread = 0.5 * rSpread;
+
+	//	If the emissions come from a line, calculate that (emitWidth)
+
+	Metric rSpreadRange = Desc.GetEmitWidth().Roll() * g_KlicksPerPixel;
+	CVector vTangent = ::PolarToVectorRadians(rCurRotation + (0.5 * g_Pi), rSpreadRange);
+
+	//	Create the particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		//	Pick the position of the particle along the main axis, with a 
+		//	concentration towards the head.
+
+		Metric rLengthPos = GAUSSIAN_SCALE * Absolute(::mathRandomGaussian());
+		Metric rSpeed = Max(0.01 * LIGHT_SPEED, rMaxSpeed - (rSpeedRange * rLengthPos));
+
+		//	Pick a position along the width axis. Again, we concentrate on the
+		//	center.
+
+		Metric rWidthPos = GAUSSIAN_SCALE * ::mathRandomGaussian();
+		Metric rRotation = rCurRotation + (rHalfSpread * rWidthPos);
+
+		//	All particle start near the emission point
+
+		CVector vPos = vSource;
+		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rRotation, rSpeed);
+
+		//	Adjust for spread
+
+		if (rSpreadRange > 0.0)
+			{
+			Metric rTangentPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
+			vPos = vPos + (vTangent * rTangentPlace);
+			}
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), AngleToDegrees(rRotation));
+		}
 	}
 
 void CParticleArray::EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)

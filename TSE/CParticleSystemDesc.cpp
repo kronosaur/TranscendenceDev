@@ -29,6 +29,7 @@ static LPSTR STYLE_TABLE[] =
 	//	Must be same order as EStyles
 		"",
 
+		"amorphous",
 		"exhaust",
 		"jet",
 		"radiate",
@@ -93,7 +94,7 @@ ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		return error;
 		}
 
-	if (error = m_ParticleLifetime.LoadFromXML(pDesc->GetAttribute(EMIT_WIDTH_ATTRIB)))
+	if (error = m_ParticleLifetime.LoadFromXML(pDesc->GetAttribute(PARTICLE_LIFETIME_ATTRIB)))
 		{
 		Ctx.sError = CONSTLIT("Invalid particleLifetime.");
 		return error;
