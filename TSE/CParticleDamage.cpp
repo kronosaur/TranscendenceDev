@@ -122,7 +122,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 	//	Painter
 
-	pParticles->m_pPainter = pDesc->CreateEffectPainter();
+	pParticles->m_pPainter = pDesc->CreateParticlePainter();
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 

@@ -638,6 +638,8 @@ class CParticleCometEffectCreator : public CEffectCreator
 		//	CEffectCreator virtuals
 		virtual int GetLifetime (void) { return -1; }
 
+		static const TArray<CVector> &GetSplinePoints (void);
+
 	protected:
 		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx);
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);

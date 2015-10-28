@@ -61,22 +61,27 @@ class CParticleSystemDesc
 			styleUnknown =					0,
 			
 			styleAmorphous =				1,
-			styleExhaust =					2,
-			styleJet =						3,
-			styleRadiate =					4,
-			styleSpray =					5,
+			styleComet =					2,
+			styleExhaust =					3,
+			styleJet =						4,
+			styleRadiate =					5,
+			styleSpray =					6,
 
-			styleMax =						5,
+			styleMax =						6,
 			};
 
 		CParticleSystemDesc (void);
 
+		inline void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { retTypesUsed->SetAt(m_pParticleEffect.GetUNID(), true); }
+		inline ALERROR Bind (SDesignLoadCtx &Ctx) { return m_pParticleEffect.Bind(Ctx); }
+		inline IEffectPainter *CreateParticlePainter (CCreatePainterCtx &Ctx) { return m_pParticleEffect.CreatePainter(Ctx); }
 		ALERROR InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		inline const DiceRange &GetEmitLifetime (void) const { return m_EmitLifetime; }
 		inline const DiceRange &GetEmitRate (void) const { return m_EmitRate; }
 		inline const DiceRange &GetEmitSpeed (void) const { return m_EmitSpeed; }
 		inline const DiceRange &GetEmitWidth (void) const { return m_EmitWidth; }
+		inline CEffectCreator *GetParticleEffect (void) { return m_pParticleEffect; }
 		inline const DiceRange &GetParticleLifetime (void) const { return m_ParticleLifetime; }
 		inline int GetMissChance (void) const { return m_iMissChance; }
 		inline int GetSplashChance (void) const { return m_iSplashChance; }
@@ -85,6 +90,7 @@ class CParticleSystemDesc
 		inline int GetXformRotation (void) const { return m_iXformRotation; }
 		inline Metric GetXformTime (void) const { return m_rXformTime; }
 		inline bool IsSprayCompatible (void) const { return m_bSprayCompatible; }
+		void MarkImages (void);
 		inline void SetEmitLifetime (const DiceRange &Value) { m_EmitLifetime = Value; }
 		inline void SetEmitRate (const DiceRange &Value) { m_EmitRate = Value; }
 		inline void SetEmitSpeed (const DiceRange &Value) { m_EmitSpeed = Value; }
@@ -116,6 +122,10 @@ class CParticleSystemDesc
 
 		int m_iSplashChance;					//	Chance of a particle bouncing off
 		int m_iMissChance;						//	Chance of a particle missing
+
+		//	Particles
+
+		CEffectCreatorRef m_pParticleEffect;	//	Effect for each particle
 
 		//	Flags
 
@@ -183,6 +193,7 @@ class CParticleArray
 	private:
 		void CleanUp (void);
 		void EmitAmorphous (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
+		void EmitComet (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void PaintFireAndSmoke (CG32bitImage &Dest, 
 								int xPos, 

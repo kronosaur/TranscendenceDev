@@ -31,6 +31,8 @@ class CParticleCometEffectPainter : public IEffectPainter
 		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
+		static const TArray<CVector> &GetSplinePoints (void) { InitSplinePoints(); return m_Points; }
+
 	protected:
 		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
@@ -42,7 +44,7 @@ class CParticleCometEffectPainter : public IEffectPainter
 			};
 
 		bool CalcIntermediates (void);
-		void InitSplinePoints (void);
+		static void InitSplinePoints (void);
 		inline int GetMaxAge (void) const { return m_Points.GetCount() - 1; }
 		CVector GetParticlePos (int iParticle, int iTick, int iDirection, int *retiAge = NULL, int *retiLength = NULL);
 
@@ -80,6 +82,16 @@ CParticleCometEffectCreator::~CParticleCometEffectCreator (void)
 	{
 	if (m_pSingleton)
 		delete m_pSingleton;
+	}
+
+const TArray<CVector> &CParticleCometEffectCreator::GetSplinePoints (void)
+
+//	GetSplinePoints
+//
+//	Returns the points
+
+	{
+	return CParticleCometEffectPainter::GetSplinePoints();
 	}
 
 IEffectPainter *CParticleCometEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)

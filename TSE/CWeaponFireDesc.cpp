@@ -181,6 +181,9 @@ void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pHitEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pFireEffect.GetUNID(), true);
 
+	if (m_pParticleDesc)
+		m_pParticleDesc->AddTypesUsed(retTypesUsed);
+
 	SFragmentDesc *pNext = m_pFirstFragment;
 	while (pNext)
 		{
@@ -246,14 +249,6 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (bool bTrackingObj, bool bU
 	Ctx.SetWeaponFireDesc(this);
 	Ctx.SetTrackingObject(bTrackingObj);
 	Ctx.SetUseObjectCenter(bUseObjectCenter);
-
-	//	If this is particle damage, then the effect is per particle. In that
-	//	case, we set some default values for the effect.
-
-	if (m_iFireType == ftParticles)
-		{
-		Ctx.SetDefaultParam(LIFETIME_ATTRIB, CEffectParamDesc(m_pParticleDesc->GetParticleLifetime().GetMaxValue()));
-		}
 
 	return m_pEffect.CreatePainter(Ctx);
 	}
@@ -326,6 +321,34 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 		}
 	}
 
+IEffectPainter *CWeaponFireDesc::CreateParticlePainter (void)
+
+//	CreateParticlePainter
+//
+//	Creates an effect for a particle
+
+	{
+	if (m_pParticleDesc == NULL || m_iFireType != ftParticles)
+		return NULL;
+
+	CCreatePainterCtx Ctx;
+	Ctx.SetWeaponFireDesc(this);
+
+	//	We set the lifetime of the particle to whatever the descriptor defines.
+
+	Ctx.SetDefaultParam(LIFETIME_ATTRIB, CEffectParamDesc(m_pParticleDesc->GetParticleLifetime().GetMaxValue()));
+
+	//	See if the particle descriptor has an effect.
+
+	IEffectPainter *pPainter = m_pParticleDesc->CreateParticlePainter(Ctx);
+	if (pPainter)
+		return pPainter;
+
+	//	Otherwise, we use the projectile effect (for backwards compatibility)
+
+	return m_pEffect.CreatePainter(Ctx);
+	}
+
 bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue)
 
 //	FindDataField
@@ -390,6 +413,9 @@ CEffectCreator *CWeaponFireDesc::FindEffectCreator (const CString &sUNID)
 
 			case 'f':
 				return pDesc->m_pFireEffect;
+
+			case 'p':
+				return (pDesc->m_pParticleDesc ? pDesc->m_pParticleDesc->GetParticleEffect() : NULL);
 
 			default:
 				return NULL;
@@ -1160,6 +1186,7 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 	//	Effects
 
 	m_pEffect.Set(NULL);
+	m_pParticleDesc = NULL;
 
 	//	Load stealth
 
@@ -1427,13 +1454,13 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		CXMLElement *pParticleSystem = pDesc->GetContentElementByTag(PARTICLE_SYSTEM_TAG);
 		if (pParticleSystem)
 			{
-			if (error = m_pParticleDesc->InitFromXML(Ctx, pParticleSystem))
+			if (error = m_pParticleDesc->InitFromXML(Ctx, pParticleSystem, sUNID))
 				return error;
 
 			//	We take certain values from the particle system.
 
 			m_MissileSpeed = m_pParticleDesc->GetEmitSpeed();
-			m_Lifetime.SetConstant(m_pParticleDesc->GetParticleLifetime().GetMaxValue() + m_pParticleDesc->GetEmitLifetime().GetMaxValue());
+			m_Lifetime.SetConstant(m_pParticleDesc->GetParticleLifetime().GetMaxValue() + (m_pParticleDesc->GetEmitLifetime().GetMaxValue() - 1));
 			iMaxLifetime = m_Lifetime.GetMaxValue();
 			m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
 			m_rMissileSpeed = m_MissileSpeed.GetAveValueFloat() * LIGHT_SPEED / 100.0;
@@ -1698,6 +1725,9 @@ void CWeaponFireDesc::MarkImages (void)
 		pFragment->pDesc->MarkImages();
 		pFragment = pFragment->pNext;
 		}
+
+	if (m_pParticleDesc)
+		m_pParticleDesc->MarkImages();
 	}
 
 ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -1732,6 +1762,10 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	if (error = m_FireSound.Bind(Ctx))
 		return error;
+
+	if (m_pParticleDesc)
+		if (error = m_pParticleDesc->Bind(Ctx))
+			return error;
 
 	if (m_pEnhanced)
 		if (error = m_pEnhanced->OnDesignLoadComplete(Ctx))

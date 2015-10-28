@@ -5,11 +5,14 @@
 
 #include "PreComp.h"
 
+#define PARTICLE_EFFECT_TAG						CONSTLIT("particleEffect")
+
 #define EMIT_LIFETIME_ATTRIB					CONSTLIT("emitLifetime")
 #define EMIT_RATE_ATTRIB						CONSTLIT("emitRate")
 #define EMIT_SPEED_ATTRIB						CONSTLIT("emitSpeed")
 #define EMIT_WIDTH_ATTRIB						CONSTLIT("emitWidth")
 #define MISS_CHANCE_ATTRIB						CONSTLIT("missChance")
+#define PARTICLE_EFFECT_ATTRIB					CONSTLIT("particleEffect")
 #define PARTICLE_LIFETIME_ATTRIB				CONSTLIT("particleLifetime")
 #define SPLASH_CHANCE_ATTRIB					CONSTLIT("splashChance")
 #define SPREAD_ANGLE_ATTRIB						CONSTLIT("spreadAngle")
@@ -30,6 +33,7 @@ static LPSTR STYLE_TABLE[] =
 		"",
 
 		"amorphous",
+		"comet",
 		"exhaust",
 		"jet",
 		"radiate",
@@ -57,7 +61,7 @@ CParticleSystemDesc::CParticleSystemDesc (void) :
 	{
 	}
 
-ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
 
 //	InitFromXML
 //
@@ -112,6 +116,14 @@ ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_iMissChance = pDesc->GetAttributeIntegerBounded(MISS_CHANCE_ATTRIB, 0, 100, 0);
 	m_iSplashChance = pDesc->GetAttributeIntegerBounded(SPLASH_CHANCE_ATTRIB, 0, 100, 0);
 
+	//	Load the effect to use
+
+	if (error = m_pParticleEffect.LoadEffect(Ctx, 
+			strPatternSubst("%s:p", sUNID),
+			pDesc->GetContentElementByTag(PARTICLE_EFFECT_TAG),
+			pDesc->GetAttribute(PARTICLE_EFFECT_ATTRIB)))
+		return error;
+
 	return NOERROR;
 	}
 
@@ -151,4 +163,15 @@ ALERROR CParticleSystemDesc::InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLEle
 		}
 
 	return NOERROR;
+	}
+
+void CParticleSystemDesc::MarkImages (void)
+
+//	MarkImages
+//
+//	Make sure we've loaded our images.
+	
+	{
+	if (m_pParticleEffect) 
+		m_pParticleEffect->MarkImages(); 
 	}

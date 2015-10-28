@@ -171,6 +171,10 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSour
 			EmitAmorphous(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
 			break;
 
+		case CParticleSystemDesc::styleComet:
+			EmitComet(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			break;
+
 		case CParticleSystemDesc::styleExhaust:
 			//	LATER: Same as CParticleSystemEffectPainter::CreateFixedParticles...
 			break;
@@ -196,8 +200,8 @@ void CParticleArray::EmitAmorphous (const CParticleSystemDesc &Desc, int iCount,
 
 //	EmitAmorphous
 //
-//	Emits a directional stream of particles in the shape of a comet. The head
-//	of the comet will travel at maximum speed, while the tail will travel at
+//	Emits a directional stream of particles with a random shape. The head
+//	of the particles will travel at maximum speed, while the tail will travel at
 //	minimum speed.
 
 	{
@@ -257,6 +261,72 @@ void CParticleArray::EmitAmorphous (const CParticleSystemDesc &Desc, int iCount,
 		//	Add the particle
 
 		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), AngleToDegrees(rRotation));
+		}
+	}
+
+void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitComet
+//
+//	Emits a directional stream of particles in the shape of a comet. The head
+//	of the comet will travel at maximum speed, while the tail will travel at
+//	minimum speed.
+
+	{
+	const TArray<CVector> &SplinePoints = CParticleCometEffectCreator::GetSplinePoints();
+	const int SPLINE_CHOOSE_POINTS = 1000;
+
+	int i;
+
+	//	Compute some basic stuff
+
+	int iCurRotation = Desc.GetXformRotation() + iDirection;
+	Metric rCurRotation = AngleToRadians(iCurRotation);
+
+	//	Compute the range in speed
+
+	Metric rMaxSpeed = Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+	Metric rMinSpeed = Desc.GetEmitSpeed().GetMinValue() * LIGHT_SPEED / 100.0;
+	Metric rSpeedRange = Max(0.01 * LIGHT_SPEED, rMaxSpeed - rMinSpeed);
+
+	//	Compute the size of the comet (at the time we emit)
+
+	Metric rLength = g_SecondsPerUpdate * Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SPEED / 100.0;
+	Metric rWidth = Max(0.5 * rLength, Desc.GetEmitWidth().GetMaxValue() * g_KlicksPerPixel);
+
+	//	Use a stepper to cluster the points towards the head.
+
+	CStepIncrementor SplinePos(CStepIncrementor::styleSquare, 0.0, SplinePoints.GetCount() - 1, SPLINE_CHOOSE_POINTS);
+	CStepIncrementor WidthPos(CStepIncrementor::styleSquare, 0.0, 1.0, SPLINE_CHOOSE_POINTS);
+
+	//	Create the particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		//	Pick a random position on the comet line
+
+		const CVector &vSplinePos = SplinePoints[(int)SplinePos.GetAt(mathRandom(0, SPLINE_CHOOSE_POINTS))];
+
+		//	Pick a random position on the width and adjust the spline
+
+		Metric rWidthAdj = WidthPos.GetAt(mathRandom(0, SPLINE_CHOOSE_POINTS));
+		if ((i % 2) == 1)
+			rWidthAdj = -rWidthAdj;
+
+		CVector vSplineAdj(vSplinePos.GetX() * rLength, vSplinePos.GetY() * rWidthAdj * rWidth);
+
+		//	Rotate the spline
+
+		CVector vSplinePosRot = vSplineAdj.Rotate(iCurRotation + 180);
+		CVector vPos = vSource + vSplinePosRot;
+
+		//	Pick a velocity, proportional to the place on the spline
+
+		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rCurRotation, rMaxSpeed - (rSpeedRange * vSplinePos.GetX()));
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), AngleToDegrees(rCurRotation));
 		}
 	}
 
@@ -560,6 +630,7 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 //	Paint using a painter for each particle
 
 	{
+	int iSavedTick = Ctx.iTick;
 	int iSavedDestiny = Ctx.iDestiny;
 	int iSavedRotation = Ctx.iRotation;
 	int iSavedMaxLength = Ctx.iMaxLength;
@@ -588,10 +659,11 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 
 			//	Paint the particle
 
+			Ctx.iTick = iSavedTick - pParticle->iGeneration;
 			Ctx.iDestiny = pParticle->iDestiny;
 			Ctx.iRotation = pParticle->iRotation;
 			if (bNeedMaxLength)
-				Ctx.iMaxLength = (int)(Max(1, (Ctx.iTick - pParticle->iGeneration)) * rMaxLengthFactor);
+				Ctx.iMaxLength = (int)(Max(1, Ctx.iTick) * rMaxLengthFactor);
 
 			pPainter->Paint(Dest, x, y, Ctx);
 			}
@@ -601,6 +673,7 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 		pParticle++;
 		}
 
+	Ctx.iTick = iSavedTick;
 	Ctx.iDestiny = iSavedDestiny;
 	Ctx.iRotation = iSavedRotation;
 	Ctx.iMaxLength = iSavedMaxLength;
@@ -1337,52 +1410,47 @@ void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePo
 			{
 			if (pParticle->fAlive)
 				{
-				iParticleCount++;
+				//	Update lifetime. If -1, then we're immortal
 
-				//	Update position
-
-				pParticle->Pos = pParticle->Pos + pParticle->Vel;
-
-				//	Convert to integer
-				//	NOTE: If we're using real coords we always ignore integer
-				//	velocity.
-
-				PosToXY(pParticle->Pos, &pParticle->x, &pParticle->y);
-
-				//	Update the bounding box
-
-				if (pParticle->Pos.GetX() > xRight)
-					xRight = pParticle->Pos.GetX();
-				if (pParticle->Pos.GetX() < xLeft)
-					xLeft = pParticle->Pos.GetX();
-
-				if (pParticle->Pos.GetY() < yBottom)
-					yBottom = pParticle->Pos.GetY();
-				if (pParticle->Pos.GetY() > yTop)
-					yTop = pParticle->Pos.GetY();
-
-				//	Update lifetime
-
-				if (pParticle->iLifeLeft > 0)
+				if (pParticle->iLifeLeft == -1
+						|| (--pParticle->iLifeLeft > 0))
 					{
-					pParticle->iLifeLeft--;
+					iParticleCount++;
+
+					//	Update position
+
+					pParticle->Pos = pParticle->Pos + pParticle->Vel;
+
+					//	Convert to integer
+					//	NOTE: If we're using real coords we always ignore integer
+					//	velocity.
+
+					PosToXY(pParticle->Pos, &pParticle->x, &pParticle->y);
+
+					//	Update the bounding box
+
+					if (pParticle->Pos.GetX() > xRight)
+						xRight = pParticle->Pos.GetX();
+					if (pParticle->Pos.GetX() < xLeft)
+						xLeft = pParticle->Pos.GetX();
+
+					if (pParticle->Pos.GetY() < yBottom)
+						yBottom = pParticle->Pos.GetY();
+					if (pParticle->Pos.GetY() > yTop)
+						yTop = pParticle->Pos.GetY();
+
+					//	Update center of mass
+
+					if (bCalcCenterOfMass)
+						vTotalPos = vTotalPos + pParticle->Pos;
+
 					bAllParticlesDead = false;
 					}
 
 				//	If we hit 0, then we're dead
 
-				else if (pParticle->iLifeLeft == 0)
-					pParticle->fAlive = false;
-
-				//	Otherwise, LifeLeft is -1 and we're immortal
-
 				else
-					bAllParticlesDead = false;
-
-				//	Update center of mass
-
-				if (bCalcCenterOfMass)
-					vTotalPos = vTotalPos + pParticle->Pos;
+					pParticle->fAlive = false;
 				}
 
 			//	Next
@@ -1425,40 +1493,30 @@ void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePo
 			{
 			if (pParticle->fAlive)
 				{
-				//	Update position
-
-				pParticle->x += pParticle->xVel;
-				pParticle->y += pParticle->yVel;
-
-				//	Update the bounding box
-
-				if (pParticle->x > xRight)
-					xRight = pParticle->x;
-				if (pParticle->x < xLeft)
-					xLeft = pParticle->x;
-
-				if (pParticle->y > yBottom)
-					yBottom = pParticle->y;
-				if (pParticle->y < yTop)
-					yTop = pParticle->y;
-
-				//	Update lifetime
-
-				if (pParticle->iLifeLeft > 0)
+				if (pParticle->iLifeLeft == -1
+						|| (--pParticle->iLifeLeft > 0))
 					{
-					pParticle->iLifeLeft--;
 					bAllParticlesDead = false;
+
+					//	Update position
+
+					pParticle->x += pParticle->xVel;
+					pParticle->y += pParticle->yVel;
+
+					//	Update the bounding box
+
+					if (pParticle->x > xRight)
+						xRight = pParticle->x;
+					if (pParticle->x < xLeft)
+						xLeft = pParticle->x;
+
+					if (pParticle->y > yBottom)
+						yBottom = pParticle->y;
+					if (pParticle->y < yTop)
+						yTop = pParticle->y;
 					}
-
-				//	If we hit 0, then we're dead
-
-				else if (pParticle->iLifeLeft == 0)
-					pParticle->fAlive = false;
-
-				//	Otherwise, LifeLeft is -1 and we're immortal
-
 				else
-					bAllParticlesDead = false;
+					pParticle->fAlive = false;
 				}
 
 			//	Next
