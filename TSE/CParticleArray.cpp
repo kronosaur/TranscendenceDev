@@ -381,7 +381,7 @@ void CParticleArray::EmitSpray (const CParticleSystemDesc &Desc, int iCount, con
 
 		//	Create the particle
 
-		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), iRotation, -1, iTick);
+		AddParticle(vPos, vSourceVel + vVel, Desc.GetParticleLifetime().Roll(), iRotation, -1, iTick);
 		}
 	}
 
