@@ -362,7 +362,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 				for (i = 0; i < iLifetime; i++)
 					{
-					int iRadius = (int)Radius.GetAt(i);
+					int iRadius = Max(2, (int)Radius.GetAt(i));
 					int iIntensity = (int)Intensity.GetAt(i);
 
 					BYTE byOpacity;

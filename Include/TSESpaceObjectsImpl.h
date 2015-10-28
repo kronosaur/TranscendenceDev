@@ -519,7 +519,7 @@ class CParticleDamage : public CSpaceObject
 		CVector m_vEmitSourceVel;				//	Emit source velocity
 		int m_iEmitDirection;					//	Emit direction
 
-		IEffectPainter *m_pPainter;				//	Painter to use for each particle
+		IEffectPainter *m_pParticlePainter;		//	Painter to use for each particle
 		CParticleArray m_Particles;
 
 	friend CObjectClass<CParticleDamage>;

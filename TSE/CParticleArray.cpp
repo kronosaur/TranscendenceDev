@@ -339,62 +339,49 @@ void CParticleArray::EmitSpray (const CParticleSystemDesc &Desc, int iCount, con
 	{
 	int i;
 
-	//	Compute some basic stuff
+	//	Calculate a few temporaries
 
-	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
-	Metric rCurRotation = AngleToRadians(Desc.GetXformRotation() + iDirection);
+	Metric rRatedSpeed = Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SPEED / 100.0;
+	Metric rRadius = (6.0 * rRatedSpeed);
 
-	//	Compute the spread angle, in radians
+	int iSpreadAngle = Desc.GetSpreadAngle().Roll();
+	if (iSpreadAngle > 0)
+		iSpreadAngle = (iSpreadAngle / 2) + 1;
+	bool bSpreadAngle = (iSpreadAngle > 0);
 
-	Metric rSpread = AngleToRadians(Max(0, Desc.GetSpreadAngle().Roll()));
-	Metric rHalfSpread = 0.5 * rSpread;
+	CVector vTemp = PolarToVector(iSpreadAngle, rRatedSpeed);
+	Metric rTangentV = (3.0 * vTemp.GetY());
+	int iTangentAngle = (iDirection + 90) % 360;
 
-	//	Compute the average distance traveled in 1 tick (for random placement)
+	int iSpreadWidth = Desc.GetEmitWidth().Roll();
+	Metric rSpreadWidth = iSpreadWidth * g_KlicksPerPixel;
+	bool bSpreadWidth = (iSpreadWidth > 0);
 
-	Metric rTravelRange = g_SecondsPerUpdate * Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SPEED / 100.0;
-	Metric rSpreadRange = Desc.GetEmitWidth().Roll() * g_KlicksPerPixel;
-	CVector vTangent = ::PolarToVectorRadians(rCurRotation + (0.5 * g_Pi), rSpreadRange);
-
-	//	Create the particles
+	//	Create the particles with appropriate velocity
 
 	for (i = 0; i < iCount; i++)
 		{
-		//	Rotation
+		Metric rPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
+		Metric rTangentPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
+	
+		CVector vPlace = PolarToVector(iDirection, rRadius * rPlace);
+		CVector vVel = PolarToVector(iDirection, rRatedSpeed)
+				+ (0.05 * vPlace)
+				+ PolarToVector(iTangentAngle, rTangentV * rTangentPlace);
 
-		Metric rRotation = rCurRotation + (rHalfSpread * mathRandom(-1000, 1000) / 1000.0);
+		//	Compute the spread width
 
-		//	Place along the line of travel
+		CVector vPos = vSource + vPlace;
+		if (bSpreadWidth)
+			vPos = vPos + PolarToVector(iTangentAngle, rSpreadWidth * rTangentPlace);
 
-		Metric rPlace = 3.0 * rTravelRange * Absolute(((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0);
-		CVector vPosOffset = ::PolarToVectorRadians(rRotation, rPlace);
-		CVector vPos = vSource + vPosOffset;
+		//	Compute the travel rotation for these particles
 
-		//	Adjust for spread
+		int iRotation = (bSpreadAngle ? VectorToPolar(vVel) : iDirection);
 
-		if (rSpreadRange > 0.0)
-			{
-			Metric rTangentPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
-			vPos = vPos + (vTangent * rTangentPlace);
-			}
+		//	Create the particle
 
-		//	Generate a random velocity 
-
-		Metric rSpeed = Desc.GetXformTime() * Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
-		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500));
-
-		//	If previous versions we jittered speed. In later versions, however, 
-		//	we rely on variable speed definition.
-
-		if (Desc.IsSprayCompatible())
-			vVel = vVel + (0.05 * vPosOffset);
-
-		//	Lifetime
-
-		int iLifeLeft = Desc.GetParticleLifetime().Roll();
-
-		//	Add the particle
-
-		AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation));
+		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), iRotation, -1, iTick);
 		}
 	}
 

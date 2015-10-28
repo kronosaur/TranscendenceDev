@@ -430,7 +430,6 @@ class CWeaponFireDesc
 		inline Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
 		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
-		inline const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
@@ -446,6 +445,8 @@ class CWeaponFireDesc
 		inline int GetMaxLifetime (void) const { return m_Lifetime.GetMaxValue(); }
 		inline Metric GetMaxRadius (void) const { return m_rMaxRadius; }
 		inline Metric GetMinRadius (void) const { return m_rMinRadius; }
+		CEffectCreator *GetParticleEffect (void) const;
+		inline const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		inline int GetPassthrough (void) const { return m_iPassthrough; }
 		inline int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		inline Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }

@@ -10,7 +10,7 @@ static CObjectClass<CParticleDamage>g_Class(OBJID_CPARTICLEDAMAGE, NULL);
 
 CParticleDamage::CParticleDamage (void) : CSpaceObject(&g_Class),
 		m_pEnhancements(NULL),
-		m_pPainter(NULL)
+		m_pParticlePainter(NULL)
 
 //	CParticleDamage constructor
 
@@ -22,8 +22,8 @@ CParticleDamage::~CParticleDamage (void)
 //	CParticleDamage destructor
 
 	{
-	if (m_pPainter)
-		m_pPainter->Delete();
+	if (m_pParticlePainter)
+		m_pParticlePainter->Delete();
 
 	if (m_pEnhancements)
 		m_pEnhancements->Delete();
@@ -122,7 +122,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 	//	Painter
 
-	pParticles->m_pPainter = pDesc->CreateParticlePainter();
+	pParticles->m_pParticlePainter = pDesc->CreateParticlePainter();
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 
@@ -207,12 +207,12 @@ void CParticleDamage::OnMove (const CVector &vOldPos, Metric rSeconds)
 	{
 	//	Update the single particle painter
 
-	if (m_pPainter)
+	if (m_pParticlePainter)
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
 
-		m_pPainter->OnMove(Ctx);
+		m_pParticlePainter->OnMove(Ctx);
 		}
 
 	//	Update particle motion
@@ -279,7 +279,7 @@ void CParticleDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	//	If we can get a paint descriptor, use that because it is faster
 
-	m_Particles.Paint(*pSystemDesc, Dest, xOrigin, yOrigin, m_pPainter, Ctx);
+	m_Particles.Paint(*pSystemDesc, Dest, xOrigin, yOrigin, m_pParticlePainter, Ctx);
 	}
 
 void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
@@ -347,7 +347,7 @@ void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
 
 		//	Load painter
 
-		m_pPainter = CEffectCreator::CreatePainterFromStreamAndCreator(Ctx, m_pDesc->GetEffect());
+		m_pParticlePainter = CEffectCreator::CreatePainterFromStreamAndCreator(Ctx, m_pDesc->GetParticleEffect());
 
 		m_Particles.ReadFromStream(Ctx);
 		}
@@ -400,8 +400,8 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Update the single particle painter
 
-	if (m_pPainter)
-		m_pPainter->OnUpdate();
+	if (m_pParticlePainter)
+		m_pParticlePainter->OnUpdate();
 
 	//	Set up context block for particle array update
 
@@ -493,7 +493,7 @@ void CParticleDamage::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iEmitTime, sizeof(DWORD));
 	pStream->Write((char *)&m_iParticleCount, sizeof(DWORD));
 
-	CEffectCreator::WritePainterToStream(pStream, m_pPainter);
+	CEffectCreator::WritePainterToStream(pStream, m_pParticlePainter);
 
 	m_Particles.WriteToStream(pStream);
 

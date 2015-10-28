@@ -69,6 +69,7 @@
 #define VAPOR_TRAIL_WIDTH_ATTRIB				CONSTLIT("vaporTrailWidth")
 #define VAPOR_TRAIL_WIDTH_INC_ATTRIB			CONSTLIT("vaporTrailWidthInc")
 
+#define FIELD_PARTICLE_COUNT					CONSTLIT("particleCount")
 #define FIELD_SOUND								CONSTLIT("sound")
 
 #define FIRE_TYPE_BEAM							CONSTLIT("beam")
@@ -358,7 +359,14 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue)
 	{
 	ICCItem *pResult;
 
-	if (strEquals(sField, FIELD_SOUND))
+	if (strEquals(sField, FIELD_PARTICLE_COUNT))
+		{
+		if (m_pParticleDesc)
+			*retsValue = strFromInt((int)(m_pParticleDesc->GetEmitRate().GetAveValueFloat() * m_pParticleDesc->GetEmitLifetime().GetAveValueFloat()));
+		else
+			*retsValue = NULL_STR;
+		}
+	else if (strEquals(sField, FIELD_SOUND))
 		*retsValue = (m_FireSound.GetSound() != -1 ? strFromInt(m_FireSound.GetUNID(), false) : NULL_STR);
 
 	//	Otherwise, see if the damage can handle this.
@@ -1061,6 +1069,26 @@ Metric CWeaponFireDesc::GetInitialSpeed (void) const
 		return (double)m_MissileSpeed.Roll() * LIGHT_SPEED / 100;
 	else
 		return GetRatedSpeed();
+	}
+
+CEffectCreator *CWeaponFireDesc::GetParticleEffect (void) const
+
+//	GetParticleEffect
+//
+//	Returns the particle effect creator
+
+	{
+	//	If we have a particle descriptor with an effect, then return it from
+	//	there.
+
+	CEffectCreator *pCreator;
+	if (m_pParticleDesc
+			&& (pCreator = m_pParticleDesc->GetParticleEffect()))
+		return pCreator;
+
+	//	Otherwise, we use the main effect.
+
+	return m_pEffect;
 	}
 
 CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
