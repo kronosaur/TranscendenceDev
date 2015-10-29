@@ -75,7 +75,7 @@ CParticleArray::~CParticleArray (void)
 		delete [] m_pArray;
 	}
 
-void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft, int iRotation, int iDestiny, int iGeneration, DWORD dwData)
+void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft, int iRotation, int iDestiny, int iGeneration, Metric rData)
 
 //	AddParticle
 //
@@ -124,7 +124,7 @@ void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int 
 	pParticle->iLifeLeft = iLifeLeft;
 	pParticle->iDestiny = (iDestiny == -1 ? mathRandom(0, g_DestinyRange - 1) : iDestiny);
 	pParticle->iRotation = iRotation;
-	pParticle->dwData = dwData;
+	pParticle->rData = rData;
 
 	pParticle->fAlive = true;
 
@@ -191,6 +191,14 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSour
 			EmitSpray(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
 			break;
 		}
+
+	//	Remember
+
+	m_vLastEmitSource = vSource;
+	m_vLastEmitSourceVel = vSourceVel;
+	m_iLastEmitDirection = iDirection;
+
+	//	Done
 
 	if (retiEmitted)
 		*retiEmitted = iCount;
@@ -260,7 +268,7 @@ void CParticleArray::EmitAmorphous (const CParticleSystemDesc &Desc, int iCount,
 
 		//	Add the particle
 
-		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), AngleToDegrees(rRotation));
+		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), AngleToDegrees(rRotation), -1, iTick);
 		}
 	}
 
@@ -297,7 +305,7 @@ void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, con
 	//	Use a stepper to cluster the points towards the head.
 
 	CStepIncrementor SplinePos(CStepIncrementor::styleSquare, 0.0, SplinePoints.GetCount() - 1, SPLINE_CHOOSE_POINTS);
-	CStepIncrementor WidthPos(CStepIncrementor::styleSquare, 0.0, 1.0, SPLINE_CHOOSE_POINTS);
+	CStepIncrementor WidthPos(CStepIncrementor::styleLinear, -1.0, 1.0, SPLINE_CHOOSE_POINTS);
 
 	//	Create the particles
 
@@ -310,9 +318,6 @@ void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, con
 		//	Pick a random position on the width and adjust the spline
 
 		Metric rWidthAdj = WidthPos.GetAt(mathRandom(0, SPLINE_CHOOSE_POINTS));
-		if ((i % 2) == 1)
-			rWidthAdj = -rWidthAdj;
-
 		CVector vSplineAdj(vSplinePos.GetX() * rLength, vSplinePos.GetY() * rWidthAdj * rWidth);
 
 		//	Rotate the spline
@@ -322,11 +327,12 @@ void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, con
 
 		//	Pick a velocity, proportional to the place on the spline
 
-		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rCurRotation, rMaxSpeed - (rSpeedRange * vSplinePos.GetX()));
+		Metric rVelAdj = vSplinePos.GetX();
+		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rCurRotation, rMaxSpeed - (rSpeedRange * rVelAdj));
 
 		//	Add the particle
 
-		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), AngleToDegrees(rCurRotation));
+		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), iCurRotation, -1, iTick, rVelAdj);
 		}
 	}
 
@@ -957,14 +963,6 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 //	ReadFromStream
 //
 //	Reads from a stream
-//
-//	DWORD		Particle count
-//	CVector		m_vOrigin
-//	CVector		m_vCenterOfMass
-//	CVector		m_vUR
-//	CVector		m_vLL
-//	DWORD		Flags
-//	Array of particles
 
 	{
 	int i;
@@ -988,6 +986,15 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&m_vCenterOfMass, sizeof(CVector));
 		Ctx.pStream->Read((char *)&m_vUR, sizeof(CVector));
 		Ctx.pStream->Read((char *)&m_vLL, sizeof(CVector));
+		}
+
+	//	Last emit info
+
+	if (Ctx.dwVersion >= 120)
+		{
+		Ctx.pStream->Read((char *)&m_vLastEmitSource, sizeof(CVector));
+		Ctx.pStream->Read((char *)&m_vLastEmitSourceVel, sizeof(CVector));
+		Ctx.pStream->Read((char *)&m_iLastEmitDirection, sizeof(DWORD));
 		}
 
 	//	Load flags
@@ -1027,7 +1034,10 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 			Ctx.pStream->Read((char *)&m_pArray[i].iLifeLeft, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].iDestiny, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].iRotation, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].dwData, sizeof(DWORD));
+
+			DWORD dwData;
+			Ctx.pStream->Read((char *)&dwData, sizeof(DWORD));
+			m_pArray[i].rData = (Metric)dwData;
 
 			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 			m_pArray[i].fAlive = ((dwLoad & 0x00000001) ? true : false);
@@ -1042,7 +1052,7 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 				}
 			}
 		}
-	else if (Ctx.dwVersion < 119)
+	else
 		{
 		for (i = 0; i < m_iCount; i++)
 			{
@@ -1052,19 +1062,30 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 			Ctx.pStream->Read((char *)&m_pArray[i].y, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].xVel, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].yVel, sizeof(DWORD));
-			m_pArray[i].iGeneration = 0;
+
+			if (Ctx.dwVersion >= 119)
+				Ctx.pStream->Read((char *)&m_pArray[i].iGeneration, sizeof(DWORD));
+			else
+				m_pArray[i].iGeneration = 0;
+
 			Ctx.pStream->Read((char *)&m_pArray[i].iLifeLeft, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].iDestiny, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].iRotation, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].dwData, sizeof(DWORD));
+
+			if (Ctx.dwVersion >= 120)
+				{
+				DWORD dwData;
+				Ctx.pStream->Read((char *)&dwData, sizeof(DWORD));
+				m_pArray[i].rData = (Metric)dwData;
+				}
+			else
+				Ctx.pStream->Read((char *)&m_pArray[i].rData, sizeof(Metric));
 
 			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 			m_pArray[i].fAlive = ((dwLoad & 0x00000001) ? true : false);
 			m_pArray[i].dwSpare = 0;
 			}
 		}
-	else
-		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
 	}
 
 void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
@@ -1081,6 +1102,15 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 
 	if (Ctx.pTarget && Ctx.pDamageDesc && Ctx.pDamageDesc->IsTrackingTime(Ctx.iTick))
 		UpdateTrackTarget(Ctx.pTarget, Ctx.pDamageDesc->GetManeuverRate(), Ctx.pDamageDesc->GetRatedSpeed());
+
+	//	Adjust based on style
+
+	switch (Desc.GetStyle())
+		{
+		case CParticleSystemDesc::styleComet:
+			UpdateComet(Desc, Ctx);
+			break;
+		}
 	}
 
 void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
@@ -1348,6 +1378,47 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 				return;
 				}
 			}
+		}
+	}
+
+void CParticleArray::UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
+
+//	UpdateComet
+//
+//	Update comet velocity
+
+	{
+	const Metric SPEED_CONVERGE_FACTOR = 0.95;
+
+	//	Calculate some basic metrics
+
+	UseRealCoords();
+	Metric rMaxSpeed = Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+	Metric rMinSpeed = Desc.GetEmitSpeed().GetMinValue() * LIGHT_SPEED / 100.0;
+	Metric rSpeedRange = Max(0.01 * LIGHT_SPEED, rMaxSpeed - rMinSpeed);
+
+	//	Loop over all particles and adjust their velocity so
+	//	that they all match max speed.
+
+	SParticle *pParticle = m_pArray;
+	SParticle *pEnd = pParticle + m_iCount;
+
+	while (pParticle < pEnd)
+		{
+		if (pParticle->fAlive
+				&& pParticle->rData > 0.0)
+			{
+			Metric rVelAdj = SPEED_CONVERGE_FACTOR * pParticle->rData;
+			if (rVelAdj < 0.01)
+				rVelAdj = 0.0;
+
+			pParticle->Vel = g_SecondsPerUpdate * (m_vLastEmitSourceVel + ::PolarToVector(pParticle->iRotation, rMaxSpeed - (rSpeedRange * rVelAdj)));
+			pParticle->rData = rVelAdj;
+			}
+
+		//	Next
+
+		pParticle++;
 		}
 	}
 
@@ -1728,6 +1799,9 @@ void CParticleArray::WriteToStream (IWriteStream *pStream) const
 //	CVector			m_vCenterOfMass
 //	CVector			m_vUR
 //	CVector			m_vLL
+//	CVector			m_vLastEmitSource
+//	CVector			m_vLastEmitSourceVel
+//	DWORD			m_iLastEmitDirection
 //	DWORD			flags
 //	SParticle[]		array of particles
 
@@ -1739,6 +1813,10 @@ void CParticleArray::WriteToStream (IWriteStream *pStream) const
 	pStream->Write((char *)&m_vCenterOfMass, sizeof(CVector));
 	pStream->Write((char *)&m_vUR, sizeof(CVector));
 	pStream->Write((char *)&m_vLL, sizeof(CVector));
+
+	pStream->Write((char *)&m_vLastEmitSource, sizeof(CVector));
+	pStream->Write((char *)&m_vLastEmitSourceVel, sizeof(CVector));
+	pStream->Write((char *)&m_iLastEmitDirection, sizeof(DWORD));
 
 	//	Flags
 

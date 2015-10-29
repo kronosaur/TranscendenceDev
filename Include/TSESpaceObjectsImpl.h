@@ -503,6 +503,7 @@ class CParticleDamage : public CSpaceObject
 		//	that, then we should set the origin to the original shot position.]
 
 		inline const CVector &GetOrigin (void) const { return NullVector; }
+		bool SetMissileFade (void);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
@@ -510,6 +511,7 @@ class CParticleDamage : public CSpaceObject
 		DestructionTypes m_iCause;				//	Cause of damage
 		int m_iTick;							//	Counter
 		int m_iLifeLeft;						//	Ticks left
+		int m_iRotation;						//	Initial rotation
 		int m_iEmitTime;						//	Ticks to emit new particles
 		CDamageSource m_Source;					//	Object that fired the beam
 		CSovereign *m_pSovereign;				//	Sovereign
@@ -519,8 +521,19 @@ class CParticleDamage : public CSpaceObject
 		CVector m_vEmitSourceVel;				//	Emit source velocity
 		int m_iEmitDirection;					//	Emit direction
 
+		IEffectPainter *m_pEffectPainter;		//	Additional effect
 		IEffectPainter *m_pParticlePainter;		//	Painter to use for each particle
 		CParticleArray m_Particles;
+
+		DWORD m_fPainterFade:1;
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+		DWORD m_dwSpare:24;
 
 	friend CObjectClass<CParticleDamage>;
 	friend struct SParticle;

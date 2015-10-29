@@ -48,10 +48,11 @@ class COrbEffectPainter : public IEffectPainter
 			{
 			animateNone =			0,
 
-			animateFade =			1,
-			animateExplode =		2,
+			animateDissipate =		1,
+			animateFade =			2,
+			animateExplode =		3,
 
-			animateMax =			2,
+			animateMax =			3,
 			};
 
 		enum EOrbStyles
@@ -132,6 +133,7 @@ static LPSTR ANIMATION_TABLE[] =
 	//	Must be same order as EAnimationTypes
 		"",
 
+		"dissipate",
 		"fade",
 		"explode",
 
@@ -337,6 +339,46 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 		switch (m_iAnimation)
 			{
+			//	Expand and fade
+
+			case animateDissipate:
+				{
+				int iLifetime = Max(1, m_iLifetime);
+				Metric rDetail = (m_iDetail / 100.0);
+
+				m_iTextureType = CFractalTextureLibrary::typeExplosion;
+				CStepIncrementor Radius(CStepIncrementor::styleSquareRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
+				CStepIncrementor Intensity(CStepIncrementor::styleLinear, m_iIntensity, 0.0, iLifetime);
+				CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
+				CStepIncrementor ColorFade(CStepIncrementor::styleLinear, 0.0, 1.0, iLifetime);
+
+				m_ColorTable.InsertEmpty(iLifetime);
+				m_FlareDesc.InsertEmpty(iLifetime);
+				m_TextureFrame.InsertEmpty(iLifetime);
+
+				if (UsesColorTable2())
+					m_ColorTable2.InsertEmpty(iLifetime);
+
+				for (i = 0; i < iLifetime; i++)
+					{
+					int iRadius = Max(2, (int)Radius.GetAt(i));
+					int iIntensity = (int)Intensity.GetAt(i);
+					CG32bitPixel rgbColor = CG32bitPixel::Blend(m_rgbPrimaryColor, m_rgbSecondaryColor, ColorFade.GetAt(i));
+
+					CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, rgbColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
+
+					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
+					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
+
+					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
+
+					if (UsesColorTable2())
+						CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
+					}
+
+				break;
+				}
+
 			//	Increase radius up to maximum
 
 			case animateExplode:

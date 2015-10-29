@@ -350,6 +350,33 @@ IEffectPainter *CWeaponFireDesc::CreateParticlePainter (void)
 	return m_pEffect.CreatePainter(Ctx);
 	}
 
+IEffectPainter *CWeaponFireDesc::CreateSecondaryPainter (bool bTrackingObj, bool bUseObjectCenter)
+
+//	CreateSecondaryPainter
+//
+//	Particle damage object use the particle effect to paint each particle, but
+//	sometimes they use the main effect as an overall effect. In that case, we 
+//	return the effect here.
+//
+//	NOTE: We may return NULL if the weapon has no effect.
+
+	{
+	//	If we DON'T have a particle painter, then we don't have a secondary 
+	//	effect (since we're using it for the particle effect).
+
+	if (m_pParticleDesc == NULL || m_pParticleDesc->GetParticleEffect() == NULL)
+		return NULL;
+
+	//	Otherwise, create it if we've got it.
+
+	CCreatePainterCtx Ctx;
+	Ctx.SetWeaponFireDesc(this);
+	Ctx.SetTrackingObject(bTrackingObj);
+	Ctx.SetUseObjectCenter(bUseObjectCenter);
+
+	return m_pEffect.CreatePainter(Ctx);
+	}
+
 bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue)
 
 //	FindDataField

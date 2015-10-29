@@ -60,11 +60,11 @@ class CParticleSystemEffectPainter : public IEffectPainter
 			};
 
 		CVector CalcInitialVel (CSpaceObject *pObj);
-		void CreateFixedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel);
-		void CreateInterpolatedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel);
-		void CreateLinearParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel);
-		void CreateNewParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel);
-		void CreateRadiateParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel);
+		void CreateFixedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
+		void CreateInterpolatedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
+		void CreateLinearParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
+		void CreateNewParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
+		void CreateRadiateParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
 		void InitParticles (const CVector &vInitialPos);
 
 		CParticleSystemEffectCreator *m_pCreator;
@@ -304,7 +304,7 @@ CVector CParticleSystemEffectPainter::CalcInitialVel (CSpaceObject *pObj)
 #endif
 	}
 
-void CParticleSystemEffectPainter::CreateFixedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel)
+void CParticleSystemEffectPainter::CreateFixedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
 
 //	CreateFixedParticles
 //
@@ -359,7 +359,7 @@ void CParticleSystemEffectPainter::CreateFixedParticles (CSpaceObject *pObj, int
 
 		//	Add the particle
 
-		m_Particles.AddParticle(vPos, vVel, iLifeLeft, m_iCurDirection);
+		m_Particles.AddParticle(vPos, vVel, iLifeLeft, m_iCurDirection, -1, iTick);
 		}
 
 	//	Remember the last position
@@ -368,7 +368,7 @@ void CParticleSystemEffectPainter::CreateFixedParticles (CSpaceObject *pObj, int
 	m_vLastEmitPos = vCurPos + vInitialPos;
 	}
 
-void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel)
+void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
 
 //	CreateInterpolatedParticles
 //
@@ -439,7 +439,7 @@ void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pO
 
 		//	Add the particle
 
-		m_Particles.AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation));
+		m_Particles.AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation), -1, iTick);
 		}
 
 	//	Remember the last position
@@ -448,7 +448,7 @@ void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pO
 	m_vLastEmitPos = vInitialPos;
 	}
 
-void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel)
+void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
 
 //	CreateLinearParticles
 //
@@ -495,7 +495,7 @@ void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, in
 
 		//	Add the particle
 
-		m_Particles.AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation));
+		m_Particles.AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation), -1, iTick);
 		}
 
 	//	Remember the last position
@@ -504,7 +504,7 @@ void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, in
 	m_vLastEmitPos = vInitialPos;
 	}
 
-void CParticleSystemEffectPainter::CreateNewParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel)
+void CParticleSystemEffectPainter::CreateNewParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
 
 //	CreateNewParticles
 //
@@ -531,28 +531,28 @@ void CParticleSystemEffectPainter::CreateNewParticles (CSpaceObject *pObj, int i
 			//	completely different algorithm.
 
 			if (m_bUseObjectMotion)
-				CreateFixedParticles(pObj, iCount, vInitialPos, vInitialVel);
+				CreateFixedParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
 
 			//	If our emit direction has changed then we need to interpolate between the two
 
 			else if (m_iCurDirection != m_iLastDirection)
-				CreateInterpolatedParticles(pObj, iCount, vInitialPos, vInitialVel);
+				CreateInterpolatedParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
 
 			//	Otherwise, just linear creation
 
 			else
-				CreateLinearParticles(pObj, iCount, vInitialPos, vInitialVel);
+				CreateLinearParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
 
 			break;
 			}
 
 		case styleRadiate:
-			CreateRadiateParticles(pObj, iCount, vInitialPos, vInitialVel);
+			CreateRadiateParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
 			break;
 		}
 	}
 
-void CParticleSystemEffectPainter::CreateRadiateParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel)
+void CParticleSystemEffectPainter::CreateRadiateParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
 
 //	CreateRadiateParticles
 //
@@ -585,7 +585,7 @@ void CParticleSystemEffectPainter::CreateRadiateParticles (CSpaceObject *pObj, i
 
 		//	Add the particle
 
-		m_Particles.AddParticle(vInitialPos, vVel, iLifeLeft, AngleToDegrees(rAngle));
+		m_Particles.AddParticle(vInitialPos, vVel, iLifeLeft, AngleToDegrees(rAngle), -1, iTick);
 		}
 
 	//	Remember the last position
@@ -788,7 +788,7 @@ void CParticleSystemEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	if (!Ctx.bFade)
 		{
 		if (m_iEmitLifetime <= 0 || Ctx.iTick < m_iEmitLifetime)
-			CreateNewParticles(Ctx.pObj, m_EmitRate.Roll(), Ctx.vEmitPos, CalcInitialVel(Ctx.pObj));
+			CreateNewParticles(Ctx.pObj, m_EmitRate.Roll(), Ctx.vEmitPos, CalcInitialVel(Ctx.pObj), Ctx.iTick);
 		}
 	else
 		{
@@ -865,7 +865,7 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 
 		//	Create particles
 
-		CreateNewParticles(Ctx.pObj, m_EmitRate.Roll(), vPos, CalcInitialVel(Ctx.pObj));
+		CreateNewParticles(Ctx.pObj, m_EmitRate.Roll(), vPos, CalcInitialVel(Ctx.pObj), Ctx.iTick);
 		}
 
 	//	Paint with the painter

@@ -410,6 +410,7 @@ class CWeaponFireDesc
 		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir);
 		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx);
 		IEffectPainter *CreateParticlePainter (void);
+		IEffectPainter *CreateSecondaryPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
 		bool FindDataField (const CString &sField, CString *retsValue);
 		CEffectCreator *FindEffectCreator (const CString &sUNID);
 		bool FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const;

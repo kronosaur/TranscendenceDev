@@ -369,6 +369,9 @@
 //	119: 1.7 Alpha 1
 //		Added iGeneration to CParticleArray:SParticle
 //
+//	120: 1.7 Alpha 1
+//		Added flags to CParticleDamage
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

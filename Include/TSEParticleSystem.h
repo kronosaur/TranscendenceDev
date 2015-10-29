@@ -152,7 +152,7 @@ class CParticleArray
 			int iLifeLeft;						//	Ticks of life left
 			int iDestiny;						//	Random number from 1-360
 			int iRotation;						//	Particle rotation
-			DWORD dwData;						//	Miscellaneous data for particle
+			Metric rData;						//	Miscellaneous data for particle
 
 			DWORD fAlive:1;						//	TRUE if particle is alive
 			DWORD dwSpare:31;					//	Spare
@@ -165,7 +165,7 @@ class CParticleArray
 		void Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest, int xPos, int yPos, IEffectPainter *pPainter, SViewportPaintCtx &Ctx);
 		void Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 
-		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, DWORD dwData = 0);
+		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, Metric rData = 0.0);
 		const RECT &GetBounds (void) const { return m_rcBounds; }
 		void GetBounds (CVector *retvUR, CVector *retvLL);
 		inline int GetCount (void) const { return m_iCount; }
@@ -224,6 +224,7 @@ class CParticleArray
 						CG32bitPixel rgbSecondaryColor);
 		void PosToXY (const CVector &xy, int *retx, int *rety);
 		void UpdateCollisions (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
+		void UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 		void UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate, Metric rMaxSpeed);
 		void UseRealCoords (void);
 		CVector XYToPos (int x, int y);
@@ -236,6 +237,9 @@ class CParticleArray
 		CVector m_vUR;							//	Bounds
 		CVector m_vLL;							//	Bounds
 
+		CVector m_vLastEmitSource;
+		CVector m_vLastEmitSourceVel;
+		int m_iLastEmitDirection;
 		int m_iLastAdded;						//	Index of last particle added
 		bool m_bUseRealCoords;					//	If TRUE, we keep real (instead of int) coordinates
 	};
