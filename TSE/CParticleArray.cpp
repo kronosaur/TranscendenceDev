@@ -184,7 +184,7 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSour
 			break;
 
 		case CParticleSystemDesc::styleRadiate:
-			//	LATER: Same as CParticleSystemEffectPainter
+			EmitRadiate(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
 			break;
 
 		case CParticleSystemDesc::styleSpray:
@@ -333,6 +333,43 @@ void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, con
 		//	Add the particle
 
 		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), iCurRotation, -1, iTick, rVelAdj);
+		}
+	}
+
+void CParticleArray::EmitRadiate (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitRadiate
+//
+//	Emits in a circular shell.
+
+	{
+	int i;
+
+	//	Compute some basic stuff
+
+	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
+
+	//	Calculate where last tick's particles would be based on the last rotation.
+
+	Metric rAveSpeed = Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+
+	//	Create particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		//	Choose a random angle and velocity
+
+		Metric rAngle = 2.0 * g_Pi * (mathRandom(0, 9999) / 10000.0);
+		Metric rSpeed = (Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
+		CVector vVel = Desc.GetXformTime() * (vSourceVel + ::PolarToVectorRadians(rAngle, rSpeed));
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vSource, vVel, iLifeLeft, AngleToDegrees(rAngle), -1, iTick);
 		}
 	}
 
@@ -652,7 +689,7 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 
 			//	Paint the particle
 
-			Ctx.iTick = iSavedTick - pParticle->iGeneration;
+			Ctx.iTick = Max(0, iSavedTick - pParticle->iGeneration);
 			Ctx.iDestiny = pParticle->iDestiny;
 			Ctx.iRotation = pParticle->iRotation;
 			if (bNeedMaxLength)

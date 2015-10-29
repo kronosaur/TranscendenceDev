@@ -1657,7 +1657,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		CString sCount = pFragDesc->GetAttribute(COUNT_ATTRIB);
 		if (sCount.IsBlank())
 			sCount = pDesc->GetAttribute(FRAGMENT_COUNT_ATTRIB);
-		pNewDesc->Count.LoadFromXML(sCount);
+		pNewDesc->Count.LoadFromXML(sCount, 1);
 
 		//	Set MIRV flag
 
