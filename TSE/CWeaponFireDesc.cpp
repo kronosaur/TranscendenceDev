@@ -251,6 +251,10 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (bool bTrackingObj, bool bU
 	Ctx.SetTrackingObject(bTrackingObj);
 	Ctx.SetUseObjectCenter(bUseObjectCenter);
 
+	//	We set the default lifetime of the effect to whatever the descriptor defines.
+
+	Ctx.SetDefaultParam(LIFETIME_ATTRIB, CEffectParamDesc(m_Lifetime.GetMaxValue()));
+
 	return m_pEffect.CreatePainter(Ctx);
 	}
 

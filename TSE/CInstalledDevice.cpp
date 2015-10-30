@@ -333,7 +333,6 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 	//	Call the class
 
 	m_pClass->OnInstall(this, pObj, ItemList);
-	m_pClass->SelectFirstVariant(pObj, this);
 
 	//	Mark the item as installed
 
@@ -344,6 +343,11 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 
 	m_pItem = ItemList.GetItemPointerAtCursor();
 	ASSERT(m_pItem);
+
+	//	Select the variant. We need to do this AFTER m_pItem is set because
+	//	we need to check things like charges.
+
+	m_pClass->SelectFirstVariant(pObj, this);
 
 	//	Default to basic fire delay. Callers must set the appropriate delay
 	//	based on enhancements later.
