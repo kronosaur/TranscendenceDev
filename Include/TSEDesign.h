@@ -1427,6 +1427,7 @@ class DamageDesc
 		ICCItem *FindProperty (const CString &sName) const;
 		Metric GetAverageDamage (bool bIncludeBonus = false) const;
 		inline DestructionTypes GetCause (void) const { return m_iCause; }
+		inline const DiceRange &GetDamageRange (void) const { return m_Damage; }
 		inline DamageTypes GetDamageType (void) const { return m_iType; }
 		CString GetDesc (DWORD dwFlags = 0);
 		int GetMinDamage (void);

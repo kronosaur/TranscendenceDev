@@ -1861,7 +1861,9 @@ int CWeaponClass::GetDamageType (CInstalledDevice *pDevice, int iVariant)
 	if (pShot == NULL)
 		return damageGeneric;
 
-	return pShot->m_Damage.GetDamageType();
+	//	Get the damage type
+
+	return pShot->GetDamageType();
 	}
 
 int CWeaponClass::GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource)

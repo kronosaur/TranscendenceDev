@@ -431,6 +431,7 @@ class CWeaponFireDesc
 		inline Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
 		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
+		DamageTypes GetDamageType (void) const;
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
@@ -535,12 +536,6 @@ class CWeaponFireDesc
 
 		//	Particles (m_iFireType == ftParticles)
 		CParticleSystemDesc *m_pParticleDesc;
-#if 0
-		DiceRange m_ParticleCount;			//	Number of new particles per tick
-		DiceRange m_ParticleEmitTime;		//	Emit new particles for this number of ticks (default = 1)
-		int m_iParticleSpreadWidth;			//	Width of spread
-		int m_iParticleSpread;				//	Angle of spread
-#endif
 		int m_iSplashChance;				//	Chance that particles will splash
 		int m_iMissChance;					//	Chance that particles will miss
 

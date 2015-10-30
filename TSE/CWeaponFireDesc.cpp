@@ -1067,6 +1067,38 @@ Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
 		return GetRatedSpeed();
 	}
 
+DamageTypes CWeaponFireDesc::GetDamageType (void) const
+
+//	GetDamageType
+//
+//	Returns the damage type (checking for fragments, as necessary).
+
+	{
+	//	If the main shot does no damage, then check the fragments.
+
+	DamageTypes iType = m_Damage.GetDamageType();
+	if (iType == damageGeneric && m_Damage.GetDamageRange().IsEmpty())
+		{
+		SFragmentDesc *pNext = m_pFirstFragment;
+		while (pNext)
+			{
+			DamageTypes iFragType = pNext->pDesc->GetDamageType();
+			if (iFragType > iType)
+				iType = iFragType;
+
+			pNext = pNext->pNext;
+			}
+
+		//	Return the best damage we found so far.
+
+		return iType;
+		}
+
+	//	Otherwise, we go with the main type
+
+	return iType;
+	}
+
 CEffectCreator *CWeaponFireDesc::GetFireEffect (void) const
 
 //	GetFireEffect
