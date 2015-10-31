@@ -882,7 +882,7 @@ int IEffectPainter::GetInitialLifetime (void)
 	return GetCreator()->GetLifetime();
 	}
 
-Metric IEffectPainter::GetRadius (void) const
+Metric IEffectPainter::GetRadius (int iTick) const
 	{
 	RECT rcRect;
 	GetRect(&rcRect);

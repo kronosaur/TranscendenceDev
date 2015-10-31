@@ -12,7 +12,7 @@ const Metric SIGMA_MAX =					0.01;
 const Metric SIGMA_DECAY =					1.07;
 const Metric MAX_INTENSITY =				100.0;
 
-const Metric CORE_HEAT_LEVEL =				0.4;
+const Metric CORE_HEAT_LEVEL =				0.5;
 const Metric FRINGE_HEAT_LEVEL =			0.35;
 const Metric FRINGE_HEAT_RANGE =			(CORE_HEAT_LEVEL - FRINGE_HEAT_LEVEL);
 const Metric FLAME_HEAT_LEVEL =				0.15;

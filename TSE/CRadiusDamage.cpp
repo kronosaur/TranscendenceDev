@@ -89,7 +89,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 
 		//	Adjust radius of object based on the painter.
 
-		rRadius = Max(pArea->m_pPainter->GetRadius(), rRadius);
+		rRadius = Max(pArea->m_pPainter->GetRadius(pArea->m_iTick), rRadius);
 		}
 
 	//	Our bounds are based on the max radius

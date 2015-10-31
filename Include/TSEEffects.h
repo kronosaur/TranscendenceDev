@@ -285,7 +285,7 @@ class IEffectPainter
 		virtual bool GetParamList (TArray<CString> *retList) const { return false; }
 		virtual int GetParticleCount (void) { return 1; }
 		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc) { return false; }
-		virtual Metric GetRadius (void) const;
+		virtual Metric GetRadius (int iTick) const;
 		virtual void GetRect (RECT *retRect) const;
 		virtual int GetVariants (void) const { return 1; }
 		virtual void OnBeginFade (void) { }

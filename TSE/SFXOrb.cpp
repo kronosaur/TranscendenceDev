@@ -718,7 +718,7 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 
 		case styleFireblast:
 			{
-			CStepIncrementor Opacity(CStepIncrementor::styleSquare, byOpacity, 0.0, iRadius);
+			CStepIncrementor Opacity(CStepIncrementor::styleOct, byOpacity, 0.0, iRadius);
 
 			//	Initialize table
 
@@ -730,7 +730,7 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 
 		case styleSmoke:
 			{
-			CStepIncrementor Opacity(CStepIncrementor::styleOct, byOpacity, 0.0, iRadius);
+			CStepIncrementor Opacity(CStepIncrementor::styleQuad, byOpacity, 0.0, iRadius);
 			CStepIncrementor CenterAdj(CStepIncrementor::styleSquare, (Metric)Max(0, (70 - iIntensity)) / 100.0, 1.0, iRadius);
 
 			for (i = 0; i < iRadius; i++)
@@ -935,7 +935,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 				m_pPainter->SetParam(CONSTLIT("colorTable2"), Table2);
 				}
 
-			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[Ctx.iTick % m_TextureFrame.GetCount()]);
+			m_pPainter->Draw(Dest, x, y, Table.GetCount(), 0);
 			break;
 			}
 

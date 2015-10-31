@@ -23,7 +23,7 @@ class CShockwavePainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual Metric GetRadius (void) const { return g_KlicksPerPixel * m_iRadius; }
+		virtual Metric GetRadius (int iTick) const { return g_KlicksPerPixel * CalcRadius(iTick); }
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
 		virtual bool GetParamList (TArray<CString> *retList) const;
 		virtual void GetRect (RECT *retRect) const;
@@ -48,6 +48,7 @@ class CShockwavePainter : public IEffectPainter
 			};
 
 		bool CalcIntermediates (void);
+		inline int CalcRadius (int iTick) const { return 1 + Max(0, (m_iRadiusInc * iTick)); }
 		bool CreateGlowGradient (int iSolidWidth, int iGlowWidth, CG32bitPixel rgbSolidColor, CG32bitPixel rgbGlowColor);
 
 		CShockwaveEffectCreator *m_pCreator;
@@ -64,7 +65,6 @@ class CShockwavePainter : public IEffectPainter
 
 		//	Runtime values
 
-		int m_iRadius;						//	Current radius (in pixels)
 		CShockwaveHitTest m_HitTest;
 
 		//	Computed values
@@ -215,7 +215,6 @@ CShockwavePainter::CShockwavePainter (CShockwaveEffectCreator *pCreator) : m_pCr
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
 		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
 		m_bInitialized(false),
-		m_iRadius(1),
 		m_iRadiusInc(1)
 
 //	CShockwavePainter constructor
@@ -340,10 +339,12 @@ void CShockwavePainter::GetRect (RECT *retRect) const
 //	Returns the RECT of the effect centered on 0,0
 
 	{
-	retRect->left = -m_iRadius;
-	retRect->top = -m_iRadius;
-	retRect->right = m_iRadius + 1;
-	retRect->bottom = m_iRadius + 1;
+	int iRadius = CalcRadius(m_iLifetime);
+
+	retRect->left = -iRadius;
+	retRect->top = -iRadius;
+	retRect->right = iRadius + 1;
+	retRect->bottom = iRadius + 1;
 	}
 
 void CShockwavePainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
@@ -353,11 +354,7 @@ void CShockwavePainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
 //	Handle move event
 
 	{
-	//	Radius increases
-
-	m_iRadius += m_iRadiusInc;
-
-	//	Bounds have changed
+	//	Bounds have changed because we expand.
 
 	if (retbBoundsChanged)
 		*retbBoundsChanged = true;
@@ -379,7 +376,10 @@ void CShockwavePainter::OnReadFromStream (SLoadCtx &Ctx)
 		IEffectPainter::OnReadFromStream(Ctx);
 	else
 		{
-		Ctx.pStream->Read((char *)&m_iRadius, sizeof(DWORD));
+		//	No longer needed because we use the tick to compute it.
+
+		int iRadius;
+		Ctx.pStream->Read((char *)&iRadius, sizeof(DWORD));
 
 		if (Ctx.dwVersion >= 70)
 			Ctx.pStream->Read((char *)&m_iRadiusInc, sizeof(DWORD));
@@ -440,6 +440,8 @@ void CShockwavePainter::OnUpdate (SEffectUpdateCtx &Ctx)
 
 	if (Ctx.pDamageDesc)
 		{
+		int iRadius = CalcRadius(Ctx.iTick);
+
 		//	Initialize hit test
 
 		if (m_HitTest.IsEmpty())
@@ -447,8 +449,8 @@ void CShockwavePainter::OnUpdate (SEffectUpdateCtx &Ctx)
 
 		//	Compute the size of the expansion ring
 
-		Metric rMaxRadius = m_iRadius * g_KlicksPerPixel;
-		Metric rMinRadius = (m_iRadius - m_iRadiusInc) * g_KlicksPerPixel;
+		Metric rMaxRadius = iRadius * g_KlicksPerPixel;
+		Metric rMinRadius = (iRadius - m_iRadiusInc) * g_KlicksPerPixel;
 
 		//	See if we intersect any object and do damage
 
@@ -477,6 +479,7 @@ void CShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	if (!CalcIntermediates())
 		return;
 
+	int iRadius = CalcRadius(Ctx.iTick);
 	int iLifetime = m_iLifetime;
 	int iStartDecay = m_iFadeStart * iLifetime / 100;
 	int iDecayRange = iLifetime - iStartDecay;
@@ -494,13 +497,13 @@ void CShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			CG32bitImage &Image = m_Image.GetImage(m_pCreator->GetUNIDString());
 			RECT rcImage = m_Image.GetImageRect();
 
-			CGDraw::CircleImage(Dest, x, y, m_iRadius, (BYTE)byOpacity, Image, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
+			CGDraw::CircleImage(Dest, x, y, iRadius, (BYTE)byOpacity, Image, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
 			break;
 			}
 
 		case styleGlowRing:
 			{
-			CGDraw::RingGlowing(Dest, x, y, m_iRadius, m_iGradientCount, m_ColorGradient, (BYTE)byOpacity);
+			CGDraw::RingGlowing(Dest, x, y, iRadius, m_iGradientCount, m_ColorGradient, (BYTE)byOpacity);
 			break;
 			}
 
