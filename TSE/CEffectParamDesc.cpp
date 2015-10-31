@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-CEffectParamDesc::CEffectParamDesc (EDataTypes iType, int iValue) : m_pItem(NULL)
+CEffectParamDesc::CEffectParamDesc (EDataTypes iType, int iValue)
 
 //	CEffectParamDesc constructor
 
@@ -40,10 +40,15 @@ void CEffectParamDesc::CleanUp (void)
 //	Clean up value
 
 	{
-	if (m_pItem)
+	switch (m_iType)
 		{
-		m_pItem->Discard(&g_pUniverse->GetCC());
-		m_pItem = NULL;
+		case typeImage:
+			delete m_pImage;
+			break;
+
+		case typeVectorConstant:
+			delete m_pVector;
+			break;
 		}
 
 	m_iType = typeNull;
@@ -67,6 +72,10 @@ void CEffectParamDesc::Copy (const CEffectParamDesc &Src)
 			m_dwData = Src.m_dwData;
 			break;
 
+		case typeImage:
+			m_pImage = new CObjectImageArray(*Src.m_pImage);
+			break;
+
 		case typeIntegerDiceRange:
 			m_DiceRange = Src.m_DiceRange;
 			break;
@@ -76,7 +85,7 @@ void CEffectParamDesc::Copy (const CEffectParamDesc &Src)
 			break;
 
 		case typeVectorConstant:
-			m_vVector = Src.m_vVector;
+			m_pVector = new CVector(*Src.m_pVector);
 			break;
 		}
 	}
@@ -213,6 +222,23 @@ int CEffectParamDesc::EvalIdentifier (CCreatePainterCtx &Ctx, LPSTR *pIDMap, int
 		}
 	}
 
+const CObjectImageArray &CEffectParamDesc::EvalImage (CCreatePainterCtx &Ctx) const
+
+//	EvalImage
+//
+//	Returns an image
+
+	{
+	switch (m_iType)
+		{
+		case typeImage:
+			return *m_pImage;
+
+		default:
+			return CObjectImageArray::Null();
+		}
+	}
+
 int CEffectParamDesc::EvalInteger (CCreatePainterCtx &Ctx) const
 
 //	EvalInteger
@@ -294,7 +320,7 @@ CVector CEffectParamDesc::EvalVector (CCreatePainterCtx &Ctx) const
 	switch (m_iType)
 		{
 		case typeVectorConstant:
-			return m_vVector;
+			return *m_pVector;
 
 		default:
 			return CVector();
@@ -413,6 +439,31 @@ ALERROR CEffectParamDesc::InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CStr
 	return NOERROR;
 	}
 
+ALERROR CEffectParamDesc::InitImageFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+//	InitImageFromXML
+//
+//	Initializes an image
+
+	{
+	ALERROR error;
+
+	ASSERT(m_iType == typeNull);
+	if (pDesc == NULL)
+		return NOERROR;
+
+	m_iType = typeImage;
+	m_pImage = new CObjectImageArray;
+	if (error = m_pImage->InitFromXML(Ctx, pDesc))
+		{
+		delete m_pImage;
+		m_iType = typeNull;
+		return error;
+		}
+
+	return NOERROR;
+	}
+
 ALERROR CEffectParamDesc::InitIntegerFromXML (SDesignLoadCtx &Ctx, const CString &sValue)
 
 //	InitIntegerFromXML
@@ -477,6 +528,7 @@ bool CEffectParamDesc::IsConstant (void)
 		case typeNull:
 		case typeBoolConstant:
 		case typeColorConstant:
+		case typeImage:
 		case typeIntegerConstant:
 		case typeStringConstant:
 		case typeVectorConstant:
@@ -517,6 +569,11 @@ void CEffectParamDesc::ReadFromStream (SLoadCtx &Ctx)
 			Ctx.pStream->Read((char *)&m_dwData, sizeof(DWORD));
 			break;
 
+		case typeImage:
+			m_pImage = new CObjectImageArray;
+			m_pImage->ReadFromStream(Ctx);
+			break;
+
 		case typeIntegerDiceRange:
 			if (Ctx.dwVersion >= 99)
 				m_DiceRange.ReadFromStream(Ctx);
@@ -527,7 +584,8 @@ void CEffectParamDesc::ReadFromStream (SLoadCtx &Ctx)
 			break;
 
 		case typeVectorConstant:
-			Ctx.pStream->Read((char *)&m_vVector, sizeof(CVector));
+			m_pVector = new CVector;
+			Ctx.pStream->Read((char *)m_pVector, sizeof(CVector));
 			break;
 		}
 	}
@@ -559,6 +617,10 @@ void CEffectParamDesc::WriteToStream (IWriteStream *pStream)
 			pStream->Write((char *)&m_dwData, sizeof(DWORD));
 			break;
 
+		case typeImage:
+			m_pImage->WriteToStream(pStream);
+			break;
+
 		case typeIntegerDiceRange:
 			m_DiceRange.WriteToStream(pStream);
 			break;
@@ -568,7 +630,7 @@ void CEffectParamDesc::WriteToStream (IWriteStream *pStream)
 			break;
 
 		case typeVectorConstant:
-			pStream->Write((char *)&m_vVector, sizeof(CVector));
+			pStream->Write((char *)m_pVector, sizeof(CVector));
 			break;
 		}
 	}

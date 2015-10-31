@@ -85,26 +85,29 @@ class CEffectParamDesc
 			typeStringConstant =			5,
 			typeBoolConstant =				6,
 			typeVectorConstant =			7,
+			typeImage =						8,
 			};
 
-		CEffectParamDesc (void) : m_iType(typeNull), m_pItem(NULL)
+		CEffectParamDesc (void) : m_iType(typeNull)
 			{ }
 
-		CEffectParamDesc (const CEffectParamDesc &Src) : m_pItem(NULL)
+		CEffectParamDesc (const CEffectParamDesc &Src)
 			{ Copy(Src); }
 
-		CEffectParamDesc (int iValue) : m_iType(typeIntegerConstant), m_dwData(iValue), m_pItem(NULL) { }
+		CEffectParamDesc (int iValue) : m_iType(typeIntegerConstant), m_dwData(iValue) { }
 		CEffectParamDesc (EDataTypes iType, int iValue);
 		~CEffectParamDesc (void);
 
 		CEffectParamDesc &operator= (const CEffectParamDesc &Src)
 			{ CleanUp(); Copy(Src); return *this; }
 
+		inline ALERROR Bind (SDesignLoadCtx &Ctx) { if (m_iType == typeImage) return m_pImage->OnDesignLoadComplete(Ctx); return NOERROR; }
 		CGDraw::EBlendModes EvalBlendMode (CCreatePainterCtx &Ctx, CGDraw::EBlendModes iDefault = CGDraw::blendNormal) const;
 		bool EvalBool (CCreatePainterCtx &Ctx) const;
 		CG32bitPixel EvalColor (CCreatePainterCtx &Ctx) const;
 		DiceRange EvalDiceRange (CCreatePainterCtx &Ctx, int iDefault = -1) const;
 		int EvalIdentifier (CCreatePainterCtx &Ctx, LPSTR *pIDMap, int iMax, int iDefault = 0) const;
+		const CObjectImageArray &EvalImage (CCreatePainterCtx &Ctx) const;
 		int EvalInteger (CCreatePainterCtx &Ctx) const;
 		int EvalIntegerBounded (CCreatePainterCtx &Ctx, int iMin, int iMax = -1, int iDefault = -1) const;
 		CString EvalString (CCreatePainterCtx &Ctx) const;
@@ -113,17 +116,20 @@ class CEffectParamDesc
 		inline void InitBool (bool bValue) { CleanUp(); m_dwData = (bValue ? 1 : 0); m_iType = typeBoolConstant; }
 		inline void InitColor (CG32bitPixel rgbValue) { CleanUp(); m_dwData = rgbValue.AsDWORD(); m_iType = typeColorConstant; }
 		inline void InitDiceRange (const DiceRange &Value) { CleanUp(); m_DiceRange = Value; m_iType = typeIntegerDiceRange; }
+		inline void InitImage (const CObjectImageArray &Value) { CleanUp(); m_pImage = new CObjectImageArray(Value); m_iType = typeImage; }
 		inline void InitInteger (int iValue) { CleanUp(); m_dwData = iValue; m_iType = typeIntegerConstant; }
 		inline void InitNull (void) { CleanUp(); }
 		inline void InitString (const CString &sValue) { CleanUp(); m_sData = sValue; m_iType = typeStringConstant; }
-		inline void InitVector (const CVector &vValue) { CleanUp(); m_vVector = vValue; m_iType = typeVectorConstant; }
+		inline void InitVector (const CVector &vValue) { CleanUp(); m_pVector = new CVector(vValue); m_iType = typeVectorConstant; }
 		ALERROR InitBlendModeFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		ALERROR InitColorFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		ALERROR InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CString &sValue, LPSTR *pIDMap);
+		ALERROR InitImageFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR InitIntegerFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		ALERROR InitStringFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		bool IsConstant (void);
 		inline bool IsNull (void) const { return (m_iType == typeNull); }
+		inline void MarkImage (void) { if (m_iType == typeImage) m_pImage->MarkImage(); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -135,13 +141,16 @@ class CEffectParamDesc
 
 		EDataTypes m_iType;
 
-		DWORD m_dwData;
 		CString m_sData;
-
 		DiceRange m_DiceRange;
-		CVector m_vVector;
 
-		ICCItem *m_pItem;
+		union
+			{
+			DWORD m_dwData;
+			CObjectImageArray *m_pImage;
+			ICCItem *m_pItem;
+			CVector *m_pVector;
+			};
 	};
 
 class CEffectParamSet
@@ -287,7 +296,6 @@ class IEffectPainter
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { }
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const { return false; }
-		virtual void SetParamMetric (const CString &sParam, Metric rValue) { }
 		virtual bool SetParamString (const CString &sParam, const CString &sValue) { return false; }
 		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue) { }
 		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue) { return false; }

@@ -1076,6 +1076,8 @@ class CObjectImageArray : public CObject
 		void TakeHandoff (CObjectImageArray &Source);
 		void WriteToStream (IWriteStream *pStream) const;
 
+		static const CObjectImageArray &Null (void) { return m_Null; }
+
 	private:
 		enum BlendingTypes
 			{
@@ -1118,6 +1120,7 @@ class CObjectImageArray : public CObject
 		mutable CG32bitImage *m_pScaledImages;
 		mutable int m_cxScaledImage;
 
+		static CObjectImageArray m_Null;
 		static CG32bitImage m_NullImage;
 
 	friend CObjectClass<CObjectImageArray>;

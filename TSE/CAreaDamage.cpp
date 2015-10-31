@@ -79,9 +79,7 @@ ALERROR CAreaDamage::Create (CSystem *pSystem,
 
 	//	Create a painter instance
 
-	pArea->m_pPainter = pDesc->CreateEffectPainter();
-	if (pArea->m_pPainter)
-		pArea->m_pPainter->SetParamMetric(SPEED_PARAM, pDesc->GetExpansionSpeed());
+	pArea->m_pPainter = pDesc->CreateShockwavePainter();
 
 	//	Add to system
 

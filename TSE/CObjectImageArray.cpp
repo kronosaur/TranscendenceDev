@@ -49,6 +49,7 @@ static char g_ImageFrameCountAttrib[] = "imageFrameCount";
 static char g_ImageTicksPerFrameAttrib[] = "imageTicksPerFrame";
 
 CG32bitImage CObjectImageArray::m_NullImage;
+CObjectImageArray CObjectImageArray::m_Null;
 
 CObjectImageArray::CObjectImageArray (void) : CObject(&g_Class),
 		m_pImage(NULL),

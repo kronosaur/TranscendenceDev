@@ -60,6 +60,7 @@
 #define PASSTHROUGH_ATTRIB						CONSTLIT("passthrough")
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
 #define SOUND_ATTRIB							CONSTLIT("sound")
+#define SPEED_ATTRIB							CONSTLIT("speed")
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
 #define TRAIL_ATTRIB							CONSTLIT("trail")
 #define FIRE_TYPE_ATTRIB						CONSTLIT("type")
@@ -377,6 +378,28 @@ IEffectPainter *CWeaponFireDesc::CreateSecondaryPainter (bool bTrackingObj, bool
 	Ctx.SetWeaponFireDesc(this);
 	Ctx.SetTrackingObject(bTrackingObj);
 	Ctx.SetUseObjectCenter(bUseObjectCenter);
+
+	return m_pEffect.CreatePainter(Ctx);
+	}
+
+IEffectPainter *CWeaponFireDesc::CreateShockwavePainter (bool bTrackingObj, bool bUseObjectCenter)
+
+//	CreateShockwavePainter
+//
+//	Creates an effect to paint a shockwave. The caller is responsible for
+//	calling Delete on the result.
+//
+//	NOTE: We may return NULL if the weapon has no effect.
+
+	{
+	CCreatePainterCtx Ctx;
+	Ctx.SetWeaponFireDesc(this);
+	Ctx.SetTrackingObject(bTrackingObj);
+	Ctx.SetUseObjectCenter(bUseObjectCenter);
+
+	//	We need to match the expansion speed
+
+	Ctx.SetDefaultParam(SPEED_ATTRIB, CEffectParamDesc(m_ExpansionSpeed.Roll()));
 
 	return m_pEffect.CreatePainter(Ctx);
 	}

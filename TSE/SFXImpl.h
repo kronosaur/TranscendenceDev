@@ -852,29 +852,16 @@ class CShapeEffectCreator : public CEffectCreator
 class CShockwaveEffectCreator : public CEffectCreator
 	{
 	public:
-		enum Styles
-			{
-			styleImage,									//	Use an image to paint shockwave
-			styleGlowRing,								//	Glowing right
-			};
-
 		CShockwaveEffectCreator (void);
 		~CShockwaveEffectCreator (void);
-		static CString GetClassTag (void) { return CONSTLIT("Shockwave"); }
+			
 		virtual CString GetTag (void) { return GetClassTag(); }
 
-		inline const TArray<CG32bitPixel> &GetColorGradient (void) { return m_ColorGradient; }
-		inline int GetFadeStart (void) { return m_iFadeStart; }
-		inline const CObjectImageArray &GetImage (void) { return m_Image; }
-		inline CG32bitPixel GetPrimaryColor (void) const { return m_rgbPrimaryColor; }
-		inline CG32bitPixel GetSecondaryColor (void) const { return m_rgbSecondaryColor; }
-		inline int GetRingThickness (void) { return m_iGradientCount; }
-		inline int GetSpeed (void) { return Max(1, (int)((m_Speed.Roll() * LIGHT_SPEED * g_SecondsPerUpdate / (g_KlicksPerPixel * 100.0)) + 0.5)); }
-		inline Styles GetStyle (void) const { return m_iStyle; }
-
 		//	CEffectCreator virtuals
-		virtual int GetLifetime (void) { return m_iLifetime; }
-		virtual void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
+		virtual int GetLifetime (void) { return m_Lifetime.EvalDiceRange(CCreatePainterCtx()).GetAveValue(); }
+		virtual void SetLifetime (int iLifetime) { m_Lifetime.InitInteger(iLifetime); }
+
+		static CString GetClassTag (void) { return CONSTLIT("Shockwave"); }
 
 	protected:
 		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx);
@@ -883,22 +870,17 @@ class CShockwaveEffectCreator : public CEffectCreator
 		virtual void OnMarkImages (void) { m_Image.MarkImage(); }
 
 	private:
-		void CreateGlowGradient (int iSolidWidth, int iGlowWidth, CG32bitPixel rgbSolidColor, CG32bitPixel rgbGlowColor);
+		CEffectParamDesc m_Style;						//	Style of effect
+		CEffectParamDesc m_Image;						//	Shockwave image
+		CEffectParamDesc m_Speed;						//	Expansion speed (% of lightspeed)
+		CEffectParamDesc m_Lifetime;					//	Lifetime (ticks)
+		CEffectParamDesc m_FadeStart;					//	% of lifetime at which we start to fade
+		CEffectParamDesc m_Width;						//	Width of central ring
+		CEffectParamDesc m_GlowWidth;					//	Glow width
+		CEffectParamDesc m_PrimaryColor;
+		CEffectParamDesc m_SecondaryColor;
 
-		Styles m_iStyle;								//	Style of effect
-		CObjectImageArray m_Image;						//	Shockwave image
-		DiceRange m_Speed;								//	Expansion speed (% of lightspeed)
-		int m_iLifetime;								//	Lifetime (ticks)
-		int m_iFadeStart;								//	% of lifetime at which we start to fade
-
-		int m_iWidth;									//	Width of central ring
-		int m_iGlowWidth;								//	Glow width
-
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
-
-		int m_iGradientCount;
-		TArray<CG32bitPixel> m_ColorGradient;
+		IEffectPainter *m_pSingleton;
 	};
 
 class CSingleParticleEffectCreator : public CEffectCreator

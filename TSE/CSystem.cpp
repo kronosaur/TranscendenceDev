@@ -372,6 +372,9 @@
 //	120: 1.7 Alpha 1
 //		Added flags to CParticleDamage
 //
+//	121: 1.7 Alpha 1
+//		CShockwavePainter saves params
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
