@@ -260,7 +260,7 @@ class CGDraw
 		static void Circle (CG8bitImage &Dest, int x, int y, int iRadius, BYTE Value);
 		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor);
 		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp, EBlendModes iMode = blendNormal, bool bPreMult = false);
-		static void CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
+		static void CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, EBlendModes iMode = blendNormal, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
 		static void CircleGradient (CG8bitImage &Dest, int x, int y, int iRadius, BYTE CenterValue, BYTE EdgeValue);
 		static void CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, CG32bitPixel rgbColor);

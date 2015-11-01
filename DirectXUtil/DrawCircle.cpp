@@ -146,15 +146,29 @@ void CGDraw::Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray
 		}
 	}
 
-void CGDraw::CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, int xSrc, int ySrc, int cxSrc, int cySrc)
+void CGDraw::CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, EBlendModes iMode, int xSrc, int ySrc, int cxSrc, int cySrc)
 
 //	CircleImage
 //
 //	Draws a circle using the given image.
 
 	{
-	CImageCirclePainter Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
-	Painter.Draw(Dest, x, y);
+	switch (iMode)
+		{
+		case blendNormal:
+			{
+			CImageCirclePainter<CGBlendBlend> Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendScreen:
+			{
+			CImageCirclePainter<CGBlendScreen> Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+		}
 	}
 
 void CGDraw::CircleGradient (CG8bitImage &Dest, int x, int y, int iRadius, BYTE CenterValue, BYTE EdgeValue)
@@ -216,21 +230,6 @@ void CGDraw::RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWi
 	{
 	CGlowingRingPainter Painter(Dest, iRadius, iWidth, ColorRamp, byOpacity);
 	Painter.Draw(x, y);
-	}
-
-//	CImageCirclePainter --------------------------------------------------------
-
-CImageCirclePainter::CImageCirclePainter (int iRadius, BYTE byOpacity, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) : TCirclePainter32((cxSrc >= 0 ? cxSrc : Src.GetWidth()), iRadius),
-		m_byOpacity(byOpacity),
-		m_Src(Src),
-		m_xSrc(xSrc),
-		m_ySrc(ySrc),
-		m_cxSrc(cxSrc >= 0 ? cxSrc : Src.GetWidth()),
-		m_cySrc(cySrc >= 0 ? cySrc : Src.GetHeight())
-
-//	CImageCirclePainter constructor
-
-	{
 	}
 
 //	CRadialCirclePainter8 ------------------------------------------------------

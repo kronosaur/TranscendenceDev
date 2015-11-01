@@ -14,7 +14,7 @@ class ICirclePainter
 		virtual void SetParam (const CString &sParam, const TArray<CG32bitPixel> &ColorTable) { }
 	};
 
-template <class PAINTER> class TCirclePainter32 : public ICirclePainter
+template <class PAINTER, class BLENDER> class TCirclePainter32 : public ICirclePainter
 	{
 	public:
 
@@ -184,7 +184,7 @@ template <class PAINTER> class TCirclePainter32 : public ICirclePainter
 						&& bPaintTop
 						&& m_iRadius > 0)
 					{
-					*pCenterTop = CG32bitPixel::Blend(*pCenterTop, GET_COLOR(0, 0));
+					BLENDER::SetBlendPreMult(pCenterTop, GET_COLOR(0, 0));
 					}
 
 				//	Continue
@@ -245,9 +245,9 @@ template <class PAINTER> class TCirclePainter32 : public ICirclePainter
 						if (byOpacity == 0x00)
 							;
 						else if (byOpacity == 0xff)
-							*(pCenterTop - xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterTop - xPos, rgbColor);
 						else
-							DRAW_PIXEL(pCenterTop - xPos, rgbColor);
+							BLENDER::SetBlendPreMult(pCenterTop - xPos, rgbColor);
 						}
 
 					if (bPaintBottom)
@@ -258,9 +258,9 @@ template <class PAINTER> class TCirclePainter32 : public ICirclePainter
 						if (byOpacity == 0x00)
 							;
 						else if (byOpacity == 0xff)
-							*(pCenterBottom - xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterBottom - xPos, rgbColor);
 						else
-							DRAW_PIXEL(pCenterBottom - xPos, rgbColor);
+							BLENDER::SetBlendPreMult(pCenterBottom - xPos, rgbColor);
 						}
 					}
 
@@ -274,9 +274,9 @@ template <class PAINTER> class TCirclePainter32 : public ICirclePainter
 						if (byOpacity == 0x00)
 							;
 						else if (byOpacity == 0xff)
-							*(pCenterTop + xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterTop + xPos, rgbColor);
 						else
-							DRAW_PIXEL(pCenterTop + xPos, rgbColor);
+							BLENDER::SetBlendPreMult(pCenterTop + xPos, rgbColor);
 						}
 
 					if (bPaintBottom)
@@ -287,9 +287,9 @@ template <class PAINTER> class TCirclePainter32 : public ICirclePainter
 						if (byOpacity == 0x00)
 							;
 						else if (byOpacity == 0xff)
-							*(pCenterBottom + xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterBottom + xPos, rgbColor);
 						else
-							DRAW_PIXEL(pCenterBottom + xPos, rgbColor);
+							BLENDER::SetBlendPreMult(pCenterBottom + xPos, rgbColor);
 						}
 					}
 

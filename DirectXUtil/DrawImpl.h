@@ -236,10 +236,18 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 
 //	Circle Painters ------------------------------------------------------------
 
-class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter>
+template <class BLENDER> class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter<BLENDER>, BLENDER>
 	{
 	public:
-		CImageCirclePainter (int iRadius, BYTE byOpacity, const CG32bitImage &Src, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
+		CImageCirclePainter (int iRadius, BYTE byOpacity, const CG32bitImage &Src, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1) : TCirclePainter32((cxSrc >= 0 ? cxSrc : Src.GetWidth()), iRadius),
+				m_byOpacity(byOpacity),
+				m_Src(Src),
+				m_xSrc(xSrc),
+				m_ySrc(ySrc),
+				m_cxSrc(cxSrc >= 0 ? cxSrc : Src.GetWidth()),
+				m_cySrc(cySrc >= 0 ? cySrc : Src.GetHeight())
+			{ }
+
 
 		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
 			{
