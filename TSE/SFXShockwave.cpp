@@ -497,7 +497,7 @@ void CShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			CG32bitImage &Image = m_Image.GetImage(m_pCreator->GetUNIDString());
 			RECT rcImage = m_Image.GetImageRect();
 
-			CGDraw::CircleImage(Dest, x, y, iRadius, (BYTE)byOpacity, Image, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
+			CGDraw::CircleImage(Dest, x, y, iRadius, (BYTE)byOpacity, Image, CGDraw::blendNormal, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
 			break;
 			}
 

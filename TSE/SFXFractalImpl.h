@@ -84,7 +84,7 @@ class CExplosionColorizer
 //	We paint a spherical fractal cloud with a color table keyed to radius.
 //	rFrame is from 0.0 to 1.0. Use (Metric){frame} / {frameCount}.
 
-class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
+template <class BLENDER> class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter<BLENDER>, BLENDER>
 	{
 	public:
 		CCloudCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture) :
@@ -166,7 +166,7 @@ class CCloudCirclePainter : public TCirclePainter32<CCloudCirclePainter>
 //
 //	We draw a set of dotted diffraction circles
 
-class CDiffractionCirclePainter : public TCirclePainter32<CDiffractionCirclePainter>
+template <class BLENDER> class CDiffractionCirclePainter : public TCirclePainter32<CDiffractionCirclePainter<BLENDER>, BLENDER>
 	{
 	public:
 		CDiffractionCirclePainter (void) :
@@ -223,7 +223,7 @@ class CDiffractionCirclePainter : public TCirclePainter32<CDiffractionCirclePain
 //	For efficiency we paint both layers at the same time, using the fractal 
 //	cloud pattern as the discriminator.
 
-class CFireblastCirclePainter : public TCirclePainter32<CFireblastCirclePainter>
+template <class BLENDER> class CFireblastCirclePainter : public TCirclePainter32<CFireblastCirclePainter<BLENDER>, BLENDER>
 	{
 	public:
 		CFireblastCirclePainter (CFractalTextureLibrary::ETextureTypes iTexture, Metric rDistortion = 0.0) :

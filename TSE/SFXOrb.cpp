@@ -556,16 +556,58 @@ bool COrbEffectPainter::CalcIntermediates (void)
 			case styleCloud:
 			case styleFirecloud:
 			case styleSmoke:
-				m_pPainter = new CCloudCirclePainter(m_iTextureType);
+				{
+				switch (m_iBlendMode)
+					{
+					case CGDraw::blendNormal:
+						m_pPainter = new CCloudCirclePainter<CGBlendBlend>(m_iTextureType);
+						break;
+
+					case CGDraw::blendScreen:
+						m_pPainter = new CCloudCirclePainter<CGBlendScreen>(m_iTextureType);
+						break;
+
+					default:
+						m_pPainter = NULL;
+					}
 				break;
+				}
 
 			case styleDiffraction:
-				m_pPainter = new CDiffractionCirclePainter();
+				{
+				switch (m_iBlendMode)
+					{
+					case CGDraw::blendNormal:
+						m_pPainter = new CDiffractionCirclePainter<CGBlendBlend>();
+						break;
+
+					case CGDraw::blendScreen:
+						m_pPainter = new CDiffractionCirclePainter<CGBlendScreen>();
+						break;
+
+					default:
+						m_pPainter = NULL;
+					}
 				break;
+				}
 
 			case styleFireblast:
-				m_pPainter = new CFireblastCirclePainter(m_iTextureType, (Metric)m_iDistortion / 100.0);
+				{
+				switch (m_iBlendMode)
+					{
+					case CGDraw::blendNormal:
+						m_pPainter = new CFireblastCirclePainter<CGBlendBlend>(m_iTextureType, (Metric)m_iDistortion / 100.0);
+						break;
+
+					case CGDraw::blendScreen:
+						m_pPainter = new CFireblastCirclePainter<CGBlendScreen>(m_iTextureType, (Metric)m_iDistortion / 100.0);
+						break;
+
+					default:
+						m_pPainter = NULL;
+					}
 				break;
+				}
 			}
 
 		m_bInitialized = true;
