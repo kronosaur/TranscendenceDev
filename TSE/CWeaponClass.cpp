@@ -67,6 +67,7 @@
 #define FIELD_SPEED								CONSTLIT("speed")
 #define FIELD_VARIANT_COUNT						CONSTLIT("variantCount")
 
+#define PROPERTY_DAMAGE_PER_PROJECTILE			CONSTLIT("damagePerProjectile")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
@@ -1889,7 +1890,28 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_FIRE_ARC))
+	//	Figure out which variant we're dealing with
+
+	CString sProperty = sName;
+	int iVariant = Ctx.GetVariant();
+	if (iVariant == -1)
+		iVariant = ParseVariantFromPropertyName(sName, &sProperty);
+	if (iVariant == -1)
+		iVariant = 0;
+
+	//	Get the shot
+
+	CWeaponFireDesc *pShot = GetVariant(iVariant);
+	if (pShot == NULL)
+		return CC.CreateNil();
+
+	//	Get the property
+
+	ICCItem *pResult;
+	if (strEquals(sProperty, PROPERTY_DAMAGE_PER_PROJECTILE))
+		return CC.CreateDouble(CalcDamage(pShot));
+
+	else if (strEquals(sProperty, PROPERTY_FIRE_ARC))
 		{
 		CInstalledDevice *pDevice = Ctx.GetDevice();	//	May be NULL
 		int iMinFireArc;
@@ -1930,7 +1952,7 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 			}
 		}
 
-	else if (strEquals(sName, PROPERTY_LINKED_FIRE_OPTIONS))
+	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))
 		{
 		//	Get the options from the device
 
@@ -1960,16 +1982,32 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 		return pResult;
 		}
 
-	else if (strEquals(sName, PROPERTY_OMNIDIRECTIONAL))
+	else if (strEquals(sProperty, PROPERTY_OMNIDIRECTIONAL))
 		{
 		CInstalledDevice *pDevice = Ctx.GetDevice();	//	May be NULL
 		return CC.CreateBool(IsOmniDirectional(pDevice));
 		}
 
+	//	See if the shot has the property
+
+	else if (pResult = pShot->FindProperty(sProperty))
+		return pResult;
+
+	//	If the item is a missile, then we default to items properties
+
+	else if (Ctx.GetItem().GetType() && Ctx.GetItem().GetType()->IsMissile())
+		{
+		CString sValue;
+		if (FindDataField(iVariant, sProperty, &sValue))
+			return CreateResultFromDataField(CC, sValue);
+
+		return CreateResultFromDataField(CC, Ctx.GetItem().GetType()->GetDataField(sProperty));
+		}
+
 	//	Otherwise, just get the property from the base class
 
 	else
-		return CDeviceClass::GetItemProperty(Ctx, sName);
+		return CDeviceClass::GetItemProperty(Ctx, sProperty);
 	}
 
 Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)

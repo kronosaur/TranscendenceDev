@@ -651,6 +651,36 @@ ALERROR CDeviceClass::ParseLinkedFireOptions (SDesignLoadCtx &Ctx, const CString
 	return NOERROR;
 	}
 
+int CDeviceClass::ParseVariantFromPropertyName (const CString &sName, CString *retsName)
+
+//	ParseVariantFromPropertyName
+//
+//	If the name ends in :nn then nn is the variant. We also return the parsed
+//	property name (without the variant).
+
+	{
+	//	Look for a :nn suffix specifying a variant
+
+	char *pStart = sName.GetASCIIZPointer();
+	char *pPos = pStart;
+	while (*pPos != '\0')
+		{
+		if (*pPos == ':')
+			{
+			if (retsName)
+				*retsName = CString(pStart, (int)(pPos - pStart));
+
+			return strParseInt(pPos + 1, 0);
+			}
+
+		pPos++;
+		}
+
+	//	Not found
+
+	return -1;
+	}
+
 bool CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
 
 //	SetItemProperty

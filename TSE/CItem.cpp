@@ -910,6 +910,11 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 		else if (pArmor = GetType()->GetArmorClass())
 			return pArmor->GetItemProperty(Ctx, sName);
 
+		//	If this is a missile, then pass it to the weapon.
+
+		else if (GetType()->IsMissile() && Ctx.ResolveVariant())
+			return Ctx.GetVariantDevice()->GetItemProperty(Ctx, sName);
+
 		//	Otherwise, from the type
 
 		else

@@ -237,3 +237,39 @@ const CItemEnhancement &CItemCtx::GetMods(void)
 
 	return GetItem().GetMods();
 	}
+
+bool CItemCtx::ResolveVariant (void)
+
+//	ResolveVariant
+//
+//	If m_pItem is a missile, we look for the weapon that can launch it and 
+//	cache it in m_pWeapon and m_iVariant. If successful, we return TRUE.
+
+	{
+	int i;
+
+	if (m_pItem == NULL)
+		return false;
+
+	//	Look through all weapons
+
+	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+		{
+		CItemType *pType = g_pUniverse->GetItemType(i);
+		CDeviceClass *pWeapon;
+
+		if (pType->IsDevice() 
+				&& (pWeapon = pType->GetDeviceClass()))
+			{
+			int iVariant = pWeapon->GetAmmoVariant(m_pItem->GetType());
+			if (iVariant != -1)
+				{
+				m_pWeapon = pWeapon;
+				m_iVariant = iVariant;
+				return true;
+				}
+			}
+		}
+
+	return false;
+	}

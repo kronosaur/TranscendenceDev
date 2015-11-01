@@ -404,7 +404,7 @@ IEffectPainter *CWeaponFireDesc::CreateShockwavePainter (bool bTrackingObj, bool
 	return m_pEffect.CreatePainter(Ctx);
 	}
 
-bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue)
+bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
@@ -422,22 +422,6 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_SOUND))
 		*retsValue = (m_FireSound.GetSound() != -1 ? strFromInt(m_FireSound.GetUNID(), false) : NULL_STR);
-
-	//	Otherwise, see if the damage can handle this.
-	//
-	//	LATER: At some point we should move this code to the GetProperty side,
-	//	but for now we need it here since this is the only path that handles
-	//	missiles.
-
-	else if (pResult = m_Damage.FindProperty(sField))
-		{
-		CCodeChain &CC = g_pUniverse->GetCC();
-		*retsValue = pResult->GetStringValue();
-		pResult->Discard(&CC);
-		}
-
-	//	Otherwise, nothing
-
 	else
 		return false;
 
@@ -521,6 +505,33 @@ bool CWeaponFireDesc::FindEventHandler (const CString &sEvent, SEventHandlerDesc
 	//	Otherwise, we have no event
 
 	return false;
+	}
+
+ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
+
+//	FindProperty
+//
+//	Finds a property. We return NULL if not found.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	ICCItem *pResult;
+	CString sValue;
+
+	//	Check the damage structure
+
+	if (pResult = m_Damage.FindProperty(sProperty))
+		return pResult;
+
+	//	Otherwise, get it from a data field
+
+	else if (FindDataField(sProperty, &sValue))
+		return CreateResultFromDataField(CC, sValue);
+
+	//	Otherwise, not found
+
+	else
+		return NULL;
 	}
 
 CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDesc (const CString &sUNID, char **retpPos)

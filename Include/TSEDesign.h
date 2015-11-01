@@ -2466,6 +2466,7 @@ class CDeviceClass : public CObject
 		static ItemCategories GetItemCategory (DeviceNames iDev);
 		static CString GetLinkedFireOptionString (DWORD dwOptions);
 		static ALERROR ParseLinkedFireOptions (SDesignLoadCtx &Ctx, const CString &sDesc, DWORD *retdwOptions);
+		static int ParseVariantFromPropertyName (const CString &sName, CString *retsName = NULL);
 
 	protected:
 		inline ItemCategories GetDefinedSlotCategory (void) { return m_iSlotCategory; }
@@ -3701,12 +3702,12 @@ class CUserProfile
 class CItemCtx
 	{
 	public:
-		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL) { }
-		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice) { }
+		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1) { }
 
 		void ClearItemCache (void);
 		ICCItem *CreateItemVariable (CCodeChain &CC);
@@ -3717,7 +3718,10 @@ class CItemCtx
 		const CItem &GetItem (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
+		inline int GetVariant (void) const { return m_iVariant; }
+		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
 		inline bool IsItemNull (void) const { return (m_pItem == NULL || m_pItem->GetType() == NULL); }
+		bool ResolveVariant (void);
 
 	private:
 		const CItem *GetItemPointer (void);
@@ -3727,6 +3731,10 @@ class CItemCtx
 		CSpaceObject *m_pSource;				//	Where the item is installed (may be NULL)
 		CInstalledArmor *m_pArmor;				//	Installation structure (may be NULL)
 		CInstalledDevice *m_pDevice;			//	Installation structure (may be NULL)
+
+		CDeviceClass *m_pWeapon;				//	This is the weapon that uses the given item
+		int m_iVariant;							//	NOTE: In this case, m_pItem may be either a
+												//	missile or the weapon.
 	};
 
 class CItemType : public CDesignType
