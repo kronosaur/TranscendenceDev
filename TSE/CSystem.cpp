@@ -375,6 +375,9 @@
 //	121: 1.7 Alpha 1
 //		CShockwavePainter saves params
 //
+//	122: 1.7 Alpha 1
+//		CSingleParticlePainter saves params
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

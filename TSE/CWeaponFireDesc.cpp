@@ -411,8 +411,6 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue) 
 //	Returns data field for a weapon fire descriptor
 
 	{
-	ICCItem *pResult;
-
 	if (strEquals(sField, FIELD_PARTICLE_COUNT))
 		{
 		if (m_pParticleDesc)

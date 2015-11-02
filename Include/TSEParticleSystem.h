@@ -9,11 +9,15 @@ struct SEffectUpdateCtx;
 
 enum ParticlePaintStyles
 	{
-	paintPlain,
-	paintFlame,
-	paintSmoke,
-	paintImage,
-	paintLine,
+	paintUnknown =						0,
+
+	paintPlain =						1,
+	paintFlame =						2,
+	paintSmoke =						3,
+	paintImage =						4,
+	paintLine =							5,
+
+	paintMax =							5,
 	};
 
 struct SParticlePaintDesc

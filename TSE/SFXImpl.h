@@ -886,25 +886,24 @@ class CShockwaveEffectCreator : public CEffectCreator
 class CSingleParticleEffectCreator : public CEffectCreator
 	{
 	public:
+		CSingleParticleEffectCreator (void);
+		~CSingleParticleEffectCreator (void);
+
 		static CString GetClassTag (void) { return CONSTLIT("Particle"); }
 		virtual CString GetTag (void) { return GetClassTag(); }
-
-		inline ParticlePaintStyles GetStyle (void) const { return m_iStyle; }
-		inline int GetMaxWidth (void) const { return m_MaxWidth.Roll(); }
-		inline int GetMinWidth (void) const { return m_MinWidth.Roll(); }
-		inline CG32bitPixel GetPrimaryColor (void) const { return m_rgbPrimaryColor; }
-		inline CG32bitPixel GetSecondaryColor (void) const { return m_rgbSecondaryColor; }
 
 	protected:
 		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx);
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 
 	private:
-		ParticlePaintStyles m_iStyle;
-		DiceRange m_MinWidth;
-		DiceRange m_MaxWidth;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
+		CEffectParamDesc m_Style;
+		CEffectParamDesc m_MinWidth;
+		CEffectParamDesc m_MaxWidth;
+		CEffectParamDesc m_PrimaryColor;
+		CEffectParamDesc m_SecondaryColor;
+
+		IEffectPainter *m_pSingleton;
 	};
 
 class CSmokeTrailEffectCreator : public CEffectCreator

@@ -107,7 +107,7 @@ ALERROR CFlareEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 		}
 
 	m_iRadius = pDesc->GetAttributeIntegerBounded(RADIUS_ATTRIB, 0, -1, 100);
-	m_iLifetime = pDesc->GetAttributeIntegerBounded(LIFETIME_ATTRIB, 0, -1, 1);
+	m_iLifetime = pDesc->GetAttributeIntegerBounded(LIFETIME_ATTRIB, 0, -1, 0);
 	m_rgbPrimaryColor = ::LoadRGBColor(pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB));
 
 	CString sAttrib;

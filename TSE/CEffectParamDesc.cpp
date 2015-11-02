@@ -143,7 +143,7 @@ bool CEffectParamDesc::EvalBool (CCreatePainterCtx &Ctx) const
 		}
 	}
 
-CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx) const
+CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx, CG32bitPixel rgbDefault) const
 
 //	EvalColor
 //
@@ -156,7 +156,7 @@ CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx) const
 			return CG32bitPixel::FromDWORD(m_dwData);
 
 		default:
-			return CG32bitPixel::Null();
+			return rgbDefault;
 		}
 	}
 

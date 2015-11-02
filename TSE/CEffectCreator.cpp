@@ -1033,10 +1033,17 @@ void IEffectPainter::SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sP
 			CString sValue = pValue->GetStringValue();
 			char *pPos = sValue.GetASCIIZPointer();
 
+			DiceRange DiceRangeValue;
+
 			//	If this is a color, parse it
 
 			if (*pPos == '#')
 				Value.InitColor(::LoadRGBColor(sValue));
+
+			//	Otherwise, see if this is a dice range
+
+			else if (DiceRange::LoadIfValid(sValue, &DiceRangeValue))
+				Value.InitDiceRange(DiceRangeValue);
 
 			//	Otherwise, a string
 

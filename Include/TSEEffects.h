@@ -104,7 +104,7 @@ class CEffectParamDesc
 		inline ALERROR Bind (SDesignLoadCtx &Ctx) { if (m_iType == typeImage) return m_pImage->OnDesignLoadComplete(Ctx); return NOERROR; }
 		CGDraw::EBlendModes EvalBlendMode (CCreatePainterCtx &Ctx, CGDraw::EBlendModes iDefault = CGDraw::blendNormal) const;
 		bool EvalBool (CCreatePainterCtx &Ctx) const;
-		CG32bitPixel EvalColor (CCreatePainterCtx &Ctx) const;
+		CG32bitPixel EvalColor (CCreatePainterCtx &Ctx, CG32bitPixel rgbDefault = CG32bitPixel::Null()) const;
 		DiceRange EvalDiceRange (CCreatePainterCtx &Ctx, int iDefault = -1) const;
 		int EvalIdentifier (CCreatePainterCtx &Ctx, LPSTR *pIDMap, int iMax, int iDefault = 0) const;
 		const CObjectImageArray &EvalImage (CCreatePainterCtx &Ctx) const;

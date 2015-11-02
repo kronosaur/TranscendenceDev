@@ -28,6 +28,8 @@
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
+#define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
+#define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 
 CItemEnhancement CItem::m_NullMod;
 CItem CItem::m_NullItem;
@@ -894,6 +896,12 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 
 	else if (strEquals(sName, PROPERTY_INSTALLED))
 		return CC.CreateBool(IsInstalled());
+
+	else if (strEquals(sName, PROPERTY_MASS_BONUS_PER_CHARGE))
+		return CC.CreateInteger(m_pItemType->GetMassBonusPerCharge());
+
+	else if (strEquals(sName, PROPERTY_VALUE_BONUS_PER_CHARGE))
+		return CC.CreateInteger(m_pItemType->GetValueBonusPerCharge());
 
 	else
 		{

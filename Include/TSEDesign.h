@@ -3813,6 +3813,7 @@ class CItemType : public CDesignType
 		int GetInstallCost (void) const;
 		inline const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }
 		inline Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
+		inline int GetMassBonusPerCharge (void) const { return m_iExtraMassPerCharge; }
 		int GetMassKg (CItemCtx &Ctx) const;
 		inline int GetMaxCharges (void) const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
 		int GetMaxHPBonus (void) const;
@@ -3826,6 +3827,7 @@ class CItemType : public CDesignType
 		inline ICCItem *GetUseCode (void) const { return m_pUseCode; }
 		bool GetUseDesc (SUseDesc *retDesc) const;
 		int GetValue (CItemCtx &Ctx, bool bActual = false) const;
+		inline int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
 		inline bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		inline bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
 		bool IsAmmunition (void) const;

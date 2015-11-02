@@ -165,7 +165,7 @@ inline void DebugStopTimer (char *szTiming) { }
 const DWORD API_VERSION =								29;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
 const DWORD UNIVERSE_SAVE_VERSION =						26;
-const DWORD SYSTEM_SAVE_VERSION =						121;	//	See: CSystem.cpp
+const DWORD SYSTEM_SAVE_VERSION =						122;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{
@@ -394,6 +394,8 @@ class DiceRange
 		void Scale (Metric rScale);
 		void SetConstant (int iValue) { m_iFaces = 0; m_iCount = 0; m_iBonus = iValue; }
 		void WriteToStream (IWriteStream *pStream) const;
+
+		static bool LoadIfValid (const CString &sAttrib, DiceRange *retValue);
 
 	private:
 		int m_iFaces;
