@@ -30,6 +30,13 @@ void CGDraw::Region (CG32bitImage &Dest, int x, int y, const CG16bitBinaryRegion
 			break;
 			}
 
+		case blendHardLight:
+			{
+			TFillRegionSolid<CGBlendHardLight> Painter(rgbColor);
+			Painter.Draw(Dest, x, y, Region);
+			break;
+			}
+
 		case blendScreen:
 			{
 			TFillRegionSolid<CGBlendScreen> Painter(rgbColor);

@@ -211,12 +211,13 @@ class CGDraw
 
 			blendNormal =				0,	//	Normal drawing
 			blendMultiply =				1,	//	Darkens images
-			blendOverlay =				2,	//	Combine multiple/screen
+			blendOverlay =				2,	//	Combine multiply/screen
 			blendScreen =				3,	//	Brightens images
+			blendHardLight =			4,
 
 			//	See BlendModes.cpp to add new blend modes
 
-			blendModeCount =			4,
+			blendModeCount =			5,
 			};
 
 		//	Blts
@@ -361,6 +362,50 @@ class CGBlendCopy : public TBlendImpl<CGBlendCopy>
 		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
 		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
 		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+	};
+
+class CGBlendHardLight : public TBlendImpl<CGBlendHardLight>
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) 
+			{
+			BYTE *pAlpha = CG32bitPixel::AlphaTable(rgbSource.GetAlpha());
+
+			BYTE redResult = HardLight(rgbDest.GetRed(), rgbSource.GetRed());
+			BYTE greenResult = HardLight(rgbDest.GetGreen(), rgbSource.GetGreen());
+			BYTE blueResult = HardLight(rgbDest.GetBlue(), rgbSource.GetBlue());
+
+			if (rgbSource.GetGreen() == 0xff)
+				return CG32bitPixel(redResult, greenResult, blueResult);
+			else
+				return CG32bitPixel::Blend(rgbDest, CG32bitPixel(redResult, greenResult, blueResult), rgbSource.GetAlpha());
+			}
+
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			if (rgbSource.GetAlpha() == 0xff)
+				return Copy(rgbDest, rgbSource);
+			else
+				return CG32bitPixel::Blend(rgbDest, Copy(rgbDest, rgbSource), rgbSource.GetAlpha());
+			}
+
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			BYTE redResult = HardLight(rgbDest.GetRed(), rgbSource.GetRed());
+			BYTE greenResult = HardLight(rgbDest.GetGreen(), rgbSource.GetGreen());
+			BYTE blueResult = HardLight(rgbDest.GetBlue(), rgbSource.GetBlue());
+
+			return CG32bitPixel(redResult, greenResult, blueResult);
+			}
+
+	private:
+		inline static BYTE HardLight (BYTE byDest, BYTE bySource)
+			{
+			if (bySource < 0x80)
+				return (2 * CG32bitPixel::AlphaTable(byDest)[bySource]);
+			else
+				return 0xff - (2 * CG32bitPixel::AlphaTable(0xff - byDest)[0xff - bySource]);
+			}
 	};
 
 class CGBlendScreen : public TBlendImpl<CGBlendScreen>
