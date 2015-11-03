@@ -2717,6 +2717,60 @@ ICCItem *fnMathList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		}
 	}
 
+ICCItem *fnMathListOld (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
+
+//	fnMathListOld
+//
+//	Simple integer functions
+//
+//	(add x1 x2 ... xn) -> z
+//	(multiply x1 x2 .. .xn) -> z
+
+	{
+	int i;
+	CCodeChain *pCC = pCtx->pCC;
+
+	//	Get the list
+
+	ICCItem *pList;
+	if (pArgs->GetCount() == 1 && pArgs->GetElement(0)->IsList())
+		{
+		pList = pArgs->GetElement(0);
+
+		if (pList->GetCount() < 1)
+			return pCC->CreateInteger(0);
+		}
+	else
+		pList = pArgs;
+
+	//	Do the computation
+
+	switch (dwData)
+		{
+		case FN_MATH_ADD:
+			{
+			int iResult = pList->GetElement(0)->GetIntegerValue();
+			for (i = 1; i < pList->GetCount(); i++)
+				iResult += pList->GetElement(i)->GetIntegerValue();
+
+			return pCC->CreateInteger(iResult);
+			}
+
+		case FN_MATH_MULTIPLY:
+			{
+			int iResult = pList->GetElement(0)->GetIntegerValue();
+			for (i = 1; i < pList->GetCount(); i++)
+				iResult *= pList->GetElement(i)->GetIntegerValue();
+
+			return pCC->CreateInteger(iResult);
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
+	}
+
 ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnMathNumerals

@@ -23,7 +23,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"geq",				fnEquality,		FN_EQUALITY_GREATER_EQ,
 			"(geq a b) -> True if a >= b",		NULL,	0,	},
 
-		{	"add",				fnMathList,		FN_MATH_ADD,
+		{	"add",				fnMathListOld,		FN_MATH_ADD,
 			"(add x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
@@ -187,7 +187,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(mod ['degrees] x y) -> z",
 			"*",	0,	},
 
-		{	"multiply",			fnMathList,			FN_MATH_MULTIPLY,
+		{	"multiply",			fnMathListOld,		FN_MATH_MULTIPLY,
 			"(multiply x1 x2 ... xn) -> z",
 			"v*",	0,	},
 

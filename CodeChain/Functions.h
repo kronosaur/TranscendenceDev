@@ -121,6 +121,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMatch (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMathFractions (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMathList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
+ICCItem *fnMathListOld (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMathOld(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnMath (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
