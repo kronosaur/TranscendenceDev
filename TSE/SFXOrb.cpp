@@ -563,6 +563,10 @@ bool COrbEffectPainter::CalcIntermediates (void)
 						m_pPainter = new CCloudCirclePainter<CGBlendBlend>(m_iTextureType);
 						break;
 
+					case CGDraw::blendHardLight:
+						m_pPainter = new CCloudCirclePainter<CGBlendHardLight>(m_iTextureType);
+						break;
+
 					case CGDraw::blendScreen:
 						m_pPainter = new CCloudCirclePainter<CGBlendScreen>(m_iTextureType);
 						break;
@@ -581,6 +585,10 @@ bool COrbEffectPainter::CalcIntermediates (void)
 						m_pPainter = new CDiffractionCirclePainter<CGBlendBlend>();
 						break;
 
+					case CGDraw::blendHardLight:
+						m_pPainter = new CDiffractionCirclePainter<CGBlendHardLight>();
+						break;
+
 					case CGDraw::blendScreen:
 						m_pPainter = new CDiffractionCirclePainter<CGBlendScreen>();
 						break;
@@ -597,6 +605,10 @@ bool COrbEffectPainter::CalcIntermediates (void)
 					{
 					case CGDraw::blendNormal:
 						m_pPainter = new CFireblastCirclePainter<CGBlendBlend>(m_iTextureType, (Metric)m_iDistortion / 100.0);
+						break;
+
+					case CGDraw::blendHardLight:
+						m_pPainter = new CFireblastCirclePainter<CGBlendHardLight>(m_iTextureType, (Metric)m_iDistortion / 100.0);
 						break;
 
 					case CGDraw::blendScreen:
