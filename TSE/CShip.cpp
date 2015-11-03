@@ -1946,11 +1946,8 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		int iManeuver = GetManeuverability() * GetRotationRange() / STD_ROTATION_COUNT;
-		if (iManeuver <= 0)
-			iManeuver = 1;
-
-		*retsValue = strFromInt(30000 / iManeuver);
+		Metric rManeuver = g_SecondsPerUpdate * m_pClass->GetRotationDesc().GetMaxRotationSpeedPerTick();
+		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
 		{

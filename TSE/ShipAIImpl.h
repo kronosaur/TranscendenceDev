@@ -54,6 +54,7 @@ class CAIBehaviorCtx
 		inline int GetFireRangeAdj (void) const { return m_AISettings.GetFireRangeAdj(); }
 		inline int GetFireRateAdj (void) const { return m_AISettings.GetFireRateAdj(); }
 		inline Metric GetFlankDist (void) const { return m_rFlankDist; }
+		inline Metric GetFlankRange2 (void) const { return 1.5 * m_rFlankDist * m_rFlankDist; }
 		inline int GetLastAttack (void) const { return m_iLastAttack; }
 		inline EManeuverTypes GetLastTurn (void) const { return m_iLastTurn; }
 		inline int GetLastTurnCount (void) const { return m_iLastTurnCount; }
@@ -136,6 +137,7 @@ class CAIBehaviorCtx
 		void ImplementTurnTo (CShip *pShip, int iRotation);
 
 		//	Helpers
+		CVector CalcFlankPos (CShip *pShip, const CVector &vInterceptPos);
 		bool CalcFormationParams (CShip *pShip, const CVector &vDestPos, const CVector &vDestVel, int iDestAngle, CVector *retvRecommendedVel, Metric *retrDeltaPos2 = NULL, Metric *retrDeltaVel2 = NULL);
 		void CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget);
 		void CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric rTargetDist2);

@@ -2860,7 +2860,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	//	Compute the angular size of the target
 
-	int iHalfAngularSize = (int)(30.0 * pTarget->GetHitSize() / rDist);
+	int iHalfAngularSize = (int)(20.0 * pTarget->GetHitSize() / rDist);
 
 	//	Figure out how far off we are from the direction that we
 	//	want to fire in.

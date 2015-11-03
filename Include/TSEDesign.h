@@ -3091,7 +3091,6 @@ class CIntegralRotationDesc
 		inline int GetFrameCount (void) const { return m_iCount; }
 		int GetFrameIndex (int iAngle) const;
 		int GetManeuverDelay (void) const;
-		int GetManeuverability (void) const;
 		inline int GetMaxRotationSpeed (void) const { return m_iMaxRotationRate; }
 		Metric GetMaxRotationSpeedPerTick (void) const;
 		inline int GetMaxRotationTimeTicks (void) const { Metric rSpeed = GetMaxRotationSpeedPerTick(); return (rSpeed > 0.0 ? (int)(360.0 / rSpeed) : 0); }
@@ -4067,7 +4066,6 @@ class CShipClass : public CDesignType
 		inline const CObjectImageArray &GetImage (void) const { return m_Image; }
 		inline const CObjectImageArray &GetImageSmall (void) { return m_Image; }
 		inline const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
-		inline int GetManeuverability (void) const { return m_RotationDesc.GetManeuverability(); }
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
 		inline int GetMaxDevices (void) const { return m_iMaxDevices; }

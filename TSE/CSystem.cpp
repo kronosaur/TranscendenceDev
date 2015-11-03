@@ -1496,6 +1496,8 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 
 	ALERROR error;
 	CDesignType *pType = g_pUniverse->FindDesignType(dwClassID);
+	if (pType == NULL)
+		return ERR_FAIL;
 
 	//	If we have a ship table, then we go through a totally different path
 

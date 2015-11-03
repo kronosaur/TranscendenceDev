@@ -1866,11 +1866,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt((int)((1000.0 / m_AISettings.GetFireRateAdj()) + 0.5));
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		int iManeuver = GetManeuverability() * GetRotationRange() / STD_ROTATION_COUNT;
-		if (iManeuver <= 0)
-			iManeuver = 1;
-
-		*retsValue = strFromInt(30000 / iManeuver);
+		Metric rManeuver = g_SecondsPerUpdate * GetRotationDesc().GetMaxRotationSpeedPerTick();
+		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST))
 		{

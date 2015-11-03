@@ -185,6 +185,20 @@ bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 		}
 	}
 
+CVector CAIBehaviorCtx::CalcFlankPos (CShip *pShip, const CVector &vInterceptPos)
+
+//	CalcFlankPos
+//
+//	Computes the flanking position based on the interception position (both are
+//	relative to the ship position).
+
+	{
+	CVector vFlankingLine = vInterceptPos.Normal().Perpendicular();
+	vFlankingLine = vFlankingLine * ((pShip->GetDestiny() % 2) == 0 ? GetFlankDist() : -GetFlankDist());
+
+	return vInterceptPos + vFlankingLine;
+	}
+
 bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip, 
 										  const CVector &vDestPos, 
 										  const CVector &vDestVel, 
@@ -342,10 +356,7 @@ CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,
 
 		if (bFlank)
 			{
-			CVector vFlankingLine = vInterceptPoint.Normal().Perpendicular();
-			vFlankingLine = vFlankingLine * GetFlankDist();
-
-			vInterceptPoint = vInterceptPoint + vFlankingLine;
+			vInterceptPoint = CalcFlankPos(pShip, vInterceptPoint);
 
 #ifdef DEBUG_SHIP
 			if (bDebug)
@@ -560,11 +571,12 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 		{
 		case aicombatStandard:
 			{
+			bool bFaster = (pShip->GetMaxSpeed() > pTarget->GetMaxSpeed());
+
 			//	If we're waiting for shields to regenerate, then
 			//	spiral away
 
-			if (IsWaitingForShieldsToRegen()
-					&& pShip->GetMaxSpeed() >= pTarget->GetMaxSpeed())
+			if (IsWaitingForShieldsToRegen() && bFaster)
 				{
 				DEBUG_COMBAT_OUTPUT("Wait for shields");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
@@ -573,14 +585,13 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're not well in range of our primary weapon then
 			//	get closer to the target. (Or if we are not moving)
 
-			else if (rTargetDist2 > m_rPrimaryAimRange2)
+			else if (rTargetDist2 > (bFaster ? GetFlankRange2() : GetPrimaryAimRange2()))
 				{
 				DEBUG_COMBAT_OUTPUT("Close on target");
 
 				//	Try to flank our target, if we are faster
 
-				bool bFlank = (pShip->GetMaxSpeed() > pTarget->GetMaxSpeed());
-				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2, bFlank));
+				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2, bFaster));
 				}
 
 			//	If we're attacking a static target then find a good spot
@@ -656,7 +667,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			int iLastHit = Max(0, Min(MAX_BRAVERY_TICKS, (g_pUniverse->GetTicks() - m_iLastAttack)));
 			const Metric rBravery = pow((Metric)iLastHit / (Metric)MAX_BRAVERY_TICKS, BRAVERY_DECAY_POWER);
 
-			const Metric rMaxAimRange2 = (pTarget->CanMove() ? ((1.0 - (MAX_RANGE_ADJ * rBravery)) * m_rPrimaryAimRange2) : m_rPrimaryAimRange2);
+			const Metric rMaxAimRange2 = (pTarget->CanMove() ? ((1.0 - (MAX_RANGE_ADJ * rBravery)) * GetPrimaryAimRange2()) : GetPrimaryAimRange2());
 			const Metric rMinDist2 = Min(rMaxAimRange2 * 0.5, (1.0 + (1.0 - rBravery) * MIN_RANGE_FACTOR) * MIN_TARGET_DIST2);
 
 			//	If we're waiting for shields to regenerate, then
@@ -827,11 +838,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 		case aicombatFlyby:
 			{
-			Metric rCloseRange2 = 0.25 * m_rPrimaryAimRange2;
+			Metric rCloseRange2 = 0.25 * GetPrimaryAimRange2();
 
 			//	If we're beyond our weapon's effective range, then close on target
 
-			if (rTargetDist2 > m_rPrimaryAimRange2)
+			if (rTargetDist2 > GetPrimaryAimRange2())
 				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
 
 			//	If we're too close to the target, move
@@ -874,7 +885,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're not well in range of our primary weapon then
 			//	get closer to the target. (Or if we are not moving)
 
-			if (rTargetDist2 > m_rPrimaryAimRange2)
+			if (rTargetDist2 > GetPrimaryAimRange2())
 				{
 				DEBUG_COMBAT_OUTPUT("Close on target");
 
@@ -1022,10 +1033,7 @@ void CAIBehaviorCtx::ImplementCloseOnTarget (CShip *pShip, CSpaceObject *pTarget
 
 		if (bFlank)
 			{
-			CVector vFlankingLine = vInterceptPoint.Normal().Perpendicular();
-			vFlankingLine = vFlankingLine * GetFlankDist();
-
-			vInterceptPoint = vInterceptPoint + vFlankingLine;
+			vInterceptPoint = CalcFlankPos(pShip, vInterceptPoint);
 
 #ifdef DEBUG_SHIP
 			if (bDebug)

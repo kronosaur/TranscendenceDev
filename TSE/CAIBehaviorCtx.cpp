@@ -23,6 +23,12 @@ const Metric MAX_NAV_START_DIST2 =		(MAX_NAV_START_DIST * MAX_NAV_START_DIST);
 
 const DWORD NAV_PATH_ID_OWNED =			0xffffffff;
 
+//	For purposes of computing flanking distance, we assume that our target 
+//	won't move faster than this. In practice, it's OK if they do, it just means
+//	that there is a chance we'll be too close to turn properly.
+
+const Metric MAX_TARGET_SPEED =			(0.25 * LIGHT_SPEED);
+
 CAIBehaviorCtx::CAIBehaviorCtx (void) :
 		m_iLastTurn(NoRotation),
 		m_iLastTurnCount(0),
@@ -362,10 +368,22 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 		rAimRange = 1.5 * MIN_TARGET_DIST;
 	m_rPrimaryAimRange2 = 4.0 * rAimRange * rAimRange;
 
-	//	Flank distance
+	//	Compute the minimum flanking distance. If we're very maneuverable,
+	//	can get in closer because we can turn faster to adjust for the target's
+	//	motion.
 
-	int iAdj = 2 * Max(0, (8 - pShip->GetClass()->GetManeuverability()));
-	m_rFlankDist = (iAdj * ((pShip->GetDestiny() % 61) - 30) * g_KlicksPerPixel);
+	Metric rDegreesPerTick = Max(1.0, Min(pShip->GetClass()->GetRotationDesc().GetMaxRotationSpeedPerTick(), 60.0));
+	Metric rTanRot = tan(g_Pi * rDegreesPerTick / 180.0);
+	Metric rMinFlankDist = Max(MIN_TARGET_DIST, MAX_TARGET_SPEED / rTanRot);
+
+	//	Adjust a little based on destiny so we get some variation, even between
+	//	ships of the same class.
+
+	rMinFlankDist *= 1.0 + (0.5 * (pShip->GetDestiny() / 360.0));
+
+	//	And, of course, we can't ever flank outside our weapon range
+
+	m_rFlankDist = Min(rAimRange, rMinFlankDist);
 
 	//	Max turn count
 
