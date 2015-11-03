@@ -291,7 +291,9 @@ bool CStarburstEffectCreator::PointInImage (int x, int y, int iTick, int iVarian
 //	Return TRUE if the given point is in the effect
 
 	{
-	RECT rcRect;
-	GetRect(&rcRect);
-	return (x >= rcRect.left && x < rcRect.right && y >= rcRect.top && y < rcRect.bottom);
+	//	We only intersect if we are inside a box around the center of 1/2 the
+	//	width (since a lot of the width is taken up by glow effects).
+
+	int iSize = Max(4, (m_SpikeLength.GetAveValue() / 2));
+	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
