@@ -140,8 +140,19 @@ bool CShip::AbsorbWeaponFire (CInstalledDevice *pWeapon)
 //	the given weapon from firing
 
 	{
-	if (ShieldsAbsorbFire(pWeapon))
+	//	Check to see if shields prevent firing. If they do, they will create an
+	//	approprate hit effect.
+
+	CInstalledDevice *pShields = GetNamedDevice(devShields);
+	if (pShields && pShields->GetClass()->AbsorbsWeaponFire(pShields, this, pWeapon))
+		return true;
+
+	//	Now check to see if energy fields prevent firing
+
+	if (m_Overlays.AbsorbsWeaponFire(pWeapon))
 		{
+		//	We need to create our own default effect.
+
 		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_ShieldEffectUNID);
 		if (pEffect)
 			pEffect->CreateEffect(GetSystem(),
@@ -152,8 +163,10 @@ bool CShip::AbsorbWeaponFire (CInstalledDevice *pWeapon)
 
 		return true;
 		}
-	else
-		return false;
+
+	//	Otherwise, not absorbed
+
+	return false;
 	}
 
 void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifeLeft, DWORD *retdwID)
@@ -7044,29 +7057,6 @@ void CShip::SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered)
 					|| (pDevice->IsLinkedFire(Ctx, iCat))))
 			pDevice->SetTriggered(bTriggered);
 		}
-	}
-
-bool CShip::ShieldsAbsorbFire (CInstalledDevice *pWeapon)
-
-//	ShieldsAbsorbFire
-//
-//	Returns TRUE if the shields absorb the shot from the given weapon
-
-	{
-	//	Check to see if shields prevent firing
-
-	CInstalledDevice *pShields = GetNamedDevice(devShields);
-	if (pShields && pShields->GetClass()->AbsorbsWeaponFire(pShields, this, pWeapon))
-		return true;
-
-	//	Now check to see if energy fields prevent firing
-
-	if (m_Overlays.AbsorbsWeaponFire(pWeapon))
-		return true;
-
-	//	Done
-
-	return false;
 	}
 
 void CShip::Undock (void)

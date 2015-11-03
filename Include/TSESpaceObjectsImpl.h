@@ -1117,7 +1117,6 @@ class CShip : public CSpaceObject
 		Metric GetItemMass (void);
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void ReactorOverload (void);
-		bool ShieldsAbsorbFire (CInstalledDevice *pWeapon);
 		void SetDriveDesc (const DriveDesc *pDesc);
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		inline bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }

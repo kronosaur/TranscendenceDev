@@ -255,7 +255,18 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 			&& m_WeaponSuppress.InSet(iType)
 			&& pDevice->IsEnabled()
 			&& !IsDepleted(pDevice))
+		{
+		//	Create effect
+
+		if (m_pHitEffect)
+			m_pHitEffect->CreateEffect(pSource->GetSystem(),
+					pSource,
+					pWeapon->GetPos(pSource),
+					pSource->GetVel(),
+					0);
+
 		return true;
+		}
 	else
 		return false;
 	}
