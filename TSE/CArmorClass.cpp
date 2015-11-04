@@ -21,6 +21,7 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
+#define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
 #define INSTALL_COST_ATTRIB						CONSTLIT("installCost")
 #define INSTALL_COST_ADJ_ATTRIB					CONSTLIT("installCostAdj")
 #define MAX_HP_BONUS_ATTRIB						CONSTLIT("maxHPBonus")
@@ -887,7 +888,16 @@ int CArmorClass::CalcPowerUsed (CInstalledArmor *pArmor)
 //	only applies to powered armor)
 
 	{
-	return m_iPowerUse;
+	//	If we did work (regenerated), then we use full power. Otherwise, we use
+	//	idle power.
+	//
+	//	NOTE: By default, idle power is the same as full power, but some armors
+	//	have different values.
+
+	if (pArmor->ConsumedPower())
+		return m_iPowerUse;
+	else
+		return m_iIdlePowerUse;
 	}
 
 ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor)
@@ -1016,8 +1026,12 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	if (pArmor->m_iStealth == 0)
 		pArmor->m_iStealth = CSpaceObject::stealthNormal;
 
-	pArmor->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0);
 	pArmor->m_iMaxHPBonus = pDesc->GetAttributeIntegerBounded(MAX_HP_BONUS_ATTRIB, 0, -1, 150);
+
+	//	Power use
+
+	pArmor->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0);
+	pArmor->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pArmor->m_iPowerUse);
 
 	//	Load reflection
 
@@ -1585,6 +1599,11 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	int i;
 	bool bModified = false;
 
+	//	Default to not consuming power. Below we set the flag is we do any kind 
+	//	of regeneration work.
+
+	pArmor->SetConsumePower(false);
+
 	//	Compute total regeneration by adding mods to intrinsic
 
 	if (pArmor->GetMods().IsRegenerating()	
@@ -1642,6 +1661,7 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 					pArmor->IncCharges(pObj, -iHP);
 
 				pArmor->IncHitPoints(iHP);
+				pArmor->SetConsumePower(true);
 				bModified = true;
 				}
 			}
@@ -1822,7 +1842,11 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 					}
 
 				//	We've modified the armor
+				//
+				//	LATER: For now, only the prime segment will consume power, so we need to
+				//	compute the number of distributed segments in the CalcPowerUsed method.
 
+				pArmor->SetConsumePower(true);
 				bModified = true;
 				}
 			}

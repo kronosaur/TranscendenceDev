@@ -2188,6 +2188,7 @@ class CInstalledArmor
 	public:
 		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+		inline bool ConsumedPower (void) const { return (m_fConsumePower ? true : false); }
 		void FinishInstall (CSpaceObject *pSource);
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		inline CArmorClass *GetClass (void) const { return m_pArmorClass; }
@@ -2202,6 +2203,7 @@ class CInstalledArmor
 		inline bool IsComplete (void) const { return (m_fComplete ? true : false); }
 		inline bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
+		inline void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }
 		inline void SetPrime (CSpaceObject *pSource, bool bPrime = true) { m_fPrimeSegment = bPrime; }
 		inline void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
 		inline void SetSect (int iSect) { m_iSect = iSect; }
@@ -2218,7 +2220,8 @@ class CInstalledArmor
 
 		DWORD m_fComplete:1;						//	All armor segments the same
 		DWORD m_fPrimeSegment:1;					//	Prime segment for all segments of the same type.
-		DWORD m_fSpare:30;
+		DWORD m_fConsumePower:1;					//	If TRUE, we should consume power this tick
+		DWORD m_fSpare:29;
 	};
 
 class CArmorClass : public CObject
@@ -2297,6 +2300,7 @@ class CArmorClass : public CObject
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
 		int m_iStealth;							//	Stealth level
 		int m_iPowerUse;						//	Power consumed (1/10 MWs)
+		int m_iIdlePowerUse;					//	Power consumed when not regenerating
 		int m_iMaxHPBonus;						//	Max HP bonus allowed for this armor
 		Metric m_rMaxSpeedBonus;				//	Bonus (or penalty) to ship's max speed (10 = 10% bonus)
 
