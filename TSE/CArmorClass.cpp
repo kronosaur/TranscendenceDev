@@ -16,6 +16,7 @@
 #define DEVICE_DAMAGE_ADJ_ATTRIB				CONSTLIT("deviceDamageAdj")
 #define DEVICE_DAMAGE_IMMUNE_ATTRIB				CONSTLIT("deviceDamageImmune")
 #define DEVICE_HP_BONUS_ATTRIB					CONSTLIT("deviceHPBonus")
+#define DISTRIBUTE_ATTRIB						CONSTLIT("distribute")
 #define DISINTEGRATION_IMMUNE_ATTRIB			CONSTLIT("disintegrationImmune")
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
@@ -410,6 +411,11 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 	if (!m_Decay.IsEmpty() || Mods.IsDecaying())
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("decaying")));
 
+	//	Distribution
+
+	if (!m_Distribute.IsEmpty())
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("distributing")));
+
 	//	Reflection
 
 	for (i = 0; i < damageCount; i++)
@@ -590,6 +596,11 @@ int CArmorClass::CalcBalance (void)
 			iBalance += m_Regen.GetHPPerEra();
 		else
 			iBalance += 5 * m_Regen.GetHPPerEra();
+		}
+
+	if (!m_Distribute.IsEmpty())
+		{
+		iBalance += m_Distribute.GetHPPerEra();
 		}
 
 	//	Stealth
@@ -908,6 +919,9 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 		return error;
 
 	if (error = pArmor->m_Decay.InitFromXML(Ctx, pDesc, DECAY_ATTRIB, DECAY_RATE_ATTRIB, NULL_STR, TICKS_PER_UPDATE))
+		return error;
+
+	if (error = pArmor->m_Distribute.InitFromXML(Ctx, pDesc, DISTRIBUTE_ATTRIB, NULL_STR, NULL_STR, TICKS_PER_UPDATE))
 		return error;
 
 	//	We allow for explicit install cost (in which case we expect a currency).
@@ -1568,6 +1582,7 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	{
 	DEBUG_TRY
 
+	int i;
 	bool bModified = false;
 
 	//	Compute total regeneration by adding mods to intrinsic
@@ -1691,6 +1706,126 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 		//	right next to the sun.
 
 		pObj->Refuel(iIntensity);
+		}
+
+	//	See if we distribute HPs to other segments of our type
+
+	if (!m_Distribute.IsEmpty() 
+			&& pArmor->IsPrime())
+		{
+		//	Only works on ships (with segments).
+		//	LATER: Introduce the concept of segments to stations.
+
+		CShip *pShip = pObj->AsShip();
+
+		//	Compute the HP that we distribute this cycle
+
+		int iHP = m_Distribute.GetRegen(iTick, TICKS_PER_UPDATE);
+		if (pShip && iHP > 0)
+			{
+			TArray<int> MaxHP;
+			MaxHP.InsertEmpty(pShip->GetArmorSectionCount());
+
+			//	Compute some stats for all armor segments of the same type.
+
+			int iSegCount = 0;
+			int iTotalMaxHP = 0;
+			int iTotalHP = 0;
+			int iTotalRepairNeeded = 0;
+			int iMinRepairNeeded = 1000000000;
+			int iMaxRepairNeeded = 0;
+			for (i = 0; i < pShip->GetArmorSectionCount(); i++)
+				{
+				CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+				if (pDistArmor->GetClass() != pArmor->GetClass())
+					continue;
+
+				CItemCtx ItemCtx(pObj, pDistArmor);
+
+				MaxHP[i] = GetMaxHP(ItemCtx);
+
+				iSegCount++;
+				int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+
+				if (iRepairNeeded < iMinRepairNeeded)
+					iMinRepairNeeded = iRepairNeeded;
+				if (iRepairNeeded > iMaxRepairNeeded)
+					iMaxRepairNeeded = iRepairNeeded;
+
+				iTotalRepairNeeded += MaxHP[i] - pDistArmor->GetHitPoints();
+				}
+
+			//	If we need repairs, distribute
+
+			int iAverageRepairNeeded = (iTotalRepairNeeded / iSegCount);
+			if ((iMaxRepairNeeded > iAverageRepairNeeded)
+					&& (iMinRepairNeeded < iAverageRepairNeeded))
+				{
+				int iHPRemoved = 0;
+
+				//	Loop and remove HP from any armor segment that has more
+				//	HP than average, without exceeding our iHP budget.
+
+				for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved < iHP; i++)
+					{
+					CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+					if (pDistArmor->GetClass() != pArmor->GetClass())
+						continue;
+
+					int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+					if (iRepairNeeded < iAverageRepairNeeded)
+						{
+						int iHPToRemove = Min(iHP - iHPRemoved, iAverageRepairNeeded - iRepairNeeded);
+						pDistArmor->IncHitPoints(-iHPToRemove);
+						iHPRemoved += iHPToRemove;
+						}
+					}
+
+				//	Now loop and distribute the HP to any armor segment that has
+				//	less than average.
+
+				for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved > 0; i++)
+					{
+					CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+					if (pDistArmor->GetClass() != pArmor->GetClass())
+						continue;
+
+					int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+					if (iRepairNeeded > iAverageRepairNeeded)
+						{
+						int iHPToAdd = Min(iHPRemoved, iRepairNeeded - iAverageRepairNeeded);
+						pDistArmor->IncHitPoints(iHPToAdd);
+						iHPRemoved -= iHPToAdd;
+						}
+					}
+
+				//	This should never happen, but if we have some HP left, then 
+				//	add it back to each segment.
+
+				if (iHPRemoved > 0)
+					{
+					ASSERT(false);
+
+					for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved > 0; i++)
+						{
+						CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+						if (pDistArmor->GetClass() != pArmor->GetClass())
+							continue;
+
+						int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+						if (iRepairNeeded > 0)
+							{
+							pDistArmor->IncHitPoints(1);
+							iHPRemoved -= 1;
+							}
+						}
+					}
+
+				//	We've modified the armor
+
+				bModified = true;
+				}
+			}
 		}
 
 	//	If this armor interferes with shields, then lower shields now

@@ -2200,7 +2200,9 @@ class CInstalledArmor
 		inline int IncHitPoints (int iChange) { m_iHitPoints += iChange; return m_iHitPoints; }
 		void Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
 		inline bool IsComplete (void) const { return (m_fComplete ? true : false); }
+		inline bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
+		inline void SetPrime (CSpaceObject *pSource, bool bPrime = true) { m_fPrimeSegment = bPrime; }
 		inline void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
 		inline void SetSect (int iSect) { m_iSect = iSect; }
 		void ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx &Ctx);
@@ -2215,7 +2217,8 @@ class CInstalledArmor
 		int m_iSpare:16;
 
 		DWORD m_fComplete:1;						//	All armor segments the same
-		DWORD m_fSpare:31;
+		DWORD m_fPrimeSegment:1;					//	Prime segment for all segments of the same type.
+		DWORD m_fSpare:30;
 	};
 
 class CArmorClass : public CObject
@@ -2303,6 +2306,7 @@ class CArmorClass : public CObject
 
 		CRegenDesc m_Regen;						//	Regeneration desc
 		CRegenDesc m_Decay;						//	Decay desc
+		CRegenDesc m_Distribute;				//	Distribute hp
 		
 		int m_iDamageAdjLevel;					//	Level to use for intrinsic damage adj
 		CDamageAdjDesc m_DamageAdj;				//	Adjustments for damage type

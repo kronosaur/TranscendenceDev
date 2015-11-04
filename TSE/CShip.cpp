@@ -249,49 +249,54 @@ void CShip::CalcArmorBonus (void)
 //	Mark the m_fComplete flag appropriately for all armor segments.
 
 	{
-	int i;
+	int i, j;
 	bool bComplete = true;
 
-	//	Check to see if all segments are of the same type.
+	//	Generate a list of all segments by type.
 
-	CArmorClass *pClass = NULL;
+	TSortMap<DWORD, TArray<int>> SegmentsByType;
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
 		CInstalledArmor *pArmor = GetArmorSection(i);
-
-		//	Check to see if all segments are the same
-
-		if (pClass == NULL)
-			pClass = pArmor->GetClass();
-		else if (pArmor->GetClass() != pClass)
-			{
-			bComplete = false;
-			break;
-			}
+		TArray<int> *pList = SegmentsByType.SetAt(pArmor->GetClass()->GetUNID());
+		pList->Insert(i);
 		}
 
-	//	Compute
+	//	If we only have one type, then we've got a complete set.
+
+	bool bCompleteSet = (SegmentsByType.GetCount() == 1);
+
+	//	Loop over all armor segments and compute some values.
 
 	m_iStealth = stealthMax;
 	m_fHasSpeedAdjArmor = false;
 
-	for (i = 0; i < GetArmorSectionCount(); i++)
+	for (i = 0; i < SegmentsByType.GetCount(); i++)
 		{
-		CInstalledArmor *pArmor = GetArmorSection(i);
+		for (j = 0; j < SegmentsByType[i].GetCount(); j++)
+			{
+			CInstalledArmor *pArmor = GetArmorSection(SegmentsByType[i][j]);
 
-		//	Set armor complete
+			//	Set armor complete
 
-		pArmor->SetComplete(this, bComplete);
+			pArmor->SetComplete(this, bCompleteSet);
 
-		//	Compute stealth
+			//	If this is the first armor of its type, mark it as prime. There
+			//	are some functions that need to be done once per type and this
+			//	helps us.
 
-		if (pArmor->GetClass()->GetStealth() < m_iStealth)
-			m_iStealth = pArmor->GetClass()->GetStealth();
+			pArmor->SetPrime(this, (j == 0));
 
-		//	Check to see if any segment affects the max speed of the ship.
+			//	Compute stealth
 
-		if (pArmor->GetClass()->GetMaxSpeedBonus() != 0.0)
-			m_fHasSpeedAdjArmor = true;
+			if (pArmor->GetClass()->GetStealth() < m_iStealth)
+				m_iStealth = pArmor->GetClass()->GetStealth();
+
+			//	Check to see if any segment affects the max speed of the ship.
+
+			if (pArmor->GetClass()->GetMaxSpeedBonus() != 0.0)
+				m_fHasSpeedAdjArmor = true;
+			}
 		}
 	}
 
@@ -1349,8 +1354,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Initialize the armor from the class
 
-	CArmorClass *pArmorClass = NULL;
-	bool bComplete = true;
 	pShip->m_Armor.InsertEmpty(pClass->GetHullSectionCount());
 	for (i = 0; i < pClass->GetHullSectionCount(); i++)
 		{
@@ -1371,25 +1374,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 		//	(All armor needs this)
 
 		bInstallItemEvent = true;
-
-		//	See if all armor segments are the same
-
-		if (pArmorClass == NULL)
-			pArmorClass = pSect->pArmor;
-		else if (pArmorClass != pSect->pArmor)
-			bComplete = false;
-		}
-
-	//	Update armor hit points now that we know whether we have a complete
-	//	set of armor.
-
-	if (bComplete)
-		{
-		for (i = 0; i < pShip->GetArmorSectionCount(); i++)
-			{
-			CInstalledArmor *pArmor = pShip->GetArmorSection(i);
-			pArmor->SetComplete(pShip, bComplete);
-			}
 		}
 
 	pShip->OnComponentChanged(comCargo);
