@@ -296,6 +296,7 @@ class CShieldClass : public CDeviceClass
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
 		virtual ItemCategories GetImplCategory (void) const { return itemcatShields; }
+		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		virtual int GetPowerRating (CItemCtx &Ctx);
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const;
@@ -306,6 +307,7 @@ class CShieldClass : public CDeviceClass
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus);
 		virtual bool RequiresItems (void);
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource);
+		virtual bool SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual void Update (CInstalledDevice *pDevice, 
 							 CSpaceObject *pSource, 
 							 int iTick,

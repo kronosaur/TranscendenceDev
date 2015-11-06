@@ -212,6 +212,25 @@ void CEconomyTypeRef::Set (DWORD dwUNID)
 
 //	CCurrencyAndValue ----------------------------------------------------------
 
+CCurrencyAndValue::CCurrencyAndValue (CurrencyValue iValue, CEconomyType *pCurrency)
+
+//	CCurrencyAndValue constructor
+
+	{
+	m_iValue = iValue;
+	m_pCurrency.Set(pCurrency);
+	}
+
+void CCurrencyAndValue::Add (const CCurrencyAndValue &Value)
+
+//	Add
+//
+//	Adds, converting currency if necessary
+
+	{
+	m_iValue += m_pCurrency->Exchange(Value);
+	}
+
 ALERROR CCurrencyAndValue::Bind (SDesignLoadCtx &Ctx)
 
 //	Bind

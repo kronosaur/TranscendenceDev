@@ -686,7 +686,7 @@ bool CDesignCollection::FireGetGlobalDockScreen (CSpaceObject *pObj, CString *re
 	return true;
 	}
 
-bool CDesignCollection::FireGetGlobalPlayerPriceAdj (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, ICCItem *pData, int *retiPriceAdj)
+bool CDesignCollection::FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj)
 
 //	FireGetGlobalPlayerPriceAdj
 //
@@ -705,7 +705,7 @@ bool CDesignCollection::FireGetGlobalPlayerPriceAdj (ETradeServiceTypes iService
 		CDesignType *pType = m_EventsCache[evtGetGlobalPlayerPriceAdj]->GetEntry(i, &Event);
 
 		int iSinglePriceAdj;
-		if (pType->FireGetGlobalPlayerPriceAdj(Event, iService, pProvider, Item, pData, &iSinglePriceAdj))
+		if (pType->FireGetGlobalPlayerPriceAdj(Event, ServiceCtx, pData, &iSinglePriceAdj))
 			{
 			if (iSinglePriceAdj < 0)
 				{

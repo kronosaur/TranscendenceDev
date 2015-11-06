@@ -32,6 +32,7 @@
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
+#define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_POS							CONSTLIT("pos")

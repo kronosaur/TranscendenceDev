@@ -2997,6 +2997,47 @@ CSpaceObject *CShip::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
 	return m_pController->GetTarget(ItemCtx, bNoAutoTarget);
 	}
 
+CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
+
+//	GetTradePrice
+//
+//	Returns the fair price of this ship as calculated by pProvider, before any
+//	markups.
+
+	{
+	//	Get the hull value
+
+	const CPlayerSettings *pPlayer = m_pClass->GetPlayerSettings();
+	CCurrencyAndValue Value = (pPlayer ? pPlayer->GetHullValue() : CCurrencyAndValue(0, GetDefaultEconomy()));
+
+	//	Add up the value of all installed items
+
+	CItemListManipulator AllItems(GetItemList());
+	while (AllItems.MoveCursorForward())
+		{
+		const CItem &Item = AllItems.GetItemAtCursor();
+		if (Item.IsInstalled())
+			{
+			//	We use the raw value because not all stations sell all items. 
+			//	This at least gives us some base price.
+
+			int iItemValue = Max(0, Item.GetTradePrice(pProvider, true));
+			if (iItemValue <= 0)
+				continue;
+
+			Value.Add(CCurrencyAndValue(iItemValue, Item.GetCurrencyType()));
+
+			//	Need to include install cost
+
+			Value.Add(CCurrencyAndValue(Item.GetType()->GetInstallCost(), Item.GetCurrencyType()));
+			}
+		}
+
+	//	Done
+
+	return Value;
+	}
+
 int CShip::GetVisibleDamage (void)
 
 //	GetVisibleDamage

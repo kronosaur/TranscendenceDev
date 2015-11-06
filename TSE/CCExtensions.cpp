@@ -214,6 +214,8 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_ADD_ITEM				116
 #define FN_OBJ_GET_OVERLAY_PROPERTY	117
 #define FN_OBJ_SET_OVERLAY_PROPERTY	118
+#define FN_OBJ_GET_SHIP_SELL_PRICE	119
+#define FN_OBJ_GET_SHIP_BUY_PRICE	120
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1321,9 +1323,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'enabled\n"
 			"   'fireArc\n"
+			"   'hp\n"
 			"   'installDevicePrice\n"
 			"   'installItemStatus\n"
 			"   'linkedFireOptions\n"
+			"   'maxHP\n"
 			"   'pos\n"
 			"   'removeDevicePrice\n"
 			"   'removeDeviceStatus\n"
@@ -1501,6 +1505,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetShieldLevel",			fnObjGetOld,		FN_OBJ_SHIELD_LEVEL,
 			"(objGetShieldLevel obj) -> 0-100% (or -1 for no shields)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objGetShipBuyPrice",			fnObjGet,		FN_OBJ_GET_SHIP_BUY_PRICE,	
+			"(objGetShipBuyPrice obj shipObj) -> price (at which obj buys ship)",
+			"ii",		0,	},
+
+		{	"objGetShipSellPrice",			fnObjGet,		FN_OBJ_GET_SHIP_SELL_PRICE,	
+			"(objGetShipSellPrice obj shipObj) -> price (at which obj sells ship)",
+			"ii",		0,	},
 
 		{	"objGetShipwreckType",			fnObjGet,		FN_OBJ_SHIPWRECK_TYPE,
 			"(objGetShipwreckType obj) -> unid",
@@ -5522,10 +5534,17 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			ICCItem *pData = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : NULL);
 
+			//	Generate context
+
+			STradeServiceCtx ServiceCtx;
+			ServiceCtx.iService = serviceCustom;
+			ServiceCtx.pProvider = pObj;
+			ServiceCtx.pCurrency = pObj->GetDefaultEconomy();
+
 			//	Fire event
 
 			int iPriceAdj;
-			if (!g_pUniverse->GetDesignCollection().FireGetGlobalPlayerPriceAdj(serviceCustom, pObj, CItem(), pData, &iPriceAdj))
+			if (!g_pUniverse->GetDesignCollection().FireGetGlobalPlayerPriceAdj(ServiceCtx, pData, &iPriceAdj))
 				return pCC->CreateNil();
 
 			//	Done
@@ -5593,6 +5612,36 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateInteger(iValue);
 			else
 				return pCC->CreateNil();
+			}
+
+		case FN_OBJ_GET_SHIP_BUY_PRICE:
+			{
+			CSpaceObject *pShip = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			if (pShip == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid ship"), pArgs->GetElement(1));
+
+			//	Get the value from the station that is selling
+
+			int iValue;
+			if (!pObj->GetShipBuyPrice(pShip, 0, &iValue) || iValue <= 0)
+				return pCC->CreateNil();
+
+			return pCC->CreateInteger(iValue);
+			}
+
+		case FN_OBJ_GET_SHIP_SELL_PRICE:
+			{
+			CSpaceObject *pShip = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			if (pShip == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid ship"), pArgs->GetElement(1));
+
+			//	Get the value from the station that is selling
+
+			int iValue;
+			if (!pObj->GetShipSellPrice(pShip, 0, &iValue) || iValue <= 0)
+				return pCC->CreateNil();
+
+			return pCC->CreateInteger(iValue);
 			}
 
 		case FN_OBJ_GET_STARGATE_ID:

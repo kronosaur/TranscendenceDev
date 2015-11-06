@@ -883,6 +883,9 @@
     <ClCompile Include="CParticleEffect.cpp">
       <Filter>Source Files\ParticleSystem</Filter>
     </ClCompile>
+    <ClCompile Include="CDesignTypeCriteria.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

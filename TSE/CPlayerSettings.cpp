@@ -30,6 +30,7 @@
 #define HEIGHT_ATTRIB							CONSTLIT("height")
 #define HP_X_ATTRIB								CONSTLIT("hpX")
 #define HP_Y_ATTRIB								CONSTLIT("hpY")
+#define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
 #define INITIAL_CLASS_ATTRIB					CONSTLIT("initialClass")
 #define LARGE_IMAGE_ATTRIB						CONSTLIT("largeImage")
 #define NAME_ATTRIB								CONSTLIT("name")
@@ -88,6 +89,7 @@ CPlayerSettings &CPlayerSettings::operator= (const CPlayerSettings &Source)
 	m_pShipScreen = Source.m_pShipScreen;			//	Ship screen
 	m_pDockServicesScreen = Source.m_pDockServicesScreen;
 	m_pShipConfigScreen = Source.m_pShipConfigScreen;
+	m_HullValue = Source.m_HullValue;
 
 	//	Armor
 
@@ -159,6 +161,9 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 		return error;
 
 	if (error = m_StartingCredits.Bind(Ctx))
+		return error;
+
+	if (error = m_HullValue.Bind(Ctx))
 		return error;
 
 	//	Armor display
@@ -360,6 +365,9 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 	m_sStartPos = pDesc->GetAttribute(STARTING_POS_ATTRIB);
 	if (m_sStartPos.IsBlank())
 		m_sStartPos = CONSTLIT("Start");
+
+	if (error = m_HullValue.InitFromXML(Ctx, pDesc->GetAttribute(HULL_VALUE_ATTRIB)))
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Load the ship screen
 

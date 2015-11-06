@@ -62,8 +62,8 @@ enum ETradeServiceTypes
 	{
 	serviceNone =						0,
 
-	serviceBuy =						1,
-	serviceSell =						2,
+	serviceBuy =						1,	//	Object buys item from the player
+	serviceSell =						2,	//	Object sells item to the player
 	serviceAcceptDonations =			3,
 	serviceRefuel =						4,
 	serviceRepairArmor =				5,
@@ -74,8 +74,31 @@ enum ETradeServiceTypes
 	serviceEnhanceItem =				10,
 	serviceRepairItem =					11,
 	serviceCustom =						12,
+	serviceBuyShip =					13,	//	Object buys ship from the player
+	serviceSellShip =					14,	//	Object sells ship to the player
 
-	serviceCount =						13,
+
+	serviceCount =						15,
+	};
+
+struct STradeServiceCtx
+	{
+	STradeServiceCtx (void) :
+			iService(serviceNone),
+			pProvider(NULL),
+			pCurrency(NULL),
+			iCount(0),
+			pItem(NULL),
+			pObj(NULL)
+		{ }
+
+	ETradeServiceTypes iService;	//	Service
+	CSpaceObject *pProvider;		//	Object providing the service
+	CEconomyType *pCurrency;		//	Currency to use
+
+	int iCount;						//	Number of items
+	const CItem *pItem;				//	For item-based services
+	CSpaceObject *pObj;				//	For obj-based services (e.g., serviceSellShip)
 	};
 
 //	CFormulaText
@@ -275,6 +298,9 @@ enum DesignTypes
 class CDesignTypeCriteria
 	{
 	public:
+		CDesignTypeCriteria (void);
+
+		CString AsString (void) const;
 		inline bool ChecksLevel (void) const { return (m_iGreaterThanLevel != INVALID_COMPARE || m_iLessThanLevel != INVALID_COMPARE); }
 		inline const CString &GetExcludedAttrib (int iIndex) const { return m_sExclude[iIndex]; }
 		inline int GetExcludedAttribCount (void) const { return m_sExclude.GetCount(); }
@@ -288,6 +314,9 @@ class CDesignTypeCriteria
 		inline bool MatchesDesignType (DesignTypes iType) const
 			{ return ((m_dwTypeSet & (1 << iType)) ? true : false); }
 		bool MatchesLevel (int iMinLevel, int iMaxLevel) const;
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (IWriteStream *pStream);
+
 		static ALERROR ParseCriteria (const CString &sCriteria, CDesignTypeCriteria *retCriteria);
 
 	private:
@@ -355,7 +384,7 @@ class CDesignType
 		bool FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, CSpaceObject **retpGate, CVector *retvPos);
 		void FireGetGlobalAchievements (CGameStats &Stats);
 		bool FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CString *retsScreen, ICCItem **retpData, int *retiPriority);
-		bool FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, ICCItem *pData, int *retiPriceAdj);
+		bool FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		int FireGetGlobalResurrectPotential (void);
 		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem **retpResult);
 		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sPane, CString *retsError);
@@ -680,6 +709,9 @@ class CSystemMapRef : public CDesignTypeRef<CSystemMap>
 class CCurrencyAndValue
 	{
 	public:
+		CCurrencyAndValue (CurrencyValue iValue = 0, CEconomyType *pCurrency = NULL);
+
+		void Add (const CCurrencyAndValue &Value);
 		inline void Adjust (int iAdj) { m_iValue = iAdj * m_iValue / 100; }
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		inline CEconomyType *GetCurrencyType (void) const { return m_pCurrency; }
@@ -2808,6 +2840,7 @@ class CPlayerSettings
 		inline const SArmorSegmentImageDesc *GetArmorDesc (int iSegment) const { return (m_fHasArmorDesc ? m_ArmorDesc.Segments.GetAt(iSegment) : m_pArmorDescInherited->Segments.GetAt(iSegment)); }
 		inline const CString &GetDesc (void) const { return m_sDesc; }
 		inline const CDockScreenTypeRef &GetDockServicesScreen (void) const { return m_pDockServicesScreen; }
+		inline const CCurrencyAndValue &GetHullValue (void) const { return m_HullValue; }
 		inline DWORD GetLargeImage (void) const { return m_dwLargeImage; }
 		inline const SReactorImageDesc &GetReactorDesc (void) const { return (m_fHasReactorDesc ? m_ReactorDesc : *m_pReactorDescInherited); }
 		inline const SShieldImageDesc &GetShieldDesc (void) const { return (m_fHasShieldDesc ? m_ShieldDesc : *m_pShieldDescInherited); }
@@ -2847,6 +2880,7 @@ class CPlayerSettings
 		CDockScreenTypeRef m_pShipScreen;			//	Ship screen
 		CDockScreenTypeRef m_pDockServicesScreen;	//	Screen used for ship upgrades (may be NULL)
 		CDockScreenTypeRef m_pShipConfigScreen;		//	Screen used to show ship configuration (may be NULL)
+		CCurrencyAndValue m_HullValue;				//	Value of hull alone (excluding any devices/armor)
 
 		//	Armor
 		SArmorImageDesc m_ArmorDesc;
@@ -4690,6 +4724,7 @@ class CTradingDesc
 		inline void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
 			{ AddOrder(pType, sCriteria, iPriceAdj, FLAG_SELLS); }
 		bool Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
+		bool BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		int Charge (CSpaceObject *pObj, int iCharge);
 		bool GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
 		bool GetArmorRepairPrice (CSpaceObject *pObj, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
@@ -4701,6 +4736,7 @@ class CTradingDesc
 		bool GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
 		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
 		bool Sells (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL);
+		bool SellsShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		void SetEconomyType (CEconomyType *pCurrency) { m_pCurrency.Set(pCurrency); }
 		void SetMaxCurrency (int iMaxCurrency) { m_iMaxCurrency = iMaxCurrency; }
 		void SetReplenishCurrency (int iReplenishCurrency) { m_iReplenishCurrency = iReplenishCurrency; }
@@ -4735,30 +4771,33 @@ class CTradingDesc
 
 		struct SServiceDesc
 			{
-			ETradeServiceTypes iService;				//	Type of service
+			ETradeServiceTypes iService;		//	Type of service
 			CString sID;						//	ID of order
 
 			CItemTypeRef pItemType;				//	Item type
 			CItemCriteria ItemCriteria;			//	If ItemType is NULL, this is the criteria
-
-			CFormulaText PriceAdj;				//	Price adjustment
 			CFormulaText InventoryAdj;			//	% of item count found at any one time
 
-			CString sMessageID;					//	ID of language element to return if we match.
+			CDesignTypeCriteria TypeCriteria;	//	Type criteria (for selling ships, etc.).
 
+			CFormulaText PriceAdj;				//	Price adjustment
+
+			CString sMessageID;					//	ID of language element to return if we match.
 			DWORD dwFlags;						//	Flags
 			};
 
 		void AddOrder (CItemType *pItemType, const CString &sCriteria, int iPriceAdj, DWORD dwFlags);
 		CString ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags);
 		int ComputeMaxCurrency (CSpaceObject *pObj);
-		inline int ComputePrice (CSpaceObject *pObj, const CItem &Item, int iCount, const SServiceDesc &Commodity, DWORD dwFlags) const { return ComputePrice(pObj, m_pCurrency, Item, iCount, Commodity, dwFlags); }
+		int ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags);
 		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc);
+		bool FindService (ETradeServiceTypes iService, CSpaceObject *pShip, const SServiceDesc **retpDesc);
 		bool Matches (const CItem &Item, const SServiceDesc &Commodity) const;
+		bool Matches (CDesignType *pType, const SServiceDesc &Commodity) const;
 		void ReadServiceFromFlags (DWORD dwFlags, ETradeServiceTypes *retiService, DWORD *retdwFlags);
 		bool SetInventoryCount (CSpaceObject *pObj, SServiceDesc &Desc, CItemType *pItemType);
 
-		static int ComputePrice (CSpaceObject *pObj, CEconomyType *pCurrency, const CItem &Item, int iCount, const SServiceDesc &Commodity, DWORD dwFlags);
+		static int ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commodity, DWORD dwFlags);
 
 		CEconomyTypeRef m_pCurrency;
 		int m_iMaxCurrency;
@@ -6327,7 +6366,7 @@ class CDesignCollection
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
 		void FireGetGlobalAchievements (CGameStats &Stats);
 		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CString *retsScreen, ICCItem **retpData, int *retiPriority = NULL);
-		bool FireGetGlobalPlayerPriceAdj (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, ICCItem *pData, int *retiPriceAdj);
+		bool FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		void FireOnGlobalMarkImages (void);
 		void FireOnGlobalObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane);

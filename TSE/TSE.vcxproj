@@ -295,6 +295,7 @@
     <ClCompile Include="CCrewAI.cpp" />
     <ClCompile Include="CCrewPsyche.cpp" />
     <ClCompile Include="CCXMLWrapper.cpp" />
+    <ClCompile Include="CDesignTypeCriteria.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

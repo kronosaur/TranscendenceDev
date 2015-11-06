@@ -6730,6 +6730,21 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 				else if (iHP > pSection->GetHitPoints())
 					pShip->RepairArmor(iArmorSeg, iHP - pSection->GetHitPoints());
 				}
+			else if (Item.GetType()->GetDeviceClass())
+				{
+				//	Set the data
+				//
+				//	LATER: At some point we should move the code above that sets
+				//	armor HP to be handled by SetPropertyAtCursor. At that point,
+				//	we can delete this section and let it go to the default.
+
+				if (!ItemList.SetPropertyAtCursor(this, sName, pValue, iCount, retsError))
+					return false;
+
+				//	Update the object
+
+				ItemEnhancementModified(ItemList);
+				}
 			else
 				{
 				*retsError = CONSTLIT("Unable to set hit points.");

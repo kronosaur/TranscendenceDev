@@ -2510,6 +2510,8 @@ class CSpaceObject : public CObject
 		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL);
 		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
 		int GetSellPrice (const CItem &Item, DWORD dwFlags);
+		bool GetShipBuyPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
+		bool GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
 		int GetTradeMaxLevel (ETradeServiceTypes iService);
 		void SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
 
@@ -2646,6 +2648,7 @@ class CSpaceObject : public CObject
 		virtual CString GetStargateID (void) const { return NULL_STR; }
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual CTradingDesc *GetTradeDescOverride (void) { return NULL; }
+		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider) { return CCurrencyAndValue(0, GetDefaultEconomy()); }
 		virtual int GetVisibleDamage (void) { return 0; }
 		virtual bool HasMapLabel (void) { return false; }
 		virtual bool IsAngryAt (CSpaceObject *pObj) { return IsEnemy(pObj); }

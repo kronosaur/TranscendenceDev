@@ -39,6 +39,9 @@
 #define FIELD_REGEN								CONSTLIT("regen")
 #define FIELD_WEAPON_SUPPRESS					CONSTLIT("weaponSuppress")
 
+#define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_MAX_HP							CONSTLIT("maxHP")
+
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 struct SStdStats
@@ -920,6 +923,41 @@ int CShieldClass::GetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource)
 		return iHPLeft;
 	}
 
+ICCItem *CShieldClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
+
+//	GetItemProperty
+//
+//	Returns a property
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	CSpaceObject *pSource = Ctx.GetSource();		//	May be NULL
+	CInstalledDevice *pDevice = Ctx.GetDevice();	//	May be NULL
+
+	//	Get the property
+
+	if (strEquals(sName, PROPERTY_HP))
+		{
+		if (pSource && pDevice)
+			return CC.CreateInteger(GetHPLeft(pDevice, pSource));
+		else
+			return CC.CreateInteger(m_iHitPoints);
+		}
+
+	else if (strEquals(sName, PROPERTY_MAX_HP))
+		{
+		if (pSource && pDevice)
+			return CC.CreateInteger(GetMaxHP(pDevice, pSource));
+		else
+			return CC.CreateInteger(m_iHitPoints);
+		}
+
+	//	Otherwise, just get the property from the base class
+
+	else
+		return CDeviceClass::GetItemProperty(Ctx, sName);
+	}
+
 int CShieldClass::GetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	GetMaxHP
@@ -1334,6 +1372,58 @@ void CShieldClass::SetHPLeft (CInstalledDevice *pDevice, int iHP)
 
 	{
 	pDevice->SetData((DWORD)iHP);
+	}
+
+bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+
+//	SetItemProperty
+//
+//	Sets an item property
+
+	{
+	CSpaceObject *pSource = Ctx.GetSource();
+	CInstalledDevice *pDevice = Ctx.GetDevice();
+
+	//	This item must be installed on the given source, otherwise, it desn't
+	//	work.
+
+	if (pSource == NULL
+			|| pDevice == NULL
+			|| !Ctx.GetItem().IsInstalled())
+		{
+		*retsError = CONSTLIT("Item is not an installed device on object.");
+		return false;
+		}
+
+	//	Handle it.
+
+	if (strEquals(sName, PROPERTY_HP))
+		{
+		//	Nil means we're depleting the shields
+
+		if (pValue->IsNil())
+			Deplete(pDevice, pSource);
+
+		//	Otherwise, set it to an HP value
+
+		else
+			{
+			int iHP = pValue->GetIntegerValue();
+			int iMaxHP = GetMaxHP(pDevice, pSource);
+
+			SetHPLeft(pDevice, Min(iMaxHP, iHP));
+			pSource->OnComponentChanged(comShields);
+			}
+		}
+
+	//	Let our subclass handle it.
+
+	else
+		return CDeviceClass::SetItemProperty(Ctx, sName, pValue, retsError);
+
+	//	Success
+
+	return true;
 	}
 
 void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int iTick, bool *retbSourceDestroyed, bool *retbConsumedItems)

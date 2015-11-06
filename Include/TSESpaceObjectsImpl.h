@@ -997,6 +997,7 @@ class CShip : public CSpaceObject
 		virtual Metric GetMaxSpeed (void) { return ((m_fHalfSpeed || IsMainDriveDamaged()) ? (m_rMaxSpeed / 2.0) : m_rMaxSpeed); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
 		virtual CTradingDesc *GetTradeDescOverride (void) { return m_pTrade; }
+		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider);
 		virtual CDesignType *GetType (void) const { return m_pClass; }
 		virtual int GetVisibleDamage (void);
 		virtual bool HasAttribute (const CString &sAttribute) const;
