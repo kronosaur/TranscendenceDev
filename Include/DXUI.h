@@ -88,6 +88,7 @@ class AGScreen : public CObject, public IAreaContainer
 
 		ALERROR AddArea (AGArea *pArea, const RECT &rcRect, DWORD dwTag, bool bSendToBack = false);
 		void DestroyArea (AGArea *pArea);
+		void DestroyArea (DWORD dwTag);
 		AGArea *FindArea (DWORD dwTag);
 		inline AGArea *GetArea (int iIndex) { return m_Areas[iIndex]; }
 		inline int GetAreaCount (void) { return m_Areas.GetCount(); }

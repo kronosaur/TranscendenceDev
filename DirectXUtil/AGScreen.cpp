@@ -101,6 +101,20 @@ void AGScreen::DestroyArea (AGArea *pArea)
 	Invalidate(rcRect);
 	}
 
+void AGScreen::DestroyArea (DWORD dwTag)
+
+//	DestroyArea
+//
+//	Destroys an area by tag
+
+	{
+	AGArea *pArea = FindArea(dwTag);
+	if (pArea == NULL)
+		return;
+
+	DestroyArea(pArea);
+	}
+
 AGArea *AGScreen::FindArea (DWORD dwTag)
 
 //	FindArea
