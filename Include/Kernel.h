@@ -1027,7 +1027,8 @@ class IWriteStream
 		virtual ALERROR Close (void) = 0;
 		virtual ALERROR Create (void) = 0;
 		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) = 0;
-		virtual ALERROR WriteChar (char chChar, int iLength);
+		virtual ALERROR WriteChar (char chChar, int iLength = 1);
+		virtual ALERROR WriteString (const CString &sString, int *retiBytesWritten = NULL) { return Write(sString.GetASCIIZPointer(), sString.GetLength(), retiBytesWritten); }
 	};
 
 class IReadStream
