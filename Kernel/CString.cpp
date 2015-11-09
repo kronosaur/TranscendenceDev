@@ -463,7 +463,7 @@ void CString::Capitalize (CapitalizeOptions iOption)
 			{
 			//	Capitalize first letter
 
-			*pPos = (char)::CharUpper((LPTSTR)(int)*pPos);
+			*pPos = (char)(DWORD)::CharUpper((LPTSTR)(int)*pPos);
 			break;
 			}
 
@@ -2149,12 +2149,12 @@ CString strTitleCapitalize (const CString &sString, char **pExceptions, int iExc
 
 	//	The first word is capitalized
 
-	*Words[0] = (char)::CharUpper((LPSTR)*Words[0]);
+	*Words[0] = (char)(DWORD)::CharUpper((LPSTR)*Words[0]);
 
 	//	The last word is capitalized
 
 	if (Words.GetCount() > 1)
-		*Words[Words.GetCount() - 1] = (char)::CharUpper((LPSTR)*Words[Words.GetCount() - 1]);
+		*Words[Words.GetCount() - 1] = (char)(DWORD)::CharUpper((LPSTR)*Words[Words.GetCount() - 1]);
 
 	//	All the words in between are capitalized if they are not on the
 	//	exception list.
@@ -2172,7 +2172,7 @@ CString strTitleCapitalize (const CString &sString, char **pExceptions, int iExc
 				}
 
 		if (!bException)
-			*Words[i] = (char)::CharUpper((LPSTR)*Words[i]);
+			*Words[i] = (char)(DWORD)::CharUpper((LPSTR)*Words[i]);
 		}
 
 	//	Don
