@@ -93,6 +93,7 @@ class AGScreen : public CObject, public IAreaContainer
 		inline AGArea *GetArea (int iIndex) { return m_Areas[iIndex]; }
 		inline int GetAreaCount (void) { return m_Areas.GetCount(); }
 		inline const RECT &GetRect (void) { return m_rcRect; }
+		const CG16bitFont &GetWingdingsFont (void) const;
 		inline IScreenController *GetController (void) { return m_pController; }
 		inline void Invalidate (const RECT &rcInvalid) { UnionRect(&m_rcInvalid, &rcInvalid, &m_rcInvalid); }
 		inline void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackgroundColor = rgbColor; }
@@ -128,6 +129,8 @@ class AGScreen : public CObject, public IAreaContainer
 		AGArea *m_pMouseOver;					//	Area that the mouse is currently over
 
 		CG32bitPixel m_rgbBackgroundColor;
+
+		mutable CG16bitFont m_Wingdings;
 
 	friend CObjectClass<AGScreen>;
 	};

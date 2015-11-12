@@ -191,6 +191,19 @@ void AGScreen::GetMousePos (POINT *retpt)
 	retpt->y -= m_rcRect.top;
 	}
 
+const CG16bitFont &AGScreen::GetWingdingsFont (void) const
+
+//	Wingdings
+//
+//	Return Wingdings font
+
+	{
+	if (m_Wingdings.IsEmpty())
+		m_Wingdings.Create(CONSTLIT("Wingdings"), -16);
+
+	return m_Wingdings;
+	}
+
 AGArea *AGScreen::HitTest (const POINT &pt)
 
 //	HitTest

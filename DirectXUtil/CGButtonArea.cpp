@@ -8,6 +8,9 @@
 
 #define RGB_DISABLED_TEXT						(CG32bitPixel(128,128,128))
 
+#define SPECIAL_ACCEL_LEFT_ARROW				CONSTLIT("LeftArrow")
+#define SPECIAL_ACCEL_RIGHT_ARROW				CONSTLIT("RightArrow")
+
 const int ACCEL_INNER_PADDING =					2;
 const int ACCEL_BORDER_RADIUS =					2;
 
@@ -174,10 +177,31 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 		else if (!m_sAccelerator.IsBlank())
 			{
+			CString sLabel;
+			const CG16bitFont *pLabelFont;
+
+			//	Some accelerator names are special; we draw symbols
+
+			if (strEquals(m_sAccelerator, SPECIAL_ACCEL_LEFT_ARROW))
+				{
+				sLabel = CString("ç", 1);
+				pLabelFont = &GetScreen()->GetWingdingsFont();
+				}
+			else if (strEquals(m_sAccelerator, SPECIAL_ACCEL_RIGHT_ARROW))
+				{
+				sLabel = CString("è", 1);
+				pLabelFont = &GetScreen()->GetWingdingsFont();
+				}
+			else
+				{
+				sLabel = m_sAccelerator;
+				pLabelFont = m_pLabelFont;
+				}
+
 			//	Measure the size of the accelerator
 
 			int cyAccel;
-			int cxAccel = m_pLabelFont->MeasureText(m_sAccelerator, &cyAccel);
+			int cxAccel = pLabelFont->MeasureText(sLabel, &cyAccel);
 
 			//	We draw a rounded-rect box
 
@@ -187,7 +211,7 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 			//	Draw the text
 
-			Dest.DrawText(xPaint + ACCEL_INNER_PADDING, yPaint, *m_pLabelFont, CG32bitPixel(0, 0, 0), m_sAccelerator);
+			Dest.DrawText(xPaint + ACCEL_INNER_PADDING, yPaint, *pLabelFont, CG32bitPixel(0, 0, 0), sLabel);
 
 			//	Now draw the rest of the label
 

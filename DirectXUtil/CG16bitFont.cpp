@@ -272,6 +272,12 @@ ALERROR CG16bitFont::Create (const CString &sTypeface, int iSize, bool bBold, bo
 	else
 		dwQuality = PROOF_QUALITY;
 
+	DWORD dwCharSet;
+	if (strEquals(sTypeface, CONSTLIT("Wingdings")))
+		dwCharSet = SYMBOL_CHARSET;
+	else
+		dwCharSet = ANSI_CHARSET;
+
 	HFONT hFont = ::CreateFont(iSize,
 			0,
 			0,
@@ -280,7 +286,7 @@ ALERROR CG16bitFont::Create (const CString &sTypeface, int iSize, bool bBold, bo
 			(bItalic ? TRUE : FALSE),
 			(bUnderline ? TRUE : FALSE),
 			FALSE,
-			ANSI_CHARSET,
+			dwCharSet,
 			OUT_TT_ONLY_PRECIS,
 			CLIP_DEFAULT_PRECIS,
 			dwQuality,

@@ -2709,7 +2709,16 @@ ICCItem *fnMathList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			return CMin().Run(*pCC, pList);
 
 		case FN_MATH_SUBTRACT:
-			return CSubtraction().Run(*pCC, pList);
+			if (pList->GetCount() == 1)
+				{
+				ICCItem *pValue = pList->GetElement(0);
+				if (pValue->IsInteger())
+					return pCC->CreateInteger(-pValue->GetIntegerValue());
+				else
+					return pCC->CreateDouble(-pValue->GetDoubleValue());
+				}
+			else
+				return CSubtraction().Run(*pCC, pList);
 
 		default:
 			ASSERT(false);
