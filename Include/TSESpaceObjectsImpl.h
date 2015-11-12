@@ -963,7 +963,7 @@ class CShip : public CSpaceObject
 		virtual DWORD GetDefaultBkgnd (void) { return m_pClass->GetDefaultBkgnd(); }
 		virtual CSpaceObject *GetDestination (void) const { return m_pController->GetDestination(); }
 		virtual CSpaceObject *GetDockedObj (void) { return m_pDocked; }
-		virtual int GetDockingPortCount (void) { return m_DockingPorts.GetPortCount(this); }
+		virtual CDockingPorts *GetDockingPorts (void) { return &m_DockingPorts; }
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL);
 		virtual CInstalledDevice *GetDevice (int iDev) const { return &m_Devices[iDev]; }
 		virtual int GetDeviceCount (void) const { return m_iDeviceCount; }
@@ -980,9 +980,7 @@ class CShip : public CSpaceObject
 		virtual int GetMaxPower (void) const;
 		virtual CString GetName (DWORD *retdwFlags = NULL);
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev);
-		virtual int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CShip"); }
-		virtual int GetOpenDockingPortCount (void) { return m_DockingPorts.GetPortCount(this) - m_DockingPorts.GetPortsInUseCount(this); }
 		virtual COverlayList *GetOverlays (void) { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerShips; }
 		virtual int GetPerception (void);
@@ -1010,8 +1008,6 @@ class CShip : public CSpaceObject
 		virtual bool IsInactive (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsKnown (void) { return m_fKnown; }
 		virtual bool IsMultiHull (void) { return !m_Interior.IsEmpty(); }
-		virtual bool IsObjDocked (CSpaceObject *pObj) { return m_DockingPorts.IsObjDocked(pObj); }
-		virtual bool IsObjDockedOrDocking (CSpaceObject *pObj) { return m_DockingPorts.IsObjDockedOrDocking(pObj); }
 		virtual bool IsOutOfFuel (void) { return m_fOutOfFuel; }
 		virtual bool IsParalyzed (void) { return m_fParalyzedByOverlay || m_iParalysisTimer != 0; }
 		virtual bool IsPlayer (void) const;
@@ -1068,7 +1064,7 @@ class CShip : public CSpaceObject
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) { m_sName = sName; m_dwNameFlags = dwFlags; }
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual void SetSovereign (CSovereign *pSovereign) { m_pSovereign = pSovereign; }
-		virtual void Suspend (void) { m_fManualSuspended = true; SetCannotBeHit(); }
+		virtual void Suspend (void) { Undock(); m_fManualSuspended = true; SetCannotBeHit(); }
 		virtual void Undock (CSpaceObject *pObj);
 		virtual void UpdateArmorItems (void);
 		virtual void UpdateDockingManeuver(const CVector &vDest, const CVector &vDestVel, int iDestFacing);
@@ -1260,7 +1256,6 @@ class CStation : public CSpaceObject
 		int GetImageVariant (void);
 		inline int GetImageVariantCount (void) { return m_pType->GetImageVariants(); }
 		inline int GetMaxStructuralHitPoints (void) { return m_iMaxStructuralHP; }
-		inline CSpaceObject *GetShipAtDockingPort (int iPort) { return m_DockingPorts.GetPortObj(this, iPort); }
 		inline int GetStructuralHitPoints (void) { return m_iStructuralHP; }
 		inline int GetSubordinateCount (void) { return m_Subordinates.GetCount(); }
 		inline CSpaceObject *GetSubordinate (int iIndex) { return m_Subordinates.GetObj(iIndex); }
@@ -1311,7 +1306,7 @@ class CStation : public CSpaceObject
 		virtual DWORD GetDefaultBkgnd (void) { return m_pType->GetDefaultBkgnd(); }
 		virtual CInstalledDevice *GetDevice (int iDev) const { return &m_pDevices[iDev]; }
 		virtual int GetDeviceCount (void) const { return (m_pDevices ? maxDevices : 0); }
-		virtual int GetDockingPortCount (void) { return m_DockingPorts.GetPortCount(this); }
+		virtual CDockingPorts *GetDockingPorts (void) { return &m_DockingPorts; }
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL);
 		virtual CStationType *GetEncounterInfo (void) { return m_pType; }
 		virtual const CString &GetGlobalData (const CString &sAttribute) { return m_pType->GetGlobalData(sAttribute); }
@@ -1323,9 +1318,7 @@ class CStation : public CSpaceObject
 		virtual Metric GetMass (void) { return m_rMass; }
 		virtual int GetMaxLightDistance (void) { return m_pType->GetMaxLightDistance(); }
 		virtual CString GetName (DWORD *retdwFlags = NULL);
-		virtual int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
 		virtual CString GetObjClassName (void) { return CONSTLIT("CStation"); }
-		virtual int GetOpenDockingPortCount (void) { return m_DockingPorts.GetPortCount(this) - m_DockingPorts.GetPortsInUseCount(this); }
 		virtual COverlayList *GetOverlays (void) { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void);
 		virtual Metric GetParallaxDist (void) { return m_rParallaxDist; }
@@ -1358,8 +1351,6 @@ class CStation : public CSpaceObject
 		virtual bool IsImmutable (void) const { return m_fImmutable; }
 		virtual bool IsKnown (void) { return m_fKnown; }
 		virtual bool IsMultiHull (void) { return m_pType->IsMultiHull(); }
-		virtual bool IsObjDocked (CSpaceObject *pObj) { return m_DockingPorts.IsObjDocked(pObj); }
-		virtual bool IsObjDockedOrDocking (CSpaceObject *pObj) { return m_DockingPorts.IsObjDockedOrDocking(pObj); }
 		virtual bool IsParalyzed (void) { return m_fParalyzedByOverlay; }
 		virtual bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
 		virtual bool IsStargate (void) const { return !m_sStargateDestNode.IsBlank(); }
@@ -1377,7 +1368,6 @@ class CStation : public CSpaceObject
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx);
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
-		virtual void PlaceAtRandomDockPort (CSpaceObject *pObj) { m_DockingPorts.DockAtRandomPort(this, pObj); }
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos);
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos);
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx);

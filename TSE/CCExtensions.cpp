@@ -1430,6 +1430,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'category\n"
 			"   'cyberDefenseLevel\n"
+			"   'dockingPorts\n"
 			"   'hasDockingPorts\n"
 			"   'id\n"
 			"   'known\n"

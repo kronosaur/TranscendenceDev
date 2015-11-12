@@ -1746,7 +1746,7 @@ CString CShip::DebugCrashInfo (void)
 		CSpaceObject *pDockedObj = m_DockingPorts.GetPortObj(this, i);
 		if (pDockedObj)
 			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(pDockedObj)));
-		else if (!m_DockingPorts.DebugIsPortEmpty(this, i))
+		else if (!m_DockingPorts.IsPortEmpty(this, i))
 			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: Not empty, but NULL object!\r\n"), i));
 		}
 
@@ -2682,22 +2682,6 @@ CItem CShip::GetNamedDeviceItem (DeviceNames iDev)
 		SetCursorAtNamedDevice(ItemList, iDev);
 		return ItemList.GetItemAtCursor();
 		}
-	}
-
-int CShip::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort)
-
-//	GetNearestDockVector
-//
-//	Returns a vector from the given position to the nearest
-//	dock position
-
-	{
-	int iPort = m_DockingPorts.FindNearestEmptyPort(this, pRequestingObj);
-
-	if (retvPort)
-		*retvPort = m_DockingPorts.GetPortPos(this, iPort, pRequestingObj);
-
-	return iPort;
 	}
 
 int CShip::GetPerception (void)

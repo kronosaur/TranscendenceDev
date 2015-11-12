@@ -78,7 +78,10 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define FIELD_DESC_ID							CONSTLIT("descID")
 #define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
 #define FIELD_CAN_REMOVE						CONSTLIT("canRemove")
+#define FIELD_OBJ_ID							CONSTLIT("objID")
+#define FIELD_POS								CONSTLIT("pos")
 #define FIELD_PRICE								CONSTLIT("price")
+#define FIELD_STATUS							CONSTLIT("status")
 #define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
 #define ORDER_DOCKED							CONSTLIT("docked")
@@ -88,6 +91,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
+#define PROPERTY_DOCKING_PORTS					CONSTLIT("dockingPorts")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_HAS_DOCKING_PORTS				CONSTLIT("hasDockingPorts")
 #define PROPERTY_HP								CONSTLIT("hp")
@@ -3362,6 +3366,25 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 		}
 	}
 
+int CSpaceObject::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort)
+
+//	GetNearestDockPort
+//
+//	Returns the index of the nearest dock point (or -1)
+	
+	{
+	CDockingPorts *pPorts = GetDockingPorts();
+	if (pPorts == NULL)
+		return -1;
+
+	int iPort = pPorts->FindNearestEmptyPort(this, pRequestingObj);
+
+	if (retvPort)
+		*retvPort = pPorts->GetPortPos(this, iPort, pRequestingObj);
+
+	return iPort;
+	}
+
 CSpaceObject *CSpaceObject::GetNearestEnemy (Metric rMaxRange, bool bIncludeStations)
 
 //	GetNearest
@@ -3822,6 +3845,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns the property
 
 	{
+	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
 	CDesignType *pType;
 
@@ -3868,6 +3892,45 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
 		return CC.CreateInteger(GetCyberDefenseLevel());
+
+	else if (strEquals(sName, PROPERTY_DOCKING_PORTS))
+		{
+		CDockingPorts *pPorts = GetDockingPorts();
+		if (pPorts == NULL || pPorts->GetPortCount(this) == 0)
+			return CC.CreateNil();
+
+		ICCItem *pList = CC.CreateLinkedList();
+		for (i = 0; i < pPorts->GetPortCount(this); i++)
+			{
+			ICCItem *pPortDesc = CC.CreateSymbolTable();
+
+			//	Status
+
+			if (pPorts->IsPortEmpty(this, i))
+				pPortDesc->SetStringAt(CC, FIELD_STATUS, CONSTLIT("empty"));
+			else
+				pPortDesc->SetStringAt(CC, FIELD_STATUS, CONSTLIT("inUse"));
+
+			//	Position
+
+			ICCItem *pValue = ::CreateListFromVector(CC, pPorts->GetPortPos(this, i, NULL));
+			pPortDesc->SetAt(CC, FIELD_POS, pValue);
+			pValue->Discard(&CC);
+
+			//	ObjectID
+
+			CSpaceObject *pObj = pPorts->GetPortObj(this, i);
+			if (pObj)
+				pPortDesc->SetIntegerAt(CC, FIELD_OBJ_ID, pObj->GetID());
+
+			//	Add to list
+
+			pList->Append(CC, pPortDesc);
+			pPortDesc->Discard(&CC);
+			}
+
+		return pList;
+		}
 
 	else if (strEquals(sName, PROPERTY_HAS_DOCKING_PORTS))
 		return CC.CreateBool(SupportsDocking());

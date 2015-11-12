@@ -1687,7 +1687,6 @@ class CDockingPorts
 		CDockingPorts (void);
 		~CDockingPorts (void);
 
-		inline bool DebugIsPortEmpty (CSpaceObject *pOwner, int iPort) const { return (m_pPort[iPort].iStatus == psEmpty); }
 		void DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj);
 		bool DoesPortPaintInFront (CSpaceObject *pOwner, int iPort) const;
 		int FindNearestEmptyPort (CSpaceObject *pOwner, CSpaceObject *pRequestingObj, CVector *retvDistance = NULL, int *retiEmptyPortCount = NULL);
@@ -1702,6 +1701,7 @@ class CDockingPorts
 		void InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElement);
 		inline bool IsObjDocked (CSpaceObject *pObj) { return IsDocked(pObj); }
 		inline bool IsObjDockedOrDocking (CSpaceObject *pObj) { return IsDockedOrDocking(pObj); }
+		inline bool IsPortEmpty (CSpaceObject *pOwner, int iPort) const { return (m_pPort[iPort].iStatus == psEmpty); }
 		void MoveAll (CSpaceObject *pOwner);
 		void OnDestroyed (void);
 		void OnNewSystem (CSystem *pNewSystem);
@@ -2423,7 +2423,6 @@ class CSpaceObject : public CObject
 		inline void SetShowHighlight (void) { m_fShowHighlight = true; }
 		inline void SetVel (const CVector &vVel) { m_vVel = vVel; }
 		inline void StopTime (void) { m_fTimeStop = true; }
-		inline bool SupportsDocking (bool bPlayer = false) { return ((!bPlayer || GetDefaultDockScreen() != NULL) && GetDockingPortCount() > 0); }
 		inline void UnfreezeControls (void) { m_iControlsFrozen--; }
 		void Update (SUpdateCtx &Ctx);
 		void UpdateExtended (const CTimeSpan &ExtraTime);
@@ -2443,6 +2442,35 @@ class CSpaceObject : public CObject
 		inline void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		inline void SetDebugVector (const CVector &vVector) { }
 #endif
+		//	Docking
+
+		virtual CSpaceObject *GetDockedObj (void) { return NULL; }
+		virtual CVector GetDockingPortOffset (int iRotation) { return NullVector; }
+		virtual void OnDocked (CSpaceObject *pObj) { }
+		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
+		virtual void UpdateDockingManeuver(const CVector &vDest, const CVector &vDestVel, int iDestFacing) { }
+
+		//	Docking Ports
+
+		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, int iCount = 1) { }
+		virtual CDockingPorts *GetDockingPorts (void) { return NULL; }
+		virtual bool RequestDock (CSpaceObject *pObj, int iPort = -1) { return false; }
+		virtual void Undock (CSpaceObject *pObj) { }
+
+		inline int GetDockingPortCount (void) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->GetPortCount(this) : 0); }
+		int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
+		inline int GetOpenDockingPortCount (void) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? (pPorts->GetPortCount(this) - pPorts->GetPortsInUseCount(this)) : 0); }
+		inline CSpaceObject *GetShipAtDockingPort (int iPort) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->GetPortObj(this, iPort) : NULL); }
+		inline bool IsObjDocked (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDocked(pObj) : false); }
+		inline bool IsObjDockedOrDocking (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDockedOrDocking(pObj) : false); }
+		inline void PlaceAtRandomDockPort (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); if (pPorts) pPorts->DockAtRandomPort(this, pObj); }
+		inline bool SupportsDocking (bool bPlayer = false) { return ((!bPlayer || GetDefaultDockScreen() != NULL) && GetDockingPortCount() > 0); }
+
+		//	Dock Screens
+
+		virtual DWORD GetDefaultBkgnd (void) { return 0; }
+		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) { return NULL; }
+		virtual CXMLElement *GetScreen (const CString &sName);
 
 		//	Item functions
 
@@ -2492,12 +2520,11 @@ class CSpaceObject : public CObject
 		inline bool SetOverlayProperty (DWORD dwID, const CString &sName, ICCItem *pValue, CString *retsError) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->SetProperty(this, dwID, sName, pValue) : false); }
 		inline void SetOverlayRotation (DWORD dwID, int iRotation) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetRotation(dwID, iRotation); }
 
-		//	Statics
-
-		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
-		static CString ConvertToID (InstallItemResults iResult);
-
 		//	Trade functions
+
+		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
+		virtual CTradingDesc *GetTradeDescOverride (void) { return NULL; }
+		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider) { return CCurrencyAndValue(0, GetDefaultEconomy()); }
 
 		void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
 		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
@@ -2515,7 +2542,12 @@ class CSpaceObject : public CObject
 		int GetTradeMaxLevel (ETradeServiceTypes iService);
 		void SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
 
-		//	Virtuals to be overridden
+		//	Statics
+
+		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
+		static CString ConvertToID (InstallItemResults iResult);
+
+		//	Other virtuals to be overridden
 
 		//	...for all objects
 		virtual CBoundaryMarker *AsBoundaryMarker (void) { return NULL; }
@@ -2604,10 +2636,8 @@ class CSpaceObject : public CObject
 		virtual bool IsSuspended (void) const { return false; }
 
 		//	...for active/intelligent objects (ships, stations, etc.)
-		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
 		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
 		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue) { return 0; }
-		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, int iCount = 1) { }
 		virtual CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue) { return 0; }
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) { }
 		virtual void DeactivateShields (void) { }
@@ -2628,9 +2658,6 @@ class CSpaceObject : public CObject
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
 		virtual CInstalledDevice *GetDevice (int iDev) const { return NULL; }
 		virtual int GetDeviceCount (void) const { return 0; }
-		virtual CSpaceObject *GetDockedObj (void) { return NULL; }
-		virtual int GetDockingPortCount (void) { return 0; }
-		virtual CVector GetDockingPortOffset (int iRotation) { return NullVector; }
 		virtual CStationType *GetEncounterInfo (void) { return NULL; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }
 		virtual int GetLastFireTime (void) const { return 0; }
@@ -2639,7 +2666,6 @@ class CSpaceObject : public CObject
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) { return 0; }
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
-		virtual int GetOpenDockingPortCount (void) { return 0; }
 		virtual int GetPerception (void) { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
@@ -2647,8 +2673,6 @@ class CSpaceObject : public CObject
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual CString GetStargateID (void) const { return NULL_STR; }
 		virtual int GetStealth (void) const { return stealthNormal; }
-		virtual CTradingDesc *GetTradeDescOverride (void) { return NULL; }
-		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider) { return CCurrencyAndValue(0, GetDefaultEconomy()); }
 		virtual int GetVisibleDamage (void) { return 0; }
 		virtual bool HasMapLabel (void) { return false; }
 		virtual bool IsAngryAt (CSpaceObject *pObj) { return IsEnemy(pObj); }
@@ -2656,8 +2680,6 @@ class CSpaceObject : public CObject
 		virtual bool IsDisarmed (void) { return false; }
 		virtual bool IsIdentified (void) { return true; }
 		virtual bool IsMultiHull (void) { return false; }
-		virtual bool IsObjDocked (CSpaceObject *pObj) { return false; }
-		virtual bool IsObjDockedOrDocking (CSpaceObject *pObj) { return false; }
 		virtual bool IsOutOfFuel (void) { return false; }
 		virtual bool IsParalyzed (void) { return false; }
 		virtual bool IsPlayer (void) const { return false; }
@@ -2697,15 +2719,6 @@ class CSpaceObject : public CObject
 		virtual CString GetInstallationPhrase (const CItem &Item) const { return NULL_STR; }
 		virtual void SetFireDelay (CInstalledDevice *pWeapon, int iDelay = -1) { }
 
-		//	...for objects with docking ports
-		virtual DWORD GetDefaultBkgnd (void) { return 0; }
-		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) { return NULL; }
-		virtual int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL) { return -1; }
-		virtual CXMLElement *GetScreen (const CString &sName);
-		virtual void PlaceAtRandomDockPort (CSpaceObject *pObj) { }
-		virtual bool RequestDock (CSpaceObject *pObj, int iPort = -1) { return false; }
-		virtual void Undock (CSpaceObject *pObj) { }
-
 		//	...for beams, missiles, etc.
 		virtual void CreateReflection (const CVector &vPos, int iDirection) { }
 		virtual void DetonateNow (CSpaceObject *pHit) { }
@@ -2721,14 +2734,11 @@ class CSpaceObject : public CObject
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
-		virtual void OnDocked (CSpaceObject *pObj) { }
-		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
 		virtual void Refuel (int iFuel) { }
 		virtual void Refuel (const CItem &Fuel) { }
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }
-		virtual void UpdateDockingManeuver(const CVector &vDest, const CVector &vDestVel, int iDestFacing) { }
 
 		//	...for stations
 		virtual void AddSubordinate (CSpaceObject *pSubordinate) { }
