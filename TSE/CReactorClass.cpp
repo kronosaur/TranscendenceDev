@@ -48,10 +48,10 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
 	//	Compute descriptor when damaged
 
 	pDevice->m_DamagedDesc.iMaxPower = 80 * pDevice->m_Desc.iMaxPower / 100;
-	pDevice->m_DamagedDesc.iMaxFuel = pDevice->m_Desc.iMaxFuel;
+	pDevice->m_DamagedDesc.rMaxFuel = pDevice->m_Desc.rMaxFuel;
 	pDevice->m_DamagedDesc.iMinFuelLevel = pDevice->m_Desc.iMinFuelLevel;
 	pDevice->m_DamagedDesc.iMaxFuelLevel = pDevice->m_Desc.iMaxFuelLevel;
-	pDevice->m_DamagedDesc.iPowerPerFuelUnit = 80 * pDevice->m_Desc.iPowerPerFuelUnit / 100;
+	pDevice->m_DamagedDesc.rPowerPerFuelUnit = 0.8 * pDevice->m_Desc.rPowerPerFuelUnit;
 	pDevice->m_DamagedDesc.pFuelCriteria = pDevice->m_Desc.pFuelCriteria;
 	pDevice->m_DamagedDesc.fFreeFuelCriteria = false;
 	pDevice->m_DamagedDesc.fDamaged = true;
@@ -60,10 +60,10 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
 	//	Compute descriptor when enhanced
 
 	pDevice->m_EnhancedDesc.iMaxPower = 120 * pDevice->m_Desc.iMaxPower / 100;
-	pDevice->m_EnhancedDesc.iMaxFuel = pDevice->m_Desc.iMaxFuel;
+	pDevice->m_EnhancedDesc.rMaxFuel = pDevice->m_Desc.rMaxFuel;
 	pDevice->m_EnhancedDesc.iMinFuelLevel = pDevice->m_Desc.iMinFuelLevel;
 	pDevice->m_EnhancedDesc.iMaxFuelLevel = pDevice->m_Desc.iMaxFuelLevel;
-	pDevice->m_EnhancedDesc.iPowerPerFuelUnit = 150 * pDevice->m_Desc.iPowerPerFuelUnit / 100;
+	pDevice->m_EnhancedDesc.rPowerPerFuelUnit = 1.5 * pDevice->m_Desc.rPowerPerFuelUnit;
 	pDevice->m_EnhancedDesc.pFuelCriteria = pDevice->m_Desc.pFuelCriteria;
 	pDevice->m_EnhancedDesc.fFreeFuelCriteria = false;
 	pDevice->m_EnhancedDesc.fDamaged = false;
@@ -93,9 +93,9 @@ bool CReactorClass::FindDataField (const ReactorDesc &Desc, const CString &sFiel
 			*retsValue = strPatternSubst(CONSTLIT("f L:%d-%d;"), Desc.iMinFuelLevel, Desc.iMaxFuelLevel);
 		}
 	else if (strEquals(sField, FIELD_FUEL_EFFICIENCY))
-		*retsValue = strFromInt(Desc.iPowerPerFuelUnit);
+		*retsValue = strFromInt((int)Desc.rPowerPerFuelUnit);
 	else if (strEquals(sField, FIELD_FUEL_CAPACITY))
-		*retsValue = strFromInt(Desc.iMaxFuel / FUEL_UNITS_PER_STD_ROD);
+		*retsValue = strFromInt((int)(Desc.rMaxFuel / FUEL_UNITS_PER_STD_ROD));
 	else
 		return false;
 
@@ -150,16 +150,15 @@ ALERROR CReactorClass::InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 	if (bShipClass)
 		{
 		retDesc->iMaxPower = pDesc->GetAttributeIntegerBounded(REACTOR_POWER_ATTRIB, 0, -1, 0);
-		retDesc->iMaxFuel = pDesc->GetAttributeIntegerBounded(FUEL_CAPACITY_ATTRIB, 0, -1, retDesc->iMaxPower * 250);
-		retDesc->iPowerPerFuelUnit = pDesc->GetAttributeIntegerBounded(REACTOR_EFFICIENCY_ATTRIB, 0, -1, g_MWPerFuelUnit);
+		retDesc->rMaxFuel = pDesc->GetAttributeDoubleBounded(FUEL_CAPACITY_ATTRIB, 0.0, -1.0, retDesc->iMaxPower * 250.0);
+		retDesc->rPowerPerFuelUnit = pDesc->GetAttributeDoubleBounded(REACTOR_EFFICIENCY_ATTRIB, 0.0, -1.0, g_MWPerFuelUnit);
 		}
 	else
 		{
 		retDesc->iMaxPower = pDesc->GetAttributeIntegerBounded(MAX_POWER_ATTRIB, 0, -1, 100);
-		retDesc->iMaxFuel = pDesc->GetAttributeIntegerBounded(MAX_FUEL_ATTRIB, 0, -1, retDesc->iMaxFuel * 250);
-		retDesc->iPowerPerFuelUnit = pDesc->GetAttributeIntegerBounded(FUEL_EFFICIENCY_ATTRIB, 0, -1, g_MWPerFuelUnit);
+		retDesc->rMaxFuel = pDesc->GetAttributeDoubleBounded(MAX_FUEL_ATTRIB, 0.0, -1.0, retDesc->iMaxPower * 250.0);
+		retDesc->rPowerPerFuelUnit = pDesc->GetAttributeDoubleBounded(FUEL_EFFICIENCY_ATTRIB, 0.0, -1.0, g_MWPerFuelUnit);
 		}
-
 
 	retDesc->fDamaged = false;
 	retDesc->fEnhanced = false;

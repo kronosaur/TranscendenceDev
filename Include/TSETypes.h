@@ -78,9 +78,9 @@ const Metric g_InfiniteDistance =		g_AU * g_AU * 1000000.0;	//	A very large numb
 const Metric g_SpaceDragFactor =		0.98;		//	Coefficient of drag in space (1.0 = no drag)
 const Metric g_BounceCoefficient =		0.50;		//	Speed coefficient when bouncing
 const Metric g_MomentumConstant =		25.0;		//	Arbitrary constant for momentum
-const int g_MWPerFuelUnit =				15;			//	Tenth-MW-ticks produced per fuel unit
+const Metric g_MWPerFuelUnit =			15.0;		//	Tenth-MW-ticks produced per fuel unit
 const Metric g_MinSpeed2 =				100.0;		//	If moving less than this speed, force to 0
-const int FUEL_UNITS_PER_STD_ROD =		2500;		//	Fuel units in a standard fuel rod equivalent
+const Metric FUEL_UNITS_PER_STD_ROD =	2500.0;		//	Fuel units in a standard fuel rod equivalent
 
 const DWORD INFINITE_TICK =					0xffffffff;	//	Highest tick
 

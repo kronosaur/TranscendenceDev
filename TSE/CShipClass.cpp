@@ -47,6 +47,7 @@
 #define DEST_X_ATTRIB							CONSTLIT("destX")
 #define DEST_Y_ATTRIB							CONSTLIT("destY")
 #define DOCK_SCREEN_ATTRIB						CONSTLIT("dockScreen")
+#define DRIVE_POWER_USE_ATTRIB					CONSTLIT("drivePowerUse")
 #define EQUIPMENT_ATTRIB						CONSTLIT("equipment")
 #define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define MAX_REACTOR_FUEL_ATTRIB					CONSTLIT("fuelCapacity")
@@ -109,6 +110,7 @@
 #define FIELD_DOCK_SERVICES_SCREEN				CONSTLIT("dockServicesScreen")
 #define FIELD_DODGE_RATE						CONSTLIT("dodgeRate")
 #define FIELD_DRIVE_IMAGE						CONSTLIT("driveImage")
+#define FIELD_DRIVE_POWER						CONSTLIT("drivePowerUse")
 #define FIELD_EXPLOSION_TYPE					CONSTLIT("explosionType")
 #define FIELD_FIRE_ACCURACY						CONSTLIT("fireAccuracy")
 #define FIELD_FIRE_RANGE_ADJ					CONSTLIT("fireRangeAdj")
@@ -198,6 +200,9 @@ static CG32bitImage *g_pDamageBitmap = NULL;
 static CStationType *g_pWreckDesc = NULL;
 
 const int DOCK_OFFSET_STD_SIZE =				64;
+
+const Metric DRIVE_POWER_EXP =					1.2;
+const Metric DRIVE_POWER_FACTOR =				13.0;
 
 DWORD ParseNonCritical (const CString &sList);
 
@@ -2003,6 +2008,13 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		else
 			*retsValue = CONSTLIT("Image");
 		}
+	else if (strEquals(sField, FIELD_DRIVE_POWER))
+		{
+		DriveDesc Drive;
+		GetDriveDesc(&Drive);
+		*retsValue = strFromInt(Drive.iPowerUse);
+		}
+
 	else if (CReactorClass::FindDataField(m_ReactorDesc, sField, retsValue))
 		return true;
 	else
@@ -2831,6 +2843,19 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 			m_DriveDesc.iThrust = (int)(((m_rThrustRatio * rMass) / 2.0) + 0.5);
 		}
 
+	//	For later APIs compute the drive power usage, if not specified
+
+	if (m_DriveDesc.iPowerUse < 0)
+		{
+		if (GetAPIVersion() >= 29)
+			m_DriveDesc.iPowerUse = (int)Max(1.0, DRIVE_POWER_FACTOR * pow(m_DriveDesc.iThrust / 100.0, DRIVE_POWER_EXP));
+
+		//	Otherwise, use the default
+
+		else
+			m_DriveDesc.iPowerUse = DEFAULT_POWER_USE;
+		}
+
 	//	Bind structures
 
 	if (error = m_Interior.BindDesign(Ctx))
@@ -3079,7 +3104,8 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_rThrustRatio = 0.0;
 		}
 
-	m_DriveDesc.iPowerUse = DEFAULT_POWER_USE;
+	//	-1 means default. We will compute a proper default in Bind
+	m_DriveDesc.iPowerUse = pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1);
 	m_DriveDesc.fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
 
 	if (error = CReactorClass::InitReactorDesc(Ctx, pDesc, &m_ReactorDesc, true))

@@ -2187,8 +2187,8 @@ struct ReactorDesc
 	ReactorDesc &operator= (const ReactorDesc &Src)
 		{
 		iMaxPower = Src.iMaxPower;
-		iMaxFuel = Src.iMaxFuel;
-		iPowerPerFuelUnit = Src.iPowerPerFuelUnit;
+		rMaxFuel = Src.rMaxFuel;
+		rPowerPerFuelUnit = Src.rPowerPerFuelUnit;
 
 		pFuelCriteria = (Src.pFuelCriteria ? new CItemCriteria(*Src.pFuelCriteria) : NULL);
 		iMinFuelLevel = Src.iMinFuelLevel;
@@ -2202,8 +2202,8 @@ struct ReactorDesc
 		}
 
 	int iMaxPower;								//	Maximum power output
-	int iMaxFuel;								//	Maximum fuel space
-	int iPowerPerFuelUnit;						//	MW/10-tick per fuel unit
+	Metric rMaxFuel;							//	Maximum fuel space
+	Metric rPowerPerFuelUnit;					//	MW/10-tick per fuel unit
 
 	CItemCriteria *pFuelCriteria;
 	int iMinFuelLevel;							//	Min tech level of fuel (-1 if using fuelCriteria)

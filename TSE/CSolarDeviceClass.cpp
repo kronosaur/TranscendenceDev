@@ -60,7 +60,7 @@ void CSolarDeviceClass::Update (CInstalledDevice *pDevice,
 		int iIntensity = pSource->GetSystem()->CalculateLightIntensity(pSource->GetPos());
 		if (pDevice->IsDamaged() || pDevice->IsDisrupted())
 			iIntensity = iIntensity / 2;
-		pSource->Refuel(iIntensity * m_iRefuel / 100);
+		pSource->Refuel(iIntensity * (Metric)m_iRefuel / 100.0);
 		}
 
 	DEBUG_CATCH

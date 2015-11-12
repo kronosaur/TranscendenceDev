@@ -291,8 +291,8 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_FUEL_CAPACITY) && IsFuel())
 		{
-		int iFuelPerItem = strToInt(GetData(), 0);
-		*retsValue = strFromInt(iFuelPerItem / FUEL_UNITS_PER_STD_ROD);
+		Metric rFuelPerItem = strToInt(GetData(), 0);
+		*retsValue = strFromInt((int)(rFuelPerItem / FUEL_UNITS_PER_STD_ROD));
 
 		//	NOTE: When IsFuel() is FALSE we fall through to the else
 		//	case, which asks reactor devices.

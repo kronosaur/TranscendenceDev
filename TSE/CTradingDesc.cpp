@@ -794,7 +794,7 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.iCount = 1;
 
-	int iMaxFuel = pShipToRefuel->GetMaxFuel();
+	Metric rMaxFuel = pShipToRefuel->GetMaxFuel();
 
 	for (i = 0; i < m_List.GetCount(); i++)
 		if (m_List[i].iService == serviceRefuel)
@@ -822,13 +822,10 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 					//	we don't want to refuel with in big chunks (or else we'll
 					//	think the ship is close enough to full).
 
-					int iFuelPerItem = strToInt(Item.GetType()->GetData(), 0, NULL);
-					if (iFuelPerItem == 0)
-						iFuelPerItem = 1;
+					Metric rFuelPerItem = Max(1.0, strToDouble(Item.GetType()->GetData(), 0.0, NULL));
+					Metric rItemsToFillShip = rMaxFuel / rFuelPerItem;
 
-					int iItemsToFillShip = iMaxFuel / iFuelPerItem;
-
-					int iMetric = ((iItemsToFillShip >= 10) ? 100 : 0) + pType->GetLevel();
+					int iMetric = ((rItemsToFillShip >= 10.0) ? 100 : 0) + pType->GetLevel();
 					if (pBestItem == NULL || iMetric > iBestMetric)
 						{
 						//	Compute the price, because if we don't sell it, then we

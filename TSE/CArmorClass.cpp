@@ -1725,7 +1725,7 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 		//	unit, this means that a single armor plate can support up to 15MW when
 		//	right next to the sun.
 
-		pObj->Refuel(iIntensity);
+		pObj->Refuel((Metric)iIntensity);
 		}
 
 	//	See if we distribute HPs to other segments of our type

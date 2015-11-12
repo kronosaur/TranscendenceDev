@@ -444,7 +444,7 @@ void CShip::CalcDeviceBonus (void)
 	//	Make sure we don't overflow fuel (in case we downgrade the reactor)
 
 	if (!m_fOutOfFuel)
-		m_iFuelLeft = Min(m_iFuelLeft, GetMaxFuel());
+		m_rFuelLeft = Min(m_rFuelLeft, GetMaxFuel());
 
 	//	Let our controller know (but only if we're fully created)
 
@@ -1137,7 +1137,7 @@ void CShip::ClearParalyzed (void)
 	m_iParalysisTimer = 0;
 	}
 
-void CShip::ConsumeFuel (int iFuel)
+void CShip::ConsumeFuel (Metric rFuel)
 
 //	ConsumeFuel
 //
@@ -1145,7 +1145,7 @@ void CShip::ConsumeFuel (int iFuel)
 
 	{
 	if (m_fTrackFuel && !m_fOutOfFuel)
-		m_iFuelLeft = max(0, m_iFuelLeft - iFuel);
+		m_rFuelLeft = Max(0.0, m_rFuelLeft - rFuel);
 	}
 
 ALERROR CShip::CreateFromClass (CSystem *pSystem, 
@@ -1382,7 +1382,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Initialize fuel now that we know our maximum
 
-	pShip->m_iFuelLeft = pShip->GetMaxFuel();
+	pShip->m_rFuelLeft = pShip->GetMaxFuel();
 
 	//	Set the bounds for this object
 
@@ -2593,14 +2593,14 @@ Metric CShip::GetMass (void)
 	return m_pClass->GetHullMass() + GetItemMass();
 	}
 
-int CShip::GetMaxFuel (void)
+Metric CShip::GetMaxFuel (void)
 
 //	GetMaxFuel
 //
 //	Return the maximum amount of fuel that the reactor can hold
 
 	{
-	return m_pReactorDesc->iMaxFuel;
+	return m_pReactorDesc->rMaxFuel;
 	}
 
 int CShip::GetMaxPower (void) const
@@ -3281,9 +3281,9 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 		//	If we're upgrading/downgrading a reactor, then remember the old fuel level
 
-		int iOldFuel = -1;
+		Metric rOldFuel = -1.0;
 		if (iNamedSlot == devReactor)
-			iOldFuel = GetFuelLeft();
+			rOldFuel = GetFuelLeft();
 
 		//	Remove the item
 
@@ -3297,8 +3297,8 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 		//	new reactor. Note that on a downgrade, we will clip the fuel to the
 		//	maximum when we do a CalcDeviceBonus).
 
-		if (iOldFuel != -1 && !m_fOutOfFuel)
-			m_iFuelLeft = iOldFuel;
+		if (rOldFuel != -1.0 && !m_fOutOfFuel)
+			m_rFuelLeft = rOldFuel;
 		}
 
 	//	Look for a free slot to install to
@@ -4654,7 +4654,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
 //	DWORD		low = m_iExitGateTimer; hi = m_iDisarmedTimer
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
-//	DWORD		m_iFuelLeft
+//	Metric		m_rFuelLeft
 //	Metric		m_rItemMass (V2)
 //	Metric		m_rCargoMass
 //	DWORD		m_pDocked (CSpaceObject ref)
@@ -4767,7 +4767,14 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iLRSBlindnessTimer = (int)LOWORD(dwLoad);
 	m_iDriveDamagedTimer = (int)HIWORD(dwLoad);
-	Ctx.pStream->Read((char *)&m_iFuelLeft, sizeof(DWORD));
+	if (Ctx.dwVersion >= 123)
+		Ctx.pStream->Read((char *)&m_rFuelLeft, sizeof(Metric));
+	else
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_rFuelLeft = (Metric)(int)dwLoad;
+		}
+
 	if (Ctx.dwVersion >= 2)
 		Ctx.pStream->Read((char *)&m_rItemMass, sizeof(Metric));
 	Ctx.pStream->Read((char *)&m_rCargoMass, sizeof(Metric));
@@ -5401,14 +5408,14 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 			//	Consume fuel
 
-			ConsumeFuel(m_iPowerDrain / m_pReactorDesc->iPowerPerFuelUnit);
+			ConsumeFuel(m_iPowerDrain / m_pReactorDesc->rPowerPerFuelUnit);
 
 			//	Check to see if we've run out of fuel
 
 			if ((iTick % FUEL_CHECK_CYCLE) == 0)
 				{
-				int iFuelLeft = GetFuelLeft();
-				if (iFuelLeft == 0)
+				Metric rFuelLeft = GetFuelLeft();
+				if (rFuelLeft <= 0.0)
 					{
 					//	See if the player has any fuel on board. If they do, then there
 					//	is a small grace period
@@ -5430,7 +5437,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 						//	Out of fuel
 
 						m_fOutOfFuel = true;
-						m_iFuelLeft = FUEL_GRACE_PERIOD;
+						m_rFuelLeft = FUEL_GRACE_PERIOD;
 						m_pController->OnFuelLowWarning(-1);
 						}
 
@@ -5444,7 +5451,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 						return;
 						}
 					}
-				else if (iFuelLeft < (GetMaxFuel() / 8))
+				else if (rFuelLeft < (GetMaxFuel() / 8.0))
 					m_pController->OnFuelLowWarning(iTick / FUEL_CHECK_CYCLE);
 				}
 			}
@@ -5452,7 +5459,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			//	Countdown grace period
 
-			if (--m_iFuelLeft <= 0)
+			if (--m_rFuelLeft <= 0.0)
 				{
 				Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
 
@@ -5461,7 +5468,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				return;
 				}
 			else
-				m_pController->OnLifeSupportWarning(m_iFuelLeft / g_TicksPerSecond);
+				m_pController->OnLifeSupportWarning((int)m_rFuelLeft / g_TicksPerSecond);
 			}
 		}
 
@@ -5612,7 +5619,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
 //	DWORD		low = m_iExitGateTimer; hi = m_iDisarmedTimer
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
-//	DWORD		m_iFuelLeft
+//	Metric		m_rFuelLeft
 //	Metric		m_rItemMass
 //	Metric		m_rCargoMass
 //	DWORD		m_pDocked (CSpaceObject ref)
@@ -5679,7 +5686,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iLRSBlindnessTimer, m_iDriveDamagedTimer);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	pStream->Write((char *)&m_iFuelLeft, sizeof(DWORD));
+	pStream->Write((char *)&m_rFuelLeft, sizeof(Metric));
 	pStream->Write((char *)&m_rItemMass, sizeof(Metric));
 	pStream->Write((char *)&m_rCargoMass, sizeof(Metric));
 	WriteObjRefToStream(m_pDocked, pStream);
@@ -6155,7 +6162,7 @@ void CShip::RechargeItem (CItemListManipulator &ItemList, int iCharges)
 		}
 	}
 
-void CShip::Refuel (int iFuel)
+void CShip::Refuel (Metric rFuel)
 
 //	Refuel
 //
@@ -6164,11 +6171,11 @@ void CShip::Refuel (int iFuel)
 	{
 	if (m_fOutOfFuel)
 		{
-		m_iFuelLeft = 0;
+		m_rFuelLeft = 0.0;
 		m_fOutOfFuel = false;
 		}
 
-	m_iFuelLeft = min(GetMaxFuel(), m_iFuelLeft + iFuel);
+	m_rFuelLeft = Min(GetMaxFuel(), m_rFuelLeft + rFuel);
 	}
 
 void CShip::Refuel (const CItem &Fuel)
@@ -6179,10 +6186,10 @@ void CShip::Refuel (const CItem &Fuel)
 
 	{
 	CItemType *pFuelType = Fuel.GetType();
-	int iFuelPerItem = strToInt(pFuelType->GetData(), 0, NULL);
-	int iFuel = iFuelPerItem * Fuel.GetCount();
+	Metric rFuelPerItem = strToDouble(pFuelType->GetData(), 0.0, NULL);
+	Metric rFuel = rFuelPerItem * Fuel.GetCount();
 
-	Refuel(iFuel);
+	Refuel(rFuel);
 
 	//	Invoke refueling code
 

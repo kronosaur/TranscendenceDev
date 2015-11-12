@@ -891,8 +891,8 @@ class CShip : public CSpaceObject
 		inline void SetSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablInstall, -1, 0); }
 
 		//	Reactor methods
-		inline int GetFuelLeft (void) { return (m_fOutOfFuel ? 0 : m_iFuelLeft); }
-		int GetMaxFuel (void);
+		inline Metric GetFuelLeft (void) { return (m_fOutOfFuel ? 0.0 : m_rFuelLeft); }
+		Metric GetMaxFuel (void);
 		inline const ReactorDesc *GetReactorDesc (void) { return m_pReactorDesc; }
 		inline void TrackFuel (bool bTrack = true) { m_fTrackFuel = bTrack; }
 		inline void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
@@ -935,7 +935,7 @@ class CShip : public CSpaceObject
 		virtual bool CanMove (void) { return true; }
 		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		virtual bool ClassCanAttack (void) { return true; }
-		virtual void ConsumeFuel (int iFuel);
+		virtual void ConsumeFuel (Metric rFuel);
 		virtual CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx);
 		virtual void DeactivateShields (void);
@@ -1047,7 +1047,7 @@ class CShip : public CSpaceObject
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx);
 		virtual void ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program);
 		virtual void RefreshBounds (void) { CalcBounds(); }
-		virtual void Refuel (int iFuel);
+		virtual void Refuel (Metric rFuel);
 		virtual void Refuel (const CItem &Fuel);
 		virtual void RemoveOverlay (DWORD dwID);
 		virtual void RepairDamage (int iHitPoints);
@@ -1157,7 +1157,7 @@ class CShip : public CSpaceObject
 		int m_iLastFireTime;					//	Tick when we last fired a weapon
 		int m_iLastHitTime;						//	Tick when we last got hit by something
 
-		int m_iFuelLeft;						//	Fuel left (kilos)
+		Metric m_rFuelLeft;						//	Fuel left
 		Metric m_rItemMass;						//	Total mass of all items (including installed)
 		Metric m_rCargoMass;					//	Mass of cargo items (not including installed)
 		int m_iPowerDrain;						//	(temp) power consumed (1/10 megawatt)

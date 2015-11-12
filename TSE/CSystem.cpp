@@ -378,6 +378,9 @@
 //	122: 1.7 Alpha 1
 //		CSingleParticlePainter saves params
 //
+//	123: 1.7 Alpha 1
+//		Use a double for fuel tracking
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

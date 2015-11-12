@@ -2472,6 +2472,15 @@ class CSpaceObject : public CObject
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) { return NULL; }
 		virtual CXMLElement *GetScreen (const CString &sName);
 
+		//	Fuel
+
+		virtual void ConsumeFuel (Metric rFuel) { }
+		virtual bool IsOutOfFuel (void) { return false; }
+		virtual void Refuel (Metric Fuel) { }
+		virtual void Refuel (const CItem &Fuel) { }
+
+		bool HasFuelItem (void);
+
 		//	Item functions
 
 		EnhanceItemStatus AddItemEnhancement (const CItem &itemToEnhance, CItemType *pEnhancement, int iLifetime, DWORD *retdwID);
@@ -2483,7 +2492,6 @@ class CSpaceObject : public CObject
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
 		inline CItemList &GetItemList (void) { return m_ItemList; }
 		ICCItem *GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item, const CString &sName);
-		bool HasFuelItem (void);
 		void RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly = false);
 		void RepairItem (CItemListManipulator &ItemList);
 		void SetCursorAtArmor (CItemListManipulator &ItemList, CInstalledArmor *pArmor);
@@ -2680,7 +2688,6 @@ class CSpaceObject : public CObject
 		virtual bool IsDisarmed (void) { return false; }
 		virtual bool IsIdentified (void) { return true; }
 		virtual bool IsMultiHull (void) { return false; }
-		virtual bool IsOutOfFuel (void) { return false; }
 		virtual bool IsParalyzed (void) { return false; }
 		virtual bool IsPlayer (void) const { return false; }
 		virtual bool IsRadioactive (void) { return false; }
@@ -2730,12 +2737,9 @@ class CSpaceObject : public CObject
 
 		//	...for ships
 		virtual void Behavior (SUpdateCtx &Ctx) { }
-		virtual void ConsumeFuel (int iFuel) { }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
-		virtual void Refuel (int iFuel) { }
-		virtual void Refuel (const CItem &Fuel) { }
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }

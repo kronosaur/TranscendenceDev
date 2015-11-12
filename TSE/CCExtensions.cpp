@@ -7904,7 +7904,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			break;
 
 		case FN_SHIP_FUEL:
-			pResult = pCC->CreateInteger(pShip->GetFuelLeft());
+			pResult = pCC->CreateDouble(pShip->GetFuelLeft());
 			break;
 
 		case FN_SHIP_HAS_AUTOPILOT:
@@ -8498,8 +8498,8 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_FUEL:
 			{
-			pShip->ConsumeFuel(pArgs->GetElement(1)->GetIntegerValue());
-			pResult = pCC->CreateInteger(pShip->GetFuelLeft());
+			pShip->ConsumeFuel(pArgs->GetElement(1)->GetDoubleValue());
+			pResult = pCC->CreateDouble(pShip->GetFuelLeft());
 			pArgs->Discard(pCC);
 			break;
 			}
@@ -8565,15 +8565,11 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				{
 				//	Figure out how much fuel each item contains
 
-				int iFuelPerItem = strToInt(Item.GetType()->GetData(), 0, NULL);
-				if (iFuelPerItem == 0)
-					iFuelPerItem = 1;
+				Metric rFuelPerItem = Max(1.0, strToDouble(Item.GetType()->GetData(), 0.0, NULL));
 
-				int iFuelNeeded = pShip->GetMaxFuel() - pShip->GetFuelLeft();
-				int iWhole = (iFuelNeeded / iFuelPerItem);
-				int iPartial = (iFuelNeeded % iFuelPerItem);
-				if (iPartial > (iFuelPerItem / 2))
-					iWhole++;
+				Metric rFuelNeeded = pShip->GetMaxFuel() - pShip->GetFuelLeft();
+				Metric rUnits = (rFuelNeeded / rFuelPerItem);
+				int iWhole = (int)(rUnits + 0.5);
 
 				pResult = pCC->CreateInteger(iWhole);
 				}
