@@ -7904,7 +7904,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			break;
 
 		case FN_SHIP_FUEL:
-			pResult = pCC->CreateDouble(pShip->GetFuelLeft());
+			pResult = pCC->CreateDouble(Min(pShip->GetFuelLeft(), pShip->GetMaxFuel()));
 			break;
 
 		case FN_SHIP_HAS_AUTOPILOT:
@@ -8499,7 +8499,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_FUEL:
 			{
 			pShip->ConsumeFuel(pArgs->GetElement(1)->GetDoubleValue());
-			pResult = pCC->CreateDouble(pShip->GetFuelLeft());
+			pResult = pCC->CreateDouble(Min(pShip->GetFuelLeft(), pShip->GetMaxFuel()));
 			pArgs->Discard(pCC);
 			break;
 			}
@@ -8567,7 +8567,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 				Metric rFuelPerItem = Max(1.0, strToDouble(Item.GetType()->GetData(), 0.0, NULL));
 
-				Metric rFuelNeeded = pShip->GetMaxFuel() - pShip->GetFuelLeft();
+				Metric rFuelNeeded = Max(0.0, pShip->GetMaxFuel() - pShip->GetFuelLeft());
 				Metric rUnits = (rFuelNeeded / rFuelPerItem);
 				int iWhole = (int)(rUnits + 0.5);
 
