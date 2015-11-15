@@ -338,5 +338,8 @@
     <ClCompile Include="BlendModes.cpp">
       <Filter>Source Files\32bit</Filter>
     </ClCompile>
+    <ClCompile Include="DrawQuadCurve.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

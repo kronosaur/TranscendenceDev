@@ -97,6 +97,11 @@ enum SurfaceTypes
 
 struct SPoint
 	{
+	SPoint (int xArg = 0, int yArg = 0) : 
+			x(xArg), 
+			y(yArg)
+		{ }
+
 	int x;
 	int y;
 	};

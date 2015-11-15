@@ -470,6 +470,7 @@
     <ClCompile Include="DrawCircle.cpp" />
     <ClCompile Include="DrawClouds.cpp" />
     <ClCompile Include="DrawLine.cpp" />
+    <ClCompile Include="DrawQuadCurve.cpp" />
     <ClCompile Include="DrawRect.cpp" />
     <ClCompile Include="DrawRegion.cpp" />
     <ClCompile Include="Files.cpp" />
