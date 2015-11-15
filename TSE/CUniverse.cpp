@@ -75,6 +75,9 @@
 //		Added m_AscendedObjects to CUniverse
 //
 //	26: Save and restore m_pPlayer (IPlayerController)
+//
+//	27: 1.7 Alpha 1
+//		Additional parameters for a stargate in CTopologyNode
 
 //	See: TSEUtil.h for definition of UNIVERSE_SAVE_VERSION
 

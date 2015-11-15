@@ -10333,7 +10333,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 			if (pNode == NULL)
 				return pCC->CreateError(CONSTLIT("No topology for current system"), NULL);
 
-			if (pNode->AddStargate(sStargateName, sDestNode, sDestName) != NOERROR)
+			if (pNode->AddStargateAndReturn(sStargateName, sDestNode, sDestName) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Unable to add stargate to topology node"), NULL);
 
 			pDestNode = g_pUniverse->FindTopologyNode(sDestNode);
@@ -10525,7 +10525,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pNode->FindStargate(sGateID))
 				return pCC->CreateNil();
 
-			if (pNode->AddStargate(sGateID, sDestNodeID, sDestGateID) != NOERROR)
+			if (pNode->AddStargateAndReturn(sGateID, sDestNodeID, sDestGateID) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Unable to add stargate"), pArgs);
 
 			return pCC->CreateTrue();

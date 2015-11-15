@@ -3286,16 +3286,32 @@ class CTopologyNode
 			TArray<CString> SpecialNotAllowed;			//	Special attributes
 			};
 
+		struct SStargateRouteDesc
+			{
+			SStargateRouteDesc (void) :
+					pFromNode(NULL),
+					pToNode(NULL),
+					bOneWay(false)
+				{ }
+
+			CTopologyNode *pFromNode;
+			CString sFromName;
+
+			CTopologyNode *pToNode;
+			CString sToName;
+
+			TArray<SPoint> MidPoints;
+			bool bOneWay;
+			};
+
 		CTopologyNode (const CString &sID, DWORD SystemUNID, CSystemMap *pMap);
 		~CTopologyNode (void);
 		static void CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **retpNode);
 
 		void AddAttributes (const CString &sAttribs);
-		ALERROR AddGateInt (const CString &sName, const CString &sDestNode, const CString &sEntryPoint);
-		ALERROR AddStargate (const CString &sGateID, const CString &sDestNodeID, const CString &sDestGateID);
-		ALERROR AddStargateConnection (CTopologyNode *pDestNode, bool bOneWay = false, const CString &sFromName = NULL_STR, const CString &sToName = NULL_STR);
+		ALERROR AddStargate (const CString &sName, const CString &sDestNode, const CString &sDestEntryPoint, const SStargateRouteDesc &RouteDesc);
+		ALERROR AddStargateAndReturn (const CString &sGateID, const CString &sDestNodeID, const CString &sDestGateID);
 		int CalcMatchStrength (const CAttributeCriteria &Criteria);
-		void ChangeRequiredEncounter (CStationType *pType, int iChange = 1);
 		bool FindStargate (const CString &sName, CString *retsDestNode = NULL, CString *retsEntryPoint = NULL);
 		bool FindStargateTo (const CString &sDestNode, CString *retsName = NULL, CString *retsDestGateID = NULL);
 		CString FindStargateName (const CString &sDestNode, const CString &sEntryPoint);
@@ -3309,10 +3325,10 @@ class CTopologyNode
 		CTopologyNode *GetGateDest (const CString &sName, CString *retsEntryPoint = NULL);
 		inline int GetLevel (void) { return m_iLevel; }
 		ICCItem *GetProperty (const CString &sName);
-		int GetRequiredEncounter (CStationType *pType) const;
 		inline int GetStargateCount (void) { return m_NamedGates.GetCount(); }
 		CString GetStargate (int iIndex);
 		CTopologyNode *GetStargateDest (int iIndex, CString *retsEntryPoint = NULL);
+		void GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc);
 		inline CSystem *GetSystem (void) { return m_pSystem; }
 		inline DWORD GetSystemID (void) { return m_dwID; }
 		inline const CString &GetSystemName (void) { return m_sName; }
@@ -3327,11 +3343,6 @@ class CTopologyNode
 		inline bool IsKnown (void) const { return m_bKnown; }
 		inline bool IsMarked (void) const { return m_bMarked; }
 		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit);
-		static ALERROR ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError = NULL);
-		static ALERROR ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError = NULL);
-		static ALERROR ParseCriteriaInt (const CString &sCriteria, SCriteria *retCrit);
-		static ALERROR ParsePosition (const CString &sValue, int *retx, int *rety);
-		static ALERROR ParseStargateString (const CString &sStargate, CString *retsNodeID, CString *retsGateName);
 		inline void SetCalcDistance (int iDist) { m_iCalcDistance = iDist; }
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
 		inline void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
@@ -3351,11 +3362,40 @@ class CTopologyNode
 		inline void AddVariantLabel (const CString &sVariant) { m_VariantLabels.Insert(sVariant); }
 		bool HasVariantLabel (const CString &sVariant);
 
+		static ALERROR CreateStargateRoute (const SStargateRouteDesc &Desc);
+		static ALERROR ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError = NULL);
+		static ALERROR ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError = NULL);
+		static ALERROR ParseCriteriaInt (const CString &sCriteria, SCriteria *retCrit);
+		static ALERROR ParsePointList (const CString &sValue, TArray<SPoint> *retPoints);
+		static ALERROR ParsePosition (const CString &sValue, int *retx, int *rety);
+		static ALERROR ParseStargateString (const CString &sStargate, CString *retsNodeID, CString *retsGateName);
+
 	private:
+
 		struct StarGateDesc
 			{
+			StarGateDesc (void) :
+					fMinor(false),
+					pDestNode(NULL)
+				{ }
+
 			CString sDestNode;
 			CString sDestEntryPoint;
+
+			TArray<SPoint> MidPoints;			//	If the stargate line is curved, these are 
+												//	the intermediate points.
+
+			DWORD fMinor:1;						//	If TRUE, this is a minor stargate path
+
+			DWORD fSpare2:1;
+			DWORD fSpare3:1;
+			DWORD fSpare4:1;
+			DWORD fSpare5:1;
+			DWORD fSpare6:1;
+			DWORD fSpare7:1;
+			DWORD fSpare8:1;
+			DWORD dwSpare:24;
+
 			CTopologyNode *pDestNode;			//	Cached for efficiency (may be NULL)
 			};
 
@@ -3371,7 +3411,7 @@ class CTopologyNode
 		int m_xPos;								//	Position on map (cartessian)
 		int m_yPos;
 
-		CSymbolTable m_NamedGates;				//	Name to StarGateDesc
+		TSortMap<CString, StarGateDesc> m_NamedGates;	//	Name to StarGateDesc
 
 		CString m_sAttributes;					//	Attributes
 		TArray<CString> m_VariantLabels;		//	Variant labels
