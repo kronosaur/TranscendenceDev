@@ -2502,11 +2502,10 @@ CString CShip::GetInstallationPhrase (const CItem &Item) const
 			case itemcatArmor:
 				{
 				int iSeg = Item.GetInstalled();
-				const CPlayerSettings *pSettings = m_pClass->GetPlayerSettings();
-				const SArmorSegmentImageDesc *pSegmentDesc = (pSettings ? pSettings->GetArmorDesc(iSeg) : NULL);
+				CString sName = m_pClass->GetHullSectionName(iSeg);
 
-				if (pSegmentDesc)
-					return strPatternSubst(CONSTLIT("Installed as %s armor"), pSegmentDesc->sName);
+				if (!sName.IsBlank())
+					return strPatternSubst(CONSTLIT("Installed as %s armor"), sName);
 				else
 					return CONSTLIT("Installed as armor");
 				}

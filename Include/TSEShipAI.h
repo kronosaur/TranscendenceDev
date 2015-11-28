@@ -1,7 +1,7 @@
 //	TSEShipAI.h
 //
 //	Defines classes and interfaces for ship AI.
-//	Copyright (c) Kronosaur Productions, LLC. All Rights Reserved.
+//	Copyright (c) 2015 Kronosaur Productions, LLC. All Rights Reserved.
 
 #pragma once
 

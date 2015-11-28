@@ -780,6 +780,7 @@ extern CHumanInterface *g_pHI;
 #include "CloudInterface.h"
 #include "Painters.h"
 #include "Soundtrack.h"
+#include "TSUIHUD.h"
 #include "TSUISessions.h"
 #include "TSUISettings.h"
 #include "UIHelpers.h"

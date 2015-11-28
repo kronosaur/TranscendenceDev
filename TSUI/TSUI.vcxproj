@@ -152,6 +152,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CArmorHUDImages.cpp" />
     <ClCompile Include="CBackgroundProcessor.cpp" />
     <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="CListCollectionTask.cpp" />
     <ClCompile Include="CMCIMixer.cpp" />
     <ClCompile Include="CMessageSession.cpp" />
+    <ClCompile Include="CShieldHUDDefault.cpp" />
     <ClCompile Include="CSoundtrackManager.cpp" />
     <ClCompile Include="CStargateEffectPainter.cpp" />
     <ClCompile Include="CTimerRegistry.cpp" />
@@ -174,6 +176,7 @@
     <ClCompile Include="HardCrash.cpp" />
     <ClCompile Include="IHIController.cpp" />
     <ClCompile Include="IHISession.cpp" />
+    <ClCompile Include="IHUDPainter.cpp" />
     <ClCompile Include="Run.cpp" />
     <ClCompile Include="TSUICodeChain.cpp" />
     <ClCompile Include="CCloudService.cpp" />
@@ -197,9 +200,11 @@
     <ClInclude Include="..\Include\Painters.h" />
     <ClInclude Include="..\Include\Soundtrack.h" />
     <ClInclude Include="..\Include\TSUI.h" />
+    <ClInclude Include="..\Include\TSUIHUD.h" />
     <ClInclude Include="..\Include\TSUISessions.h" />
     <ClInclude Include="..\Include\TSUISettings.h" />
     <ClInclude Include="..\Include\UIHelpers.h" />
+    <ClInclude Include="HUDImpl.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

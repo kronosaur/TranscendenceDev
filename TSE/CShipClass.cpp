@@ -2080,6 +2080,28 @@ CString CShipClass::GenerateShipName (DWORD *retdwFlags)
 		}
 	}
 
+#if 1
+CXMLElement *CShipClass::GetArmorDescInherited (void)
+
+//	GetArmorDescInherited
+//
+//	Returns the armor desc from this class or base classes
+
+	{
+	CDesignType *pBase;
+
+	CXMLElement *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetArmorImageDescRaw() : NULL);
+	if (pDesc)
+		return pDesc;
+	else if (pBase = GetInheritFrom())
+		{
+		CShipClass *pBaseClass = CShipClass::AsType(pBase);
+		return pBaseClass->GetArmorDescInherited();
+		}
+	else
+		return NULL;
+	}
+#else
 const SArmorImageDesc *CShipClass::GetArmorDescInherited (void)
 
 //	GetArmorDescInherited
@@ -2100,6 +2122,7 @@ const SArmorImageDesc *CShipClass::GetArmorDescInherited (void)
 	else
 		return NULL;
 	}
+#endif
 
 CCommunicationsHandler *CShipClass::GetCommsHandler (void)
 
@@ -2233,6 +2256,34 @@ int CShipClass::GetHullSectionAtAngle (int iAngle)
 	//	found the angle yet, assume it is the last section.
 
 	return GetHullSectionCount() - 1;
+	}
+
+CString CShipClass::GetHullSectionName (int iIndex) const
+
+//	GetHullSectionName
+//
+//	Returns the name of this section:
+//
+//	forward
+//	starboard
+//	port
+//	aft
+
+	{
+	if (iIndex < 0 || iIndex >= m_Hull.GetCount())
+		return NULL_STR;
+
+	int iCenter = AngleMod(m_Hull[iIndex].iStartAt + m_Hull[iIndex].iSpan / 2);
+	if (iCenter >= 315)
+		return CONSTLIT("forward");
+	else if (iCenter >= 225)
+		return CONSTLIT("starboard");
+	else if (iCenter >= 135)
+		return CONSTLIT("aft");
+	else if (iCenter >= 45)
+		return CONSTLIT("port");
+	else
+		return CONSTLIT("forward");
 	}
 
 int CShipClass::GetMaxStructuralHitPoints (void) const
@@ -2394,6 +2445,28 @@ const SReactorImageDesc *CShipClass::GetReactorDescInherited (void)
 		return NULL;
 	}
 
+#if 1
+CXMLElement *CShipClass::GetShieldDescInherited (void)
+
+//	GetShieldDescInherited
+//
+//	Returns the shield desc from this class or base classes
+
+	{
+	CDesignType *pBase;
+
+	CXMLElement *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetShieldImageDescRaw() : NULL);
+	if (pDesc)
+		return pDesc;
+	else if (pBase = GetInheritFrom())
+		{
+		CShipClass *pBaseClass = CShipClass::AsType(pBase);
+		return pBaseClass->GetShieldDescInherited();
+		}
+	else
+		return NULL;
+	}
+#else
 const SShieldImageDesc *CShipClass::GetShieldDescInherited (void)
 
 //	GetShieldDescInherited
@@ -2414,6 +2487,7 @@ const SShieldImageDesc *CShipClass::GetShieldDescInherited (void)
 	else
 		return NULL;
 	}
+#endif
 
 CString CShipClass::GetShortName (void) const
 

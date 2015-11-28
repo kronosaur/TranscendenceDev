@@ -4954,11 +4954,8 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 
 		case FN_OBJ_ARMOR_NAME:
 			{
-			CString sName;
-			const CPlayerSettings *pPlayer = pShip->GetClass()->GetPlayerSettings();
-			const SArmorSegmentImageDesc *pSegmentDesc = (pPlayer ? pPlayer->GetArmorDesc(iArmorSeg) : NULL);
-
-			pResult = (pSegmentDesc ? pCC->CreateString(pSegmentDesc->sName) : pCC->CreateNil());
+			CString sName = pShip->GetClass()->GetHullSectionName(iArmorSeg);
+			pResult = (!sName.IsBlank() ? pCC->CreateString(sName) : pCC->CreateNil());
 			break;
 			}
 

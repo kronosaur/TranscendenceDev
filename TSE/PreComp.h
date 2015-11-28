@@ -9,7 +9,7 @@
 
 #include "SFXImpl.h"
 
-//	Ship AI
+//	Ships
 
 #include "ShipAIImpl.h"
 #include "OrderModuleImpl.h"

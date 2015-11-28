@@ -47,6 +47,7 @@
 #define STARTING_MAP_ATTRIB						CONSTLIT("startingMap")
 #define STARTING_POS_ATTRIB						CONSTLIT("startingPos")
 #define STARTING_SYSTEM_ATTRIB					CONSTLIT("startingSystem")
+#define STYLE_ATTRIB							CONSTLIT("style")
 #define WIDTH_ATTRIB							CONSTLIT("width")
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
@@ -59,6 +60,9 @@
 #define SEGMENT_FORWARD							CONSTLIT("forward")
 #define SEGMENT_PORT							CONSTLIT("port")
 #define SEGMENT_STARBOARD						CONSTLIT("starboard")
+
+#define STYLE_DEFAULT							CONSTLIT("default")
+#define STYLE_RING_SEGMENTS						CONSTLIT("ringSegments")
 
 #define ERR_SHIELD_DISPLAY_NEEDED				CONSTLIT("missing or invalid <ShieldDisplay> element")
 #define ERR_ARMOR_DISPLAY_NEEDED				CONSTLIT("missing or invalid <ArmorDisplay> element")
@@ -95,11 +99,17 @@ CPlayerSettings &CPlayerSettings::operator= (const CPlayerSettings &Source)
 
 	m_fHasArmorDesc = Source.m_fHasArmorDesc;
 	m_ArmorDesc = Source.m_ArmorDesc;
+	m_fOwnArmorDesc = Source.m_fOwnArmorDesc;
+	if (m_fOwnArmorDesc)
+		m_pArmorDesc = Source.m_pArmorDesc->OrphanCopy();
 
 	//	Shields
 
 	m_fHasShieldDesc = Source.m_fHasShieldDesc;
 	m_ShieldDesc = Source.m_ShieldDesc;
+	m_fOwnShieldDesc = Source.m_fOwnShieldDesc;
+	if (m_fOwnShieldDesc)
+		m_pShieldDesc = Source.m_pShieldDesc->OrphanCopy();
 
 	//	Reactor
 
@@ -147,7 +157,6 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 	DEBUG_TRY
 
 	ALERROR error;
-	int i;
 
 	//	Bind basic stuff
 
@@ -168,6 +177,11 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 
 	//	Armor display
 
+#if 1
+	if (!m_fOwnArmorDesc
+			&& (m_pArmorDesc = pClass->GetArmorDescInherited()) == NULL)
+		return ComposeLoadError(Ctx, ERR_ARMOR_DISPLAY_NEEDED);
+#else
 	if (m_fHasArmorDesc)
 		{
 		if (error = m_ArmorDesc.ShipImage.OnDesignLoadComplete(Ctx))
@@ -185,9 +199,15 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 		;
 	else
 		return ComposeLoadError(Ctx, ERR_ARMOR_DISPLAY_NEEDED);
+#endif
 
 	//	Shields
 
+#if 1
+	if (!m_fOwnShieldDesc
+			&& (m_pShieldDesc = pClass->GetShieldDescInherited()) == NULL)
+		return ComposeLoadError(Ctx, ERR_SHIELD_DISPLAY_NEEDED);
+#else
 	if (m_fHasShieldDesc)
 		{
 		if (!m_ShieldDesc.pShieldEffect.IsEmpty())
@@ -205,6 +225,7 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 		;
 	else
 		return ComposeLoadError(Ctx, ERR_SHIELD_DISPLAY_NEEDED);
+#endif
 
 	//	Reactor
 
@@ -251,6 +272,17 @@ void CPlayerSettings::CleanUp (void)
 //	Clean up our structures
 
 	{
+	if (m_fOwnArmorDesc)
+		{
+		delete m_pArmorDesc;
+		m_pArmorDesc = NULL;
+		}
+
+	if (m_fOwnShieldDesc)
+		{
+		delete m_pShieldDesc;
+		m_pShieldDesc = NULL;
+		}
 	}
 
 ALERROR CPlayerSettings::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError)
@@ -323,7 +355,6 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 
 	{
 	ALERROR error;
-	int i;
 
 	m_sDesc = pDesc->GetAttribute(DESC_ATTRIB);
 	if (error = LoadUNID(Ctx, pDesc->GetAttribute(LARGE_IMAGE_ATTRIB), &m_dwLargeImage))
@@ -405,9 +436,27 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 
 	//	Load the armor display data
 
-	CXMLElement *pArmorDisplay = pDesc->GetContentElementByTag(ARMOR_DISPLAY_TAG);
-	if (pArmorDisplay && pArmorDisplay->GetContentElementCount() > 0)
+#if 1
+	m_pArmorDesc = pDesc->GetContentElementByTag(ARMOR_DISPLAY_TAG);
+	if (m_pArmorDesc)
 		{
+		m_pArmorDesc = m_pArmorDesc->OrphanCopy();
+		m_fOwnArmorDesc = true;
+		}
+#else
+	CXMLElement *pArmorDisplay = pDesc->GetContentElementByTag(ARMOR_DISPLAY_TAG);
+	if (pArmorDisplay)
+		{
+		//	Get the style
+
+		const CString &sStyle = pArmorDisplay->GetAttribute(STYLE_ATTRIB);
+		if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
+			m_ArmorDesc.iStyle = SArmorImageDesc::styleImage;
+		else if (strEquals(sStyle, STYLE_RING_SEGMENTS))
+			m_ArmorDesc.iStyle = SArmorImageDesc::styleRingSegments;
+		else
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown ArmorDisplay style: %s."), sStyle));
+
 		//	Loop over all sub elements
 
 		for (i = 0; i < pArmorDisplay->GetContentElementCount(); i++)
@@ -438,16 +487,59 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 					return ComposeLoadError(Ctx, ERR_SHIP_IMAGE_NEEDED);
 				}
 			else
-				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown ArmorDisplay element: "), pSub->GetTag()));
+				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown ArmorDisplay element: %s."), pSub->GetTag()));
 			}
 
-		m_fHasArmorDesc = true;
+		//	Finish loading based on style
+
+		switch (m_ArmorDesc.iStyle)
+			{
+			case SArmorImageDesc::styleImage:
+				{
+				//	This is valid only if we have the proper number of armor segments
+
+				if (m_ArmorDesc.Segments.GetCount() != pClass->GetHullSectionCount())
+					{
+					if (pClass->GetAPIVersion() >= 29)
+						return ComposeLoadError(Ctx, CONSTLIT("Insufficient armor segments in ArmorDisplay."));
+
+					//	In previous versions this wasn't an error, so we continue for
+					//	backwards compatibility.
+
+					else
+						{
+						m_fHasArmorDesc = (pArmorDisplay->GetContentElementCount() > 0);
+						break;
+						}
+					}
+
+				m_fHasArmorDesc = true;
+				break;
+				}
+
+			case SArmorImageDesc::styleRingSegments:
+				m_fHasArmorDesc = true;
+				break;
+
+			default:
+				ASSERT(false);
+				return ERR_FAIL;
+			}
 		}
 	else
 		m_fHasArmorDesc = false;
+#endif
 
 	//	Load shield display data
 
+#if 1
+	m_pShieldDesc = pDesc->GetContentElementByTag(SHIELD_DISPLAY_TAG);
+	if (m_pShieldDesc)
+		{
+		m_pShieldDesc = m_pShieldDesc->OrphanCopy();
+		m_fOwnShieldDesc = true;
+		}
+#else
 	CXMLElement *pShieldDisplay = pDesc->GetContentElementByTag(SHIELD_DISPLAY_TAG);
 	if (pShieldDisplay)
 		{
@@ -476,6 +568,7 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 
 	if (!m_ShieldDesc.pShieldEffect.IsEmpty() && m_ArmorDesc.ShipImage.GetBitmapUNID() == 0)
 		return ComposeLoadError(Ctx, ERR_MUST_HAVE_SHIP_IMAGE);
+#endif
 
 	//	Load reactor display data
 
