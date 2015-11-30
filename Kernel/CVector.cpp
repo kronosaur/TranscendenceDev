@@ -42,6 +42,19 @@ void CVector::GenerateOrthogonals (const CVector &vNormal, Metric *retvPara, Met
 	*retvPerp = Dot(vNormal.Perpendicular());
 	}
 
+Metric CVector::Polar (Metric *retrRadius) const
+
+//	Polar
+//
+//	Returns the angle of the vector (in radians) and optionally the radius.
+
+	{
+	if (retrRadius)
+		*retrRadius = Length();
+
+	return mathAngleMod(atan2(y, x));
+	}
+
 CVector CVector::Rotate (int iAngle) const
 
 //	Rotate
@@ -86,9 +99,9 @@ int IntVectorToPolar (int x, int y, int *retiRadius)
 		{
 		iRadius = mathSqrt(iSqrRadius);
 		if (x >= 0.0)
-			iAngle = (((int)(180 * asin((double)y / (double)iRadius) / g_Pi)) + 360) % 360;
+			iAngle = (((int)(180 * asin((double)y / (double)iRadius) / PI)) + 360) % 360;
 		else
-			iAngle = 180 - ((int)(180 * asin((double)y / (double)iRadius) / g_Pi));
+			iAngle = 180 - ((int)(180 * asin((double)y / (double)iRadius) / PI));
 		}
 
 	ASSERT(iAngle >= 0 && iAngle < 360);
@@ -171,9 +184,9 @@ Metric VectorToPolarRadians (const CVector &vP, Metric *retrRadius)
 		{
 		rRadius = sqrt(rSqrRadius);
 		if (vP.GetX() >= 0.0)
-			rAngle = (vP.GetY() >= 0.0 ? asin(vP.GetY() / rRadius) : (2 * g_Pi) + asin(vP.GetY() / rRadius));
+			rAngle = (vP.GetY() >= 0.0 ? asin(vP.GetY() / rRadius) : (2 * PI) + asin(vP.GetY() / rRadius));
 		else
-			rAngle = g_Pi - asin(vP.GetY() / rRadius);
+			rAngle = PI - asin(vP.GetY() / rRadius);
 		}
 
 	//	Done

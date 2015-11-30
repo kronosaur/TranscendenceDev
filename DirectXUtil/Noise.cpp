@@ -11,7 +11,6 @@
 #include "NoiseImpl.h"
 
 const int RAND_MASK =					0x7fffffff;
-const Metric PI =					3.1415926535;
 
 static bool g_bInit = false;
 BYTE g_perm[PERM_TABLE_SIZE];

@@ -10,14 +10,16 @@ CArrayBase::CArrayBase (HANDLE hHeap, int iGranularity) : m_pBlock(NULL)
 //	CArrayBase constructor
 
 	{
-	if (hHeap == NULL)
-		hHeap = ::GetProcessHeap();
-
 	//	If we have anything except the default options then we need
 	//	to allocate the block
 
-	if (hHeap != ::GetProcessHeap()	|| (iGranularity != DEFAULT_ARRAY_GRANULARITY))
+	if (hHeap || (iGranularity != DEFAULT_ARRAY_GRANULARITY))
+		{
+		if (hHeap == NULL)
+			hHeap = ::GetProcessHeap();
+
 		AllocBlock(hHeap, iGranularity);
+		}
 	}
 
 CArrayBase::~CArrayBase (void)

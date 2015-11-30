@@ -109,8 +109,7 @@
       <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
@@ -250,6 +249,8 @@
     <ClInclude Include="..\Include\DXImage32.h" />
     <ClInclude Include="..\Include\DXImage8.h" />
     <ClInclude Include="..\Include\DXImageReal.h" />
+    <ClInclude Include="..\Include\DXPath.h" />
+    <ClInclude Include="..\Include\DXRegion.h" />
     <ClInclude Include="..\Include\DXScreenMgr.h" />
     <ClInclude Include="..\Include\DXScreenMgr3D.h" />
     <ClInclude Include="..\Include\DXSparseMask.h" />
@@ -265,6 +266,7 @@
     <ClInclude Include="NoiseImpl.h" />
     <ClInclude Include="PixelMacros.h" />
     <ClInclude Include="PreComp.h" />
+    <ClInclude Include="RasterizerImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="16bitBlt.cpp" />
@@ -402,6 +404,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CGImagePlane.cpp" />
+    <ClCompile Include="CGlobalEdgeTable.cpp" />
     <ClCompile Include="CGlowingRingPainter.cpp" />
     <ClCompile Include="CGImageArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -417,8 +420,11 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CGPath.cpp" />
     <ClCompile Include="CGRealHSB.cpp" />
     <ClCompile Include="CGRealRGB.cpp" />
+    <ClCompile Include="CGRegion.cpp" />
+    <ClCompile Include="CGRunList.cpp" />
     <ClCompile Include="CGTextArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -437,8 +443,10 @@
     <ClCompile Include="CNoiseGenerator.cpp" />
     <ClCompile Include="CompositeCircle.cpp" />
     <ClCompile Include="CDXScreen.cpp" />
+    <ClCompile Include="CPolygonRasterizer.cpp" />
     <ClCompile Include="CScreenMgr.cpp" />
     <ClCompile Include="CScreenMgr3D.cpp" />
+    <ClCompile Include="CSortedEdgeList.cpp" />
     <ClCompile Include="Debug.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

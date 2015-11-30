@@ -139,6 +139,9 @@ class CGImagePlane
 #include "DXImage16.h"
 #include "DXImage8.h"
 
+#include "DXRegion.h"
+#include "DXPath.h"
+
 #include "TRegionPainter.h"
 
 //	 8-bit drawing functions (for masks) ---------------------------------------

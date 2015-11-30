@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Fractal">
       <UniqueIdentifier>{1f7ee3f7-f80a-45a0-8976-f7b7714725ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Paths and Regions">
+      <UniqueIdentifier>{b6cfa6be-bfd2-4494-863d-88adf3116707}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NoiseImpl.h">
@@ -97,6 +100,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DrawRegionImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\DXPath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\DXRegion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RasterizerImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -340,6 +352,24 @@
     </ClCompile>
     <ClCompile Include="DrawQuadCurve.cpp">
       <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="CGRunList.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CGRegion.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CGPath.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CSortedEdgeList.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CPolygonRasterizer.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CGlobalEdgeTable.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

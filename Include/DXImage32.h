@@ -10,6 +10,7 @@ class CG16bitFont;
 class CG16bitImage;
 class CGRealRGB;
 class CG16bitBinaryRegion;
+class CGRegion;
 
 class CG32bitPixel
 	{
@@ -255,6 +256,7 @@ class CGDraw
 		//	Regions
 
 		static void Region (CG32bitImage &Dest, int x, int y, const CG16bitBinaryRegion &Region, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void Region (CG32bitImage &Dest, int x, int y, const CGRegion &Region, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
 
 		//	Circles
 
@@ -329,7 +331,10 @@ class CGRasterize
 template <class BLENDER> class TBlendImpl
 	{
 	public:
+		inline static CG32bitPixel BlendAlpha (CG32bitPixel rgbDest, CG32bitPixel rgbSource, BYTE byAlpha) { return BLENDER::Blend(rgbDest, CG32bitPixel(rgbSource, CG32bitPixel::BlendAlpha(byAlpha, rgbSource.GetAlpha()))); }
+
 		inline static void SetBlend (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::Blend(*pDest, rgbSource); }
+		inline static void SetBlendAlpha (CG32bitPixel *pDest, CG32bitPixel rgbSource, BYTE byAlpha) { *pDest = BLENDER::BlendAlpha(*pDest, rgbSource, byAlpha); }
 		inline static void SetBlendPreMult (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::BlendPreMult(*pDest, rgbSource); }
 		inline static void SetCopy (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::Copy(*pDest, rgbSource); }
 	};
@@ -366,6 +371,7 @@ class CGBlendCopy : public TBlendImpl<CGBlendCopy>
 	{
 	public:
 		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel BlendAlpha (CG32bitPixel rgbDest, CG32bitPixel rgbSource, BYTE byAlpha) { return CG32bitPixel::Blend(rgbDest, CG32bitPixel(rgbSource, byAlpha)); }
 		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
 		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
 	};

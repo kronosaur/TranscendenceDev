@@ -95,9 +95,9 @@ void CGFractal::CreateSphericalCloudMap (int cxWidth, int cyHeight, const SGClou
 			{
 			//	Convert this to a 3D point on a unit sphere with center at 0,0,0
 
-			Metric rX = cos((rV - 0.5) * 2.0 * g_Pi) * sin(rU * 2.0 * g_Pi);
-			Metric rY = cos((rV - 0.5) * 2.0 * g_Pi) * cos(rU * 2.0 * g_Pi);
-			Metric rZ = sin((rV - 0.5) * 2.0 * g_Pi);
+			Metric rX = cos((rV - 0.5) * 2.0 * PI) * sin(rU * 2.0 * PI);
+			Metric rY = cos((rV - 0.5) * 2.0 * PI) * cos(rU * 2.0 * PI);
+			Metric rZ = sin((rV - 0.5) * 2.0 * PI);
 
 			//	Get a value from the generator. We use the periodic fuction, 
 			//	which uses frames (passed in to the generator) as the period.

@@ -11,6 +11,14 @@
 
 typedef double Metric;
 
+const Metric PI = 3.14159265358979;
+const Metric HALF_PI = 0.5 * PI;
+const Metric TAU = 2.0 * PI;
+
+const Metric SQRT_3 = sqrt(3.0);
+
+const Metric DBL_INFINITY = 1.7976931348623158e+308;	//	DBL_MAX
+
 //	Angles
 
 bool AngleInArc (int iAngle, int iMinAngle, int iMaxAngle);
@@ -25,8 +33,12 @@ inline int AngleMiddle (int iLowAngle, int iHighAngle)
 		return iLowAngle + ((iHighAngle - iLowAngle) / 2);
 	}
 
-inline Metric AngleToRadians (int iAngle) { return iAngle * g_Pi / 180.0; }
-inline int AngleToDegrees (Metric rAngle) { return AngleMod((int)(rAngle * 180.0 / g_Pi)); }
+inline int AngleToDegrees (Metric rAngle) { return AngleMod((int)(rAngle * 180.0 / PI)); }
+
+inline Metric mathAngleMod (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, TAU); else return TAU - fmod(-rAngle, TAU); }
+inline Metric mathAngleDiff (double rFrom, double rTo) { return mathAngleMod(rTo - rFrom); }
+inline Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
+inline Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }
 
 //	2d vector class
 
@@ -40,6 +52,7 @@ class CVector
 
 		bool Clip (Metric rLength);
 		inline Metric Dot (const CVector &vA) const { return x * vA.x + y * vA.y; }
+		void GenerateOrthogonals (const CVector &vNormal, Metric *retvPara, Metric *retvPerp) const;
 		inline const Metric &GetX (void) const { return x; }
 		inline const Metric &GetY (void) const { return y; }
 		inline bool InBox (const CVector &vUR, const CVector &vLL) const { return (x >= vLL.x && x < vUR.x	&& y >= vLL.y && y < vUR.y); }
@@ -68,12 +81,15 @@ class CVector
 			else
 				return CVector(x / *retrLength, y / *retrLength);
 			}
-		void GenerateOrthogonals (const CVector &vNormal, Metric *retvPara, Metric *retvPerp) const;
 		inline CVector Perpendicular (void) const { return CVector(-y, x); }
+		Metric Polar (Metric *retrRadius = NULL) const;
 		inline CVector Reflect (void) const { return CVector(-x, -y); }
 		CVector Rotate (int iAngle) const;
 		inline void SetX (Metric NewX) { x = NewX; }
 		inline void SetY (Metric NewY) { y = NewY; }
+
+		static CVector FromPolar (const CVector &vA) { return CVector(vA.y * cos(vA.x), vA.y * sin(vA.x)); }
+		static CVector FromPolar (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), rRadius * sin(rAngle)); }
 
 	private:
 		Metric x;
@@ -269,6 +285,8 @@ template <class VALUE> class TNumberSeries
 				pPoint->rPercent = pPoint->iCount / (double)m_Series.GetCount();
 				}
 			}
+
+		inline void DeleteAll (void) { m_Series.DeleteAll(); }
 
 		inline VALUE GetMean (void) const { return (m_Series.GetCount() > 0 ? (m_Total / m_Series.GetCount()) : 0); }
 		inline VALUE GetMedian (void) const

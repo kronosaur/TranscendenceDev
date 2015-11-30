@@ -215,6 +215,12 @@ template <class VALUE> class TArray : public CArrayBase
 			return GetSize() / sizeof(VALUE);
 			}
 
+		void GrowToFit (int iCount)
+			{
+			if (iCount > 0)
+				Resize(GetSize() + iCount * sizeof(VALUE), true, GetGranularity() * sizeof(VALUE));
+			}
+
 		void Insert (const VALUE &Value, int iIndex = -1)
 			{
 			int iOffset;

@@ -38,7 +38,7 @@ void EuclidInit (void)
 		{
 		for (int i = 0; i < 360; i++)
 			{
-			Metric rRadian = 2 * g_Pi * i / 360;
+			Metric rRadian = 2 * PI * i / 360;
 
 			g_Sine[i] = sin(rRadian);
 			g_Cosine[i] = cos(rRadian);

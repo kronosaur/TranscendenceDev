@@ -108,8 +108,8 @@ CXForm::CXForm (XFormType type, int iAngle)
 		{
 		case xformRotate:
 			{
-			Metric rCos = cos(g_Pi * (Metric)iAngle / 180.0);
-			Metric rSin = sin(g_Pi * (Metric)iAngle / 180.0);
+			Metric rCos = cos(PI * (Metric)iAngle / 180.0);
+			Metric rSin = sin(PI * (Metric)iAngle / 180.0);
 
 			m_Xform[0][0] = rCos;
 			m_Xform[0][1] = rSin;
