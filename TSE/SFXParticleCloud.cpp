@@ -386,18 +386,18 @@ void CParticleCloudPainter::CreateNewParticles (int iCount, const CVector &vInit
 			if (m_pCreator->GetStyle() == CParticleCloudEffectCreator::styleExhaust)
 				iBaseRotation += 180;
 
-			Metric rBaseRotation = AngleToRadians(iBaseRotation);
+			Metric rBaseRotation = mathDegreesToRadians(iBaseRotation);
 
 			//	Compute the spread angle, in radians
 
 			Metric rSpread;
 			int iSpreadAngle = m_pCreator->GetSpreadAngle();
 			if (iSpreadAngle >= 0)
-				rSpread = AngleToRadians(iSpreadAngle);
+				rSpread = mathDegreesToRadians(iSpreadAngle);
 			else if (m_pCreator->GetStyle() == CParticleCloudEffectCreator::styleExhaust)
-				rSpread = AngleToRadians(4);
+				rSpread = mathDegreesToRadians(4);
 			else
-				rSpread = AngleToRadians(20);
+				rSpread = mathDegreesToRadians(20);
 
 			Metric rHalfSpread = 0.5 * rSpread;
 

@@ -113,7 +113,7 @@ template <class BLENDER> class CCloudCirclePainter : public TCirclePainter32<CCl
 			//	We need enough angular resolution to reach the pixel level (but
 			//	no more).
 
-			m_iAngleRange = (int)(m_iRadius * 2.0 * g_Pi);
+			m_iAngleRange = (int)(m_iRadius * 2.0 * PI);
 
 			//	Set the texture based on the frame
 
@@ -248,7 +248,7 @@ template <class BLENDER> class CFireblastCirclePainter : public TCirclePainter32
 			//	We need enough angular resolution to reach the pixel level (but
 			//	no more).
 
-			m_iAngleRange = (int)(m_iRadius * 2.0 * g_Pi);
+			m_iAngleRange = (int)(m_iRadius * 2.0 * PI);
 
 			//	Set the texture based on the frame
 

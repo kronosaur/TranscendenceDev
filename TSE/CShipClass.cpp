@@ -819,8 +819,8 @@ Metric CShipClass::CalcManeuverValue (bool bDodge) const
 	const Metric PIVOT_SPEED = 12.0;
 	const Metric PIVOT_DODGE = 0.5;
 	const Metric K1 = 0.5;
-	const Metric K2 = 1.0 / g_Pi;
-	const Metric K3 = 1.25 / g_Pi;
+	const Metric K2 = 1.0 / PI;
+	const Metric K3 = 1.25 / PI;
 
 	const Metric PIVOT_THRUST = 12.0;
 	const Metric MAX_THRUST_ADJ = 8.0;

@@ -5,6 +5,11 @@
 
 #include "stdafx.h"
 
+#define STYLE_ATTRIB							CONSTLIT("style")
+
+#define STYLE_DEFAULT							CONSTLIT("default")
+#define STYLE_RING_SEGMENTS						CONSTLIT("ringSegments")
+
 IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, ETypes iType)
 
 //	Create
@@ -26,7 +31,17 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 			if (pDesc == NULL)
 				return NULL;
 
-			pPainter = new CArmorHUDImages;
+			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
+			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
+				pPainter = new CArmorHUDImages;
+			else if (strEquals(sStyle, STYLE_RING_SEGMENTS))
+				pPainter = new CArmorHUDRingSegments;
+			else
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor display style: %s."), sStyle);
+				return NULL;
+				}
+
 			if (pPainter->InitFromXML(Ctx, pClass, pDesc) != NOERROR)
 				{
 				delete pPainter;

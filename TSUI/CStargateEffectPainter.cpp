@@ -92,7 +92,7 @@ void CStargateEffectPainter::InitTracer (STracer &Tracer)
 	Tracer.Points.Init(m_iMaxTracerLength);
 
 	SWormholePos &NewPoint = Tracer.Points.EnqueueAndOverwrite();
-	NewPoint.rAngle = g_Pi * mathRandom(0, 359) / 180.0;
+	NewPoint.rAngle = PI * mathRandom(0, 359) / 180.0;
 	NewPoint.rDepth = m_rMaxDepth;
 	NewPoint.rRadius = mathRandom(100, 1000) / 1000.0;
 

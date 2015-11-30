@@ -67,8 +67,8 @@ void CShockwaveHitTest::CalcObjBounds (CSpaceObject *pObj, const CVector &vPos, 
 			Metric rStartAngle = Min(Min(Min(rULAngle, rURAngle), rLLAngle), rLRAngle);
 			Metric rEndAngle = Max(Max(Max(rULAngle, rURAngle), rLLAngle), rLRAngle);
 
-			*retrStartAngle = 360.0 * rStartAngle / (g_Pi * 2.0);
-			*retrSizeAngle = 360.0 * (rEndAngle - rStartAngle) / (g_Pi * 2.0);
+			*retrStartAngle = 360.0 * rStartAngle / (PI * 2.0);
+			*retrSizeAngle = 360.0 * (rEndAngle - rStartAngle) / (PI * 2.0);
 			}
 
 		//	Otherwise, we're straddling the x-axis
@@ -78,8 +78,8 @@ void CShockwaveHitTest::CalcObjBounds (CSpaceObject *pObj, const CVector &vPos, 
 			Metric rStartAngle = rLLAngle;
 			Metric rEndAngle = rULAngle;
 
-			*retrStartAngle = 360.0 * rStartAngle / (g_Pi * 2.0);
-			*retrSizeAngle = 360.0 * (rEndAngle + (g_Pi * 2.0) - rStartAngle) / (g_Pi * 2.0);
+			*retrStartAngle = 360.0 * rStartAngle / (PI * 2.0);
+			*retrSizeAngle = 360.0 * (rEndAngle + (PI * 2.0) - rStartAngle) / (PI * 2.0);
 			}
 		}
 
@@ -92,8 +92,8 @@ void CShockwaveHitTest::CalcObjBounds (CSpaceObject *pObj, const CVector &vPos, 
 		Metric rStartAngle = Min(Min(Min(rULAngle, rURAngle), rLLAngle), rLRAngle);
 		Metric rEndAngle = Max(Max(Max(rULAngle, rURAngle), rLLAngle), rLRAngle);
 
-		*retrStartAngle = 360.0 * rStartAngle / (g_Pi * 2.0);
-		*retrSizeAngle = 360.0 * (rEndAngle - rStartAngle) / (g_Pi * 2.0);
+		*retrStartAngle = 360.0 * rStartAngle / (PI * 2.0);
+		*retrSizeAngle = 360.0 * (rEndAngle - rStartAngle) / (PI * 2.0);
 		}
 
 	//	Otherwise, we have to check everything
@@ -167,7 +167,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 
 	//	Compute the arc size of the grid at maximum radius
 
-	Metric rGridAngle = 360.0 * (GRID_SIZE * g_KlicksPerPixel) / (2.0 * g_Pi * rMaxRadius);
+	Metric rGridAngle = 360.0 * (GRID_SIZE * g_KlicksPerPixel) / (2.0 * PI * rMaxRadius);
 	Metric rGridRadius = GRID_SIZE * g_KlicksPerPixel;
 
 	//	Segments are rotated by a random amount each time

@@ -38,7 +38,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgePeninsula,	180,
 			0.0,		-1.0,		0.5,		-1.0,		0.0,		1.0,
 
-			0.5 * g_Pi,
+			0.5 * PI,
 			0.5,
 			0.0,
 			1.0,
@@ -50,7 +50,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgePeninsula,	270,
 			-1.0,		0.0,		0.5,		0.0,		1.0,		0.0,
 
-			0.5 * g_Pi,
+			0.5 * PI,
 			0.5,
 			0.0,
 			1.0,
@@ -62,7 +62,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgeCorner,		225,
 			-0.707107,	-0.707107,	0.707107,	-0.707107,	0.707107,	0.0,
 
-			g_Pi,
+			PI,
 			0.707107,
 			-1.0,
 			0.5,
@@ -74,7 +74,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgePeninsula,	0,
 			0.0,		1.0,		-0.5,		1.0,		0.0,		0.0,
 
-			0.5 * g_Pi,
+			0.5 * PI,
 			0.5,
 			0.0,
 			1.0,
@@ -86,7 +86,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgeNarrow,		90,
 			1.0,		0.0,		-0.5,		0.0,		-1.0,		0.5,
 
-			g_Pi,
+			PI,
 			0.5,
 			-1.0,
 			0.5,
@@ -98,7 +98,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgeCorner,		315,
 			-0.707107,	0.707107,	0.0,		0.707107,	0.707107,	-0.707107,
 
-			g_Pi,
+			PI,
 			0.707107,
 			-1.0,
 			0.5,
@@ -115,7 +115,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgePeninsula,	90,
 			1.0,		0.0,		-0.5,		0.0,		-1.0,		1.0,
 
-			0.5 * g_Pi,
+			0.5 * PI,
 			0.5,
 			0.0,
 			1.0,
@@ -127,7 +127,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgeCorner,		135,
 			0.707107,	-0.707107,	0.0,		-0.707107,	-0.707107,	0.707107,
 
-			g_Pi,
+			PI,
 			0.707107,
 			-1.0,
 			0.5,
@@ -139,7 +139,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgeNarrow,		0,
 			0.0,		-1.0,		0.5,		-1.0,		0.0,		0.5,
 
-			g_Pi,
+			PI,
 			0.5,
 			-1.0,
 			0.5,
@@ -156,7 +156,7 @@ CSpaceEnvironmentType::SEdgeDesc CSpaceEnvironmentType::EDGE_DATA[TILES_IN_TILE_
 		{	edgeCorner,		45,
 			0.707107,	0.707107,	-0.707107,	0.707107,	-0.707107,	0.0,
 
-			g_Pi,
+			PI,
 			0.707107,
 			-1.0,
 			0.5,
@@ -346,7 +346,7 @@ void CSpaceEnvironmentType::CreateEdgeTile (const SEdgeDesc &EdgeDesc, STileDesc
 			{
 			//	Compute wave parameters
 
-			Metric rHalfRange = 0.9 * g_Pi;
+			Metric rHalfRange = 0.9 * PI;
 			Metric rWc = -cos(rHalfRange);
 			Metric rAnglePerPixel = rHalfRange / (Metric)(m_iTileSize / 2);
 			Metric rMinAmplitude = m_iTileSize * 0.03;

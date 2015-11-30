@@ -950,7 +950,7 @@ void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, 
 		//	Pick the scale and increment
 
 		Metric rScale = rAmplitude * mathRandom(20, 100) / 100.0;
-		Metric rInc = 2.0 * g_Pi / iPeakSize;
+		Metric rInc = 2.0 * PI / iPeakSize;
 
 		//	Generate this cycle
 

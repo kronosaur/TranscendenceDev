@@ -380,12 +380,12 @@ void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pO
 	//	Compute some basic stuff
 
 	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
-	Metric rLastRotation = AngleToRadians(180 + m_iXformRotation + m_iLastDirection);
-	Metric rCurRotation = AngleToRadians(180 + m_iXformRotation + m_iCurDirection);
+	Metric rLastRotation = mathDegreesToRadians(180 + m_iXformRotation + m_iLastDirection);
+	Metric rCurRotation = mathDegreesToRadians(180 + m_iXformRotation + m_iCurDirection);
 
 	//	Compute the spread angle, in radians
 
-	Metric rSpread = AngleToRadians(Max(0, m_SpreadAngle.Roll()));
+	Metric rSpread = mathDegreesToRadians(Max(0, m_SpreadAngle.Roll()));
 	Metric rHalfSpread = 0.5 * rSpread;
 
 	//	Calculate where last tick's particles would be based on the last rotation.
@@ -417,12 +417,12 @@ void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pO
 
 		//	We blend the rotation as well
 
-		if (Absolute(rCurRotation - rLastRotation) > g_Pi)
+		if (Absolute(rCurRotation - rLastRotation) > PI)
 			{
 			if (rLastRotation < rCurRotation)
-				rLastRotation += g_Pi * 2.0;
+				rLastRotation += PI * 2.0;
 			else
-				rCurRotation += g_Pi * 2.0;
+				rCurRotation += PI * 2.0;
 			}
 
 		Metric rSlideRotation = (rSlide * rLastRotation) + ((1.0 - rSlide) * rCurRotation);
@@ -460,11 +460,11 @@ void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, in
 	//	Compute some basic stuff
 
 	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
-	Metric rCurRotation = AngleToRadians(180 + m_iXformRotation + m_iCurDirection);
+	Metric rCurRotation = mathDegreesToRadians(180 + m_iXformRotation + m_iCurDirection);
 
 	//	Compute the spread angle, in radians
 
-	Metric rSpread = AngleToRadians(Max(0, m_SpreadAngle.Roll()));
+	Metric rSpread = mathDegreesToRadians(Max(0, m_SpreadAngle.Roll()));
 	Metric rHalfSpread = 0.5 * rSpread;
 
 	//	Calculate where last tick's particles would be based on the last rotation.
@@ -575,7 +575,7 @@ void CParticleSystemEffectPainter::CreateRadiateParticles (CSpaceObject *pObj, i
 		{
 		//	Choose a random angle and velocity
 
-		Metric rAngle = 2.0 * g_Pi * (mathRandom(0, 9999) / 10000.0);
+		Metric rAngle = 2.0 * PI * (mathRandom(0, 9999) / 10000.0);
 		Metric rSpeed = (m_EmitSpeed.Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
 		CVector vVel = m_rXformTime * (vInitialVel + ::PolarToVectorRadians(rAngle, rSpeed));
 

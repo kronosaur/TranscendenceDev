@@ -7,7 +7,7 @@
 #include "SFXFractalImpl.h"
 
 const Metric SQRT2 =						sqrt(2.0);
-const Metric SQRT2PI =						sqrt(2.0 * g_Pi);
+const Metric SQRT2PI =						sqrt(2.0 * PI);
 const Metric SIGMA_MAX =					0.01;
 const Metric SIGMA_DECAY =					1.07;
 const Metric MAX_INTENSITY =				100.0;

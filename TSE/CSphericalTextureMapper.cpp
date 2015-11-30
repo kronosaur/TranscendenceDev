@@ -45,7 +45,7 @@ void CSphericalTextureMapper::Init (CFractalTextureLibrary::ETextureTypes iTextu
 
 			Metric rRadius = (Metric)i / iRadius;
 			Metric rACosR = acos(rRadius);
-			Metric rLat = 0.5 - (rACosR / g_Pi);
+			Metric rLat = 0.5 - (rACosR / PI);
 			m_RadiusToY[i] = (int)(rLat * (2 * m_pTexture->GetHeight()));
 			}
 		}

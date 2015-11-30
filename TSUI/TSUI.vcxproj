@@ -153,6 +153,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CArmorHUDImages.cpp" />
+    <ClCompile Include="CArmorHUDRingSegments.cpp" />
     <ClCompile Include="CBackgroundProcessor.cpp" />
     <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />

@@ -60,10 +60,34 @@ class CArmorHUDImages : public IHUDPainter
 class CArmorHUDRingSegments : public IHUDPainter
 	{
 	public:
+		CArmorHUDRingSegments (void);
+
 		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
 		virtual void GetBounds (int *retWidth, int *retHeight);
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual void Invalidate (void) { m_bInvalid = true;  }
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	private:
+		void Realize (SHUDPaintCtx &Ctx);
+
+		//	Definitions
+
+		int m_iArmorRingRadius;
+		int m_iArmorRingWidth;
+		int m_iShieldRingWidth;
+
+		//	Metrics
+
+		int m_cxDisplay;					//	Total width of display
+		int m_cyDisplay;					//	Total height of display
+		int m_xCenter;						//	Center of ring
+		int m_yCenter;						//	Center of ring
+		
+		//	Runtime State
+
+		bool m_bInvalid;
+		CG32bitImage m_Buffer;
 	};
 
 class CShieldHUDDefault : public IHUDPainter

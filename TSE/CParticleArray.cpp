@@ -219,7 +219,7 @@ void CParticleArray::EmitAmorphous (const CParticleSystemDesc &Desc, int iCount,
 
 	//	Compute some basic stuff
 
-	Metric rCurRotation = AngleToRadians(Desc.GetXformRotation() + iDirection);
+	Metric rCurRotation = mathDegreesToRadians(Desc.GetXformRotation() + iDirection);
 
 	//	Compute the range in speed
 
@@ -229,13 +229,13 @@ void CParticleArray::EmitAmorphous (const CParticleSystemDesc &Desc, int iCount,
 
 	//	Compute the spread angle, in radians
 
-	Metric rSpread = AngleToRadians(Max(0, Desc.GetSpreadAngle().Roll()));
+	Metric rSpread = mathDegreesToRadians(Max(0, Desc.GetSpreadAngle().Roll()));
 	Metric rHalfSpread = 0.5 * rSpread;
 
 	//	If the emissions come from a line, calculate that (emitWidth)
 
 	Metric rSpreadRange = Desc.GetEmitWidth().Roll() * g_KlicksPerPixel;
-	CVector vTangent = ::PolarToVectorRadians(rCurRotation + (0.5 * g_Pi), rSpreadRange);
+	CVector vTangent = ::PolarToVectorRadians(rCurRotation + (0.5 * PI), rSpreadRange);
 
 	//	Create the particles
 
@@ -289,7 +289,7 @@ void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, con
 	//	Compute some basic stuff
 
 	int iCurRotation = Desc.GetXformRotation() + iDirection;
-	Metric rCurRotation = AngleToRadians(iCurRotation);
+	Metric rCurRotation = mathDegreesToRadians(iCurRotation);
 
 	//	Compute the range in speed
 
@@ -359,7 +359,7 @@ void CParticleArray::EmitRadiate (const CParticleSystemDesc &Desc, int iCount, c
 		{
 		//	Choose a random angle and velocity
 
-		Metric rAngle = 2.0 * g_Pi * (mathRandom(0, 9999) / 10000.0);
+		Metric rAngle = 2.0 * PI * (mathRandom(0, 9999) / 10000.0);
 		Metric rSpeed = (Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
 		CVector vVel = Desc.GetXformTime() * (vSourceVel + ::PolarToVectorRadians(rAngle, rSpeed));
 

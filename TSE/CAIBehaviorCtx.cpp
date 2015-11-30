@@ -373,7 +373,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 	//	motion.
 
 	Metric rDegreesPerTick = Max(1.0, Min(pShip->GetClass()->GetRotationDesc().GetMaxRotationSpeedPerTick(), 60.0));
-	Metric rTanRot = tan(g_Pi * rDegreesPerTick / 180.0);
+	Metric rTanRot = tan(PI * rDegreesPerTick / 180.0);
 	Metric rMinFlankDist = Max(MIN_TARGET_DIST, MAX_TARGET_SPEED / rTanRot);
 
 	//	Adjust a little based on destiny so we get some variation, even between

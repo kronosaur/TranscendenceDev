@@ -46,7 +46,7 @@ ALERROR CEllipseEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLE
 	{
 	m_rSemiMajorAxis = pDesc->GetAttributeIntegerBounded(RADIUS_ATTRIB, 0, -1, 100);
 	m_rEccentricity = (pDesc->GetAttributeIntegerBounded(ECCENTRICITY_ATTRIB, 0, 99, 0)) / 100.0;
-	m_rRotation = AngleToRadians(pDesc->GetAttributeIntegerBounded(ROTATION_ATTRIB, 0, -1, 0) % 360);
+	m_rRotation = mathDegreesToRadians(pDesc->GetAttributeIntegerBounded(ROTATION_ATTRIB, 0, -1, 0) % 360);
 
 	m_rgbLineColor = ::LoadRGBColor(pDesc->GetAttribute(LINE_COLOR_ATTRIB));
 	m_iLineWidth = pDesc->GetAttributeIntegerBounded(LINE_WIDTH_ATTRIB, 1, -1, 1);
@@ -92,7 +92,7 @@ void CEllipseEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPa
 		int xStart = (int)vStart.GetX();
 		int yStart = (int)vStart.GetY();
 
-		while (rAngle < 2 * g_Pi)
+		while (rAngle < 2 * PI)
 			{
 			rAngle += rInc;
 			

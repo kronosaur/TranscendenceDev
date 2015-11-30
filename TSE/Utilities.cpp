@@ -1626,7 +1626,7 @@ Metric *GetDestinyToBellCurveArray (void)
 		Metric rMagicConstant = 0.147f;		//	From the approximation formula
 		Metric rScale1 = 360.0f;
 		Metric rScale2 = 3.7f;
-		Metric r4OverPi = 4.0f / g_Pi;
+		Metric r4OverPi = 4.0f / PI;
 
 		for (i = 0; i < g_DestinyRange; i++)
 			{
