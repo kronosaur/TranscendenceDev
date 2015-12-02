@@ -2347,7 +2347,7 @@ DWORD LoadNameFlags (CXMLElement *pDesc)
 	return dwFlags;
 	}
 
-CG32bitPixel LoadRGBColor (const CString &sString)
+CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 
 //	LoadRGBColor
 //
@@ -2359,7 +2359,7 @@ CG32bitPixel LoadRGBColor (const CString &sString)
 	//	Null
 
 	if (*pPos == '\0')
-		return CG32bitPixel::Null();
+		return rgbDefault;
 
 	//	If it starts with a # we expect an RGB DWORD
 

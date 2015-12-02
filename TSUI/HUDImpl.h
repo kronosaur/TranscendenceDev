@@ -73,6 +73,9 @@ class CArmorHUDRingSegments : public IHUDPainter
 
 		//	Definitions
 
+		CG32bitPixel m_rgbArmor;			//	Color of armor segment
+		CG32bitPixel m_rgbShields;			//	Color of shields
+
 		int m_iArmorRingRadius;
 		int m_iArmorRingWidth;
 		int m_iShieldRingWidth;

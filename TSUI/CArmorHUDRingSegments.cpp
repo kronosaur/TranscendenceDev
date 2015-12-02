@@ -5,7 +5,11 @@
 
 #include "stdafx.h"
 
+#define ARMOR_COLOR_ATTRIB						CONSTLIT("armorColor")
+#define SHIELDS_COLOR_ATTRIB					CONSTLIT("shieldsColor")
+
 const int RING_SPACING = 2;
+const int INTER_SEGMENT_SPACING = 2;
 const int NAME_SPACING_X = 20;
 const int NAME_WIDTH = 130;
 
@@ -45,6 +49,9 @@ ALERROR CArmorHUDRingSegments::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pCl
 //	Initialize from XML
 
 	{
+	m_rgbArmor = ::LoadRGBColor(pDesc->GetAttribute(ARMOR_COLOR_ATTRIB), CG32bitPixel(255, 128, 0));
+	m_rgbShields = ::LoadRGBColor(pDesc->GetAttribute(SHIELDS_COLOR_ATTRIB), CG32bitPixel(103, 204, 0));
+
 	//	LATER: Load this from definition
 
 	m_iArmorRingRadius = 64;
@@ -61,7 +68,7 @@ ALERROR CArmorHUDRingSegments::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pCl
 	m_cyDisplay = (2 * iTotalRadius) + (3 * MediumFont.GetHeight());
 
 	m_xCenter = m_cxDisplay / 2;
-	m_yCenter = (iTotalRadius + 1) / 2;
+	m_yCenter = (iTotalRadius + 1);
 
 	return NOERROR;
 	}
@@ -111,6 +118,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 	const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+	CG32bitPixel rgbArmorBack = CG32bitPixel(m_rgbArmor, 128);
+	CG32bitPixel rgbShieldsBack = CG32bitPixel(m_rgbShields, 128);
 
 	//	Create the buffer, if necessary
 
@@ -121,14 +130,87 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint each of the armor segments, one at a time.
 
+	int iArmorInnerRadius = m_iArmorRingRadius - m_iArmorRingWidth;
+
 	for (i = 0; i < pShip->GetArmorSectionCount(); i++)
 		{
 		CShipClass::HullSection *pSect = pShip->GetClass()->GetHullSection(i);
 		CInstalledArmor *pArmor = pShip->GetArmorSection(i);
 		int iMaxHP = pArmor->GetMaxHP(pShip);
-		int iWhole = (iMaxHP == 0 ? 100 : (pArmor->GetHitPoints() * 100) / iMaxHP);
+//		int iWhole = (iMaxHP == 0 ? 100 : (pArmor->GetHitPoints() * 100) / iMaxHP);
+		int iWidth = (iMaxHP == 0 ? 0 : (pArmor->GetHitPoints() * m_iArmorRingWidth) / iMaxHP);
 
+		//	Draw the full armor size
 
+		CGDraw::Arc(m_Buffer, 
+				m_xCenter, 
+				m_yCenter, 
+				iArmorInnerRadius, 
+				AngleMod(90 + pSect->iStartAt), 
+				AngleMod(90 + pSect->iStartAt + pSect->iSpan), 
+				m_iArmorRingWidth, 
+				rgbArmorBack, 
+				CGDraw::blendNormal, 
+				INTER_SEGMENT_SPACING,
+				CGDraw::ARC_INNER_RADIUS);
+
+		//	Draw an arc representing how much armor we have
+
+		CGDraw::Arc(m_Buffer, 
+				m_xCenter, 
+				m_yCenter, 
+				iArmorInnerRadius, 
+				AngleMod(90 + pSect->iStartAt), 
+				AngleMod(90 + pSect->iStartAt + pSect->iSpan), 
+				iWidth, 
+				m_rgbArmor, 
+				CGDraw::blendNormal, 
+				INTER_SEGMENT_SPACING,
+				CGDraw::ARC_INNER_RADIUS);
 		}
+
+	//	Paint shield level
+
+	int iShieldHP = 0;
+	int iShieldMaxHP = 0;
+	CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);
+	if (pShield)
+		pShield->GetStatus(pShip, &iShieldHP, &iShieldMaxHP);
+
+	if (iShieldMaxHP > 0)
+		{
+		int iShieldInnerRadius = m_iArmorRingRadius + RING_SPACING;
+		int iWidth = (iShieldMaxHP == 0 ? 0 : (iShieldHP * m_iShieldRingWidth) / iShieldMaxHP);
+
+		//	Draw the full shields
+
+		CGDraw::Arc(m_Buffer,
+				m_xCenter,
+				m_yCenter,
+				iShieldInnerRadius,
+				0,
+				0,
+				m_iShieldRingWidth,
+				rgbShieldsBack,
+				CGDraw::blendNormal,
+				0,
+				CGDraw::ARC_INNER_RADIUS);
+
+		//	Draw the shield level
+
+		CGDraw::Arc(m_Buffer,
+				m_xCenter,
+				m_yCenter,
+				iShieldInnerRadius,
+				0,
+				0,
+				iWidth,
+				m_rgbShields,
+				CGDraw::blendNormal,
+				0,
+				CGDraw::ARC_INNER_RADIUS);
+		}
+
+
 
 	}
