@@ -5,11 +5,150 @@
 
 #include "PreComp.h"
 
-void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor)
+void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode, int iSpacing, DWORD dwFlags)
 
 //	Arc
 //
-//	Draw an arc
+//	Draws an arc
+
+	{
+	const Metric MIN_SEGMENT_LENGTH = 3.0;
+
+	if (iRadius <= 0 || iLineWidth <= 0)
+		return;
+
+	//	Options
+
+	bool bCenterRadius = ((dwFlags & ARC_INNER_RADIUS ? false : true));
+
+	//	We will create a path
+
+	CGPath ArcPath;
+	Metric rWidth = (Metric)iLineWidth;
+	Metric rHalfWidth = 0.5 * rWidth;
+	Metric rInnerRadius = (bCenterRadius ? Max(0.0, (Metric)iRadius - rHalfWidth) : iRadius);
+	Metric rOuterRadius = (bCenterRadius ? (Metric)iRadius + rHalfWidth : iRadius + iLineWidth);
+
+	//	If the start angle equals the end angle, then we create a full ring.
+
+	if (iStartAngle == iEndAngle)
+		{
+		//	Figure out how many segments for the inner and outer circles
+
+		Metric rInnerCircle = TAU * rInnerRadius;
+		int iInnerSegCount = Max(8, (int)(rInnerCircle / MIN_SEGMENT_LENGTH));
+		Metric rInnerAngle = TAU / (Metric)iInnerSegCount;
+
+		Metric rOuterCircle = TAU * rOuterRadius;
+		int iOuterSegCount = Max(8, (int)(rOuterCircle / MIN_SEGMENT_LENGTH));
+		Metric rOuterAngle = TAU / (Metric)iOuterSegCount;
+
+		//	Start with the outer path
+
+		TArray<CVector> Points;
+		Points.GrowToFit(iOuterSegCount + 1);
+		Metric rAngle;
+		for (rAngle = 0.0; rAngle < TAU; rAngle += rOuterAngle)
+			Points.Insert(CVector::FromPolar(rAngle, rOuterRadius));
+
+		ArcPath.AddPolygonHandoff(Points);
+
+		//	If we've got an inner radius add that
+
+		if (rInnerRadius > 0.0)
+			{
+			for (rAngle = TAU; rAngle > 0.0; rAngle -= rInnerAngle)
+				Points.Insert(CVector::FromPolar(rAngle, rInnerRadius));
+
+			ArcPath.AddPolygonHandoff(Points);
+			}
+		}
+
+	//	Otherwise, an arc
+
+	else
+		{
+		//	Compute some metrics
+
+		Metric rStart = mathDegreesToRadians(AngleMod(iStartAngle));
+		Metric rEnd = mathDegreesToRadians(AngleMod(iEndAngle));
+
+		//	Figure out how many radians the spacing is at the outer radius and the
+		//	inner radius.
+
+		Metric rInnerSpacing = (rInnerRadius > 0.0 ? iSpacing / rInnerRadius : 0.0);
+		Metric rOuterSpacing = iSpacing / rOuterRadius;
+
+		//	Compute angles for inner curve
+
+		Metric rStartInner = ::mathAngleMod(rStart + rInnerSpacing);
+		Metric rEndInner = ::mathAngleMod(rEnd - rInnerSpacing);
+		Metric rInnerArcAngle = ::mathAngleDiff(rStartInner, rEndInner);
+		Metric rInnerArc = rInnerArcAngle * rInnerRadius;
+		Metric rInnerSegCount = rInnerArc / MIN_SEGMENT_LENGTH;
+		Metric rInnerSegAngle = rInnerArcAngle / floor(rInnerSegCount);
+
+		//	Compute angles for outer curve
+
+		Metric rStartOuter = ::mathAngleMod(rStart + rOuterSpacing);
+		Metric rEndOuter = ::mathAngleMod(rEnd - rOuterSpacing);
+		Metric rOuterArcAngle = ::mathAngleDiff(rStartOuter, rEndOuter);
+		Metric rOuterArc = rOuterArcAngle * rOuterRadius;
+		Metric rOuterSegCount = rOuterArc / MIN_SEGMENT_LENGTH;
+		Metric rOuterSegAngle = rOuterArcAngle / floor(rOuterSegCount);
+
+		//	Allocate an array with enough points for the arc
+
+		TArray<CVector> Points;
+		Points.GrowToFit(10 + Max(1, (int)rInnerSegCount) + Max(1, (int)rOuterSegCount));
+
+		//	Start at the outer curve
+
+		Metric rAngle;
+		for (rAngle = rStartOuter; rAngle < rEndOuter; rAngle += rOuterSegAngle)
+			Points.Insert(CVector::FromPolarInv(rAngle, rOuterRadius));
+
+		//	Add the last point on the outer curve
+
+		Points.Insert(CVector::FromPolarInv(rEndOuter, rOuterRadius));
+
+		//	If the inner radius is 0 then we just need a single point at the center.
+
+		if (rInnerRadius == 0.0)
+			Points.Insert(CVector(0.0, 0.0));
+
+		//	Otherwise, continue with the inner curve
+
+		else
+			{
+			for (rAngle = rEndInner; rAngle > rStartInner; rAngle -= rInnerSegAngle)
+				Points.Insert(CVector::FromPolarInv(rAngle, rInnerRadius));
+
+			//	Add the last poit on the inner curve
+
+			Points.Insert(CVector::FromPolarInv(rStartInner, rInnerRadius));
+			}
+
+		//	Create a path and rasterize it.
+
+		ArcPath.InitTakeHandoff(Points);
+		}
+
+	//	Rasterize into a region
+
+	CGRegion ArcRegion;
+	ArcPath.Rasterize(&ArcRegion);
+	
+	//	Draw the region
+
+	CGDraw::Region(Dest, xCenter, yCenter, ArcRegion, rgbColor, iMode);
+	}
+
+void CGDraw::ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor)
+
+//	Arc
+//
+//	Draw an arc (90 degrees). 
 
 	{
 	//	Temporaries

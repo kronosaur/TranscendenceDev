@@ -8,6 +8,7 @@
 class CGPath
 	{
 	public:
+		void AddPolygonHandoff (TArray<CVector> &Points);
 		void Close (void);
 		void CreateSubPathStrokePath (int iSubPath, Metric rLineWidth, CGPath *retPath);
 		inline int GetSubPathCount (void) const { return m_SubPaths.GetCount(); }
@@ -15,6 +16,7 @@ class CGPath
 		int GetVertexCount (void) const;
 		void Init (void);
 		void Init (const TArray<CVector> &Points);
+		void InitTakeHandoff (TArray<CVector> &Points);
 		inline bool IsEmpty (void) const { return (m_SubPaths.GetCount() == 0); }
 		void LineTo (const CVector &Pos);
 		void MoveTo (const CVector &Pos);

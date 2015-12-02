@@ -369,28 +369,28 @@ void CAniRoundedRect::Paint (SAniPaintCtx &Ctx)
 		//	Upper-left corner
 
 		if (ulRadius)
-			pLine->Arc(Ctx, x + ulRadius, y + ulRadius, ulRadius, 90, 180);
+			pLine->ArcCorner(Ctx, x + ulRadius, y + ulRadius, ulRadius, 90, 180);
 		else
 			pLine->Corner(Ctx, x, y);
 
 		//	Upper-right corner
 
 		if (urRadius)
-			pLine->Arc(Ctx, x + cxWidth - urRadius, y + urRadius, urRadius, 0, 90);
+			pLine->ArcCorner(Ctx, x + cxWidth - urRadius, y + urRadius, urRadius, 0, 90);
 		else
 			pLine->Corner(Ctx, x + cxWidth - 1, y);
 
 		//	Lower-left corner
 
 		if (llRadius)
-			pLine->Arc(Ctx, x + llRadius, y + cyHeight - llRadius, llRadius, 180, 270);
+			pLine->ArcCorner(Ctx, x + llRadius, y + cyHeight - llRadius, llRadius, 180, 270);
 		else
 			pLine->Corner(Ctx, x, y + cyHeight - 1);
 
 		//	Lower-right corner
 
 		if (lrRadius)
-			pLine->Arc(Ctx, x + cxWidth - lrRadius, y + cyHeight - lrRadius, lrRadius, 270, 360);
+			pLine->ArcCorner(Ctx, x + cxWidth - lrRadius, y + cyHeight - lrRadius, lrRadius, 270, 360);
 		else
 			pLine->Corner(Ctx, x + cxWidth - 1, y + cyHeight - 1);
 		}

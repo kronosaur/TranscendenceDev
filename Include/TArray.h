@@ -16,7 +16,9 @@ enum ESortOptions
 #endif
 
 //	Explicit placement operator
-inline void *operator new (size_t, void *p) { return p; }
+struct placement_new_class { };
+extern placement_new_class placement_new;
+inline void *operator new (size_t, placement_new_class, void *p) { return p; }
 
 const int DEFAULT_ARRAY_GRANULARITY = 10;
 
@@ -98,7 +100,7 @@ template <class VALUE> class TRawArray : public CArrayBase
 			iOffset = iIndex * GetElementSize();
 			InsertBytes(iOffset, NULL, GetElementSize(), DEFAULT_ARRAY_GRANULARITY * GetElementSize());
 
-			VALUE *pElement = new(GetBytes() + iOffset) VALUE(Value);
+			VALUE *pElement = new(placement_new, GetBytes() + iOffset) VALUE(Value);
 			}
 
 		VALUE *InsertEmpty (int iCount = 1, int iIndex = -1)
@@ -110,7 +112,7 @@ template <class VALUE> class TRawArray : public CArrayBase
 
 			for (int i = 0; i < iCount; i++)
 				{
-				VALUE *pElement = new(GetBytes() + iOffset + (i * GetElementSize())) VALUE;
+				VALUE *pElement = new(placement_new, GetBytes() + iOffset + (i * GetElementSize())) VALUE;
 				}
 
 			return &GetAt(iIndex);
@@ -138,7 +140,7 @@ template <class VALUE> class TArray : public CArrayBase
 
 			for (int i = 0; i < Obj.GetCount(); i++)
 				{
-				VALUE *pElement = new(GetBytes() + (i * sizeof(VALUE))) VALUE(Obj[i]);
+				VALUE *pElement = new(placement_new, GetBytes() + (i * sizeof(VALUE))) VALUE(Obj[i]);
 				}
 			}
 
@@ -153,7 +155,7 @@ template <class VALUE> class TArray : public CArrayBase
 
 			for (int i = 0; i < Obj.GetCount(); i++)
 				{
-				VALUE *pElement = new(GetBytes() + (i * sizeof(VALUE))) VALUE(Obj[i]);
+				VALUE *pElement = new(placement_new, GetBytes() + (i * sizeof(VALUE))) VALUE(Obj[i]);
 				}
 
 			return *this;
@@ -228,7 +230,7 @@ template <class VALUE> class TArray : public CArrayBase
 			iOffset = iIndex * sizeof(VALUE);
 			InsertBytes(iOffset, NULL, sizeof(VALUE), GetGranularity() * sizeof(VALUE));
 
-			VALUE *pElement = new(GetBytes() + iOffset) VALUE(Value);
+			VALUE *pElement = new(placement_new, GetBytes() + iOffset) VALUE(Value);
 			}
 
 		void Insert (const TArray<VALUE> &Src, int iIndex = -1)
@@ -242,7 +244,7 @@ template <class VALUE> class TArray : public CArrayBase
 
 			for (i = 0; i < Src.GetCount(); i++)
 				{
-				VALUE *pElement = new(GetBytes() + iOffset + i * sizeof(VALUE)) VALUE(Src[i]);
+				VALUE *pElement = new(placement_new, GetBytes() + iOffset + i * sizeof(VALUE)) VALUE(Src[i]);
 				}
 			}
 
@@ -251,7 +253,7 @@ template <class VALUE> class TArray : public CArrayBase
 			int iOffset = GetCount() * sizeof(VALUE);
 			InsertBytes(iOffset, NULL, sizeof(VALUE), GetGranularity() * sizeof(VALUE));
 
-			return new(GetBytes() + iOffset) VALUE;
+			return new(placement_new, GetBytes() + iOffset) VALUE;
 			}
 
 		VALUE *InsertAt (int iIndex)
@@ -261,7 +263,7 @@ template <class VALUE> class TArray : public CArrayBase
 			iOffset = iIndex * sizeof(VALUE);
 			InsertBytes(iOffset, NULL, sizeof(VALUE), GetGranularity() * sizeof(VALUE));
 
-			return new(GetBytes() + iOffset) VALUE;
+			return new(placement_new, GetBytes() + iOffset) VALUE;
 			}
 
 		void InsertEmpty (int iCount = 1, int iIndex = -1)
@@ -273,7 +275,7 @@ template <class VALUE> class TArray : public CArrayBase
 
 			for (int i = 0; i < iCount; i++)
 				{
-				VALUE *pElement = new(GetBytes() + iOffset + (i * sizeof(VALUE))) VALUE;
+				VALUE *pElement = new(placement_new, GetBytes() + iOffset + (i * sizeof(VALUE))) VALUE;
 				}
 			}
 

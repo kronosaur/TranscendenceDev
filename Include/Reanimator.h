@@ -231,7 +231,7 @@ class IAniLineMethod
 	public:
 		virtual ~IAniLineMethod (void) { }
 
-		virtual void Arc (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle) { }
+		virtual void ArcCorner (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle) { }
 		virtual void Corner (SAniPaintCtx &Ctx, int xCenter, int yCenter) { }
 		virtual void InitDefaults (CAniPropertySet &Properties) { }
 		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties) { }
@@ -1033,7 +1033,7 @@ class CAniSolidLine : public IAniLineMethod
 	{
 	public:
 		//	IAniLineMethod
-		virtual void Arc (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle);
+		virtual void ArcCorner (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle);
 		virtual void Corner (SAniPaintCtx &Ctx, int xCenter, int yCenter);
 		virtual void InitDefaults (CAniPropertySet &Properties);
 		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties);

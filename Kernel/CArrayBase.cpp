@@ -5,6 +5,8 @@
 #include "Kernel.h"
 #include "KernelObjID.h"
 
+placement_new_class placement_new;
+
 CArrayBase::CArrayBase (HANDLE hHeap, int iGranularity) : m_pBlock(NULL)
 
 //	CArrayBase constructor

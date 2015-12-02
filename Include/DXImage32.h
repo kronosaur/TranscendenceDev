@@ -221,6 +221,13 @@ class CGDraw
 			blendModeCount =			5,
 			};
 
+		enum EFlags
+			{
+			//	Arc
+
+			ARC_INNER_RADIUS =			0x00000001,	//	Radius is inner arc radius, not center.
+			};
+
 		//	Blts
 
 		static void BltGray (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
@@ -236,7 +243,6 @@ class CGDraw
 
 		//	Lines
 
-		static void Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor);
 		inline static void Line (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor) 
 			{ if (rgbColor.GetAlpha() == 0xff) LineBresenham(Dest, x1, y1, x2, y2, iWidth, rgbColor); else LineBresenhamTrans(Dest, x1, y1, x2, y2, iWidth, rgbColor); }
 
@@ -271,6 +277,8 @@ class CGDraw
 
 		//	Curves
 
+		static void Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, int iSpacing = 0, DWORD dwFlags = 0);
+		static void ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor);
 		static void QuadCurve (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int xMid, int yMid, int iLineWidth, CG32bitPixel rgbColor);
 
 		//	Miscellaneous

@@ -8,6 +8,41 @@
 const Metric POLYGON_POINT_EPSILON =					1.0e-06;
 const Metric POLYGON_POINT_EPSILON2 =					POLYGON_POINT_EPSILON * POLYGON_POINT_EPSILON;
 
+void CGPath::AddPolygonHandoff (TArray<CVector> &Points)
+
+//	AddPolygonHandoff
+//
+//	Adds a closed polygon to the path
+
+	{
+	//	If empty, initialize
+
+	if (m_SubPaths.GetCount() == 0)
+		{
+		InitTakeHandoff(Points);
+		return;
+		}
+
+	//	If we have an open path with a single point, then we replace that.
+
+	SSubPath &LastPath = m_SubPaths[m_SubPaths.GetCount() - 1];
+	if (!LastPath.bClosed && LastPath.Lines.GetCount() == 1)
+		{
+		LastPath.Lines.TakeHandoff(Points);
+		Close();
+		return;
+		}
+
+	//	Otherwise, we close the path and add a new sub path
+
+	if (!LastPath.bClosed)
+		Close();
+
+	SSubPath *pNewPath = m_SubPaths.Insert();
+	pNewPath->Lines.TakeHandoff(Points);
+	Close();
+	}
+
 void CGPath::CalcCornerPoints (const CVector &From, const CVector &Center, const CVector &To, Metric rHalfWidth, CVector *retInner, CVector *retOuter)
 
 //	CalcCornerPoints
@@ -336,6 +371,21 @@ void CGPath::Init (const TArray<CVector> &Points)
 	m_SubPaths.DeleteAll();
 	for (i = 0; i < Points.GetCount(); i++)
 		LineTo(Points[i]);
+
+	Close();
+	}
+
+void CGPath::InitTakeHandoff (TArray<CVector> &Points)
+
+//	InitTakeHandoff
+//
+//	Initializes to a single close path from the given points.
+
+	{
+	m_SubPaths.DeleteAll();
+
+	SSubPath *pPath = m_SubPaths.Insert();
+	pPath->Lines.TakeHandoff(Points);
 
 	Close();
 	}

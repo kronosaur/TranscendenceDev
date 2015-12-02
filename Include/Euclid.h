@@ -90,6 +90,7 @@ class CVector
 
 		static CVector FromPolar (const CVector &vA) { return CVector(vA.y * cos(vA.x), vA.y * sin(vA.x)); }
 		static CVector FromPolar (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), rRadius * sin(rAngle)); }
+		static CVector FromPolarInv (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), -rRadius * sin(rAngle)); }
 
 	private:
 		Metric x;
