@@ -216,9 +216,11 @@ class CGDraw
 			blendScreen =				3,	//	Brightens images
 			blendHardLight =			4,
 
+			blendCompositeNormal =		5,
+
 			//	See BlendModes.cpp to add new blend modes
 
-			blendModeCount =			5,
+			blendModeCount =			6,
 			};
 
 		enum EFlags
@@ -278,6 +280,7 @@ class CGDraw
 		//	Curves
 
 		static void Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, int iSpacing = 0, DWORD dwFlags = 0);
+		static void Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Metric rStartAngle, Metric rEndAngle, Metric rArcWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, int iSpacing = 0, DWORD dwFlags = 0);
 		static void ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor);
 		static void QuadCurve (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int xMid, int yMid, int iLineWidth, CG32bitPixel rgbColor);
 
@@ -369,9 +372,19 @@ class CGBlendBlend : public TBlendImpl<CGBlendBlend>
 class CGBlendComposite : public TBlendImpl<CGBlendComposite>
 	{
 	public:
-		//	LATER
-		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
-		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return CG32bitPixel::Composite(rgbDest, rgbSource); }
+
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			BYTE *pAlphaInv = CG32bitPixel::AlphaTable(rgbSource.GetAlpha() ^ 0xff);	//	Equivalent to 255 - rgbSrc.GetAlpha()
+
+			BYTE byRedResult = pAlphaInv[rgbDest.GetRed()] + rgbSource.GetRed();
+			BYTE byGreenResult = pAlphaInv[rgbDest.GetGreen()] + rgbSource.GetGreen();
+			BYTE byBlueResult = pAlphaInv[rgbDest.GetBlue()] + rgbSource.GetBlue();
+
+			return CG32bitPixel(byRedResult, byGreenResult, byBlueResult, CG32bitPixel::CompositeAlpha(rgbDest.GetAlpha(), rgbSource.GetAlpha()));
+			}
+
 		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
 	};
 

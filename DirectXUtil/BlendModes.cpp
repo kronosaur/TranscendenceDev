@@ -19,6 +19,8 @@ static SBlendModeData BLEND_MODE_DATA[CGDraw::blendModeCount] =
 		{	"overlay", },
 		{	"screen", },
 		{	"hardLight", },
+
+		{	"composite", },
 	};
 
 CGDraw::EBlendModes CGDraw::ParseBlendMode (const CString &sValue)

@@ -150,6 +150,13 @@ void CGDraw::Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray
 			Painter.Draw(Dest, x, y);
 			break;
 			}
+
+		case blendCompositeNormal:
+			{
+			CRadialCirclePainter<CGBlendComposite> Painter(iRadius, ColorRamp, bPreMult);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
 		}
 	}
 
@@ -179,6 +186,13 @@ void CGDraw::CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE by
 		case blendScreen:
 			{
 			CImageCirclePainter<CGBlendScreen> Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			CImageCirclePainter<CGBlendComposite> Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
 			Painter.Draw(Dest, x, y);
 			break;
 			}

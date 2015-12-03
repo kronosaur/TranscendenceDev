@@ -43,6 +43,21 @@ void CGDraw::Region (CG32bitImage &Dest, int x, int y, const CGRegion &Region, C
 			Painter.Draw(Dest, x, y, Region);
 			break;
 			}
+
+		case blendCompositeNormal:
+			{
+			if (rgbColor.GetAlpha() == 0xff)
+				{
+				TFillRegionSolid<CGBlendCopy> Painter(rgbColor);
+				Painter.Draw(Dest, x, y, Region);
+				}
+			else
+				{
+				TFillRegionSolid<CGBlendComposite> Painter(rgbColor);
+				Painter.Draw(Dest, x, y, Region);
+				}
+			break;
+			}
 		}
 	}
 
@@ -81,6 +96,21 @@ void CGDraw::Region (CG32bitImage &Dest, int x, int y, const CG16bitBinaryRegion
 			{
 			TFillRegionSolid<CGBlendScreen> Painter(rgbColor);
 			Painter.Draw(Dest, x, y, Region);
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			if (rgbColor.GetAlpha() == 0xff)
+				{
+				TFillRegionSolid<CGBlendCopy> Painter(rgbColor);
+				Painter.Draw(Dest, x, y, Region);
+				}
+			else
+				{
+				TFillRegionSolid<CGBlendComposite> Painter(rgbColor);
+				Painter.Draw(Dest, x, y, Region);
+				}
 			break;
 			}
 		}

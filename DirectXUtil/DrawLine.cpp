@@ -5,16 +5,16 @@
 
 #include "PreComp.h"
 
-void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode, int iSpacing, DWORD dwFlags)
+void CGDraw::Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Metric rStartAngle, Metric rEndAngle, Metric rArcWidth, CG32bitPixel rgbColor, EBlendModes iMode, int iSpacing, DWORD dwFlags)
 
 //	Arc
 //
-//	Draws an arc
+//	Draws and arc
 
 	{
 	const Metric MIN_SEGMENT_LENGTH = 3.0;
 
-	if (iRadius <= 0 || iLineWidth <= 0)
+	if (rRadius <= 0.0 || rArcWidth <= 0.0)
 		return;
 
 	//	Options
@@ -24,14 +24,13 @@ void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int
 	//	We will create a path
 
 	CGPath ArcPath;
-	Metric rWidth = (Metric)iLineWidth;
-	Metric rHalfWidth = 0.5 * rWidth;
-	Metric rInnerRadius = (bCenterRadius ? Max(0.0, (Metric)iRadius - rHalfWidth) : iRadius);
-	Metric rOuterRadius = (bCenterRadius ? (Metric)iRadius + rHalfWidth : iRadius + iLineWidth);
+	Metric rHalfWidth = 0.5 * rArcWidth;
+	Metric rInnerRadius = (bCenterRadius ? Max(0.0, (Metric)rRadius - rHalfWidth) : rRadius);
+	Metric rOuterRadius = (bCenterRadius ? (Metric)rRadius + rHalfWidth : rRadius + rArcWidth);
 
 	//	If the start angle equals the end angle, then we create a full ring.
 
-	if (iStartAngle == iEndAngle)
+	if (rStartAngle == rEndAngle)
 		{
 		//	Figure out how many segments for the inner and outer circles
 
@@ -68,11 +67,6 @@ void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int
 
 	else
 		{
-		//	Compute some metrics
-
-		Metric rStart = mathDegreesToRadians(AngleMod(iStartAngle));
-		Metric rEnd = mathDegreesToRadians(AngleMod(iEndAngle));
-
 		//	Figure out how many radians the spacing is at the outer radius and the
 		//	inner radius.
 
@@ -81,8 +75,8 @@ void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int
 
 		//	Compute angles for inner curve
 
-		Metric rStartInner = ::mathAngleMod(rStart + rInnerSpacing);
-		Metric rEndInner = ::mathAngleMod(rEnd - rInnerSpacing);
+		Metric rStartInner = ::mathAngleMod(rStartAngle + rInnerSpacing);
+		Metric rEndInner = ::mathAngleMod(rEndAngle - rInnerSpacing);
 		Metric rInnerArcAngle = ::mathAngleDiff(rStartInner, rEndInner);
 		Metric rInnerArc = rInnerArcAngle * rInnerRadius;
 		Metric rInnerSegCount = rInnerArc / MIN_SEGMENT_LENGTH;
@@ -90,8 +84,8 @@ void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int
 
 		//	Compute angles for outer curve
 
-		Metric rStartOuter = ::mathAngleMod(rStart + rOuterSpacing);
-		Metric rEndOuter = ::mathAngleMod(rEnd - rOuterSpacing);
+		Metric rStartOuter = ::mathAngleMod(rStartAngle + rOuterSpacing);
+		Metric rEndOuter = ::mathAngleMod(rEndAngle - rOuterSpacing);
 		Metric rOuterArcAngle = ::mathAngleDiff(rStartOuter, rEndOuter);
 		Metric rOuterArc = rOuterArcAngle * rOuterRadius;
 		Metric rOuterSegCount = rOuterArc / MIN_SEGMENT_LENGTH;
@@ -105,7 +99,8 @@ void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int
 		//	Start at the outer curve
 
 		Metric rAngle;
-		for (rAngle = rStartOuter; rAngle < rEndOuter; rAngle += rOuterSegAngle)
+		Metric rAngleDone = rStartOuter + rOuterArcAngle;
+		for (rAngle = rStartOuter; rAngle < rAngleDone; rAngle += rOuterSegAngle)
 			Points.Insert(CVector::FromPolarInv(rAngle, rOuterRadius));
 
 		//	Add the last point on the outer curve
@@ -121,7 +116,8 @@ void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int
 
 		else
 			{
-			for (rAngle = rEndInner; rAngle > rStartInner; rAngle -= rInnerSegAngle)
+			rAngleDone = rEndInner - rInnerArcAngle;
+			for (rAngle = rEndInner; rAngle > rAngleDone; rAngle -= rInnerSegAngle)
 				Points.Insert(CVector::FromPolarInv(rAngle, rInnerRadius));
 
 			//	Add the last poit on the inner curve
@@ -141,7 +137,26 @@ void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int
 	
 	//	Draw the region
 
-	CGDraw::Region(Dest, xCenter, yCenter, ArcRegion, rgbColor, iMode);
+	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
+	}
+
+void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode, int iSpacing, DWORD dwFlags)
+
+//	Arc
+//
+//	Draws an arc
+
+	{
+	Arc(Dest, 
+			CVector(xCenter, yCenter), 
+			(Metric)iRadius, 
+			mathDegreesToRadians(iStartAngle), 
+			mathDegreesToRadians(iEndAngle), 
+			(Metric)iLineWidth, 
+			rgbColor, 
+			iMode, 
+			iSpacing, 
+			dwFlags);
 	}
 
 void CGDraw::ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor)
