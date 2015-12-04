@@ -73,8 +73,10 @@ class CArmorHUDRingSegments : public IHUDPainter
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
 
 	private:
-		void DrawArmorIntegrity (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbColor);
-		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledArmor *pArmor);
+		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledArmor *pArmor, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
+		void DrawIntegrityBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
+		void DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const CString &sMods, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
+		void DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledDevice *pShields, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions

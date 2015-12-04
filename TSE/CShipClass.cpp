@@ -3773,6 +3773,22 @@ void CShipClass::PaintMap (CMapViewportCtx &Ctx,
 	m_Image.PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24);
 	}
 
+void CShipClass::PaintScaled (CG32bitImage &Dest,
+							int x,
+							int y,
+							int cxWidth,
+							int cyHeight,
+							int iDirection,
+							int iTick)
+
+	//	PaintScaled
+	//
+	//	Paints a scaled image
+
+	{
+	m_Image.PaintScaledImage(Dest, x, y, iTick, iDirection, cxWidth, cyHeight);
+	}
+
 void CShipClass::PaintThrust (CG32bitImage &Dest, 
 							  int x, 
 							  int y, 

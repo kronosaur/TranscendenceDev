@@ -4072,6 +4072,13 @@ class CShipClass : public CDesignType
 					int iTick, 
 					bool bThrusting,
 					bool bRadioactive);
+		void PaintScaled (CG32bitImage &Dest,
+					int x,
+					int y,
+					int cxWidth,
+					int cyHeight,
+					int iDirection,
+					int iTick);
 
 		//	CDesignType overrides
 		static CShipClass *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designShipClass) ? (CShipClass *)pType : NULL); }
