@@ -49,6 +49,19 @@ CG32bitPixel CG32bitPixel::Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 	return CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
 	}
 
+CG32bitPixel CG32bitPixel::ChangeHue (CG32bitPixel rgbSource, int iAdj)
+
+//	ChangeHue
+//
+//	Changes the hue
+
+	{
+	CGRealHSB TempHSB = CGRealHSB::FromRGB(rgbSource);
+	TempHSB.SetHue(TempHSB.GetHue() + iAdj);
+	CGRealRGB TempRGB = CGRealRGB::FromHSB(TempHSB);
+	return CG32bitPixel(TempRGB);
+	}
+
 CG32bitPixel CG32bitPixel::Composite (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 
 //	Composite

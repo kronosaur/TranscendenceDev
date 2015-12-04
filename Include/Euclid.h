@@ -36,6 +36,7 @@ inline int AngleMiddle (int iLowAngle, int iHighAngle)
 inline int AngleToDegrees (Metric rAngle) { return AngleMod((int)(rAngle * 180.0 / PI)); }
 
 inline Metric mathAngleMod (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, TAU); else return TAU - fmod(-rAngle, TAU); }
+inline Metric mathAngleModDegrees (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, 360.0); else return 360.0 - fmod(-rAngle, 360.0); }
 inline Metric mathAngleDiff (double rFrom, double rTo) { return mathAngleMod(rTo - rFrom); }
 inline Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
 inline Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }

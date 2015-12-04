@@ -292,12 +292,13 @@ void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const
 
 	//	Generate the intersection between the inner circle and the top line.
 
+	bool bNoInnerIntersect = false;
 	CVector vP1;
 	CVector vP2;
 	CVector vInnerCornerUp;
 	CGeometry::EIntersectResults iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
 	if (iResult == CGeometry::intersectNone)
-		return;
+		bNoInnerIntersect = true;
 	else if (iResult == CGeometry::intersectPoint)
 		vInnerCornerUp = vP1;
 	else
@@ -308,33 +309,50 @@ void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const
 	CVector vInnerCornerDown;
 	iResult = CGeometry::IntersectLineCircle(vInnerPos - vHalfWidth, vOuterPos - vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
 	if (iResult == CGeometry::intersectNone)
-		return;
+		bNoInnerIntersect = true;
 	else if (iResult == CGeometry::intersectPoint)
 		vInnerCornerDown = vP1;
 	else
 		vInnerCornerDown = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
 
+	//	If the inner side did not intersect, then we just use a straight line.
+
+	if (bNoInnerIntersect)
+		{
+		vInnerCornerUp = vInnerPos + vHalfWidth;
+		vInnerCornerDown = vInnerPos - vHalfWidth;
+		}
+
 	//	Generate the intersection between the outer circle and the top line.
 
+	bool bNoOuterIntersect = false;
 	CVector vOuterCornerUp;
 	iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rOuterRadius, &vP1, &vP2);
 	if (iResult == CGeometry::intersectNone)
-		return;
+		bNoOuterIntersect = true;
 	else if (iResult == CGeometry::intersectPoint)
 		vOuterCornerUp = vP1;
 	else
-		vOuterCornerUp = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
+		vOuterCornerUp = ((vP1 - vOuterPos).Length2() < (vP2 - vOuterPos).Length2() ? vP1 : vP2);
 
 	//	Now the bottom line
 
 	CVector vOuterCornerDown;
 	iResult = CGeometry::IntersectLineCircle(vInnerPos - vHalfWidth, vOuterPos - vHalfWidth, CVector(), rOuterRadius, &vP1, &vP2);
 	if (iResult == CGeometry::intersectNone)
-		return;
+		bNoOuterIntersect = true;
 	else if (iResult == CGeometry::intersectPoint)
 		vOuterCornerDown = vP1;
 	else
-		vOuterCornerDown = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
+		vOuterCornerDown = ((vP1 - vOuterPos).Length2() < (vP2 - vOuterPos).Length2() ? vP1 : vP2);
+
+	//	If no intersection, just use the two points
+
+	if (bNoOuterIntersect)
+		{
+		vOuterCornerUp = vOuterPos + vHalfWidth;
+		vOuterCornerDown = vOuterPos - vHalfWidth;
+		}
 
 	//	We will create a path
 
@@ -363,27 +381,47 @@ void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const
 	TArray<CVector> Points;
 	Points.GrowToFit(10 + Max(1, (int)rInnerSegCount) + Max(1, (int)rOuterSegCount));
 
-	//	Start at the outer curve
+	//	If no outer intersection, then just use the two points
 
-	Metric rAngle;
-	Metric rAngleDone = rStartOuter + rOuterArcAngle;
-	for (rAngle = rStartOuter; rAngle < rAngleDone; rAngle += rOuterSegAngle)
-		Points.Insert(CVector::FromPolar(rAngle, rOuterRadius));
+	if (bNoOuterIntersect)
+		{
+		Points.Insert(vOuterCornerDown);
+		Points.Insert(vOuterCornerUp);
+		}
 
-	//	Add the last point on the outer curve
+	//	Otherwise, start at the outer curve
 
-	Points.Insert(CVector::FromPolar(rEndOuter, rOuterRadius));
+	else
+		{
+		Metric rAngle;
+		Metric rAngleDone = rStartOuter + rOuterArcAngle;
+		for (rAngle = rStartOuter; rAngle < rAngleDone; rAngle += rOuterSegAngle)
+			Points.Insert(CVector::FromPolar(rAngle, rOuterRadius));
+
+		//	Add the last point on the outer curve
+
+		Points.Insert(CVector::FromPolar(rEndOuter, rOuterRadius));
+		}
 
 	//	If the inner radius is 0 then we just need a single point at the center.
 
 	if (rInnerRadius == 0.0)
 		Points.Insert(CVector(0.0, 0.0));
 
+	//	If no intersection, then just use the two points
+
+	else if (bNoInnerIntersect)
+		{
+		Points.Insert(vInnerCornerUp);
+		Points.Insert(vInnerCornerDown);
+		}
+
 	//	Otherwise, continue with the inner curve
 
 	else
 		{
-		rAngleDone = rEndInner - rInnerArcAngle;
+		Metric rAngle;
+		Metric rAngleDone = rEndInner - rInnerArcAngle;
 		for (rAngle = rEndInner; rAngle > rAngleDone; rAngle -= rInnerSegAngle)
 			Points.Insert(CVector::FromPolar(rAngle, rInnerRadius));
 

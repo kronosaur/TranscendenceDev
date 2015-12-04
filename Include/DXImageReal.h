@@ -25,6 +25,8 @@ class CGRealHSB
 		inline Metric GetHue (void) const { return m_rH; }
 		inline Metric GetSaturation (void) const { return m_rS; }
 
+		inline void SetHue (Metric rHue) { m_rH = mathAngleModDegrees(rHue); }
+
 		static CGRealHSB FromRGB (const CGRealRGB &rgbColor);
 		static CGRealHSB FromRGB (CG32bitPixel rgbColor);
 

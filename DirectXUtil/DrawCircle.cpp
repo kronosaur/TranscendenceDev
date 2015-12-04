@@ -62,61 +62,89 @@ void CGDraw::Circle (CG8bitImage &Dest, int xCenter, int yCenter, int iRadius, B
 		}
 	}
 
-void CGDraw::Circle (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, CG32bitPixel rgbColor)
+void CGDraw::Circle (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode)
 
 //	Circle
 //
 //	Draws a filled circle
 
 	{
-	BYTE byOpacity = rgbColor.GetAlpha();
-
 	//	Deal with edge-conditions
 
 	if (iRadius <= 0)
-		{
-		Dest.SetPixelTrans(xCenter, yCenter, rgbColor, byOpacity);
 		return;
-		}
 
-	//	Initialize some stuff
+	//	Based on mode
 
-	int x = 0;
-	int y = iRadius;
-	int d = 1 - iRadius;
-	int deltaE = 3;
-	int deltaSE = -2 * iRadius + 5;
-
-	Dest.FillLine(xCenter - iRadius, yCenter, 1 + 2 * iRadius, rgbColor);
-
-	//	Loop
-
-	while (y > x)
+	switch (iMode)
 		{
-		if (d < 0)
+		//	Normal mode is optimized
+
+		case blendNormal:
 			{
-			d += deltaE;
-			deltaE += 2;
-			deltaSE += 2;
+			//	Initialize some stuff
+
+			int x = 0;
+			int y = iRadius;
+			int d = 1 - iRadius;
+			int deltaE = 3;
+			int deltaSE = -2 * iRadius + 5;
+
+			Dest.FillLine(xCenter - iRadius, yCenter, 1 + 2 * iRadius, rgbColor);
+
+			//	Loop
+
+			while (y > x)
+				{
+				if (d < 0)
+					{
+					d += deltaE;
+					deltaE += 2;
+					deltaSE += 2;
+					}
+				else
+					{
+					d += deltaSE;
+					deltaE += 2;
+					deltaSE += 4;
+
+					Dest.FillLine(xCenter - x, yCenter - y, 1 + 2 * x, rgbColor);
+					Dest.FillLine(xCenter - x, yCenter + y, 1 + 2 * x, rgbColor);
+
+					y--;
+					}
+
+				x++;
+
+				if (y >= x)
+					{
+					Dest.FillLine(xCenter - y, yCenter - x, 1 + 2 * y, rgbColor);
+					Dest.FillLine(xCenter - y, yCenter + x, 1 + 2 * y, rgbColor);
+					}
+				}
+
+			break;
 			}
-		else
+
+		case blendHardLight:
 			{
-			d += deltaSE;
-			deltaE += 2;
-			deltaSE += 4;
-
-			Dest.FillLine(xCenter - x, yCenter - y, 1 + 2 * x, rgbColor);
-			Dest.FillLine(xCenter - x, yCenter + y, 1 + 2 * x, rgbColor);
-
-			y--;
+			TFillCircleSolid<CGBlendHardLight> Painter(iRadius, rgbColor);
+			Painter.Draw(Dest, xCenter, yCenter);
+			break;
 			}
 
-		x++;
-
-		if (y >= x)
+		case blendScreen:
 			{
-			Dest.FillLine(xCenter - y, yCenter - x, 1 + 2 * y, rgbColor);
-			Dest.FillLine(xCenter - y, yCenter + x, 1 + 2 * y, rgbColor);
+			TFillCircleSolid<CGBlendScreen> Painter(iRadius, rgbColor);
+			Painter.Draw(Dest, xCenter, yCenter);
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			TFillCircleSolid<CGBlendComposite> Painter(iRadius, rgbColor);
+			Painter.Draw(Dest, xCenter, yCenter);
+			break;
 			}
 		}
 	}

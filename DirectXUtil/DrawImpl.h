@@ -311,6 +311,21 @@ class CRadialCirclePainter8 : public TRadialPainter8<CRadialCirclePainter8>
 		TArray<BYTE> m_Ramp;
 	};
 
+template <class BLENDER> class TFillCircleSolid : public TRadialPainter32<TFillCircleSolid<BLENDER>, BLENDER>
+	{
+	public:
+		TFillCircleSolid (int iRadius, CG32bitPixel rgbColor) : TRadialPainter32(iRadius),
+				m_rgbColor(CG32bitPixel::PreMult(rgbColor))
+			{ }
+
+	private:
+		CG32bitPixel GetColorAt (int iRadius) const { return m_rgbColor; }
+
+		CG32bitPixel m_rgbColor;
+
+	friend TRadialPainter32;
+	};
+
 template <class BLENDER> class CRadialCirclePainter : public TRadialPainter32<CRadialCirclePainter<BLENDER>, BLENDER>
 	{
 	public:
