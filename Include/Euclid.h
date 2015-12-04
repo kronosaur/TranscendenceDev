@@ -39,6 +39,7 @@ inline Metric mathAngleMod (double rAngle) { if (rAngle >= 0.0) return fmod(rAng
 inline Metric mathAngleDiff (double rFrom, double rTo) { return mathAngleMod(rTo - rFrom); }
 inline Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
 inline Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }
+inline Metric mathRadiansToDegrees (Metric rRadians) { return 180.0 * rRadians / PI; }
 
 //	2d vector class
 
@@ -85,13 +86,14 @@ class CVector
 		Metric Polar (Metric *retrRadius = NULL) const;
 		inline CVector Reflect (void) const { return CVector(-x, -y); }
 		CVector Rotate (int iAngle) const;
+		CVector Rotate (Metric rRadians) const;
 		inline void SetX (Metric NewX) { x = NewX; }
 		inline void SetY (Metric NewY) { y = NewY; }
 
 		static CVector FromPolar (const CVector &vA) { return CVector(vA.y * cos(vA.x), vA.y * sin(vA.x)); }
 		static CVector FromPolar (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), rRadius * sin(rAngle)); }
 		static CVector FromPolarInv (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), -rRadius * sin(rAngle)); }
-
+		
 	private:
 		Metric x;
 		Metric y;
@@ -112,6 +114,21 @@ inline const CVector operator* (const CVector &op1, const Metric op2) { return C
 inline const CVector operator* (const Metric op2, const CVector &op1) { return CVector(op1.GetX() * op2, op1.GetY() * op2); }
 inline const CVector operator/ (const CVector &op1, const Metric op2) { return CVector(op1.GetX() / op2, op1.GetY() / op2); }
 
+//	Geometry
+
+class CGeometry
+	{
+	public:
+		enum EIntersectResults
+			{
+			intersectNone,
+			intersectPoint,
+			intersect2Points,
+			};
+
+		static EIntersectResults IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1 = NULL, CVector *retvP2 = NULL);
+	};
+
 //	Transform class
 
 enum XFormType
@@ -130,7 +147,7 @@ class CXForm
 		CXForm (XFormType type);
 		CXForm (XFormType type, Metric rX, Metric rY);
 		CXForm (XFormType type, const CVector &vVector);
-		CXForm (XFormType type, int iAngle);
+		CXForm (XFormType type, Metric rDegrees);
 
 		void Transform (Metric x, Metric y, Metric *retx, Metric *rety) const;
 		CVector Transform (const CVector &vVector) const;

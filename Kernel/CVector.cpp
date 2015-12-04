@@ -55,6 +55,17 @@ Metric CVector::Polar (Metric *retrRadius) const
 	return mathAngleMod(atan2(y, x));
 	}
 
+CVector CVector::Rotate (Metric rRadians) const
+
+//	Rotate
+//
+//	Returns the vector rotated by the given angle
+
+	{
+	return CVector(x * cos(rRadians) - y * sin(rRadians),
+			x * sin(rRadians) + y * cos(rRadians));
+	}
+
 CVector CVector::Rotate (int iAngle) const
 
 //	Rotate

@@ -777,6 +777,40 @@ void CG16bitFont::DrawTextEffect (CG32bitImage &Dest,
 	DrawText(Dest, x, y, rgbColor, sText, dwFlags, retx);
 	}
 
+const CG16bitImage &CG16bitFont::GetCharacterImage (char chChar, int *retx, int *rety, int *retcxWidth, int *retcyHeight, int *retcxAdvance) const
+
+//	GetCharacterImage
+//
+//	Returns the character image
+
+	{
+	//	Get metrics
+
+	int iIndex = (int)(BYTE)(chChar) - g_iStartChar;
+	iIndex = Max(0, iIndex);
+
+	CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(iIndex);
+
+	//	Paint
+
+	if (retx)
+		*retx = 0;
+
+	if (rety)
+		*rety = iIndex * m_cyHeight;
+
+	if (retcxWidth)
+		*retcxWidth = pMetrics->cxWidth;
+
+	if (retcyHeight)
+		*retcyHeight = m_cyHeight;
+
+	if (retcxAdvance)
+		*retcxAdvance = pMetrics->cxAdvance;
+
+	return m_FontImage;
+	}
+
 int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight, bool bAlwaysAdvance) const
 
 //	MeasureText

@@ -102,14 +102,14 @@ CXForm::CXForm (XFormType type, const CVector &vVector)
 		}
 	}
 
-CXForm::CXForm (XFormType type, int iAngle)
+CXForm::CXForm (XFormType type, Metric rDegrees)
 	{
 	switch (type)
 		{
 		case xformRotate:
 			{
-			Metric rCos = cos(PI * (Metric)iAngle / 180.0);
-			Metric rSin = sin(PI * (Metric)iAngle / 180.0);
+			Metric rCos = cos(PI * rDegrees / 180.0);
+			Metric rSin = sin(PI * rDegrees / 180.0);
 
 			m_Xform[0][0] = rCos;
 			m_Xform[0][1] = rSin;

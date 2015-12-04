@@ -234,6 +234,21 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 		DWORD m_dwRnd;
 	};
 
+template <class BLENDER> class TFillImageSolid : public TImagePainter<TFillImageSolid<BLENDER>, BLENDER>
+	{
+	public:
+		TFillImageSolid (CG32bitPixel rgbColor) :
+				m_rgbColor(rgbColor)
+			{ }
+
+	private:
+		CG32bitPixel GetPixelAt (int x, int y) const { return m_rgbColor; }
+
+		CG32bitPixel m_rgbColor;
+
+	friend TImagePainter;
+	};
+
 //	Circle Painters ------------------------------------------------------------
 
 template <class BLENDER> class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter<BLENDER>, BLENDER>

@@ -228,6 +228,12 @@ class CGDraw
 			//	Arc
 
 			ARC_INNER_RADIUS =			0x00000001,	//	Radius is inner arc radius, not center.
+
+			//	Text
+
+			TEXT_ALIGN_LEFT =			0x00000000,
+			TEXT_ALIGN_CENTER =			0x00000001,
+			TEXT_ALIGN_RIGHT =			0x00000002,
 			};
 
 		//	Blts
@@ -282,7 +288,12 @@ class CGDraw
 		static void Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, int iSpacing = 0, DWORD dwFlags = 0);
 		static void Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Metric rStartAngle, Metric rEndAngle, Metric rArcWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, int iSpacing = 0, DWORD dwFlags = 0);
 		static void ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor);
+		static void ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const CVector &vInnerPos, const CVector &vOuterPos, Metric rWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
 		static void QuadCurve (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int xMid, int yMid, int iLineWidth, CG32bitPixel rgbColor);
+
+		//	Text
+
+		static void Text (CG32bitImage &Dest, const CVector &vPos, const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, Metric rRotation = 0.0, DWORD dwFlags = 0);
 
 		//	Miscellaneous
 

@@ -481,6 +481,7 @@
     <ClCompile Include="DrawQuadCurve.cpp" />
     <ClCompile Include="DrawRect.cpp" />
     <ClCompile Include="DrawRegion.cpp" />
+    <ClCompile Include="DrawText.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="IPropertyAnimator.cpp" />
     <ClCompile Include="Noise.cpp" />

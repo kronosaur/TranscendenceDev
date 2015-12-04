@@ -201,6 +201,9 @@
     <ClCompile Include="CStepIncrementor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CGeometry.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">

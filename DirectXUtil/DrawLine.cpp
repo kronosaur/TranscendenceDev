@@ -262,6 +262,150 @@ void CGDraw::ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadiu
 		}
 	}
 
+void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const CVector &vInnerPos, const CVector &vOuterPos, Metric rWidth, CG32bitPixel rgbColor, EBlendModes iMode)
+
+	//	ArcQuadrilateral
+	//
+	//	Draw a quadrilateral in which two sides are straight and two sides are 
+	//	curved with respect to a center point.
+
+	{
+	const Metric MIN_SEGMENT_LENGTH = 3.0;
+
+	//	Decompose the inner and outer positions
+
+	Metric rInnerRadius;
+	Metric rInnerAngle = vInnerPos.Polar(&rInnerRadius);
+
+	Metric rOuterRadius;
+	Metric rOuterAngle = vOuterPos.Polar(&rOuterRadius);
+
+	//	Make sure we're in bounds
+
+	if (rInnerRadius >= rOuterRadius)
+		return;
+
+	//	Generate some metrics for the quadrilateral
+
+	CVector vLength = vOuterPos - vInnerPos;
+	CVector vHalfWidth = 0.5 * rWidth * vLength.Perpendicular().Normal();
+
+	//	Generate the intersection between the inner circle and the top line.
+
+	CVector vP1;
+	CVector vP2;
+	CVector vInnerCornerUp;
+	CGeometry::EIntersectResults iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
+	if (iResult == CGeometry::intersectNone)
+		return;
+	else if (iResult == CGeometry::intersectPoint)
+		vInnerCornerUp = vP1;
+	else
+		vInnerCornerUp = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
+
+	//	Now the bottom line
+
+	CVector vInnerCornerDown;
+	iResult = CGeometry::IntersectLineCircle(vInnerPos - vHalfWidth, vOuterPos - vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
+	if (iResult == CGeometry::intersectNone)
+		return;
+	else if (iResult == CGeometry::intersectPoint)
+		vInnerCornerDown = vP1;
+	else
+		vInnerCornerDown = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
+
+	//	Generate the intersection between the outer circle and the top line.
+
+	CVector vOuterCornerUp;
+	iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rOuterRadius, &vP1, &vP2);
+	if (iResult == CGeometry::intersectNone)
+		return;
+	else if (iResult == CGeometry::intersectPoint)
+		vOuterCornerUp = vP1;
+	else
+		vOuterCornerUp = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
+
+	//	Now the bottom line
+
+	CVector vOuterCornerDown;
+	iResult = CGeometry::IntersectLineCircle(vInnerPos - vHalfWidth, vOuterPos - vHalfWidth, CVector(), rOuterRadius, &vP1, &vP2);
+	if (iResult == CGeometry::intersectNone)
+		return;
+	else if (iResult == CGeometry::intersectPoint)
+		vOuterCornerDown = vP1;
+	else
+		vOuterCornerDown = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
+
+	//	We will create a path
+
+	CGPath ArcPath;
+
+	//	Compute angles for inner curve
+
+	Metric rStartInner = vInnerCornerDown.Polar();
+	Metric rEndInner = vInnerCornerUp.Polar();
+	Metric rInnerArcAngle = ::mathAngleDiff(rStartInner, rEndInner);
+	Metric rInnerArc = rInnerArcAngle * rInnerRadius;
+	Metric rInnerSegCount = rInnerArc / MIN_SEGMENT_LENGTH;
+	Metric rInnerSegAngle = rInnerArcAngle / floor(rInnerSegCount);
+
+	//	Compute angles for outer curve
+
+	Metric rStartOuter = vOuterCornerDown.Polar();
+	Metric rEndOuter = vOuterCornerUp.Polar();
+	Metric rOuterArcAngle = ::mathAngleDiff(rStartOuter, rEndOuter);
+	Metric rOuterArc = rOuterArcAngle * rOuterRadius;
+	Metric rOuterSegCount = rOuterArc / MIN_SEGMENT_LENGTH;
+	Metric rOuterSegAngle = rOuterArcAngle / floor(rOuterSegCount);
+
+	//	Allocate an array with enough points for the arc
+
+	TArray<CVector> Points;
+	Points.GrowToFit(10 + Max(1, (int)rInnerSegCount) + Max(1, (int)rOuterSegCount));
+
+	//	Start at the outer curve
+
+	Metric rAngle;
+	Metric rAngleDone = rStartOuter + rOuterArcAngle;
+	for (rAngle = rStartOuter; rAngle < rAngleDone; rAngle += rOuterSegAngle)
+		Points.Insert(CVector::FromPolar(rAngle, rOuterRadius));
+
+	//	Add the last point on the outer curve
+
+	Points.Insert(CVector::FromPolar(rEndOuter, rOuterRadius));
+
+	//	If the inner radius is 0 then we just need a single point at the center.
+
+	if (rInnerRadius == 0.0)
+		Points.Insert(CVector(0.0, 0.0));
+
+	//	Otherwise, continue with the inner curve
+
+	else
+		{
+		rAngleDone = rEndInner - rInnerArcAngle;
+		for (rAngle = rEndInner; rAngle > rAngleDone; rAngle -= rInnerSegAngle)
+			Points.Insert(CVector::FromPolar(rAngle, rInnerRadius));
+
+		//	Add the last poit on the inner curve
+
+		Points.Insert(CVector::FromPolar(rStartInner, rInnerRadius));
+		}
+
+	//	Create a path and rasterize it.
+
+	ArcPath.InitTakeHandoff(Points);
+
+	//	Rasterize into a region
+
+	CGRegion ArcRegion;
+	ArcPath.Rasterize(&ArcRegion);
+	
+	//	Draw the region
+
+	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
+	}
+
 void CGDraw::LineBresenham (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor)
 
 //	LineBresenham

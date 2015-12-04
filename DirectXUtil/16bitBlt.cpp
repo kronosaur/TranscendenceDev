@@ -227,7 +227,7 @@ bool CalcBltTransform (Metric rX,
 			* CXForm(xformScale, rScaleX, rScaleY)
 
 			//	Then rotate
-			* CXForm(xformRotate, -(int)rRotation)
+			* CXForm(xformRotate, -rRotation)
 
 			//	Now move to the proper location
 			* CXForm(xformTranslate, rX, rY);
@@ -235,7 +235,7 @@ bool CalcBltTransform (Metric rX,
 	//	Now create the inverse transfor (from dest to source)
 
 	*retDestToSrc = CXForm(xformTranslate, -rX, -rY)
-			* CXForm(xformRotate, (int)rRotation)
+			* CXForm(xformRotate, rRotation)
 			* CXForm(xformScale, 1.0 / rScaleX, 1.0 / rScaleY)
 			* CXForm(xformTranslate, xSrcCenter, ySrcCenter);
 
