@@ -85,3 +85,97 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 	return pPainter;
 	}
 
+void IHUDPainter::DrawModifier (CG32bitImage &Dest, int x, int y, const CString &sText, DWORD dwLocation)
+
+//	DrawModifier
+//
+//	Draws a standard modifier
+
+	{
+	if (!sText.IsBlank())
+		{
+		const CVisualPalette &VI = g_pHI->GetVisuals();
+		const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
+
+		bool bDisadvantage = (*(sText.GetASCIIZPointer()) == '-');
+
+		int cy;
+		int cx = SmallFont.MeasureText(sText, &cy);
+
+		int cxBox = cx + 8;
+		int cyBox = cy;
+
+		int xBox;
+		int yBox = y;
+		if (dwLocation & locAlignCenter)
+			xBox = x - (cxBox / 2);
+		else if (dwLocation & locAlignRight)
+			xBox = x - cxBox;
+		else
+			xBox = x;
+
+		Dest.Fill(xBox,
+				yBox,
+				cxBox,
+				cyBox,
+				(bDisadvantage ? VI.GetColor(colorAreaDisadvantage) : VI.GetColor(colorAreaAdvantage)));
+
+		SmallFont.DrawText(Dest,
+				xBox + (cxBox - cx) / 2,
+				yBox,
+				(bDisadvantage ? VI.GetColor(colorTextDisadvantage) : VI.GetColor(colorTextAdvantage)),
+				sText);
+		}
+	}
+
+void IHUDPainter::GetRect (RECT *retrcRect) const
+
+//	GetRect
+//
+//	Returns the RECT
+
+	{
+	int cxWidth;
+	int cyHeight;
+	GetBounds(&cxWidth, &cyHeight);
+
+	retrcRect->left = m_xPos;
+	retrcRect->top = m_yPos;
+	retrcRect->right = m_xPos + cxWidth;
+	retrcRect->bottom = m_yPos + cyHeight;
+	}
+
+void IHUDPainter::SetLocation (const RECT &rcRect, DWORD dwLocation)
+
+//	SetLocation
+//
+//	Sets the location on the screen.
+
+	{
+	if (dwLocation == locNone)
+		{
+		m_xPos = 0;
+		m_yPos = 0;
+		return;
+		}
+	else
+		{
+		int cxDisplay;
+		int cyDisplay;
+		GetBounds(&cxDisplay, &cyDisplay);
+
+		if (dwLocation & locAlignLeft)
+			m_xPos = rcRect.left;
+		else if (dwLocation & locAlignRight)
+			m_xPos = rcRect.right - cxDisplay;
+		else
+			m_xPos = rcRect.left + (RectWidth(rcRect) - cxDisplay) / 2;
+
+		if (dwLocation & locAlignTop)
+			m_yPos = rcRect.top;
+		else if (dwLocation & locAlignBottom)
+			m_yPos = rcRect.bottom - cyDisplay;
+		else
+			m_yPos = rcRect.top + (RectHeight(rcRect) - cyDisplay) / 2;
+		}
+	}

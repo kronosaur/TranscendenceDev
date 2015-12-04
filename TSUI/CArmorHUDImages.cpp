@@ -92,7 +92,7 @@ int CArmorHUDImages::GetArmorSegment (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 		return m_Segments.GetCount();
 	}
 
-void CArmorHUDImages::GetBounds (int *retWidth, int *retHeight)
+void CArmorHUDImages::GetBounds (int *retWidth, int *retHeight) const
 
 //	GetBounds
 //
@@ -157,9 +157,9 @@ ALERROR CArmorHUDImages::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 	return NOERROR;
 	}
 
-void CArmorHUDImages::Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
+void CArmorHUDImages::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
 
-//	Paint
+//	OnPaint
 //
 //	Paint to the destination bitmap
 

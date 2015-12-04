@@ -11,10 +11,12 @@ class CArmorHUDImages : public IHUDPainter
 		CArmorHUDImages (void);
 
 		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
 		virtual void Invalidate (void) { m_bInvalid = true;  }
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
 
 	private:
 		struct SArmorSegmentImageDesc
@@ -63,20 +65,25 @@ class CArmorHUDRingSegments : public IHUDPainter
 		CArmorHUDRingSegments (void);
 
 		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
 		virtual void Invalidate (void) { m_bInvalid = true;  }
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
 
 	private:
-		void DrawArmorIntegrity (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText);
+		void DrawArmorIntegrity (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbColor);
+		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledArmor *pArmor);
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions
 
 		CG32bitPixel m_rgbArmor;			//	Color of armor segment
+		CG32bitPixel m_rgbArmorText;		//	Color of text
 		CG32bitPixel m_rgbArmorTextBack;	//	Armor text background color
 		CG32bitPixel m_rgbShields;			//	Color of shields
+		CG32bitPixel m_rgbShieldsText;		//	Shield text color
 		CG32bitPixel m_rgbShieldsTextBack;	//	Shield text background color
 
 		int m_iArmorRingRadius;
@@ -105,9 +112,11 @@ class CShieldHUDDefault : public IHUDPainter
 		virtual ~CShieldHUDDefault (void);
 
 		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
 
 	private:
 		struct STextPaint

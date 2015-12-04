@@ -31,7 +31,7 @@ ALERROR CArmorHUDRingSegments::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CArmorHUDRingSegments::DrawArmorIntegrity (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText)
+void CArmorHUDRingSegments::DrawArmorIntegrity (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbColor)
 
 //	DrawArmorIntegrity
 //
@@ -51,34 +51,50 @@ void CArmorHUDRingSegments::DrawArmorIntegrity (CG32bitImage &Dest, int iAngle, 
 	int iArcWidth;
 
 	CVector vText;
+	Metric rTextRot;
 
 	//	Figure out if we're drawing the text radially or along the arc.
 
 	if (iAngle <= 45 || (iAngle >= 135 && iAngle <= 225) || iAngle >= 315)
 		{
-		iArcRadius = Max(10, iRadius - m_cxMaxValue);
-		iArcWidth = m_cxMaxValue + RING_SPACING;
+		CVector vInnerPos;
+		CVector vOuterPos;
+		CVector vMidPoint = CVector::FromPolarInv(rCenterAngle, iRadius);
+		int cxTotal = m_cxMaxValue + 2;
+		int cxExtra = m_cxMaxValue / 2;
 
-		//	Compute the smallest angle that will fit the height of the text
-		//	at the narrow point of the arc.
+		//	Right side of circle
 
-		rArcSpan = (Metric)m_cyMaxValue / (Metric)iArcRadius;
-		rArcStart = mathAngleMod(rCenterAngle - (0.5 * rArcSpan));
-
-		//	Compute a point where we can draw the text. This point will be the top,
-		//	center of the text.
-		//
-		//	Right side of the circle
-
-		Metric rRadiusCenterText = Max(1.0, (Metric)iArcRadius + 0.5 * iArcWidth);
-		Metric rAngleTextAdj = (0.5 * m_cyMaxValue) / rRadiusCenterText;
 		if (iAngle <= 45 || iAngle >= 315)
-			vText = CVector::FromPolarInv(rCenterAngle + rAngleTextAdj, rRadiusCenterText);
+			{
+			vInnerPos = vMidPoint - CVector(cxTotal - cxExtra, 0.0);
+			vOuterPos = vMidPoint + CVector(cxExtra, 0.0);
+
+			vText = vInnerPos + (0.5 * (vOuterPos - vInnerPos)) + CVector(0.0, -0.5 * m_cyMaxValue);
+			rTextRot = 0.0;
+			}
 
 		//	Left side of circle
 
 		else
-			vText = CVector::FromPolarInv(rCenterAngle - rAngleTextAdj, rRadiusCenterText);
+			{
+			vInnerPos = vMidPoint + CVector(cxTotal - cxExtra, 0.0);
+			vOuterPos = vMidPoint - CVector(cxExtra, 0.0);
+
+			vText = vInnerPos + (0.5 * (vOuterPos - vInnerPos)) + CVector(0.0, -0.5 * m_cyMaxValue);
+			rTextRot = 0.0;
+			}
+
+		//	Draw the arc
+
+		CVector vCenter(m_xCenter, m_yCenter);
+		bool bRightSide = (iAngle <= 45 || iAngle >= 315);
+		CGDraw::ArcQuadrilateral(Dest,
+				vCenter,
+				vInnerPos,
+				vOuterPos,
+				m_cyMaxValue,
+				m_rgbArmorTextBack);
 		}
 
 	//	Otherwise, painting along the arc.
@@ -86,7 +102,7 @@ void CArmorHUDRingSegments::DrawArmorIntegrity (CG32bitImage &Dest, int iAngle, 
 	else
 		{
 		iArcRadius = Max(10, iRadius - m_cyMaxValue);
-		iArcWidth = m_cyMaxValue + 2 * RING_SPACING;
+		iArcWidth = m_cyMaxValue;// +RING_SPACING;
 
 		//	Compute the smallest angle that will fit the length of the text
 		//	at the narrow point of the arc.
@@ -97,26 +113,96 @@ void CArmorHUDRingSegments::DrawArmorIntegrity (CG32bitImage &Dest, int iAngle, 
 		//	Compute the text position
 
 		if (iAngle < 180)
+			{
 			vText = CVector::FromPolarInv(rCenterAngle, iArcRadius + ((iArcWidth - m_cyMaxValue) / 2) + m_cyMaxValue);
+			rTextRot = rCenterAngle - (HALF_PI);
+			}
 		else
-			vText = CVector::FromPolarInv(rCenterAngle, iArcRadius + ((iArcWidth - m_cyMaxValue) / 2));
+			{
+			vText = CVector::FromPolarInv(rCenterAngle, iArcRadius + ((iArcWidth - m_cyMaxValue) / 2) - 1);
+			rTextRot = rCenterAngle + (HALF_PI);
+			}
+
+		//	Draw the arc
+
+		CGDraw::Arc(Dest, CVector(m_xCenter, m_yCenter), iArcRadius, rArcStart, mathAngleMod(rArcStart + rArcSpan), iArcWidth, m_rgbArmorTextBack, CGDraw::blendNormal, 0, CGDraw::ARC_INNER_RADIUS);
 		}
-
-	//	Draw the arc
-
-	CGDraw::Arc(Dest, CVector(m_xCenter, m_yCenter), iArcRadius, rArcStart, mathAngleMod(rArcStart + rArcSpan), iArcWidth, m_rgbArmorTextBack, CGDraw::blendNormal, 0, CGDraw::ARC_INNER_RADIUS);
 
 	//	Draw the text
 
-	MediumFont.DrawText(m_Buffer,
-			m_xCenter + (int)vText.GetX(),
-			m_yCenter + (int)vText.GetY(),
-			CG32bitPixel(255, 255, 255),
-			sText,
-			CG16bitFont::AlignCenter);
+	vText = vText + CVector(m_xCenter, m_yCenter);
+	if (rTextRot == 0.0)
+		MediumFont.DrawText(Dest, (int)vText.GetX(), (int)vText.GetY(), rgbColor, sText, CG16bitFont::AlignCenter);
+	else
+		CGDraw::Text(Dest,
+				vText,
+				sText,
+				MediumFont,
+				rgbColor,
+				CGDraw::blendNormal,
+				rTextRot,
+				CGDraw::TEXT_ALIGN_CENTER);
 	}
 
-void CArmorHUDRingSegments::GetBounds (int *retWidth, int *retHeight)
+void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledArmor *pArmor)
+
+	//	DrawArmorName
+	//
+	//	Draws the name of the given armor segment (and any enhancements).
+
+	{
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+	CVector vCenter(m_xCenter, m_yCenter);
+
+	//	We scale down the angle because we want the name to fit on the sides
+	//	(not on top or below the circle).
+
+	if (iAngle <= 90)
+		iAngle = iAngle / 2;
+	else if (iAngle > 270)
+		iAngle = 360 - (360 - iAngle) / 2;
+	else if (iAngle <= 180)
+		iAngle = 180 - (180 - iAngle) / 2;
+	else
+		iAngle = 180 + (iAngle - 180) / 2;
+
+	Metric rAngle = mathDegreesToRadians(iAngle);
+
+	//	Metrics
+
+	CString sName = pArmor->GetClass()->GetShortName();
+	int cyText;
+	int cxText = MediumFont.MeasureText(sName, &cyText);
+	int cxBackground = cxText + 4 * RING_SPACING;
+
+	//	Paint the background
+
+	CVector vInnerPos = CVector::FromPolarInv(rAngle, iRadius);
+	CVector vOuterPos;
+	if (iAngle <= 90 || iAngle >= 270)
+		vOuterPos = vInnerPos + CVector(cxBackground, 0.0);
+	else
+		vOuterPos = vInnerPos - CVector(cxBackground, 0.0);
+
+	CGDraw::ArcQuadrilateral(Dest, vCenter, vInnerPos, vOuterPos, cyText, m_rgbArmorTextBack);
+
+	//	Draw text
+
+	CVector vTextPos = vCenter + (vInnerPos + 0.5 * (vOuterPos - vInnerPos)) - CVector(0.0, 0.5 * cyText);
+	MediumFont.DrawText(Dest, (int)vTextPos.GetX(), (int)vTextPos.GetY(), m_rgbArmorText, sName, CG16bitFont::AlignCenter);
+
+	//	Paint modifier
+
+	CItemListManipulator ItemList(pShip->GetItemList());
+	pShip->SetCursorAtArmor(ItemList, pArmor->GetSect());
+	CString sMods = ItemList.GetItemAtCursor().GetEnhancedDesc(pShip);
+	int xMod = (int)vTextPos.GetX();
+	int yMod = (int)vTextPos.GetY() + cyText;
+	DrawModifier(Dest, xMod, yMod, sMods, locAlignCenter);
+	}
+
+void CArmorHUDRingSegments::GetBounds (int *retWidth, int *retHeight) const
 
 //	GetBounds
 //
@@ -135,8 +221,10 @@ ALERROR CArmorHUDRingSegments::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pCl
 
 	{
 	m_rgbArmor = ::LoadRGBColor(pDesc->GetAttribute(ARMOR_COLOR_ATTRIB), CG32bitPixel(255, 128, 0));
+	m_rgbArmorText = CG32bitPixel::Fade(m_rgbArmor, CG32bitPixel(255, 255, 255), 80);
 	m_rgbArmorTextBack = CG32bitPixel::Darken(m_rgbArmor, 128);
 	m_rgbShields = ::LoadRGBColor(pDesc->GetAttribute(SHIELDS_COLOR_ATTRIB), CG32bitPixel(103, 204, 0));
+	m_rgbShieldsText = CG32bitPixel::Fade(m_rgbShields, CG32bitPixel(255, 255, 255), 80);
 	m_rgbShieldsTextBack = CG32bitPixel::Darken(m_rgbShields, 128);
 
 	//	LATER: Load this from definition
@@ -164,9 +252,9 @@ ALERROR CArmorHUDRingSegments::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pCl
 	return NOERROR;
 	}
 
-void CArmorHUDRingSegments::Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
+void CArmorHUDRingSegments::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
 
-//	Paint
+//	OnPaint
 //
 //	Paint
 
@@ -203,6 +291,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 			|| (pShip = Ctx.pSource->AsShip()) == NULL)
 		return;
 
+	CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);
+
 	//	Set up some metrics
 
 	const CVisualPalette &VI = g_pHI->GetVisuals();
@@ -222,6 +312,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 	//	Paint each of the armor segments, one at a time.
 
 	int iArmorInnerRadius = m_iArmorRingRadius - m_iArmorRingWidth;
+	int iArmorNameRadius = m_iArmorRingRadius + RING_SPACING + m_iShieldRingWidth + RING_SPACING;
 
 	for (i = 0; i < pShip->GetArmorSectionCount(); i++)
 		{
@@ -261,14 +352,18 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 		//	Draw armor integrity box
 
-		DrawArmorIntegrity(m_Buffer, AngleMod(90 + (pSect->iStartAt + (pSect->iSpan / 2))), iArmorInnerRadius + RING_SPACING, strPatternSubst(CONSTLIT("%d%%"), iWhole));
+		int iCenterAngle = AngleMod(90 + (pSect->iStartAt + (pSect->iSpan / 2)));
+		DrawArmorIntegrity(m_Buffer, iCenterAngle, iArmorInnerRadius + RING_SPACING, strPatternSubst(CONSTLIT("%d%%"), iWhole), m_rgbArmorText);
+
+		//	Draw armor text
+
+		DrawArmorName(m_Buffer, iCenterAngle, iArmorNameRadius, pShip, pArmor);
 		}
 
 	//	Paint shield level
 
 	int iShieldHP = 0;
 	int iShieldMaxHP = 0;
-	CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);
 	if (pShield)
 		pShield->GetStatus(pShip, &iShieldHP, &iShieldMaxHP);
 
@@ -305,7 +400,4 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				0,
 				CGDraw::ARC_INNER_RADIUS);
 		}
-
-
-
 	}

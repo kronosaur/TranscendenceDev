@@ -66,7 +66,7 @@ ALERROR CShieldHUDDefault::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CShieldHUDDefault::GetBounds (int *retWidth, int *retHeight)
+void CShieldHUDDefault::GetBounds (int *retWidth, int *retHeight) const
 
 //	GetBounds
 //
@@ -107,9 +107,9 @@ ALERROR CShieldHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass,
 	return NOERROR;
 	}
 
-void CShieldHUDDefault::Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
+void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)
 
-//	Paint
+//	OnPaint
 //
 //	Paint
 
