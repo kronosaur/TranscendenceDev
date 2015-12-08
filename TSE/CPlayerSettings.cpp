@@ -97,29 +97,32 @@ CPlayerSettings &CPlayerSettings::operator= (const CPlayerSettings &Source)
 
 	//	Armor
 
-	m_fHasArmorDesc = Source.m_fHasArmorDesc;
-	m_ArmorDesc = Source.m_ArmorDesc;
 	m_fOwnArmorDesc = Source.m_fOwnArmorDesc;
 	if (m_fOwnArmorDesc)
 		m_pArmorDesc = Source.m_pArmorDesc->OrphanCopy();
+	else
+		m_pArmorDesc = Source.m_pArmorDesc;
 
 	//	Shields
 
-	m_fHasShieldDesc = Source.m_fHasShieldDesc;
-	m_ShieldDesc = Source.m_ShieldDesc;
 	m_fOwnShieldDesc = Source.m_fOwnShieldDesc;
 	if (m_fOwnShieldDesc)
 		m_pShieldDesc = Source.m_pShieldDesc->OrphanCopy();
+	else
+		m_pShieldDesc = Source.m_pShieldDesc;
+
+	//	Weapons
+
+	m_fOwnWeaponDesc = Source.m_fOwnWeaponDesc;
+	if (m_fOwnWeaponDesc)
+		m_pWeaponDesc = Source.m_pWeaponDesc->OrphanCopy();
+	else
+		m_pWeaponDesc = Source.m_pWeaponDesc;
 
 	//	Reactor
 
 	m_fHasReactorDesc = Source.m_fHasReactorDesc;
 	m_ReactorDesc = Source.m_ReactorDesc;
-
-	//	Weapon
-
-	m_fHasWeaponDesc = Source.m_fHasWeaponDesc;
-	m_WeaponDesc = Source.m_WeaponDesc;
 
 	//	Flags
 
@@ -177,55 +180,15 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 
 	//	Armor display
 
-#if 1
 	if (!m_fOwnArmorDesc
 			&& (m_pArmorDesc = pClass->GetArmorDescInherited()) == NULL)
 		return ComposeLoadError(Ctx, ERR_ARMOR_DISPLAY_NEEDED);
-#else
-	if (m_fHasArmorDesc)
-		{
-		if (error = m_ArmorDesc.ShipImage.OnDesignLoadComplete(Ctx))
-			return error;
-
-		for (i = 0; i < m_ArmorDesc.Segments.GetCount(); i++)
-			{
-			SArmorSegmentImageDesc &ArmorDesc = m_ArmorDesc.Segments[i];
-
-			if (error = ArmorDesc.Image.OnDesignLoadComplete(Ctx))
-				return error;
-			}
-		}
-	else if (m_pArmorDescInherited = pClass->GetArmorDescInherited())
-		;
-	else
-		return ComposeLoadError(Ctx, ERR_ARMOR_DISPLAY_NEEDED);
-#endif
 
 	//	Shields
 
-#if 1
 	if (!m_fOwnShieldDesc
 			&& (m_pShieldDesc = pClass->GetShieldDescInherited()) == NULL)
 		return ComposeLoadError(Ctx, ERR_SHIELD_DISPLAY_NEEDED);
-#else
-	if (m_fHasShieldDesc)
-		{
-		if (!m_ShieldDesc.pShieldEffect.IsEmpty())
-			{
-			if (error = m_ShieldDesc.pShieldEffect.Bind(Ctx))
-				return error;
-			}
-		else
-			{
-			if (error = m_ShieldDesc.Image.OnDesignLoadComplete(Ctx))
-				return error;
-			}
-		}
-	else if (m_pShieldDescInherited = pClass->GetShieldDescInherited())
-		;
-	else
-		return ComposeLoadError(Ctx, ERR_SHIELD_DISPLAY_NEEDED);
-#endif
 
 	//	Reactor
 
@@ -250,13 +213,8 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 
 	//	Weapon
 
-	if (m_fHasWeaponDesc)
-		{
-		if (error = m_WeaponDesc.Image.OnDesignLoadComplete(Ctx))
-			return error;
-		}
-	else
-		m_pWeaponDescInherited = pClass->GetWeaponDescInherited();
+	if (!m_fOwnWeaponDesc)
+		m_pWeaponDesc = pClass->GetWeaponDescInherited();
 
 	//	Done
 
@@ -282,6 +240,12 @@ void CPlayerSettings::CleanUp (void)
 		{
 		delete m_pShieldDesc;
 		m_pShieldDesc = NULL;
+		}
+
+	if (m_fOwnWeaponDesc)
+		{
+		delete m_pWeaponDesc;
+		m_pWeaponDesc = NULL;
 		}
 	}
 
@@ -316,35 +280,15 @@ CEffectCreator *CPlayerSettings::FindEffectCreator (const CString &sUNID)
 
 	switch (*pPos)
 		{
+		//	No longer needed
+#if 0
 		case 's':
 			return m_ShieldDesc.pShieldEffect;
+#endif
 
 		default:
 			return NULL;
 		}
-	}
-
-int CPlayerSettings::GetArmorSegment (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
-
-//	GetArmorSegment
-//
-//	While loading the armor segment descriptors, returns the segment number for 
-//	this descriptor.
-
-	{
-	//	For API versions 21 and higher, we figure out the segment version based
-	//	on an explicit attribute.
-
-	if (Ctx.GetAPIVersion() >= 21)
-		{
-		int iSegment = pDesc->GetAttributeIntegerBounded(SEGMENT_ATTRIB, 0, -1, -1);
-		return (iSegment != -1 ? iSegment : m_ArmorDesc.Segments.GetCount());
-		}
-
-	//	Otherwise, it is based on the order of elements in the XML
-
-	else
-		return m_ArmorDesc.Segments.GetCount();
 	}
 
 ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
@@ -373,10 +317,7 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 		m_fIncludeInAllAdventures = false;
 		}
 
-	m_fHasArmorDesc = false;
 	m_fHasReactorDesc = false;
-	m_fHasShieldDesc = false;
-	m_fHasWeaponDesc = false;
 
 	m_iSortOrder = pDesc->GetAttributeIntegerBounded(SORT_ORDER_ATTRIB, 0, -1, 100);
 
@@ -436,139 +377,21 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 
 	//	Load the armor display data
 
-#if 1
 	m_pArmorDesc = pDesc->GetContentElementByTag(ARMOR_DISPLAY_TAG);
 	if (m_pArmorDesc)
 		{
 		m_pArmorDesc = m_pArmorDesc->OrphanCopy();
 		m_fOwnArmorDesc = true;
 		}
-#else
-	CXMLElement *pArmorDisplay = pDesc->GetContentElementByTag(ARMOR_DISPLAY_TAG);
-	if (pArmorDisplay)
-		{
-		//	Get the style
-
-		const CString &sStyle = pArmorDisplay->GetAttribute(STYLE_ATTRIB);
-		if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
-			m_ArmorDesc.iStyle = SArmorImageDesc::styleImage;
-		else if (strEquals(sStyle, STYLE_RING_SEGMENTS))
-			m_ArmorDesc.iStyle = SArmorImageDesc::styleRingSegments;
-		else
-			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown ArmorDisplay style: %s."), sStyle));
-
-		//	Loop over all sub elements
-
-		for (i = 0; i < pArmorDisplay->GetContentElementCount(); i++)
-			{
-			CXMLElement *pSub = pArmorDisplay->GetContentElement(i);
-
-			if (strEquals(pSub->GetTag(), ARMOR_SECTION_TAG))
-				{
-				int iSegment = GetArmorSegment(Ctx, pClass, pSub);
-				SArmorSegmentImageDesc &ArmorDesc = *m_ArmorDesc.Segments.SetAt(iSegment);
-
-				if (error = ArmorDesc.Image.InitFromXML(Ctx, pSub))
-					return ComposeLoadError(Ctx, ERR_ARMOR_DISPLAY_NEEDED);
-
-				ArmorDesc.sName = pSub->GetAttribute(NAME_ATTRIB);
-				ArmorDesc.xDest = pSub->GetAttributeInteger(DEST_X_ATTRIB);
-				ArmorDesc.yDest = pSub->GetAttributeInteger(DEST_Y_ATTRIB);
-				ArmorDesc.xHP = pSub->GetAttributeInteger(HP_X_ATTRIB);
-				ArmorDesc.yHP = pSub->GetAttributeInteger(HP_Y_ATTRIB);
-				ArmorDesc.yName = pSub->GetAttributeInteger(NAME_Y_ATTRIB);
-				ArmorDesc.cxNameBreak = pSub->GetAttributeInteger(NAME_BREAK_WIDTH);
-				ArmorDesc.xNameDestOffset = pSub->GetAttributeInteger(NAME_DEST_X_ATTRIB);
-				ArmorDesc.yNameDestOffset = pSub->GetAttributeInteger(NAME_DEST_Y_ATTRIB);
-				}
-			else if (strEquals(pSub->GetTag(), SHIP_IMAGE_TAG))
-				{
-				if (error = m_ArmorDesc.ShipImage.InitFromXML(Ctx, pSub))
-					return ComposeLoadError(Ctx, ERR_SHIP_IMAGE_NEEDED);
-				}
-			else
-				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown ArmorDisplay element: %s."), pSub->GetTag()));
-			}
-
-		//	Finish loading based on style
-
-		switch (m_ArmorDesc.iStyle)
-			{
-			case SArmorImageDesc::styleImage:
-				{
-				//	This is valid only if we have the proper number of armor segments
-
-				if (m_ArmorDesc.Segments.GetCount() != pClass->GetHullSectionCount())
-					{
-					if (pClass->GetAPIVersion() >= 29)
-						return ComposeLoadError(Ctx, CONSTLIT("Insufficient armor segments in ArmorDisplay."));
-
-					//	In previous versions this wasn't an error, so we continue for
-					//	backwards compatibility.
-
-					else
-						{
-						m_fHasArmorDesc = (pArmorDisplay->GetContentElementCount() > 0);
-						break;
-						}
-					}
-
-				m_fHasArmorDesc = true;
-				break;
-				}
-
-			case SArmorImageDesc::styleRingSegments:
-				m_fHasArmorDesc = true;
-				break;
-
-			default:
-				ASSERT(false);
-				return ERR_FAIL;
-			}
-		}
-	else
-		m_fHasArmorDesc = false;
-#endif
 
 	//	Load shield display data
 
-#if 1
 	m_pShieldDesc = pDesc->GetContentElementByTag(SHIELD_DISPLAY_TAG);
 	if (m_pShieldDesc)
 		{
 		m_pShieldDesc = m_pShieldDesc->OrphanCopy();
 		m_fOwnShieldDesc = true;
 		}
-#else
-	CXMLElement *pShieldDisplay = pDesc->GetContentElementByTag(SHIELD_DISPLAY_TAG);
-	if (pShieldDisplay)
-		{
-		//	Load the new shield effect
-
-		if (error = m_ShieldDesc.pShieldEffect.LoadEffect(Ctx,
-				strPatternSubst(CONSTLIT("%d:p:s"), pClass->GetUNID()),
-				pShieldDisplay->GetContentElementByTag(SHIELD_EFFECT_TAG),
-				pShieldDisplay->GetAttribute(SHIELD_EFFECT_ATTRIB)))
-			return error;
-
-		//	If we don't have the new effect, load the backwards compatibility
-		//	image.
-
-		if (m_ShieldDesc.pShieldEffect.IsEmpty())
-			{
-			if (error = m_ShieldDesc.Image.InitFromXML(Ctx, 
-					pShieldDisplay->GetContentElementByTag(IMAGE_TAG)))
-				return ComposeLoadError(Ctx, ERR_SHIELD_DISPLAY_NEEDED);
-			}
-
-		m_fHasShieldDesc = true;
-		}
-
-	//	If we have a shield effect then we must have an armor image
-
-	if (!m_ShieldDesc.pShieldEffect.IsEmpty() && m_ArmorDesc.ShipImage.GetBitmapUNID() == 0)
-		return ComposeLoadError(Ctx, ERR_MUST_HAVE_SHIP_IMAGE);
-#endif
 
 	//	Load reactor display data
 
@@ -614,16 +437,11 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 
 	//	Load weapon display data
 
-	CXMLElement *pWeaponDisplay = pDesc->GetContentElementByTag(WEAPON_DISPLAY_TAG);
-	if (pWeaponDisplay)
+	m_pWeaponDesc = pDesc->GetContentElementByTag(WEAPON_DISPLAY_TAG);
+	if (m_pWeaponDesc)
 		{
-		//	Load the image
-
-		if (error = m_WeaponDesc.Image.InitFromXML(Ctx, 
-				pWeaponDisplay->GetContentElementByTag(IMAGE_TAG)))
-			return ComposeLoadError(Ctx, ERR_WEAPON_DISPLAY_NEEDED);
-
-		m_fHasWeaponDesc = true;
+		m_pWeaponDesc = m_pWeaponDesc->OrphanCopy();
+		m_fOwnWeaponDesc = true;
 		}
 
 	//	Done
@@ -638,10 +456,22 @@ void CPlayerSettings::MergeFrom (const CPlayerSettings &Src)
 //	Merges from the source
 
 	{
-	if (Src.m_fHasArmorDesc)
+	if (Src.m_pArmorDesc)
 		{
-		m_ArmorDesc = Src.m_ArmorDesc;
-		m_fHasArmorDesc = true;
+		if (m_fOwnArmorDesc)
+			delete m_pArmorDesc;
+
+		m_pArmorDesc = Src.m_pArmorDesc;
+		m_fOwnArmorDesc = false;
+		}
+
+	if (Src.m_pShieldDesc)
+		{
+		if (m_fOwnShieldDesc)
+			delete m_pShieldDesc;
+
+		m_pShieldDesc = Src.m_pShieldDesc;
+		m_fOwnShieldDesc = false;
 		}
 
 	if (Src.m_fHasReactorDesc)
@@ -650,16 +480,13 @@ void CPlayerSettings::MergeFrom (const CPlayerSettings &Src)
 		m_fHasReactorDesc = true;
 		}
 
-	if (Src.m_fHasShieldDesc)
+	if (Src.m_pWeaponDesc)
 		{
-		m_ShieldDesc = Src.m_ShieldDesc;
-		m_fHasShieldDesc = true;
-		}
+		if (m_fOwnWeaponDesc)
+			delete m_pWeaponDesc;
 
-	if (Src.m_fHasWeaponDesc)
-		{
-		m_WeaponDesc = Src.m_WeaponDesc;
-		m_fHasWeaponDesc = true;
+		m_pWeaponDesc = Src.m_pWeaponDesc;
+		m_fOwnWeaponDesc = false;
 		}
 	}
 

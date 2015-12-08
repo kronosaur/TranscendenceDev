@@ -23,11 +23,12 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 	//	Create
 
 	IHUDPainter *pPainter;
+	CXMLElement *pDesc;
 	switch (iType)
 		{
 		case hudArmor:
 			{
-			CXMLElement *pDesc = pSettings->GetArmorDesc();
+			pDesc = pSettings->GetArmorDesc();
 			if (pDesc == NULL)
 				return NULL;
 
@@ -42,25 +43,31 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 				return NULL;
 				}
 
-			if (pPainter->InitFromXML(Ctx, pClass, pDesc) != NOERROR)
-				{
-				delete pPainter;
-				return NULL;
-				}
-
 			break;
 			}
 
 		case hudShields:
 			{
-			CXMLElement *pDesc = pSettings->GetShieldDesc();
+			pDesc = pSettings->GetShieldDesc();
 			if (pDesc == NULL)
 				return NULL;
 
 			pPainter = new CShieldHUDDefault;
-			if (pPainter->InitFromXML(Ctx, pClass, pDesc) != NOERROR)
+			break;
+			}
+
+		case hudTargeting:
+			{
+			pDesc = pSettings->GetWeaponDesc();
+			if (pDesc == NULL)
+				return NULL;
+
+			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
+			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
+				pPainter = new CWeaponHUDDefault;
+			else
 				{
-				delete pPainter;
+				Ctx.sError = strPatternSubst(CONSTLIT("Invalid weapon display style: %s."), sStyle);
 				return NULL;
 				}
 
@@ -70,6 +77,14 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 		default:
 			ASSERT(false);
 			return NULL;
+		}
+
+	//	Initialize
+
+	if (pPainter->InitFromXML(Ctx, pClass, pDesc) != NOERROR)
+		{
+		delete pPainter;
+		return NULL;
 		}
 
 	//	Bind

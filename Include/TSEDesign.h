@@ -3979,11 +3979,7 @@ class CShipClass : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
 		CString GenerateShipName (DWORD *retdwFlags);
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
-#if 1
 		CXMLElement *GetArmorDescInherited (void);
-#else
-		const SArmorImageDesc *GetArmorDescInherited (void);
-#endif
 		inline int GetCargoSpace (void) { return m_iCargoSpace; }
 		inline CGenericType *GetCharacter (void) { return m_Character; }
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
@@ -4027,17 +4023,13 @@ class CShipClass : public CDesignType
 		inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
 		inline int GetRotationRange (void) { return m_RotationDesc.GetFrameCount(); }
 		inline int GetScore (void) { return m_iScore; }
-#if 1
 		CXMLElement *GetShieldDescInherited (void);
-#else
-		const SShieldImageDesc *GetShieldDescInherited (void);
-#endif
 		inline DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
 		CString GetShortName (void) const;
 		inline const CString &GetClassName (void) const { return m_sName; }
 		inline const CString &GetManufacturerName (void) const { return m_sManufacturer; }
 		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
-		const SWeaponImageDesc *GetWeaponDescInherited (void);
+		CXMLElement *GetWeaponDescInherited (void);
 		inline int GetWreckChance (void) { return m_iLeavesWreck; }
 		CObjectImageArray &GetWreckImage (void) { if (!m_WreckImage.IsLoaded()) CreateWreckImage(); return m_WreckImage; }
 		void GetWreckImage (CObjectImageArray *retWreckImage);

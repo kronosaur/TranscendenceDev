@@ -2080,7 +2080,6 @@ CString CShipClass::GenerateShipName (DWORD *retdwFlags)
 		}
 	}
 
-#if 1
 CXMLElement *CShipClass::GetArmorDescInherited (void)
 
 //	GetArmorDescInherited
@@ -2101,28 +2100,6 @@ CXMLElement *CShipClass::GetArmorDescInherited (void)
 	else
 		return NULL;
 	}
-#else
-const SArmorImageDesc *CShipClass::GetArmorDescInherited (void)
-
-//	GetArmorDescInherited
-//
-//	Returns the armor desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	const SArmorImageDesc *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetArmorImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetArmorDescInherited();
-		}
-	else
-		return NULL;
-	}
-#endif
 
 CCommunicationsHandler *CShipClass::GetCommsHandler (void)
 
@@ -2445,7 +2422,6 @@ const SReactorImageDesc *CShipClass::GetReactorDescInherited (void)
 		return NULL;
 	}
 
-#if 1
 CXMLElement *CShipClass::GetShieldDescInherited (void)
 
 //	GetShieldDescInherited
@@ -2466,28 +2442,6 @@ CXMLElement *CShipClass::GetShieldDescInherited (void)
 	else
 		return NULL;
 	}
-#else
-const SShieldImageDesc *CShipClass::GetShieldDescInherited (void)
-
-//	GetShieldDescInherited
-//
-//	Returns the shield desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	const SShieldImageDesc *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetShieldImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetShieldDescInherited();
-		}
-	else
-		return NULL;
-	}
-#endif
 
 CString CShipClass::GetShortName (void) const
 
@@ -2502,7 +2456,7 @@ CString CShipClass::GetShortName (void) const
 		return GetClassName();
 	}
 
-const SWeaponImageDesc *CShipClass::GetWeaponDescInherited (void)
+CXMLElement *CShipClass::GetWeaponDescInherited (void)
 
 //	GetWeaponDescInherited
 //
@@ -2511,7 +2465,7 @@ const SWeaponImageDesc *CShipClass::GetWeaponDescInherited (void)
 	{
 	CDesignType *pBase;
 
-	const SWeaponImageDesc *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetWeaponImageDescRaw() : NULL);
+	CXMLElement *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetWeaponDescRaw() : NULL);
 	if (pDesc)
 		return pDesc;
 	else if (pBase = GetInheritFrom())

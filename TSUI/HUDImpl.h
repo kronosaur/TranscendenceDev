@@ -141,3 +141,31 @@ class CShieldHUDDefault : public IHUDPainter
 		IEffectPainter *m_pShieldPainter;	//	Caches shield painter
 		TArray<STextPaint> m_Text;
 	};
+
+class CWeaponHUDDefault : public IHUDPainter
+	{
+	public:
+		CWeaponHUDDefault (void);
+		virtual ~CWeaponHUDDefault (void);
+
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	private:
+		void PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x, int y);
+		void Realize (SHUDPaintCtx &Ctx);
+
+		//	Definitions
+
+		CObjectImageArray m_BackImage;		//	Background image
+
+		//	Runtime State
+
+		bool m_bInvalid;
+		CG32bitImage m_Buffer;
+		CG32bitImage *m_pDefaultBack;
+	};
