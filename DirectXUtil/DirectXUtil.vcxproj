@@ -425,6 +425,7 @@
     <ClCompile Include="CGRealRGB.cpp" />
     <ClCompile Include="CGRegion.cpp" />
     <ClCompile Include="CGRunList.cpp" />
+    <ClCompile Include="CGShape.cpp" />
     <ClCompile Include="CGTextArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

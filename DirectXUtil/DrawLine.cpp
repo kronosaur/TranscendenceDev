@@ -9,84 +9,14 @@ void CGDraw::Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Me
 
 //	Arc
 //
-//	Draws and arc
+//	Draws an arc
 
 	{
-	const Metric MIN_SEGMENT_LENGTH = 3.0;
-
-	if (rRadius <= 0.0 || rArcWidth <= 0.0)
-		return;
-
-	//	Options
-
-	bool bCenterRadius = ((dwFlags & ARC_INNER_RADIUS ? false : true));
-
-	//	We will create a path
+	//	Create the shape
 
 	CGPath ArcPath;
-	Metric rHalfWidth = 0.5 * rArcWidth;
-	Metric rInnerRadius = (bCenterRadius ? Max(0.0, (Metric)rRadius - rHalfWidth) : rRadius);
-	Metric rOuterRadius = (bCenterRadius ? (Metric)rRadius + rHalfWidth : rRadius + rArcWidth);
-
-	//	If the start angle equals the end angle, then we create a full ring.
-
-	if (rStartAngle == rEndAngle)
-		{
-		//	Add the points for the outer circle
-
-		TArray<CVector> Points;
-		CGeometry::AddArcPoints(CVector(), rOuterRadius, 0.0, 0.0, &Points);
-		ArcPath.AddPolygonHandoff(Points);
-
-		//	If we've got an inner radius, add that
-
-		if (rInnerRadius > 0.0)
-			{
-			CGeometry::AddArcPoints(CVector(), rInnerRadius, 0.0, 0.0, &Points);
-			ArcPath.AddPolygonHandoff(Points);
-			}
-		}
-
-	//	Otherwise, an arc
-
-	else
-		{
-		TArray<CVector> Points;
-
-		//	Figure out how many radians the spacing is at the outer radius and the
-		//	inner radius.
-
-		Metric rOuterSpacing = iSpacing / rOuterRadius;
-
-		//	Compute angles for outer curve
-
-		Metric rStartOuter = ::mathAngleMod(rStartAngle + rOuterSpacing);
-		Metric rEndOuter = ::mathAngleMod(rEndAngle - rOuterSpacing);
-
-		//	Start at the outer curve
-
-		CGeometry::AddArcPoints(CVector(), rOuterRadius, rStartOuter, rEndOuter, &Points, CGeometry::FLAG_SCREEN_COORDS);
-
-		//	If the inner radius is 0 then we just need a single point at the center.
-
-		if (rInnerRadius == 0.0)
-			Points.Insert(CVector(0.0, 0.0));
-
-		//	Otherwise, continue with the inner curve
-
-		else
-			{
-			Metric rInnerSpacing = (rInnerRadius > 0.0 ? iSpacing / rInnerRadius : 0.0);
-			Metric rStartInner = ::mathAngleMod(rStartAngle + rInnerSpacing);
-			Metric rEndInner = ::mathAngleMod(rEndAngle - rInnerSpacing);
-
-			CGeometry::AddArcPoints(CVector(), rInnerRadius, rStartInner, rEndInner, &Points, CGeometry::FLAG_SCREEN_COORDS | CGeometry::FLAG_CLOCKWISE);
-			}
-
-		//	Create a path and rasterize it.
-
-		ArcPath.InitTakeHandoff(Points);
-		}
+	if (!CGShape::Arc(CVector(), rRadius, rStartAngle, rEndAngle, rArcWidth, &ArcPath, iSpacing, dwFlags))
+		return;
 
 	//	Rasterize into a region
 
@@ -227,55 +157,9 @@ void CGDraw::ArcSegment (CG32bitImage &Dest, const CVector &vCenter, Metric rRad
 //	Draws a circle segment (the area defined by a chord).
 
 	{
-	const Metric MIN_SEGMENT_LENGTH = 3.0;
-
-	//	Make sure we're in bounds
-
-	if (rRadius <= 0.0 || rWidth <= 0.0)
-		return;
-
-	//	If width is greater than 2 radii, then we've got a full circle
-
-	if (rWidth >= 2.0 * rRadius)
-		{
-		//	LATER: Create an floating point version of Circle.
-
-		Circle(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), (int)rRadius, rgbColor, iMode);
-		return;
-		}
-
-	//	Let C be the center of the circle. For now we compute everything as if
-	//	C were at the origin (and translate later).
-	//
-	//	Let P1 be the point at which the chord touches the circle. Let P2 be the
-	//	second point such that P1 to P2 is the arc of the segment.
-	//
-	//	Let M be the mid point on the chord between P1 and P2.
-	//
-	//	Start by computing the distance between C and M along the rAngle. This
-	//	will be negative if rWidth > rRadius.
-
-	Metric rChordD = rRadius - rWidth;
-
-	//	Next, compute the angle M-C-P2. If we were to add this angle to rAngle,
-	//	we would end up with the angle of P2.
-
-	Metric rHalfAngle = acos(rChordD / rRadius);
-
-	//	Now compute the two angles for P1 and P2.
-
-	Metric rP1Angle = mathAngleMod(rAngle - rHalfAngle);
-	Metric rP2Angle = mathAngleMod(rAngle + rHalfAngle);
-
-	//	Add the points along the arc
-
-	TArray<CVector> Points;
-	CGeometry::AddArcPoints(CVector(), rRadius, rP1Angle, rP2Angle, &Points, CGeometry::FLAG_SCREEN_COORDS);
-
-	//	Create a path and rasterize it.
-
 	CGPath ArcPath;
-	ArcPath.InitTakeHandoff(Points);
+	if (!CGShape::ArcSegment(CVector(), rRadius, rAngle, rWidth, &ArcPath))
+		return;
 
 	//	Rasterize into a region
 
@@ -295,139 +179,9 @@ void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const
 //	curved with respect to a center point.
 
 	{
-	const Metric MIN_SEGMENT_LENGTH = 3.0;
-
-	//	Decompose the inner and outer positions
-
-	Metric rInnerRadius;
-	Metric rInnerAngle = vInnerPos.Polar(&rInnerRadius);
-
-	Metric rOuterRadius;
-	Metric rOuterAngle = vOuterPos.Polar(&rOuterRadius);
-
-	//	Make sure we're in bounds
-
-	if (rInnerRadius >= rOuterRadius)
-		return;
-
-	//	Generate some metrics for the quadrilateral
-
-	CVector vLength = vOuterPos - vInnerPos;
-	CVector vHalfWidth = 0.5 * rWidth * vLength.Perpendicular().Normal();
-
-	//	Generate the intersection between the inner circle and the top line.
-
-	bool bNoInnerIntersect = false;
-	CVector vP1;
-	CVector vP2;
-	CVector vInnerCornerUp;
-	CGeometry::EIntersectResults iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
-	if (iResult == CGeometry::intersectNone)
-		bNoInnerIntersect = true;
-	else if (iResult == CGeometry::intersectPoint)
-		vInnerCornerUp = vP1;
-	else
-		vInnerCornerUp = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
-
-	//	Now the bottom line
-
-	CVector vInnerCornerDown;
-	iResult = CGeometry::IntersectLineCircle(vInnerPos - vHalfWidth, vOuterPos - vHalfWidth, CVector(), rInnerRadius, &vP1, &vP2);
-	if (iResult == CGeometry::intersectNone)
-		bNoInnerIntersect = true;
-	else if (iResult == CGeometry::intersectPoint)
-		vInnerCornerDown = vP1;
-	else
-		vInnerCornerDown = ((vP1 - vInnerPos).Length2() < (vP2 - vInnerPos).Length2() ? vP1 : vP2);
-
-	//	If the inner side did not intersect, then we just use a straight line.
-
-	if (bNoInnerIntersect)
-		{
-		vInnerCornerUp = vInnerPos + vHalfWidth;
-		vInnerCornerDown = vInnerPos - vHalfWidth;
-		}
-
-	//	Generate the intersection between the outer circle and the top line.
-
-	bool bNoOuterIntersect = false;
-	CVector vOuterCornerUp;
-	iResult = CGeometry::IntersectLineCircle(vInnerPos + vHalfWidth, vOuterPos + vHalfWidth, CVector(), rOuterRadius, &vP1, &vP2);
-	if (iResult == CGeometry::intersectNone)
-		bNoOuterIntersect = true;
-	else if (iResult == CGeometry::intersectPoint)
-		vOuterCornerUp = vP1;
-	else
-		vOuterCornerUp = ((vP1 - vOuterPos).Length2() < (vP2 - vOuterPos).Length2() ? vP1 : vP2);
-
-	//	Now the bottom line
-
-	CVector vOuterCornerDown;
-	iResult = CGeometry::IntersectLineCircle(vInnerPos - vHalfWidth, vOuterPos - vHalfWidth, CVector(), rOuterRadius, &vP1, &vP2);
-	if (iResult == CGeometry::intersectNone)
-		bNoOuterIntersect = true;
-	else if (iResult == CGeometry::intersectPoint)
-		vOuterCornerDown = vP1;
-	else
-		vOuterCornerDown = ((vP1 - vOuterPos).Length2() < (vP2 - vOuterPos).Length2() ? vP1 : vP2);
-
-	//	If no intersection, just use the two points
-
-	if (bNoOuterIntersect)
-		{
-		vOuterCornerUp = vOuterPos + vHalfWidth;
-		vOuterCornerDown = vOuterPos - vHalfWidth;
-		}
-
-	//	We will create a path
-
 	CGPath ArcPath;
-	TArray<CVector> Points;
-
-	//	If no outer intersection, then just use the two points
-
-	if (bNoOuterIntersect)
-		{
-		Points.Insert(vOuterCornerDown);
-		Points.Insert(vOuterCornerUp);
-		}
-
-	//	Otherwise, start at the outer curve
-
-	else
-		{
-		Metric rStartOuter = vOuterCornerDown.Polar();
-		Metric rEndOuter = vOuterCornerUp.Polar();
-
-		CGeometry::AddArcPoints(CVector(), rOuterRadius, rStartOuter, rEndOuter, &Points);
-		}
-
-	//	If the inner radius is 0 then we just need a single point at the center.
-
-	if (rInnerRadius == 0.0)
-		Points.Insert(CVector(0.0, 0.0));
-
-	//	If no intersection, then just use the two points
-
-	else if (bNoInnerIntersect)
-		{
-		Points.Insert(vInnerCornerUp);
-		Points.Insert(vInnerCornerDown);
-		}
-
-	//	Otherwise, continue with the inner curve
-
-	else
-		{
-		Metric rStartInner = vInnerCornerDown.Polar();
-		Metric rEndInner = vInnerCornerUp.Polar();
-
-		CGeometry::AddArcPoints(CVector(), rInnerRadius, rStartInner, rEndInner, &Points, CGeometry::FLAG_CLOCKWISE);
-		}
-
-	//	Create a path and rasterize it.
-
-	ArcPath.InitTakeHandoff(Points);
+	if (!CGShape::ArcQuadrilateral(CVector(), vInnerPos, vOuterPos, rWidth, &ArcPath))
+		return;
 
 	//	Rasterize into a region
 

@@ -47,6 +47,7 @@ class CGRegion
 		inline int GetXOffset (void) const { return m_xOffset; }
 		void InitFromRect (int x, int y, int cxWidth, int cyHeight, DWORD dwAlpha = 0xff);
 		void InitFromRunList (const TArray<CGRunList> &Runs, int iSamples, bool bSorted = false);
+		inline bool IsEmpty (void) const { return (m_Rows.GetCount() == 0); }
 
 		inline static DWORD DecodeRun (DWORD dwRun, int *retcxLength) { *retcxLength = (dwRun >> 16); return GetOpacity8(dwRun); }
 
