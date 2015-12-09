@@ -120,6 +120,12 @@ inline const CVector operator/ (const CVector &op1, const Metric op2) { return C
 class CGeometry
 	{
 	public:
+		enum EFlags
+			{
+			FLAG_SCREEN_COORDS =			0x00000001,	//	Use screen coordinates (y is positive downward)
+			FLAG_CLOCKWISE =				0x00000002,	//	Clockwise instead of counter-clockwise
+			};
+
 		enum EIntersectResults
 			{
 			intersectNone,
@@ -127,6 +133,7 @@ class CGeometry
 			intersect2Points,
 			};
 
+		static void AddArcPoints (const CVector &vCenter, Metric rRadius, Metric rFromAngle, Metric rToAngle, TArray<CVector> *ioPoints, DWORD dwFlags = 0);
 		static EIntersectResults IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1 = NULL, CVector *retvP2 = NULL);
 	};
 

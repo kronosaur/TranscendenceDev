@@ -123,7 +123,7 @@ void CGDraw::Text (CG32bitImage &Dest, const CVector &vPos, const CString &sText
 			{
 			if (rgbColor.GetAlpha() == 0xff)
 				{
-				TFillImageSolid<CGBlendCopy> Painter(rgbColor);
+				TFillImageSolid<CGBlendCompositeCopy> Painter(rgbColor);
 				Painter.FillMaskTransformed(Dest, vText, vScale, rRotation, Line, 0, 0, Line.GetWidth(), Line.GetHeight());
 				}
 			else

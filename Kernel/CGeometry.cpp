@@ -9,6 +9,104 @@
 #include "Euclid.h"
 
 const Metric EPSILON = 1e-10;
+const Metric MIN_SEGMENT_LENGTH = 3.0;
+
+void CGeometry::AddArcPoints (const CVector &vCenter, Metric rRadius, Metric rFromAngle, Metric rToAngle, TArray<CVector> *ioPoints, DWORD dwFlags)
+
+//	AddArcPoints
+//
+//	Add a set of points to form an arc.
+
+	{
+	bool bScreenCoords = (dwFlags & FLAG_SCREEN_COORDS ? true : false);
+	bool bClockwise = (dwFlags & FLAG_CLOCKWISE ? true : false);
+
+	//	If angles are equal, then we have a circle
+
+	if (rFromAngle == rToAngle)
+		{
+		//	Figure out how many segments
+
+		Metric rCircle = TAU * rRadius;
+		Metric rSegCount = Max(8.0, floor(rCircle / MIN_SEGMENT_LENGTH));
+		Metric rSegAngle = TAU / rSegCount;
+
+		//	Make the points
+
+		ioPoints->GrowToFit((int)rSegCount + 1);
+
+		Metric rAngle;
+		if (bClockwise)
+			{
+			for (rAngle = 0.0; rAngle > -TAU; rAngle -= rSegAngle)
+				ioPoints->Insert(vCenter + CVector::FromPolar(rAngle, rRadius));
+			}
+		else
+			{
+			for (rAngle = 0.0; rAngle < TAU; rAngle += rSegAngle)
+				ioPoints->Insert(vCenter + CVector::FromPolar(rAngle, rRadius));
+			}
+		}
+
+	//	Otherwise, we create an arc
+
+	else
+		{
+		//	Compute angles for the curve
+
+		Metric rArcAngle = ::mathAngleDiff(rFromAngle, rToAngle);
+		Metric rArc = rArcAngle * rRadius;
+		Metric rSegCount = floor(rArc / MIN_SEGMENT_LENGTH);
+		Metric rSegAngle = rArcAngle / floor(rSegCount);
+
+		//	Allocate an array with enough points for the arc
+
+		ioPoints->GrowToFit((int)rSegCount + 1);
+
+		//	Make the points
+
+		Metric rAngle;
+
+		if (bScreenCoords)
+			{
+			if (bClockwise)
+				{
+				Metric rAngleDone = rToAngle - rArcAngle;
+				for (rAngle = rToAngle; rAngle > rAngleDone; rAngle -= rSegAngle)
+					ioPoints->Insert(vCenter + CVector::FromPolarInv(rAngle, rRadius));
+
+				ioPoints->Insert(vCenter + CVector::FromPolarInv(rFromAngle, rRadius));
+				}
+			else
+				{
+				Metric rAngleDone = rFromAngle + rArcAngle;
+				for (rAngle = rFromAngle; rAngle < rAngleDone; rAngle += rSegAngle)
+					ioPoints->Insert(vCenter + CVector::FromPolarInv(rAngle, rRadius));
+
+				ioPoints->Insert(vCenter + CVector::FromPolarInv(rToAngle, rRadius));
+				}
+			}
+		else
+			{
+			if (bClockwise)
+				{
+				Metric rAngleDone = rToAngle - rArcAngle;
+				for (rAngle = rToAngle; rAngle > rAngleDone; rAngle -= rSegAngle)
+					ioPoints->Insert(vCenter + CVector::FromPolar(rAngle, rRadius));
+
+				ioPoints->Insert(vCenter + CVector::FromPolar(rFromAngle, rRadius));
+				}
+			else
+				{
+				Metric rAngleDone = rFromAngle + rArcAngle;
+				for (rAngle = rFromAngle; rAngle < rAngleDone; rAngle += rSegAngle)
+					ioPoints->Insert(vCenter + CVector::FromPolar(rAngle, rRadius));
+
+				ioPoints->Insert(vCenter + CVector::FromPolar(rToAngle, rRadius));
+				}
+			}
+		}
+	}
 
 CGeometry::EIntersectResults CGeometry::IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1, CVector *retvP2)
 

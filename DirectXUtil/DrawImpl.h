@@ -33,7 +33,6 @@ class CGlowingRingPainter
 
 //	Blt Painters ---------------------------------------------------------------
 
-
 class CFilterNormal : public TBlt<CFilterNormal>
 	{
 	public:
@@ -232,6 +231,14 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 
 		BYTE m_byOpacity;
 		DWORD m_dwRnd;
+	};
+
+template <class BLENDER> class TBltImageNormal : public TImagePainter<TBltImageNormal<BLENDER>, BLENDER>
+	{
+	private:
+		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const { return rgbSrc; }
+
+	friend TImagePainter;
 	};
 
 template <class BLENDER> class TFillImageSolid : public TImagePainter<TFillImageSolid<BLENDER>, BLENDER>

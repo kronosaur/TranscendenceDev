@@ -48,7 +48,7 @@ void CGDraw::Region (CG32bitImage &Dest, int x, int y, const CGRegion &Region, C
 			{
 			if (rgbColor.GetAlpha() == 0xff)
 				{
-				TFillRegionSolid<CGBlendCopy> Painter(rgbColor);
+				TFillRegionSolid<CGBlendCompositeCopy> Painter(rgbColor);
 				Painter.Draw(Dest, x, y, Region);
 				}
 			else
@@ -103,7 +103,7 @@ void CGDraw::Region (CG32bitImage &Dest, int x, int y, const CG16bitBinaryRegion
 			{
 			if (rgbColor.GetAlpha() == 0xff)
 				{
-				TFillRegionSolid<CGBlendCopy> Painter(rgbColor);
+				TFillRegionSolid<CGBlendCompositeCopy> Painter(rgbColor);
 				Painter.Draw(Dest, x, y, Region);
 				}
 			else

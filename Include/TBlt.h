@@ -11,6 +11,7 @@ class IImagePainter
 		virtual ~IImagePainter (void) { }
 
 		virtual void Blt (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) = 0;
+		virtual void BltMask (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG8bitImage &Mask) = 0;
 		virtual void BltTransformed (CG32bitImage &Dest, const CVector &vPos, const CVector &vScale, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) = 0;
 
 		virtual void FillMaskTransformed (CG32bitImage &Dest, const CVector &vPos, const CVector &vScale, Metric rRotation, const CG8bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) = 0;
@@ -47,6 +48,8 @@ template <class PAINTER, class BLENDER> class TImagePainter : public IImagePaint
 
 					if (byAlpha == 0x00)
 						;
+					else if (byAlpha == 0xff)
+						*pDest = BLENDER::Copy(*pDest, rgbResult);
 					else
 						*pDest = BLENDER::Blend(*pDest, rgbResult);
 
@@ -56,6 +59,78 @@ template <class PAINTER, class BLENDER> class TImagePainter : public IImagePaint
 
 				pSrcRow = Src.NextRow(pSrcRow);
 				pDestRow = Dest.NextRow(pDestRow);
+				}
+			}
+
+		virtual void BltMask (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG8bitImage &Mask)
+			{
+			//	Make sure we're in bounds
+
+			if (!Dest.AdjustCoords(&xSrc, &ySrc, Src.GetWidth(), Src.GetHeight(), 
+					&xDest, &yDest,
+					&cxSrc, &cySrc))
+				return;
+
+			//	NOTE: We expect the Mask is the same size as the destination,
+			//	but we adjust coordinates just in case.
+
+			if (!Mask.AdjustCoords(&xSrc, &ySrc, Src.GetWidth(), Src.GetHeight(),
+					&xDest, &yDest,
+					&cxSrc, &cySrc))
+				return;
+
+			//	Do the blt
+
+			CG32bitPixel *pSrcRow = Src.GetPixelPos(xSrc, ySrc);
+			CG32bitPixel *pSrcRowEnd = Src.GetPixelPos(xSrc, ySrc + cySrc);
+			CG32bitPixel *pDestRow = Dest.GetPixelPos(xDest, yDest);
+			BYTE *pAlphaRow = Mask.GetPixelPos(xDest, yDest);
+
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				CG32bitPixel *pDestPos = pDestRow;
+				BYTE *pAlphaPos = pAlphaRow;
+
+				START_ROW(pSrcPos, pDestPos);
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					BYTE byAlpha = *pAlphaPos;
+
+					if (byAlpha == 0)
+						;
+					else
+						{
+						CG32bitPixel rgbSrc = FILTER(*pSrcPos, pDestPos);
+
+						if (rgbSrc.GetAlpha() == 0)
+							;
+						else if (byAlpha == 0xff)
+							{
+							if (rgbSrc.GetAlpha() == 0xff)
+								*pDestPos = BLENDER::Copy(*pDestPos, rgbSrc);
+							else
+								*pDestPos = BLENDER::Blend(*pDestPos, rgbSrc);
+							}
+						else
+							{
+							if (rgbSrc.GetAlpha() == 0xff)
+								*pDestPos = BLENDER::Blend(*pDestPos, CG32bitPixel(rgbSrc, byAlpha));
+							else
+								*pDestPos = BLENDER::BlendAlpha(*pDestPos, rgbSrc, byAlpha);
+							}
+						}
+
+					pDestPos++;
+					pSrcPos++;
+					pAlphaPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = Dest.NextRow(pDestRow);
+				pAlphaRow = Mask.NextRow(pAlphaRow);
 				}
 			}
 
@@ -303,6 +378,7 @@ template <class PAINTER, class BLENDER> class TImagePainter : public IImagePaint
 		inline bool BeginDraw (void) { return true; }
 		inline void EndDraw (void) { }
 		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) { return CG32bitPixel::Null();  }
+		inline CG32bitPixel GetPixelAt (int x, int y) { return CG32bitPixel::Null(); }
 		inline void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest) { }
 	};
 
