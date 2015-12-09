@@ -8,7 +8,7 @@
 #define STYLE_ATTRIB							CONSTLIT("style")
 
 #define STYLE_DEFAULT							CONSTLIT("default")
-#define STYLE_RING_SEGMENTS						CONSTLIT("ringSegments")
+#define STYLE_CIRCULAR							CONSTLIT("circular")
 
 IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, ETypes iType)
 
@@ -35,7 +35,7 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
 			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
 				pPainter = new CArmorHUDImages;
-			else if (strEquals(sStyle, STYLE_RING_SEGMENTS))
+			else if (strEquals(sStyle, STYLE_CIRCULAR))
 				pPainter = new CArmorHUDRingSegments;
 			else
 				{
@@ -65,6 +65,8 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
 			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
 				pPainter = new CWeaponHUDDefault;
+			else if (strEquals(sStyle, STYLE_CIRCULAR))
+				pPainter = new CWeaponHUDCircular;
 			else
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("Invalid weapon display style: %s."), sStyle);

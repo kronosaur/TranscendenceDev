@@ -173,6 +173,7 @@
     <ClCompile Include="CTimerRegistry.cpp" />
     <ClCompile Include="CUserSettings.cpp" />
     <ClCompile Include="CVisualPalette.cpp" />
+    <ClCompile Include="CWeaponHUDCircular.cpp" />
     <ClCompile Include="CWeaponHUDDefault.cpp" />
     <ClCompile Include="Dialogs.cpp" />
     <ClCompile Include="HardCrash.cpp" />

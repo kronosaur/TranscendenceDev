@@ -151,6 +151,7 @@ class CWeaponHUDDefault : public IHUDPainter
 		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
 		virtual void GetBounds (int *retWidth, int *retHeight) const;
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual void Invalidate (void) { m_bInvalid = true;  }
 
 	protected:
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
@@ -168,4 +169,44 @@ class CWeaponHUDDefault : public IHUDPainter
 		bool m_bInvalid;
 		CG32bitImage m_Buffer;
 		CG32bitImage *m_pDefaultBack;
+	};
+
+class CWeaponHUDCircular : public IHUDPainter
+	{
+	public:
+		CWeaponHUDCircular (void);
+		virtual ~CWeaponHUDCircular (void);
+
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual void Invalidate (void) { m_bInvalid = true;  }
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	private:
+		void PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObject *pTarget);
+		void PaintTargetStat (CG32bitImage &Dest, int x, int y, const CString &sLabel, const CString &sStat);
+		void PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDevice, Metric rAngle);
+		void Realize (SHUDPaintCtx &Ctx);
+
+		//	Definitions
+
+		int m_cxDisplay;					//	Size of display (calculated in InitFromXML)
+		int m_cyDisplay;
+		int m_xCenter;						//	Center of circle
+		int m_yCenter;
+		int m_iTargetRadius;				//	Radius of target screen
+
+		CG32bitPixel m_rgbTargetBack;		//	Color of background target area
+		CG32bitPixel m_rgbTargetText;		//	Color of target text
+		CG32bitPixel m_rgbWeaponBack;		//	Color of weapon area background
+		CG32bitPixel m_rgbWeaponText;		//	Color of weapon text
+
+		//	Runtime State
+
+		bool m_bInvalid;
+		CG32bitImage m_Buffer;
+		CG8bitImage m_TargetMask;			//	Mask for the target
 	};

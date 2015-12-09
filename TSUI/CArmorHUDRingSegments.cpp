@@ -203,7 +203,7 @@ void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRa
 	else
 		vOuterPos = vInnerPos - CVector(cxBackground, 0.0);
 
-	CGDraw::ArcQuadrilateral(Dest, vCenter, vInnerPos, vOuterPos, cyText, rgbBack);
+	CGDraw::ArcQuadrilateral(Dest, vCenter, vInnerPos, vOuterPos, cyText, rgbBack, CGDraw::blendCompositeNormal);
 
 	//	Draw text
 
@@ -387,7 +387,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				AngleMod(90 + pSect->iStartAt + pSect->iSpan), 
 				iWidth, 
 				m_rgbArmor, 
-				CGDraw::blendNormal, 
+				CGDraw::blendCompositeNormal, 
 				INTER_SEGMENT_SPACING,
 				CGDraw::ARC_INNER_RADIUS);
 
@@ -449,7 +449,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				0,
 				iWidth,
 				m_rgbShields,
-				CGDraw::blendNormal,
+				CGDraw::blendCompositeNormal,
 				0,
 				CGDraw::ARC_INNER_RADIUS);
 
