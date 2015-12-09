@@ -3979,7 +3979,6 @@ class CShipClass : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
 		CString GenerateShipName (DWORD *retdwFlags);
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
-		CXMLElement *GetArmorDescInherited (void);
 		inline int GetCargoSpace (void) { return m_iCargoSpace; }
 		inline CGenericType *GetCharacter (void) { return m_Character; }
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
@@ -3995,6 +3994,7 @@ class CShipClass : public CDesignType
 		CWeaponFireDesc *GetExplosionType (void) { return m_pExplosionType; }
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
+		CXMLElement *GetHUDDescInherited (EHUDTypes iType) const;
 		inline const DriveDesc *GetHullDriveDesc (void) const { return &m_DriveDesc; }
 		inline int GetHullMass (void) const { return m_iMass; }
 		inline HullSection *GetHullSection (int iIndex) const { return &m_Hull[iIndex]; }
@@ -4018,18 +4018,15 @@ class CShipClass : public CDesignType
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
 		inline const ReactorDesc *GetReactorDesc (void) { return &m_ReactorDesc; }
-		const SReactorImageDesc *GetReactorDescInherited (void);
 		inline int GetRotationAngle (void) { return m_RotationDesc.GetFrameAngle(); }
 		inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
 		inline int GetRotationRange (void) { return m_RotationDesc.GetFrameCount(); }
 		inline int GetScore (void) { return m_iScore; }
-		CXMLElement *GetShieldDescInherited (void);
 		inline DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
 		CString GetShortName (void) const;
 		inline const CString &GetClassName (void) const { return m_sName; }
 		inline const CString &GetManufacturerName (void) const { return m_sManufacturer; }
 		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
-		CXMLElement *GetWeaponDescInherited (void);
 		inline int GetWreckChance (void) { return m_iLeavesWreck; }
 		CObjectImageArray &GetWreckImage (void) { if (!m_WreckImage.IsLoaded()) CreateWreckImage(); return m_WreckImage; }
 		void GetWreckImage (CObjectImageArray *retWreckImage);

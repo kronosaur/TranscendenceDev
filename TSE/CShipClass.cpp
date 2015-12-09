@@ -2080,27 +2080,6 @@ CString CShipClass::GenerateShipName (DWORD *retdwFlags)
 		}
 	}
 
-CXMLElement *CShipClass::GetArmorDescInherited (void)
-
-//	GetArmorDescInherited
-//
-//	Returns the armor desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	CXMLElement *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetArmorImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetArmorDescInherited();
-		}
-	else
-		return NULL;
-	}
-
 CCommunicationsHandler *CShipClass::GetCommsHandler (void)
 
 //	GetCommsHandler
@@ -2198,6 +2177,27 @@ CString CShipClass::GetGenericName (DWORD *retdwFlags)
 			return strPatternSubst(CONSTLIT("%s-class %s"), GetClassName(), GetShipTypeName());
 
 		}
+	}
+
+CXMLElement *CShipClass::GetHUDDescInherited (EHUDTypes iType) const
+
+//	GetHUDDescInherited
+//
+//	Returns the HUD descriptor, either from this class or some base class.
+
+	{
+	CDesignType *pBase;
+
+	CXMLElement *pDesc = (m_pPlayerSettings && !m_pPlayerSettings->IsHUDDescInherited(iType) ? m_pPlayerSettings->GetHUDDesc(iType) : NULL);
+	if (pDesc)
+		return pDesc;
+	else if (pBase = GetInheritFrom())
+		{
+		CShipClass *pBaseClass = CShipClass::AsType(pBase);
+		return (pBaseClass ? pBaseClass->GetHUDDescInherited(iType) : NULL);
+		}
+	else
+		return NULL;
 	}
 
 int CShipClass::GetHullSectionAtAngle (int iAngle)
@@ -2401,48 +2401,6 @@ CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPo
 		return CVector();
 	}
 
-const SReactorImageDesc *CShipClass::GetReactorDescInherited (void)
-
-//	GetReactorDescInherited
-//
-//	Returns the reator desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	const SReactorImageDesc *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetReactorImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetReactorDescInherited();
-		}
-	else
-		return NULL;
-	}
-
-CXMLElement *CShipClass::GetShieldDescInherited (void)
-
-//	GetShieldDescInherited
-//
-//	Returns the shield desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	CXMLElement *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetShieldImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetShieldDescInherited();
-		}
-	else
-		return NULL;
-	}
-
 CString CShipClass::GetShortName (void) const
 
 //	GetShortName
@@ -2454,27 +2412,6 @@ CString CShipClass::GetShortName (void) const
 		return strPatternSubst(LITERAL("%s %s"), GetManufacturerName(), GetShipTypeName());
 	else
 		return GetClassName();
-	}
-
-CXMLElement *CShipClass::GetWeaponDescInherited (void)
-
-//	GetWeaponDescInherited
-//
-//	Returns the shield desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	CXMLElement *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetWeaponDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetWeaponDescInherited();
-		}
-	else
-		return NULL;
 	}
 
 CStationType *CShipClass::GetWreckDesc (void)

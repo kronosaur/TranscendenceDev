@@ -142,6 +142,49 @@ class CShieldHUDDefault : public IHUDPainter
 		TArray<STextPaint> m_Text;
 	};
 
+class CReactorHUDDefault : public IHUDPainter
+	{
+	public:
+		CReactorHUDDefault (void);
+		virtual ~CReactorHUDDefault (void);
+
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual void Invalidate (void) { m_bInvalid = true;  }
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx);
+
+	private:
+		void Realize (SHUDPaintCtx &Ctx);
+
+		//	Definitions
+
+		CObjectImageArray m_ReactorImage;
+
+		CObjectImageArray m_PowerLevelImage;
+		int m_xPowerLevelImage;
+		int m_yPowerLevelImage;
+
+		CObjectImageArray m_FuelLevelImage;
+		int m_xFuelLevelImage;
+		int m_yFuelLevelImage;
+
+		CObjectImageArray m_FuelLowLevelImage;
+
+		RECT m_rcReactorText;
+		RECT m_rcPowerLevelText;
+		RECT m_rcFuelLevelText;
+
+		//	Runtime State
+
+		bool m_bInvalid;
+		CG32bitImage m_Buffer;
+		int m_iTick;
+	};
+
 class CWeaponHUDDefault : public IHUDPainter
 	{
 	public:
@@ -209,4 +252,5 @@ class CWeaponHUDCircular : public IHUDPainter
 		bool m_bInvalid;
 		CG32bitImage m_Buffer;
 		CG8bitImage m_TargetMask;			//	Mask for the target
+		CGRegion m_InfoArea;				//	Info area semi-circle region
 	};

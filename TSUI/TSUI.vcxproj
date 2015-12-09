@@ -167,6 +167,7 @@
     <ClCompile Include="CListCollectionTask.cpp" />
     <ClCompile Include="CMCIMixer.cpp" />
     <ClCompile Include="CMessageSession.cpp" />
+    <ClCompile Include="CReactorHUDDefault.cpp" />
     <ClCompile Include="CShieldHUDDefault.cpp" />
     <ClCompile Include="CSoundtrackManager.cpp" />
     <ClCompile Include="CStargateEffectPainter.cpp" />

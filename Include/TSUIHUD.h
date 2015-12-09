@@ -31,17 +31,20 @@ struct SHUDPaintCtx
 	IHUDPainter *pShieldsHUD;				//	Armor display also paints shields
 	};
 
+struct SHUDUpdateCtx
+	{
+	SHUDUpdateCtx (void) :
+			pSource(NULL),
+			iTick(0)
+		{ }
+
+	CSpaceObject *pSource;
+	int iTick;
+	};
+
 class IHUDPainter
 	{
 	public:
-		enum ETypes
-			{
-			hudArmor,
-			hudShields,
-			hudReactor,
-			hudTargeting,
-			};
-
 		enum ELocations
 			{
 			locNone =					0x00000000,
@@ -66,17 +69,20 @@ class IHUDPainter
 		inline void Paint (CG32bitImage &Dest, SHUDPaintCtx &Ctx) { OnPaint(Dest, m_xPos, m_yPos, Ctx); }
 		inline void Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) { OnPaint(Dest, x, y, Ctx); }
 		void SetLocation (const RECT &rcRect, DWORD dwLocation);
+		inline void Update (SHUDUpdateCtx &Ctx) { OnUpdate(Ctx); }
 
-		static IHUDPainter *Create (SDesignLoadCtx &Ctx, CShipClass *pClass, ETypes iType);
+		static IHUDPainter *Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDTypes iType);
 
 	protected:
 
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) = 0;
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx) { }
 
 		//	Helpers
 
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const { Ctx.sError = sError; return ERR_FAIL; }
 		void DrawModifier (CG32bitImage &Dest, int x, int y, const CString &sText, DWORD dwLocation);
+		ALERROR InitRectFromElement (CXMLElement *pItem, RECT *retRect);
 
 	private:
 		int m_xPos;

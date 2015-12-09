@@ -129,6 +129,9 @@
     <ClCompile Include="CWeaponHUDCircular.cpp">
       <Filter>Source Files\HUD</Filter>
     </ClCompile>
+    <ClCompile Include="CReactorHUDDefault.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

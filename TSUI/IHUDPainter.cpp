@@ -5,12 +5,17 @@
 
 #include "stdafx.h"
 
+#define HEIGHT_ATTRIB							CONSTLIT("height")
+#define WIDTH_ATTRIB							CONSTLIT("width")
+#define X_ATTRIB								CONSTLIT("x")
+#define Y_ATTRIB								CONSTLIT("y")
+
 #define STYLE_ATTRIB							CONSTLIT("style")
 
 #define STYLE_DEFAULT							CONSTLIT("default")
 #define STYLE_CIRCULAR							CONSTLIT("circular")
 
-IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, ETypes iType)
+IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDTypes iType)
 
 //	Create
 //
@@ -19,19 +24,17 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 
 	{
 	const CPlayerSettings *pSettings = pClass->GetPlayerSettings();
+	CXMLElement *pDesc = pSettings->GetHUDDesc(iType);
+	if (pDesc == NULL)
+		return NULL;
 
 	//	Create
 
 	IHUDPainter *pPainter;
-	CXMLElement *pDesc;
 	switch (iType)
 		{
 		case hudArmor:
 			{
-			pDesc = pSettings->GetArmorDesc();
-			if (pDesc == NULL)
-				return NULL;
-
 			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
 			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
 				pPainter = new CArmorHUDImages;
@@ -46,22 +49,28 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EType
 			break;
 			}
 
+		case hudReactor:
+			{
+			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
+			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
+				pPainter = new CReactorHUDDefault;
+			else
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Invalid reactor display style: %s."), sStyle);
+				return NULL;
+				}
+
+			break;
+			}
+
 		case hudShields:
 			{
-			pDesc = pSettings->GetShieldDesc();
-			if (pDesc == NULL)
-				return NULL;
-
 			pPainter = new CShieldHUDDefault;
 			break;
 			}
 
 		case hudTargeting:
 			{
-			pDesc = pSettings->GetWeaponDesc();
-			if (pDesc == NULL)
-				return NULL;
-
 			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
 			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
 				pPainter = new CWeaponHUDDefault;
@@ -160,6 +169,24 @@ void IHUDPainter::GetRect (RECT *retrcRect) const
 	retrcRect->top = m_yPos;
 	retrcRect->right = m_xPos + cxWidth;
 	retrcRect->bottom = m_yPos + cyHeight;
+	}
+
+ALERROR IHUDPainter::InitRectFromElement (CXMLElement *pItem, RECT *retRect)
+
+//	InitRectFromElement
+//
+//	Initializes the rect from x, y, width, height attributes
+
+	{
+	if (pItem == NULL)
+		return ERR_FAIL;
+
+	retRect->left = pItem->GetAttributeInteger(X_ATTRIB);
+	retRect->top = pItem->GetAttributeInteger(Y_ATTRIB);
+	retRect->right = retRect->left + pItem->GetAttributeInteger(WIDTH_ATTRIB);
+	retRect->bottom = retRect->top + pItem->GetAttributeInteger(HEIGHT_ATTRIB);
+
+	return NOERROR;
 	}
 
 void IHUDPainter::SetLocation (const RECT &rcRect, DWORD dwLocation)

@@ -152,7 +152,10 @@ void CWeaponHUDCircular::PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObj
 
 	//	Paint information about the target below it.
 
-	CGDraw::ArcSegment(m_Buffer, CVector(m_xCenter, m_yCenter), m_iTargetRadius, 1.5 * PI, cyInfoArea, rgbInfoBack);
+	if (m_InfoArea.IsEmpty())
+		CGShape::ArcSegment(CVector(), m_iTargetRadius, 1.5 * PI, cyInfoArea, &m_InfoArea);
+
+	CGDraw::Region(m_Buffer, m_xCenter, m_yCenter, m_InfoArea, rgbInfoBack);
 
 	//	Paint various information
 

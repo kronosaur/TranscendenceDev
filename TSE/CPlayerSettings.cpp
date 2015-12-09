@@ -79,6 +79,8 @@ CPlayerSettings &CPlayerSettings::operator= (const CPlayerSettings &Source)
 //	CPlayerSettings operator =
 
 	{
+	int i;
+
 	CleanUp();
 
 	m_sDesc = Source.m_sDesc;
@@ -95,34 +97,14 @@ CPlayerSettings &CPlayerSettings::operator= (const CPlayerSettings &Source)
 	m_pShipConfigScreen = Source.m_pShipConfigScreen;
 	m_HullValue = Source.m_HullValue;
 
-	//	Armor
+	//	HUDs
 
-	m_fOwnArmorDesc = Source.m_fOwnArmorDesc;
-	if (m_fOwnArmorDesc)
-		m_pArmorDesc = Source.m_pArmorDesc->OrphanCopy();
-	else
-		m_pArmorDesc = Source.m_pArmorDesc;
-
-	//	Shields
-
-	m_fOwnShieldDesc = Source.m_fOwnShieldDesc;
-	if (m_fOwnShieldDesc)
-		m_pShieldDesc = Source.m_pShieldDesc->OrphanCopy();
-	else
-		m_pShieldDesc = Source.m_pShieldDesc;
-
-	//	Weapons
-
-	m_fOwnWeaponDesc = Source.m_fOwnWeaponDesc;
-	if (m_fOwnWeaponDesc)
-		m_pWeaponDesc = Source.m_pWeaponDesc->OrphanCopy();
-	else
-		m_pWeaponDesc = Source.m_pWeaponDesc;
-
-	//	Reactor
-
-	m_fHasReactorDesc = Source.m_fHasReactorDesc;
-	m_ReactorDesc = Source.m_ReactorDesc;
+	for (i = 0; i < hudCount; i++)
+		{
+		m_HUDDesc[i] = Source.m_HUDDesc[i];
+		if (m_HUDDesc[i].bFree)
+			m_HUDDesc[i].pDesc = m_HUDDesc[i].pDesc->OrphanCopy();
+		}
 
 	//	Flags
 
@@ -160,6 +142,7 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 	DEBUG_TRY
 
 	ALERROR error;
+	int i;
 
 	//	Bind basic stuff
 
@@ -178,43 +161,17 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 	if (error = m_HullValue.Bind(Ctx))
 		return error;
 
-	//	Armor display
+	//	HUDs
 
-	if (!m_fOwnArmorDesc
-			&& (m_pArmorDesc = pClass->GetArmorDescInherited()) == NULL)
-		return ComposeLoadError(Ctx, ERR_ARMOR_DISPLAY_NEEDED);
-
-	//	Shields
-
-	if (!m_fOwnShieldDesc
-			&& (m_pShieldDesc = pClass->GetShieldDescInherited()) == NULL)
-		return ComposeLoadError(Ctx, ERR_SHIELD_DISPLAY_NEEDED);
-
-	//	Reactor
-
-	if (m_fHasReactorDesc)
+	for (i = 0; i < hudCount; i++)
 		{
-		if (error = m_ReactorDesc.ReactorImage.OnDesignLoadComplete(Ctx))
-			return error;
-
-		if (error = m_ReactorDesc.PowerLevelImage.OnDesignLoadComplete(Ctx))
-			return error;
-
-		if (error = m_ReactorDesc.FuelLevelImage.OnDesignLoadComplete(Ctx))
-			return error;
-
-		if (error = m_ReactorDesc.FuelLowLevelImage.OnDesignLoadComplete(Ctx))
-			return error;
+		if (m_HUDDesc[i].pDesc == NULL || m_HUDDesc[i].bInherited)
+			{
+			ASSERT(!m_HUDDesc[i].bFree);
+			m_HUDDesc[i].pDesc = pClass->GetHUDDescInherited((EHUDTypes)i);
+			m_HUDDesc[i].bInherited = true;
+			}
 		}
-	else if (m_pReactorDescInherited = pClass->GetReactorDescInherited())
-		;
-	else
-		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
-
-	//	Weapon
-
-	if (!m_fOwnWeaponDesc)
-		m_pWeaponDesc = pClass->GetWeaponDescInherited();
 
 	//	Done
 
@@ -230,23 +187,15 @@ void CPlayerSettings::CleanUp (void)
 //	Clean up our structures
 
 	{
-	if (m_fOwnArmorDesc)
-		{
-		delete m_pArmorDesc;
-		m_pArmorDesc = NULL;
-		}
+	int i;
 
-	if (m_fOwnShieldDesc)
-		{
-		delete m_pShieldDesc;
-		m_pShieldDesc = NULL;
-		}
-
-	if (m_fOwnWeaponDesc)
-		{
-		delete m_pWeaponDesc;
-		m_pWeaponDesc = NULL;
-		}
+	for (i = 0; i < hudCount; i++)
+		if (m_HUDDesc[i].bFree)
+			{
+			delete m_HUDDesc[i].pDesc;
+			m_HUDDesc[i].pDesc = NULL;
+			m_HUDDesc[i].bFree = false;
+			}
 	}
 
 ALERROR CPlayerSettings::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError)
@@ -299,6 +248,7 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 
 	{
 	ALERROR error;
+	int i;
 
 	m_sDesc = pDesc->GetAttribute(DESC_ATTRIB);
 	if (error = LoadUNID(Ctx, pDesc->GetAttribute(LARGE_IMAGE_ATTRIB), &m_dwLargeImage))
@@ -316,8 +266,6 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 		m_fInitialClass = CXMLElement::IsBoolTrueValue(sInitialClass);
 		m_fIncludeInAllAdventures = false;
 		}
-
-	m_fHasReactorDesc = false;
 
 	m_iSortOrder = pDesc->GetAttributeIntegerBounded(SORT_ORDER_ATTRIB, 0, -1, 100);
 
@@ -375,73 +323,20 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 		m_pShipConfigScreen.LoadUNID(Ctx, sUNID);
 		}
 
-	//	Load the armor display data
+	//	Load the displays data
 
-	m_pArmorDesc = pDesc->GetContentElementByTag(ARMOR_DISPLAY_TAG);
-	if (m_pArmorDesc)
+	m_HUDDesc[hudArmor].pDesc = pDesc->GetContentElementByTag(ARMOR_DISPLAY_TAG);
+	m_HUDDesc[hudReactor].pDesc = pDesc->GetContentElementByTag(REACTOR_DISPLAY_TAG);
+	m_HUDDesc[hudShields].pDesc = pDesc->GetContentElementByTag(SHIELD_DISPLAY_TAG);
+	m_HUDDesc[hudTargeting].pDesc = pDesc->GetContentElementByTag(WEAPON_DISPLAY_TAG);
+	for (i = 0; i < hudCount; i++)
 		{
-		m_pArmorDesc = m_pArmorDesc->OrphanCopy();
-		m_fOwnArmorDesc = true;
-		}
-
-	//	Load shield display data
-
-	m_pShieldDesc = pDesc->GetContentElementByTag(SHIELD_DISPLAY_TAG);
-	if (m_pShieldDesc)
-		{
-		m_pShieldDesc = m_pShieldDesc->OrphanCopy();
-		m_fOwnShieldDesc = true;
-		}
-
-	//	Load reactor display data
-
-	CXMLElement *pReactorDisplay = pDesc->GetContentElementByTag(REACTOR_DISPLAY_TAG);
-	if (pReactorDisplay)
-		{
-		if (error = m_ReactorDesc.ReactorImage.InitFromXML(Ctx,
-				pReactorDisplay->GetContentElementByTag(IMAGE_TAG)))
-			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
-
-		CXMLElement *pImage = pReactorDisplay->GetContentElementByTag(POWER_LEVEL_IMAGE_TAG);
-		if (pImage == NULL || (error = m_ReactorDesc.PowerLevelImage.InitFromXML(Ctx, pImage)))
-			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
-
-		m_ReactorDesc.xPowerLevelImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
-		m_ReactorDesc.yPowerLevelImage = pImage->GetAttributeInteger(DEST_Y_ATTRIB);
-
-		pImage = pReactorDisplay->GetContentElementByTag(FUEL_LEVEL_IMAGE_TAG);
-		if (pImage == NULL || (error = m_ReactorDesc.FuelLevelImage.InitFromXML(Ctx, pImage)))
-			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
-
-		m_ReactorDesc.xFuelLevelImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
-		m_ReactorDesc.yFuelLevelImage = pImage->GetAttributeInteger(DEST_Y_ATTRIB);
-
-		pImage = pReactorDisplay->GetContentElementByTag(FUEL_LOW_LEVEL_IMAGE_TAG);
-		if (pImage == NULL || (error = m_ReactorDesc.FuelLowLevelImage.InitFromXML(Ctx, pImage)))
-			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
-
-		if (error = InitRectFromElement(pReactorDisplay->GetContentElementByTag(REACTOR_TEXT_TAG),
-				&m_ReactorDesc.rcReactorText))
-			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
-
-		if (error = InitRectFromElement(pReactorDisplay->GetContentElementByTag(POWER_LEVEL_TEXT_TAG),
-				&m_ReactorDesc.rcPowerLevelText))
-			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
-
-		if (error = InitRectFromElement(pReactorDisplay->GetContentElementByTag(FUEL_LEVEL_TEXT_TAG),
-				&m_ReactorDesc.rcFuelLevelText))
-			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
-
-		m_fHasReactorDesc = true;
-		}
-
-	//	Load weapon display data
-
-	m_pWeaponDesc = pDesc->GetContentElementByTag(WEAPON_DISPLAY_TAG);
-	if (m_pWeaponDesc)
-		{
-		m_pWeaponDesc = m_pWeaponDesc->OrphanCopy();
-		m_fOwnWeaponDesc = true;
+		if (m_HUDDesc[i].pDesc)
+			{
+			m_HUDDesc[i].pDesc = m_HUDDesc[i].pDesc->OrphanCopy();
+			m_HUDDesc[i].bFree = true;
+			m_HUDDesc[i].bInherited = false;
+			}
 		}
 
 	//	Done
@@ -456,37 +351,16 @@ void CPlayerSettings::MergeFrom (const CPlayerSettings &Src)
 //	Merges from the source
 
 	{
-	if (Src.m_pArmorDesc)
+	int i;
+
+	for (i = 0; i < hudCount; i++)
 		{
-		if (m_fOwnArmorDesc)
-			delete m_pArmorDesc;
+		if (m_HUDDesc[i].bFree)
+			delete m_HUDDesc[i].pDesc;
 
-		m_pArmorDesc = Src.m_pArmorDesc;
-		m_fOwnArmorDesc = false;
-		}
-
-	if (Src.m_pShieldDesc)
-		{
-		if (m_fOwnShieldDesc)
-			delete m_pShieldDesc;
-
-		m_pShieldDesc = Src.m_pShieldDesc;
-		m_fOwnShieldDesc = false;
-		}
-
-	if (Src.m_fHasReactorDesc)
-		{
-		m_ReactorDesc = Src.m_ReactorDesc;
-		m_fHasReactorDesc = true;
-		}
-
-	if (Src.m_pWeaponDesc)
-		{
-		if (m_fOwnWeaponDesc)
-			delete m_pWeaponDesc;
-
-		m_pWeaponDesc = Src.m_pWeaponDesc;
-		m_fOwnWeaponDesc = false;
+		m_HUDDesc[i].pDesc = Src.m_HUDDesc[i].pDesc;
+		m_HUDDesc[i].bInherited = Src.m_HUDDesc[i].bInherited;
+		m_HUDDesc[i].bFree = false;
 		}
 	}
 
