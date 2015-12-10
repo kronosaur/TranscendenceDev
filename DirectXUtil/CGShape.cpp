@@ -62,6 +62,14 @@ bool CGShape::Arc (const CVector &vCenter, Metric rRadius, Metric rStartAngle, M
 		//	inner radius.
 
 		Metric rOuterSpacing = rSpacing / rOuterRadius;
+		Metric rInnerSpacing = (rInnerRadius > 0.0 ? rSpacing / rInnerRadius : 0.0);
+
+		//	The spacing adjustments better not be larger than the arc, otherwise
+		//	we paint nothing.
+
+		Metric rFullArc = ::mathAngleDiff(rStartAngle, rEndAngle);
+		if (2.0 * rOuterSpacing >= rFullArc || 2.0 * rInnerSpacing >= rFullArc)
+			return false;
 
 		//	Compute angles for outer curve
 
@@ -81,7 +89,6 @@ bool CGShape::Arc (const CVector &vCenter, Metric rRadius, Metric rStartAngle, M
 
 		else
 			{
-			Metric rInnerSpacing = (rInnerRadius > 0.0 ? rSpacing / rInnerRadius : 0.0);
 			Metric rStartInner = ::mathAngleMod(rStartAngle + rInnerSpacing);
 			Metric rEndInner = ::mathAngleMod(rEndAngle - rInnerSpacing);
 
