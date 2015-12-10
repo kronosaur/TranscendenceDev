@@ -2578,6 +2578,14 @@ void CShipClass::InstallEquipment (CShip *pShip)
 	{
 	int i;
 
+	//	Give our base class a chance to install/remove
+
+	CShipClass *pBase = CShipClass::AsType(GetInheritFrom());
+	if (pBase)
+		pBase->InstallEquipment(pShip);
+
+	//	Handle our part
+
 	for (i = 0; i < m_Equipment.GetCount(); i++)
 		{
 		if (m_Equipment[i].bInstall)

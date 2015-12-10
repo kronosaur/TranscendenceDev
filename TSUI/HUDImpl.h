@@ -5,6 +5,11 @@
 
 #pragma once
 
+//	Default Set ----------------------------------------------------------------
+//
+//	This is the default set of HUDs, created at the dawn of the game. This set
+//	mostly relies on images.
+
 class CArmorHUDImages : public IHUDPainter
 	{
 	public:
@@ -59,6 +64,118 @@ class CArmorHUDImages : public IHUDPainter
 		TArray<STextPaint> m_Text;
 	};
 
+class CReactorHUDDefault : public IHUDPainter
+	{
+	public:
+		CReactorHUDDefault (void);
+		virtual ~CReactorHUDDefault (void);
+
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual void Invalidate (void) { m_bInvalid = true;  }
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx);
+
+	private:
+		void Realize (SHUDPaintCtx &Ctx);
+
+		//	Definitions
+
+		CObjectImageArray m_ReactorImage;
+
+		CObjectImageArray m_PowerLevelImage;
+		int m_xPowerLevelImage;
+		int m_yPowerLevelImage;
+
+		CObjectImageArray m_FuelLevelImage;
+		int m_xFuelLevelImage;
+		int m_yFuelLevelImage;
+
+		CObjectImageArray m_FuelLowLevelImage;
+
+		RECT m_rcReactorText;
+		RECT m_rcPowerLevelText;
+		RECT m_rcFuelLevelText;
+
+		//	Runtime State
+
+		bool m_bInvalid;
+		CG32bitImage m_Buffer;
+		int m_iTick;
+	};
+
+class CShieldHUDDefault : public IHUDPainter
+	{
+	public:
+		CShieldHUDDefault (void);
+		virtual ~CShieldHUDDefault (void);
+
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	private:
+		struct STextPaint
+			{
+			CString sText;
+			int x;
+			int y;
+			const CG16bitFont *pFont;
+			CG32bitPixel rgbColor;
+			};
+
+		//	Definitions
+
+		CEffectCreatorRef m_pShieldEffect;	//	Effect for display shields HUD
+		CObjectImageArray m_Image;			//	Image for shields
+
+		//	Runtime State
+
+		DWORD m_dwCachedShipID;				//	Cached painters for this ship ID.
+		IEffectPainter *m_pShieldPainter;	//	Caches shield painter
+		TArray<STextPaint> m_Text;
+	};
+
+class CWeaponHUDDefault : public IHUDPainter
+	{
+	public:
+		CWeaponHUDDefault (void);
+		virtual ~CWeaponHUDDefault (void);
+
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual void Invalidate (void) { m_bInvalid = true;  }
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	private:
+		void PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x, int y);
+		void Realize (SHUDPaintCtx &Ctx);
+
+		//	Definitions
+
+		CObjectImageArray m_BackImage;		//	Background image
+
+		//	Runtime State
+
+		bool m_bInvalid;
+		CG32bitImage m_Buffer;
+		CG32bitImage *m_pDefaultBack;
+	};
+
+//	Circular Set ---------------------------------------------------------------
+//
+//	This is a procedurally drawn set in which each HUD is circular, with various
+//	labels and displays projecting outward.
+
 class CArmorHUDRingSegments : public IHUDPainter
 	{
 	public:
@@ -107,46 +224,11 @@ class CArmorHUDRingSegments : public IHUDPainter
 		CG32bitImage m_Buffer;
 	};
 
-class CShieldHUDDefault : public IHUDPainter
+class CReactorHUDCircular : public IHUDPainter
 	{
 	public:
-		CShieldHUDDefault (void);
-		virtual ~CShieldHUDDefault (void);
-
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-
-	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
-
-	private:
-		struct STextPaint
-			{
-			CString sText;
-			int x;
-			int y;
-			const CG16bitFont *pFont;
-			CG32bitPixel rgbColor;
-			};
-
-		//	Definitions
-
-		CEffectCreatorRef m_pShieldEffect;	//	Effect for display shields HUD
-		CObjectImageArray m_Image;			//	Image for shields
-
-		//	Runtime State
-
-		DWORD m_dwCachedShipID;				//	Cached painters for this ship ID.
-		IEffectPainter *m_pShieldPainter;	//	Caches shield painter
-		TArray<STextPaint> m_Text;
-	};
-
-class CReactorHUDDefault : public IHUDPainter
-	{
-	public:
-		CReactorHUDDefault (void);
-		virtual ~CReactorHUDDefault (void);
+		CReactorHUDCircular (void);
+		virtual ~CReactorHUDCircular (void);
 
 		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
 		virtual void GetBounds (int *retWidth, int *retHeight) const;
@@ -158,60 +240,33 @@ class CReactorHUDDefault : public IHUDPainter
 		virtual void OnUpdate (SHUDUpdateCtx &Ctx);
 
 	private:
+		void PaintFuelGauge (CShip *pShip);
+		void PaintPowerGauge (CShip *pShip);
+		void PaintReactorItem (CShip *pShip);
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions
 
-		CObjectImageArray m_ReactorImage;
+		int m_iGaugeRadius;
+		int m_iGaugeWidth;
 
-		CObjectImageArray m_PowerLevelImage;
-		int m_xPowerLevelImage;
-		int m_yPowerLevelImage;
+		CG32bitPixel m_rgbGaugeBack;		//	Background color of gauges
+		CG32bitPixel m_rgbFuelGauge;		//	Color of fuel bar
+		CG32bitPixel m_rgbPowerGauge;		//	Color of power gauge
+		CG32bitPixel m_rgbGaugeWarning;		//	Color when in warning mode
 
-		CObjectImageArray m_FuelLevelImage;
-		int m_xFuelLevelImage;
-		int m_yFuelLevelImage;
+		//	Metrics
 
-		CObjectImageArray m_FuelLowLevelImage;
-
-		RECT m_rcReactorText;
-		RECT m_rcPowerLevelText;
-		RECT m_rcFuelLevelText;
+		int m_cxDisplay;
+		int m_cyDisplay;
+		int m_xCenter;
+		int m_yCenter;
 
 		//	Runtime State
 
 		bool m_bInvalid;
 		CG32bitImage m_Buffer;
 		int m_iTick;
-	};
-
-class CWeaponHUDDefault : public IHUDPainter
-	{
-	public:
-		CWeaponHUDDefault (void);
-		virtual ~CWeaponHUDDefault (void);
-
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
-
-	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
-
-	private:
-		void PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x, int y);
-		void Realize (SHUDPaintCtx &Ctx);
-
-		//	Definitions
-
-		CObjectImageArray m_BackImage;		//	Background image
-
-		//	Runtime State
-
-		bool m_bInvalid;
-		CG32bitImage m_Buffer;
-		CG32bitImage *m_pDefaultBack;
 	};
 
 class CWeaponHUDCircular : public IHUDPainter
@@ -236,16 +291,19 @@ class CWeaponHUDCircular : public IHUDPainter
 
 		//	Definitions
 
-		int m_cxDisplay;					//	Size of display (calculated in InitFromXML)
-		int m_cyDisplay;
-		int m_xCenter;						//	Center of circle
-		int m_yCenter;
 		int m_iTargetRadius;				//	Radius of target screen
 
 		CG32bitPixel m_rgbTargetBack;		//	Color of background target area
 		CG32bitPixel m_rgbTargetText;		//	Color of target text
 		CG32bitPixel m_rgbWeaponBack;		//	Color of weapon area background
 		CG32bitPixel m_rgbWeaponText;		//	Color of weapon text
+
+		//	Metrics
+
+		int m_cxDisplay;					//	Size of display (calculated in InitFromXML)
+		int m_cyDisplay;
+		int m_xCenter;						//	Center of circle
+		int m_yCenter;
 
 		//	Runtime State
 

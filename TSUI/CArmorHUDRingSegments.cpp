@@ -304,7 +304,7 @@ void CArmorHUDRingSegments::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaint
 			0,
 			m_Buffer.GetWidth(),
 			m_Buffer.GetHeight(),
-			255,
+			Ctx.byOpacity,
 			m_Buffer,
 			x,
 			y);

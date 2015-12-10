@@ -141,7 +141,7 @@ void CReactorHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx
 			0,
 			m_Buffer.GetWidth(),
 			m_Buffer.GetHeight(),
-			255,
+			Ctx.byOpacity,
 			m_Buffer,
 			x + DISPLAY_OFFSET_X,
 			y + DISPLAY_OFFSET_Y);

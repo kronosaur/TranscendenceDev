@@ -111,7 +111,7 @@ void CWeaponHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 			0,
 			m_Buffer.GetWidth(),
 			m_Buffer.GetHeight(),
-			200,
+			Ctx.byOpacity,
 			m_Buffer,
 			x,
 			y);

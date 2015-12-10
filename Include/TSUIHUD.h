@@ -19,6 +19,7 @@ struct SHUDPaintCtx
 	SHUDPaintCtx (void) :
 			pSource(NULL),
 			iMode(paintNormal),
+			byOpacity(255),
 			iSegmentSelected(-1),
 			pShieldsHUD(NULL)
 		{ }
@@ -27,6 +28,7 @@ struct SHUDPaintCtx
 	RECT rcRect;
 
 	EPaintModes iMode;						//	To coordinate painting to a buffer
+	BYTE byOpacity;							//	Opacity to paint with
 	int iSegmentSelected;					//	Armor segment selected
 	IHUDPainter *pShieldsHUD;				//	Armor display also paints shields
 	};

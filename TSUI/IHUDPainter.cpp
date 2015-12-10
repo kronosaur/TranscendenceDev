@@ -54,6 +54,8 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDT
 			CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
 			if (sStyle.IsBlank() || strEquals(sStyle, STYLE_DEFAULT))
 				pPainter = new CReactorHUDDefault;
+			else if (strEquals(sStyle, STYLE_CIRCULAR))
+				pPainter = new CReactorHUDCircular;
 			else
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("Invalid reactor display style: %s."), sStyle);

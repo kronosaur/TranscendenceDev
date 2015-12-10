@@ -3211,6 +3211,7 @@ class CSFXOptions
 
 		CSFXOptions (void) { SetSFXQuality(sfxMaximum); }
 
+		inline BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
 		inline bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
 		inline bool IsManeuveringEffectEnabled (void) const { return m_bManeuveringEffect; }
 		inline bool IsSpaceBackgroundEnabled (void) const { return m_bSpaceBackground; }
@@ -3226,6 +3227,7 @@ class CSFXOptions
 		ESFXQuality m_iQuality;
 
 		bool m_b3DSystemMap;				//	3D effect on system map
+		bool m_bHUDTransparent;				//	HUD has transparency effect
 		bool m_bManeuveringEffect;			//	Show maneuvering thruster effects
 		bool m_bSpaceBackground;			//	Show system image background
 		bool m_bStargateTravelEffect;		//	Show effect when changing systems

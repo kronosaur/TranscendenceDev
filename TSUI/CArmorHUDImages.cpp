@@ -173,7 +173,7 @@ void CArmorHUDImages::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &C
 			0,
 			m_Buffer.GetWidth(),
 			m_Buffer.GetHeight(),
-			255,
+			Ctx.byOpacity,
 			m_Buffer,
 			x,
 			y);
