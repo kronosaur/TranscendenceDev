@@ -1184,7 +1184,20 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objDamage",					fnObjGet,		FN_OBJ_DAMAGE,	
-			"(objDamage obj weaponType objSource [pos])",
+			"(objDamage obj weaponType objSource [pos] [options]) -> result\n\n"
+				
+			"result:\n\n"
+
+			"   'noDamage\n"
+			"   'absorbedByShields\n"
+			"   'armorHit\n"
+			"   'structuralHit\n"
+			"   'destroyed\n\n"
+
+			"options:\n\n"
+
+			"   'fullResult",
+
 			"ivv*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objDepleteShields",			fnObjSet,		FN_OBJ_DEPLETE_SHIELDS,	
@@ -5190,13 +5203,34 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pDesc == NULL)
 				return pCC->CreateNil();
 
-			//	Position
+			//	Optional arguments
+
+			int iArg = 3;
+
+			//	See if this is a position
 
 			CVector vHitPos;
-			if (pArgs->GetCount() >= 4)
-				vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(3));
+			if (pArgs->GetCount() > iArg
+					&& IsVectorItem(pArgs->GetElement(iArg)))
+				vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(iArg++));
 			else
 				vHitPos = pObj->GetPos();
+
+			//	Get options
+
+			bool bFullResult = false;
+			if (pArgs->GetCount() > iArg)
+				{
+				ICCItem *pOptions = pArgs->GetElement(iArg++);
+				for (int i = 0; i < pOptions->GetCount(); i++)
+					{
+					ICCItem *pOption = pOptions->GetElement(i);
+					if (strEquals(pOption->GetStringValue(), CONSTLIT("fullResult")))
+						bFullResult = true;
+					else
+						return pCC->CreateError(CONSTLIT("objDamage: Invalid option"), pOption);
+					}
+				}
 
 			//	Direction
 
@@ -5232,16 +5266,29 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	No need to expose the concept of passthrough
 
-			if (result == damagePassthrough)
+			if (result == damagePassthrough
+					|| result == damageNoDamageNoPassthrough)
 				result = damageNoDamage;
-			else if (result == damagePassthroughDestroyed)
-				result = damageDestroyed;
-			else if (result == damageDestroyedAbandoned)
+			else if (result == damagePassthroughDestroyed
+					|| result == damageDestroyedAbandoned)
 				result = damageDestroyed;
 
-			//	Return result
+			//	Compose result
 
-			return pCC->CreateString(GetDamageResultsName(result));
+			if (bFullResult)
+				{
+				ICCItem *pResult = pCC->CreateSymbolTable();
+
+				pResult->SetStringAt(*pCC, CONSTLIT("result"), GetDamageResultsName(result));
+				pResult->SetIntegerAt(*pCC, CONSTLIT("armorSeg"), Ctx.iSectHit);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("overlayHitDamage"), Ctx.iOverlayHitDamage);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("shieldHitDamage"), Ctx.iShieldHitDamage);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("armorHitDamage"), Ctx.iArmorHitDamage);
+
+				return pResult;
+				}
+			else
+				return pCC->CreateString(GetDamageResultsName(result));
 			}
 
 		case FN_OBJ_DATA_FIELD:

@@ -1402,23 +1402,25 @@ class CSoundType : public CDesignType
 
 enum SpecialDamageTypes
 	{
-	specialNone			= -1,
+	specialNone				= -1,
 
-	specialRadiation	= 0,
-	specialBlinding		= 1,
-	specialEMP			= 2,
-	specialDeviceDamage	= 3,
-	specialDisintegration = 4,
-	specialMomentum		= 5,
-	specialShieldDisrupt = 6,
-	specialWMD			= 7,
-	specialMining		= 8,
+	specialRadiation		= 0,
+	specialBlinding			= 1,
+	specialEMP				= 2,
+	specialDeviceDamage		= 3,
+	specialDisintegration	= 4,
+	specialMomentum			= 5,
+	specialShieldDisrupt	= 6,
+	specialWMD				= 7,
 
-	specialDeviceDisrupt= 9,
-	specialWormhole		= 10,
-	specialFuel			= 11,
-	specialShatter		= 12,
-	specialArmor		= 13,
+	specialMining			= 8,
+	specialDeviceDisrupt	= 9,
+	specialWormhole			= 10,
+	specialFuel				= 11,
+	specialShatter			= 12,
+	specialArmor			= 13,
+	specialSensor			= 14,
+	specialShieldPenetrator	= 15,
 	};
 
 class DamageDesc
@@ -1453,6 +1455,7 @@ class DamageDesc
 				m_MassDestructionAdj(0),
 				m_MiningAdj(0),
 				m_ShatterDamage(0),
+				m_ShieldPenetratorAdj(0),
 				m_dwSpare2(0)
 			{ }
 
@@ -1495,9 +1498,11 @@ class DamageDesc
 		inline int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
 		inline int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
 		inline int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
+		inline int GetShieldPenetratorAdj (void) const { return (int)(m_ShieldPenetratorAdj ? (2 * (m_ShieldPenetratorAdj * m_ShieldPenetratorAdj) + 2) : 0); }
 
 		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
+		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
 
 	private:
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
@@ -1518,7 +1523,7 @@ class DamageDesc
 		DWORD m_WormholeDamage:3;				//	Teleport
 		DWORD m_FuelDamage:3;					//	Drain fuel
 		DWORD m_DisintegrationDamage:3;			//	Disintegration damage
-		DWORD m_dwSpare1:3;
+		DWORD m_ShieldPenetratorAdj:3;			//	Shield penetrator damage
 
 		DWORD m_fNoSRSFlash:1;					//	If TRUE, damage should not cause SRS flash
 		DWORD m_fAutomatedWeapon:1;				//	TRUE if this damage is caused by automated weapon
@@ -1552,6 +1557,35 @@ enum EDamageResults
 
 struct SDamageCtx
 	{
+	SDamageCtx (void) :
+			pObj(NULL),
+			pDesc(NULL),
+			iDirection(-1),
+			pCause(NULL),
+			iDamage(0),
+			iSectHit(-1),
+			iOverlayHitDamage(0),
+			iShieldHitDamage(0),
+			iArmorHitDamage(0),
+			iHPLeft(0),
+			iAbsorb(0),
+			iShieldDamage(0),
+			iOriginalAbsorb(0),
+			iOriginalShieldDamage(0),
+			iUnadjustedDamage(0),
+			bBlind(false),
+			iBlindTime(0),
+			bDeviceDisrupt(false),
+			iDisruptTime(0),
+			bDeviceDamage(false),
+			bDisintegrate(false),
+			bParalyze(false),
+			iParalyzeTime(0),
+			bRadioactive(false),
+			bReflect(false),
+			bShatter(false)
+		{ }
+
 	CSpaceObject *pObj;							//	Object hit
 	CWeaponFireDesc *pDesc;						//	WeaponFireDesc
 	DamageDesc Damage;							//	Damage
@@ -1562,6 +1596,11 @@ struct SDamageCtx
 
 	int iDamage;								//	Damage hp
 	int iSectHit;								//	Armor section hit on object
+
+	//	These are some results
+	int iOverlayHitDamage;						//	HP that hit overlays
+	int iShieldHitDamage;						//	HP that hit shields
+	int iArmorHitDamage;						//	HP that hit armor
 
 	//	These are used within armor/shield processing
 	int iHPLeft;								//	HP left on armor/shields (before damage)

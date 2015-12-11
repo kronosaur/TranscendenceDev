@@ -3672,6 +3672,7 @@ CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg);
 bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsError);
 ALERROR GetPosOrObject (CEvalContext *pEvalCtx, ICCItem *pArg, CVector *retvPos, CSpaceObject **retpObj = NULL, int *retiLocID = NULL);
 CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg);
+bool IsVectorItem (ICCItem *pItem);
 ALERROR LoadCodeBlock (const CString &sCode, ICCItem **retpCode, CString *retsError = NULL);
 ICCItem *StdErrorNoSystem (CCodeChain &CC);
 

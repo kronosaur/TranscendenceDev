@@ -1698,6 +1698,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	See if the damage is blocked by some external defense
 
+	Ctx.iOverlayHitDamage = Ctx.iDamage;
 	if (m_Overlays.AbsorbDamage(this, Ctx))
 		{
 		if (IsDestroyed())
@@ -1723,7 +1724,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	Let our shield generators take a crack at it
 
-	int iOriginalDamage = Ctx.iDamage;
+	Ctx.iShieldHitDamage = Ctx.iDamage;
 	if (m_pDevices)
 		{
 		for (i = 0; i < maxDevices; i++)
@@ -1739,6 +1740,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	If we're immutable, then nothing else happens.
 
+	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (IsImmutable())
 		{
 		Ctx.iDamage = 0;

@@ -3864,6 +3864,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	See if the damage is blocked by some external defense
 
+	Ctx.iOverlayHitDamage = Ctx.iDamage;
 	if (m_Overlays.AbsorbDamage(this, Ctx))
 		{
 		if (IsDestroyed())
@@ -3885,6 +3886,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Let our shield generators take a crack at it
 
+	Ctx.iShieldHitDamage = Ctx.iDamage;
 	for (i = 0; i < GetDeviceCount(); i++)
 		{
 		bool bAbsorbed = m_Devices[i].AbsorbDamage(this, Ctx);
@@ -3935,7 +3937,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Let the armor handle it
 
-	int iDamageSustained = Ctx.iDamage;
+	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (pArmor)
 		{
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
@@ -3958,7 +3960,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		{
 		//	Tell the controller that we were damaged
 
-		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, iDamageSustained);
+		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorHitDamage);
 		return damageArmorHit;
 		}
 

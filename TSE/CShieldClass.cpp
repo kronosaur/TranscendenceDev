@@ -192,6 +192,54 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	else
 		Ctx.bReflect = false;
 
+	//	If this damage is a shield penetrator, then we either penetrate the 
+	//	shields, or reflect.
+
+	int iPenetrateAdj = Ctx.Damage.GetShieldPenetratorAdj();
+	if (iPenetrateAdj > 0 && !Ctx.bReflect)
+		{
+		//	We compare the HP of damage done to the shields vs. the HP left
+		//	on the shields. Bigger values means greater chance of penetrating.
+		//	We scale to 0-100.
+		//
+		//	NOTE: We can guarantee that Ctx.iHPLeft > 0.
+
+		Metric rPenetrate = (200.0 / (Metric)Ctx.iHPLeft) * ((Metric)Ctx.iShieldDamage * (Metric)Ctx.iShieldDamage) / ((Metric)Ctx.iShieldDamage + (Metric)Ctx.iHPLeft);
+
+		//	Adjust for tech level
+
+		CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+		int iWeaponLevel = (pWeaponType ? pWeaponType->GetLevel() : 13);
+		int iShieldLevel = (pDevice ? pDevice->GetItem()->GetType()->GetLevel() : 1);
+		rPenetrate *= pow(1.5, (iWeaponLevel - iShieldLevel));
+
+		//	Add the adjustment
+
+		int iChance = (int)rPenetrate + iPenetrateAdj;
+
+		//	Roll the chance. If we penetrate, then the shields absorb nothing
+		//	and the shot goes clean through.
+
+		if (mathRandom(1, 100) <= iChance)
+			{
+			Ctx.iOriginalAbsorb = Ctx.iAbsorb;
+			Ctx.iOriginalShieldDamage = Ctx.iShieldDamage;
+			Ctx.iAbsorb = 0;
+			Ctx.iShieldDamage = Ctx.iShieldDamage / 4;
+			}
+
+		//	Otherwise, we reflect.
+
+		else
+			{
+			Ctx.bReflect = true;
+			Ctx.iOriginalAbsorb = Ctx.iAbsorb;
+			Ctx.iOriginalShieldDamage = Ctx.iShieldDamage;
+			Ctx.iAbsorb = Ctx.iDamage;
+			Ctx.iShieldDamage = 0;
+			}
+		}
+
 	//	Give custom damage a chance to react. These events can modify the
 	//	following variables:
 	//
