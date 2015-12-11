@@ -1861,6 +1861,7 @@ class COverlay
 		inline int GetRotation (void) const { return m_iRotation; }
 		inline COverlayType *GetType(void) const { return m_pType; }
 		inline bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
+		inline bool IsFading (void) const { return (m_fFading ? true : false); }
 		inline bool IsShieldOverlay (void) const { return m_pType->IsShieldOverlay(); }
 		inline bool IsShipScreenDisabled (void) const { return m_pType->IsShipScreenDisabled(); }
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
@@ -1887,6 +1888,7 @@ class COverlay
 
 		COverlayType *m_pType;					//	Type of field
 		DWORD m_dwID;							//	Universal ID
+		int m_iTick;							//	Overlay tick
 		int m_iLifeLeft;						//	Ticks left of energy field life (-1 = permanent)
 		int m_iDevice;							//	Index of device that we're associated with (-1 if not a device)
 
@@ -1905,6 +1907,7 @@ class COverlay
 		IEffectPainter *m_pHitPainter;			//	Hit painter
 
 		DWORD m_fDestroyed:1;					//	TRUE if field should be destroyed
+		DWORD m_fFading:1;						//	TRUE if we're destroyed, but fading the effect
 
 		COverlay *m_pNext;					//	Next energy field associated with this object
 	};

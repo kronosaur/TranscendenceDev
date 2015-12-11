@@ -241,7 +241,8 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Create a hit effect. (Many weapons show an effect even if no damage was
 	//	done.)
 
-	Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
+	if (!Ctx.bNoHitEffect)
+		Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
 
 	//	If no damage has reached us, then we're done
 

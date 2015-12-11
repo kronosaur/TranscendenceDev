@@ -350,6 +350,7 @@ ICCItem *fnStationType (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_SYS_CREATE_ENVIRONMENT		6
 #define FN_SYS_CREATE_TERRITORY			7
 #define FN_SYS_CREATE_LOOKUP			8
+#define FN_SYS_CREATE_HIT_EFFECT		9
 
 ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 
@@ -1196,7 +1197,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"options:\n\n"
 
-			"   'fullResult",
+			"   'fullResult\n"
+			"   'noHitEffect",
 
 			"ivv*",		PPFLAG_SIDEEFFECTS,	},
 
@@ -2101,6 +2103,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysCreateFlotsam item|unid pos sovereignID) -> obj",
 		//		pos is either a position vector or a gate object
 			"vvi",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"sysCreateHitEffect",				fnSystemCreate,		FN_SYS_CREATE_HIT_EFFECT,
+			"(sysCreateHitEffect weaponUNID hitObj hitPos hitDir damageHP) -> True/Nil",
+			"iivii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateLookup",				fnSystemCreate,	FN_SYS_CREATE_LOOKUP,
 			"(sysCreateLookup tableName orbit) -> True/Nil",
@@ -5219,16 +5225,19 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Get options
 
 			bool bFullResult = false;
+			bool bNoHitEffect = false;
 			if (pArgs->GetCount() > iArg)
 				{
 				ICCItem *pOptions = pArgs->GetElement(iArg++);
 				for (int i = 0; i < pOptions->GetCount(); i++)
 					{
-					ICCItem *pOption = pOptions->GetElement(i);
-					if (strEquals(pOption->GetStringValue(), CONSTLIT("fullResult")))
+					CString sOption = pOptions->GetElement(i)->GetStringValue();
+					if (strEquals(sOption, CONSTLIT("fullResult")))
 						bFullResult = true;
+					else if (strEquals(sOption, CONSTLIT("noHitEffect")))
+						bNoHitEffect = true;
 					else
-						return pCC->CreateError(CONSTLIT("objDamage: Invalid option"), pOption);
+						return pCC->CreateError(CONSTLIT("objDamage: Invalid option"), pOptions->GetElement(i));
 					}
 				}
 
@@ -5249,6 +5258,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.vHitPos = vHitPos;
 			Ctx.Attacker = GetDamageSourceArg(*pCC, pArgs->GetElement(2));
 			Ctx.pCause = Ctx.Attacker.GetObj();
+			Ctx.bNoHitEffect = bNoHitEffect;
 
 			EDamageResults result = pObj->Damage(Ctx);
 
@@ -9733,6 +9743,50 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pCC->CreateInteger((int)pFlotsam);
+			}
+
+		case FN_SYS_CREATE_HIT_EFFECT:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			//	Get the weapon descriptor
+
+			CWeaponFireDesc *pDesc;
+			CItemType *pItemType = g_pUniverse->FindItemType(pArgs->GetElement(0)->GetIntegerValue());
+			if (pItemType == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
+
+			if (pItemType->IsMissile())
+				pDesc = pItemType->GetMissileDesc();
+			else
+				{
+				CDeviceClass *pClass = pItemType->GetDeviceClass();
+				CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
+				if (pWeapon == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
+
+				pDesc = pWeapon->GetVariant(0);
+				}
+
+			if (pDesc == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
+
+			//	Get Parameters to initialize context
+
+			SDamageCtx Ctx;
+			Ctx.pDesc = pDesc;
+			Ctx.pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			Ctx.vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
+			Ctx.iDirection = pArgs->GetElement(3)->GetIntegerValue();
+			Ctx.Damage = pDesc->m_Damage;
+			Ctx.iDamage = pArgs->GetElement(4)->GetIntegerValue();
+
+			//	Create the effect
+
+			pDesc->CreateHitEffect(pSystem, Ctx);
+			return pCC->CreateTrue();
 			}
 
 		case FN_SYS_CREATE_LOOKUP:

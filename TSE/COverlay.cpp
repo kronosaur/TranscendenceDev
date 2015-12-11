@@ -30,6 +30,7 @@ COverlay::COverlay (void) :
 		m_pPainter(NULL),
 		m_pHitPainter(NULL),
 		m_fDestroyed(false),
+		m_fFading(false),
 		m_pNext(NULL)
 
 //	COverlay constructor
@@ -216,6 +217,7 @@ void COverlay::CreateFromType (COverlayType *pType,
 	pField->m_dwID = g_pUniverse->CreateGlobalID();
 	pField->m_iDevice = -1;
 	pField->m_iLifeLeft = iLifeLeft;
+	pField->m_iTick = 0;
 	pField->m_iPosAngle = iPosAngle;
 	pField->m_iPosRadius = iPosRadius;
 	pField->m_iRotation = iRotation;
@@ -252,6 +254,26 @@ void COverlay::Destroy (CSpaceObject *pSource)
 		//	It will be deleted in COverlayList::Update
 
 		m_fDestroyed = true;
+
+		//	If the painter needs time to fade out, then handle it
+
+		int iPainterFade;
+		if (m_pPainter 
+				&& (iPainterFade = m_pPainter->GetFadeLifetime()) > 0)
+			{
+			m_pPainter->OnBeginFade();
+			m_iLifeLeft = iPainterFade;
+			m_fFading = true;
+
+			//	No need for hit painter
+
+			m_iPaintHit = 0;
+			if (m_pHitPainter)
+				{
+				m_pHitPainter->Delete();
+				m_pHitPainter = NULL;
+				}
+			}
 		}
 	}
 
@@ -534,28 +556,34 @@ void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPai
 
 	//	Adjust rotation
 
+	int iSavedTick = Ctx.iTick;
 	int iSavedRotation = Ctx.iRotation;
 	Ctx.iRotation = (iRotationOrigin + m_iRotation) % 360;
 
 	//	Paint
 
-	if (m_iPaintHit > 0 && m_pHitPainter)
+	if (m_fFading)
+		{
+		Ctx.iTick = m_iTick;
+		m_pPainter->PaintFade(Dest, x, y, Ctx);
+		}
+	else if (m_iPaintHit > 0 && m_pHitPainter)
 		{
 		//	Paint hit effect
 
-		int iSavedTick = Ctx.iTick;
 		Ctx.iTick = m_iPaintHitTick;
-
 		m_pHitPainter->Paint(Dest, x, y, Ctx);
-
-		Ctx.iTick = iSavedTick;
 		}
 	else if (m_pPainter)
+		{
+		Ctx.iTick = m_iTick;
 		m_pPainter->Paint(Dest, x, y, Ctx);
+		}
 
 	//	Done
 
 	Ctx.iRotation = iSavedRotation;
+	Ctx.iTick = iSavedTick;
 	}
 
 void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -765,6 +793,11 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 	else
 		m_iDevice = -1;
 
+	if (Ctx.dwVersion >= 124)
+		Ctx.pStream->Read((char *)&m_iTick, sizeof(DWORD));
+	else
+		m_iTick = 0;
+
 	Ctx.pStream->Read((char *)&m_iLifeLeft, sizeof(DWORD));
 
 	if (Ctx.dwVersion >= 39)
@@ -794,7 +827,8 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 	//	We have to saved destroyed overlays because we need to run some code
 	//	when removing an overlay (e.g., see CShip::CalcOverlayImpact).
 
-	m_fDestroyed = ((dwFlags & 0x00000001) ? true : false);
+	m_fDestroyed =	((dwFlags & 0x00000001) ? true : false);
+	m_fFading =		((dwFlags & 0x00000002) ? true : false);
 	}
 
 bool COverlay::SetEffectProperty (const CString &sProperty, ICCItem *pValue)
@@ -883,7 +917,11 @@ void COverlay::Update (CSpaceObject *pSource)
 
 	if (m_iLifeLeft != -1 && --m_iLifeLeft == 0)
 		{
-		Destroy(pSource);
+		if (m_fFading)
+			m_fFading = false;
+		else
+			Destroy(pSource);
+
 		return;
 		}
 
@@ -906,6 +944,9 @@ void COverlay::Update (CSpaceObject *pSource)
 	SEffectUpdateCtx UpdateCtx;
 	UpdateCtx.pSystem = pSource->GetSystem();
 	UpdateCtx.pObj = pSource;
+	UpdateCtx.iTick = m_iTick;
+	UpdateCtx.iRotation = m_iRotation;
+	UpdateCtx.bFade = m_fFading;
 
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = pSource;
@@ -926,10 +967,13 @@ void COverlay::Update (CSpaceObject *pSource)
 	//	Call OnUpdate
 
 	if (m_pType->HasOnUpdateEvent() 
-			&& pSource->IsDestinyTime(OVERLAY_ON_UPDATE_CYCLE, OVERLAY_ON_UPDATE_OFFSET))
+			&& pSource->IsDestinyTime(OVERLAY_ON_UPDATE_CYCLE, OVERLAY_ON_UPDATE_OFFSET)
+			&& !IsDestroyed())
 		{
 		FireOnUpdate(pSource);
 		}
+
+	m_iTick++;
 	}
 
 void COverlay::WriteToStream (IWriteStream *pStream)
@@ -942,6 +986,7 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 //	DWORD	m_iPosRadius
 //	DWORD	m_iRotation
 //	DWORD	m_iDevice
+//	DWORD	m_iTick
 //	DWORD	Life left
 //	CAttributeDataBlock m_Data
 //	DWORD	m_iCounter
@@ -958,6 +1003,7 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iPosRadius, sizeof(DWORD));
 	pStream->Write((char *)&m_iRotation, sizeof(DWORD));
 	pStream->Write((char *)&m_iDevice, sizeof(DWORD));
+	pStream->Write((char *)&m_iTick, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(DWORD));
 
 	m_Data.WriteToStream(pStream);
@@ -969,7 +1015,8 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 	CEffectCreator::WritePainterToStream(pStream, m_pHitPainter);
 
 	DWORD dwFlags = 0;
-	dwFlags |= (m_fDestroyed ? 0x00000001 : 0);
+	dwFlags |= (m_fDestroyed ?	0x00000001 : 0);
+	dwFlags |= (m_fFading ?		0x00000002 : 0);
 	pStream->Write((char *)&dwFlags, sizeof(DWORD));
 	}
 

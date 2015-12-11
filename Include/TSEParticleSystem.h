@@ -16,8 +16,9 @@ enum ParticlePaintStyles
 	paintSmoke =						3,
 	paintImage =						4,
 	paintLine =							5,
+	paintGlitter =						6,
 
-	paintMax =							5,
+	paintMax =							6,
 	};
 
 struct SParticlePaintDesc
@@ -192,6 +193,7 @@ class CParticleArray
 		inline void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
 		void UpdateMotionLinear (bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
 		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
+		void UpdateWrithe (SEffectUpdateCtx &UpdateCtx);
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
@@ -200,6 +202,7 @@ class CParticleArray
 		void EmitComet (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitRadiate (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
+
 		void PaintFireAndSmoke (CG32bitImage &Dest, 
 								int xPos, 
 								int yPos, 
@@ -220,6 +223,7 @@ class CParticleArray
 						   int iMaxWidth,
 						   CG32bitPixel rgbPrimaryColor,
 						   CG32bitPixel rgbSecondaryColor);
+		void PaintGlitter (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, int iWidth, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor);
 		void PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
 		void PaintLine (CG32bitImage &Dest,
 						int xPos,

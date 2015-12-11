@@ -54,6 +54,7 @@ static LPSTR STYLE_TABLE[] =
 		"smoke",
 		"image",
 		"line",
+		"glitter",
 
 		NULL,
 	};

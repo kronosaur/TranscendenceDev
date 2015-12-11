@@ -1744,7 +1744,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	if (IsImmutable())
 		{
 		Ctx.iDamage = 0;
-		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+		if (!Ctx.bNoHitEffect)
+			Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
 
 		return damageNoDamageNoPassthrough;
 		}
@@ -1802,7 +1803,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 		//	Hit effect
 
-		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+		if (!Ctx.bNoHitEffect)
+			Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
 
 		//	Give events a chance to change the damage
 
@@ -1931,7 +1933,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	Hit effect
 
-	Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+	if (!Ctx.bNoHitEffect)
+		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
 
 	//	If no damage, we're done
 

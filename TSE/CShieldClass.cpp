@@ -263,14 +263,15 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	//	Create shield effect
 
-	if (Ctx.iAbsorb || Ctx.bReflect)
+	if ((Ctx.iAbsorb || Ctx.bReflect)
+			&& m_pHitEffect
+			&& !Ctx.bNoHitEffect)
 		{
-		if (m_pHitEffect)
-			m_pHitEffect->CreateEffect(pShip->GetSystem(),
-					NULL,
-					Ctx.vHitPos,
-					pShip->GetVel(),
-					Ctx.iDirection);
+		m_pHitEffect->CreateEffect(pShip->GetSystem(),
+				NULL,
+				Ctx.vHitPos,
+				pShip->GetVel(),
+				Ctx.iDirection);
 		}
 
 	//	Shield takes damage

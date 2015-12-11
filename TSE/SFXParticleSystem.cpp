@@ -49,14 +49,17 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
 	private:
+		//	NOTE: These values are saved to disk; do not re-order.
+
 		enum EStyles
 			{
 			styleUnknown =			0,
 
 			styleJet =				1,
 			styleRadiate =			2,
+			styleWrithe =			3,
 
-			styleMax =				2,
+			styleMax =				3,
 			};
 
 		CVector CalcInitialVel (CSpaceObject *pObj);
@@ -100,6 +103,7 @@ static LPSTR STYLE_TABLE[] =
 
 		"jet",
 		"radiate",
+		"writhe",
 
 		NULL,
 	};
@@ -547,6 +551,7 @@ void CParticleSystemEffectPainter::CreateNewParticles (CSpaceObject *pObj, int i
 			}
 
 		case styleRadiate:
+		case styleWrithe:
 			CreateRadiateParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
 			break;
 		}
@@ -768,6 +773,15 @@ void CParticleSystemEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 
 	if (m_pParticlePainter)
 		m_pParticlePainter->OnUpdate(Ctx);
+
+	//	Change the velocity based on the style
+
+	switch (m_iStyle)
+		{
+		case styleWrithe:
+			m_Particles.UpdateWrithe(Ctx);
+			break;
+		}
 
 	//	LATER: Support damage
 

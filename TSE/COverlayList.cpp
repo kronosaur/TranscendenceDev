@@ -134,7 +134,8 @@ int COverlayList::GetCountOfType (COverlayType *pType)
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
-		if (pField->GetType() == pType)
+		if (!pField->IsDestroyed()
+				&& pField->GetType() == pType)
 			iCount++;
 
 		pField = pField->GetNext();
@@ -153,31 +154,34 @@ void COverlayList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) con
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
-		//	Do we disarm the source?
+		if (!pField->IsDestroyed())
+			{
+			//	Do we disarm the source?
 
-		if (pField->Disarms(pSource))
-			retImpact->bDisarm = true;
+			if (pField->Disarms(pSource))
+				retImpact->bDisarm = true;
 
-		//	Do we paralyze the source?
+			//	Do we paralyze the source?
 
-		if (pField->Paralyzes(pSource))
-			retImpact->bParalyze = true;
+			if (pField->Paralyzes(pSource))
+				retImpact->bParalyze = true;
 
-		//	Can't bring up ship status
+			//	Can't bring up ship status
 
-		if (pField->IsShipScreenDisabled())
-			retImpact->bShipScreenDisabled = true;
+			if (pField->IsShipScreenDisabled())
+				retImpact->bShipScreenDisabled = true;
 
-		//	Do we spin the source ?
+			//	Do we spin the source ?
 
-		if (pField->Spins(pSource))
-			retImpact->bSpin = true;
+			if (pField->Spins(pSource))
+				retImpact->bSpin = true;
 
-		//	Get appy drag
+			//	Get appy drag
 
-		Metric rDrag;
-		if ((rDrag = pField->GetDrag(pSource)) < 1.0)
-			retImpact->rDrag *= rDrag;
+			Metric rDrag;
+			if ((rDrag = pField->GetDrag(pSource)) < 1.0)
+				retImpact->rDrag *= rDrag;
+			}
 
 		//	Next
 
@@ -448,7 +452,7 @@ void COverlayList::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewpor
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
-		if (!pField->IsDestroyed())
+		if (!pField->IsDestroyed() || pField->IsFading())
 			pField->Paint(Dest, iScale, x, y, Ctx);
 
 		pField = pField->GetNext();
@@ -696,7 +700,8 @@ void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
-		if (!pField->IsDestroyed())
+		if (!pField->IsDestroyed()
+				|| pField->IsFading())
 			{
 			pField->Update(pSource);
 
@@ -721,7 +726,8 @@ void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 
 		//	If this overlay was destroyed, handle that now
 
-		if (pField->IsDestroyed())
+		if (pField->IsDestroyed()
+				&& !pField->IsFading())
 			{
 			delete pField;
 

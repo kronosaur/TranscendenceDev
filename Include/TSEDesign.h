@@ -1562,6 +1562,7 @@ struct SDamageCtx
 			pDesc(NULL),
 			iDirection(-1),
 			pCause(NULL),
+			bNoHitEffect(false),
 			iDamage(0),
 			iSectHit(-1),
 			iOverlayHitDamage(0),
@@ -1593,6 +1594,7 @@ struct SDamageCtx
 	CVector vHitPos;							//	Hit at this position
 	CSpaceObject *pCause;						//	Object that directly caused the damage
 	CDamageSource Attacker;						//	Ultimate attacker
+	bool bNoHitEffect;							//	No hit effect
 
 	int iDamage;								//	Damage hp
 	int iSectHit;								//	Armor section hit on object

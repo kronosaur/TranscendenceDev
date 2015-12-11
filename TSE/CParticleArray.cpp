@@ -607,6 +607,12 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 			break;
 			}
 
+		case paintGlitter:
+			{
+			PaintGlitter(Dest, xPos, yPos, Ctx, Desc.iMaxWidth, Desc.rgbPrimaryColor, Desc.rgbSecondaryColor);
+			break;
+			}
+
 		case paintImage:
 			PaintImage(Dest, xPos, yPos, Ctx, Desc);
 			break;
@@ -877,6 +883,79 @@ void CParticleArray::PaintGaseous (CG32bitImage &Dest,
 			//	Paint the particle
 
 			PAINT_GASEOUS_PARTICLE(Dest, x, y, iWidth, rgbColor, iFade, iFade2);
+			}
+
+		//	Next
+
+		pParticle++;
+		}
+	}
+
+void CParticleArray::PaintGlitter (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, int iWidth, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor)
+
+//	PaintGlitter
+//
+//	Paints particles as glitter
+
+	{
+	const int HIGHLIGHT_ANGLE = 135;
+	const int HIGHLIGHT_RANGE = 30;
+
+	SParticle *pParticle = m_pArray;
+	SParticle *pEnd = pParticle + m_iCount;
+
+	while (pParticle < pEnd)
+		{
+		if (pParticle->fAlive)
+			{
+			//	Color flips to secondary color at certain angles
+
+			int iBearing = Absolute(AngleBearing(HIGHLIGHT_ANGLE, pParticle->iRotation));
+			CG32bitPixel rgbColor = (iBearing < HIGHLIGHT_RANGE ? CG32bitPixel::Fade(rgbSecondaryColor, rgbPrimaryColor, iBearing * 100 / HIGHLIGHT_RANGE) : rgbPrimaryColor);
+
+			//	Compute the position of the particle
+
+			int x = xPos + pParticle->x / FIXED_POINT;
+			int y = yPos + pParticle->y / FIXED_POINT;
+
+			//	Draw at appropriate size
+
+			switch (iWidth)
+				{
+				case 0:
+					Dest.SetPixel(x, y, rgbColor);
+					break;
+
+				case 1:
+					Dest.SetPixel(x, y, rgbColor);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, 0x80);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, 0x80);
+					break;
+
+				case 2:
+					Dest.SetPixel(x, y, rgbColor);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, 0x80);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, 0x80);
+					Dest.SetPixelTrans(x - 1, y, rgbColor, 0x80);
+					Dest.SetPixelTrans(x, y - 1, rgbColor, 0x80);
+					break;
+
+				case 3:
+					Dest.SetPixel(x, y, rgbColor);
+					Dest.SetPixel(x + 1, y, rgbColor);
+					Dest.SetPixel(x, y + 1, rgbColor);
+					Dest.SetPixel(x - 1, y, rgbColor);
+					Dest.SetPixel(x, y - 1, rgbColor);
+					Dest.SetPixelTrans(x + 1, y + 1, rgbColor, 0x80);
+					Dest.SetPixelTrans(x + 1, y - 1, rgbColor, 0x80);
+					Dest.SetPixelTrans(x - 1, y + 1, rgbColor, 0x80);
+					Dest.SetPixelTrans(x - 1, y - 1, rgbColor, 0x80);
+					break;
+
+				default:
+					CGDraw::Circle(Dest, x, y, (iWidth + 1) / 2, rgbColor);
+					break;
+				}
 			}
 
 		//	Next
@@ -1788,6 +1867,37 @@ void CParticleArray::UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate
 
 				pParticle->Vel = PolarToVector(iNewDir, rCurSpeed);
 				}
+			}
+
+		//	Next
+
+		pParticle++;
+		}
+	}
+
+void CParticleArray::UpdateWrithe (SEffectUpdateCtx &UpdateCtx)
+
+//	UpdateWrithe
+//
+//	Updates the particle velocity and direction for a writhe animation.
+
+	{
+	//	We need to use real coordinates instead of fixed point
+
+	UseRealCoords();
+
+	//	Loop over all particles
+
+	SParticle *pParticle = m_pArray;
+	SParticle *pEnd = pParticle + m_iCount;
+
+	while (pParticle < pEnd)
+		{
+		if (pParticle->fAlive)
+			{
+			int iTurn = (4 + (pParticle->iDestiny % 6)) * ((((pParticle->iDestiny + UpdateCtx.iTick) / 60) % 2) == 0 ? -1 : 1);
+			pParticle->iRotation = AngleMod(pParticle->iRotation + iTurn);
+			pParticle->Vel = pParticle->Vel.Rotate(mathDegreesToRadians(iTurn));
 			}
 
 		//	Next

@@ -381,6 +381,9 @@
 //	123: 1.7 Alpha 1
 //		Use a double for fuel tracking
 //
+//	124: 1.7 Alpha 1
+//		Added m_iTick for COverlay
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

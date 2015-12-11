@@ -474,7 +474,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 			case animateFlicker:
 				{
-				int iLifetime = Max(1, m_iLifetime);
+				int iLifetime = (m_iLifetime < 1 ? 120 : m_iLifetime);
 
 				m_ColorTable.InsertEmpty(iLifetime);
 				m_FlareDesc.InsertEmpty(iLifetime);
