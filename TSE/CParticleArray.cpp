@@ -1139,7 +1139,52 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 	
 	//	Previous version didn't have everything
 
-	if (Ctx.dwVersion < 64)
+	if (Ctx.dwVersion >= 120)
+		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
+
+	else if (Ctx.dwVersion >= 119)
+		{
+		SParticle119 *pOldArray = new SParticle119[m_iCount];
+		Ctx.pStream->Read((char *)pOldArray, sizeof(SParticle) * m_iCount);
+
+		for (i = 0; i < m_iCount; i++)
+			{
+			m_pArray[i].Pos = pOldArray[i].Pos;
+			m_pArray[i].Vel = pOldArray[i].Vel;
+			m_pArray[i].x = pOldArray[i].x;
+			m_pArray[i].y = pOldArray[i].y;
+			m_pArray[i].xVel = pOldArray[i].xVel;
+			m_pArray[i].yVel = pOldArray[i].yVel;
+			m_pArray[i].iGeneration = pOldArray[i].iGeneration;
+			m_pArray[i].iLifeLeft = pOldArray[i].iLifeLeft;
+			m_pArray[i].iDestiny = pOldArray[i].iDestiny;
+			m_pArray[i].iRotation = pOldArray[i].iRotation;
+			m_pArray[i].rData = pOldArray[i].dwData;
+			m_pArray[i].fAlive = pOldArray[i].fAlive;
+			}
+		}
+	else if (Ctx.dwObjClassID >= 64)
+		{
+		SParticle64 *pOldArray = new SParticle64[m_iCount];
+		Ctx.pStream->Read((char *)pOldArray, sizeof(SParticle) * m_iCount);
+
+		for (i = 0; i < m_iCount; i++)
+			{
+			m_pArray[i].Pos = pOldArray[i].Pos;
+			m_pArray[i].Vel = pOldArray[i].Vel;
+			m_pArray[i].x = pOldArray[i].x;
+			m_pArray[i].y = pOldArray[i].y;
+			m_pArray[i].xVel = pOldArray[i].xVel;
+			m_pArray[i].yVel = pOldArray[i].yVel;
+			m_pArray[i].iGeneration = 0;
+			m_pArray[i].iLifeLeft = pOldArray[i].iLifeLeft;
+			m_pArray[i].iDestiny = pOldArray[i].iDestiny;
+			m_pArray[i].iRotation = pOldArray[i].iRotation;
+			m_pArray[i].rData = pOldArray[i].dwData;
+			m_pArray[i].fAlive = pOldArray[i].fAlive;
+			}
+		}
+	else
 		{
 		for (i = 0; i < m_iCount; i++)
 			{
@@ -1157,7 +1202,6 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 
 			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 			m_pArray[i].fAlive = ((dwLoad & 0x00000001) ? true : false);
-			m_pArray[i].dwSpare = 0;
 
 			//	See if we need to compute real coords
 
@@ -1166,40 +1210,6 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 				m_pArray[i].Pos = XYToPos(m_pArray[i].x, m_pArray[i].y);
 				m_pArray[i].Vel = XYToPos(m_pArray[i].xVel, m_pArray[i].yVel);
 				}
-			}
-		}
-	else
-		{
-		for (i = 0; i < m_iCount; i++)
-			{
-			Ctx.pStream->Read((char *)&m_pArray[i].Pos, sizeof(CVector));
-			Ctx.pStream->Read((char *)&m_pArray[i].Vel, sizeof(CVector));
-			Ctx.pStream->Read((char *)&m_pArray[i].x, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].y, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].xVel, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].yVel, sizeof(DWORD));
-
-			if (Ctx.dwVersion >= 119)
-				Ctx.pStream->Read((char *)&m_pArray[i].iGeneration, sizeof(DWORD));
-			else
-				m_pArray[i].iGeneration = 0;
-
-			Ctx.pStream->Read((char *)&m_pArray[i].iLifeLeft, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].iDestiny, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].iRotation, sizeof(DWORD));
-
-			if (Ctx.dwVersion >= 120)
-				{
-				DWORD dwData;
-				Ctx.pStream->Read((char *)&dwData, sizeof(DWORD));
-				m_pArray[i].rData = (Metric)dwData;
-				}
-			else
-				Ctx.pStream->Read((char *)&m_pArray[i].rData, sizeof(Metric));
-
-			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-			m_pArray[i].fAlive = ((dwLoad & 0x00000001) ? true : false);
-			m_pArray[i].dwSpare = 0;
 			}
 		}
 	}

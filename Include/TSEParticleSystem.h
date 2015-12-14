@@ -197,6 +197,51 @@ class CParticleArray
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+		struct SParticle64
+			{
+			CVector Pos;						//	Position. Valid if we use real coordinates
+			CVector Vel;						//	Velocity. Valid if we use real coordinates
+												//		NOTE: In Km per tick (unlike normal velocities)
+
+			int x;								//	Offset from center of particle cloud
+			int y;								//		(screen-coords, in 256ths of pixels)
+												//		(valid in all cases)
+			int xVel;							//	Velocity relative to particle cloud
+			int yVel;							//		(screen-coords, in 256ths of pixels per tick)
+												//		(not valid if using real coordinates)
+
+			int iLifeLeft;						//	Ticks of life left
+			int iDestiny;						//	Random number from 1-360
+			int iRotation;						//	Particle rotation
+			DWORD dwData;						//	Miscellaneous data for particle
+
+			DWORD fAlive:1;						//	TRUE if particle is alive
+			DWORD dwSpare:31;					//	Spare
+			};
+
+		struct SParticle119
+			{
+			CVector Pos;						//	Position. Valid if we use real coordinates
+			CVector Vel;						//	Velocity. Valid if we use real coordinates
+												//		NOTE: In Km per tick (unlike normal velocities)
+
+			int x;								//	Offset from center of particle cloud
+			int y;								//		(screen-coords, in 256ths of pixels)
+												//		(valid in all cases)
+			int xVel;							//	Velocity relative to particle cloud
+			int yVel;							//		(screen-coords, in 256ths of pixels per tick)
+												//		(not valid if using real coordinates)
+
+			int iGeneration;					//	Created on this tick
+			int iLifeLeft;						//	Ticks of life left
+			int iDestiny;						//	Random number from 1-360
+			int iRotation;						//	Particle rotation
+			DWORD dwData;						//	Miscellaneous data for particle
+
+			DWORD fAlive:1;						//	TRUE if particle is alive
+			DWORD dwSpare:31;					//	Spare
+			};
+
 		void CleanUp (void);
 		void EmitAmorphous (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitComet (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
