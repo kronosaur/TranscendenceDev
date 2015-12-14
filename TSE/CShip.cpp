@@ -5857,6 +5857,10 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	if (IsInactive())
 		return;
 
+	//	Object is known if we can scan it.
+
+	SetKnown();
+
 	//	Paint red if enemy, blue otherwise
 
 	CG32bitPixel rgbColor = GetSymbolColor();
