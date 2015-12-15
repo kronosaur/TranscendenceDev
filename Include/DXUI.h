@@ -95,6 +95,7 @@ class AGScreen : public CObject, public IAreaContainer
 		inline const RECT &GetRect (void) { return m_rcRect; }
 		const CG16bitFont &GetWingdingsFont (void) const;
 		inline IScreenController *GetController (void) { return m_pController; }
+		inline void Invalidate (void) { m_rcInvalid.left = 0; m_rcInvalid.top = 0; m_rcInvalid.right = RectWidth(m_rcRect); m_rcInvalid.bottom = RectHeight(m_rcRect); }
 		inline void Invalidate (const RECT &rcInvalid) { UnionRect(&m_rcInvalid, &rcInvalid, &m_rcInvalid); }
 		inline void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackgroundColor = rgbColor; }
 		inline void SetController (IScreenController *pController) { m_pController = pController; }
