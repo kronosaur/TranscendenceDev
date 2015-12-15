@@ -26,7 +26,17 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDT
 	const CPlayerSettings *pSettings = pClass->GetPlayerSettings();
 	CXMLElement *pDesc = pSettings->GetHUDDesc(iType);
 	if (pDesc == NULL)
-		return NULL;
+		{
+		//	For backwards compatibility we still allow no targeting descriptor.
+
+		if (iType == hudTargeting)
+			return new CWeaponHUDDefault;
+
+		//	Otherwise, no HUD
+
+		else
+			return NULL;
+		}
 
 	//	Create
 
