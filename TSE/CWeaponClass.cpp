@@ -1137,7 +1137,7 @@ bool CWeaponClass::FindDataField (int iVariant, const CString &sField, CString *
 	else if (strEquals(sField, FIELD_DAMAGE_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(pShot);
-		*retsValue = strFromInt((int)((rDamagePerShot * 180.0 / m_iFireRate) + 0.5));
+		*retsValue = (m_iFireRate > 0 ? strFromInt((int)((rDamagePerShot * 180.0 / m_iFireRate) + 0.5)) : strFromInt((int)(rDamagePerShot + 0.5)));
 		}
 	else if (strEquals(sField, FIELD_BALANCE_DAMAGE))
 		{

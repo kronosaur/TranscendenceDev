@@ -284,8 +284,7 @@ template <class BLENDER> class CFireblastCirclePainter : public TCirclePainter32
 			//	Combine the explosion with the smoke, using the texture as the
 			//	discriminator.
 
-			CG32bitPixel rgbSmoke = m_pSmokeTable->GetAt(iNewRadius);
-			CG32bitPixel rgbColor = CG32bitPixel::Composite(m_pExplosionTable->GetAt(iNewRadius), CG32bitPixel(rgbSmoke, CG32bitPixel::BlendAlpha(rgbSmoke.GetAlpha(), byAlpha)));
+			CG32bitPixel rgbColor = CG32bitPixel::Interpolate(m_pExplosionTable->GetAt(iNewRadius), m_pSmokeTable->GetAt(iNewRadius), byAlpha);
 				
 			//	Return the value (premultiplied)
 
