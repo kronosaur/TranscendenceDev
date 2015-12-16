@@ -66,6 +66,7 @@ class CG32bitPixel
 		inline static CG32bitPixel FromGrayscale (BYTE byValue) { return CG32bitPixel(byValue, byValue, byValue); }
 		inline static CG32bitPixel FromGrayscale (BYTE byValue, BYTE byAlpha) { return CG32bitPixel(byValue, byValue, byValue, byAlpha); }
 		static bool Init (void);
+		static CG32bitPixel Interpolate (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, BYTE byAlpha);
 		inline static CG32bitPixel Null (void) { return CG32bitPixel(0, true); }
 		inline static CG32bitPixel PreMult (CG32bitPixel rgbColor) { return PreMult(rgbColor, rgbColor.GetAlpha()); }
 		static CG32bitPixel PreMult (CG32bitPixel rgbColor, BYTE byAlpha);

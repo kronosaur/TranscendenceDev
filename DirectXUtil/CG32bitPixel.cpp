@@ -238,6 +238,24 @@ bool CG32bitPixel::Init (void)
 	return true;
 	}
 
+CG32bitPixel CG32bitPixel::Interpolate (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, BYTE byAlpha)
+
+//	Interpolate
+//
+//	Just like Blend, but also blends alpha
+
+	{
+	BYTE *pAlpha = g_Alpha8[byAlpha];
+	BYTE *pAlphaInv = g_Alpha8[255 - byAlpha];
+
+	BYTE byRedResult = pAlphaInv[rgbFrom.GetRed()] + pAlpha[rgbTo.GetRed()];
+	BYTE byGreenResult = pAlphaInv[rgbFrom.GetGreen()] + pAlpha[rgbTo.GetGreen()];
+	BYTE byBlueResult = pAlphaInv[rgbFrom.GetBlue()] + pAlpha[rgbTo.GetBlue()];
+	BYTE byAlphaResult = pAlphaInv[rgbFrom.GetAlpha()] + pAlpha[rgbTo.GetAlpha()];
+
+	return CG32bitPixel(byRedResult, byGreenResult, byBlueResult, byAlphaResult);
+	}
+
 CG32bitPixel CG32bitPixel::PreMult (CG32bitPixel rgbColor, BYTE byAlpha)
 
 //	PreMult
