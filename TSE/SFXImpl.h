@@ -877,6 +877,7 @@ class CShockwaveEffectCreator : public CEffectCreator
 		CEffectParamDesc m_FadeStart;					//	% of lifetime at which we start to fade
 		CEffectParamDesc m_Width;						//	Width of central ring
 		CEffectParamDesc m_GlowWidth;					//	Glow width
+		CEffectParamDesc m_BlendMode;					//	blendMode: Blend mode
 		CEffectParamDesc m_PrimaryColor;
 		CEffectParamDesc m_SecondaryColor;
 

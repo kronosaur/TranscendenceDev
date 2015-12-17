@@ -33,7 +33,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
 		virtual int GetFadeLifetime (void) { return m_ParticleLifetime.GetMaxValue(); }
-		virtual int GetLifetime (void) { return m_iLifetime; }
+		virtual int GetLifetime (void);
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
 		virtual bool GetParamList (TArray<CString> *retList) const;
 		virtual int GetParticleCount (void) { return m_Particles.GetCount(); }
@@ -685,6 +685,23 @@ bool CParticleSystemEffectPainter::GetParamList (TArray<CString> *retList) const
 	retList->GetAt(15) = XFORM_TIME_ATTRIB;
 
 	return true;
+	}
+
+int CParticleSystemEffectPainter::GetLifetime (void)
+
+//	GetLifetime
+//
+//	Returns the lifetime
+	
+	{
+	if (m_iLifetime > 0)
+		return m_iLifetime;
+
+	else if (m_iEmitLifetime > 0)
+		return (m_iEmitLifetime + m_ParticleLifetime.GetMaxValue());
+
+	else
+		return m_iLifetime; 
 	}
 
 void CParticleSystemEffectPainter::GetRect (RECT *retRect) const

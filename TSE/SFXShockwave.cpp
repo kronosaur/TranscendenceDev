@@ -6,6 +6,7 @@
 
 #define IMAGE_TAG								CONSTLIT("Image")
 
+#define BLEND_MODE_ATTRIB						CONSTLIT("blendMode")
 #define FADE_START_ATTRIB						CONSTLIT("fadeStart")
 #define GLOW_SIZE_ATTRIB						CONSTLIT("glowSize")
 #define IMAGE_ATTRIB							CONSTLIT("image")
@@ -60,6 +61,7 @@ class CShockwavePainter : public IEffectPainter
 		int m_iFadeStart;					//	Tick on which we start to fade
 		int m_iWidth;						//	Width of central ring
 		int m_iGlowWidth;					//	Glow width
+		CGDraw::EBlendModes m_iBlendMode;
 		CG32bitPixel m_rgbPrimaryColor;		//	Primary color
 		CG32bitPixel m_rgbSecondaryColor;	//	Secondary color
 
@@ -124,6 +126,7 @@ IEffectPainter *CShockwaveEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx
 
 	//	Initialize the painter parameters
 
+	pPainter->SetParam(Ctx, BLEND_MODE_ATTRIB, m_BlendMode);
 	pPainter->SetParam(Ctx, FADE_START_ATTRIB, m_FadeStart);
 	pPainter->SetParam(Ctx, GLOW_SIZE_ATTRIB, m_GlowWidth);
 	pPainter->SetParam(Ctx, IMAGE_ATTRIB, m_Image);
@@ -157,6 +160,9 @@ ALERROR CShockwaveEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXM
 
 	{
 	ALERROR error;
+
+	if (error = m_BlendMode.InitBlendModeFromXML(Ctx, pDesc->GetAttribute(BLEND_MODE_ATTRIB)))
+		return error;
 
 	if (error = m_FadeStart.InitIntegerFromXML(Ctx, pDesc->GetAttribute(FADE_START_ATTRIB)))
 		return error;
@@ -212,6 +218,7 @@ CShockwavePainter::CShockwavePainter (CShockwaveEffectCreator *pCreator) : m_pCr
 		m_iFadeStart(100),
 		m_iWidth(10),
 		m_iGlowWidth(5),
+		m_iBlendMode(CGDraw::blendNormal),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
 		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
 		m_bInitialized(false),
@@ -290,7 +297,9 @@ void CShockwavePainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 //	Returns a parameter
 
 	{
-	if (strEquals(sParam, FADE_START_ATTRIB))
+	if (strEquals(sParam, BLEND_MODE_ATTRIB))
+		retValue->InitInteger(m_iBlendMode);
+	else if (strEquals(sParam, FADE_START_ATTRIB))
 		retValue->InitInteger(m_iFadeStart);
 	else if (strEquals(sParam, GLOW_SIZE_ATTRIB))
 		retValue->InitInteger(m_iGlowWidth);
@@ -318,16 +327,17 @@ bool CShockwavePainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(9);
-	retList->GetAt(0) = FADE_START_ATTRIB;
-	retList->GetAt(1) = GLOW_SIZE_ATTRIB;
-	retList->GetAt(2) = IMAGE_ATTRIB;
-	retList->GetAt(3) = LIFETIME_ATTRIB;
-	retList->GetAt(4) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(5) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(6) = SPEED_ATTRIB;
-	retList->GetAt(7) = STYLE_ATTRIB;
-	retList->GetAt(8) = WIDTH_ATTRIB;
+	retList->InsertEmpty(10);
+	retList->GetAt(0) = BLEND_MODE_ATTRIB;
+	retList->GetAt(1) = FADE_START_ATTRIB;
+	retList->GetAt(2) = GLOW_SIZE_ATTRIB;
+	retList->GetAt(3) = IMAGE_ATTRIB;
+	retList->GetAt(4) = LIFETIME_ATTRIB;
+	retList->GetAt(5) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(6) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(7) = SPEED_ATTRIB;
+	retList->GetAt(8) = STYLE_ATTRIB;
+	retList->GetAt(9) = WIDTH_ATTRIB;
 
 	return true;
 	}
@@ -406,7 +416,9 @@ void CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 //	Sets parameters
 
 	{
-	if (strEquals(sParam, FADE_START_ATTRIB))
+	if (strEquals(sParam, BLEND_MODE_ATTRIB))
+		m_iBlendMode = Value.EvalBlendMode(Ctx);
+	else if (strEquals(sParam, FADE_START_ATTRIB))
 		m_iFadeStart = Value.EvalIntegerBounded(Ctx, 0, 100, 100);
 	else if (strEquals(sParam, GLOW_SIZE_ATTRIB))
 		m_iGlowWidth = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
@@ -497,7 +509,7 @@ void CShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			CG32bitImage &Image = m_Image.GetImage(m_pCreator->GetUNIDString());
 			RECT rcImage = m_Image.GetImageRect();
 
-			CGDraw::CircleImage(Dest, x, y, iRadius, (BYTE)byOpacity, Image, CGDraw::blendNormal, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
+			CGDraw::CircleImage(Dest, x, y, iRadius, (BYTE)byOpacity, Image, m_iBlendMode, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
 			break;
 			}
 

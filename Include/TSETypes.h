@@ -144,6 +144,13 @@ const DWORD g_SuperconductingShieldsUNID =	0x0000407D;	//	Superconducting shield
 const DWORD g_SuperconductingCoilUNID =		0x0000407E;	//	Superconducting shield generator
 const DWORD NOVA25_REACTOR_UNID =			0x00004107;	//	Nova-25 reactor
 
+const DWORD UNID_KINETIC_EXPLOSION_1 =		0x00005007;
+const DWORD UNID_BLAST_EXPLOSION_1 =		0x0000500B;
+const DWORD UNID_THERMO_EXPLOSION_1 =		0x0000500F;
+const DWORD UNID_PLASMA_EXPLOSION_1 =		0x00005013;
+const DWORD UNID_ANTIMATTER_EXPLOSION_1 =	0x00005019;
+const DWORD UNID_GRAVITON_EXPLOSION_1 =		0x0000501D;
+
 const DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1
 const DWORD g_LargeExplosionUNID =			0x00009002;	//	efLargeExplosion1
 const DWORD g_HitEffectUNID =				0x00009003;	//	efSmallExplosion1

@@ -4203,6 +4203,7 @@ class CShipClass : public CDesignType
 
 		int m_iScore;							//	Score when destroyed
 		int m_iLevel;							//	Ship class level
+		EBalanceTypes m_iLevelType;				//	Type of ships for level
 
 		int m_iMass;							//	Empty mass (tons)
 		int m_iSize;							//	Length in meters
