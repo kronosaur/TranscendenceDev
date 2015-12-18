@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 CG32bitPixel::AlphaArray8 CG32bitPixel::g_Alpha8 [256];
+CG32bitPixel::AlphaArray8 CG32bitPixel::g_Screen8 [256];
 bool CG32bitPixel::m_bAlphaInitialized = CG32bitPixel::Init();
 
 CG32bitPixel::CG32bitPixel (WORD wPixel)
@@ -231,9 +232,17 @@ bool CG32bitPixel::Init (void)
 	{
 	DWORD i, j;
 
+	//	Compute alpha table
+
 	for (i = 0; i < 256; i++)
 		for (j = 0; j < 256; j++)
 			g_Alpha8[j][i] = (BYTE)((DWORD)((i * (j / 255.0f)) + 0.5));
+
+	//	Compute screen table
+
+	for (i = 0; i < 256; i++)
+		for (j = 0; j < 256; j++)
+			g_Screen8[j][i] = (BYTE)(0xff - g_Alpha8[0xff - i][0xff - j]);
 
 	return true;
 	}
@@ -289,9 +298,9 @@ CG32bitPixel CG32bitPixel::Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 //	pre-multiply source and/or dest and combine the alpha separately.
 
 	{
-	BYTE redResult = 0xff - g_Alpha8[(0xff - rgbDest.GetRed())][(0xff - rgbSrc.GetRed())];
-	BYTE greenResult = 0xff - g_Alpha8[(0xff - rgbDest.GetGreen())][(0xff - rgbSrc.GetGreen())];
-	BYTE blueResult = 0xff - g_Alpha8[(0xff - rgbDest.GetBlue())][(0xff - rgbSrc.GetBlue())];
+	BYTE redResult = CG32bitPixel::ScreenTable(rgbDest.GetRed())[rgbSrc.GetRed()];
+	BYTE greenResult = CG32bitPixel::ScreenTable(rgbDest.GetGreen())[rgbSrc.GetGreen()];
+	BYTE blueResult = CG32bitPixel::ScreenTable(rgbDest.GetBlue())[rgbSrc.GetBlue()];
 
 	return CG32bitPixel(redResult, greenResult, blueResult);
 	}
