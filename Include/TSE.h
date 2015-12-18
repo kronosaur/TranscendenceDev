@@ -433,6 +433,7 @@ class CWeaponFireDesc
 		inline Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
 		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
+		Metric GetAveParticleCount (void) const;
 		DamageTypes GetDamageType (void) const;
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
@@ -3101,8 +3102,8 @@ class CFractalTextureLibrary
 		void InitExplosionTextures (void);
 
 		bool m_bInitialized;
-		TArray<CG8bitImage> m_ExplosionTextures;
 		TArray<CG8bitImage> m_BoilingTextures;
+		TArray<CG8bitImage> m_ExplosionTextures;
 	};
 
 //	IListData implementation ---------------------------------------------------

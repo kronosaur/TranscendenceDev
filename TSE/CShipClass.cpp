@@ -1317,116 +1317,7 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 	SExplosionType Explosion;
 	pShip->FireGetExplosionType(&Explosion);
 	if (Explosion.pDesc == NULL)
-		Explosion.pDesc = GetExplosionType();
-
-	//	If no defined explosion, come up with an appropriate one.
-	//
-	//	NOTE: In general, this will only happen for smaller gunships.
-	//	Capital ships should define their own explosion type.
-
-	if (Explosion.pDesc == NULL)
-		{
-		int iLevel = pShip->GetLevel();
-		int iMass = GetHullMass();
-
-		//	There are four different sized explosions for each tier. We use the
-		//	balance type to distinguish. We also adjust the level.
-
-		int iMassLevel;
-		switch (m_iLevelType)
-			{
-			case typeUnknown:
-			case typeMinion:
-			case typeTooWeak:
-			case typeNonCombatant:
-			case typeArmorTooWeak:
-			case typeWeaponsTooWeak:
-				iMassLevel = 0;
-				iLevel = Max(1, iLevel - 3);
-				break;
-
-			case typeStandard:
-				iMassLevel = 1;
-				iLevel = Max(1, iLevel - 2);
-				break;
-
-			case typeElite:
-				iMassLevel = 2;
-				iLevel = Max(1, iLevel - 1);
-				break;
-
-			default:
-				iMassLevel = 3;
-				break;
-			}
-
-		//	We figure out which explosion type based on the level.
-
-		CWeaponFireDescRef ExplosionRef;
-		switch (iLevel)
-			{
-			//	Tier 1
-
-			case 0:
-			case 1:
-			case 2:
-			case 3:
-				ExplosionRef.SetUNID(UNID_KINETIC_EXPLOSION_1 + iMassLevel);
-				break;
-
-			//	Tier 2
-
-			case 4:
-			case 5:
-			case 6:
-				ExplosionRef.SetUNID(UNID_BLAST_EXPLOSION_1 + iMassLevel);
-				break;
-
-			//	Tier 3
-
-			case 7:
-			case 8:
-			case 9:
-				ExplosionRef.SetUNID(UNID_THERMO_EXPLOSION_1 + iMassLevel);
-				break;
-
-			//	Tier 4
-
-			case 10:
-			case 11:
-			case 12:
-				ExplosionRef.SetUNID(UNID_PLASMA_EXPLOSION_1 + iMassLevel);
-				break;
-
-			//	Tier 5
-
-			case 13:
-			case 14:
-			case 15:
-				ExplosionRef.SetUNID(UNID_ANTIMATTER_EXPLOSION_1 + iMassLevel);
-				break;
-
-			//	Tier 6
-
-			case 16:
-			case 17:
-			case 18:
-				ExplosionRef.SetUNID(UNID_GRAVITON_EXPLOSION_1 + iMassLevel);
-				break;
-
-			//	Tier 7+
-
-			default:
-				ExplosionRef.SetUNID(UNID_GRAVITON_EXPLOSION_1 + 3);
-				break;
-			}
-
-		//	Bind. NOTE: It's OK if we don't find the given explosion.
-
-		SDesignLoadCtx LoadCtx;
-		ExplosionRef.Bind(LoadCtx);
-		Explosion.pDesc = ExplosionRef;
-		}
+		Explosion.pDesc = GetExplosionType(pShip);
 
 	//	Explosion
 
@@ -1961,9 +1852,10 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_EXPLOSION_TYPE))
 		{
-		if (m_pExplosionType)
+		CWeaponFireDesc *pExplosionType;
+		if (pExplosionType = GetExplosionType(NULL))
 			{
-			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(m_pExplosionType->m_sUNID, 0));
+			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(pExplosionType->m_sUNID, 0));
 			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
 			if (pWeapon)
 				{
@@ -2257,6 +2149,122 @@ void CShipClass::GetDriveDesc (DriveDesc *retDriveDesc) const
 		retDriveDesc->iThrust += pDriveDesc->iThrust;
 		retDriveDesc->rMaxSpeed = Max(retDriveDesc->rMaxSpeed, pDriveDesc->rMaxSpeed);
 		}
+	}
+
+CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip)
+
+//	GetExplosionType
+//
+//	Returns the explosion type (or NULL if we have no default explosion for this
+//	ship class).
+	
+	{
+	//	If we've got a defined explosion, then return that
+
+	if (m_pExplosionType)
+		return m_pExplosionType;
+
+	//	If no defined explosion, come up with an appropriate one.
+	//
+	//	NOTE: In general, this will only happen for smaller gunships.
+	//	Capital ships should define their own explosion type.
+
+	int iLevel = (pShip ? pShip->GetLevel() : GetLevel());
+
+	//	Adjust the level based on the balance type.
+
+	switch (m_iLevelType)
+		{
+		case typeUnknown:
+		case typeMinion:
+		case typeTooWeak:
+		case typeNonCombatant:
+		case typeArmorTooWeak:
+		case typeWeaponsTooWeak:
+			iLevel = Max(1, iLevel - 3);
+			break;
+
+		case typeStandard:
+			iLevel = Max(1, iLevel - 2);
+			break;
+
+		case typeElite:
+			iLevel = Max(1, iLevel - 1);
+			break;
+		}
+
+	//	Compute the size of the explosion in the given tier based on where
+	//	we are on the tier (afer adjustments).
+
+	int iMassLevel = (iLevel - 1) % 3;
+
+	//	We figure out which explosion type based on the level.
+
+	CWeaponFireDescRef ExplosionRef;
+	switch (iLevel)
+		{
+		//	Tier 1
+
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			ExplosionRef.SetUNID(UNID_KINETIC_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 2
+
+		case 4:
+		case 5:
+		case 6:
+			ExplosionRef.SetUNID(UNID_BLAST_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 3
+
+		case 7:
+		case 8:
+		case 9:
+			ExplosionRef.SetUNID(UNID_THERMO_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 4
+
+		case 10:
+		case 11:
+		case 12:
+			ExplosionRef.SetUNID(UNID_PLASMA_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 5
+
+		case 13:
+		case 14:
+		case 15:
+			ExplosionRef.SetUNID(UNID_ANTIMATTER_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 6
+
+		case 16:
+		case 17:
+		case 18:
+			ExplosionRef.SetUNID(UNID_GRAVITON_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 7+
+
+		default:
+			ExplosionRef.SetUNID(UNID_GRAVITON_EXPLOSION_1 + 3);
+			break;
+		}
+
+	//	Bind. NOTE: It's OK if we don't find the given explosion and return
+	//	NULL.
+
+	SDesignLoadCtx LoadCtx;
+	ExplosionRef.Bind(LoadCtx);
+	return ExplosionRef;
 	}
 
 CString CShipClass::GetGenericName (DWORD *retdwFlags)

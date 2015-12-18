@@ -414,7 +414,7 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue) 
 	if (strEquals(sField, FIELD_PARTICLE_COUNT))
 		{
 		if (m_pParticleDesc)
-			*retsValue = strFromInt((int)(m_pParticleDesc->GetEmitRate().GetAveValueFloat() * m_pParticleDesc->GetEmitLifetime().GetAveValueFloat()));
+			*retsValue = strFromInt((int)GetAveParticleCount());
 		else
 			*retsValue = NULL_STR;
 		}
@@ -424,6 +424,25 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue) 
 		return false;
 
 	return true;
+	}
+
+Metric CWeaponFireDesc::GetAveParticleCount (void) const
+
+//	GetAveParticleCount
+//
+//	If this is a particle effect, then return the average number of particles.
+
+	{
+	if (m_pParticleDesc)
+		{
+		Metric rEmitLifetime = m_pParticleDesc->GetEmitLifetime().GetAveValueFloat();
+		if (rEmitLifetime > 0.0)
+			return m_pParticleDesc->GetEmitRate().GetAveValueFloat() * rEmitLifetime;
+		else
+			return m_pParticleDesc->GetEmitRate().GetAveValueFloat();
+		}
+	else
+		return 0.0;
 	}
 
 CEffectCreator *CWeaponFireDesc::FindEffectCreator (const CString &sUNID)
@@ -1418,6 +1437,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load missile speed
 
+	bool bDefaultMissileSpeed = false;
 	CString sData;
 	if (pDesc->FindAttribute(MISSILE_SPEED_ATTRIB, &sData))
 		{
@@ -1432,6 +1452,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		}
 	else
 		{
+		bDefaultMissileSpeed = true;
+
 		m_MissileSpeed.SetConstant(100);
 		m_fVariableInitialSpeed = false;
 		m_rMissileSpeed = LIGHT_SPEED;
@@ -1527,6 +1549,15 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		{
 		m_iFireType = ftArea;
 
+		//	If no missile speed specified, then 0
+
+		if (bDefaultMissileSpeed)
+			{
+			m_MissileSpeed.SetConstant(0);
+			m_fVariableInitialSpeed = false;
+			m_rMissileSpeed = 0.0;
+			}
+
 		m_rMaxMissileSpeed = m_rMissileSpeed;
 
 		//	Load expansion speed
@@ -1619,6 +1650,15 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	else if (strEquals(sValue, FIRE_TYPE_RADIUS))
 		{
 		m_iFireType = ftRadius;
+
+		//	If no missile speed specified, then 0
+
+		if (bDefaultMissileSpeed)
+			{
+			m_MissileSpeed.SetConstant(0);
+			m_fVariableInitialSpeed = false;
+			m_rMissileSpeed = 0.0;
+			}
 
 		m_rMaxMissileSpeed = m_rMissileSpeed;
 

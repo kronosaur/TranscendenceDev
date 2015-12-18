@@ -4032,7 +4032,7 @@ class CShipClass : public CDesignType
 		void GetDriveDesc (DriveDesc *retDriveDesc) const;
 		inline CObjectEffectDesc &GetEffectsDesc (void) { return m_Effects; }
 		IShipGenerator *GetEscorts (void) { return m_pEscorts; }
-		CWeaponFireDesc *GetExplosionType (void) { return m_pExplosionType; }
+		CWeaponFireDesc *GetExplosionType (CShip *pShip);
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
 		CXMLElement *GetHUDDescInherited (EHUDTypes iType) const;
