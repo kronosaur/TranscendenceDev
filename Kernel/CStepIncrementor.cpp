@@ -15,7 +15,15 @@ CStepIncrementor::CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, i
 //	CStepIncrementor constructor
 
 	{
-	ASSERT(iSteps > 0);
+	//	Edge conditions
+
+	if (iSteps <= 0)
+		{
+		m_iSteps = 0;
+		m_rRange = 0.0;
+		m_rPower = 0.0;
+		return;
+		}
 
 	switch (iStyle)
 		{
@@ -62,6 +70,9 @@ Metric CStepIncrementor::GetAt (int iStep) const
 //	Returns the value at the given step
 
 	{
+	if (m_iSteps == 0)
+		return m_rStart;
+
 	switch (m_iStyle)
 		{
 		case styleLinear:

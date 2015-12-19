@@ -377,5 +377,8 @@
     <ClCompile Include="CGShape.cpp">
       <Filter>Source Files\Paths and Regions</Filter>
     </ClCompile>
+    <ClCompile Include="CGImageCache.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

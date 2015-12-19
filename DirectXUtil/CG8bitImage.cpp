@@ -6,7 +6,8 @@
 #include "PreComp.h"
 
 CG8bitImage::CG8bitImage (void) :
-		m_pChannel(NULL)
+		m_pChannel(NULL),
+		m_bMarked(false)
 
 //	CG8bitImage constructor
 
@@ -47,11 +48,9 @@ void CG8bitImage::CleanUp (void)
 
 	{
 	if (m_pChannel)
-		{
 		delete [] m_pChannel;
-		m_pChannel = NULL;
-		}
 
+	m_pChannel = NULL;
 	m_cxWidth = 0;
 	m_cyHeight = 0;
 	ResetClipRect();
@@ -84,6 +83,7 @@ void CG8bitImage::Copy (const CG8bitImage &Src)
 	m_cxWidth = Src.m_cxWidth;
 	m_cyHeight = Src.m_cyHeight;
 	m_rcClip = Src.m_rcClip;
+	m_bMarked = Src.m_bMarked;
 	}
 
 bool CG8bitImage::Create (int cxWidth, int cyHeight, BYTE InitialValue)

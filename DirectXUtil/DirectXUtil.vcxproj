@@ -371,6 +371,7 @@
     <ClCompile Include="CG16bitSprite.cpp" />
     <ClCompile Include="CG16bitRegion.cpp" />
     <ClCompile Include="CG32bitImage.cpp" />
+    <ClCompile Include="CGImageCache.cpp" />
     <ClCompile Include="CG32bitPixel.cpp" />
     <ClCompile Include="CG8bitImage.cpp" />
     <ClCompile Include="CG8bitSparseImage.cpp" />

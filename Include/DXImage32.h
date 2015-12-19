@@ -55,7 +55,7 @@ class CG32bitPixel
 		static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc, BYTE bySrcAlpha);
 		static CG32bitPixel Blend (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade);
 		static CG32bitPixel Blend3 (CG32bitPixel rgbNegative, CG32bitPixel rgbCenter, CG32bitPixel rgbPositive, double rFade);
-		inline static BYTE BlendAlpha (BYTE byDest, BYTE bySrc) { return (BYTE)((DWORD)byDest * (DWORD)bySrc / 255); }
+		inline static BYTE BlendAlpha (BYTE byDest, BYTE bySrc) { return g_Alpha8[byDest][bySrc]; }
 		static CG32bitPixel ChangeHue (CG32bitPixel rgbSource, int iAdj);
 		static CG32bitPixel Composite (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
 		static CG32bitPixel Composite (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade);
@@ -130,7 +130,9 @@ class CG32bitImage : public CGImagePlane
 		inline CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
 		inline CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
 		inline bool IsEmpty (void) const { return (m_pRGBA == NULL); }
+		inline bool IsMarked (void) const { return m_bMarked; }
 		inline CG32bitPixel *NextRow (CG32bitPixel *pPos) const { return (CG32bitPixel *)((BYTE *)pPos + m_iPitch); }
+		inline void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
 
 		//	Basic Drawing Interface
 
@@ -187,6 +189,7 @@ class CG32bitImage : public CGImagePlane
 
 		CG32bitPixel *m_pRGBA;
 		bool m_bFreeRGBA;					//	If TRUE, we own the memory
+		bool m_bMarked;						//	Mark/sweep flag (for use by caller)
 		int m_iPitch;						//	Bytes per row
 		EAlphaTypes m_AlphaType;
 
@@ -509,6 +512,25 @@ class CGBlendScreen : public TBlendImpl<CGBlendScreen>
 
 #include "TBlt.h"
 #include "TCirclePainter.h"
+
+//	Utilities
+
+class CGImageCache
+	{
+	public:
+		~CGImageCache (void);
+
+		CG8bitImage *Alloc8 (void);
+		CG32bitImage *Alloc32 (void);
+		void ClearMarks (void);
+		void Free8 (CG8bitImage *pImage);
+		void Free32 (CG32bitImage *pImage);
+		void Sweep (void);
+
+	private:
+		TArray<CG8bitImage *> m_Cache8;
+		TArray<CG32bitImage *> m_Cache32;
+	};
 
 //	Inlines --------------------------------------------------------------------
 

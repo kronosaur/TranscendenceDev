@@ -14,6 +14,7 @@ CG32bitImage CG32bitImage::m_NullImage;
 CG32bitImage::CG32bitImage (void) :
 		m_pRGBA(NULL),
 		m_bFreeRGBA(false),
+		m_bMarked(false),
 		m_iPitch(0),
 		m_AlphaType(alphaNone),
 		m_pBMI(NULL)
@@ -185,11 +186,9 @@ void CG32bitImage::CleanUp (void)
 
 	{
 	if (m_pRGBA && m_bFreeRGBA)
-		{
 		delete [] m_pRGBA;
-		m_pRGBA = NULL;
-		}
 
+	m_pRGBA = NULL;
 	m_cxWidth = 0;
 	m_cyHeight = 0;
 	m_iPitch = 0;
@@ -218,6 +217,7 @@ void CG32bitImage::Copy (const CG32bitImage &Src)
 	int iSize = CalcBufferSize(Src.m_iPitch / sizeof(DWORD), Src.m_cyHeight);
 	m_pRGBA = new CG32bitPixel [iSize];
 	m_bFreeRGBA = true;
+	m_bMarked = Src.m_bMarked;
 
 	CG32bitPixel *pSrc = Src.m_pRGBA;
 	CG32bitPixel *pSrcEnd = pSrc + iSize;
