@@ -10,6 +10,7 @@
 #define FADE_START_ATTRIB						CONSTLIT("fadeStart")
 #define GLOW_SIZE_ATTRIB						CONSTLIT("glowSize")
 #define IMAGE_ATTRIB							CONSTLIT("image")
+#define INTENSITY_ATTRIB						CONSTLIT("intensity")
 #define LIFETIME_ATTRIB							CONSTLIT("lifetime")
 #define PRIMARY_COLOR_ATTRIB					CONSTLIT("primaryColor")
 #define SECONDARY_COLOR_ATTRIB					CONSTLIT("secondaryColor")
@@ -17,9 +18,22 @@
 #define STYLE_ATTRIB							CONSTLIT("style")
 #define WIDTH_ATTRIB							CONSTLIT("width")
 
+const int CLOUD_TEXTURE_SIZE =					512;
+
 class CShockwavePainter : public IEffectPainter
 	{
 	public:
+		enum EStyles
+			{
+			styleUnknown =				0,
+
+			styleGlowRing =				1,	//	Glowing right
+			styleImage =				2,	//	Use an image to paint shockwave
+			styleCloud =				3,	//	Fractal cloud
+
+			styleMax =					3,
+			};
+
 		CShockwavePainter (CShockwaveEffectCreator *pCreator);
 
 		//	IEffectPainter virtuals
@@ -32,25 +46,18 @@ class CShockwavePainter : public IEffectPainter
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 
+		static void Mark (EStyles iStyle) { if (iStyle == styleCloud) GetCloudTexture()->SetMarked();  }
+
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
 	private:
-		enum EStyles
-			{
-			styleUnknown =				0,
-
-			styleGlowRing =				1,	//	Glowing right
-			styleImage =				2,	//	Use an image to paint shockwave
-
-			styleMax =					2,
-			};
-
 		bool CalcIntermediates (void);
 		inline int CalcRadius (int iTick) const { return 1 + Max(0, (m_iRadiusInc * iTick)); }
 		bool CreateGlowGradient (int iSolidWidth, int iGlowWidth, CG32bitPixel rgbSolidColor, CG32bitPixel rgbGlowColor);
+		static CG8bitImage *GetCloudTexture (void);
 
 		CShockwaveEffectCreator *m_pCreator;
 
@@ -60,6 +67,7 @@ class CShockwavePainter : public IEffectPainter
 		int m_iLifetime;					//	Lifetime
 		int m_iFadeStart;					//	Tick on which we start to fade
 		int m_iWidth;						//	Width of central ring
+		int m_iIntensity;					//	Brighter
 		int m_iGlowWidth;					//	Glow width
 		CGDraw::EBlendModes m_iBlendMode;
 		CG32bitPixel m_rgbPrimaryColor;		//	Primary color
@@ -75,7 +83,11 @@ class CShockwavePainter : public IEffectPainter
 		int m_iRadiusInc;					//	Radius increase (pixels per tick)
 		int m_iGradientCount;
 		TArray<CG32bitPixel> m_ColorGradient;
+
+		static CG8bitImage *m_pCloudTexture;
 	};
+
+CG8bitImage *CShockwavePainter::m_pCloudTexture = NULL;
 
 static LPSTR STYLE_TABLE[] =
 	{
@@ -84,6 +96,7 @@ static LPSTR STYLE_TABLE[] =
 
 		"glowRing",
 		"image",
+		"cloud",
 
 		NULL,
 	};
@@ -130,6 +143,7 @@ IEffectPainter *CShockwaveEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx
 	pPainter->SetParam(Ctx, FADE_START_ATTRIB, m_FadeStart);
 	pPainter->SetParam(Ctx, GLOW_SIZE_ATTRIB, m_GlowWidth);
 	pPainter->SetParam(Ctx, IMAGE_ATTRIB, m_Image);
+	pPainter->SetParam(Ctx, INTENSITY_ATTRIB, m_Intensity);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
 	pPainter->SetParam(Ctx, PRIMARY_COLOR_ATTRIB, m_PrimaryColor);
 	pPainter->SetParam(Ctx, SECONDARY_COLOR_ATTRIB, m_SecondaryColor);
@@ -173,6 +187,9 @@ ALERROR CShockwaveEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXM
 	if (error = m_Image.InitImageFromXML(Ctx, pDesc->GetContentElementByTag(IMAGE_TAG)))
 		return error;
 
+	if (error = m_Intensity.InitIntegerFromXML(Ctx, pDesc->GetAttribute(INTENSITY_ATTRIB)))
+		return error;
+
 	if (error = m_Lifetime.InitIntegerFromXML(Ctx, pDesc->GetAttribute(LIFETIME_ATTRIB)))
 		return error;
 
@@ -209,6 +226,20 @@ ALERROR CShockwaveEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
+void CShockwaveEffectCreator::OnMarkImages (void)
+
+//	OnMarkImages
+//
+//	Mark images that are in use
+	
+	{
+	m_Image.MarkImage();
+
+	CCreatePainterCtx Ctx;
+	CShockwavePainter::EStyles iStyle = (CShockwavePainter::EStyles)m_Style.EvalIdentifier(Ctx, STYLE_TABLE, CShockwavePainter::styleMax, CShockwavePainter::styleImage);
+	CShockwavePainter::Mark(iStyle);
+	}
+
 //	CShockwavePainter object
 
 CShockwavePainter::CShockwavePainter (CShockwaveEffectCreator *pCreator) : m_pCreator(pCreator),
@@ -217,6 +248,7 @@ CShockwavePainter::CShockwavePainter (CShockwaveEffectCreator *pCreator) : m_pCr
 		m_iLifetime(10),
 		m_iFadeStart(100),
 		m_iWidth(10),
+		m_iIntensity(50),
 		m_iGlowWidth(5),
 		m_iBlendMode(CGDraw::blendNormal),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
@@ -236,11 +268,118 @@ bool CShockwavePainter::CalcIntermediates (void)
 //	Initialize various tables
 
 	{
+	int i;
+
 	if (m_bInitialized)
 		return true;
 
 	switch (m_iStyle)
 		{
+		case styleCloud:
+			{
+			int cxWidth = Max(CLOUD_TEXTURE_SIZE, CalcRadius(m_iLifetime) * 6);
+			int cyHeight = m_iWidth;
+			if (m_iWidth <= 0)
+				return false;
+
+			//	Calculate a table so we can fade the ring
+
+			int iCenter = cyHeight / 4;
+			int iTailSize = cyHeight - iCenter;
+			CStepIncrementor Head(CStepIncrementor::styleSquare, 0.0, 255.0, iCenter);
+			CStepIncrementor Tail(CStepIncrementor::styleSquareRoot, 255.0, 0.0, iTailSize);
+
+			BYTE *pFade = new BYTE [cyHeight];
+			for (i = 0; i < cyHeight; i++)
+				{
+				if (i < iCenter)
+					pFade[i] = (BYTE)Head.GetAt(i);
+				else
+					pFade[i] = (BYTE)Tail.GetAt(i - iCenter);
+				}
+
+			//	Compute core glow
+
+			int iBlownRadius = m_iIntensity * cyHeight / 1200;
+			int iFringeSize = m_iIntensity * cyHeight / 100;
+			int iFringeRadius = iBlownRadius + iFringeSize;
+
+			CG32bitPixel *pGlow = new CG32bitPixel [cyHeight];
+			for (i = 0; i < cyHeight; i++)
+				{
+				int iOffset = Absolute(i - iCenter);
+				if (iOffset < iBlownRadius)
+					{
+					pGlow[i] = CG32bitPixel(255, 255, 255);
+					pFade[i] = 255;
+					}
+				else if (iOffset < iFringeRadius)
+					{
+					BYTE byAlpha = 255 - (255 * (1 + iOffset - iBlownRadius) / (1 + iFringeSize));
+					pGlow[i] = CG32bitPixel(m_rgbPrimaryColor, byAlpha);
+					pFade[i] = Max(byAlpha, pFade[i]);
+					}
+				else
+					pGlow[i] = CG32bitPixel::Null();
+				}
+
+			//	Create a image to use as the shockwave
+
+			CG32bitPixel rgbTextureColor = (m_rgbSecondaryColor.IsNull() ? m_rgbPrimaryColor : m_rgbSecondaryColor);
+
+			CG32bitImage *pImage = new CG32bitImage;
+			pImage->Create(cxWidth, cyHeight, CG32bitImage::alpha8);
+
+			CG8bitImage *pTexture = GetCloudTexture();
+
+			CG32bitPixel *pRow = pImage->GetPixelPos(0, 0);
+			CG32bitPixel *pRowEnd = pImage->GetPixelPos(0, cyHeight);
+			int y = 0;
+			while (pRow < pRowEnd)
+				{
+				CG32bitPixel *pPos = pRow;
+				CG32bitPixel *pPosEnd = pRow + cxWidth;
+				int x = 0;
+				while (pPos < pPosEnd)
+					{
+					BYTE byTexture = *(pTexture->GetPixelPos(x % pTexture->GetWidth(), y % pTexture->GetHeight()));
+					CG32bitPixel rgbColor = CG32bitPixel(rgbTextureColor, byTexture);
+					if (!pGlow[y].IsNull())
+						rgbColor = CG32bitPixel::Composite(rgbColor, pGlow[y]);
+
+					*pPos = CG32bitPixel::PreMult(CG32bitPixel(rgbColor, CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), pFade[y])));
+
+					pPos++;
+					x++;
+					}
+
+				pRow = pImage->NextRow(pRow);
+				y++;
+				}
+
+			delete[] pGlow;
+			pGlow = NULL;
+
+			delete[] pFade;
+			pFade = NULL;
+
+			//	Store in m_Image (which takes ownership of the image).
+
+			RECT rcRect;
+			rcRect.left = 0;
+			rcRect.right = cxWidth;
+			rcRect.top = 0;
+			rcRect.bottom = cyHeight;
+
+			if (m_Image.Init(pImage, rcRect, 1, 1, true) != NOERROR)
+				{
+				delete pImage;
+				return false;
+				}
+
+			break;
+			}
+
 		case styleGlowRing:
 			if (!CreateGlowGradient(m_iWidth, m_iGlowWidth, m_rgbPrimaryColor, m_rgbSecondaryColor))
 				return false;
@@ -290,6 +429,33 @@ bool CShockwavePainter::CreateGlowGradient (int iSolidWidth, int iGlowWidth, CG3
 	return true;
 	}
 
+CG8bitImage *CShockwavePainter::GetCloudTexture (void)
+
+//	GetCloudTexture
+//
+//	Returns a properly initialized cloud texture.
+
+	{
+	//	Allocate image, if necessary.
+
+	if (m_pCloudTexture == NULL)
+		m_pCloudTexture = g_pUniverse->GetDynamicImageLibrary().Alloc8();
+
+	//	Initialize the texture, if necessary
+
+	if (m_pCloudTexture->IsEmpty())
+		{
+		SGCloudDesc Desc;
+
+		m_pCloudTexture->Create(CLOUD_TEXTURE_SIZE, CLOUD_TEXTURE_SIZE);
+		CGFractal::FillClouds(*m_pCloudTexture, 0, 0, CLOUD_TEXTURE_SIZE, CLOUD_TEXTURE_SIZE, Desc);
+		}
+
+	//	Done
+
+	return m_pCloudTexture;
+	}
+
 void CShockwavePainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
 
 //	GetParam
@@ -305,6 +471,8 @@ void CShockwavePainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 		retValue->InitInteger(m_iGlowWidth);
 	else if (strEquals(sParam, IMAGE_ATTRIB))
 		retValue->InitImage(m_Image);
+	else if (strEquals(sParam, INTENSITY_ATTRIB))
+		retValue->InitInteger(m_iIntensity);
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
 		retValue->InitInteger(m_iLifetime);
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
@@ -327,17 +495,18 @@ bool CShockwavePainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(10);
+	retList->InsertEmpty(11);
 	retList->GetAt(0) = BLEND_MODE_ATTRIB;
 	retList->GetAt(1) = FADE_START_ATTRIB;
 	retList->GetAt(2) = GLOW_SIZE_ATTRIB;
 	retList->GetAt(3) = IMAGE_ATTRIB;
-	retList->GetAt(4) = LIFETIME_ATTRIB;
-	retList->GetAt(5) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(6) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(7) = SPEED_ATTRIB;
-	retList->GetAt(8) = STYLE_ATTRIB;
-	retList->GetAt(9) = WIDTH_ATTRIB;
+	retList->GetAt(4) = INTENSITY_ATTRIB;
+	retList->GetAt(5) = LIFETIME_ATTRIB;
+	retList->GetAt(6) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(7) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(8) = SPEED_ATTRIB;
+	retList->GetAt(9) = STYLE_ATTRIB;
+	retList->GetAt(10) = WIDTH_ATTRIB;
 
 	return true;
 	}
@@ -422,6 +591,8 @@ void CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 		m_iFadeStart = Value.EvalIntegerBounded(Ctx, 0, 100, 100);
 	else if (strEquals(sParam, GLOW_SIZE_ATTRIB))
 		m_iGlowWidth = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+	else if (strEquals(sParam, INTENSITY_ATTRIB))
+		m_iIntensity = Value.EvalIntegerBounded(Ctx, 0, -1, 50);
 	else if (strEquals(sParam, IMAGE_ATTRIB))
 		m_Image = Value.EvalImage(Ctx);
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
@@ -504,6 +675,13 @@ void CShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	switch (m_iStyle)
 		{
+#if 0
+		case styleCloud:
+			m_Image.PaintImage(Dest, x, y, 0, 0);
+			break;
+#endif
+
+		case styleCloud:
 		case styleImage:
 			{
 			CG32bitImage &Image = m_Image.GetImage(m_pCreator->GetUNIDString());
@@ -523,4 +701,3 @@ void CShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			ASSERT(false);
 		}
 	}
-
