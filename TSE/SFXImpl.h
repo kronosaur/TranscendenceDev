@@ -867,7 +867,7 @@ class CShockwaveEffectCreator : public CEffectCreator
 		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx);
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx);
-		virtual void OnMarkImages (void) { m_Image.MarkImage(); }
+		virtual void OnMarkImages (void);
 
 	private:
 		CEffectParamDesc m_Style;						//	Style of effect
@@ -876,6 +876,7 @@ class CShockwaveEffectCreator : public CEffectCreator
 		CEffectParamDesc m_Lifetime;					//	Lifetime (ticks)
 		CEffectParamDesc m_FadeStart;					//	% of lifetime at which we start to fade
 		CEffectParamDesc m_Width;						//	Width of central ring
+		CEffectParamDesc m_Intensity;					//	Intensity (0-100)
 		CEffectParamDesc m_GlowWidth;					//	Glow width
 		CEffectParamDesc m_BlendMode;					//	blendMode: Blend mode
 		CEffectParamDesc m_PrimaryColor;

@@ -19,6 +19,7 @@
 #define COUNTER_UPDATE_ATTRIB					CONSTLIT("counterUpdate")
 #define COUNTER_UPDATE_RATE_ATTRIB				CONSTLIT("counterUpdateRate")
 #define FAILURE_CHANCE_ATTRIB					CONSTLIT("failureChance")
+#define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
 #define HEATING_ATTRIB							CONSTLIT("heating")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
 #define LAUNCHER_ATTRIB							CONSTLIT("launcher")
@@ -897,7 +898,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	if (error = pWeapon->InitDeviceFromXML(Ctx, pDesc, pType))
 		return error;
 
-	pWeapon->m_iFireRateSecs = pDesc->GetAttributeInteger(CONSTLIT(g_FireRateAttrib));
+	pWeapon->m_iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, 16);
 	pWeapon->m_iFireRate = (int)((pWeapon->m_iFireRateSecs / STD_SECONDS_PER_UPDATE) + 0.5);
 	pWeapon->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
 	pWeapon->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pWeapon->m_iPowerUse / 10);

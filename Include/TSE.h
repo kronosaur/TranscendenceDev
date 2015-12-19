@@ -3361,6 +3361,7 @@ class CUniverse : public CObject
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);
 		inline const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
+		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		inline CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		inline CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
 		inline CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
@@ -3458,14 +3459,13 @@ class CUniverse : public CObject
 		CSovereign *GetPlayerSovereign (void) const;
 		inline int GetTicks (void) { return m_iTick; }
 
-		inline void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); }
+		inline void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
 		void GarbageCollectLibraryBitmaps (void);
 		inline CObjectImage *FindLibraryImage (DWORD dwUNID) { return CObjectImage::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CG32bitImage *GetLibraryBitmap (DWORD dwUNID, DWORD dwFlags = 0) { return m_Design.GetImage(dwUNID, dwFlags); }
 		inline CG32bitImage *GetLibraryBitmapCopy (DWORD dwUNID) { return m_Design.GetImage(dwUNID, CDesignCollection::FLAG_IMAGE_COPY); }
 		inline void MarkLibraryBitmaps (void) { m_Design.MarkGlobalImages(); if (m_pCurrentSystem) m_pCurrentSystem->MarkImages(); }
-		inline void ReleaseLibraryBitmap (CG32bitImage *pBitmap) { }
-		inline void SweepLibraryBitmaps (void) { m_Extensions.SweepImages(); m_Design.SweepImages(); }
+		inline void SweepLibraryBitmaps (void) { m_Extensions.SweepImages(); m_Design.SweepImages(); m_DynamicImageLibrary.Sweep();  }
 
 		inline CDesignCollection &GetDesignCollection (void) { return m_Design; }
 		inline CDesignType *GetDesignType (int iIndex) { return m_Design.GetEntry(iIndex); }
@@ -3579,6 +3579,7 @@ class CUniverse : public CObject
 		TArray<INotifications *> m_Subscribers;
 		CSFXOptions m_SFXOptions;
 		CFractalTextureLibrary m_FractalTextureLibrary;
+		CGImageCache m_DynamicImageLibrary;
 
 		//	Debugging structures
 
