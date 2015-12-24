@@ -309,6 +309,144 @@ ICCItem *CCodeChain::CreateLinkedList (void)
 	return pItem->Reference();
 	}
 
+ICCItem *CCodeChain::CreateDoubleIfPossible (const CString &sString)
+	{
+	bool bFailed;
+	double rValue = strToDouble(sString, 0.0, &bFailed);
+	if (bFailed)
+		return CreateString(sString);
+	else
+		return CreateDouble(rValue);
+	}
+
+ICCItem *CCodeChain::CreateIntegerIfPossible (const CString &sString)
+	{
+	bool bFailed;
+	int iValue = strToInt(sString, 0, &bFailed);
+	if (bFailed)
+		return CreateString(sString);
+	else
+		return CreateInteger(iValue);
+	}
+
+ICCItem *CCodeChain::CreateLiteral (const CString &sString)
+
+//	CreateLiteral
+//
+//	Creates either an integer, double, or string, depending.
+
+	{
+	enum EStates
+		{
+		stateStart,
+		stateZero,
+		stateNumber,
+		stateHex,
+		stateDecimal,
+		stateExponent,
+		stateExponentDigits,
+		};
+
+	char *pPos = sString.GetASCIIZPointer();
+	char *pPosEnd = pPos + sString.GetLength();
+
+	EStates iState = stateStart;
+	while (true)
+		{
+		switch (iState)
+			{
+			case stateStart:
+				if (pPos >= pPosEnd)
+					return CreateString(sString);
+				else if (*pPos == '0')
+					iState = stateZero;
+				else if ((*pPos >= '0' && *pPos <= '9') || *pPos == '-' || *pPos == '+')
+					iState = stateNumber;
+				else
+					return CreateString(sString);
+				break;
+
+			case stateZero:
+				if (pPos >= pPosEnd)
+					return CreateInteger(0);
+				else if (*pPos >= '0' && *pPos <= '9')
+					iState = stateNumber;
+				else if (*pPos == '.')
+					iState = stateDecimal;
+				else if (*pPos == 'e' || *pPos == 'E')
+					iState = stateExponent;
+				else if (*pPos == 'x' || *pPos == 'X')
+					iState = stateHex;
+				else
+					return CreateString(sString);
+				break;
+
+			case stateNumber:
+				if (pPos >= pPosEnd)
+					return CreateIntegerIfPossible(sString);
+				else if (*pPos >= '0' && *pPos <= '9')
+					;
+				else if (*pPos == '.')
+					iState = stateDecimal;
+				else if (*pPos == 'e' || *pPos == 'E')
+					iState = stateExponent;
+				else
+					return CreateString(sString);
+				break;
+
+			case stateHex:
+				if (pPos >= pPosEnd)
+					return CreateIntegerIfPossible(sString);
+				else if (*pPos >= '0' && *pPos <= '9')
+					;
+				else if (*pPos >= 'a' && *pPos <= 'f')
+					;
+				else if (*pPos >= 'A' && *pPos <= 'F')
+					;
+				else
+					return CreateString(sString);
+				break;
+
+			case stateDecimal:
+				if (pPos >= pPosEnd)
+					return CreateDoubleIfPossible(sString);
+				else if (*pPos >= '0' && *pPos <= '9')
+					;
+				else if (*pPos == 'e' || *pPos == 'E')
+					iState = stateExponent;
+				else
+					return CreateString(sString);
+				break;
+
+			case stateExponent:
+				if (pPos >= pPosEnd)
+					return CreateString(sString);
+				else if (*pPos == '+' || *pPos == '-')
+					iState = stateExponentDigits;
+				else if (*pPos >= '0' && *pPos <= '9')
+					iState = stateExponentDigits;
+				else
+					return CreateString(sString);
+				break;
+
+			case stateExponentDigits:
+				if (pPos >= pPosEnd)
+					return CreateDoubleIfPossible(sString);
+				else if (*pPos >= '0' && *pPos <= '9')
+					;
+				else
+					return CreateString(sString);
+				break;
+
+			default:
+				ASSERT(false);
+				return CreateString(sString);
+			}
+
+		pPos++;
+		}
+	}
+
 ICCItem *CCodeChain::CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)
 
 //	CreatePrimitive

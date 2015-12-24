@@ -828,6 +828,7 @@ class CCodeChain : public CObject
 		ICCItem *CreateDouble (double dValue);
 		ICCItem *CreateLambda (ICCItem *pList, BOOL bArgsOnly);
 		ICCItem *CreateLinkedList (void);
+		ICCItem *CreateLiteral (const CString &sString);
 		inline ICCItem *CreateMemoryError (void) { return m_sMemoryError.Reference(); }
 		inline ICCItem *CreateNil (void) { return m_pNil->Reference(); }
 		ICCItem *CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl);
@@ -891,6 +892,8 @@ class CCodeChain : public CObject
 		bool HasIdentifier (ICCItem *pCode, const CString &sIdentifier);
 
 	private:
+		ICCItem *CreateDoubleIfPossible (const CString &sString);
+		ICCItem *CreateIntegerIfPossible (const CString &sString);
 		ICCItem *CreateParseError (int iLine, const CString &sError);
 		ICCItem *EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem);
 		ICCItem *Lookup (CEvalContext *pCtx, ICCItem *pItem);
