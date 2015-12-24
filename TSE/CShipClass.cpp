@@ -2305,16 +2305,15 @@ CXMLElement *CShipClass::GetHUDDescInherited (EHUDTypes iType) const
 //	Returns the HUD descriptor, either from this class or some base class.
 
 	{
-	CDesignType *pBase;
+	CShipClass *pBase;
 
 	CXMLElement *pDesc = (m_pPlayerSettings && !m_pPlayerSettings->IsHUDDescInherited(iType) ? m_pPlayerSettings->GetHUDDesc(iType) : NULL);
 	if (pDesc)
 		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return (pBaseClass ? pBaseClass->GetHUDDescInherited(iType) : NULL);
-		}
+
+	else if (pBase = CShipClass::AsType(GetInheritFrom()))
+		return pBase->GetHUDDescInherited(iType);
+
 	else
 		return NULL;
 	}
@@ -2440,15 +2439,14 @@ CPlayerSettings *CShipClass::GetPlayerSettingsInherited (void) const
 //	Returns player settings from us or a base class
 
 	{
-	CDesignType *pBase;
+	CShipClass *pBase;
 
 	if (m_pPlayerSettings)
 		return m_pPlayerSettings;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetPlayerSettingsInherited();
-		}
+
+	else if (pBase = CShipClass::AsType(GetInheritFrom()))
+		return pBase->GetPlayerSettingsInherited();
+
 	else
 		return NULL;
 	}
