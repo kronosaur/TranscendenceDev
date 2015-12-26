@@ -221,7 +221,7 @@ class IOrderModule
 		IOrderModule (int iObjCount);
 		virtual ~IOrderModule (void);
 
-		void Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire);
+		void Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire);
 		inline void Behavior (CShip *pShip, CAIBehaviorCtx &Ctx) { OnBehavior(pShip, Ctx); }
 		inline void BehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { OnBehaviorStart(pShip, Ctx, pOrderTarget, Data); }
 		DWORD Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
@@ -239,7 +239,7 @@ class IOrderModule
 		virtual bool IsAttacking (void) { return false; }
 		virtual bool IsTarget (int iObj) { return false; }
 		virtual bool IsTarget (CSpaceObject *pObj) { return false; }
-		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire) { }
+		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) { }
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) = 0;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { }
 		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
@@ -333,7 +333,7 @@ class CBaseShipAI : public IShipController
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution);
 		virtual bool IsAngryAt (CSpaceObject *pObj) const;
 		virtual bool IsPlayerWingman (void) const { return (m_fIsPlayerWingman ? true : false); }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage);
+		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage);
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
 		virtual void OnDocked (CSpaceObject *pObj);
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend);
@@ -390,7 +390,7 @@ class CBaseShipAI : public IShipController
 		void UseItemsBehavior (void);
 
 		//	CBaseShipAI virtuals
-		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const DamageDesc &Damage) { }
+		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
 		virtual void OnBehavior (void) { }
 		virtual void OnCleanUp (void) { }
 		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }

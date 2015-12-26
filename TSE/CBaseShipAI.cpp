@@ -909,7 +909,7 @@ bool CBaseShipAI::IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions)
 	return false;
 	}
 
-void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
+void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 
 //	OnAttacked
 //
@@ -923,7 +923,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
 
 	if (pAttacker)
 		{
-		CSpaceObject *pOrderGiver = pAttacker->GetOrderGiver(Damage.GetCause());
+		CSpaceObject *pOrderGiver = pAttacker->GetOrderGiver(Damage.Damage.GetCause());
 
 		//	If we were attacked by a friend, then warn them off
 		//	(Unless we're explicitly targeting the friend)
@@ -937,7 +937,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
 			//
 			//	Also, we ignore damage from automated weapons
 
-			if (!Damage.IsAutomatedWeapon())
+			if (!Damage.Damage.IsAutomatedWeapon())
 				HandleFriendlyFire(pOrderGiver);
 
 			bFriendlyFire = true;

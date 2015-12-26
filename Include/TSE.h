@@ -2204,7 +2204,7 @@ class CSpaceObject : public CObject
 		void FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject *pShip, ICCItem **retpResult = NULL);
 		bool FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItem **retpData);
 		void FireGetExplosionType (SExplosionType *retExplosion);
-		void FireOnAttacked (SDamageCtx &Ctx);
+		void FireOnAttacked (const SDamageCtx &Ctx);
 		void FireOnAttackedByPlayer (void);
 		void FireOnCreate (void);
 		void FireOnCreate (const SOnCreate &OnCreate);
@@ -2236,6 +2236,7 @@ class CSpaceObject : public CObject
 		InterSystemResults FireOnPlayerEnteredSystem (CSpaceObject *pPlayer);
 		InterSystemResults FireOnPlayerLeftSystem (CSpaceObject *pPlayer, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
 		void FireOnSelected (void);
+		bool FireOnSubordinateAttacked (const SDamageCtx &Ctx);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
@@ -2304,6 +2305,7 @@ class CSpaceObject : public CObject
 		inline bool HasOnDamageEvent (void) const { return (m_fHasOnDamageEvent ? true : false); }
 		inline bool HasOnObjDockedEvent (void) const { return (m_fHasOnObjDockedEvent ? true : false); }
 		inline bool HasOnOrdersCompletedEvent (void) const { return (m_fHasOnOrdersCompletedEvent ? true : false); }
+		inline bool HasOnSubordinateAttackedEvent (void) const { return (m_fHasOnSubordinateAttackedEvent ? true : false); }
 		inline bool HasRandomEncounters (void) const { int iFreq; return (GetRandomEncounterTable(&iFreq) || iFreq > 0); }
 		void Highlight (const CString &sText = NULL_STR);
 		inline bool HitSizeInBox (const CVector &vUR, const CVector &vLL)
@@ -2401,6 +2403,7 @@ class CSpaceObject : public CObject
 		inline void SetHasInterSystemEvent (bool bHasEvent) { m_fHasInterSystemEvent = bHasEvent; }
 		inline void SetHasOnObjDockedEvent (bool bHasEvent) { m_fHasOnObjDockedEvent = bHasEvent; }
 		inline void SetHasOnOrdersCompletedEvent (bool bHasEvent) { m_fHasOnOrdersCompletedEvent = bHasEvent; }
+		inline void SetHasOnSubordinateAttackedEvent (bool bHasEvent) { m_fHasOnSubordinateAttackedEvent = bHasEvent; }
 		inline void SetHighlightChar (char chChar) { m_iHighlightChar = chChar; }
 		inline void SetMarked (bool bMarked = true) { m_fMarked = bMarked; }
 		inline void SetNamed (bool bNamed = true) { m_fHasName = bNamed; }
@@ -2927,7 +2930,7 @@ class CSpaceObject : public CObject
 		DWORD m_fShowDamageBar:1;				//	TRUE if we should show damage bar
 		DWORD m_fHasGravity:1;					//	TRUE if object has gravity
 		DWORD m_fInsideBarrier:1;				//	TRUE if we got created inside a barrier
-		DWORD m_fSpare8:1;
+		DWORD m_fHasOnSubordinateAttackedEvent:1;	//	TRUE if we have a <OnSubordinateAttacked> event
 
 		DWORD m_dwSpare:24;
 

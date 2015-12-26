@@ -390,7 +390,7 @@ void CZoanthropeAI::ImplementCombatManeuvers (CSpaceObject *pTarget)
 		}
 	}
 
-void CZoanthropeAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
+void CZoanthropeAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 
 //	OnAttacked
 //

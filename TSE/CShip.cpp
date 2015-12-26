@@ -63,6 +63,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
 #define PROPERTY_MAX_INTERIOR_HP				CONSTLIT("maxInteriorHP")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
+#define PROPERTY_OPERATING_SPEED				CONSTLIT("operatingSpeed")
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
@@ -70,6 +71,9 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_SELECTED_MISSILE				CONSTLIT("selectedMissile")
 #define PROPERTY_SELECTED_WEAPON				CONSTLIT("selectedWeapon")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+
+#define SPEED_HALF								CONSTLIT("half")
+#define SPEED_FULL								CONSTLIT("full")
 
 const CG32bitPixel RGB_MAP_LABEL =				CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =				CG32bitPixel(165, 140, 83);
@@ -2838,6 +2842,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_OPEN_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(GetOpenDockingPortCount());
 
+	else if (strEquals(sName, PROPERTY_OPERATING_SPEED))
+		return CC.CreateString((m_fHalfSpeed ? SPEED_HALF : SPEED_FULL));
+
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		{
 		return CC.CreateBool(m_pController->IsPlayerWingman());
@@ -3849,7 +3856,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Tell our controller that someone hit us
 
-	m_pController->OnAttacked(Ctx.Attacker.GetObj(), Ctx.Damage);
+	m_pController->OnAttacked(Ctx.Attacker.GetObj(), Ctx);
 
 	//	OnAttacked event
 
@@ -5045,6 +5052,7 @@ void CShip::OnSetEventFlags (void)
 	SetHasInterSystemEvent(FindEventHandler(CONSTLIT("OnPlayerLeftSystem")) 
 			|| FindEventHandler(CONSTLIT("OnPlayerEnteredSystem")));
 	SetHasOnOrdersCompletedEvent(FindEventHandler(CONSTLIT("OnOrdersCompleted")));
+	SetHasOnSubordinateAttackedEvent(FindEventHandler(CONSTLIT("OnSubordinateAttacked")));
 	}
 
 void CShip::OnStationDestroyed (const SDestroyCtx &Ctx)
@@ -6942,6 +6950,21 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	else if (strEquals(sName, PROPERTY_INTERIOR_HP))
 		{
 		m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), pValue->GetIntegerValue());
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_OPERATING_SPEED))
+		{
+		CString sSpeed = pValue->GetStringValue();
+		if (strEquals(sSpeed, SPEED_FULL))
+			ResetMaxSpeed();
+		else if (strEquals(sSpeed, SPEED_HALF))
+			SetMaxSpeedHalf();
+		else
+			{
+			*retsError = strPatternSubst(CONSTLIT("Invalid speed setting: %s"), sSpeed);
+			return false;
+			}
+
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))

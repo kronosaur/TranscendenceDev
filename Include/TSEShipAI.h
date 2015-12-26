@@ -194,7 +194,7 @@ class IShipController
 		//	Events
 
 		virtual void OnArmorRepaired (int iSection) { }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage) { }
+		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
 		virtual void OnBlindnessChanged (bool bBlind, bool bNoMessage = false) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }

@@ -10,7 +10,7 @@ const Metric MAX_FOLLOW_DISTANCE		(g_KlicksPerPixel * 350.0);
 const Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
 const Metric PATROL_SENSOR_RANGE2 =		(PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE);
 
-void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire)
+void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -25,7 +25,8 @@ void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 		{
 		//	Tell our principal that we were attacked
 
-		pShip->Communicate(m_Objs[objPrincipal], msgEscortAttacked, pAttacker);
+		if (!m_Objs[objPrincipal]->FireOnSubordinateAttacked(Damage))
+			pShip->Communicate(m_Objs[objPrincipal], msgEscortAttacked, pAttacker);
 
 		//	Attack the target
 

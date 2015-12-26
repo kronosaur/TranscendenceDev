@@ -4074,6 +4074,7 @@ class CShipClass : public CDesignType
 		int GetWreckImageVariants (void);
 		inline bool HasDockingPorts (void) { return (m_fHasDockingPorts ? true : false); }
 		inline bool HasOnAttackedByPlayerEvent (void) const { return (m_fHasOnAttackedByPlayerEvent ? true : false); }
+		inline bool HasOnSubordinateAttacked (void) const { return (m_fHasOnSubordinateAttackedEvent ? true : false); }
 		inline bool HasOnOrderChangedEvent (void) const { return (m_fHasOnOrderChangedEvent ? true : false); }
 		inline bool HasOnOrdersCompletedEvent (void) const { return (m_fHasOnOrdersCompletedEvent ? true : false); }
 		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
@@ -4286,7 +4287,16 @@ class CShipClass : public CDesignType
 		DWORD m_fCyberDefenseOverride:1;		//	TRUE if cyberDefenseLevel is specified in XML
 		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 
-		DWORD m_fSpare:16;
+		DWORD m_fHasOnSubordinateAttackedEvent:1;	//	TRUE if ship has <OnSubordinateAttacked> event
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_fSpare:8;
 	};
 
 //	CEffectCreator ------------------------------------------------------------

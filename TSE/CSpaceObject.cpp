@@ -70,6 +70,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_PLAYER_LEFT_SYSTEM_EVENT				CONSTLIT("OnPlayerLeftSystem")
 #define ON_RANDOM_ENCOUNTER_EVENT				CONSTLIT("OnRandomEncounter")
 #define ON_SELECTED_EVENT						CONSTLIT("OnSelected")
+#define ON_SUBORDINATE_ATTACKED_EVENT			CONSTLIT("OnSubordinateAttacked")
 #define ON_SYSTEM_EXPLOSION_EVENT				CONSTLIT("OnSystemExplosion")
 #define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
 #define ON_SYSTEM_WEAPON_FIRE_EVENT				CONSTLIT("OnSystemWeaponFire")
@@ -248,7 +249,8 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fShowHighlight(false),
 		m_fShowDamageBar(false),
 		m_fHasGravity(false),
-		m_fInsideBarrier(false)
+		m_fInsideBarrier(false),
+		m_fHasOnSubordinateAttackedEvent(false)
 
 //	CSpaceObject constructor
 
@@ -968,6 +970,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fShowDamageBar =			((dwLoad & 0x10000000) ? true : false);
 	pObj->m_fHasGravity =				((dwLoad & 0x20000000) ? true : false);
 	pObj->m_fInsideBarrier =			((dwLoad & 0x40000000) ? true : false);
+	pObj->m_fHasOnSubordinateAttackedEvent = ((dwLoad & 0x80000000) ? true : false);
 
 	//	No need to save the following
 
@@ -1958,7 +1961,7 @@ void CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion)
 		}
 	}
 
-void CSpaceObject::FireOnAttacked (SDamageCtx &Ctx)
+void CSpaceObject::FireOnAttacked (const SDamageCtx &Ctx)
 
 //	FireOnAttacked
 //
@@ -2821,6 +2824,47 @@ void CSpaceObject::FireOnSelected (void)
 		}
 	}
 
+bool CSpaceObject::FireOnSubordinateAttacked (const SDamageCtx &Ctx)
+
+//	FireOnSubordinateAttacked
+//
+//	Fire OnSubordinateAttacked event. Return TRUE if we handle it (and we should 
+//	skip the default action).
+
+	{
+	SEventHandlerDesc Event;
+
+	bool bHandled;
+	if (bHandled = (HasOnSubordinateAttackedEvent() && FindEventHandler(ON_SUBORDINATE_ATTACKED_EVENT, &Event)))
+		{
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(this);
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjAttacked"), Ctx.pObj);
+		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
+		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
+		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
+		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
+		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
+		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
+		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_SUBORDINATE_ATTACKED_EVENT, pResult);
+		else if (pResult->IsNil())
+			bHandled = false;
+
+		//	Done
+
+		CCCtx.Discard(pResult);
+		}
+
+	return bHandled;
+	}
+
 void CSpaceObject::FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID)
 
 //	FireOnSystemExplosion
@@ -2860,8 +2904,8 @@ void CSpaceObject::FireOnSystemObjAttacked (SDamageCtx &Ctx)
 		CCodeChainCtx CCCtx;
 
 		CCCtx.SaveAndDefineSourceVar(this);
-		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjAttacked"), Ctx.pObj);
+		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
@@ -7256,6 +7300,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fShowDamageBar				? 0x10000000 : 0);
 	dwSave |= (m_fHasGravity				? 0x20000000 : 0);
 	dwSave |= (m_fInsideBarrier				? 0x40000000 : 0);
+	dwSave |= (m_fHasOnSubordinateAttackedEvent	? 0x80000000 : 0);
 	//	No need to save m_fHasName because it is set by CSystem on load.
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 

@@ -26,7 +26,7 @@ IOrderModule::~IOrderModule (void)
 	{
 	}
 
-void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire)
+void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	Attacked
 //
@@ -58,7 +58,7 @@ DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 			{
 			//	Treat this as an attack on ourselves
 
-			DamageDesc Dummy;
+			SDamageCtx Dummy;
 			pShip->GetController()->OnAttacked(pParam1, Dummy);
 			return resAck;
 			}
