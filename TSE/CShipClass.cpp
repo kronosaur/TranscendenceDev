@@ -2955,8 +2955,6 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	m_fHasOnAttackedByPlayerEvent = FindEventHandler(CONSTLIT("OnAttackedByPlayer"));
 	m_fHasOnOrderChangedEvent = FindEventHandler(CONSTLIT("OnOrderChanged"));
-	m_fHasOnOrdersCompletedEvent = FindEventHandler(CONSTLIT("OnOrdersCompleted"));
-	m_fHasOnSubordinateAttackedEvent = FindEventHandler(CONSTLIT("OnSubordinateAttacked"));
 
 	return NOERROR;
 

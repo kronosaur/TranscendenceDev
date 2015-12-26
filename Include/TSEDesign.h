@@ -4074,9 +4074,7 @@ class CShipClass : public CDesignType
 		int GetWreckImageVariants (void);
 		inline bool HasDockingPorts (void) { return (m_fHasDockingPorts ? true : false); }
 		inline bool HasOnAttackedByPlayerEvent (void) const { return (m_fHasOnAttackedByPlayerEvent ? true : false); }
-		inline bool HasOnSubordinateAttacked (void) const { return (m_fHasOnSubordinateAttackedEvent ? true : false); }
 		inline bool HasOnOrderChangedEvent (void) const { return (m_fHasOnOrderChangedEvent ? true : false); }
-		inline bool HasOnOrdersCompletedEvent (void) const { return (m_fHasOnOrdersCompletedEvent ? true : false); }
 		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
 		void InstallEquipment (CShip *pShip);
@@ -4274,7 +4272,7 @@ class CShipClass : public CDesignType
 		DWORD m_fTimeStopImmune:1;				//	TRUE if ship is immune to stop-time
 		DWORD m_fHasOnOrderChangedEvent:1;		//	TRUE if ship has an event on each new order
 		DWORD m_fHasOnAttackedByPlayerEvent:1;	//	TRUE if ship has an event when attacked by player
-		DWORD m_fHasOnOrdersCompletedEvent:1;	//	TRUE if ship has an event when orders complete
+		DWORD m_fSpare6a:1;						//	Unused
 		DWORD m_fCommsHandlerInit:1;			//	TRUE if comms handler has been initialized
 		DWORD m_fVirtual:1;						//	TRUE if ship class is virtual (e.g., a base class)
 
@@ -4287,7 +4285,7 @@ class CShipClass : public CDesignType
 		DWORD m_fCyberDefenseOverride:1;		//	TRUE if cyberDefenseLevel is specified in XML
 		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 
-		DWORD m_fHasOnSubordinateAttackedEvent:1;	//	TRUE if ship has <OnSubordinateAttacked> event
+		DWORD m_fSpare1:1;
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
