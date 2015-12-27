@@ -2819,6 +2819,14 @@ enum AICombatStyles
 class CAISettings
 	{
 	public:
+		enum EFlockingStyles
+			{
+			flockNone =						0,	//	No flocking behavior
+
+			flockCloud =					1,	//	Old-style cloud flocking
+			flockCompact =					2,	//	Crowd around leader
+			};
+
 		CAISettings (void);
 
 		inline bool AscendOnGate (void) const { return m_fAscendOnGate; }
@@ -2826,13 +2834,14 @@ class CAISettings
 		inline int GetFireAccuracy (void) const { return m_iFireAccuracy; }
 		inline int GetFireRangeAdj (void) const { return m_iFireRangeAdj; }
 		inline int GetFireRateAdj (void) const { return m_iFireRateAdj; }
+		inline EFlockingStyles GetFlockingStyle (void) const { return m_iFlockingStyle; }
 		inline Metric GetMinCombatSeparation (void) const { return m_rMinCombatSeparation; }
 		inline int GetPerception (void) const { return m_iPerception; }
 		CString GetValue (const CString &sSetting);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitToDefault (void);
 		inline bool IsAggressor (void) const { return m_fAggressor; }
-		inline bool IsFlocker (void) const { return m_fFlockFormation; }
+		inline bool IsFlocker (void) const { return (m_iFlockingStyle != flockNone); }
 		inline bool IsNonCombatant (void) const { return m_fNonCombatant; }
 		inline bool NoAttackOnThreat (void) const { return m_fNoAttackOnThreat; }
 		inline bool NoDogfights (void) const { return m_fNoDogfights; }
@@ -2848,10 +2857,13 @@ class CAISettings
 		void WriteToStream (IWriteStream *pStream);
 
 		static AICombatStyles ConvertToAICombatStyle (const CString &sValue);
+		static EFlockingStyles ConvertToFlockingStyle (const CString &sValue);
 		static CString ConvertToID (AICombatStyles iStyle);
+		static CString ConvertToID (EFlockingStyles iStyle);
 
 	private:
 		AICombatStyles m_iCombatStyle;			//	Combat style
+		EFlockingStyles m_iFlockingStyle;		//	Flocking style
 
 		int m_iFireRateAdj;						//	Adjustment to weapon's fire rate (10 = normal; 20 = double delay)
 		int m_iFireRangeAdj;					//	Adjustment to range (100 = normal; 50 = half range)
@@ -2872,7 +2884,7 @@ class CAISettings
 		DWORD m_fNoNavPaths:1;					//	If TRUE, do not use nav paths
 		DWORD m_fNoAttackOnThreat:1;			//	Do not attack enemies while escorting (unless ordered)
 		DWORD m_fNoTargetsOfOpportunity:1;		//	If TRUE, do not attack targets of opportunity
-		DWORD m_fFlockFormation:1;				//	If TRUE, flock with like ships
+		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;

@@ -384,6 +384,9 @@
 //	124: 1.7 Alpha 1
 //		Added m_iTick for COverlay
 //
+//	125: 1.7 Alpha 1
+//		New flocking styles in CAISettings
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

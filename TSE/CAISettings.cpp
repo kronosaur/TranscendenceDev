@@ -13,6 +13,7 @@
 #define FIRE_RANGE_ADJ_ATTRIB					CONSTLIT("fireRangeAdj")
 #define FIRE_RATE_ADJ_ATTRIB					CONSTLIT("fireRateAdj")
 #define FLOCK_FORMATION_ATTRIB					CONSTLIT("flockFormation")
+#define FLOCKING_STYLE_ATTRIB					CONSTLIT("flockingStyle")
 #define FLYBY_COMBAT_ATTRIB						CONSTLIT("flybyCombat")
 #define NO_SHIELD_RETREAT_ATTRIB				CONSTLIT("ignoreShieldsDown")
 #define NO_ATTACK_ON_THREAT_ATTRIB				CONSTLIT("noAttackOnThreat")
@@ -32,6 +33,9 @@
 #define COMBAT_STYLE_NO_RETREAT					CONSTLIT("noRetreat")
 #define COMBAT_STYLE_STANDARD					CONSTLIT("standard")
 #define COMBAT_STYLE_STAND_OFF					CONSTLIT("standOff")
+
+#define FLOCKING_STYLE_CLOUD					CONSTLIT("cloud")
+#define FLOCKING_STYLE_COMPACT					CONSTLIT("compact")
 
 #define STR_TRUE								CONSTLIT("True")
 
@@ -63,6 +67,21 @@ AICombatStyles CAISettings::ConvertToAICombatStyle (const CString &sValue)
 		return aicombatStandOff;
 	else
 		return aicombatStandard;
+	}
+
+CAISettings::EFlockingStyles CAISettings::ConvertToFlockingStyle (const CString &sValue)
+
+//	ConvertToFlockingStyle
+//
+//	Converts a string to flocking style
+
+	{
+	if (strEquals(sValue, FLOCKING_STYLE_CLOUD))
+		return flockCloud;
+	else if (strEquals(sValue, FLOCKING_STYLE_COMPACT))
+		return flockCompact;
+	else
+		return flockNone;
 	}
 
 CString CAISettings::ConvertToID (AICombatStyles iStyle)
@@ -97,6 +116,26 @@ CString CAISettings::ConvertToID (AICombatStyles iStyle)
 		}
 	}
 
+CString CAISettings::ConvertToID (EFlockingStyles iStyle)
+
+//	ConvertToID
+//
+//	Converts a flocking style to a string ID
+
+	{
+	switch (iStyle)
+		{
+		case flockCloud:
+			return FLOCKING_STYLE_CLOUD;
+
+		case flockCompact:
+			return FLOCKING_STYLE_COMPACT;
+
+		default:
+			return NULL_STR;
+		}
+	}
+
 CString CAISettings::GetValue (const CString &sSetting)
 
 //	GetValue
@@ -118,8 +157,10 @@ CString CAISettings::GetValue (const CString &sSetting)
 		return strFromInt(m_iFireRangeAdj);
 	else if (strEquals(sSetting, FIRE_RATE_ADJ_ATTRIB))
 		return strFromInt(m_iFireRateAdj);
+	else if (strEquals(sSetting, FLOCKING_STYLE_ATTRIB))
+		return ConvertToID(m_iFlockingStyle);
 	else if (strEquals(sSetting, FLOCK_FORMATION_ATTRIB))
-		return (m_fFlockFormation ? STR_TRUE : NULL_STR);
+		return (m_iFlockingStyle == flockCloud ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, NO_ATTACK_ON_THREAT_ATTRIB))
 		return (m_fNoAttackOnThreat ? STR_TRUE : NULL_STR);
 	else if (strEquals(sSetting, NO_TARGETS_OF_OPPORTUNITY_ATTRIB))
@@ -168,6 +209,20 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			m_iCombatStyle = aicombatStandard;
 		}
 
+	//	Flocking style
+
+	CString sFlockingStyle;
+	if (pDesc->FindAttribute(FLOCKING_STYLE_ATTRIB, &sFlockingStyle))
+		m_iFlockingStyle = ConvertToFlockingStyle(sFlockingStyle);
+	else
+		{
+		bool bValue;
+		if (pDesc->FindAttributeBool(FLOCK_FORMATION_ATTRIB, &bValue) && bValue)
+			m_iFlockingStyle = flockCloud;
+		else
+			m_iFlockingStyle = flockNone;
+		}
+
 	//	Parameters
 
 	m_iFireRateAdj = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ADJ_ATTRIB, 1, -1, 10);
@@ -197,7 +252,6 @@ ALERROR CAISettings::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoFriendlyFireCheck = pDesc->GetAttributeBool(NO_FRIENDLY_FIRE_CHECK_ATTRIB);
 	m_fNoNavPaths = pDesc->GetAttributeBool(NO_NAV_PATHS_ATTRIB);
 	m_fNoOrderGiver = pDesc->GetAttributeBool(NO_ORDER_GIVER_ATTRIB);
-	m_fFlockFormation = pDesc->GetAttributeBool(FLOCK_FORMATION_ATTRIB);
 
 	return NOERROR;
 	}
@@ -210,22 +264,25 @@ void CAISettings::InitToDefault (void)
 
 	{
 	m_iCombatStyle = aicombatStandard;
+	m_iFlockingStyle = flockNone;
 	m_iFireRateAdj = 10;					//	Normal fire rate
 	m_iFireRangeAdj = 100;					//	100% of fire range
 	m_iFireAccuracy = 100;					//	100% accuracy
 	m_iPerception = CSpaceObject::perceptNormal;
 	m_rMinCombatSeparation = -1.0;			//	Compute based on image size
 
-	m_fAscendOnGate = false;
 	m_fNoShieldRetreat = false;
 	m_fNoDogfights = false;
 	m_fNonCombatant = false;
 	m_fNoFriendlyFire = false;
 	m_fAggressor = false;
-	m_fNoAttackOnThreat = false;
 	m_fNoFriendlyFireCheck = false;
-	m_fNoNavPaths = false;
 	m_fNoOrderGiver = false;
+	m_fAscendOnGate = false;
+
+	m_fNoNavPaths = false;
+	m_fNoAttackOnThreat = false;
+	m_fNoTargetsOfOpportunity = false;
 	}
 
 void CAISettings::ReadFromStream (SLoadCtx &Ctx)
@@ -234,7 +291,7 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 //
 //	Read from stream
 //
-//	DWORD		m_iCombatStyle
+//	DWORD		LO = m_iCombatStyle; HI = m_iFlockingStyle
 //	DWORD		LO = m_iFireRateAdj; HI = m_iFireRangeAdj
 //	DWORD		LO = m_iFireAccuracy; HI = m_iPerception
 //	Metric		m_rMinCombatSeparation
@@ -244,7 +301,16 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 	DWORD dwLoad;
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_iCombatStyle = (AICombatStyles)dwLoad;
+	if (Ctx.dwVersion >= 125)
+		{
+		m_iCombatStyle = (AICombatStyles)LOWORD(dwLoad);
+		m_iFlockingStyle = (EFlockingStyles)HIWORD(dwLoad);
+		}
+	else
+		{
+		m_iCombatStyle = (AICombatStyles)dwLoad;
+		m_iFlockingStyle = flockNone;
+		}
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iFireRateAdj = (int)LOWORD(dwLoad);
@@ -270,7 +336,11 @@ void CAISettings::ReadFromStream (SLoadCtx &Ctx)
 	m_fNoNavPaths =				((dwLoad & 0x00000100) ? true : false);
 	m_fNoAttackOnThreat =		((dwLoad & 0x00000200) ? true : false);
 	m_fNoTargetsOfOpportunity =	((dwLoad & 0x00000400) ? true : false);
-	m_fFlockFormation =			((dwLoad & 0x00000800) ? true : false);
+	if (Ctx.dwVersion < 125)
+		{
+		if (dwLoad & 0x00000800)
+			m_iFlockingStyle = flockCloud;
+		}
 	}
 
 CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
@@ -294,8 +364,10 @@ CString CAISettings::SetValue (const CString &sSetting, const CString &sValue)
 		m_iFireRangeAdj = Max(1, strToInt(sValue, 100));
 	else if (strEquals(sSetting, FIRE_RATE_ADJ_ATTRIB))
 		m_iFireRateAdj = Max(1, strToInt(sValue, 10));
+	else if (strEquals(sSetting, FLOCKING_STYLE_ATTRIB))
+		m_iFlockingStyle = ConvertToFlockingStyle(sValue);
 	else if (strEquals(sSetting, FLOCK_FORMATION_ATTRIB))
-		m_fFlockFormation = !sValue.IsBlank();
+		m_iFlockingStyle = (!sValue.IsBlank() ? flockCloud : flockNone);
 	else if (strEquals(sSetting, NO_ATTACK_ON_THREAT_ATTRIB))
 		m_fNoAttackOnThreat = !sValue.IsBlank();
 	else if (strEquals(sSetting, NO_TARGETS_OF_OPPORTUNITY_ATTRIB))
@@ -328,7 +400,7 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 //
 //	Write to a stream
 //
-//	DWORD		m_iCombatStyle
+//	DWORD		LO = m_iCombatStyle; HI = m_iFlockingStyle
 //	DWORD		LO = m_iFireRateAdj; HI = m_iFireRangeAdj
 //	DWORD		LO = m_iFireAccuracy; HI = m_iPerception
 //	Metric		m_rMinCombatSeparation
@@ -337,7 +409,7 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 	{
 	DWORD dwSave;
 
-	dwSave = (DWORD)m_iCombatStyle;
+	dwSave = MAKELONG((DWORD)m_iCombatStyle, (DWORD)m_iFlockingStyle);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	dwSave = MAKELONG(m_iFireRateAdj, m_iFireRangeAdj);
@@ -362,6 +434,5 @@ void CAISettings::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoNavPaths ?				0x00000100 : 0);
 	dwSave |= (m_fNoAttackOnThreat ?		0x00000200 : 0);
 	dwSave |= (m_fNoTargetsOfOpportunity ?	0x00000400 : 0);
-	dwSave |= (m_fFlockFormation ?			0x00000800 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}

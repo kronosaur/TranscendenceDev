@@ -165,7 +165,7 @@ inline void DebugStopTimer (char *szTiming) { }
 const DWORD API_VERSION =								29;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
 const DWORD UNIVERSE_SAVE_VERSION =						27;
-const DWORD SYSTEM_SAVE_VERSION =						124;	//	See: CSystem.cpp
+const DWORD SYSTEM_SAVE_VERSION =						125;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{

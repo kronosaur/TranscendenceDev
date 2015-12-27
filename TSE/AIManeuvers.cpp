@@ -54,11 +54,27 @@ extern int g_iDebugLine;
 
 bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 											CSpaceObject *pLeader,
-											Metric rFOVRange,
-											Metric rSeparationRange,
 											CVector *retvPos, 
 											CVector *retvVel, 
 											int *retiFacing)
+
+//	CalcFlockingFormation
+//
+//	Calculates the position that this ship should take relative to the rest of the flock. Returns FALSE
+//	if the current ship is a leader in the flock.
+
+	{
+	switch (m_AISettings.GetFlockingStyle())
+		{
+		case CAISettings::flockCompact:
+			return CalcFlockingFormationCompact(pShip, pLeader, retvPos, retvVel, retiFacing);
+
+		default:
+			return CalcFlockingFormationCloud(pShip, pLeader, MAX_FLOCK_DIST, FLOCK_SEPARATION_RANGE, retvPos, retvVel, retiFacing);
+		}
+	}
+
+bool CAIBehaviorCtx::CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing)
 
 //	CalcFlockingFormation
 //
@@ -183,6 +199,29 @@ bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 		{
 		return false;
 		}
+	}
+
+bool CAIBehaviorCtx::CalcFlockingFormationCompact (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing)
+
+//	CalcFlockingFormationCompact
+//
+//	Calculates the position that this ship should take relative to the rest of the flock. Returns FALSE
+//	if the current ship is a leader in the flock.
+
+	{
+	if (pLeader == NULL)
+		return false;
+
+	//	Pick a random angle and position with respect to the leader
+
+	int iAngle = pShip->GetDestiny();
+	Metric rRange = (5 + (pShip->GetDestiny() % 10)) * LIGHT_SECOND;
+
+	*retvPos = pLeader->GetPos() + PolarToVector(iAngle, rRange);
+	*retvVel = pLeader->GetVel();
+	*retiFacing = pLeader->GetRotation();
+
+	return true;
 	}
 
 CVector CAIBehaviorCtx::CalcFlankPos (CShip *pShip, const CVector &vInterceptPos)
@@ -521,7 +560,7 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 
 	else if (m_AISettings.IsFlocker() 
 				&& rTargetDist2 > FLOCK_COMBAT_RANGE2
-				&& CalcFlockingFormation(pShip, NULL, MAX_FLOCK_DIST, FLOCK_SEPARATION_RANGE, &vFlockPos, &vFlockVel, &iFlockFacing))
+				&& CalcFlockingFormation(pShip, NULL, &vFlockPos, &vFlockVel, &iFlockFacing))
 		ImplementFormationManeuver(pShip, vFlockPos, vFlockVel, pShip->AlignToRotationAngle(iFlockFacing));
 
 	//	Otherwise, implement maneuvers
@@ -1448,7 +1487,7 @@ bool CAIBehaviorCtx::ImplementFlockingManeuver (CShip *pShip, CSpaceObject *pLea
 	CVector vFlockPos;
 	CVector vFlockVel;
 	int iFlockFacing;
-	if (!CalcFlockingFormation(pShip, pLeader, MAX_FLOCK_DIST, FLOCK_SEPARATION_RANGE, &vFlockPos, &vFlockVel, &iFlockFacing))
+	if (!CalcFlockingFormation(pShip, pLeader, &vFlockPos, &vFlockVel, &iFlockFacing))
 		return false;
 
 	ImplementFormationManeuver(pShip, vFlockPos, vFlockVel, pShip->AlignToRotationAngle(iFlockFacing));
