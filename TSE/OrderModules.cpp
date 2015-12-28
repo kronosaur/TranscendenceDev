@@ -102,7 +102,8 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 			return new CAttackStationOrder;
 
 		case IShipController::orderEscort:
-			return new CEscortOrder;
+		case IShipController::orderFollow:
+			return new CEscortOrder(iOrder);
 
 		case IShipController::orderFireEvent:
 			return new CFireEventOrder;
@@ -136,7 +137,6 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderLoot:
 		case IShipController::orderMine:
 		case IShipController::orderDestroyPlayerOnReturn:
-		case IShipController::orderFollow:
 		case IShipController::orderBombard:
 		case IShipController::orderAimAtTarget:
 		case IShipController::orderOrbit:

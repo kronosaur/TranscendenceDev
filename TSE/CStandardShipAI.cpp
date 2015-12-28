@@ -130,7 +130,7 @@ CStandardShipAI::~CStandardShipAI (void)
 	{
 	}
 
-void CStandardShipAI::OnBehavior (void)
+void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 
 //	Behavior
 //

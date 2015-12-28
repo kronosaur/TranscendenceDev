@@ -66,6 +66,7 @@
 //#define DEBUG_DOCK_PORT_POS
 //#define DEBUG_ENCOUNTER_COUNTS
 //#define DEBUG_FIRE_ON_OPPORTUNITY
+//#define DEBUG_FORMATION
 //#define DEBUG_HENCHMAN
 //#define DEBUG_LOAD
 //#define DEBUG_NAV_PATH
@@ -1305,7 +1306,6 @@ class CSystem : public CObject
 		inline CSpaceObject *EnumObjectsInBoxPointGetNext (SSpaceObjectGridEnumerator &i) { return m_ObjGrid.EnumGetNextInBoxPoint(i); }
 		CSpaceObject *FindObject (DWORD dwID);
 		bool FindObjectName (CSpaceObject *pObj, CString *retsName = NULL);
-		bool FireOnObjJumpPosAdj (CSpaceObject *pPos, CVector *iovPos);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
@@ -1353,7 +1353,7 @@ class CSystem : public CObject
 		void MarkImages (void);
 		void NameObject (const CString &sName, CSpaceObject *pObj);
 		CVector OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos);
-		void PaintViewport (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
+		void PaintViewport (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags, SViewportAnnotations *pAnnotations = NULL);
 		void PaintViewportGrid (CMapViewportCtx &Ctx, CG32bitImage &Dest, Metric rGridSize);
 		void PaintViewportObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, CSpaceObject *pObj);
 		void PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, Metric rScale, DWORD dwFlags, bool *retbNewEnemies);
@@ -1381,7 +1381,7 @@ class CSystem : public CObject
 		void TransferObjEventsOut (CSpaceObject *pObj, CTimedEventList &ObjEvents);
 		void UnnameObject (CSpaceObject *pObj);
 		void UnregisterEventHandler (CSpaceObject *pObj);
-		void Update (SSystemUpdateCtx &SystemCtx);
+		void Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
 		void UpdateExtended (const CTimeSpan &ExtraTime);
 		void VectorToTile (const CVector &vPos, int *retx, int *rety) const;
 		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CSpaceObject *pReferrer = NULL);
@@ -1435,6 +1435,7 @@ class CSystem : public CObject
 		void InitSpaceEnvironment (void) const;
 		void InitVolumetricMask (void);
 		void PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj);
+		void PaintViewportAnnotations (CG32bitImage &Dest, SViewportAnnotations &Annotations, SViewportPaintCtx &Ctx);
 		void RemoveVolumetricShadow (CSpaceObject *pObj);
 		void UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj);
 		void UpdateRandomEncounters (void);
@@ -3583,6 +3584,7 @@ class CUniverse : public CObject
 		CSFXOptions m_SFXOptions;
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
+		SViewportAnnotations m_ViewportAnnotations;
 
 		//	Debugging structures
 

@@ -151,8 +151,7 @@ class CFireEventOrder : public IOrderModule
 class CEscortOrder : public IOrderModule
 	{
 	public:
-		CEscortOrder (void) : IOrderModule(objCount)
-			{ }
+		CEscortOrder (IShipController::OrderTypes iOrder);
 
 	protected:
 		//	IOrderModule virtuals
@@ -182,7 +181,19 @@ class CEscortOrder : public IOrderModule
 			stateWaiting =						2,
 			};
 
+		IShipController::OrderTypes m_iOrder;
 		States m_iState;
+
+		DWORD m_fDeterEnemies:1;			//	If TRUE, attack enemies that approach
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:24;
 	};
 
 class CGuardOrder : public IOrderModule

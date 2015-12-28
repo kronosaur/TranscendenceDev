@@ -2825,6 +2825,7 @@ class CAISettings
 
 			flockCloud =					1,	//	Old-style cloud flocking
 			flockCompact =					2,	//	Crowd around leader
+			flockRandom =					3,	//	Random, fixed positions around leader
 			};
 
 		CAISettings (void);

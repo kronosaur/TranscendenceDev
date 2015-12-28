@@ -147,7 +147,7 @@ class IShipController
 		virtual ~IShipController (void) { }
 
 		virtual void AccumulateCrewMetrics (SCrewMetrics &Metrics) { }
-		virtual void Behavior (void) { }
+		virtual void Behavior (SUpdateCtx &Ctx) { }
 		virtual void CancelDocking (void) { }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }

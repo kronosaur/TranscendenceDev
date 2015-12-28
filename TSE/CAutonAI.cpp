@@ -19,7 +19,7 @@ CAutonAI::CAutonAI (void) :
 	{
 	}
 
-void CAutonAI::Behavior (void)
+void CAutonAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 //

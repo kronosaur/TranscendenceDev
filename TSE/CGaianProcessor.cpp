@@ -27,7 +27,7 @@ CGaianProcessorAI::CGaianProcessorAI (void) :
 	{
 	}
 
-void CGaianProcessorAI::Behavior (void)
+void CGaianProcessorAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 

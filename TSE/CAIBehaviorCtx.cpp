@@ -37,6 +37,7 @@ CAIBehaviorCtx::CAIBehaviorCtx (void) :
 		m_pNavPath(NULL),
 		m_iNavPathPos(-1),
 		m_iBarrierClock(-1),
+		m_pUpdateCtx(NULL),
 		m_pShields(NULL),
 		m_iBestWeapon(devNone),
 		m_fDockingRequested(false),

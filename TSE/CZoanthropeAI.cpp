@@ -27,7 +27,7 @@ CZoanthropeAI::CZoanthropeAI (void) :
 	{
 	}
 
-void CZoanthropeAI::Behavior (void)
+void CZoanthropeAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 

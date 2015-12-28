@@ -36,6 +36,7 @@
 
 #define FLOCKING_STYLE_CLOUD					CONSTLIT("cloud")
 #define FLOCKING_STYLE_COMPACT					CONSTLIT("compact")
+#define FLOCKING_STYLE_RANDOM					CONSTLIT("random")
 
 #define STR_TRUE								CONSTLIT("True")
 
@@ -80,6 +81,8 @@ CAISettings::EFlockingStyles CAISettings::ConvertToFlockingStyle (const CString 
 		return flockCloud;
 	else if (strEquals(sValue, FLOCKING_STYLE_COMPACT))
 		return flockCompact;
+	else if (strEquals(sValue, FLOCKING_STYLE_RANDOM))
+		return flockRandom;
 	else
 		return flockNone;
 	}
@@ -130,6 +133,9 @@ CString CAISettings::ConvertToID (EFlockingStyles iStyle)
 
 		case flockCompact:
 			return FLOCKING_STYLE_COMPACT;
+
+		case flockRandom:
+			return FLOCKING_STYLE_RANDOM;
 
 		default:
 			return NULL_STR;

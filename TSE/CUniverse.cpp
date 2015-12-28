@@ -2110,7 +2110,13 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 
 	{
 	if (m_pPOV)
-		m_pPOV->GetSystem()->PaintViewport(Dest, rcView, m_pPOV, dwFlags);
+		{
+		m_pPOV->GetSystem()->PaintViewport(Dest, rcView, m_pPOV, dwFlags, &m_ViewportAnnotations);
+
+		//	Reset annotations until the next update
+
+		m_ViewportAnnotations.Init();
+		}
 
 	m_iPaintTick++;
 	}
@@ -2722,7 +2728,7 @@ void CUniverse::Update (SSystemUpdateCtx &Ctx)
 	//	Update system
 
 	if (m_pPOV)
-		m_pPOV->GetSystem()->Update(Ctx);
+		m_pPOV->GetSystem()->Update(Ctx, &m_ViewportAnnotations);
 
 	//	Fire timed events
 

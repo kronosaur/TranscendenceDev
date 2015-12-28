@@ -3041,7 +3041,8 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest
 void CSystem::PaintViewport (CG32bitImage &Dest, 
 							 const RECT &rcView, 
 							 CSpaceObject *pCenter, 
-							 DWORD dwFlags)
+							 DWORD dwFlags, 
+							 SViewportAnnotations *pAnnotations)
 
 //	PaintViewport
 //
@@ -3330,12 +3331,32 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Let the POV paint any other enhanced displays
 
 	pCenter->PaintSRSEnhancements(Dest, Ctx);
+	if (pAnnotations)
+		PaintViewportAnnotations(Dest, *pAnnotations, Ctx);
 
 	//	Done
 
 	Dest.ResetClipRect();
 
 	DEBUG_CATCH
+	}
+
+void CSystem::PaintViewportAnnotations (CG32bitImage &Dest, SViewportAnnotations &Annotations, SViewportPaintCtx &Ctx)
+
+//	PaintViewportAnnotations
+//
+//	Paint viewport annotations.
+
+	{
+#ifdef DEBUG_FORMATION
+	if (Annotations.bDebugFormation)
+		{
+		int x, y;
+		Ctx.XForm.Transform(Annotations.vFormationPos, &x, &y);
+
+		CPaintHelper::PaintArrow(Dest, x, y, Annotations.iFormationAngle, CG32bitPixel(255, 255, 0));
+		}
+#endif
 	}
 
 void CSystem::PaintViewportGrid (CMapViewportCtx &Ctx, CG32bitImage &Dest, Metric rGridSize)
@@ -4548,7 +4569,7 @@ void CSystem::UnregisterEventHandler (CSpaceObject *pObj)
 		}
 	}
 
-void CSystem::Update (SSystemUpdateCtx &SystemCtx)
+void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations)
 
 //	Update
 //
@@ -4566,6 +4587,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx)
 	SUpdateCtx Ctx;
 	Ctx.pSystem = this;
 	Ctx.pPlayer = GetPlayerShip();
+	Ctx.pAnnotations = pAnnotations;
 
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.

@@ -248,11 +248,38 @@ struct SLoadCtx
 	CString sEffectUNID;				//	UNID of effect we're loading
 	};
 
+struct SViewportAnnotations
+	{
+	SViewportAnnotations (void)
+		{
+		Init();
+		}
+
+	void Init (void)
+		{
+		bDummy = false;
+
+#ifdef DEBUG_FORMATION
+		bDebugFormation = false;
+#endif
+		}
+
+	bool bDummy;
+
+#ifdef DEBUG_FORMATION
+	bool bDebugFormation;
+	int iFormationAngle;
+	CVector vFormationPos;
+	CVector vFormationCurPos;
+#endif
+	};
+
 struct SUpdateCtx
 	{
 	SUpdateCtx (void) :
 			pSystem(NULL),
 			pPlayer(NULL),
+			pAnnotations(NULL),
 			pDockingObj(NULL),
 			bNeedsAutoTarget(false),
 			iPlayerPerception(0),
@@ -266,6 +293,7 @@ struct SUpdateCtx
 	CSystem *pSystem;					//	Current system
 	CSpaceObject *pPlayer;				//	The player
 	TArray<CSpaceObject *> PlayerObjs;	//	List of player objects, if pPlayer == NULL
+	SViewportAnnotations *pAnnotations;	//	Extra structure to deliver to PaintViewport
 
 	//	Used to compute nearest docking port to player
 

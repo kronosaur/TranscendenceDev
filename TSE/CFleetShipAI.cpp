@@ -155,7 +155,7 @@ CFleetShipAI::CFleetShipAI (void) :
 	{
 	}
 
-void CFleetShipAI::Behavior (void)
+void CFleetShipAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 

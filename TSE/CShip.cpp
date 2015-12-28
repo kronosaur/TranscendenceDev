@@ -229,7 +229,7 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 
 	if (!IsInactive() && !m_fControllerDisabled)
 		{
-		m_pController->Behavior();
+		m_pController->Behavior(Ctx);
 
 		//	If we're targeting the player, then the player is under attack
 

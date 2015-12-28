@@ -128,7 +128,7 @@ void CBaseShipAI::AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShip
 		FireOnOrderChanged();
 	}
 
-void CBaseShipAI::Behavior (void)
+void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 //
@@ -143,6 +143,7 @@ void CBaseShipAI::Behavior (void)
 
 	//	Reset
 
+	m_AICtx.SetSystemUpdateCtx(&Ctx);
 	ResetBehavior();
 
 	//	Use basic items
@@ -235,6 +236,10 @@ void CBaseShipAI::Behavior (void)
 	//	Implement orders
 
 	m_pOrderModule->Behavior(m_pShip, m_AICtx);
+
+	//	Done
+
+	m_AICtx.SetSystemUpdateCtx(NULL);
 
 	DEBUG_CATCH
 	}
