@@ -189,7 +189,7 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 
 	if (m_fOldStyleBehaviors)
 		{
-		OnBehavior();
+		OnBehavior(Ctx);
 
 		//	This method is incompatible with order modules so we just return here.
 
@@ -208,7 +208,7 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 		if (m_pOrderModule == NULL)
 			{
 			m_fOldStyleBehaviors = true;
-			OnBehavior();
+			OnBehavior(Ctx);
 			return;
 			}
 
