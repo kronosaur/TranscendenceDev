@@ -69,6 +69,7 @@
 #define FIELD_VARIANT_COUNT						CONSTLIT("variantCount")
 
 #define PROPERTY_DAMAGE_PER_PROJECTILE			CONSTLIT("damagePerProjectile")
+#define PROPERTY_DAMAGE_WMD_180					CONSTLIT("damageWMD180")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
@@ -586,13 +587,17 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 	return rMult;
 	}
 
-Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot) const
+Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, bool bWMDAdj) const
 
 //	CalcDamage
 //
 //	Computes damage for the given weapon fire desc.
 
 	{
+	DWORD dwDamageFlags = 0;
+	if (bWMDAdj)
+		dwDamageFlags |= DamageDesc::flagWMDAdj;
+
 	//	If we have fragments we need to recurse
 
 	if (pShot->HasFragments())
@@ -636,16 +641,16 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot) const
 			{
 			case ftArea:
 				//	Assume 1/8th damage points hit on average
-				rDamage = 0.125 * pShot->GetAreaDamageDensityAverage() * pShot->m_Damage.GetAverageDamage();
+				rDamage = 0.125 * pShot->GetAreaDamageDensityAverage() * pShot->m_Damage.GetAverageDamage(dwDamageFlags);
 				break;
 
 			case ftRadius:
 				//	Assume average target is far enough away to take half damage
-				rDamage = 0.5 * pShot->m_Damage.GetAverageDamage();
+				rDamage = 0.5 * pShot->m_Damage.GetAverageDamage(dwDamageFlags);
 				break;
 
 			default:
-				rDamage = pShot->m_Damage.GetAverageDamage();
+				rDamage = pShot->m_Damage.GetAverageDamage(dwDamageFlags);
 			}
 
 		//	If we have a capacitor, adjust damage
@@ -680,14 +685,14 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot) const
 		}
 	}
 
-Metric CWeaponClass::CalcDamagePerShot (CWeaponFireDesc *pShot) const
+Metric CWeaponClass::CalcDamagePerShot (CWeaponFireDesc *pShot, bool bWMDAdj) const
 
 //	CalcDamagePerShot
 //
 //	Returns average damage per shot
 
 	{
-	return CalcConfigurationMultiplier(pShot, false) * CalcDamage(pShot);
+	return CalcConfigurationMultiplier(pShot, false) * CalcDamage(pShot, bWMDAdj);
 	}
 
 int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc)
@@ -1912,6 +1917,12 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	if (strEquals(sProperty, PROPERTY_DAMAGE_PER_PROJECTILE))
 		return CC.CreateDouble(CalcDamage(pShot));
 
+	else if (strEquals(sProperty, PROPERTY_DAMAGE_WMD_180))
+		{
+		Metric rDamagePerShot = CalcDamagePerShot(pShot, true);
+		return CC.CreateInteger(m_iFireRate > 0 ? (int)((rDamagePerShot * 180.0 / m_iFireRate) + 0.5) : (int)(rDamagePerShot + 0.5));
+		}
+
 	else if (strEquals(sProperty, PROPERTY_FIRE_ARC))
 		{
 		CInstalledDevice *pDevice = Ctx.GetDevice();	//	May be NULL
@@ -2156,7 +2167,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 			//	Compute total damage. NOTE: For particle weapons the damage 
 			//	specified is the total damage if ALL particle were to hit.
 
-			Metric rDamage = SHOCKWAVE_DAMAGE_FACTOR * Damage.GetAverageDamage(true);
+			Metric rDamage = SHOCKWAVE_DAMAGE_FACTOR * Damage.GetAverageDamage(DamageDesc::flagIncludeBonus);
 
 			//	Calculate the radius of the shockwave
 
@@ -2203,7 +2214,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 			//	Compute total damage. NOTE: For particle weapons the damage 
 			//	specified is the total damage if ALL particle were to hit.
 
-			Metric rDamage = PARTICLE_CLOUD_DAMAGE_FACTOR * Damage.GetAverageDamage(true);
+			Metric rDamage = PARTICLE_CLOUD_DAMAGE_FACTOR * Damage.GetAverageDamage(DamageDesc::flagIncludeBonus);
 
 			//	Compute result
 
@@ -2223,7 +2234,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 			{
 			//	Compute total damage
 
-			Metric rDamage = FRAGMENT_DAMAGE_FACTOR * iFragments * Damage.GetAverageDamage(true);
+			Metric rDamage = FRAGMENT_DAMAGE_FACTOR * iFragments * Damage.GetAverageDamage(DamageDesc::flagIncludeBonus);
 
 			//	Compute radius
 

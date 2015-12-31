@@ -293,7 +293,7 @@ ICCItem *DamageDesc::FindProperty (const CString &sName) const
 		return NULL;
 	}
 
-Metric DamageDesc::GetAverageDamage (bool bIncludeBonus) const
+Metric DamageDesc::GetAverageDamage (DWORD dwFlags) const
 
 //	GetAverageDamage
 //
@@ -301,8 +301,16 @@ Metric DamageDesc::GetAverageDamage (bool bIncludeBonus) const
 	
 	{
 	Metric rDamage = m_Damage.GetAveValueFloat();
-	if (bIncludeBonus)
+
+	//	Adjust for bonus
+
+	if (dwFlags & flagIncludeBonus)
 		rDamage += rDamage * m_iBonus / 100.0;
+
+	//	Adjust for WMD
+
+	if (dwFlags & flagWMDAdj)
+		rDamage = Max(1.0, rDamage * GetMassDestructionAdj() / 100.0);
 
 	return rDamage;
 	}
@@ -465,7 +473,7 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 
 	if (dwFlags & flagAverageDamage)
 		{
-		Metric rDamage = GetAverageDamage(true);
+		Metric rDamage = GetAverageDamage(DamageDesc::flagIncludeBonus);
 
 		//	For shockwaves, we adjust for the fact that we might get hit multiple
 		//	times.

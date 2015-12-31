@@ -513,8 +513,8 @@ class CWeaponClass : public CDeviceClass
 		int CalcBalance (int iVariant);
 		int CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, CVector *ShotPosOffset, int *ShotDir, bool bSetAlternating);
 		Metric CalcConfigurationMultiplier (CWeaponFireDesc *pShot = NULL, bool bIncludeFragments = true) const;
-		Metric CalcDamage (CWeaponFireDesc *pShot) const;
-		Metric CalcDamagePerShot (CWeaponFireDesc *pShot) const;
+		Metric CalcDamage (CWeaponFireDesc *pShot, bool bWMDAdj = false) const;
+		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, bool bWMDAdj = false) const;
 		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc);
 		EOnFireWeaponResults FireOnFireWeapon (CItemCtx &ItemCtx, 
 											   CWeaponFireDesc *pShot,
