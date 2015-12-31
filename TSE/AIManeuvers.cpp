@@ -562,8 +562,11 @@ void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRang
 	{
 	DEBUG_TRY
 
-	if (pShip->IsDestinyTime(19) && !m_AISettings.NoTargetsOfOpportunity())
-		(*iopTarget) = pShip->GetNearestVisibleEnemy(rMaxRange, false, pExcludeObj);
+	CSpaceObject *pNewTarget;
+	if (pShip->IsDestinyTime(19) 
+			&& !m_AISettings.NoTargetsOfOpportunity()
+			&& (pNewTarget = pShip->GetNearestVisibleEnemy(rMaxRange, false, pExcludeObj)))
+		(*iopTarget) = pNewTarget;
 
 	if (*iopTarget)
 		{
