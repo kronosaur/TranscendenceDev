@@ -138,6 +138,7 @@ void CCreatePainterCtx::SetWeaponFireDescData (CCodeChain &CC, CCSymbolTable *pT
 
 	{
 	pTable->SetIntegerValue(CC, FIELD_DAMAGE_HP, (int)(pDesc->GetAveDamage() + 0.5));
+	pTable->SetStringValue(CC, FIELD_DAMAGE_TYPE, GetDamageShortName(pDesc->GetDamageType()));
 	pTable->SetIntegerValue(CC, FIELD_SPEED, (int)((100.0 * pDesc->GetAveInitialSpeed() / LIGHT_SPEED) + 0.5));
 	if (pDesc->m_iFireType == ftParticles)
 		pTable->SetIntegerValue(CC, FIELD_PARTICLE_COUNT, (int)(pDesc->GetAveParticleCount() + 0.5));

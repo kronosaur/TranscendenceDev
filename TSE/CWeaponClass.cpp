@@ -487,8 +487,8 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 				int iShot = Max(0, Min(GetAlternatingPos(pDevice), m_iConfigCount));
 
 				iShotCount = 1;
-				ShotPos[0] = vSource + PolarToVector((iFireAngle + m_pConfig[iShot].iPosAngle) % 360, m_pConfig[iShot].rPosRadius);
-				ShotDir[0] = (360 + iFireAngle + m_pConfig[iShot].Angle.Roll()) % 360;
+				ShotPos[0] = vSource + PolarToVector(AngleMod(iFireAngle + m_pConfig[iShot].iPosAngle), m_pConfig[iShot].rPosRadius);
+				ShotDir[0] = AngleMod(iFireAngle + m_pConfig[iShot].Angle.Roll());
 
 				//	Next shot in sequence
 
@@ -501,8 +501,8 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 
 				for (i = 0; i < iShotCount; i++)
 					{
-					ShotPos[i] = vSource + PolarToVector((iFireAngle + m_pConfig[i].iPosAngle) % 360, m_pConfig[i].rPosRadius);
-					ShotDir[i] = (360 + iFireAngle + m_pConfig[i].Angle.Roll()) % 360;
+					ShotPos[i] = vSource + PolarToVector(AngleMod(iFireAngle + m_pConfig[i].iPosAngle), m_pConfig[i].rPosRadius);
+					ShotDir[i] = AngleMod(iFireAngle + m_pConfig[i].Angle.Roll());
 					}
 				}
 			break;
@@ -941,7 +941,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 				{
 				CXMLElement *pShotConfig = pConfig->GetContentElement(i);
 				pWeapon->m_pConfig[i].Angle.LoadFromXML(pShotConfig->GetAttribute(ANGLE_ATTRIB));
-				pWeapon->m_pConfig[i].iPosAngle = (pShotConfig->GetAttributeInteger(POS_ANGLE_ATTRIB) + 360) % 360;
+				pWeapon->m_pConfig[i].iPosAngle = AngleMod(pShotConfig->GetAttributeInteger(POS_ANGLE_ATTRIB));
 				pWeapon->m_pConfig[i].rPosRadius = g_KlicksPerPixel * pShotConfig->GetAttributeInteger(POS_RADIUS_ATTRIB);
 				}
 

@@ -5220,7 +5220,12 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 					CSpaceObject *pTarget;
 					int iFireAngle;
 					if (!CalcDeviceTarget(TargetingCtx, DeviceCtx, &pTarget, &iFireAngle))
+						{
+						//	Do not consume power, even though we're triggered.
+
+						pDevice->SetLastActivateSuccessful(false);
 						continue;
+						}
 
 					//	Set the target on the device. We need to do this for 
 					//	repeating weapons.
