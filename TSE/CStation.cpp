@@ -1743,9 +1743,26 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (IsImmutable())
 		{
-		Ctx.iDamage = 0;
+		//	If we don't have ejecta, the decrease damage to 0. 
+
+		if (m_pType->GetEjectaAdj() == 0
+				|| Ctx.Damage.GetMassDestructionAdj() == 0)
+			Ctx.iDamage = 0;
+
+		//	Otherwise, adjust for WMD
+
+		else
+			Ctx.iDamage = Max(1, Ctx.Damage.GetMassDestructionAdj() * Ctx.iDamage / 100);
+
+		//	Hit effect
+
 		if (!Ctx.bNoHitEffect)
 			Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+
+		//	Ejecta
+
+		if (Ctx.iDamage > 0)
+			CreateEjectaFromDamage(Ctx.iDamage, Ctx.vHitPos, Ctx.iDirection, Ctx.Damage);
 
 		return damageNoDamageNoPassthrough;
 		}

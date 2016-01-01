@@ -168,6 +168,7 @@
 #define ERR_UNKNOWN_EQUIPMENT_DIRECTIVE			CONSTLIT("unknown equipment directive: %s")
 
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
+#define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
 #define SPECIAL_MANUFACTURER					CONSTLIT("manufacturer:")
@@ -2395,7 +2396,7 @@ int CShipClass::GetMaxStructuralHitPoints (void) const
 
 	//	Otherwise we have to compute it based on level and mass
 
-	return (m_iLevel + 1) * (mathSqrt(m_iMass) + 10) * mathRandom(75, 125) / 200;
+	return (int)(pow(1.3, m_iLevel) * (sqrt(m_iMass) + 10.0));
 	}
 
 CString CShipClass::GetName (DWORD *retdwFlags)
@@ -3533,6 +3534,8 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? CC.CreateInteger(m_pDefaultSovereign.GetUNID()) : CC.CreateNil());
+	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
+		return CC.CreateInteger(GetMaxStructuralHitPoints());
 	else
 		return NULL;
 	}

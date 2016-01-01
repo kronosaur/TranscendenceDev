@@ -104,6 +104,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_INSTALL_ITEM_STATUS			CONSTLIT("installItemStatus")
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL							CONSTLIT("level")
+#define PROPERTY_MASS							CONSTLIT("mass")
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
 #define PROPERTY_REFUEL_MAX_LEVEL				CONSTLIT("refuelMaxLevel")
@@ -3999,6 +4000,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_LEVEL))
 		return CC.CreateInteger(GetLevel());
+
+	else if (strEquals(sName, PROPERTY_MASS))
+		return CC.CreateInteger((int)GetMass());
 
 	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
 		return CC.CreateString(GetPaintLayerID(GetPaintLayer()));

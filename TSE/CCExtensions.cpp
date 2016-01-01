@@ -1449,6 +1449,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'hasDockingPorts\n"
 			"   'id\n"
 			"   'known\n"
+			"   'mass\n"
 			"   'paintLayer\n"
 			"   'playerMissionsGiven\n"
 			"   'scale\n"
