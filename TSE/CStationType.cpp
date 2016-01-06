@@ -1857,10 +1857,17 @@ void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 	{
 	int i;
 
+	//	Get an image
+
+	SSelectorInitCtx InitCtx;
+	CCompositeImageSelector Selector;
+	SetImageSelector(InitCtx, &Selector);
+	const CObjectImageArray &Image = GetImage(Selector, CCompositeImageModifiers());
+
 	//	We need to initialize a docking ports structure
 
 	CDockingPorts Ports;
-	Ports.InitPortsFromXML(NULL, m_pDesc);
+	Ports.InitPortsFromXML(NULL, m_pDesc, Image.GetImageViewportSize());
 
 	//	Paint all ports
 

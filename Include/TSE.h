@@ -1700,7 +1700,7 @@ class CDockingPorts
 		void InitPorts (CSpaceObject *pOwner, int iCount, Metric rRadius);
 		void InitPorts (CSpaceObject *pOwner, int iCount, CVector *pPos);
 		void InitPorts (CSpaceObject *pOwner, const TArray<CVector> &Desc);
-		void InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElement);
+		void InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElement, int iScale = -1);
 		inline bool IsObjDocked (CSpaceObject *pObj) { return IsDocked(pObj); }
 		inline bool IsObjDockedOrDocking (CSpaceObject *pObj) { return IsDockedOrDocking(pObj); }
 		inline bool IsPortEmpty (CSpaceObject *pOwner, int iPort) const { return (m_pPort[iPort].iStatus == psEmpty); }
