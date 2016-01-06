@@ -11,6 +11,8 @@
 
 #pragma comment(lib, "d3d9.lib")
 
+CG32bitImage CDXScreen::m_NullImage;
+
 CDXScreen::CDXScreen (void) :
 		m_hWnd(NULL),
 		m_pD3D(NULL),
@@ -712,7 +714,7 @@ bool CDXScreen::ResetDevice (void)
 
 		if (hr == D3DERR_DEVICELOST)
 			{
-			::kernelDebugLogMessage("[DX] Device lost after Rest.");
+			::kernelDebugLogMessage("[DX] Device lost after reset.");
 			return false;
 			}
 

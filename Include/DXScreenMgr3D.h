@@ -39,7 +39,7 @@ class CDXScreen
 		void CleanUp (void);
 		bool CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CString *retsError = NULL);
 		void DebugOutputStats (void);
-		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return m_Layers[iLayerID].BackBuffer; }
+		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return (m_bDeviceLost ? m_NullImage : m_Layers[iLayerID].BackBuffer); }
 		bool Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError = NULL);
 		inline bool IsUsingDirectX (void) const { return !m_bUseGDI; }
 		inline bool IsUsingTextures (void) const { return m_bUseTextures; }
@@ -116,6 +116,8 @@ class CDXScreen
 
 		TArray<SLayer> m_Layers;
 		TSortMap<int, int> m_PaintOrder;
+
+		static CG32bitImage m_NullImage;
 	};
 
 class CDXBackgroundBlt
