@@ -165,8 +165,12 @@ struct CItemCriteria
 enum EDisplayAttributeTypes
 	{
 	attribNeutral,
+
 	attribPositive,
 	attribNegative,
+
+	attribEnhancement,
+	attribWeakness,
 	};
 
 enum EAttributeTypes
@@ -177,10 +181,38 @@ enum EAttributeTypes
 
 struct SDisplayAttribute
 	{
-	SDisplayAttribute (EDisplayAttributeTypes iTypeCons, const CString &sTextCons) :
+	SDisplayAttribute (EDisplayAttributeTypes iTypeCons, const CString &sTextCons, bool bDueToEnhancement = false) :
 			iType(iTypeCons),
 			sText(sTextCons)
-		{ }
+		{
+		if (bDueToEnhancement)
+			{
+			switch (iType)
+				{
+				case attribPositive:
+					iType = attribEnhancement;
+					if (*sText.GetASCIIZPointer() != '+')
+						sText = strPatternSubst(CONSTLIT("+%s"), sText);
+					break;
+
+				case attribNegative:
+					iType = attribWeakness;
+					if (*sText.GetASCIIZPointer() != '-')
+						sText = strPatternSubst(CONSTLIT("-%s"), sText);
+					break;
+				}
+			}
+		}
+
+	static bool HasEnhancement (const TArray<SDisplayAttribute> &List)
+		{
+		int i;
+		for (i = 0; i < List.GetCount(); i++)
+			if (List[i].iType == attribEnhancement || List[i].iType == attribWeakness)
+				return true;
+
+		return false;
+		}
 
 	EDisplayAttributeTypes iType;
 	CString sText;
@@ -1465,7 +1497,7 @@ class DamageDesc
 			{ }
 
 		inline void AddBonus (int iBonus) { m_iBonus += iBonus; }
-		void AddEnhancements (CItemEnhancementStack *pEnhancements);
+		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
 		inline bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
 		Metric GetAverageDamage (DWORD dwFlags = 0) const;
@@ -1508,6 +1540,7 @@ class DamageDesc
 		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
+		static int GetMassDestructionLevelFromValue (int iValue) { return ((int)(iValue ? (2 * (iValue * iValue) + 2) : 0) + 5) / 10;  }
 
 	private:
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
@@ -1868,6 +1901,7 @@ class CItemEnhancement
 		CItemEnhancement (void) : m_dwID(OBJID_NULL), m_dwMods(0), m_pEnhancer(NULL), m_iExpireTime(-1) { }
 		CItemEnhancement (DWORD dwMods) : m_dwID(OBJID_NULL), m_dwMods(dwMods), m_pEnhancer(NULL), m_iExpireTime(-1) { }
 
+		void AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
 		inline DWORD AsDWORD (void) const { return m_dwMods; }
 		EnhanceItemStatus Combine (const CItem &Item, CItemEnhancement Enhancement);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
@@ -1889,9 +1923,12 @@ class CItemEnhancement
 		inline int GetLevel2 (void) const { return (int)(DWORD)((m_dwMods & etData2Mask) >> 4); }
 		inline DWORD GetModCode (void) const { return m_dwMods; }
 		int GetPowerAdj (void) const;
+		int GetResistEnergyAdj (void) const { return (GetType() == etResistEnergy ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
+		int GetResistMatterAdj (void) const { return (GetType() == etResistMatter ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
 		SpecialDamageTypes GetSpecialDamage (int *retiLevel = NULL) const;
 		inline ItemEnhancementTypes GetType (void) const { return (ItemEnhancementTypes)(m_dwMods & etTypeMask); }
 		int GetValueAdj (const CItem &Item) const;
+		bool HasCustomDamageAdj (void) const;
 		ALERROR InitFromDesc (ICCItem *pItem, CString *retsError);
 		ALERROR InitFromDesc (const CString &sDesc, CString *retsError);
 		ALERROR InitFromDesc (SDesignLoadCtx &Ctx, const CString &sDesc);
@@ -1911,6 +1948,7 @@ class CItemEnhancement
 		inline bool IsRegenerating (void) const { return ((GetType() == etRegenerate) && !IsDisadvantage()); }
 		inline bool IsReflective (void) const { return ((GetType() == etReflect) && !IsDisadvantage()); }
 		bool IsReflective (const DamageDesc &Damage, int *retiReflectChance = NULL) const;
+		inline bool IsRepairOnDamage (void) const { return ((GetType() == etRepairOnHit) && !IsDisadvantage()); }
 		inline bool IsShatterImmune (void) const { return ((GetType() == etSpecialDamage) && GetLevel2() == specialShatter && !IsDisadvantage()); }
 		inline bool IsShieldInterfering (void) const { return ((GetType() == etImmunityIonEffects) && IsDisadvantage()); }
 		inline bool IsStacking (void) const { return (GetType() == etStrengthen && GetLevel() == 0); }
@@ -1956,17 +1994,36 @@ class CItemEnhancementStack
 				m_dwRefCount(1)
 			{ }
 
+		void AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
 		inline CItemEnhancementStack *AddRef (void) { m_dwRefCount++; return this; }
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
 		int CalcActivateDelay (CItemCtx &DeviceCtx) const;
 		void Delete (void);
+		int GetActivateDelayAdj (void) const;
 		int GetBonus (void) const;
 		inline int GetCount (void) const { return m_Stack.GetCount(); }
 		const DamageDesc &GetDamage (void) const;
+		int GetPowerAdj (void) const;
+		int GetResistDamageAdj (DamageTypes iDamage) const;
+		int GetResistEnergyAdj (void) const;
+		int GetResistMatterAdj (void) const;
 		void Insert (const CItemEnhancement &Mods);
 		void InsertActivateAdj (int iAdj, int iMin, int iMax);
 		void InsertHPBonus (int iBonus);
 		inline bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
+		bool IsBlindingImmune (void) const;
+		bool IsDecaying (void) const;
+		bool IsDeviceDamageImmune (void) const;
+		bool IsDisintegrationImmune (void) const;
+		bool IsEMPImmune (void) const;
+		bool IsPhotoRegenerating (void) const;
+		bool IsPhotoRecharging (void) const;
+		bool IsRadiationImmune (void) const;
+		bool IsRegenerating (void) const;
+		bool IsShatterImmune (void) const;
+		bool IsShieldInterfering (void) const;
+		bool ReflectsDamage (DamageTypes iDamage) const;
+		bool RepairOnDamage (DamageTypes iDamage) const;
 
 		static void ReadFromStream (SLoadCtx &Ctx, CItemEnhancementStack **retpStack);
 		static void WriteToStream (CItemEnhancementStack *pStack, IWriteStream *pStream);
@@ -3697,12 +3754,13 @@ class CUserProfile
 class CItemCtx
 	{
 	public:
-		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		~CItemCtx (void);
 
 		void ClearItemCache (void);
 		ICCItem *CreateItemVariable (CCodeChain &CC);
@@ -3710,6 +3768,7 @@ class CItemCtx
 		CArmorClass *GetArmorClass (void);
 		CInstalledDevice *GetDevice (void);
 		CDeviceClass *GetDeviceClass (void);
+		const CItemEnhancementStack *GetEnhancementStack (void);
 		const CItem &GetItem (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
@@ -3730,6 +3789,8 @@ class CItemCtx
 		CDeviceClass *m_pWeapon;				//	This is the weapon that uses the given item
 		int m_iVariant;							//	NOTE: In this case, m_pItem may be either a
 												//	missile or the weapon.
+
+		CItemEnhancementStack *m_pEnhancements;	//	Only used if we need to cons one up
 	};
 
 class CItemType : public CDesignType

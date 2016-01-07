@@ -206,7 +206,7 @@ DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
 
 //	DamageDesc -----------------------------------------------------------------
 
-void DamageDesc::AddEnhancements (CItemEnhancementStack *pEnhancements)
+void DamageDesc::AddEnhancements (const CItemEnhancementStack *pEnhancements)
 
 //	AddEnhancements
 //

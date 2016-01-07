@@ -1208,14 +1208,12 @@ void CShieldClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 
 	{
 	int i;
-	const CItemEnhancement &Mods = ItemCtx.GetMods();
 
 	//	Reflection
 
 	for (i = 0; i < damageCount; i++)
 		{
-		if (m_Reflective.InSet((DamageTypes)i)
-				|| (Mods.IsReflective() && Mods.GetDamageType() == i))
+		if (m_Reflective.InSet((DamageTypes)i))
 			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
 		}
 

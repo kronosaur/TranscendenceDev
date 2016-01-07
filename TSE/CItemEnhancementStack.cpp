@@ -5,6 +5,86 @@
 
 #include "PreComp.h"
 
+void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const
+
+//	AccumulateAttributes
+//
+//	Add enhancement attributes as appropriate.
+
+	{
+	int i;
+
+	//	Add all damage resistance enhancements
+
+	bool bNoDamageAdj = false;
+	int iAdj;
+	if ((iAdj = GetResistEnergyAdj()) != 100)
+		{
+		retList->Insert(SDisplayAttribute((iAdj < 100 ? attribPositive : attribNegative), (iAdj < 100 ? CONSTLIT("+energy resist") : CONSTLIT("-energy vulnerable")), true));
+		bNoDamageAdj = true;
+		}
+
+	if ((iAdj = GetResistMatterAdj()) != 100)
+		{
+		retList->Insert(SDisplayAttribute((iAdj < 100 ? attribPositive : attribNegative), (iAdj < 100 ? CONSTLIT("+matter resist") : CONSTLIT("-matter vulnerable")), true));
+		bNoDamageAdj = true;
+		}
+
+	//	Per damage-type bonuses
+
+	for (i = 0; i < damageCount; i++)
+		{
+		if ((iAdj = GetResistDamageAdj((DamageTypes)i)) != 100)
+			retList->Insert(SDisplayAttribute((iAdj < 100 ? attribPositive : attribNegative), GetDamageShortName((DamageTypes)i), true));
+		}
+
+	//	Add some binary enhancements
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		bool bDisadvantage = m_Stack[i].IsDisadvantage();
+		EDisplayAttributeTypes iDisplayType = (bDisadvantage ? attribNegative : attribPositive);
+
+		switch (m_Stack[i].GetType())
+			{
+			case etRegenerate:
+			case etReflect:
+			case etRepairOnHit:
+			case etSpecialDamage:
+			case etConferSpecialDamage:
+			case etImmunityIonEffects:
+			case etPhotoRegenerate:
+			case etPhotoRecharge:
+				m_Stack[i].AccumulateAttributes(Ctx, retList);
+				break;
+			}
+		}
+
+	//	Power adjustment
+
+	int iPowerAdj = GetPowerAdj();
+	if (iPowerAdj > 100)
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-drain"), true));
+	else if (iPowerAdj < 100)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+efficient"), true));
+
+	//	Enhancements to fire rate
+
+	int iFireAdj = GetActivateDelayAdj();
+	if (iFireAdj > 100)
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("-slow"), true));
+	else if (iFireAdj < 100)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+fast"), true));
+
+	//	Add bonus
+
+	int iBonus = GetBonus();
+	if (iBonus < 0)
+		retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("-%d%%"), iBonus), true));
+	else if (iBonus > 0)
+		retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+%d%%"), iBonus), true));
+	}
+
 void CItemEnhancementStack::ApplySpecialDamage (DamageDesc *pDamage) const
 
 //	ApplySpecialDamage
@@ -102,6 +182,30 @@ void CItemEnhancementStack::Delete (void)
 		delete this;
 	}
 
+int CItemEnhancementStack::GetActivateDelayAdj (void) const
+
+//	GetActivateDelayAdj
+//
+//	Computes the activation delay
+
+	{
+	int i;
+
+	Metric rDelay = 100.0;
+
+	//	Apply enhancements (including on the item itself)
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iMin, iMax;
+		int iAdj = m_Stack[i].GetActivateRateAdj(&iMin, &iMax);
+		if (iAdj != 100)
+			rDelay = iAdj * rDelay / 100.0;
+		}
+
+	return (int)(rDelay + 0.5);
+	}
+
 int CItemEnhancementStack::GetBonus (void) const
 
 //	GetBonus
@@ -128,6 +232,96 @@ const DamageDesc &CItemEnhancementStack::GetDamage (void) const
 	return m_Damage;
 	}
 
+int CItemEnhancementStack::GetPowerAdj (void) const
+
+//	GetPowerAdj
+//
+//	Returns the power consumption adjustment
+
+	{
+	int i;
+
+	Metric rValue = 100.0;
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iAdj = m_Stack[i].GetPowerAdj();
+		if (iAdj != 100)
+			rValue = iAdj * rValue / 100.0;
+		}
+
+	return (int)(rValue + 0.5);
+	}
+
+int CItemEnhancementStack::GetResistDamageAdj (DamageTypes iDamage) const
+
+//	GetResistDamageAdj
+//
+//	Gets the damage adjustment for the given type
+
+	{
+	int i;
+
+	DamageDesc Damage(iDamage, DiceRange(0, 0, 10));
+
+	Metric rValue = 100.0;
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iAdj = m_Stack[i].GetDamageAdj(Damage);
+		if (iAdj != 100)
+			rValue = iAdj * rValue / 100.0;
+		}
+
+	return (int)(rValue + 0.5);
+	}
+
+int CItemEnhancementStack::GetResistEnergyAdj (void) const
+
+//	GetResistEnergyAdj
+//
+//	Gets the damage adjustment for energy. We only return an adjustment if there
+//	are no other damage adjustments (otherwise we return 100).
+
+	{
+	int i;
+
+	Metric rValue = 100.0;
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		if (m_Stack[i].HasCustomDamageAdj())
+			return 100;
+
+		int iAdj = m_Stack[i].GetResistEnergyAdj();
+		if (iAdj != 100)
+			rValue = iAdj * rValue / 100.0;
+		}
+
+	return (int)(rValue + 0.5);
+	}
+
+int CItemEnhancementStack::GetResistMatterAdj (void) const
+
+//	GetResistMatterAdj
+//
+//	Gets the damage adjustment for matter. We only return an adjustment if there
+//	are no other damage adjustments (otherwise we return 100).
+
+	{
+	int i;
+
+	Metric rValue = 100.0;
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		if (m_Stack[i].HasCustomDamageAdj())
+			return 100;
+
+		int iAdj = m_Stack[i].GetResistMatterAdj();
+		if (iAdj != 100)
+			rValue = iAdj * rValue / 100.0;
+		}
+
+	return (int)(rValue + 0.5);
+	}
+
 void CItemEnhancementStack::Insert (const CItemEnhancement &Mods)
 
 //	Insert
@@ -135,7 +329,8 @@ void CItemEnhancementStack::Insert (const CItemEnhancement &Mods)
 //	Appends the given enhancement to the stack.
 
 	{
-	m_Stack.Insert(Mods);
+	if (!Mods.IsEmpty())
+		m_Stack.Insert(Mods);
 	}
 
 void CItemEnhancementStack::InsertActivateAdj (int iAdj, int iMin, int iMax)
@@ -158,6 +353,182 @@ void CItemEnhancementStack::InsertHPBonus (int iBonus)
 	{
 	m_Stack.InsertEmpty();
 	m_Stack[m_Stack.GetCount() - 1].SetModBonus(iBonus);
+	}
+
+bool CItemEnhancementStack::IsBlindingImmune (void) const
+
+//	IsBlindingImmune
+//
+//	Returns true if we're immune to blinding
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsBlindingImmune())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsDecaying (void) const
+
+//	IsDecaying
+//
+//	Returns true if we're decaying
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsDecaying())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsDeviceDamageImmune (void) const
+
+//	IsDeviceDamageImmune
+//
+//	Returns true if we're immune to device damage
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsDeviceDamageImmune())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsDisintegrationImmune (void) const
+
+//	IsDisintegrationImmune
+//
+//	Returns true if we're immune to disintegration
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsDisintegrationImmune())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsEMPImmune (void) const
+
+//	IsEMPImmune
+//
+//	Returns true if we're immune to EMP
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsEMPImmune())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsPhotoRecharging (void) const
+
+//	IsPhotoRecharging
+//
+//	Returns true if we're photo recharging
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsPhotoRecharge())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsPhotoRegenerating (void) const
+
+//	IsPhotoRegenerating
+//
+//	Returns true if we're photo regenerating
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsPhotoRegenerating())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsRadiationImmune (void) const
+
+//	IsRadiationImmune
+//
+//	Returns true if we're immune to radiation
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsRadiationImmune())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsRegenerating (void) const
+
+//	IsRegenerating
+//
+//	Returns true if we're regenerating
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsRegenerating())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsShatterImmune (void) const
+
+//	IsShatterImmune
+//
+//	Returns true if we're immune to shatter
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsShatterImmune())
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::IsShieldInterfering (void) const
+
+//	IsShieldInterfering
+//
+//	Returns true if we're shield interfering
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsShieldInterfering())
+			return true;
+
+	return false;
 	}
 
 void CItemEnhancementStack::ReadFromStream (SLoadCtx &Ctx, CItemEnhancementStack **retpStack)
@@ -184,6 +555,38 @@ void CItemEnhancementStack::ReadFromStream (SLoadCtx &Ctx, CItemEnhancementStack
 		pStack->m_Stack[i].ReadFromStream(Ctx);
 
 	*retpStack = pStack;
+	}
+
+bool CItemEnhancementStack::ReflectsDamage (DamageTypes iDamage) const
+
+//	ReflectsDamage
+//
+//	Returns TRUE if we reflect the given damage type
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsReflective() && m_Stack[i].GetDamageType() == iDamage)
+			return true;
+
+	return false;
+	}
+
+bool CItemEnhancementStack::RepairOnDamage (DamageTypes iDamage) const
+
+//	RepairOnDamage
+//
+//	Returns TRUE if we repair when hit with damage
+
+	{
+	int i;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		if (m_Stack[i].IsRepairOnDamage() && m_Stack[i].GetDamageType() == iDamage)
+			return true;
+
+	return false;
 	}
 
 void CItemEnhancementStack::WriteToStream (CItemEnhancementStack *pStack, IWriteStream *pStream)

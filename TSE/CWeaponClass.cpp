@@ -2944,8 +2944,6 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 //	Adds attributes of the weapon type
 
 	{
-	const CItemEnhancement &Mods = ItemCtx.GetMods();
-
 	//	Add omnidirectional and arc attributes
 
 	int iMinArc;
@@ -2979,14 +2977,6 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 		int iFragments;
 		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
 		DamageDesc Damage = pShot->m_Damage;
-
-		//	Modify the damage based on any enhancements that the ship may have
-
-		CInstalledDevice *pDevice = ItemCtx.GetDevice();
-		if (pDevice)
-			Damage.AddEnhancements(pDevice->GetEnhancements());
-		else
-			Damage.AddBonus(Mods.GetHPBonus());
 
 		//	Compute special abilities.
 
@@ -3040,7 +3030,7 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device damage")));
 
 		if (Damage.GetDeviceDisruptDamage() > 0)
-			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device ionization")));
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device ionize")));
 
 		//	Disintegration
 
@@ -3055,7 +3045,7 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 		//	Armor
 
 		if (Damage.GetArmorDamageLevel() > 0)
-			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("armor penetrator")));
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("armor penetrate")));
 
 		//	WMD
 

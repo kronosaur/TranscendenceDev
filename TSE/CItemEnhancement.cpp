@@ -4,6 +4,167 @@
 
 #include "PreComp.h"
 
+void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const
+
+//	AccumulateAttributes
+//
+//	Adds attributes
+
+	{
+	EDisplayAttributeTypes iDisplayType = (IsDisadvantage() ? attribNegative : attribPositive);
+
+	switch (GetType())
+		{
+		//	This is handled elsewhere because we need to aggregate.
+
+		case etNone:
+		case etHPBonus:
+		case etStrengthen:
+		case etResist:
+		case etResistEnergy:
+		case etResistMatter:
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+			break;
+
+		case etRegenerate:
+			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-decay") : CONSTLIT("+regen")), true));
+			break;
+
+		case etReflect:
+			retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s transparent") : CONSTLIT("+%s reflect")), ::GetDamageShortName(GetDamageType())), true));
+			break;
+
+		case etRepairOnHit:
+			retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+%s regen"), ::GetDamageShortName(GetDamageType())), true));
+			break;
+
+		case etSpecialDamage:
+			{
+			switch (GetLevel2())
+				{
+				case specialRadiation:
+					retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+radiation immune"), true));
+					break;
+
+				case specialBlinding:
+					retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+blind immune"), true));
+					break;
+
+				case specialEMP:
+					retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+EMP immune"), true));
+					break;
+
+				case specialDeviceDamage:
+					retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+device protect"), true));
+					break;
+
+				case specialDisintegration:
+					retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+disintegration immune"), true));
+					break;
+
+				default:
+					retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+immune"), true));
+					break;
+				}
+
+			break;
+			}
+
+		case etConferSpecialDamage:
+			{
+			int iLevel;
+			SpecialDamageTypes iSpecial = GetSpecialDamage(&iLevel);
+			switch (iSpecial)
+				{
+				case specialArmor:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+armor penetrate"), true));
+					break;
+
+				case specialBlinding:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+blinding"), true));
+					break;
+
+				case specialDeviceDamage:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+device damage"), true));
+					break;
+
+				case specialDeviceDisrupt:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+device ionize"), true));
+					break;
+
+				case specialDisintegration:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+disintegration"), true));
+					break;
+
+				case specialEMP:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+EMP"), true));
+					break;
+
+				case specialFuel:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+fuel drain"), true));
+					break;
+
+				case specialMining:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+mining"), true));
+					break;
+
+				case specialMomentum:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+momentum"), true));
+					break;
+
+				case specialRadiation:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+radiation"), true));
+					break;
+
+				case specialShatter:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+shatter"), true));
+					break;
+
+				case specialShieldDisrupt:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+shield buster"), true));
+					break;
+
+				case specialShieldPenetrator:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+shield penetrate"), true));
+					break;
+
+				case specialWMD:
+					retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+WMD %d"), DamageDesc::GetMassDestructionLevelFromValue(iLevel))));
+					break;
+				}
+
+			break;
+			}
+
+		case etImmunityIonEffects:
+			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-no shields") : CONSTLIT("+ionize immune")), true));
+			break;
+
+		case etPhotoRegenerate:
+			retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+photo-regen"), true));
+			break;
+
+		case etPhotoRecharge:
+			retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+solar"), true));
+			break;
+
+		case etPowerEfficiency:
+			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-drain") : CONSTLIT("+efficient")), true));
+			break;
+
+		case etSpeed:
+		case etSpeedOld:
+			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-slow") : CONSTLIT("+fast")), true));
+			break;
+
+		default:
+			retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+unknown"), true));
+			break;
+		}
+	}
+
 int CItemEnhancement::DamageAdj2Level (int iDamageAdj)
 
 //	DamageAdj2Level
@@ -511,23 +672,23 @@ CString CItemEnhancement::GetEnhancedDesc (const CItem &Item, CSpaceObject *pIns
 			}
 
 		case etRegenerate:
-			return (IsDisadvantage() ? CONSTLIT("-Decay") : CONSTLIT("+Regen"));
+			return (IsDisadvantage() ? CONSTLIT("-decay") : CONSTLIT("+regen"));
 
 		case etReflect:
-			return strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s Trans") : CONSTLIT("+%s Reflect")),
-					strCapitalizeWords(::GetDamageShortName(GetDamageType())));
+			return strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s transparent") : CONSTLIT("+%s reflect")),
+					::GetDamageShortName(GetDamageType()));
 
 		case etRepairOnHit:
-			return strPatternSubst(CONSTLIT("+%s Repair"), strCapitalizeWords(::GetDamageShortName(GetDamageType())));
+			return strPatternSubst(CONSTLIT("+%s regen"), ::GetDamageShortName(GetDamageType()));
 
 		case etResist:
-			return (IsDisadvantage() ? CONSTLIT("-Vulnerable") : CONSTLIT("+Resistant"));
+			return (IsDisadvantage() ? CONSTLIT("-vulnerable") : CONSTLIT("+resistant"));
 
 		case etResistEnergy:
-			return (IsDisadvantage() ? CONSTLIT("-Energy Vulnerable") : CONSTLIT("+Energy Resistant"));
+			return (IsDisadvantage() ? CONSTLIT("-energy vulnerable") : CONSTLIT("+energy resist"));
 
 		case etResistMatter:
-			return (IsDisadvantage() ? CONSTLIT("-Matter Vulnerable") : CONSTLIT("+Matter Resistant"));
+			return (IsDisadvantage() ? CONSTLIT("-matter vulnerable") : CONSTLIT("+matter resist"));
 
 		case etResistByLevel:
 			{
@@ -538,27 +699,26 @@ CString CItemEnhancement::GetEnhancedDesc (const CItem &Item, CSpaceObject *pIns
 			}
 
 		case etResistByDamage:
-			return strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s") : CONSTLIT("+%s")),
-					strCapitalizeWords(::GetDamageShortName(GetDamageType())));
+			return strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s") : CONSTLIT("+%s")), ::GetDamageShortName(GetDamageType()));
 
 		case etResistByDamage2:
 			{
 			if (IsDisadvantage())
-				return strPatternSubst(CONSTLIT("-%s -%s"), strCapitalizeWords(::GetDamageShortName(GetDamageType())), strCapitalizeWords(::GetDamageShortName((DamageTypes)(GetDamageType() + 2))));
+				return strPatternSubst(CONSTLIT("-%s -%s"), ::GetDamageShortName(GetDamageType()), ::GetDamageShortName((DamageTypes)(GetDamageType() + 2)));
 			else
 				{
 				switch (GetDamageType())
 					{
 					case damageLaser:
-						return CONSTLIT("+Ablative");
+						return CONSTLIT("+ablative");
 
 					case damageKinetic:
-						return CONSTLIT("+Reactive");
+						return CONSTLIT("+reactive");
 
 					default:
 						return strPatternSubst(CONSTLIT("+%s +%s"), 
-								strCapitalizeWords(::GetDamageShortName(GetDamageType())), 
-								strCapitalizeWords(::GetDamageShortName((DamageTypes)(GetDamageType() + 2))));
+								::GetDamageShortName(GetDamageType()), 
+								::GetDamageShortName((DamageTypes)(GetDamageType() + 2)));
 					}
 				}
 			}
@@ -568,43 +728,43 @@ CString CItemEnhancement::GetEnhancedDesc (const CItem &Item, CSpaceObject *pIns
 			switch (GetLevel2())
 				{
 				case specialRadiation:
-					return CONSTLIT("+Rad Immune");
+					return CONSTLIT("+radiation immune");
 
 				case specialBlinding:
-					return CONSTLIT("+Blind Immune");
+					return CONSTLIT("+blind immune");
 
 				case specialEMP:
-					return CONSTLIT("+EMP Immune");
+					return CONSTLIT("+EMP immune");
 
 				case specialDeviceDamage:
-					return CONSTLIT("+Dev Protect");
+					return CONSTLIT("+device protect");
 
 				case specialDisintegration:
-					return CONSTLIT("+Dis Immune");
+					return CONSTLIT("+disintegration immune");
 
 				default:
-					return CONSTLIT("+Unk Immune");
+					return CONSTLIT("+immune");
 				}
 			}
 
 		case etImmunityIonEffects:
-			return (IsDisadvantage() ? CONSTLIT("-No Shields") : CONSTLIT("+Ionization Immune"));
+			return (IsDisadvantage() ? CONSTLIT("-no shields") : CONSTLIT("+ionize immune"));
 
 		case etPhotoRegenerate:
-			return CONSTLIT("+SolRegen");
+			return CONSTLIT("+photo-regen");
 
 		case etPhotoRecharge:
-			return CONSTLIT("+SolPower");
+			return CONSTLIT("+solar");
 
 		case etPowerEfficiency:
-			return (IsDisadvantage() ? CONSTLIT("-Drain") : CONSTLIT("+Efficient"));
+			return (IsDisadvantage() ? CONSTLIT("-drain") : CONSTLIT("+efficient"));
 
 		case etSpeed:
 		case etSpeedOld:
-			return (IsDisadvantage() ? CONSTLIT("-Slow") : CONSTLIT("+Fast"));
+			return (IsDisadvantage() ? CONSTLIT("-slow") : CONSTLIT("+fast"));
 
 		default:
-			return CONSTLIT("+Unknown");
+			return CONSTLIT("+unknown");
 		}
 	}
 
@@ -869,6 +1029,26 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			default:
 				return 0;
 			}
+		}
+	}
+
+bool CItemEnhancement::HasCustomDamageAdj (void) const
+
+//	HasCustomDamageAdj
+//
+//	Returns TRUE if we have a damage adjustment that's not one of the generic
+//	energy/matter adjustments.
+
+	{
+	switch (GetType())
+		{
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+			return true;
+
+		default:
+			return false;
 		}
 	}
 

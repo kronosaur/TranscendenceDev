@@ -281,15 +281,12 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 //	AccumulateAttributes
 //
-//	Returns list of display attributes
+//	Returns list of display attributes. NOTE: We only include our intrinsic 
+//	attributes--enhancements are added later by the caller.
 
 	{
 	int i;
-
-	//	Get modifications
-
 	int iLevel = m_pItemType->GetLevel();
-	const CItemEnhancement &Mods = ItemCtx.GetMods();
 
 	//	If we require a higher level to repair
 
@@ -298,7 +295,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	//	Radiation 
 
-	if (m_fRadiationImmune || Mods.IsRadiationImmune())
+	if (m_fRadiationImmune)
 		{
 		if (iLevel < RADIATION_IMMUNE_LEVEL)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radiation immune")));
@@ -313,12 +310,12 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 	bool bCheckedEMP = false;
 	bool bCheckedDevice = false;
 
-	if ((m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
-			&& (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune())
-			&& (m_iDeviceDamageAdj < 100 || Mods.IsDeviceDamageImmune()))
+	if ((m_iBlindingDamageAdj == 0)
+			&& (m_iEMPDamageAdj == 0)
+			&& (m_iDeviceDamageAdj < 100))
 		{
 		if (iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ion-effect immune")));
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ionize immune")));
 
 		bCheckedBlind = true;
 		bCheckedEMP = true;
@@ -329,7 +326,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	if (!bCheckedBlind)
 		{
-		if (m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
+		if (m_iBlindingDamageAdj == 0)
 			{
 			if (iLevel < BLIND_IMMUNE_LEVEL)
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("blind immune")));
@@ -349,7 +346,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	if (!bCheckedEMP)
 		{
-		if (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune())
+		if (m_iEMPDamageAdj == 0)
 			{
 			if (iLevel < EMP_IMMUNE_LEVEL)
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("EMP immune")));
@@ -369,10 +366,10 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	if (!bCheckedDevice)
 		{
-		if (m_iDeviceDamageAdj < 100 || Mods.IsDeviceDamageImmune())
+		if (m_iDeviceDamageAdj < 100)
 			{
 			if (iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device protecting")));
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device protect")));
 			}
 		else if (iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL)
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("device vulnerable")));
@@ -380,51 +377,50 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	//	Disintegration
 
-	if (m_fDisintegrationImmune || Mods.IsDisintegrationImmune())
+	if (m_fDisintegrationImmune)
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("disintegration immune")));
 
 	//	Shatter
 
-	if (IsShatterImmune(ItemCtx))
+	if (m_fShatterImmune)
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shatter immune")));
 
 	//	Shield interference
 
-	if (m_fShieldInterference || Mods.IsShieldInterfering())
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("shield interfering")));
+	if (m_fShieldInterference)
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("no shields")));
 
 	//	Photo repair
 
-	if (m_fPhotoRepair || Mods.IsPhotoRegenerating())
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("photo-repair")));
+	if (m_fPhotoRepair)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("photo-regen")));
 
 	//	Solar power
 
-	if (m_fPhotoRecharge || Mods.IsPhotoRecharge())
+	if (m_fPhotoRecharge)
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("solar")));
 
 	//	Regeneration
 
-	if ((!m_Regen.IsEmpty() && !m_fPhotoRepair) || Mods.IsRegenerating())
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("regenerating")));
+	if (!m_Regen.IsEmpty() && !m_fPhotoRepair)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("regen")));
 
 	//	Decay
 
-	if (!m_Decay.IsEmpty() || Mods.IsDecaying())
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("decaying")));
+	if (!m_Decay.IsEmpty())
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("decay")));
 
 	//	Distribution
 
 	if (!m_Distribute.IsEmpty())
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("distributing")));
 
-	//	Reflection
+	//	Per damage-type bonuses
 
 	for (i = 0; i < damageCount; i++)
 		{
-		if (m_Reflective.InSet((DamageTypes)i)
-				|| (Mods.IsReflective() && Mods.GetDamageType() == i))
-			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
+		if (m_Reflective.InSet((DamageTypes)i))
+			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflect"), GetDamageShortName((DamageTypes)i))));
 		}
 	}
 

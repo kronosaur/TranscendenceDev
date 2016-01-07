@@ -5,6 +5,15 @@
 
 #include "PreComp.h"
 
+CItemCtx::~CItemCtx (void)
+
+//	CItemCtx destructor
+
+	{
+	if (m_pEnhancements)
+		m_pEnhancements->Delete();
+	}
+
 void CItemCtx::ClearItemCache (void)
 
 //	ClearItemCache
@@ -143,6 +152,31 @@ CDeviceClass *CItemCtx::GetDeviceClass(void)
 	//	Couldn't get it
 
 	return NULL;
+	}
+
+const CItemEnhancementStack *CItemCtx::GetEnhancementStack (void)
+
+//	GetEnhancementStack
+//
+//	Returns the enhancement stack for the given item. May return NULL.
+
+	{
+	//	If we have an installed device, then get the enhancement stack from it.
+
+	CInstalledDevice *pDevice = GetDevice();
+	if (pDevice)
+		return pDevice->GetEnhancements();
+
+	//	Otherwise, see if we've got a cached enhancement stack
+
+	if (m_pEnhancements)
+		return m_pEnhancements;
+
+	//	Otherwise, we need to create one from mods
+
+	m_pEnhancements = new CItemEnhancementStack;
+	m_pEnhancements->Insert(GetMods());
+	return m_pEnhancements;
 	}
 
 const CItem &CItemCtx::GetItem(void)

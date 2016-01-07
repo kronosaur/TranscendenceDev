@@ -688,22 +688,22 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 			&& m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("illegal")));
 
+	//	Add any enhancements
+
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	if (pEnhancements)
+		pEnhancements->AccumulateAttributes(Ctx, retList);
+
 	//	Add various engine-based attributes
+
+	if (IsEnhanced())
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
 
 	if (IsDamaged())
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("damaged")));
 
 	if (IsDisrupted())
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("ionized")));
-
-	//	Add any enhancements as a display attribute
-
-	CString sEnhanced = GetEnhancedDesc(Ctx.GetSource());
-	if (!sEnhanced.IsBlank())
-		{
-		bool bDisadvantage = (*(sEnhanced.GetASCIIZPointer()) == '-');
-		retList->Insert(SDisplayAttribute((bDisadvantage ? attribNegative : attribPositive), sEnhanced));
-		}
 
 	//	Done
 
@@ -757,7 +757,7 @@ CString CItem::GetEnhancedDesc (CSpaceObject *pInstalled) const
 	//	Otherwise, generic enhancement
 
 	else if (IsEnhanced())
-		return CONSTLIT("+Enhanced");
+		return CONSTLIT("+enhanced");
 
 	//	Otherwise, not enhanced
 
