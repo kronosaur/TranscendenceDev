@@ -64,6 +64,9 @@ class CCargoSpaceClass : public CDeviceClass
 		virtual int GetCargoSpace (void) { return m_iCargoSpace; }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList);
 
+	protected:
+		virtual CString OnGetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
+
 	private:
 		CCargoSpaceClass (void);
 
@@ -127,6 +130,13 @@ class CDriveClass : public CDeviceClass
 		virtual const DriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL);
 		virtual int GetPowerRating (CItemCtx &Ctx);
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList);
+
+	protected:
+
+		//	CDeviceClass virtuals
+
+		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList);
+		virtual CString OnGetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 
 	private:
 		CDriveClass (void);
@@ -222,6 +232,9 @@ class CReactorClass : public CDeviceClass
 		virtual const ReactorDesc *GetReactorDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL);
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return IsFuelCompatible(m_Desc, FuelItem); }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList);
+
+	protected:
+		virtual CString OnGetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 
 	private:
 		CReactorClass (void);

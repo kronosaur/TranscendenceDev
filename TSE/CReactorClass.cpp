@@ -217,6 +217,68 @@ bool CReactorClass::IsFuelCompatible (const ReactorDesc &Desc, const CItem &Fuel
 		}
 	}
 
+CString CReactorClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+
+//	OnGetReference
+//
+//	Returns a reference string.
+
+	{
+	CString sReference;
+
+	//	Get reactor stats
+
+	const ReactorDesc &Desc = *GetReactorDesc(Ctx.GetDevice(), Ctx.GetSource());
+
+	//	Power output
+
+	sReference = strPatternSubst(CONSTLIT("%s max output"), ReactorPower2String(Desc.iMaxPower));
+
+	//	Fuel level
+
+	int iMinLevel;
+	int iMaxLevel;
+	if (Desc.pFuelCriteria)
+		Desc.pFuelCriteria->GetExplicitLevelMatched(&iMinLevel, &iMaxLevel);
+	else
+		{
+		iMinLevel = Desc.iMinFuelLevel;
+		iMaxLevel = Desc.iMaxFuelLevel;
+		}
+
+	if (iMinLevel == -1 && iMaxLevel == -1)
+		;
+	else if (iMinLevel == iMaxLevel)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("fuel level %d"), iMinLevel));
+	else if (iMaxLevel == -1)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("fuel level %d-25"), iMinLevel));
+	else if (iMinLevel == -1)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("fuel level 1-%d"), iMaxLevel));
+	else
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("fuel level %d-%d"), iMinLevel, iMaxLevel));
+
+	//	Efficiency
+
+	if (Desc.rPowerPerFuelUnit != g_MWPerFuelUnit)
+		{
+		int iBonus = (int)(100.0 * ((Desc.rPowerPerFuelUnit / g_MWPerFuelUnit) - 1.0));
+		if (iBonus > 0)
+			{
+			int iRounded = 5 * ((iBonus + 2) / 5);
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("+%d%% efficiency"), iRounded));
+			}
+		else
+			{
+			int iRounded = 5 * ((iBonus - 2) / 5);
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%% efficiency"), iRounded));
+			}
+		}
+
+	//	Done
+
+	return sReference;
+	}
+
 void CReactorClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList)
 
 //	OnInstall

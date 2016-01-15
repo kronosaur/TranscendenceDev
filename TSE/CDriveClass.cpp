@@ -116,6 +116,48 @@ int CDriveClass::GetPowerRating (CItemCtx &Ctx)
 	return m_DriveDesc.iPowerUse;
 	}
 
+void CDriveClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+
+//	OnAccumulateAttributes
+//
+//	Returns display attributes
+
+	{
+	const DriveDesc &Desc = *GetDriveDesc(ItemCtx.GetDevice(), ItemCtx.GetSource());
+
+	//	Inertialess
+
+	if (Desc.fInertialess)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("inertialess")));
+	}
+
+CString CDriveClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+
+//	OnGetReference
+//
+//	Returns a reference string.
+
+	{
+	CString sReference;
+
+	//	Get the drive stats
+
+	const DriveDesc &Desc = *GetDriveDesc(Ctx.GetDevice(), Ctx.GetSource());
+
+	//	Max speed
+
+	int iSpeed = (int)(100.0 * Desc.rMaxSpeed / LIGHT_SPEED);
+	AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("max speed 0.%02dc"), iSpeed));
+
+	//	Thrust
+
+	AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("thrust %d"), Desc.iThrust));
+
+	//	Done
+
+	return sReference;
+	}
+
 void CDriveClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList)
 
 //	OnInstall

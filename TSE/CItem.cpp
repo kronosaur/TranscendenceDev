@@ -657,47 +657,50 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 	//	Add additional custom attributes
 
 	if (m_pItemType->IsKnown())
+		{
 		g_pUniverse->GetAttributeDesc().AccumulateAttributes(*this, retList);
 
-	CArmorClass *pArmor;
-	CDeviceClass *pDevice;
-	int iVariant;
+		CArmorClass *pArmor;
+		CDeviceClass *pDevice;
+		int iVariant;
 
-	//	Armor attributes
+		//	Armor attributes
 
-	if (pArmor = m_pItemType->GetArmorClass())
-		pArmor->AccumulateAttributes(Ctx, retList);
+		if (pArmor = m_pItemType->GetArmorClass())
+			pArmor->AccumulateAttributes(Ctx, retList);
 
-	//	Device attributes
+		//	Device attributes
 
-	else if (pDevice = m_pItemType->GetDeviceClass())
-		pDevice->AccumulateAttributes(Ctx, -1, retList);
+		else if (pDevice = m_pItemType->GetDeviceClass())
+			pDevice->AccumulateAttributes(Ctx, -1, retList);
 
-	//	Missile attributes
+		//	Missile attributes
 
-	else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher(&iVariant)))
-		pDevice->AccumulateAttributes(Ctx, iVariant, retList);
+		else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher(&iVariant)))
+			pDevice->AccumulateAttributes(Ctx, iVariant, retList);
 
-	//	Military and Illegal attributes
+		//	Military and Illegal attributes
 
-	if (m_pItemType->IsKnown()
-			&& m_pItemType->HasLiteralAttribute(CONSTLIT("Military")))
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("military")));
+		if (m_pItemType->IsKnown()
+				&& m_pItemType->HasLiteralAttribute(CONSTLIT("Military")))
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("military")));
 
-	if (m_pItemType->IsKnown()
-			&& m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("illegal")));
+		if (m_pItemType->IsKnown()
+				&& m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("illegal")));
 
-	//	Add any enhancements
+		//	Add any enhancements
 
-	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
-	if (pEnhancements)
-		pEnhancements->AccumulateAttributes(Ctx, retList);
+		const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+		if (pEnhancements)
+			pEnhancements->AccumulateAttributes(Ctx, retList);
 
-	//	Add various engine-based attributes
+		if (IsEnhanced())
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
+		}
 
-	if (IsEnhanced())
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
+	//	Add various engine-based attributes (these are shown even if the item 
+	//	type is unknown).
 
 	if (IsDamaged())
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("damaged")));
@@ -2525,6 +2528,43 @@ CItemCriteria::~CItemCriteria (void)
 	{
 	if (pFilter)
 		pFilter->Discard(&g_pUniverse->GetCC());
+	}
+
+bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const
+
+//	GetExplicitLevelMatched
+//
+//	Returns the min and max levels that this criteria matches, assuming that
+//	there are explicit level criteria. If not, we return FALSE. If min or max
+//	criteria are missing, we return -1.
+
+	{
+	if (iEqualToLevel != -1)
+		{
+		*retiMin = iEqualToLevel;
+		*retiMax = iEqualToLevel;
+		return true;
+		}
+	else if (iLessThanLevel == -1 && iGreaterThanLevel == -1)
+		{ 
+		*retiMin = -1;
+		*retiMax = -1;
+		return false;
+		}
+	else
+		{
+		if (iLessThanLevel != -1)
+			*retiMax = iLessThanLevel - 1;
+		else
+			*retiMax = -1;
+
+		if (iGreaterThanLevel != -1)
+			*retiMin = iGreaterThanLevel + 1;
+		else
+			*retiMin = -1;
+
+		return true;
+		}
 	}
 
 int CItemCriteria::GetMaxLevelMatched (void) const

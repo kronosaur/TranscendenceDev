@@ -53,6 +53,41 @@ bool CCargoSpaceClass::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
+CString CCargoSpaceClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+
+//	OnGetReference
+//
+//	Returns a reference string.
+
+	{
+	CString sReference;
+
+	//	If this item is installed on a ship, then take into account the maximum
+	//	cargo limits.
+
+	CSpaceObject *pObj;
+	CShip *pShip;
+	CShipClass *pClass;
+	if (Ctx.GetItem().IsInstalled()
+			&& (pObj = Ctx.GetSource())
+			&& (pShip = pObj->AsShip())
+			&& (pClass = pShip->GetClass()))
+		{
+		int iCargoInc = Min(m_iCargoSpace, pClass->GetMaxCargoSpace() - pClass->GetCargoSpace());
+		if (iCargoInc > 0)
+			sReference = strPatternSubst(CONSTLIT("+%d ton capacity"), iCargoInc);
+		}
+
+	//	Otherwise, describe the full amount
+
+	else
+		sReference = strPatternSubst(CONSTLIT("%d ton capacity"), m_iCargoSpace);
+
+	//	Done
+
+	return sReference;
+	}
+
 void CCargoSpaceClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList)
 
 //	OnInstall

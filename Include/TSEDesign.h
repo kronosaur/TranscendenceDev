@@ -128,6 +128,7 @@ struct CItemCriteria
 
 	CItemCriteria &operator= (const CItemCriteria &Copy);
 
+	bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
 	int GetMaxLevelMatched (void) const;
 
 	DWORD dwItemCategories;			//	Set of ItemCategories to match on
