@@ -910,6 +910,28 @@ int CItemEnhancement::GetPowerAdj (void) const
 		}
 	}
 
+int CItemEnhancement::GetReflectChance (DamageTypes iDamage) const
+
+//	GetReflectChance
+//
+//	Returns chance of reflecting
+
+	{
+	switch (GetType())
+		{
+		case etReflect:
+			{
+			if (!IsDisadvantage() && iDamage == GetDamageType())
+				return 50 + (GetLevel() * 5);
+			else
+				return 0;
+			}
+
+		default:
+			return 0;
+		}
+	}
+
 SpecialDamageTypes CItemEnhancement::GetSpecialDamage (int *retiLevel) const
 
 //	GetSpecialDamage

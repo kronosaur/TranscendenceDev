@@ -1924,6 +1924,7 @@ class CItemEnhancement
 		inline int GetLevel2 (void) const { return (int)(DWORD)((m_dwMods & etData2Mask) >> 4); }
 		inline DWORD GetModCode (void) const { return m_dwMods; }
 		int GetPowerAdj (void) const;
+		int GetReflectChance (DamageTypes iDamage) const;
 		int GetResistEnergyAdj (void) const { return (GetType() == etResistEnergy ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
 		int GetResistMatterAdj (void) const { return (GetType() == etResistMatter ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
 		SpecialDamageTypes GetSpecialDamage (int *retiLevel = NULL) const;
@@ -2000,10 +2001,12 @@ class CItemEnhancementStack
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
 		int CalcActivateDelay (CItemCtx &DeviceCtx) const;
 		void Delete (void);
+		int GetAbsorbAdj (const DamageDesc &Damage) const;
 		int GetActivateDelayAdj (void) const;
 		int GetBonus (void) const;
 		inline int GetCount (void) const { return m_Stack.GetCount(); }
 		const DamageDesc &GetDamage (void) const;
+		int GetDamageAdj (const DamageDesc &Damage) const;
 		int GetPowerAdj (void) const;
 		int GetResistDamageAdj (DamageTypes iDamage) const;
 		int GetResistEnergyAdj (void) const;
@@ -2023,7 +2026,7 @@ class CItemEnhancementStack
 		bool IsRegenerating (void) const;
 		bool IsShatterImmune (void) const;
 		bool IsShieldInterfering (void) const;
-		bool ReflectsDamage (DamageTypes iDamage) const;
+		bool ReflectsDamage (DamageTypes iDamage, int *retiChance = NULL) const;
 		bool RepairOnDamage (DamageTypes iDamage) const;
 
 		static void ReadFromStream (SLoadCtx &Ctx, CItemEnhancementStack **retpStack);
@@ -3768,6 +3771,7 @@ class CItemCtx
 		CInstalledArmor *GetArmor (void);
 		CArmorClass *GetArmorClass (void);
 		CInstalledDevice *GetDevice (void);
+		int GetDeviceCharges (void);
 		CDeviceClass *GetDeviceClass (void);
 		const CItemEnhancementStack *GetEnhancementStack (void);
 		const CItem &GetItem (void);

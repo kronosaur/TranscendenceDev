@@ -168,6 +168,15 @@
 #define ERR_UNKNOWN_EQUIPMENT_DIRECTIVE			CONSTLIT("unknown equipment directive: %s")
 
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
+#define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
+#define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
+#define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
+#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
+#define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
+#define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
+#define PROPERTY_POWER							CONSTLIT("power")
+#define PROPERTY_THRUST							CONSTLIT("thrust")
+#define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
@@ -2018,7 +2027,6 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		GetDriveDesc(&Drive);
 		*retsValue = strFromInt(Drive.iPowerUse);
 		}
-
 	else if (CReactorClass::FindDataField(m_ReactorDesc, sField, retsValue))
 		return true;
 	else
@@ -3536,6 +3544,47 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 		return (m_pDefaultSovereign.GetUNID() ? CC.CreateInteger(m_pDefaultSovereign.GetUNID()) : CC.CreateNil());
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return CC.CreateInteger(GetMaxStructuralHitPoints());
+
+	//	Drive properties
+
+	else if (strEquals(sProperty, PROPERTY_THRUST_TO_WEIGHT))
+		{
+		DriveDesc Drive;
+		GetDriveDesc(&Drive);
+
+		Metric rMass = CalcMass(m_AverageDevices);
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? Drive.iThrust / rMass : 0.0)) + 0.5);
+		return CC.CreateInteger(10 * iRatio);
+		}
+
+	else if (strEquals(sProperty, PROPERTY_DRIVE_POWER)
+			|| strEquals(sProperty, PROPERTY_MAX_SPEED)
+			|| strEquals(sProperty, PROPERTY_THRUST))
+		{
+		DriveDesc Drive;
+		GetDriveDesc(&Drive);
+
+		return CDriveClass::GetDriveProperty(Drive, sProperty);
+		}
+
+	//	Reactor properties
+
+	else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY)
+			|| strEquals(sProperty, PROPERTY_FUEL_CRITERIA)
+			|| strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY)
+			|| strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY_BONUS)
+			|| strEquals(sProperty, PROPERTY_POWER))
+		{
+		CDeviceClass *pDevice = m_AverageDevices.GetNamedDevice(devReactor);
+		if (pDevice)
+			{
+			CItem ReactorItem(pDevice->GetItemType(), 1);
+			CItemCtx ItemCtx(ReactorItem);
+			return pDevice->GetItemProperty(ItemCtx, sProperty);
+			}
+		else
+			return CReactorClass::GetReactorProperty(*GetReactorDesc(), sProperty);
+		}
 	else
 		return NULL;
 	}

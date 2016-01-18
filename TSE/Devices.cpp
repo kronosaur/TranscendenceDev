@@ -36,6 +36,7 @@
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_POS							CONSTLIT("pos")
+#define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 
 struct SStdDeviceStats
@@ -517,6 +518,9 @@ ICCItem *CDeviceClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
 		return pResult;
 		}
+
+	else if (strEquals(sName, PROPERTY_POWER))
+		return CC.CreateInteger(GetPowerRating(Ctx) * 100);
 
 	else if (strEquals(sName, PROPERTY_SECONDARY))
 		return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());

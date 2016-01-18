@@ -116,14 +116,14 @@ int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 	{
 	int i;
 
-	CInstalledDevice *pDevice = DeviceCtx.GetDevice();
-	if (pDevice == NULL)
+	CDeviceClass *pClass = DeviceCtx.GetDeviceClass();
+	if (pClass == NULL)
 		return 0;
 
 	//	Get the raw activation delay. NOTE: This DOES NOT include
 	//	any enhancements on the item.
 
-	Metric rDelay = pDevice->GetClass()->GetActivateDelay(pDevice, DeviceCtx.GetSource());
+	Metric rDelay = pClass->GetActivateDelay(DeviceCtx.GetDevice(), DeviceCtx.GetSource());
 
 	//	Apply enhancements (including on the item itself)
 
@@ -182,6 +182,29 @@ void CItemEnhancementStack::Delete (void)
 		delete this;
 	}
 
+int CItemEnhancementStack::GetAbsorbAdj (const DamageDesc &Damage) const
+
+//	GetAbsorbAdj
+//
+//	Compute the absorb adjustment (for shields)
+
+	{
+	int i;
+
+	Metric rValue = 100.0;
+
+	//	Apply enhancements (including on the item itself)
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iAdj = m_Stack[i].GetAbsorbAdj(Damage);
+		if (iAdj != 100)
+			rValue = iAdj * rValue / 100.0;
+		}
+
+	return (int)(rValue + 0.5);
+	}
+
 int CItemEnhancementStack::GetActivateDelayAdj (void) const
 
 //	GetActivateDelayAdj
@@ -230,6 +253,29 @@ const DamageDesc &CItemEnhancementStack::GetDamage (void) const
 		CalcCache();
 
 	return m_Damage;
+	}
+
+int CItemEnhancementStack::GetDamageAdj (const DamageDesc &Damage) const
+
+//	GetDamageAdj
+//
+//	Compute the damage adjustment
+
+	{
+	int i;
+
+	Metric rValue = 100.0;
+
+	//	Apply enhancements (including on the item itself)
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iAdj = m_Stack[i].GetDamageAdj(Damage);
+		if (iAdj != 100)
+			rValue = iAdj * rValue / 100.0;
+		}
+
+	return (int)(rValue + 0.5);
 	}
 
 int CItemEnhancementStack::GetPowerAdj (void) const
@@ -557,7 +603,7 @@ void CItemEnhancementStack::ReadFromStream (SLoadCtx &Ctx, CItemEnhancementStack
 	*retpStack = pStack;
 	}
 
-bool CItemEnhancementStack::ReflectsDamage (DamageTypes iDamage) const
+bool CItemEnhancementStack::ReflectsDamage (DamageTypes iDamage, int *retiChance) const
 
 //	ReflectsDamage
 //
@@ -566,11 +612,22 @@ bool CItemEnhancementStack::ReflectsDamage (DamageTypes iDamage) const
 	{
 	int i;
 
-	for (i = 0; i < m_Stack.GetCount(); i++)
-		if (m_Stack[i].IsReflective() && m_Stack[i].GetDamageType() == iDamage)
-			return true;
+	if (retiChance)
+		*retiChance = 0;
 
-	return false;
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iChance = m_Stack[i].GetReflectChance(iDamage);
+		if (iChance > 0)
+			{
+			if (retiChance)
+				*retiChance = Max(iChance, *retiChance);
+			else
+				return true;
+			}
+		}
+
+	return (retiChance ? (*retiChance > 0) : false);
 	}
 
 bool CItemEnhancementStack::RepairOnDamage (DamageTypes iDamage) const

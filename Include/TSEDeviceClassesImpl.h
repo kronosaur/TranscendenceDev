@@ -16,6 +16,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		virtual ItemCategories GetImplCategory (void) const { return itemcatMiscDevice; }
 		virtual int GetDamageType (CInstalledDevice *pDevice = NULL, int iVariant = -1);
+		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sProperty);
 		virtual int GetPowerRating (CItemCtx &Ctx);
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const;
 		virtual bool IsAutomatedWeapon (void) { return true; }
@@ -122,12 +123,14 @@ class CDriveClass : public CDeviceClass
 	{
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDrive);
+		static ICCItem *GetDriveProperty (const DriveDesc &Desc, const CString &sProperty);
 
 		//	CDeviceClass virtuals
 
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
 		virtual ItemCategories GetImplCategory (void) const { return itemcatDrive; }
 		virtual const DriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL);
+		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sProperty);
 		virtual int GetPowerRating (CItemCtx &Ctx);
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList);
 
@@ -221,6 +224,7 @@ class CReactorClass : public CDeviceClass
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
 
 		static bool FindDataField (const ReactorDesc &Desc, const CString &sField, CString *retsValue);
+		static ICCItem *GetReactorProperty (const ReactorDesc &Desc, const CString &sProperty);
 		static ALERROR InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc, ReactorDesc *retDesc, bool bShipClass = false);
 		static bool IsFuelCompatible (const ReactorDesc &Desc, const CItem &FuelItem);
 
@@ -229,6 +233,7 @@ class CReactorClass : public CDeviceClass
 		virtual bool CanBeDisabled (CItemCtx &Ctx) { return false; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
 		virtual ItemCategories GetImplCategory (void) const { return itemcatReactor; }
+		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		virtual const ReactorDesc *GetReactorDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL);
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return IsFuelCompatible(m_Desc, FuelItem); }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList);
@@ -238,6 +243,8 @@ class CReactorClass : public CDeviceClass
 
 	private:
 		CReactorClass (void);
+
+		static int GetEfficiencyBonus (const ReactorDesc &Desc);
 
 		ReactorDesc m_Desc;
 		ReactorDesc m_DamagedDesc;
@@ -349,9 +356,9 @@ class CShieldClass : public CDeviceClass
 		int FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource, int iMaxHP) const;
 		void FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		void FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pSource);
-		int GetDamageAdj (CItemEnhancement Mods, const DamageDesc &Damage) const;
-		int GetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource);
-		int GetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource);
+		int GetDamageAdj (const DamageDesc &Damage, const CItemEnhancementStack *pEnhancements) const;
+		int GetHPLeft (CItemCtx &Ctx);
+		int GetMaxHP (CItemCtx &Ctx);
 		bool UpdateDepleted (CInstalledDevice *pDevice);
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, int iHP);
@@ -523,11 +530,12 @@ class CWeaponClass : public CDeviceClass
 
 		CWeaponClass (void);
 
+		int CalcActivateDelay (CItemCtx &ItemCtx);
 		int CalcBalance (int iVariant);
 		int CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, CVector *ShotPosOffset, int *ShotDir, bool bSetAlternating);
 		Metric CalcConfigurationMultiplier (CWeaponFireDesc *pShot = NULL, bool bIncludeFragments = true) const;
-		Metric CalcDamage (CWeaponFireDesc *pShot, bool bWMDAdj = false) const;
-		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, bool bWMDAdj = false) const;
+		Metric CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, bool bWMDAdj = false) const;
+		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, bool bWMDAdj = false) const;
 		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc);
 		EOnFireWeaponResults FireOnFireWeapon (CItemCtx &ItemCtx, 
 											   CWeaponFireDesc *pShot,

@@ -59,18 +59,27 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_DOCKED_AT_ID					CONSTLIT("dockedAtID")
 #define PROPERTY_DOCKING_ENABLED				CONSTLIT("dockingEnabled")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
+#define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
+#define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
+#define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
+#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
+#define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
 #define PROPERTY_MAX_INTERIOR_HP				CONSTLIT("maxInteriorHP")
+#define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
 #define PROPERTY_OPERATING_SPEED				CONSTLIT("operatingSpeed")
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
+#define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 #define PROPERTY_SELECTED_LAUNCHER				CONSTLIT("selectedLauncher")
 #define PROPERTY_SELECTED_MISSILE				CONSTLIT("selectedMissile")
 #define PROPERTY_SELECTED_WEAPON				CONSTLIT("selectedWeapon")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+#define PROPERTY_THRUST							CONSTLIT("thrust")
+#define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 
 #define SPEED_HALF								CONSTLIT("half")
 #define SPEED_FULL								CONSTLIT("full")
@@ -2922,6 +2931,42 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			}
 
 		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
+		}
+
+	//	Drive properties
+
+	else if (strEquals(sName, PROPERTY_DRIVE_POWER))
+		return CC.CreateInteger(m_pDriveDesc->iPowerUse * 100);
+
+	else if (strEquals(sName, PROPERTY_MAX_SPEED))
+		return CC.CreateInteger((int)((100.0 * m_rMaxSpeed / LIGHT_SPEED) + 0.5));
+
+	else if (strEquals(sName, PROPERTY_THRUST))
+		return CC.CreateInteger(m_iThrust);
+
+	else if (strEquals(sName, PROPERTY_THRUST_TO_WEIGHT))
+		{
+		Metric rMass = GetMass();
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_iThrust / rMass : 0.0)) + 0.5);
+		return CC.CreateInteger(10 * iRatio);
+		}
+
+	//	Reactor properties
+
+	else if (strEquals(sName, PROPERTY_FUEL_CAPACITY)
+			|| strEquals(sName, PROPERTY_FUEL_CRITERIA)
+			|| strEquals(sName, PROPERTY_FUEL_EFFICIENCY)
+			|| strEquals(sName, PROPERTY_FUEL_EFFICIENCY_BONUS)
+			|| strEquals(sName, PROPERTY_POWER))
+		{
+		CInstalledDevice *pReactor = GetNamedDevice(devReactor);
+		if (pReactor)
+			{
+			CItemCtx ItemCtx(this, pReactor);
+			return pReactor->GetClass()->GetItemProperty(ItemCtx, sName);
+			}
+		else
+			return CReactorClass::GetReactorProperty(*m_pClass->GetReactorDesc(), sName);
 		}
 	else
 		return CSpaceObject::GetProperty(Ctx, sName);

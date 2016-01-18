@@ -27,6 +27,7 @@
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
 #define MULTI_TARGET_ATTRIB						CONSTLIT("multiTarget")
+#define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define POS_ANGLE_ATTRIB						CONSTLIT("posAngle")
 #define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
@@ -68,10 +69,14 @@
 #define FIELD_SPEED								CONSTLIT("speed")
 #define FIELD_VARIANT_COUNT						CONSTLIT("variantCount")
 
+#define PROPERTY_AVERAGE_DAMAGE					CONSTLIT("averageDamage")	//	Average damage
+#define PROPERTY_DAMAGE_180						CONSTLIT("damage")			//	HP damage per 180 ticks
 #define PROPERTY_DAMAGE_PER_PROJECTILE			CONSTLIT("damagePerProjectile")
 #define PROPERTY_DAMAGE_WMD_180					CONSTLIT("damageWMD180")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
+#define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
+#define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
@@ -79,9 +84,6 @@
 static CObjectClass<CWeaponClass>g_Class(OBJID_CWEAPONCLASS, NULL);
 
 const int MAX_SHOT_COUNT =				100;
-
-static char g_FireRateAttrib[] = "fireRate";
-static char g_OmnidirectionalAttrib[] = "omnidirectional";
 
 const Metric g_DualShotSeparation =		12;					//	Radius of dual shot (pixels)
 const int TEMP_DECREASE =				-1;					//	Decrease in temp per cooling rate
@@ -261,6 +263,20 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 	return true;
 
 	DEBUG_CATCH
+	}
+
+int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx)
+
+//	CalcActivateDelay
+//
+//	Computes the activation delay, optionally dealing with enhancements.
+
+	{
+	const CItemEnhancementStack *pEnhancements = ItemCtx.GetEnhancementStack();
+	if (pEnhancements)
+		return pEnhancements->CalcActivateDelay(ItemCtx);
+
+	return m_iFireRate;
 	}
 
 int CWeaponClass::CalcBalance (int iVariant)
@@ -587,17 +603,13 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 	return rMult;
 	}
 
-Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, bool bWMDAdj) const
+Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements, bool bWMDAdj) const
 
 //	CalcDamage
 //
 //	Computes damage for the given weapon fire desc.
 
 	{
-	DWORD dwDamageFlags = 0;
-	if (bWMDAdj)
-		dwDamageFlags |= DamageDesc::flagWMDAdj;
-
 	//	If we have fragments we need to recurse
 
 	if (pShot->HasFragments())
@@ -624,7 +636,7 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, bool bWMDAdj) const
 
 			//	Add up values
 
-			rTotal += rHitFraction * pFragment->Count.GetAveValueFloat() * CalcDamage(pFragment->pDesc);
+			rTotal += rHitFraction * pFragment->Count.GetAveValueFloat() * CalcDamage(pFragment->pDesc, pEnhancements, bWMDAdj);
 
 			pFragment = pFragment->pNext;
 			}
@@ -634,6 +646,10 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, bool bWMDAdj) const
 	else
 		{
 		Metric rDamage;
+
+		DWORD dwDamageFlags = 0;
+		if (bWMDAdj)
+			dwDamageFlags |= DamageDesc::flagWMDAdj;
 
 		//	Average damage depends on type
 
@@ -679,20 +695,25 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, bool bWMDAdj) const
 				}
 			}
 
+		//	Adjust for enhancements
+
+		if (pEnhancements)
+			rDamage += (rDamage * pEnhancements->GetBonus() / 100.0);
+
 		//	Done
 
 		return rDamage;
 		}
 	}
 
-Metric CWeaponClass::CalcDamagePerShot (CWeaponFireDesc *pShot, bool bWMDAdj) const
+Metric CWeaponClass::CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements, bool bWMDAdj) const
 
 //	CalcDamagePerShot
 //
 //	Returns average damage per shot
 
 	{
-	return CalcConfigurationMultiplier(pShot, false) * CalcDamage(pShot, bWMDAdj);
+	return CalcConfigurationMultiplier(pShot, false) * CalcDamage(pShot, pEnhancements, bWMDAdj);
 	}
 
 int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc)
@@ -1011,7 +1032,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 
 	//	Flags
 
-	pWeapon->m_bOmnidirectional = pDesc->GetAttributeBool(CONSTLIT(g_OmnidirectionalAttrib));
+	pWeapon->m_bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
 	pWeapon->m_bMIRV = pDesc->GetAttributeBool(MULTI_TARGET_ATTRIB);
 
 	//	If we have a Missiles tag then this weapon has ammunition; otherwise,
@@ -1278,7 +1299,7 @@ CWeaponClass::EOnFireWeaponResults CWeaponClass::FireOnFireWeapon (CItemCtx &Ite
 		{
 		CCodeChainCtx Ctx;
 		EOnFireWeaponResults iResult;
-		CItemEnhancementStack *pEnhancement = ItemCtx.GetDevice()->GetEnhancements();
+		const CItemEnhancementStack *pEnhancement = ItemCtx.GetEnhancementStack();
 
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
@@ -1905,6 +1926,10 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	if (iVariant == -1)
 		iVariant = 0;
 
+	//	Enhancements
+
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+
 	//	Get the shot
 
 	CWeaponFireDesc *pShot = GetVariant(iVariant);
@@ -1914,13 +1939,24 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	//	Get the property
 
 	ICCItem *pResult;
-	if (strEquals(sProperty, PROPERTY_DAMAGE_PER_PROJECTILE))
-		return CC.CreateDouble(CalcDamage(pShot));
+	if (strEquals(sProperty, PROPERTY_AVERAGE_DAMAGE))
+		return CC.CreateDouble(CalcDamagePerShot(pShot, pEnhancements));
+
+	else if (strEquals(sProperty, PROPERTY_DAMAGE_180))
+		{
+		Metric rDamagePerShot = CalcDamagePerShot(pShot, pEnhancements);
+		int iDelay = CalcActivateDelay(Ctx);
+		return CC.CreateInteger(iDelay > 0 ? (int)((rDamagePerShot * 180.0 / iDelay) + 0.5) : (int)(rDamagePerShot + 0.5));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_DAMAGE_PER_PROJECTILE))
+		return CC.CreateDouble(CalcDamage(pShot, pEnhancements));
 
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_WMD_180))
 		{
-		Metric rDamagePerShot = CalcDamagePerShot(pShot, true);
-		return CC.CreateInteger(m_iFireRate > 0 ? (int)((rDamagePerShot * 180.0 / m_iFireRate) + 0.5) : (int)(rDamagePerShot + 0.5));
+		Metric rDamagePerShot = CalcDamagePerShot(pShot, pEnhancements, true);
+		int iDelay = CalcActivateDelay(Ctx);
+		return CC.CreateInteger(iDelay > 0 ? (int)((rDamagePerShot * 180.0 / iDelay) + 0.5) : (int)(rDamagePerShot + 0.5));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_ARC))
@@ -1962,6 +1998,18 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 			else
 				return CC.CreateInteger(iFacingAngle);
 			}
+		}
+
+	else if (strEquals(sProperty, PROPERTY_FIRE_DELAY))
+		return CC.CreateInteger(CalcActivateDelay(Ctx));
+
+	else if (strEquals(sProperty, PROPERTY_FIRE_RATE))
+		{
+		Metric rDelay = CalcActivateDelay(Ctx);
+		if (rDelay <= 0.0)
+			return CC.CreateNil();
+
+		return CC.CreateInteger((int)(1000.0 / rDelay));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))
@@ -2083,9 +2131,9 @@ int CWeaponClass::GetPowerRating (CItemCtx &Ctx)
 	{
 	int iPower = m_iPowerUse;
 
-	const CItemEnhancement &Mods = Ctx.GetMods();
-	if (Mods.IsNotEmpty())
-		iPower = iPower * Mods.GetPowerAdj() / 100;
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	if (pEnhancements)
+		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
 
 	return iPower;
 	}
@@ -2155,10 +2203,9 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 
 		//	Modify the damage based on any enhancements that the ship may have
 
-		if (pSource && pDevice)
-			Damage.AddEnhancements(pDevice->GetEnhancements());
-		else
-			Damage.AddBonus(Mods.GetHPBonus());
+		const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+		if (pEnhancements)
+			Damage.AddEnhancements(pEnhancements);
 
 		//	For shockwaves...
 

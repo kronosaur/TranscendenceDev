@@ -14,6 +14,9 @@
 
 #define MISSILES_TARGET							CONSTLIT("missiles")
 
+#define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
+#define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
+
 const int DEFAULT_INTERCEPT_RANGE =				10;
 
 CAutoDefenseClass::CAutoDefenseClass (void) : CDeviceClass(NULL)
@@ -61,6 +64,45 @@ int CAutoDefenseClass::GetDamageType (CInstalledDevice *pDevice, int iVariant)
 		return pWeapon->GetDamageType(pDevice, iVariant);
 	else
 		return damageGeneric;
+	}
+
+ICCItem *CAutoDefenseClass::GetItemProperty (CItemCtx &Ctx, const CString &sProperty)
+
+//	GetItemProperty
+//
+//	Returns the item property. Subclasses should call this if they do not
+//	understand the property.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	CDeviceClass *pWeapon = GetWeapon();
+	if (pWeapon == NULL)
+		return NULL;
+
+	//	Get the property
+
+	if (strEquals(sProperty, PROPERTY_FIRE_DELAY))
+		return CC.CreateInteger(m_iRechargeTicks);
+
+	else if (strEquals(sProperty, PROPERTY_FIRE_RATE))
+		{
+		Metric rDelay = m_iRechargeTicks;
+		if (rDelay <= 0.0)
+			return CC.CreateNil();
+
+		return CC.CreateInteger((int)(1000.0 / rDelay));
+		}
+
+	//	Otherwise, just get the property from the weapon we're using
+
+	else
+		{
+		CItem Weapon(pWeapon->GetItemType(), 1);
+		CItemCtx WeaponCtx(Weapon);
+
+		return pWeapon->GetItemProperty(WeaponCtx, sProperty);
+		}
 	}
 
 int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx)
