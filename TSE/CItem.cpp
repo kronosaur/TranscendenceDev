@@ -681,12 +681,10 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 		//	Military and Illegal attributes
 
-		if (m_pItemType->IsKnown()
-				&& m_pItemType->HasLiteralAttribute(CONSTLIT("Military")))
+		if (m_pItemType->HasLiteralAttribute(CONSTLIT("Military")))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("military")));
 
-		if (m_pItemType->IsKnown()
-				&& m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
+		if (m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("illegal")));
 
 		//	Add any enhancements
