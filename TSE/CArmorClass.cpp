@@ -62,6 +62,7 @@
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
 #define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
@@ -1308,6 +1309,12 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
+	//	Enhancements
+
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+
+	//	Get the property
+
 	if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return CC.CreateBool(IsBlindingDamageImmune(Ctx));
 
@@ -1334,6 +1341,9 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 		else
 			return CC.CreateInteger(GetMaxHP(Ctx));
 		}
+
+	else if (strEquals(sName, PROPERTY_HP_BONUS))
+		return m_DamageAdj.GetHPBonusProperty(pEnhancements);
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx));

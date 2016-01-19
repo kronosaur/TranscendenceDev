@@ -8,6 +8,7 @@
 class CDesignType;
 class CEconomyType;
 class CItemCtx;
+class CItemEnhancementStack;
 class CExtension;
 class CLocationDef;
 class COrbit;
@@ -666,6 +667,7 @@ class CDamageAdjDesc
 		inline int GetAdj (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? 100 : m_iDamageAdj[iDamageType]); }
 		void GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
 		int GetHPBonus (DamageTypes iDamageType) const;
+		ICCItem *GetHPBonusProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
 		ALERROR InitFromArray (int *pTable);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsDefault = false);
 
@@ -684,6 +686,7 @@ class CDamageAdjDesc
 			};
 
 		void Compute (const CDamageAdjDesc *pDefault);
+		int GetBonusFromAdj (int iDamageAdj, int iDefault) const;
 		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
 		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
 

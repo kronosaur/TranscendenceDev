@@ -530,12 +530,12 @@ class CWeaponClass : public CDeviceClass
 
 		CWeaponClass (void);
 
-		int CalcActivateDelay (CItemCtx &ItemCtx);
+		int CalcActivateDelay (CItemCtx &ItemCtx) const;
 		int CalcBalance (int iVariant);
 		int CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, CVector *ShotPosOffset, int *ShotDir, bool bSetAlternating);
 		Metric CalcConfigurationMultiplier (CWeaponFireDesc *pShot = NULL, bool bIncludeFragments = true) const;
-		Metric CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, bool bWMDAdj = false) const;
-		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, bool bWMDAdj = false) const;
+		Metric CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
+		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc);
 		EOnFireWeaponResults FireOnFireWeapon (CItemCtx &ItemCtx, 
 											   CWeaponFireDesc *pShot,

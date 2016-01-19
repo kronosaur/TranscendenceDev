@@ -78,6 +78,8 @@
 #define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
 #define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
+#define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
+#define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 
@@ -265,7 +267,7 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 	DEBUG_CATCH
 	}
 
-int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx)
+int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx) const
 
 //	CalcActivateDelay
 //
@@ -311,7 +313,7 @@ int CWeaponClass::CalcBalance (int iVariant)
 	else
 		Damage = pShot->m_Damage;
 
-	Metric rDamage = CalcConfigurationMultiplier(pShot) * Damage.GetAverageDamage();
+	Metric rDamage = CalcConfigurationMultiplier(pShot) * Damage.GetDamageValue();
 
 	//	Adjust the damage by fire rate (we end up with damage per standard fire rate)
 
@@ -603,7 +605,7 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 	return rMult;
 	}
 
-Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements, bool bWMDAdj) const
+Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements, DWORD dwDamageFlags) const
 
 //	CalcDamage
 //
@@ -636,7 +638,7 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 
 			//	Add up values
 
-			rTotal += rHitFraction * pFragment->Count.GetAveValueFloat() * CalcDamage(pFragment->pDesc, pEnhancements, bWMDAdj);
+			rTotal += rHitFraction * pFragment->Count.GetAveValueFloat() * CalcDamage(pFragment->pDesc, pEnhancements, dwDamageFlags);
 
 			pFragment = pFragment->pNext;
 			}
@@ -647,26 +649,22 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 		{
 		Metric rDamage;
 
-		DWORD dwDamageFlags = 0;
-		if (bWMDAdj)
-			dwDamageFlags |= DamageDesc::flagWMDAdj;
-
 		//	Average damage depends on type
 
 		switch (pShot->m_iFireType)
 			{
 			case ftArea:
 				//	Assume 1/8th damage points hit on average
-				rDamage = 0.125 * pShot->GetAreaDamageDensityAverage() * pShot->m_Damage.GetAverageDamage(dwDamageFlags);
+				rDamage = 0.125 * pShot->GetAreaDamageDensityAverage() * pShot->m_Damage.GetDamageValue(dwDamageFlags);
 				break;
 
 			case ftRadius:
 				//	Assume average target is far enough away to take half damage
-				rDamage = 0.5 * pShot->m_Damage.GetAverageDamage(dwDamageFlags);
+				rDamage = 0.5 * pShot->m_Damage.GetDamageValue(dwDamageFlags);
 				break;
 
 			default:
-				rDamage = pShot->m_Damage.GetAverageDamage(dwDamageFlags);
+				rDamage = pShot->m_Damage.GetDamageValue(dwDamageFlags);
 			}
 
 		//	If we have a capacitor, adjust damage
@@ -706,14 +704,14 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 		}
 	}
 
-Metric CWeaponClass::CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements, bool bWMDAdj) const
+Metric CWeaponClass::CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements, DWORD dwDamageFlags) const
 
 //	CalcDamagePerShot
 //
 //	Returns average damage per shot
 
 	{
-	return CalcConfigurationMultiplier(pShot, false) * CalcDamage(pShot, pEnhancements, bWMDAdj);
+	return CalcConfigurationMultiplier(pShot, false) * CalcDamage(pShot, pEnhancements, dwDamageFlags);
 	}
 
 int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc)
@@ -833,6 +831,8 @@ int CWeaponClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSourc
 //	Returns the power consumed
 
 	{
+	CItemCtx Ctx(pSource, pDevice);
+
 	if (!pDevice->IsEnabled())
 		return 0;
 
@@ -844,8 +844,9 @@ int CWeaponClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSourc
 
 	//	Adjust based on power efficiency enhancement
 
-	if (pDevice->GetMods().IsNotEmpty())
-		iPower = iPower * pDevice->GetMods().GetPowerAdj() / 100;
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	if (pEnhancements)
+		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
 
 	return iPower;
 	}
@@ -1954,7 +1955,7 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_WMD_180))
 		{
-		Metric rDamagePerShot = CalcDamagePerShot(pShot, pEnhancements, true);
+		Metric rDamagePerShot = CalcDamagePerShot(pShot, pEnhancements, DamageDesc::flagWMDAdj);
 		int iDelay = CalcActivateDelay(Ctx);
 		return CC.CreateInteger(iDelay > 0 ? (int)((rDamagePerShot * 180.0 / iDelay) + 0.5) : (int)(rDamagePerShot + 0.5));
 		}
@@ -2041,6 +2042,12 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
 		return pResult;
 		}
+
+	else if (strEquals(sProperty, PROPERTY_MAX_DAMAGE))
+		return CC.CreateDouble(CalcDamagePerShot(pShot, pEnhancements, DamageDesc::flagMaxDamage));
+
+	else if (strEquals(sProperty, PROPERTY_MIN_DAMAGE))
+		return CC.CreateDouble(CalcDamagePerShot(pShot, pEnhancements, DamageDesc::flagMinDamage));
 
 	else if (strEquals(sProperty, PROPERTY_OMNIDIRECTIONAL))
 		{
@@ -2172,15 +2179,9 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 	CString sReference;
 	CItemEnhancement Mods = Item.GetMods();
 
-	//	Get the root class. This is different from this class in the case of
-	//	autodefense devices, which embed a weapon.
-
-	CDeviceClass *pRootItem = Item.GetType()->GetDeviceClass();
-
 	//	Fire rate
 
-	int iFireRate = (pRootItem ? pRootItem->GetActivateDelay(pDevice, pSource) : m_iFireRate);
-	CString sFireRate = GetReferenceFireRate(pDevice ? pDevice->GetActivateDelay(pSource) : Mods.GetEnhancedRate(iFireRate));
+	CString sFireRate = GetReferenceFireRate(CalcActivateDelay(Ctx));
 
 	//	Compute the damage string and special string
 
@@ -2214,7 +2215,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 			//	Compute total damage. NOTE: For particle weapons the damage 
 			//	specified is the total damage if ALL particle were to hit.
 
-			Metric rDamage = SHOCKWAVE_DAMAGE_FACTOR * Damage.GetAverageDamage(DamageDesc::flagIncludeBonus);
+			Metric rDamage = SHOCKWAVE_DAMAGE_FACTOR * Damage.GetDamageValue(DamageDesc::flagIncludeBonus);
 
 			//	Calculate the radius of the shockwave
 
@@ -2261,7 +2262,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 			//	Compute total damage. NOTE: For particle weapons the damage 
 			//	specified is the total damage if ALL particle were to hit.
 
-			Metric rDamage = PARTICLE_CLOUD_DAMAGE_FACTOR * Damage.GetAverageDamage(DamageDesc::flagIncludeBonus);
+			Metric rDamage = PARTICLE_CLOUD_DAMAGE_FACTOR * Damage.GetDamageValue(DamageDesc::flagIncludeBonus);
 
 			//	Compute result
 
@@ -2281,7 +2282,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 			{
 			//	Compute total damage
 
-			Metric rDamage = FRAGMENT_DAMAGE_FACTOR * iFragments * Damage.GetAverageDamage(DamageDesc::flagIncludeBonus);
+			Metric rDamage = FRAGMENT_DAMAGE_FACTOR * iFragments * Damage.GetDamageValue(DamageDesc::flagIncludeBonus);
 
 			//	Compute radius
 
@@ -2369,7 +2370,7 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 				break;
 			}
 
-		Metric rDamage = pFragDesc->pDesc->m_Damage.GetAverageDamage() * iFragments;
+		Metric rDamage = pFragDesc->pDesc->m_Damage.GetDamageValue() * iFragments;
 		DamageTypes iDamageType = pFragDesc->pDesc->m_Damage.GetDamageType();
 		if (iDamageType > iBestDamageType 
 				|| (iDamageType == iBestDamageType && rDamage >= rBestDamage))

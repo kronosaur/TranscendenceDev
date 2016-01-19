@@ -430,7 +430,7 @@ class CWeaponFireDesc
 		inline CItemType *GetAmmoType (void) const { return m_pAmmoType; }
 		inline int GetAreaDamageDensity (void) const { return m_AreaDamageDensity.Roll(); }
 		inline Metric GetAreaDamageDensityAverage (void) const { return m_AreaDamageDensity.GetAveValueFloat(); }
-		inline Metric GetAveDamage (void) const { return m_Damage.GetAverageDamage(); }
+		inline Metric GetAveDamage (void) const { return m_Damage.GetDamageValue(); }
 		inline Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
 		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }

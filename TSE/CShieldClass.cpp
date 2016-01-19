@@ -40,6 +40,7 @@
 #define FIELD_WEAPON_SUPPRESS					CONSTLIT("weaponSuppress")
 
 #define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
@@ -981,10 +982,17 @@ ICCItem *CShieldClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
+	//	Enhancements
+
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+
 	//	Get the property
 
 	if (strEquals(sName, PROPERTY_HP))
 		return CC.CreateInteger(GetHPLeft(Ctx));
+
+	else if (strEquals(sName, PROPERTY_HP_BONUS))
+		return m_DamageAdj.GetHPBonusProperty(pEnhancements);
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx));

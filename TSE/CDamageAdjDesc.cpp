@@ -80,6 +80,31 @@ void CDamageAdjDesc::GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, in
 		*retiDefault = (m_pDefault ? m_pDefault->GetAdj(iDamageType) : 100);
 	}
 
+int CDamageAdjDesc::GetBonusFromAdj (int iDamageAdj, int iDefault) const
+
+//	GetBonusFromAdj
+//
+//	Converts a damage adjustment to a bonus
+
+	{
+	if (iDamageAdj == 0)
+		return -100;
+
+	int iBonus = (int)((100.0 * (iDefault - iDamageAdj) / iDamageAdj) + 0.5);
+
+	//	Prettify. Because of rounding-error, sometimes a bonus of +25 or -25 comes out as
+	//	+24 or -24. This is because we store a damage adjustment not the bonus.
+
+	if (((iBonus + 1) % 25) == 0)
+		iBonus++;
+	else if (((iBonus - 1) % 25) == 0)
+		iBonus--;
+	else if (iBonus == 48)
+		iBonus = 50;
+
+	return iBonus;
+	}
+
 int CDamageAdjDesc::GetHPBonus (DamageTypes iDamageType) const
 
 //	GetHPBonus
@@ -99,23 +124,41 @@ int CDamageAdjDesc::GetHPBonus (DamageTypes iDamageType) const
 		int iDamageAdj;
 
 		GetAdjAndDefault(iDamageType, &iDamageAdj, &iDefault);
-		if (iDamageAdj == 0)
-			return -100;
-
-		int iBonus = (int)((100.0 * (iDefault - iDamageAdj) / iDamageAdj) + 0.5);
-
-		//	Prettify. Because of rounding-error, sometimes a bonus of +25 or -25 comes out as
-		//	+24 or -24. This is because we store a damage adjustment not the bonus.
-
-		if (((iBonus + 1) % 25) == 0)
-			iBonus++;
-		else if (((iBonus - 1) % 25) == 0)
-			iBonus--;
-		else if (iBonus == 48)
-			iBonus = 50;
-
-		return iBonus;
+		return GetBonusFromAdj(iDamageAdj, iDefault);
 		}
+	}
+
+ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhancements) const
+
+//	GetHPBonusProperty
+//
+//	Returns an array of hp bonuses, one for each damage type
+
+	{
+	int i;
+
+	CCodeChain &CC = g_pUniverse->GetCC();
+	ICCItem *pResult = CC.CreateSymbolTable();
+
+	for (i = 0; i < damageCount; i++)
+		{
+		DamageTypes iDamageType = (DamageTypes)i;
+		DamageDesc Damage(iDamageType, DiceRange(0, 0, 1));
+
+		int iDefault;
+		int iDamageAdj;
+		GetAdjAndDefault(iDamageType, &iDamageAdj, &iDefault);
+		if (pEnhancements)
+			iDamageAdj = iDamageAdj * pEnhancements->GetDamageAdj(Damage) / 100;
+
+		int iBonus = GetBonusFromAdj(iDamageAdj, iDefault);
+		if (iBonus == -100)
+			pResult->SetStringAt(CC, ::GetDamageType(iDamageType), CONSTLIT("immune"));
+		else
+			pResult->SetIntegerAt(CC, ::GetDamageType(iDamageType), iBonus);
+		}
+
+	return pResult;
 	}
 
 ALERROR CDamageAdjDesc::InitFromArray (int *pTable)

@@ -1465,10 +1465,12 @@ class DamageDesc
 			flagNoDamageType =		0x00000002,
 			flagShockwaveDamage =	0x00000004,
 
-			//	GetAverageDamage
+			//	GetDamage
 
 			flagIncludeBonus =		0x00000008,
 			flagWMDAdj =			0x00000010,
+			flagMinDamage =			0x00000020,
+			flagMaxDamage =			0x00000040,
 			};
 
 		DamageDesc (void) { }
@@ -1501,10 +1503,10 @@ class DamageDesc
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
 		inline bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
-		Metric GetAverageDamage (DWORD dwFlags = 0) const;
 		inline DestructionTypes GetCause (void) const { return m_iCause; }
 		inline const DiceRange &GetDamageRange (void) const { return m_Damage; }
 		inline DamageTypes GetDamageType (void) const { return m_iType; }
+		Metric GetDamageValue (DWORD dwFlags = 0) const;
 		CString GetDesc (DWORD dwFlags = 0);
 		int GetMinDamage (void);
 		int GetMaxDamage (void);

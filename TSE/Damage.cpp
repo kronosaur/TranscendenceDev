@@ -293,14 +293,22 @@ ICCItem *DamageDesc::FindProperty (const CString &sName) const
 		return NULL;
 	}
 
-Metric DamageDesc::GetAverageDamage (DWORD dwFlags) const
+Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
 
-//	GetAverageDamage
+//	GetDamageValue
 //
-//	Returns the average damage
-	
+//	Returns the damage in HP
+
 	{
-	Metric rDamage = m_Damage.GetAveValueFloat();
+	//	Get the damage value based on what we're looking for
+
+	Metric rDamage;
+	if (dwFlags & flagMinDamage)
+		rDamage = m_Damage.GetMinValue();
+	else if (dwFlags & flagMaxDamage)
+		rDamage = m_Damage.GetMaxValue();
+	else
+		rDamage = m_Damage.GetAveValueFloat();
 
 	//	Adjust for bonus
 
@@ -473,7 +481,7 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 
 	if (dwFlags & flagAverageDamage)
 		{
-		Metric rDamage = GetAverageDamage(DamageDesc::flagIncludeBonus);
+		Metric rDamage = GetDamageValue(DamageDesc::flagIncludeBonus);
 
 		//	For shockwaves, we adjust for the fact that we might get hit multiple
 		//	times.
