@@ -494,12 +494,12 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	int iDamageLevel = Ctx.Damage.GetArmorDamageLevel();
 	if (iDamageLevel > 0)
-		Ctx.iDamage = (CalcArmorDamageAdj(Ctx.Damage) * Ctx.iDamage + 50) / 100;
+		Ctx.iDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(Ctx.Damage));
 
 	//	Adjust for damage type
 
 	int iDamageAdj = GetDamageAdj((pArmor ? pArmor->GetMods() : CItemEnhancement()), Ctx.Damage);
-	Ctx.iDamage = (iDamageAdj * Ctx.iDamage + 50) / 100;
+	Ctx.iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
 	}
 
 int CArmorClass::CalcArmorDamageAdj (const DamageDesc &Damage) const

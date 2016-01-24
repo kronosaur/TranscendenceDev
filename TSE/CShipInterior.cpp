@@ -25,7 +25,7 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 	//	Damage requires mass destruction power
 
 	int iWMD = Ctx.Damage.GetMassDestructionAdj();
-	Ctx.iDamage = Max(1, iWMD * Ctx.iDamage / 100);
+	Ctx.iDamage = Max(1, mathAdjust(Ctx.iDamage, iWMD));
 
 	//	See if we hit a device on the ship
 

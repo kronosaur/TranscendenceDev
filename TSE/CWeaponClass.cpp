@@ -1150,7 +1150,7 @@ bool CWeaponClass::FindDataField (int iVariant, const CString &sField, CString *
 	else if (strEquals(sField, FIELD_MAX_DAMAGE))
 		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->m_Damage.GetMaxDamage()));
 	else if (strEquals(sField, FIELD_DAMAGE_TYPE))
-		*retsValue = strFromInt(pShot->m_Damage.GetDamageType());
+		*retsValue = strFromInt(pShot->GetDamageType());
 	else if (strEquals(sField, FIELD_FIRE_DELAY))
 		*retsValue = strFromInt(m_iFireRate);
 	else if (strEquals(sField, FIELD_FIRE_RATE))

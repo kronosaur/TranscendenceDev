@@ -921,7 +921,7 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 
 		//	If this is a missile, then pass it to the weapon.
 
-		else if (GetType()->IsMissile() && Ctx.ResolveVariant())
+        else if (GetType()->IsMissile() && Ctx.ResolveVariant())
 			return Ctx.GetVariantDevice()->GetItemProperty(Ctx, sName);
 
 		//	Otherwise, from the type

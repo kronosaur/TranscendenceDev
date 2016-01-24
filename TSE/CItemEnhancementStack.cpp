@@ -117,7 +117,9 @@ int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 	int i;
 
 	CDeviceClass *pClass = DeviceCtx.GetDeviceClass();
-	if (pClass == NULL)
+    if (pClass == NULL)
+        pClass = DeviceCtx.GetVariantDevice();
+    if (pClass == NULL)
 		return 0;
 
 	//	Get the raw activation delay. NOTE: This DOES NOT include

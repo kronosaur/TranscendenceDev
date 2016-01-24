@@ -1746,13 +1746,13 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		//	If we don't have ejecta, the decrease damage to 0. 
 
 		if (m_pType->GetEjectaAdj() == 0
-				|| Ctx.Damage.GetMassDestructionAdj() == 0)
+			|| Ctx.Damage.GetMassDestructionAdj() == 0)
 			Ctx.iDamage = 0;
 
 		//	Otherwise, adjust for WMD
 
 		else
-			Ctx.iDamage = Max(1, Ctx.Damage.GetMassDestructionAdj() * Ctx.iDamage / 100);
+			Ctx.iDamage = Max(1, mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj()));
 
 		//	Hit effect
 
@@ -1814,7 +1814,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		//	Once the station is abandoned, only WMD damage can destroy it
 
 		if (Ctx.Damage.GetMassDestructionAdj() > 0)
-			Ctx.iDamage = Max(1, Ctx.Damage.GetMassDestructionAdj() * Ctx.iDamage / 100);
+			Ctx.iDamage = Max(1, mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj()));
 		else
 			Ctx.iDamage = 0;
 
@@ -1945,7 +1945,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	if (Ctx.iDamage > 0 && m_pType->IsMultiHull())
 		{
 		int iWMD = Ctx.Damage.GetMassDestructionAdj();
-		Ctx.iDamage = Max(1, iWMD * Ctx.iDamage / 100);
+		Ctx.iDamage = Max(1, mathAdjust(Ctx.iDamage, iWMD));
 		}
 
 	//	Hit effect

@@ -133,14 +133,14 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	//	Calculate how much we will absorb
 
 	int iAbsorbAdj = (Ctx.Damage.GetDamageType() == damageGeneric ? 100 : m_iAbsorbAdj[Ctx.Damage.GetDamageType()]);
-	Ctx.iAbsorb = (Ctx.iDamage * iAbsorbAdj) / 100;
+	Ctx.iAbsorb = mathAdjust(Ctx.iDamage, iAbsorbAdj);
 	if (pEnhancements)
-		Ctx.iAbsorb = Ctx.iAbsorb * pEnhancements->GetAbsorbAdj(Ctx.Damage) / 100;
+		Ctx.iAbsorb = mathAdjust(Ctx.iAbsorb, pEnhancements->GetAbsorbAdj(Ctx.Damage));
 
 	//	Compute how much damage we take (based on the type of damage)
 
 	int iAdj = GetDamageAdj(Ctx.Damage, pEnhancements);
-	Ctx.iShieldDamage = (Ctx.iAbsorb * iAdj) / 100;
+	Ctx.iShieldDamage = mathAdjust(Ctx.iAbsorb, iAdj);
 
 	//	If shield generator is damaged then sometimes we take extra damage
 
@@ -149,7 +149,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		int iRoll = mathRandom(1, 100);
 
 		if (iRoll <= 10)
-			Ctx.iAbsorb = 75 * Ctx.iAbsorb / 100;
+			Ctx.iAbsorb = mathAdjust(Ctx.iAbsorb, 75);
 		else if (iRoll <= 25)
 			Ctx.iShieldDamage *= 2;
 		}
