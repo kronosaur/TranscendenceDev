@@ -7,6 +7,31 @@
 
 DWORD g_Seed = 0;
 
+int mathAdjust (int iValue, int iPercent)
+
+//	mathAdjust
+//
+//	Alters iValue such that:
+//
+//	result = (iValue * iPercent) / 100
+//
+//	But since this is an integer result, we can't express the actual real value.
+//	Instead, we stochastically add 1 to average out to the real value over
+//	multiple tries.
+
+	{
+	if (iPercent == 100)
+		return iValue;
+	else
+		{
+		int iA = (iValue * iPercent);
+		int iWhole = iA / 100;
+		int iFraction = iA % 100;
+
+		return iWhole + (mathRandom(1, 100) <= iFraction ? 1 : 0);
+		}
+	}
+
 DWORD mathGetSeed (void)
 
 //	mathGetSeed
