@@ -1056,7 +1056,7 @@ int CShieldClass::GetMaxHP (CItemCtx &Ctx)
 	return iMax;
 	}
 
-int CShieldClass::GetPowerRating (CItemCtx &Ctx)
+int CShieldClass::GetPowerRating (CItemCtx &Ctx) const
 
 //	GetPowerRating
 //

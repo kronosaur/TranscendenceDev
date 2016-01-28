@@ -1185,6 +1185,41 @@ Metric CWeaponFireDesc::GetInitialSpeed (void) const
 		return GetRatedSpeed();
 	}
 
+Metric CWeaponFireDesc::GetMaxRange (void) const
+
+//  GetMaxRange
+//
+//  Returns the maximum possible range.
+
+    {
+    Metric rRange;
+
+    //  Compute lifetime
+
+    Metric rMaxLifetime = Ticks2Seconds(m_Lifetime.GetMaxValue());
+
+	//	Compute max effective range
+
+    if (m_iFireType == ftArea)
+        rRange = (m_ExpansionSpeed.GetAveValueFloat() * LIGHT_SECOND / 100.0) * rMaxLifetime;
+	else if (m_iFireType == ftRadius)
+		rRange = m_rMaxRadius;
+	else
+		{
+		Metric rSpeed = (m_rMissileSpeed + m_rMaxMissileSpeed) / 2;
+		rRange = rSpeed * rMaxLifetime;
+		}
+
+	//	If we have fragments, add to the effective range
+
+    if (m_pFirstFragment)
+        rRange += m_pFirstFragment->pDesc->GetMaxRange();
+
+    //  Done
+
+    return rRange;
+    }
+
 CEffectCreator *CWeaponFireDesc::GetParticleEffect (void) const
 
 //	GetParticleEffect
@@ -1481,6 +1516,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	//	Initialize some variables not used by all types
 
 	m_iHitPoints = 0;
+    m_iInteraction = 100;
 
 	//	Load specific properties
 

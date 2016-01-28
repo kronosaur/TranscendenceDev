@@ -507,6 +507,45 @@ ItemCategories CItemType::GetCategoryForNamedDevice (DeviceNames iDev)
 	return itemcatMiscDevice;
 	}
 
+CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) const
+
+//  GetCurrencyAndValue
+//
+//  Returns the value of the item and its currency.
+
+    {
+	//	NOTE: We have got that guaranteed m_pUnknownType is non-NULL if IsKnown is FALSE.
+
+	if (!IsKnown() && !bActual)
+		return m_pUnknownType->GetCurrencyAndValue(Ctx);
+
+	//	Value in the item's currency.
+
+	CurrencyValue iValue = m_iValue.GetValue();
+
+	//	If we need to account for charges, then do it
+
+	if (m_iExtraValuePerCharge != 0)
+		{
+		if (Ctx.IsItemNull())
+			iValue = Max((CurrencyValue)0, iValue + (m_InitDataValue.GetAveValue() * m_iExtraValuePerCharge));
+		else
+			iValue = Max((CurrencyValue)0, iValue + (Ctx.GetItem().GetCharges() * m_iExtraValuePerCharge));
+		}
+
+	else if (m_fValueCharges && !Ctx.IsItemNull())
+		{
+		int iMaxCharges = GetMaxCharges();
+
+		if (iMaxCharges > 0)
+			iValue = (iValue * (1 + Ctx.GetItem().GetCharges())) / (1 + iMaxCharges);
+		}
+
+    //  Done
+
+    return CCurrencyAndValue(iValue, m_iValue.GetCurrencyType());
+    }
+
 const CString &CItemType::GetDesc (void) const
 
 //	GetDesc
@@ -805,48 +844,6 @@ bool CItemType::GetUseDesc (SUseDesc *retDesc) const
 
 	else
 		return false;
-	}
-
-int CItemType::GetValue (CItemCtx &Ctx, bool bActual) const
-
-//	GetValue
-//
-//	Returns the value of the item in its currency
-
-	{
-	//	NOTE: We have got that guaranteed m_pUnknownType is non-NULL if IsKnown is FALSE.
-
-	if (!IsKnown() && !bActual)
-		return m_pUnknownType->GetValue(Ctx);
-
-	//	Value in the item's currency.
-
-	int iValue = (int)m_iValue.GetValue();
-
-	//	If we need to account for charges, then do it
-
-	if (m_iExtraValuePerCharge != 0)
-		{
-		if (Ctx.IsItemNull())
-			return Max(0, iValue + (m_InitDataValue.GetAveValue() * m_iExtraValuePerCharge));
-		else
-			return Max(0, iValue + (Ctx.GetItem().GetCharges() * m_iExtraValuePerCharge));
-		}
-
-	else if (m_fValueCharges && !Ctx.IsItemNull())
-		{
-		int iMaxCharges = GetMaxCharges();
-
-		if (iMaxCharges > 0)
-			return (iValue * (1 + Ctx.GetItem().GetCharges())) / (1 + iMaxCharges);
-		else
-			return iValue;
-		}
-
-	//	Otherwise, just the fixed price
-
-	else
-		return iValue;
 	}
 
 void CItemType::InitComponents (void)

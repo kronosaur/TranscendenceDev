@@ -859,10 +859,8 @@ class CShip : public CSpaceObject
 		void SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered = true);
 		CDeviceClass *GetNamedDeviceClass (DeviceNames iDev);
 		CString GetReactorName (void);
-		inline int GetWeaponAimTolerance (DeviceNames iDev) { return 3; }
 		bool GetWeaponIsReady (DeviceNames iDev);
-		Metric GetWeaponRange (DeviceNames iDev) { return LIGHT_SPEED * 60.0; }
-		Metric GetWeaponSpeed (DeviceNames iDev) { return LIGHT_SPEED; }
+        Metric GetWeaponRange (DeviceNames iDev);
 		bool IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL, int *retiFacingAngle = NULL);
 
 		//	Settings

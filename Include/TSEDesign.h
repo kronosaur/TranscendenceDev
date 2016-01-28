@@ -1542,6 +1542,8 @@ class DamageDesc
 
 		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
+        static int GetDamageLevel (DamageTypes iType);
+        static int GetDamageTier (DamageTypes iType);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
 		static int GetMassDestructionLevelFromValue (int iValue) { return ((int)(iValue ? (2 * (iValue * iValue) + 2) : 0) + 5) / 10;  }
 
@@ -2531,14 +2533,14 @@ class CDeviceClass : public CObject
 		inline CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		int GetInstallCost (void);
-		inline CItemType *GetItemType (void) { return m_pItemType; }
+		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		inline int GetLevel (void) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void);
 		inline COverlayType *GetOverlayType(void) const { return m_pOverlayType; }
 		CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0);
 		CString GetReferencePower (CItemCtx &Ctx);
-		inline int GetSlotsRequired (void) { return m_iSlots; }
+		inline int GetSlotsRequired (void) const { return m_iSlots; }
 		inline DWORD GetUNID (void);
 		inline void MarkImages (void) { DEBUG_TRY OnMarkImages(); DEBUG_CATCH }
 
@@ -2555,7 +2557,7 @@ class CDeviceClass : public CObject
 		virtual bool CanBeDamaged (void) { return true; }
 		virtual bool CanBeDisabled (CItemCtx &Ctx) { return (GetPowerRating(Ctx) != 0); }
 		virtual bool CanHitFriends (void) { return true; }
-		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) { return false; }
+		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual bool FindDataField (int iVariant, const CString &sField, CString *retsValue) { return false; }
@@ -2565,14 +2567,14 @@ class CDeviceClass : public CObject
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) { return 0; }
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return NULL; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
-		virtual int GetDamageType (CInstalledDevice *pDevice = NULL, int iVariant = -1) { return damageGeneric; }
+		virtual DamageTypes GetDamageType (CInstalledDevice *pDevice = NULL, int iVariant = -1) const { return damageGeneric; }
 		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual bool GetDeviceEnhancementDesc (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return false; }
-		virtual const DriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) { return NULL; }
+		virtual const DriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) const { return NULL; }
 		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
-		virtual int GetPowerRating (CItemCtx &Ctx) { return 0; }
+		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
 		virtual const ReactorDesc *GetReactorDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) { return NULL; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const { return false; }
@@ -2587,7 +2589,7 @@ class CDeviceClass : public CObject
 		virtual bool IsAmmoWeapon (void) { return false; }
 		virtual bool IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 		virtual bool IsAutomatedWeapon (void) { return false; }
-		virtual bool IsExternal (void) { return (m_fExternal ? true : false); }
+		virtual bool IsExternal (void) const { return (m_fExternal ? true : false); }
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return false; }
 		virtual bool IsTrackingWeapon (CItemCtx &Ctx) { return false; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
@@ -3866,6 +3868,7 @@ class CItemType : public CDesignType
 		ItemCategories GetCategory (void) const;
 		inline int GetCharges (void) const { return (m_fInstanceData ? m_InitDataValue.Roll() : 0); }
 		inline const CItemList &GetComponents (void) const { return m_Components; }
+        CCurrencyAndValue GetCurrencyAndValue (CItemCtx &Ctx, bool bActual = false) const;
 		inline CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
 		inline const CString &GetData (void) const { return m_sData; }
 		const CString &GetDesc (void) const;
@@ -3890,7 +3893,7 @@ class CItemType : public CDesignType
 		inline CItemType *GetUnknownType (void) { return m_pUnknownType; }
 		inline ICCItem *GetUseCode (void) const { return m_pUseCode; }
 		bool GetUseDesc (SUseDesc *retDesc) const;
-		int GetValue (CItemCtx &Ctx, bool bActual = false) const;
+        inline int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
 		inline int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
 		inline bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		inline bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
@@ -5177,6 +5180,7 @@ class CEconomyType : public CDesignType
 
 		static CEconomyType *Default (void);
 		static CurrencyValue ExchangeToCredits (CEconomyType *pFrom, CurrencyValue iAmount);
+		static CurrencyValue ExchangeToCredits (const CCurrencyAndValue &Value);
 		static CString RinHackGet (CSpaceObject *pObj);
 		static CurrencyValue RinHackInc (CSpaceObject *pObj, CurrencyValue iInc);
 		static void RinHackSet (CSpaceObject *pObj, const CString &sData);
@@ -5891,7 +5895,7 @@ class CInstalledDevice
 		inline bool CanBeDamaged (void) { return m_pClass->CanBeDamaged(); }
 		inline bool CanBeDisabled (CItemCtx &Ctx) { return m_pClass->CanBeDisabled(Ctx); }
 		inline bool CanHitFriends (void) { return m_pClass->CanHitFriends(); }
-		inline bool CanRotate (CItemCtx &Ctx) { return m_pClass->CanRotate(Ctx); }
+		inline bool CanRotate (CItemCtx &Ctx) const { return m_pClass->CanRotate(Ctx); }
 		inline void Deplete (CSpaceObject *pSource) { m_pClass->Deplete(this, pSource); }
 		int GetActivateDelay (CSpaceObject *pSource);
 		inline ItemCategories GetCategory (void) const { return m_pClass->GetCategory(); }
@@ -5907,7 +5911,7 @@ class CInstalledDevice
 		inline CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (CSpaceObject *pSource);
 		CVector GetPosOffset (CSpaceObject *pSource);
-		inline int GetPowerRating (CItemCtx &Ctx) { return m_pClass->GetPowerRating(Ctx); }
+		inline int GetPowerRating (CItemCtx &Ctx) const { return m_pClass->GetPowerRating(Ctx); }
 		inline void GetSelectedVariantInfo (CSpaceObject *pSource, 
 											CString *retsLabel,
 											int *retiAmmoLeft,

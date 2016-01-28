@@ -40,70 +40,39 @@ const int MAX_BINARY =							1;
 
 const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
+struct SDamageTypeData
+    {
+    char *pszID;
+    int iTier;
+    int iLevel;
+    char *pszName;
+    char *pszShortName;
+    };
+
+SDamageTypeData DAMAGE_TYPE_DATA[damageCount] =
+    {
+        { "laser",          1,  1,  "laser",            "laser" },
+        { "kinetic",        1,  1,  "kinetic",          "kinetic" },
+        { "particle",       2,  4,  "particle beam",    "particle" },
+        { "blast",          2,  4,  "blast",            "blast" },
+        { "ion",            3,  7,  "ion",              "ion" },
+        { "thermo",         3,  7,  "thermonuclear",    "thermo" },
+        { "positron",       4,  10, "positron beam",    "positron" },
+        { "plasma",         4,  10, "plasma",           "plasma" },
+        { "antimatter",     5,  13, "antimatter",       "antimatter" },
+        { "nano",           5,  13, "nanotech",         "nano" },
+        { "graviton",       6,  16, "graviton",         "graviton" },
+        { "singularity",    6,  16, "singularity",      "singularity" },
+        { "darkAcid",       7,  19, "dark acid",        "dark acid" },
+        { "darkSteel",      7,  19, "dark steel",       "dark steel" },
+        { "darkLightning",  8,  22, "dark lightning",   "dark lightning" },
+        { "darkFire",       8,  22, "dark fire",        "dark fire" },
+    };
+
 struct SSpecialDamageData
 	{
 	char *pszSpecial;						//	Name as specified in a damage desc line
 	char *pszProperty;						//	Property for this special damage
-	};
-
-char *g_pszDamageTypes[damageCount] =
-	{
-	"laser",
-	"kinetic",
-	"particle",
-	"blast",
-	"ion",
-	"thermo",
-	"positron",
-	"plasma",
-	"antimatter",
-	"nano",
-	"graviton",
-	"singularity",
-	"darkAcid",
-	"darkSteel",
-	"darkLightning",
-	"darkFire",
-	};
-
-char *g_pszDamageName[damageCount] =
-	{
-	"laser",
-	"kinetic",
-	"particle beam",
-	"blast",
-	"ion",
-	"thermonuclear",
-	"positron beam",
-	"plasma",
-	"antimatter",
-	"nanotech",
-	"graviton",
-	"singularity",
-	"dark acid",
-	"dark steel",
-	"dark lightning",
-	"dark fire",
-	};
-
-char *g_pszShortDamageName[damageCount] =
-	{
-	"laser",
-	"kinetic",
-	"particle",
-	"blast",
-	"ion",
-	"thermo",
-	"positron",
-	"plasma",
-	"antimatter",
-	"nano",
-	"graviton",
-	"singularity",
-	"dark acid",
-	"dark steel",
-	"dark lightning",
-	"dark fire",
 	};
 
 //	These must match the order in the SpecialDamageTypes enum.
@@ -143,7 +112,7 @@ CString GetDamageName (DamageTypes iType)
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
 	else
-		return CString(g_pszDamageName[iType]);
+		return CString(DAMAGE_TYPE_DATA[iType].pszName);
 	}
 
 CString GetDamageShortName (DamageTypes iType)
@@ -156,7 +125,7 @@ CString GetDamageShortName (DamageTypes iType)
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
 	else
-		return CString(g_pszShortDamageName[iType]);
+		return CString(DAMAGE_TYPE_DATA[iType].pszShortName);
 	}
 
 CString GetDamageType (DamageTypes iType)
@@ -169,7 +138,7 @@ CString GetDamageType (DamageTypes iType)
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
 	else
-		return CString(g_pszDamageTypes[iType]);
+		return CString(DAMAGE_TYPE_DATA[iType].pszID);
 	}
 
 DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
@@ -182,7 +151,7 @@ DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
 	int iType;
 
 	for (iType = 0; iType < damageCount; iType++)
-		if (strEquals(sAttrib, CString(g_pszDamageTypes[iType])))
+		if (strEquals(sAttrib, CString(DAMAGE_TYPE_DATA[iType].pszID)))
 			return (DamageTypes)iType;
 
 	//	Generic
@@ -292,6 +261,32 @@ ICCItem *DamageDesc::FindProperty (const CString &sName) const
 	else
 		return NULL;
 	}
+
+int DamageDesc::GetDamageLevel (DamageTypes iType)
+
+//  GetDamageTier
+//
+//  Returns the damage tier based on damage type.
+
+    {
+    if (iType == damageGeneric)
+        return 1;
+    else
+        return DAMAGE_TYPE_DATA[iType].iLevel;
+    }
+
+int DamageDesc::GetDamageTier (DamageTypes iType)
+
+//  GetDamageTier
+//
+//  Returns the damage tier based on damage type.
+
+    {
+    if (iType == damageGeneric)
+        return 1;
+    else
+        return DAMAGE_TYPE_DATA[iType].iTier;
+    }
 
 Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
 
@@ -1057,7 +1052,7 @@ ICCItem *CreateItemFromDamageEffects (CCodeChain &CC, SDamageCtx &Ctx)
 	//	Add the damage
 
 	if (Ctx.iDamage)
-		AddEffectItem(CC, pList, CString(g_pszDamageTypes[Ctx.Damage.GetDamageType()]), Ctx.iDamage);
+		AddEffectItem(CC, pList, CString(DAMAGE_TYPE_DATA[Ctx.Damage.GetDamageType()].pszID), Ctx.iDamage);
 
 	//	Add effects
 

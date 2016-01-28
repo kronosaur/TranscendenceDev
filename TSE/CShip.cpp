@@ -3163,6 +3163,20 @@ bool CShip::GetWeaponIsReady (DeviceNames iDev)
 	return (pWeapon && pWeapon->IsReady());
 	}
 
+Metric CShip::GetWeaponRange (DeviceNames iDev)
+
+//  GetWeaponRange
+//
+//  Returns the range of the given weapon.
+
+    {
+	CInstalledDevice *pWeapon = GetNamedDevice(iDev);
+    if (pWeapon == NULL)
+        return 0.0;
+
+    return pWeapon->GetMaxEffectiveRange(this);
+    }
+
 bool CShip::HasAttribute (const CString &sAttribute) const
 
 //	HasAttribute

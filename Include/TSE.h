@@ -437,20 +437,22 @@ class CWeaponFireDesc
 		Metric GetAveParticleCount (void) const;
 		DamageTypes GetDamageType (void) const;
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
+        inline Metric GetEffectiveRange (void) const { return m_rMaxEffectiveRange; }
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
-		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
-		Metric GetInitialSpeed (void) const;
-		inline int GetInteraction (void) const { return m_iInteraction; }
 		inline FireTypes GetFireType (void) const { return m_iFireType; }
 		inline SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
+		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
+		Metric GetInitialSpeed (void) const;
+		inline int GetInteraction (void) const { return m_iInteraction; }
 		inline int GetLifetime (void) const { return m_Lifetime.Roll(); }
 		inline int GetManeuverRate (void) const { return m_iManeuverRate; }
 		inline int GetMaxLifetime (void) const { return m_Lifetime.GetMaxValue(); }
 		inline Metric GetMaxRadius (void) const { return m_rMaxRadius; }
 		inline Metric GetMinRadius (void) const { return m_rMinRadius; }
+        Metric GetMaxRange (void) const;
 		CEffectCreator *GetParticleEffect (void) const;
 		inline const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		inline int GetPassthrough (void) const { return m_iPassthrough; }
@@ -487,7 +489,6 @@ class CWeaponFireDesc
 
 		FireTypes m_iFireType;				//	beam or missile
 		DamageDesc m_Damage;				//	Damage per shot
-		Metric m_rMaxEffectiveRange;		//	Max effective range of weapon
 		int m_iContinuous;					//	repeat for this number of frames
 
 		//	Missile stuff (m_iFireType == ftMissile)
@@ -521,6 +522,9 @@ class CWeaponFireDesc
 
 		bool m_bAutoTarget;					//	TRUE if we can acquire new targets after launch
 		int m_iPassthrough;					//	Chance that the missile will continue through target
+
+        //  Computed properties
+		Metric m_rMaxEffectiveRange;		//	Max effective range of weapon
 
 		//	Effects
 		CEffectCreatorRef m_pEffect;		//	Effect for the actual bullet/missile/beam

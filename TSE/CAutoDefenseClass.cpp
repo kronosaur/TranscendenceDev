@@ -51,7 +51,7 @@ int CAutoDefenseClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *p
 	return pWeapon->CalcPowerUsed(pDevice, pSource);
 	}
 
-int CAutoDefenseClass::GetDamageType (CInstalledDevice *pDevice, int iVariant)
+DamageTypes CAutoDefenseClass::GetDamageType (CInstalledDevice *pDevice, int iVariant) const
 
 //	GetDamageType
 //
@@ -105,7 +105,7 @@ ICCItem *CAutoDefenseClass::GetItemProperty (CItemCtx &Ctx, const CString &sProp
 		}
 	}
 
-int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx)
+int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx) const
 
 //	GetPowerRating
 //

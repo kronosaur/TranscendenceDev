@@ -92,7 +92,7 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
-const DriveDesc *CDriveClass::GetDriveDesc (CInstalledDevice *pDevice, CSpaceObject *pSource)
+const DriveDesc *CDriveClass::GetDriveDesc (CInstalledDevice *pDevice, CSpaceObject *pSource) const
 
 //	GetDriveDesc
 //
@@ -139,7 +139,7 @@ ICCItem *CDriveClass::GetItemProperty (CItemCtx &Ctx, const CString &sProperty)
 		return CDeviceClass::GetItemProperty(Ctx, sProperty);
 	}
 
-int CDriveClass::GetPowerRating (CItemCtx &Ctx)
+int CDriveClass::GetPowerRating (CItemCtx &Ctx) const
 
 //	GetPowerRating
 //
