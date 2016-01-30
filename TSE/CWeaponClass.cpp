@@ -130,7 +130,7 @@ const Metric BALANCE_POWER_RATIO =      -0.5;               //  Each percent of 
                                                             //      is 0.5% balance penalty.
 const Metric BALANCE_COST_RATIO =       -0.5;               //  Each percent of cost above standard is a 0.5%
                                                             //      balance penalty.
-const Metric BALANCE_SLOT_FACTOR =      -20.0;              //  Penalty to balance for every extra slot used 
+const Metric BALANCE_SLOT_FACTOR =      -40.0;              //  Penalty to balance for every extra slot used 
                                                             //      above 1.
 const Metric BALANCE_NO_SLOT =          20.0;               //  Bonus to balance if no slot is used.
 const Metric BALANCE_EXTERNAL =         -40.0;              //  Penalty to balance if weapon is external
