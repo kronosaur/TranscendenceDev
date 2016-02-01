@@ -90,6 +90,10 @@ static CObjectClass<CWeaponClass>g_Class(OBJID_CWEAPONCLASS, NULL);
 
 const int MAX_SHOT_COUNT =				100;
 
+const Metric MAX_EXPECTED_PASSTHROUGH = 4.0;
+const Metric EXPECTED_FRAGMENT_HITS = 0.125;                //  1/8th of fragments hit.
+const Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.67;        //  2/3rds of fragments hit, if tracking
+
 const Metric g_DualShotSeparation =		12;					//	Radius of dual shot (pixels)
 const int TEMP_DECREASE =				-1;					//	Decrease in temp per cooling rate
 const int MAX_TEMP =					120;				//	Max temperature
@@ -107,7 +111,7 @@ const Metric BALANCE_AMMO_COST_RATIO =  -0.25;              //  Each percent of 
 const Metric BALANCE_AMMO_MASS_RATIO =  -0.25;              //  Heavier ammo is a balance penalty.
 
 const Metric BALANCE_OMNI_POWER =       0.5;                //  f(x) = factor * (x/360)^power
-const Metric BALANCE_OMNI_FACTOR =      50.0;               //      This function maps from a swivel
+const Metric BALANCE_OMNI_FACTOR =      100.0;              //      This function maps from a swivel
                                                             //      arc (0-360) to its effect on weapon
                                                             //      balance: 0 = none; 100.0 = +100%
 
@@ -115,7 +119,7 @@ const Metric BALANCE_TRACKING_BONUS =   50.0;               //  Bonus to balance
 
 const Metric STD_RANGE =                60.0 * LIGHT_SECOND;//  Standard range
 const Metric BALANCE_RANGE_OVER_FACTOR = 0.5;               //  Bonus to balance for each ls above standard
-const Metric BALANCE_RANGE_UNDER_FACTOR = 0.25;             //  Penalty to balance for each ls below standard
+const Metric BALANCE_RANGE_UNDER_FACTOR = 0.75;             //  Penalty to balance for each ls below standard
 
 const Metric BALANCE_SPEED_POWER =      0.5;                //  f(x) = factor * (1 - (x/lightspeed)^power)
 const Metric BALANCE_SPEED_FACTOR =     -20.0;
@@ -164,34 +168,34 @@ static SStdWeaponStats STD_WEAPON_STATS[MAX_ITEM_LEVEL] =
 	{
 		//	Damage	Power	        Cost     Ammo Cost   Over	Under
 		{	4,		10,		        350.,       0.6,     0,	    0, },
-		{	5,		20,		       1000.,       1.2,     5,	    -10, },
-		{	7,		50,		       2200.,       3.0,     10,    -25, },
-		{	9,		100,	       4600.,       6.0,     15,    -40, },
-		{	12,		200,	       9400.,      12.0,     20,    -65, },
+		{	5,		20,		       1000.,       1.2,     0,	    -20, },
+		{	7,		50,		       2200.,       3.0,     0,     -60, },
+		{	9,		100,	       4600.,       6.0,     0,     -100, },
+		{	12,		200,	       9400.,      12.0,     5,     -170, },
 			
-		{	16,		300,	      19200.,      18.0,     25,    -100, },
-		{	21,		500,	      39000.,      30.0,     30,    -100, },
-		{	27,		1000,	      78500.,      60.0,     35,    -100, },
-		{	35,		2000,	     158000.,     120.0,     40,    -100, },
-		{	46,		3000,	     320000.,     180.0,     45,    -100, },
+		{	16,		300,	      19200.,      18.0,     5,     -250, },
+		{	21,		500,	      39000.,      30.0,     5,     -300, },
+		{	27,		1000,	      78500.,      60.0,     10,    -300, },
+		{	35,		2000,	     158000.,     120.0,     10,    -300, },
+		{	46,		3000,	     320000.,     180.0,     10,    -300, },
 			
-		{	60,		4000,	     640000.,     240.0,     50,    -100, },
-		{	78,		6000,	    1300000.,     360.0,     50,    -100, },
-		{	101,	8000,	    2700000.,     480.0,     50,    -100, },
-		{	131,	10000,	    5300000.,     600.0,     50,    -100, },
-		{	170,	12000,	   10600000.,     720.0,     50,    -100, },
+		{	60,		4000,	     640000.,     240.0,     25,    -300, },
+		{	78,		6000,	    1300000.,     360.0,     25,    -300, },
+		{	101,	8000,	    2700000.,     480.0,     25,    -300, },
+		{	131,	10000,	    5300000.,     600.0,     100,   -300, },
+		{	170,	12000,	   10600000.,     720.0,     100,   -300, },
 			
-		{	221,	15000,	   21300000.,     900.0,     50,    -100, },
-		{	287,	20000,	   42600000.,    1200.0,     50,    -100, },
-		{	373,	25000,	   85200000.,    1500.0,     50,    -100, },
-		{	485,	30000,	  170000000.,    1800.0,     50,    -100, },
-		{	631,	35000,	  341000000.,    2100.0,     50,    -100, },
+		{	221,	15000,	   21300000.,     900.0,     100,   -300, },
+		{	287,	20000,	   42600000.,    1200.0,     200,   -300, },
+		{	373,	25000,	   85200000.,    1500.0,     200,   -300, },
+		{	485,	30000,	  170000000.,    1800.0,     200,   -300, },
+		{	631,	35000,	  341000000.,    2100.0,     200,   -300, },
 			
-		{	820,	40000,	  682000000.,    2400.0,     50,    -100, },
-		{	1066,	50000,	 1400000000.,    3000.0,     50,    -100, },
-		{	1386,	60000,	 2700000000.,    3600.0,     50,    -100, },
-		{	1802,	70000,	 5500000000.,    4200.0,     50,    -100, },
-		{	2343,	80000,	10900000000.,    4800.0,     50,    -100, },
+		{	820,	40000,	  682000000.,    2400.0,     200,   -300, },
+		{	1066,	50000,	 1400000000.,    3000.0,     200,   -300, },
+		{	1386,	60000,	 2700000000.,    3600.0,     200,   -300, },
+		{	1802,	70000,	 5500000000.,    4200.0,     200,   -300, },
+		{	2343,	80000,	10900000000.,    4800.0,     200,   -300, },
 	};
 
 static char *CACHED_EVENTS[CWeaponClass::evtCount] =
@@ -519,7 +523,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Radiation
 
-    if (pShot->m_Damage.GetRadiationDamage())
+    if (pShot->HasRadiationDamage())
         {
         retBalance.rRadiation = BALANCE_RADIATION;
         retBalance.rBalance += retBalance.rRadiation;
@@ -527,21 +531,22 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Device disrupt and damage
 
-    if (pShot->m_Damage.GetDeviceDisruptDamage())
+    int iDamage;
+    if (pShot->HasDeviceDisruptDamage(&iDamage))
         {
-        retBalance.rDeviceDisrupt = BALANCE_DEVICE_DISRUPT_FACTOR * pShot->m_Damage.GetDeviceDisruptDamage();
+        retBalance.rDeviceDisrupt = BALANCE_DEVICE_DISRUPT_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rDeviceDisrupt;
         }
 
-    if (pShot->m_Damage.GetDeviceDamage())
+    if (pShot->HasDeviceDamage(&iDamage))
         {
-        retBalance.rDeviceDamage = BALANCE_DEVICE_DAMAGE_FACTOR * pShot->m_Damage.GetDeviceDamage();
+        retBalance.rDeviceDamage = BALANCE_DEVICE_DAMAGE_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rDeviceDamage;
         }
 
     //  Disintegration
 
-    if (pShot->m_Damage.GetDisintegrationDamage())
+    if (pShot->HasDisintegrationDamage())
         {
         retBalance.rDisintegration = BALANCE_DISINTEGRATION;
         retBalance.rBalance += retBalance.rDisintegration;
@@ -549,51 +554,51 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Shatter
 
-    if (pShot->m_Damage.GetShatterDamage())
+    if (pShot->HasShatterDamage(&iDamage))
         {
-        retBalance.rShatter = BALANCE_SHATTER_FACTOR * pShot->m_Damage.GetShatterDamage();
+        retBalance.rShatter = BALANCE_SHATTER_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rShatter;
         }
 
     //  Shield penetrate
 
-    if (pShot->m_Damage.GetShieldPenetratorAdj())
+    if (pShot->HasShieldPenetratorDamage(&iDamage))
         {
-        retBalance.rShieldPenetrate = BALANCE_SHIELD_PENETRATE_FACTOR * pShot->m_Damage.GetShieldPenetratorAdj();
+        retBalance.rShieldPenetrate = BALANCE_SHIELD_PENETRATE_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rShieldPenetrate;
         }
 
     //  Extra shield damage
 
-    if (pShot->m_Damage.GetShieldDamageLevel())
+    if (pShot->HasShieldDamage(&iDamage))
         {
-        int iEffectLevel = Max(0, 3 + pShot->m_Damage.GetShieldDamageLevel() - retBalance.iLevel);
+        int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
         retBalance.rShield = BALANCE_SHIELD_LEVEL_FACTOR * iEffectLevel;
         retBalance.rBalance += retBalance.rShield;
         }
 
     //  Extra armor damage
 
-    if (pShot->m_Damage.GetArmorDamageLevel())
+    if (pShot->HasArmorDamage(&iDamage))
         {
-        int iEffectLevel = Max(0, 3 + pShot->m_Damage.GetArmorDamageLevel() - retBalance.iLevel);
+        int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
         retBalance.rArmor = BALANCE_ARMOR_LEVEL_FACTOR * iEffectLevel;
         retBalance.rBalance += retBalance.rArmor;
         }
 
     //  Mining
 
-    if (pShot->m_Damage.GetMiningAdj())
+    if (pShot->HasMiningDamage(&iDamage))
         {
-        retBalance.rMining = BALANCE_MINING_FACTOR * pShot->m_Damage.GetMiningAdj();
+        retBalance.rMining = BALANCE_MINING_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rMining;
         }
 
     //  WMD
 
-    if (pShot->m_Damage.GetMassDestructionAdj())
+    if (pShot->HasWMD(&iDamage))
         {
-        retBalance.rWMD = BALANCE_WMD_FACTOR * pShot->m_Damage.GetMassDestructionAdj();
+        retBalance.rWMD = BALANCE_WMD_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rWMD;
         }
 
@@ -843,10 +848,25 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 	if (pShot->m_iContinuous > 0)
 		rMult *= (pShot->m_iContinuous + 1);
 
-	//	Include passhtrough
+	//	Include passhtrough.
+    //
+    //  If the probability of passthrough is P, then the expected number of hits
+    //  is:
+    //
+    //  hits = Sum(n=1-infinity) n * (P^(n-1) - P^n)
+    //
+    //  Empirically this converges to:
+    //
+    //  hits = 1/(1-P)
+    //
+    //  Note, however, that since targets are finite size, we put a limit on the
+    //  number of passthroughs we expect.
 
-	if (pShot->GetPassthrough() > 0)
-		rMult *= 1.0 + (4.0 * pShot->GetPassthrough() / 100.0);
+    if (pShot->GetPassthrough() > 0)
+        {
+        Metric rPassthroughProb = Min(0.99, pShot->GetPassthrough() / 100.0);
+        rMult *= Min(1.0 / (1.0 - rPassthroughProb), MAX_EXPECTED_PASSTHROUGH);
+        }
 
 	//	Compute fragment count
 
@@ -895,9 +915,20 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 					break;
 
 				default:
-					//	Assume 1/8th fragments hit on average
-					rHitFraction = 0.125;
+                    if (pFragment->pDesc->IsTracking())
+                        rHitFraction = EXPECTED_TRACKING_FRAGMENT_HITS;
+                    else
+                        rHitFraction = EXPECTED_FRAGMENT_HITS;
+                    break;
 				}
+
+            //  Adjust for passthrough
+
+            if (pFragment->pDesc->GetPassthrough() > 0)
+                {
+                Metric rPassthroughProb = Min(0.99, pFragment->pDesc->GetPassthrough() / 100.0);
+                rHitFraction *= Min(1.0 / (1.0 - rPassthroughProb), MAX_EXPECTED_PASSTHROUGH);
+                }
 
 			//	Add up values
 
@@ -945,15 +976,32 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 				Metric rRechargeTime = (MAX_COUNTER / (Metric)m_iCounterUpdate) * m_iCounterUpdateRate;
 
 				//	Adjust damage by the fraction of time that we spend firing.
+                //  Remember that we're recharging even while firing, so we 
+                //  only care about the ratio.
 
-				Metric rTotalTime = rFireTime + rRechargeTime;
-				if (rTotalTime > 0.0)
-					rDamage *= rFireTime / rTotalTime;
-				else
-					rDamage = 0.0;
+                if (rRechargeTime > rFireTime)
+					rDamage *= rFireTime / rRechargeTime;
 
 				break;
 				}
+
+            case cntTemperature:
+                {
+                //  Compute the number of ticks until we reach max temp
+
+                Metric rFireTime = (MAX_COUNTER / (Metric)m_iCounterActivate) * m_iFireRate;
+
+                //  Compute the number of ticks to cool down
+
+                Metric rCoolDownTime = (MAX_COUNTER / (Metric)-m_iCounterUpdate) * m_iCounterUpdateRate;
+
+                //  Adjust damage by the fraction of time that we spend firing.
+
+                if (rCoolDownTime > rFireTime)
+                    rDamage *= rFireTime / rCoolDownTime;
+
+                break;
+                }
 			}
 
 		//	Adjust for enhancements
