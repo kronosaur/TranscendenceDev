@@ -12,20 +12,18 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 //	Ship interior takes damage.
 
 	{
-	ASSERT(Ctx.iDamage > 0);
+	//	Damage requires mass destruction power
 
-	SHitTestCtx HitCtx(pShip, Desc);
+    Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+    if (Ctx.iDamage == 0)
+        return damageArmorHit;
 
 	//	Transform the hit position to coordinates relative to the standard image.
 
+	SHitTestCtx HitCtx(pShip, Desc);
 	CVector vPos = (Ctx.vHitPos - pShip->GetPos()).Rotate(-pShip->GetRotation() + 360);
 	int xHitPos = (int)((vPos.GetX() / g_KlicksPerPixel) + 0.5);
 	int yHitPos = -(int)((vPos.GetY() / g_KlicksPerPixel) + 0.5);
-
-	//	Damage requires mass destruction power
-
-	int iWMD = Ctx.Damage.GetMassDestructionAdj();
-	Ctx.iDamage = Max(1, mathAdjust(Ctx.iDamage, iWMD));
 
 	//	See if we hit a device on the ship
 

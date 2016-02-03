@@ -4065,8 +4065,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 			//	We only care about mass destruction damage
 
-			int iWMD = Ctx.Damage.GetMassDestructionAdj();
-			int iWMDDamage = Max(1, mathAdjust(Ctx.iDamage, iWMD));
+            int iWMDDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
 			//	Compare the amount of damage that we are taking with the
 			//	original strength (HP) of the armor. Increase the chance

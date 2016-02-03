@@ -535,9 +535,15 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 	ICCItem *pResult;
 	CString sValue;
 
+	//	See if this is one of the special damage properties
+
+	SpecialDamageTypes iSpecial;
+	if ((iSpecial = DamageDesc::ConvertPropertyToSpecialDamageTypes(sProperty)) != specialNone)
+		return CC.CreateInteger(GetSpecialDamage(iSpecial));
+
 	//	Check the damage structure
 
-	if (pResult = m_Damage.FindProperty(sProperty))
+    else if (pResult = m_Damage.FindProperty(sProperty))
 		return pResult;
 
 	//	Otherwise, get it from a data field
@@ -1240,6 +1246,26 @@ CEffectCreator *CWeaponFireDesc::GetParticleEffect (void) const
 	return m_pEffect;
 	}
 
+int CWeaponFireDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) const
+
+//  GetSpecialDamage
+//
+//  Returns the value of the given special damage. If a weapon has fragments,
+//  we return the highest level for all fragments.
+
+    {
+    int iValue = m_Damage.GetSpecialDamage(iSpecial, dwFlags);
+
+    SFragmentDesc *pFrag = m_pFirstFragment;
+    while (pFrag)
+        {
+        iValue = Max(iValue, pFrag->pDesc->GetSpecialDamage(iSpecial, dwFlags));
+        pFrag = pFrag->pNext;
+        }
+
+    return iValue;
+    }
+
 CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 
 //	GetWeaponType
@@ -1325,258 +1351,6 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 	else
 		return NULL;
 	}
-
-bool CWeaponFireDesc::HasArmorDamage (int *retiValue) const
-
-//  HasArmorDamage
-//
-//  Returns TRUE if we (or any fragment) have armor damage. Optionally
-//  returns the maximum level.
-
-    {
-    int iValue = m_Damage.GetArmorDamageLevel();
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        int iFragValue;
-        if (pFrag->pDesc->HasArmorDamage(&iFragValue))
-            iValue = Max(iValue, iFragValue);
-
-        pFrag = pFrag->pNext;
-        }
-
-    if (retiValue)
-        *retiValue = iValue;
-
-    return (iValue > 0);
-    }
-
-bool CWeaponFireDesc::HasDeviceDamage (int *retiValue) const
-
-//  HasDeviceDamage
-//
-//  Returns TRUE if we (or any fragment) have device damage capability. Optionally
-//  returns the maximum level.
-
-    {
-    int iValue = m_Damage.GetDeviceDamage();
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        int iFragValue;
-        if (pFrag->pDesc->HasDeviceDamage(&iFragValue))
-            iValue = Max(iValue, iFragValue);
-
-        pFrag = pFrag->pNext;
-        }
-
-    if (retiValue)
-        *retiValue = iValue;
-
-    return (iValue > 0);
-    }
-
-bool CWeaponFireDesc::HasDeviceDisruptDamage (int *retiValue) const
-
-//  HasDeviceDisruptDamage
-//
-//  Returns TRUE if we (or any fragment) have device disrupt damage. Optionally
-//  returns the maximum level.
-
-    {
-    int iValue = m_Damage.GetDeviceDisruptDamage();
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        int iFragValue;
-        if (pFrag->pDesc->HasDeviceDisruptDamage(&iFragValue))
-            iValue = Max(iValue, iFragValue);
-
-        pFrag = pFrag->pNext;
-        }
-
-    if (retiValue)
-        *retiValue = iValue;
-
-    return (iValue > 0);
-    }
-
-bool CWeaponFireDesc::HasDisintegrationDamage (void) const
-
-//  HasDisintegrationDamage
-//
-//  Returns TRUE if we (or any fragments) have disintegration damage.
-
-    {
-    if (m_Damage.GetDisintegrationDamage())
-        return true;
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        if (pFrag->pDesc->HasDisintegrationDamage())
-            return true;
-
-        pFrag = pFrag->pNext;
-        }
-
-    return false;
-    }
-
-bool CWeaponFireDesc::HasMiningDamage (int *retiValue) const
-
-//  HasMiningDamage
-//
-//  Returns TRUE if we (or any fragment) have mining damage. Optionally
-//  returns the maximum level.
-
-    {
-    int iValue = m_Damage.GetMiningAdj();
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        int iFragValue;
-        if (pFrag->pDesc->HasMiningDamage(&iFragValue))
-            iValue = Max(iValue, iFragValue);
-
-        pFrag = pFrag->pNext;
-        }
-
-    if (retiValue)
-        *retiValue = iValue;
-
-    return (iValue > 0);
-    }
-
-bool CWeaponFireDesc::HasRadiationDamage (void) const
-
-//  HasRadiationDamage
-//
-//  Returns TRUE if we (or any fragments) have radiation damage.
-
-    {
-    if (m_Damage.GetRadiationDamage())
-        return true;
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        if (pFrag->pDesc->HasRadiationDamage())
-            return true;
-
-        pFrag = pFrag->pNext;
-        }
-
-    return false;
-    }
-
-bool CWeaponFireDesc::HasShatterDamage (int *retiValue) const
-
-//  HasShatterDamage
-//
-//  Returns TRUE if we (or any fragment) have shatter damage. Optionally
-//  returns the maximum level.
-
-    {
-    int iValue = m_Damage.GetShatterDamage();
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        int iFragValue;
-        if (pFrag->pDesc->HasShatterDamage(&iFragValue))
-            iValue = Max(iValue, iFragValue);
-
-        pFrag = pFrag->pNext;
-        }
-
-    if (retiValue)
-        *retiValue = iValue;
-
-    return (iValue > 0);
-    }
-
-bool CWeaponFireDesc::HasShieldDamage (int *retiValue) const
-
-//  HasShieldDamage
-//
-//  Returns TRUE if we (or any fragment) have shield damage. Optionally
-//  returns the maximum level.
-
-    {
-    int iValue = m_Damage.GetShieldDamageLevel();
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        int iFragValue;
-        if (pFrag->pDesc->HasShieldDamage(&iFragValue))
-            iValue = Max(iValue, iFragValue);
-
-        pFrag = pFrag->pNext;
-        }
-
-    if (retiValue)
-        *retiValue = iValue;
-
-    return (iValue > 0);
-    }
-
-bool CWeaponFireDesc::HasShieldPenetratorDamage (int *retiValue) const
-
-//  HasShieldPenetratorDamage
-//
-//  Returns TRUE if we (or any fragment) have shield penetrator damage. Optionally
-//  returns the maximum level.
-
-    {
-    int iValue = m_Damage.GetShieldPenetratorAdj();
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        int iFragValue;
-        if (pFrag->pDesc->HasShieldPenetratorDamage(&iFragValue))
-            iValue = Max(iValue, iFragValue);
-
-        pFrag = pFrag->pNext;
-        }
-
-    if (retiValue)
-        *retiValue = iValue;
-
-    return (iValue > 0);
-    }
-
-bool CWeaponFireDesc::HasWMD (int *retiValue) const
-
-//  HasWMD
-//
-//  Returns TRUE if we (or any fragment) have WMD. Optionally
-//  returns the maximum level.
-
-    {
-    int iValue = m_Damage.GetMassDestructionAdj();
-
-    SFragmentDesc *pFrag = m_pFirstFragment;
-    while (pFrag)
-        {
-        int iFragValue;
-        if (pFrag->pDesc->HasWMD(&iFragValue))
-            iValue = Max(iValue, iFragValue);
-
-        pFrag = pFrag->pNext;
-        }
-
-    if (retiValue)
-        *retiValue = iValue;
-
-    return (iValue > 0);
-    }
 
 void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 

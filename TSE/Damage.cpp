@@ -100,6 +100,24 @@ SSpecialDamageData SPECIAL_DAMAGE_DATA[] =
 		{	NULL,				NULL }
 	};
 
+struct SWMDData
+    {
+    int iAdj;                               //  Adjustments to damage at this WMD value (0-100)
+    int iLevel;                             //  Display level (0-10)
+    };
+    
+SWMDData WMD_DATA[] =
+    {
+        {   10,     0   },
+        {   25,     2   },
+        {   32,     3   },
+        {   40,     4   },
+        {   50,     5   },
+        {   63,     6   },
+        {   80,     8   },
+        {   100,    10   },
+    };
+
 //	Damage Types
 
 CString GetDamageName (DamageTypes iType)
@@ -313,12 +331,42 @@ Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
 	//	Adjust for WMD
 
 	if (dwFlags & flagWMDAdj)
-		rDamage = Max(1.0, rDamage * GetMassDestructionAdj() / 100.0);
+		rDamage = rDamage * GetMassDestructionAdj() / 100.0;
 
 	return rDamage;
 	}
 
-int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial) const
+int DamageDesc::GetMassDestructionAdj (void) const
+
+//  GetMassDestructionAdj
+//
+//  Returns the adjustment to damage given our level of mass destruction.
+
+    {
+    return WMD_DATA[m_MassDestructionAdj].iAdj;
+    }
+    
+int DamageDesc::GetMassDestructionLevel (void) const
+
+//  GetMassDestructionLevel
+//
+//  Returns the display level of WMD. This is what we show in weapon stats.
+
+    {
+    return WMD_DATA[m_MassDestructionAdj].iLevel;
+    }
+
+int DamageDesc::GetMassDestructionLevelFromValue (int iValue) 
+    
+//  GetMassDestructionLevel
+//
+//  Returns the display level of WMD. This is what we show in weapon stats.
+
+    {
+    return WMD_DATA[Max(0, Min(iValue, MAX_INTENSITY))].iLevel;
+    }
+
+int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) const
 
 //	GetSpecialDamage
 //
@@ -349,7 +397,7 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial) const
 			return m_FuelDamage;
 
 		case specialMining:
-			return m_MiningAdj;
+			return ((dwFlags & flagSpecialAdj) ? GetMiningAdj() : m_MiningAdj);
 
 		case specialMomentum:
 			return m_MomentumDamage;
@@ -364,10 +412,15 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial) const
 			return m_ShieldDamage;
 
 		case specialShieldPenetrator:
-			return m_ShieldPenetratorAdj;
+			return ((dwFlags & flagSpecialAdj) ? GetShieldPenetratorAdj() : m_ShieldPenetratorAdj);
 
 		case specialWMD:
-			return m_MassDestructionAdj;
+            if (dwFlags & flagSpecialAdj)
+                return GetMassDestructionAdj();
+            else if (dwFlags & flagSpecialLevel)
+                return GetMassDestructionLevel();
+            else
+                return m_MassDestructionAdj;
 
 		default:
 			return 0;
@@ -398,43 +451,43 @@ void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 			break;
 
 		case specialBlinding:
-			m_BlindingDamage = Max(0, Min(iLevel, 7));
+			m_BlindingDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialDeviceDamage:
-			m_DeviceDamage = Max(0, Min(iLevel, 7));
+			m_DeviceDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialDeviceDisrupt:
-			m_DeviceDisruptDamage = Max(0, Min(iLevel, 7));
+			m_DeviceDisruptDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialDisintegration:
-			m_DisintegrationDamage = Max(0, Min(iLevel, 7));
+			m_DisintegrationDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialEMP:
-			m_EMPDamage = Max(0, Min(iLevel, 7));
+			m_EMPDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialFuel:
-			m_FuelDamage = Max(0, Min(iLevel, 7));
+			m_FuelDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialMining:
-			m_MiningAdj = Max(0, Min(iLevel, 7));
+			m_MiningAdj = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialMomentum:
-			m_MomentumDamage = Max(0, Min(iLevel, 7));
+			m_MomentumDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialRadiation:
-			m_RadiationDamage = Max(0, Min(iLevel, 7));
+			m_RadiationDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialShatter:
-			m_ShatterDamage = Max(0, Min(iLevel, 7));
+			m_ShatterDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialShieldDisrupt:
@@ -442,11 +495,11 @@ void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 			break;
 
 		case specialShieldPenetrator:
-			m_ShieldPenetratorAdj = Max(0, Min(iLevel, 7));
+			m_ShieldPenetratorAdj = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialWMD:
-			m_MassDestructionAdj = Max(0, Min(iLevel, 7));
+			m_MassDestructionAdj = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 		}
 	}

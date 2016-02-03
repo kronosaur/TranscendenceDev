@@ -1743,16 +1743,20 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (IsImmutable())
 		{
-		//	If we don't have ejecta, the decrease damage to 0. 
+		//	If we don't have ejecta, the decrease damage to 0.
+        //
+        //  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
+        //  because even level 0 has some WMD. But for this case we only case
+        //  about "real" WMD.
 
-		if (m_pType->GetEjectaAdj() == 0
-			|| Ctx.Damage.GetMassDestructionAdj() == 0)
-			Ctx.iDamage = 0;
+        if (m_pType->GetEjectaAdj() == 0
+            || Ctx.Damage.GetMassDestructionLevel() == 0)
+            Ctx.iDamage = 0;
 
-		//	Otherwise, adjust for WMD
+        //	Otherwise, adjust for WMD
 
-		else
-			Ctx.iDamage = Max(1, mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj()));
+        else
+            Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
 		//	Hit effect
 
@@ -1811,10 +1815,13 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		if (Ctx.Damage.GetMiningAdj())
 			FireOnMining(Ctx);
 
-		//	Once the station is abandoned, only WMD damage can destroy it
+		//	Once the station is abandoned, only WMD damage can destroy it.
+        //  NOTE: We check level (which is 0 for no WMD) rather than 
+        //  MassDestructionAdj, because we always have a little WMD. But for 
+        //  this case, we want "real" WMD.
 
-		if (Ctx.Damage.GetMassDestructionAdj() > 0)
-			Ctx.iDamage = Max(1, mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj()));
+        if (Ctx.Damage.GetMassDestructionLevel() > 0)
+            Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 		else
 			Ctx.iDamage = 0;
 
@@ -1942,11 +1949,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	If we're a multi-hull object then we adjust for mass destruction
 	//	effects (non-mass destruction weapons don't hurt us very much)
 
-	if (Ctx.iDamage > 0 && m_pType->IsMultiHull())
-		{
-		int iWMD = Ctx.Damage.GetMassDestructionAdj();
-		Ctx.iDamage = Max(1, mathAdjust(Ctx.iDamage, iWMD));
-		}
+    if (Ctx.iDamage > 0 && m_pType->IsMultiHull())
+        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
 	//	Hit effect
 

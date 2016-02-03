@@ -458,24 +458,15 @@ class CWeaponFireDesc
 		inline int GetPassthrough (void) const { return m_iPassthrough; }
 		inline int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		inline Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
+        int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		inline CG32bitPixel GetVaporTrailColor (void) const { return m_rgbVaporTrailColor; }
 		inline int GetVaporTrailLength (void) const { return m_iVaporTrailLength; }
 		inline int GetVaporTrailWidth (void) const { return m_iVaporTrailWidth; }
 		inline int GetVaporTrailWidthInc (void) const { return m_iVaporTrailWidthInc; }
 		CItemType *GetWeaponType (CItemType **retpLauncher = NULL) const;
-        bool HasArmorDamage (int *retiValue = NULL) const;
-        bool HasDeviceDamage (int *retiValue = NULL) const;
-        bool HasDeviceDisruptDamage (int *retiValue = NULL) const;
-        bool HasDisintegrationDamage (void) const;
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty(); }
 		inline bool HasFragments (void) const { return m_pFirstFragment != NULL; }
-        bool HasMiningDamage (int *retiValue = NULL) const;
 		inline bool HasOnFragmentEvent (void) const { return m_CachedEvents[evtOnFragment].pCode != NULL; }
-        bool HasRadiationDamage (void) const;
-        bool HasShatterDamage (int *retiValue = NULL) const;
-        bool HasShieldDamage (int *retiValue = NULL) const;
-        bool HasShieldPenetratorDamage (int *retiValue = NULL) const;
-        bool HasWMD (int *retiValue = NULL) const;
 		void InitFromDamage (DamageDesc &Damage);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, bool bDamageOnly = false);
 		inline bool IsTracking (void) { return m_iManeuverability != 0; }

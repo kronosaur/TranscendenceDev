@@ -523,7 +523,8 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Radiation
 
-    if (pShot->HasRadiationDamage())
+    int iDamage;
+    if (iDamage = pShot->GetSpecialDamage(specialRadiation))
         {
         retBalance.rRadiation = BALANCE_RADIATION;
         retBalance.rBalance += retBalance.rRadiation;
@@ -531,14 +532,13 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Device disrupt and damage
 
-    int iDamage;
-    if (pShot->HasDeviceDisruptDamage(&iDamage))
+    if (iDamage = pShot->GetSpecialDamage(specialDeviceDisrupt))
         {
         retBalance.rDeviceDisrupt = BALANCE_DEVICE_DISRUPT_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rDeviceDisrupt;
         }
 
-    if (pShot->HasDeviceDamage(&iDamage))
+    if (iDamage = pShot->GetSpecialDamage(specialDeviceDamage))
         {
         retBalance.rDeviceDamage = BALANCE_DEVICE_DAMAGE_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rDeviceDamage;
@@ -546,7 +546,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Disintegration
 
-    if (pShot->HasDisintegrationDamage())
+    if (iDamage = pShot->GetSpecialDamage(specialDisintegration))
         {
         retBalance.rDisintegration = BALANCE_DISINTEGRATION;
         retBalance.rBalance += retBalance.rDisintegration;
@@ -554,7 +554,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Shatter
 
-    if (pShot->HasShatterDamage(&iDamage))
+    if (iDamage = pShot->GetSpecialDamage(specialShatter))
         {
         retBalance.rShatter = BALANCE_SHATTER_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rShatter;
@@ -562,7 +562,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Shield penetrate
 
-    if (pShot->HasShieldPenetratorDamage(&iDamage))
+    if (iDamage = pShot->GetSpecialDamage(specialShieldPenetrator, DamageDesc::flagSpecialAdj))
         {
         retBalance.rShieldPenetrate = BALANCE_SHIELD_PENETRATE_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rShieldPenetrate;
@@ -570,7 +570,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Extra shield damage
 
-    if (pShot->HasShieldDamage(&iDamage))
+    if (iDamage = pShot->GetSpecialDamage(specialShieldDisrupt))
         {
         int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
         retBalance.rShield = BALANCE_SHIELD_LEVEL_FACTOR * iEffectLevel;
@@ -579,7 +579,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Extra armor damage
 
-    if (pShot->HasArmorDamage(&iDamage))
+    if (iDamage = pShot->GetSpecialDamage(specialArmor))
         {
         int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
         retBalance.rArmor = BALANCE_ARMOR_LEVEL_FACTOR * iEffectLevel;
@@ -588,17 +588,20 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Mining
 
-    if (pShot->HasMiningDamage(&iDamage))
+    if (iDamage = pShot->GetSpecialDamage(specialMining, DamageDesc::flagSpecialAdj))
         {
         retBalance.rMining = BALANCE_MINING_FACTOR * iDamage;
         retBalance.rBalance += retBalance.rMining;
         }
 
     //  WMD
+    //
+    //  All weapons have some degree of WMD, but we only count the ones that 
+    //  have non-default WMD.
 
-    if (pShot->HasWMD(&iDamage))
+    if (pShot->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialLevel))
         {
-        retBalance.rWMD = BALANCE_WMD_FACTOR * iDamage;
+        retBalance.rWMD = BALANCE_WMD_FACTOR * pShot->GetSpecialDamage(specialWMD, DamageDesc::flagSpecialAdj);
         retBalance.rBalance += retBalance.rWMD;
         }
 

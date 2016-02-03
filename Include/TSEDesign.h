@@ -1471,6 +1471,12 @@ class DamageDesc
 			flagWMDAdj =			0x00000010,
 			flagMinDamage =			0x00000020,
 			flagMaxDamage =			0x00000040,
+
+            //  GetSpecialDamage
+
+            flagSpecialAdj =        0x00000080, //  Returns adjusted value (e.g., GetMassDestructionAdj
+                                                //      instead of raw value).
+            flagSpecialLevel =      0x00000100, //  Returns display level (e.g., GetMassDestructionLevel)
 			};
 
 		DamageDesc (void) { }
@@ -1510,7 +1516,7 @@ class DamageDesc
 		CString GetDesc (DWORD dwFlags = 0);
 		int GetMinDamage (void);
 		int GetMaxDamage (void);
-		int GetSpecialDamage (SpecialDamageTypes iSpecial) const;
+		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsEnergyDamage (void) const;
 		bool IsMatterDamage (void) const;
@@ -1531,8 +1537,8 @@ class DamageDesc
 		inline int GetDeviceDisruptDamage (void) const { return (int)m_DeviceDisruptDamage; }
 		inline int GetDisintegrationDamage (void) const { return (int)m_DisintegrationDamage; }
 		inline int GetEMPDamage (void) const { return (int)m_EMPDamage; }
-		inline int GetMassDestructionAdj (void) const { return (int)(m_MassDestructionAdj ? (2 * (m_MassDestructionAdj * m_MassDestructionAdj) + 2) : 0); }
-		inline int GetMassDestructionLevel (void) const { return (GetMassDestructionAdj() + 5) / 10; }
+        int GetMassDestructionAdj (void) const;
+        int GetMassDestructionLevel (void) const;
 		inline int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
 		inline int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
 		inline int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
@@ -1545,7 +1551,7 @@ class DamageDesc
         static int GetDamageLevel (DamageTypes iType);
         static int GetDamageTier (DamageTypes iType);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
-		static int GetMassDestructionLevelFromValue (int iValue) { return ((int)(iValue ? (2 * (iValue * iValue) + 2) : 0) + 5) / 10;  }
+        static int GetMassDestructionLevelFromValue (int iValue);
 
 	private:
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
