@@ -443,6 +443,8 @@ class CWeaponClass : public CDeviceClass
                     rCost(0.0),
                     rSlots(0.0),
                     rExternal(0.0),
+                    rLinkedFire(0.0),
+                    rRecoil(0.0),
                     rRadiation(0.0),
                     rDeviceDisrupt(0.0),
                     rDeviceDamage(0.0),
@@ -478,6 +480,8 @@ class CWeaponClass : public CDeviceClass
             Metric rCost;           //  Cost component to balance
             Metric rSlots;          //  Slot component
             Metric rExternal;       //  External component
+            Metric rLinkedFire;     //  Weapon is linked-fire
+            Metric rRecoil;         //  Weapon has recoil
 
             Metric rRadiation;      //  Bonus for radiation
             Metric rDeviceDisrupt;  //  Bonus for device disrupt
@@ -498,7 +502,8 @@ class CWeaponClass : public CDeviceClass
 		inline bool FindEventHandlerWeaponClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 		CWeaponFireDesc *GetSelectedShotData (CItemCtx &Ctx) const;
 		inline int GetVariantCount (void) { return m_ShotData.GetCount(); }
-		inline CWeaponFireDesc *GetVariant (int iIndex) const { return m_ShotData[iIndex].pDesc; }
+		inline CWeaponFireDesc *GetVariant (int iIndex) const { return ((iIndex >=0 && iIndex < m_ShotData.GetCount()) ? m_ShotData[iIndex].pDesc : NULL); }
+        CWeaponFireDesc *GetVariant (CItemCtx &ItemCtx, int *retiVariant = NULL, int iDefault = 0) const;
 
 		static int GetStdDamage (int iLevel);
 		static bool IsStdDamageType (DamageTypes iDamageType, int iLevel);
@@ -607,6 +612,7 @@ class CWeaponClass : public CDeviceClass
 		Metric CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc);
+        int CalcLevel (CWeaponFireDesc *pShot) const;
         int CalcRotateRange (CItemCtx &ItemCtx) const;
 		EOnFireWeaponResults FireOnFireWeapon (CItemCtx &ItemCtx, 
 											   CWeaponFireDesc *pShot,
