@@ -40,6 +40,8 @@ inline Metric mathAngleModDegrees (double rAngle) { if (rAngle >= 0.0) return fm
 inline Metric mathAngleDiff (double rFrom, double rTo) { return mathAngleMod(rTo - rFrom); }
 inline Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
 inline Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }
+inline Metric mathLog (Metric rValue, Metric rBase) { return ((rValue > 0.0 && rBase > 0.0) ? (log(rValue) / log(rBase)) : 0.0); }
+inline Metric mathLog2 (Metric rValue) { return (rValue > 0.0 ? (log(rValue) / log(2.0)) : 0.0); }
 inline Metric mathRadiansToDegrees (Metric rRadians) { return 180.0 * rRadians / PI; }
 
 //	2d vector class
