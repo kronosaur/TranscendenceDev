@@ -225,19 +225,23 @@ CEffectCreator *CPlayerSettings::FindEffectCreator (const CString &sUNID)
 	
 	pPos++;
 
+    //	No longer needed
+
+#if 0
+
 	//	Figure out what
 
 	switch (*pPos)
 		{
-		//	No longer needed
-#if 0
 		case 's':
 			return m_ShieldDesc.pShieldEffect;
-#endif
 
 		default:
 			return NULL;
 		}
+#endif
+
+    return NULL;
 	}
 
 ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)

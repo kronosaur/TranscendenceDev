@@ -1284,7 +1284,8 @@ class CSystem : public CObject
 									   CSpaceObject *pTarget,
 									   const CVector &vPos,
 									   const CVector &vVel,
-									   CSpaceObject *pMissileSource);
+									   CSpaceObject *pMissileSource,
+                                       int iFraction = 100);
 
 		ALERROR AddTimedEvent (CTimedEvent *pEvent);
 		inline void AddToDeleteList (CSpaceObject *pObj) { m_DeletedObjects.FastAdd(pObj); }

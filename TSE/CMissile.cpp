@@ -322,6 +322,13 @@ void CMissile::CreateFragments (const CVector &vPos)
 	{
 	DEBUG_TRY
 
+    //  If we triggering inside an object, then we only create half the number
+    //  of fragments (as if it hit on the surface).
+
+    int iFraction = 100;
+    if (m_pHit && m_pHit->PointInObject(m_pHit->GetPos(), vPos))
+        iFraction = 50;
+
 	//	If there is an event, then let it handle the fragmentation
 
 	if (m_pDesc->FireOnFragment(m_Source, this, vPos, m_pHit, m_pTarget))
@@ -338,7 +345,8 @@ void CMissile::CreateFragments (const CVector &vPos)
 				m_pTarget,
 				vPos,
 				CVector(),
-				this);
+				this,
+                iFraction);
 
 	//	Create the hit effect
 

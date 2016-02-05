@@ -1983,7 +1983,8 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 									    CSpaceObject *pTarget,
 									    const CVector &vPos,
 										const CVector &vVel,
-									    CSpaceObject *pMissileSource)
+									    CSpaceObject *pMissileSource,
+                                        int iFraction)
 
 //	CreateWeaponFragments
 //
@@ -2095,9 +2096,19 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 
 			for (i = 0; i < iFragmentCount; i++)
 				{
-				CSpaceObject *pNewObj;
+                //  If we're only creating a fraction of fragments, then skip some.
+
+                if (iFraction < 100
+                        && mathRandom(1, 100) > iFraction)
+                    continue;
+
+                //  Generate initial speed (this might be random for each fragment)
+
 				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
+                //  Create the fragment
+
+				CSpaceObject *pNewObj;
 				if (error = CreateWeaponFire(pFragDesc->pDesc,
 						pEnhancements,
 						iCause,
