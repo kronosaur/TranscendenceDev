@@ -145,8 +145,8 @@ const Metric BALANCE_NO_SLOT =          20.0;               //  Bonus to balance
 const Metric BALANCE_EXTERNAL =         -40.0;              //  Penalty to balance if weapon is external
 const Metric BALANCE_RECOIL_FACTOR =    -2.5;               //  Penalty to balance per point of recoil
 const Metric BALANCE_RADIATION =        30.0;               //  Bonus to balance if we have radiation damage
-const Metric BALANCE_DEVICE_DISRUPT_FACTOR = 8.0;           //  Bonus to balance for each point of device disruption (0-7)
-const Metric BALANCE_DEVICE_DAMAGE_FACTOR = 8.0;            //  Bonus to balance for each point of device damage (0-7)
+const Metric BALANCE_DEVICE_DISRUPT_FACTOR = 3.0;           //  Bonus to balance for per % chance of disruption
+const Metric BALANCE_DEVICE_DAMAGE_FACTOR = 3.0;            //  Bonus to balance for per % chance of damage
 const Metric BALANCE_DISINTEGRATION =   100.0;              //  Bonus to balance for disintegration
 const Metric BALANCE_SHATTER_FACTOR =   12.0;               //  Bonus to balance for shatter
 const Metric BALANCE_SHIELD_PENETRATE_FACTOR = 0.25;        //  Bonus to balance for each % of shield penetrate chance
@@ -552,15 +552,15 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Device disrupt and damage
 
-    if (iDamage = pShot->GetSpecialDamage(specialDeviceDisrupt))
+    if (iDamage = pShot->GetSpecialDamage(specialDeviceDisrupt, DamageDesc::flagSpecialAdj))
         {
-        retBalance.rDeviceDisrupt = BALANCE_DEVICE_DISRUPT_FACTOR * iDamage;
+        retBalance.rDeviceDisrupt = BALANCE_DEVICE_DISRUPT_FACTOR * Min(iDamage, 50);
         retBalance.rBalance += retBalance.rDeviceDisrupt;
         }
 
-    if (iDamage = pShot->GetSpecialDamage(specialDeviceDamage))
+    if (iDamage = pShot->GetSpecialDamage(specialDeviceDamage, DamageDesc::flagSpecialAdj))
         {
-        retBalance.rDeviceDamage = BALANCE_DEVICE_DAMAGE_FACTOR * iDamage;
+        retBalance.rDeviceDamage = BALANCE_DEVICE_DAMAGE_FACTOR * Min(iDamage, 50);
         retBalance.rBalance += retBalance.rDeviceDamage;
         }
 

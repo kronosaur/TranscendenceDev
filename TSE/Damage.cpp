@@ -382,10 +382,10 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 			return m_BlindingDamage;
 
 		case specialDeviceDamage:
-			return m_DeviceDamage;
+			return ((dwFlags & flagSpecialAdj) ? 4 * m_DeviceDamage * m_DeviceDamage : m_DeviceDamage);
 
 		case specialDeviceDisrupt:
-			return m_DeviceDisruptDamage;
+			return ((dwFlags & flagSpecialAdj) ? 4 * m_DeviceDisruptDamage * m_DeviceDisruptDamage : m_DeviceDisruptDamage);
 
 		case specialDisintegration:
 			return m_DisintegrationDamage;
