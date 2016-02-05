@@ -413,6 +413,7 @@ void EuclidInit (void);
 void IntPolarToVector (int iAngle, Metric rRadius, int *retx, int *rety);
 inline void IntPolarToVector (int iAngle, int iRadius, int *retx, int *rety) { IntPolarToVector(iAngle, (Metric)iRadius, retx, rety); }
 bool IntSegmentsIntersect (int A1x, int A1y, int A2x, int A2y, int B1x, int B1y, int B2x, int B2y);
+int IntProportionalTransition (int iFrom, int iTo, int iPercent);
 int IntVectorToPolar (int x, int y, int *retiRadius = NULL);
 
 CVector PolarToVector (int iAngle, Metric rRadius);

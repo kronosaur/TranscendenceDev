@@ -88,6 +88,25 @@ void IntPolarToVector (int iAngle, Metric rRadius, int *iox, int *ioy)
 	*ioy = (int)(rRadius * g_Sine[AngleMod(iAngle)]);
 	}
 
+int IntProportionalTransition (int iFrom, int iTo, int iPercent)
+
+//  IntProportionalTransition
+//
+//  Moves from iFrom to iTo by a fraction of the distance between them. We 
+//  guarantee that we always make progress (unless we're at to).
+
+    {
+    int iDiff = iTo - iFrom;
+    if (iDiff == 0)
+        return iTo;
+
+    int iMove = iDiff * iPercent / 100;
+    if (iMove == 0)
+        return iFrom + (iDiff > 0 ? 1 : -1);
+
+    return iFrom + iMove;
+    }
+
 int IntVectorToPolar (int x, int y, int *retiRadius)
 
 //	IntVectorToPolar
