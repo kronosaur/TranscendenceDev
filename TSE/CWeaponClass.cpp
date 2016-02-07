@@ -94,8 +94,10 @@ static CObjectClass<CWeaponClass>g_Class(OBJID_CWEAPONCLASS, NULL);
 const int MAX_SHOT_COUNT =				100;
 
 const Metric MAX_EXPECTED_PASSTHROUGH = 4.0;
-const Metric EXPECTED_FRAGMENT_HITS = 0.125;                //  1/8th of fragments hit.
-const Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.67;        //  2/3rds of fragments hit, if tracking
+const Metric EXPECTED_FRAGMENT_HITS =   0.2;                //  Fraction of fragments that hit (for balance purposes)
+const Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.67;        //  Fraction of tracking fragments that hit (for balance purposes)
+const Metric EXPECTED_SHOCKWAVE_HITS =  0.2;                //  Fraction of shockwave that hits (for balance purposes)
+const Metric EXPECTED_RADIUS_DAMAGE =   0.5;                //  Fraction of radius damage (for balance purposes)
 
 const Metric g_DualShotSeparation =		12;					//	Radius of dual shot (pixels)
 const int TEMP_DECREASE =				-1;					//	Decrease in temp per cooling rate
@@ -155,7 +157,6 @@ const Metric BALANCE_ARMOR_LEVEL_FACTOR =       20;         //  Bonus to balance
 const Metric BALANCE_MINING_FACTOR =            0.1;        //  Bonus to balance for each % of mining adj
 const Metric BALANCE_WMD_FACTOR =               0.5;        //  Bonust to balance for each % of WMD
 
-const Metric FRAGMENT_DAMAGE_FACTOR =			0.125;
 const Metric PARTICLE_CLOUD_DAMAGE_FACTOR =		0.75;
 const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
@@ -905,7 +906,7 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 		//	only a fraction will hit.
 
 		if (!pShot->GetFirstFragment()->pDesc->IsTracking())
-			rMult *= FRAGMENT_DAMAGE_FACTOR;
+			rMult *= EXPECTED_FRAGMENT_HITS;
 		}
 
 	return rMult;
@@ -972,12 +973,12 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 			{
 			case ftArea:
 				//	Assume 1/8th damage points hit on average
-				rDamage = 0.125 * pShot->GetAreaDamageDensityAverage() * pShot->m_Damage.GetDamageValue(dwDamageFlags);
+				rDamage = EXPECTED_SHOCKWAVE_HITS * pShot->GetAreaDamageDensityAverage() * pShot->m_Damage.GetDamageValue(dwDamageFlags);
 				break;
 
 			case ftRadius:
 				//	Assume average target is far enough away to take half damage
-				rDamage = 0.5 * pShot->m_Damage.GetDamageValue(dwDamageFlags);
+				rDamage = EXPECTED_RADIUS_DAMAGE * pShot->m_Damage.GetDamageValue(dwDamageFlags);
 				break;
 
 			default:
@@ -2692,7 +2693,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 			{
 			//	Compute total damage
 
-			Metric rDamage = FRAGMENT_DAMAGE_FACTOR * iFragments * Damage.GetDamageValue(DamageDesc::flagIncludeBonus);
+			Metric rDamage = EXPECTED_FRAGMENT_HITS * iFragments * Damage.GetDamageValue(DamageDesc::flagIncludeBonus);
 
 			//	Compute radius
 
