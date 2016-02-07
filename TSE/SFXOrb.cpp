@@ -423,7 +423,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 					CalcSphericalColorTable(m_iStyle, iRadius, iHeat, m_rgbPrimaryColor, m_rgbSecondaryColor, byOpacity, &m_ColorTable[i]);
 
-					m_FlareDesc[i].iLength = (byOpacity == 255 ? iIntensity * iRadius * FLARE_MULITPLE / 70 : 0);
+					m_FlareDesc[i].iLength = (iIntensity > 60 ? iIntensity * iRadius * FLARE_MULITPLE / 70 : 0);
 					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
 
 					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));

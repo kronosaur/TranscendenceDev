@@ -1520,12 +1520,19 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		m_rMissileSpeed = LIGHT_SPEED;
 		}
 
-	//	Load the effect to use
+	//	Load the effect to use. By default we expect images to loop (since they need to last
+    //  as long as the missile).
 
-	if (error = m_pEffect.LoadEffect(Ctx, 
-			strPatternSubst("%s:e", sUNID),
-			pDesc->GetContentElementByTag(EFFECT_TAG),
-			pDesc->GetAttribute(EFFECT_ATTRIB)))
+    Ctx.bLoopImages = true;
+
+    error = m_pEffect.LoadEffect(Ctx,
+        strPatternSubst("%s:e", sUNID),
+        pDesc->GetContentElementByTag(EFFECT_TAG),
+        pDesc->GetAttribute(EFFECT_ATTRIB));
+
+    Ctx.bLoopImages = false;
+
+    if (error)
 		return error;
 
 	//	Load stealth

@@ -6344,6 +6344,7 @@ struct SDesignLoadCtx
 			bNoResources(false),
 			bNoVersionCheck(false),
 			bKeepXML(false),
+            bLoopImages(false),
 			bLoadAdventureDesc(false),
 			bLoadModule(false),
 			dwInheritAPIVersion(0)
@@ -6366,6 +6367,7 @@ struct SDesignLoadCtx
 	bool bNoResources;
 	bool bNoVersionCheck;
 	bool bKeepXML;							//	Keep XML around
+    bool bLoopImages;                       //  If TRUE, image effects loop by default
 
 	//	Output
 	CString sError;
