@@ -112,11 +112,14 @@ class CExternalEntityTable : public IXMLParserController
 		void AddTable (CSymbolTable &Table);
 		inline int GetCount (void) { return m_Entities.GetCount(); }
 		void GetEntity (int iIndex, CString *retsEntity, CString *retsValue);
+        inline const CString &GetName (void) const { return m_sName; }
+        inline void SetName (const CString &sName) { m_sName = sName; }
 
 		virtual CString ResolveExternalEntity (const CString &sName, bool *retbFound = NULL);
 		virtual void SetParent (IXMLParserController *pParent) { m_pParent = pParent; }
 
 	private:
+        CString m_sName;
 		TSortMap<CString, CString> m_Entities;
 		IXMLParserController *m_pParent;
 	};
