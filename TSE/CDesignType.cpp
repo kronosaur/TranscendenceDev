@@ -6,6 +6,7 @@
 
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
 #define ATTRIBUTE_DESC_TAG						CONSTLIT("AttributeDesc")
+#define DATA_TAG						    	CONSTLIT("Data")
 #define DISPLAY_ATTRIBUTES_TAG					CONSTLIT("DisplayAttributes")
 #define DOCK_SCREEN_TAG							CONSTLIT("DockScreen")
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
@@ -2288,11 +2289,31 @@ ALERROR CEffectCreatorRef::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	{
 	ALERROR error;
 
-	if (error = CEffectCreator::CreateFromXML(Ctx, pDesc, sUNID, &m_pType))
-		return error;
+    //  If we're specifying an effect type by reference, then we load it here.
 
-	m_dwUNID = 0;
-	m_bDelete = true;
+    CString sAttrib;
+    if (pDesc->FindAttribute(EFFECT_ATTRIB, &sAttrib))
+        {
+        if (error = LoadUNID(Ctx, sAttrib))
+            return error;
+
+        //  We can pass parameters to the effect type through a data block.
+
+	    CXMLElement *pInitialData = pDesc->GetContentElementByTag(DATA_TAG);
+	    if (pInitialData)
+		    m_Data.SetFromXML(pInitialData);
+        }
+
+    //  Otherwise, we are defining an effect
+
+    else
+        {
+	    if (error = CEffectCreator::CreateFromXML(Ctx, pDesc, sUNID, &m_pType))
+		    return error;
+
+	    m_dwUNID = 0;
+	    m_bDelete = true;
+        }
 
 	return NOERROR;
 	}
@@ -2304,6 +2325,8 @@ IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffec
 //	Use this call when we want to use a per-owner singleton.
 
 	{
+    int i;
+
 	//	If we have a singleton, then return that.
 
 	if (m_pSingleton)
@@ -2317,6 +2340,16 @@ IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffec
 
 	if (pCreator == NULL)
 		return NULL;
+
+    //  If we have some data, add it to the context
+
+    for (i = 0; i < m_Data.GetDataCount(); i++)
+        {
+        //  LATER: We only handle integers for now. Later we should handle any
+        //  ICCItem type.
+
+        Ctx.AddDataInteger(m_Data.GetDataAttrib(i), strToInt(m_Data.GetData(i), 0));
+        }
 
 	//	Create the painter
 

@@ -701,6 +701,7 @@ class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
 		void Set (CEffectCreator *pEffect);
 
 	private:
+        CAttributeDataBlock m_Data;
 		IEffectPainter *m_pSingleton;
 		bool m_bDelete;
 	};

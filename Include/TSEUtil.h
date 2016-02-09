@@ -444,8 +444,9 @@ class CAttributeDataBlock
 		bool FindData (const CString &sAttrib, const CString **retsData = NULL) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
 		const CString &GetData (const CString &sAttrib) const;
-		CString GetDataAttrib (int iIndex) const { return m_pData->GetKey(iIndex); }
-		int GetDataCount (void) const { return (m_pData ? m_pData->GetCount() : 0); }
+        inline CString GetData (int iIndex) const { return (m_pData ? *(CString *)m_pData->GetValue(iIndex) : NULL_STR); }
+		inline CString GetDataAttrib (int iIndex) const { return (m_pData ? m_pData->GetKey(iIndex) : NULL_STR); }
+		inline int GetDataCount (void) const { return (m_pData ? m_pData->GetCount() : 0); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
 		inline bool IsEmpty (void) const { return (m_pData == NULL && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
