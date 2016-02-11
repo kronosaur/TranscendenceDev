@@ -29,6 +29,8 @@ enum EInetsErrors
 class IMediaType
 	{
 	public:
+        virtual ~IMediaType (void) { }
+
 		virtual ALERROR DecodeFromBuffer (const CString &sMediaType, const CString &sBuffer) = 0;
 		virtual ALERROR EncodeToBuffer (IWriteStream *pOutput) const = 0;
 		virtual const CString &GetMediaBuffer (void) const { return NULL_STR; }
