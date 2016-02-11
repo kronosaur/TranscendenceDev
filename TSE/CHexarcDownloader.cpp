@@ -85,7 +85,7 @@ void CHexarcDownloader::GetStatus (SStatus *retStatus)
 	if (m_pCurrent->dwTotalLen == 0)
 		retStatus->iProgress = 0;
 	else
-		retStatus->iProgress = (100 * m_pCurrent->dwDownload / m_pCurrent->dwTotalLen);
+		retStatus->iProgress = (int)(100 * (DWORDLONG)m_pCurrent->dwDownload / m_pCurrent->dwTotalLen);
 	}
 
 ALERROR CHexarcDownloader::Update (CHexarcSession &Session, SStatus *retStatus, CString *retsError)
@@ -198,7 +198,7 @@ ALERROR CHexarcDownloader::Update (CHexarcSession &Session, SStatus *retStatus, 
 
 	m_pCurrent->dwDownload += sData.GetLength();
 	retStatus->sFilespec = m_pCurrent->sFilespec;
-	retStatus->iProgress = (100 * m_pCurrent->dwDownload / m_pCurrent->dwTotalLen);
+	retStatus->iProgress = (int)(100 * (DWORDLONG)m_pCurrent->dwDownload / (DWORDLONG)m_pCurrent->dwTotalLen);
 	retStatus->FileDigest = m_pCurrent->FileDigest;
 
 	//	Are we done? If not, then ask for more
