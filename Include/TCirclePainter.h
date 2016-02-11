@@ -5,28 +5,60 @@
 
 #pragma once
 
-template <class PAINTER> class TCirclePainter32
+class ICirclePainter
+	{
+	public:
+		virtual ~ICirclePainter (void) { }
+
+		virtual void Draw (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius = -1, int iFrame = 0) = 0;
+		virtual void SetParam (const CString &sParam, const TArray<CG32bitPixel> &ColorTable) { }
+	};
+
+template <class PAINTER, class BLENDER> class TCirclePainter32 : public ICirclePainter
 	{
 	public:
 
-		void Draw (CG32bitImage &Dest, int xCenter, int yCenter)
+		virtual void Draw (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius = -1, int iFrame = 0)
 			{
 			m_pDest = &Dest;
 			m_rcClip = &Dest.GetClipRect();
 			m_xDest = xCenter;
 			m_yDest = yCenter;
+			if (iRadius != -1)
+				m_iRadius = iRadius;
+			m_iFrame = iFrame;
+
+			//	Give our specializations a chance to initialize
+
+			if (!BEGIN_DRAW())
+				{
+				m_pDest = NULL;
+				m_rcClip = NULL;
+				return;
+				}
+
+			//	Draw
 
 			DrawCircle();
 
+			//	Rest
+
+			END_DRAW();
 			m_pDest = NULL;
 			m_rcClip = NULL;
 			}
 
+		//	Default implementation
+
+		inline bool BeginDraw (void) { return true; }
+		inline void EndDraw (void) { }
+
 	protected:
 
-		TCirclePainter32 (int iAngleRange, int iRadius) : 
+		TCirclePainter32 (int iAngleRange = 360, int iRadius = 100) : 
 				m_iAngleRange(iAngleRange),
-				m_iRadius(iRadius)
+				m_iRadius(iRadius),
+				m_pDest(NULL)
 			{
 			}
 
@@ -152,7 +184,7 @@ template <class PAINTER> class TCirclePainter32
 						&& bPaintTop
 						&& m_iRadius > 0)
 					{
-					*pCenterTop = CG32bitPixel::Blend(*pCenterTop, GET_COLOR(0, 0));
+					BLENDER::SetBlendPreMult(pCenterTop, GET_COLOR(0, 0));
 					}
 
 				//	Continue
@@ -213,9 +245,9 @@ template <class PAINTER> class TCirclePainter32
 						if (byOpacity == 0x00)
 							;
 						else if (byOpacity == 0xff)
-							*(pCenterTop - xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterTop - xPos, rgbColor);
 						else
-							DRAW_PIXEL(pCenterTop - xPos, rgbColor);
+							BLENDER::SetBlendPreMult(pCenterTop - xPos, rgbColor);
 						}
 
 					if (bPaintBottom)
@@ -226,9 +258,9 @@ template <class PAINTER> class TCirclePainter32
 						if (byOpacity == 0x00)
 							;
 						else if (byOpacity == 0xff)
-							*(pCenterBottom - xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterBottom - xPos, rgbColor);
 						else
-							DRAW_PIXEL(pCenterBottom - xPos, rgbColor);
+							BLENDER::SetBlendPreMult(pCenterBottom - xPos, rgbColor);
 						}
 					}
 
@@ -242,9 +274,9 @@ template <class PAINTER> class TCirclePainter32
 						if (byOpacity == 0x00)
 							;
 						else if (byOpacity == 0xff)
-							*(pCenterTop + xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterTop + xPos, rgbColor);
 						else
-							DRAW_PIXEL(pCenterTop + xPos, rgbColor);
+							BLENDER::SetBlendPreMult(pCenterTop + xPos, rgbColor);
 						}
 
 					if (bPaintBottom)
@@ -255,9 +287,9 @@ template <class PAINTER> class TCirclePainter32
 						if (byOpacity == 0x00)
 							;
 						else if (byOpacity == 0xff)
-							*(pCenterBottom + xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterBottom + xPos, rgbColor);
 						else
-							DRAW_PIXEL(pCenterBottom + xPos, rgbColor);
+							BLENDER::SetBlendPreMult(pCenterBottom + xPos, rgbColor);
 						}
 					}
 
@@ -283,10 +315,14 @@ template <class PAINTER> class TCirclePainter32
 
 		inline CG32bitPixel GET_COLOR (int iAngle, int iRadius) { return ((PAINTER *)this)->GetColorAt(iAngle, iRadius); }
 
+		inline bool BEGIN_DRAW (void) { return ((PAINTER *)this)->BeginDraw(); }
+		inline void END_DRAW (void) { ((PAINTER *)this)->EndDraw(); }
+
 		CG32bitImage *m_pDest;
 		const RECT *m_rcClip;
 		int m_iAngleRange;
 		int m_iRadius;
+		int m_iFrame;
 		int m_xDest;
 		int m_yDest;
 	};
@@ -486,7 +522,7 @@ template <class PAINTER> class TRadialPainter8
 		int m_yDest;
 	};
 
-template <class PAINTER> class TRadialPainter32
+template <class PAINTER, class BLENDER> class TRadialPainter32
 	{
 	public:
 
@@ -836,7 +872,7 @@ template <class PAINTER> class TRadialPainter32
 						&& bPaintTop
 						&& m_iRadius > 0)
 					{
-					*pCenterTop = CG32bitPixel::Blend(*pCenterTop, GET_COLOR(0));
+					BLENDER::SetBlendPreMult(pCenterTop, GET_COLOR(0));
 					}
 
 				//	Continue
@@ -890,58 +926,40 @@ template <class PAINTER> class TRadialPainter32
 					if (m_xDest - xPos < m_rcClip->right && m_xDest - xPos >= m_rcClip->left)
 						{
 						if (bPaintTop)
-							*(pCenterTop - xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterTop - xPos, rgbColor);
 
 						if (bPaintBottom)
-							*(pCenterBottom - xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterBottom - xPos, rgbColor);
 						}
 
 					if (xPos > 0 && m_xDest + xPos < m_rcClip->right && m_xDest + xPos >= m_rcClip->left)
 						{
 						if (bPaintTop)
-							*(pCenterTop + xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterTop + xPos, rgbColor);
 
 						if (bPaintBottom)
-							*(pCenterBottom + xPos) = rgbColor;
+							BLENDER::SetCopy(pCenterBottom + xPos, rgbColor);
 						}
 					}
 				else
 					{
-					BYTE *pAlphaInv = CG32bitPixel::AlphaTable(byOpacity ^ 0xff);
-
-					WORD wRed = rgbColor.GetRed();
-					WORD wGreen = rgbColor.GetGreen();
-					WORD wBlue = rgbColor.GetBlue();
-
-					//	Draw transparent
-
-#define DRAW_PIXEL(pos)	\
-						{ \
-						BYTE byRedResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetRed()] + wRed)); \
-						BYTE byGreenResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetGreen()] + wGreen)); \
-						BYTE byBlueResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[(pos)->GetBlue()] + wBlue)); \
-						\
-						*(pos) = CG32bitPixel(byRedResult, byGreenResult, byBlueResult); \
-						}
-
 					if (m_xDest - xPos < m_rcClip->right && m_xDest - xPos >= m_rcClip->left)
 						{
 						if (bPaintTop)
-							DRAW_PIXEL(pCenterTop - xPos);
+							BLENDER::SetBlendPreMult(pCenterTop - xPos, rgbColor);
 
 						if (bPaintBottom)
-							DRAW_PIXEL(pCenterBottom - xPos);
+							BLENDER::SetBlendPreMult(pCenterBottom - xPos, rgbColor);
 						}
 
 					if (xPos > 0 && m_xDest + xPos < m_rcClip->right && m_xDest + xPos >= m_rcClip->left)
 						{
 						if (bPaintTop)
-							DRAW_PIXEL(pCenterTop + xPos);
+							BLENDER::SetBlendPreMult(pCenterTop + xPos, rgbColor);
 
 						if (bPaintBottom)
-							DRAW_PIXEL(pCenterBottom + xPos);
+							BLENDER::SetBlendPreMult(pCenterBottom + xPos, rgbColor);
 						}
-#undef DRAW_PIXEL
 					}
 
 				xPos++;
@@ -956,3 +974,4 @@ template <class PAINTER> class TRadialPainter32
 		int m_xDest;
 		int m_yDest;
 	};
+

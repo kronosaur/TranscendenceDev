@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 CG32bitPixel::AlphaArray8 CG32bitPixel::g_Alpha8 [256];
+CG32bitPixel::AlphaArray8 CG32bitPixel::g_Screen8 [256];
 bool CG32bitPixel::m_bAlphaInitialized = CG32bitPixel::Init();
 
 CG32bitPixel::CG32bitPixel (WORD wPixel)
@@ -47,6 +48,46 @@ CG32bitPixel CG32bitPixel::Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 	BYTE byBlueResult = pAlphaInv[rgbDest.GetBlue()] + pAlpha[rgbSrc.GetBlue()];
 
 	return CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
+	}
+
+CG32bitPixel CG32bitPixel::ChangeHue (CG32bitPixel rgbSource, int iAdj)
+
+//	ChangeHue
+//
+//	Changes the hue
+
+	{
+	CGRealHSB TempHSB = CGRealHSB::FromRGB(rgbSource);
+	TempHSB.SetHue(TempHSB.GetHue() + iAdj);
+	CGRealRGB TempRGB = CGRealRGB::FromHSB(TempHSB);
+	return CG32bitPixel(TempRGB);
+	}
+
+CG32bitPixel CG32bitPixel::Composite (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
+
+//	Composite
+//
+//	Combines two pixels, preserving alpha
+
+	{
+	BYTE bySrcAlpha = rgbSrc.GetAlpha();
+	BYTE byDestAlpha = rgbDest.GetAlpha();
+
+	if (bySrcAlpha == 0)
+		return rgbDest;
+	else if (bySrcAlpha == 0xff)
+		return rgbSrc;
+	else
+		{
+		BYTE *pAlpha = CG32bitPixel::AlphaTable(bySrcAlpha);	//	Equivalent to 255 - byAlpha
+		BYTE *pAlphaInv = CG32bitPixel::AlphaTable(bySrcAlpha ^ 0xff);	//	Equivalent to 255 - byAlpha
+
+		BYTE byRedResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[rgbDest.GetRed()] + (WORD)pAlpha[rgbSrc.GetRed()]));
+		BYTE byGreenResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[rgbDest.GetGreen()] + (WORD)pAlpha[rgbSrc.GetGreen()]));
+		BYTE byBlueResult = (BYTE)Min((WORD)0xff, (WORD)(pAlphaInv[rgbDest.GetBlue()] + (WORD)pAlpha[rgbSrc.GetBlue()]));
+
+		return CG32bitPixel(byRedResult, byGreenResult, byBlueResult, CG32bitPixel::CompositeAlpha(byDestAlpha, bySrcAlpha));
+		}
 	}
 
 CG32bitPixel CG32bitPixel::Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc, BYTE bySrcAlpha)
@@ -107,6 +148,33 @@ CG32bitPixel CG32bitPixel::Blend3 (CG32bitPixel rgbNegative, CG32bitPixel rgbCen
 		return rgbCenter;
 	}
 
+CG32bitPixel CG32bitPixel::Composite (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade)
+
+//	Composite
+//
+//	Blends color and alpha by the given value (0.0 to 1.0)
+
+	{
+	if (rFade <= 0.0)
+		return rgbFrom;
+	else if (rFade >= 1.0)
+		return rgbTo;
+	else
+		{
+		int iRDiff = (int)(DWORD)rgbTo.GetRed() - (int)(DWORD)rgbFrom.GetRed();
+		int iGDiff = (int)(DWORD)rgbTo.GetGreen() - (int)(DWORD)rgbFrom.GetGreen();
+		int iBDiff = (int)(DWORD)rgbTo.GetBlue() - (int)(DWORD)rgbFrom.GetBlue();
+		int iADiff = (int)(DWORD)rgbTo.GetAlpha() - (int)(DWORD)rgbFrom.GetAlpha();
+
+		BYTE byRed = (BYTE)((int)(DWORD)rgbFrom.GetRed() + (iRDiff * rFade));
+		BYTE byGreen = (BYTE)((int)(DWORD)rgbFrom.GetGreen() + (iGDiff * rFade));
+		BYTE byBlue = (BYTE)((int)(DWORD)rgbFrom.GetBlue() + (iBDiff * rFade));
+		BYTE byAlpha = (BYTE)((int)(DWORD)rgbFrom.GetAlpha() + (iADiff * rFade));
+
+		return CG32bitPixel(byRed, byGreen, byBlue, byAlpha);
+		}
+	}
+
 CG32bitPixel CG32bitPixel::Darken (CG32bitPixel rgbSource, BYTE byOpacity)
 
 //	Darken
@@ -164,11 +232,37 @@ bool CG32bitPixel::Init (void)
 	{
 	DWORD i, j;
 
+	//	Compute alpha table
+
 	for (i = 0; i < 256; i++)
 		for (j = 0; j < 256; j++)
 			g_Alpha8[j][i] = (BYTE)((DWORD)((i * (j / 255.0f)) + 0.5));
 
+	//	Compute screen table
+
+	for (i = 0; i < 256; i++)
+		for (j = 0; j < 256; j++)
+			g_Screen8[j][i] = (BYTE)(0xff - g_Alpha8[0xff - i][0xff - j]);
+
 	return true;
+	}
+
+CG32bitPixel CG32bitPixel::Interpolate (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, BYTE byAlpha)
+
+//	Interpolate
+//
+//	Just like Blend, but also blends alpha
+
+	{
+	BYTE *pAlpha = g_Alpha8[byAlpha];
+	BYTE *pAlphaInv = g_Alpha8[255 - byAlpha];
+
+	BYTE byRedResult = pAlphaInv[rgbFrom.GetRed()] + pAlpha[rgbTo.GetRed()];
+	BYTE byGreenResult = pAlphaInv[rgbFrom.GetGreen()] + pAlpha[rgbTo.GetGreen()];
+	BYTE byBlueResult = pAlphaInv[rgbFrom.GetBlue()] + pAlpha[rgbTo.GetBlue()];
+	BYTE byAlphaResult = pAlphaInv[rgbFrom.GetAlpha()] + pAlpha[rgbTo.GetAlpha()];
+
+	return CG32bitPixel(byRedResult, byGreenResult, byBlueResult, byAlphaResult);
 	}
 
 CG32bitPixel CG32bitPixel::PreMult (CG32bitPixel rgbColor, BYTE byAlpha)
@@ -192,4 +286,21 @@ CG32bitPixel CG32bitPixel::PreMult (CG32bitPixel rgbColor, BYTE byAlpha)
 
 		return CG32bitPixel(pAlpha[byRed], pAlpha[byGreen], pAlpha[byBlue], byAlpha);
 		}
+	}
+
+CG32bitPixel CG32bitPixel::Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
+
+//	Screen
+//
+//	Blends using screen mode.
+//
+//	NOTE: We assume that rgbDest and rgbSrc have no alpha. If necessary, 
+//	pre-multiply source and/or dest and combine the alpha separately.
+
+	{
+	BYTE redResult = CG32bitPixel::ScreenTable(rgbDest.GetRed())[rgbSrc.GetRed()];
+	BYTE greenResult = CG32bitPixel::ScreenTable(rgbDest.GetGreen())[rgbSrc.GetGreen()];
+	BYTE blueResult = CG32bitPixel::ScreenTable(rgbDest.GetBlue())[rgbSrc.GetBlue()];
+
+	return CG32bitPixel(redResult, greenResult, blueResult);
 	}

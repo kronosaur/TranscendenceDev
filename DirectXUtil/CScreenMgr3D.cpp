@@ -251,10 +251,9 @@ ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)
 		return ERR_FAIL;
 		}
 
-	//	Debug
+	//	Debug stats for troubleshooting
 
-	if (m_bDebugVideo)
-		DebugOutputStats();
+	DebugOutputStats();
 
 	//	Done
 

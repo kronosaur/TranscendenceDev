@@ -9,6 +9,8 @@ class CG8bitImage;
 class CG16bitFont;
 class CG16bitImage;
 class CGRealRGB;
+class CG16bitBinaryRegion;
+class CGRegion;
 
 class CG32bitPixel
 	{
@@ -48,11 +50,15 @@ class CG32bitPixel
 		inline void SetRed (BYTE byValue) { m_dwPixel = (m_dwPixel & 0xff00ffff) | ((DWORD)byValue << 16); }
 
 		inline static BYTE *AlphaTable (BYTE byOpacity) { return g_Alpha8[byOpacity]; }
+		inline static BYTE *ScreenTable (BYTE byValue) { return g_Screen8[byValue]; }
 		static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
 		static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc, BYTE bySrcAlpha);
 		static CG32bitPixel Blend (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade);
 		static CG32bitPixel Blend3 (CG32bitPixel rgbNegative, CG32bitPixel rgbCenter, CG32bitPixel rgbPositive, double rFade);
-		inline static BYTE BlendAlpha (BYTE byDest, BYTE bySrc) { return (BYTE)((DWORD)byDest * (DWORD)bySrc / 255); }
+		inline static BYTE BlendAlpha (BYTE byDest, BYTE bySrc) { return g_Alpha8[byDest][bySrc]; }
+		static CG32bitPixel ChangeHue (CG32bitPixel rgbSource, int iAdj);
+		static CG32bitPixel Composite (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
+		static CG32bitPixel Composite (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade);
 		inline static BYTE CompositeAlpha (BYTE byDest, BYTE bySrc) { return (BYTE)255 - (BYTE)(((DWORD)(255 - byDest) * (DWORD)(255 - bySrc)) / 255); }
 		static CG32bitPixel Darken (CG32bitPixel rgbSource, BYTE byOpacity);
 		static CG32bitPixel Desaturate (CG32bitPixel rgbColor);
@@ -61,9 +67,11 @@ class CG32bitPixel
 		inline static CG32bitPixel FromGrayscale (BYTE byValue) { return CG32bitPixel(byValue, byValue, byValue); }
 		inline static CG32bitPixel FromGrayscale (BYTE byValue, BYTE byAlpha) { return CG32bitPixel(byValue, byValue, byValue, byAlpha); }
 		static bool Init (void);
+		static CG32bitPixel Interpolate (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, BYTE byAlpha);
 		inline static CG32bitPixel Null (void) { return CG32bitPixel(0, true); }
 		inline static CG32bitPixel PreMult (CG32bitPixel rgbColor) { return PreMult(rgbColor, rgbColor.GetAlpha()); }
 		static CG32bitPixel PreMult (CG32bitPixel rgbColor, BYTE byAlpha);
+		static CG32bitPixel Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
 
 	private:
 		CG32bitPixel (DWORD dwValue, bool bRaw) : m_dwPixel(dwValue) { }
@@ -72,6 +80,7 @@ class CG32bitPixel
 
 		typedef BYTE AlphaArray8 [256];
 		static AlphaArray8 g_Alpha8 [256];
+		static AlphaArray8 g_Screen8 [256];
 		static bool m_bAlphaInitialized;
 	};
 
@@ -121,7 +130,9 @@ class CG32bitImage : public CGImagePlane
 		inline CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
 		inline CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
 		inline bool IsEmpty (void) const { return (m_pRGBA == NULL); }
+		inline bool IsMarked (void) const { return m_bMarked; }
 		inline CG32bitPixel *NextRow (CG32bitPixel *pPos) const { return (CG32bitPixel *)((BYTE *)pPos + m_iPitch); }
+		inline void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
 
 		//	Basic Drawing Interface
 
@@ -178,6 +189,7 @@ class CG32bitImage : public CGImagePlane
 
 		CG32bitPixel *m_pRGBA;
 		bool m_bFreeRGBA;					//	If TRUE, we own the memory
+		bool m_bMarked;						//	Mark/sweep flag (for use by caller)
 		int m_iPitch;						//	Bytes per row
 		EAlphaTypes m_AlphaType;
 
@@ -201,10 +213,41 @@ class CGDraw
 	{
 	public:
 
+		enum EBlendModes
+			{
+			blendNone =					-1,
+
+			blendNormal =				0,	//	Normal drawing
+			blendMultiply =				1,	//	Darkens images
+			blendOverlay =				2,	//	Combine multiply/screen
+			blendScreen =				3,	//	Brightens images
+			blendHardLight =			4,
+
+			blendCompositeNormal =		5,
+
+			//	See BlendModes.cpp to add new blend modes
+
+			blendModeCount =			6,
+			};
+
+		enum EFlags
+			{
+			//	Arc
+
+			ARC_INNER_RADIUS =			0x00000001,	//	Radius is inner arc radius, not center.
+
+			//	Text
+
+			TEXT_ALIGN_LEFT =			0x00000000,
+			TEXT_ALIGN_CENTER =			0x00000001,
+			TEXT_ALIGN_RIGHT =			0x00000002,
+			};
+
 		//	Blts
 
 		static void BltGray (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
 		static void BltLighten (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
+		static void BltMask (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG8bitImage &Mask, EBlendModes iMode = blendNormal);
 		static void BltMask0 (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
 		static void BltScaled (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
 		static void BltShimmer (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity, DWORD dwSeed);
@@ -212,11 +255,10 @@ class CGDraw
 		static void BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
 		static void BltTransformedGray (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
 		static void BltWithBackColor (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG32bitPixel rgbBackColor);
-		static void CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, REALPIXEL rHue, REALPIXEL rSaturation);
+		static void CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, Metric rHue, Metric rSaturation);
 
 		//	Lines
 
-		static void Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor);
 		inline static void Line (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor) 
 			{ if (rgbColor.GetAlpha() == 0xff) LineBresenham(Dest, x1, y1, x2, y2, iWidth, rgbColor); else LineBresenhamTrans(Dest, x1, y1, x2, y2, iWidth, rgbColor); }
 
@@ -233,16 +275,38 @@ class CGDraw
 		static void RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor);
 		static void RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, int iLineWidth, CG32bitPixel rgbColor);
 
+		//	Regions
+
+		static void Region (CG32bitImage &Dest, int x, int y, const CG16bitBinaryRegion &Region, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void Region (CG32bitImage &Dest, int x, int y, const CGRegion &Region, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+
 		//	Circles
 
 		static void Circle (CG8bitImage &Dest, int x, int y, int iRadius, BYTE Value);
-		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor);
-		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp);
-		static void CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
+		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp, EBlendModes iMode = blendNormal, bool bPreMult = false);
+		static void CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, EBlendModes iMode = blendNormal, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
 		static void CircleGradient (CG8bitImage &Dest, int x, int y, int iRadius, BYTE CenterValue, BYTE EdgeValue);
-		static void CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor);
+		static void CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, CG32bitPixel rgbColor);
 		static void RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, const TArray<CG32bitPixel> &ColorRamp, BYTE byOpacity = 0xff);
+
+		//	Curves
+
+		static void Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, int iSpacing = 0, DWORD dwFlags = 0);
+		static void Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Metric rStartAngle, Metric rEndAngle, Metric rArcWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, int iSpacing = 0, DWORD dwFlags = 0);
+		static void ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor);
+		static void ArcSegment (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Metric rAngle, Metric rWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const CVector &vInnerPos, const CVector &vOuterPos, Metric rWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void QuadCurve (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int xMid, int yMid, int iLineWidth, CG32bitPixel rgbColor);
+
+		//	Text
+
+		static void Text (CG32bitImage &Dest, const CVector &vPos, const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal, Metric rRotation = 0.0, DWORD dwFlags = 0);
+
+		//	Miscellaneous
+
+		static EBlendModes ParseBlendMode (const CString &sValue);
 
 	private:
 		struct SGlowRingLineCtx
@@ -263,6 +327,8 @@ class CGDraw
 		static void LineBresenhamGradient (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor1, CG32bitPixel rgbColor2);
 		static void LineBresenhamGradientTrans (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor1, CG32bitPixel rgbColor2);
 		static void LineBresenhamTrans (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor);
+
+		static void QuadCurve (CG32bitImage &Dest, const CVector &vP1, const CVector &vP2, const CVector &vC1, int iLineWidth, CG32bitPixel rgbColor);
 	};
 
 class CGRasterize
@@ -285,6 +351,188 @@ class CGRasterize
 		static void Line (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, TArray<SLinePixel> *retPixels);
 	};
 
+//	Blending Classes -----------------------------------------------------------
+//
+//	The following methods are defined:
+//
+//	Blend: Combines two pixels where rgbSource may have alpha transparency (though it may be 0 or 0xff).
+//	BlendPreMult: Same as Blend but we assume that RGB of source has already been multiplied by its alpha.
+//	Copy: Combines two pixels where rgbSource is guaranteed to have alpha 0xff.
+
+template <class BLENDER> class TBlendImpl
+	{
+	public:
+		__forceinline static CG32bitPixel BlendAlpha (CG32bitPixel rgbDest, CG32bitPixel rgbSource, BYTE byAlpha) { return BLENDER::Blend(rgbDest, CG32bitPixel(rgbSource, CG32bitPixel::BlendAlpha(byAlpha, rgbSource.GetAlpha()))); }
+
+		__forceinline static void SetBlend (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::Blend(*pDest, rgbSource); }
+		__forceinline static void SetBlendAlpha (CG32bitPixel *pDest, CG32bitPixel rgbSource, BYTE byAlpha) { *pDest = BLENDER::BlendAlpha(*pDest, rgbSource, byAlpha); }
+		__forceinline static void SetBlendPreMult (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::BlendPreMult(*pDest, rgbSource); }
+		__forceinline static void SetCopy (CG32bitPixel *pDest, CG32bitPixel rgbSource) { *pDest = BLENDER::Copy(*pDest, rgbSource); }
+	};
+
+class CGBlendBlend : public TBlendImpl<CGBlendBlend>
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return CG32bitPixel::Blend(rgbDest, rgbSource); }
+
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) 
+			{
+			BYTE *pAlphaInv = CG32bitPixel::AlphaTable(rgbSource.GetAlpha() ^ 0xff);	//	Equivalent to 255 - rgbSrc.GetAlpha()
+
+			BYTE byRedResult = pAlphaInv[rgbDest.GetRed()] + rgbSource.GetRed();
+			BYTE byGreenResult = pAlphaInv[rgbDest.GetGreen()] + rgbSource.GetGreen();
+			BYTE byBlueResult = pAlphaInv[rgbDest.GetBlue()] + rgbSource.GetBlue();
+
+			return CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
+			}
+
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+	};
+
+class CGBlendComposite : public TBlendImpl<CGBlendComposite>
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return CG32bitPixel::Composite(rgbDest, rgbSource); }
+
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			BYTE *pAlphaInv = CG32bitPixel::AlphaTable(rgbSource.GetAlpha() ^ 0xff);	//	Equivalent to 255 - rgbSrc.GetAlpha()
+
+			BYTE byRedResult = pAlphaInv[rgbDest.GetRed()] + rgbSource.GetRed();
+			BYTE byGreenResult = pAlphaInv[rgbDest.GetGreen()] + rgbSource.GetGreen();
+			BYTE byBlueResult = pAlphaInv[rgbDest.GetBlue()] + rgbSource.GetBlue();
+
+			return CG32bitPixel(byRedResult, byGreenResult, byBlueResult, CG32bitPixel::CompositeAlpha(rgbDest.GetAlpha(), rgbSource.GetAlpha()));
+			}
+
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+	};
+
+class CGBlendCompositeCopy : public TBlendImpl<CGBlendCompositeCopy>
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel BlendAlpha (CG32bitPixel rgbDest, CG32bitPixel rgbSource, BYTE byAlpha) { return CG32bitPixel::Composite(rgbDest, CG32bitPixel(rgbSource, byAlpha)); }
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource;  }
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+	};
+
+class CGBlendCopy : public TBlendImpl<CGBlendCopy>
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel BlendAlpha (CG32bitPixel rgbDest, CG32bitPixel rgbSource, BYTE byAlpha) { return CG32bitPixel::Blend(rgbDest, CG32bitPixel(rgbSource, byAlpha)); }
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource) { return rgbSource; }
+	};
+
+class CGBlendHardLight : public TBlendImpl<CGBlendHardLight>
+	{
+	public:
+		inline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) 
+			{
+			BYTE *pAlpha = CG32bitPixel::AlphaTable(rgbSource.GetAlpha());
+
+			BYTE redResult = HardLight(rgbDest.GetRed(), rgbSource.GetRed());
+			BYTE greenResult = HardLight(rgbDest.GetGreen(), rgbSource.GetGreen());
+			BYTE blueResult = HardLight(rgbDest.GetBlue(), rgbSource.GetBlue());
+
+			if (rgbSource.GetGreen() == 0xff)
+				return CG32bitPixel(redResult, greenResult, blueResult);
+			else
+				return CG32bitPixel::Blend(rgbDest, CG32bitPixel(redResult, greenResult, blueResult), rgbSource.GetAlpha());
+			}
+
+		inline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			if (rgbSource.GetAlpha() == 0xff)
+				return Copy(rgbDest, rgbSource);
+			else
+				return CG32bitPixel::Blend(rgbDest, Copy(rgbDest, rgbSource), rgbSource.GetAlpha());
+			}
+
+		inline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			BYTE redResult = HardLight(rgbDest.GetRed(), rgbSource.GetRed());
+			BYTE greenResult = HardLight(rgbDest.GetGreen(), rgbSource.GetGreen());
+			BYTE blueResult = HardLight(rgbDest.GetBlue(), rgbSource.GetBlue());
+
+			return CG32bitPixel(redResult, greenResult, blueResult);
+			}
+
+	private:
+		inline static BYTE HardLight (BYTE byDest, BYTE bySource)
+			{
+			if (bySource < 0x80)
+				return (2 * CG32bitPixel::AlphaTable(byDest)[bySource]);
+			else
+				return 0xff - (2 * CG32bitPixel::AlphaTable(0xff - byDest)[0xff - bySource]);
+			}
+	};
+
+class CGBlendScreen : public TBlendImpl<CGBlendScreen>
+	{
+	public:
+		__forceinline static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSource) 
+			{
+			BYTE *pAlpha = CG32bitPixel::AlphaTable(rgbSource.GetAlpha());
+
+			BYTE redResult = CG32bitPixel::ScreenTable(rgbDest.GetRed())[pAlpha[rgbSource.GetRed()]];
+			BYTE greenResult = CG32bitPixel::ScreenTable(rgbDest.GetGreen())[pAlpha[rgbSource.GetGreen()]];
+			BYTE blueResult = CG32bitPixel::ScreenTable(rgbDest.GetBlue())[pAlpha[rgbSource.GetBlue()]];
+
+			return CG32bitPixel(redResult, greenResult, blueResult);
+			}
+
+		__forceinline static CG32bitPixel BlendPreMult (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			BYTE redResult = CG32bitPixel::ScreenTable(rgbDest.GetRed())[rgbSource.GetRed()];
+			BYTE greenResult = CG32bitPixel::ScreenTable(rgbDest.GetGreen())[rgbSource.GetGreen()];
+			BYTE blueResult = CG32bitPixel::ScreenTable(rgbDest.GetBlue())[rgbSource.GetBlue()];
+
+			return CG32bitPixel(redResult, greenResult, blueResult);
+			}
+
+		__forceinline static CG32bitPixel Copy (CG32bitPixel rgbDest, CG32bitPixel rgbSource)
+			{
+			if (rgbSource.AsDWORD() == 0xffffffff)
+				return rgbSource;
+			else
+				{
+				BYTE redResult = CG32bitPixel::ScreenTable(rgbDest.GetRed())[rgbSource.GetRed()];
+				BYTE greenResult = CG32bitPixel::ScreenTable(rgbDest.GetGreen())[rgbSource.GetGreen()];
+				BYTE blueResult = CG32bitPixel::ScreenTable(rgbDest.GetBlue())[rgbSource.GetBlue()];
+
+				return CG32bitPixel(redResult, greenResult, blueResult);
+				}
+			}
+	};
+
+//	Implementation Helpers -----------------------------------------------------
+
+#include "TBlt.h"
+#include "TCirclePainter.h"
+
+//	Utilities
+
+class CGImageCache
+	{
+	public:
+		~CGImageCache (void);
+
+		CG8bitImage *Alloc8 (void);
+		CG32bitImage *Alloc32 (void);
+		void ClearMarks (void);
+		void Free8 (CG8bitImage *pImage);
+		void Free32 (CG32bitImage *pImage);
+		void Sweep (void);
+
+	private:
+		TArray<CG8bitImage *> m_Cache8;
+		TArray<CG32bitImage *> m_Cache32;
+	};
+
 //	Inlines --------------------------------------------------------------------
 
 inline void CG32bitImage::DrawLine (int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor) { CGDraw::Line(*this, x1, y1, x2, y2, iWidth, rgbColor); }
+

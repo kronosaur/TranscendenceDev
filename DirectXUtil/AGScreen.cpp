@@ -101,6 +101,20 @@ void AGScreen::DestroyArea (AGArea *pArea)
 	Invalidate(rcRect);
 	}
 
+void AGScreen::DestroyArea (DWORD dwTag)
+
+//	DestroyArea
+//
+//	Destroys an area by tag
+
+	{
+	AGArea *pArea = FindArea(dwTag);
+	if (pArea == NULL)
+		return;
+
+	DestroyArea(pArea);
+	}
+
 AGArea *AGScreen::FindArea (DWORD dwTag)
 
 //	FindArea
@@ -175,6 +189,19 @@ void AGScreen::GetMousePos (POINT *retpt)
 
 	retpt->x -= m_rcRect.left;
 	retpt->y -= m_rcRect.top;
+	}
+
+const CG16bitFont &AGScreen::GetWingdingsFont (void) const
+
+//	Wingdings
+//
+//	Return Wingdings font
+
+	{
+	if (m_Wingdings.IsEmpty())
+		m_Wingdings.Create(CONSTLIT("Wingdings"), -16);
+
+	return m_Wingdings;
 	}
 
 AGArea *AGScreen::HitTest (const POINT &pt)

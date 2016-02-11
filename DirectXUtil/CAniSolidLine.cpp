@@ -14,7 +14,7 @@
 #define PROP_LINE_COLOR						CONSTLIT("lineColor")
 #define PROP_LINE_WIDTH						CONSTLIT("lineWidth")
 
-void CAniSolidLine::Arc (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle)
+void CAniSolidLine::ArcCorner (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle)
 
 //	Arc
 //

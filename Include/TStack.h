@@ -75,7 +75,7 @@ template <class VALUE> class TStack : public CStackBase
 		void Push (const VALUE &Element)
 			{
 			void *pPos = PushData(sizeof(VALUE));
-			VALUE *pElement = new(pPos) VALUE(Element);
+			VALUE *pElement = new(placement_new, pPos) VALUE(Element);
 			}
 
 		void SetSP (int iSP)

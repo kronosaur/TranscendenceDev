@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "TBlt.h"
-#include "TCirclePainter.h"
 #include "NoiseImpl.h"
 
 //	Glow Ring Painter ----------------------------------------------------------
@@ -34,7 +32,6 @@ class CGlowingRingPainter
 	};
 
 //	Blt Painters ---------------------------------------------------------------
-
 
 class CFilterNormal : public TBlt<CFilterNormal>
 	{
@@ -126,7 +123,7 @@ class CFilterDesaturateTrans : public TBlt<CFilterDesaturate>
 class CFilterColorize : public TBlt<CFilterColorize>
 	{
 	public:
-		CFilterColorize (REALPIXEL rHue, REALPIXEL rSaturation) :
+		CFilterColorize (Metric rHue, Metric rSaturation) :
 				m_rHue(rHue),
 				m_rSaturation(rSaturation),
 				m_rgbBlack(CG32bitPixel(0, 0, 0)),
@@ -141,14 +138,14 @@ class CFilterColorize : public TBlt<CFilterColorize>
 			//	See: Computer Graphics, Foley & van Dam, p.593.
 
 			BYTE byBrightness = CG32bitPixel::Desaturate(rgbSrc).GetRed();
-			REALPIXEL rB = byBrightness / 255.0;
+			Metric rB = byBrightness / 255.0;
 
 			return CG32bitPixel::Blend3(m_rgbBlack, m_rgbColor, m_rgbWhite, 2.0 * (rB - 1.0) + 1.0);
 			}
 
 	private:
-		REALPIXEL m_rHue;
-		REALPIXEL m_rSaturation;
+		Metric m_rHue;
+		Metric m_rSaturation;
 
 		CG32bitPixel m_rgbBlack;
 		CG32bitPixel m_rgbWhite;
@@ -236,12 +233,43 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 		DWORD m_dwRnd;
 	};
 
-//	Circle Painters ------------------------------------------------------------
+template <class BLENDER> class TBltImageNormal : public TImagePainter<TBltImageNormal<BLENDER>, BLENDER>
+	{
+	private:
+		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const { return rgbSrc; }
 
-class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter>
+	friend TImagePainter;
+	};
+
+template <class BLENDER> class TFillImageSolid : public TImagePainter<TFillImageSolid<BLENDER>, BLENDER>
 	{
 	public:
-		CImageCirclePainter (int iRadius, BYTE byOpacity, const CG32bitImage &Src, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
+		TFillImageSolid (CG32bitPixel rgbColor) :
+				m_rgbColor(rgbColor)
+			{ }
+
+	private:
+		CG32bitPixel GetPixelAt (int x, int y) const { return m_rgbColor; }
+
+		CG32bitPixel m_rgbColor;
+
+	friend TImagePainter;
+	};
+
+//	Circle Painters ------------------------------------------------------------
+
+template <class BLENDER> class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter<BLENDER>, BLENDER>
+	{
+	public:
+		CImageCirclePainter (int iRadius, BYTE byOpacity, const CG32bitImage &Src, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1) : TCirclePainter32((cxSrc >= 0 ? cxSrc : Src.GetWidth()), iRadius),
+				m_byOpacity(byOpacity),
+				m_Src(Src),
+				m_xSrc(xSrc),
+				m_ySrc(ySrc),
+				m_cxSrc(cxSrc >= 0 ? cxSrc : Src.GetWidth()),
+				m_cySrc(cySrc >= 0 ? cySrc : Src.GetHeight())
+			{ }
+
 
 		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
 			{
@@ -290,16 +318,54 @@ class CRadialCirclePainter8 : public TRadialPainter8<CRadialCirclePainter8>
 		TArray<BYTE> m_Ramp;
 	};
 
-class CRadialCirclePainter : public TRadialPainter32<CRadialCirclePainter>
+template <class BLENDER> class TFillCircleSolid : public TRadialPainter32<TFillCircleSolid<BLENDER>, BLENDER>
 	{
 	public:
-		CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult = false);
-
-		inline CG32bitPixel GetColorAt (int iRadius) const { return m_pColorRamp->GetAt(iRadius); }
+		TFillCircleSolid (int iRadius, CG32bitPixel rgbColor) : TRadialPainter32(iRadius),
+				m_rgbColor(CG32bitPixel::PreMult(rgbColor))
+			{ }
 
 	private:
+		CG32bitPixel GetColorAt (int iRadius) const { return m_rgbColor; }
+
+		CG32bitPixel m_rgbColor;
+
+	friend TRadialPainter32;
+	};
+
+template <class BLENDER> class CRadialCirclePainter : public TRadialPainter32<CRadialCirclePainter<BLENDER>, BLENDER>
+	{
+	public:
+		CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult = false) : TRadialPainter32(iRadius)
+			{
+			int i;
+
+			//	If the ramp is not pre-multiplied, then we need to do that now
+
+			if (!bPreMult)
+				{
+				//	Pre-multiply the color ramp
+
+				m_ColorRamp.InsertEmpty(ColorRamp.GetCount());
+				m_pColorRamp = &m_ColorRamp;
+
+				for (i = 0; i < m_ColorRamp.GetCount(); i++)
+					m_ColorRamp[i] = CG32bitPixel::PreMult(ColorRamp[i]);
+				}
+
+			//	Otherwise we just take the ramp we've been given
+
+			else
+				m_pColorRamp = &ColorRamp;
+			}
+
+	private:
+		inline CG32bitPixel GetColorAt (int iRadius) const { return m_pColorRamp->GetAt(iRadius); }
+
 		const TArray<CG32bitPixel> *m_pColorRamp;
 		TArray<CG32bitPixel> m_ColorRamp;
+
+		friend TRadialPainter32;
 	};
 
 //	Lines ----------------------------------------------------------------------

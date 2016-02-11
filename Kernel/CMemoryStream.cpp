@@ -237,17 +237,24 @@ ALERROR IWriteStream::WriteChar (char chChar, int iLength)
 //	Write out a sequence of characters
 
 	{
-	int i;
-	char chBuffer[sizeof(DWORD)];
-
-	for (i = 0; i < sizeof(DWORD); i++)
-		chBuffer[i] = chChar;
-
-	while (iLength > 0)
+	if (iLength == 1)
 		{
-		int iChunk = Min((int)sizeof(DWORD), iLength);
-		Write(chBuffer, iChunk);
-		iLength -= iChunk;
+		Write(&chChar, 1);
+		}
+	else
+		{
+		int i;
+		char chBuffer[sizeof(DWORD)];
+
+		for (i = 0; i < sizeof(DWORD); i++)
+			chBuffer[i] = chChar;
+
+		while (iLength > 0)
+			{
+			int iChunk = Min((int)sizeof(DWORD), iLength);
+			Write(chBuffer, iChunk);
+			iLength -= iChunk;
+			}
 		}
 
 	return NOERROR;

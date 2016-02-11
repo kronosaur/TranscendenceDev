@@ -235,6 +235,8 @@ ALERROR kernelSetDebugLog (CTextFileLog *pLog, bool bAppend, bool bFreeLog)
 		{
 		if (error = pLog->Create(bAppend))
 			{
+            g_pDebugLog = NULL;
+            g_bFreeDebugLog = false;
 			LeaveCriticalSection(&g_csKernel);
 			return error;
 			}

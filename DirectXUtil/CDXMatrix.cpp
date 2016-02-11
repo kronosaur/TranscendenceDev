@@ -54,7 +54,7 @@ void CDXMatrix::SetIdentity (void)
 
 	m_Matrix._31 = 0.0;
 	m_Matrix._32 = 0.0;
-	m_Matrix._33 = 1.0;
+	m_Matrix._33 = 1.0f;
 	m_Matrix._34 = 0.0;
 
 	m_Matrix._41 = 0.0;
@@ -63,7 +63,7 @@ void CDXMatrix::SetIdentity (void)
 	m_Matrix._44 = 1.0f;
 	}
 
-void CDXMatrix::SetOrthoLH (float rWidth, float rHeight, float rNear, float rFar)
+void CDXMatrix::SetOrthoLH (FLOAT rWidth, FLOAT rHeight, FLOAT rNear, FLOAT rFar)
 
 //	SetOrthoLH
 //

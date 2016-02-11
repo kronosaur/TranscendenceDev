@@ -11,6 +11,14 @@
 
 typedef double Metric;
 
+const Metric PI = 3.14159265358979;
+const Metric HALF_PI = 0.5 * PI;
+const Metric TAU = 2.0 * PI;
+
+const Metric SQRT_3 = sqrt(3.0);
+
+const Metric DBL_INFINITY = 1.7976931348623158e+308;	//	DBL_MAX
+
 //	Angles
 
 bool AngleInArc (int iAngle, int iMinAngle, int iMaxAngle);
@@ -25,8 +33,16 @@ inline int AngleMiddle (int iLowAngle, int iHighAngle)
 		return iLowAngle + ((iHighAngle - iLowAngle) / 2);
 	}
 
-inline Metric AngleToRadians (int iAngle) { return iAngle * g_Pi / 180.0; }
-inline int AngleToDegrees (Metric rAngle) { return AngleMod((int)(rAngle * 180.0 / g_Pi)); }
+inline int AngleToDegrees (Metric rAngle) { return AngleMod((int)(rAngle * 180.0 / PI)); }
+
+inline Metric mathAngleMod (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, TAU); else return TAU - fmod(-rAngle, TAU); }
+inline Metric mathAngleModDegrees (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, 360.0); else return 360.0 - fmod(-rAngle, 360.0); }
+inline Metric mathAngleDiff (double rFrom, double rTo) { return mathAngleMod(rTo - rFrom); }
+inline Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
+inline Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }
+inline Metric mathLog (Metric rValue, Metric rBase) { return ((rValue > 0.0 && rBase > 0.0) ? (log(rValue) / log(rBase)) : 0.0); }
+inline Metric mathLog2 (Metric rValue) { return (rValue > 0.0 ? (log(rValue) / log(2.0)) : 0.0); }
+inline Metric mathRadiansToDegrees (Metric rRadians) { return 180.0 * rRadians / PI; }
 
 //	2d vector class
 
@@ -40,6 +56,7 @@ class CVector
 
 		bool Clip (Metric rLength);
 		inline Metric Dot (const CVector &vA) const { return x * vA.x + y * vA.y; }
+		void GenerateOrthogonals (const CVector &vNormal, Metric *retvPara, Metric *retvPerp) const;
 		inline const Metric &GetX (void) const { return x; }
 		inline const Metric &GetY (void) const { return y; }
 		inline bool InBox (const CVector &vUR, const CVector &vLL) const { return (x >= vLL.x && x < vUR.x	&& y >= vLL.y && y < vUR.y); }
@@ -68,13 +85,18 @@ class CVector
 			else
 				return CVector(x / *retrLength, y / *retrLength);
 			}
-		void GenerateOrthogonals (const CVector &vNormal, Metric *retvPara, Metric *retvPerp) const;
 		inline CVector Perpendicular (void) const { return CVector(-y, x); }
+		Metric Polar (Metric *retrRadius = NULL) const;
 		inline CVector Reflect (void) const { return CVector(-x, -y); }
 		CVector Rotate (int iAngle) const;
+		CVector Rotate (Metric rRadians) const;
 		inline void SetX (Metric NewX) { x = NewX; }
 		inline void SetY (Metric NewY) { y = NewY; }
 
+		static CVector FromPolar (const CVector &vA) { return CVector(vA.y * cos(vA.x), vA.y * sin(vA.x)); }
+		static CVector FromPolar (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), rRadius * sin(rAngle)); }
+		static CVector FromPolarInv (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), -rRadius * sin(rAngle)); }
+		
 	private:
 		Metric x;
 		Metric y;
@@ -95,6 +117,28 @@ inline const CVector operator* (const CVector &op1, const Metric op2) { return C
 inline const CVector operator* (const Metric op2, const CVector &op1) { return CVector(op1.GetX() * op2, op1.GetY() * op2); }
 inline const CVector operator/ (const CVector &op1, const Metric op2) { return CVector(op1.GetX() / op2, op1.GetY() / op2); }
 
+//	Geometry
+
+class CGeometry
+	{
+	public:
+		enum EFlags
+			{
+			FLAG_SCREEN_COORDS =			0x00000001,	//	Use screen coordinates (y is positive downward)
+			FLAG_CLOCKWISE =				0x00000002,	//	Clockwise instead of counter-clockwise
+			};
+
+		enum EIntersectResults
+			{
+			intersectNone,
+			intersectPoint,
+			intersect2Points,
+			};
+
+		static void AddArcPoints (const CVector &vCenter, Metric rRadius, Metric rFromAngle, Metric rToAngle, TArray<CVector> *ioPoints, DWORD dwFlags = 0);
+		static EIntersectResults IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1 = NULL, CVector *retvP2 = NULL);
+	};
+
 //	Transform class
 
 enum XFormType
@@ -113,7 +157,7 @@ class CXForm
 		CXForm (XFormType type);
 		CXForm (XFormType type, Metric rX, Metric rY);
 		CXForm (XFormType type, const CVector &vVector);
-		CXForm (XFormType type, int iAngle);
+		CXForm (XFormType type, Metric rDegrees);
 
 		void Transform (Metric x, Metric y, Metric *retx, Metric *rety) const;
 		CVector Transform (const CVector &vVector) const;
@@ -270,6 +314,8 @@ template <class VALUE> class TNumberSeries
 				}
 			}
 
+		inline void DeleteAll (void) { m_Series.DeleteAll(); }
+
 		inline VALUE GetMean (void) const { return (m_Series.GetCount() > 0 ? (m_Total / m_Series.GetCount()) : 0); }
 		inline VALUE GetMedian (void) const
 			{
@@ -322,6 +368,44 @@ template <class VALUE> class TNumberSeries
 		VALUE m_Total;
 	};
 
+//	Miscellaneous
+
+class CStepIncrementor
+	{
+	public:
+		enum EStyle
+			{
+			styleNone,
+
+			//	Equal speed from start to end
+
+			styleLinear,
+
+			//	Start fast and then move slower
+
+			styleSquareRoot,				//	x^0.5
+			styleQuadRoot,					//	x^0.25
+			styleOctRoot,					//	x^0.125
+
+			//	Start slow and then move faster
+
+			styleSquare,					//	x^2
+			styleQuad,						//	x^4
+			styleOct,						//	x^8
+			};
+
+		CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, int iSteps);
+		Metric GetAt (int iStep) const;
+
+	private:
+		EStyle m_iStyle;
+		Metric m_rStart;
+		int m_iSteps;
+
+		Metric m_rRange;
+		Metric m_rPower;
+	};
+
 //	Functions
 
 void EuclidInit (void);
@@ -329,6 +413,7 @@ void EuclidInit (void);
 void IntPolarToVector (int iAngle, Metric rRadius, int *retx, int *rety);
 inline void IntPolarToVector (int iAngle, int iRadius, int *retx, int *rety) { IntPolarToVector(iAngle, (Metric)iRadius, retx, rety); }
 bool IntSegmentsIntersect (int A1x, int A1y, int A2x, int A2y, int B1x, int B1y, int B2x, int B2y);
+int IntProportionalTransition (int iFrom, int iTo, int iPercent);
 int IntVectorToPolar (int x, int y, int *retiRadius = NULL);
 
 CVector PolarToVector (int iAngle, Metric rRadius);

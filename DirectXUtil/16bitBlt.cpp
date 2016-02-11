@@ -227,7 +227,7 @@ bool CalcBltTransform (Metric rX,
 			* CXForm(xformScale, rScaleX, rScaleY)
 
 			//	Then rotate
-			* CXForm(xformRotate, -(int)rRotation)
+			* CXForm(xformRotate, -rRotation)
 
 			//	Now move to the proper location
 			* CXForm(xformTranslate, rX, rY);
@@ -235,7 +235,7 @@ bool CalcBltTransform (Metric rX,
 	//	Now create the inverse transfor (from dest to source)
 
 	*retDestToSrc = CXForm(xformTranslate, -rX, -rY)
-			* CXForm(xformRotate, (int)rRotation)
+			* CXForm(xformRotate, rRotation)
 			* CXForm(xformScale, 1.0 / rScaleX, 1.0 / rScaleY)
 			* CXForm(xformTranslate, xSrcCenter, ySrcCenter);
 
@@ -290,7 +290,7 @@ void CopyBltColorize (CG16bitImage &Dest,
 
 	CG32bitPixel rgbBlack = CG32bitPixel(0, 0, 0);
 	CG32bitPixel rgbWhite = CG32bitPixel(255, 255, 255);
-	CG32bitPixel rgbHue = CGRealRGB::FromHSB(CGRealHSB((REALPIXEL)dwHue, 1.0, 1.0));
+	CG32bitPixel rgbHue = CGRealRGB::FromHSB(CGRealHSB((Metric)dwHue, 1.0, 1.0));
 	CG32bitPixel rgbColor = CG32bitPixel::Blend(CG32bitPixel(128, 128, 128), rgbHue, dwSaturation / 100.0);
 
 	//	Different code paths depending on whether we have alpha values or not

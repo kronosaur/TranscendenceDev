@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug in Program Files|Win32">
       <Configuration>Debug in Program Files</Configuration>
@@ -29,27 +29,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -109,8 +109,7 @@
       <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
@@ -174,7 +173,7 @@
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
@@ -203,7 +202,7 @@
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
@@ -245,23 +244,29 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\DirectXUtil.h" />
+    <ClInclude Include="..\Include\DXFractal.h" />
     <ClInclude Include="..\Include\DXImage16.h" />
     <ClInclude Include="..\Include\DXImage32.h" />
     <ClInclude Include="..\Include\DXImage8.h" />
     <ClInclude Include="..\Include\DXImageReal.h" />
+    <ClInclude Include="..\Include\DXPath.h" />
+    <ClInclude Include="..\Include\DXRegion.h" />
     <ClInclude Include="..\Include\DXScreenMgr.h" />
     <ClInclude Include="..\Include\DXScreenMgr3D.h" />
     <ClInclude Include="..\Include\DXSparseMask.h" />
     <ClInclude Include="..\Include\DXUI.h" />
     <ClInclude Include="..\Include\Reanimator.h" />
+    <ClInclude Include="..\Include\TBlt.h" />
+    <ClInclude Include="..\Include\TCirclePainter.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
+    <ClInclude Include="..\Include\TRegionPainter.h" />
     <ClInclude Include="DrawImpl.h" />
+    <ClInclude Include="DrawRegionImpl.h" />
     <ClInclude Include="DX3DImpl.h" />
     <ClInclude Include="NoiseImpl.h" />
     <ClInclude Include="PixelMacros.h" />
     <ClInclude Include="PreComp.h" />
-    <ClInclude Include="TBlt.h" />
-    <ClInclude Include="TCirclePainter.h" />
+    <ClInclude Include="RasterizerImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="16bitBlt.cpp" />
@@ -314,6 +319,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="BlendModes.cpp" />
+    <ClCompile Include="CCloudGenerator.cpp" />
     <ClCompile Include="CDXBackgroundBlt.cpp" />
     <ClCompile Include="CDXMatrix.cpp" />
     <ClCompile Include="CFrameRateCounter.cpp" />
@@ -364,6 +371,7 @@
     <ClCompile Include="CG16bitSprite.cpp" />
     <ClCompile Include="CG16bitRegion.cpp" />
     <ClCompile Include="CG32bitImage.cpp" />
+    <ClCompile Include="CGImageCache.cpp" />
     <ClCompile Include="CG32bitPixel.cpp" />
     <ClCompile Include="CG8bitImage.cpp" />
     <ClCompile Include="CG8bitSparseImage.cpp" />
@@ -381,6 +389,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CGCloudGenerator3D.cpp" />
     <ClCompile Include="CGFrameArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -396,6 +405,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CGImagePlane.cpp" />
+    <ClCompile Include="CGlobalEdgeTable.cpp" />
     <ClCompile Include="CGlowingRingPainter.cpp" />
     <ClCompile Include="CGImageArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -411,8 +421,12 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CGPath.cpp" />
     <ClCompile Include="CGRealHSB.cpp" />
     <ClCompile Include="CGRealRGB.cpp" />
+    <ClCompile Include="CGRegion.cpp" />
+    <ClCompile Include="CGRunList.cpp" />
+    <ClCompile Include="CGShape.cpp" />
     <ClCompile Include="CGTextArea.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -431,8 +445,10 @@
     <ClCompile Include="CNoiseGenerator.cpp" />
     <ClCompile Include="CompositeCircle.cpp" />
     <ClCompile Include="CDXScreen.cpp" />
+    <ClCompile Include="CPolygonRasterizer.cpp" />
     <ClCompile Include="CScreenMgr.cpp" />
     <ClCompile Include="CScreenMgr3D.cpp" />
+    <ClCompile Include="CSortedEdgeList.cpp" />
     <ClCompile Include="Debug.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -462,8 +478,12 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="DrawCircle.cpp" />
+    <ClCompile Include="DrawClouds.cpp" />
     <ClCompile Include="DrawLine.cpp" />
+    <ClCompile Include="DrawQuadCurve.cpp" />
     <ClCompile Include="DrawRect.cpp" />
+    <ClCompile Include="DrawRegion.cpp" />
+    <ClCompile Include="DrawText.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="IPropertyAnimator.cpp" />
     <ClCompile Include="Noise.cpp" />

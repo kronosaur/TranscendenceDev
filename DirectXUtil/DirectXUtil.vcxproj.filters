@@ -31,6 +31,12 @@
     <Filter Include="Source Files\DX">
       <UniqueIdentifier>{54f2d532-069c-4ac1-8ce0-1168120f05a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Fractal">
+      <UniqueIdentifier>{1f7ee3f7-f80a-45a0-8976-f7b7714725ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Paths and Regions">
+      <UniqueIdentifier>{b6cfa6be-bfd2-4494-863d-88adf3116707}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NoiseImpl.h">
@@ -60,9 +66,6 @@
     <ClInclude Include="..\Include\DXImageReal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TCirclePainter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\DXImage16.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -70,9 +73,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\DXImage8.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TBlt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\DXSparseMask.h">
@@ -87,15 +87,36 @@
     <ClInclude Include="DX3DImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\DXFractal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TBlt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TCirclePainter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TRegionPainter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawRegionImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\DXPath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\DXRegion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RasterizerImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="8bitDrawCircle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="8bitImageDrawing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="8bitNoise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AGArea.cpp">
@@ -117,9 +138,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CGTextArea.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CNoiseGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Debug.cpp">
@@ -310,6 +328,57 @@
     </ClCompile>
     <ClCompile Include="CScreenMgr.cpp">
       <Filter>Source Files\DX</Filter>
+    </ClCompile>
+    <ClCompile Include="8bitNoise.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="CNoiseGenerator.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawClouds.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="CCloudGenerator.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="CGCloudGenerator3D.cpp">
+      <Filter>Source Files\Fractal</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawRegion.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="BlendModes.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawQuadCurve.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="CGRunList.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CGRegion.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CGPath.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CSortedEdgeList.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CPolygonRasterizer.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CGlobalEdgeTable.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawText.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="CGShape.cpp">
+      <Filter>Source Files\Paths and Regions</Filter>
+    </ClCompile>
+    <ClCompile Include="CGImageCache.cpp">
+      <Filter>Source Files\32bit</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

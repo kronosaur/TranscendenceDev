@@ -86,7 +86,10 @@ class CException
 
 inline int Absolute (int iValue) { return (iValue < 0 ? -iValue : iValue); }
 inline double Absolute (double rValue) { return (rValue < 0.0 ? -rValue : rValue); }
+inline int AlignDown (int iValue, int iGranularity) { return (iValue / iGranularity) * iGranularity; }
+inline int AlignDownSigned (int iValue, int iGranularity) { return ((iValue + (iValue < 0 ? (1 - iGranularity) : 0)) / iGranularity) * iGranularity; }
 inline int AlignUp (int iValue, int iGranularity) { return ((iValue + (iGranularity - 1)) / iGranularity) * iGranularity; }
+inline int AlignUpSigned (int iValue, int iGranularity) { return ((iValue + (iValue < 0 ? 0 : (iGranularity - 1))) / iGranularity) * iGranularity; }
 inline int ClockMod (int iValue, int iDivisor) { int iResult = (iValue % iDivisor); return (iResult < 0 ? iResult + iDivisor : iResult); }
 inline int ClockDiff (int iValue, int iOrigin, int iDivisor)
 	{
@@ -1027,7 +1030,8 @@ class IWriteStream
 		virtual ALERROR Close (void) = 0;
 		virtual ALERROR Create (void) = 0;
 		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) = 0;
-		virtual ALERROR WriteChar (char chChar, int iLength);
+		virtual ALERROR WriteChar (char chChar, int iLength = 1);
+		virtual ALERROR WriteString (const CString &sString, int *retiBytesWritten = NULL) { return Write(sString.GetASCIIZPointer(), sString.GetLength(), retiBytesWritten); }
 	};
 
 class IReadStream
@@ -1603,8 +1607,7 @@ bool strRegEx (char *pStart, const CString &sPattern, TArray<SRegExMatch> *retMa
 
 //	Math functions (Math.cpp)
 
-const double g_Pi = 3.14159265358979323846;			//	Pi
-
+int mathAdjust (int iValue, int iPercent);
 DWORD mathGetSeed (void);
 int mathNearestPowerOf2 (int x);
 int mathPower (int x, int n);
@@ -1615,7 +1618,6 @@ int mathRound (double x);
 int mathSeededRandom (int iSeed, int iFrom, int iTo);
 void mathSetSeed (DWORD dwSeed);
 int mathSqrt (int x);
-inline double mathDegreesToRadians (double rDegrees) { return g_Pi * rDegrees / 180.0; }
 
 //	Compression functions
 

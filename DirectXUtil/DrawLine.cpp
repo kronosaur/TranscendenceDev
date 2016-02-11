@@ -5,11 +5,53 @@
 
 #include "PreComp.h"
 
-void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor)
+void CGDraw::Arc (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Metric rStartAngle, Metric rEndAngle, Metric rArcWidth, CG32bitPixel rgbColor, EBlendModes iMode, int iSpacing, DWORD dwFlags)
 
 //	Arc
 //
-//	Draw an arc
+//	Draws an arc
+
+	{
+	//	Create the shape
+
+	CGPath ArcPath;
+	if (!CGShape::Arc(CVector(), rRadius, rStartAngle, rEndAngle, rArcWidth, &ArcPath, iSpacing, dwFlags))
+		return;
+
+	//	Rasterize into a region
+
+	CGRegion ArcRegion;
+	ArcPath.Rasterize(&ArcRegion);
+	
+	//	Draw the region
+
+	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
+	}
+
+void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor, EBlendModes iMode, int iSpacing, DWORD dwFlags)
+
+//	Arc
+//
+//	Draws an arc
+
+	{
+	Arc(Dest, 
+			CVector(xCenter, yCenter), 
+			(Metric)iRadius, 
+			mathDegreesToRadians(iStartAngle), 
+			mathDegreesToRadians(iEndAngle), 
+			(Metric)iLineWidth, 
+			rgbColor, 
+			iMode, 
+			iSpacing, 
+			dwFlags);
+	}
+
+void CGDraw::ArcCorner (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle, int iLineWidth, CG32bitPixel rgbColor)
+
+//	Arc
+//
+//	Draw an arc (90 degrees). 
 
 	{
 	//	Temporaries
@@ -106,6 +148,49 @@ void CGDraw::Arc (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, int
 		iRow++;
 		rRow = (Metric)iRow + 0.5;
 		}
+	}
+
+void CGDraw::ArcSegment (CG32bitImage &Dest, const CVector &vCenter, Metric rRadius, Metric rAngle, Metric rWidth, CG32bitPixel rgbColor, EBlendModes iMode)
+
+//	ArcSegment
+//
+//	Draws a circle segment (the area defined by a chord).
+
+	{
+	CGPath ArcPath;
+	if (!CGShape::ArcSegment(CVector(), rRadius, rAngle, rWidth, &ArcPath))
+		return;
+
+	//	Rasterize into a region
+
+	CGRegion ArcRegion;
+	ArcPath.Rasterize(&ArcRegion);
+	
+	//	Draw the region
+
+	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
+	}
+
+void CGDraw::ArcQuadrilateral (CG32bitImage &Dest, const CVector &vCenter, const CVector &vInnerPos, const CVector &vOuterPos, Metric rWidth, CG32bitPixel rgbColor, EBlendModes iMode)
+
+//	ArcQuadrilateral
+//
+//	Draw a quadrilateral in which two sides are straight and two sides are 
+//	curved with respect to a center point.
+
+	{
+	CGPath ArcPath;
+	if (!CGShape::ArcQuadrilateral(CVector(), vInnerPos, vOuterPos, rWidth, &ArcPath))
+		return;
+
+	//	Rasterize into a region
+
+	CGRegion ArcRegion;
+	ArcPath.Rasterize(&ArcRegion);
+	
+	//	Draw the region
+
+	CGDraw::Region(Dest, (int)vCenter.GetX(), (int)vCenter.GetY(), ArcRegion, rgbColor, iMode);
 	}
 
 void CGDraw::LineBresenham (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor)

@@ -28,7 +28,7 @@ CFrameRateCounter::~CFrameRateCounter (void)
 	delete m_pTimes;
 	}
 
-float CFrameRateCounter::GetFrameRate (void)
+Metric CFrameRateCounter::GetFrameRate (void)
 
 //	GetFrameRate
 //
@@ -40,7 +40,7 @@ float CFrameRateCounter::GetFrameRate (void)
 		DWORD dwStart = m_pTimes[(m_iPos - m_iCount + m_iSize) % m_iSize];
 		DWORD dwEnd = m_pTimes[(m_iPos - 1 + m_iSize) % m_iSize];
 		if (dwEnd - dwStart > 0)
-			return 1000.0f * (float)(m_iCount - 1) / (float)(dwEnd - dwStart);
+			return 1000.0f * (Metric)(m_iCount - 1) / (Metric)(dwEnd - dwStart);
 		else
 			return 0.0;
 		}

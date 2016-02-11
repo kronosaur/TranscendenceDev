@@ -44,7 +44,7 @@ void CreateArcPolygon (Metric rInnerRadius, Metric rOuterRadius, int iArc, TArra
 		{
 		CVector &Point = retPoints->GetAt(i);
 
-		Metric rAngle = g_Pi * (rAnglePerSegment * i) / 180.0;
+		Metric rAngle = PI * (rAnglePerSegment * i) / 180.0;
 		Point.SetX(rOuterRadius * cos(rAngle));
 		Point.SetY(rOuterRadius * sin(rAngle));
 		}
@@ -55,7 +55,7 @@ void CreateArcPolygon (Metric rInnerRadius, Metric rOuterRadius, int iArc, TArra
 		{
 		CVector &Point = retPoints->GetAt(iSegCount + i);
 
-		Metric rAngle = g_Pi * (rAnglePerSegment * (iSegCount - i - 1)) / 180.0;
+		Metric rAngle = PI * (rAnglePerSegment * (iSegCount - i - 1)) / 180.0;
 		Point.SetX(rInnerRadius * cos(rAngle));
 		Point.SetY(rInnerRadius * sin(rAngle));
 		}

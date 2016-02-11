@@ -7,6 +7,31 @@
 
 DWORD g_Seed = 0;
 
+int mathAdjust (int iValue, int iPercent)
+
+//	mathAdjust
+//
+//	Alters iValue such that:
+//
+//	result = (iValue * iPercent) / 100
+//
+//	But since this is an integer result, we can't express the actual real value.
+//	Instead, we stochastically add 1 to average out to the real value over
+//	multiple tries.
+
+	{
+	if (iPercent == 100)
+		return iValue;
+	else
+		{
+		int iA = (iValue * iPercent);
+		int iWhole = iA / 100;
+		int iFraction = iA % 100;
+
+		return iWhole + (mathRandom(1, 100) <= iFraction ? 1 : 0);
+		}
+	}
+
 DWORD mathGetSeed (void)
 
 //	mathGetSeed
@@ -190,7 +215,7 @@ int mathRound (double x)
 //	Based on: http://ldesoras.free.fr/doc/articles/rounding_en.pdf
 
 	{
-	const float round_to_nearest = 0.5f;
+	const double round_to_nearest = 0.5;
 	int i;
 
 #ifndef __GNUC__

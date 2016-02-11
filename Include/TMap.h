@@ -358,6 +358,19 @@ template <class KEY, class VALUE> class TSortMap
 			return m_Array[m_Index[iIndex]].theValue;
 			}
 
+		void GrowToFit (int iCount)
+			{
+			int i;
+
+			int iPos = m_Array.GetCount();
+			m_Array.InsertEmpty(iCount);
+			m_Free.GrowToFit(iCount);
+			for (i = 0; i < iCount; i++)
+				m_Free.Insert(iPos + i);
+
+			m_Index.GrowToFit(iCount);
+			}
+
 		VALUE *Insert (const KEY &newKey)
 			{
 			return atom_Insert(newKey);

@@ -16,13 +16,16 @@ class CG8bitImage : public CGImagePlane
 
 		//	Basic Interface
 
+		void CleanUp (void);
 		bool Create (int cxWidth, int cyHeight, BYTE InitialValue = 0);
 		bool CreateChannel (ChannelTypes iChannel, const CG32bitImage &Src, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
 		bool CreateRoundedRect (int cxWidth, int cyHeight, int iRadius, BYTE Foreground = 0xff, BYTE Background = 0xff);
 		inline BYTE GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
 		inline BYTE *GetPixelPos (int x, int y) const { return m_pChannel + (y * m_cxWidth) + x; }
 		inline bool IsEmpty (void) const { return (m_pChannel == NULL); }
+		inline bool IsMarked (void) const { return m_bMarked; }
 		inline BYTE *NextRow (BYTE *pPos) const { return pPos + m_cxWidth; }
+		inline void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
 
 		//	Basic Drawing Interface
 
@@ -34,8 +37,8 @@ class CG8bitImage : public CGImagePlane
 
 	private:
 		static int CalcBufferSize (int cxWidth, int cyHeight) { return (cxWidth * cyHeight); }
-		void CleanUp (void);
 		void Copy (const CG8bitImage &Src);
 
 		BYTE *m_pChannel;
+		bool m_bMarked;						//	Mark/sweep flag (for use by caller)
 	};

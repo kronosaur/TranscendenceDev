@@ -372,14 +372,14 @@ double CXMLElement::GetAttributeDoubleBounded (const CString &sName, double rMin
 		return rNull;
 	}
 
-float CXMLElement::GetAttributeFloat (const CString &sName)
+double CXMLElement::GetAttributeFloat (const CString &sName)
 
 //	GetAttributeFloat
 //
 //	Returns a floating point attribute
 
 	{
-	return (float)strToDouble(GetAttribute(sName), 0.0);
+	return strToDouble(GetAttribute(sName), 0.0);
 	}
 
 int CXMLElement::GetAttributeInteger (const CString &sName)

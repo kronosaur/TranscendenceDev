@@ -45,8 +45,6 @@ const int MIN_COORD =			-1000000;
 
 const WORD DEFAULT_TRANSPARENT_COLOR = 0xfc1f;
 
-typedef double REALPIXEL;
-
 class CG16bitFont;
 class CG16bitImage;
 
@@ -99,6 +97,11 @@ enum SurfaceTypes
 
 struct SPoint
 	{
+	SPoint (int xArg = 0, int yArg = 0) : 
+			x(xArg), 
+			y(yArg)
+		{ }
+
 	int x;
 	int y;
 	};
@@ -136,6 +139,11 @@ class CGImagePlane
 #include "DXImage16.h"
 #include "DXImage8.h"
 
+#include "DXRegion.h"
+#include "DXPath.h"
+
+#include "TRegionPainter.h"
+
 //	 8-bit drawing functions (for masks) ---------------------------------------
 
 void DrawHorzLine8bit (CG16bitImage &Dest, int x, int y, int cxWidth, BYTE byValue);
@@ -165,29 +173,39 @@ class CNoiseGenerator
 		CNoiseGenerator (int iScale);
 		~CNoiseGenerator (void);
 
-		inline float GetAt (SNoisePos &x, SNoisePos &y);
+		inline Metric GetAt (SNoisePos &x, SNoisePos &y);
+		inline Metric GetAt (SNoisePos &x, SNoisePos &y, SNoisePos &z);
+		inline Metric GetAtPeriodic (int iPeriod, SNoisePos &x, SNoisePos &y, SNoisePos &z);
 		inline void Next (SNoisePos &i) { if (++i.iFraction == m_iScale) { i.iInteger++; i.iFraction = 0; } }
 		inline void Reset (SNoisePos &i, int iPos) { i.iInteger = iPos / m_iScale; i.iFraction = iPos % m_iScale; }
 
 	private:
 		int m_iScale;
-		float *m_Frac;
-		float *m_InvFrac;
-		float *m_Smooth;
+		Metric *m_Frac;
+		Metric *m_InvFrac;
+		Metric *m_Smooth;
 	};
 
-float Noise2D (int x, float fx0, float fx1, float wx, int y, float fy0, float fy1, float wy);
-float Noise3D (int x, float fx0, float fx1, float wx, int y, float fy0, float fy1, float wy, int z, float fz0, float fz1, float wz);
+Metric Noise2D (int x, Metric fx0, Metric fx1, Metric wx, int y, Metric fy0, Metric fy1, Metric wy);
+Metric Noise3D (int x, Metric fx0, Metric fx1, Metric wx, int y, Metric fy0, Metric fy1, Metric wy, int z, Metric fz0, Metric fz1, Metric wz);
 void NoiseInit (DWORD dwSeed = 0);
 void NoiseReinit (DWORD dwSeed = 0);
-float NoiseSmoothStep (float x);
+Metric NoiseSmoothStep (Metric x);
+Metric PeriodicNoise3D (int iPeriod, int x, Metric fx0, Metric fx1, Metric wx, int y, Metric fy0, Metric fy1, Metric wy, int z, Metric fz0, Metric fz1, Metric wz);
 
-inline float CNoiseGenerator::GetAt (SNoisePos &x, SNoisePos &y)
+inline Metric CNoiseGenerator::GetAt (SNoisePos &x, SNoisePos &y)
 	{ return Noise2D(x.iInteger, m_Frac[x.iFraction], m_InvFrac[x.iFraction], m_Smooth[x.iFraction], y.iInteger, m_Frac[y.iFraction], m_InvFrac[y.iFraction], m_Smooth[y.iFraction]); }
+
+inline Metric CNoiseGenerator::GetAt (SNoisePos &x, SNoisePos &y, SNoisePos &z)
+	{ return Noise3D(x.iInteger, m_Frac[x.iFraction], m_InvFrac[x.iFraction], m_Smooth[x.iFraction], y.iInteger, m_Frac[y.iFraction], m_InvFrac[y.iFraction], m_Smooth[y.iFraction], z.iInteger, m_Frac[z.iFraction], m_InvFrac[z.iFraction], m_Smooth[z.iFraction]); }
+
+inline Metric CNoiseGenerator::GetAtPeriodic (int iPeriod, SNoisePos &x, SNoisePos &y, SNoisePos &z)
+	{ return PeriodicNoise3D(iPeriod, x.iInteger, m_Frac[x.iFraction], m_InvFrac[x.iFraction], m_Smooth[x.iFraction], y.iInteger, m_Frac[y.iFraction], m_InvFrac[y.iFraction], m_Smooth[y.iFraction], z.iInteger, m_Frac[z.iFraction], m_InvFrac[z.iFraction], m_Smooth[z.iFraction]); }
 
 #include "TextFormat.h"
 #include "DXUI.h"
 #include "DXSparseMask.h"
+#include "DXFractal.h"
 
 //	Utility Functions ---------------------------------------------------------
 
@@ -267,7 +285,7 @@ class CFrameRateCounter
 		CFrameRateCounter (int iSize = 128);
 		~CFrameRateCounter (void);
 
-		float GetFrameRate (void);
+		Metric GetFrameRate (void);
 		void MarkFrame (void);
 
 	private:

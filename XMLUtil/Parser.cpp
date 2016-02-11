@@ -1325,6 +1325,22 @@ CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound)
 		return CONSTLIT("\"");
 	else if (strEquals(sName, CONSTLIT("apos")))
 		return CONSTLIT("'");
+	else if (strEquals(sName, CONSTLIT("bull")))
+		return CONSTLIT("•");
+	else if (strEquals(sName, CONSTLIT("copy")))
+		return CONSTLIT("©");
+	else if (strEquals(sName, CONSTLIT("deg")))
+		return CONSTLIT("°");
+	else if (strEquals(sName, CONSTLIT("mdash")))
+		return CONSTLIT("—");
+	else if (strEquals(sName, CONSTLIT("plusmn")))
+		return CONSTLIT("±");
+	else if (strEquals(sName, CONSTLIT("reg")))
+		return CONSTLIT("®");
+	else if (strEquals(sName, CONSTLIT("times")))
+		return CONSTLIT("×");
+	else if (strEquals(sName, CONSTLIT("trade")))
+		return CONSTLIT("™");
 
 	//	If the entity is a hex number, then this is a character
 

@@ -205,9 +205,9 @@ class CG16bitImage : public CGImagePlane
 	private:
 		struct RealPixel
 			{
-			REALPIXEL rRed;
-			REALPIXEL rGreen;
-			REALPIXEL rBlue;
+			Metric rRed;
+			Metric rGreen;
+			Metric rBlue;
 			};
 
 		void BresenhamLine (int x1, int y1, 
@@ -508,6 +508,7 @@ class CG16bitFont : public CObject
 							 int *retx = NULL) const;
 		inline int GetAscent (void) const { return m_cyAscent; }
 		inline int GetAverageWidth (void) const { return m_cxAveWidth; }
+		const CG16bitImage &GetCharacterImage (char chChar = ' ', int *retx = 0, int *rety = 0, int *retcxWidth = 0, int *retcyHeight = 0, int *retcxAdvance = 0) const;
 		inline int GetHeight (void) const { return m_cyHeight; }
 		inline const CString &GetTypeface (void) const { return m_sTypeface; }
 		inline bool IsBold (void) const { return m_bBold; }

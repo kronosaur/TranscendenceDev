@@ -42,6 +42,30 @@ void CVector::GenerateOrthogonals (const CVector &vNormal, Metric *retvPara, Met
 	*retvPerp = Dot(vNormal.Perpendicular());
 	}
 
+Metric CVector::Polar (Metric *retrRadius) const
+
+//	Polar
+//
+//	Returns the angle of the vector (in radians) and optionally the radius.
+
+	{
+	if (retrRadius)
+		*retrRadius = Length();
+
+	return mathAngleMod(atan2(y, x));
+	}
+
+CVector CVector::Rotate (Metric rRadians) const
+
+//	Rotate
+//
+//	Returns the vector rotated by the given angle
+
+	{
+	return CVector(x * cos(rRadians) - y * sin(rRadians),
+			x * sin(rRadians) + y * cos(rRadians));
+	}
+
 CVector CVector::Rotate (int iAngle) const
 
 //	Rotate
@@ -63,6 +87,25 @@ void IntPolarToVector (int iAngle, Metric rRadius, int *iox, int *ioy)
 	*iox = (int)(rRadius * g_Cosine[AngleMod(iAngle)]);
 	*ioy = (int)(rRadius * g_Sine[AngleMod(iAngle)]);
 	}
+
+int IntProportionalTransition (int iFrom, int iTo, int iPercent)
+
+//  IntProportionalTransition
+//
+//  Moves from iFrom to iTo by a fraction of the distance between them. We 
+//  guarantee that we always make progress (unless we're at to).
+
+    {
+    int iDiff = iTo - iFrom;
+    if (iDiff == 0)
+        return iTo;
+
+    int iMove = iDiff * iPercent / 100;
+    if (iMove == 0)
+        return iFrom + (iDiff > 0 ? 1 : -1);
+
+    return iFrom + iMove;
+    }
 
 int IntVectorToPolar (int x, int y, int *retiRadius)
 
@@ -86,9 +129,9 @@ int IntVectorToPolar (int x, int y, int *retiRadius)
 		{
 		iRadius = mathSqrt(iSqrRadius);
 		if (x >= 0.0)
-			iAngle = (((int)(180 * asin((float)y / (float)iRadius) / g_Pi)) + 360) % 360;
+			iAngle = (((int)(180 * asin((double)y / (double)iRadius) / PI)) + 360) % 360;
 		else
-			iAngle = 180 - ((int)(180 * asin((float)y / (float)iRadius) / g_Pi));
+			iAngle = 180 - ((int)(180 * asin((double)y / (double)iRadius) / PI));
 		}
 
 	ASSERT(iAngle >= 0 && iAngle < 360);
@@ -171,9 +214,9 @@ Metric VectorToPolarRadians (const CVector &vP, Metric *retrRadius)
 		{
 		rRadius = sqrt(rSqrRadius);
 		if (vP.GetX() >= 0.0)
-			rAngle = (vP.GetY() >= 0.0 ? asin(vP.GetY() / rRadius) : (2 * g_Pi) + asin(vP.GetY() / rRadius));
+			rAngle = (vP.GetY() >= 0.0 ? asin(vP.GetY() / rRadius) : (2 * PI) + asin(vP.GetY() / rRadius));
 		else
-			rAngle = g_Pi - asin(vP.GetY() / rRadius);
+			rAngle = PI - asin(vP.GetY() / rRadius);
 		}
 
 	//	Done

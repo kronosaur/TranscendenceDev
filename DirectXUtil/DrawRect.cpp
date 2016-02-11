@@ -242,8 +242,8 @@ void CGDraw::RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, 
 
 	//	Paint the corners
 
-	Arc(Dest, x + iRadius, y + iRadius, iRadius, 90, 180, iLineWidth, rgbColor);
-	Arc(Dest, x + cxWidth - iRadius, y + iRadius, iRadius, 0, 90, iLineWidth, rgbColor);
-	Arc(Dest, x + iRadius, y + cyHeight - iRadius, iRadius, 180, 270, iLineWidth, rgbColor);
-	Arc(Dest, x + cxWidth - iRadius, y + cyHeight - iRadius, iRadius, 270, 360, iLineWidth, rgbColor);
+	ArcCorner(Dest, x + iRadius, y + iRadius, iRadius, 90, 180, iLineWidth, rgbColor);
+	ArcCorner(Dest, x + cxWidth - iRadius, y + iRadius, iRadius, 0, 90, iLineWidth, rgbColor);
+	ArcCorner(Dest, x + iRadius, y + cyHeight - iRadius, iRadius, 180, 270, iLineWidth, rgbColor);
+	ArcCorner(Dest, x + cxWidth - iRadius, y + cyHeight - iRadius, iRadius, 270, 360, iLineWidth, rgbColor);
 	}

@@ -406,6 +406,7 @@ class CCString : public ICCString
 
 		virtual ICCItem *Clone (CCodeChain *pCC);
 		virtual BOOL GetBinding (int *retiFrame, int *retiOffset);
+		virtual double GetDoubleValue (void) { return strToDouble(m_sValue, 0.0); }
 		virtual int GetIntegerValue (void) { return strToInt(m_sValue, 0); }
 		virtual ICCItem *GetFunctionBinding (void) { if (m_pBinding) return m_pBinding->Reference(); else return NULL; }
 		virtual CString GetStringValue (void) { return m_sValue; }
@@ -562,29 +563,29 @@ class CCLinkedList : public ICCList
 class CCVectorOld : public ICCList
 {
 public:
-	CCVectorOld(void);
-	CCVectorOld(CCodeChain *pCC);
-	virtual ~CCVectorOld(void);
+	CCVectorOld (void);
+	CCVectorOld (CCodeChain *pCC);
+	virtual ~CCVectorOld (void);
 
-	int *GetArray(void);
-	BOOL SetElement(int iIndex, int iElement);
-	ICCItem *SetSize(CCodeChain *pCC, int iNewSize);
+	int *GetArray (void);
+	BOOL SetElement (int iIndex, int iElement);
+	ICCItem *SetSize (CCodeChain *pCC, int iNewSize);
 
 	//	ICCItem virtuals
 
-	virtual ICCItem *Clone(CCodeChain *pCC);
-	virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
-	virtual int GetCount(void) { return m_iCount; }
-	virtual ICCItem *GetElement(int iIndex);
-	virtual ICCItem *Head(CCodeChain *pCC) { return GetElement(0); }
-	virtual CString Print(CCodeChain *pCC, DWORD dwFlags = 0);
-	virtual ICCItem *Tail(CCodeChain *pCC);
-	virtual void Reset(void);
+	virtual ICCItem *Clone (CCodeChain *pCC);
+	virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode);
+	virtual int GetCount (void) { return m_iCount; }
+	virtual ICCItem *GetElement (int iIndex);
+	virtual ICCItem *Head (CCodeChain *pCC) { return GetElement(0); }
+	virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
+	virtual ICCItem *Tail (CCodeChain *pCC);
+	virtual void Reset (void);
 
 protected:
-	virtual void DestroyItem(CCodeChain *pCC);
-	virtual ICCItem *StreamItem(CCodeChain *pCC, IWriteStream *pStream);
-	virtual ICCItem *UnstreamItem(CCodeChain *pCC, IReadStream *pStream);
+	virtual void DestroyItem (CCodeChain *pCC);
+	virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream);
+	virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream);
 
 private:
 	CCodeChain *m_pCC;						//	CodeChain
@@ -827,6 +828,7 @@ class CCodeChain : public CObject
 		ICCItem *CreateDouble (double dValue);
 		ICCItem *CreateLambda (ICCItem *pList, BOOL bArgsOnly);
 		ICCItem *CreateLinkedList (void);
+		ICCItem *CreateLiteral (const CString &sString);
 		inline ICCItem *CreateMemoryError (void) { return m_sMemoryError.Reference(); }
 		inline ICCItem *CreateNil (void) { return m_pNil->Reference(); }
 		ICCItem *CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl);
@@ -890,6 +892,8 @@ class CCodeChain : public CObject
 		bool HasIdentifier (ICCItem *pCode, const CString &sIdentifier);
 
 	private:
+		ICCItem *CreateDoubleIfPossible (const CString &sString);
+		ICCItem *CreateIntegerIfPossible (const CString &sString);
 		ICCItem *CreateParseError (int iLine, const CString &sError);
 		ICCItem *EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem);
 		ICCItem *Lookup (CEvalContext *pCtx, ICCItem *pItem);

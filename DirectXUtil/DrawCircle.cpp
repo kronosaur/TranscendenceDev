@@ -62,85 +62,169 @@ void CGDraw::Circle (CG8bitImage &Dest, int xCenter, int yCenter, int iRadius, B
 		}
 	}
 
-void CGDraw::Circle (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, CG32bitPixel rgbColor)
+void CGDraw::Circle (CG32bitImage &Dest, int xCenter, int yCenter, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode)
 
 //	Circle
 //
 //	Draws a filled circle
 
 	{
-	BYTE byOpacity = rgbColor.GetAlpha();
-
 	//	Deal with edge-conditions
 
 	if (iRadius <= 0)
-		{
-		Dest.SetPixelTrans(xCenter, yCenter, rgbColor, byOpacity);
 		return;
-		}
 
-	//	Initialize some stuff
+	//	Based on mode
 
-	int x = 0;
-	int y = iRadius;
-	int d = 1 - iRadius;
-	int deltaE = 3;
-	int deltaSE = -2 * iRadius + 5;
-
-	Dest.FillLine(xCenter - iRadius, yCenter, 1 + 2 * iRadius, rgbColor);
-
-	//	Loop
-
-	while (y > x)
+	switch (iMode)
 		{
-		if (d < 0)
+		//	Normal mode is optimized
+
+		case blendNormal:
 			{
-			d += deltaE;
-			deltaE += 2;
-			deltaSE += 2;
+			//	Initialize some stuff
+
+			int x = 0;
+			int y = iRadius;
+			int d = 1 - iRadius;
+			int deltaE = 3;
+			int deltaSE = -2 * iRadius + 5;
+
+			Dest.FillLine(xCenter - iRadius, yCenter, 1 + 2 * iRadius, rgbColor);
+
+			//	Loop
+
+			while (y > x)
+				{
+				if (d < 0)
+					{
+					d += deltaE;
+					deltaE += 2;
+					deltaSE += 2;
+					}
+				else
+					{
+					d += deltaSE;
+					deltaE += 2;
+					deltaSE += 4;
+
+					Dest.FillLine(xCenter - x, yCenter - y, 1 + 2 * x, rgbColor);
+					Dest.FillLine(xCenter - x, yCenter + y, 1 + 2 * x, rgbColor);
+
+					y--;
+					}
+
+				x++;
+
+				if (y >= x)
+					{
+					Dest.FillLine(xCenter - y, yCenter - x, 1 + 2 * y, rgbColor);
+					Dest.FillLine(xCenter - y, yCenter + x, 1 + 2 * y, rgbColor);
+					}
+				}
+
+			break;
 			}
-		else
+
+		case blendHardLight:
 			{
-			d += deltaSE;
-			deltaE += 2;
-			deltaSE += 4;
-
-			Dest.FillLine(xCenter - x, yCenter - y, 1 + 2 * x, rgbColor);
-			Dest.FillLine(xCenter - x, yCenter + y, 1 + 2 * x, rgbColor);
-
-			y--;
+			TFillCircleSolid<CGBlendHardLight> Painter(iRadius, rgbColor);
+			Painter.Draw(Dest, xCenter, yCenter);
+			break;
 			}
 
-		x++;
-
-		if (y >= x)
+		case blendScreen:
 			{
-			Dest.FillLine(xCenter - y, yCenter - x, 1 + 2 * y, rgbColor);
-			Dest.FillLine(xCenter - y, yCenter + x, 1 + 2 * y, rgbColor);
+			TFillCircleSolid<CGBlendScreen> Painter(iRadius, rgbColor);
+			Painter.Draw(Dest, xCenter, yCenter);
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			TFillCircleSolid<CGBlendComposite> Painter(iRadius, rgbColor);
+			Painter.Draw(Dest, xCenter, yCenter);
+			break;
 			}
 		}
 	}
 
-void CGDraw::Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp)
+void CGDraw::Circle (CG32bitImage &Dest, int x, int y, int iRadius, const TArray<CG32bitPixel> &ColorRamp, EBlendModes iMode, bool bPreMult)
 
 //	Circle
 //
 //	Draws a circle with a color ramp
 
 	{
-	CRadialCirclePainter Painter(iRadius, ColorRamp);
-	Painter.Draw(Dest, x, y);
+	switch (iMode)
+		{
+		case blendNormal:
+			{
+			CRadialCirclePainter<CGBlendBlend> Painter(iRadius, ColorRamp, bPreMult);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendHardLight:
+			{
+			CRadialCirclePainter<CGBlendHardLight> Painter(iRadius, ColorRamp, bPreMult);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendScreen:
+			{
+			CRadialCirclePainter<CGBlendScreen> Painter(iRadius, ColorRamp, bPreMult);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			CRadialCirclePainter<CGBlendComposite> Painter(iRadius, ColorRamp, bPreMult);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+		}
 	}
 
-void CGDraw::CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, int xSrc, int ySrc, int cxSrc, int cySrc)
+void CGDraw::CircleImage (CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity, const CG32bitImage &Image, EBlendModes iMode, int xSrc, int ySrc, int cxSrc, int cySrc)
 
 //	CircleImage
 //
 //	Draws a circle using the given image.
 
 	{
-	CImageCirclePainter Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
-	Painter.Draw(Dest, x, y);
+	switch (iMode)
+		{
+		case blendNormal:
+			{
+			CImageCirclePainter<CGBlendBlend> Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendHardLight:
+			{
+			CImageCirclePainter<CGBlendHardLight> Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendScreen:
+			{
+			CImageCirclePainter<CGBlendScreen> Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			CImageCirclePainter<CGBlendComposite> Painter(iRadius, byOpacity, Image, xSrc, ySrc, cxSrc, cySrc);
+			Painter.Draw(Dest, x, y);
+			break;
+			}
+		}
 	}
 
 void CGDraw::CircleGradient (CG8bitImage &Dest, int x, int y, int iRadius, BYTE CenterValue, BYTE EdgeValue)
@@ -154,7 +238,7 @@ void CGDraw::CircleGradient (CG8bitImage &Dest, int x, int y, int iRadius, BYTE 
 	Painter.Draw(Dest, x, y);
 	}
 
-void CGDraw::CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor)
+void CGDraw::CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32bitPixel rgbColor, EBlendModes iBlendMode)
 
 //	CircleGradient
 //
@@ -179,8 +263,7 @@ void CGDraw::CircleGradient (CG32bitImage &Dest, int x, int y, int iRadius, CG32
 
 	//	Draw the circle
 
-	CRadialCirclePainter Painter(iRadius, ColorRamp, true);
-	Painter.Draw(Dest, x, y);
+	Circle(Dest, x, y, iRadius, ColorRamp, iBlendMode, true);
 	}
 
 void CGDraw::RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWidth, CG32bitPixel rgbColor)
@@ -205,21 +288,6 @@ void CGDraw::RingGlowing (CG32bitImage &Dest, int x, int y, int iRadius, int iWi
 	Painter.Draw(x, y);
 	}
 
-//	CImageCirclePainter --------------------------------------------------------
-
-CImageCirclePainter::CImageCirclePainter (int iRadius, BYTE byOpacity, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) : TCirclePainter32((cxSrc >= 0 ? cxSrc : Src.GetWidth()), iRadius),
-		m_byOpacity(byOpacity),
-		m_Src(Src),
-		m_xSrc(xSrc),
-		m_ySrc(ySrc),
-		m_cxSrc(cxSrc >= 0 ? cxSrc : Src.GetWidth()),
-		m_cySrc(cySrc >= 0 ? cySrc : Src.GetHeight())
-
-//	CImageCirclePainter constructor
-
-	{
-	}
-
 //	CRadialCirclePainter8 ------------------------------------------------------
 
 CRadialCirclePainter8::CRadialCirclePainter8 (int iRadius, BYTE CenterValue, BYTE EdgeValue) : TRadialPainter8(iRadius)
@@ -240,30 +308,3 @@ CRadialCirclePainter8::CRadialCirclePainter8 (int iRadius, BYTE CenterValue, BYT
 		m_Ramp[i] = (BYTE)(iStart + (iRange * i / iRadius));
 	}
 
-//	CRadialCirclePainter -------------------------------------------------------
-
-CRadialCirclePainter::CRadialCirclePainter (int iRadius, const TArray<CG32bitPixel> &ColorRamp, bool bPreMult) : TRadialPainter32(iRadius)
-
-//	CCirclePainter constructor
-
-	{
-	int i;
-
-	//	If the ramp is not pre-multiplied, then we need to do that now
-
-	if (!bPreMult)
-		{
-		//	Pre-multiply the color ramp
-
-		m_ColorRamp.InsertEmpty(ColorRamp.GetCount());
-		m_pColorRamp = &m_ColorRamp;
-
-		for (i = 0; i < m_ColorRamp.GetCount(); i++)
-			m_ColorRamp[i] = CG32bitPixel::PreMult(ColorRamp[i]);
-		}
-
-	//	Otherwise we just take the ramp we've been given
-
-	else
-		m_pColorRamp = &ColorRamp;
-	}

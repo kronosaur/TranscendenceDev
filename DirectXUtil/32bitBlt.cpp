@@ -901,6 +901,41 @@ void CGDraw::BltLighten (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage 
 	Filter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
 	}
 
+void CGDraw::BltMask (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG8bitImage &Mask, EBlendModes iMode)
+
+	{
+	switch (iMode)
+		{
+		case blendNormal:
+			{
+			TBltImageNormal<CGBlendBlend> Painter;
+			Painter.BltMask(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc, Mask);
+			break;
+			}
+
+		case blendHardLight:
+			{
+			TBltImageNormal<CGBlendHardLight> Painter;
+			Painter.BltMask(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc, Mask);
+			break;
+			}
+
+		case blendScreen:
+			{
+			TBltImageNormal<CGBlendScreen> Painter;
+			Painter.BltMask(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc, Mask);
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			TBltImageNormal<CGBlendComposite> Painter;
+			Painter.BltMask(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc, Mask);
+			break;
+			}
+		}
+	}
+
 void CGDraw::BltMask0 (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
 
 	{
@@ -1000,7 +1035,7 @@ void CGDraw::BltWithBackColor (CG32bitImage &Dest, int xDest, int yDest, CG32bit
 		Dest.Blt(xSrc, ySrc, cxSrc, cySrc, Src, xDest, yDest);
 	}
 
-void CGDraw::CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, REALPIXEL rHue, REALPIXEL rSaturation)
+void CGDraw::CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, Metric rHue, Metric rSaturation)
 
 	{
 	CFilterColorize Filter(rHue, rSaturation);

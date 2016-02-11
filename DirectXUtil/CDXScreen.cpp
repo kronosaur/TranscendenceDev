@@ -38,14 +38,18 @@ bool CDXScreen::BeginScene (void)
 
 		if (hr == D3DERR_DEVICELOST)
 			{
+            ::kernelDebugLogMessage("[DX] Device lost at BeginScene.");
 			m_bDeviceLost = true;
 			return false;
 			}
 
 		//	Otherwise, it's some error we can't handle
 
-		else
+        else
+            {
+            RenderError(CONSTLIT("BeginScene unknown error."));
 			return false;
+            }
 		}
 
 	//	Success!
@@ -468,7 +472,7 @@ bool CDXScreen::InitDevice (CString *retsError)
 	Identity.SetIdentity();
 
 	CDXMatrix Ortho2D;
-	Ortho2D.SetOrthoLH((float)m_cxSource, (float)m_cySource, 0.0f, 1.0f);
+	Ortho2D.SetOrthoLH((FLOAT)m_cxSource, (FLOAT)m_cySource, 0.0, 1.0);
     
     m_pD3DDevice->SetTransform(D3DTS_PROJECTION, Ortho2D);
     m_pD3DDevice->SetTransform(D3DTS_WORLD, Identity);
@@ -482,6 +486,31 @@ bool CDXScreen::InitDevice (CString *retsError)
 
 	return true;
 	}
+
+bool CDXScreen::InitLayerResources (void)
+
+//  InitLayerResources
+//
+//  Initializes layer resources after a reset
+
+    {
+    int i;
+
+	if (m_bUseTextures)
+		{
+		for (i = 0; i < m_Layers.GetCount(); i++)
+			{
+			SLayer &Layer = m_Layers[i];
+			if (!CreateLayerResources(Layer))
+				{
+				::kernelDebugLogMessage("[DX] CreateLayerResources failed.");
+				return false;
+				}
+			}
+		}
+
+    return true;
+    }
 
 bool CDXScreen::Present (void)
 
@@ -500,22 +529,23 @@ bool CDXScreen::Present (void)
 		m_bEndSceneNeeded = false;
 		}
 
-	//	See if we need to reset
-
-	HRESULT hr = m_pD3DDevice->TestCooperativeLevel();
-	if (hr == D3DERR_DEVICELOST)
-		//	We're reset later.
-		return true;
-	else if (hr == D3DERR_DEVICENOTRESET)
-		{
-		m_bDeviceLost = true;
-		return false;
-		}
-
 	//	Otherwise, present
 
-	if (FAILED(m_pD3DDevice->Present(NULL, NULL, NULL, NULL)))
-		return false;
+    HRESULT hr;
+    if (FAILED(hr = m_pD3DDevice->Present(NULL, NULL, NULL, NULL)))
+        {
+        if (hr == D3DERR_DEVICELOST)
+            {
+            ::kernelDebugLogMessage("[DX] Device lost at Present.");
+            m_bDeviceLost = true;
+            return false;
+            }
+        else
+            {
+            RenderError(CONSTLIT("Present unknown error."));
+		    return false;
+            }
+        }
 
 	//	Done
 
@@ -611,10 +641,7 @@ void CDXScreen::Render (void)
 		//	it explicitly).
 
 		if (!Present())
-			{
-			RenderError(CONSTLIT("Unable to end scene."));
 			return;
-			}
 		}
 
 	//	Otherwise, we just blt directly to the back buffer. In this case, however, we
@@ -637,10 +664,7 @@ void CDXScreen::Render (void)
 		//	Done
 
 		if (!Present())
-			{
-			RenderError(CONSTLIT("Unable to end scene."));
 			return;
-			}
 		}
 	}
 
@@ -712,7 +736,7 @@ bool CDXScreen::ResetDevice (void)
 
 		if (hr == D3DERR_DEVICELOST)
 			{
-			::kernelDebugLogMessage("[DX] Device lost after Rest.");
+			::kernelDebugLogMessage("[DX] Device lost after reset.");
 			return false;
 			}
 
@@ -721,35 +745,6 @@ bool CDXScreen::ResetDevice (void)
 		::kernelDebugLogMessage("[DX] Device reset failed: %x", hr);
 		return false;
 		}
-
-	//	Reinitialize the render state
-
-	if (!InitDevice())
-		{
-		::kernelDebugLogMessage("[DX] InitDevice failed.");
-		return false;
-		}
-
-	//	Create all layer resources
-
-	if (m_bUseTextures)
-		{
-		for (i = 0; i < m_Layers.GetCount(); i++)
-			{
-			SLayer &Layer = m_Layers[i];
-			if (!CreateLayerResources(Layer))
-				{
-				::kernelDebugLogMessage("[DX] CreateLayerResources failed.");
-				return false;
-				}
-			}
-		}
-
-	//	Success
-
-	m_bDeviceLost = false;
-	m_bErrorReported = false;
-	::kernelDebugLogMessage("[DX] Device reset successfully.");
 
 	return true;
 	}
@@ -772,19 +767,53 @@ void CDXScreen::SwapBuffers (void)
 		//	See if we need to reset
 
 		HRESULT hr = m_pD3DDevice->TestCooperativeLevel();
-		if (hr == D3DERR_DEVICELOST
-				|| hr == D3DERR_DEVICENOTRESET)
-			{
-			if (!ResetDevice())
-				return;
-			}
-		else if (hr != D3D_OK)
-			return;
+        switch (hr)
+            {
+            case D3D_OK:
+                {
+	            //	Reinitialize the render state
+
+	            if (!InitDevice())
+		            {
+		            ::kernelDebugLogMessage("[DX] InitDevice failed.");
+		            return;
+		            }
+
+	            //	Create all layer resources`
+
+                if (!InitLayerResources())
+                    {
+    	            ::kernelDebugLogMessage("[DX] CreateLayerResources failed.");
+                    return;
+		            }
+
+	            //	Success
+
+	            m_bDeviceLost = false;
+	            m_bErrorReported = false;
+	            ::kernelDebugLogMessage("[DX] Device reset successfully.");
+                break;
+                }
+
+            case D3DERR_DEVICELOST:
+                //  If we're still lost, keep waiting
+
+                Sleep(10);
+                break;
+
+            case D3DERR_DEVICENOTRESET:
+                ResetDevice();
+                break;
+
+            default:
+                ::kernelDebugLogMessage("[DX] TestCooperativeLevel failed.");
+                return;
+            }
 		}
 
 	//	Swap
 
-	if (m_bUseTextures)
+	else if (m_bUseTextures)
 		{
 		for (i = 0; i < m_Layers.GetCount(); i++)
 			{

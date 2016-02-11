@@ -39,7 +39,7 @@ class CDXScreen
 		void CleanUp (void);
 		bool CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CString *retsError = NULL);
 		void DebugOutputStats (void);
-		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return m_Layers[iLayerID].BackBuffer; }
+		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return (m_bDeviceLost ? CG32bitImage::Null() : m_Layers[iLayerID].BackBuffer); }
 		bool Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError = NULL);
 		inline bool IsUsingDirectX (void) const { return !m_bUseGDI; }
 		inline bool IsUsingTextures (void) const { return m_bUseTextures; }
@@ -91,6 +91,7 @@ class CDXScreen
 		inline bool CanUseDynamicTextures (void) const { return ((m_DeviceCaps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) ? true : false); }
 		bool CreateLayerResources (SLayer &Layer, CString *retsError = NULL);
 		bool InitDevice (CString *retsError = NULL);
+        bool InitLayerResources (void);
 		bool Present (void);
 		void RenderError (const CString &sError);
 		bool ResetDevice (void);
