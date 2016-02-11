@@ -130,7 +130,7 @@ CStandardShipAI::~CStandardShipAI (void)
 	{
 	}
 
-void CStandardShipAI::OnBehavior (void)
+void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 
 //	Behavior
 //
@@ -1676,7 +1676,7 @@ void CStandardShipAI::CommunicateWithEscorts (MessageTypes iMessage, CSpaceObjec
 	m_AICtx.CommunicateWithEscorts(m_pShip, iMessage, pParam1, dwParam2);
 	}
 
-void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const DamageDesc &Damage)
+void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 
 //	OnAttackedNotify
 //
@@ -1684,7 +1684,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const DamageDes
 //	or it can be the missile/beam that hit us.
 
 	{
-	CSpaceObject *pOrderGiver = (pAttacker ? pAttacker->GetOrderGiver(Damage.GetCause()) : NULL);
+	CSpaceObject *pOrderGiver = (pAttacker ? pAttacker->GetOrderGiver(Damage.Damage.GetCause()) : NULL);
 
 	if (pAttacker)
 		{
@@ -1985,7 +1985,7 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 			{
 			//	Treat this as an attack on ourselves
 
-			DamageDesc Dummy;
+			SDamageCtx Dummy;
 			OnAttacked(pParam1, Dummy);
 			return resAck;
 			}

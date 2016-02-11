@@ -26,7 +26,7 @@ IOrderModule::~IOrderModule (void)
 	{
 	}
 
-void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire)
+void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	Attacked
 //
@@ -58,7 +58,7 @@ DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 			{
 			//	Treat this as an attack on ourselves
 
-			DamageDesc Dummy;
+			SDamageCtx Dummy;
 			pShip->GetController()->OnAttacked(pParam1, Dummy);
 			return resAck;
 			}
@@ -102,7 +102,8 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 			return new CAttackStationOrder;
 
 		case IShipController::orderEscort:
-			return new CEscortOrder;
+		case IShipController::orderFollow:
+			return new CEscortOrder(iOrder);
 
 		case IShipController::orderFireEvent:
 			return new CFireEventOrder;
@@ -136,7 +137,6 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderLoot:
 		case IShipController::orderMine:
 		case IShipController::orderDestroyPlayerOnReturn:
-		case IShipController::orderFollow:
 		case IShipController::orderBombard:
 		case IShipController::orderAimAtTarget:
 		case IShipController::orderOrbit:

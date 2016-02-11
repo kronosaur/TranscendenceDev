@@ -32,15 +32,60 @@
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
+#define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_POS							CONSTLIT("pos")
+#define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
+
+struct SStdDeviceStats
+	{
+	int iInstallCost;							//	Cost to install (credits)
+	};
+
+static SStdDeviceStats STD_DEVICE_STATS[MAX_ITEM_LEVEL] =
+	{
+		//	Install
+		{	60,		}, 
+ 		{	160,		},  
+ 		{	360,		},  
+ 		{	760,		},  
+ 		{	1500,		},  
+ 		{	3200,		},  
+ 		{	6500,		},  
+ 		{	13000,		},  
+ 		{	26000,		},  
+ 		{	53000,		},  
+ 		{	100000,		},  
+ 		{	210000,		},  
+ 		{	450000,		},  
+ 		{	880000,		},  
+ 		{	1700000,	},  
+ 		{	3500000,	},  
+ 		{	7100000,	},  
+ 		{	14000000,	},  
+ 		{	28000000,	}, 
+ 		{	56000000,	},  
+ 		{	110000000,	},  
+ 		{	230000000,	},  
+ 		{	450000000,	},  
+ 		{	910000000,	},  
+ 		{	1800000000,	},
+	};
 
 static char *CACHED_EVENTS[CDeviceClass::evtCount] =
 	{
 		"GetOverlayType",
 	};
+
+inline const SStdDeviceStats *GetStdDeviceStats (int iLevel)
+	{
+	if (iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL)
+		return &STD_DEVICE_STATS[iLevel - 1];
+	else
+		return NULL;
+	}
 
 void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
 
@@ -189,6 +234,23 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 		}
 	else
 		return GetOverlayType();
+	}
+
+int CDeviceClass::GetInstallCost (void)
+
+//	GetInstallCost
+//
+//	Returns the standard install cost (in the default currency of the item).
+
+	{
+	if (m_pItemType == NULL)
+		return -1;
+
+	const SStdDeviceStats *pStats = GetStdDeviceStats(m_pItemType->GetApparentLevel());
+	if (pStats == NULL)
+		return -1;
+
+	return (int)m_pItemType->GetCurrencyType()->Exchange(CEconomyType::Default(), pStats->iInstallCost);
 	}
 
 ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType)
@@ -457,6 +519,9 @@ ICCItem *CDeviceClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 		return pResult;
 		}
 
+	else if (strEquals(sName, PROPERTY_POWER))
+		return CC.CreateInteger(GetPowerRating(Ctx) * 100);
+
 	else if (strEquals(sName, PROPERTY_SECONDARY))
 		return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());
 
@@ -589,6 +654,36 @@ ALERROR CDeviceClass::ParseLinkedFireOptions (SDesignLoadCtx &Ctx, const CString
 	*retdwOptions = dwOptions;
 
 	return NOERROR;
+	}
+
+int CDeviceClass::ParseVariantFromPropertyName (const CString &sName, CString *retsName)
+
+//	ParseVariantFromPropertyName
+//
+//	If the name ends in :nn then nn is the variant. We also return the parsed
+//	property name (without the variant).
+
+	{
+	//	Look for a :nn suffix specifying a variant
+
+	char *pStart = sName.GetASCIIZPointer();
+	char *pPos = pStart;
+	while (*pPos != '\0')
+		{
+		if (*pPos == ':')
+			{
+			if (retsName)
+				*retsName = CString(pStart, (int)(pPos - pStart));
+
+			return strParseInt(pPos + 1, 0);
+			}
+
+		pPos++;
+		}
+
+	//	Not found
+
+	return -1;
 	}
 
 bool CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)

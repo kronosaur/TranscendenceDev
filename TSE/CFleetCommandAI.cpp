@@ -147,7 +147,7 @@ void CFleetCommandAI::AddTarget (CSpaceObject *pTarget)
 	m_iTargetCount++;
 	}
 
-void CFleetCommandAI::Behavior (void)
+void CFleetCommandAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 //

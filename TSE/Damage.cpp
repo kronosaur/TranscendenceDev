@@ -40,65 +40,83 @@ const int MAX_BINARY =							1;
 
 const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
-char *g_pszDamageTypes[damageCount] =
+struct SDamageTypeData
+    {
+    char *pszID;
+    int iTier;
+    int iLevel;
+    char *pszName;
+    char *pszShortName;
+    };
+
+SDamageTypeData DAMAGE_TYPE_DATA[damageCount] =
+    {
+        { "laser",          1,  1,  "laser",            "laser" },
+        { "kinetic",        1,  1,  "kinetic",          "kinetic" },
+        { "particle",       2,  4,  "particle beam",    "particle" },
+        { "blast",          2,  4,  "blast",            "blast" },
+        { "ion",            3,  7,  "ion",              "ion" },
+        { "thermo",         3,  7,  "thermonuclear",    "thermo" },
+        { "positron",       4,  10, "positron beam",    "positron" },
+        { "plasma",         4,  10, "plasma",           "plasma" },
+        { "antimatter",     5,  13, "antimatter",       "antimatter" },
+        { "nano",           5,  13, "nanotech",         "nano" },
+        { "graviton",       6,  16, "graviton",         "graviton" },
+        { "singularity",    6,  16, "singularity",      "singularity" },
+        { "darkAcid",       7,  19, "dark acid",        "dark acid" },
+        { "darkSteel",      7,  19, "dark steel",       "dark steel" },
+        { "darkLightning",  8,  22, "dark lightning",   "dark lightning" },
+        { "darkFire",       8,  22, "dark fire",        "dark fire" },
+    };
+
+struct SSpecialDamageData
 	{
-	"laser",
-	"kinetic",
-	"particle",
-	"blast",
-	"ion",
-	"thermo",
-	"positron",
-	"plasma",
-	"antimatter",
-	"nano",
-	"graviton",
-	"singularity",
-	"darkAcid",
-	"darkSteel",
-	"darkLightning",
-	"darkFire",
+	char *pszSpecial;						//	Name as specified in a damage desc line
+	char *pszProperty;						//	Property for this special damage
 	};
 
-char *g_pszDamageName[damageCount] =
+//	These must match the order in the SpecialDamageTypes enum.
+
+SSpecialDamageData SPECIAL_DAMAGE_DATA[] =
 	{
-	"laser",
-	"kinetic",
-	"particle beam",
-	"blast",
-	"ion",
-	"thermonuclear",
-	"positron beam",
-	"plasma",
-	"antimatter",
-	"nanotech",
-	"graviton",
-	"singularity",
-	"dark acid",
-	"dark steel",
-	"dark lightning",
-	"dark fire",
+		{	"radiation",		"damageRadiation" },
+		{	"blinding",			"damageBlinding" },
+		{	"EMP",				"damageEMP" },
+		{	"device",			"damageDeviceDestroy" },
+		{	"disintegration",	"damageDisintegration" },
+		{	"momentum",			"damageMomentum" },
+		{	"shield",			"damageShieldLevel" },
+		{	"WMD",				"damageWMD" },
+
+		{	"mining",			"damageMining" },
+		{	"deviceDisrupt",	"damageDeviceDisrupt" },
+		{	"wormhole",			"damageWormhole" },
+		{	"fuel",				"damageFuel" },
+		{	"shatter",			"damageShatter" },
+		{	"armor",			"damageArmorLevel" },
+		{	"sensor",			"damageSensor" },
+		{	"shieldPenetrate",	"damageShieldPenetrate" },
+
+		{	NULL,				NULL }
 	};
 
-char *g_pszShortDamageName[damageCount] =
-	{
-	"laser",
-	"kinetic",
-	"particle",
-	"blast",
-	"ion",
-	"thermo",
-	"positron",
-	"plasma",
-	"antimatter",
-	"nano",
-	"graviton",
-	"singularity",
-	"dark acid",
-	"dark steel",
-	"dark lightning",
-	"dark fire",
-	};
+struct SWMDData
+    {
+    int iAdj;                               //  Adjustments to damage at this WMD value (0-100)
+    int iLevel;                             //  Display level (0-10)
+    };
+    
+SWMDData WMD_DATA[] =
+    {
+        {   10,     0   },
+        {   25,     2   },
+        {   32,     3   },
+        {   40,     4   },
+        {   50,     5   },
+        {   63,     6   },
+        {   80,     8   },
+        {   100,    10   },
+    };
 
 //	Damage Types
 
@@ -112,7 +130,7 @@ CString GetDamageName (DamageTypes iType)
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
 	else
-		return CString(g_pszDamageName[iType]);
+		return CString(DAMAGE_TYPE_DATA[iType].pszName);
 	}
 
 CString GetDamageShortName (DamageTypes iType)
@@ -125,7 +143,7 @@ CString GetDamageShortName (DamageTypes iType)
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
 	else
-		return CString(g_pszShortDamageName[iType]);
+		return CString(DAMAGE_TYPE_DATA[iType].pszShortName);
 	}
 
 CString GetDamageType (DamageTypes iType)
@@ -138,7 +156,7 @@ CString GetDamageType (DamageTypes iType)
 	if (iType == damageGeneric)
 		return CONSTLIT("generic");
 	else
-		return CString(g_pszDamageTypes[iType]);
+		return CString(DAMAGE_TYPE_DATA[iType].pszID);
 	}
 
 DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
@@ -151,7 +169,7 @@ DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
 	int iType;
 
 	for (iType = 0; iType < damageCount; iType++)
-		if (strEquals(sAttrib, CString(g_pszDamageTypes[iType])))
+		if (strEquals(sAttrib, CString(DAMAGE_TYPE_DATA[iType].pszID)))
 			return (DamageTypes)iType;
 
 	//	Generic
@@ -175,7 +193,7 @@ DamageTypes LoadDamageTypeFromXML (const CString &sAttrib)
 
 //	DamageDesc -----------------------------------------------------------------
 
-void DamageDesc::AddEnhancements (CItemEnhancementStack *pEnhancements)
+void DamageDesc::AddEnhancements (const CItemEnhancementStack *pEnhancements)
 
 //	AddEnhancements
 //
@@ -202,53 +220,153 @@ SpecialDamageTypes DamageDesc::ConvertToSpecialDamageTypes (const CString &sValu
 //	Converts
 
 	{
-	if (strEquals(sValue, SPECIAL_DAMAGE_ARMOR))
-		return specialArmor;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_BLINDING))
-		return specialBlinding;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_DEVICE))
-		return specialDeviceDamage;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_DEVICE_DISRUPT))
-		return specialDeviceDisrupt;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_DISINTEGRATION))
-		return specialDisintegration;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_EMP))
-		return specialEMP;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_FUEL))
-		return specialFuel;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_MINING))
-		return specialMining;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_MOMENTUM))
-		return specialMomentum;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_RADIATION))
-		return specialRadiation;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_SHATTER))
-		return specialShatter;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_SHIELD))
-		return specialShieldDisrupt;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_WMD))
-		return specialWMD;
-	else if (strEquals(sValue, SPECIAL_DAMAGE_WORMHOLE))
-		return specialWormhole;
-	else
-		return specialNone;
+	int iSpecial = 0;
+	SSpecialDamageData *pData = SPECIAL_DAMAGE_DATA;
+	while (pData->pszSpecial)
+		{
+		if (strEquals(CString(pData->pszSpecial, -1, true), sValue))
+			return (SpecialDamageTypes)iSpecial;
+
+		pData++;
+		iSpecial++;
+		}
+
+	//	If we get this far, then we did not find it.
+
+	return specialNone;
 	}
 
-Metric DamageDesc::GetAverageDamage (bool bIncludeBonus) const
+SpecialDamageTypes DamageDesc::ConvertPropertyToSpecialDamageTypes (const CString &sValue)
 
-//	GetAverageDamage
+//	ConvertPropertyToSpecialDamageTypes
 //
-//	Returns the average damage
-	
+//	Converts
+
 	{
-	Metric rDamage = m_Damage.GetAveValueFloat();
-	if (bIncludeBonus)
+	int iSpecial = 0;
+	SSpecialDamageData *pData = SPECIAL_DAMAGE_DATA;
+	while (pData->pszSpecial)
+		{
+		if (strEquals(CString(pData->pszProperty, -1, true), sValue))
+			return (SpecialDamageTypes)iSpecial;
+
+		pData++;
+		iSpecial++;
+		}
+
+	//	If we get this far, then we did not find it.
+
+	return specialNone;
+	}
+
+ICCItem *DamageDesc::FindProperty (const CString &sName) const
+
+//	FindProperty
+//
+//	Returns the given damage property (or NULL for unknown properties).
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	//	See if this is one of the special damage properties
+
+	SpecialDamageTypes iSpecial;
+	if ((iSpecial = ConvertPropertyToSpecialDamageTypes(sName)) != specialNone)
+		return CC.CreateInteger(GetSpecialDamage(iSpecial));
+
+	//	Otherwise, not found
+
+	else
+		return NULL;
+	}
+
+int DamageDesc::GetDamageLevel (DamageTypes iType)
+
+//  GetDamageTier
+//
+//  Returns the damage tier based on damage type.
+
+    {
+    if (iType == damageGeneric)
+        return 1;
+    else
+        return DAMAGE_TYPE_DATA[iType].iLevel;
+    }
+
+int DamageDesc::GetDamageTier (DamageTypes iType)
+
+//  GetDamageTier
+//
+//  Returns the damage tier based on damage type.
+
+    {
+    if (iType == damageGeneric)
+        return 1;
+    else
+        return DAMAGE_TYPE_DATA[iType].iTier;
+    }
+
+Metric DamageDesc::GetDamageValue (DWORD dwFlags) const
+
+//	GetDamageValue
+//
+//	Returns the damage in HP
+
+	{
+	//	Get the damage value based on what we're looking for
+
+	Metric rDamage;
+	if (dwFlags & flagMinDamage)
+		rDamage = m_Damage.GetMinValue();
+	else if (dwFlags & flagMaxDamage)
+		rDamage = m_Damage.GetMaxValue();
+	else
+		rDamage = m_Damage.GetAveValueFloat();
+
+	//	Adjust for bonus
+
+	if (dwFlags & flagIncludeBonus)
 		rDamage += rDamage * m_iBonus / 100.0;
+
+	//	Adjust for WMD
+
+	if (dwFlags & flagWMDAdj)
+		rDamage = rDamage * GetMassDestructionAdj() / 100.0;
 
 	return rDamage;
 	}
 
-int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial) const
+int DamageDesc::GetMassDestructionAdj (void) const
+
+//  GetMassDestructionAdj
+//
+//  Returns the adjustment to damage given our level of mass destruction.
+
+    {
+    return WMD_DATA[m_MassDestructionAdj].iAdj;
+    }
+    
+int DamageDesc::GetMassDestructionLevel (void) const
+
+//  GetMassDestructionLevel
+//
+//  Returns the display level of WMD. This is what we show in weapon stats.
+
+    {
+    return WMD_DATA[m_MassDestructionAdj].iLevel;
+    }
+
+int DamageDesc::GetMassDestructionLevelFromValue (int iValue) 
+    
+//  GetMassDestructionLevel
+//
+//  Returns the display level of WMD. This is what we show in weapon stats.
+
+    {
+    return WMD_DATA[Max(0, Min(iValue, MAX_INTENSITY))].iLevel;
+    }
+
+int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) const
 
 //	GetSpecialDamage
 //
@@ -264,10 +382,10 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial) const
 			return m_BlindingDamage;
 
 		case specialDeviceDamage:
-			return m_DeviceDamage;
+			return ((dwFlags & flagSpecialAdj) ? 4 * m_DeviceDamage * m_DeviceDamage : m_DeviceDamage);
 
 		case specialDeviceDisrupt:
-			return m_DeviceDisruptDamage;
+			return ((dwFlags & flagSpecialAdj) ? 4 * m_DeviceDisruptDamage * m_DeviceDisruptDamage : m_DeviceDisruptDamage);
 
 		case specialDisintegration:
 			return m_DisintegrationDamage;
@@ -279,7 +397,7 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial) const
 			return m_FuelDamage;
 
 		case specialMining:
-			return m_MiningAdj;
+			return ((dwFlags & flagSpecialAdj) ? GetMiningAdj() : m_MiningAdj);
 
 		case specialMomentum:
 			return m_MomentumDamage;
@@ -293,12 +411,30 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial) const
 		case specialShieldDisrupt:
 			return m_ShieldDamage;
 
+		case specialShieldPenetrator:
+			return ((dwFlags & flagSpecialAdj) ? GetShieldPenetratorAdj() : m_ShieldPenetratorAdj);
+
 		case specialWMD:
-			return m_MassDestructionAdj;
+            if (dwFlags & flagSpecialAdj)
+                return GetMassDestructionAdj();
+            else if (dwFlags & flagSpecialLevel)
+                return GetMassDestructionLevel();
+            else
+                return m_MassDestructionAdj;
 
 		default:
 			return 0;
 		}
+	}
+
+CString DamageDesc::GetSpecialDamageName (SpecialDamageTypes iSpecial)
+
+//	GetSpecialDamageName
+//
+//	Returns the name
+
+	{
+	return CString(SPECIAL_DAMAGE_DATA[iSpecial].pszSpecial, -1, TRUE);
 	}
 
 void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
@@ -315,51 +451,55 @@ void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 			break;
 
 		case specialBlinding:
-			m_BlindingDamage = Max(0, Min(iLevel, 7));
+			m_BlindingDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialDeviceDamage:
-			m_DeviceDamage = Max(0, Min(iLevel, 7));
+			m_DeviceDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialDeviceDisrupt:
-			m_DeviceDisruptDamage = Max(0, Min(iLevel, 7));
+			m_DeviceDisruptDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialDisintegration:
-			m_DisintegrationDamage = Max(0, Min(iLevel, 7));
+			m_DisintegrationDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialEMP:
-			m_EMPDamage = Max(0, Min(iLevel, 7));
+			m_EMPDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialFuel:
-			m_FuelDamage = Max(0, Min(iLevel, 7));
+			m_FuelDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialMining:
-			m_MiningAdj = Max(0, Min(iLevel, 7));
+			m_MiningAdj = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialMomentum:
-			m_MomentumDamage = Max(0, Min(iLevel, 7));
+			m_MomentumDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialRadiation:
-			m_RadiationDamage = Max(0, Min(iLevel, 7));
+			m_RadiationDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialShatter:
-			m_ShatterDamage = Max(0, Min(iLevel, 7));
+			m_ShatterDamage = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 
 		case specialShieldDisrupt:
 			m_ShieldDamage = Max(1, Min(iLevel, MAX_ITEM_LEVEL));
 			break;
 
+		case specialShieldPenetrator:
+			m_ShieldPenetratorAdj = Max(0, Min(iLevel, MAX_INTENSITY));
+			break;
+
 		case specialWMD:
-			m_MassDestructionAdj = Max(0, Min(iLevel, 7));
+			m_MassDestructionAdj = Max(0, Min(iLevel, MAX_INTENSITY));
 			break;
 		}
 	}
@@ -389,7 +529,7 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 
 	if (dwFlags & flagAverageDamage)
 		{
-		Metric rDamage = GetAverageDamage(true);
+		Metric rDamage = GetDamageValue(DamageDesc::flagIncludeBonus);
 
 		//	For shockwaves, we adjust for the fact that we might get hit multiple
 		//	times.
@@ -484,6 +624,7 @@ ALERROR DamageDesc::LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib)
 	m_ArmorDamage = 0;
 	m_WormholeDamage = 0;
 	m_FuelDamage = 0;
+	m_ShieldPenetratorAdj = 0;
 	m_fNoSRSFlash = false;
 	m_fAutomatedWeapon = false;
 	m_DeviceDamage = 0;
@@ -557,21 +698,23 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 				return ERR_FAIL;
 			}
 
-		if (strEquals(sType, SPECIAL_DAMAGE_EMP))
+		if (strEquals(sType, GetSpecialDamageName(specialEMP)))
 			m_EMPDamage = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_RADIATION))
+		else if (strEquals(sType, GetSpecialDamageName(specialRadiation)))
 			m_RadiationDamage = (DWORD)Min(iCount, MAX_BINARY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_MOMENTUM))
+		else if (strEquals(sType, GetSpecialDamageName(specialMomentum)))
 			m_MomentumDamage = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_DISINTEGRATION))
+		else if (strEquals(sType, GetSpecialDamageName(specialDisintegration)))
 			m_DisintegrationDamage = (DWORD)Min(iCount, MAX_BINARY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_DEVICE_DISRUPT))
+		else if (strEquals(sType, GetSpecialDamageName(specialDeviceDisrupt)))
 			m_DeviceDisruptDamage = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_BLINDING))
+		else if (strEquals(sType, GetSpecialDamageName(specialShieldPenetrator)))
+			m_ShieldPenetratorAdj = (DWORD)Min(iCount, MAX_INTENSITY);
+		else if (strEquals(sType, GetSpecialDamageName(specialBlinding)))
 			m_BlindingDamage = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_SENSOR))
+		else if (strEquals(sType, GetSpecialDamageName(specialSensor)))
 			m_SensorDamage = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_SHIELD))
+		else if (strEquals(sType, GetSpecialDamageName(specialShieldDisrupt)))
 			{
 			m_ShieldDamage = (BYTE)Min(iCount, MAX_ITEM_LEVEL);
 
@@ -581,19 +724,19 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 			if (Ctx.GetAPIVersion() < 3)
 				m_ShieldDamage = 1 + ((m_ShieldDamage * m_ShieldDamage) / 2);
 			}
-		else if (strEquals(sType, SPECIAL_DAMAGE_ARMOR))
+		else if (strEquals(sType, GetSpecialDamageName(specialArmor)))
 			m_ArmorDamage = (BYTE)Max(1, Min(iCount, MAX_ITEM_LEVEL));
-		else if (strEquals(sType, SPECIAL_DAMAGE_WORMHOLE))
+		else if (strEquals(sType, GetSpecialDamageName(specialWormhole)))
 			m_WormholeDamage = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_FUEL))
+		else if (strEquals(sType, GetSpecialDamageName(specialFuel)))
 			m_FuelDamage = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_WMD))
+		else if (strEquals(sType, GetSpecialDamageName(specialWMD)))
 			m_MassDestructionAdj = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_DEVICE))
+		else if (strEquals(sType, GetSpecialDamageName(specialDeviceDamage)))
 			m_DeviceDamage = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_MINING))
+		else if (strEquals(sType, GetSpecialDamageName(specialMining)))
 			m_MiningAdj = (DWORD)Min(iCount, MAX_INTENSITY);
-		else if (strEquals(sType, SPECIAL_DAMAGE_SHATTER))
+		else if (strEquals(sType, GetSpecialDamageName(specialShatter)))
 			m_ShatterDamage = (DWORD)Min(iCount, MAX_INTENSITY);
 		else
 			return ERR_FAIL;
@@ -757,7 +900,12 @@ void DamageDesc::ReadFromStream (SLoadCtx &Ctx)
 	m_BlindingDamage = (dwLoad >> 12) & 0x07;
 	m_SensorDamage = (dwLoad >> 15) & 0x07;
 	if (Ctx.dwVersion < 73)
+		{
 		m_ShieldDamage = (BYTE)((dwLoad >> 18) & 0x07);
+		m_ShieldPenetratorAdj = 0;
+		}
+	else
+		m_ShieldPenetratorAdj = (dwLoad >> 18) & 0x07;
 	m_WormholeDamage = (dwLoad >> 21) & 0x07;
 	m_FuelDamage = (dwLoad >> 24) & 0x07;
 	m_DisintegrationDamage = (dwLoad >> 27) & 0x07;
@@ -837,7 +985,7 @@ void DamageDesc::WriteToStream (IWriteStream *pStream) const
 	dwSave |= m_DeviceDisruptDamage << 9;
 	dwSave |= m_BlindingDamage << 12;
 	dwSave |= m_SensorDamage << 15;
-//	UNUSED: dwSave |= m_ShieldDamage << 18;
+	dwSave |= m_ShieldPenetratorAdj << 18;
 	dwSave |= m_WormholeDamage << 21;
 	dwSave |= m_FuelDamage << 24;
 	dwSave |= m_DisintegrationDamage << 27;
@@ -957,7 +1105,7 @@ ICCItem *CreateItemFromDamageEffects (CCodeChain &CC, SDamageCtx &Ctx)
 	//	Add the damage
 
 	if (Ctx.iDamage)
-		AddEffectItem(CC, pList, CString(g_pszDamageTypes[Ctx.Damage.GetDamageType()]), Ctx.iDamage);
+		AddEffectItem(CC, pList, CString(DAMAGE_TYPE_DATA[Ctx.Damage.GetDamageType()].pszID), Ctx.iDamage);
 
 	//	Add effects
 

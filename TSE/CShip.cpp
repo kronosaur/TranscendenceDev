@@ -59,17 +59,30 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_DOCKED_AT_ID					CONSTLIT("dockedAtID")
 #define PROPERTY_DOCKING_ENABLED				CONSTLIT("dockingEnabled")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
+#define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
+#define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
+#define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
+#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
+#define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
 #define PROPERTY_MAX_INTERIOR_HP				CONSTLIT("maxInteriorHP")
+#define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
+#define PROPERTY_OPERATING_SPEED				CONSTLIT("operatingSpeed")
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
+#define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 #define PROPERTY_SELECTED_LAUNCHER				CONSTLIT("selectedLauncher")
 #define PROPERTY_SELECTED_MISSILE				CONSTLIT("selectedMissile")
 #define PROPERTY_SELECTED_WEAPON				CONSTLIT("selectedWeapon")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+#define PROPERTY_THRUST							CONSTLIT("thrust")
+#define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
+
+#define SPEED_HALF								CONSTLIT("half")
+#define SPEED_FULL								CONSTLIT("full")
 
 const CG32bitPixel RGB_MAP_LABEL =				CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =				CG32bitPixel(165, 140, 83);
@@ -140,8 +153,19 @@ bool CShip::AbsorbWeaponFire (CInstalledDevice *pWeapon)
 //	the given weapon from firing
 
 	{
-	if (ShieldsAbsorbFire(pWeapon))
+	//	Check to see if shields prevent firing. If they do, they will create an
+	//	approprate hit effect.
+
+	CInstalledDevice *pShields = GetNamedDevice(devShields);
+	if (pShields && pShields->GetClass()->AbsorbsWeaponFire(pShields, this, pWeapon))
+		return true;
+
+	//	Now check to see if energy fields prevent firing
+
+	if (m_Overlays.AbsorbsWeaponFire(pWeapon))
 		{
+		//	We need to create our own default effect.
+
 		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_ShieldEffectUNID);
 		if (pEffect)
 			pEffect->CreateEffect(GetSystem(),
@@ -152,8 +176,10 @@ bool CShip::AbsorbWeaponFire (CInstalledDevice *pWeapon)
 
 		return true;
 		}
-	else
-		return false;
+
+	//	Otherwise, not absorbed
+
+	return false;
 	}
 
 void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifeLeft, DWORD *retdwID)
@@ -212,7 +238,7 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 
 	if (!IsInactive() && !m_fControllerDisabled)
 		{
-		m_pController->Behavior();
+		m_pController->Behavior(Ctx);
 
 		//	If we're targeting the player, then the player is under attack
 
@@ -236,43 +262,55 @@ void CShip::CalcArmorBonus (void)
 //	Mark the m_fComplete flag appropriately for all armor segments.
 
 	{
-	int i;
+	int i, j;
 	bool bComplete = true;
 
-	//	Figure out if the armor set is complete
+	//	Generate a list of all segments by type.
 
-	CArmorClass *pClass = NULL;
+	TSortMap<DWORD, TArray<int>> SegmentsByType;
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
 		CInstalledArmor *pArmor = GetArmorSection(i);
+		TArray<int> *pList = SegmentsByType.SetAt(pArmor->GetClass()->GetUNID());
+		pList->Insert(i);
+		}
 
-		if (pClass == NULL)
-			pClass = pArmor->GetClass();
-		else if (pArmor->GetClass() != pClass)
+	//	If we only have one type, then we've got a complete set.
+
+	bool bCompleteSet = (SegmentsByType.GetCount() == 1);
+
+	//	Loop over all armor segments and compute some values.
+
+	m_iStealth = stealthMax;
+	m_fHasSpeedAdjArmor = false;
+
+	for (i = 0; i < SegmentsByType.GetCount(); i++)
+		{
+		for (j = 0; j < SegmentsByType[i].GetCount(); j++)
 			{
-			bComplete = false;
-			break;
+			CInstalledArmor *pArmor = GetArmorSection(SegmentsByType[i][j]);
+
+			//	Set armor complete
+
+			pArmor->SetComplete(this, bCompleteSet);
+
+			//	If this is the first armor of its type, mark it as prime. There
+			//	are some functions that need to be done once per type and this
+			//	helps us.
+
+			pArmor->SetPrime(this, (j == 0));
+
+			//	Compute stealth
+
+			if (pArmor->GetClass()->GetStealth() < m_iStealth)
+				m_iStealth = pArmor->GetClass()->GetStealth();
+
+			//	Check to see if any segment affects the max speed of the ship.
+
+			if (pArmor->GetClass()->GetMaxSpeedBonus() != 0.0)
+				m_fHasSpeedAdjArmor = true;
 			}
 		}
-
-	//	Compute
-
-	int iStealth = stealthMax;
-	for (i = 0; i < GetArmorSectionCount(); i++)
-		{
-		CInstalledArmor *pArmor = GetArmorSection(i);
-
-		//	Set armor complete
-
-		pArmor->SetComplete(this, bComplete);
-
-		//	Compute stealth
-
-		if (pArmor->GetClass()->GetStealth() < iStealth)
-			iStealth = pArmor->GetClass()->GetStealth();
-		}
-
-	m_iStealth = iStealth;
 	}
 
 void CShip::CalcBounds (void)
@@ -419,7 +457,7 @@ void CShip::CalcDeviceBonus (void)
 	//	Make sure we don't overflow fuel (in case we downgrade the reactor)
 
 	if (!m_fOutOfFuel)
-		m_iFuelLeft = Min(m_iFuelLeft, GetMaxFuel());
+		m_rFuelLeft = Min(m_rFuelLeft, GetMaxFuel());
 
 	//	Let our controller know (but only if we're fully created)
 
@@ -1112,7 +1150,7 @@ void CShip::ClearParalyzed (void)
 	m_iParalysisTimer = 0;
 	}
 
-void CShip::ConsumeFuel (int iFuel)
+void CShip::ConsumeFuel (Metric rFuel)
 
 //	ConsumeFuel
 //
@@ -1120,7 +1158,7 @@ void CShip::ConsumeFuel (int iFuel)
 
 	{
 	if (m_fTrackFuel && !m_fOutOfFuel)
-		m_iFuelLeft = max(0, m_iFuelLeft - iFuel);
+		m_rFuelLeft = Max(0.0, m_rFuelLeft - rFuel);
 	}
 
 ALERROR CShip::CreateFromClass (CSystem *pSystem, 
@@ -1184,7 +1222,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_iLastHitTime = 0;
 	pShip->m_rItemMass = 0.0;
 	pShip->m_rCargoMass = 0.0;
-	pShip->SetDriveDesc(NULL);
 	pShip->m_pReactorDesc = pClass->GetReactorDesc();
 	pShip->m_pTrade = NULL;
 
@@ -1212,7 +1249,9 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fSpinningByOverlay = false;
 	pShip->m_fDragByOverlay = false;
 	pShip->m_fAlwaysLeaveWreck = false;
-	pShip->m_dwSpare = 0;
+	pShip->m_fHasSpeedAdjArmor = false;
+
+	pShip->SetDriveDesc(NULL);
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -1328,8 +1367,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Initialize the armor from the class
 
-	CArmorClass *pArmorClass = NULL;
-	bool bComplete = true;
 	pShip->m_Armor.InsertEmpty(pClass->GetHullSectionCount());
 	for (i = 0; i < pClass->GetHullSectionCount(); i++)
 		{
@@ -1350,25 +1387,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 		//	(All armor needs this)
 
 		bInstallItemEvent = true;
-
-		//	See if all armor segments are the same
-
-		if (pArmorClass == NULL)
-			pArmorClass = pSect->pArmor;
-		else if (pArmorClass != pSect->pArmor)
-			bComplete = false;
-		}
-
-	//	Update armor hit points now that we know whether we have a complete
-	//	set of armor.
-
-	if (bComplete)
-		{
-		for (i = 0; i < pShip->GetArmorSectionCount(); i++)
-			{
-			CInstalledArmor *pArmor = pShip->GetArmorSection(i);
-			pArmor->SetComplete(pShip, bComplete);
-			}
 		}
 
 	pShip->OnComponentChanged(comCargo);
@@ -1377,7 +1395,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Initialize fuel now that we know our maximum
 
-	pShip->m_iFuelLeft = pShip->GetMaxFuel();
+	pShip->m_rFuelLeft = pShip->GetMaxFuel();
 
 	//	Set the bounds for this object
 
@@ -1741,7 +1759,7 @@ CString CShip::DebugCrashInfo (void)
 		CSpaceObject *pDockedObj = m_DockingPorts.GetPortObj(this, i);
 		if (pDockedObj)
 			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(pDockedObj)));
-		else if (!m_DockingPorts.DebugIsPortEmpty(this, i))
+		else if (!m_DockingPorts.IsPortEmpty(this, i))
 			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: Not empty, but NULL object!\r\n"), i));
 		}
 
@@ -1938,11 +1956,8 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		int iManeuver = GetManeuverability() * GetRotationRange() / STD_ROTATION_COUNT;
-		if (iManeuver <= 0)
-			iManeuver = 1;
-
-		*retsValue = strFromInt(30000 / iManeuver);
+		Metric rManeuver = g_SecondsPerUpdate * m_pClass->GetRotationDesc().GetMaxRotationSpeedPerTick();
+		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
 		{
@@ -2500,11 +2515,10 @@ CString CShip::GetInstallationPhrase (const CItem &Item) const
 			case itemcatArmor:
 				{
 				int iSeg = Item.GetInstalled();
-				const CPlayerSettings *pSettings = m_pClass->GetPlayerSettings();
-				const SArmorSegmentImageDesc *pSegmentDesc = (pSettings ? pSettings->GetArmorDesc(iSeg) : NULL);
+				CString sName = m_pClass->GetHullSectionName(iSeg);
 
-				if (pSegmentDesc)
-					return strPatternSubst(CONSTLIT("Installed as %s armor"), pSegmentDesc->sName);
+				if (!sName.IsBlank())
+					return strPatternSubst(CONSTLIT("Installed as %s armor"), sName);
 				else
 					return CONSTLIT("Installed as armor");
 				}
@@ -2591,14 +2605,14 @@ Metric CShip::GetMass (void)
 	return m_pClass->GetHullMass() + GetItemMass();
 	}
 
-int CShip::GetMaxFuel (void)
+Metric CShip::GetMaxFuel (void)
 
 //	GetMaxFuel
 //
 //	Return the maximum amount of fuel that the reactor can hold
 
 	{
-	return m_pReactorDesc->iMaxFuel;
+	return m_pReactorDesc->rMaxFuel;
 	}
 
 int CShip::GetMaxPower (void) const
@@ -2680,22 +2694,6 @@ CItem CShip::GetNamedDeviceItem (DeviceNames iDev)
 		SetCursorAtNamedDevice(ItemList, iDev);
 		return ItemList.GetItemAtCursor();
 		}
-	}
-
-int CShip::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort)
-
-//	GetNearestDockVector
-//
-//	Returns a vector from the given position to the nearest
-//	dock position
-
-	{
-	int iPort = m_DockingPorts.FindNearestEmptyPort(this, pRequestingObj);
-
-	if (retvPort)
-		*retvPort = m_DockingPorts.GetPortPos(this, iPort, pRequestingObj);
-
-	return iPort;
 	}
 
 int CShip::GetPerception (void)
@@ -2853,6 +2851,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_OPEN_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(GetOpenDockingPortCount());
 
+	else if (strEquals(sName, PROPERTY_OPERATING_SPEED))
+		return CC.CreateString((m_fHalfSpeed ? SPEED_HALF : SPEED_FULL));
+
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		{
 		return CC.CreateBool(m_pController->IsPlayerWingman());
@@ -2931,6 +2932,42 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
 		}
+
+	//	Drive properties
+
+	else if (strEquals(sName, PROPERTY_DRIVE_POWER))
+		return CC.CreateInteger(m_pDriveDesc->iPowerUse * 100);
+
+	else if (strEquals(sName, PROPERTY_MAX_SPEED))
+		return CC.CreateInteger((int)((100.0 * m_rMaxSpeed / LIGHT_SPEED) + 0.5));
+
+	else if (strEquals(sName, PROPERTY_THRUST))
+		return CC.CreateInteger(m_iThrust);
+
+	else if (strEquals(sName, PROPERTY_THRUST_TO_WEIGHT))
+		{
+		Metric rMass = GetMass();
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_iThrust / rMass : 0.0)) + 0.5);
+		return CC.CreateInteger(10 * iRatio);
+		}
+
+	//	Reactor properties
+
+	else if (strEquals(sName, PROPERTY_FUEL_CAPACITY)
+			|| strEquals(sName, PROPERTY_FUEL_CRITERIA)
+			|| strEquals(sName, PROPERTY_FUEL_EFFICIENCY)
+			|| strEquals(sName, PROPERTY_FUEL_EFFICIENCY_BONUS)
+			|| strEquals(sName, PROPERTY_POWER))
+		{
+		CInstalledDevice *pReactor = GetNamedDevice(devReactor);
+		if (pReactor)
+			{
+			CItemCtx ItemCtx(this, pReactor);
+			return pReactor->GetClass()->GetItemProperty(ItemCtx, sName);
+			}
+		else
+			return CReactorClass::GetReactorProperty(*m_pClass->GetReactorDesc(), sName);
+		}
 	else
 		return CSpaceObject::GetProperty(Ctx, sName);
 	}
@@ -2993,6 +3030,47 @@ CSpaceObject *CShip::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
 
 	{
 	return m_pController->GetTarget(ItemCtx, bNoAutoTarget);
+	}
+
+CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
+
+//	GetTradePrice
+//
+//	Returns the fair price of this ship as calculated by pProvider, before any
+//	markups.
+
+	{
+	//	Get the hull value
+
+	const CPlayerSettings *pPlayer = m_pClass->GetPlayerSettings();
+	CCurrencyAndValue Value = (pPlayer ? pPlayer->GetHullValue() : CCurrencyAndValue(0, GetDefaultEconomy()));
+
+	//	Add up the value of all installed items
+
+	CItemListManipulator AllItems(GetItemList());
+	while (AllItems.MoveCursorForward())
+		{
+		const CItem &Item = AllItems.GetItemAtCursor();
+		if (Item.IsInstalled())
+			{
+			//	We use the raw value because not all stations sell all items. 
+			//	This at least gives us some base price.
+
+			int iItemValue = Max(0, Item.GetTradePrice(pProvider, true));
+			if (iItemValue <= 0)
+				continue;
+
+			Value.Add(CCurrencyAndValue(iItemValue, Item.GetCurrencyType()));
+
+			//	Need to include install cost
+
+			Value.Add(CCurrencyAndValue(Item.GetType()->GetInstallCost(), Item.GetCurrencyType()));
+			}
+		}
+
+	//	Done
+
+	return Value;
 	}
 
 int CShip::GetVisibleDamage (void)
@@ -3084,6 +3162,20 @@ bool CShip::GetWeaponIsReady (DeviceNames iDev)
 	CInstalledDevice *pWeapon = GetNamedDevice(iDev);
 	return (pWeapon && pWeapon->IsReady());
 	}
+
+Metric CShip::GetWeaponRange (DeviceNames iDev)
+
+//  GetWeaponRange
+//
+//  Returns the range of the given weapon.
+
+    {
+	CInstalledDevice *pWeapon = GetNamedDevice(iDev);
+    if (pWeapon == NULL)
+        return 0.0;
+
+    return pWeapon->GetMaxEffectiveRange(this);
+    }
 
 bool CShip::HasAttribute (const CString &sAttribute) const
 
@@ -3254,9 +3346,9 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 		//	If we're upgrading/downgrading a reactor, then remember the old fuel level
 
-		int iOldFuel = -1;
+		Metric rOldFuel = -1.0;
 		if (iNamedSlot == devReactor)
-			iOldFuel = GetFuelLeft();
+			rOldFuel = GetFuelLeft();
 
 		//	Remove the item
 
@@ -3270,8 +3362,8 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 		//	new reactor. Note that on a downgrade, we will clip the fuel to the
 		//	maximum when we do a CalcDeviceBonus).
 
-		if (iOldFuel != -1 && !m_fOutOfFuel)
-			m_iFuelLeft = iOldFuel;
+		if (rOldFuel != -1.0 && !m_fOutOfFuel)
+			m_rFuelLeft = rOldFuel;
 		}
 
 	//	Look for a free slot to install to
@@ -3823,7 +3915,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Tell our controller that someone hit us
 
-	m_pController->OnAttacked(Ctx.Attacker.GetObj(), Ctx.Damage);
+	m_pController->OnAttacked(Ctx.Attacker.GetObj(), Ctx);
 
 	//	OnAttacked event
 
@@ -3838,6 +3930,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	See if the damage is blocked by some external defense
 
+	Ctx.iOverlayHitDamage = Ctx.iDamage;
 	if (m_Overlays.AbsorbDamage(this, Ctx))
 		{
 		if (IsDestroyed())
@@ -3859,6 +3952,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Let our shield generators take a crack at it
 
+	Ctx.iShieldHitDamage = Ctx.iDamage;
 	for (i = 0; i < GetDeviceCount(); i++)
 		{
 		bool bAbsorbed = m_Devices[i].AbsorbDamage(this, Ctx);
@@ -3909,7 +4003,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Let the armor handle it
 
-	int iDamageSustained = Ctx.iDamage;
+	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (pArmor)
 		{
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
@@ -3932,7 +4026,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		{
 		//	Tell the controller that we were damaged
 
-		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, iDamageSustained);
+		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorHitDamage);
 		return damageArmorHit;
 		}
 
@@ -3971,8 +4065,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 			//	We only care about mass destruction damage
 
-			int iWMD = Ctx.Damage.GetMassDestructionAdj();
-			int iWMDDamage = Max(1, iWMD * Ctx.iDamage / 100);
+            int iWMDDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
 			//	Compare the amount of damage that we are taking with the
 			//	original strength (HP) of the armor. Increase the chance
@@ -4391,10 +4484,11 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	//	Set up context
 
+	CViewportPaintCtxSmartSave Save(Ctx);
 	Ctx.iTick = (IsTimeStopped() ? GetDestiny() : g_pUniverse->GetTicks());
 	Ctx.iVariant = m_Rotation.GetFrameIndex();
-	Ctx.iDestiny = GetDestiny();
 	Ctx.iRotation = GetRotation();
+	Ctx.iDestiny = GetDestiny();
 
 	bool bPaintThrust = (m_pController->GetThrust() && !IsParalyzed() && ((Ctx.iTick + GetDestiny()) % 4) != 0);
 	const CObjectImageArray *pImage;
@@ -4626,7 +4720,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
 //	DWORD		low = m_iExitGateTimer; hi = m_iDisarmedTimer
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
-//	DWORD		m_iFuelLeft
+//	Metric		m_rFuelLeft
 //	Metric		m_rItemMass (V2)
 //	Metric		m_rCargoMass
 //	DWORD		m_pDocked (CSpaceObject ref)
@@ -4739,7 +4833,14 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iLRSBlindnessTimer = (int)LOWORD(dwLoad);
 	m_iDriveDamagedTimer = (int)HIWORD(dwLoad);
-	Ctx.pStream->Read((char *)&m_iFuelLeft, sizeof(DWORD));
+	if (Ctx.dwVersion >= 123)
+		Ctx.pStream->Read((char *)&m_rFuelLeft, sizeof(Metric));
+	else
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_rFuelLeft = (Metric)(int)dwLoad;
+		}
+
 	if (Ctx.dwVersion >= 2)
 		Ctx.pStream->Read((char *)&m_rItemMass, sizeof(Metric));
 	Ctx.pStream->Read((char *)&m_rCargoMass, sizeof(Metric));
@@ -4785,6 +4886,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fSpinningByOverlay =		((dwLoad & 0x00200000) ? true : false);
 	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
+	m_fHasSpeedAdjArmor =		((dwLoad & 0x01000000) ? true : false);
 
 	//	OK to recompute
 	m_fRecalcRotationAccel = true;
@@ -5008,6 +5110,7 @@ void CShip::OnSetEventFlags (void)
 	SetHasInterSystemEvent(FindEventHandler(CONSTLIT("OnPlayerLeftSystem")) 
 			|| FindEventHandler(CONSTLIT("OnPlayerEnteredSystem")));
 	SetHasOnOrdersCompletedEvent(FindEventHandler(CONSTLIT("OnOrdersCompleted")));
+	SetHasOnSubordinateAttackedEvent(FindEventHandler(CONSTLIT("OnSubordinateAttacked")));
 	}
 
 void CShip::OnStationDestroyed (const SDestroyCtx &Ctx)
@@ -5175,7 +5278,12 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 					CSpaceObject *pTarget;
 					int iFireAngle;
 					if (!CalcDeviceTarget(TargetingCtx, DeviceCtx, &pTarget, &iFireAngle))
+						{
+						//	Do not consume power, even though we're triggered.
+
+						pDevice->SetLastActivateSuccessful(false);
 						continue;
+						}
 
 					//	Set the target on the device. We need to do this for 
 					//	repeating weapons.
@@ -5372,14 +5480,14 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 			//	Consume fuel
 
-			ConsumeFuel(m_iPowerDrain / m_pReactorDesc->iPowerPerFuelUnit);
+			ConsumeFuel(m_iPowerDrain / m_pReactorDesc->rPowerPerFuelUnit);
 
 			//	Check to see if we've run out of fuel
 
 			if ((iTick % FUEL_CHECK_CYCLE) == 0)
 				{
-				int iFuelLeft = GetFuelLeft();
-				if (iFuelLeft == 0)
+				Metric rFuelLeft = GetFuelLeft();
+				if (rFuelLeft <= 0.0)
 					{
 					//	See if the player has any fuel on board. If they do, then there
 					//	is a small grace period
@@ -5401,7 +5509,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 						//	Out of fuel
 
 						m_fOutOfFuel = true;
-						m_iFuelLeft = FUEL_GRACE_PERIOD;
+						m_rFuelLeft = FUEL_GRACE_PERIOD;
 						m_pController->OnFuelLowWarning(-1);
 						}
 
@@ -5415,7 +5523,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 						return;
 						}
 					}
-				else if (iFuelLeft < (GetMaxFuel() / 8))
+				else if (rFuelLeft < (GetMaxFuel() / 8.0))
 					m_pController->OnFuelLowWarning(iTick / FUEL_CHECK_CYCLE);
 				}
 			}
@@ -5423,7 +5531,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			//	Countdown grace period
 
-			if (--m_iFuelLeft <= 0)
+			if (--m_rFuelLeft <= 0.0)
 				{
 				Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
 
@@ -5432,7 +5540,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				return;
 				}
 			else
-				m_pController->OnLifeSupportWarning(m_iFuelLeft / g_TicksPerSecond);
+				m_pController->OnLifeSupportWarning((int)m_rFuelLeft / g_TicksPerSecond);
 			}
 		}
 
@@ -5583,7 +5691,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
 //	DWORD		low = m_iExitGateTimer; hi = m_iDisarmedTimer
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
-//	DWORD		m_iFuelLeft
+//	Metric		m_rFuelLeft
 //	Metric		m_rItemMass
 //	Metric		m_rCargoMass
 //	DWORD		m_pDocked (CSpaceObject ref)
@@ -5650,7 +5758,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iLRSBlindnessTimer, m_iDriveDamagedTimer);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	pStream->Write((char *)&m_iFuelLeft, sizeof(DWORD));
+	pStream->Write((char *)&m_rFuelLeft, sizeof(Metric));
 	pStream->Write((char *)&m_rItemMass, sizeof(Metric));
 	pStream->Write((char *)&m_rCargoMass, sizeof(Metric));
 	WriteObjRefToStream(m_pDocked, pStream);
@@ -5683,6 +5791,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fSpinningByOverlay ?	0x00200000 : 0);
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
+	dwSave |= (m_fHasSpeedAdjArmor ?	0x01000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Armor
@@ -5818,6 +5927,10 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 
 	if (IsInactive())
 		return;
+
+	//	Object is known if we can scan it.
+
+	SetKnown();
 
 	//	Paint red if enemy, blue otherwise
 
@@ -6125,7 +6238,7 @@ void CShip::RechargeItem (CItemListManipulator &ItemList, int iCharges)
 		}
 	}
 
-void CShip::Refuel (int iFuel)
+void CShip::Refuel (Metric rFuel)
 
 //	Refuel
 //
@@ -6134,11 +6247,11 @@ void CShip::Refuel (int iFuel)
 	{
 	if (m_fOutOfFuel)
 		{
-		m_iFuelLeft = 0;
+		m_rFuelLeft = 0.0;
 		m_fOutOfFuel = false;
 		}
 
-	m_iFuelLeft = min(GetMaxFuel(), m_iFuelLeft + iFuel);
+	m_rFuelLeft = Min(GetMaxFuel(), m_rFuelLeft + rFuel);
 	}
 
 void CShip::Refuel (const CItem &Fuel)
@@ -6149,10 +6262,10 @@ void CShip::Refuel (const CItem &Fuel)
 
 	{
 	CItemType *pFuelType = Fuel.GetType();
-	int iFuelPerItem = strToInt(pFuelType->GetData(), 0, NULL);
-	int iFuel = iFuelPerItem * Fuel.GetCount();
+	Metric rFuelPerItem = strToDouble(pFuelType->GetData(), 0.0, NULL);
+	Metric rFuel = rFuelPerItem * Fuel.GetCount();
 
-	Refuel(iFuel);
+	Refuel(rFuel);
 
 	//	Invoke refueling code
 
@@ -6631,19 +6744,57 @@ void CShip::SetDriveDesc (const DriveDesc *pDesc)
 //	Sets the drive descriptor (or NULL to set back to class)
 
 	{
-	int iOldThrust = m_iThrust;
+	int i;
 
+	//	Compute any speed bonus due to armor
+
+	Metric rMaxSpeedAdj;
+	if (m_fHasSpeedAdjArmor)
+		{
+		Metric rTotalSpeedBonus = 0.0;
+
+		//	A segment's max speed bonus is based on having a complete set. For partial
+		//	sets we adjust accordingly.
+
+		Metric rSingleSegAdj = (GetArmorSectionCount() > 0 ? 1.0 / GetArmorSectionCount() : 1.0);
+
+		//	Loop over all segments
+
+		for (i = 0; i < GetArmorSectionCount(); i++)
+			{
+			CInstalledArmor *pArmor = GetArmorSection(i);
+			Metric rMaxSpeedBonus = pArmor->GetClass()->GetMaxSpeedBonus();
+
+			if (rMaxSpeedBonus != 0.0)
+				rTotalSpeedBonus += (rSingleSegAdj * rMaxSpeedBonus);
+			}
+
+		//	Convert to an adjustment
+
+		if (rTotalSpeedBonus <= -100.0)
+			rMaxSpeedAdj = 0.0;
+		else if (rTotalSpeedBonus != 0.0)
+			rMaxSpeedAdj = (100.0 + rTotalSpeedBonus) / 100.0;
+		else
+			rMaxSpeedAdj = 1.0;
+		}
+	else
+		rMaxSpeedAdj = 1.0;
+
+	//	Set the data based on device
+
+	int iOldThrust = m_iThrust;
 	if (pDesc)
 		{
 		m_pDriveDesc = pDesc;
 		m_iThrust = m_pClass->GetHullDriveDesc()->iThrust + m_pDriveDesc->iThrust;
-		m_rMaxSpeed = Max(m_pClass->GetHullDriveDesc()->rMaxSpeed, m_pDriveDesc->rMaxSpeed);
+		m_rMaxSpeed = rMaxSpeedAdj * Max(m_pClass->GetHullDriveDesc()->rMaxSpeed, m_pDriveDesc->rMaxSpeed);
 		}
 	else
 		{
 		m_pDriveDesc = m_pClass->GetHullDriveDesc();
 		m_iThrust = m_pDriveDesc->iThrust;
-		m_rMaxSpeed = m_pDriveDesc->rMaxSpeed;
+		m_rMaxSpeed = rMaxSpeedAdj * m_pDriveDesc->rMaxSpeed;
 		}
 
 	//	If we upgraded, then we reinitialize the effects
@@ -6864,6 +7015,21 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), pValue->GetIntegerValue());
 		return true;
 		}
+	else if (strEquals(sName, PROPERTY_OPERATING_SPEED))
+		{
+		CString sSpeed = pValue->GetStringValue();
+		if (strEquals(sSpeed, SPEED_FULL))
+			ResetMaxSpeed();
+		else if (strEquals(sSpeed, SPEED_HALF))
+			SetMaxSpeedHalf();
+		else
+			{
+			*retsError = strPatternSubst(CONSTLIT("Invalid speed setting: %s"), sSpeed);
+			return false;
+			}
+
+		return true;
+		}
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		{
 		m_pController->SetPlayerWingman(!pValue->IsNil());
@@ -6998,29 +7164,6 @@ void CShip::SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered)
 					|| (pDevice->IsLinkedFire(Ctx, iCat))))
 			pDevice->SetTriggered(bTriggered);
 		}
-	}
-
-bool CShip::ShieldsAbsorbFire (CInstalledDevice *pWeapon)
-
-//	ShieldsAbsorbFire
-//
-//	Returns TRUE if the shields absorb the shot from the given weapon
-
-	{
-	//	Check to see if shields prevent firing
-
-	CInstalledDevice *pShields = GetNamedDevice(devShields);
-	if (pShields && pShields->GetClass()->AbsorbsWeaponFire(pShields, this, pWeapon))
-		return true;
-
-	//	Now check to see if energy fields prevent firing
-
-	if (m_Overlays.AbsorbsWeaponFire(pWeapon))
-		return true;
-
-	//	Done
-
-	return false;
 	}
 
 void CShip::Undock (void)

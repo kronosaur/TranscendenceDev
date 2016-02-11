@@ -23,7 +23,7 @@ CGladiatorAI::CGladiatorAI (void) :
 	{
 	}
 
-void CGladiatorAI::Behavior (void)
+void CGladiatorAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 //

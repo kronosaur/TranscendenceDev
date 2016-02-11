@@ -484,6 +484,11 @@ ALERROR CResourceDb::LoadGameFile (CXMLElement **retpData, IXMLParserController 
 			}
 		}
 
+    //  Set name of entities so that we know where these entities came from.
+
+    if (ioEntityTable)
+        ioEntityTable->SetName(m_sGameFile);
+
 	//	Remember our entity table so that future calls (e.g., LoadModule) can 
 	//	get access to them.
 	//
@@ -654,6 +659,7 @@ ALERROR CResourceDb::LoadModuleEntities (const CString &sFolder, const CString &
 	{
 	ALERROR error;
 
+	CExternalEntityTable *pEntities = new CExternalEntityTable;
 
 	if (m_bGameFileInDb && m_pDb)
 		{
@@ -668,11 +674,10 @@ ALERROR CResourceDb::LoadModuleEntities (const CString &sFolder, const CString &
 		CString sGameFile;
 		if (error = ReadEntry(sFilespec, &sGameFile))
 			{
+            delete pEntities;
 			*retsError = strPatternSubst(CONSTLIT("%s: Unable to read entry %s."), m_sGameFile, sFilespec);
 			return error;
 			}
-
-		CExternalEntityTable *pEntities = new CExternalEntityTable;
 
 		//	Parse the XML file from the buffer
 
@@ -685,13 +690,9 @@ ALERROR CResourceDb::LoadModuleEntities (const CString &sFolder, const CString &
 			*retsError = strPatternSubst(CONSTLIT("%s: %s"), m_sGameFile, sError);
 			return error;
 			}
-
-		*retpEntities = pEntities;
 		}
 	else
 		{
-		CExternalEntityTable *pEntities = new CExternalEntityTable;
-
 		//	Parse the XML file on disk
 
 		CFileReadBlock DataFile(pathAddComponent(m_sRoot, pathAddComponent(sFolder, sFilename)));
@@ -705,9 +706,12 @@ ALERROR CResourceDb::LoadModuleEntities (const CString &sFolder, const CString &
 				*retsError = strPatternSubst(CONSTLIT("%s: %s"), sFilename, sError);
 			return error;
 			}
-
-		*retpEntities = pEntities;
 		}
+
+    //  Done
+
+    pEntities->SetName(sFilename);
+	*retpEntities = pEntities;
 
 	return NOERROR;
 	}

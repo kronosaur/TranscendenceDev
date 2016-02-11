@@ -270,11 +270,9 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 
 	//	Add maneuver speed
 
-	int iManeuver = pClass->GetManeuverability() * pClass->GetRotationRange() / STD_ROTATION_COUNT;
-	if (iManeuver <= 0)
-		iManeuver = 1;
-
-	CString sManeuverNumber = strPatternSubst(CONSTLIT("%d.%d"), 30 / iManeuver, (10 * (30 % iManeuver) + (iManeuver / 2)) / iManeuver);
+	Metric rManeuver = g_SecondsPerUpdate * pClass->GetRotationDesc().GetMaxRotationSpeedPerTick();
+	int iManeuver = (int)((rManeuver * 100) + 0.5);
+	CString sManeuverNumber = strPatternSubst(CONSTLIT("%d.%d"), iManeuver / 100, ((iManeuver % 100) + 5) / 10);
 
 	//	Compose the text
 
@@ -284,7 +282,7 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 			"{/f:LargeBold;/c:%d; %s} thrust//mass ratio\n"
 			"(thrust as proportion of total mass)\n"
 			"{/f:LargeBold;/c:%d; %s} maneuverability\n"
-			"(turning speed)}"),
+			"(degrees//sec)}"),
 
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),

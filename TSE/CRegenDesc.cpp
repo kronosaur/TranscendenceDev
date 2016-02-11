@@ -274,6 +274,8 @@ ALERROR CRegenDesc::InitFromXML (SDesignLoadCtx &Ctx,
 
 		iHPPerEra = iPeriodsPerEra * iRegenHP + (iPeriodsRemainder * iRegenHP / iRegenRate);
 		}
+	else
+		iHPPerEra = 0;
 
 	Init(iHPPerEra);
 

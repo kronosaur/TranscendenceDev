@@ -293,6 +293,9 @@ ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector)
 
 CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem)
 	{
+	if (pItem == NULL)
+		return NULL;
+
 	int iArg = pItem->GetIntegerValue();
 	if (iArg == 0)
 		return NULL;
@@ -952,6 +955,23 @@ CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg)
 
 	else
 		return NULL;
+	}
+
+bool IsVectorItem (ICCItem *pItem)
+
+//	IsVectorItem
+//
+//	Returns TRUE if pItem is a valid vector
+
+	{
+	if (pItem->IsInteger())
+		return true;
+	else if (pItem->IsList()
+			&& pItem->GetCount() > 0
+			&& pItem->GetElement(0)->IsInteger())
+		return true;
+	else
+		return false;
 	}
 
 void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item)

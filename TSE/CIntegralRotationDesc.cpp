@@ -83,17 +83,6 @@ int CIntegralRotationDesc::GetManeuverDelay (void) const
 	return (m_iMaxRotationRate > 0 ? (int)(ROTATION_FRACTION / m_iMaxRotationRate) : 0);
 	}
 
-int CIntegralRotationDesc::GetManeuverability (void) const
-
-//	GetManeuverability
-//
-//	For compatibility we convert from our internal units to old style 
-//	maneuverability (game seconds per rotation angle)
-
-	{
-	return (m_iMaxRotationRate > 0 ? (int)(ROTATION_FRACTION * STD_SECONDS_PER_UPDATE / m_iMaxRotationRate) : 0);
-	}
-
 Metric CIntegralRotationDesc::GetMaxRotationSpeedPerTick (void) const
 
 //	GetMaxRotationSpeedPerTick

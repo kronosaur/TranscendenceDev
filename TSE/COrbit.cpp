@@ -71,7 +71,7 @@ void COrbit::Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbCo
 	if (m_rEccentricity == 0.0)
 		{
 		Metric rAngle;
-		const Metric rIncrement = g_Pi / 90.0;
+		const Metric rIncrement = PI / 90.0;
 		int xPrev, yPrev;
 		CG32bitPixel rgbColor;
 
@@ -89,7 +89,7 @@ void COrbit::Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbCo
 
 		//	Paint the orbit in multiple segments
 
-		for (rAngle = rIncrement; rAngle < g_Pi * 2.0; rAngle += rIncrement)
+		for (rAngle = rIncrement; rAngle < PI * 2.0; rAngle += rIncrement)
 			{
 			//	Compute the end point
 
@@ -109,7 +109,7 @@ void COrbit::Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbCo
 	else
 		{
 		Metric rAngle;
-		const Metric rIncrement = g_Pi / 90.0;
+		const Metric rIncrement = PI / 90.0;
 		int xPrev, yPrev;
 
 		//	Compute the position of the starting point
@@ -118,7 +118,7 @@ void COrbit::Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbCo
 
 		//	Paint the orbit in multiple segments
 
-		for (rAngle = rIncrement; rAngle < g_Pi * 2.0; rAngle += rIncrement)
+		for (rAngle = rIncrement; rAngle < PI * 2.0; rAngle += rIncrement)
 			{
 			Metric rRadius;
 			CVector vPos = GetPointAndRadius(rAngle, &rRadius);

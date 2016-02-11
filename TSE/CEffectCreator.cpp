@@ -27,6 +27,8 @@
 #define SOUND_ATTRIB							CONSTLIT("sound")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 
+#define FIELD_NO_SOUND							CONSTLIT("noSound")
+
 #define INSTANCE_CREATOR						CONSTLIT("creator")
 #define INSTANCE_GAME							CONSTLIT("game")
 #define INSTANCE_OWNER							CONSTLIT("owner")
@@ -38,7 +40,9 @@ static char *CACHED_EVENTS[CEffectCreator::evtCount] =
 		"GetParameters",
 	};
 
-CEffectCreator::CEffectCreator (void) : m_pDamage(NULL)
+CEffectCreator::CEffectCreator (void) : 
+		m_iInstance(instCreator),
+		m_pDamage(NULL)
 
 //	CEffectCreator constructor
 
@@ -97,7 +101,15 @@ ALERROR CEffectCreator::CreateEffect (CSystem *pSystem,
 	ALERROR error;
 	CEffect *pEffect;
 
-	if (error = CEffect::Create(this,
+	//	Create a painter
+
+	IEffectPainter *pPainter = CreatePainter(CCreatePainterCtx());
+	if (pPainter == NULL)
+		return ERR_CANCEL;
+
+	//	Create the effect object
+
+	if (error = CEffect::Create(pPainter,
 			pSystem,
 			pAnchor,
 			vPos,
@@ -125,8 +137,9 @@ ALERROR CEffectCreator::CreateFromTag (const CString &sTag, CEffectCreator **ret
 		pCreator = new CImageEffectCreator;
 	else if (strEquals(sTag, CRayEffectCreator::GetClassTag()))
 		pCreator = new CRayEffectCreator;
-	else if (strEquals(sTag, CParticleJetEffectCreator::GetClassTag()))
-		pCreator = new CParticleJetEffectCreator;
+	else if (strEquals(sTag, CParticleSystemEffectCreator::GetClassTag())
+			 || strEquals(sTag, CONSTLIT("ParticleJet")))
+		pCreator = new CParticleSystemEffectCreator;
 	else if (strEquals(sTag, COrbEffectCreator::GetClassTag()))
 		pCreator = new COrbEffectCreator;
 	else if (strEquals(sTag, CLightningStormEffectCreator::GetClassTag()))
@@ -246,6 +259,16 @@ ALERROR CEffectCreator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	return NOERROR;
 	}
 
+IEffectPainter *CEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+
+//	CreatePainter
+//
+//	Creates the painter for this effect. Caller must call Delete.
+	
+	{
+	return OnCreatePainter(Ctx); 
+	}
+
 ALERROR CEffectCreator::CreateSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CEffectCreator **retpCreator)
 
 //	CreateSimpleFromXML
@@ -268,7 +291,11 @@ ALERROR CEffectCreator::CreateSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *p
 		return ERR_MEMORY;
 
 	pCreator->m_sUNID = sUNID;
-	pCreator->m_iInstance = instCreator;
+
+	//	Instancing
+
+	if (error = pCreator->InitInstanceFromXML(Ctx, pDesc))
+		return error;
 
 	//	Load events
 
@@ -302,18 +329,16 @@ ALERROR CEffectCreator::CreateTypeFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 	ALERROR error;
 	CEffectCreator *pCreator;
 
-	//	Create the effect based on the child tag
+	//	Create the effect based on the child tag. If we have not <Effect> tag
+	//	then we assume that this will be a dynamically created group of effects.
 
 	CXMLElement *pEffect = pDesc->GetContentElementByTag(EFFECT_TAG);
 	if (pEffect == NULL)
-		{
-		Ctx.sError = CONSTLIT("<EffectType> must have an <Effect> sub-element.");
-		return ERR_FAIL;
-		}
+		pCreator = new CEffectGroupCreator;
 
 	//	If we've got no sub elements, then its a null creator
 
-	if (pEffect->GetContentElementCount() == 0)
+	else if (pEffect->GetContentElementCount() == 0)
 		pCreator = new CNullEffectCreator;
 
 	//	If we've got a single element, then we create a simple creator
@@ -455,6 +480,27 @@ IEffectPainter *CEffectCreator::CreatePainterFromStreamAndCreator (SLoadCtx &Ctx
 	return pPainter;
 	}
 
+IEffectPainter *CEffectCreator::CreatePainterFromTag (const CString &sTag)
+
+//	CreatePainterFromTag
+//
+//	Creates a raw painter. This only works for painters that are fully 
+//	parameterized.
+
+	{
+	CEffectCreator *pCreator;
+	if (CreateFromTag(sTag, &pCreator) != NOERROR)
+		return NULL;
+
+	CCreatePainterCtx Ctx;
+	Ctx.SetRawPainter(true);
+	IEffectPainter *pPainter = pCreator->CreatePainter(Ctx);
+
+	delete pCreator;
+
+	return pPainter;
+	}
+
 ALERROR CEffectCreator::InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitBasicsFromXML
@@ -471,6 +517,21 @@ ALERROR CEffectCreator::InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 
 	//	Figure out what kind of instancing model we use
 
+	if (error = InitInstanceFromXML(Ctx, pDesc))
+		return error;
+
+	//	Done
+
+	return NOERROR;
+	}
+
+ALERROR CEffectCreator::InitInstanceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+//	InitInstanceFromXML
+//
+//	Initializes the instance model
+
+	{
 	CString sAttrib;
 	if (pDesc->FindAttribute(INSTANCE_ATTRIB, &sAttrib))
 		{
@@ -486,10 +547,6 @@ ALERROR CEffectCreator::InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 			return ERR_FAIL;
 			}
 		}
-	else
-		m_iInstance = instCreator;
-
-	//	Done
 
 	return NOERROR;
 	}
@@ -517,33 +574,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 			CCSymbolTable *pTable = (CCSymbolTable *)pResult;
 
 			for (i = 0; i < pTable->GetCount(); i++)
-				{
-				CString sParam = pTable->GetKey(i);
-				ICCItem *pValue = pTable->GetElement(i);
-				CEffectParamDesc Value;
-
-				if (pValue->IsNil())
-					Value.InitNull();
-				else if (pValue->IsInteger())
-					Value.InitInteger(pValue->GetIntegerValue());
-				else if (pValue->IsIdentifier())
-					{
-					CString sValue = pValue->GetStringValue();
-					char *pPos = sValue.GetASCIIZPointer();
-
-					//	If this is a color, parse it
-
-					if (*pPos == '#')
-						Value.InitColor(::LoadRGBColor(sValue));
-
-					//	Otherwise, a string
-
-					else
-						Value.InitString(sValue);
-					}
-
-				pPainter->SetParam(Ctx, sParam, Value);
-				}
+				pPainter->SetParamFromItem(Ctx, pTable->GetKey(i), pTable->GetElement(i));
 			}
 		else
 			::kernelDebugLogMessage(CONSTLIT("EffectType %x GetParameters: Expected struct result."), GetUNID());
@@ -671,15 +702,11 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		return error;
 
 	//	Allow our subclass to initialize based on the effect
-	//	(We know we have one because we couldn't have gotten this far
-	//	without one. See CreateTypeFromXML.)
+	//	It is valid to not have an effect tag if we've got a dynamically
+	//	created group effect.
 
 	CXMLElement *pEffect = pDesc->GetContentElementByTag(EFFECT_TAG);
-	ASSERT(pEffect);
-
-	//	Continue
-
-	if (pEffect->GetContentElementCount() == 1)
+	if (pEffect && pEffect->GetContentElementCount() == 1)
 		{
 		CXMLElement *pEffectDesc = pEffect->GetContentElement(0);
 
@@ -855,7 +882,7 @@ int IEffectPainter::GetInitialLifetime (void)
 	return GetCreator()->GetLifetime();
 	}
 
-Metric IEffectPainter::GetRadius (void) const
+Metric IEffectPainter::GetRadius (int iTick) const
 	{
 	RECT rcRect;
 	GetRect(&rcRect);
@@ -971,6 +998,61 @@ CString IEffectPainter::ReadUNID (SLoadCtx &Ctx)
 		}
 
 	return sUNID;
+	}
+
+void IEffectPainter::SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue)
+
+//	SetParamFromItem
+//
+//	Sets the parameter
+
+	{
+	//	Some parameters are special (and valid for all parameterized
+	//	effects).
+
+	if (strEquals(sParam, FIELD_NO_SOUND))
+		SetNoSound(!pValue->IsNil());
+
+	//	We treat structures specially
+
+	else if (pValue->IsSymbolTable())
+		SetParamStruct(Ctx, sParam, pValue);
+
+	//	Otherwise, tell the painter to set the parameter
+
+	else
+		{
+		CEffectParamDesc Value;
+
+		if (pValue->IsNil())
+			Value.InitNull();
+		else if (pValue->IsInteger())
+			Value.InitInteger(pValue->GetIntegerValue());
+		else if (pValue->IsIdentifier())
+			{
+			CString sValue = pValue->GetStringValue();
+			char *pPos = sValue.GetASCIIZPointer();
+
+			DiceRange DiceRangeValue;
+
+			//	If this is a color, parse it
+
+			if (*pPos == '#')
+				Value.InitColor(::LoadRGBColor(sValue));
+
+			//	Otherwise, see if this is a dice range
+
+			else if (DiceRange::LoadIfValid(sValue, &DiceRangeValue))
+				Value.InitDiceRange(DiceRangeValue);
+
+			//	Otherwise, a string
+
+			else
+				Value.InitString(sValue);
+			}
+
+		SetParam(Ctx, sParam, Value);
+		}
 	}
 
 ALERROR IEffectPainter::ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass)

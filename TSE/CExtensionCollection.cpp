@@ -30,8 +30,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-     71, 228, 129, 122,  85,   5, 153,  29, 222, 208,
-	181, 203,  21, 102, 230, 138, 145,   8,   4, 152,
+     16,  92,  70,  73, 166,  75, 194,  89, 111,  20,
+     69, 186,   2, 199, 102,  63,  26, 102,  58, 142,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -90,12 +90,16 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 	{
 	int i;
 
+	CString sExtensionName;
+
+	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
 	bool bNeedLibrary = pAdventure->UsesCompatibilityLibrary();
 	if (!bNeedLibrary)
 		{
 		for (i = 0; i < Extensions.GetCount(); i++)
 			if (Extensions[i]->UsesCompatibilityLibrary())
 				{
+				sExtensionName = Extensions[i]->GetName();
 				bNeedLibrary = true;
 				break;
 				}
@@ -103,6 +107,9 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 
 	if (!bNeedLibrary)
 		return NOERROR;
+
+	if (bDebugMode)
+		::kernelDebugLogMessage("Adding compatibility library because of %s.", sExtensionName);
 
 	//	Add the library
 
@@ -205,6 +212,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 		return NOERROR;
 
 	bool bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
+	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
 
 	//	Mark now in case there is a circular dependency (in that case, we will
 	//	ignore the circular dependency.)
@@ -281,7 +289,14 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	//	Finally add the extension itself.
 
 	if (!pExtension->IsDisabled())
+		{
 		retList->Insert(pExtension);
+
+#ifdef DEBUG_EXTENSION_LOAD
+		if (bDebugMode)
+			::kernelDebugLogMessage("Adding: %s.", pExtension->GetName());
+#endif
+		}
 
 	//	Success.
 
@@ -580,6 +595,8 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 	ASSERT(pAdventure);
 	ASSERT(pAdventure->GetType() == extAdventure);
 
+	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+
 	//	Initialize
 
 	retList->DeleteAll();
@@ -598,6 +615,9 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 		{
 		CoreLibraries[i]->SetMarked();
 		retList->Insert(CoreLibraries[i]);
+
+		if (bDebugMode)
+			::kernelDebugLogMessage("Adding core library: %s", CoreLibraries[i]->GetName());
 		}
 
 	//	Make a list of all compatibility libraries

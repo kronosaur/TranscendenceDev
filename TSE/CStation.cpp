@@ -1154,7 +1154,7 @@ CString CStation::DebugCrashInfo (void)
 		CSpaceObject *pDockedObj = m_DockingPorts.GetPortObj(this, i);
 		if (pDockedObj)
 			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(pDockedObj)));
-		else if (!m_DockingPorts.DebugIsPortEmpty(this, i))
+		else if (!m_DockingPorts.IsPortEmpty(this, i))
 			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: Not empty, but NULL object!\r\n"), i));
 		}
 
@@ -1384,22 +1384,6 @@ CString CStation::GetName (DWORD *retdwFlags)
 		*retdwFlags = m_dwNameFlags;
 
 	return m_sName;
-	}
-
-int CStation::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort)
-
-//	GetNearestDockVector
-//
-//	Returns a vector from the given position to the nearest
-//	dock position
-
-	{
-	int iPort = m_DockingPorts.FindNearestEmptyPort(this, pRequestingObj);
-
-	if (retvPort)
-		*retvPort = m_DockingPorts.GetPortPos(this, iPort, pRequestingObj);
-
-	return iPort;
 	}
 
 CSystem::LayerEnum CStation::GetPaintLayer (void)
@@ -1714,6 +1698,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	See if the damage is blocked by some external defense
 
+	Ctx.iOverlayHitDamage = Ctx.iDamage;
 	if (m_Overlays.AbsorbDamage(this, Ctx))
 		{
 		if (IsDestroyed())
@@ -1739,7 +1724,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	Let our shield generators take a crack at it
 
-	int iOriginalDamage = Ctx.iDamage;
+	Ctx.iShieldHitDamage = Ctx.iDamage;
 	if (m_pDevices)
 		{
 		for (i = 0; i < maxDevices; i++)
@@ -1755,10 +1740,33 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	If we're immutable, then nothing else happens.
 
+	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (IsImmutable())
 		{
-		Ctx.iDamage = 0;
-		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+		//	If we don't have ejecta, the decrease damage to 0.
+        //
+        //  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
+        //  because even level 0 has some WMD. But for this case we only case
+        //  about "real" WMD.
+
+        if (m_pType->GetEjectaAdj() == 0
+            || Ctx.Damage.GetMassDestructionLevel() == 0)
+            Ctx.iDamage = 0;
+
+        //	Otherwise, adjust for WMD
+
+        else
+            Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+
+		//	Hit effect
+
+		if (!Ctx.bNoHitEffect)
+			Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+
+		//	Ejecta
+
+		if (Ctx.iDamage > 0)
+			CreateEjectaFromDamage(Ctx.iDamage, Ctx.vHitPos, Ctx.iDirection, Ctx.Damage);
 
 		return damageNoDamageNoPassthrough;
 		}
@@ -1807,16 +1815,20 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		if (Ctx.Damage.GetMiningAdj())
 			FireOnMining(Ctx);
 
-		//	Once the station is abandoned, only WMD damage can destroy it
+		//	Once the station is abandoned, only WMD damage can destroy it.
+        //  NOTE: We check level (which is 0 for no WMD) rather than 
+        //  MassDestructionAdj, because we always have a little WMD. But for 
+        //  this case, we want "real" WMD.
 
-		if (Ctx.Damage.GetMassDestructionAdj() > 0)
-			Ctx.iDamage = Max(1, Ctx.Damage.GetMassDestructionAdj() * Ctx.iDamage / 100);
+        if (Ctx.Damage.GetMassDestructionLevel() > 0)
+            Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 		else
 			Ctx.iDamage = 0;
 
 		//	Hit effect
 
-		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+		if (!Ctx.bNoHitEffect)
+			Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
 
 		//	Give events a chance to change the damage
 
@@ -1937,15 +1949,13 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	If we're a multi-hull object then we adjust for mass destruction
 	//	effects (non-mass destruction weapons don't hurt us very much)
 
-	if (Ctx.iDamage > 0 && m_pType->IsMultiHull())
-		{
-		int iWMD = Ctx.Damage.GetMassDestructionAdj();
-		Ctx.iDamage = Max(1, iWMD * Ctx.iDamage / 100);
-		}
+    if (Ctx.iDamage > 0 && m_pType->IsMultiHull())
+        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
 	//	Hit effect
 
-	Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+	if (!Ctx.bNoHitEffect)
+		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
 
 	//	If no damage, we're done
 
@@ -2310,6 +2320,19 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		m_fReconned = true;
 		}
 
+	//	Get the image
+
+	int iTick, iVariant;
+	const CObjectImageArray &Image = GetImage(true, &iTick, &iVariant);
+
+	//	Set some context
+
+	CViewportPaintCtxSmartSave Save(Ctx);
+	Ctx.iTick = iTick;
+	Ctx.iVariant = 0;
+	Ctx.iRotation = GetRotation();
+	Ctx.iDestiny = GetDestiny();
+
 	//	Paints overlay background
 
 	m_Overlays.PaintBackground(Dest, x, y, Ctx);
@@ -2349,9 +2372,6 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Paint
 
-	int iTick, iVariant;
-	const CObjectImageArray &Image = GetImage(true, &iTick, &iVariant);
-
 	if (m_fRadioactive)
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, CG32bitPixel(0, 255, 0));
 
@@ -2377,12 +2397,8 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		g_pUniverse->GetNamedFont(CUniverse::fontSign).DrawText(Dest, rcRect, RGB_SIGN_COLOR, GetName(), -2);
 		}
 
-	//	Paint energy fields
+	//	Paint overlays
 
-	Ctx.iTick = iTick;
-	Ctx.iVariant = 0;
-	Ctx.iDestiny = GetDestiny();
-	Ctx.iRotation = GetRotation();
 	m_Overlays.Paint(Dest, Image.GetImageViewportSize(), x, y, Ctx);
 
 	//	Now paint any object that are docked in front of us

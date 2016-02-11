@@ -70,6 +70,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_PLAYER_LEFT_SYSTEM_EVENT				CONSTLIT("OnPlayerLeftSystem")
 #define ON_RANDOM_ENCOUNTER_EVENT				CONSTLIT("OnRandomEncounter")
 #define ON_SELECTED_EVENT						CONSTLIT("OnSelected")
+#define ON_SUBORDINATE_ATTACKED_EVENT			CONSTLIT("OnSubordinateAttacked")
 #define ON_SYSTEM_EXPLOSION_EVENT				CONSTLIT("OnSystemExplosion")
 #define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
 #define ON_SYSTEM_WEAPON_FIRE_EVENT				CONSTLIT("OnSystemWeaponFire")
@@ -78,15 +79,20 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define FIELD_DESC_ID							CONSTLIT("descID")
 #define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
 #define FIELD_CAN_REMOVE						CONSTLIT("canRemove")
+#define FIELD_OBJ_ID							CONSTLIT("objID")
+#define FIELD_POS								CONSTLIT("pos")
 #define FIELD_PRICE								CONSTLIT("price")
+#define FIELD_STATUS							CONSTLIT("status")
 #define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
 #define ORDER_DOCKED							CONSTLIT("docked")
 
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_COMMS_KEY						CONSTLIT("commsKey")
+#define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
+#define PROPERTY_DOCKING_PORTS					CONSTLIT("dockingPorts")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_HAS_DOCKING_PORTS				CONSTLIT("hasDockingPorts")
 #define PROPERTY_HP								CONSTLIT("hp")
@@ -98,12 +104,14 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_INSTALL_ITEM_STATUS			CONSTLIT("installItemStatus")
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL							CONSTLIT("level")
+#define PROPERTY_MASS							CONSTLIT("mass")
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
 #define PROPERTY_REFUEL_MAX_LEVEL				CONSTLIT("refuelMaxLevel")
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
 #define PROPERTY_REMOVE_ITEM_STATUS				CONSTLIT("removeItemStatus")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
+#define PROPERTY_SCALE							CONSTLIT("scale")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
 
 #define SPECIAL_DATA							CONSTLIT("data:")
@@ -119,6 +127,12 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define CATEGORY_MISSILE						CONSTLIT("missile")
 #define CATEGORY_SHIP							CONSTLIT("ship")
 #define CATEGORY_STATION						CONSTLIT("station")
+
+#define SCALE_STAR								CONSTLIT("star")
+#define SCALE_WORLD								CONSTLIT("world")
+#define SCALE_STATION							CONSTLIT("station")
+#define SCALE_SHIP								CONSTLIT("ship")
+#define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
 static Metric g_rMaxPerceptionRange[CSpaceObject::perceptMax+1] =
 	{
@@ -236,7 +250,8 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fShowHighlight(false),
 		m_fShowDamageBar(false),
 		m_fHasGravity(false),
-		m_fInsideBarrier(false)
+		m_fInsideBarrier(false),
+		m_fHasOnSubordinateAttackedEvent(false)
 
 //	CSpaceObject constructor
 
@@ -956,6 +971,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fShowDamageBar =			((dwLoad & 0x10000000) ? true : false);
 	pObj->m_fHasGravity =				((dwLoad & 0x20000000) ? true : false);
 	pObj->m_fInsideBarrier =			((dwLoad & 0x40000000) ? true : false);
+	pObj->m_fHasOnSubordinateAttackedEvent = ((dwLoad & 0x80000000) ? true : false);
 
 	//	No need to save the following
 
@@ -1946,7 +1962,7 @@ void CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion)
 		}
 	}
 
-void CSpaceObject::FireOnAttacked (SDamageCtx &Ctx)
+void CSpaceObject::FireOnAttacked (const SDamageCtx &Ctx)
 
 //	FireOnAttacked
 //
@@ -2809,6 +2825,47 @@ void CSpaceObject::FireOnSelected (void)
 		}
 	}
 
+bool CSpaceObject::FireOnSubordinateAttacked (const SDamageCtx &Ctx)
+
+//	FireOnSubordinateAttacked
+//
+//	Fire OnSubordinateAttacked event. Return TRUE if we handle it (and we should 
+//	skip the default action).
+
+	{
+	SEventHandlerDesc Event;
+
+	bool bHandled;
+	if (bHandled = (HasOnSubordinateAttackedEvent() && FindEventHandler(ON_SUBORDINATE_ATTACKED_EVENT, &Event)))
+		{
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(this);
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjAttacked"), Ctx.pObj);
+		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
+		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
+		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
+		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
+		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
+		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
+		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_SUBORDINATE_ATTACKED_EVENT, pResult);
+		else if (pResult->IsNil())
+			bHandled = false;
+
+		//	Done
+
+		CCCtx.Discard(pResult);
+		}
+
+	return bHandled;
+	}
+
 void CSpaceObject::FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID)
 
 //	FireOnSystemExplosion
@@ -2848,8 +2905,8 @@ void CSpaceObject::FireOnSystemObjAttacked (SDamageCtx &Ctx)
 		CCodeChainCtx CCCtx;
 
 		CCCtx.SaveAndDefineSourceVar(this);
-		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjAttacked"), Ctx.pObj);
+		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
@@ -3354,6 +3411,25 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 		}
 	}
 
+int CSpaceObject::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort)
+
+//	GetNearestDockPort
+//
+//	Returns the index of the nearest dock point (or -1)
+	
+	{
+	CDockingPorts *pPorts = GetDockingPorts();
+	if (pPorts == NULL)
+		return -1;
+
+	int iPort = pPorts->FindNearestEmptyPort(this, pRequestingObj);
+
+	if (retvPort)
+		*retvPort = pPorts->GetPortPos(this, iPort, pRequestingObj);
+
+	return iPort;
+	}
+
 CSpaceObject *CSpaceObject::GetNearestEnemy (Metric rMaxRange, bool bIncludeStations)
 
 //	GetNearest
@@ -3814,6 +3890,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns the property
 
 	{
+	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
 	CDesignType *pType;
 
@@ -3855,8 +3932,50 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		else
 			return CC.CreateNil();
 		}
+	else if (strEquals(sName, PROPERTY_CURRENCY))
+		return CC.CreateInteger(GetDefaultEconomy()->GetUNID());
+
 	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
 		return CC.CreateInteger(GetCyberDefenseLevel());
+
+	else if (strEquals(sName, PROPERTY_DOCKING_PORTS))
+		{
+		CDockingPorts *pPorts = GetDockingPorts();
+		if (pPorts == NULL || pPorts->GetPortCount(this) == 0)
+			return CC.CreateNil();
+
+		ICCItem *pList = CC.CreateLinkedList();
+		for (i = 0; i < pPorts->GetPortCount(this); i++)
+			{
+			ICCItem *pPortDesc = CC.CreateSymbolTable();
+
+			//	Status
+
+			if (pPorts->IsPortEmpty(this, i))
+				pPortDesc->SetStringAt(CC, FIELD_STATUS, CONSTLIT("empty"));
+			else
+				pPortDesc->SetStringAt(CC, FIELD_STATUS, CONSTLIT("inUse"));
+
+			//	Position
+
+			ICCItem *pValue = ::CreateListFromVector(CC, pPorts->GetPortPos(this, i, NULL));
+			pPortDesc->SetAt(CC, FIELD_POS, pValue);
+			pValue->Discard(&CC);
+
+			//	ObjectID
+
+			CSpaceObject *pObj = pPorts->GetPortObj(this, i);
+			if (pObj)
+				pPortDesc->SetIntegerAt(CC, FIELD_OBJ_ID, pObj->GetID());
+
+			//	Add to list
+
+			pList->Append(CC, pPortDesc);
+			pPortDesc->Discard(&CC);
+			}
+
+		return pList;
+		}
 
 	else if (strEquals(sName, PROPERTY_HAS_DOCKING_PORTS))
 		return CC.CreateBool(SupportsDocking());
@@ -3882,6 +4001,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_LEVEL))
 		return CC.CreateInteger(GetLevel());
 
+	else if (strEquals(sName, PROPERTY_MASS))
+		return CC.CreateInteger((int)GetMass());
+
 	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
 		return CC.CreateString(GetPaintLayerID(GetPaintLayer()));
 
@@ -3904,6 +4026,30 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		{
 		int iMaxLevel = GetTradeMaxLevel(serviceRepairArmor);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
+		}
+
+	else if (strEquals(sName, PROPERTY_SCALE))
+		{
+		switch (GetScale())
+			{
+			case scaleStar:
+				return CC.CreateString(SCALE_STAR);
+
+			case scaleWorld:
+				return CC.CreateString(SCALE_WORLD);
+
+			case scaleStructure:
+				return CC.CreateString(SCALE_STATION);
+
+			case scaleShip:
+				return CC.CreateString(SCALE_SHIP);
+
+			case scaleFlotsam:
+				return CC.CreateString(SCALE_FLOTSAM);
+
+			default:
+				return CC.CreateNil();
+			}
 		}
 
 	else if (strEquals(sName, PROPERTY_UNDER_ATTACK))
@@ -5610,19 +5756,24 @@ void CSpaceObject::PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPain
 
 	{
 	SEffectNode *pEffect = m_pFirstEffect;
-	while (pEffect)
+	if (pEffect)
 		{
-		Ctx.iTick = pEffect->iTick;
+		CViewportPaintCtxSmartSave Save(Ctx);
 		Ctx.iVariant = 0;
-		Ctx.iRotation = pEffect->iRotation;
 		Ctx.iDestiny = GetDestiny();
 
-		pEffect->pPainter->Paint(Dest, 
-				x + pEffect->xOffset,
-				y + pEffect->yOffset,
-				Ctx);
+		while (pEffect)
+			{
+			Ctx.iTick = pEffect->iTick;
+			Ctx.iRotation = pEffect->iRotation;
 
-		pEffect = pEffect->pNext;
+			pEffect->pPainter->Paint(Dest, 
+					x + pEffect->xOffset,
+					y + pEffect->yOffset,
+					Ctx);
+
+			pEffect = pEffect->pNext;
+			}
 		}
 	}
 
@@ -6690,6 +6841,21 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 				else if (iHP > pSection->GetHitPoints())
 					pShip->RepairArmor(iArmorSeg, iHP - pSection->GetHitPoints());
 				}
+			else if (Item.GetType()->GetDeviceClass())
+				{
+				//	Set the data
+				//
+				//	LATER: At some point we should move the code above that sets
+				//	armor HP to be handled by SetPropertyAtCursor. At that point,
+				//	we can delete this section and let it go to the default.
+
+				if (!ItemList.SetPropertyAtCursor(this, sName, pValue, iCount, retsError))
+					return false;
+
+				//	Update the object
+
+				ItemEnhancementModified(ItemList);
+				}
 			else
 				{
 				*retsError = CONSTLIT("Unable to set hit points.");
@@ -6862,6 +7028,10 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = this;
 
+	SEffectUpdateCtx UpdateCtx;
+	UpdateCtx.pSystem = GetSystem();
+	UpdateCtx.pObj = this;
+
 	//	Update the effects
 
 	SEffectNode *pEffect = m_pFirstEffect;
@@ -6882,7 +7052,10 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			}
 		else
 			{
-			pEffect->pPainter->OnUpdate();
+			UpdateCtx.iTick = pEffect->iTick;
+			UpdateCtx.iRotation = pEffect->iRotation;
+
+			pEffect->pPainter->OnUpdate(UpdateCtx);
 			pEffect->pPainter->OnMove(MoveCtx);
 
 			pPrev = pEffect;
@@ -7131,6 +7304,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fShowDamageBar				? 0x10000000 : 0);
 	dwSave |= (m_fHasGravity				? 0x20000000 : 0);
 	dwSave |= (m_fInsideBarrier				? 0x40000000 : 0);
+	dwSave |= (m_fHasOnSubordinateAttackedEvent	? 0x80000000 : 0);
 	//	No need to save m_fHasName because it is set by CSystem on load.
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 

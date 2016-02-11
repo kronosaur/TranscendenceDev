@@ -78,9 +78,9 @@ const Metric g_InfiniteDistance =		g_AU * g_AU * 1000000.0;	//	A very large numb
 const Metric g_SpaceDragFactor =		0.98;		//	Coefficient of drag in space (1.0 = no drag)
 const Metric g_BounceCoefficient =		0.50;		//	Speed coefficient when bouncing
 const Metric g_MomentumConstant =		25.0;		//	Arbitrary constant for momentum
-const int g_MWPerFuelUnit =				15;			//	Tenth-MW-ticks produced per fuel unit
+const Metric g_MWPerFuelUnit =			15.0;		//	Tenth-MW-ticks produced per fuel unit
 const Metric g_MinSpeed2 =				100.0;		//	If moving less than this speed, force to 0
-const int FUEL_UNITS_PER_STD_ROD =		2500;		//	Fuel units in a standard fuel rod equivalent
+const Metric FUEL_UNITS_PER_STD_ROD =	2500.0;		//	Fuel units in a standard fuel rod equivalent
 
 const DWORD INFINITE_TICK =					0xffffffff;	//	Highest tick
 
@@ -144,6 +144,13 @@ const DWORD g_SuperconductingShieldsUNID =	0x0000407D;	//	Superconducting shield
 const DWORD g_SuperconductingCoilUNID =		0x0000407E;	//	Superconducting shield generator
 const DWORD NOVA25_REACTOR_UNID =			0x00004107;	//	Nova-25 reactor
 
+const DWORD UNID_KINETIC_EXPLOSION_1 =		0x00005007;
+const DWORD UNID_BLAST_EXPLOSION_1 =		0x0000500B;
+const DWORD UNID_THERMO_EXPLOSION_1 =		0x0000500F;
+const DWORD UNID_PLASMA_EXPLOSION_1 =		0x00005013;
+const DWORD UNID_ANTIMATTER_EXPLOSION_1 =	0x00005019;
+const DWORD UNID_GRAVITON_EXPLOSION_1 =		0x0000501D;
+
 const DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1
 const DWORD g_LargeExplosionUNID =			0x00009002;	//	efLargeExplosion1
 const DWORD g_HitEffectUNID =				0x00009003;	//	efSmallExplosion1
@@ -159,7 +166,7 @@ const DWORD DEFAULT_SHIP_SCREEN_UNID =		0x0000A001;	//	dsShipInterior
 const DWORD g_DamageImageUNID =				0x0000F001;	//	rsMediumDamage
 const DWORD SHIP_INTERIOR_IMAGE_UNID =		0x0000F002;	//	rsShipInterior
 const DWORD g_LRSImageUNID =				0x0000F006;	//	rsZubrinLRS
-const DWORD g_TargetingImageUNID =			0x0000F007;	//	rsZubrinTargeting
+const DWORD UNID_TARGETING_HUD_BACKGROUND =	0x0000F007;	//	rsZubrinTargeting
 const DWORD g_SRSSnowImageUNID =			0x0000F008;	//	rsSRSSnow
 const DWORD g_LRSBorderUNID =				0x0000F009;	//	rsZubrinLRSBorder
 const DWORD DEFAULT_DOCK_SCREEN_IMAGE_UNID = 0x0000F013;	//	Default dock screen background

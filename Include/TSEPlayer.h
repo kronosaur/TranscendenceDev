@@ -3,8 +3,7 @@
 //	Player classes
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_PLAYER
-#define INCL_TSE_PLAYER
+#pragma once
 
 class IPlayerController
 	{
@@ -41,5 +40,4 @@ class IPlayerController
 		mutable CSovereign *m_pSovereign;			//	Cached sovereign
 	};
 
-#endif
 

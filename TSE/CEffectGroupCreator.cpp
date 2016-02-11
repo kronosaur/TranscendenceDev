@@ -4,7 +4,10 @@
 
 #include "PreComp.h"
 
+#define EFFECTS_TAG								CONSTLIT("Effects")
+
 #define ANGLE_OFFSET_ATTRIB						CONSTLIT("angleOffset")
+#define EFFECTS_ATTRIB							CONSTLIT("effects")
 #define RADIUS_OFFSET_ATTRIB					CONSTLIT("radiusOffset")
 #define ROTATION_ADJ_ATTRIB						CONSTLIT("rotationAdj")
 #define X_OFFSET_ATTRIB							CONSTLIT("xOffset")
@@ -21,6 +24,7 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual bool CanPaintComposite (void);
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
 		virtual int GetFadeLifetime (void);
+		virtual int GetLifetime (void);
 		virtual void GetRect (RECT *retRect) const;
 		virtual void OnBeginFade (void);
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged);
@@ -30,6 +34,7 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
+		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue);
 		virtual void SetVariants (int iVariants);
 
 	protected:
@@ -37,6 +42,17 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
 	private:
+		inline bool IsAlive (IEffectPainter *pPainter, int iTick)
+			{
+			if (pPainter)
+				{
+				int iLifetime = pPainter->GetLifetime();
+				return (iLifetime <= 0 || iTick < iLifetime);
+				}
+			else
+				return false;
+			}
+
 		SViewportPaintCtx *AdjustCtx (SViewportPaintCtx &Ctx, SViewportPaintCtx &NewCtx, int *retx, int *rety);
 
 		CEffectGroupCreator *m_pCreator;
@@ -116,6 +132,22 @@ int CEffectGroupPainter::GetFadeLifetime (void)
 	for (int i = 0; i < m_Painters.GetCount(); i++)
 		if (m_Painters[i])
 			iMaxLifetime = Max(iMaxLifetime, m_Painters[i]->GetFadeLifetime());
+
+	return iMaxLifetime;
+	}
+
+int CEffectGroupPainter::GetLifetime (void)
+
+//	GetLifetime
+//
+//	Returns the lifetime of the painter
+
+	{
+	int iMaxLifetime = 0;
+
+	for (int i = 0; i < m_Painters.GetCount(); i++)
+		if (m_Painters[i])
+			iMaxLifetime = Max(iMaxLifetime, m_Painters[i]->GetLifetime());
 
 	return iMaxLifetime;
 	}
@@ -229,7 +261,7 @@ void CEffectGroupPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 
 	{
 	for (int i = 0; i < m_Painters.GetCount(); i++)
-		if (m_Painters[i])
+		if (IsAlive(m_Painters[i], Ctx.iTick))
 			{
 			//	If we have offsets, we need to modify the emit position
 
@@ -269,7 +301,7 @@ void CEffectGroupPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 	SViewportPaintCtx *pCtx = AdjustCtx(Ctx, NewCtx, &x, &y);
 
 	for (int i = 0; i < m_Painters.GetCount(); i++)
-		if (m_Painters[i])
+		if (IsAlive(m_Painters[i], Ctx.iTick))
 			m_Painters[i]->Paint(Dest, x, y, *pCtx);
 	}
 
@@ -333,6 +365,27 @@ bool CEffectGroupPainter::PointInImage (int x, int y, int iTick, int iVariant, i
 	return false;
 	}
 
+void CEffectGroupPainter::SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue)
+
+//	SetParamStruct
+//
+//	Sets special parameters
+
+	{
+	if (strEquals(sParam, EFFECTS_ATTRIB))
+		{
+		//	This allows us to programmatically create sub painters.
+		//	(But only if we don't have any.)
+
+		if (m_Painters.GetCount() != 0)
+			return;
+
+		//	LATER: Create a set of painters from the structures.
+		//	NOTE: We will need to save and load painters by tag (without
+		//	creators).
+		}
+	}
+
 void CEffectGroupPainter::SetVariants (int iVariants)
 
 //	SetVariants
@@ -347,7 +400,15 @@ void CEffectGroupPainter::SetVariants (int iVariants)
 
 //	CEffectGroupCreator --------------------------------------------------------
 
-CEffectGroupCreator::CEffectGroupCreator (void) : m_pCreators(NULL), m_iCount(0)
+CEffectGroupCreator::CEffectGroupCreator (void) : 
+		m_pCreators(NULL), 
+		m_iCount(0),
+		m_iAngleOffset(0),
+		m_iRadiusOffset(0),
+		m_xOffset(0),
+		m_yOffset(0),
+		m_iRotationAdj(0),
+		m_bHasOffsets(false)
 
 //	CEffectGroupCreator constructor
 
@@ -437,14 +498,22 @@ ALERROR CEffectGroupCreator::CreateEffect (CSystem *pSystem,
 	return NOERROR;
 	}
 
-IEffectPainter *CEffectGroupCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CEffectGroupCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //
 //	Creates a painter
 
 	{
-	return new CEffectGroupPainter(this, Ctx);
+	IEffectPainter *pPainter = new CEffectGroupPainter(this, Ctx);
+
+	//	Initialize via GetParameters, if necessary
+
+	InitPainterParameters(Ctx, pPainter);
+
+	//	Done
+
+	return pPainter;
 	}
 
 int CEffectGroupCreator::GetLifetime (void)
@@ -496,20 +565,33 @@ ALERROR CEffectGroupCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 
 	ASSERT(m_pCreators == NULL);
 
+	//	It's OK if we have a NULL pDesc. It just means that we are going to create
+	//	the group dynamically.
+
+	if (pDesc == NULL)
+		return NOERROR;
+
+	//	If we have the special tag <Effects> then we look there. We need this 
+	//	in case we want to also have an <Events> tag.
+
+	CXMLElement *pEffectList = pDesc->GetContentElementByTag(EFFECTS_TAG);
+	if (pEffectList == NULL)
+		pEffectList = pDesc;
+
 	//	Allocate the creator array
 
-	m_iCount = pDesc->GetContentElementCount();
-	if (m_iCount == 0)
-		return ERR_FAIL;
-
-	m_pCreators = new CEffectCreatorRef [m_iCount];
-
-	for (i = 0; i < m_iCount; i++)
+	m_iCount = pEffectList->GetContentElementCount();
+	if (m_iCount > 0)
 		{
-		CString sSubUNID = strPatternSubst(CONSTLIT("%s/%d"), sUNID, i);
+		m_pCreators = new CEffectCreatorRef [m_iCount];
 
-		if (error = m_pCreators[i].LoadSimpleEffect(Ctx, sSubUNID, pDesc->GetContentElement(i)))
-			return error;
+		for (i = 0; i < m_iCount; i++)
+			{
+			CString sSubUNID = strPatternSubst(CONSTLIT("%s/%d"), sUNID, i);
+
+			if (error = m_pCreators[i].LoadSimpleEffect(Ctx, sSubUNID, pEffectList->GetContentElement(i)))
+				return error;
+			}
 		}
 
 	//	Load any offsets or transforms

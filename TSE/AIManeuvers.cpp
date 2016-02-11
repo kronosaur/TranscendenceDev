@@ -23,7 +23,7 @@ const int MAX_TARGETS =					10;
 const Metric MIN_FLYBY_SPEED =			(2.0 * KLICKS_PER_PIXEL);
 const Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL* KLICKS_PER_PIXEL * 25.0);
 const Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
-const Metric MIN_TARGET_DIST =			(5.0 * LIGHT_SECOND);
+const Metric MIN_TARGET_DIST =			(3.0 * LIGHT_SECOND);
 
 const Metric CLOSE_RANGE2 =				(CLOSE_RANGE * CLOSE_RANGE);
 const Metric HIT_NAV_POINT_DIST2 =		(HIT_NAV_POINT_DIST * HIT_NAV_POINT_DIST);
@@ -52,13 +52,85 @@ const Metric MIN_SPEED_RATIO =			0.01;
 
 extern int g_iDebugLine;
 
+void CAIBehaviorCtx::CalcEscortFormation (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing)
+
+//	CalcEscortFormation
+//
+//	Computes the position of the escort
+
+	{
+	//	If we're flocking, use flocking algorithm (if a flock is available).
+
+	if (m_AISettings.IsFlocker()
+			&& CalcFlockingFormation(pShip, pLeader, retvPos, retvVel, retiFacing))
+		;
+
+	//	Otherwise, we do a normal escort.
+	//	Pick escort position relative to our current position
+	//	at time = 0
+
+	else
+		{
+		CVector vEscortPos;
+
+		//	Escort position is encoded in order data
+
+		IShipController::SData Data;
+		pShip->GetCurrentOrder(NULL, &Data);
+		if (Data.IsIntegerOrPair())
+			{
+			int iAngle = Data.AsInteger();
+			int iDistance = Data.AsInteger2();
+			if (iDistance == 0)
+				iDistance = 6;
+
+			vEscortPos = PolarToVector(pLeader->GetRotation() + iAngle, iDistance * LIGHT_SECOND);
+			}
+
+		//	Otherwise, generate a position
+
+		else
+			{
+			int iAngle = (pLeader->GetRotation() + 45 + 5 * (pShip->GetDestiny() % 54)) % 360;
+			Metric rRadius = ESCORT_DISTANCE * (0.75 + (pShip->GetDestiny() / 360.0));
+			vEscortPos = PolarToVector(iAngle, rRadius);
+			}
+
+		//	Compute absolute positions
+
+		*retvPos = pLeader->GetPos() + vEscortPos;
+		*retvVel = pLeader->GetVel();
+		*retiFacing = pLeader->GetRotation();
+		}
+	}
+
 bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 											CSpaceObject *pLeader,
-											Metric rFOVRange,
-											Metric rSeparationRange,
 											CVector *retvPos, 
 											CVector *retvVel, 
 											int *retiFacing)
+
+//	CalcFlockingFormation
+//
+//	Calculates the position that this ship should take relative to the rest of the flock. Returns FALSE
+//	if the current ship is a leader in the flock.
+
+	{
+	switch (m_AISettings.GetFlockingStyle())
+		{
+		case CAISettings::flockCompact:
+			//	LATER: Not Yet Implemented.
+			return CalcFlockingFormationRandom(pShip, pLeader, retvPos, retvVel, retiFacing);
+
+		case CAISettings::flockRandom:
+			return CalcFlockingFormationRandom(pShip, pLeader, retvPos, retvVel, retiFacing);
+
+		default:
+			return CalcFlockingFormationCloud(pShip, pLeader, MAX_FLOCK_DIST, FLOCK_SEPARATION_RANGE, retvPos, retvVel, retiFacing);
+		}
+	}
+
+bool CAIBehaviorCtx::CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing)
 
 //	CalcFlockingFormation
 //
@@ -185,6 +257,47 @@ bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 		}
 	}
 
+bool CAIBehaviorCtx::CalcFlockingFormationRandom (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing)
+
+//	CalcFlockingFormationRandom
+//
+//	Calculates the position that this ship should take relative to the rest of the flock. Returns FALSE
+//	if the current ship is a leader in the flock.
+
+	{
+	if (pLeader == NULL)
+		return false;
+
+	//	Compute the size of the ship
+
+	Metric rSpacing = 0.5 * pShip->GetHitSize();
+
+	//	Pick a random angle and position with respect to the leader
+
+	int iAngle = pShip->GetDestiny();
+	Metric rRange = (2 + (pShip->GetDestiny() % 10)) * rSpacing;
+
+	*retvPos = pLeader->GetPos() + PolarToVector(iAngle, rRange);
+	*retvVel = pLeader->GetVel();
+	*retiFacing = pLeader->GetRotation();
+
+	return true;
+	}
+
+CVector CAIBehaviorCtx::CalcFlankPos (CShip *pShip, const CVector &vInterceptPos)
+
+//	CalcFlankPos
+//
+//	Computes the flanking position based on the interception position (both are
+//	relative to the ship position).
+
+	{
+	CVector vFlankingLine = vInterceptPos.Normal().Perpendicular();
+	vFlankingLine = vFlankingLine * ((pShip->GetDestiny() % 2) == 0 ? GetFlankDist() : -GetFlankDist());
+
+	return vInterceptPos + vFlankingLine;
+	}
+
 bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip, 
 										  const CVector &vDestPos, 
 										  const CVector &vDestVel, 
@@ -277,6 +390,18 @@ bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip,
 	Metric rCloseV = CLOSE_DELTA_V_RATIO * pShip->GetMaxSpeed();
 	Metric rCloseV2 = (rCloseV * rCloseV);
 
+#ifdef DEBUG_FORMATION
+	if (g_pUniverse->GetPlayerShip() 
+			&& g_pUniverse->GetPlayerShip()->GetTarget(CItemCtx(), true) == pShip
+			&& m_pUpdateCtx->pAnnotations)
+		{
+		m_pUpdateCtx->pAnnotations->bDebugFormation = true;
+		m_pUpdateCtx->pAnnotations->vFormationPos = vDestPos;
+		m_pUpdateCtx->pAnnotations->iFormationAngle = iDestAngle;
+		m_pUpdateCtx->pAnnotations->vFormationCurPos = pShip->GetPos();
+		}
+#endif
+
 	return (rDiff2 < rCloseV2);
 	}
 
@@ -342,10 +467,7 @@ CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,
 
 		if (bFlank)
 			{
-			CVector vFlankingLine = vInterceptPoint.Normal().Perpendicular();
-			vFlankingLine = vFlankingLine * GetFlankDist();
-
-			vInterceptPoint = vInterceptPoint + vFlankingLine;
+			vInterceptPoint = CalcFlankPos(pShip, vInterceptPoint);
 
 #ifdef DEBUG_SHIP
 			if (bDebug)
@@ -440,8 +562,11 @@ void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRang
 	{
 	DEBUG_TRY
 
-	if (pShip->IsDestinyTime(19) && !m_AISettings.NoTargetsOfOpportunity())
-		(*iopTarget) = pShip->GetNearestVisibleEnemy(rMaxRange, false, pExcludeObj);
+	CSpaceObject *pNewTarget;
+	if (pShip->IsDestinyTime(19) 
+			&& !m_AISettings.NoTargetsOfOpportunity()
+			&& (pNewTarget = pShip->GetNearestVisibleEnemy(rMaxRange, false, pExcludeObj)))
+		(*iopTarget) = pNewTarget;
 
 	if (*iopTarget)
 		{
@@ -510,7 +635,7 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 
 	else if (m_AISettings.IsFlocker() 
 				&& rTargetDist2 > FLOCK_COMBAT_RANGE2
-				&& CalcFlockingFormation(pShip, NULL, MAX_FLOCK_DIST, FLOCK_SEPARATION_RANGE, &vFlockPos, &vFlockVel, &iFlockFacing))
+				&& CalcFlockingFormation(pShip, NULL, &vFlockPos, &vFlockVel, &iFlockFacing))
 		ImplementFormationManeuver(pShip, vFlockPos, vFlockVel, pShip->AlignToRotationAngle(iFlockFacing));
 
 	//	Otherwise, implement maneuvers
@@ -560,11 +685,12 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 		{
 		case aicombatStandard:
 			{
+			bool bFaster = (pShip->GetMaxSpeed() > pTarget->GetMaxSpeed());
+
 			//	If we're waiting for shields to regenerate, then
 			//	spiral away
 
-			if (IsWaitingForShieldsToRegen()
-					&& pShip->GetMaxSpeed() >= pTarget->GetMaxSpeed())
+			if (IsWaitingForShieldsToRegen() && bFaster)
 				{
 				DEBUG_COMBAT_OUTPUT("Wait for shields");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
@@ -573,14 +699,13 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're not well in range of our primary weapon then
 			//	get closer to the target. (Or if we are not moving)
 
-			else if (rTargetDist2 > m_rPrimaryAimRange2)
+			else if (rTargetDist2 > GetPrimaryAimRange2())
 				{
 				DEBUG_COMBAT_OUTPUT("Close on target");
 
 				//	Try to flank our target, if we are faster
 
-				bool bFlank = (pShip->GetMaxSpeed() > pTarget->GetMaxSpeed());
-				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2, bFlank));
+				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2, bFaster));
 				}
 
 			//	If we're attacking a static target then find a good spot
@@ -645,25 +770,34 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 		case aicombatAdvanced:
 			{
+			bool bWeAreFaster = (pShip->GetMaxSpeed() >= pTarget->GetMaxSpeed());
+
 			const int MAX_BRAVERY_TICKS = 300;				//	Number of ticks since last attack to be 100% brave
 			const Metric BRAVERY_DECAY_POWER = 2.0;
-			const Metric MAX_RANGE_ADJ = 0.9;				//	Shrink primary aim range2 by this much at max bravery
-			const Metric MIN_RANGE_FACTOR = 25.0;			//	Increase min range2 by this factor at min bravery
-			const Metric TANGENT_SPEED_RATIO =	0.025;
+			const Metric EXTRA_RANGE = LIGHT_SECOND * 8.0;
 
 			//	Compute how brave we are based on the last time we got hit.
+			//	rBravery goes from 0.0 (scared) to 1.0 (brave)
 
 			int iLastHit = Max(0, Min(MAX_BRAVERY_TICKS, (g_pUniverse->GetTicks() - m_iLastAttack)));
 			const Metric rBravery = pow((Metric)iLastHit / (Metric)MAX_BRAVERY_TICKS, BRAVERY_DECAY_POWER);
 
-			const Metric rMaxAimRange2 = (pTarget->CanMove() ? ((1.0 - (MAX_RANGE_ADJ * rBravery)) * m_rPrimaryAimRange2) : m_rPrimaryAimRange2);
-			const Metric rMinDist2 = Min(rMaxAimRange2 * 0.5, (1.0 + (1.0 - rBravery) * MIN_RANGE_FACTOR) * MIN_TARGET_DIST2);
+			//	Compute the maximum distance at which we'll start firing. If we're feeling brave,
+			//	this will be close to the flank distance (which is often close). Otherwise, we'll
+			//	try to stack back.
+
+			const Metric rMaxAimDist = GetFlankDist() + (EXTRA_RANGE * (1.0 - rBravery));
+			const Metric rMaxAimDist2 = (bWeAreFaster ? Min(GetPrimaryAimRange2(), rMaxAimDist * rMaxAimDist) : GetPrimaryAimRange2());
+
+			//	Minimum distance is a never more than one-half the maximum distance.
+
+			const Metric rMinDist2 = Min(MIN_TARGET_DIST2, 0.25 * rMaxAimDist2);
 
 			//	If we're waiting for shields to regenerate, then
 			//	spiral away
 
 			if (IsWaitingForShieldsToRegen()
-					&& pShip->GetMaxSpeed() >= pTarget->GetMaxSpeed()
+					&& bWeAreFaster
 					&& pShip->GetController()->GetCurrentOrderEx() != IShipController::orderEscort)
 				{
 				DEBUG_COMBAT_OUTPUT("Wait for shields");
@@ -673,14 +807,36 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're not well in range of our primary weapon then
 			//	get closer to the target. (Or if we are not moving)
 
-			else if (rTargetDist2 > rMaxAimRange2)
+			else if (rTargetDist2 > rMaxAimDist2)
 				{
-				DEBUG_COMBAT_OUTPUT("Close on target");
+				//	If we're faster, try to be clever
 
-				//	Try to flank our target, if we are faster
+				if (bWeAreFaster)
+					{
+					DEBUG_COMBAT_OUTPUT("Close to aim point");
 
-				bool bFlank = (pTarget->CanMove() && pShip->GetMaxSpeed() > pTarget->GetMaxSpeed());
-				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2, bFlank));
+					//	Pick a position at the flank distance between us and the target
+
+					CVector vToTargetN = (pTarget->GetPos() - pShip->GetPos()).Normal();
+					CVector vPos = pTarget->GetPos() + (vToTargetN * -rMaxAimDist);
+
+					//	We want to end with a non-zero velocity. Otherwise, we'll be a
+					//	sitting duck.
+
+					CVector vVel = pTarget->GetVel() + (vToTargetN * (1.0 - Min(0.7, rBravery)) * pShip->GetMaxSpeed());
+
+					//	Maneuver to that point
+
+					vDirection = CombinePotential(CalcManeuverFormation(pShip, vPos, vVel, 0));
+					}
+
+				//	Otherwise, we just try to close as best as possible
+
+				else
+					{
+					DEBUG_COMBAT_OUTPUT("Close on target");
+					vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
+					}
 				}
 
 			//	If we're attacking a static target then find a good spot
@@ -726,35 +882,10 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
-			//	If we're moving too fast relative to the target, then we slow down.
+			//	Otherwise, hazard avoidance only.
 
 			else
-				{
-				CVector vTargetVel = pTarget->GetVel() - pShip->GetVel();
-				Metric rTargetDist = sqrt(rTargetDist2);
-				CVector vTargetNormal = vTarget / rTargetDist;
-				CVector vTargetTangentNormal = vTargetNormal.Perpendicular();
-
-				if (Absolute(vTargetVel.Dot(vTargetTangentNormal)) > TANGENT_SPEED_RATIO * rTargetDist)
-					{
-					DEBUG_COMBAT_OUTPUT("Slow down to aim");
-					vDirection = CombinePotential(vTargetVel);
-					}
-
-				//	If we're moving too slowly, move away
-
-				else if (pTarget->CanMove()
-						&& (pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
-					{
-					DEBUG_COMBAT_OUTPUT("Speed away");
-					vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
-					}
-
-				//	Otherwise, hazard avoidance only
-
-				else
-					vDirection = GetPotential();
-				}
+				vDirection = GetPotential();
 
 			break;
 			}
@@ -827,11 +958,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 		case aicombatFlyby:
 			{
-			Metric rCloseRange2 = 0.25 * m_rPrimaryAimRange2;
+			Metric rCloseRange2 = 0.25 * GetPrimaryAimRange2();
 
 			//	If we're beyond our weapon's effective range, then close on target
 
-			if (rTargetDist2 > m_rPrimaryAimRange2)
+			if (rTargetDist2 > GetPrimaryAimRange2())
 				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
 
 			//	If we're too close to the target, move
@@ -874,7 +1005,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're not well in range of our primary weapon then
 			//	get closer to the target. (Or if we are not moving)
 
-			if (rTargetDist2 > m_rPrimaryAimRange2)
+			if (rTargetDist2 > GetPrimaryAimRange2())
 				{
 				DEBUG_COMBAT_OUTPUT("Close on target");
 
@@ -1022,10 +1153,7 @@ void CAIBehaviorCtx::ImplementCloseOnTarget (CShip *pShip, CSpaceObject *pTarget
 
 		if (bFlank)
 			{
-			CVector vFlankingLine = vInterceptPoint.Normal().Perpendicular();
-			vFlankingLine = vFlankingLine * GetFlankDist();
-
-			vInterceptPoint = vInterceptPoint + vFlankingLine;
+			vInterceptPoint = CalcFlankPos(pShip, vInterceptPoint);
 
 #ifdef DEBUG_SHIP
 			if (bDebug)
@@ -1081,72 +1209,35 @@ void CAIBehaviorCtx::ImplementEscort (CShip *pShip, CSpaceObject *pBase, CSpaceO
 
 	{
 	ASSERT(pBase);
-	CVector vTarget = pBase->GetPos() - pShip->GetPos();
-	Metric rTargetDist2 = vTarget.Dot(vTarget);
 
+	//	Compute the desired escort position
+
+	CVector vEscortPos;
+	CVector vEscortVel;
+	int iEscortDir;
+	CalcEscortFormation(pShip, pBase, &vEscortPos, &vEscortVel, &iEscortDir);
+
+	//	If we're particularly far from our desired position, then we close
+
+	CVector vTarget = vEscortPos - pShip->GetPos();
+	Metric rTargetDist2 = vTarget.Dot(vTarget);
 	if (rTargetDist2 > (MAX_ESCORT_DISTANCE * MAX_ESCORT_DISTANCE))
 		ImplementCloseOnTarget(pShip, pBase, vTarget, rTargetDist2);
+
+	//	Otherwise, we're free to attack our target or maneuver into position
+
 	else
 		{
 		if (*iopTarget)
 			ImplementAttackTarget(pShip, *iopTarget, true);
 		else
-			ImplementEscortManeuvers(pShip, pBase, vTarget);
+			ImplementFormationManeuver(pShip, vEscortPos, vEscortVel, pShip->AlignToRotationAngle(iEscortDir));
 		}
+
+	//	Attack in our current position
 
 	ImplementAttackNearestTarget(pShip, ATTACK_RANGE, iopTarget, pBase);
 	ImplementFireOnTargetsOfOpportunity(pShip, NULL, pBase);
-	}
-
-void CAIBehaviorCtx::ImplementEscortManeuvers (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget)
-
-//	ImplementEscortManeuvers
-//
-//	Maneuvers to escort the given target
-
-	{
-	//	If we're flocking, use flocking algorithm (if a flock is available).
-
-	if (m_AISettings.IsFlocker()
-			&& ImplementFlockingManeuver(pShip, pTarget))
-		return;
-
-	//	Otherwise, we do a normal escort.
-	//	Pick escort position relative to our current position
-	//	at time = 0
-
-	if (GetFireRateAdj() <= 15
-			|| (pShip->GetSystem()->GetTick() % 3) <= (pShip->GetDestiny() % 3))
-		{
-		CVector vEscortPos;
-
-		//	Escort position is encoded in order data
-
-		IShipController::SData Data;
-		pShip->GetCurrentOrder(NULL, &Data);
-		if (Data.IsIntegerOrPair())
-			{
-			int iAngle = Data.AsInteger();
-			int iDistance = Data.AsInteger2();
-			if (iDistance == 0)
-				iDistance = 6;
-
-			vEscortPos = PolarToVector(pTarget->GetRotation() + iAngle, iDistance * LIGHT_SECOND);
-			}
-
-		//	Otherwise, generate a position
-
-		else
-			{
-			int iAngle = (pTarget->GetRotation() + 45 + 5 * (pShip->GetDestiny() % 54)) % 360;
-			Metric rRadius = ESCORT_DISTANCE * (0.75 + (pShip->GetDestiny() / 360.0));
-			vEscortPos = PolarToVector(iAngle, rRadius);
-			}
-
-		//	Maneuver towards the position
-
-		ImplementFormationManeuver(pShip, pTarget->GetPos() + vEscortPos, pTarget->GetVel(), pShip->AlignToRotationAngle(pTarget->GetRotation()));
-		}
 	}
 
 void CAIBehaviorCtx::ImplementEvasiveManeuvers (CShip *pShip, CSpaceObject *pTarget)
@@ -1421,25 +1512,6 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 
 	if (retiFireDir)
 		*retiFireDir = iFireDir;
-	}
-
-bool CAIBehaviorCtx::ImplementFlockingManeuver (CShip *pShip, CSpaceObject *pLeader)
-
-//	ImplementFlockingManeuver
-//
-//	Implements flocking. If there is no flock, or if we are the leader, then
-//	this function returns FALSE and callers should handle maneuvering.
-
-	{
-	CVector vFlockPos;
-	CVector vFlockVel;
-	int iFlockFacing;
-	if (!CalcFlockingFormation(pShip, pLeader, MAX_FLOCK_DIST, FLOCK_SEPARATION_RANGE, &vFlockPos, &vFlockVel, &iFlockFacing))
-		return false;
-
-	ImplementFormationManeuver(pShip, vFlockPos, vFlockVel, pShip->AlignToRotationAngle(iFlockFacing));
-
-	return true;
 	}
 
 void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestination)

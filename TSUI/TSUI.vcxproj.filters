@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Soundtrack">
       <UniqueIdentifier>{a56f585b-f7ff-46e4-ae9f-4db580bec931}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\HUD">
+      <UniqueIdentifier>{d58776d7-da50-422b-a327-fae452d83c21}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CBackgroundProcessor.cpp">
@@ -108,6 +111,30 @@
     <ClCompile Include="CMCIMixer.cpp">
       <Filter>Source Files\Soundtrack</Filter>
     </ClCompile>
+    <ClCompile Include="CArmorHUDImages.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CShieldHUDDefault.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="IHUDPainter.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorHUDRingSegments.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CWeaponHUDDefault.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CWeaponHUDCircular.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CReactorHUDDefault.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CReactorHUDCircular.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -132,6 +159,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\TSUISessions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSUIHUD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HUDImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

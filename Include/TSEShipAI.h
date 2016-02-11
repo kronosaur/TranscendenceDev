@@ -1,7 +1,7 @@
 //	TSEShipAI.h
 //
 //	Defines classes and interfaces for ship AI.
-//	Copyright (c) Kronosaur Productions, LLC. All Rights Reserved.
+//	Copyright (c) 2015 Kronosaur Productions, LLC. All Rights Reserved.
 
 #pragma once
 
@@ -147,7 +147,7 @@ class IShipController
 		virtual ~IShipController (void) { }
 
 		virtual void AccumulateCrewMetrics (SCrewMetrics &Metrics) { }
-		virtual void Behavior (void) { }
+		virtual void Behavior (SUpdateCtx &Ctx) { }
 		virtual void CancelDocking (void) { }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
@@ -194,7 +194,7 @@ class IShipController
 		//	Events
 
 		virtual void OnArmorRepaired (int iSection) { }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage) { }
+		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
 		virtual void OnBlindnessChanged (bool bBlind, bool bNoMessage = false) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }

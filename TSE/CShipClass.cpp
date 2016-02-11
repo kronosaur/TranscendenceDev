@@ -47,6 +47,7 @@
 #define DEST_X_ATTRIB							CONSTLIT("destX")
 #define DEST_Y_ATTRIB							CONSTLIT("destY")
 #define DOCK_SCREEN_ATTRIB						CONSTLIT("dockScreen")
+#define DRIVE_POWER_USE_ATTRIB					CONSTLIT("drivePowerUse")
 #define EQUIPMENT_ATTRIB						CONSTLIT("equipment")
 #define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define MAX_REACTOR_FUEL_ATTRIB					CONSTLIT("fuelCapacity")
@@ -109,6 +110,7 @@
 #define FIELD_DOCK_SERVICES_SCREEN				CONSTLIT("dockServicesScreen")
 #define FIELD_DODGE_RATE						CONSTLIT("dodgeRate")
 #define FIELD_DRIVE_IMAGE						CONSTLIT("driveImage")
+#define FIELD_DRIVE_POWER						CONSTLIT("drivePowerUse")
 #define FIELD_EXPLOSION_TYPE					CONSTLIT("explosionType")
 #define FIELD_FIRE_ACCURACY						CONSTLIT("fireAccuracy")
 #define FIELD_FIRE_RANGE_ADJ					CONSTLIT("fireRangeAdj")
@@ -166,6 +168,16 @@
 #define ERR_UNKNOWN_EQUIPMENT_DIRECTIVE			CONSTLIT("unknown equipment directive: %s")
 
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
+#define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
+#define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
+#define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
+#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
+#define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
+#define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
+#define PROPERTY_POWER							CONSTLIT("power")
+#define PROPERTY_THRUST							CONSTLIT("thrust")
+#define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
+#define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
 #define SPECIAL_MANUFACTURER					CONSTLIT("manufacturer:")
@@ -198,6 +210,9 @@ static CG32bitImage *g_pDamageBitmap = NULL;
 static CStationType *g_pWreckDesc = NULL;
 
 const int DOCK_OFFSET_STD_SIZE =				64;
+
+const Metric DRIVE_POWER_EXP =					1.2;
+const Metric DRIVE_POWER_FACTOR =				13.0;
 
 DWORD ParseNonCritical (const CString &sList);
 
@@ -814,8 +829,8 @@ Metric CShipClass::CalcManeuverValue (bool bDodge) const
 	const Metric PIVOT_SPEED = 12.0;
 	const Metric PIVOT_DODGE = 0.5;
 	const Metric K1 = 0.5;
-	const Metric K2 = 1.0 / g_Pi;
-	const Metric K3 = 1.25 / g_Pi;
+	const Metric K2 = 1.0 / PI;
+	const Metric K3 = 1.25 / PI;
 
 	const Metric PIVOT_THRUST = 12.0;
 	const Metric MAX_THRUST_ADJ = 8.0;
@@ -1312,7 +1327,9 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 	SExplosionType Explosion;
 	pShip->FireGetExplosionType(&Explosion);
 	if (Explosion.pDesc == NULL)
-		Explosion.pDesc = GetExplosionType();
+		Explosion.pDesc = GetExplosionType(pShip);
+
+	//	Explosion
 
 	if (Explosion.pDesc)
 		{
@@ -1329,7 +1346,7 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 				CDamageSource(pShip, Explosion.iCause, pWreck),
 				pShip->GetPos(),
 				pShip->GetVel(),
-				0,
+				pShip->GetRotation(),
 				NULL,
 				CSystem::CWF_EXPLOSION,
 				NULL);
@@ -1845,9 +1862,10 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_EXPLOSION_TYPE))
 		{
-		if (m_pExplosionType)
+		CWeaponFireDesc *pExplosionType;
+		if (pExplosionType = GetExplosionType(NULL))
 			{
-			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(m_pExplosionType->m_sUNID, 0));
+			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(pExplosionType->m_sUNID, 0));
 			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
 			if (pWeapon)
 				{
@@ -1866,11 +1884,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt((int)((1000.0 / m_AISettings.GetFireRateAdj()) + 0.5));
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		int iManeuver = GetManeuverability() * GetRotationRange() / STD_ROTATION_COUNT;
-		if (iManeuver <= 0)
-			iManeuver = 1;
-
-		*retsValue = strFromInt(30000 / iManeuver);
+		Metric rManeuver = g_SecondsPerUpdate * GetRotationDesc().GetMaxRotationSpeedPerTick();
+		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST))
 		{
@@ -2006,6 +2021,12 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		else
 			*retsValue = CONSTLIT("Image");
 		}
+	else if (strEquals(sField, FIELD_DRIVE_POWER))
+		{
+		DriveDesc Drive;
+		GetDriveDesc(&Drive);
+		*retsValue = strFromInt(Drive.iPowerUse);
+		}
 	else if (CReactorClass::FindDataField(m_ReactorDesc, sField, retsValue))
 		return true;
 	else
@@ -2069,27 +2090,6 @@ CString CShipClass::GenerateShipName (DWORD *retdwFlags)
 			*retdwFlags = 0;
 		return NULL_STR;
 		}
-	}
-
-const SArmorImageDesc *CShipClass::GetArmorDescInherited (void)
-
-//	GetArmorDescInherited
-//
-//	Returns the armor desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	const SArmorImageDesc *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetArmorImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetArmorDescInherited();
-		}
-	else
-		return NULL;
 	}
 
 CCommunicationsHandler *CShipClass::GetCommsHandler (void)
@@ -2160,6 +2160,122 @@ void CShipClass::GetDriveDesc (DriveDesc *retDriveDesc) const
 		}
 	}
 
+CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip)
+
+//	GetExplosionType
+//
+//	Returns the explosion type (or NULL if we have no default explosion for this
+//	ship class).
+	
+	{
+	//	If we've got a defined explosion, then return that
+
+	if (m_pExplosionType)
+		return m_pExplosionType;
+
+	//	If no defined explosion, come up with an appropriate one.
+	//
+	//	NOTE: In general, this will only happen for smaller gunships.
+	//	Capital ships should define their own explosion type.
+
+	int iLevel = (pShip ? pShip->GetLevel() : GetLevel());
+
+	//	Adjust the level based on the balance type.
+
+	switch (m_iLevelType)
+		{
+		case typeUnknown:
+		case typeMinion:
+		case typeTooWeak:
+		case typeNonCombatant:
+		case typeArmorTooWeak:
+		case typeWeaponsTooWeak:
+			iLevel = Max(1, iLevel - 3);
+			break;
+
+		case typeStandard:
+			iLevel = Max(1, iLevel - 2);
+			break;
+
+		case typeElite:
+			iLevel = Max(1, iLevel - 1);
+			break;
+		}
+
+	//	Compute the size of the explosion in the given tier based on where
+	//	we are on the tier (afer adjustments).
+
+	int iMassLevel = (iLevel - 1) % 3;
+
+	//	We figure out which explosion type based on the level.
+
+	CWeaponFireDescRef ExplosionRef;
+	switch (iLevel)
+		{
+		//	Tier 1
+
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			ExplosionRef.SetUNID(UNID_KINETIC_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 2
+
+		case 4:
+		case 5:
+		case 6:
+			ExplosionRef.SetUNID(UNID_BLAST_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 3
+
+		case 7:
+		case 8:
+		case 9:
+			ExplosionRef.SetUNID(UNID_THERMO_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 4
+
+		case 10:
+		case 11:
+		case 12:
+			ExplosionRef.SetUNID(UNID_PLASMA_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 5
+
+		case 13:
+		case 14:
+		case 15:
+			ExplosionRef.SetUNID(UNID_ANTIMATTER_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 6
+
+		case 16:
+		case 17:
+		case 18:
+			ExplosionRef.SetUNID(UNID_GRAVITON_EXPLOSION_1 + iMassLevel);
+			break;
+
+		//	Tier 7+
+
+		default:
+			ExplosionRef.SetUNID(UNID_GRAVITON_EXPLOSION_1 + 3);
+			break;
+		}
+
+	//	Bind. NOTE: It's OK if we don't find the given explosion and return
+	//	NULL.
+
+	SDesignLoadCtx LoadCtx;
+	ExplosionRef.Bind(LoadCtx);
+	return ExplosionRef;
+	}
+
 CString CShipClass::GetGenericName (DWORD *retdwFlags)
 
 //	GetGenericName
@@ -2189,6 +2305,26 @@ CString CShipClass::GetGenericName (DWORD *retdwFlags)
 			return strPatternSubst(CONSTLIT("%s-class %s"), GetClassName(), GetShipTypeName());
 
 		}
+	}
+
+CXMLElement *CShipClass::GetHUDDescInherited (EHUDTypes iType) const
+
+//	GetHUDDescInherited
+//
+//	Returns the HUD descriptor, either from this class or some base class.
+
+	{
+	CShipClass *pBase;
+
+	CXMLElement *pDesc = (m_pPlayerSettings && !m_pPlayerSettings->IsHUDDescInherited(iType) ? m_pPlayerSettings->GetHUDDesc(iType) : NULL);
+	if (pDesc)
+		return pDesc;
+
+	else if (pBase = CShipClass::AsType(GetInheritFrom()))
+		return pBase->GetHUDDescInherited(iType);
+
+	else
+		return NULL;
 	}
 
 int CShipClass::GetHullSectionAtAngle (int iAngle)
@@ -2226,6 +2362,34 @@ int CShipClass::GetHullSectionAtAngle (int iAngle)
 	return GetHullSectionCount() - 1;
 	}
 
+CString CShipClass::GetHullSectionName (int iIndex) const
+
+//	GetHullSectionName
+//
+//	Returns the name of this section:
+//
+//	forward
+//	starboard
+//	port
+//	aft
+
+	{
+	if (iIndex < 0 || iIndex >= m_Hull.GetCount())
+		return NULL_STR;
+
+	int iCenter = AngleMod(m_Hull[iIndex].iStartAt + m_Hull[iIndex].iSpan / 2);
+	if (iCenter >= 315)
+		return CONSTLIT("forward");
+	else if (iCenter >= 225)
+		return CONSTLIT("starboard");
+	else if (iCenter >= 135)
+		return CONSTLIT("aft");
+	else if (iCenter >= 45)
+		return CONSTLIT("port");
+	else
+		return CONSTLIT("forward");
+	}
+
 int CShipClass::GetMaxStructuralHitPoints (void) const
 
 //	GetMaxStructuralHitPoints
@@ -2240,7 +2404,7 @@ int CShipClass::GetMaxStructuralHitPoints (void) const
 
 	//	Otherwise we have to compute it based on level and mass
 
-	return (m_iLevel + 1) * (mathSqrt(m_iMass) + 10) * mathRandom(75, 125) / 200;
+	return (int)(pow(1.3, m_iLevel) * (sqrt(m_iMass) + 10.0));
 	}
 
 CString CShipClass::GetName (DWORD *retdwFlags)
@@ -2284,15 +2448,14 @@ CPlayerSettings *CShipClass::GetPlayerSettingsInherited (void) const
 //	Returns player settings from us or a base class
 
 	{
-	CDesignType *pBase;
+	CShipClass *pBase;
 
 	if (m_pPlayerSettings)
 		return m_pPlayerSettings;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetPlayerSettingsInherited();
-		}
+
+	else if (pBase = CShipClass::AsType(GetInheritFrom()))
+		return pBase->GetPlayerSettingsInherited();
+
 	else
 		return NULL;
 	}
@@ -2364,48 +2527,6 @@ CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPo
 		return CVector();
 	}
 
-const SReactorImageDesc *CShipClass::GetReactorDescInherited (void)
-
-//	GetReactorDescInherited
-//
-//	Returns the reator desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	const SReactorImageDesc *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetReactorImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetReactorDescInherited();
-		}
-	else
-		return NULL;
-	}
-
-const SShieldImageDesc *CShipClass::GetShieldDescInherited (void)
-
-//	GetShieldDescInherited
-//
-//	Returns the shield desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	const SShieldImageDesc *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetShieldImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetShieldDescInherited();
-		}
-	else
-		return NULL;
-	}
-
 CString CShipClass::GetShortName (void) const
 
 //	GetShortName
@@ -2417,27 +2538,6 @@ CString CShipClass::GetShortName (void) const
 		return strPatternSubst(LITERAL("%s %s"), GetManufacturerName(), GetShipTypeName());
 	else
 		return GetClassName();
-	}
-
-const SWeaponImageDesc *CShipClass::GetWeaponDescInherited (void)
-
-//	GetWeaponDescInherited
-//
-//	Returns the shield desc from this class or base classes
-
-	{
-	CDesignType *pBase;
-
-	const SWeaponImageDesc *pDesc = (m_pPlayerSettings ? m_pPlayerSettings->GetWeaponImageDescRaw() : NULL);
-	if (pDesc)
-		return pDesc;
-	else if (pBase = GetInheritFrom())
-		{
-		CShipClass *pBaseClass = CShipClass::AsType(pBase);
-		return pBaseClass->GetWeaponDescInherited();
-		}
-	else
-		return NULL;
 	}
 
 CStationType *CShipClass::GetWreckDesc (void)
@@ -2603,6 +2703,14 @@ void CShipClass::InstallEquipment (CShip *pShip)
 
 	{
 	int i;
+
+	//	Give our base class a chance to install/remove
+
+	CShipClass *pBase = CShipClass::AsType(GetInheritFrom());
+	if (pBase)
+		pBase->InstallEquipment(pShip);
+
+	//	Handle our part
 
 	for (i = 0; i < m_Equipment.GetCount(); i++)
 		{
@@ -2834,6 +2942,19 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 			m_DriveDesc.iThrust = (int)(((m_rThrustRatio * rMass) / 2.0) + 0.5);
 		}
 
+	//	For later APIs compute the drive power usage, if not specified
+
+	if (m_DriveDesc.iPowerUse < 0)
+		{
+		if (GetAPIVersion() >= 29)
+			m_DriveDesc.iPowerUse = (int)Max(1.0, DRIVE_POWER_FACTOR * pow(m_DriveDesc.iThrust / 100.0, DRIVE_POWER_EXP));
+
+		//	Otherwise, use the default
+
+		else
+			m_DriveDesc.iPowerUse = DEFAULT_POWER_USE;
+		}
+
 	//	Bind structures
 
 	if (error = m_Interior.BindDesign(Ctx))
@@ -2841,9 +2962,8 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Events
 
-	m_fHasOnOrderChangedEvent = FindEventHandler(CONSTLIT("OnOrderChanged"));
 	m_fHasOnAttackedByPlayerEvent = FindEventHandler(CONSTLIT("OnAttackedByPlayer"));
-	m_fHasOnOrdersCompletedEvent = FindEventHandler(CONSTLIT("OnOrdersCompleted"));
+	m_fHasOnOrderChangedEvent = FindEventHandler(CONSTLIT("OnOrderChanged"));
 
 	return NOERROR;
 
@@ -2869,6 +2989,8 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 
 	if (!m_fCyberDefenseOverride)
 		m_iCyberDefenseLevel = m_iLevel;
+
+	m_iLevelType = CalcBalanceType();
 
 	//	Done
 
@@ -3082,7 +3204,8 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_rThrustRatio = 0.0;
 		}
 
-	m_DriveDesc.iPowerUse = DEFAULT_POWER_USE;
+	//	-1 means default. We will compute a proper default in Bind
+	m_DriveDesc.iPowerUse = pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1);
 	m_DriveDesc.fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
 
 	if (error = CReactorClass::InitReactorDesc(Ctx, pDesc, &m_ReactorDesc, true))
@@ -3419,6 +3542,49 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? CC.CreateInteger(m_pDefaultSovereign.GetUNID()) : CC.CreateNil());
+	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
+		return CC.CreateInteger(GetMaxStructuralHitPoints());
+
+	//	Drive properties
+
+	else if (strEquals(sProperty, PROPERTY_THRUST_TO_WEIGHT))
+		{
+		DriveDesc Drive;
+		GetDriveDesc(&Drive);
+
+		Metric rMass = CalcMass(m_AverageDevices);
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? Drive.iThrust / rMass : 0.0)) + 0.5);
+		return CC.CreateInteger(10 * iRatio);
+		}
+
+	else if (strEquals(sProperty, PROPERTY_DRIVE_POWER)
+			|| strEquals(sProperty, PROPERTY_MAX_SPEED)
+			|| strEquals(sProperty, PROPERTY_THRUST))
+		{
+		DriveDesc Drive;
+		GetDriveDesc(&Drive);
+
+		return CDriveClass::GetDriveProperty(Drive, sProperty);
+		}
+
+	//	Reactor properties
+
+	else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY)
+			|| strEquals(sProperty, PROPERTY_FUEL_CRITERIA)
+			|| strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY)
+			|| strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY_BONUS)
+			|| strEquals(sProperty, PROPERTY_POWER))
+		{
+		CDeviceClass *pDevice = m_AverageDevices.GetNamedDevice(devReactor);
+		if (pDevice)
+			{
+			CItem ReactorItem(pDevice->GetItemType(), 1);
+			CItemCtx ItemCtx(ReactorItem);
+			return pDevice->GetItemProperty(ItemCtx, sProperty);
+			}
+		else
+			return CReactorClass::GetReactorProperty(*GetReactorDesc(), sProperty);
+		}
 	else
 		return NULL;
 	}
@@ -3674,6 +3840,22 @@ void CShipClass::PaintMap (CMapViewportCtx &Ctx,
 
 	{
 	m_Image.PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24);
+	}
+
+void CShipClass::PaintScaled (CG32bitImage &Dest,
+							int x,
+							int y,
+							int cxWidth,
+							int cyHeight,
+							int iDirection,
+							int iTick)
+
+	//	PaintScaled
+	//
+	//	Paints a scaled image
+
+	{
+	m_Image.PaintScaledImage(Dest, x, y, iTick, iDirection, cxWidth, cyHeight);
 	}
 
 void CShipClass::PaintThrust (CG32bitImage &Dest, 

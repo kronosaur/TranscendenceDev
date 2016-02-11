@@ -68,6 +68,8 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 
 	m_iSect = iSect;
 	m_fComplete = false;
+	m_fPrimeSegment = false;
+	m_fConsumePower = false;
 	m_iHitPoints = m_pArmorClass->GetMaxHP(ItemCtx);
 	if (pItem->IsDamaged())
 		m_iHitPoints = m_iHitPoints / 2;
@@ -127,6 +129,8 @@ void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_fComplete =		((dwLoad & 0x00000001) ? true : false);
+	m_fPrimeSegment =	((dwLoad & 0x00000002) ? true : false);
+	m_fConsumePower =	((dwLoad & 0x00000004) ? true : false);
 
 	//	Fix up the item pointer
 
@@ -177,6 +181,8 @@ void CInstalledArmor::WriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iHitPoints, sizeof(DWORD));
 
 	dwSave = 0;
-	dwSave |= (m_fComplete ?	0x00000001 : 0);
+	dwSave |= (m_fComplete ?		0x00000001 : 0);
+	dwSave |= (m_fPrimeSegment ?	0x00000002 : 0);
+	dwSave |= (m_fConsumePower ?	0x00000004 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}

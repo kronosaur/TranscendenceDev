@@ -12,6 +12,19 @@
 
 static CEconomyType *g_pDefaultEconomy = NULL;
 
+CEconomyType *CEconomyType::Default (void)
+
+//	Default
+//
+//	Returns the default economy (credits)
+
+	{
+	if (g_pDefaultEconomy == NULL)
+		g_pDefaultEconomy = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+
+	return g_pDefaultEconomy;
+	}
+
 CurrencyValue CEconomyType::Exchange (CEconomyType *pFrom, CurrencyValue iAmount)
 
 //	Exchange
@@ -59,6 +72,16 @@ CurrencyValue CEconomyType::ExchangeToCredits (CEconomyType *pFrom, CurrencyValu
 	{
 	return pFrom->m_iCreditConversion * iAmount / 100;
 	}
+
+CurrencyValue CEconomyType::ExchangeToCredits (const CCurrencyAndValue &Value)
+
+//  ExchangeToCredits
+//
+//  Converts the given value to credits
+
+    {
+    return Value.GetCurrencyType()->m_iCreditConversion * Value.GetValue() / 100;
+    }
 
 bool CEconomyType::FindDataField (const CString &sField, CString *retsValue)
 
@@ -198,6 +221,25 @@ void CEconomyTypeRef::Set (DWORD dwUNID)
 	}
 
 //	CCurrencyAndValue ----------------------------------------------------------
+
+CCurrencyAndValue::CCurrencyAndValue (CurrencyValue iValue, CEconomyType *pCurrency)
+
+//	CCurrencyAndValue constructor
+
+	{
+	m_iValue = iValue;
+	m_pCurrency.Set(pCurrency);
+	}
+
+void CCurrencyAndValue::Add (const CCurrencyAndValue &Value)
+
+//	Add
+//
+//	Adds, converting currency if necessary
+
+	{
+	m_iValue += m_pCurrency->Exchange(Value);
+	}
 
 ALERROR CCurrencyAndValue::Bind (SDesignLoadCtx &Ctx)
 

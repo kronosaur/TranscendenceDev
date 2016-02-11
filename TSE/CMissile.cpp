@@ -278,7 +278,7 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	//	Create a painter instance
 
 	bool bIsTracking = pTarget && pDesc->IsTracking();
-	pMissile->m_pPainter = pDesc->CreateEffect(bIsTracking, true);
+	pMissile->m_pPainter = pDesc->CreateEffectPainter(bIsTracking, true);
 	if (pMissile->m_pPainter)
 		pMissile->SetBounds(pMissile->m_pPainter);
 
@@ -322,6 +322,13 @@ void CMissile::CreateFragments (const CVector &vPos)
 	{
 	DEBUG_TRY
 
+    //  If we triggering inside an object, then we only create half the number
+    //  of fragments (as if it hit on the surface).
+
+    int iFraction = 100;
+    if (m_pHit && m_pHit->PointInObject(m_pHit->GetPos(), vPos))
+        iFraction = 50;
+
 	//	If there is an event, then let it handle the fragmentation
 
 	if (m_pDesc->FireOnFragment(m_Source, this, vPos, m_pHit, m_pTarget))
@@ -338,7 +345,8 @@ void CMissile::CreateFragments (const CVector &vPos)
 				m_pTarget,
 				vPos,
 				CVector(),
-				this);
+				this,
+                iFraction);
 
 	//	Create the hit effect
 
@@ -359,24 +367,6 @@ void CMissile::CreateFragments (const CVector &vPos)
 
 	DEBUG_CATCH
 	}
-
-#if 0
-void CMissile::CreateHitEffect (const CVector &vPos, int iRotation)
-
-//	CreateHitEffect
-//
-//	Create hit effect
-
-	{
-	CEffectCreator *pEffect;
-	if (pEffect = m_pDesc->GetHitEffect())
-		pEffect->CreateEffect(GetSystem(),
-				(m_iHitDir == -1 ? NULL : m_pHit),
-				vPos,
-				CVector(),
-				iRotation);
-	}
-#endif
 
 void CMissile::CreateReflection (const CVector &vPos, int iDirection)
 
@@ -600,6 +590,7 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	m_iHitPoints = 0;
 
+#if 0
 	//	If the missile has 10+ hp, then we create an effect when
 	//	it gets destroyed.
 
@@ -613,6 +604,7 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 					CVector(),
 					0);
 		}
+#endif
 
 	//	If we've got a vapor trail, then we stick around until the trail is gone,
 	//	but otherwise we're destroyed.
@@ -754,6 +746,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	if (m_pPainter)
 		{
+		CViewportPaintCtxSmartSave Save(Ctx);
 		Ctx.iTick = m_iTick;
 		Ctx.iVariant = 0;
 		Ctx.iRotation = m_iRotation;
@@ -783,7 +776,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Paint image (deprecated method)
 
-	if (m_pPainter == NULL && !m_fDestroyOnAnimationDone && m_pHit == NULL)
+	else if (!m_fDestroyOnAnimationDone && m_pHit == NULL)
 		{
 		m_pDesc->m_Image.PaintImage(Dest,
 				x,
@@ -996,6 +989,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			SEffectUpdateCtx PainterCtx;
 			PainterCtx.pObj = this;
+			PainterCtx.iTick = m_iTick;
 			PainterCtx.iRotation = GetRotation();
 			PainterCtx.bFade = true;
 
@@ -1110,6 +1104,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			SEffectUpdateCtx PainterCtx;
 			PainterCtx.pObj = this;
+			PainterCtx.iTick = m_iTick;
 			PainterCtx.iRotation = GetRotation();
 
 			m_pPainter->OnUpdate(PainterCtx);

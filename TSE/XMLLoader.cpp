@@ -4,53 +4,7 @@
 
 #include "PreComp.h"
 
-#ifdef DEBUG
-//#define DEBUG_TIME_IMAGE_LOAD
-#endif
-
-#define ADVENTURE_DESC_TAG					CONSTLIT("AdventureDesc")
-#define ENCOUNTER_TABLES_TAG				CONSTLIT("EncounterTables")
-#define TABLES_TAG							CONSTLIT("Tables")
-#define POWERS_TAG							CONSTLIT("Powers")
-#define SOUNDS_TAG							CONSTLIT("Sounds")
-#define GLOBALS_TAG							CONSTLIT("Globals")
-#define SPACE_ENVIRONMENT_TYPE_TAG			CONSTLIT("SpaceEnvironmentType")
-#define ITEM_TABLE_TAG						CONSTLIT("ItemTable")
-#define DOCK_SCREEN_TAG						(CONSTLIT("DockScreen"))
-#define ITEM_TYPE_TAG						(CONSTLIT("ItemType"))
-#define SHIP_CLASS_TAG						(CONSTLIT("ShipClass"))
-#define IMAGE_TAG							(CONSTLIT("Image"))
-#define STATION_TYPE_TAG					(CONSTLIT("StationType"))
-#define SYSTEM_TYPE_TAG						(CONSTLIT("SystemType"))
-#define SOVEREIGN_TAG						(CONSTLIT("Sovereign"))
-#define SOVEREIGNS_TAG						(CONSTLIT("Sovereigns"))
-#define IMAGES_TAG							CONSTLIT("Images")
-#define STAR_SYSTEM_TYPES_TAG				CONSTLIT("SystemTypes")
-#define SYSTEM_NODE_TAG						CONSTLIT("SystemNode")
-#define POWER_TAG							CONSTLIT("Power")
-#define TRANSCENDENCE_ADVENTURE_TAG			CONSTLIT("TranscendenceAdventure")
-#define TRANSCENDENCE_MODULE_TAG			CONSTLIT("TranscendenceModule")
-
-#define ID_ATTRIB							CONSTLIT("ID")
-#define UNID_ATTRIB							CONSTLIT("UNID")
-#define FOLDER_ATTRIB						CONSTLIT("folder")
-#define FILENAME_ATTRIB						CONSTLIT("filename")
-#define MIN_VERSION_ATTRIB					CONSTLIT("minVersion")
-#define VERSION_ATTRIB						CONSTLIT("version")
-
-#define FILE_TYPE_XML						CONSTLIT("xml")
-#define FILE_TYPE_TDB						CONSTLIT("tdb")
 #define STORAGE_FILESPEC					CONSTLIT("Storage.xml")
-
-static char g_ShipClassTag[] = "ShipClasses";
-static char g_StationTypesTag[] = "StationTypes";
-static char g_ArmorClassesTag[] = "ArmorClasses";
-static char g_DockScreensTag[] = "DockScreens";
-static char g_ItemTypesTag[] = "ItemTypes";
-
-static char g_BitmapAttrib[] = "bitmap";
-static char g_BitmaskAttrib[] = "bitmask";
-static char g_TransColorAttrib[] = "backColor";
 
 ALERROR CUniverse::InitCodeChain (const TArray<SPrimitiveDefTable> &CCPrimitives)
 
@@ -162,4 +116,3 @@ ALERROR CUniverse::SaveDeviceStorage (void)
 
 	return NOERROR;
 	}
-

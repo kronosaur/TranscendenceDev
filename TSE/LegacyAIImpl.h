@@ -11,7 +11,7 @@ class CAutonAI : public CBaseShipAI
 		CAutonAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (void);
+		virtual void Behavior (SUpdateCtx &Ctx);
 		virtual CString DebugCrashInfo (void);
 		virtual CString GetClass (void) { return CONSTLIT("auton"); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
@@ -50,7 +50,7 @@ class CFerianShipAI : public CBaseShipAI
 		CFerianShipAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (void);
+		virtual void Behavior (SUpdateCtx &Ctx);
 		virtual CString DebugCrashInfo (void);
 		virtual CSpaceObject *GetBase (void) const { return m_pBase; }
 		virtual CString GetClass (void) { return CONSTLIT("ferian"); }
@@ -95,7 +95,7 @@ class CFleetCommandAI : public CBaseShipAI
 		virtual ~CFleetCommandAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (void);
+		virtual void Behavior (SUpdateCtx &Ctx);
 		virtual CString DebugCrashInfo (void);
 		virtual CString GetClass (void) { return CONSTLIT("fleetcommand"); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return m_pTarget; }
@@ -191,7 +191,7 @@ class CFleetShipAI : public CBaseShipAI
 		CFleetShipAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (void);
+		virtual void Behavior (SUpdateCtx &Ctx);
 		virtual CString DebugCrashInfo (void);
 		virtual CString GetClass (void) { return CONSTLIT("fleet"); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
@@ -246,7 +246,7 @@ class CGaianProcessorAI : public CBaseShipAI
 		CGaianProcessorAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (void);
+		virtual void Behavior (SUpdateCtx &Ctx);
 		virtual CString DebugCrashInfo (void);
 		virtual CString GetClass (void) { return CONSTLIT("gaianprocessor"); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
@@ -291,7 +291,7 @@ class CGladiatorAI : public CBaseShipAI
 		CGladiatorAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (void);
+		virtual void Behavior (SUpdateCtx &Ctx);
 		virtual CString DebugCrashInfo (void);
 		virtual CString GetClass (void) { return CONSTLIT("gladiator"); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
@@ -332,8 +332,8 @@ class CStandardShipAI : public CBaseShipAI
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const DamageDesc &Damage);
-		virtual void OnBehavior (void);
+		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage);
+		virtual void OnBehavior (SUpdateCtx &Ctx);
 		virtual void OnCleanUp (void) { m_State = stateNone; m_pTarget = NULL; m_pDest = NULL; }
 		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
 		virtual CString OnDebugCrashInfo (void);
@@ -432,12 +432,12 @@ class CZoanthropeAI : public CBaseShipAI
 		CZoanthropeAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (void);
+		virtual void Behavior (SUpdateCtx &Ctx);
 		virtual CString DebugCrashInfo (void);
 		virtual CSpaceObject *GetBase (void) const;
 		virtual CString GetClass (void) { return CONSTLIT("zoanthrope"); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
-		virtual void OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage);
+		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage);
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
 
 	protected:

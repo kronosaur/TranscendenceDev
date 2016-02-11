@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+CItemList CItemList::m_Null;
+
 CItemList::CItemList (void)
 
 //	CItemList constructor
@@ -140,96 +142,14 @@ void CItemList::SortItems (void)
 //	armor/weapon/device/other
 
 	{
+	int i;
+
 	if (GetCount() == 0)
 		return;
 
-	int i;
-	CSymbolTable Sort(false, true);
-
+	TSortMap<CString, int> Sort;
 	for (i = 0; i < GetCount(); i++)
-		{
-		CItem &Item = GetItem(i);
-		CItemType *pType = Item.GetType();
-
-		//	All installed items first
-
-		CString sInstalled;
-		if (Item.IsInstalled())
-			sInstalled = CONSTLIT("0");
-		else
-			sInstalled = CONSTLIT("1");
-
-		//	Next, sort on category
-
-		CString sCat;
-		switch (pType->GetCategory())
-			{
-			case itemcatWeapon:
-			case itemcatLauncher:
-				sCat = CONSTLIT("0");
-				break;
-
-			case itemcatMissile:
-				sCat = CONSTLIT("1");
-				break;
-
-			case itemcatShields:
-				sCat = CONSTLIT("2");
-				break;
-
-			case itemcatReactor:
-				sCat = CONSTLIT("3");
-				break;
-
-			case itemcatDrive:
-				sCat = CONSTLIT("4");
-				break;
-
-			case itemcatCargoHold:
-				sCat = CONSTLIT("5");
-				break;
-
-			case itemcatMiscDevice:
-				sCat = CONSTLIT("6");
-				break;
-
-			case itemcatArmor:
-				sCat = CONSTLIT("7");
-				break;
-
-			case itemcatFuel:
-			case itemcatUseful:
-				sCat = CONSTLIT("8");
-				break;
-
-			default:
-				sCat = CONSTLIT("9");
-			}
-
-		//	Next, sort by install location
-
-		if (Item.IsInstalled() && Item.GetType()->GetArmorClass())
-			sCat.Append(strPatternSubst(CONSTLIT("%03d%08x"), Item.GetInstalled(), Item.GetType()->GetUNID()));
-		else
-			sCat.Append(CONSTLIT("99900000000"));
-
-		//	Within category, sort by level (highest first)
-
-		sCat.Append(strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - Item.GetType()->GetApparentLevel()));
-
-		//	Enhanced items before others
-
-		if (Item.IsEnhanced())
-			sCat.Append(CONSTLIT("0"));
-		else if (Item.IsDamaged())
-			sCat.Append(CONSTLIT("2"));
-		else
-			sCat.Append(CONSTLIT("1"));
-
-		CString sName = pType->GetSortName();
-		CString sSort = strPatternSubst(CONSTLIT("%s%s%s%d"), sInstalled, sCat, sName, ((DWORD)(int)&Item) % 0x10000);
-		Sort.AddEntry(sSort, (CObject *)i);
-		}
+		Sort.Insert(GetItem(i).CalcSortKey(), i);
 
 	//	Allocate a new list
 
@@ -239,10 +159,7 @@ void CItemList::SortItems (void)
 	//	Move the items from the old list to the new list in the new order
 
 	for (i = 0; i < GetCount(); i++)
-		{
-		int iOld = (int)Sort.GetValue(i);
-		NewList[i] = m_List[iOld];
-		}
+		NewList[i] = m_List[Sort[i]];
 
 	//	Swap
 

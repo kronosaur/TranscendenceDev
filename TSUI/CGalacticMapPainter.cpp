@@ -180,8 +180,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 //	iScale 400 = x4
 
 	{
-	int i;
-	int j;
+	int i, j, k;
 
 	ASSERT(iScale > 0);
 
@@ -195,6 +194,10 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 		{
 		//	Compute some metrics
 
+		m_iScale = iScale;
+		m_xCenter = xCenter;
+		m_yCenter = yCenter;
+
 		CG32bitPixel rgbNodeColor = CG32bitPixel(255, 200, 128);
 		CG32bitPixel rgbStargateColor = CG32bitPixel(160, 255, 128);
 
@@ -205,8 +208,8 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 
 		int cxMap = (100 * RectWidth(rcView) / iScale);
 		int cyMap = (100 * RectHeight(rcView) / iScale);
-		int xViewCenter = rcView.left + (RectWidth(rcView) / 2);
-		int yViewCenter = rcView.top + (RectHeight(rcView) / 2);
+		m_xViewCenter = rcView.left + (RectWidth(rcView) / 2);
+		m_yViewCenter = rcView.top + (RectHeight(rcView) / 2);
 
 		//	Compute the given center in map image coordinates
 
@@ -262,35 +265,79 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 			CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
 			if (!pNode->IsMarked())
 				{
-				int xPos, yPos;
-				pNode->GetDisplayPos(&xPos, &yPos);
-
-				//	Convert to view coordinates
-
-				int x = xViewCenter + iScale * (xPos - xCenter) / 100;
-				int y = yViewCenter + iScale * (yCenter - yPos) / 100;
+				SPoint Start;
+				pNode->GetDisplayPos(&Start.x, &Start.y);
+				Start = Xform(Start);
 
 				//	Draw gate connections
 
 				for (j = 0; j < pNode->GetStargateCount(); j++)
 					{
-					CTopologyNode *pDestNode = pNode->GetStargateDest(j);
-					if (pDestNode && !pDestNode->IsMarked())
+					CTopologyNode::SStargateRouteDesc RouteDesc;
+					pNode->GetStargateRouteDesc(j, &RouteDesc);
+
+					if (RouteDesc.pToNode && !RouteDesc.pToNode->IsMarked())
 						{
-						int xPos, yPos;
-						pDestNode->GetDisplayPos(&xPos, &yPos);
+						SPoint End;
+						RouteDesc.pToNode->GetDisplayPos(&End.x, &End.y);
+						End = Xform(End);
 
-						int xDest = xViewCenter + iScale * (xPos - xCenter) / 100;
-						int yDest = yViewCenter + iScale * (yCenter - yPos) / 100;
+						//	If this is a curved path, the draw it
 
-						Dest.DrawLine(x, y, xDest, yDest, STARGATE_LINE_WIDTH, rgbStargateColor);
+						if (RouteDesc.MidPoints.GetCount() > 0)
+							{
+							int iCurMid = 0;
+							while (iCurMid <= RouteDesc.MidPoints.GetCount())
+								{
+								//	If we're at the end and we don't have enough points 
+								//	for a curve, then just draw a line.
+								//
+								//	LATER: We try to do a curved line.
+
+								if (iCurMid == RouteDesc.MidPoints.GetCount())
+									{
+									SPoint ptFrom = Xform(RouteDesc.MidPoints[iCurMid - 1]);
+
+									Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, STARGATE_LINE_WIDTH, rgbStargateColor);
+									}
+
+								//	Otherwise, we draw a curve
+
+								else
+									{
+									SPoint ptMid = Xform(RouteDesc.MidPoints[iCurMid]);
+									SPoint ptFrom = (iCurMid > 0 ? Xform(RouteDesc.MidPoints[iCurMid - 1]) : Start);
+									SPoint ptTo = (iCurMid + 1 < RouteDesc.MidPoints.GetCount() ? Xform(RouteDesc.MidPoints[iCurMid + 1]) : End);
+
+									CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, STARGATE_LINE_WIDTH, rgbStargateColor);
+									}
+
+								iCurMid += 2;
+								}
+
+							//	If in debug mode, paint all the intermediate nodes
+
+							if (g_pUniverse->InDebugMode())
+								{
+								for (k = 0; k < RouteDesc.MidPoints.GetCount(); k++)
+									{
+									SPoint ptPos = Xform(RouteDesc.MidPoints[k]);
+									Dest.DrawDot(ptPos.x, ptPos.y, CG32bitPixel(255, 128, 0), markerMediumCross);
+									}
+								}
+							}
+
+						//	Otherwise, straight line
+
+						else
+							Dest.DrawLine(Start.x, Start.y, End.x, End.y, STARGATE_LINE_WIDTH, rgbStargateColor);
 						}
 					}
 
 				//	Draw star system
 
-				if (x >= rcView.left && x < rcView.right && y >= rcView.top && y < rcView.bottom)
-					DrawNode(Dest, pNode, x, y, rgbNodeColor);
+				if (Start.x >= rcView.left && Start.x < rcView.right && Start.y >= rcView.top && Start.y < rcView.bottom)
+					DrawNode(Dest, pNode, Start.x, Start.y, rgbNodeColor);
 
 				pNode->SetMarked();
 				}

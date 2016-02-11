@@ -86,13 +86,26 @@ ALERROR CEffectVariantCreator::CreateEffect (CSystem *pSystem,
 	return ChooseVariant(iVariant)->pEffect->CreateEffect(pSystem, pAnchor, vPos, vVel, iRotation, iVariant, retpEffect);
 	}
 
-IEffectPainter *CEffectVariantCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CEffectVariantCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //
 //	Creates a painter
 
 	{
+	//	For backwards compatibility, if we have a damage descriptor, then we 
+	//	create the appropriate variant based on damage.
+	//
+	//	Newer code should use the <GetParameter> functionality instead of 
+	//	variants.
+
+	SDamageCtx *pDamageCtx = Ctx.GetDamageCtx();
+	if (pDamageCtx)
+		return ChooseVariant(pDamageCtx->iDamage)->pEffect->CreatePainter(Ctx);
+
+	//	Otherwise, just create us as a variant. This is used in the case of 
+	//	shield effects, which paint different variants at runtime.
+
 	return new CEffectVariantPainter(this);
 	}
 

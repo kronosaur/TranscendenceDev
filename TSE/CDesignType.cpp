@@ -6,6 +6,7 @@
 
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
 #define ATTRIBUTE_DESC_TAG						CONSTLIT("AttributeDesc")
+#define DATA_TAG						    	CONSTLIT("Data")
 #define DISPLAY_ATTRIBUTES_TAG					CONSTLIT("DisplayAttributes")
 #define DOCK_SCREEN_TAG							CONSTLIT("DockScreen")
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
@@ -16,6 +17,7 @@
 #define EVENTS_TAG								CONSTLIT("Events")
 #define GLOBAL_DATA_TAG							CONSTLIT("GlobalData")
 #define IMAGE_TAG								CONSTLIT("Image")
+#define IMAGE_COMPOSITE_TAG						CONSTLIT("ImageComposite")
 #define INITIAL_DATA_TAG						CONSTLIT("InitialData")
 #define ITEM_TABLE_TAG							CONSTLIT("ItemTable")
 #define ITEM_TYPE_TAG							CONSTLIT("ItemType")
@@ -110,6 +112,7 @@ static char DESIGN_CHAR[designCount] =
 		'$',
 		'_',
 		'x',
+		'o',
 	};
 
 static char *DESIGN_CLASS_NAME[designCount] =
@@ -139,6 +142,7 @@ static char *DESIGN_CLASS_NAME[designCount] =
 		"EconomyType",
 		"TemplateType",
 		"Type",
+		"ImageComposite",
 	};
 
 static char *CACHED_EVENTS[CDesignType::evtCount] =
@@ -200,6 +204,8 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	ALERROR error;
 	int i;
 
+	Ctx.pType = this;
+
 	//	Now that we've connected to our based classes, update the event cache
 	//	with events from our ancestors.
 
@@ -229,9 +235,11 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	catch (...)
 		{
 		::kernelDebugLogMessage("Crash in OnBindDesign [UNID: %08x]", m_dwUNID);
+		Ctx.pType = NULL;
 		throw;
 		}
 
+	Ctx.pType = NULL;
 	return error;
 	}
 
@@ -444,6 +452,8 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			pType = new CTemplateType;
 		else if (strEquals(pDesc->GetTag(), TYPE_TAG))
 			pType = new CGenericType;
+		else if (strEquals(pDesc->GetTag(), IMAGE_COMPOSITE_TAG))
+			pType = new CCompositeImageType;
 		else if (strEquals(pDesc->GetTag(), ADVENTURE_DESC_TAG))
 			{
 			//	Only valid if we are inside an Adventure
@@ -458,15 +468,18 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			}
 		else if (strEquals(pDesc->GetTag(), EFFECT_TAG))
 			{
+			//	Load UNID
+
+			DWORD dwUNID;
+			if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &dwUNID))
+				return error;
+
 			//	This is an old-style CEffectCreator for compatibility
 
 			if (error = CEffectCreator::CreateFromXML(Ctx, pDesc, NULL_STR, (CEffectCreator **)&pType))
 				return error;
 
-			//	Load UNID
-
-			if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &pType->m_dwUNID))
-				return error;
+			pType->m_dwUNID = dwUNID;
 
 			if (!pDesc->FindAttribute(ATTRIBUTES_ATTRIB, &pType->m_sAttributes))
 				pType->m_sAttributes = pDesc->GetAttribute(MODIFIERS_ATTRIB);
@@ -852,7 +865,7 @@ bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpac
 	return bResult;
 	}
 
-bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, ICCItem *pData, int *retiPriceAdj)
+bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj)
 
 //	FireGetGlobalPlayerPriceAdj
 //
@@ -864,10 +877,18 @@ bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, E
 	//	Set up
 
 	Ctx.SetEvent(eventGetGlobalPlayerPriceAdj);
-	Ctx.SetItemType(Item.GetType());
-	Ctx.DefineString(CONSTLIT("aService"), CTradingDesc::ServiceToString(iService));
-	Ctx.DefineSpaceObject(CONSTLIT("aProviderObj"), pProvider);
-	Ctx.SaveAndDefineItemVar(Item);
+	if (ServiceCtx.pItem)
+		{
+		Ctx.SaveAndDefineItemVar(*ServiceCtx.pItem);
+		Ctx.SetItemType(ServiceCtx.pItem->GetType());
+		}
+	else if (ServiceCtx.pObj)
+		{
+		Ctx.DefineSpaceObject(CONSTLIT("aObj"), ServiceCtx.pObj);
+		}
+
+	Ctx.DefineString(CONSTLIT("aService"), CTradingDesc::ServiceToString(ServiceCtx.iService));
+	Ctx.DefineSpaceObject(CONSTLIT("aProviderObj"), ServiceCtx.pProvider);
 	if (pData)
 		Ctx.SaveAndDefineDataVar(pData);
 
@@ -2268,35 +2289,75 @@ ALERROR CEffectCreatorRef::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	{
 	ALERROR error;
 
-	if (error = CEffectCreator::CreateFromXML(Ctx, pDesc, sUNID, &m_pType))
-		return error;
+    //  If we're specifying an effect type by reference, then we load it here.
 
-	m_dwUNID = 0;
-	m_bDelete = true;
+    CString sAttrib;
+    if (pDesc->FindAttribute(EFFECT_ATTRIB, &sAttrib))
+        {
+        if (error = LoadUNID(Ctx, sAttrib))
+            return error;
+
+        //  We can pass parameters to the effect type through a data block.
+
+	    CXMLElement *pInitialData = pDesc->GetContentElementByTag(DATA_TAG);
+	    if (pInitialData)
+		    m_Data.SetFromXML(pInitialData);
+        }
+
+    //  Otherwise, we are defining an effect
+
+    else
+        {
+	    if (error = CEffectCreator::CreateFromXML(Ctx, pDesc, sUNID, &m_pType))
+		    return error;
+
+	    m_dwUNID = 0;
+	    m_bDelete = true;
+        }
 
 	return NOERROR;
 	}
 
-IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffectCreator *pDefaultCreator)
 
 //	CreatePainter
 //
 //	Use this call when we want to use a per-owner singleton.
 
 	{
-	if (m_pType == NULL)
-		return NULL;
+    int i;
 
 	//	If we have a singleton, then return that.
 
 	if (m_pSingleton)
 		return m_pSingleton;
 
-	IEffectPainter *pPainter = m_pType->CreatePainter(Ctx);
+	//	Figure out the creator
+
+	CEffectCreator *pCreator = m_pType;
+	if (pCreator == NULL)
+		pCreator = pDefaultCreator;
+
+	if (pCreator == NULL)
+		return NULL;
+
+    //  If we have some data, add it to the context
+
+    for (i = 0; i < m_Data.GetDataCount(); i++)
+        {
+        //  LATER: We only handle integers for now. Later we should handle any
+        //  ICCItem type.
+
+        Ctx.AddDataInteger(m_Data.GetDataAttrib(i), strToInt(m_Data.GetData(i), 0));
+        }
+
+	//	Create the painter
+
+	IEffectPainter *pPainter = pCreator->CreatePainter(Ctx);
 
 	//	If we're an owner singleton then we only need to create this once.
 
-	if (m_pType->GetInstance() == CEffectCreator::instOwner
+	if (pCreator->GetInstance() == CEffectCreator::instOwner
 			&& !pPainter->IsSingleton())
 		{
 		pPainter->SetSingleton(true);
@@ -2370,252 +2431,6 @@ void CEffectCreatorRef::Set (CEffectCreator *pEffect)
 		m_dwUNID = m_pType->GetUNID();
 	else
 		m_dwUNID = 0;
-	}
-
-//	CDesignTypeCriteria --------------------------------------------------------
-
-bool CDesignTypeCriteria::MatchesLevel (int iMinLevel, int iMaxLevel) const
-
-//	MatchesLevel
-//
-//	Returns true if we match the level
-
-	{
-	if (m_iGreaterThanLevel != INVALID_COMPARE 
-			&& iMaxLevel <= m_iGreaterThanLevel)
-		return false;
-
-	if (m_iLessThanLevel != INVALID_COMPARE 
-			&& iMinLevel >= m_iLessThanLevel)
-		return false;
-
-	return true;
-	}
-
-ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTypeCriteria *retCriteria)
-
-//	ParseCriteria
-//
-//	Parses the criteria and initializes retCriteria
-
-	{
-	//	Initialize
-
-	retCriteria->m_dwTypeSet = 0;
-	retCriteria->m_iGreaterThanLevel = INVALID_COMPARE;
-	retCriteria->m_iLessThanLevel = INVALID_COMPARE;
-	retCriteria->m_bIncludeVirtual = false;
-
-	//	Parse
-
-	char *pPos = sCriteria.GetPointer();
-	while (*pPos != '\0')
-		{
-		switch (*pPos)
-			{
-			case '*':
-				retCriteria->m_dwTypeSet = designSetAll;
-				break;
-
-			case charAdventureDesc:
-				retCriteria->m_dwTypeSet |= (1 << designAdventureDesc);
-				break;
-
-			case charItemTable:
-				retCriteria->m_dwTypeSet |= (1 << designItemTable);
-				break;
-
-			case charEffectType:
-				retCriteria->m_dwTypeSet |= (1 << designEffectType);
-				break;
-
-			case charDockScreen:
-				retCriteria->m_dwTypeSet |= (1 << designDockScreen);
-				break;
-
-			case charSpaceEnvironmentType:
-				retCriteria->m_dwTypeSet |= (1 << designSpaceEnvironmentType);
-				break;
-
-			case charEconomyType:
-				retCriteria->m_dwTypeSet |= (1 << designEconomyType);
-				break;
-
-			case charEnergyFieldType:
-				retCriteria->m_dwTypeSet |= (1 << designEnergyFieldType);
-				break;
-
-			case charGenericType:
-				retCriteria->m_dwTypeSet |= (1 << designGenericType);
-				break;
-
-			case charGlobals:
-				retCriteria->m_dwTypeSet |= (1 << designGlobals);
-				break;
-
-			case charShipTable:
-				retCriteria->m_dwTypeSet |= (1 << designShipTable);
-				break;
-
-			case charItemType:
-				retCriteria->m_dwTypeSet |= (1 << designItemType);
-				break;
-
-			case charImage:
-				retCriteria->m_dwTypeSet |= (1 << designImage);
-				break;
-
-			case charMissionType:
-				retCriteria->m_dwTypeSet |= (1 << designMissionType);
-				break;
-
-			case charPower:
-				retCriteria->m_dwTypeSet |= (1 << designPower);
-				break;
-
-			case charShipClass:
-				retCriteria->m_dwTypeSet |= (1 << designShipClass);
-				break;
-
-			case charStationType:
-				retCriteria->m_dwTypeSet |= (1 << designStationType);
-				break;
-
-			case charSound:
-				retCriteria->m_dwTypeSet |= (1 << designSound);
-				break;
-
-			case charSovereign:
-				retCriteria->m_dwTypeSet |= (1 << designSovereign);
-				break;
-
-			case charSystemTable:
-				retCriteria->m_dwTypeSet |= (1 << designSystemTable);
-				break;
-
-			case charSystemType:
-				retCriteria->m_dwTypeSet |= (1 << designSystemType);
-				break;
-
-			case charSystemMap:
-				retCriteria->m_dwTypeSet |= (1 << designSystemMap);
-				break;
-
-			case charNameGenerator:
-				retCriteria->m_dwTypeSet |= (1 << designNameGenerator);
-				break;
-
-			case charTemplateType:
-				//	We don't support enumerating template types
-				break;
-
-			case 'L':
-				{
-				int iHigh;
-				int iLow;
-
-				if (ParseCriteriaParamLevelRange(&pPos, &iLow, &iHigh))
-					{
-					if (iHigh == -1)
-						{
-						retCriteria->m_iGreaterThanLevel = iLow - 1;
-						retCriteria->m_iLessThanLevel = iLow + 1;
-						}
-					else
-						{
-						retCriteria->m_iGreaterThanLevel = iLow - 1;
-						retCriteria->m_iLessThanLevel = iHigh + 1;
-						}
-					}
-
-				break;
-				}
-
-			case 'V':
-				retCriteria->m_bIncludeVirtual = true;
-				break;
-
-			case '+':
-			case '-':
-				{
-				bool bRequired = (*pPos == '+');
-				bool bBinaryParam;
-				CString sParam = ParseCriteriaParam(&pPos, false, &bBinaryParam);
-
-				if (bRequired)
-					{
-					if (bBinaryParam)
-						retCriteria->m_sRequireSpecial.Insert(sParam);
-					else
-						retCriteria->m_sRequire.Insert(sParam);
-					}
-				else
-					{
-					if (bBinaryParam)
-						retCriteria->m_sExcludeSpecial.Insert(sParam);
-					else
-						retCriteria->m_sExclude.Insert(sParam);
-					}
-				break;
-				}
-
-			case '=':
-			case '>':
-			case '<':
-				{
-				char chChar = *pPos;
-				pPos++;
-
-				//	<= or >=
-
-				int iEqualAdj;
-				if (*pPos == '=')
-					{
-					pPos++;
-					iEqualAdj = 1;
-					}
-				else
-					iEqualAdj = 0;
-
-				//	Is this price?
-
-				char comparison;
-				if (*pPos == '$' || *pPos == '#')
-					comparison = *pPos++;
-				else
-					comparison = '\0';
-
-				//	Get the number
-
-				char *pNewPos;
-				int iValue = strParseInt(pPos, 0, &pNewPos);
-
-				//	Back up one because we will increment at the bottom
-				//	of the loop.
-
-				if (pPos != pNewPos)
-					pPos = pNewPos - 1;
-
-				//	Level limits
-
-				if (chChar == '=')
-					{
-					retCriteria->m_iGreaterThanLevel = iValue - 1;
-					retCriteria->m_iLessThanLevel = iValue + 1;
-					}
-				else if (chChar == '>')
-					retCriteria->m_iGreaterThanLevel = iValue - iEqualAdj;
-				else if (chChar == '<')
-					retCriteria->m_iLessThanLevel = iValue + iEqualAdj;
-
-				break;
-				}
-			}
-
-		pPos++;
-		}
-
-	return NOERROR;
 	}
 
 //	Utility -------------------------------------------------------------------

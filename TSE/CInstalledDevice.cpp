@@ -179,16 +179,16 @@ CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *p
 	//	Describe enhancements from the device only (e.g., confered by other devices)
 
 	else if (GetActivateDelay(pSource) > m_pClass->GetActivateDelay(this, pSource))
-		return CONSTLIT("-Slow");
+		return CONSTLIT("-slow");
 	else if (GetActivateDelay(pSource) < m_pClass->GetActivateDelay(this, pSource))
-		return CONSTLIT("+Fast");
+		return CONSTLIT("+fast");
 	else if (iDamageBonus = (m_pEnhancements ? m_pEnhancements->GetBonus() : 0))
 		return (iDamageBonus > 0 ? strPatternSubst(CONSTLIT("+%d%%"), iDamageBonus) : strPatternSubst(CONSTLIT("%d%%"), iDamageBonus));
 
 	//	Other enhancements
 
 	else if (IsEnhanced())
-		return CONSTLIT("+Enhanced");
+		return CONSTLIT("+enhanced");
 	else
 		return NULL_STR;
 	}
@@ -333,7 +333,6 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 	//	Call the class
 
 	m_pClass->OnInstall(this, pObj, ItemList);
-	m_pClass->SelectFirstVariant(pObj, this);
 
 	//	Mark the item as installed
 
@@ -344,6 +343,11 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 
 	m_pItem = ItemList.GetItemPointerAtCursor();
 	ASSERT(m_pItem);
+
+	//	Select the variant. We need to do this AFTER m_pItem is set because
+	//	we need to check things like charges.
+
+	m_pClass->SelectFirstVariant(pObj, this);
 
 	//	Default to basic fire delay. Callers must set the appropriate delay
 	//	based on enhancements later.

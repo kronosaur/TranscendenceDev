@@ -14,10 +14,11 @@
 #define REACTOR_EFFICIENCY_ATTRIB				CONSTLIT("reactorEfficiency")
 #define REACTOR_POWER_ATTRIB					CONSTLIT("reactorPower")
 
-#define FIELD_FUEL_CAPACITY						CONSTLIT("fuelCapacity")
-#define FIELD_FUEL_CRITERIA						CONSTLIT("fuelCriteria")
-#define FIELD_FUEL_EFFICIENCY					CONSTLIT("fuelEfficiency")
-#define FIELD_POWER								CONSTLIT("power")
+#define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
+#define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
+#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
+#define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
+#define PROPERTY_POWER							CONSTLIT("power")
 
 CReactorClass::CReactorClass (void) : CDeviceClass(NULL)
 	{
@@ -48,10 +49,10 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
 	//	Compute descriptor when damaged
 
 	pDevice->m_DamagedDesc.iMaxPower = 80 * pDevice->m_Desc.iMaxPower / 100;
-	pDevice->m_DamagedDesc.iMaxFuel = pDevice->m_Desc.iMaxFuel;
+	pDevice->m_DamagedDesc.rMaxFuel = pDevice->m_Desc.rMaxFuel;
 	pDevice->m_DamagedDesc.iMinFuelLevel = pDevice->m_Desc.iMinFuelLevel;
 	pDevice->m_DamagedDesc.iMaxFuelLevel = pDevice->m_Desc.iMaxFuelLevel;
-	pDevice->m_DamagedDesc.iPowerPerFuelUnit = 80 * pDevice->m_Desc.iPowerPerFuelUnit / 100;
+	pDevice->m_DamagedDesc.rPowerPerFuelUnit = 0.8 * pDevice->m_Desc.rPowerPerFuelUnit;
 	pDevice->m_DamagedDesc.pFuelCriteria = pDevice->m_Desc.pFuelCriteria;
 	pDevice->m_DamagedDesc.fFreeFuelCriteria = false;
 	pDevice->m_DamagedDesc.fDamaged = true;
@@ -60,10 +61,10 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
 	//	Compute descriptor when enhanced
 
 	pDevice->m_EnhancedDesc.iMaxPower = 120 * pDevice->m_Desc.iMaxPower / 100;
-	pDevice->m_EnhancedDesc.iMaxFuel = pDevice->m_Desc.iMaxFuel;
+	pDevice->m_EnhancedDesc.rMaxFuel = pDevice->m_Desc.rMaxFuel;
 	pDevice->m_EnhancedDesc.iMinFuelLevel = pDevice->m_Desc.iMinFuelLevel;
 	pDevice->m_EnhancedDesc.iMaxFuelLevel = pDevice->m_Desc.iMaxFuelLevel;
-	pDevice->m_EnhancedDesc.iPowerPerFuelUnit = 150 * pDevice->m_Desc.iPowerPerFuelUnit / 100;
+	pDevice->m_EnhancedDesc.rPowerPerFuelUnit = 1.5 * pDevice->m_Desc.rPowerPerFuelUnit;
 	pDevice->m_EnhancedDesc.pFuelCriteria = pDevice->m_Desc.pFuelCriteria;
 	pDevice->m_EnhancedDesc.fFreeFuelCriteria = false;
 	pDevice->m_EnhancedDesc.fDamaged = false;
@@ -83,19 +84,19 @@ bool CReactorClass::FindDataField (const ReactorDesc &Desc, const CString &sFiel
 //	Finds a data field for the reactor desc.
 
 	{
-	if (strEquals(sField, FIELD_POWER))
+	if (strEquals(sField, PROPERTY_POWER))
 		*retsValue = strFromInt(Desc.iMaxPower * 100);
-	else if (strEquals(sField, FIELD_FUEL_CRITERIA))
+	else if (strEquals(sField, PROPERTY_FUEL_CRITERIA))
 		{
 		if (Desc.pFuelCriteria)
 			*retsValue = CItem::GenerateCriteria(*Desc.pFuelCriteria);
 		else
 			*retsValue = strPatternSubst(CONSTLIT("f L:%d-%d;"), Desc.iMinFuelLevel, Desc.iMaxFuelLevel);
 		}
-	else if (strEquals(sField, FIELD_FUEL_EFFICIENCY))
-		*retsValue = strFromInt(Desc.iPowerPerFuelUnit);
-	else if (strEquals(sField, FIELD_FUEL_CAPACITY))
-		*retsValue = strFromInt(Desc.iMaxFuel / FUEL_UNITS_PER_STD_ROD);
+	else if (strEquals(sField, PROPERTY_FUEL_EFFICIENCY))
+		*retsValue = strFromInt((int)Desc.rPowerPerFuelUnit);
+	else if (strEquals(sField, PROPERTY_FUEL_CAPACITY))
+		*retsValue = strFromInt((int)(Desc.rMaxFuel / FUEL_UNITS_PER_STD_ROD));
 	else
 		return false;
 
@@ -110,6 +111,42 @@ bool CReactorClass::FindDataField (const CString &sField, CString *retsValue)
 
 	{
 	return FindDataField(m_Desc, sField, retsValue);
+	}
+
+ICCItem *CReactorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
+
+//	GetItemProperty
+//
+//	Returns the item property. Subclasses should call this if they do not
+//	understand the property.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	const ReactorDesc &Desc = *GetReactorDesc(Ctx.GetDevice(), Ctx.GetSource());
+
+	if (strEquals(sName, PROPERTY_POWER))
+		return CC.CreateInteger(Desc.iMaxPower * 100);
+
+	else if (strEquals(sName, PROPERTY_FUEL_CRITERIA))
+		{
+		if (Desc.pFuelCriteria)
+			return CC.CreateString(CItem::GenerateCriteria(*Desc.pFuelCriteria));
+		else
+			return CC.CreateString(strPatternSubst(CONSTLIT("f L:%d-%d;"), Desc.iMinFuelLevel, Desc.iMaxFuelLevel));
+		}
+	else if (strEquals(sName, PROPERTY_FUEL_EFFICIENCY))
+		return CC.CreateInteger((int)Desc.rPowerPerFuelUnit);
+
+	else if (strEquals(sName, PROPERTY_FUEL_EFFICIENCY_BONUS))
+		return CC.CreateInteger(GetEfficiencyBonus(Desc));
+
+	else if (strEquals(sName, PROPERTY_FUEL_CAPACITY))
+		return CC.CreateInteger((int)(Desc.rMaxFuel / FUEL_UNITS_PER_STD_ROD));
+
+	//	Otherwise, just get the property from the base class
+
+	else
+		return CDeviceClass::GetItemProperty(Ctx, sName);
 	}
 
 const ReactorDesc *CReactorClass::GetReactorDesc (CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -127,6 +164,38 @@ const ReactorDesc *CReactorClass::GetReactorDesc (CInstalledDevice *pDevice, CSp
 		return &m_EnhancedDesc;
 	else
 		return &m_Desc;
+	}
+
+ICCItem *CReactorClass::GetReactorProperty (const ReactorDesc &Desc, const CString &sProperty)
+
+//	GetReactorProperty
+//
+//	Returns property for a built-in reactor. NOTE: We've mostly deprecated this
+//	case. All player ships should have actual reactor items.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sProperty, PROPERTY_POWER))
+		return CC.CreateInteger(Desc.iMaxPower * 100);
+
+	else if (strEquals(sProperty, PROPERTY_FUEL_CRITERIA))
+		{
+		if (Desc.pFuelCriteria)
+			return CC.CreateString(CItem::GenerateCriteria(*Desc.pFuelCriteria));
+		else
+			return CC.CreateString(strPatternSubst(CONSTLIT("f L:%d-%d;"), Desc.iMinFuelLevel, Desc.iMaxFuelLevel));
+		}
+	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY))
+		return CC.CreateInteger((int)Desc.rPowerPerFuelUnit);
+
+	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY_BONUS))
+		return CC.CreateInteger(GetEfficiencyBonus(Desc));
+
+	else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY))
+		return CC.CreateInteger((int)(Desc.rMaxFuel / FUEL_UNITS_PER_STD_ROD));
+	else
+		return CC.CreateNil();
 	}
 
 ALERROR CReactorClass::InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc, ReactorDesc *retDesc, bool bShipClass)
@@ -150,16 +219,15 @@ ALERROR CReactorClass::InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 	if (bShipClass)
 		{
 		retDesc->iMaxPower = pDesc->GetAttributeIntegerBounded(REACTOR_POWER_ATTRIB, 0, -1, 0);
-		retDesc->iMaxFuel = pDesc->GetAttributeIntegerBounded(FUEL_CAPACITY_ATTRIB, 0, -1, retDesc->iMaxPower * 250);
-		retDesc->iPowerPerFuelUnit = pDesc->GetAttributeIntegerBounded(REACTOR_EFFICIENCY_ATTRIB, 0, -1, g_MWPerFuelUnit);
+		retDesc->rMaxFuel = pDesc->GetAttributeDoubleBounded(FUEL_CAPACITY_ATTRIB, 0.0, -1.0, retDesc->iMaxPower * 250.0);
+		retDesc->rPowerPerFuelUnit = pDesc->GetAttributeDoubleBounded(REACTOR_EFFICIENCY_ATTRIB, 0.0, -1.0, g_MWPerFuelUnit);
 		}
 	else
 		{
 		retDesc->iMaxPower = pDesc->GetAttributeIntegerBounded(MAX_POWER_ATTRIB, 0, -1, 100);
-		retDesc->iMaxFuel = pDesc->GetAttributeIntegerBounded(MAX_FUEL_ATTRIB, 0, -1, retDesc->iMaxFuel * 250);
-		retDesc->iPowerPerFuelUnit = pDesc->GetAttributeIntegerBounded(FUEL_EFFICIENCY_ATTRIB, 0, -1, g_MWPerFuelUnit);
+		retDesc->rMaxFuel = pDesc->GetAttributeDoubleBounded(MAX_FUEL_ATTRIB, 0.0, -1.0, retDesc->iMaxPower * 250.0);
+		retDesc->rPowerPerFuelUnit = pDesc->GetAttributeDoubleBounded(FUEL_EFFICIENCY_ATTRIB, 0.0, -1.0, g_MWPerFuelUnit);
 		}
-
 
 	retDesc->fDamaged = false;
 	retDesc->fEnhanced = false;
@@ -216,6 +284,79 @@ bool CReactorClass::IsFuelCompatible (const ReactorDesc &Desc, const CItem &Fuel
 		return (iLevel >= Desc.iMinFuelLevel 
 				&& iLevel <= Desc.iMaxFuelLevel);
 		}
+	}
+
+CString CReactorClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+
+//	OnGetReference
+//
+//	Returns a reference string.
+
+	{
+	CString sReference;
+
+	//	Get reactor stats
+
+	const ReactorDesc &Desc = *GetReactorDesc(Ctx.GetDevice(), Ctx.GetSource());
+
+	//	Power output
+
+	sReference = strPatternSubst(CONSTLIT("%s max output"), ReactorPower2String(Desc.iMaxPower));
+
+	//	Fuel level
+
+	int iMinLevel;
+	int iMaxLevel;
+	if (Desc.pFuelCriteria)
+		Desc.pFuelCriteria->GetExplicitLevelMatched(&iMinLevel, &iMaxLevel);
+	else
+		{
+		iMinLevel = Desc.iMinFuelLevel;
+		iMaxLevel = Desc.iMaxFuelLevel;
+		}
+
+	if (iMinLevel == -1 && iMaxLevel == -1)
+		;
+	else if (iMinLevel == iMaxLevel)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("fuel level %d"), iMinLevel));
+	else if (iMaxLevel == -1)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("fuel level %d-25"), iMinLevel));
+	else if (iMinLevel == -1)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("fuel level 1-%d"), iMaxLevel));
+	else
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("fuel level %d-%d"), iMinLevel, iMaxLevel));
+
+	//	Efficiency
+
+	int iBonus = GetEfficiencyBonus(Desc);
+	if (iBonus > 0)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("+%d%% efficiency"), iBonus));
+	else if (iBonus < 0)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%% efficiency"), iBonus));
+
+	//	Done
+
+	return sReference;
+	}
+
+int CReactorClass::GetEfficiencyBonus (const ReactorDesc &Desc)
+
+//	GetEfficiencyBonus
+//
+//	Returns the efficiency of the reactor relative to the standard in percent
+//	terms. We round to multiple of 5.
+
+	{
+	if (Desc.rPowerPerFuelUnit != g_MWPerFuelUnit)
+		{
+		int iBonus = (int)(100.0 * ((Desc.rPowerPerFuelUnit / g_MWPerFuelUnit) - 1.0));
+		if (iBonus > 0)
+			return 5 * ((iBonus + 2) / 5);
+		else
+			return 5 * ((iBonus - 2) / 5);
+		}
+	else
+		return 0;
 	}
 
 void CReactorClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList)

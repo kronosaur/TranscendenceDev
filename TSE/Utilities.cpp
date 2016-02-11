@@ -375,6 +375,89 @@ ALERROR DiceRange::LoadFromXML (const CString &sAttrib, int iDefault, CString *r
 	return NOERROR;
 	}
 
+bool DiceRange::LoadIfValid (const CString &sAttrib, DiceRange *retValue)
+
+//	LoadIfValid
+//
+//	Tries to parse sAttrib as a dice range. If successful, we return TRUE.
+
+	{
+	bool bNullValue;
+	char *pPos = sAttrib.GetASCIIZPointer();
+
+	//	If empty, then not valid
+
+	if (*pPos == '\0'
+			|| (*pPos != '-' && (*pPos < '0' || *pPos > '9')))
+		return false;
+
+	//	First is the number of dice
+
+	int iCount = strParseInt(pPos, 0, &pPos, &bNullValue);
+	int iFaces;
+	int iBonus;
+	if (bNullValue)
+		return false;
+
+	//	If we've got a 'd' then we have a dice pattern
+
+	if (*pPos == 'd')
+		{
+		pPos++;
+		if (iCount < 0)
+			return false;
+
+		//	Now parse the sides
+
+		iFaces = strParseInt(pPos, -1, &pPos, NULL);
+		if (iFaces == -1)
+			return false;
+
+		//	Finally, add any bonus
+
+		if (*pPos != '\0')
+			iBonus = strParseInt(pPos, 0, &pPos, NULL);
+		else
+			iBonus = 0;
+		}
+
+	//	If we've got a '-' then we have a range pattern
+
+	else if (*pPos == '-')
+		{
+		pPos++;
+		int iEnd = strParseInt(pPos, 0, &pPos, &bNullValue);
+		if (bNullValue)
+			return false;
+
+		if (iEnd < iCount)
+			Swap(iEnd, iCount);
+
+		iFaces = (iEnd - iCount) + 1;
+		iBonus = iCount - 1;
+		iCount = 1;
+		}
+
+	//	If we're at the end, then this is a constant number
+
+	else if (*pPos == '\0')
+		{
+		iBonus = iCount;
+		iCount = 0;
+		iFaces = 0;
+		}
+
+	//	Otherwise, not a dice range
+
+	else
+		return false;
+
+	if (retValue)
+		*retValue = DiceRange(iFaces, iCount, iBonus);
+
+	return true;
+	}
+
 void DiceRange::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
@@ -1543,7 +1626,7 @@ Metric *GetDestinyToBellCurveArray (void)
 		Metric rMagicConstant = 0.147f;		//	From the approximation formula
 		Metric rScale1 = 360.0f;
 		Metric rScale2 = 3.7f;
-		Metric r4OverPi = 4.0f / g_Pi;
+		Metric r4OverPi = 4.0f / PI;
 
 		for (i = 0; i < g_DestinyRange; i++)
 			{
@@ -1942,6 +2025,16 @@ CString GetPaintLayerID (CSystem::LayerEnum iPaintLayer)
 		}
 	}
 
+CString GetRGBColor (CG32bitPixel rgbColor)
+
+//	GetRGBColor
+//
+//	Returns a color string of the form "#rrggbb"
+
+	{
+	return strPatternSubst(CONSTLIT("#%02x%02x%02x"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
+	}
+
 int OrderGetDataCount (IShipController::OrderTypes iOrder)
 
 //	OrderGetDataCount
@@ -2254,7 +2347,7 @@ DWORD LoadNameFlags (CXMLElement *pDesc)
 	return dwFlags;
 	}
 
-CG32bitPixel LoadRGBColor (const CString &sString)
+CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 
 //	LoadRGBColor
 //
@@ -2266,7 +2359,7 @@ CG32bitPixel LoadRGBColor (const CString &sString)
 	//	Null
 
 	if (*pPos == '\0')
-		return CG32bitPixel::Null();
+		return rgbDefault;
 
 	//	If it starts with a # we expect an RGB DWORD
 

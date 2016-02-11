@@ -17,6 +17,12 @@
 #define FIELD_THRUST				CONSTLIT("thrust")
 #define FIELD_POWER					CONSTLIT("power")
 
+#define PROPERTY_DRIVE_POWER		CONSTLIT("drivePowerUse")
+#define PROPERTY_MAX_SPEED			CONSTLIT("maxSpeed")
+#define PROPERTY_POWER				CONSTLIT("power")
+#define PROPERTY_THRUST				CONSTLIT("thrust")
+#define PROPERTY_THRUST_TO_WEIGHT	CONSTLIT("thrustToWeight")
+
 CDriveClass::CDriveClass (void) : CDeviceClass(NULL)
 	{
 	}
@@ -86,7 +92,7 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
-const DriveDesc *CDriveClass::GetDriveDesc (CInstalledDevice *pDevice, CSpaceObject *pSource)
+const DriveDesc *CDriveClass::GetDriveDesc (CInstalledDevice *pDevice, CSpaceObject *pSource) const
 
 //	GetDriveDesc
 //
@@ -106,14 +112,106 @@ const DriveDesc *CDriveClass::GetDriveDesc (CInstalledDevice *pDevice, CSpaceObj
 		return &m_DriveDesc;
 	}
 
-int CDriveClass::GetPowerRating (CItemCtx &Ctx)
+ICCItem *CDriveClass::GetItemProperty (CItemCtx &Ctx, const CString &sProperty)
+
+//	GetItemProperty
+//
+//	Returns the item property. Subclasses should call this if they do not
+//	understand the property.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	const DriveDesc &Desc = *GetDriveDesc(Ctx.GetDevice(), Ctx.GetSource());
+
+	if (strEquals(sProperty, PROPERTY_MAX_SPEED))
+		return CC.CreateInteger((int)((100.0 * Desc.rMaxSpeed / LIGHT_SPEED) + 0.5));
+
+	else if (strEquals(sProperty, PROPERTY_THRUST))
+		return CC.CreateInteger(Desc.iThrust);
+	
+	else if (strEquals(sProperty, PROPERTY_POWER)
+			|| strEquals(sProperty, PROPERTY_DRIVE_POWER))
+		return CC.CreateInteger(Desc.iPowerUse * 100);
+
+	//	Otherwise, just get the property from the base class
+
+	else
+		return CDeviceClass::GetItemProperty(Ctx, sProperty);
+	}
+
+int CDriveClass::GetPowerRating (CItemCtx &Ctx) const
 
 //	GetPowerRating
 //
 //	Get minimum reactor output for device
 
 	{
-	return m_DriveDesc.iPowerUse;
+	const DriveDesc &Desc = *GetDriveDesc(Ctx.GetDevice(), Ctx.GetSource());
+	return Desc.iPowerUse;
+	}
+
+ICCItem *CDriveClass::GetDriveProperty (const DriveDesc &Desc, const CString &sProperty)
+
+//	GetDriveProperty
+//
+//	Returns property for a built-in drive.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sProperty, PROPERTY_MAX_SPEED))
+		return CC.CreateInteger((int)((100.0 * Desc.rMaxSpeed / LIGHT_SPEED) + 0.5));
+
+	else if (strEquals(sProperty, PROPERTY_THRUST))
+		return CC.CreateInteger(Desc.iThrust);
+	
+	else if (strEquals(sProperty, PROPERTY_POWER)
+			|| strEquals(sProperty, PROPERTY_DRIVE_POWER))
+		return CC.CreateInteger(Desc.iPowerUse * 100);
+	else
+		return CC.CreateNil();
+	}
+
+void CDriveClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+
+//	OnAccumulateAttributes
+//
+//	Returns display attributes
+
+	{
+	const DriveDesc &Desc = *GetDriveDesc(ItemCtx.GetDevice(), ItemCtx.GetSource());
+
+	//	Inertialess
+
+	if (Desc.fInertialess)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("inertialess")));
+	}
+
+CString CDriveClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+
+//	OnGetReference
+//
+//	Returns a reference string.
+
+	{
+	CString sReference;
+
+	//	Get the drive stats
+
+	const DriveDesc &Desc = *GetDriveDesc(Ctx.GetDevice(), Ctx.GetSource());
+
+	//	Max speed
+
+	int iSpeed = (int)(100.0 * Desc.rMaxSpeed / LIGHT_SPEED);
+	AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("max speed 0.%02dc"), iSpeed));
+
+	//	Thrust
+
+	AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("thrust %d"), Desc.iThrust));
+
+	//	Done
+
+	return sReference;
 	}
 
 void CDriveClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList)

@@ -430,6 +430,68 @@ int CSpaceObject::GetSellPrice (const CItem &Item, DWORD dwFlags)
 	return iPrice;
 	}
 
+bool CSpaceObject::GetShipBuyPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice)
+
+//	GetShipBuyPrice
+//
+//	Returns the price for which we'd sell the given ship.
+
+	{
+	if (IsAbandoned())
+		return false;
+
+	//	See if we have an override price
+
+	CTradingDesc *pTradeOverride = GetTradeDescOverride();
+	if (pTradeOverride && pTradeOverride->BuysShip(this, pShip, dwFlags, retiPrice))
+		return true;
+
+	//	Otherwise, ask our design type
+
+	CDesignType *pType = GetType();
+	if (pType == NULL)
+		return false;
+
+	CTradingDesc *pTrade = pType->GetTradingDesc();
+	if (pTrade && pTrade->BuysShip(this, pShip, dwFlags, retiPrice))
+		return true;
+
+	//	Otherwise, we do not sell.
+
+	return false;
+	}
+
+bool CSpaceObject::GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice)
+
+//	GetShipSellPrice
+//
+//	Returns the price for which we'd sell the given ship.
+
+	{
+	if (IsAbandoned())
+		return false;
+
+	//	See if we have an override price
+
+	CTradingDesc *pTradeOverride = GetTradeDescOverride();
+	if (pTradeOverride && pTradeOverride->SellsShip(this, pShip, dwFlags, retiPrice))
+		return true;
+
+	//	Otherwise, ask our design type
+
+	CDesignType *pType = GetType();
+	if (pType == NULL)
+		return false;
+
+	CTradingDesc *pTrade = pType->GetTradingDesc();
+	if (pTrade && pTrade->SellsShip(this, pShip, dwFlags, retiPrice))
+		return true;
+
+	//	Otherwise, we do not sell.
+
+	return false;
+	}
+
 int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService)
 
 //	GetTradeMaxLevel

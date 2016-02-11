@@ -89,7 +89,8 @@ void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos)
 //	is the ending point.
 
 	{
-	ASSERT(iCount > 2);
+	if (iCount <= 2)
+		return;
 
 	//	Line
 
@@ -185,6 +186,48 @@ void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, CItemType *pType, int c
 						RectWidth(rcImage),
 						RectHeight(rcImage));
 			}
+		}
+	}
+
+void DrawLightning (CG32bitImage &Dest,
+					int xFrom, int yFrom,
+					int xTo, int yTo,
+					CG32bitPixel rgbFrom,
+					CG32bitPixel rgbTo,
+					Metric rChaos)
+
+//	DrawLighting
+//
+//	Draw a lightning line, fading color from the start to the end.
+
+	{
+	const int MAX_LINE_SEGMENT = 3;
+	const int MAX_POINTS = 100;
+
+	int i;
+
+	//	Figure out how many points. We do a quick heuristic to make sure we get
+	//	enough detail.
+
+	int iPoints = Min(Max(2, Max(Absolute(xFrom - xTo), Absolute(yFrom - yTo)) / MAX_LINE_SEGMENT), MAX_POINTS);
+
+	//	Compute the lightning points
+
+	CVector Points[MAX_POINTS];
+	Points[0] = CVector(xFrom, yFrom);
+	Points[iPoints - 1] = CVector(xTo, yTo);
+
+	ComputeLightningPoints(iPoints, Points, rChaos);
+
+	//	Draw the line segments
+
+	for (i = 0; i < iPoints - 1; i++)
+		{
+		CG32bitPixel rgbColor = CG32bitPixel::Composite(rgbFrom, rgbTo, (Metric)i / iPoints);
+		Dest.DrawLine((int)Points[i].GetX(), (int)Points[i].GetY(),
+				(int)Points[i + 1].GetX(), (int)Points[i + 1].GetY(),
+				1,
+				rgbColor);
 		}
 	}
 

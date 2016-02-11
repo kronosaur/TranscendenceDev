@@ -41,7 +41,7 @@ CFerianShipAI::CFerianShipAI (void) :
 	{
 	}
 
-void CFerianShipAI::Behavior (void)
+void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 

@@ -149,7 +149,7 @@ void CEnvironmentGrid::CreateArcNebula (SCreateCtx &Ctx, TArray<STileDesc> *retT
 	Metric rHalfWidth = Ctx.rWidth / 2.0;
 	Metric rMaxVariation = Ctx.iWidthVariation * rHalfWidth / 100.0;
 	Metric rHalfVariation = rMaxVariation / 2.0;
-	Metric rHalfSpan = g_Pi * Ctx.iSpan / 360.0;
+	Metric rHalfSpan = PI * Ctx.iSpan / 360.0;
 
 	Metric rErode = Max(0, Min(Ctx.iErode, 100)) / 100.0;
 
@@ -221,10 +221,10 @@ void CEnvironmentGrid::CreateArcNebula (SCreateCtx &Ctx, TArray<STileDesc> *retT
 			//	Figure out our distance from the center angle
 
 			Metric rDistAngle = rAngle - rArcCenterAngle;
-			if (rDistAngle > g_Pi)
-				rDistAngle -= 2.0 * g_Pi;
-			else if (rDistAngle < -g_Pi)
-				rDistAngle += 2.0 * g_Pi;
+			if (rDistAngle > PI)
+				rDistAngle -= 2.0 * PI;
+			else if (rDistAngle < -PI)
+				rDistAngle += 2.0 * PI;
 
 			Metric rDistAngleAbs = Absolute(rDistAngle);
 			if (rDistAngleAbs > rHalfSpan)

@@ -31,7 +31,9 @@ class CRayEffectPainter : public IEffectPainter
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
-		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+
+	protected:
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
 	private:
 		enum EAnimationTypes
@@ -62,8 +64,9 @@ class CRayEffectPainter : public IEffectPainter
 			styleGlow =				2,
 			styleJagged =			3,
 			styleGrainy =			4,
+			styleLightning =		5,
 
-			styleMax =				4,
+			styleMax =				5,
 			};
 
 		typedef TArray<BYTE> OpacityArray;
@@ -75,6 +78,7 @@ class CRayEffectPainter : public IEffectPainter
 		void CalcOval (TArray<Metric> &AdjArray);
 		void CalcTaper (TArray<Metric> &AdjArray);
 		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
+		void PaintLightning (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 
 		CEffectCreator *m_pCreator;
@@ -151,6 +155,7 @@ static LPSTR STYLE_TABLE[] =
 		"smooth",
 		"jagged",
 		"grainy",
+		"lightning",
 
 		NULL,
 	};
@@ -172,7 +177,7 @@ CRayEffectCreator::~CRayEffectCreator (void)
 		delete m_pSingleton;
 	}
 
-IEffectPainter *CRayEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CRayEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //
@@ -423,6 +428,10 @@ void CRayEffectPainter::CalcIntermediates (void)
 						iWidthAdjType = widthAdjJagged;
 						iReshape = widthAdjCone;
 						break;
+
+					case styleLightning:
+						iWidthAdjType = widthAdjCone;
+						break;
 					}
 				break;
 
@@ -454,6 +463,10 @@ void CRayEffectPainter::CalcIntermediates (void)
 						iOpacityTypes = opacityTaperedGlow;
 						iWidthAdjType = widthAdjJagged;
 						iReshape = widthAdjDiamond;
+						break;
+
+					case styleLightning:
+						iWidthAdjType = widthAdjDiamond;
 						break;
 					}
 				break;
@@ -487,6 +500,10 @@ void CRayEffectPainter::CalcIntermediates (void)
 						iWidthAdjType = widthAdjJagged;
 						iReshape = widthAdjOval;
 						break;
+
+					case styleLightning:
+						iWidthAdjType = widthAdjOval;
+						break;
 					}
 				break;
 
@@ -514,6 +531,9 @@ void CRayEffectPainter::CalcIntermediates (void)
 						iColorTypes = colorGlow;
 						iOpacityTypes = opacityGlow;
 						iWidthAdjType = widthAdjJagged;
+						break;
+
+					case styleLightning:
 						break;
 					}
 				break;
@@ -546,6 +566,10 @@ void CRayEffectPainter::CalcIntermediates (void)
 						iOpacityTypes = opacityTaperedGlow;
 						iWidthAdjType = widthAdjJagged;
 						iReshape = widthAdjTapered;
+						break;
+
+					case styleLightning:
+						iWidthAdjType = widthAdjTapered;
 						break;
 					}
 				break;
@@ -926,7 +950,7 @@ void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, 
 		//	Pick the scale and increment
 
 		Metric rScale = rAmplitude * mathRandom(20, 100) / 100.0;
-		Metric rInc = 2.0 * g_Pi / iPeakSize;
+		Metric rInc = 2.0 * PI / iPeakSize;
 
 		//	Generate this cycle
 
@@ -1042,9 +1066,18 @@ void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	int xFrom = x;
 	int yFrom = y;
 
-	//	Paint the ray
+	//	Paint the effect
 
-	PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+	switch (m_iStyle)
+		{
+		case styleLightning:
+			PaintLightning(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+			break;
+
+		default:
+			PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+			break;
+		}
 
 	DEBUG_CATCH
 	}
@@ -1071,9 +1104,80 @@ void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVecto
 	int yFrom;
 	Ctx.XFormRel.Transform(vHitPos, &xFrom, &yFrom);
 
-	//	Paint the ray
+	//	Paint the effect
 
-	PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+	switch (m_iStyle)
+		{
+		case styleLightning:
+			PaintLightning(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+			break;
+
+		default:
+			PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+			break;
+		}
+	}
+
+void CRayEffectPainter::PaintLightning (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx)
+
+//	PaintLightning
+//
+//	Paint a lightning effect
+
+	{
+	int i;
+
+	//	Figure out how many bolts to paint based on intensity
+
+	int iBoltCount = Max(1, Min(m_iIntensity / 5, 20));
+	Metric rChaos = 0.2;
+
+	//	Generate some intermediates
+
+	CVector vCenterLine = CVector(xTo, yTo) - CVector(xFrom, yFrom);
+	Metric rLength;
+	CVector vAxis = vCenterLine.Normal(&rLength);
+	CVector vTangent = vAxis.Perpendicular();
+
+	//	We fade at the end
+
+	CG32bitPixel rgbTo = CG32bitPixel(m_rgbSecondaryColor, 0);
+
+	//	Paint each bolt
+
+	for (i = 0; i < iBoltCount; i++)
+		{
+		//	Each bolt consists of two segments. We pick a middle point along the ray 
+		//	shape to divide the two segments.
+		//
+		//	Start by picking a value from 0.2 to 0.8
+
+		Metric rMid = mathRandom(20, 80) / 100.0;
+
+		//	Get the width of the shape at this point along the ray
+
+		int iWidthMid = (int)(m_iLengthCount * rMid);
+		Metric rWidthAdj = (mathRandom(1, 2) == 1 ? m_WidthAdjTop[iWidthMid] : -m_WidthAdjBottom[iWidthMid]) * m_iWidth * 0.5;
+
+		//	Compute opacity at midpoint and then compute the midpoint color
+
+		CG32bitPixel rgbMid = CG32bitPixel::Composite(m_rgbPrimaryColor, rgbTo, rMid);
+
+		//	vMid is the midpoint, relative to the front of the ray
+
+		CVector vMidLine = vAxis * rMid * rLength;
+		CVector vMid = vMidLine + (vTangent * rWidthAdj);
+
+		//	Convert to screen coordinates
+
+		int xMid = xFrom + (int)vMid.GetX();
+		int yMid = yFrom + (int)vMid.GetY();
+
+		//	Draw the two bolts
+
+		DrawLightning(Dest, xFrom, yFrom, xMid, yMid, m_rgbPrimaryColor, rgbMid, rChaos);
+		DrawLightning(Dest, xMid, yMid, xTo, yTo, rgbMid, rgbTo, rChaos);
+		}
 	}
 
 void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx)
@@ -1226,7 +1330,7 @@ bool CRayEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void CRayEffectPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+void CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //

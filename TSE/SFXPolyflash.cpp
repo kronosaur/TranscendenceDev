@@ -25,7 +25,7 @@ class CPolyflashPainter : public IEffectPainter
 
 //	CPolyflashEffectCreator object
 
-IEffectPainter *CPolyflashEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CPolyflashEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

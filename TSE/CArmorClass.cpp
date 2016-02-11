@@ -16,19 +16,23 @@
 #define DEVICE_DAMAGE_ADJ_ATTRIB				CONSTLIT("deviceDamageAdj")
 #define DEVICE_DAMAGE_IMMUNE_ATTRIB				CONSTLIT("deviceDamageImmune")
 #define DEVICE_HP_BONUS_ATTRIB					CONSTLIT("deviceHPBonus")
+#define DISTRIBUTE_ATTRIB						CONSTLIT("distribute")
 #define DISINTEGRATION_IMMUNE_ATTRIB			CONSTLIT("disintegrationImmune")
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
+#define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
 #define INSTALL_COST_ATTRIB						CONSTLIT("installCost")
 #define INSTALL_COST_ADJ_ATTRIB					CONSTLIT("installCostAdj")
 #define MAX_HP_BONUS_ATTRIB						CONSTLIT("maxHPBonus")
+#define MAX_SPEED_BONUS_ATTRIB					CONSTLIT("maxSpeedBonus")
 #define PHOTO_RECHARGE_ATTRIB					CONSTLIT("photoRecharge")
 #define PHOTO_REPAIR_ATTRIB						CONSTLIT("photoRepair")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define RADIATION_IMMUNE_ATTRIB					CONSTLIT("radiationImmune")
 #define REFLECT_ATTRIB							CONSTLIT("reflect")
 #define REGEN_ATTRIB							CONSTLIT("regen")
+#define REPAIR_COST_ATTRIB						CONSTLIT("repairCost")
 #define REPAIR_COST_ADJ_ATTRIB					CONSTLIT("repairCostAdj")
 #define REPAIR_RATE_ATTRIB						CONSTLIT("repairRate")
 #define REPAIR_TECH_ATTRIB						CONSTLIT("repairTech")
@@ -58,6 +62,7 @@
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
 #define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
@@ -67,7 +72,6 @@
 static CObjectClass<CArmorClass>g_Class(OBJID_CARMORCLASS, NULL);
 
 static char g_HitPointsAttrib[] = "hitPoints";
-static char g_RepairCostAttrib[] = "repairCost";
 static char g_DamageAdjAttrib[] = "damageAdj";
 static char g_ItemIDAttrib[] = "itemID";
 #define MAX_REFLECTION_CHANCE		95
@@ -238,7 +242,8 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Create a hit effect. (Many weapons show an effect even if no damage was
 	//	done.)
 
-	Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
+	if (!Ctx.bNoHitEffect)
+		Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
 
 	//	If no damage has reached us, then we're done
 
@@ -277,15 +282,12 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 //	AccumulateAttributes
 //
-//	Returns list of display attributes
+//	Returns list of display attributes. NOTE: We only include our intrinsic 
+//	attributes--enhancements are added later by the caller.
 
 	{
 	int i;
-
-	//	Get modifications
-
 	int iLevel = m_pItemType->GetLevel();
-	const CItemEnhancement &Mods = ItemCtx.GetMods();
 
 	//	If we require a higher level to repair
 
@@ -294,7 +296,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	//	Radiation 
 
-	if (m_fRadiationImmune || Mods.IsRadiationImmune())
+	if (m_fRadiationImmune)
 		{
 		if (iLevel < RADIATION_IMMUNE_LEVEL)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radiation immune")));
@@ -309,12 +311,12 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 	bool bCheckedEMP = false;
 	bool bCheckedDevice = false;
 
-	if ((m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
-			&& (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune())
-			&& (m_iDeviceDamageAdj < 100 || Mods.IsDeviceDamageImmune()))
+	if ((m_iBlindingDamageAdj == 0)
+			&& (m_iEMPDamageAdj == 0)
+			&& (m_iDeviceDamageAdj < 100))
 		{
 		if (iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ion-effect immune")));
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("ionize immune")));
 
 		bCheckedBlind = true;
 		bCheckedEMP = true;
@@ -325,7 +327,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	if (!bCheckedBlind)
 		{
-		if (m_iBlindingDamageAdj == 0 || Mods.IsBlindingImmune())
+		if (m_iBlindingDamageAdj == 0)
 			{
 			if (iLevel < BLIND_IMMUNE_LEVEL)
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("blind immune")));
@@ -345,7 +347,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	if (!bCheckedEMP)
 		{
-		if (m_iEMPDamageAdj == 0 || Mods.IsEMPImmune())
+		if (m_iEMPDamageAdj == 0)
 			{
 			if (iLevel < EMP_IMMUNE_LEVEL)
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("EMP immune")));
@@ -365,10 +367,10 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	if (!bCheckedDevice)
 		{
-		if (m_iDeviceDamageAdj < 100 || Mods.IsDeviceDamageImmune())
+		if (m_iDeviceDamageAdj < 100)
 			{
 			if (iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device protecting")));
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("device protect")));
 			}
 		else if (iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL)
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("device vulnerable")));
@@ -376,46 +378,50 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	//	Disintegration
 
-	if (m_fDisintegrationImmune || Mods.IsDisintegrationImmune())
+	if (m_fDisintegrationImmune)
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("disintegration immune")));
 
 	//	Shatter
 
-	if (IsShatterImmune(ItemCtx))
+	if (m_fShatterImmune)
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shatter immune")));
 
 	//	Shield interference
 
-	if (m_fShieldInterference || Mods.IsShieldInterfering())
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("shield interfering")));
+	if (m_fShieldInterference)
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("no shields")));
 
 	//	Photo repair
 
-	if (m_fPhotoRepair || Mods.IsPhotoRegenerating())
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("photo-repair")));
+	if (m_fPhotoRepair)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("photo-regen")));
 
 	//	Solar power
 
-	if (m_fPhotoRecharge || Mods.IsPhotoRecharge())
+	if (m_fPhotoRecharge)
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("solar")));
 
 	//	Regeneration
 
-	if ((!m_Regen.IsEmpty() && !m_fPhotoRepair) || Mods.IsRegenerating())
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("regenerating")));
+	if (!m_Regen.IsEmpty() && !m_fPhotoRepair)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("regen")));
 
 	//	Decay
 
-	if (!m_Decay.IsEmpty() || Mods.IsDecaying())
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("decaying")));
+	if (!m_Decay.IsEmpty())
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("decay")));
 
-	//	Reflection
+	//	Distribution
+
+	if (!m_Distribute.IsEmpty())
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("distributing")));
+
+	//	Per damage-type bonuses
 
 	for (i = 0; i < damageCount; i++)
 		{
-		if (m_Reflective.InSet((DamageTypes)i)
-				|| (Mods.IsReflective() && Mods.GetDamageType() == i))
-			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
+		if (m_Reflective.InSet((DamageTypes)i))
+			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflect"), GetDamageShortName((DamageTypes)i))));
 		}
 	}
 
@@ -488,12 +494,12 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	int iDamageLevel = Ctx.Damage.GetArmorDamageLevel();
 	if (iDamageLevel > 0)
-		Ctx.iDamage = (CalcArmorDamageAdj(Ctx.Damage) * Ctx.iDamage + 50) / 100;
+		Ctx.iDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(Ctx.Damage));
 
 	//	Adjust for damage type
 
 	int iDamageAdj = GetDamageAdj((pArmor ? pArmor->GetMods() : CItemEnhancement()), Ctx.Damage);
-	Ctx.iDamage = (iDamageAdj * Ctx.iDamage + 50) / 100;
+	Ctx.iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
 	}
 
 int CArmorClass::CalcArmorDamageAdj (const DamageDesc &Damage) const
@@ -589,6 +595,11 @@ int CArmorClass::CalcBalance (void)
 			iBalance += m_Regen.GetHPPerEra();
 		else
 			iBalance += 5 * m_Regen.GetHPPerEra();
+		}
+
+	if (!m_Distribute.IsEmpty())
+		{
+		iBalance += m_Distribute.GetHPPerEra();
 		}
 
 	//	Stealth
@@ -730,7 +741,7 @@ int CArmorClass::CalcBalance (void)
 	//	Repair cost
 
 	int iStdRepairCost = STD_STATS[m_iRepairTech - 1].iRepairCost;
-	int iDiff = iStdRepairCost - m_iRepairCost;
+	int iDiff = iStdRepairCost - (int)CEconomyType::Default()->Exchange(m_RepairCost);
 	if (iDiff < 0)
 		iBalance += Max(-8, 2 * iDiff / iStdRepairCost);
 	else if (iDiff > 0)
@@ -875,7 +886,16 @@ int CArmorClass::CalcPowerUsed (CInstalledArmor *pArmor)
 //	only applies to powered armor)
 
 	{
-	return m_iPowerUse;
+	//	If we did work (regenerated), then we use full power. Otherwise, we use
+	//	idle power.
+	//
+	//	NOTE: By default, idle power is the same as full power, but some armors
+	//	have different values.
+
+	if (pArmor->ConsumedPower())
+		return m_iPowerUse;
+	else
+		return m_iIdlePowerUse;
 	}
 
 ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor)
@@ -909,10 +929,22 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	if (error = pArmor->m_Decay.InitFromXML(Ctx, pDesc, DECAY_ATTRIB, DECAY_RATE_ATTRIB, NULL_STR, TICKS_PER_UPDATE))
 		return error;
 
-	//	Install cost based on level
+	if (error = pArmor->m_Distribute.InitFromXML(Ctx, pDesc, DISTRIBUTE_ATTRIB, NULL_STR, NULL_STR, TICKS_PER_UPDATE))
+		return error;
+
+	//	We allow for explicit install cost (in which case we expect a currency).
+	//	If no cost specified, we take the default (which is in credits).
+	//	Either result is adjusted.
+
+	if (error = pArmor->m_InstallCost.InitFromXML(Ctx, pDesc->GetAttribute(INSTALL_COST_ATTRIB)))
+		return error;
+
+	if (pArmor->m_InstallCost.IsEmpty())
+		pArmor->m_InstallCost.Init(STD_STATS[iLevel - 1].iInstallCost);
 
 	int iInstallCostAdj = pDesc->GetAttributeIntegerBounded(INSTALL_COST_ADJ_ATTRIB, 0, -1, 100);
-	pArmor->m_iInstallCost = iInstallCostAdj * pDesc->GetAttributeIntegerBounded(INSTALL_COST_ATTRIB, 0, -1, STD_STATS[iLevel - 1].iInstallCost) / 100;
+	if (iInstallCostAdj != 100)
+		pArmor->m_InstallCost.Adjust(iInstallCostAdj);
 
 	//	Repair tech defaults to level
 
@@ -920,8 +952,15 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	//	Repair cost is based on repair tech
 
+	if (error = pArmor->m_RepairCost.InitFromXML(Ctx, pDesc->GetAttribute(REPAIR_COST_ATTRIB)))
+		return error;
+
+	if (pArmor->m_RepairCost.IsEmpty())
+		pArmor->m_RepairCost.Init(STD_STATS[pArmor->m_iRepairTech - 1].iRepairCost);
+
 	int iRepairCostAdj = pDesc->GetAttributeIntegerBounded(REPAIR_COST_ADJ_ATTRIB, 0, -1, 100);
-	pArmor->m_iRepairCost = iRepairCostAdj * pDesc->GetAttributeIntegerBounded(CONSTLIT(g_RepairCostAttrib), 0, -1, STD_STATS[pArmor->m_iRepairTech - 1].iRepairCost) / 100;
+	if (iRepairCostAdj != 100)
+		pArmor->m_RepairCost.Adjust(iRepairCostAdj);
 
 	//	Load the new damage adjustment structure
 
@@ -985,8 +1024,12 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	if (pArmor->m_iStealth == 0)
 		pArmor->m_iStealth = CSpaceObject::stealthNormal;
 
-	pArmor->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0);
 	pArmor->m_iMaxHPBonus = pDesc->GetAttributeIntegerBounded(MAX_HP_BONUS_ATTRIB, 0, -1, 150);
+
+	//	Power use
+
+	pArmor->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0);
+	pArmor->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pArmor->m_iPowerUse);
 
 	//	Load reflection
 
@@ -1002,6 +1045,10 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 		sCriteria = CONSTLIT("s");
 
 	CItem::ParseCriteria(sCriteria, &pArmor->m_DeviceCriteria);
+
+	//	Ship speed bonus
+
+	pArmor->m_rMaxSpeedBonus = pDesc->GetAttributeDoubleBounded(MAX_SPEED_BONUS_ATTRIB, -100.0, 1000.0, 0.0);
 
 	//	Done
 
@@ -1076,11 +1123,11 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = sResult;
 		}
 	else if (strEquals(sField, FIELD_REPAIR_COST))
-		*retsValue = strFromInt(m_iRepairCost);
+		*retsValue = strFromInt(GetRepairCost());
 	else if (strEquals(sField, FIELD_REGEN))
 		*retsValue = strFromInt((int)m_Regen.GetHPPer180());
 	else if (strEquals(sField, FIELD_INSTALL_COST))
-		*retsValue = strFromInt(m_iInstallCost);
+		*retsValue = strFromInt(GetInstallCost());
 	else if (strEquals(sField, FIELD_SHIELD_INTERFERENCE))
 		{
 		if (m_fShieldInterference)
@@ -1262,6 +1309,12 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
+	//	Enhancements
+
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+
+	//	Get the property
+
 	if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return CC.CreateBool(IsBlindingDamageImmune(Ctx));
 
@@ -1288,6 +1341,9 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 		else
 			return CC.CreateInteger(GetMaxHP(Ctx));
 		}
+
+	else if (strEquals(sName, PROPERTY_HP_BONUS))
+		return m_DamageAdj.GetHPBonusProperty(pEnhancements);
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx));
@@ -1522,6 +1578,14 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_DamageAdj.Bind(Ctx, g_pUniverse->GetArmorDamageAdj(m_iDamageAdjLevel)))
 		return error;
 
+	//	Prices
+
+	if (error = m_InstallCost.Bind(Ctx))
+		return error;
+
+	if (error = m_RepairCost.Bind(Ctx))
+		return error;
+
 	//	Cache some events
 
 	CItemType *pType = GetItemType();
@@ -1539,7 +1603,13 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	{
 	DEBUG_TRY
 
+	int i;
 	bool bModified = false;
+
+	//	Default to not consuming power. Below we set the flag is we do any kind 
+	//	of regeneration work.
+
+	pArmor->SetConsumePower(false);
 
 	//	Compute total regeneration by adding mods to intrinsic
 
@@ -1564,9 +1634,11 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 
 			CRegenDesc *pRegen;
 			CRegenDesc RegenWithMod;
-			if (pArmor->GetMods().IsRegenerating()	|| pArmor->GetMods().IsPhotoRegenerating())
+			if (pArmor->GetMods().IsRegenerating() || pArmor->GetMods().IsPhotoRegenerating())
 				{
-				RegenWithMod.Init(4);
+				//	Standard regeneration is 1% of armor HP per 180 ticks
+
+				RegenWithMod.InitFromRegen(0.01 * GetStdHP(m_pItemType->GetLevel()), TICKS_PER_UPDATE);
 				RegenWithMod.Add(m_Regen);
 				pRegen = &RegenWithMod;
 				}
@@ -1598,6 +1670,7 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 					pArmor->IncCharges(pObj, -iHP);
 
 				pArmor->IncHitPoints(iHP);
+				pArmor->SetConsumePower(true);
 				bModified = true;
 				}
 			}
@@ -1661,7 +1734,131 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 		//	unit, this means that a single armor plate can support up to 15MW when
 		//	right next to the sun.
 
-		pObj->Refuel(iIntensity);
+		pObj->Refuel((Metric)iIntensity);
+		}
+
+	//	See if we distribute HPs to other segments of our type
+
+	if (!m_Distribute.IsEmpty() 
+			&& pArmor->IsPrime())
+		{
+		//	Only works on ships (with segments).
+		//	LATER: Introduce the concept of segments to stations.
+
+		CShip *pShip = pObj->AsShip();
+
+		//	Compute the HP that we distribute this cycle
+
+		int iHP = m_Distribute.GetRegen(iTick, TICKS_PER_UPDATE);
+		if (pShip && iHP > 0)
+			{
+			TArray<int> MaxHP;
+			MaxHP.InsertEmpty(pShip->GetArmorSectionCount());
+
+			//	Compute some stats for all armor segments of the same type.
+
+			int iSegCount = 0;
+			int iTotalMaxHP = 0;
+			int iTotalHP = 0;
+			int iTotalRepairNeeded = 0;
+			int iMinRepairNeeded = 1000000000;
+			int iMaxRepairNeeded = 0;
+			for (i = 0; i < pShip->GetArmorSectionCount(); i++)
+				{
+				CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+				if (pDistArmor->GetClass() != pArmor->GetClass())
+					continue;
+
+				CItemCtx ItemCtx(pObj, pDistArmor);
+
+				MaxHP[i] = GetMaxHP(ItemCtx);
+
+				iSegCount++;
+				int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+
+				if (iRepairNeeded < iMinRepairNeeded)
+					iMinRepairNeeded = iRepairNeeded;
+				if (iRepairNeeded > iMaxRepairNeeded)
+					iMaxRepairNeeded = iRepairNeeded;
+
+				iTotalRepairNeeded += MaxHP[i] - pDistArmor->GetHitPoints();
+				}
+
+			//	If we need repairs, distribute
+
+			int iAverageRepairNeeded = (iTotalRepairNeeded / iSegCount);
+			if ((iMaxRepairNeeded > iAverageRepairNeeded)
+					&& (iMinRepairNeeded < iAverageRepairNeeded))
+				{
+				int iHPRemoved = 0;
+
+				//	Loop and remove HP from any armor segment that has more
+				//	HP than average, without exceeding our iHP budget.
+
+				for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved < iHP; i++)
+					{
+					CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+					if (pDistArmor->GetClass() != pArmor->GetClass())
+						continue;
+
+					int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+					if (iRepairNeeded < iAverageRepairNeeded)
+						{
+						int iHPToRemove = Min(iHP - iHPRemoved, iAverageRepairNeeded - iRepairNeeded);
+						pDistArmor->IncHitPoints(-iHPToRemove);
+						iHPRemoved += iHPToRemove;
+						}
+					}
+
+				//	Now loop and distribute the HP to any armor segment that has
+				//	less than average.
+
+				for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved > 0; i++)
+					{
+					CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+					if (pDistArmor->GetClass() != pArmor->GetClass())
+						continue;
+
+					int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+					if (iRepairNeeded > iAverageRepairNeeded)
+						{
+						int iHPToAdd = Min(iHPRemoved, iRepairNeeded - iAverageRepairNeeded);
+						pDistArmor->IncHitPoints(iHPToAdd);
+						iHPRemoved -= iHPToAdd;
+						}
+					}
+
+				//	This should never happen, but if we have some HP left, then 
+				//	add it back to each segment.
+
+				if (iHPRemoved > 0)
+					{
+					ASSERT(false);
+
+					for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved > 0; i++)
+						{
+						CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+						if (pDistArmor->GetClass() != pArmor->GetClass())
+							continue;
+
+						int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+						if (iRepairNeeded > 0)
+							{
+							pDistArmor->IncHitPoints(1);
+							iHPRemoved -= 1;
+							}
+						}
+					}
+
+				//	We've modified the armor
+				//
+				//	LATER: For now, only the prime segment will consume power, so we need to
+				//	compute the number of distributed segments in the CalcPowerUsed method.
+
+				pArmor->SetConsumePower(true);
+				bModified = true;
+				}
+			}
 		}
 
 	//	If this armor interferes with shields, then lower shields now

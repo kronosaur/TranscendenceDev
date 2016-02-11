@@ -214,6 +214,8 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_ADD_ITEM				116
 #define FN_OBJ_GET_OVERLAY_PROPERTY	117
 #define FN_OBJ_SET_OVERLAY_PROPERTY	118
+#define FN_OBJ_GET_SHIP_SELL_PRICE	119
+#define FN_OBJ_GET_SHIP_BUY_PRICE	120
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -348,6 +350,7 @@ ICCItem *fnStationType (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_SYS_CREATE_ENVIRONMENT		6
 #define FN_SYS_CREATE_TERRITORY			7
 #define FN_SYS_CREATE_LOOKUP			8
+#define FN_SYS_CREATE_HIT_EFFECT		9
 
 ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 
@@ -485,6 +488,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_RESOURCE_CREATE_IMAGE_DESC	1
+#define FN_RESOURCE_COLOR_BLEND			2
 
 ICCItem *fnResourceGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -646,10 +650,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmGetData item attrib) -> data",
 			"vs",	0,	},
 
-		{	"itmGetDefaultCurrency",		fnItemTypeGet,	FN_ITEM_DEFAULT_CURRENCY,
-			"(itmGetDefaultCurrency item|type) -> currency",
-			"v",	0,	},
-
 		{	"itmGetFrequency",				fnItemTypeGet,		FN_ITEM_FREQUENCY,
 			"(itmGetFrequency item|type [level]) -> frequency",
 			"v*",	0,	},
@@ -704,6 +704,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'canBeDisabled\n"
 			"   'category\n"
 			"   'charges\n"
+			"   'components\n"
+			"   'currency\n"
 			"   'damaged\n"
 			"   'description\n"
 			"   'deviceDamageImmune\n"
@@ -1183,7 +1185,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objDamage",					fnObjGet,		FN_OBJ_DAMAGE,	
-			"(objDamage obj weaponType objSource [pos])",
+			"(objDamage obj weaponType objSource [pos] [options]) -> result\n\n"
+				
+			"result:\n\n"
+
+			"   'noDamage\n"
+			"   'absorbedByShields\n"
+			"   'armorHit\n"
+			"   'structuralHit\n"
+			"   'destroyed\n\n"
+
+			"options:\n\n"
+
+			"   'fullResult\n"
+			"   'noHitEffect",
+
 			"ivv*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objDepleteShields",			fnObjSet,		FN_OBJ_DEPLETE_SHIELDS,	
@@ -1259,10 +1275,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetDataField obj field) -> data",
 			"is",	0,	},
 
-		{	"objGetDefaultCurrency",		fnObjGet,		FN_OBJ_DEFAULT_CURRENCY,
-			"(objGetDefaultCurrency obj) -> currency",
-			"i",	0,	},
-
 		{	"objGetDestiny",				fnObjGetOld,		FN_OBJ_DESTINY,
 			"(objGetDestiny obj) -> 0-359",
 			NULL,	0,	},
@@ -1326,9 +1338,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'enabled\n"
 			"   'fireArc\n"
+			"   'hp\n"
 			"   'installDevicePrice\n"
 			"   'installItemStatus\n"
 			"   'linkedFireOptions\n"
+			"   'maxHP\n"
 			"   'pos\n"
 			"   'removeDevicePrice\n"
 			"   'removeDeviceStatus\n"
@@ -1431,11 +1445,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'category\n"
 			"   'cyberDefenseLevel\n"
+			"   'dockingPorts\n"
 			"   'hasDockingPorts\n"
 			"   'id\n"
 			"   'known\n"
+			"   'mass\n"
 			"   'paintLayer\n"
 			"   'playerMissionsGiven\n"
+			"   'scale\n"
 			"   'underAttack\n"
 			"\n"
 			"property (ships)\n\n"
@@ -1468,6 +1485,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'abandoned\n"
 			"   'barrier\n"
+			"   'currency\n"
 			"   'destNodeID\n"
 			"   'destStargateID\n"
 			"   'dockingPortCount\n"
@@ -1504,6 +1522,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetShieldLevel",			fnObjGetOld,		FN_OBJ_SHIELD_LEVEL,
 			"(objGetShieldLevel obj) -> 0-100% (or -1 for no shields)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objGetShipBuyPrice",			fnObjGet,		FN_OBJ_GET_SHIP_BUY_PRICE,	
+			"(objGetShipBuyPrice obj shipObj) -> price (at which obj buys ship)",
+			"ii",		0,	},
+
+		{	"objGetShipSellPrice",			fnObjGet,		FN_OBJ_GET_SHIP_SELL_PRICE,	
+			"(objGetShipSellPrice obj shipObj) -> price (at which obj sells ship)",
+			"ii",		0,	},
 
 		{	"objGetShipwreckType",			fnObjGet,		FN_OBJ_SHIPWRECK_TYPE,
 			"(objGetShipwreckType obj) -> unid",
@@ -2079,6 +2105,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//		pos is either a position vector or a gate object
 			"vvi",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"sysCreateHitEffect",				fnSystemCreate,		FN_SYS_CREATE_HIT_EFFECT,
+			"(sysCreateHitEffect weaponUNID hitObj hitPos hitDir damageHP) -> True/Nil",
+			"iivii",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"sysCreateLookup",				fnSystemCreate,	FN_SYS_CREATE_LOOKUP,
 			"(sysCreateLookup tableName orbit) -> True/Nil",
 			"sv",	PPFLAG_SIDEEFFECTS,	},
@@ -2620,6 +2650,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	Resource functions
 		//	------------------
 
+		{	"resColorBlend",				fnResourceGet,	FN_RESOURCE_COLOR_BLEND,
+			"(resColorBlend rgbDest rgbSource srcOpacity) -> rgbColor",
+			"ssn",	0,	},
+
 		{	"resCreateImageDesc",			fnResourceGet,	FN_RESOURCE_CREATE_IMAGE_DESC,
 			"(resCreateImageDesc imageUNID x y width height) -> imageDesc",
 			"iiiii",	0,	},
@@ -2740,6 +2774,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"objGetDefaultCurrency",		fnObjGet,		FN_OBJ_DEFAULT_CURRENCY,
+			"DEPRECATED: Use (objGetProperty obj 'currency) instead.",
+			"i",	0,	},
+
+		{	"itmGetDefaultCurrency",		fnItemTypeGet,	FN_ITEM_DEFAULT_CURRENCY,
+			"DEPRECATED: Use (itmGetProperty item 'currency) instead.",
+			"v",	0,	},
 
 		{	"shpCanInstallArmor",			fnShipSet,			FN_SHIP_CAN_INSTALL_ARMOR,
 			"DEPRECATED: Use objCanInstallItem instead.",
@@ -4932,11 +4974,8 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 
 		case FN_OBJ_ARMOR_NAME:
 			{
-			CString sName;
-			const CPlayerSettings *pPlayer = pShip->GetClass()->GetPlayerSettings();
-			const SArmorSegmentImageDesc *pSegmentDesc = (pPlayer ? pPlayer->GetArmorDesc(iArmorSeg) : NULL);
-
-			pResult = (pSegmentDesc ? pCC->CreateString(pSegmentDesc->sName) : pCC->CreateNil());
+			CString sName = pShip->GetClass()->GetHullSectionName(iArmorSeg);
+			pResult = (!sName.IsBlank() ? pCC->CreateString(sName) : pCC->CreateNil());
 			break;
 			}
 
@@ -5171,13 +5210,37 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pDesc == NULL)
 				return pCC->CreateNil();
 
-			//	Position
+			//	Optional arguments
+
+			int iArg = 3;
+
+			//	See if this is a position
 
 			CVector vHitPos;
-			if (pArgs->GetCount() >= 4)
-				vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(3));
+			if (pArgs->GetCount() > iArg
+					&& IsVectorItem(pArgs->GetElement(iArg)))
+				vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(iArg++));
 			else
 				vHitPos = pObj->GetPos();
+
+			//	Get options
+
+			bool bFullResult = false;
+			bool bNoHitEffect = false;
+			if (pArgs->GetCount() > iArg)
+				{
+				ICCItem *pOptions = pArgs->GetElement(iArg++);
+				for (int i = 0; i < pOptions->GetCount(); i++)
+					{
+					CString sOption = pOptions->GetElement(i)->GetStringValue();
+					if (strEquals(sOption, CONSTLIT("fullResult")))
+						bFullResult = true;
+					else if (strEquals(sOption, CONSTLIT("noHitEffect")))
+						bNoHitEffect = true;
+					else
+						return pCC->CreateError(CONSTLIT("objDamage: Invalid option"), pOptions->GetElement(i));
+					}
+				}
 
 			//	Direction
 
@@ -5196,6 +5259,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.vHitPos = vHitPos;
 			Ctx.Attacker = GetDamageSourceArg(*pCC, pArgs->GetElement(2));
 			Ctx.pCause = Ctx.Attacker.GetObj();
+			Ctx.bNoHitEffect = bNoHitEffect;
 
 			EDamageResults result = pObj->Damage(Ctx);
 
@@ -5213,16 +5277,29 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	No need to expose the concept of passthrough
 
-			if (result == damagePassthrough)
+			if (result == damagePassthrough
+					|| result == damageNoDamageNoPassthrough)
 				result = damageNoDamage;
-			else if (result == damagePassthroughDestroyed)
-				result = damageDestroyed;
-			else if (result == damageDestroyedAbandoned)
+			else if (result == damagePassthroughDestroyed
+					|| result == damageDestroyedAbandoned)
 				result = damageDestroyed;
 
-			//	Return result
+			//	Compose result
 
-			return pCC->CreateString(GetDamageResultsName(result));
+			if (bFullResult)
+				{
+				ICCItem *pResult = pCC->CreateSymbolTable();
+
+				pResult->SetStringAt(*pCC, CONSTLIT("result"), GetDamageResultsName(result));
+				pResult->SetIntegerAt(*pCC, CONSTLIT("armorSeg"), Ctx.iSectHit);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("overlayHitDamage"), Ctx.iOverlayHitDamage);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("shieldHitDamage"), Ctx.iShieldHitDamage);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("armorHitDamage"), Ctx.iArmorHitDamage);
+
+				return pResult;
+				}
+			else
+				return pCC->CreateString(GetDamageResultsName(result));
 			}
 
 		case FN_OBJ_DATA_FIELD:
@@ -5513,10 +5590,17 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			ICCItem *pData = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : NULL);
 
+			//	Generate context
+
+			STradeServiceCtx ServiceCtx;
+			ServiceCtx.iService = serviceCustom;
+			ServiceCtx.pProvider = pObj;
+			ServiceCtx.pCurrency = pObj->GetDefaultEconomy();
+
 			//	Fire event
 
 			int iPriceAdj;
-			if (!g_pUniverse->GetDesignCollection().FireGetGlobalPlayerPriceAdj(serviceCustom, pObj, CItem(), pData, &iPriceAdj))
+			if (!g_pUniverse->GetDesignCollection().FireGetGlobalPlayerPriceAdj(ServiceCtx, pData, &iPriceAdj))
 				return pCC->CreateNil();
 
 			//	Done
@@ -5584,6 +5668,36 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateInteger(iValue);
 			else
 				return pCC->CreateNil();
+			}
+
+		case FN_OBJ_GET_SHIP_BUY_PRICE:
+			{
+			CSpaceObject *pShip = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			if (pShip == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid ship"), pArgs->GetElement(1));
+
+			//	Get the value from the station that is selling
+
+			int iValue;
+			if (!pObj->GetShipBuyPrice(pShip, 0, &iValue) || iValue <= 0)
+				return pCC->CreateNil();
+
+			return pCC->CreateInteger(iValue);
+			}
+
+		case FN_OBJ_GET_SHIP_SELL_PRICE:
+			{
+			CSpaceObject *pShip = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			if (pShip == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid ship"), pArgs->GetElement(1));
+
+			//	Get the value from the station that is selling
+
+			int iValue;
+			if (!pObj->GetShipSellPrice(pShip, 0, &iValue) || iValue <= 0)
+				return pCC->CreateNil();
+
+			return pCC->CreateInteger(iValue);
 			}
 
 		case FN_OBJ_GET_STARGATE_ID:
@@ -7491,6 +7605,29 @@ ICCItem *fnResourceGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_RESOURCE_COLOR_BLEND:
+			{
+			CG32bitPixel rgbDest = ::LoadRGBColor(pArgs->GetElement(0)->GetStringValue());
+			CG32bitPixel rgbSrc = ::LoadRGBColor(pArgs->GetElement(1)->GetStringValue());
+			
+			//	The slider is either an integer from 0-255 or a double from 0-1.
+
+			Metric rFade;
+			if (pArgs->GetElement(2)->IsDouble())
+				rFade = pArgs->GetElement(2)->GetDoubleValue();
+			else
+				rFade = (Metric)pArgs->GetElement(2)->GetIntegerValue() / 255.0;
+
+			//	Make sure we're in range and generate the new color
+
+			rFade = Max(0.0, Min(rFade, 1.0));
+			CG32bitPixel rgbResult = CG32bitPixel::Blend(rgbDest, rgbSrc, rFade);
+
+			//	Return the color
+
+			return pCC->CreateString(GetRGBColor(rgbResult));
+			}
+
 		case FN_RESOURCE_CREATE_IMAGE_DESC:
 			//	For now, image descs are pretty simple
 			return pArgs->Reference();
@@ -7822,7 +7959,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			break;
 
 		case FN_SHIP_FUEL:
-			pResult = pCC->CreateInteger(pShip->GetFuelLeft());
+			pResult = pCC->CreateDouble(Min(pShip->GetFuelLeft(), pShip->GetMaxFuel()));
 			break;
 
 		case FN_SHIP_HAS_AUTOPILOT:
@@ -8416,8 +8553,8 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_FUEL:
 			{
-			pShip->ConsumeFuel(pArgs->GetElement(1)->GetIntegerValue());
-			pResult = pCC->CreateInteger(pShip->GetFuelLeft());
+			pShip->ConsumeFuel(pArgs->GetElement(1)->GetDoubleValue());
+			pResult = pCC->CreateDouble(Min(pShip->GetFuelLeft(), pShip->GetMaxFuel()));
 			pArgs->Discard(pCC);
 			break;
 			}
@@ -8483,15 +8620,11 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				{
 				//	Figure out how much fuel each item contains
 
-				int iFuelPerItem = strToInt(Item.GetType()->GetData(), 0, NULL);
-				if (iFuelPerItem == 0)
-					iFuelPerItem = 1;
+				Metric rFuelPerItem = Max(1.0, strToDouble(Item.GetType()->GetData(), 0.0, NULL));
 
-				int iFuelNeeded = pShip->GetMaxFuel() - pShip->GetFuelLeft();
-				int iWhole = (iFuelNeeded / iFuelPerItem);
-				int iPartial = (iFuelNeeded % iFuelPerItem);
-				if (iPartial > (iFuelPerItem / 2))
-					iWhole++;
+				Metric rFuelNeeded = Max(0.0, pShip->GetMaxFuel() - pShip->GetFuelLeft());
+				Metric rUnits = (rFuelNeeded / rFuelPerItem);
+				int iWhole = (int)(rUnits + 0.5);
 
 				pResult = pCC->CreateInteger(iWhole);
 				}
@@ -9613,6 +9746,50 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger((int)pFlotsam);
 			}
 
+		case FN_SYS_CREATE_HIT_EFFECT:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			//	Get the weapon descriptor
+
+			CWeaponFireDesc *pDesc;
+			CItemType *pItemType = g_pUniverse->FindItemType(pArgs->GetElement(0)->GetIntegerValue());
+			if (pItemType == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
+
+			if (pItemType->IsMissile())
+				pDesc = pItemType->GetMissileDesc();
+			else
+				{
+				CDeviceClass *pClass = pItemType->GetDeviceClass();
+				CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
+				if (pWeapon == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
+
+				pDesc = pWeapon->GetVariant(0);
+				}
+
+			if (pDesc == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
+
+			//	Get Parameters to initialize context
+
+			SDamageCtx Ctx;
+			Ctx.pDesc = pDesc;
+			Ctx.pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			Ctx.vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
+			Ctx.iDirection = pArgs->GetElement(3)->GetIntegerValue();
+			Ctx.Damage = pDesc->m_Damage;
+			Ctx.iDamage = pArgs->GetElement(4)->GetIntegerValue();
+
+			//	Create the effect
+
+			pDesc->CreateHitEffect(pSystem, Ctx);
+			return pCC->CreateTrue();
+			}
+
 		case FN_SYS_CREATE_LOOKUP:
 			{
 			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
@@ -9835,11 +10012,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Create barrel flash effect
 
 			if (bFireEffect)
-				{
-				CEffectCreator *pFireEffect;
-				if (pFireEffect = pDesc->GetFireEffect())
-					pFireEffect->CreateEffect(pSystem, pSource, vPos, CVector(), iDir);
-				}
+				pDesc->CreateFireEffect(pSystem, pSource, vPos, CVector(), iDir);
 
 			//	If we have a bonus, we need an enhancement stack
 
@@ -10259,7 +10432,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 			if (pNode == NULL)
 				return pCC->CreateError(CONSTLIT("No topology for current system"), NULL);
 
-			if (pNode->AddStargate(sStargateName, sDestNode, sDestName) != NOERROR)
+			if (pNode->AddStargateAndReturn(sStargateName, sDestNode, sDestName) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Unable to add stargate to topology node"), NULL);
 
 			pDestNode = g_pUniverse->FindTopologyNode(sDestNode);
@@ -10451,7 +10624,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pNode->FindStargate(sGateID))
 				return pCC->CreateNil();
 
-			if (pNode->AddStargate(sGateID, sDestNodeID, sDestGateID) != NOERROR)
+			if (pNode->AddStargateAndReturn(sGateID, sDestNodeID, sDestGateID) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Unable to add stargate"), pArgs);
 
 			return pCC->CreateTrue();

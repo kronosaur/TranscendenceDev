@@ -2339,7 +2339,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 			rOffset = mathDegreesToRadians(Offset.Roll());
 			}
 		else
-			rOffset = (g_Pi / 3.0);
+			rOffset = (PI / 3.0);
 
 		COrbit TrojanOrbit(OrbitDesc.GetFocus(),
 				OrbitDesc.GetSemiMajorAxis(),
@@ -2372,7 +2372,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 			rOffset = mathDegreesToRadians(Offset.Roll());
 			}
 		else
-			rOffset = (g_Pi / 3.0);
+			rOffset = (PI / 3.0);
 
 		COrbit TrojanOrbit(OrbitDesc.GetFocus(),
 				OrbitDesc.GetSemiMajorAxis(),
@@ -2895,8 +2895,8 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 				for (int k = 0; k < i; k++)
 					{
 					if (Absolute(pAngles[i] - pAngles[k]) < rMinSep
-							|| pAngles[i] + (2.0 * g_Pi) - pAngles[k] < rMinSep
-							|| pAngles[k] + (2.0 * g_Pi) - pAngles[i] < rMinSep)
+							|| pAngles[i] + (2.0 * PI) - pAngles[k] < rMinSep
+							|| pAngles[k] + (2.0 * PI) - pAngles[i] < rMinSep)
 						{
 						bAngleIsOK = false;
 						break;

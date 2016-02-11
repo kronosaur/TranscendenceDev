@@ -360,6 +360,33 @@
 //	114: 1.6
 //		m_iFramesPerRow in CObjectImageArray
 //
+//	117: 1.7 Alpha 1
+//		Added components to CItemType
+//
+//	118: 1.7 Alpha 1
+//		None
+//
+//	119: 1.7 Alpha 1
+//		Added iGeneration to CParticleArray:SParticle
+//
+//	120: 1.7 Alpha 1
+//		Added flags to CParticleDamage
+//
+//	121: 1.7 Alpha 1
+//		CShockwavePainter saves params
+//
+//	122: 1.7 Alpha 1
+//		CSingleParticlePainter saves params
+//
+//	123: 1.7 Alpha 1
+//		Use a double for fuel tracking
+//
+//	124: 1.7 Alpha 1
+//		Added m_iTick for COverlay
+//
+//	125: 1.7 Alpha 1
+//		New flocking styles in CAISettings
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -1478,6 +1505,8 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 
 	ALERROR error;
 	CDesignType *pType = g_pUniverse->FindDesignType(dwClassID);
+	if (pType == NULL)
+		return ERR_FAIL;
 
 	//	If we have a ship table, then we go through a totally different path
 
@@ -1954,7 +1983,8 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 									    CSpaceObject *pTarget,
 									    const CVector &vPos,
 										const CVector &vVel,
-									    CSpaceObject *pMissileSource)
+									    CSpaceObject *pMissileSource,
+                                        int iFraction)
 
 //	CreateWeaponFragments
 //
@@ -2066,9 +2096,19 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 
 			for (i = 0; i < iFragmentCount; i++)
 				{
-				CSpaceObject *pNewObj;
+                //  If we're only creating a fraction of fragments, then skip some.
+
+                if (iFraction < 100
+                        && mathRandom(1, 100) > iFraction)
+                    continue;
+
+                //  Generate initial speed (this might be random for each fragment)
+
 				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
+                //  Create the fragment
+
+				CSpaceObject *pNewObj;
 				if (error = CreateWeaponFire(pFragDesc->pDesc,
 						pEnhancements,
 						iCause,
@@ -3012,7 +3052,8 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest
 void CSystem::PaintViewport (CG32bitImage &Dest, 
 							 const RECT &rcView, 
 							 CSpaceObject *pCenter, 
-							 DWORD dwFlags)
+							 DWORD dwFlags, 
+							 SViewportAnnotations *pAnnotations)
 
 //	PaintViewport
 //
@@ -3301,12 +3342,32 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Let the POV paint any other enhanced displays
 
 	pCenter->PaintSRSEnhancements(Dest, Ctx);
+	if (pAnnotations)
+		PaintViewportAnnotations(Dest, *pAnnotations, Ctx);
 
 	//	Done
 
 	Dest.ResetClipRect();
 
 	DEBUG_CATCH
+	}
+
+void CSystem::PaintViewportAnnotations (CG32bitImage &Dest, SViewportAnnotations &Annotations, SViewportPaintCtx &Ctx)
+
+//	PaintViewportAnnotations
+//
+//	Paint viewport annotations.
+
+	{
+#ifdef DEBUG_FORMATION
+	if (Annotations.bDebugFormation)
+		{
+		int x, y;
+		Ctx.XForm.Transform(Annotations.vFormationPos, &x, &y);
+
+		CPaintHelper::PaintArrow(Dest, x, y, Annotations.iFormationAngle, CG32bitPixel(255, 255, 0));
+		}
+#endif
 	}
 
 void CSystem::PaintViewportGrid (CMapViewportCtx &Ctx, CG32bitImage &Dest, Metric rGridSize)
@@ -4371,7 +4432,7 @@ ALERROR CSystem::StargateCreated (CSpaceObject *pGate, const CString &sStargateI
 	//	Look for the stargate in the topology; if we don't find it, then we need to add it
 
 	if (!m_pTopology->FindStargate(sGateID))
-		m_pTopology->AddStargate(sGateID, sDestNodeID, sDestEntryPoint);
+		m_pTopology->AddStargateAndReturn(sGateID, sDestNodeID, sDestEntryPoint);
 
 	//	Add this as a named object (so we can come back here)
 
@@ -4519,7 +4580,7 @@ void CSystem::UnregisterEventHandler (CSpaceObject *pObj)
 		}
 	}
 
-void CSystem::Update (SSystemUpdateCtx &SystemCtx)
+void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations)
 
 //	Update
 //
@@ -4537,6 +4598,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx)
 	SUpdateCtx Ctx;
 	Ctx.pSystem = this;
 	Ctx.pPlayer = GetPlayerShip();
+	Ctx.pAnnotations = pAnnotations;
 
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.

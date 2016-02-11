@@ -10,7 +10,29 @@ const Metric MAX_FOLLOW_DISTANCE		(g_KlicksPerPixel * 350.0);
 const Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
 const Metric PATROL_SENSOR_RANGE2 =		(PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE);
 
-void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire)
+CEscortOrder::CEscortOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCount),
+		m_iOrder(iOrder)
+
+//	CEscortOrder constructor
+
+	{
+	switch (iOrder)
+		{
+		case IShipController::orderEscort:
+			m_fDeterEnemies = true;
+			break;
+
+		case IShipController::orderFollow:
+			m_fDeterEnemies = false;
+			break;
+
+		default:
+			ASSERT(false);
+			m_fDeterEnemies = false;
+		}
+	}
+
+void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)
 
 //	OnAttacked
 //
@@ -25,7 +47,8 @@ void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 		{
 		//	Tell our principal that we were attacked
 
-		pShip->Communicate(m_Objs[objPrincipal], msgEscortAttacked, pAttacker);
+		if (!m_Objs[objPrincipal]->FireOnSubordinateAttacked(Damage))
+			pShip->Communicate(m_Objs[objPrincipal], msgEscortAttacked, pAttacker);
 
 		//	Attack the target
 
@@ -70,15 +93,16 @@ void CEscortOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 					Ctx.ImplementStop(pShip);
 				}
 
-			//	Otherwise, we follow the principal
+			//	Otherwise, we follow the principal and attack threats
 
 			else
 				{
 				Ctx.ImplementEscort(pShip, m_Objs[objPrincipal], &m_Objs[objTarget]);
 
-				//	See if we need to defer a threat
+				//	See if we need to deter a threat
 
-				if (!Ctx.NoAttackOnThreat() 
+				if (m_fDeterEnemies
+						&& !Ctx.NoAttackOnThreat() 
 						&& pShip->IsDestinyTime(30) 
 						&& !Ctx.IsWaitingForShieldsToRegen())
 					{

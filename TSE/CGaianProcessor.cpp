@@ -27,7 +27,7 @@ CGaianProcessorAI::CGaianProcessorAI (void) :
 	{
 	}
 
-void CGaianProcessorAI::Behavior (void)
+void CGaianProcessorAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 
@@ -229,7 +229,7 @@ void CGaianProcessorAI::CalcDevices (void)
 				const DamageDesc *pDamage = pWeapon->GetDamageDesc(Ctx);
 				if (pDamage)
 					{
-					if (pDamage->GetMassDestructionAdj())
+					if (pDamage->GetMassDestructionLevel())
 						m_iDestructorDev = i;
 					else if (pDamage->GetEMPDamage())
 						m_iDisablerDev = i;

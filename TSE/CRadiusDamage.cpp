@@ -59,7 +59,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();
 
-	pArea->m_iLifeLeft = pDesc->GetLifetime();
+	pArea->m_iLifeLeft = Max(1, pDesc->GetLifetime());
 	pArea->m_pDesc = pDesc;
 	pArea->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
 	pArea->m_iCause = iCause;
@@ -80,24 +80,17 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 
 	//	Create a painter instance
 
-	CEffectCreator *pEffect;
-	if (pEffect = pDesc->GetEffect())
+	pArea->m_pPainter = pDesc->CreateEffectPainter();
+	if (pArea->m_pPainter)
 		{
-		CCreatePainterCtx Ctx;
-		Ctx.SetWeaponFireDesc(pDesc);
+		//	Adjust lifetime of object based on the painter
 
-		pArea->m_pPainter = pEffect->CreatePainter(Ctx);
+		pArea->m_iLifeLeft = Max(pArea->m_pPainter->GetLifetime(), pArea->m_iLifeLeft);
 
-		//	The lifetime of the object is based on the painter
+		//	Adjust radius of object based on the painter.
 
-		pArea->m_iLifeLeft = Max(pEffect->GetLifetime(), pArea->m_iLifeLeft);
-
-		//	The radius is also adjusted
-
-		rRadius = Max(pArea->m_pPainter->GetRadius(), rRadius);
+		rRadius = Max(pArea->m_pPainter->GetRadius(pArea->m_iTick), rRadius);
 		}
-	else
-		pArea->m_pPainter = NULL;
 
 	//	Our bounds are based on the max radius
 
@@ -316,9 +309,12 @@ void CRadiusDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx
 	{
 	if (m_pPainter)
 		{
+		CViewportPaintCtxSmartSave Save(Ctx);
 		Ctx.iTick = m_iTick;
 		Ctx.iVariant = 0;
+		Ctx.iRotation = 0;
 		Ctx.iDestiny = GetDestiny();
+
 		m_pPainter->Paint(Dest, x, y, Ctx);
 		}
 	}
@@ -433,8 +429,13 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	m_iTick++;
 
+	SEffectUpdateCtx EffectCtx;
+	EffectCtx.pSystem = GetSystem();
+	EffectCtx.pObj = this;
+	EffectCtx.iTick = m_iTick;
+
 	if (m_pPainter)
-		m_pPainter->OnUpdate();
+		m_pPainter->OnUpdate(EffectCtx);
 
 	//	Destroy
 

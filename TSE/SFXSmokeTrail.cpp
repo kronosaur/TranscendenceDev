@@ -62,7 +62,7 @@ CSmokeTrailEffectCreator::~CSmokeTrailEffectCreator (void)
 		delete m_pParticleEffect;
 	}
 
-IEffectPainter *CSmokeTrailEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CSmokeTrailEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

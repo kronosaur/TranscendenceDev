@@ -5,6 +5,26 @@
 
 #include "PreComp.h"
 
+CEffectParamDesc::CEffectParamDesc (EDataTypes iType, int iValue)
+
+//	CEffectParamDesc constructor
+
+	{
+	switch (iType)
+		{
+		case typeColorConstant:
+		case typeIntegerConstant:
+			m_iType = iType;
+			m_dwData = (DWORD)iValue;
+			break;
+
+		default:
+			ASSERT(false);
+			m_iType = typeNull;
+			break;
+		}
+	}
+
 CEffectParamDesc::~CEffectParamDesc (void)
 
 //	CEffectParamDesc destructor
@@ -20,13 +40,83 @@ void CEffectParamDesc::CleanUp (void)
 //	Clean up value
 
 	{
-	if (m_pItem)
+	switch (m_iType)
 		{
-		m_pItem->Discard(&g_pUniverse->GetCC());
-		m_pItem = NULL;
+		case typeImage:
+			delete m_pImage;
+			break;
+
+		case typeVectorConstant:
+			delete m_pVector;
+			break;
 		}
 
 	m_iType = typeNull;
+	}
+
+void CEffectParamDesc::Copy (const CEffectParamDesc &Src)
+
+//	Copy
+//
+//	Copies from the source. We assume that we are in a pristine state
+//	(otherwise, call CleanUp() first).
+
+	{
+	m_iType = Src.m_iType;
+
+	switch (Src.m_iType)
+		{
+		case typeBoolConstant:
+		case typeColorConstant:
+		case typeIntegerConstant:
+			m_dwData = Src.m_dwData;
+			break;
+
+		case typeImage:
+			m_pImage = new CObjectImageArray(*Src.m_pImage);
+			break;
+
+		case typeIntegerDiceRange:
+			m_DiceRange = Src.m_DiceRange;
+			break;
+
+		case typeStringConstant:
+			m_sData = Src.m_sData;
+			break;
+
+		case typeVectorConstant:
+			m_pVector = new CVector(*Src.m_pVector);
+			break;
+		}
+	}
+
+CGDraw::EBlendModes CEffectParamDesc::EvalBlendMode (CCreatePainterCtx &Ctx, CGDraw::EBlendModes iDefault) const
+
+//	EvalBlendMode
+//
+//	Returns a blend mode
+
+	{
+	switch (m_iType)
+		{
+		case typeIntegerConstant:
+			return (CGDraw::EBlendModes)Max((int)CGDraw::blendNormal, Min((int)m_dwData, (int)CGDraw::blendModeCount - 1));
+
+		case typeIntegerDiceRange:
+			return (CGDraw::EBlendModes)Max((int)CGDraw::blendNormal, Min((int)m_DiceRange.Roll(), (int)CGDraw::blendModeCount - 1));
+
+		case typeStringConstant:
+			{
+			CGDraw::EBlendModes iMode = CGDraw::ParseBlendMode(m_sData);
+			if (iMode == CGDraw::blendNone)
+				return iDefault;
+
+			return iMode;
+			}
+
+		default:
+			return iDefault;
+		}
 	}
 
 bool CEffectParamDesc::EvalBool (CCreatePainterCtx &Ctx) const
@@ -53,7 +143,7 @@ bool CEffectParamDesc::EvalBool (CCreatePainterCtx &Ctx) const
 		}
 	}
 
-CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx) const
+CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx, CG32bitPixel rgbDefault) const
 
 //	EvalColor
 //
@@ -66,7 +156,7 @@ CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx) const
 			return CG32bitPixel::FromDWORD(m_dwData);
 
 		default:
-			return 0;
+			return rgbDefault;
 		}
 	}
 
@@ -129,6 +219,23 @@ int CEffectParamDesc::EvalIdentifier (CCreatePainterCtx &Ctx, LPSTR *pIDMap, int
 
 		default:
 			return iDefault;
+		}
+	}
+
+const CObjectImageArray &CEffectParamDesc::EvalImage (CCreatePainterCtx &Ctx) const
+
+//	EvalImage
+//
+//	Returns an image
+
+	{
+	switch (m_iType)
+		{
+		case typeImage:
+			return *m_pImage;
+
+		default:
+			return CObjectImageArray::Null();
 		}
 	}
 
@@ -213,7 +320,7 @@ CVector CEffectParamDesc::EvalVector (CCreatePainterCtx &Ctx) const
 	switch (m_iType)
 		{
 		case typeVectorConstant:
-			return m_vVector;
+			return *m_pVector;
 
 		default:
 			return CVector();
@@ -238,7 +345,7 @@ ALERROR CEffectParamDesc::InitColorFromXML (SDesignLoadCtx &Ctx, const CString &
 	return NOERROR;
 	}
 
-bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWORD *retdwID) const
+bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWORD *retdwID)
 
 //	FindIdentifier
 //
@@ -270,6 +377,38 @@ bool CEffectParamDesc::FindIdentifier (const CString &sValue, LPSTR *pIDMap, DWO
 	return false;
 	}
 
+ALERROR CEffectParamDesc::InitBlendModeFromXML (SDesignLoadCtx &Ctx, const CString &sValue)
+
+//	InitBlendModeFromXML
+//
+//	Initializes a blend mode
+
+	{
+	ASSERT(m_iType == typeNull);
+
+	//	If the value is blank, then we leave as defaults
+
+	if (sValue.IsBlank())
+		{
+		m_iType = typeNull;
+		return NOERROR;
+		}
+
+	//	Convert.
+
+	CGDraw::EBlendModes iMode = CGDraw::ParseBlendMode(sValue);
+	if (iMode == CGDraw::blendNone)
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid effect param blend mode: %s"), sValue);
+		return ERR_FAIL;
+		}
+
+	m_iType = typeIntegerConstant;
+	m_dwData = iMode;
+
+	return NOERROR;
+	}
+
 ALERROR CEffectParamDesc::InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CString &sValue, LPSTR *pIDMap)
 
 //	InitIdentifierFromXML
@@ -296,6 +435,31 @@ ALERROR CEffectParamDesc::InitIdentifierFromXML (SDesignLoadCtx &Ctx, const CStr
 		}
 
 	m_iType = typeIntegerConstant;
+
+	return NOERROR;
+	}
+
+ALERROR CEffectParamDesc::InitImageFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+//	InitImageFromXML
+//
+//	Initializes an image
+
+	{
+	ALERROR error;
+
+	ASSERT(m_iType == typeNull);
+	if (pDesc == NULL)
+		return NOERROR;
+
+	m_iType = typeImage;
+	m_pImage = new CObjectImageArray;
+	if (error = m_pImage->InitFromXML(Ctx, pDesc))
+		{
+		delete m_pImage;
+		m_iType = typeNull;
+		return error;
+		}
 
 	return NOERROR;
 	}
@@ -364,6 +528,7 @@ bool CEffectParamDesc::IsConstant (void)
 		case typeNull:
 		case typeBoolConstant:
 		case typeColorConstant:
+		case typeImage:
 		case typeIntegerConstant:
 		case typeStringConstant:
 		case typeVectorConstant:
@@ -404,6 +569,11 @@ void CEffectParamDesc::ReadFromStream (SLoadCtx &Ctx)
 			Ctx.pStream->Read((char *)&m_dwData, sizeof(DWORD));
 			break;
 
+		case typeImage:
+			m_pImage = new CObjectImageArray;
+			m_pImage->ReadFromStream(Ctx);
+			break;
+
 		case typeIntegerDiceRange:
 			if (Ctx.dwVersion >= 99)
 				m_DiceRange.ReadFromStream(Ctx);
@@ -414,7 +584,8 @@ void CEffectParamDesc::ReadFromStream (SLoadCtx &Ctx)
 			break;
 
 		case typeVectorConstant:
-			Ctx.pStream->Read((char *)&m_vVector, sizeof(CVector));
+			m_pVector = new CVector;
+			Ctx.pStream->Read((char *)m_pVector, sizeof(CVector));
 			break;
 		}
 	}
@@ -446,6 +617,10 @@ void CEffectParamDesc::WriteToStream (IWriteStream *pStream)
 			pStream->Write((char *)&m_dwData, sizeof(DWORD));
 			break;
 
+		case typeImage:
+			m_pImage->WriteToStream(pStream);
+			break;
+
 		case typeIntegerDiceRange:
 			m_DiceRange.WriteToStream(pStream);
 			break;
@@ -455,7 +630,7 @@ void CEffectParamDesc::WriteToStream (IWriteStream *pStream)
 			break;
 
 		case typeVectorConstant:
-			pStream->Write((char *)&m_vVector, sizeof(CVector));
+			pStream->Write((char *)m_pVector, sizeof(CVector));
 			break;
 		}
 	}

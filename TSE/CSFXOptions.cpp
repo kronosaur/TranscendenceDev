@@ -23,6 +23,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 	switch (iQuality)
 		{
 		case sfxMaximum:
+			m_bHUDTransparent = true;
 			m_bSpaceBackground = true;
 			m_bStargateTravelEffect = true;
 			m_bStarGlow = true;
@@ -30,6 +31,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 			break;
 
 		case sfxStandard:
+			m_bHUDTransparent = true;
 			m_bSpaceBackground = true;
 			m_bStargateTravelEffect = true;
 			m_bStarGlow = true;
@@ -37,6 +39,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 			break;
 
 		case sfxMinimum:
+			m_bHUDTransparent = false;
 			m_bSpaceBackground = false;
 			m_bStargateTravelEffect = false;
 			m_bStarGlow = false;

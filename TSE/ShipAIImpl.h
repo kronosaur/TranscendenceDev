@@ -54,6 +54,7 @@ class CAIBehaviorCtx
 		inline int GetFireRangeAdj (void) const { return m_AISettings.GetFireRangeAdj(); }
 		inline int GetFireRateAdj (void) const { return m_AISettings.GetFireRateAdj(); }
 		inline Metric GetFlankDist (void) const { return m_rFlankDist; }
+		inline Metric GetFlankRange2 (void) const { return 1.5 * m_rFlankDist * m_rFlankDist; }
 		inline int GetLastAttack (void) const { return m_iLastAttack; }
 		inline EManeuverTypes GetLastTurn (void) const { return m_iLastTurn; }
 		inline int GetLastTurnCount (void) const { return m_iLastTurnCount; }
@@ -65,6 +66,7 @@ class CAIBehaviorCtx
 		inline int GetPerception (void) const { return m_AISettings.GetPerception(); }
 		inline const CVector &GetPotential (void) const { return m_vPotential; }
 		inline Metric GetPrimaryAimRange2 (void) const { return m_rPrimaryAimRange2; }
+		inline SUpdateCtx *GetSystemUpdateCtx (void) const { return m_pUpdateCtx;  }
 		inline bool GetThrust (CShip *pShip) const { return m_ShipControls.GetThrust(pShip); }
 		inline int GetThrustDir (void) const { return m_ShipControls.GetThrustDir(); }
 		inline bool HasEscorts (void) const { return m_fHasEscorts; }
@@ -99,6 +101,7 @@ class CAIBehaviorCtx
 		inline void SetManeuverCounter (int iCount) { m_iManeuverCounter = iCount; }
 		inline void SetNavPath (CNavigationPath *pNavPath, int iNavPathPos, bool bOwned = false) { ClearNavPath(); m_pNavPath = pNavPath; m_iNavPathPos = iNavPathPos; m_fFreeNavPath = bOwned; }
 		inline void SetPotential (const CVector &vVec) { m_vPotential = vVec; }
+		inline void SetSystemUpdateCtx (SUpdateCtx *pCtx) { m_pUpdateCtx = pCtx;  }
 		inline void SetThrust (bool bThrust) { m_ShipControls.SetThrust(bThrust); }
 		inline void SetThrustDir (int iDir) { m_ShipControls.SetThrustDir(iDir); }
 		inline void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
@@ -117,13 +120,11 @@ class CAIBehaviorCtx
 		void ImplementCloseOnTarget (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, bool bFlank = false);
 		void ImplementDocking (CShip *pShip, CSpaceObject *pTarget);
 		void ImplementEscort (CShip *pShip, CSpaceObject *pBase, CSpaceObject **iopTarget);
-		void ImplementEscortManeuvers (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget);
 		void ImplementEvasiveManeuvers (CShip *pShip, CSpaceObject *pTarget);
 		void ImplementFireOnTarget (CShip *pShip, CSpaceObject *pTarget, bool *retbOutOfRange = NULL);
 		void ImplementFireOnTargetsOfOpportunity (CShip *pShip, CSpaceObject *pTarget = NULL, CSpaceObject *pExcludeObj = NULL);
 		void ImplementFireWeapon (CShip *pShip, DeviceNames iDev = devNone);
 		void ImplementFireWeaponOnTarget (CShip *pShip, int iWeapon, int iWeaponVariant, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2, int *retiFireDir = NULL, bool bDoNotShoot = false);
-		bool ImplementFlockingManeuver (CShip *pShip, CSpaceObject *pLeader);
 		void ImplementFollowNavPath (CShip *pShip, bool *retbAtDestination = NULL);
 		void ImplementFormationManeuver (CShip *pShip, const CVector vDest, const CVector vDestVel, int iDestFacing, bool *retbInFormation = NULL);
 		void ImplementGating (CShip *pShip, CSpaceObject *pTarget);
@@ -136,10 +137,11 @@ class CAIBehaviorCtx
 		void ImplementTurnTo (CShip *pShip, int iRotation);
 
 		//	Helpers
+		CVector CalcFlankPos (CShip *pShip, const CVector &vInterceptPos);
 		bool CalcFormationParams (CShip *pShip, const CVector &vDestPos, const CVector &vDestVel, int iDestAngle, CVector *retvRecommendedVel, Metric *retrDeltaPos2 = NULL, Metric *retrDeltaVel2 = NULL);
 		void CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget);
 		void CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric rTargetDist2);
-		bool CalcFlockingFormation (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing);
+		bool CalcFlockingFormation (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		void CalcInvariants (CShip *pShip);
 		bool CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget, CSpaceObject *pNewTarget) const;
 		bool CalcNavPath (CShip *pShip, const CVector &vTo);
@@ -157,6 +159,9 @@ class CAIBehaviorCtx
 		void Undock (CShip *pShip);
 
 	private:
+		void CalcEscortFormation (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
+		bool CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing);
+		bool CalcFlockingFormationRandom (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2);
 
 		CAISettings m_AISettings;				//	Settings
@@ -179,6 +184,7 @@ class CAIBehaviorCtx
 		DWORD m_dwSpare1:30;
 
 		//	Cached values
+		SUpdateCtx *m_pUpdateCtx;				//	System update context
 		CInstalledDevice *m_pShields;			//	Shields (NULL if none)
 		CInstalledDevice *m_pBestWeapon;		//	Best weapon
 		DeviceNames m_iBestWeapon;
@@ -219,7 +225,7 @@ class IOrderModule
 		IOrderModule (int iObjCount);
 		virtual ~IOrderModule (void);
 
-		void Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire);
+		void Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire);
 		inline void Behavior (CShip *pShip, CAIBehaviorCtx &Ctx) { OnBehavior(pShip, Ctx); }
 		inline void BehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { OnBehaviorStart(pShip, Ctx, pOrderTarget, Data); }
 		DWORD Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
@@ -237,7 +243,7 @@ class IOrderModule
 		virtual bool IsAttacking (void) { return false; }
 		virtual bool IsTarget (int iObj) { return false; }
 		virtual bool IsTarget (CSpaceObject *pObj) { return false; }
-		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const DamageDesc &Damage, bool bFriendlyFire) { }
+		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) { }
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) = 0;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { }
 		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
@@ -309,7 +315,7 @@ class CBaseShipAI : public IShipController
 		virtual ~CBaseShipAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (void);
+		virtual void Behavior (SUpdateCtx &Ctx);
 		virtual CString DebugCrashInfo (void);
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL);
@@ -331,7 +337,7 @@ class CBaseShipAI : public IShipController
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution);
 		virtual bool IsAngryAt (CSpaceObject *pObj) const;
 		virtual bool IsPlayerWingman (void) const { return (m_fIsPlayerWingman ? true : false); }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage);
+		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage);
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
 		virtual void OnDocked (CSpaceObject *pObj);
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend);
@@ -388,8 +394,8 @@ class CBaseShipAI : public IShipController
 		void UseItemsBehavior (void);
 
 		//	CBaseShipAI virtuals
-		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const DamageDesc &Damage) { }
-		virtual void OnBehavior (void) { }
+		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
+		virtual void OnBehavior (SUpdateCtx &Ctx) { }
 		virtual void OnCleanUp (void) { }
 		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
 		virtual CString OnDebugCrashInfo (void) { return NULL_STR; }

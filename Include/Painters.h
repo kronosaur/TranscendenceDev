@@ -20,6 +20,7 @@ class CGalacticMapPainter
 	private:
 		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor);
 		void Init (void);
+		inline SPoint Xform (const SPoint &pt) const { return SPoint(m_xViewCenter + m_iScale * (pt.x - m_xCenter) / 100, m_yViewCenter + m_iScale * (m_yCenter - pt.y) / 100); }
 
 		const CVisualPalette &m_VI;
 
@@ -29,6 +30,14 @@ class CGalacticMapPainter
 
 		CG32bitImage *m_pImage;
 		bool m_bFreeImage;
+
+		//	Temporaries, while painting
+
+		int m_iScale;
+		int m_xCenter;
+		int m_yCenter;
+		int m_xViewCenter;
+		int m_yViewCenter;
 	};
 
 class CStargateEffectPainter

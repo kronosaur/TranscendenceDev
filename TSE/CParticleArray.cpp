@@ -75,7 +75,7 @@ CParticleArray::~CParticleArray (void)
 		delete [] m_pArray;
 	}
 
-void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft, int iRotation, int iDestiny, DWORD dwData)
+void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft, int iRotation, int iDestiny, int iGeneration, Metric rData)
 
 //	AddParticle
 //
@@ -120,10 +120,11 @@ void CParticleArray::AddParticle (const CVector &vPos, const CVector &vVel, int 
 		PosToXY(vVel * g_SecondsPerUpdate, &pParticle->xVel, &pParticle->yVel);
 		}
 
+	pParticle->iGeneration = iGeneration;
 	pParticle->iLifeLeft = iLifeLeft;
 	pParticle->iDestiny = (iDestiny == -1 ? mathRandom(0, g_DestinyRange - 1) : iDestiny);
 	pParticle->iRotation = iRotation;
-	pParticle->dwData = dwData;
+	pParticle->rData = rData;
 
 	pParticle->fAlive = true;
 
@@ -144,6 +145,287 @@ void CParticleArray::CleanUp (void)
 		}
 
 	m_iCount = 0;
+	}
+
+void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, int *retiEmitted)
+
+//	Emit
+//
+//	Emit particles based on the descriptor.
+//
+//	vSource is relative to the particle array origin.
+//
+//	vSourceVel is the velocity of the source relative to the array origin.
+//		For some effects, in which the array origin moves with the effect, this
+//		should be Null. But for particle damage, which has a fixed array origin,
+//		this should be the motion of the ship/station that fired.
+
+	{
+	int iCount = Desc.GetEmitRate().Roll();
+	if (iCount <= 0)
+		return;
+
+	switch (Desc.GetStyle())
+		{
+		case CParticleSystemDesc::styleAmorphous:
+			EmitAmorphous(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			break;
+
+		case CParticleSystemDesc::styleComet:
+			EmitComet(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			break;
+
+		case CParticleSystemDesc::styleExhaust:
+			//	LATER: Same as CParticleSystemEffectPainter::CreateFixedParticles...
+			break;
+
+		case CParticleSystemDesc::styleJet:
+			//	LATER: Same as CParticleSystemEffectPainter
+			break;
+
+		case CParticleSystemDesc::styleRadiate:
+			EmitRadiate(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			break;
+
+		case CParticleSystemDesc::styleSpray:
+			EmitSpray(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			break;
+		}
+
+	//	Remember
+
+	m_vLastEmitSource = vSource;
+	m_vLastEmitSourceVel = vSourceVel;
+	m_iLastEmitDirection = iDirection;
+
+	//	Done
+
+	if (retiEmitted)
+		*retiEmitted = iCount;
+	}
+
+void CParticleArray::EmitAmorphous (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitAmorphous
+//
+//	Emits a directional stream of particles with a random shape. The head
+//	of the particles will travel at maximum speed, while the tail will travel at
+//	minimum speed.
+
+	{
+	const Metric GAUSSIAN_SCALE = 0.5;
+
+	int i;
+
+	//	Compute some basic stuff
+
+	Metric rCurRotation = mathDegreesToRadians(Desc.GetXformRotation() + iDirection);
+
+	//	Compute the range in speed
+
+	Metric rMaxSpeed = Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+	Metric rMinSpeed = Desc.GetEmitSpeed().GetMinValue() * LIGHT_SPEED / 100.0;
+	Metric rSpeedRange = Max(0.01 * LIGHT_SPEED, rMaxSpeed - rMinSpeed);
+
+	//	Compute the spread angle, in radians
+
+	Metric rSpread = mathDegreesToRadians(Max(0, Desc.GetSpreadAngle().Roll()));
+	Metric rHalfSpread = 0.5 * rSpread;
+
+	//	If the emissions come from a line, calculate that (emitWidth)
+
+	Metric rSpreadRange = Desc.GetEmitWidth().Roll() * g_KlicksPerPixel;
+	CVector vTangent = ::PolarToVectorRadians(rCurRotation + (0.5 * PI), rSpreadRange);
+
+	//	Create the particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		//	Pick the position of the particle along the main axis, with a 
+		//	concentration towards the head.
+
+		Metric rLengthPos = GAUSSIAN_SCALE * Absolute(::mathRandomGaussian());
+		Metric rSpeed = Max(0.01 * LIGHT_SPEED, rMaxSpeed - (rSpeedRange * rLengthPos));
+
+		//	Pick a position along the width axis. Again, we concentrate on the
+		//	center.
+
+		Metric rWidthPos = GAUSSIAN_SCALE * ::mathRandomGaussian();
+		Metric rRotation = rCurRotation + (rHalfSpread * rWidthPos);
+
+		//	All particle start near the emission point
+
+		CVector vPos = vSource;
+		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rRotation, rSpeed);
+
+		//	Adjust for spread
+
+		if (rSpreadRange > 0.0)
+			{
+			Metric rTangentPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
+			vPos = vPos + (vTangent * rTangentPlace);
+			}
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), AngleToDegrees(rRotation), -1, iTick);
+		}
+	}
+
+void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitComet
+//
+//	Emits a directional stream of particles in the shape of a comet. The head
+//	of the comet will travel at maximum speed, while the tail will travel at
+//	minimum speed.
+
+	{
+	const TArray<CVector> &SplinePoints = CParticleCometEffectCreator::GetSplinePoints();
+	const int SPLINE_CHOOSE_POINTS = 1000;
+
+	int i;
+
+	//	Compute some basic stuff
+
+	int iCurRotation = Desc.GetXformRotation() + iDirection;
+	Metric rCurRotation = mathDegreesToRadians(iCurRotation);
+
+	//	Compute the range in speed
+
+	Metric rMaxSpeed = Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+	Metric rMinSpeed = Desc.GetEmitSpeed().GetMinValue() * LIGHT_SPEED / 100.0;
+	Metric rSpeedRange = Max(0.01 * LIGHT_SPEED, rMaxSpeed - rMinSpeed);
+
+	//	Compute the size of the comet (at the time we emit)
+
+	Metric rLength = g_SecondsPerUpdate * Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SPEED / 100.0;
+	Metric rWidth = Max(0.5 * rLength, Desc.GetEmitWidth().GetMaxValue() * g_KlicksPerPixel);
+
+	//	Use a stepper to cluster the points towards the head.
+
+	CStepIncrementor SplinePos(CStepIncrementor::styleSquare, 0.0, SplinePoints.GetCount() - 1, SPLINE_CHOOSE_POINTS);
+	CStepIncrementor WidthPos(CStepIncrementor::styleLinear, -1.0, 1.0, SPLINE_CHOOSE_POINTS);
+
+	//	Create the particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		//	Pick a random position on the comet line
+
+		const CVector &vSplinePos = SplinePoints[(int)SplinePos.GetAt(mathRandom(0, SPLINE_CHOOSE_POINTS))];
+
+		//	Pick a random position on the width and adjust the spline
+
+		Metric rWidthAdj = WidthPos.GetAt(mathRandom(0, SPLINE_CHOOSE_POINTS));
+		CVector vSplineAdj(vSplinePos.GetX() * rLength, vSplinePos.GetY() * rWidthAdj * rWidth);
+
+		//	Rotate the spline
+
+		CVector vSplinePosRot = vSplineAdj.Rotate(iCurRotation + 180);
+		CVector vPos = vSource + vSplinePosRot;
+
+		//	Pick a velocity, proportional to the place on the spline
+
+		Metric rVelAdj = vSplinePos.GetX();
+		CVector vVel =  vSourceVel + ::PolarToVectorRadians(rCurRotation, rMaxSpeed - (rSpeedRange * rVelAdj));
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), iCurRotation, -1, iTick, rVelAdj);
+		}
+	}
+
+void CParticleArray::EmitRadiate (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitRadiate
+//
+//	Emits in a circular shell.
+
+	{
+	int i;
+
+	//	Compute some basic stuff
+
+	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
+
+	//	Calculate where last tick's particles would be based on the last rotation.
+
+	Metric rAveSpeed = Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+
+	//	Create particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		//	Choose a random angle and velocity
+
+		Metric rAngle = 2.0 * PI * (mathRandom(0, 9999) / 10000.0);
+		Metric rSpeed = (Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
+		CVector vVel = Desc.GetXformTime() * (vSourceVel + ::PolarToVectorRadians(rAngle, rSpeed));
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vSource, vVel, iLifeLeft, AngleToDegrees(rAngle), -1, iTick);
+		}
+	}
+
+void CParticleArray::EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitSpray
+//
+//	Emits a directional spray (compatible with particle weapon effects).
+
+	{
+	int i;
+
+	//	Calculate a few temporaries
+
+	Metric rRatedSpeed = Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SPEED / 100.0;
+	Metric rRadius = (6.0 * rRatedSpeed);
+
+	int iSpreadAngle = Desc.GetSpreadAngle().Roll();
+	if (iSpreadAngle > 0)
+		iSpreadAngle = (iSpreadAngle / 2) + 1;
+	bool bSpreadAngle = (iSpreadAngle > 0);
+
+	CVector vTemp = PolarToVector(iSpreadAngle, rRatedSpeed);
+	Metric rTangentV = (3.0 * vTemp.GetY());
+	int iTangentAngle = (iDirection + 90) % 360;
+
+	int iSpreadWidth = Desc.GetEmitWidth().Roll();
+	Metric rSpreadWidth = iSpreadWidth * g_KlicksPerPixel;
+	bool bSpreadWidth = (iSpreadWidth > 0);
+
+	//	Create the particles with appropriate velocity
+
+	for (i = 0; i < iCount; i++)
+		{
+		Metric rPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
+		Metric rTangentPlace = ((mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25) + mathRandom(0, 25)) - 50.0) / 100.0;
+	
+		CVector vPlace = PolarToVector(iDirection, rRadius * rPlace);
+		CVector vVel = PolarToVector(iDirection, rRatedSpeed)
+				+ (0.05 * vPlace)
+				+ PolarToVector(iTangentAngle, rTangentV * rTangentPlace);
+
+		//	Compute the spread width
+
+		CVector vPos = vSource + vPlace;
+		if (bSpreadWidth)
+			vPos = vPos + PolarToVector(iTangentAngle, rSpreadWidth * rTangentPlace);
+
+		//	Compute the travel rotation for these particles
+
+		int iRotation = (bSpreadAngle ? VectorToPolar(vVel) : iDirection);
+
+		//	Create the particle
+
+		AddParticle(vPos, vSourceVel + vVel, Desc.GetParticleLifetime().Roll(), iRotation, -1, iTick);
+		}
 	}
 
 void CParticleArray::GetBounds (CVector *retvUR, CVector *retvLL)
@@ -265,6 +547,31 @@ void CParticleArray::Move (const CVector &vMove)
 	m_vCenterOfMass = (iParticleCount > 0 ? vTotalPos / (Metric)iParticleCount : NullVector);
 	}
 
+void CParticleArray::Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest, int xPos, int yPos, IEffectPainter *pPainter, SViewportPaintCtx &Ctx)
+
+//	Paint
+//
+//	Paint all particles
+
+	{
+	if (pPainter == NULL)
+		return;
+
+	//	See if the painter has a paint descriptor (which is faster for us).
+
+	SParticlePaintDesc PaintDesc;
+	if (pPainter->GetParticlePaintDesc(&PaintDesc))
+		{
+		PaintDesc.iMaxLifetime = Desc.GetParticleLifetime().GetMaxValue();
+		Paint(Dest, xPos, yPos, Ctx, PaintDesc);
+		}
+
+	//	Otherwise, we use the painter for each particle
+
+	else
+		Paint(Dest, xPos, yPos, Ctx, pPainter, Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SECOND / 100.0);
+	}
+
 void CParticleArray::Paint (CG32bitImage &Dest,
 							int xPos,
 							int yPos,
@@ -300,12 +607,18 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 			break;
 			}
 
+		case paintGlitter:
+			{
+			PaintGlitter(Dest, xPos, yPos, Ctx, Desc.iMaxWidth, Desc.rgbPrimaryColor, Desc.rgbSecondaryColor);
+			break;
+			}
+
 		case paintImage:
 			PaintImage(Dest, xPos, yPos, Ctx, Desc);
 			break;
 
 		case paintLine:
-			PaintLine(Dest, xPos, yPos, Ctx, Desc.rgbPrimaryColor);
+			PaintLine(Dest, xPos, yPos, Ctx, Desc.rgbPrimaryColor, Desc.rgbSecondaryColor);
 			break;
 
 		case paintSmoke:
@@ -345,15 +658,28 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 							int xPos,
 							int yPos,
 							SViewportPaintCtx &Ctx,
-							IEffectPainter *pPainter)
+							IEffectPainter *pPainter,
+							Metric rRatedSpeed)
 
 //	Paint
 //
 //	Paint using a painter for each particle
 
 	{
+	int iSavedTick = Ctx.iTick;
 	int iSavedDestiny = Ctx.iDestiny;
 	int iSavedRotation = Ctx.iRotation;
+	int iSavedMaxLength = Ctx.iMaxLength;
+
+	//	If necessary set the max length based on the rated speed at the current
+	//	tick count.
+
+	Metric rMaxLengthFactor = 0.0;
+	bool bNeedMaxLength = (rRatedSpeed > 0.0);
+	if (bNeedMaxLength)
+		rMaxLengthFactor = g_SecondsPerUpdate * rRatedSpeed / g_KlicksPerPixel;
+
+	//	Loop
 
 	SParticle *pParticle = m_pArray;
 	SParticle *pEnd = pParticle + m_iCount;
@@ -369,8 +695,12 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 
 			//	Paint the particle
 
+			Ctx.iTick = Max(0, iSavedTick - pParticle->iGeneration);
 			Ctx.iDestiny = pParticle->iDestiny;
 			Ctx.iRotation = pParticle->iRotation;
+			if (bNeedMaxLength)
+				Ctx.iMaxLength = (int)(Max(1, Ctx.iTick) * rMaxLengthFactor);
+
 			pPainter->Paint(Dest, x, y, Ctx);
 			}
 
@@ -379,8 +709,10 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 		pParticle++;
 		}
 
+	Ctx.iTick = iSavedTick;
 	Ctx.iDestiny = iSavedDestiny;
 	Ctx.iRotation = iSavedRotation;
+	Ctx.iMaxLength = iSavedMaxLength;
 	}
 
 void CParticleArray::PaintFireAndSmoke (CG32bitImage &Dest, 
@@ -559,6 +891,79 @@ void CParticleArray::PaintGaseous (CG32bitImage &Dest,
 		}
 	}
 
+void CParticleArray::PaintGlitter (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, int iWidth, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor)
+
+//	PaintGlitter
+//
+//	Paints particles as glitter
+
+	{
+	const int HIGHLIGHT_ANGLE = 135;
+	const int HIGHLIGHT_RANGE = 30;
+
+	SParticle *pParticle = m_pArray;
+	SParticle *pEnd = pParticle + m_iCount;
+
+	while (pParticle < pEnd)
+		{
+		if (pParticle->fAlive)
+			{
+			//	Color flips to secondary color at certain angles
+
+			int iBearing = Absolute(AngleBearing(HIGHLIGHT_ANGLE, pParticle->iRotation));
+			CG32bitPixel rgbColor = (iBearing < HIGHLIGHT_RANGE ? CG32bitPixel::Fade(rgbSecondaryColor, rgbPrimaryColor, iBearing * 100 / HIGHLIGHT_RANGE) : rgbPrimaryColor);
+
+			//	Compute the position of the particle
+
+			int x = xPos + pParticle->x / FIXED_POINT;
+			int y = yPos + pParticle->y / FIXED_POINT;
+
+			//	Draw at appropriate size
+
+			switch (iWidth)
+				{
+				case 0:
+					Dest.SetPixel(x, y, rgbColor);
+					break;
+
+				case 1:
+					Dest.SetPixel(x, y, rgbColor);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, 0x80);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, 0x80);
+					break;
+
+				case 2:
+					Dest.SetPixel(x, y, rgbColor);
+					Dest.SetPixelTrans(x + 1, y, rgbColor, 0x80);
+					Dest.SetPixelTrans(x, y + 1, rgbColor, 0x80);
+					Dest.SetPixelTrans(x - 1, y, rgbColor, 0x80);
+					Dest.SetPixelTrans(x, y - 1, rgbColor, 0x80);
+					break;
+
+				case 3:
+					Dest.SetPixel(x, y, rgbColor);
+					Dest.SetPixel(x + 1, y, rgbColor);
+					Dest.SetPixel(x, y + 1, rgbColor);
+					Dest.SetPixel(x - 1, y, rgbColor);
+					Dest.SetPixel(x, y - 1, rgbColor);
+					Dest.SetPixelTrans(x + 1, y + 1, rgbColor, 0x80);
+					Dest.SetPixelTrans(x + 1, y - 1, rgbColor, 0x80);
+					Dest.SetPixelTrans(x - 1, y + 1, rgbColor, 0x80);
+					Dest.SetPixelTrans(x - 1, y - 1, rgbColor, 0x80);
+					break;
+
+				default:
+					CGDraw::Circle(Dest, x, y, (iWidth + 1) / 2, rgbColor);
+					break;
+				}
+			}
+
+		//	Next
+
+		pParticle++;
+		}
+	}
+
 void CParticleArray::PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
 
 //	Paint
@@ -609,7 +1014,8 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 								int xPos,
 								int yPos,
 								SViewportPaintCtx &Ctx,
-								CG32bitPixel rgbPrimaryColor)
+								CG32bitPixel rgbPrimaryColor,
+								CG32bitPixel rgbSecondaryColor)
 
 //	PaintLine
 //
@@ -622,6 +1028,12 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 	int yVel = 0;
 	if (Ctx.pObj)
 		PosToXY(Ctx.pObj->GetVel(), &xVel, &yVel);
+
+	//	We want the tail to be transparent and the head to be full.
+	//	NOTE: We paint from head to tail.
+
+	CG32bitPixel rgbFrom = rgbPrimaryColor;
+	CG32bitPixel rgbTo = CG32bitPixel(rgbSecondaryColor, 0);
 
 	//	Paint all the particles
 
@@ -642,10 +1054,7 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 
 			//	Paint the particle
 
-			Dest.DrawLine(xFrom, yFrom,
-					xTo, yTo,
-					1,
-					rgbPrimaryColor);
+			CGDraw::LineGradient(Dest, xFrom, yFrom, xTo, yTo, 1, rgbFrom, rgbTo);
 			}
 
 		//	Next
@@ -670,14 +1079,6 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 //	ReadFromStream
 //
 //	Reads from a stream
-//
-//	DWORD		Particle count
-//	CVector		m_vOrigin
-//	CVector		m_vCenterOfMass
-//	CVector		m_vUR
-//	CVector		m_vLL
-//	DWORD		Flags
-//	Array of particles
 
 	{
 	int i;
@@ -701,6 +1102,15 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&m_vCenterOfMass, sizeof(CVector));
 		Ctx.pStream->Read((char *)&m_vUR, sizeof(CVector));
 		Ctx.pStream->Read((char *)&m_vLL, sizeof(CVector));
+		}
+
+	//	Last emit info
+
+	if (Ctx.dwVersion >= 120)
+		{
+		Ctx.pStream->Read((char *)&m_vLastEmitSource, sizeof(CVector));
+		Ctx.pStream->Read((char *)&m_vLastEmitSourceVel, sizeof(CVector));
+		Ctx.pStream->Read((char *)&m_iLastEmitDirection, sizeof(DWORD));
 		}
 
 	//	Load flags
@@ -729,7 +1139,52 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 	
 	//	Previous version didn't have everything
 
-	if (Ctx.dwVersion < 64)
+	if (Ctx.dwVersion >= 120)
+		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
+
+	else if (Ctx.dwVersion >= 119)
+		{
+		SParticle119 *pOldArray = new SParticle119[m_iCount];
+		Ctx.pStream->Read((char *)pOldArray, sizeof(SParticle) * m_iCount);
+
+		for (i = 0; i < m_iCount; i++)
+			{
+			m_pArray[i].Pos = pOldArray[i].Pos;
+			m_pArray[i].Vel = pOldArray[i].Vel;
+			m_pArray[i].x = pOldArray[i].x;
+			m_pArray[i].y = pOldArray[i].y;
+			m_pArray[i].xVel = pOldArray[i].xVel;
+			m_pArray[i].yVel = pOldArray[i].yVel;
+			m_pArray[i].iGeneration = pOldArray[i].iGeneration;
+			m_pArray[i].iLifeLeft = pOldArray[i].iLifeLeft;
+			m_pArray[i].iDestiny = pOldArray[i].iDestiny;
+			m_pArray[i].iRotation = pOldArray[i].iRotation;
+			m_pArray[i].rData = pOldArray[i].dwData;
+			m_pArray[i].fAlive = pOldArray[i].fAlive;
+			}
+		}
+	else if (Ctx.dwObjClassID >= 64)
+		{
+		SParticle64 *pOldArray = new SParticle64[m_iCount];
+		Ctx.pStream->Read((char *)pOldArray, sizeof(SParticle) * m_iCount);
+
+		for (i = 0; i < m_iCount; i++)
+			{
+			m_pArray[i].Pos = pOldArray[i].Pos;
+			m_pArray[i].Vel = pOldArray[i].Vel;
+			m_pArray[i].x = pOldArray[i].x;
+			m_pArray[i].y = pOldArray[i].y;
+			m_pArray[i].xVel = pOldArray[i].xVel;
+			m_pArray[i].yVel = pOldArray[i].yVel;
+			m_pArray[i].iGeneration = 0;
+			m_pArray[i].iLifeLeft = pOldArray[i].iLifeLeft;
+			m_pArray[i].iDestiny = pOldArray[i].iDestiny;
+			m_pArray[i].iRotation = pOldArray[i].iRotation;
+			m_pArray[i].rData = pOldArray[i].dwData;
+			m_pArray[i].fAlive = pOldArray[i].fAlive;
+			}
+		}
+	else
 		{
 		for (i = 0; i < m_iCount; i++)
 			{
@@ -740,11 +1195,13 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 			Ctx.pStream->Read((char *)&m_pArray[i].iLifeLeft, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].iDestiny, sizeof(DWORD));
 			Ctx.pStream->Read((char *)&m_pArray[i].iRotation, sizeof(DWORD));
-			Ctx.pStream->Read((char *)&m_pArray[i].dwData, sizeof(DWORD));
+
+			DWORD dwData;
+			Ctx.pStream->Read((char *)&dwData, sizeof(DWORD));
+			m_pArray[i].rData = (Metric)dwData;
 
 			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 			m_pArray[i].fAlive = ((dwLoad & 0x00000001) ? true : false);
-			m_pArray[i].dwSpare = 0;
 
 			//	See if we need to compute real coords
 
@@ -755,15 +1212,38 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 				}
 			}
 		}
-	else
-		Ctx.pStream->Read((char *)m_pArray, sizeof(SParticle) * m_iCount);
 	}
 
-void CParticleArray::Update (SEffectUpdateCtx &Ctx)
+void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
 
 //	Update
 //
 //	Updates the array based on the context
+
+	{
+	if ((Ctx.pDamageDesc || Ctx.iWakePotential > 0) && Ctx.pSystem)
+		UpdateCollisions(Desc, Ctx);
+
+	//	If we're tracking, change velocity to follow target
+
+	if (Ctx.pTarget && Ctx.pDamageDesc && Ctx.pDamageDesc->IsTrackingTime(Ctx.iTick))
+		UpdateTrackTarget(Ctx.pTarget, Ctx.pDamageDesc->GetManeuverRate(), Ctx.pDamageDesc->GetRatedSpeed());
+
+	//	Adjust based on style
+
+	switch (Desc.GetStyle())
+		{
+		case CParticleSystemDesc::styleComet:
+			UpdateComet(Desc, Ctx);
+			break;
+		}
+	}
+
+void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
+
+//	UpdateCollisions
+//
+//	Update particle collisions, including damage
 
 	{
 	int i;
@@ -774,8 +1254,8 @@ void CParticleArray::Update (SEffectUpdateCtx &Ctx)
 
 	//	Compute some values
 
-	int iSplashChance = (Ctx.pDamageDesc ? Ctx.pDamageDesc->GetParticleSplashChance() : 0);
-	int iGhostChance = (Ctx.pDamageDesc ? Ctx.pDamageDesc->GetParticleMissChance() : 0);
+	int iSplashChance = Desc.GetSplashChance();
+	int iGhostChance = Desc.GetMissChance();
 
 	//	Compute the velocity of the effect object in Km/tick
 
@@ -1027,6 +1507,47 @@ void CParticleArray::Update (SEffectUpdateCtx &Ctx)
 		}
 	}
 
+void CParticleArray::UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
+
+//	UpdateComet
+//
+//	Update comet velocity
+
+	{
+	const Metric SPEED_CONVERGE_FACTOR = 0.95;
+
+	//	Calculate some basic metrics
+
+	UseRealCoords();
+	Metric rMaxSpeed = Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+	Metric rMinSpeed = Desc.GetEmitSpeed().GetMinValue() * LIGHT_SPEED / 100.0;
+	Metric rSpeedRange = Max(0.01 * LIGHT_SPEED, rMaxSpeed - rMinSpeed);
+
+	//	Loop over all particles and adjust their velocity so
+	//	that they all match max speed.
+
+	SParticle *pParticle = m_pArray;
+	SParticle *pEnd = pParticle + m_iCount;
+
+	while (pParticle < pEnd)
+		{
+		if (pParticle->fAlive
+				&& pParticle->rData > 0.0)
+			{
+			Metric rVelAdj = SPEED_CONVERGE_FACTOR * pParticle->rData;
+			if (rVelAdj < 0.01)
+				rVelAdj = 0.0;
+
+			pParticle->Vel = g_SecondsPerUpdate * (m_vLastEmitSourceVel + ::PolarToVector(pParticle->iRotation, rMaxSpeed - (rSpeedRange * rVelAdj)));
+			pParticle->rData = rVelAdj;
+			}
+
+		//	Next
+
+		pParticle++;
+		}
+	}
+
 void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePos)
 
 //	UpdateMotionLinear
@@ -1073,52 +1594,47 @@ void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePo
 			{
 			if (pParticle->fAlive)
 				{
-				iParticleCount++;
+				//	Update lifetime. If -1, then we're immortal
 
-				//	Update position
-
-				pParticle->Pos = pParticle->Pos + pParticle->Vel;
-
-				//	Convert to integer
-				//	NOTE: If we're using real coords we always ignore integer
-				//	velocity.
-
-				PosToXY(pParticle->Pos, &pParticle->x, &pParticle->y);
-
-				//	Update the bounding box
-
-				if (pParticle->Pos.GetX() > xRight)
-					xRight = pParticle->Pos.GetX();
-				if (pParticle->Pos.GetX() < xLeft)
-					xLeft = pParticle->Pos.GetX();
-
-				if (pParticle->Pos.GetY() < yBottom)
-					yBottom = pParticle->Pos.GetY();
-				if (pParticle->Pos.GetY() > yTop)
-					yTop = pParticle->Pos.GetY();
-
-				//	Update lifetime
-
-				if (pParticle->iLifeLeft > 0)
+				if (pParticle->iLifeLeft == -1
+						|| (--pParticle->iLifeLeft > 0))
 					{
-					pParticle->iLifeLeft--;
+					iParticleCount++;
+
+					//	Update position
+
+					pParticle->Pos = pParticle->Pos + pParticle->Vel;
+
+					//	Convert to integer
+					//	NOTE: If we're using real coords we always ignore integer
+					//	velocity.
+
+					PosToXY(pParticle->Pos, &pParticle->x, &pParticle->y);
+
+					//	Update the bounding box
+
+					if (pParticle->Pos.GetX() > xRight)
+						xRight = pParticle->Pos.GetX();
+					if (pParticle->Pos.GetX() < xLeft)
+						xLeft = pParticle->Pos.GetX();
+
+					if (pParticle->Pos.GetY() < yBottom)
+						yBottom = pParticle->Pos.GetY();
+					if (pParticle->Pos.GetY() > yTop)
+						yTop = pParticle->Pos.GetY();
+
+					//	Update center of mass
+
+					if (bCalcCenterOfMass)
+						vTotalPos = vTotalPos + pParticle->Pos;
+
 					bAllParticlesDead = false;
 					}
 
 				//	If we hit 0, then we're dead
 
-				else if (pParticle->iLifeLeft == 0)
-					pParticle->fAlive = false;
-
-				//	Otherwise, LifeLeft is -1 and we're immortal
-
 				else
-					bAllParticlesDead = false;
-
-				//	Update center of mass
-
-				if (bCalcCenterOfMass)
-					vTotalPos = vTotalPos + pParticle->Pos;
+					pParticle->fAlive = false;
 				}
 
 			//	Next
@@ -1161,40 +1677,30 @@ void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePo
 			{
 			if (pParticle->fAlive)
 				{
-				//	Update position
-
-				pParticle->x += pParticle->xVel;
-				pParticle->y += pParticle->yVel;
-
-				//	Update the bounding box
-
-				if (pParticle->x > xRight)
-					xRight = pParticle->x;
-				if (pParticle->x < xLeft)
-					xLeft = pParticle->x;
-
-				if (pParticle->y > yBottom)
-					yBottom = pParticle->y;
-				if (pParticle->y < yTop)
-					yTop = pParticle->y;
-
-				//	Update lifetime
-
-				if (pParticle->iLifeLeft > 0)
+				if (pParticle->iLifeLeft == -1
+						|| (--pParticle->iLifeLeft > 0))
 					{
-					pParticle->iLifeLeft--;
 					bAllParticlesDead = false;
+
+					//	Update position
+
+					pParticle->x += pParticle->xVel;
+					pParticle->y += pParticle->yVel;
+
+					//	Update the bounding box
+
+					if (pParticle->x > xRight)
+						xRight = pParticle->x;
+					if (pParticle->x < xLeft)
+						xLeft = pParticle->x;
+
+					if (pParticle->y > yBottom)
+						yBottom = pParticle->y;
+					if (pParticle->y < yTop)
+						yTop = pParticle->y;
 					}
-
-				//	If we hit 0, then we're dead
-
-				else if (pParticle->iLifeLeft == 0)
-					pParticle->fAlive = false;
-
-				//	Otherwise, LifeLeft is -1 and we're immortal
-
 				else
-					bAllParticlesDead = false;
+					pParticle->fAlive = false;
 				}
 
 			//	Next
@@ -1379,6 +1885,37 @@ void CParticleArray::UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate
 		}
 	}
 
+void CParticleArray::UpdateWrithe (SEffectUpdateCtx &UpdateCtx)
+
+//	UpdateWrithe
+//
+//	Updates the particle velocity and direction for a writhe animation.
+
+	{
+	//	We need to use real coordinates instead of fixed point
+
+	UseRealCoords();
+
+	//	Loop over all particles
+
+	SParticle *pParticle = m_pArray;
+	SParticle *pEnd = pParticle + m_iCount;
+
+	while (pParticle < pEnd)
+		{
+		if (pParticle->fAlive)
+			{
+			int iTurn = (4 + (pParticle->iDestiny % 6)) * ((((pParticle->iDestiny + UpdateCtx.iTick) / 60) % 2) == 0 ? -1 : 1);
+			pParticle->iRotation = AngleMod(pParticle->iRotation + iTurn);
+			pParticle->Vel = pParticle->Vel.Rotate(mathDegreesToRadians(iTurn));
+			}
+
+		//	Next
+
+		pParticle++;
+		}
+	}
+
 void CParticleArray::UseRealCoords (void)
 
 //	UseRealCoords
@@ -1419,6 +1956,9 @@ void CParticleArray::WriteToStream (IWriteStream *pStream) const
 //	CVector			m_vCenterOfMass
 //	CVector			m_vUR
 //	CVector			m_vLL
+//	CVector			m_vLastEmitSource
+//	CVector			m_vLastEmitSourceVel
+//	DWORD			m_iLastEmitDirection
 //	DWORD			flags
 //	SParticle[]		array of particles
 
@@ -1430,6 +1970,10 @@ void CParticleArray::WriteToStream (IWriteStream *pStream) const
 	pStream->Write((char *)&m_vCenterOfMass, sizeof(CVector));
 	pStream->Write((char *)&m_vUR, sizeof(CVector));
 	pStream->Write((char *)&m_vLL, sizeof(CVector));
+
+	pStream->Write((char *)&m_vLastEmitSource, sizeof(CVector));
+	pStream->Write((char *)&m_vLastEmitSourceVel, sizeof(CVector));
+	pStream->Write((char *)&m_iLastEmitDirection, sizeof(DWORD));
 
 	//	Flags
 

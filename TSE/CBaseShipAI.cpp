@@ -128,7 +128,7 @@ void CBaseShipAI::AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShip
 		FireOnOrderChanged();
 	}
 
-void CBaseShipAI::Behavior (void)
+void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 
 //	Behavior
 //
@@ -143,6 +143,7 @@ void CBaseShipAI::Behavior (void)
 
 	//	Reset
 
+	m_AICtx.SetSystemUpdateCtx(&Ctx);
 	ResetBehavior();
 
 	//	Use basic items
@@ -188,7 +189,7 @@ void CBaseShipAI::Behavior (void)
 
 	if (m_fOldStyleBehaviors)
 		{
-		OnBehavior();
+		OnBehavior(Ctx);
 
 		//	This method is incompatible with order modules so we just return here.
 
@@ -207,7 +208,7 @@ void CBaseShipAI::Behavior (void)
 		if (m_pOrderModule == NULL)
 			{
 			m_fOldStyleBehaviors = true;
-			OnBehavior();
+			OnBehavior(Ctx);
 			return;
 			}
 
@@ -235,6 +236,10 @@ void CBaseShipAI::Behavior (void)
 	//	Implement orders
 
 	m_pOrderModule->Behavior(m_pShip, m_AICtx);
+
+	//	Done
+
+	m_AICtx.SetSystemUpdateCtx(NULL);
 
 	DEBUG_CATCH
 	}
@@ -909,7 +914,7 @@ bool CBaseShipAI::IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions)
 	return false;
 	}
 
-void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
+void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 
 //	OnAttacked
 //
@@ -923,7 +928,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
 
 	if (pAttacker)
 		{
-		CSpaceObject *pOrderGiver = pAttacker->GetOrderGiver(Damage.GetCause());
+		CSpaceObject *pOrderGiver = pAttacker->GetOrderGiver(Damage.Damage.GetCause());
 
 		//	If we were attacked by a friend, then warn them off
 		//	(Unless we're explicitly targeting the friend)
@@ -937,7 +942,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const DamageDesc &Damage)
 			//
 			//	Also, we ignore damage from automated weapons
 
-			if (!Damage.IsAutomatedWeapon())
+			if (!Damage.Damage.IsAutomatedWeapon())
 				HandleFriendlyFire(pOrderGiver);
 
 			bFriendlyFire = true;

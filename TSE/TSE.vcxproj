@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug in Program Files|Win32">
       <Configuration>Debug in Program Files</Configuration>
@@ -29,27 +29,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -105,7 +105,7 @@
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
@@ -133,7 +133,7 @@
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
@@ -237,8 +237,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Include\TSEEffects.h" />
     <ClInclude Include="..\Include\TSEGeometry.h" />
+    <ClInclude Include="..\Include\TSEParticleSystem.h" />
     <ClInclude Include="..\Include\TSEPlayer.h" />
+    <ClInclude Include="..\Include\TSEPlayerSettings.h" />
     <ClInclude Include="..\Include\TSEShipAI.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="CrewAIImpl.h" />
@@ -256,6 +259,7 @@
     <ClInclude Include="..\Include\TSETypes.h" />
     <ClInclude Include="OrderModuleImpl.h" />
     <ClInclude Include="PsycheDefs.h" />
+    <ClInclude Include="SFXFractalImpl.h" />
     <ClInclude Include="SFXImpl.h" />
     <ClInclude Include="ShipAIImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
@@ -268,6 +272,7 @@
     <ClCompile Include="CAscendedObjectList.cpp" />
     <ClCompile Include="CAttackOrder.cpp" />
     <ClCompile Include="CAttackStationOrder.cpp" />
+    <ClCompile Include="CCircleRadiusDisruptor.cpp" />
     <ClCompile Include="CCommunicationsHandler.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -286,10 +291,12 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CCompositeImageModifiers.cpp" />
+    <ClCompile Include="CCompositeImageType.cpp" />
     <ClCompile Include="CCreatePainterCtx.cpp" />
     <ClCompile Include="CCrewAI.cpp" />
     <ClCompile Include="CCrewPsyche.cpp" />
     <ClCompile Include="CCXMLWrapper.cpp" />
+    <ClCompile Include="CDesignTypeCriteria.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
@@ -309,6 +316,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CEffectParamDesc.cpp" />
+    <ClCompile Include="CExplosionColorizer.cpp" />
+    <ClCompile Include="CFractalTextureLibrary.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
@@ -337,6 +346,7 @@
     <ClCompile Include="COrderList.cpp" />
     <ClCompile Include="CPaintHelper.cpp" />
     <ClCompile Include="CParticleArray.cpp" />
+    <ClCompile Include="CParticleSystemDesc.cpp" />
     <ClCompile Include="CPlayerSettings.cpp" />
     <ClCompile Include="CRegenDesc.cpp" />
     <ClCompile Include="CResourceDb.cpp">
@@ -366,6 +376,7 @@
     <ClCompile Include="CSoundType.cpp" />
     <ClCompile Include="CSpaceObjectAddressResolver.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
+    <ClCompile Include="CSphericalTextureMapper.cpp" />
     <ClCompile Include="CStationEncounterCtx.cpp" />
     <ClCompile Include="CStationEncounterDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />
@@ -435,7 +446,7 @@
     <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="SFXLightningStorm.cpp" />
     <ClCompile Include="SFXOrb.cpp" />
-    <ClCompile Include="SFXParticleJet.cpp" />
+    <ClCompile Include="SFXParticleSystem.cpp" />
     <ClCompile Include="SFXRay.cpp" />
     <ClCompile Include="XMLLoader.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

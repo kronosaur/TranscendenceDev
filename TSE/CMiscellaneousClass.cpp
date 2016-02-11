@@ -137,7 +137,7 @@ int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pS
 	return iLevel;
 	}
 
-int CMiscellaneousClass::GetPowerRating (CItemCtx &Ctx)
+int CMiscellaneousClass::GetPowerRating (CItemCtx &Ctx) const
 
 //	GetPowerRating
 //

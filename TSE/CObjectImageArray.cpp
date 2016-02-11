@@ -12,6 +12,7 @@ static CObjectClass<CObjectImageArray>g_Class(OBJID_COBJECTIMAGEARRAY, NULL);
 #define BLENDING_ATTRIB					CONSTLIT("blend")
 #define ROTATION_COLUMNS_ATTRIB			CONSTLIT("rotationColumns")
 #define ROTATION_COUNT_ATTRIB			CONSTLIT("rotationCount")
+#define VIEWPORT_RATIO_ATTRIB			CONSTLIT("viewportRatio")
 #define VIEWPORT_SIZE_ATTRIB			CONSTLIT("viewportSize")
 #define X_OFFSET_ATTRIB					CONSTLIT("xOffset")
 #define Y_OFFSET_ATTRIB					CONSTLIT("yOffset")
@@ -49,6 +50,7 @@ static char g_ImageFrameCountAttrib[] = "imageFrameCount";
 static char g_ImageTicksPerFrameAttrib[] = "imageTicksPerFrame";
 
 CG32bitImage CObjectImageArray::m_NullImage;
+CObjectImageArray CObjectImageArray::m_Null;
 
 CObjectImageArray::CObjectImageArray (void) : CObject(&g_Class),
 		m_pImage(NULL),
@@ -908,6 +910,9 @@ ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int
 //	Creates a new image from the source
 
 	{
+	if (Source.m_pImage == NULL)
+		return NOERROR;
+
 	CG32bitImage &SourceImage = Source.GetImage(CONSTLIT("Rotated image"));
 	RECT rcSrc = Source.GetImageRect(iTick, iVariant);
 
@@ -1006,10 +1011,18 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 
 	//	Viewport
 
-	if (pDesc->FindAttributeInteger(VIEWPORT_SIZE_ATTRIB, &m_iViewportSize))
+	Metric rViewportRatio;
+	if (pDesc->FindAttributeDouble(VIEWPORT_RATIO_ATTRIB, &rViewportRatio))
+		{
+		if (rViewportRatio > 0.0)
+			m_iViewportSize = Max(1, (int)((RectWidth(m_rcImage) / (2.0 * rViewportRatio)) + 0.5));
+		else
+			m_iViewportSize = Max(1, RectWidth(m_rcImage));
+		}
+	else if (pDesc->FindAttributeInteger(VIEWPORT_SIZE_ATTRIB, &m_iViewportSize))
 		m_iViewportSize = Max(1, m_iViewportSize);
 	else
-		m_iViewportSize = RectWidth(m_rcImage);
+		m_iViewportSize = Max(1, RectWidth(m_rcImage));
 
 	//	Compute rotation offsets
 

@@ -54,6 +54,9 @@
     <Filter Include="Notes and Documents">
       <UniqueIdentifier>{bc46a20a-e8b5-477b-9bb2-1882b15ca0c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ParticleSystem">
+      <UniqueIdentifier>{f2098d42-18ad-4eec-b83d-44945622abff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -122,6 +125,18 @@
     <ClInclude Include="PsycheDefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SFXFractalImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEEffects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEPlayerSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -143,9 +158,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CMoveCtx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CParticleArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CResourceDb.cpp">
@@ -604,12 +616,6 @@
     <ClCompile Include="CMissile.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
-    <ClCompile Include="CParticleDamage.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="CParticleEffect.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="CRadiusDamage.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
@@ -775,9 +781,6 @@
     <ClCompile Include="CMapViewportCtx.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
-    <ClCompile Include="SFXParticleJet.cpp">
-      <Filter>Source Files\SFX</Filter>
-    </ClCompile>
     <ClCompile Include="CPaintHelper.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -852,6 +855,39 @@
     </ClCompile>
     <ClCompile Include="CAdventureHighScoreList.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CCompositeImageType.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CFractalTextureLibrary.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CSphericalTextureMapper.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CCircleRadiusDisruptor.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CExplosionColorizer.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXParticleSystem.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleArray.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleSystemDesc.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleDamage.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleEffect.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CDesignTypeCriteria.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

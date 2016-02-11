@@ -5,6 +5,15 @@
 
 #include "PreComp.h"
 
+CItemCtx::~CItemCtx (void)
+
+//	CItemCtx destructor
+
+	{
+	if (m_pEnhancements)
+		m_pEnhancements->Delete();
+	}
+
 void CItemCtx::ClearItemCache (void)
 
 //	ClearItemCache
@@ -119,6 +128,22 @@ CInstalledDevice *CItemCtx::GetDevice(void)
 	return NULL;
 	}
 
+int CItemCtx::GetDeviceCharges (void)
+
+//	GetDeviceCharges
+//
+//	Returns the number of charges for the device (or 0).
+
+	{
+	CSpaceObject *pSource = GetSource();
+	CInstalledDevice *pDevice = GetDevice();
+
+	if (pSource == NULL || pDevice == NULL)
+		return 0;
+
+	return pDevice->GetCharges(pSource);
+	}
+
 CDeviceClass *CItemCtx::GetDeviceClass(void)
 
 //	GetDeviceClass
@@ -143,6 +168,31 @@ CDeviceClass *CItemCtx::GetDeviceClass(void)
 	//	Couldn't get it
 
 	return NULL;
+	}
+
+const CItemEnhancementStack *CItemCtx::GetEnhancementStack (void)
+
+//	GetEnhancementStack
+//
+//	Returns the enhancement stack for the given item. May return NULL.
+
+	{
+	//	If we have an installed device, then get the enhancement stack from it.
+
+	CInstalledDevice *pDevice = GetDevice();
+	if (pDevice)
+		return pDevice->GetEnhancements();
+
+	//	Otherwise, see if we've got a cached enhancement stack
+
+	if (m_pEnhancements)
+		return m_pEnhancements;
+
+	//	Otherwise, we need to create one from mods
+
+	m_pEnhancements = new CItemEnhancementStack;
+	m_pEnhancements->Insert(GetMods());
+	return m_pEnhancements;
 	}
 
 const CItem &CItemCtx::GetItem(void)
@@ -236,4 +286,40 @@ const CItemEnhancement &CItemCtx::GetMods(void)
 	//	Else, we have to get an item
 
 	return GetItem().GetMods();
+	}
+
+bool CItemCtx::ResolveVariant (void)
+
+//	ResolveVariant
+//
+//	If m_pItem is a missile, we look for the weapon that can launch it and 
+//	cache it in m_pWeapon and m_iVariant. If successful, we return TRUE.
+
+	{
+	int i;
+
+	if (m_pItem == NULL)
+		return false;
+
+	//	Look through all weapons
+
+	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+		{
+		CItemType *pType = g_pUniverse->GetItemType(i);
+		CDeviceClass *pWeapon;
+
+		if (pType->IsDevice() 
+				&& (pWeapon = pType->GetDeviceClass()))
+			{
+			int iVariant = pWeapon->GetAmmoVariant(m_pItem->GetType());
+			if (iVariant != -1)
+				{
+				m_pWeapon = pWeapon;
+				m_iVariant = iVariant;
+				return true;
+				}
+			}
+		}
+
+	return false;
 	}

@@ -911,11 +911,13 @@ void CUIHelper::PaintDisplayAttributes (CG32bitImage &Dest, TArray<SDisplayAttri
 		switch (Attribs[i].iType)
 			{
 			case attribPositive:
+			case attribEnhancement:
 				rgbBackColor = VI.GetColor(colorAreaAdvantage);
 				rgbTextColor = VI.GetColor(colorTextAdvantage);
 				break;
 
 			case attribNegative:
+			case attribWeakness:
 				rgbBackColor = VI.GetColor(colorAreaDisadvantage);
 				rgbTextColor = VI.GetColor(colorTextDisadvantage);
 				break;

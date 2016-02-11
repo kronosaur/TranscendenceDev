@@ -53,11 +53,11 @@ class CParticleCloudPainter : public IEffectPainter
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
-		virtual void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 		virtual void SetPos (const CVector &vPos) { m_Particles.SetOrigin(vPos); }
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
 	private:
@@ -89,7 +89,7 @@ CParticleCloudEffectCreator::~CParticleCloudEffectCreator (void)
 		delete m_pParticleEffect;
 	}
 
-IEffectPainter *CParticleCloudEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CParticleCloudEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //
@@ -386,18 +386,18 @@ void CParticleCloudPainter::CreateNewParticles (int iCount, const CVector &vInit
 			if (m_pCreator->GetStyle() == CParticleCloudEffectCreator::styleExhaust)
 				iBaseRotation += 180;
 
-			Metric rBaseRotation = AngleToRadians(iBaseRotation);
+			Metric rBaseRotation = mathDegreesToRadians(iBaseRotation);
 
 			//	Compute the spread angle, in radians
 
 			Metric rSpread;
 			int iSpreadAngle = m_pCreator->GetSpreadAngle();
 			if (iSpreadAngle >= 0)
-				rSpread = AngleToRadians(iSpreadAngle);
+				rSpread = mathDegreesToRadians(iSpreadAngle);
 			else if (m_pCreator->GetStyle() == CParticleCloudEffectCreator::styleExhaust)
-				rSpread = AngleToRadians(4);
+				rSpread = mathDegreesToRadians(4);
 			else
-				rSpread = AngleToRadians(20);
+				rSpread = mathDegreesToRadians(20);
 
 			Metric rHalfSpread = 0.5 * rSpread;
 
@@ -572,12 +572,9 @@ void CParticleCloudPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	Ctx.pDamageDesc = m_pCreator->GetDamageDesc();
 	Ctx.iWakePotential = m_pCreator->GetWakePotential();
 
-	if ((Ctx.pDamageDesc || Ctx.iWakePotential > 0) && Ctx.pSystem)
-		{
-		//	Update
+	//	Update
 
-		m_Particles.Update(Ctx);
-		}
+	m_Particles.Update(CParticleSystemDesc(), Ctx);
 
 	//	Create new particles
 
@@ -706,7 +703,7 @@ void CParticleCloudPainter::SetLifetime (int iLifetime)
 		m_iEmitLifetime = (m_pCreator->GetEmitLifetime() == -1 ? 100 : m_pCreator->GetEmitLifetime()) * iLifetime / 100;
 	}
 
-void CParticleCloudPainter::SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+void CParticleCloudPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //

@@ -7,6 +7,7 @@
 #define ARMOR_TAG								CONSTLIT("Armor")
 #define AUTO_DEFENSE_CLASS_TAG					CONSTLIT("AutoDefenseDevice")
 #define CARGO_HOLD_CLASS_TAG					CONSTLIT("CargoHoldDevice")
+#define COMPONENTS_TAG							CONSTLIT("Components")
 #define CYBER_DECK_CLASS_TAG					CONSTLIT("CyberDeckDevice")
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
 #define DRIVE_CLASS_TAG							CONSTLIT("DriveDevice")
@@ -96,6 +97,7 @@
 
 #define SPECIAL_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged:")
 #define SPECIAL_DAMAGE_TYPE						CONSTLIT("damageType:")
+#define SPECIAL_HAS_COMPONENTS					CONSTLIT("hasComponents:")
 #define SPECIAL_IS_LAUNCHER						CONSTLIT("isLauncher:")
 #define SPECIAL_LAUNCHED_BY						CONSTLIT("launchedBy:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
@@ -124,6 +126,7 @@ static CStationType *g_pFlotsamStationType = NULL;
 
 CItemType::CItemType (void) : 
 		m_dwSpare(0),
+		m_pComponents(NULL),
 		m_pUseCode(NULL),
 		m_pArmor(NULL),
 		m_pDevice(NULL),
@@ -139,6 +142,9 @@ CItemType::~CItemType (void)
 //	CItemType destructor
 
 	{
+	if (m_pComponents)
+		delete m_pComponents;
+
 	if (m_pUseCode)
 		m_pUseCode->Discard(&g_pUniverse->GetCC());
 
@@ -285,8 +291,8 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_FUEL_CAPACITY) && IsFuel())
 		{
-		int iFuelPerItem = strToInt(GetData(), 0);
-		*retsValue = strFromInt(iFuelPerItem / FUEL_UNITS_PER_STD_ROD);
+		Metric rFuelPerItem = strToInt(GetData(), 0);
+		*retsValue = strFromInt((int)(rFuelPerItem / FUEL_UNITS_PER_STD_ROD));
 
 		//	NOTE: When IsFuel() is FALSE we fall through to the else
 		//	case, which asks reactor devices.
@@ -501,6 +507,45 @@ ItemCategories CItemType::GetCategoryForNamedDevice (DeviceNames iDev)
 	return itemcatMiscDevice;
 	}
 
+CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) const
+
+//  GetCurrencyAndValue
+//
+//  Returns the value of the item and its currency.
+
+    {
+	//	NOTE: We have got that guaranteed m_pUnknownType is non-NULL if IsKnown is FALSE.
+
+	if (!IsKnown() && !bActual)
+		return m_pUnknownType->GetCurrencyAndValue(Ctx);
+
+	//	Value in the item's currency.
+
+	CurrencyValue iValue = m_iValue.GetValue();
+
+	//	If we need to account for charges, then do it
+
+	if (m_iExtraValuePerCharge != 0)
+		{
+		if (Ctx.IsItemNull())
+			iValue = Max((CurrencyValue)0, iValue + (m_InitDataValue.GetAveValue() * m_iExtraValuePerCharge));
+		else
+			iValue = Max((CurrencyValue)0, iValue + (Ctx.GetItem().GetCharges() * m_iExtraValuePerCharge));
+		}
+
+	else if (m_fValueCharges && !Ctx.IsItemNull())
+		{
+		int iMaxCharges = GetMaxCharges();
+
+		if (iMaxCharges > 0)
+			iValue = (iValue * (1 + Ctx.GetItem().GetCharges())) / (1 + iMaxCharges);
+		}
+
+    //  Done
+
+    return CCurrencyAndValue(iValue, m_iValue.GetCurrencyType());
+    }
+
 const CString &CItemType::GetDesc (void) const
 
 //	GetDesc
@@ -567,7 +612,7 @@ int CItemType::GetInstallCost (void) const
 	if (m_pArmor)
 		return m_pArmor->GetInstallCost();
 	else if (m_pDevice)
-		return 100 * (((GetApparentLevel() * GetApparentLevel()) + 4) / 5);
+		return m_pDevice->GetInstallCost();
 	else
 		return -1;
 	}
@@ -801,46 +846,22 @@ bool CItemType::GetUseDesc (SUseDesc *retDesc) const
 		return false;
 	}
 
-int CItemType::GetValue (CItemCtx &Ctx, bool bActual) const
+void CItemType::InitComponents (void)
 
-//	GetValue
+//	InitComponents
 //
-//	Returns the value of the item in its currency
+//	Initializes m_Components
 
 	{
-	//	NOTE: We have got that guaranteed m_pUnknownType is non-NULL if IsKnown is FALSE.
-
-	if (!IsKnown() && !bActual)
-		return m_pUnknownType->GetValue(Ctx);
-
-	//	Value in the item's currency.
-
-	int iValue = (int)m_iValue.GetValue();
-
-	//	If we need to account for charges, then do it
-
-	if (m_iExtraValuePerCharge != 0)
+	m_Components.DeleteAll();
+	if (m_pComponents)
 		{
-		if (Ctx.IsItemNull())
-			return Max(0, iValue + (m_InitDataValue.GetAveValue() * m_iExtraValuePerCharge));
-		else
-			return Max(0, iValue + (Ctx.GetItem().GetCharges() * m_iExtraValuePerCharge));
+		CItemListManipulator ItemList(m_Components);
+		SItemAddCtx Ctx(ItemList);
+		Ctx.iLevel = GetLevel();
+
+		m_pComponents->AddItems(Ctx);
 		}
-
-	else if (m_fValueCharges && !Ctx.IsItemNull())
-		{
-		int iMaxCharges = GetMaxCharges();
-
-		if (iMaxCharges > 0)
-			return (iValue * (1 + Ctx.GetItem().GetCharges())) / (1 + iMaxCharges);
-		else
-			return iValue;
-		}
-
-	//	Otherwise, just the fixed price
-
-	else
-		return iValue;
 	}
 
 void CItemType::InitRandomNames (void)
@@ -953,6 +974,9 @@ void CItemType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pUnknownType.GetUNID(), true);
 	retTypesUsed->SetAt(strToInt(m_pUseScreen.GetUNID(), 0), true);
 
+	if (m_pComponents)
+		m_pComponents->AddTypesUsed(retTypesUsed);
+
 	if (m_pArmor)
 		m_pArmor->AddTypesUsed(retTypesUsed);
 
@@ -997,6 +1021,14 @@ ALERROR CItemType::OnBindDesign (SDesignLoadCtx &Ctx)
 		return error;
 
 	//	Call contained objects
+
+	if (m_pComponents)
+		{
+		if (error = m_pComponents->OnDesignLoadComplete(Ctx))
+			return error;
+
+		InitComponents();
+		}
 
 	if (m_pDevice)
 		if (error = m_pDevice->Bind(Ctx))
@@ -1140,6 +1172,14 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			{
 			if (error = AddEventHandler(ON_REFUEL_TAG, pSubDesc->GetContentText(0), &Ctx.sError))
 				return ComposeLoadError(Ctx, CONSTLIT("Unable to load OnRefuel event"));
+			}
+
+		//	Components
+
+		else if (strEquals(pSubDesc->GetTag(), COMPONENTS_TAG))
+			{
+			if (error = IItemGenerator::CreateFromXML(Ctx, pSubDesc, &m_pComponents))
+				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unable to load Components: %s"), Ctx.sError));
 			}
 
 		//	Armor
@@ -1294,6 +1334,11 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		else
 			return (false == bValue);
 		}
+	else if (strStartsWith(sAttrib, SPECIAL_HAS_COMPONENTS))
+		{
+		bool bValue = strEquals(strSubString(sAttrib, SPECIAL_HAS_COMPONENTS.GetLength(), -1), SPECIAL_TRUE);
+		return ((m_Components.GetCount() > 0) == bValue);
+		}
 	else if (strStartsWith(sAttrib, SPECIAL_IS_LAUNCHER))
 		{
 		bool bValue = strEquals(strSubString(sAttrib, SPECIAL_IS_LAUNCHER.GetLength(), -1), SPECIAL_TRUE);
@@ -1360,6 +1405,14 @@ void CItemType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 	if (m_pUnknownType == NULL)
 		m_fKnown = true;
+
+	//	Load components
+
+	if (Ctx.dwSystemVersion >= 117)
+		{
+		m_Components.DeleteAll();
+		m_Components.ReadFromStream(SLoadCtx(Ctx));
+		}
 	}
 
 void CItemType::OnReinit (void)
@@ -1376,7 +1429,10 @@ void CItemType::OnReinit (void)
 
 	m_fReference = m_fDefaultReference;
 
+	//	Initialize some random elements
+
 	InitRandomNames();
+	InitComponents();
 	}
 
 void CItemType::OnWriteToStream (IWriteStream *pStream)
@@ -1387,6 +1443,7 @@ void CItemType::OnWriteToStream (IWriteStream *pStream)
 //
 //	DWORD		flags
 //	DWORD		m_sUnknownName
+//	CItemList	m_Components
 
 	{
 	DWORD dwSave;
@@ -1397,6 +1454,8 @@ void CItemType::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	m_sUnknownName.WriteToStream(pStream);
+
+	m_Components.WriteToStream(pStream);
 	}
 
 bool CItemType::ParseItemCategory (const CString &sCategory, ItemCategories *retCategory)

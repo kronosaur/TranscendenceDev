@@ -48,7 +48,7 @@ class CTextPainter : public IEffectPainter
 
 //	CTextEffectCreator object
 
-IEffectPainter *CTextEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CTextEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //

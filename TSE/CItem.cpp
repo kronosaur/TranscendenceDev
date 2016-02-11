@@ -21,11 +21,15 @@
 
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_CHARGES						CONSTLIT("charges")
+#define PROPERTY_COMPONENTS						CONSTLIT("components")
+#define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
+#define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
+#define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 
 CItemEnhancement CItem::m_NullMod;
 CItem CItem::m_NullItem;
@@ -134,6 +138,96 @@ DWORD CItem::AddEnhancement (const CItemEnhancement &Enhancement)
 		m_pExtra->m_Mods.SetID(g_pUniverse->CreateGlobalID());
 
 	return m_pExtra->m_Mods.GetID();
+	}
+
+CString CItem::CalcSortKey (void) const
+
+//	CalcSortKey
+//
+//	Returns a sort key
+
+	{
+	CItemType *pType = GetType();
+	if (pType == NULL)
+		return NULL_STR;
+
+	//	All installed items first
+
+	CString sInstalled;
+	if (IsInstalled())
+		sInstalled = CONSTLIT("0");
+	else
+		sInstalled = CONSTLIT("1");
+
+	//	Next, sort on category
+
+	CString sCat;
+	switch (pType->GetCategory())
+		{
+		case itemcatWeapon:
+		case itemcatLauncher:
+			sCat = CONSTLIT("0");
+			break;
+
+		case itemcatMissile:
+			sCat = CONSTLIT("1");
+			break;
+
+		case itemcatShields:
+			sCat = CONSTLIT("2");
+			break;
+
+		case itemcatReactor:
+			sCat = CONSTLIT("3");
+			break;
+
+		case itemcatDrive:
+			sCat = CONSTLIT("4");
+			break;
+
+		case itemcatCargoHold:
+			sCat = CONSTLIT("5");
+			break;
+
+		case itemcatMiscDevice:
+			sCat = CONSTLIT("6");
+			break;
+
+		case itemcatArmor:
+			sCat = CONSTLIT("7");
+			break;
+
+		case itemcatFuel:
+		case itemcatUseful:
+			sCat = CONSTLIT("8");
+			break;
+
+		default:
+			sCat = CONSTLIT("9");
+		}
+
+	//	Next, sort by install location
+
+	if (IsInstalled() && pType->GetArmorClass())
+		sCat.Append(strPatternSubst(CONSTLIT("%03d%08x"), GetInstalled(), pType->GetUNID()));
+	else
+		sCat.Append(CONSTLIT("99900000000"));
+
+	//	Within category, sort by level (highest first)
+
+	sCat.Append(strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - pType->GetApparentLevel()));
+
+	//	Enhanced items before others
+
+	if (IsEnhanced())
+		sCat.Append(CONSTLIT("0"));
+	else if (IsDamaged())
+		sCat.Append(CONSTLIT("2"));
+	else
+		sCat.Append(CONSTLIT("1"));
+
+	CString sName = pType->GetSortName();
+	return strPatternSubst(CONSTLIT("%s%s%s%d"), sInstalled, sCat, sName, ((DWORD)(int)this) % 0x10000);
 	}
 
 CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName)
@@ -563,53 +657,54 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 	//	Add additional custom attributes
 
 	if (m_pItemType->IsKnown())
+		{
 		g_pUniverse->GetAttributeDesc().AccumulateAttributes(*this, retList);
 
-	CArmorClass *pArmor;
-	CDeviceClass *pDevice;
-	int iVariant;
+		CArmorClass *pArmor;
+		CDeviceClass *pDevice;
+		int iVariant;
 
-	//	Armor attributes
+		//	Armor attributes
 
-	if (pArmor = m_pItemType->GetArmorClass())
-		pArmor->AccumulateAttributes(Ctx, retList);
+		if (pArmor = m_pItemType->GetArmorClass())
+			pArmor->AccumulateAttributes(Ctx, retList);
 
-	//	Device attributes
+		//	Device attributes
 
-	else if (pDevice = m_pItemType->GetDeviceClass())
-		pDevice->AccumulateAttributes(Ctx, -1, retList);
+		else if (pDevice = m_pItemType->GetDeviceClass())
+			pDevice->AccumulateAttributes(Ctx, -1, retList);
 
-	//	Missile attributes
+		//	Missile attributes
 
-	else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher(&iVariant)))
-		pDevice->AccumulateAttributes(Ctx, iVariant, retList);
+		else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher(&iVariant)))
+			pDevice->AccumulateAttributes(Ctx, iVariant, retList);
 
-	//	Military and Illegal attributes
+		//	Military and Illegal attributes
 
-	if (m_pItemType->IsKnown()
-			&& m_pItemType->HasLiteralAttribute(CONSTLIT("Military")))
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("military")));
+		if (m_pItemType->HasLiteralAttribute(CONSTLIT("Military")))
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("military")));
 
-	if (m_pItemType->IsKnown()
-			&& m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("illegal")));
+		if (m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("illegal")));
 
-	//	Add various engine-based attributes
+		//	Add any enhancements
+
+		const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+		if (pEnhancements)
+			pEnhancements->AccumulateAttributes(Ctx, retList);
+
+		if (IsEnhanced())
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
+		}
+
+	//	Add various engine-based attributes (these are shown even if the item 
+	//	type is unknown).
 
 	if (IsDamaged())
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("damaged")));
 
 	if (IsDisrupted())
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("ionized")));
-
-	//	Add any enhancements as a display attribute
-
-	CString sEnhanced = GetEnhancedDesc(Ctx.GetSource());
-	if (!sEnhanced.IsBlank())
-		{
-		bool bDisadvantage = (*(sEnhanced.GetASCIIZPointer()) == '-');
-		retList->Insert(SDisplayAttribute((bDisadvantage ? attribNegative : attribPositive), sEnhanced));
-		}
 
 	//	Done
 
@@ -663,7 +758,7 @@ CString CItem::GetEnhancedDesc (CSpaceObject *pInstalled) const
 	//	Otherwise, generic enhancement
 
 	else if (IsEnhanced())
-		return CONSTLIT("+Enhanced");
+		return CONSTLIT("+enhanced");
 
 	//	Otherwise, not enhanced
 
@@ -758,12 +853,33 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
+	int i;
 
 	if (strEquals(sName, PROPERTY_CATEGORY))
 		return CC.CreateString(GetItemCategoryID(m_pItemType->GetCategory()));
 
 	else if (strEquals(sName, PROPERTY_CHARGES))
 		return CC.CreateInteger(GetCharges());
+
+	else if (strEquals(sName, PROPERTY_COMPONENTS))
+		{
+		const CItemList &Components = m_pItemType->GetComponents();
+		if (Components.GetCount() == 0)
+			return CC.CreateNil();
+
+		ICCItem *pList = CC.CreateLinkedList();
+		for (i = 0; i < Components.GetCount(); i++)
+			{
+			ICCItem *pEntry = CreateListFromItem(CC, Components.GetItem(i));
+			pList->Append(CC, pEntry);
+			pEntry->Discard(&CC);
+			}
+
+		return pList;
+		}
+
+	else if (strEquals(sName, PROPERTY_CURRENCY))
+		return CC.CreateInteger(m_pItemType->GetCurrencyType()->GetUNID());
 
 	else if (strEquals(sName, PROPERTY_DAMAGED))
 		return CC.CreateBool(IsDamaged());
@@ -782,6 +898,12 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 	else if (strEquals(sName, PROPERTY_INSTALLED))
 		return CC.CreateBool(IsInstalled());
 
+	else if (strEquals(sName, PROPERTY_MASS_BONUS_PER_CHARGE))
+		return CC.CreateInteger(m_pItemType->GetMassBonusPerCharge());
+
+	else if (strEquals(sName, PROPERTY_VALUE_BONUS_PER_CHARGE))
+		return CC.CreateInteger(m_pItemType->GetValueBonusPerCharge());
+
 	else
 		{
 		CDeviceClass *pDevice;
@@ -796,6 +918,11 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 
 		else if (pArmor = GetType()->GetArmorClass())
 			return pArmor->GetItemProperty(Ctx, sName);
+
+		//	If this is a missile, then pass it to the weapon.
+
+        else if (GetType()->IsMissile() && Ctx.ResolveVariant())
+			return Ctx.GetVariantDevice()->GetItemProperty(Ctx, sName);
 
 		//	Otherwise, from the type
 
@@ -2399,6 +2526,43 @@ CItemCriteria::~CItemCriteria (void)
 	{
 	if (pFilter)
 		pFilter->Discard(&g_pUniverse->GetCC());
+	}
+
+bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const
+
+//	GetExplicitLevelMatched
+//
+//	Returns the min and max levels that this criteria matches, assuming that
+//	there are explicit level criteria. If not, we return FALSE. If min or max
+//	criteria are missing, we return -1.
+
+	{
+	if (iEqualToLevel != -1)
+		{
+		*retiMin = iEqualToLevel;
+		*retiMax = iEqualToLevel;
+		return true;
+		}
+	else if (iLessThanLevel == -1 && iGreaterThanLevel == -1)
+		{ 
+		*retiMin = -1;
+		*retiMax = -1;
+		return false;
+		}
+	else
+		{
+		if (iLessThanLevel != -1)
+			*retiMax = iLessThanLevel - 1;
+		else
+			*retiMax = -1;
+
+		if (iGreaterThanLevel != -1)
+			*retiMin = iGreaterThanLevel + 1;
+		else
+			*retiMin = -1;
+
+		return true;
+		}
 	}
 
 int CItemCriteria::GetMaxLevelMatched (void) const

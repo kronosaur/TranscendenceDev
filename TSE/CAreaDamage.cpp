@@ -79,19 +79,7 @@ ALERROR CAreaDamage::Create (CSystem *pSystem,
 
 	//	Create a painter instance
 
-	CEffectCreator *pEffect;
-	if (pEffect = pDesc->GetEffect())
-		{
-		CCreatePainterCtx Ctx;
-		Ctx.SetWeaponFireDesc(pDesc);
-
-		pArea->m_pPainter = pEffect->CreatePainter(Ctx);
-
-		//	Set the expansion speed appropriately
-
-		if (pArea->m_pPainter)
-			pArea->m_pPainter->SetParamMetric(SPEED_PARAM, pDesc->GetExpansionSpeed());
-		}
+	pArea->m_pPainter = pDesc->CreateShockwavePainter();
 
 	//	Add to system
 
@@ -179,9 +167,12 @@ void CAreaDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &
 
 	if (m_pPainter)
 		{
+		CViewportPaintCtxSmartSave Save(Ctx);
 		Ctx.iTick = m_iTick;
 		Ctx.iVariant = 0;
+		Ctx.iRotation = 0;
 		Ctx.iDestiny = GetDestiny();
+
 		m_pPainter->Paint(Dest, x, y, Ctx);
 		}
 	}
@@ -297,6 +288,7 @@ void CAreaDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	SEffectUpdateCtx EffectCtx;
 	EffectCtx.pSystem = GetSystem();
 	EffectCtx.pObj = this;
+	EffectCtx.iTick = m_iTick;
 
 	EffectCtx.pDamageDesc = m_pDesc;
 	EffectCtx.pEnhancements = m_pEnhancements;
@@ -360,7 +352,7 @@ void CAreaDamage::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Vi
 	if (m_pPainter)
 		{
 		int i;
-		Metric rRadius = m_pPainter->GetRadius();
+		Metric rRadius = m_pPainter->GetRadius(m_iTick);
 		int iRadius = (int)((rRadius / g_KlicksPerPixel) + 0.5);
 		int iCount = Min(64, 3 * iRadius);
 

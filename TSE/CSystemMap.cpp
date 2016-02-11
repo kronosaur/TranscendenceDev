@@ -77,7 +77,7 @@ void CSystemMap::AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRota
 		*retdwID = pAnnotation->dwID;
 	}
 
-ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, CString *retsError)
+ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError)
 
 //	AddFixedTopology
 //
@@ -101,16 +101,15 @@ ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, CString *retsError)
 
 	for (i = 0; i < m_Uses.GetCount(); i++)
 		{
-		if (error = m_Uses[i]->AddFixedTopology(Topology, retsError))
+		if (error = m_Uses[i]->AddFixedTopology(Topology, NodesAdded, retsError))
 			return error;
 		}
 
 	//	Iterate over all creators and execute them
 
-	CTopologyNodeList NodesAdded;
 	STopologyCreateCtx Ctx;
 	Ctx.pMap = GetDisplayMap();
-	Ctx.pNodesAdded = &NodesAdded;
+	Ctx.pNodesAdded = NodesAdded.SetAt((Ctx.pMap ? Ctx.pMap->GetUNID() : GetUNID()));
 
 	//	We need to include any maps that we use.
 
@@ -135,32 +134,6 @@ ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, CString *retsError)
 		*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), GetUNID(), Ctx.sError);
 		return error;
 		}
-
-	//	Apply any topology processors (in order) on all the newly added nodes
-
-	for (i = 0; i < m_Processors.GetCount(); i++)
-		{
-		//	Make a copy of the node list because each call will destroy it
-
-		CTopologyNodeList NodeList = NodesAdded;
-
-		//	Process
-
-		if (error = m_Processors[i]->Process(this, Topology, NodeList, retsError))
-			{
-			*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), GetUNID(), *retsError);
-			return error;
-			}
-		}
-
-	//	Make sure every node added has a system UNID
-
-	for (i = 0; i < NodesAdded.GetCount(); i++)
-		if (NodesAdded[i]->GetSystemTypeUNID() == 0)
-			{
-			*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): NodeID %s: No system specified"), GetUNID(), NodesAdded[i]->GetID());
-			return ERR_FAIL;
-			}
 
 	return NOERROR;
 	}
@@ -191,7 +164,6 @@ CG32bitImage *CSystemMap::CreateBackgroundImage (void)
 		for (i = 0; i < m_Annotations.GetCount(); i++)
 			{
 			SMapAnnotation *pAnnotation = &m_Annotations[i];
-
 			Ctx.iTick = pAnnotation->iTick;
 			Ctx.iRotation = pAnnotation->iRotation;
 
@@ -499,12 +471,7 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 		//	To load the painter we need to cons up an SLoadCtx. Fortunately.
 		//	we have the system version saved in the universe load ctx.
 
-		SLoadCtx SystemCtx;
-		SystemCtx.dwVersion = Ctx.dwSystemVersion;
-		SystemCtx.pStream = Ctx.pStream;
-		SystemCtx.pSystem = NULL;
-
-		m_Annotations[i].pPainter = CEffectCreator::CreatePainterFromStream(SystemCtx);
+		m_Annotations[i].pPainter = CEffectCreator::CreatePainterFromStream(SLoadCtx(Ctx));
 
 		//	Load remaining fields
 
@@ -556,6 +523,51 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 		pStream->Write((char *)&m_Annotations[i].iTick, sizeof(DWORD));
 		pStream->Write((char *)&m_Annotations[i].iRotation, sizeof(DWORD));
 		}
+	}
+
+ALERROR CSystemMap::ProcessTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError)
+
+//	ProcessTopology
+//
+//	Process the topology over any nodes added to this map.
+
+	{
+	ALERROR error;
+	int i;
+
+	//	Get the list of nodes added to this map.
+
+	CTopologyNodeList *pNodesAdded = NodesAdded.GetAt(GetUNID());
+	if (pNodesAdded == NULL)
+		return NOERROR;
+
+	//	Apply any topology processors (in order) on all the newly added nodes
+
+	for (i = 0; i < m_Processors.GetCount(); i++)
+		{
+		//	Make a copy of the node list because each call will destroy it
+
+		CTopologyNodeList NodeList = *pNodesAdded;
+
+		//	Process
+
+		if (error = m_Processors[i]->Process(this, Topology, NodeList, retsError))
+			{
+			*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), GetUNID(), *retsError);
+			return error;
+			}
+		}
+
+	//	Make sure every node added has a system UNID
+
+	for (i = 0; i < pNodesAdded->GetCount(); i++)
+		if (pNodesAdded->GetAt(i)->GetSystemTypeUNID() == 0)
+			{
+			*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): NodeID %s: No system specified"), GetUNID(), pNodesAdded->GetAt(i)->GetID());
+			return ERR_FAIL;
+			}
+
+	return NOERROR;
 	}
 
 int KeyCompare (const CSystemMap::SSortEntry &Key1, const CSystemMap::SSortEntry &Key2)

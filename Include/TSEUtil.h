@@ -8,6 +8,7 @@
 class CDesignType;
 class CEconomyType;
 class CItemCtx;
+class CItemEnhancementStack;
 class CExtension;
 class CLocationDef;
 class COrbit;
@@ -162,10 +163,10 @@ inline void DebugStopTimer (char *szTiming) { }
 #define UPGRADE_ENTRY_UNID								CONSTLIT("Engine:Transcendence.next")
 #endif
 
-const DWORD API_VERSION =								28;		//	See: LoadExtensionVersion in Utilities.cpp
+const DWORD API_VERSION =								29;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
-const DWORD UNIVERSE_SAVE_VERSION =						26;
-const DWORD SYSTEM_SAVE_VERSION =						116;	//	See: CSystem.cpp
+const DWORD UNIVERSE_SAVE_VERSION =						27;
+const DWORD SYSTEM_SAVE_VERSION =						125;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{
@@ -219,6 +220,15 @@ struct SLoadCtx
 			dwObjClassID(0)
 		{ }
 
+	SLoadCtx (const SUniverseLoadCtx &Ctx) :
+			dwVersion(Ctx.dwSystemVersion),
+			pStream(Ctx.pStream),
+			pSystem(NULL),
+			ObjMap(FALSE, TRUE),
+			iLoadState(loadStateUnknown),
+			dwObjClassID(0)
+		{ }
+
 	DWORD dwVersion;					//	See CSystem.cpp for version history
 
 	IReadStream *pStream;				//	Stream to load from
@@ -239,11 +249,38 @@ struct SLoadCtx
 	CString sEffectUNID;				//	UNID of effect we're loading
 	};
 
+struct SViewportAnnotations
+	{
+	SViewportAnnotations (void)
+		{
+		Init();
+		}
+
+	void Init (void)
+		{
+		bDummy = false;
+
+#ifdef DEBUG_FORMATION
+		bDebugFormation = false;
+#endif
+		}
+
+	bool bDummy;
+
+#ifdef DEBUG_FORMATION
+	bool bDebugFormation;
+	int iFormationAngle;
+	CVector vFormationPos;
+	CVector vFormationCurPos;
+#endif
+	};
+
 struct SUpdateCtx
 	{
 	SUpdateCtx (void) :
 			pSystem(NULL),
 			pPlayer(NULL),
+			pAnnotations(NULL),
 			pDockingObj(NULL),
 			bNeedsAutoTarget(false),
 			iPlayerPerception(0),
@@ -257,6 +294,7 @@ struct SUpdateCtx
 	CSystem *pSystem;					//	Current system
 	CSpaceObject *pPlayer;				//	The player
 	TArray<CSpaceObject *> PlayerObjs;	//	List of player objects, if pPlayer == NULL
+	SViewportAnnotations *pAnnotations;	//	Extra structure to deliver to PaintViewport
 
 	//	Used to compute nearest docking port to player
 
@@ -386,6 +424,8 @@ class DiceRange
 		void SetConstant (int iValue) { m_iFaces = 0; m_iCount = 0; m_iBonus = iValue; }
 		void WriteToStream (IWriteStream *pStream) const;
 
+		static bool LoadIfValid (const CString &sAttrib, DiceRange *retValue);
+
 	private:
 		int m_iFaces;
 		int m_iCount;
@@ -404,8 +444,9 @@ class CAttributeDataBlock
 		bool FindData (const CString &sAttrib, const CString **retsData = NULL) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
 		const CString &GetData (const CString &sAttrib) const;
-		CString GetDataAttrib (int iIndex) const { return m_pData->GetKey(iIndex); }
-		int GetDataCount (void) const { return (m_pData ? m_pData->GetCount() : 0); }
+        inline CString GetData (int iIndex) const { return (m_pData ? *(CString *)m_pData->GetValue(iIndex) : NULL_STR); }
+		inline CString GetDataAttrib (int iIndex) const { return (m_pData ? m_pData->GetKey(iIndex) : NULL_STR); }
+		inline int GetDataCount (void) const { return (m_pData ? m_pData->GetCount() : 0); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
 		inline bool IsEmpty (void) const { return (m_pData == NULL && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
@@ -627,6 +668,7 @@ class CDamageAdjDesc
 		inline int GetAdj (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? 100 : m_iDamageAdj[iDamageType]); }
 		void GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
 		int GetHPBonus (DamageTypes iDamageType) const;
+		ICCItem *GetHPBonusProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
 		ALERROR InitFromArray (int *pTable);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsDefault = false);
 
@@ -645,6 +687,7 @@ class CDamageAdjDesc
 			};
 
 		void Compute (const CDamageAdjDesc *pDefault);
+		int GetBonusFromAdj (int iDamageAdj, int iDefault) const;
 		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
 		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
 
@@ -1231,18 +1274,18 @@ class I2DFunction
 
 		virtual ~I2DFunction (void) { }
 
-		inline float Eval (float x, float y) { return OnEval(x, y); }
+		inline Metric Eval (Metric x, Metric y) { return OnEval(x, y); }
 		inline ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return OnInitFromXML(Ctx, pDesc); }
 
 	protected:
-		virtual float OnEval (float x, float y) { return 0.0f; }
+		virtual Metric OnEval (Metric x, Metric y) { return 0.0f; }
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 	};
 
 class CNoise2DFunc : public I2DFunction
 	{
 	protected:
-		virtual float OnEval (float x, float y);
+		virtual Metric OnEval (Metric x, Metric y);
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 
 	private:

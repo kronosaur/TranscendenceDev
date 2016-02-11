@@ -39,6 +39,10 @@
 #define FIELD_REGEN								CONSTLIT("regen")
 #define FIELD_WEAPON_SUPPRESS					CONSTLIT("weaponSuppress")
 
+#define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
+#define PROPERTY_MAX_HP							CONSTLIT("maxHP")
+
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 struct SStdStats
@@ -114,9 +118,12 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	{
 	DEBUG_TRY
 
+	CItemCtx ItemCtx(pShip, pDevice);
+	const CItemEnhancementStack *pEnhancements = ItemCtx.GetEnhancementStack();
+
 	//	If we're depleted then we cannot absorb anything
 
-	Ctx.iHPLeft = GetHPLeft(pDevice, pShip);
+	Ctx.iHPLeft = GetHPLeft(ItemCtx);
 	if (Ctx.iHPLeft == 0)
 		{
 		Ctx.iAbsorb = 0;
@@ -126,14 +133,14 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	//	Calculate how much we will absorb
 
 	int iAbsorbAdj = (Ctx.Damage.GetDamageType() == damageGeneric ? 100 : m_iAbsorbAdj[Ctx.Damage.GetDamageType()]);
-	Ctx.iAbsorb = (Ctx.iDamage * iAbsorbAdj) / 100;
-	if (pDevice->GetMods().IsNotEmpty())
-		Ctx.iAbsorb = Ctx.iAbsorb * pDevice->GetMods().GetAbsorbAdj(Ctx.Damage) / 100;
+	Ctx.iAbsorb = mathAdjust(Ctx.iDamage, iAbsorbAdj);
+	if (pEnhancements)
+		Ctx.iAbsorb = mathAdjust(Ctx.iAbsorb, pEnhancements->GetAbsorbAdj(Ctx.Damage));
 
 	//	Compute how much damage we take (based on the type of damage)
 
-	int iAdj = GetDamageAdj(pDevice->GetMods(), Ctx.Damage);
-	Ctx.iShieldDamage = (Ctx.iAbsorb * iAdj) / 100;
+	int iAdj = GetDamageAdj(Ctx.Damage, pEnhancements);
+	Ctx.iShieldDamage = mathAdjust(Ctx.iAbsorb, iAdj);
 
 	//	If shield generator is damaged then sometimes we take extra damage
 
@@ -142,7 +149,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		int iRoll = mathRandom(1, 100);
 
 		if (iRoll <= 10)
-			Ctx.iAbsorb = 75 * Ctx.iAbsorb / 100;
+			Ctx.iAbsorb = mathAdjust(Ctx.iAbsorb, 75);
 		else if (iRoll <= 25)
 			Ctx.iShieldDamage *= 2;
 		}
@@ -160,19 +167,21 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	//	See if we're reflective
 
-	int iReflectChance;
-	if (!pDevice->GetMods().IsReflective(Ctx.Damage, &iReflectChance))
-		iReflectChance = 0;
+	int iReflectChance = 0;
+	if (pEnhancements)
+		pEnhancements->ReflectsDamage(Ctx.Damage.GetDamageType(), &iReflectChance);
 	if (m_Reflective.InSet(Ctx.Damage.GetDamageType()))
 		iReflectChance = Max(iReflectChance, MAX_REFLECTION_CHANCE);
 	if (iReflectChance 
 			&& Ctx.pCause 
 			&& Ctx.Damage.GetShieldDamageLevel() == 0)
 		{
+		CItemCtx ItemCtx(pShip, pDevice);
+
 		//	Compute the chance that we will reflect (based on the strength of
 		//	our shields)
 
-		int iMaxHP = GetMaxHP(pDevice, pShip);
+		int iMaxHP = GetMaxHP(ItemCtx);
 		int iEfficiency = (iMaxHP == 0 ? 100 : 50 + (Ctx.iHPLeft * 50 / iMaxHP));
 		int iChance = iEfficiency * iReflectChance / 100;
 
@@ -188,6 +197,54 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		}
 	else
 		Ctx.bReflect = false;
+
+	//	If this damage is a shield penetrator, then we either penetrate the 
+	//	shields, or reflect.
+
+	int iPenetrateAdj = Ctx.Damage.GetShieldPenetratorAdj();
+	if (iPenetrateAdj > 0 && !Ctx.bReflect)
+		{
+		//	We compare the HP of damage done to the shields vs. the HP left
+		//	on the shields. Bigger values means greater chance of penetrating.
+		//	We scale to 0-100.
+		//
+		//	NOTE: We can guarantee that Ctx.iHPLeft > 0.
+
+		Metric rPenetrate = (200.0 / (Metric)Ctx.iHPLeft) * ((Metric)Ctx.iShieldDamage * (Metric)Ctx.iShieldDamage) / ((Metric)Ctx.iShieldDamage + (Metric)Ctx.iHPLeft);
+
+		//	Adjust for tech level
+
+		CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
+		int iWeaponLevel = (pWeaponType ? pWeaponType->GetLevel() : 13);
+		int iShieldLevel = (pDevice ? pDevice->GetItem()->GetType()->GetLevel() : 1);
+		rPenetrate *= pow(1.5, (iWeaponLevel - iShieldLevel));
+
+		//	Add the adjustment
+
+		int iChance = (int)rPenetrate + iPenetrateAdj;
+
+		//	Roll the chance. If we penetrate, then the shields absorb nothing
+		//	and the shot goes clean through.
+
+		if (mathRandom(1, 100) <= iChance)
+			{
+			Ctx.iOriginalAbsorb = Ctx.iAbsorb;
+			Ctx.iOriginalShieldDamage = Ctx.iShieldDamage;
+			Ctx.iAbsorb = 0;
+			Ctx.iShieldDamage = Ctx.iShieldDamage / 4;
+			}
+
+		//	Otherwise, we reflect.
+
+		else
+			{
+			Ctx.bReflect = true;
+			Ctx.iOriginalAbsorb = Ctx.iAbsorb;
+			Ctx.iOriginalShieldDamage = Ctx.iShieldDamage;
+			Ctx.iAbsorb = Ctx.iDamage;
+			Ctx.iShieldDamage = 0;
+			}
+		}
 
 	//	Give custom damage a chance to react. These events can modify the
 	//	following variables:
@@ -212,14 +269,15 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	//	Create shield effect
 
-	if (Ctx.iAbsorb || Ctx.bReflect)
+	if ((Ctx.iAbsorb || Ctx.bReflect)
+			&& m_pHitEffect
+			&& !Ctx.bNoHitEffect)
 		{
-		if (m_pHitEffect)
-			m_pHitEffect->CreateEffect(pShip->GetSystem(),
-					NULL,
-					Ctx.vHitPos,
-					pShip->GetVel(),
-					Ctx.iDirection);
+		m_pHitEffect->CreateEffect(pShip->GetSystem(),
+				NULL,
+				Ctx.vHitPos,
+				pShip->GetVel(),
+				Ctx.iDirection);
 		}
 
 	//	Shield takes damage
@@ -255,7 +313,18 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 			&& m_WeaponSuppress.InSet(iType)
 			&& pDevice->IsEnabled()
 			&& !IsDepleted(pDevice))
+		{
+		//	Create effect
+
+		if (m_pHitEffect)
+			m_pHitEffect->CreateEffect(pSource->GetSystem(),
+					pSource,
+					pWeapon->GetPos(pSource),
+					pSource->GetVel(),
+					0);
+
 		return true;
+		}
 	else
 		return false;
 	}
@@ -378,25 +447,13 @@ void CShieldClass::CalcMinMaxHP (CItemCtx &Ctx, int iCharges, int iArmorSegs, in
 	//	If we're installed, fire the custom event to get max HPs
 
 	if (Ctx.GetSource() && Ctx.GetDevice())
-		{
-		CItemEnhancementStack *pEnhancements = Ctx.GetDevice()->GetEnhancements();
-
 		iMax = FireGetMaxHP(Ctx.GetDevice(), Ctx.GetSource(), iMax);
 
-		//	Apply bonus from device (which includes mods)
+	//	Adjust max HP based on enhancements
 
-		if (pEnhancements)
-			iMax += (iMax * pEnhancements->GetBonus() / 100);
-		}
-
-	//	Otherwise, we just apply mods
-
-	else
-		{
-		const CItemEnhancement &Mods = Ctx.GetMods();
-		if (Mods.IsNotEmpty())
-			iMax = iMax * Mods.GetHPAdj() / 100;
-		}
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	if (pEnhancements)
+		iMax += (iMax * pEnhancements->GetBonus() / 100);
 
 	//	Done
 
@@ -417,6 +474,8 @@ int CShieldClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSourc
 //	Returns the amount of power used by the shields
 
 	{
+	CItemCtx Ctx(pSource, pDevice);
+
 	int iPower = 0;
 
 	//	Only if enabled
@@ -439,8 +498,9 @@ int CShieldClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSourc
 
 	//	Adjust based on power efficiency enhancement
 
-	if (pDevice->GetMods().IsNotEmpty())
-		iPower = iPower * pDevice->GetMods().GetPowerAdj() / 100;
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	if (pEnhancements)
+		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
 
 	return iPower;
 	}
@@ -818,7 +878,7 @@ void CShieldClass::FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pS
 		}
 	}
 
-int CShieldClass::GetDamageAdj (CItemEnhancement Mods, const DamageDesc &Damage) const
+int CShieldClass::GetDamageAdj (const DamageDesc &Damage, const CItemEnhancementStack *pEnhancements) const
 
 //	GetDamageAdj
 //
@@ -847,8 +907,8 @@ int CShieldClass::GetDamageAdj (CItemEnhancement Mods, const DamageDesc &Damage)
 
 	//	Adjust based on enhancements
 
-	if (Mods.IsNotEmpty())
-		iAdj = iAdj * Mods.GetDamageAdj(Damage) / 100;
+	if (pEnhancements)
+		iAdj = iAdj * pEnhancements->GetDamageAdj(Damage) / 100;
 
 	return iAdj;
 	}
@@ -894,39 +954,76 @@ int CShieldClass::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDev
 	return iScore;
 	}
 
-int CShieldClass::GetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CShieldClass::GetHPLeft (CItemCtx &Ctx)
 
 //	GetHPLeft
 //
 //	Returns the number of HP left of shields
 
 	{
-	int iHPLeft = (int)pDevice->GetData();
+	CInstalledDevice *pDevice = Ctx.GetDevice();
 
-	if (iHPLeft < 0)
-		return 0;
-	else
-		return iHPLeft;
+	//	If we're not installed, then just return maximum HP
+
+	if (pDevice == NULL)
+		return GetMaxHP(Ctx);
+
+	//	Get HP left
+
+	return Max(0, (int)pDevice->GetData());
 	}
 
-int CShieldClass::GetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource)
+ICCItem *CShieldClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
+
+//	GetItemProperty
+//
+//	Returns a property
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	//	Enhancements
+
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+
+	//	Get the property
+
+	if (strEquals(sName, PROPERTY_HP))
+		return CC.CreateInteger(GetHPLeft(Ctx));
+
+	else if (strEquals(sName, PROPERTY_HP_BONUS))
+		return m_DamageAdj.GetHPBonusProperty(pEnhancements);
+
+	else if (strEquals(sName, PROPERTY_MAX_HP))
+		return CC.CreateInteger(GetMaxHP(Ctx));
+
+	//	Otherwise, just get the property from the base class
+
+	else
+		return CDeviceClass::GetItemProperty(Ctx, sName);
+	}
+
+int CShieldClass::GetMaxHP (CItemCtx &Ctx)
 
 //	GetMaxHP
 //
 //	Max HP of shields
 	
 	{
+	CSpaceObject *pSource = Ctx.GetSource();
+	CInstalledDevice *pDevice = Ctx.GetDevice();
+
 	int iMax = m_iHitPoints;
 
 	//	Adjust based on charges
 
 	if (m_iExtraHPPerCharge)
-		iMax = Max(0, iMax + m_iExtraHPPerCharge * pDevice->GetCharges(pSource));
+		iMax = Max(0, iMax + m_iExtraHPPerCharge * Ctx.GetDeviceCharges());
 
 	//	Adjust if shield is based on armor strength
 
 	CShip *pShip;
-	if (m_iArmorShield && (pShip = pSource->AsShip()))
+	if (m_iArmorShield && pSource && (pShip = pSource->AsShip()))
 		{
 		//	Compute the average HP of all the armor
 
@@ -945,11 +1042,12 @@ int CShieldClass::GetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 	//	Fire event
 
-	iMax = FireGetMaxHP(pDevice, pSource, iMax);
+	if (pDevice && pSource)
+		iMax = FireGetMaxHP(pDevice, pSource, iMax);
 
 	//	Adjust based on enhancements
 
-	CItemEnhancementStack *pEnhancements = pDevice->GetEnhancements();
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
 		iMax = iMax + ((iMax * pEnhancements->GetBonus()) / 100);
 
@@ -958,7 +1056,7 @@ int CShieldClass::GetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource)
 	return iMax;
 	}
 
-int CShieldClass::GetPowerRating (CItemCtx &Ctx)
+int CShieldClass::GetPowerRating (CItemCtx &Ctx) const
 
 //	GetPowerRating
 //
@@ -967,9 +1065,9 @@ int CShieldClass::GetPowerRating (CItemCtx &Ctx)
 	{
 	int iPower = m_iPowerUse;
 
-	const CItemEnhancement &Mods = Ctx.GetMods();
-	if (Mods.IsNotEmpty())
-		iPower = iPower * Mods.GetPowerAdj() / 100;
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	if (pEnhancements)
+		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
 
 	return iPower;
 	}
@@ -981,10 +1079,10 @@ bool CShieldClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pIns
 //	Returns an array of damage adj values
 
 	{
-	CItemCtx Ctx(pItem, pInstalled);
 	int i;
 
-	const CItemEnhancement &Mods = Ctx.GetMods();
+	CItemCtx Ctx(pItem, pInstalled);
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
 
 	int iMinHP, iMaxHP;
 	CalcMinMaxHP(Ctx, m_iMaxCharges, 0, 0, &iMinHP, &iMaxHP);
@@ -997,7 +1095,7 @@ bool CShieldClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pIns
 		for (i = 0; i < damageCount; i++)
 			{
 			DamageDesc Damage((DamageTypes)i, DiceRange(0, 0, 0));
-			int iAdj = GetDamageAdj(Mods, Damage);
+			int iAdj = GetDamageAdj(Damage, pEnhancements);
 			if (iAdj == 0)
 				retArray[i] = -1;
 			else
@@ -1015,8 +1113,10 @@ void CShieldClass::GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 //	Returns the status of the shields
 
 	{
-	*retiStatus = GetHPLeft(pDevice, pSource);
-	*retiMaxStatus = GetMaxHP(pDevice, pSource);
+	CItemCtx Ctx(pSource, pDevice);
+
+	*retiStatus = GetHPLeft(Ctx);
+	*retiMaxStatus = GetMaxHP(Ctx);
 	}
 
 int CShieldClass::GetStdCost (int iLevel)
@@ -1110,14 +1210,12 @@ void CShieldClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 
 	{
 	int i;
-	const CItemEnhancement &Mods = ItemCtx.GetMods();
 
 	//	Reflection
 
 	for (i = 0; i < damageCount; i++)
 		{
-		if (m_Reflective.InSet((DamageTypes)i)
-				|| (Mods.IsReflective() && Mods.GetDamageType() == i))
+		if (m_Reflective.InSet((DamageTypes)i))
 			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
 		}
 
@@ -1212,12 +1310,6 @@ CString CShieldClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags
 
 	{
 	CString sReference;
-	const CItemEnhancement &Mods = Ctx.GetMods();
-
-	//	Compute the strength string
-
-	int iMin, iMax;
-	CalcMinMaxHP(Ctx, m_iMaxCharges, 0, 0, &iMin, &iMax);
 
 	//	Compute the regeneration
 
@@ -1234,9 +1326,11 @@ void CShieldClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 //	Called when the device is installed
 
 	{
+	CItemCtx Ctx(pSource, pDevice);
+
 	//	Set shields to max HP
 
-	SetHPLeft(pDevice, GetMaxHP(pDevice, pSource));
+	SetHPLeft(pDevice, GetMaxHP(Ctx));
 
 	//	Identified
 
@@ -1263,9 +1357,11 @@ void CShieldClass::Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatu
 //	depleted or not).
 
 	{
-	int iMaxHP = GetMaxHP(pDevice, pShip);
-	int iHPLeft = GetHPLeft(pDevice, pShip);
-	SetHPLeft(pDevice, min(iMaxHP, iHPLeft + iStatus));
+	CItemCtx Ctx(pShip, pDevice);
+
+	int iMaxHP = GetMaxHP(Ctx);
+	int iHPLeft = GetHPLeft(Ctx);
+	SetHPLeft(pDevice, Min(iMaxHP, iHPLeft + iStatus));
 	pShip->OnComponentChanged(comShields);
 	}
 
@@ -1325,6 +1421,58 @@ void CShieldClass::SetHPLeft (CInstalledDevice *pDevice, int iHP)
 	pDevice->SetData((DWORD)iHP);
 	}
 
+bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+
+//	SetItemProperty
+//
+//	Sets an item property
+
+	{
+	CSpaceObject *pSource = Ctx.GetSource();
+	CInstalledDevice *pDevice = Ctx.GetDevice();
+
+	//	This item must be installed on the given source, otherwise, it desn't
+	//	work.
+
+	if (pSource == NULL
+			|| pDevice == NULL
+			|| !Ctx.GetItem().IsInstalled())
+		{
+		*retsError = CONSTLIT("Item is not an installed device on object.");
+		return false;
+		}
+
+	//	Handle it.
+
+	if (strEquals(sName, PROPERTY_HP))
+		{
+		//	Nil means we're depleting the shields
+
+		if (pValue->IsNil())
+			Deplete(pDevice, pSource);
+
+		//	Otherwise, set it to an HP value
+
+		else
+			{
+			int iHP = pValue->GetIntegerValue();
+			int iMaxHP = GetMaxHP(Ctx);
+
+			SetHPLeft(pDevice, Min(iMaxHP, iHP));
+			pSource->OnComponentChanged(comShields);
+			}
+		}
+
+	//	Let our subclass handle it.
+
+	else
+		return CDeviceClass::SetItemProperty(Ctx, sName, pValue, retsError);
+
+	//	Success
+
+	return true;
+	}
+
 void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int iTick, bool *retbSourceDestroyed, bool *retbConsumedItems)
 
 //	Update
@@ -1334,6 +1482,8 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 	{
 	DEBUG_TRY
 
+	CItemCtx ItemCtx(pSource, pDevice);
+
 	//	Initialize to not regenerating
 
 	pDevice->SetRegenerating(false);
@@ -1342,7 +1492,7 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 
 	if (!pDevice->IsEnabled())
 		{
-		if (GetHPLeft(pDevice, 0))
+		if (GetHPLeft(ItemCtx))
 			{
 			//	Note: We don't call SetDepleted because we don't want to fire the OnShieldDown
 			//	event. If necessary, we should add an OnDeviceDisabled event.
@@ -1380,8 +1530,8 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 
 		else
 			{
-			int iMaxHP = GetMaxHP(pDevice, pSource);
-			int iHPLeft = GetHPLeft(pDevice, pSource);
+			int iMaxHP = GetMaxHP(ItemCtx);
+			int iHPLeft = GetHPLeft(ItemCtx);
 
 			if (iHPLeft != iMaxHP)
 				{

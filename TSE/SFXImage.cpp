@@ -7,7 +7,10 @@
 #define RANDOM_START_FRAME_ATTRIB				CONSTLIT("randomStartFrame")
 #define ROTATE_IMAGE_ATTRIB						CONSTLIT("rotateImage")
 #define VARIANTS_ATTRIB							CONSTLIT("imageVariants")
+#define LIFETIME_ATTRIB					        CONSTLIT("lifetime")
 #define ROTATION_COUNT_ATTRIB					CONSTLIT("rotationCount")
+
+const int COMPUTE_LIFETIME_CONSTANT = -100;
 
 class CImagePainter : public IEffectPainter
 	{
@@ -31,7 +34,7 @@ class CImagePainter : public IEffectPainter
 		CCompositeImageSelector m_Sel;
 	};
 
-IEffectPainter *CImageEffectCreator::CreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CImageEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //
@@ -83,9 +86,8 @@ ALERROR CImageEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 	if (error = m_Image.InitFromXML(Ctx, pDesc))
 		return error;
 
-	m_iLifetime = m_Image.GetMaxLifetime();
-	if (m_iLifetime <= 0)
-		m_iLifetime = 1;
+    if (!pDesc->FindAttributeInteger(LIFETIME_ATTRIB, &m_iLifetime))
+	    m_iLifetime = COMPUTE_LIFETIME_CONSTANT;	//	Compute from image frames
 
 	m_bRandomStartFrame = pDesc->GetAttributeBool(RANDOM_START_FRAME_ATTRIB);
 
@@ -123,6 +125,14 @@ ALERROR CImageEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
 		return error;
+
+    if (m_iLifetime == COMPUTE_LIFETIME_CONSTANT)
+        {
+        if (Ctx.bLoopImages)
+            m_iLifetime = -1;
+        else
+	        m_iLifetime = m_Image.GetMaxLifetime();
+        }
 
 	return NOERROR;
 	}

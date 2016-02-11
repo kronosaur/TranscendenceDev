@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug in Program Files|Win32">
       <Configuration>Debug in Program Files</Configuration>
@@ -32,28 +32,28 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -98,7 +98,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">
@@ -112,7 +112,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">
@@ -152,6 +152,8 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CArmorHUDImages.cpp" />
+    <ClCompile Include="CArmorHUDRingSegments.cpp" />
     <ClCompile Include="CBackgroundProcessor.cpp" />
     <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />
@@ -165,15 +167,21 @@
     <ClCompile Include="CListCollectionTask.cpp" />
     <ClCompile Include="CMCIMixer.cpp" />
     <ClCompile Include="CMessageSession.cpp" />
+    <ClCompile Include="CReactorHUDCircular.cpp" />
+    <ClCompile Include="CReactorHUDDefault.cpp" />
+    <ClCompile Include="CShieldHUDDefault.cpp" />
     <ClCompile Include="CSoundtrackManager.cpp" />
     <ClCompile Include="CStargateEffectPainter.cpp" />
     <ClCompile Include="CTimerRegistry.cpp" />
     <ClCompile Include="CUserSettings.cpp" />
     <ClCompile Include="CVisualPalette.cpp" />
+    <ClCompile Include="CWeaponHUDCircular.cpp" />
+    <ClCompile Include="CWeaponHUDDefault.cpp" />
     <ClCompile Include="Dialogs.cpp" />
     <ClCompile Include="HardCrash.cpp" />
     <ClCompile Include="IHIController.cpp" />
     <ClCompile Include="IHISession.cpp" />
+    <ClCompile Include="IHUDPainter.cpp" />
     <ClCompile Include="Run.cpp" />
     <ClCompile Include="TSUICodeChain.cpp" />
     <ClCompile Include="CCloudService.cpp" />
@@ -197,9 +205,11 @@
     <ClInclude Include="..\Include\Painters.h" />
     <ClInclude Include="..\Include\Soundtrack.h" />
     <ClInclude Include="..\Include\TSUI.h" />
+    <ClInclude Include="..\Include\TSUIHUD.h" />
     <ClInclude Include="..\Include\TSUISessions.h" />
     <ClInclude Include="..\Include\TSUISettings.h" />
     <ClInclude Include="..\Include\UIHelpers.h" />
+    <ClInclude Include="HUDImpl.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
