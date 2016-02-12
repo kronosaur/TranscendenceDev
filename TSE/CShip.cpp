@@ -311,6 +311,11 @@ void CShip::CalcArmorBonus (void)
 				m_fHasSpeedAdjArmor = true;
 			}
 		}
+
+	//	Let our controller know (but only if we're fully created)
+
+	if (IsCreated())
+		m_pController->OnStatsChanged();
 	}
 
 void CShip::CalcBounds (void)
