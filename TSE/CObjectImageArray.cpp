@@ -1057,8 +1057,26 @@ void CObjectImageArray::MarkImage (void)
 //	Mark image so that the sweeper knows that it is in use
 
 	{
-	if (m_pImage)
-		m_pImage->Mark();
+    //  Nothing to do if no image
+
+    if (m_pImage == NULL)
+        return;
+
+    //  Mark (and load) the underlying image
+
+	m_pImage->Mark();
+
+    //  If we're in debug mode, we take this opportunity to validate the image
+    //  rect against the actual image.
+
+    if (g_pUniverse->InDebugMode())
+        {
+        if (m_rcImage.right > m_pImage->GetWidth() || m_rcImage.bottom > m_pImage->GetHeight())
+            {
+            ASSERT(false);
+            ::kernelDebugLogMessage("[0x%08x %s]: Image rect too big for bitmap.", m_pImage->GetUNID(), m_pImage->GetImageFilename());
+            }
+        }
 	}
 
 ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)

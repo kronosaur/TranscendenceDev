@@ -1022,10 +1022,12 @@ class CObjectImage : public CDesignType
 		CG32bitImage *CreateCopy (CString *retsError = NULL);
 		ALERROR Exists (SDesignLoadCtx &Ctx);
 		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
+        inline int GetHeight (void) const { return (m_pBitmap ? m_pBitmap->GetHeight() : 0); }
 		CG32bitImage *GetHitMask (void);
 		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL);
 		inline CString GetImageFilename (void) { return m_sBitmap; }
 		CG32bitImage *GetShadowMask (void);
+        inline int GetWidth (void) const { return (m_pBitmap ? m_pBitmap->GetWidth() : 0); }
 		inline bool HasAlpha (void) { return (m_pBitmap ? (m_pBitmap->GetAlphaType() == CG32bitImage::alpha8) : false); }
 
 		ALERROR Lock (SDesignLoadCtx &Ctx);
