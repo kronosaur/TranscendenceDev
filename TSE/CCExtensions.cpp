@@ -1235,8 +1235,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetArmorRepairPrice",		fnObjGet,		FN_OBJ_ARMOR_REPAIR_PRICE,
-			"(objGetArmorRepairPrice obj armorItem hpToRepair) -> price",
-			"ivi",		0,	},
+			"(objGetArmorRepairPrice obj [shipObj] armorItem hpToRepair) -> price (at which obj repairs)",
+			"i*vi",		0,	},
 
 		{	"objGetArmorReplacePrice",		fnObjGet,		FN_OBJ_ARMOR_REPLACE_PRICE,
 			"(objGetArmorReplacePrice obj armorItem) -> price",
@@ -5084,16 +5084,30 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_ARMOR_REPAIR_PRICE:
 			{
-			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
+            int iArg = 1;
+
+            //  If we have more than 3 args then we expect the second arg to be
+            //  the object that has the armor.
+
+            CSpaceObject *pSource = NULL;
+            if (pArgs->GetCount() > 3)
+                pSource = CreateObjFromItem(*pCC, pArgs->GetElement(iArg++));
+
+            //  Get the armor item
+
+			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(iArg++)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateNil();
 
-			int iHPToRepair = pArgs->GetElement(2)->GetIntegerValue();
+            //  Get HP to repair
+
+            ICCItem *pHPToRepair = pArgs->GetElement(iArg++);
+            int iHPToRepair = ((!pHPToRepair->IsNil() || pSource == NULL) ? pHPToRepair->GetIntegerValue() : -1);
 
 			//	Ask the object
 
 			int iPrice;
-			if (!pObj->GetArmorRepairPrice(Item, iHPToRepair, 0, &iPrice))
+			if (!pObj->GetArmorRepairPrice(pSource, Item, iHPToRepair, 0, &iPrice))
 				return pCC->CreateNil();
 
 			//	Done

@@ -28,6 +28,8 @@
 #define CONSTANT_PREFIX							CONSTLIT("constant")
 #define UNAVAILABLE_PREFIX						CONSTLIT("unavailable")
 
+const int EXTRA_REPAIR_COST_FACTOR =            3;  //  Damage over 50% cost 3 times more to repair
+
 struct SServiceData
 	{
 	char *pszName;
@@ -214,7 +216,36 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 			if (pArmor == NULL)
 				return -1;
 
-			iBasePrice = Ctx.iCount * pArmor->GetRepairCost();
+            //  If we don't have a source, then we only do a basic calculation. 
+            //  This should not happen (as long as the TLisp code follows 
+            //  guidelines).
+
+            if (Ctx.pObj == NULL)
+    			iBasePrice = Ctx.iCount * pArmor->GetRepairCost();
+
+            //  Otherwise, the price is based on how much damage we've taken
+
+            else
+                {
+                CInstalledArmor *pSeg = Ctx.pObj->FindArmor(*Ctx.pItem);
+                if (pSeg == NULL)
+                    return -1;
+
+                int iMaxHP = pArmor->GetMaxHP(CItemCtx(Ctx.pObj, pSeg));
+                int iHalf = iMaxHP / 2;
+
+                //  We can repair up to half of maximum damage at normal price
+
+                int iHPToRepair = Ctx.iCount;
+                int iHPAtNormalPrice = Min(iHalf, iHPToRepair);
+                iBasePrice = iHPAtNormalPrice * pArmor->GetRepairCost();
+
+                //  If we have more damage than that, we pay double price
+
+                int iHPAtExtraPrice = iHPToRepair - iHPAtNormalPrice;
+                iBasePrice += iHPAtExtraPrice * pArmor->GetRepairCost() * EXTRA_REPAIR_COST_FACTOR;
+                }
+
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}
@@ -604,7 +635,7 @@ bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, 
 	return false;
 	}
 
-bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
+bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
 
 //	GetArmorRepairPrice
 //
@@ -617,6 +648,7 @@ bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, const CItem &Item, i
 	Ctx.iService = serviceRepairArmor;
 	Ctx.pProvider = pObj;
 	Ctx.pCurrency = m_pCurrency;
+    Ctx.pObj = pSource;
 	Ctx.pItem = &Item;
 	Ctx.iCount = iHPToRepair;
 

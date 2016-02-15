@@ -74,7 +74,7 @@ bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *
 	return false;
 	}
 
-bool CSpaceObject::GetArmorRepairPrice (const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice)
+bool CSpaceObject::GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice)
 
 //	GetArmorRepairPrice
 //
@@ -87,7 +87,7 @@ bool CSpaceObject::GetArmorRepairPrice (const CItem &Item, int iHPToRepair, DWOR
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetArmorRepairPrice(this, Item, iHPToRepair, dwFlags, retiPrice))
+	if (pTradeOverride && pTradeOverride->GetArmorRepairPrice(this, pSource, Item, iHPToRepair, dwFlags, retiPrice))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -97,7 +97,7 @@ bool CSpaceObject::GetArmorRepairPrice (const CItem &Item, int iHPToRepair, DWOR
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetArmorRepairPrice(this, Item, iHPToRepair, dwFlags, retiPrice))
+	if (pTrade && pTrade->GetArmorRepairPrice(this, pSource, Item, iHPToRepair, dwFlags, retiPrice))
 		return true;
 
 	//	For compatibility, any ship prior to version 23 has a default.
