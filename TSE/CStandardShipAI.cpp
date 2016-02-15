@@ -1815,8 +1815,8 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 					if (m_AICtx.IsSecondAttack())
 						{
 						CSpaceObject *pBase = GetCurrentOrderTarget();
-						if (!pBase->IsEnemy(pAttacker)
-								&& !pBase->IsAngryAt(pAttacker))
+						if (pBase->IsEnemy(pAttacker)
+								|| pBase->IsAngryAt(pAttacker))
 							m_pShip->Communicate(pBase, msgAttackDeter, pAttacker);
 						}
 
