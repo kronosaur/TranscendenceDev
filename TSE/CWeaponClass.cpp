@@ -1884,37 +1884,58 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	CVector ShotPos[MAX_SHOT_COUNT];
 	int ShotDir[MAX_SHOT_COUNT];
 	int iShotCount = CalcConfiguration(CItemCtx(pSource, pDevice), pShot, iFireAngle, ShotPos, ShotDir, (iRepeatingCount == pShot->m_iContinuous));
+    if (iShotCount <= 0)
+        return false;
 
-	//	If we're independently targeted, then compute targets for the remaining shots
+	//	If we're independently targeted, then we generate an array of separate
+    //  targets for each shot.
 
-	if (m_bMIRV && iShotCount > 1)
+    CSpaceObject *MIRVTarget[MAX_SHOT_COUNT];
+	if (m_bMIRV)
 		{
-		TArray<CSpaceObject *> TargetList;
-		int iFound = pSource->GetNearestVisibleEnemies(iShotCount, 
-				MAX_TARGET_RANGE, 
-				&TargetList, 
-				NULL, 
-				FLAG_INCLUDE_NON_AGGRESSORS);
+        //  The first shot always goes to the current target.
 
-		int j = 1;
-		for (i = 0; i < iFound && j < iShotCount; i++)
-			{
-			CSpaceObject *pNewTarget = TargetList[i];
-			if (pNewTarget != pTarget)
-				{
-				//	Calculate direction to fire in
+        MIRVTarget[0] = pTarget;
 
-				CVector vTarget = pNewTarget->GetPos() - ShotPos[j];
-				CVector vTargetVel = pNewTarget->GetVel() - pSource->GetVel();
-				Metric rTimeToIntercept = CalcInterceptTime(vTarget, vTargetVel, rSpeed);
-				CVector vInterceptPoint = (rTimeToIntercept > 0.0 ? vTarget + pNewTarget->GetVel() * rTimeToIntercept : vTarget);
+        //  Now initialize the remainder
 
-				ShotDir[j] = VectorToPolar(vInterceptPoint, NULL);
-				//ShotVel[j] = pSource->GetVel() + PolarToVector(ShotDir[j], rSpeed);
+        if (iShotCount > 1)
+            {
+		    TArray<CSpaceObject *> TargetList;
+		    int iFound = pSource->GetNearestVisibleEnemies(iShotCount, 
+				    MAX_TARGET_RANGE, 
+				    &TargetList, 
+				    pTarget, 
+				    FLAG_INCLUDE_NON_AGGRESSORS);
 
-				j++;
-				}
-			}
+            int iNextTarget = 0;
+            for (i = 1; i < iShotCount; i++)
+                {
+                //  If we've exhausted the nearest target list, then add the
+                //  selected target again and loop back to the beginning of
+                //  the list.
+
+                if (iNextTarget == iFound)
+                    {
+                    MIRVTarget[i] = pTarget;
+                    iNextTarget = 0;
+                    }
+                else
+                    {
+			        CSpaceObject *pNewTarget = TargetList[iNextTarget++ % iFound];
+
+                    //	Calculate direction to fire in
+
+                    CVector vTarget = pNewTarget->GetPos() - ShotPos[i];
+                    CVector vTargetVel = pNewTarget->GetVel() - pSource->GetVel();
+                    Metric rTimeToIntercept = CalcInterceptTime(vTarget, vTargetVel, rSpeed);
+                    CVector vInterceptPoint = (rTimeToIntercept > 0.0 ? vTarget + pNewTarget->GetVel() * rTimeToIntercept : vTarget);
+
+                    ShotDir[i] = VectorToPolar(vInterceptPoint, NULL);
+                    MIRVTarget[i] = pNewTarget;
+                    }
+                }
+            }
 		}
 
 	//	If the shot requires ammo, check to see that the source has
@@ -1971,7 +1992,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 			iResult = FireOnFireWeapon(CItemCtx(pSource, pDevice), 
 					pShot, 
 					ShotPos[i], 
-					pTarget,
+					(m_bMIRV ? MIRVTarget[i] : pTarget),
 					ShotDir[i], 
 					iRepeatingCount);
 
@@ -1993,7 +2014,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 						ShotPos[i],
 						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
 						ShotDir[i],
-						pTarget,
+						(m_bMIRV ? MIRVTarget[i] : pTarget),
 						((iRepeatingCount == 0 && i == 0) ? CSystem::CWF_WEAPON_FIRE : CSystem::CWF_FRAGMENT),
 						&pNewObj);
 
