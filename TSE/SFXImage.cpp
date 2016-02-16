@@ -11,6 +11,7 @@
 #define ROTATION_COUNT_ATTRIB					CONSTLIT("rotationCount")
 
 const int COMPUTE_LIFETIME_CONSTANT = -100;
+const int ALWAYS_LOOP_CONSTANT = -101;
 
 class CImagePainter : public IEffectPainter
 	{
@@ -87,7 +88,7 @@ ALERROR CImageEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEle
 		return error;
 
     if (!pDesc->FindAttributeInteger(LIFETIME_ATTRIB, &m_iLifetime))
-	    m_iLifetime = COMPUTE_LIFETIME_CONSTANT;	//	Compute from image frames
+        m_iLifetime = (Ctx.bLoopImages ? ALWAYS_LOOP_CONSTANT : COMPUTE_LIFETIME_CONSTANT);
 
 	m_bRandomStartFrame = pDesc->GetAttributeBool(RANDOM_START_FRAME_ATTRIB);
 
@@ -127,12 +128,10 @@ ALERROR CImageEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 		return error;
 
     if (m_iLifetime == COMPUTE_LIFETIME_CONSTANT)
-        {
-        if (Ctx.bLoopImages)
-            m_iLifetime = -1;
-        else
-	        m_iLifetime = m_Image.GetMaxLifetime();
-        }
+        m_iLifetime = m_Image.GetMaxLifetime();
+
+    else if (m_iLifetime == ALWAYS_LOOP_CONSTANT)
+        m_iLifetime = -1;
 
 	return NOERROR;
 	}
