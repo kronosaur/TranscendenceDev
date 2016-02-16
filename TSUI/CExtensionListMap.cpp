@@ -11,6 +11,31 @@
 #define DEBUG_MODE_ATTRIB					CONSTLIT("debugMode")
 #define UNID_ATTRIB							CONSTLIT("unid")
 
+void CExtensionListMap::GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const
+
+//  GetList
+//
+//  Returns a list of enabled extensions for the given adventure. Note that we
+//  do not guaranteed that all extensions are available.
+
+    {
+	int i;
+
+	retList->DeleteAll();
+
+	SEntry *pEntry = m_Map.GetAt(dwAdventure);
+	if (pEntry)
+		{
+		TSortMap<DWORD, bool> *pSource = (bDebugMode ? &pEntry->DebugList : &pEntry->List);
+
+		//	Loop over all extensions and add the ones that are enabled.
+
+        for (i = 0; i < pSource->GetCount(); i++)
+            if (pSource->GetValue(i))
+                retList->Insert(pSource->GetKey(i));
+		}
+    }
+
 void CExtensionListMap::GetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, TArray<DWORD> *retList) const
 
 //	GetList

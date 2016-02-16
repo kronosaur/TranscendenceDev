@@ -10,6 +10,7 @@
 class CExtensionListMap
 	{
 	public:
+		void GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const;
 		void GetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, TArray<DWORD> *retList) const;
 		void SetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, const TArray<DWORD> &List);
 		ALERROR ReadFromXML (CXMLElement *pDesc);

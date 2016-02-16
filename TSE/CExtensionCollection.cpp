@@ -292,10 +292,8 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 		{
 		retList->Insert(pExtension);
 
-#ifdef DEBUG_EXTENSION_LOAD
 		if (bDebugMode)
 			::kernelDebugLogMessage("Adding: %s.", pExtension->GetName());
-#endif
 		}
 
 	//	Success.
