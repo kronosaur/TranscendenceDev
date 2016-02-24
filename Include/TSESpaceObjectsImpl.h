@@ -1351,6 +1351,7 @@ class CStation : public CSpaceObject
 		virtual bool IsMultiHull (void) { return m_pType->IsMultiHull(); }
 		virtual bool IsParalyzed (void) { return m_fParalyzedByOverlay; }
 		virtual bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
+        virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const { return (m_fIsSegment && (m_pBase == pBase)); }
 		virtual bool IsStargate (void) const { return !m_sStargateDestNode.IsBlank(); }
 		virtual bool IsTimeStopImmune (void) { return m_pType->IsTimeStopImmune(); }
 		virtual bool IsVirtual (void) const { return m_pType->IsVirtual(); }
@@ -1493,7 +1494,7 @@ class CStation : public CSpaceObject
 
 		DWORD m_fShowMapOrbit:1;				//	If TRUE, show orbit in map
 		DWORD m_fDestroyIfEmpty:1;				//	If TRUE, we destroy the station as soon as it is empty
-		DWORD m_fSpare3:1;
+		DWORD m_fIsSegment:1;                   //  If TRUE, we are a segment of some other object (m_pBase)
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

@@ -112,6 +112,7 @@
 #define RADIUS_DEC_ATTRIB				CONSTLIT("radiusDec")
 #define RADIUS_INC_ATTRIB				CONSTLIT("radiusInc")
 #define ROTATION_ATTRIB					CONSTLIT("rotation")
+#define SEGMENT_ATTRIB			        CONSTLIT("segment")
 #define SEPARATE_ENEMIES_ATTRIB			CONSTLIT("separateEnemies")
 #define SHAPE_ATTRIB					CONSTLIT("shape")
 #define SHOW_ORBIT_ATTRIB				CONSTLIT("showOrbit")
@@ -4055,15 +4056,7 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 	//	If this is a satellite, then add it as a subordinate
 
 	if (pStation && pCtx->pStation && pStation->CanAttack())
-		{
 		pCtx->pStation->AddSubordinate(pStation);
-
-		//	And remember our base
-
-		CStation *pStationCast = pStation->AsStation();
-		if (pStationCast)
-			pStationCast->SetBase(pCtx->pStation);
-		}
 
 	//	Create any satellites of the station
 
@@ -4156,6 +4149,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CreateCtx.pOrbit = &OrbitDesc;
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
 	CreateCtx.pExtraData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
+    CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
 
 	//	Since this is an explicit creation of a station, ignore limits
 

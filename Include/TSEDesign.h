@@ -793,6 +793,7 @@ struct SViewportPaintCtx
 			fShowManeuverEffects(false),
 			fNoStarshine(false),
 			fNoSpaceBackground(false),
+            fShowSatellites(false),
 			bInFront(false),
 			bFade(false),
 			iTick(0),
@@ -873,7 +874,15 @@ struct SViewportPaintCtx
 	DWORD fNoStarshine:1;
 	DWORD fNoSpaceBackground:1;
 
-	DWORD dwSpare:24;
+    DWORD fShowSatellites:1;
+    DWORD fSpare2:1;
+    DWORD fSpare3:1;
+    DWORD fSpare4:1;
+    DWORD fSpare5:1;
+    DWORD fSpare6:1;
+    DWORD fSpare7:1;
+
+	DWORD dwSpare:16;
 
 	CSpaceObject *pObj;					//	Current object being painted
 	RECT rcObjBounds;					//	Object bounds in screen coordinates.

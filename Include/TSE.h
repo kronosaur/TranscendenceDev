@@ -1155,6 +1155,7 @@ struct SObjCreateCtx
 			pEventHandler(NULL),
 			pSovereign(NULL),
 			bCreateSatellites(false),
+            bIsSegment(false),
 			bIgnoreLimits(false)
 		{ }
 
@@ -1170,6 +1171,7 @@ struct SObjCreateCtx
 	CSovereign *pSovereign;					//	Optional sovereign (may be NULL)
 
 	bool bCreateSatellites;					//	If TRUE, create satellites
+    bool bIsSegment;                        //  If TRUE, we're a satellite segment
 	bool bIgnoreLimits;						//	If TRUE, create even if we exceed limits
 	};
 
@@ -2763,6 +2765,7 @@ class CSpaceObject : public CObject
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const { if (retiFrequency) *retiFrequency = 0; return NULL; }
 		virtual bool IsAbandoned (void) const { return false; }
 		virtual bool IsActiveStargate (void) const { return false; }
+        virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const { return false; }
 		virtual bool IsStargate (void) const { return false; }
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) { return false; }
 		virtual bool RequestGate (CSpaceObject *pObj);

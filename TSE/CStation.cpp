@@ -59,9 +59,6 @@ const Metric MAX_ATTACK_DISTANCE =				LIGHT_SECOND * 25;
 const Metric MAX_ATTACK_DISTANCE2 =				MAX_ATTACK_DISTANCE * MAX_ATTACK_DISTANCE;
 
 #define BEACON_RANGE					(LIGHT_SECOND * 20)
-#define MAX_SUBORDINATES				12
-#define BLACKLIST_HIT_LIMIT				3
-#define BLACKLIST_DECAY_RATE			150
 
 #define MIN_ANGER						300
 #define MAX_ANGER						1800
@@ -680,6 +677,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->SetHasGravity(pType->HasGravity());
 	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
 	pStation->m_fDestroyIfEmpty = false;
+    pStation->m_fIsSegment = CreateCtx.bIsSegment;
 
 	//	We generally don't move
 
@@ -1750,7 +1748,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
         //  about "real" WMD.
 
         if (m_pType->GetEjectaAdj() == 0
-            || Ctx.Damage.GetMassDestructionLevel() == 0)
+                || Ctx.Damage.GetMassDestructionLevel() == 0)
             Ctx.iDamage = 0;
 
         //	Otherwise, adjust for WMD
@@ -2378,6 +2376,30 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 	else
 		Image.PaintImage(Dest, x, y, iTick, iVariant);
 
+    //  If necessary, paint attached satellite stations
+
+    if (Ctx.fShowSatellites)
+        {
+		CSpaceObject *pOldObj = Ctx.pObj;
+
+        //  Loop over all our subordinates and paint any segments.
+
+        for (i = 0; i < m_Subordinates.GetCount(); i++)
+            {
+            CSpaceObject *pObj = m_Subordinates.GetObj(i);
+            if (pObj->IsSatelliteSegmentOf(this))
+                {
+				int xObj, yObj;
+				Ctx.XForm.Transform(pObj->GetPos(), &xObj, &yObj);
+
+				Ctx.pObj = pObj;
+				pObj->Paint(Dest, xObj, yObj, Ctx);
+                }
+            }
+
+		Ctx.pObj = pOldObj;
+        }
+
 	//	Paint animations
 
 	if (!IsAbandoned() && m_pType->HasAnimations())
@@ -2956,6 +2978,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fPaintOverhang =		((dwLoad & 0x00020000) ? true : false);
 	m_fShowMapOrbit =		((dwLoad & 0x00040000) ? true : false);
 	m_fDestroyIfEmpty =		((dwLoad & 0x00080000) ? true : false);
+	m_fIsSegment =		    ((dwLoad & 0x00100000) ? true : false);
 
 	//	Init name flags
 
@@ -3306,6 +3329,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fPaintOverhang ?		0x00020000 : 0);
 	dwSave |= (m_fShowMapOrbit ?		0x00040000 : 0);
 	dwSave |= (m_fDestroyIfEmpty ?		0x00080000 : 0);
+	dwSave |= (m_fIsSegment ?		    0x00100000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
