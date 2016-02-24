@@ -338,9 +338,14 @@ bool CHTTPClientSession::ReadBuffer (void *pBuffer, DWORD dwLen, DWORD *retdwRea
 		return false;
 		}
 
+    //  NOTE: This can happen when we lose the connection. Our caller is 
+    //  responsible for re-establishing a session.
+
 	if (dwBytesRead == 0)
 		{
+#ifdef DEBUG
 		::kernelDebugLogMessage("0 bytes returned.");
+#endif
 		return false;
 		}
 

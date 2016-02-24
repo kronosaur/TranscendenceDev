@@ -80,7 +80,7 @@ class CXMLElement : public CObject
 		double GetAttributeFloat (const CString &sName);
 		inline CString GetAttributeName (int iIndex) { return m_Attributes.GetKey(iIndex); }
 		inline int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
-		inline CXMLElement *GetContentElement (int iOrdinal) const { return m_ContentElements[iOrdinal]; }
+		inline CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
 		CXMLElement *GetContentElementByTag (const CString &sTag) const;
 		inline const CString &GetContentText (int iOrdinal) { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
 		inline CXMLElement *GetParentElement (void) const { return m_pParent; }
