@@ -73,6 +73,44 @@ bool CStationEncounterCtx::CanBeEncounteredInSystem (CSystem *pSystem, CStationT
 	return CanBeEncountered(Desc);
 	}
 
+int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc)
+
+//  GetBaseFrequencyForNode
+//
+//  Returns the chance of appearing at this node, given only the encounter
+//  descriptor and the node.
+
+    {
+    //  See if we've got a cached value for this node. (Even if not, we need
+    //  the structure so we can cache it.)
+
+    const SEncounterStats *pStats = m_ByNode.SetAt(pNode->GetID());
+    if (pStats->iNodeCriteria == -1)
+        {
+        //  Initialized based on level
+
+        pStats->iNodeCriteria = Desc.GetFrequencyByLevel(pNode->GetLevel());
+
+        //	If we have system criteria, then make sure we are allowed to be in
+        //  this system.
+
+        const CTopologyNode::SCriteria *pSystemCriteria;
+        if (pStats->iNodeCriteria > 0 && Desc.HasSystemCriteria(&pSystemCriteria))
+            {
+            //  Compute the criteria for this node and cache it.
+
+            CTopologyNode::SCriteriaCtx Ctx;
+            Ctx.pTopology = &g_pUniverse->GetTopology();
+            if (!pNode->MatchesCriteria(Ctx, *pSystemCriteria))
+                pStats->iNodeCriteria = 0;
+            }
+        }
+
+    //  Return cached value
+
+    return pStats->iNodeCriteria;
+    }
+
 int CStationEncounterCtx::GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc)
 
 //	GetFrequencyByLevel
@@ -104,9 +142,9 @@ int CStationEncounterCtx::GetFrequencyForNode (CTopologyNode *pNode, CStationTyp
 	if (pCount && pCount->iLimit != -1 && pCount->iCount >= pCount->iLimit)
 		return 0;
 
-	//	Otherwise, let the descriptor figure out the chance
+    //  Return based on the frequency for this node
 
-	return Desc.GetFrequencyByNode(pNode, pStation);
+    return GetBaseFrequencyForNode(pNode, pStation, Desc);
 	}
 
 int CStationEncounterCtx::GetFrequencyForSystem (CSystem *pSystem, CStationType *pStation, const CStationEncounterDesc &Desc)
@@ -135,7 +173,7 @@ int CStationEncounterCtx::GetFrequencyForSystem (CSystem *pSystem, CStationType 
 
 	//	Otherwise, let the descriptor figure out the chance
 
-	return Desc.GetFrequencyByNode(pSystem->GetTopology(), pStation);
+    return GetBaseFrequencyForNode(pSystem->GetTopology(), pStation, Desc);
 	}
 
 int CStationEncounterCtx::GetMinimumForNode (CTopologyNode *pNode, const CStationEncounterDesc &Desc)

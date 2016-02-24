@@ -4684,10 +4684,20 @@ class CStationEncounterDesc
 		int GetCountOfRandomEncounterLevels (void) const;
 		inline Metric GetEnemyExclusionRadius (void) const { return m_rEnemyExclusionRadius; }
 		int GetFrequencyByLevel (int iLevel) const;
-		int GetFrequencyByNode (CTopologyNode *pSystem, CStationType *pType) const;
 		inline const CString &GetLocationCriteria (void) { return m_sLocationCriteria; }
 		inline int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
 		inline int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
+        inline bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
+            {
+            if (m_bSystemCriteria) 
+                {
+                if (retpCriteria) 
+                    *retpCriteria = &m_SystemCriteria;
+                return m_bSystemCriteria; 
+                }
+            else
+                return false;
+            }
 		inline bool IsUniqueInSystem (void) const { return (m_iMaxCountInSystem == 1); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
@@ -4735,13 +4745,18 @@ class CStationEncounterCtx
 			SEncounterStats (void) :
 					iCount(0),
 					iLimit(-1),
-					iMinimum(0)
+					iMinimum(0),
+                    iNodeCriteria(-1)
 				{ }
 
 			int iCount;						//	Number of times encountered
 			int iLimit;						//	Encounter limit (-1 = no limit)
 			int iMinimum;					//	Minimum encounters (-1 = no limit)
+
+            mutable int iNodeCriteria;      //  Cached frequency for node (-1 = unknown)
 			};
+
+		int GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
 
 		SEncounterStats m_Total;			//	Encounters in entire game
 		TSortMap<int, SEncounterStats> m_ByLevel;	//	Encounters by system level

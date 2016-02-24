@@ -116,34 +116,6 @@ int CStationEncounterDesc::GetFrequencyByLevel (int iLevel) const
 		return ::GetFrequencyByLevel(m_sLevelFrequency, iLevel);
 	}
 
-int CStationEncounterDesc::GetFrequencyByNode (CTopologyNode *pNode, CStationType *pType) const
-
-//	GetFrequencyByNode
-//
-//	Returns the frequency of the encounter in this system.
-
-	{
-	if (!CanBeRandomlyEncountered())
-		return 0;
-
-	//	If we have system criteria, then check it here.
-
-	if (m_bSystemCriteria)
-		{
-		CTopologyNode::SCriteriaCtx Ctx;
-		Ctx.pTopology = &g_pUniverse->GetTopology();
-		if (!pNode->MatchesCriteria(Ctx, m_SystemCriteria))
-			return 0;
-		}
-
-	//	Check by level frequency
-
-	if (m_sLevelFrequency.IsBlank())
-		return ftCommon;
-	else
-		return ::GetFrequencyByLevel(m_sLevelFrequency, pNode->GetLevel());
-	}
-
 ALERROR CStationEncounterDesc::InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitFromStationTypeXML
