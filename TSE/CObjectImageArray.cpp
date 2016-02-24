@@ -847,7 +847,7 @@ bool CObjectImageArray::ImagesIntersect (int iTick, int iRotation, int x, int y,
 	return false;
 	}
 
-ALERROR CObjectImageArray::Init (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap)
+ALERROR CObjectImageArray::Init (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset, int yOffset)
 
 //	Init
 //
@@ -871,6 +871,9 @@ ALERROR CObjectImageArray::Init (CG32bitImage *pBitmap, const RECT &rcImage, int
 	m_pRotationOffset = NULL;
 	m_iBlending = blendNormal;
 	m_iViewportSize = RectWidth(rcImage);
+
+    if (xOffset != 0 || yOffset != 0)
+        ComputeRotationOffsets(xOffset, -yOffset);
 
 	return NOERROR;
 	}
