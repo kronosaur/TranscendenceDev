@@ -1300,10 +1300,10 @@ void CArmorClass::GenerateScaledStats (void)
 
         //  Immunities based on level
 
-        Stats.iBlindingDamageAdj = (Stats.iLevel >= BLIND_IMMUNE_LEVEL ? 0 : 100);
-		Stats.fRadiationImmune = (Stats.iLevel >= RADIATION_IMMUNE_LEVEL ? true : false);
-		Stats.iEMPDamageAdj = (Stats.iLevel >= EMP_IMMUNE_LEVEL ? 0 : 100);
-		Stats.iDeviceDamageAdj = (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL ? 0 : 100);
+        Stats.iBlindingDamageAdj = Min(m_Stats.iBlindingDamageAdj, (Stats.iLevel >= BLIND_IMMUNE_LEVEL ? 0 : 100));
+		Stats.fRadiationImmune = m_Stats.fRadiationImmune || (Stats.iLevel >= RADIATION_IMMUNE_LEVEL ? true : false);
+		Stats.iEMPDamageAdj = Min(m_Stats.iEMPDamageAdj, (Stats.iLevel >= EMP_IMMUNE_LEVEL ? 0 : 100));
+		Stats.iDeviceDamageAdj = Min(m_Stats.iDeviceDamageAdj, (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL ? 0 : 100));
 
         //  Regen and decay
 
