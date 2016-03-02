@@ -1579,7 +1579,7 @@ void CBaseShipAI::UpgradeShieldBehavior (void)
 	CInstalledDevice *pDevice = m_pShip->GetNamedDevice(devShields);
 	if (pDevice)
 		{
-		iBestLevel = pDevice->GetClass()->GetLevel();
+        iBestLevel = pDevice->GetLevel();
 		bReplace = true;
 		}
 
@@ -1592,7 +1592,7 @@ void CBaseShipAI::UpgradeShieldBehavior (void)
 		if (Item.GetType()->GetCategory() == itemcatShields
 				&& !Item.IsInstalled()
 				&& !Item.IsDamaged()
-				&& Item.GetType()->GetLevel() >= iBestLevel)
+				&& Item.GetLevel() >= iBestLevel)
 			{
 			//	If this device requires some item, then skip it for now
 			//	(later we can add code to figure out if we've got enough
@@ -1611,7 +1611,7 @@ void CBaseShipAI::UpgradeShieldBehavior (void)
 			else
 				{
 				BestItem = Item;
-				iBestLevel = Item.GetType()->GetLevel();
+				iBestLevel = Item.GetLevel();
 				}
 			}
 		}
@@ -1661,7 +1661,7 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 			//	find something better than this one.
 
 			CItem BestItem;
-			int iBestLevel = pDevice->GetClass()->GetLevel();
+			int iBestLevel = pDevice->GetLevel();
 
 			CItemListManipulator ItemList(m_pShip->GetItemList());
 			while (ItemList.MoveCursorForward())
@@ -1670,7 +1670,7 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 				if (Item.GetType()->GetCategory() == itemcatWeapon
 						&& !Item.IsInstalled()
 						&& !Item.IsDamaged()
-						&& Item.GetType()->GetLevel() >= iBestLevel)
+						&& Item.GetLevel() >= iBestLevel)
 					{
 					//	If this weapon is an ammo weapon, then skip it for now
 					//	(later we can add code to figure out if we've got enough
@@ -1689,7 +1689,7 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 					else
 						{
 						BestItem = Item;
-						iBestLevel = Item.GetType()->GetLevel();
+						iBestLevel = Item.GetLevel();
 						}
 					}
 				}

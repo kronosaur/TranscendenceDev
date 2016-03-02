@@ -2081,7 +2081,6 @@ class CItem
 		inline void ClearDamaged (void) { m_dwFlags &= ~flagDamaged; }
 		inline void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		inline void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
-		inline void ClearModFlag (int iMod) { m_dwFlags &= ~Mod2Flags(iMod); }
 		static CItem CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		inline bool IsArmor (void) const;
 		inline bool IsDevice (void) const;
@@ -2105,6 +2104,7 @@ class CItem
 		DWORD GetDisruptedDuration (void) const;
 		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
 		inline int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
+        inline int GetLevel (void) const;
 		inline Metric GetMass (void) const { return GetMassKg() / 1000.0; }
 		int GetMassKg (void) const;
 		inline const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
@@ -2118,6 +2118,8 @@ class CItem
 		int GetTradePrice (CSpaceObject *pObj, bool bActual = false) const;
 		inline CItemType *GetType (void) const { return m_pItemType; }
 		int GetValue (bool bActual = false) const;
+        int GetVariantHigh (void) const { return (m_pExtra ? (int)HIWORD(m_pExtra->m_dwVariant) : 0); }
+        int GetVariantLow (void) const { return (m_pExtra ? (int)LOWORD(m_pExtra->m_dwVariant) : 0); }
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		inline bool IsDamaged (void) const { return (m_dwFlags & flagDamaged ? true : false); }
@@ -2137,7 +2139,10 @@ class CItem
 		inline void SetEnhanced (void) { m_dwFlags |= flagEnhanced; }
 		inline void SetEnhanced (bool bEnhanced) { ClearEnhanced(); if (bEnhanced) SetEnhanced(); }
 		inline void SetInstalled (int iInstalled) { m_dwInstalled = (BYTE)(char)iInstalled; }
+        bool SetLevel (int iLevel, CString *retsError = NULL);
 		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
+        void SetVariantHigh (int iValue) { Extra(); m_pExtra->m_dwVariant = MAKELONG(LOWORD(m_pExtra->m_dwVariant), (WORD)(short)iValue); }
+        void SetVariantLow (int iValue) { Extra(); m_pExtra->m_dwVariant = MAKELONG((WORD)(short)iValue, HIWORD(m_pExtra->m_dwVariant)); }
 
 		static CString GenerateCriteria (const CItemCriteria &Criteria);
 		static void InitCriteriaAll (CItemCriteria *retCriteria);
@@ -2176,7 +2181,6 @@ class CItem
 		void Extra (void);
 		static bool IsExtraEmpty (const SExtra *pExtra);
 		bool IsExtraEqual (SExtra *pSrc) const;
-		DWORD Mod2Flags (int iMod) const;
 
 		CItemType *m_pItemType;
 
@@ -2355,6 +2359,7 @@ class CInstalledArmor
 		inline CArmorClass *GetClass (void) const { return m_pArmorClass; }
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
+        inline int GetLevel (void) const;
 		inline int GetMaxHP (CSpaceObject *pSource);
 		inline const CItemEnhancement &GetMods (void) { return m_pItem->GetMods(); }
 		inline int GetSect (void) const { return m_iSect; }
@@ -2396,26 +2401,34 @@ class CArmorClass : public CObject
 			evtCount					= 2,
 			};
 
+        struct SStdStats
+	        {
+	        int iHP;								//	HP for std armor at this level
+	        int iCost;								//	Std cost at this level
+	        int iRepairCost;						//	Cost to repair 1 hp
+	        int iInstallCost;						//	Cost to install
+	        int iMass;								//	Standard mass
+	        };
+
+        ~CArmorClass (void);
+
 		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		void AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList);
 		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
-		int CalcAverageRelativeDamageAdj (void);
+		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
 		int CalcBalance (void);
 		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcPowerUsed (CInstalledArmor *pArmor);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor);
 		bool FindDataField (const CString &sField, CString *retsValue);
 		inline bool FindEventHandlerArmorClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
-		inline int GetBlindingDamageAdj (void) { return m_iBlindingDamageAdj; }
 		inline int GetCompleteBonus (void) { return m_iArmorCompleteBonus; }
-		inline int GetDamageAdj (DamageTypes iDamage) { return m_DamageAdj.GetAdj(iDamage); }
+        inline int GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const;
 		int GetDamageAdjForWeaponLevel (int iLevel);
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
-		inline int GetDeviceDamageAdj (void) { return m_iDeviceDamageAdj; }
-		inline int GetEMPDamageAdj (void) { return m_iEMPDamageAdj; }
-		inline int GetInstallCost (void);
+		inline int GetInstallCost (CItemCtx &Ctx) const;
 		ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		inline CItemType *GetItemType (void) { return m_pItemType; }
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false);
@@ -2424,8 +2437,9 @@ class CArmorClass : public CObject
 		inline CString GetName (void);
 		CString GetReference (CItemCtx &Ctx, int iVariant = -1);
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
-		inline int GetRepairCost (void);
+		inline int GetRepairCost (CItemCtx &Ctx) const;
 		inline int GetRepairTech (void) { return m_iRepairTech; }
+        Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
 		CString GetShortName (void);
 		inline int GetStealth (void) const { return m_iStealth; }
 		inline DWORD GetUNID (void);
@@ -2435,6 +2449,7 @@ class CArmorClass : public CObject
 		inline bool IsEMPDamageImmune (CItemCtx &ItemCtx);
 		inline bool IsRadiationImmune (CItemCtx &ItemCtx);
 		bool IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage);
+        inline bool IsScalable (void) const { return (m_pScalable != NULL); }
 		inline bool IsShatterImmune (CItemCtx &ItemCtx);
 		inline bool IsShieldInterfering (CItemCtx &ItemCtx);
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
@@ -2445,18 +2460,41 @@ class CArmorClass : public CObject
 		static int GetStdEffectiveHP (int iLevel);
 		static int GetStdHP (int iLevel);
 		static int GetStdMass (int iLevel);
+        static const SStdStats &GetStdStats (int iLevel);
 
 	private:
+        struct SScalableStats
+            {
+            int iLevel;
+
+            int iHitPoints;
+            CDamageAdjDesc DamageAdj;
+            int iBlindingDamageAdj;
+            int iEMPDamageAdj;
+            int iDeviceDamageAdj;
+
+            CRegenDesc Regen;
+            CRegenDesc Decay;
+            CRegenDesc Distribute;
+            
+            CCurrencyAndValue RepairCost;
+            CCurrencyAndValue InstallCost;
+
+            DWORD fRadiationImmune : 1;
+            };
+
 		CArmorClass (void);
 
-		int CalcArmorDamageAdj (const DamageDesc &Damage) const;
-		int GetDamageAdj (CItemEnhancement Mods, const DamageDesc &Damage);
+        ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
+		int CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
+        void GenerateScaledStats (void);
+		int GetDamageAdj (CItemCtx &ItemCtx, CItemEnhancement Mods, const DamageDesc &Damage) const;
+        const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
 		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 
-		int m_iHitPoints;						//	Hit points for this armor class
-		CCurrencyAndValue m_RepairCost;			//	Cost per HP to repair
-		CCurrencyAndValue m_InstallCost;		//	Cost to install
+        SScalableStats m_Stats;                 //  Base stats capable of being scaled
+
 		int m_iRepairTech;						//	Tech required to repair
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
 		int m_iStealth;							//	Stealth level
@@ -2464,34 +2502,27 @@ class CArmorClass : public CObject
 		int m_iIdlePowerUse;					//	Power consumed when not regenerating
 		int m_iMaxHPBonus;						//	Max HP bonus allowed for this armor
 		Metric m_rMaxSpeedBonus;				//	Bonus (or penalty) to ship's max speed (10 = 10% bonus)
-
 		CString m_sEnhancementType;				//	Type of enhancements
 		int m_iDeviceBonus;						//	Bonus to devices
 		CItemCriteria m_DeviceCriteria;			//	Only enhances devices that match criteria
-
-		CRegenDesc m_Regen;						//	Regeneration desc
-		CRegenDesc m_Decay;						//	Decay desc
-		CRegenDesc m_Distribute;				//	Distribute hp
-		
 		int m_iDamageAdjLevel;					//	Level to use for intrinsic damage adj
-		CDamageAdjDesc m_DamageAdj;				//	Adjustments for damage type
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
-		int m_iEMPDamageAdj;					//	Adjust for EMP damage
-		int m_iBlindingDamageAdj;				//	Adjust for blinding damage
-		int m_iDeviceDamageAdj;					//	Adjust for device damage
 
 		DWORD m_fPhotoRepair:1;					//	TRUE if repairs when near a star
-		DWORD m_fRadiationImmune:1;				//	TRUE if immune to radiation
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
 		DWORD m_fDisintegrationImmune:1;		//	TRUE if immune to disintegration
 		DWORD m_fShatterImmune:1;				//	TRUE if immune to shatter
 		DWORD m_fChargeRepair:1;				//	If TRUE, we regenerage while we have charges left
 		DWORD m_fChargeDecay:1;					//	If TRUE, we decay while we have charges left
+        DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:24;
 
 		CItemType *m_pItemType;					//	Item for this armor
+
+        int m_iScaledLevels;                    //  Number of levels
+        SScalableStats *m_pScalable;            //  Params for higher level versions of this armor
 
 		SEventHandlerDesc m_CachedEvents[evtCount];
 
@@ -2680,7 +2711,7 @@ class CRandomEnhancementGenerator
 
 		CRandomEnhancementGenerator &operator= (const CRandomEnhancementGenerator &Src);
 
-		void EnhanceItem (CItem &Item);
+		void EnhanceItem (CItem &Item) const;
 		inline int GetChance (void) const { return m_iChance; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 
@@ -3014,6 +3045,48 @@ struct STargetingCtx
 	};
 
 //	Ship Structure and Compartments --------------------------------------------
+
+class CShipArmorSegmentDesc
+    {
+    public:
+        bool AngleInSegment (int iAngle) const;
+        ALERROR Bind (SDesignLoadCtx &Ctx);
+        bool CreateArmorItem (CItem *retItem, CString *retsError = NULL) const;
+        inline CArmorClass *GetArmorClass (void) const { return m_pArmor;  }
+        inline int GetCenterAngle (void) const { return AngleMod(m_iStartAt + m_iSpan / 2); }
+        DWORD GetCriticalArea (void) const { return m_dwAreaSet; }
+        int GetLevel (void) const;
+        inline int GetSpan (void) const { return m_iSpan; }
+        inline int GetStartAngle (void) const { return m_iStartAt; }
+        ALERROR Init (int iStartAt, int iSpan, DWORD dwArmorUNID, int iLevel, const CRandomEnhancementGenerator &Enhancement);
+        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+
+    private:
+        static DWORD ParseNonCritical (const CString &sList);
+
+		int m_iStartAt;						//	Start of section in degrees
+		int m_iSpan;						//	Size of section in degrees
+		CArmorClassRef m_pArmor;			//	Type of armor for hull
+        int m_iLevel;                       //  For scalable armor
+		CRandomEnhancementGenerator m_Enhanced;//	Mods
+		DWORD m_dwAreaSet;					//	Areas that this section protects
+    };
+
+class CShipArmorDesc
+    {
+    public:
+        void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
+        ALERROR Bind (SDesignLoadCtx &Ctx);
+        Metric CalcMass (void) const;
+        inline int GetCount (void) const { return m_Segments.GetCount(); }
+        inline const CShipArmorSegmentDesc &GetSegment (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < m_Segments.GetCount()); return m_Segments[iIndex]; }
+        int GetSegmentAtAngle (int iAngle) const;
+        CString GetSegmentName (int iIndex) const;
+        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+
+    private:
+        TArray<CShipArmorSegmentDesc> m_Segments;
+    };
 
 enum ECompartmentTypes
 	{
@@ -3895,17 +3968,19 @@ class CItemType : public CDesignType
 		inline int GetFrequency (void) const { return m_Frequency; }
 		int GetFrequencyByLevel (int iLevel);
 		inline const CObjectImageArray &GetImage (void) { return m_Image; }
-		int GetInstallCost (void) const;
-		inline const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }
+		int GetInstallCost (CItemCtx &Ctx) const;
+        int GetLevel (CItemCtx &Ctx) const;
 		inline Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
 		inline int GetMassBonusPerCharge (void) const { return m_iExtraMassPerCharge; }
 		int GetMassKg (CItemCtx &Ctx) const;
 		inline int GetMaxCharges (void) const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
 		int GetMaxHPBonus (void) const;
+        inline int GetMaxLevel (void) const { return m_iMaxLevel; }
 		inline CWeaponFireDesc *GetMissileDesc (void) const { return m_pMissile;  }
 		inline DWORD GetModCode (void) const { return m_dwModCode; }
 		CString GetName (DWORD *retdwFlags, bool bActualName = false) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
+		inline const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }
 		CString GetReference (CItemCtx &Ctx, int iVariant = -1, DWORD dwFlags = 0) const;
 		CString GetSortName (void) const;
 		inline CItemType *GetUnknownType (void) { return m_pUnknownType; }
@@ -3921,6 +3996,7 @@ class CItemType : public CDesignType
 		inline bool IsKnown (void) const { return (m_fKnown ? true : false); }
 		bool IsFuel (void) const;
 		bool IsMissile (void) const;
+		inline bool IsScalable (void) const { return (m_fScalable ? true : false); }
 		inline bool IsUsable (void) const { return GetUseDesc(NULL); }
 		inline void SetKnown (void) { m_fKnown = true; }
 		inline void SetShowReference (void) { m_fReference = true; }
@@ -3962,6 +4038,7 @@ class CItemType : public CDesignType
 		CString m_sSortName;					//	Name to sort by
 
 		int m_iLevel;							//	Level of item
+        int m_iMaxLevel;                        //  Max level, for scalable items
 		CCurrencyAndValue m_iValue;				//	Value in some currency
 		int m_iMass;							//	Mass in kilograms
 		FrequencyTypes m_Frequency;				//	Frequency
@@ -4013,7 +4090,7 @@ class CItemType : public CDesignType
 
 		DWORD m_fUseUninstalled:1;				//	If TRUE, item can only be used when uninstalled
 		DWORD m_fUseEnabled:1;					//	If TRUE, item can only be used when enabled
-		DWORD m_fSpare3:1;
+		DWORD m_fScalable:1;                    //  If TRUE, VariantHigh adds to level.
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
@@ -4104,15 +4181,6 @@ class CShipClass : public CDesignType
 			sectCritical	= 0x00010000,		//	Ship destroyed
 			};
 
-		struct HullSection
-			{
-			int iStartAt;						//	Start of section in degrees
-			int iSpan;							//	Size of section in degrees
-			CArmorClassRef pArmor;				//	Type of armor for hull
-			CRandomEnhancementGenerator Enhanced;//	Mods
-			DWORD dwAreaSet;					//	Areas that this section protects
-			};
-
 		CShipClass (void);
 		virtual ~CShipClass (void);
 
@@ -4146,9 +4214,9 @@ class CShipClass : public CDesignType
 		CXMLElement *GetHUDDescInherited (EHUDTypes iType) const;
 		inline const DriveDesc *GetHullDriveDesc (void) const { return &m_DriveDesc; }
 		inline int GetHullMass (void) const { return m_iMass; }
-		inline HullSection *GetHullSection (int iIndex) const { return &m_Hull[iIndex]; }
+		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
 		int GetHullSectionAtAngle (int iAngle);
-		inline int GetHullSectionCount (void) const { return m_Hull.GetCount(); }
+		inline int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
 		CString GetHullSectionName (int iIndex) const;
 		inline const CObjectImageArray &GetImage (void) const { return m_Image; }
 		inline const CObjectImageArray &GetImageSmall (void) { return m_Image; }
@@ -4332,7 +4400,7 @@ class CShipClass : public CDesignType
 		int m_iStructuralHP;					//	Structual hp of wreck
 		CStationTypeRef m_pWreckType;				//	Station type to use as wreck
 
-		TArray<HullSection> m_Hull;
+        CShipArmorDesc m_Armor;                 //  Armor descriptor
 		CShipInteriorDesc m_Interior;			//	Interior structure
 		IDeviceGenerator *m_pDevices;			//	Generator of devices
 		CDeviceDescList m_AverageDevices;		//	Average complement of devices (only for stats)
@@ -5864,6 +5932,7 @@ class CInstalledDevice
 		inline int GetFireAngle (void) const { return m_iFireAngle; }
 		inline CItem *GetItem (void) const { return m_pItem; }
 		DWORD GetLinkedFireOptions (void) const;
+        inline int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
 		inline int GetMinFireArc (void) const { return m_iMinFireArc; }
 		inline int GetMaxFireArc (void) const { return m_iMaxFireArc; }
 		inline COverlay *GetOverlay (void) const { return m_pOverlay; }
@@ -6546,6 +6615,7 @@ bool SetFrequencyByLevel (CString &sLevelFrequency, int iLevel, int iFreq);
 
 inline EDamageResults CInstalledArmor::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx) { return m_pArmorClass->AbsorbDamage(CItemCtx(pSource, this), Ctx); }
 inline int CInstalledArmor::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return m_pArmorClass->GetDamageEffectiveness(pAttacker, pWeapon); }
+inline int CInstalledArmor::GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetItemType()->GetLevel()); }
 inline int CInstalledArmor::GetMaxHP (CSpaceObject *pSource) { return m_pArmorClass->GetMaxHP(CItemCtx(pSource, this)); }
 
 inline bool CInstalledDevice::IsSecondaryWeapon (void) const 
@@ -6559,18 +6629,20 @@ inline bool CInstalledDevice::IsSecondaryWeapon (void) const
 inline bool CItem::IsArmor (void) const { return (m_pItemType && m_pItemType->GetArmorClass()); }
 inline bool CItem::IsDevice (void) const { return (m_pItemType && m_pItemType->GetDeviceClass()); }
 inline CEconomyType *CItem::GetCurrencyType (void) const { return m_pItemType->GetCurrencyType(); }
+inline int CItem::GetLevel (void) const { return m_pItemType->GetLevel(CItemCtx(*this)); }
 
 inline CDeviceClass *CDeviceDescList::GetDeviceClass (int iIndex) const { return m_List[iIndex].Item.GetType()->GetDeviceClass(); }
 
-inline int CArmorClass::GetInstallCost (void) { return (int)m_pItemType->GetCurrencyType()->Exchange(m_InstallCost); }
+inline int CArmorClass::GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const { const SScalableStats &Stats = GetScaledStats(Ctx); return Stats.DamageAdj.GetAdj(iDamage); }
+inline int CArmorClass::GetInstallCost (CItemCtx &Ctx) const { const SScalableStats &Stats = GetScaledStats(Ctx); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.InstallCost); }
 inline CString CArmorClass::GetName (void) { return m_pItemType->GetNounPhrase(); }
-inline int CArmorClass::GetRepairCost (void) { return (int)m_pItemType->GetCurrencyType()->Exchange(m_RepairCost); }
+inline int CArmorClass::GetRepairCost (CItemCtx &Ctx) const { const SScalableStats &Stats = GetScaledStats(Ctx); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.RepairCost); }
 inline DWORD CArmorClass::GetUNID (void) { return m_pItemType->GetUNID(); }
-inline bool CArmorClass::IsBlindingDamageImmune (CItemCtx &ItemCtx) { return (m_iBlindingDamageAdj == 0 || ItemCtx.GetMods().IsBlindingImmune()); }
-inline bool CArmorClass::IsDeviceDamageImmune (CItemCtx &ItemCtx) { return (m_iDeviceDamageAdj == 0 || ItemCtx.GetMods().IsDeviceDamageImmune()); }
+inline bool CArmorClass::IsBlindingDamageImmune (CItemCtx &ItemCtx) { const SScalableStats &Stats = GetScaledStats(ItemCtx); return (Stats.iBlindingDamageAdj == 0 || ItemCtx.GetMods().IsBlindingImmune()); }
+inline bool CArmorClass::IsDeviceDamageImmune (CItemCtx &ItemCtx) { const SScalableStats &Stats = GetScaledStats(ItemCtx); return (Stats.iDeviceDamageAdj == 0 || ItemCtx.GetMods().IsDeviceDamageImmune()); }
 inline bool CArmorClass::IsDisintegrationImmune (CItemCtx &ItemCtx) { return (m_fDisintegrationImmune || ItemCtx.GetMods().IsDisintegrationImmune()); }
-inline bool CArmorClass::IsEMPDamageImmune (CItemCtx &ItemCtx) { return (m_iEMPDamageAdj == 0 || ItemCtx.GetMods().IsEMPImmune()); }
-inline bool CArmorClass::IsRadiationImmune (CItemCtx &ItemCtx) { return (m_fRadiationImmune || ItemCtx.GetMods().IsRadiationImmune()); }
+inline bool CArmorClass::IsEMPDamageImmune (CItemCtx &ItemCtx) { const SScalableStats &Stats = GetScaledStats(ItemCtx); return (Stats.iEMPDamageAdj == 0 || ItemCtx.GetMods().IsEMPImmune()); }
+inline bool CArmorClass::IsRadiationImmune (CItemCtx &ItemCtx) { const SScalableStats &Stats = GetScaledStats(ItemCtx); return (Stats.fRadiationImmune || ItemCtx.GetMods().IsRadiationImmune()); }
 inline bool CArmorClass::IsShatterImmune (CItemCtx &ItemCtx) { return (m_fShatterImmune || (ItemCtx.GetMods().IsShatterImmune())); }
 inline bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx) { return (m_fShieldInterference || ItemCtx.GetMods().IsShieldInterfering()); }
 

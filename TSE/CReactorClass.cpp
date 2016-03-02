@@ -280,7 +280,7 @@ bool CReactorClass::IsFuelCompatible (const ReactorDesc &Desc, const CItem &Fuel
 
 		//	Make sure we're the correct level
 
-		int iLevel = FuelItem.GetType()->GetLevel();
+		int iLevel = FuelItem.GetLevel();
 		return (iLevel >= Desc.iMinFuelLevel 
 				&& iLevel <= Desc.iMaxFuelLevel);
 		}

@@ -889,6 +889,12 @@
     <ClCompile Include="CDesignTypeCriteria.cpp">
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
+    <ClCompile Include="CShipArmorSegmentDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipArmorDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

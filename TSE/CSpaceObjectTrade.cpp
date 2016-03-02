@@ -317,7 +317,7 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 
 			if (pShipToRefuel->IsFuelCompatible(Item))
 				{
-				if (pBestItem == NULL || pType->GetLevel() > iBestPrice)
+				if (pBestItem == NULL || pType->GetLevel() > iBestLevel)
 					{
 					//	Compute the price, because if we don't sell it, then we
 					//	skip it.

@@ -28,6 +28,7 @@
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
+#define PROPERTY_LEVEL  						CONSTLIT("level")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 
@@ -898,6 +899,9 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 	else if (strEquals(sName, PROPERTY_INSTALLED))
 		return CC.CreateBool(IsInstalled());
 
+    else if (strEquals(sName, PROPERTY_LEVEL))
+        return CC.CreateInteger(GetType()->GetLevel(CItemCtx(*this)));
+
 	else if (strEquals(sName, PROPERTY_MASS_BONUS_PER_CHARGE))
 		return CC.CreateInteger(m_pItemType->GetMassBonusPerCharge());
 
@@ -1180,6 +1184,7 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 	{
 	int i;
+    CItemCtx ItemCtx(*this);
 
 	if (m_pItemType == NULL)
 		return false;
@@ -1408,13 +1413,13 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 	//	Check for level modifiers
 
-	if (Criteria.iEqualToLevel != -1 && m_pItemType->GetLevel() != Criteria.iEqualToLevel)
+	if (Criteria.iEqualToLevel != -1 && m_pItemType->GetLevel(ItemCtx) != Criteria.iEqualToLevel)
 		return false;
 
-	if (Criteria.iGreaterThanLevel != -1 && m_pItemType->GetLevel() <= Criteria.iGreaterThanLevel)
+	if (Criteria.iGreaterThanLevel != -1 && m_pItemType->GetLevel(ItemCtx) <= Criteria.iGreaterThanLevel)
 		return false;
 
-	if (Criteria.iLessThanLevel != -1 && m_pItemType->GetLevel() >= Criteria.iLessThanLevel)
+	if (Criteria.iLessThanLevel != -1 && m_pItemType->GetLevel(ItemCtx) >= Criteria.iLessThanLevel)
 		return false;
 
 	//	Check for price modifiers
@@ -2229,6 +2234,31 @@ void CItem::SetDisrupted (DWORD dwDuration)
 		}
 	}
 
+bool CItem::SetLevel (int iLevel, CString *retsError)
+
+//  SetLevel
+//
+//  Sets the level for scalable items. Returns TRUE if successful.
+
+    {
+    if (!GetType()->IsScalable())
+        {
+        if (retsError)
+            *retsError = strPatternSubst(CONSTLIT("Item [%08x] is not scalable."), GetType()->GetUNID());
+        return false;
+        }
+
+    if (iLevel < GetType()->GetLevel() || iLevel > GetType()->GetMaxLevel())
+        {
+        if (retsError)
+            *retsError = strPatternSubst(CONSTLIT("Item [%08x] cannot be scaled to level %d."), GetType()->GetUNID(), iLevel);
+        return false;
+        }
+
+    SetVariantHigh(iLevel - GetType()->GetLevel());
+    return true;
+    }
+
 bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
 
 //	SetProperty
@@ -2287,6 +2317,14 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			return false;
 			}
 		}
+
+    else if (strEquals(sName, PROPERTY_LEVEL))
+        {
+        if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
+            return false;
+
+        return true;
+        }
 
 	else
 		{

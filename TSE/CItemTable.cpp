@@ -1771,7 +1771,7 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	return NOERROR;
 	}
 
-void CRandomEnhancementGenerator::EnhanceItem (CItem &Item)
+void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 
 //	EnhanceItem
 //

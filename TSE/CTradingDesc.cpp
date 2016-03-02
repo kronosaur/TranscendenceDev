@@ -221,7 +221,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
             //  guidelines).
 
             if (Ctx.pObj == NULL)
-    			iBasePrice = Ctx.iCount * pArmor->GetRepairCost();
+    			iBasePrice = Ctx.iCount * pArmor->GetRepairCost(CItemCtx(*Ctx.pItem));
 
             //  Otherwise, the price is based on how much damage we've taken
 
@@ -231,19 +231,21 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
                 if (pSeg == NULL)
                     return -1;
 
-                int iMaxHP = pArmor->GetMaxHP(CItemCtx(Ctx.pObj, pSeg));
+                CItemCtx ItemCtx(Ctx.pItem, Ctx.pObj, pSeg);
+
+                int iMaxHP = pArmor->GetMaxHP(ItemCtx);
                 int iHalf = iMaxHP / 2;
 
                 //  We can repair up to half of maximum damage at normal price
 
                 int iHPToRepair = Ctx.iCount;
                 int iHPAtNormalPrice = Min(iHalf, iHPToRepair);
-                iBasePrice = iHPAtNormalPrice * pArmor->GetRepairCost();
+                iBasePrice = iHPAtNormalPrice * pArmor->GetRepairCost(ItemCtx);
 
                 //  If we have more damage than that, we pay double price
 
                 int iHPAtExtraPrice = iHPToRepair - iHPAtNormalPrice;
-                iBasePrice += iHPAtExtraPrice * pArmor->GetRepairCost() * EXTRA_REPAIR_COST_FACTOR;
+                iBasePrice += iHPAtExtraPrice * pArmor->GetRepairCost(ItemCtx) * EXTRA_REPAIR_COST_FACTOR;
                 }
 
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
@@ -253,14 +255,14 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 		case serviceInstallDevice:
 		case serviceReplaceArmor:
 			{
-			iBasePrice = Ctx.iCount * Ctx.pItem->GetType()->GetInstallCost();
+			iBasePrice = Ctx.iCount * Ctx.pItem->GetType()->GetInstallCost(CItemCtx(*Ctx.pItem));
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}
 
 		case serviceRemoveDevice:
 			{
-			iBasePrice = Ctx.iCount * Ctx.pItem->GetType()->GetInstallCost() / 2;
+			iBasePrice = Ctx.iCount * Ctx.pItem->GetType()->GetInstallCost(CItemCtx(*Ctx.pItem)) / 2;
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}

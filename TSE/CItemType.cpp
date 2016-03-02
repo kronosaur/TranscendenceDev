@@ -341,7 +341,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue)
 
 	else if (strEquals(sField, FIELD_INSTALL_COST))
 		{
-		int iCost = GetInstallCost();
+		int iCost = GetInstallCost(CItemCtx());
 		if (iCost == -1)
 			*retsValue = NULL_STR;
 		else
@@ -519,9 +519,18 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
 	if (!IsKnown() && !bActual)
 		return m_pUnknownType->GetCurrencyAndValue(Ctx);
 
-	//	Value in the item's currency.
+	//	If this is a scalable item, then we need to ask the class
 
-	CurrencyValue iValue = m_iValue.GetValue();
+    CurrencyValue iValue;
+    if (IsScalable())
+        {
+        if (m_pArmor)
+            iValue = CurrencyValue(m_iValue.GetValue() * m_pArmor->GetScaledCostAdj(Ctx));
+        else
+            iValue = m_iValue.GetValue();
+        }
+    else
+        iValue = m_iValue.GetValue();
 
 	//	If we need to account for charges, then do it
 
@@ -602,7 +611,7 @@ int CItemType::GetFrequencyByLevel (int iLevel)
 		}
 	}
 
-int CItemType::GetInstallCost (void) const
+int CItemType::GetInstallCost (CItemCtx &Ctx) const
 
 //	GetInstallCost
 //
@@ -610,7 +619,7 @@ int CItemType::GetInstallCost (void) const
 
 	{
 	if (m_pArmor)
-		return m_pArmor->GetInstallCost();
+		return m_pArmor->GetInstallCost(Ctx);
 	else if (m_pDevice)
 		return m_pDevice->GetInstallCost();
 	else
@@ -667,6 +676,20 @@ CString CItemType::GetItemCategory (ItemCategories iCategory)
 			return CONSTLIT("unknown");
 		}
 	}
+
+int CItemType::GetLevel (CItemCtx &Ctx) const
+
+//  GetLevel
+//
+//  Returns the level of the item. For some items, the level varies based on the
+//  charge.
+
+    {
+    if (IsScalable() && !Ctx.IsItemNull())
+        return Max(1, Min(m_iLevel + Ctx.GetItem().GetVariantHigh(), m_iMaxLevel));
+    else
+        return m_iLevel;
+    }
 
 int CItemType::GetMassKg (CItemCtx &Ctx) const
 
@@ -1055,6 +1078,10 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	ALERROR error;
 	int i;
 
+    //  Load the level. If this is a range, then it is a scalable item.
+
+    m_fScalable = pDesc->GetAttributeIntegerRange(LEVEL_ATTRIB, &m_iLevel, &m_iMaxLevel, 1, MAX_ITEM_LEVEL, 1, 1);
+
 	//	Initialize basic info
 
 	if (!pDesc->FindAttribute(PLURAL_NAME_ATTRIB, &m_sName))
@@ -1065,7 +1092,6 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_sSortName = pDesc->GetAttribute(SORT_NAME_ATTRIB);
 	if (m_sSortName.IsBlank())
 		m_sSortName = m_sName;
-	m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, 1);
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
 
 	if (error = m_iValue.InitFromXML(Ctx, pDesc->GetAttribute(VALUE_ATTRIB)))

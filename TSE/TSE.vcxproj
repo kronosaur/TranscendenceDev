@@ -368,6 +368,8 @@
     </ClCompile>
     <ClCompile Include="CSendMessageOrder.cpp" />
     <ClCompile Include="CSFXOptions.cpp" />
+    <ClCompile Include="CShipArmorDesc.cpp" />
+    <ClCompile Include="CShipArmorSegmentDesc.cpp" />
     <ClCompile Include="CShipInterior.cpp" />
     <ClCompile Include="CShipInteriorDesc.cpp" />
     <ClCompile Include="CShipTable.cpp" />

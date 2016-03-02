@@ -3133,7 +3133,7 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(pArmor->GetMaxHP(CItemCtx(&ArmorItem)));
 
 		case FN_ARM_REPAIRCOST:
-			return pCC->CreateInteger(pArmor->GetRepairCost());
+			return pCC->CreateInteger(pArmor->GetRepairCost(CItemCtx(&ArmorItem)));
 
 		case FN_ARM_REPAIRTECH:
 			return pCC->CreateInteger(pArmor->GetRepairTech());
@@ -3845,7 +3845,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_INSTALL_COST:
 			{
-			int iCost = pType->GetInstallCost();
+			int iCost = pType->GetInstallCost(CItemCtx(Item));
 			if (iCost == -1)
 				return pCC->CreateNil();
 
@@ -3947,7 +3947,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_LEVEL:
-			pResult = pCC->CreateInteger(pType->GetLevel());
+			pResult = pCC->CreateInteger(Item.GetLevel());
 			break;
 
 		case FN_ITEM_PRICE:
@@ -5060,7 +5060,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pSection->GetSect() >= pClass->GetHullSectionCount())
 				return pCC->CreateNil();
 
-			DWORD dwCritical = pClass->GetHullSection(pSection->GetSect())->dwAreaSet;
+            DWORD dwCritical = pClass->GetHullSection(pSection->GetSect()).GetCriticalArea();
 			if (dwCritical & CShipClass::sectCritical)
 				return pCC->CreateString(CONSTLIT("critical"));
 			else

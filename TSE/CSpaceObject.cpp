@@ -6752,9 +6752,20 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 		return false;
 		}
 
+	//	We handle damage differently because we may need to remove enhancements,
+	//	etc.
+
+	if (strEquals(sName, PROPERTY_DAMAGED))
+		{
+		if (pValue && pValue->IsNil())
+			RepairItem(ItemList);
+		else
+			DamageItem(ItemList);
+		}
+
 	//	Enabling/disabling needs special handling
 
-	if (strEquals(sName, PROPERTY_ENABLED))
+	else if (strEquals(sName, PROPERTY_ENABLED))
 		{
 		CShip *pShip = AsShip();
 		if (pShip == NULL)
@@ -6867,17 +6878,6 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 			*retsError = CONSTLIT("Unable to set hit points.");
 			return false;
 			}
-		}
-
-	//	We handle damage differently because we may need to remove enhancements,
-	//	etc.
-
-	else if (strEquals(sName, PROPERTY_DAMAGED))
-		{
-		if (pValue && pValue->IsNil())
-			RepairItem(ItemList);
-		else
-			DamageItem(ItemList);
 		}
 
 	//	Otherwise, just set the property, but pass enough context (this object)

@@ -250,9 +250,10 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 						if (rMaxRange > m_rMaxWeaponRange)
 							m_rMaxWeaponRange = rMaxRange;
 
+                        int iWeaponLevel = pWeapon->GetLevel();
 						if (!pWeapon->GetClass()->IsAmmoWeapon()
-								&& pWeapon->GetClass()->GetLevel() > iBestNonLauncherLevel)
-							iBestNonLauncherLevel = pWeapon->GetClass()->GetLevel();
+								&& iWeaponLevel > iBestNonLauncherLevel)
+							iBestNonLauncherLevel = iWeaponLevel;
 
 						iPrimaryCount++;
 						break;
@@ -418,11 +419,12 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 				{
 				//	Figure out the best non-launcher level
 
+                int iWeaponLevel = pDevice->GetLevel();
 				if (pDevice->GetCategory() != itemcatLauncher
 						&& !pDevice->GetClass()->IsAmmoWeapon()
-						&& pDevice->GetClass()->GetLevel() > m_iBestNonLauncherWeaponLevel)
+						&& iWeaponLevel > m_iBestNonLauncherWeaponLevel)
 					{
-					m_iBestNonLauncherWeaponLevel = pDevice->GetClass()->GetLevel();
+					m_iBestNonLauncherWeaponLevel = iWeaponLevel;
 					}
 
 				//	Secondary
@@ -736,7 +738,8 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 
 	//	Base score is based on the level of the variant
 
-	iScore += pType->GetLevel() * 10;
+    int iLevel = (pType->IsDevice() ? pWeapon->GetLevel() : pType->GetLevel());
+	iScore += iLevel * 10;
 
 	//	Missiles/ammo count for more
 
@@ -749,7 +752,7 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 				&& pTarget->GetCategory() == CSpaceObject::catShip
 				&& !pTarget->IsMultiHull()
 				&& pTarget->GetLevel() <= (m_iBestNonLauncherWeaponLevel - 2)
-				&& pTarget->GetLevel() <= (pType->GetLevel() - 2)
+				&& pTarget->GetLevel() <= (iLevel - 2)
 				&& !pTarget->IsPlayer())
 			return 1;
 

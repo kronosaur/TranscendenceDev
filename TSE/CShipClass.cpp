@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define ARMOR_TAG		        				CONSTLIT("Armor")
 #define ARMOR_DISPLAY_TAG						CONSTLIT("ArmorDisplay")
 #define COMMUNICATIONS_TAG						CONSTLIT("Communications")
 #define DEVICES_TAG								CONSTLIT("Devices")
@@ -34,7 +35,6 @@
 #define WRECK_IMAGE_TAG							CONSTLIT("WreckImage")
 
 #define AUTOPILOT_ATTRIB						CONSTLIT("autopilot")
-#define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
 #define CHARACTER_ATTRIB						CONSTLIT("character")
 #define CHARACTER_CLASS_ATTRIB					CONSTLIT("characterClass")
@@ -70,7 +70,6 @@
 #define NAME_DEST_X_ATTRIB						CONSTLIT("nameDestX")
 #define NAME_DEST_Y_ATTRIB						CONSTLIT("nameDestY")
 #define NAME_Y_ATTRIB							CONSTLIT("nameY")
-#define NON_CRITICAL_ATTRIB						CONSTLIT("nonCritical")
 #define PERCEPTION_ATTRIB						CONSTLIT("perception")
 #define PLAYER_SHIP_ATTRIB						CONSTLIT("playerShip")
 #define RADIOACTIVE_WRECK_ATTRIB				CONSTLIT("radioactiveWreck")
@@ -191,7 +190,6 @@
 
 #define DEFAULT_POWER_USE						20
 
-static char g_ArmorTag[] = "Armor";
 static char g_AISettingsTag[] = "AISettings";
 
 static char g_ManufacturerAttrib[] = "manufacturer";
@@ -200,8 +198,6 @@ static char g_TypeAttrib[] = "type";
 static char g_MassAttrib[] = "mass";
 static char g_ManeuverAttrib[] = "maneuver";
 static char g_MaxSpeedAttrib[] = "maxSpeed";
-static char g_StartAttrib[] = "start";
-static char g_SpanAttrib[] = "span";
 static char g_DeviceIDAttrib[] = "deviceID";
 
 static char g_FireRateAttrib[] = "fireRate";
@@ -213,8 +209,6 @@ const int DOCK_OFFSET_STD_SIZE =				64;
 
 const Metric DRIVE_POWER_EXP =					1.2;
 const Metric DRIVE_POWER_FACTOR =				13.0;
-
-DWORD ParseNonCritical (const CString &sList);
 
 struct ScoreDesc
 	{
@@ -640,21 +634,22 @@ Metric CShipClass::CalcDefenseRate (void) const
 
 	Metric Ahp;
 	Metric Aregen;
-	CArmorClass *pArmor;
-	if (m_Hull.GetCount() > 0)
-		pArmor = m_Hull[0].pArmor;
-	else
-		pArmor = NULL;
+    const CShipArmorSegmentDesc *pSect = (m_Armor.GetCount() > 0 ? &m_Armor.GetSegment(0) : NULL);
 
-	if (pArmor)
+	if (pSect)
 		{
-		Ahp = pArmor->GetMaxHP(CItemCtx());
+        CArmorClass *pArmor = pSect->GetArmorClass();
+        CItem ArmorItem;
+        pSect->CreateArmorItem(&ArmorItem);
+        CItemCtx ItemCtx(ArmorItem);
+
+		Ahp = pArmor->GetMaxHP(ItemCtx);
 		Aregen = pArmor->GetItemType()->GetDataFieldInteger(FIELD_REGEN);
 
 		//	Adjust for damage type adjustment (for armor that has more resistance
 		//	than standard armor, e.g., meteorsteel).
 
-		int iDamageAdj = pArmor->CalcAverageRelativeDamageAdj();
+		int iDamageAdj = pArmor->CalcAverageRelativeDamageAdj(ItemCtx);
 		Metric rDamageAdj = (iDamageAdj > 0 ? 100.0 / iDamageAdj : 10.0);
 		Ahp *= rDamageAdj;
 		Aregen *= rDamageAdj;
@@ -662,7 +657,7 @@ Metric CShipClass::CalcDefenseRate (void) const
 		//	Adjust for number of segments
 
 		Metric rAdj;
-		switch (m_Hull.GetCount())
+		switch (m_Armor.GetCount())
 			{
 			case 1:
 				rAdj = 0.5;
@@ -689,7 +684,7 @@ Metric CShipClass::CalcDefenseRate (void) const
 				break;
 
 			default:
-				rAdj = Max(1.0, m_Hull.GetCount() / 12.0);
+				rAdj = Max(1.0, m_Armor.GetCount() / 12.0);
 			}
 
 		Ahp *= rAdj;
@@ -792,7 +787,7 @@ int CShipClass::CalcLevel (void) const
 	//	Figure out what armor we've got
 
 	int iArmorSections = GetHullSectionCount();
-	int iArmorLevel = (iArmorSections > 0 ? GetHullSection(0)->pArmor->GetItemType()->GetLevel() : 1);
+	int iArmorLevel = (iArmorSections > 0 ? GetHullSection(0).GetLevel() : 1);
 	if (iArmorLevel > iBestLevel)
 		iBestLevel = iArmorLevel;
 
@@ -892,11 +887,7 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 	int i;
 	Metric rMass = GetHullMass();
 
-	for (i = 0; i < GetHullSectionCount(); i++)
-		{
-		CItem Item(GetHullSection(i)->pArmor->GetItemType(), 1);
-		rMass += Item.GetMass();
-		}
+    rMass += m_Armor.CalcMass();
 
 	for (i = 0; i < Devices.GetCount(); i++)
 		{
@@ -922,7 +913,7 @@ int CShipClass::CalcScore (void)
 	//	Figure out what armor we've got
 
 	int iArmorSections = GetHullSectionCount();
-	int iArmorLevel = (iArmorSections > 0 ? GetHullSection(0)->pArmor->GetItemType()->GetLevel() : 1);
+	int iArmorLevel = (iArmorSections > 0 ? GetHullSection(0).GetLevel() : 1);
 
 	//	Figure out what devices we've got
 
@@ -1705,9 +1696,9 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt(GetHullSectionCount());
 	else if (strEquals(sField, FIELD_ARMOR_HP))
 		{
-		CShipClass::HullSection *pSection = (GetHullSectionCount() > 0 ? GetHullSection(0) : NULL);
+		const CShipArmorSegmentDesc *pSection = (GetHullSectionCount() > 0 ? &GetHullSection(0) : NULL);
 		if (pSection)
-			pSection->pArmor->FindDataField(FIELD_HP, retsValue);
+			pSection->GetArmorClass()->FindDataField(FIELD_HP, retsValue);
 		else
 			*retsValue = NULL_STR;
 		return true;
@@ -1773,11 +1764,15 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR_UNID))
 		{
 		CArmorClass *pArmor = NULL;
+        int iBestLevel;
 		for (i = 0; i < GetHullSectionCount(); i++)
 			{
-			HullSection *pHull = GetHullSection(i);
-			if (pArmor == NULL || pHull->pArmor->GetItemType()->GetLevel() > pArmor->GetItemType()->GetLevel())
-				pArmor = pHull->pArmor;
+			const CShipArmorSegmentDesc *pSeg = &GetHullSection(i);
+            if (pArmor == NULL || pSeg->GetLevel() > iBestLevel)
+                {
+                pArmor = pSeg->GetArmorClass();
+                iBestLevel = pSeg->GetLevel();
+                }
 			}
 		if (pArmor)
 			*retsValue = strFromInt(pArmor->GetItemType()->GetUNID());
@@ -1988,9 +1983,9 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		TArray<CItem> Items;
 		for (i = 0; i < GetHullSectionCount(); i++)
 			{
-			HullSection *pSect = GetHullSection(i);
-			CItem theItem(pSect->pArmor->GetItemType(), 1);
-			pSect->Enhanced.EnhanceItem(theItem);
+			const CShipArmorSegmentDesc &Seg = GetHullSection(i);
+            CItem theItem;
+            Seg.CreateArmorItem(&theItem);
 
 			Items.Insert(theItem);
 			}
@@ -2335,31 +2330,7 @@ int CShipClass::GetHullSectionAtAngle (int iAngle)
 //	angle.
 
 	{
-	int i;
-
-	for (i = 0; i < GetHullSectionCount(); i++)
-		{
-		HullSection *pSect = GetHullSection(i);
-
-		int iStart = pSect->iStartAt;
-		int iEnd = (pSect->iStartAt + pSect->iSpan) % 360;
-
-		if (iEnd > iStart)
-			{
-			if (iAngle >= iStart && iAngle < iEnd)
-				return i;
-			}
-		else
-			{
-			if (iAngle < iEnd || iAngle >= iStart)
-				return i;
-			}
-		}
-
-	//	The last hull section may wrap around to the beginning again. If we haven't
-	//	found the angle yet, assume it is the last section.
-
-	return GetHullSectionCount() - 1;
+    return m_Armor.GetSegmentAtAngle(iAngle);
 	}
 
 CString CShipClass::GetHullSectionName (int iIndex) const
@@ -2374,20 +2345,7 @@ CString CShipClass::GetHullSectionName (int iIndex) const
 //	aft
 
 	{
-	if (iIndex < 0 || iIndex >= m_Hull.GetCount())
-		return NULL_STR;
-
-	int iCenter = AngleMod(m_Hull[iIndex].iStartAt + m_Hull[iIndex].iSpan / 2);
-	if (iCenter >= 315)
-		return CONSTLIT("forward");
-	else if (iCenter >= 225)
-		return CONSTLIT("starboard");
-	else if (iCenter >= 135)
-		return CONSTLIT("aft");
-	else if (iCenter >= 45)
-		return CONSTLIT("port");
-	else
-		return CONSTLIT("forward");
+    return m_Armor.GetSegmentName(iIndex);
 	}
 
 int CShipClass::GetMaxStructuralHitPoints (void) const
@@ -2778,13 +2736,10 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 //	Adds types used by the class
 
 	{
-	int i;
-
 	retTypesUsed->SetAt(m_pDefaultSovereign.GetUNID(), true);
 	retTypesUsed->SetAt(m_pWreckType.GetUNID(), true);
 
-	for (i = 0; i < GetHullSectionCount(); i++)
-		retTypesUsed->SetAt(GetHullSection(i)->pArmor->GetItemType()->GetUNID(), true);
+    m_Armor.AddTypesUsed(retTypesUsed);
 
 	if (m_pDevices)
 		m_pDevices->AddTypesUsed(retTypesUsed);
@@ -2852,19 +2807,8 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Hull
 
-	for (i = 0; i < GetHullSectionCount(); i++)
-		{
-		if (error = GetHullSection(i)->pArmor.Bind(Ctx))
-			goto Fail;
-
-		//	Must have armor
-
-		if (GetHullSection(i)->pArmor == NULL)
-			{
-			Ctx.sError = CONSTLIT("ArmorSection must specify valid armor.");
-			goto Fail;
-			}
-		}
+    if (error = m_Armor.Bind(Ctx))
+        goto Fail;
 
 	if (error = m_pExplosionType.Bind(Ctx))
 		goto Fail;
@@ -3047,7 +2991,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_iLeavesWreck = pClass->m_iLeavesWreck;
 	m_iStructuralHP = pClass->m_iStructuralHP;
 	m_pWreckType = pClass->m_pWreckType;
-	m_Hull = pClass->m_Hull;
+	m_Armor = pClass->m_Armor;
 	m_Interior = pClass->m_Interior;
 
 	if (pClass->m_pDevices)
@@ -3220,64 +3164,11 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Load armor
 
-	CXMLElement *pArmor = pDesc->GetContentElementByTag(CONSTLIT(g_ArmorTag));
+	CXMLElement *pArmor = pDesc->GetContentElementByTag(ARMOR_TAG);
 	if (pArmor)
 		{
-		//	If no content, then we assume a regular distribution of armor
-
-		if (pArmor->GetContentElementCount() == 0)
-			{
-			int iSegCount = pArmor->GetAttributeIntegerBounded(COUNT_ATTRIB, 1, -1, 4);
-			CString sArmorUNID = pArmor->GetAttribute(ARMOR_ID_ATTRIB);
-
-			int iSegSize = Max(1, 360 / iSegCount);
-
-			int iSegPos;
-			if (!pArmor->FindAttributeInteger(START_AT_ATTRIB, &iSegPos))
-				iSegPos = 360 - (iSegSize / 2);
-
-			m_Hull.InsertEmpty(iSegCount);
-			for (i = 0; i < iSegCount; i++)
-				{
-				HullSection &Section = m_Hull[i];
-
-				Section.iStartAt = AngleMod(iSegPos);
-				Section.iSpan = iSegSize;
-
-				if (error = Section.pArmor.LoadUNID(Ctx, sArmorUNID))
-					return error;
-
-				Section.dwAreaSet = CShipClass::sectCritical;
-
-				if (error = Section.Enhanced.InitFromXML(Ctx, pArmor))
-					return ComposeLoadError(Ctx, Ctx.sError);
-
-				iSegPos += iSegSize;
-				}
-			}
-
-		//	Otherwise, we load each segment separately.
-
-		else
-			{
-			m_Hull.InsertEmpty(pArmor->GetContentElementCount());
-			for (i = 0; i < pArmor->GetContentElementCount(); i++)
-				{
-				CXMLElement *pSectionDesc = pArmor->GetContentElement(i);
-				HullSection &Section = m_Hull[i];
-
-				Section.iStartAt = pSectionDesc->GetAttributeInteger(CONSTLIT(g_StartAttrib));
-				Section.iSpan = pSectionDesc->GetAttributeInteger(CONSTLIT(g_SpanAttrib));
-
-				if (error = Section.pArmor.LoadUNID(Ctx, pSectionDesc->GetAttribute(ARMOR_ID_ATTRIB)))
-					return error;
-
-				Section.dwAreaSet = ParseNonCritical(pSectionDesc->GetAttribute(NON_CRITICAL_ATTRIB));
-
-				if (error = Section.Enhanced.InitFromXML(Ctx, pSectionDesc))
-					return ComposeLoadError(Ctx, Ctx.sError);
-				}
-			}
+        if (error = m_Armor.InitFromXML(Ctx, pArmor))
+            return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	//	Load devices
@@ -3890,91 +3781,3 @@ void CShipClass::PaintThrust (CG32bitImage &Dest,
 		}
 	}
 
-DWORD ParseNonCritical (const CString &sList)
-
-//	ParseNonCritical
-//
-//	Returns the set of non-critical areas
-
-	{
-	//	These must match the order of VitalSections in TSE.h
-
-	static char *g_pszNonCritical[] =
-		{
-		"dev0",
-		"dev1",
-		"dev2",
-		"dev3",
-		"dev4",
-		"dev5",
-		"dev6",
-		"dev7",
-
-		"maneuver",
-		"drive",
-		"scanners",
-		"tactical",
-		"cargo",
-
-		"",
-		};
-
-	//	Blank means critical
-
-	if (sList.IsBlank())
-		return CShipClass::sectCritical;
-
-	//	Loop over list
-
-	DWORD dwSet = 0;
-	char *pPos = sList.GetASCIIZPointer();
-	while (*pPos != '\0')
-		{
-		//	Trim spaces
-
-		while (*pPos != '\0' && *pPos == ' ')
-			pPos++;
-
-		//	Which of the items do we match?
-
-		int i = 0;
-		DWORD dwArea = 0x1;
-		char *pFind;
-		while (*(pFind = g_pszNonCritical[i]))
-			{
-			char *pSource = pPos;
-
-			while (*pFind != '\0' && *pFind == *pSource)
-				{
-				pFind++;
-				pSource++;
-				}
-
-			//	If we matched then we've got this area
-
-			if (*pFind == '\0' && (*pSource == ' ' || *pSource == ';' || *pSource == '\0'))
-				{
-				dwSet |= dwArea;
-				pPos = pSource;
-				break;
-				}
-
-			//	Next
-
-			i++;
-			dwArea = dwArea << 1;
-			}
-
-		//	Skip to the next modifier
-
-		while (*pPos != '\0' && *pPos != ';')
-			pPos++;
-
-		if (*pPos == ';')
-			pPos++;
-		}
-
-	//	Done
-
-	return dwSet;
-	}

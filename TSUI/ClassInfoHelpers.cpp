@@ -50,7 +50,8 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 
 	//	Get the armor used
 
-	CArmorClass *pArmor = pClass->GetHullSection(0)->pArmor;
+    CItem ArmorItem;
+    pClass->GetHullSection(0).CreateArmorItem(&ArmorItem);
 
 	//	Compute the max armor limit
 
@@ -62,7 +63,7 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 
 	//	Info
 
-	CreateClassInfoItem(CItem(pArmor->GetItemType(), 1), 
+	CreateClassInfoItem(ArmorItem, 
 			x, 
 			y, 
 			cxWidth, 

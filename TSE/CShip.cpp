@@ -725,7 +725,7 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 				else
 					iThisType = 1;
 
-				int iThisLevel = pDevice->GetClass()->GetLevel();
+				int iThisLevel = pDevice->GetLevel();
 
 				//	See if uninstalling this device would be enough; if not, then
 				//	don't bother.
@@ -1187,6 +1187,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	DEBUG_TRY
 
 	ALERROR error;
+    CString sError;
 	CShip *pShip;
 	int i;
 	CUniverse *pUniv = pSystem->GetUniverse();
@@ -1375,12 +1376,14 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_Armor.InsertEmpty(pClass->GetHullSectionCount());
 	for (i = 0; i < pClass->GetHullSectionCount(); i++)
 		{
-		CShipClass::HullSection *pSect = pClass->GetHullSection(i);
+        const CShipArmorSegmentDesc &Sect = pClass->GetHullSection(i);
 
 		//	Add item
 
-		CItem ArmorItem(pSect->pArmor->GetItemType(), 1);
-		pSect->Enhanced.EnhanceItem(ArmorItem);
+        CItem ArmorItem;
+        if (!Sect.CreateArmorItem(&ArmorItem, &sError))
+            pShip->ReportCreateError(sError);
+
 		ShipItems.AddItem(ArmorItem);
 
 		//	Install
@@ -1460,8 +1463,8 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 		if (pCtx->pItems)
 			{
-			if (pShip->CreateRandomItems(pCtx->pItems, pSystem) != NOERROR)
-				kernelDebugLogMessage("Unable to create items for ship: %x", pClass->GetUNID());
+            if (pShip->CreateRandomItems(pCtx->pItems, pSystem) != NOERROR)
+                pShip->ReportCreateError(CONSTLIT("Unable to create items"));
 			}
 
 		//	set any initial data
@@ -1661,7 +1664,7 @@ void CShip::DamageExternalDevice (int iDev, SDamageCtx &Ctx)
 
 	//	If the device gets hit, see if it gets damaged
 
-	int iLevel = pDevice->GetClass()->GetLevel();
+	int iLevel = pDevice->GetLevel();
 	int iMaxLevel = 0;
 	int iChanceOfDamage = Ctx.iDamage * ((26 - iLevel) * 4) / 100;
 
@@ -1899,15 +1902,19 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR_UNID))
 		{
-		CArmorClass *pArmor = NULL;
+		CArmorClass *pBestArmor = NULL;
+        int iBestLevel = 0;
 		for (i = 0; i < GetArmorSectionCount(); i++)
 			{
 			CInstalledArmor *pSect = GetArmorSection(i);
-			if (pArmor == NULL || pSect->GetClass()->GetItemType()->GetLevel() > pArmor->GetItemType()->GetLevel())
-				pArmor = pSect->GetClass();
+            if (pBestArmor == NULL || pSect->GetLevel() > iBestLevel)
+                {
+                pBestArmor = pSect->GetClass();
+                iBestLevel = pSect->GetLevel();
+                }
 			}
-		if (pArmor)
-			*retsValue = strFromInt(pArmor->GetItemType()->GetUNID());
+		if (pBestArmor)
+			*retsValue = strFromInt(pBestArmor->GetItemType()->GetUNID());
 		else
 			*retsValue = CONSTLIT("none");
 		}
@@ -3069,7 +3076,7 @@ CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
 
 			//	Need to include install cost
 
-			Value.Add(CCurrencyAndValue(Item.GetType()->GetInstallCost(), Item.GetCurrencyType()));
+			Value.Add(CCurrencyAndValue(Item.GetType()->GetInstallCost(CItemCtx(Item)), Item.GetCurrencyType()));
 			}
 		}
 
@@ -4058,8 +4065,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		{
 		//	Figure out which areas of the ship got affected
 
-		CShipClass::HullSection *pSect = ((Ctx.iSectHit != -1 && Ctx.iSectHit < m_pClass->GetHullSectionCount()) ? m_pClass->GetHullSection(Ctx.iSectHit) : NULL);
-		DWORD dwDamage = (pSect ? pSect->dwAreaSet : CShipClass::sectCritical);
+		const CShipArmorSegmentDesc *pSect = ((Ctx.iSectHit != -1 && Ctx.iSectHit < m_pClass->GetHullSectionCount()) ? &m_pClass->GetHullSection(Ctx.iSectHit) : NULL);
+		DWORD dwDamage = (pSect ? pSect->GetCriticalArea() : CShipClass::sectCritical);
 
 		//	If this is a non-critical hit, then there is still a random
 		//	chance that it will destroy the ship
@@ -6024,7 +6031,7 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 				//	The chance of success is 50% plus 10% for every level
 				//	that the program is greater than the shields
 
-				int iSuccess = 50 + 10 * (Program.iAILevel - pShields->GetClass()->GetLevel());
+				int iSuccess = 50 + 10 * (Program.iAILevel - pShields->GetLevel());
 				if (mathRandom(1, 100) <= iSuccess)
 					pShields->Deplete(this);
 				}
@@ -6040,7 +6047,7 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 				//	The chance of success is 50% plus 10% for every level
 				//	that the program is greater than the primary weapon
 
-				int iSuccess = 50 + 10 * (Program.iAILevel - pWeapon->GetClass()->GetLevel());
+				int iSuccess = 50 + 10 * (Program.iAILevel - pWeapon->GetLevel());
 				if (mathRandom(1, 100) <= iSuccess)
 					MakeDisarmed(Program.iAILevel * mathRandom(30, 60));
 				}
@@ -6449,6 +6456,17 @@ void CShip::RepairDamage (int iHitPoints)
 	if (bRepaired)
 		m_pController->OnArmorRepaired(-1);
 	}
+
+ALERROR CShip::ReportCreateError (const CString &sError) const
+
+//  ReportCreateError
+//
+//  Reports an error while creating a ship.
+
+    {
+    ::kernelDebugLogMessage("Error creating ship %08x: %s", (m_pClass ? m_pClass->GetUNID() : 0), sError);
+    return ERR_FAIL;
+    }
 
 bool CShip::RequestDock (CSpaceObject *pObj, int iPort)
 

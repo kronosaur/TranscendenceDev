@@ -357,7 +357,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 	for (i = 0; i < pShip->GetArmorSectionCount(); i++)
 		{
-		CShipClass::HullSection *pSect = pShip->GetClass()->GetHullSection(i);
+		const CShipArmorSegmentDesc &Sect = pShip->GetClass()->GetHullSection(i);
 		CInstalledArmor *pArmor = pShip->GetArmorSection(i);
 		int iMaxHP = pArmor->GetMaxHP(pShip);
 		int iWhole = (iMaxHP == 0 ? 100 : (pArmor->GetHitPoints() * 100) / iMaxHP);
@@ -369,8 +369,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				m_xCenter, 
 				m_yCenter, 
 				iArmorInnerRadius, 
-				AngleMod(90 + pSect->iStartAt), 
-				AngleMod(90 + pSect->iStartAt + pSect->iSpan), 
+				AngleMod(90 + Sect.GetStartAngle()), 
+				AngleMod(90 + Sect.GetStartAngle() + Sect.GetSpan()), 
 				m_iArmorRingWidth, 
 				rgbArmorBack, 
 				CGDraw::blendCompositeNormal, 
@@ -383,8 +383,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				m_xCenter, 
 				m_yCenter, 
 				iArmorInnerRadius, 
-				AngleMod(90 + pSect->iStartAt), 
-				AngleMod(90 + pSect->iStartAt + pSect->iSpan), 
+				AngleMod(90 + Sect.GetStartAngle()), 
+				AngleMod(90 + Sect.GetStartAngle() + Sect.GetSpan()), 
 				iWidth, 
 				m_rgbArmor, 
 				CGDraw::blendCompositeNormal, 
@@ -393,7 +393,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 		//	Draw armor integrity box
 
-		int iCenterAngle = AngleMod(90 + (pSect->iStartAt + (pSect->iSpan / 2)));
+        int iCenterAngle = Sect.GetCenterAngle();
 		DrawIntegrityBox(m_Buffer, 
 				iCenterAngle, 
 				iArmorInnerRadius + RING_SPACING, 
