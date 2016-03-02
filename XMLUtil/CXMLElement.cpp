@@ -436,6 +436,83 @@ ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, CIntArray *p
 	return ParseAttributeIntegerList(GetAttribute(sName), pList);
 	}
 
+bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin, int iMax, int iNullLow, int iNullHigh, bool bAllowInverted)
+
+//  GetAttributeIntegerRange
+//
+//  Parses two numbers separated by a hyphen. We return TRUE if we have a range.
+//  Otherwise, we return FALSE and retiLow is the number.
+
+    {
+	CString sValue;
+    if (!FindAttribute(sName, &sValue))
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Parse the first number
+
+    char *pPos = sValue.GetASCIIZPointer();
+    bool bNullValue;
+	int iValue = strParseInt(pPos, 0, &pPos, &bNullValue);
+    if (bNullValue)
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Make sure we're in range
+
+    int iLow;
+    if (iValue == iNullLow)
+        iLow = iValue;
+    else if (iMax < iMin)
+        iLow = Max(iMin, iValue);
+    else
+        iLow = Min(Max(iMin, iValue), iMax);
+
+    //  If there is no high value, then we just have a single number
+
+    if (*pPos != '-')
+        {
+        *retiLow = iLow;
+        *retiHigh = iLow;
+        return false;
+        }
+
+    pPos++;
+
+    //  Parse the next number
+
+    int iHigh;
+    iValue = strParseInt(pPos, 0, &pPos, &bNullValue);
+    if (bNullValue)
+        iHigh = iNullHigh;
+    else if (iValue == iNullHigh)
+        iHigh = iValue;
+    else if (iMax < iMin)
+        iHigh = Max(iMin, iValue);
+    else
+        iHigh = Min(Max(iMin, iValue), iMax);
+
+    //  If low > high, then we fail, unless we allow an inverted range.
+
+        {
+        *retiLow = iNullLow;
+        *retiHigh = iNullHigh;
+        return (iNullLow != iNullHigh);
+        }
+
+    //  Otherwise, we're done
+
+    *retiLow = iLow;
+    *retiHigh = iHigh;
+    return (iLow != iHigh);
+    }
+
 CXMLElement *CXMLElement::GetContentElementByTag (const CString &sTag) const
 
 //	GetContentElementByTag

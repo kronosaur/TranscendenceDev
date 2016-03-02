@@ -76,6 +76,7 @@ class CXMLElement : public CObject
 		double GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax = -1.0, double rNull = 0.0);
 		int GetAttributeInteger (const CString &sName);
 		int GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax = -1, int iNull = 0);
+		bool GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false);
 		ALERROR GetAttributeIntegerList (const CString &sName, CIntArray *pList);
 		double GetAttributeFloat (const CString &sName);
 		inline CString GetAttributeName (int iIndex) { return m_Attributes.GetKey(iIndex); }
