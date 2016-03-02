@@ -500,6 +500,7 @@ bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, 
 
     //  If low > high, then we fail, unless we allow an inverted range.
 
+    if (iLow > iHigh && !bAllowInverted)
         {
         *retiLow = iNullLow;
         *retiHigh = iNullHigh;
