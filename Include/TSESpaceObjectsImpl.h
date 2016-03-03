@@ -331,22 +331,33 @@ class CMarker : public CSpaceObject
 		//	CSpaceObject virtuals
 		virtual Categories GetCategory (void) const { return catMarker; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return m_sName; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerEffects; }
+		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
 		virtual bool IsMarker (void) { return true; }
 		virtual void OnObjLeaveGate (CSpaceObject *pObj);
+		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
 	protected:
 		virtual bool CanHit (CSpaceObject *pObj) { return false; }
 		virtual CSovereign *GetSovereign (void) const;
 		virtual CString GetObjClassName (void) { return CONSTLIT("CMarker"); }
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 
 	private:
+        enum EStyles
+            {
+            styleNone =                     0,  //  Invisible
+            styleSmallCross =               1,  //  Paint small cross
+            };
+
 		CMarker (void);
 
 		CString m_sName;						//	Name
 		CSovereign *m_pSovereign;				//	Sovereign
+        EStyles m_iStyle;                       //  Paint style
 
 	friend CObjectClass<CMarker>;
 	};

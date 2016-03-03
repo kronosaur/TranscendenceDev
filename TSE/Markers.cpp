@@ -4,6 +4,9 @@
 
 #include "PreComp.h"
 
+#define PROPERTY_STYLE  						CONSTLIT("style")
+
+#define STYLE_SMALL_CROSS  						CONSTLIT("smallCross")
 
 //	CMarker -------------------------------------------------------------------
 
@@ -46,6 +49,10 @@ ALERROR CMarker::Create (CSystem *pSystem,
 	if (pMarker->m_pSovereign == NULL)
 		pMarker->m_pSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
 
+    //  Basic properties
+
+    pMarker->m_iStyle = styleNone;
+
 	//	Add to system
 
 	if (error = pMarker->AddToSystem(pSystem))
@@ -60,6 +67,31 @@ ALERROR CMarker::Create (CSystem *pSystem,
 		*retpMarker = pMarker;
 
 	return NOERROR;
+	}
+
+ICCItem *CMarker::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
+
+//	GetProperty
+//
+//	Returns a property
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+    if (strEquals(sName, PROPERTY_STYLE))
+        {
+        switch (m_iStyle)
+            {
+            case styleSmallCross:
+                return CC.CreateString(STYLE_SMALL_CROSS);
+
+            default:
+                return CC.CreateNil();
+            }
+        }
+
+	else
+		return CSpaceObject::GetProperty(Ctx, sName);
 	}
 
 CSovereign *CMarker::GetSovereign (void) const
@@ -85,6 +117,21 @@ void CMarker::OnObjLeaveGate (CSpaceObject *pObj)
 				0);
 	}
 
+void CMarker::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+
+//	OnPaint
+//
+//	Paint the marker
+
+	{
+    switch (m_iStyle)
+        {
+        case styleSmallCross:
+            Dest.DrawDot(x, y, CG32bitPixel(255, 255, 0), markerSmallCross);
+            break;
+        }
+	}
+
 void CMarker::OnReadFromStream (SLoadCtx &Ctx)
 
 //	OnReadFromStream
@@ -99,6 +146,15 @@ void CMarker::OnReadFromStream (SLoadCtx &Ctx)
 		m_sName.ReadFromStream(Ctx.pStream);
 		CSystem::ReadSovereignRefFromStream(Ctx, &m_pSovereign);
 		}
+
+    if (Ctx.dwVersion >= 126)
+        {
+        DWORD dwLoad;
+        Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+        m_iStyle = (EStyles)dwLoad;
+        }
+    else
+        m_iStyle = styleNone;
 	}
 
 void CMarker::OnWriteToStream (IWriteStream *pStream)
@@ -109,10 +165,42 @@ void CMarker::OnWriteToStream (IWriteStream *pStream)
 //
 //	CString		m_sName
 //	DWORD		m_pSovereign (CSovereign ref)
+//  DWORD       m_iStyle
 
 	{
 	m_sName.WriteToStream(pStream);
 	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
+
+    DWORD dwSave = (DWORD)m_iStyle;
+    pStream->Write((char *)&dwSave, sizeof(DWORD));
+	}
+
+bool CMarker::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
+
+//	SetProperty
+//
+//	Sets an object property
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sName, PROPERTY_STYLE))
+		{
+        CString sStyle = pValue->GetStringValue();
+        if (sStyle.IsBlank())
+            m_iStyle = styleNone;
+        else if (strEquals(sStyle, STYLE_SMALL_CROSS))
+            m_iStyle = styleSmallCross;
+        else
+            {
+			*retsError = strPatternSubst(CONSTLIT("Invalid style: %s"), sStyle);
+			return false;
+            }
+
+		return true;
+		}
+	else
+		return CSpaceObject::SetProperty(sName, pValue, retsError);
 	}
 
 //	CPOVMarker ----------------------------------------------------------------

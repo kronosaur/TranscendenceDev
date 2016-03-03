@@ -387,6 +387,9 @@
 //	125: 1.7 Alpha 1
 //		New flocking styles in CAISettings
 //
+//  126: 1.7 Alpha 2
+//      m_iStyle in CMarker
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
