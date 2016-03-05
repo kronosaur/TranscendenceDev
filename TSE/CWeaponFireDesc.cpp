@@ -102,41 +102,13 @@ static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 
 CWeaponFireDesc::CWeaponFireDesc (void) : 
 		m_pExtension(NULL),
-		m_pParticleDesc(NULL)
+		m_pParticleDesc(NULL),
+        m_pFirstFragment(NULL),
+        m_pScalable(NULL)
 
 //	CWeaponFireDesc constructor
 
 	{
-	}
-
-CWeaponFireDesc::CWeaponFireDesc (const CWeaponFireDesc &Desc)
-
-//	CWeaponFireDesc constructor
-
-	{
-	*this = Desc;
-
-	//	Fragments
-
-	SFragmentDesc *pNext = Desc.m_pFirstFragment;
-	SFragmentDesc *pPrev = NULL;
-	while (pNext)
-		{
-		SFragmentDesc *pNew = new SFragmentDesc(*pNext);
-		pNew->pDesc = new CWeaponFireDesc(*(pNext->pDesc));
-		
-		if (pPrev == NULL)
-			m_pFirstFragment = pNew;
-		else
-			pPrev->pNext = pNew;
-
-		pPrev = pNew;
-		}
-	if (pPrev)
-		pPrev->pNext = NULL;
-
-	if (Desc.m_pParticleDesc)
-		m_pParticleDesc = new CParticleSystemDesc(*Desc.m_pParticleDesc);
 	}
 
 CWeaponFireDesc::~CWeaponFireDesc (void)
@@ -155,6 +127,9 @@ CWeaponFireDesc::~CWeaponFireDesc (void)
 
 	if (m_pParticleDesc)
 		delete m_pParticleDesc;
+
+    if (m_pScalable)
+        delete[] m_pScalable;
 	}
 
 void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -1444,8 +1419,8 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 
 	//	Vapor trail
 
-	m_iVaporTrailWidth = 0;
-	m_iVaporTrailLength = 0;
+	m_VaporTrail.iVaporTrailWidth = 0;
+	m_VaporTrail.iVaporTrailLength = 0;
 
 	//	Sound
 
@@ -1902,21 +1877,21 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Vapor trail
 
-	if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_ATTRIB, &m_iVaporTrailWidth))
-		m_iVaporTrailWidth = 100 * pDesc->GetAttributeInteger(VAPOR_TRAIL_ATTRIB);
+	if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_ATTRIB, &m_VaporTrail.iVaporTrailWidth))
+		m_VaporTrail.iVaporTrailWidth = 100 * pDesc->GetAttributeInteger(VAPOR_TRAIL_ATTRIB);
 
-	if (m_iVaporTrailWidth)
+	if (m_VaporTrail.iVaporTrailWidth)
 		{
-		m_rgbVaporTrailColor = LoadRGBColor(pDesc->GetAttribute(VAPOR_TRAIL_COLOR_ATTRIB));
-		m_iVaporTrailLength = pDesc->GetAttributeInteger(VAPOR_TRAIL_LENGTH_ATTRIB);
-		if (m_iVaporTrailLength <= 0)
-			m_iVaporTrailLength = 64;
+		m_VaporTrail.rgbVaporTrailColor = LoadRGBColor(pDesc->GetAttribute(VAPOR_TRAIL_COLOR_ATTRIB));
+		m_VaporTrail.iVaporTrailLength = pDesc->GetAttributeInteger(VAPOR_TRAIL_LENGTH_ATTRIB);
+		if (m_VaporTrail.iVaporTrailLength <= 0)
+			m_VaporTrail.iVaporTrailLength = 64;
 
-		if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_INC_ATTRIB, &m_iVaporTrailWidthInc))
-			m_iVaporTrailWidthInc = 25;
+		if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_INC_ATTRIB, &m_VaporTrail.iVaporTrailWidthInc))
+			m_VaporTrail.iVaporTrailWidthInc = 25;
 		}
 	else
-		m_iVaporTrailLength = 0;
+		m_VaporTrail.iVaporTrailLength = 0;
 
 	//	Sound
 

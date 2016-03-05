@@ -407,8 +407,15 @@ class CWeaponFireDesc
 		    Metric rExhaustDrag;			//	Coefficient of drag for exhaust particles
             };
 
+        struct SVaporTrailDesc
+            {
+		    int iVaporTrailWidth;			//	Width of vapor trail (0 = none)
+		    int iVaporTrailLength;			//	Number of segments
+		    int iVaporTrailWidthInc;		//	Width increment in 100ths of a pixel
+		    CG32bitPixel rgbVaporTrailColor;//	Color of vapor trail
+            };
+
 		CWeaponFireDesc (void);
-		CWeaponFireDesc (const CWeaponFireDesc &Desc);
 		~CWeaponFireDesc (void);
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
@@ -477,10 +484,7 @@ class CWeaponFireDesc
         inline int GetStealth (void) const { return m_iStealth; }
         inline FireTypes GetType (void) const { return m_iFireType; }
         inline const CString &GetUNID (void) const { return m_sUNID; }
-		inline CG32bitPixel GetVaporTrailColor (void) const { return m_rgbVaporTrailColor; }
-		inline int GetVaporTrailLength (void) const { return m_iVaporTrailLength; }
-		inline int GetVaporTrailWidth (void) const { return m_iVaporTrailWidth; }
-		inline int GetVaporTrailWidthInc (void) const { return m_iVaporTrailWidthInc; }
+        inline const SVaporTrailDesc &GetVaporTrail (void) const { return m_VaporTrail; }
 		CItemType *GetWeaponType (CItemType **retpLauncher = NULL) const;
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty(); }
 		inline bool HasFragments (void) const { return m_pFirstFragment != NULL; }
@@ -498,6 +502,11 @@ class CWeaponFireDesc
 		inline bool ProximityBlast (void) const { return m_bProximityBlast; }
 
 	private:
+        //  Copying this class is not supported
+
+		CWeaponFireDesc (const CWeaponFireDesc &Desc) = delete;
+        CWeaponFireDesc & operator= (const CWeaponFireDesc &Desc) = delete;
+
 		CEffectCreator *GetFireEffect (void) const;
 
 		CExtension *m_pExtension;			//	Extension that defines the weaponfiredesc
@@ -531,14 +540,9 @@ class CWeaponFireDesc
 		CEffectCreatorRef m_pEffect;		//	Effect for the actual bullet/missile/beam
 		CEffectCreatorRef m_pHitEffect;		//	Effect when we hit/explode
 		CEffectCreatorRef m_pFireEffect;	//	Effect when we fire (muzzle flash)
-		int m_iVaporTrailWidth;				//	Width of vapor trail (0 = none)
-		int m_iVaporTrailLength;			//	Number of segments
-		int m_iVaporTrailWidthInc;			//	Width increment in 100ths of a pixel
-		CG32bitPixel m_rgbVaporTrailColor;	//	Color of vapor trail
 		CSoundRef m_FireSound;				//	Sound when weapon is fired
 
 		//	Missile stuff (m_iFireType == ftMissile)
-		CObjectImageArray m_Image;			//	Image for missile
 		int m_iAccelerationFactor;			//	% increase in speed per 10 ticks
 		Metric m_rMaxMissileSpeed;			//	Max speed.
 		bool m_bDirectional;				//	True if different images for each direction
@@ -549,7 +553,6 @@ class CWeaponFireDesc
 		int m_iInteraction;					//	Interaction opacity (0-100)
 		int m_iManeuverability;				//	Tracking maneuverability (0 = none)
 		int m_iManeuverRate;				//	Angle turned at each maneuverability point
-        SExhaustDesc m_Exhaust;             //  Exhaust effect
 
 		//	Particles (m_iFireType == ftParticles)
 		CParticleSystemDesc *m_pParticleDesc;
@@ -570,9 +573,18 @@ class CWeaponFireDesc
 											//		and OnFragment event.
 		int m_iProximityFailsafe;			//	Min ticks before proximity is active
 
+        //  Old-style effects
+		CObjectImageArray m_Image;			//	Image for missile
+        SExhaustDesc m_Exhaust;             //  Exhaust effect
+        SVaporTrailDesc m_VaporTrail;       //  Vapor trail effect
+
 		//	Events
 		CEventHandler m_Events;				//	Events
 		SEventHandlerDesc m_CachedEvents[evtCount];
+
+        //  Scalable items
+        int m_iScaledLevels;                //  Number of scaled levels (above base)
+        CWeaponFireDesc *m_pScalable;       //  Array of entries, one per scaled level
 
 		//	Flags
 		DWORD m_fVariableInitialSpeed:1;	//	TRUE if initial speed is random

@@ -74,8 +74,8 @@ int CMissile::ComputeVaporTrail (void)
 
 		//	Compute some constants
 
-		Metric rHalfWidth = (Metric)m_pDesc->GetVaporTrailWidth() / 200.0;
-		Metric rWidthInc = m_pDesc->GetVaporTrailWidthInc() / 100.0;
+		Metric rHalfWidth = (Metric)m_pDesc->GetVaporTrail().iVaporTrailWidth / 200.0;
+		Metric rWidthInc = m_pDesc->GetVaporTrail().iVaporTrailWidthInc / 100.0;
 		Metric rLength = m_pDesc->GetRatedSpeed() * g_SecondsPerUpdate / g_KlicksPerPixel;
 
 		//	Start at the beginning
@@ -139,7 +139,7 @@ int CMissile::ComputeVaporTrail (void)
 		}
 	else
 		{
-		int iCount = m_pDesc->GetVaporTrailLength();
+		int iCount = m_pDesc->GetVaporTrail().iVaporTrailLength;
 
 		//	For non-maneuverable missiles, only compute the trail once
 
@@ -156,14 +156,14 @@ int CMissile::ComputeVaporTrail (void)
 
 		//	We start a few pixels away from the center line
 
-		Metric rHalfWidth = (Metric)m_pDesc->GetVaporTrailWidth() / 200.0;
+		Metric rHalfWidth = (Metric)m_pDesc->GetVaporTrail().iVaporTrailWidth / 200.0;
 		CVector vLeft = PolarToVector(iLeft, rHalfWidth);
 		CVector vRight = PolarToVector(iRight, rHalfWidth);
 
 		//	Compute the slope the trail
 
 		Metric rLength = m_pDesc->GetRatedSpeed() * g_SecondsPerUpdate / g_KlicksPerPixel;
-		Metric rWidthInc = m_pDesc->GetVaporTrailWidthInc() / 100.0;
+		Metric rWidthInc = m_pDesc->GetVaporTrail().iVaporTrailWidthInc / 100.0;
 		CVector vLeftInc = PolarToVector(iDirection, rLength) + PolarToVector(iLeft, rWidthInc);
 		CVector vRightInc = PolarToVector(iDirection, rLength) + PolarToVector(iRight, rWidthInc);
 
@@ -294,7 +294,7 @@ ALERROR CMissile::Create (CSystem *pSystem,
 
 	//	Create vapor trail, if necessary
 
-	if (pDesc->GetVaporTrailWidth())
+	if (pDesc->GetVaporTrail().iVaporTrailWidth)
 		pMissile->SetBounds(2048.0 * g_KlicksPerPixel);
 
 	//	Add to system
@@ -806,11 +806,11 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Paint vapor trail
 
-	if (m_pDesc->GetVaporTrailLength())
+	if (m_pDesc->GetVaporTrail().iVaporTrailLength)
 		{
 		int iCount = ComputeVaporTrail();
-		int iFadeStep = (VAPOR_TRAIL_OPACITY / m_pDesc->GetVaporTrailLength());
-		int iFade = Max(0, m_pDesc->GetVaporTrailLength() - (m_iHitDir - m_iLifeLeft));
+		int iFadeStep = (VAPOR_TRAIL_OPACITY / m_pDesc->GetVaporTrail().iVaporTrailLength);
+		int iFade = Max(0, m_pDesc->GetVaporTrail().iVaporTrailLength - (m_iHitDir - m_iLifeLeft));
 		int iOpacity = (!m_fDestroyOnAnimationDone ? VAPOR_TRAIL_OPACITY : (iFadeStep * iFade));
 
 		//	HACK: We store the maximum life left in m_iHitDir after the missile
@@ -823,7 +823,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 		for (int i = iStart; i < iCount; i++)
 			{
-			m_pVaporTrailRegions[i].Fill(Dest, x, y, CG32bitPixel(m_pDesc->GetVaporTrailColor(), (BYTE)iOpacity));
+			m_pVaporTrailRegions[i].Fill(Dest, x, y, CG32bitPixel(m_pDesc->GetVaporTrail().rgbVaporTrailColor, (BYTE)iOpacity));
 			iOpacity -= iFadeStep;
 			if (iOpacity <= 0)
 				break;
@@ -955,7 +955,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&m_iSavedRotationsCount, sizeof(DWORD));
 		if (m_iSavedRotationsCount > 0)
 			{
-			m_pSavedRotations = new int [Max(m_pDesc->GetVaporTrailLength(), m_iSavedRotationsCount)];
+			m_pSavedRotations = new int [Max(m_pDesc->GetVaporTrail().iVaporTrailLength, m_iSavedRotationsCount)];
 			Ctx.pStream->Read((char *)m_pSavedRotations, sizeof(DWORD) * m_iSavedRotationsCount);
 			}
 		else
@@ -1112,7 +1112,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	If we have a vapor trail and need to save rotation, do it
 
-		if (m_pDesc->GetVaporTrailLength() 
+		if (m_pDesc->GetVaporTrail().iVaporTrailLength 
 				&& m_pDesc->IsTracking())
 			{
 			//	Compute the current rotation
@@ -1123,16 +1123,16 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 			if (m_pSavedRotations == NULL)
 				{
-				m_pSavedRotations = new int [m_pDesc->GetVaporTrailLength()];
+				m_pSavedRotations = new int [m_pDesc->GetVaporTrail().iVaporTrailLength];
 				m_iSavedRotationsCount = 0;
 				}
 
-			int iStart = Min(m_iSavedRotationsCount, m_pDesc->GetVaporTrailLength() - 1);
+			int iStart = Min(m_iSavedRotationsCount, m_pDesc->GetVaporTrail().iVaporTrailLength - 1);
 			for (i = iStart; i > 0; i--)
 				m_pSavedRotations[i] = m_pSavedRotations[i - 1];
 
 			m_pSavedRotations[0] = iDirection;
-			if (m_iSavedRotationsCount < m_pDesc->GetVaporTrailLength())
+			if (m_iSavedRotationsCount < m_pDesc->GetVaporTrail().iVaporTrailLength)
 				m_iSavedRotationsCount++;
 			}
 
@@ -1359,7 +1359,7 @@ bool CMissile::SetMissileFade (void)
 	//	If we've got a vapor trail effect, then keep the missile object alive
 	//	but mark it destroyed
 
-	int iFadeLife = m_pDesc->GetVaporTrailLength();
+	int iFadeLife = m_pDesc->GetVaporTrail().iVaporTrailLength;
 
 	//	If we've got an effect that needs time to fade out, then keep
 	//	the missile object alive
