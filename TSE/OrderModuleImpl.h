@@ -86,8 +86,8 @@ class CAttackOrder : public IOrderModule
 		DWORD m_fNearestTarget:1;				//	If TRUE, continue attacking other targets
 		DWORD m_fInRangeOfObject:1;				//	If TRUE, new target must be in range of order object
 		DWORD m_fHold:1;						//	If TRUE, hold position
+		DWORD m_fStayInArea:1;                  //  If TRUE, do not wander more than 50 ls beyond target area
 
-		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
