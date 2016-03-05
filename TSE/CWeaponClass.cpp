@@ -89,8 +89,6 @@
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 
-static CObjectClass<CWeaponClass>g_Class(OBJID_CWEAPONCLASS, NULL);
-
 const int MAX_SHOT_COUNT =				100;
 
 const Metric MAX_EXPECTED_PASSTHROUGH = 4.0;
@@ -218,7 +216,7 @@ inline SStdWeaponStats *GetStdWeaponStats (int iLevel)
 		return NULL;
 	}
 
-CWeaponClass::CWeaponClass (void) : CDeviceClass(&g_Class),
+CWeaponClass::CWeaponClass (void) : 
 		m_pConfig(NULL),
 		m_bConfigAlternating(false)
 	{

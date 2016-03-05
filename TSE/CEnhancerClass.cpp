@@ -13,7 +13,7 @@
 #define MAX_ACTIVATE_DELAY_ATTRIB				CONSTLIT("maxActivateDelay")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 
-CEnhancerClass::CEnhancerClass (void) : CDeviceClass(NULL)
+CEnhancerClass::CEnhancerClass (void)
 
 //	CEnhancerClass constructor
 

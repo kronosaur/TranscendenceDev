@@ -104,7 +104,7 @@ inline SStdStats *GetStdStats (int iLevel)
 		return NULL;
 	}
 
-CShieldClass::CShieldClass (void) : CDeviceClass(NULL)
+CShieldClass::CShieldClass (void)
 	{
 	}
 

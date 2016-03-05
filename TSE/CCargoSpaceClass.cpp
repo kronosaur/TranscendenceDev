@@ -8,7 +8,7 @@
 
 #define FIELD_CARGO_SPACE			CONSTLIT("cargoSpace")
 
-CCargoSpaceClass::CCargoSpaceClass (void) : CDeviceClass(NULL)
+CCargoSpaceClass::CCargoSpaceClass (void)
 	{
 	}
 

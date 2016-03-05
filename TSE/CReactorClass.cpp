@@ -20,7 +20,7 @@
 #define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
 #define PROPERTY_POWER							CONSTLIT("power")
 
-CReactorClass::CReactorClass (void) : CDeviceClass(NULL)
+CReactorClass::CReactorClass (void)
 	{
 	}
 

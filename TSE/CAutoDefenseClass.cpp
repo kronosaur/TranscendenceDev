@@ -19,7 +19,7 @@
 
 const int DEFAULT_INTERCEPT_RANGE =				10;
 
-CAutoDefenseClass::CAutoDefenseClass (void) : CDeviceClass(NULL)
+CAutoDefenseClass::CAutoDefenseClass (void)
 
 //	CAutoDefenseClass constructor
 

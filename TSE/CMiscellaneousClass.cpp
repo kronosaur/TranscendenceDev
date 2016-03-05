@@ -11,7 +11,7 @@
 
 #define TICKS_PER_UPDATE						30
 
-CMiscellaneousClass::CMiscellaneousClass (void) : CDeviceClass(NULL)
+CMiscellaneousClass::CMiscellaneousClass (void)
 
 //	CAutoDefenseClass constructor
 

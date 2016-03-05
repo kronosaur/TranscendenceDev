@@ -16,7 +16,7 @@ static char *CACHED_EVENTS[CRepairerClass::evtCount] =
 		"GetArmorRegen",
 	};
 
-CRepairerClass::CRepairerClass (void) : CDeviceClass(NULL)
+CRepairerClass::CRepairerClass (void)
 	{
 	}
 

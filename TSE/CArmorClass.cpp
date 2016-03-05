@@ -69,8 +69,6 @@
 #define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 
-static CObjectClass<CArmorClass>g_Class(OBJID_CARMORCLASS, NULL);
-
 static char g_HitPointsAttrib[] = "hitPoints";
 static char g_DamageAdjAttrib[] = "damageAdj";
 static char g_ItemIDAttrib[] = "itemID";
@@ -126,7 +124,7 @@ static char *CACHED_EVENTS[CArmorClass::evtCount] =
 		"OnArmorDamage",
 	};
 
-CArmorClass::CArmorClass (void) : CObject(&g_Class),
+CArmorClass::CArmorClass (void) :
 		m_pItemType(NULL),
         m_iScaledLevels(0),
         m_pScalable(NULL)

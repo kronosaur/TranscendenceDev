@@ -9,7 +9,7 @@
 
 #define CYCLE_TIME									10
 
-CSolarDeviceClass::CSolarDeviceClass (void) : CDeviceClass(NULL)
+CSolarDeviceClass::CSolarDeviceClass (void)
 
 //	CSolarDeviceClass constructor
 

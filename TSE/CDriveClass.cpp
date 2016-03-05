@@ -23,7 +23,7 @@
 #define PROPERTY_THRUST				CONSTLIT("thrust")
 #define PROPERTY_THRUST_TO_WEIGHT	CONSTLIT("thrustToWeight")
 
-CDriveClass::CDriveClass (void) : CDeviceClass(NULL)
+CDriveClass::CDriveClass (void)
 	{
 	}
 

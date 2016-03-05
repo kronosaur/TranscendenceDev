@@ -2390,7 +2390,7 @@ class CInstalledArmor
 		DWORD m_fSpare:29;
 	};
 
-class CArmorClass : public CObject
+class CArmorClass
 	{
 	public:
 		enum ECachedHandlers
@@ -2529,7 +2529,7 @@ class CArmorClass : public CObject
 	friend CObjectClass<CArmorClass>;
 	};
 
-class CDeviceClass : public CObject
+class CDeviceClass
 	{
 	public:
 		enum CounterTypes
@@ -2568,7 +2568,7 @@ class CDeviceClass : public CObject
 			evtCount					= 1,
 			};
 
-		CDeviceClass (IObjectClass *pClass) : CObject(pClass), m_pItemType(NULL) { }
+		CDeviceClass (void) : m_pItemType(NULL) { }
 		virtual ~CDeviceClass (void) { }
 
 		void AccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList);

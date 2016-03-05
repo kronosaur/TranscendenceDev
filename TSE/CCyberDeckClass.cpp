@@ -16,7 +16,7 @@
 #define REBOOT_PROGRAM							CONSTLIT("Reboot")
 #define DISARM_PROGRAM							CONSTLIT("Disarm")
 
-CCyberDeckClass::CCyberDeckClass (void) : CDeviceClass(NULL)
+CCyberDeckClass::CCyberDeckClass (void)
 
 //	CCyberDeckClass constructor
 
