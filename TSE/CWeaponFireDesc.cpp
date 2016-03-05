@@ -1336,14 +1336,14 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 	{
 	int i;
 
-	m_bFragment = false;
+	m_fFragment = false;
 
 	//	Load basic attributes
 
 	m_sUNID = NULL_STR;
 	m_Lifetime.SetConstant(1);
-	m_bCanDamageSource = false;
-	m_bAutoTarget = false;
+	m_fCanDamageSource = false;
+	m_fAutoTarget = false;
 	m_InitialDelay.SetConstant(0);
 
 	//	Hit criteria
@@ -1373,7 +1373,7 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 	//	Load specific properties
 
 	m_iFireType = ftMissile;
-	m_bDirectional = false;
+	m_fDirectional = false;
 	m_iManeuverability = 0;
 	m_iManeuverRate = -1;
 	m_iAccelerationFactor = 0;
@@ -1405,7 +1405,7 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 	//	Fragments
 
 	m_pFirstFragment = NULL;
-	m_bProximityBlast = false;
+	m_fProximityBlast = false;
 	m_iProximityFailsafe = 0;
 
 	//	Compute max effective range
@@ -1464,15 +1464,15 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_pExtension = Ctx.pExtension;
 	m_fVariableInitialSpeed = false;
-	m_bFragment = false;
+	m_fFragment = false;
 
 	//	Load basic attributes
 
 	m_sUNID = sUNID;
 	m_Lifetime.LoadFromXML(pDesc->GetAttribute(LIFETIME_ATTRIB));
 	int iMaxLifetime = m_Lifetime.GetMaxValue();
-	m_bCanDamageSource = pDesc->GetAttributeBool(CAN_HIT_SOURCE_ATTRIB);
-	m_bAutoTarget = pDesc->GetAttributeBool(AUTO_TARGET_ATTRIB);
+	m_fCanDamageSource = pDesc->GetAttributeBool(CAN_HIT_SOURCE_ATTRIB);
+	m_fAutoTarget = pDesc->GetAttributeBool(AUTO_TARGET_ATTRIB);
 	m_InitialDelay.LoadFromXML(pDesc->GetAttribute(INITIAL_DELAY_ATTRIB));
 
 	//	Hit criteria
@@ -1562,8 +1562,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			if (error = m_Image.InitFromXML(Ctx, pImage))
 				return error;
 
-		m_bDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
-		if (m_bDirectional && m_pEffect)
+		m_fDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
+		if (m_fDirectional && m_pEffect)
 			m_pEffect->SetVariants(g_RotationRange);
 
 		m_iAccelerationFactor = pDesc->GetAttributeInteger(ACCELERATION_FACTOR_ATTRIB);
@@ -1815,7 +1815,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		if (error = pNewDesc->pDesc->InitFromXML(Ctx, pFragDesc, sFragUNID))
 			return error;
 
-		pNewDesc->pDesc->m_bFragment = true;
+		pNewDesc->pDesc->m_fFragment = true;
 
 		//	Set the fragment count
 
@@ -1832,10 +1832,10 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	If we have fragments, then set proximity appropriately
 	//	NOTE: We set the fail safe value even if we don't set the proximity
-	//	blast because we might set m_bProximityBlast later if there
+	//	blast because we might set m_fProximityBlast later if there
 	//	is an OnFragment event.
 
-	m_bProximityBlast = (iFragCount != 0);
+	m_fProximityBlast = (iFragCount != 0);
 	m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
 
 	//	Compute max effective range
@@ -1988,7 +1988,7 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	//	If we have an OnFragment event, then we enable proximity blast
 
 	if (HasOnFragmentEvent())
-		m_bProximityBlast = true;
+		m_fProximityBlast = true;
 
 	//	Fragment
 

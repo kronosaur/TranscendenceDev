@@ -420,8 +420,8 @@ class CWeaponFireDesc
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
         void ApplyAcceleration (CSpaceObject *pMissile) const;
-		inline bool CanAutoTarget (void) const { return m_bAutoTarget; }
-        inline bool CanDamageSource (void) const { return m_bCanDamageSource; }
+		inline bool CanAutoTarget (void) const { return m_fAutoTarget; }
+        inline bool CanDamageSource (void) const { return m_fCanDamageSource; }
 		bool CanHit (CSpaceObject *pObj) const;
 		inline bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		IEffectPainter *CreateEffectPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
@@ -492,14 +492,14 @@ class CWeaponFireDesc
 		void InitFromDamage (DamageDesc &Damage);
 		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, bool bDamageOnly = false);
-        inline bool IsDirectionalImage (void) const { return m_bDirectional; }
-        inline bool IsFragment (void) const { return m_bFragment; }
+        inline bool IsDirectionalImage (void) const { return m_fDirectional; }
+        inline bool IsFragment (void) const { return m_fFragment; }
 		inline bool IsTracking (void) const { return m_iManeuverability != 0; }
 		inline bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		inline void PlayFireSound (CSpaceObject *pSource) { m_FireSound.PlaySound(pSource); }
-		inline bool ProximityBlast (void) const { return m_bProximityBlast; }
+		inline bool ProximityBlast (void) const { return m_fProximityBlast; }
 
 	private:
         //  Copying this class is not supported
@@ -530,7 +530,6 @@ class CWeaponFireDesc
 		DiceRange m_Lifetime;				//	Lifetime of fire in seconds
 		DiceRange m_InitialDelay;			//	Delay for n ticks before starting
 
-		bool m_bAutoTarget;					//	TRUE if we can acquire new targets after launch
 		int m_iPassthrough;					//	Chance that the missile will continue through target
 
         //  Computed properties
@@ -545,9 +544,6 @@ class CWeaponFireDesc
 		//	Missile stuff (m_iFireType == ftMissile)
 		int m_iAccelerationFactor;			//	% increase in speed per 10 ticks
 		Metric m_rMaxMissileSpeed;			//	Max speed.
-		bool m_bDirectional;				//	True if different images for each direction
-		bool m_bFragment;					//	True if this is a fragment of a proximity blast
-		bool m_bCanDamageSource;			//	TRUE if we can damage the source
 		int m_iStealth;						//	Missile stealth
 		int m_iHitPoints;					//	HP before dissipating (0 = destroyed by any hit)
 		int m_iInteraction;					//	Interaction opacity (0-100)
@@ -569,8 +565,6 @@ class CWeaponFireDesc
 
 		//	Fragmentation
 		SFragmentDesc *m_pFirstFragment;	//	Pointer to first fragment desc (or NULL)
-		bool m_bProximityBlast;				//	This is TRUE if we have fragments or if we have
-											//		and OnFragment event.
 		int m_iProximityFailsafe;			//	Min ticks before proximity is active
 
         //  Old-style effects
@@ -594,9 +588,19 @@ class CWeaponFireDesc
 		DWORD m_fNoStationHits:1;			//	If TRUE, we never hit station-scale objects
 		DWORD m_fNoImmobileHits:1;			//	If TRUE, we never hit immobile objects
 		DWORD m_fNoShipHits:1;				//	If TRUE, we never hit ship-scale objects
-		DWORD m_fSpare8:1;
+		DWORD m_fAutoTarget:1;				//	If TRUE, we can acquire new targets after launch
 
-		DWORD m_dwSpare:24;
+		DWORD m_fCanDamageSource;			//	TRUE if we can damage the source
+		DWORD m_fDirectional:1;				//	True if different images for each direction
+		DWORD m_fFragment:1;				//	True if this is a fragment of a proximity blast
+		DWORD m_fProximityBlast;			//	This is TRUE if we have fragments or if we have
+											//		and OnFragment event.
+        DWORD m_fSpare5:1;
+        DWORD m_fSpare6:1;
+        DWORD m_fSpare7:1;
+        DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:16;
 	};
 
 //	Space environment
