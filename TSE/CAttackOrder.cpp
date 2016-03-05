@@ -12,6 +12,8 @@ const Metric THREAT_SENSOR_RANGE2 =		(THREAT_SENSOR_RANGE * THREAT_SENSOR_RANGE)
 const Metric WANDER_SAFETY_RANGE =		(20.0 * LIGHT_SECOND);
 const Metric WANDER_SAFETY_RANGE2 =		(WANDER_SAFETY_RANGE * WANDER_SAFETY_RANGE);
 
+const Metric STAY_IN_AREA_THRESHOLD =   (50.0 * LIGHT_SECOND);
+
 CAttackOrder::CAttackOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCount),
 		m_iOrder(iOrder)
 
@@ -24,24 +26,28 @@ CAttackOrder::CAttackOrder (IShipController::OrderTypes iOrder) : IOrderModule(o
 			m_fNearestTarget = false;
 			m_fInRangeOfObject = false;
 			m_fHold = false;
+            m_fStayInArea = false;
 			break;
 
 		case IShipController::orderAttackNearestEnemy:
 			m_fNearestTarget = true;
 			m_fInRangeOfObject = false;
 			m_fHold = false;
+            m_fStayInArea = false;
 			break;
 
 		case IShipController::orderAttackArea:
 			m_fNearestTarget = true;
 			m_fInRangeOfObject = true;
 			m_fHold = false;
+            m_fStayInArea = true;
 			break;
 
 		case IShipController::orderHoldAndAttack:
 			m_fNearestTarget = false;
 			m_fInRangeOfObject = false;
 			m_fHold = true;
+            m_fStayInArea = false;
 			break;
 
 		default:
@@ -223,10 +229,15 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget]);
 			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
 
+			//	See if our timer has expired
+
+			if (m_iCountdown != -1 && m_iCountdown-- == 0)
+				pShip->CancelCurrentOrder();
+
 			//	Every once in a while check to see if we've wandered near
 			//	an enemy station
 
-			if (pShip->IsDestinyTime(41) && !Ctx.IsImmobile() && m_Objs[objTarget]->CanMove())
+			else if (pShip->IsDestinyTime(41) && !Ctx.IsImmobile() && m_Objs[objTarget]->CanMove())
 				{
 				CSpaceObject *pEnemy = pShip->GetNearestEnemyStation(WANDER_SAFETY_RANGE);
 				if (pEnemy 
@@ -238,10 +249,20 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 					}
 				}
 
-			//	See if our timer has expired
+            //  See if we've wandered outside our area
 
-			if (m_iCountdown != -1 && m_iCountdown-- == 0)
-				pShip->CancelCurrentOrder();
+            else if (m_fStayInArea && pShip->IsDestinyTime(29) && m_Objs[objTarget]->CanMove())
+                {
+                Metric rDist;
+                CSpaceObject *pCenter = GetTargetArea(pShip, &rDist);
+                if (pCenter
+                        && pShip->GetDistance(pCenter) > rDist + STAY_IN_AREA_THRESHOLD)
+                    {
+                    m_Objs[objTarget] = GetBestTarget(pShip);
+                    if (m_Objs[objTarget] == NULL)
+                        pShip->CancelCurrentOrder();
+                    }
+                }
 
 			break;
 			}

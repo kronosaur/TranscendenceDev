@@ -110,7 +110,7 @@ class IShipController
 			orderScavenge,				//	Scavenge for scraps
 
 			orderFollowPlayerThroughGate,//	Follow the player through the nearest gate
-			orderAttackNearestEnemy,	//	Attack the nearest enemy
+			orderAttackNearestEnemy,	//	Attack the nearest enemy; dwData = timer (0 == indefinitely)
 			orderTradeRoute,			//	Moves from station to station
 			orderWander,				//	Wander around system, avoiding enemies
 			orderLoot,					//	pTarget = target to loot
