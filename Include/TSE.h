@@ -494,7 +494,6 @@ class CWeaponFireDesc
 		inline bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		ALERROR OverrideDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline void PlayFireSound (CSpaceObject *pSource) { m_FireSound.PlaySound(pSource); }
 		inline bool ProximityBlast (void) const { return m_bProximityBlast; }
 
@@ -574,9 +573,6 @@ class CWeaponFireDesc
 		//	Events
 		CEventHandler m_Events;				//	Events
 		SEventHandlerDesc m_CachedEvents[evtCount];
-
-		//	Miscellaneous
-		CWeaponFireDesc *m_pEnhanced;		//	Data when weapon is enhanced
 
 		//	Flags
 		DWORD m_fVariableInitialSpeed:1;	//	TRUE if initial speed is random

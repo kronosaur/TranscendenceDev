@@ -102,7 +102,6 @@ static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 
 CWeaponFireDesc::CWeaponFireDesc (void) : 
 		m_pExtension(NULL),
-		m_pEnhanced(NULL),
 		m_pParticleDesc(NULL)
 
 //	CWeaponFireDesc constructor
@@ -138,11 +137,6 @@ CWeaponFireDesc::CWeaponFireDesc (const CWeaponFireDesc &Desc)
 
 	if (Desc.m_pParticleDesc)
 		m_pParticleDesc = new CParticleSystemDesc(*Desc.m_pParticleDesc);
-
-	//	Other
-
-	if (Desc.m_pEnhanced)
-		m_pEnhanced = new CWeaponFireDesc(*Desc.m_pEnhanced);
 	}
 
 CWeaponFireDesc::~CWeaponFireDesc (void)
@@ -159,9 +153,6 @@ CWeaponFireDesc::~CWeaponFireDesc (void)
 		delete pDelete;
 		}
 
-	if (m_pEnhanced)
-		delete m_pEnhanced;
-
 	if (m_pParticleDesc)
 		delete m_pParticleDesc;
 	}
@@ -176,9 +167,6 @@ void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pAmmoType.GetUNID(), true);
 	retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_Exhaust.ExhaustImage.GetBitmapUNID(), true);
-	if (m_pEnhanced)
-		m_pEnhanced->AddTypesUsed(retTypesUsed);
-
 	retTypesUsed->SetAt(m_pEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pHitEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pFireEffect.GetUNID(), true);
@@ -597,10 +585,7 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDesc (const CString &sUNID, char
 		if (*pPos == 'e')
 			{
 			pPos++;
-			if (m_pEnhanced)
-				return m_pEnhanced->FindWeaponFireDesc(CString(pPos, -1, TRUE), retpPos);
-			else
-				return NULL;
+    		return NULL;
 			}
 
 		//	A fragment
@@ -1466,10 +1451,6 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 
 	m_FireSound = CSoundRef();
 
-	//	Enhanced
-
-	m_pEnhanced = NULL;
-
 	//	Cached events
 
 	for (i = 0; i < evtCount; i++)
@@ -1951,19 +1932,6 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			return error;
 		}
 
-	//	Check to see if this element has an enhanced sub-element. If so, then we
-	//	recurse.
-
-	CXMLElement *pEnhanced = pDesc->GetContentElementByTag(ENHANCED_TAG);
-	if (pEnhanced)
-		{
-		m_pEnhanced = new CWeaponFireDesc(*this);
-		if (error = m_pEnhanced->OverrideDesc(Ctx, pEnhanced))
-			return error;
-		}
-	else
-		m_pEnhanced = NULL;
-
 	return NOERROR;
 	}
 
@@ -2031,10 +1999,6 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 		if (error = m_pParticleDesc->Bind(Ctx))
 			return error;
 
-	if (m_pEnhanced)
-		if (error = m_pEnhanced->OnDesignLoadComplete(Ctx))
-			return error;
-
 	//	Load some events for efficiency
 
 	for (i = 0; i < evtCount; i++)
@@ -2066,29 +2030,3 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	DEBUG_CATCH
 	}
-
-ALERROR CWeaponFireDesc::OverrideDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
-
-//	OverrideDesc
-//
-//	Override shot data (used for enhanced weapons)
-
-	{
-	ALERROR error;
-
-	//	Damage
-
-	CString sAttrib;
-	if (pDesc->FindAttribute(DAMAGE_ATTRIB, &sAttrib))
-		{
-		if (error = m_Damage.LoadFromXML(Ctx, sAttrib))
-			return error;
-		}
-
-	//	Add enhanced UNID
-
-	m_sUNID.Append(CONSTLIT("/e"));
-
-	return NOERROR;
-	}
-

@@ -589,7 +589,8 @@ class CWeaponClass : public CDeviceClass
 			{
 			CItemTypeRef pAmmoType;	//	ItemType for ammo (may be NULL)
 			CWeaponFireDesc *pDesc;	//	Pointer to descriptor (may be external)
-			bool bOwned;			//	TRUE if we own the descriptor
+			bool bOwned;			//	TRUE if we own the descriptor (otherwise, it
+                                    //      may be owned by a missile).
 			};
 
 		enum EOnFireWeaponResults
