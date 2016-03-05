@@ -587,12 +587,12 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 		}
 	}
 
-int DamageDesc::GetMinDamage (void)
+int DamageDesc::GetMinDamage (void) const
 	{
 	return m_Damage.GetCount() + m_Damage.GetBonus();
 	}
 
-int DamageDesc::GetMaxDamage (void)
+int DamageDesc::GetMaxDamage (void) const
 	{
 	return m_Damage.GetCount() * m_Damage.GetFaces() + m_Damage.GetBonus();
 	}

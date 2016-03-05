@@ -175,7 +175,7 @@ void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	{
 	retTypesUsed->SetAt(m_pAmmoType.GetUNID(), true);
 	retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true);
-	retTypesUsed->SetAt(m_ExhaustImage.GetBitmapUNID(), true);
+	retTypesUsed->SetAt(m_Exhaust.ExhaustImage.GetBitmapUNID(), true);
 	if (m_pEnhanced)
 		m_pEnhanced->AddTypesUsed(retTypesUsed);
 
@@ -194,6 +194,21 @@ void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		pNext = pNext->pNext;
 		}
 	}
+
+void CWeaponFireDesc::ApplyAcceleration (CSpaceObject *pMissile) const
+
+//  ApplyAcceleration
+//
+//  Accelerates, if necessary. This should be called exactly once per 10 ticks.
+
+    {
+	if (m_iAccelerationFactor > 0)
+		{
+		if (m_iAccelerationFactor < 100
+				|| pMissile->GetVel().Length() < m_rMaxMissileSpeed)
+			pMissile->SetVel(pMissile->GetVel() * (Metric)(m_iAccelerationFactor / 100.0));
+		}
+    }
 
 bool CWeaponFireDesc::CanHit (CSpaceObject *pObj) const
 
@@ -1411,9 +1426,9 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 
 	//	Load exhaust data
 
-	m_iExhaustRate = 0;
-	m_iExhaustLifetime = 0;
-	m_rExhaustDrag = 0.0;
+	m_Exhaust.iExhaustRate = 0;
+	m_Exhaust.iExhaustLifetime = 0;
+	m_Exhaust.rExhaustDrag = 0.0;
 
 	//	We initialize this with the UNID, and later resolve the reference
 	//	during OnDesignLoadComplete
@@ -1463,6 +1478,23 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 		m_CachedEvents[i].pCode = NULL;
 		}
 	}
+
+ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile)
+
+    //  InitFromMissileXML
+    //
+    //  This weapon definition is for a missile
+
+    {
+    ALERROR error;
+
+    if (error = InitFromXML(Ctx, pDesc, sUNID))
+        return error;
+
+    m_pAmmoType = pMissile;
+
+    return NOERROR;
+    }
 
 ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, bool bDamageOnly)
 
@@ -1599,19 +1631,19 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		CXMLElement *pExhaust = pDesc->GetContentElementByTag(MISSILE_EXHAUST_TAG);
 		if (pExhaust)
 			{
-			m_iExhaustRate = pExhaust->GetAttributeInteger(EXHAUST_RATE_ATTRIB);
-			m_iExhaustLifetime = pExhaust->GetAttributeInteger(EXHAUST_LIFETIME_ATTRIB);
-			m_rExhaustDrag = pExhaust->GetAttributeInteger(EXHAUST_DRAG_ATTRIB) / 100.0;
+			m_Exhaust.iExhaustRate = pExhaust->GetAttributeInteger(EXHAUST_RATE_ATTRIB);
+			m_Exhaust.iExhaustLifetime = pExhaust->GetAttributeInteger(EXHAUST_LIFETIME_ATTRIB);
+			m_Exhaust.rExhaustDrag = pExhaust->GetAttributeInteger(EXHAUST_DRAG_ATTRIB) / 100.0;
 
 			CXMLElement *pImage = pExhaust->GetContentElementByTag(IMAGE_TAG);
-			if (error = m_ExhaustImage.InitFromXML(Ctx, pImage))
+			if (error = m_Exhaust.ExhaustImage.InitFromXML(Ctx, pImage))
 				return error;
 			}
 		else
 			{
-			m_iExhaustRate = 0;
-			m_iExhaustLifetime = 0;
-			m_rExhaustDrag = 0.0;
+			m_Exhaust.iExhaustRate = 0;
+			m_Exhaust.iExhaustLifetime = 0;
+			m_Exhaust.rExhaustDrag = 0.0;
 			}
 		}
 	else if (strEquals(sValue, FIRE_TYPE_AREA))
@@ -1977,7 +2009,7 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
 		return error;
 
-	if (error = m_ExhaustImage.OnDesignLoadComplete(Ctx))
+	if (error = m_Exhaust.ExhaustImage.OnDesignLoadComplete(Ctx))
 		return error;
 
 	if (error = m_pAmmoType.Bind(Ctx))

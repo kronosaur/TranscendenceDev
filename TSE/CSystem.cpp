@@ -1853,7 +1853,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 	{
 	CSpaceObject *pShot;
 
-	switch (pDesc->m_iFireType)
+	switch (pDesc->GetType())
 		{
 		case ftBeam:
 		case ftMissile:

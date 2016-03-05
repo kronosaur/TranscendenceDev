@@ -1288,7 +1288,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 
 			//	See if this object can be hit by the damage
 
-			bool bDoDamage = (Ctx.pDamageDesc && pObj->CanBeHitBy(Ctx.pDamageDesc->m_Damage));
+			bool bDoDamage = (Ctx.pDamageDesc && pObj->CanBeHitBy(Ctx.pDamageDesc->GetDamage()));
 
 			//	Keep track of some values if we're doing damage
 
@@ -1472,7 +1472,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 
 				//	Compute damage
 
-				int iTotal = Ctx.pDamageDesc->m_Damage.RollDamage() * pHit->iHitStrength;
+				int iTotal = Ctx.pDamageDesc->GetDamage().RollDamage() * pHit->iHitStrength;
 				int iDamage = iTotal / Ctx.iTotalParticleCount;
 				if (mathRandom(1, 100) <= (iTotal % Ctx.iTotalParticleCount) * 100 / Ctx.iTotalParticleCount)
 					iDamage++;
@@ -1482,7 +1482,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 				SDamageCtx DamageCtx;
 				DamageCtx.pObj = pObj;
 				DamageCtx.pDesc = Ctx.pDamageDesc;
-				DamageCtx.Damage = Ctx.pDamageDesc->m_Damage;
+				DamageCtx.Damage = Ctx.pDamageDesc->GetDamage();
 				DamageCtx.Damage.SetDamage(iDamage);
 				DamageCtx.Damage.AddEnhancements(Ctx.pEnhancements);
 				DamageCtx.Damage.SetCause(Ctx.iCause);

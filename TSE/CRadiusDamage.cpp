@@ -46,7 +46,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 
 	//	Make sure we have a valid CWeaponFireDesc (otherwise we won't be
 	//	able to save the descriptor).
-	ASSERT(!pDesc->m_sUNID.IsBlank());
+	ASSERT(!pDesc->GetUNID().IsBlank());
 
 	//	Create the area
 
@@ -135,7 +135,7 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
 		if (!CanHit(pObj)
 				|| !pObj->CanBeHit()
-				|| !pObj->CanBeHitBy(m_pDesc->m_Damage)
+				|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
 				|| pObj == this)
 			continue;
 
@@ -165,7 +165,7 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		SDamageCtx Ctx;
 		Ctx.pObj = pObj;
 		Ctx.pDesc = m_pDesc;
-		Ctx.Damage = m_pDesc->m_Damage;
+		Ctx.Damage = m_pDesc->GetDamage();
 		Ctx.Damage.AddEnhancements(m_pEnhancements);
 		Ctx.Damage.SetCause(m_iCause);
 		if (IsAutomatedWeapon())
@@ -201,7 +201,7 @@ CString CRadiusDamage::DebugCrashInfo (void)
 	{
 	CString sResult;
 
-	sResult.Append(strPatternSubst(CONSTLIT("m_pDesc: %s\r\n"), m_pDesc->m_sUNID));
+	sResult.Append(strPatternSubst(CONSTLIT("m_pDesc: %s\r\n"), m_pDesc->GetUNID()));
 	sResult.Append(strPatternSubst(CONSTLIT("m_Source: %s\r\n"), CSpaceObject::DebugDescribe(m_Source.GetObj())));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pTarget: %s\r\n"), CSpaceObject::DebugDescribe(m_pTarget)));
 	sResult.Append(strPatternSubst(CONSTLIT("m_iDestiny: %d\r\n"), GetDestiny()));
@@ -465,7 +465,7 @@ void CRadiusDamage::OnWriteToStream (IWriteStream *pStream)
 	{
 	DWORD dwSave;
 
-	m_pDesc->m_sUNID.WriteToStream(pStream);
+	m_pDesc->GetUNID().WriteToStream(pStream);
 	dwSave = m_iCause;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));

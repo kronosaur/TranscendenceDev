@@ -1279,12 +1279,8 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		else if (strEquals(pSubDesc->GetTag(), MISSILE_TAG))
 			{
 			m_pMissile = new CWeaponFireDesc;
-			if (error = m_pMissile->InitFromXML(Ctx, pSubDesc, strPatternSubst(CONSTLIT("%d"), GetUNID())))
+			if (error = m_pMissile->InitFromMissileXML(Ctx, pSubDesc, strPatternSubst(CONSTLIT("%d"), GetUNID()), this))
 				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unable to load %s: %s"), pSubDesc->GetTag(), Ctx.sError));
-
-			//	Make sure we point to us
-
-			m_pMissile->m_pAmmoType = this;
 			}
 
 		//	Other elements

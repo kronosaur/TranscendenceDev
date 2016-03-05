@@ -1526,8 +1526,8 @@ class DamageDesc
 		inline DamageTypes GetDamageType (void) const { return m_iType; }
 		Metric GetDamageValue (DWORD dwFlags = 0) const;
 		CString GetDesc (DWORD dwFlags = 0);
-		int GetMinDamage (void);
-		int GetMaxDamage (void);
+		int GetMinDamage (void) const;
+		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsEnergyDamage (void) const;

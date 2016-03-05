@@ -1860,7 +1860,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		CWeaponFireDesc *pExplosionType;
 		if (pExplosionType = GetExplosionType(NULL))
 			{
-			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(pExplosionType->m_sUNID, 0));
+			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(pExplosionType->GetUNID(), 0));
 			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
 			if (pWeapon)
 				{

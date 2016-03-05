@@ -720,7 +720,7 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 								SDamageCtx Ctx;
 								Ctx.pObj = pObj;
 								Ctx.pDesc = pType->pDamageDesc;
-								Ctx.Damage = pType->pDamageDesc->m_Damage;
+								Ctx.Damage = pType->pDamageDesc->GetDamage();
 								if (IsAutomatedWeapon())
 									Ctx.Damage.SetAutomatedWeapon();
 								Ctx.iDirection = VectorToPolar(vDeltaV);
@@ -1227,7 +1227,7 @@ void CParticleEffect::OnWriteToStream (IWriteStream *pStream)
 		pStream->Write((char *)&pType->rHoleRadius, sizeof(Metric));
 		pStream->Write((char *)&pType->rDampening, sizeof(Metric));
 		if (pType->pDamageDesc)
-			pType->pDamageDesc->m_Damage.WriteToStream(pStream);
+			pType->pDamageDesc->GetDamage().WriteToStream(pStream);
 		else
 			{
 			DamageDesc Dummy;

@@ -295,7 +295,7 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 	//	We set to -1 because we skip the first Update after the call
 	//	to Activate (since it happens on the same tick)
 
-	if (pShot->m_iContinuous > 0)
+	if (pShot->GetContinuous() > 0)
 		SetContinuousFire(pDevice, CONTINUOUS_START);
 
 	//	Player-specific code
@@ -310,9 +310,9 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 			CItem WeaponItem(GetItemType(), 1);
 			pShip->GetController()->OnItemFired(WeaponItem);
 
-			if ((m_bLauncher || m_bReportAmmo) && pShot->m_pAmmoType)
+			if ((m_bLauncher || m_bReportAmmo) && pShot->GetAmmoType())
 				{
-				CItem AmmoItem(pShot->m_pAmmoType, 1);
+				CItem AmmoItem(pShot->GetAmmoType(), 1);
 				pShip->GetController()->OnItemFired(AmmoItem);
 				}
 			}
@@ -869,8 +869,8 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 			break;
 		}
 
-	if (pShot->m_iContinuous > 0)
-		rMult *= (pShot->m_iContinuous + 1);
+	if (pShot->GetContinuous() > 0)
+		rMult *= (pShot->GetContinuous() + 1);
 
 	//	Include passthrough.
     //
@@ -931,7 +931,7 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 			//	By default, 1/8 of fragments hit, unless the fragments are radius type
 
 			Metric rHitFraction;
-			switch (pFragment->pDesc->m_iFireType)
+			switch (pFragment->pDesc->GetType())
 				{
 				case ftArea:
 				case ftRadius:
@@ -969,20 +969,20 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 
 		//	Average damage depends on type
 
-		switch (pShot->m_iFireType)
+		switch (pShot->GetType())
 			{
 			case ftArea:
 				//	Assume 1/8th damage points hit on average
-				rDamage = EXPECTED_SHOCKWAVE_HITS * pShot->GetAreaDamageDensityAverage() * pShot->m_Damage.GetDamageValue(dwDamageFlags);
+				rDamage = EXPECTED_SHOCKWAVE_HITS * pShot->GetAreaDamageDensityAverage() * pShot->GetDamage().GetDamageValue(dwDamageFlags);
 				break;
 
 			case ftRadius:
 				//	Assume average target is far enough away to take half damage
-				rDamage = EXPECTED_RADIUS_DAMAGE * pShot->m_Damage.GetDamageValue(dwDamageFlags);
+				rDamage = EXPECTED_RADIUS_DAMAGE * pShot->GetDamage().GetDamageValue(dwDamageFlags);
 				break;
 
 			default:
-				rDamage = pShot->m_Damage.GetDamageValue(dwDamageFlags);
+				rDamage = pShot->GetDamage().GetDamageValue(dwDamageFlags);
 			}
 
 		//	If we have a capacitor, adjust damage
@@ -1518,9 +1518,9 @@ bool CWeaponClass::FindDataField (int iVariant, const CString &sField, CString *
 	else if (strEquals(sField, FIELD_HP))
 		*retsValue = strFromInt(pShot->GetHitPoints());
 	else if (strEquals(sField, FIELD_MIN_DAMAGE))
-		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->m_Damage.GetMinDamage()));
+		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMinDamage()));
 	else if (strEquals(sField, FIELD_MAX_DAMAGE))
-		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->m_Damage.GetMaxDamage()));
+		*retsValue = strFromInt((int)(CalcConfigurationMultiplier(pShot) * pShot->GetDamage().GetMaxDamage()));
 	else if (strEquals(sField, FIELD_DAMAGE_TYPE))
 		*retsValue = strFromInt(pShot->GetDamageType());
 	else if (strEquals(sField, FIELD_FIRE_DELAY))
@@ -1559,7 +1559,7 @@ bool CWeaponClass::FindDataField (int iVariant, const CString &sField, CString *
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
 		*retsValue = strFromInt(m_ShotData.GetCount());
 	else if (strEquals(sField, FIELD_REPEAT_COUNT))
-		*retsValue = strFromInt(pShot->m_iContinuous + 1);
+		*retsValue = strFromInt(pShot->GetContinuous() + 1);
 	else if (strEquals(sField, FIELD_CONFIGURATION))
 		{
 		CCodeChain &CC = g_pUniverse->GetCC();
@@ -1883,7 +1883,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	CVector ShotPos[MAX_SHOT_COUNT];
 	int ShotDir[MAX_SHOT_COUNT];
-	int iShotCount = CalcConfiguration(CItemCtx(pSource, pDevice), pShot, iFireAngle, ShotPos, ShotDir, (iRepeatingCount == pShot->m_iContinuous));
+	int iShotCount = CalcConfiguration(CItemCtx(pSource, pDevice), pShot, iFireAngle, ShotPos, ShotDir, (iRepeatingCount == pShot->GetContinuous()));
     if (iShotCount <= 0)
         return false;
 
@@ -1943,12 +1943,12 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	if (iRepeatingCount == 0)
 		{
-		if (pShot->m_pAmmoType)
+		if (pShot->GetAmmoType())
 			{
 			//	Select the ammo
 
 			CItemListManipulator ItemList(pSource->GetItemList());
-			CItem Item(pShot->m_pAmmoType, iShotCount);
+			CItem Item(pShot->GetAmmoType(), iShotCount);
 			bool bAmmoSelected = ItemList.SetCursorAtItem(Item);
 
 			//	If we could not select ammo (because we don't have any)
@@ -2046,14 +2046,14 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	Consume ammo
 
 	bool bNextVariant = false;
-	if (iRepeatingCount == pShot->m_iContinuous)
+	if (iRepeatingCount == pShot->GetContinuous())
 		{
-		if (pShot->m_pAmmoType)
+		if (pShot->GetAmmoType())
 			{
 			//	Select the ammo
 
 			CItemListManipulator ItemList(pSource->GetItemList());
-			CItem Item(pShot->m_pAmmoType, iShotCount);
+			CItem Item(pShot->GetAmmoType(), iShotCount);
 			bool bAmmoSelected = ItemList.SetCursorAtItem(Item);
 
 			//	If we selected some ammo and this is the last
@@ -2116,7 +2116,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 		SDamageCtx Ctx;
 		Ctx.pObj = pSource;
 		Ctx.pDesc = pShot;
-		Ctx.Damage = pShot->m_Damage;
+		Ctx.Damage = pShot->GetDamage();
 		Ctx.Damage.SetCause(killedByWeaponMalfunction);
 		Ctx.iDirection = (pDevice->GetPosAngle() + 360 + mathRandom(0, 30) - 15) % 360;
 		Ctx.vHitPos = vSource;
@@ -2233,7 +2233,7 @@ const DamageDesc *CWeaponClass::GetDamageDesc (CItemCtx &Ctx)
 	if (pShot == NULL)
 		return NULL;
 	else
-		return &pShot->m_Damage;
+		return &pShot->GetDamage();
 	}
 
 DamageTypes CWeaponClass::GetDamageType (CInstalledDevice *pDevice, int iVariant) const
@@ -2526,7 +2526,7 @@ Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevi
 			{
 			if (pTarget && !pTarget->CanMove())
 				{
-				Metric rSpeed = (pShot->GetRatedSpeed() + pShot->m_rMaxMissileSpeed) / 2;
+                Metric rSpeed = pShot->GetAveSpeed();
 				return (rSpeed * (pShot->GetMaxLifetime() * 90 / 100)) + (128.0 * g_KlicksPerPixel);
 				}
 			else
@@ -2631,7 +2631,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 		int iFragments;
 		CWeaponFireDesc *pRootShot = GetVariant(iVariant != -1 ? iVariant : 0);
 		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
-		DamageDesc Damage = pShot->m_Damage;
+		DamageDesc Damage = pShot->GetDamage();
 		iDamageType = Damage.GetDamageType();
 
 		//	Modify the damage based on any enhancements that the ship may have
@@ -2642,7 +2642,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 
 		//	For shockwaves...
 
-		if (pShot->m_iFireType == ftArea)
+		if (pShot->GetType() == ftArea)
 			{
 			//	Compute total damage. NOTE: For particle weapons the damage 
 			//	specified is the total damage if ALL particle were to hit.
@@ -2667,7 +2667,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 
 		//	For area weapons...
 
-		else if (pShot->m_iFireType == ftRadius)
+		else if (pShot->GetType() == ftRadius)
 			{
 			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage);
 
@@ -2682,7 +2682,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 
 		//	For particles...
 
-		else if (pShot->m_iFireType == ftParticles)
+		else if (pShot->GetType() == ftParticles)
 			{
 			//	Some weapons fire multiple shots (e.g., Avalanche cannon)
 
@@ -2781,7 +2781,7 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 		{
 		int iOriginalFragments = pFragDesc->Count.GetAveValue();
 		int iFragments = iOriginalFragments;
-		switch (pFragDesc->pDesc->m_iFireType)
+		switch (pFragDesc->pDesc->GetType())
 			{
 			//	Area damage counts as multiple hits
 
@@ -2802,8 +2802,8 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 				break;
 			}
 
-		Metric rDamage = pFragDesc->pDesc->m_Damage.GetDamageValue() * iFragments;
-		DamageTypes iDamageType = pFragDesc->pDesc->m_Damage.GetDamageType();
+		Metric rDamage = pFragDesc->pDesc->GetDamage().GetDamageValue() * iFragments;
+		DamageTypes iDamageType = pFragDesc->pDesc->GetDamage().GetDamageType();
 		if (iDamageType > iBestDamageType 
 				|| (iDamageType == iBestDamageType && rDamage >= rBestDamage))
 			{
@@ -2852,7 +2852,7 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
 	if (pShot)
 		{
-		if (pShot->m_pAmmoType == NULL)
+		if (pShot->GetAmmoType() == NULL)
 			{
 			if (retsLabel)
 				*retsLabel = CString();
@@ -2868,7 +2868,7 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 			}
 		else
 			{
-			CItem Item(pShot->m_pAmmoType, 1);
+			CItem Item(pShot->GetAmmoType(), 1);
 
 			if (retiAmmoLeft)
 				{
@@ -2887,7 +2887,7 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 				}
 
 			if (retpType)
-				*retpType = pShot->m_pAmmoType;
+				*retpType = pShot->GetAmmoType();
 			}
 		}
 	else
@@ -2971,10 +2971,10 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 
 	//	If we don't enough ammo, clearly we will not be effective
 
-	if (pShot->m_pAmmoType)
+	if (pShot->GetAmmoType())
 		{
 		CItemListManipulator ItemList(pSource->GetItemList());
-		CItem Item(pShot->m_pAmmoType, 1);
+		CItem Item(pShot->GetAmmoType(), 1);
 		if (!ItemList.SetCursorAtItem(Item))
 			return -100;
 		}
@@ -3023,7 +3023,7 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 	//	If the weapon has EMP damage and the target is not paralysed then
 	//	this is very effective.
 
-	if (pTarget && pShot->m_Damage.GetEMPDamage() > 0)
+	if (pTarget && pShot->GetDamage().GetEMPDamage() > 0)
 		{
 		//	If the target is already ionized, or if the target is a station
 		//	(which cannot be paralyzed) then don't use this weapon.
@@ -3038,7 +3038,7 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 	//	If the weapon has blinding damage and the target is not blind then
 	//	this is very effective
 
-	if (pTarget && pShot->m_Damage.GetBlindingDamage() > 0)
+	if (pTarget && pShot->GetDamage().GetBlindingDamage() > 0)
 		{
 		//	If the target is already blind, or if the target is a station, then
 		//	don't bother with this weapon.
@@ -3078,10 +3078,10 @@ bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevic
 	if (pShot == NULL)
 		return false;
 
-	if (pShot->m_iFireType == ftArea)
+	if (pShot->GetType() == ftArea)
 		return true;
 
-	if (pShot->HasFragments() && pShot->GetFirstFragment()->pDesc->m_iFireType == ftArea)
+	if (pShot->HasFragments() && pShot->GetFirstFragment()->pDesc->GetType() == ftArea)
 		return true;
 
 	return false;
@@ -3263,7 +3263,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	//	Area weapons are always aligned
 
-	if (pShot->m_iFireType == ftArea)
+	if (pShot->GetType() == ftArea)
 		{
 		if (retiFireAngle)
 			*retiFireAngle = iFacingAngle;
@@ -3471,7 +3471,7 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 
 		int iFragments;
 		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
-		DamageDesc Damage = pShot->m_Damage;
+		DamageDesc Damage = pShot->GetDamage();
 
 		//	Compute special abilities.
 
@@ -3480,15 +3480,15 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 
 		//	Special damage delivery
 
-		if (pShot->m_iFireType == ftArea)
+		if (pShot->GetType() == ftArea)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shockwave")));
 
-		else if (pShot->m_iFireType == ftRadius)
+		else if (pShot->GetType() == ftRadius)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radius")));
 
 		//	For particles...
 
-		else if (pShot->m_iFireType == ftParticles)
+		else if (pShot->GetType() == ftParticles)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("cloud")));
 
 		//	For large number of fragments, we have a special description
@@ -3501,7 +3501,7 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 		//	(We ignore passthrough for shockwaves, since that's already a 
 		//	property of them.)
 
-		if (pShot->GetPassthrough() >= 20 && pShot->m_iFireType != ftArea)
+		if (pShot->GetPassthrough() >= 20 && pShot->GetType() != ftArea)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("passthrough")));
 
 		//	Blinding
@@ -3839,7 +3839,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 		//	(which happens on the same tick as Activate)
 
 		CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
-		SetContinuousFire(pDevice, (pShot ? pShot->m_iContinuous : 0));
+		SetContinuousFire(pDevice, (pShot ? pShot->GetContinuous() : 0));
 		}
 	else if (dwContinuous > 0)
 		{
@@ -3852,7 +3852,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 					pShot, 
 					pSource, 
 					NULL, 
-					1 + pShot->m_iContinuous - dwContinuous,
+					1 + pShot->GetContinuous() - dwContinuous,
 					&bSourceDestroyed,
 					retbConsumedItems);
 

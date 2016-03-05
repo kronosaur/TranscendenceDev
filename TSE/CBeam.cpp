@@ -69,7 +69,7 @@ CString CBeam::GetName (DWORD *retdwFlags)
 	if (retdwFlags)
 		*retdwFlags = 0;
 
-	switch (m_pDesc->m_Damage.GetDamageType())
+	switch (m_pDesc->GetDamage().GetDamageType())
 		{
 		case damageLaser:
 			return CONSTLIT("laser blast");
@@ -101,7 +101,7 @@ void CBeam::OnMove (const CVector &vOldPos, Metric rSeconds)
 	//	See if the beam hit anything after the move
 
 	if (!m_fReflection || m_iTick > 1)
-		m_pHit = HitTest(vOldPos, 0.0, m_pDesc->m_Damage, &m_vPaintTo, &m_iHitDir);
+		m_pHit = HitTest(vOldPos, 0.0, m_pDesc->GetDamage(), &m_vPaintTo, &m_iHitDir);
 
 	if (m_pHit == NULL)
 		m_vPaintTo = GetPos();
@@ -152,9 +152,9 @@ void CBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	//	Draw the head of the beam if we have an image
 
-	if (m_pDesc->m_Image.IsLoaded())
+	if (m_pDesc->GetImage().IsLoaded())
 		{
-		m_pDesc->m_Image.PaintImage(Dest,
+		m_pDesc->GetImage().PaintImage(Dest,
 				BeamCtx.xTo,
 				BeamCtx.yTo,
 				m_iTick,
@@ -235,7 +235,7 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		SDamageCtx Ctx;
 		Ctx.pObj = m_pHit;
 		Ctx.pDesc = m_pDesc;
-		Ctx.Damage = m_pDesc->m_Damage;
+		Ctx.Damage = m_pDesc->GetDamage();
 		Ctx.Damage.AddBonus(m_iBonus);
 		Ctx.Damage.SetCause(m_iCause);
 		if (IsAutomatedWeapon())
@@ -284,7 +284,7 @@ void CBeam::OnWriteToStream (IWriteStream *pStream)
 
 	{
 	DWORD dwSave;
-	m_pDesc->m_sUNID.WriteToStream(pStream);
+	m_pDesc->GetUNID().WriteToStream(pStream);
 	pStream->Write((char *)&m_iBonus, sizeof(DWORD));
 	dwSave = m_iCause;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));

@@ -751,7 +751,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue)
 		{
 		if (m_pExplosionType)
 			{
-			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(m_pExplosionType->m_sUNID, 0));
+			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(m_pExplosionType->GetUNID(), 0));
 			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
 			if (pWeapon)
 				{

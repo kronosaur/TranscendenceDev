@@ -399,12 +399,22 @@ class CWeaponFireDesc
 			SFragmentDesc *pNext;
 			};
 
+        struct SExhaustDesc
+            {
+		    int iExhaustRate;				//	Ticks per exhaust creation (0 if no exhaust)
+		    CObjectImageArray ExhaustImage; //	Image for exhaust
+		    int iExhaustLifetime;			//	Ticks that each exhaust particle lasts
+		    Metric rExhaustDrag;			//	Coefficient of drag for exhaust particles
+            };
+
 		CWeaponFireDesc (void);
 		CWeaponFireDesc (const CWeaponFireDesc &Desc);
 		~CWeaponFireDesc (void);
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
+        void ApplyAcceleration (CSpaceObject *pMissile) const;
 		inline bool CanAutoTarget (void) const { return m_bAutoTarget; }
+        inline bool CanDamageSource (void) const { return m_bCanDamageSource; }
 		bool CanHit (CSpaceObject *pObj) const;
 		inline bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		IEffectPainter *CreateEffectPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
@@ -435,15 +445,20 @@ class CWeaponFireDesc
 		Metric GetAveInitialSpeed (void) const;
 		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
 		Metric GetAveParticleCount (void) const;
+        Metric GetAveSpeed (void) const { return 0.5 * (GetRatedSpeed() + m_rMaxMissileSpeed); }
+        inline int GetContinuous (void) const { return m_iContinuous; }
+        const DamageDesc &GetDamage (void) const { return m_Damage; }
 		DamageTypes GetDamageType (void) const;
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
         inline Metric GetEffectiveRange (void) const { return m_rMaxEffectiveRange; }
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
+        inline const SExhaustDesc &GetExhaust (void) const { return m_Exhaust; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
 		inline FireTypes GetFireType (void) const { return m_iFireType; }
 		inline SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
+		inline const CObjectImageArray &GetImage (void) const { return m_Image; }
 		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
 		inline int GetInteraction (void) const { return m_iInteraction; }
@@ -459,6 +474,9 @@ class CWeaponFireDesc
 		inline int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		inline Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
         int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
+        inline int GetStealth (void) const { return m_iStealth; }
+        inline FireTypes GetType (void) const { return m_iFireType; }
+        inline const CString &GetUNID (void) const { return m_sUNID; }
 		inline CG32bitPixel GetVaporTrailColor (void) const { return m_rgbVaporTrailColor; }
 		inline int GetVaporTrailLength (void) const { return m_iVaporTrailLength; }
 		inline int GetVaporTrailWidth (void) const { return m_iVaporTrailWidth; }
@@ -468,16 +486,22 @@ class CWeaponFireDesc
 		inline bool HasFragments (void) const { return m_pFirstFragment != NULL; }
 		inline bool HasOnFragmentEvent (void) const { return m_CachedEvents[evtOnFragment].pCode != NULL; }
 		void InitFromDamage (DamageDesc &Damage);
+		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, bool bDamageOnly = false);
-		inline bool IsTracking (void) { return m_iManeuverability != 0; }
-		inline bool IsTrackingTime (int iTick) { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
+        inline bool IsDirectionalImage (void) const { return m_bDirectional; }
+        inline bool IsFragment (void) const { return m_bFragment; }
+		inline bool IsTracking (void) const { return m_iManeuverability != 0; }
+		inline bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		ALERROR OverrideDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline void PlayFireSound (CSpaceObject *pSource) { m_FireSound.PlaySound(pSource); }
 		inline bool ProximityBlast (void) const { return m_bProximityBlast; }
 
-	public:
+	private:
+		CEffectCreator *GetFireEffect (void) const;
+
+		CExtension *m_pExtension;			//	Extension that defines the weaponfiredesc
 		CString m_sUNID;					//	Identification. The format is
 											//		uuuuu/n/fi/e
 											//
@@ -486,36 +510,13 @@ class CWeaponFireDesc
 											//		fi = fragment, i is index (optional)
 											//		e = enhanced (optional)
 
-		CItemTypeRef m_pAmmoType;			//	item type for this ammo
 
+		//	Basic properties
+		CItemTypeRef m_pAmmoType;			//	item type for this ammo
 		FireTypes m_iFireType;				//	beam or missile
 		DamageDesc m_Damage;				//	Damage per shot
 		int m_iContinuous;					//	repeat for this number of frames
 
-		//	Missile stuff (m_iFireType == ftMissile)
-		CObjectImageArray m_Image;			//	Image for missile
-		int m_iAccelerationFactor;			//	% increase in speed per 10 ticks
-		Metric m_rMaxMissileSpeed;			//	Max speed.
-		bool m_bDirectional;				//	True if different images for each direction
-		bool m_bFragment;					//	True if this is a fragment of a proximity blast
-		bool m_bCanDamageSource;			//	TRUE if we can damage the source
-		int m_iStealth;						//	Missile stealth
-
-		//	Missile exhaust
-		int m_iExhaustRate;					//	Ticks per exhaust creation (0 if no exhaust)
-		CObjectImageArray m_ExhaustImage;	//	Image for exhaust
-		int m_iExhaustLifetime;				//	Ticks that each exhaust particle lasts
-		Metric m_rExhaustDrag;				//	Coefficient of drag for exhaust particles
-
-		//	Miscellaneous
-		CWeaponFireDesc *m_pEnhanced;		//	Data when weapon is enhanced
-
-	private:
-		CEffectCreator *GetFireEffect (void) const;
-
-		CExtension *m_pExtension;			//	Extension that defines the weaponfiredesc
-
-		//	Basic properties
 		Metric m_rMissileSpeed;				//	Speed of missile
 		DiceRange m_MissileSpeed;			//	Speed of missile (if random)
 		DiceRange m_Lifetime;				//	Lifetime of fire in seconds
@@ -538,10 +539,18 @@ class CWeaponFireDesc
 		CSoundRef m_FireSound;				//	Sound when weapon is fired
 
 		//	Missile stuff (m_iFireType == ftMissile)
+		CObjectImageArray m_Image;			//	Image for missile
+		int m_iAccelerationFactor;			//	% increase in speed per 10 ticks
+		Metric m_rMaxMissileSpeed;			//	Max speed.
+		bool m_bDirectional;				//	True if different images for each direction
+		bool m_bFragment;					//	True if this is a fragment of a proximity blast
+		bool m_bCanDamageSource;			//	TRUE if we can damage the source
+		int m_iStealth;						//	Missile stealth
 		int m_iHitPoints;					//	HP before dissipating (0 = destroyed by any hit)
 		int m_iInteraction;					//	Interaction opacity (0-100)
 		int m_iManeuverability;				//	Tracking maneuverability (0 = none)
 		int m_iManeuverRate;				//	Angle turned at each maneuverability point
+        SExhaustDesc m_Exhaust;             //  Exhaust effect
 
 		//	Particles (m_iFireType == ftParticles)
 		CParticleSystemDesc *m_pParticleDesc;
@@ -565,6 +574,9 @@ class CWeaponFireDesc
 		//	Events
 		CEventHandler m_Events;				//	Events
 		SEventHandlerDesc m_CachedEvents[evtCount];
+
+		//	Miscellaneous
+		CWeaponFireDesc *m_pEnhanced;		//	Data when weapon is enhanced
 
 		//	Flags
 		DWORD m_fVariableInitialSpeed:1;	//	TRUE if initial speed is random

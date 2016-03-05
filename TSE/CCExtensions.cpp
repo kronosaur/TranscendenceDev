@@ -5268,7 +5268,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			SDamageCtx Ctx;
 			Ctx.pObj = pObj;
 			Ctx.pDesc = pDesc;
-			Ctx.Damage = pDesc->m_Damage;
+			Ctx.Damage = pDesc->GetDamage();
 			Ctx.iDirection = AngleMod(iDir + mathRandom(0, 30) - 15);
 			Ctx.vHitPos = vHitPos;
 			Ctx.Attacker = GetDamageSourceArg(*pCC, pArgs->GetElement(2));
@@ -9797,7 +9797,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			Ctx.vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
 			Ctx.iDirection = pArgs->GetElement(3)->GetIntegerValue();
-			Ctx.Damage = pDesc->m_Damage;
+			Ctx.Damage = pDesc->GetDamage();
 			Ctx.iDamage = pArgs->GetElement(4)->GetIntegerValue();
 
 			//	Create the effect

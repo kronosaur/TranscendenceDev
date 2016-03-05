@@ -227,7 +227,7 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	pMissile->Place(vPos, vVel);
 
 	//	We can't save missiles without an UNID
-	ASSERT(!pDesc->m_sUNID.IsBlank());
+	ASSERT(!pDesc->GetUNID().IsBlank());
 
 	//	Target must be valid
 	ASSERT(pTarget == NULL || !pTarget->IsDestroyed());
@@ -284,9 +284,9 @@ ALERROR CMissile::Create (CSystem *pSystem,
 
 	//	Create exhaust trail, if necessary
 
-	if (pDesc->m_iExhaustRate > 0)
+	if (pDesc->GetExhaust().iExhaustRate > 0)
 		{
-		int iCount = (pDesc->m_iExhaustLifetime / pDesc->m_iExhaustRate) + 1;
+		int iCount = (pDesc->GetExhaust().iExhaustLifetime / pDesc->GetExhaust().iExhaustRate) + 1;
 		pMissile->m_pExhaust = new TQueue<SExhaustParticle>(iCount);
 		}
 	else
@@ -353,7 +353,7 @@ void CMissile::CreateFragments (const CVector &vPos)
 	SDamageCtx Ctx;
 	Ctx.pObj = NULL;
 	Ctx.pDesc = m_pDesc;
-	Ctx.Damage = m_pDesc->m_Damage;
+	Ctx.Damage = m_pDesc->GetDamage();
 	Ctx.Damage.AddEnhancements(m_pEnhancements);
 	Ctx.Damage.SetCause(m_iCause);
 	if (IsAutomatedWeapon())
@@ -403,7 +403,7 @@ CString CMissile::DebugCrashInfo (void)
 
 	if (m_fDestroyOnAnimationDone)
 		sResult.Append(CONSTLIT("m_fDestroyOnAnimationDone: true\r\n"));
-	sResult.Append(strPatternSubst(CONSTLIT("m_pDesc: %s\r\n"), m_pDesc->m_sUNID));
+	sResult.Append(strPatternSubst(CONSTLIT("m_pDesc: %s\r\n"), m_pDesc->GetUNID()));
 	sResult.Append(strPatternSubst(CONSTLIT("m_Source: %s\r\n"), CSpaceObject::DebugDescribe(m_Source.GetObj())));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pHit: %s\r\n"), CSpaceObject::DebugDescribe(m_pHit)));
 	sResult.Append(strPatternSubst(CONSTLIT("m_iHitDir: %d\r\n"), m_iHitDir));
@@ -500,7 +500,7 @@ CString CMissile::GetName (DWORD *retdwFlags)
 	if (retdwFlags)
 		*retdwFlags = nounNoArticle;
 
-	return strPatternSubst(CONSTLIT("%s damage"), GetDamageShortName(m_pDesc->m_Damage.GetDamageType()));
+	return strPatternSubst(CONSTLIT("%s damage"), GetDamageShortName(m_pDesc->GetDamage().GetDamageType()));
 	}
 
 ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
@@ -526,7 +526,7 @@ int CMissile::GetStealth (void) const
 //	Returns the stealth of the missile
 
 	{
-	return m_pDesc->m_iStealth;
+	return m_pDesc->GetStealth();
 	}
 
 bool CMissile::HasAttribute (const CString &sAttribute) const
@@ -685,10 +685,10 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 	else
 		rThreshold = 0.0;
 
-	//	See if the beam hit anything after the move
+	//	See if the missile hit anything after the move
 
-	if (m_iTick > 1 || (!m_pDesc->m_bFragment && !m_fReflection))
-		m_pHit = HitTest(vOldPos, rThreshold, m_pDesc->m_Damage, &m_vHitPos, &m_iHitDir);
+	if (m_iTick > 1 || (!m_pDesc->IsFragment() && !m_fReflection))
+		m_pHit = HitTest(vOldPos, rThreshold, m_pDesc->GetDamage(), &m_vHitPos, &m_iHitDir);
 
 	//	Make sure we are not too close to the source when we trigger
 	//	a proximity blast.
@@ -764,9 +764,9 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		//	LATER: We should incorporate this into the painter when we
 		//	load the CWeaponFireDesc.
 
-		if (m_pDesc->GetFireType() == ftBeam && m_pDesc->m_Image.IsLoaded())
+		if (m_pDesc->GetFireType() == ftBeam && m_pDesc->GetImage().IsLoaded())
 			{
-			m_pDesc->m_Image.PaintImage(Dest,
+			m_pDesc->GetImage().PaintImage(Dest,
 					x,
 					y,
 					m_iTick,
@@ -778,11 +778,11 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	else if (!m_fDestroyOnAnimationDone && m_pHit == NULL)
 		{
-		m_pDesc->m_Image.PaintImage(Dest,
+		m_pDesc->GetImage().PaintImage(Dest,
 				x,
 				y,
 				m_iTick,
-				(m_pDesc->m_bDirectional ? Angle2Direction(m_iRotation, g_RotationRange) : 0));
+				(m_pDesc->IsDirectionalImage() ? Angle2Direction(m_iRotation, g_RotationRange) : 0));
 
 		//	Paint exhaust trail
 
@@ -795,10 +795,10 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 				int xParticle, yParticle;
 
 				Ctx.XForm.Transform(m_pExhaust->GetAt(i).vPos, &xParticle, &yParticle);
-				m_pDesc->m_ExhaustImage.PaintImage(Dest, 
+				m_pDesc->GetExhaust().ExhaustImage.PaintImage(Dest, 
 						xParticle, 
 						yParticle, 
-						(iCount - i - 1) * m_pDesc->m_iExhaustRate, 
+						(iCount - i - 1) * m_pDesc->GetExhaust().iExhaustRate, 
 						0);
 				}
 			}
@@ -919,9 +919,9 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load exhaust
 
-	if (m_pDesc->m_iExhaustRate > 0)
+	if (m_pDesc->GetExhaust().iExhaustRate > 0)
 		{
-		int iCount = (m_pDesc->m_iExhaustLifetime / m_pDesc->m_iExhaustRate) + 1;
+		int iCount = (m_pDesc->GetExhaust().iExhaustLifetime / m_pDesc->GetExhaust().iExhaustRate) + 1;
 		m_pExhaust = new TQueue<SExhaustParticle>(iCount);
 		}
 
@@ -1021,13 +1021,8 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	Accelerate, if necessary
 
-		if (m_pDesc->m_iAccelerationFactor > 0 
-				&& (iTick % 10 ) == 0)
-			{
-			if (m_pDesc->m_iAccelerationFactor < 100
-					|| GetVel().Length() < m_pDesc->m_rMaxMissileSpeed)
-				SetVel(GetVel() * (Metric)(m_pDesc->m_iAccelerationFactor / 100.0));
-			}
+        if ((iTick % 10) == 0)
+            m_pDesc->ApplyAcceleration(this);
 
 		//	If we can choose new targets, see if we need one now
 
@@ -1082,7 +1077,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		if (m_pExhaust)
 			{
-			if (iTick % m_pDesc->m_iExhaustRate)
+			if (iTick % m_pDesc->GetExhaust().iExhaustRate)
 				{
 				SExhaustParticle &New = m_pExhaust->EnqueueAndOverwrite();
 				New.vPos = GetPos();
@@ -1092,7 +1087,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			for (int i = 0; i < m_pExhaust->GetCount(); i++)
 				{
 				SExhaustParticle &Particle = m_pExhaust->GetAt(i);
-				Particle.vVel = m_pDesc->m_rExhaustDrag * Particle.vVel;
+				Particle.vVel = m_pDesc->GetExhaust().rExhaustDrag * Particle.vVel;
 				Particle.vPos = Particle.vPos + Particle.vVel * g_SecondsPerUpdate;
 				}
 			}
@@ -1166,7 +1161,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				SDamageCtx DamageCtx;
 				DamageCtx.pObj = m_pHit;
 				DamageCtx.pDesc = m_pDesc;
-				DamageCtx.Damage = m_pDesc->m_Damage;
+				DamageCtx.Damage = m_pDesc->GetDamage();
 				DamageCtx.Damage.AddEnhancements(m_pEnhancements);
 				DamageCtx.Damage.SetCause(m_iCause);
 				if (IsAutomatedWeapon())
@@ -1254,7 +1249,7 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	{
 	DWORD dwSave;
 
-	m_pDesc->m_sUNID.WriteToStream(pStream);
+	m_pDesc->GetUNID().WriteToStream(pStream);
 	dwSave = m_iCause;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	pStream->Write((char *)&m_iHitPoints, sizeof(DWORD));
@@ -1348,7 +1343,7 @@ bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
 	if (m_pPainter)
 		return m_pPainter->PointInImage(x, y, m_iTick, 0, m_iRotation);
 	else
-		return m_pDesc->m_Image.PointInImage(x, y, m_iTick, (m_pDesc->m_bDirectional ? Angle2Direction(m_iRotation, g_RotationRange) : 0));
+		return m_pDesc->GetImage().PointInImage(x, y, m_iTick, (m_pDesc->IsDirectionalImage() ? Angle2Direction(m_iRotation, g_RotationRange) : 0));
 
 	DEBUG_CATCH
 	}

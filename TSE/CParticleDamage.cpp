@@ -61,7 +61,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	//	Make sure we have a valid CWeaponFireDesc (otherwise we won't be
 	//	able to save the object).
 
-	ASSERT(!pDesc->m_sUNID.IsBlank());
+	ASSERT(!pDesc->GetUNID().IsBlank());
 
 	//	Create the area
 
@@ -120,7 +120,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 	//	Damage
 
-	pParticles->m_iDamage = pDesc->m_Damage.RollDamage();
+	pParticles->m_iDamage = pDesc->GetDamage().RollDamage();
 
 	//	Friendly fire
 
@@ -607,7 +607,7 @@ void CParticleDamage::OnWriteToStream (IWriteStream *pStream)
 
 	{
 	DWORD dwSave;
-	m_pDesc->m_sUNID.WriteToStream(pStream);
+	m_pDesc->GetUNID().WriteToStream(pStream);
 	dwSave = m_iCause;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
