@@ -1805,6 +1805,7 @@ void CSpaceObject::FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject
 	if (FindEventHandler(sEvent, &Event))
 		{
 		Ctx.SaveAndDefineSourceVar(this);
+        Ctx.SaveAndDefineDataVar(NULL);
 		Ctx.DefineSpaceObject(CONSTLIT("aShipObj"), pShip);
 
 		ICCItem *pResult = Ctx.Run(Event);

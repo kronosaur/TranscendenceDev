@@ -6570,6 +6570,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pResult;
 			ICCItem *pData = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
 			pObj->FireCustomEvent(pArgs->GetElement(1)->GetStringValue(), eventObjFireEvent, pData, &pResult);
+            if (pResult->IsError() && g_pUniverse->InDebugMode())
+                ::kernelDebugLogMessage("[%s %s]: %s", pObj->GetName(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
 			return pResult;
 			}
 
