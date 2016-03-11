@@ -60,6 +60,7 @@ class CSingleDevice : public IDeviceGenerator
 		DiceRange m_Count;
 		int m_iDamaged;
 		CRandomEnhancementGenerator m_Enhanced;
+        DiceRange m_Level;                  //  For scalable items
 
 		int m_iPosAngle;
 		int m_iPosRadius;
@@ -265,6 +266,21 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 
 		SDeviceDesc Desc;
 		Desc.Item = CItem(m_pItemType, 1);
+
+        //  Level
+
+        if (!m_Level.IsEmpty())
+            {
+            CString sError;
+            if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
+                {
+                if (g_pUniverse->InDebugMode())
+                    ::kernelDebugLogMessage(sError);
+                }
+            }
+
+        //  Damage/enhancement
+
 		if (mathRandom(1, 100) <= m_iDamaged)
 			Desc.Item.SetDamaged();
 		else
@@ -404,6 +420,10 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (error = m_Enhanced.InitFromXML(Ctx, pDesc))
 		return error;
+
+    //  Level
+
+    m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
 
 	//	Load device position attributes
 

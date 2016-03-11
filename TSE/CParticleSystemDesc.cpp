@@ -162,6 +162,9 @@ ALERROR CParticleSystemDesc::InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLEle
 		return error;
 		}
 
+	m_iSplashChance = pDesc->GetAttributeIntegerBounded(PARTICLE_SPLASH_CHANCE_ATTRIB, 0, 100, 0);
+	m_iMissChance = pDesc->GetAttributeIntegerBounded(PARTICLE_MISS_CHANCE_ATTRIB, 0, 100, 0);
+
 	return NOERROR;
 	}
 

@@ -89,6 +89,8 @@
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
+CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
+
 static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 	{
 		"OnCreateShot",
@@ -104,6 +106,7 @@ CWeaponFireDesc::CWeaponFireDesc (void) :
 		m_pExtension(NULL),
 		m_pParticleDesc(NULL),
         m_pFirstFragment(NULL),
+        m_pOldEffects(NULL),
         m_pScalable(NULL)
 
 //	CWeaponFireDesc constructor
@@ -128,6 +131,9 @@ CWeaponFireDesc::~CWeaponFireDesc (void)
 	if (m_pParticleDesc)
 		delete m_pParticleDesc;
 
+    if (m_pOldEffects)
+        delete m_pOldEffects;
+
     if (m_pScalable)
         delete[] m_pScalable;
 	}
@@ -140,8 +146,8 @@ void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	{
 	retTypesUsed->SetAt(m_pAmmoType.GetUNID(), true);
-	retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true);
-	retTypesUsed->SetAt(m_Exhaust.ExhaustImage.GetBitmapUNID(), true);
+	retTypesUsed->SetAt(GetImage().GetBitmapUNID(), true);
+	retTypesUsed->SetAt(GetExhaust().ExhaustImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_pEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pHitEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pFireEffect.GetUNID(), true);
@@ -171,6 +177,42 @@ void CWeaponFireDesc::ApplyAcceleration (CSpaceObject *pMissile) const
 				|| pMissile->GetVel().Length() < m_rMaxMissileSpeed)
 			pMissile->SetVel(pMissile->GetVel() * (Metric)(m_iAccelerationFactor / 100.0));
 		}
+    }
+
+Metric CWeaponFireDesc::CalcMaxEffectiveRange (void) const
+
+//  CalcMaxEffectiveRange
+//
+//  Computes the max effective range given current stats
+
+    {
+    int iMaxLifetime = m_Lifetime.GetMaxValue();
+
+    Metric rRange;
+	if (m_iFireType == ftArea)
+		rRange = (m_ExpansionSpeed.GetAveValueFloat() * LIGHT_SECOND / 100.0) * Ticks2Seconds(iMaxLifetime) * 0.75;
+	else if (m_iFireType == ftRadius)
+		rRange = m_rMaxRadius;
+	else
+		{
+		Metric rEffectiveLifetime;
+		if (m_iManeuverability > 0)
+			rEffectiveLifetime = Ticks2Seconds(iMaxLifetime) * 0.75;
+		else
+			rEffectiveLifetime = Min(Ticks2Seconds(iMaxLifetime), 100.0);
+
+		Metric rSpeed = (m_rMissileSpeed + m_rMaxMissileSpeed) / 2;
+		rRange = rSpeed * rEffectiveLifetime;
+		}
+
+	//	If we have fragments, add to the effective range
+
+	if (m_pFirstFragment)
+		rRange += m_pFirstFragment->pDesc->m_rMaxEffectiveRange;
+
+    //  Done
+
+    return rRange;
     }
 
 bool CWeaponFireDesc::CanHit (CSpaceObject *pObj) const
@@ -1327,7 +1369,7 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 		return NULL;
 	}
 
-void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
+void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 //	InitFromDamage
 //
@@ -1384,12 +1426,6 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 	m_iHitPoints = 0;
 	m_iInteraction = 0;
 
-	//	Load exhaust data
-
-	m_Exhaust.iExhaustRate = 0;
-	m_Exhaust.iExhaustLifetime = 0;
-	m_Exhaust.rExhaustDrag = 0.0;
-
 	//	We initialize this with the UNID, and later resolve the reference
 	//	during OnDesignLoadComplete
 
@@ -1408,23 +1444,22 @@ void CWeaponFireDesc::InitFromDamage (DamageDesc &Damage)
 	m_fProximityBlast = false;
 	m_iProximityFailsafe = 0;
 
-	//	Compute max effective range
-
-	m_rMaxEffectiveRange = m_rMissileSpeed;
-
 	//	Effects
 
 	m_pHitEffect.Set(NULL);
 	m_pFireEffect.Set(NULL);
 
-	//	Vapor trail
+	//	Old effects
 
-	m_VaporTrail.iVaporTrailWidth = 0;
-	m_VaporTrail.iVaporTrailLength = 0;
+    m_pOldEffects = NULL;
 
 	//	Sound
 
 	m_FireSound = CSoundRef();
+
+	//	Compute max effective range
+
+    m_rMaxEffectiveRange = CalcMaxEffectiveRange();
 
 	//	Cached events
 
@@ -1529,11 +1564,6 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	if (m_iStealth == 0)
 		m_iStealth = CSpaceObject::stealthNormal;
 
-	//	Other properties
-
-	m_iSplashChance = pDesc->GetAttributeIntegerBounded(PARTICLE_SPLASH_CHANCE_ATTRIB, 0, 100, 0);
-	m_iMissChance = pDesc->GetAttributeIntegerBounded(PARTICLE_MISS_CHANCE_ATTRIB, 0, 100, 0);
-
 	//	Initialize some variables not used by all types
 
 	m_iHitPoints = 0;
@@ -1559,7 +1589,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
 		if (pImage)
-			if (error = m_Image.InitFromXML(Ctx, pImage))
+			if (error = SetOldEffects().Image.InitFromXML(Ctx, pImage))
 				return error;
 
 		m_fDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
@@ -1587,19 +1617,14 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		CXMLElement *pExhaust = pDesc->GetContentElementByTag(MISSILE_EXHAUST_TAG);
 		if (pExhaust)
 			{
-			m_Exhaust.iExhaustRate = pExhaust->GetAttributeInteger(EXHAUST_RATE_ATTRIB);
-			m_Exhaust.iExhaustLifetime = pExhaust->GetAttributeInteger(EXHAUST_LIFETIME_ATTRIB);
-			m_Exhaust.rExhaustDrag = pExhaust->GetAttributeInteger(EXHAUST_DRAG_ATTRIB) / 100.0;
+            SExhaustDesc &Exhaust = SetOldEffects().Exhaust;
+			Exhaust.iExhaustRate = pExhaust->GetAttributeInteger(EXHAUST_RATE_ATTRIB);
+			Exhaust.iExhaustLifetime = pExhaust->GetAttributeInteger(EXHAUST_LIFETIME_ATTRIB);
+			Exhaust.rExhaustDrag = pExhaust->GetAttributeInteger(EXHAUST_DRAG_ATTRIB) / 100.0;
 
 			CXMLElement *pImage = pExhaust->GetContentElementByTag(IMAGE_TAG);
-			if (error = m_Exhaust.ExhaustImage.InitFromXML(Ctx, pImage))
+			if (error = Exhaust.ExhaustImage.InitFromXML(Ctx, pImage))
 				return error;
-			}
-		else
-			{
-			m_Exhaust.iExhaustRate = 0;
-			m_Exhaust.iExhaustLifetime = 0;
-			m_Exhaust.rExhaustDrag = 0.0;
 			}
 		}
 	else if (strEquals(sValue, FIRE_TYPE_AREA))
@@ -1675,8 +1700,6 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			iMaxLifetime = m_Lifetime.GetMaxValue();
 			m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
 			m_rMissileSpeed = m_MissileSpeed.GetAveValueFloat() * LIGHT_SPEED / 100.0;
-			m_iMissChance = m_pParticleDesc->GetMissChance();
-			m_iSplashChance = m_pParticleDesc->GetSplashChance();
 			}
 
 		//	Otherwise, we initialize from our root (in backwards compatible mode).
@@ -1692,8 +1715,6 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 			m_pParticleDesc->SetEmitSpeed(m_MissileSpeed);
 			m_pParticleDesc->SetParticleLifetime(m_Lifetime);
-			m_pParticleDesc->SetMissChance(m_iMissChance);
-			m_pParticleDesc->SetSplashChance(m_iSplashChance);
 
 			//	We always set the old compatibility behavior.
 
@@ -1840,26 +1861,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Compute max effective range
 
-	if (m_iFireType == ftArea)
-		m_rMaxEffectiveRange = (m_ExpansionSpeed.GetAveValueFloat() * LIGHT_SECOND / 100.0) * Ticks2Seconds(iMaxLifetime) * 0.75;
-	else if (m_iFireType == ftRadius)
-		m_rMaxEffectiveRange = m_rMaxRadius;
-	else
-		{
-		Metric rEffectiveLifetime;
-		if (m_iManeuverability > 0)
-			rEffectiveLifetime = Ticks2Seconds(iMaxLifetime) * 0.75;
-		else
-			rEffectiveLifetime = Min(Ticks2Seconds(iMaxLifetime), 100.0);
-
-		Metric rSpeed = (m_rMissileSpeed + m_rMaxMissileSpeed) / 2;
-		m_rMaxEffectiveRange = rSpeed * rEffectiveLifetime;
-		}
-
-	//	If we have fragments, add to the effective range
-
-	if (m_pFirstFragment)
-		m_rMaxEffectiveRange += m_pFirstFragment->pDesc->m_rMaxEffectiveRange;
+    m_rMaxEffectiveRange = CalcMaxEffectiveRange();
 
 	//	Effects
 
@@ -1877,21 +1879,23 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Vapor trail
 
-	if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_ATTRIB, &m_VaporTrail.iVaporTrailWidth))
-		m_VaporTrail.iVaporTrailWidth = 100 * pDesc->GetAttributeInteger(VAPOR_TRAIL_ATTRIB);
+    int iVaporTrailWidth;
+	if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_ATTRIB, &iVaporTrailWidth))
+		iVaporTrailWidth = 100 * pDesc->GetAttributeInteger(VAPOR_TRAIL_ATTRIB);
 
-	if (m_VaporTrail.iVaporTrailWidth)
+	if (iVaporTrailWidth)
 		{
-		m_VaporTrail.rgbVaporTrailColor = LoadRGBColor(pDesc->GetAttribute(VAPOR_TRAIL_COLOR_ATTRIB));
-		m_VaporTrail.iVaporTrailLength = pDesc->GetAttributeInteger(VAPOR_TRAIL_LENGTH_ATTRIB);
-		if (m_VaporTrail.iVaporTrailLength <= 0)
-			m_VaporTrail.iVaporTrailLength = 64;
+        SVaporTrailDesc &VaporTrail = SetOldEffects().VaporTrail;
 
-		if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_INC_ATTRIB, &m_VaporTrail.iVaporTrailWidthInc))
-			m_VaporTrail.iVaporTrailWidthInc = 25;
+        VaporTrail.iVaporTrailWidth = iVaporTrailWidth;
+		VaporTrail.rgbVaporTrailColor = LoadRGBColor(pDesc->GetAttribute(VAPOR_TRAIL_COLOR_ATTRIB));
+		VaporTrail.iVaporTrailLength = pDesc->GetAttributeInteger(VAPOR_TRAIL_LENGTH_ATTRIB);
+		if (VaporTrail.iVaporTrailLength <= 0)
+			VaporTrail.iVaporTrailLength = 64;
+
+		if (!pDesc->FindAttributeInteger(VAPOR_TRAIL_WIDTH_INC_ATTRIB, &VaporTrail.iVaporTrailWidthInc))
+			VaporTrail.iVaporTrailWidthInc = 25;
 		}
-	else
-		m_VaporTrail.iVaporTrailLength = 0;
 
 	//	Sound
 
@@ -1909,6 +1913,163 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	return NOERROR;
 	}
+
+ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem)
+
+//  InitScaledStats
+//
+//  After initializing from XML, this function generates scaled versions of the
+//  weapon, based on any scaling parameters.
+//
+//  NOTE: We don't call this in InitFromXML because we don't want to recurse
+//  for fragments (instead, we deal with them here).
+
+    {
+    ALERROR error;
+    int i;
+
+    ASSERT(m_pScalable == NULL);
+
+    m_iBaseLevel = pItem->GetLevel();
+    m_iScaledLevels = pItem->GetMaxLevel() - m_iBaseLevel;
+    if (m_iScaledLevels < 1)
+        return NOERROR;
+
+    m_pScalable = new CWeaponFireDesc [m_iScaledLevels];
+
+    //  Loop over every descriptor and initialize it.
+
+    for (i = 0; i < m_iScaledLevels; i++)
+        {
+        CWeaponFireDesc &ScaledDesc = m_pScalable[i];
+        int iScaledLevel = m_iBaseLevel + i + 1;
+
+        if (error = InitScaledStats(Ctx, pDesc, pItem, *this, iScaledLevel))
+            return error;
+        }
+
+    //  Done
+
+    return NOERROR;
+    }
+
+ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, const CWeaponFireDesc &Src, int iScaledLevel)
+
+//  InitScaledStats
+//
+//  Initializes a single level
+
+    {
+    ALERROR error;
+    int i;
+
+    //  Damage scales. We use the bonus parameter to increase it.
+    //  We start by figuring out the percent increase in damage at the scaled
+    //  level, relative to base.
+
+    Metric rIncrease = (100.0 * CWeaponClass::GetStdDamage(iScaledLevel) / CWeaponClass::GetStdDamage(m_iBaseLevel)) - 100.0;
+    m_Damage.AddBonus((int)(rIncrease + 0.5));
+
+    //  These stats never scale, so we just copy them
+
+    m_pExtension = Src.m_pExtension;
+    m_sUNID = Src.m_sUNID;      //  NOTE: We don't need a unique UNID 
+                                //      since we're using the same effects
+                                //      as the base level.
+
+    m_pAmmoType = Src.m_pAmmoType;
+    m_iFireType = Src.m_iFireType;
+    m_iContinuous = Src.m_iContinuous;
+
+    m_rMissileSpeed = Src.m_rMissileSpeed;
+    m_MissileSpeed = Src.m_MissileSpeed;
+    m_Lifetime = Src.m_Lifetime;
+    m_InitialDelay = Src.m_InitialDelay;
+    m_iPassthrough = Src.m_iPassthrough;
+
+    m_iAccelerationFactor = Src.m_iAccelerationFactor;
+    m_rMaxMissileSpeed = Src.m_rMaxMissileSpeed;
+    m_iStealth = Src.m_iStealth;
+    m_iHitPoints = Src.m_iHitPoints;
+    m_iInteraction = Src.m_iInteraction;
+    m_iManeuverability = Src.m_iManeuverability;
+    m_iManeuverRate = Src.m_iManeuverRate;
+
+    m_pParticleDesc = (Src.m_pParticleDesc ? new CParticleSystemDesc(*Src.m_pParticleDesc) : NULL);
+
+    m_ExpansionSpeed = Src.m_ExpansionSpeed;
+    m_AreaDamageDensity = Src.m_AreaDamageDensity;
+        
+    m_rMinRadius = Src.m_rMinRadius;
+    m_rMaxRadius = Src.m_rMaxRadius;
+
+    m_fVariableInitialSpeed = Src.m_fVariableInitialSpeed;
+    m_fNoFriendlyFire = Src.m_fNoFriendlyFire;
+    m_fNoWorldHits = Src.m_fNoWorldHits;
+    m_fNoImmutableHits = Src.m_fNoImmutableHits;
+    m_fNoStationHits = Src.m_fNoStationHits;
+    m_fNoImmobileHits = Src.m_fNoImmobileHits;
+    m_fNoShipHits = Src.m_fNoShipHits;
+    m_fAutoTarget = Src.m_fAutoTarget;
+    m_fCanDamageSource = Src.m_fCanDamageSource;
+    m_fDirectional = Src.m_fDirectional;
+    m_fFragment = Src.m_fFragment;
+    m_fProximityBlast = Src.m_fProximityBlast;
+
+    m_pEffect = Src.m_pEffect;
+    m_pHitEffect = Src.m_pHitEffect;
+    m_pFireEffect = Src.m_pFireEffect;
+    m_FireSound = Src.m_FireSound;
+    m_pOldEffects = (Src.m_pOldEffects ? new SOldEffects(*Src.m_pOldEffects) : NULL);
+
+    m_Events = Src.m_Events;
+
+    //  Handle fragments recursively
+
+	m_pFirstFragment = NULL;
+	SFragmentDesc *pLastFragment = NULL;
+	int iFragCount = 0;
+    SFragmentDesc *pSrcFragment = Src.m_pFirstFragment;
+	for (i = 0; i < pDesc->GetContentElementCount() && pSrcFragment; i++, pSrcFragment = pSrcFragment->pNext)
+		{
+		CXMLElement *pFragDesc = pDesc->GetContentElement(i);
+		if (!strEquals(FRAGMENT_TAG, pFragDesc->GetTag()))
+			continue;
+
+		//	Create a new fragmentation descriptor
+
+		SFragmentDesc *pNewDesc = new SFragmentDesc;
+		pNewDesc->pNext = NULL;
+		if (pLastFragment)
+			pLastFragment->pNext = pNewDesc;
+		else
+			m_pFirstFragment = pNewDesc;
+
+		pLastFragment = pNewDesc;
+
+		//	Load fragment data
+
+		pNewDesc->pDesc = new CWeaponFireDesc;
+		if (error = pNewDesc->pDesc->InitScaledStats(Ctx, pFragDesc, pItem, *pSrcFragment->pDesc, iScaledLevel))
+			return error;
+
+		//	Set the fragment count
+
+        pNewDesc->Count = pSrcFragment->Count;
+
+		//	Set MIRV flag
+
+        pNewDesc->bMIRV = pSrcFragment->bMIRV;
+		}
+
+    //  Cached values
+
+    m_rMaxEffectiveRange = CalcMaxEffectiveRange();
+
+    //  Done
+
+    return NOERROR;
+    }
 
 void CWeaponFireDesc::MarkImages (void)
 
@@ -1949,11 +2110,14 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	ALERROR error;
 	int i;
 
-	if (error = m_Image.OnDesignLoadComplete(Ctx))
-		return error;
+    if (m_pOldEffects)
+        {
+        if (error = SetOldEffects().Image.OnDesignLoadComplete(Ctx))
+            return error;
 
-	if (error = m_Exhaust.ExhaustImage.OnDesignLoadComplete(Ctx))
-		return error;
+        if (error = SetOldEffects().Exhaust.ExhaustImage.OnDesignLoadComplete(Ctx))
+            return error;
+        }
 
 	if (error = m_pAmmoType.Bind(Ctx))
 		return error;
@@ -2000,6 +2164,15 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 		pNext = pNext->pNext;
 		}
+
+    //  Scaled levels
+
+    if (m_pScalable)
+        {
+        for (i = 0; i < m_iScaledLevels; i++)
+            if (error = m_pScalable[i].OnDesignLoadComplete(Ctx))
+                return error;
+        }
 
 	return NOERROR;
 

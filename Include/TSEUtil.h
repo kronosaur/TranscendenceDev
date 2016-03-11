@@ -502,6 +502,11 @@ class CCurrencyBlock
 
 struct SEventHandlerDesc
 	{
+    SEventHandlerDesc (void) :
+            pExtension(NULL),
+            pCode(NULL)
+        { }
+
 	CExtension *pExtension;
 	ICCItem *pCode;
 	};

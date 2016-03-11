@@ -1471,6 +1471,14 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		CString sUNID = strPatternSubst(CONSTLIT("%d/0"), pWeapon->GetUNID());
 		if (error = pWeapon->m_ShotData[0].pDesc->InitFromXML(Ctx, pDesc, sUNID))
 			return error;
+
+        //  Initialize scaled stats, if necessary
+
+        if (pType->IsScalable())
+            {
+            if (error = pWeapon->m_ShotData[0].pDesc->InitScaledStats(Ctx, pDesc, pType))
+                return error;
+            }
 		}
 
 	//	If this weapon uses different kinds of ammo then it is a launcher
