@@ -391,6 +391,7 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 
 	//	Get the device and variant
 
+    CItem Ammo;
 	if (pItem->IsMissile())
 		{
 		iVariant = -1;
@@ -402,8 +403,11 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 			if (pDevice = pType->GetDeviceClass())
 				{
 				iVariant = pDevice->GetAmmoVariant(pItem);
-				if (iVariant != -1)
+                if (iVariant != -1)
+                    {
+                    Ammo = CItem(pItem, 1);
 					break;
+                    }
 				}
 			}
 
@@ -423,8 +427,6 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 	if (pWeapon == NULL)
 		return false;
 
-	CWeaponFireDesc *pDesc = pWeapon->GetVariant(iVariant);
-
 	//	Done
 
 	if (retpWeapon)
@@ -434,7 +436,7 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 		*retiVariant = iVariant;
 
 	if (retpDesc)
-		*retpDesc = pDesc;
+		*retpDesc = pWeapon->GetWeaponFireDesc(CItemCtx(), Ammo);
 
 	return true;
 	}

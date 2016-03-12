@@ -684,9 +684,15 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 			pPos++;
 			int iOrdinal = strParseInt(pPos, 0, &pPos);
 
+            //  Convert the ordinal to an ammo type
+
+            CItem Ammo;
+            if (iOrdinal < pClass->GetAmmoItemCount())
+                Ammo = CItem(pClass->GetAmmoItem(iOrdinal), 1);
+
 			//	Get the weapon fire desc of the ordinal
 
-			CWeaponFireDesc *pDesc = pClass->GetVariant(iOrdinal);
+            CWeaponFireDesc *pDesc = pClass->GetWeaponFireDesc(CItemCtx(), Ammo);
 			if (pDesc == NULL)
 				return NULL;
 
@@ -1263,6 +1269,29 @@ CEffectCreator *CWeaponFireDesc::GetParticleEffect (void) const
 	return m_pEffect;
 	}
 
+CWeaponFireDesc *CWeaponFireDesc::GetScaledDesc (int iLevel) const
+
+//  GetScaledDesc
+//
+//  Returns the scalable descriptor for the given level.
+
+    {
+    //  If we're not scalable, then we just return our stats
+
+    if (m_pScalable == NULL)
+        return const_cast<CWeaponFireDesc *>(this);
+
+    //  If we're at or below our base level, then we just return our stats.
+
+    else if (iLevel <= m_iBaseLevel)
+        return const_cast<CWeaponFireDesc *>(this);
+
+    //  Otherwise, return a scaled level (but make sure we're in range).
+
+    else
+        return &m_pScalable[Min(iLevel - m_iBaseLevel - 1, m_iScaledLevels - 1)];
+    }
+
 int CWeaponFireDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) const
 
 //  GetSpecialDamage
@@ -1325,19 +1354,13 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 
 		if (pClass->GetCategory() == itemcatLauncher)
 			{
-			CWeaponFireDesc *pMissileDesc = pClass->GetVariant(iOrdinal);
-			if (pMissileDesc == NULL)
-				return NULL;
-
-			//	If we have ammo, then return the ammo type
-
-			CItemType *pAmmoType = pMissileDesc->GetAmmoType();
-			if (pAmmoType)
-				return pAmmoType;
+            if (iOrdinal < pClass->GetAmmoItemCount())
+                return pClass->GetAmmoItem(iOrdinal);
 
 			//	Otherwise return the launcher (e.g., DM600)
 
-			return pItemType;
+            else
+			    return pItemType;
 			}
 
 		//	Otherwise, return the weapon

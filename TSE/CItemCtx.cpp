@@ -5,6 +5,20 @@
 
 #include "PreComp.h"
 
+CItemCtx::CItemCtx (CItemType *pItemType) :
+        m_Item(pItemType, 1),
+        m_pItem(&m_Item),
+        m_pSource(NULL),
+        m_pArmor(NULL),
+        m_pDevice(NULL),
+        m_pWeapon(NULL),
+        m_iVariant(-1)
+
+//  CItemCtx constructor
+
+    {
+    }
+        
 CItemCtx::~CItemCtx (void)
 
 //	CItemCtx destructor

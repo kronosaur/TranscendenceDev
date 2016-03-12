@@ -493,6 +493,7 @@ class CWeaponFireDesc
 		inline int GetPassthrough (void) const { return m_iPassthrough; }
 		inline int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		inline Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
+        CWeaponFireDesc *GetScaledDesc (int iLevel) const;
         int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
         inline int GetStealth (void) const { return m_iStealth; }
         inline FireTypes GetType (void) const { return m_iFireType; }
@@ -508,6 +509,7 @@ class CWeaponFireDesc
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem);
         inline bool IsDirectionalImage (void) const { return m_fDirectional; }
         inline bool IsFragment (void) const { return m_fFragment; }
+        inline bool IsScalable (void) const { return (m_pScalable != NULL); }
 		inline bool IsTracking (void) const { return m_iManeuverability != 0; }
 		inline bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);

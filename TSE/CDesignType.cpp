@@ -2169,40 +2169,16 @@ ALERROR CWeaponFireDescRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = g_pUniverse->FindDesignType(m_dwUNID);
-		if (pBaseType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown weapon fire desc design type: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		CItemType *pItemType = CItemType::AsType(pBaseType);
+        CItemType *pItemType = g_pUniverse->FindItemType(m_dwUNID);
 		if (pItemType == NULL)
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Weapon item type expected: %x"), m_dwUNID);
+			Ctx.sError = strPatternSubst(CONSTLIT("Weapon item type expected: %08x"), m_dwUNID);
 			return ERR_FAIL;
 			}
 
-		CDeviceClass *pDevice = pItemType->GetDeviceClass();
-		if (pDevice == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Weapon item type expected: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		CWeaponClass *pWeapon = pDevice->AsWeaponClass();
-		if (pWeapon == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Weapon item type expected: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		m_pType = pWeapon->GetVariant(0);
-		if (m_pType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Invalid weapon type: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+        m_pType = pItemType->GetWeaponFireDesc(CItemCtx(), &Ctx.sError);
+        if (m_pType == NULL)
+            return ERR_FAIL;
 		}
 
 	return NOERROR;

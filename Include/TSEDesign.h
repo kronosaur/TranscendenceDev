@@ -2125,6 +2125,7 @@ class CItem
 		inline bool IsDamaged (void) const { return (m_dwFlags & flagDamaged ? true : false); }
 		inline bool IsDisrupted (void) const;
 		inline bool IsDisrupted (DWORD dwNow) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= dwNow) : false); }
+        inline bool IsEmpty (void) const { return (m_pItemType == NULL); }
 		inline bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
 		inline bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
 		inline bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
@@ -2648,7 +2649,7 @@ class CDeviceClass
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
 		virtual void OnUninstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) { }
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus) { }
-		virtual bool RequiresItems (void) { return false; }
+		virtual bool RequiresItems (void) const { return false; }
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
 		virtual bool SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 		virtual bool SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *pDevice, int iDir = 1) { return false; }
@@ -3853,6 +3854,7 @@ class CUserProfile
 class CItemCtx
 	{
 	public:
+        CItemCtx (CItemType *pItemType);
 		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
 		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
 		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
@@ -3874,9 +3876,10 @@ class CItemCtx
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
 		inline int GetVariant (void) const { return m_iVariant; }
 		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
+        inline const CItem &GetVariantItem (void) const { return m_Variant; }
 		inline bool IsItemNull (void) const { return (m_pItem == NULL || m_pItem->GetType() == NULL); }
 		bool ResolveVariant (void);
-        inline void SetVariantDevice (CDeviceClass *pWeapon, int iVariant) { m_pWeapon = pWeapon; m_iVariant = iVariant; }
+        inline void SetVariantItem (const CItem &Item) { m_Variant = Item; }
 
 	private:
 		const CItem *GetItemPointer (void);
@@ -3887,6 +3890,7 @@ class CItemCtx
 		CInstalledArmor *m_pArmor;				//	Installation structure (may be NULL)
 		CInstalledDevice *m_pDevice;			//	Installation structure (may be NULL)
 
+        CItem m_Variant;                        //  Stores the selected missile/ammo for a weapon.
 		CDeviceClass *m_pWeapon;				//	This is the weapon that uses the given item
 		int m_iVariant;							//	NOTE: In this case, m_pItem may be either a
 												//	missile or the weapon.
@@ -3988,6 +3992,7 @@ class CItemType : public CDesignType
 		bool GetUseDesc (SUseDesc *retDesc) const;
         inline int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
 		inline int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
+        CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError = NULL) const;
 		inline bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		inline bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
 		bool IsAmmunition (void) const;

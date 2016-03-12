@@ -9770,25 +9770,14 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the weapon descriptor
 
-			CWeaponFireDesc *pDesc;
 			CItemType *pItemType = g_pUniverse->FindItemType(pArgs->GetElement(0)->GetIntegerValue());
 			if (pItemType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
 
-			if (pItemType->IsMissile())
-				pDesc = pItemType->GetMissileDesc();
-			else
-				{
-				CDeviceClass *pClass = pItemType->GetDeviceClass();
-				CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
-				if (pWeapon == NULL)
-					return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
-
-				pDesc = pWeapon->GetVariant(0);
-				}
-
+            CString sError;
+			CWeaponFireDesc *pDesc = pItemType->GetWeaponFireDesc(CItemCtx(), &sError);
 			if (pDesc == NULL)
-				return pCC->CreateError(CONSTLIT("Unknown weapon UNID"), pArgs->GetElement(0));
+				return pCC->CreateError(sError, pArgs->GetElement(0));
 
 			//	Get Parameters to initialize context
 

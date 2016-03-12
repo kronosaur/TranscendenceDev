@@ -869,7 +869,6 @@ CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg)
 //	Returns NULL on error
 
 	{
-	int i;
 	DWORD dwWeaponUNID;
 	DWORD dwVariantUNID;
 
@@ -896,65 +895,22 @@ CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg)
 	if (pType == NULL)
 		return NULL;
 
-	//	If this is a weapon, then return the weapon fire desc
+	//	If variant UNID is 0, then pType is either a weapon or a missile and 
+    //  this will return its descriptor.
 
-	if (pType->GetCategory() == itemcatWeapon || pType->GetCategory() == itemcatLauncher)
-		{
-		CDeviceClass *pClass = pType->GetDeviceClass();
-		if (pClass == NULL)
-			return NULL;
+    if (dwVariantUNID == 0)
+        return pType->GetWeaponFireDesc(CItemCtx());
 
-		CWeaponClass *pWeapon = pClass->AsWeaponClass();
-		if (pWeapon == NULL)
-			return NULL;
+    //  Otherwise, get the missile type
 
-		//	If variant UNID is 0, then we just want the weapon
+    else
+        {
+	    CItemType *pMissileType = g_pUniverse->FindItemType(dwVariantUNID);
+	    if (pMissileType == NULL)
+		    return NULL;
 
-		if (dwVariantUNID == 0)
-			return pWeapon->GetVariant(0);
-
-		//	Otherwise, we need to find the variant index for the given UNID
-
-		int i;
-		for (i = 0; i < pWeapon->GetVariantCount(); i++)
-			{
-			CWeaponFireDesc *pDesc = pWeapon->GetVariant(i);
-			if (pDesc->GetAmmoType()->GetUNID() == dwVariantUNID)
-				return pDesc;
-			}
-
-		//	If we get this far, then we couldn't find the missile
-
-		return NULL;
-		}
-
-	//	Otherwise, if this is a missile, then find the appropriate weapon
-
-	else if (pType->GetCategory() == itemcatMissile)
-		{
-		for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
-			{
-			CItemType *pWeaponType = g_pUniverse->GetItemType(i);
-			CDeviceClass *pClass;
-			if (pClass = pWeaponType->GetDeviceClass())
-				{
-				int iWeaponVariant;
-				if ((iWeaponVariant = pClass->GetAmmoVariant(pType)) != -1)
-					{
-					CWeaponClass *pWeapon = pClass->AsWeaponClass();
-					if (pWeapon)
-						return pWeapon->GetVariant(iWeaponVariant);
-					}
-				}
-			}
-
-		return NULL;
-		}
-
-	//	Otherwise, nothing
-
-	else
-		return NULL;
+        return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
+        }
 	}
 
 bool IsVectorItem (ICCItem *pItem)

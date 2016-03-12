@@ -169,7 +169,7 @@ bool CItemType::IsAmmunition (void) const
 		return false;
 
 	CDeviceClass *pWeapon;
-	if (!CDeviceClass::FindWeaponFor((CItemType *)this, &pWeapon))
+	if (!CDeviceClass::FindWeaponFor(const_cast<CItemType *>(this), &pWeapon))
 		return false;
 
 	return (pWeapon->GetItemType()->GetCategory() != itemcatLauncher);
@@ -868,6 +868,171 @@ bool CItemType::GetUseDesc (SUseDesc *retDesc) const
 	else
 		return false;
 	}
+
+CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError) const
+
+//  GetWeaponFireDesc
+//
+//  Returns the weapon fire descriptor for the item.
+//
+//  The recommended usage pattern is to have Ctx based on the installed device
+//  and an variant item representing the missile. In that case, we get the same
+//  result whether invoked on the weapon or the missile.
+//
+//  The result depends on this item and Ctx as follows:
+//
+//                              this->IsMissile()           this->IsWeapon()
+//  ----------------------------------------------------------------------------
+//  Ctx=installed weapon        missile desc, if            weapon desc (use variant
+//                                  fired by weapon.            item for missile).
+//
+//  Ctx=weapon item             missile desc, if            weapon desc (use variant
+//                                  fired by weapon.            item for missile).
+//
+//  Ctx=missile item            missile desc, for           missile desc, if fired
+//                                  first weapon that           by weapon.
+//                                  fires this missile.
+//
+//  If anything goes wrong (e.g., if we don't have enough information) we return
+//  NULL and an optional error explanation.
+
+    {
+    //  We need to end up with the following pieces of data:
+    //
+    //  1.  A CItemCtx for the installed weapon (or at least just the weapon
+    //      item).
+    //  2.  A CWeaponClass to call.
+    //  3.  An optional CItem for the missile/ammo being fired.
+
+    CItemCtx *pWeaponCtx = NULL;
+    CWeaponClass *pWeaponClass = NULL;
+    const CItem *pAmmo = NULL;
+
+    CItemCtx WeaponCtx;
+    CItem Ammo;
+
+    //  We go through different paths depending on the item context that was
+    //  passed in.
+    //
+    //  If the item context is a weapon (installed or not)
+
+    if (Ctx.GetDeviceClass())
+        {
+        pWeaponCtx = &Ctx;
+
+        pWeaponClass = pWeaponCtx->GetDeviceClass()->AsWeaponClass();
+        if (pWeaponClass == NULL)
+            {
+            if (retsError)
+                *retsError = strPatternSubst("Item %08x is not a weapon or missile.", pWeaponCtx->GetDeviceClass()->GetUNID());
+            return NULL;
+            }
+
+        //  If we have ammo, then get the ammo item.
+
+        if (pWeaponClass->GetAmmoItemCount() > 0)
+            {
+            //  We prefer the item from the context. NOTE: We assume that the
+            //  context has already validated that this ammo is compatible.
+
+            if (!(pAmmo = &Ctx.GetVariantItem())->IsEmpty())
+                { }
+
+            //  If we are a missile, we cons up an item
+
+            else if (pWeaponClass->GetAmmoVariant(const_cast<CItemType *>(this)))
+                {
+                Ammo = CItem(const_cast<CItemType *>(this), 1);
+                pAmmo = &Ammo;
+                }
+
+            //  If we are the same weapon, then we use the first ammo item
+
+            else if (GetUNID() == pWeaponClass->GetUNID())
+                {
+                Ammo = CItem(pWeaponClass->GetAmmoItem(0), 1);
+                pAmmo = &Ammo;
+                }
+
+            //  Otherwise, error
+
+            else
+                {
+                if (retsError)
+                    *retsError = strPatternSubst("Item %08x is not compatible with weapon %08x.", GetUNID(), pWeaponClass->GetUNID());
+                return NULL;
+                }
+            }
+        }
+
+    //  If the item context is an item, then we expect it to be ammo for us.
+    //  (It can't be the weapon, because otherwise we'd be in the code above.)
+
+    else if (!Ctx.GetItem().IsEmpty())
+        {
+        WeaponCtx = CItemCtx(const_cast<CItemType *>(this));
+        pWeaponCtx = &WeaponCtx;
+
+        pWeaponClass = (GetDeviceClass() ? GetDeviceClass()->AsWeaponClass() : NULL);
+        if (pWeaponClass == NULL)
+            {
+            if (retsError)
+                *retsError = strPatternSubst("Item %08x is not a weapon.", GetUNID());
+            return NULL;
+            }
+
+        //  Make sure the context is ammo for the weapon.
+
+        if (pWeaponClass->GetAmmoVariant(Ctx.GetItem().GetType()) != -1)
+            pAmmo = &Ctx.GetItem();
+        else
+            {
+            if (retsError)
+                *retsError = strPatternSubst("Item %08x is not compatible with weapon %08x.", Ctx.GetItem().GetType()->GetUNID(), pWeaponClass->GetUNID());
+            return NULL;
+            }
+        }
+
+    //  Otherwise, if we're a weapon, then we cons something up
+
+    else if (GetDeviceClass() && (pWeaponClass = GetDeviceClass()->AsWeaponClass()))
+        {
+        WeaponCtx = CItemCtx(const_cast<CItemType *>(this));
+        pWeaponCtx = &WeaponCtx;
+
+        //  Choose the first ammo for this weapon (if necessary)
+
+        if (pWeaponClass->GetAmmoItemCount() > 0)
+            {
+            Ammo = CItem(pWeaponClass->GetAmmoItem(0), 1);
+            pAmmo = &Ammo;
+            }
+        }
+
+    //  Otherwise we expect to be ammo for some weapon.
+
+    else
+        {
+        Ammo = CItem(const_cast<CItemType *>(this), 1);
+        pAmmo = &Ammo;
+
+	    CDeviceClass *pDeviceClass;
+        if (!CDeviceClass::FindWeaponFor(Ammo.GetType(), &pDeviceClass)
+                || (pWeaponClass = pDeviceClass->AsWeaponClass()) == NULL)
+            {
+            if (retsError)
+                *retsError = strPatternSubst("Item %08x is not a weapon or missile.", GetUNID());
+            return NULL;
+            }
+
+        WeaponCtx = CItemCtx(pWeaponClass->GetItemType());
+        pWeaponCtx = &WeaponCtx;
+        }
+
+    //  Now we have all the pieces.
+
+    return pWeaponClass->GetWeaponFireDesc(*pWeaponCtx, (pAmmo ? *pAmmo : CItem()));
+    }
 
 void CItemType::InitComponents (void)
 

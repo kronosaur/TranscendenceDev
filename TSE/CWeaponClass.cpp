@@ -2152,6 +2152,39 @@ int CWeaponClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSo
 	return m_iFireRate;
 	}
 
+CItemType *CWeaponClass::GetAmmoItem (int iIndex) const
+
+//  GetAmmoItem
+//
+//  Returns the nth ammo item compatible with this weapon.
+
+    {
+    ASSERT(iIndex >= 0 && iIndex < GetAmmoItemCount());
+    return m_ShotData[iIndex].pAmmoType;
+    }
+
+int CWeaponClass::GetAmmoItemCount (void) const
+
+//  GetAmmoItemCount
+//
+//  Returns the number of ammo items that we are compatible with.
+
+    {
+	if (m_ShotData.GetCount() == 0)
+		return 0;
+
+    //  If we only have a single entry, then see if it uses ammo.
+
+    else if (m_ShotData.GetCount() == 1)
+        return (m_ShotData[0].pAmmoType ? 1 : 0);
+
+    //  If we have multiple entries, then we are a launcher and by definition
+    //  all of the entries use ammo.
+
+    else
+        return m_ShotData.GetCount();
+    }
+
 int CWeaponClass::GetAmmoVariant (const CItemType *pItem) const
 
 //	GetAmmoVariant
@@ -3061,6 +3094,75 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 	return iScore;
 	}
 
+CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo) const
+
+//  GetWeaponFireDesc
+//
+//  Get weapon fire descriptor for the weapon when shooting the given ammo.
+//  ItemCtx may optionally refer to the installed weapon (it must not contain
+//  a different item, though it may be empty).
+//
+//  Ammo may be specified either through the ammo item or through ItemCtx
+//  (as an installed device selection).
+
+    {
+    if (m_ShotData.GetCount() == 0)
+        return NULL;
+
+    //  We need to get the root descriptor and the level to use (in case this
+    //  is a scalable weapon).
+
+    CWeaponFireDesc *pRoot = NULL;
+    int iLevel = -1;
+
+    //  If we need ammo, then we have extra work to do.
+
+    if (RequiresItems())
+        {
+        //  If we have ammo, use it.
+
+        if (!Ammo.IsEmpty())
+            {
+            int iSelection = GetAmmoVariant(Ammo.GetType());
+            if (iSelection != -1)
+                pRoot = m_ShotData[iSelection].pDesc;
+            else
+                return NULL;
+            }
+
+        //  If we have a device, we ask it for the variant
+
+        else if (ItemCtx.GetDevice())
+            {
+            int iSelection = GetCurrentVariant(ItemCtx.GetDevice());
+            if (iSelection != -1 && iSelection < m_ShotData.GetCount())
+                pRoot = m_ShotData[iSelection].pDesc;
+            else
+                return NULL;
+            }
+
+        //  Otherwise, just return the first entry
+
+        else
+            pRoot = m_ShotData[0].pDesc;
+
+        //  For now, the scaling for ammo weapons always comes from the weapon
+        //  (we can't have scalable ammo).
+
+        iLevel = (ItemCtx.GetItem().IsEmpty() ? -1 : ItemCtx.GetItem().GetLevel());
+        }
+    else
+        {
+        pRoot = m_ShotData[0].pDesc;
+        iLevel = (ItemCtx.GetItem().IsEmpty() ? -1 : ItemCtx.GetItem().GetLevel());
+        }
+
+    //  If this weapon descriptor is scalable, we need to get the actual 
+    //  descriptor for the level.
+
+    return (iLevel == -1 ? pRoot : pRoot->GetScaledDesc(iLevel));
+    }
+
 bool CWeaponClass::IsAmmoWeapon (void)
 
 //	IsAmmoWeapon
@@ -3699,7 +3801,7 @@ void CWeaponClass::OnMarkImages (void)
 		m_ShotData[i].pDesc->MarkImages();
 	}
 
-bool CWeaponClass::RequiresItems (void)
+bool CWeaponClass::RequiresItems (void) const
 
 //	RequiresItems
 //

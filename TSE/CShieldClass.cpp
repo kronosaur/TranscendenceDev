@@ -1365,7 +1365,7 @@ void CShieldClass::Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatu
 	pShip->OnComponentChanged(comShields);
 	}
 
-bool CShieldClass::RequiresItems (void)
+bool CShieldClass::RequiresItems (void) const
 
 //	RequiresItems
 //

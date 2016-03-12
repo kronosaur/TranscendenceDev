@@ -325,7 +325,7 @@ class CShieldClass : public CDeviceClass
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID);
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList);
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus);
-		virtual bool RequiresItems (void);
+		virtual bool RequiresItems (void) const;
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		virtual bool SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual void Update (CInstalledDevice *pDevice, 
@@ -500,10 +500,9 @@ class CWeaponClass : public CDeviceClass
 
 		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
 		inline bool FindEventHandlerWeaponClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
-		CWeaponFireDesc *GetSelectedShotData (CItemCtx &Ctx) const;
-		inline int GetVariantCount (void) { return m_ShotData.GetCount(); }
-		inline CWeaponFireDesc *GetVariant (int iIndex) const { return ((iIndex >=0 && iIndex < m_ShotData.GetCount()) ? m_ShotData[iIndex].pDesc : NULL); }
-        CWeaponFireDesc *GetVariant (CItemCtx &ItemCtx, int *retiVariant = NULL, int iDefault = 0) const;
+        CItemType *GetAmmoItem (int iIndex) const;
+        int GetAmmoItemCount (void) const;
+        CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
 
 		static int GetStdDamage (int iLevel);
 		static bool IsStdDamageType (DamageTypes iDamageType, int iLevel);
@@ -553,7 +552,7 @@ class CWeaponClass : public CDeviceClass
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL);
 		virtual bool NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		virtual bool RequiresItems (void);
+		virtual bool RequiresItems (void) const;
 		virtual bool SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice);
 		virtual bool SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *pDevice, int iDir = 1);
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice);
@@ -629,6 +628,10 @@ class CWeaponClass : public CDeviceClass
 						 bool *retbSourceDestroyed,
 						 bool *retbConsumedItems);
 		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
+		CWeaponFireDesc *GetSelectedShotData (CItemCtx &Ctx) const;
+        CWeaponFireDesc *GetVariant (CItemCtx &ItemCtx, int *retiVariant = NULL, int iDefault = 0) const;
+		inline CWeaponFireDesc *GetVariant (int iIndex) const { return ((iIndex >=0 && iIndex < m_ShotData.GetCount()) ? m_ShotData[iIndex].pDesc : NULL); }
+		inline int GetVariantCount (void) { return m_ShotData.GetCount(); }
 		inline bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
 		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
 		bool IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL);
