@@ -308,7 +308,7 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 //	when installed on the same ship
 
 	{
-	int iType = pWeapon->GetClass()->GetDamageType(pWeapon);
+    int iType = pWeapon->GetDamageType(CItemCtx(pSource, pDevice));
 	if (iType != -1 
 			&& m_WeaponSuppress.InSet(iType)
 			&& pDevice->IsEnabled()
@@ -1202,7 +1202,7 @@ bool CShieldClass::IsDepleted (CInstalledDevice *pDevice)
 	return ((int)pDevice->GetData() < 0); 
 	}
 
-void CShieldClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+void CShieldClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
 
 //	OnAccumulateAttributes
 //
@@ -1297,7 +1297,7 @@ CEffectCreator *CShieldClass::OnFindEffectCreator (const CString &sUNID)
 		}
 	}
 
-CString CShieldClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	GetReference
 //

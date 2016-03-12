@@ -663,7 +663,6 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 		CArmorClass *pArmor;
 		CDeviceClass *pDevice;
-		int iVariant;
 
 		//	Armor attributes
 
@@ -673,12 +672,12 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 		//	Device attributes
 
 		else if (pDevice = m_pItemType->GetDeviceClass())
-			pDevice->AccumulateAttributes(Ctx, -1, retList);
+			pDevice->AccumulateAttributes(Ctx, CItem(), retList);
 
 		//	Missile attributes
 
-		else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher(&iVariant)))
-			pDevice->AccumulateAttributes(Ctx, iVariant, retList);
+		else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher()))
+			pDevice->AccumulateAttributes(Ctx, *this, retList);
 
 		//	Military and Illegal attributes
 
@@ -935,7 +934,7 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 		}
 	}
 
-CString CItem::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags) const
+CString CItem::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) const
 
 //	GetReference
 //
@@ -948,7 +947,7 @@ CString CItem::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags) const
 
 	//	Done
 
-	return m_pItemType->GetReference(Ctx, iVariant, dwFlags);
+	return m_pItemType->GetReference(Ctx, Ammo, dwFlags);
 	}
 
 bool CItem::GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const
@@ -983,7 +982,7 @@ bool CItem::GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int 
 		return false;
 	}
 
-bool CItem::GetReferenceDamageType (CSpaceObject *pInstalled, int iVariant, DWORD dwFlags, DamageTypes *retiDamage, CString *retsReference) const
+bool CItem::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags, DamageTypes *retiDamage, CString *retsReference) const
 
 //	GetReferenceDamageType
 //
@@ -991,7 +990,6 @@ bool CItem::GetReferenceDamageType (CSpaceObject *pInstalled, int iVariant, DWOR
 
 	{
 	CDeviceClass *pDevice;
-	int iShotVariant;
 
 	//	No reference if unknown
 
@@ -1002,20 +1000,18 @@ bool CItem::GetReferenceDamageType (CSpaceObject *pInstalled, int iVariant, DWOR
 
 	if (pDevice = m_pItemType->GetDeviceClass())
 		{
-		CItemCtx Ctx(this, pInstalled, (CInstalledDevice *)NULL);
 		return pDevice->GetReferenceDamageType(Ctx, 
-				iVariant, 
+				Ammo, 
 				retiDamage, 
 				retsReference);
 		}
 
 	//	If a missile, then get the damage from the weapon
 
-	else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher(&iShotVariant)))
+	else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher()))
 		{
-		CItemCtx Ctx(this, pInstalled, (CInstalledDevice *)NULL);
 		return pDevice->GetReferenceDamageType(Ctx, 
-				iShotVariant, 
+				*this, 
 				retiDamage, 
 				retsReference);
 		}

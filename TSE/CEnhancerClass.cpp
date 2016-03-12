@@ -108,11 +108,11 @@ bool CEnhancerClass::GetDeviceEnhancementDesc (CInstalledDevice *pDevice, CSpace
 
 	if (m_bUseArray)
 		{
-		//	NOTE: We enter 0 for a variant because we want to hard-code to 
+		//	NOTE: We enter an empty item context because we want to hard-code to 
 		//	the first variant (otherwise we would default to the selected
 		//	variant)
 
-		int iType = pWeapon->GetDamageType(0);
+		int iType = pWeapon->GetDamageType(CItemCtx());
 		retDesc->iBonus = (iType != -1 ? m_iDamageAdjArray[iType] : 0);
 		}
 	else
@@ -165,11 +165,11 @@ bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevic
 	int iBonus;
 	if (m_bUseArray)
 		{
-		//	NOTE: We enter 0 for a variant because we want to hard-code to 
+		//	NOTE: We enter an empty item context because we want to hard-code to 
 		//	the first variant (otherwise we would default to the selected
 		//	variant)
 
-		int iType = pTarget->GetDamageType(0);
+		int iType = pTarget->GetDamageType(CItemCtx());
 		iBonus = (iType != -1 ? m_iDamageAdjArray[iType] : 0);
 		}
 	else

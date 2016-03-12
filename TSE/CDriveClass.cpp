@@ -172,7 +172,7 @@ ICCItem *CDriveClass::GetDriveProperty (const DriveDesc &Desc, const CString &sP
 		return CC.CreateNil();
 	}
 
-void CDriveClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+void CDriveClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
 
 //	OnAccumulateAttributes
 //
@@ -187,7 +187,7 @@ void CDriveClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArra
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("inertialess")));
 	}
 
-CString CDriveClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+CString CDriveClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	OnGetReference
 //

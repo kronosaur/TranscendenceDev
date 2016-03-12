@@ -229,7 +229,7 @@ bool CCyberDeckClass::IsWeaponAligned (CSpaceObject *pShip,
 	return true;
 	}
 
-CString CCyberDeckClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+CString CCyberDeckClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	GetReference
 //

@@ -67,7 +67,7 @@ bool COverlayType::AbsorbsWeaponFire (CInstalledDevice *pWeapon)
 //	Absorbs weapon fire from the ship
 
 	{
-	int iType = pWeapon->GetClass()->GetDamageType(pWeapon);
+    int iType = pWeapon->GetDamageType(CItemCtx(NULL, pWeapon));
 	if (iType != -1 && m_WeaponSuppress.InSet(iType))
 		return true;
 	else
@@ -142,7 +142,7 @@ int COverlayType::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 //	Returns the bonus for this weapon
 
 	{
-	int iType = pDevice->GetDamageType();
+	int iType = pDevice->GetDamageType(CItemCtx(pSource, pDevice));
 	if (iType == damageGeneric)
 		return 0;
 

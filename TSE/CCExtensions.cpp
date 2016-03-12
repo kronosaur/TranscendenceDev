@@ -3821,7 +3821,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iDamageType;
 			CDeviceClass *pClass = pType->GetDeviceClass();
 			if (pClass)
-				iDamageType = pClass->GetDamageType(NULL);
+				iDamageType = pClass->GetDamageType(CItemCtx());
 			else
 				iDamageType = -1;
 

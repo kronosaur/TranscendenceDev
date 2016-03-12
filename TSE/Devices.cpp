@@ -87,7 +87,7 @@ inline const SStdDeviceStats *GetStdDeviceStats (int iLevel)
 		return NULL;
 	}
 
-void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
 
 //	AccumulateAttributes
 //
@@ -98,7 +98,7 @@ void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray
 	//	we're interested in the attributes for a missile/ammo of the device 
 	//	(not the device itself).
 
-	if (iVariant == -1)
+	if (Ammo.IsEmpty())
 		{
 		CInstalledDevice *pDevice = ItemCtx.GetDevice();
 
@@ -111,7 +111,7 @@ void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray
 
 	//	Let our subclasses add their own attributes
 
-	OnAccumulateAttributes(ItemCtx, iVariant, retList);
+	OnAccumulateAttributes(ItemCtx, Ammo, retList);
 	}
 
 bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
@@ -360,6 +360,7 @@ bool CDeviceClass::FindAmmoDataField (CItemType *pItem, const CString &sField, C
 
 	{
 	int i;
+    CItem Ammo(pItem, 1);
 
 	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
 		{
@@ -367,12 +368,9 @@ bool CDeviceClass::FindAmmoDataField (CItemType *pItem, const CString &sField, C
 		CDeviceClass *pWeapon;
 
 		if (pType->IsDevice() 
-				&& (pWeapon = pType->GetDeviceClass()))
-			{
-			int iVariant = pWeapon->GetAmmoVariant(pItem);
-			if (iVariant != -1)
-				return pWeapon->FindDataField(iVariant, sField, retsValue);
-			}
+				&& (pWeapon = pType->GetDeviceClass())
+                && pWeapon->FindAmmoDataField(Ammo, sField, retsValue))
+			return true;
 		}
 
 	return false;
@@ -558,7 +556,7 @@ CString CDeviceClass::GetLinkedFireOptionString (DWORD dwOptions)
 		}
 	}
 
-CString CDeviceClass::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+CString CDeviceClass::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	GetReference
 //
@@ -571,7 +569,7 @@ CString CDeviceClass::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
 	//	(If iVariant != -1 then it means that we're looking for reference on a
 	//	missile or someting).
 	
-	if (iVariant == -1)
+	if (Ammo.IsEmpty())
 		{
 		CInstalledDevice *pDevice = Ctx.GetDevice();
 
@@ -592,7 +590,7 @@ CString CDeviceClass::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
 
 	//	Combine with our subclass
 
-	AppendReferenceString(&sReference, OnGetReference(Ctx, iVariant, dwFlags));
+	AppendReferenceString(&sReference, OnGetReference(Ctx, Ammo, dwFlags));
 	return sReference;
 	}
 

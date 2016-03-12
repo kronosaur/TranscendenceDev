@@ -1500,7 +1500,7 @@ int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete)
 	return iHP;
 	}
 
-CString CArmorClass::GetReference (CItemCtx &Ctx, int iVariant)
+CString CArmorClass::GetReference (CItemCtx &Ctx, const CItem &Ammo)
 	
 //	GetReference
 //

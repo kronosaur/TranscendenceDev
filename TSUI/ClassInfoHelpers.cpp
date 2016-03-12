@@ -403,7 +403,7 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	//	Add the reference text
 
 	CItemCtx ItemCtx;
-	CString sRef = pType->GetReference(ItemCtx, -1, CItemType::FLAG_ACTUAL_ITEM);
+	CString sRef = pType->GetReference(ItemCtx, CItem(), CItemType::FLAG_ACTUAL_ITEM);
 	if (sRef.IsBlank())
 		sRef = strPatternSubst(CONSTLIT("Level %s%s"), strLevel(pType->GetLevel()), sExtraDesc);
 	else

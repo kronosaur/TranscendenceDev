@@ -1502,18 +1502,14 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	return NOERROR;
 	}
 
-bool CWeaponClass::FindDataField (int iVariant, const CString &sField, CString *retsValue) const
+bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const
 
-//	FindDataField
+//	FindAmmoDataField
 //
 //	Returns meta-data
 
 	{
 	int i;
-
-    CItem Ammo;
-    if (iVariant >= 0 && iVariant < GetAmmoItemCount())
-        Ammo = CItem(GetAmmoItem(iVariant), 1);
 
     CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(), Ammo);
 	if (pShot == NULL)
@@ -1636,7 +1632,11 @@ bool CWeaponClass::FindDataField (const CString &sField, CString *retsValue)
 		pPos++;
 		}
 
-	return FindDataField(iVariant, sRootField, retsValue);
+    CItem Ammo;
+    if (iVariant >= 0 && iVariant < GetAmmoItemCount())
+        Ammo = CItem(GetAmmoItem(iVariant), 1);
+
+	return FindAmmoDataField(Ammo, sRootField, retsValue);
 	}
 
 CWeaponClass::EOnFireWeaponResults CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx, 
@@ -2278,18 +2278,14 @@ const DamageDesc *CWeaponClass::GetDamageDesc (CItemCtx &Ctx)
 	return &pShot->GetDamage();
 	}
 
-DamageTypes CWeaponClass::GetDamageType (CInstalledDevice *pDevice, int iVariant) const
+DamageTypes CWeaponClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) const
 
 //	GetDamageType
 //
 //	Returns the kind of damage caused by this weapon
 
 	{
-    CItem Ammo;
-    if (iVariant != -1 && iVariant < GetAmmoItemCount())
-        Ammo = CItem(GetAmmoItem(iVariant), 1);
-
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(NULL, pDevice), Ammo);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx, Ammo);
 
 	//	OK if we don't find shot--could be a launcher with no ammo
 
@@ -2536,7 +2532,7 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (Ctx.GetItem().GetType() && Ctx.GetItem().GetType()->IsMissile())
 		{
 		CString sValue;
-		if (FindDataField(iAmmoIndex, sProperty, &sValue))
+		if (FindAmmoDataField(Ctx.GetItem(), sProperty, &sValue))
 			return CreateResultFromDataField(CC, sValue);
 
 		return CreateResultFromDataField(CC, Ctx.GetItem().GetType()->GetDataField(sProperty));
@@ -2624,7 +2620,7 @@ CString GetReferenceFireRate (int iFireRate)
 		return strPatternSubst(CONSTLIT(" @ %d.%d shots/sec"), iRate / 10, iRate % 10);
 	}
 
-bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const
+bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const
 
 //	GetReferenceDamageType
 //
@@ -2645,7 +2641,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 
 	//	Compute the damage string and special string
 
-	if (m_ShotData.GetCount() != 1 && iVariant == -1)
+	if (m_ShotData.GetCount() != 1 && Ammo.IsEmpty())
 		{
 		sReference = CONSTLIT("missile launcher");
 
@@ -2654,10 +2650,6 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 		}
 	else
 		{
-        CItem Ammo;
-        if (iVariant >= 0 && iVariant < GetAmmoItemCount())
-            Ammo = CItem(GetAmmoItem(iVariant), 1);
-
 		//	Get the damage
 
 		int iFragments;
@@ -3526,7 +3518,7 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 	return false;
 	}
 
-void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArray<SDisplayAttribute> *retList)
+void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
 
 //	OnAccumulateAttributes
 //
@@ -3556,12 +3548,8 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 	//	These properties are valid either for an ammo-less weapon, or a specific
 	//	ammo/missile.
 
-	if (m_ShotData.GetCount() == 1 || iVariant != -1)
+	if (m_ShotData.GetCount() == 1 || !Ammo.IsEmpty())
 		{
-        CItem Ammo;
-        if (iVariant >= 0 && iVariant < GetAmmoItemCount())
-            Ammo = CItem(GetAmmoItem(iVariant), 1);
-
         CWeaponFireDesc *pRootShot = GetWeaponFireDesc(ItemCtx, Ammo);
 
 		//	Sometimes the fragments do all the damage. In that case, we take 
@@ -3753,7 +3741,7 @@ CEffectCreator *CWeaponClass::OnFindEffectCreator (const CString &sUNID)
 	return pDesc->FindEffectCreator(CString(pPos));
 	}
 
-CString CWeaponClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+CString CWeaponClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	OnGetReference
 //
@@ -3764,7 +3752,7 @@ CString CWeaponClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags
 
 	//	For weapons
 
-	if (iVariant == -1)
+	if (Ammo.IsEmpty())
 		{
 		//	For ammo weapons, we describe the kind of ammo we need.
 

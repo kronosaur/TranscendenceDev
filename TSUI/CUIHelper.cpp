@@ -151,7 +151,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	If this is a weapon, then add room for the weapon damage
 
-	if (Item.GetReferenceDamageType(pSource, -1, 0, NULL, NULL))
+	if (Item.GetReferenceDamageType(Ctx, CItem(), 0, NULL, NULL))
 		cyHeight += Medium.GetHeight();
 
 	//	If this is armor or a shield, then add room for damage resistance
@@ -1030,7 +1030,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	int iDamageAdj[damageCount];
 	int iHP;
 
-	if (Item.GetReferenceDamageType(pSource, -1, 0, &iDamageType, &sDamageRef))
+	if (Item.GetReferenceDamageType(Ctx, CItem(), 0, &iDamageType, &sDamageRef))
 		{
 		//	Paint the damage type reference
 

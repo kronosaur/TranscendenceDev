@@ -53,7 +53,7 @@ bool CCargoSpaceClass::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
-CString CCargoSpaceClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+CString CCargoSpaceClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	OnGetReference
 //

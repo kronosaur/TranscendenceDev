@@ -286,7 +286,7 @@ bool CReactorClass::IsFuelCompatible (const ReactorDesc &Desc, const CItem &Fuel
 		}
 	}
 
-CString CReactorClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+CString CReactorClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	OnGetReference
 //

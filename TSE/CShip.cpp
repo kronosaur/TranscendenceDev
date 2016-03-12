@@ -2434,7 +2434,7 @@ DamageTypes CShip::GetDamageType (void)
 	{
 	CInstalledDevice *pWeapon = GetNamedDevice(devPrimaryWeapon);
 	if (pWeapon)
-		return (DamageTypes)pWeapon->GetDamageType();
+		return (DamageTypes)pWeapon->GetDamageType(CItemCtx(this, pWeapon));
 	else
 		return damageGeneric;
 	}

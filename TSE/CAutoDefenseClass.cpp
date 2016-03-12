@@ -51,7 +51,7 @@ int CAutoDefenseClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *p
 	return pWeapon->CalcPowerUsed(pDevice, pSource);
 	}
 
-DamageTypes CAutoDefenseClass::GetDamageType (CInstalledDevice *pDevice, int iVariant) const
+DamageTypes CAutoDefenseClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) const
 
 //	GetDamageType
 //
@@ -61,7 +61,7 @@ DamageTypes CAutoDefenseClass::GetDamageType (CInstalledDevice *pDevice, int iVa
 	CDeviceClass *pWeapon = GetWeapon();
 
 	if (pWeapon)
-		return pWeapon->GetDamageType(pDevice, iVariant);
+		return pWeapon->GetDamageType(Ctx, Ammo);
 	else
 		return damageGeneric;
 	}
@@ -120,7 +120,7 @@ int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx) const
 		return 0;
 	}
 
-bool CAutoDefenseClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTypes *retiDamage, CString *retsReference) const
+bool CAutoDefenseClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const
 
 //	GetReferenceDamageType
 //
@@ -130,7 +130,7 @@ bool CAutoDefenseClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, Dam
 	CDeviceClass *pWeapon = GetWeapon();
 	
 	if (pWeapon)
-		return pWeapon->GetReferenceDamageType(Ctx, iVariant, retiDamage, retsReference);
+		return pWeapon->GetReferenceDamageType(Ctx, Ammo, retiDamage, retsReference);
 	else
 		return false;
 	}
@@ -145,7 +145,7 @@ void CAutoDefenseClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pWeapon.GetUNID(), true);
 	}
 
-CString CAutoDefenseClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags)
+CString CAutoDefenseClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	OnGetReference
 //
@@ -156,7 +156,7 @@ CString CAutoDefenseClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dw
 	CDeviceClass *pWeapon = GetWeapon();
 	
 	if (pWeapon)
-		return pWeapon->OnGetReference(Ctx, iVariant);
+		return pWeapon->OnGetReference(Ctx, Ammo);
 	else
 		return NULL_STR;
 	}

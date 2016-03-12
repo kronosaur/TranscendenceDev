@@ -760,7 +760,7 @@ CString CItemType::GetNounPhrase (DWORD dwFlags) const
 	return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
 	}
 
-CString CItemType::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags) const
+CString CItemType::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) const
 
 //	GetReference
 //
@@ -769,7 +769,6 @@ CString CItemType::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags) con
 	{
 	CArmorClass *pArmor;
 	CDeviceClass *pDevice;
-	int iShotVariant;
 
 	//	No reference if unknown
 
@@ -779,17 +778,17 @@ CString CItemType::GetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags) con
 	//	Return armor reference, if this is armor
 
 	if (pArmor = GetArmorClass())
-		return pArmor->GetReference(Ctx, iVariant);
+		return pArmor->GetReference(Ctx);
 
 	//	Return device reference, if this is a device
 
 	else if (pDevice = GetDeviceClass())
-		return pDevice->GetReference(Ctx, iVariant);
+		return pDevice->GetReference(Ctx, Ammo);
 
 	//	If a missile, then get the reference from the weapon
 
-	else if (IsMissile() && (pDevice = GetAmmoLauncher(&iShotVariant)))
-		return pDevice->GetReference(Ctx, iShotVariant);
+	else if (IsMissile() && (pDevice = GetAmmoLauncher()))
+		return pDevice->GetReference(Ctx, CItem(const_cast<CItemType *>(this), 1));
 
 	//	Otherwise, nothing
 
@@ -1498,14 +1497,14 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		//	Get the device
 
 		CDeviceClass *pDevice;
-		int iVariant;
-		if (IsMissile())
-			pDevice = GetAmmoLauncher(&iVariant);
+        CItem Ammo;
+        if (IsMissile())
+            {
+			pDevice = GetAmmoLauncher();
+            Ammo = CItem(const_cast<CItemType *>(this), 1);
+            }
 		else
-			{
 			pDevice = GetDeviceClass();
-			iVariant = 0;
-			}
 
 		if (pDevice == NULL)
 			return false;
@@ -1514,7 +1513,7 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		if (iType == damageError)
 			return false;
 
-		return (iType == pDevice->GetDamageType(NULL, iVariant));
+		return (iType == pDevice->GetDamageType(CItemCtx(), Ammo));
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_CAN_BE_DAMAGED))
 		{
