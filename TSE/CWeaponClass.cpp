@@ -248,7 +248,7 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 	DEBUG_TRY
 
 	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 
 	if (retbSourceDestroyed)
 		*retbSourceDestroyed = false;
@@ -352,7 +352,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     retBalance.rBalance = 0.0;
 
-	CWeaponFireDesc *pShot = GetVariant(ItemCtx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 	if (pShot == NULL)
 		return 0;
 
@@ -629,7 +629,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
     return (int)retBalance.rBalance;
 	}
 
-int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, CVector *ShotPos, int *ShotDir, bool bSetAlternating)
+int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, CVector *ShotPos, int *ShotDir, bool bSetAlternating) const
 
 //	CalcConfiguration
 //
@@ -836,9 +836,8 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 	{
 	if (pShot == NULL)
 		{
-		if (m_ShotData.GetCount() == 1)
-			pShot = GetVariant(0);
-		else
+        pShot = GetWeaponFireDesc(CItemCtx());
+        if (pShot == NULL)
 			return 1.0;
 		}
 
@@ -1130,7 +1129,7 @@ int CWeaponClass::CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSo
 	ASSERT(pTarget);
 
 	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot == NULL)
 		return -1;
 
@@ -1503,7 +1502,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	return NOERROR;
 	}
 
-bool CWeaponClass::FindDataField (int iVariant, const CString &sField, CString *retsValue)
+bool CWeaponClass::FindDataField (int iVariant, const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
@@ -1512,7 +1511,11 @@ bool CWeaponClass::FindDataField (int iVariant, const CString &sField, CString *
 	{
 	int i;
 
-	CWeaponFireDesc *pShot = GetVariant(iVariant);
+    CItem Ammo;
+    if (iVariant >= 0 && iVariant < GetAmmoItemCount())
+        Ammo = CItem(GetAmmoItem(iVariant), 1);
+
+    CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(), Ammo);
 	if (pShot == NULL)
 		return false;
 
@@ -2246,12 +2249,12 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	return pDevice->GetTemperature();
 	}
 
-int CWeaponClass::GetAlternatingPos (CInstalledDevice *pDevice)
+int CWeaponClass::GetAlternatingPos (CInstalledDevice *pDevice) const
 	{
 	return (int)(DWORD)HIBYTE(LOWORD(pDevice->GetData()));
 	}
 
-DWORD CWeaponClass::GetContinuousFire (CInstalledDevice *pDevice) 
+DWORD CWeaponClass::GetContinuousFire (CInstalledDevice *pDevice) const
 	{
 	return (int)(DWORD)LOBYTE(LOWORD(pDevice->GetData()));
 	}
@@ -2268,11 +2271,11 @@ const DamageDesc *CWeaponClass::GetDamageDesc (CItemCtx &Ctx)
 //	Returns the kind of damage caused by this weapon
 
 	{
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot == NULL)
 		return NULL;
-	else
-		return &pShot->GetDamage();
+
+	return &pShot->GetDamage();
 	}
 
 DamageTypes CWeaponClass::GetDamageType (CInstalledDevice *pDevice, int iVariant) const
@@ -2282,19 +2285,11 @@ DamageTypes CWeaponClass::GetDamageType (CInstalledDevice *pDevice, int iVariant
 //	Returns the kind of damage caused by this weapon
 
 	{
-	CWeaponFireDesc *pShot;
+    CItem Ammo;
+    if (iVariant != -1 && iVariant < GetAmmoItemCount())
+        Ammo = CItem(GetAmmoItem(iVariant), 1);
 
-	if (iVariant == -1)
-		{
-		if (pDevice)
-			pShot = GetSelectedShotData(CItemCtx(NULL, pDevice));
-		else if (m_ShotData.GetCount() > 0)
-			pShot = GetVariant(0);
-		else
-			return damageGeneric;
-		}
-	else
-		pShot = GetVariant(iVariant);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(NULL, pDevice), Ammo);
 
 	//	OK if we don't find shot--could be a launcher with no ammo
 
@@ -2306,7 +2301,7 @@ DamageTypes CWeaponClass::GetDamageType (CInstalledDevice *pDevice, int iVariant
 	return pShot->GetDamageType();
 	}
 
-int CWeaponClass::GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CWeaponClass::GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const
 
 //	GetDefaultFireAngle
 //
@@ -2329,11 +2324,17 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
+    //  See if we specified a specific variant. If so, get the ammo for it.
+
+	CString sProperty = sName;
+    CItem Ammo;
+    int iAmmoIndex = ParseVariantFromPropertyName(sName, &sProperty);
+    if (iAmmoIndex != -1 && iAmmoIndex < GetAmmoItemCount())
+        Ammo = CItem(GetAmmoItem(iAmmoIndex), 1);
+
 	//	Get the shot
 
-    int iVariant;
-	CString sProperty = sName;
-	CWeaponFireDesc *pShot = GetVariant(Ctx, &iVariant, ParseVariantFromPropertyName(sName, &sProperty));
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx, Ammo);
 	if (pShot == NULL)
 		return CC.CreateNil();
 
@@ -2535,7 +2536,7 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (Ctx.GetItem().GetType() && Ctx.GetItem().GetType()->IsMissile())
 		{
 		CString sValue;
-		if (FindDataField(iVariant, sProperty, &sValue))
+		if (FindDataField(iAmmoIndex, sProperty, &sValue))
 			return CreateResultFromDataField(CC, sValue);
 
 		return CreateResultFromDataField(CC, Ctx.GetItem().GetType()->GetDataField(sProperty));
@@ -2555,30 +2556,18 @@ Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevi
 //	effective.
 
 	{
-	if (pSource)
+	CItemCtx Ctx(pSource, pDevice);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+	if (pShot == NULL)
+		return 0.0;
+
+	if (pTarget && !pTarget->CanMove())
 		{
-		CItemCtx Ctx(pSource, pDevice);
-		CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
-		if (pShot == NULL)
-			return 0.0;
-		else
-			{
-			if (pTarget && !pTarget->CanMove())
-				{
-                Metric rSpeed = pShot->GetAveSpeed();
-				return (rSpeed * (pShot->GetMaxLifetime() * 90 / 100)) + (128.0 * g_KlicksPerPixel);
-				}
-			else
-				return pShot->GetEffectiveRange();
-			}
+        Metric rSpeed = pShot->GetAveSpeed();
+		return (rSpeed * (pShot->GetMaxLifetime() * 90 / 100)) + (128.0 * g_KlicksPerPixel);
 		}
 	else
-		{
-		if (m_ShotData.GetCount() > 0)
-			return GetVariant(0)->GetEffectiveRange();
-		else
-			return 0.0;
-		}
+		return pShot->GetEffectiveRange();
 	}
 
 DWORD CWeaponClass::GetLinkedFireOptions (CItemCtx &Ctx)
@@ -2665,10 +2654,14 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, int iVariant, DamageTy
 		}
 	else
 		{
+        CItem Ammo;
+        if (iVariant >= 0 && iVariant < GetAmmoItemCount())
+            Ammo = CItem(GetAmmoItem(iVariant), 1);
+
 		//	Get the damage
 
 		int iFragments;
-		CWeaponFireDesc *pRootShot = GetVariant(iVariant != -1 ? iVariant : 0);
+        CWeaponFireDesc *pRootShot = GetWeaponFireDesc(Ctx, Ammo);
 		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
 		DamageDesc Damage = pShot->GetDamage();
 		iDamageType = Damage.GetDamageType();
@@ -2861,20 +2854,6 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 	return pBestShot;
 	}
 
-CWeaponFireDesc *CWeaponClass::GetSelectedShotData (CItemCtx &Ctx) const
-
-//	GetSelectedShotData
-//
-//	Returns the currently selected shot data (or NULL if none)
-
-	{
-	int iSelection = GetCurrentVariant(Ctx.GetDevice());
-	if (iSelection != -1 && iSelection < m_ShotData.GetCount())
-		return GetVariant(iSelection);
-	else
-		return NULL;
-	}
-
 void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource, 
 										   CInstalledDevice *pDevice,
 										   CString *retsLabel,
@@ -2886,50 +2865,12 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 //	Returns information about the selected variant
 
 	{
-	CItemListManipulator ItemList(pSource->GetItemList());
 	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
-	if (pShot)
-		{
-		if (pShot->GetAmmoType() == NULL)
-			{
-			if (retsLabel)
-				*retsLabel = CString();
-			if (retiAmmoLeft)
-				{
-				if (m_bCharges)
-					*retiAmmoLeft = pDevice->GetCharges(pSource);
-				else
-					*retiAmmoLeft = -1;
-				}
-			if (retpType)
-				*retpType = GetItemType();
-			}
-		else
-			{
-			CItem Item(pShot->GetAmmoType(), 1);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 
-			if (retiAmmoLeft)
-				{
-				if (ItemList.SetCursorAtItem(Item))
-					*retiAmmoLeft = ItemList.GetItemAtCursor().GetCount();
-				else
-					*retiAmmoLeft = 0;
-				}
+    //  Short-circuit if we don't have enough data
 
-			if (retsLabel)
-				{
-				if (GetCategory() == itemcatLauncher)
-					*retsLabel = Item.GetNounPhrase(nounCapitalize);
-				else
-					*retsLabel = CString();
-				}
-
-			if (retpType)
-				*retpType = pShot->GetAmmoType();
-			}
-		}
-	else
+	if (pShot == NULL || pSource == NULL || pDevice == NULL)
 		{
 		if (retsLabel)
 			*retsLabel = CString();
@@ -2937,6 +2878,50 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 			*retiAmmoLeft = 0;
 		if (retpType)
 			*retpType = NULL;
+		}
+
+    //  If we don't have ammo, then we return info based on charges
+
+	else if (pShot->GetAmmoType() == NULL)
+		{
+		if (retsLabel)
+			*retsLabel = CString();
+		if (retiAmmoLeft)
+			{
+			if (m_bCharges)
+				*retiAmmoLeft = pDevice->GetCharges(pSource);
+			else
+				*retiAmmoLeft = -1;
+			}
+		if (retpType)
+			*retpType = GetItemType();
+		}
+
+    //  Otherwise, we return ammo counts
+
+	else
+		{
+    	CItemListManipulator ItemList(pSource->GetItemList());
+		CItem Item(pShot->GetAmmoType(), 1);
+
+		if (retiAmmoLeft)
+			{
+			if (ItemList.SetCursorAtItem(Item))
+				*retiAmmoLeft = ItemList.GetItemAtCursor().GetCount();
+			else
+				*retiAmmoLeft = 0;
+			}
+
+		if (retsLabel)
+			{
+			if (GetCategory() == itemcatLauncher)
+				*retsLabel = Item.GetNounPhrase(nounCapitalize);
+			else
+				*retsLabel = CString();
+			}
+
+		if (retpType)
+			*retpType = pShot->GetAmmoType();
 		}
 	}
 
@@ -2965,27 +2950,12 @@ int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice 
 
 	for (int i = 0; i < m_ShotData.GetCount(); i++)
 		{
-		if (VariantIsValid(pSource, pDevice, *GetVariant(i)))
+		if (VariantIsValid(pSource, pDevice, *m_ShotData[i].pDesc))
 			iCount++;
 		}
 
 	return iCount;
 	}
-
-CWeaponFireDesc *CWeaponClass::GetVariant (CItemCtx &ItemCtx, int *retiVariant, int iDefault) const
-
-//  GetVariant
-//
-//  Returns the weapon fire desc from an item context.
-    
-    {
-    int iVariant = (ItemCtx.GetVariant() != -1 ? ItemCtx.GetVariant() : (iDefault != -1 ? iDefault : 0));
-
-    if (retiVariant)
-        *retiVariant = iVariant;
-
-    return GetVariant(iVariant);
-    }
 
 int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
 
@@ -3004,7 +2974,7 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 	int iScore = 0;
 
 	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot == NULL)
 		return -100;
 
@@ -3116,10 +3086,12 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
     int iLevel = -1;
 
     //  If we need ammo, then we have extra work to do.
+    //  NOTE: Currently, if one variant uses ammo, all need to use ammo.
 
-    if (RequiresItems())
+    if (m_ShotData[0].pAmmoType != NULL)
         {
-        //  If we have ammo, use it.
+        //  If we have ammo, use it (this overrides whatever item is selected 
+        //  in ItemCtx).
 
         if (!Ammo.IsEmpty())
             {
@@ -3139,6 +3111,20 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
                 pRoot = m_ShotData[iSelection].pDesc;
             else
                 return NULL;
+            }
+
+        else if (!ItemCtx.GetVariantItem().IsEmpty())
+            {
+            int iSelection = GetAmmoVariant(ItemCtx.GetVariantItem().GetType());
+            if (iSelection != -1)
+                pRoot = m_ShotData[iSelection].pDesc;
+            else
+                return NULL;
+            }
+
+        else if (ItemCtx.GetVariant() != -1 && ItemCtx.GetVariant() < m_ShotData.GetCount())
+            {
+            pRoot = m_ShotData[ItemCtx.GetVariant()].pDesc;
             }
 
         //  Otherwise, just return the first entry
@@ -3182,7 +3168,7 @@ bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevic
 
 	{
 	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot == NULL)
 		return false;
 
@@ -3296,7 +3282,7 @@ bool CWeaponClass::IsTrackingWeapon (CItemCtx &Ctx)
 //	Returns TRUE if we're a tracking weapon
 	
 	{
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot == NULL)
 		return false;
 
@@ -3327,8 +3313,8 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	{
 	CItemCtx Ctx(pShip, pDevice);
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
-	if (pShot == NULL)
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+	if (pShot == NULL || pShip == NULL || pDevice == NULL)
 		{
 		if (retiAimAngle)
 			*retiAimAngle = -1;
@@ -3572,7 +3558,11 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, int iVariant, TArr
 
 	if (m_ShotData.GetCount() == 1 || iVariant != -1)
 		{
-		CWeaponFireDesc *pRootShot = GetVariant(iVariant != -1 ? iVariant : 0);
+        CItem Ammo;
+        if (iVariant >= 0 && iVariant < GetAmmoItemCount())
+            Ammo = CItem(GetAmmoItem(iVariant), 1);
+
+        CWeaponFireDesc *pRootShot = GetWeaponFireDesc(ItemCtx, Ammo);
 
 		//	Sometimes the fragments do all the damage. In that case, we take 
 		//	the properties from the fragment.
@@ -3750,12 +3740,16 @@ CEffectCreator *CWeaponClass::OnFindEffectCreator (const CString &sUNID)
 	//	Parse the variant
 
 	int iOrdinal = strParseInt(pPos, 0, &pPos);
-	if (iOrdinal < 0 || iOrdinal >= GetVariantCount())
+	if (iOrdinal < 0 || iOrdinal >= m_ShotData.GetCount())
 		return NULL;
 
 	//	Now ask the weapon fire desc to parse the remaining UNID
 
-	CWeaponFireDesc *pDesc = GetVariant(iOrdinal);
+    CItem Ammo;
+    if (iOrdinal < GetAmmoItemCount())
+        Ammo = CItem(GetAmmoItem(iOrdinal), 1);
+
+    CWeaponFireDesc *pDesc = GetWeaponFireDesc(CItemCtx(), Ammo);
 	return pDesc->FindEffectCreator(CString(pPos));
 	}
 
@@ -3774,12 +3768,10 @@ CString CWeaponClass::OnGetReference (CItemCtx &Ctx, int iVariant, DWORD dwFlags
 		{
 		//	For ammo weapons, we describe the kind of ammo we need.
 
-		CWeaponFireDesc *pShot;
 		CItemType *pAmmo;
 		if (!m_bLauncher
-				&& m_ShotData.GetCount() == 1
-				&& (pShot = GetVariant(0))
-				&& (pAmmo = pShot->GetAmmoType()))
+				&& GetAmmoItemCount() == 1
+				&& (pAmmo = GetAmmoItem(0)))
 			{
 			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("Requires %s"), pAmmo->GetNounPhrase(0x02)));
 			}
@@ -3851,7 +3843,7 @@ bool CWeaponClass::SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *p
 
 			//	If this variant is valid, then we're done
 
-			if (VariantIsValid(pSource, pDevice, *GetVariant(iTry)))
+			if (VariantIsValid(pSource, pDevice, *m_ShotData[iTry].pDesc))
 				{
 				iSelection = iTry;
 				break;
@@ -3865,7 +3857,7 @@ bool CWeaponClass::SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *p
 	return (iSelection != -1);
 	}
 
-void CWeaponClass::SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos)
+void CWeaponClass::SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos) const
 
 //	SetAlternatingPos
 //
@@ -3875,7 +3867,7 @@ void CWeaponClass::SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatin
 	pDevice->SetData((pDevice->GetData() & 0xFFFF00FF) | (((DWORD)iAlternatingPos & 0xFF) << 8));
 	}
 
-void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous)
+void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous) const
 
 //	SetContinuousFire
 //
@@ -3885,7 +3877,7 @@ void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinu
 	pDevice->SetData((pDevice->GetData() & 0xFFFFFF00) | (dwContinuous & 0xFF));
 	}
 
-void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant)
+void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const
 
 //	SetCurrentVariant
 //
@@ -3946,12 +3938,12 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 		//	-1 is used to skip the first update cycle
 		//	(which happens on the same tick as Activate)
 
-		CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 		SetContinuousFire(pDevice, (pShot ? pShot->GetContinuous() : 0));
 		}
 	else if (dwContinuous > 0)
 		{
-		CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 		if (pShot)
 			{
 			bool bSourceDestroyed;
@@ -3989,7 +3981,7 @@ bool CWeaponClass::ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDev
 
 	{
 	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetSelectedShotData(Ctx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot && VariantIsValid(pSource, pDevice, *pShot))
 		return true;
 

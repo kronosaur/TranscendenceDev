@@ -932,19 +932,26 @@ CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError
 
         if (pWeaponClass->GetAmmoItemCount() > 0)
             {
-            //  We prefer the item from the context. NOTE: We assume that the
-            //  context has already validated that this ammo is compatible.
+            //  If we're a missile, then we cons up an item
 
-            if (!(pAmmo = &Ctx.GetVariantItem())->IsEmpty())
-                { }
-
-            //  If we are a missile, we cons up an item
-
-            else if (pWeaponClass->GetAmmoVariant(const_cast<CItemType *>(this)))
+            if (GetDeviceClass() == NULL
+                    && pWeaponClass->GetAmmoVariant(const_cast<CItemType *>(this)))
                 {
                 Ammo = CItem(const_cast<CItemType *>(this), 1);
                 pAmmo = &Ammo;
                 }
+
+            //  If we have an installed device, then we omit the ammo, because
+            //  GetWeaponFireDesc below will get the ammo from the device.
+
+            else if (Ctx.GetDevice())
+                pAmmo = NULL;
+
+            //  We prefer the item from the context. NOTE: We assume that the
+            //  context has already validated that this ammo is compatible.
+
+            else if (!(pAmmo = &Ctx.GetVariantItem())->IsEmpty())
+                { }
 
             //  If we are the same weapon, then we use the first ammo item
 

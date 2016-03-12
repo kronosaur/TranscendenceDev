@@ -522,7 +522,7 @@ class CWeaponClass : public CDeviceClass
 		virtual int GetAmmoVariant (const CItemType *pItem) const;
 		virtual ItemCategories GetImplCategory (void) const;
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL);
-		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource);
+		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const;
 		virtual void Update (CInstalledDevice *pDevice, 
 							 CSpaceObject *pSource, 
 							 int iTick,
@@ -530,7 +530,7 @@ class CWeaponClass : public CDeviceClass
 							 bool *retbConsumedItems = NULL);
 
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual bool FindDataField (int iVariant, const CString &sField, CString *retsValue);
+		virtual bool FindDataField (int iVariant, const CString &sField, CString *retsValue) const;
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx);
 		virtual DamageTypes GetDamageType (CInstalledDevice *pDevice = NULL, int iVariant = -1) const;
 		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
@@ -607,7 +607,7 @@ class CWeaponClass : public CDeviceClass
 		CWeaponClass (void);
 
 		int CalcActivateDelay (CItemCtx &ItemCtx) const;
-		int CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, CVector *ShotPosOffset, int *ShotDir, bool bSetAlternating);
+		int CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iFireAngle, CVector *ShotPosOffset, int *ShotDir, bool bSetAlternating) const;
 		Metric CalcConfigurationMultiplier (CWeaponFireDesc *pShot = NULL, bool bIncludeFragments = true) const;
 		Metric CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
 		Metric CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements = NULL, DWORD dwDamageFlags = 0) const;
@@ -628,10 +628,6 @@ class CWeaponClass : public CDeviceClass
 						 bool *retbSourceDestroyed,
 						 bool *retbConsumedItems);
 		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
-		CWeaponFireDesc *GetSelectedShotData (CItemCtx &Ctx) const;
-        CWeaponFireDesc *GetVariant (CItemCtx &ItemCtx, int *retiVariant = NULL, int iDefault = 0) const;
-		inline CWeaponFireDesc *GetVariant (int iIndex) const { return ((iIndex >=0 && iIndex < m_ShotData.GetCount()) ? m_ShotData[iIndex].pDesc : NULL); }
-		inline int GetVariantCount (void) { return m_ShotData.GetCount(); }
 		inline bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
 		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
 		bool IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL);
@@ -639,12 +635,12 @@ class CWeaponClass : public CDeviceClass
 		inline bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
 		bool VariantIsValid (CSpaceObject *pSource, CInstalledDevice *pDevice, CWeaponFireDesc &ShotData);
 
-		int GetAlternatingPos (CInstalledDevice *pDevice);
-		DWORD GetContinuousFire (CInstalledDevice *pDevice);
+		int GetAlternatingPos (CInstalledDevice *pDevice) const;
+		DWORD GetContinuousFire (CInstalledDevice *pDevice) const;
 		int GetCurrentVariant (CInstalledDevice *pDevice) const;
-		void SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos);
-		void SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous);
-		void SetCurrentVariant (CInstalledDevice *pDevice, int iVariant);
+		void SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos) const;
+		void SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous) const;
+		void SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const;
 
 		int m_iFireRate;						//	Ticks between shots
 		int m_iFireRateSecs;					//	Game seconds between shots
