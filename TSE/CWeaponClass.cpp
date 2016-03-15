@@ -2188,145 +2188,14 @@ int CWeaponClass::GetAmmoItemCount (void) const
         return m_ShotData.GetCount();
     }
 
-int CWeaponClass::GetAmmoVariant (const CItemType *pItem) const
+ICCItem *CWeaponClass::GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty)
 
-//	GetAmmoVariant
+//  GetAmmoItemProperty
 //
-//	Returns the variant that fires the given ammo (or -1 if the weapons
-//	does not fire the ammo)
+//  Returns a property of the weapon when the given ammo item is selected.
 
-	{
-	int i;
-
-	DWORD dwItemUNID = (pItem ? pItem->GetUNID() : 0);
-	if (dwItemUNID == 0)
-		return -1;
-
-	for (i = 0; i < m_ShotData.GetCount(); i++)
-		{
-		if (m_ShotData[i].pAmmoType.GetUNID() == dwItemUNID)
-			return i;
-		}
-
-	return -1;
-	}
-
-ItemCategories CWeaponClass::GetImplCategory (void) const
-
-//	GetImplCategory
-//
-//	Returns the weapon class category
-
-	{
-	if (m_bLauncher)
-		return itemcatLauncher;
-	else
-		return itemcatWeapon;
-	}
-
-int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType)
-
-//	GetCounter
-//
-//	Return counter
-
-	{
-	//	Return the type
-
-	if (retiType)
-		*retiType = m_Counter;
-
-	if (m_Counter == cntNone)
-		return 0;
-
-	//	If we're a capacitor, then don't show the counter if we are full
-
-	if (m_Counter == cntCapacitor && pDevice->GetTemperature() >= MAX_COUNTER)
-		return 0;
-
-	//	Otherwise, return the current value
-
-	return pDevice->GetTemperature();
-	}
-
-int CWeaponClass::GetAlternatingPos (CInstalledDevice *pDevice) const
-	{
-	return (int)(DWORD)HIBYTE(LOWORD(pDevice->GetData()));
-	}
-
-DWORD CWeaponClass::GetContinuousFire (CInstalledDevice *pDevice) const
-	{
-	return (int)(DWORD)LOBYTE(LOWORD(pDevice->GetData()));
-	}
-
-int CWeaponClass::GetCurrentVariant (CInstalledDevice *pDevice) const
-	{
-	return (int)(short)HIWORD(pDevice->GetData()); 
-	}
-
-const DamageDesc *CWeaponClass::GetDamageDesc (CItemCtx &Ctx)
-
-//	GetDamageDesc
-//
-//	Returns the kind of damage caused by this weapon
-
-	{
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
-	if (pShot == NULL)
-		return NULL;
-
-	return &pShot->GetDamage();
-	}
-
-DamageTypes CWeaponClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) const
-
-//	GetDamageType
-//
-//	Returns the kind of damage caused by this weapon
-
-	{
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx, Ammo);
-
-	//	OK if we don't find shot--could be a launcher with no ammo
-
-	if (pShot == NULL)
-		return damageGeneric;
-
-	//	Get the damage type
-
-	return pShot->GetDamageType();
-	}
-
-int CWeaponClass::GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const
-
-//	GetDefaultFireAngle
-//
-//	Gets the natural fire direction (not counting omni or swivel mounts)
-
-	{
-	if (pDevice && pSource)
-		return (pSource->GetRotation() + pDevice->GetRotation() + AngleMiddle(m_iMinFireArc, m_iMaxFireArc)) % 360;
-	else
-		return AngleMiddle(m_iMinFireArc, m_iMaxFireArc);
-	}
-
-ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
-
-//	GetItemProperty
-//
-//	Returns the item property. Subclasses should call this if they do not
-//	understand the property.
-
-	{
+    {
 	CCodeChain &CC = g_pUniverse->GetCC();
-
-    //  See if we specified a specific variant. If so, get the ammo for it.
-
-	CString sProperty = sName;
-    CItem Ammo;
-    int iAmmoIndex = ParseVariantFromPropertyName(sName, &sProperty);
-    if (iAmmoIndex != -1 && iAmmoIndex < GetAmmoItemCount())
-        Ammo = CItem(GetAmmoItem(iAmmoIndex), 1);
 
 	//	Get the shot
 
@@ -2541,7 +2410,150 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	//	Otherwise, just get the property from the base class
 
 	else
-		return CDeviceClass::GetItemProperty(Ctx, sProperty);
+		return CDeviceClass::GetAmmoItemProperty(Ctx, Ammo, sProperty);
+    }
+
+int CWeaponClass::GetAmmoVariant (const CItemType *pItem) const
+
+//	GetAmmoVariant
+//
+//	Returns the variant that fires the given ammo (or -1 if the weapons
+//	does not fire the ammo)
+
+	{
+	int i;
+
+	DWORD dwItemUNID = (pItem ? pItem->GetUNID() : 0);
+	if (dwItemUNID == 0)
+		return -1;
+
+	for (i = 0; i < m_ShotData.GetCount(); i++)
+		{
+		if (m_ShotData[i].pAmmoType.GetUNID() == dwItemUNID)
+			return i;
+		}
+
+	return -1;
+	}
+
+ItemCategories CWeaponClass::GetImplCategory (void) const
+
+//	GetImplCategory
+//
+//	Returns the weapon class category
+
+	{
+	if (m_bLauncher)
+		return itemcatLauncher;
+	else
+		return itemcatWeapon;
+	}
+
+int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType)
+
+//	GetCounter
+//
+//	Return counter
+
+	{
+	//	Return the type
+
+	if (retiType)
+		*retiType = m_Counter;
+
+	if (m_Counter == cntNone)
+		return 0;
+
+	//	If we're a capacitor, then don't show the counter if we are full
+
+	if (m_Counter == cntCapacitor && pDevice->GetTemperature() >= MAX_COUNTER)
+		return 0;
+
+	//	Otherwise, return the current value
+
+	return pDevice->GetTemperature();
+	}
+
+int CWeaponClass::GetAlternatingPos (CInstalledDevice *pDevice) const
+	{
+	return (int)(DWORD)HIBYTE(LOWORD(pDevice->GetData()));
+	}
+
+DWORD CWeaponClass::GetContinuousFire (CInstalledDevice *pDevice) const
+	{
+	return (int)(DWORD)LOBYTE(LOWORD(pDevice->GetData()));
+	}
+
+int CWeaponClass::GetCurrentVariant (CInstalledDevice *pDevice) const
+	{
+	return (int)(short)HIWORD(pDevice->GetData()); 
+	}
+
+const DamageDesc *CWeaponClass::GetDamageDesc (CItemCtx &Ctx)
+
+//	GetDamageDesc
+//
+//	Returns the kind of damage caused by this weapon
+
+	{
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+	if (pShot == NULL)
+		return NULL;
+
+	return &pShot->GetDamage();
+	}
+
+DamageTypes CWeaponClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) const
+
+//	GetDamageType
+//
+//	Returns the kind of damage caused by this weapon
+
+	{
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx, Ammo);
+
+	//	OK if we don't find shot--could be a launcher with no ammo
+
+	if (pShot == NULL)
+		return damageGeneric;
+
+	//	Get the damage type
+
+	return pShot->GetDamageType();
+	}
+
+int CWeaponClass::GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const
+
+//	GetDefaultFireAngle
+//
+//	Gets the natural fire direction (not counting omni or swivel mounts)
+
+	{
+	if (pDevice && pSource)
+		return (pSource->GetRotation() + pDevice->GetRotation() + AngleMiddle(m_iMinFireArc, m_iMaxFireArc)) % 360;
+	else
+		return AngleMiddle(m_iMinFireArc, m_iMaxFireArc);
+	}
+
+ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
+
+//	GetItemProperty
+//
+//	Returns the item property. Subclasses should call this if they do not
+//	understand the property.
+
+	{
+    //  See if we specified a specific variant. If so, get the ammo for it.
+
+	CString sProperty = sName;
+    CItem Ammo;
+    int iAmmoIndex = ParseVariantFromPropertyName(sName, &sProperty);
+    if (iAmmoIndex != -1 && iAmmoIndex < GetAmmoItemCount())
+        Ammo = CItem(GetAmmoItem(iAmmoIndex), 1);
+
+	//	Get the property
+
+    return GetAmmoItemProperty(Ctx, Ammo, sProperty);
 	}
 
 Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
@@ -3095,8 +3107,12 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
             }
 
         //  If we have a device, we ask it for the variant
+        //
+        //  NOTE: We need to make sure we check that the source exists because
+        //  some code (like CStationType::OnBindDesign) will call this with a
+        //  valid CInstalledDevice but a NULL source.
 
-        else if (ItemCtx.GetDevice())
+        else if (ItemCtx.GetDevice() && ItemCtx.GetSource())
             {
             int iSelection = GetCurrentVariant(ItemCtx.GetDevice());
             if (iSelection != -1 && iSelection < m_ShotData.GetCount())

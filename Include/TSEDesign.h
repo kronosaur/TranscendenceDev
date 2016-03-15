@@ -1535,6 +1535,7 @@ class DamageDesc
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib);
 		void ReadFromStream (SLoadCtx &Ctx);
 		int RollDamage (void) const;
+        inline void ScaleDamage (Metric rAdj) { m_Damage.Scale(rAdj); }
 		inline void SetAutomatedWeapon (void) { m_fAutomatedWeapon = true; }
 		inline void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
 		void SetDamage (int iDamage);
@@ -2579,6 +2580,7 @@ class CDeviceClass
 		inline CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		inline bool FindEventHandlerDeviceClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 		COverlayType *FireGetOverlayType(CItemCtx &Ctx) const;
+        Metric GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty);
 		inline ItemCategories GetCategory (void) const { return (m_iSlotCategory == itemcatNone ? GetImplCategory() : m_iSlotCategory); }
 		inline CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
@@ -2612,6 +2614,7 @@ class CDeviceClass
 		virtual bool FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const { return false; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
+        virtual ICCItem *GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) { return GetItemProperty(Ctx, sProperty); }
 		virtual int GetAmmoVariant (const CItemType *pItem) const { return -1; }
 		virtual int GetCargoSpace (void) { return 0; }
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) { return 0; }

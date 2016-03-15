@@ -534,7 +534,7 @@ class CWeaponFireDesc
 		CEffectCreator *GetFireEffect (void) const;
         inline SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
         inline SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
-        ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, const CWeaponFireDesc &Src, int iScaledLevel);
+        ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
 
 		CExtension *m_pExtension;			//	Extension that defines the weaponfiredesc
 		CString m_sUNID;					//	Identification. The format is

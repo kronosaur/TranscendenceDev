@@ -519,6 +519,7 @@ class CWeaponClass : public CDeviceClass
 		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const override;
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+        virtual ICCItem *GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
 		virtual int GetAmmoVariant (const CItemType *pItem) const override;
 		virtual ItemCategories GetImplCategory (void) const override;
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) override;

@@ -593,7 +593,7 @@ int CArmorClass::CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx)
 				&& iArmorLevel > iDamageLevel - 3)
 			{
 			int iStdAdj = GetStdDamageAdj(iArmorLevel, (DamageTypes)i);
-			int iDamageAdj = GetDamageAdj(CItemCtx(), (DamageTypes)i);
+			int iDamageAdj = GetDamageAdj(ItemCtx, (DamageTypes)i);
 
 			rTotalAdj += (iStdAdj > 0.0 ? (Metric)iDamageAdj * 100.0 / iStdAdj : 1000.0);
 			iCount++;

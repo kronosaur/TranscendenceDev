@@ -484,8 +484,8 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 	for (i = 0; i < m_AverageDevices.GetCount(); i++)
 		{
 		const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
-		CItemType *pItem = Desc.Item.GetType();
-		CDeviceClass *pDevice = (pItem ? pItem->GetDeviceClass() : NULL);
+        CItemCtx ItemCtx(Desc.Item);
+        CDeviceClass *pDevice = ItemCtx.GetDeviceClass();
 		bool bIsLauncher;
 
 		//	Figure out if this is a weapon or a launcher; if neither, then we
@@ -507,32 +507,31 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 		//	If this is a launcher then we need to figure out the best available
 		//	variant.
 
-		int iVariant = 0;
+        CItem Ammo;
 		int iMissileLevel = 0;
 		if (bIsLauncher)
 			{
 			CItemType *pBestMissile = CalcBestMissile(Desc);
 			if (pBestMissile)
 				{
-				iVariant = pDevice->GetAmmoVariant(pBestMissile);
-				iMissileLevel = pBestMissile->GetLevel();
+                Ammo = CItem(pBestMissile, 1);
+                iMissileLevel = Ammo.GetLevel();
 				}
-			else
-				iVariant = -1;
+            else
+                {
+                //  If the launcher has no ammo, then skip to the next device.
+
+                continue;
+                }
 			}
-
-		//	If no valid variant, then skip
-
-		if (iVariant == -1)
-			continue;
 
 		//	Compute the damage rate for the weapon
 
-		Metric rDamageRate = (Metric)pDevice->GetDataFieldInteger(strPatternSubst(CONSTLIT("damage:%d"), iVariant));
+        Metric rDamageRate = pDevice->GetAmmoItemPropertyDouble(ItemCtx, Ammo, CONSTLIT("damage"));
 
 		//	Compute weapon level
 
-		int iWeaponLevel = (bIsLauncher ? iMissileLevel : pDevice->GetLevel());
+		int iWeaponLevel = (bIsLauncher ? iMissileLevel : Desc.Item.GetLevel());
 
 		//	Compute the total coverage of the weapon (360 = omnidirectional; 0 = fixed)
 

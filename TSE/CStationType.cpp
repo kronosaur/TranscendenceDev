@@ -1113,6 +1113,9 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 		goto Fail;
 
 	//	Resolve the devices pointer
+    //
+    //  LATER: We shouldn't have CInstalledDevices here. We should use the same
+    //  system that ships use.
 
 	Metric rBestRange = MAX_ATTACK_DISTANCE;
 	for (i = 0; i < m_iDevicesCount; i++)

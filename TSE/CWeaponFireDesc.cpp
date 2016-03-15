@@ -1967,7 +1967,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
         CWeaponFireDesc &ScaledDesc = m_pScalable[i];
         int iScaledLevel = m_iBaseLevel + i + 1;
 
-        if (error = InitScaledStats(Ctx, pDesc, pItem, *this, iScaledLevel))
+        if (error = ScaledDesc.InitScaledStats(Ctx, pDesc, pItem, *this, m_iBaseLevel, iScaledLevel))
             return error;
         }
 
@@ -1976,7 +1976,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     return NOERROR;
     }
 
-ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, const CWeaponFireDesc &Src, int iScaledLevel)
+ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel)
 
 //  InitScaledStats
 //
@@ -1990,8 +1990,9 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     //  We start by figuring out the percent increase in damage at the scaled
     //  level, relative to base.
 
-    Metric rIncrease = (100.0 * CWeaponClass::GetStdDamage(iScaledLevel) / CWeaponClass::GetStdDamage(m_iBaseLevel)) - 100.0;
-    m_Damage.AddBonus((int)(rIncrease + 0.5));
+    Metric rAdj = (Metric)CWeaponClass::GetStdDamage(iScaledLevel) / CWeaponClass::GetStdDamage(iBaseLevel);
+    m_Damage = Src.m_Damage;
+    m_Damage.ScaleDamage(rAdj);
 
     //  These stats never scale, so we just copy them
 
@@ -2073,7 +2074,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		//	Load fragment data
 
 		pNewDesc->pDesc = new CWeaponFireDesc;
-		if (error = pNewDesc->pDesc->InitScaledStats(Ctx, pFragDesc, pItem, *pSrcFragment->pDesc, iScaledLevel))
+		if (error = pNewDesc->pDesc->InitScaledStats(Ctx, pFragDesc, pItem, *pSrcFragment->pDesc, iBaseLevel, iScaledLevel))
 			return error;
 
 		//	Set the fragment count

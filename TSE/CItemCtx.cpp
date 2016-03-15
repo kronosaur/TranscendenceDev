@@ -12,7 +12,8 @@ CItemCtx::CItemCtx (CItemType *pItemType) :
         m_pArmor(NULL),
         m_pDevice(NULL),
         m_pWeapon(NULL),
-        m_iVariant(-1)
+        m_iVariant(-1),
+        m_pEnhancements(NULL)
 
 //  CItemCtx constructor
 
