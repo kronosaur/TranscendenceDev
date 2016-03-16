@@ -2306,48 +2306,56 @@ struct DriveDesc
 	DWORD dwSpare:31;
 	};
 
-struct ReactorDesc
+class CReactorDesc
 	{
-	ReactorDesc (void) : 
-			pFuelCriteria(NULL),
-			fFreeFuelCriteria(false)
-		{ }
+    public:
+        struct SStdStats
+            {
+            int iMaxPower;                  //  Max power (1/10 MW)
+            Metric rFuelDensity;            //  Std fuel rods per 100 Kg
+            Metric rCost;                   //  Credits per 100 fuel units
+            };
 
-	~ReactorDesc (void)
-		{
-		if (pFuelCriteria && fFreeFuelCriteria)
-			delete pFuelCriteria;
-		}
+	    CReactorDesc (void) : 
+			    m_pFuelCriteria(NULL),
+			    m_fFreeFuelCriteria(false)
+		    { }
+        CReactorDesc (const CReactorDesc &Src) { Copy(Src); }
 
-	ReactorDesc &operator= (const ReactorDesc &Src)
-		{
-		iMaxPower = Src.iMaxPower;
-		rMaxFuel = Src.rMaxFuel;
-		rPowerPerFuelUnit = Src.rPowerPerFuelUnit;
+	    inline ~CReactorDesc (void) { CleanUp(); }
+        inline CReactorDesc &operator= (const CReactorDesc &Src) { CleanUp(); Copy(Src); return *this; }
 
-		pFuelCriteria = (Src.pFuelCriteria ? new CItemCriteria(*Src.pFuelCriteria) : NULL);
-		iMinFuelLevel = Src.iMinFuelLevel;
-		iMaxFuelLevel = Src.iMaxFuelLevel;
+        int AdjMaxPower (Metric rAdj);
+        Metric AdjEfficiency (Metric rAdj);
+        ICCItem *FindProperty (const CString &sProperty) const;
+        inline Metric GetEfficiency (void) const { return m_rPowerPerFuelUnit; }
+        int GetEfficiencyBonus (void) const;
+        inline Metric GetFuelCapacity (void) const { return m_rMaxFuel; }
+        CString GetFuelCriteriaString (void) const;
+        void GetFuelLevel (int *retiMin, int *retiMax) const;
+        inline int GetMaxPower (void) const { return m_iMaxPower; }
+        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bShipClass = false);
+        ALERROR InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, int iBaseLevel, int iScaledLevel);
+        bool IsFuelCompatible (const CItem &FuelItem) const;
 
-		fDamaged = Src.fDamaged;
-		fEnhanced = Src.fEnhanced;
-		fFreeFuelCriteria = (pFuelCriteria != NULL);
+        static const SStdStats &GetStdStats (int iLevel);
 
-		return *this;
-		}
+    private:
+        void CleanUp (void);
+        void Copy (const CReactorDesc &Src);
 
-	int iMaxPower;								//	Maximum power output
-	Metric rMaxFuel;							//	Maximum fuel space
-	Metric rPowerPerFuelUnit;					//	MW/10-tick per fuel unit
+	    int m_iMaxPower;					//	Maximum power output
+	    Metric m_rMaxFuel;					//	Maximum fuel space
+	    Metric m_rPowerPerFuelUnit;			//	MW/10-tick per fuel unit
 
-	CItemCriteria *pFuelCriteria;
-	int iMinFuelLevel;							//	Min tech level of fuel (-1 if using fuelCriteria)
-	int iMaxFuelLevel;							//	Max tech level of fuel (-1 if using fuelCriteria)
+	    CItemCriteria *m_pFuelCriteria;
+	    int m_iMinFuelLevel;				//	Min tech level of fuel (-1 if using fuelCriteria)
+	    int m_iMaxFuelLevel;				//	Max tech level of fuel (-1 if using fuelCriteria)
 
-	DWORD fDamaged:1;							//	TRUE if damaged
-	DWORD fEnhanced:1;							//	TRUE if enhanced
-	DWORD fFreeFuelCriteria:1;					//	TRUE if we own pFuelCriteria
-	DWORD dwSpare:29;
+	    DWORD m_fFreeFuelCriteria:1;		//	TRUE if we own pFuelCriteria
+	    DWORD m_dwSpare:31;
+
+        static SStdStats m_Stats[MAX_ITEM_LEVEL];
 	};
 
 class CInstalledArmor
@@ -2628,7 +2636,7 @@ class CDeviceClass
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
-		virtual const ReactorDesc *GetReactorDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) { return NULL; }
+		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) { return NULL; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
@@ -2811,6 +2819,7 @@ class CDeviceDescList
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline CDeviceClass *GetDeviceClass (int iIndex) const;
 		inline const SDeviceDesc &GetDeviceDesc (int iIndex) const { return m_List[iIndex]; }
+		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev) const;
 		CDeviceClass *GetNamedDevice (DeviceNames iDev) const;
 		void RemoveAll (void);
 
@@ -4242,7 +4251,7 @@ class CShipClass : public CDesignType
 		CString GetPlayerSortString (void) const;
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
-		inline const ReactorDesc *GetReactorDesc (void) { return &m_ReactorDesc; }
+		inline const CReactorDesc *GetReactorDesc (void) { return &m_ReactorDesc; }
 		inline int GetRotationAngle (void) { return m_RotationDesc.GetFrameAngle(); }
 		inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
 		inline int GetRotationRange (void) { return m_RotationDesc.GetFrameCount(); }
@@ -4394,7 +4403,7 @@ class CShipClass : public CDesignType
 		CIntegralRotationDesc m_RotationDesc;	//	Rotation and maneuverability
 		double m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
 		DriveDesc m_DriveDesc;					//	Drive descriptor
-		ReactorDesc m_ReactorDesc;				//	Reactor descriptor
+		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
 		int m_iCyberDefenseLevel;				//	Cyber defense level
 
 		int m_iMaxArmorMass;					//	Max mass of single armor segment
@@ -6016,7 +6025,7 @@ class CInstalledDevice
 		inline int GetDefaultFireAngle (CSpaceObject *pSource) { return m_pClass->GetDefaultFireAngle(this, pSource); }
 		bool GetDeviceEnhancementDesc (CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return m_pClass->GetDeviceEnhancementDesc(this, pSource, pWeapon, retDesc); }
 		inline const DriveDesc *GetDriveDesc (CSpaceObject *pSource) { return m_pClass->GetDriveDesc(this, pSource); }
-		inline const ReactorDesc *GetReactorDesc (CSpaceObject *pSource) { return m_pClass->GetReactorDesc(this, pSource); }
+		inline const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) { return m_pClass->GetReactorDesc(Ctx); }
 		inline Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		inline CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (CSpaceObject *pSource);

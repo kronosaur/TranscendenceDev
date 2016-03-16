@@ -902,7 +902,7 @@ class CShip : public CSpaceObject
 		//	Reactor methods
 		inline Metric GetFuelLeft (void) { return (m_fOutOfFuel ? 0.0 : m_rFuelLeft); }
 		Metric GetMaxFuel (void);
-		inline const ReactorDesc *GetReactorDesc (void) { return m_pReactorDesc; }
+		inline const CReactorDesc *GetReactorDesc (void) { return m_pReactorDesc; }
 		inline void TrackFuel (bool bTrack = true) { m_fTrackFuel = bTrack; }
 		inline void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
 		int GetPowerConsumption (void);
@@ -1140,7 +1140,7 @@ class CShip : public CSpaceObject
 		CInstalledDevice *m_Devices;			//	Array of devices
 		int m_NamedDevices[devNamesCount];
 		const DriveDesc *m_pDriveDesc;			//	Drive descriptor
-		const ReactorDesc *m_pReactorDesc;		//	Reactor descriptor
+		const CReactorDesc *m_pReactorDesc;		//	Reactor descriptor
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)

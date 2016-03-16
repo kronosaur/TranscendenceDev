@@ -298,7 +298,7 @@ void CReactorHUDCircular::PaintReactorItem (CShip *pShip)
 	CGDraw::ArcQuadrilateral(m_Buffer, CVector(m_xCenter, m_yCenter), vInnerPos, vOuterPos, cyHeight, m_rgbGaugeBack, CGDraw::blendCompositeNormal);
 
 	CG32bitPixel rgbColor;
-	if (pShip->GetReactorDesc()->fDamaged)
+	if (pReactor && pReactor->IsDamaged())
 		rgbColor = DAMAGED_TEXT_COLOR;
 	else
 		rgbColor = VI.GetColor(colorTextHighlight);

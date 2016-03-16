@@ -177,6 +177,8 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 			|| (pShip = Ctx.pSource->AsShip()) == NULL)
 		return;
 
+	CInstalledDevice *pReactor = pShip->GetNamedDevice(devReactor);
+
 	//	Set up some metrics
 
 	const CVisualPalette &VI = g_pHI->GetVisuals();
@@ -300,7 +302,7 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 	//	Paint the reactor name (we paint on top of the levels)
 
 	CG32bitPixel rgbColor;
-	if (pShip->GetReactorDesc()->fDamaged)
+	if (pReactor && pReactor->IsDamaged())
 		rgbColor = DAMAGED_TEXT_COLOR;
 	else
 		rgbColor = VI.GetColor(colorTextHighlight);

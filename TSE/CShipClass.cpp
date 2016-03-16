@@ -3151,7 +3151,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_DriveDesc.iPowerUse = pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1);
 	m_DriveDesc.fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
 
-	if (error = CReactorClass::InitReactorDesc(Ctx, pDesc, &m_ReactorDesc, true))
+	if (error = m_ReactorDesc.InitFromXML(Ctx, pDesc, true))
 		return error;
 
 	if ((m_fCyberDefenseOverride = pDesc->FindAttributeInteger(CYBER_DEFENSE_LEVEL_ATTRIB, &m_iCyberDefenseLevel)))
@@ -3472,8 +3472,8 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 			CItemCtx ItemCtx(ReactorItem);
 			return pDevice->GetItemProperty(ItemCtx, sProperty);
 			}
-		else
-			return CReactorClass::GetReactorProperty(*GetReactorDesc(), sProperty);
+        else
+            return GetReactorDesc()->FindProperty(sProperty);
 		}
 	else
 		return NULL;

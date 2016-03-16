@@ -374,6 +374,8 @@ void CShip::CalcDeviceBonus (void)
 	for (i = 0; i < GetDeviceCount(); i++)
 		if (!m_Devices[i].IsEmpty())
 			{
+            CItemCtx ItemCtx(this, &m_Devices[i]);
+
 			//	Keep an enhancement stack for this device
 
 			CItemEnhancementStack *pEnhancements = new CItemEnhancementStack;
@@ -444,7 +446,7 @@ void CShip::CalcDeviceBonus (void)
 
 				case itemcatReactor:
 					{
-					m_pReactorDesc = m_Devices[i].GetReactorDesc(this);
+					m_pReactorDesc = m_Devices[i].GetReactorDesc(ItemCtx);
 					break;
 					}
 				}
@@ -452,7 +454,7 @@ void CShip::CalcDeviceBonus (void)
 			//	Set the bonuses
 			//	Note that these include any bonuses confered by item enhancements
 
-			m_Devices[i].SetActivateDelay(pEnhancements->CalcActivateDelay(CItemCtx(this, &m_Devices[i])));
+			m_Devices[i].SetActivateDelay(pEnhancements->CalcActivateDelay(ItemCtx));
 
 			//	Take ownership of the stack.
 
@@ -847,7 +849,7 @@ void CShip::CalcReactorStats (void)
 
 	//	Calculate power generation
 
-	m_iMaxPower = m_pReactorDesc->iMaxPower;
+	m_iMaxPower = m_pReactorDesc->GetMaxPower();
 
 	//	Calculate power usage
 
@@ -934,6 +936,8 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 	else if (Item.IsDevice())
 		{
+        CItemCtx ItemCtx(&Item);
+
 		//	Get the item type
 
 		CDeviceClass *pDevice = Item.GetType()->GetDeviceClass();
@@ -952,14 +956,14 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		//	See if the ship's engine core is powerful enough
 
 		else if (GetMaxPower() > 0
-				&& pDevice->GetPowerRating(CItemCtx(&Item)) >= GetMaxPower())
+				&& pDevice->GetPowerRating(ItemCtx) >= GetMaxPower())
 			iResult = insReactorTooWeak;
 
 		//	If this is a reactor, then see if the ship class can support it
 
 		else if (iCategory == itemcatReactor
 				&& m_pClass->GetMaxReactorPower() > 0
-				&& pDevice->GetReactorDesc()->iMaxPower > m_pClass->GetMaxReactorPower())
+				&& pDevice->GetReactorDesc(ItemCtx)->GetMaxPower() > m_pClass->GetMaxReactorPower())
 			iResult = insReactorIncompatible;
 
 		//	See if we have enough device slots to install or if we have to
@@ -2624,7 +2628,7 @@ Metric CShip::GetMaxFuel (void)
 //	Return the maximum amount of fuel that the reactor can hold
 
 	{
-	return m_pReactorDesc->rMaxFuel;
+    return m_pReactorDesc->GetFuelCapacity();
 	}
 
 int CShip::GetMaxPower (void) const
@@ -2637,7 +2641,7 @@ int CShip::GetMaxPower (void) const
 	if (m_fTrackFuel)
 		return m_iMaxPower;
 	else
-		return m_pReactorDesc->iMaxPower;
+		return m_pReactorDesc->GetMaxPower();
 	}
 
 int CShip::GetMissileCount (void)
@@ -2977,8 +2981,14 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			CItemCtx ItemCtx(this, pReactor);
 			return pReactor->GetClass()->GetItemProperty(ItemCtx, sName);
 			}
-		else
-			return CReactorClass::GetReactorProperty(*m_pClass->GetReactorDesc(), sName);
+        else
+            {
+            ICCItem *pResult = m_pClass->GetReactorDesc()->FindProperty(sName);
+            if (pResult)
+                return pResult;
+            else
+                return CC.CreateNil();
+            }
 		}
 	else
 		return CSpaceObject::GetProperty(Ctx, sName);
@@ -3391,6 +3401,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 		}
 
 	CInstalledDevice *pDevice = &m_Devices[iDeviceSlot];
+    CItemCtx ItemCtx(this, pDevice);
 
 	//	Update the structure
 
@@ -3406,13 +3417,13 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	switch (pDevice->GetCategory())
 		{
 		case itemcatWeapon:
-			if (pDevice->IsSelectable(CItemCtx(this, pDevice)))
+			if (pDevice->IsSelectable(ItemCtx))
 				m_NamedDevices[devPrimaryWeapon] = iDeviceSlot;
 			m_pController->OnWeaponStatusChanged();
 			break;
 
 		case itemcatLauncher:
-			if (pDevice->IsSelectable(CItemCtx(this, pDevice)))
+			if (pDevice->IsSelectable(ItemCtx))
 				m_NamedDevices[devMissileWeapon] = iDeviceSlot;
 			m_pController->OnWeaponStatusChanged();
 			break;
@@ -3435,7 +3446,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 		case itemcatReactor:
 			m_NamedDevices[devReactor] = iDeviceSlot;
-			m_pReactorDesc = pDevice->GetReactorDesc(this);
+			m_pReactorDesc = pDevice->GetReactorDesc(ItemCtx);
 			break;
 		}
 
@@ -3534,7 +3545,7 @@ bool CShip::IsFuelCompatible (const CItem &Item)
 
 	//	If we have no installed reactor, we determine this ourselves
 
-	return CReactorClass::IsFuelCompatible(*m_pReactorDesc, Item);
+	return m_pReactorDesc->IsFuelCompatible(Item);
 	}
 
 bool CShip::IsPlayer (void) const
@@ -3883,7 +3894,7 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 			{
 			CInstalledDevice *pReactor = GetNamedDevice(devReactor);
 			if (pReactor)
-				m_pReactorDesc = pReactor->GetReactorDesc(this);
+				m_pReactorDesc = pReactor->GetReactorDesc(CItemCtx(this, pReactor));
 			else
 				m_pReactorDesc = m_pClass->GetReactorDesc();
 			break;
@@ -4960,8 +4971,11 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Engine core
 
-	if (m_NamedDevices[devReactor] != -1)
-		m_pReactorDesc = m_Devices[m_NamedDevices[devReactor]].GetReactorDesc(this);
+    if (m_NamedDevices[devReactor] != -1)
+        {
+        CInstalledDevice *pReactor = &m_Devices[m_NamedDevices[devReactor]];
+        m_pReactorDesc = pReactor->GetReactorDesc(CItemCtx(this, pReactor));
+        }
 	else
 		m_pReactorDesc = m_pClass->GetReactorDesc();
 
@@ -5492,7 +5506,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 			//	Consume fuel
 
-			ConsumeFuel(m_iPowerDrain / m_pReactorDesc->rPowerPerFuelUnit);
+			ConsumeFuel(m_iPowerDrain / m_pReactorDesc->GetEfficiency());
 
 			//	Check to see if we've run out of fuel
 

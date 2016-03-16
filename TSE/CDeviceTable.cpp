@@ -992,13 +992,13 @@ void CDeviceDescList::AddDeviceDesc (const SDeviceDesc &Desc)
 	m_List.Insert(Desc);
 	}
 
-CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
+const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const
 
-//	GetNamedDevice
+//  GetDeviceDescByName
 //
-//	Returns the named device (or NULL if not found)
+//  Returns a descriptor for a named device (or NULL if not found)
 
-	{
+    {
 	int i;
 	ItemCategories iCatToFind = CDeviceClass::GetItemCategory(iDev);
 
@@ -1008,9 +1008,23 @@ CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
 
 		//	See if this is the category that we want to find
 
-		if (pDevice->GetCategory() == iCatToFind)
-			return pDevice;
+        if (pDevice->GetCategory() == iCatToFind)
+            return &GetDeviceDesc(i);
 		}
+
+	return NULL;
+    }
+
+CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
+
+//	GetNamedDevice
+//
+//	Returns the named device (or NULL if not found)
+
+	{
+    const SDeviceDesc *pDesc = GetDeviceDescByName(iDev);
+    if (pDesc)
+        return pDesc->Item.GetType()->GetDeviceClass();
 
 	return NULL;
 	}

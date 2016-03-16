@@ -443,7 +443,7 @@ void CUIHelper::CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescLis
 
 	//	Get reactor info from the ship class
 
-	const ReactorDesc *pReactorDesc = pClass->GetReactorDesc();
+	const CReactorDesc *pReactorDesc = pClass->GetReactorDesc();
 	if (pReactorDesc == NULL)
 		{
 		if (retcyHeight)
@@ -453,21 +453,21 @@ void CUIHelper::CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescLis
 		return;
 		}
 
-	CDeviceClass *pReactor = Devices.GetNamedDevice(devReactor);
-	if (pReactor)
-		pReactorDesc = pReactor->GetReactorDesc();
+	const SDeviceDesc *pReactor = Devices.GetDeviceDescByName(devReactor);
+    if (pReactor)
+        pReactorDesc = CReactorClass::GetReactorDescForItem(CItemCtx(pReactor->Item));
 
 	//	Get the icon (OK if this is NULL)
 
-	CItemType *pItemIcon = (pReactor ? pReactor->GetItemType() : g_pUniverse->FindItemType(NOVA25_REACTOR_UNID));
+	CItemType *pItemIcon = (pReactor ? pReactor->Item.GetType() : g_pUniverse->FindItemType(NOVA25_REACTOR_UNID));
 
 	//	Create the info
 
 	CString sText = strPatternSubst(CONSTLIT("{/rtf {/f:LargeBold;/c:%d; %s} {/f:MediumBold;/c:%d; %s}}"),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			CTextBlock::Escape(ReactorPower2String(pReactorDesc->iMaxPower)),
+			CTextBlock::Escape(ReactorPower2String(pReactorDesc->GetMaxPower())),
 			(COLORREF)VI.GetColor(colorTextDialogInput),
-			(pReactor ? CTextBlock::Escape(pReactor->GetItemType()->GetNounPhrase()) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(pClass->GetShortName()))));
+			(pReactor ? CTextBlock::Escape(pReactor->Item.GetType()->GetNounPhrase()) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(pClass->GetShortName()))));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
 	}

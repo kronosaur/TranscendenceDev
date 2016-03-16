@@ -348,6 +348,7 @@
     <ClCompile Include="CParticleArray.cpp" />
     <ClCompile Include="CParticleSystemDesc.cpp" />
     <ClCompile Include="CPlayerSettings.cpp" />
+    <ClCompile Include="CReactorDesc.cpp" />
     <ClCompile Include="CRegenDesc.cpp" />
     <ClCompile Include="CResourceDb.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

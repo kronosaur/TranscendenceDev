@@ -221,12 +221,11 @@ class CMiscellaneousClass : public CDeviceClass
 class CReactorClass : public CDeviceClass
 	{
 	public:
-		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
+        ~CReactorClass (void);
 
-		static bool FindDataField (const ReactorDesc &Desc, const CString &sField, CString *retsValue);
-		static ICCItem *GetReactorProperty (const ReactorDesc &Desc, const CString &sProperty);
-		static ALERROR InitReactorDesc (SDesignLoadCtx &Ctx, CXMLElement *pDesc, ReactorDesc *retDesc, bool bShipClass = false);
-		static bool IsFuelCompatible (const ReactorDesc &Desc, const CItem &FuelItem);
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
+		static bool FindDataField (const CReactorDesc &Desc, const CString &sField, CString *retsValue);
+        static const CReactorDesc *GetReactorDescForItem (CItemCtx &ItemCtx);
 
 		//	CDeviceClass virtuals
 
@@ -234,8 +233,8 @@ class CReactorClass : public CDeviceClass
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatReactor; }
 		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName) override;
-		virtual const ReactorDesc *GetReactorDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) override;
-		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) override { return IsFuelCompatible(m_Desc, FuelItem); }
+		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) override;
+		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) override { return GetReactorDesc(Ctx)->IsFuelCompatible(FuelItem); }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
 	protected:
@@ -243,12 +242,20 @@ class CReactorClass : public CDeviceClass
 
 	private:
 		CReactorClass (void);
+        void InitDamagedDesc (void) const;
+        void InitEnhancedDesc (void) const;
 
-		static int GetEfficiencyBonus (const ReactorDesc &Desc);
+        //  Scalable items
 
-		ReactorDesc m_Desc;
-		ReactorDesc m_DamagedDesc;
-		ReactorDesc m_EnhancedDesc;
+        int m_iBaseLevel;                   //  Base level.
+        int m_iLevels;                      //  Total number of levels.
+        CReactorDesc *m_pDesc;              //  Array of entries, one per scaled level (minimum 1)
+
+        //  Damaged/enhanced
+        //  We allocate these as needed; the array matches m_pDesc
+
+		mutable CReactorDesc *m_pDamagedDesc;
+		mutable CReactorDesc *m_pEnhancedDesc;
 	};
 
 class CRepairerClass : public CDeviceClass
