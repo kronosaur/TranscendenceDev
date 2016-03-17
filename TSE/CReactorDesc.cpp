@@ -64,7 +64,7 @@ int CReactorDesc::AdjMaxPower (Metric rAdj)
 
     {
     if (rAdj > 0.0)
-        m_iMaxPower = (int)((Metric)m_iMaxPower * rAdj + 0.5);
+        m_iMaxPower = mathRound(m_iMaxPower * rAdj);
 
     return m_iMaxPower;
     }

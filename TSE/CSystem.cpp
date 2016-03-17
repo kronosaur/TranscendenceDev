@@ -390,6 +390,9 @@
 //  126: 1.7 Alpha 2
 //      m_iStyle in CMarker
 //
+//  127: 1.7 Alpha 2
+//      Removed saving drive desc UNID for CShip
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

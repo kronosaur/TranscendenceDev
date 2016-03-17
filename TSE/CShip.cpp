@@ -109,7 +109,6 @@ const DWORD CONTROLLER_PLAYERSHIP =				0x100000 + 100;
 
 CShip::CShip (void) : CSpaceObject(&g_Class),
 		m_pDocked(NULL),
-		m_pDriveDesc(NULL),
 		m_pReactorDesc(NULL),
 		m_pController(NULL),
 		m_iPowerDrain(0),
@@ -198,6 +197,8 @@ void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int 
 	CalcArmorBonus();
 	CalcDeviceBonus();
     CalcPerformance();
+
+    m_pController->OnStatsChanged();
 	m_pController->OnWeaponStatusChanged();
 	m_pController->OnArmorRepaired(-1);
 	}
@@ -436,15 +437,6 @@ void CShip::CalcDeviceBonus (void)
 					break;
 					}
 
-				case itemcatDrive:
-					{
-					if (m_Devices[i].IsEnabled())
-						SetDriveDesc(m_Devices[i].GetDriveDesc(this));
-					else
-						SetDriveDesc(NULL);
-					break;
-					}
-
 				case itemcatReactor:
 					{
 					m_pReactorDesc = m_Devices[i].GetReactorDesc(ItemCtx);
@@ -466,11 +458,6 @@ void CShip::CalcDeviceBonus (void)
 
 	if (!m_fOutOfFuel)
 		m_rFuelLeft = Min(m_rFuelLeft, GetMaxFuel());
-
-	//	Let our controller know (but only if we're fully created)
-
-	if (IsCreated())
-		m_pController->OnStatsChanged();
 
 	DEBUG_CATCH
 	}
@@ -849,11 +836,21 @@ void CShip::CalcPerformance (void)
     {
     int i;
 
+    //  Remember current settings so we can detect if something changed.
+
+    int iOldThrust = m_Perf.GetDriveDesc().GetThrust();
+    Metric rOldMaxSpeed = m_Perf.GetDriveDesc().GetMaxSpeed();
+
     //  We generate a context block and accumulate performance stats from the
     //  class, armor, devices, etc.
+    //
+    //  These fields are context for the ship that we're computing.
 
     SShipPerformanceCtx Ctx;
     Ctx.pShip = this;
+    Ctx.rSingleArmorFraction = (GetArmorSectionCount() > 0 ? 1.0 / GetArmorSectionCount() : 1.0);
+    Ctx.bDriveDamaged = IsMainDriveDamaged();
+    Ctx.bHalfSpeed = m_fHalfSpeed;
 
     //  Start with parameters from the class
 
@@ -861,7 +858,20 @@ void CShip::CalcPerformance (void)
 
     //  Accumulate settings from armor
 
+	for (i = 0; i < GetArmorSectionCount(); i++)
+		{
+        CItemCtx ItemCtx(this, GetArmorSection(i));
+        ItemCtx.GetArmor()->AccumulatePerformance(ItemCtx, Ctx);
+		}
+
     //  Accumulate settings from devices
+
+    for (i = 0; i < GetDeviceCount(); i++)
+        if (!GetDevice(i)->IsEmpty())
+            {
+            CItemCtx ItemCtx(this, GetDevice(i));
+            ItemCtx.GetDevice()->AccumulatePerformance(ItemCtx, Ctx);
+            }
 
     //  If we're tracking mass, adjust rotation descriptor to compensate for
     //  ship mass.
@@ -876,6 +886,12 @@ void CShip::CalcPerformance (void)
     //  This recalcs maneuvering
 
     m_fRecalcRotationAccel = false;
+
+	//	If we upgraded, then we reinitialize the effects
+
+	if (m_Perf.GetDriveDesc().GetThrust() != iOldThrust
+            || m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
+		m_pClass->InitEffects(this, &m_Effects);
     }
 
 void CShip::CalcReactorStats (void)
@@ -902,7 +918,7 @@ void CShip::CalcReactorStats (void)
 	//	If we're thrusting, then we consume power
 
 	if (!IsParalyzed() && m_pController->GetThrust())
-		m_iPowerDrain += m_pDriveDesc->iPowerUse;
+		m_iPowerDrain += m_Perf.GetDriveDesc().GetPowerUse();
 
 	//	Compute power drain of all devices
 
@@ -1301,8 +1317,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fAlwaysLeaveWreck = false;
 	pShip->m_fHasSpeedAdjArmor = false;
 
-	pShip->SetDriveDesc(NULL);
-
 	//	Shouldn't be able to hit a virtual ship
 
 	if (pClass->IsVirtual())
@@ -1652,9 +1666,9 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 				&& m_Overlays.GetCountOfType(pOverlayType) < MAX_DRIVE_DAMAGE_OVERLAY_COUNT)
 			CSpaceObject::AddOverlay(pOverlayType, Ctx.vHitPos, 180, iDamageTime);
 
-		//	Update effects
+		//	Update performance (which also updates effects).
 
-		m_pClass->InitEffects(this, &m_Effects);
+        CalcPerformance();
 		}
 	}
 
@@ -1890,6 +1904,8 @@ void CShip::EnableDevice (int iDev, bool bEnable, bool bSilent)
 
 	CalcDeviceBonus();
     CalcPerformance();
+
+    m_pController->OnStatsChanged();
 	m_pController->OnWeaponStatusChanged();
 	m_pController->OnArmorRepaired(-1);
 	m_pController->OnDeviceEnabledDisabled(iDev, bEnable, bSilent);
@@ -1931,7 +1947,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 	if (strEquals(sField, FIELD_CARGO_SPACE))
 		*retsValue = strFromInt(CalcMaxCargoSpace());
 	else if (strEquals(sField, FIELD_MAX_SPEED))
-		*retsValue = strFromInt((int)((100.0 * m_rMaxSpeed / LIGHT_SPEED) + 0.5), false);
+		*retsValue = strFromInt((int)((100.0 * GetMaxSpeed() / LIGHT_SPEED) + 0.5), false);
 	else if (strEquals(sField, FIELD_NAME))
 		{
 		DWORD dwFlags;
@@ -2020,7 +2036,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
 		{
 		Metric rMass = GetMass();
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_iThrust / rMass : 0.0)) + 0.5);
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? GetThrust() / rMass : 0.0)) + 0.5);
 		*retsValue = strFromInt(10 * iRatio);
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE))
@@ -2994,18 +3010,18 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	//	Drive properties
 
 	else if (strEquals(sName, PROPERTY_DRIVE_POWER))
-		return CC.CreateInteger(m_pDriveDesc->iPowerUse * 100);
+		return CC.CreateInteger(m_Perf.GetDriveDesc().GetPowerUse() * 100);
 
 	else if (strEquals(sName, PROPERTY_MAX_SPEED))
-		return CC.CreateInteger((int)((100.0 * m_rMaxSpeed / LIGHT_SPEED) + 0.5));
+		return CC.CreateInteger((int)((100.0 * GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 
 	else if (strEquals(sName, PROPERTY_THRUST))
-		return CC.CreateInteger(m_iThrust);
+		return CC.CreateInteger((int)GetThrust());
 
 	else if (strEquals(sName, PROPERTY_THRUST_TO_WEIGHT))
 		{
 		Metric rMass = GetMass();
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_iThrust / rMass : 0.0)) + 0.5);
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? GetThrust() / rMass : 0.0)) + 0.5);
 		return CC.CreateInteger(10 * iRatio);
 		}
 
@@ -3380,7 +3396,9 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	CalcArmorBonus();
 	CalcDeviceBonus();
     CalcPerformance();
+
 	InvalidateItemListState();
+    m_pController->OnStatsChanged();
 	m_pController->OnArmorRepaired(iSect);
 	}
 
@@ -3480,7 +3498,6 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 		case itemcatDrive:
 			m_NamedDevices[devDrive] = iDeviceSlot;
-			SetDriveDesc(pDevice->GetDriveDesc(this));
 			break;
 
 		case itemcatCargoHold:
@@ -3497,6 +3514,8 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	CalcDeviceBonus();
     CalcPerformance();
+
+    m_pController->OnStatsChanged();
 	InvalidateItemListState();
 	}
 
@@ -3901,6 +3920,8 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 		case comCargo:
 			{
 			//	Calculate new mass
+            //
+            //  NOTE: In this case we defer recalculating performance until update.
 
 			m_fRecalcItemMass = true;
             if (m_fTrackMass)
@@ -3926,11 +3947,7 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 
 		case comDrive:
 			{
-			CInstalledDevice *pDrive = GetNamedDevice(devDrive);
-			if (pDrive && pDrive->IsEnabled())
-				SetDriveDesc(pDrive->GetDriveDesc(this));
-			else
-				SetDriveDesc(NULL);
+            CalcPerformance();
 			break;
 			}
 
@@ -4478,6 +4495,7 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 		//	Update UI
 
 		InvalidateItemListState();
+        m_pController->OnStatsChanged();
 		m_pController->OnWeaponStatusChanged();
 		m_pController->OnArmorRepaired(-1);
 		}
@@ -4811,8 +4829,6 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		device: low = m_iTimeUntilReady
 //	DWORD		device: flags
 //
-//	DWORD		drivedesc UNID
-//
 //	DWORD		No of energy fields
 //	DWORD		field: type UNID
 //	DWORD		field: iLifeLeft
@@ -5007,13 +5023,10 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 			m_Devices[i].SetDeviceSlot(i);
 		}
 
-	//	Drive desc
+	//	Previous versions stored drive desc UNID
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	if (m_NamedDevices[devDrive] != -1 && m_Devices[m_NamedDevices[devDrive]].IsEnabled())
-		SetDriveDesc(m_Devices[m_NamedDevices[devDrive]].GetDriveDesc(this));
-	else
-		SetDriveDesc(NULL);
+    if (Ctx.dwVersion < 127)
+	    Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 
 	//	Engine core
 
@@ -5234,6 +5247,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     bool bArmorStatusChanged = false;
     bool bCalcDeviceBonus = false;
     bool bCargoChanged = false;
+    bool bCalcPerformance = false;
     bool bBoundsChanged = false;
 
     //	If we passed through a gate, then destroy ourselves
@@ -5245,7 +5259,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         //	If we're supposed to ascend on gate, then ascend now
 
         if (m_pClass->GetCharacter() != NULL
-            || (pAI && pAI->AscendOnGate()))
+                || (pAI && pAI->AscendOnGate()))
             {
             ResetMaxSpeed();
             m_fDestroyInGate = false;
@@ -5460,7 +5474,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     //	Slow down if an overlay is imposing drag
 
     if (m_fDragByOverlay
-        && !ShowParalyzedEffect())
+            && !ShowParalyzedEffect())
         {
         //	We're too lazy to store the drag coefficient, so we recalculate it here.
         //
@@ -5477,11 +5491,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     //	Drive damage timer
 
     if (m_iDriveDamagedTimer > 0
-        && (--m_iDriveDamagedTimer == 0))
+            && (--m_iDriveDamagedTimer == 0))
         {
-        //	If drive is repaired, update effects
+        //	If drive is repaired, update performance
 
-        m_pClass->InitEffects(this, &m_Effects);
+        bCalcPerformance = true;
         }
 
     //	Update armor
@@ -5719,8 +5733,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	if (m_fTrackMass && bCargoChanged)
 		OnComponentChanged(comCargo);
 
-    if (bOverlaysChanged || bCalcDeviceBonus || bArmorStatusChanged || m_fRecalcRotationAccel)
+    if (bOverlaysChanged || bCalcDeviceBonus || bArmorStatusChanged || m_fRecalcRotationAccel || bCalcPerformance)
         CalcPerformance();
+
+    if (bOverlaysChanged || bCalcDeviceBonus || bArmorStatusChanged || bCalcPerformance)
+        m_pController->OnStatsChanged();
 
 	if (bWeaponStatusChanged)
 		m_pController->OnWeaponStatusChanged();
@@ -5891,8 +5908,6 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 		dwSave = ((j == devNamesCount) ? 0xffffffff : j);
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
 		}
-
-	pStream->Write((char *)&m_pDriveDesc->dwUNID, sizeof(DWORD));
 
 	//	Energy fields
 
@@ -6300,8 +6315,13 @@ void CShip::RechargeItem (CItemListManipulator &ItemList, int iCharges)
 
 	if (Item.IsInstalled())
 		{
-		if (Item.IsDevice())
-			CalcDeviceBonus();
+        if (Item.IsDevice())
+            {
+            CalcDeviceBonus();
+
+            m_pController->OnStatsChanged();
+            m_pController->OnWeaponStatusChanged();
+            }
 		}
 	}
 
@@ -6412,7 +6432,6 @@ ALERROR CShip::RemoveItemAsDevice (CItemListManipulator &ItemList)
 
 		case itemcatDrive:
 			m_NamedDevices[devDrive] = -1;
-			SetDriveDesc(NULL);
 			break;
 
 		case itemcatCargoHold:
@@ -6428,7 +6447,10 @@ ALERROR CShip::RemoveItemAsDevice (CItemListManipulator &ItemList)
 	//	Recalc bonuses
 
 	CalcDeviceBonus();
+    CalcPerformance();
+
 	InvalidateItemListState();
+    m_pController->OnStatsChanged();
 
 	return NOERROR;
 	}
@@ -6813,72 +6835,6 @@ void CShip::SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames 
 	{
 	if (m_NamedDevices[iDev] != -1)
 		SetCursorAtDevice(ItemList, m_NamedDevices[iDev]);
-	}
-
-void CShip::SetDriveDesc (const DriveDesc *pDesc)
-
-//	SetDriveDesc
-//
-//	Sets the drive descriptor (or NULL to set back to class)
-
-	{
-	int i;
-
-	//	Compute any speed bonus due to armor
-
-	Metric rMaxSpeedAdj;
-	if (m_fHasSpeedAdjArmor)
-		{
-		Metric rTotalSpeedBonus = 0.0;
-
-		//	A segment's max speed bonus is based on having a complete set. For partial
-		//	sets we adjust accordingly.
-
-		Metric rSingleSegAdj = (GetArmorSectionCount() > 0 ? 1.0 / GetArmorSectionCount() : 1.0);
-
-		//	Loop over all segments
-
-		for (i = 0; i < GetArmorSectionCount(); i++)
-			{
-			CInstalledArmor *pArmor = GetArmorSection(i);
-			Metric rMaxSpeedBonus = pArmor->GetClass()->GetMaxSpeedBonus();
-
-			if (rMaxSpeedBonus != 0.0)
-				rTotalSpeedBonus += (rSingleSegAdj * rMaxSpeedBonus);
-			}
-
-		//	Convert to an adjustment
-
-		if (rTotalSpeedBonus <= -100.0)
-			rMaxSpeedAdj = 0.0;
-		else if (rTotalSpeedBonus != 0.0)
-			rMaxSpeedAdj = (100.0 + rTotalSpeedBonus) / 100.0;
-		else
-			rMaxSpeedAdj = 1.0;
-		}
-	else
-		rMaxSpeedAdj = 1.0;
-
-	//	Set the data based on device
-
-	int iOldThrust = m_iThrust;
-	if (pDesc)
-		{
-		m_pDriveDesc = pDesc;
-		m_iThrust = m_pClass->GetHullDriveDesc()->iThrust + m_pDriveDesc->iThrust;
-		m_rMaxSpeed = rMaxSpeedAdj * Max(m_pClass->GetHullDriveDesc()->rMaxSpeed, m_pDriveDesc->rMaxSpeed);
-		}
-	else
-		{
-		m_pDriveDesc = m_pClass->GetHullDriveDesc();
-		m_iThrust = m_pDriveDesc->iThrust;
-		m_rMaxSpeed = rMaxSpeedAdj * m_pDriveDesc->rMaxSpeed;
-		}
-
-	//	If we upgraded, then we reinitialize the effects
-
-	if (m_iThrust != iOldThrust)
-		m_pClass->InitEffects(this, &m_Effects);
 	}
 
 void CShip::SetFireDelay (CInstalledDevice *pWeapon, int iDelay)

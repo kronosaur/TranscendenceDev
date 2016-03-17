@@ -14,6 +14,16 @@ bool CInstalledArmor::AccumulateEnhancements (CSpaceObject *pSource, CInstalledD
 	return m_pArmorClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements);
 	}
 
+bool CInstalledArmor::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const
+
+//	AccumulateEnhancements
+//
+//	Accumulate enhancements on devices.
+
+	{
+    return m_pArmorClass->AccumulatePerformance(ItemCtx, Ctx);
+	}
+
 void CInstalledArmor::FinishInstall (CSpaceObject *pSource)
 
 //	FinishInstall

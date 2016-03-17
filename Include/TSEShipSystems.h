@@ -5,6 +5,8 @@
 
 #pragma once
 
+struct SShipPerformanceCtx;
+
 //	Basic ship properties ------------------------------------------------------
 
 enum ObjectComponentTypes
@@ -359,6 +361,7 @@ class CArmorClass
 		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		void AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList);
 		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
@@ -473,15 +476,35 @@ class CArmorClass
 
 //  Drive ----------------------------------------------------------------------
 
-struct DriveDesc
+class CDriveDesc
 	{
-	DWORD dwUNID;								//	UNID source (either ship class or device)
-	Metric rMaxSpeed;							//	Max speed (Km/sec)
-	int iThrust;								//	Thrust (GigaNewtons--gasp!)
-	int iPowerUse;								//	Power used while thrusting (1/10 megawatt)
+    public:
+        CDriveDesc (void);
 
-	DWORD fInertialess:1;						//	Inertialess drive
-	DWORD dwSpare:31;
+        void Add (const CDriveDesc &Src);
+        Metric AdjMaxSpeed (Metric rAdj);
+        int AdjPowerUse (Metric rAdj);
+        int AdjThrust (Metric rAdj);
+        inline Metric GetMaxSpeed (void) const { return m_rMaxSpeed; }
+        inline int GetPowerUse (void) const { return m_iPowerUse; }
+        inline int GetThrust (void) const { return m_iThrust; }
+        inline DWORD GetUNID (void) const { return m_dwUNID; }
+        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass = false);
+        inline bool IsInertialess (void) const { return (m_fInertialess ? true : false); }
+        inline void SetInertialess (bool bValue = true) { m_fInertialess = bValue; }
+        inline void SetMaxSpeed (Metric rSpeed) { m_rMaxSpeed = rSpeed; }
+        inline void SetPowerUse (int iPowerUse) { m_iPowerUse = iPowerUse; }
+        inline void SetThrust (int iThrust) { m_iThrust = iThrust; }
+        inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
+
+    private:
+	    DWORD m_dwUNID;						//	UNID source (either ship class or device)
+	    Metric m_rMaxSpeed;					//	Max speed (Km/sec)
+	    int m_iThrust;						//	Thrust (GigaNewtons--gasp!)
+	    int m_iPowerUse;					//	Power used while thrusting (1/10 megawatt)
+
+	    DWORD m_fInertialess:1;				//	Inertialess drive
+	    DWORD m_dwSpare:31;
 	};
 
 //  Reactor --------------------------------------------------------------------
@@ -601,6 +624,7 @@ class CDeviceClass
 
 		void AccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList);
 		bool AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		inline CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
@@ -649,7 +673,7 @@ class CDeviceClass
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
 		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const { return 0; }
 		virtual bool GetDeviceEnhancementDesc (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return false; }
-		virtual const DriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) const { return NULL; }
+		virtual const CDriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) const { return NULL; }
 		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
@@ -705,6 +729,7 @@ class CDeviceClass
 
 		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList) { }
 		virtual bool OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return false; }
+        virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return false; }
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
@@ -827,20 +852,37 @@ class IDeviceGenerator
 struct SShipPerformanceCtx
     {
     SShipPerformanceCtx (void) :
-            pShip(NULL)
+            pShip(NULL),
+            rSingleArmorFraction(0.0),
+            rMaxSpeedBonus(0.0),
+            bDriveDamaged(false),
+            bHalfSpeed(false)
         { }
 
     CShip *pShip;                           //  Target ship
+    Metric rSingleArmorFraction;            //  Fraction of all armor segments represented by 1 segment (= 1/segment-count)
+
     CRotationDesc RotationDesc;             //  Double precision rotation descriptor
+
+    CDriveDesc DriveDesc;                   //  Drive descriptor
+    Metric rMaxSpeedBonus;                  //  % bonus to speed (+/-). 100.0 = +100%
+    bool bDriveDamaged;                     //  If TRUE, cut thrust in half
+    bool bHalfSpeed;                        //  If TRUE, ship is running at half speed
     };
 
 class CShipPerformanceDesc
     {
     public:
-        inline CIntegralRotationDesc &GetRotationDesc (void) { return m_RotationDesc; }
+        inline const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
         inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
         void Init (SShipPerformanceCtx &Ctx);
 
+        //  Read-Write versions of accessors
+
+        inline CDriveDesc &GetDriveDesc (void) { return m_DriveDesc; }
+        inline CIntegralRotationDesc &GetRotationDesc (void) { return m_RotationDesc; }
+
     private:
         CIntegralRotationDesc m_RotationDesc;
+        CDriveDesc m_DriveDesc;
     };

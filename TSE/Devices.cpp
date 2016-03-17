@@ -169,6 +169,26 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *p
 	return bEnhanced;
 	}
 
+bool CDeviceClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const
+
+//  AccumulatePerformance
+//
+//  If this device alters a ship's performance, then we modified the ship 
+//  performance context. We return TRUE if we modified the context.
+
+    {
+    bool bModified = false;
+
+    //  Let sub-classes handle it
+
+    if (OnAccumulatePerformance(ItemCtx, Ctx))
+        bModified = true;
+
+    //  Done
+
+    return bModified;
+    }
+
 void CDeviceClass::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	AddTypesUsed

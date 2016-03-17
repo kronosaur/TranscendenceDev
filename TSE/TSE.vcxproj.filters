@@ -916,6 +916,9 @@
     <ClCompile Include="CShipPerformanceDesc.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="CDriveDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

@@ -1419,6 +1419,7 @@ class CInstalledArmor
 	public:
 		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		inline bool ConsumedPower (void) const { return (m_fConsumePower ? true : false); }
 		void FinishInstall (CSpaceObject *pSource);
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
@@ -2419,14 +2420,14 @@ class CShipClass : public CDesignType
 		inline int GetDockingPortCount (void) { return m_DockingPorts.GetCount(); }
 		CVector GetDockingPortOffset (int iRotation);
 		inline const TArray<CVector> &GetDockingPortPositions (void) { return m_DockingPorts; }
-		void GetDriveDesc (DriveDesc *retDriveDesc) const;
+		void GetDriveDesc (CDriveDesc *retDriveDesc) const;
 		inline CObjectEffectDesc &GetEffectsDesc (void) { return m_Effects; }
 		IShipGenerator *GetEscorts (void) { return m_pEscorts; }
 		CWeaponFireDesc *GetExplosionType (CShip *pShip);
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
 		CXMLElement *GetHUDDescInherited (EHUDTypes iType) const;
-		inline const DriveDesc *GetHullDriveDesc (void) const { return &m_DriveDesc; }
+		inline const CDriveDesc *GetHullDriveDesc (void) const { return &m_DriveDesc; }
 		inline int GetHullMass (void) const { return m_iMass; }
 		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
 		int GetHullSectionAtAngle (int iAngle);
@@ -2600,7 +2601,7 @@ class CShipClass : public CDesignType
 		int m_iCargoSpace;						//	Available cargo space (tons)
 		CRotationDesc m_RotationDesc;	        //	Rotation and maneuverability
 		double m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
-		DriveDesc m_DriveDesc;					//	Drive descriptor
+		CDriveDesc m_DriveDesc;					//	Drive descriptor
 		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
 		int m_iCyberDefenseLevel;				//	Cyber defense level
 
@@ -4203,6 +4204,7 @@ class CInstalledDevice
 
 		inline bool AbsorbDamage (CSpaceObject *pShip, SDamageCtx &Ctx) { if (!IsEmpty()) return m_pClass->AbsorbDamage(this, pShip, Ctx); else return false; }
 		inline bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return m_pClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements); }
+        inline bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return m_pClass->AccumulatePerformance(ItemCtx, Ctx); }
 		inline bool Activate (CSpaceObject *pSource, 
 							  CSpaceObject *pTarget,
 							  bool *retbSourceDestroyed,
@@ -4222,7 +4224,7 @@ class CInstalledDevice
 		inline int GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) { return m_pClass->GetDamageType(Ctx, Ammo); }
 		inline int GetDefaultFireAngle (CSpaceObject *pSource) { return m_pClass->GetDefaultFireAngle(this, pSource); }
 		bool GetDeviceEnhancementDesc (CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return m_pClass->GetDeviceEnhancementDesc(this, pSource, pWeapon, retDesc); }
-		inline const DriveDesc *GetDriveDesc (CSpaceObject *pSource) { return m_pClass->GetDriveDesc(this, pSource); }
+		inline const CDriveDesc *GetDriveDesc (CSpaceObject *pSource) { return m_pClass->GetDriveDesc(this, pSource); }
 		inline const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) { return m_pClass->GetReactorDesc(Ctx); }
 		inline Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		inline CString GetName (void) { return m_pClass->GetName(); }

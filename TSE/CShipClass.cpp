@@ -833,13 +833,13 @@ Metric CShipClass::CalcManeuverValue (bool bDodge) const
 
 	//	Get some statistics
 
-	DriveDesc Drive;
+	CDriveDesc Drive;
 	GetDriveDesc(&Drive);
 
 	Metric rMass = CalcMass(m_AverageDevices);
-	Metric rThrustRatio = 2.0 * (rMass > 0.0 ? Drive.iThrust / rMass : 0.0);
+	Metric rThrustRatio = 2.0 * (rMass > 0.0 ? Drive.GetThrust() / rMass : 0.0);
 	int iManeuverDelay = Max(1, GetManeuverDelay());
-	Metric rSpeed = 100.0 * Drive.rMaxSpeed / LIGHT_SPEED;
+	Metric rSpeed = 100.0 * Drive.GetMaxSpeed() / LIGHT_SPEED;
 
 	//	Speed of 12 is a pivot point. Above this speed it gets easy to dodge
 	//	shots; below this speed it gets increasingly harder.
@@ -1002,13 +1002,13 @@ enum LowMediumHigh
 
 void CShipClass::ComputeMovementStats (CDeviceDescList &Devices, int *retiSpeed, int *retiThrust, int *retiManeuver)
 	{
-	const DriveDesc *pDrive = GetHullDriveDesc();
+	const CDriveDesc *pDrive = GetHullDriveDesc();
 
 	//	Figure out the speed of the ship
 
-	if (pDrive->rMaxSpeed > 0.20 * LIGHT_SPEED)
+	if (pDrive->GetMaxSpeed() > 0.20 * LIGHT_SPEED)
 		*retiSpeed = enumHigh;
-	else if (pDrive->rMaxSpeed > 0.15 * LIGHT_SPEED)
+	else if (pDrive->GetMaxSpeed() > 0.15 * LIGHT_SPEED)
 		*retiSpeed = enumMedium;
 	else
 		*retiSpeed = enumLow;
@@ -1020,7 +1020,7 @@ void CShipClass::ComputeMovementStats (CDeviceDescList &Devices, int *retiSpeed,
 
 	//	Figure out the thrust of the ship
 
-	Metric rRatio = (Metric)pDrive->iThrust / rFullMass;
+	Metric rRatio = (Metric)pDrive->GetThrust() / rFullMass;
 	if (rRatio >= 7.0)
 		*retiThrust = enumHigh;
 	else if (rRatio >= 3.0)
@@ -1737,9 +1737,9 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt(mathRound(CIntegralRotationDesc(m_RotationDesc).GetMaxRotationSpeedDegrees()));
 	else if (strEquals(sField, FIELD_MAX_SPEED))
 		{
-		DriveDesc Desc;
+		CDriveDesc Desc;
 		GetDriveDesc(&Desc);
-		*retsValue = strFromInt((int)((100.0 * Desc.rMaxSpeed / LIGHT_SPEED) + 0.5));
+		*retsValue = strFromInt((int)((100.0 * Desc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_MAX_STRUCTURAL_HP))
 		*retsValue = strFromInt(m_Interior.GetHitPoints());
@@ -1884,17 +1884,17 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_THRUST))
 		{
-		DriveDesc Drive;
+		CDriveDesc Drive;
 		GetDriveDesc(&Drive);
-		*retsValue = strFromInt(Drive.iThrust);
+		*retsValue = strFromInt(Drive.GetThrust());
 		}
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
 		{
-		DriveDesc Drive;
+		CDriveDesc Drive;
 		GetDriveDesc(&Drive);
 
 		Metric rMass = CalcMass(m_AverageDevices);
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? Drive.iThrust / rMass : 0.0)) + 0.5);
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? Drive.GetThrust() / rMass : 0.0)) + 0.5);
 		*retsValue = strFromInt(10 * iRatio);
 		}
 	else if (strEquals(sField, FIELD_TREASURE_VALUE))
@@ -2018,9 +2018,9 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_DRIVE_POWER))
 		{
-		DriveDesc Drive;
+		CDriveDesc Drive;
 		GetDriveDesc(&Drive);
-		*retsValue = strFromInt(Drive.iPowerUse);
+		*retsValue = strFromInt(Drive.GetPowerUse());
 		}
 	else if (CReactorClass::FindDataField(m_ReactorDesc, sField, retsValue))
 		return true;
@@ -2133,7 +2133,7 @@ CVector CShipClass::GetDockingPortOffset (int iRotation)
 	return PolarToVector(iRotation + 180, (0.8 * g_KlicksPerPixel * ((iImageSize - DOCK_OFFSET_STD_SIZE) / 2)));
 	}
 
-void CShipClass::GetDriveDesc (DriveDesc *retDriveDesc) const
+void CShipClass::GetDriveDesc (CDriveDesc *retDriveDesc) const
 
 //	GetDriveDesc
 //
@@ -2144,15 +2144,7 @@ void CShipClass::GetDriveDesc (DriveDesc *retDriveDesc) const
 
 	CDeviceClass *pDrive = m_AverageDevices.GetNamedDevice(devDrive);
 	if (pDrive)
-		{
-		const DriveDesc *pDriveDesc = pDrive->GetDriveDesc();
-
-		retDriveDesc->dwUNID = pDriveDesc->dwUNID;
-		retDriveDesc->fInertialess = pDriveDesc->fInertialess;
-		retDriveDesc->iPowerUse = pDriveDesc->iPowerUse;
-		retDriveDesc->iThrust += pDriveDesc->iThrust;
-		retDriveDesc->rMaxSpeed = Max(retDriveDesc->rMaxSpeed, pDriveDesc->rMaxSpeed);
-		}
+        retDriveDesc->Add(*pDrive->GetDriveDesc());
 	}
 
 CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip)
@@ -2564,8 +2556,8 @@ void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 			}
 		else
 			{
-			iThrust = m_DriveDesc.iThrust;
-			rMaxSpeed = m_DriveDesc.rMaxSpeed;
+			iThrust = m_DriveDesc.GetThrust();
+			rMaxSpeed = m_DriveDesc.GetMaxSpeed();
 			}
 
 		//	Compute power of maneuvering thrusters
@@ -2637,9 +2629,10 @@ void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
 //  Initializes the performance parameters from the ship class.
 
     {
-    //  Start with the class's rotation descriptor
+    //  Initialize with performance params based on the class.
 
     Ctx.RotationDesc = m_RotationDesc;
+    Ctx.DriveDesc = m_DriveDesc;
     }
 
 void CShipClass::InitShipNamesIndices (void)
@@ -2895,20 +2888,20 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 		{
 		Metric rMass = CalcMass(m_AverageDevices);
 		if (rMass > 0.0)
-			m_DriveDesc.iThrust = (int)(((m_rThrustRatio * rMass) / 2.0) + 0.5);
+			m_DriveDesc.SetThrust((int)(((m_rThrustRatio * rMass) / 2.0) + 0.5));
 		}
 
 	//	For later APIs compute the drive power usage, if not specified
 
-	if (m_DriveDesc.iPowerUse < 0)
+	if (m_DriveDesc.GetPowerUse() < 0)
 		{
 		if (GetAPIVersion() >= 29)
-			m_DriveDesc.iPowerUse = (int)Max(1.0, DRIVE_POWER_FACTOR * pow(m_DriveDesc.iThrust / 100.0, DRIVE_POWER_EXP));
+			m_DriveDesc.SetPowerUse((int)Max(1.0, DRIVE_POWER_FACTOR * pow(m_DriveDesc.GetThrust() / 100.0, DRIVE_POWER_EXP)));
 
 		//	Otherwise, use the default
 
 		else
-			m_DriveDesc.iPowerUse = DEFAULT_POWER_USE;
+			m_DriveDesc.SetPowerUse(DEFAULT_POWER_USE);
 		}
 
 	//	Bind structures
@@ -3136,8 +3129,8 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	m_Image.SetRotationCount(m_RotationDesc.GetFrameCount());
 
-	m_DriveDesc.dwUNID = GetUNID();
-	m_DriveDesc.rMaxSpeed = (double)pDesc->GetAttributeInteger(CONSTLIT(g_MaxSpeedAttrib)) * LIGHT_SPEED / 100;
+	m_DriveDesc.SetUNID(GetUNID());
+	m_DriveDesc.SetMaxSpeed((double)pDesc->GetAttributeInteger(CONSTLIT(g_MaxSpeedAttrib)) * LIGHT_SPEED / 100);
 
 	//	Load effects
 
@@ -3153,16 +3146,16 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	We also accept a thrust ratio
 
 	if (pDesc->FindAttributeDouble(THRUST_RATIO_ATTRIB, &m_rThrustRatio))
-		m_DriveDesc.iThrust = 0;
+		m_DriveDesc.SetThrust(0);
 	else
 		{
-		m_DriveDesc.iThrust = pDesc->GetAttributeInteger(THRUST_ATTRIB);
+		m_DriveDesc.SetThrust(pDesc->GetAttributeInteger(THRUST_ATTRIB));
 		m_rThrustRatio = 0.0;
 		}
 
 	//	-1 means default. We will compute a proper default in Bind
-	m_DriveDesc.iPowerUse = pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1);
-	m_DriveDesc.fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
+	m_DriveDesc.SetPowerUse(pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1));
+	m_DriveDesc.SetInertialess(pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB));
 
 	if (error = m_ReactorDesc.InitFromXML(Ctx, pDesc, true))
 		return error;
@@ -3452,11 +3445,11 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	else if (strEquals(sProperty, PROPERTY_THRUST_TO_WEIGHT))
 		{
-		DriveDesc Drive;
+		CDriveDesc Drive;
 		GetDriveDesc(&Drive);
 
 		Metric rMass = CalcMass(m_AverageDevices);
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? Drive.iThrust / rMass : 0.0)) + 0.5);
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? Drive.GetThrust() / rMass : 0.0)) + 0.5);
 		return CC.CreateInteger(10 * iRatio);
 		}
 
@@ -3464,7 +3457,7 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 			|| strEquals(sProperty, PROPERTY_MAX_SPEED)
 			|| strEquals(sProperty, PROPERTY_THRUST))
 		{
-		DriveDesc Drive;
+		CDriveDesc Drive;
 		GetDriveDesc(&Drive);
 
 		return CDriveClass::GetDriveProperty(Drive, sProperty);

@@ -218,7 +218,7 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
-	const DriveDesc *pDriveDesc = pClass->GetHullDriveDesc();
+	const CDriveDesc *pDriveDesc = pClass->GetHullDriveDesc();
 	if (pDriveDesc == NULL)
 		{
 		if (retcyHeight)
@@ -230,8 +230,8 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 
 	//	Base speed and thrust
 
-	Metric rMaxSpeed = pDriveDesc->rMaxSpeed;
-	int iThrust = pDriveDesc->iThrust;
+	Metric rMaxSpeed = pDriveDesc->GetMaxSpeed();
+	int iThrust = pDriveDesc->GetThrust();
 
 	//	If we have a drive upgrade, we account for it here
 
@@ -239,8 +239,8 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 	if (pDrive)
 		{
 		pDriveDesc = pDrive->GetDriveDesc();
-		rMaxSpeed = Max(rMaxSpeed, pDriveDesc->rMaxSpeed);
-		iThrust += pDriveDesc->iThrust;
+		rMaxSpeed = Max(rMaxSpeed, pDriveDesc->GetMaxSpeed());
+		iThrust += pDriveDesc->GetThrust();
 		}
 
 	//	Icon

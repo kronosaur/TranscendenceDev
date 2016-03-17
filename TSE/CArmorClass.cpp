@@ -464,6 +464,29 @@ bool CArmorClass::AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *p
 	return false;
 	}
 
+bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const
+
+//  AccumulatePerformance
+//
+//  Adds performance improvements (if any) to the ship performance context. 
+//  Returns TRUE if any improvements were added.
+
+    {
+    bool bModified = false;
+
+    //  Adjust max speed.
+
+    if (m_rMaxSpeedBonus != 0.0)
+        {
+        Ctx.rMaxSpeedBonus += Ctx.rSingleArmorFraction * m_rMaxSpeedBonus;
+        bModified = true;
+        }
+
+    //  Done
+
+    return bModified;
+    }
+
 void CArmorClass::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	AddTypesUsed

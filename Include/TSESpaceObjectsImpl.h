@@ -915,12 +915,12 @@ class CShip : public CSpaceObject
         inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
 		inline int GetRotationRange (void) { return m_pClass->GetRotationRange(); }
 		inline EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetRotationDesc(), iAngle); }
-		inline Metric GetThrust (void) { return (IsMainDriveDamaged() ? (m_iThrust / 2) : m_iThrust); }
-		inline bool IsInertialess (void) { return (m_pDriveDesc->fInertialess ? true : false); }
+		inline Metric GetThrust (void) { return m_Perf.GetDriveDesc().GetThrust(); }
+		inline bool IsInertialess (void) { return m_Perf.GetDriveDesc().IsInertialess(); }
 		inline bool IsMainDriveDamaged (void) const { return m_iDriveDamagedTimer != 0; }
 		inline bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_Perf.GetRotationDesc(), iAngle); }
-		inline void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; }
-		inline void ResetMaxSpeed (void) { m_fHalfSpeed = false; }
+        inline void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; CalcPerformance(); }
+        inline void ResetMaxSpeed (void) { m_fHalfSpeed = false; CalcPerformance(); }
 
 		//	Miscellaneous
 		inline IShipController *GetController (void) { return m_pController; }
@@ -1002,7 +1002,7 @@ class CShip : public CSpaceObject
 		virtual int GetShieldLevel (void);
 		virtual CSovereign *GetSovereign (void) const { return m_pSovereign; }
 		virtual int GetStealth (void) const;
-		virtual Metric GetMaxSpeed (void) { return ((m_fHalfSpeed || IsMainDriveDamaged()) ? (m_rMaxSpeed / 2.0) : m_rMaxSpeed); }
+		virtual Metric GetMaxSpeed (void) { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
 		virtual CTradingDesc *GetTradeDescOverride (void) { return m_pTrade; }
 		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider);
@@ -1126,7 +1126,6 @@ class CShip : public CSpaceObject
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void ReactorOverload (void);
         ALERROR ReportCreateError (const CString &sError) const;
-		void SetDriveDesc (const DriveDesc *pDesc);
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		inline bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
 
@@ -1141,7 +1140,6 @@ class CShip : public CSpaceObject
 		int m_iDeviceCount;						//	Number of devices
 		CInstalledDevice *m_Devices;			//	Array of devices
 		int m_NamedDevices[devNamesCount];
-		const DriveDesc *m_pDriveDesc;			//	Drive descriptor
 		const CReactorDesc *m_pReactorDesc;		//	Reactor descriptor
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
@@ -1174,8 +1172,6 @@ class CShip : public CSpaceObject
 		Metric m_rCargoMass;					//	Mass of cargo items (not including installed)
 		int m_iPowerDrain;						//	(temp) power consumed (1/10 megawatt)
 		int m_iMaxPower;						//	(temp) max power (1/10 megawatt)
-		int m_iThrust;							//	Computed thrust
-		Metric m_rMaxSpeed;						//	Computed max speed
 		int m_iStealth;							//	Computed stealth
 
 		CSpaceObject *m_pDocked;				//	If not NULL, object we are docked to.

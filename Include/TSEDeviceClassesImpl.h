@@ -123,13 +123,13 @@ class CDriveClass : public CDeviceClass
 	{
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDrive);
-		static ICCItem *GetDriveProperty (const DriveDesc &Desc, const CString &sProperty);
+		static ICCItem *GetDriveProperty (const CDriveDesc &Desc, const CString &sProperty);
 
 		//	CDeviceClass virtuals
 
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatDrive; }
-		virtual const DriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) const override;
+		virtual const CDriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) const override;
 		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
@@ -139,14 +139,15 @@ class CDriveClass : public CDeviceClass
 		//	CDeviceClass virtuals
 
 		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList) override;
+        virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 
 	private:
 		CDriveClass (void);
 
-		DriveDesc m_DriveDesc;
-		DriveDesc m_DamagedDriveDesc;
-		DriveDesc m_EnhancedDriveDesc;
+		CDriveDesc m_DriveDesc;
+		CDriveDesc m_DamagedDriveDesc;
+		CDriveDesc m_EnhancedDriveDesc;
 	};
 
 class CEnhancerClass : public CDeviceClass
