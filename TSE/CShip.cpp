@@ -284,7 +284,6 @@ void CShip::CalcArmorBonus (void)
 	//	Loop over all armor segments and compute some values.
 
 	m_iStealth = stealthMax;
-	m_fHasSpeedAdjArmor = false;
 
 	for (i = 0; i < SegmentsByType.GetCount(); i++)
 		{
@@ -306,11 +305,6 @@ void CShip::CalcArmorBonus (void)
 
 			if (pArmor->GetClass()->GetStealth() < m_iStealth)
 				m_iStealth = pArmor->GetClass()->GetStealth();
-
-			//	Check to see if any segment affects the max speed of the ship.
-
-			if (pArmor->GetClass()->GetMaxSpeedBonus() != 0.0)
-				m_fHasSpeedAdjArmor = true;
 			}
 		}
 
@@ -1315,7 +1309,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fSpinningByOverlay = false;
 	pShip->m_fDragByOverlay = false;
 	pShip->m_fAlwaysLeaveWreck = false;
-	pShip->m_fHasSpeedAdjArmor = false;
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -4971,7 +4964,6 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fSpinningByOverlay =		((dwLoad & 0x00200000) ? true : false);
 	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
-	m_fHasSpeedAdjArmor =		((dwLoad & 0x01000000) ? true : false);
 
 	//	We will compute CalcPerformance at the bottom anyways
 	m_fRecalcRotationAccel = false;
@@ -5875,7 +5867,6 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fSpinningByOverlay ?	0x00200000 : 0);
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
-	dwSave |= (m_fHasSpeedAdjArmor ?	0x01000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Armor

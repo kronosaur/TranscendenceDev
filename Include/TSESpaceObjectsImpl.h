@@ -1208,7 +1208,7 @@ class CShip : public CSpaceObject
 		DWORD m_fDragByOverlay:1;				//	TRUE if overlay imposes drag
 		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
 
-		DWORD m_fHasSpeedAdjArmor:1;			//	TRUE if one or more segments change ship's max speed
+		DWORD m_fSpare1:1;			            //	TRUE if one or more segments change ship's max speed
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
