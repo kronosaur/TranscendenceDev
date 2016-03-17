@@ -32,6 +32,96 @@ struct SCrewMetrics
 	int iLoyalty;							//	Loyalty for all crew members
 	};
 
+//  CAISettings ----------------------------------------------------------------
+
+enum AICombatStyles
+	{
+	aicombatStandard =						0,	//	Normal dogfighting
+	aicombatStandOff =						1,	//	Missile ship combat
+	aicombatFlyby =							2,	//	Maximize relative speed wrt target
+	aicombatNoRetreat =						3,	//	Do not turn away from target
+	aicombatChase =							4,	//	Get in position behind the target
+	aicombatAdvanced =						5,	//	Dogfight, keeping proper distance from target
+	};
+
+class CAISettings
+	{
+	public:
+		enum EFlockingStyles
+			{
+			flockNone =						0,	//	No flocking behavior
+
+			flockCloud =					1,	//	Old-style cloud flocking
+			flockCompact =					2,	//	Crowd around leader
+			flockRandom =					3,	//	Random, fixed positions around leader
+			};
+
+		CAISettings (void);
+
+		inline bool AscendOnGate (void) const { return m_fAscendOnGate; }
+		inline AICombatStyles GetCombatStyle (void) const { return m_iCombatStyle; }
+		inline int GetFireAccuracy (void) const { return m_iFireAccuracy; }
+		inline int GetFireRangeAdj (void) const { return m_iFireRangeAdj; }
+		inline int GetFireRateAdj (void) const { return m_iFireRateAdj; }
+		inline EFlockingStyles GetFlockingStyle (void) const { return m_iFlockingStyle; }
+		inline Metric GetMinCombatSeparation (void) const { return m_rMinCombatSeparation; }
+		inline int GetPerception (void) const { return m_iPerception; }
+		CString GetValue (const CString &sSetting);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		void InitToDefault (void);
+		inline bool IsAggressor (void) const { return m_fAggressor; }
+		inline bool IsFlocker (void) const { return (m_iFlockingStyle != flockNone); }
+		inline bool IsNonCombatant (void) const { return m_fNonCombatant; }
+		inline bool NoAttackOnThreat (void) const { return m_fNoAttackOnThreat; }
+		inline bool NoDogfights (void) const { return m_fNoDogfights; }
+		inline bool NoFriendlyFire (void) const { return m_fNoFriendlyFire; }
+		inline bool NoFriendlyFireCheck (void) const { return m_fNoFriendlyFireCheck; }
+		inline bool NoNavPaths (void) const { return m_fNoNavPaths; }
+		inline bool NoOrderGiver (void) const { return m_fNoOrderGiver; }
+		inline bool NoShieldRetreat (void) const { return m_fNoShieldRetreat; }
+		inline bool NoTargetsOfOpportunity (void) const { return m_fNoTargetsOfOpportunity; }
+		void ReadFromStream (SLoadCtx &Ctx);
+		inline void SetMinCombatSeparation (Metric rValue) { m_rMinCombatSeparation = rValue; }
+		CString SetValue (const CString &sSetting, const CString &sValue);
+		void WriteToStream (IWriteStream *pStream);
+
+		static AICombatStyles ConvertToAICombatStyle (const CString &sValue);
+		static EFlockingStyles ConvertToFlockingStyle (const CString &sValue);
+		static CString ConvertToID (AICombatStyles iStyle);
+		static CString ConvertToID (EFlockingStyles iStyle);
+
+	private:
+		AICombatStyles m_iCombatStyle;			//	Combat style
+		EFlockingStyles m_iFlockingStyle;		//	Flocking style
+
+		int m_iFireRateAdj;						//	Adjustment to weapon's fire rate (10 = normal; 20 = double delay)
+		int m_iFireRangeAdj;					//	Adjustment to range (100 = normal; 50 = half range)
+		int m_iFireAccuracy;					//	Percent chance of hitting
+		int m_iPerception;						//	Perception
+
+		Metric m_rMinCombatSeparation;			//	Min separation from other ships while in combat
+
+		DWORD m_fNoShieldRetreat:1;				//	Ship does not retreat when shields go down
+		DWORD m_fNoDogfights:1;					//	Don't turn ship to face target
+		DWORD m_fNonCombatant:1;				//	Tries to stay out of trouble
+		DWORD m_fNoFriendlyFire:1;				//	Cannot hit friends
+		DWORD m_fAggressor:1;					//	Attack targets of opportunity even if they haven't attacked
+		DWORD m_fNoFriendlyFireCheck:1;			//	Do not check to see if friends are in line of fire
+		DWORD m_fNoOrderGiver:1;				//	Always treated as the decider
+		DWORD m_fAscendOnGate:1;				//	If TRUE, we ascend when the ship gates out
+
+		DWORD m_fNoNavPaths:1;					//	If TRUE, do not use nav paths
+		DWORD m_fNoAttackOnThreat:1;			//	Do not attack enemies while escorting (unless ordered)
+		DWORD m_fNoTargetsOfOpportunity:1;		//	If TRUE, do not attack targets of opportunity
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:16;
+	};
+
 //	IShipController ------------------------------------------------------------
 //
 //	This abstract class is the root of all ship AI classes.

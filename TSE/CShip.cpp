@@ -197,6 +197,7 @@ void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int 
 	CalcOverlayImpact();
 	CalcArmorBonus();
 	CalcDeviceBonus();
+    CalcPerformance();
 	m_pController->OnWeaponStatusChanged();
 	m_pController->OnArmorRepaired(-1);
 	}
@@ -838,6 +839,45 @@ void CShip::CalcOverlayImpact (void)
 	DEBUG_CATCH
 	}
 
+void CShip::CalcPerformance (void)
+
+//  CalcPerformance
+//
+//  Computes ship performance parameters by accumulating all devices, 
+//  enhancements, etc.
+
+    {
+    int i;
+
+    //  We generate a context block and accumulate performance stats from the
+    //  class, armor, devices, etc.
+
+    SShipPerformanceCtx Ctx;
+    Ctx.pShip = this;
+
+    //  Start with parameters from the class
+
+    m_pClass->InitPerformance(Ctx);
+
+    //  Accumulate settings from armor
+
+    //  Accumulate settings from devices
+
+    //  If we're tracking mass, adjust rotation descriptor to compensate for
+    //  ship mass.
+
+    if (m_fTrackMass)
+        Ctx.RotationDesc.AdjForShipMass(m_pClass->GetHullMass(), GetItemMass());
+
+    //  Now apply the performance parameters to the descriptor
+
+    m_Perf.Init(Ctx);
+
+    //  This recalcs maneuvering
+
+    m_fRecalcRotationAccel = false;
+    }
+
 void CShip::CalcReactorStats (void)
 
 //	CalcReactorStats
@@ -1251,7 +1291,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fManualSuspended = false;
 	pShip->m_fGalacticMap = false;
 	pShip->m_fRecalcItemMass = true;
-	pShip->m_fRecalcRotationAccel = true;
+	pShip->m_fRecalcRotationAccel = false;
 	pShip->m_fDockingDisabled = false;
 	pShip->m_fControllerDisabled = false;
 	pShip->m_fParalyzedByOverlay = false;
@@ -1404,6 +1444,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->OnComponentChanged(comCargo);
 	pShip->CalcArmorBonus();
 	pShip->CalcDeviceBonus();
+    pShip->CalcPerformance();
 
 	//	Initialize fuel now that we know our maximum
 
@@ -1848,6 +1889,7 @@ void CShip::EnableDevice (int iDev, bool bEnable, bool bSilent)
 	//	Recalc bonuses, etc.
 
 	CalcDeviceBonus();
+    CalcPerformance();
 	m_pController->OnWeaponStatusChanged();
 	m_pController->OnArmorRepaired(-1);
 	m_pController->OnDeviceEnabledDisabled(iDev, bEnable, bSilent);
@@ -1972,7 +2014,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		Metric rManeuver = g_SecondsPerUpdate * m_pClass->GetRotationDesc().GetMaxRotationSpeedPerTick();
+		Metric rManeuver = g_SecondsPerUpdate * m_Perf.GetRotationDesc().GetMaxRotationSpeedDegrees();
 		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
@@ -3337,6 +3379,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 
 	CalcArmorBonus();
 	CalcDeviceBonus();
+    CalcPerformance();
 	InvalidateItemListState();
 	m_pController->OnArmorRepaired(iSect);
 	}
@@ -3453,6 +3496,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	//	Recalc bonuses
 
 	CalcDeviceBonus();
+    CalcPerformance();
 	InvalidateItemListState();
 	}
 
@@ -3859,8 +3903,8 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 			//	Calculate new mass
 
 			m_fRecalcItemMass = true;
-			if (m_fTrackMass)
-				m_fRecalcRotationAccel = true;
+            if (m_fTrackMass)
+                m_fRecalcRotationAccel = true;
 
 			//	If one of our weapons doesn't have a variant selected, then
 			//	try to select it now (if we just got some new ammo, this will
@@ -4424,13 +4468,15 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 		//	Update item mass in case the mass of this item changed
 
 		m_fRecalcItemMass = true;
-		if (m_fTrackMass)
-			m_fRecalcRotationAccel = true;
 
-		//	Update UI
+        //  Recalc performance
 
 		CalcArmorBonus();
 		CalcDeviceBonus();
+        CalcPerformance();
+
+		//	Update UI
+
 		InvalidateItemListState();
 		m_pController->OnWeaponStatusChanged();
 		m_pController->OnArmorRepaired(-1);
@@ -4911,8 +4957,8 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
 	m_fHasSpeedAdjArmor =		((dwLoad & 0x01000000) ? true : false);
 
-	//	OK to recompute
-	m_fRecalcRotationAccel = true;
+	//	We will compute CalcPerformance at the bottom anyways
+	m_fRecalcRotationAccel = false;
 
 	//	This is recomputed every tick
 	m_fDeviceDisrupted = false;
@@ -5121,6 +5167,10 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	m_pController->ReadFromStream(Ctx, this);
 
+    //  Recompute performance (because we don't save it).
+
+    CalcPerformance();
+
 	//	Initialize effects
 
 	m_pClass->InitEffects(this, &m_Effects);
@@ -5175,517 +5225,508 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 //
 //	Update
 
-	{
-	DEBUG_TRY
-
-	int i;
-	bool bOverlaysChanged = false;
-	bool bWeaponStatusChanged = false;
-	bool bArmorStatusChanged = false;
-	bool bCalcDeviceBonus = false;
-	bool bCargoChanged = false;
-	bool bBoundsChanged = false;
-
-	//	If we passed through a gate, then destroy ourselves
-
-	if (m_fDestroyInGate)
-		{
-		const CAISettings *pAI = m_pController->GetAISettings();
-
-		//	If we're supposed to ascend on gate, then ascend now
-
-		if (m_pClass->GetCharacter() != NULL
-				|| (pAI && pAI->AscendOnGate()))
-			{
-			ResetMaxSpeed();
-			m_fDestroyInGate = false;
-			GetSystem()->AscendObject(this);
-			}
-
-		//	If we're already suspended, then instead of destroying the ship, remove
-		//	it from the system and re-add it. We need to do this so that all
-		//	OnObjDestroyed notifications go out, etc.
-		//
-		//	Note that this will also clear out any events registered for the ship.
-
-		else if (IsSuspended())
-			{
-			CSystem *pSystem = GetSystem();
-			if (pSystem)
-				{
-				Remove(enteredStargate, CDamageSource());
-				AddToSystem(pSystem);
-				m_fDestroyInGate = false;
-				}
-			}
-		else
-			Destroy(enteredStargate, CDamageSource());
-
-		return;
-		}
-
-	//	If we're in a gate, then all we do is update the in gate timer
-
-	if (IsInactive())
-		{
-		if (IsInGate() && !IsSuspended())
-			{
-			//	Gate effect
-
-			if (m_iExitGateTimer == GATE_ANIMATION_LENGTH)
-				if (m_pExitGate)
-					m_pExitGate->OnObjLeaveGate(this);
-
-			//	Done?
-
-			if (--m_iExitGateTimer == 0)
-				{
-				if (m_pExitGate && m_pExitGate->IsMobile())
-					Place(m_pExitGate->GetPos());
-
-				if (!IsVirtual())
-					ClearCannotBeHit();
-				FireOnEnteredSystem(m_pExitGate);
-				m_pExitGate = NULL;
-				}
-			}
-
-		return;
-		}
-
-	//	Allow docking
-
-	if (m_pClass->HasDockingPorts())
-		m_DockingPorts.UpdateAll(Ctx, this);
-
-	//	Initialize
-
-	int iTick = GetSystem()->GetTick() + GetDestiny();
-
-	//	Trade
-
-	if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
-		UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
-
-	//	Calc rotation acceleration (for player ships we adjust this 
-	//	acceleration based on mass, etc.).
-
-	if (m_fRecalcRotationAccel)
-		{
-		if (m_fTrackMass)
-			m_Rotation.UpdateAccel(m_pClass->GetRotationDesc(), m_pClass->GetHullMass(), GetItemMass());
-		else
-			m_Rotation.UpdateAccel(m_pClass->GetRotationDesc());
-		m_fRecalcRotationAccel = false;
-		}
-
-	//	Check controls
-
-	if (!IsParalyzed())
-		{
-		//	See if we're firing. Note that we fire before we rotate so that the
-		//	fire behavior code can know which way we're aiming.
-
-		if (!IsDisarmed())
-			{
-			STargetingCtx TargetingCtx;
-
-			for (i = 0; i < GetDeviceCount(); i++)
-				{
-				CInstalledDevice *pDevice = GetDevice(i);
-				if (pDevice->IsTriggered() && pDevice->IsReady())
-					{
-					CItemCtx DeviceCtx(this, pDevice);
-					bool bSourceDestroyed = false;
-					bool bConsumedItems = false;
-
-					//	Compute the target for this weapon.
-
-					CSpaceObject *pTarget;
-					int iFireAngle;
-					if (!CalcDeviceTarget(TargetingCtx, DeviceCtx, &pTarget, &iFireAngle))
-						{
-						//	Do not consume power, even though we're triggered.
-
-						pDevice->SetLastActivateSuccessful(false);
-						continue;
-						}
-
-					//	Set the target on the device. We need to do this for 
-					//	repeating weapons.
-
-					pDevice->SetFireAngle(iFireAngle);
-					pDevice->SetTarget(pTarget);
-
-					//	Fire
-
-					bool bSuccess = pDevice->Activate(this, 
-							pTarget,
-							&bSourceDestroyed,
-							&bConsumedItems);
-					if (IsDestroyed())
-						return;
-
-					//	If we succeeded then it means that the weapon fired successfully
-
-					if (bSuccess)
-						{
-						if (bConsumedItems)
-							{
-							bWeaponStatusChanged = true;
-							bCargoChanged = true;
-							}
-
-						//	Remember the last time we fired a weapon
-
-						if (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher)
-							m_iLastFireTime = g_pUniverse->GetTicks();
-
-						//	Set delay for next activation
-
-						SetFireDelay(pDevice);
-						}
-					}
-				}
-			}
-		else
-			{
-			if (m_iDisarmedTimer > 0)
-				m_iDisarmedTimer--;
-			}
-
-		//	Update rotation
-
-		m_Rotation.Update(m_pClass->GetRotationDesc(), m_pController->GetManeuver());
-
-		//	See if we're accelerating
-
-		if (IsInertialess())
-			{
-			if (m_pController->GetThrust())
-				{
-				CVector vVel = PolarToVector(GetRotation(), GetMaxSpeed());
-				SetVel(vVel);
-				}
-			else if (CanBeControlled())
-				ClipSpeed(0.0);
-			}
-		else if (m_pController->GetThrust())
-			{
-			CVector vAccel = PolarToVector(GetRotation(), GetThrust());
-
-			Accelerate(vAccel, rSecondsPerTick);
-
-			//	Check to see if we're exceeding the ship's speed limit. If we
-			//	are then adjust the speed
-
-			ClipSpeed(GetMaxSpeed());
-			}
-		else if (m_pController->GetStopThrust())
-			{
-			//	Stop thrust is proportional to main engine thrust and maneuverability
-
-			Metric rManeuverAdj = Min((Metric)0.5, m_Rotation.GetManeuverRatio());
-			Metric rThrust = rManeuverAdj * GetThrust();
-
-			AccelerateStop(rThrust, rSecondsPerTick);
-			}
-		}
-
-	//	If we're paralyzed, rotate in one direction
-
-	else if (ShowParalyzedEffect())
-		{
-		//	Rotate wildly
-
-		if (m_pDocked == NULL)
-			m_Rotation.Update(m_pClass->GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
-
-		//	Slow down
-
-		SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
-
-		if (m_iParalysisTimer > 0)
-			m_iParalysisTimer--;
-		}
-	
-	//	Otherwise, we're paralyzed (by an overlay most-likely)
-
-	else
-		{
-		//	Spin wildly
-
-		if (m_pDocked == NULL && m_fSpinningByOverlay)
-			m_Rotation.Update(m_pClass->GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
-		}
-
-	//	Slow down if an overlay is imposing drag
-
-	if (m_fDragByOverlay
-			&& !ShowParalyzedEffect())
-		{
-		//	We're too lazy to store the drag coefficient, so we recalculate it here.
-		//
-		//	(Since it's rare to have this, it shouldn't been too much of a performance
-		//	penalty. But if necessary we have add a special function to just get the
-		//	drag coefficient from the overlay list.)
-
-		COverlayList::SImpactDesc Impact;
-		m_Overlays.GetImpact(this, &Impact);
-
-		SetVel(CVector(GetVel().GetX() * Impact.rDrag, GetVel().GetY() * Impact.rDrag));
-		}
-
-	//	Drive damage timer
-
-	if (m_iDriveDamagedTimer > 0
-			&& (--m_iDriveDamagedTimer == 0))
-		{
-		//	If drive is repaired, update effects
-
-		m_pClass->InitEffects(this, &m_Effects);
-		}
-
-	//	Update armor
-
-	if ((iTick % ARMOR_UPDATE_CYCLE) == 0)
-		{
-		for (i = 0; i < GetArmorSectionCount(); i++)
-			{
-			bool bModified;
-			CInstalledArmor *pArmor = GetArmorSection(i);
-			pArmor->GetClass()->Update(pArmor, this, iTick, &bModified);
-			if (bModified)
-				bArmorStatusChanged = true;
-			}
-		}
-
-	//	Update each device
-
-	m_fDeviceDisrupted = false;
-	for (i = 0; i < GetDeviceCount(); i++)
-		{
-		bool bSourceDestroyed = false;
-		bool bConsumedItems = false;
-		bool bDisrupted = false;
-		m_Devices[i].Update(this, iTick, &bSourceDestroyed, &bConsumedItems, &bDisrupted);
-		if (bSourceDestroyed)
-			return;
-
-		if (bConsumedItems)
-			{
-			bWeaponStatusChanged = true;
-			bCargoChanged = true;
-			}
-
-		if (bDisrupted)
-			m_fDeviceDisrupted = true;
-		}
-
-	//	Update reactor
-
-	if (m_fTrackFuel)
-		{
-		if (!m_fOutOfFuel)
-			{
-			CalcReactorStats();
-
-			//	See if reactor is overloaded
-
-			if ((iTick % FUEL_CHECK_CYCLE) == 0)
-				{
-				if (m_iPowerDrain > m_iMaxPower)
-					{
-					m_pController->OnReactorOverloadWarning(iTick / FUEL_CHECK_CYCLE);
-
-					//	Consequences of reactor overload
-
-					ReactorOverload();
-					}
-				}
-
-			//	Consume fuel
-
-			ConsumeFuel(m_iPowerDrain / m_pReactorDesc->GetEfficiency());
-
-			//	Check to see if we've run out of fuel
-
-			if ((iTick % FUEL_CHECK_CYCLE) == 0)
-				{
-				Metric rFuelLeft = GetFuelLeft();
-				if (rFuelLeft <= 0.0)
-					{
-					//	See if the player has any fuel on board. If they do, then there
-					//	is a small grace period
-
-					if (HasFuelItem())
-						{
-						//	Disable all devices
-
-						for (i = 0; i < GetDeviceCount(); i++)
-							{
-							if (!m_Devices[i].IsEmpty() 
-									&& m_Devices[i].IsEnabled()
-									&& m_Devices[i].CanBeDisabled(CItemCtx(this, &m_Devices[i])))
-								{
-								EnableDevice(i, false);
-								}
-							}
-
-						//	Out of fuel
-
-						m_fOutOfFuel = true;
-						m_rFuelLeft = FUEL_GRACE_PERIOD;
-						m_pController->OnFuelLowWarning(-1);
-						}
-
-					//	Otherwise, the player is out of luck
-
-					else
-						{
-						Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
-
-						//	Shouldn't do anything else after being destroyed
-						return;
-						}
-					}
-				else if (rFuelLeft < (GetMaxFuel() / 8.0))
-					m_pController->OnFuelLowWarning(iTick / FUEL_CHECK_CYCLE);
-				}
-			}
-		else
-			{
-			//	Countdown grace period
-
-			if (--m_rFuelLeft <= 0.0)
-				{
-				Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
-
-				//	Shouldn't do anything else after being destroyed
-
-				return;
-				}
-			else
-				m_pController->OnLifeSupportWarning((int)m_rFuelLeft / g_TicksPerSecond);
-			}
-		}
-
-	//	Radiation
-
-	if (m_fRadioactive)
-		{
-		m_iContaminationTimer--;
-		if (m_iContaminationTimer > 0)
-			{
-			m_pController->OnRadiationWarning(m_iContaminationTimer);
-			}
-		else
-			{
-			if (m_pIrradiatedBy)
-				Destroy(m_pIrradiatedBy->GetCause(), *m_pIrradiatedBy);
-			else
-				Destroy(killedByRadiationPoisoning, CDamageSource(NULL, killedByRadiationPoisoning));
-
-			//	Shouldn't do anything else after being destroyed
-			return;
-			}
-		}
-
-	//	Blindness
-
-	if (m_iBlindnessTimer > 0)
-		if (--m_iBlindnessTimer == 0)
-			m_pController->OnBlindnessChanged(false);
-
-	//	LRS blindness
-
-	if (m_iLRSBlindnessTimer > 0)
-		--m_iLRSBlindnessTimer;
-
-	//	Energy fields
-
-	if (!m_Overlays.IsEmpty())
-		{
-		bool bModified;
-		m_Overlays.Update(this, &bModified);
-		if (CSpaceObject::IsDestroyedInUpdate())
-			return;
-		else if (bModified)
-			{
-			bOverlaysChanged = true;
-			bWeaponStatusChanged = true;
-			bArmorStatusChanged = true;
-			bCalcDeviceBonus = true;
-			bBoundsChanged = true;
-			}
-		}
-
-	//	Check space environment
-
-	if ((iTick % ENVIRONMENT_ON_UPDATE_CYCLE) == ENVIRONMENT_ON_UPDATE_OFFSET)
-		{
-		CSpaceEnvironmentType *pEnvironment = GetSystem()->GetSpaceEnvironment(GetPos());
-		if (pEnvironment)
-			{
-			//	See if our LRS is affected
-
-			if (pEnvironment->IsLRSJammer())
-				{
-				MakeLRSBlind(ENVIRONMENT_ON_UPDATE_CYCLE);
-				m_fHiddenByNebula = true;
-				}
-			else
-				m_fHiddenByNebula = false;
-
-			//	See if the environment causes drag
-
-			Metric rDrag = pEnvironment->GetDragFactor();
-			if (rDrag != 1.0)
-				{
-				SetVel(CVector(GetVel().GetX() * rDrag,
-						GetVel().GetY() * rDrag));
-				}
-
-			//	Update
-
-			if (pEnvironment->HasOnUpdateEvent())
-				{
-				CString sError;
-				if (pEnvironment->FireOnUpdate(this, &sError) != NOERROR)
-					SendMessage(NULL, sError);
-				}
-			}
-		else
-			{
-			m_fHiddenByNebula = false;
-			}
-		}
-
-	//	Update effects. For efficiency, we only update our effects if we painted
-	//	last tick.
-
-	if (WasPainted())
-		m_Effects.Update(this, m_pClass->GetEffectsDesc(), GetRotation(), CalcEffectsMask());
-
-	//	Invalidate
-
-	if (bBoundsChanged)
-		CalcBounds();
-
-	if (bOverlaysChanged)
-		CalcOverlayImpact();
-
-	if (bCalcDeviceBonus)
-		CalcDeviceBonus();
+    {
+    DEBUG_TRY
+
+    int i;
+    bool bOverlaysChanged = false;
+    bool bWeaponStatusChanged = false;
+    bool bArmorStatusChanged = false;
+    bool bCalcDeviceBonus = false;
+    bool bCargoChanged = false;
+    bool bBoundsChanged = false;
+
+    //	If we passed through a gate, then destroy ourselves
+
+    if (m_fDestroyInGate)
+        {
+        const CAISettings *pAI = m_pController->GetAISettings();
+
+        //	If we're supposed to ascend on gate, then ascend now
+
+        if (m_pClass->GetCharacter() != NULL
+            || (pAI && pAI->AscendOnGate()))
+            {
+            ResetMaxSpeed();
+            m_fDestroyInGate = false;
+            GetSystem()->AscendObject(this);
+            }
+
+        //	If we're already suspended, then instead of destroying the ship, remove
+        //	it from the system and re-add it. We need to do this so that all
+        //	OnObjDestroyed notifications go out, etc.
+        //
+        //	Note that this will also clear out any events registered for the ship.
+
+        else if (IsSuspended())
+            {
+            CSystem *pSystem = GetSystem();
+            if (pSystem)
+                {
+                Remove(enteredStargate, CDamageSource());
+                AddToSystem(pSystem);
+                m_fDestroyInGate = false;
+                }
+            }
+        else
+            Destroy(enteredStargate, CDamageSource());
+
+        return;
+        }
+
+    //	If we're in a gate, then all we do is update the in gate timer
+
+    if (IsInactive())
+        {
+        if (IsInGate() && !IsSuspended())
+            {
+            //	Gate effect
+
+            if (m_iExitGateTimer == GATE_ANIMATION_LENGTH)
+                if (m_pExitGate)
+                    m_pExitGate->OnObjLeaveGate(this);
+
+            //	Done?
+
+            if (--m_iExitGateTimer == 0)
+                {
+                if (m_pExitGate && m_pExitGate->IsMobile())
+                    Place(m_pExitGate->GetPos());
+
+                if (!IsVirtual())
+                    ClearCannotBeHit();
+                FireOnEnteredSystem(m_pExitGate);
+                m_pExitGate = NULL;
+                }
+            }
+
+        return;
+        }
+
+    //	Allow docking
+
+    if (m_pClass->HasDockingPorts())
+        m_DockingPorts.UpdateAll(Ctx, this);
+
+    //	Initialize
+
+    int iTick = GetSystem()->GetTick() + GetDestiny();
+
+    //	Trade
+
+    if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
+        UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
+
+    //	Check controls
+
+    if (!IsParalyzed())
+        {
+        //	See if we're firing. Note that we fire before we rotate so that the
+        //	fire behavior code can know which way we're aiming.
+
+        if (!IsDisarmed())
+            {
+            STargetingCtx TargetingCtx;
+
+            for (i = 0; i < GetDeviceCount(); i++)
+                {
+                CInstalledDevice *pDevice = GetDevice(i);
+                if (pDevice->IsTriggered() && pDevice->IsReady())
+                    {
+                    CItemCtx DeviceCtx(this, pDevice);
+                    bool bSourceDestroyed = false;
+                    bool bConsumedItems = false;
+
+                    //	Compute the target for this weapon.
+
+                    CSpaceObject *pTarget;
+                    int iFireAngle;
+                    if (!CalcDeviceTarget(TargetingCtx, DeviceCtx, &pTarget, &iFireAngle))
+                        {
+                        //	Do not consume power, even though we're triggered.
+
+                        pDevice->SetLastActivateSuccessful(false);
+                        continue;
+                        }
+
+                    //	Set the target on the device. We need to do this for 
+                    //	repeating weapons.
+
+                    pDevice->SetFireAngle(iFireAngle);
+                    pDevice->SetTarget(pTarget);
+
+                    //	Fire
+
+                    bool bSuccess = pDevice->Activate(this,
+                        pTarget,
+                        &bSourceDestroyed,
+                        &bConsumedItems);
+                    if (IsDestroyed())
+                        return;
+
+                    //	If we succeeded then it means that the weapon fired successfully
+
+                    if (bSuccess)
+                        {
+                        if (bConsumedItems)
+                            {
+                            bWeaponStatusChanged = true;
+                            bCargoChanged = true;
+                            }
+
+                        //	Remember the last time we fired a weapon
+
+                        if (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher)
+                            m_iLastFireTime = g_pUniverse->GetTicks();
+
+                        //	Set delay for next activation
+
+                        SetFireDelay(pDevice);
+                        }
+                    }
+                }
+            }
+        else
+            {
+            if (m_iDisarmedTimer > 0)
+                m_iDisarmedTimer--;
+            }
+
+        //	Update rotation
+
+        m_Rotation.Update(m_Perf.GetRotationDesc(), m_pController->GetManeuver());
+
+        //	See if we're accelerating
+
+        if (IsInertialess())
+            {
+            if (m_pController->GetThrust())
+                {
+                CVector vVel = PolarToVector(GetRotation(), GetMaxSpeed());
+                SetVel(vVel);
+                }
+            else if (CanBeControlled())
+                ClipSpeed(0.0);
+            }
+        else if (m_pController->GetThrust())
+            {
+            CVector vAccel = PolarToVector(GetRotation(), GetThrust());
+
+            Accelerate(vAccel, rSecondsPerTick);
+
+            //	Check to see if we're exceeding the ship's speed limit. If we
+            //	are then adjust the speed
+
+            ClipSpeed(GetMaxSpeed());
+            }
+        else if (m_pController->GetStopThrust())
+            {
+            //	Stop thrust is proportional to main engine thrust and maneuverability
+
+            Metric rManeuverAdj = Min((Metric)0.5, m_Perf.GetRotationDesc().GetManeuverRatio());
+            Metric rThrust = rManeuverAdj * GetThrust();
+
+            AccelerateStop(rThrust, rSecondsPerTick);
+            }
+        }
+
+    //	If we're paralyzed, rotate in one direction
+
+    else if (ShowParalyzedEffect())
+        {
+        //	Rotate wildly
+
+        if (m_pDocked == NULL)
+            m_Rotation.Update(m_Perf.GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
+
+        //	Slow down
+
+        SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
+
+        if (m_iParalysisTimer > 0)
+            m_iParalysisTimer--;
+        }
+
+    //	Otherwise, we're paralyzed (by an overlay most-likely)
+
+    else
+        {
+        //	Spin wildly
+
+        if (m_pDocked == NULL && m_fSpinningByOverlay)
+            m_Rotation.Update(m_Perf.GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
+        }
+
+    //	Slow down if an overlay is imposing drag
+
+    if (m_fDragByOverlay
+        && !ShowParalyzedEffect())
+        {
+        //	We're too lazy to store the drag coefficient, so we recalculate it here.
+        //
+        //	(Since it's rare to have this, it shouldn't been too much of a performance
+        //	penalty. But if necessary we have add a special function to just get the
+        //	drag coefficient from the overlay list.)
+
+        COverlayList::SImpactDesc Impact;
+        m_Overlays.GetImpact(this, &Impact);
+
+        SetVel(CVector(GetVel().GetX() * Impact.rDrag, GetVel().GetY() * Impact.rDrag));
+        }
+
+    //	Drive damage timer
+
+    if (m_iDriveDamagedTimer > 0
+        && (--m_iDriveDamagedTimer == 0))
+        {
+        //	If drive is repaired, update effects
+
+        m_pClass->InitEffects(this, &m_Effects);
+        }
+
+    //	Update armor
+
+    if ((iTick % ARMOR_UPDATE_CYCLE) == 0)
+        {
+        for (i = 0; i < GetArmorSectionCount(); i++)
+            {
+            bool bModified;
+            CInstalledArmor *pArmor = GetArmorSection(i);
+            pArmor->GetClass()->Update(pArmor, this, iTick, &bModified);
+            if (bModified)
+                bArmorStatusChanged = true;
+            }
+        }
+
+    //	Update each device
+
+    m_fDeviceDisrupted = false;
+    for (i = 0; i < GetDeviceCount(); i++)
+        {
+        bool bSourceDestroyed = false;
+        bool bConsumedItems = false;
+        bool bDisrupted = false;
+        m_Devices[i].Update(this, iTick, &bSourceDestroyed, &bConsumedItems, &bDisrupted);
+        if (bSourceDestroyed)
+            return;
+
+        if (bConsumedItems)
+            {
+            bWeaponStatusChanged = true;
+            bCargoChanged = true;
+            }
+
+        if (bDisrupted)
+            m_fDeviceDisrupted = true;
+        }
+
+    //	Update reactor
+
+    if (m_fTrackFuel)
+        {
+        if (!m_fOutOfFuel)
+            {
+            CalcReactorStats();
+
+            //	See if reactor is overloaded
+
+            if ((iTick % FUEL_CHECK_CYCLE) == 0)
+                {
+                if (m_iPowerDrain > m_iMaxPower)
+                    {
+                    m_pController->OnReactorOverloadWarning(iTick / FUEL_CHECK_CYCLE);
+
+                    //	Consequences of reactor overload
+
+                    ReactorOverload();
+                    }
+                }
+
+            //	Consume fuel
+
+            ConsumeFuel(m_iPowerDrain / m_pReactorDesc->GetEfficiency());
+
+            //	Check to see if we've run out of fuel
+
+            if ((iTick % FUEL_CHECK_CYCLE) == 0)
+                {
+                Metric rFuelLeft = GetFuelLeft();
+                if (rFuelLeft <= 0.0)
+                    {
+                    //	See if the player has any fuel on board. If they do, then there
+                    //	is a small grace period
+
+                    if (HasFuelItem())
+                        {
+                        //	Disable all devices
+
+                        for (i = 0; i < GetDeviceCount(); i++)
+                            {
+                            if (!m_Devices[i].IsEmpty()
+                                && m_Devices[i].IsEnabled()
+                                && m_Devices[i].CanBeDisabled(CItemCtx(this, &m_Devices[i])))
+                                {
+                                EnableDevice(i, false);
+                                }
+                            }
+
+                        //	Out of fuel
+
+                        m_fOutOfFuel = true;
+                        m_rFuelLeft = FUEL_GRACE_PERIOD;
+                        m_pController->OnFuelLowWarning(-1);
+                        }
+
+                    //	Otherwise, the player is out of luck
+
+                    else
+                        {
+                        Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
+
+                        //	Shouldn't do anything else after being destroyed
+                        return;
+                        }
+                    }
+                else if (rFuelLeft < (GetMaxFuel() / 8.0))
+                    m_pController->OnFuelLowWarning(iTick / FUEL_CHECK_CYCLE);
+                }
+            }
+        else
+            {
+            //	Countdown grace period
+
+            if (--m_rFuelLeft <= 0.0)
+                {
+                Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
+
+                //	Shouldn't do anything else after being destroyed
+
+                return;
+                }
+            else
+                m_pController->OnLifeSupportWarning((int)m_rFuelLeft / g_TicksPerSecond);
+            }
+        }
+
+    //	Radiation
+
+    if (m_fRadioactive)
+        {
+        m_iContaminationTimer--;
+        if (m_iContaminationTimer > 0)
+            {
+            m_pController->OnRadiationWarning(m_iContaminationTimer);
+            }
+        else
+            {
+            if (m_pIrradiatedBy)
+                Destroy(m_pIrradiatedBy->GetCause(), *m_pIrradiatedBy);
+            else
+                Destroy(killedByRadiationPoisoning, CDamageSource(NULL, killedByRadiationPoisoning));
+
+            //	Shouldn't do anything else after being destroyed
+            return;
+            }
+        }
+
+    //	Blindness
+
+    if (m_iBlindnessTimer > 0)
+        if (--m_iBlindnessTimer == 0)
+            m_pController->OnBlindnessChanged(false);
+
+    //	LRS blindness
+
+    if (m_iLRSBlindnessTimer > 0)
+        --m_iLRSBlindnessTimer;
+
+    //	Energy fields
+
+    if (!m_Overlays.IsEmpty())
+        {
+        bool bModified;
+        m_Overlays.Update(this, &bModified);
+        if (CSpaceObject::IsDestroyedInUpdate())
+            return;
+        else if (bModified)
+            {
+            bOverlaysChanged = true;
+            bWeaponStatusChanged = true;
+            bArmorStatusChanged = true;
+            bCalcDeviceBonus = true;
+            bBoundsChanged = true;
+            }
+        }
+
+    //	Check space environment
+
+    if ((iTick % ENVIRONMENT_ON_UPDATE_CYCLE) == ENVIRONMENT_ON_UPDATE_OFFSET)
+        {
+        CSpaceEnvironmentType *pEnvironment = GetSystem()->GetSpaceEnvironment(GetPos());
+        if (pEnvironment)
+            {
+            //	See if our LRS is affected
+
+            if (pEnvironment->IsLRSJammer())
+                {
+                MakeLRSBlind(ENVIRONMENT_ON_UPDATE_CYCLE);
+                m_fHiddenByNebula = true;
+                }
+            else
+                m_fHiddenByNebula = false;
+
+            //	See if the environment causes drag
+
+            Metric rDrag = pEnvironment->GetDragFactor();
+            if (rDrag != 1.0)
+                {
+                SetVel(CVector(GetVel().GetX() * rDrag,
+                    GetVel().GetY() * rDrag));
+                }
+
+            //	Update
+
+            if (pEnvironment->HasOnUpdateEvent())
+                {
+                CString sError;
+                if (pEnvironment->FireOnUpdate(this, &sError) != NOERROR)
+                    SendMessage(NULL, sError);
+                }
+            }
+        else
+            {
+            m_fHiddenByNebula = false;
+            }
+        }
+
+    //	Update effects. For efficiency, we only update our effects if we painted
+    //	last tick.
+
+    if (WasPainted())
+        m_Effects.Update(this, m_pClass->GetEffectsDesc(), GetRotation(), CalcEffectsMask());
+
+    //	Invalidate
+
+    if (bBoundsChanged)
+        CalcBounds();
+
+    if (bOverlaysChanged)
+        CalcOverlayImpact();
+
+    if (bCalcDeviceBonus)
+        CalcDeviceBonus();
+
+	if (m_fTrackMass && bCargoChanged)
+		OnComponentChanged(comCargo);
+
+    if (bOverlaysChanged || bCalcDeviceBonus || bArmorStatusChanged || m_fRecalcRotationAccel)
+        CalcPerformance();
 
 	if (bWeaponStatusChanged)
 		m_pController->OnWeaponStatusChanged();
 
 	if (bArmorStatusChanged)
 		m_pController->OnArmorRepaired(-1);
-
-	if (m_fTrackMass && bCargoChanged)
-		OnComponentChanged(comCargo);
 
 	if (bCargoChanged)
 		InvalidateItemListAddRemove();

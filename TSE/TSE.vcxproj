@@ -239,10 +239,14 @@
   <ItemGroup>
     <ClInclude Include="..\Include\TSEEffects.h" />
     <ClInclude Include="..\Include\TSEGeometry.h" />
+    <ClInclude Include="..\Include\TSEImages.h" />
+    <ClInclude Include="..\Include\TSEItems.h" />
     <ClInclude Include="..\Include\TSEParticleSystem.h" />
     <ClInclude Include="..\Include\TSEPlayer.h" />
     <ClInclude Include="..\Include\TSEPlayerSettings.h" />
     <ClInclude Include="..\Include\TSEShipAI.h" />
+    <ClInclude Include="..\Include\TSEShipCreator.h" />
+    <ClInclude Include="..\Include\TSEShipSystems.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="LegacyAIImpl.h" />
@@ -318,6 +322,7 @@
     <ClCompile Include="CEffectParamDesc.cpp" />
     <ClCompile Include="CExplosionColorizer.cpp" />
     <ClCompile Include="CFractalTextureLibrary.cpp" />
+    <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
@@ -329,7 +334,7 @@
     <ClCompile Include="CImageArranger.cpp" />
     <ClCompile Include="CInstalledDevice.cpp" />
     <ClCompile Include="CIntegralRotation.cpp" />
-    <ClCompile Include="CIntegralRotationDesc.cpp" />
+    <ClCompile Include="CRotationDesc.cpp" />
     <ClCompile Include="CItemCtx.cpp" />
     <ClCompile Include="CItemEnhancementStack.cpp" />
     <ClCompile Include="CMapGridPainter.cpp" />
@@ -373,6 +378,7 @@
     <ClCompile Include="CShipArmorSegmentDesc.cpp" />
     <ClCompile Include="CShipInterior.cpp" />
     <ClCompile Include="CShipInteriorDesc.cpp" />
+    <ClCompile Include="CShipPerformanceDesc.cpp" />
     <ClCompile Include="CShipTable.cpp" />
     <ClCompile Include="CShockwaveHitTest.cpp" />
     <ClCompile Include="CEnvironmentGrid.cpp" />

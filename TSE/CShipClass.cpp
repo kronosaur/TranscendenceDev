@@ -1030,9 +1030,10 @@ void CShipClass::ComputeMovementStats (CDeviceDescList &Devices, int *retiSpeed,
 
 	//	Figure out the maneuverability of the ship
 
-	if (m_RotationDesc.GetMaxRotationTimeTicks() >= 90)
+    CIntegralRotationDesc Desc(m_RotationDesc);
+	if (Desc.GetMaxRotationTimeTicks() >= 90)
 		*retiManeuver = enumLow;
-	else if (m_RotationDesc.GetMaxRotationTimeTicks() > 30)
+	else if (Desc.GetMaxRotationTimeTicks() > 30)
 		*retiManeuver = enumMedium;
 	else
 		*retiManeuver = enumHigh;
@@ -1733,7 +1734,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_MASS))
 		*retsValue = strFromInt(m_iMass);
 	else if (strEquals(sField, FIELD_MAX_ROTATION))
-		*retsValue = strFromInt(mathRound(m_RotationDesc.GetMaxRotationSpeedPerTick()));
+		*retsValue = strFromInt(mathRound(CIntegralRotationDesc(m_RotationDesc).GetMaxRotationSpeedDegrees()));
 	else if (strEquals(sField, FIELD_MAX_SPEED))
 		{
 		DriveDesc Desc;
@@ -1878,7 +1879,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt((int)((1000.0 / m_AISettings.GetFireRateAdj()) + 0.5));
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		Metric rManeuver = g_SecondsPerUpdate * GetRotationDesc().GetMaxRotationSpeedPerTick();
+		Metric rManeuver = g_SecondsPerUpdate * CIntegralRotationDesc(m_RotationDesc).GetMaxRotationSpeedDegrees();
 		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST))
@@ -2628,6 +2629,18 @@ void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 
 	DEBUG_CATCH
 	}
+
+void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
+
+//  InitPerformance
+//
+//  Initializes the performance parameters from the ship class.
+
+    {
+    //  Start with the class's rotation descriptor
+
+    Ctx.RotationDesc = m_RotationDesc;
+    }
 
 void CShipClass::InitShipNamesIndices (void)
 

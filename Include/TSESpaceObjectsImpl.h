@@ -912,12 +912,13 @@ class CShip : public CSpaceObject
 		inline int Angle2Direction (int iAngle) const { return m_pClass->Angle2Direction(iAngle); }
 		inline int AlignToRotationAngle (int iAngle) const { return m_pClass->AlignToRotationAngle(iAngle); }
 		inline int GetRotationAngle (void) { return m_pClass->GetRotationAngle(); }
+        inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
 		inline int GetRotationRange (void) { return m_pClass->GetRotationRange(); }
-		inline EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_pClass->GetRotationDesc(), iAngle); }
+		inline EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetRotationDesc(), iAngle); }
 		inline Metric GetThrust (void) { return (IsMainDriveDamaged() ? (m_iThrust / 2) : m_iThrust); }
 		inline bool IsInertialess (void) { return (m_pDriveDesc->fInertialess ? true : false); }
 		inline bool IsMainDriveDamaged (void) const { return m_iDriveDamagedTimer != 0; }
-		inline bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_pClass->GetRotationDesc(), iAngle); }
+		inline bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_Perf.GetRotationDesc(), iAngle); }
 		inline void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; }
 		inline void ResetMaxSpeed (void) { m_fHalfSpeed = false; }
 
@@ -1112,6 +1113,7 @@ class CShip : public CSpaceObject
 		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
 		void CalcOverlayImpact (void);
+        void CalcPerformance (void);
 		void CalcReactorStats (void);
 		int FindDeviceIndex (CInstalledDevice *pDevice) const;
 		int FindFreeDeviceSlot (void);
@@ -1144,7 +1146,7 @@ class CShip : public CSpaceObject
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
-		COverlayList m_Overlays;		//	List of energy fields
+		COverlayList m_Overlays;		        //	List of energy fields
 		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
 		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
 		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
@@ -1180,6 +1182,8 @@ class CShip : public CSpaceObject
 		CSpaceObject *m_pExitGate;				//	If not NULL, gate we are about to exit.
 		CDamageSource *m_pIrradiatedBy;			//	If not NULL, object that irradiated us
 		SShipGeneratorCtx *m_pDeferredOrders;	//	Defer orders until system done being created.
+
+        CShipPerformanceDesc m_Perf;            //  Computed performance parameters (not saved)
 
 		DWORD m_fOutOfFuel:1;					//	TRUE if ship is out of fuel
 		DWORD m_fRadioactive:1;					//	TRUE if radioactive

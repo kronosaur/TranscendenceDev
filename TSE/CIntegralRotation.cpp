@@ -17,34 +17,6 @@ CIntegralRotation::~CIntegralRotation (void)
 	{
 	}
 
-int CIntegralRotation::CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed, const CIntegralRotationDesc &Desc) const
-
-//	CalcFinalRotationFrame
-//
-//	Try to figure out what our final rotation frame would be if we stopped
-//	thrusting and turned on inertia only.
-
-	{
-	while (iRotationSpeed > m_iRotationAccelStop || iRotationSpeed < -m_iRotationAccelStop)
-		{
-		if (iRotationSpeed > 0)
-			iRotationSpeed = Max(0, iRotationSpeed - m_iRotationAccelStop);
-		else
-			iRotationSpeed = Min(0, iRotationSpeed + m_iRotationAccelStop);
-
-		if (iRotationSpeed != 0)
-			{
-			int iFrameMax = Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION;
-
-			iRotationFrame = (iRotationFrame + iRotationSpeed) % iFrameMax;
-			if (iRotationFrame < 0)
-				iRotationFrame += iFrameMax;
-			}
-		}
-
-	return iRotationFrame;
-	}
-
 EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const
 
 //	GetManeuverToFace
@@ -85,12 +57,12 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 		//	rotation speed will be if we turn right.
 
 		iNewRotationSpeed = m_iRotationSpeed;
-		if (iNewRotationSpeed < m_iMaxRotationRate)
+		if (iNewRotationSpeed < Desc.GetMaxRotationSpeed())
 			{
 			if (iNewRotationSpeed < 0)
-				iNewRotationSpeed = Min(m_iMaxRotationRate, iNewRotationSpeed + m_iRotationAccelStop);
+				iNewRotationSpeed = Min(Desc.GetMaxRotationSpeed(), iNewRotationSpeed + Desc.GetRotationAccelStop());
 			else
-				iNewRotationSpeed = Min(m_iMaxRotationRate, iNewRotationSpeed + m_iRotationAccel);
+				iNewRotationSpeed = Min(Desc.GetMaxRotationSpeed(), iNewRotationSpeed + Desc.GetRotationAccel());
 			}
 		}
 
@@ -107,12 +79,12 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 		//	rotation speed will be if we turn left.
 
 		iNewRotationSpeed = m_iRotationSpeed;
-		if (iNewRotationSpeed > -m_iMaxRotationRate)
+		if (iNewRotationSpeed > -Desc.GetMaxRotationSpeed())
 			{
 			if (iNewRotationSpeed > 0)
-				iNewRotationSpeed = Max(-m_iMaxRotationRate, iNewRotationSpeed - m_iRotationAccelStop);
+				iNewRotationSpeed = Max(-Desc.GetMaxRotationSpeed(), iNewRotationSpeed - Desc.GetRotationAccelStop());
 			else
-				iNewRotationSpeed = Max(-m_iMaxRotationRate, iNewRotationSpeed - m_iRotationAccel);
+				iNewRotationSpeed = Max(-Desc.GetMaxRotationSpeed(), iNewRotationSpeed - Desc.GetRotationAccel());
 			}
 		}
 
@@ -124,7 +96,7 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 	if (iNewRotationFrame < 0)
 		iNewRotationFrame += iFrameMax;
 
-	int iNewFrameIndex = GetFrameIndex(CalcFinalRotationFrame(iNewRotationFrame, iNewRotationSpeed, Desc));
+	int iNewFrameIndex = GetFrameIndex(Desc.CalcFinalRotationFrame(iNewRotationFrame, iNewRotationSpeed));
 	int iNewFrameDiff = ClockDiff(iDesiredFrameIndex, iNewFrameIndex, Desc.GetFrameCount());
 
 	//	If we're closer to the target, then do it.
@@ -135,7 +107,7 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 		return NoRotation;
 	}
 
-int CIntegralRotation::GetRotationAngle (const CIntegralRotationDesc &Desc) const
+int CIntegralRotation::GetRotationAngle (const CRotationDesc &Desc) const
 
 //	GetRotationAngle
 //
@@ -145,7 +117,7 @@ int CIntegralRotation::GetRotationAngle (const CIntegralRotationDesc &Desc) cons
 	return Desc.GetRotationAngle(GetFrameIndex(m_iRotationFrame));
 	}
 
-void CIntegralRotation::Init (const CIntegralRotationDesc &Desc, int iRotationAngle)
+void CIntegralRotation::Init (const CRotationDesc &Desc, int iRotationAngle)
 
 //	Init
 //
@@ -154,15 +126,11 @@ void CIntegralRotation::Init (const CIntegralRotationDesc &Desc, int iRotationAn
 	{
 	//	Defaults
 
-	m_iMaxRotationRate = Desc.GetMaxRotationSpeed();
-	m_iRotationAccel = Desc.GetRotationAccel();
-	m_iRotationAccelStop = Desc.GetRotationAccelStop();
-
 	if (iRotationAngle != -1)
 		SetRotationAngle(Desc, iRotationAngle);
 	}
 
-void CIntegralRotation::ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc)
+void CIntegralRotation::ReadFromStream (SLoadCtx &Ctx, const CRotationDesc &Desc)
 
 //	ReadFromStream
 //
@@ -186,7 +154,7 @@ void CIntegralRotation::ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDe
 		SetRotationAngle(Desc, 0);
 	}
 
-void CIntegralRotation::SetRotationAngle (const CIntegralRotationDesc &Desc, int iAngle)
+void CIntegralRotation::SetRotationAngle (const CRotationDesc &Desc, int iAngle)
 
 //	SetRotationAngle
 //
@@ -214,12 +182,12 @@ void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuverType
 
 				if (m_iRotationSpeed > 0)
 					{
-					m_iRotationSpeed = Max(0, m_iRotationSpeed - m_iRotationAccelStop);
+					m_iRotationSpeed = Max(0, m_iRotationSpeed - Desc.GetRotationAccelStop());
 					m_iLastManeuver = RotateLeft;
 					}
 				else
 					{
-					m_iRotationSpeed = Min(0, m_iRotationSpeed + m_iRotationAccelStop);
+					m_iRotationSpeed = Min(0, m_iRotationSpeed + Desc.GetRotationAccelStop());
 					m_iLastManeuver = RotateRight;
 					}
 
@@ -233,12 +201,12 @@ void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuverType
 			break;
 
 		case RotateRight:
-			if (m_iRotationSpeed < m_iMaxRotationRate)
+			if (m_iRotationSpeed < Desc.GetMaxRotationSpeed())
 				{
 				if (m_iRotationSpeed < 0)
-					m_iRotationSpeed = Min(m_iMaxRotationRate, m_iRotationSpeed + m_iRotationAccelStop);
+					m_iRotationSpeed = Min(Desc.GetMaxRotationSpeed(), m_iRotationSpeed + Desc.GetRotationAccelStop());
 				else
-					m_iRotationSpeed = Min(m_iMaxRotationRate, m_iRotationSpeed + m_iRotationAccel);
+					m_iRotationSpeed = Min(Desc.GetMaxRotationSpeed(), m_iRotationSpeed + Desc.GetRotationAccel());
 				m_iLastManeuver = RotateRight;
 				}
 			else
@@ -246,12 +214,12 @@ void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuverType
 			break;
 
 		case RotateLeft:
-			if (m_iRotationSpeed > -m_iMaxRotationRate)
+			if (m_iRotationSpeed > -Desc.GetMaxRotationSpeed())
 				{
 				if (m_iRotationSpeed > 0)
-					m_iRotationSpeed = Max(-m_iMaxRotationRate, m_iRotationSpeed - m_iRotationAccelStop);
+					m_iRotationSpeed = Max(-Desc.GetMaxRotationSpeed(), m_iRotationSpeed - Desc.GetRotationAccelStop());
 				else
-					m_iRotationSpeed = Max(-m_iMaxRotationRate, m_iRotationSpeed - m_iRotationAccel);
+					m_iRotationSpeed = Max(-Desc.GetMaxRotationSpeed(), m_iRotationSpeed - Desc.GetRotationAccel());
 				m_iLastManeuver = RotateLeft;
 				}
 			else
@@ -268,47 +236,6 @@ void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuverType
 		m_iRotationFrame = (m_iRotationFrame + m_iRotationSpeed) % iFrameMax;
 		if (m_iRotationFrame < 0)
 			m_iRotationFrame += iFrameMax;
-		}
-	}
-
-void CIntegralRotation::UpdateAccel (const CIntegralRotationDesc &Desc, Metric rHullMass, Metric rItemMass)
-
-//	UpdateAccel
-//
-//	Recalculates rotation acceleration based on the mass of the ship.
-
-	{
-	//	If we have no mass, then we just take the default acceleration
-
-	if (rHullMass == 0.0)
-		{
-		m_iRotationAccel = Desc.GetRotationAccel();
-		m_iRotationAccelStop = Desc.GetRotationAccelStop();
-		m_iMaxRotationRate = Desc.GetMaxRotationSpeed();
-		}
-
-	//	Otherwise we compute based on the mass
-
-	else
-		{
-		Metric rExtraMass = (rItemMass - rHullMass) * MANEUVER_MASS_FACTOR;
-
-		//	If we don't have too much extra mass, then rotation is not affected.
-
-		if (rExtraMass <= 0.0)
-			{
-			m_iRotationAccel = Desc.GetRotationAccel();
-			m_iRotationAccelStop = Desc.GetRotationAccelStop();
-			m_iMaxRotationRate = Desc.GetMaxRotationSpeed();
-			return;
-			}
-
-		//	Otherwise, we slow down
-
-		Metric rRatio = 1.0f / Min(MAX_INERTIA_RATIO, (1.0f + (rExtraMass / rHullMass)));
-		m_iRotationAccel = Max(1, (int)mathRound(rRatio * Desc.GetRotationAccel()));
-		m_iRotationAccelStop = Max(1, (int)mathRound(rRatio * Desc.GetRotationAccelStop()));
-		m_iMaxRotationRate = Max(1, (int)mathRound(pow(rRatio, 0.3) * Desc.GetMaxRotationSpeed()));
 		}
 	}
 

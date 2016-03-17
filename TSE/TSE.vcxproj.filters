@@ -137,6 +137,18 @@
     <ClInclude Include="..\Include\TSEPlayerSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEShipSystems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEShipCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEItems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEImages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -766,9 +778,6 @@
     <ClCompile Include="CPlayerSettings.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="CIntegralRotationDesc.cpp">
-      <Filter>Source Files\Ships</Filter>
-    </ClCompile>
     <ClCompile Include="CIntegralRotation.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
@@ -897,6 +906,15 @@
     </ClCompile>
     <ClCompile Include="CReactorDesc.cpp">
       <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CRotationDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CIntegralRotationDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipPerformanceDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

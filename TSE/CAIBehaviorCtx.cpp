@@ -374,7 +374,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 	//	can get in closer because we can turn faster to adjust for the target's
 	//	motion.
 
-	Metric rDegreesPerTick = Max(1.0, Min(pShip->GetClass()->GetRotationDesc().GetMaxRotationSpeedPerTick(), 60.0));
+	Metric rDegreesPerTick = Max(1.0, Min(pShip->GetRotationDesc().GetMaxRotationSpeedDegrees(), 60.0));
 	Metric rTanRot = tan(PI * rDegreesPerTick / 180.0);
 	Metric rMinFlankDist = Max(MIN_TARGET_DIST, MAX_TARGET_SPEED / rTanRot);
 
@@ -389,7 +389,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 
 	//	Max turn count
 
-	int iFullRotationTime = Max(1, pShip->GetClass()->GetRotationDesc().GetMaxRotationTimeTicks());
+	int iFullRotationTime = Max(1, pShip->GetRotationDesc().GetMaxRotationTimeTicks());
 	m_iMaxTurnCount = iFullRotationTime * (1 + (pShip->GetDestiny() % 6));
 
 	//	Chance of premature fire based on turn rate
@@ -1041,7 +1041,7 @@ void CAIBehaviorCtx::SetBarrierClock (CShip *pShip)
 
 	//	Set our clock
 
-	int iFullRotationTime = Max(1, pShip->GetClass()->GetRotationDesc().GetMaxRotationTimeTicks());
+	int iFullRotationTime = Max(1, pShip->GetRotationDesc().GetMaxRotationTimeTicks());
 	m_iBarrierClock = 30 + iFullRotationTime;
 	}
 
