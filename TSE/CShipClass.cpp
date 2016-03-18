@@ -833,8 +833,7 @@ Metric CShipClass::CalcManeuverValue (bool bDodge) const
 
 	//	Get some statistics
 
-	CDriveDesc Drive;
-	GetDriveDesc(&Drive);
+    const CDriveDesc &Drive = m_Perf.GetDriveDesc();
 
 	Metric rMass = CalcMass(m_AverageDevices);
 	Metric rThrustRatio = 2.0 * (rMass > 0.0 ? Drive.GetThrust() / rMass : 0.0);
@@ -897,6 +896,58 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 	return rMass;
 	}
 
+void CShipClass::CalcPerformance (void)
+
+//  CalcPerformance
+//
+//  Calculates the basic stats including all devices. This function initializes
+//  m_Perf and uses m_AverageDevices.
+
+    {
+    int i;
+
+    //  We generate a context block and accumulate performance stats from the
+    //  class, armor, devices, etc.
+    //
+    //  These fields are context for the ship that we're computing.
+
+    SShipPerformanceCtx Ctx;
+    Ctx.rSingleArmorFraction = (m_Armor.GetCount() > 0 ? 1.0 / m_Armor.GetCount() : 1.0);
+
+    //  Start with parameters from the class
+
+    InitPerformance(Ctx);
+
+    //  Accumulate settings from armor
+
+	for (i = 0; i < m_Armor.GetCount(); i++)
+		{
+        CItem ArmorItem;
+        if (!m_Armor.GetSegment(i).CreateArmorItem(&ArmorItem)
+                || ArmorItem.IsEmpty())
+            continue;
+
+        CItemCtx ItemCtx(ArmorItem);
+        ItemCtx.GetArmorClass()->AccumulatePerformance(ItemCtx, Ctx);
+		}
+
+    //  Accumulate settings from devices
+
+    for (i = 0; i < m_AverageDevices.GetCount(); i++)
+        {
+        const CItem &DeviceItem = m_AverageDevices.GetDeviceDesc(i).Item;
+        if (DeviceItem.IsEmpty())
+            continue;
+
+        CItemCtx ItemCtx(DeviceItem);
+        ItemCtx.GetDeviceClass()->AccumulatePerformance(ItemCtx, Ctx);
+        }
+
+    //  Now apply the performance parameters to the descriptor
+
+    m_Perf.Init(Ctx);
+    }
+
 int CShipClass::CalcScore (void)
 
 //	CalcScore
@@ -907,7 +958,7 @@ int CShipClass::CalcScore (void)
 	//	Compute the movement stats
 
 	int iSpeed, iThrust, iManeuver;
-	ComputeMovementStats(m_AverageDevices, &iSpeed, &iThrust, &iManeuver);
+	ComputeMovementStats(&iSpeed, &iThrust, &iManeuver);
 
 	//	Figure out what armor we've got
 
@@ -960,8 +1011,7 @@ int CShipClass::CalcScore (void)
 
 	//	Compute score and level
 
-	return ComputeScore(m_AverageDevices,
-			iArmorLevel, 
+	return ComputeScore(iArmorLevel, 
 			iPrimaryWeapon, 
 			iSpeed, 
 			iThrust, 
@@ -1000,15 +1050,15 @@ enum LowMediumHigh
 	enumHigh = 2,
 	};
 
-void CShipClass::ComputeMovementStats (CDeviceDescList &Devices, int *retiSpeed, int *retiThrust, int *retiManeuver)
+void CShipClass::ComputeMovementStats (int *retiSpeed, int *retiThrust, int *retiManeuver)
 	{
-	const CDriveDesc *pDrive = GetHullDriveDesc();
+    const CDriveDesc &DriveDesc = m_Perf.GetDriveDesc();
 
 	//	Figure out the speed of the ship
 
-	if (pDrive->GetMaxSpeed() > 0.20 * LIGHT_SPEED)
+	if (DriveDesc.GetMaxSpeed() > 0.20 * LIGHT_SPEED)
 		*retiSpeed = enumHigh;
-	else if (pDrive->GetMaxSpeed() > 0.15 * LIGHT_SPEED)
+	else if (DriveDesc.GetMaxSpeed() > 0.15 * LIGHT_SPEED)
 		*retiSpeed = enumMedium;
 	else
 		*retiSpeed = enumLow;
@@ -1016,11 +1066,11 @@ void CShipClass::ComputeMovementStats (CDeviceDescList &Devices, int *retiSpeed,
 	//	Figure out the mass of the ship (including all installed
 	//	weapons and armor)
 
-	Metric rFullMass = CalcMass(Devices);
+	Metric rFullMass = CalcMass(m_AverageDevices);
 
 	//	Figure out the thrust of the ship
 
-	Metric rRatio = (Metric)pDrive->GetThrust() / rFullMass;
+	Metric rRatio = (Metric)DriveDesc.GetThrust() / rFullMass;
 	if (rRatio >= 7.0)
 		*retiThrust = enumHigh;
 	else if (rRatio >= 3.0)
@@ -1030,17 +1080,16 @@ void CShipClass::ComputeMovementStats (CDeviceDescList &Devices, int *retiSpeed,
 
 	//	Figure out the maneuverability of the ship
 
-    CIntegralRotationDesc Desc(m_RotationDesc);
-	if (Desc.GetMaxRotationTimeTicks() >= 90)
+    const CIntegralRotationDesc &RotationDesc = m_Perf.GetRotationDesc();
+	if (RotationDesc.GetMaxRotationTimeTicks() >= 90)
 		*retiManeuver = enumLow;
-	else if (Desc.GetMaxRotationTimeTicks() > 30)
+	else if (RotationDesc.GetMaxRotationTimeTicks() > 30)
 		*retiManeuver = enumMedium;
 	else
 		*retiManeuver = enumHigh;
 	}
 
-int CShipClass::ComputeScore (const CDeviceDescList &Devices,
-							  int iArmorLevel,
+int CShipClass::ComputeScore (int iArmorLevel,
 							  int iPrimaryWeapon,
 							  int iSpeed,
 							  int iThrust,
@@ -1057,7 +1106,7 @@ int CShipClass::ComputeScore (const CDeviceDescList &Devices,
 	int iExceptional = 0;
 	int iDrawback = 0;
 	int iStdLevel = iArmorLevel;
-	int iWeaponLevel = (iPrimaryWeapon == -1 ? 0 : ComputeDeviceLevel(Devices.GetDeviceDesc(iPrimaryWeapon)));
+	int iWeaponLevel = (iPrimaryWeapon == -1 ? 0 : ComputeDeviceLevel(m_AverageDevices.GetDeviceDesc(iPrimaryWeapon)));
 
 	//	If our weapon is better than our armor then adjust the level
 	//	depending on the difference.
@@ -1144,9 +1193,9 @@ int CShipClass::ComputeScore (const CDeviceDescList &Devices,
 	bool bDirectionalBonus = false;
 	bool bGoodSecondary = false;
 	int iDirectionalBonus = 0;
-	for (i = 0; i < Devices.GetCount(); i++)
+	for (i = 0; i < m_AverageDevices.GetCount(); i++)
 		{
-		const SDeviceDesc &Dev = Devices.GetDeviceDesc(i);
+		const SDeviceDesc &Dev = m_AverageDevices.GetDeviceDesc(i);
 		CDeviceClass *pDevice = Dev.Item.GetType()->GetDeviceClass();
 		int iDeviceLevel = ComputeDeviceLevel(Dev);
 
@@ -1736,11 +1785,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_MAX_ROTATION))
 		*retsValue = strFromInt(mathRound(CIntegralRotationDesc(m_RotationDesc).GetMaxRotationSpeedDegrees()));
 	else if (strEquals(sField, FIELD_MAX_SPEED))
-		{
-		CDriveDesc Desc;
-		GetDriveDesc(&Desc);
-		*retsValue = strFromInt((int)((100.0 * Desc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
-		}
+		*retsValue = strFromInt((int)((100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 	else if (strEquals(sField, FIELD_MAX_STRUCTURAL_HP))
 		*retsValue = strFromInt(m_Interior.GetHitPoints());
 	else if (strEquals(sField, FIELD_NAME))
@@ -1883,18 +1928,11 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST))
-		{
-		CDriveDesc Drive;
-		GetDriveDesc(&Drive);
-		*retsValue = strFromInt(Drive.GetThrust());
-		}
+		*retsValue = strFromInt(m_Perf.GetDriveDesc().GetThrust());
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
 		{
-		CDriveDesc Drive;
-		GetDriveDesc(&Drive);
-
 		Metric rMass = CalcMass(m_AverageDevices);
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? Drive.GetThrust() / rMass : 0.0)) + 0.5);
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)) + 0.5);
 		*retsValue = strFromInt(10 * iRatio);
 		}
 	else if (strEquals(sField, FIELD_TREASURE_VALUE))
@@ -2017,11 +2055,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 			*retsValue = CONSTLIT("Image");
 		}
 	else if (strEquals(sField, FIELD_DRIVE_POWER))
-		{
-		CDriveDesc Drive;
-		GetDriveDesc(&Drive);
-		*retsValue = strFromInt(Drive.GetPowerUse());
-		}
+		*retsValue = strFromInt(m_Perf.GetDriveDesc().GetPowerUse());
+
 	else if (CReactorClass::FindDataField(m_ReactorDesc, sField, retsValue))
 		return true;
 	else
@@ -2133,19 +2168,21 @@ CVector CShipClass::GetDockingPortOffset (int iRotation)
 	return PolarToVector(iRotation + 180, (0.8 * g_KlicksPerPixel * ((iImageSize - DOCK_OFFSET_STD_SIZE) / 2)));
 	}
 
-void CShipClass::GetDriveDesc (CDriveDesc *retDriveDesc) const
+const CDriveDesc &CShipClass::GetDriveDesc (const CItem **retpDriveItem) const
 
-//	GetDriveDesc
+//  GetDriveDesc
 //
-//	Returns the drive desc for the hull plus any device
+//  Returns the computed drive desc (including devices)
 
-	{
-	*retDriveDesc = *GetHullDriveDesc();
+    {
+    if (retpDriveItem)
+        {
+        const SDeviceDesc *pDrive = m_AverageDevices.GetDeviceDescByName(devDrive);
+        *retpDriveItem = (pDrive ? &pDrive->Item : NULL);
+        }
 
-	CDeviceClass *pDrive = m_AverageDevices.GetNamedDevice(devDrive);
-	if (pDrive)
-        retDriveDesc->Add(*pDrive->GetDriveDesc());
-	}
+    return m_Perf.GetDriveDesc();
+    }
 
 CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip)
 
@@ -2909,6 +2946,10 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_Interior.BindDesign(Ctx))
 		goto Fail;
 
+    //  Compute performance based on average devices
+
+    CalcPerformance();
+
 	//	Events
 
 	m_fHasOnAttackedByPlayerEvent = FindEventHandler(CONSTLIT("OnAttackedByPlayer"));
@@ -3445,23 +3486,15 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	else if (strEquals(sProperty, PROPERTY_THRUST_TO_WEIGHT))
 		{
-		CDriveDesc Drive;
-		GetDriveDesc(&Drive);
-
 		Metric rMass = CalcMass(m_AverageDevices);
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? Drive.GetThrust() / rMass : 0.0)) + 0.5);
+		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)) + 0.5);
 		return CC.CreateInteger(10 * iRatio);
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DRIVE_POWER)
 			|| strEquals(sProperty, PROPERTY_MAX_SPEED)
 			|| strEquals(sProperty, PROPERTY_THRUST))
-		{
-		CDriveDesc Drive;
-		GetDriveDesc(&Drive);
-
-		return CDriveClass::GetDriveProperty(Drive, sProperty);
-		}
+		return CDriveClass::GetDriveProperty(m_Perf.GetDriveDesc(), sProperty);
 
 	//	Reactor properties
 

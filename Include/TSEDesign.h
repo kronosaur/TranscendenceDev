@@ -2420,14 +2420,13 @@ class CShipClass : public CDesignType
 		inline int GetDockingPortCount (void) { return m_DockingPorts.GetCount(); }
 		CVector GetDockingPortOffset (int iRotation);
 		inline const TArray<CVector> &GetDockingPortPositions (void) { return m_DockingPorts; }
-		void GetDriveDesc (CDriveDesc *retDriveDesc) const;
+        const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
 		inline CObjectEffectDesc &GetEffectsDesc (void) { return m_Effects; }
 		IShipGenerator *GetEscorts (void) { return m_pEscorts; }
 		CWeaponFireDesc *GetExplosionType (CShip *pShip);
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
 		CXMLElement *GetHUDDescInherited (EHUDTypes iType) const;
-		inline const CDriveDesc *GetHullDriveDesc (void) const { return &m_DriveDesc; }
 		inline int GetHullMass (void) const { return m_iMass; }
 		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
 		int GetHullSectionAtAngle (int iAngle);
@@ -2556,10 +2555,10 @@ class CShipClass : public CDesignType
 		inline Metric CalcDodgeRate (void) const { return CalcManeuverValue(true); }
 		int CalcLevel (void) const;
 		Metric CalcManeuverValue (bool bDodge = false) const;
+        void CalcPerformance (void);
 		int ComputeDeviceLevel (const SDeviceDesc &Device) const;
-		void ComputeMovementStats (CDeviceDescList &Devices, int *retiSpeed, int *retiThrust, int *retiManeuver);
-		int ComputeScore (const CDeviceDescList &Devices,
-						  int iArmorLevel,
+		void ComputeMovementStats (int *retiSpeed, int *retiThrust, int *retiManeuver);
+		int ComputeScore (int iArmorLevel,
 						  int iPrimaryWeapon,
 						  int iSpeed,
 						  int iThrust,
@@ -2596,6 +2595,8 @@ class CShipClass : public CDesignType
 		int m_iLevel;							//	Ship class level
 		EBalanceTypes m_iLevelType;				//	Type of ships for level
 
+        //  Hull properties
+
 		int m_iMass;							//	Empty mass (tons)
 		int m_iSize;							//	Length in meters
 		int m_iCargoSpace;						//	Available cargo space (tons)
@@ -2605,6 +2606,8 @@ class CShipClass : public CDesignType
 		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
 		int m_iCyberDefenseLevel;				//	Cyber defense level
 
+        //  Class limits
+
 		int m_iMaxArmorMass;					//	Max mass of single armor segment
 		int m_iMaxCargoSpace;					//	Max amount of cargo space with expansion (tons)
 		int m_iMaxReactorPower;					//	Max compatible reactor power
@@ -2612,29 +2615,41 @@ class CShipClass : public CDesignType
 		int m_iMaxWeapons;						//	Max number of weapon devices (including launchers)
 		int m_iMaxNonWeapons;					//	Max number of non-weapon devices
 
+        //  Wrecks
+
 		int m_iLeavesWreck;						//	Chance that it leaves a wreck
 		int m_iStructuralHP;					//	Structual hp of wreck
 		CStationTypeRef m_pWreckType;				//	Station type to use as wreck
 
+        //  Armor, Devices, Equipment, Etc.
+
         CShipArmorDesc m_Armor;                 //  Armor descriptor
 		CShipInteriorDesc m_Interior;			//	Interior structure
 		IDeviceGenerator *m_pDevices;			//	Generator of devices
+		TArray<SEquipmentDesc> m_Equipment;		//	Initial equipment
+
+        //  Performance Stats (after accounting for devices, etc).
+
+        CShipPerformanceDesc m_Perf;            //  Performance based on average devices (only for stats)
 		CDeviceDescList m_AverageDevices;		//	Average complement of devices (only for stats)
 
-		TArray<SEquipmentDesc> m_Equipment;		//	Initial equipment
+        //  AI & Player Settings
 
 		CAISettings m_AISettings;				//	AI controller data
 		CPlayerSettings *m_pPlayerSettings;		//	Player settings data
 		IItemGenerator *m_pItems;				//	Random items
 
 		//	Escorts
+
 		IShipGenerator *m_pEscorts;				//	Escorts
 
 		//	Character
+
 		CGenericTypeRef m_CharacterClass;		//	Character class
 		CGenericTypeRef m_Character;			//	Character for ship
 
 		//	Docking
+
 		TArray<CVector> m_DockingPorts;			//	Position of docking ports
 		CDockScreenTypeRef m_pDefaultScreen;	//	Default screen
 		DWORD m_dwDefaultBkgnd;					//	Default background screen
@@ -2644,21 +2659,26 @@ class CShipClass : public CDesignType
 		CCommunicationsHandler m_CommsHandler;	//	Communications handler
 
 		//	Image
+
 		CObjectImageArray m_Image;				//	Image of ship
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
 		//	Wreck image
+
 		CG32bitImage m_WreckBitmap;				//	Image to use when ship is wrecked
 		CObjectImageArray m_WreckImage;			//	Image to use when ship is wrecked
 
 		//	Explosion
+
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 
 		//	Exhaust
+
 		CObjectImageArray m_ExhaustImage;		//	Image of drive exhaust
 		TArray<SExhaustDesc> m_Exhaust;			//	Drive exhaust painting
 
 		//	Misc
+
 		DWORD m_fRadioactiveWreck:1;			//	TRUE if wreck is always radioactive
 		DWORD m_fHasDockingPorts:1;				//	TRUE if ship has docking ports
 		DWORD m_fTimeStopImmune:1;				//	TRUE if ship is immune to stop-time
@@ -4224,7 +4244,6 @@ class CInstalledDevice
 		inline int GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) { return m_pClass->GetDamageType(Ctx, Ammo); }
 		inline int GetDefaultFireAngle (CSpaceObject *pSource) { return m_pClass->GetDefaultFireAngle(this, pSource); }
 		bool GetDeviceEnhancementDesc (CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return m_pClass->GetDeviceEnhancementDesc(this, pSource, pWeapon, retDesc); }
-		inline const CDriveDesc *GetDriveDesc (CSpaceObject *pSource) { return m_pClass->GetDriveDesc(this, pSource); }
 		inline const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) { return m_pClass->GetReactorDesc(Ctx); }
 		inline Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		inline CString GetName (void) { return m_pClass->GetName(); }

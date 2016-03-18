@@ -83,13 +83,15 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
-const CDriveDesc *CDriveClass::GetDriveDesc (CInstalledDevice *pDevice, CSpaceObject *pSource) const
+const CDriveDesc *CDriveClass::GetDriveDesc (CItemCtx &Ctx) const
 
 //	GetDriveDesc
 //
 //	Returns the drive descriptor
 
 	{
+    CInstalledDevice *pDevice = Ctx.GetDevice();
+
 	if (pDevice)
 		{
 		if (pDevice->IsDamaged() || pDevice->IsDisrupted())
@@ -112,7 +114,7 @@ ICCItem *CDriveClass::GetItemProperty (CItemCtx &Ctx, const CString &sProperty)
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
-	const CDriveDesc &Desc = *GetDriveDesc(Ctx.GetDevice(), Ctx.GetSource());
+	const CDriveDesc &Desc = *GetDriveDesc(Ctx);
 
 	if (strEquals(sProperty, PROPERTY_MAX_SPEED))
 		return CC.CreateInteger((int)((100.0 * Desc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
@@ -137,7 +139,7 @@ int CDriveClass::GetPowerRating (CItemCtx &Ctx) const
 //	Get minimum reactor output for device
 
 	{
-	const CDriveDesc &Desc = *GetDriveDesc(Ctx.GetDevice(), Ctx.GetSource());
+	const CDriveDesc &Desc = *GetDriveDesc(Ctx);
 	return Desc.GetPowerUse();
 	}
 
@@ -170,7 +172,7 @@ void CDriveClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, 
 //	Returns display attributes
 
 	{
-	const CDriveDesc &Desc = *GetDriveDesc(ItemCtx.GetDevice(), ItemCtx.GetSource());
+	const CDriveDesc &Desc = *GetDriveDesc(ItemCtx);
 
 	//	Inertialess
 
@@ -185,7 +187,7 @@ bool CDriveClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCt
 //  Modifies the performance of the ship.
 
     {
-	const CDriveDesc &Desc = *GetDriveDesc(ItemCtx.GetDevice(), ItemCtx.GetSource());
+	const CDriveDesc &Desc = *GetDriveDesc(ItemCtx);
 
     //  Add our drive metrics to the base metrics (defined by the class).
 
@@ -205,7 +207,7 @@ CString CDriveClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwF
 
 	//	Get the drive stats
 
-	const CDriveDesc &Desc = *GetDriveDesc(Ctx.GetDevice(), Ctx.GetSource());
+	const CDriveDesc &Desc = *GetDriveDesc(Ctx);
 
 	//	Max speed
 

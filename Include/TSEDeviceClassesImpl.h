@@ -129,7 +129,6 @@ class CDriveClass : public CDeviceClass
 
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatDrive; }
-		virtual const CDriveDesc *GetDriveDesc (CInstalledDevice *pDevice = NULL, CSpaceObject *pSource = NULL) const override;
 		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
@@ -144,6 +143,7 @@ class CDriveClass : public CDeviceClass
 
 	private:
 		CDriveClass (void);
+        const CDriveDesc *GetDriveDesc (CItemCtx &Ctx) const;
 
 		CDriveDesc m_DriveDesc;
 		CDriveDesc m_DamagedDriveDesc;

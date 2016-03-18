@@ -218,34 +218,17 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
-	const CDriveDesc *pDriveDesc = pClass->GetHullDriveDesc();
-	if (pDriveDesc == NULL)
-		{
-		if (retcyHeight)
-			*retcyHeight = 0;
-
-		CAniSequencer::Create(CVector(x, y), (CAniSequencer **)retpInfo);
-		return;
-		}
+    const CItem *pDriveItem;
+	const CDriveDesc &DriveDesc = pClass->GetDriveDesc(&pDriveItem);
 
 	//	Base speed and thrust
 
-	Metric rMaxSpeed = pDriveDesc->GetMaxSpeed();
-	int iThrust = pDriveDesc->GetThrust();
-
-	//	If we have a drive upgrade, we account for it here
-
-	CDeviceClass *pDrive = Devices.GetNamedDevice(devDrive);
-	if (pDrive)
-		{
-		pDriveDesc = pDrive->GetDriveDesc();
-		rMaxSpeed = Max(rMaxSpeed, pDriveDesc->GetMaxSpeed());
-		iThrust += pDriveDesc->GetThrust();
-		}
+	Metric rMaxSpeed = DriveDesc.GetMaxSpeed();
+	int iThrust = DriveDesc.GetThrust();
 
 	//	Icon
 
-	CItemType *pItemIcon = (pDrive ? pDrive->GetItemType() : g_pUniverse->FindItemType(TRITIUM_PROPULSION_UPGRADE_UNID));
+	CItemType *pItemIcon = (pDriveItem ? pDriveItem->GetType() : g_pUniverse->FindItemType(TRITIUM_PROPULSION_UPGRADE_UNID));
 
 	//	Add speed box
 
@@ -260,7 +243,7 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 		sSpeedNumber = strPatternSubst(CONSTLIT("%d.%02dc"), iFTL, iFrac);
 		}
 
-	CString sSpeedHeader = (pDrive ? pDrive->GetItemType()->GetNounPhrase(nounActual) : CONSTLIT("main drive"));
+	CString sSpeedHeader = (pDriveItem ? pDriveItem->GetNounPhrase(nounActual) : CONSTLIT("main drive"));
 
 	//	Add thrust/mass ratio
 
