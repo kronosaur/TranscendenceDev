@@ -26,6 +26,8 @@
 const Metric MANEUVER_MASS_FACTOR =				1.0;
 const Metric MAX_INERTIA_RATIO =				9.0;
 
+TArray<CRotationDesc::SEntry> CRotationDesc::m_Rotations[360];
+
 bool CRotationDesc::AdjForShipMass (Metric rHullMass, Metric rItemMass)
 
 //  AdjForShipMass
@@ -71,6 +73,9 @@ ALERROR CRotationDesc::Bind (SDesignLoadCtx &Ctx, CObjectImageArray &Image)
 
 	if (m_iCount != STD_ROTATION_COUNT && Image.GetRotationCount() == STD_ROTATION_COUNT)
 		{
+        //  NOTE: We can guarantee that m_iCount <= 360 because we check during
+        //  XML load.
+
 		Image.SetRotationCount(m_iCount);
 		InitRotationCount(m_iCount);
 		}
@@ -87,6 +92,11 @@ ALERROR CRotationDesc::Bind (SDesignLoadCtx &Ctx, CObjectImageArray &Image)
 			Ctx.sError = CONSTLIT("Image must specify valid rotation count.");
 			return ERR_FAIL;
 			}
+        else if (iRotationCount > 360)
+            {
+			Ctx.sError = CONSTLIT("More than 360 rotation frames not supported.");
+			return ERR_FAIL;
+            }
 
 		InitRotationCount(iRotationCount);
 		}
@@ -157,6 +167,12 @@ ALERROR CRotationDesc::InitFromXML (SDesignLoadCtx &Ctx, const CString &sUNID, C
 		m_rAccelPerTickStop = m_rDegreesPerTick;
 		}
 
+    if (m_iCount > 360)
+        {
+        Ctx.sError = CONSTLIT("More than 360 rotation frames not supported.");
+        return ERR_FAIL;
+        }
+
 	return NOERROR;
 	}
 
@@ -168,6 +184,8 @@ void CRotationDesc::InitRotationCount (int iCount)
 
 	{
 	int i;
+
+    ASSERT(iCount >= 0 && iCount <= 360);
 
 	//	If we're in backwards compatibility mode and if we've got a different
 	//	count, then we need to recompute our degrees per tick.
@@ -182,14 +200,12 @@ void CRotationDesc::InitRotationCount (int iCount)
 	//	Initialize count
 
 	m_iCount = iCount;
-	m_Rotations.DeleteAll();
 
-	if (m_iCount > 0)
+	if (m_iCount > 0 && m_Rotations[m_iCount].GetCount() == 0)
 		{
 		Metric rFrameAngle = 360.0 / m_iCount;
-		m_Rotations.InsertEmpty(m_iCount);
 		for (i = 0; i < m_iCount; i++)
-			m_Rotations[i].iRotation = AngleMod(mathRound(90.0 - i * rFrameAngle));
+			m_Rotations[m_iCount][i].iRotation = AngleMod(mathRound(90.0 - i * rFrameAngle));
 		}
 	}
 

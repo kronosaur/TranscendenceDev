@@ -209,9 +209,11 @@ class CRotationDesc
         inline Metric GetMaxRotationPerTick (void) const { return m_rDegreesPerTick; }
         inline Metric GetRotationAccelPerTick (void) const { return m_rAccelPerTick; }
         inline Metric GetRotationAccelStopPerTick (void) const { return m_rAccelPerTickStop; }
-		inline int GetRotationAngle (int iIndex) const { return m_Rotations[iIndex % m_iCount].iRotation; }
+		inline int GetRotationAngle (int iIndex) const { return m_Rotations[m_iCount][iIndex % m_iCount].iRotation; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc);
         void Interpolate (const CRotationDesc &From, const CRotationDesc &To, Metric rInterpolate = 0.5);
+
+        static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_Rotations[iCount].GetCount() > 0) ? m_Rotations[iCount][iIndex % iCount].iRotation : 0); }
 
 	private:
 		struct SEntry
@@ -227,7 +229,7 @@ class CRotationDesc
 		Metric m_rAccelPerTickStop;			//	Degrees acceleration per tick when stoping rotation
 		int m_iManeuverability;				//	Only for backwards compatibility (during InitFromXML)
 
-		TArray<SEntry> m_Rotations;			//	Entries for each rotation
+        static TArray<SEntry> m_Rotations[360];
 	};
 
 class CIntegralRotationDesc
