@@ -120,3 +120,22 @@ ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD 
 
     return NOERROR;
     }
+
+void CDriveDesc::Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metric rInterpolate)
+
+//  Interpolate
+//
+//  Initialize stats based on an interpolation between From and To.
+
+    {
+    //  Some values cannot be interpolated. We take one or the other.
+
+    m_dwUNID = (rInterpolate >= 0.5 ? To.m_dwUNID : From.m_dwUNID);
+    m_fInertialess = (rInterpolate >= 0.5 ? To.m_fInertialess : From.m_fInertialess);
+
+    //  Scalar values can be interpolated
+
+    m_iThrust = mathRound(mathInterpolate(From.m_iThrust, To.m_iThrust, rInterpolate));
+    m_iPowerUse = mathRound(mathInterpolate(From.m_iPowerUse, To.m_iPowerUse, rInterpolate));
+    m_rMaxSpeed = mathInterpolate(From.m_rMaxSpeed, To.m_rMaxSpeed, rInterpolate);
+    }

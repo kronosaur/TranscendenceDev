@@ -122,6 +122,8 @@ class CCyberDeckClass : public CDeviceClass
 class CDriveClass : public CDeviceClass
 	{
 	public:
+        ~CDriveClass (void);
+
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDrive);
 		static ICCItem *GetDriveProperty (const CDriveDesc &Desc, const CString &sProperty);
 
@@ -142,8 +144,31 @@ class CDriveClass : public CDeviceClass
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 
 	private:
+        struct SScalableStats
+            {
+            SScalableStats (void) : 
+                    iLevel(-1)
+                { }
+
+            int iLevel;
+            CDriveDesc DriveDesc;
+            CRotationDesc ManeuverDesc;
+            };
+
 		CDriveClass (void);
-        const CDriveDesc *GetDriveDesc (CItemCtx &Ctx) const;
+		CDriveClass (const CDriveClass &Desc) = delete;
+        CDriveClass &operator= (const CDriveClass &Desc) = delete;
+
+        const SScalableStats *GetDesc (CItemCtx &Ctx) const;
+        void InitDamagedDesc (void) const;
+        void InitEnhancedDesc (void) const;
+        static ALERROR InitStatsFromXML (SDesignLoadCtx &Ctx, int iLevel, DWORD dwUNID, CXMLElement *pDesc, SScalableStats &retStats);
+
+        int m_iLevels;                      //  Total number of levels.
+        SScalableStats *m_pDesc;            //  Array of entries, one per scaled level (minimum 1)
+
+        mutable SScalableStats *m_pDamagedDesc;
+        mutable SScalableStats *m_pEnhancedDesc;
 
 		CDriveDesc m_DriveDesc;
 		CDriveDesc m_DamagedDriveDesc;

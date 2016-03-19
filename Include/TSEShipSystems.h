@@ -211,6 +211,7 @@ class CRotationDesc
         inline Metric GetRotationAccelStopPerTick (void) const { return m_rAccelPerTickStop; }
 		inline int GetRotationAngle (int iIndex) const { return m_Rotations[iIndex % m_iCount].iRotation; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc);
+        void Interpolate (const CRotationDesc &From, const CRotationDesc &To, Metric rInterpolate = 0.5);
 
 	private:
 		struct SEntry
@@ -490,6 +491,7 @@ class CDriveDesc
         inline int GetThrust (void) const { return m_iThrust; }
         inline DWORD GetUNID (void) const { return m_dwUNID; }
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass = false);
+        void Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metric rInterpolate = 0.5);
         inline bool IsInertialess (void) const { return (m_fInertialess ? true : false); }
         inline void SetInertialess (bool bValue = true) { m_fInertialess = bValue; }
         inline void SetMaxSpeed (Metric rSpeed) { m_rMaxSpeed = rSpeed; }

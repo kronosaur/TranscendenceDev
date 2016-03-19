@@ -192,3 +192,13 @@ void CRotationDesc::InitRotationCount (int iCount)
 			m_Rotations[i].iRotation = AngleMod(mathRound(90.0 - i * rFrameAngle));
 		}
 	}
+
+void CRotationDesc::Interpolate (const CRotationDesc &From, const CRotationDesc &To, Metric rInterpolate)
+
+//  Interpolate
+//
+//  Initializes with interpolation between From and To.
+
+    {
+    *this = From;
+    }
