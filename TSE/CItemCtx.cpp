@@ -303,6 +303,17 @@ const CItemEnhancement &CItemCtx::GetMods(void)
 	return GetItem().GetMods();
 	}
 
+bool CItemCtx::IsDeviceEnabled (void)
+
+//  IsDeviceEnabled
+//
+//  Returns TRUE if the device is enabled.
+//  NOTE: If we don't have a CInstalledDevice, we alway treat as enabled.
+    
+    {
+    return (GetDevice() == NULL || GetDevice()->IsEnabled());
+    }
+
 bool CItemCtx::ResolveVariant (void)
 
 //	ResolveVariant

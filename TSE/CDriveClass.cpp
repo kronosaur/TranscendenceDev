@@ -407,6 +407,13 @@ bool CDriveClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCt
 //  Modifies the performance of the ship.
 
     {
+    //  If disabled, then nothing
+
+    if (!ItemCtx.IsDeviceEnabled())
+        return false;
+
+    //  Get the stats (this checks for damage)
+
 	const SScalableStats *pDesc = GetDesc(ItemCtx);
     if (pDesc == NULL)
         return false;
