@@ -187,6 +187,40 @@ class CShipInterior
 	};
 
 //	Maneuvering ----------------------------------------------------------------
+//
+//  We use three different classes for tracking rotations/maneuvering.
+//
+//  CRotationDesc describes the ideal rotation parameters in terms of floating-
+//  point degrees per tick. These do not deal with integral rotation frames
+//  (other than for purposes of determining parameters in backwards 
+//  compatibility mode).
+//
+//  CRotationDesc is defined by the ship class, but can be modified by devices
+//  or other enhancements to a ship.
+//
+//  CIntegralRotationDesc describes the integral parameters in terms of frames
+//  (or fractions of frames, using fixed-point precision). We do this in order 
+//  to remove any possibility of round-off errors (or precision errors) from
+//  creeping into our calculations. This makes rotation predictable and
+//  reversible.
+//
+//  At bind-time, CShipClass computes its CIntegralRotationDesc (in the 
+//  performance structure) based on its base CRotationDesc and any default
+//  devices. This is mostly used to return class performance characteristics,
+//  such as maneuverability.
+//
+//  In general, when asking about CShipClass characteristics, callers should
+//  ask the class's CIntegralRotationDesc (in the performance structure) rather
+//  than CRotationDesc (because the former accounts for installed devices).
+//
+//  CShip objects compute their own copy of CIntegralRotationDesc when computing
+//  their own performance structure (generally after any device is installed or
+//  enhanced). Any of the parameters in CRotationDesc can change after bind-time
+//  (except frame count).
+//
+//  CIntegralRotation holds the current rotation and rotation acceleration of
+//  a ship. Only CShip objects have (or need) this class. It is initialized from
+//  a CIntegralRotationDesc and generally refers to it when doing calculations.
 
 enum EManeuverTypes
 	{
@@ -203,17 +237,13 @@ class CRotationDesc
 
         bool AdjForShipMass (Metric rHullMass, Metric rItemMass);
 		ALERROR Bind (SDesignLoadCtx &Ctx, CObjectImageArray &Image);
-		inline int GetFrameAngle (void) const { return (int)((360.0 / m_iCount) + 0.5); }
 		inline int GetFrameCount (void) const { return m_iCount; }
-		int GetFrameIndex (int iAngle) const;
         inline Metric GetMaxRotationPerTick (void) const { return m_rDegreesPerTick; }
         inline Metric GetRotationAccelPerTick (void) const { return m_rAccelPerTick; }
         inline Metric GetRotationAccelStopPerTick (void) const { return m_rAccelPerTickStop; }
-		inline int GetRotationAngle (int iIndex) const { return m_Rotations[m_iCount][iIndex % m_iCount].iRotation; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc);
         void Interpolate (const CRotationDesc &From, const CRotationDesc &To, Metric rInterpolate = 0.5);
 
-        static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_Rotations[iCount].GetCount() > 0) ? m_Rotations[iCount][iIndex % iCount].iRotation : 0); }
 
 	private:
 		struct SEntry
@@ -228,8 +258,6 @@ class CRotationDesc
 		Metric m_rAccelPerTick;				//	Degrees acceleration per tick
 		Metric m_rAccelPerTickStop;			//	Degrees acceleration per tick when stoping rotation
 		int m_iManeuverability;				//	Only for backwards compatibility (during InitFromXML)
-
-        static TArray<SEntry> m_Rotations[360];
 	};
 
 class CIntegralRotationDesc
@@ -243,6 +271,7 @@ class CIntegralRotationDesc
         CIntegralRotationDesc (void);
         inline explicit CIntegralRotationDesc (const CRotationDesc &Desc) { InitFromDesc(Desc); }
 
+        inline int AlignToRotationAngle (int iAngle) const { return GetRotationAngle(GetFrameIndex(iAngle)); }
 		int CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed) const;
 		inline int GetFrameAngle (void) const { return (int)((360.0 / m_iCount) + 0.5); }
 		inline int GetFrameCount (void) const { return m_iCount; }
@@ -254,13 +283,23 @@ class CIntegralRotationDesc
 		inline int GetMaxRotationTimeTicks (void) const { Metric rSpeed = GetMaxRotationSpeedDegrees(); return (rSpeed > 0.0 ? (int)(360.0 / rSpeed) : 0); }
 		inline int GetRotationAccel (void) const { return m_iRotationAccel; }
 		inline int GetRotationAccelStop (void) const { return m_iRotationAccelStop; }
+		inline int GetRotationAngle (int iIndex) const { return m_Rotations[m_iCount][iIndex % m_iCount].iRotation; }
         void InitFromDesc (const CRotationDesc &Desc);
 
+        static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_Rotations[iCount].GetCount() > 0) ? m_Rotations[iCount][iIndex % iCount].iRotation : 0); }
+
     private:
+		struct SEntry
+			{
+			int iRotation;					//	Angle at this rotation position
+			};
+
         int m_iCount;                       //  Number of frames
 		int m_iMaxRotationRate;				//	Rotations per tick (in 1/1000ths of a rotation)
 		int m_iRotationAccel;				//	Rotation acceleration (in 1/1000ths of a rotation)
 		int m_iRotationAccelStop;			//	Rotation acceleration when stopping rotation (in 1/1000th of a rotation)
+
+        static TArray<SEntry> m_Rotations[360 + 1];
     };
 
 class CIntegralRotation
@@ -277,11 +316,11 @@ class CIntegralRotation
 		inline int GetFrameIndex (void) const { return GetFrameIndex(m_iRotationFrame); }
 		inline EManeuverTypes GetLastManeuver (void) const { return m_iLastManeuver; }
 		EManeuverTypes GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const;
-		int GetRotationAngle (const CRotationDesc &Desc) const;
-		void Init (const CRotationDesc &Desc, int iRotationAngle = -1);
+		int GetRotationAngle (const CIntegralRotationDesc &Desc) const;
+		void Init (const CIntegralRotationDesc &Desc, int iRotationAngle = -1);
 		inline bool IsPointingTo (const CIntegralRotationDesc &Desc, int iAngle) const { return (GetManeuverToFace(Desc, iAngle) == NoRotation); }
-		void ReadFromStream (SLoadCtx &Ctx, const CRotationDesc &Desc);
-		void SetRotationAngle (const CRotationDesc &Desc, int iAngle);
+		void ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc);
+		void SetRotationAngle (const CIntegralRotationDesc &Desc, int iAngle);
 		void Update (const CIntegralRotationDesc &Desc, EManeuverTypes iManeuver);
 		void WriteToStream (IWriteStream *pStream) const;
 

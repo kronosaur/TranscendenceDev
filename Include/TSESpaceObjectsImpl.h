@@ -931,7 +931,7 @@ class CShip : public CSpaceObject
 		inline void SetDestroyInGate (void) { m_fDestroyInGate = true; }
 		inline void SetEncounterInfo (CStationType *pEncounterInfo) { m_pEncounterInfo = pEncounterInfo; }
 		inline void SetPlayerWingman (bool bIsWingman) const { m_pController->SetPlayerWingman(bIsWingman); }
-		inline void SetRotation (int iAngle) { m_Rotation.SetRotationAngle(m_pClass->GetRotationDesc(), iAngle); }
+		inline void SetRotation (int iAngle) { m_Rotation.SetRotationAngle(m_Perf.GetRotationDesc(), iAngle); }
 		void Undock (void);
 
 		//	CSpaceObject virtuals
@@ -995,7 +995,7 @@ class CShip : public CSpaceObject
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerShips; }
 		virtual int GetPerception (void);
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
-		virtual int GetRotation (void) const { return m_Rotation.GetRotationAngle(m_pClass->GetRotationDesc()); }
+		virtual int GetRotation (void) const { return m_Rotation.GetRotationAngle(m_Perf.GetRotationDesc()); }
 		virtual ScaleTypes GetScale (void) const { return scaleShip; }
 		virtual int GetScore (void) { return m_pClass->GetScore(); }
 		virtual CXMLElement *GetScreen (const CString &sName) { return m_pClass->GetScreen(sName); }

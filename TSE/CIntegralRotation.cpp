@@ -107,7 +107,7 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 		return NoRotation;
 	}
 
-int CIntegralRotation::GetRotationAngle (const CRotationDesc &Desc) const
+int CIntegralRotation::GetRotationAngle (const CIntegralRotationDesc &Desc) const
 
 //	GetRotationAngle
 //
@@ -117,7 +117,7 @@ int CIntegralRotation::GetRotationAngle (const CRotationDesc &Desc) const
 	return Desc.GetRotationAngle(GetFrameIndex(m_iRotationFrame));
 	}
 
-void CIntegralRotation::Init (const CRotationDesc &Desc, int iRotationAngle)
+void CIntegralRotation::Init (const CIntegralRotationDesc &Desc, int iRotationAngle)
 
 //	Init
 //
@@ -130,7 +130,7 @@ void CIntegralRotation::Init (const CRotationDesc &Desc, int iRotationAngle)
 		SetRotationAngle(Desc, iRotationAngle);
 	}
 
-void CIntegralRotation::ReadFromStream (SLoadCtx &Ctx, const CRotationDesc &Desc)
+void CIntegralRotation::ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc)
 
 //	ReadFromStream
 //
@@ -154,7 +154,7 @@ void CIntegralRotation::ReadFromStream (SLoadCtx &Ctx, const CRotationDesc &Desc
 		SetRotationAngle(Desc, 0);
 	}
 
-void CIntegralRotation::SetRotationAngle (const CRotationDesc &Desc, int iAngle)
+void CIntegralRotation::SetRotationAngle (const CIntegralRotationDesc &Desc, int iAngle)
 
 //	SetRotationAngle
 //

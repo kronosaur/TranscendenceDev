@@ -2399,8 +2399,8 @@ class CShipClass : public CDesignType
 		CShipClass (void);
 		virtual ~CShipClass (void);
 
-		inline int Angle2Direction (int iAngle) const { return m_RotationDesc.GetFrameIndex(iAngle); }
-		inline int AlignToRotationAngle (int iAngle) const { return m_RotationDesc.GetRotationAngle(m_RotationDesc.GetFrameIndex(iAngle)); }
+		inline int Angle2Direction (int iAngle) const { return m_Perf.GetRotationDesc().GetFrameIndex(iAngle); }
+		inline int AlignToRotationAngle (int iAngle) const { return m_Perf.GetRotationDesc().AlignToRotationAngle(iAngle); }
 		Metric CalcMass (const CDeviceDescList &Devices) const;
 		int CalcScore (void);
 		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
@@ -2449,9 +2449,9 @@ class CShipClass : public CDesignType
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
 		inline const CReactorDesc *GetReactorDesc (void) { return &m_ReactorDesc; }
-		inline int GetRotationAngle (void) { return m_RotationDesc.GetFrameAngle(); }
-		inline const CRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
-		inline int GetRotationRange (void) { return m_RotationDesc.GetFrameCount(); }
+		inline int GetRotationAngle (void) { return m_Perf.GetRotationDesc().GetFrameAngle(); }
+		inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
+		inline int GetRotationRange (void) { return m_Perf.GetRotationDesc().GetFrameCount(); }
 		inline int GetScore (void) { return m_iScore; }
 		inline DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
 		CString GetShortName (void) const;
@@ -2568,7 +2568,7 @@ class CShipClass : public CDesignType
 		void FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpMissile) const;
 		void FindBestMissile (CDeviceClass *pLauncher, const CItemList &Items, CItemType **retpMissile) const;
 		CString GetGenericName (DWORD *retdwFlags = NULL);
-		inline int GetManeuverDelay (void) const { return CIntegralRotationDesc(m_RotationDesc).GetManeuverDelay(); }
+		inline int GetManeuverDelay (void) const { return m_Perf.GetRotationDesc().GetManeuverDelay(); }
 		CPlayerSettings *GetPlayerSettingsInherited (void) const;
 		CStationType *GetWreckDesc (void);
 		void InitShipNamesIndices (void);

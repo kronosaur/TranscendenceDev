@@ -8,6 +8,8 @@
 const Metric MANEUVER_MASS_FACTOR =				1.0;
 const Metric MAX_INERTIA_RATIO =				9.0;
 
+TArray<CIntegralRotationDesc::SEntry> CIntegralRotationDesc::m_Rotations[360 + 1];
+
 CIntegralRotationDesc::CIntegralRotationDesc (void) :
         m_iCount(20),
         m_iMaxRotationRate(0),
@@ -90,8 +92,19 @@ void CIntegralRotationDesc::InitFromDesc (const CRotationDesc &Desc)
 //  Initialize from a descriptor (which uses double precision)
 
     {
+    int i;
+
     m_iCount = Desc.GetFrameCount();
 	m_iMaxRotationRate = Max(1, mathRound(ROTATION_FRACTION * Desc.GetMaxRotationPerTick() * m_iCount / 360.0));
 	m_iRotationAccel = Max(1, mathRound(ROTATION_FRACTION * Desc.GetRotationAccelPerTick() * m_iCount / 360.0));
 	m_iRotationAccelStop = Max(1, mathRound(ROTATION_FRACTION * Desc.GetRotationAccelStopPerTick() * m_iCount / 360.0));
+
+	if (m_Rotations[m_iCount].GetCount() == 0 && m_iCount > 0 && m_iCount <= 360)
+		{
+        m_Rotations[m_iCount].InsertEmpty(m_iCount);
+
+		Metric rFrameAngle = 360.0 / m_iCount;
+		for (i = 0; i < m_iCount; i++)
+			m_Rotations[m_iCount][i].iRotation = AngleMod(mathRound(90.0 - i * rFrameAngle));
+		}
     }

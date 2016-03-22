@@ -26,8 +26,6 @@
 const Metric MANEUVER_MASS_FACTOR =				1.0;
 const Metric MAX_INERTIA_RATIO =				9.0;
 
-TArray<CRotationDesc::SEntry> CRotationDesc::m_Rotations[360];
-
 bool CRotationDesc::AdjForShipMass (Metric rHullMass, Metric rItemMass)
 
 //  AdjForShipMass
@@ -104,18 +102,6 @@ ALERROR CRotationDesc::Bind (SDesignLoadCtx &Ctx, CObjectImageArray &Image)
 	return NOERROR;
 	}
 
-int CRotationDesc::GetFrameIndex (int iAngle) const
-
-//	GetFrameIndex
-//
-//	Returns the frame index, 0 to m_iCount-1, that corresponds to the given 
-//	angle. Remember that frame 0 points straight up and frames rotate clockwise.
-
-	{
-	Metric rIndex = AngleMod(90 - iAngle) * m_iCount / 360.0;
-	return (int)rIndex;
-	}
-
 ALERROR CRotationDesc::InitFromXML (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc)
 
 //	InitFromXML
@@ -183,8 +169,6 @@ void CRotationDesc::InitRotationCount (int iCount)
 //	Initialize count
 
 	{
-	int i;
-
     ASSERT(iCount >= 0 && iCount <= 360);
 
 	//	If we're in backwards compatibility mode and if we've got a different
@@ -200,13 +184,6 @@ void CRotationDesc::InitRotationCount (int iCount)
 	//	Initialize count
 
 	m_iCount = iCount;
-
-	if (m_iCount > 0 && m_Rotations[m_iCount].GetCount() == 0)
-		{
-		Metric rFrameAngle = 360.0 / m_iCount;
-		for (i = 0; i < m_iCount; i++)
-			m_Rotations[m_iCount][i].iRotation = AngleMod(mathRound(90.0 - i * rFrameAngle));
-		}
 	}
 
 void CRotationDesc::Interpolate (const CRotationDesc &From, const CRotationDesc &To, Metric rInterpolate)

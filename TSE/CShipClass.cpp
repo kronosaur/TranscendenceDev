@@ -1639,7 +1639,7 @@ void CShipClass::CreateWreckImage (void)
 		{
 		//	Pick a random rotation
 
-		Rotations[i] = mathRandom(0, m_RotationDesc.GetFrameCount() - 1);
+		Rotations[i] = mathRandom(0, GetRotationDesc().GetFrameCount() - 1);
 
 		//	Copy the frame
 
@@ -1783,7 +1783,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_MASS))
 		*retsValue = strFromInt(m_iMass);
 	else if (strEquals(sField, FIELD_MAX_ROTATION))
-		*retsValue = strFromInt(mathRound(CIntegralRotationDesc(m_RotationDesc).GetMaxRotationSpeedDegrees()));
+		*retsValue = strFromInt(mathRound(GetRotationDesc().GetMaxRotationSpeedDegrees()));
 	else if (strEquals(sField, FIELD_MAX_SPEED))
 		*retsValue = strFromInt((int)((100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 	else if (strEquals(sField, FIELD_MAX_STRUCTURAL_HP))
@@ -1924,7 +1924,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt((int)((1000.0 / m_AISettings.GetFireRateAdj()) + 0.5));
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		Metric rManeuver = g_SecondsPerUpdate * CIntegralRotationDesc(m_RotationDesc).GetMaxRotationSpeedDegrees();
+		Metric rManeuver = g_SecondsPerUpdate * GetRotationDesc().GetMaxRotationSpeedDegrees();
 		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST))
@@ -2600,7 +2600,7 @@ void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 		//	Compute power of maneuvering thrusters
 
 		int iThrustersPerSide = Max(1, Effects.GetEffectCount(CObjectEffectDesc::effectThrustLeft));
-		int iThrusterPower = Max(1, mathRound((GetHullMass() / iThrustersPerSide) * GetRotationDesc().GetRotationAccelPerTick()));
+		int iThrusterPower = Max(1, mathRound((GetHullMass() / iThrustersPerSide) * m_RotationDesc.GetRotationAccelPerTick()));
 
 		//	Compute power of main thruster
 
@@ -3167,8 +3167,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			strPatternSubst(CONSTLIT("%d:r"), GetUNID()), 
 			pDesc))
 		return ComposeLoadError(Ctx, Ctx.sError);
-
-//	m_Image.SetRotationCount(m_RotationDesc.GetFrameCount());
 
 	m_DriveDesc.SetUNID(GetUNID());
 	m_DriveDesc.SetMaxSpeed((double)pDesc->GetAttributeInteger(CONSTLIT(g_MaxSpeedAttrib)) * LIGHT_SPEED / 100);
