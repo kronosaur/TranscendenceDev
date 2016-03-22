@@ -3163,9 +3163,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iMaxArmorMass = pDesc->GetAttributeInteger(MAX_ARMOR_ATTRIB);
 	m_iMaxReactorPower = pDesc->GetAttributeInteger(MAX_REACTOR_POWER_ATTRIB);
 
-	if (error = m_RotationDesc.InitFromXML(Ctx, 
-			strPatternSubst(CONSTLIT("%d:r"), GetUNID()), 
-			pDesc))
+	if (error = m_RotationDesc.InitFromXML(Ctx, pDesc))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
 	m_DriveDesc.SetUNID(GetUNID());

@@ -526,6 +526,8 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
         {
         if (m_pArmor)
             iValue = CurrencyValue(m_iValue.GetValue() * m_pArmor->GetScaledCostAdj(Ctx));
+        else if (m_pDevice)
+            iValue = CurrencyValue(m_iValue.GetValue() * m_pDevice->GetScaledCostAdj(Ctx));
         else
             iValue = m_iValue.GetValue();
         }

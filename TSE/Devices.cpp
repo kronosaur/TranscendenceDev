@@ -661,6 +661,25 @@ CString CDeviceClass::GetReferencePower (CItemCtx &Ctx)
 		return strPatternSubst(CONSTLIT("%d.%d %s"), iMW, iMWDecimal, sUnit);
 	}
 
+Metric CDeviceClass::OnGetScaledCostAdj (CItemCtx &Ctx) const
+
+//  OnGetScaledCostAdj
+//
+//  Default implementation. Descendants may override.
+
+    {
+    if (Ctx.IsItemNull())
+        return 1.0;
+
+    int iLevel = Min(Ctx.GetItem().GetVariantHigh(), m_pItemType->GetMaxLevel());
+    if (iLevel <= 0)
+        return 1.0;
+
+    //  We use weapon price increases as a guide.
+
+    return CWeaponClass::GetStdStats(iLevel).rCost / CWeaponClass::GetStdStats(m_pItemType->GetLevel()).rCost;
+    }
+
 ALERROR CDeviceClass::ParseLinkedFireOptions (SDesignLoadCtx &Ctx, const CString &sDesc, DWORD *retdwOptions)
 
 //	ParseLinkedFireOptions

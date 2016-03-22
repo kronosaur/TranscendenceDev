@@ -26,6 +26,19 @@
 const Metric MANEUVER_MASS_FACTOR =				1.0;
 const Metric MAX_INERTIA_RATIO =				9.0;
 
+void CRotationDesc::Add (const CRotationDesc &Src)
+
+//  Add
+//
+//  Combine Src with our stats as an enhancement. In general, we take the 
+//  highest of the two parameters.
+
+    {
+    m_rDegreesPerTick = Max(m_rDegreesPerTick, Src.m_rDegreesPerTick);
+    m_rAccelPerTick = Max(m_rAccelPerTick, Src.m_rAccelPerTick);
+    m_rAccelPerTickStop = Max(m_rAccelPerTickStop, Src.m_rAccelPerTickStop);
+    }
+
 bool CRotationDesc::AdjForShipMass (Metric rHullMass, Metric rItemMass)
 
 //  AdjForShipMass
@@ -102,30 +115,49 @@ ALERROR CRotationDesc::Bind (SDesignLoadCtx &Ctx, CObjectImageArray &Image)
 	return NOERROR;
 	}
 
-ALERROR CRotationDesc::InitFromXML (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc)
+ALERROR CRotationDesc::InitFromManeuverXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Metric rDefaultDegreesPerTick)
+
+//  InitFromManeuverXML
+//
+//  Initializes from a <Maneuver> element (or equivalent).
+
+    {
+	m_iManeuverability = 0;
+	m_iCount = pDesc->GetAttributeIntegerBounded(ROTATION_COUNT_ATTRIB, 1, -1, STD_ROTATION_COUNT);
+
+	//	Max rotation rate is in degrees per tick. Later we convert that to rotation frames per tick
+	//	(but not until we figure out the number of rotation frames).
+
+	m_rDegreesPerTick = pDesc->GetAttributeDoubleBounded(MAX_ROTATION_RATE_ATTRIB, 0.01, -1.0, rDefaultDegreesPerTick);
+
+	//	Also init rotation acceleration
+
+	m_rAccelPerTick = pDesc->GetAttributeDoubleBounded(ROTATION_ACCEL_ATTRIB, 0.01, -1.0, m_rDegreesPerTick);
+	m_rAccelPerTickStop = pDesc->GetAttributeDoubleBounded(ROTATION_STOP_ACCEL_ATTRIB, 0.01, -1.0, m_rAccelPerTick);
+
+    return NOERROR;
+    }
+
+ALERROR CRotationDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitFromXML
 //
 //	Initialize from an XML descriptor
 
 	{
+    ALERROR error;
+
 	//	If we have a Maneuver element, then use that (and ignore other attributes)
 
 	CXMLElement *pManeuver = pDesc->GetContentElementByTag(MANEUVER_TAG);
 	if (pManeuver)
 		{
-		m_iManeuverability = 0;
-		m_iCount = pManeuver->GetAttributeIntegerBounded(ROTATION_COUNT_ATTRIB, 1, -1, STD_ROTATION_COUNT);
+        //  NOTE: For backwards compatibility we default degrees per tick to 18.0.
+        //  But all <Maneuver> elements should define max rotation rate instead of
+        //  relying on this.
 
-		//	Max rotation rate is in degrees per tick. Later we convert that to rotation frames per tick
-		//	(but not until we figure out the number of rotation frames).
-
-		m_rDegreesPerTick = pManeuver->GetAttributeDoubleBounded(MAX_ROTATION_RATE_ATTRIB, 0.01, -1.0, 360.0 / STD_ROTATION_COUNT);
-
-		//	Also convert rotation acceleration
-
-		m_rAccelPerTick = pManeuver->GetAttributeDoubleBounded(ROTATION_ACCEL_ATTRIB, 0.01, -1.0, m_rDegreesPerTick);
-		m_rAccelPerTickStop = pManeuver->GetAttributeDoubleBounded(ROTATION_STOP_ACCEL_ATTRIB, 0.01, -1.0, m_rAccelPerTick);
+        if (error = InitFromManeuverXML(Ctx, pManeuver, 360.0 / STD_ROTATION_COUNT))
+            return error;
 		}
 
 	//	Otherwise we look for attributes on the root (this is backwards compatible

@@ -172,24 +172,6 @@ ALERROR CDriveClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
             iStartLevel = i;
         }
 
-    if (error = pDrive->m_DriveDesc.InitFromXML(Ctx, pDesc, pDrive->GetUNID()))
-        return error;
-
-	//	Compute descriptor when damaged
-
-    pDrive->m_DamagedDriveDesc = pDrive->m_DriveDesc;
-    pDrive->m_DamagedDriveDesc.AdjMaxSpeed(0.75);
-    pDrive->m_DamagedDriveDesc.AdjThrust(0.5);
-    pDrive->m_DamagedDriveDesc.AdjPowerUse(1.3);
-    pDrive->m_DamagedDriveDesc.SetInertialess(false);
-
-    //  Compute descriptor when enhanced
-
-    pDrive->m_EnhancedDriveDesc = pDrive->m_DriveDesc;
-    pDrive->m_EnhancedDriveDesc.AdjMaxSpeed(1.1);
-    pDrive->m_EnhancedDriveDesc.AdjThrust(1.2);
-    pDrive->m_EnhancedDriveDesc.AdjPowerUse(0.9);
-
 	//	Done
 
 	*retpDrive = pDrive;
@@ -204,12 +186,16 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
 //	Returns meta-data
 
 	{
+    const SScalableStats *pDesc = GetDesc(CItemCtx());
+    if (pDesc == NULL)
+        return false;
+
 	if (strEquals(sField, FIELD_MAX_SPEED))
-		*retsValue = strFromInt((int)((100.0 * m_DriveDesc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
+		*retsValue = strFromInt((int)((100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 	else if (strEquals(sField, FIELD_THRUST))
-		*retsValue = strFromInt(m_DriveDesc.GetThrust());
+		*retsValue = strFromInt(pDesc->DriveDesc.GetThrust());
 	else if (strEquals(sField, FIELD_POWER))
-		*retsValue = strFromInt(m_DriveDesc.GetPowerUse() * 100);
+		*retsValue = strFromInt(pDesc->DriveDesc.GetPowerUse() * 100);
 	else
 		return false;
 
@@ -386,7 +372,11 @@ ALERROR CDriveClass::InitStatsFromXML (SDesignLoadCtx &Ctx, int iLevel, DWORD dw
     if (error = retStats.DriveDesc.InitFromXML(Ctx, pDesc, dwUNID))
         return error;
 
-    //  Load maneuverability desc
+    //  Load maneuverability desc. If no maneuverability parameters, we default
+    //  values to 0.0.
+
+    if (error = retStats.ManeuverDesc.InitFromManeuverXML(Ctx, pDesc, 0.0))
+        return error;
 
     //  Done
 
@@ -421,9 +411,10 @@ bool CDriveClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCt
     if (pDesc == NULL)
         return false;
 
-    //  Add our drive metrics to the base metrics (defined by the class).
+    //  Add our metrics to the base metrics.
 
     Ctx.DriveDesc.Add(pDesc->DriveDesc);
+    Ctx.RotationDesc.Add(pDesc->ManeuverDesc);
 
     return true;
     }

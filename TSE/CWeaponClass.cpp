@@ -158,18 +158,7 @@ const Metric BALANCE_WMD_FACTOR =               0.5;        //  Bonust to balanc
 const Metric PARTICLE_CLOUD_DAMAGE_FACTOR =		0.75;
 const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
 
-struct SStdWeaponStats
-	{
-	int iDamage;								//	Average damage at this level
-	int iPower;									//	Power (in tenths of MWs)
-    Metric rCost;                               //  Weapon cost (credits)
-    Metric rAmmoCost;                           //  Ammo cost (credits)
-
-	int iOverTierAdj;							//	Balance points to add to adjust for damage type above level
-	int iUnderTierAdj;							//	Balance points to add to adjust for damage type below level
-	};
-
-static SStdWeaponStats STD_WEAPON_STATS[MAX_ITEM_LEVEL] =
+static CWeaponClass::SStdStats STD_WEAPON_STATS[MAX_ITEM_LEVEL] =
 	{
 		//	Damage	Power	        Cost     Ammo Cost   Over	Under
 		{	4,		10,		        350.,       0.6,     0,	    0, },
@@ -207,14 +196,6 @@ static char *CACHED_EVENTS[CWeaponClass::evtCount] =
 	{
 		"OnFireWeapon",
 	};
-
-inline SStdWeaponStats *GetStdWeaponStats (int iLevel)
-	{
-	if (iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL)
-		return &STD_WEAPON_STATS[iLevel - 1];
-	else
-		return NULL;
-	}
 
 CWeaponClass::CWeaponClass (void) : 
 		m_pConfig(NULL),
@@ -363,7 +344,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Get the standard stats for this level
 
-    const SStdWeaponStats &Stats = STD_WEAPON_STATS[retBalance.iLevel - 1];
+    const SStdStats &Stats = STD_WEAPON_STATS[retBalance.iLevel - 1];
     retBalance.rStdDamage180 = Stats.iDamage * (180.0 / STD_FIRE_DELAY_TICKS);
 
     //  Compute how much damage we do in 180 ticks.
@@ -2229,7 +2210,7 @@ ICCItem *CWeaponClass::GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, co
         if (Balance.iLevel == 0)
             return CC.CreateNil();
 
-        const SStdWeaponStats &Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
+        const SStdStats &Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
 
         //  Compute the balance assuming that damage is standard.
 
@@ -2248,7 +2229,7 @@ ICCItem *CWeaponClass::GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, co
         if (Balance.iLevel == 0)
             return CC.CreateNil();
 
-        const SStdWeaponStats &Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
+        const SStdStats &Stats = STD_WEAPON_STATS[Balance.iLevel - 1];
 
         //  Compute the balance assuming that cost is standard.
 
@@ -2387,7 +2368,7 @@ ICCItem *CWeaponClass::GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, co
 
     else if (strEquals(sProperty, PROPERTY_STD_COST))
         {
-        const SStdWeaponStats &Stats = STD_WEAPON_STATS[CalcLevel(pShot) - 1];
+        const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(pShot) - 1];
         return CC.CreateDouble(Stats.rCost);
         }
 
@@ -2936,12 +2917,24 @@ int CWeaponClass::GetStdDamage (int iLevel)
 //	Returns standard damage at this level.
 
 	{
-	SStdWeaponStats *pStd = GetStdWeaponStats(iLevel);
-	if (pStd == NULL)
-		return 0;
-
-	return pStd->iDamage;
+    return GetStdStats(iLevel).iDamage;
 	}
+
+const CWeaponClass::SStdStats &CWeaponClass::GetStdStats (int iLevel)
+
+//  GetStdStats
+//
+//  Returns standard stats for level.
+
+    {
+    if (iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL)
+	    return STD_WEAPON_STATS[iLevel - 1];
+    else
+        {
+        ASSERT(false);
+	    return STD_WEAPON_STATS[0];
+        }
+    }
 
 int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice)
 

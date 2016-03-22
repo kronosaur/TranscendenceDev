@@ -235,13 +235,15 @@ class CRotationDesc
 	public:
 		CRotationDesc (void) { }
 
+        void Add (const CRotationDesc &Src);
         bool AdjForShipMass (Metric rHullMass, Metric rItemMass);
 		ALERROR Bind (SDesignLoadCtx &Ctx, CObjectImageArray &Image);
 		inline int GetFrameCount (void) const { return m_iCount; }
         inline Metric GetMaxRotationPerTick (void) const { return m_rDegreesPerTick; }
         inline Metric GetRotationAccelPerTick (void) const { return m_rAccelPerTick; }
         inline Metric GetRotationAccelStopPerTick (void) const { return m_rAccelPerTickStop; }
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc);
+		ALERROR InitFromManeuverXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Metric rDefaultDegreesPerTick = 0.01);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
         void Interpolate (const CRotationDesc &From, const CRotationDesc &To, Metric rInterpolate = 0.5);
 
 
@@ -685,6 +687,7 @@ class CDeviceClass
 		inline COverlayType *GetOverlayType(void) const { return m_pOverlayType; }
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0);
 		CString GetReferencePower (CItemCtx &Ctx);
+        inline Metric GetScaledCostAdj (CItemCtx &Ctx) const { return OnGetScaledCostAdj(Ctx); }
 		inline int GetSlotsRequired (void) const { return m_iSlots; }
 		inline DWORD GetUNID (void);
 		inline void MarkImages (void) { DEBUG_TRY OnMarkImages(); DEBUG_CATCH }
@@ -775,6 +778,7 @@ class CDeviceClass
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
+        virtual Metric OnGetScaledCostAdj (CItemCtx &Ctx) const;
 		virtual void OnMarkImages (void) { }
 
 	private:

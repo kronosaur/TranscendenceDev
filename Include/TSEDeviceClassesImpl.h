@@ -169,10 +169,6 @@ class CDriveClass : public CDeviceClass
 
         mutable SScalableStats *m_pDamagedDesc;
         mutable SScalableStats *m_pEnhancedDesc;
-
-		CDriveDesc m_DriveDesc;
-		CDriveDesc m_DamagedDriveDesc;
-		CDriveDesc m_EnhancedDriveDesc;
 	};
 
 class CEnhancerClass : public CDeviceClass
@@ -528,6 +524,17 @@ class CWeaponClass : public CDeviceClass
             Metric rMining;         //  Bonus for mining
             };
 
+        struct SStdStats
+	        {
+	        int iDamage;			//	Average damage at this level
+	        int iPower;				//	Power (in tenths of MWs)
+            Metric rCost;           //  Weapon cost (credits)
+            Metric rAmmoCost;       //  Ammo cost (credits)
+
+	        int iOverTierAdj;		//	Balance points to add to adjust for damage type above level
+	        int iUnderTierAdj;		//	Balance points to add to adjust for damage type below level
+	        };
+
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpWeapon);
 		virtual ~CWeaponClass (void);
 
@@ -537,6 +544,7 @@ class CWeaponClass : public CDeviceClass
         int GetAmmoItemCount (void) const;
         CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
 
+        static const SStdStats &GetStdStats (int iLevel);
 		static int GetStdDamage (int iLevel);
 		static bool IsStdDamageType (DamageTypes iDamageType, int iLevel);
 
