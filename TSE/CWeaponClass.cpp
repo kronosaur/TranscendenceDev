@@ -1413,7 +1413,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 				pWeapon->m_ShotData[i].pDesc = new CWeaponFireDesc;
 
 				CString sUNID = strPatternSubst(CONSTLIT("%d/%d"), pWeapon->GetUNID(), i);
-				if (error = pWeapon->m_ShotData[i].pDesc->InitFromXML(Ctx, pItem, sUNID))
+				if (error = pWeapon->m_ShotData[i].pDesc->InitFromMissileXML(Ctx, pItem, sUNID, pWeapon->m_ShotData[i].pAmmoType))
 					return error;
 				}
 
@@ -1449,7 +1449,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		//	Load the definition from the root element
 
 		CString sUNID = strPatternSubst(CONSTLIT("%d/0"), pWeapon->GetUNID());
-		if (error = pWeapon->m_ShotData[0].pDesc->InitFromXML(Ctx, pDesc, sUNID))
+		if (error = pWeapon->m_ShotData[0].pDesc->InitFromXML(Ctx, pDesc, sUNID, pWeapon->GetLevel()))
 			return error;
 
         //  Initialize scaled stats, if necessary

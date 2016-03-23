@@ -736,8 +736,10 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		{
 		m_pDamage = new CWeaponFireDesc;
 
+        //  LATER: Need to allow caller to set level.
+
 		CString sUNID = strPatternSubst(CONSTLIT("%d/d"), GetUNID());
-		if (error = m_pDamage->InitFromXML(Ctx, pDamageDesc, sUNID, true))
+		if (error = m_pDamage->InitFromXML(Ctx, pDamageDesc, sUNID, 13, true))
 			return error;
 		}
 	

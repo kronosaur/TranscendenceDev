@@ -1397,10 +1397,12 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 //	InitFromDamage
 //
 //	Conses up a new CWeaponFireDesc from just a damage structure.
+//  LATER: This should take a level parameter.
 
 	{
 	int i;
 
+    m_iLevel = 13;
 	m_fFragment = false;
 
 	//	Load basic attributes
@@ -1502,7 +1504,7 @@ ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *p
     {
     ALERROR error;
 
-    if (error = InitFromXML(Ctx, pDesc, sUNID))
+    if (error = InitFromXML(Ctx, pDesc, sUNID, pMissile->GetLevel()))
         return error;
 
     m_pAmmoType = pMissile;
@@ -1510,7 +1512,7 @@ ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *p
     return NOERROR;
     }
 
-ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, bool bDamageOnly)
+ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, int iLevel, bool bDamageOnly)
 
 //	InitFromXML
 //
@@ -1521,6 +1523,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	int i;
 
 	m_pExtension = Ctx.pExtension;
+    m_iLevel = iLevel;
 	m_fVariableInitialSpeed = false;
 	m_fFragment = false;
 
@@ -1856,7 +1859,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		pNewDesc->pDesc = new CWeaponFireDesc;
 		CString sFragUNID = strPatternSubst("%s/f%d", sUNID, iFragCount++);
-		if (error = pNewDesc->pDesc->InitFromXML(Ctx, pFragDesc, sFragUNID))
+		if (error = pNewDesc->pDesc->InitFromXML(Ctx, pFragDesc, sFragUNID, iLevel))
 			return error;
 
 		pNewDesc->pDesc->m_fFragment = true;
@@ -1985,6 +1988,10 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     {
     ALERROR error;
     int i;
+
+    //  Set the level
+
+    m_iLevel = iScaledLevel;
 
     //  Damage scales. We use the bonus parameter to increase it.
     //  We start by figuring out the percent increase in damage at the scaled

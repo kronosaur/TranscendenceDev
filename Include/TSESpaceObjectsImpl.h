@@ -387,7 +387,7 @@ class CMissile : public CSpaceObject
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual DestructionTypes GetDamageCauseType (void) override { return m_iCause; }
 		virtual int GetInteraction (void) override { return m_pDesc->GetInteraction(); }
-		virtual int GetLevel (void) const override { CItemType *pType = m_pDesc->GetWeaponType(); return (pType ? pType->GetLevel() : 1); }
+		virtual int GetLevel (void) const override { return m_pDesc->GetLevel(); }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMissile"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }

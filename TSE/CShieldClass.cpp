@@ -214,8 +214,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 		//	Adjust for tech level
 
-		CItemType *pWeaponType = Ctx.pDesc->GetWeaponType();
-		int iWeaponLevel = (pWeaponType ? pWeaponType->GetLevel() : 13);
+        int iWeaponLevel = Ctx.pDesc->GetLevel();
 		int iShieldLevel = (pDevice ? pDevice->GetLevel() : 1);
 		rPenetrate *= pow(1.5, (iWeaponLevel - iShieldLevel));
 

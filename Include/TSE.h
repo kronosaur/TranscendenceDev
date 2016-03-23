@@ -484,6 +484,7 @@ class CWeaponFireDesc
 		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
 		inline int GetInteraction (void) const { return m_iInteraction; }
+        inline int GetLevel (void) const { return m_iLevel; }
 		inline int GetLifetime (void) const { return m_Lifetime.Roll(); }
 		inline int GetManeuverRate (void) const { return m_iManeuverRate; }
 		inline int GetMaxLifetime (void) const { return m_Lifetime.GetMaxValue(); }
@@ -507,7 +508,7 @@ class CWeaponFireDesc
 		inline bool HasOnFragmentEvent (void) const { return m_CachedEvents[evtOnFragment].pCode != NULL; }
 		void InitFromDamage (const DamageDesc &Damage);
 		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, bool bDamageOnly = false);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, int iLevel, bool bDamageOnly = false);
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem);
         inline bool IsDirectionalImage (void) const { return m_fDirectional; }
         inline bool IsFragment (void) const { return m_fFragment; }
@@ -549,6 +550,7 @@ class CWeaponFireDesc
 
 
 		//	Basic properties
+        int m_iLevel;                       //  Level of desc (missile or weapon or scalable weapon)
 		CItemTypeRef m_pAmmoType;			//	item type for this ammo
 		FireTypes m_iFireType;				//	beam or missile
 		DamageDesc m_Damage;				//	Damage per shot
