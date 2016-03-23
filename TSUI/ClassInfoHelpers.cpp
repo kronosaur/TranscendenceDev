@@ -358,7 +358,7 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	pName->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
 	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
 	pName->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pName->SetPropertyString(PROP_TEXT, pType->GetNounPhrase(nounActual));
+	pName->SetPropertyString(PROP_TEXT, Item.GetNounPhrase(nounActual));
 	if (bRightAlign)
 		pName->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_RIGHT);
 
@@ -386,12 +386,12 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 
 	//	Add the reference text
 
-	CItemCtx ItemCtx;
+	CItemCtx ItemCtx(Item);
 	CString sRef = pType->GetReference(ItemCtx, CItem(), CItemType::FLAG_ACTUAL_ITEM);
 	if (sRef.IsBlank())
-		sRef = strPatternSubst(CONSTLIT("Level %s%s"), strLevel(pType->GetLevel()), sExtraDesc);
+		sRef = strPatternSubst(CONSTLIT("Level %s%s"), strLevel(Item.GetLevel()), sExtraDesc);
 	else
-		sRef = strPatternSubst(CONSTLIT("Level %s — %s%s"), strLevel(pType->GetLevel()), sRef, sExtraDesc);
+		sRef = strPatternSubst(CONSTLIT("Level %s — %s%s"), strLevel(Item.GetLevel()), sRef, sExtraDesc);
 
 	IAnimatron *pRef = new CAniText;
 	pRef->SetPropertyVector(PROP_POSITION, CVector(xText, yText + cyText));

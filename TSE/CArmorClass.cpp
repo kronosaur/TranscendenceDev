@@ -1813,7 +1813,7 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 				{
 				//	Standard regeneration is 1% of armor HP per 180 ticks
 
-				RegenWithMod.InitFromRegen(0.01 * GetStdHP(m_pItemType->GetLevel()), TICKS_PER_UPDATE);
+				RegenWithMod.InitFromRegen(0.01 * GetStdHP(ItemCtx.GetItem().GetLevel()), TICKS_PER_UPDATE);
 				RegenWithMod.Add(Stats.Regen);
 				pRegen = &RegenWithMod;
 				}

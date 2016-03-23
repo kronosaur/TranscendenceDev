@@ -1695,6 +1695,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	{
 	int i;
+    CItemCtx ItemCtx(pSource, pDevice);
 
 	//	Figure out the source of the shot
 
@@ -1722,7 +1723,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	if (iFireAngle == -1)
 		{
 		bool bOutOfArc;
-		iFireAngle = CalcFireAngle(CItemCtx(pSource, pDevice), rSpeed, pTarget, &bOutOfArc);
+		iFireAngle = CalcFireAngle(ItemCtx, rSpeed, pTarget, &bOutOfArc);
 		}
 
 	//	Pre-init
@@ -1873,7 +1874,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	CVector ShotPos[MAX_SHOT_COUNT];
 	int ShotDir[MAX_SHOT_COUNT];
-	int iShotCount = CalcConfiguration(CItemCtx(pSource, pDevice), pShot, iFireAngle, ShotPos, ShotDir, (iRepeatingCount == pShot->GetContinuous()));
+	int iShotCount = CalcConfiguration(ItemCtx, pShot, iFireAngle, ShotPos, ShotDir, (iRepeatingCount == pShot->GetContinuous()));
     if (iShotCount <= 0)
         return false;
 
@@ -1979,7 +1980,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 			//	Otherwise, we create weapon fire
 
 			EOnFireWeaponResults iResult;
-			iResult = FireOnFireWeapon(CItemCtx(pSource, pDevice), 
+			iResult = FireOnFireWeapon(ItemCtx, 
 					pShot, 
 					ShotPos[i], 
 					(m_bMIRV ? MIRVTarget[i] : pTarget),

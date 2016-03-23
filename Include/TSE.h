@@ -45,7 +45,9 @@
 #include "TSEGeometry.h"
 #endif
 
-#define LEVEL_ROMAN_NUMERALS
+//  Starting with Part II we use Arabic numerals for levels.
+
+//#define LEVEL_ROMAN_NUMERALS
 
 //	Uncomment out the following define when building a stable release
 

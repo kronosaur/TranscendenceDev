@@ -2427,6 +2427,7 @@ class CShipClass : public CDesignType
 		CWeaponFireDesc *GetExplosionType (CShip *pShip);
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
+        const CObjectImageArray &GetHeroImage (void);
 		CXMLElement *GetHUDDescInherited (EHUDTypes iType) const;
 		inline int GetHullMass (void) const { return m_iMass; }
 		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
@@ -2528,6 +2529,7 @@ class CShipClass : public CDesignType
 		virtual void OnMergeType (CDesignType *pSource);
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx);
 		virtual void OnReinit (void);
+		virtual void OnSweep (void);
 		virtual void OnUnbindDesign (void);
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
@@ -2662,6 +2664,7 @@ class CShipClass : public CDesignType
 		//	Image
 
 		CObjectImageArray m_Image;				//	Image of ship
+        CObjectImageArray m_HeroImage;          //  Large image
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
 		//	Wreck image

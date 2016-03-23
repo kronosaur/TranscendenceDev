@@ -17,6 +17,7 @@
 #define FUEL_LEVEL_IMAGE_TAG					CONSTLIT("FuelLevelImage")
 #define FUEL_LEVEL_TEXT_TAG						CONSTLIT("FuelLevelText")
 #define FUEL_LOW_LEVEL_IMAGE_TAG				CONSTLIT("FuelLowLevelImage")
+#define HERO_IMAGE_TAG							CONSTLIT("HeroImage")
 #define IMAGE_TAG								CONSTLIT("Image")
 #define INSTALL_TAG								CONSTLIT("Install")
 #define INTERIOR_TAG							CONSTLIT("Interior")
@@ -55,7 +56,6 @@
 #define HP_X_ATTRIB								CONSTLIT("hpX")
 #define HP_Y_ATTRIB								CONSTLIT("hpY")
 #define INERTIALESS_DRIVE_ATTRIB				CONSTLIT("inertialessDrive")
-#define LARGE_IMAGE_ATTRIB						CONSTLIT("largeImage")
 #define LEAVES_WRECK_ATTRIB						CONSTLIT("leavesWreck")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
@@ -209,6 +209,8 @@ const int DOCK_OFFSET_STD_SIZE =				64;
 
 const Metric DRIVE_POWER_EXP =					1.2;
 const Metric DRIVE_POWER_FACTOR =				13.0;
+
+const int MAX_HERO_IMAGE_HEIGHT =               528;
 
 struct ScoreDesc
 	{
@@ -2331,6 +2333,64 @@ CString CShipClass::GetGenericName (DWORD *retdwFlags)
 		}
 	}
 
+const CObjectImageArray &CShipClass::GetHeroImage (void)
+
+//  GetHeroImage
+//
+//  Returns the hero image, suitable for dock screens.
+
+    {
+    //  If we don't have a hero image, try to create one from the player setting's
+    //  large image.
+
+    DWORD dwImageUNID;
+    CG32bitImage *pLargeImage;
+    if (m_HeroImage.IsEmpty()
+            && m_pPlayerSettings 
+            && (dwImageUNID = m_pPlayerSettings->GetLargeImage())
+            && (pLargeImage = g_pUniverse->GetLibraryBitmap(dwImageUNID))
+            && !pLargeImage->IsEmpty())
+        {
+        //  If necessary, we scale it down to fit the dock screen.
+
+        if (pLargeImage->GetHeight() > MAX_HERO_IMAGE_HEIGHT)
+            {
+			Metric rScale = (Metric)MAX_HERO_IMAGE_HEIGHT / pLargeImage->GetHeight();
+			CG32bitImage *pNewImage = new CG32bitImage;
+			pNewImage->CreateFromImageTransformed(*pLargeImage,
+					0,
+					0,
+					pLargeImage->GetWidth(),
+					pLargeImage->GetHeight(),
+					rScale,
+					rScale,
+					0.0);
+
+            RECT rcImage;
+            rcImage.left = 0;
+            rcImage.top = 0;
+            rcImage.right = pNewImage->GetWidth();
+            rcImage.bottom = pNewImage->GetHeight();
+
+            m_HeroImage.Init(pNewImage, rcImage, 1, 1, true);
+            }
+        else
+            {
+            RECT rcImage;
+            rcImage.left = 0;
+            rcImage.top = 0;
+            rcImage.right = pLargeImage->GetWidth();
+            rcImage.bottom = pLargeImage->GetHeight();
+
+            m_HeroImage.Init(pLargeImage, rcImage, 1, 1, false);
+            }
+        }
+
+    //  Return the hero image (even if blank)
+
+    return m_HeroImage;
+    }
+
 CXMLElement *CShipClass::GetHUDDescInherited (EHUDTypes iType) const
 
 //	GetHUDDescInherited
@@ -2744,6 +2804,7 @@ void CShipClass::MarkImages (bool bMarkDevices)
 	int i;
 
 	m_Image.MarkImage();
+    m_HeroImage.MarkImage();
 
 	if (m_pExplosionType)
 		m_pExplosionType->MarkImages();
@@ -2763,6 +2824,7 @@ void CShipClass::MarkImages (bool bMarkDevices)
 
 	if (!m_WreckImage.IsLoaded())
 		CreateWreckImage();
+    m_WreckImage.MarkImage();
 
 	//	Effects
 
@@ -2798,6 +2860,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(strToInt(m_pDefaultScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(m_dwDefaultBkgnd, true);
 	retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true);
+	retTypesUsed->SetAt(m_HeroImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_WreckImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 	retTypesUsed->SetAt(m_ExhaustImage.GetBitmapUNID(), true);
@@ -2820,6 +2883,9 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
 		goto Fail;
+
+    if (error = m_HeroImage.OnDesignLoadComplete(Ctx))
+        goto Fail;
 
 	//	Now that we have the image we can bind the rotation desc, because it needs
 	//	the rotation count, etc.
@@ -3089,6 +3155,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_fCommsHandlerInit = pClass->m_fCommsHandlerInit;
 
 	m_Image = pClass->m_Image;
+    m_HeroImage = pClass->m_HeroImage;
 	m_Effects = pClass->m_Effects;
 
 	//	No need to copy m_WreckImage or m_WreckBitmap because they are just
@@ -3153,6 +3220,11 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pImage)
 		if (error = m_Image.InitFromXML(Ctx, pImage, false, STD_ROTATION_COUNT))
 			return ComposeLoadError(Ctx, Ctx.sError);
+
+    pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG);
+    if (pImage)
+        if (error = m_HeroImage.InitFromXML(Ctx, pImage))
+            return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Initialize design
 
@@ -3557,6 +3629,9 @@ void CShipClass::OnMergeType (CDesignType *pSource)
 	if (!pClass->m_Image.IsEmpty())
 		m_Image = pClass->m_Image;
 
+    if (!pClass->m_HeroImage.IsEmpty())
+        m_HeroImage = pClass->m_HeroImage;
+
 	//	Merge player settings
 
 	if (pClass->m_pPlayerSettings)
@@ -3639,7 +3714,34 @@ void CShipClass::OnReinit (void)
 	{
 	InitShipNamesIndices();
 	m_WreckImage.CleanUp();
+
+    //  If we created the hero image, then free it.
+
+    if (m_HeroImage.GetBitmapUNID() == 0)
+        m_HeroImage.CleanUp();
 	}
+
+void CShipClass::OnSweep (void)
+
+//  OnSweep
+//
+//  Free images that we're no longer using
+
+    {
+    //  Clean up wreck image
+
+    if (!m_WreckImage.IsMarked())
+        {
+        m_WreckImage.CleanUp();
+        m_WreckImage.CleanUp();
+        }
+
+    //  If we created the hero image, then we free it.
+
+    if (m_HeroImage.GetBitmapUNID() == 0
+            && !m_HeroImage.IsMarked())
+        m_HeroImage.CleanUp();
+    }
 
 void CShipClass::OnUnbindDesign (void)
 

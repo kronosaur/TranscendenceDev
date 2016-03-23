@@ -77,7 +77,8 @@ class CObjectImage : public CDesignType
         inline int GetWidth (void) const { return (m_pBitmap ? m_pBitmap->GetWidth() : 0); }
 		inline bool HasAlpha (void) { return (m_pBitmap ? (m_pBitmap->GetAlphaType() == CG32bitImage::alpha8) : false); }
 
-		ALERROR Lock (SDesignLoadCtx &Ctx);
+        inline bool IsMarked (void) const { return m_bMarked; }
+        ALERROR Lock (SDesignLoadCtx &Ctx);
 		inline void Mark (void) { GetImage(NULL_STR); m_bMarked = true; }
 
 		//	CDesignType overrides
@@ -147,6 +148,7 @@ class CObjectImageArray : public CObject
 		bool ImagesIntersect (int iTick, int iRotation, int x, int y, const CObjectImageArray &Image2, int iTick2, int iRotation2) const;
 		inline bool IsEmpty (void) const { return ((m_pImage == NULL) && (m_dwBitmapUNID == 0)); }
 		inline bool IsLoaded (void) const { return (m_pImage != NULL); }
+        inline bool IsMarked (void) const { return (m_pImage && m_pImage->IsMarked()); }
 		void MarkImage (void);
 		void PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false) const;
 		void PaintImageGrayed (CG32bitImage &Dest, int x, int y, int iTick, int iRotation) const;
