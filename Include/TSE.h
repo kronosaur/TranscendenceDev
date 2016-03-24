@@ -460,6 +460,7 @@ class CWeaponFireDesc
 		bool FireOnFragment (const CDamageSource &Source, CSpaceObject *pShot, const CVector &vHitPos, CSpaceObject *pNearestObj, CSpaceObject *pTarget);
 		void FireOnDestroyShot (CSpaceObject *pShot);
 		inline CItemType *GetAmmoType (void) const { return m_pAmmoType; }
+        inline DWORD GetAmmoTypeUNID (void) const { return m_pAmmoType.GetUNID(); }
 		inline int GetAreaDamageDensity (void) const { return m_AreaDamageDensity.Roll(); }
 		inline Metric GetAreaDamageDensityAverage (void) const { return m_AreaDamageDensity.GetAveValueFloat(); }
 		inline Metric GetAveDamage (void) const { return m_Damage.GetDamageValue(); }
@@ -484,7 +485,7 @@ class CWeaponFireDesc
 		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
 		inline int GetInteraction (void) const { return m_iInteraction; }
-        inline int GetLevel (void) const { return m_iLevel; }
+        inline int GetLevel (void) const { return Max(m_iLevel, (m_pAmmoType != NULL ? m_pAmmoType->GetLevel() : 0)); }
 		inline int GetLifetime (void) const { return m_Lifetime.Roll(); }
 		inline int GetManeuverRate (void) const { return m_iManeuverRate; }
 		inline int GetMaxLifetime (void) const { return m_Lifetime.GetMaxValue(); }

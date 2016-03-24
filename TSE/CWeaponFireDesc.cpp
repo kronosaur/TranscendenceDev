@@ -1497,9 +1497,9 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile)
 
-    //  InitFromMissileXML
-    //
-    //  This weapon definition is for a missile
+//  InitFromMissileXML
+//
+//  This weapon definition is for a missile
 
     {
     ALERROR error;

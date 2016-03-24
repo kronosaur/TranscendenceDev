@@ -628,8 +628,8 @@ class CWeaponClass : public CDeviceClass
 
 		struct SShotDesc
 			{
-			CItemTypeRef pAmmoType;	//	ItemType for ammo (may be NULL)
 			CWeaponFireDesc *pDesc;	//	Pointer to descriptor (may be external)
+			CItemTypeRef pAmmoType;	//	ItemType for ammo, only if referring to a missile
 			bool bOwned;			//	TRUE if we own the descriptor (otherwise, it
                                     //      may be owned by a missile).
 			};

@@ -1144,18 +1144,7 @@ int CWeaponClass::CalcLevel (CWeaponFireDesc *pShot) const
 //  Returns the level of the given shot.
 
     {
-    int iLevel;
-
-    //  For launchers, use the missile level
-
-	if (m_bLauncher)
-		iLevel = Max(GetLevel(), (pShot->GetAmmoType() ? pShot->GetAmmoType()->GetLevel() : 0));
-	else
-		iLevel = GetLevel();
-
-    //  Make sure we're in range
-
-    return Max(1, Min(iLevel, MAX_ITEM_LEVEL));
+    return Max(1, Min(pShot->GetLevel(), MAX_ITEM_LEVEL));
     }
 
 int CWeaponClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -1400,11 +1389,6 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 			{
 			CXMLElement *pItem = pMissiles->GetContentElement(i);
 
-			//	No matter what we load the ammo type.
-
-			if (error = pWeapon->m_ShotData[i].pAmmoType.LoadUNID(Ctx, pItem->GetAttribute(AMMO_ID_ATTRIB)))
-				return error;
-
 			//	If this entry defines the missile, then we own it.
 
 			if (pItem->FindAttribute(TYPE_ATTRIB))
@@ -1413,7 +1397,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 				pWeapon->m_ShotData[i].pDesc = new CWeaponFireDesc;
 
 				CString sUNID = strPatternSubst(CONSTLIT("%d/%d"), pWeapon->GetUNID(), i);
-				if (error = pWeapon->m_ShotData[i].pDesc->InitFromMissileXML(Ctx, pItem, sUNID, pWeapon->m_ShotData[i].pAmmoType))
+				if (error = pWeapon->m_ShotData[i].pDesc->InitFromXML(Ctx, pItem, sUNID, pWeapon->GetLevel()))
 					return error;
 				}
 
@@ -1422,6 +1406,12 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 
 			else
 				{
+			    //	In this case we need to load the ammo type because it we 
+                //  will later load the missile (at bind time).
+
+			    if (error = pWeapon->m_ShotData[i].pAmmoType.LoadUNID(Ctx, pItem->GetAttribute(AMMO_ID_ATTRIB)))
+				    return error;
+
 				//	AmmoID is required in this case.
 
 				if (pWeapon->m_ShotData[i].pAmmoType.GetUNID() == 0)
@@ -1440,11 +1430,6 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		pWeapon->m_ShotData.InsertEmpty(1);
 		pWeapon->m_ShotData[0].bOwned = true;
 		pWeapon->m_ShotData[0].pDesc = new CWeaponFireDesc;
-
-		//	See if we have ammo ID
-
-		if (error = pWeapon->m_ShotData[0].pAmmoType.LoadUNID(Ctx, pDesc->GetAttribute(AMMO_ID_ATTRIB)))
-			return error;
 
 		//	Load the definition from the root element
 
@@ -2145,7 +2130,7 @@ CItemType *CWeaponClass::GetAmmoItem (int iIndex) const
 
     {
     ASSERT(iIndex >= 0 && iIndex < GetAmmoItemCount());
-    return m_ShotData[iIndex].pAmmoType;
+    return m_ShotData[iIndex].pDesc->GetAmmoType();
     }
 
 int CWeaponClass::GetAmmoItemCount (void) const
@@ -2161,7 +2146,7 @@ int CWeaponClass::GetAmmoItemCount (void) const
     //  If we only have a single entry, then see if it uses ammo.
 
     else if (m_ShotData.GetCount() == 1)
-        return (m_ShotData[0].pAmmoType ? 1 : 0);
+        return (m_ShotData[0].pDesc->GetAmmoType() ? 1 : 0);
 
     //  If we have multiple entries, then we are a launcher and by definition
     //  all of the entries use ammo.
@@ -2411,7 +2396,7 @@ int CWeaponClass::GetAmmoVariant (const CItemType *pItem) const
 
 	for (i = 0; i < m_ShotData.GetCount(); i++)
 		{
-		if (m_ShotData[i].pAmmoType.GetUNID() == dwItemUNID)
+		if (m_ShotData[i].pDesc->GetAmmoTypeUNID() == dwItemUNID)
 			return i;
 		}
 
@@ -3086,7 +3071,7 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
     //  If we need ammo, then we have extra work to do.
     //  NOTE: Currently, if one variant uses ammo, all need to use ammo.
 
-    if (m_ShotData[0].pAmmoType != NULL)
+    if (m_ShotData[0].pDesc->GetAmmoType() != NULL)
         {
         //  If we have ammo, use it (this overrides whatever item is selected 
         //  in ItemCtx).
@@ -3159,7 +3144,7 @@ bool CWeaponClass::IsAmmoWeapon (void)
 
 	{
 	return (m_bLauncher
-			|| (m_ShotData.GetCount() > 0 && m_ShotData[0].pAmmoType));
+			|| (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType()));
 	}
 
 bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice)
@@ -3678,11 +3663,6 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	for (int i = 0; i < m_ShotData.GetCount(); i++)
 		{
-		//	Bind the ammoID
-
-		if (error = m_ShotData[i].pAmmoType.Bind(Ctx))
-			return error;
-
 		//	If we own this definition, then we need to bind it.
 
 		if (m_ShotData[i].bOwned)
@@ -3696,6 +3676,11 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 		else
 			{
+		    //	Bind the ammoID
+
+		    if (error = m_ShotData[i].pAmmoType.Bind(Ctx))
+			    return error;
+
 			//	Must be valid
 
 			if (m_ShotData[i].pAmmoType == NULL)
@@ -3801,7 +3786,7 @@ bool CWeaponClass::RequiresItems (void) const
 	if (m_ShotData.GetCount() == 0)
 		return false;
 	else if (m_ShotData.GetCount() == 1)
-		return (m_ShotData[0].pAmmoType != NULL);
+		return (m_ShotData[0].pDesc->GetAmmoType() != NULL);
 	else
 		return true;
 	}
