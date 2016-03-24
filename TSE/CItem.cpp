@@ -216,7 +216,7 @@ CString CItem::CalcSortKey (void) const
 
 	//	Within category, sort by level (highest first)
 
-	sCat.Append(strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - pType->GetApparentLevel()));
+	sCat.Append(strPatternSubst(CONSTLIT("%02d"), MAX_ITEM_LEVEL - pType->GetApparentLevel(CItemCtx(*this))));
 
 	//	Enhanced items before others
 
@@ -653,7 +653,7 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 	//	Always add level
 
-	retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("level %d"), m_pItemType->GetApparentLevel())));
+	retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("level %d"), m_pItemType->GetApparentLevel(Ctx))));
 
 	//	Add additional custom attributes
 

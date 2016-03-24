@@ -269,7 +269,7 @@ Metric CDeviceClass::GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo
     return rValue; 
     }
 
-int CDeviceClass::GetInstallCost (void)
+int CDeviceClass::GetInstallCost (CItemCtx &ItemCtx)
 
 //	GetInstallCost
 //
@@ -279,7 +279,7 @@ int CDeviceClass::GetInstallCost (void)
 	if (m_pItemType == NULL)
 		return -1;
 
-	const SStdDeviceStats *pStats = GetStdDeviceStats(m_pItemType->GetApparentLevel());
+	const SStdDeviceStats *pStats = GetStdDeviceStats(m_pItemType->GetApparentLevel(ItemCtx));
 	if (pStats == NULL)
 		return -1;
 

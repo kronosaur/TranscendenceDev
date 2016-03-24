@@ -1504,6 +1504,10 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	pShip->m_Interior.Init(pClass->GetInteriorDesc());
 
+    //  Initialize the data from the class
+
+    pShip->SetDataFromDataBlock(pClass->GetInitialData());
+
 	//	If we have a generator context, set some more settings
 
 	if (pCtx)

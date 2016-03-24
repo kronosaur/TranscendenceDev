@@ -119,7 +119,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	if (!bNoIcon)
 		rcDrawRect.left += ITEM_LEFT_PADDING + ICON_WIDTH;
 
-	int iLevel = pType->GetApparentLevel();
+	int iLevel = pType->GetApparentLevel(Ctx);
 
 	//	Compute the height of the row
 
@@ -1023,7 +1023,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 	CString sStat;
 
-	int iLevel = pItemType->GetApparentLevel();
+	int iLevel = pItemType->GetApparentLevel(Ctx);
 	CString sReference = pItemType->GetReference(Ctx);
 	DamageTypes iDamageType;
 	CString sDamageRef;

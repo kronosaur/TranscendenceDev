@@ -438,7 +438,7 @@ CDeviceClass *CItemType::GetAmmoLauncher (int *retiVariant) const
 	return NULL;
 	}
 
-int CItemType::GetApparentLevel (void) const
+int CItemType::GetApparentLevel (CItemCtx &Ctx) const
 
 //	GetApparentLevel
 //
@@ -448,7 +448,7 @@ int CItemType::GetApparentLevel (void) const
 	if (!IsKnown())
 		return m_pUnknownType->GetLevel();
 
-	return GetLevel();
+	return GetLevel(Ctx);
 	}
 
 ItemCategories CItemType::GetCategory (void) const
@@ -623,7 +623,7 @@ int CItemType::GetInstallCost (CItemCtx &Ctx) const
 	if (m_pArmor)
 		return m_pArmor->GetInstallCost(Ctx);
 	else if (m_pDevice)
-		return m_pDevice->GetInstallCost();
+		return m_pDevice->GetInstallCost(Ctx);
 	else
 		return -1;
 	}

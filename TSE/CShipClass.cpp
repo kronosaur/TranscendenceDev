@@ -19,6 +19,7 @@
 #define FUEL_LOW_LEVEL_IMAGE_TAG				CONSTLIT("FuelLowLevelImage")
 #define HERO_IMAGE_TAG							CONSTLIT("HeroImage")
 #define IMAGE_TAG								CONSTLIT("Image")
+#define INITIAL_DATA_TAG						CONSTLIT("InitialData")
 #define INSTALL_TAG								CONSTLIT("Install")
 #define INTERIOR_TAG							CONSTLIT("Interior")
 #define ITEMS_TAG								CONSTLIT("Items")
@@ -3482,6 +3483,12 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iStructuralHP = pDesc->GetAttributeIntegerBounded(STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, -1);
 	if (m_iStructuralHP == -1)
 		m_iStructuralHP = pDesc->GetAttributeIntegerBounded(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, 0);
+
+    //  Load initial data, if available
+
+    CXMLElement *pInitData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
+    if (pInitData)
+        m_InitialData.SetFromXML(pInitData);
 
 	//	Explosion
 

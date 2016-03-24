@@ -2162,7 +2162,7 @@ class CItemType : public CDesignType
 		inline void ClearShowReference (void) { m_fReference = false; }
 		void CreateEmptyFlotsam (CSystem *pSystem, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpFlotsam);
 		inline bool FindEventHandlerItemType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
-		int GetApparentLevel (void) const;
+		int GetApparentLevel (CItemCtx &Ctx) const;
 		CDeviceClass *GetAmmoLauncher (int *retiVariant = NULL) const;
 		inline CArmorClass *GetArmorClass (void) const { return m_pArmor; }
 		ItemCategories GetCategory (void) const;
@@ -2436,6 +2436,7 @@ class CShipClass : public CDesignType
 		CString GetHullSectionName (int iIndex) const;
 		inline const CObjectImageArray &GetImage (void) const { return m_Image; }
 		inline const CObjectImageArray &GetImageSmall (void) { return m_Image; }
+        inline const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
 		inline const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
@@ -2641,6 +2642,7 @@ class CShipClass : public CDesignType
 		CAISettings m_AISettings;				//	AI controller data
 		CPlayerSettings *m_pPlayerSettings;		//	Player settings data
 		IItemGenerator *m_pItems;				//	Random items
+        CAttributeDataBlock m_InitialData;      //  Initial data for ship object
 
 		//	Escorts
 
