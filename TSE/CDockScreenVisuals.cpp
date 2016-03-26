@@ -12,7 +12,7 @@
 #define TITLE_BACKGROUND_ATTRIB					CONSTLIT("titleBackgroundColor")
 #define TITLE_TEXT_ATTRIB				    	CONSTLIT("titleTextColor")
 
-const CG32bitPixel RGB_TEXT =                   CG32bitPixel(0xf0, 0xf7, 0xff);    //   H:210 S:6   B:100
+const CG32bitPixel RGB_TEXT =                   CG32bitPixel(0xb0, 0xb8, 0xbf);    //   H:210 S:8   B:75
 const CG32bitPixel RGB_TEXT_BACKGROUND =        CG32bitPixel(0x2a, 0x31, 0x38);    //   H:210 S:25  B:22
 const CG32bitPixel RGB_TITLE_BACKGROUND =       CG32bitPixel(0x37, 0x3f, 0x47);    //   H:240 S:23  B:28
 const CG32bitPixel RGB_TITLE_TEXT =             CG32bitPixel(0xd9, 0xec, 0xff);    //   H:210 S:15  B:100
