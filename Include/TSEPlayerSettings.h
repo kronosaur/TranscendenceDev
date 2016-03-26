@@ -28,6 +28,7 @@ class CDockScreenVisuals
         inline CG32bitPixel GetTextColor (void) const { return m_rgbText; }
         inline CG32bitPixel GetTitleBackgroundColor (void) const { return m_rgbTitleBackground; }
         inline CG32bitPixel GetTitleTextColor (void) const { return m_rgbTitleText; }
+        inline CG32bitPixel GetWindowBackgroundColor (void) const { return CG32bitPixel::Darken(m_rgbTitleBackground, 30);  }
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
         void MarkImages (void) const;
 
