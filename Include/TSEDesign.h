@@ -2428,7 +2428,6 @@ class CShipClass : public CDesignType
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
         const CObjectImageArray &GetHeroImage (void);
-		CXMLElement *GetHUDDescInherited (EHUDTypes iType) const;
 		inline int GetHullMass (void) const { return m_iMass; }
 		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
 		int GetHullSectionAtAngle (int iAngle);
@@ -2447,7 +2446,7 @@ class CShipClass : public CDesignType
 		inline int GetMaxWeapons (void) const { return m_iMaxWeapons; }
 		CString GetName (DWORD *retdwFlags = NULL);
 		CString GetNounPhrase (DWORD dwFlags);
-		inline const CPlayerSettings *GetPlayerSettings (void) const { return m_pPlayerSettings; }
+        const CPlayerSettings *GetPlayerSettings (void) const;
 		CString GetPlayerSortString (void) const;
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
@@ -2640,7 +2639,7 @@ class CShipClass : public CDesignType
         //  AI & Player Settings
 
 		CAISettings m_AISettings;				//	AI controller data
-		CPlayerSettings *m_pPlayerSettings;		//	Player settings data
+		mutable CPlayerSettings *m_pPlayerSettings;		//	Player settings data
 		IItemGenerator *m_pItems;				//	Random items
         CAttributeDataBlock m_InitialData;      //  Initial data for ship object
 
@@ -2694,7 +2693,7 @@ class CShipClass : public CDesignType
 		DWORD m_fCommsHandlerInit:1;			//	TRUE if comms handler has been initialized
 		DWORD m_fVirtual:1;						//	TRUE if ship class is virtual (e.g., a base class)
 
-		DWORD m_fInheritedPlayerSettings:1;		//	TRUE if m_pPlayerSettings is inherited from a base class
+		DWORD m_fOwnPlayerSettings:1;		    //	TRUE if we own m_pPlayerSettings
 		DWORD m_fScoreOverride:1;				//	TRUE if score is specified in XML
 		DWORD m_fLevelOverride:1;				//	TRUE if level is specified in XML
 		DWORD m_fInheritedDevices:1;			//	TRUE if m_pDevices is inherited from another class

@@ -268,7 +268,8 @@ CShipClass::CShipClass (void) :
 		m_fInheritedDevices(false),
 		m_fInheritedItems(false),
 		m_fInheritedEscorts(false),
-		m_fInheritedTrade(false)
+		m_fInheritedTrade(false),
+        m_fOwnPlayerSettings(false)
 
 //	CShipClass constructor
 
@@ -283,7 +284,7 @@ CShipClass::~CShipClass (void)
 	if (m_pDevices && !m_fInheritedDevices)
 		delete m_pDevices;
 
-	if (m_pPlayerSettings && !m_fInheritedPlayerSettings)
+	if (m_fOwnPlayerSettings)
 		delete m_pPlayerSettings;
 
 	if (m_pItems && !m_fInheritedItems)
@@ -2344,11 +2345,12 @@ const CObjectImageArray &CShipClass::GetHeroImage (void)
     //  If we don't have a hero image, try to create one from the player setting's
     //  large image.
 
+    const CPlayerSettings *pPlayerSettings;
     DWORD dwImageUNID;
     CG32bitImage *pLargeImage;
     if (m_HeroImage.IsEmpty()
-            && m_pPlayerSettings 
-            && (dwImageUNID = m_pPlayerSettings->GetLargeImage())
+            && (pPlayerSettings = GetPlayerSettings())
+            && (dwImageUNID = pPlayerSettings->GetLargeImage())
             && (pLargeImage = g_pUniverse->GetLibraryBitmap(dwImageUNID))
             && !pLargeImage->IsEmpty())
         {
@@ -2391,26 +2393,6 @@ const CObjectImageArray &CShipClass::GetHeroImage (void)
 
     return m_HeroImage;
     }
-
-CXMLElement *CShipClass::GetHUDDescInherited (EHUDTypes iType) const
-
-//	GetHUDDescInherited
-//
-//	Returns the HUD descriptor, either from this class or some base class.
-
-	{
-	CShipClass *pBase;
-
-	CXMLElement *pDesc = (m_pPlayerSettings && !m_pPlayerSettings->IsHUDDescInherited(iType) ? m_pPlayerSettings->GetHUDDesc(iType) : NULL);
-	if (pDesc)
-		return pDesc;
-
-	else if (pBase = CShipClass::AsType(GetInheritFrom()))
-		return pBase->GetHUDDescInherited(iType);
-
-	else
-		return NULL;
-	}
 
 int CShipClass::GetHullSectionAtAngle (int iAngle)
 
@@ -2489,24 +2471,60 @@ CString CShipClass::GetNounPhrase (DWORD dwFlags)
 	return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
 	}
 
-CPlayerSettings *CShipClass::GetPlayerSettingsInherited (void) const
+const CPlayerSettings *CShipClass::GetPlayerSettings (void) const
 
-//	GetPlayerSettingsInherited
+//  GetPlayerSettings
 //
-//	Returns player settings from us or a base class
+//  There are three possible cases for a given ship class:
+//
+//  1.  We inherit ALL our player settings from our base class (if any).
+//      After loading, m_pPlayerSettings is NULL. Here, we set m_pPlayerSettings
+//      to whatever our base class has, and we set m_fInheritedPlayerSettings
+//      to TRUE. At bind-time, we undo this so that we can pull from the
+//      proper base class.
+//
+//  2.  We inherit SOME of our player settings from our base class (if any).
+//      m_pPlayerSettings is valid, but not yet resolved. Here we ask for our
+//      base class player settings and resolve our m_pPlayerSettings object
+//      (NOTE: Our caller has to deal with missing elements). At bind-time, we
+//      unresolve.
+//
+//  3.  Our m_pPlayerSettings is valid and complete. In that case, we just 
+//      return it.
 
-	{
-	CShipClass *pBase;
+    {
+    //  If we have a resolved set of player settings, we're done.
 
-	if (m_pPlayerSettings)
-		return m_pPlayerSettings;
+    if (m_pPlayerSettings && m_pPlayerSettings->IsResolved())
+        return m_pPlayerSettings;
 
-	else if (pBase = CShipClass::AsType(GetInheritFrom()))
-		return pBase->GetPlayerSettingsInherited();
+    //  Get our base class because we're going to need it one way or the other.
+    //  If we don't have a base class, then we just return whatever we have.
+    //  (Which may be either NULL or incomplete).
 
-	else
-		return NULL;
-	}
+    CShipClass *pBase = CShipClass::AsType(GetInheritFrom());
+    const CPlayerSettings *pBaseSettings = (pBase ? pBase->GetPlayerSettings() : NULL);
+
+    //  If we have player settings, the resolve against the base class so that
+    //  we can inherit.
+    //
+    //  NOTE: It's OK if pBaseSettings is NULL--at least we will mark m_pPlayerSettings
+    //  as resolved.
+
+    if (m_fOwnPlayerSettings)
+        {
+        m_pPlayerSettings->Resolve(pBaseSettings);
+        return m_pPlayerSettings;
+        }
+
+    //  Otherwise, we inherit all our settings from our base class
+
+    else
+        {
+        m_pPlayerSettings = const_cast<CPlayerSettings *>(pBaseSettings);
+        return m_pPlayerSettings;
+        }
+    }
 
 CString CShipClass::GetPlayerSortString (void) const
 
@@ -2831,6 +2849,12 @@ void CShipClass::MarkImages (bool bMarkDevices)
 
 	m_Effects.MarkImages();
 
+    //  Settings
+
+    const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
+    if (pPlayerSettings)
+        pPlayerSettings->MarkImages();
+
 	DEBUG_CATCH
 	}
 
@@ -2849,8 +2873,9 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	if (m_pDevices)
 		m_pDevices->AddTypesUsed(retTypesUsed);
 
-	if (m_pPlayerSettings)
-		m_pPlayerSettings->AddTypesUsed(retTypesUsed);
+    const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
+	if (pPlayerSettings)
+		pPlayerSettings->AddTypesUsed(retTypesUsed);
 
 	if (m_pItems)
 		m_pItems->AddTypesUsed(retTypesUsed);
@@ -2937,19 +2962,19 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 		if (error = m_pTrade->OnDesignLoadComplete(Ctx))
 			goto Fail;
 
-	//	Load player settings
+	//	If we own the player settings, then bind them. Otherwise, we clear the
+    //  pointer so that we can resolve at run-time.
+    //
+    //  NOTE: Bind will also unresolve the settings, in case it inherited some
+    //  stuff.
 
-	CPlayerSettings *pBasePlayerSettings;
-	if (m_pPlayerSettings)
-		{
+    if (m_fOwnPlayerSettings)
+        {
 		if (error = m_pPlayerSettings->Bind(Ctx, this))
 			goto Fail;
-		}
-	else if (pBasePlayerSettings = GetPlayerSettingsInherited())
-		{
-		m_pPlayerSettings = pBasePlayerSettings;
-		m_fInheritedPlayerSettings = true;
-		}
+        }
+    else
+        m_pPlayerSettings = NULL;
 
 	//	AI Settings
 
@@ -3119,11 +3144,10 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 
 	m_AISettings = pClass->m_AISettings;
 
-	if (pClass->m_pPlayerSettings)
-		{
-		m_pPlayerSettings = pClass->m_pPlayerSettings;
-		m_fInheritedPlayerSettings = true;
-		}
+    if (m_fOwnPlayerSettings = pClass->m_fOwnPlayerSettings)
+        m_pPlayerSettings = new CPlayerSettings(*pClass->m_pPlayerSettings);
+    else
+        m_pPlayerSettings = NULL;
 
 	if (pClass->m_pItems)
 		{
@@ -3192,7 +3216,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_sTypeName = pDesc->GetAttribute(CONSTLIT(g_TypeAttrib));
 	m_dwClassNameFlags = LoadNameFlags(pDesc);
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
-	m_fInheritedPlayerSettings = false;
 
 	if (error = m_pDefaultSovereign.LoadUNID(Ctx, pDesc->GetAttribute(DEFAULT_SOVEREIGN_ATTRIB)))
 		return error;
@@ -3497,13 +3520,17 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Load player settings
 
+    m_pPlayerSettings = NULL;
+	m_fOwnPlayerSettings = false;
 	CXMLElement *pPlayer = pDesc->GetContentElementByTag(PLAYER_SETTINGS_TAG);
-	if (pPlayer)
-		{
-		m_pPlayerSettings = new CPlayerSettings;
-		if (error = m_pPlayerSettings->InitFromXML(Ctx, this, pPlayer))
-			return ComposeLoadError(Ctx, Ctx.sError);
-		}
+    if (pPlayer)
+        {
+        m_pPlayerSettings = new CPlayerSettings;
+        m_fOwnPlayerSettings = true;
+
+        if (error = m_pPlayerSettings->InitFromXML(Ctx, this, pPlayer))
+            return ComposeLoadError(Ctx, Ctx.sError);
+        }
 
 	//	Done
 
@@ -3533,10 +3560,13 @@ CEffectCreator *CShipClass::OnFindEffectCreator (const CString &sUNID)
 	switch (*pPos)
 		{
 		case 'p':
-			if (m_pPlayerSettings == NULL)
-				return NULL;
+            {
+            const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
+            if (pPlayerSettings == NULL)
+                return NULL;
 
-			return m_pPlayerSettings->FindEffectCreator(CString(pPos + 1));
+            return pPlayerSettings->FindEffectCreator(CString(pPos + 1));
+            }
 
 		default:
 			return NULL;
@@ -3641,26 +3671,15 @@ void CShipClass::OnMergeType (CDesignType *pSource)
 
 	//	Merge player settings
 
-	if (pClass->m_pPlayerSettings)
+	if (pClass->m_fOwnPlayerSettings)
 		{
-		if (m_pPlayerSettings == NULL)
-			{
-			m_pPlayerSettings = new CPlayerSettings;
-			*m_pPlayerSettings = *pClass->m_pPlayerSettings;
-			}
-		else if (m_fInheritedPlayerSettings)
-			{
-			CPlayerSettings *pNew = new CPlayerSettings;
-			*pNew = *m_pPlayerSettings;
-
-			pNew->MergeFrom(*pClass->m_pPlayerSettings);
-
-			m_pPlayerSettings = pNew;
-			}
-		else
+		if (m_fOwnPlayerSettings)
 			m_pPlayerSettings->MergeFrom(*pClass->m_pPlayerSettings);
-
-		m_fInheritedPlayerSettings = false;
+        else
+            {
+            m_pPlayerSettings = new CPlayerSettings(*pClass->m_pPlayerSettings);
+            m_fOwnPlayerSettings = true;
+            }
 		}
 
 	//	Comms handler
@@ -3759,11 +3778,8 @@ void CShipClass::OnUnbindDesign (void)
 	{
 	//	Undo inheritance
 
-	if (m_fInheritedPlayerSettings)
-		{
-		m_fInheritedPlayerSettings = false;
+	if (!m_fOwnPlayerSettings)
 		m_pPlayerSettings = NULL;
-		}
 
 	//	Reset comms handler because our inheritance chain might
 	//	have changed.

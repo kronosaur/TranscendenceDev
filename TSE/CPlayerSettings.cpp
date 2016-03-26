@@ -7,6 +7,7 @@
 
 #define ARMOR_DISPLAY_TAG						CONSTLIT("ArmorDisplay")
 #define ARMOR_SECTION_TAG						CONSTLIT("ArmorSection")
+#define DOCK_SCREEN_DISPLAY_TAG 				CONSTLIT("DockScreenDisplay")
 #define FUEL_LEVEL_IMAGE_TAG					CONSTLIT("FuelLevelImage")
 #define FUEL_LEVEL_TEXT_TAG						CONSTLIT("FuelLevelText")
 #define FUEL_LOW_LEVEL_IMAGE_TAG				CONSTLIT("FuelLowLevelImage")
@@ -74,50 +75,7 @@
 
 ALERROR InitRectFromElement (CXMLElement *pItem, RECT *retRect);
 
-CPlayerSettings &CPlayerSettings::operator= (const CPlayerSettings &Source)
-
-//	CPlayerSettings operator =
-
-	{
-	int i;
-
-	CleanUp();
-
-	m_sDesc = Source.m_sDesc;
-	m_dwLargeImage = Source.m_dwLargeImage;
-	m_iSortOrder = Source.m_iSortOrder;
-
-	//	Miscellaneous
-
-	m_StartingCredits = Source.m_StartingCredits;		//	Starting credits
-	m_sStartNode = Source.m_sStartNode;						//	Starting node (may be blank)
-	m_sStartPos = Source.m_sStartPos;						//	Label of starting position (may be blank)
-	m_pShipScreen = Source.m_pShipScreen;			//	Ship screen
-	m_pDockServicesScreen = Source.m_pDockServicesScreen;
-	m_pShipConfigScreen = Source.m_pShipConfigScreen;
-	m_HullValue = Source.m_HullValue;
-
-	//	HUDs
-
-	for (i = 0; i < hudCount; i++)
-		{
-		m_HUDDesc[i] = Source.m_HUDDesc[i];
-		if (m_HUDDesc[i].bFree)
-			m_HUDDesc[i].pDesc = m_HUDDesc[i].pDesc->OrphanCopy();
-		}
-
-	//	Flags
-
-	m_fInitialClass = Source.m_fInitialClass;					//	Use ship class at game start
-	m_fDebug = Source.m_fDebug;
-	m_fIncludeInAllAdventures = Source.m_fIncludeInAllAdventures;
-
-	//	Don
-
-	return *this;
-	}
-
-void CPlayerSettings::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
+void CPlayerSettings::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 
 //	AddTypesUsed
 //
@@ -128,6 +86,8 @@ void CPlayerSettings::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(strToInt(m_pShipScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(strToInt(m_pDockServicesScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(strToInt(m_pShipConfigScreen.GetUNID(), 0), true);
+
+    GetDockScreenVisuals().AddTypesUsed(retTypesUsed);
 
 	//	LATER: Add armor images, etc.
 	}
@@ -143,6 +103,7 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 
 	ALERROR error;
 	int i;
+    bool bMissingElements = false;
 
 	//	Bind basic stuff
 
@@ -161,17 +122,34 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 	if (error = m_HullValue.Bind(Ctx))
 		return error;
 
+    //  If we own our visuals, bind them
+
+    if (m_fOwnDockScreenDesc)
+        {
+        if (error = m_pDockScreenDesc->Bind(Ctx))
+            return error;
+        }
+    else
+        {
+        m_pDockScreenDesc = NULL;
+        bMissingElements = true;
+        }
+
 	//	HUDs
 
 	for (i = 0; i < hudCount; i++)
 		{
-		if (m_HUDDesc[i].pDesc == NULL || m_HUDDesc[i].bInherited)
+        if (!m_HUDDesc[i].bOwned)
 			{
-			ASSERT(!m_HUDDesc[i].bFree);
-			m_HUDDesc[i].pDesc = pClass->GetHUDDescInherited((EHUDTypes)i);
-			m_HUDDesc[i].bInherited = true;
+            m_HUDDesc[i].pDesc = NULL;
+            bMissingElements = true;
 			}
 		}
+
+    //  If we have all elements, then consider us resolved. Otherwise, we need
+    //  to inherit from some base class.
+
+    m_fResolved = (!bMissingElements);
 
 	//	Done
 
@@ -190,11 +168,11 @@ void CPlayerSettings::CleanUp (void)
 	int i;
 
 	for (i = 0; i < hudCount; i++)
-		if (m_HUDDesc[i].bFree)
+		if (m_HUDDesc[i].bOwned)
 			{
 			delete m_HUDDesc[i].pDesc;
 			m_HUDDesc[i].pDesc = NULL;
-			m_HUDDesc[i].bFree = false;
+			m_HUDDesc[i].bOwned = false;
 			}
 	}
 
@@ -209,7 +187,55 @@ ALERROR CPlayerSettings::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &s
 	return ERR_FAIL;
 	}
 
-CEffectCreator *CPlayerSettings::FindEffectCreator (const CString &sUNID)
+void CPlayerSettings::Copy (const CPlayerSettings &Src)
+
+//  Copy
+//
+//  Copy from source
+
+    {
+	int i;
+
+	m_sDesc = Src.m_sDesc;
+	m_iSortOrder = Src.m_iSortOrder;
+
+    //  Images
+
+	m_dwLargeImage = Src.m_dwLargeImage;
+    if (m_fOwnDockScreenDesc = Src.m_fOwnDockScreenDesc)
+        m_pDockScreenDesc = new CDockScreenVisuals(*Src.m_pDockScreenDesc);
+    else
+        m_pDockScreenDesc = NULL;
+
+	//	Miscellaneous
+
+	m_StartingCredits = Src.m_StartingCredits;		//	Starting credits
+	m_sStartNode = Src.m_sStartNode;						//	Starting node (may be blank)
+	m_sStartPos = Src.m_sStartPos;						//	Label of starting position (may be blank)
+	m_pShipScreen = Src.m_pShipScreen;			//	Ship screen
+	m_pDockServicesScreen = Src.m_pDockServicesScreen;
+	m_pShipConfigScreen = Src.m_pShipConfigScreen;
+	m_HullValue = Src.m_HullValue;
+
+	//	HUDs
+
+	for (i = 0; i < hudCount; i++)
+		{
+        if (Src.m_HUDDesc[i].bOwned)
+            {
+			m_HUDDesc[i].pDesc = m_HUDDesc[i].pDesc->OrphanCopy();
+            m_HUDDesc[i].bOwned = true;
+            }
+		}
+
+	//	Flags
+
+	m_fInitialClass = Src.m_fInitialClass;					//	Use ship class at game start
+	m_fDebug = Src.m_fDebug;
+	m_fIncludeInAllAdventures = Src.m_fIncludeInAllAdventures;
+    }
+
+CEffectCreator *CPlayerSettings::FindEffectCreator (const CString &sUNID) const
 
 //	FindEffectCreator
 //
@@ -327,7 +353,20 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 		m_pShipConfigScreen.LoadUNID(Ctx, sUNID);
 		}
 
-	//	Load the displays data
+    //  Dock screen visuals
+
+    m_pDockScreenDesc = NULL;
+    m_fOwnDockScreenDesc = false;
+    CXMLElement *pVisuals = pDesc->GetContentElementByTag(DOCK_SCREEN_DISPLAY_TAG);
+    if (pVisuals)
+        {
+        m_pDockScreenDesc = new CDockScreenVisuals;
+        m_fOwnDockScreenDesc = true;
+        if (error = m_pDockScreenDesc->InitFromXML(Ctx, pVisuals))
+            return ComposeLoadError(Ctx, Ctx.sError);
+        }
+
+    //	Load the displays data
 
 	m_HUDDesc[hudArmor].pDesc = pDesc->GetContentElementByTag(ARMOR_DISPLAY_TAG);
 	m_HUDDesc[hudReactor].pDesc = pDesc->GetContentElementByTag(REACTOR_DISPLAY_TAG);
@@ -338,8 +377,7 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 		if (m_HUDDesc[i].pDesc)
 			{
 			m_HUDDesc[i].pDesc = m_HUDDesc[i].pDesc->OrphanCopy();
-			m_HUDDesc[i].bFree = true;
-			m_HUDDesc[i].bInherited = false;
+			m_HUDDesc[i].bOwned = true;
 			}
 		}
 
@@ -359,14 +397,64 @@ void CPlayerSettings::MergeFrom (const CPlayerSettings &Src)
 
 	for (i = 0; i < hudCount; i++)
 		{
-		if (m_HUDDesc[i].bFree)
-			delete m_HUDDesc[i].pDesc;
+        if (Src.m_HUDDesc[i].bOwned)
+            {
+            if (m_HUDDesc[i].bOwned)
+                delete m_HUDDesc[i].pDesc;
 
-		m_HUDDesc[i].pDesc = Src.m_HUDDesc[i].pDesc;
-		m_HUDDesc[i].bInherited = Src.m_HUDDesc[i].bInherited;
-		m_HUDDesc[i].bFree = false;
+            m_HUDDesc[i].pDesc = Src.m_HUDDesc[i].pDesc->OrphanCopy();
+            m_HUDDesc[i].bOwned = true;
+            }
 		}
+
+    if (Src.m_fOwnDockScreenDesc)
+        {
+        if (m_fOwnDockScreenDesc)
+            delete m_pDockScreenDesc;
+
+        m_pDockScreenDesc = new CDockScreenVisuals(*Src.m_pDockScreenDesc);
+        m_fOwnDockScreenDesc = true;
+        }
 	}
+
+void CPlayerSettings::Resolve (const CPlayerSettings *pSrc)
+
+//  Resolve
+//
+//  Resolves inheritance
+
+    {
+    int i;
+
+    //  If we have a source, we use it to inherit elements
+
+    if (pSrc)
+        {
+        //  Inherit dock screen visuals
+
+        if (!m_fOwnDockScreenDesc
+                && pSrc->m_pDockScreenDesc)
+            m_pDockScreenDesc = pSrc->m_pDockScreenDesc;
+
+        //  Inherit any HUD elements
+
+	    for (i = 0; i < hudCount; i++)
+		    {
+            if (!m_HUDDesc[i].bOwned
+                    && pSrc->m_HUDDesc[i].pDesc)
+                m_HUDDesc[i].pDesc = pSrc->m_HUDDesc[i].pDesc;
+		    }
+        }
+
+    //  If we still don't have a dock screen visual, get the default.
+
+    if (m_pDockScreenDesc == NULL)
+        m_pDockScreenDesc = &CDockScreenVisuals::GetDefault();
+
+    //  No need to resolve again, until we re-bind
+
+    m_fResolved = true;
+    }
 
 ALERROR InitRectFromElement (CXMLElement *pItem, RECT *retRect)
 

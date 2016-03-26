@@ -124,6 +124,7 @@ class CObjectImageArray : public CObject
 		CObjectImageArray &operator= (const CObjectImageArray &Source);
 
 		ALERROR Init (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset = 0, int yOffset = 0);
+		ALERROR Init (DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow = false);
 		ALERROR Init (DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame);
 		ALERROR InitFromRotated (const CObjectImageArray &Source, int iTick, int iVariant, int iRotation);
 		ALERROR InitFromXML (CXMLElement *pDesc);
@@ -149,7 +150,7 @@ class CObjectImageArray : public CObject
 		inline bool IsEmpty (void) const { return ((m_pImage == NULL) && (m_dwBitmapUNID == 0)); }
 		inline bool IsLoaded (void) const { return (m_pImage != NULL); }
         inline bool IsMarked (void) const { return (m_pImage && m_pImage->IsMarked()); }
-		void MarkImage (void);
+		void MarkImage (void) const;
 		void PaintImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, bool bComposite = false) const;
 		void PaintImageGrayed (CG32bitImage &Dest, int x, int y, int iTick, int iRotation) const;
 		void PaintImageShimmering (CG32bitImage &Dest,

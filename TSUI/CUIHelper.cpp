@@ -948,7 +948,7 @@ void CUIHelper::PaintDisplayAttributes (CG32bitImage &Dest, TArray<SDisplayAttri
 		}
 	}
 
-void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, DWORD dwOptions) const
+void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const
 
 //	PaintItemEntry
 //
@@ -958,8 +958,8 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &LargeBold = VI.GetFont(fontLargeBold);
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
-	CG32bitPixel rgbColorTitle = VI.GetColor(colorTextHighlight);
-	CG32bitPixel rgbColorRef = VI.GetColor(colorTextHighlight);
+    CG32bitPixel rgbColorTitle = rgbText;
+    CG32bitPixel rgbColorRef = rgbText;
 	CG32bitPixel rgbColorDescSel = CG32bitPixel(200,200,200);
 	CG32bitPixel rgbColorDesc = CG32bitPixel(128,128,128);
 
@@ -1038,7 +1038,8 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 				rcDrawRect.left,
 				rcDrawRect.top,
 				iDamageType,
-				sDamageRef);
+				sDamageRef,
+                rgbText);
 
 		rcDrawRect.top += Medium.GetHeight();
 
@@ -1078,7 +1079,8 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 				rcDrawRect.top,
 				iLevel,
 				iHP,
-				iDamageAdj);
+				iDamageAdj,
+                rgbText);
 
 		rcDrawRect.top += cyHeight;
 
@@ -1123,7 +1125,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	rcDrawRect.top += cyHeight;
 	}
 
-void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj) const
+void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText) const
 
 //	PaintReferenceDamageAdj
 //
@@ -1137,7 +1139,6 @@ void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int i
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &Small = VI.GetFont(fontSmall);
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
-	CG32bitPixel rgbColorRef = VI.GetColor(colorTextHighlight);
 
 	//	Must have positive HP
 
@@ -1239,7 +1240,7 @@ void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int i
 		Dest.DrawText(x,
 				y + cyOffset,
 				TheFont,
-				rgbColorRef,
+				rgbText,
 				sStat,
 				0,
 				&x);
@@ -1248,7 +1249,7 @@ void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int i
 		}
 	}
 
-void CUIHelper::PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef) const
+void CUIHelper::PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText) const
 
 //	PaintReferenceDamageType
 //
@@ -1257,7 +1258,6 @@ void CUIHelper::PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int 
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
-	CG32bitPixel rgbColorRef = VI.GetColor(colorTextHighlight);
 
 	//	Paint the icon first
 
@@ -1274,7 +1274,7 @@ void CUIHelper::PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int 
 	Dest.DrawText(x,
 			y,
 			Medium,
-			rgbColorRef,
+			rgbText,
 			sRef,
 			0);
 	}

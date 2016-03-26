@@ -17,21 +17,53 @@ enum EHUDTypes
 	hudCount =						4,
 	};
 
+class CDockScreenVisuals
+    {
+    public:
+		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
+        ALERROR Bind (SDesignLoadCtx &Ctx);
+        inline const CObjectImageArray &GetBackground (void) const { return m_Background; }
+        inline const CObjectImageArray &GetContentMask (void) const { return m_ContentMask; }
+        inline CG32bitPixel GetTextBackgroundColor (void) const { return m_rgbTextBackground; }
+        inline CG32bitPixel GetTextColor (void) const { return m_rgbText; }
+        inline CG32bitPixel GetTitleBackgroundColor (void) const { return m_rgbTitleBackground; }
+        inline CG32bitPixel GetTitleTextColor (void) const { return m_rgbTitleText; }
+        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+        void MarkImages (void) const;
+
+        static CDockScreenVisuals &GetDefault (void);
+
+    private:
+        CObjectImageArray m_Background;     //  Background image for dock screen.
+        CObjectImageArray m_ContentMask;    //  Mask for content
+
+        CG32bitPixel m_rgbTitleBackground;  //  Color of title area background
+        CG32bitPixel m_rgbTitleText;        //  Color of title area text
+        CG32bitPixel m_rgbTextBackground;   //  Color of normal text backgrounds
+        CG32bitPixel m_rgbText;             //  Color of normal text
+
+        static CDockScreenVisuals m_Default;
+        static bool m_bDefaultInitialized;
+    };
+
 class CPlayerSettings
 	{
 	public:
-		CPlayerSettings (void)
+		CPlayerSettings (void) :
+                m_pDockScreenDesc(NULL)
 			{ }
 
-		~CPlayerSettings (void) { CleanUp(); }
+        inline CPlayerSettings (const CPlayerSettings &Src) { Copy(Src); }
+		inline ~CPlayerSettings (void) { CleanUp(); }
 
-		CPlayerSettings &operator= (const CPlayerSettings &Source);
+        inline CPlayerSettings &operator= (const CPlayerSettings &Src) { CleanUp(); Copy(Src); return *this; }
 
-		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
+		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx, CShipClass *pClass);
-		CEffectCreator *FindEffectCreator (const CString &sUNID);
+		CEffectCreator *FindEffectCreator (const CString &sUNID) const;
 		inline const CString &GetDesc (void) const { return m_sDesc; }
 		inline const CDockScreenTypeRef &GetDockServicesScreen (void) const { return m_pDockServicesScreen; }
+        inline const CDockScreenVisuals &GetDockScreenVisuals (void) const { return (m_pDockScreenDesc ? *m_pDockScreenDesc : CDockScreenVisuals::GetDefault()); }
 		inline CXMLElement *GetHUDDesc (EHUDTypes iType) const { ASSERT(iType >= 0 && iType < hudCount); return m_HUDDesc[iType].pDesc; }
 		inline const CCurrencyAndValue &GetHullValue (void) const { return m_HullValue; }
 		inline DWORD GetLargeImage (void) const { return m_dwLargeImage; }
@@ -44,27 +76,28 @@ class CPlayerSettings
 		inline const CString &GetStartingPos (void) const { return m_sStartPos; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
 		inline bool IsDebugOnly (void) const { return (m_fDebug ? true : false); }
-		inline bool IsHUDDescInherited (EHUDTypes iType) const { ASSERT(iType >= 0 && iType < hudCount); return m_HUDDesc[iType].bInherited;  }
 		inline bool IsIncludedInAllAdventures (void) const { return (m_fIncludeInAllAdventures ? true : false); }
 		inline bool IsInitialClass (void) const { return (m_fInitialClass ? true : false); }
+        inline bool IsResolved (void) const { return (m_fResolved ? true : false); }
+        inline void MarkImages (void) const { GetDockScreenVisuals().MarkImages(); }
 		void MergeFrom (const CPlayerSettings &Src);
+        void Resolve (const CPlayerSettings *pSrc);
 
 	private:
 		struct SHUDDesc
 			{
 			SHUDDesc (void) :
 					pDesc(NULL),
-					bFree(false),
-					bInherited(false)
+					bOwned(false)
 				{ }
 
 			CXMLElement *pDesc;						//	HUD descriptor
-			bool bFree;								//	If TRUE, we need to free this on exit
-			bool bInherited;						//	If TRUE, we inherited this from a base class
+			bool bOwned;							//	If TRUE, we own this element
 			};
 
 		void CleanUp (void);
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError);
+        void Copy (const CPlayerSettings &Src);
 
 		CString m_sDesc;							//	Description
 		DWORD m_dwLargeImage;						//	UNID of large image
@@ -80,15 +113,16 @@ class CPlayerSettings
 		CDockScreenTypeRef m_pShipConfigScreen;		//	Screen used to show ship configuration (may be NULL)
 		CCurrencyAndValue m_HullValue;				//	Value of hull alone (excluding any devices/armor)
 
-		//	HUD descriptors
+		//	UI Elements
+        CDockScreenVisuals *m_pDockScreenDesc;
 		SHUDDesc m_HUDDesc[hudCount];
 
 		//	Flags
 		DWORD m_fInitialClass:1;					//	Use ship class at game start
 		DWORD m_fDebug:1;							//	Debug only
 		DWORD m_fIncludeInAllAdventures:1;			//	TRUE if we should always include this ship
-		DWORD m_fSpare4:1;
-		DWORD m_fSpare5:1;
+        DWORD m_fOwnDockScreenDesc:1;               //  TRUE if we own m_pDockScreenVisuals element
+		DWORD m_fResolved:1;                        //  TRUE if we have resolved all inheritance
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

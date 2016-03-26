@@ -878,6 +878,65 @@ ALERROR CObjectImageArray::Init (CG32bitImage *pBitmap, const RECT &rcImage, int
 	return NOERROR;
 	}
 
+ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow)
+
+//  Init
+//
+//  Create from parameters
+
+    {
+	CleanUp();
+
+	//	Initialize basic info
+
+	m_dwBitmapUNID = dwBitmapUNID;
+
+    //  Get the actual image, if we want it now
+
+    if (bResolveNow)
+        {
+        m_pImage = g_pUniverse->FindLibraryImage(m_dwBitmapUNID);
+
+        //  We assume the RECT is the entire bitmap
+
+        CG32bitImage *pImage = (m_pImage ? m_pImage->GetImage(CONSTLIT("CObjectImageArray::Init")) : NULL);
+        m_rcImage.left = 0;
+        m_rcImage.top = 0;
+        if (pImage)
+            {
+            m_rcImage.right = pImage->GetWidth();
+            m_rcImage.bottom = pImage->GetHeight();
+            }
+        else
+            {
+            m_rcImage.right = 0;
+            m_rcImage.bottom = 0;
+            }
+        }
+    else
+        {
+        m_rcImage.left = 0;
+        m_rcImage.top = 0;
+        m_rcImage.right = 0;
+        m_rcImage.bottom = 0;
+        }
+
+    //  Initialize the rest
+
+	m_iFrameCount = iFrameCount;
+	m_iRotationCount = STD_ROTATION_COUNT;
+	m_iFramesPerColumn = m_iRotationCount;
+	m_iFramesPerRow = iFrameCount;
+	m_iTicksPerFrame = iTicksPerFrame;
+	m_iFlashTicks = 0;
+	m_iRotationOffset = 0;
+	m_pRotationOffset = NULL;
+	m_iBlending = blendNormal;
+	m_iViewportSize = RectWidth(m_rcImage);
+
+	return NOERROR;
+    }
+
 ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame)
 
 //	Init
@@ -1053,7 +1112,7 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 	return NOERROR;
 	}
 
-void CObjectImageArray::MarkImage (void)
+void CObjectImageArray::MarkImage (void) const
 
 //	MarkImage
 //
@@ -1105,6 +1164,20 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 			Ctx.sError = strPatternSubst(CONSTLIT("Unknown image: %x"), m_dwBitmapUNID);
 			return ERR_FAIL;
 			}
+
+        //  If we don't have a RECT, initialize it now that we have the image
+
+        if (m_rcImage.right == 0 && m_rcImage.bottom == 0)
+            {
+            CG32bitImage *pImage = m_pImage->GetImage(CONSTLIT("Resolve image size"));
+            if (pImage)
+                {
+                m_rcImage.right = pImage->GetWidth();
+                m_rcImage.bottom = pImage->GetHeight();
+
+            	m_iViewportSize = RectWidth(m_rcImage);
+                }
+            }
 		}
 
 	return NOERROR;
