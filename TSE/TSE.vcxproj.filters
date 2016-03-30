@@ -149,6 +149,9 @@
     <ClInclude Include="..\Include\TSEImages.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEArmor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -920,6 +923,9 @@
       <Filter>Source Files\Items</Filter>
     </ClCompile>
     <ClCompile Include="CDockScreenVisuals.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorSystem.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
   </ItemGroup>

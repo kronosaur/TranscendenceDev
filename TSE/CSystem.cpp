@@ -393,6 +393,9 @@
 //  127: 1.7 Alpha 2
 //      Removed saving drive desc UNID for CShip
 //
+//  128: 1.7 Alpha 2
+//      Added m_iHealerLeft to CShip
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

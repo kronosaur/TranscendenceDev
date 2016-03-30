@@ -40,6 +40,7 @@
 #define SHIELD_INTERFERENCE_ATTRIB				CONSTLIT("shieldInterference")
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
 #define UNID_ATTRIB								CONSTLIT("unid")
+#define HEALER_REGEN_ATTRIB 					CONSTLIT("useHealerToRegen")
 
 #define GET_MAX_HP_EVENT						CONSTLIT("GetMaxHP")
 #define ON_ARMOR_DAMAGE_EVENT					CONSTLIT("OnArmorDamage")
@@ -1073,6 +1074,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_fShieldInterference = pDesc->GetAttributeBool(SHIELD_INTERFERENCE_ATTRIB);
 	pArmor->m_fChargeRepair = pDesc->GetAttributeBool(CHARGE_REGEN_ATTRIB);
 	pArmor->m_fChargeDecay = pDesc->GetAttributeBool(CHARGE_DECAY_ATTRIB);
+    pArmor->m_fHealerRepair = pDesc->GetAttributeBool(HEALER_REGEN_ATTRIB);
 
 	pArmor->m_iStealth = pDesc->GetAttributeInteger(STEALTH_ATTRIB);
 	if (pArmor->m_iStealth == 0)
@@ -1775,7 +1777,10 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 //	Updates the armor. This should be called once every 10 ticks
 
 	{
-	DEBUG_TRY
+    DEBUG_TRY
+
+    ASSERT(pArmor);
+    ASSERT(pObj);
 
 	int i;
 	bool bModified = false;
@@ -1798,8 +1803,10 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 
 		//	If we require charges, then we're limited to the charges we have
 
-		if (m_fChargeRepair)
-			iHPNeeded = Min(iHPNeeded, pArmor->GetCharges(pObj));
+        if (m_fChargeRepair)
+            iHPNeeded = Min(iHPNeeded, pArmor->GetCharges(pObj));
+        else if (m_fHealerRepair && pObj->GetArmorSystem())
+            iHPNeeded = Min(iHPNeeded, pObj->GetArmorSystem()->GetHealerLeft());
 
 		//	Regen
 
@@ -1841,8 +1848,10 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 				{
 				//	If we require charges to regen, then consume charges
 
-				if (m_fChargeRepair)
-					pArmor->IncCharges(pObj, -iHP);
+                if (m_fChargeRepair)
+                    pArmor->IncCharges(pObj, -iHP);
+                else if (m_fHealerRepair && pObj->GetArmorSystem())
+                    pObj->GetArmorSystem()->IncHealerLeft(-iHP);
 
 				pArmor->IncHitPoints(iHP);
 				pArmor->SetConsumePower(true);

@@ -65,6 +65,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
 #define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
 #define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
+#define PROPERTY_HEALER_LEFT        			CONSTLIT("healerLeft")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
 #define PROPERTY_MAX_INTERIOR_HP				CONSTLIT("maxInteriorHP")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
@@ -1424,29 +1425,12 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Initialize the armor from the class
 
-	pShip->m_Armor.InsertEmpty(pClass->GetHullSectionCount());
-	for (i = 0; i < pClass->GetHullSectionCount(); i++)
-		{
-        const CShipArmorSegmentDesc &Sect = pClass->GetHullSection(i);
+    pShip->m_Armor.Install(pShip, pClass->GetArmorDesc(), true);
 
-		//	Add item
+	//	Remember if we need to call OnInstall for this item
+	//	(All armor needs this)
 
-        CItem ArmorItem;
-        if (!Sect.CreateArmorItem(&ArmorItem, &sError))
-            pShip->ReportCreateError(sError);
-
-		ShipItems.AddItem(ArmorItem);
-
-		//	Install
-
-		CInstalledArmor &ArmorSect = pShip->m_Armor[i];
-		ArmorSect.Install(pShip, ShipItems, i, true);
-
-		//	Remember if we need to call OnInstall for this item
-		//	(All armor needs this)
-
-		bInstallItemEvent = true;
-		}
+	bInstallItemEvent = true;
 
 	pShip->OnComponentChanged(comCargo);
 	pShip->CalcArmorBonus();
@@ -2478,8 +2462,8 @@ int CShip::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pW
 	CInstalledDevice *pShields = GetNamedDevice(devShields);
 	if (pShields && GetShieldLevel() > 0)
 		return pShields->GetDamageEffectiveness(pAttacker, pWeapon);
-	else if (m_Armor.GetCount() > 0)
-		return m_Armor[0].GetDamageEffectiveness(pAttacker, pWeapon);
+	else if (m_Armor.GetSegmentCount() > 0)
+		return m_Armor.GetSegment(0).GetDamageEffectiveness(pAttacker, pWeapon);
 	else
 		return 100;
 	}
@@ -2889,8 +2873,11 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_DOCKING_ENABLED))
 		return CC.CreateBool(SupportsDocking(true));
 
-	else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
-		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
+    else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
+        return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
+
+    else if (strEquals(sName, PROPERTY_HEALER_LEFT))
+        return CC.CreateInteger(m_Armor.GetHealerLeft());
 
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
 		{
@@ -4813,8 +4800,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_iLastHitTime
 //	DWORD		flags
 //
-//	DWORD		Number of armor structs
-//	CInstalledArmor
+//	CArmorSystem m_Armor
 //
 //	DWORD		m_iStealth
 //
@@ -4977,11 +4963,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load armor
 
-	DWORD dwCount;
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
-	m_Armor.InsertEmpty(dwCount);
-	for (i = 0; i < (int)dwCount; i++)
-		m_Armor[i].ReadFromStream(this, i, Ctx);
+    m_Armor.ReadFromStream(Ctx, this);
 
 	//	Stealth
 
@@ -5780,11 +5762,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_iLastHitTime
 //	DWORD		flags
 //
-//	DWORD		Number of armor structs
-//	DWORD		armor: class UNID
-//	DWORD		armor: hit points
-//	DWORD		armor: mods
-//	DWORD		armor: flags
+//  CArmorSystem m_Armor
 //
 //	DWORD		m_iStealth
 //
@@ -5875,13 +5853,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	//	Armor
 
-	dwSave = GetArmorSectionCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	for (i = 0; i < GetArmorSectionCount(); i++)
-		{
-		CInstalledArmor *pArmor = GetArmorSection(i);
-		pArmor->WriteToStream(pStream);
-		}
+    m_Armor.WriteToStream(pStream);
 
 	//	Stealth
 
@@ -7039,6 +7011,12 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		m_fDockingDisabled = pValue->IsNil();
 		return true;
 		}
+    else if (strEquals(sName, PROPERTY_HEALER_LEFT))
+        {
+        m_Armor.SetHealerLeft(pValue->GetIntegerValue());
+        return true;
+        }
+
 	else if (strEquals(sName, PROPERTY_INTERIOR_HP))
 		{
 		m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), pValue->GetIntegerValue());

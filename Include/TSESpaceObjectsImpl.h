@@ -830,8 +830,8 @@ class CShip : public CSpaceObject
 		inline DWORD GetCurrentOrderData (void) { return m_pController->GetCurrentOrderData(); }
 
 		//	Armor methods
-		inline CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor[iSect]; }
-		inline int GetArmorSectionCount (void) { return m_Armor.GetCount(); }
+		inline CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor.GetSegment(iSect); }
+		inline int GetArmorSectionCount (void) { return m_Armor.GetSegmentCount(); }
 		int DamageArmor (int iSect, DamageDesc &Damage);
 		void InstallItemAsArmor (CItemListManipulator &ItemList, int iSect);
 		bool IsArmorDamaged (int iSect);
@@ -961,6 +961,7 @@ class CShip : public CSpaceObject
 		virtual AbilityStatus GetAbility (Abilities iAbility) override;
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
+		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
 		virtual CurrencyValue GetBalance (DWORD dwEconomyUNID) override;
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual Metric GetCargoSpaceLeft (void) override;
@@ -1137,7 +1138,7 @@ class CShip : public CSpaceObject
 		DWORD m_dwNameFlags;					//	Name flags
 		CString m_sMapLabel;					//	Map label
 
-		TArray<CInstalledArmor> m_Armor;		//	Array of CInstalledArmor
+		CArmorSystem m_Armor;		            //	Array of CInstalledArmor
 		int m_iDeviceCount;						//	Number of devices
 		CInstalledDevice *m_Devices;			//	Array of devices
 		int m_NamedDevices[devNamesCount];

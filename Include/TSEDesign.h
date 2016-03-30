@@ -1413,49 +1413,7 @@ class CCommunicationsHandler
 
 #include "TSEItems.h"
 #include "TSEShipSystems.h"
-
-class CInstalledArmor
-	{
-	public:
-		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
-		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
-        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
-		inline bool ConsumedPower (void) const { return (m_fConsumePower ? true : false); }
-		void FinishInstall (CSpaceObject *pSource);
-		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
-		inline CArmorClass *GetClass (void) const { return m_pArmorClass; }
-		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
-		inline int GetHitPoints (void) const { return m_iHitPoints; }
-        inline int GetLevel (void) const;
-		inline int GetMaxHP (CSpaceObject *pSource);
-		inline const CItemEnhancement &GetMods (void) { return m_pItem->GetMods(); }
-		inline int GetSect (void) const { return m_iSect; }
-		int IncCharges (CSpaceObject *pSource, int iChange);
-		inline int IncHitPoints (int iChange) { m_iHitPoints += iChange; return m_iHitPoints; }
-		void Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
-		inline bool IsComplete (void) const { return (m_fComplete ? true : false); }
-		inline bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
-		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
-		inline void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }
-		inline void SetPrime (CSpaceObject *pSource, bool bPrime = true) { m_fPrimeSegment = bPrime; }
-		inline void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
-		inline void SetSect (int iSect) { m_iSect = iSect; }
-		void ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx &Ctx);
-		void WriteToStream (IWriteStream *pStream);
-
-	private:
-		CItem *m_pItem;								//	Item
-		CArmorClass *m_pArmorClass;					//	Armor class used
-		int m_iHitPoints;							//	Hit points left
-
-		int m_iSect:16;								//	Armor section
-		int m_iSpare:16;
-
-		DWORD m_fComplete:1;						//	All armor segments the same
-		DWORD m_fPrimeSegment:1;					//	Prime segment for all segments of the same type.
-		DWORD m_fConsumePower:1;					//	If TRUE, we should consume power this tick
-		DWORD m_fSpare:29;
-	};
+#include "TSEArmor.h"
 
 //	IItemGenerator -------------------------------------------------------------
 
@@ -2412,6 +2370,7 @@ class CShipClass : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
 		CString GenerateShipName (DWORD *retdwFlags);
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
+        inline const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
 		inline int GetCargoSpace (void) { return m_iCargoSpace; }
 		inline CGenericType *GetCharacter (void) { return m_Character; }
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }

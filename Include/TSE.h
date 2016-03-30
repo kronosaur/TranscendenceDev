@@ -2726,6 +2726,7 @@ class CSpaceObject : public CObject
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
+		virtual CArmorSystem *GetArmorSystem (void) { return NULL; }
 		virtual CurrencyValue GetBalance (DWORD dwEconomyUNID) { return 0; }
 		virtual Metric GetCargoSpaceLeft (void) { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
