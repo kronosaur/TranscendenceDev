@@ -169,10 +169,6 @@
 
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
-#define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
-#define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
-#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
-#define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
@@ -2061,7 +2057,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_DRIVE_POWER))
 		*retsValue = strFromInt(m_Perf.GetDriveDesc().GetPowerUse());
 
-	else if (CReactorClass::FindDataField(m_ReactorDesc, sField, retsValue))
+	else if (m_ReactorDesc.FindDataField(sField, retsValue))
 		return true;
 	else
 		return CDesignType::FindDataField(sField, retsValue);
@@ -3581,9 +3577,12 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
+    CDeviceClass *pDevice;
+    ICCItem *pResult;
 
 	if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? CC.CreateInteger(m_pDefaultSovereign.GetUNID()) : CC.CreateNil());
+
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return CC.CreateInteger(GetMaxStructuralHitPoints());
 
@@ -3603,22 +3602,13 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	//	Reactor properties
 
-	else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY)
-			|| strEquals(sProperty, PROPERTY_FUEL_CRITERIA)
-			|| strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY)
-			|| strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY_BONUS)
-			|| strEquals(sProperty, PROPERTY_POWER))
-		{
-		CDeviceClass *pDevice = m_AverageDevices.GetNamedDevice(devReactor);
-		if (pDevice)
-			{
-			CItem ReactorItem(pDevice->GetItemType(), 1);
-			CItemCtx ItemCtx(ReactorItem);
-			return pDevice->GetItemProperty(ItemCtx, sProperty);
-			}
-        else
-            return GetReactorDesc()->FindProperty(sProperty);
-		}
+    else if ((pDevice = m_AverageDevices.GetNamedDevice(devReactor))
+            && (pResult = pDevice->FindItemProperty(CItemCtx(CItem(pDevice->GetItemType(), 1)), sProperty)))
+        return pResult;
+
+    else if (pResult = GetReactorDesc()->FindProperty(sProperty))
+        return pResult;
+
 	else
 		return NULL;
 	}

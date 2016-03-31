@@ -972,9 +972,9 @@ int CShieldClass::GetHPLeft (CItemCtx &Ctx)
 	return Max(0, (int)pDevice->GetData());
 	}
 
-ICCItem *CShieldClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
+ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
-//	GetItemProperty
+//	FindItemProperty
 //
 //	Returns a property
 
@@ -999,7 +999,7 @@ ICCItem *CShieldClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	//	Otherwise, just get the property from the base class
 
 	else
-		return CDeviceClass::GetItemProperty(Ctx, sName);
+		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
 int CShieldClass::GetMaxHP (CItemCtx &Ctx)

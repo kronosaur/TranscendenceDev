@@ -61,10 +61,8 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
-#define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
-#define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
-#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
-#define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
+#define PROPERTY_FUEL_LEFT      				CONSTLIT("fuelLeft")
+#define PROPERTY_FUEL_LEFT_EXACT				CONSTLIT("fuelLeftExact")
 #define PROPERTY_HEALER_LEFT        			CONSTLIT("healerLeft")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
 #define PROPERTY_MAX_INTERIOR_HP				CONSTLIT("maxInteriorHP")
@@ -2788,6 +2786,8 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	{
 	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
+    ICCItem *pResult;
+    CInstalledDevice *pReactor;
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
@@ -2890,6 +2890,12 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
 		}
+
+    else if (strEquals(sName, PROPERTY_FUEL_LEFT))
+        return CC.CreateInteger(mathRound(GetFuelLeft() / FUEL_UNITS_PER_STD_ROD));
+
+    else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
+        return CC.CreateDouble(GetFuelLeft());
 
 	else if (strEquals(sName, PROPERTY_INTERIOR_HP))
 		{
@@ -3011,27 +3017,13 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	//	Reactor properties
 
-	else if (strEquals(sName, PROPERTY_FUEL_CAPACITY)
-			|| strEquals(sName, PROPERTY_FUEL_CRITERIA)
-			|| strEquals(sName, PROPERTY_FUEL_EFFICIENCY)
-			|| strEquals(sName, PROPERTY_FUEL_EFFICIENCY_BONUS)
-			|| strEquals(sName, PROPERTY_POWER))
-		{
-		CInstalledDevice *pReactor = GetNamedDevice(devReactor);
-		if (pReactor)
-			{
-			CItemCtx ItemCtx(this, pReactor);
-			return pReactor->GetClass()->GetItemProperty(ItemCtx, sName);
-			}
-        else
-            {
-            ICCItem *pResult = m_pClass->GetReactorDesc()->FindProperty(sName);
-            if (pResult)
-                return pResult;
-            else
-                return CC.CreateNil();
-            }
-		}
+    else if ((pReactor = GetNamedDevice(devReactor))
+            && (pResult = pReactor->GetClass()->FindItemProperty(CItemCtx(this, pReactor), sName)))
+        return pResult;
+
+    else if (pResult = m_pClass->GetReactorDesc()->FindProperty(sName))
+        return pResult;
+
 	else
 		return CSpaceObject::GetProperty(Ctx, sName);
 	}
@@ -7011,6 +7003,18 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		m_fDockingDisabled = pValue->IsNil();
 		return true;
 		}
+    else if (strEquals(sName, PROPERTY_FUEL_LEFT))
+        {
+        m_rFuelLeft = Max(0.0, Min(pValue->GetIntegerValue() * FUEL_UNITS_PER_STD_ROD, GetMaxFuel()));
+        return true;
+        }
+
+    else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
+        {
+        m_rFuelLeft = Max(0.0, Min(pValue->GetDoubleValue(), GetMaxFuel()));
+        return true;
+        }
+
     else if (strEquals(sName, PROPERTY_HEALER_LEFT))
         {
         m_Armor.SetHealerLeft(pValue->GetIntegerValue());

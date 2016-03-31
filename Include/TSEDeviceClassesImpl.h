@@ -13,10 +13,10 @@ class CAutoDefenseClass : public CDeviceClass
 		//	CDeviceClass virtuals
 
 		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
-		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
 		virtual bool IsAutomatedWeapon (void) override { return true; }
@@ -131,7 +131,7 @@ class CDriveClass : public CDeviceClass
 
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatDrive; }
-		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
@@ -246,15 +246,14 @@ class CReactorClass : public CDeviceClass
         ~CReactorClass (void);
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
-		static bool FindDataField (const CReactorDesc &Desc, const CString &sField, CString *retsValue);
         static const CReactorDesc *GetReactorDescForItem (CItemCtx &ItemCtx);
 
 		//	CDeviceClass virtuals
 
 		virtual bool CanBeDisabled (CItemCtx &Ctx) override { return false; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatReactor; }
-		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) override;
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) override { return GetReactorDesc(Ctx)->IsFuelCompatible(FuelItem); }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
@@ -344,8 +343,8 @@ class CShieldClass : public CDeviceClass
 		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatShields; }
-		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const override;
@@ -559,8 +558,8 @@ class CWeaponClass : public CDeviceClass
 		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) override;
 		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const override;
+        virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
-        virtual ICCItem *GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
 		virtual int GetAmmoVariant (const CItemType *pItem) const override;
 		virtual ItemCategories GetImplCategory (void) const override;
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) override;
@@ -573,9 +572,9 @@ class CWeaponClass : public CDeviceClass
 
 		virtual bool FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) override;
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
-		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) override;
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;

@@ -263,7 +263,10 @@ Metric CDeviceClass::GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo
 //  Wrapper around properties that discard ICCItem appropriately.
     
     {
-    ICCItem *pValue = GetAmmoItemProperty(Ctx, Ammo, sProperty); 
+    ICCItem *pValue = FindAmmoItemProperty(Ctx, Ammo, sProperty); 
+    if (pValue == NULL)
+        return 0.0;
+
     Metric rValue = pValue->GetDoubleValue(); 
     pValue->Discard(&g_pUniverse->GetCC());
     return rValue; 
@@ -409,6 +412,71 @@ bool CDeviceClass::FindAmmoDataField (CItemType *pItem, const CString &sField, C
 	return false;
 	}
 
+ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
+
+//	FindItemProperty
+//
+//	Returns the item property. Subclasses should call this if they do not
+//	understand the property.
+//
+//  We return NULL if the property is not found. Otherwise, the caller is 
+//  responsible for freeing.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+    CString sFieldValue;
+
+	//	Get the device
+
+	CInstalledDevice *pDevice = Ctx.GetDevice();
+
+	//	Get the property
+
+    if (strEquals(sName, PROPERTY_CAN_BE_DISABLED))
+        return (pDevice ? CC.CreateBool(pDevice->CanBeDisabled(Ctx)) : CC.CreateBool(CanBeDisabled(Ctx)));
+
+    else if (strEquals(sName, PROPERTY_ENABLED))
+        return (pDevice ? CC.CreateBool(pDevice->IsEnabled()) : CC.CreateNil());
+
+    else if (strEquals(sName, PROPERTY_POS))
+        {
+        if (pDevice == NULL)
+            return CC.CreateNil();
+
+        //	Create a list
+
+        ICCItem *pResult = CC.CreateLinkedList();
+        if (pResult->IsError())
+            return pResult;
+
+        CCLinkedList *pList = (CCLinkedList *)pResult;
+
+        //	List contains angle, radius, and optional z
+
+        pList->AppendInteger(CC, pDevice->GetPosAngle());
+        pList->AppendInteger(CC, pDevice->GetPosRadius());
+        if (pDevice->GetPosZ() != 0)
+            pList->AppendInteger(CC, pDevice->GetPosZ());
+
+        //	Done
+
+        return pResult;
+        }
+
+    else if (strEquals(sName, PROPERTY_POWER))
+        return CC.CreateInteger(GetPowerRating(Ctx) * 100);
+
+    else if (strEquals(sName, PROPERTY_SECONDARY))
+        return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());
+
+    else if (m_pItemType
+            && m_pItemType->FindDataField(sName, &sFieldValue))
+        return CreateResultFromDataField(CC, sFieldValue);
+
+    else
+        return NULL;
+	}
+
 bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, int *retiVariant, CWeaponFireDesc **retpDesc)
 
 //	FindWeaponFor
@@ -507,63 +575,17 @@ ItemCategories CDeviceClass::GetItemCategory (DeviceNames iDev)
 
 ICCItem *CDeviceClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
-//	GetItemProperty
+//  GetItemProperty
 //
-//	Returns the item property. Subclasses should call this if they do not
-//	understand the property.
-
-	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
-	//	Get the device
-
-	CInstalledDevice *pDevice = Ctx.GetDevice();
-
-	//	Get the property
-
-	if (strEquals(sName, PROPERTY_CAN_BE_DISABLED))
-		return (pDevice ? CC.CreateBool(pDevice->CanBeDisabled(Ctx)) : CC.CreateBool(CanBeDisabled(Ctx)));
-
-	else if (strEquals(sName, PROPERTY_ENABLED))
-		return (pDevice ? CC.CreateBool(pDevice->IsEnabled()) : CC.CreateNil());
-
-	else if (strEquals(sName, PROPERTY_POS))
-		{
-		if (pDevice == NULL)
-			return CC.CreateNil();
-
-		//	Create a list
-
-		ICCItem *pResult = CC.CreateLinkedList();
-		if (pResult->IsError())
-			return pResult;
-
-		CCLinkedList *pList = (CCLinkedList *)pResult;
-
-		//	List contains angle, radius, and optional z
-
-		pList->AppendInteger(CC, pDevice->GetPosAngle());
-		pList->AppendInteger(CC, pDevice->GetPosRadius());
-		if (pDevice->GetPosZ() != 0)
-			pList->AppendInteger(CC, pDevice->GetPosZ());
-
-		//	Done
-
-		return pResult;
-		}
-
-	else if (strEquals(sName, PROPERTY_POWER))
-		return CC.CreateInteger(GetPowerRating(Ctx) * 100);
-
-	else if (strEquals(sName, PROPERTY_SECONDARY))
-		return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());
-
-	else if (m_pItemType)
-		return CreateResultFromDataField(CC, m_pItemType->GetDataField(sName));
-
-	else
-		return CC.CreateNil();
-	}
+//  Returns a property. Caller must free the result.
+    
+    {
+    ICCItem *pResult;
+    if (pResult = FindItemProperty(Ctx, sName))
+        return pResult;
+    else
+        return g_pUniverse->GetCC().CreateNil();
+    }
 
 CString CDeviceClass::GetLinkedFireOptionString (DWORD dwOptions)
 

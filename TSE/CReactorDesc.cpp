@@ -16,6 +16,7 @@
 #define REACTOR_POWER_ATTRIB					CONSTLIT("reactorPower")
 
 #define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
+#define PROPERTY_FUEL_CAPACITY_EXACT			CONSTLIT("fuelCapacityExact")
 #define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
 #define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
 #define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
@@ -111,6 +112,28 @@ void CReactorDesc::Copy (const CReactorDesc &Src)
 	m_fFreeFuelCriteria = (m_pFuelCriteria != NULL);
     }
 
+bool CReactorDesc::FindDataField (const CString &sField, CString *retsValue) const
+
+//  FindDataField
+//
+//  Returns a data field, for backwards compatibility. New code should call
+//  FindProperty.
+
+    {
+    if (strEquals(sField, PROPERTY_POWER))
+        *retsValue = strFromInt(GetMaxPower() * 100);
+    else if (strEquals(sField, PROPERTY_FUEL_CRITERIA))
+        *retsValue = GetFuelCriteriaString();
+	else if (strEquals(sField, PROPERTY_FUEL_EFFICIENCY))
+		*retsValue = strFromInt((int)GetEfficiency());
+	else if (strEquals(sField, PROPERTY_FUEL_CAPACITY))
+		*retsValue = strFromInt((int)(GetFuelCapacity() / FUEL_UNITS_PER_STD_ROD));
+	else
+		return false;
+
+	return true;
+    }
+
 ICCItem *CReactorDesc::FindProperty (const CString &sProperty) const
 
 //  FindProperty
@@ -132,13 +155,17 @@ ICCItem *CReactorDesc::FindProperty (const CString &sProperty) const
 			return CC.CreateString(strPatternSubst(CONSTLIT("f L:%d-%d;"), m_iMinFuelLevel, m_iMaxFuelLevel));
 		}
 	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY))
-		return CC.CreateInteger((int)m_rPowerPerFuelUnit);
+		return CC.CreateInteger(mathRound(m_rPowerPerFuelUnit));
 
 	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY_BONUS))
 		return CC.CreateInteger(GetEfficiencyBonus());
 
     else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY))
-        return CC.CreateInteger((int)(m_rMaxFuel / FUEL_UNITS_PER_STD_ROD));
+        return CC.CreateInteger(mathRound(m_rMaxFuel / FUEL_UNITS_PER_STD_ROD));
+
+    else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY_EXACT))
+        return CC.CreateDouble(m_rMaxFuel);
+
     else
         return NULL;
     }

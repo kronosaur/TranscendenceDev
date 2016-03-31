@@ -246,9 +246,9 @@ const CDriveClass::SScalableStats *CDriveClass::GetDesc (CItemCtx &Ctx) const
 		return &m_pDesc[iIndex];
 	}
 
-ICCItem *CDriveClass::GetItemProperty (CItemCtx &Ctx, const CString &sProperty)
+ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
 
-//	GetItemProperty
+//	FindItemProperty
 //
 //	Returns the item property. Subclasses should call this if they do not
 //	understand the property.
@@ -257,7 +257,7 @@ ICCItem *CDriveClass::GetItemProperty (CItemCtx &Ctx, const CString &sProperty)
 	CCodeChain &CC = g_pUniverse->GetCC();
 	const SScalableStats *pDesc = GetDesc(Ctx);
     if (pDesc == NULL)
-        return CC.CreateNil();
+        return CDeviceClass::FindItemProperty(Ctx, sProperty);
 
 	if (strEquals(sProperty, PROPERTY_MAX_SPEED))
 		return CC.CreateInteger((int)((100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
@@ -272,7 +272,7 @@ ICCItem *CDriveClass::GetItemProperty (CItemCtx &Ctx, const CString &sProperty)
 	//	Otherwise, just get the property from the base class
 
 	else
-		return CDeviceClass::GetItemProperty(Ctx, sProperty);
+		return CDeviceClass::FindItemProperty(Ctx, sProperty);
 	}
 
 int CDriveClass::GetPowerRating (CItemCtx &Ctx) const

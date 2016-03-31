@@ -66,9 +66,9 @@ DamageTypes CAutoDefenseClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) 
 		return damageGeneric;
 	}
 
-ICCItem *CAutoDefenseClass::GetItemProperty (CItemCtx &Ctx, const CString &sProperty)
+ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
 
-//	GetItemProperty
+//	FindItemProperty
 //
 //	Returns the item property. Subclasses should call this if they do not
 //	understand the property.
@@ -101,7 +101,7 @@ ICCItem *CAutoDefenseClass::GetItemProperty (CItemCtx &Ctx, const CString &sProp
 		CItem Weapon(pWeapon->GetItemType(), 1);
 		CItemCtx WeaponCtx(Weapon);
 
-		return pWeapon->GetItemProperty(WeaponCtx, sProperty);
+		return pWeapon->FindItemProperty(WeaponCtx, sProperty);
 		}
 	}
 

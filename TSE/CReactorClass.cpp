@@ -4,12 +4,6 @@
 
 #include "PreComp.h"
 
-#define PROPERTY_FUEL_CAPACITY					CONSTLIT("fuelCapacity")
-#define PROPERTY_FUEL_CRITERIA					CONSTLIT("fuelCriteria")
-#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
-#define PROPERTY_FUEL_EFFICIENCY_BONUS			CONSTLIT("fuelEfficiencyBonus")
-#define PROPERTY_POWER							CONSTLIT("power")
-
 CReactorClass::CReactorClass (void) :
         m_pDesc(NULL),
         m_pDamagedDesc(NULL),
@@ -79,27 +73,6 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
 	return NOERROR;
 	}
 
-bool CReactorClass::FindDataField (const CReactorDesc &Desc, const CString &sField, CString *retsValue)
-
-//	FindDataField
-//
-//	Finds a data field for the reactor desc.
-
-	{
-    if (strEquals(sField, PROPERTY_POWER))
-        *retsValue = strFromInt(Desc.GetMaxPower() * 100);
-    else if (strEquals(sField, PROPERTY_FUEL_CRITERIA))
-        *retsValue = Desc.GetFuelCriteriaString();
-	else if (strEquals(sField, PROPERTY_FUEL_EFFICIENCY))
-		*retsValue = strFromInt((int)Desc.GetEfficiency());
-	else if (strEquals(sField, PROPERTY_FUEL_CAPACITY))
-		*retsValue = strFromInt((int)(Desc.GetFuelCapacity() / FUEL_UNITS_PER_STD_ROD));
-	else
-		return false;
-
-	return true;
-	}
-
 bool CReactorClass::FindDataField (const CString &sField, CString *retsValue)
 
 //	FindDataField
@@ -107,12 +80,12 @@ bool CReactorClass::FindDataField (const CString &sField, CString *retsValue)
 //	Returns meta-data
 
 	{
-	return FindDataField(m_pDesc[0], sField, retsValue);
+	return m_pDesc[0].FindDataField(sField, retsValue);
 	}
 
-ICCItem *CReactorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
+ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
-//	GetItemProperty
+//	FindItemProperty
 //
 //	Returns the item property. Subclasses should call this if they do not
 //	understand the property.
@@ -128,7 +101,7 @@ ICCItem *CReactorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	//	Otherwise, just get the property from the base class
 
 	else
-		return CDeviceClass::GetItemProperty(Ctx, sName);
+		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
 const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx)

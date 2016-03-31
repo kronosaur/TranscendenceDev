@@ -389,6 +389,7 @@ class CReactorDesc
 
         int AdjMaxPower (Metric rAdj);
         Metric AdjEfficiency (Metric rAdj);
+        bool FindDataField (const CString &sField, CString *retsValue) const;
         ICCItem *FindProperty (const CString &sProperty) const;
         inline Metric GetEfficiency (void) const { return m_rPowerPerFuelUnit; }
         int GetEfficiencyBonus (void) const;
@@ -494,6 +495,7 @@ class CDeviceClass
 		inline CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		int GetInstallCost (CItemCtx &ItemCtx);
+        ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		inline int GetLevel (void) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
@@ -522,9 +524,10 @@ class CDeviceClass
 		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
 		virtual bool FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const { return false; }
+        virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) { return CDeviceClass::FindItemProperty(Ctx, sProperty); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName);
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
-        virtual ICCItem *GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) { return CDeviceClass::GetItemProperty(Ctx, sProperty); }
 		virtual int GetAmmoVariant (const CItemType *pItem) const { return -1; }
 		virtual int GetCargoSpace (void) { return 0; }
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) { return 0; }
@@ -533,7 +536,6 @@ class CDeviceClass
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
 		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const { return 0; }
 		virtual bool GetDeviceEnhancementDesc (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return false; }
-		virtual ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }

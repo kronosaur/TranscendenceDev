@@ -2531,7 +2531,6 @@ class CShipClass : public CDesignType
 		void FindBestMissile (CDeviceClass *pLauncher, const CItemList &Items, CItemType **retpMissile) const;
 		CString GetGenericName (DWORD *retdwFlags = NULL);
 		inline int GetManeuverDelay (void) const { return m_Perf.GetRotationDesc().GetManeuverDelay(); }
-		CPlayerSettings *GetPlayerSettingsInherited (void) const;
 		CStationType *GetWreckDesc (void);
 		void InitShipNamesIndices (void);
 		void PaintThrust (CG32bitImage &Dest, 

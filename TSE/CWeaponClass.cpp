@@ -2155,9 +2155,9 @@ int CWeaponClass::GetAmmoItemCount (void) const
         return m_ShotData.GetCount();
     }
 
-ICCItem *CWeaponClass::GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty)
+ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty)
 
-//  GetAmmoItemProperty
+//  FindAmmoItemProperty
 //
 //  Returns a property of the weapon when the given ammo item is selected.
 
@@ -2168,7 +2168,7 @@ ICCItem *CWeaponClass::GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, co
 
 	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx, Ammo);
 	if (pShot == NULL)
-		return CC.CreateNil();
+		return CDeviceClass::FindAmmoItemProperty(Ctx, Ammo, sProperty);
 
 	//	Enhancements
 
@@ -2368,16 +2368,20 @@ ICCItem *CWeaponClass::GetAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, co
 	else if (Ctx.GetItem().GetType() && Ctx.GetItem().GetType()->IsMissile())
 		{
 		CString sValue;
-		if (FindAmmoDataField(Ctx.GetItem(), sProperty, &sValue))
-			return CreateResultFromDataField(CC, sValue);
+        if (FindAmmoDataField(Ctx.GetItem(), sProperty, &sValue))
+            return CreateResultFromDataField(CC, sValue);
 
-		return CreateResultFromDataField(CC, Ctx.GetItem().GetType()->GetDataField(sProperty));
+        else if (Ctx.GetItem().GetType()->FindDataField(sProperty, &sValue))
+            return CreateResultFromDataField(CC, sValue);
+
+        else
+            return NULL;
 		}
 
 	//	Otherwise, just get the property from the base class
 
 	else
-		return CDeviceClass::GetAmmoItemProperty(Ctx, Ammo, sProperty);
+		return CDeviceClass::FindAmmoItemProperty(Ctx, Ammo, sProperty);
     }
 
 int CWeaponClass::GetAmmoVariant (const CItemType *pItem) const
@@ -2502,9 +2506,9 @@ int CWeaponClass::GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *
 		return AngleMiddle(m_iMinFireArc, m_iMaxFireArc);
 	}
 
-ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
+ICCItem *CWeaponClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
-//	GetItemProperty
+//	FindItemProperty
 //
 //	Returns the item property. Subclasses should call this if they do not
 //	understand the property.
@@ -2520,7 +2524,7 @@ ICCItem *CWeaponClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	//	Get the property
 
-    return GetAmmoItemProperty(Ctx, Ammo, sProperty);
+    return FindAmmoItemProperty(Ctx, Ammo, sProperty);
 	}
 
 Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
