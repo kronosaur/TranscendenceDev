@@ -2430,10 +2430,10 @@ class CShipClass : public CDesignType
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
         void InitPerformance (SShipPerformanceCtx &Ctx) const;
 		void InstallEquipment (CShip *pShip);
-		inline bool IsDebugOnly (void) const { return (m_pPlayerSettings && m_pPlayerSettings->IsDebugOnly()); }
-		inline bool IsIncludedInAllAdventures (void) { return (m_pPlayerSettings && m_pPlayerSettings->IsIncludedInAllAdventures()); }
-		inline bool IsPlayerShip (void) { return (m_pPlayerSettings != NULL); }
-		inline bool IsShownAtNewGame (void) { return (m_pPlayerSettings && m_pPlayerSettings->IsInitialClass() && !IsVirtual()); }
+        inline bool IsDebugOnly (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsDebugOnly()); }
+		inline bool IsIncludedInAllAdventures (void) { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsIncludedInAllAdventures()); }
+		inline bool IsPlayerShip (void) { return (GetPlayerSettings() != NULL); }
+		inline bool IsShownAtNewGame (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsInitialClass() && !IsVirtual()); }
 		inline bool IsTimeStopImmune (void) { return (m_fTimeStopImmune ? true : false); }
 		void MarkImages (bool bMarkDevices);
 		void Paint (CG32bitImage &Dest, 
