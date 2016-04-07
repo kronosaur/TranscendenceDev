@@ -125,6 +125,7 @@ class ICCItem : public CObject
 		virtual ICCItem *GetElement (int iIndex) = 0;
 		virtual ICCItem *GetElement (const CString &sKey) { return NULL; }
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex);
+        virtual CString GetKey (int iIndex) { return NULL_STR; }
 		virtual ICCItem *Head (CCodeChain *pCC) = 0;
 		inline BOOL IsList (void) { return IsNil() || !IsAtom(); }
 		virtual ICCItem *Tail (CCodeChain *pCC) = 0;
@@ -696,8 +697,6 @@ class CCSymbolTable : public ICCList
 	public:
 		CCSymbolTable (void);
 
-		inline CString GetKey (int iIndex) { return m_Symbols.GetKey(iIndex); }
-
 		//	LATER: These are deprecated. Should remove them (and replace callers with SetAt versions).
 
 		inline void SetIntegerValue (CCodeChain &CC, const CString &sKey, int iValue) { SetIntegerAt(CC, sKey, iValue); }
@@ -722,6 +721,7 @@ class CCSymbolTable : public ICCList
 		virtual ICCItem *GetElement (int iIndex);
 		virtual ICCItem *GetElement (const CString &sKey);
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex);
+        virtual CString GetKey (int iIndex) { return m_Symbols.GetKey(iIndex); }
 		virtual ICCItem *Head (CCodeChain *pCC) { return GetElement(0); }
 		virtual ICCItem *Tail (CCodeChain *pCC) { return GetElement(1); }
 

@@ -1596,6 +1596,8 @@ int mathSeededRandom (int iSeed, int iFrom, int iTo);
 void mathSetSeed (DWORD dwSeed);
 int mathSqrt (int x);
 
+#include "TMath.h"
+
 //	Compression functions
 
 void CompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput);

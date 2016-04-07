@@ -736,6 +736,7 @@
     <ClInclude Include="..\Include\Lingua.h" />
     <ClInclude Include="..\Include\TArray.h" />
     <ClInclude Include="..\Include\TMap.h" />
+    <ClInclude Include="..\Include\TMath.h" />
     <ClInclude Include="..\Include\TQueue.h" />
     <ClInclude Include="..\Include\TStack.h" />
     <ClInclude Include="..\Include\Zip.h" />
