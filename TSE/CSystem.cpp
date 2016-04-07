@@ -396,6 +396,12 @@
 //  128: 1.7 Alpha 2
 //      Added m_iHealerLeft to CShip
 //
+//  129: 1.7 Alpha 2
+//      Added m_rFuelConsumed to CPlayerGameStats
+//
+//  130: 1.7 Alpha 2
+//      Replaced symbol table in CAttributeDataBlock
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

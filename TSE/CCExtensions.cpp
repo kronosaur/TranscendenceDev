@@ -30,6 +30,7 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_CURRENCY					1
 #define FN_NAME						2
+#define FN_NUMBER                   3
 
 ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -824,6 +825,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"fmtNoun",						fnFormat,		FN_NAME,
 			"(fmtNoun name nameFlags count formatFlags) -> string",
 			"siii",	0, },
+
+		{	"fmtNumber",					fnFormat,		FN_NUMBER,
+			"(fmtNumber value) -> string",
+			"v",	0, },
 
 		{	"rollDice",						fnRollDice,		0,
 			"(rollDice count sides bonus)",
@@ -3458,29 +3463,12 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_DESIGN_INC_GLOBAL_DATA:
 			{
-			//	Get parameters
-
 			CString sAttrib = pArgs->GetElement(1)->GetStringValue();
-			int iInc = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : 1);
+            ICCItem *pValue = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
 
-			//	Get the current value
-
-			ICCItem *pValue = pCC->Link(pType->GetGlobalData(sAttrib), 0, NULL);
-			if (pValue->IsError())
-				return pValue;
-
-			//	Compose the new value
-
-			ICCItem *pNewValue = pCC->CreateInteger(pValue->GetIntegerValue() + iInc);
-			pValue->Discard(pCC);
-
-			//	Save back
-
-			pType->SetGlobalData(sAttrib, pCC->Unlink(pNewValue));
-
-			//	Done
-
-			return pNewValue;
+            ICCItem *pResult;
+            pType->IncGlobalData(sAttrib, pValue, &pResult);
+            return pResult;
 			}
 
 		case FN_DESIGN_MARK_IMAGES:
@@ -3630,6 +3618,12 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			return pCC->CreateString(::ComposeNounPhrase(sName, iCount, NULL_STR, dwNameFlags, dwFlags));
 			}
+
+        case FN_NUMBER:
+            {
+            ICCItem *pValue = pArgs->GetElement(0);
+            return pCC->CreateString(strFormatInteger(pValue->GetIntegerValue(), -1, FORMAT_THOUSAND_SEPARATOR));
+            }
 
 		default:
 			ASSERT(false);
@@ -4476,42 +4470,20 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_OBJ_INCREMENT_DATA:
 			{
-			//	Figure out how much to increment
-
-			int iIncrement;
-			if (pArgs->GetCount() > 2)
-				iIncrement = pArgs->GetElement(2)->GetIntegerValue();
-			else
-				iIncrement = 1;
-
-			pArgs->Discard(pCC);
-
-			//	Get the current value and increment
-
-			CString sData = pObj->GetData(sAttrib);
-
 			//	For backwards compatibility we reroute rin
 
-			if (sData.IsBlank() && pObj->IsPlayer() && strEquals(sAttrib, CONSTLIT("rins")))
+            if (pObj->GetData(sAttrib).IsBlank() && pObj->IsPlayer() && strEquals(sAttrib, CONSTLIT("rins")))
 				{
+			    int iIncrement = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : 1);
 				pResult = pCC->CreateInteger((int)CEconomyType::RinHackInc(pObj, iIncrement));
-				break;
 				}
 
-			//	Otherwise, we proceed
+            //  Increment
 
-			ICCItem *pValue = pCC->Link(sData, 0, NULL);
+            else
+                pObj->IncData(sAttrib, (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), &pResult);
 
-			//	Create the result
-
-			ICCItem *pNewValue = pCC->CreateInteger(pValue->GetIntegerValue() + iIncrement);
-			CString sNewData = pCC->Unlink(pNewValue);
-			pObj->SetData(sAttrib, sNewData);
-
-			//	Done
-
-			pValue->Discard(pCC);
-			pResult = pNewValue;
+			pArgs->Discard(pCC);
 			break;
 			}
 
@@ -5741,27 +5713,13 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
 			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
 
-			//	Get the current value and increment
+            COverlayList *pOverlays = pObj->GetOverlays();
+            if (pOverlays == NULL)
+                return pCC->CreateNil();
 
-			CString sData = pObj->GetOverlayData(dwID, sAttrib);
-			ICCItem *pValue = pCC->Link(sData, 0, NULL);
-			int iIncrement;
-
-			if (pArgs->GetCount() > 3)
-				iIncrement = pArgs->GetElement(3)->GetIntegerValue();
-			else
-				iIncrement = 1;
-
-			//	Create the result
-
-			ICCItem *pNewValue = pCC->CreateInteger(pValue->GetIntegerValue() + iIncrement);
-			CString sNewData = pCC->Unlink(pNewValue);
-			pObj->SetOverlayData(dwID, sAttrib, sNewData);
-
-			//	Done
-
-			pValue->Discard(pCC);
-			return pNewValue;
+            ICCItem *pResult;
+            pOverlays->IncData(dwID, sAttrib, (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL), &pResult);
+            return pResult;
 			}
 
 		case FN_OBJ_IS_ANGRY_AT:

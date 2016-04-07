@@ -8,7 +8,6 @@
 #define ID_ATTRIB								CONSTLIT("id")
 
 CAttributeDataBlock::CAttributeDataBlock (void) :
-		m_pData(NULL),
 		m_pObjRefData(NULL)
 
 //	CAttributeDataBlock constructor
@@ -17,7 +16,6 @@ CAttributeDataBlock::CAttributeDataBlock (void) :
 	}
 
 CAttributeDataBlock::CAttributeDataBlock (const CAttributeDataBlock &Src) :
-		m_pData(NULL),
 		m_pObjRefData(NULL)
 
 //	CAttributeDataBlock constructor
@@ -50,12 +48,17 @@ void CAttributeDataBlock::CleanUp (void)
 //	Destroy all entries
 
 	{
-	if (m_pData)
-		{
-		delete m_pData;
-		m_pData = NULL;
-		}
+    m_Data.DeleteAll();
+    CleanUpObjRefs();
+	}
 
+void CAttributeDataBlock::CleanUpObjRefs (void)
+
+//  CleanUpObjRefs
+//
+//  Clean up
+
+    {
 	SObjRefEntry *pNext = m_pObjRefData;
 	while (pNext)
 		{
@@ -65,7 +68,7 @@ void CAttributeDataBlock::CleanUp (void)
 		}
 
 	m_pObjRefData = NULL;
-	}
+    }
 
 void CAttributeDataBlock::Copy (const CAttributeDataBlock &Copy)
 
@@ -76,20 +79,54 @@ void CAttributeDataBlock::Copy (const CAttributeDataBlock &Copy)
 	{
 	CleanUp();
 
-	//	Copy data
+    m_Data = Copy.m_Data;
+    CopyObjRefs(Copy.m_pObjRefData);
+	}
 
-	if (Copy.m_pData)
-		{
-		CString sSave;
-		CObject::Flatten(Copy.m_pData, &sSave);
+void CAttributeDataBlock::Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options)
 
-		if (!sSave.IsBlank())
-			CObject::Unflatten(sSave, (CObject **)&m_pData);
-		}
+//  Copy
+//
+//  Copies selectively
 
-	//	Copy object references
+    {
+    int i;
 
-	SObjRefEntry *pSrcNext = Copy.m_pObjRefData;
+    //  Transfer data from source appropriately
+
+    for (i = 0; i < Src.m_Data.GetCount(); i++)
+        {
+        STransferDesc *pDesc = Options.GetAt(Src.m_Data.GetKey(i));
+        ETransferOptions iTrans = (pDesc ? pDesc->iOption : transCopy);
+
+        switch (iTrans)
+            {
+            case transCopy:
+                SetData(Src.m_Data.GetKey(i), Src.m_Data[i].sData);
+                break;
+
+            case transIgnore:
+                break;
+
+            default:
+                ASSERT(false);
+            }
+        }
+
+    //  Copy object references
+
+    CleanUpObjRefs();
+    CopyObjRefs(Src.m_pObjRefData);
+    }
+
+void CAttributeDataBlock::CopyObjRefs (SObjRefEntry *pSrc)
+
+//  CopyObjRefs
+//
+//  Copy object references
+
+    {
+    SObjRefEntry *pSrcNext = pSrc;
 	SObjRefEntry *pDest = NULL;
 	while (pSrcNext)
 		{
@@ -107,30 +144,23 @@ void CAttributeDataBlock::Copy (const CAttributeDataBlock &Copy)
 		pDest = pNew;
 		pSrcNext = pSrcNext->pNext;
 		}
-	}
+    }
 
-bool CAttributeDataBlock::FindData (const CString &sAttrib, const CString **retsData) const
+bool CAttributeDataBlock::FindData (const CString &sAttrib, const CString **retpData) const
 
 //	FindData
 //
 //	Finds string data
 
 	{
-	if (m_pData)
-		{
-		CString *pData;
-		if (m_pData->Lookup(sAttrib, (CObject **)&pData) == NOERROR)
-			{
-			if (retsData)
-				*retsData = pData;
+    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+    if (pEntry == NULL)
+        return false;
 
-			return true;
-			}
-		else
-			return false;
-		}
-	else
-		return false;
+    if (retpData)
+        *retpData = &pEntry->sData;
+
+    return !pEntry->sData.IsBlank();
 	}
 
 bool CAttributeDataBlock::FindObjRefData (CSpaceObject *pObj, CString *retsAttrib) const
@@ -162,16 +192,11 @@ const CString &CAttributeDataBlock::GetData (const CString &sAttrib) const
 //	Returns string data associated with attribute
 
 	{
-	if (m_pData)
-		{
-		CString *pData;
-		if (m_pData->Lookup(sAttrib, (CObject **)&pData) == NOERROR)
-			return *pData;
-		else
-			return NULL_STR;
-		}
-	else
-		return NULL_STR;
+    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+    if (pEntry == NULL)
+        return NULL_STR;
+
+    return pEntry->sData;
 	}
 
 CSpaceObject *CAttributeDataBlock::GetObjRefData (const CString &sAttrib) const
@@ -198,6 +223,60 @@ CSpaceObject *CAttributeDataBlock::GetObjRefData (const CString &sAttrib) const
 	return NULL;
 	}
 
+void CAttributeDataBlock::IncData (const CString &sAttrib, ICCItem *pValue, ICCItem **retpNewValue)
+
+//  IncData
+//
+//  Increments the given attribute, handling both integer and double values,
+//  and optionally returning the new value (which must be discarded by the
+//  caller).
+
+    {
+    CCodeChain &CC = g_pUniverse->GetCC();
+    SDataEntry *pEntry = m_Data.SetAt(sAttrib);
+
+    //  If pValue is NULL, we default to 1. We add ref no matter what so that
+    //  we can discard unconditionally.
+
+    if (pValue == NULL)
+        pValue = CC.CreateInteger(1);
+    else
+        pValue->Reference();
+
+    //  If the entry is currently blank, then we just take the increment.
+
+    ICCItem *pResult = NULL;
+    if (pEntry->sData.IsBlank())
+        pResult = pValue->Reference();
+
+    //  Otherwise, we need to get the data value
+
+    else
+        {
+		ICCItem *pOriginal = CC.Link(pEntry->sData, 0, NULL);
+
+        if (pOriginal->IsDouble() || pValue->IsDouble())
+            pResult = CC.CreateDouble(pOriginal->GetDoubleValue() + pValue->GetDoubleValue());
+        else
+            pResult = CC.CreateInteger(pOriginal->GetIntegerValue() + pValue->GetIntegerValue());
+
+        pOriginal->Discard(&CC);
+        }
+
+    //  Store
+
+	pEntry->sData = CC.Unlink(pResult);
+
+    //  Done
+
+    if (retpNewValue)
+        *retpNewValue = pResult;
+    else
+        pResult->Discard(&CC);
+
+    pValue->Discard(&CC);
+    }
+
 bool CAttributeDataBlock::IsEqual (const CAttributeDataBlock &Src)
 
 //	IsEqual
@@ -207,25 +286,19 @@ bool CAttributeDataBlock::IsEqual (const CAttributeDataBlock &Src)
 	{
 	int i;
 
-	if ((m_pData == NULL) != (Src.m_pData == NULL))
+	if (m_Data.GetCount() != Src.m_Data.GetCount())
 		return false;
 
-	if (m_pData)
+	for (i = 0; i < m_Data.GetCount(); i++)
 		{
-		if (m_pData->GetCount() != Src.m_pData->GetCount())
+		if (!strEquals(m_Data.GetKey(i), Src.m_Data.GetKey(i)))
 			return false;
 
-		for (i = 0; i < m_pData->GetCount(); i++)
-			{
-			if (!strEquals(m_pData->GetKey(i), Src.m_pData->GetKey(i)))
-				return false;
+        const SDataEntry &DestEntry = m_Data[i];
+        const SDataEntry &SrcEntry = Src.m_Data[i];
 
-			CString *pDest = (CString *)m_pData->GetValue(i);
-			CString *pSrc = (CString *)Src.m_pData->GetValue(i);
-
-			if (!strEquals(*pDest, *pSrc))
-				return false;
-			}
+		if (!strEquals(DestEntry.sData, SrcEntry.sData))
+			return false;
 		}
 
 	SObjRefEntry *pDest = m_pObjRefData;
@@ -288,13 +361,10 @@ void CAttributeDataBlock::MergeFrom (const CAttributeDataBlock &Src)
 
 	//	Plain data
 
-	if (Src.m_pData)
+	for (i = 0; i < Src.m_Data.GetCount(); i++)
 		{
-		for (i = 0; i < Src.m_pData->GetCount(); i++)
-			{
-			CString *pValue = (CString *)Src.m_pData->GetValue(i);
-			SetData(Src.m_pData->GetKey(i), *pValue);
-			}
+        const SDataEntry &Entry = Src.m_Data[i];
+		SetData(Src.m_Data.GetKey(i), Entry.sData);
 		}
 
 	//	Object reference
@@ -345,36 +415,94 @@ void CAttributeDataBlock::OnSystemChanged (CSystem *pSystem)
 		}
 	}
 
+void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
+
+//  ReadDataEntries
+//
+//  Read the m_Data table.
+
+    {
+    int i;
+
+	//	Load the sentinel string, which is either "ADB" or a flattened table
+    //  (for the old version).
+
+    CString sData;
+    sData.ReadFromStream(pStream);
+
+    //  If this is empty, then we've got no data.
+
+    if (sData.IsBlank())
+        { }
+
+    //  If this is the sentinel string, then we have the new format
+
+    else if (strEquals(sData, CONSTLIT("ADB")))
+        {
+        DWORD dwCount;
+    	pStream->Read((char *)&dwCount, sizeof(DWORD));
+        for (i = 0; i < (int)dwCount; i++)
+            {
+            CString sKey;
+            sKey.ReadFromStream(pStream);
+            SDataEntry *pEntry = m_Data.SetAt(sKey);
+
+            pEntry->sData.ReadFromStream(pStream);
+            }
+        }
+
+    //  Otherwise, this is the old, backward compatible format.
+
+    else
+        {
+        CSymbolTable *pData = NULL;
+	    CObject::Unflatten(sData, (CObject **)&pData);
+        if (pData)
+            {
+            for (i = 0; i < pData->GetCount(); i++)
+                {
+                SDataEntry *pEntry = m_Data.SetAt(pData->GetKey(i));
+                CString *pDest = (CString *)pData->GetValue(i);
+                pEntry->sData = *pDest;
+                }
+
+            delete pData;
+            }
+        }
+    }
+
 void CAttributeDataBlock::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
 //
 //	Reads from a stream
 //
-//	CString		m_pData (flattened)
+//  CString     "ADB"
+//	DWORD       No of data entries
+//  CString     sKey
+//  CString     sData
 //
 //	DWORD		No of obj references
 //	CString		ref: name
 //	DWORD		ref: pointer (CSpaceObject ref)
 
 	{
+    int i;
+	DWORD dwCount;
+
 	DeleteAll();
 
 	//	Load the opaque data table
 
-	CString sData;
-	sData.ReadFromStream(Ctx.pStream);
-	if (!sData.IsBlank())
-		CObject::Unflatten(sData, (CObject **)&m_pData);
+    ReadDataEntries(Ctx.pStream);
 
 	//	Load object reference
 
-	DWORD dwCount;
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
 	if (dwCount)
 		{
 		SObjRefEntry *pPrev = NULL;
-		for (int i = 0; i < (int)dwCount; i++)
+		for (i = 0; i < (int)dwCount; i++)
 			{
 			SObjRefEntry *pEntry = new SObjRefEntry;
 			if (pPrev)
@@ -410,7 +538,9 @@ void CAttributeDataBlock::ReadFromStream (IReadStream *pStream)
 //
 //	Reads from a stream
 //
-//	CString		m_pData (flattened)
+//	DWORD       No of data entries
+//  CString     sKey
+//  CString     sData
 //
 //	DWORD		No of obj references
 //	CString		ref: name
@@ -421,10 +551,7 @@ void CAttributeDataBlock::ReadFromStream (IReadStream *pStream)
 
 	//	Load the opaque data table
 
-	CString sData;
-	sData.ReadFromStream(pStream);
-	if (!sData.IsBlank())
-		CObject::Unflatten(sData, (CObject **)&m_pData);
+    ReadDataEntries(pStream);
 
 	//	Load object reference (since we don't have a system,
 	//	we ignore all references)
@@ -453,11 +580,8 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, const CString &sData)
 //	Sets string data associated with attribute
 
 	{
-	if (m_pData == NULL)
-		m_pData = new CSymbolTable(TRUE, FALSE);
-
-	CString *pData = new CString(sData);
-	m_pData->ReplaceEntry(sAttrib, pData, TRUE, NULL);
+    SDataEntry *pEntry = m_Data.SetAt(sAttrib);
+    pEntry->sData = sData;
 	}
 
 void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
@@ -537,24 +661,47 @@ void CAttributeDataBlock::WriteToStream (IWriteStream *pStream, CSystem *pSystem
 //
 //	Write the object to a stream
 //
-//	CString		m_pData (flattened)
+//  CString     "ADB"
+//	DWORD       No of data entries
+//  CString     sKey
+//  CString     sData
 //
 //	DWORD		No of obj references
 //	CString		ref: name
 //	DWORD		ref: pointer (CSpaceObject ref)
 
 	{
-	//	Write out the opaque data
+    int i;
+    DWORD dwCount;
 
-	CString sSave;
-	if (m_pData)
-		CObject::Flatten(m_pData, &sSave);
-	sSave.WriteToStream(pStream);
+    //  If we have no data, we write out an empty string, which is valid
+    //  in both old and new formats.
+
+    if (m_Data.GetCount() == 0)
+        NULL_STR.WriteToStream(pStream);
+
+    //  Otherwise, we write out the new format
+
+    else
+        {
+        //  Write out a string to indicate that we're using the new  format.
+
+        CONSTLIT("ADB").WriteToStream(pStream);
+
+	    //	Write out the opaque data
+
+        dwCount = m_Data.GetCount();
+	    pStream->Write((char *)&dwCount, sizeof(DWORD));
+        for (i = 0; i < m_Data.GetCount(); i++)
+            {
+            m_Data.GetKey(i).WriteToStream(pStream);
+            m_Data[i].sData.WriteToStream(pStream);
+            }
+        }
 
 	//	Write out object references
 
-	DWORD dwCount = 0;
-
+	dwCount = 0;
 	if (pSystem)
 		{
 		SObjRefEntry *pEntry = m_pObjRefData;

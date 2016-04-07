@@ -459,6 +459,7 @@ class CDesignType
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty() || (m_pInheritFrom && m_pInheritFrom->HasEvents()); }
 		inline bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
+        inline void IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_GlobalData.IncData(sAttrib, pValue, retpNewValue); }
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
 		inline bool IsClone (void) const { return m_bIsClone; }
 		inline bool IsModification (void) const { return m_bIsModification; }
@@ -2039,7 +2040,7 @@ class CItemCtx
 		inline int GetVariant (void) const { return m_iVariant; }
 		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
         inline const CItem &GetVariantItem (void) const { return m_Variant; }
-		inline bool IsItemNull (void) const { return (m_pItem == NULL || m_pItem->GetType() == NULL); }
+        inline bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
         bool IsDeviceEnabled (void);
 		bool ResolveVariant (void);
         inline void SetVariantItem (const CItem &Item) { m_Variant = Item; }

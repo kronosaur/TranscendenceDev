@@ -2316,8 +2316,23 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 
     else if (strEquals(sName, PROPERTY_LEVEL))
         {
+        //  If this is armor, then we remember the current damaged state and
+        //  carry that forward to the new level.
+
+        CInstalledArmor *pArmor;
+        int iArmorIntegrity;
+        if (pArmor = Ctx.GetArmor())
+            iArmorIntegrity = mathPercent(pArmor->GetHitPoints(), Ctx.GetArmorClass()->GetMaxHP(Ctx));
+
+        //  Set the level
+
         if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
             return false;
+
+        //  Set armor HP
+
+        if (pArmor)
+            pArmor->SetHitPoints(mathAdjust(Ctx.GetArmorClass()->GetMaxHP(Ctx), iArmorIntegrity));
 
         return true;
         }

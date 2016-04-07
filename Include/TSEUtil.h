@@ -166,7 +166,7 @@ inline void DebugStopTimer (char *szTiming) { }
 const DWORD API_VERSION =								30;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
 const DWORD UNIVERSE_SAVE_VERSION =						27;
-const DWORD SYSTEM_SAVE_VERSION =						128;	//	See: CSystem.cpp
+const DWORD SYSTEM_SAVE_VERSION =						130;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{
@@ -435,20 +435,37 @@ class DiceRange
 class CAttributeDataBlock
 	{
 	public:
+        enum ETransferOptions
+            {
+            transCopy,
+            transIgnore,
+            };
+
+        struct STransferDesc
+            {
+            STransferDesc (void) :
+                    iOption(transCopy)
+                { }
+
+            ETransferOptions iOption;
+            };
+
 		CAttributeDataBlock (void);
 		CAttributeDataBlock (const CAttributeDataBlock &Src);
 		CAttributeDataBlock &operator= (const CAttributeDataBlock &Src);
 		~CAttributeDataBlock (void);
 
+		void Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options);
 		inline void DeleteAll (void) { CleanUp(); }
-		bool FindData (const CString &sAttrib, const CString **retsData = NULL) const;
+		bool FindData (const CString &sAttrib, const CString **retpData = NULL) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
 		const CString &GetData (const CString &sAttrib) const;
-        inline CString GetData (int iIndex) const { return (m_pData ? *(CString *)m_pData->GetValue(iIndex) : NULL_STR); }
-		inline CString GetDataAttrib (int iIndex) const { return (m_pData ? m_pData->GetKey(iIndex) : NULL_STR); }
-		inline int GetDataCount (void) const { return (m_pData ? m_pData->GetCount() : 0); }
+        inline const CString &GetData (int iIndex) const { return m_Data[iIndex].sData; }
+		inline const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
+		inline int GetDataCount (void) const { return m_Data.GetCount(); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
-		inline bool IsEmpty (void) const { return (m_pData == NULL && m_pObjRefData == NULL); }
+        void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL);
+		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
 		void LoadObjReferences (CSystem *pSystem);
 		void MergeFrom (const CAttributeDataBlock &Src);
@@ -462,6 +479,11 @@ class CAttributeDataBlock
 		void WriteToStream (IWriteStream *pStream, CSystem *pSystem = NULL);
 
 	private:
+        struct SDataEntry
+            {
+            CString sData;                  //  Serialized data
+            };
+
 		struct SObjRefEntry
 			{
 			CString sName;
@@ -472,10 +494,13 @@ class CAttributeDataBlock
 			};
 
 		void CleanUp (void);
+        void CleanUpObjRefs (void);
 		void Copy (const CAttributeDataBlock &Copy);
+        void CopyObjRefs (SObjRefEntry *pSrc);
 		bool IsXMLText (const CString &sData) const;
+        void ReadDataEntries (IReadStream *pStream);
 
-		CSymbolTable *m_pData;					//	Opaque string data
+        TSortMap<CString, SDataEntry> m_Data;
 		SObjRefEntry *m_pObjRefData;			//	Custom pointers to CSpaceObject *
 	};
 

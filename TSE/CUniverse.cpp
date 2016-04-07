@@ -2681,6 +2681,12 @@ void CUniverse::StartGame (bool bNewGame)
 
 		if (m_pPlayerShip)
 			{
+            //  Player entered ship
+
+            m_pPlayerShip->FireOnPlayerEnteredShip(NULL);
+
+            //  Player entered system
+
 			FireOnGlobalPlayerEnteredSystem();
 
 			//	Tell all objects that the player has entered the system

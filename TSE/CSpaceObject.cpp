@@ -45,6 +45,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_CREATE_ORDERS_EVENT					CONSTLIT("OnCreateOrders")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
+#define ON_DATA_TRANSFER_EVENT                  CONSTLIT("OnDataTransfer")
 #define ON_DESELECTED_EVENT						CONSTLIT("OnDeselected")
 #define ON_DESTROY_EVENT						CONSTLIT("OnDestroy")
 #define ON_DOCK_OBJ_ADJ_EVENT					CONSTLIT("OnDockObjAdj")
@@ -66,7 +67,9 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_MISSION_ACCEPTED_EVENT				CONSTLIT("OnMissionAccepted")
 #define ON_MISSION_COMPLETED_EVENT				CONSTLIT("OnMissionCompleted")
 #define ON_PLAYER_BLACKLISTED_EVENT				CONSTLIT("OnPlayerBlacklisted")
+#define ON_PLAYER_ENTERED_SHIP_EVENT			CONSTLIT("OnPlayerEnteredShip")
 #define ON_PLAYER_ENTERED_SYSTEM_EVENT			CONSTLIT("OnPlayerEnteredSystem")
+#define ON_PLAYER_LEFT_SHIP_EVENT				CONSTLIT("OnPlayerLeftShip")
 #define ON_PLAYER_LEFT_SYSTEM_EVENT				CONSTLIT("OnPlayerLeftSystem")
 #define ON_RANDOM_ENCOUNTER_EVENT				CONSTLIT("OnRandomEncounter")
 #define ON_SELECTED_EVENT						CONSTLIT("OnSelected")
@@ -842,7 +845,48 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
 //	change ships)
 
 	{
-	m_Data = pSource->m_Data;
+    int i;
+
+    //  Ask our object for a list of data fields that we DO NOT want to copy.
+    //  We only ask our class because it should be the only thing that stores
+    //  per-ship data. All other uses should store data in other places, such
+    //  as overlays, items, etc.
+    //
+    //  [The other exception is non-player ships, which often have event
+    //  handlers that store state, but those are not player ships.]
+
+	SEventHandlerDesc Event;
+    TSortMap<CString, CAttributeDataBlock::STransferDesc> Options;
+	if (FindEventHandler(ON_DATA_TRANSFER_EVENT, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SaveAndDefineSourceVar(this);
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_DATA_TRANSFER_EVENT, pResult);
+        else if (pResult->IsSymbolTable())
+            {
+            for (i = 0; i < pResult->GetCount(); i++)
+                {
+                CAttributeDataBlock::STransferDesc *pDesc = Options.SetAt(pResult->GetKey(i));
+                CString sOption = pResult->GetElement(i)->GetStringValue();
+                if (strEquals(sOption, CONSTLIT("ignore")))
+                    pDesc->iOption = CAttributeDataBlock::transIgnore;
+                else if (strEquals(sOption, CONSTLIT("copy")))
+                    pDesc->iOption = CAttributeDataBlock::transCopy;
+                else
+                	kernelDebugLogMessage(strPatternSubst(CONSTLIT("Unknown transfer option: %s"), sOption));
+                }
+            }
+
+		Ctx.Discard(pResult);
+		}
+
+    //  Copy
+
+    m_Data.Copy(pSource->m_Data, Options);
 	}
 
 void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
@@ -2742,6 +2786,32 @@ void CSpaceObject::FireOnPlayerBlacklisted (void)
 	m_SubscribedObjs.NotifyOnPlayerBlacklisted(this);
 	}
 
+void CSpaceObject::FireOnPlayerEnteredShip (CSpaceObject *pOldShip)
+
+//	FireOnPlayerEnteredShip
+//
+//	Fire OnPlayerEnteredShip event
+
+	{
+	SEventHandlerDesc Event;
+
+	//	Fire an event for ourselves
+
+	if (FindEventHandler(ON_PLAYER_ENTERED_SHIP_EVENT, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SaveAndDefineSourceVar(this);
+        Ctx.DefineSpaceObject(CONSTLIT("aOldShip"), pOldShip);
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_PLAYER_ENTERED_SHIP_EVENT, pResult);
+
+		Ctx.Discard(pResult);
+		}
+	}
+
 CSpaceObject::InterSystemResults CSpaceObject::FireOnPlayerEnteredSystem (CSpaceObject *pPlayer)
 
 //	FireOnPlayerEnteredSystem
@@ -2768,6 +2838,32 @@ CSpaceObject::InterSystemResults CSpaceObject::FireOnPlayerEnteredSystem (CSpace
 		}
 
 	return interNoAction;
+	}
+
+void CSpaceObject::FireOnPlayerLeftShip (CSpaceObject *pNewShip)
+
+//  FireOnPlayerLeftShip
+//
+//	Fire OnPlayerLeftShip event
+
+	{
+	SEventHandlerDesc Event;
+
+	//	Fire an event for ourselves
+
+	if (FindEventHandler(ON_PLAYER_LEFT_SHIP_EVENT, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SaveAndDefineSourceVar(this);
+        Ctx.DefineSpaceObject(CONSTLIT("aNewShip"), pNewShip);
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_PLAYER_LEFT_SHIP_EVENT, pResult);
+
+		Ctx.Discard(pResult);
+		}
 	}
 
 CSpaceObject::InterSystemResults CSpaceObject::FireOnPlayerLeftSystem (CSpaceObject *pPlayer, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate)

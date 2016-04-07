@@ -241,6 +241,7 @@ class IShipController
 		virtual void CancelDocking (void) { }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
+        virtual ICCItem *FindProperty (const CString &sProperty) { return NULL; }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
@@ -296,6 +297,7 @@ class IShipController
 		virtual void OnDocked (CSpaceObject *pObj) { }
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { }
+        virtual void OnFuelConsumed (Metric rFuel) { }
 		virtual void OnFuelLowWarning (int iSeq) { }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) { CancelDocking(); }
 		virtual void OnItemDamaged (const CItem &Item, int iHP) { }

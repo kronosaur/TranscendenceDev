@@ -442,6 +442,28 @@ int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 	return iBonus;
 	}
 
+void COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue, ICCItem **retpNewValue)
+
+//  IncData
+//
+//  Increment data
+
+    {
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (pField->GetID() == dwID && !pField->IsDestroyed())
+			return pField->IncData(sAttrib, pValue, retpNewValue);
+
+		pField = pField->GetNext();
+		}
+
+    //  If we get this far, then we couldn't find it, so we just return nil
+
+    if (retpNewValue)
+        *retpNewValue = g_pUniverse->GetCC().CreateNil();
+    }
+
 void COverlayList::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint

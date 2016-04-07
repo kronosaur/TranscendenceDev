@@ -1215,8 +1215,13 @@ void CShip::ConsumeFuel (Metric rFuel)
 //	Consumes some amount of fuel
 
 	{
-	if (m_fTrackFuel && !m_fOutOfFuel)
-		m_rFuelLeft = Max(0.0, m_rFuelLeft - rFuel);
+    if (m_fTrackFuel && !m_fOutOfFuel)
+        {
+        Metric rConsumed = Min(m_rFuelLeft, rFuel);
+
+        m_rFuelLeft -= rConsumed;
+        m_pController->OnFuelConsumed(rConsumed);
+        }
 	}
 
 ALERROR CShip::CreateFromClass (CSystem *pSystem, 
@@ -3022,6 +3027,11 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
         return pResult;
 
     else if (pResult = m_pClass->GetReactorDesc()->FindProperty(sName))
+        return pResult;
+
+    //  Controller properties
+
+    else if (pResult = m_pController->FindProperty(sName))
         return pResult;
 
 	else
