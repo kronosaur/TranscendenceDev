@@ -348,6 +348,7 @@ class CDesignTypeCriteria
 			{ return ((m_dwTypeSet & (1 << iType)) ? true : false); }
 		bool MatchesLevel (int iMinLevel, int iMaxLevel) const;
 		void ReadFromStream (SLoadCtx &Ctx);
+		inline bool StructuresOnly (void) const { return m_bStructuresOnly; }
 		void WriteToStream (IWriteStream *pStream);
 
 		static ALERROR ParseCriteria (const CString &sCriteria, CDesignTypeCriteria *retCriteria);
@@ -368,6 +369,7 @@ class CDesignTypeCriteria
 		int m_iLessThanLevel;
 
 		bool m_bIncludeVirtual;
+        bool m_bStructuresOnly;
 	};
 
 //	CDesignType

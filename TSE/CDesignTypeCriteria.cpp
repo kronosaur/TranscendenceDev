@@ -9,7 +9,8 @@ CDesignTypeCriteria::CDesignTypeCriteria (void) :
 		m_dwTypeSet(0),
 		m_iGreaterThanLevel(INVALID_COMPARE),
 		m_iLessThanLevel(INVALID_COMPARE),
-		m_bIncludeVirtual(false)
+		m_bIncludeVirtual(false),
+        m_bStructuresOnly(false)
 
 //	CDesignTypeCriteria constructor
 
@@ -63,7 +64,10 @@ CString CDesignTypeCriteria::AsString (void) const
 						break;
 
 					case designStationType:
-						Output.WriteChar(charStationType);
+                        if (m_bStructuresOnly)
+						    Output.WriteChar('T');
+                        else
+						    Output.WriteChar(charStationType);
 						break;
 
 					case designSovereign:
@@ -205,6 +209,7 @@ ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTyp
 	retCriteria->m_iGreaterThanLevel = INVALID_COMPARE;
 	retCriteria->m_iLessThanLevel = INVALID_COMPARE;
 	retCriteria->m_bIncludeVirtual = false;
+    retCriteria->m_bStructuresOnly = false;
 
 	//	Parse
 
@@ -334,6 +339,11 @@ ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTyp
 
 				break;
 				}
+
+            case 'T':
+                retCriteria->m_dwTypeSet |= (1 << designStationType);
+                retCriteria->m_bStructuresOnly = true;
+                break;
 
 			case 'V':
 				retCriteria->m_bIncludeVirtual = true;

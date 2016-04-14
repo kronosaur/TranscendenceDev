@@ -1797,6 +1797,14 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 	if (!Criteria.MatchesDesignType(GetType()))
 		return false;
 
+    //  If structures only, and this is a stationtype, then exclude stars/planets
+
+    CStationType *pStationType;
+    if (Criteria.StructuresOnly()
+            && (pStationType = CStationType::AsType(this))
+            && (pStationType->GetScale() == scaleStar || pStationType->GetScale() == scaleWorld))
+        return false;
+
 	//	Skip virtual
 
 	if (IsVirtual() && !Criteria.IncludesVirtual())
