@@ -277,7 +277,7 @@ void CDesignType::CreateClone (CDesignType **retpType)
 			pClone = new CShipClass;
 			break;
 
-		case designEnergyFieldType:
+		case designOverlayType:
 			pClone = new COverlayType;
 			break;
 

@@ -270,7 +270,7 @@ enum DesignTypes
 	designItemType =					0,
 	designItemTable =					1,
 	designShipClass =					2,
-	designEnergyFieldType =				3,
+	designOverlayType =				    3,
 	designSystemType =					4,
 	designStationType =					5,
 	designSovereign =					6,
@@ -303,7 +303,7 @@ enum DesignTypes
 	charEffectType =					'c',
 	charDockScreen =					'd',
 	charSpaceEnvironmentType =			'e',
-	charEnergyFieldType =				'f',
+	charOverlayType =				    'f',
 	charGlobals =						'g',
 	charShipTable =						'h',
 	charItemType =						'i',
@@ -343,7 +343,9 @@ class CDesignTypeCriteria
 		inline int GetRequiredAttribCount (void) const { return m_sRequire.GetCount(); }
 		inline const CString &GetRequiredSpecialAttrib (int iIndex) const { return m_sRequireSpecial[iIndex]; }
 		inline int GetRequiredSpecialAttribCount (void) const { return m_sRequireSpecial.GetCount(); }
+        inline void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
 		inline bool IncludesVirtual (void) const { return m_bIncludeVirtual; }
+        inline bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
 		inline bool MatchesDesignType (DesignTypes iType) const
 			{ return ((m_dwTypeSet & (1 << iType)) ? true : false); }
 		bool MatchesLevel (int iMinLevel, int iMaxLevel) const;
@@ -2806,9 +2808,9 @@ class COverlayType : public CDesignType
 		inline bool Spins (void) const { return m_fSpinShip; }
 
 		//	CDesignType overrides
-		static COverlayType *AsType(CDesignType *pType) { return ((pType && pType->GetType() == designEnergyFieldType) ? (COverlayType *)pType : NULL); }
+		static COverlayType *AsType(CDesignType *pType) { return ((pType && pType->GetType() == designOverlayType) ? (COverlayType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual DesignTypes GetType (void) const { return designEnergyFieldType; }
+		virtual DesignTypes GetType (void) const { return designOverlayType; }
 
 	protected:
 		//	CDesignType overrides

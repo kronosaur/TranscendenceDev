@@ -55,8 +55,8 @@ CString CDesignTypeCriteria::AsString (void) const
 						Output.WriteChar(charShipClass);
 						break;
 
-					case designEnergyFieldType:
-						Output.WriteChar(charEnergyFieldType);
+					case designOverlayType:
+						Output.WriteChar(charOverlayType);
 						break;
 
 					case designSystemType:
@@ -246,8 +246,8 @@ ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTyp
 				retCriteria->m_dwTypeSet |= (1 << designEconomyType);
 				break;
 
-			case charEnergyFieldType:
-				retCriteria->m_dwTypeSet |= (1 << designEnergyFieldType);
+			case charOverlayType:
+				retCriteria->m_dwTypeSet |= (1 << designOverlayType);
 				break;
 
 			case charGenericType:

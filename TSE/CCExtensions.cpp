@@ -1428,8 +1428,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	0,	},
 
 		{	"objGetOverlays",			fnObjGet,		FN_OBJ_GET_OVERLAYS,
-			"(objGetOverlays obj) -> list of overlayIDs",
-			"i",	0,	},
+			"(objGetOverlays obj [criteria]) -> list of overlayIDs",
+			"i*",	0,	},
 
 		{	"objGetOverlayType",			fnObjGet,		FN_OBJ_GET_OVERLAY_TYPE,
 			"(objGetOverlayType obj overlayID) -> type",
@@ -5537,27 +5537,46 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_OVERLAYS:
 			{
+            //  See if we have a criteria
+
+            CDesignTypeCriteria Criteria;
+            if (pArgs->GetCount() >= 2)
+                {
+                if (CDesignTypeCriteria::ParseCriteria(pArgs->GetElement(1)->GetStringValue(), &Criteria) != NOERROR)
+                    return pCC->CreateError(CONSTLIT("Invalid criteria"), pArgs->GetElement(1));
+
+                //  Make sure we include overlay types
+
+                Criteria.IncludeType(designOverlayType);
+                }
+
+            //  Get the list of overlays
+
 			TArray<COverlay *> List;
 			pObj->GetOverlayList(&List);
 
-			if (List.GetCount() == 0)
-				return pCC->CreateNil();
-			else
+            //  Generate result 
+
+            ICCItem *pResult = NULL;
+
+			for (int i = 0; i < List.GetCount(); i++)
 				{
-				ICCItem *pResult = pCC->CreateLinkedList();
-				if (pResult->IsError())
-					return pResult;
+                //  If we don't match the criteria, skip
 
-				CCLinkedList *pList = (CCLinkedList *)pResult;
-				for (int i = 0; i < List.GetCount(); i++)
-					{
-					ICCItem *pItem = pCC->CreateInteger(List[i]->GetID());
-					pList->Append(*pCC, pItem);
-					pItem->Discard(pCC);
-					}
+                if (!Criteria.IsEmpty() && !List[i]->GetType()->MatchesCriteria(Criteria))
+                    continue;
 
-				return pResult;
+                //  Create a list if necessary
+
+                if (pResult == NULL)
+                    pResult = pCC->CreateLinkedList();
+
+                //  Add to list
+
+                pResult->AppendInteger(*pCC, List[i]->GetID());
 				}
+
+            return (pResult ? pResult : pCC->CreateNil());
 			}
 
 		case FN_OBJ_GET_OVERLAY_TYPE:
