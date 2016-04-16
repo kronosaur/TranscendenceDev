@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define ANIMATE_OPACITY_ATTRIB			CONSTLIT("animateOpacity")
+#define BLEND_MODE_ATTRIB   			CONSTLIT("blendMode")
 #define INTENSITY_ATTRIB				CONSTLIT("intensity")
 #define LENGTH_ATTRIB					CONSTLIT("length")
 #define LIFETIME_ATTRIB					CONSTLIT("lifetime")
@@ -81,6 +82,103 @@ class CRayEffectPainter : public IEffectPainter
 		void PaintLightning (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 
+        template <class BLENDER> void PaintPixels (TArray<CGRasterize::SLinePixel> &Pixels, DWORD dwOpacity)
+            {
+            int i;
+
+	        //	Loop over all pixels and fill them in
+
+	        for (i = 0; i < Pixels.GetCount(); i++)
+		        {
+		        CGRasterize::SLinePixel &Pixel = Pixels[i];
+
+		        //	Scale v and w to map to our array sizes
+
+		        Metric rV = (m_iLengthCount * Pixel.rV);
+		        int v = (int)rV;
+
+		        //	If necessary, adjust the width of the ray
+
+		        if (m_WidthAdjTop.GetCount() > 0)
+			        {
+			        //	If this pixel is outside the width adjustment, then we skip it
+
+			        if (v < 0 || v >= m_iLengthCount)
+				        continue;
+
+			        //	Positive values are above
+
+			        else if (Pixel.rW > 0.0)
+				        {
+				        if (Pixel.rW > m_WidthAdjTop[v])
+					        continue;
+
+				        Pixel.rW = (m_WidthAdjTop[v] > 0.0 ? Pixel.rW / m_WidthAdjTop[v] : 0.0);
+				        }
+
+			        //	Otherwise, we use bottom adjustment
+
+			        else
+				        {
+				        if (-Pixel.rW > m_WidthAdjBottom[v])
+					        continue;
+
+				        Pixel.rW = (m_WidthAdjBottom[v] > 0.0 ? Pixel.rW / m_WidthAdjBottom[v] : 0.0);
+				        }
+			        }
+		        else
+			        v = Min(Max(0, v), m_iLengthCount - 1);
+
+		        //	Width adjustment touches Pixel.rW, so we need to do this afterwards.
+
+		        Metric rW = (m_iWidthCount * Absolute(Pixel.rW));
+		        int w = (int)rW;
+		        if (w < 0 || w >= m_iWidthCount)
+			        continue;
+
+		        //	Adjust opacity, if necessary
+
+		        if (m_OpacityMap.GetCount() == 1)
+			        Pixel.byAlpha = m_OpacityMap[0][w];
+
+		        else if (m_OpacityMap.GetCount() > 1)
+			        Pixel.byAlpha = m_OpacityMap[v][w];
+
+		        //	Compute color
+
+		        CG32bitPixel rgbColor;
+		        if (m_ColorMap.GetCount() == 1)
+			        {
+			        rgbColor = m_ColorMap[0][w];
+			        if (w > 0)
+				        {
+				        CG32bitPixel rgbAAColor = m_ColorMap[0][w - 1];
+				        rgbColor = CG32bitPixel::Blend(rgbAAColor, rgbColor, rW - (Metric)w);
+				        }
+			        }
+
+		        else if (m_ColorMap.GetCount() > 1)
+			        rgbColor = m_ColorMap[v][w];
+
+		        else
+			        rgbColor = m_rgbPrimaryColor;
+
+		        //	Apply opacity, if necessary
+
+                if (dwOpacity != 255)
+                    Pixel.byAlpha = CG32bitPixel::BlendAlpha(Pixel.byAlpha, (BYTE)dwOpacity);
+
+		        //	Draw
+
+                if (Pixel.byAlpha == 0x00)
+                    ;
+                else if (Pixel.byAlpha == 0xff)
+                    BLENDER::SetCopy(Pixel.pPos, rgbColor);
+                else
+                    BLENDER::SetBlendAlpha(Pixel.pPos, rgbColor, Pixel.byAlpha);
+		        }
+            }
+
 		CEffectCreator *m_pCreator;
 
 		int m_iLength;
@@ -90,6 +188,7 @@ class CRayEffectPainter : public IEffectPainter
 		int m_iIntensity;
 		CG32bitPixel m_rgbPrimaryColor;
 		CG32bitPixel m_rgbSecondaryColor;
+		CGDraw::EBlendModes m_iBlendMode;
 
 		int m_iXformRotation;
 
@@ -197,6 +296,7 @@ IEffectPainter *CRayEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 	//	Initialize the painter parameters
 
 	pPainter->SetParam(Ctx, ANIMATE_OPACITY_ATTRIB, m_AnimateOpacity);
+	pPainter->SetParam(Ctx, BLEND_MODE_ATTRIB, m_BlendMode);
 	pPainter->SetParam(Ctx, LENGTH_ATTRIB, m_Length);
 	pPainter->SetParam(Ctx, WIDTH_ATTRIB, m_Width);
 	pPainter->SetParam(Ctx, SHAPE_ATTRIB, m_Shape);
@@ -232,6 +332,9 @@ ALERROR CRayEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	ALERROR error;
 
 	if (error = m_AnimateOpacity.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(ANIMATE_OPACITY_ATTRIB), ANIMATION_TABLE))
+		return error;
+
+	if (error = m_BlendMode.InitBlendModeFromXML(Ctx, pDesc->GetAttribute(BLEND_MODE_ATTRIB)))
 		return error;
 
 	if (error = m_Length.InitIntegerFromXML(Ctx, pDesc->GetAttribute(LENGTH_ATTRIB)))
@@ -293,6 +396,7 @@ CRayEffectPainter::CRayEffectPainter (CEffectCreator *pCreator) :
 		m_iIntensity(50),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
 		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
+		m_iBlendMode(CGDraw::blendNormal),
 		m_iXformRotation(0),
 		m_iLifetime(0),
 		m_iOpacityAnimation(animateNone),
@@ -975,6 +1079,9 @@ void CRayEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 	if (strEquals(sParam, ANIMATE_OPACITY_ATTRIB))
 		retValue->InitInteger(m_iOpacityAnimation);
 
+	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
+		retValue->InitInteger(m_iBlendMode);
+
 	else if (strEquals(sParam, INTENSITY_ATTRIB))
 		retValue->InitInteger(m_iIntensity);
 
@@ -1014,17 +1121,18 @@ bool CRayEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(10);
+	retList->InsertEmpty(11);
 	retList->GetAt(0) = ANIMATE_OPACITY_ATTRIB;
-	retList->GetAt(1) = INTENSITY_ATTRIB;
-	retList->GetAt(2) = LENGTH_ATTRIB;
-	retList->GetAt(3) = LIFETIME_ATTRIB;
-	retList->GetAt(4) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(5) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(6) = SHAPE_ATTRIB;
-	retList->GetAt(7) = STYLE_ATTRIB;
-	retList->GetAt(8) = WIDTH_ATTRIB;
-	retList->GetAt(9) = XFORM_ROTATION_ATTRIB;
+	retList->GetAt(1) = BLEND_MODE_ATTRIB;
+	retList->GetAt(2) = INTENSITY_ATTRIB;
+	retList->GetAt(3) = LENGTH_ATTRIB;
+	retList->GetAt(4) = LIFETIME_ATTRIB;
+	retList->GetAt(5) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(6) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(7) = SHAPE_ATTRIB;
+	retList->GetAt(8) = STYLE_ATTRIB;
+	retList->GetAt(9) = WIDTH_ATTRIB;
+	retList->GetAt(10) = XFORM_ROTATION_ATTRIB;
 
 	return true;
 	}
@@ -1189,8 +1297,6 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	Rasterize the line
 
 	TArray<CGRasterize::SLinePixel> Pixels;
@@ -1219,99 +1325,26 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 	if (dwOpacity == 0)
 		return;
 
-	//	Loop over all pixels and fill them in
+    //  Paint based on blend mode
 
-	for (i = 0; i < Pixels.GetCount(); i++)
-		{
-		CGRasterize::SLinePixel &Pixel = Pixels[i];
+    switch (m_iBlendMode)
+        {
+        case CGDraw::blendNormal:
+            PaintPixels<CGBlendCopy>(Pixels, dwOpacity);
+            break;
 
-		//	Scale v and w to map to our array sizes
+        case CGDraw::blendHardLight:
+            PaintPixels<CGBlendHardLight>(Pixels, dwOpacity);
+            break;
 
-		Metric rV = (m_iLengthCount * Pixel.rV);
-		int v = (int)rV;
+        case CGDraw::blendScreen:
+            PaintPixels<CGBlendScreen>(Pixels, dwOpacity);
+            break;
 
-		//	If necessary, adjust the width of the ray
-
-		if (m_WidthAdjTop.GetCount() > 0)
-			{
-			//	If this pixel is outside the width adjustment, then we skip it
-
-			if (v < 0 || v >= m_iLengthCount)
-				continue;
-
-			//	Positive values are above
-
-			else if (Pixel.rW > 0.0)
-				{
-				if (Pixel.rW > m_WidthAdjTop[v])
-					continue;
-
-				Pixel.rW = (m_WidthAdjTop[v] > 0.0 ? Pixel.rW / m_WidthAdjTop[v] : 0.0);
-				}
-
-			//	Otherwise, we use bottom adjustment
-
-			else
-				{
-				if (-Pixel.rW > m_WidthAdjBottom[v])
-					continue;
-
-				Pixel.rW = (m_WidthAdjBottom[v] > 0.0 ? Pixel.rW / m_WidthAdjBottom[v] : 0.0);
-				}
-			}
-		else
-			v = Min(Max(0, v), m_iLengthCount - 1);
-
-		//	Width adjustment touches Pixel.rW, so we need to do this afterwards.
-
-		Metric rW = (m_iWidthCount * Absolute(Pixel.rW));
-		int w = (int)rW;
-		if (w < 0 || w >= m_iWidthCount)
-			continue;
-
-		//	Adjust opacity, if necessary
-
-		if (m_OpacityMap.GetCount() == 1)
-			Pixel.byAlpha = m_OpacityMap[0][w];
-
-		else if (m_OpacityMap.GetCount() > 1)
-			Pixel.byAlpha = m_OpacityMap[v][w];
-
-		//	Compute color
-
-		CG32bitPixel rgbColor;
-		if (m_ColorMap.GetCount() == 1)
-			{
-			rgbColor = m_ColorMap[0][w];
-			if (w > 0)
-				{
-				CG32bitPixel rgbAAColor = m_ColorMap[0][w - 1];
-				rgbColor = CG32bitPixel::Blend(rgbAAColor, rgbColor, rW - (Metric)w);
-				}
-			}
-
-		else if (m_ColorMap.GetCount() > 1)
-			rgbColor = m_ColorMap[v][w];
-
-		else
-			rgbColor = m_rgbPrimaryColor;
-
-		//	Apply opacity, if necessary
-
-		if (dwOpacity != 255)
-			Pixel.byAlpha = (BYTE)(Pixel.byAlpha * dwOpacity / 255);
-
-		//	Draw
-
-		if (Pixel.byAlpha == 0x00)
-			;
-		else if (Pixel.byAlpha == 0xff)
-			*(Pixel.pPos) = rgbColor;
-		else
-			{
-			*(Pixel.pPos) = CG32bitPixel::Blend(*(Pixel.pPos), rgbColor, Pixel.byAlpha);
-			}
-		}
+        case CGDraw::blendCompositeNormal:
+            PaintPixels<CGBlendComposite>(Pixels, dwOpacity);
+            break;
+        }
 
 	DEBUG_CATCH
 	}
@@ -1339,6 +1372,9 @@ void CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 	{
 	if (strEquals(sParam, ANIMATE_OPACITY_ATTRIB))
 		m_iOpacityAnimation = (EAnimationTypes)Value.EvalIntegerBounded(Ctx, 0, -1, animateNone);
+
+	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
+		m_iBlendMode = Value.EvalBlendMode(Ctx);
 
 	else if (strEquals(sParam, INTENSITY_ATTRIB))
 		m_iIntensity = Value.EvalIntegerBounded(Ctx, 0, 100, 50);

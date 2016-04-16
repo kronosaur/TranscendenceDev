@@ -796,6 +796,7 @@ class CRayEffectCreator : public CEffectCreator
 		CEffectParamDesc m_Intensity;		//	intensity: Intensity of ray
 		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
 		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
+		CEffectParamDesc m_BlendMode;		//	blendMode: Blend mode
 
 		CEffectParamDesc m_Lifetime;		//	lifetime: Lifetime in ticks (optional)
 		CEffectParamDesc m_XformRotation;	//	XformRotation: Rotations (degrees)
