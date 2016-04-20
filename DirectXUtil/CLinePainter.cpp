@@ -250,6 +250,32 @@ CLinePainter::ESlopeTypes CLinePainter::CalcIntermediates (const CG32bitImage &I
 		}
 	}
 
+void CLinePainter::CalcLoopX (int *retx, int *rety, int *retiEnd, int *retiInc)
+
+//  CalcLoopX
+//
+//  Calculate loop parameters for X-dominant
+
+    {
+    *retx = m_xStart;
+    *rety = m_yStart - m_iAxisHalfWidth - 1;
+    *retiEnd = m_xEnd;
+    *retiInc = m_sx;
+    }
+
+void CLinePainter::CalcLoopY (int *retx, int *rety, int *retiEnd, int *retiInc)
+
+//  CalcLoopY
+//
+//  Calculate loop parameters for Y-dominant
+
+    {
+    *retx = m_xStart - m_iAxisHalfWidth - 1;
+    *rety = m_yStart;
+    *retiEnd = m_yEnd;
+    *retiInc = m_sy;
+    }
+
 void CLinePainter::CalcPixelMapping (int x1, int y1, int x2, int y2, double *retrV, double *retrW)
 
 //	CalcPixelMapping
@@ -386,6 +412,7 @@ void CLinePainter::Rasterize (CG32bitImage &Image, int x1, int y1, int x2, int y
 			{
 			CGRasterize::SLinePixel *pPixel = retPixels->Insert();
 			pPixel->pPos = Image.GetPixelPos(x1, y1);
+            pPixel->byAlpha = 255;
 			pPixel->x = x1;
 			pPixel->y = y1;
 			pPixel->rV = 0.0;
@@ -396,10 +423,7 @@ void CLinePainter::Rasterize (CG32bitImage &Image, int x1, int y1, int x2, int y
 		case lineXDominant:
 			{
 			double rV, rW;
-			CalcPixelMapping(x1, y1, x2, y2, &rV, &rW);
-
-			rV += (-m_iAxisHalfWidth - 1) * m_rVPerY;
-			rW += (-m_iAxisHalfWidth - 1) * m_rWPerY;
+			CalcPixelMappingX(x1, y1, x2, y2, &rV, &rW);
 
 			int iMaxPixelCount = Absolute(m_dx) * (m_iAxisWidth + 2);
 			int iPixel = 0;
@@ -479,10 +503,7 @@ void CLinePainter::Rasterize (CG32bitImage &Image, int x1, int y1, int x2, int y
 		case lineYDominant:
 			{
 			double rV, rW;
-			CalcPixelMapping(x1, y1, x2, y2, &rV, &rW);
-
-			rV += (-m_iAxisHalfWidth - 1) * m_rVPerX;
-			rW += (-m_iAxisHalfWidth - 1) * m_rWPerX;
+			CalcPixelMappingY(x1, y1, x2, y2, &rV, &rW);
 
 			int iMaxPixelCount = Absolute(m_dy) * (m_iAxisWidth + 2);
 			int iPixel = 0;
