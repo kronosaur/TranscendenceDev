@@ -259,6 +259,7 @@
     <ClInclude Include="..\Include\TBlt.h" />
     <ClInclude Include="..\Include\TCirclePainter.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
+    <ClInclude Include="..\Include\TLinePainter.h" />
     <ClInclude Include="..\Include\TRegionPainter.h" />
     <ClInclude Include="DrawImpl.h" />
     <ClInclude Include="DrawRegionImpl.h" />

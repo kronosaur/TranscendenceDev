@@ -223,6 +223,17 @@ CG32bitPixel CG32bitPixel::Fade (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, int i
 		}
 	}
 
+CG32bitPixel CG32bitPixel::Fade (CG32bitPixel rgbColor, BYTE byAlpha)
+
+//  Fade
+//
+//  Fades to transparency by the given value.
+
+    {
+	BYTE *pAlpha = g_Alpha8[byAlpha];
+    return CG32bitPixel(pAlpha[rgbColor.GetRed()], pAlpha[rgbColor.GetGreen()], pAlpha[rgbColor.GetBlue()], pAlpha[rgbColor.GetAlpha()]);
+    }
+
 bool CG32bitPixel::Init (void)
 
 //	Init

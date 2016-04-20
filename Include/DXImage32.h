@@ -51,27 +51,42 @@ class CG32bitPixel
 
 		inline static BYTE *AlphaTable (BYTE byOpacity) { return g_Alpha8[byOpacity]; }
 		inline static BYTE *ScreenTable (BYTE byValue) { return g_Screen8[byValue]; }
+
+        //  Single channel operations
+
+		inline static BYTE BlendAlpha (BYTE byDest, BYTE bySrc) { return g_Alpha8[byDest][bySrc]; }
+		inline static BYTE CompositeAlpha (BYTE byDest, BYTE bySrc) { return (BYTE)255 - (BYTE)(((DWORD)(255 - byDest) * (DWORD)(255 - bySrc)) / 255); }
+
+        //  Creates pixels
+
+		inline static CG32bitPixel FromGrayscale (BYTE byValue) { return CG32bitPixel(byValue, byValue, byValue); }
+		inline static CG32bitPixel FromGrayscale (BYTE byValue, BYTE byAlpha) { return CG32bitPixel(byValue, byValue, byValue, byAlpha); }
+		inline static CG32bitPixel FromDWORD (DWORD dwValue) { return CG32bitPixel(dwValue, true); }
+		inline static CG32bitPixel Null (void) { return CG32bitPixel(0, true); }
+
+        //  Expects solid pixels, and always returns solid pixels
+
 		static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
 		static CG32bitPixel Blend (CG32bitPixel rgbDest, CG32bitPixel rgbSrc, BYTE bySrcAlpha);
 		static CG32bitPixel Blend (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade);
 		static CG32bitPixel Blend3 (CG32bitPixel rgbNegative, CG32bitPixel rgbCenter, CG32bitPixel rgbPositive, double rFade);
-		inline static BYTE BlendAlpha (BYTE byDest, BYTE bySrc) { return g_Alpha8[byDest][bySrc]; }
 		static CG32bitPixel ChangeHue (CG32bitPixel rgbSource, int iAdj);
+		static CG32bitPixel Darken (CG32bitPixel rgbSource, BYTE byOpacity);
+		static CG32bitPixel Fade (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, int iPercent);
+		static CG32bitPixel Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
+
+        //  Works on transparent pixels
+
 		static CG32bitPixel Composite (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
 		static CG32bitPixel Composite (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade);
-		inline static BYTE CompositeAlpha (BYTE byDest, BYTE bySrc) { return (BYTE)255 - (BYTE)(((DWORD)(255 - byDest) * (DWORD)(255 - bySrc)) / 255); }
-		static CG32bitPixel Darken (CG32bitPixel rgbSource, BYTE byOpacity);
 		static CG32bitPixel Desaturate (CG32bitPixel rgbColor);
-		static CG32bitPixel Fade (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, int iPercent);
-		inline static CG32bitPixel FromDWORD (DWORD dwValue) { return CG32bitPixel(dwValue, true); }
-		inline static CG32bitPixel FromGrayscale (BYTE byValue) { return CG32bitPixel(byValue, byValue, byValue); }
-		inline static CG32bitPixel FromGrayscale (BYTE byValue, BYTE byAlpha) { return CG32bitPixel(byValue, byValue, byValue, byAlpha); }
-		static bool Init (void);
+        static CG32bitPixel Fade (CG32bitPixel rgbColor, BYTE byAlpha);
 		static CG32bitPixel Interpolate (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, BYTE byAlpha);
-		inline static CG32bitPixel Null (void) { return CG32bitPixel(0, true); }
+
 		inline static CG32bitPixel PreMult (CG32bitPixel rgbColor) { return PreMult(rgbColor, rgbColor.GetAlpha()); }
 		static CG32bitPixel PreMult (CG32bitPixel rgbColor, BYTE byAlpha);
-		static CG32bitPixel Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
+
+		static bool Init (void);
 
 	private:
 		CG32bitPixel (DWORD dwValue, bool bRaw) : m_dwPixel(dwValue) { }
@@ -512,6 +527,7 @@ class CGBlendScreen : public TBlendImpl<CGBlendScreen>
 
 #include "TBlt.h"
 #include "TCirclePainter.h"
+#include "TLinePainter.h"
 
 //	Utilities
 
