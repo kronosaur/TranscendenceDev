@@ -146,20 +146,29 @@ template <class PAINTER, class BLENDER> class TLinePainter32 : public ILinePaint
             else if (rgbColor.GetAlpha() == 0xff)
                 BLENDER::SetCopy(pPos, rgbColor);
             else
-                BLENDER::SetBlend(pPos, rgbColor);
+                BLENDER::SetBlendPreMult(pPos, rgbColor);
             }
 
         inline CG32bitPixel GET_EDGE_PIXEL (Metric rEdge, Metric rV, Metric rW) { return ((PAINTER *)this)->GetEdgePixel(rEdge, rV, rW); }
         inline CG32bitPixel GET_PIXEL (Metric rV, Metric rW) { return ((PAINTER *)this)->GetPixel(rV, rW); }
 
-    private:
+        //  Default implementations
+
+        inline CG32bitPixel GetEdgePixel (Metric rEdge, Metric rV, Metric rW)
+            {
+            CG32bitPixel rgbColor = GET_PIXEL(rV, rW);
+            BYTE byOpacity = (BYTE)(DWORD)(255.0 * (rEdge > 1.0 ? 1.0 : rEdge));
+            if (rgbColor.GetAlpha() == 0xff)
+                return CG32bitPixel(rgbColor, byOpacity);
+            else
+                return CG32bitPixel(rgbColor, CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), byOpacity));
+            }
     };
 
 class CLinePainter
 	{
 	public:
 		void DrawSolid (CG32bitImage &Image, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor);
-		void Rasterize (CG32bitImage &Image, int x1, int y1, int x2, int y2, int iWidth, TArray<CGRasterize::SLinePixel> *retPixels);
 
     public:
         //  This functions are used by TLinePainter32

@@ -272,9 +272,6 @@
     <ClCompile Include="CLinePainter.cpp">
       <Filter>Source Files\32bit</Filter>
     </ClCompile>
-    <ClCompile Include="RasterizeLine.cpp">
-      <Filter>Source Files\32bit</Filter>
-    </ClCompile>
     <ClCompile Include="CGImagePlane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

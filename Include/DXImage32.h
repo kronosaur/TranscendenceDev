@@ -346,26 +346,6 @@ class CGDraw
 		static void QuadCurve (CG32bitImage &Dest, const CVector &vP1, const CVector &vP2, const CVector &vC1, int iLineWidth, CG32bitPixel rgbColor);
 	};
 
-class CGRasterize
-	{
-	public:
-
-		//	Lines
-
-		struct SLinePixel
-			{
-			CG32bitPixel *pPos;				//	Pixel to draw on
-			BYTE byAlpha;					//	Line opacity at this point
-			int x;							//	x-coordinate on image
-			int y;							//	y-coordinate on image
-
-			double rV;						//	Distance from start to end along line (0 to 1.0)
-			double rW;						//	Distance perpendicular to line axis (0 to 1.0)
-			};
-
-		static void Line (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, TArray<SLinePixel> *retPixels);
-	};
-
 //	Blending Classes -----------------------------------------------------------
 //
 //	The following methods are defined:
