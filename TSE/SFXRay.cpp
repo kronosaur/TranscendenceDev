@@ -17,6 +17,146 @@
 #define WIDTH_ATTRIB					CONSTLIT("width")
 #define XFORM_ROTATION_ATTRIB			CONSTLIT("xformRotation")
 
+#define FIELD_OPACITY                   CONSTLIT("opacity")
+
+//  Grayscale value at each point on the 2D ray [length][width]
+
+typedef TArray<BYTE> OpacityArray;
+typedef TArray<OpacityArray> OpacityPlane;
+
+//  Color of each point on the 2D ray [length][width]
+
+typedef TArray<CG32bitPixel> ColorArray;
+typedef TArray<ColorArray> ColorPlane;
+
+//  Adjustment to width at each point along the length of the ray
+
+typedef TArray<Metric> WidthAdjArray;
+
+template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRasterizer<BLENDER>, BLENDER>
+    {
+    public:
+        CRayRasterizer (int iLengthCount, int iWidthCount, const ColorPlane &ColorMap, const OpacityPlane &OpacityMap, const WidthAdjArray &WidthAdjTop, const WidthAdjArray &WidthAdjBottom) :
+                m_iLengthCount(iLengthCount),
+                m_iWidthCount(iWidthCount),
+                m_rgbColor(255, 255, 255),
+                m_byOpacity(255),
+                m_ColorMap(ColorMap),
+                m_OpacityMap(OpacityMap),
+                m_WidthAdjTop(WidthAdjTop),
+                m_WidthAdjBottom(WidthAdjBottom)
+            { }
+
+        virtual void SetParam (const CString &sParam, BYTE byValue) override
+            {
+            if (strEquals(sParam, FIELD_OPACITY))
+                m_byOpacity = byValue;
+            }
+
+    private:
+        inline CG32bitPixel GetEdgePixel (Metric rEdge, Metric rV, Metric rW)
+            {
+            CG32bitPixel rgbColor = GetPixel(rV, rW);
+            BYTE byOpacity = (BYTE)(DWORD)(255.0 * (rEdge > 1.0 ? 1.0 : rEdge));
+            if (rgbColor.GetAlpha() == 0xff)
+                return CG32bitPixel(rgbColor, byOpacity);
+            else
+                return CG32bitPixel(rgbColor, CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), byOpacity));
+            }
+
+        inline CG32bitPixel GetPixel (Metric rV, Metric rW)
+            {
+		    //	Scale v and w to map to our array sizes
+
+		    int v = (int)(m_iLengthCount * rV);
+
+		    //	If necessary, adjust the width of the ray
+
+		    if (m_WidthAdjTop.GetCount() > 0)
+			    {
+			    //	If this pixel is outside the width adjustment, then we skip it
+
+                if (v < 0 || v >= m_iLengthCount)
+                    return CG32bitPixel::Null();
+
+			    //	Positive values are above
+
+			    else if (rW > 0.0)
+				    {
+				    if (rW > m_WidthAdjTop[v])
+					    return CG32bitPixel::Null();
+
+				    rW = (m_WidthAdjTop[v] > 0.0 ? rW / m_WidthAdjTop[v] : 0.0);
+				    }
+
+			    //	Otherwise, we use bottom adjustment
+
+			    else
+				    {
+				    if (-rW > m_WidthAdjBottom[v])
+					    return CG32bitPixel::Null();
+
+				    rW = (m_WidthAdjBottom[v] > 0.0 ? rW / m_WidthAdjBottom[v] : 0.0);
+				    }
+			    }
+		    else
+			    v = Min(Max(0, v), m_iLengthCount - 1);
+
+		    //	Width adjustment touches Pixel.rW, so we need to do this afterwards.
+
+		    Metric rWPixels = (m_iWidthCount * Absolute(rW));
+		    int w = (int)rWPixels;
+		    if (w < 0 || w >= m_iWidthCount)
+			    return CG32bitPixel::Null();
+
+		    //	Compute color
+
+		    CG32bitPixel rgbColor;
+		    if (m_ColorMap.GetCount() == 1)
+			    {
+			    rgbColor = m_ColorMap[0][w];
+			    if (w > 0)
+				    {
+				    CG32bitPixel rgbAAColor = m_ColorMap[0][w - 1];
+				    rgbColor = CG32bitPixel::Composite(rgbAAColor, rgbColor, rWPixels - (Metric)w);
+				    }
+			    }
+
+            else if (m_ColorMap.GetCount() > 1)
+                {
+			    rgbColor = m_ColorMap[v][w];
+                if (w > 0)
+                    {
+				    CG32bitPixel rgbAAColor = m_ColorMap[v][w - 1];
+				    rgbColor = CG32bitPixel::Composite(rgbAAColor, rgbColor, rWPixels - (Metric)w);
+                    }
+                }
+
+		    else
+			    rgbColor = m_rgbColor;
+
+		    //	Apply opacity, if necessary
+
+            if (m_byOpacity != 255)
+                rgbColor = CG32bitPixel::Fade(rgbColor, m_byOpacity);
+
+		    //	Draw
+
+            return rgbColor;
+            }
+
+		int m_iLengthCount;					//	Count of cells along ray length
+		int m_iWidthCount;					//	Count of cells from ray axis out to edge
+        CG32bitPixel m_rgbColor;            //  Solid color only
+        BYTE m_byOpacity;                   //  Opacity
+		const ColorPlane &m_ColorMap;		    //	Full color map
+		const OpacityPlane &m_OpacityMap;	    //	Full opacity map
+		const WidthAdjArray &m_WidthAdjTop;	    //	Top width adjustment
+		const WidthAdjArray &m_WidthAdjBottom;	//	Bottom width adjustment
+
+    friend TLinePainter32;
+    };
+
 class CRayEffectPainter : public IEffectPainter
 	{
 	public:
@@ -70,9 +210,6 @@ class CRayEffectPainter : public IEffectPainter
 			styleMax =				5,
 			};
 
-		typedef TArray<BYTE> OpacityArray;
-		typedef TArray<CG32bitPixel> ColorArray;
-
 		void CalcCone (TArray<Metric> &AdjArray);
 		void CalcDiamond (TArray<Metric> &AdjArray);
 		void CalcIntermediates (void);
@@ -81,103 +218,6 @@ class CRayEffectPainter : public IEffectPainter
 		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
 		void PaintLightning (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
-
-        template <class BLENDER> void PaintPixels (TArray<CGRasterize::SLinePixel> &Pixels, DWORD dwOpacity)
-            {
-            int i;
-
-	        //	Loop over all pixels and fill them in
-
-	        for (i = 0; i < Pixels.GetCount(); i++)
-		        {
-		        CGRasterize::SLinePixel &Pixel = Pixels[i];
-
-		        //	Scale v and w to map to our array sizes
-
-		        Metric rV = (m_iLengthCount * Pixel.rV);
-		        int v = (int)rV;
-
-		        //	If necessary, adjust the width of the ray
-
-		        if (m_WidthAdjTop.GetCount() > 0)
-			        {
-			        //	If this pixel is outside the width adjustment, then we skip it
-
-			        if (v < 0 || v >= m_iLengthCount)
-				        continue;
-
-			        //	Positive values are above
-
-			        else if (Pixel.rW > 0.0)
-				        {
-				        if (Pixel.rW > m_WidthAdjTop[v])
-					        continue;
-
-				        Pixel.rW = (m_WidthAdjTop[v] > 0.0 ? Pixel.rW / m_WidthAdjTop[v] : 0.0);
-				        }
-
-			        //	Otherwise, we use bottom adjustment
-
-			        else
-				        {
-				        if (-Pixel.rW > m_WidthAdjBottom[v])
-					        continue;
-
-				        Pixel.rW = (m_WidthAdjBottom[v] > 0.0 ? Pixel.rW / m_WidthAdjBottom[v] : 0.0);
-				        }
-			        }
-		        else
-			        v = Min(Max(0, v), m_iLengthCount - 1);
-
-		        //	Width adjustment touches Pixel.rW, so we need to do this afterwards.
-
-		        Metric rW = (m_iWidthCount * Absolute(Pixel.rW));
-		        int w = (int)rW;
-		        if (w < 0 || w >= m_iWidthCount)
-			        continue;
-
-		        //	Adjust opacity, if necessary
-
-		        if (m_OpacityMap.GetCount() == 1)
-			        Pixel.byAlpha = m_OpacityMap[0][w];
-
-		        else if (m_OpacityMap.GetCount() > 1)
-			        Pixel.byAlpha = m_OpacityMap[v][w];
-
-		        //	Compute color
-
-		        CG32bitPixel rgbColor;
-		        if (m_ColorMap.GetCount() == 1)
-			        {
-			        rgbColor = m_ColorMap[0][w];
-			        if (w > 0)
-				        {
-				        CG32bitPixel rgbAAColor = m_ColorMap[0][w - 1];
-				        rgbColor = CG32bitPixel::Blend(rgbAAColor, rgbColor, rW - (Metric)w);
-				        }
-			        }
-
-		        else if (m_ColorMap.GetCount() > 1)
-			        rgbColor = m_ColorMap[v][w];
-
-		        else
-			        rgbColor = m_rgbPrimaryColor;
-
-		        //	Apply opacity, if necessary
-
-                if (dwOpacity != 255)
-                    Pixel.byAlpha = CG32bitPixel::BlendAlpha(Pixel.byAlpha, (BYTE)dwOpacity);
-
-		        //	Draw
-
-                if (Pixel.byAlpha == 0x00)
-                    ;
-                else if (Pixel.byAlpha == 0xff)
-                    BLENDER::SetCopy(Pixel.pPos, rgbColor);
-                else
-                    BLENDER::SetBlendAlpha(Pixel.pPos, rgbColor, Pixel.byAlpha);
-		        }
-            }
 
 		CEffectCreator *m_pCreator;
 
@@ -198,12 +238,13 @@ class CRayEffectPainter : public IEffectPainter
 		//	Temporary variables based on shape/style/etc.
 
 		bool m_bInitialized;				//	TRUE if values are valid
+        ILinePainter *m_pRayRenderer;
 		int m_iLengthCount;					//	Count of cells along ray length
 		int m_iWidthCount;					//	Count of cells from ray axis out to edge
-		TArray<ColorArray> m_ColorMap;		//	Full color map
-		TArray<OpacityArray> m_OpacityMap;	//	Full opacity map
-		TArray<Metric> m_WidthAdjTop;		//	Top width adjustment
-		TArray<Metric> m_WidthAdjBottom;	//	Bottom width adjustment
+		ColorPlane m_ColorMap;		        //	Full color map
+		OpacityPlane m_OpacityMap;	        //	Full opacity map
+		WidthAdjArray m_WidthAdjTop;		//	Top width adjustment
+		WidthAdjArray m_WidthAdjBottom;	    //	Bottom width adjustment
 	};
 
 const int BLOB_PEAK_FRACTION =			1;
@@ -400,7 +441,8 @@ CRayEffectPainter::CRayEffectPainter (CEffectCreator *pCreator) :
 		m_iXformRotation(0),
 		m_iLifetime(0),
 		m_iOpacityAnimation(animateNone),
-		m_bInitialized(false)
+		m_bInitialized(false),
+        m_pRayRenderer(NULL)
 
 //	CRayEffectCreator constructor
 
@@ -412,6 +454,8 @@ CRayEffectPainter::~CRayEffectPainter (void)
 //	CRayEffectCreator destructor
 
 	{
+    if (m_pRayRenderer)
+        delete m_pRayRenderer;
 	}
 
 void CRayEffectPainter::CalcCone (TArray<Metric> &AdjArray)
@@ -969,6 +1013,79 @@ void CRayEffectPainter::CalcIntermediates (void)
 				}
 			}
 
+        //  Combine the opacity map and color map.
+
+        if (m_OpacityMap.GetCount() > m_ColorMap.GetCount())
+            {
+            int iInsert = m_OpacityMap.GetCount() - m_ColorMap.GetCount();
+            m_ColorMap.GrowToFit(iInsert);
+
+            //  If we have no color column, then add one using the primary color.
+
+            if (m_ColorMap.GetCount() == 0)
+                {
+                ColorArray *pSingleRow = m_ColorMap.Insert();
+                pSingleRow->InsertEmpty(m_OpacityMap[0].GetCount());
+                for (i = 0; i < pSingleRow->GetCount(); i++)
+                    pSingleRow->GetAt(i) = m_rgbPrimaryColor;
+
+                iInsert--;
+                }
+
+            //  Copy the color columns.
+
+            for (i = 0; i < iInsert; i++)
+                m_ColorMap.Insert(m_ColorMap[0]);
+            }
+        else if (m_OpacityMap.GetCount() < m_ColorMap.GetCount())
+            {
+            int iInsert = m_ColorMap.GetCount() - m_OpacityMap.GetCount();
+            m_OpacityMap.GrowToFit(iInsert);
+
+            if (m_OpacityMap.GetCount() == 0)
+                {
+                OpacityArray *pSingleRow = m_OpacityMap.Insert();
+                pSingleRow->InsertEmpty(m_ColorMap[0].GetCount());
+                for (i = 0; i < pSingleRow->GetCount(); i++)
+                    pSingleRow->GetAt(i) = 255;
+
+                iInsert--;
+                }
+
+            for (i = 0; i < iInsert; i++)
+                m_OpacityMap.Insert(m_OpacityMap[0]);
+            }
+
+        //  Apply opacity
+
+        for (v = 0; v < m_ColorMap.GetCount(); v++)
+            for (w = 0; w < m_ColorMap[0].GetCount(); w++)
+                m_ColorMap[v][w] = CG32bitPixel::PreMult(m_ColorMap[v][w], m_OpacityMap[v][w]);
+
+        //  Create the painter
+
+        if (m_iStyle != styleLightning)
+            {
+            switch (m_iBlendMode)
+                {
+                case CGDraw::blendNormal:
+                    m_pRayRenderer = new CRayRasterizer<CGBlendCopy>(m_iLengthCount, m_iWidthCount, m_ColorMap, m_OpacityMap, m_WidthAdjTop, m_WidthAdjBottom);
+                    break;
+
+                case CGDraw::blendHardLight:
+                    m_pRayRenderer = new CRayRasterizer<CGBlendHardLight>(m_iLengthCount, m_iWidthCount, m_ColorMap, m_OpacityMap, m_WidthAdjTop, m_WidthAdjBottom);
+                    break;
+
+                case CGDraw::blendScreen:
+                    m_pRayRenderer = new CRayRasterizer<CGBlendScreen>(m_iLengthCount, m_iWidthCount, m_ColorMap, m_OpacityMap, m_WidthAdjTop, m_WidthAdjBottom);
+                    break;
+
+                case CGDraw::blendCompositeNormal:
+                    m_pRayRenderer = new CRayRasterizer<CGBlendComposite>(m_iLengthCount, m_iWidthCount, m_ColorMap, m_OpacityMap, m_WidthAdjTop, m_WidthAdjBottom);
+                    break;
+                }
+            }
+
 		//	Done
 
 		m_bInitialized = true;
@@ -1059,7 +1176,7 @@ void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, 
 		//	Generate this cycle
 
 		Metric rAngle = 0.0;
-		for (i = 0; i < iPeakSize && v < m_iLengthCount; i++)
+		for (i = 0; i < iPeakSize && v < AdjArray.GetCount(); i++)
 			{
 			AdjArray[v] = rPos + rScale * sin(rAngle);
 
@@ -1297,11 +1414,6 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 	{
 	DEBUG_TRY
 
-	//	Rasterize the line
-
-	TArray<CGRasterize::SLinePixel> Pixels;
-	CGRasterize::Line(Dest, xFrom, yFrom, xTo, yTo, m_iWidth, &Pixels);
-
 	//	Compute opacity animation
 
 	DWORD dwOpacity;
@@ -1327,23 +1439,10 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 
     //  Paint based on blend mode
 
-    switch (m_iBlendMode)
+    if (m_pRayRenderer)
         {
-        case CGDraw::blendNormal:
-            PaintPixels<CGBlendCopy>(Pixels, dwOpacity);
-            break;
-
-        case CGDraw::blendHardLight:
-            PaintPixels<CGBlendHardLight>(Pixels, dwOpacity);
-            break;
-
-        case CGDraw::blendScreen:
-            PaintPixels<CGBlendScreen>(Pixels, dwOpacity);
-            break;
-
-        case CGDraw::blendCompositeNormal:
-            PaintPixels<CGBlendComposite>(Pixels, dwOpacity);
-            break;
+        m_pRayRenderer->SetParam(FIELD_OPACITY, (BYTE)dwOpacity);
+        m_pRayRenderer->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
         }
 
 	DEBUG_CATCH
