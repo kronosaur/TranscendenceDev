@@ -266,6 +266,7 @@
     <ClInclude Include="PsycheDefs.h" />
     <ClInclude Include="SFXFractalImpl.h" />
     <ClInclude Include="SFXImpl.h" />
+    <ClInclude Include="SFXRayImpl.h" />
     <ClInclude Include="ShipAIImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
   </ItemGroup>

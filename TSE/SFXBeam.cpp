@@ -90,7 +90,7 @@ void CBeamEffectCreator::DrawBeam (CG32bitImage &Dest, SLineDesc &Line, SViewpor
 			break;
 
 		case beamJaggedBolt:
-			DrawBeamJaggedBolt(Dest, Line, Ctx);
+			DrawBeamLaser(Dest, Line, Ctx);
 			break;
 
 		case beamLaser:
@@ -184,35 +184,6 @@ void CBeamEffectCreator::DrawBeamHeavyBlaster (CG32bitImage &Dest, SLineDesc &Li
 	CreateBlasterShape(iAngle, iLengthUnit, iWidthUnit - 1, Poly);
 	Region.CreateFromConvexPolygon(8, Poly);
 	Region.Fill(Dest, Line.xTo, Line.yTo, m_rgbPrimaryColor);
-	}
-
-void CBeamEffectCreator::DrawBeamJaggedBolt (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)
-
-//	DrawBeamJaggedBolt
-//
-//	Draws a jagged bolt
-
-	{
-	int i;
-
-	//	Rasterize the line
-
-	TArray<CGRasterize::SLinePixel> Pixels;
-	CGRasterize::Line(Dest, Line.xFrom, Line.yFrom, Line.xTo, Line.yTo, m_iIntensity, &Pixels);
-
-	for (i = 0; i < Pixels.GetCount(); i++)
-		{
-		const CGRasterize::SLinePixel &Pixel = Pixels[i];
-
-		BYTE byOpacity = (BYTE)Min(Max(0, (int)(255.0 * (1.0 - Absolute(Pixel.rW)))), 255);
-		if (Pixel.byAlpha != 0xff)
-			byOpacity = (BYTE)(byOpacity * Pixel.byAlpha / 255);
-
-		if (byOpacity == 0xff)
-			*(Pixel.pPos) = m_rgbPrimaryColor;
-		else
-			*(Pixel.pPos) = CG32bitPixel::Blend(*(Pixel.pPos), m_rgbPrimaryColor, byOpacity);
-		}
 	}
 
 void CBeamEffectCreator::DrawBeamLaser (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx)

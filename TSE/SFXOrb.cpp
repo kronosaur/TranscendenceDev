@@ -78,17 +78,6 @@ class COrbEffectPainter : public IEffectPainter
 			int iWidth;
 			};
 
-		inline CG32bitPixel CalcFlarePoint (CGRasterize::SLinePixel &Pixel)
-			{
-			Metric rDist = (1.0 - (2.0 * Absolute(Pixel.rV - 0.5)));
-			Metric rSpread = (1.0 - Absolute(Pixel.rW));
-			Metric rValue = BLOOM_FACTOR * (rDist * rDist) * (rSpread * rSpread);
-
-			BYTE byOpacity = (rValue >= 1.0 ? Pixel.byAlpha : (BYTE)(rValue * Pixel.byAlpha));
-
-			return CG32bitPixel(255, 255, 255, byOpacity);
-			}
-
 		bool CalcIntermediates (void);
 		void CalcSecondaryColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
 		void CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
@@ -861,34 +850,16 @@ void COrbEffectPainter::CompositeFlareRay (CG32bitImage &Dest, int xCenter, int 
 //	Paints a flare line
 
 	{
-	int i;
-
 	//	Compute the line
 
 	CVector vHalf = PolarToVector(iAngle, iLength / 2.0);
 	int xOffset = (int)vHalf.GetX();
 	int yOffset = (int)vHalf.GetY();
 
-	//	Rasterize the line
+    //  Paint the line
 
-	TArray<CGRasterize::SLinePixel> Pixels;
-	CGRasterize::Line(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth, &Pixels);
-
-	//	Now fill the line
-
-	for (i = 0; i < Pixels.GetCount(); i++)
-		{
-		CGRasterize::SLinePixel &Pixel = Pixels[i];
-
-		if (Pixel.rW < -1.0 || Pixel.rW > 1.0 || Pixel.rV < 0.0 || Pixel.rV > 1.0)
-			continue;
-
-		CG32bitPixel rgbValue = CalcFlarePoint(Pixel);
-
-		//	Draw
-
-		*(Pixel.pPos) = CG32bitPixel::Composite(*(Pixel.pPos), rgbValue);
-		}
+    CFlareRayRasterizer<CGBlendComposite> Flare;
+    Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
 	}
 
 void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
@@ -1113,8 +1084,6 @@ void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCen
 //	Paints a flare line
 
 	{
-	int i;
-
 	if (iLength <= 0 || iWidth <= 0)
 		return;
 
@@ -1124,34 +1093,10 @@ void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCen
 	int xOffset = (int)vHalf.GetX();
 	int yOffset = (int)vHalf.GetY();
 
-	//	Rasterize the line
+    //  Paint the line
 
-	TArray<CGRasterize::SLinePixel> Pixels;
-	CGRasterize::Line(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth, &Pixels);
-
-	//	Now fill the line
-
-	for (i = 0; i < Pixels.GetCount(); i++)
-		{
-		CGRasterize::SLinePixel &Pixel = Pixels[i];
-
-		if (Pixel.rW < -1.0 || Pixel.rW > 1.0 || Pixel.rV < 0.0 || Pixel.rV > 1.0)
-			continue;
-
-		//	Compute the brightness at this pixel
-
-		CG32bitPixel rgbValue = CalcFlarePoint(Pixel);
-		BYTE byOpacity = rgbValue.GetAlpha();
-
-		//	Draw
-
-		if (byOpacity == 0)
-			;
-		else if (byOpacity == 0xff)
-			*(Pixel.pPos) = rgbValue;
-		else
-			*(Pixel.pPos) = CG32bitPixel::Blend(*(Pixel.pPos), rgbValue, byOpacity);
-		}
+    CFlareRayRasterizer<CGBlendBlend> Flare;
+    Flare.Draw(Dest, xCenter - xOffset, yCenter + yOffset, xCenter + xOffset, yCenter - yOffset, iWidth);
 	}
 
 void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)

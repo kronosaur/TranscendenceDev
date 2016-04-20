@@ -65,7 +65,6 @@ class CBeamEffectCreator : public CEffectCreator,
 		void DrawBeam (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
 		void DrawBeamBlaster (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
 		void DrawBeamHeavyBlaster (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
-		void DrawBeamJaggedBolt (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
 		void DrawBeamLaser (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
 		void DrawBeamLightning (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);
 		void DrawBeamLightningBolt (CG32bitImage &Dest, SLineDesc &Line, SViewportPaintCtx &Ctx);

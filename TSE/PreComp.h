@@ -8,6 +8,7 @@
 //	SFX
 
 #include "SFXImpl.h"
+#include "SFXRayImpl.h"
 
 //	Ships
 
