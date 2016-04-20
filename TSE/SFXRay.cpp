@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define ANIMATE_ATTRIB			        CONSTLIT("animate")
 #define ANIMATE_OPACITY_ATTRIB			CONSTLIT("animateOpacity")
 #define BLEND_MODE_ATTRIB   			CONSTLIT("blendMode")
 #define INTENSITY_ATTRIB				CONSTLIT("intensity")
@@ -44,6 +45,9 @@ class CRayEffectPainter : public IEffectPainter
 			animateNone =			0,
 
 			animateFade =			1,
+            animateFlicker =        2,
+
+            animateMax =            2,
 			};
 
 		enum ERayShapes
@@ -72,13 +76,39 @@ class CRayEffectPainter : public IEffectPainter
 			styleMax =				5,
 			};
 
+		enum EColorTypes
+			{
+			colorNone,
+			colorGlow,
+			};
+
+		enum EOpacityTypes
+			{
+			opacityNone,
+			opacityGlow,
+			opacityGrainy,
+			opacityTaperedGlow,
+			};
+
+		enum EWidthAdjTypes
+			{
+			widthAdjNone,
+			widthAdjBlob,
+			widthAdjDiamond,
+			widthAdjJagged,
+			widthAdjOval,
+			widthAdjTapered,
+			widthAdjCone,
+			};
+
 		void CalcCone (TArray<Metric> &AdjArray);
 		void CalcDiamond (TArray<Metric> &AdjArray);
 		void CalcIntermediates (void);
+        int CalcLength (SViewportPaintCtx &Ctx) const;
 		void CalcOval (TArray<Metric> &AdjArray);
 		void CalcTaper (TArray<Metric> &AdjArray);
 		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
-		void PaintLightning (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
+        ILinePainter *CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape);
 		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 
 		CEffectCreator *m_pCreator;
@@ -95,18 +125,13 @@ class CRayEffectPainter : public IEffectPainter
 		int m_iXformRotation;
 
 		int m_iLifetime;
-		EAnimationTypes m_iOpacityAnimation;
+		EAnimationTypes m_iAnimation;
 
 		//	Temporary variables based on shape/style/etc.
 
 		bool m_bInitialized;				//	TRUE if values are valid
-        ILinePainter *m_pRayRenderer;
-		int m_iLengthCount;					//	Count of cells along ray length
-		int m_iWidthCount;					//	Count of cells from ray axis out to edge
-		ColorPlane m_ColorMap;		        //	Full color map
-		OpacityPlane m_OpacityMap;	        //	Full opacity map
-		WidthAdjArray m_WidthAdjTop;		//	Top width adjustment
-		WidthAdjArray m_WidthAdjBottom;	    //	Bottom width adjustment
+        TArray<ILinePainter *> m_RayRenderer;
+        TArray<int> m_Length;               //  Length for each frame (only for multi-frame animations)
 	};
 
 const int BLOB_PEAK_FRACTION =			1;
@@ -130,6 +155,7 @@ static LPSTR ANIMATION_TABLE[] =
 		"",
 
 		"fade",
+		"flicker",
 
 		NULL
 	};
@@ -198,7 +224,7 @@ IEffectPainter *CRayEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 	//	Initialize the painter parameters
 
-	pPainter->SetParam(Ctx, ANIMATE_OPACITY_ATTRIB, m_AnimateOpacity);
+	pPainter->SetParam(Ctx, ANIMATE_ATTRIB, m_AnimateOpacity);
 	pPainter->SetParam(Ctx, BLEND_MODE_ATTRIB, m_BlendMode);
 	pPainter->SetParam(Ctx, LENGTH_ATTRIB, m_Length);
 	pPainter->SetParam(Ctx, WIDTH_ATTRIB, m_Width);
@@ -234,7 +260,11 @@ ALERROR CRayEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	{
 	ALERROR error;
 
-	if (error = m_AnimateOpacity.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(ANIMATE_OPACITY_ATTRIB), ANIMATION_TABLE))
+    CString sAnimate;
+    if (!pDesc->FindAttribute(ANIMATE_ATTRIB, &sAnimate))
+        sAnimate = pDesc->GetAttribute(ANIMATE_OPACITY_ATTRIB);
+
+	if (error = m_AnimateOpacity.InitIdentifierFromXML(Ctx, sAnimate, ANIMATION_TABLE))
 		return error;
 
 	if (error = m_BlendMode.InitBlendModeFromXML(Ctx, pDesc->GetAttribute(BLEND_MODE_ATTRIB)))
@@ -302,9 +332,8 @@ CRayEffectPainter::CRayEffectPainter (CEffectCreator *pCreator) :
 		m_iBlendMode(CGDraw::blendNormal),
 		m_iXformRotation(0),
 		m_iLifetime(0),
-		m_iOpacityAnimation(animateNone),
-		m_bInitialized(false),
-        m_pRayRenderer(NULL)
+		m_iAnimation(animateNone),
+		m_bInitialized(false)
 
 //	CRayEffectCreator constructor
 
@@ -316,8 +345,10 @@ CRayEffectPainter::~CRayEffectPainter (void)
 //	CRayEffectCreator destructor
 
 	{
-    if (m_pRayRenderer)
-        delete m_pRayRenderer;
+    int i;
+
+    for (i = 0; i < m_RayRenderer.GetCount(); i++)
+        delete m_RayRenderer[i];
 	}
 
 void CRayEffectPainter::CalcCone (TArray<Metric> &AdjArray)
@@ -367,592 +398,76 @@ void CRayEffectPainter::CalcIntermediates (void)
 //	Calculate intermediate values used for painting.
 
 	{
-	int i, v, w;
+    int i;
 
-	if (!m_bInitialized)
-		{
-		enum EColorTypes
-			{
-			colorNone,
-			colorGlow,
-			};
+    //  If already initialized, we're done.
 
-		enum EOpacityTypes
-			{
-			opacityNone,
-			opacityGlow,
-			opacityGrainy,
-			opacityTaperedGlow,
-			};
+    if (m_bInitialized)
+        return;
 
-		enum EWidthAdjTypes
-			{
-			widthAdjNone,
-			widthAdjBlob,
-			widthAdjDiamond,
-			widthAdjJagged,
-			widthAdjOval,
-			widthAdjTapered,
-			widthAdjCone,
-			};
+    ASSERT(m_RayRenderer.GetCount() == 0);
 
-		EColorTypes iColorTypes = colorNone;
-		EOpacityTypes iOpacityTypes = opacityNone;
-		EWidthAdjTypes iWidthAdjType = widthAdjNone;
-		EWidthAdjTypes iReshape = widthAdjNone;
-		EOpacityTypes iTexture = opacityNone;
+    //  Create the renderer. Depending on our animation option, we either create
+    //  one or more renderers.
 
-		m_iWidthCount = m_iWidth;
-		m_iLengthCount = 2 * m_iLength;
-
-		//	Every combination requires a slightly different set up
-
-		switch (m_iShape)
-			{
-			case shapeCone:
-				switch (m_iStyle)
-					{
-					case styleBlob:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjBlob;
-						iReshape = widthAdjCone;
-						break;
-
-					case styleGlow:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjCone;
-						break;
-
-					case styleGrainy:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjCone;
-						iTexture = opacityGrainy;
-						break;
-
-					case styleJagged:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjJagged;
-						iReshape = widthAdjCone;
-						break;
-
-					case styleLightning:
-						iWidthAdjType = widthAdjCone;
-						break;
-					}
-				break;
-
-			case shapeDiamond:
-				switch (m_iStyle)
-					{
-					case styleBlob:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjBlob;
-						iReshape = widthAdjDiamond;
-						break;
-
-					case styleGlow:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjDiamond;
-						break;
-
-					case styleGrainy:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjDiamond;
-						iTexture = opacityGrainy;
-						break;
-
-					case styleJagged:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjJagged;
-						iReshape = widthAdjDiamond;
-						break;
-
-					case styleLightning:
-						iWidthAdjType = widthAdjDiamond;
-						break;
-					}
-				break;
-
-			case shapeOval:
-				switch (m_iStyle)
-					{
-					case styleBlob:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjBlob;
-						iReshape = widthAdjOval;
-						break;
-
-					case styleGlow:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjOval;
-						break;
-
-					case styleGrainy:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjOval;
-						iTexture = opacityGrainy;
-						break;
-
-					case styleJagged:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjJagged;
-						iReshape = widthAdjOval;
-						break;
-
-					case styleLightning:
-						iWidthAdjType = widthAdjOval;
-						break;
-					}
-				break;
-
-			case shapeStraight:
-				switch (m_iStyle)
-					{
-					case styleBlob:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityGlow;
-						iWidthAdjType = widthAdjBlob;
-						break;
-
-					case styleGlow:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityGlow;
-						break;
-
-					case styleGrainy:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityGlow;
-						iTexture = opacityGrainy;
-						break;
-
-					case styleJagged:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityGlow;
-						iWidthAdjType = widthAdjJagged;
-						break;
-
-					case styleLightning:
-						break;
-					}
-				break;
-
-			case shapeTapered:
-				switch (m_iStyle)
-					{
-					case styleBlob:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjBlob;
-						iReshape = widthAdjTapered;
-						break;
-
-					case styleGlow:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjTapered;
-						break;
-
-					case styleGrainy:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjTapered;
-						iTexture = opacityGrainy;
-						break;
-
-					case styleJagged:
-						iColorTypes = colorGlow;
-						iOpacityTypes = opacityTaperedGlow;
-						iWidthAdjType = widthAdjJagged;
-						iReshape = widthAdjTapered;
-						break;
-
-					case styleLightning:
-						iWidthAdjType = widthAdjTapered;
-						break;
-					}
-				break;
-			}
-
-		//	Full color map
-
-		switch (iColorTypes)
-			{
-			case colorGlow:
-				{
-				m_ColorMap.InsertEmpty(1);
-				m_ColorMap[0].InsertEmpty(m_iWidthCount);
-
-				//	The center blends towards white
-
-				CG32bitPixel rgbCenter = CG32bitPixel::Blend(m_rgbPrimaryColor, CG32bitPixel(255, 255, 255), Min(50, m_iIntensity) / 50.0);
-
-				int iBrightPoint = (int)(BRIGHT_FACTOR * m_iWidthCount * m_iIntensity);
-				for (i = 0; i < iBrightPoint; i++)
-					m_ColorMap[0][i] = rgbCenter;
-
-				//	The rest fades (linearly) from primary color to secondary color
-
-				Metric rFadeInc = (m_iWidthCount > 0 ? (1.0 / (m_iWidthCount - iBrightPoint)) : 0.0);
-				Metric rFade = 1.0;
-				for (i = iBrightPoint; i < m_iWidthCount; i++, rFade -= rFadeInc)
-					m_ColorMap[0][i] = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, rFade);
-
-				break;
-				}
-			}
-
-		//	Full opacity
-
-		switch (iOpacityTypes)
-			{
-			case opacityGlow:
-				{
-				m_OpacityMap.InsertEmpty(1);
-				m_OpacityMap[0].InsertEmpty(m_iWidthCount);
-
-				//	From center to peak we have solid opacity
-
-				int iPeakPoint = (int)(SOLID_FACTOR * m_iIntensity * m_iWidthCount);
-				for (i = 0; i < iPeakPoint; i++)
-					m_OpacityMap[0][i] = 255;
-
-				//	We decay exponentially to edge
-
-				Metric rGlowLevel = MIN_GLOW_LEVEL + (m_iIntensity * GLOW_FACTOR);
-				Metric rGlowInc = (m_iWidthCount > 0 ? (1.0 / (m_iWidthCount - iPeakPoint)) : 0.0);
-				Metric rGlow = 1.0;
-				for (i = iPeakPoint; i < m_iWidthCount; i++, rGlow -= rGlowInc)
-					m_OpacityMap[0][i] = (int)(255.0 * rGlowLevel * rGlow * rGlow);
-
-				break;
-				}
-
-			case opacityTaperedGlow:
-				{
-				m_OpacityMap.InsertEmpty(m_iLengthCount);
-				for (i = 0; i < m_iLengthCount; i++)
-					m_OpacityMap[i].InsertEmpty(m_iWidthCount);
-
-				//	From center to peak we have solid opacity
-
-				int iPeakPoint = (int)(SOLID_FACTOR * m_iIntensity * m_iWidthCount);
-
-				//	After the 1/3 point start fading out (linearly)
-
-				int iFadePoint = m_iLengthCount / TAPER_FRACTION;
-				Metric rTaperInc = (m_iLengthCount > 0 ? (1.0 / (m_iLengthCount - iFadePoint)) : 0.0);
-
-				//	From center to peak we have solid opacity plus taper
-
-				for (w = 0; w < iPeakPoint; w++)
-					{
-					for (v = 0; v < iFadePoint; v++)
-						m_OpacityMap[v][w] = 255;
-
-					Metric rTaper = 1.0;
-					for (v = iFadePoint; v < m_iLengthCount; v++, rTaper -= rTaperInc)
-						m_OpacityMap[v][w] = (int)(255.0 * rTaper);
-					}
-
-				//	The glow around the peak decays exponentially
-
-				Metric rGlowLevel = MIN_GLOW_LEVEL + (m_iIntensity * GLOW_FACTOR);
-				Metric rGlowInc = (m_iWidthCount > 0 ? (1.0 / (m_iWidthCount - iPeakPoint)) : 0.0);
-				Metric rGlow = 1.0;
-				for (w = iPeakPoint; w < m_iWidthCount; w++, rGlow -= rGlowInc)
-					{
-					Metric rGlowPart = rGlowLevel * rGlow * rGlow;
-
-					for (v = 0; v < iFadePoint; v++)
-						m_OpacityMap[v][w] = (int)(255.0 * rGlowPart);
-
-					Metric rTaper = 1.0;
-					for (v = iFadePoint; v < m_iLengthCount; v++, rTaper -= rTaperInc)
-						m_OpacityMap[v][w] = (int)(255.0 * rGlowPart * rTaper);
-					}
-
-				break;
-				}
-			}
-
-		//	Width adjustments
-
-		switch (iWidthAdjType)
-			{
-			case widthAdjBlob:
-				{
-				m_WidthAdjTop.InsertEmpty(m_iLengthCount);
-				m_WidthAdjBottom.InsertEmpty(m_iLengthCount);
-
-				//	Initialize jagged envelope
-
-				CalcWaves(m_WidthAdjTop, BLOB_WAVE_SIZE, m_iWidth * WAVY_WAVELENGTH_FACTOR);
-				CalcWaves(m_WidthAdjBottom, BLOB_WAVE_SIZE, m_iWidth * WAVY_WAVELENGTH_FACTOR);
-
-				break;
-				}
-
-			case widthAdjCone:
-				{
-				m_WidthAdjTop.InsertEmpty(m_iLengthCount);
-
-				CalcCone(m_WidthAdjTop);
-				m_WidthAdjBottom = m_WidthAdjTop;
-
-				break;
-				}
-
-			case widthAdjDiamond:
-				{
-				m_WidthAdjTop.InsertEmpty(m_iLengthCount);
-
-				CalcDiamond(m_WidthAdjTop);
-				m_WidthAdjBottom = m_WidthAdjTop;
-
-				break;
-				}
-
-			case widthAdjJagged:
-				{
-				m_WidthAdjTop.InsertEmpty(m_iLengthCount);
-				m_WidthAdjBottom.InsertEmpty(m_iLengthCount);
-
-				//	Initialize jagged envelope
-
-				CalcWaves(m_WidthAdjTop, JAGGED_AMPLITUDE, m_iWidth * JAGGED_WAVELENGTH_FACTOR);
-				CalcWaves(m_WidthAdjBottom, JAGGED_AMPLITUDE, m_iWidth * JAGGED_WAVELENGTH_FACTOR);
-
-				break;
-				}
-
-			case widthAdjOval:
-				{
-				m_WidthAdjTop.InsertEmpty(m_iLengthCount);
-
-				CalcOval(m_WidthAdjTop);
-				m_WidthAdjBottom = m_WidthAdjTop;
-
-				break;
-				}
-
-			case widthAdjTapered:
-				{
-				m_WidthAdjTop.InsertEmpty(m_iLengthCount);
-
-				CalcTaper(m_WidthAdjTop);
-				m_WidthAdjBottom = m_WidthAdjTop;
-
-				break;
-				}
-			}
-
-		//	Adjust shape
-
-		switch (iReshape)
-			{
-			case widthAdjCone:
-				{
-				TArray<Metric> TaperAdj;
-				TaperAdj.InsertEmpty(m_iLengthCount);
-				CalcCone(TaperAdj);
-
-				for (i = 0; i < m_iLengthCount; i++)
-					{
-					m_WidthAdjTop[i] *= TaperAdj[i];
-					m_WidthAdjBottom[i] *= TaperAdj[i];
-					}
-				break;
-				}
-
-			case widthAdjDiamond:
-				{
-				TArray<Metric> TaperAdj;
-				TaperAdj.InsertEmpty(m_iLengthCount);
-				CalcDiamond(TaperAdj);
-
-				for (i = 0; i < m_iLengthCount; i++)
-					{
-					m_WidthAdjTop[i] *= TaperAdj[i];
-					m_WidthAdjBottom[i] *= TaperAdj[i];
-					}
-				break;
-				}
-
-			case widthAdjOval:
-				{
-				TArray<Metric> TaperAdj;
-				TaperAdj.InsertEmpty(m_iLengthCount);
-				CalcOval(TaperAdj);
-
-				for (i = 0; i < m_iLengthCount; i++)
-					{
-					m_WidthAdjTop[i] *= TaperAdj[i];
-					m_WidthAdjBottom[i] *= TaperAdj[i];
-					}
-				break;
-				}
-
-			case widthAdjTapered:
-				{
-				TArray<Metric> TaperAdj;
-				TaperAdj.InsertEmpty(m_iLengthCount);
-				CalcTaper(TaperAdj);
-
-				for (i = 0; i < m_iLengthCount; i++)
-					{
-					m_WidthAdjTop[i] *= TaperAdj[i];
-					m_WidthAdjBottom[i] *= TaperAdj[i];
-					}
-				break;
-				}
-			}
-
-		//	Apply texture
-
-		switch (iTexture)
-			{
-			case opacityGrainy:
-				{
-				const int DIAMETER = 11;
-				const int START = -(DIAMETER / 2);
-				const int CENTER_X = (DIAMETER / 2);
-				const int CENTER_Y = (DIAMETER / 2);
-				const Metric RADIUS = (DIAMETER / 2.0);
-
-				Metric Adj[DIAMETER][DIAMETER];
-				for (v = 0; v < DIAMETER; v++)
-					for (w = 0; w < DIAMETER; w++)
-						{
-						int vDiff = v - CENTER_X;
-						int wDiff = w - CENTER_Y;
-
-						Metric rDist = sqrt((Metric)(vDiff * vDiff + wDiff * wDiff)) / RADIUS;
-						Adj[v][w] = Max(0.0, 1.0 - rDist);
-						}
-
-				int iPeakPoint = (int)(SOLID_FACTOR * m_iIntensity * m_iWidthCount);
-
-				int iGrainCount = (int)(4 * sqrt((Metric)m_iLength * m_iWidth));
-				for (i = 0; i < iGrainCount; i++)
-					{
-					int vCount = m_OpacityMap.GetCount();
-					int wCount = m_OpacityMap[0].GetCount();
-					int vCenter = mathRandom(0, vCount - 1);
-					int wCenter = mathRandom(0, wCount - 1);
-
-					Metric rCenter = GRAINY_SIGMA * mathRandomGaussian();
-
-					for (v = 0; v < DIAMETER; v++)
-						{
-						int vPos = START + vCenter + v;
-						if (vPos < 0 || vPos >= vCount)
-							continue;
-
-						for (w = 0; w < DIAMETER; w++)
-							{
-							int wPos = START + wCenter + w;
-							if (wPos < iPeakPoint || wPos >= wCount)
-								continue;
-
-							m_OpacityMap[vPos][wPos] = (BYTE)Min(Max(0, (int)((Metric)m_OpacityMap[vPos][wPos] * (1.0 + rCenter * Adj[v][w]))), 255);
-							}
-						}
-					}
-				
-				break;
-				}
-			}
-
-        //  Combine the opacity map and color map.
-
-        if (m_OpacityMap.GetCount() > m_ColorMap.GetCount())
+    switch (m_iAnimation)
+        {
+        case animateFlicker:
             {
-            int iInsert = m_OpacityMap.GetCount() - m_ColorMap.GetCount();
-            m_ColorMap.GrowToFit(iInsert);
+            //  We generate 16 frames of random length and intensity
 
-            //  If we have no color column, then add one using the primary color.
+            int iFrameCount = 16;
+            m_RayRenderer.InsertEmpty(iFrameCount);
+            m_Length.InsertEmpty(iFrameCount);
 
-            if (m_ColorMap.GetCount() == 0)
+            for (i = 0; i < m_RayRenderer.GetCount(); i++)
                 {
-                ColorArray *pSingleRow = m_ColorMap.Insert();
-                pSingleRow->InsertEmpty(m_OpacityMap[0].GetCount());
-                for (i = 0; i < pSingleRow->GetCount(); i++)
-                    pSingleRow->GetAt(i) = m_rgbPrimaryColor;
+				Metric rFlicker = Max(0.5, Min(1.0 + (0.25 * mathRandomGaussian()), 2.0));
+				int iLength = Max(2, (int)(rFlicker * m_iLength));
+				int iIntensity = (int)(rFlicker * m_iIntensity);
 
-                iInsert--;
+                m_Length[i] = iLength;
+                m_RayRenderer[i] = CreateRenderer(m_iWidth, iLength, iIntensity, m_iStyle, m_iShape);
                 }
-
-            //  Copy the color columns.
-
-            for (i = 0; i < iInsert; i++)
-                m_ColorMap.Insert(m_ColorMap[0]);
-            }
-        else if (m_OpacityMap.GetCount() < m_ColorMap.GetCount())
-            {
-            int iInsert = m_ColorMap.GetCount() - m_OpacityMap.GetCount();
-            m_OpacityMap.GrowToFit(iInsert);
-
-            if (m_OpacityMap.GetCount() == 0)
-                {
-                OpacityArray *pSingleRow = m_OpacityMap.Insert();
-                pSingleRow->InsertEmpty(m_ColorMap[0].GetCount());
-                for (i = 0; i < pSingleRow->GetCount(); i++)
-                    pSingleRow->GetAt(i) = 255;
-
-                iInsert--;
-                }
-
-            for (i = 0; i < iInsert; i++)
-                m_OpacityMap.Insert(m_OpacityMap[0]);
+            break;
             }
 
-        //  Apply opacity
+        default:
+            m_RayRenderer.InsertEmpty();
+            m_RayRenderer[0] = CreateRenderer(m_iWidth, m_iLength, m_iIntensity, m_iStyle, m_iShape);
+            break;
+        }
 
-        for (v = 0; v < m_ColorMap.GetCount(); v++)
-            for (w = 0; w < m_ColorMap[0].GetCount(); w++)
-                m_ColorMap[v][w] = CG32bitPixel::PreMult(m_ColorMap[v][w], m_OpacityMap[v][w]);
+	//	Done
 
-        //  Create the painter
-
-        if (m_iStyle != styleLightning)
-            {
-            switch (m_iBlendMode)
-                {
-                case CGDraw::blendNormal:
-                    m_pRayRenderer = new CRayRasterizer<CGBlendBlend>(m_iLengthCount, m_iWidthCount, m_ColorMap, m_OpacityMap, m_WidthAdjTop, m_WidthAdjBottom);
-                    break;
-
-                case CGDraw::blendHardLight:
-                    m_pRayRenderer = new CRayRasterizer<CGBlendHardLight>(m_iLengthCount, m_iWidthCount, m_ColorMap, m_OpacityMap, m_WidthAdjTop, m_WidthAdjBottom);
-                    break;
-
-                case CGDraw::blendScreen:
-                    m_pRayRenderer = new CRayRasterizer<CGBlendScreen>(m_iLengthCount, m_iWidthCount, m_ColorMap, m_OpacityMap, m_WidthAdjTop, m_WidthAdjBottom);
-                    break;
-
-                case CGDraw::blendCompositeNormal:
-                    m_pRayRenderer = new CRayRasterizer<CGBlendComposite>(m_iLengthCount, m_iWidthCount, m_ColorMap, m_OpacityMap, m_WidthAdjTop, m_WidthAdjBottom);
-                    break;
-                }
-            }
-
-		//	Done
-
-		m_bInitialized = true;
-		}
+	m_bInitialized = true;
 	}
+
+int CRayEffectPainter::CalcLength (SViewportPaintCtx &Ctx) const
+
+//  CalcLength
+//
+//  Computes the length of the ray this frame.
+
+    {
+    int iLength;
+
+    //  Get the length based on the animation frame
+
+    switch (m_iAnimation)
+        {
+        case animateFlicker:
+            iLength = m_Length[Ctx.iTick % m_Length.GetCount()];
+            break;
+
+        default:
+            iLength = m_iLength;
+        }
+
+    //  Adjust for maximum
+
+	return (Ctx.iMaxLength != -1 ? Min(Ctx.iMaxLength, iLength) : iLength);
+    }
 
 void CRayEffectPainter::CalcOval (TArray<Metric> &AdjArray)
 
@@ -1048,6 +563,576 @@ void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, 
 		}
 	}
 
+ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape)
+
+//  CreateRenderer
+//
+//  Creates a single renderer with the given properties.
+
+    {
+    int i, v, w;
+
+	EColorTypes iColorTypes = colorNone;
+	EOpacityTypes iOpacityTypes = opacityNone;
+	EWidthAdjTypes iWidthAdjType = widthAdjNone;
+	EWidthAdjTypes iReshape = widthAdjNone;
+	EOpacityTypes iTexture = opacityNone;
+
+	int iWidthCount = iWidth;
+	int iLengthCount = 2 * iLength;
+
+	//	Every combination requires a slightly different set up
+
+	switch (iShape)
+		{
+		case shapeCone:
+			switch (iStyle)
+				{
+				case styleBlob:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjBlob;
+					iReshape = widthAdjCone;
+					break;
+
+				case styleGlow:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjCone;
+					break;
+
+				case styleGrainy:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjCone;
+					iTexture = opacityGrainy;
+					break;
+
+				case styleJagged:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjJagged;
+					iReshape = widthAdjCone;
+					break;
+
+				case styleLightning:
+					iWidthAdjType = widthAdjCone;
+					break;
+				}
+			break;
+
+		case shapeDiamond:
+			switch (iStyle)
+				{
+				case styleBlob:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjBlob;
+					iReshape = widthAdjDiamond;
+					break;
+
+				case styleGlow:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjDiamond;
+					break;
+
+				case styleGrainy:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjDiamond;
+					iTexture = opacityGrainy;
+					break;
+
+				case styleJagged:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjJagged;
+					iReshape = widthAdjDiamond;
+					break;
+
+				case styleLightning:
+					iWidthAdjType = widthAdjDiamond;
+					break;
+				}
+			break;
+
+		case shapeOval:
+			switch (iStyle)
+				{
+				case styleBlob:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjBlob;
+					iReshape = widthAdjOval;
+					break;
+
+				case styleGlow:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjOval;
+					break;
+
+				case styleGrainy:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjOval;
+					iTexture = opacityGrainy;
+					break;
+
+				case styleJagged:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjJagged;
+					iReshape = widthAdjOval;
+					break;
+
+				case styleLightning:
+					iWidthAdjType = widthAdjOval;
+					break;
+				}
+			break;
+
+		case shapeStraight:
+			switch (iStyle)
+				{
+				case styleBlob:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityGlow;
+					iWidthAdjType = widthAdjBlob;
+					break;
+
+				case styleGlow:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityGlow;
+					break;
+
+				case styleGrainy:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityGlow;
+					iTexture = opacityGrainy;
+					break;
+
+				case styleJagged:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityGlow;
+					iWidthAdjType = widthAdjJagged;
+					break;
+
+				case styleLightning:
+					break;
+				}
+			break;
+
+		case shapeTapered:
+			switch (iStyle)
+				{
+				case styleBlob:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjBlob;
+					iReshape = widthAdjTapered;
+					break;
+
+				case styleGlow:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjTapered;
+					break;
+
+				case styleGrainy:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjTapered;
+					iTexture = opacityGrainy;
+					break;
+
+				case styleJagged:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjJagged;
+					iReshape = widthAdjTapered;
+					break;
+
+				case styleLightning:
+					iWidthAdjType = widthAdjTapered;
+					break;
+				}
+			break;
+		}
+
+	//	Full color map
+
+    ColorPlane ColorMap;
+	switch (iColorTypes)
+		{
+		case colorGlow:
+			{
+			ColorMap.InsertEmpty(1);
+			ColorMap[0].InsertEmpty(iWidthCount);
+
+			//	The center blends towards white
+
+			CG32bitPixel rgbCenter = CG32bitPixel::Blend(m_rgbPrimaryColor, CG32bitPixel(255, 255, 255), Min(50, iIntensity) / 50.0);
+
+			int iBrightPoint = (int)(BRIGHT_FACTOR * iWidthCount * iIntensity);
+			for (i = 0; i < iBrightPoint; i++)
+				ColorMap[0][i] = rgbCenter;
+
+			//	The rest fades (linearly) from primary color to secondary color
+
+			Metric rFadeInc = (iWidthCount > 0 ? (1.0 / (iWidthCount - iBrightPoint)) : 0.0);
+			Metric rFade = 1.0;
+			for (i = iBrightPoint; i < iWidthCount; i++, rFade -= rFadeInc)
+				ColorMap[0][i] = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, rFade);
+
+			break;
+			}
+		}
+
+	//	Full opacity
+
+    OpacityPlane OpacityMap;
+	switch (iOpacityTypes)
+		{
+		case opacityGlow:
+			{
+			OpacityMap.InsertEmpty(1);
+			OpacityMap[0].InsertEmpty(iWidthCount);
+
+			//	From center to peak we have solid opacity
+
+			int iPeakPoint = (int)(SOLID_FACTOR * iIntensity * iWidthCount);
+			for (i = 0; i < iPeakPoint; i++)
+				OpacityMap[0][i] = 255;
+
+			//	We decay exponentially to edge
+
+			Metric rGlowLevel = MIN_GLOW_LEVEL + (iIntensity * GLOW_FACTOR);
+			Metric rGlowInc = (iWidthCount > 0 ? (1.0 / (iWidthCount - iPeakPoint)) : 0.0);
+			Metric rGlow = 1.0;
+			for (i = iPeakPoint; i < iWidthCount; i++, rGlow -= rGlowInc)
+				OpacityMap[0][i] = (int)(255.0 * rGlowLevel * rGlow * rGlow);
+
+			break;
+			}
+
+		case opacityTaperedGlow:
+			{
+			OpacityMap.InsertEmpty(iLengthCount);
+			for (i = 0; i < iLengthCount; i++)
+				OpacityMap[i].InsertEmpty(iWidthCount);
+
+			//	From center to peak we have solid opacity
+
+			int iPeakPoint = (int)(SOLID_FACTOR * iIntensity * iWidthCount);
+
+			//	After the 1/3 point start fading out (linearly)
+
+			int iFadePoint = iLengthCount / TAPER_FRACTION;
+			Metric rTaperInc = (iLengthCount > 0 ? (1.0 / (iLengthCount - iFadePoint)) : 0.0);
+
+			//	From center to peak we have solid opacity plus taper
+
+			for (w = 0; w < iPeakPoint; w++)
+				{
+				for (v = 0; v < iFadePoint; v++)
+					OpacityMap[v][w] = 255;
+
+				Metric rTaper = 1.0;
+				for (v = iFadePoint; v < iLengthCount; v++, rTaper -= rTaperInc)
+					OpacityMap[v][w] = (int)(255.0 * rTaper);
+				}
+
+			//	The glow around the peak decays exponentially
+
+			Metric rGlowLevel = MIN_GLOW_LEVEL + (iIntensity * GLOW_FACTOR);
+			Metric rGlowInc = (iWidthCount > 0 ? (1.0 / (iWidthCount - iPeakPoint)) : 0.0);
+			Metric rGlow = 1.0;
+			for (w = iPeakPoint; w < iWidthCount; w++, rGlow -= rGlowInc)
+				{
+				Metric rGlowPart = rGlowLevel * rGlow * rGlow;
+
+				for (v = 0; v < iFadePoint; v++)
+					OpacityMap[v][w] = (int)(255.0 * rGlowPart);
+
+				Metric rTaper = 1.0;
+				for (v = iFadePoint; v < iLengthCount; v++, rTaper -= rTaperInc)
+					OpacityMap[v][w] = (int)(255.0 * rGlowPart * rTaper);
+				}
+
+			break;
+			}
+		}
+
+	//	Width adjustments
+
+    WidthAdjArray WidthAdjTop;
+    WidthAdjArray WidthAdjBottom;
+	switch (iWidthAdjType)
+		{
+		case widthAdjBlob:
+			{
+			WidthAdjTop.InsertEmpty(iLengthCount);
+			WidthAdjBottom.InsertEmpty(iLengthCount);
+
+			//	Initialize jagged envelope
+
+			CalcWaves(WidthAdjTop, BLOB_WAVE_SIZE, iWidth * WAVY_WAVELENGTH_FACTOR);
+			CalcWaves(WidthAdjBottom, BLOB_WAVE_SIZE, iWidth * WAVY_WAVELENGTH_FACTOR);
+
+			break;
+			}
+
+		case widthAdjCone:
+			{
+			WidthAdjTop.InsertEmpty(iLengthCount);
+
+			CalcCone(WidthAdjTop);
+			WidthAdjBottom = WidthAdjTop;
+
+			break;
+			}
+
+		case widthAdjDiamond:
+			{
+			WidthAdjTop.InsertEmpty(iLengthCount);
+
+			CalcDiamond(WidthAdjTop);
+			WidthAdjBottom = WidthAdjTop;
+
+			break;
+			}
+
+		case widthAdjJagged:
+			{
+			WidthAdjTop.InsertEmpty(iLengthCount);
+			WidthAdjBottom.InsertEmpty(iLengthCount);
+
+			//	Initialize jagged envelope
+
+			CalcWaves(WidthAdjTop, JAGGED_AMPLITUDE, iWidth * JAGGED_WAVELENGTH_FACTOR);
+			CalcWaves(WidthAdjBottom, JAGGED_AMPLITUDE, iWidth * JAGGED_WAVELENGTH_FACTOR);
+
+			break;
+			}
+
+		case widthAdjOval:
+			{
+			WidthAdjTop.InsertEmpty(iLengthCount);
+
+			CalcOval(WidthAdjTop);
+			WidthAdjBottom = WidthAdjTop;
+
+			break;
+			}
+
+		case widthAdjTapered:
+			{
+			WidthAdjTop.InsertEmpty(iLengthCount);
+
+			CalcTaper(WidthAdjTop);
+			WidthAdjBottom = WidthAdjTop;
+
+			break;
+			}
+		}
+
+	//	Adjust shape
+
+	switch (iReshape)
+		{
+		case widthAdjCone:
+			{
+			TArray<Metric> TaperAdj;
+			TaperAdj.InsertEmpty(iLengthCount);
+			CalcCone(TaperAdj);
+
+			for (i = 0; i < iLengthCount; i++)
+				{
+				WidthAdjTop[i] *= TaperAdj[i];
+				WidthAdjBottom[i] *= TaperAdj[i];
+				}
+			break;
+			}
+
+		case widthAdjDiamond:
+			{
+			TArray<Metric> TaperAdj;
+			TaperAdj.InsertEmpty(iLengthCount);
+			CalcDiamond(TaperAdj);
+
+			for (i = 0; i < iLengthCount; i++)
+				{
+				WidthAdjTop[i] *= TaperAdj[i];
+				WidthAdjBottom[i] *= TaperAdj[i];
+				}
+			break;
+			}
+
+		case widthAdjOval:
+			{
+			TArray<Metric> TaperAdj;
+			TaperAdj.InsertEmpty(iLengthCount);
+			CalcOval(TaperAdj);
+
+			for (i = 0; i < iLengthCount; i++)
+				{
+				WidthAdjTop[i] *= TaperAdj[i];
+				WidthAdjBottom[i] *= TaperAdj[i];
+				}
+			break;
+			}
+
+		case widthAdjTapered:
+			{
+			TArray<Metric> TaperAdj;
+			TaperAdj.InsertEmpty(iLengthCount);
+			CalcTaper(TaperAdj);
+
+			for (i = 0; i < iLengthCount; i++)
+				{
+				WidthAdjTop[i] *= TaperAdj[i];
+				WidthAdjBottom[i] *= TaperAdj[i];
+				}
+			break;
+			}
+		}
+
+	//	Apply texture
+
+	switch (iTexture)
+		{
+		case opacityGrainy:
+			{
+			const int DIAMETER = 11;
+			const int START = -(DIAMETER / 2);
+			const int CENTER_X = (DIAMETER / 2);
+			const int CENTER_Y = (DIAMETER / 2);
+			const Metric RADIUS = (DIAMETER / 2.0);
+
+			Metric Adj[DIAMETER][DIAMETER];
+			for (v = 0; v < DIAMETER; v++)
+				for (w = 0; w < DIAMETER; w++)
+					{
+					int vDiff = v - CENTER_X;
+					int wDiff = w - CENTER_Y;
+
+					Metric rDist = sqrt((Metric)(vDiff * vDiff + wDiff * wDiff)) / RADIUS;
+					Adj[v][w] = Max(0.0, 1.0 - rDist);
+					}
+
+			int iPeakPoint = (int)(SOLID_FACTOR * iIntensity * iWidthCount);
+
+			int iGrainCount = (int)(4 * sqrt((Metric)iLength * iWidth));
+			for (i = 0; i < iGrainCount; i++)
+				{
+				int vCount = OpacityMap.GetCount();
+				int wCount = OpacityMap[0].GetCount();
+				int vCenter = mathRandom(0, vCount - 1);
+				int wCenter = mathRandom(0, wCount - 1);
+
+				Metric rCenter = GRAINY_SIGMA * mathRandomGaussian();
+
+				for (v = 0; v < DIAMETER; v++)
+					{
+					int vPos = START + vCenter + v;
+					if (vPos < 0 || vPos >= vCount)
+						continue;
+
+					for (w = 0; w < DIAMETER; w++)
+						{
+						int wPos = START + wCenter + w;
+						if (wPos < iPeakPoint || wPos >= wCount)
+							continue;
+
+						OpacityMap[vPos][wPos] = (BYTE)Min(Max(0, (int)((Metric)OpacityMap[vPos][wPos] * (1.0 + rCenter * Adj[v][w]))), 255);
+						}
+					}
+				}
+				
+			break;
+			}
+		}
+
+    //  Combine the opacity map and color map.
+
+    if (OpacityMap.GetCount() > ColorMap.GetCount())
+        {
+        int iInsert = OpacityMap.GetCount() - ColorMap.GetCount();
+        ColorMap.GrowToFit(iInsert);
+
+        //  If we have no color column, then add one using the primary color.
+
+        if (ColorMap.GetCount() == 0)
+            {
+            ColorArray *pSingleRow = ColorMap.Insert();
+            pSingleRow->InsertEmpty(OpacityMap[0].GetCount());
+            for (i = 0; i < pSingleRow->GetCount(); i++)
+                pSingleRow->GetAt(i) = m_rgbPrimaryColor;
+
+            iInsert--;
+            }
+
+        //  Copy the color columns.
+
+        for (i = 0; i < iInsert; i++)
+            ColorMap.Insert(ColorMap[0]);
+        }
+    else if (OpacityMap.GetCount() < ColorMap.GetCount())
+        {
+        int iInsert = ColorMap.GetCount() - OpacityMap.GetCount();
+        OpacityMap.GrowToFit(iInsert);
+
+        if (OpacityMap.GetCount() == 0)
+            {
+            OpacityArray *pSingleRow = OpacityMap.Insert();
+            pSingleRow->InsertEmpty(ColorMap[0].GetCount());
+            for (i = 0; i < pSingleRow->GetCount(); i++)
+                pSingleRow->GetAt(i) = 255;
+
+            iInsert--;
+            }
+
+        for (i = 0; i < iInsert; i++)
+            OpacityMap.Insert(OpacityMap[0]);
+        }
+
+    //  Apply opacity
+
+    for (v = 0; v < ColorMap.GetCount(); v++)
+        for (w = 0; w < ColorMap[0].GetCount(); w++)
+            ColorMap[v][w] = CG32bitPixel::PreMult(ColorMap[v][w], OpacityMap[v][w]);
+
+    //  Create the renderer
+
+    if (iStyle == styleLightning)
+        {
+        int iBoltCount = Max(1, Min(iIntensity / 5, 20));
+        return new CLightningBundlePainter(iBoltCount, m_rgbPrimaryColor, m_rgbSecondaryColor, WidthAdjTop, WidthAdjBottom);
+        }
+    else
+        {
+        switch (m_iBlendMode)
+            {
+            case CGDraw::blendNormal:
+                return new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+
+            case CGDraw::blendHardLight:
+                return new CRayRasterizer<CGBlendHardLight>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+
+            case CGDraw::blendScreen:
+                return new CRayRasterizer<CGBlendScreen>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+
+            case CGDraw::blendCompositeNormal:
+                return new CRayRasterizer<CGBlendComposite>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
+
+            default:
+                return NULL;
+            }
+        }
+    }
+
 void CRayEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
 
 //	GetParam
@@ -1055,8 +1140,8 @@ void CRayEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 //	Returns the parameter
 
 	{
-	if (strEquals(sParam, ANIMATE_OPACITY_ATTRIB))
-		retValue->InitInteger(m_iOpacityAnimation);
+	if (strEquals(sParam, ANIMATE_ATTRIB))
+		retValue->InitInteger(m_iAnimation);
 
 	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
 		retValue->InitInteger(m_iBlendMode);
@@ -1101,7 +1186,7 @@ bool CRayEffectPainter::GetParamList (TArray<CString> *retList) const
 	{
 	retList->DeleteAll();
 	retList->InsertEmpty(11);
-	retList->GetAt(0) = ANIMATE_OPACITY_ATTRIB;
+	retList->GetAt(0) = ANIMATE_ATTRIB;
 	retList->GetAt(1) = BLEND_MODE_ATTRIB;
 	retList->GetAt(2) = INTENSITY_ATTRIB;
 	retList->GetAt(3) = LENGTH_ATTRIB;
@@ -1146,8 +1231,7 @@ void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	//	Compute the two end points of the line. We paint from the head to the tail.
 
-	int iLength = (Ctx.iMaxLength != -1 ? Min(Ctx.iMaxLength, m_iLength) : m_iLength);
-	CVector vFrom = PolarToVector(AngleMod(Ctx.iRotation + m_iXformRotation), -iLength);
+	CVector vFrom = PolarToVector(AngleMod(Ctx.iRotation + m_iXformRotation), -CalcLength(Ctx));
 	int xTo = x + (int)(vFrom.GetX() + 0.5);
 	int yTo = y - (int)(vFrom.GetY() + 0.5);
 	int xFrom = x;
@@ -1155,16 +1239,7 @@ void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	//	Paint the effect
 
-	switch (m_iStyle)
-		{
-		case styleLightning:
-			PaintLightning(Dest, xFrom, yFrom, xTo, yTo, Ctx);
-			break;
-
-		default:
-			PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
-			break;
-		}
+    PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
 
 	DEBUG_CATCH
 	}
@@ -1182,8 +1257,7 @@ void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVecto
 
 	//	Compute the two end points of the line. We paint from the head to the tail.
 
-	int iLength = (Ctx.iMaxLength != -1 ? Min(Ctx.iMaxLength, m_iLength) : m_iLength);
-	CVector vFrom = PolarToVector(AngleMod(Ctx.iRotation + m_iXformRotation), -iLength);
+	CVector vFrom = PolarToVector(AngleMod(Ctx.iRotation + m_iXformRotation), -CalcLength(Ctx));
 	int xTo = x + (int)(vFrom.GetX() + 0.5);
 	int yTo = y - (int)(vFrom.GetY() + 0.5);
 
@@ -1193,78 +1267,7 @@ void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVecto
 
 	//	Paint the effect
 
-	switch (m_iStyle)
-		{
-		case styleLightning:
-			PaintLightning(Dest, xFrom, yFrom, xTo, yTo, Ctx);
-			break;
-
-		default:
-			PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
-			break;
-		}
-	}
-
-void CRayEffectPainter::PaintLightning (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx)
-
-//	PaintLightning
-//
-//	Paint a lightning effect
-
-	{
-	int i;
-
-	//	Figure out how many bolts to paint based on intensity
-
-	int iBoltCount = Max(1, Min(m_iIntensity / 5, 20));
-	Metric rChaos = 0.2;
-
-	//	Generate some intermediates
-
-	CVector vCenterLine = CVector(xTo, yTo) - CVector(xFrom, yFrom);
-	Metric rLength;
-	CVector vAxis = vCenterLine.Normal(&rLength);
-	CVector vTangent = vAxis.Perpendicular();
-
-	//	We fade at the end
-
-	CG32bitPixel rgbTo = CG32bitPixel(m_rgbSecondaryColor, 0);
-
-	//	Paint each bolt
-
-	for (i = 0; i < iBoltCount; i++)
-		{
-		//	Each bolt consists of two segments. We pick a middle point along the ray 
-		//	shape to divide the two segments.
-		//
-		//	Start by picking a value from 0.2 to 0.8
-
-		Metric rMid = mathRandom(20, 80) / 100.0;
-
-		//	Get the width of the shape at this point along the ray
-
-		int iWidthMid = (int)(m_iLengthCount * rMid);
-		Metric rWidthAdj = (mathRandom(1, 2) == 1 ? m_WidthAdjTop[iWidthMid] : -m_WidthAdjBottom[iWidthMid]) * m_iWidth * 0.5;
-
-		//	Compute opacity at midpoint and then compute the midpoint color
-
-		CG32bitPixel rgbMid = CG32bitPixel::Composite(m_rgbPrimaryColor, rgbTo, rMid);
-
-		//	vMid is the midpoint, relative to the front of the ray
-
-		CVector vMidLine = vAxis * rMid * rLength;
-		CVector vMid = vMidLine + (vTangent * rWidthAdj);
-
-		//	Convert to screen coordinates
-
-		int xMid = xFrom + (int)vMid.GetX();
-		int yMid = yFrom + (int)vMid.GetY();
-
-		//	Draw the two bolts
-
-		DrawLightning(Dest, xFrom, yFrom, xMid, yMid, m_rgbPrimaryColor, rgbMid, rChaos);
-		DrawLightning(Dest, xMid, yMid, xTo, yTo, rgbMid, rgbTo, rChaos);
-		}
+	PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
 	}
 
 void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx)
@@ -1274,38 +1277,42 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 //	Paints the ray
 
 	{
-	DEBUG_TRY
+    DEBUG_TRY
 
-	//	Compute opacity animation
+    //  If no renderer, nothing to do
 
-	DWORD dwOpacity;
-	switch (m_iOpacityAnimation)
+    if (m_RayRenderer.GetCount() == 0)
+        return;
+
+	//	Paint based on animation
+
+	switch (m_iAnimation)
 		{
 		case animateFade:
 			{
+        	DWORD dwOpacity;
 			if (m_iLifetime > 0)
 				dwOpacity = 255 * (m_iLifetime - (Ctx.iTick % m_iLifetime)) / m_iLifetime;
 			else
 				dwOpacity = 255;
+
+	        //	Short-circuit
+
+	        if (dwOpacity == 0)
+		        return;
+
+            m_RayRenderer[0]->SetParam(FIELD_OPACITY, (BYTE)dwOpacity);
+            m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 			break;
 			}
 
+        case animateFlicker:
+            m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
+            break;
+
 		default:
-			dwOpacity = 255;
+            m_RayRenderer[0]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
 		}
-
-	//	Short-circuit
-
-	if (dwOpacity == 0)
-		return;
-
-    //  Paint based on blend mode
-
-    if (m_pRayRenderer)
-        {
-        m_pRayRenderer->SetParam(FIELD_OPACITY, (BYTE)dwOpacity);
-        m_pRayRenderer->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
-        }
 
 	DEBUG_CATCH
 	}
@@ -1331,8 +1338,11 @@ void CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 //	Sets parameters
 
 	{
-	if (strEquals(sParam, ANIMATE_OPACITY_ATTRIB))
-		m_iOpacityAnimation = (EAnimationTypes)Value.EvalIntegerBounded(Ctx, 0, -1, animateNone);
+    if (strEquals(sParam, ANIMATE_ATTRIB))
+        m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
+
+	else if (strEquals(sParam, ANIMATE_OPACITY_ATTRIB))
+        m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
 
 	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
 		m_iBlendMode = Value.EvalBlendMode(Ctx);

@@ -328,6 +328,7 @@
     <ClCompile Include="CExplosionColorizer.cpp" />
     <ClCompile Include="CFractalTextureLibrary.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
+    <ClCompile Include="CLightningBundlePainter.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />

@@ -22,16 +22,17 @@ typedef TArray<Metric> WidthAdjArray;
 template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRasterizer<BLENDER>, BLENDER>
     {
     public:
-        CRayRasterizer (int iLengthCount, int iWidthCount, const ColorPlane &ColorMap, const OpacityPlane &OpacityMap, const WidthAdjArray &WidthAdjTop, const WidthAdjArray &WidthAdjBottom) :
+        CRayRasterizer (int iLengthCount, int iWidthCount, ColorPlane &ColorMap, OpacityPlane &OpacityMap, WidthAdjArray &WidthAdjTop, WidthAdjArray &WidthAdjBottom) :
                 m_iLengthCount(iLengthCount),
                 m_iWidthCount(iWidthCount),
                 m_rgbColor(255, 255, 255),
-                m_byOpacity(255),
-                m_ColorMap(ColorMap),
-                m_OpacityMap(OpacityMap),
-                m_WidthAdjTop(WidthAdjTop),
-                m_WidthAdjBottom(WidthAdjBottom)
-            { }
+                m_byOpacity(255)
+            {
+            m_ColorMap.TakeHandoff(ColorMap);
+            m_OpacityMap.TakeHandoff(OpacityMap);
+            m_WidthAdjTop.TakeHandoff(WidthAdjTop);
+            m_WidthAdjBottom.TakeHandoff(WidthAdjBottom);
+            }
 
         virtual void SetParam (const CString &sParam, BYTE byValue) override
             {
@@ -125,10 +126,10 @@ template <class BLENDER> class CRayRasterizer : public TLinePainter32<CRayRaster
 		int m_iWidthCount;					//	Count of cells from ray axis out to edge
         CG32bitPixel m_rgbColor;            //  Solid color only
         BYTE m_byOpacity;                   //  Opacity
-		const ColorPlane &m_ColorMap;		    //	Full color map
-		const OpacityPlane &m_OpacityMap;	    //	Full opacity map
-		const WidthAdjArray &m_WidthAdjTop;	    //	Top width adjustment
-		const WidthAdjArray &m_WidthAdjBottom;	//	Bottom width adjustment
+		ColorPlane m_ColorMap;		        //	Full color map
+		OpacityPlane m_OpacityMap;	        //	Full opacity map
+		WidthAdjArray m_WidthAdjTop;	    //	Top width adjustment
+		WidthAdjArray m_WidthAdjBottom;	    //	Bottom width adjustment
 
         friend TLinePainter32;
     };
@@ -168,4 +169,19 @@ template <class BLENDER> class CFlareRayRasterizer : public TLinePainter32<CFlar
             }
 
         friend TLinePainter32;
+    };
+
+class CLightningBundlePainter : public ILinePainter
+    {
+    public:
+        CLightningBundlePainter (int iBoltCount, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor, WidthAdjArray &WidthAdjTop, WidthAdjArray &WidthAdjBottom);
+
+        virtual void Draw (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth) override;
+
+    private:
+        int m_iBoltCount;
+        CG32bitPixel m_rgbPrimaryColor;
+        CG32bitPixel m_rgbSecondaryColor;
+        WidthAdjArray m_WidthAdjTop;
+        WidthAdjArray m_WidthAdjBottom;
     };
