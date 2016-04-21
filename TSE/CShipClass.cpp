@@ -2161,7 +2161,7 @@ CVector CShipClass::GetDockingPortOffset (int iRotation)
 	{
 	//	For small ships we just go with the ship center.
 
-	int iImageSize = m_Image.GetImageViewportSize();
+    int iImageSize = RectWidth(m_Image.GetImageRect());
 	if (iImageSize <= DOCK_OFFSET_STD_SIZE)
 		return NullVector;
 
