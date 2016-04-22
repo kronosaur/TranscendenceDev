@@ -3673,6 +3673,109 @@ ICCItem *fnStrFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		return pCC->CreateInteger(iPos);
 	}
 
+ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
+
+//  fndStruct
+//
+//  Constructs a structure
+
+    {
+    int i;
+	CCodeChain *pCC = pCtx->pCC;
+    ICCItem *pResult = pCC->CreateSymbolTable();
+
+    //  Loop over all arguments and add to the result.
+
+    int iArg = 0;
+    while (iArg < pArgs->GetCount())
+        {
+        ICCItem *pArg = pArgs->GetElement(iArg);
+
+        //  If nil, then skip. This allows us to have conditional key/value 
+        //  pairs.
+
+        if (pArg->IsNil())
+            iArg++;
+
+        //  If this element is a structure, then combine it.
+
+        else if (pArg->IsSymbolTable())
+            {
+            for (i = 0; i < pArg->GetCount(); i++)
+                {
+                CString sKey = pArg->GetKey(i);
+                ICCItem *pValue = pArg->GetElement(i);
+                pResult->SetAt(*pCC, sKey, pValue);
+                }
+
+            iArg++;
+            }
+
+        //  If this is an array of two elements, then assume it is a key/value 
+        //  pair.
+
+        else if (pArg->IsList() && pArg->GetCount() == 2)
+            {
+            CString sKey = pArg->GetElement(0)->GetStringValue();
+            if (sKey.IsBlank())
+                {
+                pResult->Discard(pCC);
+                pResult = pCC->CreateError(CONSTLIT("Key cannot be Nil."));
+                break;
+                }
+
+            pResult->SetAt(*pCC, sKey, pArg->GetElement(1));
+            iArg++;
+            }
+
+        //  Otherwise, if this is an atom, assume it is a key and a value 
+        //  follows.
+
+        else if (pArg->IsAtom())
+            {
+            CString sKey = pArg->GetStringValue();
+            if (sKey.IsBlank())
+                {
+                pResult->Discard(pCC);
+                pResult = pCC->CreateError(CONSTLIT("Key cannot be Nil."));
+                break;
+                }
+
+            iArg++;
+            if (iArg >= pArgs->GetCount())
+                {
+                pResult->Discard(pCC);
+                pResult = pCC->CreateError(CONSTLIT("Insufficient arguments."));
+                break;
+                }
+
+            pResult->SetAt(*pCC, sKey, pArgs->GetElement(iArg));
+            iArg++;
+            }
+
+        //  Otherwise, error
+
+        else
+            {
+            pResult->Discard(pCC);
+            pResult = pCC->CreateError(CONSTLIT("Invalid argument"), pArg);
+            break;
+            }
+        }
+
+    //  If the result is empty, return Nil
+
+    if (pResult->GetCount() == 0)
+        {
+        pResult->Discard(pCC);
+        return pCC->CreateNil();
+        }
+
+    //  Done
+
+    return pResult;
+    }
+
 ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnSubset

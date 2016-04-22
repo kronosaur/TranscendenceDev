@@ -136,6 +136,7 @@ ICCItem *fnSpecial (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnStrCapitalize (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnStrFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
+ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSubst (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSwitch (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

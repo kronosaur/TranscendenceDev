@@ -284,6 +284,12 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(strFind string target) -> pos of target in string (0-based)",
 			"ss",	0,	},
 
+		{	"struct",			fnStruct,		0,
+			"(struct key1 value1 key2 value2 ...) -> struct\n"
+            "(struct (key1 value1) (key2 value2) ..) -> struct\n"
+            "(struct { key1:value1 key2:value2 ... } ...) -> struct",
+			"*",	0,	},
+
 		{	"subset",			fnSubset,		0,
 			"(subset list pos [count]) -> list",
 			"vv*",	0,	},
