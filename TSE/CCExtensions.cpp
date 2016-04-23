@@ -472,6 +472,9 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_HAS_EVENT				14
 #define FN_DESIGN_GET_XML				15
 #define FN_DESIGN_GET_PROPERTY			16
+#define FN_DESIGN_ADD_TIMER             17
+#define FN_DESIGN_ADD_RECURRING_TIMER   18
+#define FN_DESIGN_CANCEL_TIMER          19
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -2461,6 +2464,24 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	Design Type functions
 		//	---------------------
 
+		{	"typAddTimerEvent",				fnDesignGet,		FN_DESIGN_ADD_TIMER,
+			"(typeAddTimerEvent unid delay event)\n\n"
+			
+			"delay in ticks\n",
+
+			"iis",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"typAddRecurringTimerEvent",	fnDesignGet,		FN_DESIGN_ADD_RECURRING_TIMER,	
+			"(typAddRecurringTimerEvent unid interval event)\n\n"
+			
+			"interval in ticks\n",
+
+			"iis",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"typCancelTimerEvent",				fnDesignGet,	FN_DESIGN_CANCEL_TIMER,
+			"(typCancelTimerEvent unid event) -> True/Nil",
+			"is",	0,	},
+
 		{	"typCreate",					fnDesignCreate,		FN_DESIGN_CREATE,
 			"(typCreate unid XML) -> True/Nil",
 			"iv",	PPFLAG_SIDEEFFECTS,	},
@@ -3407,6 +3428,37 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+        case FN_DESIGN_ADD_TIMER:
+        case FN_DESIGN_ADD_RECURRING_TIMER:
+            {
+			int iTime = pArgs->GetElement(1)->GetIntegerValue();
+			if (iTime < 0 || (iTime == 0 && dwData == FN_DESIGN_ADD_RECURRING_TIMER))
+				return pCC->CreateError(CONSTLIT("Invalid recurring time"), pArgs->GetElement(1));
+
+			CString sEvent = pArgs->GetElement(2)->GetStringValue();
+
+			CTimedEvent *pEvent;
+			if (dwData == FN_DESIGN_ADD_TIMER)
+				pEvent = new CTimedTypeEvent(
+						g_pUniverse->GetTicks() + iTime,
+						0,
+						pType,
+						sEvent);
+			else
+				pEvent = new CTimedTypeEvent(
+						g_pUniverse->GetTicks() + mathRandom(0, iTime),
+						iTime,
+						pType,
+						sEvent);
+
+			g_pUniverse->AddEvent(pEvent);
+
+			return pCC->CreateTrue();
+            }
+
+        case FN_DESIGN_CANCEL_TIMER:
+			return pCC->CreateBool(g_pUniverse->CancelEvent(pType, pArgs->GetElement(1)->GetStringValue(), pCtx->InEvent(eventDoEvent)));
+
 		case FN_DESIGN_FIRE_OBJ_EVENT:
 			{
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));

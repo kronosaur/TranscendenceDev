@@ -74,6 +74,37 @@ bool CTimedEventList::CancelEvent (CSpaceObject *pObj, const CString &sEvent, bo
 	return bFound;
 	}
 
+bool CTimedEventList::CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent)
+
+//	CancelEvent
+//
+//	Cancels the given event
+
+	{
+	int i;
+	bool bFound = false;
+
+	for (i = 0; i < GetCount(); i++)
+		{
+		CTimedEvent *pEvent = GetEvent(i);
+		if (pEvent->GetEventHandlerType() == pType 
+				&& strEquals(pEvent->GetEventHandlerName(), sEvent))
+			{
+			bFound = true;
+
+			if (bInDoEvent)
+				pEvent->SetDestroyed();
+			else
+				{
+				RemoveEvent(i);
+				i--;
+				}
+			}
+		}
+
+	return bFound;
+	}
+
 void CTimedEventList::DeleteAll (void)
 
 //	DeleteAll

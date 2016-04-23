@@ -3116,6 +3116,12 @@ class CTradingDesc
 
 		struct SServiceDesc
 			{
+            SServiceDesc (void) :
+                    pPriceAdjCode(NULL)
+                { }
+
+            ~SServiceDesc (void);
+
 			ETradeServiceTypes iService;		//	Type of service
 			CString sID;						//	ID of order
 
@@ -3126,6 +3132,7 @@ class CTradingDesc
 			CDesignTypeCriteria TypeCriteria;	//	Type criteria (for selling ships, etc.).
 
 			CFormulaText PriceAdj;				//	Price adjustment
+            ICCItem *pPriceAdjCode;             //  Code to adjust price
 
 			CString sMessageID;					//	ID of language element to return if we match.
 			DWORD dwFlags;						//	Flags

@@ -1349,3 +1349,14 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 		pStream->Write((char *)&Commodity.dwFlags, sizeof(DWORD));
 		}
 	}
+
+//  CTradingDesc::SServiceDesc -------------------------------------------------
+
+CTradingDesc::SServiceDesc::~SServiceDesc (void)
+
+//  SServiceDesc destructor
+
+    {
+    if (pPriceAdjCode)
+        pPriceAdjCode->Discard(&g_pUniverse->GetCC());
+    }

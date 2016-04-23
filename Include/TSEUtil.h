@@ -1060,6 +1060,7 @@ class CTimedEventList
 		inline void AddEvent (CTimedEvent *pEvent) { m_List.Insert(pEvent); }
 		bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent);
 		bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent);
+		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent);
 		void DeleteAll (void);
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline CTimedEvent *GetEvent (int iIndex) const { return m_List[iIndex]; }
