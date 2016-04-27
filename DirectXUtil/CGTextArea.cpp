@@ -103,6 +103,9 @@ int CGTextArea::Justify (const RECT &rcRect)
 
 		RECT rcBounds;
 		m_RichText.GetBounds(&rcBounds);
+        if (RectHeight(rcBounds) == 0)
+            return 0;
+
 		return m_rcPadding.top + RectHeight(rcBounds) + m_rcPadding.bottom;
 		}
 	else
