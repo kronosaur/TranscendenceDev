@@ -130,6 +130,7 @@ struct CItemCriteria
 
 	bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
 	int GetMaxLevelMatched (void) const;
+    inline bool MatchesItemCategory (ItemCategories iCategory) { return ((dwItemCategories & iCategory) && !(dwExcludeCategories & iCategory)); }
 
 	DWORD dwItemCategories;			//	Set of ItemCategories to match on
 	DWORD dwExcludeCategories;		//	Categories to exclude
@@ -2178,7 +2179,7 @@ class CItemType : public CDesignType
 		//	CDesignType overrides
 		static CItemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iLevel; return m_iLevel; }
+		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return m_iLevel; }
 		virtual DesignTypes GetType (void) const { return designItemType; }
 		virtual bool IsVirtual (void) const { return (m_fVirtual ? true : false); }
 

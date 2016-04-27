@@ -29,6 +29,8 @@
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
 #define PROPERTY_LEVEL  						CONSTLIT("level")
+#define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
+#define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 
@@ -903,6 +905,12 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 
 	else if (strEquals(sName, PROPERTY_MASS_BONUS_PER_CHARGE))
 		return CC.CreateInteger(m_pItemType->GetMassBonusPerCharge());
+
+    else if (strEquals(sName, PROPERTY_MAX_LEVEL))
+        return CC.CreateInteger(GetType()->GetMaxLevel());
+
+    else if (strEquals(sName, PROPERTY_MIN_LEVEL))
+        return CC.CreateInteger(GetType()->GetLevel());
 
 	else if (strEquals(sName, PROPERTY_VALUE_BONUS_PER_CHARGE))
 		return CC.CreateInteger(m_pItemType->GetValueBonusPerCharge());
