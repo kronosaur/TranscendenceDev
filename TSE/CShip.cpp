@@ -782,18 +782,7 @@ int CShip::CalcMaxCargoSpace (void) const
 //	additional devices)
 
 	{
-	//	Compute total cargo space. Start with the space specified
-	//	by the class. Then see if any devices add to it.
-
-	int iCargoSpace = m_pClass->GetCargoSpace();
-	for (int i = 0; i < GetDeviceCount(); i++)
-		if (!m_Devices[i].IsEmpty())
-			iCargoSpace += m_Devices[i].GetClass()->GetCargoSpace();
-
-	//	We never exceed the max cargo space for the class (even
-	//	with extra devices)
-
-	return Min(iCargoSpace, m_pClass->GetMaxCargoSpace());
+    return m_Perf.GetCargoDesc().GetCargoSpace();
 	}
 
 void CShip::CalcOverlayImpact (void)
@@ -841,7 +830,6 @@ void CShip::CalcPerformance (void)
 
     SShipPerformanceCtx Ctx;
     Ctx.pShip = this;
-    Ctx.rSingleArmorFraction = (GetArmorSectionCount() > 0 ? 1.0 / GetArmorSectionCount() : 1.0);
     Ctx.bDriveDamaged = IsMainDriveDamaged();
     Ctx.bHalfSpeed = m_fHalfSpeed;
 
@@ -1125,7 +1113,7 @@ CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *re
 
 			//	If this is larger than the ship class max, then we cannot remove
 
-			if (rCargoSpace > (Metric)m_pClass->GetCargoSpace())
+			if (rCargoSpace > (Metric)m_pClass->GetHullCargoSpace())
 				{
 				*retsResult = CONSTLIT("Your ship has too much cargo to be able to replace the cargo hold.");
 				return remTooMuchCargo;

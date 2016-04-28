@@ -2377,7 +2377,7 @@ class CShipClass : public CDesignType
 		CString GenerateShipName (DWORD *retdwFlags);
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
         inline const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
-		inline int GetCargoSpace (void) { return m_iCargoSpace; }
+        const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;
 		inline CGenericType *GetCharacter (void) { return m_Character; }
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
 		inline int GetCyberDefenseLevel (void) { return m_iCyberDefenseLevel; }
@@ -2393,6 +2393,7 @@ class CShipClass : public CDesignType
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
         const CObjectImageArray &GetHeroImage (void);
+		inline int GetHullCargoSpace (void) { return m_CargoDesc.GetCargoSpace(); }
 		inline int GetHullMass (void) const { return m_iMass; }
 		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
 		int GetHullSectionAtAngle (int iAngle);
@@ -2566,11 +2567,11 @@ class CShipClass : public CDesignType
 
 		int m_iMass;							//	Empty mass (tons)
 		int m_iSize;							//	Length in meters
-		int m_iCargoSpace;						//	Available cargo space (tons)
 		CRotationDesc m_RotationDesc;	        //	Rotation and maneuverability
 		double m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
 		CDriveDesc m_DriveDesc;					//	Drive descriptor
 		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
+        CCargoDesc m_CargoDesc;                 //  Cargo space descriptor
 		int m_iCyberDefenseLevel;				//	Cyber defense level
 
         //  Class limits

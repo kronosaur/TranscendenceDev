@@ -62,16 +62,17 @@ class CCargoSpaceClass : public CDeviceClass
 		virtual bool CanBeDisabled (CItemCtx &Ctx) override { return false; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatCargoHold; }
-		virtual int GetCargoSpace (void) override { return m_iCargoSpace; }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
 	protected:
+        virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 
 	private:
 		CCargoSpaceClass (void);
+        const CCargoDesc *GetDesc (CItemCtx &Ctx) const;
 
-		int m_iCargoSpace;
+        TArray<CCargoDesc> m_Desc;
 	};
 
 class CCyberDeckClass : public CDeviceClass

@@ -5706,6 +5706,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_GET_SELL_PRICE:
 			{
 			CItem Item = CreateItemFromList(*pCC, pArgs->GetElement(1));
+            if (Item.IsEmpty())
+                return pCC->CreateNil();
+
 			bool bNoInventoryCheck = (pArgs->GetCount() >= 3 && !pArgs->GetElement(2)->IsNil());
 
 			int iValue;

@@ -332,6 +332,25 @@ enum AbilityStatus
 	ablDamaged =				2,
 	};
 
+//  Cargo ----------------------------------------------------------------------
+
+class CCargoDesc
+    {
+    public:
+        CCargoDesc (int iCargoSpace = -1) :
+                m_iCargoSpace(iCargoSpace)
+            { }
+
+        inline int GetCargoSpace (void) const { return m_iCargoSpace; }
+        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+        void Interpolate (const CCargoDesc &From, const CCargoDesc &To, Metric rInterpolate = 0.5);
+        inline bool IsEmpty (void) const { return (m_iCargoSpace == -1); }
+        inline void SetCargoSpace (int iCargoSpace) { m_iCargoSpace = iCargoSpace; }
+
+    private:
+        int m_iCargoSpace;                  //  Cargo space in tons
+    };
+
 //  Drive ----------------------------------------------------------------------
 
 class CDriveDesc
@@ -529,7 +548,6 @@ class CDeviceClass
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName);
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual int GetAmmoVariant (const CItemType *pItem) const { return -1; }
-		virtual int GetCargoSpace (void) { return 0; }
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) { return 0; }
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return NULL; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
@@ -718,7 +736,9 @@ struct SShipPerformanceCtx
             rSingleArmorFraction(0.0),
             rMaxSpeedBonus(0.0),
             bDriveDamaged(false),
-            bHalfSpeed(false)
+            bHalfSpeed(false),
+            CargoDesc(0),
+            iMaxCargoSpace(0)
         { }
 
     CShip *pShip;                           //  Target ship
@@ -730,21 +750,28 @@ struct SShipPerformanceCtx
     Metric rMaxSpeedBonus;                  //  % bonus to speed (+/-). 100.0 = +100%
     bool bDriveDamaged;                     //  If TRUE, cut thrust in half
     bool bHalfSpeed;                        //  If TRUE, ship is running at half speed
+
+    CCargoDesc CargoDesc;                   //  Cargo space descriptor
+    int iMaxCargoSpace;                     //  Max cargo space limit imposed by class
+                                            //      0 = no limit
     };
 
 class CShipPerformanceDesc
     {
     public:
+        inline const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
         inline const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
         inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
         void Init (SShipPerformanceCtx &Ctx);
 
         //  Read-Write versions of accessors
 
+        inline CCargoDesc &GetCargoDesc (void) { return m_CargoDesc; }
         inline CDriveDesc &GetDriveDesc (void) { return m_DriveDesc; }
         inline CIntegralRotationDesc &GetRotationDesc (void) { return m_RotationDesc; }
 
     private:
         CIntegralRotationDesc m_RotationDesc;
         CDriveDesc m_DriveDesc;
+        CCargoDesc m_CargoDesc;
     };

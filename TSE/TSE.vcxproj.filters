@@ -934,6 +934,9 @@
     <ClCompile Include="CLightningBundlePainter.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
+    <ClCompile Include="CCargoDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

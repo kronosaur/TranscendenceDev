@@ -82,24 +82,22 @@ void CUIHelper::CreateClassInfoCargo (CShipClass *pClass, const CDeviceDescList 
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
-	CDeviceClass *pCargoExtension = Devices.GetNamedDevice(devCargo);
-	int iCargoSpace = pClass->GetCargoSpace();
-	if (pCargoExtension)
-		iCargoSpace += pCargoExtension->GetCargoSpace();
+    const CItem *pCargoExpansion;
+	const CCargoDesc &CargoDesc = pClass->GetCargoDesc(&pCargoExpansion);
 
 	//	Icon
 
-	CItemType *pItemIcon = (pCargoExtension ? pCargoExtension->GetItemType() : g_pUniverse->FindItemType(CARGO_HOLD_EXPANSION_UNID));
+	CItemType *pItemIcon = (pCargoExpansion ? pCargoExpansion->GetType() : g_pUniverse->FindItemType(CARGO_HOLD_EXPANSION_UNID));
 
 	//	Text
 
 	CString sText = strPatternSubst(CONSTLIT("{/rtf {/f:LargeBold;/c:%d; %s} {/f:MediumBold;/c:%d; %s}\n{/f:Medium;/c:%d; %s}}"),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			strFromInt(iCargoSpace),
+			strFromInt(CargoDesc.GetCargoSpace()),
 			(COLORREF)VI.GetColor(colorTextDialogInput),
-			(pCargoExtension ? strPatternSubst(CONSTLIT("ton %s"), CTextBlock::Escape(pCargoExtension->GetItemType()->GetNounPhrase(nounActual))) : CONSTLIT("ton cargo hold")),
+			(pCargoExpansion ? strPatternSubst(CONSTLIT("ton %s"), CTextBlock::Escape(pCargoExpansion->GetType()->GetNounPhrase(nounActual))) : CONSTLIT("ton cargo hold")),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			(iCargoSpace < pClass->GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), pClass->GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
+			(CargoDesc.GetCargoSpace() < pClass->GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), pClass->GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
 	}

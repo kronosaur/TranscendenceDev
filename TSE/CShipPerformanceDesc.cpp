@@ -38,4 +38,8 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
     if (Ctx.bHalfSpeed)
         m_DriveDesc.AdjMaxSpeed(0.5);
+
+    //  Cargo space
+
+    m_CargoDesc = Ctx.CargoDesc;
     }

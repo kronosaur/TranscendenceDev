@@ -912,7 +912,6 @@ void CShipClass::CalcPerformance (void)
     //  These fields are context for the ship that we're computing.
 
     SShipPerformanceCtx Ctx;
-    Ctx.rSingleArmorFraction = (m_Armor.GetCount() > 0 ? 1.0 / m_Armor.GetCount() : 1.0);
 
     //  Start with parameters from the class
 
@@ -1755,7 +1754,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_BALANCE_TYPE))
 		CalcBalanceType(retsValue);
 	else if (strEquals(sField, FIELD_CARGO_SPACE))
-		*retsValue = strFromInt(GetCargoSpace());
+		*retsValue = strFromInt(GetCargoDesc().GetCargoSpace());
 	else if (strEquals(sField, FIELD_COMBAT_STRENGTH))
 		*retsValue = strFromInt((int)(CalcCombatStrength() + 0.5));
 	else if (strEquals(sField, FIELD_DAMAGE_RATE))
@@ -2121,6 +2120,22 @@ CString CShipClass::GenerateShipName (DWORD *retdwFlags)
 		return NULL_STR;
 		}
 	}
+
+const CCargoDesc &CShipClass::GetCargoDesc (const CItem **retpCargoItem) const
+
+//  GetCargoDesc
+//
+//  Returns the computed cargo descriptor
+
+    {
+    if (retpCargoItem)
+        {
+        const SDeviceDesc *pCargo = m_AverageDevices.GetDeviceDescByName(devCargo);
+        *retpCargoItem = (pCargo ? &pCargo->Item : NULL);
+        }
+
+    return m_Perf.GetCargoDesc();
+    }
 
 CCommunicationsHandler *CShipClass::GetCommsHandler (void)
 
@@ -2741,10 +2756,16 @@ void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
 //  Initializes the performance parameters from the ship class.
 
     {
+    //  Initialize some values from the class
+
+    Ctx.rSingleArmorFraction = (m_Armor.GetCount() > 0 ? 1.0 / m_Armor.GetCount() : 1.0);
+    Ctx.iMaxCargoSpace = GetMaxCargoSpace();
+
     //  Initialize with performance params based on the class.
 
     Ctx.RotationDesc = m_RotationDesc;
     Ctx.DriveDesc = m_DriveDesc;
+    Ctx.CargoDesc = m_CargoDesc;
     }
 
 void CShipClass::InitShipNamesIndices (void)
@@ -3107,7 +3128,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 
 	m_iMass = pClass->m_iMass;
 	m_iSize = pClass->m_iSize;
-	m_iCargoSpace = pClass->m_iCargoSpace;
+	m_CargoDesc = pClass->m_CargoDesc;
 	m_RotationDesc = pClass->m_RotationDesc;
 	m_rThrustRatio = pClass->m_rThrustRatio;
 	m_DriveDesc = pClass->m_DriveDesc;
@@ -3248,10 +3269,12 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Initialize design
 
+    if (error = m_CargoDesc.InitFromXML(Ctx, pDesc))
+        return ComposeLoadError(Ctx, Ctx.sError);
+
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
 	m_iSize = pDesc->GetAttributeIntegerBounded(SIZE_ATTRIB, 1, -1, 0);
-	m_iCargoSpace = pDesc->GetAttributeInteger(CARGO_SPACE_ATTRIB);
-	m_iMaxCargoSpace = Max(m_iCargoSpace, pDesc->GetAttributeInteger(MAX_CARGO_SPACE_ATTRIB));
+	m_iMaxCargoSpace = Max(m_CargoDesc.GetCargoSpace(), pDesc->GetAttributeInteger(MAX_CARGO_SPACE_ATTRIB));
 	m_iMaxArmorMass = pDesc->GetAttributeInteger(MAX_ARMOR_ATTRIB);
 	m_iMaxReactorPower = pDesc->GetAttributeInteger(MAX_REACTOR_POWER_ATTRIB);
 

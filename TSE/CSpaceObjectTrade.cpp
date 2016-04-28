@@ -368,7 +368,7 @@ int CSpaceObject::GetSellPrice (const CItem &Item, DWORD dwFlags)
 	int iPrice = -1;
 
 	if (IsAbandoned())
-		return false;
+		return 0;
 
 	//	See if we have an override price
 
