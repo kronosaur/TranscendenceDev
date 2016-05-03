@@ -2,10 +2,7 @@
 //
 //	Implements CCString class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 static CObjectClass<CCString>g_Class(OBJID_CCSTRING, NULL);
 

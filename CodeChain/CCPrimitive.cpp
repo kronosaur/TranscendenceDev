@@ -2,10 +2,7 @@
 //
 //	Implements CCPrimitive class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 static CObjectClass<CCPrimitive>g_Class(OBJID_CCPRIMITIVE, NULL);
 

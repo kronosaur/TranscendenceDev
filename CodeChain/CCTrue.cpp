@@ -2,10 +2,7 @@
 //
 //	Implements CCTrue class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 static CObjectClass<CCTrue>g_Class(OBJID_CCTRUE, NULL);
 

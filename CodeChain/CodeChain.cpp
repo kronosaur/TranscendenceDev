@@ -2,10 +2,7 @@
 //
 //	Implementation of CCodeChain object
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 #include "Functions.h"
 #include "DefPrimitives.h"
 

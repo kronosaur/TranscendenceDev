@@ -1,0 +1,3 @@
+#include "PreComp.h"
+
+NoEmptyFile();

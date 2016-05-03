@@ -19,11 +19,8 @@
 //		y	Symbol table
 //		*	Any number of items (must be last)
 
-#include <windows.h>
+#include "PreComp.h"
 #include <Math.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
 #include "Functions.h"
 #include "TMathList.h"
 

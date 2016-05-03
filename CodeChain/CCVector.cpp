@@ -2,10 +2,7 @@
 //
 //	Implements CCVector class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 //	================ HELPER FUNCTIONS ====================
 

@@ -2,10 +2,7 @@
 //
 //	Implements CCDouble class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 CCDouble::CCDouble (void) : 
 		m_dValue(0.0)
