@@ -24,6 +24,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{54A735D5-A8EA-4D72-A4B5-593F79080882}</ProjectGuid>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <RootNamespace>TSUI</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
