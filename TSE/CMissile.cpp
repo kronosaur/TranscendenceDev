@@ -7,6 +7,7 @@
 #define TRAIL_COUNT								4
 #define MAX_TARGET_RANGE						(24.0 * LIGHT_SECOND)
 
+#define PROPERTY_LIFE_LEFT						CONSTLIT("lifeLeft")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 
 const DWORD VAPOR_TRAIL_OPACITY =				80;
@@ -512,7 +513,10 @@ ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_ROTATION))
+	if (strEquals(sName, PROPERTY_LIFE_LEFT))
+		return (m_fDestroyOnAnimationDone ? CC.CreateInteger(0) : CC.CreateInteger(m_iLifeLeft));
+
+	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());
 
 	else
@@ -1400,7 +1404,14 @@ bool CMissile::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_ROTATION))
+    if (strEquals(sName, PROPERTY_LIFE_LEFT))
+        {
+        if (!m_fDestroyOnAnimationDone)
+            m_iLifeLeft = Max(0, pValue->GetIntegerValue());
+        return true;
+        }
+
+	else if (strEquals(sName, PROPERTY_ROTATION))
 		{
 		m_iRotation = AngleMod(pValue->GetIntegerValue());
 		return true;

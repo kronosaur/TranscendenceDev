@@ -379,10 +379,12 @@ class CMissile : public CSpaceObject
 
 		//	CSpaceObject virtuals
 		virtual CMissile *AsMissile (void) override { return this; }
+        virtual bool CanAttack (void) const override { return (m_fDestroyOnAnimationDone ? false : true); }
 		virtual bool CanMove (void) override { return true; }
 		virtual void CreateReflection (const CVector &vPos, int iDirection) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DetonateNow (CSpaceObject *pHit) override;
+        virtual CSpaceObject *GetBase (void) const override { return m_Source.GetObj(); }
 		virtual Categories GetCategory (void) const override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual DestructionTypes GetDamageCauseType (void) override { return m_iCause; }
@@ -397,6 +399,7 @@ class CMissile : public CSpaceObject
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CSpaceObject *GetSource (void) override { return m_Source.GetObj(); }
 		virtual int GetStealth (void) const override;
+        virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override { return m_pTarget; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual bool HasAttribute (const CString &sAttribute) const override;
