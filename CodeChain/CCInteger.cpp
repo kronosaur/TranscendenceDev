@@ -2,10 +2,7 @@
 //
 //	Implements CCInteger class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 CCInteger::CCInteger (void) : 
 		m_iValue(0)

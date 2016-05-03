@@ -2,10 +2,7 @@
 //
 //	Implements CCLambda class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 static CObjectClass<CCLambda>g_Class(OBJID_CCLAMBDA, NULL);
 

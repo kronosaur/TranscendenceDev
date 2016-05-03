@@ -3,10 +3,7 @@
 //	Implements the page library for CodeChain
 //	Copyright (c) 2011 by George Moromisato. All Rights Reserved.
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 #include "Pages.h"
 
 #define FN_PAGE_MAP						1

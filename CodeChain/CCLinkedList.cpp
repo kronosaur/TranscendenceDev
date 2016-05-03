@@ -2,10 +2,7 @@
 //
 //	Implements CCLinkedList class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 #define MIN_UNINDEXED_LOOKUP					5
 

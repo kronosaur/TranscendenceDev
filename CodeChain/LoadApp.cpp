@@ -2,10 +2,7 @@
 //
 //	Implementation of LoadApp method for CCodeChain
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 #define OUTPUT_SIGNATURE							'CCDO'
 #define OUTPUT_VERSION								1

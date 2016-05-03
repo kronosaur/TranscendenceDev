@@ -2,10 +2,7 @@
 //
 //	Implements ICCItem class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 #define ITEM_FLAG_QUOTED					0x00000001
 #define ITEM_FLAG_ERROR						0x00000002

@@ -2,10 +2,7 @@
 //
 //	Implements CCAtomTable class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 static CObjectClass<CCAtomTable>g_Class(OBJID_CCATOMTABLE, NULL);
 

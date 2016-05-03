@@ -2,10 +2,7 @@
 //
 //	Implements CCNil class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 static CObjectClass<CCNil>g_Class(OBJID_CCNIL, NULL);
 

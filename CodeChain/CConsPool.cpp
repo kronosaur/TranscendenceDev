@@ -2,10 +2,7 @@
 //
 //	Implements CConsPool class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 #define SEGMENT_SIZE					4096	//	Size of each backbone segment
 #define BACKBONE_SIZE					1024	//	Size of the backbone

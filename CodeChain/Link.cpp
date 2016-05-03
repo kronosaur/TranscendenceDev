@@ -2,10 +2,7 @@
 //
 //	Parsing routines
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 #define SYMBOL_QUOTE					'\''	//	Quote symbol
 #define SYMBOL_OPENPAREN				'('		//	Open list

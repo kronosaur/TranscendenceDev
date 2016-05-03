@@ -87,6 +87,9 @@
     <ClCompile Include="CCDouble.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PreComp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DefPrimitives.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TMathList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PreComp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

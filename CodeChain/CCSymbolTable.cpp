@@ -2,10 +2,7 @@
 //
 //	Implements CCSymbolTable class
 
-#include <windows.h>
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "CodeChain.h"
+#include "PreComp.h"
 
 static CObjectClass<CCSymbolTable>g_Class(OBJID_CCSYMBOLTABLE, NULL);
 
