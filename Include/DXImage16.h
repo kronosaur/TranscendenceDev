@@ -440,6 +440,8 @@ class CG16bitFont : public CObject
 
 			MeasureOnly =	0x00000010,
 			AdjustToFit =	0x00000020,
+
+            AlignMiddle =   0x00000040,
 			};
 
 		CG16bitFont (void);

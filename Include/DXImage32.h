@@ -289,6 +289,7 @@ class CGDraw
 		static void RectOutlineDotted (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbColor);
 		static void RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor);
 		static void RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, int iLineWidth, CG32bitPixel rgbColor);
+        static void TriangleCorner (CG32bitImage &Dest, int x, int y, int iDir, int iSize, CG32bitPixel rgbColor);
 
 		//	Regions
 

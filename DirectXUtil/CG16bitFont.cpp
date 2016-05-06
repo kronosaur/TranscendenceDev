@@ -662,8 +662,21 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
 	int i;
 	TArray<CString> Lines;
 
+    //  Break into lines
+
 	BreakText(sText, RectWidth(rcRect), &Lines, dwFlags);
+
+    //  Compute top alignment
+
 	int y = rcRect.top;
+    if (dwFlags & AlignMiddle)
+        {
+        int cyHeight = Lines.GetCount() * m_cyHeight + (iLineAdj * (Lines.GetCount() - 1));
+        y += (RectHeight(rcRect) - cyHeight) / 2;
+        }
+
+    //  Paint each line
+
 	for (i = 0; i < Lines.GetCount(); i++)
 		{
 		int x = rcRect.left;
@@ -684,6 +697,8 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
 
 		y += m_cyHeight + iLineAdj;
 		}
+
+    //  Done
 
 	if (retcyHeight)
 		*retcyHeight = y - rcRect.top;

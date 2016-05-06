@@ -126,14 +126,15 @@ inline int RectHeight(RECT *pRect) { return pRect->bottom - pRect->top; }
 inline int RectHeight(const RECT &Rect) { return Rect.bottom - Rect.top; }
 inline int RectWidth(RECT *pRect) { return pRect->right - pRect->left; }
 inline int RectWidth(const RECT &Rect) { return Rect.right - Rect.left; }
-inline BOOL RectsIntersect(RECT &R1, RECT &R2)
+inline void RectCenter (const RECT &rcRect, int *retx, int *rety) { *retx = rcRect.left + (RectWidth(rcRect) / 2); *rety = rcRect.top + (RectHeight(rcRect) / 2); }
+inline bool RectsIntersect(const RECT &R1, const RECT &R2)
 	{
 	return (R1.right >= R2.left)
 			&& (R1.left < R2.right)
 			&& (R1.bottom >= R2.top)
 			&& (R1.top < R2.bottom);
 	}
-inline BOOL RectEncloses (RECT *pR1, RECT *pR2)
+inline bool RectEncloses (RECT *pR1, RECT *pR2)
 	{
 	return (pR1->left <= pR2->left)
 			&& (pR1->right >= pR2->right)

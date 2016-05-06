@@ -425,6 +425,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CLabelArranger.cpp" />
     <ClCompile Include="CLargeSet.cpp" />
     <ClCompile Include="CManualEvent.cpp" />
     <ClCompile Include="CMapBase.cpp" />

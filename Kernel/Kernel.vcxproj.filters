@@ -204,6 +204,9 @@
     <ClCompile Include="CGeometry.cpp">
       <Filter>Source Files\Euclid</Filter>
     </ClCompile>
+    <ClCompile Include="CLabelArranger.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">

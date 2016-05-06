@@ -37,6 +37,7 @@ inline int AngleToDegrees (Metric rAngle) { return AngleMod((int)(rAngle * 180.0
 
 inline Metric mathAngleMod (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, TAU); else return TAU - fmod(-rAngle, TAU); }
 inline Metric mathAngleModDegrees (double rAngle) { if (rAngle >= 0.0) return fmod(rAngle, 360.0); else return 360.0 - fmod(-rAngle, 360.0); }
+inline Metric mathAngleBearing (Metric rAngle, Metric rOrigin) { Metric rDiff = mathAngleMod(rAngle - rOrigin); return (rDiff > PI ? rDiff - TAU : rDiff); }
 inline Metric mathAngleDiff (double rFrom, double rTo) { return mathAngleMod(rTo - rFrom); }
 inline Metric mathDegreesToRadians (int iAngle) { return iAngle * PI / 180.0; }
 inline Metric mathDegreesToRadians (Metric rDegrees) { return PI * rDegrees / 180.0; }
@@ -406,6 +407,66 @@ class CStepIncrementor
 		Metric m_rRange;
 		Metric m_rPower;
 	};
+
+//  Labels ---------------------------------------------------------------------
+
+class CLabelArranger
+    {
+    public:
+        enum EStyles
+            {
+            styleSideColumns,               //  Arrange in two columns at edge of bounds
+            };
+
+        struct SLabelDesc
+            {
+            //  Inputs
+
+            int cxWidth;                    //  Label width
+            int cyHeight;                   //  Label height
+            int xDest;                      //  What the label points to
+            int yDest;
+
+            //  Outputs
+
+            RECT rcRect;                    //  Output rect of the label
+            };
+
+        CLabelArranger (void);
+
+        inline void AddExclusion (const RECT &rcRect) { m_Exclusions.Insert(rcRect); }
+        void Arrange (TArray<SLabelDesc> &Labels) const;
+        void SetBounds (const RECT &rcRect);
+        inline void SetRadius (int iRadius) { m_iRadius = iRadius; }
+        inline void SetStyle (EStyles iStyle) { m_iStyle = iStyle; }
+
+    private:
+        enum EConstraints
+            {
+            consNone,
+            consOutOfBounds,
+            consExclusion,
+            consCollision,
+            };
+
+        void ArrangeSideColumn (TArray<SLabelDesc> &Labels, const TSortMap<Metric, int> &Sort, int cxColumn, bool bLeftSide) const;
+        void ArrangeSideColumns (TArray<SLabelDesc> &Labels) const;
+        bool BalanceColumns (TSortMap<Metric, int> &From, TSortMap<Metric, int> &To) const;
+
+        //  Arragement options
+
+        EStyles m_iStyle;                   //  Arrangement style
+        RECT m_rcBounds;                    //  Arrange within this rect (if empty, no limits)
+        TArray<RECT> m_Exclusions;          //  Do not place inside these rects
+        int m_iRadius;                      //  Arrange along this circle size (for some styles)
+        int m_cxGrid;                       //  Align labels to this grid
+        int m_cyGrid;
+
+        //  Derived values
+
+        int m_xCenter;
+        int m_yCenter;
+    };
 
 //	Functions
 

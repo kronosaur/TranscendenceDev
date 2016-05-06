@@ -247,3 +247,87 @@ void CGDraw::RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, 
 	ArcCorner(Dest, x + iRadius, y + cyHeight - iRadius, iRadius, 180, 270, iLineWidth, rgbColor);
 	ArcCorner(Dest, x + cxWidth - iRadius, y + cyHeight - iRadius, iRadius, 270, 360, iLineWidth, rgbColor);
 	}
+
+void CGDraw::TriangleCorner (CG32bitImage &Dest, int x, int y, int iDir, int iSize, CG32bitPixel rgbColor)
+
+//  TriangleCorner
+//
+//  Draws a triangular corner in one of 8 cardinal direction. 0 = E, 1 = NE, 2 = N, etc.
+//  The position is the tip of the triangle.
+
+    {
+    int xPos, yRow;
+
+    //  Null
+
+    if (iSize <= 0)
+        return;
+
+    BYTE byHalf = CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), 0x80);
+
+    //  Handle E, N, W, S
+
+    if ((iDir % 2) == 0)
+        {
+        //  Paint the tip
+
+        Dest.SetPixelTrans(x, y, rgbColor, byHalf);
+
+        //  N and S
+
+        if (iDir == 2 || iDir == 6)
+            {
+            int yInc = (iDir == 2 ? 1 : -1);
+            int yEnd = y + yInc * iSize;
+            int xLength = 0;
+            for (yRow = y + yInc; yRow != yEnd; yRow += yInc, xLength++)
+                {
+                Dest.SetPixelTrans(x - (xLength + 1), yRow, rgbColor, byHalf);
+                Dest.SetPixelTrans(x + xLength + 1, yRow, rgbColor, byHalf);
+                Dest.FillLine(x - xLength, yRow, 2 * xLength + 1, rgbColor);
+                }
+            }
+
+        //  E and W
+
+        else
+            {
+            int xInc = (iDir == 0 ? -1 : 1);
+            int xEnd = x + xInc * iSize;
+            int yLength = 0;
+            for (xPos = x + xInc; xPos != xEnd; xPos += xInc, yLength++)
+                {
+                Dest.SetPixelTrans(xPos, y - (yLength + 1), rgbColor, byHalf);
+                Dest.SetPixelTrans(xPos, y + yLength + 1, rgbColor, byHalf);
+                Dest.FillColumn(xPos, y - yLength, 2 * yLength + 1, rgbColor);
+                }
+            }
+        }
+
+    //  Handle NE, NW, SW, SE
+
+    else
+        {
+        int iLength = (int)(1.414 * iSize);
+        int yInc = (iDir == 1 || iDir == 3 ? +1 : -1);
+        int xInc = (iDir == 1 || iDir == 7 ? -1 : +1);
+        xPos = x;
+        yRow = y;
+        while (iLength >= 0)
+            {
+            if (xInc == 1)
+                {
+                Dest.FillLine(xPos, yRow, iLength, rgbColor);
+                Dest.SetPixelTrans(xPos + iLength, yRow, rgbColor, byHalf);
+                }
+            else
+                {
+                Dest.FillLine(xPos - iLength + 1, yRow, iLength, rgbColor);
+                Dest.SetPixelTrans(xPos - iLength, yRow, rgbColor, byHalf);
+                }
+
+            yRow += yInc;
+            iLength--;
+            }
+        }
+    }
