@@ -27,33 +27,33 @@ static SColorInitTable COLOR_TABLE[] =
 
 		{	"AreaDeep",					CG32bitPixel(0, 2, 10) },
 		{	"AreaDialog",				CG32bitPixel(28, 33, 39) },
-		{	"AreaDialogHighlight",		CG32bitPixel(237, 137, 36) },
+		{	"AreaDialogHighlight",		CG32bitPixel(237, 137, 36) },       //  H:30 S:85 B:93
 		{	"AreaDialogInput",			CG32bitPixel(28, 33, 39) },
 		{	"AreaDialogInputFocus",		CG32bitPixel(42, 49, 57) },
 		
-		{	"AreaDialogTitle",			CG32bitPixel(32, 48, 64) },
+		{	"AreaDialogTitle",			CG32bitPixel(32, 48, 64) },         //  H:210 S:50 B:25
 		{	"AreaInfoMsg",				CG32bitPixel(28, 33, 39) },
 		{	"AreaWarningMsg",			CG32bitPixel(229, 229, 92) },		//	H:60 S:60 B:90
 		{	"LineDialogFrame",			CG32bitPixel(163,191,219) },
 		{	"LineFrame",				CG32bitPixel(80,80,80) },
 
-		{	"TextHighlight",			CG32bitPixel(218, 235, 255) },
-		{	"TextNormal",				CG32bitPixel(191, 196, 201) },
+		{	"TextHighlight",			CG32bitPixel(217, 236, 255) },      //  H:210 S:15 B:100
+		{	"TextNormal",				CG32bitPixel(191, 196, 201) },      //  H:210 S:5  B:79
 		{	"TextFade",					CG32bitPixel(120, 129, 140) },
 		{	"TextAltHighlight",			CG32bitPixel(255, 239, 215) },
 		{	"TextAltNormal",			CG32bitPixel(204, 200, 194) },
 
 		{	"TextAltFade",				CG32bitPixel(140, 131, 118) },
-		{	"TextWarningMsg",			CG32bitPixel(38,  45,  51) },	//	H:210 S:25   B:20
-		{	"TextDialogInput",			CG32bitPixel(218, 235, 255) },
+		{	"TextWarningMsg",			CG32bitPixel(38,  45,  51) },	    //	H:210 S:25  B:20
+		{	"TextDialogInput",			CG32bitPixel(217, 236, 255) },      //  H:210 S:15  B:100
 		{	"TextDialogLabel",			CG32bitPixel(115, 134, 153) },
-		{	"TextDialogLink",			CG32bitPixel(218, 235, 255) },
+		{	"TextDialogLink",			CG32bitPixel(217, 236, 255) },
 
 		{	"TextDialogTitle",			CG32bitPixel(115, 134, 153) },
-		{	"TextDialogWarning",		CG32bitPixel(255, 127, 0) },
+		{	"TextDialogWarning",		CG32bitPixel(255, 127, 0) },        //  H:30  S:100 B:100
 		{	"AreaDockTitle",			CG32bitPixel(0x37, 0x3f, 0x47) },	//	H:210 S:23 B:28
-		{	"TextDockAction",			CG32bitPixel(218, 235, 255) },
-		{	"TextDockActionHotKey",		CG32bitPixel(218, 235, 255) },
+		{	"TextDockAction",			CG32bitPixel(217, 236, 255) },
+		{	"TextDockActionHotKey",		CG32bitPixel(217, 236, 255) },
 
 		{	"TextDockText",				CG32bitPixel(0xAF, 0xB7, 0xBF) },	//	H:210 S:8   B:75
 		{	"TextDockTitle",			CG32bitPixel(0xE7, 0xF3, 0xFF) },	//	H:210 S:9   B:100
