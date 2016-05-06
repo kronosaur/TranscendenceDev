@@ -4537,17 +4537,18 @@ class CExtensionCollection
 			FLAG_DESC_ONLY =		0x00000004,	//	Load adventure descs only
 			FLAG_ERROR_ON_DISABLE =	0x00000008,	//	Return an error if an extension was loaded disabled
 												//		(due to missing dependencies, etc.)
+            FLAG_NO_COLLECTION =    0x00000010, //  Do not load collection
 
 			//	FindExtension
 
-			FLAG_ADVENTURE_ONLY =	0x00000010,	//	Must be an adventure (not found otherwise)
+			FLAG_ADVENTURE_ONLY =	0x00000020,	//	Must be an adventure (not found otherwise)
 
 			//	ComputeAvailableExtension
 
-			FLAG_INCLUDE_AUTO =		0x00000020,	//	Include extensions that are automatic
-			FLAG_AUTO_ONLY =		0x00000040,	//	Only include extensions that are automatic
-			FLAG_ACCUMULATE =		0x00000080,	//	Add to result list
-			FLAG_REGISTERED_ONLY =	0x00000100,	//	Only registered extensions
+			FLAG_INCLUDE_AUTO =		0x00000040,	//	Include extensions that are automatic
+			FLAG_AUTO_ONLY =		0x00000080,	//	Only include extensions that are automatic
+			FLAG_ACCUMULATE =		0x00000100,	//	Add to result list
+			FLAG_REGISTERED_ONLY =	0x00000200,	//	Only registered extensions
 			};
 
 		CExtensionCollection (void);

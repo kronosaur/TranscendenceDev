@@ -1239,6 +1239,12 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		if (Ctx.bNoResources)
 			dwFlags |= CExtensionCollection::FLAG_NO_RESOURCES;
 
+        //  Don't load collection if we don't want it.
+        //  (But we only honor it in debug mode.)
+
+        if (Ctx.bNoCollectionLoad && m_bDebugMode)
+            dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION;
+
 		//	Load everything
 
 		if (error = m_Extensions.Load(sMainFilespec, dwFlags, retsError))

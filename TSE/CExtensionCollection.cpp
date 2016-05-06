@@ -1245,8 +1245,11 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 	//	We begin by loading stubs for all extension (i.e., only basic extension
 	//	information and entities).
 
-	if (error = LoadFolderStubsOnly(m_sCollectionFolder, CExtension::folderCollection, dwFlags, retsError))
-		return error;
+    if (!(dwFlags & FLAG_NO_COLLECTION))
+        {
+	    if (error = LoadFolderStubsOnly(m_sCollectionFolder, CExtension::folderCollection, dwFlags, retsError))
+		    return error;
+        }
 
 	for (i = 0; i < m_ExtensionFolders.GetCount(); i++)
 		{
