@@ -154,6 +154,8 @@ static SImageInitTable IMAGE_TABLE[] =
 
 		{	"PlayIcon",				"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			  0,	512,	 64,	 64, },
 		{	"DebugIcon",			"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			 64,	512,	 64,	 64, },
+
+		{	"SettingsIcon",			"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			  0,	576,	 64,	 64, },
 	};
 
 class CResourceImageCache

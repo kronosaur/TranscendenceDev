@@ -65,6 +65,8 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_FUEL_LEFT_EXACT				CONSTLIT("fuelLeftExact")
 #define PROPERTY_HEALER_LEFT        			CONSTLIT("healerLeft")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
+#define PROPERTY_MAX_FUEL						CONSTLIT("maxFuel")
+#define PROPERTY_MAX_FUEL_EXACT					CONSTLIT("maxFuelExact")
 #define PROPERTY_MAX_INTERIOR_HP				CONSTLIT("maxInteriorHP")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
@@ -2896,6 +2898,12 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iHP);
 		return CC.CreateInteger(iHP);
 		}
+
+	else if (strEquals(sName, PROPERTY_MAX_FUEL))
+        return CC.CreateInteger(mathRound(GetMaxFuel() / FUEL_UNITS_PER_STD_ROD));
+
+    else if (strEquals(sName, PROPERTY_MAX_FUEL_EXACT))
+        return CC.CreateDouble(GetMaxFuel());
 
 	else if (strEquals(sName, PROPERTY_MAX_INTERIOR_HP))
 		{

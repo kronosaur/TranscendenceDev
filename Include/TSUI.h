@@ -457,8 +457,9 @@ enum EImageLibrary
 	imageSmallEditIcon =			24,
 	imagePlayIcon =					25,
 	imageDebugIcon =				26,
+	imageSettingsIcon =				27,
 
-	imageCount =					27,
+	imageCount =					28,
 	};
 
 class CVisualPalette : public IFontTable
