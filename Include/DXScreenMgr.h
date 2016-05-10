@@ -53,7 +53,7 @@ class CScreenMgr
 		void Blt (void);
 		bool CheckIsReady (void);
 		void CleanUp (void);
-		void ClientToScreen (int x, int y, int *retx, int *rety);
+		void ClientToLocal (int x, int y, int *retx, int *rety);
 		inline void Flip (void) { if (m_bExclusiveMode && m_pDD) FlipInt(); }
 		inline int GetHeight (void) const { return m_cyScreen; }
 		inline bool GetInvalidRect (RECT *retrcRect) { *retrcRect = m_rcInvalid; return (::IsRectEmpty(&m_rcInvalid) != TRUE); }

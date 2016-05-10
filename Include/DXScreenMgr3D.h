@@ -149,12 +149,13 @@ class CScreenMgr3D
 
 		bool CheckIsReady (void);
 		void CleanUp (void);
-		void ClientToScreen (int x, int y, int *retx, int *rety);
+		void ClientToLocal (int x, int y, int *retx, int *rety) const;
 		void Flip (void);
 		inline int GetHeight (void) const { return m_cyScreen; }
 		inline bool GetInvalidRect (RECT *retrcRect) { retrcRect->left = 0; retrcRect->top = 0; retrcRect->right = m_cxScreen; retrcRect->bottom = m_cyScreen; return true; }
 		inline CG32bitImage &GetScreen (void) { return m_DX.GetLayerBuffer(m_iDefaultLayer); }
 		inline int GetWidth (void) const { return m_cxScreen; }
+		void GlobalToLocal (int x, int y, int *retx, int *rety) const;
 		ALERROR Init (SScreenMgrOptions &Options, CString *retsError);
 		void Invalidate (void);
 		void Invalidate (const RECT &rcRect);

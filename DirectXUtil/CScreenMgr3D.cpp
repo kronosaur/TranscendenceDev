@@ -53,11 +53,11 @@ void CScreenMgr3D::CleanUp (void)
 	m_DX.CleanUp();
 	}
 
-void CScreenMgr3D::ClientToScreen (int x, int y, int *retx, int *rety)
+void CScreenMgr3D::ClientToLocal (int x, int y, int *retx, int *rety) const
 
-//	ClientToScreen
+//	ClientToLocal
 //
-//	Convert from client to screen coordinates
+//	Convert from client to (local) screen manager coordinates
 
 	{
 	if (m_rScale != 1.0)
@@ -125,6 +125,22 @@ void CScreenMgr3D::Flip (void)
 //	Flip between the two buffers
 
 	{
+	}
+
+void CScreenMgr3D::GlobalToLocal (int x, int y, int *retx, int *rety) const
+
+//	GlobalToLocal
+//
+//	Converts global (screen) coordinates to local (screen manager)
+
+	{
+	POINT pt;
+	pt.x = x;
+	pt.y = y;
+
+	::ScreenToClient(m_hWnd, &pt);
+
+	ClientToLocal(pt.x, pt.y, retx, rety);
 	}
 
 ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)

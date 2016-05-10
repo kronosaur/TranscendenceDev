@@ -263,11 +263,11 @@ void CScreenMgr::CleanUp (void)
 		}
 	}
 
-void CScreenMgr::ClientToScreen (int x, int y, int *retx, int *rety)
+void CScreenMgr::ClientToLocal (int x, int y, int *retx, int *rety)
 
-//	ClientToScreen
+//	ClientToLocal
 //
-//	Converts from window client coordinates to screen manager coordinates
+//	Converts from window client coordinates to local screen manager coordinates
 
 	{
 	if (m_rScale != 1.0)
@@ -395,7 +395,7 @@ void CScreenMgr::GlobalToLocal (int x, int y, int *retx, int *rety)
 
 	::ScreenToClient(m_hWnd, &pt);
 
-	ClientToScreen(pt.x, pt.y, retx, rety);
+	ClientToLocal(pt.x, pt.y, retx, rety);
 	}
 
 ALERROR CScreenMgr::Init (SScreenMgrOptions &Options, CString *retsError)
