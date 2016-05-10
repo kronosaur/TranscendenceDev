@@ -17,6 +17,8 @@ CHumanInterface::CHumanInterface (void) :
 		m_pController(NULL),
 		m_pCurSession(NULL),
 		m_hWnd(NULL),
+        m_bLButtonDown(false),
+        m_bRButtonDown(false),
 		m_chKeyDown('\0'),
 		m_iShutdownCode(HIShutdownUnknown)
 
@@ -284,6 +286,22 @@ void CHumanInterface::Exit (void)
 	{
 	::SendMessage(GetHWND(), WM_CLOSE, 0, 0);
 	}
+
+bool CHumanInterface::GetMousePos (int *retx, int *rety) const
+
+//  GetMousePos
+//
+//  Returns the mouse position relative to the current session. Returns FALSE 
+//  if we fail for some reason.
+
+    {
+    POINT ptMouse;
+    if (!::GetCursorPos(&ptMouse))
+        return false;
+
+    m_ScreenMgr.GlobalToLocal(ptMouse.x, ptMouse.y, retx, rety);
+    return true;
+    }
 
 CReanimator &CHumanInterface::GetReanimator (void)
 

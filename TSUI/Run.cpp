@@ -543,7 +543,7 @@ LONG CHumanInterface::WMLButtonDblClick (int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HILButtonDblClick(xLocal, yLocal, dwFlags);
 		}
 
@@ -560,10 +560,11 @@ LONG CHumanInterface::WMLButtonDown (int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HILButtonDown(xLocal, yLocal, dwFlags);
 		}
 
+    m_bLButtonDown = true;
 	return 0;
 	}
 
@@ -578,10 +579,11 @@ LONG CHumanInterface::WMLButtonUp (int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HILButtonUp(xLocal, yLocal, dwFlags);
 		}
 
+    m_bLButtonDown = false;
 	return 0;
 	}
 
@@ -596,7 +598,7 @@ LONG CHumanInterface::WMMouseMove (int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HIMouseMove(xLocal, yLocal, dwFlags);
 		}
 
@@ -614,7 +616,7 @@ LONG CHumanInterface::WMMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HIMouseWheel(iDelta, xLocal, yLocal, dwFlags);
 		}
 
@@ -647,7 +649,7 @@ LONG CHumanInterface::WMRButtonDblClick (int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HIRButtonDblClick(xLocal, yLocal, dwFlags);
 		}
 
@@ -664,10 +666,11 @@ LONG CHumanInterface::WMRButtonDown (int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HIRButtonDown(xLocal, yLocal, dwFlags);
 		}
 
+    m_bRButtonDown = true;
 	return 0;
 	}
 
@@ -682,10 +685,11 @@ LONG CHumanInterface::WMRButtonUp (int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToScreen(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HIRButtonUp(xLocal, yLocal, dwFlags);
 		}
 
+    m_bRButtonDown = false;
 	return 0;
 	}
 

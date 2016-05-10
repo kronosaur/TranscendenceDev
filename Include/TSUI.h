@@ -662,6 +662,7 @@ class CHumanInterface
 		void Exit (void);
 		void GetCodeChainPrimitives (SPrimitiveDefTable *retTable);
 		inline HWND GetHWND (void) { return m_hWnd; }
+        bool GetMousePos (int *retx, int *rety) const;
 		inline const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
 		inline CG32bitImage &GetScreen (void) { return m_ScreenMgr.GetScreen(); }
@@ -680,6 +681,8 @@ class CHumanInterface
 		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return m_pController->HICommand(sCmd, pData); }
 		void HIPostCommand (const CString &sCmd, void *pData = NULL);
 		inline ALERROR HISessionCommand (const CString &sCmd, void *pData = NULL) { return (m_pCurSession ? m_pCurSession->HICommand(sCmd, pData) : NOERROR); }
+        inline bool IsLButtonDown (void) const { return m_bLButtonDown; }
+        inline bool IsRButtonDown (void) const { return m_bRButtonDown; }
 		inline bool IsWindowedMode (void) const { return m_Options.m_bWindowedMode; }
 		ALERROR OpenPopupSession (IHISession *pSession, CString *retsError = NULL);
 		void ShowHardCrashSession (const CString &sTitle, const CString &sDescription);
@@ -769,10 +772,14 @@ class CHumanInterface
 		CFrameRateCounter m_FrameRate;
 		CCriticalSection m_cs;				//	Coordinate UI vs. Background
 
+        //  Input state
+        bool m_bLButtonDown;
+        bool m_bRButtonDown;
+		char m_chKeyDown;
+
 		//	Sound
 		CSoundMgr m_SoundMgr;
 
-		char m_chKeyDown;
 		EHIShutdownReasons m_iShutdownCode;	//	Valid after call to Shutdown
 	};
 
