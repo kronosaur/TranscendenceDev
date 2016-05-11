@@ -1556,6 +1556,7 @@ bool fileOpen (const CString &sFile, const CString &sParameters = NULL_STR, cons
 CString pathAddComponent (const CString &sPath, const CString &sComponent);
 CString pathAddExtensionIfNecessary (const CString &sPath, const CString &sExtension);
 bool pathCreate (const CString &sPath);
+bool pathDeleteAll (const CString &sPath);
 bool pathExists (const CString &sPath);
 CString pathGetExecutablePath (HINSTANCE hInstance);
 CString pathGetExtension (const CString &sPath);
@@ -1563,6 +1564,7 @@ CString pathGetFilename (const CString &sPath);
 CString pathGetPath (const CString &sPath);
 CString pathGetResourcePath (char *pszResID);
 CString pathGetSpecialFolder (ESpecialFolders iFolder);
+CString pathGetTempPath (void);
 bool pathIsAbsolute (const CString &sPath);
 bool pathIsFolder (const CString &sFilespec);
 inline bool pathIsPathSeparator (char *pPos) { return (*pPos == '\\' || *pPos == '/'); }

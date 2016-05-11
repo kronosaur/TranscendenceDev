@@ -399,6 +399,62 @@ bool pathCreate (const CString &sPath)
 	return true;
 	}
 
+bool pathDeleteAll (const CString &sPath)
+
+//  pathDeleteAll
+//
+//  Recursively deletes all file in the given directory (including the directory).
+//  We return FALSE if we could not delete everything.
+
+    {
+    bool bFailed = false;
+
+	CFileDirectory Dir(pathAddComponent(sPath, CONSTLIT("*.*")));
+    while (Dir.HasMore())
+        {
+        SFileDesc FileDesc;
+        Dir.GetNextDesc(&FileDesc);
+
+        //	Skip special files
+
+        if (strEquals(FileDesc.sFilename, STR_DOT) || strEquals(FileDesc.sFilename, STR_DOT_DOT))
+            continue;
+
+        //	Get path and extension
+
+        CString sFilepath = pathAddComponent(sPath, FileDesc.sFilename);
+
+        //	If this is a folder, then recurse
+
+        if (FileDesc.bFolder)
+            {
+            if (!pathDeleteAll(sFilepath))
+                bFailed = true;
+            }
+
+        //	Otherwise, delete the file
+
+        else
+            {
+            if (!fileDelete(sFilepath))
+                bFailed = true;
+            }
+        }
+
+    //  We're not going to be able to delete the directory, since it is not 
+    //  empty.
+
+    if (bFailed)
+        return false;
+
+    //  Delete the directory
+
+    if (!::RemoveDirectory(sPath.GetASCIIZPointer()))
+        return false;
+
+    return true;
+    }
+
 CString pathGetExecutablePath (HINSTANCE hInstance)
 
 //	pathGetExecutablePath
@@ -429,6 +485,21 @@ CString pathGetExecutablePath (HINSTANCE hInstance)
 	sPath.Transcribe(szBuffer, -1);
 	return sPath;
 	}
+
+CString pathGetTempPath (void)
+
+//  pathGetTempPath
+//
+//  Returns a path to a temporary directory
+
+    {
+	char szBuffer[1024];
+
+    if (GetTempPath(sizeof(szBuffer), szBuffer) == 0)
+        return NULL_STR;
+
+    return CString(szBuffer);
+    }
 
 bool pathExists (const CString &sPath)
 
