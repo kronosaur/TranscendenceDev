@@ -50,6 +50,7 @@ class ICIService
 		inline bool IsModified (void) { return m_bModified; }
 		inline void SetEnabled (bool bValue = true) { m_bEnabled = bValue; }
 
+        virtual void AccumulateExtensionFolders (TArray<CString> &Folders) { }
 		virtual ALERROR ChangePassword (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sOldPassword, const CString &sNewPassword, CString *retsResult = NULL) { return NOERROR; }
 		virtual CString GetTag (void) = 0;
 		virtual CString GetUsername (void) { return NULL_STR; }
@@ -101,6 +102,7 @@ class CCloudService
 		inline void AddService (ICIService *pService) { if (pService) m_Boot.Insert(pService); }
 		void CleanUp (void);
 		CString GetDefaultUsername (void);
+        TArray<CString> GetExtensionFolders (void);
 		CString GetUsername (void);
 		bool HasCapability (DWORD dwCapability);
 		ALERROR InitFromXML (CHumanInterface &HI, CXMLElement *pDesc, bool *retbModified);

@@ -15,15 +15,16 @@ class CSteamService : public ICIService
 		CSteamService (CHumanInterface &HI);
 		~CSteamService (void);
 
-		virtual CString GetTag (void);
-		virtual CString GetUsername (void) { return m_sUsername; }
-		virtual bool HasCapability (DWORD dwCapability);
-		virtual ALERROR InitFromXML (CXMLElement *pDesc, bool *retbModified);
-		virtual ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, CString *retsResult = NULL);
-		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL);
-		virtual ALERROR ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult = NULL);
-		virtual ALERROR SignInUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, bool bAutoSignIn, CString *retsResult = NULL);
-		virtual ALERROR WriteAsXML (IWriteStream *pOutput);
+        virtual void AccumulateExtensionFolders (TArray<CString> &Folders) override;
+		virtual CString GetTag (void) override;
+		virtual CString GetUsername (void) override { return m_sUsername; }
+		virtual bool HasCapability (DWORD dwCapability) override;
+		virtual ALERROR InitFromXML (CXMLElement *pDesc, bool *retbModified) override;
+		virtual ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, CString *retsResult = NULL) override;
+		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL) override;
+		virtual ALERROR ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult = NULL) override;
+		virtual ALERROR SignInUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, bool bAutoSignIn, CString *retsResult = NULL) override;
+		virtual ALERROR WriteAsXML (IWriteStream *pOutput) override;
 
 	private:
 		bool m_bConnected;

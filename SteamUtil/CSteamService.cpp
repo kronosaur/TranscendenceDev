@@ -14,6 +14,8 @@
 
 #define TAG_STEAM								CONSTLIT("Steam")
 
+const AppId_t TRANSCENDENCE_APP_ID = 364510;
+
 struct SSteamEntryCreate
 	{
 	DWORD dwUNID;
@@ -107,6 +109,40 @@ CSteamService::~CSteamService (void)
 	if (m_bConnected)
 		SteamAPI_Shutdown();
 	}
+
+void CSteamService::AccumulateExtensionFolders (TArray<CString> &Folders)
+
+//  AccumulateExtensionFolders
+//
+//  Append list of folders in which to find extension.
+
+    {
+    int i;
+    int iCount = (int)SteamUGC()->GetNumSubscribedItems();
+    TArray<PublishedFileId_t> FileIds;
+    if (iCount)
+        {
+        FileIds.InsertEmpty(iCount);
+        SteamUGC()->GetSubscribedItems(&FileIds[0], iCount);
+        }
+
+    Folders.GrowToFit(iCount);
+    for (i = 0; i < FileIds.GetCount(); i++)
+        {
+	    uint32 unItemState = SteamUGC()->GetItemState(FileIds[i]);
+        if (!(unItemState & k_EItemStateInstalled))
+            continue;
+
+	    uint32 unTimeStamp = 0;
+	    uint64 unSizeOnDisk = 0;
+	    char szItemFolder[1024] = { 0 };
+	
+        if (!SteamUGC()->GetItemInstallInfo(FileIds[i], &unSizeOnDisk, szItemFolder, sizeof(szItemFolder), &unTimeStamp))
+            continue;
+
+        Folders.Insert(CString(szItemFolder));
+        }
+    }
 
 CString CSteamService::GetTag (void)
 
@@ -222,6 +258,36 @@ ALERROR CSteamService::LoadUserCollection (ITaskProcessor *pProcessor, CMultiver
 		CMultiverseCatalogEntry::CreateBasicEntry(Create, &pEntry);
 		Collection.Insert(pEntry);
 		}
+
+    //  Add workshop items
+
+    CString sError;
+    CUGCGetUserContent::SQuery Query;
+    Query.nAppId = TRANSCENDENCE_APP_ID;
+    Query.eListType = k_EUserUGCList_Subscribed;
+    Query.unAccountID = SteamUser()->GetSteamID().GetAccountID();
+
+    TArray<CUGCGetUserContent::SDetails> Results;
+    if (CUGCGetUserContent().Call(Query, Results, &sError))
+        {
+        for (i = 0; i < Results.GetCount(); i++)
+            {
+            CUGCGetUserContent::SDetails &Details = Results[i];
+
+		    //	Add the entry to the catalog.
+
+		    CMultiverseCatalogEntry *pEntry;
+		    CMultiverseCatalogEntry::SEntryCreate Create;
+            Create.dwUNID = Details.dwUNID;
+            Create.sName = CString(Details.Basic.m_rgchTitle);
+            Create.iType = Details.iType;
+            Create.iLicense = CMultiverseCatalogEntry::licenseSteamUGC;
+            Create.sDesc = CString(Details.Basic.m_rgchDescription);
+
+		    CMultiverseCatalogEntry::CreateBasicEntry(Create, &pEntry);
+		    Collection.Insert(pEntry);
+            }
+        }
 
 	//	Set the collection
 

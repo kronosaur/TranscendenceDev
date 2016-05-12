@@ -1819,6 +1819,11 @@ void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection 
 		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
 			continue;
 
+        //  Skip Steam UGC
+
+        if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+            continue;
+
 		//	Look for this extension in our list. If we found it then compare
 		//	the signature to make sure that we have the right version.
 
@@ -1826,6 +1831,7 @@ void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection 
 		if (FindExtension(pEntry->GetUNID(), pEntry->GetRelease(), CExtension::folderCollection, &pExtension))
 			{
 			//	Steam versions are always verified
+
 			if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteam)
 				pExtension->SetVerified();
 
@@ -1887,9 +1893,11 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 		//	Figure out which folder to look in
 
 		CExtension::EFolderTypes iFolder;
-		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
-			iFolder = CExtension::folderBase;
-		else
+        if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
+            iFolder = CExtension::folderBase;
+        else if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+            iFolder = CExtension::folderExtensions;
+        else
 			iFolder = CExtension::folderCollection;
 
 		//	Look for this extension in our list.
@@ -1899,7 +1907,8 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 			{
 			if (pExtension->IsDisabled())
 				pEntry->SetStatus(CMultiverseCatalogEntry::statusError, pExtension->GetDisabledReason());
-			else if (pExtension->IsRegistrationVerified())
+			else if (pExtension->IsRegistrationVerified()
+                    || pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
 				pEntry->SetStatus(CMultiverseCatalogEntry::statusLoaded);
 			else
 				pEntry->SetStatus(CMultiverseCatalogEntry::statusCorrupt);

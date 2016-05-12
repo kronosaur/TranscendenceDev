@@ -125,6 +125,25 @@ CString CCloudService::GetDefaultUsername (void)
 	return NULL_STR;
 	}
 
+TArray<CString> CCloudService::GetExtensionFolders (void)
+
+//  GetExtensionFolders
+//
+//  Returns an array of folders from which to load extensions.
+
+    {
+	int i;
+
+	//	See if any services can post stats
+
+    TArray<CString> Folders;
+    for (i = 0; i < m_Services.GetCount(); i++)
+        if (m_Services[i]->IsEnabled())
+            m_Services[i]->AccumulateExtensionFolders(Folders);
+
+    return Folders;
+    }
+
 CString CCloudService::GetUsername (void)
 
 //	GetUsername

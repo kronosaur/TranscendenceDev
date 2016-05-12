@@ -38,6 +38,7 @@ class CMultiverseCatalogEntry
 			licenseFree,
 			licensePaid,
 			licenseSteam,
+            licenseSteamUGC,
 			};
 
 		enum ELocalStatus
