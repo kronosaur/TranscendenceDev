@@ -402,6 +402,9 @@
 //  130: 1.7 Alpha 2
 //      Replaced symbol table in CAttributeDataBlock
 //
+//  131: 1.7 Alpha 2
+//      Added CCompositeImageSelector to CObjectTracker
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

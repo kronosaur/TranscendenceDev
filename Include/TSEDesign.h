@@ -6,6 +6,7 @@
 #define INCL_TSE_DESIGN
 
 class CCommunicationsHandler;
+class CCompositeImageDesc;
 class CCreatePainterCtx;
 class CDockScreen;
 class CDynamicDesignTable;
@@ -483,6 +484,7 @@ class CDesignType
 		virtual bool FindDataField (const CString &sField, CString *retsValue);
 		virtual CCommunicationsHandler *GetCommsHandler (void) { return NULL; }
 		virtual CTradingDesc *GetTradingDesc (void) { return NULL; }
+        virtual const CCompositeImageDesc &GetTypeImage (void) const;
 		virtual CString GetTypeName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = -1; if (retiMaxLevel) *retiMaxLevel = -1; return -1; }
 		virtual DesignTypes GetType (void) const = 0;
@@ -2399,8 +2401,7 @@ class CShipClass : public CDesignType
 		int GetHullSectionAtAngle (int iAngle);
 		inline int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
 		CString GetHullSectionName (int iIndex) const;
-		inline const CObjectImageArray &GetImage (void) const { return m_Image; }
-		inline const CObjectImageArray &GetImageSmall (void) { return m_Image; }
+		inline const CObjectImageArray &GetImage (void) const { return m_Image.GetSimpleImage(); }
         inline const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
 		inline const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
@@ -2475,6 +2476,7 @@ class CShipClass : public CDesignType
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iLevel; return m_iLevel; }
 		virtual CTradingDesc *GetTradingDesc (void) { return m_pTrade; }
 		virtual DesignTypes GetType (void) const { return designShipClass; }
+        virtual const CCompositeImageDesc &GetTypeImage (void) const { return m_Image; }
 		virtual CString GetTypeName (DWORD *retdwFlags = NULL) { return GetName(retdwFlags); }
 		virtual bool IsVirtual (void) const { return (m_fVirtual ? true : false); }
 
@@ -2629,7 +2631,7 @@ class CShipClass : public CDesignType
 
 		//	Image
 
-		CObjectImageArray m_Image;				//	Image of ship
+		CCompositeImageDesc m_Image;			//	Image of ship
         CObjectImageArray m_HeroImage;          //  Large image
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
@@ -3305,6 +3307,7 @@ class CStationType : public CDesignType
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const;
 		virtual CTradingDesc *GetTradingDesc (void) { return m_pTrade; }
 		virtual DesignTypes GetType (void) const { return designStationType; }
+        virtual const CCompositeImageDesc &GetTypeImage (void) const { return m_Image; }
 		virtual CString GetTypeName (DWORD *retdwFlags = NULL) { return GetName(retdwFlags); }
 		virtual bool IsVirtual (void) const { return (m_fVirtual ? true : false); }
 

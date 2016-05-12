@@ -1328,6 +1328,7 @@ class CStation : public CSpaceObject
 		virtual Metric GetGravity (Metric *retrRadius) const override;
 		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pType->GetHeroImage(m_ImageSelector, CCompositeImageModifiers()); }
 		virtual const CObjectImageArray &GetImage (void) const override { return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
+        virtual const CCompositeImageSelector &GetImageSelector (void) const override { return m_ImageSelector; }
 		virtual int GetLevel (void) const override { return m_pType->GetLevel(); }
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual Metric GetMass (void) override { return m_rMass; }

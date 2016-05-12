@@ -1561,6 +1561,16 @@ CString CDesignType::GetTypeClassName (void) const
 	return CString(DESIGN_CLASS_NAME[GetType()]);
 	}
 
+const CCompositeImageDesc &CDesignType::GetTypeImage (void) const
+
+//  GetTypeImage
+//
+//  Default implementation
+    
+    {
+    return CCompositeImageDesc::Null();
+    }
+
 bool CDesignType::HasAttribute (const CString &sAttrib) const
 
 //	HasAttribute

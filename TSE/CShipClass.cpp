@@ -1402,7 +1402,7 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 
 		//	If this is a large ship, use a large explosion
 
-		if (RectWidth(m_Image.GetImageRect()) > 64)
+		if (RectWidth(GetImage().GetImageRect()) > 64)
 			dwEffectID = g_LargeExplosionUNID;
 		else
 			dwEffectID = g_ExplosionUNID;
@@ -1597,11 +1597,11 @@ void CShipClass::CreateWreckImage (void)
 
 	int i;
 
-	if (!m_Image.IsLoaded())
+	if (!GetImage().IsLoaded())
 		return;
 
-	int cxWidth = RectWidth(m_Image.GetImageRect());
-	int cyHeight = RectHeight(m_Image.GetImageRect());
+	int cxWidth = RectWidth(GetImage().GetImageRect());
+	int cyHeight = RectHeight(GetImage().GetImageRect());
 
 	//	Get the image for damage
 
@@ -1626,7 +1626,7 @@ void CShipClass::CreateWreckImage (void)
 
 	//	Create the bitmap
 
-	CG32bitImage &SourceImage = m_Image.GetImage(NULL_STR);
+	CG32bitImage &SourceImage = GetImage().GetImage(NULL_STR);
 	m_WreckBitmap.Create(cxWidth, cyHeight * WRECK_IMAGE_VARIANTS, SourceImage.GetAlphaType());
 
 	//	Blt the images
@@ -1642,7 +1642,7 @@ void CShipClass::CreateWreckImage (void)
 
 		//	Copy the frame
 
-		m_Image.CopyImage(m_WreckBitmap,
+		GetImage().CopyImage(m_WreckBitmap,
 				0,
 				i * cyHeight,
 				0,
@@ -1670,7 +1670,7 @@ void CShipClass::CreateWreckImage (void)
 
 	for (i = 0; i < WRECK_IMAGE_VARIANTS; i++)
 		{
-		RECT rcSrc = m_Image.GetImageRect(0, Rotations[i]);
+		RECT rcSrc = GetImage().GetImageRect(0, Rotations[i]);
 		m_WreckBitmap.CopyChannel(channelAlpha, rcSrc.left, rcSrc.top, cxWidth, cyHeight, SourceImage, 0, i * cyHeight);
 		}
 
@@ -2176,7 +2176,7 @@ CVector CShipClass::GetDockingPortOffset (int iRotation)
 	{
 	//	For small ships we just go with the ship center.
 
-    int iImageSize = RectWidth(m_Image.GetImageRect());
+    int iImageSize = RectWidth(GetImage().GetImageRect());
 	if (iImageSize <= DOCK_OFFSET_STD_SIZE)
 		return NullVector;
 
@@ -2640,8 +2640,8 @@ void CShipClass::GetWreckImage (CObjectImageArray *retWreckImage)
 	RECT rcRect;
 	rcRect.left = 0;
 	rcRect.top = 0;
-	rcRect.right = RectWidth(m_Image.GetImageRect());
-	rcRect.bottom = RectHeight(m_Image.GetImageRect());
+	rcRect.right = RectWidth(GetImage().GetImageRect());
+	rcRect.bottom = RectHeight(GetImage().GetImageRect());
 	retWreckImage->Init(&m_WreckBitmap, rcRect, 0, 0, false);
 	}
 
@@ -2902,7 +2902,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	retTypesUsed->SetAt(strToInt(m_pDefaultScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(m_dwDefaultBkgnd, true);
-	retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true);
+	retTypesUsed->SetAt(GetImage().GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_HeroImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_WreckImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
@@ -2933,12 +2933,12 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Now that we have the image we can bind the rotation desc, because it needs
 	//	the rotation count, etc.
 
-	if (error = m_RotationDesc.Bind(Ctx, m_Image))
+	if (error = m_RotationDesc.Bind(Ctx, m_Image.GetSimpleImage()))
 		goto Fail;
 
 	//	Thruster effects
 
-	if (error = m_Effects.Bind(Ctx, m_Image))
+	if (error = m_Effects.Bind(Ctx, GetImage()))
 		goto Fail;
 
 	//	Drive images
@@ -2946,7 +2946,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (m_Exhaust.GetCount() > 0)
 		{
 		int iRotationCount = m_RotationDesc.GetFrameCount();
-		int iScale = m_Image.GetImageViewportSize();
+		int iScale = GetImage().GetImageViewportSize();
 
 		m_ExhaustImage.SetRotationCount(iRotationCount);
 		if (error = m_ExhaustImage.OnDesignLoadComplete(Ctx))
@@ -2997,8 +2997,8 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (m_AISettings.GetMinCombatSeparation() < 0.0)
 		{
-		if (m_Image.IsLoaded())
-			m_AISettings.SetMinCombatSeparation(RectWidth(m_Image.GetImageRect()) * g_KlicksPerPixel);
+		if (GetImage().IsLoaded())
+			m_AISettings.SetMinCombatSeparation(RectWidth(GetImage().GetImageRect()) * g_KlicksPerPixel);
 		else
 			m_AISettings.SetMinCombatSeparation(60.0 * g_KlicksPerPixel);
 		}
@@ -3259,7 +3259,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
 	if (pImage)
-		if (error = m_Image.InitFromXML(Ctx, pImage, false, STD_ROTATION_COUNT))
+		if (error = m_Image.InitSimpleFromXML(Ctx, pImage, false, STD_ROTATION_COUNT))
 			return ComposeLoadError(Ctx, Ctx.sError);
 
     pImage = pDesc->GetContentElementByTag(HERO_IMAGE_TAG);
@@ -3411,7 +3411,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pDriveImages = pDesc->GetContentElementByTag(DRIVE_IMAGES_TAG);
 	if (pDriveImages)
 		{
-		int iScale = m_Image.GetImageViewportSize();
+		int iScale = GetImage().GetImageViewportSize();
 
 		for (i = 0; i < pDriveImages->GetContentElementCount(); i++)
 			{
@@ -3854,11 +3854,11 @@ void CShipClass::Paint (CG32bitImage &Dest,
 	//	Paint the body of the ship
 
 	if (byInvisible)
-		m_Image.PaintImageShimmering(Dest, x, y, iTick, iDirection, byInvisible);
+		GetImage().PaintImageShimmering(Dest, x, y, iTick, iDirection, byInvisible);
 	else if (bRadioactive)
-		m_Image.PaintImageWithGlow(Dest, x, y, iTick, iDirection, CG32bitPixel(0, 255, 0));
+		GetImage().PaintImageWithGlow(Dest, x, y, iTick, iDirection, CG32bitPixel(0, 255, 0));
 	else
-		m_Image.PaintImage(Dest, x, y, iTick, iDirection);
+		GetImage().PaintImage(Dest, x, y, iTick, iDirection);
 
 	//	If we need to paint the thrust (because we didn't earlier) do it now.
 
@@ -3902,7 +3902,7 @@ void CShipClass::PaintMap (CMapViewportCtx &Ctx,
 //	Paints the ship class on the map
 
 	{
-	m_Image.PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24);
+	GetImage().PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24);
 	}
 
 void CShipClass::PaintScaled (CG32bitImage &Dest,
@@ -3918,7 +3918,7 @@ void CShipClass::PaintScaled (CG32bitImage &Dest,
 	//	Paints a scaled image
 
 	{
-	m_Image.PaintScaledImage(Dest, x, y, iTick, iDirection, cxWidth, cyHeight);
+	GetImage().PaintScaledImage(Dest, x, y, iTick, iDirection, cxWidth, cyHeight);
 	}
 
 void CShipClass::PaintThrust (CG32bitImage &Dest, 

@@ -40,6 +40,7 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesign
 
 		//	Otherwise, add all objects to the results
 
+        retResult->GrowToFit(pList->ObjectIDs.GetCount());
 		for (j = 0; j < pList->ObjectIDs.GetCount(); j++)
 			{
 			SObjEntry *pEntry = retResult->Insert();
@@ -47,11 +48,14 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesign
 			pEntry->pType = pList->pType;
 			pEntry->dwObjID = pList->ObjectIDs[j];
 
-			SObjName *pName = pList->ObjectNames.GetAt(pEntry->dwObjID);
-			if (pName)
+			SObjExtra *pExtra = pList->ObjectExtra.GetAt(pEntry->dwObjID);
+			if (pExtra)
 				{
-				pEntry->sName = pName->sName;
-				pEntry->dwNameFlags = pName->dwNameFlags;
+				pEntry->sName = pExtra->sName;
+				pEntry->dwNameFlags = pExtra->dwNameFlags;
+                pEntry->ImageSel = pExtra->ImageSel;
+                pEntry->sNotes = pExtra->sNotes;
+                pEntry->fShowDestroyed = pExtra->fShowDestroyed;
 				}
 			else
 				pEntry->sName = pList->pType->GetTypeName(&pEntry->dwNameFlags);
@@ -84,7 +88,7 @@ void CObjectTracker::Delete (CSpaceObject *pObj)
 			break;
 			}
 
-	pList->ObjectNames.DeleteAt(dwID);
+	pList->ObjectExtra.DeleteAt(dwID);
 	}
 
 void CObjectTracker::DeleteAll (void)
@@ -226,11 +230,13 @@ void CObjectTracker::Insert (CSpaceObject *pObj)
 	DWORD dwNameFlags;
 	DWORD dwDummyFlags;
 	CString sName = pObj->GetName(&dwNameFlags);
-	if (!strEquals(sName, pType->GetTypeName(&dwDummyFlags)))
+	if (!strEquals(sName, pType->GetTypeName(&dwDummyFlags))
+            || !pType->GetTypeImage().IsConstant())
 		{
-		SObjName *pName = pList->ObjectNames.SetAt(pObj->GetID());
-		pName->sName = sName;
-		pName->dwNameFlags = dwNameFlags;
+		SObjExtra *pExtra = pList->ObjectExtra.SetAt(pObj->GetID());
+		pExtra->sName = sName;
+		pExtra->dwNameFlags = dwNameFlags;
+        pExtra->ImageSel = pObj->GetImageSelector();
 		}
 	}
 
@@ -256,6 +262,9 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 //	DWORD			ObjID
 //	DWORD			Name Flags
 //	CString			Name
+//  CCompositeImageSelector
+//  CString         Notes
+//  DWORD           Object flags
 
 	{
 	int i;
@@ -302,8 +311,9 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 			{
 			Ctx.pStream->Read((char *)&iObjCount, sizeof(DWORD));
 			if (pList)
-				pList->ObjectNames.SetGranularity(Max(10, Min(iObjCount, MAX_ALLOC_GRANULARITY)));
+				pList->ObjectExtra.SetGranularity(Max(10, Min(iObjCount, MAX_ALLOC_GRANULARITY)));
 
+            SLoadCtx SystemCtx(Ctx);
 			for (j = 0; j < iObjCount; j++)
 				{
 				DWORD dwObjID;
@@ -311,16 +321,35 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 				if (pList)
 					{
-					SObjName *pName = pList->ObjectNames.SetAt(dwObjID);
+					SObjExtra *pExtra = pList->ObjectExtra.SetAt(dwObjID);
 
-					Ctx.pStream->Read((char *)&pName->dwNameFlags, sizeof(DWORD));
-					pName->sName.ReadFromStream(Ctx.pStream);
+					Ctx.pStream->Read((char *)&pExtra->dwNameFlags, sizeof(DWORD));
+					pExtra->sName.ReadFromStream(Ctx.pStream);
+
+                    if (SystemCtx.dwVersion >= 131)
+                        {
+                        pExtra->ImageSel.ReadFromStream(SystemCtx);
+                        pExtra->sNotes.ReadFromStream(Ctx.pStream);
+
+                        //  Flags
+
+    					Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                        pExtra->fShowDestroyed = ((dwLoad & 0x00000001) ? true : false);
+                        }
 					}
 				else
 					{
 					CString sDummy;
 					Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 					sDummy.ReadFromStream(Ctx.pStream);
+
+                    if (SystemCtx.dwVersion >= 131)
+                        {
+                        CCompositeImageSelector Dummy;
+                        Dummy.ReadFromStream(SystemCtx);
+                        sDummy.ReadFromStream(Ctx.pStream);
+    					Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                        }
 					}
 				}
 			}
@@ -345,10 +374,12 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
 //
 //	DWORD			No. of names
 //
-//	For each name
+//	For each object extra
 //	DWORD			ObjID
 //	DWORD			Name Flags
 //	CString			Name
+//  CCompositeImageSelector
+//  DWORD           Object flags
 
 	{
 	int i;
@@ -378,19 +409,28 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
 			pStream->Write((char *)&dwSave, sizeof(DWORD));
 			}
 
-		//	Write out all object names
+		//	Write out all object extra data
 
-		dwSave = pList->ObjectNames.GetCount();
+		dwSave = pList->ObjectExtra.GetCount();
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-		for (j = 0; j < pList->ObjectNames.GetCount(); j++)
+		for (j = 0; j < pList->ObjectExtra.GetCount(); j++)
 			{
-			dwSave = pList->ObjectNames.GetKey(j);
+			dwSave = pList->ObjectExtra.GetKey(j);
 			pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-			const SObjName &Name = pList->ObjectNames[j];
-			pStream->Write((char *)&Name.dwNameFlags, sizeof(DWORD));
-			Name.sName.WriteToStream(pStream);
+			const SObjExtra &Extra = pList->ObjectExtra[j];
+			pStream->Write((char *)&Extra.dwNameFlags, sizeof(DWORD));
+			Extra.sName.WriteToStream(pStream);
+
+            Extra.ImageSel.WriteToStream(pStream);
+            Extra.sNotes.WriteToStream(pStream);
+
+            //  Flags
+
+            dwSave = 0;
+            dwSave |= (Extra.fShowDestroyed ? 0x00000001 : 0);
+            pStream->Write((char *)&dwSave, sizeof(DWORD));
 			}
 		}
 	}

@@ -277,6 +277,8 @@ class CCompositeImageSelector
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream) const;
 
+        inline static const CCompositeImageSelector &Null (void) { return g_NullSelector; }
+
 	private:
 		struct SEntry
 			{
@@ -289,6 +291,8 @@ class CCompositeImageSelector
 		ETypes GetEntryType (const SEntry &Entry) const;
 
 		TArray<SEntry> m_Sel;
+
+        static CCompositeImageSelector g_NullSelector;
 	};
 
 struct SSelectorInitCtx
@@ -308,9 +312,11 @@ class IImageEntry
 		virtual ~IImageEntry (void) { }
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
+        virtual IImageEntry *Clone (void) = 0;
 		inline DWORD GetID (void) { return m_dwID; }
 		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) = 0;
 		virtual int GetMaxLifetime (void) const { return 0; }
+        virtual CObjectImageArray &GetSimpleImage (void);
 		virtual int GetVariantCount (void) = 0;
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) { return NOERROR; }
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) { }
@@ -357,22 +363,30 @@ class CCompositeImageDesc
 	{
 	public:
 		CCompositeImageDesc (void);
+		CCompositeImageDesc (const CCompositeImageDesc &Src);
 		~CCompositeImageDesc (void);
+
+		CCompositeImageDesc &operator= (const CCompositeImageDesc &Src);
 
 		inline void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { if (m_pRoot) m_pRoot->AddTypesUsed(retTypesUsed); }
 		CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiRotation = NULL) const;
 		int GetMaxLifetime (void) const;
 		inline IImageEntry *GetRoot (void) const { return m_pRoot; }
+        inline const CObjectImageArray &GetSimpleImage (void) const { return (m_pRoot ? m_pRoot->GetSimpleImage() : CObjectImageArray::Null()); }
+        CObjectImageArray &GetSimpleImage (void);
 		inline int GetVariantCount (void) { return (m_pRoot ? m_pRoot->GetVariantCount() : 0); }
 		static ALERROR InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIDCounter &IDGen, IImageEntry **retpEntry);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
+		ALERROR InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1);
 		inline bool IsConstant (void) const { return m_bConstant; }
 		inline bool IsEmpty (void) { return (GetVariantCount() == 0); }
 		void MarkImage (void);
 		void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers());
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void Reinit (void);
+
+        static const CCompositeImageDesc &Null (void) { return g_Null; }
 
 	private:
 		struct SCacheEntry
@@ -382,12 +396,16 @@ class CCompositeImageDesc
 			CObjectImageArray Image;
 			};
 
+        void CleanUp (void);
+        void Copy (const CCompositeImageDesc &Src);
 		SCacheEntry *FindCacheEntry (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const;
 
 		CXMLElement *m_pDesc;
 		IImageEntry *m_pRoot;
 		bool m_bConstant;
 		mutable TArray<SCacheEntry> m_Cache;
+
+        static CCompositeImageDesc g_Null;
 	};
 
 class CCompositeImageType : public CDesignType

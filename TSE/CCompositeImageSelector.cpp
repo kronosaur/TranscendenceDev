@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 static CObjectImageArray EMPTY_IMAGE;
+CCompositeImageSelector CCompositeImageSelector::g_NullSelector;
 
 bool CCompositeImageSelector::operator== (const CCompositeImageSelector &Val) const
 

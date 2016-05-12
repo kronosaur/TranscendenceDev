@@ -2654,6 +2654,7 @@ class CSpaceObject : public CObject
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
 		virtual const CObjectImageArray &GetImage (void) const;
+        virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
 		virtual int GetInteraction (void) { return 100; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) { return 0.0; }
@@ -3061,11 +3062,19 @@ class CObjectTracker
 	public:
 		struct SObjEntry
 			{
+            SObjEntry (void) :
+                    fShowDestroyed(false)
+                { }
+
 			CTopologyNode *pNode;
 			CDesignType *pType;
 			DWORD dwObjID;
 			CString sName;
 			DWORD dwNameFlags;
+            CCompositeImageSelector ImageSel;
+            CString sNotes;
+
+            DWORD fShowDestroyed : 1;
 			};
 
 		~CObjectTracker (void);
@@ -3078,10 +3087,18 @@ class CObjectTracker
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
-		struct SObjName
+		struct SObjExtra
 			{
+            SObjExtra (void) :
+                    fShowDestroyed(false)
+                { }
+
 			CString sName;
 			DWORD dwNameFlags;
+            CCompositeImageSelector ImageSel;
+            CString sNotes;
+
+            DWORD fShowDestroyed : 1;
 			};
 
 		struct SObjList
@@ -3089,7 +3106,7 @@ class CObjectTracker
 			CTopologyNode *pNode;
 			CDesignType *pType;
 			TArray<DWORD> ObjectIDs;
-			TSortMap<DWORD, SObjName> ObjectNames;
+			TSortMap<DWORD, SObjExtra> ObjectExtra;
 			};
 
 		bool AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);

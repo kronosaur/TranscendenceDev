@@ -71,24 +71,24 @@
 class CCompositeEntry : public IImageEntry
 	{
 	public:
-		CCompositeEntry (void) : m_pImageCache(NULL) { }
+		CCompositeEntry (void) { }
 		virtual ~CCompositeEntry (void);
 
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage);
-		virtual int GetMaxLifetime (void) const;
-		virtual int GetVariantCount (void) { return 1; }
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc);
-		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
-		virtual bool IsConstant (void);
-		virtual void MarkImage (void);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
+        virtual IImageEntry *Clone (void) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual int GetMaxLifetime (void) const override;
+		virtual int GetVariantCount (void) override { return 1; }
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
+		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
+		virtual bool IsConstant (void) override;
+		virtual void MarkImage (void) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		TArray<IImageEntry *> m_Layers;
 
 		CObjectImageArray m_Image;
-		CG32bitImage *m_pImageCache;
 	};
 
 class CEffectEntry : public IImageEntry
@@ -97,14 +97,15 @@ class CEffectEntry : public IImageEntry
 		CEffectEntry (void) { }
 		virtual ~CEffectEntry (void);
 
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { if (m_pEffect) m_pEffect->AddTypesUsed(retTypesUsed); }
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage);
-		virtual int GetMaxLifetime (void) const;
-		virtual int GetVariantCount (void) { return 1; }
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc);
-		virtual bool IsConstant (void) { return true; }
-		virtual void MarkImage (void);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pEffect) m_pEffect->AddTypesUsed(retTypesUsed); }
+        virtual IImageEntry *Clone (void) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual int GetMaxLifetime (void) const override;
+		virtual int GetVariantCount (void) override { return 1; }
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
+		virtual bool IsConstant (void) override { return true; }
+		virtual void MarkImage (void) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		CEffectCreatorRef m_pEffect;
@@ -116,15 +117,16 @@ class CFilterColorizeEntry : public IImageEntry
 		CFilterColorizeEntry (void) : m_pSource(NULL) { }
 		virtual ~CFilterColorizeEntry (void);
 
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { if (m_pSource) m_pSource->AddTypesUsed(retTypesUsed); }
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage);
-		virtual int GetMaxLifetime (void) const;
-		virtual int GetVariantCount (void) { return 1; }
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc);
-		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
-		virtual bool IsConstant (void);
-		virtual void MarkImage (void);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pSource) m_pSource->AddTypesUsed(retTypesUsed); }
+        virtual IImageEntry *Clone (void) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual int GetMaxLifetime (void) const override;
+		virtual int GetVariantCount (void) override { return 1; }
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
+		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
+		virtual bool IsConstant (void) override;
+		virtual void MarkImage (void) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		IImageEntry *m_pSource;
@@ -136,14 +138,18 @@ class CFilterColorizeEntry : public IImageEntry
 class CImageEntry : public IImageEntry
 	{
 	public:
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) { *retImage = m_Image; }
-		virtual int GetMaxLifetime (void) const { return m_Image.GetFrameCount() * m_Image.GetTicksPerFrame(); }
-		virtual int GetVariantCount (void) { return 1; }
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc);
-		virtual bool IsConstant (void) { return true; }
-		virtual void MarkImage (void) { m_Image.MarkImage(); }
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return m_Image.OnDesignLoadComplete(Ctx); }
+        inline ALERROR InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1) { return m_Image.InitFromXML(Ctx, pDesc, bResolveNow, iDefaultRotationCount); }
+
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
+        virtual IImageEntry *Clone (void) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override { *retImage = m_Image; }
+		virtual int GetMaxLifetime (void) const override { return m_Image.GetFrameCount() * m_Image.GetTicksPerFrame(); }
+        virtual CObjectImageArray &GetSimpleImage (void) override { return m_Image; }
+		virtual int GetVariantCount (void) override { return 1; }
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
+		virtual bool IsConstant (void) override { return true; }
+		virtual void MarkImage (void) override { m_Image.MarkImage(); }
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override { return m_Image.OnDesignLoadComplete(Ctx); }
 
 	private:
 		CObjectImageArray m_Image;
@@ -154,15 +160,16 @@ class CLocationCriteriaTableEntry : public IImageEntry
 	public:
 		virtual ~CLocationCriteriaTableEntry (void);
 
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage);
-		virtual int GetMaxLifetime (void) const;
-		virtual int GetVariantCount (void) { return m_Table.GetCount(); }
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc);
-		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
-		virtual bool IsConstant (void) { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
-		virtual void MarkImage (void);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+        virtual IImageEntry *Clone (void) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual int GetMaxLifetime (void) const override;
+		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
+		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
+		virtual bool IsConstant (void) override { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
+		virtual void MarkImage (void) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		struct SEntry
@@ -180,15 +187,16 @@ class CTableEntry : public IImageEntry
 	public:
 		virtual ~CTableEntry (void);
 
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage);
-		virtual int GetMaxLifetime (void) const;
-		virtual int GetVariantCount (void) { return m_Table.GetCount(); }
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc);
-		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
-		virtual bool IsConstant (void) { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
-		virtual void MarkImage (void);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+        virtual IImageEntry *Clone (void) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual int GetMaxLifetime (void) const override;
+		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
+		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
+		virtual bool IsConstant (void) override { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
+		virtual void MarkImage (void) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		struct SEntry
@@ -202,28 +210,85 @@ class CTableEntry : public IImageEntry
 	};
 
 static CObjectImageArray EMPTY_IMAGE;
+CCompositeImageDesc CCompositeImageDesc::g_Null;
 
 CCompositeImageDesc::CCompositeImageDesc (void) : 
 		m_pDesc(NULL),
 		m_pRoot(NULL),
-		m_bConstant(false)
+		m_bConstant(true)
 
 //	CCompositeImageDesc constructor
 
 	{
 	}
 
+CCompositeImageDesc::CCompositeImageDesc (const CCompositeImageDesc &Src)
+
+//  CCompositeImageDesc constructor
+
+    {
+    Copy(Src);
+    }
+
 CCompositeImageDesc::~CCompositeImageDesc (void)
 
 //	CCompositeImageDesc destructor
 
 	{
-	if (m_pDesc)
-		delete m_pDesc;
-
-	if (m_pRoot)
-		delete m_pRoot;
+    CleanUp();
 	}
+
+CCompositeImageDesc &CCompositeImageDesc::operator= (const CCompositeImageDesc &Src)
+
+//  CCompositeImageDesc operator =
+
+    {
+    CleanUp();
+    Copy(Src);
+    return *this;
+    }
+
+void CCompositeImageDesc::CleanUp (void)
+
+//  CleanUp
+//
+//  Restore to initial state.
+
+    {
+    if (m_pDesc)
+        {
+        delete m_pDesc;
+        m_pDesc = NULL;
+        }
+
+    if (m_pRoot)
+        {
+        delete m_pRoot;
+        m_pRoot = NULL;
+        }
+
+    m_bConstant = true;
+    }
+
+void CCompositeImageDesc::Copy (const CCompositeImageDesc &Src)
+
+//  Copy
+//
+//  Copy from source. (We assume that we are empty).
+
+    {
+    if (Src.m_pDesc)
+        m_pDesc = Src.m_pDesc->OrphanCopy();
+    else
+        m_pDesc = NULL;
+
+    if (Src.m_pRoot)
+        m_pRoot = Src.m_pRoot->Clone();
+    else
+        m_pRoot = NULL;
+
+    m_bConstant = Src.m_bConstant;
+    }
 
 CCompositeImageDesc::SCacheEntry *CCompositeImageDesc::FindCacheEntry (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const
 
@@ -333,6 +398,20 @@ int CCompositeImageDesc::GetMaxLifetime (void) const
 	return m_pRoot->GetMaxLifetime();
 	}
 
+CObjectImageArray &CCompositeImageDesc::GetSimpleImage (void)
+
+//  GetSimpleImage
+//
+//  Returns a simple image (only for descriptors initialized with 
+//  InitSimpleFromXML).
+
+    {
+    if (m_pRoot == NULL)
+        return EMPTY_IMAGE;
+
+    return m_pRoot->GetSimpleImage();
+    }
+
 ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIDCounter &IDGen, IImageEntry **retpEntry)
 
 //	InitEntryFromXML
@@ -418,6 +497,35 @@ void CCompositeImageDesc::InitSelector (SSelectorInitCtx &InitCtx, CCompositeIma
 	m_pRoot->InitSelector(InitCtx, retSelector);
 	}
 
+ALERROR CCompositeImageDesc::InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow, int iDefaultRotationCount)
+
+//  InitSimpleFromXML
+//
+//  Initialize as a single, simple image. This is mostly used for backwards
+//  compatibility with CObjectImageArray.
+
+    {
+    ALERROR error;
+
+    ASSERT(m_pRoot == NULL);
+
+    //  No need to keep a descriptor, because we just have an image (plus
+    //  bind code uses this to initialize).
+
+    m_pDesc = NULL;
+
+    //  Create a simple image descriptor
+
+    CImageEntry *pImage = new CImageEntry;
+    if (error = pImage->InitSimpleFromXML(Ctx, pDesc, bResolveNow, iDefaultRotationCount))
+        return error;
+
+    m_pRoot = pImage;
+    m_bConstant = true;
+
+    return NOERROR;
+    }
+
 void CCompositeImageDesc::MarkImage (void)
 
 //	MarkImage
@@ -450,10 +558,18 @@ ALERROR CCompositeImageDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	{
 	ALERROR error;
 
-	//	If no XML then this is an empty image (and that's OK).
+	//	If no XML then this is a simple image (and that's OK).
 
 	if (m_pDesc == NULL)
+        {
+        if (m_pRoot)
+            {
+            if (error = m_pRoot->OnDesignLoadComplete(Ctx))
+                return error;
+            }
+
 		return NOERROR;
+        }
 
 	//	Clean up our previous load, if necessary.
 
@@ -493,6 +609,18 @@ void CCompositeImageDesc::Reinit (void)
 	m_Cache.DeleteAll();
 	}
 
+//  IImageEntry ----------------------------------------------------------------
+
+CObjectImageArray &IImageEntry::GetSimpleImage (void)
+
+//  GetSimpleImage
+//
+//  Default impl
+
+    {
+    return EMPTY_IMAGE;
+    }
+
 //	CCompositeEntry ------------------------------------------------------------
 
 CCompositeEntry::~CCompositeEntry (void)
@@ -504,10 +632,28 @@ CCompositeEntry::~CCompositeEntry (void)
 
 	for (i = 0; i < m_Layers.GetCount(); i++)
 		delete m_Layers[i];
-
-	if (m_pImageCache)
-		delete m_pImageCache;
 	}
+
+IImageEntry *CCompositeEntry::Clone (void)
+
+//  Clone
+//
+//  Returns a new copy.
+
+    {
+    int i;
+
+    CCompositeEntry *pDest = new CCompositeEntry;
+    pDest->m_dwID = m_dwID;
+
+    pDest->m_Layers.InsertEmpty(m_Layers.GetCount());
+    for (i = 0; i < m_Layers.GetCount(); i++)
+        pDest->m_Layers[i] = (m_Layers[i] ? m_Layers[i]->Clone() : NULL);
+
+    pDest->m_Image = m_Image;
+
+    return pDest;
+    }
 
 void CCompositeEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
 
@@ -728,10 +874,24 @@ ALERROR CCompositeEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 CEffectEntry::~CEffectEntry (void)
 
-//	CFilterColorizeEntry destructor
+//	CEffectEntry destructor
 
 	{
 	}
+
+IImageEntry *CEffectEntry::Clone (void)
+
+//  Clone
+//
+//  Create a new copy
+
+    {
+    CEffectEntry *pDest = new CEffectEntry;
+    pDest->m_dwID = m_dwID;
+
+    pDest->m_pEffect = m_pEffect;
+    return pDest;
+    }
 
 void CEffectEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
 
@@ -875,6 +1035,23 @@ CFilterColorizeEntry::~CFilterColorizeEntry (void)
 	if (m_pSource)
 		delete m_pSource;
 	}
+
+IImageEntry *CFilterColorizeEntry::Clone (void)
+
+//  Clone
+//
+//  Create a new copy
+
+    {
+    CFilterColorizeEntry *pDest = new CFilterColorizeEntry;
+    pDest->m_dwID = m_dwID;
+    pDest->m_pSource = (m_pSource ? m_pSource->Clone() : NULL);
+    pDest->m_dwHue = m_dwHue;
+    pDest->m_dwSaturation = m_dwSaturation;
+    pDest->m_rgbColor = m_rgbColor;
+
+    return pDest;
+    }
 
 void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
 
@@ -1045,6 +1222,20 @@ ALERROR CFilterColorizeEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 //	CImageEntry ----------------------------------------------------------------
 
+IImageEntry *CImageEntry::Clone (void)
+
+//  Clone
+//
+//  Create a new copy
+
+    {
+    CImageEntry *pDest = new CImageEntry;
+    pDest->m_dwID = m_dwID;
+    pDest->m_Image = m_Image;
+
+    return pDest;
+    }
+
 ALERROR CImageEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc)
 
 //	InitFromXML
@@ -1089,6 +1280,30 @@ void CLocationCriteriaTableEntry::AddTypesUsed (TSortMap<DWORD, bool> *retTypesU
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pImage->AddTypesUsed(retTypesUsed);
 	}
+
+IImageEntry *CLocationCriteriaTableEntry::Clone (void)
+
+//  Clone
+//
+//  Create a new copy
+
+    {
+    int i;
+
+    CLocationCriteriaTableEntry *pDest = new CLocationCriteriaTableEntry;
+    pDest->m_dwID = m_dwID;
+
+    pDest->m_Table.InsertEmpty(m_Table.GetCount());
+    for (i = 0; i < m_Table.GetCount(); i++)
+        {
+        pDest->m_Table[i].pImage = (m_Table[i].pImage ? m_Table[i].pImage->Clone() : NULL);
+        pDest->m_Table[i].Criteria = m_Table[i].Criteria;
+        }
+
+    pDest->m_iDefault = m_iDefault;
+
+    return pDest;
+    }
 
 void CLocationCriteriaTableEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
 
@@ -1270,6 +1485,30 @@ void CTableEntry::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pImage->AddTypesUsed(retTypesUsed);
 	}
+
+IImageEntry *CTableEntry::Clone (void)
+
+//  Clone
+//
+//  Create a new copy
+
+    {
+    int i;
+
+    CTableEntry *pDest = new CTableEntry;
+    pDest->m_dwID = m_dwID;
+
+    pDest->m_Table.InsertEmpty(m_Table.GetCount());
+    for (i = 0; i < m_Table.GetCount(); i++)
+        {
+        m_Table[i].pImage = (m_Table[i].pImage ? m_Table[i].pImage->Clone() : NULL);
+        m_Table[i].iChance = m_Table[i].iChance;
+        }
+
+    pDest->m_iTotalChance = m_iTotalChance;
+
+    return pDest;
+    }
 
 void CTableEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
 
