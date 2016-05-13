@@ -1,7 +1,7 @@
 //	CGalacticMapPainter.cpp
 //
 //	CGalacticMapPainter class
-//	Copyright (c) 2010 by George Moromisato. All Rights Reserved.
+//	Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "stdafx.h"
 
@@ -101,11 +101,12 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 		}
 	}
 
-void CGalacticMapPainter::GetPos (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety)
+void CGalacticMapPainter::GalacticToView (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
 
-//	GetPos
+//	GalacticToView
 //
-//	Returns the position
+//	Converts from galactic (map) coordinates to view coordinates (relative to
+//  the entire session).
 
 	{
 	int xViewCenter = rcView.left + (RectWidth(rcView) / 2);
@@ -346,3 +347,20 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 	else
 		Dest.Fill(rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), 0);
 	}
+
+void CGalacticMapPainter::ViewToGalactic (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
+
+//  ViewToGalactic
+//
+//  Converts from session/screen coordinates to galactic (map) coordinates.
+
+    {
+	int xViewCenter = rcView.left + (RectWidth(rcView) / 2);
+	int yViewCenter = rcView.top + (RectHeight(rcView) / 2);
+
+	//	Convert to galactic coordinates
+
+    *retx = (100 * (x - xViewCenter) / iScale) + xCenter;
+    *rety = yCenter - (100 * (y - yViewCenter) / iScale);
+    }
+

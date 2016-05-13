@@ -12,10 +12,11 @@ class CGalacticMapPainter
 		~CGalacticMapPainter (void);
 
 		void AdjustCenter (const RECT &rcView, int xCenter, int yCenter, int iScale, int *retxCenter, int *retyCenter);
+        void GalacticToView (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
 		inline int GetHeight (void) { return m_cyMap; }
-		void GetPos (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety);
 		inline int GetWidth (void) { return m_cxMap; }
 		void Paint (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, int iScale);
+        void ViewToGalactic (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
 
 	private:
 		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor);

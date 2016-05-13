@@ -61,6 +61,19 @@ void IHISession::DefaultOnAnimate (CG32bitImage &Screen, bool bTopMost)
 		HIInvalidate();
 	}
 
+void IHISession::GetRect (RECT &rcRect)
+
+//  GetRect
+//
+//  Get the full session rect (usually the entire screen).
+
+    {
+    rcRect.left = 0;
+    rcRect.top = 0;
+    rcRect.right = g_pHI->GetScreenWidth();
+    rcRect.bottom = g_pHI->GetScreenHeight();
+    }
+
 bool IHISession::HandlePageScrollKeyDown (const CString &sScroller, int iVirtKey, DWORD dwKeyData)
 
 //	HandlePageScrollKeyDown

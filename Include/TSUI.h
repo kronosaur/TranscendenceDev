@@ -207,6 +207,7 @@ class IHISession : public IHICommand, public IAniCommand
 		virtual void OnSize (int cxWidth, int cyHeight) { }
 		virtual void OnUpdate (bool bTopMost) { }
 
+        void GetRect (RECT &rcRect);
 		bool HandlePageScrollKeyDown (const CString &sScroller, int iVirtKey, DWORD dwKeyData);
 		bool HandlePageScrollMouseWheel (const CString &sScroller, int iDelta);
 		inline void SetNoCursor (bool bNoCursor = true) { if (bNoCursor != m_bNoCursor) { m_bNoCursor = bNoCursor; } }
