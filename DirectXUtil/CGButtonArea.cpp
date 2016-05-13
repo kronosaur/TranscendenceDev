@@ -1,6 +1,7 @@
 //	CGButtonArea.cpp
 //
 //	Implementation of CGButtonArea class
+//	Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include <windows.h>
 #include "Alchemy.h"

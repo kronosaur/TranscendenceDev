@@ -227,13 +227,14 @@ void CGDraw::RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, 
 	//	Intermediates
 
 	int iHalfWidth = iLineWidth / 2;
+    int iHalfWidth2 = iLineWidth - iHalfWidth;
 
 	//	Paint the straight edges first.
 
 	Dest.Fill(x + iRadius, y - iHalfWidth, cxWidth - (2 * iRadius), iLineWidth, rgbColor);
-	Dest.Fill(x + iRadius, y + cyHeight - iHalfWidth, cxWidth - (2 * iRadius), iLineWidth, rgbColor);
+	Dest.Fill(x + iRadius, y + cyHeight - iHalfWidth2, cxWidth - (2 * iRadius), iLineWidth, rgbColor);
 	Dest.Fill(x - iHalfWidth, y + iRadius, iLineWidth, cyHeight - (2 * iRadius), rgbColor);
-	Dest.Fill(x + cxWidth - iHalfWidth, y + iRadius, iLineWidth, cyHeight - (2 * iRadius), rgbColor);
+	Dest.Fill(x + cxWidth - iHalfWidth2, y + iRadius, iLineWidth, cyHeight - (2 * iRadius), rgbColor);
 
 	//	If no radius, then we're done
 
