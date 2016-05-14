@@ -4007,6 +4007,7 @@ class CSystemMap : public CDesignType
 		CG32bitImage *CreateBackgroundImage (void);
 		void GetBackgroundImageSize (int *retcx, int *retcy);
 		inline CSystemMap *GetDisplayMap (void) { return (m_pPrimaryMap != NULL ? m_pPrimaryMap : this); }
+        inline Metric GetLightYearsPerPixel (void) const { return m_rLightYearsPerPixel; }
 		inline const CString &GetName (void) const { return m_sName; }
 		inline void GetScale (int *retiInitial, int *retiMin, int *retiMax) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
 		inline const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
@@ -4045,6 +4046,7 @@ class CSystemMap : public CDesignType
 		int m_iInitialScale;					//	Initial map display scale (100 = 100%)
 		int m_iMaxScale;						//	Max zoom
 		int m_iMinScale;						//	Min zoom
+        Metric m_rLightYearsPerPixel;           //  Number of light years per pixel
 
 		CSystemMapRef m_pPrimaryMap;			//	If not NULL, place nodes on given map
 		TArray<CSystemMapRef> m_Uses;			//	List of maps that we rely on.

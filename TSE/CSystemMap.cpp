@@ -23,6 +23,7 @@
 #define ID_ATTRIB							CONSTLIT("id")
 #define ID_PREFIX_ATTRIB					CONSTLIT("idPrefix")
 #define INITIAL_SCALE_ATTRIB				CONSTLIT("initialScale")
+#define LIGHT_YEARS_PER_PIXEL_ATTRIB		CONSTLIT("lightYearsPerPixel")
 #define MAX_SCALE_ATTRIB					CONSTLIT("maxScale")
 #define MIN_SCALE_ATTRIB					CONSTLIT("minScale")
 #define NAME_ATTRIB							CONSTLIT("name")
@@ -304,6 +305,7 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Scale information
 
+    m_rLightYearsPerPixel = pDesc->GetAttributeDoubleBounded(LIGHT_YEARS_PER_PIXEL_ATTRIB, 0.0, -1.0, 0.0);
 	m_iInitialScale = pDesc->GetAttributeIntegerBounded(INITIAL_SCALE_ATTRIB, 10, 1000, 100);
 	m_iMaxScale = pDesc->GetAttributeIntegerBounded(MAX_SCALE_ATTRIB, 100, 1000, 200);
 	m_iMinScale = pDesc->GetAttributeIntegerBounded(MIN_SCALE_ATTRIB, 10, 100, 50);
