@@ -72,7 +72,7 @@ void CMapLegendPainter::Paint (CG32bitImage &Dest, int x, int y) const
         }
     }
 
-void CMapLegendPainter::SetScale (Metric rUnitsPerPixel)
+void CMapLegendPainter::SetScale (Metric rLogicalUnitsPerPixel)
 
 //  SetScale
 //
@@ -87,7 +87,7 @@ void CMapLegendPainter::SetScale (Metric rUnitsPerPixel)
 
     //  Short-circuit
 
-    if (rUnitsPerPixel <= 0.0)
+    if (rLogicalUnitsPerPixel <= 0.0)
         {
         m_cxScale = 0;
         return;
@@ -101,6 +101,7 @@ void CMapLegendPainter::SetScale (Metric rUnitsPerPixel)
 
     for (i = 0; i < m_iScaleCount; i++)
         {
+        Metric rUnitsPerPixel = rLogicalUnitsPerPixel / m_pScaleDesc[i].rUnitLength;
         m_cxScale = mathRound(m_pScaleDesc[i].rUnits / rUnitsPerPixel);
         if (m_cxScale <= cxMaxLength)
             break;

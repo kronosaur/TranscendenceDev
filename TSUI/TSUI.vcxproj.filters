@@ -141,6 +141,9 @@
     <ClCompile Include="CMapLegendPainter.cpp">
       <Filter>Source Files\Painters</Filter>
     </ClCompile>
+    <ClCompile Include="CMapScaleCounter.cpp">
+      <Filter>Source Files\UIHelpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

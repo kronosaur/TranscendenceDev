@@ -167,6 +167,7 @@
     </ClCompile>
     <ClCompile Include="CListCollectionTask.cpp" />
     <ClCompile Include="CMapLegendPainter.cpp" />
+    <ClCompile Include="CMapScaleCounter.cpp" />
     <ClCompile Include="CMCIMixer.cpp" />
     <ClCompile Include="CMessageSession.cpp" />
     <ClCompile Include="CReactorHUDCircular.cpp" />

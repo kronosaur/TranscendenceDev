@@ -201,3 +201,32 @@ class CInputErrorMessageController : public IAnimatron, public IAniCommand
 	private:
 		IHISession *m_pSession;
 	};
+
+class CMapScaleCounter
+    {
+    public:
+        CMapScaleCounter (void);
+
+        inline bool CanZoomIn (void) const { return (m_iTargetScale < m_iMaxScale); }
+        inline bool CanZoomOut (void) const { return (m_iTargetScale > m_iMinScale); }
+        inline int GetScale (void) const { return m_iScale; }
+        inline int GetTargetScale (void) const { return m_iTargetScale; }
+        void Init (int iScale, int iMinScale, int iMaxScale);
+        void SetTargetScale (int iScale);
+        bool Update (void);
+        void ZoomIn (void);
+        void ZoomOut (void);
+        void ZoomWheel (int iDelta);
+
+    private:
+        int GetScaleIndex (int iScale) const;
+
+        int m_iScale;
+        int m_iMinScale;
+        int m_iMaxScale;
+
+        int m_iTargetScale;
+
+        int m_iMinScaleIndex;
+        int m_iMaxScaleIndex;
+    };
