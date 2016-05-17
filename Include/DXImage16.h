@@ -476,6 +476,7 @@ class CG16bitFont : public CObject
 					   int iLineAdj = 0, 
 					   DWORD dwFlags = 0,
 					   int *retcyHeight = NULL) const;
+
 		void DrawText (CG32bitImage &Dest, 
 					   int x, 
 					   int y, 
@@ -490,6 +491,8 @@ class CG16bitFont : public CObject
 					   int iLineAdj = 0, 
 					   DWORD dwFlags = 0,
 					   int *retcyHeight = NULL) const;
+        void DrawText (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor, const TArray<CString> &Lines, int iLineAdj = 0, DWORD dwFlags = 0, int *rety = NULL) const;
+
 		void DrawTextEffect (CG16bitImage &Dest,
 							 int x,
 							 int y,

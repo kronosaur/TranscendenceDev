@@ -58,9 +58,12 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 	int cxRemainingWidth = cxWidth;
 	int iLines = 0;
 
+    if (retLines)
+        retLines->DeleteAll();
+
 	//	Can't handle 0 widths
 
-	if (cxWidth == 0)
+	if (cxWidth <= 0)
 		return 0;
 
 	//	Smart quotes
@@ -703,6 +706,46 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
 	if (retcyHeight)
 		*retcyHeight = y - rcRect.top;
 	}
+
+void CG16bitFont::DrawText (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor, const TArray<CString> &Lines, int iLineAdj, DWORD dwFlags, int *rety) const
+
+//  DrawText
+//
+//  Draws an array of lines.
+
+    {
+    int i;
+
+    //  Paint each line
+
+	for (i = 0; i < Lines.GetCount(); i++)
+		{
+        int xPos;
+
+        if (dwFlags & AlignCenter)
+            {
+            int cxWidth = MeasureText(Lines[i]);
+            xPos = x - (cxWidth / 2);
+            }
+        else if (dwFlags & AlignRight)
+            {
+            int cxWidth = MeasureText(Lines[i]);
+            xPos = x - cxWidth;
+            }
+        else
+            xPos = x;
+
+		if (!(dwFlags & MeasureOnly))
+			DrawText(Dest, x, y, rgbColor, Lines[i]);
+
+		y += m_cyHeight + iLineAdj;
+		}
+
+    //  Done
+
+    if (rety)
+        *rety = y;
+    }
 
 void CG16bitFont::DrawTextEffect (CG16bitImage &Dest,
 								  int x,
