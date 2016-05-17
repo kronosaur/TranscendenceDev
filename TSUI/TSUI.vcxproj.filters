@@ -28,12 +28,12 @@
     <Filter Include="Source Files\HUD">
       <UniqueIdentifier>{d58776d7-da50-422b-a327-fae452d83c21}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Painters">
+      <UniqueIdentifier>{d9e99aff-db2d-46f9-a935-bf702824968c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CBackgroundProcessor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CGalacticMapPainter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CHumanInterface.cpp">
@@ -102,9 +102,6 @@
     <ClCompile Include="CMessageSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CStargateEffectPainter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CSoundtrackManager.cpp">
       <Filter>Source Files\Soundtrack</Filter>
     </ClCompile>
@@ -134,6 +131,15 @@
     </ClCompile>
     <ClCompile Include="CReactorHUDCircular.cpp">
       <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CGalacticMapPainter.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CStargateEffectPainter.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLegendPainter.cpp">
+      <Filter>Source Files\Painters</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
