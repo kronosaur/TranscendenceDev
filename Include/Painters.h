@@ -8,18 +8,31 @@
 class CGalacticMapPainter
 	{
 	public:
+        struct SSelectResult
+            {
+            CTopologyNode *pNode;
+            };
+
 		CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *pMap);
 		~CGalacticMapPainter (void);
 
-		void AdjustCenter (const RECT &rcView, int xCenter, int yCenter, int iScale, int *retxCenter, int *retyCenter);
-        void GalacticToView (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
-		inline int GetHeight (void) { return m_cyMap; }
-		inline int GetWidth (void) { return m_cxMap; }
-		void Paint (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, int iScale);
-        void ViewToGalactic (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
+		void AdjustCenter (int xCenter, int yCenter, int iScale, int *retxCenter, int *retyCenter) const;
+        void GalacticToView (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
+		inline int GetHeight (void) const { return m_cyMap; }
+        inline void GetPos (int *retx, int *rety) const { *retx = m_xCenter; *rety = m_yCenter; }
+        inline int GetScale (void) const { return m_iScale; }
+        inline const RECT &GetViewport (void) const { return m_rcView; }
+		inline int GetWidth (void) const { return m_cxMap; }
+        bool HitTest (int x, int y, SSelectResult &Result) const;
+		void Paint (CG32bitImage &Dest) const;
+        inline void SetPos (int x, int y) { m_xCenter = x; m_yCenter = y; }
+        inline void SetScale (int iScale) { m_iScale = iScale; }
+        inline void SetSelection (CTopologyNode *pNode) { m_pSelected = pNode; }
+        inline void SetViewport (const RECT &rcRect) { m_rcView = rcRect; RectCenter(m_rcView, &m_xViewCenter, &m_yViewCenter); }
+        void ViewToGalactic (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
 
 	private:
-		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor);
+		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor) const;
 		void Init (void);
 		inline SPoint Xform (const SPoint &pt) const { return SPoint(m_xViewCenter + m_iScale * (pt.x - m_xCenter) / 100, m_yViewCenter + m_iScale * (m_yCenter - pt.y) / 100); }
 
@@ -32,12 +45,16 @@ class CGalacticMapPainter
 		CG32bitImage *m_pImage;
 		bool m_bFreeImage;
 
-		//	Temporaries, while painting
+		//	Painting options
 
-		int m_iScale;
-		int m_xCenter;
+        CTopologyNode *m_pSelected;         //  Selected node (may be NULL)
+
+		int m_iScale;                       //  Scale to paint at 100 = normal; 200 = 2x size
+		int m_xCenter;                      //  Center of viewport in galactic coordinates
 		int m_yCenter;
-		int m_xViewCenter;
+
+        RECT m_rcView;                      //  Viewport in output coordinates
+		int m_xViewCenter;                  //  Center of viewport in output coordinates
 		int m_yViewCenter;
 	};
 

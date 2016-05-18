@@ -6,6 +6,7 @@
 #include "stdafx.h"
 
 const int NODE_RADIUS =						6;
+const int SELECTION_RADIUS =                12;
 const int STARGATE_LINE_WIDTH =				3;
 const int MIN_NODE_MARGIN =					64;
 
@@ -14,11 +15,24 @@ CGalacticMapPainter::CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *
 		m_cxMap(-1),
 		m_cyMap(-1),
 		m_bFreeImage(false),
-		m_pImage(NULL)
+		m_pImage(NULL),
+        m_pSelected(NULL),
+        m_iScale(100),
+        m_xCenter(0),
+        m_yCenter(0)
 
 //	CGalacticMapPainter constructor
 
 	{
+    RECT rcRect;
+    rcRect.left = 0;
+    rcRect.top = 0;
+    rcRect.right = 100;
+    rcRect.bottom = 100;
+
+    SetViewport(rcRect);
+
+	Init();
 	}
 
 CGalacticMapPainter::~CGalacticMapPainter (void)
@@ -30,21 +44,20 @@ CGalacticMapPainter::~CGalacticMapPainter (void)
 		delete m_pImage;
 	}
 
-void CGalacticMapPainter::AdjustCenter (const RECT &rcView, int xCenter, int yCenter, int iScale, int *retxCenter, int *retyCenter)
+void CGalacticMapPainter::AdjustCenter (int xCenter, int yCenter, int iScale, int *retxCenter, int *retyCenter) const
 
 //	AdjustCenter
 //
-//	Adjusts the center coordinates so that the map is always fully visible
+//	Adjusts the center coordinates so that the map is always fully visible. The 
+//  viewport must be set, but scale and position are inputs to this.
 
 	{
-	Init();
-
 	//	Compute the dimensions of the map to paint
 
 	int cxWidth = m_cxMap;
 	int cyHeight = m_cyMap;
-	int cxMap = (100 * RectWidth(rcView) / iScale);
-	int cyMap = (100 * RectHeight(rcView) / iScale);
+	int cxMap = (100 * RectWidth(m_rcView) / iScale);
+	int cyMap = (100 * RectHeight(m_rcView) / iScale);
 
 	//	Compute the given center in map image coordinates
 
@@ -53,24 +66,33 @@ void CGalacticMapPainter::AdjustCenter (const RECT &rcView, int xCenter, int yCe
 
 	//	Convert back after adjustment
 
-	if ((iScale * cxWidth / 100) < RectWidth(rcView))
+	if ((iScale * cxWidth / 100) < RectWidth(m_rcView))
 		*retxCenter = 0;
 	else
 		*retxCenter = xMapCenter - (cxWidth / 2);
 
-	if ((iScale * cyHeight / 100) < RectHeight(rcView))
+	if ((iScale * cyHeight / 100) < RectHeight(m_rcView))
 		*retyCenter = 0;
 	else
 		*retyCenter = (cyHeight / 2) - yMapCenter;
 	}
 
-void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor)
+void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor) const
 
 //	DrawNode
 //
 //	Draws a topology node
 
 	{
+    //  Draw selection, if necessary
+
+    if (pNode == m_pSelected)
+        {
+        CGDraw::Circle(Dest, x, y, SELECTION_RADIUS, m_VI.GetColor(colorAreaDialogHighlight));
+        }
+
+    //  Draw the node
+
 	CGDraw::CircleGradient(Dest, x + 2, y + 2, NODE_RADIUS + 1, 0);
 	CGDraw::Circle(Dest, x, y, NODE_RADIUS, rgbColor);
 	CGDraw::CircleGradient(Dest, x - 2, y - 2, NODE_RADIUS - 3, CG32bitPixel(0xff, 0xff, 0xff));
@@ -101,7 +123,7 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 		}
 	}
 
-void CGalacticMapPainter::GalacticToView (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
+void CGalacticMapPainter::GalacticToView (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
 
 //	GalacticToView
 //
@@ -109,14 +131,48 @@ void CGalacticMapPainter::GalacticToView (int x, int y, const RECT &rcView, int 
 //  the entire session).
 
 	{
-	int xViewCenter = rcView.left + (RectWidth(rcView) / 2);
-	int yViewCenter = rcView.top + (RectHeight(rcView) / 2);
-
-	//	Convert to view coordinates
-
-	*retx = xViewCenter + iScale * (x - xCenter) / 100;
-	*rety = yViewCenter + iScale * (yCenter - y) / 100;
+	*retx = m_xViewCenter + iScale * (x - xCenter) / 100;
+	*rety = m_yViewCenter + iScale * (yCenter - y) / 100;
 	}
+
+bool CGalacticMapPainter::HitTest (int x, int y, SSelectResult &Result) const
+
+//  HitTest
+//
+//  Returns TRUE if we clicked on a node
+
+    {
+    int i;
+
+    //  Convert to galactic coordinates
+
+    int xPos, yPos;
+    ViewToGalactic(x, y, m_xCenter, m_yCenter, m_iScale, &xPos, &yPos);
+
+    //  See if we hit a node
+
+    for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+        {
+        CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
+        int xNode, yNode;
+        if (!pNode->IsKnown()
+                || pNode->IsEndGame()
+                || pNode->GetDisplayPos(&xNode, &yNode) != m_pMap)
+            continue;
+
+        int xDiff = Absolute(xNode - xPos);
+        int yDiff = Absolute(yNode - yPos);
+        if (xDiff < SELECTION_RADIUS && yDiff < SELECTION_RADIUS)
+            {
+            Result.pNode = pNode;
+            return true;
+            }
+        }
+
+    //  If we get this far, we did not find a node.
+
+    return false;
+    }
 
 void CGalacticMapPainter::Init (void)
 
@@ -169,7 +225,7 @@ void CGalacticMapPainter::Init (void)
 		}
 	}
 
-void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCenter, int yCenter, int iScale)
+void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
 //	Paint
 //
@@ -183,21 +239,13 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 	{
 	int i, j, k;
 
-	ASSERT(iScale > 0);
-
-	//	Initialize
-
-	Init();
+	ASSERT(m_iScale > 0);
 
 	//	Paint the image, if we have it
 
 	if (m_cxMap > 0 && m_cyMap > 0)
 		{
 		//	Compute some metrics
-
-		m_iScale = iScale;
-		m_xCenter = xCenter;
-		m_yCenter = yCenter;
 
 		CG32bitPixel rgbNodeColor = CG32bitPixel(255, 200, 128);
 		CG32bitPixel rgbStargateColor = CG32bitPixel(160, 255, 128);
@@ -207,15 +255,13 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 
 		//	Compute the dimensions of the map to paint
 
-		int cxMap = (100 * RectWidth(rcView) / iScale);
-		int cyMap = (100 * RectHeight(rcView) / iScale);
-		m_xViewCenter = rcView.left + (RectWidth(rcView) / 2);
-		m_yViewCenter = rcView.top + (RectHeight(rcView) / 2);
+		int cxMap = (100 * RectWidth(m_rcView) / m_iScale);
+		int cyMap = (100 * RectHeight(m_rcView) / m_iScale);
 
 		//	Compute the given center in map image coordinates
 
-		int xMapCenter = (cxWidth / 2) + xCenter;
-		int yMapCenter = (cyHeight / 2) - yCenter;
+		int xMapCenter = (cxWidth / 2) + m_xCenter;
+		int yMapCenter = (cyHeight / 2) - m_yCenter;
 
 		//	Compute the upper-left corner of the map
 
@@ -225,27 +271,27 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 		//	Fill the borders, in case we the image won't fit
 
 		if (xMap < 0)
-			Dest.Fill(rcView.left, rcView.top, -(xMap * iScale) / 100, RectHeight(rcView), 0);
+			Dest.Fill(m_rcView.left, m_rcView.top, -(xMap * m_iScale) / 100, RectHeight(m_rcView), 0);
 
 		if (yMap < 0)
-			Dest.Fill(rcView.left, rcView.top, RectWidth(rcView), (-yMap * iScale) / 100, 0);
+			Dest.Fill(m_rcView.left, m_rcView.top, RectWidth(m_rcView), (-yMap * m_iScale) / 100, 0);
 
 		if (xMap + cxMap > cxWidth)
 			{
-			int cx = iScale * ((xMap + cxMap) - cxWidth) / 100;
-			Dest.Fill(rcView.right - cx, rcView.top, cx, RectHeight(rcView), 0);
+			int cx = m_iScale * ((xMap + cxMap) - cxWidth) / 100;
+			Dest.Fill(m_rcView.right - cx, m_rcView.top, cx, RectHeight(m_rcView), 0);
 			}
 
 		if (yMap + cyMap > cyHeight)
 			{
-			int cy = iScale * ((yMap + cyMap) - cyHeight) / 100;
-			Dest.Fill(rcView.left, rcView.bottom - cy, RectWidth(rcView), cy, 0);
+			int cy = m_iScale * ((yMap + cyMap) - cyHeight) / 100;
+			Dest.Fill(m_rcView.left, m_rcView.bottom - cy, RectWidth(m_rcView), cy, 0);
 			}
 
 		//	Blt
 
 		if (m_pImage)
-			CGDraw::BltScaled(Dest, rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView),	*m_pImage, xMap, yMap, cxMap, cyMap);
+			CGDraw::BltScaled(Dest, m_rcView.left, m_rcView.top, RectWidth(m_rcView), RectHeight(m_rcView), *m_pImage, xMap, yMap, cxMap, cyMap);
 
 		//	Loop over all nodes and clear marks on the ones that we need to draw
 
@@ -337,7 +383,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 
 				//	Draw star system
 
-				if (Start.x >= rcView.left && Start.x < rcView.right && Start.y >= rcView.top && Start.y < rcView.bottom)
+				if (Start.x >= m_rcView.left && Start.x < m_rcView.right && Start.y >= m_rcView.top && Start.y < m_rcView.bottom)
 					DrawNode(Dest, pNode, Start.x, Start.y, rgbNodeColor);
 
 				pNode->SetMarked();
@@ -345,22 +391,17 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest, const RECT &rcView, int xCe
 			}
 		}
 	else
-		Dest.Fill(rcView.left, rcView.top, RectWidth(rcView), RectHeight(rcView), 0);
+		Dest.Fill(m_rcView.left, m_rcView.top, RectWidth(m_rcView), RectHeight(m_rcView), 0);
 	}
 
-void CGalacticMapPainter::ViewToGalactic (int x, int y, const RECT &rcView, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
+void CGalacticMapPainter::ViewToGalactic (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
 
 //  ViewToGalactic
 //
 //  Converts from session/screen coordinates to galactic (map) coordinates.
 
     {
-	int xViewCenter = rcView.left + (RectWidth(rcView) / 2);
-	int yViewCenter = rcView.top + (RectHeight(rcView) / 2);
-
-	//	Convert to galactic coordinates
-
-    *retx = (100 * (x - xViewCenter) / iScale) + xCenter;
-    *rety = yCenter - (100 * (y - yViewCenter) / iScale);
+    *retx = (100 * (x - m_xViewCenter) / iScale) + xCenter;
+    *rety = yCenter - (100 * (y - m_yViewCenter) / iScale);
     }
 
