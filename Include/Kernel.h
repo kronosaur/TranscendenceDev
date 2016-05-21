@@ -1635,6 +1635,7 @@ inline bool uiIsControlDown (void) { return (::GetAsyncKeyState(VK_CONTROL) & 0x
 inline bool uiIsKeyDown (int iVirtKey) { return ((::GetAsyncKeyState(iVirtKey) & 0x8000) ? true : false); }
 inline bool uiIsKeyRepeat (DWORD dwKeyData) { return ((dwKeyData & 0x40000000) ? true : false); }
 inline bool uiIsShiftDown (void) { return (::GetAsyncKeyState(VK_SHIFT) & 0x8000) ? true : false; }
+inline char uiGetCharFromKeyCode (int iVirtKey) { DWORD dwChar = ::MapVirtualKey((UINT)iVirtKey, MAPVK_VK_TO_CHAR); return (dwChar < 256 ? (char)(BYTE)dwChar : 0); }
 
 //	Note: This cannot be an inline because it will fail if the inline is
 //	ever compiled as a function call
