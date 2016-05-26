@@ -566,6 +566,14 @@ class CVisualPalette : public IFontTable
 						 IAnimatron **retpControl = NULL,
 						 int *retcxWidth = NULL,
 						 int *retcyHeight = NULL) const;
+        void CreateListBox (CAniSequencer *pContainer,
+                            const CString &sID,
+                            int x,
+                            int y,
+                            int cxWidth,
+                            int cyHeight,
+                            DWORD dwOptions,
+                            CAniListBox **retpControl = NULL) const;
 		void CreateMessagePane (CAniSequencer *pContainer, 
 								const CString &sID, 
 								const CString &sTitle,
@@ -790,6 +798,7 @@ extern CHumanInterface *g_pHI;
 #include "Painters.h"
 #include "Soundtrack.h"
 #include "TSUIHUD.h"
+#include "TSUIMapPainters.h"
 #include "TSUISessions.h"
 #include "TSUISettings.h"
 #include "UIHelpers.h"

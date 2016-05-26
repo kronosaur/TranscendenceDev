@@ -39,6 +39,8 @@ const int MSG_PADDING_TOP =						20;
 const int MSG_PANE_HEIGHT =						200;
 const int MSG_PANE_WIDTH =						400;
 
+const int MAJOR_PADDING_BOTTOM =				20;
+
 const int RING_SPACING =						2;
 const int RING_SIZE =							10;
 const int RING_SIZE_INC =						2;
@@ -47,6 +49,9 @@ const int RING_MAX_RATE =						6;
 const int RING_MIN_RADIUS =						20;
 const int RING_COUNT =							4;
 
+const int SELECTION_BORDER_WIDTH =				1;
+const int SELECTION_CORNER_RADIUS =				8;
+
 const int SMALL_BUTTON_CORNER_RADIUS =			4;
 
 const int SMALL_IMAGE_BUTTON_BORDER_WIDTH =		1;
@@ -54,6 +59,7 @@ const int SMALL_IMAGE_BUTTON_HEIGHT =			48;
 const int SMALL_IMAGE_BUTTON_WIDTH =			48;
 
 #define PROP_COLOR								CONSTLIT("color")
+#define PROP_FADE_EDGE_HEIGHT					CONSTLIT("fadeEdgeHeight")
 #define PROP_FILL_TYPE							CONSTLIT("fillType")
 #define PROP_FONT								CONSTLIT("font")
 #define PROP_LINE_COLOR							CONSTLIT("lineColor")
@@ -63,6 +69,7 @@ const int SMALL_IMAGE_BUTTON_WIDTH =			48;
 #define PROP_LL_RADIUS							CONSTLIT("llRadius")
 #define PROP_LR_RADIUS							CONSTLIT("lrRadius")
 #define PROP_OPACITY							CONSTLIT("opacity")
+#define PROP_PADDING_BOTTOM						CONSTLIT("paddingBottom")
 #define PROP_POSITION							CONSTLIT("position")
 #define PROP_SCALE								CONSTLIT("scale")
 #define PROP_TEXT								CONSTLIT("text")
@@ -70,6 +77,7 @@ const int SMALL_IMAGE_BUTTON_WIDTH =			48;
 #define PROP_TEXT_ALIGN_VERT					CONSTLIT("textAlignVert")
 #define PROP_UL_RADIUS							CONSTLIT("ulRadius")
 #define PROP_UR_RADIUS							CONSTLIT("urRadius")
+#define PROP_VIEWPORT_HEIGHT					CONSTLIT("viewportHeight")
 
 #define ALIGN_CENTER							CONSTLIT("center")
 
@@ -82,6 +90,8 @@ const int SMALL_IMAGE_BUTTON_WIDTH =			48;
 #define STYLE_HOVER								CONSTLIT("hover")
 #define STYLE_IMAGE								CONSTLIT("image")
 #define STYLE_NORMAL							CONSTLIT("normal")
+#define STYLE_SELECTION							CONSTLIT("selection")
+#define STYLE_SELECTION_FOCUS					CONSTLIT("selectionFocus")
 #define STYLE_TEXT								CONSTLIT("text")
 
 #define FILL_TYPE_NONE							CONSTLIT("none")
@@ -692,6 +702,65 @@ void CVisualPalette::CreateLink (CAniSequencer *pContainer,
 	if (retpControl)
 		*retpControl = pButton;
 	}
+
+void CVisualPalette::CreateListBox (CAniSequencer *pContainer,
+                                    const CString &sID,
+                                    int x,
+                                    int y,
+                                    int cxWidth,
+                                    int cyHeight,
+                                    DWORD dwOptions,
+                                    CAniListBox **retpControl) const
+
+//  CreateListBox
+//
+//  Creates a standard listbox control.
+
+    {
+    CAniListBox *pList = new CAniListBox;
+
+    if (!sID.IsBlank())
+	    pList->SetID(sID);
+
+	pList->SetPropertyVector(PROP_POSITION, CVector(x, y));
+    pList->SetPropertyVector(PROP_SCALE, CVector(cxWidth, cyHeight));
+	pList->SetPropertyMetric(PROP_VIEWPORT_HEIGHT, (Metric)cyHeight);
+	pList->SetPropertyMetric(PROP_FADE_EDGE_HEIGHT, 0.0);
+	pList->SetPropertyMetric(PROP_PADDING_BOTTOM, (Metric)MAJOR_PADDING_BOTTOM);
+
+	//	Set the selection style for the list
+
+	IAnimatron *pStyle = new CAniRoundedRect;
+	pStyle->SetPropertyColor(PROP_COLOR, GetColor(colorAreaDialogInputFocus));
+	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
+	pStyle->SetPropertyString(PROP_LINE_TYPE, LINE_TYPE_SOLID);
+	pStyle->SetPropertyColor(PROP_LINE_COLOR, GetColor(colorAreaDialogHighlight));
+	pStyle->SetPropertyInteger(PROP_LINE_WIDTH, SELECTION_BORDER_WIDTH);
+	pStyle->SetPropertyInteger(PROP_UL_RADIUS, SELECTION_CORNER_RADIUS);
+	pStyle->SetPropertyInteger(PROP_UR_RADIUS, SELECTION_CORNER_RADIUS);
+	pStyle->SetPropertyInteger(PROP_LL_RADIUS, SELECTION_CORNER_RADIUS);
+	pStyle->SetPropertyInteger(PROP_LR_RADIUS, SELECTION_CORNER_RADIUS);
+	pList->SetStyle(STYLE_SELECTION_FOCUS, pStyle);
+
+	pStyle = new CAniRoundedRect;
+	pStyle->SetPropertyColor(PROP_COLOR, GetColor(colorAreaDialogInputFocus));
+	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
+	pStyle->SetPropertyInteger(PROP_UL_RADIUS, SELECTION_CORNER_RADIUS);
+	pStyle->SetPropertyInteger(PROP_UR_RADIUS, SELECTION_CORNER_RADIUS);
+	pStyle->SetPropertyInteger(PROP_LL_RADIUS, SELECTION_CORNER_RADIUS);
+	pStyle->SetPropertyInteger(PROP_LR_RADIUS, SELECTION_CORNER_RADIUS);
+	pList->SetStyle(STYLE_SELECTION, pStyle);
+
+    //  Add
+
+    if (pContainer)
+        pContainer->AddTrack(pList, 0);
+
+    //  Done
+
+    if (retpControl)
+        *retpControl = pList;
+    }
 
 void CVisualPalette::CreateMessagePane (CAniSequencer *pContainer, 
 										const CString &sID, 

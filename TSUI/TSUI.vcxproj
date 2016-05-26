@@ -158,6 +158,7 @@
     <ClCompile Include="CBackgroundProcessor.cpp" />
     <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />
+    <ClCompile Include="CGalacticMapSystemDetails.cpp" />
     <ClCompile Include="CHumanInterface.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Create</PrecompiledHeader>
@@ -209,6 +210,7 @@
     <ClInclude Include="..\Include\Soundtrack.h" />
     <ClInclude Include="..\Include\TSUI.h" />
     <ClInclude Include="..\Include\TSUIHUD.h" />
+    <ClInclude Include="..\Include\TSUIMapPainters.h" />
     <ClInclude Include="..\Include\TSUISessions.h" />
     <ClInclude Include="..\Include\TSUISettings.h" />
     <ClInclude Include="..\Include\UIHelpers.h" />

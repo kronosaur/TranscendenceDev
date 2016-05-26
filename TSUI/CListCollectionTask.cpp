@@ -310,32 +310,7 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 
 	//	Generate a Reanimator list of all entries. The root will be a CAniListBox
 
-	m_pList = new CAniListBox;
-	m_pList->SetPropertyMetric(PROP_FADE_EDGE_HEIGHT, 0.0);
-	m_pList->SetPropertyMetric(PROP_PADDING_BOTTOM, (Metric)MAJOR_PADDING_BOTTOM);
-
-	//	Set the selection style for the list
-
-	IAnimatron *pStyle = new CAniRoundedRect;
-	pStyle->SetPropertyColor(PROP_COLOR, VI.GetColor(colorAreaDialogInputFocus));
-	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
-	pStyle->SetPropertyString(PROP_LINE_TYPE, LINE_TYPE_SOLID);
-	pStyle->SetPropertyColor(PROP_LINE_COLOR, VI.GetColor(colorAreaDialogHighlight));
-	pStyle->SetPropertyInteger(PROP_LINE_WIDTH, SELECTION_BORDER_WIDTH);
-	pStyle->SetPropertyInteger(PROP_UL_RADIUS, SELECTION_CORNER_RADIUS);
-	pStyle->SetPropertyInteger(PROP_UR_RADIUS, SELECTION_CORNER_RADIUS);
-	pStyle->SetPropertyInteger(PROP_LL_RADIUS, SELECTION_CORNER_RADIUS);
-	pStyle->SetPropertyInteger(PROP_LR_RADIUS, SELECTION_CORNER_RADIUS);
-	m_pList->SetStyle(STYLE_SELECTION_FOCUS, pStyle);
-
-	pStyle = new CAniRoundedRect;
-	pStyle->SetPropertyColor(PROP_COLOR, VI.GetColor(colorAreaDialogInputFocus));
-	pStyle->SetPropertyOpacity(PROP_OPACITY, 255);
-	pStyle->SetPropertyInteger(PROP_UL_RADIUS, SELECTION_CORNER_RADIUS);
-	pStyle->SetPropertyInteger(PROP_UR_RADIUS, SELECTION_CORNER_RADIUS);
-	pStyle->SetPropertyInteger(PROP_LL_RADIUS, SELECTION_CORNER_RADIUS);
-	pStyle->SetPropertyInteger(PROP_LR_RADIUS, SELECTION_CORNER_RADIUS);
-	m_pList->SetStyle(STYLE_SELECTION, pStyle);
+    VI.CreateListBox(NULL, NULL_STR, 0, 0, 0, 0, 0, &m_pList);
 
 	//	No need to log image load
 
