@@ -431,7 +431,7 @@ void CAniVScroller::Paint (SAniPaintCtx &Ctx)
 
 	//	Transform
 
-	CVector vPos = m_Properties[INDEX_POSITION].GetVector();
+    CVector vPos = m_Properties[INDEX_POSITION].GetVector();
 	CXForm LocalToDest = CXForm(xformTranslate, vPos - CVector(0.0, yScrollPos)) * Ctx.ToDest;
 
 	//	Local paint ctx
@@ -445,9 +445,10 @@ void CAniVScroller::Paint (SAniPaintCtx &Ctx)
 
 	RECT rcSavedClip = Ctx.Dest.GetClipRect();
 
+	CVector vPosT = Ctx.ToDest.Transform(vPos);
 	RECT rcClip = rcSavedClip;
-	rcClip.top = (int)vPos.GetY();
-	rcClip.bottom = (int)(vPos.GetY() + cyViewport);
+	rcClip.top = (int)vPosT.GetY();
+	rcClip.bottom = (int)(vPosT.GetY() + cyViewport);
 	Ctx.Dest.SetClipRect(rcClip);
 
 	//	Loop over all lines
