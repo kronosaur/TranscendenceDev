@@ -111,8 +111,6 @@ Metric g_KlicksPerPixel = KLICKS_PER_PIXEL;
 Metric g_TimeScale = TIME_SCALE;
 Metric g_SecondsPerUpdate =	g_TimeScale / g_TicksPerSecond;
 
-static CObjectClass<CUniverse>g_Class(OBJID_CUNIVERSE, NULL);
-
 CEffectCreator *g_DefaultFireEffect[damageCount];
 CEffectCreator *g_DefaultHitEffect[damageCount];
 bool g_bDefaultEffectsInit = false;
@@ -139,7 +137,7 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	"Small",				//	SRS object counter: 10 pixels
 	};
 
-CUniverse::CUniverse (void) : CObject(&g_Class),
+CUniverse::CUniverse (void) : 
 		m_Sounds(FALSE, TRUE),
 		m_LevelEncounterTables(TRUE),
 		m_bBasicInit(false),
@@ -153,7 +151,6 @@ CUniverse::CUniverse (void) : CObject(&g_Class),
 		m_pPlayer(NULL),
 		m_pPlayerShip(NULL),
 		m_pCurrentSystem(NULL),
-		m_StarSystems(TRUE, FALSE),
 		m_dwNextID(1),
 		m_AllMissions(true),
 
@@ -186,6 +183,8 @@ CUniverse::~CUniverse (void)
 //	CUniverse destructor
 
 	{
+    int i;
+
 	SetPOV(NULL);
 	m_pPlayerShip = NULL;
 
@@ -196,7 +195,9 @@ CUniverse::~CUniverse (void)
 	//	guarantee that we destroy all objects before we destruct
 	//	codechain, et al
 
-	m_StarSystems.RemoveAll();
+    for (i = 0; i < m_StarSystems.GetCount(); i++)
+        delete m_StarSystems[i];
+    m_StarSystems.DeleteAll();
 
 	//	Free up various arrays whose cleanup requires m_CC
 
@@ -254,18 +255,11 @@ ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 //	Adds a system to the universe
 
 	{
-	ALERROR error;
+	//	Add it to our list (must be new)
 
-	//	Add it to our list
-
-	if (error = m_StarSystems.ReplaceEntry((int)pSystem->GetID(), 
-			pSystem,
-			TRUE,
-			NULL))
-		{
-		ASSERT(false);
-		return error;
-		}
+    bool bNew;
+    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+    ASSERT(bNew);
 
 	//	Set the system for the topoplogy
 
@@ -291,16 +285,15 @@ ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)
 	if (error = CSystem::CreateEmpty(this, NULL, &pSystem))
 		return error;
 
+    //  Set a unique ID
+
+	pSystem->SetID(CreateGlobalID());
+
 	//	Add to our list
 
-	DWORD dwID = CreateGlobalID();
-	if (error = m_StarSystems.AddEntry((int)dwID, pSystem))
-		{
-		delete pSystem;
-		return error;
-		}
-
-	pSystem->SetID(dwID);
+    bool bNew;
+    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+    ASSERT(bNew);
 
 	//	Done
 
@@ -531,18 +524,15 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 		return error;
 		}
 
+    //  Set a unique ID
+
+	pSystem->SetID(CreateGlobalID());
+
 	//	Add to our list
 
-	DWORD dwID = CreateGlobalID();
-	if (error = m_StarSystems.AddEntry(dwID, pSystem))
-		{
-		if (retsError)
-			*retsError = strPatternSubst(CONSTLIT("Cannot create system %s: Unable to add system to list"), pTopology->GetID());
-		delete pSystem;
-		return error;
-		}
-
-	pSystem->SetID(dwID);
+    bool bNew;
+    m_StarSystems.SetAt(pSystem->GetID(), pSystem, &bNew);
+    ASSERT(bNew);
 
 	//	Set the system for the topoplogy
 
@@ -590,11 +580,8 @@ void CUniverse::DestroySystem (CSystem *pSystem)
 
 	//	Remove and destroy the system
 
-	if (m_StarSystems.RemoveEntry(pSystem->GetID(), NULL) != NOERROR)
-		{
-		ASSERT(false);
-		return;
-		}
+    m_StarSystems.DeleteAt(pSystem->GetID());
+    delete pSystem;
 	}
 
 CArmorClass *CUniverse::FindArmor (DWORD dwUNID)
@@ -784,7 +771,13 @@ void CUniverse::FlushStarSystem (CTopologyNode *pTopology)
 
 	{
 	ASSERT(pTopology->GetSystemID() != 0xffffffff);
-	m_StarSystems.RemoveEntry(pTopology->GetSystemID(), NULL);
+
+    int iPos;
+    if (m_StarSystems.FindPos(pTopology->GetSystemID(), &iPos))
+        {
+        delete m_StarSystems[iPos];
+        m_StarSystems.Delete(iPos);
+        }
 	}
 
 void CUniverse::GarbageCollectLibraryBitmaps (void)
@@ -2265,6 +2258,8 @@ ALERROR CUniverse::Reinit (void)
 //	Reinitializes the universe
 
 	{
+    int i;
+
 	DEBUG_TRY
 
 	//	We start at tick 1 because sometimes we need to start with some things
@@ -2280,7 +2275,9 @@ ALERROR CUniverse::Reinit (void)
 	m_Time.DeleteAll();
 	m_pPOV = NULL;
 	SetCurrentSystem(NULL);
-	m_StarSystems.RemoveAll();
+    for (i = 0; i < m_StarSystems.GetCount(); i++)
+        delete m_StarSystems[i];
+	m_StarSystems.DeleteAll();
 	m_dwNextID = 1;
 	m_Objects.DeleteAll();
 

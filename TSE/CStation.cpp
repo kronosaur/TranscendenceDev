@@ -268,7 +268,7 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 
 	if (retModifiers)
 		{
-		if (ShowWreckImage())
+		if (ShowStationDamage())
 			retModifiers->SetStationDamage(true);
 		}
 
@@ -1205,7 +1205,7 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
 
-	g_pUniverse->AddObject(this);
+	g_pUniverse->GetGlobalObjects().Insert(this);
 	}
 
 void CStation::FriendlyFire (CSpaceObject *pAttacker)
@@ -2060,6 +2060,10 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			if (m_pType->AlertWhenDestroyed())
 				RaiseAlert(pOrderGiver);
 			}
+
+        //  Invalidate global data
+
+        GetSystem()->SetGlobalStateInvalid(true);
 
 		//	Clear destination
 
@@ -3690,6 +3694,11 @@ void CStation::SetKnown (bool bKnown)
 				&& IsStargate()
 				&& (pDestNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode)))
 			pDestNode->SetKnown();
+
+        //  May need to update global object data
+
+        if (GetSystem())
+            GetSystem()->SetGlobalStateInvalid(true);
 
 		//	Done
 

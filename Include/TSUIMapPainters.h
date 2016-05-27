@@ -21,6 +21,7 @@ class CGalacticMapPainter
 		inline int GetHeight (void) const { return m_cyMap; }
         inline void GetPos (int *retx, int *rety) const { *retx = m_xCenter; *rety = m_yCenter; }
         inline int GetScale (void) const { return m_iScale; }
+        inline CTopologyNode *GetSelection (void) const { return m_pSelected; }
         inline const RECT &GetViewport (void) const { return m_rcView; }
 		inline int GetWidth (void) const { return m_cxMap; }
         bool HitTest (int x, int y, SSelectResult &Result) const;
@@ -66,6 +67,9 @@ class CGalacticMapSystemDetails
         bool CreateDetailsPane (CTopologyNode *pNode, IAnimatron **retpAni);
 
     private:
+		void CreateObjEntry (const CObjectTracker::SObjEntry &Obj, int yPos, int cxWidth, IAnimatron **retpAni, int *retcyHeight);
+		bool CreateObjIcon (const CObjectTracker::SObjEntry &Obj, CG32bitImage **retpIcon);
+
         const CVisualPalette &m_VI;
         CReanimator &m_Reanimator;
         RECT m_rcPane;                      //  RECT of pane (relative to screen)

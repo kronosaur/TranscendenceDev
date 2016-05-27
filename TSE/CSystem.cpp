@@ -405,6 +405,9 @@
 //  131: 1.7 Alpha 2
 //      Added CCompositeImageSelector to CObjectTracker
 //
+//  132: 1.7 Alpha 2
+//      Added flags to CObjectTracker
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -433,8 +436,6 @@ const int MAX_THREAD_COUNT =					16;
 #define SPECIAL_ATTRIB_LIFE_ZONE		CONSTLIT("lifeZone")
 #define SPECIAL_ATTRIB_NEAR_STATIONS	CONSTLIT("nearStations")
 #define SPECIAL_ATTRIB_OUTER_SYSTEM		CONSTLIT("outerSystem")
-
-static CObjectClass<CSystem>g_Class(OBJID_CSYSTEM, NULL);
 
 int g_iGateTimer = 0;
 int g_iGateTimerTick = -1;
@@ -487,33 +488,13 @@ void SetLabelBelow (SLabelEntry &Entry, int cyChar);
 void SetLabelLeft (SLabelEntry &Entry, int cyChar);
 void SetLabelRight (SLabelEntry &Entry, int cyChar);
 
-CSystem::CSystem (void) : CObject(&g_Class),
-		m_iTick(0),
-		m_AllObjects(TRUE),
-		m_iTimeStopped(0),
-		m_rKlicksPerPixel(KLICKS_PER_PIXEL),
-		m_rTimeScale(TIME_SCALE),
-		m_iLastUpdated(-1),
-		m_fInCreate(false),
-		m_fEncounterTableValid(false),
-		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER),
-		m_fEnemiesInLRS(false),
-		m_fEnemiesInSRS(false),
-		m_fPlayerUnderAttack(false),
-		m_pThreadPool(NULL)
-
-//	CSystem constructor
-
-	{
-	ASSERT(FALSE);
-	}
-
-CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) : CObject(&g_Class),
+CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) : 
 		m_dwID(OBJID_NULL),
-		m_iTick(0),
 		m_pTopology(pTopology),
 		m_AllObjects(TRUE),
 		m_pEnvironment(NULL),
+		m_iTick(0),
+        m_iNextEncounter(0),
 		m_iTimeStopped(0),
 		m_rKlicksPerPixel(KLICKS_PER_PIXEL),
 		m_rTimeScale(TIME_SCALE),
@@ -522,6 +503,10 @@ CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) : CObject(&g_Class
 		m_fInCreate(false),
 		m_fEncounterTableValid(false),
 		m_fUseDefaultTerritories(true),
+		m_fEnemiesInLRS(false),
+		m_fEnemiesInSRS(false),
+		m_fPlayerUnderAttack(false),
+        m_fGlobalObjsInvalid(false),
 		m_pThreadPool(NULL),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 

@@ -535,7 +535,7 @@ ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
 		{
 		CSpaceObject::Categories iCategory = GetCategory();
 		if (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip)
-			g_pUniverse->AddObject(this);
+			g_pUniverse->GetGlobalObjects().Insert(this);
 		}
 
 	return NOERROR;
@@ -1318,7 +1318,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 	CSpaceObject::Categories iCategory = GetCategory();
 	if (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip)
-		g_pUniverse->DeleteObject(this);
+		g_pUniverse->GetGlobalObjects().Delete(this);
 
 	//	Remove from system. This will call OnObjDestroyed to all other
 	//	interested objects
@@ -6527,7 +6527,7 @@ void CSpaceObject::Remove (DestructionTypes iCause, const CDamageSource &Attacke
 
 		CSpaceObject::Categories iCategory = GetCategory();
 		if (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip)
-			g_pUniverse->DeleteObject(this);
+			g_pUniverse->GetGlobalObjects().Delete(this);
 
 		//	Remove
 

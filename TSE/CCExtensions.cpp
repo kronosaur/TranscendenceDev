@@ -11957,7 +11957,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Get the list of entries
 
 			TArray<CObjectTracker::SObjEntry> Result;
-			if (!g_pUniverse->FindObjects(sNodeID, Criteria, &Result))
+			if (!g_pUniverse->GetGlobalObjects().Find(sNodeID, Criteria, &Result))
 				return pCC->CreateNil();
 
 			//	Create a list to hold the results

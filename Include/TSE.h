@@ -1228,7 +1228,7 @@ struct SObjCreateCtx
 	bool bIgnoreLimits;						//	If TRUE, create even if we exceed limits
 	};
 
-class CSystem : public CObject
+class CSystem
 	{
 	public:
 		//	Other defines
@@ -1407,6 +1407,7 @@ class CSystem : public CObject
 		bool HasAttribute (const CVector &vPos, const CString &sAttrib);
 		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, CVector *retvHitPos = NULL);
 		inline bool IsCreationInProgress (void) const { return (m_fInCreate ? true : false); }
+        inline bool IsGlobalStateInvalid (void) const { return (m_fGlobalObjsInvalid ? true : false); }
 		inline bool IsPlayerUnderAttack (void) const { return m_fPlayerUnderAttack; }
 		bool IsStarAtPos (const CVector &vPos);
 		bool IsStationInSystem (CStationType *pType);
@@ -1429,6 +1430,7 @@ class CSystem : public CObject
 		void RestartTime (void);
 		ALERROR SaveToStream (IWriteStream *pStream);
 		inline void SetID (DWORD dwID) { m_dwID = dwID; }
+        inline void SetGlobalStateInvalid (bool bInvalid = true) { m_fGlobalObjsInvalid = bInvalid; }
 		void SetLastUpdated (void);
 		void SetObjectSovereign (CSpaceObject *pObj, CSovereign *pSovereign);
 		inline void SetPlayerUnderAttack (void) { m_fPlayerUnderAttack = true; }
@@ -1477,7 +1479,6 @@ class CSystem : public CObject
 			CG8bitSparseImage VolumetricMask;
 			};
 
-		CSystem (void);
 		CSystem (CUniverse *pUniv, CTopologyNode *pTopology);
 
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
@@ -1532,7 +1533,7 @@ class CSystem : public CObject
 		DWORD m_fEnemiesInLRS:1;				//	TRUE if we found enemies in last LRS update
 		DWORD m_fEnemiesInSRS:1;				//	TRUE if we found enemies in last SRS update
 		DWORD m_fPlayerUnderAttack:1;			//	TRUE if at least one object has player as target
-		DWORD m_fSpare8:1;
+		DWORD m_fGlobalObjsInvalid:1;           //  TRUE if we need to refresh global objects
 
 		DWORD m_fSpare:24;
 
@@ -2680,6 +2681,7 @@ class CSpaceObject : public CObject
 		virtual bool IsMarker (void) { return false; }
 		virtual bool IsMission (void) { return false; }
 		virtual bool IsNonSystemObj (void) { return false; }
+		virtual bool IsSignificant (void) const { return false; }
 		virtual bool IsVirtual (void) const { return false; }
 		virtual bool IsWreck (void) const { return false; }
 		virtual void MarkImages (void) { }
@@ -2829,6 +2831,7 @@ class CSpaceObject : public CObject
 		virtual bool IsStargate (void) const { return false; }
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) { return false; }
 		virtual bool RequestGate (CSpaceObject *pObj);
+        virtual bool ShowStationDamage (void) const { return false; }
 		virtual bool SupportsGating (void) { return false; }
 
 		//	...for particle effects
@@ -3063,7 +3066,9 @@ class CObjectTracker
 		struct SObjEntry
 			{
             SObjEntry (void) :
-                    fShowDestroyed(false)
+                    fKnown(false),
+                    fShowDestroyed(false),
+                    fShowInMap(false)
                 { }
 
 			CTopologyNode *pNode;
@@ -3074,7 +3079,9 @@ class CObjectTracker
             CCompositeImageSelector ImageSel;
             CString sNotes;
 
-            DWORD fShowDestroyed : 1;
+            DWORD fKnown:1;
+            DWORD fShowDestroyed:1;
+            DWORD fShowInMap:1;
 			};
 
 		~CObjectTracker (void);
@@ -3082,36 +3089,100 @@ class CObjectTracker
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		bool Find (const CString &sNodeID, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
+        void GetGalacticMapObjects (CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
 		void Insert (CSpaceObject *pObj);
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
+        void Refresh (CSystem *pSystem);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
 		struct SObjExtra
 			{
-            SObjExtra (void) :
-                    fShowDestroyed(false)
+            SObjExtra (void)
                 { }
 
 			CString sName;
 			DWORD dwNameFlags;
             CCompositeImageSelector ImageSel;
             CString sNotes;
-
-            DWORD fShowDestroyed : 1;
 			};
+
+        struct SObjBasics
+            {
+            SObjBasics (void) :
+                    fKnown(false),
+                    fShowDestroyed(false),
+                    fShowInMap(false),
+                    pExtra(NULL)
+                { }
+
+            SObjBasics (const SObjBasics &Src) { Copy(Src); }
+            ~SObjBasics (void) { CleanUp(); }
+
+            SObjBasics &operator= (const SObjBasics &Src)
+                {
+                CleanUp();
+                Copy(Src);
+                return *this;
+                }
+
+            void CleanUp (void)
+                {
+                if (pExtra)
+                    {
+                    delete pExtra;
+                    pExtra = NULL;
+                    }
+                }
+
+            void Copy (const SObjBasics &Src)
+                {
+                fKnown = Src.fKnown;
+                fShowDestroyed = Src.fShowDestroyed;
+                fShowInMap = Src.fShowInMap;
+
+                if (Src.pExtra)
+                    pExtra = new SObjExtra(*Src.pExtra);
+                else
+                    pExtra = NULL;
+                }
+
+            SObjExtra &SetExtra (void)
+                {
+                if (pExtra == NULL)
+                    pExtra = new SObjExtra;
+
+                return *pExtra;
+                }
+
+            DWORD fKnown:1;                 //  TRUE if player knows about this obj
+            DWORD fShowDestroyed:1;         //  TRUE if we need to paint station as destroyed
+            DWORD fShowInMap:1;             //  TRUE if we can dock with the obj
+            DWORD fSpare4:1;
+            DWORD fSpare5:1;
+            DWORD fSpare6:1;
+            DWORD fSpare7:1;
+            DWORD fSpare8:1;
+
+            DWORD dwSpare:24;
+
+            SObjExtra *pExtra;
+            };
 
 		struct SObjList
 			{
 			CTopologyNode *pNode;
 			CDesignType *pType;
-			TArray<DWORD> ObjectIDs;
-			TSortMap<DWORD, SObjExtra> ObjectExtra;
+			TSortMap<DWORD, SObjBasics> Objects;
 			};
 
 		bool AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
-		SObjList *GetList (CSpaceObject *pObj);
-		SObjList *GetList (CTopologyNode *pNode, CDesignType *pType);
+        void AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, TArray<SObjEntry> &Results) const;
+        bool Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
+		SObjList *GetList (CSpaceObject *pObj) const;
+		SObjList *GetList (CTopologyNode *pNode, CDesignType *pType) const;
+		SObjList *SetList (CSpaceObject *pObj);
+		SObjList *SetList (CTopologyNode *pNode, CDesignType *pType);
 
 		TArray<SObjList *> m_AllLists;
 		TSortMap<CString, TArray<SObjList *>> m_ByNode;
@@ -3328,7 +3399,7 @@ class CSFXOptions
 		bool m_bStarshine;					//	Show starshine effect
 	};
 
-class CUniverse : public CObject
+class CUniverse
 	{
 	public:
 		class IHost
@@ -3415,7 +3486,6 @@ class CUniverse : public CObject
 		inline void AddAscendedObj (CSpaceObject *pObj) { m_AscendedObjects.Insert(pObj); }
 		inline ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError) { return m_Design.AddDynamicType(pExtension, dwUNID, pSource, bNewGame, retsError); }
 		void AddEvent (CTimedEvent *pEvent);
-		inline void AddObject (CSpaceObject *pObj) { m_Objects.Insert(pObj); }
 		void AddSound (DWORD dwUNID, int iChannel);
 		inline void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
 		ALERROR AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem);
@@ -3432,11 +3502,9 @@ class CUniverse : public CObject
 		IShipController *CreateShipController (const CString &sAI);
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
-		inline void DeleteObject (CSpaceObject *pObj) { m_Objects.Delete(pObj); }
 		void DestroySystem (CSystem *pSystem);
 		inline CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }
 		CSpaceObject *FindObject (DWORD dwID);
-		inline bool FindObjects (const CString &sNodeID, const CDesignTypeCriteria &Criteria, TArray<CObjectTracker::SObjEntry> *retResult) { return m_Objects.Find(sNodeID, Criteria, retResult); }
 		inline void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane) { m_Design.FireOnGlobalPaneInit(pScreen, pRoot, sScreen, sPane); }
 		inline void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip) { m_Design.FireOnGlobalPlayerChangedShips(pOldShip); }
 		inline void FireOnGlobalPlayerEnteredSystem (void) { m_Design.FireOnGlobalPlayerEnteredSystem(); }
@@ -3461,6 +3529,7 @@ class CUniverse : public CObject
 		CTopologyNode *GetFirstTopologyNode (void);
 		inline const CG16bitFont *GetFont (const CString &sFont) { return m_pHost->GetFont(sFont); }
 		inline CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
+        inline CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
 		inline IHost *GetHost (void) const { return m_pHost; }
 		inline CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		inline int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
@@ -3649,7 +3718,7 @@ class CUniverse : public CObject
 		IPlayerController *m_pPlayer;			//	Player controller
 		CSpaceObject *m_pPlayerShip;			//	Player ship
 		CSystem *m_pCurrentSystem;				//	Current star system (used by code)
-		CIDTable m_StarSystems;					//	Array of CSystem (indexed by ID)
+		TSortMap<DWORD, CSystem *> m_StarSystems;	//	Array of CSystem (indexed by ID)
 		CTimeDate m_StartTime;					//	Time when we started the game
 		DWORD m_dwNextID;						//	Next universal ID
 		CTopology m_Topology;					//	Array of CTopologyNode
