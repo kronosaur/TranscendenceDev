@@ -735,12 +735,19 @@ void CSovereign::SetDispositionTowards (CSovereign *pSovereign, Disposition iDis
 
 	pRel->iDisp = iDisp;
 
+	if (pSovereign == this)
+		m_bSelfRel = true;
+
 	//	Flush cache of enemy objects
 
 	FlushEnemyObjectCache();
 
-	if (pSovereign == this)
-		m_bSelfRel = true;
+    //  Invalidate global object state (since some of them could now have a 
+    //  different disposition).
+
+    CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+    if (pSystem)
+        pSystem->SetGlobalStateInvalid(true);
 	}
 
 bool CSovereign::SetPropertyInteger (const CString &sProperty, int iValue)

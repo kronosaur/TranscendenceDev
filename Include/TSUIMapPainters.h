@@ -67,8 +67,20 @@ class CGalacticMapSystemDetails
         bool CreateDetailsPane (CTopologyNode *pNode, IAnimatron **retpAni);
 
     private:
-		void CreateObjEntry (const CObjectTracker::SObjEntry &Obj, int yPos, int cxWidth, IAnimatron **retpAni, int *retcyHeight);
+        struct SObjDesc
+            {
+            SObjDesc (void) : 
+                    iCount(0)
+                { }
+
+            int iCount;
+            CObjectTracker::SObjEntry ObjData;
+            };
+
+		void CreateObjEntry (const SObjDesc &Obj, int yPos, int cxWidth, IAnimatron **retpAni, int *retcyHeight);
 		bool CreateObjIcon (const CObjectTracker::SObjEntry &Obj, CG32bitImage **retpIcon);
+        void CreateSystemHeader (CAniSequencer *pContainer, CTopologyNode *pTopology) const;
+        bool GetObjList (CTopologyNode *pNode, TSortMap<CString, SObjDesc> &Results) const;
 
         const CVisualPalette &m_VI;
         CReanimator &m_Reanimator;

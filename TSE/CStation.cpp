@@ -58,7 +58,8 @@ const int INVENTORY_REFRESHED_PER_UPDATE = 20;			//	% of inventory refreshed on 
 const Metric MAX_ATTACK_DISTANCE =				LIGHT_SECOND * 25;
 const Metric MAX_ATTACK_DISTANCE2 =				MAX_ATTACK_DISTANCE * MAX_ATTACK_DISTANCE;
 
-#define BEACON_RANGE					(LIGHT_SECOND * 20)
+const Metric BEACON_RANGE = 			(LIGHT_SECOND * 20);
+const Metric BEACON_RANGE2 =            (BEACON_RANGE * BEACON_RANGE);
 
 #define MIN_ANGER						300
 #define MAX_ANGER						1800
@@ -1167,28 +1168,6 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 //	completed creation.
 
 	{
-	int i;
-
-	//	If this is a beacon, scan all stations in range
-
-	if (m_pType->IsBeacon())
-		{
-		for (i = 0; i < GetSystem()->GetObjectCount(); i++)
-			{
-			CSpaceObject *pObj = GetSystem()->GetObject(i);
-
-			if (pObj 
-					&& pObj->GetScale() == scaleStructure
-					&& pObj != this)
-				{
-				CVector vDist = pObj->GetPos() - GetPos();
-				Metric rDist = vDist.Length();
-				if (rDist < BEACON_RANGE)
-					pObj->SetKnown();
-				}
-			}
-		}
-
 	//	Initialize trading
 
 	CTradingDesc *pTrade = m_pType->GetTradingDesc();
@@ -1643,6 +1622,34 @@ bool CStation::IsBlacklisted (CSpaceObject *pObj)
 		return m_Blacklist.IsBlacklisted();
 	}
 
+bool CStation::IsShownInGalacticMap (void) const
+
+//  IsShownInGalacticMap
+//
+//  Returns TRUE if this object should be shown on the details pane of the 
+//  galactic map.
+
+    {
+    //  We only show stations (not worlds)
+
+    if (GetScale() != scaleStructure)
+        return false;
+
+    //  Only if we would show it on the system map
+
+    if (!m_pType->ShowsMapIcon() || m_fNoMapLabel)
+        return false;
+
+    //  Skip stargates, which we don't need to show in the details pane
+
+    if (IsStargate())
+        return false;
+
+    //  Show it
+
+    return true;
+    }
+
 EDamageResults CStation::GetPassthroughDefault (void)
 
 //	GetPassthroughDefault
@@ -2063,7 +2070,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
         //  Invalidate global data
 
-        GetSystem()->SetGlobalStateInvalid(true);
+        InvalidateGlobalState();
 
 		//	Clear destination
 
@@ -2651,6 +2658,31 @@ void CStation::OnPlayerObj (CSpaceObject *pPlayer)
 //	Player has entered the system
 
 	{
+    int i;
+
+	//	If this is a beacon, scan all stations in range. We scan here because
+    //  we don't want to scan distant systems at game creation.
+
+	if (m_pType->IsBeacon())
+		{
+		for (i = 0; i < GetSystem()->GetObjectCount(); i++)
+			{
+			CSpaceObject *pObj = GetSystem()->GetObject(i);
+
+			if (pObj 
+					&& pObj->GetScale() == scaleStructure
+					&& pObj != this)
+				{
+				CVector vDist = pObj->GetPos() - GetPos();
+				Metric rDist2 = vDist.Length2();
+				if (rDist2 < BEACON_RANGE2)
+					pObj->SetKnown();
+				}
+			}
+		}
+
+    //  Fire event
+
 	FireOnPlayerEnteredSystem(pPlayer);
 	}
 
@@ -3697,8 +3729,7 @@ void CStation::SetKnown (bool bKnown)
 
         //  May need to update global object data
 
-        if (GetSystem())
-            GetSystem()->SetGlobalStateInvalid(true);
+        InvalidateGlobalState();
 
 		//	Done
 

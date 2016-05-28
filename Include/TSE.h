@@ -2395,6 +2395,7 @@ class CSpaceObject : public CObject
 					&& (vLL.GetX() < m_vPos.GetX())
 					&& (vLL.GetY() < m_vPos.GetY()); }
 		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
+        inline void InvalidateGlobalState (void) { if (GetSystem()) GetSystem()->SetGlobalStateInvalid(true); }
 		inline bool IsAscended (void) const { return m_fAscended; }
 		bool IsAutoClearDestination (void) { return m_fAutoClearDestination; }
 		bool IsAutoClearDestinationOnDestroy (void) { return m_fAutoClearDestinationOnDestroy; }
@@ -2681,7 +2682,7 @@ class CSpaceObject : public CObject
 		virtual bool IsMarker (void) { return false; }
 		virtual bool IsMission (void) { return false; }
 		virtual bool IsNonSystemObj (void) { return false; }
-		virtual bool IsSignificant (void) const { return false; }
+		virtual bool IsShownInGalacticMap (void) const { return false; }
 		virtual bool IsVirtual (void) const { return false; }
 		virtual bool IsWreck (void) const { return false; }
 		virtual void MarkImages (void) { }
@@ -3068,7 +3069,9 @@ class CObjectTracker
             SObjEntry (void) :
                     fKnown(false),
                     fShowDestroyed(false),
-                    fShowInMap(false)
+                    fShowInMap(false),
+                    fFriendly(false),
+                    fEnemy(false)
                 { }
 
 			CTopologyNode *pNode;
@@ -3082,6 +3085,8 @@ class CObjectTracker
             DWORD fKnown:1;
             DWORD fShowDestroyed:1;
             DWORD fShowInMap:1;
+            DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
+            DWORD fEnemy:1;
 			};
 
 		~CObjectTracker (void);
@@ -3113,6 +3118,8 @@ class CObjectTracker
                     fKnown(false),
                     fShowDestroyed(false),
                     fShowInMap(false),
+                    fFriendly(false),
+                    fEnemy(false),
                     pExtra(NULL)
                 { }
 
@@ -3140,6 +3147,8 @@ class CObjectTracker
                 fKnown = Src.fKnown;
                 fShowDestroyed = Src.fShowDestroyed;
                 fShowInMap = Src.fShowInMap;
+                fFriendly = Src.fFriendly;
+                fEnemy = Src.fEnemy;
 
                 if (Src.pExtra)
                     pExtra = new SObjExtra(*Src.pExtra);
@@ -3158,8 +3167,8 @@ class CObjectTracker
             DWORD fKnown:1;                 //  TRUE if player knows about this obj
             DWORD fShowDestroyed:1;         //  TRUE if we need to paint station as destroyed
             DWORD fShowInMap:1;             //  TRUE if we can dock with the obj
-            DWORD fSpare4:1;
-            DWORD fSpare5:1;
+            DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
+            DWORD fEnemy:1;
             DWORD fSpare6:1;
             DWORD fSpare7:1;
             DWORD fSpare8:1;

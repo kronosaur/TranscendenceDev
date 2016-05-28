@@ -32,7 +32,7 @@ const int LINK_SPACING_X =						4;
 const int LINK_CORNER_RADIUS =					3;
 
 const int MSG_BORDER_WIDTH =					1;
-const int MSG_CORNER_RADIUS =					20;
+const int MSG_CORNER_RADIUS =					4;
 const int MSG_PADDING_LEFT =					20;
 const int MSG_PADDING_RIGHT =					20;
 const int MSG_PADDING_TOP =						20;
@@ -383,6 +383,84 @@ void CVisualPalette::CreateEditControl (CAniSequencer *pContainer,
 	if (retpControl)
 		*retpControl = pInput;
 	}
+
+void CVisualPalette::CreateFrame (CAniSequencer *pContainer,
+                                  const CString &sID,
+                                  int x,
+                                  int y,
+                                  int cxWidth,
+                                  int cyHeight,
+                                  DWORD dwOptions,
+                                  IAnimatron **retpControl) const
+
+//  CreateFrame
+//
+//  Creates a background frame
+
+    {
+    DWORD dwOpacity = 255;
+    if (dwOptions & OPTION_FRAME_TRANS)
+        dwOpacity = 128;
+
+    //  Create it
+
+	CAniRoundedRect *pFrame = new CAniRoundedRect;
+    if (!sID.IsBlank())
+	    pFrame->SetID(sID);
+
+	pFrame->SetPropertyVector(PROP_POSITION, CVector(x, y));
+	pFrame->SetPropertyVector(PROP_SCALE, CVector(cxWidth, cyHeight));
+	pFrame->SetPropertyColor(PROP_COLOR, GetColor(colorAreaInfoMsg));
+	pFrame->SetPropertyOpacity(PROP_OPACITY, dwOpacity);
+	pFrame->SetPropertyInteger(PROP_UL_RADIUS, MSG_CORNER_RADIUS);
+	pFrame->SetPropertyInteger(PROP_UR_RADIUS, MSG_CORNER_RADIUS);
+	pFrame->SetPropertyInteger(PROP_LL_RADIUS, MSG_CORNER_RADIUS);
+	pFrame->SetPropertyInteger(PROP_LR_RADIUS, MSG_CORNER_RADIUS);
+
+	pFrame->SetPropertyString(PROP_LINE_TYPE, LINE_TYPE_SOLID);
+	pFrame->SetPropertyColor(PROP_LINE_COLOR, GetColor(colorLineFrame));
+	pFrame->SetPropertyInteger(PROP_LINE_WIDTH, MSG_BORDER_WIDTH);
+
+    if (pContainer)
+	    pContainer->AddTrack(pFrame, 0);
+
+    if (retpControl)
+        *retpControl = pFrame;
+    }
+
+void CVisualPalette::CreateFrameHeader (CAniSequencer *pContainer,
+                                        const CString &sID,
+                                        int x,
+                                        int y,
+                                        int cxWidth,
+                                        int cyHeight,
+                                        DWORD dwOptions,
+                                        IAnimatron **retpControl) const
+
+//  CreateFrameHeader
+//
+//  Creates a header
+
+    {
+	CAniRoundedRect *pFrame = new CAniRoundedRect;
+    if (!sID.IsBlank())
+	    pFrame->SetID(sID);
+
+	pFrame->SetPropertyVector(PROP_POSITION, CVector(x + 1, y + 1));
+	pFrame->SetPropertyVector(PROP_SCALE, CVector(cxWidth - 2, cyHeight - 1));
+	pFrame->SetPropertyColor(PROP_COLOR, GetColor(colorAreaInfoMsg));
+	pFrame->SetPropertyOpacity(PROP_OPACITY, 255);
+	pFrame->SetPropertyInteger(PROP_UL_RADIUS, MSG_CORNER_RADIUS);
+	pFrame->SetPropertyInteger(PROP_UR_RADIUS, MSG_CORNER_RADIUS);
+	pFrame->SetPropertyInteger(PROP_LL_RADIUS, 0);
+	pFrame->SetPropertyInteger(PROP_LR_RADIUS, 0);
+
+    if (pContainer)
+	    pContainer->AddTrack(pFrame, 0);
+
+    if (retpControl)
+        *retpControl = pFrame;
+    }
 
 void CVisualPalette::CreateHiddenButton (CAniSequencer *pContainer,
 										 const CString &sID,
@@ -790,21 +868,7 @@ void CVisualPalette::CreateMessagePane (CAniSequencer *pContainer,
 
 	//	Create the background rect
 
-	CAniRoundedRect *pFrame = new CAniRoundedRect;
-	pFrame->SetPropertyVector(PROP_POSITION, CVector(0, 0));
-	pFrame->SetPropertyVector(PROP_SCALE, CVector(MSG_PANE_WIDTH, MSG_PANE_HEIGHT));
-	pFrame->SetPropertyColor(PROP_COLOR, GetColor(colorAreaInfoMsg));
-	pFrame->SetPropertyOpacity(PROP_OPACITY, 255);
-	pFrame->SetPropertyInteger(PROP_UL_RADIUS, MSG_CORNER_RADIUS);
-	pFrame->SetPropertyInteger(PROP_UR_RADIUS, MSG_CORNER_RADIUS);
-	pFrame->SetPropertyInteger(PROP_LL_RADIUS, MSG_CORNER_RADIUS);
-	pFrame->SetPropertyInteger(PROP_LR_RADIUS, MSG_CORNER_RADIUS);
-
-	pFrame->SetPropertyString(PROP_LINE_TYPE, LINE_TYPE_SOLID);
-	pFrame->SetPropertyColor(PROP_LINE_COLOR, GetColor(colorLineDialogFrame));
-	pFrame->SetPropertyInteger(PROP_LINE_WIDTH, MSG_BORDER_WIDTH);
-
-	pRoot->AddTrack(pFrame, 0);
+    CreateFrame(pRoot, NULL_STR, 0, 0, MSG_PANE_WIDTH, MSG_PANE_HEIGHT, 0);
 
 	//	Add the title of the message
 
@@ -993,6 +1057,53 @@ void CVisualPalette::CreateStdDialog (const RECT &rcRect, const CString &sTitle,
 	*retpDlg = pDlg;
 	*retpContainer = pContainer;
 	}
+
+void CVisualPalette::CreateTextArea (CAniSequencer *pContainer, 
+                                     const CString &sID, 
+                                     int x, 
+                                     int y, 
+                                     int cxWidth, 
+                                     int cyHeight, 
+                                     const CString &sText, 
+                                     CG32bitPixel rgbColor, 
+                                     const CG16bitFont &Font, 
+                                     IAnimatron **retpControl,
+                                     int *retcyHeight) const
+
+//  CreateTextArea
+//
+//  Create a text element
+
+    {
+	IAnimatron *pText = new CAniText;
+    if (!sID.IsBlank())
+        pText->SetID(sID);
+
+	pText->SetPropertyVector(PROP_POSITION, CVector(x, y));
+	pText->SetPropertyVector(PROP_SCALE, CVector(cxWidth, cyHeight));
+	pText->SetPropertyColor(PROP_COLOR, rgbColor);
+	pText->SetPropertyFont(PROP_FONT, &Font);
+	pText->SetPropertyString(PROP_TEXT, sText);
+
+    //  Compute the height, if requested
+
+    if (retcyHeight)
+        {
+	    RECT rcLine;
+	    pText->GetSpacingRect(&rcLine);
+    	*retcyHeight = RectHeight(rcLine);
+        }
+
+    //  Add to container, if necessary
+
+    if (pContainer)
+        pContainer->AddTrack(pText, 0);
+
+    //  Return control, if requested
+
+    if (retpControl)
+        *retpControl = pText;
+    }
 
 void CVisualPalette::CreateWaitAnimation (CAniSequencer *pContainer, const CString &sID, const RECT &rcRect, IAnimatron **retpControl) const
 

@@ -477,6 +477,9 @@ class CVisualPalette : public IFontTable
 			//	CreateEditControl
 			OPTION_EDIT_PASSWORD =				0x00000001,
 
+            //  CreateFrame
+            OPTION_FRAME_TRANS =                0x00000001,
+
 			//	CreateLink
 			OPTION_LINK_MEDIUM_FONT =			0x00000001,
 			OPTION_LINK_SUB_TITLE_FONT =		0x00000002,
@@ -534,6 +537,22 @@ class CVisualPalette : public IFontTable
 								const CString &sLabel, 
 								IAnimatron **retpControl, 
 								int *retcyHeight) const;
+        void CreateFrame (CAniSequencer *pContainer,
+                          const CString &sID,
+                          int x,
+                          int y,
+                          int cxWidth,
+                          int cyHeight,
+                          DWORD dwOptions,
+                          IAnimatron **retpControl = NULL) const;
+        void CreateFrameHeader (CAniSequencer *pContainer,
+                                const CString &sID,
+                                int x,
+                                int y,
+                                int cxWidth,
+                                int cyHeight,
+                                DWORD dwOptions,
+                                IAnimatron **retpControl = NULL) const;
 		void CreateHiddenButton (CAniSequencer *pContainer,
 								 const CString &sID,
 								 int x,
@@ -583,6 +602,17 @@ class CVisualPalette : public IFontTable
 								IAnimatron **retpControl) const;
 		void CreateRingAnimation (CAniSequencer *pContainer, int iCount, int iMinRadius, int iInc) const;
 		void CreateStdDialog (const RECT &rcRect, const CString &sTitle, IAnimatron **retpDlg, CAniSequencer **retpContainer) const;
+        void CreateTextArea (CAniSequencer *pContainer, 
+                             const CString &sID, 
+                             int x, 
+                             int y, 
+                             int cxWidth, 
+                             int cyHeight, 
+                             const CString &sText, 
+                             CG32bitPixel rgbColor, 
+                             const CG16bitFont &Font, 
+                             IAnimatron **retpControl = NULL,
+                             int *retcyHeight = NULL) const;
 		void CreateWaitAnimation (CAniSequencer *pContainer, const CString &sID, const RECT &rcRect, IAnimatron **retpControl) const;
 
 		//	IFontTable methods
