@@ -4,6 +4,11 @@
 
 #include "PreComp.h"
 
+#define LANGID_DESC_GALACTIC_MAP                CONSTLIT("descGalacticMap")
+#define LANGID_DESC_GALACTIC_MAP_CUSTOM         CONSTLIT("descGalacticMapCustom")
+#define LANGID_DESC_GALACTIC_MAP_ABANDONED      CONSTLIT("descGalacticMapAbandoned")
+#define LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM CONSTLIT("descGalacticMapAbandonedCustom")
+
 const int MAX_ALLOC_GRANULARITY =			10000;
 
 CObjectTracker::~CObjectTracker (void)
@@ -76,6 +81,132 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
 		}
 	else
 		pEntry->sName = ObjList.pType->GetTypeName(&pEntry->dwNameFlags);
+
+    //  If we've got custom notes stored with the object, then use those.
+
+    if (!pEntry->sNotes.IsBlank())
+        ;
+
+    //  If we're destroyed ask the type for description
+
+    else if (pEntry->fShowDestroyed)
+        {
+        if (!pEntry->pType->TranslateText(NULL, LANGID_DESC_GALACTIC_MAP_ABANDONED, NULL, &pEntry->sNotes))
+            pEntry->sNotes = CONSTLIT("Abandoned");
+        }
+
+    //  Otherwise, let the type generate them
+
+    else if (pEntry->pType->TranslateText(NULL, LANGID_DESC_GALACTIC_MAP, NULL, &pEntry->sNotes))
+        ;
+
+    //  Otherwise, we have to generate default notes based on the services.
+
+    else
+        {
+        CTradingDesc *pTrade;
+
+        //  If this is an enemy, all we say is that it is hostile.
+
+        if (pEntry->fEnemy)
+            pEntry->sNotes = CONSTLIT("Hostile");
+
+        //  Otherwise, if it has services, we compose a description based on the
+        //  services it provides.
+
+        else if ((pTrade = pEntry->pType->GetTradingDesc()) && pTrade->HasServices())
+            {
+            pEntry->sNotes = NULL_STR;
+
+            //  Buying and selling ships
+
+            bool bBuysShips = pTrade->HasService(serviceBuyShip);
+            bool bSellsShips = pTrade->HasService(serviceSellShip);
+            CString sBuySellShips;
+            if (bBuysShips && bSellsShips)
+                pEntry->sNotes = CONSTLIT("Buys and sells ships");
+            else if (bBuysShips)
+                pEntry->sNotes = CONSTLIT("Buys ships");
+            else if (bSellsShips)
+                pEntry->sNotes = CONSTLIT("Sells ships");
+
+            //  Refuels
+
+            int iRefuel = pTrade->GetMaxLevelMatched(serviceRefuel);
+            if (iRefuel != -1)
+                {
+                CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), iRefuel);
+
+                if (!pEntry->sNotes.IsBlank())
+                    pEntry->sNotes = strPatternSubst(CONSTLIT("%s — %s"), pEntry->sNotes, sText);
+                else
+                    pEntry->sNotes = sText;
+                }
+
+            //  Repair armor
+
+            int iRepairArmor = pTrade->GetMaxLevelMatched(serviceRepairArmor);
+            int iInstallArmor = pTrade->GetMaxLevelMatched(serviceReplaceArmor);
+            if (iRepairArmor != -1 || iInstallArmor != -1)
+                {
+                CString sText;
+                if (iRepairArmor == iInstallArmor)
+                    sText = strPatternSubst(CONSTLIT("Repairs/installs armor up to level %d"), iRepairArmor);
+                else if (iRepairArmor != -1 && iInstallArmor != -1)
+                    sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d — Installs armor up to level %d"), iRepairArmor, iInstallArmor);
+                else if (iRepairArmor != -1)
+                    sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), iRepairArmor);
+                else
+                    sText = strPatternSubst(CONSTLIT("Installs armor up to level %d"), iInstallArmor);
+
+                if (!pEntry->sNotes.IsBlank())
+                    pEntry->sNotes = strPatternSubst(CONSTLIT("%s — %s"), pEntry->sNotes, sText);
+                else
+                    pEntry->sNotes = sText;
+                }
+
+            //  Install devices
+
+            int iInstallDevice = pTrade->GetMaxLevelMatched(serviceInstallDevice);
+            if (iInstallDevice != -1)
+                {
+                CString sText = strPatternSubst(CONSTLIT("Installs devices up to level %d"), iInstallDevice);
+
+                if (!pEntry->sNotes.IsBlank())
+                    pEntry->sNotes = strPatternSubst(CONSTLIT("%s — %s"), pEntry->sNotes, sText);
+                else
+                    pEntry->sNotes = sText;
+                }
+
+            bool bBuys = pTrade->HasService(serviceBuy);
+            bool bSells = pTrade->HasService(serviceSell);
+            if (bBuys || bSells)
+                {
+                CString sText;
+                if (bBuys && bSells)
+                    sText = CONSTLIT("Buys and sells commodities");
+                else if (bBuys)
+                    sText = CONSTLIT("Buys commodities");
+                else
+                    sText = CONSTLIT("Sells commodities");
+
+                if (!pEntry->sNotes.IsBlank())
+                    pEntry->sNotes = strPatternSubst(CONSTLIT("%s — %s"), pEntry->sNotes, sText);
+                else
+                    pEntry->sNotes = sText;
+                }
+
+            //  If we still don't have text, then no services
+
+            if (pEntry->sNotes.IsBlank())
+                pEntry->sNotes = CONSTLIT("No services available");
+            }
+
+        //  Otherwise, we say no services
+
+        else
+            pEntry->sNotes = CONSTLIT("No services available");
+        }
     }
 
 void CObjectTracker::Delete (CSpaceObject *pObj)
@@ -269,45 +400,19 @@ void CObjectTracker::Insert (CSpaceObject *pObj)
 //	NOTE: We rely on our caller to NOT insert the same object twice.
 
 	{
-	CDesignType *pType = pObj->GetType();
-	if (pType == NULL)
-		return;
-
 	SObjList *pList = SetList(pObj);
 	if (pList == NULL)
 		return;
 
-	SObjBasics *pEntry = pList->Objects.Insert(pObj->GetID());
-    pEntry->fKnown = pObj->IsKnown();
-    pEntry->fShowDestroyed = pObj->ShowStationDamage();
-    pEntry->fShowInMap = pObj->IsShownInGalacticMap();
-
-    //  Track our disposition relative to the player
+    //  We need the player ship to track disposition (but it's OK if we get back
+    //  NULL).
 
     CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
-    if (pPlayer)
-        {
-        CSovereign::Disposition iDisp = pObj->GetDispositionTowards(pPlayer);
-        pEntry->fFriendly = (iDisp == CSovereign::dispFriend);
-        pEntry->fEnemy = (iDisp == CSovereign::dispEnemy);
-        }
 
-	//	If the name of this object does not match the type, then we store it.
-	//
-	//	NOTE: We need to pass a flags var to GetTypeName because it has slightly 
-	//	different behavior if you omit them.
+    //  Insert and update
 
-	DWORD dwNameFlags;
-	DWORD dwDummyFlags;
-	CString sName = pObj->GetName(&dwNameFlags);
-	if (!strEquals(sName, pType->GetTypeName(&dwDummyFlags))
-            || !pType->GetTypeImage().IsConstant())
-		{
-        SObjExtra &Extra = pEntry->SetExtra();
-		Extra.sName = sName;
-		Extra.dwNameFlags = dwNameFlags;
-        Extra.ImageSel = pObj->GetImageSelector();
-		}
+	SObjBasics *pEntry = pList->Objects.Insert(pObj->GetID());
+    Refresh(pObj, pEntry, pPlayer);
 	}
 
 void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
@@ -505,25 +610,67 @@ void CObjectTracker::Refresh (CSystem *pSystem)
             continue;
             }
 
-        //  Update our flags
+        //  Refresh
 
-        pObjData->fKnown = pObj->IsKnown();
-        pObjData->fShowDestroyed = pObj->ShowStationDamage();
-        pObjData->fShowInMap = pObj->IsShownInGalacticMap();
-
-        //  Update disposition
-
-        if (pPlayer)
-            {
-            CSovereign::Disposition iDisp = pObj->GetDispositionTowards(pPlayer);
-            pObjData->fFriendly = (iDisp == CSovereign::dispFriend);
-            pObjData->fEnemy = (iDisp == CSovereign::dispEnemy);
-            }
+        Refresh(pObj, pObjData, pPlayer);
         }
 
     //  Mark valid
 
     pSystem->SetGlobalStateInvalid(false);
+    }
+
+void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceObject *pPlayer)
+
+//  Refresh
+//
+//  Refresh the object data from the actual object.
+
+    {
+	CDesignType *pType = pObj->GetType();
+	if (pType == NULL)
+		return;
+
+    //  Update flags
+
+    pObjData->fKnown = pObj->IsKnown();
+    pObjData->fShowDestroyed = pObj->ShowStationDamage();
+    pObjData->fShowInMap = pObj->IsShownInGalacticMap();
+
+    //  Track our disposition relative to the player
+
+    if (pPlayer)
+        {
+        CSovereign::Disposition iDisp = pObj->GetDispositionTowards(pPlayer);
+        pObjData->fFriendly = (iDisp == CSovereign::dispFriend);
+        pObjData->fEnemy = (iDisp == CSovereign::dispEnemy);
+        }
+
+    //  See if we have a custom services description
+
+    CString sCustomNotes;
+    bool bHasCustomNotes = pObj->Translate((pObjData->fShowDestroyed ? LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM : LANGID_DESC_GALACTIC_MAP_CUSTOM), NULL, &sCustomNotes);
+
+	//	If the name of this object does not match the type, then we store it.
+	//
+	//	NOTE: We need to pass a flags var to GetTypeName because it has slightly 
+	//	different behavior if you omit them.
+
+	DWORD dwNameFlags;
+	DWORD dwDummyFlags;
+	CString sName = pObj->GetName(&dwNameFlags);
+	if (!pType->GetTypeImage().IsConstant()
+            || bHasCustomNotes
+            || !strEquals(sName, pType->GetTypeName(&dwDummyFlags)))
+		{
+        SObjExtra &Extra = pObjData->SetExtra();
+		Extra.sName = sName;
+		Extra.dwNameFlags = dwNameFlags;
+        Extra.ImageSel = pObj->GetImageSelector();
+        Extra.sNotes = sCustomNotes;
+		}
+    else
+        pObjData->DeleteExtra();
     }
 
 CObjectTracker::SObjList *CObjectTracker::SetList (CSpaceObject *pObj)

@@ -900,6 +900,31 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 	return false;
 	}
 
+bool CTradingDesc::HasService (ETradeServiceTypes iService) const
+
+//	HasService
+//
+//	Returns true if it has the given service.
+
+	{
+	int i;
+
+	//	Loop over the commodity list and find the first entry that matches
+
+	for (i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i].iService == iService)
+			{
+			CString sPrefix;
+			int iPriceAdj = m_List[i].PriceAdj.EvalAsInteger(NULL, &sPrefix);
+			if (strEquals(sPrefix, UNAVAILABLE_PREFIX))
+				continue;
+
+            return true;
+			}
+	
+	return false;
+	}
+
 bool CTradingDesc::Matches (const CItem &Item, const SServiceDesc &Commodity) const
 
 //	Matches

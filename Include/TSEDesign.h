@@ -3084,6 +3084,8 @@ class CTradingDesc
 		int GetMaxLevelMatched (ETradeServiceTypes iService) const;
 		bool GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
 		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
+		bool HasService (ETradeServiceTypes iService) const;
+        inline bool HasServices (void) const { return (m_List.GetCount() > 0); }
 		bool Sells (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL);
 		bool SellsShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		void SetEconomyType (CEconomyType *pCurrency) { m_pCurrency.Set(pCurrency); }

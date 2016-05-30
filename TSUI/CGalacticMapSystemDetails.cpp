@@ -133,17 +133,23 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 
     //  Create the icon for the object
 
-    CG32bitImage *pIcon;
+    IAnimatron *pIconAni = NULL;
+    CG32bitImage *pIcon = NULL;
+    int xIcon = 0;
     if (CreateObjIcon(Obj.ObjData, &pIcon))
         {
-		int xOffset = (MAX_ICON_SIZE - pIcon->GetWidth()) / 2;
-		IAnimatron *pIconAni = new CAniRect;
-		pIconAni->SetPropertyVector(PROP_POSITION, CVector(x + xOffset, 0));
+		xIcon = x + ((MAX_ICON_SIZE - pIcon->GetWidth()) / 2);
+		pIconAni = new CAniRect;
 		pIconAni->SetPropertyVector(PROP_SCALE, CVector(pIcon->GetWidth(), pIcon->GetHeight()));
 		pIconAni->SetFillMethod(new CAniImageFill(pIcon, true));
 
 		pRoot->AddTrack(pIconAni, 0);
         }
+
+    //  Keep track of the total height of the text part so we can vertically
+    //  center it.
+
+    int cyText = 0;
 
     //  Add the object name
 
@@ -152,38 +158,58 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
     int cxText = cxWidth - (MAX_ICON_SIZE + ICON_SPACING_HORZ);
 
 	IAnimatron *pName = new CAniText;
-	pName->SetPropertyVector(PROP_POSITION, CVector(xText, y));
 	pName->SetPropertyVector(PROP_SCALE, CVector(10000, 1000));
 	pName->SetPropertyColor(PROP_COLOR, m_VI.GetColor(colorTextHighlight));
 	pName->SetPropertyFont(PROP_FONT, &HeaderFont);
 	pName->SetPropertyString(PROP_TEXT, sHeading);
 
 	pRoot->AddTrack(pName, 0);
-	y += HeaderFont.GetHeight();
+    cyText += HeaderFont.GetHeight();
 
     //  Add description
 
-    CString sDesc = CONSTLIT("This is a cool station that will do some stuff and maybe it will be good or maybe it will not be. Either way, you should visit it. Maybe.");
+    IAnimatron *pDesc = NULL;
+    if (!Obj.ObjData.sNotes.IsBlank())
+        {
+        pDesc = new CAniText;
+        pDesc->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
+        pDesc->SetPropertyColor(PROP_COLOR, m_VI.GetColor(colorTextNormal));
+        pDesc->SetPropertyFont(PROP_FONT, &TextFont);
+        pDesc->SetPropertyString(PROP_TEXT, Obj.ObjData.sNotes);
 
-	IAnimatron *pDesc = new CAniText;
-	pDesc->SetPropertyVector(PROP_POSITION, CVector(xText, y));
-	pDesc->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
-	pDesc->SetPropertyColor(PROP_COLOR, m_VI.GetColor(colorTextNormal));
-	pDesc->SetPropertyFont(PROP_FONT, &TextFont);
-	pDesc->SetPropertyString(PROP_TEXT, sDesc);
+        RECT rcLine;
+        pDesc->GetSpacingRect(&rcLine);
 
-	RECT rcLine;
-	pDesc->GetSpacingRect(&rcLine);
+        pRoot->AddTrack(pDesc, 0);
+        cyText += RectHeight(rcLine);
+        }
 
-	pRoot->AddTrack(pDesc, 0);
-	y += RectHeight(rcLine);
+    //  Center the text
+
+    int cyEntry = Max((pIcon ? pIcon->GetHeight() : 0), cyText);
+    int yText = (cyEntry - cyText) / 2;
+	pName->SetPropertyVector(PROP_POSITION, CVector(xText, yText));
+
+    if (pDesc)
+        {
+        yText += HeaderFont.GetHeight();
+	    pDesc->SetPropertyVector(PROP_POSITION, CVector(xText, yText));
+        }
+
+    //  Center the icon
+
+    if (pIconAni)
+        {
+        int yIcon = (cyEntry - pIcon->GetHeight()) / 2;
+		pIconAni->SetPropertyVector(PROP_POSITION, CVector(xIcon, yIcon));
+        }
 
     //  Done
 
     *retpAni = pRoot;
 
-	if (retcyHeight)
-		*retcyHeight = Max((pIcon ? pIcon->GetHeight() : 0), y);
+    if (retcyHeight)
+        *retcyHeight = cyEntry;
     }
 
 bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &Obj, CG32bitImage **retpIcon)
@@ -335,10 +361,16 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
 
         int iLevelSort = (MAX_ITEM_LEVEL + 1 - Objs[i].pType->GetLevel());
 
+        //  Abandoned stations are separate
+
+        CString sAbandoned;
+        if (Objs[i].fShowDestroyed)
+            sAbandoned = CONSTLIT("-A");
+
         //  Generate a sort string. We want stations with the same type and name
         //  to be collapsed into a single entry.
 
-        CString sSort = strPatternSubst(CONSTLIT("%d-%02d-%08x-%s"), iDispSort, iLevelSort, Objs[i].pType->GetUNID(), Objs[i].sName);
+        CString sSort = strPatternSubst(CONSTLIT("%d-%02d-%08x-%s%s"), iDispSort, iLevelSort, Objs[i].pType->GetUNID(), Objs[i].sName, sAbandoned);
 
         //  Add to our result list
 

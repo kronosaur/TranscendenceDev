@@ -3135,11 +3135,7 @@ class CObjectTracker
 
             void CleanUp (void)
                 {
-                if (pExtra)
-                    {
-                    delete pExtra;
-                    pExtra = NULL;
-                    }
+                DeleteExtra();
                 }
 
             void Copy (const SObjBasics &Src)
@@ -3154,6 +3150,15 @@ class CObjectTracker
                     pExtra = new SObjExtra(*Src.pExtra);
                 else
                     pExtra = NULL;
+                }
+
+            void DeleteExtra (void)
+                {
+                if (pExtra)
+                    {
+                    delete pExtra;
+                    pExtra = NULL;
+                    }
                 }
 
             SObjExtra &SetExtra (void)
@@ -3190,6 +3195,7 @@ class CObjectTracker
         bool Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
 		SObjList *GetList (CSpaceObject *pObj) const;
 		SObjList *GetList (CTopologyNode *pNode, CDesignType *pType) const;
+        void Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceObject *pPlayer);
 		SObjList *SetList (CSpaceObject *pObj);
 		SObjList *SetList (CTopologyNode *pNode, CDesignType *pType);
 
