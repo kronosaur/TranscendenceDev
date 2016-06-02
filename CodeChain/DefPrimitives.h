@@ -133,6 +133,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"DEPRECATED: Alias of @",
 			"vv",	0,	},
 
+		{	"join",				fnItem,			FN_JOIN,
+			"(join list [separator]) -> string\n"
+            "(join list 'oxfordComma) -> string",
+			"v*",	0,	},
+
 		{	"lambda",			fnLambda,		0,						"",		NULL,	0,	},
 		{	"lookup",			fnFind,			FN_LOOKUP,
 			"(lookup source target ['ascending|'descending] [keyIndex]) -> found entry",

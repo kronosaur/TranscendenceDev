@@ -1563,6 +1563,79 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Cannot convert to type"), pArgs->GetElement(0));
 			}
 
+        case FN_JOIN:
+            {
+            ICCItem *pList = pArgs->GetElement(0);
+
+            //  Short-circuit.
+
+            if (pList->GetCount() == 0)
+                return pCC->CreateNil();
+
+            //  Prepare output buffer
+
+        	CMemoryWriteStream Stream(1000);
+            if (Stream.Create() != NOERROR)
+                return pCC->CreateError(CONSTLIT("Out of memory"));
+
+            //  We always start with the first element
+
+            Stream.WriteString(pList->GetElement(0)->GetStringValue());
+
+            //  If no separator, then we just concatenate all entries
+
+            CString sSeparator = (pArgs->GetCount() >= 2 ? pArgs->GetElement(1)->GetStringValue() : NULL_STR);
+            if (sSeparator.IsBlank())
+                {
+                for (i = 1; i < pList->GetCount(); i++)
+                    Stream.WriteString(pList->GetElement(i)->GetStringValue());
+                }
+
+            //  If oxford comma, concatenate
+
+            else if (strEquals(sSeparator, CONSTLIT("oxfordComma")))
+                {
+                for (i = 1; i < pList->GetCount(); i++)
+                    {
+                    //  Either comma or comma-and
+
+                    if (i == pList->GetCount() - 1)
+                        {
+                        if (pList->GetCount() == 2)
+                            Stream.WriteString(CONSTLIT(" and "));
+                        else
+                            Stream.WriteString(CONSTLIT(", and "));
+                        }
+                    else
+                        Stream.WriteString(CONSTLIT(", "));
+
+                    //  Write entry
+
+                    Stream.WriteString(pList->GetElement(i)->GetStringValue());
+                    }
+                }
+
+            //  Otherwise, join with separator
+
+            else
+                {
+                for (i = 1; i < pList->GetCount(); i++)
+                    {
+                    //  Write separator
+
+                    Stream.WriteString(sSeparator);
+
+                    //  Write entry
+
+                    Stream.WriteString(pList->GetElement(i)->GetStringValue());
+                    }
+                }
+
+            //  Convert to string
+
+            return pCC->CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
+            }
+
 		case FN_ITEM_TYPE:
 			{
 			ICCItem *pItem = pArgs->GetElement(0);

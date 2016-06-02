@@ -91,6 +91,7 @@
 #define FN_MATH_CEIL					87
 #define FN_MATH_FLOOR					88
 #define FN_ITEM_CONVERT_TO				89
+#define FN_JOIN                         90
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
