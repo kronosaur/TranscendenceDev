@@ -506,6 +506,7 @@ class CDeviceClass
         bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
+        inline ALERROR FinishBind (SDesignLoadCtx &Ctx) { return OnFinishBind(Ctx); }
 		inline CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		inline bool FindEventHandlerDeviceClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 		COverlayType *FireGetOverlayType(CItemCtx &Ctx) const;
@@ -612,6 +613,7 @@ class CDeviceClass
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
+		virtual ALERROR OnFinishBind (SDesignLoadCtx &Ctx) { return NOERROR; }
         virtual Metric OnGetScaledCostAdj (CItemCtx &Ctx) const;
 		virtual void OnMarkImages (void) { }
 

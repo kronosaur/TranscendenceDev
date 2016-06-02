@@ -102,7 +102,7 @@ static bool g_bDamageAdjInit = false;
 static CDamageAdjDesc g_ArmorDamageAdj[MAX_ITEM_LEVEL];
 static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
-bool CAdventureDesc::FindDataField (const CString &sField, CString *retsValue)
+bool CAdventureDesc::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //

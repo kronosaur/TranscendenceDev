@@ -393,6 +393,19 @@ class CDesignType
 			evtCount					= 6,
 			};
 
+        struct SMapDescriptionCtx
+            {
+            SMapDescriptionCtx (void) :
+                    bShowDestroyed(false),
+                    bEnemy(false),
+                    bFriend(false)
+                { }
+
+            bool bShowDestroyed;
+            bool bEnemy;
+            bool bFriend;
+            };
+
 		CDesignType (void);
 		virtual ~CDesignType (void);
 		void CreateClone (CDesignType **retpType);
@@ -445,7 +458,7 @@ class CDesignType
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
 		inline DWORD GetAPIVersion (void) const { return m_dwVersion; }
 		inline const CString &GetAttributes (void) { return m_sAttributes; }
-		inline CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
+		inline CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return m_DisplayAttribs; }
 		CString GetEntityName (void) const;
@@ -455,10 +468,12 @@ class CDesignType
 		inline const CString &GetGlobalData (const CString &sAttrib) { return m_GlobalData.GetData(sAttrib); }
 		inline CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		inline CXMLElement *GetLocalScreens (void) const { return m_pLocalScreens; }
+        CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
 		CXMLElement *GetScreen (const CString &sUNID);
 		const CString &GetStaticData (const CString &sAttrib) const;
 		CString GetTypeClassName (void) const;
+        CString GetTypeNounPhrase (DWORD dwFlags = 0) const;
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline CXMLElement *GetXMLElement (void) const { return m_pXML; }
 		bool HasAttribute (const CString &sAttrib) const;
@@ -475,17 +490,17 @@ class CDesignType
 		inline void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		inline void Sweep (void) { OnSweep(); }
 		inline void TopologyInitialized (void) { OnTopologyInitialized(); }
-		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult);
-		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText);
+		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const;
+		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
 
 		static CString GetTypeChar (DesignTypes iType);
 
 		//	CDesignType overrides
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const;
 		virtual CCommunicationsHandler *GetCommsHandler (void) { return NULL; }
-		virtual CTradingDesc *GetTradingDesc (void) { return NULL; }
+		virtual CTradingDesc *GetTradingDesc (void) const { return NULL; }
         virtual const CCompositeImageDesc &GetTypeImage (void) const;
-		virtual CString GetTypeName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
+		virtual CString GetTypeName (DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = -1; if (retiMaxLevel) *retiMaxLevel = -1; return -1; }
 		virtual DesignTypes GetType (void) const = 0;
 		virtual bool IsVirtual (void) const { return false; }
@@ -505,6 +520,7 @@ class CDesignType
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const { return false; }
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
+		virtual CString OnGetMapDescriptionExtra (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
 		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) { return NULL; }
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const { return sAttrib.IsBlank(); }
 		virtual void OnInitFromClone (CDesignType *pSource) { ASSERT(false); }
@@ -525,7 +541,7 @@ class CDesignType
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
 		void MergeLanguageTo (CLanguageDataBlock &Dest);
-		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult);
+		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const;
 
 		DWORD m_dwUNID;
 		CExtension *m_pExtension;				//	Extension
@@ -614,7 +630,7 @@ class CGenericType : public CDesignType
 		//	CDesignType overrides
 
 		static CGenericType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designGenericType) ? (CGenericType *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designGenericType; }
+		virtual DesignTypes GetType (void) const override { return designGenericType; }
 	};
 
 //	Design Type References ----------------------------------------------------
@@ -1024,13 +1040,13 @@ class CSoundType : public CDesignType
 
 		//	CDesignType overrides
 		static CSoundType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSound) ? (CSoundType *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual DesignTypes GetType (void) const { return designSound; }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual DesignTypes GetType (void) const override { return designSound; }
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnAddExternals (TArray<CString> *retExternals) { if (!m_sFilespec.IsBlank()) retExternals->Insert(m_sFilespec); }
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		virtual void OnAddExternals (TArray<CString> *retExternals) override { if (!m_sFilespec.IsBlank()) retExternals->Insert(m_sFilespec); }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 
 	private:
 		struct SSegmentDesc
@@ -1323,7 +1339,7 @@ class DamageTypeSet
 
 		ALERROR InitFromXML (const CString &sAttrib);
 		void Add (int iType) { if (iType > damageGeneric) m_dwSet |= (1 << iType); }
-		bool InSet (int iType) { return (iType <= damageGeneric ? false : ((m_dwSet & (1 << iType)) ? true : false)); }
+		bool InSet (int iType) const { return (iType <= damageGeneric ? false : ((m_dwSet & (1 << iType)) ? true : false)); }
 		inline bool IsEmpty (void) const { return (m_dwSet == 0); }
 		void Remove (int iType) { if (iType > damageGeneric) m_dwSet &= ~(1 << iType); }
 
@@ -2180,10 +2196,10 @@ class CItemType : public CDesignType
 
 		//	CDesignType overrides
 		static CItemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return m_iLevel; }
-		virtual DesignTypes GetType (void) const { return designItemType; }
-		virtual bool IsVirtual (void) const { return (m_fVirtual ? true : false); }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return m_iLevel; }
+		virtual DesignTypes GetType (void) const override { return designItemType; }
+		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static ItemCategories GetCategoryForNamedDevice (DeviceNames iDev);
 		static CString GetItemCategory (ItemCategories iCategory);
@@ -2191,14 +2207,15 @@ class CItemType : public CDesignType
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID);
-		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const;
-		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx);
-		virtual void OnReinit (void);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
+        virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
+		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
+		virtual void OnReinit (void) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		void CreateFlotsamImage (void);
@@ -2287,19 +2304,19 @@ class CItemTable : public CDesignType
 		virtual ~CItemTable (void);
 
 		inline void AddItems (SItemAddCtx &Ctx) { if (m_pGenerator) m_pGenerator->AddItems(Ctx); }
-		inline CurrencyValue GetAverageValue (int iLevel) { return (m_pGenerator ? m_pGenerator->GetAverageValue(iLevel) : 0); }
+		inline CurrencyValue GetAverageValue (int iLevel) const { return (m_pGenerator ? m_pGenerator->GetAverageValue(iLevel) : 0); }
 		inline IItemGenerator *GetGenerator (void) { return m_pGenerator; }
 
 		//	CDesignType overrides
 		static CItemTable *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designItemTable) ? (CItemTable *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual DesignTypes GetType (void) const { return designItemTable; }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual DesignTypes GetType (void) const override { return designItemTable; }
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 
 	private:
 		IItemGenerator *m_pGenerator;
@@ -2376,7 +2393,7 @@ class CShipClass : public CDesignType
 		inline bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(iDev, retDesc) : false); }
 		inline bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(Item, retDesc) : false); }
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
-		CString GenerateShipName (DWORD *retdwFlags);
+		CString GenerateShipName (DWORD *retdwFlags) const;
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
         inline const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
         const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;
@@ -2391,7 +2408,7 @@ class CShipClass : public CDesignType
         const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
 		inline CObjectEffectDesc &GetEffectsDesc (void) { return m_Effects; }
 		IShipGenerator *GetEscorts (void) { return m_pEscorts; }
-		CWeaponFireDesc *GetExplosionType (CShip *pShip);
+		CWeaponFireDesc *GetExplosionType (CShip *pShip) const;
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
         const CObjectImageArray &GetHeroImage (void);
@@ -2411,8 +2428,8 @@ class CShipClass : public CDesignType
 		inline int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
 		int GetMaxStructuralHitPoints (void) const;
 		inline int GetMaxWeapons (void) const { return m_iMaxWeapons; }
-		CString GetName (DWORD *retdwFlags = NULL);
-		CString GetNounPhrase (DWORD dwFlags);
+		CString GetName (DWORD *retdwFlags = NULL) const;
+		CString GetNounPhrase (DWORD dwFlags) const;
         const CPlayerSettings *GetPlayerSettings (void) const;
 		CString GetPlayerSortString (void) const;
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
@@ -2471,35 +2488,36 @@ class CShipClass : public CDesignType
 
 		//	CDesignType overrides
 		static CShipClass *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designShipClass) ? (CShipClass *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual CCommunicationsHandler *GetCommsHandler (void);
-		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iLevel; return m_iLevel; }
-		virtual CTradingDesc *GetTradingDesc (void) { return m_pTrade; }
-		virtual DesignTypes GetType (void) const { return designShipClass; }
-        virtual const CCompositeImageDesc &GetTypeImage (void) const { return m_Image; }
-		virtual CString GetTypeName (DWORD *retdwFlags = NULL) { return GetName(retdwFlags); }
-		virtual bool IsVirtual (void) const { return (m_fVirtual ? true : false); }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual CCommunicationsHandler *GetCommsHandler (void) override;
+		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iLevel; return m_iLevel; }
+		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
+		virtual DesignTypes GetType (void) const override { return designShipClass; }
+        virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
+		virtual CString GetTypeName (DWORD *retdwFlags = NULL) const override { return GetName(retdwFlags); }
+		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static Metric GetStdCombatStrength (int iLevel);
 		static void UnbindGlobal (void);
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID);
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx);
-		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
-		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const;
-		virtual void OnInitFromClone (CDesignType *pSource);
-		virtual void OnMarkImages (void) { MarkImages(true); }
-		virtual void OnMergeType (CDesignType *pSource);
-		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx);
-		virtual void OnReinit (void);
-		virtual void OnSweep (void);
-		virtual void OnUnbindDesign (void);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
+		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
+        virtual CString OnGetMapDescriptionExtra (SMapDescriptionCtx &Ctx) const override;
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
+		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
+		virtual void OnInitFromClone (CDesignType *pSource) override;
+		virtual void OnMarkImages (void) override { MarkImages(true); }
+		virtual void OnMergeType (CDesignType *pSource) override;
+		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
+		virtual void OnReinit (void) override;
+		virtual void OnSweep (void) override;
+		virtual void OnUnbindDesign (void) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum PrivateConstants
@@ -2538,7 +2556,7 @@ class CShipClass : public CDesignType
 		void CreateWreckImage (void);
 		void FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpMissile) const;
 		void FindBestMissile (CDeviceClass *pLauncher, const CItemList &Items, CItemType **retpMissile) const;
-		CString GetGenericName (DWORD *retdwFlags = NULL);
+		CString GetGenericName (DWORD *retdwFlags = NULL) const;
 		inline int GetManeuverDelay (void) const { return m_Perf.GetRotationDesc().GetManeuverDelay(); }
 		CStationType *GetWreckDesc (void);
 		void InitShipNamesIndices (void);
@@ -2559,7 +2577,7 @@ class CShipClass : public CDesignType
 		CString m_sShipNames;					//	Names to use for individual ship
 		DWORD m_dwShipNameFlags;				//	Flags for ship name
 		TArray<int> m_ShipNamesIndices;			//	Shuffled indices for ship names
-		int m_iShipName;						//	Current ship name index
+		mutable int m_iShipName;				//	Current ship name index
 
 		int m_iScore;							//	Score when destroyed
 		int m_iLevel;							//	Ship class level
@@ -2739,17 +2757,17 @@ class CEffectCreator : public CDesignType
 
 		//	CDesignType overrides
 		static CEffectCreator *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designEffectType) ? (CEffectCreator *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designEffectType; }
+		virtual DesignTypes GetType (void) const override { return designEffectType; }
 
 	protected:
 
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID);
-		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const;
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
+		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const override;
 
-		//	CEffectCreator overrides
+		//	CEffectCreator virtuals
 
 		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) = 0;
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) { return NOERROR; }
@@ -2813,15 +2831,15 @@ class COverlayType : public CDesignType
 
 		//	CDesignType overrides
 		static COverlayType *AsType(CDesignType *pType) { return ((pType && pType->GetType() == designOverlayType) ? (COverlayType *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual DesignTypes GetType (void) const { return designOverlayType; }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual DesignTypes GetType (void) const override { return designOverlayType; }
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID);
+		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 
 	private:
 		int m_iAbsorbAdj[damageCount];			//	Damage absorbed by the field
@@ -2900,13 +2918,13 @@ class CSystemType : public CDesignType
 
 		//	CDesignType overrides
 		static CSystemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemType) ? (CSystemType *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designSystemType; }
+		virtual DesignTypes GetType (void) const override { return designSystemType; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual void OnMarkImages (void);
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual void OnMarkImages (void) override;
 
 	private:
 		DWORD m_dwBackgroundUNID;
@@ -2939,12 +2957,12 @@ class CDockScreenType : public CDesignType
 
 		//	CDesignType overrides
 		static CDockScreenType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designDockScreen) ? (CDockScreenType *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designDockScreen; }
+		virtual DesignTypes GetType (void) const override { return designDockScreen; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override { return NOERROR; }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 
 	private:
 		CXMLElement *m_pDesc;
@@ -2969,7 +2987,7 @@ class CStationEncounterDesc
 		int GetCountOfRandomEncounterLevels (void) const;
 		inline Metric GetEnemyExclusionRadius (void) const { return m_rEnemyExclusionRadius; }
 		int GetFrequencyByLevel (int iLevel) const;
-		inline const CString &GetLocationCriteria (void) { return m_sLocationCriteria; }
+		inline const CString &GetLocationCriteria (void) const { return m_sLocationCriteria; }
 		inline int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
 		inline int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
         inline bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
@@ -3075,6 +3093,7 @@ class CTradingDesc
 		bool Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
 		bool BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		int Charge (CSpaceObject *pObj, int iCharge);
+        bool ComposeDescription (CString *retsDesc) const;
 		bool GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
 		bool GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
 		bool GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
@@ -3204,7 +3223,7 @@ class CStationType : public CDesignType
 		inline bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
 		inline bool CanBeEncountered (void) { return m_EncounterRecord.CanBeEncountered(m_RandomPlacement); }
 		inline bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, m_RandomPlacement); }
-		inline bool CanBeEncounteredRandomly (void) { return m_RandomPlacement.CanBeRandomlyEncountered(); }
+		inline bool CanBeEncounteredRandomly (void) const { return m_RandomPlacement.CanBeRandomlyEncountered(); }
 		inline bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		inline bool CanHitFriends (void) { return (m_fNoFriendlyFire ? false : true); }
 		CString GenerateRandomName (const CString &sSubst, DWORD *retdwFlags);
@@ -3221,7 +3240,7 @@ class CStationType : public CDesignType
 		inline int GetEjectaAdj (void) { return m_iEjectaAdj; }
 		CWeaponFireDesc *GetEjectaType (void) { return m_pEjectaType; }
 		inline Metric GetEnemyExclusionRadius (void) const { return m_RandomPlacement.GetEnemyExclusionRadius(); }
-		CWeaponFireDesc *GetExplosionType (void) { return m_pExplosionType; }
+		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		inline int GetEncounterFrequency (void) { return m_iEncounterFrequency; }
 		inline int GetEncounterMinimum (CTopologyNode *pNode) { return m_EncounterRecord.GetMinimumForNode(pNode, m_RandomPlacement); }
 		inline CStationEncounterCtx &GetEncounterRecord (void) { return m_EncounterRecord; }
@@ -3242,7 +3261,7 @@ class CStationType : public CDesignType
 		inline int GetInitialHitPoints (void) { return m_iHitPoints; }
 		inline IShipGenerator *GetInitialShips (int iDestiny, int *retiCount) { *retiCount = (!m_ShipsCount.IsEmpty() ? m_ShipsCount.RollSeeded(iDestiny) : 1); return m_pInitialShips; }
 		Metric GetLevelStrength (int iLevel);
-		inline const CString &GetLocationCriteria (void) { return m_RandomPlacement.GetLocationCriteria(); }
+		inline const CString &GetLocationCriteria (void) const { return m_RandomPlacement.GetLocationCriteria(); }
 		inline Metric GetMass (void) { return m_rMass; }
 		inline int GetMinShips (int iDestiny) { return (!m_ShipsCount.IsEmpty() ? m_ShipsCount.RollSeeded(iDestiny) : m_iMinShips); }
 		inline Metric GetMaxEffectiveRange (void) { return m_rMaxAttackDistance; }
@@ -3250,9 +3269,9 @@ class CStationType : public CDesignType
 		inline int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
 		inline int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
 		inline int GetMaxStructuralHitPoints (void) { return m_iMaxStructuralHP; }
-		const CString &GetName (DWORD *retdwFlags = NULL);
+		const CString &GetNamePattern (DWORD *retdwFlags = NULL) const;
 		inline DWORD GetNameFlags (void) { return m_dwNameFlags; }
-		CString GetNounPhrase (DWORD dwFlags);
+		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
 		inline Metric GetParallaxDist (void) const { return m_rParallaxDist; }
 		inline IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
@@ -3281,7 +3300,7 @@ class CStationType : public CDesignType
 		inline bool IsDestroyWhenEmpty (void) { return (m_fDestroyWhenEmpty ? true : false); }
 		inline bool IsEnemyDockingAllowed (void) { return (m_fAllowEnemyDocking ? true : false); }
 		inline bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
-		inline bool IsMultiHull (void) { return (m_fMultiHull ? true : false); }
+		inline bool IsMultiHull (void) const { return (m_fMultiHull ? true : false); }
 		inline bool IsMobile (void) const { return (m_fMobile ? true : false); }
 		inline bool IsPaintLayerOverhang (void) const { return (m_fPaintOverhang ? true : false); }
 		inline bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
@@ -3299,19 +3318,20 @@ class CStationType : public CDesignType
 		void SetImageSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
 		inline void SetEncountered (CSystem *pSystem) { m_EncounterRecord.AddEncounter(pSystem); }
 		inline void SetTempChance (int iChance) { m_iChance = iChance; }
+		inline bool ShowsMapDetails (void) { return (m_fNoMapDetails ? false : true); }
 		inline bool ShowsMapIcon (void) { return (m_fNoMapIcon ? false : true); }
 		inline bool UsesReverseArticle (void) { return (m_fReverseArticle ? true : false); }
 
 		//	CDesignType overrides
 		static CStationType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designStationType) ? (CStationType *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual CCommunicationsHandler *GetCommsHandler (void);
-		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const;
-		virtual CTradingDesc *GetTradingDesc (void) { return m_pTrade; }
-		virtual DesignTypes GetType (void) const { return designStationType; }
-        virtual const CCompositeImageDesc &GetTypeImage (void) const { return m_Image; }
-		virtual CString GetTypeName (DWORD *retdwFlags = NULL) { return GetName(retdwFlags); }
-		virtual bool IsVirtual (void) const { return (m_fVirtual ? true : false); }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual CCommunicationsHandler *GetCommsHandler (void) override;
+		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override;
+		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
+		virtual DesignTypes GetType (void) const override { return designStationType; }
+        virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
+		virtual CString GetTypeName (DWORD *retdwFlags = NULL) const override { return GetNamePattern(retdwFlags); }
+		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static Metric CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
 		static Metric CalcSatelliteStrength (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
@@ -3321,17 +3341,17 @@ class CStationType : public CDesignType
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx);
-		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const;
-		virtual void OnMarkImages (void);
-		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx);
-		virtual void OnReinit (void);
-		virtual void OnTopologyInitialized (void);
-		virtual void OnUnbindDesign (void);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
+		virtual void OnMarkImages (void) override;
+		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
+		virtual void OnReinit (void) override;
+		virtual void OnTopologyInitialized (void) override;
+		virtual void OnUnbindDesign (void) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		struct SAnimationSection
@@ -3342,11 +3362,11 @@ class CStationType : public CDesignType
 			};
 
 		void AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, bool> *retTypesUsed);
-		Metric CalcBalance (int iLevel);
-		Metric CalcDefenderStrength (int iLevel);
-		int CalcHitsToDestroy (int iLevel);
-		Metric CalcTreasureValue (int iLevel);
-		Metric CalcWeaponStrength (int iLevel);
+		Metric CalcBalance (int iLevel) const;
+		Metric CalcDefenderStrength (int iLevel) const;
+		int CalcHitsToDestroy (int iLevel) const;
+		Metric CalcTreasureValue (int iLevel) const;
+		Metric CalcWeaponStrength (int iLevel) const;
 		void InitStationDamage (void);
 
 		CXMLElement *m_pDesc;
@@ -3412,7 +3432,7 @@ class CStationType : public CDesignType
 		DWORD m_fVirtual:1;								//	Virtual stations do not show up
 		DWORD m_fPaintOverhang:1;						//	If TRUE, paint in overhang layer
 		DWORD m_fCommsHandlerInit:1;					//	TRUE if comms handler has been initialized
-		DWORD m_fSpare8:1;
+		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
 
 		DWORD m_dwSpare:8;
 
@@ -3506,13 +3526,13 @@ class CEconomyType : public CDesignType
 
 		//	CDesignType overrides
 		static CEconomyType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designEconomyType) ? (CEconomyType *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual DesignTypes GetType (void) const { return designEconomyType; }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual DesignTypes GetType (void) const override { return designEconomyType; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 
 	private:
 		CString m_sSID;									//	String ID (e.g., "credit")
@@ -3598,19 +3618,19 @@ class CSovereign : public CDesignType
 
 		//	CDesignType overrides
 		static CSovereign *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSovereign) ? (CSovereign *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual DesignTypes GetType (void) const { return designSovereign; }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual DesignTypes GetType (void) const override { return designSovereign; }
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx);
-		virtual void OnPrepareReinit (void);
-		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx);
-		virtual void OnReinit (void);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual void OnPrepareReinit (void) override;
+		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
+		virtual void OnReinit (void) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		struct SRelationship
@@ -3659,12 +3679,12 @@ class CPower : public CDesignType
 
 		//	CDesignType overrides
 		static CPower *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designPower) ? (CPower *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designPower; }
+		virtual DesignTypes GetType (void) const override { return designPower; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override { return NOERROR; }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 
 	private:
 		CString m_sName;
@@ -3696,15 +3716,15 @@ class CSpaceEnvironmentType : public CDesignType
 
 		//	CDesignType overrides
 		static CSpaceEnvironmentType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSpaceEnvironmentType) ? (CSpaceEnvironmentType *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designSpaceEnvironmentType; }
+		virtual DesignTypes GetType (void) const override { return designSpaceEnvironmentType; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual void OnClearMark (void) { m_bMarked = false; }
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual void OnMarkImages (void);
-		virtual void OnSweep (void);
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual void OnClearMark (void) override { m_bMarked = false; }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual void OnMarkImages (void) override;
+		virtual void OnSweep (void) override;
 
 	private:
 		enum EConstants
@@ -3796,13 +3816,13 @@ class CShipTable : public CDesignType
 
 		//	CDesignType overrides
 		static CShipTable *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designShipTable) ? (CShipTable *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designShipTable; }
+		virtual DesignTypes GetType (void) const override { return designShipTable; }
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { if (m_pGenerator) m_pGenerator->AddTypesUsed(retTypesUsed); }
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pGenerator) m_pGenerator->AddTypesUsed(retTypesUsed); }
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 
 	private:
 		IShipGenerator *m_pGenerator;
@@ -3830,18 +3850,18 @@ class CMissionType : public CDesignType
 		//	CDesignType overrides
 
 		static CMissionType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designMissionType) ? (CMissionType *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = m_iMinLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return (m_iMinLevel + m_iMaxLevel) / 2; }
-		virtual DesignTypes GetType (void) const { return designMissionType; }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iMinLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return (m_iMinLevel + m_iMaxLevel) / 2; }
+		virtual DesignTypes GetType (void) const override { return designMissionType; }
 
 	protected:
 		//	CDesignType overrides
 
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx);
-		virtual void OnReinit (void);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
+		virtual void OnReinit (void) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		//	Basic properties
@@ -3903,8 +3923,8 @@ class CAdventureDesc : public CDesignType
 		//	CDesignType overrides
 
 		static CAdventureDesc *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designAdventureDesc) ? (CAdventureDesc *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
-		virtual DesignTypes GetType (void) const { return designAdventureDesc; }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual DesignTypes GetType (void) const override { return designAdventureDesc; }
 
 		//	Helpers
 
@@ -3913,9 +3933,9 @@ class CAdventureDesc : public CDesignType
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual void OnUnbindDesign (void) { m_fIsCurrentAdventure = false; }
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual void OnUnbindDesign (void) override { m_fIsCurrentAdventure = false; }
 
 	private:
 		static void InitDefaultDamageAdj (void);
@@ -3950,12 +3970,12 @@ class CNameGenerator : public CDesignType
 
 		//	CDesignType overrides
 		static CNameGenerator *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designNameGenerator) ? (CNameGenerator *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designNameGenerator; }
+		virtual DesignTypes GetType (void) const override { return designNameGenerator; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 
 	private:
 	};
@@ -4018,16 +4038,16 @@ class CSystemMap : public CDesignType
 
 		//	CDesignType overrides
 		static CSystemMap *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemMap) ? (CSystemMap *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designSystemMap; }
+		virtual DesignTypes GetType (void) const override { return designSystemMap; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID);
-		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx);
-		virtual void OnReinit (void);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
+		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
+		virtual void OnReinit (void) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		struct SMapAnnotation
@@ -4083,11 +4103,11 @@ class CSystemTable : public CDesignType
 
 		//	CDesignType overrides
 		static CSystemTable *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemTable) ? (CSystemTable *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designSystemTable; }
+		virtual DesignTypes GetType (void) const override { return designSystemTable; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { m_pTable = pDesc->OrphanCopy(); return NOERROR; }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override { m_pTable = pDesc->OrphanCopy(); return NOERROR; }
 
 	private:
 		CXMLElement *m_pTable;
@@ -4103,11 +4123,11 @@ class CTemplateType : public CDesignType
 
 		//	CDesignType overrides
 		static CTemplateType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designTemplateType) ? (CTemplateType *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designTemplateType; }
+		virtual DesignTypes GetType (void) const override { return designTemplateType; }
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override { return NOERROR; }
 
 	private:
 	};

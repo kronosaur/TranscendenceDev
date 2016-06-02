@@ -3856,7 +3856,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		if (pShipRegistry == NULL)
 			{
 			ASSERT(false);
-			kernelDebugLogMessage("No ship for ship encounter: %s", pType->GetName());
+			kernelDebugLogMessage("No ship for ship encounter: %s", pType->GetNounPhrase());
 			DumpDebugStack(pCtx);
 			if (retpStation)
 				*retpStation = NULL;
@@ -3871,14 +3871,14 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pShipRegistry, &pGenerator))
 			{
 			if (retsError)
-				*retsError = strPatternSubst(CONSTLIT("Unable to create ship for %s: %s"), pType->GetName(), Ctx.sError);
+				*retsError = strPatternSubst(CONSTLIT("Unable to create ship for %s: %s"), pType->GetNounPhrase(), Ctx.sError);
 			return error;
 			}
 
 		if (error = pGenerator->OnDesignLoadComplete(Ctx))
 			{
 			if (retsError)
-				*retsError = strPatternSubst(CONSTLIT("Unable to create ship for %s: %s"), pType->GetName(), Ctx.sError);
+				*retsError = strPatternSubst(CONSTLIT("Unable to create ship for %s: %s"), pType->GetNounPhrase(), Ctx.sError);
 			return error;
 			}
 
@@ -3925,7 +3925,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 				&sError))
 			{
 			if (retsError)
-				*retsError = strPatternSubst(CONSTLIT("Unable to create station from type %s [%08x]: %s"), pType->GetName(), pType->GetUNID(), sError);
+				*retsError = strPatternSubst(CONSTLIT("Unable to create station from type %s [%08x]: %s"), pType->GetNounPhrase(), pType->GetUNID(), sError);
 			return error;
 			}
 		}
@@ -3944,7 +3944,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 				&sError))
 			{
 			if (retsError)
-				*retsError = strPatternSubst(CONSTLIT("Unable to create station from type %s [%08x]: %s"), pType->GetName(), pType->GetUNID(), sError);
+				*retsError = strPatternSubst(CONSTLIT("Unable to create station from type %s [%08x]: %s"), pType->GetNounPhrase(), pType->GetUNID(), sError);
 			return error;
 			}
 		}

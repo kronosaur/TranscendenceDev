@@ -71,7 +71,7 @@ class CObjectImage : public CDesignType
 		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
         inline int GetHeight (void) const { return (m_pBitmap ? m_pBitmap->GetHeight() : 0); }
 		CG32bitImage *GetHitMask (void);
-		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL);
+		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL) const;
 		inline CString GetImageFilename (void) { return m_sBitmap; }
 		CG32bitImage *GetShadowMask (void);
         inline int GetWidth (void) const { return (m_pBitmap ? m_pBitmap->GetWidth() : 0); }
@@ -83,7 +83,7 @@ class CObjectImage : public CDesignType
 
 		//	CDesignType overrides
 		static CObjectImage *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designImage) ? (CObjectImage *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue);
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const;
 		virtual DesignTypes GetType (void) const { return designImage; }
 
 	protected:
@@ -95,7 +95,7 @@ class CObjectImage : public CDesignType
 		virtual void OnUnbindDesign (void);
 
 	private:
-		CG32bitImage *LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL);
+		CG32bitImage *LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL) const;
 		bool LoadMask(const CString &sFilespec, CG32bitImage **retpImage);
 
 		CString m_sResourceDb;			//	Resource db
@@ -105,14 +105,14 @@ class CObjectImage : public CDesignType
 		CString m_sShadowMask;			//	Optional mask to use to generate volumetric shadow
 		bool m_bPreMult;				//	If TRUE, image needs to be premultiplied with mask on load.
 		bool m_bLoadOnUse;				//	If TRUE, image is only loaded when needed
-		bool m_bFreeBitmap;				//	If TRUE, we free the bitmap when done
+		mutable bool m_bFreeBitmap;		//	If TRUE, we free the bitmap when done
 
-		CG32bitImage *m_pBitmap;		//	Loaded image (NULL if not loaded)
+		mutable CG32bitImage *m_pBitmap;//	Loaded image (NULL if not loaded)
 		CG32bitImage *m_pHitMask;		//	NULL if not loaded
 		CG32bitImage *m_pShadowMask;	//	NULL if not loaded
 		bool m_bMarked;					//	Marked
 		bool m_bLocked;					//	Image is never unloaded
-		bool m_bLoadError;				//	If TRUE, load failed
+		mutable bool m_bLoadError;		//	If TRUE, load failed
 	};
 
 class CObjectImageArray : public CObject

@@ -3660,10 +3660,6 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	ALERROR error;
 
-	//	Events
-
-	GetItemType()->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
-
 	//	Shots
 
 	for (int i = 0; i < m_ShotData.GetCount(); i++)
@@ -3709,6 +3705,35 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	DEBUG_CATCH
 	}
+
+ALERROR CWeaponClass::OnFinishBind (SDesignLoadCtx &Ctx)
+
+//  OnFinishBind
+//
+//  Finish binding
+
+    {
+	ALERROR error;
+
+	//	Events
+
+	GetItemType()->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
+
+	//	Shots
+
+	for (int i = 0; i < m_ShotData.GetCount(); i++)
+		{
+		//	If we own this definition, then we need to bind it.
+
+		if (m_ShotData[i].bOwned)
+			{
+			if (error = m_ShotData[i].pDesc->FinishBindDesign(Ctx))
+				return error;
+			}
+		}
+
+	return NOERROR;
+    }
 
 CEffectCreator *CWeaponClass::OnFindEffectCreator (const CString &sUNID)
 

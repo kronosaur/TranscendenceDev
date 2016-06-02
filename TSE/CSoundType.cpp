@@ -16,7 +16,7 @@
 #define START_POS_ATTRIB					CONSTLIT("startPos")
 #define TITLE_ATTRIB						CONSTLIT("title")
 
-bool CSoundType::FindDataField (const CString &sField, CString *retsValue)
+bool CSoundType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //

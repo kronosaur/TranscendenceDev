@@ -452,6 +452,7 @@ class CWeaponFireDesc
 		ICCItem *FindProperty (const CString &sProperty) const;
 		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, char **retpPos = NULL);
 		static CWeaponFireDesc *FindWeaponFireDescFromFullUNID (const CString &sUNID);
+        ALERROR FinishBindDesign (SDesignLoadCtx &Ctx);
 		void FireOnCreateShot (const CDamageSource &Source, CSpaceObject *pShot, CSpaceObject *pTarget);
 		bool FireOnDamageAbandoned (SDamageCtx &Ctx);
 		bool FireOnDamageArmor (SDamageCtx &Ctx);
@@ -1407,7 +1408,6 @@ class CSystem
 		bool HasAttribute (const CVector &vPos, const CString &sAttrib);
 		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, CVector *retvHitPos = NULL);
 		inline bool IsCreationInProgress (void) const { return (m_fInCreate ? true : false); }
-        inline bool IsGlobalStateInvalid (void) const { return (m_fGlobalObjsInvalid ? true : false); }
 		inline bool IsPlayerUnderAttack (void) const { return m_fPlayerUnderAttack; }
 		bool IsStarAtPos (const CVector &vPos);
 		bool IsStationInSystem (CStationType *pType);
@@ -1430,7 +1430,6 @@ class CSystem
 		void RestartTime (void);
 		ALERROR SaveToStream (IWriteStream *pStream);
 		inline void SetID (DWORD dwID) { m_dwID = dwID; }
-        inline void SetGlobalStateInvalid (bool bInvalid = true) { m_fGlobalObjsInvalid = bInvalid; }
 		void SetLastUpdated (void);
 		void SetObjectSovereign (CSpaceObject *pObj, CSovereign *pSovereign);
 		inline void SetPlayerUnderAttack (void) { m_fPlayerUnderAttack = true; }
@@ -1533,7 +1532,7 @@ class CSystem
 		DWORD m_fEnemiesInLRS:1;				//	TRUE if we found enemies in last LRS update
 		DWORD m_fEnemiesInSRS:1;				//	TRUE if we found enemies in last SRS update
 		DWORD m_fPlayerUnderAttack:1;			//	TRUE if at least one object has player as target
-		DWORD m_fGlobalObjsInvalid:1;           //  TRUE if we need to refresh global objects
+		DWORD m_fSpare8:1;
 
 		DWORD m_fSpare:24;
 
@@ -2395,7 +2394,6 @@ class CSpaceObject : public CObject
 					&& (vLL.GetX() < m_vPos.GetX())
 					&& (vLL.GetY() < m_vPos.GetY()); }
 		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
-        inline void InvalidateGlobalState (void) { if (GetSystem()) GetSystem()->SetGlobalStateInvalid(true); }
 		inline bool IsAscended (void) const { return m_fAscended; }
 		bool IsAutoClearDestination (void) { return m_fAutoClearDestination; }
 		bool IsAutoClearDestinationOnDestroy (void) { return m_fAutoClearDestinationOnDestroy; }

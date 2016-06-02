@@ -83,7 +83,7 @@ CurrencyValue CEconomyType::ExchangeToCredits (const CCurrencyAndValue &Value)
     return Value.GetCurrencyType()->m_iCreditConversion * Value.GetValue() / 100;
     }
 
-bool CEconomyType::FindDataField (const CString &sField, CString *retsValue)
+bool CEconomyType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //

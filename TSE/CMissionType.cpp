@@ -22,7 +22,7 @@
 #define FIELD_MIN_LEVEL							CONSTLIT("minLevel")
 #define FIELD_NAME								CONSTLIT("name")
 
-bool CMissionType::FindDataField (const CString &sField, CString *retsValue)
+bool CMissionType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //

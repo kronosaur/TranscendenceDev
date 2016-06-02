@@ -1076,10 +1076,10 @@ class CShip : public CSpaceObject
 		virtual void SetFireDelay (CInstalledDevice *pWeapon, int iDelay = -1) override;
 		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) override { m_pClass->SetGlobalData(sAttribute, sData); }
 		virtual void SetIdentified (bool bIdentified = true) override { m_fIdentified = bIdentified; }
-        virtual void SetKnown (bool bKnown = true) override { m_fKnown = bKnown; InvalidateGlobalState(); }
+        virtual void SetKnown (bool bKnown = true) override { m_fKnown = bKnown; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override { m_sName = sName; m_dwNameFlags = dwFlags; }
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
-        virtual void SetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; InvalidateGlobalState(); }
+        virtual void SetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
 		virtual void Suspend (void) override { Undock(); m_fManualSuspended = true; SetCannotBeHit(); }
 		virtual void Undock (CSpaceObject *pObj) override;
 		virtual void UpdateArmorItems (void) override;
@@ -1327,7 +1327,7 @@ class CStation : public CSpaceObject
 		virtual CStationType *GetEncounterInfo (void) override { return m_pType; }
 		virtual const CString &GetGlobalData (const CString &sAttribute) override { return m_pType->GetGlobalData(sAttribute); }
 		virtual Metric GetGravity (Metric *retrRadius) const override;
-		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pType->GetHeroImage(m_ImageSelector, CCompositeImageModifiers()); }
+		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pType->GetHeroImage(CCompositeImageSelector(), CCompositeImageModifiers()); }
 		virtual const CObjectImageArray &GetImage (void) const override { return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
         virtual const CCompositeImageSelector &GetImageSelector (void) const override { return m_ImageSelector; }
 		virtual int GetLevel (void) const override { return m_pType->GetLevel(); }
@@ -1397,12 +1397,12 @@ class CStation : public CSpaceObject
 		virtual bool RequestGate (CSpaceObject *pObj) override;
 		virtual void SetExplored (bool bExplored = true) override { m_fExplored = bExplored; }
 		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) override { m_pType->SetGlobalData(sAttribute, sData); }
-		virtual void SetIdentified (bool bIdentified = true) override { m_fKnown = bIdentified; InvalidateGlobalState(); }
+		virtual void SetIdentified (bool bIdentified = true) override { m_fKnown = bIdentified; }
 		virtual void SetKnown (bool bKnown = true) override;
 		virtual void SetMapLabelPos (int x, int y) override { m_xMapLabel = x; m_yMapLabel = y; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
-        virtual void SetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; InvalidateGlobalState(); }
+        virtual void SetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
         virtual bool ShowStationDamage (void) const override { return (IsAbandoned() && m_iMaxHitPoints > 0); }
 		virtual bool SupportsGating (void) override { return IsActiveStargate(); }
 		virtual void Undock (CSpaceObject *pObj) override;

@@ -317,7 +317,7 @@ CItemTable::~CItemTable (void)
 		delete m_pGenerator;
 	}
 
-bool CItemTable::FindDataField (const CString &sField, CString *retsValue)
+bool CItemTable::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //

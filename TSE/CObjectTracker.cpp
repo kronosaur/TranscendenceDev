@@ -4,10 +4,10 @@
 
 #include "PreComp.h"
 
-#define LANGID_DESC_GALACTIC_MAP                CONSTLIT("descGalacticMap")
-#define LANGID_DESC_GALACTIC_MAP_CUSTOM         CONSTLIT("descGalacticMapCustom")
-#define LANGID_DESC_GALACTIC_MAP_ABANDONED      CONSTLIT("descGalacticMapAbandoned")
-#define LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM CONSTLIT("descGalacticMapAbandonedCustom")
+#define LANGID_DESC_GALACTIC_MAP                CONSTLIT("core.mapDesc")
+#define LANGID_DESC_GALACTIC_MAP_ABANDONED      CONSTLIT("core.mapDescAbandoned")
+#define LANGID_DESC_GALACTIC_MAP_CUSTOM         CONSTLIT("core.mapDescCustom")
+#define LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM CONSTLIT("core.mapDescAbandonedCustom")
 
 const int MAX_ALLOC_GRANULARITY =			10000;
 
@@ -87,124 +87,17 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
     if (!pEntry->sNotes.IsBlank())
         ;
 
-    //  If we're destroyed ask the type for description
-
-    else if (pEntry->fShowDestroyed)
-        {
-        if (!pEntry->pType->TranslateText(NULL, LANGID_DESC_GALACTIC_MAP_ABANDONED, NULL, &pEntry->sNotes))
-            pEntry->sNotes = CONSTLIT("Abandoned");
-        }
-
-    //  Otherwise, let the type generate them
-
-    else if (pEntry->pType->TranslateText(NULL, LANGID_DESC_GALACTIC_MAP, NULL, &pEntry->sNotes))
-        ;
-
-    //  Otherwise, we have to generate default notes based on the services.
+    //  Otherwise, we let the type compose it
 
     else
         {
-        CTradingDesc *pTrade;
+        CDesignType::SMapDescriptionCtx Ctx;
+        Ctx.bShowDestroyed = pEntry->fShowDestroyed;
+        Ctx.bEnemy = pEntry->fEnemy;
+        Ctx.bFriend = pEntry->fFriendly;
 
-        //  If this is an enemy, all we say is that it is hostile.
-
-        if (pEntry->fEnemy)
-            pEntry->sNotes = CONSTLIT("Hostile");
-
-        //  Otherwise, if it has services, we compose a description based on the
-        //  services it provides.
-
-        else if ((pTrade = pEntry->pType->GetTradingDesc()) && pTrade->HasServices())
-            {
-            pEntry->sNotes = NULL_STR;
-
-            //  Buying and selling ships
-
-            bool bBuysShips = pTrade->HasService(serviceBuyShip);
-            bool bSellsShips = pTrade->HasService(serviceSellShip);
-            CString sBuySellShips;
-            if (bBuysShips && bSellsShips)
-                pEntry->sNotes = CONSTLIT("Buys and sells ships");
-            else if (bBuysShips)
-                pEntry->sNotes = CONSTLIT("Buys ships");
-            else if (bSellsShips)
-                pEntry->sNotes = CONSTLIT("Sells ships");
-
-            //  Refuels
-
-            int iRefuel = pTrade->GetMaxLevelMatched(serviceRefuel);
-            if (iRefuel != -1)
-                {
-                CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), iRefuel);
-
-                if (!pEntry->sNotes.IsBlank())
-                    pEntry->sNotes = strPatternSubst(CONSTLIT("%s — %s"), pEntry->sNotes, sText);
-                else
-                    pEntry->sNotes = sText;
-                }
-
-            //  Repair armor
-
-            int iRepairArmor = pTrade->GetMaxLevelMatched(serviceRepairArmor);
-            int iInstallArmor = pTrade->GetMaxLevelMatched(serviceReplaceArmor);
-            if (iRepairArmor != -1 || iInstallArmor != -1)
-                {
-                CString sText;
-                if (iRepairArmor == iInstallArmor)
-                    sText = strPatternSubst(CONSTLIT("Repairs/installs armor up to level %d"), iRepairArmor);
-                else if (iRepairArmor != -1 && iInstallArmor != -1)
-                    sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d — Installs armor up to level %d"), iRepairArmor, iInstallArmor);
-                else if (iRepairArmor != -1)
-                    sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), iRepairArmor);
-                else
-                    sText = strPatternSubst(CONSTLIT("Installs armor up to level %d"), iInstallArmor);
-
-                if (!pEntry->sNotes.IsBlank())
-                    pEntry->sNotes = strPatternSubst(CONSTLIT("%s — %s"), pEntry->sNotes, sText);
-                else
-                    pEntry->sNotes = sText;
-                }
-
-            //  Install devices
-
-            int iInstallDevice = pTrade->GetMaxLevelMatched(serviceInstallDevice);
-            if (iInstallDevice != -1)
-                {
-                CString sText = strPatternSubst(CONSTLIT("Installs devices up to level %d"), iInstallDevice);
-
-                if (!pEntry->sNotes.IsBlank())
-                    pEntry->sNotes = strPatternSubst(CONSTLIT("%s — %s"), pEntry->sNotes, sText);
-                else
-                    pEntry->sNotes = sText;
-                }
-
-            bool bBuys = pTrade->HasService(serviceBuy);
-            bool bSells = pTrade->HasService(serviceSell);
-            if (bBuys || bSells)
-                {
-                CString sText;
-                if (bBuys && bSells)
-                    sText = CONSTLIT("Buys and sells commodities");
-                else if (bBuys)
-                    sText = CONSTLIT("Buys commodities");
-                else
-                    sText = CONSTLIT("Sells commodities");
-
-                if (!pEntry->sNotes.IsBlank())
-                    pEntry->sNotes = strPatternSubst(CONSTLIT("%s — %s"), pEntry->sNotes, sText);
-                else
-                    pEntry->sNotes = sText;
-                }
-
-            //  If we still don't have text, then no services
-
-            if (pEntry->sNotes.IsBlank())
-                pEntry->sNotes = CONSTLIT("No services available");
-            }
-
-        //  Otherwise, we say no services
-
-        else
+        pEntry->sNotes = pEntry->pType->GetMapDescription(Ctx);
+        if (pEntry->sNotes.IsBlank())
             pEntry->sNotes = CONSTLIT("No services available");
         }
     }
@@ -576,11 +469,6 @@ void CObjectTracker::Refresh (CSystem *pSystem)
     {
     int i;
 
-    //  If not invalid, nothing to do
-
-    if (!pSystem->IsGlobalStateInvalid())
-        return;
-
     CTopologyNode *pNode = pSystem->GetTopology();
     if (pNode == NULL)
         return;
@@ -614,10 +502,6 @@ void CObjectTracker::Refresh (CSystem *pSystem)
 
         Refresh(pObj, pObjData, pPlayer);
         }
-
-    //  Mark valid
-
-    pSystem->SetGlobalStateInvalid(false);
     }
 
 void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceObject *pPlayer)

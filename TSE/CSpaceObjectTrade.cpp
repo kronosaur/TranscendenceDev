@@ -18,7 +18,6 @@ void CSpaceObject::AddBuyOrder (CItemType *pType, const CString &sCriteria, int 
 	{
 	CTradingDesc *pTrade = AllocTradeDescOverride();
 	pTrade->AddBuyOrder(pType, sCriteria, iPriceAdj);
-    InvalidateGlobalState();
 	}
 
 void CSpaceObject::AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
@@ -30,7 +29,6 @@ void CSpaceObject::AddSellOrder (CItemType *pType, const CString &sCriteria, int
 	{
 	CTradingDesc *pTrade = AllocTradeDescOverride();
 	pTrade->AddSellOrder(pType, sCriteria, iPriceAdj);
-    InvalidateGlobalState();
 	}
 
 bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason)

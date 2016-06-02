@@ -226,14 +226,24 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 
     int iRotation;
     const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(Obj.ImageSel, Modifiers, &iRotation);
-    if (!FullImage.IsLoaded())
-        return false;
-
-	CG32bitImage *pBmpImage = &FullImage.GetImage(strFromInt(Obj.pType->GetUNID()));
-    if (pBmpImage == NULL)
-        return false;
-
+    CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(strFromInt(Obj.pType->GetUNID())) : NULL);
 	RECT rcBmpImage = FullImage.GetImageRect(0, iRotation);
+    if (pBmpImage == NULL)
+        {
+        CStationType *pStationType = CStationType::AsType(Obj.pType);
+        if (pStationType == NULL)
+            return false;
+
+        //  If we can't find the standard image, see if we have a hero image.
+
+        const CObjectImageArray &HeroImage = pStationType->GetHeroImage(CCompositeImageSelector(), Modifiers, &iRotation);
+        pBmpImage = (HeroImage.IsLoaded() ? &HeroImage.GetImage(strFromInt(Obj.pType->GetUNID())) : NULL);
+        if (pBmpImage == NULL)
+            return false;
+
+        rcBmpImage = HeroImage.GetImageRect(0, iRotation);
+        }
+
     int iSize = Max(RectWidth(rcBmpImage), RectHeight(rcBmpImage));
     if (iSize <= 0)
         return false;

@@ -603,6 +603,7 @@ class CWeaponClass : public CDeviceClass
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
+        virtual ALERROR OnFinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 		virtual void OnMarkImages (void) override;
 

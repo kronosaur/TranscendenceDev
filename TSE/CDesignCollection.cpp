@@ -240,7 +240,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 		::OutputDebugString(strPatternSubst(CONSTLIT("EXTENSION %s\n"), pExtension->GetName()));
 		for (int j = 0; j < Types.GetCount(); j++)
 			{
-			::OutputDebugString(strPatternSubst(CONSTLIT("%08x: %s\n"), Types.GetEntry(j)->GetUNID(), Types.GetEntry(j)->GetTypeName()));
+			::OutputDebugString(strPatternSubst(CONSTLIT("%08x: %s\n"), Types.GetEntry(j)->GetUNID(), Types.GetEntry(j)->GetTypeNounPhrase()));
 			}
 #endif
 

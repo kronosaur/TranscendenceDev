@@ -1355,7 +1355,7 @@ CString CStation::GetName (DWORD *retdwFlags)
 
 	{
 	if (m_sName.IsBlank())
-		return m_pType->GetName(retdwFlags);
+		return m_pType->GetNamePattern(retdwFlags);
 
 	if (retdwFlags)
 		*retdwFlags = m_dwNameFlags;
@@ -1630,9 +1630,21 @@ bool CStation::IsShownInGalacticMap (void) const
 //  galactic map.
 
     {
-    //  We only show stations (not worlds)
+    //  Skip if we purposefully disable this
 
-    if (GetScale() != scaleStructure)
+    if (!m_pType->ShowsMapDetails())
+        return false;
+
+    //  If we're virtual and we've got a trading descriptor, then we should
+    //  be included. This handles the case of stations like New Victoria
+    //  Arcology, which are composed of multiple parts with a virtual center.
+
+    if (IsVirtual() && m_pType->GetTradingDesc())
+        return true;
+
+    //  We only show stations/wrecks (not worlds)
+
+    if (GetScale() != scaleStructure && GetScale() != scaleShip)
         return false;
 
     //  Only if we would show it on the system map
@@ -2067,10 +2079,6 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			if (m_pType->AlertWhenDestroyed())
 				RaiseAlert(pOrderGiver);
 			}
-
-        //  Invalidate global data
-
-        InvalidateGlobalState();
 
 		//	Clear destination
 
@@ -3438,6 +3446,13 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 
 	SetKnown();
 
+    //  If we have a virtual base, then set it to be known. This handles the
+    //  case of New Victoria Arcology, which has a bunch of segments and a
+    //  virtual center.
+
+    if (m_pBase && m_pBase->IsVirtual())
+        m_pBase->SetKnown();
+
 	//	We've already painted these, but paint annotations on top
 
 	if (m_Scale == scaleWorld || m_Scale == scaleStar)
@@ -3726,10 +3741,6 @@ void CStation::SetKnown (bool bKnown)
 				&& IsStargate()
 				&& (pDestNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode)))
 			pDestNode->SetKnown();
-
-        //  May need to update global object data
-
-        InvalidateGlobalState();
 
 		//	Done
 

@@ -73,9 +73,14 @@
 #define SPECIAL_EXTENSION						CONSTLIT("extension:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
+#define LANGID_CORE_MAP_DESC                    CONSTLIT("core.mapDesc")
+#define LANGID_CORE_MAP_DESC_ABANDONED          CONSTLIT("core.mapDescAbandoned")
+#define LANGID_CORE_MAP_DESC_EXTRA              CONSTLIT("core.mapDescExtra")
+
 #define PROPERTY_API_VERSION					CONSTLIT("apiVersion")
 #define PROPERTY_CLASS							CONSTLIT("class")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
+#define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 
 #define FIELD_ENTITY							CONSTLIT("entity")
 #define FIELD_EXTENSION_UNID					CONSTLIT("extensionUNID")
@@ -250,7 +255,7 @@ ALERROR CDesignType::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sErro
 //	Sets Ctx.sError appropriately and returns ERR_FAIL
 
 	{
-	Ctx.sError = strPatternSubst("%s (%x): %s", GetTypeName(), GetUNID(), sError);
+	Ctx.sError = strPatternSubst("%s (%x): %s", GetTypeNounPhrase(), GetUNID(), sError);
 	return ERR_FAIL;
 	}
 
@@ -525,7 +530,7 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 		}
 	}
 
-bool CDesignType::FindDataField (const CString &sField, CString *retsValue)
+bool CDesignType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
@@ -1402,6 +1407,80 @@ ICCItem *CDesignType::GetEventHandler (const CString &sEvent) const
 		return NULL;
 	}
 
+CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
+
+//  GetMapDescription
+//
+//  Returns a description of the type, suitable for a summary. We look at the
+//  services provided. If we cannot come up with a suitable description, we
+//  return NULL_STR.
+
+    {
+    CString sDesc;
+
+    //  If we're abandoned, then we go through a totally different path.
+
+    if (Ctx.bShowDestroyed)
+        {
+        //  If we've got a specific language element, use that.
+
+        if (!TranslateText(NULL, LANGID_CORE_MAP_DESC_ABANDONED, NULL, &sDesc))
+            sDesc = CONSTLIT("Abandoned");
+
+        return sDesc;
+        }
+
+    //  If we have a specific language element for this, then we return it.
+
+    else if (TranslateText(NULL, LANGID_CORE_MAP_DESC, NULL, &sDesc))
+        return sDesc;
+
+    //  Otherwise, check the trade descriptors and compose our own.
+
+    else
+        {
+        //  See if we have a language element for the main service. If we don't,
+        //  ask the subclass
+
+        CString sMainDesc;
+        if (!TranslateText(NULL, LANGID_CORE_MAP_DESC_EXTRA, NULL, &sMainDesc))
+            sMainDesc = OnGetMapDescriptionExtra(Ctx);
+
+        //  Get the trade descriptor
+
+        CString sTradeDesc;
+        CTradingDesc *pTrade = GetTradingDesc();
+        if (pTrade)
+            pTrade->ComposeDescription(&sTradeDesc);
+
+        //  If we have both main and trade descriptors, combine them.
+
+        if (!sMainDesc.IsBlank() && !sTradeDesc.IsBlank())
+            return strPatternSubst(CONSTLIT("%s — %s"), sMainDesc, sTradeDesc);
+
+        //  If all we have is main desc, return that.
+
+        else if (!sMainDesc.IsBlank())
+            return sMainDesc;
+
+        //  If all we have is trade desc, return that.
+
+        else if (!sTradeDesc.IsBlank())
+            return sTradeDesc;
+
+        //  Otherwise, we have neither and we need to compose it. If we're an 
+        //  enemy, say so.
+
+        else if (Ctx.bEnemy)
+            return CONSTLIT("hostile");
+
+        //  Otherwise, we report no services.
+
+        else
+            return CONSTLIT("No services available");
+        }
+    }
+
 ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 
 //	GetProperty
@@ -1428,6 +1507,9 @@ ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 			return CC.CreateNil();
 		}
 
+    else if (strEquals(sProperty, PROPERTY_MAP_DESCRIPTION))
+        return CC.CreateString(GetMapDescription(SMapDescriptionCtx()));
+
 	//	See if our subclass will handle it.
 
 	else if (pResult = OnGetProperty(Ctx, sProperty))
@@ -1438,6 +1520,18 @@ ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 	else
 		return CreateResultFromDataField(CC, GetDataField(sProperty));
 	}
+
+CString CDesignType::GetTypeNounPhrase (DWORD dwFlags) const
+
+//  GetTypeNounPhrase
+//
+//  Composes a noun phrase
+    
+    {
+    DWORD dwNameFlags;
+    CString sName = GetTypeName(&dwNameFlags); 
+    return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
+    }
 
 bool CDesignType::IsValidLoadXML (const CString &sTag)
 
@@ -1996,7 +2090,7 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError)
 	kernelDebugLogMessage(sError);
 	}
 
-bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult)
+bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const
 
 //	Translate
 //
@@ -2013,7 +2107,7 @@ bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pD
 	return TranslateVersion2(pObj, sID, retpResult);
 	}
 
-bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText)
+bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
@@ -2036,7 +2130,7 @@ bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem
 	return true;
 	}
 	
-bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult)
+bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const
 
 //	TranslateVersion2
 //

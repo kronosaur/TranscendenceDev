@@ -73,6 +73,7 @@
 #define NO_BLACKLIST_ATTRIB						CONSTLIT("noBlacklist")
 #define NO_FRIENDLY_FIRE_ATTRIB					CONSTLIT("noFriendlyFire")
 #define NO_FRIENDLY_TARGET_ATTRIB				CONSTLIT("noFriendlyTarget")
+#define NO_MAP_DETAILS_ATTRIB					CONSTLIT("noMapDetails")
 #define NO_MAP_ICON_ATTRIB						CONSTLIT("noMapIcon")
 #define PAINT_LAYER_ATTRIB						CONSTLIT("paintLayer")
 #define RADIOACTIVE_ATTRIB						CONSTLIT("radioactive")
@@ -297,7 +298,7 @@ void CStationType::AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, boo
 		AddTypesUsedByXML(pElement->GetContentElement(i), retTypesUsed);
 	}
 
-Metric CStationType::CalcBalance (int iLevel)
+Metric CStationType::CalcBalance (int iLevel) const
 
 //	CalcBalance
 //
@@ -312,7 +313,7 @@ Metric CStationType::CalcBalance (int iLevel)
 	return rBalance;
 	}
 
-Metric CStationType::CalcDefenderStrength (int iLevel)
+Metric CStationType::CalcDefenderStrength (int iLevel) const
 
 //	CalcDefenderStrength
 //
@@ -337,7 +338,7 @@ Metric CStationType::CalcDefenderStrength (int iLevel)
 	return rTotal;
 	}
 
-int CStationType::CalcHitsToDestroy (int iLevel)
+int CStationType::CalcHitsToDestroy (int iLevel) const
 
 //	CalcHitsToDestroy
 //
@@ -630,7 +631,7 @@ Metric CStationType::CalcSatelliteTreasureValue (CXMLElement *pSatellites, int i
 	return rTotal;
 	}
 
-Metric CStationType::CalcTreasureValue (int iLevel)
+Metric CStationType::CalcTreasureValue (int iLevel) const
 
 //	CalcTreasureValue
 //
@@ -648,7 +649,7 @@ Metric CStationType::CalcTreasureValue (int iLevel)
 	return rTotal;
 	}
 
-Metric CStationType::CalcWeaponStrength (int iLevel)
+Metric CStationType::CalcWeaponStrength (int iLevel) const
 
 //	CalcWeaponStrength
 //
@@ -685,40 +686,40 @@ Metric CStationType::CalcWeaponStrength (int iLevel)
 	return rTotal;
 	}
 
-bool CStationType::FindDataField (const CString &sField, CString *retsValue)
+bool CStationType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
 //	Returns meta-data
 
 	{
-	if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
-		*retsValue = m_pAbandonedDockScreen.GetStringUNID(this);
-	else if (strEquals(sField, FIELD_BALANCE))
-		*retsValue = strFromInt((int)(CalcBalance(GetLevel()) * 100.0));
-	else if (strEquals(sField, FIELD_CATEGORY))
-		{
-		if (!CanBeEncounteredRandomly())
-			*retsValue = CONSTLIT("04-Not Random");
-		else if (HasLiteralAttribute(CONSTLIT("debris")))
-			*retsValue = CONSTLIT("03-Debris");
-		else if (HasLiteralAttribute(CONSTLIT("enemy")))
-			*retsValue = CONSTLIT("02-Enemy");
-		else if (HasLiteralAttribute(CONSTLIT("friendly")))
-			*retsValue = CONSTLIT("01-Friendly");
-		else
-			*retsValue = CONSTLIT("04-Not Random");
-		}
-	else if (strEquals(sField, FIELD_DEFENDER_STRENGTH))
-		*retsValue = strFromInt((int)(100.0 * CalcDefenderStrength(GetLevel())));
-	else if (strEquals(sField, FIELD_DOCK_SCREEN))
-		*retsValue = m_pFirstDockScreen.GetStringUNID(this);
-	else if (strEquals(sField, FIELD_LEVEL))
-		*retsValue = strFromInt(GetLevel());
-	else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
-		*retsValue = GetLocationCriteria();
-	else if (strEquals(sField, FIELD_NAME))
-		*retsValue = GetName();
+    if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
+        *retsValue = m_pAbandonedDockScreen.GetStringUNID(const_cast<CStationType *>(this));
+    else if (strEquals(sField, FIELD_BALANCE))
+        *retsValue = strFromInt((int)(CalcBalance(GetLevel()) * 100.0));
+    else if (strEquals(sField, FIELD_CATEGORY))
+        {
+        if (!CanBeEncounteredRandomly())
+            *retsValue = CONSTLIT("04-Not Random");
+        else if (HasLiteralAttribute(CONSTLIT("debris")))
+            *retsValue = CONSTLIT("03-Debris");
+        else if (HasLiteralAttribute(CONSTLIT("enemy")))
+            *retsValue = CONSTLIT("02-Enemy");
+        else if (HasLiteralAttribute(CONSTLIT("friendly")))
+            *retsValue = CONSTLIT("01-Friendly");
+        else
+            *retsValue = CONSTLIT("04-Not Random");
+        }
+    else if (strEquals(sField, FIELD_DEFENDER_STRENGTH))
+        *retsValue = strFromInt((int)(100.0 * CalcDefenderStrength(GetLevel())));
+    else if (strEquals(sField, FIELD_DOCK_SCREEN))
+        *retsValue = m_pFirstDockScreen.GetStringUNID(const_cast<CStationType *>(this));
+    else if (strEquals(sField, FIELD_LEVEL))
+        *retsValue = strFromInt(GetLevel());
+    else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
+        *retsValue = GetLocationCriteria();
+    else if (strEquals(sField, FIELD_NAME))
+        *retsValue = GetNounPhrase();
 	else if (strEquals(sField, FIELD_ARMOR_CLASS))
 		{
 		if (m_pArmor)
@@ -910,9 +911,9 @@ Metric CStationType::GetLevelStrength (int iLevel)
 	return rTotal;
 	}
 
-const CString &CStationType::GetName (DWORD *retdwFlags)
+const CString &CStationType::GetNamePattern (DWORD *retdwFlags) const
 
-//	GetName
+//	GetNamePattern
 //
 //	Returns the name of the type
 
@@ -923,7 +924,7 @@ const CString &CStationType::GetName (DWORD *retdwFlags)
 	return m_sName;
 	}
 
-CString CStationType::GetNounPhrase (DWORD dwFlags)
+CString CStationType::GetNounPhrase (DWORD dwFlags) const
 
 //	GetNounPhrase
 //
@@ -931,7 +932,7 @@ CString CStationType::GetNounPhrase (DWORD dwFlags)
 
 	{
 	DWORD dwNameFlags;
-	CString sName = GetName(&dwNameFlags);
+	CString sName = GetNamePattern(&dwNameFlags);
 	return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
 	}
 
@@ -1256,6 +1257,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fBeacon = pDesc->GetAttributeBool(BEACON_ATTRIB);
 	m_fRadioactive = pDesc->GetAttributeBool(RADIOACTIVE_ATTRIB);
 	m_fNoMapIcon = pDesc->GetAttributeBool(NO_MAP_ICON_ATTRIB);
+    m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
 	m_fMultiHull = pDesc->GetAttributeBool(MULTI_HULL_ATTRIB);
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
 	m_fCanAttack = pDesc->GetAttributeBool(CAN_ATTACK_ATTRIB);

@@ -247,7 +247,7 @@ void CItemType::CreateFlotsamImage (void)
 	m_FlotsamImage.Init(&m_FlotsamBitmap, rcRect, 0, 0, false);
 	}
 
-bool CItemType::FindDataField (const CString &sField, CString *retsValue)
+bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
@@ -301,7 +301,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = GetNounPhrase();
 
 	else if (strEquals(sField, FIELD_MASS))
-		*retsValue = strFromInt(CItem(this, 1).GetMassKg());
+		*retsValue = strFromInt(CItem(const_cast<CItemType *>(this), 1).GetMassKg());
 	
 	else if (strEquals(sField, FIELD_SHORT_NAME))
 		{
@@ -392,7 +392,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue)
 		//	it and ask it for the properties.
 
 		else if (IsMissile())
-			bHandled = CDeviceClass::FindAmmoDataField(this, sField, retsValue);
+			bHandled = CDeviceClass::FindAmmoDataField(const_cast<CItemType *>(this), sField, retsValue);
 		else
 			bHandled = false;
 		
@@ -1486,6 +1486,30 @@ CEffectCreator *CItemType::OnFindEffectCreator (const CString &sUNID)
 	else
 		return NULL;
 	}
+
+ALERROR CItemType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
+
+//  OnFinishBindDesign
+//
+//  Done with binding
+
+    {
+    ALERROR error;
+
+    if (m_pDevice)
+        if (error = m_pDevice->FinishBind(Ctx))
+            return error;
+
+    if (m_pArmor)
+        if (error = m_pArmor->FinishBindDesign(Ctx))
+            return error;
+
+    if (m_pMissile)
+        if (error = m_pMissile->FinishBindDesign(Ctx))
+            return error;
+
+    return NOERROR;
+    }
 
 bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 

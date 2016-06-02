@@ -224,7 +224,7 @@ void CSovereign::DeleteRelationships (void)
 	m_bSelfRel = false;
 	}
 
-bool CSovereign::FindDataField (const CString &sField, CString *retsValue)
+bool CSovereign::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
@@ -741,13 +741,6 @@ void CSovereign::SetDispositionTowards (CSovereign *pSovereign, Disposition iDis
 	//	Flush cache of enemy objects
 
 	FlushEnemyObjectCache();
-
-    //  Invalidate global object state (since some of them could now have a 
-    //  different disposition).
-
-    CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-    if (pSystem)
-        pSystem->SetGlobalStateInvalid(true);
 	}
 
 bool CSovereign::SetPropertyInteger (const CString &sProperty, int iValue)

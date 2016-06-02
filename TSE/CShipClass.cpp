@@ -1731,7 +1731,7 @@ void CShipClass::FindBestMissile (CDeviceClass *pLauncher, const CItemList &Item
 		}
 	}
 
-bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
+bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
@@ -1765,7 +1765,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		{
 		const CPlayerSettings *pPlayer = GetPlayerSettings();
 		if (pPlayer)
-			*retsValue = pPlayer->GetDockServicesScreen().GetStringUNID(this);
+			*retsValue = pPlayer->GetDockServicesScreen().GetStringUNID(const_cast<CShipClass *>(this));
 		else
 			*retsValue = CONSTLIT("none");
 		}
@@ -1843,7 +1843,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		{
 		const CPlayerSettings *pPlayer = GetPlayerSettings();
 		if (pPlayer)
-			*retsValue = pPlayer->GetShipConfigScreen().GetStringUNID(this);
+			*retsValue = pPlayer->GetShipConfigScreen().GetStringUNID(const_cast<CShipClass *>(this));
 		else
 			*retsValue = CONSTLIT("none");
 		}
@@ -1851,7 +1851,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue)
 		{
 		const CPlayerSettings *pPlayer = GetPlayerSettings();
 		if (pPlayer)
-			*retsValue = pPlayer->GetShipScreen().GetStringUNID(this);
+			*retsValue = pPlayer->GetShipScreen().GetStringUNID(const_cast<CShipClass *>(this));
 		else
 			*retsValue = CONSTLIT("none");
 		}
@@ -2088,7 +2088,7 @@ void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices)
 	DEBUG_CATCH
 	}
 
-CString CShipClass::GenerateShipName (DWORD *retdwFlags)
+CString CShipClass::GenerateShipName (DWORD *retdwFlags) const
 
 //	GenerateShipName
 //
@@ -2199,7 +2199,7 @@ const CDriveDesc &CShipClass::GetDriveDesc (const CItem **retpDriveItem) const
     return m_Perf.GetDriveDesc();
     }
 
-CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip)
+CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const
 
 //	GetExplosionType
 //
@@ -2315,7 +2315,7 @@ CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip)
 	return ExplosionRef;
 	}
 
-CString CShipClass::GetGenericName (DWORD *retdwFlags)
+CString CShipClass::GetGenericName (DWORD *retdwFlags) const
 
 //	GetGenericName
 //
@@ -2448,7 +2448,7 @@ int CShipClass::GetMaxStructuralHitPoints (void) const
 	return (int)(pow(1.3, m_iLevel) * (sqrt(m_iMass) + 10.0));
 	}
 
-CString CShipClass::GetName (DWORD *retdwFlags)
+CString CShipClass::GetName (DWORD *retdwFlags) const
 
 //	GetName
 //
@@ -2461,7 +2461,7 @@ CString CShipClass::GetName (DWORD *retdwFlags)
 		return GetGenericName(retdwFlags);
 	}
 
-CString CShipClass::GetNounPhrase (DWORD dwFlags)
+CString CShipClass::GetNounPhrase (DWORD dwFlags) const
 
 //	GetNounPhrase
 //
@@ -3591,6 +3591,21 @@ CEffectCreator *CShipClass::OnFindEffectCreator (const CString &sUNID)
 			return NULL;
 		}
 	}
+
+CString CShipClass::OnGetMapDescriptionExtra (SMapDescriptionCtx &Ctx) const
+
+//  OnGetMapDescriptionExtra
+//
+//  Returns a map description
+
+    {
+    if (Ctx.bEnemy)
+        return CONSTLIT("Hostile");
+
+    DWORD dwFlags;
+    CString sName = GetGenericName(&dwFlags);
+    return ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounCapitalize);
+    }
 
 ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 

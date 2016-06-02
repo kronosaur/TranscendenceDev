@@ -506,7 +506,6 @@ CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) :
 		m_fEnemiesInLRS(false),
 		m_fEnemiesInSRS(false),
 		m_fPlayerUnderAttack(false),
-        m_fGlobalObjsInvalid(false),
 		m_pThreadPool(NULL),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 

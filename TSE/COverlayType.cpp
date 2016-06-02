@@ -74,7 +74,7 @@ bool COverlayType::AbsorbsWeaponFire (CInstalledDevice *pWeapon)
 		return false;
 	}
 
-bool COverlayType::FindDataField (const CString &sField, CString *retsValue)
+bool COverlayType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //

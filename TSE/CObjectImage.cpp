@@ -124,7 +124,7 @@ ALERROR CObjectImage::Exists (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-bool CObjectImage::FindDataField (const CString &sField, CString *retsValue)
+bool CObjectImage::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
@@ -176,7 +176,7 @@ CG32bitImage *CObjectImage::GetHitMask (void)
 	return m_pHitMask;
 	}
 
-CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsError)
+CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsError) const
 
 //	GetImage
 //
@@ -261,7 +261,7 @@ CG32bitImage *CObjectImage::GetShadowMask (void)
 	return m_pShadowMask;
 	}
 
-CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError)
+CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError) const
 
 //	GetImage
 //

@@ -135,6 +135,112 @@ int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, CSpaceObject
 	return ComputePrice(Ctx, Default, dwFlags);
 	}
 
+bool CTradingDesc::ComposeDescription (CString *retsDesc) const
+
+//  ComposeDescription
+//
+//  Composes a description of the trading desc, suitable for map description.
+//  We return FALSE if we have no relevant services.
+
+    {
+    CString sDesc;
+
+    //  Short-circuit
+
+    if (!HasServices())
+        return false;
+
+    //  Buying and selling ships
+
+    bool bBuysShips = HasService(serviceBuyShip);
+    bool bSellsShips = HasService(serviceSellShip);
+    CString sBuySellShips;
+    if (bBuysShips && bSellsShips)
+        sDesc = CONSTLIT("Buys and sells ships");
+    else if (bBuysShips)
+        sDesc = CONSTLIT("Buys ships");
+    else if (bSellsShips)
+        sDesc = CONSTLIT("Sells ships");
+
+    //  Refuels
+
+    int iRefuel = GetMaxLevelMatched(serviceRefuel);
+    if (iRefuel != -1)
+        {
+        CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), iRefuel);
+
+        if (!sDesc.IsBlank())
+            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+        else
+            sDesc = sText;
+        }
+
+    //  Repair armor
+
+    int iRepairArmor = GetMaxLevelMatched(serviceRepairArmor);
+    int iInstallArmor = GetMaxLevelMatched(serviceReplaceArmor);
+    if (iRepairArmor != -1 || iInstallArmor != -1)
+        {
+        CString sText;
+        if (iRepairArmor == iInstallArmor)
+            sText = strPatternSubst(CONSTLIT("Repairs/installs armor up to level %d"), iRepairArmor);
+        else if (iRepairArmor != -1 && iInstallArmor != -1)
+            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d — Installs armor up to level %d"), iRepairArmor, iInstallArmor);
+        else if (iRepairArmor != -1)
+            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), iRepairArmor);
+        else
+            sText = strPatternSubst(CONSTLIT("Installs armor up to level %d"), iInstallArmor);
+
+        if (!sDesc.IsBlank())
+            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+        else
+            sDesc = sText;
+        }
+
+    //  Install devices
+
+    int iInstallDevice = GetMaxLevelMatched(serviceInstallDevice);
+    if (iInstallDevice != -1)
+        {
+        CString sText = strPatternSubst(CONSTLIT("Installs devices up to level %d"), iInstallDevice);
+
+        if (!sDesc.IsBlank())
+            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+        else
+            sDesc = sText;
+        }
+
+    bool bBuys = HasService(serviceBuy);
+    bool bSells = HasService(serviceSell);
+    if (bBuys || bSells)
+        {
+        CString sText;
+        if (bBuys && bSells)
+            sText = CONSTLIT("Buys and sells commodities");
+        else if (bBuys)
+            sText = CONSTLIT("Buys commodities");
+        else
+            sText = CONSTLIT("Sells commodities");
+
+        if (!sDesc.IsBlank())
+            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+        else
+            sDesc = sText;
+        }
+
+    //  If we don't have any trade descriptor, then we're done
+
+    if (sDesc.IsBlank())
+        return false;
+
+    //  Return it
+
+    if (retsDesc)
+        *retsDesc = sDesc;
+
+    return true;
+    }
+
 CString CTradingDesc::ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags)
 
 //	ComputeID

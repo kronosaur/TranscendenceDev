@@ -2932,6 +2932,7 @@ CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize,
 	bool bInLongNameSect = false;
 	bool bSkipWhitespace = true;
 	bool bStartOfWord = true;
+    bool bHasLongForm = false;
 	int iWord = 1;
 
 	while (*pPos != '\0')
@@ -2969,7 +2970,10 @@ CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize,
 		//	brackets appears only for long names
 
 		else if (*pPos == '[')
+            {
 			bInLongNameSect = true;
+            bHasLongForm = true;
+            }
 		else if (*pPos == ']')
 			bInLongNameSect = false;
 
@@ -3062,7 +3066,7 @@ CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize,
 	//	Add plural if necessary (short name implies plural because
 	//	a short name is always a quantifiable item, e.g., a *mass of* concrete)
 
-	if (bPluralize && bDestIsSingular && !bShortName)
+	if (bPluralize && bDestIsSingular && !bHasLongForm)
 		{
 		if (dwNounFlags & nounPluralES)
 			{
