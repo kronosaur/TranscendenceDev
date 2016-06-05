@@ -313,7 +313,7 @@ void CAniSequencer::GoToStart (void)
 		}
 	}
 
-IAnimatron *CAniSequencer::HitTest (const CXForm &ToDest, int x, int y)
+bool CAniSequencer::HitTest (const CXForm &ToLocal, SAniHitTestResult &Result)
 
 //	HitTest
 //
@@ -321,12 +321,11 @@ IAnimatron *CAniSequencer::HitTest (const CXForm &ToDest, int x, int y)
 
 	{
 	int i;
-	IAnimatron *pHit;
 
 	//	Transform
 
 	CVector vPos = m_Properties[INDEX_POSITION].GetVector();
-	CXForm LocalToDest = CXForm(xformTranslate, vPos) * ToDest;
+	CXForm ScreenToLocal = CXForm(xformTranslate, -vPos) * ToLocal;
 
 	//	Loop over all tracks
 
@@ -336,12 +335,12 @@ IAnimatron *CAniSequencer::HitTest (const CXForm &ToDest, int x, int y)
 
 		if (pTrack->iFrame != -1)
 			{
-			if (pHit = pTrack->pAni->HitTest(LocalToDest, x, y))
-				return pHit;
+			if (pTrack->pAni->HitTest(ScreenToLocal, Result))
+				return true;
 			}
 		}
 
-	return NULL;
+	return false;
 	}
 
 void CAniSequencer::Paint (SAniPaintCtx &Ctx)

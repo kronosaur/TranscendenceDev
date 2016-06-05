@@ -13,6 +13,8 @@
 #include "DirectXUtil.h
 #endif
 
+class IAnimatron;
+
 //	Command class --------------------------------------------------------------
 
 class IAniCommand
@@ -249,6 +251,26 @@ enum EScrollTypes
 	scrollToHome,
 	};
 
+struct SAniHitTestResult
+    {
+    SAniHitTestResult (int xHit, int yHit, IAnimatron *pCapturedArg = NULL) :
+            x(xHit),
+            y(yHit),
+            pCaptured(pCapturedArg),
+            pHit(NULL),
+            xLocal(0),
+            yLocal(0)
+        { }
+
+    int x;                      //  Screen-relative coordinates
+    int y;
+    IAnimatron *pCaptured;      //  If not NULL, we've captured the mouse
+
+    IAnimatron *pHit;
+    int xLocal;                 //  Hit pos relative to pHit
+    int yLocal;
+    };
+
 //	The Reanimator -------------------------------------------------------------
 
 class IAnimatron
@@ -305,7 +327,7 @@ class IAnimatron
 		virtual void HandleRButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) { *retbCapture = false; *retbFocus = false; }
 		virtual void HandleRButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) { *retbCapture = false; *retbFocus = false; }
 		virtual void HandleRButtonUp (int x, int y, DWORD dwFlags) { }
-		virtual IAnimatron *HitTest (const CXForm &ToDest, int x, int y) { return NULL; }
+		virtual bool HitTest (const CXForm &ToLocal, SAniHitTestResult &Result) { return false; }
 		virtual void KillFocus (void) { }
 		virtual void Paint (SAniPaintCtx &Ctx) { }
 		virtual void SetFocus (void) { }
@@ -419,7 +441,7 @@ class CReanimator
 		SPerformance *Find (DWORD dwID);
 		SPerformance *Find (const CString &sID);
 		bool GetFocusElements (TArray<IAnimatron *> *retList, int *retiCurrent);
-		IAnimatron *HitTest (int x, int y);
+		bool HitTest (SAniHitTestResult &Result);
 		void SetInputFocusNext (void);
 		void SetInputFocusPrev (void);
 		void StartPerformance (SPerformance *pPerf, DWORD dwFlags = 0, int *retiDuration = NULL);
@@ -430,6 +452,7 @@ class CReanimator
 		int m_iPlaySpeed;
 		int m_iFastPlayCounter;
 		CXForm m_ToDest;
+        CXForm m_ToLocal;
 		IAnimatron *m_pInputFocus;
 		IAnimatron *m_pMouseCapture;
 		IAnimatron *m_pHover;
@@ -451,17 +474,17 @@ class CAniSequencer : public IAnimatron
 		void AddTrack (IAnimatron *pAni, int iStartFrame);
 
 		//	IAnimatron virtuals
-		virtual bool DeleteElement (const CString &sID);
-		virtual bool FindElement (IAnimatron *pAni);
-		virtual bool FindElement (const CString &sID, IAnimatron **retpAni);
-		virtual int GetDuration (void);
-		virtual void GetFocusElements (TArray<IAnimatron *> *retList);
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual void GoToFrame (int iFrame);
-		virtual void GoToNextFrame (SAniUpdateCtx &Ctx, int iFrame);
-		virtual void GoToStart (void);
-		virtual IAnimatron *HitTest (const CXForm &ToDest, int x, int y);
-		virtual void Paint (SAniPaintCtx &Ctx);
+		virtual bool DeleteElement (const CString &sID) override;
+		virtual bool FindElement (IAnimatron *pAni) override;
+		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) override;
+		virtual int GetDuration (void) override;
+		virtual void GetFocusElements (TArray<IAnimatron *> *retList) override;
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void GoToFrame (int iFrame) override;
+		virtual void GoToNextFrame (SAniUpdateCtx &Ctx, int iFrame) override;
+		virtual void GoToStart (void) override;
+        virtual bool HitTest (const CXForm &ToLocal, SAniHitTestResult &Result) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
 
 	private:
 		struct STrack
@@ -490,17 +513,17 @@ class CAniVScroller : public IAnimatron
 		inline Metric GetHeight (void) const { return m_cyEnd; }
 
 		//	IAnimatron virtuals
-		virtual bool DeleteElement (const CString &sID);
-		virtual bool FindElement (IAnimatron *pAni);
-		virtual bool FindElement (const CString &sID, IAnimatron **retpAni);
-		virtual int GetDuration (void);
-		virtual void GetFocusElements (TArray<IAnimatron *> *retList);
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual void GoToFrame (int iFrame);
-		virtual void GoToNextFrame (SAniUpdateCtx &Ctx, int iFrame);
-		virtual void GoToStart (void);
-		virtual IAnimatron *HitTest (const CXForm &ToDest, int x, int y);
-		virtual void Paint (SAniPaintCtx &Ctx);
+		virtual bool DeleteElement (const CString &sID) override;
+		virtual bool FindElement (IAnimatron *pAni) override;
+		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) override;
+		virtual int GetDuration (void) override;
+		virtual void GetFocusElements (TArray<IAnimatron *> *retList) override;
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void GoToFrame (int iFrame) override;
+		virtual void GoToNextFrame (SAniUpdateCtx &Ctx, int iFrame) override;
+		virtual void GoToStart (void) override;
+        virtual bool HitTest (const CXForm &ToLocal, SAniHitTestResult &Result) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
 
 	protected:
 		//	IAnimatron virtuals
@@ -716,14 +739,14 @@ class CAniButton : public CAniControl
 		~CAniButton (void);
 
 		//	IAnimatron virtuals
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual void HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus);
-		virtual void HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus);
-		virtual void HandleLButtonUp (int x, int y, DWORD dwFlags);
-		virtual void HandleMouseEnter (void) { m_bHover = true; }
-		virtual void HandleMouseLeave (void) { m_bHover = false; }
-		virtual IAnimatron *HitTest (const CXForm &ToDest, int x, int y);
-		virtual void Paint (SAniPaintCtx &Ctx);
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) override;
+		virtual void HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) override;
+		virtual void HandleLButtonUp (int x, int y, DWORD dwFlags) override;
+		virtual void HandleMouseEnter (void) override { m_bHover = true; }
+		virtual void HandleMouseLeave (void) override { m_bHover = false; }
+        virtual bool HitTest (const CXForm &ToLocal, SAniHitTestResult &Result) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
 
 	protected:
 		//	CAniControl virtuals
@@ -757,35 +780,35 @@ class CAniListBox : public CAniControl
 		void AddEntry (const CString &sID, IAnimatron *pEntry);
 
 		//	IAnimatron virtuals
-		virtual bool DeleteElement (const CString &sID);
-		virtual bool FindElement (IAnimatron *pAni) { if (pAni == this) return true; return m_pScroller->FindElement(pAni); }
-		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) { if (strEquals(sID, m_sID)) { if (retpAni) *retpAni = this; return true; } return m_pScroller->FindElement(sID, retpAni); }
-		virtual int GetDuration (void) { return m_pScroller->GetDuration(); }
-		virtual void GetFocusElements (TArray<IAnimatron *> *retList);
-		virtual void GetSpacingRect (RECT *retrcRect) { return m_pScroller->GetSpacingRect(retrcRect); }
-		virtual void GoToFrame (int iFrame) { return m_pScroller->GoToFrame(iFrame); }
-		virtual void GoToNextFrame (SAniUpdateCtx &Ctx, int iFrame) { return m_pScroller->GoToNextFrame(Ctx, iFrame); }
-		virtual void GoToStart (void) { return m_pScroller->GoToStart(); }
-		virtual bool HandleChar (char chChar, DWORD dwKeyData);
-		virtual bool HandleKeyDown (int iVirtKey, DWORD dwKeyData);
-		virtual void HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus);
-		virtual void HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus);
-		virtual void HandleLButtonUp (int x, int y, DWORD dwFlags);
-		virtual bool HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
-		virtual IAnimatron *HitTest (const CXForm &ToDest, int x, int y);
-		virtual void KillFocus (void) { m_bFocus = false; }
-		virtual void Paint (SAniPaintCtx &Ctx);
-		virtual void SetFocus (void) { m_bFocus = true; }
+		virtual bool DeleteElement (const CString &sID) override;
+		virtual bool FindElement (IAnimatron *pAni) override { if (pAni == this) return true; return m_pScroller->FindElement(pAni); }
+		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) override { if (strEquals(sID, m_sID)) { if (retpAni) *retpAni = this; return true; } return m_pScroller->FindElement(sID, retpAni); }
+		virtual int GetDuration (void) override { return m_pScroller->GetDuration(); }
+		virtual void GetFocusElements (TArray<IAnimatron *> *retList) override;
+		virtual void GetSpacingRect (RECT *retrcRect) override { return m_pScroller->GetSpacingRect(retrcRect); }
+		virtual void GoToFrame (int iFrame) override { return m_pScroller->GoToFrame(iFrame); }
+		virtual void GoToNextFrame (SAniUpdateCtx &Ctx, int iFrame) override { return m_pScroller->GoToNextFrame(Ctx, iFrame); }
+		virtual void GoToStart (void) override { return m_pScroller->GoToStart(); }
+		virtual bool HandleChar (char chChar, DWORD dwKeyData) override;
+		virtual bool HandleKeyDown (int iVirtKey, DWORD dwKeyData) override;
+		virtual void HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) override;
+		virtual void HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) override;
+		virtual void HandleLButtonUp (int x, int y, DWORD dwFlags) override;
+		virtual bool HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags) override;
+        virtual bool HitTest (const CXForm &ToLocal, SAniHitTestResult &Result) override;
+		virtual void KillFocus (void) override { m_bFocus = false; }
+		virtual void Paint (SAniPaintCtx &Ctx) override;
+		virtual void SetFocus (void) override { m_bFocus = true; }
 
 	protected:
 		//	IAnimatron virtuals
-		virtual bool FindDynamicPropertyInteger (const CString &sName, int *retiValue) const;
-		virtual bool FindDynamicPropertyMetric (const CString &sName, Metric *retrValue) const;
-		virtual bool FindDynamicPropertyString (const CString &sName, CString *retsValue) const;
+		virtual bool FindDynamicPropertyInteger (const CString &sName, int *retiValue) const override;
+		virtual bool FindDynamicPropertyMetric (const CString &sName, Metric *retrValue) const override;
+		virtual bool FindDynamicPropertyString (const CString &sName, CString *retsValue) const override;
 		virtual void OnPropertyChanged (const CString &sName);
 
 		//	CAniControl virtuals
-		virtual int MapStyleName (const CString &sComponent) const;
+		virtual int MapStyleName (const CString &sComponent) const override;
 
 	private:
 		enum EStyleParts
@@ -828,19 +851,19 @@ class CAniTextInput : public CAniControl
 		static int GetDefaultHeight (const CG16bitFont &Font);
 
 		//	IAnimatron virtuals
-		virtual void GetFocusElements (TArray<IAnimatron *> *retList);
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual bool HandleChar (char chChar, DWORD dwKeyData);
-		virtual void HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus);
-		virtual void HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus);
-		virtual IAnimatron *HitTest (const CXForm &ToDest, int x, int y);
-		virtual void KillFocus (void) { m_bFocus = false; }
-		virtual void Paint (SAniPaintCtx &Ctx);
-		virtual void SetFocus (void) { m_bFocus = true; }
+		virtual void GetFocusElements (TArray<IAnimatron *> *retList) override;
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual bool HandleChar (char chChar, DWORD dwKeyData) override;
+		virtual void HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) override;
+		virtual void HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture, bool *retbFocus) override;
+        virtual bool HitTest (const CXForm &ToLocal, SAniHitTestResult &Result) override;
+		virtual void KillFocus (void) override { m_bFocus = false; }
+		virtual void Paint (SAniPaintCtx &Ctx) override;
+		virtual void SetFocus (void) override { m_bFocus = true; }
 
 	protected:
 		//	CAniControl virtuals
-		virtual int MapStyleName (const CString &sComponent) const;
+		virtual int MapStyleName (const CString &sComponent) const override;
 
 	private:
 		enum EStyleParts

@@ -457,31 +457,52 @@ bool CAniListBox::HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 	return true;
 	}
 
-IAnimatron *CAniListBox::HitTest (const CXForm &ToDest, int x, int y)
+bool CAniListBox::HitTest (const CXForm &ToLocal, SAniHitTestResult &Result)
 
 //	HitTest
 //
 //	Returns the element if x,y is in our bounds
 
 	{
+    //  If someone else has captured the mouse, then we never hit
+
+    if (Result.pCaptured && Result.pCaptured != this)
+        return false;
+
+    //  Transform to local coordinates
+
+    CVector vHit = ToLocal.Transform(CVector(Result.x, Result.y));
+
 	//	Position and size
 
-	CVector vPos = ToDest.Transform(m_Properties[INDEX_POSITION].GetVector());
-	CVector vSize = m_Properties[INDEX_SCALE].GetVector();
-	int cyViewport = (int)m_pScroller->GetPropertyMetric(PROP_VIEWPORT_HEIGHT);
+    CVector vPos = m_Properties[INDEX_POSITION].GetVector();
+	CVector vPos2 = vPos + CVector(m_Properties[INDEX_SCALE].GetVector().GetX(), m_pScroller->GetPropertyMetric(PROP_VIEWPORT_HEIGHT));
 
-	RECT rcRect;
-	rcRect.left = (int)vPos.GetX();
-	rcRect.top = (int)vPos.GetY();
-	rcRect.right = (int)(vPos.GetX() + vSize.GetX());
-	rcRect.bottom = (int)(vPos.GetY() + cyViewport);
+    //  Are we in bounds? If not, we fail
 
-	//	See if we're in the rect
+    if (!vHit.InBox(vPos2, vPos))
+        {
+        //  If we've captured the mouse, we return TRUE anyway and transform
+        //  the coordinates.
 
-	if (x >= rcRect.left && x < rcRect.right && y >= rcRect.top && y < rcRect.bottom)
-		return this;
-	else
-		return NULL;
+        if (Result.pCaptured)
+            {
+            Result.pHit = NULL;
+            Result.xLocal = (int)vHit.GetX();
+            Result.yLocal = (int)vHit.GetY();
+            return true;
+            }
+        else
+            return false;
+        }
+
+    //  Otherwise, we hit
+
+    Result.pHit = this;
+    Result.xLocal = (int)vHit.GetX();
+    Result.yLocal = (int)vHit.GetY();
+
+    return true;
 	}
 
 int CAniListBox::MapStyleName (const CString &sComponent) const

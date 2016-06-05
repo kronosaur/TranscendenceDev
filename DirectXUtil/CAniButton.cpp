@@ -185,31 +185,52 @@ void CAniButton::HandleLButtonUp (int x, int y, DWORD dwFlags)
 		}
 	}
 
-IAnimatron *CAniButton::HitTest (const CXForm &ToDest, int x, int y)
+bool CAniButton::HitTest (const CXForm &ToLocal, SAniHitTestResult &Result)
 
 //	HitTest
 //
 //	Returns the element if x,y is in our bounds
 
 	{
+    //  If someone else has captured the mouse, then we never hit
+
+    if (Result.pCaptured && Result.pCaptured != this)
+        return false;
+
+    //  Transform to local coordinates
+
+    CVector vHit = ToLocal.Transform(CVector(Result.x, Result.y));
+
 	//	Position and size
 
-	CVector vPos = ToDest.Transform(m_Properties[INDEX_POSITION].GetVector());
-	CVector vPos2 = ToDest.Transform(m_Properties[INDEX_POSITION].GetVector() + m_Properties[INDEX_SCALE].GetVector());
-	CVector vSize = vPos2 - vPos;
+    CVector vPos = m_Properties[INDEX_POSITION].GetVector();
+	CVector vPos2 = vPos + m_Properties[INDEX_SCALE].GetVector();
 
-	RECT rcRect;
-	rcRect.left = (int)vPos.GetX();
-	rcRect.top = (int)vPos.GetY();
-	rcRect.right = (int)(vPos.GetX() + vSize.GetX());
-	rcRect.bottom = (int)(vPos.GetY() + vSize.GetY());
+    //  Are we in bounds? If not, we fail
 
-	//	See if we're in the rect
+    if (!vHit.InBox(vPos2, vPos))
+        {
+        //  If we've captured the mouse, we return TRUE anyway and transform
+        //  the coordinates.
 
-	if (x >= rcRect.left && x < rcRect.right && y >= rcRect.top && y < rcRect.bottom)
-		return this;
-	else
-		return NULL;
+        if (Result.pCaptured)
+            {
+            Result.pHit = NULL;
+            Result.xLocal = (int)vHit.GetX();
+            Result.yLocal = (int)vHit.GetY();
+            return true;
+            }
+        else
+            return false;
+        }
+
+    //  Otherwise, we hit
+
+    Result.pHit = this;
+    Result.xLocal = (int)vHit.GetX();
+    Result.yLocal = (int)vHit.GetY();
+
+    return true;
 	}
 
 int CAniButton::MapStyleName (const CString &sComponent) const

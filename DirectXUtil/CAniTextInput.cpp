@@ -245,7 +245,7 @@ void CAniTextInput::HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCa
 	*retbFocus = m_Properties[INDEX_ENABLED].GetBool();
 	}
 
-IAnimatron *CAniTextInput::HitTest (const CXForm &ToDest, int x, int y)
+bool CAniTextInput::HitTest (const CXForm &ToLocal, SAniHitTestResult &Result)
 
 //	HitTest
 //
@@ -255,34 +255,50 @@ IAnimatron *CAniTextInput::HitTest (const CXForm &ToDest, int x, int y)
 	const CG16bitFont *pFont = m_Properties[INDEX_FONT].GetFont();
 	const CG16bitFont *pLabelFont = m_Properties[INDEX_LABEL_FONT].GetFont();
 
+    //  If someone else has captured the mouse, then we never hit
+
+    if (Result.pCaptured && Result.pCaptured != this)
+        return false;
+
+    //  Transform to local coordinates
+
+    CVector vHit = ToLocal.Transform(CVector(Result.x, Result.y));
+
 	//	Position and size
 
-	CVector vPos = ToDest.Transform(m_Properties[INDEX_POSITION].GetVector());
-	CVector vPos2 = ToDest.Transform(m_Properties[INDEX_POSITION].GetVector() + m_Properties[INDEX_SCALE].GetVector());
-	CVector vSize = vPos2 - vPos;
+    CVector vPos = m_Properties[INDEX_POSITION].GetVector();
+	CVector vPos2 = vPos + m_Properties[INDEX_SCALE].GetVector();
 
-	//	Figure out the position of the field
+    //  Compute the position and size of the field
 
-	int xField = (int)vPos.GetX();
-	int yField = (int)vPos.GetY() + LABEL_PADDING + (pLabelFont ? pLabelFont->GetHeight() : 0);
+    CVector vField = vPos + CVector(0.0, LABEL_PADDING + (pLabelFont ? pLabelFont->GetHeight() : 0.0));
+    CVector vField2 = CVector(vPos2.GetX(), vField.GetY() + (pFont ? pFont->GetHeight() : 0) + PADDING_TOP + PADDING_BOTTOM);
 
-	//	Now compute the size of the input field frame
+    //  Are we in bounds? If not, we fail
 
-	int cxField = (int)vSize.GetX();
-	int cyField = (pFont ? pFont->GetHeight() : 0) + PADDING_TOP + PADDING_BOTTOM;
+    if (!vHit.InBox(vField2, vField))
+        {
+        //  If we've captured the mouse, we return TRUE anyway and transform
+        //  the coordinates.
 
-	RECT rcRect;
-	rcRect.left = xField;
-	rcRect.top = yField;
-	rcRect.right = xField + cxField;
-	rcRect.bottom = yField + cyField;
+        if (Result.pCaptured)
+            {
+            Result.pHit = NULL;
+            Result.xLocal = (int)vHit.GetX();
+            Result.yLocal = (int)vHit.GetY();
+            return true;
+            }
+        else
+            return false;
+        }
 
-	//	See if we're in the rect
+    //  Otherwise, we hit
 
-	if (x >= rcRect.left && x < rcRect.right && y >= rcRect.top && y < rcRect.bottom)
-		return this;
-	else
-		return NULL;
+    Result.pHit = this;
+    Result.xLocal = (int)vHit.GetX();
+    Result.yLocal = (int)vHit.GetY();
+
+    return true;
 	}
 
 int CAniTextInput::MapStyleName (const CString &sComponent) const

@@ -17,6 +17,7 @@ CReanimator::CReanimator (void) :
 		m_iPlaySpeed(1),
 		m_iFastPlayCounter(-1),
 		m_ToDest(xformIdentity),
+        m_ToLocal(xformIdentity),
 		m_pInputFocus(NULL),
 		m_pMouseCapture(NULL),
 		m_pHover(NULL)
@@ -307,24 +308,24 @@ bool CReanimator::HandleLButtonDblClick (int x, int y, DWORD dwFlags, bool *retb
 //	Left button double click
 
 	{
-	IAnimatron *pHit = HitTest(x, y);
-	if (pHit)
+    SAniHitTestResult Result(x, y);
+	if (HitTest(Result))
 		{
 		//	If we haven't sent a MouseEnter event, then do it now.
 
-		if (pHit && pHit != m_pHover)
+		if (Result.pHit != m_pHover)
 			{
-			m_pHover = pHit;
+			m_pHover = Result.pHit;
 			m_pHover->HandleMouseEnter();
 			}
 
 		bool bFocus;
-		pHit->HandleLButtonDblClick(x, y, dwFlags, retbCapture, &bFocus);
+		Result.pHit->HandleLButtonDblClick(Result.xLocal, Result.yLocal, dwFlags, retbCapture, &bFocus);
 		if (*retbCapture)
-			m_pMouseCapture = pHit;
+			m_pMouseCapture = Result.pHit;
 
 		if (bFocus)
-			SetInputFocus(pHit);
+			SetInputFocus(Result.pHit);
 
 		return true;
 		}
@@ -339,24 +340,24 @@ bool CReanimator::HandleLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapt
 //	Left button down
 
 	{
-	IAnimatron *pHit = HitTest(x, y);
-	if (pHit)
+    SAniHitTestResult Result(x, y);
+	if (HitTest(Result))
 		{
 		//	If we haven't sent a MouseEnter event, then do it now.
 
-		if (pHit && pHit != m_pHover)
+		if (Result.pHit != m_pHover)
 			{
-			m_pHover = pHit;
+			m_pHover = Result.pHit;
 			m_pHover->HandleMouseEnter();
 			}
 
 		bool bFocus;
-		pHit->HandleLButtonDown(x, y, dwFlags, retbCapture, &bFocus);
+		Result.pHit->HandleLButtonDown(Result.xLocal, Result.yLocal, dwFlags, retbCapture, &bFocus);
 		if (*retbCapture)
-			m_pMouseCapture = pHit;
+			m_pMouseCapture = Result.pHit;
 
 		if (bFocus)
-			SetInputFocus(pHit);
+			SetInputFocus(Result.pHit);
 
 		return true;
 		}
@@ -371,31 +372,32 @@ bool CReanimator::HandleLButtonUp (int x, int y, DWORD dwFlags)
 //	Left button up
 
 	{
-	IAnimatron *pHit = HitTest(x, y);
+    SAniHitTestResult Result(x, y);
+	HitTest(Result);
 
 	if (m_pMouseCapture)
 		{
 		//	If we're not over the element that captured the mouse then we need
 		//	to send a mouse enter event
 
-		if (pHit && pHit != m_pMouseCapture)
+		if (Result.pHit && Result.pHit != m_pMouseCapture)
 			{
-			m_pHover = pHit;
+			m_pHover = Result.pHit;
 			m_pHover->HandleMouseEnter();
 			}
 
 		//	Keep the element that we hit on the stack because the event might
 		//	destroy everything.
 
-		pHit = m_pMouseCapture;
+		Result.pHit = m_pMouseCapture;
 		m_pMouseCapture = NULL;
 
-		pHit->HandleLButtonUp(x, y, dwFlags);
+		Result.pHit->HandleLButtonUp(Result.xLocal, Result.yLocal, dwFlags);
 		return true;
 		}
-	else if (pHit)
+	else if (Result.pHit)
 		{
-		pHit->HandleLButtonUp(x, y, dwFlags);
+		Result.pHit->HandleLButtonUp(Result.xLocal, Result.yLocal, dwFlags);
 		return true;
 		}
 	else
@@ -410,34 +412,34 @@ bool CReanimator::HandleMouseMove (int x, int y, DWORD dwFlags)
 
 	{
 	bool bHandled = false;
-	IAnimatron *pHit = HitTest(x, y);
+    SAniHitTestResult Result(x, y, m_pMouseCapture);
+
+    //  If we've captured the mouse, we always get back local coordinates,
+    //  but Result.pHit is non-NULL only if we are inside the animatron that
+    //  captured the mouse. Note, however, that HitTest always returns TRUE
+    //  in either case (because Result is valid).
+
+	HitTest(Result);
 
 	if (m_pMouseCapture)
 		{
-		m_pMouseCapture->HandleMouseMove(x, y, dwFlags);
-
-		//	When the mouse is captured we don't send enter/leave messages to any
-		//	element other than the one captured.
-
-		if (pHit != m_pMouseCapture)
-			pHit = NULL;
-
+		m_pMouseCapture->HandleMouseMove(Result.xLocal, Result.yLocal, dwFlags);
 		bHandled = true;
 		}
-	else if (pHit)
+	else if (Result.pHit)
 		{
-		pHit->HandleMouseMove(x, y, dwFlags);
+		Result.pHit->HandleMouseMove(x, y, dwFlags);
 		bHandled = true;
 		}
 
 	//	Send enter/leave messages
 
-	if (pHit != m_pHover)
+	if (Result.pHit != m_pHover)
 		{
 		if (m_pHover)
 			m_pHover->HandleMouseLeave();
 
-		m_pHover = pHit;
+		m_pHover = Result.pHit;
 
 		if (m_pHover)
 			m_pHover->HandleMouseEnter();
@@ -466,16 +468,16 @@ bool CReanimator::HandleRButtonDblClick (int x, int y, DWORD dwFlags, bool *retb
 //	Right button double click
 
 	{
-	IAnimatron *pHit = HitTest(x, y);
-	if (pHit)
+    SAniHitTestResult Result(x, y);
+	if (HitTest(Result))
 		{
 		bool bFocus;
-		pHit->HandleRButtonDblClick(x, y, dwFlags, retbCapture, &bFocus);
+		Result.pHit->HandleRButtonDblClick(Result.xLocal, Result.yLocal, dwFlags, retbCapture, &bFocus);
 		if (*retbCapture)
-			m_pMouseCapture = pHit;
+			m_pMouseCapture = Result.pHit;
 
 		if (bFocus)
-			SetInputFocus(pHit);
+			SetInputFocus(Result.pHit);
 
 		return true;
 		}
@@ -490,16 +492,16 @@ bool CReanimator::HandleRButtonDown (int x, int y, DWORD dwFlags, bool *retbCapt
 //	Right button down
 
 	{
-	IAnimatron *pHit = HitTest(x, y);
-	if (pHit)
+    SAniHitTestResult Result(x, y);
+	if (HitTest(Result))
 		{
 		bool bFocus;
-		pHit->HandleRButtonDown(x, y, dwFlags, retbCapture, &bFocus);
+		Result.pHit->HandleRButtonDown(Result.xLocal, Result.yLocal, dwFlags, retbCapture, &bFocus);
 		if (*retbCapture)
-			m_pMouseCapture = pHit;
+			m_pMouseCapture = Result.pHit;
 
 		if (bFocus)
-			SetInputFocus(pHit);
+			SetInputFocus(Result.pHit);
 
 		return true;
 		}
@@ -514,38 +516,38 @@ bool CReanimator::HandleRButtonUp (int x, int y, DWORD dwFlags)
 //	Right button up
 
 	{
-	IAnimatron *pHit = HitTest(x, y);
+    SAniHitTestResult Result(x, y);
 
 	if (m_pMouseCapture)
 		{
 		//	If we're not over the element that captured the mouse then we need
 		//	to send a mouse enter event
 
-		if (pHit && pHit != m_pMouseCapture)
+		if (Result.pHit && Result.pHit != m_pMouseCapture)
 			{
-			m_pHover = pHit;
+			m_pHover = Result.pHit;
 			m_pHover->HandleMouseEnter();
 			}
 
 		//	Keep the element that we hit on the stack because the event might
 		//	destroy everything.
 
-		pHit = m_pMouseCapture;
+		Result.pHit = m_pMouseCapture;
 		m_pMouseCapture = NULL;
 
-		pHit->HandleRButtonUp(x, y, dwFlags);
+		Result.pHit->HandleRButtonUp(Result.xLocal, Result.yLocal, dwFlags);
 		return true;
 		}
-	else if (pHit)
+	else if (Result.pHit)
 		{
-		pHit->HandleRButtonUp(x, y, dwFlags);
+		Result.pHit->HandleRButtonUp(Result.xLocal, Result.yLocal, dwFlags);
 		return true;
 		}
 	else
 		return false;
 	}
 
-IAnimatron *CReanimator::HitTest (int x, int y)
+bool CReanimator::HitTest (SAniHitTestResult &Result)
 
 //	HitTest
 //
@@ -553,17 +555,16 @@ IAnimatron *CReanimator::HitTest (int x, int y)
 
 	{
 	int i;
-	IAnimatron *pHit;
 
 	for (i = 0; i < m_Library.GetCount(); i++)
 		{
 		SPerformance *pPerf = &m_Library[i];
 		if ((pPerf->iFrame != -1)
-				&& (pHit = pPerf->pAni->HitTest(m_ToDest, x, y)))
-			return pHit;
+				&& (pPerf->pAni->HitTest(m_ToLocal, Result)))
+			return true;
 		}
 
-	return NULL;
+	return false;
 	}
 
 bool CReanimator::IsPerformanceRunning (const CString &sID)

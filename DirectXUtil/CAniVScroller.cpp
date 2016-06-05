@@ -371,7 +371,7 @@ void CAniVScroller::GoToStart (void)
 		m_List[i].pAni->GoToStart();
 	}
 
-IAnimatron *CAniVScroller::HitTest (const CXForm &ToDest, int x, int y)
+bool CAniVScroller::HitTest (const CXForm &ToLocal, SAniHitTestResult &Result)
 
 //	HitTest
 //
@@ -379,14 +379,13 @@ IAnimatron *CAniVScroller::HitTest (const CXForm &ToDest, int x, int y)
 
 	{
 	int i;
-	IAnimatron *pHit;
 
 	//	Transform
 
 	Metric yScrollPos = m_Properties[INDEX_SCROLL_POS].GetMetric();
 	Metric cyViewport = m_Properties[INDEX_VIEWPORT_HEIGHT].GetMetric();
 	CVector vPos = m_Properties[INDEX_POSITION].GetVector();
-	CXForm LocalToDest = CXForm(xformTranslate, vPos - CVector(0.0, yScrollPos)) * ToDest;
+	CXForm ScreenToLocal = CXForm(xformTranslate, CVector(0.0, yScrollPos) - vPos) * ToLocal;
 
 	//	Loop over all lines
 
@@ -406,11 +405,11 @@ IAnimatron *CAniVScroller::HitTest (const CXForm &ToDest, int x, int y)
 
 		//	Hit test
 
-		if (pHit = pList->pAni->HitTest(LocalToDest, x, y))
-			return pHit;
+		if (pList->pAni->HitTest(ScreenToLocal, Result))
+			return true;
 		}
 
-	return NULL;
+	return false;
 	}
 
 void CAniVScroller::Paint (SAniPaintCtx &Ctx)
