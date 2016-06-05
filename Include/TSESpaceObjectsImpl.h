@@ -1403,6 +1403,7 @@ class CStation : public CSpaceObject
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
         virtual void SetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
+        virtual bool ShowMapOrbit (void) const override { return (m_fShowMapOrbit ? true : false); }
         virtual bool ShowStationDamage (void) const override { return (IsAbandoned() && m_iMaxHitPoints > 0); }
 		virtual bool SupportsGating (void) override { return IsActiveStargate(); }
 		virtual void Undock (CSpaceObject *pObj) override;

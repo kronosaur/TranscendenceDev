@@ -2830,6 +2830,7 @@ class CSpaceObject : public CObject
 		virtual bool IsStargate (void) const { return false; }
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) { return false; }
 		virtual bool RequestGate (CSpaceObject *pObj);
+        virtual bool ShowMapOrbit (void) const { return false; }
         virtual bool ShowStationDamage (void) const { return false; }
 		virtual bool SupportsGating (void) { return false; }
 
@@ -3087,12 +3088,21 @@ class CObjectTracker
             DWORD fEnemy:1;
 			};
 
+        struct SBackgroundObjEntry
+            {
+            CStationType *pType;
+            CVector vPos;
+            CCompositeImageSelector *pImageSel;
+            };
+
 		~CObjectTracker (void);
 
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		bool Find (const CString &sNodeID, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
         void GetGalacticMapObjects (CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
+        void GetSystemBackgroundObjects (CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const;
+        const TArray<COrbit> &GetSystemOrbits (CTopologyNode *pNode) const;
 		void Insert (CSpaceObject *pObj);
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
         void Refresh (CSystem *pSystem);
@@ -3138,6 +3148,8 @@ class CObjectTracker
 
             void Copy (const SObjBasics &Src)
                 {
+                vPos = Src.vPos;
+
                 fKnown = Src.fKnown;
                 fShowDestroyed = Src.fShowDestroyed;
                 fShowInMap = Src.fShowInMap;
@@ -3167,6 +3179,8 @@ class CObjectTracker
                 return *pExtra;
                 }
 
+            CVector vPos;                   //  Position of object in its system
+
             DWORD fKnown:1;                 //  TRUE if player knows about this obj
             DWORD fShowDestroyed:1;         //  TRUE if we need to paint station as destroyed
             DWORD fShowInMap:1;             //  TRUE if we can dock with the obj
@@ -3188,17 +3202,25 @@ class CObjectTracker
 			TSortMap<DWORD, SObjBasics> Objects;
 			};
 
+        struct SNodeData
+            {
+            TArray<SObjList *> ObjLists;
+            TArray<COrbit> Orbits;
+            };
+
 		bool AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
         void AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, TArray<SObjEntry> &Results) const;
         bool Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
+        bool Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
 		SObjList *GetList (CSpaceObject *pObj) const;
 		SObjList *GetList (CTopologyNode *pNode, CDesignType *pType) const;
         void Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceObject *pPlayer);
 		SObjList *SetList (CSpaceObject *pObj);
 		SObjList *SetList (CTopologyNode *pNode, CDesignType *pType);
+		SObjList *SetList (SNodeData *pNodeData, CTopologyNode *pNode, CDesignType *pType);
 
 		TArray<SObjList *> m_AllLists;
-		TSortMap<CString, TArray<SObjList *>> m_ByNode;
+		TSortMap<CString, SNodeData> m_ByNode;
 	};
 
 class CObjectStats

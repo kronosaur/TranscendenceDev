@@ -10,8 +10,9 @@ const int SELECTION_RADIUS =                12;
 const int STARGATE_LINE_WIDTH =				3;
 const int MIN_NODE_MARGIN =					64;
 
-CGalacticMapPainter::CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *pMap) : m_VI(VI),
+CGalacticMapPainter::CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *pMap, CSystemMapThumbnails &SystemMapThumbnails) : m_VI(VI),
 		m_pMap(pMap),
+        m_SystemMapThumbnails(SystemMapThumbnails),
 		m_cxMap(-1),
 		m_cyMap(-1),
 		m_bFreeImage(false),
@@ -77,7 +78,7 @@ void CGalacticMapPainter::AdjustCenter (int xCenter, int yCenter, int iScale, in
 		*retyCenter = (cyHeight / 2) - yMapCenter;
 	}
 
-void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor) const
+void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const
 
 //	DrawNode
 //
@@ -93,9 +94,13 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 
     //  Draw the node
 
+#if 0
 	CGDraw::CircleGradient(Dest, x + 2, y + 2, NODE_RADIUS + 1, 0);
 	CGDraw::Circle(Dest, x, y, NODE_RADIUS, rgbColor);
 	CGDraw::CircleGradient(Dest, x - 2, y - 2, NODE_RADIUS - 3, CG32bitPixel(0xff, 0xff, 0xff));
+#else
+    m_SystemMapThumbnails.DrawThumbnail(pNode, Dest, x, y, rScale);
+#endif
 
 	m_VI.GetFont(fontMediumBold).DrawText(Dest,
 			x, y + NODE_RADIUS + 2,
@@ -241,6 +246,10 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
 	ASSERT(m_iScale > 0);
 
+    //  System thumbnails are full-res at x4
+
+    Metric rScale = m_iScale / 400.0;
+
 	//	Paint the image, if we have it
 
 	if (m_cxMap > 0 && m_cyMap > 0)
@@ -384,7 +393,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 				//	Draw star system
 
 				if (Start.x >= m_rcView.left && Start.x < m_rcView.right && Start.y >= m_rcView.top && Start.y < m_rcView.bottom)
-					DrawNode(Dest, pNode, Start.x, Start.y, rgbNodeColor);
+					DrawNode(Dest, pNode, Start.x, Start.y, rScale, rgbNodeColor);
 
 				pNode->SetMarked();
 				}

@@ -5,6 +5,8 @@
 
 #pragma once
 
+class CSystemMapThumbnails;
+
 class CGalacticMapPainter
 	{
 	public:
@@ -13,7 +15,7 @@ class CGalacticMapPainter
             CTopologyNode *pNode;
             };
 
-		CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *pMap);
+		CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *pMap, CSystemMapThumbnails &SystemMapThumbnails);
 		~CGalacticMapPainter (void);
 
 		void AdjustCenter (int xCenter, int yCenter, int iScale, int *retxCenter, int *retyCenter) const;
@@ -33,13 +35,14 @@ class CGalacticMapPainter
         void ViewToGalactic (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
 
 	private:
-		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, CG32bitPixel rgbColor) const;
+		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
 		void Init (void);
 		inline SPoint Xform (const SPoint &pt) const { return SPoint(m_xViewCenter + m_iScale * (pt.x - m_xCenter) / 100, m_yViewCenter + m_iScale * (m_yCenter - pt.y) / 100); }
 
 		const CVisualPalette &m_VI;
 
 		CSystemMap *m_pMap;
+        CSystemMapThumbnails &m_SystemMapThumbnails;
 		int m_cxMap;
 		int m_cyMap;
 
@@ -154,4 +157,31 @@ class CMapScaleCounter
 
         int m_iMinScaleIndex;
         int m_iMaxScaleIndex;
+    };
+
+class CSystemMapThumbnails
+    {
+    public:
+        CSystemMapThumbnails (void);
+        ~CSystemMapThumbnails (void);
+
+        void CleanUp (void);
+        void DrawThumbnail (CTopologyNode *pNode, CG32bitImage &Dest, int x, int y, Metric rScale = 1.0) const;
+        CG32bitImage *GetThumbnail (CTopologyNode *pNode) const;
+        void Init (CObjectTracker &SystemData, int cxThumb, int cyThumb);
+
+    private:
+        CG32bitImage *GetObjImage (const CObjectTracker::SBackgroundObjEntry &ObjEntry) const;
+
+        CObjectTracker *m_pSystemData;
+        int m_cxThumb;                      //  Size of thumbnail
+        int m_cyThumb;
+        ViewportTransform m_Trans;          //  Transform from system coords to thumb
+        Metric m_rMapScale;                 //  Map scale in klicks per pixel
+        Metric m_rImageScale;               //  Scale factor for objects in system
+        int m_iMaxImage;
+        int m_iMinImage;
+
+        mutable TSortMap<CTopologyNode *, CG32bitImage *> m_Cache;
+        mutable TSortMap<DWORDLONG, CG32bitImage *> m_ObjImageCache;
     };

@@ -150,6 +150,9 @@
     <ClCompile Include="CGalacticMapSystemDetails.cpp">
       <Filter>Source Files\Map Painters</Filter>
     </ClCompile>
+    <ClCompile Include="CSystemMapThumbnails.cpp">
+      <Filter>Source Files\Map Painters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

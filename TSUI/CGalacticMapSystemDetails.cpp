@@ -226,7 +226,7 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 
     int iRotation;
     const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(Obj.ImageSel, Modifiers, &iRotation);
-    CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(strFromInt(Obj.pType->GetUNID())) : NULL);
+    CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(CONSTLIT("Galactic map")) : NULL);
 	RECT rcBmpImage = FullImage.GetImageRect(0, iRotation);
     if (pBmpImage == NULL)
         {
@@ -237,7 +237,7 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
         //  If we can't find the standard image, see if we have a hero image.
 
         const CObjectImageArray &HeroImage = pStationType->GetHeroImage(CCompositeImageSelector(), Modifiers, &iRotation);
-        pBmpImage = (HeroImage.IsLoaded() ? &HeroImage.GetImage(strFromInt(Obj.pType->GetUNID())) : NULL);
+        pBmpImage = (HeroImage.IsLoaded() ? &HeroImage.GetImage(CONSTLIT("Galactic map")) : NULL);
         if (pBmpImage == NULL)
             return false;
 

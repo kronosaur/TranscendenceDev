@@ -267,6 +267,7 @@ class CCompositeImageSelector
 		void AddVariant (DWORD dwID, int iVariant);
 		inline void DeleteAll (void) { m_Sel.DeleteAll(); }
 		inline int GetCount (void) const { return m_Sel.GetCount(); }
+        DWORD GetHash (void) const;
 		CObjectImageArray &GetFlotsamImage (DWORD dwID = DEFAULT_SELECTOR_ID) const;
 		CItemType *GetFlotsamType (DWORD dwID = DEFAULT_SELECTOR_ID) const;
 		CShipClass *GetShipwreckClass (DWORD dwID = DEFAULT_SELECTOR_ID) const;
@@ -289,6 +290,7 @@ class CCompositeImageSelector
 
 		SEntry *FindEntry (DWORD dwID) const;
 		ETypes GetEntryType (const SEntry &Entry) const;
+        DWORD GetHash (const SEntry &Entry) const;
 
 		TArray<SEntry> m_Sel;
 

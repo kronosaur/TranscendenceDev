@@ -154,13 +154,13 @@ bool CObjectTracker::Find (const CString &sNodeID, const CDesignTypeCriteria &Cr
 		{
 		//	Look for the node ID.
 
-		TArray<SObjList *> *pTable = m_ByNode.GetAt(sNodeID);
-		if (pTable == NULL)
+		SNodeData *pNodeData = m_ByNode.GetAt(sNodeID);
+		if (pNodeData == NULL)
 			return false;
 
 		//	Accumulate entries for this table
 
-		return AccumulateEntries(*pTable, Criteria, retResult);
+		return AccumulateEntries(pNodeData->ObjLists, Criteria, retResult);
 		}
 	}
 
@@ -172,6 +172,41 @@ bool CObjectTracker::Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics 
 
     {
     SObjList *pList = GetList(pObj);
+    if (pList == NULL)
+        return false;
+
+    SObjBasics *pObjData = pList->Objects.GetAt(pObj->GetID());
+    if (pObjData == NULL)
+        return false;
+
+    if (retpObjData)
+        *retpObjData = pObjData;
+
+    return true;
+    }
+
+bool CObjectTracker::Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics **retpObjData) const
+
+//  Find
+//
+//  Returns a pointer to the object data for the given object.
+
+    {
+    int i;
+
+	//	Look for the UNID. If found, return it.
+
+    CDesignType *pType = pObj->GetType();
+    SObjList *pList = NULL;
+	for (i = 0; i < pNodeData->ObjLists.GetCount(); i++)
+		{
+		if (pNodeData->ObjLists.GetAt(i)->pType == pType)
+            {
+            pList = pNodeData->ObjLists.GetAt(i);
+            break;
+            }
+		}
+
     if (pList == NULL)
         return false;
 
@@ -201,15 +236,15 @@ void CObjectTracker::GetGalacticMapObjects (CTopologyNode *pNode, TArray<SObjEnt
 
 	//	Look in the index of nodes
 
-	TArray<SObjList *> *pTable = m_ByNode.GetAt(pNode->GetID());
-    if (pTable == NULL)
+	SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    if (pNodeData == NULL)
         return;
 
     //  Loop over all objects
 
-    for (i = 0; i < pTable->GetCount(); i++)
+    for (i = 0; i < pNodeData->ObjLists.GetCount(); i++)
         {
-        const SObjList *pList = pTable->GetAt(i);
+        const SObjList *pList = pNodeData->ObjLists.GetAt(i);
         if (pList == NULL)
             continue;
 
@@ -266,15 +301,15 @@ CObjectTracker::SObjList *CObjectTracker::GetList (CTopologyNode *pNode, CDesign
 
 	//	Look in the index of nodes
 
-	TArray<SObjList *> *pTable = m_ByNode.GetAt(pNode->GetID());
-    if (pTable == NULL)
+	SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    if (pNodeData == NULL)
         return NULL;
 
 	//	Look for the UNID. If found, return it.
 
-	for (i = 0; i < pTable->GetCount(); i++)
+	for (i = 0; i < pNodeData->ObjLists.GetCount(); i++)
 		{
-		SObjList *pList = pTable->GetAt(i);
+		SObjList *pList = pNodeData->ObjLists.GetAt(i);
 		if (pList->pType == pType)
 			return pList;
 		}
@@ -283,6 +318,55 @@ CObjectTracker::SObjList *CObjectTracker::GetList (CTopologyNode *pNode, CDesign
 
 	return NULL;
 	}
+
+void CObjectTracker::GetSystemBackgroundObjects (CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const
+
+//  GetSystemObjects
+//
+//  Returns a list of stars, worlds, and asteroids, sorted by Y-coordinate.
+
+    {
+    int i, j;
+
+    Results.DeleteAll();
+    Results.GrowToFit(1000);
+
+    SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    if (pNodeData == NULL)
+        return;
+
+    for (i = 0; i < pNodeData->ObjLists.GetCount(); i++)
+        {
+        CStationType *pType = CStationType::AsType(pNodeData->ObjLists[i]->pType);
+        if (pType == NULL)
+            continue;
+
+        if (pType->GetScale() != scaleStar && pType->GetScale() != scaleWorld)
+            continue;
+
+        for (j = 0; j < pNodeData->ObjLists[i]->Objects.GetCount(); j++)
+            {
+            SObjBasics *pObjData = &pNodeData->ObjLists[i]->Objects[j];
+            SBackgroundObjEntry *pSysObj = Results.Insert(pObjData->vPos.GetY());
+            pSysObj->pType = pType;
+            pSysObj->vPos = pObjData->vPos;
+            pSysObj->pImageSel = (pObjData->pExtra ? &pObjData->pExtra->ImageSel : NULL);
+            }
+        }
+    }
+
+const TArray<COrbit> &CObjectTracker::GetSystemOrbits (CTopologyNode *pNode) const
+
+//  GetSystemOrbits
+//
+//  Returns a list of orbits for the system.
+
+    {
+    SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    ASSERT(pNodeData);
+
+    return pNodeData->Orbits;
+    }
 
 void CObjectTracker::Insert (CSpaceObject *pObj)
 
@@ -312,27 +396,29 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 //	ReadFromStream
 //
-//	Reads all objects
+//	DWORD			No. of nodes
 //
-//	DWORD			No. of lists
+//  For each node:
+//      CString         NodeID
+//      DWORD           No. of lists
 //
-//	For each list:
-//	CString			NodeID
-//	DWORD			UNID
-//	DWORD			No. of objects
+//	    For each list:
+//	    DWORD			Type UNID
+//	    DWORD			No. of objects
 //
-//	For each object
-//	DWORD			ObjID
+//	    For each object:
+//	        DWORD			ObjID
+//          CVector         vPos
+//          DWORD           Flags
 //
-//	DWORD			No. of names
+//          If extra data
+//	        DWORD			Name Flags
+//	        CString			Name
+//          CCompositeImageSelector
+//          CString         Notes
 //
-//	For each name
-//	DWORD			ObjID
-//	DWORD			Name Flags
-//	CString			Name
-//  CCompositeImageSelector
-//  CString         Notes
-//  DWORD           Object flags
+//      DWORD           No. of orbits
+//      COrbit          List of orbits
 
 	{
     SLoadCtx SystemCtx(Ctx);
@@ -343,121 +429,247 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 	DeleteAll();
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	int iListCount = (int)dwLoad;
+    //  New version has a different format
 
-	for (i = 0; i < iListCount; i++)
-		{
-		CString sNodeID;
+    if (SystemCtx.dwVersion >= 133)
+        {
+        int iNodeCount;
+        Ctx.pStream->Read((char *)&iNodeCount, sizeof(DWORD));
 
-		sNodeID.ReadFromStream(Ctx.pStream);
-		CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sNodeID);
+        //  Load all nodes
 
-		DWORD dwUNID;
-		Ctx.pStream->Read((char *)&dwUNID, sizeof(DWORD));
-		CDesignType *pType = g_pUniverse->FindDesignType(dwUNID);
-
-		int iObjCount;
-		Ctx.pStream->Read((char *)&iObjCount, sizeof(DWORD));
-
-		//	Get the appropriate table
-
-		SObjList *pList = (pNode && pType ? SetList(pNode, pType) : NULL);
-        if (pList)
-            pList->Objects.GrowToFit(iObjCount);
-
-        //  The new version stores everything in one list
-
-        if (SystemCtx.dwVersion >= 132)
+        int iNode;
+        for (iNode = 0; iNode < iNodeCount; iNode++)
             {
-            for (j = 0; j < iObjCount; j++)
+            //  Read the node ID
+
+            CString sNodeID;
+            sNodeID.ReadFromStream(Ctx.pStream);
+            CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sNodeID);
+
+            //  Get the node data entry
+
+            SNodeData *pNodeData = (pNode ? m_ByNode.SetAt(pNode->GetID()) : NULL);
+
+            //  Get the number of lists
+
+            int iListCount;
+            Ctx.pStream->Read((char *)&iListCount, sizeof(DWORD));
+
+            //  Loop over every list
+
+            for (i = 0; i < iListCount; i++)
                 {
-                Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-                SObjBasics *pObjData = (pList ? pList->Objects.Insert(dwLoad) : NULL);
+                //  Read the UNID for the object in this list
 
-                //  Flags
+                DWORD dwUNID;
+                Ctx.pStream->Read((char *)&dwUNID, sizeof(DWORD));
+                CDesignType *pType = g_pUniverse->FindDesignType(dwUNID);
 
-                Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-                pObjData->fKnown =              ((dwLoad & 0x00000002) ? true : false);
-                pObjData->fShowDestroyed =      ((dwLoad & 0x00000004) ? true : false);
-                pObjData->fShowInMap =          ((dwLoad & 0x00000008) ? true : false);
-                pObjData->fFriendly =           ((dwLoad & 0x00000010) ? true : false);
-                pObjData->fEnemy =              ((dwLoad & 0x00000020) ? true : false);
+                //  Number of objects
 
-                //  Extra, if we've got it
-
-                if (dwLoad & 0x00000001)
-                    {
-                    SObjExtra &Extra = pObjData->SetExtra();
-
-                    Ctx.pStream->Read((char *)&Extra.dwNameFlags, sizeof(DWORD));
-                    Extra.sName.ReadFromStream(Ctx.pStream);
-                    Extra.ImageSel.ReadFromStream(SystemCtx);
-                    Extra.sNotes.ReadFromStream(Ctx.pStream);
-                    }
-                }
-            }
-
-        //  In old version we read multiple lists
-
-        else
-            {
-            //	Read all the objects
-
-            for (j = 0; j < iObjCount; j++)
-                {
-                Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-                if (pList)
-                    pList->Objects.Insert(dwLoad);
-                }
-
-            //	Read names
-
-            if (Ctx.dwVersion >= 21)
-                {
+                int iObjCount;
                 Ctx.pStream->Read((char *)&iObjCount, sizeof(DWORD));
+
+                //	Get the appropriate table
+
+                SObjList *pList = (pNodeData && pType ? SetList(pNodeData, pNode, pType) : NULL);
+                if (pList)
+                    pList->Objects.GrowToFit(iObjCount);
+
+                //  Loop over all objects in this list
+
                 for (j = 0; j < iObjCount; j++)
                     {
-                    DWORD dwObjID;
-                    Ctx.pStream->Read((char *)&dwObjID, sizeof(DWORD));
+                    Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                    SObjBasics *pObjData = (pList ? pList->Objects.Insert(dwLoad) : NULL);
 
-                    SObjBasics *pObjData;
-                    if (pList && (pObjData = pList->Objects.GetAt(dwObjID)))
+                    if (pObjData)
                         {
-                        SObjExtra &Extra = pObjData->SetExtra();
+                        Ctx.pStream->Read((char *)&pObjData->vPos, sizeof(CVector));
 
-                        Ctx.pStream->Read((char *)&Extra.dwNameFlags, sizeof(DWORD));
-                        Extra.sName.ReadFromStream(Ctx.pStream);
+                        //  Flags
 
-                        if (SystemCtx.dwVersion >= 131)
+                        Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                        pObjData->fKnown = ((dwLoad & 0x00000002) ? true : false);
+                        pObjData->fShowDestroyed = ((dwLoad & 0x00000004) ? true : false);
+                        pObjData->fShowInMap = ((dwLoad & 0x00000008) ? true : false);
+                        pObjData->fFriendly = ((dwLoad & 0x00000010) ? true : false);
+                        pObjData->fEnemy = ((dwLoad & 0x00000020) ? true : false);
+
+                        //  Extra, if we've got it
+
+                        if (dwLoad & 0x00000001)
                             {
+                            SObjExtra &Extra = pObjData->SetExtra();
+
+                            Ctx.pStream->Read((char *)&Extra.dwNameFlags, sizeof(DWORD));
+                            Extra.sName.ReadFromStream(Ctx.pStream);
                             Extra.ImageSel.ReadFromStream(SystemCtx);
                             Extra.sNotes.ReadFromStream(Ctx.pStream);
-
-                            //  Flags
-
-                            Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-                            pObjData->fShowDestroyed = ((dwLoad & 0x00000001) ? true : false);
                             }
                         }
                     else
                         {
                         CString sDummy;
+                        CVector vDummy;
+                        CCompositeImageSelector DummySel;
+                        Ctx.pStream->Read((char *)&vDummy, sizeof(CVector));
                         Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-                        sDummy.ReadFromStream(Ctx.pStream);
 
-                        if (SystemCtx.dwVersion >= 131)
+                        if (dwLoad & 0x00000001)
                             {
-                            CCompositeImageSelector Dummy;
-                            Dummy.ReadFromStream(SystemCtx);
-                            sDummy.ReadFromStream(Ctx.pStream);
                             Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                            sDummy.ReadFromStream(Ctx.pStream);
+                            DummySel.ReadFromStream(SystemCtx);
+                            sDummy.ReadFromStream(Ctx.pStream);
+                            }
+                        }
+                    }
+                }
+
+            //  Read the orbit list
+
+            int iOrbitCount;
+            Ctx.pStream->Read((char *)&iOrbitCount, sizeof(DWORD));
+            if (pNodeData)
+                {
+                pNodeData->Orbits.InsertEmpty(iOrbitCount);
+
+                //  Read orbits
+
+                for (i = 0; i < iOrbitCount; i++)
+                    Ctx.pStream->Read((char *)&pNodeData->Orbits[i], sizeof(COrbit));
+                }
+            else
+                {
+                COrbit Dummy;
+                for (i = 0; i < iOrbitCount; i++)
+                    Ctx.pStream->Read((char *)&Dummy, sizeof(COrbit));
+                }
+            }
+        }
+
+    //  Backwards compatibility
+
+    else
+        {
+        Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+        int iListCount = (int)dwLoad;
+
+        for (i = 0; i < iListCount; i++)
+            {
+            CString sNodeID;
+
+            sNodeID.ReadFromStream(Ctx.pStream);
+            CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sNodeID);
+
+            DWORD dwUNID;
+            Ctx.pStream->Read((char *)&dwUNID, sizeof(DWORD));
+            CDesignType *pType = g_pUniverse->FindDesignType(dwUNID);
+
+            int iObjCount;
+            Ctx.pStream->Read((char *)&iObjCount, sizeof(DWORD));
+
+            //	Get the appropriate table
+
+            SObjList *pList = (pNode && pType ? SetList(pNode, pType) : NULL);
+            if (pList)
+                pList->Objects.GrowToFit(iObjCount);
+
+            //  The new version stores everything in one list
+
+            if (SystemCtx.dwVersion >= 132)
+                {
+                for (j = 0; j < iObjCount; j++)
+                    {
+                    Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                    SObjBasics *pObjData = (pList ? pList->Objects.Insert(dwLoad) : NULL);
+
+                    //  Flags
+
+                    Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                    pObjData->fKnown = ((dwLoad & 0x00000002) ? true : false);
+                    pObjData->fShowDestroyed = ((dwLoad & 0x00000004) ? true : false);
+                    pObjData->fShowInMap = ((dwLoad & 0x00000008) ? true : false);
+                    pObjData->fFriendly = ((dwLoad & 0x00000010) ? true : false);
+                    pObjData->fEnemy = ((dwLoad & 0x00000020) ? true : false);
+
+                    //  Extra, if we've got it
+
+                    if (dwLoad & 0x00000001)
+                        {
+                        SObjExtra &Extra = pObjData->SetExtra();
+
+                        Ctx.pStream->Read((char *)&Extra.dwNameFlags, sizeof(DWORD));
+                        Extra.sName.ReadFromStream(Ctx.pStream);
+                        Extra.ImageSel.ReadFromStream(SystemCtx);
+                        Extra.sNotes.ReadFromStream(Ctx.pStream);
+                        }
+                    }
+                }
+
+            //  In old version we read multiple lists
+
+            else
+                {
+                //	Read all the objects
+
+                for (j = 0; j < iObjCount; j++)
+                    {
+                    Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                    if (pList)
+                        pList->Objects.Insert(dwLoad);
+                    }
+
+                //	Read names
+
+                if (Ctx.dwVersion >= 21)
+                    {
+                    Ctx.pStream->Read((char *)&iObjCount, sizeof(DWORD));
+                    for (j = 0; j < iObjCount; j++)
+                        {
+                        DWORD dwObjID;
+                        Ctx.pStream->Read((char *)&dwObjID, sizeof(DWORD));
+
+                        SObjBasics *pObjData;
+                        if (pList && (pObjData = pList->Objects.GetAt(dwObjID)))
+                            {
+                            SObjExtra &Extra = pObjData->SetExtra();
+
+                            Ctx.pStream->Read((char *)&Extra.dwNameFlags, sizeof(DWORD));
+                            Extra.sName.ReadFromStream(Ctx.pStream);
+
+                            if (SystemCtx.dwVersion >= 131)
+                                {
+                                Extra.ImageSel.ReadFromStream(SystemCtx);
+                                Extra.sNotes.ReadFromStream(Ctx.pStream);
+
+                                //  Flags
+
+                                Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                                pObjData->fShowDestroyed = ((dwLoad & 0x00000001) ? true : false);
+                                }
+                            }
+                        else
+                            {
+                            CString sDummy;
+                            Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                            sDummy.ReadFromStream(Ctx.pStream);
+
+                            if (SystemCtx.dwVersion >= 131)
+                                {
+                                CCompositeImageSelector Dummy;
+                                Dummy.ReadFromStream(SystemCtx);
+                                sDummy.ReadFromStream(Ctx.pStream);
+                                Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+                                }
                             }
                         }
                     }
                 }
             }
-		}
+        }
 	}
 
 void CObjectTracker::Refresh (CSystem *pSystem)
@@ -473,9 +685,15 @@ void CObjectTracker::Refresh (CSystem *pSystem)
     if (pNode == NULL)
         return;
 
+    SNodeData *pNodeData = m_ByNode.SetAt(pNode->GetID());
+
     //  Get the player so we can compute disposition
 
     CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+
+    //  See if we need to accumulate orbit information
+
+    bool bAddOrbits = (pNodeData->Orbits.GetCount() == 0);
 
     //  Loop over all objects and refresh them
 
@@ -490,13 +708,21 @@ void CObjectTracker::Refresh (CSystem *pSystem)
         //  Look for the object in our list
 
         SObjBasics *pObjData;
-        if (!Find(pNode, pObj, &pObjData))
+        if (!Find(pNodeData, pObj, &pObjData))
             {
             //  Should never happen because objects are added/deleted at the
             //  appropriate times.
             ASSERT(false);
             continue;
             }
+
+        //  If this object has an orbit, store it.
+
+        const COrbit *pOrbit;
+        if (bAddOrbits 
+                && pObj->ShowMapOrbit()
+                && (pOrbit = pObj->GetMapOrbit()))
+            pNodeData->Orbits.Insert(*pOrbit);
 
         //  Refresh
 
@@ -517,6 +743,7 @@ void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceOb
 
     //  Update flags
 
+    pObjData->vPos = pObj->GetPos();
     pObjData->fKnown = pObj->IsKnown();
     pObjData->fShowDestroyed = pObj->ShowStationDamage();
     pObjData->fShowInMap = pObj->IsShownInGalacticMap();
@@ -583,22 +810,29 @@ CObjectTracker::SObjList *CObjectTracker::SetList (CSpaceObject *pObj)
 
 CObjectTracker::SObjList *CObjectTracker::SetList (CTopologyNode *pNode, CDesignType *pType)
 
-//	GetList
+//	SetList
 //
 //	Returns the list that corresponds to the given object's UNID and NodeID.
 
 	{
+    SNodeData *pNodeData = m_ByNode.SetAt(pNode->GetID());
+    return SetList(pNodeData, pNode, pType);
+	}
+
+CObjectTracker::SObjList *CObjectTracker::SetList (SNodeData *pNodeData, CTopologyNode *pNode, CDesignType *pType)
+
+//  SetList
+//
+//  Returns the list that corresponds to the given object's UNID and node
+
+    {
 	int i;
-
-	//	Look in the index of nodes
-
-	TArray<SObjList *> *pTable = m_ByNode.SetAt(pNode->GetID());
 
 	//	Look for the UNID. If found, return it.
 
-	for (i = 0; i < pTable->GetCount(); i++)
+	for (i = 0; i < pNodeData->ObjLists.GetCount(); i++)
 		{
-		SObjList *pList = pTable->GetAt(i);
+		SObjList *pList = pNodeData->ObjLists.GetAt(i);
 		if (pList->pType == pType)
 			return pList;
 		}
@@ -615,86 +849,125 @@ CObjectTracker::SObjList *CObjectTracker::SetList (CTopologyNode *pNode, CDesign
 
 	//	Add to the index
 
-	pTable->Insert(pNewList);
+	pNodeData->ObjLists.Insert(pNewList);
 
 	//	Done
 
 	return pNewList;
-	}
+    }
 
 void CObjectTracker::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream
 //
-//	Write out all objects
+//	DWORD			No. of nodes
 //
-//	DWORD			No. of lists
+//  For each node:
+//      CString         NodeID
+//      DWORD           No. of lists
 //
-//	For each list:
-//	CString			NodeID
-//	DWORD			UNID
-//	DWORD			No. of objects
+//	    For each list:
+//	    DWORD			Type UNID
+//	    DWORD			No. of objects
 //
-//	For each object
-//	DWORD			ObjID
-//  DWORD           Flags
+//	    For each object:
+//	        DWORD			ObjID
+//          CVector         vPos
+//          DWORD           Flags
 //
-//  If extra data
-//	DWORD			Name Flags
-//	CString			Name
-//  CCompositeImageSelector
-//  CString         Notes
+//          If extra data
+//	        DWORD			Name Flags
+//	        CString			Name
+//          CCompositeImageSelector
+//          CString         Notes
+//
+//      DWORD           No. of orbits
+//      COrbit          List of orbits
 
 	{
 	int i;
 	int j;
 	DWORD dwSave;
 
-	dwSave = m_AllLists.GetCount();
+    //  Write out the total number of nodes that we know about
+
+    dwSave = m_ByNode.GetCount();
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	for (i = 0; i < m_AllLists.GetCount(); i++)
-		{
-		SObjList *pList = m_AllLists[i];
+    //  Loop over each node
 
-		pList->pNode->GetID().WriteToStream(pStream);
+    int iNode;
+    for (iNode = 0; iNode < m_ByNode.GetCount(); iNode++)
+        {
+        //  Save the nodeID
 
-		dwSave = pList->pType->GetUNID();
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+        m_ByNode.GetKey(iNode).WriteToStream(pStream);
 
-		//	Write out all objects
+        //  Write the number of lists for this node.
 
-		dwSave = pList->Objects.GetCount();
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+        dwSave = m_ByNode[iNode].ObjLists.GetCount();
+	    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-		for (j = 0; j < pList->Objects.GetCount(); j++)
-			{
-            SObjBasics &ObjData = pList->Objects[j];
-            dwSave = pList->Objects.GetKey(j);
-			pStream->Write((char *)&dwSave, sizeof(DWORD));
+        //  Write each of the lists
 
-            //  Flags
+	    for (i = 0; i < m_ByNode[iNode].ObjLists.GetCount(); i++)
+		    {
+            SObjList *pList = m_ByNode[iNode].ObjLists[i];
 
-            dwSave = 0;
-            dwSave |= (ObjData.pExtra           ? 0x00000001 : 0);
-            dwSave |= (ObjData.fKnown           ? 0x00000002 : 0);
-            dwSave |= (ObjData.fShowDestroyed   ? 0x00000004 : 0);
-            dwSave |= (ObjData.fShowInMap       ? 0x00000008 : 0);
-            dwSave |= (ObjData.fFriendly        ? 0x00000010 : 0);
-            dwSave |= (ObjData.fEnemy           ? 0x00000020 : 0);
-			pStream->Write((char *)&dwSave, sizeof(DWORD));
+		    dwSave = pList->pType->GetUNID();
+		    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-            //  If we have extra data, save that
+		    //	Write out all objects
 
-            if (ObjData.pExtra)
-                {
-			    pStream->Write((char *)&ObjData.pExtra->dwNameFlags, sizeof(DWORD));
-			    ObjData.pExtra->sName.WriteToStream(pStream);
+		    dwSave = pList->Objects.GetCount();
+		    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-                ObjData.pExtra->ImageSel.WriteToStream(pStream);
-                ObjData.pExtra->sNotes.WriteToStream(pStream);
-                }
-			}
-		}
+		    for (j = 0; j < pList->Objects.GetCount(); j++)
+			    {
+                SObjBasics &ObjData = pList->Objects[j];
+                dwSave = pList->Objects.GetKey(j);
+			    pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+                //  Position
+
+                pStream->Write((char *)&ObjData.vPos, sizeof(CVector));
+
+                //  Flags
+
+                dwSave = 0;
+                dwSave |= (ObjData.pExtra           ? 0x00000001 : 0);
+                dwSave |= (ObjData.fKnown           ? 0x00000002 : 0);
+                dwSave |= (ObjData.fShowDestroyed   ? 0x00000004 : 0);
+                dwSave |= (ObjData.fShowInMap       ? 0x00000008 : 0);
+                dwSave |= (ObjData.fFriendly        ? 0x00000010 : 0);
+                dwSave |= (ObjData.fEnemy           ? 0x00000020 : 0);
+			    pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+                //  If we have extra data, save that
+
+                if (ObjData.pExtra)
+                    {
+			        pStream->Write((char *)&ObjData.pExtra->dwNameFlags, sizeof(DWORD));
+			        ObjData.pExtra->sName.WriteToStream(pStream);
+
+                    ObjData.pExtra->ImageSel.WriteToStream(pStream);
+                    ObjData.pExtra->sNotes.WriteToStream(pStream);
+                    }
+			    }
+		    }
+
+        //  Write each of the orbits
+
+        dwSave = m_ByNode[iNode].Orbits.GetCount();
+	    pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+        //  Write each of the orbits
+
+        for (i = 0; i < m_ByNode[iNode].Orbits.GetCount(); i++)
+            {
+            const COrbit &Orbit = m_ByNode[iNode].Orbits[i];
+	        pStream->Write((char *)&Orbit, sizeof(COrbit));
+            }
+        }
 	}
 

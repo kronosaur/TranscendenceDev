@@ -139,6 +139,35 @@ CItemType *CCompositeImageSelector::GetFlotsamType (DWORD dwID) const
 	return (CItemType *)pEntry->dwExtra;
 	}
 
+DWORD CCompositeImageSelector::GetHash (void) const
+
+//  GetHash
+//
+//  Returns a hash for the structure
+
+    {
+    int i;
+
+    if (m_Sel.GetCount() == 0)
+        return 0;
+
+    DWORD dwHash = GetHash(m_Sel[0]);
+    for (i = 1; i < m_Sel.GetCount(); i++)
+        dwHash = dwHash ^ (GetHash(m_Sel[i]) << i);
+
+    return dwHash;
+    }
+
+DWORD CCompositeImageSelector::GetHash (const SEntry &Entry) const
+
+//  GetHash
+//
+//  Hashes an entry
+
+    {
+    return ((Entry.dwID << 16) | ((DWORD)(Entry.iVariant) & 0xffff)) ^ Entry.dwExtra;
+    }
+
 CShipClass *CCompositeImageSelector::GetShipwreckClass (DWORD dwID) const
 
 //	GetShipwreckClass

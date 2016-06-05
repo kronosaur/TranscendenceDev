@@ -408,6 +408,9 @@
 //  132: 1.7 Alpha 2
 //      Added flags to CObjectTracker
 //
+//  133: 1.7 Alpha 2
+//      Added more data CObjectTracker
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
