@@ -73,6 +73,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_OPERATING_SPEED				CONSTLIT("operatingSpeed")
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
 #define PROPERTY_POWER							CONSTLIT("power")
+#define PROPERTY_POWER_USE						CONSTLIT("powerUse")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 #define PROPERTY_SELECTED_LAUNCHER				CONSTLIT("selectedLauncher")
@@ -2769,7 +2770,7 @@ int CShip::GetPowerConsumption (void)
 	if (m_fTrackFuel)
 		return m_iPowerDrain;
 	else
-		return 1;
+		return 0;
 	}
 
 ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
@@ -2920,9 +2921,11 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateString((m_fHalfSpeed ? SPEED_HALF : SPEED_FULL));
 
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
-		{
 		return CC.CreateBool(m_pController->IsPlayerWingman());
-		}
+
+    else if (strEquals(sName, PROPERTY_POWER_USE))
+        return CC.CreateDouble(GetPowerConsumption() * 100.0);
+
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
 		{
 		for (i = 0; i < GetArmorSectionCount(); i++)
