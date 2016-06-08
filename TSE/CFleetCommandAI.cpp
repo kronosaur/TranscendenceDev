@@ -1223,6 +1223,7 @@ void CFleetCommandAI::UpdateTargetList (void)
 		CSpaceObject *pObj = ObjList.GetObj(i);
 
 		if (pObj != m_pObjective
+                && (pObj->GetCategory() == CSpaceObject::catShip || pObj->GetCategory() == CSpaceObject::catStation)
 				&& pObj->CanAttack()
 				&& pObj != m_pShip)
 			{

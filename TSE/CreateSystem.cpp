@@ -3019,7 +3019,8 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit)
 					&& pObj != pCenter
 					&& !pObj->IsInactive()
 					&& !pObj->IsVirtual()
-					&& pObj->CanAttack())
+					&& pObj->CanAttack()
+                    && (pObj->GetCategory() == CSpaceObject::catShip || pObj->GetCategory() == CSpaceObject::catStation))
 				{
 				Metric rDist2 = (pObj->GetPos() - vTry).Length2();
 				if (rDist2 < rMinActive2)

@@ -7177,6 +7177,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			&& !IsDestroyed()
 			&& Ctx.pPlayer
 			&& Ctx.pPlayer->IsEnemy(this)
+            && (GetCategory() == catShip || GetCategory() == catStation)
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
 		{
