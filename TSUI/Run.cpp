@@ -283,19 +283,19 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			return (g_pHI ? g_pHI->WMKeyUp((int)wParam, lParam) : 0);
 
 		case WM_LBUTTONDBLCLK:
-			return g_pHI->WMLButtonDblClick((int)LOWORD(lParam), (int)HIWORD(lParam), wParam);
+			return g_pHI->WMLButtonDblClick((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_LBUTTONDOWN:
-			return g_pHI->WMLButtonDown((int)LOWORD(lParam), (int)HIWORD(lParam), wParam);
+			return g_pHI->WMLButtonDown((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_LBUTTONUP:
-			return (g_pHI ? g_pHI->WMLButtonUp((int)LOWORD(lParam), (int)HIWORD(lParam), wParam) : 0);
+			return (g_pHI ? g_pHI->WMLButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam) : 0);
 
 		case WM_MOUSEMOVE:
-			return g_pHI->WMMouseMove((int)LOWORD(lParam), (int)HIWORD(lParam), wParam);
+			return g_pHI->WMMouseMove((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_MOUSEWHEEL:
-			return g_pHI->WMMouseWheel((int)(short)HIWORD(wParam), (int)LOWORD(lParam), (int)HIWORD(lParam), (DWORD)LOWORD(wParam));
+			return g_pHI->WMMouseWheel((int)(short)HIWORD(wParam), (int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), (DWORD)LOWORD(wParam));
 
 		case WM_MOVE:
 			return g_pHI->WMMove((int)LOWORD(lParam), (int)HIWORD(lParam));
@@ -310,13 +310,13 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 			}
 
 		case WM_RBUTTONDBLCLK:
-			return g_pHI->WMRButtonDblClick((int)LOWORD(lParam), (int)HIWORD(lParam), wParam);
+			return g_pHI->WMRButtonDblClick((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_RBUTTONDOWN:
-			return g_pHI->WMRButtonDown((int)LOWORD(lParam), (int)HIWORD(lParam), wParam);
+			return g_pHI->WMRButtonDown((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
 		case WM_RBUTTONUP:
-			return (g_pHI ? g_pHI->WMRButtonUp((int)LOWORD(lParam), (int)HIWORD(lParam), wParam) : 0);
+			return (g_pHI ? g_pHI->WMRButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam) : 0);
 
 		case WM_SIZE:
 			return g_pHI->WMSize((int)LOWORD(lParam), (int)HIWORD(lParam), (int)wParam);
@@ -601,6 +601,11 @@ LONG CHumanInterface::WMMouseMove (int x, int y, DWORD dwFlags)
 		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HIMouseMove(xLocal, yLocal, dwFlags);
 		}
+
+    //  Remember the position so we can tell if we moved last time.
+
+    m_xLastMousePos = x;
+    m_yLastMousePos = y;
 
 	return 0;
 	}

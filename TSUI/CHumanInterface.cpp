@@ -20,6 +20,8 @@ CHumanInterface::CHumanInterface (void) :
         m_bLButtonDown(false),
         m_bRButtonDown(false),
 		m_chKeyDown('\0'),
+        m_xLastMousePos(-1),
+        m_yLastMousePos(-1),
 		m_iShutdownCode(HIShutdownUnknown)
 
 //	CHumanInterface constructor
