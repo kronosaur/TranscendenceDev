@@ -13,6 +13,7 @@ class IImagePainter
 		virtual void Blt (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) = 0;
 		virtual void BltMask (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG8bitImage &Mask) = 0;
 		virtual void BltTransformed (CG32bitImage &Dest, const CVector &vPos, const CVector &vScale, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) = 0;
+		virtual void BltTransformedHD (CG32bitImage &Dest, const CVector &vPos, const CVector &vScale, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) = 0;
 
 		virtual void FillMaskTransformed (CG32bitImage &Dest, const CVector &vPos, const CVector &vScale, Metric rRotation, const CG8bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc) = 0;
 	};
@@ -139,6 +140,127 @@ template <class PAINTER, class BLENDER> class TImagePainter : public IImagePaint
 			BltTransformed(Dest, vPos.GetX(), vPos.GetY(), vScale.GetX(), vScale.GetY(), rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
 			}
 
+		virtual void BltTransformedHD (CG32bitImage &Dest, const CVector &vPos, const CVector &vScale, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
+            {
+			CXForm SrcToDest;
+			CXForm DestToSrc;
+			RECT rcDest;
+			if (!CalcBltTransform(vPos.GetX(), vPos.GetY(), vScale.GetX(), vScale.GetY(), mathRadiansToDegrees(rRotation), xSrc, ySrc, cxSrc, cySrc, &SrcToDest, &DestToSrc, &rcDest))
+				return;
+
+			//	Bounds check on the destination
+
+			int cxDest = RectWidth(rcDest);
+			int cyDest = RectHeight(rcDest);
+
+			int xDest = rcDest.left;
+			if (xDest < 0)
+				{
+				cxDest += xDest;
+				xDest = 0;
+				}
+
+			int yDest = rcDest.top;
+			if (yDest < 0)
+				{
+				cyDest += yDest;
+				yDest = 0;
+				}
+
+			if (xDest + cxDest > Dest.GetWidth())
+				cxDest = Dest.GetWidth() - xDest;
+
+			if (yDest + cyDest > Dest.GetHeight())
+				cyDest = Dest.GetHeight() - yDest;
+
+			if (cxDest <= 0 || cyDest <= 0)
+				return;
+
+			int xSrcEnd = xSrc + cxSrc;
+			int ySrcEnd = ySrc + cySrc;
+
+			//	Compute vectors that move us by 1 pixel
+
+			CVector vOrigin = DestToSrc.Transform(CVector(0.0, 0.0));
+			CVector vIncX = DestToSrc.Transform(CVector(1.0, 0.0)) - vOrigin;
+			CVector vIncY = DestToSrc.Transform(CVector(0.0, 1.0)) - vOrigin;
+
+			int iRowHeight = Src.GetPixelPos(0, 1) - Src.GetPixelPos(0, 0);
+
+			//	Loop over every pixel in the destination
+
+			CVector vSrcRow = DestToSrc.Transform(CVector(xDest, yDest));
+			CG32bitPixel *pDestRow = Dest.GetPixelPos(xDest, yDest);
+			CG32bitPixel *pDestRowEnd = Dest.GetPixelPos(xDest, yDest + cyDest);
+			while (pDestRow < pDestRowEnd)
+				{
+				CVector vSrcPos = vSrcRow;
+				CG32bitPixel *pDestPos = pDestRow;
+				CG32bitPixel *pDestPosEnd = pDestRow + cxDest;
+				while (pDestPos < pDestPosEnd)
+					{
+					int xSrcPos = (int)vSrcPos.GetX();
+					int ySrcPos = (int)vSrcPos.GetY();
+
+					if (xSrcPos >= xSrc && xSrcPos + 1 < xSrcEnd
+							&& ySrcPos >= ySrc && ySrcPos + 1< ySrcEnd)
+						{
+						CG32bitPixel *pSrcPos = Src.GetPixelPos(xSrcPos, ySrcPos);
+
+						CG32bitPixel rgbA = FILTER(*pSrcPos, pDestPos);
+						CG32bitPixel rgbB = FILTER(*(pSrcPos + iRowHeight), pDestPos);
+						CG32bitPixel rgbC = FILTER(*(pSrcPos + 1), pDestPos);
+						CG32bitPixel rgbD = FILTER(*(pSrcPos + iRowHeight + 1), pDestPos);
+
+						Metric xf = vSrcPos.GetX() - (Metric)(xSrcPos);
+						Metric yf = vSrcPos.GetY() - (Metric)(ySrcPos);
+
+						Metric ka = (1.0 - xf) * (1.0 - yf);
+						Metric kb = (1.0 - xf) * yf;
+						Metric kc = xf * (1.0 - yf);
+						Metric kd = xf * yf;
+
+                        DWORD alpha = (DWORD)(ka * rgbA.GetAlpha()
+									+ kb * rgbB.GetAlpha()
+									+ kc * rgbC.GetAlpha()
+									+ kd * rgbD.GetAlpha());
+
+                        if (alpha == 0x00)
+                            NULL;
+                        else
+                            {
+							DWORD red = (DWORD)(ka * rgbA.GetRed()
+									+ kb * rgbB.GetRed()
+									+ kc * rgbC.GetRed()
+									+ kd * rgbD.GetRed());
+
+							DWORD green = (DWORD)(ka * rgbA.GetGreen()
+									+ kb * rgbB.GetGreen()
+									+ kc * rgbC.GetGreen()
+									+ kd * rgbD.GetGreen());
+
+							DWORD blue = (DWORD)(ka * rgbA.GetBlue()
+									+ kb * rgbB.GetBlue()
+									+ kc * rgbC.GetBlue()
+									+ kd * rgbD.GetBlue());
+
+							*pDestPos = BLENDER::BlendPreMult(*pDestPos, CG32bitPixel((BYTE)red, (BYTE)green, (BYTE)blue, (BYTE)alpha));
+                            }
+						}
+
+					//	Next
+
+					vSrcPos = vSrcPos + vIncX;
+					pDestPos++;
+					}
+
+				//	Next row
+
+				vSrcRow = vSrcRow + vIncY;
+				pDestRow = Dest.NextRow(pDestRow);
+				}
+            }
+
 		void BltTransformed (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
 			{
 			CXForm SrcToDest;
@@ -240,7 +362,7 @@ template <class PAINTER, class BLENDER> class TImagePainter : public IImagePaint
 									+ kc * rgbC.GetBlue()
 									+ kd * rgbD.GetBlue());
 
-							*pDestPos = BLENDER::Blend(*pDestPos, CG32bitPixel((BYTE)red, (BYTE)green, (BYTE)blue, byAlpha));
+							*pDestPos = BLENDER::BlendPreMult(*pDestPos, CG32bitPixel((BYTE)red, (BYTE)green, (BYTE)blue, byAlpha));
 							}
 						}
 

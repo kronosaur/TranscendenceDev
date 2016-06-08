@@ -1023,6 +1023,41 @@ void CGDraw::BltTransformedGray (CG32bitImage &Dest, Metric rX, Metric rY, Metri
 		}
 	}
 
+void CGDraw::BltTransformedHD (CG32bitImage &Dest, Metric rX, Metric rY, Metric rScaleX, Metric rScaleY, Metric rRotation, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, EBlendModes iMode)
+
+	{
+	switch (iMode)
+		{
+		case blendNormal:
+			{
+			TBltImageNormal<CGBlendBlend> Painter;
+			Painter.BltTransformedHD(Dest, CVector(rX, rY), CVector(rScaleX, rScaleY), rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+			break;
+			}
+
+		case blendHardLight:
+			{
+			TBltImageNormal<CGBlendHardLight> Painter;
+			Painter.BltTransformedHD(Dest, CVector(rX, rY), CVector(rScaleX, rScaleY), rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+			break;
+			}
+
+		case blendScreen:
+			{
+			TBltImageNormal<CGBlendScreen> Painter;
+			Painter.BltTransformedHD(Dest, CVector(rX, rY), CVector(rScaleX, rScaleY), rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			TBltImageNormal<CGBlendComposite> Painter;
+			Painter.BltTransformedHD(Dest, CVector(rX, rY), CVector(rScaleX, rScaleY), rRotation, Src, xSrc, ySrc, cxSrc, cySrc);
+			break;
+			}
+		}
+	}
+
 void CGDraw::BltWithBackColor (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG32bitPixel rgbBackColor)
 	
 	{

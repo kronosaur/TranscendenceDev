@@ -172,6 +172,12 @@ class CXForm
 
 const CXForm operator* (const CXForm &op1, const CXForm &op2);
 
+//  3D Projection --------------------------------------------------------------
+
+class C3DProjection
+    {
+    };
+
 //	Shapes ---------------------------------------------------------------------
 
 void CreateArcPolygon (Metric rInnerRadius, Metric rOuterRadius, int iArc, TArray<CVector> *retPoints);

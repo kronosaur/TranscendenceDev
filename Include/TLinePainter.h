@@ -159,10 +159,29 @@ template <class PAINTER, class BLENDER> class TLinePainter32 : public ILinePaint
             CG32bitPixel rgbColor = GET_PIXEL(rV, rW);
             BYTE byOpacity = (BYTE)(DWORD)(255.0 * (rEdge > 1.0 ? 1.0 : rEdge));
             if (rgbColor.GetAlpha() == 0xff)
-                return CG32bitPixel(rgbColor, byOpacity);
+                return CG32bitPixel::PreMult(rgbColor, byOpacity);
             else
-                return CG32bitPixel(rgbColor, CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), byOpacity));
+                return CG32bitPixel(CG32bitPixel::PreMult(rgbColor, byOpacity), CG32bitPixel::BlendAlpha(rgbColor.GetAlpha(), byOpacity));
             }
+    };
+
+template <class BLENDER> class TLinePainterSolid : public TLinePainter32<TLinePainterSolid<BLENDER>, BLENDER>
+    {
+    public:
+        TLinePainterSolid (CG32bitPixel rgbColor)
+            {
+            if (rgbColor.GetAlpha() == 0xff)
+                m_rgbColor = rgbColor;
+            else
+                m_rgbColor = CG32bitPixel::PreMult(rgbColor);
+            }
+
+    private:
+        inline CG32bitPixel GetPixel (Metric rV, Metric rW) const { return m_rgbColor; }
+
+        CG32bitPixel m_rgbColor;
+
+    friend TLinePainter32;
     };
 
 class CLinePainter

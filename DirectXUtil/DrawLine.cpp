@@ -1114,13 +1114,41 @@ void CGDraw::LineGradient (CG32bitImage &Dest, int x1, int y1, int x2, int y2, i
 		LineBresenhamGradientTrans(Dest, x1, y1, x2, y2, iWidth, rgbColor1, rgbColor2);
 	}
 
-void CGDraw::LineHD (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor)
+void CGDraw::LineHD (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor, EBlendModes iMode)
 
 //	LineHD
 //
 //	Draw a high-quality line. [This is better for thicker lines.]
 
 	{
-	CLinePainter LinePainter;
-	LinePainter.DrawSolid(Dest, x1, y1, x2, y2, iWidth, rgbColor);
+    switch (iMode)
+        {
+		case blendNormal:
+            {
+	        CLinePainter LinePainter;
+	        LinePainter.DrawSolid(Dest, x1, y1, x2, y2, iWidth, rgbColor);
+            break;
+            }
+
+		case blendHardLight:
+            {
+            TLinePainterSolid<CGBlendHardLight> LinePainter(rgbColor);
+            LinePainter.Draw(Dest, x1, y1, x2, y2, iWidth);
+            break;
+            }
+
+		case blendScreen:
+            {
+            TLinePainterSolid<CGBlendScreen> LinePainter(rgbColor);
+            LinePainter.Draw(Dest, x1, y1, x2, y2, iWidth);
+            break;
+            }
+
+		case blendCompositeNormal:
+            {
+            TLinePainterSolid<CGBlendComposite> LinePainter(rgbColor);
+            LinePainter.Draw(Dest, x1, y1, x2, y2, iWidth);
+            break;
+            }
+        }
 	}
