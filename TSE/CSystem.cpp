@@ -4759,7 +4759,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		{
 		CSpaceObject *pObj = GetObject(i);
 
-		if (pObj && pObj->IsMobile() && !pObj->IsTimeStopped())
+		if (pObj 
+                && !pObj->IsDestroyed()
+                && pObj->IsMobile() 
+                && !pObj->IsTimeStopped())
 			{
 			//	Move the objects
 

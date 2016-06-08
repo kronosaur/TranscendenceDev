@@ -5582,8 +5582,13 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 				CSpaceObject *pBarrier = Barriers.GetObj(i);
 
 				//	If this barrier doesn't block us, then nothing to do
+                //
+                //  NOTE: We make sure the barrier is not destroyed because it
+                //  could have been destroyed in a gravity well AFTER we added
+                //  it to the barrier list.
 
 				if (pBarrier == this 
+                        || pBarrier->IsDestroyed()
 						|| !pBarrier->CanBlock(this))
 					continue;
 
