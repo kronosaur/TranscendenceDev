@@ -458,6 +458,14 @@ bool CReanimator::HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 	if (m_pInputFocus == NULL)
 		return false;
 
+    //  If we're not over a reanimator element, then we don't handle it.
+
+    SAniHitTestResult Result(x, y);
+    if (!HitTest(Result))
+        return false;
+
+    //  Let the input control handle it.
+
 	return m_pInputFocus->HandleMouseWheel(iDelta, x, y, dwFlags);
 	}
 
