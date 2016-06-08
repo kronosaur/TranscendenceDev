@@ -929,7 +929,7 @@ CString ComposeNounPhrase (const CString &sNoun,
 				case 'U':
 				case 'u':
 					{
-					if (dwNounFlags & nounVowelArticle)
+					if ((dwNounFlags & nounVowelArticle) && sModifier.IsBlank())
 						sArticle = CONSTLIT("a ");
 					else
 						sArticle = CONSTLIT("an ");
@@ -938,7 +938,7 @@ CString ComposeNounPhrase (const CString &sNoun,
 
 				default:
 					{
-					if (dwNounFlags & nounVowelArticle)
+					if ((dwNounFlags & nounVowelArticle) && sModifier.IsBlank())
 						sArticle = CONSTLIT("an ");
 					else
 						sArticle = CONSTLIT("a ");
