@@ -3592,11 +3592,11 @@ CEffectCreator *CShipClass::OnFindEffectCreator (const CString &sUNID)
 		}
 	}
 
-CString CShipClass::OnGetMapDescriptionExtra (SMapDescriptionCtx &Ctx) const
+CString CShipClass::OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const
 
-//  OnGetMapDescriptionExtra
+//  OnGetMapDescriptionMain
 //
-//  Returns a map description
+//  Returns a map description. This always gets prepended to any other descriptions.
 
     {
     if (Ctx.bEnemy)

@@ -76,6 +76,7 @@
 #define LANGID_CORE_MAP_DESC                    CONSTLIT("core.mapDesc")
 #define LANGID_CORE_MAP_DESC_ABANDONED          CONSTLIT("core.mapDescAbandoned")
 #define LANGID_CORE_MAP_DESC_EXTRA              CONSTLIT("core.mapDescExtra")
+#define LANGID_CORE_MAP_DESC_MAIN				CONSTLIT("core.mapDescMain")
 
 #define PROPERTY_API_VERSION					CONSTLIT("apiVersion")
 #define PROPERTY_CLASS							CONSTLIT("class")
@@ -1443,8 +1444,8 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         //  ask the subclass
 
         CString sMainDesc;
-        if (!TranslateText(NULL, LANGID_CORE_MAP_DESC_EXTRA, NULL, &sMainDesc))
-            sMainDesc = OnGetMapDescriptionExtra(Ctx);
+        if (!TranslateText(NULL, LANGID_CORE_MAP_DESC_MAIN, NULL, &sMainDesc))
+            sMainDesc = OnGetMapDescriptionMain(Ctx);
 
         //  Get the trade descriptor
 

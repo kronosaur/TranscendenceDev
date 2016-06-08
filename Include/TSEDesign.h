@@ -520,7 +520,7 @@ class CDesignType
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const { return false; }
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
-		virtual CString OnGetMapDescriptionExtra (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
+		virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
 		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) { return NULL; }
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const { return sAttrib.IsBlank(); }
 		virtual void OnInitFromClone (CDesignType *pSource) { ASSERT(false); }
@@ -2508,7 +2508,7 @@ class CShipClass : public CDesignType
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
-        virtual CString OnGetMapDescriptionExtra (SMapDescriptionCtx &Ctx) const override;
+        virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const override;
 		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual void OnInitFromClone (CDesignType *pSource) override;
@@ -3101,7 +3101,7 @@ class CTradingDesc
 		bool GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
 		inline CEconomyType *GetEconomyType (void) { return m_pCurrency; }
 		inline int GetMaxCurrency (void) { return m_iMaxCurrency; }
-		int GetMaxLevelMatched (ETradeServiceTypes iService) const;
+		int GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescriptionOnly = false) const;
 		bool GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
 		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
 		bool HasService (ETradeServiceTypes iService) const;
@@ -3131,6 +3131,7 @@ class CTradingDesc
 			FLAG_ACTUAL_PRICE =			0x00000004,	//	TRUE if we compute actual price
 			FLAG_INVENTORY_ADJ =		0x00000008,	//	TRUE if we adjust the inventory
 			FLAG_UPGRADE_INSTALL_ONLY =	0x00000020,	//	TRUE if we must purchase an item to install
+            FLAG_NO_DESCRIPTION =       0x00000040, //  If TRUE, we exclude this service from ComposeDescription
 
 			//	DEPRECATED: We don't store these flags, but we require the values
 			//	for older versions.
@@ -3164,12 +3165,21 @@ class CTradingDesc
 			DWORD dwFlags;						//	Flags
 			};
 
+        struct SServiceInfo
+            {
+            bool bAvailable;                    //  Service available
+            int iMaxLevel;                      //  Max level for this service
+            bool bUpdateInstallOnly;            //  Requires purchase
+            };
+
 		void AddOrder (CItemType *pItemType, const CString &sCriteria, int iPriceAdj, DWORD dwFlags);
 		CString ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags);
 		int ComputeMaxCurrency (CSpaceObject *pObj);
 		int ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags);
 		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc);
 		bool FindService (ETradeServiceTypes iService, CSpaceObject *pShip, const SServiceDesc **retpDesc);
+        bool GetServiceInfo (ETradeServiceTypes iService, SServiceInfo &Info) const;
+		bool HasServiceDescription (ETradeServiceTypes iService) const;
 		bool Matches (const CItem &Item, const SServiceDesc &Commodity) const;
 		bool Matches (CDesignType *pType, const SServiceDesc &Commodity) const;
 		void ReadServiceFromFlags (DWORD dwFlags, ETradeServiceTypes *retiService, DWORD *retdwFlags);

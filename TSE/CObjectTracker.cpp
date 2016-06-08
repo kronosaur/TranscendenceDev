@@ -4,8 +4,6 @@
 
 #include "PreComp.h"
 
-#define LANGID_DESC_GALACTIC_MAP                CONSTLIT("core.mapDesc")
-#define LANGID_DESC_GALACTIC_MAP_ABANDONED      CONSTLIT("core.mapDescAbandoned")
 #define LANGID_DESC_GALACTIC_MAP_CUSTOM         CONSTLIT("core.mapDescCustom")
 #define LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM CONSTLIT("core.mapDescAbandonedCustom")
 
