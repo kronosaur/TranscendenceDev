@@ -6,9 +6,24 @@
 #include "stdafx.h"
 
 const int NODE_RADIUS =						6;
-const int SELECTION_RADIUS =                12;
-const int STARGATE_LINE_WIDTH =				3;
+const int HIT_TEST_RADIUS =                 8;
+const int SELECTION_RADIUS =                24;
+const int SELECTION_WIDTH =                 4;
+const int STARGATE_LINE_WIDTH =				1;
 const int MIN_NODE_MARGIN =					64;
+
+const int NAME_PADDING_X =                  4;
+const int NAME_SPACING_Y =                  4;
+const int CORNER_RADIUS =                   2;
+
+const Metric MIN_SYSTEM_THUMB_SCALE =       0.5;
+
+const CG32bitPixel RGB_STARGATE =		    CG32bitPixel(178, 217, 255);    //  H:210 S:30 B:100
+const CG32bitPixel RGB_SYSTEM_NAME =		CG32bitPixel(128, 191, 255);    //  H:210 S:50 B:100
+//const CG32bitPixel RGB_SYSTEM_NAME =	    CG32bitPixel(204, 184, 163);    //  H:30  S:20 B:80
+//const CG32bitPixel RGB_SYSTEM_NAME =	    CG32bitPixel(143, 159, 179);    //  H:210 S:20 B:70
+//const CG32bitPixel RGB_SYSTEM_NAME =        CG32bitPixel(115, 121, 128);    //  H:210 S:10 B:50
+const CG32bitPixel RGB_SYSTEM_NAME_BACK =   CG32bitPixel(23, 24, 26, 96);  //  H:210 S:10 B:20
 
 CGalacticMapPainter::CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *pMap, CSystemMapThumbnails &SystemMapThumbnails) : m_VI(VI),
 		m_pMap(pMap),
@@ -18,6 +33,7 @@ CGalacticMapPainter::CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *
 		m_bFreeImage(false),
 		m_pImage(NULL),
         m_pSelected(NULL),
+        m_iSelectAngle(0),
         m_iScale(100),
         m_xCenter(0),
         m_yCenter(0)
@@ -85,28 +101,37 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 //	Draws a topology node
 
 	{
+    const CG16bitFont &NameFont = m_VI.GetFont(fontMedium);
+
     //  Draw selection, if necessary
 
     if (pNode == m_pSelected)
-        {
-        CGDraw::Circle(Dest, x, y, SELECTION_RADIUS, m_VI.GetColor(colorAreaDialogHighlight));
-        }
+        DrawSelection(Dest, x, y, m_VI.GetColor(colorAreaDialogHighlight));
 
-    //  Draw the node
+    //  Draw the node (either as a full system thumbnail or just the stars)
 
-#if 0
-	CGDraw::CircleGradient(Dest, x + 2, y + 2, NODE_RADIUS + 1, 0);
-	CGDraw::Circle(Dest, x, y, NODE_RADIUS, rgbColor);
-	CGDraw::CircleGradient(Dest, x - 2, y - 2, NODE_RADIUS - 3, CG32bitPixel(0xff, 0xff, 0xff));
+#ifdef FULL_SYSTEM_THUMBNAILS
+    bool bFullSystem = ((pNode->GetLastVisitedTime() != 0xffffffff) && rScale > MIN_SYSTEM_THUMB_SCALE);
 #else
-    m_SystemMapThumbnails.DrawThumbnail(pNode, Dest, x, y, rScale);
+    bool bFullSystem = false;
 #endif
 
-	m_VI.GetFont(fontMediumBold).DrawText(Dest,
-			x, y + NODE_RADIUS + 2,
-			CG32bitPixel(255, 255, 255),
+    m_SystemMapThumbnails.DrawThumbnail(pNode, Dest, x, y, bFullSystem, rScale);
+
+    //  Draw the name label
+
+    int cxName = NameFont.MeasureText(pNode->GetSystemName());
+    int cxNameBack = cxName + 2 * NAME_PADDING_X;
+    int xNameBack = x - (cxNameBack / 2);
+    int yName = y + NODE_RADIUS + NAME_SPACING_Y;
+
+    CGDraw::RoundedRect(Dest, xNameBack, yName, cxNameBack, NameFont.GetHeight(), CORNER_RADIUS, RGB_SYSTEM_NAME_BACK);
+
+	NameFont.DrawText(Dest,
+			xNameBack + NAME_PADDING_X, yName,
+			RGB_SYSTEM_NAME,
 			pNode->GetSystemName(),
-			CG16bitFont::AlignCenter);
+			0);
 
 	//	Debug info
 
@@ -127,6 +152,28 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 				CG16bitFont::AlignCenter);
 		}
 	}
+
+void CGalacticMapPainter::DrawSelection (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const
+
+//  DrawSelection
+//
+//  Draws a selection
+
+    {
+    int i;
+    const int ANGLE_INC = 90;
+
+    //  Draw four arcs
+
+    int iAngle = m_iSelectAngle;
+    for (i = 0; i < 4; i++)
+        {
+        CGDraw::Arc(Dest, x, y, SELECTION_RADIUS, iAngle, iAngle + ANGLE_INC, SELECTION_WIDTH, rgbColor, CGDraw::blendNormal, SELECTION_WIDTH, 0);
+        iAngle += ANGLE_INC;
+        }
+
+    m_iSelectAngle = AngleMod(m_iSelectAngle + 1);
+    }
 
 void CGalacticMapPainter::GalacticToView (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
 
@@ -167,7 +214,7 @@ bool CGalacticMapPainter::HitTest (int x, int y, SSelectResult &Result) const
 
         int xDiff = Absolute(xNode - xPos);
         int yDiff = Absolute(yNode - yPos);
-        if (xDiff < SELECTION_RADIUS && yDiff < SELECTION_RADIUS)
+        if (xDiff < HIT_TEST_RADIUS && yDiff < HIT_TEST_RADIUS)
             {
             Result.pNode = pNode;
             return true;
@@ -250,6 +297,10 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
     Metric rScale = m_iScale / 400.0;
 
+    //  Compute the stargate line width based on scale
+
+    int iStargateLine = Max(1, mathRound(STARGATE_LINE_WIDTH * (Metric)m_iScale / 100.0));
+
 	//	Paint the image, if we have it
 
 	if (m_cxMap > 0 && m_cyMap > 0)
@@ -257,7 +308,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 		//	Compute some metrics
 
 		CG32bitPixel rgbNodeColor = CG32bitPixel(255, 200, 128);
-		CG32bitPixel rgbStargateColor = CG32bitPixel(160, 255, 128);
+		CG32bitPixel rgbStargateColor = (m_pMap ? m_pMap->GetStargateLineColor() : RGB_STARGATE);
 
 		int cxWidth = (m_pImage ? m_pImage->GetWidth() : 0);
 		int cyHeight = (m_pImage ? m_pImage->GetHeight() : 0);
@@ -354,7 +405,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 									{
 									SPoint ptFrom = Xform(RouteDesc.MidPoints[iCurMid - 1]);
 
-									Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, STARGATE_LINE_WIDTH, rgbStargateColor);
+									Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, iStargateLine, rgbStargateColor);
 									}
 
 								//	Otherwise, we draw a curve
@@ -365,7 +416,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 									SPoint ptFrom = (iCurMid > 0 ? Xform(RouteDesc.MidPoints[iCurMid - 1]) : Start);
 									SPoint ptTo = (iCurMid + 1 < RouteDesc.MidPoints.GetCount() ? Xform(RouteDesc.MidPoints[iCurMid + 1]) : End);
 
-									CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, STARGATE_LINE_WIDTH, rgbStargateColor);
+									CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, iStargateLine, rgbStargateColor);
 									}
 
 								iCurMid += 2;
@@ -386,7 +437,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 						//	Otherwise, straight line
 
 						else
-							Dest.DrawLine(Start.x, Start.y, End.x, End.y, STARGATE_LINE_WIDTH, rgbStargateColor);
+							Dest.DrawLine(Start.x, Start.y, End.x, End.y, iStargateLine, rgbStargateColor);
 						}
 					}
 

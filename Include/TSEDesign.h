@@ -1580,6 +1580,7 @@ class CTopologyNode
 		inline const CString &GetEpitaph (void) { return m_sEpitaph; }
 		inline const CString &GetID (void) const { return m_sID; }
 		CTopologyNode *GetGateDest (const CString &sName, CString *retsEntryPoint = NULL);
+        DWORD GetLastVisitedTime (void) const;
 		inline int GetLevel (void) { return m_iLevel; }
 		ICCItem *GetProperty (const CString &sName);
 		inline int GetStargateCount (void) { return m_NamedGates.GetCount(); }
@@ -4032,6 +4033,7 @@ class CSystemMap : public CDesignType
         inline Metric GetLightYearsPerPixel (void) const { return m_rLightYearsPerPixel; }
 		inline const CString &GetName (void) const { return m_sName; }
 		inline void GetScale (int *retiInitial, int *retiMin, int *retiMax) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
+        inline CG32bitPixel GetStargateLineColor (void) const { return m_rgbStargateLines; }
 		inline const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
 		inline bool IsStartingMap (void) const { return m_bStartingMap; }
 		ALERROR ProcessTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
@@ -4069,6 +4071,7 @@ class CSystemMap : public CDesignType
 		int m_iMaxScale;						//	Max zoom
 		int m_iMinScale;						//	Min zoom
         Metric m_rLightYearsPerPixel;           //  Number of light years per pixel
+        CG32bitPixel m_rgbStargateLines;        //  Color of stargate line
 
 		CSystemMapRef m_pPrimaryMap;			//	If not NULL, place nodes on given map
 		TArray<CSystemMapRef> m_Uses;			//	List of maps that we rely on.

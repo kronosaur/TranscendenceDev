@@ -355,6 +355,41 @@ void CObjectTracker::GetSystemBackgroundObjects (CTopologyNode *pNode, TSortMap<
         }
     }
 
+void CObjectTracker::GetSystemStarObjects (CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const
+
+//  GetSystemStarObjects
+//
+//  Returns a list of stars
+
+    {
+    int i, j;
+
+    Results.DeleteAll();
+
+    SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    if (pNodeData == NULL)
+        return;
+
+    for (i = 0; i < pNodeData->ObjLists.GetCount(); i++)
+        {
+        CStationType *pType = CStationType::AsType(pNodeData->ObjLists[i]->pType);
+        if (pType == NULL)
+            continue;
+
+        if (pType->GetScale() != scaleStar)
+            continue;
+
+        for (j = 0; j < pNodeData->ObjLists[i]->Objects.GetCount(); j++)
+            {
+            SObjBasics *pObjData = &pNodeData->ObjLists[i]->Objects[j];
+            SBackgroundObjEntry *pSysObj = Results.Insert();
+            pSysObj->pType = pType;
+            pSysObj->vPos = pObjData->vPos;
+            pSysObj->pImageSel = (pObjData->pExtra ? &pObjData->pExtra->ImageSel : NULL);
+            }
+        }
+    }
+
 const TArray<COrbit> &CObjectTracker::GetSystemOrbits (CTopologyNode *pNode) const
 
 //  GetSystemOrbits

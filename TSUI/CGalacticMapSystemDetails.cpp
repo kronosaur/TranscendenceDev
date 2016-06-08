@@ -305,15 +305,10 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
             &cyText);
     y += cyText;
 
-    //  Figure out when we last visited the system.
-
-    IPlayerController *pPlayer = g_pUniverse->GetPlayer();
-    CPlayerGameStats *pStats = (pPlayer ? pPlayer->GetGameStats() : NULL);
-    DWORD dwLastVisit = (pStats ? pStats->GetSystemLastVisitedTime(pTopology->GetID()) : 0xffffffff);
-
     //  Compose a string indicating when we visited.
 
     CString sVisit;
+    DWORD dwLastVisit = pTopology->GetLastVisitedTime();
     if (dwLastVisit == 0xffffffff)
         sVisit = CONSTLIT("You've never visited this system.");
     else if (dwLastVisit == (DWORD)g_pUniverse->GetTicks())

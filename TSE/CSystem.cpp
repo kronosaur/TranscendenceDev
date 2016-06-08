@@ -983,7 +983,7 @@ void CSystem::ComputeMapLabels (void)
 			{
 			Labels[iLabelCount].pObj = pObj;
 			Trans.Transform(pObj->GetPos(), &Labels[iLabelCount].x, &Labels[iLabelCount].y);
-			Labels[iLabelCount].cxLabel = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).MeasureText(pObj->GetName(NULL));
+			Labels[iLabelCount].cxLabel = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).MeasureText(pObj->GetNounPhrase(0));
 
 			SetLabelRight(Labels[iLabelCount], cyChar);
 

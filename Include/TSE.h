@@ -721,8 +721,11 @@ class COrbit
 		inline const Metric &GetSemiMajorAxis (void) const { return m_rSemiMajorAxis; }
 		inline bool IsNull (void) const { return (m_rSemiMajorAxis == 0.0); }
 		void Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor);
+        void PaintHD (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor, CGDraw::EBlendModes iMode = CGDraw::blendNormal);
 
 	private:
+        CG32bitPixel GetColorAtRadiusHD (CG32bitPixel rgbColor, Metric rRadius) const;
+
 		CVector m_vFocus;				//	Focus of orbit
 		Metric m_rEccentricity;			//	Ellipse eccentricity
 		Metric m_rSemiMajorAxis;		//	Semi-major axis
@@ -3102,6 +3105,7 @@ class CObjectTracker
 		bool Find (const CString &sNodeID, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
         void GetGalacticMapObjects (CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
         void GetSystemBackgroundObjects (CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const;
+        void GetSystemStarObjects (CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const;
         const TArray<COrbit> &GetSystemOrbits (CTopologyNode *pNode) const;
 		void Insert (CSpaceObject *pObj);
 		void ReadFromStream (SUniverseLoadCtx &Ctx);

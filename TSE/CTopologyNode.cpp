@@ -520,6 +520,20 @@ CTopologyNode *CTopologyNode::GetGateDest (const CString &sName, CString *retsEn
 	return pDesc->pDestNode;
 	}
 
+DWORD CTopologyNode::GetLastVisitedTime (void) const
+
+//  GetLastVisitedTime
+//
+//  Returns the most recent tick when the player was in the given system. If 
+//  the player never visited the system, we return 0xFFFFFFFF. If the player
+//  is currently in the system, we return the current tick.
+
+    {
+    IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+    CPlayerGameStats *pStats = (pPlayer ? pPlayer->GetGameStats() : NULL);
+    return (pStats ? pStats->GetSystemLastVisitedTime(GetID()) : 0xffffffff);
+    }
+
 ICCItem *CTopologyNode::GetProperty (const CString &sName)
 
 //	GetProperty

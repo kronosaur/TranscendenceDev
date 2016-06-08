@@ -9,6 +9,9 @@
 
 const Metric SYSTEM_RADIUS =            LIGHT_SECOND * 1200.0;
 const Metric IMAGE_SCALE =              3000.0;
+const Metric STAR_IMAGE_SCALE =         0.1;
+
+const Metric STAR_THUMB_RADIUS =        32.0;   //  Separation of stars, in pixels, at scale = 1.0
 
 const CG32bitPixel RGB_MAP_ORBIT =		CG32bitPixel(115, 149, 229);
 
@@ -36,8 +39,6 @@ void CSystemMapThumbnails::CleanUp (void)
 
     {
     int i;
-    for (i = 0; i < m_Cache.GetCount(); i++)
-        delete m_Cache[i];
 
     m_Cache.DeleteAll();
 
@@ -49,28 +50,193 @@ void CSystemMapThumbnails::CleanUp (void)
     m_pSystemData = NULL;
     }
 
-void CSystemMapThumbnails::DrawThumbnail (CTopologyNode *pNode, CG32bitImage &Dest, int x, int y, Metric rScale) const
+bool CSystemMapThumbnails::CreateThumbnail (CTopologyNode *pNode, bool bFullSystem, CG32bitImage &Result) const
+
+//  CreateThumbnail
+//
+//  Creates a system thumbnail
+
+    {
+    int i;
+
+    if (m_pSystemData == NULL)
+        return false;
+
+    //  Create the image
+
+    Result.Create(m_cxThumb, m_cyThumb, CG32bitImage::alpha8, CG32bitPixel::Null());
+
+    //  Compute a transform
+
+    RECT rcThumb;
+    rcThumb.left = 0;
+    rcThumb.top = 0;
+    rcThumb.right = m_cxThumb;
+    rcThumb.bottom = m_cyThumb;
+    CMapViewportCtx Ctx(NULL, rcThumb, m_rMapScale);
+
+    //  Paint orbits
+
+#ifndef DEBUG
+    if (bFullSystem)
+        {
+        const TArray<COrbit> &Orbits = m_pSystemData->GetSystemOrbits(pNode);
+        for (i = 0; i < Orbits.GetCount(); i++)
+            Orbits[i].PaintHD(Ctx, Result, RGB_MAP_ORBIT, CGDraw::blendCompositeNormal);
+        }
+#endif
+
+    //  Get the list of objects to paint
+
+    TSortMap<Metric, CObjectTracker::SBackgroundObjEntry> Objs(DescendingSort);
+    m_pSystemData->GetSystemBackgroundObjects(pNode, Objs);
+
+    //  Paint all objects
+
+    for (i = 0; i < Objs.GetCount(); i++)
+        {
+        const CObjectTracker::SBackgroundObjEntry &ObjData = Objs[i];
+        CG32bitImage *pObjImage = GetObjImage(ObjData);
+        if (pObjImage == NULL)
+            continue;
+
+        //  If we're not painting the full system, then we only paint stars
+
+        if (!bFullSystem && ObjData.pType->GetScale() != scaleStar)
+            continue;
+
+        //  Paint
+
+        int xPos, yPos;
+        Ctx.Transform(ObjData.vPos, &xPos, &yPos);
+
+        Result.Composite(0, 0, pObjImage->GetWidth(), pObjImage->GetHeight(), 255, *pObjImage, xPos - (pObjImage->GetWidth() / 2), yPos - (pObjImage->GetHeight() / 2));
+        }
+
+    //  Done
+
+    return true;
+    }
+
+bool CSystemMapThumbnails::CreateThumbnailStars (CTopologyNode *pNode, TArray<SStarDesc> &Result) const
+
+//  CreateThumbnailStars
+//
+//  Initializes the result array with the set of stars in this node
+
+    {
+    int i;
+
+    if (m_pSystemData == NULL)
+        return false;
+
+    //  Get the list of objects to paint
+
+    TArray<CObjectTracker::SBackgroundObjEntry> Objs;
+    m_pSystemData->GetSystemStarObjects(pNode, Objs);
+
+    //  Short-circuit
+
+    if (Objs.GetCount() == 0)
+        return false;
+
+    //  If we only have a single star, then we always position it at the center.
+
+    else if (Objs.GetCount() == 1)
+        {
+        const CObjectTracker::SBackgroundObjEntry &ObjData = Objs[0];
+
+        SStarDesc *pStar = Result.Insert();
+        pStar->pStar = GetObjImage(ObjData);
+        pStar->vPos = CVector();
+        }
+
+    //  Otherwise, we scale all the stars so they fit
+
+    else
+        {
+        Metric rLongestDist = Objs[0].vPos.Length();
+        for (i = 1; i < Objs.GetCount(); i++)
+            {
+            const CObjectTracker::SBackgroundObjEntry &ObjData = Objs[i];
+            Metric rDist = ObjData.vPos.Length();
+            if (rDist > rLongestDist)
+                rLongestDist = rDist;
+            }
+
+        //  We scale positions so that the farthest star is at the max radius.
+
+        Metric rScale = (rLongestDist > 0.0 ? (STAR_THUMB_RADIUS / rLongestDist) : 0.0);
+
+        //  Now add all stars
+
+        Result.InsertEmpty(Objs.GetCount());
+        for (i = 0; i < Objs.GetCount(); i++)
+            {
+            const CObjectTracker::SBackgroundObjEntry &ObjData = Objs[i];
+            Result[i].pStar = GetObjImage(ObjData);
+            Result[i].vPos = rScale * ObjData.vPos;
+            }
+        }
+
+    //  Done
+
+    return true;
+    }
+
+void CSystemMapThumbnails::DrawThumbnail (CTopologyNode *pNode, CG32bitImage &Dest, int x, int y, bool bFullSystem, Metric rScale) const
 
 //  DrawThumbnail
 //
 //  Draws the given thumbnail.
 
     {
-    CG32bitImage *pImage = GetThumbnail(pNode);
-    if (pImage == NULL)
-        return;
+    int i;
 
-    CGDraw::BltTransformed(Dest,
-            x,
-            y,
-            rScale,
-            rScale,
-            0.0,
-            *pImage,
-            0,
-            0,
-            pImage->GetWidth(),
-            pImage->GetHeight());
+    //  For a full system, get the thumbnail image (from the cache, if possible)
+    //  and paint it.
+
+    if (bFullSystem)
+        {
+        CG32bitImage *pImage = GetThumbnail(pNode, bFullSystem);
+        if (pImage == NULL)
+            return;
+
+        CGDraw::BltTransformedHD(Dest,
+                x,
+                y,
+                rScale,
+                rScale,
+                0.0,
+                *pImage,
+                0,
+                0,
+                pImage->GetWidth(),
+                pImage->GetHeight());
+        }
+
+    //  Otherwise, we draw just the stars
+
+    else
+        {
+        const TArray<SStarDesc> &Stars = GetThumbnailStars(pNode);
+
+        for (i = 0; i < Stars.GetCount(); i++)
+            {
+            CGDraw::BltTransformedHD(Dest,
+                    x + rScale * Stars[i].vPos.GetX(),
+                    y - rScale * Stars[i].vPos.GetY(),
+                    rScale,
+                    rScale,
+                    0.0,
+                    *Stars[i].pStar,
+                    0,
+                    0,
+                    Stars[i].pStar->GetWidth(),
+                    Stars[i].pStar->GetHeight(),
+                    CGDraw::blendNormal);
+            }
+        }
     }
 
 CG32bitImage *CSystemMapThumbnails::GetObjImage (const CObjectTracker::SBackgroundObjEntry &ObjEntry) const
@@ -111,10 +277,10 @@ CG32bitImage *CSystemMapThumbnails::GetObjImage (const CObjectTracker::SBackgrou
     Metric rScaleSize = Max((Metric)m_iMinImage, Min(m_rImageScale * iSize, (Metric)m_iMaxImage));
     Metric rScale = rScaleSize / (Metric)iSize;
 
-    //  Stars are bigger
+    //  Stars are a consistent scale
 
     if (ObjEntry.pType->GetScale() == scaleStar)
-        rScale *= 3.0;
+        rScale = STAR_IMAGE_SCALE;
 
     //  Create a small version
 
@@ -132,7 +298,7 @@ CG32bitImage *CSystemMapThumbnails::GetObjImage (const CObjectTracker::SBackgrou
         return NULL;
         }
 
-    //  Remember in cache so we don't have to recreat this.
+    //  Remember in cache so we don't have to recreate this.
 
     m_ObjImageCache.SetAt(dwHash, pImage);
 
@@ -141,7 +307,7 @@ CG32bitImage *CSystemMapThumbnails::GetObjImage (const CObjectTracker::SBackgrou
     return pImage;
     }
 
-CG32bitImage *CSystemMapThumbnails::GetThumbnail (CTopologyNode *pNode) const
+CG32bitImage *CSystemMapThumbnails::GetThumbnail (CTopologyNode *pNode, bool bFullSystem) const
 
 //  GetThumbnail
 //
@@ -149,61 +315,67 @@ CG32bitImage *CSystemMapThumbnails::GetThumbnail (CTopologyNode *pNode) const
 //  kind of error).
 
     {
-    int i;
-
-    if (m_pSystemData == NULL)
-        return NULL;
-
     //  Look in cache first.
 
-    CG32bitImage *pImage;
-    if (m_Cache.Find(pNode, &pImage))
-        return pImage;
+    SThumbnailCacheEntry *pCache = m_Cache.GetAt(pNode);
+    if (pCache)
+        {
+        //  If we have a full entry, then we can return it (it is always valid).
+
+        if (bFullSystem && pCache->pFullSystem)
+            return pCache->pFullSystem;
+
+        //  Otherwise, if we have a partial image, return that.
+
+        else if (!bFullSystem && pCache->pStarsOnly)
+            return pCache->pStarsOnly;
+        }
 
     //  Otherwise, we create an image
 
-    pImage = new CG32bitImage;
+    CG32bitImage *pImage = new CG32bitImage;
     pImage->Create(m_cxThumb, m_cyThumb, CG32bitImage::alpha8, CG32bitPixel::Null());
-    m_Cache.SetAt(pNode, pImage);
-
-    //  Compute a transform
-
-    RECT rcThumb;
-    rcThumb.left = 0;
-    rcThumb.top = 0;
-    rcThumb.right = m_cxThumb;
-    rcThumb.bottom = m_cyThumb;
-    CMapViewportCtx Ctx(NULL, rcThumb, m_rMapScale);
-
-    //  Paint orbits
-
-    const TArray<COrbit> &Orbits = m_pSystemData->GetSystemOrbits(pNode);
-    for (i = 0; i < Orbits.GetCount(); i++)
-        Orbits[i].Paint(Ctx, *pImage, RGB_MAP_ORBIT);
-
-    //  Get the list of objects to paint
-
-    TSortMap<Metric, CObjectTracker::SBackgroundObjEntry> Objs(DescendingSort);
-    m_pSystemData->GetSystemBackgroundObjects(pNode, Objs);
-
-    //  Paint all objects
-
-    for (i = 0; i < Objs.GetCount(); i++)
+    if (!CreateThumbnail(pNode, bFullSystem, *pImage))
         {
-        const CObjectTracker::SBackgroundObjEntry &ObjData = Objs[i];
-        CG32bitImage *pObjImage = GetObjImage(ObjData);
-        if (pImage == NULL)
-            continue;
+        delete pImage;
+        return NULL;
+        }
 
-        int xPos, yPos;
-        Ctx.Transform(ObjData.vPos, &xPos, &yPos);
+    //  Store in cache
 
-        pImage->Composite(0, 0, pObjImage->GetWidth(), pObjImage->GetHeight(), 255, *pObjImage, xPos - (pObjImage->GetWidth() / 2), yPos - (pObjImage->GetHeight() / 2));
+    pCache = m_Cache.SetAt(pNode);
+    if (bFullSystem)
+        {
+        ASSERT(pCache->pFullSystem == NULL);
+        pCache->pFullSystem = pImage;
+        }
+    else
+        {
+        ASSERT(pCache->pStarsOnly == NULL);
+        pCache->pStarsOnly = pImage;
         }
 
     //  Done
 
     return pImage;
+    }
+
+const TArray<CSystemMapThumbnails::SStarDesc> &CSystemMapThumbnails::GetThumbnailStars (CTopologyNode *pNode) const
+
+//  GetThumbnailStars
+//
+//  Returns an array of stars to draw for the thumbnails
+
+    {
+    //  If we don't have it in the cache, we need to create it.
+
+    SThumbnailCacheEntry *pCache = m_Cache.SetAt(pNode);
+    if (pCache->Stars.GetCount() == 0)
+        CreateThumbnailStars(pNode, pCache->Stars);
+
+    //  Done
+
+    return pCache->Stars;
     }
 
 void CSystemMapThumbnails::Init (CObjectTracker &SystemData, int cxThumb, int cyThumb)

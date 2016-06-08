@@ -30,6 +30,7 @@
 #define NODE_COUNT_ATTRIB					CONSTLIT("nodeCount")
 #define PATTERN_ATTRIB						CONSTLIT("pattern")
 #define STARGATE_PREFIX_ATTRIB				CONSTLIT("stargatePrefix")
+#define STARGATE_LINE_COLOR_ATTRIB		    CONSTLIT("stargateLineColor")
 #define STARTING_MAP_ATTRIB					CONSTLIT("startingMap")
 #define UNID_ATTRIB							CONSTLIT("unid")
 #define X_ATTRIB							CONSTLIT("x")
@@ -39,6 +40,8 @@
 #define CIRCULAR_PATTERN					CONSTLIT("circular")
 
 const int MAX_NODE_PLACEMENT_LOOPS =		100;
+
+const CG32bitPixel RGB_STARGATE_LINE_DEFAULT =	    CG32bitPixel(178, 217, 255);    //  H:210 S:30 B:100
 
 CSystemMap::~CSystemMap (void)
 
@@ -309,6 +312,10 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iInitialScale = pDesc->GetAttributeIntegerBounded(INITIAL_SCALE_ATTRIB, 10, 1000, 100);
 	m_iMaxScale = pDesc->GetAttributeIntegerBounded(MAX_SCALE_ATTRIB, 100, 1000, 200);
 	m_iMinScale = pDesc->GetAttributeIntegerBounded(MIN_SCALE_ATTRIB, 10, 100, 50);
+
+    //  Other display information
+
+    m_rgbStargateLines = ::LoadRGBColor(pDesc->GetAttribute(STARGATE_LINE_COLOR_ATTRIB), RGB_STARGATE_LINE_DEFAULT);
 
 	//	Generate an UNID
 
