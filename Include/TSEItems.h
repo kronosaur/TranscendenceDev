@@ -276,6 +276,7 @@ class CItem
 		CString GetDesc (void) const;
 		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
 		DWORD GetDisruptedDuration (void) const;
+		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
 		inline int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
         inline int GetLevel (void) const;
@@ -354,8 +355,10 @@ class CItem
 			};
 
 		void Extra (void);
-		static bool IsExtraEmpty (const SExtra *pExtra);
 		bool IsExtraEqual (SExtra *pSrc) const;
+
+		static bool IsDisruptionEqual (DWORD dwD1, DWORD dwD2);
+		static bool IsExtraEmpty (const SExtra *pExtra);
 
 		CItemType *m_pItemType;
 

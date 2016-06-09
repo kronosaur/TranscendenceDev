@@ -738,20 +738,21 @@ void CInstalledDevice::Update (CSpaceObject *pSource,
 
 		//	Disruption
 
-		if (IsDisrupted())
+		bool bRepaired;
+		if (GetDisruptedStatus(NULL, &bRepaired))
 			{
 			if (retbDisrupted)
 				*retbDisrupted = true;
+			}
 
-			//	If disruption is about to end, then notify
+		//	If disruption was repaired
 
-			if (GetDisruptedDuration() == 1)
-				{
-				if (retbDeviceRepaired)
-					*retbDeviceRepaired = true;
+		if (bRepaired)
+			{
+			if (retbDeviceRepaired)
+				*retbDeviceRepaired = true;
 
-				pSource->OnDeviceStatus(this, CDeviceClass::statusDisruptionRepaired);
-				}
+			pSource->OnDeviceStatus(this, CDeviceClass::statusDisruptionRepaired);
 			}
 		}
 

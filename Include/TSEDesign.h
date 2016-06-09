@@ -4295,6 +4295,7 @@ class CInstalledDevice
 		//	These are wrapper methods for the CItem behind this device.
 
 		inline DWORD GetDisruptedDuration (void) const { return (m_pItem ? m_pItem->GetDisruptedDuration() : 0); }
+		inline bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const { return (m_pItem ? m_pItem->GetDisruptedStatus(retdwTimeLeft, retbRepairedEvent) : false); }
 		CString GetEnhancedDesc (CSpaceObject *pSource, const CItem *pItem = NULL);
 		inline const CItemEnhancement &GetMods (void) const { return (m_pItem ? m_pItem->GetMods() : CItem::GetNullMod()); }
 		inline bool IsDamaged (void) const { return (m_pItem ? m_pItem->IsDamaged() : false); }

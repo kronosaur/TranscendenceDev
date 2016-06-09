@@ -734,6 +734,51 @@ DWORD CItem::GetDisruptedDuration (void) const
 		}
 	}
 
+bool CItem::GetDisruptedStatus (DWORD *retdwTimeLeft, bool *retbRepairedEvent) const
+
+//	GetDisruptedStatus
+//
+//	Returns TRUE if the item is disrupted. Optionally returns the number of 
+//	ticks left until repair. retbRepairedEvent is set to TRUE if the item was
+//	repaired on the previous tick.
+
+	{
+	bool bDisrupted = false;
+	bool bRepairedEvent = false;
+	DWORD dwTimeLeft = 0;
+
+	if (m_pExtra == NULL || m_pExtra->m_dwDisruptedTime == 0)
+		;
+	else if (m_pExtra->m_dwDisruptedTime == INFINITE_TICK)
+		{
+		bDisrupted = true;
+		dwTimeLeft = INFINITE_TICK;
+		}
+	else
+		{
+		DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+		if (m_pExtra->m_dwDisruptedTime < dwNow)
+			{
+			bRepairedEvent = (m_pExtra->m_dwDisruptedTime + 1 == dwNow);
+			}
+		else
+			{
+			bDisrupted = true;
+			dwTimeLeft = (m_pExtra->m_dwDisruptedTime - dwNow);
+			}
+		}
+
+	//	Return
+
+	if (retdwTimeLeft)
+		*retdwTimeLeft = dwTimeLeft;
+
+	if (retbRepairedEvent)
+		*retbRepairedEvent = bRepairedEvent;
+
+	return bDisrupted;
+	}
+
 CString CItem::GetEnhancedDesc (CSpaceObject *pInstalled) const
 
 //	GetEnhancedDesc
@@ -1115,6 +1160,20 @@ bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 	return m_pItemType->HasSpecialAttribute(sAttrib);
 	}
 
+bool CItem::IsDisruptionEqual (DWORD dwD1, DWORD dwD2)
+
+//	IsDisruptionEqual
+//
+//	Returns TRUE if the two disruption time values are effectively equal.
+
+	{
+	if (dwD1 == dwD2)
+		return true;
+
+	DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+	return (dwD1 < dwNow && dwD2 < dwNow);
+	}
+
 bool CItem::IsEqual (const CItem &Item, bool bIgnoreInstalled) const
 
 //	IsEqual
@@ -1139,7 +1198,7 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra)
 	{
 	return (pExtra->m_dwCharges == 0
 			&& pExtra->m_dwVariant == 0
-			&& pExtra->m_dwDisruptedTime == 0
+			&& (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < (DWORD)g_pUniverse->GetTicks())
 			&& pExtra->m_Mods.IsEmpty()
 			&& pExtra->m_Data.IsEmpty());
 	}
@@ -1157,7 +1216,7 @@ bool CItem::IsExtraEqual (SExtra *pSrc) const
 		{
 		return (m_pExtra->m_dwCharges == pSrc->m_dwCharges
 				&& m_pExtra->m_dwVariant == pSrc->m_dwVariant
-				&& m_pExtra->m_dwDisruptedTime == pSrc->m_dwDisruptedTime
+				&& IsDisruptionEqual(m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime)
 				&& m_pExtra->m_Mods.IsEqual(pSrc->m_Mods)
 				&& m_pExtra->m_Data.IsEqual(pSrc->m_Data));
 		}
