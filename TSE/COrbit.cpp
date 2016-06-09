@@ -33,6 +33,18 @@ COrbit::COrbit (const CVector &vCenter,
 	{
 	}
 
+bool COrbit::operator== (const COrbit &Src) const
+
+//  COrbit operator ==
+
+    {
+    return (m_vFocus == Src.m_vFocus
+			&& m_rSemiMajorAxis == Src.m_rSemiMajorAxis
+			&& m_rEccentricity == Src.m_rEccentricity
+			&& m_rRotation == Src.m_rRotation
+			&& m_rPos == Src.m_rPos);
+    }
+
 CG32bitPixel COrbit::GetColorAtRadiusHD (CG32bitPixel rgbColor, Metric rRadius) const
 
 //  GetColorAtRadiusHD

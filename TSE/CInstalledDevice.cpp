@@ -717,7 +717,8 @@ void CInstalledDevice::Update (CSpaceObject *pSource,
 							   int iTick,
 							   bool *retbSourceDestroyed,
 							   bool *retbConsumedItems,
-							   bool *retbDisrupted)
+							   bool *retbDisrupted,
+							   bool *retbDeviceRepaired)
 	{
 	DEBUG_TRY
 
@@ -745,7 +746,12 @@ void CInstalledDevice::Update (CSpaceObject *pSource,
 			//	If disruption is about to end, then notify
 
 			if (GetDisruptedDuration() == 1)
+				{
+				if (retbDeviceRepaired)
+					*retbDeviceRepaired = true;
+
 				pSource->OnDeviceStatus(this, CDeviceClass::statusDisruptionRepaired);
+				}
 			}
 		}
 

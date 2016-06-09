@@ -2421,7 +2421,7 @@ ItemCategories CWeaponClass::GetImplCategory (void) const
 		return itemcatWeapon;
 	}
 
-int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType)
+int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType, int *retiLevel)
 
 //	GetCounter
 //
@@ -2433,15 +2433,28 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	if (retiType)
 		*retiType = m_Counter;
 
-	if (m_Counter == cntNone)
+	if (m_Counter == cntNone || pDevice == NULL || pSource == NULL)
+        {
+        if (retiLevel)
+            *retiLevel = 0;
+
 		return 0;
+        }
 
 	//	If we're a capacitor, then don't show the counter if we are full
 
 	if (m_Counter == cntCapacitor && pDevice->GetTemperature() >= MAX_COUNTER)
+        {
+        if (retiLevel)
+            *retiLevel = MAX_COUNTER;
+
 		return 0;
+        }
 
 	//	Otherwise, return the current value
+
+    if (retiLevel)
+        *retiLevel = pDevice->GetTemperature();
 
 	return pDevice->GetTemperature();
 	}
@@ -3889,6 +3902,22 @@ void CWeaponClass::SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinu
 	{
 	pDevice->SetData((pDevice->GetData() & 0xFFFFFF00) | (dwContinuous & 0xFF));
 	}
+
+bool CWeaponClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel)
+
+//  SetCounter
+//
+//  Sets the counter to the given level. Returns FALSE if we cannot set it.
+
+    {
+    if (m_Counter != iCounter || pDevice == NULL || pSource == NULL)
+        return false;
+
+    pDevice->SetTemperature(Max(0, Min(iLevel, MAX_COUNTER)));
+	pSource->OnComponentChanged(comDeviceCounter);
+
+    return true;
+    }
 
 void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const
 

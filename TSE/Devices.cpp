@@ -30,6 +30,7 @@
 #define LINKED_FIRE_TARGET						CONSTLIT("targetInRange")
 
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
+#define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_HP								CONSTLIT("hp")
@@ -38,6 +39,9 @@
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
+#define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
+
+const int MAX_COUNTER =					        100;
 
 struct SStdDeviceStats
 	{
@@ -435,6 +439,18 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
     if (strEquals(sName, PROPERTY_CAN_BE_DISABLED))
         return (pDevice ? CC.CreateBool(pDevice->CanBeDisabled(Ctx)) : CC.CreateBool(CanBeDisabled(Ctx)));
 
+    else if (strEquals(sName, PROPERTY_CAPACITOR))
+        {
+        CSpaceObject *pSource = Ctx.GetSource();
+        CounterTypes iType;
+        int iLevel;
+        GetCounter(pDevice, pSource, &iType, &iLevel);
+        if (iType != cntCapacitor || pDevice == NULL || pSource == NULL)
+            return CC.CreateNil();
+
+        return CC.CreateInteger(iLevel);
+        }
+
     else if (strEquals(sName, PROPERTY_ENABLED))
         return (pDevice ? CC.CreateBool(pDevice->IsEnabled()) : CC.CreateNil());
 
@@ -469,6 +485,17 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
     else if (strEquals(sName, PROPERTY_SECONDARY))
         return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());
 
+    else if (strEquals(sName, PROPERTY_TEMPERATURE))
+        {
+        CSpaceObject *pSource = Ctx.GetSource();
+        CounterTypes iType;
+        int iLevel;
+        GetCounter(pDevice, pSource, &iType, &iLevel);
+        if (iType != cntTemperature || pDevice == NULL || pSource == NULL)
+            return CC.CreateNil();
+
+        return CC.CreateInteger(iLevel);
+        }
     else if (m_pItemType
             && m_pItemType->FindDataField(sName, &sFieldValue))
         return CreateResultFromDataField(CC, sFieldValue);
@@ -781,7 +808,16 @@ bool CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 
 	//	Figure out what to set
 
-	if (strEquals(sName, PROPERTY_FIRE_ARC))
+    if (strEquals(sName, PROPERTY_CAPACITOR))
+        {
+        CSpaceObject *pSource = Ctx.GetSource();
+        if (!SetCounter(pDevice, pSource, cntCapacitor, pValue->GetIntegerValue()))
+            {
+            *retsError = CONSTLIT("Unable to set capacitor value.");
+            return false;
+            }
+        }
+	else if (strEquals(sName, PROPERTY_FIRE_ARC))
 		{
 		//	A value of nil means no fire arc (and no omni)
 
@@ -884,6 +920,16 @@ bool CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 		else
 			pDevice->SetSecondary(false);
 		}
+
+    else if (strEquals(sName, PROPERTY_TEMPERATURE))
+        {
+        CSpaceObject *pSource = Ctx.GetSource();
+        if (!SetCounter(pDevice, pSource, cntTemperature, pValue->GetIntegerValue()))
+            {
+            *retsError = CONSTLIT("Unable to set temperature value.");
+            return false;
+            }
+        }
 
 	else
 		{

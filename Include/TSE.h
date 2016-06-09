@@ -710,6 +710,8 @@ class COrbit
 		COrbit (const CVector &vCenter, Metric rRadius, Metric rPos = 0.0);
 		COrbit (const CVector &vCenter, Metric rSemiMajorAxis, Metric rEccentricity, Metric rRotation, Metric rPos = 0.0);
 
+		bool operator== (const COrbit &Src) const;
+
 		inline const Metric &GetEccentricity (void) const { return m_rEccentricity; }
 		inline const CVector &GetFocus (void) const { return m_vFocus; }
 		inline const Metric &GetObjectAngle (void) const { return m_rPos; }
@@ -1370,6 +1372,7 @@ class CSystem
 		inline CSpaceObject *EnumObjectsInBoxGetNextFast (SSpaceObjectGridEnumerator &i) { return m_ObjGrid.EnumGetNextFast(i); }
 		inline CSpaceObject *EnumObjectsInBoxPointGetNext (SSpaceObjectGridEnumerator &i) { return m_ObjGrid.EnumGetNextInBoxPoint(i); }
 		CSpaceObject *FindObject (DWORD dwID);
+        CSpaceObject *FindObjectWithOrbit (const COrbit &Orbit) const;
 		bool FindObjectName (CSpaceObject *pObj, CString *retsName = NULL);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
@@ -1386,8 +1389,8 @@ class CSystem
 		inline const CString &GetName (void) { return m_sName; }
 		CNavigationPath *GetNavPath (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
 		CNavigationPath *GetNavPathByID (DWORD dwID);
-		CSpaceObject *GetObject (int iIndex) { return (CSpaceObject *)m_AllObjects.GetObject(iIndex); }
-		int GetObjectCount (void) { return m_AllObjects.GetCount(); }
+		CSpaceObject *GetObject (int iIndex) const { return (CSpaceObject *)m_AllObjects.GetObject(iIndex); }
+		int GetObjectCount (void) const { return m_AllObjects.GetCount(); }
 		inline void GetObjectsInBox (const CVector &vPos, Metric rRange, CSpaceObjectList &Result)
 			{
 			CVector vRange = CVector(rRange, rRange);

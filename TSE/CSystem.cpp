@@ -411,6 +411,9 @@
 //  133: 1.7 Alpha 2
 //      Added more data CObjectTracker
 //
+//  134: 1.7 Alpha 2
+//      Added m_pMapOrbit to CMarker
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -2196,6 +2199,30 @@ CSpaceObject *CSystem::FindObject (DWORD dwID)
 	return NULL;
 	}
 
+CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const
+
+//  FindObjectWithOrbit
+//
+//  Returns an object that shows the given orbit
+
+    {
+	int i;
+
+	for (i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		const COrbit *pOrbit;
+		if (pObj 
+                && !pObj->IsDestroyed()
+                && pObj->ShowMapOrbit()
+                && (pOrbit = pObj->GetMapOrbit())
+				&& (*pOrbit == Orbit))
+			return pObj;
+		}
+
+	return NULL;
+    }
+
 bool CSystem::FindObjectName (CSpaceObject *pObj, CString *retsName)
 
 //	FindObjectName
@@ -3711,7 +3738,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 		CSpaceObject *pObj = GetObject(i);
 
 		if (pObj 
-				&& (pObj->GetScale() == scaleStar || pObj->GetScale() == scaleWorld)
+				&& (pObj->GetScale() == scaleStar || pObj->GetScale() == scaleWorld || pObj->GetCategory() == CSpaceObject::catMarker)
 				&& (pObj->GetMapOrbit() || Ctx.IsInViewport(pObj)))
 			{
 			//	Figure out the position of the object in pixels

@@ -215,8 +215,9 @@ class CMiscellaneousClass : public CDeviceClass
 		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
-		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) override;
+		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
+		virtual bool SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel) override;
 		virtual bool ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual void Update (CInstalledDevice *pDevice, 
 							 CSpaceObject *pSource, 
@@ -563,7 +564,7 @@ class CWeaponClass : public CDeviceClass
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual int GetAmmoVariant (const CItemType *pItem) const override;
 		virtual ItemCategories GetImplCategory (void) const override;
-		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL) override;
+		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) override;
 		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const override;
 		virtual void Update (CInstalledDevice *pDevice, 
 							 CSpaceObject *pSource, 
@@ -597,6 +598,7 @@ class CWeaponClass : public CDeviceClass
 		virtual bool RequiresItems (void) const override;
 		virtual bool SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *pDevice, int iDir = 1) override;
+		virtual bool SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel) override;
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 
 	protected:

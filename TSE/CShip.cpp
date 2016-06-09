@@ -4193,7 +4193,7 @@ void CShip::OnDeviceStatus (CInstalledDevice *pDev, int iEvent)
 //
 //	Called when a device fails in some way
 
-	{ 
+	{
 	m_pController->OnDeviceStatus(pDev, iEvent);
 	}
 
@@ -5499,7 +5499,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         bool bSourceDestroyed = false;
         bool bConsumedItems = false;
         bool bDisrupted = false;
-        m_Devices[i].Update(this, iTick, &bSourceDestroyed, &bConsumedItems, &bDisrupted);
+		bool bRepaired = false;
+        m_Devices[i].Update(this, iTick, &bSourceDestroyed, &bConsumedItems, &bDisrupted, &bRepaired);
         if (bSourceDestroyed)
             return;
 
@@ -5511,6 +5512,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
         if (bDisrupted)
             m_fDeviceDisrupted = true;
+
+		//	If the device was repaired, then we need to recalc performance, etc.
+
+		if (bRepaired)
+			bCalcDeviceBonus = true;
         }
 
     //	Update reactor

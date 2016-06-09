@@ -8,16 +8,28 @@
 
 #define STYLE_SMALL_CROSS  						CONSTLIT("smallCross")
 
+const CG32bitPixel RGB_ORBIT_LINE =		        CG32bitPixel(115, 149, 229);
+
 //	CMarker -------------------------------------------------------------------
 
 static CObjectClass<CMarker>g_MarkerClass(OBJID_CMARKER, NULL);
 
-CMarker::CMarker (void) : CSpaceObject(&g_MarkerClass)
+CMarker::CMarker (void) : CSpaceObject(&g_MarkerClass),
+        m_pMapOrbit(NULL)
 
 //	CMarker constructor
 
 	{
 	}
+
+CMarker::~CMarker (void)
+
+//  CMarker destructor
+
+    {
+    if (m_pMapOrbit)
+        delete m_pMapOrbit;
+    }
 
 ALERROR CMarker::Create (CSystem *pSystem,
 						 CSovereign *pSovereign,
@@ -132,6 +144,19 @@ void CMarker::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
         }
 	}
 
+void CMarker::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
+
+//  OnPaintMap
+//
+//  Paints on the system map
+
+    {
+	//	Draw an orbit
+
+	if (m_pMapOrbit)
+		m_pMapOrbit->Paint(Ctx, Dest, RGB_ORBIT_LINE);
+    }
+
 void CMarker::OnReadFromStream (SLoadCtx &Ctx)
 
 //	OnReadFromStream
@@ -155,6 +180,22 @@ void CMarker::OnReadFromStream (SLoadCtx &Ctx)
         }
     else
         m_iStyle = styleNone;
+
+    DWORD dwFlags = 0;
+    if (Ctx.dwVersion >= 134)
+        Ctx.pStream->Read((char *)&dwFlags, sizeof(DWORD));
+
+    bool bHasMapOrbit = ((dwFlags & 0x00000001) ? true : false);
+
+    //  Read map orbit, if we have it.
+
+    if (bHasMapOrbit)
+        {
+        m_pMapOrbit = new COrbit;
+        Ctx.pStream->Read((char *)m_pMapOrbit, sizeof(COrbit));
+        }
+    else
+        m_pMapOrbit = NULL;
 	}
 
 void CMarker::OnWriteToStream (IWriteStream *pStream)
@@ -166,6 +207,8 @@ void CMarker::OnWriteToStream (IWriteStream *pStream)
 //	CString		m_sName
 //	DWORD		m_pSovereign (CSovereign ref)
 //  DWORD       m_iStyle
+//  DWORD       Flags
+//  COrbit      (optional)
 
 	{
 	m_sName.WriteToStream(pStream);
@@ -173,7 +216,30 @@ void CMarker::OnWriteToStream (IWriteStream *pStream)
 
     DWORD dwSave = (DWORD)m_iStyle;
     pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+    DWORD dwFlags = 0;
+    dwFlags |= (m_pMapOrbit ? 0x00000001 : 0);
+
+    pStream->Write((char *)&dwFlags, sizeof(DWORD));
+
+    //  Write map orbit, if we have one
+
+    if (m_pMapOrbit)
+        pStream->Write((char *)m_pMapOrbit, sizeof(COrbit));
 	}
+
+void CMarker::SetOrbit (const COrbit &Orbit)
+
+//  SetOrbit
+//
+//  Sets the orbit to paint on the map
+
+    {
+    if (m_pMapOrbit)
+        delete m_pMapOrbit;
+
+    m_pMapOrbit = new COrbit(Orbit);
+    }
 
 bool CMarker::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
 

@@ -3800,6 +3800,14 @@ ALERROR CSystem::CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker
 	if (!sEntryPoint.IsBlank())
 		NameObject(sEntryPoint, pMarker);
 
+    //  Show the orbit, if necessary
+	//	(But not if we duplicate an existing orbit. This is what allows us to show
+	//	orbits on asteroid belt lines.)
+
+    if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
+			&& !FindObjectWithOrbit(oOrbit))
+        pMarker->SetOrbit(oOrbit);
+
 	//	Done
 
 	if (retpObj)

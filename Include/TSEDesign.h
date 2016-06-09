@@ -4170,7 +4170,8 @@ class CInstalledDevice
 					 int iTick, 
 					 bool *retbSourceDestroyed,
 					 bool *retbConsumedItems = NULL,
-					 bool *retbDisrupted = NULL);
+					 bool *retbDisrupted = NULL,
+					 bool *retbDeviceRepaired = NULL);
 		void WriteToStream (IWriteStream *pStream);
 
 		//	These methods are about CInstalledDevice properties; not about properties
@@ -4255,7 +4256,7 @@ class CInstalledDevice
 		inline void Deplete (CSpaceObject *pSource) { m_pClass->Deplete(this, pSource); }
 		int GetActivateDelay (CSpaceObject *pSource);
 		inline ItemCategories GetCategory (void) const { return m_pClass->GetCategory(); }
-		inline int GetCounter (CSpaceObject *pSource, CDeviceClass::CounterTypes *retiCounter = NULL) { return m_pClass->GetCounter(this, pSource, retiCounter); }
+		inline int GetCounter (CSpaceObject *pSource, CDeviceClass::CounterTypes *retiCounter = NULL, int *retiLevel = NULL) { return m_pClass->GetCounter(this, pSource, retiCounter, retiLevel); }
 		inline const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return m_pClass->GetDamageDesc(Ctx); }
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return m_pClass->GetDamageEffectiveness(pAttacker, pWeapon); }
 		inline int GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) { return m_pClass->GetDamageType(Ctx, Ammo); }

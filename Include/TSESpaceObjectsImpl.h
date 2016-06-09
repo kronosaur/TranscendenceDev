@@ -321,6 +321,8 @@ class CFractureEffect : public CSpaceObject
 class CMarker : public CSpaceObject
 	{
 	public:
+        ~CMarker (void);
+
 		static ALERROR Create (CSystem *pSystem,
 							   CSovereign *pSovereign,
 							   const CVector &vPos,
@@ -328,20 +330,25 @@ class CMarker : public CSpaceObject
 							   const CString &sName,
 							   CMarker **retpMarker);
 
+        void SetOrbit (const COrbit &Orbit);
+
 		//	CSpaceObject virtuals
 		virtual Categories GetCategory (void) const override { return catMarker; }
+		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual bool IsMarker (void) override { return true; }
 		virtual void OnObjLeaveGate (CSpaceObject *pObj) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
+        virtual bool ShowMapOrbit (void) const override { return (m_pMapOrbit != NULL); }
 
 	protected:
 		virtual bool CanHit (CSpaceObject *pObj) override { return false; }
 		virtual CSovereign *GetSovereign (void) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMarker"); }
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
@@ -358,6 +365,8 @@ class CMarker : public CSpaceObject
 		CString m_sName;						//	Name
 		CSovereign *m_pSovereign;				//	Sovereign
         EStyles m_iStyle;                       //  Paint style
+
+		COrbit *m_pMapOrbit;					//	Orbit to draw on map (may be NULL)
 
 	friend CObjectClass<CMarker>;
 	};
