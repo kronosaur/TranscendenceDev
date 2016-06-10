@@ -340,3 +340,113 @@ void CG8bitImage::Fill (int x, int y, int cxWidth, int cyHeight, BYTE Value)
 		}
 	}
 
+void CG8bitImage::IntersectChannel (ChannelTypes iChannel, const CG32bitImage &Src, int xDest, int yDest, int xSrc, int ySrc, int cxSrc, int cySrc)
+
+//	IntersectMask
+//
+//	Intersects the given channel with this bitmap using a multiply operation.
+
+	{
+	if (cxSrc == -1)
+		cxSrc = Src.GetWidth();
+
+	if (cySrc == -1)
+		cySrc = Src.GetHeight();
+
+	//	Make sure we're in bounds
+
+	if (!AdjustCoords(&xSrc, &ySrc, Src.GetWidth(), Src.GetHeight(), 
+			&xDest, &yDest,
+			&cxSrc, &cySrc))
+		return;
+
+	//	Apply data from the channel
+
+	CG32bitPixel *pSrcRow = Src.GetPixelPos(xSrc, ySrc);
+	CG32bitPixel *pSrcRowEnd = Src.GetPixelPos(xSrc, ySrc + cySrc);
+	BYTE *pDestRow = GetPixelPos(xDest, yDest);
+
+	switch (iChannel)
+		{
+		case channelAlpha:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				BYTE *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					*pDestPos = CG32bitPixel::BlendAlpha(*pDestPos, pSrcPos->GetAlpha());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelRed:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				BYTE *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					*pDestPos = CG32bitPixel::BlendAlpha(*pDestPos, pSrcPos->GetRed());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelGreen:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				BYTE *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					*pDestPos = CG32bitPixel::BlendAlpha(*pDestPos, pSrcPos->GetGreen());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+
+		case channelBlue:
+			while (pSrcRow < pSrcRowEnd)
+				{
+				CG32bitPixel *pSrcPos = pSrcRow;
+				CG32bitPixel *pSrcPosEnd = pSrcRow + cxSrc;
+				BYTE *pDestPos = pDestRow;
+
+				while (pSrcPos < pSrcPosEnd)
+					{
+					*pDestPos = CG32bitPixel::BlendAlpha(*pDestPos, pSrcPos->GetBlue());
+
+					pSrcPos++;
+					pDestPos++;
+					}
+
+				pSrcRow = Src.NextRow(pSrcRow);
+				pDestRow = NextRow(pDestRow);
+				}
+			break;
+		}
+	}
+

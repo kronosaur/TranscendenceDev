@@ -22,6 +22,7 @@ class CG8bitImage : public CGImagePlane
 		bool CreateRoundedRect (int cxWidth, int cyHeight, int iRadius, BYTE Foreground = 0xff, BYTE Background = 0xff);
 		inline BYTE GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
 		inline BYTE *GetPixelPos (int x, int y) const { return m_pChannel + (y * m_cxWidth) + x; }
+		void IntersectChannel (ChannelTypes iChannel, const CG32bitImage &Src, int xDest = 0, int yDest = 0, int xSrc = 0, int ySrc = 0, int cxSrc = -1, int cySrc = -1);
 		inline bool IsEmpty (void) const { return (m_pChannel == NULL); }
 		inline bool IsMarked (void) const { return m_bMarked; }
 		inline BYTE *NextRow (BYTE *pPos) const { return pPos + m_cxWidth; }
