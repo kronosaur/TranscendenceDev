@@ -101,7 +101,7 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 
 	//	If we're closer to the target, then do it.
 
-	if (Absolute(iNewFrameDiff) < Absolute(iFrameDiff))
+	if (iNewFrameDiff == iFrameDiff || Absolute(iNewFrameDiff) < Absolute(iFrameDiff))
 		return (iFrameDiff < 0 ? RotateLeft : RotateRight);
 	else
 		return NoRotation;

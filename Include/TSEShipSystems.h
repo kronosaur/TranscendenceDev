@@ -271,6 +271,7 @@ class CIntegralRotation
 
 		~CIntegralRotation (void);
 
+		inline int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const { return Desc.CalcFinalRotationFrame(m_iRotationFrame, m_iRotationSpeed); }
 		inline int GetFrameIndex (void) const { return GetFrameIndex(m_iRotationFrame); }
 		inline EManeuverTypes GetLastManeuver (void) const { return m_iLastManeuver; }
 		EManeuverTypes GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const;
@@ -283,7 +284,6 @@ class CIntegralRotation
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
-		inline int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const { return Desc.CalcFinalRotationFrame(m_iRotationFrame, m_iRotationSpeed); }
 		inline int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
 
 		int m_iRotationFrame;				//	Current rotation (in 1/1000ths of a rotation)

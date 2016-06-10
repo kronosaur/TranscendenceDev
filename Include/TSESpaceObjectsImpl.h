@@ -926,6 +926,7 @@ class CShip : public CSpaceObject
 		inline int GetRotationAngle (void) { return m_pClass->GetRotationAngle(); }
         inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
 		inline int GetRotationRange (void) { return m_pClass->GetRotationRange(); }
+		inline const CIntegralRotation &GetRotationState (void) const { return m_Rotation; }
 		inline EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetRotationDesc(), iAngle); }
 		inline Metric GetThrust (void) { return m_Perf.GetDriveDesc().GetThrust(); }
 		inline bool IsInertialess (void) { return m_Perf.GetDriveDesc().IsInertialess(); }
