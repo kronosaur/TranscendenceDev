@@ -168,6 +168,9 @@ class CWeaponHUDDefault : public IHUDPainter
 
 		bool m_bInvalid;
 		CG32bitImage m_Buffer;
+		CG32bitImage m_Target;				//	Temp image for target.
+		CG8bitImage m_TargetMask;			//	Mask to contain target image
+
 		CG32bitImage *m_pDefaultBack;
 	};
 

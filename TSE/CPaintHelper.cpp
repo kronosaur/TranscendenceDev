@@ -57,6 +57,35 @@ void CPaintHelper::PaintArrow (CG32bitImage &Dest, int x, int y, int iDirection,
 	Region.Fill(Dest, x, y, rgbColor);
 	}
 
+void CPaintHelper::PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirection, const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor)
+
+//	PaintArrowText
+//
+//	Paints some text associated with an arrow.
+
+	{
+	int i;
+
+	TArray<CString> Text;
+	Font.BreakText(sText, 200, &Text);
+
+	CVector vPos = PolarToVector(iDirection, 30);
+	int xText = x - (int)vPos.GetX();
+	int yText = y + (int)vPos.GetY();
+
+	DWORD dwFontFlags = CG16bitFont::AdjustToFit | CG16bitFont::AlignCenter;
+	if (iDirection <= 180)
+		yText += 16;
+	else
+		yText -= 16 + (Text.GetCount() * Font.GetHeight());
+
+	for (i = 0; i < Text.GetCount(); i++)
+		{
+		Font.DrawText(Dest, xText, yText, rgbColor, Text[i], CG16bitFont::AlignCenter);
+		yText += Font.GetHeight();
+		}
+	}
+
 void CPaintHelper::PaintStatusBar (CG32bitImage &Dest, int x, int y, int iTick, CG32bitPixel rgbColor, const CString &sLabel, int iPos, int iMaxPos, int *retcyHeight)
 
 //	PaintStatusBar

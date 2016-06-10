@@ -27,6 +27,9 @@ const int TARGET_IMAGE_Y =					60;
 const int TARGET_NAME_X =					122;
 const int TARGET_NAME_Y =					27;
 
+const int TARGET_MASK_RADIUS =				56;
+const BYTE TARGET_MASK_TRANSPARENCY =		0x60;
+
 const CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
 const CG32bitPixel TARGET_NAME_COLOR =		CG32bitPixel(5, 211, 5);
 
@@ -263,6 +266,28 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 			m_Buffer.Blt(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, *m_pDefaultBack, 0, 0);
 		}
 
+	//	Prepare a buffer for the target
+
+	if (m_Target.IsEmpty())
+		m_Target.Create(DISPLAY_WIDTH, DISPLAY_HEIGHT, CG32bitImage::alpha8);
+
+	if (m_TargetMask.IsEmpty())
+		{
+		m_TargetMask.Create(DISPLAY_WIDTH, DISPLAY_HEIGHT, TARGET_MASK_TRANSPARENCY);
+
+		//	Erase the area outside the target pane
+
+		if (!m_BackImage.IsEmpty())
+			m_TargetMask.IntersectChannel(channelAlpha, m_BackImage.GetImage(NULL_STR));
+
+		else if (m_pDefaultBack)
+			m_TargetMask.IntersectChannel(channelAlpha, *m_pDefaultBack);
+
+		//	Show the target
+
+		CGDraw::Circle(m_TargetMask, TARGET_IMAGE_X, TARGET_IMAGE_Y, TARGET_MASK_RADIUS, 0xff);
+		}
+
 	//	Draw the primary weapon status
 
 	PaintDeviceStatus(pShip, 
@@ -286,6 +311,11 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 		if (pTarget->IsIdentified())
 			{
+			//	Paint the target on the target bitmap
+
+			m_Target.Set(CG32bitPixel::Null());
+			CGDraw::Circle(m_Target, TARGET_IMAGE_X, TARGET_IMAGE_Y, TARGET_MASK_RADIUS, CG32bitPixel(0, 0, 0));
+
 			SViewportPaintCtx Ctx;
 			Ctx.pObj = pTarget;
 			Ctx.XForm = ViewportTransform(pTarget->GetPos(), 
@@ -297,34 +327,11 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 			Ctx.fNoDockedShips = true;
 			Ctx.fNoSelection = true;
 
-			pTarget->Paint(m_Buffer, TARGET_IMAGE_X, TARGET_IMAGE_Y, Ctx);
+			pTarget->Paint(m_Target, TARGET_IMAGE_X, TARGET_IMAGE_Y, Ctx);
 
-			//	Erase the area outside the target pane
+			//	Blt on buffer through the target mask
 
-			if (!m_BackImage.IsEmpty())
-				{
-				const RECT &rcImage = m_BackImage.GetImageRect();
-
-				m_Buffer.CopyChannel(channelAlpha,
-						rcImage.left, 
-						rcImage.top, 
-						RectWidth(rcImage), 
-						RectHeight(rcImage), 
-						m_BackImage.GetImage(NULL_STR),
-						0,
-						0);
-				}
-			else if (m_pDefaultBack)
-				{
-				m_Buffer.CopyChannel(channelAlpha,
-						0, 
-						0, 
-						DISPLAY_WIDTH, 
-						DISPLAY_HEIGHT, 
-						*m_pDefaultBack,
-						0,
-						0);
-				}
+			CGDraw::BltMask(m_Buffer, 0, 0, m_Target, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, m_TargetMask);
 			}
 
 		//	Paint the name of the target
