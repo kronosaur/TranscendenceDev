@@ -241,8 +241,6 @@ class IOrderModule
 	protected:
 		//	IOrderModule virtuals
 		virtual bool IsAttacking (void) { return false; }
-		virtual bool IsTarget (int iObj) { return false; }
-		virtual bool IsTarget (CSpaceObject *pObj) { return false; }
 		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) { }
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) = 0;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { }
@@ -315,56 +313,56 @@ class CBaseShipAI : public IShipController
 		virtual ~CBaseShipAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (SUpdateCtx &Ctx);
-		virtual CString DebugCrashInfo (void);
-		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL);
-		virtual int GetAISettingInteger (const CString &sSetting);
-		virtual CString GetAISettingString (const CString &sSetting);
-		virtual const CAISettings *GetAISettings (void) { return &m_AICtx.GetAISettings(); }
-		virtual CSpaceObject *GetBase (void) const;
-		virtual int GetCombatPower (void);
-		virtual bool GetDeviceActivate (void) { return m_fDeviceActivate; }
-		virtual CSpaceObject *GetEscortPrincipal (void) const;
-		virtual int GetFireRateAdj (void) { return m_AICtx.GetFireRateAdj(); }
-		virtual EManeuverTypes GetManeuver (void) { return m_AICtx.GetManeuver(); }
-		virtual CSpaceObject *GetOrderGiver (void);
-		virtual bool GetReverseThrust (void) { return false; }
-		virtual CSpaceObject *GetShip (void) { return m_pShip; }
-		virtual bool GetStopThrust (void) { return false; }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
-		virtual bool GetThrust (void) { return m_AICtx.GetThrust(m_pShip); }
-		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution);
-		virtual bool IsAngryAt (CSpaceObject *pObj) const;
-		virtual bool IsPlayerWingman (void) const { return (m_fIsPlayerWingman ? true : false); }
-		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage);
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
-		virtual void OnDocked (CSpaceObject *pObj);
-		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend);
-		virtual void OnNewSystem (CSystem *pSystem);
-		virtual void OnWeaponStatusChanged (void) { m_AICtx.ClearBestWeapon(); }
-		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
-		virtual void OnObjDestroyed (const SDestroyCtx &Ctx);
-		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip);
-		virtual void OnPlayerObj (CSpaceObject *pPlayer);
-		virtual void OnStationDestroyed (const SDestroyCtx &Ctx);
-		virtual void OnStatsChanged (void) { m_AICtx.CalcInvariants(m_pShip); }
-		virtual void OnSystemLoaded (void) { m_AICtx.CalcInvariants(m_pShip); OnSystemLoadedNotify(); }
-		virtual int SetAISettingInteger (const CString &sSetting, int iValue);
-		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue);
-		virtual void SetCommandCode (ICCItem *pCode);
-		virtual void SetManeuver (EManeuverTypes iManeuver) { m_AICtx.SetManeuver(iManeuver); }
-		virtual void SetShipToControl (CShip *pShip);
-		virtual void SetThrust (bool bThrust) { m_AICtx.SetThrust(bThrust); }
-		virtual void SetPlayerWingman (bool bIsWingman) { m_fIsPlayerWingman = bIsWingman; }
-		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip);
-		virtual void WriteToStream (IWriteStream *pStream);
+		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual CString DebugCrashInfo (void) override;
+		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;
+		virtual int GetAISettingInteger (const CString &sSetting) override;
+		virtual CString GetAISettingString (const CString &sSetting) override;
+		virtual const CAISettings *GetAISettings (void) override { return &m_AICtx.GetAISettings(); }
+		virtual CSpaceObject *GetBase (void) const override;
+		virtual int GetCombatPower (void) override;
+		virtual bool GetDeviceActivate (void) override { return m_fDeviceActivate; }
+		virtual CSpaceObject *GetEscortPrincipal (void) const override;
+		virtual int GetFireRateAdj (void) override { return m_AICtx.GetFireRateAdj(); }
+		virtual EManeuverTypes GetManeuver (void) override { return m_AICtx.GetManeuver(); }
+		virtual CSpaceObject *GetOrderGiver (void) override;
+		virtual bool GetReverseThrust (void) override { return false; }
+		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
+		virtual bool GetStopThrust (void) override { return false; }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual bool GetThrust (void) override { return m_AICtx.GetThrust(m_pShip); }
+		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override;
+		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
+		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
+		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual void OnDocked (CSpaceObject *pObj) override;
+		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
+		virtual void OnNewSystem (CSystem *pSystem) override;
+		virtual void OnWeaponStatusChanged (void) override { m_AICtx.ClearBestWeapon(); }
+		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) override;
+		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
+		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip) override;
+		virtual void OnPlayerObj (CSpaceObject *pPlayer) override;
+		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) override;
+		virtual void OnStatsChanged (void) override { m_AICtx.CalcInvariants(m_pShip); }
+		virtual void OnSystemLoaded (void) override { m_AICtx.CalcInvariants(m_pShip); OnSystemLoadedNotify(); }
+		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override;
+		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override;
+		virtual void SetCommandCode (ICCItem *pCode) override;
+		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_AICtx.SetManeuver(iManeuver); }
+		virtual void SetShipToControl (CShip *pShip) override;
+		virtual void SetThrust (bool bThrust) override { m_AICtx.SetThrust(bThrust); }
+		virtual void SetPlayerWingman (bool bIsWingman) override { m_fIsPlayerWingman = bIsWingman; }
+		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
+		virtual void WriteToStream (IWriteStream *pStream) override;
 
-		virtual void AddOrder (IShipController::OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false);
-		virtual void CancelAllOrders (void);
-		virtual void CancelCurrentOrder (void);
-		virtual DWORD GetCurrentOrderData (void) { return m_Orders.GetCurrentOrderData(); }
-		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL);
+		virtual void AddOrder (IShipController::OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) override;
+		virtual void CancelAllOrders (void) override;
+		virtual void CancelCurrentOrder (void) override;
+		virtual DWORD GetCurrentOrderData (void) override { return m_Orders.GetCurrentOrderData(); }
+		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override;
 
 	protected:
 		CSpaceObject *CalcEnemyShipInRange (CSpaceObject *pCenter, Metric rRange, CSpaceObject *pExcludeObj = NULL);
