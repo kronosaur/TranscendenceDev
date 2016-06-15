@@ -2654,6 +2654,20 @@ Metric CShip::GetMass (void)
 	return m_pClass->GetHullMass() + GetItemMass();
 	}
 
+
+//	GetMaxAcceleration
+//
+//	Returns the maximum possible acceleration (given our current thrust and mass)
+//	in klicks per second per second.
+
+	{
+	Metric rMass = GetMass();
+	if (rMass <= 0.0)
+		return 0.0;
+
+	return GetThrust() * 1000.0 / rMass;
+	}
+
 Metric CShip::GetMaxFuel (void)
 
 //	GetMaxFuel

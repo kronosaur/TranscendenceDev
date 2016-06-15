@@ -162,6 +162,7 @@ class CAIBehaviorCtx
 		void CalcEscortFormation (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool CalcFlockingFormationRandom (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
+		CVector CalcFormationDeltaV (const CVector &vDestPos, const CVector &vDestVel, const CVector &vCurPos, const CVector &vCurVel, const CVector &vAxisX, const CVector &vAxisY, Metric rMaxSpeed, Metric *retrDelta2) const;
 		bool ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2);
 
 		CAISettings m_AISettings;				//	Settings
