@@ -2654,6 +2654,7 @@ Metric CShip::GetMass (void)
 	return m_pClass->GetHullMass() + GetItemMass();
 	}
 
+Metric CShip::GetMaxAcceleration (void)
 
 //	GetMaxAcceleration
 //
