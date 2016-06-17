@@ -151,6 +151,12 @@ class CItemEnhancement
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+		bool CalcNewHPBonus (const CItem &Item, const CItemEnhancement &NewEnhancement, int *retiNewBonus) const;
+		bool CanBeCombinedWith (const CItemEnhancement &NewEnhancement) const;
+		EnhanceItemStatus CombineAdvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement);
+		EnhanceItemStatus CombineAdvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement);
+		EnhanceItemStatus CombineDisadvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement);
+		EnhanceItemStatus CombineDisadvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement);
 		inline bool IsIonEffectImmune (void) const { return ((GetType() == etImmunityIonEffects) && !IsDisadvantage()); }
 
 		static int DamageAdj2Level (int iDamageAdj);

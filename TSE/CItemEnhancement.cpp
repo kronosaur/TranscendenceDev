@@ -178,6 +178,105 @@ int CItemEnhancement::DamageAdj2Level (int iDamageAdj)
 		return Min(9, (100 - (10000 / (iDamageAdj + 5))) / 10);
 	}
 
+bool CItemEnhancement::CalcNewHPBonus (const CItem &Item, const CItemEnhancement &NewEnhancement, int *retiNewBonus) const
+
+//	CalcNewHPBonus
+//
+//	Computes the new HP bonus after applying the given new enhancement. We 
+//	return TRUE if the new enhancement is different from the current one.
+
+	{
+	int iCurBonus = GetHPBonus();
+
+	//	If this is a stacking enhancement, then it's additive
+
+	int iNewBonus;
+	if (NewEnhancement.IsStacking())
+		{
+		int iAddedBonus = (NewEnhancement.IsDisadvantage() ? -10 : 10);
+		iNewBonus = iCurBonus + iAddedBonus;
+		}
+
+	//	Otherwise, if we're a disadvantage, we only apply the bonus if we're
+	//	worse than the current.
+
+	else if (NewEnhancement.IsDisadvantage())
+		{
+		if (iCurBonus <= 0)
+			iNewBonus = Min(NewEnhancement.GetHPBonus(), iCurBonus);
+		else
+			iNewBonus = 0;
+		}
+
+	//	If we're an advantage, then we only apply if we're better
+
+	else
+		{
+		if (iCurBonus >= 0)
+			iNewBonus = Max(NewEnhancement.GetHPBonus(), iCurBonus);
+		else
+			iNewBonus = 0;
+		}
+
+	//	Make sure we're still in range.
+
+	int iMaxBonus = Item.GetType()->GetMaxHPBonus();
+	if (iNewBonus < 0)
+		iNewBonus = Max(iNewBonus, -iMaxBonus);
+	else
+		iNewBonus = Min(iNewBonus, iMaxBonus);
+
+	//	Done
+
+	if (retiNewBonus)
+		*retiNewBonus = iNewBonus;
+
+	return (iNewBonus != iCurBonus);
+	}
+
+bool CItemEnhancement::CanBeCombinedWith (const CItemEnhancement &NewEnhancement) const
+
+//	CanBeCombinedWith
+//
+//	Returns TRUE if we can combine the new enhancement with ours. That is, if
+//	the two types are compatible.
+
+	{
+	//	Equal enhancements are always compatible
+
+	if (GetType() == NewEnhancement.GetType())
+		return true;
+
+	//	If we don't have an enhancement, then we're always compatible.
+
+	else if (GetType() == etNone || NewEnhancement.GetType() == etNone)
+		return true;
+
+	//	Regeneration can cure any disadvantage
+
+	else if (NewEnhancement.GetType() == etRegenerate && !NewEnhancement.IsDisadvantage() && IsDisadvantage())
+		return true;
+
+	//	Otherwise, it depends on the enhancement type
+
+	else
+		{
+		switch (GetType())
+			{
+			case etStrengthen:
+			case etHPBonus:
+				return (NewEnhancement.GetType() == etStrengthen || NewEnhancement.GetType() == etHPBonus);
+
+			case etSpeed:
+			case etSpeedOld:
+				return (NewEnhancement.GetType() == etSpeed || NewEnhancement.GetType() == etSpeedOld);
+
+			default:
+				return false;
+			}
+		}
+	}
+
 EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, CItemEnhancement Enhancement)
 
 //	Combine
@@ -212,9 +311,8 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, CItemEnhancement
 		if (Enhancement.GetType() == etStrengthen
 					|| Enhancement.GetType() == etHPBonus)
 			{
-			int iMaxBonus = Item.GetType()->GetMaxHPBonus();
-			int iNewBonus = Min((Enhancement.IsStacking() ? 10 : Enhancement.GetHPBonus()), iMaxBonus);
-			if (iNewBonus > 0)
+			int iNewBonus;
+			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
 				{
 				SetModBonus(iNewBonus);
 				return eisOK;
@@ -241,243 +339,277 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, CItemEnhancement
 			return eisAlreadyEnhanced;
 		}
 
-	//	We currently have a disadvantage
+	//	We handle each permutation separately.
 
 	else if (IsDisadvantage())
 		{
-		//	We have a disadvantage and the enhancement is another
-		//	disadvantage.
-
 		if (Enhancement.IsDisadvantage())
 			{
-			switch (Enhancement.GetType())
-				{
-				//	If we're making the disadvantage worse, then
-				//	continue; otherwise, no effect.
-
-				case etRegenerate:
-				case etResist:
-				case etResistEnergy:
-				case etResistMatter:
-				case etPowerEfficiency:
-					{
-					if (Enhancement.GetType() == GetType()
-							&& Enhancement.GetLevel() > GetLevel())
-						{
-						*this = Enhancement;
-						return eisWorse;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				case etHPBonus:
-				case etStrengthen:
-					{
-					if ((GetType() == etHPBonus || GetType() == etStrengthen)
-							&& Enhancement.GetHPBonus() < GetHPBonus())
-						{
-						*this = Enhancement;
-						return eisWorse;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				case etSpeed:
-				case etSpeedOld:
-					{
-					if ((GetType() == etSpeed || GetType() == etSpeedOld)
-							&& Enhancement.GetActivateRateAdj() > GetActivateRateAdj())
-						{
-						*this = Enhancement;
-						return eisWorse;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				case etResistByLevel:
-				case etResistByDamage:
-				case etResistByDamage2:
-					{
-					if (Enhancement.GetType() == GetType()
-							&& Enhancement.GetDamageType() == GetDamageType()
-							&& Enhancement.GetLevel() > GetLevel())
-						{
-						*this = Enhancement;
-						return eisWorse;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				//	Otherwise, a disadvantage does not affect a disadvantage
-
-				default:
-					return eisNoEffect;
-				}
+			if (CanBeCombinedWith(Enhancement))
+				return CombineDisadvantageWithDisadvantage(Item, Enhancement);
+			else
+				return eisNoEffect;
 			}
-
-		//	We have a disadvantage and we use an enhancement.
-
 		else
 			{
-			switch (Enhancement.GetType())
-				{
-				//	Regeneration enhancement always repairs a disadvantage
-
-				case etRegenerate:
-					{
-					*this = CItemEnhancement();
-					return eisRepaired;
-					}
-
-				//	If the enhancement is the opposite of the disadvantage
-				//	then the disadvantage is repaired.
-
-				case etResist:
-				case etResistEnergy:
-				case etResistMatter:
-				case etPowerEfficiency:
-				case etResistByLevel:
-				case etResistByDamage:
-				case etResistByDamage2:
-				case etReflect:
-					{
-					if (GetType() == Enhancement.GetType())
-						{
-						*this = CItemEnhancement();
-						return eisRepaired;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				case etHPBonus:
-				case etStrengthen:
-					{
-					if (GetType() == etHPBonus || GetType() == etStrengthen)
-						{
-						*this = CItemEnhancement();
-						return eisRepaired;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				case etSpeed:
-				case etSpeedOld:
-					{
-					if (GetType() == etSpeed || GetType() == etSpeedOld)
-						{
-						*this = CItemEnhancement();
-						return eisRepaired;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				//	Otherwise, no effect
-
-				default:
-					return eisNoEffect;
-				}
+			if (CanBeCombinedWith(Enhancement))
+				return CombineDisadvantageWithAdvantage(Item, Enhancement);
+			else
+				return eisNoEffect;
 			}
 		}
-
-	//	We currently have an enhancement
-
 	else
 		{
-		if (!Enhancement.IsDisadvantage())
+		if (Enhancement.IsDisadvantage())
 			{
-			switch (Enhancement.GetType())
+			if (CanBeCombinedWith(Enhancement))
+				return CombineAdvantageWithDisadvantage(Item, Enhancement);
+			else
 				{
-				case etHPBonus:
-				case etStrengthen:
-					{
-					if (GetType() != etHPBonus 
-							&& GetType() != etStrengthen)
-						return eisNoEffect;
+				//	A disadvantage removes an advantage
 
-					//	If improving...
-
-					int iOldBonus = GetHPBonus();
-					int iMaxBonus = Item.GetType()->GetMaxHPBonus();
-					int iNewBonus = Min((Enhancement.IsStacking() ? iOldBonus + 10 : Enhancement.GetHPBonus()), iMaxBonus);
-					if (iNewBonus > iOldBonus)
-						{
-						SetModBonus(iNewBonus);
-						return eisBetter;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				//	If this is the same type of enhancement and it is better,
-				//	then take it (otherwise, no effect)
-
-				case etRegenerate:
-				case etResist:
-				case etResistEnergy:
-				case etResistMatter:
-				case etPowerEfficiency:
-					{
-					if (Enhancement.GetType() == GetType()
-							&& Enhancement.GetLevel() > GetLevel())
-						{
-						*this = Enhancement;
-						return eisBetter;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				case etSpeed:
-				case etSpeedOld:
-					{
-					if (Enhancement.GetType() == GetType()
-							&& Enhancement.GetActivateRateAdj() < GetActivateRateAdj())
-						{
-						*this = Enhancement;
-						return eisBetter;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				case etResistByLevel:
-				case etResistByDamage:
-				case etResistByDamage2:
-					{
-					if (Enhancement.GetType() != GetType())
-						return eisNoEffect;
-					else if (Enhancement.GetDamageType() != GetDamageType())
-						{
-						*this = Enhancement;
-						return eisEnhancementReplaced;
-						}
-					else if (Enhancement.GetLevel() > GetLevel())
-						{
-						*this = Enhancement;
-						return eisBetter;
-						}
-					else
-						return eisNoEffect;
-					}
-
-				default:
-					return eisNoEffect;
+				*this = CItemEnhancement();
+				return eisEnhancementRemoved;
 				}
 			}
 		else
 			{
-			//	A disadvantage always destroys any enhancement
-
-			*this = CItemEnhancement();
-			return eisEnhancementRemoved;
+			if (CanBeCombinedWith(Enhancement))
+				return CombineAdvantageWithAdvantage(Item, Enhancement);
+			else
+				return eisNoEffect;
 			}
+		}
+	}
+
+EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement)
+
+//	CombineAdvantageWithAdvantage
+//
+//	We've already got some enhancement and we're applying a new one.
+//	NOTE: We assume the two enhancements are compatible.
+
+	{
+	switch (Enhancement.GetType())
+		{
+		case etHPBonus:
+		case etStrengthen:
+			{
+			int iNewBonus;
+			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
+				{
+				SetModBonus(iNewBonus);
+				return eisBetter;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		//	If this is the same type of enhancement and it is better,
+		//	then take it (otherwise, no effect)
+
+		case etRegenerate:
+		case etResist:
+		case etResistEnergy:
+		case etResistMatter:
+		case etPowerEfficiency:
+			{
+			if (Enhancement.GetLevel() > GetLevel())
+				{
+				*this = Enhancement;
+				return eisBetter;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		case etSpeed:
+		case etSpeedOld:
+			{
+			if (Enhancement.GetActivateRateAdj() < GetActivateRateAdj())
+				{
+				*this = Enhancement;
+				return eisBetter;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+			{
+			if (Enhancement.GetDamageType() != GetDamageType())
+				{
+				*this = Enhancement;
+				return eisEnhancementReplaced;
+				}
+			else if (Enhancement.GetLevel() > GetLevel())
+				{
+				*this = Enhancement;
+				return eisBetter;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		default:
+			return eisNoEffect;
+		}
+	}
+
+EnhanceItemStatus CItemEnhancement::CombineAdvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement)
+
+//	CombineAdvantageWithDisadvantage
+//
+//	We've got some enhancement and are applying a disadvantage
+
+	{
+	switch (Enhancement.GetType())
+		{
+		case etHPBonus:
+		case etStrengthen:
+			{
+			int iNewBonus;
+			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
+				{
+				SetModBonus(iNewBonus);
+				return eisWorse;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		default:
+			return eisNoEffect;
+		}
+	}
+
+EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement)
+
+//	CombineDisadvantageWithAdvantage
+//
+//	We've got a disadvantage and are applying an enhancement.
+
+	{
+	switch (Enhancement.GetType())
+		{
+		//	Regeneration enhancement always repairs a disadvantage
+
+		case etRegenerate:
+			{
+			*this = CItemEnhancement();
+			return eisRepaired;
+			}
+
+		//	If the enhancement is the opposite of the disadvantage
+		//	then the disadvantage is repaired.
+
+		case etResist:
+		case etResistEnergy:
+		case etResistMatter:
+		case etPowerEfficiency:
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+		case etReflect:
+		case etSpeed:
+		case etSpeedOld:
+			{
+			*this = CItemEnhancement();
+			return eisRepaired;
+			}
+
+		case etHPBonus:
+		case etStrengthen:
+			{
+			int iNewBonus;
+			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
+				{
+				SetModBonus(iNewBonus);
+				return (GetHPBonus() >= 0 ? eisRepaired : eisBetter);
+				}
+			else
+				return eisNoEffect;
+			}
+
+		//	Otherwise, no effect
+
+		default:
+			return eisNoEffect;
+		}
+	}
+
+EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement)
+
+//	CombineDisadvantageWithDisadvantage
+//
+//	We've got a disadvantage and are applying another one.
+
+	{
+	switch (Enhancement.GetType())
+		{
+		//	If we're making the disadvantage worse, then
+		//	continue; otherwise, no effect.
+
+		case etRegenerate:
+		case etResist:
+		case etResistEnergy:
+		case etResistMatter:
+		case etPowerEfficiency:
+			{
+			if (Enhancement.GetLevel() > GetLevel())
+				{
+				*this = Enhancement;
+				return eisWorse;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		case etHPBonus:
+		case etStrengthen:
+			{
+			int iNewBonus;
+			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
+				{
+				SetModBonus(iNewBonus);
+				return eisWorse;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		case etSpeed:
+		case etSpeedOld:
+			{
+			if (Enhancement.GetActivateRateAdj() > GetActivateRateAdj())
+				{
+				*this = Enhancement;
+				return eisWorse;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+			{
+			if (Enhancement.GetDamageType() == GetDamageType()
+					&& Enhancement.GetLevel() > GetLevel())
+				{
+				*this = Enhancement;
+				return eisWorse;
+				}
+			else
+				return eisNoEffect;
+			}
+
+		//	Otherwise, a disadvantage does not affect a disadvantage
+
+		default:
+			return eisNoEffect;
 		}
 	}
 
@@ -1502,7 +1634,9 @@ void CItemEnhancement::SetModBonus (int iBonus)
 //	Sets bonus enhancement
 
 	{
-	if (iBonus >= 0)
+	if (iBonus == 0)
+		m_dwMods = 0;
+	else if (iBonus > 0)
 		m_dwMods = EncodeAX(etHPBonus, 0, iBonus);
 	else
 		m_dwMods = EncodeAX(etHPBonus | etDisadvantage, 0, -iBonus);
