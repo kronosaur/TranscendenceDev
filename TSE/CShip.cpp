@@ -996,7 +996,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		//	See if the ship's engine core is powerful enough
 
 		else if (GetMaxPower() > 0
-				&& pDevice->GetPowerRating(ItemCtx) >= GetMaxPower())
+				&& pDevice->GetPowerRating(ItemCtx) > GetMaxPower())
 			iResult = insReactorTooWeak;
 
 		//	If this is a reactor, then see if the ship class can support it
