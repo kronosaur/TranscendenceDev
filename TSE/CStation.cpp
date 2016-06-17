@@ -26,6 +26,7 @@
 #define PAINT_LAYER_OVERHANG					CONSTLIT("overhang")
 
 #define PROPERTY_ABANDONED						CONSTLIT("abandoned")
+#define PROPERTY_ACTIVE							CONSTLIT("active")
 #define PROPERTY_BARRIER						CONSTLIT("barrier")
 #define PROPERTY_DEST_NODE_ID					CONSTLIT("destNodeID")
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
@@ -1405,6 +1406,9 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	if (strEquals(sName, PROPERTY_ABANDONED))
 		return CC.CreateBool(IsAbandoned());
 
+	else if (strEquals(sName, PROPERTY_ACTIVE))
+		return CC.CreateBool(m_fActive);
+
 	else if (strEquals(sName, PROPERTY_BARRIER))
 		return CC.CreateBool(m_fBlocksShips);
 
@@ -1620,6 +1624,29 @@ bool CStation::IsBlacklisted (CSpaceObject *pObj)
 		return (pObj->IsPlayer() && m_Blacklist.IsBlacklisted());
 	else
 		return m_Blacklist.IsBlacklisted();
+	}
+
+bool CStation::IsNameSet (void) const
+
+//	IsNameSet
+//
+//	Returns TRUE if the station has a valid name already.
+	
+	{
+	//	If we have a unique name, then we're done.
+
+	if (!m_sName.IsBlank())
+		return true;
+
+	//	If the type has a valid name, then we're done.
+
+	const CString &sName = m_pType->GetNamePattern();
+	if (!sName.IsBlank() && *sName.GetASCIIZPointer() != '(')
+		return true;
+
+	//	Otherwise, we don't have a valid name
+
+	return false;
 	}
 
 bool CStation::IsShownInGalacticMap (void) const
@@ -3897,7 +3924,15 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_BARRIER))
+	if (strEquals(sName, PROPERTY_ACTIVE))
+		{
+		if (pValue->IsNil())
+			SetInactive();
+		else
+			SetActive();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_BARRIER))
 		{
 		m_fBlocksShips = !pValue->IsNil();
 		return true;

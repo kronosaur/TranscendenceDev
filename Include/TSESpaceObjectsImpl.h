@@ -1286,7 +1286,7 @@ class CStation : public CSpaceObject
 		inline int GetStructuralHitPoints (void) { return m_iStructuralHP; }
 		inline int GetSubordinateCount (void) { return m_Subordinates.GetCount(); }
 		inline CSpaceObject *GetSubordinate (int iIndex) { return m_Subordinates.GetObj(iIndex); }
-		inline bool IsNameSet (void) { return !m_sName.IsBlank(); }
+		bool IsNameSet (void) const;
 		inline bool IsReconned (void) { return (m_fReconned ? true : false); }
 		inline void SetActive (void) { m_fActive = true; }
 		inline void SetBase (CSpaceObject *pBase) { m_pBase = pBase; }
