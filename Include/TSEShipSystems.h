@@ -473,6 +473,7 @@ class CDeviceClass
 		enum DeviceNotificationTypes
 			{
 			statusDisruptionRepaired,
+			statusUsedLastAmmo,
 
 			failDamagedByDisruption,
 			failDeviceHitByDamage,

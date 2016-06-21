@@ -4202,13 +4202,45 @@ bool CShip::OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attack
 	return true;
 	}
 
-void CShip::OnDeviceStatus (CInstalledDevice *pDev, int iEvent)
+void CShip::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent)
 
 //	OnDeviceStatus
 //
 //	Called when a device fails in some way
 
 	{
+	//	Some events we handle ourselves
+
+	switch (iEvent)
+		{
+		//	If we just used up the last of our ammo, automatically select the 
+		//	next missile. NOTE: This will also select the next missile for any
+		//	linked launchers.
+
+		case CDeviceClass::statusUsedLastAmmo:
+			{
+			CInstalledDevice *pMainLauncher = GetNamedDevice(devMissileWeapon);
+
+			//	If this is the standard missile launcher or a linked-fire 
+			//	launcher compatible with the standard missile launcher, then we
+			//	select the next missile.
+
+			if (pMainLauncher == pDev 
+					|| (pMainLauncher && pMainLauncher->GetClass() == pDev->GetClass()))
+				ReadyNextMissile();
+
+			//	Otherwise, if this is a launcher, we just switch its missiles.
+			//	This handles the case where we have heterogeneous missile launchers.
+
+			else if (pDev->GetCategory() == itemcatLauncher)
+				pDev->SelectNextVariant(this);
+
+			break;
+			}
+		}
+
+	//	Call controller and let it handle things.
+
 	m_pController->OnDeviceStatus(pDev, iEvent);
 	}
 
@@ -6205,7 +6237,7 @@ void CShip::ReadyFirstMissile (void)
 		{
 		pDevice->SelectFirstVariant(this);
 
-		//	If we have any linked missile launchers, then select them also
+		//	If we have any linked missile launchers, then select them also.
 
 		for (i = 0; i < GetDeviceCount(); i++)
 			{
@@ -6214,6 +6246,7 @@ void CShip::ReadyFirstMissile (void)
 
 			if (!pLinkedDevice->IsEmpty()
 					&& pLinkedDevice != pDevice
+					&& pLinkedDevice->GetClass() == pDevice->GetClass()
 					&& pLinkedDevice->IsLinkedFire(Ctx, itemcatLauncher))
 				pLinkedDevice->SelectFirstVariant(this);
 			}
@@ -6261,6 +6294,7 @@ void CShip::ReadyNextMissile (int iDir)
 
 			if (!pLinkedDevice->IsEmpty()
 					&& pLinkedDevice != pDevice
+					&& pLinkedDevice->GetClass() == pDevice->GetClass()
 					&& pLinkedDevice->IsLinkedFire(Ctx, itemcatLauncher))
 				pLinkedDevice->SelectNextVariant(this, iDir);
 			}
@@ -6594,10 +6628,10 @@ DeviceNames CShip::SelectWeapon (int iDev, int iVariant)
 	else if (pWeapon->GetCategory() == itemcatLauncher)
 		{
 		m_NamedDevices[devMissileWeapon] = iDev;
-		pWeapon->SelectFirstVariant(this);
+		ReadyFirstMissile();
 		while (iVariant > 0)
 			{
-			pWeapon->SelectNextVariant(this);
+			ReadyNextMissile();
 			iVariant--;
 			}
 

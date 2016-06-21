@@ -206,6 +206,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 		for (i = 0; i < pShip->GetDeviceCount(); i++)
 			{
 			CInstalledDevice *pWeapon = pShip->GetDevice(i);
+			CItemCtx ItemCtx(pShip, pWeapon);
 
 			//	If this weapon is not working, then skip it
 
@@ -227,6 +228,11 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 				bHasSecondaryWeapons = true;
 				continue;
 				}
+
+			//	Skip linked-fire weapons
+
+			else if (pWeapon->IsLinkedFire(ItemCtx))
+				continue;
 
 			//	Otherwise, this is a primary weapon or launcher
 

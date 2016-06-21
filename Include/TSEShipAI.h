@@ -291,7 +291,7 @@ class IShipController
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }
 		virtual void OnDamaged (const CDamageSource &Cause, CInstalledArmor *pArmor, const DamageDesc &Damage, int iDamage) { }
 		virtual void OnDeviceEnabledDisabled (int iDev, bool bEnabled, bool bSilent = false) { }
-		virtual void OnDeviceStatus (CInstalledDevice *pDev, int iEvent) { }
+		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) { return true; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
 		virtual void OnDocked (CSpaceObject *pObj) { }

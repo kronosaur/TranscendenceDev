@@ -2780,7 +2780,7 @@ class CSpaceObject : public CObject
 		virtual void MakeRadioactive (void) { }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) { return true; }
-		virtual void OnDeviceStatus (CInstalledDevice *pDev, int iEvent) { }
+		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) { }
 		virtual void OnHitByDeviceDamage (void) { }
 		virtual void OnHitByDeviceDisruptDamage (DWORD dwDuration) { }
 		virtual void OnHitByRadioactiveDamage (SDamageCtx &Ctx) { }

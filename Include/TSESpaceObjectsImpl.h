@@ -1047,7 +1047,7 @@ class CShip : public CSpaceObject
 		virtual void OnAscended (void) override;
 		virtual void OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos) override;
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;
-		virtual void OnDeviceStatus (CInstalledDevice *pDev, int iEvent) override;
+		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) override;
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) override;
 		virtual void OnDocked (CSpaceObject *pObj) override;
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) override;

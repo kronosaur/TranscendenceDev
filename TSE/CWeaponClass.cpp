@@ -2080,10 +2080,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	Switch to the next variant if necessary
 
 	if (bNextVariant)
-		{
-		if (!SelectNextVariant(pSource, pDevice))
-			SelectFirstVariant(pSource, pDevice);
-		}
+		pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
 
 	//	Create an explosion if weapon damage
 
