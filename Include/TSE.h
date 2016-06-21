@@ -516,6 +516,7 @@ class CWeaponFireDesc
         inline bool IsFragment (void) const { return m_fFragment; }
         inline bool IsScalable (void) const { return (m_pScalable != NULL); }
 		inline bool IsTracking (void) const { return m_iManeuverability != 0; }
+		bool IsTrackingOrHasTrackingFragments (void) const;
 		inline bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);

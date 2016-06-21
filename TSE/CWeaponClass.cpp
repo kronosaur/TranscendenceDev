@@ -88,6 +88,7 @@
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
+#define PROPERTY_TRACKING						CONSTLIT("tracking")
 
 const int MAX_SHOT_COUNT =				100;
 
@@ -427,9 +428,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Tracking weapons are a bonus
 
-    CWeaponFireDesc::SFragmentDesc *pFragment;
-    if (pShot->IsTracking()
-            || ((pFragment = pShot->GetFirstFragment()) && pFragment->pDesc->IsTracking()))
+    if (pShot->IsTrackingOrHasTrackingFragments())
         {
         retBalance.rTracking = BALANCE_TRACKING_BONUS;
         retBalance.rBalance += retBalance.rTracking;
@@ -1695,7 +1694,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	it is somewhat expensive to get the target from the device so
 	//	we only do it if we really need it.
 
-	if (pTarget == NULL && pShot->IsTracking())
+	if (pTarget == NULL && pShot->IsTrackingOrHasTrackingFragments())
 		pTarget = pDevice->GetTarget(pSource);
 
 	//	Get the fire angle from the device (the AI sets it when it has pre-
@@ -3288,7 +3287,7 @@ bool CWeaponClass::IsTrackingWeapon (CItemCtx &Ctx)
 	if (pShot == NULL)
 		return false;
 
-	return pShot->IsTracking();
+	return pShot->IsTrackingOrHasTrackingFragments();
 	}
 
 bool CWeaponClass::IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice)

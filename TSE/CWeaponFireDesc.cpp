@@ -87,6 +87,8 @@
 #define ON_DESTROY_SHOT_EVENT					CONSTLIT("OnDestroyShot")
 #define ON_FRAGMENT_EVENT						CONSTLIT("OnFragment")
 
+#define PROPERTY_TRACKING						CONSTLIT("tracking")
+
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
@@ -610,11 +612,16 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 	CCodeChain &CC = g_pUniverse->GetCC();
 	ICCItem *pResult;
 	CString sValue;
+	SpecialDamageTypes iSpecial;
+
+	//	We handle some properties
+
+	if (strEquals(sProperty, PROPERTY_TRACKING))
+		return CC.CreateBool(IsTrackingOrHasTrackingFragments());
 
 	//	See if this is one of the special damage properties
 
-	SpecialDamageTypes iSpecial;
-	if ((iSpecial = DamageDesc::ConvertPropertyToSpecialDamageTypes(sProperty)) != specialNone)
+	else if ((iSpecial = DamageDesc::ConvertPropertyToSpecialDamageTypes(sProperty)) != specialNone)
 		return CC.CreateInteger(GetSpecialDamage(iSpecial));
 
 	//	Check the damage structure
@@ -2157,6 +2164,20 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
     return NOERROR;
     }
+
+bool CWeaponFireDesc::IsTrackingOrHasTrackingFragments (void) const
+
+//	IsTrackingOrHasTrackingFragments
+//
+//	Returns TRUE if either the main shot tracks or if it launches tracking
+//	fragments.
+
+	{
+    SFragmentDesc *pFragment;
+
+	return (IsTracking()
+            || ((pFragment = GetFirstFragment()) && pFragment->pDesc->IsTrackingOrHasTrackingFragments()));
+	}
 
 void CWeaponFireDesc::MarkImages (void)
 
