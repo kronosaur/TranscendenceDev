@@ -32,10 +32,13 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 
 	//	Per damage-type bonuses
 
-	for (i = 0; i < damageCount; i++)
+	if (!bNoDamageAdj)
 		{
-		if ((iAdj = GetResistDamageAdj((DamageTypes)i)) != 100)
-			retList->Insert(SDisplayAttribute((iAdj < 100 ? attribPositive : attribNegative), GetDamageShortName((DamageTypes)i), true));
+		for (i = 0; i < damageCount; i++)
+			{
+			if ((iAdj = GetResistDamageAdj((DamageTypes)i)) != 100)
+				retList->Insert(SDisplayAttribute((iAdj < 100 ? attribPositive : attribNegative), GetDamageShortName((DamageTypes)i), true));
+			}
 		}
 
 	//	Add some binary enhancements
