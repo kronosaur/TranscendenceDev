@@ -329,8 +329,8 @@ void CSystemSpacePainter::PaintStarfield (CG32bitImage &Dest, const RECT &rcView
 	{
 	int i;
 
-	int cxField = RectWidth(rcView);
-	int cyField = RectHeight(rcView);
+	int cxField = Dest.GetWidth();
+	int cyField = Dest.GetHeight();
 
 	//	Compute the minimum brightness to paint
 
@@ -353,8 +353,6 @@ void CSystemSpacePainter::PaintStarfield (CG32bitImage &Dest, const RECT &rcView
 	CG32bitPixel *pStart = Dest.GetPixelPos(0, 0);
 	int cyRow = Dest.GetPixelPos(0, 1) - pStart;
 
-	pStart += cyRow * rcView.top + rcView.left;
-
 	for (i = 0; i < m_Starfield.GetCount(); i++)
 		{
 		SStar *pStar = &m_Starfield[i];
@@ -368,6 +366,11 @@ void CSystemSpacePainter::PaintStarfield (CG32bitImage &Dest, const RECT &rcView
 		int y = (pStar->y + yDistAdj[pStar->wDistance]) % cyField;
 		if (y < 0)
 			y += cyField;
+
+		//	Skip stars outside the view
+
+		if (x < rcView.left || x >= rcView.right || y < rcView.top || y >= rcView.bottom)
+			continue;
 
 		//	Blt the star
 
@@ -435,7 +438,7 @@ void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType,
 			{
 			if (!m_bInitialized)
 				{
-				CreateStarfield(RectWidth(Ctx.rcView), RectHeight(Ctx.rcView));
+				CreateStarfield(Dest.GetWidth(), Dest.GetHeight());
 				m_bInitialized = true;
 				}
 
