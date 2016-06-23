@@ -366,6 +366,10 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
 
         int iLevelSort = (MAX_ITEM_LEVEL + 1 - Objs[i].pType->GetLevel());
 
+		//	Size is next
+
+		int iSizeSort = 10000 - Min(10000, Objs[i].pType->GetPropertyInteger(CONSTLIT("size")));
+
         //  Abandoned stations are separate
 
         CString sAbandoned;
@@ -375,7 +379,7 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
         //  Generate a sort string. We want stations with the same type and name
         //  to be collapsed into a single entry.
 
-        CString sSort = strPatternSubst(CONSTLIT("%d-%02d-%08x-%s%s"), iDispSort, iLevelSort, Objs[i].pType->GetUNID(), Objs[i].sName, sAbandoned);
+        CString sSort = strPatternSubst(CONSTLIT("%d-%02d-%05d-%s-%08x-%s"), iDispSort, iLevelSort, iSizeSort, Objs[i].sName, Objs[i].pType->GetUNID(), sAbandoned);
 
         //  Add to our result list
 

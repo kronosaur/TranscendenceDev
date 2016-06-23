@@ -470,6 +470,7 @@ class CDesignType
 		inline CXMLElement *GetLocalScreens (void) const { return m_pLocalScreens; }
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
+		int GetPropertyInteger (const CString &sProperty);
 		CXMLElement *GetScreen (const CString &sUNID);
 		const CString &GetStaticData (const CString &sAttrib) const;
 		CString GetTypeClassName (void) const;
@@ -3334,6 +3335,7 @@ class CStationType : public CDesignType
 		inline void SetTempChance (int iChance) { m_iChance = iChance; }
 		inline bool ShowsMapDetails (void) { return (m_fNoMapDetails ? false : true); }
 		inline bool ShowsMapIcon (void) { return (m_fNoMapIcon ? false : true); }
+		inline bool ShowsMapLabel (void) { return (m_fNoMapLabel ? false : true); }
 		inline bool UsesReverseArticle (void) { return (m_fReverseArticle ? true : false); }
 
 		//	CDesignType overrides
@@ -3448,7 +3450,14 @@ class CStationType : public CDesignType
 		DWORD m_fCommsHandlerInit:1;					//	TRUE if comms handler has been initialized
 		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
 
-		DWORD m_dwSpare:8;
+		DWORD m_fNoMapLabel:1;							//	If TRUE, do not show a label on system map
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
 
 		//	Images
 		CCompositeImageDesc m_Image;

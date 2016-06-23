@@ -75,6 +75,7 @@
 #define NO_FRIENDLY_TARGET_ATTRIB				CONSTLIT("noFriendlyTarget")
 #define NO_MAP_DETAILS_ATTRIB					CONSTLIT("noMapDetails")
 #define NO_MAP_ICON_ATTRIB						CONSTLIT("noMapIcon")
+#define NO_MAP_LABEL_ATTRIB						CONSTLIT("noMapLabel")
 #define PAINT_LAYER_ATTRIB						CONSTLIT("paintLayer")
 #define RADIOACTIVE_ATTRIB						CONSTLIT("radioactive")
 #define RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("randomEncounters")
@@ -1257,6 +1258,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fBeacon = pDesc->GetAttributeBool(BEACON_ATTRIB);
 	m_fRadioactive = pDesc->GetAttributeBool(RADIOACTIVE_ATTRIB);
 	m_fNoMapIcon = pDesc->GetAttributeBool(NO_MAP_ICON_ATTRIB);
+    m_fNoMapLabel = pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB);
     m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
 	m_fMultiHull = pDesc->GetAttributeBool(MULTI_HULL_ATTRIB);
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);

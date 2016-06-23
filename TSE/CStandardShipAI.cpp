@@ -90,6 +90,8 @@ const int ATTACK_TIME_THRESHOLD =		150;
 
 const Metric ATTACK_RANGE =				(20.0 * LIGHT_SECOND);
 const Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
+const Metric PATROL_DETER_RANGE =		80.0 * LIGHT_SECOND;
+const Metric PATROL_DETER_RANGE2 =		PATROL_DETER_RANGE * PATROL_DETER_RANGE;
 const Metric STOP_ATTACK_RANGE =		(120.0 * LIGHT_SECOND);
 const Metric STOP_ATTACK_RANGE2 =		STOP_ATTACK_RANGE * STOP_ATTACK_RANGE;
 const Metric SCAVENGE_SENSOR_RANGE =	(10.0 * LIGHT_MINUTE);
@@ -1939,10 +1941,15 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 					return resAck;
 
 				case stateOnPatrolOrbit:
-					SetState(stateAttackingOnPatrol);
-					m_pTarget = pParam1;
-					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
-					return resAck;
+					if (m_pShip->GetDistance2(pParam1) < PATROL_DETER_RANGE2)
+						{
+						SetState(stateAttackingOnPatrol);
+						m_pTarget = pParam1;
+						ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
+						return resAck;
+						}
+					else
+						return resNoAnswer;
 
 				default:
 					return resNoAnswer;

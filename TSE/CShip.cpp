@@ -6950,6 +6950,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 				bDockWithBase = true;
 				break;
 
+			case IShipController::orderPatrol:
 			case IShipController::orderMine:
 				pOrderTarget = Ctx.pBase;
 				bIsSubordinate = true;
@@ -6978,12 +6979,8 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 
 				break;
 
-			case IShipController::orderPatrol:
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:
-				//	NOTE: Ships on patrol are not considered subordinates. Why? I don't know
-				//	but I don't want to change it for fear of unintended consequences.
-
 				pOrderTarget = Ctx.pBase;
 				break;
 

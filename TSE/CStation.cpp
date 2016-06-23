@@ -19,7 +19,6 @@
 #define DEVICE_ID_ATTRIB						CONSTLIT("deviceID")
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
-#define NO_MAP_LABEL_ATTRIB						CONSTLIT("noMapLabel")
 #define SHIPWRECK_UNID_ATTRIB					CONSTLIT("shipwreckID")
 #define NAME_ATTRIB								CONSTLIT("name")
 
@@ -756,7 +755,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 		pStation->m_pMapOrbit = NULL;
 
 	pStation->m_fShowMapOrbit = false;
-	pStation->m_fNoMapLabel = pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB);
+	pStation->m_fNoMapLabel = !pType->ShowsMapLabel();
 
 	//	We block others (CanBlock returns TRUE only for other stations)
 
@@ -1703,8 +1702,12 @@ bool CStation::IsShownInGalacticMap (void) const
         return false;
 
     //  Only if we would show it on the system map
+	//
+	//	NOTE: We only care about what the type specifies, not what the object
+	//	overrides, because sometimes the object just hides the map label to keep
+	//	the map clean (not because it is not an interesting station).
 
-    if (!m_pType->ShowsMapIcon() || m_fNoMapLabel)
+    if (!m_pType->ShowsMapIcon() || !m_pType->ShowsMapLabel())
         return false;
 
     //  Skip stargates, which we don't need to show in the details pane

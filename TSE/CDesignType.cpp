@@ -1522,6 +1522,25 @@ ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 		return CreateResultFromDataField(CC, GetDataField(sProperty));
 	}
 
+int CDesignType::GetPropertyInteger (const CString &sProperty)
+
+//	GetPropertyInteger
+//
+//	Returns an integer property
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChainCtx Ctx;
+
+	ICCItem *pItem = GetProperty(Ctx, sProperty);
+	if (pItem == NULL)
+		return 0;
+
+	int iResult = pItem->GetIntegerValue();
+	pItem->Discard(&CC);
+	return iResult;
+	}
+
 CString CDesignType::GetTypeNounPhrase (DWORD dwFlags) const
 
 //  GetTypeNounPhrase
