@@ -1877,6 +1877,10 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 
 			switch (m_State)
 				{
+				case stateNone:
+					AddOrder(orderDestroyTarget, pParam1, IShipController::SData(), true);
+					return resAck;
+
 				case stateEscorting:
 				case stateReturningFromThreat:
 				case stateWaitingForThreat:
@@ -2284,63 +2288,63 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		m_pTarget = NULL;
 		}
 
-	//	Alter our orders
+	//	If our orders involve this target, then we've got to deal with
+	//	that appropriately.
 
-	if (GetOrderCount() > 0)
+	if (GetOrderCount() > 0
+			&& Ctx.pObj == GetCurrentOrderTarget())
 		{
-		//	If our orders involve this target, then we've got to deal with
-		//	that appropriately.
+		//	Deal with the consequences
 
-		if (Ctx.pObj == GetCurrentOrderTarget())
-			{
-			//	Deal with the consequences
-
-			switch (GetCurrentOrder())
-				{
-				//	If we're looting then we don't remove the order. (If the
-				//	object is really going away, the order will get deleted by
-				//	our ancestor class).
-
-				case IShipController::orderLoot:
-				case IShipController::orderAttackArea:
-					break;
-
-				//	In these cases we avenge the target
-
-				case IShipController::orderPatrol:
-				case IShipController::orderGuard:
-				case IShipController::orderEscort:
-					{
-					CancelCurrentOrder();
-
-					if (Ctx.Attacker.IsCausedByNonFriendOf(m_pShip) && Ctx.Attacker.GetObj())
-						AddOrder(IShipController::orderDestroyTarget, Ctx.Attacker.GetObj(), IShipController::SData());
-					else
-						AddOrder(IShipController::orderAttackNearestEnemy, NULL, IShipController::SData());
-
-					break;
-					}
-
-				default:
-					{
-					CancelCurrentOrder();
-					}
-				}
-			}
-		}
-
-	//	If we're docked with the object that got destroyed then react
-
-	if (Ctx.pObj == m_pShip->GetDockedObj())
-		{
 		switch (GetCurrentOrder())
 			{
+			//	If we're looting then we don't remove the order. (If the
+			//	object is really going away, the order will get deleted by
+			//	our ancestor class).
+
+			case IShipController::orderLoot:
+			case IShipController::orderAttackArea:
+				break;
+
+			//	In these cases we avenge the target
+
+			case IShipController::orderEscort:
+				{
+				CancelCurrentOrder();
+
+				if (Ctx.Attacker.IsCausedByNonFriendOf(m_pShip) && Ctx.Attacker.GetObj())
+					AddOrder(IShipController::orderDestroyTarget, Ctx.Attacker.GetObj(), IShipController::SData());
+				else
+					AddOrder(IShipController::orderAttackNearestEnemy, NULL, IShipController::SData());
+				break;
+				}
+
 			//	Gate out
 
 			case IShipController::orderGateOnStationDestroyed:
 			case IShipController::orderGateOnThreat:
 				CancelCurrentOrder();
 				AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+				break;
+
+			default:
+				CancelCurrentOrder();
+				break;
+			}
+		}
+
+	//	Otherwise, if we're docked with the object that got destroyed then react
+
+	else if (Ctx.pObj == m_pShip->GetDockedObj())
+		{
+		switch (GetCurrentOrder())
+			{
+			//	These do not retaliate
+
+			case IShipController::orderGateOnStationDestroyed:
+			case IShipController::orderGateOnThreat:
+			case IShipController::orderLoot:
+			case IShipController::orderScavenge:
 				break;
 
 			//	Avenge
