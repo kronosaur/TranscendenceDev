@@ -388,7 +388,6 @@ class CMissile : public CSpaceObject
 
 		//	CSpaceObject virtuals
 		virtual CMissile *AsMissile (void) override { return this; }
-        virtual bool CanAttack (void) const override { return (m_fDestroyOnAnimationDone ? false : true); }
 		virtual bool CanMove (void) override { return true; }
 		virtual void CreateReflection (const CVector &vPos, int iDirection) override;
 		virtual CString DebugCrashInfo (void) override;
@@ -412,7 +411,8 @@ class CMissile : public CSpaceObject
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual bool HasAttribute (const CString &sAttribute) const override;
-		virtual bool IsInactive (void) const override { return (m_fDestroyOnAnimationDone); }
+		virtual bool IsInactive (void) const override { return (m_fDestroyOnAnimationDone ? true : false); }
+		virtual bool IsIntangible (void) const { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
@@ -1032,6 +1032,7 @@ class CShip : public CSpaceObject
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsIdentified (void) override { return m_fIdentified; }
 		virtual bool IsInactive (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
+		virtual bool IsIntangible (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0 || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return !m_Interior.IsEmpty(); }
 		virtual bool IsOutOfFuel (void) override { return m_fOutOfFuel; }
@@ -1372,11 +1373,14 @@ class CStation : public CSpaceObject
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
 		virtual bool IsAbandoned (void) const override { return (m_iHitPoints == 0 && !IsImmutable()); }
 		virtual bool IsActiveStargate (void) const override { return !m_sStargateDestNode.IsBlank() && m_fActive; }
+		virtual bool IsAngry (void) override { return (!IsAbandoned() && (m_iAngryCounter > 0)); }
 		virtual bool IsAngryAt (CSpaceObject *pObj) override { return (IsEnemy(pObj) || IsBlacklisted(pObj)); }
 		virtual bool IsDisarmed (void) override { return m_fDisarmedByOverlay; }
 		virtual bool IsExplored (void) override { return m_fExplored; }
 		virtual bool IsIdentified (void) override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_fImmutable; }
+		virtual bool IsInactive (void) const override { return !CanAttack(); }
+		virtual bool IsIntangible (void) const { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return m_pType->IsMultiHull(); }
 		virtual bool IsParalyzed (void) override { return m_fParalyzedByOverlay; }
@@ -1447,7 +1451,8 @@ class CStation : public CSpaceObject
 
 		CStation (void);
 
-		void Blacklist (CSpaceObject *pObj);
+		void AvengeAttack (CSpaceObject *pAttacker);
+		bool Blacklist (CSpaceObject *pObj);
 		void CalcBounds (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL);
 		int CalcNumberOfShips (void);
@@ -1457,11 +1462,16 @@ class CStation : public CSpaceObject
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);
 		void CreateStructuralDestructionEffect (SDestroyCtx &Ctx);
 		ALERROR CreateMapImage (void);
+		void DeterAttack (CSpaceObject *pTarget);
 		void FinishCreation (SSystemCreateCtx *pSysCreateCtx = NULL);
-		void FriendlyFire (CSpaceObject *pAttacker);
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick, int *retiRotation);
 		bool IsBlacklisted (CSpaceObject *pObj = NULL);
+		inline bool IsFriendlyFire (CSpaceObject *pOrderGiver) { return (!IsEnemy(pOrderGiver) && !IsBlacklisted(pOrderGiver)); }
+		void OnDestroyedByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		void OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		void OnHitByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void RaiseAlert (CSpaceObject *pTarget);
 		void SetAngry (void);
 		void UpdateAttacking (SUpdateCtx &Ctx, int iTick);

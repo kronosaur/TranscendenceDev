@@ -2733,8 +2733,7 @@ CSpaceObject *CSystem::HitScan (CSpaceObject *pExclude, const CVector &vStart, c
 
 		if (pObj->IsDestroyed()
 				|| pObj == pExclude
-				|| pObj->IsVirtual()
-				|| pObj->IsInactive()
+				|| pObj->IsIntangible()
 				|| (pObj->GetScale() != scaleStructure 
 					&& pObj->GetScale() != scaleShip))
 			continue;
@@ -3150,7 +3149,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 				//	If we're in the viewport, then we add it
 
-				if (pObj->InBox(vParallaxUR, vParallaxLL) && !pObj->IsVirtual())
+				if (pObj->InBox(vParallaxUR, vParallaxLL))
 					{
 					pObj->SetPaintNeeded();
 
@@ -3182,7 +3181,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 						|| (Ctx.fEnhancedDisplay
 							&& (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 							&& pObj->PosInBox(Ctx.vEnhancedUR, Ctx.vEnhancedLL)
-							&& !pObj->IsInactive());
+							&& !pObj->IsHidden());
 
 				if (bMarker
 						&& (!bInViewport || !pObj->HitSizeInBox(Ctx.vUR, Ctx.vLL)))
@@ -3611,7 +3610,7 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 			continue;
 
 		int iRange;
-		if (!pObj->IsInactive()
+		if (!pObj->IsHidden()
 				&& !pObj->IsVirtual()
 				&& pObj->InBox(vLargeUR, vLargeLL)
 				&& (pObj->GetScale() == scaleStar 

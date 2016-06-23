@@ -727,6 +727,37 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
+class CPerceptionCalc
+	{
+	public:
+		CPerceptionCalc (int iPerception);
+
+		bool CanBeTargeted (CSpaceObject *pTarget, Metric rTargetDist2) const;
+		bool CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTargetDist) const;
+		Metric GetMaxDist (CSpaceObject *pTarget) const;
+		Metric GetMaxDist2 (CSpaceObject *pTarget) const;
+		inline Metric GetRange (int iIndex) const { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
+		inline Metric GetRange2 (int iIndex) const { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }
+		int GetRangeIndex (int iStealth) const;
+
+	private:
+		enum EConstants
+			{
+			RANGE_ARRAY_SIZE = 9,
+			};
+
+		bool IsVisibleDueToAttack (CSpaceObject *pTarget) const;
+
+		static void InitRangeTable (void);
+
+		int m_iPerception;
+		DWORD m_dwLastAttackThreshold;			//	Last attack on or after means visible
+
+		static bool m_bRangeTableInitialized;
+		static Metric m_rRange[RANGE_ARRAY_SIZE];
+		static Metric m_rRange2[RANGE_ARRAY_SIZE];
+	};
+
 class CRandomEntryResults
 	{
 	public:

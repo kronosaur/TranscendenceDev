@@ -90,6 +90,8 @@ const int ATTACK_TIME_THRESHOLD =		150;
 
 const Metric ATTACK_RANGE =				(20.0 * LIGHT_SECOND);
 const Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
+const Metric STOP_ATTACK_RANGE =		(120.0 * LIGHT_SECOND);
+const Metric STOP_ATTACK_RANGE2 =		STOP_ATTACK_RANGE * STOP_ATTACK_RANGE;
 const Metric SCAVENGE_SENSOR_RANGE =	(10.0 * LIGHT_MINUTE);
 const Metric THREAT_SENSOR_RANGE =		(10.0 * LIGHT_SECOND);
 const Metric THREAT_SENSOR_RANGE2 =		(THREAT_SENSOR_RANGE * THREAT_SENSOR_RANGE);
@@ -179,9 +181,9 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 				{
 				CSpaceObject *pCenter = GetCurrentOrderTarget();
 				int iDistance = GetCurrentOrderData();
-				Metric rMaxRange2 = (LIGHT_SECOND * iDistance) + PATROL_SENSOR_RANGE;
+				Metric rMaxRange2 = Max((LIGHT_SECOND * iDistance) + PATROL_SENSOR_RANGE, STOP_ATTACK_RANGE);
 				rMaxRange2 = rMaxRange2 * rMaxRange2;
-				Metric rMinRange2 = max(0.0, (LIGHT_SECOND * iDistance) - PATROL_SENSOR_RANGE);
+				Metric rMinRange2 = Max(0.0, (LIGHT_SECOND * iDistance) - PATROL_SENSOR_RANGE);
 				rMinRange2 = rMinRange2 * rMinRange2;
 
 				CVector vRange = pCenter->GetPos() - m_pShip->GetPos();
@@ -368,7 +370,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 				//	If we're outside of our patrol range and if we haven't
 				//	been hit in a while then stop the attack.
 
-				if (rDistance2 > (PATROL_SENSOR_RANGE * PATROL_SENSOR_RANGE)
+				if (rDistance2 > STOP_ATTACK_RANGE2
 						&& !m_AICtx.IsBeingAttacked())
 					SetState(stateNone);
 				}
@@ -604,9 +606,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 							&& pObj->SupportsDocking()
 							&& pObj->IsAbandoned()
 							&& !pObj->IsRadioactive()
-							&& !pObj->IsDestroyed()
-							&& !pObj->IsInactive()
-							&& !pObj->IsVirtual()
+							&& !pObj->IsIntangible()
 							&& pObj->GetData(SPACE_OBJ_SCAVENGE_DATA).IsBlank())
 						{
 						CVector vRange = pObj->GetPos() - m_pShip->GetPos();
@@ -1028,14 +1028,11 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 
 			if (m_pShip->IsDestinyTime(17))
 				{
-				Metric rDetectRange = m_pDest->GetDetectionRange(m_pShip->GetPerception());
-				if (m_rDistance > 0.0)
-					rDetectRange = Min(m_rDistance, rDetectRange);
-
-				Metric rDetectRange2 = rDetectRange * rDetectRange;
-
+				CPerceptionCalc Perception(m_pShip->GetPerception());
 				Metric rRange2 = (m_pDest->GetPos() - m_pShip->GetPos()).Length2();
-				if (rRange2 < rDetectRange2)
+
+				if ((m_rDistance <= 0.0 || rRange2 < (m_rDistance * m_rDistance))
+						&& Perception.CanBeTargeted(m_pDest, rRange2))
 					CancelCurrentOrder();
 				}
 
@@ -1069,19 +1066,15 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 
 		case stateWaitingUnarmed:
 			{
-			//	Every once in a while check to see if there are enemy ships
-			//	near-by. If so, then gate out.
+			//	Every once in a while, check to see if we should leave.
+			//	Not everyone leaves right away, so we set the timer appropriately.
 
-			if (m_pShip->IsDestinyTime(30))
+			if (m_pShip->IsDestinyTime(90))
 				{
-				CSpaceObject *pPlayer = m_pShip->GetPlayerShip();
+				//	If our station is angry or dead, then we leave.
+
 				CSpaceObject *pDock = m_pShip->GetDockedObj();
-
-				//	(We treat the player as a special case because sometimes the
-				//	player has been blacklisted)
-
-				if (m_pShip->IsEnemyInRange(THREAT_SENSOR_RANGE)
-						|| (pDock && pPlayer && pDock->IsAngryAt(pPlayer) && pDock->GetDistance(pPlayer) <= THREAT_SENSOR_RANGE))
+				if (pDock == NULL || pDock->IsAngry() || pDock->IsAbandoned() || pDock->IsDestroyed())
 					{
 					CancelCurrentOrder();
 					AddOrder(IShipController::orderGate, NULL, IShipController::SData());
@@ -1519,8 +1512,7 @@ void CStandardShipAI::BehaviorStart (void)
 						&& !pObj->IsRadioactive()
 						&& !pObj->IsEnemy(m_pShip)
 						&& !pObj->IsAbandoned()
-						&& !pObj->IsInactive()
-						&& !pObj->IsVirtual()
+						&& !pObj->IsIntangible()
 						&& pObj->HasAttribute(CONSTLIT("populated")))
 					{
 					CVector vRange = pObj->GetPos() - m_pShip->GetPos();
@@ -1808,6 +1800,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 			switch (GetCurrentOrder())
 				{
 				case IShipController::orderGuard:
+				case IShipController::orderPatrol:
 					{
 					//	If we were attacked twice (excluding multi-shot weapons)
 					//	then we tell our station about this
@@ -1817,7 +1810,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 						CSpaceObject *pBase = GetCurrentOrderTarget();
 						if (pBase->IsEnemy(pAttacker)
 								|| pBase->IsAngryAt(pAttacker))
-							m_pShip->Communicate(pBase, msgAttackDeter, pAttacker);
+							m_pShip->Communicate(pBase, msgAttackDeter, pBase->CalcTargetToAttack(pAttacker, pOrderGiver));
 						}
 
 					break;
@@ -2102,6 +2095,51 @@ CString CStandardShipAI::OnDebugCrashInfo (void)
 	return sResult;
 	}
 
+void CStandardShipAI::OnDestroyedNotify (SDestroyCtx &Ctx)
+
+//	OnDestroyedNotify
+//
+//	We've been destroyed
+
+	{
+	switch (GetCurrentOrder())
+		{
+		//	If we've been destroyed, then ask our station to avenge us
+
+		case orderGuard:
+		case orderPatrol:
+		case orderGateOnThreat:
+			{
+			CSpaceObject *pBase = GetBase();
+			CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
+			CSpaceObject *pOrderGiver = (pAttacker ? pAttacker->GetOrderGiver(Ctx.iCause) : NULL);
+
+			if (pBase 
+					&& pAttacker 
+					&& pAttacker->CanAttack()
+					&& !pBase->IsEnemy(m_pShip))
+				{
+				CSpaceObject *pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver);
+
+				//	If we were attacked by a friend, then we tell our station
+				//	so they can be blacklisted.
+
+				if (pOrderGiver && m_pShip->IsFriend(pOrderGiver)
+						&& pOrderGiver != m_pTarget
+						&& !IsAngryAt(pAttacker))
+					m_pShip->Communicate(pBase, msgDestroyedByFriendlyFire, pTarget);
+
+				//	Otherwise, we deter the target
+
+				else
+					m_pShip->Communicate(pBase, msgDestroyedByHostileFire, pTarget);
+				}
+
+			break;
+			}
+		}
+	}
+
 void CStandardShipAI::OnDockedEvent (CSpaceObject *pObj)
 
 //	OnDockedEvent
@@ -2126,6 +2164,9 @@ CSpaceObject *CStandardShipAI::OnGetBase (void) const
 		case IShipController::orderOrbit:
 		case IShipController::orderPatrol:
 			return GetCurrentOrderTarget();
+
+		case IShipController::orderGateOnThreat:
+			return m_pShip->GetDockedObj();
 
 		default:
 			return NULL;

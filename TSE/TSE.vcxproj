@@ -342,6 +342,7 @@
     <ClCompile Include="CImageArranger.cpp" />
     <ClCompile Include="CInstalledDevice.cpp" />
     <ClCompile Include="CIntegralRotation.cpp" />
+    <ClCompile Include="CPerceptionCalc.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />
     <ClCompile Include="CItemCtx.cpp" />

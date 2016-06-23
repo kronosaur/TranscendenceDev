@@ -482,6 +482,8 @@ bool CAIBehaviorCtx::CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget,
 
 	else
 		{
+		CPerceptionCalc Perception(pShip->GetPerception());
+
 		//	Compute the distance to the new target
 
 		Metric rDist2 = (pNewTarget->GetPos() - pShip->GetPos()).Length2();
@@ -489,9 +491,7 @@ bool CAIBehaviorCtx::CalcIsBetterTarget (CShip *pShip, CSpaceObject *pCurTarget,
 		//	See if the new target is visible to us. If not, then it cannot be a
 		//	better target.
 
-		Metric rMaxVisibility = RangeIndex2Range(pNewTarget->GetDetectionRangeIndex(pShip->GetPerception()));
-		Metric rMaxVisibility2 = rMaxVisibility * rMaxVisibility;
-		if (rDist2 > rMaxVisibility2)
+		if (!Perception.CanBeTargeted(pNewTarget, rDist2))
 			return false;
 
 		//	If the current target is not valid, then we always switch
@@ -564,8 +564,7 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 					|| pObj->IsMarker()
 					|| (pObj->GetCategory() == CSpaceObject::catStation
 						&& pObj->GetScale() == scaleStructure
-						&& !pObj->IsInactive()
-						&& !pObj->IsVirtual()
+						&& !pObj->IsIntangible()
 						&& pObj->SupportsDocking()
 						&& (pObj->IsFriend(pShip) || !pObj->CanAttack()))))
 			{
@@ -897,7 +896,7 @@ void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage
 			if (pObj 
 					&& pObj->GetCategory() == CSpaceObject::catShip
 					&& pObj != pShip
-					&& !pObj->IsInactive()
+					&& !pObj->IsIntangible()
 					&& pObj->GetEscortPrincipal() == pShip)
 				{
 				pShip->Communicate(pObj, iMessage, pParam1, dwParam2);

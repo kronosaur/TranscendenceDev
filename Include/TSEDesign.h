@@ -1386,6 +1386,9 @@ enum MessageTypes
 	msgAttackDeter =				17, //	Attack target, but return after a while (pParam1 is target)
 	msgQueryAttackStatus =			18, //	Replies with Ack if attacking a target
 	msgDockingSequenceEngaged =		19,	//	Sent by a station to anyone docking
+	msgHitByHostileFire =			20,	//	Hit by hostile fire (pParam1 is attacker)
+	msgDestroyedByFriendlyFire =	21,	//	We were destroyed by friendly fire (pParam1 is attacker)
+	msgDestroyedByHostileFire =		22,	//	We were destroyed by hostile fire (pParam is attacker)
 	};
 
 enum ResponseTypes

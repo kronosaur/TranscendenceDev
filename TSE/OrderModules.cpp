@@ -175,6 +175,16 @@ CString IOrderModule::DebugCrashInfo (CShip *pShip)
 	return sResult;
 	}
 
+void IOrderModule::Destroyed (CShip *pShip, SDestroyCtx &Ctx)
+
+//	Destroyed
+//
+//	We've been destroyed
+
+	{
+	OnDestroyed(pShip, Ctx);
+	}
+
 void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 
 //	ObjDestroyed

@@ -24,6 +24,8 @@ const Metric MIN_FLYBY_SPEED =			(2.0 * KLICKS_PER_PIXEL);
 const Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL* KLICKS_PER_PIXEL * 25.0);
 const Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
 const Metric MIN_TARGET_DIST =			(3.0 * LIGHT_SECOND);
+const Metric MAX_HEADING_DELTA_V =		g_KlicksPerPixel;
+const Metric MAX_HEADING_DELTA_V2 =		MAX_HEADING_DELTA_V * MAX_HEADING_DELTA_V;
 
 const Metric CLOSE_RANGE2 =				(CLOSE_RANGE * CLOSE_RANGE);
 const Metric HIT_NAV_POINT_DIST2 =		(HIT_NAV_POINT_DIST * HIT_NAV_POINT_DIST);
@@ -159,8 +161,7 @@ bool CAIBehaviorCtx::CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLe
 		if (pObj 
 				&& pObj->GetSovereign() == pShip->GetSovereign()
 				&& pObj->GetCategory() == CSpaceObject::catShip
-				&& !pObj->IsInactive()
-				&& !pObj->IsVirtual()
+				&& !pObj->IsIntangible()
 				&& pObj != pShip
 				&& pObj != pLeader)
 			{
@@ -1660,7 +1661,7 @@ void CAIBehaviorCtx::ImplementHeadingManeuver (CShip *pShip, const CVector &vTar
 
 	int iDirectionToFace;
 	Metric rDeltaV2 = vDeltaV.Length2();
-	if (rDeltaV2 < MAX_DELTA_VEL2)
+	if (rDeltaV2 < MAX_HEADING_DELTA_V2)
 		iDirectionToFace = VectorToPolar(vTarget, NULL);
 
 	//	Otherwise, head towards the delta V vector
@@ -1671,7 +1672,7 @@ void CAIBehaviorCtx::ImplementHeadingManeuver (CShip *pShip, const CVector &vTar
 	//	Head in that direction
 
 	m_iManeuverCounter = 0;
-	ImplementManeuver(pShip, iDirectionToFace, true);
+	ImplementManeuver(pShip, iDirectionToFace, true, true);
 	}
 
 void CAIBehaviorCtx::ImplementHold (CShip *pShip, bool *retbInPlace)

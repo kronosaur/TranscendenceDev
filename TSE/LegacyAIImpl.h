@@ -11,19 +11,19 @@ class CAutonAI : public CBaseShipAI
 		CAutonAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (SUpdateCtx &Ctx);
-		virtual CString DebugCrashInfo (void);
-		virtual CString GetClass (void) { return CONSTLIT("auton"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
+		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual CString DebugCrashInfo (void) override;
+		virtual CString GetClass (void) override { return CONSTLIT("auton"); }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
-		virtual void OnOrderChanged (void);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnSystemLoadedNotify (void);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
+		virtual void OnOrderChanged (void) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnSystemLoadedNotify (void) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum StateTypes
@@ -50,19 +50,19 @@ class CFerianShipAI : public CBaseShipAI
 		CFerianShipAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (SUpdateCtx &Ctx);
-		virtual CString DebugCrashInfo (void);
-		virtual CSpaceObject *GetBase (void) const { return m_pBase; }
-		virtual CString GetClass (void) { return CONSTLIT("ferian"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return m_pTarget; }
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
+		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual CString DebugCrashInfo (void) override;
+		virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
+		virtual CString GetClass (void) override { return CONSTLIT("ferian"); }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override { return m_pTarget; }
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
-		virtual void OnOrderChanged (void);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
+		virtual void OnOrderChanged (void) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum StateTypes
@@ -95,20 +95,20 @@ class CFleetCommandAI : public CBaseShipAI
 		virtual ~CFleetCommandAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (SUpdateCtx &Ctx);
-		virtual CString DebugCrashInfo (void);
-		virtual CString GetClass (void) { return CONSTLIT("fleetcommand"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return m_pTarget; }
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
+		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual CString DebugCrashInfo (void) override;
+		virtual CString GetClass (void) override { return CONSTLIT("fleetcommand"); }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override { return m_pTarget; }
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnDockedEvent (CSpaceObject *pObj);
-		virtual void OnNewSystemNotify (void);
-		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
-		virtual void OnOrderChanged (void);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnDockedEvent (CSpaceObject *pObj) override;
+		virtual void OnNewSystemNotify (void) override;
+		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
+		virtual void OnOrderChanged (void) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum StateTypes
@@ -191,20 +191,20 @@ class CFleetShipAI : public CBaseShipAI
 		CFleetShipAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (SUpdateCtx &Ctx);
-		virtual CString DebugCrashInfo (void);
-		virtual CString GetClass (void) { return CONSTLIT("fleet"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
+		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual CString DebugCrashInfo (void) override;
+		virtual CString GetClass (void) override { return CONSTLIT("fleet"); }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnDockedEvent (CSpaceObject *pObj);
-		virtual CSpaceObject *OnGetBase (void) const;
-		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
-		virtual void OnOrderChanged (void);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnDockedEvent (CSpaceObject *pObj) override;
+		virtual CSpaceObject *OnGetBase (void) const override;
+		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
+		virtual void OnOrderChanged (void) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum StateTypes
@@ -246,19 +246,19 @@ class CGaianProcessorAI : public CBaseShipAI
 		CGaianProcessorAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (SUpdateCtx &Ctx);
-		virtual CString DebugCrashInfo (void);
-		virtual CString GetClass (void) { return CONSTLIT("gaianprocessor"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
+		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual CString DebugCrashInfo (void) override;
+		virtual CString GetClass (void) override { return CONSTLIT("gaianprocessor"); }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
-		virtual void OnOrderChanged (void);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnSystemLoadedNotify (void);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
+		virtual void OnOrderChanged (void) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnSystemLoadedNotify (void) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum StateTypes
@@ -291,17 +291,17 @@ class CGladiatorAI : public CBaseShipAI
 		CGladiatorAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (SUpdateCtx &Ctx);
-		virtual CString DebugCrashInfo (void);
-		virtual CString GetClass (void) { return CONSTLIT("gladiator"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
+		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual CString DebugCrashInfo (void) override;
+		virtual CString GetClass (void) override { return CONSTLIT("gladiator"); }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
-		virtual void OnOrderChanged (void);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
+		virtual void OnOrderChanged (void) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum StateTypes
@@ -332,18 +332,19 @@ class CStandardShipAI : public CBaseShipAI
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage);
-		virtual void OnBehavior (SUpdateCtx &Ctx);
-		virtual void OnCleanUp (void) { m_State = stateNone; m_pTarget = NULL; m_pDest = NULL; }
-		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
-		virtual CString OnDebugCrashInfo (void);
-		virtual void OnDockedEvent (CSpaceObject *pObj);
-		virtual CSpaceObject *OnGetBase (void) const;
-		virtual CSpaceObject *OnGetTarget (bool bNoAutoTarget = false) const;
-		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
-		virtual void OnOrderChanged (void);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
+		virtual void OnBehavior (SUpdateCtx &Ctx) override;
+		virtual void OnCleanUp (void) override { m_State = stateNone; m_pTarget = NULL; m_pDest = NULL; }
+		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual CString OnDebugCrashInfo (void) override;
+		virtual void OnDockedEvent (CSpaceObject *pObj) override;
+		virtual void OnDestroyedNotify (SDestroyCtx &Ctx) override;
+		virtual CSpaceObject *OnGetBase (void) const override;
+		virtual CSpaceObject *OnGetTarget (bool bNoAutoTarget = false) const override;
+		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
+		virtual void OnOrderChanged (void) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum StateTypes
@@ -432,21 +433,21 @@ class CZoanthropeAI : public CBaseShipAI
 		CZoanthropeAI (void);
 
 		//	IShipController virtuals
-		virtual void Behavior (SUpdateCtx &Ctx);
-		virtual CString DebugCrashInfo (void);
-		virtual CSpaceObject *GetBase (void) const;
-		virtual CString GetClass (void) { return CONSTLIT("zoanthrope"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const;
-		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage);
-		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
+		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual CString DebugCrashInfo (void) override;
+		virtual CSpaceObject *GetBase (void) const override;
+		virtual CString GetClass (void) override { return CONSTLIT("zoanthrope"); }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
+		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
 		//	CBaseShipAI overrides
-		virtual void OnDockedEvent (CSpaceObject *pObj);
-		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx);
-		virtual void OnOrderChanged (void);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnDockedEvent (CSpaceObject *pObj) override;
+		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
+		virtual void OnOrderChanged (void) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum StateTypes

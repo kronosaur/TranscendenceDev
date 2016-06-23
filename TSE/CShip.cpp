@@ -927,7 +927,7 @@ bool CShip::CanAttack (void) const
 //	do damage (perhaps because it has no weapons) we still mark it as CanAttack.
 
 	{
-	return (!IsInactive() && !IsVirtual());
+	return !IsIntangible();
 	}
 
 bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
@@ -4752,7 +4752,7 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 //	Paint the ship
 
 	{
-	if (IsInactive())
+	if (IsHidden())
 		return;
 
 	//	Do not paint ships on the map unless we are the point of view
@@ -5997,7 +5997,7 @@ void CShip::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewport
 	{
 	DEBUG_TRY
 
-	if (IsInactive())
+	if (IsHidden())
 		return;
 
 	if (m_fKnown && m_pClass->HasDockingPorts())
@@ -6028,7 +6028,7 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	{
 	DEBUG_TRY
 
-	if (IsInactive())
+	if (IsHidden())
 		return;
 
 	//	Object is known if we can scan it.

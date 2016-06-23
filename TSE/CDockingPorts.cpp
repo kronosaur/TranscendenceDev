@@ -695,8 +695,7 @@ bool CDockingPorts::ShipsNearPort (CSpaceObject *pOwner, CSpaceObject *pRequesti
 		CSpaceObject *pObj = pSystem->GetObject(i);
 		if (pObj
 				&& pObj->GetCategory() == CSpaceObject::catShip
-				&& !pObj->IsInactive()
-				&& !pObj->IsVirtual()
+				&& !pObj->IsIntangible()
 				&& pObj != pRequestingObj)
 			{
 			Metric rDist2 = (pObj->GetPos() - vPortPos).Length2();
@@ -758,8 +757,7 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 	//	port.
 
 	if (pPlayer 
-			&& (pOwner->IsDestroyed() 
-				|| pOwner->IsInactive() 
+			&& (pOwner->IsIntangible() 
 				|| pOwner == pPlayer
 				|| pPlayer->IsDestroyed()))
 		pPlayer = NULL;

@@ -691,10 +691,8 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 				if (pObj 
 						&& pObj->GetCategory() == catShip
-						&& !pObj->IsInactive()
-						&& !pObj->IsVirtual()
+						&& !pObj->IsIntangible()
 						&& pObj->CanBeHit()
-						&& !pObj->IsDestroyed()
 						&& pObj != this)
 					{
 					CVector vDist = GetPos() - pObj->GetPos();

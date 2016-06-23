@@ -259,13 +259,7 @@ CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric r
 
 	//	Compute this object's perception and perception range
 
-	int iPerception = m_pShip->GetPerception();
-	Metric rRange2[RANGE_INDEX_COUNT];
-	for (i = 0; i < RANGE_INDEX_COUNT; i++)
-		{
-		rRange2[i] = RangeIndex2Range(i);
-		rRange2[i] = rRange2[i] * rRange2[i];
-		}
+	CPerceptionCalc Perception(m_pShip->GetPerception());
 
 	//	The player is a special case (because sometimes a station is angry at the 
 	//	player even though she is not an enemy)
@@ -280,7 +274,7 @@ CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric r
 		Metric rDistance2 = vRange.Dot(vRange);
 
 		if (rDistance2 < rMaxRange2
-				&& rDistance2 < rRange2[pPlayer->GetDetectionRangeIndex(iPerception)])
+				&& Perception.CanBeTargeted(pPlayer, rDistance2))
 			return pPlayer;
 		}
 
@@ -306,7 +300,7 @@ CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric r
 			Metric rDistance2 = vRange.Dot(vRange);
 
 			if (rDistance2 < rMaxRange2
-					&& rDistance2 < rRange2[pObj->GetDetectionRangeIndex(iPerception)]
+					&& Perception.CanBeTargeted(pObj, rDistance2)
 					&& pObj != pExcludeObj
 					&& !pObj->IsEscortingFriendOf(m_pShip))
 				return pObj;
@@ -974,6 +968,21 @@ DWORD CBaseShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, 
 		return m_pOrderModule->Communicate(m_pShip, m_AICtx, pSender, iMessage, pParam1, dwParam2);
 	else
 		return OnCommunicateNotify(pSender, iMessage, pParam1, dwParam2);
+	}
+
+void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
+
+//	OnDestroyed
+//
+//	The ship was destroyed
+
+	{
+	//	Notify our order module (or derrived class if we're doing it old-style)
+
+	if (m_pOrderModule)
+		m_pOrderModule->Destroyed(m_pShip, Ctx);
+	else
+		OnDestroyedNotify(Ctx);
 	}
 
 void CBaseShipAI::OnDocked (CSpaceObject *pObj)

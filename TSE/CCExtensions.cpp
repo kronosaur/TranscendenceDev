@@ -1492,6 +1492,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (stations)\n\n"
 
 			"   'abandoned\n"
+			"   'angry\n"
 			"   'barrier\n"
 			"   'currency\n"
 			"   'destNodeID\n"
@@ -5171,7 +5172,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pTarget == NULL)
 				return pCC->CreateNil();
 
-			return pCC->CreateBool(pObj->GetDistance2(pTarget) <= pTarget->GetDetectionRange2(pObj->GetPerception()));
+			CPerceptionCalc Perception(pObj->GetPerception());
+			return pCC->CreateBool(Perception.CanBeTargeted(pTarget, pObj->GetDistance2(pTarget)));
 			}
 
 		case FN_OBJ_CAN_INSTALL_ITEM:
@@ -10583,9 +10585,12 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
 
+		//	NOTE: Sometimes we want to find virtual objects, so always include 
+		//	them if they match.
+
 		if (pObj 
 				&& pObj->MatchesCriteria(Ctx, Criteria)
-				&& !pObj->IsInactive())
+				&& (!pObj->IsIntangible() || pObj->IsVirtual()))
 			{
 			if (bGenerateOurOwnList)
 				pList->AppendInteger(*pCC, (int)pObj);
@@ -11758,7 +11763,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 					CSpaceObject *pObj = pSystem->GetObject(i);
 					if (pObj 
 							&& pObj->MatchesCriteria(Ctx, Criteria)
-							&& !pObj->IsInactive())
+							&& (!pObj->IsIntangible() || pObj->IsVirtual()))
 						{
 						Metric rDist2 = (pObj->GetPos() - vTry).Length2();
 						if (rDist2 < rMinDist2)

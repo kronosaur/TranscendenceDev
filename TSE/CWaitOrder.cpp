@@ -100,16 +100,11 @@ bool CWaitOrder::IsLeaderInRange (CShip *pShip)
 //	Returns TRUE if the leader is in range.
 
 	{
-	//	Check to see if the target that we're looking for is in sight
-
-	Metric rDetectRange = m_Objs[objLeader]->GetDetectionRange(pShip->GetPerception());
-	if (m_rDistance > 0.0)
-		rDetectRange = Min(m_rDistance, rDetectRange);
-
-	Metric rDetectRange2 = rDetectRange * rDetectRange;
-
+	CPerceptionCalc Perception(pShip->GetPerception());
 	Metric rRange2 = (m_Objs[objLeader]->GetPos() - pShip->GetPos()).Length2();
-	return (rRange2 < rDetectRange2);
+
+	return ((m_rDistance <= 0.0 || rRange2 < (m_rDistance * m_rDistance))
+			&& Perception.CanBeTargeted(m_Objs[objLeader], rRange2));
 	}
 
 void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire)

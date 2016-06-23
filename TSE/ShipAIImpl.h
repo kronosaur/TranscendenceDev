@@ -232,6 +232,7 @@ class IOrderModule
 		DWORD Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
 		static IOrderModule *Create (IShipController::OrderTypes iOrder);
 		CString DebugCrashInfo (CShip *pShip);
+		void Destroyed (CShip *pShip, SDestroyCtx &Ctx);
 		inline CSpaceObject *GetBase (void) { return OnGetBase(); }
 		inline IShipController::OrderTypes GetOrder (void) { return OnGetOrder(); }
 		inline CSpaceObject *GetTarget (void) { return OnGetTarget(); }
@@ -247,6 +248,7 @@ class IOrderModule
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { }
 		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
 		virtual CString OnDebugCrashInfo (void) { return NULL_STR; }
+		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) { }
 		virtual CSpaceObject *OnGetBase (void) { return NULL; }
 		virtual IShipController::OrderTypes OnGetOrder (void) = 0;
 		virtual CSpaceObject *OnGetTarget (void) { return NULL; }
@@ -338,6 +340,7 @@ class CBaseShipAI : public IShipController
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual void OnDocked (CSpaceObject *pObj) override;
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
 		virtual void OnNewSystem (CSystem *pSystem) override;
@@ -398,6 +401,7 @@ class CBaseShipAI : public IShipController
 		virtual void OnCleanUp (void) { }
 		virtual DWORD OnCommunicateNotify (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
 		virtual CString OnDebugCrashInfo (void) { return NULL_STR; }
+		virtual void OnDestroyedNotify (SDestroyCtx &Ctx) { }
 		virtual void OnDockedEvent (CSpaceObject *pObj) { }
 		virtual bool OnGetAISettingInteger (const CString &sSetting, int *retiValue) { return false; }
 		virtual bool OnGetAISettingString (const CString &sSetting, CString *retsValue) { return false; }

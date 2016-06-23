@@ -629,6 +629,70 @@ void CSpaceObject::CalcOverlayPos (COverlayType *pOverlayType, const CVector &vP
 		*retiPosRadius = (int)(rRadius / g_KlicksPerPixel);
 	}
 
+CSpaceObject *CSpaceObject::CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
+
+//	CalcTargetToAttack
+//
+//	Figure out whether to attack the order giver or not. NOTE: We return NULL if
+//	neither can be attacked.
+
+	{
+	CPerceptionCalc Perception(GetPerception());
+
+	//	Figure out if we can see the attacker
+
+	Metric rAttackerDist2 = g_InfiniteDistance;
+	bool bCanSeeAttacker = false;
+	if (pAttacker)
+		{
+		rAttackerDist2 = GetDistance2(pAttacker);
+		if (Perception.CanBeTargeted(pAttacker, rAttackerDist2))
+			bCanSeeAttacker = true;
+		}
+
+	//	Figure out if we can see the order giver
+
+	Metric rOrderGiverDist2 = g_InfiniteDistance;
+	bool bCanSeeOrderGiver = false;
+	if (pOrderGiver == pAttacker)
+		{
+		bCanSeeOrderGiver = bCanSeeAttacker;
+		rOrderGiverDist2 = rAttackerDist2;
+		}
+	else if (pOrderGiver)
+		{
+		rOrderGiverDist2 = GetDistance2(pOrderGiver);
+		if (Perception.CanBeTargeted(pOrderGiver, rOrderGiverDist2))
+			bCanSeeOrderGiver = true;
+		}
+
+	//	Choose whichever is valid and visible.
+
+	if (pAttacker == pOrderGiver)
+		return (bCanSeeAttacker ? pAttacker : NULL);
+
+	else if (pAttacker == NULL || !bCanSeeAttacker)
+		return (bCanSeeOrderGiver ? pOrderGiver : NULL);
+
+	else if (pOrderGiver == NULL || !bCanSeeOrderGiver)
+		return (bCanSeeAttacker ? pAttacker : NULL);
+
+	//	Both attacker and order giver are valid and visible to us. If one is
+	//	twice as close to us, we pick that one.
+
+	else if (rAttackerDist2 < rOrderGiverDist2 * 4.0)
+		return pAttacker;
+	else if (rOrderGiverDist2 < rAttackerDist2 * 4.0)
+		return pOrderGiver;
+
+	//	Otherwise, we pick randomly, weighing the order giver a little more.
+
+	else if (mathRandom(1, 100) <= 60)
+		return pOrderGiver;
+	else
+		return pAttacker;
+	}
+
 Metric CSpaceObject::CalculateItemMass (Metric *retrCargoMass)
 
 //	CalculateCargoMass
@@ -680,6 +744,11 @@ bool CSpaceObject::CanCommunicateWith (CSpaceObject *pSender)
 	//	We can't communicate if we don't know about the object
 
 	if (!IsKnown())
+		return false;
+
+	//	We can't communicate if we're intangible (unless we're virual)
+
+	if (IsIntangible() && !IsVirtual())
 		return false;
 
 	//	We can't communicate if we are out of range
@@ -3691,13 +3760,7 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 
 	//	Compute this object's perception and perception range
 
-	int iPerception = GetPerception();
-	Metric rRange2[RANGE_INDEX_COUNT];
-	for (i = 0; i < RANGE_INDEX_COUNT; i++)
-		{
-		rRange2[i] = RangeIndex2Range(i);
-		rRange2[i] = rRange2[i] * rRange2[i];
-		}
+	CPerceptionCalc Perception(GetPerception());
 
 	//	Allocate an array large enough
 
@@ -3734,7 +3797,7 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 			Metric rDist2 = vDist.Length2();
 
 			if (rDist2 < rWorstDist2
-					&& rDist2 < rRange2[pObj->GetDetectionRangeIndex(iPerception)]
+					&& Perception.CanBeTargeted(pObj, rDist2)
 					&& pObj != pExcludeObj
 					&& pObj->GetLastFireTime() > iAggressorThreshold
 					&& !pObj->IsEscortingFriendOf(this))
@@ -3813,18 +3876,12 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncl
 
 	//	Compute this object's perception and perception range
 
-	int iPerception = GetPerception();
-	Metric rRange2[RANGE_INDEX_COUNT];
-	for (i = 0; i < RANGE_INDEX_COUNT; i++)
-		{
-		rRange2[i] = RangeIndex2Range(i);
-		rRange2[i] = rRange2[i] * rRange2[i];
-		}
+	CPerceptionCalc Perception(GetPerception());
 
 	//	Loop over all objects finding the nearest visible enemy
 
 	CSpaceObject *pBestObj = NULL;
-	Metric rBestDist2 = rRange2[0];
+	Metric rBestDist2 = Perception.GetRange2(0);
 
 	//	If the caller has specified a max range, then use that
 
@@ -3847,7 +3904,7 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncl
 			Metric rDist2 = vDist.Length2();
 
 			if (rDist2 < rBestDist2
-					&& rDist2 < rRange2[pObj->GetDetectionRangeIndex(iPerception)]
+					&& Perception.CanBeTargeted(pObj, rDist2)
 					&& pObj != pExcludeObj
 					&& !pObj->IsEscortingFriendOf(this))
 				{
@@ -3884,15 +3941,12 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iM
 
 	//	Compute this object's perception and perception range
 
-	int iPerception = GetPerception();
-	Metric rRange[RANGE_INDEX_COUNT];
-	for (i = 0; i < RANGE_INDEX_COUNT; i++)
-		rRange[i] = RangeIndex2Range(i);
+	CPerceptionCalc Perception(GetPerception());
 
 	//	Loop over all objects finding the nearest visible enemy
 
 	CSpaceObject *pBestObj = NULL;
-	Metric rBestDist = rRange[0];
+	Metric rBestDist = Perception.GetRange(0);
 
 	//	If the caller has specified a max range, then use that
 
@@ -3915,7 +3969,7 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iM
 			int iAngle = VectorToPolar(vDist, &rDist);
 
 			if (rDist < rBestDist
-					&& rDist < rRange[pObj->GetDetectionRangeIndex(iPerception)]
+					&& Perception.CanBeTargetedAtDist(pObj, rDist)
 					&& pObj != pExcludeObj
 					&& !pObj->IsEscortingFriendOf(this))
 				{
@@ -4268,13 +4322,7 @@ void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *ret
 
 	//	Compute this object's perception and perception range
 
-	int iPerception = GetPerception();
-	Metric rRange2[RANGE_INDEX_COUNT];
-	for (i = 0; i < RANGE_INDEX_COUNT; i++)
-		{
-		rRange2[i] = RangeIndex2Range(i);
-		rRange2[i] = rRange2[i] * rRange2[i];
-		}
+	CPerceptionCalc Perception(GetPerception());
 
 	//	Loop over all objects
 
@@ -4292,7 +4340,7 @@ void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *ret
 			CVector vDist = vCenter - pObj->GetPos();
 			Metric rDist2 = vDist.Length2();
 
-			if (rDist2 < rRange2[pObj->GetDetectionRangeIndex(iPerception)]
+			if (Perception.CanBeTargeted(pObj, rDist2)
 					&& pObj != pExcludeObj
 					&& pObj->GetLastFireTime() > iAggressorThreshold
 					&& !pObj->IsEscortingFriendOf(this))
@@ -4317,13 +4365,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 
 	//	Compute this object's perception and perception range
 
-	int iPerception = GetPerception();
-	Metric rRange2[RANGE_INDEX_COUNT];
-	for (i = 0; i < RANGE_INDEX_COUNT; i++)
-		{
-		rRange2[i] = RangeIndex2Range(i);
-		rRange2[i] = rRange2[i] * rRange2[i];
-		}
+	CPerceptionCalc Perception(GetPerception());
 
 	//	The player is a special case (because sometimes a station is angry at the 
 	//	player even though she is not an enemy)
@@ -4338,7 +4380,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 		Metric rDistance2 = vRange.Dot(vRange);
 
 		if (rDistance2 < rMaxRange2
-				&& rDistance2 < rRange2[pPlayer->GetDetectionRangeIndex(iPerception)])
+				&& Perception.CanBeTargeted(pPlayer, rDistance2))
 			return pPlayer;
 		}
 
@@ -4365,7 +4407,7 @@ CSpaceObject *CSpaceObject::GetVisibleEnemyInRange (CSpaceObject *pCenter, Metri
 			Metric rDistance2 = vRange.Dot(vRange);
 
 			if (rDistance2 < rMaxRange2
-					&& rDistance2 < rRange2[pObj->GetDetectionRangeIndex(iPerception)]
+					&& Perception.CanBeTargeted(pObj, rDistance2)
 					&& pObj != pExcludeObj
 					&& !pObj->IsEscortingFriendOf(this))
 				return pObj;
@@ -5203,7 +5245,7 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 	//	[An alternative is to add !IsVirtual() to all places that look for
 	//	enemies to attack.]
 
-	if (Crit.bActiveObjectsOnly && !CanAttack() && !IsVirtual())
+	if (Crit.bActiveObjectsOnly && IsInactive() && !IsVirtual())
 		return false;
 
 	if (Crit.bStargatesOnly && !IsActiveStargate())
@@ -7177,7 +7219,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			&& !IsDestroyed()
 			&& Ctx.pPlayer
 			&& Ctx.pPlayer->IsEnemy(this)
-            && (GetCategory() == catShip || GetCategory() == catStation)
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
 		{

@@ -2055,6 +2055,25 @@ class COverlayList
 
 #define MAX_COMMS_CAPS					25
 
+//	CSpaceObject ---------------------------------------------------------------
+//
+//	SEMANTICS
+//
+//	CanAttack: If TRUE, this is an active/intelligent object that could pose
+//		a threat. E.g., a ship or a station. Generally used to pick out a 
+//		possible target. Missiles/beams cannot attack. Wrecks and abandoned
+//		stations cannot attack.
+//
+//	Hidden: Hidden objects are never shown in the system. For example, suspended
+//		objects are hidden. Anything that paints, e.g., fading missiles, is not
+//		hidden.
+//
+//	Inactive: This is almost identical to !CanAttack, except that missiles are
+//		considered active (unless they are fading out).
+//
+//	Intangible: If TRUE, this object is not a physical object in the system.
+//		Virtual and hidden objects are intangible. So are missiles fading out.
+
 class CSpaceObject : public CObject
 	{
 	public:
@@ -2233,6 +2252,7 @@ class CSpaceObject : public CObject
 		inline bool Blocks (CSpaceObject *pObj) { return (m_fIsBarrier && CanBlock(pObj)); }
 		inline bool BlocksShips (void) { return (m_fIsBarrier && CanBlockShips()); }
 		void CalcOverlayPos (COverlayType *pOverlayType, const CVector &vPos, int *retiPosAngle, int *retiPosRadius);
+		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		inline bool CanBeControlled (void) { return m_iControlsFrozen == 0; }
 		inline bool CanBeHit (void) { return (!m_fCannotBeHit && !m_fOutOfPlaneObj); }
 		inline bool CanBeHitByFriends (void) { return !m_fNoFriendlyTarget; }
@@ -2411,7 +2431,7 @@ class CSpaceObject : public CObject
 		bool IsCovering (CSpaceObject *pObj);
 		bool IsCreated (void) { return m_fOnCreateCalled; }
 		bool IsDestinyTime (int iCycle, int iOffset = 0);
-		bool IsDestroyed (void) { return (m_fDestroyed ? true : false); }
+		bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
 		static bool IsDestroyedInUpdate (void) { return m_bObjDestroyed; }
 		bool IsEnemy (const CSpaceObject *pObj) const;
 		bool IsEnemyInRange (Metric rMaxRange, bool bIncludeStations = false);
@@ -2708,22 +2728,9 @@ class CSpaceObject : public CObject
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual void SetSovereign (CSovereign *pSovereign) { }
 
-		//	A hidden object is not painted.
-
 		virtual bool IsHidden (void) const { return false; }
-
-		//	An inactive object is no longer considered to be in the system. 
-		//	A ship inside a gate (but not yet removed) is inactive. A suspended object 
-		//	is also inactive. A missile object which is dead but still painting exhaust
-		//	is inactive.
-		//
-		//	NOTE: An object could be inactive but not hidden (e.g., a missile).
-
 		virtual bool IsInactive (void) const { return IsSuspended(); }
-
-		//	A suspended object is out of the system but may at some point return.
-		//	For example, a ship that has returned to a carrier is suspended.
-
+		virtual bool IsIntangible (void) const { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsSuspended (void) const { return false; }
 
 		//	...for active/intelligent objects (ships, stations, etc.)
@@ -2767,6 +2774,7 @@ class CSpaceObject : public CObject
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetVisibleDamage (void) { return 0; }
 		virtual bool HasMapLabel (void) { return false; }
+		virtual bool IsAngry (void) { return false; }
 		virtual bool IsAngryAt (CSpaceObject *pObj) { return IsEnemy(pObj); }
 		virtual bool IsBlind (void) { return false; }
 		virtual bool IsDisarmed (void) { return false; }

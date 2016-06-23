@@ -1223,7 +1223,6 @@ void CFleetCommandAI::UpdateTargetList (void)
 		CSpaceObject *pObj = ObjList.GetObj(i);
 
 		if (pObj != m_pObjective
-                && (pObj->GetCategory() == CSpaceObject::catShip || pObj->GetCategory() == CSpaceObject::catStation)
 				&& pObj->CanAttack()
 				&& pObj != m_pShip)
 			{
@@ -1258,7 +1257,7 @@ void CFleetCommandAI::UpdateTargetListAndPotentials (void)
 		{
 		CSpaceObject *pObj = m_pShip->GetSystem()->GetObject(i);
 
-		if (pObj  == NULL || pObj == m_pObjective || pObj == m_pShip || pObj->IsInactive() || pObj->IsVirtual())
+		if (pObj  == NULL || pObj == m_pObjective || pObj == m_pShip || pObj->IsIntangible())
 			NULL;
 
 		//	Compute the influence of ships (both friendly and enemy)

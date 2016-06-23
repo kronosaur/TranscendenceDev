@@ -207,6 +207,9 @@ static char *g_pszMessageID[] =
 	"DeterTarget",				//	msgAttackDeter
 	"QueryAttackStatus",		//	msgQueryAttackStatus
 	"DockingSequenceEngaged",	//	msgDockingSequenceEngaged
+	"HitByHostileFire",			//	msgHitByHostileFire
+	"DestroyedByFriendlyFire",	//	msgDestroyedByFriendlyFire
+	"DestroyedByHostileFire",	//	msgDestroyedByHostileFire
 	};
 
 #define MESSAGE_ID_COUNT			(sizeof(g_pszMessageID) / sizeof(g_pszMessageID[0]))
