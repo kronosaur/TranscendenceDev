@@ -45,9 +45,12 @@ void CDriveDesc::Add (const CDriveDesc &Src)
 
     m_iThrust += Src.m_iThrust;
 
-    //  We take the power from the new device
+    //  Power use is additive (unless inertialess)
 
-    m_iPowerUse = Src.m_iPowerUse;
+	if (Src.m_fInertialess)
+		m_iPowerUse = Src.m_iPowerUse;
+	else
+		m_iPowerUse += Src.m_iPowerUse;
 
     //  Take on inertialess
 
