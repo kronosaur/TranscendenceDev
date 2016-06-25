@@ -1041,7 +1041,12 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			//	Get the position and velocity of the target
 
 			CVector vTarget = m_pTarget->GetPos() - GetPos();
-			CVector vTargetVel = m_pTarget->GetVel() - GetVel();
+
+			//	We use the system-relative velocity because we're not adding to
+			//	the missile's velocity. That is, we're interested in the 
+			//	intercept time at the missile's speed.
+
+			CVector vTargetVel = m_pTarget->GetVel();
 
 			//	Figure out which direction to move in
 
