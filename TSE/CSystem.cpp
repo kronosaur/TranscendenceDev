@@ -2038,7 +2038,7 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 				int iAngleInc = 360 / iFragmentCount;
 				for (i = 0; i < iFragmentCount; i++)
 					{
-					Angles[i] = (360 + iAngleOffset + (iAngleInc * i) + mathRandom(-iAngleVar, iAngleVar)) % 360;
+					Angles[i] = AngleMod(iAngleOffset + (iAngleInc * i) + mathRandom(-iAngleVar, iAngleVar));
 					Targets[i] = pTarget;
 					}
 				}
@@ -2100,14 +2100,39 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 			if (!pFragDesc->bMIRV)
 				vInitVel = vVel;
 
+			//	If we don't want to create all fragments, we randomly delete 
+			//	some fragments (by setting angle to -1).
+
+			if (iFraction < 100)
+				{
+				int iNewFragmentCount = Max(1, iFraction * iFragmentCount / 100);
+				if (iNewFragmentCount < iFragmentCount)
+					{
+					TArray<int> ToDelete;
+					ToDelete.InsertEmpty(iFragmentCount);
+					for (i = 0; i < iFragmentCount; i++)
+						ToDelete[i] = i;
+
+					ToDelete.Shuffle();
+
+					//	Randomly pick some fragments to delete.
+
+					int iDeleteCount = iFragmentCount - iNewFragmentCount;
+					for (i = 0; i < iDeleteCount; i++)
+						{
+						ASSERT(Angles[ToDelete[i]] >= 0);
+						Angles[ToDelete[i]] = -1;
+						}
+					}
+				}
+
 			//	Create the fragments
 
 			for (i = 0; i < iFragmentCount; i++)
 				{
                 //  If we're only creating a fraction of fragments, then skip some.
 
-                if (iFraction < 100
-                        && mathRandom(1, 100) > iFraction)
+                if (Angles[i] < 0)
                     continue;
 
                 //  Generate initial speed (this might be random for each fragment)
