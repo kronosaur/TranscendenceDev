@@ -491,6 +491,7 @@ class CWeaponFireDesc
 		inline int GetManeuverRate (void) const { return m_iManeuverRate; }
 		inline int GetMaxLifetime (void) const { return m_Lifetime.GetMaxValue(); }
 		inline Metric GetMaxRadius (void) const { return m_rMaxRadius; }
+		inline int GetMinDamage (void) const { return m_MinDamage.Roll(); }
 		inline Metric GetMinRadius (void) const { return m_rMinRadius; }
         Metric GetMaxRange (void) const;
 		CEffectCreator *GetParticleEffect (void) const;
@@ -587,6 +588,7 @@ class CWeaponFireDesc
 
 		//	Particles (m_iFireType == ftParticles)
 		CParticleSystemDesc *m_pParticleDesc;
+		DiceRange m_MinDamage;				//	Minimum damage when hit by particles
 
 		//	Area stuff (m_iFireType == ftArea)
 		DiceRange m_ExpansionSpeed;			//	Speed of expansion (% of lightspeed)

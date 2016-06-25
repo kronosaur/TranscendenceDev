@@ -42,6 +42,7 @@
 #define MANEUVER_RATE_ATTRIB					CONSTLIT("maneuverRate")
 #define MAX_MISSILE_SPEED_ATTRIB				CONSTLIT("maxMissileSpeed")
 #define MAX_RADIUS_ATTRIB						CONSTLIT("maxRadius")
+#define MIN_DAMAGE_ATTRIB						CONSTLIT("minDamage")
 #define MIN_RADIUS_ATTRIB						CONSTLIT("minRadius")
 #define MISSILE_SPEED_ATTRIB					CONSTLIT("missileSpeed")
 #define MULTI_TARGET_ATTRIB						CONSTLIT("multiTarget")
@@ -1808,6 +1809,14 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			//	We always set the old compatibility behavior.
 
 			m_pParticleDesc->SetSprayCompatible();
+			}
+
+		//	Minimum damage
+
+		if (error = m_MinDamage.LoadFromXML(pDesc->GetAttribute(MIN_DAMAGE_ATTRIB)))
+			{
+			Ctx.sError = CONSTLIT("Invalid minDamage attribute");
+			return ERR_FAIL;
 			}
 
 		//	Initialize other variables

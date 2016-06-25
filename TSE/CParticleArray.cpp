@@ -1477,6 +1477,10 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 				if (mathRandom(1, 100) <= (iTotal % Ctx.iTotalParticleCount) * 100 / Ctx.iTotalParticleCount)
 					iDamage++;
 
+				//	Some weapons always do minimum damage.
+
+				iDamage = Max(Ctx.pDamageDesc->GetMinDamage(), iDamage);
+
 				//	Do damage
 
 				SDamageCtx DamageCtx;
