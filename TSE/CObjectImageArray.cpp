@@ -937,6 +937,36 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, int iFrameCount, int iTicks
 	return NOERROR;
     }
 
+ALERROR CObjectImageArray::Init (CObjectImage *pImage, const RECT &rcImage, int iFrameCount, int iTicksPerFrame)
+
+//	Init
+//
+//	Create from parameters
+
+	{
+	ASSERT(pImage);
+
+	CleanUp();
+
+	//	Initialize basic info
+
+	m_dwBitmapUNID = pImage->GetUNID();
+	m_pImage = pImage;
+	m_rcImage = rcImage;
+	m_iFrameCount = iFrameCount;
+	m_iRotationCount = STD_ROTATION_COUNT;
+	m_iFramesPerColumn = m_iRotationCount;
+	m_iFramesPerRow = iFrameCount;
+	m_iTicksPerFrame = iTicksPerFrame;
+	m_iFlashTicks = 0;
+	m_iRotationOffset = 0;
+	m_pRotationOffset = NULL;
+	m_iBlending = blendNormal;
+	m_iViewportSize = RectWidth(rcImage);
+
+	return NOERROR;
+	}
+
 ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame)
 
 //	Init

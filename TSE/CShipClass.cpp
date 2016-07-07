@@ -2358,11 +2358,13 @@ const CObjectImageArray &CShipClass::GetHeroImage (void)
 
     const CPlayerSettings *pPlayerSettings;
     DWORD dwImageUNID;
+	CObjectImage *pLargeImageObj;
     CG32bitImage *pLargeImage;
     if (m_HeroImage.IsEmpty()
             && (pPlayerSettings = GetPlayerSettings())
             && (dwImageUNID = pPlayerSettings->GetLargeImage())
-            && (pLargeImage = g_pUniverse->GetLibraryBitmap(dwImageUNID))
+            && (pLargeImageObj = g_pUniverse->FindLibraryImage(dwImageUNID))
+			&& (pLargeImage = pLargeImageObj->GetImage(strPatternSubst(CONSTLIT("%08x hero image"), GetUNID())))
             && !pLargeImage->IsEmpty())
         {
         //  If necessary, we scale it down to fit the dock screen.
@@ -2396,7 +2398,7 @@ const CObjectImageArray &CShipClass::GetHeroImage (void)
             rcImage.right = pLargeImage->GetWidth();
             rcImage.bottom = pLargeImage->GetHeight();
 
-            m_HeroImage.Init(pLargeImage, rcImage, 1, 1, false);
+            m_HeroImage.Init(pLargeImageObj, rcImage, 1, 1);
             }
         }
 
