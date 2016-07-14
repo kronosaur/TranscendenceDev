@@ -46,8 +46,9 @@ class CRayEffectPainter : public IEffectPainter
 
 			animateFade =			1,
             animateFlicker =        2,
+			animateCycle =			3,
 
-            animateMax =            2,
+            animateMax =            3,
 			};
 
 		enum ERayShapes
@@ -108,7 +109,7 @@ class CRayEffectPainter : public IEffectPainter
 		void CalcOval (TArray<Metric> &AdjArray);
 		void CalcTaper (TArray<Metric> &AdjArray);
 		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
-        ILinePainter *CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape);
+        ILinePainter *CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
 		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 
 		CEffectCreator *m_pCreator;
@@ -156,6 +157,7 @@ static LPSTR ANIMATION_TABLE[] =
 
 		"fade",
 		"flicker",
+		"cycle",
 
 		NULL
 	};
@@ -412,6 +414,22 @@ void CRayEffectPainter::CalcIntermediates (void)
 
     switch (m_iAnimation)
         {
+		case animateCycle:
+			{
+            //  We generate 16 frames. For some styles, such as "wavy", we cycle
+			//	through some kind of motion. For others, it's just random.
+
+            int iFrameCount = 16;
+            m_RayRenderer.InsertEmpty(iFrameCount);
+
+            for (i = 0; i < m_RayRenderer.GetCount(); i++)
+                {
+				Metric rAnimation = (Metric)i / (Metric)iFrameCount;
+                m_RayRenderer[i] = CreateRenderer(m_iWidth, m_iLength, m_iIntensity, m_iStyle, m_iShape, rAnimation);
+                }
+			break;
+			}
+
         case animateFlicker:
             {
             //  We generate 16 frames of random length and intensity
@@ -563,7 +581,7 @@ void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, 
 		}
 	}
 
-ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape)
+ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos)
 
 //  CreateRenderer
 //
@@ -1306,6 +1324,7 @@ void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int 
 			break;
 			}
 
+		case animateCycle:
         case animateFlicker:
             m_RayRenderer[Ctx.iTick % m_RayRenderer.GetCount()]->Draw(Dest, xFrom, yFrom, xTo, yTo, m_iWidth);
             break;
