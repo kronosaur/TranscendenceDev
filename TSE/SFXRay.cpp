@@ -73,8 +73,9 @@ class CRayEffectPainter : public IEffectPainter
 			styleJagged =			3,
 			styleGrainy =			4,
 			styleLightning =		5,
+			styleWhiptail =			6,
 
-			styleMax =				5,
+			styleMax =				6,
 			};
 
 		enum EColorTypes
@@ -100,6 +101,7 @@ class CRayEffectPainter : public IEffectPainter
 			widthAdjOval,
 			widthAdjTapered,
 			widthAdjCone,
+			widthAdjWhiptail,
 			};
 
 		void CalcCone (TArray<Metric> &AdjArray);
@@ -107,8 +109,9 @@ class CRayEffectPainter : public IEffectPainter
 		void CalcIntermediates (void);
         int CalcLength (SViewportPaintCtx &Ctx) const;
 		void CalcOval (TArray<Metric> &AdjArray);
+		void CalcRandomWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
 		void CalcTaper (TArray<Metric> &AdjArray);
-		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
+		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos);
         ILinePainter *CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
 		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 
@@ -143,6 +146,9 @@ const Metric BLOB_WAVE_SIZE =			0.30;
 const Metric JAGGED_AMPLITUDE =			0.45;
 const Metric JAGGED_WAVELENGTH_FACTOR =	0.33;
 const Metric WAVY_WAVELENGTH_FACTOR =	1.0;
+const Metric WHIPTAIL_AMPLITUDE =		0.45;
+const Metric WHIPTAIL_WAVELENGTH_FACTOR =		1.0;
+const Metric WHIPTAIL_DECAY =			0.13;
 
 const Metric MIN_GLOW_LEVEL =			0.6;
 const Metric GLOW_FACTOR =				(0.4 / 100.0);
@@ -186,6 +192,7 @@ static LPSTR STYLE_TABLE[] =
 		"jagged",
 		"grainy",
 		"lightning",
+		"whiptail",
 
 		NULL,
 	};
@@ -511,34 +518,9 @@ void CRayEffectPainter::CalcOval (TArray<Metric> &AdjArray)
 		AdjArray[i] = sqrt(1.0 - (rX * rX));
 	}
 
-void CRayEffectPainter::CalcTaper (TArray<Metric> &AdjArray)
+void CRayEffectPainter::CalcRandomWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength)
 
-//	CalcTaper
-//
-//	Fills in the given array with tapered widths.
-
-	{
-	int i;
-
-	//	From the head to the peak, we grow like a circle
-
-	int iPeakPoint = AdjArray.GetCount() / TAPER_PEAK_FRACTION;
-	Metric rXInc = (iPeakPoint > 0 ? (1.0 / (Metric)iPeakPoint) : 0.0);
-	Metric rX = 1.0;
-	for (i = 0; i < iPeakPoint; i++, rX -= rXInc)
-		AdjArray[i] = sqrt(1.0 - (rX * rX));
-
-	//	Past the peak we decay linearly
-
-	Metric rY = 1.0;
-	Metric rYInc = (AdjArray.GetCount() > 0 ? (1.0 / (Metric)(AdjArray.GetCount() - iPeakPoint)) : 0.0);
-	for (i = iPeakPoint; i < AdjArray.GetCount(); i++, rY -= rYInc)
-		AdjArray[i] = rY;
-	}
-
-void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength)
-
-//	CalcWaves
+//	CalcRandomWaves
 //
 //	Creates a smooth rolling sine wave envelope.
 
@@ -578,6 +560,69 @@ void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, 
 			rAngle += rInc;
 			v++;
 			}
+		}
+	}
+
+void CRayEffectPainter::CalcTaper (TArray<Metric> &AdjArray)
+
+//	CalcTaper
+//
+//	Fills in the given array with tapered widths.
+
+	{
+	int i;
+
+	//	From the head to the peak, we grow like a circle
+
+	int iPeakPoint = AdjArray.GetCount() / TAPER_PEAK_FRACTION;
+	Metric rXInc = (iPeakPoint > 0 ? (1.0 / (Metric)iPeakPoint) : 0.0);
+	Metric rX = 1.0;
+	for (i = 0; i < iPeakPoint; i++, rX -= rXInc)
+		AdjArray[i] = sqrt(1.0 - (rX * rX));
+
+	//	Past the peak we decay linearly
+
+	Metric rY = 1.0;
+	Metric rYInc = (AdjArray.GetCount() > 0 ? (1.0 / (Metric)(AdjArray.GetCount() - iPeakPoint)) : 0.0);
+	for (i = iPeakPoint; i < AdjArray.GetCount(); i++, rY -= rYInc)
+		AdjArray[i] = rY;
+	}
+
+void CRayEffectPainter::CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos)
+
+//	CalcWaves
+//
+//	Creates a smooth rolling sine wave envelope.
+
+	{
+	int v;
+	int iLength = AdjArray.GetCount();
+
+	//	Wavelength will decay (increase with each cycle)
+
+	Metric rStartWavelength = Max(2.0, rWavelength);
+
+	//	Cycle around the mid-point
+
+	Metric rPos = 1.0 - rAmplitude;
+
+	//	Offset the wave to produce an animation
+
+	Metric rAngleStart = 2.0 * PI * (1.0 - rCyclePos);
+
+	//	Keep looping until we're done
+
+	for (v = 0; v < iLength; v++)
+		{
+		//	Figure out the wavelength at this point. The wavelength increases
+		//	according to decay.
+
+		Metric rPointWavelength = (rStartWavelength + ((Metric)v * rDecay));
+		Metric rAngle = rAngleStart + (2.0 * PI * (Metric)v / rPointWavelength);
+
+		//	Set the value
+
+		AdjArray[v] = rPos + rAmplitude * sin(rAngle);
 		}
 	}
 
@@ -636,6 +681,13 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 				case styleLightning:
 					iWidthAdjType = widthAdjCone;
 					break;
+
+				case styleWhiptail:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjWhiptail;
+					iReshape = widthAdjCone;
+					break;
 				}
 			break;
 
@@ -671,6 +723,13 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 				case styleLightning:
 					iWidthAdjType = widthAdjDiamond;
+					break;
+
+				case styleWhiptail:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjWhiptail;
+					iReshape = widthAdjDiamond;
 					break;
 				}
 			break;
@@ -708,6 +767,13 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 				case styleLightning:
 					iWidthAdjType = widthAdjOval;
 					break;
+
+				case styleWhiptail:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjWhiptail;
+					iReshape = widthAdjOval;
+					break;
 				}
 			break;
 
@@ -738,6 +804,12 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 					break;
 
 				case styleLightning:
+					break;
+
+				case styleWhiptail:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjWhiptail;
 					break;
 				}
 			break;
@@ -774,6 +846,13 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 				case styleLightning:
 					iWidthAdjType = widthAdjTapered;
+					break;
+
+				case styleWhiptail:
+					iColorTypes = colorGlow;
+					iOpacityTypes = opacityTaperedGlow;
+					iWidthAdjType = widthAdjWhiptail;
+					iReshape = widthAdjTapered;
 					break;
 				}
 			break;
@@ -896,9 +975,8 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 			//	Initialize jagged envelope
 
-			CalcWaves(WidthAdjTop, BLOB_WAVE_SIZE, iWidth * WAVY_WAVELENGTH_FACTOR);
-			CalcWaves(WidthAdjBottom, BLOB_WAVE_SIZE, iWidth * WAVY_WAVELENGTH_FACTOR);
-
+			CalcRandomWaves(WidthAdjTop, BLOB_WAVE_SIZE, iWidth * WAVY_WAVELENGTH_FACTOR);
+			CalcRandomWaves(WidthAdjBottom, BLOB_WAVE_SIZE, iWidth * WAVY_WAVELENGTH_FACTOR);
 			break;
 			}
 
@@ -908,7 +986,6 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 			CalcCone(WidthAdjTop);
 			WidthAdjBottom = WidthAdjTop;
-
 			break;
 			}
 
@@ -918,7 +995,6 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 			CalcDiamond(WidthAdjTop);
 			WidthAdjBottom = WidthAdjTop;
-
 			break;
 			}
 
@@ -929,9 +1005,8 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 			//	Initialize jagged envelope
 
-			CalcWaves(WidthAdjTop, JAGGED_AMPLITUDE, iWidth * JAGGED_WAVELENGTH_FACTOR);
-			CalcWaves(WidthAdjBottom, JAGGED_AMPLITUDE, iWidth * JAGGED_WAVELENGTH_FACTOR);
-
+			CalcRandomWaves(WidthAdjTop, JAGGED_AMPLITUDE, iWidth * JAGGED_WAVELENGTH_FACTOR);
+			CalcRandomWaves(WidthAdjBottom, JAGGED_AMPLITUDE, iWidth * JAGGED_WAVELENGTH_FACTOR);
 			break;
 			}
 
@@ -941,7 +1016,6 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 			CalcOval(WidthAdjTop);
 			WidthAdjBottom = WidthAdjTop;
-
 			break;
 			}
 
@@ -951,7 +1025,16 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 			CalcTaper(WidthAdjTop);
 			WidthAdjBottom = WidthAdjTop;
+			break;
+			}
 
+		case widthAdjWhiptail:
+			{
+			WidthAdjTop.InsertEmpty(iLengthCount);
+			WidthAdjBottom.InsertEmpty(iLengthCount);
+
+			CalcWaves(WidthAdjTop, WHIPTAIL_AMPLITUDE, iWidth * WHIPTAIL_WAVELENGTH_FACTOR, WHIPTAIL_DECAY, rCyclePos);
+			CalcWaves(WidthAdjBottom, WHIPTAIL_AMPLITUDE, iWidth * WHIPTAIL_WAVELENGTH_FACTOR, WHIPTAIL_DECAY, rCyclePos + 0.5);
 			break;
 			}
 		}
