@@ -1095,7 +1095,6 @@ class CShip : public CSpaceObject
 		virtual void Suspend (void) override { Undock(); m_fManualSuspended = true; SetCannotBeHit(); }
 		virtual void Undock (CSpaceObject *pObj) override;
 		virtual void UpdateArmorItems (void) override;
-		virtual void UpdateDockingManeuver(const CVector &vDest, const CVector &vDestVel, int iDestFacing) override;
 
 	protected:
 
