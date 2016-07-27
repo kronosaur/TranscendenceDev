@@ -973,6 +973,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	int iLevel = (pType ? pType->GetLevel() : 1);
 
 	pArmor->m_pItemType = pType;
+	pArmor->m_Stats.iLevel = iLevel;
 	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(CONSTLIT(g_HitPointsAttrib), 0);
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 
