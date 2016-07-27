@@ -3648,12 +3648,18 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	//	Reactor properties
 
-    else if ((pDevice = m_AverageDevices.GetNamedDevice(devReactor))
-            && (pResult = pDevice->FindItemProperty(CItemCtx(CItem(pDevice->GetItemType(), 1)), sProperty)))
-        return pResult;
+	else if (CReactorDesc::IsExportedProperty(sProperty))
+		{
+		if ((pDevice = m_AverageDevices.GetNamedDevice(devReactor))
+			&& (pResult = pDevice->FindItemProperty(CItemCtx(CItem(pDevice->GetItemType(), 1)), sProperty)))
+			return pResult;
 
-    else if (pResult = GetReactorDesc()->FindProperty(sProperty))
-        return pResult;
+		else if (pResult = GetReactorDesc()->FindProperty(sProperty))
+			return pResult;
+
+		else
+			return NULL;
+		}
 
 	else
 		return NULL;

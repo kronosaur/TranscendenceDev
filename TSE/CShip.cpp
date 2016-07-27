@@ -3036,12 +3036,17 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	//	Reactor properties
 
-    else if ((pReactor = GetNamedDevice(devReactor))
-            && (pResult = pReactor->GetClass()->FindItemProperty(CItemCtx(this, pReactor), sName)))
-        return pResult;
+	else if (CReactorDesc::IsExportedProperty(sName))
+		{
+		if ((pReactor = GetNamedDevice(devReactor))
+			&& (pResult = pReactor->GetClass()->FindItemProperty(CItemCtx(this, pReactor), sName)))
+			return pResult;
 
-    else if (pResult = m_pClass->GetReactorDesc()->FindProperty(sName))
-        return pResult;
+		else if (pResult = m_pClass->GetReactorDesc()->FindProperty(sName))
+			return pResult;
+		else
+			return CC.CreateNil();
+		}
 
     //  Controller properties
 
