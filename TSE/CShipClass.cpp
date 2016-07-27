@@ -2336,7 +2336,13 @@ CString CShipClass::GetGenericName (DWORD *retdwFlags) const
 		//	use ComposeNounPhrase. In that case, return the short-name syntax.
 
 		else if (retdwFlags)
+			{
+			//	We need this flag because otherwise the code assumes that 
+			//	long-forms are mass items (e.g., barrel of grain).
+
+			*retdwFlags |= nounPluralizeLongForm;
 			return strPatternSubst(CONSTLIT("%s[-class %s]"), GetClassName(), GetShipTypeName());
+			}
 
 		//	Otherwise, just the class name
 

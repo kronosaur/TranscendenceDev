@@ -242,6 +242,7 @@ enum NounFlags
 	nounVowelArticle		= 0x00000020,	//	Should be "a" instead of "an" or vice versa
 	nounNoArticle			= 0x00000040,	//	Do not use "a" or "the"
 	nounPersonalName		= 0x00000080,	//	This is a human name (e.g., "Arco Vaughn")
+	nounPluralizeLongForm	= 0x00000100,	//	OK to pluralize even long form (e.g., "Tripoli-class destroyers")
 	};
 
 enum NounPhraseFlags

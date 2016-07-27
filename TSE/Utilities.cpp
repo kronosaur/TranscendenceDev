@@ -3069,7 +3069,7 @@ CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize,
 	//	Add plural if necessary (short name implies plural because
 	//	a short name is always a quantifiable item, e.g., a *mass of* concrete)
 
-	if (bPluralize && bDestIsSingular && !bHasLongForm)
+	if (bPluralize && bDestIsSingular && (!bHasLongForm || (dwNounFlags & nounPluralizeLongForm)))
 		{
 		if (dwNounFlags & nounPluralES)
 			{
