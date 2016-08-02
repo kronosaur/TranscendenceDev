@@ -95,10 +95,25 @@ CSteamService::CSteamService (CHumanInterface &HI) : ICIService(HI)
 		return;
 		}
 
+	//	Ensure that the user has logged into Steam. This will always return true if the game is launched
+	//	from Steam, but if Steam is at the login prompt when you run your game from the debugger, it
+	//	will return false.
+
+	if (!SteamUser()->BLoggedOn())
+		{
+		::kernelDebugLogMessage("Steam user is not logged in.");
+		m_bConnected = false;
+		return;
+		}
+
 	//	We're enabled
 
 	m_sUsername = CString(CString::csUTF8, SteamFriends()->GetPersonaName());
 	m_bConnected = true;
+
+#ifdef DEBUG
+	::kernelDebugLogMessage("Username: %s", m_sUsername);
+#endif
 	}
 
 CSteamService::~CSteamService (void)
@@ -117,6 +132,9 @@ void CSteamService::AccumulateExtensionFolders (TArray<CString> &Folders)
 //  Append list of folders in which to find extension.
 
     {
+	if (!m_bConnected)
+		return;
+
     int i;
     int iCount = (int)SteamUGC()->GetNumSubscribedItems();
     TArray<PublishedFileId_t> FileIds;
