@@ -421,6 +421,7 @@ class CReactorDesc
         bool IsFuelCompatible (const CItem &FuelItem) const;
 
         static const SStdStats &GetStdStats (int iLevel);
+		static bool IsExportedProperty (const CString &sProperty);
 
     private:
         void CleanUp (void);

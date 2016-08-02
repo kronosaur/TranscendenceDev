@@ -134,6 +134,21 @@ bool CReactorDesc::FindDataField (const CString &sField, CString *retsValue) con
 	return true;
     }
 
+bool CReactorDesc::IsExportedProperty (const CString &sProperty)
+
+//	IsExportedProperty
+//
+//	Returns TRUE if this property should be exported to a ship property.
+
+	{
+	return (strEquals(sProperty, PROPERTY_POWER)
+			|| strEquals(sProperty, PROPERTY_FUEL_CRITERIA)
+			|| strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY)
+			|| strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY_BONUS)
+			|| strEquals(sProperty, PROPERTY_FUEL_CAPACITY)
+			|| strEquals(sProperty, PROPERTY_FUEL_CAPACITY_EXACT));
+	}
+
 ICCItem *CReactorDesc::FindProperty (const CString &sProperty) const
 
 //  FindProperty

@@ -2124,14 +2124,14 @@ void CStandardShipAI::OnDestroyedNotify (SDestroyCtx &Ctx)
 			CSpaceObject *pBase = GetBase();
 			CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
 			CSpaceObject *pOrderGiver = (pAttacker ? pAttacker->GetOrderGiver(Ctx.iCause) : NULL);
+			CSpaceObject *pTarget;
 
 			if (pBase 
 					&& pAttacker 
 					&& pAttacker->CanAttack()
-					&& !pBase->IsEnemy(m_pShip))
+					&& !pBase->IsEnemy(m_pShip)
+					&& (pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver)))
 				{
-				CSpaceObject *pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver);
-
 				//	If we were attacked by a friend, then we tell our station
 				//	so they can be blacklisted.
 

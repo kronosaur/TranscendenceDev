@@ -2336,7 +2336,13 @@ CString CShipClass::GetGenericName (DWORD *retdwFlags) const
 		//	use ComposeNounPhrase. In that case, return the short-name syntax.
 
 		else if (retdwFlags)
+			{
+			//	We need this flag because otherwise the code assumes that 
+			//	long-forms are mass items (e.g., barrel of grain).
+
+			*retdwFlags |= nounPluralizeLongForm;
 			return strPatternSubst(CONSTLIT("%s[-class %s]"), GetClassName(), GetShipTypeName());
+			}
 
 		//	Otherwise, just the class name
 
@@ -3642,12 +3648,18 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	//	Reactor properties
 
-    else if ((pDevice = m_AverageDevices.GetNamedDevice(devReactor))
-            && (pResult = pDevice->FindItemProperty(CItemCtx(CItem(pDevice->GetItemType(), 1)), sProperty)))
-        return pResult;
+	else if (CReactorDesc::IsExportedProperty(sProperty))
+		{
+		if ((pDevice = m_AverageDevices.GetNamedDevice(devReactor))
+			&& (pResult = pDevice->FindItemProperty(CItemCtx(CItem(pDevice->GetItemType(), 1)), sProperty)))
+			return pResult;
 
-    else if (pResult = GetReactorDesc()->FindProperty(sProperty))
-        return pResult;
+		else if (pResult = GetReactorDesc()->FindProperty(sProperty))
+			return pResult;
+
+		else
+			return NULL;
+		}
 
 	else
 		return NULL;

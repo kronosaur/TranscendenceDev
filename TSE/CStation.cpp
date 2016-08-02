@@ -2385,10 +2385,38 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 
 		case msgHitByFriendlyFire:
 		case msgDestroyedByFriendlyFire:
-			if (!IsAbandoned() 
-					&& Blacklist(g_pUniverse->GetPlayerShip()))
-				DeterAttack(pParam1);
+			{
+			//	If we're abandoned, then we don't care.
+
+			if (IsAbandoned())
+				return resNoAnswer;
+
+			//	The sender has already figured out which target to retaliate against.
+			//	But we need to recompute the order giver.
+
+			CSpaceObject *pTarget = pParam1;
+			CSpaceObject *pOrderGiver = pTarget->GetOrderGiver();
+
+			//	If this is not the player, then we don't care.
+			//	If we don't blacklist, then we don't care.
+
+			if (!pOrderGiver->IsPlayer()
+					|| !m_pType->IsBlacklistEnabled() || m_fNoBlacklist)
+				return resAck;
+
+			//	If we think this might have been accidental, then ignore it.
+
+			if (!m_Blacklist.Hit(GetSystem()->GetTick()))
+				return resAck;
+
+			//	Otherwise, blacklist the player (but go after the target, which 
+			//	might be an auton because the player is hidden).
+
+			if (Blacklist(pOrderGiver))
+				DeterAttack(pTarget);
+
 			return resAck;
+			}
 
 		default:
 			return resNoAnswer;
