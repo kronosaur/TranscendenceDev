@@ -3084,8 +3084,11 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
 
     //  If we need ammo, then we have extra work to do.
     //  NOTE: Currently, if one variant uses ammo, all need to use ammo.
+	//	NOTE 2: This only applies to launchers. By definition, non-launchers
+	//	never have more than one type of ammo. [But some launchers do not
+	//	have ammo, so we need to check that they use ammo.]
 
-    if (m_ShotData[0].pDesc->GetAmmoType() != NULL)
+    if (m_ShotData[0].pDesc->GetAmmoType() != NULL && m_bLauncher)
         {
         //  If we have ammo, use it (this overrides whatever item is selected 
         //  in ItemCtx).
