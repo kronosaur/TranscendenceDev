@@ -2294,6 +2294,11 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	if (Ctx.pObj == m_pTarget)
 		m_pTarget = NULL;
 
+	//	If this was our base, remove it.
+
+	if (Ctx.pObj == m_pBase)
+		m_pBase = NULL;
+
 	//	Remove from the subordinate list. No need to take action because the 
 	//	ship/turret will communicate if we need to avenge.
 

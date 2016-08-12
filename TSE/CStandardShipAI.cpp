@@ -1807,13 +1807,13 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 					//	If we were attacked twice (excluding multi-shot weapons)
 					//	then we tell our station about this
 
-					if (m_AICtx.IsSecondAttack())
-						{
-						CSpaceObject *pBase = GetCurrentOrderTarget();
-						if (pBase->IsEnemy(pAttacker)
-								|| pBase->IsAngryAt(pAttacker))
-							m_pShip->Communicate(pBase, msgAttackDeter, pBase->CalcTargetToAttack(pAttacker, pOrderGiver));
-						}
+					CSpaceObject *pBase;
+					CSpaceObject *pTarget;
+					if (m_AICtx.IsSecondAttack()
+							&& (pBase = GetCurrentOrderTarget())
+							&& (pBase->IsEnemy(pAttacker) || pBase->IsAngryAt(pAttacker))
+							&& (pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver)))
+						m_pShip->Communicate(pBase, msgAttackDeter, pTarget);
 
 					break;
 					}

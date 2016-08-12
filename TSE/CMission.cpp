@@ -1273,7 +1273,7 @@ bool CMission::SetUnavailable (void)
 	{
 	//	Must be open
 
-	if (m_iStatus == statusOpen)
+	if (m_iStatus != statusOpen)
 		return false;
 
 	//	No player

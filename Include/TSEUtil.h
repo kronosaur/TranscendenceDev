@@ -1521,6 +1521,7 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 CString GetLoadStateString (ELoadStates iState);
 Metric GetScale (CXMLElement *pObj);
 bool HasModifier (const CString &sModifierList, const CString &sModifier);
+inline bool IsOfficialUNID (DWORD dwUNID) { return ((dwUNID & 0xF0000000) < 0xA0000000); }
 inline bool IsRegisteredUNID (DWORD dwUNID) { return ((dwUNID & 0xF0000000) != 0xD0000000) && ((dwUNID & 0xF0000000) != 0xE0000000); }
 inline bool IsReservedUNID (DWORD dwUNID) { return ((dwUNID & 0xF0000000) == 0xF0000000); }
 
