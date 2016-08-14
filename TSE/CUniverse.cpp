@@ -2550,7 +2550,7 @@ void CUniverse::SetHost (IHost *pHost)
 		m_pHost = pHost;
 	}
 
-void CUniverse::SetNewSystem (CSystem *pSystem, CShip *pPlayerShip, CSpaceObject *pPOV)
+void CUniverse::SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV)
 
 //	SetNewSystem
 //
@@ -2577,6 +2577,11 @@ void CUniverse::SetNewSystem (CSystem *pSystem, CShip *pPlayerShip, CSpaceObject
 	//	Set the new system
 
 	SetPOV(pPOV);
+
+	//	Replay any commands that might have happened while the player was in a
+	//	different system.
+
+	m_Objects.ReplayCommands(pSystem);
 
 	//	Add a discontinuity to reflect the amount of time spent
 	//	in the stargate

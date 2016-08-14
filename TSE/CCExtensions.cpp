@@ -488,6 +488,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_UNIVERSE_SET_EXTENSION_DATA	5
 #define FN_UNIVERSE_FIND_OBJ			6
 #define FN_UNIVERSE_GET_ELAPSED_GAME_TIME	7
+#define FN_UNIVERSE_SET_OBJECT_KNOWN	8
 
 ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2688,8 +2689,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	Universe functions
 		//	----------------
 
-		{	"unvFindObj",					fnUniverseGet,		FN_UNIVERSE_FIND_OBJ,
-			"(unvFindObj [nodeID] criteria) -> list of entries\n\n"
+		{	"unvFindObject",					fnUniverseGet,		FN_UNIVERSE_FIND_OBJ,
+			"(unvFindObject [nodeID] criteria) -> list of entries\n\n"
 
 			"criteria\n\n"
 			
@@ -2739,6 +2740,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'serviceUser\n",
 
 			"ssv",	0,	},
+
+		{	"unvSetObjectKnown",			fnUniverseGet,	FN_UNIVERSE_SET_OBJECT_KNOWN,
+			"(unvSetObjectKnown [nodeID] criteria [True/Nil]) -> True/Nil",
+			"s*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"unvUNID",						fnUniverseGet,	FN_UNIVERSE_UNID,
 			"(unvUNID string) -> (unid 'itemtype name) or (unid 'shipclass name)",
@@ -2801,6 +2806,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"unvFindObj",					fnUniverseGet,		FN_UNIVERSE_FIND_OBJ,
+			"DEPRECATED: Use unvFindObject instead.",
+			"*s",	0,	},
 
 		{	"objGetDefaultCurrency",		fnObjGet,		FN_OBJ_DEFAULT_CURRENCY,
 			"DEPRECATED: Use (objGetProperty obj 'currency) instead.",
@@ -12062,6 +12071,62 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Unable to store data"), pArgs->GetElement(1));
 
 			//	Result
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_UNIVERSE_SET_OBJECT_KNOWN:
+			{
+			//	If the last argument is True or Nil, then we know what the 
+			//	others are.
+
+			CString sNodeID;
+			CString sCriteria;
+			bool bKnown;
+
+			ICCItem *pLastArg = pArgs->GetElement(pArgs->GetCount() - 1);
+			if (pLastArg->IsNil() || pLastArg->IsTrue())
+				{
+				if (pArgs->GetCount() >= 3)
+					{
+					sNodeID = pArgs->GetElement(0)->GetStringValue();
+					sCriteria = pArgs->GetElement(1)->GetStringValue();
+					}
+				else
+					{
+					sNodeID = NULL_STR;
+					sCriteria = pArgs->GetElement(0)->GetStringValue();
+					}
+
+				bKnown = !pLastArg->IsNil();
+				}
+
+			//	Otherwise, we either have nodeID + criteria or just criteria
+
+			else if (pArgs->GetCount() >= 2)
+				{
+				sNodeID = pArgs->GetElement(0)->GetStringValue();
+				sCriteria = pArgs->GetElement(1)->GetStringValue();
+				bKnown = true;
+				}
+			else
+				{
+				sNodeID = NULL_STR;
+				sCriteria = pArgs->GetElement(0)->GetStringValue();
+				bKnown = true;
+				}
+
+			//	Parse the criteria
+
+			CDesignTypeCriteria Criteria;
+			if (CDesignTypeCriteria::ParseCriteria(sCriteria, &Criteria) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid design type criteria"), pArgs->GetElement(0));
+
+			//	Do it
+
+			g_pUniverse->GetGlobalObjects().SetKnown(sNodeID, Criteria, bKnown);
+
+			//	Done
 
 			return pCC->CreateTrue();
 			}

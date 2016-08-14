@@ -3121,11 +3121,30 @@ class CObjectTracker
         void GetSystemStarObjects (CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const;
         const TArray<COrbit> &GetSystemOrbits (CTopologyNode *pNode) const;
 		void Insert (CSpaceObject *pObj);
+		inline bool IsTracked (CSpaceObject *pObj) { CSpaceObject::Categories iCategory = pObj->GetCategory(); return (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip); }
+		inline void InsertIfTracked (CSpaceObject *pObj) { if (IsTracked(pObj)) Insert(pObj); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
         void Refresh (CSystem *pSystem);
+		void ReplayCommands (CSystem *pSystem);
+		void SetKnown (const CString &sNodeID, const CDesignTypeCriteria &Criteria, bool bKnown = true);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		
+		enum EDelayedCommandTypes
+			{
+			cmdUnknown =			-1,
+
+			cmdSetKnown =			0,
+			cmdSetUnknown =			1,
+			};
+
+		struct SDelayedCommand
+			{
+			EDelayedCommandTypes iCmd;
+			CDesignTypeCriteria Criteria;
+			};
+
 		struct SObjExtra
 			{
             SObjExtra (void)
@@ -3223,6 +3242,7 @@ class CObjectTracker
             {
             TArray<SObjList *> ObjLists;
             TArray<COrbit> Orbits;
+			TArray<SDelayedCommand> Commands;
             };
 
 		bool AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
@@ -3232,6 +3252,8 @@ class CObjectTracker
 		SObjList *GetList (CSpaceObject *pObj) const;
 		SObjList *GetList (CTopologyNode *pNode, CDesignType *pType) const;
         void Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceObject *pPlayer);
+		void ReplayCommand (const SDelayedCommand &Cmd, CSystem *pSystem);
+		void SetKnown (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, bool bKnown);
 		SObjList *SetList (CSpaceObject *pObj);
 		SObjList *SetList (CTopologyNode *pNode, CDesignType *pType);
 		SObjList *SetList (SNodeData *pNodeData, CTopologyNode *pNode, CDesignType *pType);
@@ -3618,7 +3640,7 @@ class CUniverse
 		void SetCurrentSystem (CSystem *pSystem);
 		inline void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
-		void SetNewSystem (CSystem *pSystem, CShip *pPlayerShip, CSpaceObject *pPOV);
+		void SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV);
 		void SetPOV (CSpaceObject *pPOV);
 		void SetPlayerShip (CSpaceObject *pPlayer);
 		inline void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }

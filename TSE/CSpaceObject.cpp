@@ -532,11 +532,7 @@ ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
 	//	If this is a ship or station then add to the global list
 
 	if (!bNoGlobalInsert)
-		{
-		CSpaceObject::Categories iCategory = GetCategory();
-		if (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip)
-			g_pUniverse->GetGlobalObjects().Insert(this);
-		}
+		g_pUniverse->GetGlobalObjects().InsertIfTracked(this);
 
 	return NOERROR;
 	}

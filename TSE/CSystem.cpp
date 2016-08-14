@@ -414,6 +414,9 @@
 //  134: 1.7 Alpha 2
 //      Added m_pMapOrbit to CMarker
 //
+//  135: 1.7 Beta 1
+//      Added delayed commands to CObjectTracker
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

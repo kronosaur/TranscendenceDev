@@ -1236,7 +1236,7 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
 
-	g_pUniverse->GetGlobalObjects().Insert(this);
+	g_pUniverse->GetGlobalObjects().InsertIfTracked(this);
 	}
 
 Metric CStation::GetAttackDistance (void) const
@@ -3680,13 +3680,6 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 
 	SetKnown();
 
-    //  If we have a virtual base, then set it to be known. This handles the
-    //  case of New Victoria Arcology, which has a bunch of segments and a
-    //  virtual center.
-
-    if (m_pBase && m_pBase->IsVirtual())
-        m_pBase->SetKnown();
-
 	//	We've already painted these, but paint annotations on top
 
 	if (m_Scale == scaleWorld || m_Scale == scaleStar)
@@ -3975,6 +3968,15 @@ void CStation::SetKnown (bool bKnown)
 				&& IsStargate()
 				&& (pDestNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode)))
 			pDestNode->SetKnown();
+
+		//  If we have a virtual base, then set it to be known. This handles the
+		//  case of New Victoria Arcology, which has a bunch of segments and a
+		//  virtual center.
+
+		if (bKnown
+				&& m_pBase 
+				&& m_pBase->IsVirtual())
+			m_pBase->SetKnown();
 
 		//	Done
 

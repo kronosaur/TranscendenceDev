@@ -452,6 +452,12 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 //
 //      DWORD           No. of orbits
 //      COrbit          List of orbits
+//
+//		DWORD			No. of commands
+//
+//		For each command:
+//			DWORD				Type
+//			CDesignTypeCriteria	Criteria
 
 	{
     SLoadCtx SystemCtx(Ctx);
@@ -580,6 +586,35 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                 for (i = 0; i < iOrbitCount; i++)
                     Ctx.pStream->Read((char *)&Dummy, sizeof(COrbit));
                 }
+
+			//	Read the command list
+
+			if (SystemCtx.dwVersion >= 135)
+				{
+				int iCommandCount;
+				Ctx.pStream->Read((char *)&iCommandCount, sizeof(DWORD));
+				if (pNodeData)
+					{
+					pNodeData->Commands.InsertEmpty(iCommandCount);
+
+					for (i = 0; i < iCommandCount; i++)
+						{
+						Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+						pNodeData->Commands[i].iCmd = (EDelayedCommandTypes)dwLoad;
+
+						pNodeData->Commands[i].Criteria.ReadFromStream(SystemCtx);
+						}
+					}
+				else
+					{
+					CDesignTypeCriteria Dummy;
+					for (i = 0; i < iCommandCount; i++)
+						{
+						Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+						Dummy.ReadFromStream(SystemCtx);
+						}
+					}
+				}
             }
         }
 
@@ -817,6 +852,145 @@ void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceOb
         pObjData->DeleteExtra();
     }
 
+void CObjectTracker::ReplayCommands (CSystem *pSystem)
+
+//	ReplayCommands
+//
+//	Replay any delayed commands so that the system can be synchronized with any
+//	changes made while in a different system.
+
+	{
+	int i;
+
+	CTopologyNode *pNode = pSystem->GetTopology();
+	if (pNode == NULL)
+		return;
+
+	SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+	if (pNodeData == NULL)
+		return;
+
+	for (i = 0; i < pNodeData->Commands.GetCount(); i++)
+		ReplayCommand(pNodeData->Commands[i], pSystem);
+
+	//	Clear out the commands for this node (so we don't replay them twice).
+
+	pNodeData->Commands.DeleteAll();
+	}
+
+void CObjectTracker::ReplayCommand (const SDelayedCommand &Cmd, CSystem *pSystem)
+
+//	ReplayCommand
+//
+//	Replays a single delayed command.
+
+	{
+	int i;
+
+	switch (Cmd.iCmd)
+		{
+		case cmdSetKnown:
+		case cmdSetUnknown:
+			{
+			for (i = 0; i < pSystem->GetObjectCount(); i++)
+				{
+				CDesignType *pType;
+				CSpaceObject *pObj = pSystem->GetObject(i);
+				if (pObj == NULL
+						|| (pType = pObj->GetType()) == NULL
+						|| pObj->IsDestroyed()
+						|| !IsTracked(pObj))
+					continue;
+
+				//	Skip objects that don't match the criteria.
+
+				if (!pType->MatchesCriteria(Cmd.Criteria))
+					continue;
+
+				//	Set known or unknown
+
+				pObj->SetKnown(Cmd.iCmd == cmdSetKnown);
+				}
+			break;
+			}
+		}
+	}
+
+void CObjectTracker::SetKnown (const CString &sNodeID, const CDesignTypeCriteria &Criteria, bool bKnown)
+
+//	SetKnown
+//
+//	Sets the given objects as known or unknown.
+
+	{
+	int i;
+
+	//	If no node ID, then we look through all nodes
+
+	if (sNodeID.IsBlank())
+		{
+		//	Add a delayed command to all nodes so that when we actually enter
+		//	it, the objects will be set known appropriately.
+
+		for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+			{
+			CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
+			if (pNode->IsEndGame())
+				continue;
+
+		    SNodeData *pNodeData = m_ByNode.SetAt(pNode->GetID());
+			SDelayedCommand *pNewCmd = pNodeData->Commands.Insert();
+			pNewCmd->iCmd = (bKnown ? cmdSetKnown : cmdSetUnknown);
+			pNewCmd->Criteria = Criteria;
+			}
+
+		//	Set all objects known
+
+		return SetKnown(m_AllLists, Criteria, bKnown);
+		}
+
+	//	Otherwise, check the specific node
+
+	else
+		{
+		//	Add a delayed command.
+
+		SNodeData *pNodeData = m_ByNode.SetAt(sNodeID);
+		SDelayedCommand *pNewCmd = pNodeData->Commands.Insert();
+		pNewCmd->iCmd = (bKnown ? cmdSetKnown : cmdSetUnknown);
+		pNewCmd->Criteria = Criteria;
+
+		//	Accumulate entries for this table
+
+		return SetKnown(pNodeData->ObjLists, Criteria, bKnown);
+		}
+	}
+
+void CObjectTracker::SetKnown (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, bool bKnown)
+
+//	SetKnown
+//
+//	Sets the objects in the list to known or unknown.
+
+	{
+	int i, j;
+
+	for (i = 0; i < Table.GetCount(); i++)
+		{
+		SObjList *pList = Table[i];
+
+		//	If we don't match, then continue
+
+		if (!pList->pType->MatchesCriteria(Criteria))
+			continue;
+
+		//	Look over all objects and make them known
+
+		for (j = 0; j < pList->Objects.GetCount(); j++)
+			pList->Objects[j].fKnown = bKnown;
+		}
+	}
+
 CObjectTracker::SObjList *CObjectTracker::SetList (CSpaceObject *pObj)
 
 //	GetList
@@ -1001,6 +1175,19 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
             const COrbit &Orbit = m_ByNode[iNode].Orbits[i];
 	        pStream->Write((char *)&Orbit, sizeof(COrbit));
             }
+
+		//	Write any delayed commands
+
+		dwSave = m_ByNode[iNode].Commands.GetCount();
+	    pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+        for (i = 0; i < m_ByNode[iNode].Commands.GetCount(); i++)
+			{
+			dwSave = (DWORD)m_ByNode[iNode].Commands[i].iCmd;
+	        pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+			m_ByNode[iNode].Commands[i].Criteria.WriteToStream(pStream);
+			}
         }
 	}
 

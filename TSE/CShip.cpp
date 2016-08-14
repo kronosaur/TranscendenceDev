@@ -2286,7 +2286,7 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
 
-	g_pUniverse->GetGlobalObjects().Insert(this);
+	g_pUniverse->GetGlobalObjects().InsertIfTracked(this);
 	}
 
 bool CShip::FollowsObjThroughGate (CSpaceObject *pLeader)
