@@ -248,7 +248,6 @@ class CReactorClass : public CDeviceClass
         ~CReactorClass (void);
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice);
-        static const CReactorDesc *GetReactorDescForItem (CItemCtx &ItemCtx);
 
 		//	CDeviceClass virtuals
 
@@ -256,7 +255,7 @@ class CReactorClass : public CDeviceClass
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatReactor; }
-		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const override;
+		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) override { return GetReactorDesc(Ctx)->IsFuelCompatible(FuelItem); }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
@@ -266,14 +265,21 @@ class CReactorClass : public CDeviceClass
 
 	private:
 		CReactorClass (void);
+
+		const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const;
+		int GetMaxPower (CItemCtx &ItemCtx, const CReactorDesc &Desc) const;
         void InitDamagedDesc (void) const;
         void InitEnhancedDesc (void) const;
 
-        //  Scalable items
+        //  Descriptors (optional scaling)
 
         int m_iBaseLevel;                   //  Base level.
         int m_iLevels;                      //  Total number of levels.
         CReactorDesc *m_pDesc;              //  Array of entries, one per scaled level (minimum 1)
+
+		//	Other properties
+
+		int m_iExtraPowerPerCharge;			//	Adds to max power
 
         //  Damaged/enhanced
         //  We allocate these as needed; the array matches m_pDesc

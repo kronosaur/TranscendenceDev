@@ -416,6 +416,7 @@ class CReactorDesc
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass = false);
         ALERROR InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, int iBaseLevel, int iScaledLevel);
         bool IsFuelCompatible (const CItem &FuelItem) const;
+		inline void SetMaxPower (int iPower) { m_iMaxPower = iPower; }
 
         static const SStdStats &GetStdStats (int iLevel);
 		static bool IsExportedProperty (const CString &sProperty);
@@ -558,7 +559,7 @@ class CDeviceClass
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
-		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const { return NULL; }
+		//virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const { return NULL; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 

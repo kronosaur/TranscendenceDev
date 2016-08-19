@@ -4275,7 +4275,7 @@ class CInstalledDevice
 		inline int GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) { return m_pClass->GetDamageType(Ctx, Ammo); }
 		inline int GetDefaultFireAngle (CSpaceObject *pSource) { return m_pClass->GetDefaultFireAngle(this, pSource); }
 		bool GetDeviceEnhancementDesc (CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return m_pClass->GetDeviceEnhancementDesc(this, pSource, pWeapon, retDesc); }
-		inline const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const { return m_pClass->GetReactorDesc(Ctx); }
+//		inline const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const { return m_pClass->GetReactorDesc(Ctx); }
 		inline Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		inline CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (CSpaceObject *pSource);

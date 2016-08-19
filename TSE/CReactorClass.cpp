@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+#define MAX_POWER_BONUS_PER_CHARGE_ATTRIB		CONSTLIT("maxPowerBonusPerCharge")
+
 CReactorClass::CReactorClass (void) :
         m_pDesc(NULL),
         m_pDamagedDesc(NULL),
@@ -66,6 +68,10 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
             return error;
         }
 
+	//	Some properties are not scaled (OK if negative).
+
+	pDevice->m_iExtraPowerPerCharge = pDesc->GetAttributeInteger(MAX_POWER_BONUS_PER_CHARGE_ATTRIB);
+
 	//	Done
 
 	*retpDevice = pDevice;
@@ -102,6 +108,41 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else
 		return CDeviceClass::FindItemProperty(Ctx, sName);
+	}
+
+int CReactorClass::GetPowerRating (CItemCtx &Ctx) const
+
+//	GetPowerRating
+//
+//	Returns the max power output.
+
+	{
+	const CReactorDesc *pDesc = GetReactorDesc(Ctx);
+	if (pDesc == NULL)
+		return 0;
+
+	return GetMaxPower(Ctx, *pDesc);
+	}
+
+int CReactorClass::GetMaxPower (CItemCtx &ItemCtx, const CReactorDesc &Desc) const
+
+//	GetMaxPower
+//
+//	Returns max reactor power
+
+	{
+	int iMaxPower = Desc.GetMaxPower();
+
+	//	Adjust for charges
+
+    CInstalledDevice *pDevice;
+	if (m_iExtraPowerPerCharge
+			&& (pDevice = ItemCtx.GetDevice()))
+		iMaxPower += m_iExtraPowerPerCharge * pDevice->GetCharges(ItemCtx.GetSource());
+
+	//	Done
+
+	return Max(0, iMaxPower);
 	}
 
 const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx) const
@@ -143,21 +184,6 @@ const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx) const
 	else
 		return &m_pDesc[iIndex];
 	}
-
-const CReactorDesc *CReactorClass::GetReactorDescForItem (CItemCtx &ItemCtx)
-
-//  GetReactorDescForItem
-//
-//  Returns the reactor desc for the item specified in ItemCtx (or NULL, if it
-//  is not a reactor).
-
-    {
-    CDeviceClass *pClass = ItemCtx.GetDeviceClass();
-    if (pClass == NULL)
-        return NULL;
-
-    return pClass->GetReactorDesc(ItemCtx);
-    }
 
 void CReactorClass::InitDamagedDesc (void) const
 
@@ -213,10 +239,11 @@ CString CReactorClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD d
 	//	Get reactor stats
 
 	const CReactorDesc &Desc = *GetReactorDesc(Ctx);
+	int iMaxPower = GetMaxPower(Ctx, Desc);
 
 	//	Power output
 
-	sReference = strPatternSubst(CONSTLIT("%s max output"), ReactorPower2String(Desc.GetMaxPower()));
+	sReference = strPatternSubst(CONSTLIT("%s max output"), ReactorPower2String(iMaxPower));
 
 	//	Fuel level
 
@@ -259,11 +286,13 @@ bool CReactorClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformance
 	if (pDesc == NULL)
 		return false;
 
-	//	We don't allow multiple reactors, so we alway override.
+	//	We don't allow multiple reactors, so we always override.
 
 	Ctx.ReactorDesc = *pDesc;
 
 	//	For reactors with charges, increase power based on charges
+
+	Ctx.ReactorDesc.SetMaxPower(GetMaxPower(ItemCtx, *pDesc));
 
 	//	Done
 
