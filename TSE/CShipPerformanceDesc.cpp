@@ -17,6 +17,10 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
     m_RotationDesc.InitFromDesc(Ctx.RotationDesc);
 
+	//	Initialize reactor desc
+
+	m_ReactorDesc = Ctx.ReactorDesc;
+
     //  Compute our drive parameters. We start with the core stats
 
     m_DriveDesc = Ctx.DriveDesc;

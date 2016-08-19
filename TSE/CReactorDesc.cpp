@@ -57,6 +57,21 @@ CReactorDesc::SStdStats CReactorDesc::m_Stats[MAX_ITEM_LEVEL] =
         {   62500000,   330000.0,   17.0 },
     };
 
+CReactorDesc::CReactorDesc (void) : 
+		m_dwUNID(0),
+		m_iMaxPower(0),
+		m_rMaxFuel(0.0),
+		m_rPowerPerFuelUnit(0.0),
+		m_pFuelCriteria(NULL),
+		m_iMinFuelLevel(-1),
+		m_iMaxFuelLevel(-1),
+		m_fFreeFuelCriteria(false)
+
+//	CReactorDesc constructor
+
+	{
+	}
+
 int CReactorDesc::AdjMaxPower (Metric rAdj)
 
 //  AdjMaxPower
@@ -101,6 +116,7 @@ void CReactorDesc::Copy (const CReactorDesc &Src)
 //  Make a copy. We assume that we are clean.
 
     {
+	m_dwUNID = Src.m_dwUNID;
 	m_iMaxPower = Src.m_iMaxPower;
 	m_rMaxFuel = Src.m_rMaxFuel;
 	m_rPowerPerFuelUnit = Src.m_rPowerPerFuelUnit;
@@ -245,7 +261,7 @@ const CReactorDesc::SStdStats &CReactorDesc::GetStdStats (int iLevel)
     return m_Stats[iLevel];
     }
 
-ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bShipClass)
+ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass)
 
 //  InitFromXML
 //
@@ -253,6 +269,8 @@ ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool
 
     {
     CleanUp();
+
+    m_dwUNID = dwUNID;
 
 	//	Load some values
 

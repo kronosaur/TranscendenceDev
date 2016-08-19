@@ -397,10 +397,7 @@ class CReactorDesc
             Metric rCost;                   //  Credits per 100 fuel units
             };
 
-	    CReactorDesc (void) : 
-			    m_pFuelCriteria(NULL),
-			    m_fFreeFuelCriteria(false)
-		    { }
+	    CReactorDesc (void);
         CReactorDesc (const CReactorDesc &Src) { Copy(Src); }
 
 	    inline ~CReactorDesc (void) { CleanUp(); }
@@ -416,7 +413,7 @@ class CReactorDesc
         CString GetFuelCriteriaString (void) const;
         void GetFuelLevel (int *retiMin, int *retiMax) const;
         inline int GetMaxPower (void) const { return m_iMaxPower; }
-        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bShipClass = false);
+        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass = false);
         ALERROR InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, int iBaseLevel, int iScaledLevel);
         bool IsFuelCompatible (const CItem &FuelItem) const;
 
@@ -427,6 +424,7 @@ class CReactorDesc
         void CleanUp (void);
         void Copy (const CReactorDesc &Src);
 
+		DWORD m_dwUNID;						//	UNID source (either ship class or device)
 	    int m_iMaxPower;					//	Maximum power output
 	    Metric m_rMaxFuel;					//	Maximum fuel space
 	    Metric m_rPowerPerFuelUnit;			//	MW/10-tick per fuel unit
@@ -560,7 +558,7 @@ class CDeviceClass
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
-		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) { return NULL; }
+		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const { return NULL; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
@@ -751,6 +749,8 @@ struct SShipPerformanceCtx
 
     CRotationDesc RotationDesc;             //  Double precision rotation descriptor
 
+	CReactorDesc ReactorDesc;				//	Reactor descriptor
+
     CDriveDesc DriveDesc;                   //  Drive descriptor
     Metric rMaxSpeedBonus;                  //  % bonus to speed (+/-). 100.0 = +100%
     bool bDriveDamaged;                     //  If TRUE, cut thrust in half
@@ -766,6 +766,7 @@ class CShipPerformanceDesc
     public:
         inline const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
         inline const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
+        inline const CReactorDesc &GetReactorDesc (void) const { return m_ReactorDesc; }
         inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
         void Init (SShipPerformanceCtx &Ctx);
 
@@ -773,10 +774,12 @@ class CShipPerformanceDesc
 
         inline CCargoDesc &GetCargoDesc (void) { return m_CargoDesc; }
         inline CDriveDesc &GetDriveDesc (void) { return m_DriveDesc; }
+        inline CReactorDesc &GetReactorDesc (void) { return m_ReactorDesc; }
         inline CIntegralRotationDesc &GetRotationDesc (void) { return m_RotationDesc; }
 
     private:
         CIntegralRotationDesc m_RotationDesc;
+		CReactorDesc m_ReactorDesc;
         CDriveDesc m_DriveDesc;
         CCargoDesc m_CargoDesc;
     };

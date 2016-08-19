@@ -55,7 +55,7 @@ ALERROR CReactorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, C
     //  We initialized the first level from XML
 
     ASSERT(pDevice->m_iLevels >= 1);
-    if (error = pDevice->m_pDesc[0].InitFromXML(Ctx, pDesc))
+    if (error = pDevice->m_pDesc[0].InitFromXML(Ctx, pDesc, pType->GetUNID()))
         return error;
 
     //  Now initialize the scaled levels
@@ -104,7 +104,7 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
-const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx)
+const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx) const
 
 //	GetReactorDesc
 //
@@ -246,6 +246,28 @@ CString CReactorClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD d
 	//	Done
 
 	return sReference;
+	}
+
+bool CReactorClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const
+
+//	OnAccumulatePerformance
+//
+//	Accumulate performance characteristics
+
+	{
+	const CReactorDesc *pDesc = GetReactorDesc(ItemCtx);
+	if (pDesc == NULL)
+		return false;
+
+	//	We don't allow multiple reactors, so we alway override.
+
+	Ctx.ReactorDesc = *pDesc;
+
+	//	For reactors with charges, increase power based on charges
+
+	//	Done
+
+	return true;
 	}
 
 void CReactorClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList)

@@ -111,10 +111,8 @@ const DWORD CONTROLLER_PLAYERSHIP =				0x100000 + 100;
 
 CShip::CShip (void) : CSpaceObject(&g_Class),
 		m_pDocked(NULL),
-		m_pReactorDesc(NULL),
 		m_pController(NULL),
 		m_iPowerDrain(0),
-		m_iMaxPower(0),
 		m_iDeviceCount(0),
 		m_Devices(NULL),
 		m_pEncounterInfo(NULL),
@@ -430,12 +428,6 @@ void CShip::CalcDeviceBonus (void)
 					int iBonus = m_Overlays.GetWeaponBonus(&m_Devices[i], this);
 					if (iBonus != 0)
 						pEnhancements->InsertHPBonus(iBonus);
-					break;
-					}
-
-				case itemcatReactor:
-					{
-					m_pReactorDesc = m_Devices[i].GetReactorDesc(ItemCtx);
 					break;
 					}
 				}
@@ -887,10 +879,6 @@ void CShip::CalcReactorStats (void)
 	{
 	int i;
 
-	//	Calculate power generation
-
-	m_iMaxPower = m_pReactorDesc->GetMaxPower();
-
 	//	Calculate power usage
 
 	m_iPowerDrain = 0;
@@ -1277,7 +1265,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_iLastHitTime = 0;
 	pShip->m_rItemMass = 0.0;
 	pShip->m_rCargoMass = 0.0;
-	pShip->m_pReactorDesc = pClass->GetReactorDesc();
 	pShip->m_pTrade = NULL;
 
 	pShip->m_fOutOfFuel = false;
@@ -2676,7 +2663,7 @@ Metric CShip::GetMaxFuel (void)
 //	Return the maximum amount of fuel that the reactor can hold
 
 	{
-    return m_pReactorDesc->GetFuelCapacity();
+    return m_Perf.GetReactorDesc().GetFuelCapacity();
 	}
 
 int CShip::GetMaxPower (void) const
@@ -2686,10 +2673,7 @@ int CShip::GetMaxPower (void) const
 //	Return max power output
 
 	{
-	if (m_fTrackFuel)
-		return m_iMaxPower;
-	else
-		return m_pReactorDesc->GetMaxPower();
+    return m_Perf.GetReactorDesc().GetMaxPower();
 	}
 
 int CShip::GetMissileCount (void)
@@ -2798,7 +2782,6 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
     ICCItem *pResult;
-    CInstalledDevice *pReactor;
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
@@ -3038,11 +3021,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (CReactorDesc::IsExportedProperty(sName))
 		{
-		if ((pReactor = GetNamedDevice(devReactor))
-			&& (pResult = pReactor->GetClass()->FindItemProperty(CItemCtx(this, pReactor), sName)))
-			return pResult;
-
-		else if (pResult = m_pClass->GetReactorDesc()->FindProperty(sName))
+		if (pResult = m_Perf.GetReactorDesc().FindProperty(sName))
 			return pResult;
 		else
 			return CC.CreateNil();
@@ -3511,7 +3490,6 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 		case itemcatReactor:
 			m_NamedDevices[devReactor] = iDeviceSlot;
-			m_pReactorDesc = pDevice->GetReactorDesc(ItemCtx);
 			break;
 		}
 
@@ -3604,16 +3582,7 @@ bool CShip::IsFuelCompatible (const CItem &Item)
 //	Returns TRUE if the given fuel is compatible
 
 	{
-	CInstalledDevice *pReactor = GetNamedDevice(devReactor);
-
-	//	Ask the reactor
-
-	if (pReactor)
-		return pReactor->IsFuelCompatible(CItemCtx(this, pReactor), Item);
-
-	//	If we have no installed reactor, we determine this ourselves
-
-	return m_pReactorDesc->IsFuelCompatible(Item);
+	return m_Perf.GetReactorDesc().IsFuelCompatible(Item);
 	}
 
 bool CShip::IsPlayer (void) const
@@ -3951,20 +3920,12 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 			}
 
 		case comDrive:
-			{
             CalcPerformance();
 			break;
-			}
 
 		case comReactor:
-			{
-			CInstalledDevice *pReactor = GetNamedDevice(devReactor);
-			if (pReactor)
-				m_pReactorDesc = pReactor->GetReactorDesc(CItemCtx(this, pReactor));
-			else
-				m_pReactorDesc = m_pClass->GetReactorDesc();
+			CalcPerformance();
 			break;
-			}
 
 		default:
 			m_pController->OnComponentChanged(iComponent);
@@ -5059,16 +5020,6 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
     if (Ctx.dwVersion < 127)
 	    Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 
-	//	Engine core
-
-    if (m_NamedDevices[devReactor] != -1)
-        {
-        CInstalledDevice *pReactor = &m_Devices[m_NamedDevices[devReactor]];
-        m_pReactorDesc = pReactor->GetReactorDesc(CItemCtx(this, pReactor));
-        }
-	else
-		m_pReactorDesc = m_pClass->GetReactorDesc();
-
 	//	Energy fields
 
 	m_Overlays.ReadFromStream(Ctx, this);
@@ -5583,7 +5534,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
             if ((iTick % FUEL_CHECK_CYCLE) == 0)
                 {
-                if (m_iPowerDrain > m_iMaxPower)
+                if (m_iPowerDrain > m_Perf.GetReactorDesc().GetMaxPower())
                     {
                     m_pController->OnReactorOverloadWarning(iTick / FUEL_CHECK_CYCLE);
 
@@ -5595,7 +5546,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
             //	Consume fuel
 
-            ConsumeFuel(m_iPowerDrain / m_pReactorDesc->GetEfficiency());
+            ConsumeFuel(m_iPowerDrain / m_Perf.GetReactorDesc().GetEfficiency());
 
             //	Check to see if we've run out of fuel
 
@@ -6187,7 +6138,7 @@ void CShip::ReactorOverload (void)
 	//	(or, if the overload is severe, something bad always happens)
 
 	if (mathRandom(1, 100) <= 10
-			|| (m_iPowerDrain > 2 * m_iMaxPower))
+			|| (m_iPowerDrain > 2 * m_Perf.GetReactorDesc().GetMaxPower()))
 		{
 		//	See if there is an OnReactorOverload event that will
 		//	handle this.
@@ -6468,7 +6419,6 @@ ALERROR CShip::RemoveItemAsDevice (CItemListManipulator &ItemList)
 
 		case itemcatReactor:
 			m_NamedDevices[devReactor] = -1;
-			m_pReactorDesc = m_pClass->GetReactorDesc();
 			break;
 		}
 

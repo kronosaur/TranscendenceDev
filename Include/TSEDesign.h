@@ -2419,6 +2419,7 @@ class CShipClass : public CDesignType
         const CObjectImageArray &GetHeroImage (void);
 		inline int GetHullCargoSpace (void) { return m_CargoDesc.GetCargoSpace(); }
 		inline int GetHullMass (void) const { return m_iMass; }
+		inline const CReactorDesc *GetHullReactorDesc (void) { return &m_ReactorDesc; }
 		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
 		int GetHullSectionAtAngle (int iAngle);
 		inline int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
@@ -2439,7 +2440,7 @@ class CShipClass : public CDesignType
 		CString GetPlayerSortString (void) const;
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
-		inline const CReactorDesc *GetReactorDesc (void) { return &m_ReactorDesc; }
+        const CReactorDesc &GetReactorDesc (const CItem **retpReactorItem = NULL) const;
 		inline int GetRotationAngle (void) { return m_Perf.GetRotationDesc().GetFrameAngle(); }
 		inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
 		inline int GetRotationRange (void) { return m_Perf.GetRotationDesc().GetFrameCount(); }
@@ -4274,7 +4275,7 @@ class CInstalledDevice
 		inline int GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) { return m_pClass->GetDamageType(Ctx, Ammo); }
 		inline int GetDefaultFireAngle (CSpaceObject *pSource) { return m_pClass->GetDefaultFireAngle(this, pSource); }
 		bool GetDeviceEnhancementDesc (CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return m_pClass->GetDeviceEnhancementDesc(this, pSource, pWeapon, retDesc); }
-		inline const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) { return m_pClass->GetReactorDesc(Ctx); }
+		inline const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const { return m_pClass->GetReactorDesc(Ctx); }
 		inline Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		inline CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (CSpaceObject *pSource);

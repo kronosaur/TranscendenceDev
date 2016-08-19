@@ -914,7 +914,7 @@ class CShip : public CSpaceObject
 		//	Reactor methods
 		inline Metric GetFuelLeft (void) { return (m_fOutOfFuel ? 0.0 : m_rFuelLeft); }
 		Metric GetMaxFuel (void);
-		inline const CReactorDesc *GetReactorDesc (void) { return m_pReactorDesc; }
+		inline const CReactorDesc *GetReactorDesc (void) { return &m_Perf.GetReactorDesc(); }
 		inline void TrackFuel (bool bTrack = true) { m_fTrackFuel = bTrack; }
 		inline void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
 		int GetPowerConsumption (void);
@@ -1157,7 +1157,6 @@ class CShip : public CSpaceObject
 		int m_iDeviceCount;						//	Number of devices
 		CInstalledDevice *m_Devices;			//	Array of devices
 		int m_NamedDevices[devNamesCount];
-		const CReactorDesc *m_pReactorDesc;		//	Reactor descriptor
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
@@ -1188,7 +1187,6 @@ class CShip : public CSpaceObject
 		Metric m_rItemMass;						//	Total mass of all items (including installed)
 		Metric m_rCargoMass;					//	Mass of cargo items (not including installed)
 		int m_iPowerDrain;						//	(temp) power consumed (1/10 megawatt)
-		int m_iMaxPower;						//	(temp) max power (1/10 megawatt)
 		int m_iStealth;							//	Computed stealth
 
 		CSpaceObject *m_pDocked;				//	If not NULL, object we are docked to.

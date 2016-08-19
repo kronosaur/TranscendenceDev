@@ -269,15 +269,15 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			sSpeedNumber,
+			CTextBlock::Escape(sSpeedNumber),
 			(COLORREF)VI.GetColor(colorTextDialogInput),
-			sSpeedHeader,
+			CTextBlock::Escape(sSpeedHeader),
 
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			sThrustNumber,
+			CTextBlock::Escape(sThrustNumber),
 
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			sManeuverNumber);
+			CTextBlock::Escape(sManeuverNumber));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
 	}
@@ -425,31 +425,21 @@ void CUIHelper::CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescLis
 
 	//	Get reactor info from the ship class
 
-	const CReactorDesc *pReactorDesc = pClass->GetReactorDesc();
-	if (pReactorDesc == NULL)
-		{
-		if (retcyHeight)
-			*retcyHeight = 0;
-
-		CAniSequencer::Create(CVector(x, y), (CAniSequencer **)retpInfo);
-		return;
-		}
-
-	const SDeviceDesc *pReactor = Devices.GetDeviceDescByName(devReactor);
-    if (pReactor)
-        pReactorDesc = CReactorClass::GetReactorDescForItem(CItemCtx(pReactor->Item));
+    const CItem *pReactorItem;
+	const CReactorDesc &ReactorDesc = pClass->GetReactorDesc(&pReactorItem);
 
 	//	Get the icon (OK if this is NULL)
 
-	CItemType *pItemIcon = (pReactor ? pReactor->Item.GetType() : g_pUniverse->FindItemType(NOVA25_REACTOR_UNID));
+	CItemType *pItemIcon = (pReactorItem ? pReactorItem->GetType() : g_pUniverse->FindItemType(NOVA25_REACTOR_UNID));
+	CString sHeader = (pReactorItem ? CTextBlock::Escape(pReactorItem->GetNounPhrase(nounActual)) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(pClass->GetShortName())));
 
 	//	Create the info
 
 	CString sText = strPatternSubst(CONSTLIT("{/rtf {/f:LargeBold;/c:%d; %s} {/f:MediumBold;/c:%d; %s}}"),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			CTextBlock::Escape(ReactorPower2String(pReactorDesc->GetMaxPower())),
+			CTextBlock::Escape(ReactorPower2String(ReactorDesc.GetMaxPower())),
 			(COLORREF)VI.GetColor(colorTextDialogInput),
-			(pReactor ? CTextBlock::Escape(pReactor->Item.GetType()->GetNounPhrase()) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(pClass->GetShortName()))));
+			sHeader);
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
 	}

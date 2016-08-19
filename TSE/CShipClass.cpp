@@ -2056,7 +2056,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_DRIVE_POWER))
 		*retsValue = strFromInt(m_Perf.GetDriveDesc().GetPowerUse());
 
-	else if (m_ReactorDesc.FindDataField(sField, retsValue))
+	else if (m_Perf.GetReactorDesc().FindDataField(sField, retsValue))
 		return true;
 	else
 		return CDesignType::FindDataField(sField, retsValue);
@@ -2612,6 +2612,22 @@ CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPo
 		return CVector();
 	}
 
+const CReactorDesc &CShipClass::GetReactorDesc (const CItem **retpReactorItem) const
+
+//  GetReactorDesc
+//
+//  Returns the computed reactor desc (including devices)
+
+    {
+    if (retpReactorItem)
+        {
+        const SDeviceDesc *pDevice = m_AverageDevices.GetDeviceDescByName(devReactor);
+        *retpReactorItem = (pDevice ? &pDevice->Item : NULL);
+        }
+
+    return m_Perf.GetReactorDesc();
+    }
+
 CString CShipClass::GetShortName (void) const
 
 //	GetShortName
@@ -2772,6 +2788,7 @@ void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
     //  Initialize with performance params based on the class.
 
     Ctx.RotationDesc = m_RotationDesc;
+	Ctx.ReactorDesc = m_ReactorDesc;
     Ctx.DriveDesc = m_DriveDesc;
     Ctx.CargoDesc = m_CargoDesc;
     }
@@ -3317,7 +3334,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_DriveDesc.SetPowerUse(pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1));
 	m_DriveDesc.SetInertialess(pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB));
 
-	if (error = m_ReactorDesc.InitFromXML(Ctx, pDesc, true))
+	if (error = m_ReactorDesc.InitFromXML(Ctx, pDesc, GetUNID(), true))
 		return error;
 
 	if ((m_fCyberDefenseOverride = pDesc->FindAttributeInteger(CYBER_DEFENSE_LEVEL_ATTRIB, &m_iCyberDefenseLevel)))
@@ -3623,8 +3640,6 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
-    CDeviceClass *pDevice;
-    ICCItem *pResult;
 
 	if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? CC.CreateInteger(m_pDefaultSovereign.GetUNID()) : CC.CreateNil());
@@ -3649,17 +3664,7 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 	//	Reactor properties
 
 	else if (CReactorDesc::IsExportedProperty(sProperty))
-		{
-		if ((pDevice = m_AverageDevices.GetNamedDevice(devReactor))
-			&& (pResult = pDevice->FindItemProperty(CItemCtx(CItem(pDevice->GetItemType(), 1)), sProperty)))
-			return pResult;
-
-		else if (pResult = GetReactorDesc()->FindProperty(sProperty))
-			return pResult;
-
-		else
-			return NULL;
-		}
+		return m_Perf.GetReactorDesc().FindProperty(sProperty);
 
 	else
 		return NULL;

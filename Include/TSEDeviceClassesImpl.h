@@ -256,11 +256,12 @@ class CReactorClass : public CDeviceClass
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatReactor; }
-		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) override;
+		virtual const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const override;
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) override { return GetReactorDesc(Ctx)->IsFuelCompatible(FuelItem); }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
 	protected:
+        virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 
 	private:
