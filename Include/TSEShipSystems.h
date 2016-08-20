@@ -435,7 +435,15 @@ class CReactorDesc
 	    int m_iMaxFuelLevel;				//	Max tech level of fuel (-1 if using fuelCriteria)
 
 	    DWORD m_fFreeFuelCriteria:1;		//	TRUE if we own pFuelCriteria
-	    DWORD m_dwSpare:31;
+		DWORD m_fNoFuel:1;					//	TRUE if we don't need fuel
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+	    DWORD m_dwSpare:24;
 
         static SStdStats m_Stats[MAX_ITEM_LEVEL];
 	};

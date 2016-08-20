@@ -344,6 +344,20 @@ bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc)
 		}
 	}
 
+ICCItem *CreatePowerResult (CCodeChain &CC, double rPowerInKW)
+
+//	CreatePowerResult
+//
+//	Returns either an integer or a double, depending on whether we can fit it
+//	or not.
+
+	{
+	if (rPowerInKW > 2000000000.0)
+		return CC.CreateDouble(rPowerInKW);
+	else
+		return CC.CreateInteger((int)rPowerInKW);
+	}
+
 ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue)
 
 //	CreateResultFromDataField

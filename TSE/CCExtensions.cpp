@@ -31,6 +31,7 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_CURRENCY					1
 #define FN_NAME						2
 #define FN_NUMBER                   3
+#define FN_POWER					4
 
 ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -832,6 +833,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"fmtNumber",					fnFormat,		FN_NUMBER,
 			"(fmtNumber value) -> string",
+			"v",	0, },
+
+		{	"fmtPower",						fnFormat,		FN_POWER,
+			"(fmtPower powerInKWs) -> string",
 			"v",	0, },
 
 		{	"rollDice",						fnRollDice,		0,
@@ -3686,6 +3691,20 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
             ICCItem *pValue = pArgs->GetElement(0);
             return pCC->CreateString(strFormatInteger(pValue->GetIntegerValue(), -1, FORMAT_THOUSAND_SEPARATOR));
             }
+
+		case FN_POWER:
+			{
+			double rValue = pArgs->GetElement(0)->GetDoubleValue();
+
+			if (rValue < 9950.0)
+				return pCC->CreateString(strPatternSubst(CONSTLIT("%s MW"), strFromDouble(rValue / 1000.0, 1)));
+			else if (rValue < 999500.0)
+				return pCC->CreateString(strPatternSubst(CONSTLIT("%d MW"), mathRound(rValue / 1000.0)));
+			else if (rValue < 9950000.0)
+				return pCC->CreateString(strPatternSubst(CONSTLIT("%s GW"), strFromDouble(rValue / 1000000.0, 1)));
+			else
+				return pCC->CreateString(strPatternSubst(CONSTLIT("%d GW"), mathRound(rValue / 1000000.0)));
+			}
 
 		default:
 			ASSERT(false);

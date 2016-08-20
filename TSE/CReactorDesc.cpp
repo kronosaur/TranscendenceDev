@@ -12,6 +12,7 @@
 #define MAX_FUEL_TECH_ATTRIB					CONSTLIT("maxFuelTech")
 #define MIN_FUEL_TECH_ATTRIB					CONSTLIT("minFuelTech")
 #define MAX_POWER_ATTRIB						CONSTLIT("maxPower")
+#define NO_FUEL_ATTRIB							CONSTLIT("noFuel")
 #define REACTOR_EFFICIENCY_ATTRIB				CONSTLIT("reactorEfficiency")
 #define REACTOR_POWER_ATTRIB					CONSTLIT("reactorPower")
 
@@ -65,7 +66,8 @@ CReactorDesc::CReactorDesc (void) :
 		m_pFuelCriteria(NULL),
 		m_iMinFuelLevel(-1),
 		m_iMaxFuelLevel(-1),
-		m_fFreeFuelCriteria(false)
+		m_fFreeFuelCriteria(false),
+		m_fNoFuel(false)
 
 //	CReactorDesc constructor
 
@@ -125,6 +127,8 @@ void CReactorDesc::Copy (const CReactorDesc &Src)
 	m_iMinFuelLevel = Src.m_iMinFuelLevel;
 	m_iMaxFuelLevel = Src.m_iMaxFuelLevel;
 
+	m_fNoFuel = Src.m_fNoFuel;
+
 	m_fFreeFuelCriteria = (m_pFuelCriteria != NULL);
     }
 
@@ -176,7 +180,7 @@ ICCItem *CReactorDesc::FindProperty (const CString &sProperty) const
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_POWER))
-		return CC.CreateInteger(m_iMaxPower * 100);
+		return CreatePowerResult(CC, 100.0 * m_iMaxPower);
 
 	else if (strEquals(sProperty, PROPERTY_FUEL_CRITERIA))
 		{
@@ -279,12 +283,18 @@ ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWOR
 		m_iMaxPower = pDesc->GetAttributeIntegerBounded(REACTOR_POWER_ATTRIB, 0, -1, 0);
 		m_rMaxFuel = pDesc->GetAttributeDoubleBounded(FUEL_CAPACITY_ATTRIB, 0.0, -1.0, m_iMaxPower * 250.0);
 		m_rPowerPerFuelUnit = pDesc->GetAttributeDoubleBounded(REACTOR_EFFICIENCY_ATTRIB, 0.0, -1.0, g_MWPerFuelUnit);
+
+		m_fNoFuel = false;
 		}
 	else
 		{
 		m_iMaxPower = pDesc->GetAttributeIntegerBounded(MAX_POWER_ATTRIB, 0, -1, 100);
 		m_rMaxFuel = pDesc->GetAttributeDoubleBounded(MAX_FUEL_ATTRIB, 0.0, -1.0, m_iMaxPower * 250.0);
 		m_rPowerPerFuelUnit = pDesc->GetAttributeDoubleBounded(FUEL_EFFICIENCY_ATTRIB, 0.0, -1.0, g_MWPerFuelUnit);
+
+		//	Load some options (only valid for reactor items)
+
+		m_fNoFuel = pDesc->GetAttributeBool(NO_FUEL_ATTRIB);
 		}
 
 	//	Load the fuel criteria

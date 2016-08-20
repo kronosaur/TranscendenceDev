@@ -3900,6 +3900,7 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 ICCItem *CreateListFromItem (CCodeChain &CC, const CItem &Item);
 ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc);
 ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector);
+ICCItem *CreatePowerResult (CCodeChain &CC, double rPowerInKW);
 CItem CreateItemFromList (CCodeChain &CC, ICCItem *pList);
 CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem);
 bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc);

@@ -29,6 +29,7 @@
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
 #define PROPERTY_LEVEL  						CONSTLIT("level")
+#define PROPERTY_MAX_CHARGES  					CONSTLIT("maxCharges")
 #define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
@@ -926,7 +927,7 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 		}
 
 	else if (strEquals(sName, PROPERTY_CURRENCY))
-		return CC.CreateInteger(m_pItemType->GetCurrencyType()->GetUNID());
+		return CC.CreateInteger(GetType()->GetCurrencyType()->GetUNID());
 
 	else if (strEquals(sName, PROPERTY_DAMAGED))
 		return CC.CreateBool(IsDamaged());
@@ -934,7 +935,7 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 	else if (strEquals(sName, PROPERTY_DESCRIPTION))
 		{
 		if (pCCCtx && pCCCtx->InEvent(eventGetDescription))
-			return CC.CreateString(m_pItemType->GetDesc());
+			return CC.CreateString(GetType()->GetDesc());
 		else
 			return CC.CreateString(GetDesc());
 		}
@@ -949,7 +950,10 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
         return CC.CreateInteger(GetType()->GetLevel(CItemCtx(*this)));
 
 	else if (strEquals(sName, PROPERTY_MASS_BONUS_PER_CHARGE))
-		return CC.CreateInteger(m_pItemType->GetMassBonusPerCharge());
+		return CC.CreateInteger(GetType()->GetMassBonusPerCharge());
+
+	else if (strEquals(sName, PROPERTY_MAX_CHARGES))
+		return CC.CreateInteger(GetType()->GetMaxCharges());
 
     else if (strEquals(sName, PROPERTY_MAX_LEVEL))
         return CC.CreateInteger(GetType()->GetMaxLevel());

@@ -6,6 +6,9 @@
 
 #define MAX_POWER_BONUS_PER_CHARGE_ATTRIB		CONSTLIT("maxPowerBonusPerCharge")
 
+#define PROPERTY_MAX_POWER						CONSTLIT("maxPower")
+#define PROPERTY_POWER							CONSTLIT("power")
+
 CReactorClass::CReactorClass (void) :
         m_pDesc(NULL),
         m_pDamagedDesc(NULL),
@@ -99,9 +102,28 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 	const CReactorDesc &Desc = *GetReactorDesc(Ctx);
+    ICCItem *pResult;
 
-    ICCItem *pResult = Desc.FindProperty(sName);
-    if (pResult)
+	//	Some properties we handle ourselves
+
+	if (strEquals(sName, PROPERTY_MAX_POWER))
+		{
+		if (m_iExtraPowerPerCharge == 0 || Ctx.IsItemNull())
+			return CreatePowerResult(CC, 100.0 * GetMaxPower(Ctx, Desc));
+		else
+			{
+			int iMaxCharges = Ctx.GetItem().GetType()->GetMaxCharges();
+			int iMaxPower = Desc.GetMaxPower() + (iMaxCharges * m_iExtraPowerPerCharge);
+			return CreatePowerResult(CC, 100.0 * iMaxPower);
+			}
+		}
+
+	else if (strEquals(sName, PROPERTY_POWER))
+		return CreatePowerResult(CC, 100.0 * GetMaxPower(Ctx, Desc));
+
+	//	Ask the descriptor
+
+    else if (pResult = Desc.FindProperty(sName))
         return pResult;
 
 	//	Otherwise, just get the property from the base class
