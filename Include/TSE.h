@@ -2580,7 +2580,7 @@ class CSpaceObject : public CObject
 		//	Fuel
 
 		virtual void ConsumeFuel (Metric rFuel) { }
-		virtual bool IsOutOfFuel (void) { return false; }
+		virtual bool IsOutOfPower (void) { return false; }
 		virtual void Refuel (Metric Fuel) { }
 		virtual void Refuel (const CItem &Fuel) { }
 

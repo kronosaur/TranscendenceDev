@@ -1194,7 +1194,7 @@ void CShip::ConsumeFuel (Metric rFuel)
 //	Consumes some amount of fuel
 
 	{
-    if (m_fTrackFuel && !m_fOutOfFuel)
+    if (m_fTrackFuel && !IsOutOfPower())
         {
         Metric rConsumed = Min(m_rFuelLeft, rFuel);
 
@@ -1253,6 +1253,8 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_Rotation.Init(pClass->GetRotationDesc(), iRotation);
 	pShip->m_iFireDelay = 0;
 	pShip->m_iMissileFireDelay = 0;
+	pShip->m_iReactorGraceTimer = 0;
+	pShip->m_iContaminationTimer = 0;
 	pShip->m_iBlindnessTimer = 0;
 	pShip->m_iLRSBlindnessTimer = 0;
 	pShip->m_iParalysisTimer = 0;
@@ -1291,6 +1293,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fSpinningByOverlay = false;
 	pShip->m_fDragByOverlay = false;
 	pShip->m_fAlwaysLeaveWreck = false;
+	pShip->m_fOutOfPower = false;
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -1835,6 +1838,26 @@ void CShip::DepleteShields (void)
 	CInstalledDevice *pShields = GetNamedDevice(devShields);
 	if (pShields)
 		pShields->Deplete(this);
+	}
+
+void CShip::DisableAllDevices (void)
+
+//	DisableAllDevices
+//
+//	Disable all devices that can be disabled.
+
+	{
+	int i;
+
+    for (i = 0; i < GetDeviceCount(); i++)
+        {
+        if (!m_Devices[i].IsEmpty()
+            && m_Devices[i].IsEnabled()
+            && m_Devices[i].CanBeDisabled(CItemCtx(this, &m_Devices[i])))
+            {
+            EnableDevice(i, false);
+            }
+        }
 	}
 
 void CShip::DisableDevice (CInstalledDevice *pDevice)
@@ -4227,6 +4250,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 			&& (Ctx.iCause != killedByShatter)
 			&& (Ctx.iCause != killedByGravity)
 			&& (Ctx.bResurrectPending
+				|| Ctx.iCause == killedByPowerFailure
 				|| Ctx.iCause == killedByRadiationPoisoning
 				|| Ctx.iCause == killedByRunningOutOfFuel
 				|| m_fAlwaysLeaveWreck
@@ -4277,6 +4301,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 			//	No effect
 			break;
 
+		case killedByPowerFailure:
 		case killedByRadiationPoisoning:
 		case killedByRunningOutOfFuel:
 		case killedByOther:
@@ -4801,7 +4826,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_dwNameFlags
 //	CIntegralRotation	m_Rotation
 //	DWORD		low = m_iFireDelay; hi = m_iMissileFireDelay
-//	DWORD		low = (spare); hi = m_iContaminationTimer
+//	DWORD		low = m_iReactorGraceTimer; hi = m_iContaminationTimer
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
 //	DWORD		low = m_iExitGateTimer; hi = m_iDisarmedTimer
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
@@ -4904,7 +4929,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_iFireDelay = (int)LOWORD(dwLoad);
 	m_iMissileFireDelay = (int)HIWORD(dwLoad);
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	//	Spare = (int)LOWORD(dwLoad)
+	m_iReactorGraceTimer = (int)LOWORD(dwLoad);
 	m_iContaminationTimer = (int)HIWORD(dwLoad);
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iBlindnessTimer = (int)LOWORD(dwLoad);
@@ -4968,6 +4993,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fSpinningByOverlay =		((dwLoad & 0x00200000) ? true : false);
 	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
+	m_fOutOfPower =				((dwLoad & 0x01000000) ? true : false);
 
 	//	We will compute CalcPerformance at the bottom anyways
 	m_fRecalcRotationAccel = false;
@@ -5236,66 +5262,15 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
     if (m_fDestroyInGate)
         {
-        const CAISettings *pAI = m_pController->GetAISettings();
-
-        //	If we're supposed to ascend on gate, then ascend now
-
-        if (m_pClass->GetCharacter() != NULL
-                || (pAI && pAI->AscendOnGate()))
-            {
-            ResetMaxSpeed();
-            m_fDestroyInGate = false;
-            GetSystem()->AscendObject(this);
-            }
-
-        //	If we're already suspended, then instead of destroying the ship, remove
-        //	it from the system and re-add it. We need to do this so that all
-        //	OnObjDestroyed notifications go out, etc.
-        //
-        //	Note that this will also clear out any events registered for the ship.
-
-        else if (IsSuspended())
-            {
-            CSystem *pSystem = GetSystem();
-            if (pSystem)
-                {
-                Remove(enteredStargate, CDamageSource());
-                AddToSystem(pSystem);
-                m_fDestroyInGate = false;
-                }
-            }
-        else
-            Destroy(enteredStargate, CDamageSource());
-
+		UpdateDestroyInGate();
         return;
         }
 
-    //	If we're in a gate, then all we do is update the in gate timer
+    //	If we're in a gate, then all we do is update the in-gate timer
 
     if (IsInactive())
         {
-        if (IsInGate() && !IsSuspended())
-            {
-            //	Gate effect
-
-            if (m_iExitGateTimer == GATE_ANIMATION_LENGTH)
-                if (m_pExitGate)
-                    m_pExitGate->OnObjLeaveGate(this);
-
-            //	Done?
-
-            if (--m_iExitGateTimer == 0)
-                {
-                if (m_pExitGate && m_pExitGate->IsMobile())
-                    Place(m_pExitGate->GetPos());
-
-                if (!IsVirtual())
-                    ClearCannotBeHit();
-                FireOnEnteredSystem(m_pExitGate);
-                m_pExitGate = NULL;
-                }
-            }
-
+		UpdateInactive();
         return;
         }
 
@@ -5524,91 +5499,9 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
     //	Update reactor
 
-    if (m_fTrackFuel)
-        {
-        if (!m_fOutOfFuel)
-            {
-            CalcReactorStats();
-
-            //	See if reactor is overloaded
-
-            if ((iTick % FUEL_CHECK_CYCLE) == 0)
-                {
-                if (m_iPowerDrain > m_Perf.GetReactorDesc().GetMaxPower())
-                    {
-                    m_pController->OnReactorOverloadWarning(iTick / FUEL_CHECK_CYCLE);
-
-                    //	Consequences of reactor overload
-
-                    ReactorOverload();
-                    }
-                }
-
-            //	Consume fuel
-
-            ConsumeFuel(m_iPowerDrain / m_Perf.GetReactorDesc().GetEfficiency());
-
-            //	Check to see if we've run out of fuel
-
-            if ((iTick % FUEL_CHECK_CYCLE) == 0)
-                {
-                Metric rFuelLeft = GetFuelLeft();
-                if (rFuelLeft <= 0.0)
-                    {
-                    //	See if the player has any fuel on board. If they do, then there
-                    //	is a small grace period
-
-                    if (HasFuelItem())
-                        {
-                        //	Disable all devices
-
-                        for (i = 0; i < GetDeviceCount(); i++)
-                            {
-                            if (!m_Devices[i].IsEmpty()
-                                && m_Devices[i].IsEnabled()
-                                && m_Devices[i].CanBeDisabled(CItemCtx(this, &m_Devices[i])))
-                                {
-                                EnableDevice(i, false);
-                                }
-                            }
-
-                        //	Out of fuel
-
-                        m_fOutOfFuel = true;
-                        m_rFuelLeft = FUEL_GRACE_PERIOD;
-                        m_pController->OnFuelLowWarning(-1);
-                        }
-
-                    //	Otherwise, the player is out of luck
-
-                    else
-                        {
-                        Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
-
-                        //	Shouldn't do anything else after being destroyed
-                        return;
-                        }
-                    }
-                else if (rFuelLeft < (GetMaxFuel() / 8.0))
-                    m_pController->OnFuelLowWarning(iTick / FUEL_CHECK_CYCLE);
-                }
-            }
-        else
-            {
-            //	Countdown grace period
-
-            if (--m_rFuelLeft <= 0.0)
-                {
-                Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
-
-                //	Shouldn't do anything else after being destroyed
-
-                return;
-                }
-            else
-                m_pController->OnLifeSupportWarning((int)m_rFuelLeft / g_TicksPerSecond);
-            }
-        }
+	if (m_fTrackFuel)
+		if (!UpdateFuel(iTick))
+			return;
 
     //	Radiation
 
@@ -5759,7 +5652,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_dwNameFlags
 //	CIntegralRotation m_Rotation
 //	DWORD		low = m_iFireDelay; hi = m_iMissileFireDelay
-//	DWORD		low = (spare); hi = m_iContaminationTimer
+//	DWORD		low = m_iReactorGraceTimer; hi = m_iContaminationTimer
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
 //	DWORD		low = m_iExitGateTimer; hi = m_iDisarmedTimer
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
@@ -5817,7 +5710,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	dwSave = MAKELONG(m_iFireDelay, m_iMissileFireDelay);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	dwSave = MAKELONG(0, m_iContaminationTimer);
+	dwSave = MAKELONG(m_iReactorGraceTimer, m_iContaminationTimer);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	dwSave = MAKELONG(m_iBlindnessTimer, m_iParalysisTimer);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
@@ -5859,6 +5752,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fSpinningByOverlay ?	0x00200000 : 0);
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
+	dwSave |= (m_fOutOfPower ?			0x01000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Armor
@@ -7255,3 +7149,204 @@ void CShip::UpdateArmorItems (void)
 		}
 	}
 
+void CShip::UpdateDestroyInGate (void)
+
+//	UpdateDestroyInGate
+//
+//	Called in OnUpdate when m_fDestroyInGate is true.
+
+	{
+    const CAISettings *pAI = m_pController->GetAISettings();
+
+    //	If we're supposed to ascend on gate, then ascend now
+
+    if (m_pClass->GetCharacter() != NULL
+            || (pAI && pAI->AscendOnGate()))
+        {
+        ResetMaxSpeed();
+        m_fDestroyInGate = false;
+        GetSystem()->AscendObject(this);
+        }
+
+    //	If we're already suspended, then instead of destroying the ship, remove
+    //	it from the system and re-add it. We need to do this so that all
+    //	OnObjDestroyed notifications go out, etc.
+    //
+    //	Note that this will also clear out any events registered for the ship.
+
+    else if (IsSuspended())
+        {
+        CSystem *pSystem = GetSystem();
+        if (pSystem)
+            {
+            Remove(enteredStargate, CDamageSource());
+            AddToSystem(pSystem);
+            m_fDestroyInGate = false;
+            }
+        }
+    else
+        Destroy(enteredStargate, CDamageSource());
+	}
+
+bool CShip::UpdateFuel (int iTick)
+
+//	UpdateFuel
+//
+//	Update fuel. We return FALSE if the ship is destroyed and we cannot continue
+//	with update.
+//
+//	NOTE: iTick is a local system tick, not the global universe tick.
+
+	{
+	//	If we're out of power, then see if power is restored before we die from
+	//	life-support failure.
+
+	if (m_fOutOfPower)
+		{
+		//	If we've got power back, then we're OK
+
+		if (m_Perf.GetReactorDesc().GetMaxPower() > 0)
+			{
+			m_fOutOfPower = false;
+			m_pController->OnShipStatus(IShipController::statusReactorRestored);
+			}
+
+        //	Countdown grace period
+
+        else if (--m_iReactorGraceTimer <= 0.0)
+            {
+            Destroy(killedByPowerFailure, CDamageSource(NULL, killedByPowerFailure));
+
+            //	Shouldn't do anything else after being destroyed
+
+            return false;
+            }
+        else
+            m_pController->OnLifeSupportWarning(m_iReactorGraceTimer / g_TicksPerSecond);
+		}
+
+	//	If we're out of fuel, then count down until we die
+
+	else if (m_fOutOfFuel)
+		{
+        //	Countdown grace period
+
+        if (--m_iReactorGraceTimer <= 0.0)
+            {
+            Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
+
+            //	Shouldn't do anything else after being destroyed
+
+            return false;
+            }
+        else
+            m_pController->OnLifeSupportWarning(m_iReactorGraceTimer / g_TicksPerSecond);
+		}
+
+	//	Otherwise, consume fuel
+
+	else
+		{
+        CalcReactorStats();
+
+        //	Consume fuel
+
+        ConsumeFuel(m_iPowerDrain / m_Perf.GetReactorDesc().GetEfficiency());
+
+        //	Make sure everything is running smoothly.
+
+        if ((iTick % FUEL_CHECK_CYCLE) == 0)
+            {
+			int iMaxPower = m_Perf.GetReactorDesc().GetMaxPower();
+            Metric rFuelLeft = GetFuelLeft();
+
+			//	If we're consuming more power than the reactor can output, then 
+			//	we overload.
+
+			if (m_iPowerDrain > iMaxPower)
+				{
+                m_pController->OnReactorOverloadWarning(iTick / FUEL_CHECK_CYCLE);
+
+                //	Consequences of reactor overload
+
+                ReactorOverload();
+				}
+
+			//	If our reactor has 0 power, then we can't even run life-support,
+			//	so we die.
+
+			if (iMaxPower == 0)
+				{
+				m_fOutOfPower = true;
+				DisableAllDevices();
+				m_iReactorGraceTimer = FUEL_GRACE_PERIOD;
+                m_pController->OnShipStatus(IShipController::statusReactorPowerFailure);
+				}
+
+			//	If we have no fuel left, then we may die
+
+            else if (rFuelLeft <= 0.0)
+                {
+                //	See if the player has any fuel on board. If they do, then there
+                //	is a small grace period
+
+                if (HasFuelItem())
+                    {
+                    m_fOutOfFuel = true;
+					DisableAllDevices();
+                    m_iReactorGraceTimer = FUEL_GRACE_PERIOD;
+                    m_pController->OnFuelLowWarning(-1);
+                    }
+
+                //	Otherwise, the player is out of luck
+
+                else
+                    {
+                    Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
+
+                    //	Shouldn't do anything else after being destroyed
+                    return false;
+                    }
+                }
+
+			//	If we have low fuel, then warn the player.
+
+            else if (rFuelLeft < (GetMaxFuel() / 8.0))
+                m_pController->OnFuelLowWarning(iTick / FUEL_CHECK_CYCLE);
+            }
+        }
+
+	//	Done
+
+	return true;
+	}
+
+void CShip::UpdateInactive (void)
+
+//	UpdateInactive
+//
+//	Updates if we are inactive
+
+	{
+    if (IsInGate() && !IsSuspended())
+        {
+        //	Gate effect
+
+        if (m_iExitGateTimer == GATE_ANIMATION_LENGTH)
+            if (m_pExitGate)
+                m_pExitGate->OnObjLeaveGate(this);
+
+        //	Done?
+
+        if (--m_iExitGateTimer == 0)
+            {
+            if (m_pExitGate && m_pExitGate->IsMobile())
+                Place(m_pExitGate->GetPos());
+
+            if (!IsVirtual())
+                ClearCannotBeHit();
+            FireOnEnteredSystem(m_pExitGate);
+            m_pExitGate = NULL;
+            }
+        }
+	}

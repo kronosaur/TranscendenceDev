@@ -234,6 +234,12 @@ class IShipController
 			orderGoToPos,				//	dwData = vector destination
 			};
 
+		enum EShipStatusNotifications
+			{
+			statusReactorPowerFailure,	//	Reactor is dead
+			statusReactorRestored,		//	Reactor is functioning normally
+			};
+
 		virtual ~IShipController (void) { }
 
 		virtual void AccumulateCrewMetrics (SCrewMetrics &Metrics) { }
@@ -317,6 +323,7 @@ class IShipController
 		virtual void OnRadiationWarning (int iTicksLeft) { }
 		virtual void OnRadiationCleared (void) { }
 		virtual void OnReactorOverloadWarning (int iSeq) { }
+		virtual void OnShipStatus (EShipStatusNotifications iEvent, DWORD dwData = 0) { }
 		virtual void OnStatsChanged (void) { }
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) { }
 		virtual void OnSystemLoaded (void) { }

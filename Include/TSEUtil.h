@@ -640,9 +640,10 @@ enum DestructionTypes
 	enteredStargate					= 11,	//	Entered a stargate
 	killedByOther					= 12,	//	Custom death
 	killedByGravity					= 13,	//	Killed by white dwarf/neutron star/black hole
+	killedByPowerFailure			= 14,	//	Reactor stopped working 
 
 	killedNone						= -1,
-	killedCount						= 14
+	killedCount						= 15
 	};
 
 class CDamageSource

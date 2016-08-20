@@ -2156,6 +2156,7 @@ void CStation::OnDestroyed (SDestroyCtx &Ctx)
 			//	No effect
 			break;
 
+		case killedByPowerFailure:
 		case killedByRadiationPoisoning:
 		case killedByRunningOutOfFuel:
 		case killedByOther:

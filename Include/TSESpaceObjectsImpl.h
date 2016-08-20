@@ -860,6 +860,7 @@ class CShip : public CSpaceObject
 		void DamageCargo (SDamageCtx &Ctx);
 		void DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx);
 		void DamageDrive (SDamageCtx &Ctx);
+		void DisableAllDevices (void);
 		void EnableDevice (int iDev, bool bEnable = true, bool bSilent = false);
 		bool FindDeviceAtPos (const CVector &vPos, CInstalledDevice **retpDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
@@ -1035,7 +1036,7 @@ class CShip : public CSpaceObject
 		virtual bool IsIntangible (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0 || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return !m_Interior.IsEmpty(); }
-		virtual bool IsOutOfFuel (void) override { return m_fOutOfFuel; }
+		virtual bool IsOutOfPower (void) override { return m_fOutOfFuel || m_fOutOfPower; }
 		virtual bool IsParalyzed (void) override { return m_fParalyzedByOverlay || m_iParalysisTimer != 0; }
 		virtual bool IsPlayer (void) const override;
 		virtual bool IsRadioactive (void) override { return (m_fRadioactive ? true : false); }
@@ -1145,6 +1146,9 @@ class CShip : public CSpaceObject
         ALERROR ReportCreateError (const CString &sError) const;
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		inline bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
+		void UpdateDestroyInGate (void);
+		bool UpdateFuel (int iTick);
+		void UpdateInactive (void);
 
 		CShipClass *m_pClass;					//	Ship class
 		IShipController *m_pController;			//	Controller
@@ -1167,7 +1171,7 @@ class CShip : public CSpaceObject
 
 		int m_iFireDelay:16;					//	Ticks until next fire
 		int m_iMissileFireDelay:16;				//	Ticks until next missile fire
-		int m_iSpare:16;
+		int m_iReactorGraceTimer:16;			//	Ticks left to live when no power
 		int m_iContaminationTimer:16;			//	Ticks left to live
 		int m_iBlindnessTimer:16;				//	Ticks until blindness wears off
 												//	(-1 = permanent)
@@ -1223,7 +1227,7 @@ class CShip : public CSpaceObject
 		DWORD m_fDragByOverlay:1;				//	TRUE if overlay imposes drag
 		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
 
-		DWORD m_fSpare1:1;			            //	TRUE if one or more segments change ship's max speed
+		DWORD m_fOutOfPower:1;			        //	TRUE if reactor has 0 output
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;

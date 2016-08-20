@@ -168,6 +168,7 @@ static char *g_pszDestructionCauses[killedCount] =
 	"enteredStargate",
 	"custom",
 	"gravity",
+	"powerFailure",
 	};
 
 #define DESTRUCTION_CAUSES_COUNT	(sizeof(g_pszDestructionCauses) / sizeof(g_pszDestructionCauses[0]))
