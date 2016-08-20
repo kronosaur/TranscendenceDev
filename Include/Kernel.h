@@ -1592,9 +1592,11 @@ DWORD mathGetSeed (void);
 int mathNearestPowerOf2 (int x);
 int mathPower (int x, int n);
 DWORD mathRandom (void);
+inline double mathRandomDouble (void) { return (mathRandom() / 2147483648.0); }
 int mathRandom (int iFrom, int iTo);
 double mathRandomGaussian (void);
 int mathRound (double x);
+int mathRoundStochastic (double x);
 int mathSeededRandom (int iSeed, int iFrom, int iTo);
 void mathSetSeed (DWORD dwSeed);
 int mathSqrt (int x);

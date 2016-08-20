@@ -2954,7 +2954,20 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_MATH_ROUND:
-			return pCC->CreateDouble(round(pArgs->GetElement(0)->GetDoubleValue()));
+			{
+			if (pArgs->GetCount() >= 2)
+				{
+				CString sOption = pArgs->GetElement(0)->GetStringValue();
+				double rValue = pArgs->GetElement(1)->GetDoubleValue();
+
+				if (strEquals(sOption, CONSTLIT("stochastic")))
+					return pCC->CreateDouble(mathRoundStochastic(rValue));
+				else
+					return pCC->CreateDouble(round(rValue));
+				}
+			else
+				return pCC->CreateDouble(round(pArgs->GetElement(0)->GetDoubleValue()));
+			}
 
 		case FN_MATH_SQRT_NUMERALS:
 			{

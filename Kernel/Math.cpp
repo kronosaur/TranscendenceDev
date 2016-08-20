@@ -240,6 +240,23 @@ int mathRound (double x)
 	return (i);
 	}
 
+int mathRoundStochastic (double x)
+
+//	mathRoundStochastic
+//
+//	Converts a double into an integer and randomly rounds up or down with 
+//	probability proportional to the fractional part.
+
+	{
+	double rInt = floor(x);
+	double rFraction = x - rInt;
+
+	if (mathRandomDouble() < rFraction)
+		return (int)rInt + 1;
+	else
+		return (int)rInt;
+	}
+
 int mathSeededRandom (int iSeed, int iFrom, int iTo)
 
 //	mathSeededRandom

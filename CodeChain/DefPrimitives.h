@@ -225,8 +225,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"ss*",	0,	},
 
 		{	"round",			fnMathNumerals,		FN_MATH_ROUND,
-			"(round x) -> y",
-			"n",	0,	},
+			"(round ['stochastic] x) -> y",
+			"*n",	0,	},
 
 		{	"quote",			fnSpecial,			FN_QUOTE,
 			"(quote exp) -> unevaluated exp",
