@@ -78,6 +78,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
 #define ON_SYSTEM_WEAPON_FIRE_EVENT				CONSTLIT("OnSystemWeaponFire")
 #define ON_TRANSLATE_MESSAGE_EVENT				CONSTLIT("OnTranslateMessage")
+#define ON_UPDATE_EVENT							CONSTLIT("OnUpdate")
 
 #define FIELD_DESC_ID							CONSTLIT("descID")
 #define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
@@ -254,7 +255,8 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fShowDamageBar(false),
 		m_fHasGravity(false),
 		m_fInsideBarrier(false),
-		m_fHasOnSubordinateAttackedEvent(false)
+		m_fHasOnSubordinateAttackedEvent(false),
+		m_fHasOnUpdateEvent(false)
 
 //	CSpaceObject constructor
 
@@ -1081,6 +1083,15 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fHasGravity =				((dwLoad & 0x20000000) ? true : false);
 	pObj->m_fInsideBarrier =			((dwLoad & 0x40000000) ? true : false);
 	pObj->m_fHasOnSubordinateAttackedEvent = ((dwLoad & 0x80000000) ? true : false);
+
+	//	More flags
+
+	if (Ctx.dwVersion >= 136)
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	else
+		dwLoad = 0;
+
+	pObj->m_fHasOnUpdateEvent =			((dwLoad & 0x00000001) ? true : false);
 
 	//	No need to save the following
 
@@ -3171,6 +3182,28 @@ bool CSpaceObject::FireOnTranslateMessage (const CString &sMessage, CString *ret
 		*retsMessage = sResult;
 
 	return bHandled;
+	}
+
+void CSpaceObject::FireOnUpdate (void)
+
+//	FireOnUpdate
+//
+//	Fire OnUpdate event
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_UPDATE_EVENT, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SaveAndDefineSourceVar(this);
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_UPDATE_EVENT, pResult);
+		Ctx.Discard(pResult);
+		}
 	}
 
 void CSpaceObject::GetBoundingRect (CVector *retvUR, CVector *retvLL)
@@ -6868,6 +6901,7 @@ void CSpaceObject::SetEventFlags (void)
 	SetHasOnAttackedEvent(FindEventHandler(CONSTLIT("OnAttacked")));
 	SetHasOnDamageEvent(FindEventHandler(CONSTLIT("OnDamage")));
 	SetHasOnObjDockedEvent(FindEventHandler(CONSTLIT("OnObjDocked")));
+	SetHasOnUpdateEvent(FindEventHandler(CONSTLIT("OnUpdate")));
 
 	//	Let subclasses do their bit
 
@@ -7209,6 +7243,15 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	if (IsDestinyTime(ITEM_ON_UPDATE_CYCLE, ITEM_ON_UPDATE_OFFSET))
 		FireOnItemUpdate();
 
+	//	Update object
+
+	CDesignType *pType;
+	if (HasOnUpdateEvent() 
+			&& IsDestinyTime(OBJECT_ON_UPDATE_CYCLE, OBJECT_ON_UPDATE_OFFSET)
+			&& (pType = GetType())
+			&& pType->GetAPIVersion() >= 31)
+		FireOnUpdate();
+
 	//	See if this is the nearest player target
 
 	if (CanAttack()
@@ -7446,6 +7489,12 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fInsideBarrier				? 0x40000000 : 0);
 	dwSave |= (m_fHasOnSubordinateAttackedEvent	? 0x80000000 : 0);
 	//	No need to save m_fHasName because it is set by CSystem on load.
+	pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+	//	More flags
+
+	dwSave = 0;
+	dwSave |= (m_fHasOnUpdateEvent			? 0x00000001 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data

@@ -2337,6 +2337,7 @@ class CSpaceObject : public CObject
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pSource, DWORD dwItemUNID);
 		bool FireOnTranslateMessage (const CString &sMessage, CString *retsMessage);
+		void FireOnUpdate (void);
 		inline void FreezeControls (void) { m_iControlsFrozen++; }
 		inline DWORD GetAPIVersion (void) const { CDesignType *pType = GetType(); return (pType ? pType->GetAPIVersion() : API_VERSION); }
 		void GetBoundingRect (CVector *retvUR, CVector *retvLL);
@@ -2401,6 +2402,7 @@ class CSpaceObject : public CObject
 		inline bool HasOnObjDockedEvent (void) const { return (m_fHasOnObjDockedEvent ? true : false); }
 		inline bool HasOnOrdersCompletedEvent (void) const { return (m_fHasOnOrdersCompletedEvent ? true : false); }
 		inline bool HasOnSubordinateAttackedEvent (void) const { return (m_fHasOnSubordinateAttackedEvent ? true : false); }
+		inline bool HasOnUpdateEvent (void) const { return (m_fHasOnUpdateEvent ? true : false); }
 		inline bool HasRandomEncounters (void) const { int iFreq; return (GetRandomEncounterTable(&iFreq) || iFreq > 0); }
 		void Highlight (const CString &sText = NULL_STR);
 		inline bool HitSizeInBox (const CVector &vUR, const CVector &vLL)
@@ -2500,6 +2502,7 @@ class CSpaceObject : public CObject
 		inline void SetHasOnObjDockedEvent (bool bHasEvent) { m_fHasOnObjDockedEvent = bHasEvent; }
 		inline void SetHasOnOrdersCompletedEvent (bool bHasEvent) { m_fHasOnOrdersCompletedEvent = bHasEvent; }
 		inline void SetHasOnSubordinateAttackedEvent (bool bHasEvent) { m_fHasOnSubordinateAttackedEvent = bHasEvent; }
+		inline void SetHasOnUpdateEvent (bool bHasEvent) { m_fHasOnUpdateEvent = bHasEvent; }
 		inline void SetHighlightChar (char chChar) { m_iHighlightChar = chChar; }
 		inline void SetMarked (bool bMarked = true) { m_fMarked = bMarked; }
 		inline void SetNamed (bool bNamed = true) { m_fHasName = bNamed; }
@@ -3021,7 +3024,16 @@ class CSpaceObject : public CObject
 		DWORD m_fInsideBarrier:1;				//	TRUE if we got created inside a barrier
 		DWORD m_fHasOnSubordinateAttackedEvent:1;	//	TRUE if we have a <OnSubordinateAttacked> event
 
-		DWORD m_dwSpare:24;
+		DWORD m_fHasOnUpdateEvent:1;			//	TRUE if we have an <OnUpdate> event
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:16;
 
 #ifdef DEBUG_VECTOR
 		CVector m_vDebugVector;			//	Draw a vector

@@ -98,6 +98,9 @@ const int ITEM_ON_AI_UPDATE_OFFSET =		0;
 const int ITEM_ON_UPDATE_CYCLE =			30;		//	OnUpdate in <ItemType>
 const int ITEM_ON_UPDATE_OFFSET =			7;
 
+const int OBJECT_ON_UPDATE_CYCLE =			30;		//	OnUpdate in space objects
+const int OBJECT_ON_UPDATE_OFFSET =			13;
+
 const int OVERLAY_ON_UPDATE_CYCLE =			15;		//	OnUpdate in <OverlayType>
 const int OVERLAY_ON_UPDATE_OFFSET =		11;
 

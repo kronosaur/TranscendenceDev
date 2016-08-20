@@ -417,6 +417,9 @@
 //  135: 1.7 Beta 1
 //      Added delayed commands to CObjectTracker
 //
+//	136: 1.7 Beta 1
+//		Additional flags on CSpaceObject
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
