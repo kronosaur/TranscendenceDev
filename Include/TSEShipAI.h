@@ -236,8 +236,14 @@ class IShipController
 
 		enum EShipStatusNotifications
 			{
-			statusReactorPowerFailure,	//	Reactor is dead
-			statusReactorRestored,		//	Reactor is functioning normally
+			statusArmorRepaired,			//	dwData = segment
+			statusFuelLowWarning,			//	dwData = sequence
+			statusLifeSupportWarning,		//	dwData = seconds left
+			statusRadiationCleared,			//	Decontaminated
+			statusRadiationWarning,			//	dwData = ticks left
+			statusReactorOverloadWarning,	//	dwData = sequence
+			statusReactorPowerFailure,		//	Reactor is dead
+			statusReactorRestored,			//	Reactor is functioning normally
 			};
 
 		virtual ~IShipController (void) { }
@@ -290,7 +296,6 @@ class IShipController
 
 		//	Events
 
-		virtual void OnArmorRepaired (int iSection) { }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
 		virtual void OnBlindnessChanged (bool bBlind, bool bNoMessage = false) { }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
@@ -304,13 +309,11 @@ class IShipController
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { }
         virtual void OnFuelConsumed (Metric rFuel) { }
-		virtual void OnFuelLowWarning (int iSeq) { }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) { CancelDocking(); }
 		virtual void OnItemDamaged (const CItem &Item, int iHP) { }
 		virtual void OnItemFired (const CItem &Item) { }
 		virtual void OnItemInstalled (const CItem &Item) { }
 		virtual void OnItemUninstalled (const CItem &Item) { }
-		virtual void OnLifeSupportWarning (int iSecondsLeft) { }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) { }
 		virtual void OnNewSystem (CSystem *pSystem) { }
 		virtual void OnObjDamaged (const SDamageCtx &Ctx) { }
@@ -320,9 +323,6 @@ class IShipController
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip) { }
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) { }
 		virtual void OnProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) { }
-		virtual void OnRadiationWarning (int iTicksLeft) { }
-		virtual void OnRadiationCleared (void) { }
-		virtual void OnReactorOverloadWarning (int iSeq) { }
 		virtual void OnShipStatus (EShipStatusNotifications iEvent, DWORD dwData = 0) { }
 		virtual void OnStatsChanged (void) { }
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) { }

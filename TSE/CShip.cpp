@@ -200,7 +200,7 @@ void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int 
 
     m_pController->OnStatsChanged();
 	m_pController->OnWeaponStatusChanged();
-	m_pController->OnArmorRepaired(-1);
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	}
 
 CTradingDesc *CShip::AllocTradeDescOverride (void)
@@ -1824,7 +1824,7 @@ void CShip::Decontaminate (void)
 
 		m_iContaminationTimer = 0;
 		m_fRadioactive = false;
-		m_pController->OnRadiationCleared();
+		m_pController->OnShipStatus(IShipController::statusRadiationCleared);
 		}
 	}
 
@@ -1892,7 +1892,7 @@ void CShip::EnableDevice (int iDev, bool bEnable, bool bSilent)
 
     m_pController->OnStatsChanged();
 	m_pController->OnWeaponStatusChanged();
-	m_pController->OnArmorRepaired(-1);
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	m_pController->OnDeviceEnabledDisabled(iDev, bEnable, bSilent);
 
 	//	Fire event
@@ -3406,7 +3406,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 
 	InvalidateItemListState();
     m_pController->OnStatsChanged();
-	m_pController->OnArmorRepaired(iSect);
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 	}
 
 void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot, int iSlotPosIndex)
@@ -3500,7 +3500,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 			m_NamedDevices[devShields] = iDeviceSlot;
 			//	If we just installed a shield generator, start a 0 energy
 			pDevice->Reset(this);
-			m_pController->OnArmorRepaired(-1);
+			m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 			break;
 
 		case itemcatDrive:
@@ -3765,7 +3765,7 @@ void CShip::MakeRadioactive (void)
 		{
 		m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
 		m_fRadioactive = true;
-		m_pController->OnRadiationWarning(m_iContaminationTimer);
+		m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
 		}
 	}
 
@@ -3911,7 +3911,7 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 		{
 		case comArmor:
 		case comShields:
-			m_pController->OnArmorRepaired(-1);
+			m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 			break;
 
 		case comCargo:
@@ -4520,7 +4520,7 @@ void CShip::OnItemEnhanced (CItemListManipulator &ItemList)
 		InvalidateItemListState();
         m_pController->OnStatsChanged();
 		m_pController->OnWeaponStatusChanged();
-		m_pController->OnArmorRepaired(-1);
+		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 		}
 	}
 
@@ -5510,7 +5510,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         m_iContaminationTimer--;
         if (m_iContaminationTimer > 0)
             {
-            m_pController->OnRadiationWarning(m_iContaminationTimer);
+			m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
             }
         else
             {
@@ -5624,8 +5624,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		m_pController->OnWeaponStatusChanged();
 
 	if (bArmorStatusChanged)
-		m_pController->OnArmorRepaired(-1);
-
+		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
+	
 	if (bCargoChanged)
 		InvalidateItemListAddRemove();
 
@@ -6300,7 +6300,7 @@ ALERROR CShip::RemoveItemAsDevice (CItemListManipulator &ItemList)
 
 		case itemcatShields:
 			m_NamedDevices[devShields] = -1;
-			m_pController->OnArmorRepaired(-1);
+			m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 			break;
 
 		case itemcatDrive:
@@ -6351,7 +6351,7 @@ void CShip::RepairAllArmor (void)
 		{
 		CInstalledArmor *pSection = GetArmorSection(i);
 		pSection->SetHitPoints(pSection->GetMaxHP(this));
-		m_pController->OnArmorRepaired(i);
+		m_pController->OnShipStatus(IShipController::statusArmorRepaired, i);
 		}
 	}
 
@@ -6372,7 +6372,7 @@ void CShip::RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired)
 
 	pSection->IncHitPoints(iHitPoints);
 
-	m_pController->OnArmorRepaired(iSect);
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 
 	if (retiHPRepaired)
 		*retiHPRepaired = iHitPoints;
@@ -6403,7 +6403,7 @@ void CShip::RepairDamage (int iHitPoints)
 		}
 
 	if (bRepaired)
-		m_pController->OnArmorRepaired(-1);
+		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	}
 
 ALERROR CShip::ReportCreateError (const CString &sError) const
@@ -7222,7 +7222,7 @@ bool CShip::UpdateFuel (int iTick)
             return false;
             }
         else
-            m_pController->OnLifeSupportWarning(m_iReactorGraceTimer / g_TicksPerSecond);
+            m_pController->OnShipStatus(IShipController::statusLifeSupportWarning, m_iReactorGraceTimer / g_TicksPerSecond);
 		}
 
 	//	If we're out of fuel, then count down until we die
@@ -7240,7 +7240,7 @@ bool CShip::UpdateFuel (int iTick)
             return false;
             }
         else
-            m_pController->OnLifeSupportWarning(m_iReactorGraceTimer / g_TicksPerSecond);
+            m_pController->OnShipStatus(IShipController::statusLifeSupportWarning, m_iReactorGraceTimer / g_TicksPerSecond);
 		}
 
 	//	Otherwise, consume fuel
@@ -7265,7 +7265,7 @@ bool CShip::UpdateFuel (int iTick)
 
 			if (m_iPowerDrain > iMaxPower)
 				{
-                m_pController->OnReactorOverloadWarning(iTick / FUEL_CHECK_CYCLE);
+                m_pController->OnShipStatus(IShipController::statusReactorOverloadWarning, iTick / FUEL_CHECK_CYCLE);
 
                 //	Consequences of reactor overload
 
@@ -7295,7 +7295,7 @@ bool CShip::UpdateFuel (int iTick)
                     m_fOutOfFuel = true;
 					DisableAllDevices();
                     m_iReactorGraceTimer = FUEL_GRACE_PERIOD;
-                    m_pController->OnFuelLowWarning(-1);
+                    m_pController->OnShipStatus(IShipController::statusFuelLowWarning, -1);
                     }
 
                 //	Otherwise, the player is out of luck
@@ -7312,7 +7312,7 @@ bool CShip::UpdateFuel (int iTick)
 			//	If we have low fuel, then warn the player.
 
             else if (rFuelLeft < (GetMaxFuel() / 8.0))
-                m_pController->OnFuelLowWarning(iTick / FUEL_CHECK_CYCLE);
+	            m_pController->OnShipStatus(IShipController::statusFuelLowWarning, iTick / FUEL_CHECK_CYCLE);
             }
         }
 
