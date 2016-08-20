@@ -1475,7 +1475,7 @@ CString strFormatInteger (int iValue, int iMinFieldWidth = -1, DWORD dwFlags = 0
 
 CString strFormatMicroseconds (DWORD dwMicroseconds);
 CString strFormatMilliseconds (DWORD dwMilliseconds);
-CString strFromDouble (double rValue);
+CString strFromDouble (double rValue, int iDecimals = -1);
 CString strFromInt (int iInteger, bool bSigned = true);
 int strGetHexDigit (char *pPos);
 char strGetHexDigit (int iDigit);

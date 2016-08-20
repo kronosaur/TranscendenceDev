@@ -1411,7 +1411,7 @@ CString strFormatInteger (int iValue, int iMinFieldWidth, DWORD dwFlags)
 	return sResult;
 	}
 
-CString strFromDouble (double rValue)
+CString strFromDouble (double rValue, int iDecimals)
 
 //	strFromDouble
 //
@@ -1419,12 +1419,71 @@ CString strFromDouble (double rValue)
 
 	{
 	CString sResult;
-	char *pPos = sResult.GetWritePointer(_CVTBUFSIZE);
-	if (_gcvt_s(pPos, sResult.GetLength(), rValue, 16) != 0)
-		return CONSTLIT("NaN");
+
+	if (iDecimals == -1)
+		{
+		char *pPos = sResult.GetWritePointer(_CVTBUFSIZE);
+		if (_gcvt_s(pPos, sResult.GetLength(), rValue, 16) != 0)
+			return CONSTLIT("NaN");
+		}
+	else
+		{
+		CString sDigits;
+		char *pPos = sDigits.GetWritePointer(_CVTBUFSIZE);
+
+		int iDecimalPoint;
+		int iSign;
+
+		if (_fcvt_s(pPos, sDigits.GetLength(), rValue, iDecimals, &iDecimalPoint, &iSign) != 0)
+			return CONSTLIT("NaN");
+
+		char *pSrc = sDigits.GetASCIIZPointer();
+
+		pPos = sResult.GetWritePointer(_CVTBUFSIZE);
+		char *pPosEnd = pPos + sResult.GetLength();
+		if (iSign != 0)
+			*pPos++ = '-';
+
+		if (iDecimalPoint <= 0)
+			{
+			*pPos++ = '0';
+			*pPos++ = '.';
+
+			if (*pSrc == '\0')
+				*pPos++ = '0';
+			else
+				{
+				while (iDecimalPoint < 0 && pPos < pPosEnd)
+					{
+					*pPos++ = '0';
+					iDecimalPoint++;
+					}
+				}
+			}
+		else
+			{
+			while (iDecimalPoint > 0 && pPos < pPosEnd)
+				{
+				*pPos++ = *pSrc++;
+				iDecimalPoint--;
+				}
+
+			if (pPos < pPosEnd)
+				*pPos++ = '.';
+			}
+
+		while (*pSrc != '\0' && pPos < pPosEnd)
+			*pPos++ = *pSrc++;
+
+		if (pPos < pPosEnd)
+			*pPos++ = '\0';
+		else
+			pPosEnd[-1] = '\0';
+		}
 
 	//	Figure out how much we wrote
 
+	char *pPos = sResult.GetASCIIZPointer();
 	int iLen = strlen(pPos);
 
 	//	If we end in a '.' then add a terminating 0
