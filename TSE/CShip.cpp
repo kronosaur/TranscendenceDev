@@ -1194,7 +1194,9 @@ void CShip::ConsumeFuel (Metric rFuel)
 //	Consumes some amount of fuel
 
 	{
-    if (m_fTrackFuel && !IsOutOfPower())
+    if (m_fTrackFuel 
+			&& !IsOutOfPower()
+			&& m_Perf.GetReactorDesc().UsesFuel())
         {
         Metric rConsumed = Min(m_rFuelLeft, rFuel);
 
@@ -7257,8 +7259,8 @@ bool CShip::UpdateFuel (int iTick)
 
         if ((iTick % FUEL_CHECK_CYCLE) == 0)
             {
+            Metric rFuelLeft;
 			int iMaxPower = m_Perf.GetReactorDesc().GetMaxPower();
-            Metric rFuelLeft = GetFuelLeft();
 
 			//	If we're consuming more power than the reactor can output, then 
 			//	we overload.
@@ -7283,9 +7285,14 @@ bool CShip::UpdateFuel (int iTick)
                 m_pController->OnShipStatus(IShipController::statusReactorPowerFailure);
 				}
 
+			//	If we don't consume fuel, then no need to check further
+
+			else if (!m_Perf.GetReactorDesc().UsesFuel())
+				NULL;
+
 			//	If we have no fuel left, then we may die
 
-            else if (rFuelLeft <= 0.0)
+            else if ((rFuelLeft = GetFuelLeft()) <= 0.0)
                 {
                 //	See if the player has any fuel on board. If they do, then there
                 //	is a small grace period

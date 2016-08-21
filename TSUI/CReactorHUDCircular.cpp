@@ -126,6 +126,57 @@ void CReactorHUDCircular::OnUpdate (SHUDUpdateCtx &Ctx)
 		}
 	}
 
+void CReactorHUDCircular::PaintChargesGauge (CShip *pShip)
+
+//	PaintChargesGauge
+//
+//	Paint the number of charges (out of the maximum number of charges possible).
+//	This paints on the left arc, instead of the fuel gauge.
+
+	{
+	int i;
+
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
+	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+
+	//	Figure out the number of charges
+
+	CInstalledDevice *pReactor = pShip->GetNamedDevice(devReactor);
+	if (pReactor == NULL)
+		return;
+
+	int iCharges = pReactor->GetItem()->GetCharges();
+	int iMaxCharges = Max(1, Max(iCharges, pReactor->GetItem()->GetType()->GetMaxCharges()));
+
+	//	Compute some metrics
+
+	Metric rTotalArc = PI;
+	Metric rChargeArc = rTotalArc / iMaxCharges;
+	Metric rStartAngle = 1.5 * PI;
+	Metric rAngle = rStartAngle;
+
+	//	Paint all the charges
+
+	for (i = 0; i < iMaxCharges; i++)
+		{
+		CG32bitPixel rgbColor = (i < iCharges ? m_rgbFuelGauge : m_rgbGaugeBack);
+
+		CGDraw::Arc(m_Buffer,
+				CVector(m_xCenter, m_yCenter),
+				m_iGaugeRadius + RING_SPACING,
+				rAngle - rChargeArc,
+				rAngle,
+				m_iGaugeWidth,
+				rgbColor,
+				CGDraw::blendCompositeNormal,
+				RING_SPACING / 2,
+				CGDraw::ARC_INNER_RADIUS);
+
+		rAngle -= rChargeArc;
+		}
+	}
+
 void CReactorHUDCircular::PaintFuelGauge (CShip *pShip)
 
 //	PaintFuelGauge
@@ -347,6 +398,9 @@ void CReactorHUDCircular::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint gauges
 
-	PaintFuelGauge(pShip);
+	if (pShip->GetReactorDesc().UsesFuel())
+		PaintFuelGauge(pShip);
+	else
+		PaintChargesGauge(pShip);
 	PaintPowerGauge(pShip);
 	}

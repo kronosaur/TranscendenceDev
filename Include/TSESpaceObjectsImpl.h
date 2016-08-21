@@ -915,7 +915,7 @@ class CShip : public CSpaceObject
 		//	Reactor methods
 		inline Metric GetFuelLeft (void) { return (m_fOutOfFuel ? 0.0 : m_rFuelLeft); }
 		Metric GetMaxFuel (void);
-		inline const CReactorDesc *GetReactorDesc (void) { return &m_Perf.GetReactorDesc(); }
+		inline const CReactorDesc &GetReactorDesc (void) { return m_Perf.GetReactorDesc(); }
 		inline void TrackFuel (bool bTrack = true) { m_fTrackFuel = bTrack; }
 		inline void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
 		int GetPowerConsumption (void);

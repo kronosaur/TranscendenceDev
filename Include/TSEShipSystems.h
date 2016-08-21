@@ -417,6 +417,7 @@ class CReactorDesc
         ALERROR InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, int iBaseLevel, int iScaledLevel);
         bool IsFuelCompatible (const CItem &FuelItem) const;
 		inline void SetMaxPower (int iPower) { m_iMaxPower = iPower; }
+		inline bool UsesFuel (void) const { return (m_fNoFuel ? false : true); }
 
         static const SStdStats &GetStdStats (int iLevel);
 		static bool IsExportedProperty (const CString &sProperty);
