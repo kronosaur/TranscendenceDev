@@ -9,7 +9,6 @@
 
 #define CREDITS_ATTRIB							CONSTLIT("credits")
 #define DEBUG_ONLY_ATTRIB						CONSTLIT("debugOnly")
-#define EXTENDS_ATTRIB							CONSTLIT("extends")
 #define FILENAME_ATTRIB							CONSTLIT("filename")
 #define NAME_ATTRIB								CONSTLIT("name")
 #define UNID_ATTRIB								CONSTLIT("UNID")

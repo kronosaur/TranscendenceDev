@@ -162,6 +162,8 @@ bool CExtension::CanExtend (CExtension *pAdventure) const
 //	Returns TRUE if this extension can extend the given adventure.
 
 	{
+	int i;
+
 	ASSERT(pAdventure);
 
 	//	If our extend list is empty then we extend everything.
@@ -169,9 +171,20 @@ bool CExtension::CanExtend (CExtension *pAdventure) const
 	if (m_Extends.GetCount() == 0)
 		return true;
 
-	//	Otherwise, see if this adventure is in the list.
+	//	If the extension is on the list, then we can extend it.
 
-	return m_Extends.Find(pAdventure->GetUNID());
+	if (m_Extends.Find(pAdventure->GetUNID()))
+		return true;
+
+	//	Otherwise, see if we extend any of the libraries used by this adventure.
+
+	for (i = 0; i < pAdventure->GetLibraryCount(); i++)
+		if (m_Extends.Find(pAdventure->GetLibrary(i).dwUNID))
+			return true;
+
+	//	Otherwise, we don't extend it
+
+	return false;
 	}
 
 void CExtension::CleanUp (void)
@@ -1095,6 +1108,26 @@ ALERROR CExtension::LoadDesignElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			}
 
 		return NOERROR;
+		}
+
+	//	<Library>
+	//
+	//	We need to load this because we want to know what libraries an adventure
+	//	uses so we can determine what extensions it is compatible with. This is
+	//	needed before the adventure is loaded.
+	//
+	//	NOTE: The limitation is that we don't handle the case where a library
+	//	loads a library that the adventure does not. In those case, an extension
+	//	that works on the secondary library would not be picked up.
+
+	else if (strEquals(pDesc->GetTag(), LIBRARY_TAG))
+		{
+		//	If we've already loaded adventure descs, then we're done
+
+		if (m_iLoadState == loadAdventureDesc)
+			return NOERROR;
+
+		return LoadLibraryElement(Ctx, pDesc);
 		}
 
 	//	If we're only loading adventure descs, then we don't care about other

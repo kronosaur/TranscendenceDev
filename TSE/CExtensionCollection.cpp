@@ -543,21 +543,30 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 			if (!ExtensionList[j]->IsAutoInclude() && bAutoOnly)
 				continue;
 
-			//	If this extension does not extend the adventure, then skip.
-
-			if (pAdventure && !ExtensionList[j]->CanExtend(pAdventure))
-				continue;
-
 			//	Compute the best extension out of the list.
 
 			if (Compare(ExtensionList[j], pBest, bDebugMode) == 1)
 				pBest = ExtensionList[j];
 			}
 
-		//	If we found one then add it to the list.
+		//	If best not found, skip
 
-		if (pBest)
-			retList->Insert(pBest);
+		if (pBest == NULL)
+			continue;
+
+		//	If this extension does not extend the adventure, then skip.
+		//	NOTE: We do this outside the loop because we honor the settings of 
+		//	the latest version. Otherwise, we might exclude a later version but
+		//	include an earlier one.
+
+		//	If this extension does not extend the adventure, then skip.
+
+		if (pAdventure && !pBest->CanExtend(pAdventure))
+			continue;
+
+		//	If we get this far, then we can add this extension
+
+		retList->Insert(pBest);
 		}
 
 	//	Done
