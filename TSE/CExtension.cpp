@@ -182,6 +182,19 @@ bool CExtension::CanExtend (CExtension *pAdventure) const
 		if (m_Extends.Find(pAdventure->GetLibrary(i).dwUNID))
 			return true;
 
+	//	Any adventure that uses the compatibility library should be treated as
+	//	if it includes Core Types, RPG, Universe, and Human Space Vol 1.
+	//
+	//	NOTE: At this point, m_bUsesCompatibilityLibrary has not yet been set
+	//	because we haven't completely loaded the adventure.
+
+	if (pAdventure->GetAPIVersion() < 26
+			&& (m_Extends.Find(UNID_CORE_TYPES_LIBRARY)
+				|| m_Extends.Find(UNID_RPG_LIBRARY)
+				|| m_Extends.Find(UNID_UNIVERSE_LIBRARY)
+				|| m_Extends.Find(UNID_HUMAN_SPACE_LIBRARY)))
+		return true;
+
 	//	Otherwise, we don't extend it
 
 	return false;
