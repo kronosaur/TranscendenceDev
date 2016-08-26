@@ -27,7 +27,9 @@
 #define SOLAR_DEVICE_CLASS_TAG					CONSTLIT("SolarDevice")
 #define WEAPON_CLASS_TAG						CONSTLIT("Weapon")
 
+#define AS_ARMOR_SET_ATTRIB						CONSTLIT("asArmorSet")
 #define INSTANCE_DATA_ATTRIB					CONSTLIT("charges")
+#define COMPLETE_ARMOR_ONLY_ATTRIB				CONSTLIT("completeArmorOnly")
 #define DATA_ATTRIB								CONSTLIT("data")
 #define ENHANCEMENT_ATTRIB						CONSTLIT("enhancement")
 #define FREQUENCY_ATTRIB						CONSTLIT("frequency")
@@ -45,6 +47,8 @@
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define UNINSTALLED_ONLY_ATTRIB					CONSTLIT("uninstalledOnly")
 #define UNKNOWN_TYPE_ATTRIB						CONSTLIT("unknownType")
+#define USE_AS_ARMOR_SET_ATTRIB					CONSTLIT("useAsArmorSet")
+#define USE_COMPLETE_ARMOR_ONLY_ATTRIB			CONSTLIT("useCompleteArmorOnly")
 #define USE_ENABLED_ONLY_ATTRIB					CONSTLIT("useEnabledOnly")
 #define USE_INSTALLED_ONLY_ATTRIB				CONSTLIT("useInstalledOnly")
 #define USE_KEY_ATTRIB							CONSTLIT("useKey")
@@ -848,6 +852,8 @@ bool CItemType::GetUseDesc (SUseDesc *retDesc) const
 			retDesc->bOnlyIfEnabled = m_fUseEnabled;
 			retDesc->bOnlyIfInstalled = m_fUseInstalled;
 			retDesc->bOnlyIfUninstalled = m_fUseUninstalled;
+			retDesc->bOnlyIfCompleteArmor = m_fUseCompleteArmor;
+			retDesc->bAsArmorSet = m_fUseAsArmorSet;
 			}
 
 		return true;
@@ -1324,6 +1330,8 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fUseInstalled = pDesc->GetAttributeBool(USE_INSTALLED_ONLY_ATTRIB);
 	m_fUseUninstalled = pDesc->GetAttributeBool(USE_UNINSTALLED_ONLY_ATTRIB);
 	m_fUseEnabled = pDesc->GetAttributeBool(USE_ENABLED_ONLY_ATTRIB);
+	m_fUseCompleteArmor = pDesc->GetAttributeBool(USE_COMPLETE_ARMOR_ONLY_ATTRIB);
+	m_fUseAsArmorSet = pDesc->GetAttributeBool(USE_AS_ARMOR_SET_ATTRIB);
 
 	//	Process sub-elements
 
@@ -1363,6 +1371,12 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 			if (pSubDesc->FindAttributeBool(ENABLED_ONLY_ATTRIB, &bValue))
 				m_fUseEnabled = bValue;
+
+			if (pSubDesc->FindAttributeBool(COMPLETE_ARMOR_ONLY_ATTRIB, &bValue))
+				m_fUseCompleteArmor = bValue;
+
+			if (pSubDesc->FindAttributeBool(AS_ARMOR_SET_ATTRIB, &bValue))
+				m_fUseAsArmorSet = bValue;
 			}
 
 		//	Process on refuel code

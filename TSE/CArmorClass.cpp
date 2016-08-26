@@ -58,6 +58,7 @@
 
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_COMPLETE_HP					CONSTLIT("completeHP")
+#define PROPERTY_COMPLETE_SET					CONSTLIT("completeSet")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
@@ -65,6 +66,7 @@
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
+#define PROPERTY_PRIME_SEGMENT					CONSTLIT("primeSegment")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
 #define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
@@ -1446,6 +1448,15 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_COMPLETE_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx, true));
 
+	else if (strEquals(sName, PROPERTY_COMPLETE_SET))
+		{
+		CInstalledArmor *pArmor = Ctx.GetArmor();
+		if (pArmor == NULL)
+			return CC.CreateNil();
+
+		return CC.CreateBool(pArmor->IsComplete());
+		}
+
 	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE))
 		return CC.CreateBool(IsDeviceDamageImmune(Ctx));
 
@@ -1472,6 +1483,15 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx));
+
+	else if (strEquals(sName, PROPERTY_PRIME_SEGMENT))
+		{
+		CInstalledArmor *pArmor = Ctx.GetArmor();
+		if (pArmor == NULL)
+			return CC.CreateNil();
+
+		return CC.CreateBool(pArmor->IsPrime());
+		}
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
 		return CC.CreateBool(IsRadiationImmune(Ctx));

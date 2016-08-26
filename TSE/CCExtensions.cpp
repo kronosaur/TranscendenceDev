@@ -218,6 +218,7 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_SET_OVERLAY_PROPERTY	118
 #define FN_OBJ_GET_SHIP_SELL_PRICE	119
 #define FN_OBJ_GET_SHIP_BUY_PRICE	120
+#define FN_OBJ_FIRE_ITEM_INVOKE		121
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1235,6 +1236,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objFireItemEvent",				fnObjSet,		FN_OBJ_FIRE_ITEM_EVENT,
 			"(objFireItemEvent obj item event [data]) -> result of event",
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objFireItemInvoke",				fnObjSet,		FN_OBJ_FIRE_ITEM_INVOKE,
+			"(objFireItemInvoke obj item) -> True/Nil",
+			"iv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objFireOverlayEvent",			fnObjSet,		FN_OBJ_FIRE_OVERLAY_EVENT,
 			"(objFireOverlayEvent obj overlayID event [data]) -> result of event",
@@ -6645,6 +6650,29 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pObj->FireCustomItemEvent(pArgs->GetElement(2)->GetStringValue(), Item, pData, &pResult);
 			return pResult;
+			}
+
+		case FN_OBJ_FIRE_ITEM_INVOKE:
+			{
+			CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(1));
+			CItemType *pType = Item.GetType();
+			if (pType == NULL)
+				return pCC->CreateNil();
+
+			CItemType::SUseDesc UseDesc;
+			if (!pType->GetUseDesc(&UseDesc)
+					|| !UseDesc.bUsableInCockpit)
+				return pCC->CreateNil();;
+
+			CString sError;
+			pObj->UseItem(Item, &sError);
+			if (sError.IsBlank())
+				{
+				::kernelDebugLogMessage("[%s %s Invoke]: %s", pObj->GetName(), pType->GetName(NULL), sError);
+				return pCC->CreateNil();
+				}
+
+			return pCC->CreateTrue();
 			}
 
 		case FN_OBJ_FIRE_OVERLAY_EVENT:

@@ -2125,7 +2125,9 @@ class CItemType : public CDesignType
 					bUsableInCockpit(false),
 					bOnlyIfEnabled(false),
 					bOnlyIfInstalled(false),
-					bOnlyIfUninstalled(false)
+					bOnlyIfUninstalled(false),
+					bOnlyIfCompleteArmor(false),
+					bAsArmorSet(false)
 				{ }
 
 			CExtension *pExtension;			//	Extension the code came from
@@ -2139,6 +2141,8 @@ class CItemType : public CDesignType
 			bool bOnlyIfEnabled;
 			bool bOnlyIfInstalled;
 			bool bOnlyIfUninstalled;
+			bool bOnlyIfCompleteArmor;
+			bool bAsArmorSet;
 			};
 
 		CItemType (void);
@@ -2289,8 +2293,8 @@ class CItemType : public CDesignType
 		DWORD m_fUseUninstalled:1;				//	If TRUE, item can only be used when uninstalled
 		DWORD m_fUseEnabled:1;					//	If TRUE, item can only be used when enabled
 		DWORD m_fScalable:1;                    //  If TRUE, VariantHigh adds to level.
-		DWORD m_fSpare4:1;
-		DWORD m_fSpare5:1;
+		DWORD m_fUseCompleteArmor:1;			//	If TRUE, item can be used as a complete armor set
+		DWORD m_fUseAsArmorSet:1;				//	If TRUE, we only show item once for armor set
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
