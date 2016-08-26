@@ -132,9 +132,9 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
-int CReactorClass::GetPowerRating (CItemCtx &Ctx) const
+int CReactorClass::GetPowerOutput (CItemCtx &Ctx) const
 
-//	GetPowerRating
+//	GetPowerOutput
 //
 //	Returns the max power output.
 

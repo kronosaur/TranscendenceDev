@@ -2579,7 +2579,6 @@ DWORD CWeaponClass::GetLinkedFireOptions (CItemCtx &Ctx)
 
 int CWeaponClass::GetPowerRating (CItemCtx &Ctx) const
 
-
 //	GetPowerRating
 //
 //	Returns the rated power

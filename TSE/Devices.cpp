@@ -479,8 +479,13 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
         return pResult;
         }
 
-    else if (strEquals(sName, PROPERTY_POWER))
-        return CC.CreateInteger(GetPowerRating(Ctx) * 100);
+	else if (strEquals(sName, PROPERTY_POWER))
+		{
+		if (GetCategory() == itemcatReactor)
+			return CreatePowerResult(CC, GetPowerOutput(Ctx) * 100.0);
+		else
+			return CreatePowerResult(CC, GetPowerRating(Ctx) * 100.0);
+		}
 
     else if (strEquals(sName, PROPERTY_SECONDARY))
         return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());
