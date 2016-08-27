@@ -610,6 +610,75 @@ void CCLinkedList::QuickSortLists (int iKeyIndex, int iLeft, int iRight, int iOr
 		}
 	}
 
+void CCLinkedList::QuickSortStructs (const CString &sSortKey, int iLeft, int iRight, int iOrder)
+
+//	QuickSortStructs
+//
+//	Assumes that this is a list of structs and sorts based on the given key.
+
+	{
+	int i;
+
+	ASSERT(m_pIndex);
+	ASSERT(iLeft < iRight);
+	ASSERT(iLeft >= 0 && iRight < m_iCount);
+
+	//	Deal with small lists
+
+	if (iLeft + 1 == iRight)
+		{
+		if (iOrder * HelperCompareItemsStructs(m_pIndex[iLeft]->m_pItem, m_pIndex[iRight]->m_pItem, sSortKey) < 0)
+			Swap(m_pIndex[iLeft], m_pIndex[iRight]);
+		}
+	else
+		{
+		//	Pick a pivot
+
+		int iPivot = (iLeft + iRight) / 2;
+
+		//	Order left, right, and pivot.
+
+		if (iOrder * HelperCompareItemsStructs(m_pIndex[iLeft]->m_pItem, m_pIndex[iRight]->m_pItem, sSortKey) < 0)
+			Swap(m_pIndex[iLeft], m_pIndex[iRight]);
+
+		if (iOrder * HelperCompareItemsStructs(m_pIndex[iLeft]->m_pItem, m_pIndex[iPivot]->m_pItem, sSortKey) < 0)
+			Swap(m_pIndex[iLeft], m_pIndex[iPivot]);
+		else if (iOrder * HelperCompareItemsStructs(m_pIndex[iPivot]->m_pItem, m_pIndex[iRight]->m_pItem, sSortKey) < 0)
+			Swap(m_pIndex[iPivot], m_pIndex[iRight]);
+
+		//	We take the value of the pivot (because we can't guarantee that the pivot will
+		//	end up in the middle after partition).
+
+		ICCItem *pPivot = m_pIndex[iPivot]->m_pItem;
+
+		//	Swap the pivot to the end so we don't have to partition it
+
+		Swap(m_pIndex[iPivot], m_pIndex[iRight]);
+
+		//	Partition around the pivot
+
+		int iStoreIndex = iLeft;
+		for (i = iLeft; i < iRight; i++)
+			if (iOrder * HelperCompareItemsStructs(m_pIndex[i]->m_pItem, pPivot, sSortKey) > 0)
+				{
+				Swap(m_pIndex[iStoreIndex], m_pIndex[i]);
+				iStoreIndex++;
+				}
+
+		//	Move pivot to final place
+
+		Swap(m_pIndex[iStoreIndex], m_pIndex[iRight]);
+
+		//	Recurse
+
+		if (iLeft < iStoreIndex - 1)
+			QuickSortStructs(sSortKey, iLeft, iStoreIndex - 1, iOrder);
+
+		if (iStoreIndex + 1 < iRight)
+			QuickSortStructs(sSortKey, iStoreIndex + 1, iRight, iOrder);
+		}
+	}
+
 void CCLinkedList::RemoveElement (CCodeChain *pCC, int iIndex)
 
 //	RemoveElement
@@ -765,7 +834,7 @@ void CCLinkedList::Shuffle (CCodeChain *pCC)
 	UpdateLinksFromIndex();
 	}
 
-void CCLinkedList::Sort (CCodeChain *pCC, int iOrder, int iIndex)
+void CCLinkedList::Sort (CCodeChain *pCC, int iOrder, ICCItem *pSortIndex)
 
 //	Sort
 //
@@ -783,10 +852,18 @@ void CCLinkedList::Sort (CCodeChain *pCC, int iOrder, int iIndex)
 
 	//	Do a quick sort
 
-	if (iIndex != -1)
-		QuickSortLists(iIndex, 0, m_iCount - 1, iOrder);
-	else
+	if (pSortIndex == NULL)
 		QuickSort(0, m_iCount - 1, iOrder);
+	else if (pSortIndex->IsIdentifier())
+		QuickSortStructs(pSortIndex->GetStringValue(), 0, m_iCount - 1, iOrder);
+	else
+		{
+		int iIndex = pSortIndex->GetIntegerValue();
+		if (iIndex == -1)
+			QuickSort(0, m_iCount - 1, iOrder);
+		else
+			QuickSortLists(iIndex, 0, m_iCount - 1, iOrder);
+		}
 
 	//	Fixup all the pointers
 

@@ -526,7 +526,7 @@ class CCLinkedList : public ICCList
 		void RemoveElement (CCodeChain *pCC, int iIndex);
 		void ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewItem);
 		void Shuffle (CCodeChain *pCC);
-		void Sort (CCodeChain *pCC, int iOrder, int iIndex = -1);
+		void Sort (CCodeChain *pCC, int iOrder, ICCItem *pSortIndex = NULL);
 		ICCItem *GetFlattened(CCodeChain *pCC, ICCItem *pResult);
 		ICCItem *IsValidVectorContent (CCodeChain *pCC);
 		
@@ -551,6 +551,7 @@ class CCLinkedList : public ICCList
 	private:
 		void QuickSort (int iLeft, int iRight, int iOrder);
 		void QuickSortLists (int iKeyIndex, int iLeft, int iRight, int iOrder);
+		void QuickSortStructs (const CString &sSortKey, int iLeft, int iRight, int iOrder);
 		void UpdateLinksFromIndex (void);
 
 		CCons *m_pFirst;						//	First element in the list
@@ -928,5 +929,6 @@ ALERROR pageLibraryInit (CCodeChain &CC);
 
 int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags = HELPER_COMPARE_COERCE_COMPATIBLE);
 int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
+int HelperCompareItemsStructs (ICCItem *pFirst, ICCItem *pSecond, const CString &sSortKey, bool bCoerce = true);
 
 #endif

@@ -3560,7 +3560,7 @@ ICCItem *fnSort (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get optional index
 
-			int iIndex = (pArgs->GetCount() > iOptionalArg ? pArgs->GetElement(iOptionalArg)->GetIntegerValue() : -1);
+			ICCItem *pSortIndex = (pArgs->GetCount() > iOptionalArg ? pArgs->GetElement(iOptionalArg) : NULL);
 
 			//	Handle edge cases
 
@@ -3582,7 +3582,7 @@ ICCItem *fnSort (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Sort the list
 
-			pList->Sort(pCC, iOrder, iIndex);
+			pList->Sort(pCC, iOrder, pSortIndex);
 
 			//	Done
 
@@ -5094,7 +5094,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 		return -2;
 	}
 
-int HelperCompareItemsLists(ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce)
+int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce)
 	{
 	if (pFirst->GetCount() > iKeyIndex && pSecond->GetCount() > iKeyIndex)
 		return HelperCompareItems(pFirst->GetElement(iKeyIndex), pSecond->GetElement(iKeyIndex), (bCoerce ? HELPER_COMPARE_COERCE_COMPATIBLE : 0));
@@ -5111,7 +5111,22 @@ int HelperCompareItemsLists(ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bo
 		}
 	}
 
-ALERROR HelperSetq(CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem **retpError)
+int HelperCompareItemsStructs (ICCItem *pFirst, ICCItem *pSecond, const CString &sSortKey, bool bCoerce)
+	{
+	CCNil TempNil;
+
+	ICCItem *pFirstValue = pFirst->GetElement(sSortKey);
+	if (pFirstValue == NULL)
+		pFirstValue = &TempNil;
+
+	ICCItem *pSecondValue = pSecond->GetElement(sSortKey);
+	if (pSecondValue == NULL)
+		pSecondValue = &TempNil;
+
+	return HelperCompareItems (pFirstValue, pSecondValue, (bCoerce ? HELPER_COMPARE_COERCE_COMPATIBLE : 0));
+	}
+
+ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem **retpError)
 	{
 	CCodeChain *pCC = pCtx->pCC;
 	ICCItem *pSymTable;
