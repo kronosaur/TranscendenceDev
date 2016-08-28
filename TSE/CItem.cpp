@@ -894,7 +894,7 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 	return ComposeNounPhrase(sName, (int)m_dwCount, sModifier, dwNounFlags, dwFlags);
 	}
 
-ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sName) const
+ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
 
 //	GetItemProperty
 //
@@ -927,25 +927,6 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 //
 //	IMPLEMENTATION NOTES
 //
-//	CItem::GetItemProperty: We take both CCodeChainCtx and CItemCtx. This is one
-//		of the main entry points for properties (the other is 
-//		CDesignType::GetProperty).
-//		
-//
-//	CItemType::GetItemProperty: We take both CCodeChainCtx and CItemCtx. In 
-//		general, though, we return default values for any CItem specific 
-//		properties (that is, we DO NOT call CItem to get data).
-//
-//		If we are either a device, armor, or missile, then we call 
-//		FindItemProperty on that object. We expect those classes to handle any
-//		properties that require the ship/device (which they get from CItemCtx).
-//
-//		If the device doesn't handle the property, then we call 
-//		CDesignType::FindBaseProperty to access any properties of the type 
-//		(e.g., APIVersion) and any old-style fields.
-//
-//		If nobody handled the property, we return Nil (we never return NULL).
-//
 //	CDeviceClass::FindItemProperty: We take both CCodeChainCtx and CItemCtx. This
 //		method ONLY returns device properties. It will never return CItem or
 //		CItemType properties (because otherwise we'd recurse infinitely). It
@@ -956,7 +937,7 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 //		fields, we might again call out to the device class (to get its fields).
 //		We return NULL if we do not know about the property.
 //
-//	CDesignType::GetProperty: This method call OnGetProperty on its subclasses
+//	CDesignType::GetProperty: This method calls OnGetProperty on its subclasses
 //		to let them handle it. If the subclass does not handle it, then we call
 //		CDesignType::FindBaseProperty.
 //
@@ -966,13 +947,84 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
-	int i;
+	ICCItem *pResult;
 
+	//	First we handle all properties that are specific to the item instance.
+
+	if (strEquals(sProperty, PROPERTY_CHARGES))
+		return CC.CreateInteger(GetCharges());
+
+	else if (strEquals(sProperty, PROPERTY_DAMAGED))
+		return CC.CreateBool(IsDamaged());
+
+	else if (strEquals(sProperty, PROPERTY_DESCRIPTION))
+		{
+		if (CCCtx.InEvent(eventGetDescription))
+			return CC.CreateString(GetType()->GetDesc());
+		else
+			return CC.CreateString(GetDesc());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_DISRUPTED))
+		return CC.CreateBool(IsDisrupted());
+
+	else if (strEquals(sProperty, PROPERTY_INSTALLED))
+		return CC.CreateBool(IsInstalled());
+
+    else if (strEquals(sProperty, PROPERTY_LEVEL))
+        return CC.CreateInteger(GetType()->GetLevel(Ctx));
+
+	//	Next we handle all properties for devices, armor, etc. Note that this
+	//	includes both installed properties (e.g., armor segment) and static
+	//	properties (e.g., armor HP). But it DOES NOT include item type 
+	//	properties common to all items (e.g., mass).
+
+	else
+		{
+		CDeviceClass *pDevice;
+		CArmorClass *pArmor;
+
+		//	If this is a device, then pass it on
+
+		if (pDevice = GetType()->GetDeviceClass())
+			{
+			if (pResult = pDevice->FindItemProperty(Ctx, sProperty))
+				return pResult;
+			}
+
+		//	If this is armor, then pass it on
+
+		else if (pArmor = GetType()->GetArmorClass())
+			{
+			if (pResult = pArmor->FindItemProperty(Ctx, sProperty))
+				return pResult;
+			}
+
+		//	If this is a missile, then pass it to the weapon.
+
+        else if (GetType()->IsMissile())
+			{
+			if (Ctx.ResolveVariant()
+					&& (pResult = Ctx.GetVariantDevice()->FindItemProperty(Ctx, sProperty)))
+				return pResult;
+			}
+		}
+
+	//	If we get this far, then we ask the item type for its properties. This 
+	//	will also get any design type properties and will check the old-style
+	//	data fields.
+
+	if (pResult = GetType()->FindItemTypeBaseProperty(CCCtx, sProperty))
+		return pResult;
+
+	//	Otherwise, we've got nothing
+
+	else
+		return CC.CreateNil();
+
+#if 0
 	if (strEquals(sName, PROPERTY_CATEGORY))
 		return CC.CreateString(GetItemCategoryID(m_pItemType->GetCategory()));
-
-	else if (strEquals(sName, PROPERTY_CHARGES))
-		return CC.CreateInteger(GetCharges());
 
 	else if (strEquals(sName, PROPERTY_COMPONENTS))
 		{
@@ -993,23 +1045,6 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	else if (strEquals(sName, PROPERTY_CURRENCY))
 		return CC.CreateInteger(GetType()->GetCurrencyType()->GetUNID());
-
-	else if (strEquals(sName, PROPERTY_DAMAGED))
-		return CC.CreateBool(IsDamaged());
-
-	else if (strEquals(sName, PROPERTY_DESCRIPTION))
-		{
-		if (CCCtx.InEvent(eventGetDescription))
-			return CC.CreateString(GetType()->GetDesc());
-		else
-			return CC.CreateString(GetDesc());
-		}
-
-	else if (strEquals(sName, PROPERTY_DISRUPTED))
-		return CC.CreateBool(IsDisrupted());
-
-	else if (strEquals(sName, PROPERTY_INSTALLED))
-		return CC.CreateBool(IsInstalled());
 
     else if (strEquals(sName, PROPERTY_LEVEL))
         return CC.CreateInteger(GetType()->GetLevel(CItemCtx(*this)));
@@ -1054,6 +1089,63 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 		else
 			return CreateResultFromDataField(CC, GetType()->GetDataField(sName));
 		}
+#endif
+	}
+
+Metric CItem::GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
+
+//	GetItemPropertyDouble
+//
+//	Returns a double.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	if (pResult == NULL)
+		return 0.0;
+
+	Metric rValue = pResult->GetDoubleValue();
+	pResult->Discard(&CC);
+	return rValue;
+	}
+
+int CItem::GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
+
+//	GetItemPropertyInteger
+//
+//	Returns an integer property.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	if (pResult == NULL)
+		return 0;
+
+	int iValue = pResult->GetIntegerValue();
+	pResult->Discard(&CC);
+	return iValue;
+	}
+
+CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
+
+//	GetItemPropertyString
+//
+//	Returns a string property
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	if (pResult == NULL)
+		return 0;
+
+	CString sValue;
+	if (pResult->IsNil())
+		sValue = NULL_STR;
+	else
+		sValue = pResult->Print(&g_pUniverse->GetCC(), PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+
+	pResult->Discard(&CC);
+	return sValue;
 	}
 
 CString CItem::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) const

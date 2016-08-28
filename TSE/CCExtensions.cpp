@@ -4052,8 +4052,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_ITEM_PROPERTY:
 			{
 			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
-			CItemCtx ItemCtx(&Item);
-			return Item.GetProperty(pCtx, ItemCtx, pArgs->GetElement(1)->GetStringValue());
+			return Item.GetItemProperty((pCtx ? *pCtx : CCodeChainCtx()), CItemCtx(Item), pArgs->GetElement(1)->GetStringValue());
 			}
 
 		case FN_ITEM_DAMAGED:

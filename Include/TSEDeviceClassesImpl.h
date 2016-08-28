@@ -629,6 +629,15 @@ class CWeaponClass : public CDeviceClass
 			ctCustom,				//	custom configuration
 			};
 
+		enum EVariantTypes
+			{
+			varSingle,				//	Single CWeaponFireDesc (may or may not use ammo)
+			varLauncher,			//	We're a launcher; each variant is a missile
+			varSingleLevelScaling,	//	Single CWeaponFireDesc, scales to levels
+			varLevelScaling,		//	Explicit definitions for each level
+			varCharges,				//	Current charge determines definition
+			};
+
 		struct SConfigDesc
 			{
 			DiceRange Angle;		//	Offset from fire angle
@@ -680,11 +689,16 @@ class CWeaponClass : public CDeviceClass
 						 bool *retbSourceDestroyed,
 						 bool *retbConsumedItems);
 		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
+		int GetSelectVariantCount (void) const;
+		ALERROR InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
 		inline bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
 		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
 		bool IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL);
+		inline bool IsLauncher (void) const { return (m_iVariantType == varLauncher); }
+		inline bool IsLauncherWithAmmo (void) const { return (IsLauncher() && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool IsOmniDirectional (CInstalledDevice *pDevice);
 		inline bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
+		inline bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool VariantIsValid (CSpaceObject *pSource, CInstalledDevice *pDevice, CWeaponFireDesc &ShotData);
 
 		int GetAlternatingPos (CInstalledDevice *pDevice) const;
@@ -701,7 +715,6 @@ class CWeaponClass : public CDeviceClass
 		int m_iRecoil;							//	0-7 (as per momentum damage)
 		int m_iFailureChance;					//	Chance of failure
 
-		bool m_bLauncher;						//	Generic missile launcher
 		bool m_bOmnidirectional;				//	Omnidirectional
 		bool m_bMIRV;							//	Each shot seeks an independent target
 		bool m_bReportAmmo;						//	Report count of ammo shot even if not a launcher
@@ -709,6 +722,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iMaxFireArc;						//	Max angle of fire arc (degrees)
 		DWORD m_dwLinkedFireOptions;			//	Linked fire options
 
+		EVariantTypes m_iVariantType;			//	Type of variant
 		TArray<SShotDesc> m_ShotData;			//	Desc for each shot variation
 
 		ConfigurationTypes m_Configuration;		//	Shot configuration;

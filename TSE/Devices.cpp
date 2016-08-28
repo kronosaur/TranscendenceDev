@@ -399,21 +399,11 @@ bool CDeviceClass::FindAmmoDataField (CItemType *pItem, const CString &sField, C
 //	Finds the device that fires this item and returns the given field
 
 	{
-	int i;
-    CItem Ammo(pItem, 1);
+	CDeviceClass *pWeapon = (pItem->GetLaunchWeapons().GetCount() ? pItem->GetLaunchWeapons()[0] : NULL);
+	if (pWeapon == NULL)
+		return false;
 
-	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
-		{
-		CItemType *pType = g_pUniverse->GetItemType(i);
-		CDeviceClass *pWeapon;
-
-		if (pType->IsDevice() 
-				&& (pWeapon = pType->GetDeviceClass())
-                && pWeapon->FindAmmoDataField(Ammo, sField, retsValue))
-			return true;
-		}
-
-	return false;
+	return pWeapon->FindAmmoDataField(CItem(pItem, 1), sField, retsValue);
 	}
 
 ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
@@ -425,6 +415,9 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 //
 //  We return NULL if the property is not found. Otherwise, the caller is 
 //  responsible for freeing.
+//
+//	NOTE: We only return device-specific properties. We DO NOT return generic
+//	item properties.
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
@@ -501,9 +494,6 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
         return CC.CreateInteger(iLevel);
         }
-    else if (m_pItemType
-            && m_pItemType->FindDataField(sName, &sFieldValue))
-        return CreateResultFromDataField(CC, sFieldValue);
 
     else
         return NULL;
@@ -516,7 +506,6 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 //	Returns weapon data for the given item (which may be a weapon or a missile).
 
 	{
-	int i;
 	CDeviceClass *pDevice;
 	int iVariant;
 
@@ -525,25 +514,12 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
     CItem Ammo;
 	if (pItem->IsMissile())
 		{
-		iVariant = -1;
-
-		for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
-			{
-			CItemType *pType = g_pUniverse->GetItemType(i);
-
-			if (pDevice = pType->GetDeviceClass())
-				{
-				iVariant = pDevice->GetAmmoVariant(pItem);
-                if (iVariant != -1)
-                    {
-                    Ammo = CItem(pItem, 1);
-					break;
-                    }
-				}
-			}
-
+		pDevice = (pItem->GetLaunchWeapons().GetCount() ? pItem->GetLaunchWeapons()[0] : NULL);
+		iVariant = (pDevice ? pDevice->GetAmmoVariant(pItem) : -1);
 		if (iVariant == -1)
 			return false;
+
+		Ammo = CItem(pItem, 1);
 		}
 	else
 		{
@@ -604,20 +580,6 @@ ItemCategories CDeviceClass::GetItemCategory (DeviceNames iDev)
 			return itemcatNone;
 		}
 	}
-
-ICCItem *CDeviceClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
-
-//  GetItemProperty
-//
-//  Returns a property. Caller must free the result.
-    
-    {
-    ICCItem *pResult;
-    if (pResult = FindItemProperty(Ctx, sName))
-        return pResult;
-    else
-        return g_pUniverse->GetCC().CreateNil();
-    }
 
 CString CDeviceClass::GetLinkedFireOptionString (DWORD dwOptions)
 

@@ -322,30 +322,11 @@ bool CItemCtx::ResolveVariant (void)
 //	cache it in m_pWeapon and m_iVariant. If successful, we return TRUE.
 
 	{
-	int i;
-
 	if (m_pItem == NULL)
 		return false;
 
-	//	Look through all weapons
+	//	Look through all weapons that can launch this ammo. We pick the first
+	//	weapon (arbitrarily).
 
-	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
-		{
-		CItemType *pType = g_pUniverse->GetItemType(i);
-		CDeviceClass *pWeapon;
-
-		if (pType->IsDevice() 
-				&& (pWeapon = pType->GetDeviceClass()))
-			{
-			int iVariant = pWeapon->GetAmmoVariant(m_pItem->GetType());
-			if (iVariant != -1)
-				{
-				m_pWeapon = pWeapon;
-				m_iVariant = iVariant;
-				return true;
-				}
-			}
-		}
-
-	return false;
+	return CDeviceClass::FindWeaponFor(m_pItem->GetType(), &m_pWeapon, &m_iVariant);
 	}

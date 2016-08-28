@@ -552,7 +552,6 @@ class CWeaponFireDesc
 											//		fi = fragment, i is index (optional)
 											//		e = enhanced (optional)
 
-
 		//	Basic properties
         int m_iLevel;                       //  Level of desc (missile or weapon or scalable weapon)
 		CItemTypeRef m_pAmmoType;			//	item type for this ammo

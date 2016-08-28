@@ -4,8 +4,9 @@
 
 #include "PreComp.h"
 
-#define MISSILES_TAG							CONSTLIT("Missiles")
 #define CONFIGURATION_TAG						CONSTLIT("Configuration")
+#define MISSILES_TAG							CONSTLIT("Missiles")
+#define VARIANTS_TAG							CONSTLIT("Variants")
 
 #define AIM_TOLERANCE_ATTRIB					CONSTLIT("aimTolerance")
 #define ALTERNATING_ATTRIB						CONSTLIT("alternating")
@@ -69,6 +70,7 @@
 #define FIELD_SPEED								CONSTLIT("speed")
 #define FIELD_VARIANT_COUNT						CONSTLIT("variantCount")
 
+#define PROPERTY_AMMO_TYPES						CONSTLIT("ammoTypes")
 #define PROPERTY_AVERAGE_DAMAGE					CONSTLIT("averageDamage")	//	Average damage
 #define PROPERTY_BALANCE    					CONSTLIT("balance")
 #define PROPERTY_BALANCE_DAMAGE					CONSTLIT("balanceDamage")
@@ -89,6 +91,10 @@
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
+
+#define VARIANT_TYPE_CHARGES					CONSTLIT("charges")
+#define VARIANT_TYPE_LEVELS						CONSTLIT("levels")
+#define VARIANT_TYPE_MISSILES					CONSTLIT("missiles")
 
 const int MAX_SHOT_COUNT =				100;
 
@@ -290,7 +296,7 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 			CItem WeaponItem(GetItemType(), 1);
 			pShip->GetController()->OnItemFired(WeaponItem);
 
-			if ((m_bLauncher || m_bReportAmmo) && pShot->GetAmmoType())
+			if ((IsLauncher() || m_bReportAmmo) && pShot->GetAmmoType())
 				{
 				CItem AmmoItem(pShot->GetAmmoType(), 1);
 				pShip->GetController()->OnItemFired(AmmoItem);
@@ -408,7 +414,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Weapons with charges count as needing ammo
 
-    else if (m_bCharges || m_bLauncher)
+    else if (m_bCharges || IsLauncher())
         {
         bUsesAmmo = true;
         retBalance.rAmmo = STD_AMMO_BALANCE;
@@ -462,7 +468,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Power use (ignore if we're balancing a launcher's missile).
 
-    if (!bAmmo || !m_bLauncher)
+    if (!bAmmo || !IsLauncher())
         {
         //  Note: We divide by Stats.iPower (not rStdPower) because we care 
         //  about power use relative to what we generate. That is, launcher
@@ -477,7 +483,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Cost
 
-    if (!bAmmo || !m_bLauncher)
+    if (!bAmmo || !IsLauncher())
         {
         Metric rCost = (Metric)CEconomyType::ExchangeToCredits(GetItemType()->GetCurrencyAndValue(ItemCtx, true));
         Metric rCostDelta = 100.0 * (rCost - Stats.rCost) / Stats.rCost;
@@ -1266,6 +1272,8 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	if (error = pWeapon->InitDeviceFromXML(Ctx, pDesc, pType))
 		return error;
 
+	//	Basics
+
 	pWeapon->m_iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, 16);
 	pWeapon->m_iFireRate = (int)((pWeapon->m_iFireRateSecs / STD_SECONDS_PER_UPDATE) + 0.5);
 	pWeapon->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
@@ -1274,6 +1282,12 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_iFailureChance = pDesc->GetAttributeInteger(FAILURE_CHANCE_ATTRIB);
 	pWeapon->m_iMinFireArc = AngleMod(pDesc->GetAttributeInteger(MIN_FIRE_ARC_ATTRIB));
 	pWeapon->m_iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
+
+	pWeapon->m_bCharges = pDesc->GetAttributeBool(CHARGES_ATTRIB);
+	pWeapon->m_bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
+	pWeapon->m_bMIRV = pDesc->GetAttributeBool(MULTI_TARGET_ATTRIB);
+	pWeapon->m_bReportAmmo = pDesc->GetAttributeBool(REPORT_AMMO_ATTRIB);
+	pWeapon->m_bTargetStationsOnly = pDesc->GetAttributeBool(TARGET_STATIONS_ONLY_ATTRIB);
 
 	//	Configuration
 
@@ -1318,10 +1332,6 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 			pWeapon->m_Configuration = ctSingle;
 		}
 
-	//	Charges
-
-	pWeapon->m_bCharges = pDesc->GetAttributeBool(CHARGES_ATTRIB);
-	
 	//	Counter
 
 	sConfig = pDesc->GetAttribute(COUNTER_ATTRIB);
@@ -1372,93 +1382,11 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	else
 		pWeapon->m_dwLinkedFireOptions = 0;
 
-	//	Flags
+	//	Initialize the variants, whether from missiles, level scaling, or 
+	//	charges.
 
-	pWeapon->m_bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
-	pWeapon->m_bMIRV = pDesc->GetAttributeBool(MULTI_TARGET_ATTRIB);
-
-	//	If we have a Missiles tag then this weapon has ammunition; otherwise,
-	//	we take the information from the root element
-
-	CXMLElement *pMissiles = pDesc->GetContentElementByTag(MISSILES_TAG);
-	if (pMissiles)
-		{
-		pWeapon->m_ShotData.InsertEmpty(pMissiles->GetContentElementCount());
-		for (i = 0; i < pWeapon->m_ShotData.GetCount(); i++)
-			{
-			CXMLElement *pItem = pMissiles->GetContentElement(i);
-
-			//	If this entry defines the missile, then we own it.
-
-			if (pItem->FindAttribute(TYPE_ATTRIB))
-				{
-				pWeapon->m_ShotData[i].bOwned = true;
-				pWeapon->m_ShotData[i].pDesc = new CWeaponFireDesc;
-
-				CString sUNID = strPatternSubst(CONSTLIT("%d/%d"), pWeapon->GetUNID(), i);
-				if (error = pWeapon->m_ShotData[i].pDesc->InitFromXML(Ctx, pItem, sUNID, pWeapon->GetLevel()))
-					return error;
-				}
-
-			//	Otherwise we expect the definition to be in the ItemType.
-			//	This is best for missiles.
-
-			else
-				{
-			    //	In this case we need to load the ammo type because it we 
-                //  will later load the missile (at bind time).
-
-			    if (error = pWeapon->m_ShotData[i].pAmmoType.LoadUNID(Ctx, pItem->GetAttribute(AMMO_ID_ATTRIB)))
-				    return error;
-
-				//	AmmoID is required in this case.
-
-				if (pWeapon->m_ShotData[i].pAmmoType.GetUNID() == 0)
-					{
-					Ctx.sError = CONSTLIT("Expected either type= or ammoID= definition.");
-					return ERR_FAIL;
-					}
-
-				pWeapon->m_ShotData[i].bOwned = false;
-				pWeapon->m_ShotData[i].pDesc = NULL;
-				}
-			}
-		}
-	else
-		{
-		pWeapon->m_ShotData.InsertEmpty(1);
-		pWeapon->m_ShotData[0].bOwned = true;
-		pWeapon->m_ShotData[0].pDesc = new CWeaponFireDesc;
-
-		//	Load the definition from the root element
-
-		CString sUNID = strPatternSubst(CONSTLIT("%d/0"), pWeapon->GetUNID());
-		if (error = pWeapon->m_ShotData[0].pDesc->InitFromXML(Ctx, pDesc, sUNID, pWeapon->GetLevel()))
-			return error;
-
-        //  Initialize scaled stats, if necessary
-
-        if (pType->IsScalable())
-            {
-            if (error = pWeapon->m_ShotData[0].pDesc->InitScaledStats(Ctx, pDesc, pType))
-                return error;
-            }
-		}
-
-	//	If this weapon uses different kinds of ammo then it is a launcher
-
-	if (pWeapon->m_ShotData.GetCount() > 1)
-		pWeapon->m_bLauncher = true;
-	else if (pWeapon->GetDefinedSlotCategory() == itemcatLauncher)
-		pWeapon->m_bLauncher = true;
-	else
-		pWeapon->m_bLauncher = pDesc->GetAttributeBool(LAUNCHER_ATTRIB);
-
-	pWeapon->m_bReportAmmo = pDesc->GetAttributeBool(REPORT_AMMO_ATTRIB);
-
-	//	Targeting options
-
-	pWeapon->m_bTargetStationsOnly = pDesc->GetAttributeBool(TARGET_STATIONS_ONLY_ATTRIB);
+	if (error = pWeapon->InitVariantsFromXML(Ctx, pDesc, pType))
+		return error;
 
 	//	Done
 
@@ -1475,6 +1403,11 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 
 	{
 	int i;
+
+	//	Make sure we actually fire the given ammo. We need to check here because
+	//	GetWeaponFireDesc doesn't check.
+
+	ASSERT(Ammo.IsEmpty() || GetAmmoVariant(Ammo.GetType()) != -1);
 
     CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(), Ammo);
 	if (pShot == NULL)
@@ -1527,7 +1460,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_SPEED))
 		*retsValue = strFromInt((int)((100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND) + 0.5));
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
-		*retsValue = strFromInt(m_ShotData.GetCount());
+		*retsValue = strFromInt(GetSelectVariantCount());
 	else if (strEquals(sField, FIELD_REPEAT_COUNT))
 		*retsValue = strFromInt(pShot->GetContinuous() + 1);
 	else if (strEquals(sField, FIELD_CONFIGURATION))
@@ -2136,19 +2069,20 @@ int CWeaponClass::GetAmmoItemCount (void) const
 //  Returns the number of ammo items that we are compatible with.
 
     {
-	if (m_ShotData.GetCount() == 0)
+	if (!UsesAmmo())
 		return 0;
 
-    //  If we only have a single entry, then see if it uses ammo.
+    //  Launchers use the m_ShotData array to track each missile. We can assume
+	//	that each entry is a missile.
 
-    else if (m_ShotData.GetCount() == 1)
-        return (m_ShotData[0].pDesc->GetAmmoType() ? 1 : 0);
+    else if (IsLauncherWithAmmo())
+        return m_ShotData.GetCount();
 
-    //  If we have multiple entries, then we are a launcher and by definition
-    //  all of the entries use ammo.
+	//	NOTE: We can't assume that m_ShotData only has one entry because we 
+	//	could be a scaling weapon.
 
     else
-        return m_ShotData.GetCount();
+        return 1;
     }
 
 ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty)
@@ -2158,7 +2092,13 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 //  Returns a property of the weapon when the given ammo item is selected.
 
     {
+	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
+
+	//	Make sure we actually fire the given ammo. We need to check here because
+	//	GetWeaponFireDesc doesn't check.
+
+	ASSERT(Ammo.IsEmpty() || GetAmmoVariant(Ammo.GetType()) != -1);
 
 	//	Get the shot
 
@@ -2173,7 +2113,22 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 	//	Get the property
 
 	ICCItem *pResult;
-	if (strEquals(sProperty, PROPERTY_AVERAGE_DAMAGE))
+	if (strEquals(sProperty, PROPERTY_AMMO_TYPES))
+		{
+		if (UsesAmmo())
+			{
+			pResult = CC.CreateLinkedList();
+			for (i = 0; i < m_ShotData.GetCount(); i++)
+				if (m_ShotData[i].pDesc->GetAmmoType())
+					pResult->AppendInteger(CC, m_ShotData[i].pDesc->GetAmmoType()->GetUNID());
+
+			return pResult;
+			}
+		else
+			return CC.CreateNil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_AVERAGE_DAMAGE))
 		return CC.CreateDouble(CalcDamagePerShot(pShot, pEnhancements));
 
     else if (strEquals(sProperty, PROPERTY_BALANCE))
@@ -2394,11 +2349,16 @@ int CWeaponClass::GetAmmoVariant (const CItemType *pItem) const
 	if (dwItemUNID == 0)
 		return -1;
 
+	//	Find it
+
 	for (i = 0; i < m_ShotData.GetCount(); i++)
 		{
 		if (m_ShotData[i].pDesc->GetAmmoType()
-                && m_ShotData[i].pDesc->GetAmmoType()->GetUNID() == dwItemUNID)
-			return i;
+				&& m_ShotData[i].pDesc->GetAmmoType()->GetUNID() == dwItemUNID)
+
+			//	Launchers take multiple ammo; others do not.
+
+			return (IsLauncher() ? i : 0);
 		}
 
 	return -1;
@@ -2411,7 +2371,7 @@ ItemCategories CWeaponClass::GetImplCategory (void) const
 //	Returns the weapon class category
 
 	{
-	if (m_bLauncher)
+	if (IsLauncher())
 		return itemcatLauncher;
 	else
 		return itemcatWeapon;
@@ -2633,7 +2593,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 	//	Compute the damage string and special string
 
-	if (m_ShotData.GetCount() != 1 && Ammo.IsEmpty())
+	if (IsLauncherWithAmmo() && Ammo.IsEmpty())
 		{
 		sReference = CONSTLIT("missile launcher");
 
@@ -2838,6 +2798,25 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 	return pBestShot;
 	}
 
+int CWeaponClass::GetSelectVariantCount (void) const
+
+//	GetSelectVariantCount
+//
+//	Returns the number of selectable variants for this weapon. For example, for
+//	missile launchers, this is the number of compatible missiles. This isn't
+//	always the same as m_ShotData.GetCount().
+
+	{
+	switch (m_iVariantType)
+		{
+		case varLauncher:
+			return m_ShotData.GetCount();
+
+		default:
+			return (m_ShotData.GetCount() > 0 ? 1 : 0);
+		}
+	}
+
 void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource, 
 										   CInstalledDevice *pDevice,
 										   CString *retsLabel,
@@ -2942,15 +2921,31 @@ int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice 
 //	Returns the number of valid variants for this weapons
 
 	{
-	int iCount = 0;
+	//	Special handling for scalable weapons
 
-	for (int i = 0; i < m_ShotData.GetCount(); i++)
+	if (m_iVariantType == varLevelScaling || m_iVariantType == varCharges)
 		{
-		if (VariantIsValid(pSource, pDevice, *m_ShotData[i].pDesc))
-			iCount++;
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(pSource, pDevice));
+		if (pShot && VariantIsValid(pSource, pDevice, *pShot))
+			return 1;
+		else
+			return 0;
 		}
 
-	return iCount;
+	//	Otherwise, count them
+
+	else
+		{
+		int iCount = 0;
+
+		for (int i = 0; i < m_ShotData.GetCount(); i++)
+			{
+			if (VariantIsValid(pSource, pDevice, *m_ShotData[i].pDesc))
+				iCount++;
+			}
+
+		return iCount;
+		}
 	}
 
 int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
@@ -3070,16 +3065,33 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
 //
 //  Ammo may be specified either through the ammo item or through ItemCtx
 //  (as an installed device selection).
+//
+//	NOTE: If Ammo is passed in, we expect it to be fired by this weapon. Check
+//	before calling if not sure.
 
     {
     if (m_ShotData.GetCount() == 0)
         return NULL;
 
-    //  We need to get the root descriptor and the level to use (in case this
-    //  is a scalable weapon).
+	//	Handle scalable levels
 
-    CWeaponFireDesc *pRoot = NULL;
-    int iLevel = -1;
+	if (m_iVariantType == varLevelScaling)
+		{
+		//	We assume that all levels are represented in m_ShotData.
+
+        int iIndex = (ItemCtx.GetItem().IsEmpty() ? 0 : Min(Max(0, ItemCtx.GetItem().GetLevel() - m_ShotData[0].pDesc->GetLevel()), m_ShotData.GetCount() - 1));
+		return m_ShotData[iIndex].pDesc;
+		}
+
+	//	Handle charge variants
+
+	else if (m_iVariantType == varCharges)
+		{
+		//	We assume that all charge values are represented in m_ShotData.
+
+        int iIndex = Min(Max(0, ItemCtx.GetDeviceCharges()), m_ShotData.GetCount() - 1);
+		return m_ShotData[iIndex].pDesc;
+		}
 
     //  If we need ammo, then we have extra work to do.
     //  NOTE: Currently, if one variant uses ammo, all need to use ammo.
@@ -3087,8 +3099,11 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
 	//	never have more than one type of ammo. [But some launchers do not
 	//	have ammo, so we need to check that they use ammo.]
 
-    if (m_ShotData[0].pDesc->GetAmmoType() != NULL && m_bLauncher)
+    else if (IsLauncherWithAmmo())
         {
+		CWeaponFireDesc *pRoot = NULL;
+		int iLevel = -1;
+
         //  If we have ammo, use it (this overrides whatever item is selected 
         //  in ItemCtx).
 
@@ -3139,28 +3154,158 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
         //  (we can't have scalable ammo).
 
         iLevel = (ItemCtx.GetItem().IsEmpty() ? -1 : ItemCtx.GetItem().GetLevel());
+		return (iLevel == -1 ? pRoot : pRoot->GetScaledDesc(iLevel));
         }
     else
         {
-        pRoot = m_ShotData[0].pDesc;
-        iLevel = (ItemCtx.GetItem().IsEmpty() ? -1 : ItemCtx.GetItem().GetLevel());
+        CWeaponFireDesc *pRoot = m_ShotData[0].pDesc;
+        int iLevel = (ItemCtx.GetItem().IsEmpty() ? -1 : ItemCtx.GetItem().GetLevel());
+	    return (iLevel == -1 ? pRoot : pRoot->GetScaledDesc(iLevel));
         }
-
-    //  If this weapon descriptor is scalable, we need to get the actual 
-    //  descriptor for the level.
-
-    return (iLevel == -1 ? pRoot : pRoot->GetScaledDesc(iLevel));
     }
+
+ALERROR CWeaponClass::InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType)
+
+//	InitVariantsFromXML
+//
+//	Loads the variant descriptions, whether from missiles, scaling, or charges.
+
+	{
+	int i;
+	ALERROR error;
+
+	//	If we have a Missiles tag then this weapon has ammunition; otherwise,
+	//	if we have a Variants tag, then we have multiple descriptors.
+
+	CXMLElement *pVariants = pDesc->GetContentElementByTag(MISSILES_TAG);
+	if (pVariants == NULL)
+		pVariants = pDesc->GetContentElementByTag(VARIANTS_TAG);
+
+	if (pVariants)
+		{
+		//	Get the type of variants
+
+		CString sType = pVariants->GetAttribute(TYPE_ATTRIB);
+		if (sType.IsBlank())
+			{
+			if (pVariants->GetContentElementCount() > 1
+					|| GetDefinedSlotCategory() == itemcatLauncher
+					|| pDesc->GetAttributeBool(LAUNCHER_ATTRIB))
+				m_iVariantType = varLauncher;
+			else
+				m_iVariantType = varSingle;
+			}
+		else if (strEquals(sType, VARIANT_TYPE_CHARGES))
+			m_iVariantType = varCharges;
+		else if (strEquals(sType, VARIANT_TYPE_MISSILES))
+			m_iVariantType = varLauncher;
+		else if (strEquals(sType, VARIANT_TYPE_LEVELS))
+			m_iVariantType = varLevelScaling;
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unknown variant type: %s"), sType);
+			return ERR_FAIL;
+			}
+
+		//	Load each variant
+
+		m_ShotData.InsertEmpty(pVariants->GetContentElementCount());
+		for (i = 0; i < m_ShotData.GetCount(); i++)
+			{
+			CXMLElement *pItem = pVariants->GetContentElement(i);
+
+			//	If this entry defines the missile, then we own it.
+
+			if (pItem->FindAttribute(TYPE_ATTRIB))
+				{
+				m_ShotData[i].bOwned = true;
+				m_ShotData[i].pDesc = new CWeaponFireDesc;
+
+				//	For scalable levels, we assume each entry is a level
+
+				int iLevel = GetLevel();
+				if (m_iVariantType == varLevelScaling)
+					iLevel += i;
+
+				//	Initialize
+
+				CString sUNID = strPatternSubst(CONSTLIT("%d/%d"), GetUNID(), i);
+				if (error = m_ShotData[i].pDesc->InitFromXML(Ctx, pItem, sUNID, iLevel))
+					return error;
+				}
+
+			//	Otherwise we expect the definition to be in the ItemType.
+			//	This is best for missiles.
+
+			else
+				{
+			    //	In this case we need to load the ammo type because it we 
+                //  will later load the missile (at bind time).
+
+			    if (error = m_ShotData[i].pAmmoType.LoadUNID(Ctx, pItem->GetAttribute(AMMO_ID_ATTRIB)))
+				    return error;
+
+				//	AmmoID is required in this case.
+
+				if (m_ShotData[i].pAmmoType.GetUNID() == 0)
+					{
+					Ctx.sError = CONSTLIT("Expected either type= or ammoID= definition.");
+					return ERR_FAIL;
+					}
+
+				m_ShotData[i].bOwned = false;
+				m_ShotData[i].pDesc = NULL;
+				}
+			}
+		}
+	else
+		{
+		//	Figure out the type of variants
+
+		if (pType->IsScalable())
+			m_iVariantType = varSingleLevelScaling;
+
+		else if (GetDefinedSlotCategory() == itemcatLauncher
+				|| pDesc->GetAttributeBool(LAUNCHER_ATTRIB))
+			m_iVariantType = varLauncher;
+
+		else
+			m_iVariantType = varSingle;
+
+		//	Add a single entry
+
+		m_ShotData.InsertEmpty(1);
+		m_ShotData[0].bOwned = true;
+		m_ShotData[0].pDesc = new CWeaponFireDesc;
+
+		//	Load the definition from the root element
+
+		CString sUNID = strPatternSubst(CONSTLIT("%d/0"), GetUNID());
+		if (error = m_ShotData[0].pDesc->InitFromXML(Ctx, pDesc, sUNID, GetLevel()))
+			return error;
+
+        //  Initialize scaled stats, if necessary
+
+        if (pType->IsScalable())
+            {
+            if (error = m_ShotData[0].pDesc->InitScaledStats(Ctx, pDesc, pType))
+                return error;
+            }
+		}
+
+	//	Done
+
+	return NOERROR;
+	}
 
 bool CWeaponClass::IsAmmoWeapon (void)
 
 //	IsAmmoWeapon
 //
-//	Returns TRUE if weapon uses ammo
+//	Returns TRUE if weapon uses ammo or other expendables
 
 	{
-	return (m_bLauncher
-			|| (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType()));
+	return (UsesAmmo() || m_bCharges);
 	}
 
 bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice)
@@ -3559,10 +3704,10 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo,
 	//	These properties are valid either for an ammo-less weapon, or a specific
 	//	ammo/missile.
 
-	if (m_ShotData.GetCount() == 1 || !Ammo.IsEmpty())
+	CWeaponFireDesc *pRootShot;
+	if ((GetSelectVariantCount() == 1 || !Ammo.IsEmpty())
+			&& (pRootShot = GetWeaponFireDesc(ItemCtx, Ammo)))
 		{
-        CWeaponFireDesc *pRootShot = GetWeaponFireDesc(ItemCtx, Ammo);
-
 		//	Sometimes the fragments do all the damage. In that case, we take 
 		//	the properties from the fragment.
 
@@ -3724,6 +3869,7 @@ ALERROR CWeaponClass::OnFinishBind (SDesignLoadCtx &Ctx)
 //  Finish binding
 
     {
+	int i;
 	ALERROR error;
 
 	//	Events
@@ -3732,7 +3878,8 @@ ALERROR CWeaponClass::OnFinishBind (SDesignLoadCtx &Ctx)
 
 	//	Shots
 
-	for (int i = 0; i < m_ShotData.GetCount(); i++)
+	TSortMap<CItemType *, bool> UniqueAmmo;
+	for (i = 0; i < m_ShotData.GetCount(); i++)
 		{
 		//	If we own this definition, then we need to bind it.
 
@@ -3741,6 +3888,20 @@ ALERROR CWeaponClass::OnFinishBind (SDesignLoadCtx &Ctx)
 			if (error = m_ShotData[i].pDesc->FinishBindDesign(Ctx))
 				return error;
 			}
+
+		//	Make a list of all unique ammo items
+
+		if (m_ShotData[i].pDesc->GetAmmoType())
+			UniqueAmmo.SetAt(m_ShotData[i].pDesc->GetAmmoType(), true);
+		}
+
+	//	For each ammo item that we fire, give it a pointer to us so that it can
+	//	refer back.
+
+	for (i = 0; i < UniqueAmmo.GetCount(); i++)
+		{
+		CItemType *pAmmoType = UniqueAmmo.GetKey(i);
+		pAmmoType->AddWeapon(this);
 		}
 
 	return NOERROR;
@@ -3793,7 +3954,7 @@ CString CWeaponClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 		//	For ammo weapons, we describe the kind of ammo we need.
 
 		CItemType *pAmmo;
-		if (!m_bLauncher
+		if (!IsLauncher()
 				&& GetAmmoItemCount() == 1
 				&& (pAmmo = GetAmmoItem(0)))
 			{
@@ -3824,12 +3985,7 @@ bool CWeaponClass::RequiresItems (void) const
 //	Returns TRUE if this weapon requires ammo
 
 	{
-	if (m_ShotData.GetCount() == 0)
-		return false;
-	else if (m_ShotData.GetCount() == 1)
-		return (m_ShotData[0].pDesc->GetAmmoType() != NULL);
-	else
-		return true;
+	return UsesAmmo();
 	}
 
 bool CWeaponClass::SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice)
@@ -3850,35 +4006,55 @@ bool CWeaponClass::SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *p
 //	Selects the next valid variant for this weapon
 
 	{
-	int iStart = GetCurrentVariant(pDevice);
-	if (iStart == -1)
-		iStart = m_ShotData.GetCount() + (iDir == 1 ? 0 : -1);
-	else
-		iStart = m_ShotData.GetCount() + iStart + iDir;
+	//	For scaling, the descriptor to use is based on something other than the
+	//	selection, so we only one selection.
 
-	//	Loop over all variants
-
-	int iSelection = -1;
-	if (m_ShotData.GetCount() > 0)
+	if (m_iVariantType == varLevelScaling || m_iVariantType == varCharges)
 		{
-		for (int i = 0; i < m_ShotData.GetCount(); i++)
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(CItemCtx(pSource, pDevice));
+		if (pShot && VariantIsValid(pSource, pDevice, *pShot))
 			{
-			int iTry = (iStart + (i * iDir)) % m_ShotData.GetCount();
-
-			//	If this variant is valid, then we're done
-
-			if (VariantIsValid(pSource, pDevice, *m_ShotData[iTry].pDesc))
-				{
-				iSelection = iTry;
-				break;
-				}
+			SetCurrentVariant(pDevice, 0);
+			return true;
+			}
+		else
+			{
+			SetCurrentVariant(pDevice, -1);
+			return false;
 			}
 		}
+	else
+		{
+		int iStart = GetCurrentVariant(pDevice);
+		if (iStart == -1)
+			iStart = m_ShotData.GetCount() + (iDir == 1 ? 0 : -1);
+		else
+			iStart = m_ShotData.GetCount() + iStart + iDir;
 
-	//	If we found a selection, then select the variant
+		//	Loop over all variants
 
-	SetCurrentVariant(pDevice, iSelection);
-	return (iSelection != -1);
+		int iSelection = -1;
+		if (m_ShotData.GetCount() > 0)
+			{
+			for (int i = 0; i < m_ShotData.GetCount(); i++)
+				{
+				int iTry = (iStart + (i * iDir)) % m_ShotData.GetCount();
+
+				//	If this variant is valid, then we're done
+
+				if (VariantIsValid(pSource, pDevice, *m_ShotData[iTry].pDesc))
+					{
+					iSelection = iTry;
+					break;
+					}
+				}
+			}
+
+		//	If we found a selection, then select the variant
+
+		SetCurrentVariant(pDevice, iSelection);
+		return (iSelection != -1);
+		}
 	}
 
 void CWeaponClass::SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos) const

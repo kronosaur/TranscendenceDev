@@ -99,6 +99,18 @@
 #define FIELD_UNKNOWN_TYPE						CONSTLIT("unknownType")
 #define FIELD_USE_KEY							CONSTLIT("useKey")
 
+#define PROPERTY_CATEGORY						CONSTLIT("category")
+#define PROPERTY_COMPONENTS						CONSTLIT("components")
+#define PROPERTY_CURRENCY						CONSTLIT("currency")
+#define PROPERTY_DESCRIPTION					CONSTLIT("description")
+#define PROPERTY_LEVEL  						CONSTLIT("level")
+#define PROPERTY_MAX_CHARGES  					CONSTLIT("maxCharges")
+#define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
+#define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
+#define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
+#define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
+#define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
+
 #define SPECIAL_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged:")
 #define SPECIAL_DAMAGE_TYPE						CONSTLIT("damageType:")
 #define SPECIAL_HAS_COMPONENTS					CONSTLIT("hasComponents:")
@@ -410,6 +422,87 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 		}
 
 	return true;
+	}
+
+ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+
+//	FindItemTypeBaseProperty
+//
+//	Returns a property specific to a generic type. We DO NOT return device/armor
+//	properties, nor do we return CItem properties. But we DO return CDesignType
+//	properties and we DO return old-style data fields (which DO have device/armor
+//	parameters).
+//
+//	We return NULL if we do not understand the property.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	ICCItem *pResult;
+	int i;
+
+	if (strEquals(sProperty, PROPERTY_CATEGORY))
+		return CC.CreateString(GetItemCategoryID(GetCategory()));
+
+	else if (strEquals(sProperty, PROPERTY_COMPONENTS))
+		{
+		const CItemList &Components = GetComponents();
+		if (Components.GetCount() == 0)
+			return CC.CreateNil();
+
+		ICCItem *pList = CC.CreateLinkedList();
+		for (i = 0; i < Components.GetCount(); i++)
+			{
+			ICCItem *pEntry = CreateListFromItem(CC, Components.GetItem(i));
+			pList->Append(CC, pEntry);
+			pEntry->Discard(&CC);
+			}
+
+		return pList;
+		}
+
+	else if (strEquals(sProperty, PROPERTY_CURRENCY))
+		return CC.CreateInteger(GetCurrencyType()->GetUNID());
+
+	else if (strEquals(sProperty, PROPERTY_DESCRIPTION))
+		return CC.CreateString(GetDesc());
+
+    else if (strEquals(sProperty, PROPERTY_LEVEL))
+        return CC.CreateInteger(GetLevel());
+
+	else if (strEquals(sProperty, PROPERTY_MASS_BONUS_PER_CHARGE))
+		return CC.CreateInteger(GetMassBonusPerCharge());
+
+	else if (strEquals(sProperty, PROPERTY_MAX_CHARGES))
+		return CC.CreateInteger(GetMaxCharges());
+
+    else if (strEquals(sProperty, PROPERTY_MAX_LEVEL))
+        return CC.CreateInteger(GetMaxLevel());
+
+    else if (strEquals(sProperty, PROPERTY_MIN_LEVEL))
+        return CC.CreateInteger(GetLevel());
+
+	else if (strEquals(sProperty, PROPERTY_VALUE_BONUS_PER_CHARGE))
+		return CC.CreateInteger(GetValueBonusPerCharge());
+
+	else if (strEquals(sProperty, PROPERTY_WEAPON_TYPES))
+		{
+		if (GetLaunchWeapons().GetCount() == 0)
+			return CC.CreateNil();
+		else
+			{
+			ICCItem *pResult = CC.CreateLinkedList();
+			for (i = 0; i < GetLaunchWeapons().GetCount(); i++)
+				pResult->AppendInteger(CC, GetLaunchWeapons()[i]->GetUNID());
+
+			return pResult;
+			}
+		}
+
+	else if (pResult = FindBaseProperty(Ctx, sProperty))
+		return pResult;
+
+	else
+		return NULL;
 	}
 
 CDeviceClass *CItemType::GetAmmoLauncher (int *retiVariant) const
@@ -1525,6 +1618,19 @@ ALERROR CItemType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
     return NOERROR;
     }
 
+ICCItem *CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+
+//	OnGetProperty
+//
+//	Return property.
+
+	{
+	CItem Item(this, 1);
+	CItemCtx ItemCtx(Item);
+
+	return Item.GetItemProperty(Ctx, ItemCtx, sProperty);
+	}
+
 bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 
 //	OnHasSpecialAttribute
@@ -1593,10 +1699,8 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		{
 		CString sProperty = strSubString(sAttrib, SPECIAL_PROPERTY.GetLength());
 		CItem Item((CItemType *)this, 1);
-		CItemCtx ItemCtx(Item);
-		CCodeChainCtx Ctx;
 
-		ICCItem *pValue = Item.GetProperty(&Ctx, ItemCtx, sProperty);
+		ICCItem *pValue = Item.GetItemProperty(CCodeChainCtx(), CItemCtx(Item), sProperty);
 		bool bResult = !pValue->IsNil();
 		pValue->Discard(&g_pUniverse->GetCC());
 
@@ -1604,6 +1708,23 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		}
 	else
 		return false;
+	}
+
+ALERROR CItemType::OnPrepareBindDesign (SDesignLoadCtx &Ctx)
+
+//	OnPrepareBindDesign
+//
+//	Get ready to bind
+
+	{
+	//	Delete the weapon relationship until we've bound everything and known
+	//	what we've got.
+
+	m_Weapons.DeleteAll();
+
+	//	Done
+
+	return NOERROR;
 	}
 
 void CItemType::OnReadFromStream (SUniverseLoadCtx &Ctx)

@@ -3602,7 +3602,7 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 			return CC.CreateError(CONSTLIT("Item not found on object."));
 
 		CItemCtx Ctx(&Item, this);
-		return Item.GetProperty(pCCCtx, Ctx, sName);
+		return Item.GetItemProperty((pCCCtx ? *pCCCtx : CCodeChainCtx()), Ctx, sName);
 		}
 	}
 

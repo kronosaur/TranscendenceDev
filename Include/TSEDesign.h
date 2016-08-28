@@ -508,6 +508,7 @@ class CDesignType
 
 	protected:
 		ALERROR AddEventHandler (const CString &sEvent, const CString &sCode, CString *retsError = NULL) { return m_Events.AddEvent(sEvent, sCode, retsError); }
+		ICCItem *FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		bool IsValidLoadXML (const CString &sTag);
 		void ReadGlobalData (SUniverseLoadCtx &Ctx);
 		void ReportEventError (const CString &sEvent, ICCItem *pError);
@@ -2148,11 +2149,13 @@ class CItemType : public CDesignType
 		CItemType (void);
 		virtual ~CItemType (void);
 
+		inline void AddWeapon (CDeviceClass *pWeapon) { ASSERT(!m_Weapons.Find(pWeapon)); m_Weapons.Insert(pWeapon); }
 		inline bool AreChargesValued (void) const { return (m_fValueCharges ? true : false); }
 		inline void ClearKnown (void) { m_fKnown = false; }
 		inline void ClearShowReference (void) { m_fReference = false; }
 		void CreateEmptyFlotsam (CSystem *pSystem, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpFlotsam);
 		inline bool FindEventHandlerItemType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
+		ICCItem *FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		int GetApparentLevel (CItemCtx &Ctx) const;
 		CDeviceClass *GetAmmoLauncher (int *retiVariant = NULL) const;
 		inline CArmorClass *GetArmorClass (void) const { return m_pArmor; }
@@ -2169,6 +2172,7 @@ class CItemType : public CDesignType
 		int GetFrequencyByLevel (int iLevel);
 		inline const CObjectImageArray &GetImage (void) { return m_Image; }
 		int GetInstallCost (CItemCtx &Ctx) const;
+		const TArray<CDeviceClass *> &GetLaunchWeapons (void) const { return m_Weapons; }
         int GetLevel (CItemCtx &Ctx) const;
 		inline Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
 		inline int GetMassBonusPerCharge (void) const { return m_iExtraMassPerCharge; }
@@ -2221,7 +2225,9 @@ class CItemType : public CDesignType
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
         virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
+		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
 		virtual void OnReinit (void) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
@@ -2276,6 +2282,7 @@ class CItemType : public CDesignType
 
 		//	Missiles
 		CWeaponFireDesc *m_pMissile;			//	Missile desc (may be NULL)
+		TArray<CDeviceClass *> m_Weapons;		//	Weapons that fire this missile/ammo
 
 		//	Flotsam
 		CG32bitImage m_FlotsamBitmap;			//	Image used for flotsam
@@ -4812,7 +4819,6 @@ class CDesignCollection
 		CTopologyDescTable *GetTopologyDesc (void) const { return m_pTopology; }
 		inline bool HasDynamicTypes (void) { return (m_DynamicTypes.GetCount() > 0); }
 		bool IsAdventureExtensionBound (DWORD dwUNID);
-		bool IsAdventureExtensionLoaded (DWORD dwUNID);
 		bool IsRegisteredGame (void);
 		void MarkGlobalImages (void);
 		void NotifyTopologyInit (void);
@@ -4822,7 +4828,6 @@ class CDesignCollection
 		void WriteDynamicTypes (IWriteStream *pStream);
 
 	private:
-		ALERROR AddExtension (SDesignLoadCtx &Ctx, EExtensionTypes iType, DWORD dwUNID, bool bDefaultResource, CExtension **retpExtension);
 		void CacheGlobalEvents (CDesignType *pType);
 		ALERROR CreateTemplateTypes (SDesignLoadCtx &Ctx);
 		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx);

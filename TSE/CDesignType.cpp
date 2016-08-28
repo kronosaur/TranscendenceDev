@@ -531,6 +531,47 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 		}
 	}
 
+ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+
+//	FindBaseProperty
+//
+//	Returns base property of all design types. We also check to see if we have
+//	an old-style data field.
+//
+//	If we don't have the property, we return NULL.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	CString sValue;
+
+	if (strEquals(sProperty, PROPERTY_API_VERSION))
+		return CC.CreateInteger(GetAPIVersion());
+
+	else if (strEquals(sProperty, PROPERTY_CLASS))
+		return CC.CreateString(GetTypeClassName());
+
+	else if (strEquals(sProperty, PROPERTY_EXTENSION))
+		{
+		if (m_pExtension)
+			return CC.CreateInteger(m_pExtension->GetUNID());
+		else
+			return CC.CreateNil();
+		}
+
+    else if (strEquals(sProperty, PROPERTY_MAP_DESCRIPTION))
+        return CC.CreateString(GetMapDescription(SMapDescriptionCtx()));
+
+	//	Otherwise, we see if there is a data field
+
+	else if (FindDataField(sProperty, &sValue))
+		return CreateResultFromDataField(CC, sValue);
+
+	//	Not found
+
+	else
+		return NULL;
+	}
+
 bool CDesignType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
@@ -1487,39 +1528,26 @@ ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 //	GetProperty
 //
 //	Returns the value of the given property. We return an allocated CC item (which 
-//	must be discarded by the caller). If the property is not found, we return
-//	Nil.
+//	must be discarded by the caller).
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 	ICCItem *pResult;
 
-	if (strEquals(sProperty, PROPERTY_API_VERSION))
-		return CC.CreateInteger(GetAPIVersion());
+	//	Let our subclass handle this first
 
-	else if (strEquals(sProperty, PROPERTY_CLASS))
-		return CC.CreateString(GetTypeClassName());
-
-	else if (strEquals(sProperty, PROPERTY_EXTENSION))
-		{
-		if (m_pExtension)
-			return CC.CreateInteger(m_pExtension->GetUNID());
-		else
-			return CC.CreateNil();
-		}
-
-    else if (strEquals(sProperty, PROPERTY_MAP_DESCRIPTION))
-        return CC.CreateString(GetMapDescription(SMapDescriptionCtx()));
-
-	//	See if our subclass will handle it.
-
-	else if (pResult = OnGetProperty(Ctx, sProperty))
+	if (pResult = OnGetProperty(Ctx, sProperty))
 		return pResult;
 
-	//	Otherwise, we see if there is a data field
+	//	If not, then see if we handle it.
+
+	else if (pResult = FindBaseProperty(Ctx, sProperty))
+		return pResult;
+
+	//	Nobody handled it, so just return Nil
 
 	else
-		return CreateResultFromDataField(CC, GetDataField(sProperty));
+		return CC.CreateNil();
 	}
 
 int CDesignType::GetPropertyInteger (const CString &sProperty)

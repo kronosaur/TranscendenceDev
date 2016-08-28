@@ -75,10 +75,7 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
-
-	CDeviceClass *pWeapon = GetWeapon();
-	if (pWeapon == NULL)
-		return NULL;
+	CDeviceClass *pWeapon;
 
 	//	Get the property
 
@@ -96,13 +93,15 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 
 	//	Otherwise, just get the property from the weapon we're using
 
-	else
+	else if (pWeapon = GetWeapon())
 		{
 		CItem Weapon(pWeapon->GetItemType(), 1);
 		CItemCtx WeaponCtx(Weapon);
 
 		return pWeapon->FindItemProperty(WeaponCtx, sProperty);
 		}
+	else
+		return CDeviceClass::FindItemProperty(Ctx, sProperty);
 	}
 
 int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx) const

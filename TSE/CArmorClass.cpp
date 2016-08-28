@@ -1426,11 +1426,11 @@ int CArmorClass::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevi
 	return iScore;
 	}
 
-ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
+ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
-//	GetItemProperty
+//	FindItemProperty
 //
-//	Returns armor property
+//	Returns armor property. NOTE: We DO NOT return generic item properties.
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
@@ -1505,11 +1505,8 @@ ICCItem *CArmorClass::GetItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return CC.CreateBool(IsShatterImmune(Ctx));
 
-	else if (m_pItemType)
-		return CreateResultFromDataField(CC, m_pItemType->GetDataField(sName));
-
 	else
-		return CC.CreateNil();
+		return NULL;
 	}
 
 int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete)

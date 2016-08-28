@@ -47,13 +47,13 @@ class CArmorClass
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor);
 		bool FindDataField (const CString &sField, CString *retsValue);
 		inline bool FindEventHandlerArmorClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
+		ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty);
         inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		inline int GetCompleteBonus (void) { return m_iArmorCompleteBonus; }
         inline int GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const;
 		int GetDamageAdjForWeaponLevel (int iLevel);
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetInstallCost (CItemCtx &Ctx) const;
-		ICCItem *GetItemProperty (CItemCtx &Ctx, const CString &sName);
 		inline CItemType *GetItemType (void) { return m_pItemType; }
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false);
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
