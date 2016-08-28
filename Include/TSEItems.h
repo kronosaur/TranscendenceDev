@@ -285,13 +285,13 @@ class CItem
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
 		inline int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
+		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sName) const;
         inline int GetLevel (void) const;
 		inline Metric GetMass (void) const { return GetMassKg() / 1000.0; }
 		int GetMassKg (void) const;
 		inline const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
 		static const CItem &GetNullItem (void) { return m_NullItem; }
 		static const CItemEnhancement &GetNullMod (void) { return m_NullMod; }
-		ICCItem *GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString &sName) const;
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
 		bool GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const;
 		bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags, DamageTypes *retiDamage, CString *retsReference) const;

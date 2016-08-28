@@ -34,6 +34,7 @@
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
+#define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
 CItemEnhancement CItem::m_NullMod;
 CItem CItem::m_NullItem;
@@ -893,11 +894,75 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 	return ComposeNounPhrase(sName, (int)m_dwCount, sModifier, dwNounFlags, dwFlags);
 	}
 
-ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString &sName) const
+ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sName) const
 
-//	GetProperty
+//	GetItemProperty
 //
 //	Returns an item property. Caller must free ICCItem.
+//
+//	This is one of the main entry points for item properties (the other is 
+//	CDesignType::GetProperty). All other item property functions are helpers and
+//	should not be called directly.
+//
+//	This function assumes that the item specified by CItemCtx is the SAME as 
+//	this item. Behavior is undefined otherwise. However, we DO support an empty
+//	CItemCtx.
+//
+//	ARCHITECTURE
+//
+//	There are two entry points for item properties. CDesignType::GetProperty 
+//	returns all properties available to uninstalled items, including any device
+//	or armor specific properties.
+//
+//	CItem::GetItemProperty is a superset of CDesignType::GetProperty. It also
+//	returns properties available to concrete and installed items. For example, 
+//	it returns the damaged state of an item and the charges on a weapon.
+//
+//	Importantly, the properties returned by CDesignType::GetProperty are 
+//	identical to those returned by CItem::GetItemProperty on a newly cons'ed up
+//	item.
+//
+//	All other item properties are helpers and should not be called directly
+//	other than from one of the two methods above.
+//
+//	IMPLEMENTATION NOTES
+//
+//	CItem::GetItemProperty: We take both CCodeChainCtx and CItemCtx. This is one
+//		of the main entry points for properties (the other is 
+//		CDesignType::GetProperty).
+//		
+//
+//	CItemType::GetItemProperty: We take both CCodeChainCtx and CItemCtx. In 
+//		general, though, we return default values for any CItem specific 
+//		properties (that is, we DO NOT call CItem to get data).
+//
+//		If we are either a device, armor, or missile, then we call 
+//		FindItemProperty on that object. We expect those classes to handle any
+//		properties that require the ship/device (which they get from CItemCtx).
+//
+//		If the device doesn't handle the property, then we call 
+//		CDesignType::FindBaseProperty to access any properties of the type 
+//		(e.g., APIVersion) and any old-style fields.
+//
+//		If nobody handled the property, we return Nil (we never return NULL).
+//
+//	CDeviceClass::FindItemProperty: We take both CCodeChainCtx and CItemCtx. This
+//		method ONLY returns device properties. It will never return CItem or
+//		CItemType properties (because otherwise we'd recurse infinitely). It
+//		returns NULL if it does not know about the property.
+//
+//	CDesignType::FindBaseProperty: This method handles generic type properties 
+//		and it also converts any old-style fields into properties. When getting
+//		fields, we might again call out to the device class (to get its fields).
+//		We return NULL if we do not know about the property.
+//
+//	CDesignType::GetProperty: This method call OnGetProperty on its subclasses
+//		to let them handle it. If the subclass does not handle it, then we call
+//		CDesignType::FindBaseProperty.
+//
+//	CItemType::OnGetProperty: We call GetItemProperty with an empty CItemCtx.
+//		Since GetItemProperty ends up calling CDesignType::FindBaseProperty, we
+//		never return NULL (we always handle it).
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
@@ -934,7 +999,7 @@ ICCItem *CItem::GetProperty (CCodeChainCtx *pCCCtx, CItemCtx &Ctx, const CString
 
 	else if (strEquals(sName, PROPERTY_DESCRIPTION))
 		{
-		if (pCCCtx && pCCCtx->InEvent(eventGetDescription))
+		if (CCCtx.InEvent(eventGetDescription))
 			return CC.CreateString(GetType()->GetDesc());
 		else
 			return CC.CreateString(GetDesc());
