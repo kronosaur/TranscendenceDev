@@ -3478,7 +3478,7 @@ CItem CSpaceObject::GetItemForDevice (CInstalledDevice *pDevice)
 	return ItemList.GetItemAtCursor();
 	}
 
-ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item, const CString &sName)
+ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName)
 
 //	GetItemProperty
 //
@@ -3602,7 +3602,7 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item
 			return CC.CreateError(CONSTLIT("Item not found on object."));
 
 		CItemCtx Ctx(&Item, this);
-		return Item.GetItemProperty((pCCCtx ? *pCCCtx : CCodeChainCtx()), Ctx, sName);
+		return Item.GetItemProperty(CCCtx, Ctx, sName);
 		}
 	}
 

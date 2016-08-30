@@ -2595,7 +2595,7 @@ class CSpaceObject : public CObject
 		EnhanceItemStatus EnhanceItem (CItemListManipulator &ItemList, const CItemEnhancement &Mods, DWORD *retdwID = NULL);
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
 		inline CItemList &GetItemList (void) { return m_ItemList; }
-		ICCItem *GetItemProperty (CCodeChainCtx *pCCCtx, const CItem &Item, const CString &sName);
+		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName);
 		void RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly = false);
 		void RepairItem (CItemListManipulator &ItemList);
 		void SetCursorAtArmor (CItemListManipulator &ItemList, CInstalledArmor *pArmor);

@@ -568,6 +568,8 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define UNID_TYPE_ITEM_TYPE				CONSTLIT("itemtype")
 #define UNID_TYPE_SHIP_CLASS			CONSTLIT("shipclass")
 
+#define ERR_NO_CODE_CHAIN_CTX			CONSTLIT("No CodeChainCtx")
+
 static PRIMITIVEPROCDEF g_Extensions[] =
 	{
 		//	ArmorClass functions
@@ -3380,6 +3382,9 @@ ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	//	Implement
 
@@ -3387,8 +3392,6 @@ ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_DESIGN_CREATE:
 			{
-			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
-
 			DWORD dwUNID = pArgs->GetElement(0)->GetIntegerValue();
 
 			//	Add it
@@ -3431,6 +3434,8 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	//	The first argument is an UNID
 
@@ -3856,6 +3861,10 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
+
 	ICCItem *pResult;
 
 	//	Convert the first argument into an item
@@ -4050,10 +4059,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_PROPERTY:
-			{
-			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
-			return Item.GetItemProperty((pCtx ? *pCtx : CCodeChainCtx()), CItemCtx(Item), pArgs->GetElement(1)->GetStringValue());
-			}
+			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue());
 
 		case FN_ITEM_DAMAGED:
 			pResult = pCC->CreateBool(Item.IsDamaged());
@@ -4098,7 +4104,6 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_NAME:
 			{
-			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 			DWORD dwFlags = pArgs->GetElement(1)->GetIntegerValue();
 
 			//	If we're inside the GetName event, then don't recurse
@@ -5090,6 +5095,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	//	Get the object
 
@@ -5383,19 +5390,19 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_DEVICE_FIRE_ARC:
 			{
 			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			return pObj->GetItemProperty(pCtx, Item, CONSTLIT("fireArc"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("fireArc"));
 			}
 
 		case FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS:
 			{
 			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			return pObj->GetItemProperty(pCtx, Item, CONSTLIT("linkedFireOptions"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("linkedFireOptions"));
 			}
 
 		case FN_OBJ_DEVICE_POS:
 			{
 			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			return pObj->GetItemProperty(pCtx, Item, CONSTLIT("pos"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("pos"));
 			}
 
 		case FN_OBJ_DOCKED_AT:
@@ -5508,7 +5515,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get it
 
-			return pObj->GetItemProperty(pCtx, Item, sProperty);
+			return pObj->GetItemProperty(*pCtx, Item, sProperty);
 			}
 
 		case FN_OBJ_GET_NAMED_ITEM:
@@ -6293,6 +6300,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	//	Get the object
 
@@ -7602,6 +7611,8 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	//	Get the mission object
 
@@ -8224,6 +8235,8 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	//	Get the ship arg
 
@@ -8595,6 +8608,9 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
+
 	ICCItem *pArgs;
 	ICCItem *pResult;
 
@@ -9606,6 +9622,8 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	switch (dwData)
 		{
@@ -9719,8 +9737,12 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	ALERROR error;
-	CCodeChain *pCC = pEvalCtx->pCC;
 	int i;
+
+	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	switch (dwData)
 		{
@@ -9886,7 +9908,6 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_CREATE_LOOKUP:
 			{
-			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 			SSystemCreateCtx *pSysCreateCtx = pCtx->GetSystemCreateCtx();
 
 			//	We can't always control if we're called inside of system create or not,
@@ -10387,6 +10408,9 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 	ALERROR error;
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
+
 	SSystemCreateCtx *pSysCreateCtx = pCtx->GetSystemCreateCtx();
 
 	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
@@ -11965,6 +11989,10 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	int i;
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
+
 	ICCItem *pResult;
 
 	//	Do the appropriate command
@@ -11973,7 +12001,6 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_UNIVERSE_EXTENSION_UNID:
 			{
-			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 			CExtension *pExtension = pCtx->GetExtension();
 			if (pExtension == NULL)
 				return pCC->CreateNil();
@@ -12056,7 +12083,6 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_UNIVERSE_GET_EXTENSION_DATA:
 			{
-			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 			CExtension *pExtension = pCtx->GetExtension();
 			if (pExtension == NULL || pExtension->GetUNID() == 0)
 				return pCC->CreateError(CONSTLIT("Extension UNID undefined in this context"));
@@ -12102,7 +12128,6 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_UNIVERSE_SET_EXTENSION_DATA:
 			{
-			CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 			CExtension *pExtension = pCtx->GetExtension();
 			if (pExtension == NULL || pExtension->GetUNID() == 0)
 				return pCC->CreateError(CONSTLIT("Extension UNID undefined in this context"));
