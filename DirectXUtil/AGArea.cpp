@@ -77,8 +77,9 @@ ALERROR AGArea::Init (AGScreen *pScreen, IAreaContainer *pParent, const RECT &rc
 
 	m_pScreen = pScreen;
 	m_pParent = pParent;
-	m_rcRect = rcRect;
 	m_dwTag = dwTag;
+
+	SetRect(rcRect);
 
 	return NOERROR;
 	}

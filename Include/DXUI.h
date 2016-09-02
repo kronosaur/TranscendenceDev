@@ -18,6 +18,7 @@ class IAreaContainer
 	{
 	public:
 		virtual void GetMousePos (POINT *retpt) { }
+		virtual RECT GetPaintRect (const RECT &rcArea) const = 0;
 		virtual void OnAreaSetRect (void) { }
 	};
 
@@ -29,7 +30,7 @@ class AGArea : public CObject
 
 		void AddEffect (const SEffectDesc &Effect);
 		void AddShadowEffect (void);
-		inline IAreaContainer *GetParent (void) { return m_pParent; }
+		inline IAreaContainer *GetParent (void) const { return m_pParent; }
 		inline RECT &GetRect (void) { return m_rcRect; }
 		inline const RECT &GetRect (void) const { return m_rcRect; }
 		inline AGScreen *GetScreen (void) { return m_pScreen; }
@@ -101,8 +102,9 @@ class AGScreen : public CObject, public IAreaContainer
 		inline void SetController (IScreenController *pController) { m_pController = pController; }
 
 		//	IAreaContainer virtuals
-		virtual void GetMousePos (POINT *retpt);
-		virtual void OnAreaSetRect (void);
+		virtual void GetMousePos (POINT *retpt) override;
+		virtual RECT GetPaintRect (const RECT &rcArea) const override { RECT rcResult = rcArea; ::OffsetRect(&rcResult, m_rcRect.left, m_rcRect.top); return rcResult; }
+		virtual void OnAreaSetRect (void) override;
 
 		//	These methods are called by the HWND
 		void LButtonDoubleClick (int x, int y);
@@ -156,7 +158,8 @@ class CGFrameArea : public AGArea, public IAreaContainer
 		virtual void Update (void);
 
 		//	IAreaContainer virtuals
-		virtual void OnAreaSetRect (void);
+		virtual RECT GetPaintRect (const RECT &rcArea) const override;
+		virtual void OnAreaSetRect (void) override;
 
 	private:
 		RECT m_rcInvalid;						//	Invalid rect relative to m_rcRect

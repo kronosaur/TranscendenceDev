@@ -363,8 +363,7 @@ void AGScreen::Paint (CG32bitImage &Dest)
 
 		//	Convert to Window coordinates
 
-		RECT rcUpdate = m_rcInvalid;
-		OffsetRect(&rcUpdate, m_rcRect.left, m_rcRect.top);
+		RECT rcUpdate = GetPaintRect(m_rcInvalid);
 
 		//	Clip appropriately. Note that Dest is always in
 		//	window coordinates.
@@ -391,13 +390,11 @@ void AGScreen::Paint (CG32bitImage &Dest)
 				{
 				//	Calculate the rect of the area relative to the Window
 
-				RECT rcArea = pArea->GetRect();
-				OffsetRect(&rcArea, m_rcRect.left, m_rcRect.top);
+				RECT rcArea = GetPaintRect(pArea->GetRect());
 
 				//	Clip appropriately
 
-				OffsetRect(&rcIntersect, m_rcRect.left, m_rcRect.top);
-				Dest.SetClipRect(rcIntersect);
+				Dest.SetClipRect(GetPaintRect(rcIntersect));
 
 				//	Paint
 

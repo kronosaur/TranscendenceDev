@@ -55,6 +55,18 @@ AGArea *CGFrameArea::FindArea (DWORD dwTag)
 	return NULL;
 	}
 
+RECT CGFrameArea::GetPaintRect (const RECT &rcArea) const
+
+//	GetPaintRect
+//
+//	Returns the RECT of the area to be relative to screen image.
+
+	{
+	RECT rcResult = rcArea;
+	::OffsetRect(&rcResult, -(GetRect().left), -(GetRect().top));
+	return GetParent()->GetPaintRect(rcResult);
+	}
+
 bool CGFrameArea::LButtonDoubleClick (int x, int y)
 
 //	LButtonDoubleClick
@@ -256,11 +268,7 @@ void CGFrameArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 		{
 		AGArea *pArea = GetArea(i);
 
-		RECT rcAreaRelativeToFrame = pArea->GetRect();
-		::OffsetRect(&rcAreaRelativeToFrame, -(GetRect().left), -(GetRect().top));
-
-		RECT rcAreaRelativeToDest = rcAreaRelativeToFrame;
-		::OffsetRect(&rcAreaRelativeToDest, rcRect.left, rcRect.top);
+		RECT rcAreaRelativeToDest =	GetPaintRect(pArea->GetRect());
 
 		RECT rcIntersect;
 		if (pArea->IsVisible()
