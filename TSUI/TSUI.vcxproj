@@ -159,6 +159,7 @@
     <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapPainter.cpp" />
     <ClCompile Include="CGalacticMapSystemDetails.cpp" />
+    <ClCompile Include="CHoverDescriptionPainter.cpp" />
     <ClCompile Include="CHumanInterface.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Create</PrecompiledHeader>
