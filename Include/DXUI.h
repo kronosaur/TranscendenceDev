@@ -17,12 +17,13 @@ class IScreenController
 class IAreaContainer
 	{
 	public:
-		virtual void GetMousePos (POINT *retpt) { }
+		virtual void ConvertToPaintCoords (int &x, int &y) const = 0;
+		virtual void GetMousePos (POINT *retpt) = 0;
 		virtual RECT GetPaintRect (const RECT &rcArea) const = 0;
 		virtual void OnAreaSetRect (void) { }
 	};
 
-class AGArea : public CObject
+class AGArea
 	{
 	public:
 		AGArea (void);
@@ -30,6 +31,7 @@ class AGArea : public CObject
 
 		void AddEffect (const SEffectDesc &Effect);
 		void AddShadowEffect (void);
+		inline RECT GetPaintRect (void) const { return m_pParent->GetPaintRect(GetRect()); }
 		inline IAreaContainer *GetParent (void) const { return m_pParent; }
 		inline RECT &GetRect (void) { return m_rcRect; }
 		inline const RECT &GetRect (void) const { return m_rcRect; }
@@ -81,7 +83,7 @@ class AGArea : public CObject
 	friend CObjectClass<AGArea>;
 	};
 
-class AGScreen : public CObject, public IAreaContainer
+class AGScreen : public IAreaContainer
 	{
 	public:
 		AGScreen (HWND hWnd, const RECT &rcRect);
@@ -94,6 +96,7 @@ class AGScreen : public CObject, public IAreaContainer
 		inline AGArea *GetArea (int iIndex) { return m_Areas[iIndex]; }
 		inline int GetAreaCount (void) { return m_Areas.GetCount(); }
 		inline const RECT &GetRect (void) { return m_rcRect; }
+		inline DWORD GetTimeSinceMouseMove (void) const { return (::GetTickCount() - m_dwLastMouseTime); }
 		const CG16bitFont &GetWingdingsFont (void) const;
 		inline IScreenController *GetController (void) { return m_pController; }
 		inline void Invalidate (void) { m_rcInvalid.left = 0; m_rcInvalid.top = 0; m_rcInvalid.right = RectWidth(m_rcRect); m_rcInvalid.bottom = RectHeight(m_rcRect); }
@@ -102,6 +105,7 @@ class AGScreen : public CObject, public IAreaContainer
 		inline void SetController (IScreenController *pController) { m_pController = pController; }
 
 		//	IAreaContainer virtuals
+		virtual void ConvertToPaintCoords (int &x, int &y) const override { x += m_rcRect.left; y += m_rcRect.top; }
 		virtual void GetMousePos (POINT *retpt) override;
 		virtual RECT GetPaintRect (const RECT &rcArea) const override { RECT rcResult = rcArea; ::OffsetRect(&rcResult, m_rcRect.left, m_rcRect.top); return rcResult; }
 		virtual void OnAreaSetRect (void) override;
@@ -115,7 +119,6 @@ class AGScreen : public CObject, public IAreaContainer
 		void Update (void);
 
 	private:
-		AGScreen (void);
 		void FireMouseMove (const POINT &pt);
 		inline int GetAreaIndex (AGArea *pArea) { int iIndex; if (m_Areas.Find(pArea, &iIndex)) return iIndex; else return -1; }
 		AGArea *HitTest (const POINT &pt);
@@ -128,6 +131,9 @@ class AGScreen : public CObject, public IAreaContainer
 
 		TArray<AGArea *> m_Areas;
 
+		int m_xLastMousePos;					//	Last position of mouse
+		int m_yLastMousePos;
+		DWORD m_dwLastMouseTime;				//	Tick on which we captured last mouse pos
 		AGArea *m_pMouseCapture;				//	Area that has captured the mouse
 		AGArea *m_pMouseOver;					//	Area that the mouse is currently over
 
@@ -142,10 +148,11 @@ class CGFrameArea : public AGArea, public IAreaContainer
 	{
 	public:
 		CGFrameArea (void);
+		~CGFrameArea (void);
 
 		ALERROR AddArea (AGArea *pArea, const RECT &rcRect, DWORD dwTag);
 		AGArea *FindArea (DWORD dwTag);
-		inline AGArea *GetArea (int iIndex) { return (AGArea *)m_Areas.GetObject(iIndex); }
+		inline AGArea *GetArea (int iIndex) { return m_Areas[iIndex]; }
 		inline int GetAreaCount (void) { return m_Areas.GetCount(); }
 
 		//	AGArea virtuals
@@ -158,13 +165,15 @@ class CGFrameArea : public AGArea, public IAreaContainer
 		virtual void Update (void);
 
 		//	IAreaContainer virtuals
+		virtual void ConvertToPaintCoords (int &x, int &y) const override { GetParent()->ConvertToPaintCoords(x, y); }
+		virtual void GetMousePos (POINT *retpt) override { GetParent()->GetMousePos(retpt); }
 		virtual RECT GetPaintRect (const RECT &rcArea) const override;
 		virtual void OnAreaSetRect (void) override;
 
 	private:
 		RECT m_rcInvalid;						//	Invalid rect relative to m_rcRect
 
-		CObjectArray m_Areas;					//	Array of areas
+		TArray<AGArea *> m_Areas;				//	Array of areas
 
 		AGArea *m_pMouseCapture;				//	Area that has captured the mouse
 		AGArea *m_pMouseOver;					//	Area that the mouse is currently over

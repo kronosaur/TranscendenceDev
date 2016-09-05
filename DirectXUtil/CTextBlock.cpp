@@ -447,6 +447,27 @@ CString CTextBlock::LoadAsRichText (const CString &sText)
 	return strPatternSubst(CONSTLIT("{\\rtf %s}"), Escape(sText));
 	}
 
+void CTextBlock::Paint (CG32bitImage &Dest, int x, int y) const
+
+//	Paint
+//
+//	Paints the formatted text block.
+
+	{
+	int i;
+
+	for (i = 0; i < GetFormattedSpanCount(); i++)
+		{
+		const SFormattedTextSpan &Span = GetFormattedSpan(i);
+
+		Span.Format.pFont->DrawText(Dest,
+				x + Span.x,
+				y + Span.y,
+				Span.Format.rgbColor,
+				Span.sText);
+		}
+	}
+
 //	CRTFParser -----------------------------------------------------------------
 
 CRTFParser::CRTFParser (const CString &sInput, const IFontTable &FontTable, CTextBlock *pOutput) :

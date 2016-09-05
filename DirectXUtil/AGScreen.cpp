@@ -6,13 +6,6 @@
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 
-AGScreen::AGScreen (void) : CObject(NULL)
-
-//	AGScreen constructor
-
-	{
-	}
-
 AGScreen::~AGScreen (void)
 	{
 	int i;
@@ -24,10 +17,11 @@ AGScreen::~AGScreen (void)
 		delete m_Areas[i];
 	}
 
-AGScreen::AGScreen (HWND hWnd, const RECT &rcRect) : CObject(NULL),
+AGScreen::AGScreen (HWND hWnd, const RECT &rcRect) : 
 		m_hWnd(hWnd),
 		m_rcRect(rcRect),
 		m_pController(NULL),
+		m_dwLastMouseTime(0),
 		m_pMouseCapture(NULL),
 		m_pMouseOver(NULL),
 		m_rgbBackgroundColor(0)
@@ -336,6 +330,17 @@ void AGScreen::MouseMove (int x, int y)
 	pt.x = x - m_rcRect.left;
 	pt.y = y - m_rcRect.top;
 
+	//	Remember this mouse position and time
+
+	if (m_xLastMousePos != pt.x || m_yLastMousePos != pt.y)
+		{
+		m_xLastMousePos = pt.x;
+		m_yLastMousePos = pt.y;
+		m_dwLastMouseTime = ::GetTickCount();
+		}
+
+	//	Notify
+
 	FireMouseMove(pt);
 	}
 
@@ -407,6 +412,13 @@ void AGScreen::Paint (CG32bitImage &Dest)
 		ZeroMemory(&m_rcInvalid, sizeof(m_rcInvalid));
 		Dest.ResetClipRect();
 		}
+
+#ifdef DEBUG_MOUSE_OVER
+	RECT rcClip = Dest.GetClipRect();
+	Dest.ResetClipRect();
+	CG16bitFont::GetDefault().DrawText(Dest, m_rcRect.left, m_rcRect.top + 20, CG32bitPixel(255, 255, 255), strPatternSubst(CONSTLIT("m_pMouseOver: %x"), (DWORD)m_pMouseOver));
+	Dest.SetClipRect(rcClip);
+#endif
 	}
 
 void AGScreen::SetMouseOver (AGArea *pArea)

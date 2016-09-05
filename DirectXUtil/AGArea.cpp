@@ -6,7 +6,7 @@
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 
-AGArea::AGArea (void) : CObject(NULL),
+AGArea::AGArea (void) : 
 		m_pScreen(NULL),
 		m_pController(NULL),
 		m_bVisible(true),

@@ -94,11 +94,14 @@ class CTextBlock
 		CTextBlock (void) { }
 
 		void AddTextSpan (const CString &sText, const STextFormat &Format, bool bEoP = false);
+		inline void DeleteAll (void) { m_Formatted.DeleteAll(); m_Text.DeleteAll(); }
 		void Format (const SBlockFormatDesc &BlockFormat);
 		void GetBounds (RECT *retrcRect);
 		inline const SFormattedTextSpan &GetFormattedSpan (int iIndex) const { return m_Formatted[iIndex]; }
 		inline int GetFormattedSpanCount (void) const { return m_Formatted.GetCount(); }
 		bool InitFromRTF (const CString &RTF, const IFontTable &FontTable, const SBlockFormatDesc &BlockFormat, CString *retsError = NULL);
+		inline bool IsEmpty (void) const { return (m_Formatted.GetCount() == 0); }
+		void Paint (CG32bitImage &Dest, int x, int y) const;
 
 		static CString Escape (const CString &sText);
 		static CString LoadAsRichText (const CString &sText);

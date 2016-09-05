@@ -7,12 +7,22 @@
 #include "DirectXUtil.h"
 
 CGFrameArea::CGFrameArea (void) : m_pMouseCapture(NULL),
-		m_pMouseOver(NULL),
-		m_Areas(TRUE)
+		m_pMouseOver(NULL)
 
 //	CGFrameArea constructor
 
 	{
+	}
+
+CGFrameArea::~CGFrameArea (void)
+
+//	CGFrameArea destructor
+
+	{
+	int i;
+
+	for (i = 0; i < m_Areas.GetCount(); i++)
+		delete m_Areas[i];
 	}
 
 ALERROR CGFrameArea::AddArea (AGArea *pArea, const RECT &rcRect, DWORD dwTag)
@@ -32,8 +42,7 @@ ALERROR CGFrameArea::AddArea (AGArea *pArea, const RECT &rcRect, DWORD dwTag)
 
 	//	Add the area
 
-	if (error = m_Areas.AppendObject(pArea, NULL))
-		return error;
+	m_Areas.Insert(pArea);
 
 	return NOERROR;
 	}
@@ -62,9 +71,7 @@ RECT CGFrameArea::GetPaintRect (const RECT &rcArea) const
 //	Returns the RECT of the area to be relative to screen image.
 
 	{
-	RECT rcResult = rcArea;
-	::OffsetRect(&rcResult, -(GetRect().left), -(GetRect().top));
-	return GetParent()->GetPaintRect(rcResult);
+	return GetParent()->GetPaintRect(rcArea);
 	}
 
 bool CGFrameArea::LButtonDoubleClick (int x, int y)
@@ -277,6 +284,13 @@ void CGFrameArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 			pArea->Paint(Dest, rcAreaRelativeToDest);
 			}
 		}
+
+#ifdef DEBUG_MOUSE_OVER
+	RECT rcClip = Dest.GetClipRect();
+	Dest.ResetClipRect();
+	CG16bitFont::GetDefault().DrawText(Dest, rcRect.left, rcRect.top, CG32bitPixel(255, 255, 255), strPatternSubst(CONSTLIT("m_pMouseOver: %x"), (DWORD)m_pMouseOver));
+	Dest.SetClipRect(rcClip);
+#endif
 	}
 
 void CGFrameArea::Update (void)

@@ -427,7 +427,7 @@ struct SEffectDesc
 	WORD wColor2;
 	};
 
-class CG16bitFont : public CObject
+class CG16bitFont
 	{
 	public:
 		enum Flags
@@ -452,7 +452,7 @@ class CG16bitFont : public CObject
 		ALERROR Create (const CString &sTypeface, int iSize, bool bBold = false, bool bItalic = false, bool bUnderline = false);
 		ALERROR CreateFromFont (HFONT hFont);
 		ALERROR CreateFromResource (HINSTANCE hInst, char *pszRes);
-		inline void Destroy (void) { m_FontImage.Destroy(); m_Metrics.RemoveAll(); }
+		inline void Destroy (void) { m_FontImage.Destroy(); m_Metrics.DeleteAll(); }
 
 		int BreakText (const CString &sText, int cxWidth, TArray<CString> *retLines, DWORD dwFlags = 0) const;
 		inline void DrawText (CG16bitImage &Dest, int x, int y, WORD wColor, const CString &sText, DWORD dwFlags = 0, int *retx = NULL) const
@@ -525,6 +525,8 @@ class CG16bitFont : public CObject
 		ALERROR ReadFromStream (IReadStream *pStream);
 		void WriteToStream (IWriteStream *pStream);
 
+		static const CG16bitFont &GetDefault (void);
+
 	private:
 		struct CharMetrics
 			{
@@ -537,12 +539,14 @@ class CG16bitFont : public CObject
 		int m_cyHeight;				//	Height of the font
 		int m_cyAscent;				//	Height above baseline
 		int m_cxAveWidth;			//	Average width of font
-		CStructArray m_Metrics;		//	Metrics for each character
+		TArray<CharMetrics> m_Metrics;		//	Metrics for each character
 
 		CString m_sTypeface;		//	Name of font selected
 		bool m_bBold;				//	Bold
 		bool m_bItalic;				//	Italic
 		bool m_bUnderline;			//	Underline
+
+		static CG16bitFont m_DefaultFont;
 	};
 
 class CG16bitRegion

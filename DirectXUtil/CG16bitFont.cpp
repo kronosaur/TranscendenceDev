@@ -13,18 +13,18 @@ const int FONT_SAVE_VERSION =					1;
 const int g_iStartChar =						' ';
 const int g_iCharCount =						0xff - g_iStartChar + 1;
 
+CG16bitFont CG16bitFont::m_DefaultFont;
+
 void FormatLine (char *pPos, int iLen, bool *ioInSmartQuotes, TArray<CString> *retLines);
 
-CG16bitFont::CG16bitFont (void) : CObject(NULL),
-		m_Metrics(sizeof(CharMetrics), g_iCharCount)
+CG16bitFont::CG16bitFont (void)
 
 //	CG16bitFont constructor
 
 	{
 	}
 
-CG16bitFont::CG16bitFont (const CG16bitFont &Src) : CObject(NULL),
-		m_Metrics(sizeof(CharMetrics), g_iCharCount)
+CG16bitFont::CG16bitFont (const CG16bitFont &Src)
 
 	{
 	//	Not Yet Implemented
@@ -135,11 +135,11 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 			int iIndex = (int)(BYTE)chChar - g_iStartChar;
 			iIndex = max(0, iIndex);
 
-			CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(iIndex);
+			CharMetrics &Metrics = m_Metrics[iIndex];
 
 			//	Does the character fit in the line?
 
-			bool bCharFits = ((cxRemainingWidth - cxWordWidth) >= pMetrics->cxWidth);
+			bool bCharFits = ((cxRemainingWidth - cxWordWidth) >= Metrics.cxWidth);
 
 			//	If the character doesn't fit, then we've reached the end
 			//	of the line.
@@ -175,7 +175,7 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 					pStartWord = pPos;
 					pStartLine = pStartWord;
 					iCharsInWord = 1;
-					cxWordWidth = pMetrics->cxAdvance;
+					cxWordWidth = Metrics.cxAdvance;
 					cxRemainingWidth = cxWidth - cxWordWidth;
 					}
 
@@ -197,7 +197,7 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 					if (*pPos != ' ')
 						{
 						iCharsInWord++;
-						cxWordWidth += pMetrics->cxAdvance;
+						cxWordWidth += Metrics.cxAdvance;
 						}
 					}
 
@@ -217,7 +217,7 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 			else
 				{
 				iCharsInWord++;
-				cxWordWidth += pMetrics->cxAdvance;
+				cxWordWidth += Metrics.cxAdvance;
 
 				//	If this character is a space or a hyphen, add it to the
 				//	end of the line
@@ -337,7 +337,7 @@ ALERROR CG16bitFont::CreateFromFont (HFONT hFont)
 
 	//	Remember some for the whole font metrics
 
-	m_Metrics.RemoveAll();
+	m_Metrics.DeleteAll();
 	m_cyHeight = tm.tmHeight;
 	m_cyAscent = tm.tmAscent;
 	m_cxAveWidth = tm.tmAveCharWidth;
@@ -364,6 +364,7 @@ ALERROR CG16bitFont::CreateFromFont (HFONT hFont)
 	//	Write each font character to the bitmap
 
 	y = 0;
+	m_Metrics.GrowToFit(g_iCharCount);
 	for (i = 0; i < g_iCharCount; i++)
 		{
 		char chChar = (char)(g_iStartChar + i);
@@ -379,8 +380,7 @@ ALERROR CG16bitFont::CreateFromFont (HFONT hFont)
 		GetCharABCWidths(hDC, (BYTE)chChar, (BYTE)chChar, &abc);
 		Metrics.cxWidth = abc.abcA + abc.abcB;
 		Metrics.cxAdvance = abc.abcA + abc.abcB + abc.abcC;
-		if (error = m_Metrics.AppendStruct(&Metrics, NULL))
-			goto Fail;
+		m_Metrics.Insert(Metrics);
 
 #ifdef MOREDEBUG
 		kernelDebugLogMessage("char: %d  width: %d  advance: %d", (int)chChar, Metrics.cxWidth, Metrics.cxAdvance);
@@ -514,13 +514,13 @@ void CG16bitFont::DrawText (CG16bitImage &Dest,
 		int iIndex = (int)(BYTE)(*pPos) - g_iStartChar;
 		iIndex = max(0, iIndex);
 
-		CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(iIndex);
+		CharMetrics &Metrics = m_Metrics[iIndex];
 
 		//	Paint
 
 		Dest.FillMask(0,
 				iIndex * m_cyHeight,
-				pMetrics->cxWidth,
+				Metrics.cxWidth,
 				m_cyHeight,
 				m_FontImage,
 				wColor,
@@ -529,7 +529,7 @@ void CG16bitFont::DrawText (CG16bitImage &Dest,
 				(BYTE)byOpacity);
 
 		pPos++;
-		xPos += pMetrics->cxAdvance;
+		xPos += Metrics.cxAdvance;
 		}
 	
 	if (retx)
@@ -628,13 +628,13 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
 		int iIndex = (int)(BYTE)(*pPos) - g_iStartChar;
 		iIndex = max(0, iIndex);
 
-		CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(iIndex);
+		CharMetrics &Metrics = m_Metrics[iIndex];
 
 		//	Paint
 
 		Dest.FillMask(0,
 				iIndex * m_cyHeight,
-				pMetrics->cxWidth,
+				Metrics.cxWidth,
 				m_cyHeight,
 				m_FontImage,
 				rgbColor,
@@ -642,7 +642,7 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
 				y);
 
 		pPos++;
-		xPos += pMetrics->cxAdvance;
+		xPos += Metrics.cxAdvance;
 		}
 	
 	if (retx)
@@ -847,7 +847,7 @@ const CG16bitImage &CG16bitFont::GetCharacterImage (char chChar, int *retx, int 
 	int iIndex = (int)(BYTE)(chChar) - g_iStartChar;
 	iIndex = Max(0, iIndex);
 
-	CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(iIndex);
+	CharMetrics &Metrics = m_Metrics[iIndex];
 
 	//	Paint
 
@@ -858,15 +858,32 @@ const CG16bitImage &CG16bitFont::GetCharacterImage (char chChar, int *retx, int 
 		*rety = iIndex * m_cyHeight;
 
 	if (retcxWidth)
-		*retcxWidth = pMetrics->cxWidth;
+		*retcxWidth = Metrics.cxWidth;
 
 	if (retcyHeight)
 		*retcyHeight = m_cyHeight;
 
 	if (retcxAdvance)
-		*retcxAdvance = pMetrics->cxAdvance;
+		*retcxAdvance = Metrics.cxAdvance;
 
 	return m_FontImage;
+	}
+
+const CG16bitFont &CG16bitFont::GetDefault (void)
+
+//	GetDefault
+//
+//	Returns a default font.
+
+	{
+	if (m_DefaultFont.IsEmpty())
+		{
+		m_DefaultFont.Create(CONSTLIT("Arial"), -16);
+
+		m_DefaultFont.m_sTypeface = NULL_STR;
+		}
+
+	return m_DefaultFont;
 	}
 
 int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight, bool bAlwaysAdvance) const
@@ -885,7 +902,7 @@ int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight, bool bAlwa
 		int iIndex = (int)(BYTE)(*pPos) - g_iStartChar;
 		iIndex = max(0, iIndex);
 
-		CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(iIndex);
+		CharMetrics &Metrics = m_Metrics[iIndex];
 
 		pPos++;
 
@@ -895,9 +912,9 @@ int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight, bool bAlwa
 		//	otherwise, the cxWidth seems to be 0)
 
 		if (pPos == pEndPos && iIndex != 0 && !bAlwaysAdvance)
-			cxWidth += pMetrics->cxWidth;
+			cxWidth += Metrics.cxWidth;
 		else
-			cxWidth += pMetrics->cxAdvance;
+			cxWidth += Metrics.cxAdvance;
 		}
 
 	//	Done
@@ -1035,11 +1052,11 @@ ALERROR CG16bitFont::ReadFromStream (IReadStream *pStream)
 	//	Load metrics
 	pStream->Read((char *)&dwLoad, sizeof(DWORD));
 
-	m_Metrics.RemoveAll();
-	m_Metrics.ExpandArray(0, dwLoad);
+	m_Metrics.DeleteAll();
+	m_Metrics.InsertEmpty(dwLoad);
 	for (i = 0; i < m_Metrics.GetCount(); i++)
 		{
-		CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(i);
+		CharMetrics *pMetrics = &m_Metrics[i];
 
 		pStream->Read((char *)&pMetrics->cxWidth, sizeof(DWORD));
 		pStream->Read((char *)&pMetrics->cxAdvance, sizeof(DWORD));
@@ -1088,7 +1105,7 @@ void CG16bitFont::WriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	for (i = 0; i < m_Metrics.GetCount(); i++)
 		{
-		CharMetrics *pMetrics = (CharMetrics *)m_Metrics.GetStruct(i);
+		CharMetrics *pMetrics = &m_Metrics[i];
 
 		pStream->Write((char *)&pMetrics->cxWidth, sizeof(DWORD));
 		pStream->Write((char *)&pMetrics->cxAdvance, sizeof(DWORD));
