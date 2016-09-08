@@ -3462,6 +3462,7 @@ class CSFXOptions
 
 		inline BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
 		inline bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
+		inline bool IsDockScreenTransparent (void) const { return m_bDockScreenTransparent; }
 		inline bool IsManeuveringEffectEnabled (void) const { return m_bManeuveringEffect; }
 		inline bool IsSpaceBackgroundEnabled (void) const { return m_bSpaceBackground; }
 		inline bool IsStargateTravelEffectEnabled (void) const { return m_bStargateTravelEffect; }
@@ -3482,6 +3483,7 @@ class CSFXOptions
 		bool m_bStargateTravelEffect;		//	Show effect when changing systems
 		bool m_bStarGlow;					//	Show star glow in system map
 		bool m_bStarshine;					//	Show starshine effect
+		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
 	};
 
 class CUniverse

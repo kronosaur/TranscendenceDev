@@ -23,6 +23,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 	switch (iQuality)
 		{
 		case sfxMaximum:
+			m_bDockScreenTransparent = true;
 			m_bHUDTransparent = true;
 			m_bSpaceBackground = true;
 			m_bStargateTravelEffect = true;
@@ -31,6 +32,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 			break;
 
 		case sfxStandard:
+			m_bDockScreenTransparent = true;
 			m_bHUDTransparent = true;
 			m_bSpaceBackground = true;
 			m_bStargateTravelEffect = true;
@@ -39,6 +41,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 			break;
 
 		case sfxMinimum:
+			m_bDockScreenTransparent = false;
 			m_bHUDTransparent = false;
 			m_bSpaceBackground = false;
 			m_bStargateTravelEffect = false;
