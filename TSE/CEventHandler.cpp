@@ -52,6 +52,21 @@ void CEventHandler::AddEvent (const CString &sEvent, ICCItem *pCode)
 	m_Handlers.Insert(sEvent, pCode);
 	}
 
+ALERROR CEventHandler::AddEvent (CXMLElement *pEventXML, CString *retsError)
+
+//	AddEvent
+//
+//	Adds an event defined in XML.
+
+	{
+	//	If NULL, then that's OK. It means it is an optional event.
+
+	if (pEventXML == NULL)
+		return NOERROR;
+
+	return AddEvent(pEventXML->GetTag(), pEventXML->GetContentText(0), retsError);
+	}
+
 ALERROR CEventHandler::AddEvent (const CString &sEvent, const CString &sCode, CString *retsError)
 
 //	AddEvent

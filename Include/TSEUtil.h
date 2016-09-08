@@ -546,6 +546,7 @@ class CEventHandler
 
 		void AddEvent (const CString &sEvent, ICCItem *pCode);
 		ALERROR AddEvent (const CString &sEvent, const CString &sCode, CString *retsError = NULL);
+		ALERROR AddEvent (CXMLElement *pEventXML, CString *retsError = NULL);
 		void DeleteAll (void);
 		bool FindEvent (const CString &sEvent, ICCItem **retpCode) const;
 		inline int GetCount (void) const { return m_Handlers.GetCount(); }
