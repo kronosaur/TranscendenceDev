@@ -344,6 +344,38 @@ void AGScreen::MouseMove (int x, int y)
 	FireMouseMove(pt);
 	}
 
+void AGScreen::MouseWheel (int iDelta, int x, int y, DWORD dwFlags)
+
+//	MouseWheel
+//
+//	Handle mouse wheel
+
+	{
+	int i;
+
+	//	Convert to AGScreen coordinates
+
+	POINT pt;
+	pt.x = x - m_rcRect.left;
+	pt.y = y - m_rcRect.top;
+
+	//	Give it to the area under the pointer
+
+	for (i = 0; i < GetAreaCount(); i++)
+		{
+		AGArea *pArea = GetArea(i);
+		RECT rcArea = pArea->GetRect();
+
+		if (pArea->IsVisible() 
+				&& pArea->WantsMouseOver() 
+				&& ::PtInRect(&rcArea, pt))
+			{
+			pArea->MouseWheel(iDelta, pt.x, pt.y, dwFlags);
+			break;
+			}
+		}
+	}
+
 void AGScreen::OnAreaSetRect (void)
 
 //	OnAreaSetRect

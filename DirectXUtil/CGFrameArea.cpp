@@ -253,6 +253,34 @@ void CGFrameArea::MouseMove (int x, int y)
 		}
 	}
 
+void CGFrameArea::MouseWheel (int iDelta, int x, int y, DWORD dwFlags)
+
+//	MouseWheel
+//
+//	Handle mouse scrolling
+
+	{
+	int i;
+
+	POINT pt = { x, y };
+
+	//	Give it to the area under the pointer
+
+	for (i = 0; i < GetAreaCount(); i++)
+		{
+		AGArea *pArea = GetArea(i);
+		RECT rcArea = pArea->GetRect();
+
+		if (pArea->IsVisible()
+				&& pArea->WantsMouseOver() 
+				&& ::PtInRect(&rcArea, pt))
+			{
+			pArea->MouseWheel(iDelta, x, y, dwFlags);
+			return;
+			}
+		}
+	}
+
 void CGFrameArea::OnAreaSetRect (void)
 
 //	OnAreaSetRect

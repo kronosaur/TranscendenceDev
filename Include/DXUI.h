@@ -56,6 +56,7 @@ class AGArea
 		virtual void MouseEnter (void) { }
 		virtual void MouseLeave (void) { }
 		virtual void MouseMove (int x, int y) { }
+		virtual void MouseWheel (int iDelta, int x, int y, DWORD dwFlags) { }
 		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) { }
 		virtual void Update (void) { }
 		virtual bool WantsMouseOver (void) { return true; }
@@ -115,6 +116,7 @@ class AGScreen : public IAreaContainer
 		void LButtonDown (int x, int y);
 		void LButtonUp (int x, int y);
 		void MouseMove (int x, int y);
+		void MouseWheel (int iDelta, int x, int y, DWORD dwFlags);
 		void Paint (CG32bitImage &Dest);
 		void Update (void);
 
@@ -156,13 +158,14 @@ class CGFrameArea : public AGArea, public IAreaContainer
 		inline int GetAreaCount (void) { return m_Areas.GetCount(); }
 
 		//	AGArea virtuals
-		virtual bool LButtonDoubleClick (int x, int y);
-		virtual bool LButtonDown (int x, int y);
-		virtual void LButtonUp (int x, int y);
-		virtual void MouseLeave (void);
-		virtual void MouseMove (int x, int y);
-		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect);
-		virtual void Update (void);
+		virtual bool LButtonDoubleClick (int x, int y) override;
+		virtual bool LButtonDown (int x, int y) override;
+		virtual void LButtonUp (int x, int y) override;
+		virtual void MouseLeave (void) override;
+		virtual void MouseMove (int x, int y) override;
+		virtual void MouseWheel (int iDelta, int x, int y, DWORD dwFlags) override;
+		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
+		virtual void Update (void) override;
 
 		//	IAreaContainer virtuals
 		virtual void ConvertToPaintCoords (int &x, int &y) const override { GetParent()->ConvertToPaintCoords(x, y); }
