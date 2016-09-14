@@ -27,6 +27,8 @@ const int DAMAGE_TYPE_ICON_HEIGHT =				16;
 const int ICON_CORNER_RADIUS =					8;
 const int ICON_HEIGHT =							96;
 const int ICON_WIDTH =							96;
+const int SMALL_ICON_HEIGHT =					64;
+const int SMALL_ICON_WIDTH =					64;
 
 const int INPUT_ERROR_CORNER_RADIUS =			8;
 const int INPUT_ERROR_PADDING_BOTTOM =			10;
@@ -104,6 +106,11 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	bool bNoIcon = ((dwOptions & OPTION_NO_ICON) == OPTION_NO_ICON);
 	bool bTitle = ((dwOptions & OPTION_TITLE) == OPTION_TITLE);
 
+	//	Icons size
+
+	int cxIcon = ((dwOptions & OPTION_SMALL_ICON) ? SMALL_ICON_WIDTH : ICON_WIDTH);
+	int cyIcon = ((dwOptions & OPTION_SMALL_ICON) ? SMALL_ICON_HEIGHT : ICON_HEIGHT);
+
 	//	Get the item
 
 	CItemCtx Ctx(&Item, pSource);
@@ -117,7 +124,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	rcDrawRect.left += ITEM_TEXT_MARGIN_X;
 	rcDrawRect.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
 	if (!bNoIcon)
-		rcDrawRect.left += ITEM_LEFT_PADDING + ICON_WIDTH;
+		rcDrawRect.left += ITEM_LEFT_PADDING + cxIcon;
 
 	int iLevel = pType->GetApparentLevel(Ctx);
 
@@ -180,7 +187,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	Done
 
-	cyHeight = Max(ITEM_DEFAULT_HEIGHT, cyHeight);
+	cyHeight = Max(cyIcon, cyHeight);
 
 	return cyHeight;
 	}
@@ -967,6 +974,11 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	bool bNoIcon = ((dwOptions & OPTION_NO_ICON) == OPTION_NO_ICON);
 	bool bTitle = ((dwOptions & OPTION_TITLE) == OPTION_TITLE);
 
+	//	Icons size
+
+	int cxIcon = ((dwOptions & OPTION_SMALL_ICON) ? SMALL_ICON_WIDTH : ICON_WIDTH);
+	int cyIcon = ((dwOptions & OPTION_SMALL_ICON) ? SMALL_ICON_HEIGHT : ICON_HEIGHT);
+
 	//	Item context
 
 	CItemCtx Ctx(&Item, pSource);
@@ -983,8 +995,8 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 	if (!bNoIcon)
 		{
-		DrawItemTypeIcon(Dest, rcRect.left + ITEM_LEFT_PADDING, rcRect.top, pItemType);
-		rcDrawRect.left += ITEM_LEFT_PADDING + ICON_WIDTH;
+		DrawItemTypeIcon(Dest, rcRect.left + ITEM_LEFT_PADDING, rcRect.top, pItemType, cxIcon, cyIcon);
+		rcDrawRect.left += ITEM_LEFT_PADDING + cxIcon;
 		}
 
 	//	Paint the item name
@@ -1277,6 +1289,28 @@ void CUIHelper::PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int 
 			rgbText,
 			sRef,
 			0);
+	}
+
+int CUIHelper::ScrollAnimationDecay (int iOffset)
+
+//	ScrollAnimationDecay
+//
+//	To implement smooth scrolling, we decay the offset.
+
+	{
+	int iDelta;
+	if (iOffset > 0)
+		{
+		iDelta = Max(12, iOffset / 4);
+		iOffset = Max(0, iOffset - iDelta);
+		}
+	else
+		{
+		iDelta = Min(-12, iOffset / 4);
+		iOffset = Min(0, iOffset - iDelta);
+		}
+
+	return iOffset;
 	}
 
 //	PaintItemEntry

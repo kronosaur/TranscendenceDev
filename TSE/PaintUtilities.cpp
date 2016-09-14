@@ -4,6 +4,9 @@
 
 #include "PreComp.h"
 
+const int DEFAULT_ICON_HEIGHT =				96;
+const int DEFAULT_ICON_WIDTH =				96;
+
 SPoint g_BlasterShape[8] = 
 	{
 		{    0,    0	},
@@ -136,7 +139,7 @@ void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, CItemType *pType, int c
 		{
 		RECT rcImage = Image.GetImageRect();
 
-		if (cxSize <= 0 || cySize <= 0)
+		if (cxSize <= 0 || cySize <= 0 || (cxSize == DEFAULT_ICON_WIDTH && cySize == DEFAULT_ICON_HEIGHT))
 			{
 			if (bGray)
 				CGDraw::BltGray(Dest,

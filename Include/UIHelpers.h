@@ -128,6 +128,7 @@ class CUIHelper
 			OPTION_SELECTED =						0x00000001,
 			OPTION_NO_ICON =						0x00000002,
 			OPTION_TITLE =							0x00000004,
+			OPTION_SMALL_ICON =						0x00000008,		//	Paint icon at 64x64
 
 			//	SMenuEntry flags
 			MENU_TEXT =								0x00000001,		//	Show on left-hand text menu
@@ -177,6 +178,8 @@ class CUIHelper
 		void PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const;
 		void PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText) const;
 		void PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText) const;
+
+		static int ScrollAnimationDecay (int iOffset);
 
 	private:
 		void CreateClassInfoSpecialItem (CItemType *pItemIcon, const CString &sText, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
