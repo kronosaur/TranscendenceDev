@@ -28,9 +28,21 @@ class CArrayBase
 		inline void SetGranularity (int iGranularity) { if (m_pBlock == NULL) AllocBlock(::GetProcessHeap(), iGranularity); else m_pBlock->m_iGranularity = iGranularity; }
 
 	protected:
+		struct SHeader
+			{
+			HANDLE m_hHeap;				//	Heap on which block is allocated
+			int m_iSize;				//	Size of data portion (as seen by callers)
+			int m_iAllocSize;			//	Current size of block
+			int m_iGranularity;			//	Used by descendants to resize block
+			};
+
 		CArrayBase (HANDLE hHeap, int iGranularity);
+		CArrayBase (SHeader *pBlock) : m_pBlock(pBlock)
+			{ }
+
 		~CArrayBase (void);
 
+		void AllocBlock (HANDLE hHeap, int iGranularity);
 		void CopyOptions (const CArrayBase &Src);
 		void DeleteBytes (int iOffset, int iLength);
 		inline char *GetBytes (void) const { return (m_pBlock ? (char *)(&m_pBlock[1]) : NULL); }
@@ -40,17 +52,6 @@ class CArrayBase
 		void InsertBytes (int iOffset, void *pData, int iLength, int iAllocQuantum);
 		ALERROR Resize (int iNewSize, bool bPreserve, int iAllocQuantum);
 		void TakeHandoffBase (CArrayBase &Src);
-
-	private:
-		struct SHeader
-			{
-			HANDLE m_hHeap;				//	Heap on which block is allocated
-			int m_iSize;				//	Size of data portion (as seen by callers)
-			int m_iAllocSize;			//	Current size of block
-			int m_iGranularity;			//	Used by descendants to resize block
-			};
-
-		void AllocBlock (HANDLE hHeap, int iGranularity);
 
 		SHeader *m_pBlock;
 	};
@@ -142,6 +143,10 @@ template <class VALUE> class TArray : public CArrayBase
 				{
 				VALUE *pElement = new(placement_new, GetBytes() + (i * sizeof(VALUE))) VALUE(Obj[i]);
 				}
+			}
+		TArray (TArray<VALUE> &&Src) : CArrayBase(Src.m_pBlock)
+			{
+			Src.m_pBlock = NULL;
 			}
 
 		~TArray (void) { DeleteAll(); }
