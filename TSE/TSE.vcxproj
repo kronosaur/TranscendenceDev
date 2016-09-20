@@ -239,6 +239,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\TSEArmor.h" />
+    <ClInclude Include="..\Include\TSEArtifactAwakening.h" />
     <ClInclude Include="..\Include\TSEEffects.h" />
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEImages.h" />
@@ -277,6 +278,8 @@
     <ClCompile Include="CAISettings.cpp" />
     <ClCompile Include="CApproachOrder.cpp" />
     <ClCompile Include="CArmorSystem.cpp" />
+    <ClCompile Include="CArtifactAwakening.cpp" />
+    <ClCompile Include="CArtifactProgram.cpp" />
     <ClCompile Include="CAscendedObjectList.cpp" />
     <ClCompile Include="CAttackOrder.cpp" />
     <ClCompile Include="CAttackStationOrder.cpp" />

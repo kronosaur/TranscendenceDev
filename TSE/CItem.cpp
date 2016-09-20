@@ -115,6 +115,48 @@ CItem &CItem::operator= (const CItem &Copy)
 	return *this;
 	}
 
+void CItem::AccumulateCustomAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const
+
+//	AccumulateCustomAttributes
+//
+//	Adds display attributes defined by <GetDisplayAttributes>
+
+	{
+	int i;
+
+	//	See if we have <GetDisplayAttributes> event. If not, we're done.
+
+	SEventHandlerDesc Event;
+	if (!m_pItemType->FindEventHandlerItemType(CItemType::evtGetDisplayAttributes, &Event))
+		return;
+
+	CCodeChainCtx Ctx;
+
+	Ctx.SetItemType(GetType());
+	Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
+	Ctx.SaveAndDefineItemVar(*this);
+	Ctx.SaveAndDefineDataVar(pData);
+
+	ICCItem *pResult = Ctx.Run(Event);
+	if (pResult->IsError())
+		::kernelDebugLogMessage("[%08x] <GetDisplayAttributes>: %s", GetType()->GetUNID(), pResult->GetStringValue());
+	else if (!pResult->IsNil())
+		{
+		//	We expect a list of attributes.
+
+		for (i = 0; i < pResult->GetCount(); i++)
+			{
+			ICCItem *pEntry = pResult->GetElement(i);
+
+			SDisplayAttribute Entry;
+			if (CDisplayAttributeDefinitions::InitFromCCItem(pEntry, Entry))
+				retList->Insert(Entry);
+			}
+		}
+
+	Ctx.Discard(pResult);
+	}
+
 DWORD CItem::AddEnhancement (const CItemEnhancement &Enhancement)
 
 //	AddEnhancement
@@ -420,6 +462,49 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 		return true;
 	}
 
+void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const
+
+//	FireCustomEvent
+//
+//	Triggers the given event.
+
+	{
+	CCodeChainCtx Ctx;
+
+	SEventHandlerDesc Event;
+	if (GetType()->FindEventHandler(sEvent, &Event))
+		{
+		//	Define some globals
+
+		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
+		Ctx.SaveAndDefineItemVar(*this);
+		Ctx.SaveAndDefineDataVar(pData);
+
+		//	Run code
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			{
+			if (ItemCtx.GetSource())
+				ItemCtx.GetSource()->ReportEventError(strPatternSubst(CONSTLIT("Item %x %s"), GetType()->GetUNID(), sEvent), pResult);
+			else
+				::kernelDebugLogMessage("[%08x] <%s>: %s", GetType()->GetUNID(), sEvent, pResult->GetStringValue());
+			}
+
+		//	Either return the event result or discard it
+
+		if (retpResult)
+			*retpResult = pResult;
+		else
+			Ctx.Discard(pResult);
+		}
+	else
+		{
+		if (retpResult)
+			*retpResult = Ctx.CreateNil();
+		}
+	}
+
 void CItem::FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced, EnhanceItemStatus iStatus) const
 
 //	FireOnAddedAsEnhancement
@@ -642,7 +727,7 @@ CString CItem::GetDesc (void) const
 		return m_pItemType->GetDesc(); 
 	}
 
-bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const
+bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const
 
 //	GetDisplayAttributes
 //
@@ -682,6 +767,10 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 		else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher()))
 			pDevice->AccumulateAttributes(Ctx, *this, retList);
+
+		//	Add custom attributes
+
+		AccumulateCustomAttributes(Ctx, retList, pData);
 
 		//	Military and Illegal attributes
 

@@ -184,6 +184,10 @@ enum EAttributeTypes
 
 struct SDisplayAttribute
 	{
+	SDisplayAttribute (void) :
+			iType(attribNeutral)
+		{ }
+
 	SDisplayAttribute (EDisplayAttributeTypes iTypeCons, const CString &sTextCons, bool bDueToEnhancement = false) :
 			iType(iTypeCons),
 			sText(sTextCons)
@@ -232,6 +236,8 @@ class CDisplayAttributeDefinitions
 		int GetLocationAttribFrequency (const CString &sAttrib) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return ((m_Attribs.GetCount() == 0) && (m_ItemAttribs.GetCount() == 0)); }
+
+		static bool InitFromCCItem (ICCItem *pEntry, SDisplayAttribute &Result);
 
 	private:
 		struct SItemEntry
@@ -2107,13 +2113,14 @@ class CItemType : public CDesignType
 			//	This list must match CACHED_EVENTS array in CItemType.cpp
 
 			evtGetDescription			= 0,
-			evtGetName					= 1,
-			evtGetTradePrice			= 2,
-			evtOnInstall				= 3,
-			evtOnEnabled				= 4,
-			evtOnRefuel					= 5,
+			evtGetDisplayAttributes		= 1,
+			evtGetName					= 2,
+			evtGetTradePrice			= 3,
+			evtOnInstall				= 4,
+			evtOnEnabled				= 5,
+			evtOnRefuel					= 6,
 
-			evtCount					= 6,
+			evtCount					= 7,
 			};
 
 		struct SUseDesc

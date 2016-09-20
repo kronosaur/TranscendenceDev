@@ -57,6 +57,9 @@
     <Filter Include="Source Files\ParticleSystem">
       <UniqueIdentifier>{f2098d42-18ad-4eec-b83d-44945622abff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Artifact Awakening">
+      <UniqueIdentifier>{dfe4b145-536e-44d7-9da9-b85686275143}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -153,6 +156,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SFXRayImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEArtifactAwakening.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -942,6 +948,12 @@
     </ClCompile>
     <ClCompile Include="CPerceptionCalc.cpp">
       <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CArtifactAwakening.cpp">
+      <Filter>Source Files\Artifact Awakening</Filter>
+    </ClCompile>
+    <ClCompile Include="CArtifactProgram.cpp">
+      <Filter>Source Files\Artifact Awakening</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

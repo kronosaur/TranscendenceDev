@@ -267,6 +267,7 @@ class CItem
 		bool IsEqual (const CItem &Item, bool bIgnoreInstalled = false) const;
 		bool FireCanBeInstalled (CSpaceObject *pSource, CString *retsError) const;
 		bool FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) const;
+		void FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const;
 		void FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced, EnhanceItemStatus iStatus) const;
 		void FireOnDisabled (CSpaceObject *pSource) const;
 		void FireOnEnabled (CSpaceObject *pSource) const;
@@ -280,7 +281,7 @@ class CItem
 		inline CEconomyType *GetCurrencyType (void) const;
 		inline CString GetData (const CString &sAttrib) const { return (m_pExtra ? m_pExtra->m_Data.GetData(sAttrib) : NULL_STR); }
 		CString GetDesc (void) const;
-		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
+		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL) const;
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
@@ -363,6 +364,7 @@ class CItem
 			CAttributeDataBlock m_Data;			//	Opaque data
 			};
 
+		void AccumulateCustomAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);
 		bool IsExtraEqual (SExtra *pSrc) const;
 

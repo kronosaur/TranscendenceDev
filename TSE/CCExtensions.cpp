@@ -40,7 +40,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_NAME				3
 #define FN_ITEM_DAMAGED				4
 #define FN_ITEM_USE_SCREEN			5
-//	6 UNUSED
+#define FN_ITEM_FIRE_EVENT			6
 #define FN_ITEM_SET_KNOWN			7
 #define FN_ITEM_KNOWN				8
 #define FN_ITEM_ARMOR_TYPE			9
@@ -626,6 +626,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmEnumTypes",					fnItemEnumTypes,	0,
 			"(itmEnumTypes criteria item-var exp)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"itmFireEvent",				fnItemSet,		FN_ITEM_FIRE_EVENT,
+			"(itmFireEvent item|type event [data]) -> result of event",
+			"vs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmGetActualPrice",			fnItemGet,		FN_ITEM_ACTUAL_PRICE,
 			"(itmGetActualPrice item|type) -> actual price of a single item",
@@ -4252,6 +4256,14 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			Item.AddEnhancement(Mods);
 			return CreateListFromItem(*pCC, Item);
+			}
+
+		case FN_ITEM_FIRE_EVENT:
+			{
+			ICCItem *pResult;
+			ICCItem *pData = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
+			Item.FireCustomEvent(CItemCtx(&Item), pArgs->GetElement(1)->GetStringValue(), pData, &pResult);
+			return pResult;
 			}
 
 		case FN_ITEM_PROPERTY:

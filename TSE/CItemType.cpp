@@ -131,6 +131,7 @@ const int FLOTSAM_IMAGE_WIDTH =					32;
 static char *CACHED_EVENTS[CItemType::evtCount] =
 	{
 		"GetDescription",
+		"GetDisplayAttributes",
 		"GetName",
 		"GetTradePrice",
 		"OnInstall",

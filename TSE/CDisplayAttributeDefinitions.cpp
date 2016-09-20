@@ -75,6 +75,55 @@ int CDisplayAttributeDefinitions::GetLocationAttribFrequency (const CString &sAt
 	return pEntry->iFrequency;
 	}
 
+bool CDisplayAttributeDefinitions::InitFromCCItem (ICCItem *pEntry, SDisplayAttribute &Result)
+
+//	InitFromCCItem
+//
+//	Initialize from a struct of the form:
+//
+//	{
+//		label: ...
+//		labelType: ...
+//		}
+
+	{
+	CString sLabel;
+	EDisplayAttributeTypes iType;
+
+	//	If this is a struct, then we expect certain fields.
+
+	if (pEntry->IsSymbolTable())
+		{
+		sLabel = pEntry->GetStringAt(LABEL_ATTRIB);
+		CString sType = pEntry->GetStringAt(LABEL_TYPE_ATTRIB);
+
+		if (sType.IsBlank() || strEquals(sType, TYPE_NEUTRAL))
+			iType = attribNeutral;
+		else if (strEquals(sType, TYPE_POSITIVE))
+			iType = attribPositive;
+		else if (strEquals(sType, TYPE_NEGATIVE))
+			iType = attribNegative;
+		else
+			return false;
+		}
+
+	//	Otherwise, this is just a plain attribute
+
+	else
+		{
+		sLabel = pEntry->GetStringValue();
+		iType = attribNeutral;
+		}
+
+	//	Done
+
+	if (sLabel.IsBlank())
+		return false;
+
+	Result = SDisplayAttribute(iType, sLabel);
+	return true;
+	}
+
 ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitFromXML

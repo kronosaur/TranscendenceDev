@@ -1857,35 +1857,7 @@ void CSpaceObject::FireCustomItemEvent (const CString &sEvent, const CItem &Item
 //	Fires a named event to an item and optionally returns result
 
 	{
-	CCodeChainCtx Ctx;
-
-	SEventHandlerDesc Event;
-	if (Item.GetType()->FindEventHandler(sEvent, &Event))
-		{
-		//	Define some globals
-
-		Ctx.SaveAndDefineSourceVar(this);
-		Ctx.SaveAndDefineItemVar(Item);
-		Ctx.SaveAndDefineDataVar(pData);
-
-		//	Run code
-
-		ICCItem *pResult = Ctx.Run(Event);
-		if (pResult->IsError())
-			ReportEventError(strPatternSubst(CONSTLIT("Item %x %s"), Item.GetType()->GetUNID(), sEvent), pResult);
-
-		//	Either return the event result or discard it
-
-		if (retpResult)
-			*retpResult = pResult;
-		else
-			Ctx.Discard(pResult);
-		}
-	else
-		{
-		if (retpResult)
-			*retpResult = Ctx.CreateNil();
-		}
+	Item.FireCustomEvent(CItemCtx(&Item, this), sEvent, pData, retpResult);
 	}
 
 void CSpaceObject::FireCustomOverlayEvent (const CString &sEvent, DWORD dwOverlayID, ICCItem *pData, ICCItem **retpResult)
