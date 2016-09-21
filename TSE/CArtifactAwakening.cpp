@@ -8,15 +8,34 @@
 #define ERR_TOO_MANY_COUNTERMEASURES		CONSTLIT("Cannot deploy more than 6 countermeasures.")
 #define ERR_INVALID_STAT					CONSTLIT("Stats must be from 1 to 24.")
 #define ERR_NO_ROOM_FOR_DAIMON				CONSTLIT("All daimon loci are already filled.")
+#define ERR_NOT_IN_BATTLE					CONSTLIT("Battle has already ended.")
 
 const int MAX_COUNTERMEASURE_COUNT =		6;
 const int MAX_DAIMON_COUNT =				6;
 
-CArtifactAwakening::CArtifactAwakening (void)
+CArtifactAwakening::CArtifactAwakening (void) :
+		m_iState(stateStart)
 
 //	CArtifactAwakening constructor
 
 	{
+	}
+
+int CArtifactAwakening::CalcFreeDaimonLoci (void) const
+
+//	CalcFreeDaimonLoci
+//
+//	Calculates and returns the number of open loci for daimons.
+
+	{
+	int i;
+
+	int iCount = 0;
+	for (i = 0; i < m_Daimons.GetCount(); i++)
+		if (m_Daimons[i] == NULL)
+			iCount++;
+
+	return iCount;
 	}
 
 TArray<CArtifactProgram *> CArtifactAwakening::CalcMatchingPrograms (const TArray<CArtifactProgram *> &Targets, const CString &sCriteria, DWORD dwFlags) const
@@ -46,6 +65,11 @@ TArray<CArtifactProgram *> CArtifactAwakening::CalcMatchingPrograms (const TArra
 
 	for (i = 0; i < Targets.GetCount(); i++)
 		{
+		//	Targets is generally a list of loci, so sometimes they are empty
+
+		if (Targets[i] == NULL)
+			continue;
+
 		//	Check flags
 
 		if (bActiveOnly && !Targets[i]->IsActive())
@@ -85,7 +109,7 @@ int CArtifactAwakening::CalcNextDaimonPos (void) const
 	return -1;
 	}
 
-CArtifactProgram *CArtifactAwakening::CalcProgramTarget (CArtifactProgram::EEffectTypes iEffect, const TArray<CArtifactProgram *> &Targets) const
+CArtifactProgram *CArtifactAwakening::CalcProgramTarget (CArtifactProgram &Program, CArtifactProgram::EEffectTypes iEffect, const TArray<CArtifactProgram *> &Targets) const
 
 //	CalcProgramTarget
 //
@@ -108,7 +132,7 @@ CArtifactProgram *CArtifactAwakening::CalcProgramTarget (CArtifactProgram::EEffe
 		{
 		CArtifactProgram &Target = *Targets[i];
 
-		int iScore = CalcTargetScore(iEffect, Target);
+		int iScore = CalcTargetScore(Program, iEffect, Target);
 		if (iScore > iBestScore)
 			{
 			iBestScore = iScore;
@@ -121,7 +145,7 @@ CArtifactProgram *CArtifactAwakening::CalcProgramTarget (CArtifactProgram::EEffe
 	return pBestProgram;
 	}
 
-int CArtifactAwakening::CalcTargetScore (CArtifactProgram::EEffectTypes iEffect, CArtifactProgram &Target) const
+int CArtifactAwakening::CalcTargetScore (CArtifactProgram &Program, CArtifactProgram::EEffectTypes iEffect, CArtifactProgram &Target) const
 
 //	CalcTargetScore
 //
@@ -141,7 +165,7 @@ int CArtifactAwakening::CalcTargetScore (CArtifactProgram::EEffectTypes iEffect,
 		switch (TargetEffect.iType)
 			{
 			case CArtifactProgram::effectTargetStat:
-				iScore += 10 * TargetEffect.iValue;
+				iScore += 10 * Program.GetStrength();
 				break;
 
 			case CArtifactProgram::effectHalt:
@@ -189,6 +213,16 @@ bool CArtifactAwakening::DeployDaimon (CItemType *pType, CString *retsError)
 	{
 	ASSERT(IsValid());
 
+	//	Make sure we're in a valid state
+
+	if (m_iState == stateStart)
+		m_iState = stateInBattle;
+	else if (m_iState != stateInBattle)
+		{
+		if (retsError) *retsError = ERR_NOT_IN_BATTLE;
+		return false;
+		}
+
 	//	Make sure we have room
 
 	int iPos = CalcNextDaimonPos();
@@ -234,6 +268,26 @@ CArtifactProgram *CArtifactAwakening::GetLocusProgram (CArtifactProgram::EProgra
 
 		default:
 			return NULL;
+		}
+	}
+
+CArtifactAwakening::EResultTypes CArtifactAwakening::GetStatus (void) const
+
+//	GetStatus
+//
+//	Returns the current status
+
+	{
+	switch (m_iState)
+		{
+		case stateSuccess:
+			return resultArtifactSubdued;
+
+		case stateFailure:
+			return resultPlayerFailed;
+
+		default:
+			return resultBattleContinues;
 		}
 	}
 
@@ -334,10 +388,12 @@ bool CArtifactAwakening::Init (const SCreateDesc &Desc, CString *retsError)
 
 	//	Done
 
+	m_iState = stateStart;
+
 	return true;
 	}
 
-void CArtifactAwakening::NextTurn (TArray<SEventDesc> &Results)
+CArtifactAwakening::EResultTypes CArtifactAwakening::NextTurn (int iDaimonsLeft, TArray<SEventDesc> &Results)
 
 //	NextTurn
 //
@@ -346,6 +402,9 @@ void CArtifactAwakening::NextTurn (TArray<SEventDesc> &Results)
 
 	{
 	int i;
+
+	if (m_iState != stateInBattle)
+		return resultError;
 
 	//	Reset to base state
 
@@ -411,10 +470,28 @@ void CArtifactAwakening::NextTurn (TArray<SEventDesc> &Results)
 
 	//	If any core stat has been reduced to 0, then the player wins.
 
+	if (m_iState == stateInBattle)
+		{
+		for (i = 0; i < CArtifactStat::statCount; i++)
+			if (m_Stat[i] == 0)
+				{
+				m_iState = stateSuccess;
+				break;
+				}
+		}
+
 	//	If no more daimons can be deployed (either because the player has none
 	//	or because there are no free loci) then the artifact wins.
 
-	ASSERT(IsValid());
+	if (m_iState == stateInBattle
+			&& (CalcFreeDaimonLoci() == 0 || iDaimonsLeft == 0))
+		{
+		m_iState = stateFailure;
+		}
+
+	//	Return result
+
+	return GetStatus();
 	}
 
 void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifactProgram *> &Targets)
@@ -435,7 +512,7 @@ void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifact
 			//	Attacks to core stats always succeed.
 
 			case CArtifactProgram::effectTargetStat:
-				m_Stat[Effect.iStat].Inc(Program.GetStrength());
+				m_Stat[Effect.iStat].Inc(-Program.GetStrength());
 				break;
 
 			case CArtifactProgram::effectHalt:
@@ -443,7 +520,7 @@ void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifact
 				{
 				//	Figure out the target of the program
 
-				CArtifactProgram *pTarget = CalcProgramTarget(Effect.iType, CalcMatchingPrograms(Targets, Effect.sCriteria, FLAG_ACTIVE_ONLY));
+				CArtifactProgram *pTarget = CalcProgramTarget(Program, Effect.iType, CalcMatchingPrograms(Targets, Effect.sCriteria, FLAG_ACTIVE_ONLY));
 				if (pTarget == NULL)
 					continue;
 

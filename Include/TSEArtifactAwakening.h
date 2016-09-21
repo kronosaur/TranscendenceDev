@@ -156,6 +156,16 @@ class CArtifactAwakening
 
 			};
 
+		enum EResultTypes
+			{
+			resultNone,
+			resultError,
+
+			resultBattleContinues,
+			resultArtifactSubdued,
+			resultPlayerFailed,
+			};
+
 		struct SCreateDesc
 			{
 			int Stat[CArtifactStat::statCount];
@@ -173,15 +183,26 @@ class CArtifactAwakening
 		inline ~CArtifactAwakening (void) { CleanUp(); }
 
 		bool DeployDaimon (CItemType *pType, CString *retsError = NULL);
+		inline int GetCoreStat (CArtifactStat::ETypes iStat) const { return m_Stat[iStat]; }
 		const TArray<CItemType *> &GetInitialDaimons (void) const { return m_InitialDaimons; }
 		CArtifactProgram *GetLocusProgram (CArtifactProgram::EProgramTypes iType, int iIndex) const;
+		EResultTypes GetStatus (void) const;
 		bool Init (const SCreateDesc &Desc, CString *retsError = NULL);
-		void NextTurn (TArray<SEventDesc> &Results);
+		EResultTypes NextTurn (int iDaimonsLeft, TArray<SEventDesc> &Results);
 
 	private:
+		enum EStates
+			{
+			stateStart,						//	Have not yet deployed a single daimon
+			stateInBattle,					//	Have deployed a daimon, but no resolution
+			stateSuccess,					//	Artifact subjugated
+			stateFailure,					//	Failed to subjugate
+			};
+
+		int CalcFreeDaimonLoci (void) const;
 		TArray<CArtifactProgram *> CalcMatchingPrograms (const TArray<CArtifactProgram *> &Targets, const CString &sCriteria, DWORD dwFlags = 0) const;
-		CArtifactProgram *CalcProgramTarget (CArtifactProgram::EEffectTypes iEffect, const TArray<CArtifactProgram *> &Targets) const;
-		int CalcTargetScore (CArtifactProgram::EEffectTypes iEffect, CArtifactProgram &Target) const;
+		CArtifactProgram *CalcProgramTarget (CArtifactProgram &Program, CArtifactProgram::EEffectTypes iEffect, const TArray<CArtifactProgram *> &Targets) const;
+		int CalcTargetScore (CArtifactProgram &Program, CArtifactProgram::EEffectTypes iEffect, CArtifactProgram &Target) const;
 		int CalcNextDaimonPos (void) const;
 		void CleanUp (void);
 		void IncDefense (const TArray<CArtifactProgram *> &Programs, int iValue);
@@ -190,6 +211,7 @@ class CArtifactAwakening
 		void RunAttacks (CArtifactProgram &Program, TArray<CArtifactProgram *> &Targets);
 		void RunPatchEffects (CArtifactProgram &Program, TArray<CArtifactProgram *> &Targets);
 
+		EStates m_iState;
 		CArtifactStat m_Stat[CArtifactStat::statCount];
 		TArray<CItemType *> m_InitialDaimons;	//	List of initial (undeployed daimons)
 
