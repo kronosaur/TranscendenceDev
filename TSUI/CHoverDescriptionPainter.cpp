@@ -25,9 +25,9 @@ CHoverDescriptionPainter::CHoverDescriptionPainter (const CVisualPalette &VI) :
 	{
 	}
 
-void CHoverDescriptionPainter::Format (void) const
+void CHoverDescriptionPainter::FormatText (void) const
 
-//	Format
+//	FormatText
 //
 //	Make sure text is formatted. Initializes:
 //
@@ -84,11 +84,20 @@ void CHoverDescriptionPainter::Format (void) const
 		cyContent += RectHeight(rcBounds);
 		}
 
-	//	Now compute the outer rect dimensions
+	//	Figure out the position of the outer and inner rects based on our width
+	//	and height.
 
-	int cxRect = m_cxWidth;
-	int cyRect = DEFAULT_PADDING_TOP + cyContent + DEFAULT_PADDING_BOTTOM;
+	InitRects(m_cxWidth, DEFAULT_PADDING_TOP + cyContent + DEFAULT_PADDING_BOTTOM);
+	}
 
+void CHoverDescriptionPainter::InitRects (int cxWidth, int cyHeight) const
+
+//	InitRects
+//
+//	Initializes m_rcRect and m_rcText based on the given metrics. We make sure 
+//	that the rect is inside m_rcContainer.
+
+	{
 	//	Figure out the position of the rect. Start at the desired position.
 
 	m_rcRect.left = m_xPos;
@@ -98,19 +107,19 @@ void CHoverDescriptionPainter::Format (void) const
 
 	if (m_rcRect.left < m_rcContainer.left)
 		m_rcRect.left = m_rcContainer.left;
-	else if (m_rcRect.left + cxRect > m_rcContainer.right)
-		m_rcRect.left = Max(m_rcContainer.left, m_rcContainer.right - cxRect);
+	else if (m_rcRect.left + cxWidth > m_rcContainer.right)
+		m_rcRect.left = Max(m_rcContainer.left, m_rcContainer.right - cxWidth);
 
 	//	If we don't fit below the position, and we can fit above it, adjust
 
-	if (m_rcRect.top + cyRect > m_rcContainer.bottom
-			&& m_rcRect.top - cyRect >= m_rcContainer.top)
-		m_rcRect.top = m_rcRect.top - cyRect;
+	if (m_rcRect.top + cyHeight > m_rcContainer.bottom
+			&& m_rcRect.top - cyHeight >= m_rcContainer.top)
+		m_rcRect.top = m_rcRect.top - cyHeight;
 
 	//	Complete the rect
 
-	m_rcRect.right = m_rcRect.left + cxRect;
-	m_rcRect.bottom = m_rcRect.top + cyRect;
+	m_rcRect.right = m_rcRect.left + cxWidth;
+	m_rcRect.bottom = m_rcRect.top + cyHeight;
 
 	//	Now initialize the inner text rect
 
@@ -130,9 +139,57 @@ void CHoverDescriptionPainter::Paint (CG32bitImage &Dest) const
 	if (!IsVisible())
 		return;
 
+	//	Paint based on our type
+
+	if (!m_Item.IsEmpty())
+		PaintItem(Dest);
+	else
+		PaintText(Dest);
+	}
+
+void CHoverDescriptionPainter::PaintItem (CG32bitImage &Dest) const
+
+//	PaintItem
+//
+//	Paint an item description
+
+	{
+	CUIHelper Helper(*g_pHI);
+
+	//	Compute the size of the content
+	
+	RECT rcRect;
+	rcRect.left = 0;
+	rcRect.top = 0;
+	rcRect.right = m_cxWidth - (DEFAULT_PADDING_LEFT + DEFAULT_PADDING_RIGHT);
+	rcRect.bottom = 1000;
+
+	int cyContent = Helper.CalcItemEntryHeight(NULL, m_Item, rcRect, CUIHelper::OPTION_NO_ICON | CUIHelper::OPTION_TITLE | CUIHelper::OPTION_NO_PADDING);
+
+	//	Figure out the position of the outer and inner rects based on our width
+	//	and height.
+
+	InitRects(m_cxWidth, DEFAULT_PADDING_TOP + cyContent + DEFAULT_PADDING_BOTTOM);
+
+	//	Paint the background
+
+	CGDraw::RoundedRect(Dest, m_rcRect.left, m_rcRect.top, RectWidth(m_rcRect), RectHeight(m_rcRect), DEFAULT_BORDER_RADIUS, m_rgbBack);
+
+	//	Paint the item
+
+	Helper.PaintItemEntry(Dest, NULL, m_Item, m_rcText, m_rgbTitle, CUIHelper::OPTION_NO_ICON | CUIHelper::OPTION_TITLE | CUIHelper::OPTION_NO_PADDING);
+	}
+
+void CHoverDescriptionPainter::PaintText (CG32bitImage &Dest) const
+
+//	PaintText
+//
+//	Paint the description
+
+	{
 	//	Format, if necessary
 
-	Format();
+	FormatText();
 
 	//	Paint the background
 
@@ -163,6 +220,7 @@ void CHoverDescriptionPainter::SetDescription (const CString &sValue)
 	CUIHelper UIHelper(*g_pHI);
 	UIHelper.GenerateDockScreenRTF(sValue, &m_sDescription);
 
+	m_Item = CItem();
 	Invalidate();
 	}
 

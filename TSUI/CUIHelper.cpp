@@ -105,6 +105,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	bool bNoIcon = ((dwOptions & OPTION_NO_ICON) == OPTION_NO_ICON);
 	bool bTitle = ((dwOptions & OPTION_TITLE) == OPTION_TITLE);
+	bool bNoPadding = ((dwOptions & OPTION_NO_PADDING) == OPTION_NO_PADDING);
 
 	//	Icons size
 
@@ -121,10 +122,19 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	//	Compute the rect where the reference text will paint
 
 	RECT rcDrawRect = rcRect;
-	rcDrawRect.left += ITEM_TEXT_MARGIN_X;
-	rcDrawRect.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
+	if (!bNoPadding)
+		{
+		rcDrawRect.left += ITEM_TEXT_MARGIN_X;
+		rcDrawRect.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
+		}
+
 	if (!bNoIcon)
-		rcDrawRect.left += ITEM_LEFT_PADDING + cxIcon;
+		{
+		if (bNoPadding)
+			rcDrawRect.left += cxIcon + ITEM_TEXT_MARGIN_X;
+		else
+			rcDrawRect.left += ITEM_LEFT_PADDING + cxIcon;
+		}
 
 	int iLevel = pType->GetApparentLevel(Ctx);
 
@@ -134,7 +144,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	Account for margin
 
-	cyHeight += ITEM_TEXT_MARGIN_Y;
+	cyHeight += (bNoPadding ? 0 : ITEM_TEXT_MARGIN_Y);
 
 	//	Item title
 
@@ -183,11 +193,12 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	Margin
 
-	cyHeight += ITEM_TEXT_MARGIN_BOTTOM;
+	cyHeight += (bNoPadding ? 0 : ITEM_TEXT_MARGIN_BOTTOM);
+
+	if (!bNoIcon)
+		cyHeight = Max(cyIcon, cyHeight);
 
 	//	Done
-
-	cyHeight = Max(cyIcon, cyHeight);
 
 	return cyHeight;
 	}
@@ -973,6 +984,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	bool bSelected = ((dwOptions & OPTION_SELECTED) == OPTION_SELECTED);
 	bool bNoIcon = ((dwOptions & OPTION_NO_ICON) == OPTION_NO_ICON);
 	bool bTitle = ((dwOptions & OPTION_TITLE) == OPTION_TITLE);
+	bool bNoPadding = ((dwOptions & OPTION_NO_PADDING) == OPTION_NO_PADDING);
 
 	//	Icons size
 
@@ -987,16 +999,20 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	//	Calc the rect where we will draw
 
 	RECT rcDrawRect = rcRect;
-	rcDrawRect.left += ITEM_TEXT_MARGIN_X;
-	rcDrawRect.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
-	rcDrawRect.top += ITEM_TEXT_MARGIN_Y;
+	if (!bNoPadding)
+		{
+		rcDrawRect.left += ITEM_TEXT_MARGIN_X;
+		rcDrawRect.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
+		rcDrawRect.top += ITEM_TEXT_MARGIN_Y;
+		}
 
 	//	Paint the image
 
 	if (!bNoIcon)
 		{
-		DrawItemTypeIcon(Dest, rcRect.left + ITEM_LEFT_PADDING, rcRect.top, pItemType, cxIcon, cyIcon);
-		rcDrawRect.left += ITEM_LEFT_PADDING + cxIcon;
+		int xIcon = (bNoPadding ? rcRect.left : rcRect.left + ITEM_LEFT_PADDING);
+		DrawItemTypeIcon(Dest, xIcon, rcRect.top, pItemType, cxIcon, cyIcon);
+		rcDrawRect.left = xIcon + cxIcon + ITEM_TEXT_MARGIN_X;
 		}
 
 	//	Paint the item name

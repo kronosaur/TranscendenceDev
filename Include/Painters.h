@@ -16,19 +16,24 @@ class CHoverDescriptionPainter
 		inline void SetBackColor (const CG32bitPixel rgbValue) { m_rgbBack = rgbValue; }
 		void SetDescription (const CString &sValue);
 		inline void SetDescriptionColor (const CG32bitPixel rgbValue) { m_rgbDescription = rgbValue; }
-		inline void SetTitle (const CString &sValue) { m_sTitle = sValue; Invalidate(); }
+		inline void SetItem (const CItem &Item) { m_Item = Item; Invalidate(); }
+		inline void SetTitle (const CString &sValue) { m_sTitle = sValue; m_Item = CItem(); Invalidate(); }
 		inline void SetTitleColor (const CG32bitPixel rgbValue) { m_rgbTitle = rgbValue; }
 		void Show (int x, int y, int cxWidth, const RECT &rcContainer);
 
 	private:
-		inline bool IsInvalid (void) const { return (m_rcRect.left == 0 && m_rcRect.right == 0); }
+		void InitRects (int cxWidth, int cyHeight) const;
 		inline void Invalidate (void) { m_rcRect = { 0, 0, 0, 0 };	}
-		void Format (void) const;
+		inline bool IsInvalid (void) const { return (m_rcRect.left == 0 && m_rcRect.right == 0); }
+		void FormatText (void) const;
+		void PaintItem (CG32bitImage &Dest) const;
+		void PaintText (CG32bitImage &Dest) const;
 
 		const CVisualPalette &m_VI;
 
 		CString m_sTitle;					//	Title to paint
 		CString m_sDescription;				//	Description
+		CItem m_Item;						//	Item to show (may be empty)
 		CG32bitPixel m_rgbBack;				//	Background color
 		CG32bitPixel m_rgbTitle;			//	Title color
 		CG32bitPixel m_rgbDescription;		//	Description color
