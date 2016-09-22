@@ -31,6 +31,13 @@
     <Filter Include="Notes and Documents">
       <UniqueIdentifier>{3df47da0-1840-45d3-b62f-294a4b3bae71}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\quickhull">
+      <UniqueIdentifier>{304c24b8-bd7f-4a83-81cd-d72e839a4037}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
+    </Filter>
+    <Filter Include="Source Files\quickhull">
+      <UniqueIdentifier>{ffb19b8e-5a39-4f27-9f14-de1429eb7291}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CArchiver.cpp">
@@ -207,6 +214,24 @@
     <ClCompile Include="CLabelArranger.cpp">
       <Filter>Source Files\Euclid</Filter>
     </ClCompile>
+    <ClCompile Include="..\Include\CMatrix.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CSphericalCoordinates.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CXForm3D.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
+    <ClCompile Include="quickhull\QuickHull.cpp">
+      <Filter>Source Files\quickhull</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CalcConvexHull.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
+    <ClCompile Include="CProjection3D.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">
@@ -244,6 +269,45 @@
     </ClInclude>
     <ClInclude Include="..\Include\TMath.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Euclid3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\EuclidMatrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\ConvexHull.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\HalfEdgeMesh.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\MathUtils.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\QuickHull.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\Types.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\Structs\Mesh.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\Structs\Plane.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\Structs\Pool.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\Structs\Ray.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\Structs\Vector3.hpp">
+      <Filter>Header Files\quickhull</Filter>
+    </ClInclude>
+    <ClInclude Include="quickhull\Structs\VertexDataSource.hpp">
+      <Filter>Header Files\quickhull</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

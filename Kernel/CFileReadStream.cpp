@@ -138,7 +138,7 @@ ALERROR CFileReadStream::Read (char *pData, int iLength, int *retiBytesRead)
 	ASSERT(m_hFile);
 	iBytesLeft = (int)m_dwFileSize - (m_pPos - m_pFile);
 
-	iWritten = min(iBytesLeft, iLength);
+	iWritten = Min(iBytesLeft, iLength);
 
 	utlMemCopy(m_pPos, pData, iWritten);
 

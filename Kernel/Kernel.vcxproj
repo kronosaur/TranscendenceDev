@@ -235,6 +235,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\CalcConvexHull.cpp" />
+    <ClCompile Include="..\CSphericalCoordinates.cpp" />
+    <ClCompile Include="..\CXForm3D.cpp" />
+    <ClCompile Include="..\Include\CMatrix.cpp" />
     <ClCompile Include="CArchiver.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -481,6 +485,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CPeriodicWaiter.cpp" />
+    <ClCompile Include="CProjection3D.cpp" />
     <ClCompile Include="CRegKey.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -674,6 +679,13 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="quickhull\QuickHull.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="RegEx.cpp" />
     <ClCompile Include="RunLengthCompression.cpp" />
     <ClCompile Include="Time.cpp">
@@ -732,16 +744,29 @@
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h" />
     <ClInclude Include="..\Include\Euclid.h" />
+    <ClInclude Include="..\Include\EuclidMatrix.h" />
     <ClInclude Include="..\Include\Internets.h" />
     <ClInclude Include="..\Include\Kernel.h" />
     <ClInclude Include="..\Include\KernelObjID.h" />
     <ClInclude Include="..\Include\Lingua.h" />
+    <ClInclude Include="..\Include\Euclid3D.h" />
     <ClInclude Include="..\Include\TArray.h" />
     <ClInclude Include="..\Include\TMap.h" />
     <ClInclude Include="..\Include\TMath.h" />
     <ClInclude Include="..\Include\TQueue.h" />
     <ClInclude Include="..\Include\TStack.h" />
     <ClInclude Include="..\Include\Zip.h" />
+    <ClInclude Include="quickhull\ConvexHull.hpp" />
+    <ClInclude Include="quickhull\HalfEdgeMesh.hpp" />
+    <ClInclude Include="quickhull\MathUtils.hpp" />
+    <ClInclude Include="quickhull\QuickHull.hpp" />
+    <ClInclude Include="quickhull\Structs\Mesh.hpp" />
+    <ClInclude Include="quickhull\Structs\Plane.hpp" />
+    <ClInclude Include="quickhull\Structs\Pool.hpp" />
+    <ClInclude Include="quickhull\Structs\Ray.hpp" />
+    <ClInclude Include="quickhull\Structs\Vector3.hpp" />
+    <ClInclude Include="quickhull\Structs\VertexDataSource.hpp" />
+    <ClInclude Include="quickhull\Types.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\zlib-1.2.7\contrib\vstudio\vc10\zlibstat.vcxproj">

@@ -775,7 +775,7 @@ BOOL CString::Size (int iLength, BOOL bPreserveContents)
 		if (bPreserveContents)
 			{
 			int i;
-			int iCopyLen = min(m_pStore->iLength+1, iLength);
+			int iCopyLen = Min(m_pStore->iLength+1, iLength);
 
 			for (i = 0; i < iCopyLen; i++)
 				pNewStore->pString[i] = m_pStore->pString[i];
@@ -804,7 +804,7 @@ BOOL CString::Size (int iLength, BOOL bPreserveContents)
 		if (bPreserveContents)
 			{
 			int i;
-			int iCopyLen = min(m_pStore->iLength, iLength);
+			int iCopyLen = Min(m_pStore->iLength, iLength);
 
 			for (i = 0; i < iCopyLen; i++)
 				pNewString[i] = m_pStore->pString[i];
@@ -953,7 +953,7 @@ int strCompare (const CString &sString1, const CString &sString2)
 
 	pPos1 = sString1.GetPointer();
 	pPos2 = sString2.GetPointer();
-	iLen = min(sString1.GetLength(), sString2.GetLength());
+	iLen = Min(sString1.GetLength(), sString2.GetLength());
 
 	//	Compare by commonality
 
@@ -2595,7 +2595,7 @@ CString strSubString (const CString &sString, int iOffset, int iLength)
 		if (iLength == -1)
 			iLength = sString.GetLength() - iOffset;
 		else
-			iLength = min(iLength, sString.GetLength() - iOffset);
+			iLength = Min(iLength, sString.GetLength() - iOffset);
 
 		CString sSub(sString.GetPointer() + iOffset, iLength);
 		return sSub;

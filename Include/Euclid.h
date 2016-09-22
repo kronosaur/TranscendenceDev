@@ -1,13 +1,11 @@
 //	Euclid.h
 //
 //	Basic geometry definitions
+//	Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_EUCLID
-#define INCL_EUCLID
+#pragma once
 
-#ifndef _INC_MATH
 #include <math.h>
-#endif
 
 typedef double Metric;
 
@@ -109,15 +107,15 @@ extern Metric g_Cosine[360];
 extern Metric g_Sine[360];
 
 //	Vector-Vector operations
-inline const CVector operator+ (const CVector &op1, const CVector &op2) { return CVector(op1.GetX() + op2.GetX(), op1.GetY() + op2.GetY()); }
-inline const CVector operator- (const CVector &op1, const CVector &op2) { return CVector(op1.GetX() - op2.GetX(), op1.GetY() - op2.GetY()); }
-inline const CVector operator* (const CVector &op1, const CVector &op2) { return CVector(op1.GetX() * op2.GetX(), op1.GetY() * op2.GetY()); }
-inline const CVector operator- (const CVector &op) { return CVector(-op.GetX(), -op.GetY()); }
+inline CVector operator+ (const CVector &op1, const CVector &op2) { return CVector(op1.GetX() + op2.GetX(), op1.GetY() + op2.GetY()); }
+inline CVector operator- (const CVector &op1, const CVector &op2) { return CVector(op1.GetX() - op2.GetX(), op1.GetY() - op2.GetY()); }
+inline CVector operator* (const CVector &op1, const CVector &op2) { return CVector(op1.GetX() * op2.GetX(), op1.GetY() * op2.GetY()); }
+inline CVector operator- (const CVector &op) { return CVector(-op.GetX(), -op.GetY()); }
 
 //	Vector-scalar operations
-inline const CVector operator* (const CVector &op1, const Metric op2) { return CVector(op1.GetX() * op2, op1.GetY() * op2); }
-inline const CVector operator* (const Metric op2, const CVector &op1) { return CVector(op1.GetX() * op2, op1.GetY() * op2); }
-inline const CVector operator/ (const CVector &op1, const Metric op2) { return CVector(op1.GetX() / op2, op1.GetY() / op2); }
+inline CVector operator* (const CVector &op1, const Metric op2) { return CVector(op1.GetX() * op2, op1.GetY() * op2); }
+inline CVector operator* (const Metric op2, const CVector &op1) { return CVector(op1.GetX() * op2, op1.GetY() * op2); }
+inline CVector operator/ (const CVector &op1, const Metric op2) { return CVector(op1.GetX() / op2, op1.GetY() / op2); }
 
 //	Geometry
 
@@ -150,6 +148,10 @@ enum XFormType
 	xformTranslate,
 	xformScale,
 	xformRotate,
+
+	xformRotateX,
+	xformRotateY,
+	xformRotateZ,
 	};
 
 class CXForm
@@ -171,12 +173,6 @@ class CXForm
 	};
 
 const CXForm operator* (const CXForm &op1, const CXForm &op2);
-
-//  3D Projection --------------------------------------------------------------
-
-class C3DProjection
-    {
-    };
 
 //	Shapes ---------------------------------------------------------------------
 
@@ -489,4 +485,5 @@ CVector PolarToVectorRadians (Metric rRadians, Metric rRadius);
 int VectorToPolar (const CVector &vP, Metric *retrRadius = NULL);
 Metric VectorToPolarRadians (const CVector &vP, Metric *retrRadius = NULL);
 
-#endif
+#include "EuclidMatrix.h"
+#include "Euclid3D.h"

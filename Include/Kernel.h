@@ -10,6 +10,7 @@
 #endif						
 
 #define _CRT_RAND_S
+#define NOMINMAX
 #include <stdlib.h>
 #include <windows.h>
 
@@ -1595,6 +1596,7 @@ DWORD mathRandom (void);
 inline double mathRandomDouble (void) { return (mathRandom() / 2147483648.0); }
 int mathRandom (int iFrom, int iTo);
 double mathRandomGaussian (void);
+double mathRandomMinusOneToOne (void);
 int mathRound (double x);
 int mathRoundStochastic (double x);
 int mathSeededRandom (int iSeed, int iFrom, int iTo);

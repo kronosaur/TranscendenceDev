@@ -68,8 +68,8 @@ void uiGetCenteredWindowRect (int cxWidth,
 
 	if (bClip)
 		{
-		int xOffset = max(0, (RectWidth(rcWorkArea) - cxWidth) / 2);
-		int yOffset = max(0, (RectHeight(rcWorkArea) - cyHeight) / 2);
+		int xOffset = Max(0, (RectWidth(rcWorkArea) - cxWidth) / 2);
+		int yOffset = Max(0, (RectHeight(rcWorkArea) - cyHeight) / 2);
 		retrcRect->left = rcWorkArea.left + xOffset;
 		retrcRect->top = rcWorkArea.top + yOffset;
 		retrcRect->right = Min((int)(retrcRect->left + cxWidth), (int)rcWorkArea.right);
