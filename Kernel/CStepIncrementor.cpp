@@ -15,6 +15,8 @@ CStepIncrementor::CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, i
 //	CStepIncrementor constructor
 
 	{
+	int i;
+
 	//	Edge conditions
 
 	if (iSteps <= 0)
@@ -60,6 +62,20 @@ CStepIncrementor::CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, i
 			m_rRange = (rEnd - m_rStart);
 			m_rPower = 0.25;
 			break;
+
+		case styleSin:
+			{
+			Metric rCenter = 0.5 * (rStart + rEnd);
+			Metric rScale = rCenter - rStart;
+			Metric rAngle = 0.0;
+			Metric rInc = TAU / iSteps;
+
+			m_Cycle.InsertEmpty(iSteps);
+			for (i = 0; i < iSteps; i++, rAngle += rInc)
+				m_Cycle[i] = rCenter + (rScale * sin(rAngle));
+
+			break;
+			}
 		}
 	}
 
@@ -88,6 +104,9 @@ Metric CStepIncrementor::GetAt (int iStep) const
 			Metric rStep = (Metric)iStep / (Metric)m_iSteps;
 			return m_rStart + (pow(rStep, m_rPower) * m_rRange);
 			}
+
+		case styleSin:
+			return m_Cycle[iStep % m_iSteps];
 
 		default:
 			return 0.0;

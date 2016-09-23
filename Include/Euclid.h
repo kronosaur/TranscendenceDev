@@ -396,6 +396,10 @@ class CStepIncrementor
 			styleSquare,					//	x^2
 			styleQuad,						//	x^4
 			styleOct,						//	x^8
+
+			//	Cyclical (start, peak at end, back to start)
+
+			styleSin,
 			};
 
 		CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, int iSteps);
@@ -408,6 +412,8 @@ class CStepIncrementor
 
 		Metric m_rRange;
 		Metric m_rPower;
+
+		TArray<Metric> m_Cycle;
 	};
 
 //  Labels ---------------------------------------------------------------------
