@@ -60,7 +60,7 @@ bool CArtifactProgram::Init (EProgramTypes iType, int iLocus, CItemType *pItem, 
 	ASSERT(pItem);
 
 	m_iType = iType;
-	m_iStatus = statusRunning;
+	m_iStatus = (iType == typeDaimon ? statusRunning : statusArchived);
 	m_iLocusPos = iLocus;
 	m_pItem = pItem;
 	m_sBaseAttributes = pItem->GetAttributes();
@@ -118,7 +118,12 @@ bool CArtifactProgram::Init (EProgramTypes iType, int iLocus, CItemType *pItem, 
 				return false;
 				}
 
-			pNewEffect->sCriteria = pDef->GetStringAt(FIELD_CRITERIA);
+			CString sCriteria = pDef->GetStringAt(FIELD_CRITERIA);
+			if (!sCriteria.IsBlank())
+				{
+				if (!ParseCriteria(sCriteria, pNewEffect->Criteria, retsError))
+					return false;
+				}
 
 			CString sStat = pDef->GetStringAt(FIELD_STAT);
 			if (sStat.IsBlank())
@@ -147,14 +152,29 @@ bool CArtifactProgram::Init (EProgramTypes iType, int iLocus, CItemType *pItem, 
 	return true;
 	}
 
-bool CArtifactProgram::MatchCriteria (SCriteria &Criteria) const
+bool CArtifactProgram::MatchesCriteria (const SCriteria &Criteria, DWORD dwFlags) const
 
-//	MatchCriteria
+//	MatchesCriteria
 //
 //	Returns TRUE if we matche the criteria
 
 	{
 	int i;
+
+	//	Flags
+
+	bool bActiveOnly = ((dwFlags & FLAG_ACTIVE_ONLY) == FLAG_ACTIVE_ONLY);
+	bool bRunningLastTurn = ((dwFlags & FLAG_RUNNING_LAST_TURN) == FLAG_RUNNING_LAST_TURN);
+
+	//	Check flags
+
+	if (bActiveOnly && !IsActive())
+		return false;
+
+	if (bRunningLastTurn && WasHaltedLastTurn())
+		return false;
+
+	//	Attributes
 
 	for (i = 0; i < Criteria.ModifiersRequired.GetCount(); i++)
 		if (!::HasModifier(m_sAttributes, Criteria.ModifiersRequired[i]))

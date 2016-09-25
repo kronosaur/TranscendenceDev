@@ -14,11 +14,126 @@ const int MAX_COUNTERMEASURE_COUNT =		6;
 const int MAX_DAIMON_COUNT =				6;
 
 CArtifactAwakening::CArtifactAwakening (void) :
-		m_iState(stateStart)
+		m_iState(stateStart),
+		m_iTurn(0)
 
 //	CArtifactAwakening constructor
 
 	{
+	}
+
+void CArtifactAwakening::AddEventResult (EEventTypes iEvent, CArtifactProgram *pSource, CArtifactProgram *pTarget, TArray<SEventDesc> &Results)
+
+//	AddEventResult
+//
+//	Adds an event result, making sure to check the history to see if it is the
+//	first time.
+
+	{
+	int i;
+
+	SEventDesc *pEvent = Results.Insert();
+	pEvent->iEvent = iEvent;
+	pEvent->pSource = pSource;
+	pEvent->pTarget = pTarget;
+
+	//	Look for this event in the previous event list and set the flag to indicate
+	//	that we've already reported it.
+
+	for (i = 0; i < m_LastResults.GetCount(); i++)
+		{
+		if (pEvent->iEvent == m_LastResults[i].iEvent
+				&& pEvent->pSource == m_LastResults[i].pSource
+				&& pEvent->pTarget == m_LastResults[i].pTarget)
+			{
+			pEvent->bAlreadyReported = true;
+			break;
+			}
+		}
+	}
+
+int CArtifactAwakening::CalcCountermeasureScore (CArtifactProgram &Program)
+
+//	CalcCountermeasureScore
+//
+//	Returns the score for activating this countermeasure.
+
+	{
+	int i, j;
+	int iScore = 0;
+
+	//	Loop over all our effects computing a score
+
+	for (i = 0; i < Program.GetEffects().GetCount(); i++)
+		{
+		const CArtifactProgram::SEffectDesc &Effect = Program.GetEffects()[i];
+
+		switch (Effect.iType)
+			{
+			case CArtifactProgram::effectHalt:
+			case CArtifactProgram::effectWipe:
+				{
+				//	Loop over all non-halted daimons and see if we can halt one. If so, our
+				//	score is inversely proportional to our power (we want to activate the
+				//	weakest countermeasure that can halt the daimon).
+
+				for (j = 0; j < m_Daimons.GetCount(); j++)
+					{
+					CArtifactProgram *pDaimon = m_Daimons[j];
+					if (pDaimon == NULL || pDaimon->WasHaltedLastTurn() || !pDaimon->IsActive())
+						continue;
+
+					//	See if we can affect this daimon
+
+					if (!pDaimon->MatchesCriteria(Effect.Criteria) 
+							|| !CanAffectTarget(Program, Effect.iType, *pDaimon))
+						continue;
+			
+					//	Score
+
+					iScore += 300 - (10 * Program.GetStrength());
+					break;
+					}
+
+				break;
+				}
+
+			default:
+				iScore += 5 * Program.GetStrength();
+				break;
+			}
+		}
+
+
+	return iScore;
+	}
+
+CArtifactProgram *CArtifactAwakening::CalcCountermeasureToActivate (void)
+
+//	CalcCountermeasureToActivate
+//
+//	Loop over all archived countermeasures and pick the best one to activate.
+
+	{
+	int i;
+
+	int iBestScore = 0;
+	CArtifactProgram *pBestCountermeasure = NULL;
+	for (i = 0; i < m_Countermeasures.GetCount(); i++)
+		{
+		CArtifactProgram *pCountermeasure = m_Countermeasures[i];
+		if (pCountermeasure == NULL || !pCountermeasure->IsArchived())
+			continue;
+
+		int iScore = CalcCountermeasureScore(*pCountermeasure);
+		if (iScore > iBestScore)
+			{
+			iBestScore = iScore;
+			pBestCountermeasure = pCountermeasure;
+			}
+		}
+
+	return pBestCountermeasure;
 	}
 
 int CArtifactAwakening::CalcFreeDaimonLoci (void) const
@@ -38,7 +153,7 @@ int CArtifactAwakening::CalcFreeDaimonLoci (void) const
 	return iCount;
 	}
 
-TArray<CArtifactProgram *> CArtifactAwakening::CalcMatchingPrograms (const TArray<CArtifactProgram *> &Targets, const CString &sCriteria, DWORD dwFlags) const
+TArray<CArtifactProgram *> CArtifactAwakening::CalcMatchingPrograms (const TArray<CArtifactProgram *> &Targets, const CArtifactProgram::SCriteria &Criteria, DWORD dwFlags) const
 
 //	CalcMatchingPrograms
 //
@@ -50,17 +165,6 @@ TArray<CArtifactProgram *> CArtifactAwakening::CalcMatchingPrograms (const TArra
 	TArray<CArtifactProgram *> Result;
 	Result.GrowToFit(Targets.GetCount());
 
-	//	Flags
-
-	bool bActiveOnly = ((dwFlags & FLAG_ACTIVE_ONLY) == FLAG_ACTIVE_ONLY);
-	bool bRunningLastTurn = ((dwFlags & FLAG_RUNNING_LAST_TURN) == FLAG_RUNNING_LAST_TURN);
-
-	//	Parse the criteria
-
-	CArtifactProgram::SCriteria Criteria;
-	if (!CArtifactProgram::ParseCriteria(sCriteria, Criteria))
-		return Result;
-
 	//	Match criteria
 
 	for (i = 0; i < Targets.GetCount(); i++)
@@ -70,17 +174,9 @@ TArray<CArtifactProgram *> CArtifactAwakening::CalcMatchingPrograms (const TArra
 		if (Targets[i] == NULL)
 			continue;
 
-		//	Check flags
-
-		if (bActiveOnly && !Targets[i]->IsActive())
-			continue;
-
-		if (bRunningLastTurn && Targets[i]->WasHaltedLastTurn())
-			continue;
-
 		//	Check criteria
 
-		if (!Targets[i]->MatchCriteria(Criteria))
+		if (!Targets[i]->MatchesCriteria(Criteria, dwFlags))
 			continue;
 
 		//	Add to list
@@ -156,7 +252,12 @@ int CArtifactAwakening::CalcTargetScore (CArtifactProgram &Program, CArtifactPro
 	int i;
 	int iScore = 0;
 
-	//	Loop over all target effects
+	//	If the program cannot effect the given target, then we return 0.
+
+	if (!CanAffectTarget(Program, iEffect, Target))
+		return 0;
+
+	//	Loop over all target effects (to see how dangerous it is to us).
 
 	for (i = 0; i < Target.GetEffects().GetCount(); i++)
 		{
@@ -185,6 +286,25 @@ int CArtifactAwakening::CalcTargetScore (CArtifactProgram &Program, CArtifactPro
 	return iScore;
 	}
 
+bool CArtifactAwakening::CanAffectTarget (CArtifactProgram &Program, CArtifactProgram::EEffectTypes iEffect, CArtifactProgram &Target) const
+
+//	CanAffectTarget
+//
+//	Returns TRUE if we can affect the given target.
+//	NOTE: We assume that we've already checked the criteria requirements.
+
+	{
+	switch (iEffect)
+		{
+		case CArtifactProgram::effectHalt:
+		case CArtifactProgram::effectWipe:
+			return (Program.GetStrength() >= Target.GetDefense());
+
+		default:
+			return true;
+		}
+	}
+
 void CArtifactAwakening::CleanUp (void)
 
 //	CleanUp
@@ -204,7 +324,7 @@ void CArtifactAwakening::CleanUp (void)
 	m_Daimons.DeleteAll();
 	}
 
-bool CArtifactAwakening::DeployDaimon (CItemType *pType, CString *retsError)
+bool CArtifactAwakening::DeployDaimon (CItemType *pType, CArtifactProgram **retpNewDaimon, CString *retsError)
 
 //	DeployDaimon
 //
@@ -241,11 +361,16 @@ bool CArtifactAwakening::DeployDaimon (CItemType *pType, CString *retsError)
 		return false;
 		}
 
+	//	Deploy
+
+	pNewProgram->SetTurnDeployed(m_iTurn);
 	m_InPlay.Insert(pNewProgram);
 
 	//	Add to locus
 
 	m_Daimons[iPos] = pNewProgram;
+	if (retpNewDaimon)
+		*retpNewDaimon = pNewProgram;
 
 	return true;
 	}
@@ -389,11 +514,12 @@ bool CArtifactAwakening::Init (const SCreateDesc &Desc, CString *retsError)
 	//	Done
 
 	m_iState = stateStart;
+	m_iTurn = 0;
 
 	return true;
 	}
 
-CArtifactAwakening::EResultTypes CArtifactAwakening::NextTurn (int iDaimonsLeft, TArray<SEventDesc> &Results)
+CArtifactAwakening::EResultTypes CArtifactAwakening::PlayTurn (CItemType *pDaimonToPlay, int iDaimonsLeft, TArray<SEventDesc> &Results)
 
 //	NextTurn
 //
@@ -403,8 +529,22 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::NextTurn (int iDaimonsLeft,
 	{
 	int i;
 
-	if (m_iState != stateInBattle)
+	//	Turn starts when we deploy a daimon
+
+	m_iTurn++;
+
+	//	Deploy the daimon
+
+	CArtifactProgram *pNewDaimon;
+	if (!DeployDaimon(pDaimonToPlay, &pNewDaimon))
+		{
+		m_iTurn--;
 		return resultError;
+		}
+
+	SEventDesc *pEvent = Results.Insert();
+	pEvent->iEvent = eventDeployed;
+	pEvent->pSource = pNewDaimon;
 
 	//	Reset to base state
 
@@ -413,7 +553,10 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::NextTurn (int iDaimonsLeft,
 	m_Stat[CArtifactStat::statWillpower].StartTurn();
 
 	for (i = 0; i < m_InPlay.GetCount(); i++)
+		{
 		m_InPlay[i]->ResetStats();
+		m_InPlay[i]->ClearResults();
+		}
 
 	//	Start by applying patches, which enhance our own programs
 
@@ -426,9 +569,22 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::NextTurn (int iDaimonsLeft,
 		//	Run
 
 		if (Program.GetType() == CArtifactProgram::typeDaimon)
-			RunPatchEffects(Program, m_Daimons);
+			RunPatchEffects(Program, m_Daimons, Results);
 		else
-			RunPatchEffects(Program, m_Countermeasures);
+			RunPatchEffects(Program, m_Countermeasures, Results);
+		}
+
+	//	Pick a countermeasure to activate
+
+	CArtifactProgram *pCountermeasure = CalcCountermeasureToActivate();
+	if (pCountermeasure)
+		{
+		pCountermeasure->Activate();
+		pCountermeasure->SetTurnDeployed(GetTurn());
+
+		pEvent = Results.Insert();
+		pEvent->iEvent = eventActivated;
+		pEvent->pSource = pCountermeasure;
 		}
 
 	//	Countermeasures get to run first
@@ -446,7 +602,7 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::NextTurn (int iDaimonsLeft,
 
 		//	Run. These may halt some daimons.
 
-		RunAttacks(Program, m_Daimons);
+		RunAttacks(Program, m_Daimons, Results);
 		}
 
 	//	Now run any active daimons
@@ -465,7 +621,7 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::NextTurn (int iDaimonsLeft,
 		//	Run. These may halt some countermeasures and/or change some core 
 		//	stats (ego, intelligence, willpower).
 
-		RunAttacks(Program, m_Countermeasures);
+		RunAttacks(Program, m_Countermeasures, Results);
 		}
 
 	//	If any core stat has been reduced to 0, then the player wins.
@@ -489,12 +645,17 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::NextTurn (int iDaimonsLeft,
 		m_iState = stateFailure;
 		}
 
+	//	Remember this set of results for the next turn (so we can remove results 
+	//	that we already reported).
+
+	m_LastResults = Results;
+
 	//	Return result
 
 	return GetStatus();
 	}
 
-void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifactProgram *> &Targets)
+void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifactProgram *> &Targets, TArray<SEventDesc> &Results)
 
 //	RunAttacks
 //
@@ -513,34 +674,45 @@ void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifact
 
 			case CArtifactProgram::effectTargetStat:
 				m_Stat[Effect.iStat].Inc(-Program.GetStrength());
+				Program.AddResult(Effect.iType, Effect.iStat);
+
+				if (Effect.iStat == CArtifactStat::statEgo)
+					AddEventResult(eventEgoChanged, &Program, NULL, Results);
+				else if (Effect.iStat == CArtifactStat::statIntelligence)
+					AddEventResult(eventIntelligenceChanged, &Program, NULL, Results);
+				else if (Effect.iStat == CArtifactStat::statWillpower)
+					AddEventResult(eventWillpowerChanged, &Program, NULL, Results);
 				break;
 
 			case CArtifactProgram::effectHalt:
 			case CArtifactProgram::effectWipe:
 				{
-				//	Figure out the target of the program
+				//	Figure out the target of the program (this also does a strength vs. defense check).
 
-				CArtifactProgram *pTarget = CalcProgramTarget(Program, Effect.iType, CalcMatchingPrograms(Targets, Effect.sCriteria, FLAG_ACTIVE_ONLY));
+				CArtifactProgram *pTarget = CalcProgramTarget(Program, Effect.iType, CalcMatchingPrograms(Targets, Effect.Criteria, CArtifactProgram::FLAG_ACTIVE_ONLY));
 				if (pTarget == NULL)
 					continue;
 
 				//	Halt the program
 
 				pTarget->Halt();
+				Program.AddResult(Effect.iType, pTarget);
+
+				AddEventResult(eventHalted, &Program, pTarget, Results);
 				break;
 				}
 			}
 		}
 	}
 
-void CArtifactAwakening::RunPatchEffects (CArtifactProgram &Program, TArray<CArtifactProgram *> &Targets)
+void CArtifactAwakening::RunPatchEffects (CArtifactProgram &Program, TArray<CArtifactProgram *> &Targets, TArray<SEventDesc> &Results)
 
 //	RunPatchEffects
 //
 //	Runs any patch effects of the given program on the given targets.
 
 	{
-	int i;
+	int i, j;
 
 	for (i = 0; i < Program.GetEffects().GetCount(); i++)
 		{
@@ -549,12 +721,26 @@ void CArtifactAwakening::RunPatchEffects (CArtifactProgram &Program, TArray<CArt
 		switch (Effect.iType)
 			{
 			case CArtifactProgram::effectPatchDefense:
-				IncDefense(CalcMatchingPrograms(Targets, Effect.sCriteria), Effect.iValue);
+				{
+				TArray<CArtifactProgram *> &Matching = CalcMatchingPrograms(Targets, Effect.Criteria);
+				IncDefense(Matching, Program.GetStrength());
+				Program.AddResult(Effect.iType, Matching);
+
+				for (j = 0; j < Matching.GetCount(); j++)
+					AddEventResult(eventDefenseChanged, &Program, Matching[j], Results);
 				break;
+				}
 
 			case CArtifactProgram::effectPatchStrength:
-				IncStrength(CalcMatchingPrograms(Targets, Effect.sCriteria), Effect.iValue);
+				{
+				TArray<CArtifactProgram *> &Matching = CalcMatchingPrograms(Targets, Effect.Criteria);
+				IncStrength(Matching, Program.GetStrength());
+				Program.AddResult(Effect.iType, Matching);
+
+				for (j = 0; j < Matching.GetCount(); j++)
+					AddEventResult(eventStrengthChanged, &Program, Matching[j], Results);
 				break;
+				}
 			}
 		}
 	}
