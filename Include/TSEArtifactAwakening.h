@@ -93,18 +93,6 @@ class CArtifactProgram
 			SCriteria Criteria;				//	Program criteria (varies by type)
 			};
 
-		struct SResultDesc
-			{
-			SResultDesc (void) :
-					iType(effectNone),
-					iStat(CArtifactStat::statNone)
-				{ }
-
-			EEffectTypes iType;
-			CArtifactStat::ETypes iStat;
-			TArray<CArtifactProgram *> Targets;
-			};
-
 		CArtifactProgram (void) :
 				m_iType(typeNone),
 				m_iStatus(statusNone),
@@ -118,15 +106,10 @@ class CArtifactProgram
 			{ }
 
 		inline void Activate (void) { if (m_iStatus == statusArchived) m_iStatus = statusRunning; }
-		inline void AddResult (EEffectTypes iType, CArtifactStat::ETypes iStat) { SResultDesc *pDesc = m_Results.Insert(); pDesc->iType = iType; pDesc->iStat = iStat; }
-		inline void AddResult (EEffectTypes iType, CArtifactProgram *pTarget) { SResultDesc *pDesc = m_Results.Insert(); pDesc->iType = iType; pDesc->Targets.Insert(pTarget); }
-		inline void AddResult (EEffectTypes iType, const TArray<CArtifactProgram *> &Targets) { SResultDesc *pDesc = m_Results.Insert(); pDesc->iType = iType; pDesc->Targets = Targets; }
-		inline void ClearResults (void) { m_Results.DeleteAll(); }
 		inline int GetDefense (void) const { return m_iDefense; }
 		inline const TArray<SEffectDesc> &GetEffects (void) const { return m_Effects; }
 		inline CItemType *GetItemType (void) const { return m_pItem; }
 		inline int GetLocusIndex (void) const { return m_iLocusPos; }
-		inline const TArray<SResultDesc> &GetResults (void) const { return m_Results; }
 		inline int GetStrength (void) const { return m_iStrength; }
 		inline int GetTurnDeployed (void) const { return m_iTurnDeployed; }
 		inline EProgramTypes GetType (void) const { return m_iType; }
@@ -168,8 +151,6 @@ class CArtifactProgram
 		CArtifactStat m_iStrength;		//	Attack power (compute power)
 		CArtifactStat m_iDefense;		//	Defense power (fault tolerance)
 		TArray<SEffectDesc> m_Effects;	//	Effects
-
-		TArray<SResultDesc> m_Results;	//	Effect results from last turn
 
 		bool m_bVisible;				//	TRUE if visible to the player.
 		bool m_bLastAttackSuccessful;	//	TRUE if our last attack succeeded

@@ -552,12 +552,6 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::PlayTurn (CItemType *pDaimo
 	m_Stat[CArtifactStat::statIntelligence].StartTurn();
 	m_Stat[CArtifactStat::statWillpower].StartTurn();
 
-	for (i = 0; i < m_InPlay.GetCount(); i++)
-		{
-		m_InPlay[i]->ResetStats();
-		m_InPlay[i]->ClearResults();
-		}
-
 	//	Start by applying patches, which enhance our own programs
 
 	for (i = 0; i < m_InPlay.GetCount(); i++)
@@ -674,7 +668,6 @@ void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifact
 
 			case CArtifactProgram::effectTargetStat:
 				m_Stat[Effect.iStat].Inc(-Program.GetStrength());
-				Program.AddResult(Effect.iType, Effect.iStat);
 
 				if (Effect.iStat == CArtifactStat::statEgo)
 					AddEventResult(eventEgoChanged, &Program, NULL, Results);
@@ -696,8 +689,6 @@ void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifact
 				//	Halt the program
 
 				pTarget->Halt();
-				Program.AddResult(Effect.iType, pTarget);
-
 				AddEventResult(eventHalted, &Program, pTarget, Results);
 				break;
 				}
@@ -724,7 +715,6 @@ void CArtifactAwakening::RunPatchEffects (CArtifactProgram &Program, TArray<CArt
 				{
 				TArray<CArtifactProgram *> &Matching = CalcMatchingPrograms(Targets, Effect.Criteria);
 				IncDefense(Matching, Program.GetStrength());
-				Program.AddResult(Effect.iType, Matching);
 
 				for (j = 0; j < Matching.GetCount(); j++)
 					AddEventResult(eventDefenseChanged, &Program, Matching[j], Results);
@@ -735,7 +725,6 @@ void CArtifactAwakening::RunPatchEffects (CArtifactProgram &Program, TArray<CArt
 				{
 				TArray<CArtifactProgram *> &Matching = CalcMatchingPrograms(Targets, Effect.Criteria);
 				IncStrength(Matching, Program.GetStrength());
-				Program.AddResult(Effect.iType, Matching);
 
 				for (j = 0; j < Matching.GetCount(); j++)
 					AddEventResult(eventStrengthChanged, &Program, Matching[j], Results);
