@@ -15,7 +15,7 @@ class CGPath
 		int GetSubPathPolygonPoints (int iSubPath, TArray<CVector> *retPoints) const;
 		int GetVertexCount (void) const;
 		void Init (void);
-		void Init (const TArray<CVector> &Points);
+		void Init (const TArray<CVector> &Points, bool bLeaveOpen = false);
 		void InitTakeHandoff (TArray<CVector> &Points);
 		inline bool IsEmpty (void) const { return (m_SubPaths.GetCount() == 0); }
 		void LineTo (const CVector &Pos);

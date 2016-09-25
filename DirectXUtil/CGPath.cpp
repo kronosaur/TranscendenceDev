@@ -359,7 +359,7 @@ void CGPath::Init (void)
 	m_SubPaths.DeleteAll();
 	}
 
-void CGPath::Init (const TArray<CVector> &Points)
+void CGPath::Init (const TArray<CVector> &Points, bool bLeaveOpen)
 
 //	Init
 //
@@ -372,7 +372,8 @@ void CGPath::Init (const TArray<CVector> &Points)
 	for (i = 0; i < Points.GetCount(); i++)
 		LineTo(Points[i]);
 
-	Close();
+	if (!bLeaveOpen)
+		Close();
 	}
 
 void CGPath::InitTakeHandoff (TArray<CVector> &Points)
