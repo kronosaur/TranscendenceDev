@@ -521,7 +521,7 @@ bool CArtifactAwakening::Init (const SCreateDesc &Desc, CString *retsError)
 
 CArtifactAwakening::EResultTypes CArtifactAwakening::PlayTurn (CItemType *pDaimonToPlay, int iDaimonsLeft, TArray<SEventDesc> &Results)
 
-//	NextTurn
+//	PlayTurn
 //
 //	Computes the next turn and returns a list of events (what happened during 
 //	the turn).
@@ -552,6 +552,9 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::PlayTurn (CItemType *pDaimo
 	m_Stat[CArtifactStat::statIntelligence].StartTurn();
 	m_Stat[CArtifactStat::statWillpower].StartTurn();
 
+	for (i = 0; i < m_InPlay.GetCount(); i++)
+		m_InPlay[i]->ResetStats();
+
 	//	Start by applying patches, which enhance our own programs
 
 	for (i = 0; i < m_InPlay.GetCount(); i++)
@@ -575,10 +578,6 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::PlayTurn (CItemType *pDaimo
 		{
 		pCountermeasure->Activate();
 		pCountermeasure->SetTurnDeployed(GetTurn());
-
-		pEvent = Results.Insert();
-		pEvent->iEvent = eventActivated;
-		pEvent->pSource = pCountermeasure;
 		}
 
 	//	Countermeasures get to run first
@@ -586,12 +585,21 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::PlayTurn (CItemType *pDaimo
 	for (i = 0; i < m_InPlay.GetCount(); i++)
 		{
 		CArtifactProgram &Program = *m_InPlay[i];
-		if (!Program.IsLive() || Program.WasHaltedLastTurn())
-			continue;
 
 		//	Only countermeasures
 
 		if (Program.GetType() != CArtifactProgram::typeCountermeasure)
+			continue;
+
+		//	If countermeasure is alive, then add event for activation,
+		//	so it shows up.
+
+		if (Program.IsLive())
+			AddEventResult(eventActivated, &Program, NULL, Results);
+
+		//	No effect if halted
+
+		if (!Program.IsLive() || Program.WasHaltedLastTurn())
 			continue;
 
 		//	Run. These may halt some daimons.
