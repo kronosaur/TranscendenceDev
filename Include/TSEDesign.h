@@ -477,6 +477,7 @@ class CDesignType
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
 		int GetPropertyInteger (const CString &sProperty);
+		CString GetPropertyString (const CString &sProperty);
 		CXMLElement *GetScreen (const CString &sUNID);
 		const CString &GetStaticData (const CString &sAttrib) const;
 		CString GetTypeClassName (void) const;

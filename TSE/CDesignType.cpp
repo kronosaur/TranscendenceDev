@@ -1569,6 +1569,25 @@ int CDesignType::GetPropertyInteger (const CString &sProperty)
 	return iResult;
 	}
 
+CString CDesignType::GetPropertyString (const CString &sProperty)
+
+//	GetPropertyString
+//
+//	Returns a string property
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChainCtx Ctx;
+
+	ICCItem *pItem = GetProperty(Ctx, sProperty);
+	if (pItem == NULL)
+		return 0;
+
+	CString sResult = pItem->GetStringValue();
+	pItem->Discard(&CC);
+	return sResult;
+	}
+
 CString CDesignType::GetTypeNounPhrase (DWORD dwFlags) const
 
 //  GetTypeNounPhrase
