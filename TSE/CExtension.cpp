@@ -354,12 +354,12 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 		//	<Images>
 
 		if (strEquals(pItem->GetTag(), IMAGES_TAG))
-			error = pExtension->LoadImagesElement(Ctx, pItem);
+			error = pExtension->LoadResourcesElement(Ctx, pItem);
 
 		//	<Sounds>
 
 		else if (strEquals(pItem->GetTag(), SOUNDS_TAG))
-			error = pExtension->LoadSoundsElement(Ctx, pItem);
+			error = pExtension->LoadResourcesElement(Ctx, pItem);
 
 		//	<SystemTypes>
 
@@ -1174,10 +1174,12 @@ ALERROR CExtension::LoadDesignType (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			return error;
 		}
 
+#ifdef OLD_SOUND
 	//	<Sound>
 
 	else if (strEquals(pDesc->GetTag(), SOUND_TAG))
 		return LoadSoundElement(Ctx, pDesc);
+#endif
 
 	//	<Globals>
 
@@ -1276,41 +1278,6 @@ ALERROR CExtension::LoadGlobalsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 #ifdef DEBUG_GLOBALS
 	::kernelDebugLogMessage("Loading globals in %s", Ctx.sErrorFilespec);
 #endif
-
-	return NOERROR;
-	}
-
-ALERROR CExtension::LoadImagesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
-
-//	LoadImagesElement
-//
-//	Loads <Images> element
-//	(For backwards compatibility)
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Figure out if we've got a special folder for the images
-
-	CString sOldFolder = Ctx.sFolder;
-	CString sFolder = pDesc->GetAttribute(FOLDER_ATTRIB);
-	if (!sFolder.IsBlank())
-		Ctx.sFolder = pathAddComponent(Ctx.sFolder, sFolder);
-
-	//	Load all images
-
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
-		{
-		CXMLElement *pItem = pDesc->GetContentElement(i);
-
-		if (error = LoadDesignType(Ctx, pItem))
-			return error;
-		}
-
-	//	Restore folder
-
-	Ctx.sFolder = sOldFolder;
 
 	return NOERROR;
 	}
@@ -1446,6 +1413,7 @@ ALERROR CExtension::LoadModulesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
+#ifdef OLD_SOUND
 ALERROR CExtension::LoadSoundElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	LoadSoundElement
@@ -1508,6 +1476,42 @@ ALERROR CExtension::LoadSoundsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		CXMLElement *pItem = pDesc->GetContentElement(i);
 
 		if (error = LoadSoundElement(Ctx, pItem))
+			return error;
+		}
+
+	//	Restore folder
+
+	Ctx.sFolder = sOldFolder;
+
+	return NOERROR;
+	}
+#endif
+
+ALERROR CExtension::LoadResourcesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+//	LoadResourcesElement
+//
+//	Loads <Images> and <Sounds> element
+//	(For backwards compatibility)
+
+	{
+	ALERROR error;
+	int i;
+
+	//	Figure out if we've got a special folder for the images
+
+	CString sOldFolder = Ctx.sFolder;
+	CString sFolder = pDesc->GetAttribute(FOLDER_ATTRIB);
+	if (!sFolder.IsBlank())
+		Ctx.sFolder = pathAddComponent(Ctx.sFolder, sFolder);
+
+	//	Load all images
+
+	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+		{
+		CXMLElement *pItem = pDesc->GetContentElement(i);
+
+		if (error = LoadDesignType(Ctx, pItem))
 			return error;
 		}
 

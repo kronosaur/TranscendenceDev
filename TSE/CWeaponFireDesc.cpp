@@ -2204,6 +2204,8 @@ void CWeaponFireDesc::MarkImages (void)
 	if (m_pFireEffect)
 		m_pFireEffect->MarkImages();
 
+	m_FireSound.Mark();
+
 	SFragmentDesc *pFragment = m_pFirstFragment;
 	while (pFragment)
 		{

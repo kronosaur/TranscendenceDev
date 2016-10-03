@@ -93,6 +93,7 @@ ALERROR CDesignCollection::AddDynamicType (CExtension *pExtension, DWORD dwUNID,
 		case designAdventureDesc:
 		case designGlobals:
 		case designImage:
+		case designMusic:
 		case designSound:
 		case designEconomyType:
 		case designTemplateType:

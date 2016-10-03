@@ -226,9 +226,9 @@ ALERROR CShockwaveEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CShockwaveEffectCreator::OnMarkImages (void)
+void CShockwaveEffectCreator::OnEffectMarkResources (void)
 
-//	OnMarkImages
+//	OnEffectMarkResources
 //
 //	Mark images that are in use
 	

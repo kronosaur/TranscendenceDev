@@ -102,7 +102,7 @@ bool CMCIMixer::CreateParentWindow (void)
 	return true;
 	}
 
-void CMCIMixer::EnqueueRequest (ERequestType iType, CSoundType *pTrack, int iPos)
+void CMCIMixer::EnqueueRequest (ERequestType iType, CMusicResource *pTrack, int iPos)
 
 //	EnqueueRequest
 //
@@ -474,7 +474,7 @@ LONG APIENTRY CMCIMixer::ParentWndProc (HWND hWnd, UINT message, UINT wParam, LO
 		}
 	}
 
-bool CMCIMixer::Play (CSoundType *pTrack, int iPos)
+bool CMCIMixer::Play (CMusicResource *pTrack, int iPos)
 
 //	Play
 //
@@ -490,7 +490,7 @@ bool CMCIMixer::Play (CSoundType *pTrack, int iPos)
 	return true;
 	}
 
-bool CMCIMixer::PlayFadeIn (CSoundType *pTrack, int iPos)
+bool CMCIMixer::PlayFadeIn (CMusicResource *pTrack, int iPos)
 
 //	Play
 //

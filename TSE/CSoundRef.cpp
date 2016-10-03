@@ -13,21 +13,21 @@ ALERROR CSoundRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (Ctx.bNoResources || g_pUniverse->GetSoundMgr() == NULL)
 		{
-		m_iSound = -1;
+		m_pSound = NULL;
 		return NOERROR;
 		}
 
 	if (m_dwUNID)
 		{
-		m_iSound = g_pUniverse->FindSound(m_dwUNID);
-		if (m_iSound == -1 && Ctx.GetAPIVersion() >= 12)
+		m_pSound = g_pUniverse->FindSoundResource(m_dwUNID);
+		if (m_pSound == NULL && Ctx.GetAPIVersion() >= 12)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find sound: %x."), m_dwUNID);
 			return ERR_FAIL;
 			}
 		}
 	else
-		m_iSound = -1;
+		m_pSound = NULL;
 
 	return NOERROR;
 	}
@@ -49,6 +49,6 @@ void CSoundRef::PlaySound (CSpaceObject *pSource)
 //	Plays the sound
 
 	{
-	if (m_iSound != -1)
-		g_pUniverse->PlaySound(pSource, m_iSound);
+	if (m_pSound)
+		g_pUniverse->PlaySound(pSource, m_pSound->GetSound());
 	}

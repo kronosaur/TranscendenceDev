@@ -30,6 +30,7 @@
 #define SHIP_CLASS_OVERRIDE_TAG					CONSTLIT("ShipClassOverride")
 #define SHIP_ENERGY_FIELD_TYPE_TAG				CONSTLIT("ShipEnergyFieldType")
 #define SHIP_TABLE_TAG							CONSTLIT("ShipTable")
+#define SOUND_TAG								CONSTLIT("Sound")
 #define SOUNDTRACK_TAG							CONSTLIT("Soundtrack")
 #define SOVEREIGN_TAG							CONSTLIT("Sovereign")
 #define SPACE_ENVIRONMENT_TYPE_TAG				CONSTLIT("SpaceEnvironmentType")
@@ -343,12 +344,16 @@ void CDesignType::CreateClone (CDesignType **retpType)
 			pClone = new CObjectImage;
 			break;
 
-		case designSound:
-			pClone = new CSoundType;
+		case designMusic:
+			pClone = new CMusicResource;
 			break;
 
 		case designMissionType:
 			pClone = new CMissionType;
+			break;
+
+		case designSound:
+			pClone = new CSoundResource;
 			break;
 
 		case designSystemTable:
@@ -433,7 +438,7 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 		else if (strEquals(pDesc->GetTag(), STATION_TYPE_TAG))
 			pType = new CStationType;
 		else if (strEquals(pDesc->GetTag(), SOUNDTRACK_TAG))
-			pType = new CSoundType;
+			pType = new CMusicResource;
 		else if (strEquals(pDesc->GetTag(), SOVEREIGN_TAG))
 			pType = new CSovereign;
 		else if (strEquals(pDesc->GetTag(), DOCK_SCREEN_TAG))
@@ -446,6 +451,8 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			pType = new CShipTable;
 		else if (strEquals(pDesc->GetTag(), SHIP_TABLE_TAG))
 			pType = new CShipTable;
+		else if (strEquals(pDesc->GetTag(), SOUND_TAG))
+			pType = new CSoundResource;
 		else if (strEquals(pDesc->GetTag(), SYSTEM_FRAGMENT_TABLE_TAG))
 			pType = new CSystemTable;
 		else if (strEquals(pDesc->GetTag(), SYSTEM_MAP_TAG))

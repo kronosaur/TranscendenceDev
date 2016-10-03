@@ -3574,7 +3574,6 @@ class CUniverse
 		inline void AddAscendedObj (CSpaceObject *pObj) { m_AscendedObjects.Insert(pObj); }
 		inline ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError) { return m_Design.AddDynamicType(pExtension, dwUNID, pSource, bNewGame, retsError); }
 		void AddEvent (CTimedEvent *pEvent);
-		void AddSound (DWORD dwUNID, int iChannel);
 		inline void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
 		ALERROR AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem);
 		inline bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, bInDoEvent); }
@@ -3631,7 +3630,6 @@ class CUniverse
 		inline CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const;
 		inline CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
-		DWORD GetSoundUNID (int iChannel);
 		inline bool InDebugMode (void) { return m_bDebugMode; }
 		inline void InitEntityResolver (CExtension *pExtension, CEntityResolverList *retResolver) { m_Extensions.InitEntityResolver(pExtension, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retResolver); }
 		inline bool InResurrectMode (void) { return m_bResurrectMode; }
@@ -3687,8 +3685,9 @@ class CUniverse
 		inline CShipClass *FindShipClass (DWORD dwUNID) { return CShipClass::AsType(m_Design.FindEntry(dwUNID)); }
 		CShipClass *FindShipClassByName (const CString &sName);
 		inline COverlayType *FindShipEnergyFieldType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline int FindSound (DWORD dwUNID) { CObject *pObj; if (!FindByUNID(m_Sounds, dwUNID, &pObj)) return -1; return (int)pObj; }
-		inline CSoundType *FindSoundType (DWORD dwUNID) { return CSoundType::AsType(m_Design.FindEntry(dwUNID)); }
+		inline int FindSound (DWORD dwUNID) { CSoundResource *pSound = FindSoundResource(dwUNID); return (pSound ? pSound->GetSound() : -1); }
+		inline CMusicResource *FindMusicResource (DWORD dwUNID) { return CMusicResource::AsType(m_Design.FindEntry(dwUNID)); }
+		inline CSoundResource *FindSoundResource (DWORD dwUNID) { return CSoundResource::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CSovereign *FindSovereign (DWORD dwUNID) const { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CSpaceEnvironmentType *FindSpaceEnvironment (DWORD dwUNID) { return CSpaceEnvironmentType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CStationType *FindStationType (DWORD dwUNID) { return CStationType::AsType(m_Design.FindEntry(dwUNID)); }
@@ -3727,8 +3726,8 @@ class CUniverse
 		inline int GetPowerCount (void) { return m_Design.GetCount(designPower); }
 		inline CShipClass *GetShipClass (int iIndex) { return (CShipClass *)m_Design.GetEntry(designShipClass, iIndex); }
 		inline int GetShipClassCount (void) { return m_Design.GetCount(designShipClass); }
-		inline CSoundType *GetSoundType (int iIndex) const { return (CSoundType *)m_Design.GetEntry(designSound, iIndex); }
-		inline int GetSoundTypeCount (void) const { return m_Design.GetCount(designSound); }
+		inline CMusicResource *GetMusicResource (int iIndex) const { return (CMusicResource *)m_Design.GetEntry(designMusic, iIndex); }
+		inline int GetMusicResourceCount (void) const { return m_Design.GetCount(designMusic); }
 		inline CSovereign *GetSovereign (int iIndex) const { return (CSovereign *)m_Design.GetEntry(designSovereign, iIndex); }
 		inline int GetSovereignCount (void) { return m_Design.GetCount(designSovereign); }
 		inline CStationType *GetStationType (int iIndex) { return (CStationType *)m_Design.GetEntry(designStationType, iIndex); }
@@ -3790,7 +3789,6 @@ class CUniverse
 
 		CString m_sResourceDb;					//	Resource database
 
-		CIDTable m_Sounds;						//	Array of sound channels (int)
 		CObjectArray m_LevelEncounterTables;	//	Array of SLevelEncounter arrays
 		bool m_bBasicInit;						//	TRUE if we've initialized CodeChain, etc.
 

@@ -145,9 +145,9 @@ ALERROR CEffectSequencerCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CEffectSequencerCreator::OnMarkImages (void)
+void CEffectSequencerCreator::OnEffectMarkResources (void)
 
-//	MarkImages
+//	OnEffectMarkResources
 //
 //	Mark images used by this effect
 

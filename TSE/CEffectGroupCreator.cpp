@@ -641,9 +641,9 @@ void CEffectGroupCreator::OnEffectPlaySound (CSpaceObject *pSource)
 		m_pCreators[i]->PlaySound(pSource);
 	}
 
-void CEffectGroupCreator::OnMarkImages (void)
+void CEffectGroupCreator::OnEffectMarkResources (void)
 
-//	MarkImages
+//	OnEffectMarkResources
 //
 //	Mark images used by this effect
 

@@ -1,6 +1,6 @@
-//	CSoundType.cpp
+//	CMusicResource.cpp
 //
-//	CSoundType class
+//	CMusicResource class
 //	Copyright (c) 2013 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
@@ -16,7 +16,7 @@
 #define START_POS_ATTRIB					CONSTLIT("startPos")
 #define TITLE_ATTRIB						CONSTLIT("title")
 
-bool CSoundType::FindDataField (const CString &sField, CString *retsValue) const
+bool CMusicResource::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
 //
@@ -26,7 +26,7 @@ bool CSoundType::FindDataField (const CString &sField, CString *retsValue) const
 	return false;
 	}
 
-int CSoundType::FindSegment (int iPos)
+int CMusicResource::FindSegment (int iPos)
 
 //	FindSegment
 //
@@ -49,7 +49,7 @@ int CSoundType::FindSegment (int iPos)
 	return i;
 	}
 
-const CString &CSoundType::GetAlbum (void) const
+const CString &CMusicResource::GetAlbum (void) const
 
 //	GetAlbum
 //
@@ -60,7 +60,7 @@ const CString &CSoundType::GetAlbum (void) const
 	return (pExtension ? pExtension->GetName() : NULL_STR);
 	}
 
-int CSoundType::GetNextFadePos (int iPos)
+int CMusicResource::GetNextFadePos (int iPos)
 
 //	GetNextFadePos
 //
@@ -74,7 +74,7 @@ int CSoundType::GetNextFadePos (int iPos)
 	return m_Segments[FindSegment(iPos)].iEndPos;
 	}
 
-CString CSoundType::GetFilespec (void) const
+CString CMusicResource::GetFilespec (void) const
 
 //	GetFilespec
 //
@@ -84,7 +84,7 @@ CString CSoundType::GetFilespec (void) const
 	return m_sFilespec;
 	}
 
-int CSoundType::GetNextPlayPos (void)
+int CMusicResource::GetNextPlayPos (void)
 
 //	GetNextPlayPos
 //
@@ -97,7 +97,7 @@ int CSoundType::GetNextPlayPos (void)
 		return m_Segments[m_iNextSegment].iStartPos;
 	}
 
-ALERROR CSoundType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CMusicResource::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	OnCreateFromXML
 //
@@ -187,7 +187,7 @@ ALERROR CSoundType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-void CSoundType::SetLastPlayPos (int iPos)
+void CMusicResource::SetLastPlayPos (int iPos)
 
 //	SetLastPlayPos
 //

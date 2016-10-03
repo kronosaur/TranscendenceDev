@@ -17,8 +17,8 @@ class CMCIMixer
 		int GetCurrentPlayLength (void);
 		int GetCurrentPlayPos (void);
 		void GetDebugInfo (TArray<CString> *retLines) const;
-		bool Play (CSoundType *pTrack, int iPos = 0);
-		bool PlayFadeIn (CSoundType *pTrack, int iPos = 0);
+		bool Play (CMusicResource *pTrack, int iPos = 0);
+		bool PlayFadeIn (CMusicResource *pTrack, int iPos = 0);
 		void SetPlayPaused (bool bPlay);
 		void SetVolume (int iVolume);
 		void Shutdown (void);
@@ -56,7 +56,7 @@ class CMCIMixer
 		struct SRequest
 			{
 			ERequestType iType;
-			CSoundType *pTrack;
+			CMusicResource *pTrack;
 			int iPos;
 			};
 
@@ -66,7 +66,7 @@ class CMCIMixer
 			};
 
 		bool CreateParentWindow (void);
-		void EnqueueRequest (ERequestType iType, CSoundType *pTrack = NULL, int iPos = 0);
+		void EnqueueRequest (ERequestType iType, CMusicResource *pTrack = NULL, int iPos = 0);
 		bool FindChannel (HWND hMCI, SChannel **retpChannel = NULL);
 		inline int GetPlayLength (HWND hMCI) { return MCIWndGetLength(hMCI); }
 		inline int GetPlayPos (HWND hMCI) { return MCIWndGetPosition(hMCI); }
@@ -92,7 +92,7 @@ class CMCIMixer
 		int m_iDefaultVolume;				//	Default volume
 		TArray<SChannel> m_Channels;
 		int m_iCurChannel;
-		CSoundType *m_pNowPlaying;			//	Currently playing
+		CMusicResource *m_pNowPlaying;			//	Currently playing
 
 		//	Synchronization
 
@@ -130,7 +130,7 @@ class CSoundtrackManager
 		CSoundtrackManager (void);
 		~CSoundtrackManager (void);
 
-		CSoundType *GetCurrentTrack (int *retiPos = NULL);
+		CMusicResource *GetCurrentTrack (int *retiPos = NULL);
 		void NextTrack (void);
 		void NotifyEndCombat (void);
 		void NotifyEnterSystem (CTopologyNode *pNode = NULL, bool bFirstTime = true);
@@ -138,13 +138,13 @@ class CSoundtrackManager
 		void NotifyStartCombat (void);
 		void NotifyStartCombatMission (void);
 		void NotifyTrackDone (void);
-		void NotifyTrackPlaying (CSoundType *pTrack);
+		void NotifyTrackPlaying (CMusicResource *pTrack);
 		void NotifyUndocked (void);
 		void NotifyUpdatePlayPos (int iPos);
 		void PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen);
 		inline void SetDebugMode (bool bDebugMode = true) { m_bDebugMode = bDebugMode; }
 		void SetGameState (EGameStates iNewState);
-		void SetGameState (EGameStates iNewState, CSoundType *pTrack);
+		void SetGameState (EGameStates iNewState, CMusicResource *pTrack);
 		void SetMusicEnabled (bool bEnabled = true);
 		void SetPlayPaused (bool bPlay = true);
 		void SetVolume (int iVolume);
@@ -161,15 +161,15 @@ class CSoundtrackManager
 			CString sRequiredAttrib;
 			};
 
-		CSoundType *CalcGameTrackToPlay (CTopologyNode *pNode, const CString &sRequiredAttrib) const;
-		CSoundType *CalcRandomTrackToPlay (void) const;
-		CSoundType *CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const;
+		CMusicResource *CalcGameTrackToPlay (CTopologyNode *pNode, const CString &sRequiredAttrib) const;
+		CMusicResource *CalcRandomTrackToPlay (void) const;
+		CMusicResource *CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const;
 		int GetLastPlayedRank (DWORD dwUNID) const;
 		bool IsPlayingCombatTrack (void) const;
 		bool InTransition (void) const;
-		void Play (CSoundType *pTrack);
+		void Play (CMusicResource *pTrack);
 		void Reinit (void);
-		void TransitionTo (CSoundType *pTrack, int iPos, bool bFadeIn = false);
+		void TransitionTo (CMusicResource *pTrack, int iPos, bool bFadeIn = false);
 		void TransitionToCombat (void);
 		void TransitionToTravel (void);
 
@@ -177,8 +177,8 @@ class CSoundtrackManager
 		bool m_bEnabled;					//	Music is enabled
 		bool m_bDebugMode;					//	Output debug info
 		EGameStates m_iGameState;			//	Current soundtrack state
-		CSoundType *m_pNowPlaying;			//	What we've scheduled to play
-		CSoundType *m_pLastTravel;			//	Travel music track interrupted by combat
+		CMusicResource *m_pNowPlaying;			//	What we've scheduled to play
+		CMusicResource *m_pLastTravel;			//	Travel music track interrupted by combat
 
 		TQueue<DWORD> m_LastPlayed;			//	UNID of tracks played.
 		bool m_bSystemTrackPlayed;			//	systemSoundtrack already played in system.
@@ -189,5 +189,5 @@ class CSoundtrackManager
 
 		mutable STrackCriteria m_NotFoundCache;		//	Remember that we couldn't find this criteria
 
-		CSoundType *m_pIntroTrack;			//	Track to play for intro.
+		CMusicResource *m_pIntroTrack;			//	Track to play for intro.
 	};

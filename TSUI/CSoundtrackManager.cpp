@@ -56,7 +56,7 @@ CSoundtrackManager::CSoundtrackManager (void) :
 	{
 	//	Hardcoded intro soundtrack
 
-	m_pIntroTrack = new CSoundType;
+	m_pIntroTrack = new CMusicResource;
 	m_pIntroTrack->Init(0xFFFFFFFF, CONSTLIT("TranscendenceIntro.mp3"));
 	}
 
@@ -69,7 +69,7 @@ CSoundtrackManager::~CSoundtrackManager (void)
 		delete m_pIntroTrack;
 	}
 
-CSoundType *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const CString &sRequiredAttrib) const
+CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const CString &sRequiredAttrib) const
 
 //	CalcGameTrackToPlay
 //
@@ -87,10 +87,10 @@ CSoundType *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const
 
 	//	Create a probability table of tracks to play.
 
-	TSortMap<int, TProbabilityTable<CSoundType *>> Table(DescendingSort);
-	for (i = 0; i < g_pUniverse->GetSoundTypeCount(); i++)
+	TSortMap<int, TProbabilityTable<CMusicResource *>> Table(DescendingSort);
+	for (i = 0; i < g_pUniverse->GetMusicResourceCount(); i++)
 		{
-		CSoundType *pTrack = g_pUniverse->GetSoundType(i);
+		CMusicResource *pTrack = g_pUniverse->GetMusicResource(i);
 
 		//	If this is not appropriate music then skip it
 
@@ -158,7 +158,7 @@ CSoundType *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const
 
 		//	Add to the probability table
 
-		TProbabilityTable<CSoundType *> *pEntry = Table.SetAt(iPriority);
+		TProbabilityTable<CMusicResource *> *pEntry = Table.SetAt(iPriority);
 		pEntry->Insert(pTrack, iChance);
 		}
 
@@ -176,8 +176,8 @@ CSoundType *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const
 
 	//	Otherwise, roll out of the first table.
 
-	TProbabilityTable<CSoundType *> &Entry = Table[0];
-	CSoundType *pResult = Entry.GetAt(Entry.RollPos());
+	TProbabilityTable<CMusicResource *> &Entry = Table[0];
+	CMusicResource *pResult = Entry.GetAt(Entry.RollPos());
 
 	//	Clear the cache, since we found something
 
@@ -193,7 +193,7 @@ CSoundType *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, const
 	return pResult;
 	}
 
-CSoundType *CSoundtrackManager::CalcRandomTrackToPlay (void) const
+CMusicResource *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 
 //	CalcRandomTrackToPlay
 //
@@ -205,10 +205,10 @@ CSoundType *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 
 	//	Create a probability table of tracks to play.
 
-	TProbabilityTable<CSoundType *> Table;
-	for (i = 0; i < g_pUniverse->GetSoundTypeCount(); i++)
+	TProbabilityTable<CMusicResource *> Table;
+	for (i = 0; i < g_pUniverse->GetMusicResourceCount(); i++)
 		{
-		CSoundType *pTrack = g_pUniverse->GetSoundType(i);
+		CMusicResource *pTrack = g_pUniverse->GetMusicResource(i);
 
 		//	Adjust probability based on when we last played this tack.
 
@@ -265,7 +265,7 @@ CSoundType *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 
 	//	Otherwise, roll out of the first table.
 
-	CSoundType *pResult = Table.GetAt(Table.RollPos());
+	CMusicResource *pResult = Table.GetAt(Table.RollPos());
 
 	if (m_bDebugMode)
 		{
@@ -276,7 +276,7 @@ CSoundType *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 	return pResult;
 	}
 
-CSoundType *CSoundtrackManager::CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const
+CMusicResource *CSoundtrackManager::CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const
 
 //	CalcTrackToPlay
 //
@@ -304,7 +304,7 @@ CSoundType *CSoundtrackManager::CalcTrackToPlay (CTopologyNode *pNode, EGameStat
 		}
 	}
 
-CSoundType *CSoundtrackManager::GetCurrentTrack (int *retiPos)
+CMusicResource *CSoundtrackManager::GetCurrentTrack (int *retiPos)
 
 //	GetCurrentTrack
 //
@@ -378,7 +378,7 @@ void CSoundtrackManager::NextTrack (void)
 
 	if (m_bEnabled)
 		{
-		CSoundType *pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState);
+		CMusicResource *pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState);
 		if (pTrack == NULL)
 			return;
 
@@ -461,7 +461,7 @@ void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTim
 
 	if (m_bEnabled)
 		{
-		CSoundType *pTrack = CalcTrackToPlay(pNode, stateGameTravel);
+		CMusicResource *pTrack = CalcTrackToPlay(pNode, stateGameTravel);
 		if (pTrack == NULL)
 			return;
 
@@ -533,7 +533,7 @@ void CSoundtrackManager::NotifyTrackDone (void)
 		Play(CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState));
 	}
 
-void CSoundtrackManager::NotifyTrackPlaying (CSoundType *pTrack)
+void CSoundtrackManager::NotifyTrackPlaying (CMusicResource *pTrack)
 
 //	NotifyTrackPlaying
 //
@@ -710,7 +710,7 @@ void CSoundtrackManager::PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScree
 		}
 	}
 
-void CSoundtrackManager::Play (CSoundType *pTrack)
+void CSoundtrackManager::Play (CMusicResource *pTrack)
 
 //	Play
 //
@@ -783,7 +783,7 @@ void CSoundtrackManager::SetGameState (EGameStates iNewState)
 		SetGameState(iNewState, CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), iNewState));
 	}
 
-void CSoundtrackManager::SetGameState (EGameStates iNewState, CSoundType *pTrack)
+void CSoundtrackManager::SetGameState (EGameStates iNewState, CMusicResource *pTrack)
 
 //	SetGameState
 //
@@ -859,7 +859,7 @@ void CSoundtrackManager::TogglePlayPaused (void)
 	m_Mixer.TogglePausePlay();
 	}
 
-void CSoundtrackManager::TransitionTo (CSoundType *pTrack, int iPos, bool bFadeIn)
+void CSoundtrackManager::TransitionTo (CMusicResource *pTrack, int iPos, bool bFadeIn)
 
 //	TransitionTo
 //
@@ -927,7 +927,7 @@ void CSoundtrackManager::TransitionToCombat (void)
 
 	//	Pick a combat track
 
-	CSoundType *pCombatTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), stateGameCombat);
+	CMusicResource *pCombatTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), stateGameCombat);
 	if (pCombatTrack == NULL)
 		return;
 
@@ -945,7 +945,7 @@ void CSoundtrackManager::TransitionToTravel (void)
 //	Transition to a travel bed track.
 
 	{
-	CSoundType *pTrack;
+	CMusicResource *pTrack;
 
 	//	If we interrupted a travel track, see if we can go back to it.
 

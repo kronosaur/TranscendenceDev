@@ -138,7 +138,6 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	};
 
 CUniverse::CUniverse (void) : 
-		m_Sounds(FALSE, TRUE),
 		m_LevelEncounterTables(TRUE),
 		m_bBasicInit(false),
 
@@ -224,6 +223,7 @@ void CUniverse::AddEvent (CTimedEvent *pEvent)
 	m_Events.AddEvent(pEvent);
 	}
 
+#ifdef OLD_SOUND
 void CUniverse::AddSound (DWORD dwUNID, int iChannel)
 
 //	AddSound
@@ -247,6 +247,7 @@ void CUniverse::AddSound (DWORD dwUNID, int iChannel)
 
 	m_Sounds.AddEntry((int)dwUNID, (CObject *)iChannel);
 	}
+#endif
 
 ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 
@@ -1083,22 +1084,6 @@ void CUniverse::GetRandomLevelEncounter (int iLevel,
 	*retpType = ((SLevelEncounter *)pTable->GetStruct(iPos))->pType;
 	*retpTable = ((SLevelEncounter *)pTable->GetStruct(iPos))->pTable;
 	*retpBaseSovereign = ((SLevelEncounter *)pTable->GetStruct(iPos))->pBaseSovereign;
-	}
-
-DWORD CUniverse::GetSoundUNID (int iChannel)
-
-//	GetSoundUNID
-//
-//	Returns the UNID for the given sound
-
-	{
-	int i;
-
-	for (i = 0; i < m_Sounds.GetCount(); i++)
-		if ((int)m_Sounds.GetValue(i) == iChannel)
-			return (DWORD)m_Sounds.GetKey(i);
-
-	return INVALID_UNID;
 	}
 
 ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)

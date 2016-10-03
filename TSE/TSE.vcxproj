@@ -395,7 +395,8 @@
     <ClCompile Include="CShipTable.cpp" />
     <ClCompile Include="CShockwaveHitTest.cpp" />
     <ClCompile Include="CEnvironmentGrid.cpp" />
-    <ClCompile Include="CSoundType.cpp" />
+    <ClCompile Include="CMusicResource.cpp" />
+    <ClCompile Include="CSoundResource.cpp" />
     <ClCompile Include="CSpaceObjectAddressResolver.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />

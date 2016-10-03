@@ -106,12 +106,16 @@ CString CDesignTypeCriteria::AsString (void) const
 						Output.WriteChar(charImage);
 						break;
 
-					case designSound:
-						Output.WriteChar(charSound);
+					case designMusic:
+						Output.WriteChar(charMusic);
 						break;
 
 					case designMissionType:
 						Output.WriteChar(charMissionType);
+						break;
+
+					case designSound:
+						Output.WriteChar(charSound);
 						break;
 
 					case designSystemTable:
@@ -288,6 +292,10 @@ ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTyp
 
 			case charStationType:
 				retCriteria->m_dwTypeSet |= (1 << designStationType);
+				break;
+
+			case charMusic:
+				retCriteria->m_dwTypeSet |= (1 << designMusic);
 				break;
 
 			case charSound:

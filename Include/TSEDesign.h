@@ -291,7 +291,7 @@ enum DesignTypes
 	designAdventureDesc =				12,
 	designGlobals =						13,
 	designImage =						14,
-	designSound =						15,
+	designMusic =						15,
 	designMissionType =					16,
 	designSystemTable =					17,
 	designSystemMap =					18,
@@ -301,8 +301,9 @@ enum DesignTypes
 	designTemplateType =				21,
 	designGenericType =					22,
 	designImageComposite =				23,
+	designSound =						24,
 
-	designCount	=						24, 
+	designCount	=						25, 
 
 	designSetAll =						0xffffffff,
 	charEconomyType =					'$',
@@ -315,7 +316,7 @@ enum DesignTypes
 	charGlobals =						'g',
 	charShipTable =						'h',
 	charItemType =						'i',
-	//	j
+	charSound =							'j',
 	//	k
 	//	l
 	charImage =							'm',
@@ -326,7 +327,7 @@ enum DesignTypes
 	//	r
 	charShipClass =						's',
 	charStationType =					't',
-	charSound =							'u',
+	charMusic =							'u',
 	charSovereign =						'v',
 	charNameGenerator =					'w',
 	charGenericType =					'x',
@@ -1006,31 +1007,66 @@ class CMapViewportCtx
 
 //	Sounds
 
+class CSoundResource : public CDesignType
+	{
+	public:
+		CSoundResource (void);
+
+		int GetSound (void) const;
+        inline bool IsMarked (void) const { return m_bMarked; }
+		inline void Mark (void) { GetSound(); m_bMarked = true; }
+
+		//	CDesignType overrides
+
+		static CSoundResource *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSound) ? (CSoundResource *)pType : NULL); }
+		virtual DesignTypes GetType (void) const override { return designSound; }
+
+	protected:
+
+		//	CDesignType overrides
+
+		virtual void OnClearMark (void) override { m_bMarked = false; }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual void OnSweep (void) override;
+		virtual void OnUnbindDesign (void) override;
+
+	private:
+		void LoadResource (void) const;
+		void UnloadResource (void);
+
+		CString m_sResourceDb;			//	Resource db
+		CString m_sFilename;			//	Resource name
+
+		mutable int m_iChannel;			//	Loaded in the given channel (-1 if not loaded)
+		bool m_bMarked;					//	Marked
+	};
+
 class CSoundRef
 	{
 	public:
-		CSoundRef (void) : m_dwUNID(0), m_iSound(-1)
+		CSoundRef (void) : m_dwUNID(0), m_pSound(NULL)
 			{ }
 
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		DWORD GetUNID (void) const { return m_dwUNID; }
-		int GetSound (void) const { return m_iSound; }
+		int GetSound (void) const { return (m_pSound ? m_pSound->GetSound() : -1); }
 		inline bool IsNull (void) const { return (m_dwUNID == 0); }
 		ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sAttrib);
+		inline void Mark (void) { if (m_pSound) m_pSound->Mark(); }
 		void PlaySound (CSpaceObject *pSource);
 
 	private:
 		DWORD m_dwUNID;
-		int m_iSound;
+		CSoundResource *m_pSound;
 	};
 
-class CSoundType : public CDesignType
+class CMusicResource : public CDesignType
 	{
 	public:
-		CSoundType (void) : m_iNextSegment(0)
+		CMusicResource (void) : m_iNextSegment(0)
 			{ }
 
-		~CSoundType (void) { }
+		~CMusicResource (void) { }
 
 		int FindSegment (int iPos);
 		const CString &GetAlbum (void) const;
@@ -1048,9 +1084,9 @@ class CSoundType : public CDesignType
 		void SetLastPlayPos (int iPos);
 
 		//	CDesignType overrides
-		static CSoundType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSound) ? (CSoundType *)pType : NULL); }
+		static CMusicResource *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designMusic) ? (CMusicResource *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
-		virtual DesignTypes GetType (void) const override { return designSound; }
+		virtual DesignTypes GetType (void) const override { return designMusic; }
 
 	protected:
 		//	CDesignType overrides
@@ -2791,12 +2827,14 @@ class CEffectCreator : public CDesignType
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const override;
+		virtual void OnMarkImages (void) override { m_Sound.Mark(); OnEffectMarkResources(); }
 
 		//	CEffectCreator virtuals
 
 		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) = 0;
 		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) { return NOERROR; }
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
+		virtual void OnEffectMarkResources (void) { }
 		virtual void OnEffectPlaySound (CSpaceObject *pSource);
 
 		void InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPainter *pPainter);
@@ -4538,13 +4576,11 @@ class CExtension
 		ALERROR LoadDesignElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR LoadDesignType (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDesignType **retpType = NULL);
 		ALERROR LoadGlobalsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		ALERROR LoadImagesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR LoadLibraryElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR LoadModuleContent (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR LoadModuleElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR LoadModulesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		ALERROR LoadSoundElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		ALERROR LoadSoundsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR LoadResourcesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR LoadSystemTypesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 
 		CString m_sFilespec;				//	Extension file

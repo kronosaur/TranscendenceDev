@@ -183,9 +183,9 @@ ALERROR CEffectVariantCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CEffectVariantCreator::OnMarkImages (void)
+void CEffectVariantCreator::OnEffectMarkResources (void)
 
-//	OnMarkImages
+//	OnEffectMarkResources
 //
 //	Mark images used by this effect
 

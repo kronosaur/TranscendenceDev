@@ -742,9 +742,6 @@
     <ClCompile Include="CSoundRef.cpp">
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="CSoundType.cpp">
-      <Filter>Source Files\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="CItemEnhancementStack.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
@@ -954,6 +951,12 @@
     </ClCompile>
     <ClCompile Include="CArtifactProgram.cpp">
       <Filter>Source Files\Artifact Awakening</Filter>
+    </ClCompile>
+    <ClCompile Include="CMusicResource.cpp">
+      <Filter>Source Files\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="CSoundResource.cpp">
+      <Filter>Source Files\Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
