@@ -2442,16 +2442,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"sysVectorDivide",				fnSystemVectorMath,		FN_VECTOR_DIVIDE,
 			"(sysVectorDivide vector scalar) -> vector",
-			"vi",	0,	},
+			"vn",	0,	},
 
 		{	"sysVectorMultiply",			fnSystemVectorMath,		FN_VECTOR_MULTIPLY,
 			"(sysVectorMultiply vector scalar) -> vector",
-			"vi",	0,	},
+			"vn",	0,	},
 
 		{	"sysVectorPixelOffset",			fnSystemVectorMath,		FN_VECTOR_PIXEL_OFFSET,
 			"(sysVectorPixelOffset center x y) -> vector",
 		//			center is either Nil, an object, or a vector
-			"vii",	0,	},
+			"vnn",	0,	},
 
 		{	"sysVectorPolarOffset",			fnSystemVectorOffset,	0,
 			"(sysVectorPolarOffset center angle radius) -> vector",
@@ -2461,7 +2461,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"sysVectorPolarVelocity",			fnSystemVectorMath,		FN_VECTOR_POLAR_VELOCITY,
 			"(sysVectorPolarVelocity angle speed) -> velVector",
-			"ii",	0,	},
+			"nn",	0,	},
 
 		{	"sysVectorRandom",				fnSystemVectorMath,		FN_VECTOR_RANDOM,
 			"(sysVectorRandom center radius minSeparation [filter]) -> vector",
@@ -11738,12 +11738,12 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
-			int iFactor = pArgs->GetElement(1)->GetIntegerValue();
+			Metric rFactor = pArgs->GetElement(1)->GetDoubleValue();
 
-			if (iFactor == 0)
+			if (rFactor == 0.0)
 				return pCC->CreateError(CONSTLIT("division by zero"), NULL);
 
-			return CreateListFromVector(*pCC, vPos1 / (Metric)iFactor);
+			return CreateListFromVector(*pCC, vPos1 / rFactor);
 			}
 
 		case FN_VECTOR_MULTIPLY:
@@ -11752,9 +11752,9 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
-			int iFactor = pArgs->GetElement(1)->GetIntegerValue();
+			Metric rFactor = pArgs->GetElement(1)->GetDoubleValue();
 
-			return CreateListFromVector(*pCC, vPos1 * (Metric)iFactor);
+			return CreateListFromVector(*pCC, vPos1 * rFactor);
 			}
 
 		case FN_VECTOR_PIXEL_OFFSET:
@@ -11767,8 +11767,8 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 			//	Get the offset
 
-			int xOffset = pArgs->GetElement(1)->GetIntegerValue();
-			int yOffset = pArgs->GetElement(2)->GetIntegerValue();
+			Metric xOffset = pArgs->GetElement(1)->GetDoubleValue();
+			Metric yOffset = pArgs->GetElement(2)->GetDoubleValue();
 
 			//	Return the vector
 
@@ -11795,11 +11795,11 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (pArgs->GetElement(1)->IsFunction())
 				pRadiusFunc = pArgs->GetElement(1);
 			else
-				rRadius = LIGHT_SECOND * pArgs->GetElement(1)->GetIntegerValue();
+				rRadius = LIGHT_SECOND * pArgs->GetElement(1)->GetDoubleValue();
 
 			Metric rSeparation = 0.0;
 			if (pArgs->GetCount() > 2)
-				rSeparation = LIGHT_SECOND * pArgs->GetElement(2)->GetIntegerValue();
+				rSeparation = LIGHT_SECOND * pArgs->GetElement(2)->GetDoubleValue();
 
 			//	Get the filter
 
@@ -11836,7 +11836,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 					if (pResult->IsList())
 						vOffset = CreateVectorFromList(*pCC, pResult);
 					else
-						vOffset = PolarToVector(mathRandom(0, 359), LIGHT_SECOND * pResult->GetIntegerValue());
+						vOffset = PolarToVector(mathRandom(0, 359), LIGHT_SECOND * pResult->GetDoubleValue());
 
 					pResult->Discard(pCC);
 					}
@@ -11908,10 +11908,10 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 		case FN_VECTOR_POLAR_VELOCITY:
 			{
-			int iAngle = pArgs->GetElement(0)->GetIntegerValue();
-			Metric rSpeed = (Metric)(LIGHT_SPEED / 100.0) * pArgs->GetElement(1)->GetIntegerValue();
+			Metric rAngle = pArgs->GetElement(0)->GetDoubleValue();
+			Metric rSpeed = (Metric)(LIGHT_SPEED / 100.0) * pArgs->GetElement(1)->GetDoubleValue();
 
-			return CreateListFromVector(*pCC, PolarToVector(iAngle, rSpeed));
+			return CreateListFromVector(*pCC, PolarToVector((int)rAngle, rSpeed));
 			}
 
 		case FN_VECTOR_SPEED:
@@ -11938,7 +11938,7 @@ ICCItem *fnSystemVectorOffset (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 
 	//	Evaluate the arguments and validate them
 
-	pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("vii"));
+	pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("vnn"));
 	if (pArgs->IsError())
 		return pArgs;
 
@@ -11948,14 +11948,14 @@ ICCItem *fnSystemVectorOffset (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter) != NOERROR)
 		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
-	int iAngle = pArgs->GetElement(1)->GetIntegerValue();
-	Metric rRadius = LIGHT_SECOND * pArgs->GetElement(2)->GetIntegerValue();
+	Metric rAngle = pArgs->GetElement(1)->GetDoubleValue();
+	Metric rRadius = LIGHT_SECOND * pArgs->GetElement(2)->GetDoubleValue();
 
 	pArgs->Discard(pCC);
 
 	//	Compute
 
-	CVector vVec = vCenter + PolarToVector(iAngle, rRadius);
+	CVector vVec = vCenter + PolarToVector((int)rAngle, rRadius);
 
 	//	Done
 
