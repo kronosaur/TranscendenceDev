@@ -484,6 +484,7 @@ void CDesignCollection::CleanUp (void)
 	//	Some classes need to clean up global data
 	//	(But we need to do this before we destroy the types)
 
+	CShipClass::Reinit();
 	CStationType::Reinit();
 	}
 

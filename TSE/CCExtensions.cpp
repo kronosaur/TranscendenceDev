@@ -552,6 +552,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_ERODE						CONSTLIT("erode")
 #define FIELD_HEIGHT					CONSTLIT("height")
 #define FIELD_LENGTH					CONSTLIT("length")
+#define FIELD_OBJ_TYPE					CONSTLIT("objType")
 #define FIELD_ORBIT						CONSTLIT("orbit")
 #define FIELD_POS						CONSTLIT("pos")
 #define FIELD_RADIUS_OFFSET				CONSTLIT("radiusOffset")
@@ -2292,6 +2293,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"options:\n\n"
 			
+			"   'objType           Type (UNID) of object to place (optional)\n"
 			"   'remove            If True, remove location\n\n"
 			
 			"location:\n\n"
@@ -10946,10 +10948,15 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pRemove = (pOptions ? pOptions->GetElement(FIELD_REMOVE) : NULL);
 			bool bRemoveLoc = (pRemove && !pRemove->IsNil());
 
+			//	See if we specified an object type
+
+			ICCItem *pObjType = (pOptions ? pOptions->GetElement(FIELD_OBJ_TYPE) : NULL);
+			CStationType *pType = (pObjType ? g_pUniverse->FindStationType(pObjType->GetIntegerValue()) : NULL);
+
 			//	Get a random location. If we can't find one, we return Nil.
 
 			int iLocID;
-			if (!pSystem->FindRandomLocation(Criteria, 0, COrbit(), NULL, &iLocID))
+			if (!pSystem->FindRandomLocation(Criteria, 0, COrbit(), pType, &iLocID))
 				return pCC->CreateNil();
 
 			//	Get the data
@@ -10985,9 +10992,10 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	If we have more than two args, then the first arg is
 			//	the node ID.
 
+			CSystem *pSystem = NULL;
 			if (pArgs->GetCount() <= 2)
 				{
-				CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+				pSystem = g_pUniverse->GetCurrentSystem();
 				if (pSystem == NULL)
 					return StdErrorNoSystem(*pCC);
 

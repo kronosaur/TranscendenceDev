@@ -60,6 +60,9 @@
     <Filter Include="Source Files\Artifact Awakening">
       <UniqueIdentifier>{dfe4b145-536e-44d7-9da9-b85686275143}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Overlays">
+      <UniqueIdentifier>{331f5312-6f2a-462f-a276-15ffb747f4c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -808,9 +811,6 @@
     <ClCompile Include="CItemCtx.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
-    <ClCompile Include="COverlayType.cpp">
-      <Filter>Source Files\DesignTypes</Filter>
-    </ClCompile>
     <ClCompile Include="CAttackOrder.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
@@ -855,12 +855,6 @@
     </ClCompile>
     <ClCompile Include="CCrewPsyche.cpp">
       <Filter>Source Files\ShipAI</Filter>
-    </ClCompile>
-    <ClCompile Include="COverlayList.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="COverlay.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CSystemSpacePainter.cpp">
       <Filter>Source Files\StarSystem</Filter>
@@ -957,6 +951,15 @@
     </ClCompile>
     <ClCompile Include="CSoundResource.cpp">
       <Filter>Source Files\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlay.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlayList.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlayType.cpp">
+      <Filter>Source Files\Overlays</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

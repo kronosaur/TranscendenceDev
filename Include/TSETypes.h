@@ -135,6 +135,7 @@ const DWORD UNID_DEFAULT_GRAVITY_ALARM =	0x000000A8;
 const DWORD g_PlayerSovereignUNID =			0x00001001;	//	svPlayer
 const DWORD DEFAULT_ECONOMY_UNID =			0x00001017;	//	ecCreditEconomy
 const DWORD UNID_UNKNOWN_ENEMY =			0x00001018;	//	svUnknownEnemy
+const DWORD UNID_NEUTRAL_SOVEREIGN =		0x00001019;	//	svNeutral
 
 const DWORD g_ShipWreckUNID =				0x00002001;	//	stShipwreck
 const DWORD FLOTSAM_UNID =					0x0000200E;	//	stFlotsam

@@ -1024,10 +1024,12 @@ CSovereign *CUniverse::GetPlayerSovereign (void) const
 //	Returns the player's sovereign
 
 	{
-	if (m_pPlayer == NULL)
+	if (m_pPlayerShip)
+		return m_pPlayerShip->GetSovereign();
+	else if (m_pPlayer)
+		return m_pPlayer->GetSovereign();
+	else
 		return NULL;
-
-	return m_pPlayer->GetSovereign();
 	}
 
 void CUniverse::GetRandomLevelEncounter (int iLevel, 

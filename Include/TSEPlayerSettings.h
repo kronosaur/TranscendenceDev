@@ -50,10 +50,7 @@ class CDockScreenVisuals
 class CPlayerSettings
 	{
 	public:
-		CPlayerSettings (void) :
-                m_pDockScreenDesc(NULL)
-			{ }
-
+		CPlayerSettings (void);
         inline CPlayerSettings (const CPlayerSettings &Src) { Copy(Src); }
 		inline ~CPlayerSettings (void) { CleanUp(); }
 
@@ -75,6 +72,7 @@ class CPlayerSettings
 		inline DWORD GetStartingMap (void) const { return m_dwStartMap; }
 		inline const CString &GetStartingNode (void) const { return m_sStartNode; }
 		inline const CString &GetStartingPos (void) const { return m_sStartPos; }
+		void InitAsDefault (void);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
 		inline bool IsDebugOnly (void) const { return (m_fDebug ? true : false); }
 		inline bool IsIncludedInAllAdventures (void) const { return (m_fIncludeInAllAdventures ? true : false); }

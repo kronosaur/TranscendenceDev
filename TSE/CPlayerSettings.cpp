@@ -75,6 +75,22 @@
 
 ALERROR InitRectFromElement (CXMLElement *pItem, RECT *retRect);
 
+CPlayerSettings::CPlayerSettings (void) :
+		m_dwLargeImage(0),
+		m_iSortOrder(10000),
+		m_dwStartMap(0),
+		m_pDockScreenDesc(NULL),
+		m_fInitialClass(false),
+		m_fDebug(false),
+		m_fIncludeInAllAdventures(false),
+		m_fOwnDockScreenDesc(false),
+		m_fResolved(false)
+
+	//	CPlayerSettings constructor
+
+	{
+	}
+		
 void CPlayerSettings::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 
 //	AddTypesUsed
@@ -107,13 +123,13 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 
 	//	Bind basic stuff
 
-	if (error = m_pShipScreen.Bind(Ctx, pClass->GetLocalScreens()))
+	if (error = m_pShipScreen.Bind(Ctx, (pClass ? pClass->GetLocalScreens() : NULL)))
 		return error;
 
-	if (error = m_pDockServicesScreen.Bind(Ctx, pClass->GetLocalScreens()))
+	if (error = m_pDockServicesScreen.Bind(Ctx, (pClass ? pClass->GetLocalScreens() : NULL)))
 		return error;
 
-	if (error = m_pShipConfigScreen.Bind(Ctx, pClass->GetLocalScreens()))
+	if (error = m_pShipConfigScreen.Bind(Ctx, (pClass ? pClass->GetLocalScreens() : NULL)))
 		return error;
 
 	if (error = m_StartingCredits.Bind(Ctx))
@@ -268,6 +284,41 @@ CEffectCreator *CPlayerSettings::FindEffectCreator (const CString &sUNID) const
 #endif
 
     return NULL;
+	}
+
+void CPlayerSettings::InitAsDefault (void)
+
+//	InitAsDefault
+//
+//	Initializes to default settings.
+
+	{
+	m_pShipScreen.LoadUNID(strFromInt(DEFAULT_SHIP_SCREEN_UNID, false));
+	m_pDockServicesScreen.LoadUNID(strFromInt(DEFAULT_DOCK_SERVICES_SCREEN, false));
+	m_pShipConfigScreen.LoadUNID(strFromInt(DEFAULT_DOCK_SERVICES_SCREEN, false));
+
+	if (m_HUDDesc[hudArmor].pDesc == NULL)
+		{
+		m_HUDDesc[hudArmor].pDesc = new CXMLElement(ARMOR_DISPLAY_TAG, NULL);
+		m_HUDDesc[hudArmor].pDesc->SetAttribute(STYLE_ATTRIB, CONSTLIT("circular"));
+		m_HUDDesc[hudArmor].bOwned = true;
+		}
+
+	if (m_HUDDesc[hudReactor].pDesc == NULL)
+		{
+		m_HUDDesc[hudReactor].pDesc = new CXMLElement(REACTOR_DISPLAY_TAG, NULL);
+		m_HUDDesc[hudReactor].pDesc->SetAttribute(STYLE_ATTRIB, CONSTLIT("circular"));
+		m_HUDDesc[hudReactor].bOwned = true;
+		}
+
+	if (m_HUDDesc[hudTargeting].pDesc == NULL)
+		{
+		m_HUDDesc[hudTargeting].pDesc = new CXMLElement(WEAPON_DISPLAY_TAG, NULL);
+		m_HUDDesc[hudTargeting].pDesc->SetAttribute(STYLE_ATTRIB, CONSTLIT("circular"));
+		m_HUDDesc[hudTargeting].bOwned = true;
+		}
+
+	m_fResolved = true;
 	}
 
 ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)

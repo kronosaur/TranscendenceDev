@@ -607,7 +607,7 @@ template <class CLASS> class CDesignTypeRef
 			}
 
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
-		ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sUNID) { return ::LoadUNID(Ctx, sUNID, &m_dwUNID); }
+		ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sUNID, DWORD dwDefault = 0) { if (!sUNID.IsBlank()) return ::LoadUNID(Ctx, sUNID, &m_dwUNID); else { m_dwUNID = dwDefault; return NOERROR; } }
 
 		void Set (CLASS *pType)
 			{
@@ -677,6 +677,7 @@ class CDockScreenTypeRef
 	{
 	public:
 		CDockScreenTypeRef (void) : m_pType(NULL), m_pLocal(NULL) { }
+		CDockScreenTypeRef (const CString &sUNID) : m_sUNID(sUNID), m_pType(NULL), m_pLocal(NULL) { }
 
 		inline operator CDockScreenType *() const { return m_pType; }
 		inline CDockScreenType * operator->() const { return m_pType; }
@@ -2559,6 +2560,7 @@ class CShipClass : public CDesignType
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static Metric GetStdCombatStrength (int iLevel);
+		static void Reinit (void);
 		static void UnbindGlobal (void);
 
 	protected:
@@ -2758,6 +2760,9 @@ class CShipClass : public CDesignType
 		DWORD m_fSpare8:1;
 
 		DWORD m_fSpare:8;
+
+		static CPlayerSettings m_DefaultPlayerSettings;
+		static bool m_bDefaultPlayerSettingsBound;
 	};
 
 //	CEffectCreator ------------------------------------------------------------

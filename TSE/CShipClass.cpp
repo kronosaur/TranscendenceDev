@@ -255,6 +255,9 @@ static ScoreDesc g_XP[] =
 
 #define SCORE_DESC_COUNT							(sizeof(g_XP) / sizeof(g_XP[0]))
 
+CPlayerSettings CShipClass::m_DefaultPlayerSettings;
+bool CShipClass::m_bDefaultPlayerSettingsBound = false;
+
 CShipClass::CShipClass (void) : 
 		m_pDevices(NULL),
 		m_pPlayerSettings(NULL),
@@ -2524,7 +2527,7 @@ const CPlayerSettings *CShipClass::GetPlayerSettings (void) const
     CShipClass *pBase = CShipClass::AsType(GetInheritFrom());
     const CPlayerSettings *pBaseSettings = (pBase ? pBase->GetPlayerSettings() : NULL);
 
-    //  If we have player settings, the resolve against the base class so that
+    //  If we have player settings, then resolve against the base class so that
     //  we can inherit.
     //
     //  NOTE: It's OK if pBaseSettings is NULL--at least we will mark m_pPlayerSettings
@@ -2538,11 +2541,19 @@ const CPlayerSettings *CShipClass::GetPlayerSettings (void) const
 
     //  Otherwise, we inherit all our settings from our base class
 
-    else
+    else if (pBaseSettings)
         {
         m_pPlayerSettings = const_cast<CPlayerSettings *>(pBaseSettings);
         return m_pPlayerSettings;
         }
+
+	//	Otherwise, we use default settings
+
+	else
+		{
+        m_pPlayerSettings = const_cast<CPlayerSettings *>(&m_DefaultPlayerSettings);
+        return m_pPlayerSettings;
+		}
     }
 
 CString CShipClass::GetPlayerSortString (void) const
@@ -2851,6 +2862,7 @@ void CShipClass::UnbindGlobal (void)
 	{
 	g_pDamageBitmap = NULL;
 	g_pWreckDesc = NULL;
+	m_bDefaultPlayerSettingsBound = false;
 	}
 
 void CShipClass::MarkImages (bool bMarkDevices)
@@ -2943,6 +2955,20 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	{
 	ALERROR error;
 	int i;
+
+	//	If necessary, bind our static default player settings
+
+	if (!m_bDefaultPlayerSettingsBound)
+		{
+		m_DefaultPlayerSettings.InitAsDefault();
+
+		if (error = m_DefaultPlayerSettings.Bind(Ctx, NULL))
+			goto Fail;
+
+		m_bDefaultPlayerSettingsBound = true;
+		}
+
+	//	Bind sovereign
 
 	if (error = m_pDefaultSovereign.Bind(Ctx))
 		goto Fail;
@@ -3987,3 +4013,12 @@ void CShipClass::PaintThrust (CG32bitImage &Dest,
 		}
 	}
 
+void CShipClass::Reinit (void)
+
+//	Reinit
+//
+//	Clean up global data
+
+	{
+	m_DefaultPlayerSettings = CPlayerSettings();
+	}

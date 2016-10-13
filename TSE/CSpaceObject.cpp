@@ -256,7 +256,8 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fHasGravity(false),
 		m_fInsideBarrier(false),
 		m_fHasOnSubordinateAttackedEvent(false),
-		m_fHasOnUpdateEvent(false)
+		m_fHasOnUpdateEvent(false),
+		m_fHasGetDockScreenEvent(false)
 
 //	CSpaceObject constructor
 
@@ -1092,6 +1093,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 		dwLoad = 0;
 
 	pObj->m_fHasOnUpdateEvent =			((dwLoad & 0x00000001) ? true : false);
+	pObj->m_fHasGetDockScreenEvent =	((dwLoad & 0x00000002) ? true : false);
 
 	//	No need to save the following
 
@@ -1927,7 +1929,8 @@ bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, IC
 	{
 	SEventHandlerDesc Event;
 
-	if (FindEventHandler(GET_DOCK_SCREEN_EVENT, &Event))
+	if (HasGetDockScreenEvent() 
+			&& FindEventHandler(GET_DOCK_SCREEN_EVENT, &Event))
 		{
 		CCodeChainCtx Ctx;
 		Ctx.SaveAndDefineSourceVar(this);
@@ -1947,23 +1950,23 @@ bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, IC
 			bResult = false;
 		else if (pResult->GetCount() >= 3)
 			{
-			*retsScreen = pResult->GetElement(0)->GetStringValue();
-			*retpData = pResult->GetElement(1)->Reference();
-			*retiPriority = pResult->GetElement(2)->GetIntegerValue();
+			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
+			if (retpData) *retpData = pResult->GetElement(1)->Reference();
+			if (retiPriority) *retiPriority = pResult->GetElement(2)->GetIntegerValue();
 			bResult = true;
 			}
 		else if (pResult->GetCount() >= 2)
 			{
-			*retsScreen = pResult->GetElement(0)->GetStringValue();
-			*retiPriority = pResult->GetElement(1)->GetIntegerValue();
-			*retpData = NULL;
+			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
+			if (retiPriority) *retiPriority = pResult->GetElement(1)->GetIntegerValue();
+			if (retpData) *retpData = NULL;
 			bResult = true;
 			}
 		else if (pResult->GetCount() >= 1)
 			{
-			*retsScreen = pResult->GetElement(0)->GetStringValue();
-			*retiPriority = 0;
-			*retpData = NULL;
+			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
+			if (retiPriority) *retiPriority = 0;
+			if (retpData) *retpData = NULL;
 			bResult = true;
 			}
 		else
@@ -5131,6 +5134,14 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 			if (vDist.Length2() > rMaxDist2)
 				continue;
 
+			//	Area weapons cover all aspects, so a friendly ship would be hit here.
+
+			if (bAreaWeapon)
+				{
+				bResult = false;
+				break;
+				}
+
 			//	Figure out the object's bearing relative to us
 
 			Metric rDist;
@@ -6870,6 +6881,7 @@ void CSpaceObject::SetEventFlags (void)
 //	Sets cached flags for events
 
 	{
+	SetHasGetDockScreenEvent(FindEventHandler(CONSTLIT("GetDockScreen")));
 	SetHasOnAttackedEvent(FindEventHandler(CONSTLIT("OnAttacked")));
 	SetHasOnDamageEvent(FindEventHandler(CONSTLIT("OnDamage")));
 	SetHasOnObjDockedEvent(FindEventHandler(CONSTLIT("OnObjDocked")));
@@ -7467,6 +7479,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 
 	dwSave = 0;
 	dwSave |= (m_fHasOnUpdateEvent			? 0x00000001 : 0);
+	dwSave |= (m_fHasGetDockScreenEvent		? 0x00000002 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data

@@ -2294,7 +2294,7 @@ class CSpaceObject : public CObject
 		void FireCustomItemEvent (const CString &sEvent, const CItem &Item, ICCItem *pData, ICCItem **retpResult = NULL);
 		void FireCustomOverlayEvent (const CString &sEvent, DWORD dwID, ICCItem *pData, ICCItem **retpResult = NULL);
 		void FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject *pShip, ICCItem **retpResult = NULL);
-		bool FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItem **retpData);
+		bool FireGetDockScreen (CString *retsScreen = NULL, int *retiPriority = NULL, ICCItem **retpData = NULL);
 		void FireGetExplosionType (SExplosionType *retExplosion);
 		void FireOnAttacked (const SDamageCtx &Ctx);
 		void FireOnAttackedByPlayer (void);
@@ -2393,6 +2393,7 @@ class CSpaceObject : public CObject
 		CSpaceObject *GetVisibleEnemyInRange (CSpaceObject *pCenter, Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		bool HasBeenHitLately (int iTicks = 30);
 		bool HasFiredLately (int iTicks = 30);
+		inline bool HasGetDockScreenEvent (void) const { return (m_fHasGetDockScreenEvent ? true : false); }
 		bool HasGravity (void) const { return (m_fHasGravity ? true : false); }
 		inline bool HasInterSystemEvent (void) const { return (m_fHasInterSystemEvent ? true : false); }
 		inline bool HasNonLinearMove (void) const { return (m_fNonLinearMove ? true : false); }
@@ -2495,6 +2496,7 @@ class CSpaceObject : public CObject
 		void SetDataInteger (const CString &sAttrib, int iValue);
 		inline void SetDestructionNotify (bool bNotify = true) { m_fNoObjectDestructionNotify = !bNotify; }
 		void SetEventFlags (void);
+		inline void SetHasGetDockScreenEvent (bool bHasEvent) { m_fHasGetDockScreenEvent = bHasEvent; }
 		inline void SetHasOnAttackedEvent (bool bHasEvent) { m_fHasOnAttackedEvent = bHasEvent; }
 		inline void SetHasOnDamageEvent (bool bHasEvent) { m_fHasOnDamageEvent = bHasEvent; }
 		inline void SetHasInterSystemEvent (bool bHasEvent) { m_fHasInterSystemEvent = bHasEvent; }
@@ -2568,7 +2570,7 @@ class CSpaceObject : public CObject
 		inline bool IsObjDocked (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDocked(pObj) : false); }
 		inline bool IsObjDockedOrDocking (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDockedOrDocking(pObj) : false); }
 		inline void PlaceAtRandomDockPort (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); if (pPorts) pPorts->DockAtRandomPort(this, pObj); }
-		inline bool SupportsDocking (bool bPlayer = false) { return ((!bPlayer || GetDefaultDockScreen() != NULL) && GetDockingPortCount() > 0); }
+		inline bool SupportsDocking (bool bPlayer = false) { return ((!bPlayer || GetDefaultDockScreen() != NULL || FireGetDockScreen()) && GetDockingPortCount() > 0); }
 
 		//	Dock Screens
 
@@ -3024,7 +3026,7 @@ class CSpaceObject : public CObject
 		DWORD m_fHasOnSubordinateAttackedEvent:1;	//	TRUE if we have a <OnSubordinateAttacked> event
 
 		DWORD m_fHasOnUpdateEvent:1;			//	TRUE if we have an <OnUpdate> event
-		DWORD m_fSpare2:1;
+		DWORD m_fHasGetDockScreenEvent:1;		//	TRUE if we have a <GetDockScreen> event
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
