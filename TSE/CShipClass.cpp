@@ -531,6 +531,7 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 		//	Compute the damage rate for the weapon
 
         Metric rDamageRate = pDevice->GetAmmoItemPropertyDouble(ItemCtx, Ammo, CONSTLIT("damage"));
+		bool bCanTrack = pDevice->GetAmmoItemPropertyBool(ItemCtx, Ammo, CONSTLIT("tracking"));
 
 		//	Compute weapon level
 
@@ -555,6 +556,9 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 			iWeaponCoverage = ::AngleRange(iMinFireArc, iMaxFireArc);
 		else
 			iWeaponCoverage = 360;
+
+		if (bCanTrack)
+			iWeaponCoverage = Max(iWeaponCoverage, 180);
 
 		int iCoverage = Max(iDeviceCoverage, iWeaponCoverage);
 

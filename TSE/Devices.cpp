@@ -260,6 +260,22 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 		return GetOverlayType();
 	}
 
+bool CDeviceClass::GetAmmoItemPropertyBool (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty)
+
+//  GetAmmoItemPropertyBool
+//
+//  Wrapper around properties that discard ICCItem appropriately.
+    
+    {
+    ICCItem *pValue = FindAmmoItemProperty(Ctx, Ammo, sProperty); 
+    if (pValue == NULL)
+        return false;
+
+    bool bValue = !pValue->IsNil();
+    pValue->Discard(&g_pUniverse->GetCC());
+    return bValue;
+    }
+
 Metric CDeviceClass::GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty)
 
 //  GetAmmoItemPropertyDouble
