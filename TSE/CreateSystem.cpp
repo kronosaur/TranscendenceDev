@@ -1817,7 +1817,18 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 		Metric rScale = GetScale(pObj);
 		DiceRange RadiusAdj;
 		Metric rRadiusAdjScale;
-		if (pObj->FindAttribute(RADIUS_INC_ATTRIB, &sAttrib))
+		if (pObj->FindAttribute(MIN_RADIUS_ATTRIB, &sAttrib))
+			{
+			Metric rMinRadius = Max(0, strToInt(sAttrib, 0)) * rScale;
+			if (rMinRadius > OrbitDesc.GetSemiMajorAxis())
+				{
+				RadiusAdj.SetConstant(mathRound((rMinRadius - OrbitDesc.GetSemiMajorAxis()) / rScale));
+				rRadiusAdjScale = rScale;
+				}
+			else
+				rRadiusAdjScale = 0.0;
+			}
+		else if (pObj->FindAttribute(RADIUS_INC_ATTRIB, &sAttrib))
 			{
 			RadiusAdj.LoadFromXML(sAttrib);
 			rRadiusAdjScale = rScale;
