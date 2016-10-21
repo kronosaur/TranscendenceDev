@@ -198,6 +198,13 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 	m_bInBindDesign = true;
 
+	//	Generate a table of extension UNIDs that we're including
+
+	TArray<DWORD> ExtensionsIncluded;
+	ExtensionsIncluded.InsertEmpty(BindOrder.GetCount());
+	for (i = 0; i < BindOrder.GetCount(); i++)
+		ExtensionsIncluded[i] = BindOrder[i]->GetUNID();
+
 	//	Unbind everything
 
 	CShipClass::UnbindGlobal();
@@ -255,7 +262,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 		//	Add the types
 
-		m_AllTypes.Merge(Types, &m_OverrideTypes);
+		m_AllTypes.Merge(Types, &m_OverrideTypes, &ExtensionsIncluded);
 
 		//	If this is the adventure, then remember it
 

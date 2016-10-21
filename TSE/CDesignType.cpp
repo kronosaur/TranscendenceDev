@@ -44,6 +44,7 @@
 
 #define ATTRIBUTES_ATTRIB						CONSTLIT("attributes")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
+#define EXTENDS_ATTRIB							CONSTLIT("extends")
 #define INHERIT_ATTRIB							CONSTLIT("inherit")
 #define MODIFIERS_ATTRIB						CONSTLIT("modifiers")
 #define UNID_ATTRIB								CONSTLIT("UNID")
@@ -1854,6 +1855,12 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 	m_pExtension = Ctx.pExtension;
 	m_dwVersion = Ctx.GetAPIVersion();
 
+	//	Required libraries
+
+	CString sExtends = pDesc->GetAttribute(EXTENDS_ATTRIB);
+	if (!sExtends.IsBlank())
+		ParseUNIDList(sExtends, 0, &m_Extends);
+
 	//	Remember XML if necessary
 
 	if (Ctx.bKeepXML)
@@ -2021,6 +2028,41 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 			return false;
 
 	//	If we get this far, then we match
+
+	return true;
+	}
+
+bool CDesignType::MatchesExtensions (const TArray<DWORD> &ExtensionsIncluded) const
+
+//	MatchesExtensions
+//
+//	Returns TRUE if this type should be included given the included extensions.
+
+	{
+	int i;
+
+	//	If we extend one of the given extensions, then we're OK.
+
+	if (m_Extends.GetCount() > 0)
+		{
+		bool bFound = false;
+		for (i = 0; i < m_Extends.GetCount(); i++)
+			{
+			if (ExtensionsIncluded.Find(m_Extends[i]))
+				{
+				bFound = true;
+				break;
+				}
+			}
+
+		//	If none of the extensions that we require are included, then we 
+		//	don't match the criteria.
+
+		if (!bFound)
+			return false;
+		}
+
+	//	If we get this far, then we're OK.
 
 	return true;
 	}

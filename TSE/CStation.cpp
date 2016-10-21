@@ -1035,7 +1035,11 @@ void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
 //	iStarAngle.
 
 	{
-	ASSERT(m_StarlightImage.IsEmpty());
+	//	If we already have a starlight image, then we skip. This can happen if
+	//	we have a double star and overlapping light zones.
+
+	if (!m_StarlightImage.IsEmpty())
+		return;
 
 	//	Figure out the rotation
 

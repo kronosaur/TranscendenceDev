@@ -470,8 +470,6 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 //	Loads the given extension or adventure. We take ownership of pEntities.
 
 	{
-	int i;
-
 	//	Create an extension object
 
 	CExtension *pExtension = new CExtension;
@@ -587,16 +585,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 
 	CString sExtends = pDesc->GetAttribute(EXTENDS_ATTRIB);
 	if (!sExtends.IsBlank())
-		{
-		TArray<CString> Extends;
-		strDelimitEx(sExtends, ';', DELIMIT_TRIM_WHITESPACE, 0, &Extends);
-		for (i = 0; i < Extends.GetCount(); i++)
-			{
-			DWORD dwUNID = strToInt(Extends[i], INVALID_UNID);
-			if (dwUNID != INVALID_UNID)
-				pExtension->m_Extends.Insert(dwUNID);
-			}
-		}
+		ParseUNIDList(sExtends, 0, &pExtension->m_Extends);
 
 	//	Other options
 

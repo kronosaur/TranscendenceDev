@@ -422,6 +422,7 @@ class CDesignType
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError);
 		inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
+		inline bool IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const { if (m_Extends.GetCount() == 0) return true; else return MatchesExtensions(ExtensionsIncluded); }
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
 		void MergeType (CDesignType *pSource);
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
@@ -550,12 +551,14 @@ class CDesignType
 		inline SEventHandlerDesc *GetInheritedCachedEvent (ECachedHandlers iEvent) { return (m_EventsCache[iEvent].pCode ? &m_EventsCache[iEvent] : (m_pInheritFrom ? m_pInheritFrom->GetInheritedCachedEvent(iEvent) : NULL)); }
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
+		bool MatchesExtensions (const TArray<DWORD> &ExtensionsIncluded) const;
 		void MergeLanguageTo (CLanguageDataBlock &Dest);
 		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const;
 
 		DWORD m_dwUNID;
 		CExtension *m_pExtension;				//	Extension
 		DWORD m_dwVersion;						//	Extension version
+		TArray<DWORD> m_Extends;				//	Exclude this type from bind unless one of these extensions is present
 		CXMLElement *m_pXML;					//	Optional XML for this type
 
 		DWORD m_dwInheritFrom;					//	Inherit from this type
@@ -4454,7 +4457,7 @@ class CDesignTable
 		CDesignType *FindByUNID (DWORD dwUNID) const;
 		inline int GetCount (void) const { return m_Table.GetCount(); }
 		inline CDesignType *GetEntry (int iIndex) const { return m_Table.GetValue(iIndex); }
-		ALERROR Merge (const CDesignTable &Source, CDesignList *ioOverride = NULL);
+		ALERROR Merge (const CDesignTable &Source, CDesignList *ioOverride = NULL, const TArray<DWORD> *pExtensionsIncluded = NULL);
 		ALERROR Merge (const CDynamicDesignTable &Source, CDesignList *ioOverride = NULL);
 
 	private:

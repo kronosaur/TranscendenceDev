@@ -485,6 +485,8 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
             CString sNodeID;
             sNodeID.ReadFromStream(Ctx.pStream);
             CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sNodeID);
+			if (pNode == NULL)
+				::kernelDebugLogMessage("Galactic Map: Unable to find nodeID: %s", sNodeID);
 
             //  Get the node data entry
 
@@ -504,6 +506,8 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                 DWORD dwUNID;
                 Ctx.pStream->Read((char *)&dwUNID, sizeof(DWORD));
                 CDesignType *pType = g_pUniverse->FindDesignType(dwUNID);
+				if (pType == NULL)
+					::kernelDebugLogMessage("Galactic Map: Unable to find type: %08x", dwUNID);
 
                 //  Number of objects
 
@@ -778,10 +782,20 @@ void CObjectTracker::Refresh (CSystem *pSystem)
         SObjBasics *pObjData;
         if (!Find(pNodeData, pObj, &pObjData))
             {
-            //  Should never happen because objects are added/deleted at the
-            //  appropriate times.
-            ASSERT(false);
-            continue;
+			//	There are certain (old) bugs which caused us to lose all the 
+			//	objects in CObjectTracker. If that happens, we just re-add the
+			//	object here.
+			//
+			//	But this should really never happen.
+
+			Insert(pObj);
+			if (!Find(pNodeData, pObj, &pObjData))
+				{
+				//  Should never happen because objects are added/deleted at the
+				//  appropriate times.
+				ASSERT(false);
+				continue;
+				}
             }
 
         //  If this object has an orbit, store it.

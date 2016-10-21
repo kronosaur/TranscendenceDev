@@ -121,7 +121,7 @@ ALERROR CDesignTable::Merge (const CDynamicDesignTable &Source, CDesignList *ioO
 	DEBUG_CATCH
 	}
 
-ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride)
+ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride, const TArray<DWORD> *pExtensionsIncluded)
 
 //	Merge
 //
@@ -143,11 +143,18 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride
 
 	while (iSrcPos < Source.GetCount())
 		{
+		CDesignType *pNewType = Source.m_Table.GetValue(iSrcPos);
+
+		//	Exclude this type if it the required extensions are not included.
+
+		if (pExtensionsIncluded && !pNewType->IsIncluded(*pExtensionsIncluded))
+			continue;
+
 		//	If we're at the end of the destination then just insert
 
 		if (iDestPos == m_Table.GetCount())
 			{
-			m_Table.InsertSorted(Source.m_Table.GetKey(iSrcPos), Source.m_Table.GetValue(iSrcPos));
+			m_Table.InsertSorted(pNewType->GetUNID(), pNewType);
 
 			//	Advance
 
@@ -159,14 +166,12 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride
 
 		else
 			{
-			int iCompare = AscendingSort * KeyCompare(Source.m_Table.GetKey(iSrcPos), m_Table.GetKey(iDestPos));
+			int iCompare = AscendingSort * KeyCompare(pNewType->GetUNID(), m_Table.GetKey(iDestPos));
 
 			//	If the same key then we replace
 
 			if (iCompare == 0)
 				{
-				CDesignType *pNewType = Source.m_Table.GetValue(iSrcPos);
-
 				//	If this is an override then we put it on a different table and
 				//	leave the type alone.
 				//
@@ -207,7 +212,7 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride
 
 			else if (iCompare == 1)
 				{
-				m_Table.InsertSorted(Source.m_Table.GetKey(iSrcPos), Source.m_Table.GetValue(iSrcPos), iDestPos);
+				m_Table.InsertSorted(pNewType->GetUNID(), pNewType, iDestPos);
 
 				//	Advance
 
