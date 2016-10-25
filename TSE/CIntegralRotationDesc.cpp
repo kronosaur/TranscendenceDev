@@ -8,7 +8,7 @@
 const Metric MANEUVER_MASS_FACTOR =				1.0;
 const Metric MAX_INERTIA_RATIO =				9.0;
 
-TArray<CIntegralRotationDesc::SEntry> CIntegralRotationDesc::m_Rotations[360 + 1];
+CIntegralRotationDesc::SFacingsData CIntegralRotationDesc::m_FacingsData[360 + 1];
 
 CIntegralRotationDesc::CIntegralRotationDesc (void) :
         m_iCount(20),
@@ -49,18 +49,6 @@ int CIntegralRotationDesc::CalcFinalRotationFrame (int iRotationFrame, int iRota
 	return iRotationFrame;
 	}
 
-int CIntegralRotationDesc::GetFrameIndex (int iAngle) const
-
-//	GetFrameIndex
-//
-//	Returns the frame index, 0 to m_iCount-1, that corresponds to the given 
-//	angle. Remember that frame 0 points straight up and frames rotate clockwise.
-
-	{
-	Metric rIndex = AngleMod(90 - iAngle) * m_iCount / 360.0;
-	return (int)rIndex;
-	}
-
 int CIntegralRotationDesc::GetManeuverDelay (void) const
 
 //	GetManeuverDelay
@@ -99,12 +87,19 @@ void CIntegralRotationDesc::InitFromDesc (const CRotationDesc &Desc)
 	m_iRotationAccel = Max(1, mathRound(ROTATION_FRACTION * Desc.GetRotationAccelPerTick() * m_iCount / 360.0));
 	m_iRotationAccelStop = Max(1, mathRound(ROTATION_FRACTION * Desc.GetRotationAccelStopPerTick() * m_iCount / 360.0));
 
-	if (m_Rotations[m_iCount].GetCount() == 0 && m_iCount > 0 && m_iCount <= 360)
+	if (m_iCount > 0 && m_iCount <= 360 && !m_FacingsData[m_iCount].bInitialized)
 		{
-        m_Rotations[m_iCount].InsertEmpty(m_iCount);
+		//	Initialize constants arrays for this number of rotation facings.
 
+		m_FacingsData[m_iCount].FrameIndexToAngle.InsertEmpty(m_iCount);
 		Metric rFrameAngle = 360.0 / m_iCount;
 		for (i = 0; i < m_iCount; i++)
-			m_Rotations[m_iCount][i].iRotation = AngleMod(mathRound(90.0 - i * rFrameAngle));
+			m_FacingsData[m_iCount].FrameIndexToAngle[i] = AngleMod(mathRound(90.0 - i * rFrameAngle));
+
+		m_FacingsData[m_iCount].AngleToFrameIndex.InsertEmpty(360);
+		for (i = 0; i < 360; i++)
+			m_FacingsData[m_iCount].AngleToFrameIndex[i] = mathRound(AngleMod(90 - i) * m_iCount / 360.0) % m_iCount;
+
+		m_FacingsData[m_iCount].bInitialized = true;
 		}
     }

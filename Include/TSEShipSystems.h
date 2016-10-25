@@ -233,7 +233,7 @@ class CIntegralRotationDesc
 		int CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed) const;
 		inline int GetFrameAngle (void) const { return (int)((360.0 / m_iCount) + 0.5); }
 		inline int GetFrameCount (void) const { return m_iCount; }
-		int GetFrameIndex (int iAngle) const;
+		inline int GetFrameIndex (int iAngle) const { return m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]; }
 		int GetManeuverDelay (void) const;
 		inline Metric GetManeuverRatio (void) const { return (Metric)m_iMaxRotationRate / ROTATION_FRACTION; }
 		inline int GetMaxRotationSpeed (void) const { return m_iMaxRotationRate; }
@@ -241,10 +241,10 @@ class CIntegralRotationDesc
 		inline int GetMaxRotationTimeTicks (void) const { Metric rSpeed = GetMaxRotationSpeedDegrees(); return (rSpeed > 0.0 ? (int)(360.0 / rSpeed) : 0); }
 		inline int GetRotationAccel (void) const { return m_iRotationAccel; }
 		inline int GetRotationAccelStop (void) const { return m_iRotationAccelStop; }
-		inline int GetRotationAngle (int iIndex) const { return m_Rotations[m_iCount][iIndex % m_iCount].iRotation; }
+		inline int GetRotationAngle (int iIndex) const { return m_FacingsData[m_iCount].FrameIndexToAngle[iIndex % m_iCount]; }
         void InitFromDesc (const CRotationDesc &Desc);
 
-        static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_Rotations[iCount].GetCount() > 0) ? m_Rotations[iCount][iIndex % iCount].iRotation : 0); }
+        static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_FacingsData[iCount].bInitialized) ? m_FacingsData[iCount].FrameIndexToAngle[iIndex % iCount] : 0); }
 
     private:
 		struct SEntry
@@ -252,12 +252,23 @@ class CIntegralRotationDesc
 			int iRotation;					//	Angle at this rotation position
 			};
 
+		struct SFacingsData
+			{
+			SFacingsData (void) :
+					bInitialized(false)
+				{ }
+
+			bool bInitialized;
+			TArray<int> AngleToFrameIndex;
+			TArray<int> FrameIndexToAngle;
+			};
+
         int m_iCount;                       //  Number of frames
 		int m_iMaxRotationRate;				//	Rotations per tick (in 1/1000ths of a rotation)
 		int m_iRotationAccel;				//	Rotation acceleration (in 1/1000ths of a rotation)
 		int m_iRotationAccelStop;			//	Rotation acceleration when stopping rotation (in 1/1000th of a rotation)
 
-        static TArray<SEntry> m_Rotations[360 + 1];
+		static SFacingsData m_FacingsData[360 + 1];
     };
 
 class CIntegralRotation
