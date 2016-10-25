@@ -300,9 +300,9 @@ class CItem
 		bool GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const;
 		bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags, DamageTypes *retiDamage, CString *retsReference) const;
 		CString GetNounPhrase (DWORD dwFlags) const;
-		int GetTradePrice (CSpaceObject *pObj, bool bActual = false) const;
+		inline int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
+		int GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
 		inline CItemType *GetType (void) const { return m_pItemType; }
-		int GetValue (bool bActual = false) const;
         int GetVariantHigh (void) const { return (m_pExtra ? (int)HIWORD(m_pExtra->m_dwVariant) : 0); }
         int GetVariantLow (void) const { return (m_pExtra ? (int)LOWORD(m_pExtra->m_dwVariant) : 0); }
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
@@ -366,6 +366,7 @@ class CItem
 
 		void AccumulateCustomAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);
+		int GetValue (bool bActual = false) const;
 		bool IsExtraEqual (SExtra *pSrc) const;
 
 		static bool IsDisruptionEqual (DWORD dwD1, DWORD dwD2);

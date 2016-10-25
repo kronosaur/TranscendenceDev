@@ -3885,7 +3885,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	switch (dwData)
 		{
 		case FN_ITEM_ACTUAL_PRICE:
-			pResult = pCC->CreateInteger(Item.GetValue(true));
+			pResult = pCC->CreateInteger(Item.GetTradePrice(NULL, true));
 			break;
 
 		case FN_ITEM_ARMOR_INSTALLED_LOCATION:
@@ -4048,7 +4048,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_ITEM_PRICE:
 			{
 			if (pArgs->GetCount() < 2 || pArgs->GetElement(1)->IsNil())
-				pResult = pCC->CreateInteger(Item.GetValue());
+				pResult = pCC->CreateInteger(Item.GetTradePrice());
 			else
 				{
 				CEconomyType *pEconFrom = pType->GetCurrencyType();
@@ -4059,7 +4059,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				//	Exchange
 
-				return pCC->CreateInteger((int)pEconTo->Exchange(pEconFrom, Item.GetValue()));
+				return pCC->CreateInteger((int)pEconTo->Exchange(pEconFrom, Item.GetTradePrice()));
 				}
 			break;
 			}
@@ -5475,7 +5475,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if ((pCtx->InEvent(eventGetTradePrice) || pCtx->InEvent(eventGetGlobalPlayerPriceAdj))
 					&& pCtx->GetItemType() == Item.GetType())
-				iValue = Item.GetValue();
+				iValue = Item.GetRawPrice();
 
 			//	Get the value from the station that is buying
 
@@ -5772,7 +5772,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if ((pCtx->InEvent(eventGetTradePrice) || pCtx->InEvent(eventGetGlobalPlayerPriceAdj))
 					&& pCtx->GetItemType() == Item.GetType())
-				iValue = Item.GetValue();
+				iValue = Item.GetRawPrice();
 
 			//	Get the value from the station that is selling
 

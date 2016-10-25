@@ -1348,7 +1348,7 @@ int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const
 		Ctx.DefineString(CONSTLIT("aPriceType"), (bActual ? CONSTLIT("actual") : CONSTLIT("normal")));
 
 		ICCItem *pResult = Ctx.Run(Event);
-		if (pResult->IsError())
+		if (pResult->IsError() && pObj)
 			pObj->ReportEventError(strPatternSubst(CONSTLIT("Item %x GetTradePrice"), m_pItemType->GetUNID()), pResult);
 		int iPrice = pResult->GetIntegerValue();
 		Ctx.Discard(pResult);
