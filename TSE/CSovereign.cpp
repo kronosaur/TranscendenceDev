@@ -27,6 +27,10 @@
 
 #define FIELD_NAME								CONSTLIT("name")
 
+#define PROPERTY_PLAYER_THREAT_LEVEL			CONSTLIT("playerThreatLevel")
+#define PROPERTY_SHIPS_DESTROYED_BY_PLAYER		CONSTLIT("shipsDestroyedByPlayer")
+#define PROPERTY_STATIONS_DESTROYED_BY_PLAYER	CONSTLIT("stationsDestroyedByPlayer")
+
 static char *g_DefaultText[] =
 	{
 	//	0
@@ -173,6 +177,8 @@ CSovereign::CSovereign (void) :
 		m_pEnemyObjectsSystem(NULL),
 		m_pFirstRelationship(NULL),
 		m_pInitialRelationships(NULL),
+		m_iStationsDestroyedByPlayer(0),
+		m_iShipsDestroyedByPlayer(0),
 		m_bSelfRel(false)
 
 //	CSovereign constructor
@@ -305,6 +311,43 @@ CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereig
 	//	Consult the table
 
 	return g_DispositionTable[iOurDispClass][iTheirDispClass];
+	}
+
+CSovereign::EThreatLevels CSovereign::GetPlayerThreatLevel (void) const
+
+//	GetPlayerThreatLevel
+//
+//	Computes the threat the player poses to us, based on what they've destroyed.
+
+	{
+	//	If she's destroyed more than 10 stations, the player is an existential
+	//	threat.
+
+	if (m_iStationsDestroyedByPlayer > 10)
+		return threatExistential;
+
+	//	If she's destroyed more than 5 stations or more than 15 ships, then she
+	//	is considered a major threat.
+
+	else if (m_iStationsDestroyedByPlayer > 5 || m_iShipsDestroyedByPlayer > 15)
+		return threatMajor;
+
+	//	If she's destroyed at least one station, then the player is a minor 
+	//	raiding threat.
+
+	else if (m_iStationsDestroyedByPlayer > 0)
+		return threatMinorRaiding;
+
+	//	If she's destroyed more than 5 ships, then the player is a piracy
+	//	threat.
+
+	else if (m_iShipsDestroyedByPlayer > 5)
+		return threatMinorPiracy;
+
+	//	Otherwise, she is no threat.
+
+	else
+		return threatNone;
 	}
 
 bool CSovereign::GetPropertyInteger (const CString &sProperty, int *retiValue)
@@ -578,6 +621,41 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
+ICCItem *CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+
+//	OnGetProperty
+//
+//	Returns the given property (or NULL if not found)
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))
+		return CC.CreateInteger((int)GetPlayerThreatLevel());
+
+	else if (strEquals(sProperty, PROPERTY_SHIPS_DESTROYED_BY_PLAYER))
+		return CC.CreateInteger(m_iShipsDestroyedByPlayer);
+
+	else if (strEquals(sProperty, PROPERTY_STATIONS_DESTROYED_BY_PLAYER))
+		return CC.CreateInteger(m_iStationsDestroyedByPlayer);
+
+	else
+		return NULL;
+	}
+
+void CSovereign::OnObjDestroyedByPlayer (CSpaceObject *pObj)
+
+//	OnObjDestroyedByPlayer
+//
+//	One of our objects (ship/station) was destroyed by the player.
+
+	{
+	if (pObj->GetCategory() == CSpaceObject::catStation)
+		m_iStationsDestroyedByPlayer++;
+	else
+		m_iShipsDestroyedByPlayer++;
+	}
+
 ALERROR CSovereign::OnPrepareBindDesign (SDesignLoadCtx &Ctx)
 
 //	OnPrepareBindDesign
@@ -612,6 +690,9 @@ void CSovereign::OnReadFromStream (SUniverseLoadCtx &Ctx)
 //	DWORD		Unid of target relationship (or NULL if no more)
 //	DWORD		Disposition
 //	DWORD		Flags
+//
+//	DWORD		m_iStationsDestroyedByPlayer
+//	DWORD		m_iShipsDestroyedByPlayer
 
 	{
 	DWORD dwUNID;
@@ -653,6 +734,14 @@ void CSovereign::OnReadFromStream (SUniverseLoadCtx &Ctx)
 	(*pNext) = NULL;
 
 	m_bSelfRel = CalcSelfRel();
+
+	//	Read some other data
+
+	if (Ctx.dwVersion >= 28)
+		{
+		Ctx.pStream->Read((char *)&m_iStationsDestroyedByPlayer, sizeof(DWORD));
+		Ctx.pStream->Read((char *)&m_iShipsDestroyedByPlayer, sizeof(DWORD));
+		}
 	}
 
 void CSovereign::OnReinit (void)
@@ -663,6 +752,9 @@ void CSovereign::OnReinit (void)
 
 	{
 	InitRelationships();
+
+	m_iStationsDestroyedByPlayer = 0;
+	m_iShipsDestroyedByPlayer = 0;
 	}
 
 void CSovereign::OnWriteToStream (IWriteStream *pStream)
@@ -675,6 +767,9 @@ void CSovereign::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		Unid of target relationship (or NULL if no more)
 //	DWORD		Disposition
 //	DWORD		Flags
+//
+//	DWORD		m_iStationsDestroyedByPlayer
+//	DWORD		m_iShipsDestroyedByPlayer
 
 	{
 	DWORD dwSave;
@@ -699,6 +794,11 @@ void CSovereign::OnWriteToStream (IWriteStream *pStream)
 
 	dwSave = 0;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+	//	Write some stats
+
+	pStream->Write((char *)&m_iStationsDestroyedByPlayer, sizeof(DWORD));
+	pStream->Write((char *)&m_iShipsDestroyedByPlayer, sizeof(DWORD));
 	}
 
 CSovereign::Alignments CSovereign::ParseAlignment (const CString &sAlign)

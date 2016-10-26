@@ -2449,6 +2449,7 @@ class CSpaceObject : public CObject
 		inline bool IsNamed (void) const { return m_fHasName; }
 		inline bool IsOutOfPlaneObj (void) const { return m_fOutOfPlaneObj; }
 		inline bool IsPaintNeeded (void) { return m_fPaintNeeded; }
+		bool IsPlayerAttackJustified (void) const;
 		inline bool IsPlayerDestination (void) { return m_fPlayerDestination; }
 		inline bool IsPlayerDocked (void) { return m_fPlayerDocked; }
 		bool IsPlayerEscortTarget (CSpaceObject *pPlayer = NULL);

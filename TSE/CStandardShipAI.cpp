@@ -2143,6 +2143,7 @@ void CStandardShipAI::OnDestroyedNotify (SDestroyCtx &Ctx)
 		case orderGuard:
 		case orderPatrol:
 		case orderGateOnThreat:
+		case orderGateOnStationDestroyed:
 			{
 			CSpaceObject *pBase = GetBase();
 			CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());

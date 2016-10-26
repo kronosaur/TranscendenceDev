@@ -1370,6 +1370,12 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 			}
 		else
 			pStats->iFriendDestroyed++;
+
+		//	Tell the sovereign that the player destroyed one of their ships.
+
+		CSovereign *pSovereign = Ctx.pObj->GetSovereign();
+		if (pSovereign)
+			pSovereign->OnObjDestroyedByPlayer(Ctx.pObj);
 		}
 
 	//	Is this a station?
@@ -1382,6 +1388,12 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 			SStationTypeStats *pStats = GetStationStats(Ctx.pObj->GetType()->GetUNID());
 
 			pStats->iDestroyed++;
+
+			//	Tell the sovereign that the player destroyed one of their stations.
+
+			CSovereign *pSovereign = Ctx.pObj->GetSovereign();
+			if (pSovereign)
+				pSovereign->OnObjDestroyedByPlayer(Ctx.pObj);
 			}
 		}
 	}

@@ -17,7 +17,8 @@ CWaitOrder::CWaitOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCo
 		m_fAttackEnemies(false),
 		m_fWaitForEnemy(false),
 		m_fDeterEnemies(false),
-		m_fIsDeterring(false)
+		m_fIsDeterring(false),
+		m_fWaitForThreat(false)
 
 //	CWaitOrder constructor
 
@@ -37,6 +38,10 @@ CWaitOrder::CWaitOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCo
 		case IShipController::orderWaitForTarget:
 			m_fWaitForLeaderToApproach = true;
 			m_fAttackEnemies = true;
+			break;
+
+		case IShipController::orderWaitForThreat:
+			m_fWaitForThreat = true;
 			break;
 
 		case IShipController::orderWaitForUndock:
@@ -114,10 +119,18 @@ void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 //	We've been attacked.
 
 	{
+	//	If we're waiting for a threat and we got attacked, then we're done 
+	//	waiting.
+
+	if (m_fWaitForThreat
+			&& pAttacker
+			&& pAttacker->CanAttack())
+		pShip->CancelCurrentOrder();
+
 	//	If we're waiting for enemies and someone deliberately hits us, then 
 	//	that counts.
 
-	if (m_fWaitForEnemy
+	else if (m_fWaitForEnemy
 			&& Ctx.IsSecondAttack()
 			&& pAttacker
 			&& pAttacker->CanAttack()
@@ -199,6 +212,12 @@ void CWaitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			&& pShip->GetNearestVisibleEnemy())
 		pShip->CancelCurrentOrder();
 
+	else if (m_fWaitForThreat
+			&& pShip->IsDestinyTime(90)
+			&& pShip->GetDockedObj()
+			&& (pShip->GetDockedObj()->IsAngry() || pShip->GetDockedObj()->IsAbandoned() || pShip->GetDockedObj()->IsDestroyed()))
+		pShip->CancelCurrentOrder();
+
 	DEBUG_CATCH
 	}
 
@@ -269,6 +288,41 @@ DWORD CWaitOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject
 		}
 	}
 
+void CWaitOrder::OnDestroyed (CShip *pShip, SDestroyCtx &Ctx)
+
+//	OnDestroyed
+//
+//	We've been destroyed.
+
+	{
+	CSpaceObject *pTarget;
+
+	//	If we're waiting on a threat at a station, then ask the station to 
+	//	avenge us if we die.
+
+	if (m_fWaitForThreat
+			&& pShip->GetDockedObj()
+			&& Ctx.Attacker.GetObj()
+			&& Ctx.Attacker.GetObj()->CanAttack()
+			&& !pShip->GetDockedObj()->IsEnemy(pShip)
+			&& (pTarget = pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver())))
+		{
+		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+
+		//	If we were attacked by a friend, then we tell our station
+		//	so they can be blacklisted.
+
+		if (pOrderGiver 
+				&& pShip->IsFriend(pOrderGiver))
+			pShip->Communicate(pShip->GetDockedObj(), msgDestroyedByFriendlyFire, pTarget);
+
+		//	Otherwise, we deter the target
+
+		else
+			pShip->Communicate(pShip->GetDockedObj(), msgDestroyedByHostileFire, pTarget);
+		}
+	}
+
 void CWaitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)
 
 //	OnObjDestroyed
@@ -280,6 +334,13 @@ void CWaitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj,
 
 	if (m_fIsDeterring && iObj == objTarget)
 		m_fIsDeterring = false;
+
+	//	If we're waiting for a threat and the station we're docked with got 
+	//	destroyed, then we leave.
+
+	if (m_fWaitForThreat
+			&& pShip->GetDockedObj() == Ctx.pObj)
+		*retbCancelOrder = true;
 	}
 
 void CWaitOrder::OnReadFromStream (SLoadCtx &Ctx)

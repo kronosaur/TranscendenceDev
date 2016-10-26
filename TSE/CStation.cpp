@@ -2438,10 +2438,35 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 					|| !m_pType->IsBlacklistEnabled() || m_fNoBlacklist)
 				return resAck;
 
-			//	If we think this might have been accidental, then ignore it.
+			//	If our sovereign considers the player to be a major threat, then
+			//	we immediately blacklist.
 
-			if (!m_Blacklist.Hit(GetSystem()->GetTick()))
-				return resAck;
+			if (GetSovereign()
+					&& GetSovereign()->GetPlayerThreatLevel() >= CSovereign::threatMajor)
+				{
+				//	Fall through and blacklist.
+				}
+
+			//	If one of our subordinates was destroyed, then we take it seriously.
+
+			else if (iMessage == msgDestroyedByFriendlyFire)
+				{
+				//	If the player had a good reason for using deadly force, then
+				//	we treat this as an accident.
+
+				if (IsPlayerAttackJustified())
+					return resAck;
+				}
+
+			//	Otherwise, we treat it like a hit on us.
+
+			else
+				{
+				//	If we think this might have been accidental, then ignore it.
+
+				if (!m_Blacklist.Hit(GetSystem()->GetTick()))
+					return resAck;
+				}
 
 			//	Otherwise, blacklist the player (but go after the target, which 
 			//	might be an auton because the player is hidden).
@@ -2516,8 +2541,11 @@ void CStation::OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrde
 			return;
 
 		//	If we think this might have been accidental, then ignore it.
+		//	(but if the player is considered a major threat, then we stop
+		//	believing in accidents).
 
-		if (!m_Blacklist.Hit(GetSystem()->GetTick()))
+		if (!m_Blacklist.Hit(GetSystem()->GetTick())
+				&& (GetSovereign() == NULL || GetSovereign()->GetPlayerThreatLevel() < CSovereign::threatMajor))
 			return;
 
 		//	Figure out which target we should attack (based on visibility,

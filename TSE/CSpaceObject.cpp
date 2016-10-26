@@ -4828,6 +4828,40 @@ bool CSpaceObject::IsEscortingFriendOf (const CSpaceObject *pObj) const
 		return false;
 	}
 
+bool CSpaceObject::IsPlayerAttackJustified (void) const
+
+//	IsPlayerAttackJustified
+//
+//	Returns TRUE if we think the player attacked us by accident (e.g., while
+//	defending us or themselves from attack).
+//
+//	NOTE: This assumes the player is not an enemy or already blacklisted.
+
+	{
+	CSpaceObject *pPlayer = GetPlayerShip();
+	if (pPlayer == NULL)
+		return false;
+
+	//	Iterate over all objects to see who has this object as a target
+
+	int i;
+	for (i = 0; i < GetSystem()->GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetSystem()->GetObject(i);
+		CSpaceObject *pTarget;
+
+		if (pObj
+				&& IsEnemy(pObj)
+				&& ((pTarget = pObj->GetTarget(CItemCtx())) == this
+						|| pTarget == pPlayer)
+				&& pObj != pPlayer
+				&& pObj != this)
+			return true;
+		}
+
+	return false;
+	}
+
 bool CSpaceObject::IsPlayerEscortTarget (CSpaceObject *pPlayer)
 
 //	IsPlayerEscortTarget

@@ -232,6 +232,7 @@ class IShipController
 			orderAttackArea,			//	pTarget = center; dwData1 = radius (light-seconds); dwData2 = timer.
 			orderHoldAndAttack,			//	pTarget = target to destroy; dwData = timer.
 			orderGoToPos,				//	dwData = vector destination
+			orderWaitForThreat,			//	dwData = seconds to wait (0 == indefinitely)
 			};
 
 		enum EShipStatusNotifications

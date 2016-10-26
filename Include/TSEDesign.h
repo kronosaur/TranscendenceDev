@@ -3689,6 +3689,15 @@ class CSovereign : public CDesignType
 			dispFriend = 2,
 			};
 
+		enum EThreatLevels
+			{
+			threatNone =				0,	//	Player is not a threat to us
+			threatMinorPiracy =			1,	//	Player is a minor threat to ships
+			threatMinorRaiding =		2,	//	Player is a minor threat to stations
+			threatMajor =				3,	//	Player is a major threat
+			threatExistential =			4,	//	Player threatens our existence
+			};
+
 		CSovereign (void);
 		~CSovereign (void);
 
@@ -3697,6 +3706,7 @@ class CSovereign : public CDesignType
 		IPlayerController *GetController (void);
 		Disposition GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent = true);
 		inline const CSpaceObjectList &GetEnemyObjectList (CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
+		EThreatLevels GetPlayerThreatLevel (void) const;
 		bool GetPropertyInteger (const CString &sProperty, int *retiValue);
 		bool GetPropertyItemList (const CString &sProperty, CItemList *retItemList);
 		bool GetPropertyString (const CString &sProperty, CString *retsValue);
@@ -3704,6 +3714,7 @@ class CSovereign : public CDesignType
 		inline bool IsEnemy (CSovereign *pSovereign) { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispEnemy); }
 		inline bool IsFriend (CSovereign *pSovereign) { return (!m_bSelfRel && (pSovereign == this)) || (GetDispositionTowards(pSovereign) == dispFriend); }
 		void MessageFromObj (CSpaceObject *pSender, const CString &sText);
+		void OnObjDestroyedByPlayer (CSpaceObject *pObj);
 		static Alignments ParseAlignment (const CString &sAlign);
 		void SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp);
 		bool SetPropertyInteger (const CString &sProperty, int iValue);
@@ -3720,6 +3731,7 @@ class CSovereign : public CDesignType
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual void OnPrepareReinit (void) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
@@ -3746,6 +3758,9 @@ class CSovereign : public CDesignType
 		CXMLElement *m_pInitialRelationships;
 
 		SRelationship *m_pFirstRelationship;	//	List of individual relationships
+
+		int m_iStationsDestroyedByPlayer;		//	Number of our stations destroyed by the player
+		int m_iShipsDestroyedByPlayer;			//	Number of our ships destroyed by the player
 
 		bool m_bSelfRel;						//	TRUE if relationship with itself is not friendly
 		CSystem *m_pEnemyObjectsSystem;			//	System that we've cached enemy objects

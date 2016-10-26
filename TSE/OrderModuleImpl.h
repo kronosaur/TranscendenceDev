@@ -295,6 +295,7 @@ class CWaitOrder : public IOrderModule
 		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
 		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
 		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
 		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
 		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
@@ -323,7 +324,7 @@ class CWaitOrder : public IOrderModule
 		DWORD m_fWaitForEnemy:1;
 		DWORD m_fDeterEnemies:1;
 		DWORD m_fIsDeterring:1;
-		DWORD m_fSpare7:1;
+		DWORD m_fWaitForThreat:1;
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:24;

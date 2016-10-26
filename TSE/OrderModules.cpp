@@ -123,6 +123,7 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderWaitForEnemy:
 		case IShipController::orderWaitForPlayer:
 		case IShipController::orderWaitForTarget:
+		case IShipController::orderWaitForThreat:
 		case IShipController::orderWaitForUndock:
 			return new CWaitOrder(iOrder);
 
