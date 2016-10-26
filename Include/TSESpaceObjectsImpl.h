@@ -1006,7 +1006,7 @@ class CShip : public CSpaceObject
 		virtual Metric GetMass (void) override;
 		virtual int GetMaxPower (void) const override;
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) override;
+		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerShips; }
@@ -1020,6 +1020,7 @@ class CShip : public CSpaceObject
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual int GetStealth (void) const override;
 		virtual Metric GetMaxSpeed (void) override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
+		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) override { return m_pTrade; }
 		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider) override;
@@ -1347,6 +1348,7 @@ class CStation : public CSpaceObject
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual Metric GetMass (void) override { return m_rMass; }
 		virtual int GetMaxLightDistance (void) override { return m_pType->GetMaxLightDistance(); }
+		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStation"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }

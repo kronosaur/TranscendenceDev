@@ -2769,7 +2769,8 @@ class CSpaceObject : public CObject
 		virtual int GetLevel (void) const { return 1; }
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) { return 0; }
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
+		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
+		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
 		virtual int GetPerception (void) { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return NULL; }
 		virtual int GetScore (void) { return 0; }

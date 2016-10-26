@@ -91,7 +91,8 @@ class CCyberDeckClass : public CDeviceClass
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override { return 30; }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatWeapon; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override { return damageGeneric; }
-		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget);
+		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
+		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
 											 CInstalledDevice *pDevice,
 											 CString *retsLabel,
@@ -586,6 +587,7 @@ class CWeaponClass : public CDeviceClass
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) override;
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
+		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 

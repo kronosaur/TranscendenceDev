@@ -4667,6 +4667,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	if (Ctx.pPlayer)
 		{
+		Ctx.pPlayerTarget = Ctx.pPlayer->GetTarget(CItemCtx(), true);
+
 		//	Check to see if the primary weapon requires autotargetting
 
 		CInstalledDevice *pWeapon = Ctx.pPlayer->GetNamedDevice(devPrimaryWeapon);

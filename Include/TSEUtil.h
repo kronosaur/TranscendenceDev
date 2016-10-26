@@ -283,7 +283,9 @@ struct SUpdateCtx
 			pAnnotations(NULL),
 			pDockingObj(NULL),
 			bNeedsAutoTarget(false),
+			bPlayerTargetOutOfRange(false),
 			iPlayerPerception(0),
+			pPlayerTarget(NULL),
 			pTargetObj(NULL),
 			rTargetDist2(g_InfiniteDistance * g_InfiniteDistance),
 			iMinFireArc(0),
@@ -306,8 +308,10 @@ struct SUpdateCtx
 	//	Used to compute player's auto target
 
 	bool bNeedsAutoTarget;				//	TRUE if player's weapon needs an autotarget
+	bool bPlayerTargetOutOfRange;		//	TRUE if player's current target is unreachable
 	int iPlayerPerception;				//	Player's perception
 
+	CSpaceObject *pPlayerTarget;		//	Current player target (may be NULL)
 	CSpaceObject *pTargetObj;			//	If non-null, nearest possible target for player
 	Metric rTargetDist2;				//	Distance from player to target
 	int iMinFireArc;					//	Fire arc of primary weapon

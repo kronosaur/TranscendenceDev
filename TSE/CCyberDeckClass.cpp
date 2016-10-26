@@ -141,6 +141,16 @@ Metric CCyberDeckClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledD
 	return m_iRange * LIGHT_SECOND;
 	}
 
+Metric CCyberDeckClass::GetMaxRange (CItemCtx &ItemCtx)
+
+//	GetMaxEffectiveRange
+//
+//	Returns the maximum effective range of the weapon
+
+	{
+	return m_iRange * LIGHT_SECOND;
+	}
+
 void CCyberDeckClass::GetSelectedVariantInfo (CSpaceObject *pSource, 
 											  CInstalledDevice *pDevice,
 											  CString *retsLabel,

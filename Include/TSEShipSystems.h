@@ -578,6 +578,7 @@ class CDeviceClass
 		virtual bool GetDeviceEnhancementDesc (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return false; }
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
+		virtual Metric GetMaxRange (CItemCtx &ItemCtx) { return 0.0; }
 		virtual int GetPowerOutput (CItemCtx &Ctx) const { return 0; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }

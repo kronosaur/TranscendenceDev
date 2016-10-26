@@ -1376,6 +1376,26 @@ const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *ret
 		}
 	}
 
+Metric CStation::GetMaxWeaponRange (void) const
+
+//	GetMaxWeaponRange
+//
+//	Returns the maximum range of weapons.
+
+	{
+	int i;
+
+	Metric rRange = 0.0;
+	if (m_pDevices)
+		{
+		for (i = 0; i < maxDevices; i++)
+			if (!m_pDevices[i].IsEmpty())
+				rRange = Max(rRange, m_pDevices[i].GetMaxRange(CItemCtx(const_cast<CStation *>(this), &m_pDevices[i])));
+		}
+
+	return rRange;
+	}
+
 CString CStation::GetName (DWORD *retdwFlags)
 
 //	GetName

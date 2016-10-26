@@ -7247,10 +7247,49 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 		{
 		CVector vDist = GetPos() - Ctx.pPlayer->GetPos();
 
+		//	If this is the player's current target, then see if we can actually
+		//	hit it with any of our weapons.
+
+		if (Ctx.pPlayerTarget == this)
+			{
+			Metric rDist;
+			int iAngle = VectorToPolar(vDist, &rDist);
+
+			//	If we're out of range of both the primary and the launcher, then 
+			//	we remember that fact.
+
+			if (rDist > Ctx.pPlayer->GetMaxWeaponRange())
+				Ctx.bPlayerTargetOutOfRange = true;
+
+			//	If we have a fire arc and we're outside the arc, then we're not in
+			//	range either.
+
+			else if (Ctx.iMinFireArc != Ctx.iMaxFireArc
+					&& !AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc))
+				Ctx.bPlayerTargetOutOfRange = true;
+
+			//	If we're outside detection range, then we can't keep the target
+
+			else if (rDist > GetDetectionRange(Ctx.iPlayerPerception))
+				Ctx.bPlayerTargetOutOfRange = true;
+
+			//	Otherwise, this is a valid target
+
+			else
+				{
+				Metric rDist2 = rDist * rDist;
+				if (rDist2 < Ctx.rTargetDist2)
+					{
+					Ctx.pTargetObj = this;
+					Ctx.rTargetDist2 = rDist2;
+					}
+				}
+			}
+
 		//	If the player's weapons has an arc of fire, then limit ourselves to
 		//	targets in the arc.
 
-		if (Ctx.iMinFireArc != Ctx.iMaxFireArc)
+		else if (Ctx.iMinFireArc != Ctx.iMaxFireArc)
 			{
 			Metric rDist;
 			int iAngle = VectorToPolar(vDist, &rDist);

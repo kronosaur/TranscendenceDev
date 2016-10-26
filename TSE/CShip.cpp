@@ -2701,6 +2701,25 @@ int CShip::GetMaxPower (void) const
     return m_Perf.GetReactorDesc().GetMaxPower();
 	}
 
+Metric CShip::GetMaxWeaponRange (void) const
+
+//	GetMaxWeaponRange
+//
+//	Returns the maximum range of weapons.
+
+	{
+	Metric rRange = 0.0;
+	CInstalledDevice *pDevice = GetNamedDevice(devPrimaryWeapon);
+	if (pDevice)
+		rRange = pDevice->GetMaxRange(CItemCtx(const_cast<CShip *>(this), pDevice));
+
+	pDevice = GetNamedDevice(devMissileWeapon);
+	if (pDevice)
+		rRange = Max(rRange, pDevice->GetMaxRange(CItemCtx(const_cast<CShip *>(this), pDevice)));
+
+	return rRange;
+	}
+
 int CShip::GetMissileCount (void)
 
 //	GetMissileCount
@@ -2736,7 +2755,7 @@ CString CShip::GetName (DWORD *retdwFlags)
 		}
 	}
 
-CInstalledDevice *CShip::GetNamedDevice (DeviceNames iDev)
+CInstalledDevice *CShip::GetNamedDevice (DeviceNames iDev) const
 	{
 	if (m_NamedDevices[iDev] == -1)
 		return NULL;

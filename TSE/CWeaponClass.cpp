@@ -2519,6 +2519,20 @@ Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevi
 		return pShot->GetEffectiveRange();
 	}
 
+Metric CWeaponClass::GetMaxRange (CItemCtx &ItemCtx)
+
+//	GetMaxRange
+//
+//	Returns the greatest range for the weapon.
+
+	{
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
+	if (pShot == NULL)
+		return 0.0;
+
+	return pShot->GetMaxRange();
+	}
+
 DWORD CWeaponClass::GetLinkedFireOptions (CItemCtx &Ctx)
 
 //	GetLinkedFireOptions
