@@ -91,6 +91,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 
 #define ORDER_DOCKED							CONSTLIT("docked")
 
+#define PROPERTY_ASCENDED						CONSTLIT("ascended")
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_COMMS_KEY						CONSTLIT("commsKey")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
@@ -4049,7 +4050,10 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	CCodeChain &CC = g_pUniverse->GetCC();
 	CDesignType *pType;
 
-	if (strEquals(sName, PROPERTY_CATEGORY))
+	if (strEquals(sName, PROPERTY_ASCENDED))
+		return CC.CreateBool(IsAscended());
+
+	else if (strEquals(sName, PROPERTY_CATEGORY))
 		{
 		switch (GetCategory())
 			{

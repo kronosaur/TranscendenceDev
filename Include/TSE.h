@@ -3307,6 +3307,7 @@ class CAscendedObjectList
 
 		inline void DeleteAll (void) { CleanUp(); }
 		inline void Insert (CSpaceObject *pObj) { m_List.Insert(pObj); }
+		CSpaceObject *FindByID (DWORD dwID) const;
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
 		inline bool IsEmpty (void) const { return (m_List.GetCount() == 0); }
@@ -3608,6 +3609,7 @@ class CUniverse
 		void GenerateGameStats (CGameStats &Stats);
 		inline void GetAllAdventures (TArray<CExtension *> *retList) { CString sError; m_Extensions.ComputeAvailableAdventures((m_bDebugMode ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retList, &sError); }
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const;
+		inline CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
 		inline CAdventureDesc *GetCurrentAdventureDesc (void) { return m_pAdventure; }
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);

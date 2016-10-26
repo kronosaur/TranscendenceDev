@@ -683,21 +683,27 @@ CSpaceObject *CUniverse::FindObject (DWORD dwID)
 //	Finds the object by ID
 
 	{
-	CSpaceObject *pObj = NULL;
+	CSpaceObject *pObj;
 
 	//	Look for an object in the current system
 
-	if (m_pCurrentSystem)
-		pObj = m_pCurrentSystem->FindObject(dwID);
+	if (m_pCurrentSystem
+			&& (pObj = m_pCurrentSystem->FindObject(dwID)))
+		return pObj;
 
 	//	Look for a mission
 
-	if (pObj == NULL)
-		pObj = m_AllMissions.GetMissionByID(dwID);
+	else if (pObj = m_AllMissions.GetMissionByID(dwID))
+		return pObj;
 
-	//	Done
+	//	Look for an ascended object
 
-	return pObj;
+	else if (pObj = m_AscendedObjects.FindByID(dwID))
+		return pObj;
+
+	//	Not found
+
+	return NULL;
 	}
 
 CShipClass *CUniverse::FindShipClassByName (const CString &sName)

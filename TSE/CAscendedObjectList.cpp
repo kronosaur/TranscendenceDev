@@ -20,6 +20,22 @@ void CAscendedObjectList::CleanUp (void)
 	m_List.DeleteAll();
 	}
 
+CSpaceObject *CAscendedObjectList::FindByID (DWORD dwID) const
+
+//	FindByID
+//
+//	Returns the object by ID
+
+	{
+	int i;
+
+	for (i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i]->GetID() == dwID)
+			return m_List[i];
+
+	return NULL;
+	}
+
 void CAscendedObjectList::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
