@@ -660,6 +660,7 @@ class CDamageSource
 		inline DestructionTypes GetCause (void) const { return m_iCause; }
 		CString GetDamageCauseNounPhrase (DWORD dwFlags);
 		CSpaceObject *GetObj (void) const;
+		CSpaceObject *GetOrderGiver (void) const;
 		inline CSpaceObject *GetSecondaryObj (void) const { return m_pSecondarySource; }
 		CSovereign *GetSovereign (void) const;
 		DWORD GetSovereignUNID (void) const;

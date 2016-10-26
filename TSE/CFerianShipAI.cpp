@@ -514,16 +514,21 @@ void CFerianShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	{
 	switch (GetCurrentOrder())
 		{
-		case IShipController::orderMine:
+		case orderMine:
 			{
 			if (Ctx.pObj == GetCurrentOrderTarget())
 				{
 				//	Avenge the base
 
-				if (Ctx.Attacker.IsCausedByNonFriendOf(m_pShip) && Ctx.Attacker.GetObj())
-					AddOrder(IShipController::orderDestroyTarget, Ctx.Attacker.GetObj(), IShipController::SData());
+				CSpaceObject *pTarget;
+				if (Ctx.Attacker.IsCausedByNonFriendOf(m_pShip) 
+						&& Ctx.Attacker.GetObj()
+						&& (pTarget = m_pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver())))
+					AddOrder(orderDestroyTarget, pTarget, SData());
 				else if (m_State == stateAttackingThreat)
-					AddOrder(IShipController::orderDestroyTarget, m_pTarget, IShipController::SData());
+					AddOrder(orderDestroyTarget, m_pTarget, SData());
+				else
+					AddOrder(orderAttackNearestEnemy, NULL, SData());
 
 				//	Stop mining
 

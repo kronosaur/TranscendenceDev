@@ -1324,6 +1324,8 @@ struct SDamageCtx
 			bShatter(false)
 		{ }
 
+	inline CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
+
 	CSpaceObject *pObj;							//	Object hit
 	CWeaponFireDesc *pDesc;						//	WeaponFireDesc
 	DamageDesc Damage;							//	Damage
@@ -1371,6 +1373,8 @@ struct SDestroyCtx
 		iCause(removedFromSystem),
 		bResurrectPending(false),
 		pResurrectedObj(NULL) { }
+
+	CSpaceObject *GetOrderGiver (void) const;
 
 	CSpaceObject *pObj;							//	Object destroyed
 	CDamageSource Attacker;						//	Ultimate attacker
@@ -1438,6 +1442,7 @@ enum MessageTypes
 	msgHitByHostileFire =			20,	//	Hit by hostile fire (pParam1 is attacker)
 	msgDestroyedByFriendlyFire =	21,	//	We were destroyed by friendly fire (pParam1 is attacker)
 	msgDestroyedByHostileFire =		22,	//	We were destroyed by hostile fire (pParam is attacker)
+	msgBaseDestroyedByTarget =		23,	//	Our base was destroyed by target (pParam is target)
 	};
 
 enum ResponseTypes

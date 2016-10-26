@@ -922,7 +922,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 
 	if (pAttacker)
 		{
-		CSpaceObject *pOrderGiver = pAttacker->GetOrderGiver(Damage.Damage.GetCause());
+		CSpaceObject *pOrderGiver = Damage.GetOrderGiver();
 
 		//	If we were attacked by a friend, then warn them off
 		//	(Unless we're explicitly targeting the friend)

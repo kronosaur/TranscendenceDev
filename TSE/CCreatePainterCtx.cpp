@@ -99,7 +99,7 @@ void CCreatePainterCtx::SetDamageCtxData (CCodeChain &CC, CCSymbolTable *pTable,
 	if (pAttacker)
 		pTable->SetIntegerValue(CC, FIELD_ATTACKER, (int)pAttacker);
 
-	CSpaceObject *pOrderGiver = (pAttacker ? pAttacker->GetOrderGiver(DamageCtx.Attacker.GetCause()) : NULL);
+	CSpaceObject *pOrderGiver = DamageCtx.GetOrderGiver();
 	if (pOrderGiver)
 		pTable->SetIntegerValue(CC, FIELD_ORDER_GIVER, (int)pAttacker);
 

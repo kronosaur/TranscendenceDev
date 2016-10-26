@@ -1678,7 +1678,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 //	or it can be the missile/beam that hit us.
 
 	{
-	CSpaceObject *pOrderGiver = (pAttacker ? pAttacker->GetOrderGiver(Damage.Damage.GetCause()) : NULL);
+	CSpaceObject *pOrderGiver = Damage.GetOrderGiver();
 
 	if (pAttacker)
 		{
@@ -1960,6 +1960,29 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 				}
 			}
 
+		case msgBaseDestroyedByTarget:
+			{
+			if (pParam1 == NULL
+					|| pParam1->IsDestroyed()
+					|| m_AICtx.IsNonCombatant())
+				return resNoAnswer;
+
+			switch (GetCurrentOrder())
+				{
+				case orderGuard:
+				case orderPatrol:
+					m_pShip->GetController()->AddOrder(IShipController::orderDestroyTarget,
+								pParam1,
+								IShipController::SData(),
+								true);
+
+					return resAck;
+
+				default:
+					return resNoAnswer;
+				}
+			}
+
 		case msgDestroyBroadcast:
 			{
 			switch (m_State)
@@ -2123,7 +2146,7 @@ void CStandardShipAI::OnDestroyedNotify (SDestroyCtx &Ctx)
 			{
 			CSpaceObject *pBase = GetBase();
 			CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
-			CSpaceObject *pOrderGiver = (pAttacker ? pAttacker->GetOrderGiver(Ctx.iCause) : NULL);
+			CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 			CSpaceObject *pTarget;
 
 			if (pBase 
@@ -2319,6 +2342,18 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 				break;
 				}
 
+			//	If we're station guards, and our station got destroyed, then 
+			//	attack the nearest enemy. If we could retaliate against the
+			//	attacker, we would have gotten msgBaseDestroyedByTarget. The fact
+			//	that we're here means that we never got the message, probably 
+			//	because the target is out of range or already dead.
+
+			case orderGuard:
+			case orderPatrol:
+				CancelCurrentOrder();
+				AddOrder(orderAttackNearestEnemy, NULL, IShipController::SData());
+				break;
+
 			//	Gate out
 
 			case IShipController::orderGateOnStationDestroyed:
@@ -2353,7 +2388,9 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 				if (Ctx.Attacker.IsCausedByEnemyOf(m_pShip))
 					{
 					CancelCurrentOrder();
-					AddOrder(IShipController::orderDestroyTarget, Ctx.Attacker.GetObj(), IShipController::SData());
+					CSpaceObject *pTarget = m_pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver());
+					if (pTarget)
+						AddOrder(IShipController::orderDestroyTarget, pTarget, IShipController::SData());
 					}
 			}
 		}

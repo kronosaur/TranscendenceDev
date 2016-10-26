@@ -4110,7 +4110,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Tell our attacker that we got hit
 
-	CSpaceObject *pOrderGiver = (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Damage.GetCause()) : NULL);
+	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 	if (pOrderGiver && pOrderGiver->CanAttack())
 		pOrderGiver->OnObjDamaged(Ctx);
 

@@ -822,7 +822,7 @@ void CWeaponFireDesc::FireOnCreateShot (const CDamageSource &Source, CSpaceObjec
 		CCCtx.SaveAndDefineSourceVar(pShot);
 		CCCtx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Source.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Source.GetObj() ? Source.GetObj()->GetOrderGiver(Source.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Source.GetOrderGiver());
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
 
 		ICCItem *pResult = CCCtx.Run(Event);
@@ -850,7 +850,7 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
@@ -901,7 +901,7 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx)
 		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
@@ -953,7 +953,7 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 		CCCtx.DefineInteger(CONSTLIT("aOverlayID"), pOverlay->GetID());
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
@@ -1011,7 +1011,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 		CCCtx.DefineItem(CONSTLIT("aDeviceItem"), ItemList.GetItemAtCursor());
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
@@ -1177,7 +1177,7 @@ bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject 
 		CSpaceObject *pAttacker = Source.GetObj();
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), pShot);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), pAttacker);
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (pAttacker ? pAttacker->GetOrderGiver(Source.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Source.GetOrderGiver());
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())

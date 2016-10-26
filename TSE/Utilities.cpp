@@ -211,6 +211,7 @@ static char *g_pszMessageID[] =
 	"HitByHostileFire",			//	msgHitByHostileFire
 	"DestroyedByFriendlyFire",	//	msgDestroyedByFriendlyFire
 	"DestroyedByHostileFire",	//	msgDestroyedByHostileFire
+	"BaseDestroyedByTarget",	//	msgBaseDestroyedByTarget
 	};
 
 #define MESSAGE_ID_COUNT			(sizeof(g_pszMessageID) / sizeof(g_pszMessageID[0]))
@@ -3401,3 +3402,4 @@ bool SetFrequencyByLevel (CString &sLevelFrequency, int iLevel, int iFreq)
 	return true;
 	}
 
+CSpaceObject *SDestroyCtx::GetOrderGiver (void) const { return (Attacker.GetObj() ? Attacker.GetObj()->GetOrderGiver(iCause) : NULL); }

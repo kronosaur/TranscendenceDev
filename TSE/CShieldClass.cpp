@@ -772,7 +772,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);

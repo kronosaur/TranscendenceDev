@@ -1262,7 +1262,7 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
 
 		ICCItem *pResult = CCCtx.Run(Event);

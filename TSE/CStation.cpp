@@ -1973,7 +1973,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	//	If we're not abandoned, we go through a completely different code-path
 
-	CSpaceObject *pOrderGiver = (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Damage.GetCause()) : NULL);
+	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 
 	if (pOrderGiver 
 			&& pOrderGiver->CanAttack()
@@ -2109,6 +2109,20 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 		InvalidateItemListAddRemove();
 
+		//	Alert others and retaliate, if necessary.
+		//
+		//	NOTE: We need to do this before <OnObjDestroyed> because we want 
+		//	that event to be able to override this behavior.
+		//	because we want those events to be able to override this behavior.
+
+		if (pOrderGiver && pOrderGiver->CanAttack())
+			{
+			if (IsFriendlyFire(pOrderGiver))
+				OnDestroyedByFriendlyFire(Ctx.Attacker.GetObj(), pOrderGiver);
+			else
+				OnDestroyedByHostileFire(Ctx.Attacker.GetObj(), pOrderGiver);
+			}
+
 		//	Tell all objects that we've been destroyed
 
 		for (int i = 0; i < GetSystem()->GetObjectCount(); i++)
@@ -2128,16 +2142,6 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 		GetSystem()->FireOnSystemObjDestroyed(DestroyCtx);
 		g_pUniverse->NotifyOnObjDestroyed(DestroyCtx);
-
-		//	Alert others, if necessary
-
-		if (pOrderGiver && pOrderGiver->CanAttack())
-			{
-			if (IsFriendlyFire(pOrderGiver))
-				OnDestroyedByFriendlyFire(Ctx.Attacker.GetObj(), pOrderGiver);
-			else
-				OnDestroyedByHostileFire(Ctx.Attacker.GetObj(), pOrderGiver);
-			}
 
 		//	Clear destination
 
@@ -2290,7 +2294,7 @@ void CStation::AvengeAttack (CSpaceObject *pTarget)
 	//	Tell our subordinates to attack to kill
 
 	for (i = 0; i < m_Subordinates.GetCount(); i++)
-		Communicate(m_Subordinates.GetObj(i), msgAttack, pTarget);
+		Communicate(m_Subordinates.GetObj(i), msgBaseDestroyedByTarget, pTarget);
 
 	//	Alert
 
@@ -2356,7 +2360,7 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 	{
 	switch (iMessage)
 		{
-		case msgAttack:
+		case msgBaseDestroyedByTarget:
 			if (!IsAbandoned())
 				AvengeAttack(pParam1);
 			return resAck;

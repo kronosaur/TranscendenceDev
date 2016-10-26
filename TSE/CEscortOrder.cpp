@@ -225,10 +225,11 @@ DWORD CEscortOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 				}
 			}
 
+		case msgBaseDestroyedByTarget:
 		case msgDestroyBroadcast:
 			{
 			if (pParam1 == NULL
-					|| !pParam1->IsDestroyed())
+					|| pParam1->IsDestroyed())
 				return resNoAnswer;
 
 			pShip->GetController()->AddOrder(IShipController::orderDestroyTarget,
@@ -313,8 +314,11 @@ void CEscortOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 		{
 		//	Retaliate
 
-		if (Ctx.Attacker.IsCausedByNonFriendOf(pShip) && Ctx.Attacker.GetObj())
-			pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, Ctx.Attacker.GetObj(), IShipController::SData());
+		CSpaceObject *pTarget;
+		if (Ctx.Attacker.IsCausedByNonFriendOf(pShip) 
+				&& Ctx.Attacker.GetObj()
+				&& (pTarget = pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver())))
+			pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, pTarget, IShipController::SData());
 		else
 			pShip->GetController()->AddOrder(IShipController::orderAttackNearestEnemy, NULL, IShipController::SData());
 

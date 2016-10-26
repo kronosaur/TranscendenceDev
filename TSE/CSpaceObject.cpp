@@ -2077,7 +2077,7 @@ void CSpaceObject::FireOnAttacked (const SDamageCtx &Ctx)
 		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
@@ -2207,7 +2207,7 @@ void CSpaceObject::FireOnDamage (SDamageCtx &Ctx)
 		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
@@ -2267,7 +2267,7 @@ void CSpaceObject::FireOnDestroy (const SDestroyCtx &Ctx)
 
 		CCCtx.SaveAndDefineSourceVar(this);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.iCause) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
@@ -2572,7 +2572,7 @@ void CSpaceObject::FireOnObjDestroyed (const SDestroyCtx &Ctx)
 		CCCtx.SaveAndDefineSourceVar(this);
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.iCause) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
@@ -2993,7 +2993,7 @@ bool CSpaceObject::FireOnSubordinateAttacked (const SDamageCtx &Ctx)
 		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
@@ -3057,7 +3057,7 @@ void CSpaceObject::FireOnSystemObjAttacked (SDamageCtx &Ctx)
 		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.Attacker.GetCause()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
@@ -3090,7 +3090,7 @@ void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 		CCCtx.SaveAndDefineSourceVar(this);
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (Ctx.Attacker.GetObj() ? Ctx.Attacker.GetObj()->GetOrderGiver(Ctx.iCause) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 

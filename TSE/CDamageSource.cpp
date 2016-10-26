@@ -70,6 +70,16 @@ CSpaceObject *CDamageSource::GetObj (void) const
 		return m_pSource;
 	}
 
+CSpaceObject *CDamageSource::GetOrderGiver (void) const
+
+//	GetOrderGiver
+//
+//	Returns the object which actually gave the order (or NULL)
+	
+	{
+	return (GetObj() ? GetObj()->GetOrderGiver(GetCause()) : NULL);
+	}
+
 CSovereign *CDamageSource::GetSovereign (void) const
 
 //	GetSovereign
