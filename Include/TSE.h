@@ -2868,7 +2868,7 @@ class CSpaceObject : public CObject
 		virtual bool CanBlock (CSpaceObject *pObj) { return false; }
 		virtual bool CanBlockShips (void) { return false; }
 		virtual bool CanFireOn (CSpaceObject *pObj) { return true; }
-		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { Destroy(removedFromSystem, CDamageSource()); }
+		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { if (!bAscend) Destroy(removedFromSystem, CDamageSource()); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
 		virtual void OnAscended (void) { }
