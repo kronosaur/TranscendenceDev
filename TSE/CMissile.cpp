@@ -9,6 +9,8 @@
 
 #define PROPERTY_LIFE_LEFT						CONSTLIT("lifeLeft")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
+#define PROPERTY_SOURCE							CONSTLIT("source")
+#define PROPERTY_TARGET							CONSTLIT("target")
 
 const DWORD VAPOR_TRAIL_OPACITY =				80;
 
@@ -518,6 +520,12 @@ ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());
+
+	else if (strEquals(sName, PROPERTY_SOURCE))
+		return ::CreateDamageSource(CC, m_Source);
+
+	else if (strEquals(sName, PROPERTY_TARGET))
+		return ::CreateObjPointer(CC, m_pTarget);
 
 	else
 		return CSpaceObject::GetProperty(Ctx, sName);
@@ -1421,6 +1429,22 @@ bool CMissile::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		m_iRotation = AngleMod(pValue->GetIntegerValue());
 		return true;
 		}
+
+	else if (strEquals(sName, PROPERTY_SOURCE))
+		{
+		//	NOTE: CDamageSource handles the case where any objects are destroyed.
+		//	so we don't need to check anything here.
+
+		m_Source = ::GetDamageSourceArg(CC, pValue);
+		return true;
+		}
+
+	else if (strEquals(sName, PROPERTY_TARGET))
+		{
+		m_pTarget = ::CreateObjFromItem(CC, pValue, CCUTIL_FLAG_CHECK_DESTROYED);
+		return true;
+		}
+
 	else
 		return CSpaceObject::SetProperty(sName, pValue, retsError);
 	}

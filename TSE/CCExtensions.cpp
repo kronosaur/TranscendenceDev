@@ -1535,6 +1535,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'stargateID\n"
 			"   'structuralHP\n"
 			"\n"
+			"property (missiles)\n\n"
+
+			"   'lifeLeft\n"
+			"   'rotation\n"
+			"   'sourceObj\n"
+			"   'target\n"
+			"\n"
 			"NOTE: All type properties (accessed via typGetProperty) are also valid object properties.\n",
 
 			"is",	0,	},
@@ -6785,6 +6792,9 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_OBJ_REGISTER_SYSTEM_EVENTS:
+			if (pObj->IsDestroyed())
+				return pCC->CreateNil();
+
 			pObj->GetSystem()->RegisterEventHandler(pObj, pArgs->GetElement(1)->GetIntegerValue() * LIGHT_SECOND);
 			return pCC->CreateTrue();
 
@@ -6812,6 +6822,9 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CVector vPos;
 			CSpaceObject *pGate = NULL;
+
+			if (pObj->IsDestroyed())
+				return pCC->CreateNil();
 
 			pObj->Resume();
 
@@ -7106,6 +7119,9 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_OBJ_SUSPEND:
+			if (pObj->IsDestroyed())
+				return pCC->CreateNil();
+
 			pObj->Suspend();
 			return pCC->CreateTrue();
 
@@ -7166,7 +7182,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			CSpaceObject *pSubordinate = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			pArgs->Discard(pCC);
 
-			if (pSubordinate)
+			if (pSubordinate && !pSubordinate->IsDestroyed())
 				{
 				pObj->AddSubordinate(pSubordinate);
 				pResult = pCC->CreateTrue();
@@ -8498,8 +8514,26 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					iArg++;
 					}
 				}
-			else if (bRequiredTarget)
-				return pCC->CreateError(CONSTLIT("Order requires target"), pArgs->GetElement(1));
+
+			//	Validate
+
+			if (bRequiredTarget && pTarget == NULL)
+				{
+				if (g_pUniverse->InDebugMode())
+					return pCC->CreateError(CONSTLIT("shpOrder requires target"), pArgs->GetElement(1));
+
+				::kernelDebugLogMessage("ERROR: shpOrder %s requires target.", pArgs->GetElement(1)->GetStringValue());
+				return pCC->CreateNil();
+				}
+
+			if (pTarget && pTarget->IsDestroyed())
+				{
+				if (g_pUniverse->InDebugMode())
+					return pCC->CreateError(CONSTLIT("shpOrder target already destroyed"), pArgs->GetElement(1));
+
+				::kernelDebugLogMessage("ERROR: shpOrder %s target already destroyed.", pArgs->GetElement(1)->GetStringValue());
+				return pCC->CreateNil();
+				}
 
 			//	Get the data
 
@@ -8553,7 +8587,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed())
 				{
 				pShip->GetController()->AddOrder(IShipController::orderGoTo, pObj, IShipController::SData());
 				return pCC->CreateTrue();
@@ -8794,7 +8828,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			pArgs->Discard(pCC);
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed())
 				{
 				pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, pObj, IShipController::SData());
 				pResult = pCC->CreateTrue();
@@ -8809,7 +8843,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			pArgs->Discard(pCC);
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed())
 				{
 				pShip->GetController()->AddOrder(IShipController::orderDock, pObj, IShipController::SData());
 				pResult = pCC->CreateTrue();
@@ -8827,7 +8861,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				dwFormation = pArgs->GetElement(2)->GetIntegerValue();
 			pArgs->Discard(pCC);
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed())
 				{
 				pShip->GetController()->AddOrder(IShipController::orderEscort, pObj, IShipController::SData(dwFormation));
 				pResult = pCC->CreateTrue();
@@ -8842,7 +8876,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			pArgs->Discard(pCC);
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed())
 				{
 				pShip->GetController()->AddOrder(IShipController::orderFollow, pObj, IShipController::SData());
 				pResult = pCC->CreateTrue();
@@ -8859,9 +8893,15 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				pGate = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			pArgs->Discard(pCC);
 
-			//	Note: OK if pGate == NULL.
-			pShip->GetController()->AddOrder(IShipController::orderGate, pGate, IShipController::SData());
-			pResult = pCC->CreateTrue();
+			if (pGate == NULL || !pGate->IsDestroyed())
+				{
+				//	Note: OK if pGate == NULL.
+				pShip->GetController()->AddOrder(IShipController::orderGate, pGate, IShipController::SData());
+				pResult = pCC->CreateTrue();
+				}
+			else
+				pResult = pCC->CreateNil();
+
 			break;
 			}
 
@@ -8870,7 +8910,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			pArgs->Discard(pCC);
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed())
 				{
 				pShip->GetController()->AddOrder(IShipController::orderGuard, pObj, IShipController::SData());
 				pResult = pCC->CreateTrue();
@@ -8885,7 +8925,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			pArgs->Discard(pCC);
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed())
 				{
 				pShip->GetController()->AddOrder(IShipController::orderLoot, pObj, IShipController::SData());
 				pResult = pCC->CreateTrue();
@@ -8900,7 +8940,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			pArgs->Discard(pCC);
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed())
 				{
 				pShip->GetController()->AddOrder(IShipController::orderMine, pObj, IShipController::SData());
 				pResult = pCC->CreateTrue();
@@ -8918,7 +8958,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				int iRadius = pArgs->GetElement(2)->GetIntegerValue();
 				pArgs->Discard(pCC);
 
-				if (pCenter)
+				if (pCenter && !pCenter->IsDestroyed())
 					{
 					pShip->GetController()->AddOrder(IShipController::orderPatrol, pCenter, IShipController::SData(iRadius));
 					pResult = pCC->CreateTrue();

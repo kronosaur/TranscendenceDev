@@ -662,6 +662,7 @@ class CDamageSource
 		CSpaceObject *GetObj (void) const;
 		CSpaceObject *GetOrderGiver (void) const;
 		inline CSpaceObject *GetSecondaryObj (void) const { return m_pSecondarySource; }
+		inline const CString &GetSourceName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwSourceNameFlags; return m_sSourceName; }
 		CSovereign *GetSovereign (void) const;
 		DWORD GetSovereignUNID (void) const;
 		inline bool HasDamageCause (void) const { return (m_pSource || !m_sSourceName.IsBlank()); }

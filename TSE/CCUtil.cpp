@@ -104,6 +104,33 @@ bool CreateBinaryFromList (CCodeChain &CC, const CString &sClass, ICCItem *pList
 	return true;
 	}
 
+ICCItem *CreateDamageSource (CCodeChain &CC, const CDamageSource &Source)
+
+//	CreateDamageSource
+//
+//	Encodes a CDamageSource into a struct.
+
+	{
+	ICCItem *pResult = CC.CreateSymbolTable();
+
+	if (Source.GetObj())
+		pResult->SetIntegerAt(CC, CONSTLIT("obj"), (int)Source.GetObj());
+
+	pResult->SetStringAt(CC, CONSTLIT("cause"), GetDestructionName(Source.GetCause()));
+
+	if (Source.GetSecondaryObj())
+		pResult->SetIntegerAt(CC, CONSTLIT("secondaryObj"), (int)Source.GetSecondaryObj());
+
+	if (Source.GetObj() == NULL)
+		{
+		DWORD dwFlags;
+		pResult->SetStringAt(CC, CONSTLIT("sourceName"), Source.GetSourceName(&dwFlags));
+		pResult->SetIntegerAt(CC, CONSTLIT("sourceNameFlags"), dwFlags);
+		}
+
+	return pResult;
+	}
+
 CString CreateDataFieldFromItemList (const TArray<CItem> &List)
 
 //	CreateDataFieldFromItemList
@@ -291,7 +318,7 @@ ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector)
 	return CreateListFromBinary(CC, NULL_STR, &vVector, sizeof(vVector));
 	}
 
-CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem)
+CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem, DWORD dwFlags)
 	{
 	if (pItem == NULL)
 		return NULL;
@@ -310,7 +337,24 @@ CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem)
 		pObj = NULL;
 		}
 
+	//	Make sure it is not destroyed
+
+	if ((dwFlags & CCUTIL_FLAG_CHECK_DESTROYED)
+			&& pObj
+			&& pObj->IsDestroyed())
+		return NULL;
+
+	//	Done
+
 	return pObj;
+	}
+
+ICCItem *CreateObjPointer (CCodeChain &CC, CSpaceObject *pObj)
+	{
+	if (pObj)
+		return CC.CreateInteger((int)pObj);
+	else
+		return CC.CreateNil();
 	}
 
 bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc)
@@ -554,6 +598,29 @@ CDamageSource GetDamageSourceArg (CCodeChain &CC, ICCItem *pArg)
 		}
 
 	//	Full control over death
+
+	else if (pArg->IsSymbolTable())
+		{
+		CSpaceObject *pSource = CreateObjFromItem(CC, pArg->GetElement(CONSTLIT("obj")));
+		CSpaceObject *pSecondarySource = CreateObjFromItem(CC, pArg->GetElement(CONSTLIT("secondaryObj")));
+
+		CString sSourceName;
+		ICCItem *pValue = pArg->GetElement(CONSTLIT("sourceName"));
+		if (pValue)
+			sSourceName = pValue->GetStringValue();
+
+		DWORD dwSourceFlags = 0;
+		pValue = pArg->GetElement(CONSTLIT("sourceNameFlags"));
+		if (pValue)
+			dwSourceFlags = pValue->GetIntegerValue();
+
+		DestructionTypes iCause = killedByDamage;
+		pValue = pArg->GetElement(CONSTLIT("cause"));
+		if (pValue)
+			iCause = ::GetDestructionCause(pValue->GetStringValue());
+
+		return CDamageSource(pSource, iCause, pSecondarySource, sSourceName, dwSourceFlags);
+		}
 
 	else if (pArg->IsList())
 		{

@@ -3899,7 +3899,10 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale);
 
 //	CodeChain helper functions (CCUtil.cpp)
 
+#define CCUTIL_FLAG_CHECK_DESTROYED				0x00000001
+
 Metric CalcRandomMetric (CCodeChain &CC, ICCItem *pItem);
+ICCItem *CreateDamageSource (CCodeChain &CC, const CDamageSource &Source);
 CString CreateDataFieldFromItemList (const TArray<CItem> &List);
 CString CreateDataFromItem (CCodeChain &CC, ICCItem *pItem);
 ICCItem *CreateDisposition (CCodeChain &CC, CSovereign::Disposition iDisp);
@@ -3909,7 +3912,8 @@ ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc);
 ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector);
 ICCItem *CreatePowerResult (CCodeChain &CC, double rPowerInKW);
 CItem CreateItemFromList (CCodeChain &CC, ICCItem *pList);
-CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem);
+CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem, DWORD dwFlags = 0);
+ICCItem *CreateObjPointer (CCodeChain &CC, CSpaceObject *pObj);
 bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc);
 ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue);
 CShip *CreateShipObjFromItem (CCodeChain &CC, ICCItem *pArg);

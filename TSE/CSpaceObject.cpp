@@ -3116,6 +3116,7 @@ void CSpaceObject::FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pS
 		CCodeChainCtx Ctx;
 
 		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.DefineSpaceObject(CONSTLIT("aShotObj"), pShot);
 		Ctx.DefineSpaceObject(CONSTLIT("aWeaponObj"), pSource);
 		Ctx.DefineInteger(CONSTLIT("aWeaponUNID"), dwItemUNID);
 		Ctx.DefineVector(CONSTLIT("aWeaponPos"), pShot->GetPos());
