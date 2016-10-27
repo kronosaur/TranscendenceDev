@@ -63,6 +63,8 @@ CSpaceObject *CAttackOrder::GetBestTarget (CShip *pShip)
 //	there is no appropriate target.
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	if (m_fInRangeOfObject)
@@ -111,6 +113,8 @@ CSpaceObject *CAttackOrder::GetBestTarget (CShip *pShip)
 		}
 	else
 		return pShip->GetNearestVisibleEnemy();
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CAttackOrder::GetTargetArea (CShip *pShip, Metric *retrRange)

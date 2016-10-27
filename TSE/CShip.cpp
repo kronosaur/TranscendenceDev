@@ -1806,6 +1806,8 @@ CString CShip::DebugCrashInfo (void)
 		sResult.Append(strPatternSubst(CONSTLIT("Invalid controller: %x\r\n"), (DWORD)m_pController));
 		}
 
+	sResult.Append(m_Overlays.DebugCrashInfo());
+
 	return sResult;
 	}
 

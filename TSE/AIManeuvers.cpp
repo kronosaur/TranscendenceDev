@@ -122,6 +122,8 @@ bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 //	if the current ship is a leader in the flock.
 
 	{
+	DEBUG_TRY
+
 	switch (m_AISettings.GetFlockingStyle())
 		{
 		case CAISettings::flockCompact:
@@ -134,6 +136,8 @@ bool CAIBehaviorCtx::CalcFlockingFormation (CShip *pShip,
 		default:
 			return CalcFlockingFormationCloud(pShip, pLeader, MAX_FLOCK_DIST, FLOCK_SEPARATION_RANGE, retvPos, retvVel, retiFacing);
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CAIBehaviorCtx::CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLeader, Metric rFOVRange, Metric rSeparationRange, CVector *retvPos, CVector *retvVel, int *retiFacing)
@@ -588,6 +592,8 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 //	Maneuvers towards and attacks target
 
 	{
+	DEBUG_TRY
+
 	CVector vTarget = pTarget->GetPos() - pShip->GetPos();
 	Metric rTargetDist2 = vTarget.Dot(vTarget);
 
@@ -641,6 +647,8 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 	if (iFireDir != -1
 			&& !NoDogfights())
 		ImplementManeuver(pShip, iFireDir, false);
+
+	DEBUG_CATCH
 	}
 
 bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2)
@@ -1332,6 +1340,8 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 //	Fires the given weapon (if aligned) on target
 
 	{
+	DEBUG_TRY
+
 	int iFireDir = -1;
 	int iTick = pShip->GetSystem()->GetTick();
 
@@ -1494,6 +1504,8 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 
 	if (retiFireDir)
 		*retiFireDir = iFireDir;
+
+	DEBUG_CATCH
 	}
 
 void CAIBehaviorCtx::ImplementFollowNavPath (CShip *pShip, bool *retbAtDestination)

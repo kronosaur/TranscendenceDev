@@ -2019,6 +2019,7 @@ class COverlayList
 		bool AbsorbsWeaponFire (CInstalledDevice *pDevice);
 		void AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds);
 		bool Damage (CSpaceObject *pSource, SDamageCtx &Ctx);
+		CString DebugCrashInfo (void) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		int GetCountOfType (COverlayType *pType);
 		const CString &GetData (DWORD dwID, const CString &sAttrib);

@@ -1182,6 +1182,8 @@ CString CStation::DebugCrashInfo (void)
 			sResult.Append(strPatternSubst(CONSTLIT("m_DockingPorts[%d]: Not empty, but NULL object!\r\n"), i));
 		}
 
+	sResult.Append(m_Overlays.DebugCrashInfo());
+
 	return sResult;
 	}
 

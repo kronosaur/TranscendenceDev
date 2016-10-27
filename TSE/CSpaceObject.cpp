@@ -3663,6 +3663,8 @@ CSpaceObject *CSpaceObject::GetNearestEnemyStation (Metric rMaxRange)
 //	Returns the nearest enemy station that could threaten the object
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Get the sovereign
@@ -3703,6 +3705,8 @@ CSpaceObject *CSpaceObject::GetNearestEnemyStation (Metric rMaxRange)
 		}
 
 	return pBestObj;
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CSpaceObject::GetNearestStargate (bool bExcludeUncharted)

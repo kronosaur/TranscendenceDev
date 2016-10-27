@@ -123,6 +123,33 @@ bool COverlayList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
 	DEBUG_CATCH
 	}
 
+CString COverlayList::DebugCrashInfo (void) const
+
+//	DebugCrashInfo
+//
+//	Outputs overlay info
+
+	{
+	try
+		{
+		CString sResult;
+
+		COverlay *pField = m_pFirst;
+		while (pField)
+			{
+			sResult.Append(strPatternSubst(CONSTLIT("overlay [%d]: type = %08x\n"), pField->GetID(), pField->GetType()->GetUNID()));
+
+			pField = pField->GetNext();
+			}
+
+		return sResult;
+		}
+	catch (...)
+		{
+		return CONSTLIT("Crash obtaining overlay information.\n");
+		}
+	}
+
 int COverlayList::GetCountOfType (COverlayType *pType)
 
 //	GetCountOfType
