@@ -4002,7 +4002,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Map the direction that we got hit from to a ship-relative
 	//	direction (i.e., adjust for the ship's rotation)
 
-	int iHitAngle = (Ctx.iDirection + 360 - GetRotation()) % 360;
+	int iHitDir = VectorToPolar(Ctx.vHitPos - GetPos());
+	int iHitAngle = AngleMod(iHitDir - GetRotation());
 
 	//	Figure out which section of armor got hit
 

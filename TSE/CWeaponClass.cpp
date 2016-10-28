@@ -1915,6 +1915,15 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 				{
 				CSpaceObject *pNewObj;
 
+				DWORD dwFlags = 0;
+				if (i != 0)
+					dwFlags = CSystem::CWF_FRAGMENT;
+				else
+					dwFlags = CSystem::CWF_WEAPON_FIRE;
+
+				if (iRepeatingCount != 0)
+					dwFlags |= CSystem::CWF_REPEAT;
+
 				pSource->GetSystem()->CreateWeaponFire(pShot,
 						pDevice->GetEnhancements(),
 						killedByDamage,
@@ -1923,7 +1932,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
 						ShotDir[i],
 						(m_bMIRV ? MIRVTarget[i] : pTarget),
-						((iRepeatingCount == 0 && i == 0) ? CSystem::CWF_WEAPON_FIRE : CSystem::CWF_FRAGMENT),
+						dwFlags,
 						&pNewObj);
 
 				//	If this shot was created by automated weapon fire, then set flag

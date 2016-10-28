@@ -3102,7 +3102,7 @@ void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 		}
 	}
 
-void CSpaceObject::FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pSource, DWORD dwItemUNID)
+void CSpaceObject::FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pSource, DWORD dwItemUNID, DWORD dwFlags)
 
 //	FireOnSystemWeaponFire
 //
@@ -3121,6 +3121,7 @@ void CSpaceObject::FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pS
 		Ctx.DefineInteger(CONSTLIT("aWeaponUNID"), dwItemUNID);
 		Ctx.DefineVector(CONSTLIT("aWeaponPos"), pShot->GetPos());
 		Ctx.DefineItemType(CONSTLIT("aWeaponType"), (pShot->GetWeaponFireDesc() ? pShot->GetWeaponFireDesc()->GetWeaponType() : g_pUniverse->GetItemType(dwItemUNID)));
+		Ctx.DefineBool(CONSTLIT("aWeaponRepeat"), ((dwFlags & CSystem::CWF_REPEAT) == CSystem::CWF_REPEAT));
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())

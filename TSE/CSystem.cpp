@@ -1978,7 +1978,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 		else if (dwFlags & CWF_WEAPON_FIRE)
 			{
 			if (Source.GetObj() && Source.GetObj()->CanAttack())
-				FireOnSystemWeaponFire(pShot, pDesc, Source);
+				FireOnSystemWeaponFire(pShot, pDesc, Source, dwFlags);
 			}
 		}
 
@@ -2356,7 +2356,7 @@ void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 		}
 	}
 
-void CSystem::FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source)
+void CSystem::FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, DWORD dwFlags)
 
 //	FireOnSystemWeaponFire
 //
@@ -2372,7 +2372,7 @@ void CSystem::FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDes
 	while (pHandler)
 		{
 		if (pHandler->InRange(vPos))
-			pHandler->GetObj()->FireOnSystemWeaponFire(pShot, pSource, dwWeaponUNID);
+			pHandler->GetObj()->FireOnSystemWeaponFire(pShot, pSource, dwWeaponUNID, dwFlags);
 
 		pHandler = pHandler->GetNext();
 		}

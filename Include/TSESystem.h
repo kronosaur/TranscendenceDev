@@ -630,6 +630,7 @@ class CSystem
 			CWF_FRAGMENT =					0x00000002,	//	Creating a fragment
 			CWF_EXPLOSION =					0x00000004,	//	Creating an explosion (or fragment of an explosion)
 			CWF_EJECTA =					0x00000008,	//	Creating ejecta (or fragments of ejecta)
+			CWF_REPEAT =					0x00000010,	//	Mixed with CWF_WEAPON_FIRE to indicate this is a repeat
 
 			//	IsAreaClear flags
 			IAC_FIXED_RADIUS =				0x00000001,	//	Don't use station exclusion zone
@@ -747,7 +748,7 @@ class CSystem
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
-		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source);
+		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, DWORD dwFlags);
 		CString GetAttribsAtPos (const CVector &vPos);
 		inline CSpaceObject *GetDestroyedObject (int iIndex) { return m_DeletedObjects.GetObj(iIndex); }
 		inline int GetDestroyedObjectCount (void) { return m_DeletedObjects.GetCount(); }
