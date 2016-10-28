@@ -1,9 +1,9 @@
 //	TSETransLisp.h
 //
 //	Transcendence Lisp Utilities
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_TRANS_LISP
-#define INCL_TSE_TRANS_LISP
+#pragma once
 
 //	CodeChain context
 
@@ -182,5 +182,3 @@ class CCXMLWrapper : public ICCAtom
 		CXMLElement *m_pXML;
 		ICCItem *m_pRef;
 	};
-
-#endif

@@ -1,9 +1,9 @@
 //	TSEUtil.h
 //
 //	Transcendence Utilities
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_UTIL
-#define INCL_TSE_UTIL
+#pragma once
 
 class CDesignType;
 class CEconomyType;
@@ -1548,6 +1548,4 @@ void ParseUNIDList (const CString &sList, DWORD dwFlags, TArray<DWORD> *retList)
 inline CString strLevel (int iLevel) { return strRomanNumeral(iLevel); }
 #else
 inline CString strLevel (int iLevel) { return strFromInt(iLevel); }
-#endif
-
 #endif

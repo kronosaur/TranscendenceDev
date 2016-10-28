@@ -1,9 +1,9 @@
 //	TSEDesign.h
 //
 //	Transcendence design classes
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_DESIGN
-#define INCL_TSE_DESIGN
+#pragma once
 
 class CCommunicationsHandler;
 class CCompositeImageDesc;
@@ -1008,408 +1008,7 @@ class CMapViewportCtx
 //  Resources
 
 #include "TSEImages.h"
-
-//	Sounds
-
-class CSoundResource : public CDesignType
-	{
-	public:
-		CSoundResource (void);
-
-		int GetSound (void) const;
-        inline bool IsMarked (void) const { return m_bMarked; }
-		inline void Mark (void) { GetSound(); m_bMarked = true; }
-
-		//	CDesignType overrides
-
-		static CSoundResource *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSound) ? (CSoundResource *)pType : NULL); }
-		virtual DesignTypes GetType (void) const override { return designSound; }
-
-	protected:
-
-		//	CDesignType overrides
-
-		virtual void OnClearMark (void) override { m_bMarked = false; }
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual void OnSweep (void) override;
-		virtual void OnUnbindDesign (void) override;
-
-	private:
-		void LoadResource (void) const;
-		void UnloadResource (void);
-
-		CString m_sResourceDb;			//	Resource db
-		CString m_sFilename;			//	Resource name
-
-		mutable int m_iChannel;			//	Loaded in the given channel (-1 if not loaded)
-		bool m_bMarked;					//	Marked
-	};
-
-class CSoundRef
-	{
-	public:
-		CSoundRef (void) : m_dwUNID(0), m_pSound(NULL)
-			{ }
-
-		ALERROR Bind (SDesignLoadCtx &Ctx);
-		DWORD GetUNID (void) const { return m_dwUNID; }
-		int GetSound (void) const { return (m_pSound ? m_pSound->GetSound() : -1); }
-		inline bool IsNull (void) const { return (m_dwUNID == 0); }
-		ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sAttrib);
-		inline void Mark (void) { if (m_pSound) m_pSound->Mark(); }
-		void PlaySound (CSpaceObject *pSource);
-
-	private:
-		DWORD m_dwUNID;
-		CSoundResource *m_pSound;
-	};
-
-class CMusicResource : public CDesignType
-	{
-	public:
-		CMusicResource (void) : m_iNextSegment(0)
-			{ }
-
-		~CMusicResource (void) { }
-
-		int FindSegment (int iPos);
-		const CString &GetAlbum (void) const;
-		inline const CString &GetComposedBy (void) const { return m_sComposedBy; }
-		CString GetFilename (void) const { return m_sFilename; }
-		CString GetFilespec (void) const;
-		inline const CAttributeCriteria &GetLocationCriteria (void) const { return m_LocationCriteria; }
-		int GetNextFadePos (int iPos);
-		int GetNextPlayPos (void);
-		inline const CString &GetPerformedBy (void) const { return m_sPerformedBy; }
-		inline int GetPriority (void) const { return m_iPriority; }
-		inline int GetSegmentCount (void) const { return (m_Segments.GetCount() == 0 ? 1 : m_Segments.GetCount()); }
-		inline const CString &GetTitle (void) const { return m_sTitle; }
-		inline void Init (DWORD dwUNID, const CString &sFilespec, int iPriority = 0) { SetUNID(dwUNID); m_sFilespec = sFilespec; m_iPriority = iPriority; }
-		void SetLastPlayPos (int iPos);
-
-		//	CDesignType overrides
-		static CMusicResource *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designMusic) ? (CMusicResource *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
-		virtual DesignTypes GetType (void) const override { return designMusic; }
-
-	protected:
-		//	CDesignType overrides
-		virtual void OnAddExternals (TArray<CString> *retExternals) override { if (!m_sFilespec.IsBlank()) retExternals->Insert(m_sFilespec); }
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-
-	private:
-		struct SSegmentDesc
-			{
-			int iStartPos;
-			int iEndPos;				//	-1 = end of track
-			};
-
-		CString m_sResourceDb;			//	Resource db
-		CString m_sFilename;			//	Filename
-		CString m_sFilespec;			//	Sound resource within db
-
-		CString m_sTitle;
-		CString m_sComposedBy;
-		CString m_sPerformedBy;
-		int m_iPriority;				//	Track priority
-		CAttributeCriteria m_LocationCriteria;	//	Play in specific systems
-
-		TArray<SSegmentDesc> m_Segments;
-		int m_iNextSegment;				//	Index of last segment played
-	};
-
-//	Damage
-
-enum SpecialDamageTypes
-	{
-	specialNone				= -1,
-
-	specialRadiation		= 0,
-	specialBlinding			= 1,
-	specialEMP				= 2,
-	specialDeviceDamage		= 3,
-	specialDisintegration	= 4,
-	specialMomentum			= 5,
-	specialShieldDisrupt	= 6,
-	specialWMD				= 7,
-
-	specialMining			= 8,
-	specialDeviceDisrupt	= 9,
-	specialWormhole			= 10,
-	specialFuel				= 11,
-	specialShatter			= 12,
-	specialArmor			= 13,
-	specialSensor			= 14,
-	specialShieldPenetrator	= 15,
-	};
-
-class DamageDesc
-	{
-	public:
-		enum Flags 
-			{
-			flagAverageDamage =		0x00000001,
-			flagNoDamageType =		0x00000002,
-			flagShockwaveDamage =	0x00000004,
-
-			//	GetDamage
-
-			flagIncludeBonus =		0x00000008,
-			flagWMDAdj =			0x00000010,
-			flagMinDamage =			0x00000020,
-			flagMaxDamage =			0x00000040,
-
-            //  GetSpecialDamage
-
-            flagSpecialAdj =        0x00000080, //  Returns adjusted value (e.g., GetMassDestructionAdj
-                                                //      instead of raw value).
-            flagSpecialLevel =      0x00000100, //  Returns display level (e.g., GetMassDestructionLevel)
-			};
-
-		DamageDesc (void) { }
-		DamageDesc (DamageTypes iType, const DiceRange &Damage) : m_iType(iType),
-				m_Damage(Damage),
-				m_iBonus(0),
-				m_iCause(killedByDamage),
-				m_EMPDamage(0),
-				m_MomentumDamage(0),
-				m_RadiationDamage(0),
-				m_DisintegrationDamage(0),
-				m_DeviceDisruptDamage(0),
-				m_BlindingDamage(0),
-				m_SensorDamage(0),
-				m_ShieldDamage(0),
-				m_ArmorDamage(0),
-				m_WormholeDamage(0),
-				m_FuelDamage(0),
-				m_fNoSRSFlash(0),
-				m_fAutomatedWeapon(0),
-				m_DeviceDamage(0),
-				m_MassDestructionAdj(0),
-				m_MiningAdj(0),
-				m_ShatterDamage(0),
-				m_ShieldPenetratorAdj(0),
-				m_dwSpare2(0)
-			{ }
-
-		inline void AddBonus (int iBonus) { m_iBonus += iBonus; }
-		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
-		inline bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
-		ICCItem *FindProperty (const CString &sName) const;
-		inline DestructionTypes GetCause (void) const { return m_iCause; }
-		inline const DiceRange &GetDamageRange (void) const { return m_Damage; }
-		inline DamageTypes GetDamageType (void) const { return m_iType; }
-		Metric GetDamageValue (DWORD dwFlags = 0) const;
-		CString GetDesc (DWORD dwFlags = 0);
-		int GetMinDamage (void) const;
-		int GetMaxDamage (void) const;
-		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
-		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
-		bool IsEnergyDamage (void) const;
-		bool IsMatterDamage (void) const;
-		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib);
-		void ReadFromStream (SLoadCtx &Ctx);
-		int RollDamage (void) const;
-        inline void ScaleDamage (Metric rAdj) { m_Damage.Scale(rAdj); }
-		inline void SetAutomatedWeapon (void) { m_fAutomatedWeapon = true; }
-		inline void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
-		void SetDamage (int iDamage);
-		inline void SetDamageType (DamageTypes iType) { m_iType = iType; }
-		inline void SetNoSRSFlash (void) { m_fNoSRSFlash = true; }
-		void SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel);
-		void WriteToStream (IWriteStream *pStream) const;
-
-		inline int GetArmorDamageLevel (void) const { return (int)m_ArmorDamage; }
-		inline int GetBlindingDamage (void) const { return (int)m_BlindingDamage; }
-		inline int GetDeviceDamage (void) const { return (int)m_DeviceDamage; }
-		inline int GetDeviceDisruptDamage (void) const { return (int)m_DeviceDisruptDamage; }
-		inline int GetDisintegrationDamage (void) const { return (int)m_DisintegrationDamage; }
-		inline int GetEMPDamage (void) const { return (int)m_EMPDamage; }
-        int GetMassDestructionAdj (void) const;
-        int GetMassDestructionLevel (void) const;
-		inline int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
-		inline int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
-		inline int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
-		inline int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
-		inline int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
-		inline int GetShieldPenetratorAdj (void) const { return (int)(m_ShieldPenetratorAdj ? (2 * (m_ShieldPenetratorAdj * m_ShieldPenetratorAdj) + 2) : 0); }
-
-		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
-		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
-        static int GetDamageLevel (DamageTypes iType);
-        static int GetDamageTier (DamageTypes iType);
-		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
-        static int GetMassDestructionLevelFromValue (int iValue);
-
-	private:
-		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
-		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
-
-		DamageTypes m_iType;					//	Type of damage
-		DiceRange m_Damage;						//	Amount of damage
-		int m_iBonus;							//	Bonus to damage (%)
-		DestructionTypes m_iCause;				//	Cause of damage
-
-		//	Extra damage
-		DWORD m_EMPDamage:3;					//	Ion (paralysis) damage
-		DWORD m_MomentumDamage:3;				//	Momentum damage
-		DWORD m_RadiationDamage:3;				//	Radiation damage
-		DWORD m_DeviceDisruptDamage:3;			//	Disrupt devices damage
-		DWORD m_BlindingDamage:3;				//	Optical sensor damage
-		DWORD m_SensorDamage:3;					//	Long-range sensor damage
-		DWORD m_WormholeDamage:3;				//	Teleport
-		DWORD m_FuelDamage:3;					//	Drain fuel
-		DWORD m_DisintegrationDamage:3;			//	Disintegration damage
-		DWORD m_ShieldPenetratorAdj:3;			//	Shield penetrator damage
-
-		DWORD m_fNoSRSFlash:1;					//	If TRUE, damage should not cause SRS flash
-		DWORD m_fAutomatedWeapon:1;				//	TRUE if this damage is caused by automated weapon
-
-		DWORD m_DeviceDamage:3;					//	Damage to devices
-		DWORD m_MassDestructionAdj:3;			//	Adj for mass destruction
-		DWORD m_MiningAdj:3;					//	Adj for mining capability
-		DWORD m_ShatterDamage:3;				//	Shatter damage
-		DWORD m_dwSpare2:20;
-
-		BYTE m_ShieldDamage;					//	Shield damage (level)
-		BYTE m_ArmorDamage;						//	Armor damage (level)
-		BYTE m_Spare2;
-		BYTE m_Spare3;
-	};
-
-enum EDamageResults
-	{
-	damageNoDamage =				0,
-	damageAbsorbedByShields =		1,
-	damageArmorHit =				2,
-	damageStructuralHit =			3,
-	damageDestroyed =				4,
-	damagePassthrough =				5,	//	When we hit another missile (or small obj) we pass through
-	damagePassthroughDestroyed =	6,	//	Target destroyed, but we pass through
-	damageDestroyedAbandoned =		7,	//	Station was abandoned, but object not destroyed
-	damageNoDamageNoPassthrough =	8,	//	No damage; stop any passthrough
-
-	damageResultCount =				9,
-	};
-
-struct SDamageCtx
-	{
-	SDamageCtx (void) :
-			pObj(NULL),
-			pDesc(NULL),
-			iDirection(-1),
-			pCause(NULL),
-			bNoHitEffect(false),
-			iDamage(0),
-			iSectHit(-1),
-			iOverlayHitDamage(0),
-			iShieldHitDamage(0),
-			iArmorHitDamage(0),
-			iHPLeft(0),
-			iAbsorb(0),
-			iShieldDamage(0),
-			iOriginalAbsorb(0),
-			iOriginalShieldDamage(0),
-			iUnadjustedDamage(0),
-			bBlind(false),
-			iBlindTime(0),
-			bDeviceDisrupt(false),
-			iDisruptTime(0),
-			bDeviceDamage(false),
-			bDisintegrate(false),
-			bParalyze(false),
-			iParalyzeTime(0),
-			bRadioactive(false),
-			bReflect(false),
-			bShatter(false)
-		{ }
-
-	inline CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
-
-	CSpaceObject *pObj;							//	Object hit
-	CWeaponFireDesc *pDesc;						//	WeaponFireDesc
-	DamageDesc Damage;							//	Damage
-	int iDirection;								//	Direction that hit came from
-	CVector vHitPos;							//	Hit at this position
-	CSpaceObject *pCause;						//	Object that directly caused the damage
-	CDamageSource Attacker;						//	Ultimate attacker
-	bool bNoHitEffect;							//	No hit effect
-
-	int iDamage;								//	Damage hp
-	int iSectHit;								//	Armor section hit on object
-
-	//	These are some results
-	int iOverlayHitDamage;						//	HP that hit overlays
-	int iShieldHitDamage;						//	HP that hit shields
-	int iArmorHitDamage;						//	HP that hit armor
-
-	//	These are used within armor/shield processing
-	int iHPLeft;								//	HP left on armor/shields (before damage)
-	int iAbsorb;								//	Damage absorbed by shields
-	int iShieldDamage;							//	Damage taken by shields
-	int iOriginalAbsorb;						//	Computed absorb value, if shot had not been reflected
-	int iOriginalShieldDamage;					//	Computed shield damage value, if shot had not been reflected
-	int iUnadjustedDamage;						//	HP hit on armor before damage type adjustment
-
-	//	Damage effects
-	bool bBlind;								//	If true, shot will blind the target
-	int iBlindTime;
-	bool bDeviceDisrupt;						//	If true, shot will disrupt devices
-	int iDisruptTime;
-	bool bDeviceDamage;							//	If true, shot will damage devices
-	bool bDisintegrate;							//	If true, shot will disintegrate target
-	bool bParalyze;								//	If true, shot will paralyze the target
-	int iParalyzeTime;
-	bool bRadioactive;							//	If true, shot will irradiate the target
-	bool bReflect;								//	If true, armor/shields reflected the shot
-	bool bShatter;								//	If true, shot will shatter the target
-	};
-
-struct SDestroyCtx
-	{
-	SDestroyCtx (void) :
-		pObj(NULL),
-		pWreck(NULL),
-		iCause(removedFromSystem),
-		bResurrectPending(false),
-		pResurrectedObj(NULL) { }
-
-	CSpaceObject *GetOrderGiver (void) const;
-
-	CSpaceObject *pObj;							//	Object destroyed
-	CDamageSource Attacker;						//	Ultimate attacker
-	CSpaceObject *pWreck;						//	Wreck left behind
-	DestructionTypes iCause;					//	Cause of damage
-
-	bool bResurrectPending;						//	TRUE if this object will be resurrected
-	CSpaceObject *pResurrectedObj;				//	Pointer to resurrected object
-	};
-
-class DamageTypeSet
-	{
-	public:
-		DamageTypeSet (void) : m_dwSet(0) { }
-
-		ALERROR InitFromXML (const CString &sAttrib);
-		void Add (int iType) { if (iType > damageGeneric) m_dwSet |= (1 << iType); }
-		bool InSet (int iType) const { return (iType <= damageGeneric ? false : ((m_dwSet & (1 << iType)) ? true : false)); }
-		inline bool IsEmpty (void) const { return (m_dwSet == 0); }
-		void Remove (int iType) { if (iType > damageGeneric) m_dwSet &= ~(1 << iType); }
-
-	private:
-		DWORD m_dwSet;
-	};
-
-//	WeaponFireDesc
-
-enum FireTypes
-	{
-	ftArea,
-	ftBeam,
-	ftMissile,
-	ftParticles,
-	ftRadius,
-	};
+#include "TSESounds.h"
 
 //	Communications
 
@@ -1492,60 +1091,10 @@ class CCommunicationsHandler
 		TArray<SMessage> m_Messages;
 	};
 
+#include "TSEWeaponFireDesc.h"
 #include "TSEItems.h"
 #include "TSEShipSystems.h"
 #include "TSEArmor.h"
-
-//	IItemGenerator -------------------------------------------------------------
-
-struct SItemAddCtx
-	{
-	SItemAddCtx (CItemListManipulator &theItemList) : 
-			ItemList(theItemList),
-			pSystem(NULL),
-			iLevel(1)
-		{ }
-
-	CItemListManipulator &ItemList;				//	Item list to add items to
-
-	CSystem *pSystem;							//	System where we're creating items
-	CVector vPos;								//	Position to use (for LocationCriteriaTable)
-	int iLevel;									//	Level to use for item create (for LevelTable)
-	};
-
-class IItemGenerator
-	{
-	public:
-		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator);
-		static ALERROR CreateLookupTable (SDesignLoadCtx &Ctx, DWORD dwUNID, IItemGenerator **retpGenerator);
-		static ALERROR CreateRandomItemTable (const CItemCriteria &Crit, 
-											  const CString &sLevelFrequency,
-											  IItemGenerator **retpGenerator);
-
-		virtual ~IItemGenerator (void) { }
-		virtual void AddItems (SItemAddCtx &Ctx) { }
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
-		virtual CurrencyValue GetAverageValue (int iLevel) { return 0; }
-		virtual IItemGenerator *GetGenerator (int iIndex) { return NULL; }
-		virtual int GetGeneratorCount (void) { return 0; }
-		virtual CItemType *GetItemType (int iIndex) { return NULL; }
-		virtual int GetItemTypeCount (void) { return 0; }
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
-	};
-
-//	Object properties
-
-enum ScaleTypes
-	{
-	scaleNone =						-1,
-
-	scaleStar =						0,
-	scaleWorld =					1,
-	scaleStructure =				2,
-	scaleShip =						3,
-	scaleFlotsam =					4,
-	};
 
 //	Effect Support Structures
 
@@ -2094,54 +1643,6 @@ class CUserProfile
 	};
 
 //	CItemType -----------------------------------------------------------------
-
-class CItemCtx
-	{
-	public:
-        CItemCtx (CItemType *pItemType);
-		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		~CItemCtx (void);
-
-		void ClearItemCache (void);
-		ICCItem *CreateItemVariable (CCodeChain &CC);
-		CInstalledArmor *GetArmor (void);
-		CArmorClass *GetArmorClass (void);
-		CInstalledDevice *GetDevice (void);
-		int GetDeviceCharges (void);
-		CDeviceClass *GetDeviceClass (void);
-		const CItemEnhancementStack *GetEnhancementStack (void);
-		const CItem &GetItem (void);
-		const CItemEnhancement &GetMods (void);
-		inline CSpaceObject *GetSource (void) { return m_pSource; }
-		inline int GetVariant (void) const { return m_iVariant; }
-		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
-        inline const CItem &GetVariantItem (void) const { return m_Variant; }
-        inline bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
-        bool IsDeviceEnabled (void);
-		bool ResolveVariant (void);
-        inline void SetVariantItem (const CItem &Item) { m_Variant = Item; }
-
-	private:
-		const CItem *GetItemPointer (void);
-
-		const CItem *m_pItem;					//	The item
-		CItem m_Item;							//	A cached item, if we need to cons one up.
-		CSpaceObject *m_pSource;				//	Where the item is installed (may be NULL)
-		CInstalledArmor *m_pArmor;				//	Installation structure (may be NULL)
-		CInstalledDevice *m_pDevice;			//	Installation structure (may be NULL)
-
-        CItem m_Variant;                        //  Stores the selected missile/ammo for a weapon.
-		CDeviceClass *m_pWeapon;				//	This is the weapon that uses the given item
-		int m_iVariant;							//	NOTE: In this case, m_pItem may be either a
-												//	missile or the weapon.
-
-		CItemEnhancementStack *m_pEnhancements;	//	Only used if we need to cons one up
-	};
 
 class CItemType : public CDesignType
 	{
@@ -3272,6 +2773,17 @@ class CTradingDesc
 //	CStationType --------------------------------------------------------------
 
 const int STATION_REPAIR_FREQUENCY =	30;
+
+enum ScaleTypes
+	{
+	scaleNone =						-1,
+
+	scaleStar =						0,
+	scaleWorld =					1,
+	scaleStructure =				2,
+	scaleShip =						3,
+	scaleFlotsam =					4,
+	};
 
 class CStationType : public CDesignType
 	{
@@ -5008,5 +4520,3 @@ inline bool DamageDesc::IsMatterDamage (void) const { return ::IsMatterDamage(m_
 inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { if (!m_bNoSound) GetCreator()->PlaySound(pSource); }
 
 inline CSystemMap *CTopologyNode::GetDisplayPos (int *retxPos, int *retyPos) { if (retxPos) *retxPos = m_xPos; if (retyPos) *retyPos = m_yPos; return (m_pMap ? m_pMap->GetDisplayMap() : NULL); }
-
-#endif

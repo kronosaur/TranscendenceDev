@@ -5,6 +5,9 @@
 
 #pragma once
 
+class CInstalledArmor;
+class CInstalledDevice;
+
 //	Item Types
 
 enum ItemEnhancementTypes
@@ -464,4 +467,90 @@ class CItemListManipulator
 
 		bool m_bUseFilter;
 		CItemCriteria m_Filter;
+	};
+
+class CItemCtx
+	{
+	public:
+        CItemCtx (CItemType *pItemType);
+		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
+		~CItemCtx (void);
+
+		void ClearItemCache (void);
+		ICCItem *CreateItemVariable (CCodeChain &CC);
+		CInstalledArmor *GetArmor (void);
+		CArmorClass *GetArmorClass (void);
+		CInstalledDevice *GetDevice (void);
+		int GetDeviceCharges (void);
+		CDeviceClass *GetDeviceClass (void);
+		const CItemEnhancementStack *GetEnhancementStack (void);
+		const CItem &GetItem (void);
+		const CItemEnhancement &GetMods (void);
+		inline CSpaceObject *GetSource (void) { return m_pSource; }
+		inline int GetVariant (void) const { return m_iVariant; }
+		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
+        inline const CItem &GetVariantItem (void) const { return m_Variant; }
+        inline bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
+        bool IsDeviceEnabled (void);
+		bool ResolveVariant (void);
+        inline void SetVariantItem (const CItem &Item) { m_Variant = Item; }
+
+	private:
+		const CItem *GetItemPointer (void);
+
+		const CItem *m_pItem;					//	The item
+		CItem m_Item;							//	A cached item, if we need to cons one up.
+		CSpaceObject *m_pSource;				//	Where the item is installed (may be NULL)
+		CInstalledArmor *m_pArmor;				//	Installation structure (may be NULL)
+		CInstalledDevice *m_pDevice;			//	Installation structure (may be NULL)
+
+        CItem m_Variant;                        //  Stores the selected missile/ammo for a weapon.
+		CDeviceClass *m_pWeapon;				//	This is the weapon that uses the given item
+		int m_iVariant;							//	NOTE: In this case, m_pItem may be either a
+												//	missile or the weapon.
+
+		CItemEnhancementStack *m_pEnhancements;	//	Only used if we need to cons one up
+	};
+
+//	IItemGenerator -------------------------------------------------------------
+
+struct SItemAddCtx
+	{
+	SItemAddCtx (CItemListManipulator &theItemList) : 
+			ItemList(theItemList),
+			pSystem(NULL),
+			iLevel(1)
+		{ }
+
+	CItemListManipulator &ItemList;				//	Item list to add items to
+
+	CSystem *pSystem;							//	System where we're creating items
+	CVector vPos;								//	Position to use (for LocationCriteriaTable)
+	int iLevel;									//	Level to use for item create (for LevelTable)
+	};
+
+class IItemGenerator
+	{
+	public:
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator);
+		static ALERROR CreateLookupTable (SDesignLoadCtx &Ctx, DWORD dwUNID, IItemGenerator **retpGenerator);
+		static ALERROR CreateRandomItemTable (const CItemCriteria &Crit, 
+											  const CString &sLevelFrequency,
+											  IItemGenerator **retpGenerator);
+
+		virtual ~IItemGenerator (void) { }
+		virtual void AddItems (SItemAddCtx &Ctx) { }
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
+		virtual CurrencyValue GetAverageValue (int iLevel) { return 0; }
+		virtual IItemGenerator *GetGenerator (int iIndex) { return NULL; }
+		virtual int GetGeneratorCount (void) { return 0; }
+		virtual CItemType *GetItemType (int iIndex) { return NULL; }
+		virtual int GetItemTypeCount (void) { return 0; }
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 	};

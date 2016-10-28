@@ -3,8 +3,7 @@
 //	Transcendence Paint Utilities
 //	Copyright (c) 2013 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_PAINT
-#define INCL_TSE_PAINT
+#pragma once
 
 class CImageArranger
 	{
@@ -115,5 +114,3 @@ class CVolumetricShadowPainter
 		CVector m_vUL;						//	Upper-left of shadow box (mask coords)
 		CVector m_vLR;						//	Lower-right of shadow box (mask coords)
 	};
-
-#endif

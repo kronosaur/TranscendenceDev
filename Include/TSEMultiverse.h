@@ -3,8 +3,7 @@
 //	Transcendence Multiverse Classes
 //	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_MULTIVERSE
-#define INCL_TSE_MULTIVERSE
+#pragma once
 
 class CMultiverseFileRef
 	{
@@ -388,5 +387,3 @@ class CHexarcDownloader
 
 		DWORD m_dwChunkSize;
 	};
-
-#endif

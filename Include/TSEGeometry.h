@@ -1,9 +1,9 @@
 //	TSEGeometry.h
 //
 //	Transcendence Space Engine geometry
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_GEOMETRY
-#define INCL_TSE_GEOMETRY
+#pragma once
 
 class ViewportTransform
 	{
@@ -35,4 +35,3 @@ bool IntersectRect (const CVector &vUR1, const CVector &vLL1,
 bool IntersectRect (const CVector &vUR, const CVector &vLL, const CVector &vPoint);
 bool IntersectRectAndRay (const CVector &vUR, const CVector &vLL, const CVector &vStart, const CVector &vEnd, CVector *retvIntersection = NULL, Metric *retIntersectionFraction = NULL);
 
-#endif

@@ -1278,6 +1278,16 @@ Metric CWeaponFireDesc::GetInitialSpeed (void) const
 		return GetRatedSpeed();
 	}
 
+int CWeaponFireDesc::GetLevel (void) const
+
+//	GetLevel
+//
+//	Returns the level of the weapon fire
+	
+	{
+	return Max(m_iLevel, (m_pAmmoType != NULL ? m_pAmmoType->GetLevel() : 0)); 
+	}
+
 Metric CWeaponFireDesc::GetMaxRange (void) const
 
 //  GetMaxRange

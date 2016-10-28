@@ -250,7 +250,10 @@
     <ClInclude Include="..\Include\TSEShipAI.h" />
     <ClInclude Include="..\Include\TSEShipCreator.h" />
     <ClInclude Include="..\Include\TSEShipSystems.h" />
+    <ClInclude Include="..\Include\TSESounds.h" />
+    <ClInclude Include="..\Include\TSESystem.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
+    <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="LegacyAIImpl.h" />
     <ClInclude Include="PreComp.h" />

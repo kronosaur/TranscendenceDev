@@ -1,9 +1,9 @@
 //	TSETypes.h
 //
 //	Basic types
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TSE_TYPES
-#define INCL_TSE_TYPES
+#pragma once
 
 #define OBJID_CUNIVERSE				MakeOBJCLASSID(1)
 #define OBJID_CSYSTEM				MakeOBJCLASSID(2)
@@ -283,5 +283,3 @@ enum GenomeTypes
 	genomeHumanMale		= 1,
 	genomeHumanFemale	= 2,
 	};
-
-#endif
