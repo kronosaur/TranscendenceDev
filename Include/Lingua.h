@@ -1,9 +1,9 @@
 //	Lingua.h
 //
 //	Basic text processing classes
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_LINGUA
-#define INCL_LINGUA
+#pragma once
 
 //	CMarkovWordGenerator -------------------------------------------------------
 
@@ -50,5 +50,3 @@ class CMarkovWordGenerator
 		DWORD m_dwStartCount;
 		TArray<SFragHead *> m_Start;
 	};
-
-#endif

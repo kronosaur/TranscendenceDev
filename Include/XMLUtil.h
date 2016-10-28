@@ -1,5 +1,7 @@
 //	XMLUtil.h
 //
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
+//
 //	Library to help parse XML files
 //
 //	Supported Format:
@@ -16,8 +18,7 @@
 //		cdata :: <![CDATA[ any-text ]]>
 //		comment :: <!-- any-text -->
 
-#ifndef INCL_XMLUTIL
-#define INCL_XMLUTIL
+#pragma once
 
 class CExternalEntityTable;
 class CXMLElement;
@@ -143,5 +144,3 @@ class CEntityResolverList : public IXMLParserController
 
 ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **retpElement);
 ALERROR ParseAttributeIntegerList (const CString &sValue, CIntArray *pList);
-
-#endif

@@ -1,9 +1,9 @@
 //	Internets.h
 //
 //	Basic classes for Internet protocols
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_INTERNETS
-#define INCL_INTERNETS
+#pragma once
 
 #include <winhttp.h>
 
@@ -268,6 +268,4 @@ void urlParseHostspec (const CString &sHostspec, CString *retsHost, CString *ret
 
 #ifndef SD_BOTH
 #define SD_BOTH 2
-#endif
-
 #endif

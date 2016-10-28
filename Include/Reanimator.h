@@ -1,17 +1,12 @@
 //	Reanimator.h
 //
 //	Animation sequencers based on DirectXUtil
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_REANIMATOR
-#define INCL_REANIMATOR
+#pragma once
 
-#ifndef INCL_EUCLID
 #include "Euclid.h"
-#endif
-
-#ifndef INCL_DIRECTXUTIL
-#include "DirectXUtil.h
-#endif
+#include "DirectXUtil.h"
 
 class IAnimatron;
 
@@ -1066,5 +1061,3 @@ class CAniSolidLine : public IAniLineMethod
 		CG32bitPixel m_rgbColor;
 		int m_iWidth;
 	};
-
-#endif

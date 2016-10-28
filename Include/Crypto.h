@@ -1,13 +1,11 @@
 //	Crypto.h
 //
 //	Basic cryptography classes
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_CRYPTO
-#define INCL_CRYPTO
+#pragma once
 
-#ifndef INCL_EUCLID
 #include "Euclid.h"
-#endif
 
 class CDigest : public CIntegerIP
 	{
@@ -29,4 +27,3 @@ void cryptoCreateMAC (IReadBlock &Data, const CIntegerIP &Key, CIntegerIP *retMA
 void cryptoRandom (int iCount, CIntegerIP *retx);
 ALERROR fileCreateDigest (const CString &sFilespec, CIntegerIP *retDigest);
 
-#endif

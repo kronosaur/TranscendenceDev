@@ -3,12 +3,9 @@
 //	Library to help parse JSON
 //	Copyright (c) 2011 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_JSONUTIL
-#define INCL_JSONUTIL
+#pragma once
 
-#ifndef INCL_INTERNETS
 #include "Internets.h"
-#endif
 
 class CJSONValue
 	{
@@ -82,4 +79,3 @@ class CJSONMessage : public IMediaType
 		mutable CMemoryWriteStream m_Serialized;
 	};
 
-#endif

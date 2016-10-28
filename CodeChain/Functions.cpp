@@ -1398,25 +1398,52 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		CString sPartial = pArgs->GetElement(0)->GetStringValue();
 		TArray<CString> Help;
 
+		//	If we have a trailing '*' then we force a list, even on an exact
+		//	match. This helps us when there is a function whose name is a
+		//	subset of other function names.
+
+		bool bForcePartial = false;
+		if (strEndsWith(sPartial, CONSTLIT("*")))
+			{
+			bForcePartial = true;
+			sPartial = strSubString(sPartial, 0, sPartial.GetLength() - 1);
+			}
+
 		//	Compile a list of all functions that match
 
+		int iExactMatch = -1;
 		CCSymbolTable *pGlobals = (CCSymbolTable *)pCC->GetGlobals();
 		for (i = 0; i < pGlobals->GetCount(); i++)
 			{
 			ICCItem *pItem = pGlobals->GetElement(i);
 
-			if (pItem->IsFunction() && strStartsWith(pGlobals->GetKey(i), sPartial))
+			if (pItem->IsPrimitive() && strStartsWith(pGlobals->GetKey(i), sPartial))
 				{
-				CString sHelp = pItem->GetHelp();
+				//	Generate help text
 
-				if (!sHelp.IsBlank() && !strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+				CString sHelp = pItem->GetHelp();
+				if (sHelp.IsBlank())
+					{
+					if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
+						iExactMatch = Help.GetCount();
+
+					Help.Insert(strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i)));
+					}
+				else if (!strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+					{
+					if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
+						iExactMatch = Help.GetCount();
+
 					Help.Insert(sHelp);
+					}
 				}
 			}
 
 		//	Output
 
-		if (Help.GetCount() == 1)
+		if (iExactMatch != -1 && !bForcePartial)
+			Output.Write(Help[iExactMatch].GetASCIIZPointer(), Help[iExactMatch].GetLength());
+		else if (Help.GetCount() == 1)
 			Output.Write(Help[0].GetASCIIZPointer(), Help[0].GetLength());
 		else
 			{

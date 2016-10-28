@@ -1,14 +1,14 @@
 //	DirectXUtil.h
 //
 //	DirectX Utilities
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 //
 //	We require:
 //
 //		windows.h
 //		Alchemy.h
 
-#ifndef INCL_DIRECTXUTIL
-#define INCL_DIRECTXUTIL
+#pragma once
 
 #include <d3d9.h>
 
@@ -299,5 +299,3 @@ typedef BYTE AlphaArray5 [32];
 typedef BYTE AlphaArray6 [64];
 extern AlphaArray5 g_Alpha5 [256];
 extern AlphaArray6 g_Alpha6 [256];
-
-#endif

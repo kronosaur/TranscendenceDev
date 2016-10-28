@@ -1,10 +1,9 @@
 //	JPEGUtil.h
 //
 //	Header for using JPEGLib library
-//	Note: Requires Basics.h
+//	Copyright 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_JPEG
-#define INCL_JPEG
+#pragma once
 
 #define JPEG_LFR_8BITCOLOR				0x00000001
 #define JPEG_LFR_HALFSCALE				0x00000002
@@ -16,4 +15,3 @@ ALERROR JPEGLoadFromFile (CString sFilename, DWORD dwFlags, HPALETTE hPalette, H
 ALERROR JPEGLoadFromMemory (char *pImage, int iSize, DWORD dwFlags, HPALETTE hPalette, HBITMAP *rethBitmap);
 ALERROR JPEGLoadFromResource (HINSTANCE hInst, char *pszRes, DWORD dwFlags, HPALETTE hPalette, HBITMAP *rethBitmap);
 
-#endif
