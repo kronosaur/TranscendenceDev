@@ -96,7 +96,8 @@ ICCItem *CAddFunctionContextWrapper::Transform (CCodeChain &CC, ICCItem *pItem)
 	{
 	//	If the item is a lambda expression, then we add the wrapper.
 
-	if (pItem->IsLambdaFunction())
+	if (pItem->IsLambdaFunction() 
+			&& dynamic_cast<CFunctionContextWrapper *>(pItem) == NULL)
 		{
 		//	Create the wrapper for the function
 

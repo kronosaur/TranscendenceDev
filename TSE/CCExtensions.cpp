@@ -444,6 +444,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_RANDOM_LOCATION			30
 #define FN_SYS_ORBIT_CREATE				31
 #define FN_SYS_HIT_SCAN					32
+#define FN_SYS_LIGHT_INTENSITY			33
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -1432,7 +1433,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	0,	},
 
 		{	"objGetOverlayProperty",			fnObjGet,		FN_OBJ_GET_OVERLAY_PROPERTY,
-			"(objSetOverlayProperty obj overlayID property) -> value\n\n"
+			"(objGetOverlayProperty obj overlayID property) -> value\n\n"
 			
 			"property\n\n"
 			
@@ -1770,7 +1771,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iiv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetOverlayProperty",			fnObjGet,		FN_OBJ_SET_OVERLAY_PROPERTY,
-			"(objSetOverlayPos obj overlayID property value)\n\n"
+			"(objSetOverlayProperty obj overlayID property value)\n\n"
 			
 			"property:\n\n"
 			
@@ -2258,12 +2259,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"s*",	0,	},
 
 		{	"sysGetEnvironment",			fnSystemGet,	FN_SYS_ENVIRONMENT,
-			"(sysGetEnvironment vector) -> environmentUNID",
-			"v",	PPFLAG_SIDEEFFECTS,	},
+			"(sysGetEnvironment pos) -> environmentUNID",
+			"v",	0,	},
 
 		{	"sysGetLevel",					fnSystemGet,	FN_SYS_LEVEL,
 			"(sysGetLevel [nodeID]) -> level",
 			"*",	0,	},
+
+		{	"sysGetLightIntensity",			fnSystemGet,	FN_SYS_LIGHT_INTENSITY,
+			"(sysGetLightIntensity pos) -> intensity (0-100)",
+			"v",	0,	},
 
 		{	"sysGetName",					fnSystemGet,	FN_SYS_NAME,
 			"(sysGetName [nodeID]) -> name",
@@ -2493,7 +2498,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	---------------------
 
 		{	"typAddTimerEvent",				fnDesignGet,		FN_DESIGN_ADD_TIMER,
-			"(typeAddTimerEvent unid delay event)\n\n"
+			"(typAddTimerEvent unid delay event)\n\n"
 			
 			"delay in ticks\n",
 
@@ -11180,6 +11185,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else
 				return fnTopologyGet(pEvalCtx, pArgs, FN_NODE_LEVEL);
+			}
+
+		case FN_SYS_LIGHT_INTENSITY:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			CVector vPos;
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
+			return pCC->CreateInteger(pSystem->CalculateLightIntensity(vPos));
 			}
 
 		case FN_SYS_MATCHES:

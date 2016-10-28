@@ -125,6 +125,7 @@ class CFunctionContextWrapper : public ICCAtom
 		virtual ValueTypes GetValueType (void) { return Function; }
 		virtual BOOL IsIdentifier (void) { return FALSE; }
 		virtual BOOL IsFunction (void) { return TRUE; }
+		virtual bool IsLambdaFunction (void) { return true; }
 		virtual BOOL IsPrimitive (void) { return FALSE; }
 		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) { return m_pFunction->Print(pCC, dwFlags); }
 		virtual void Reset (void) { }
