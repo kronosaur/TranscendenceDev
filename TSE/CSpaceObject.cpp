@@ -3120,6 +3120,7 @@ void CSpaceObject::FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pS
 		Ctx.DefineSpaceObject(CONSTLIT("aWeaponObj"), pSource);
 		Ctx.DefineInteger(CONSTLIT("aWeaponUNID"), dwItemUNID);
 		Ctx.DefineVector(CONSTLIT("aWeaponPos"), pShot->GetPos());
+		Ctx.DefineItemType(CONSTLIT("aWeaponType"), (pShot->GetWeaponFireDesc() ? pShot->GetWeaponFireDesc()->GetWeaponType() : g_pUniverse->GetItemType(dwItemUNID)));
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
