@@ -1419,9 +1419,10 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pItem->IsPrimitive() && strStartsWith(pGlobals->GetKey(i), sPartial))
 				{
-				//	Generate help text
-
 				CString sHelp = pItem->GetHelp();
+
+				//	If the help text is blank, then we generate our own
+
 				if (sHelp.IsBlank())
 					{
 					if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
@@ -1429,7 +1430,23 @@ ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 					Help.Insert(strPatternSubst(CONSTLIT("(%s ...)"), pGlobals->GetKey(i)));
 					}
-				else if (!strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+
+				//	If the help text starts with DEPRECATED, then we skip it.
+
+				else if (strStartsWith(sHelp, CONSTLIT("DEPRECATED")))
+					{
+					}
+
+				//	If the help text does not match the function, then it means 
+				//	that this is an alias, so we skip it.
+
+				else if (!strStartsWith(strSubString(sHelp, 1), pGlobals->GetKey(i)))
+					{
+					}
+
+				//	Otherwise, we add to the list
+
+				else
 					{
 					if (iExactMatch == -1 && strEquals(pGlobals->GetKey(i), sPartial))
 						iExactMatch = Help.GetCount();
