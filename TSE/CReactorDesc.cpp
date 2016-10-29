@@ -335,7 +335,7 @@ ALERROR CReactorDesc::InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, 
 
     {
     *this = Src;
-    if (iBaseLevel <= iScaledLevel)
+    if (iBaseLevel > iScaledLevel)
         return NOERROR;
 
     const SStdStats &BaseStats = GetStdStats(iBaseLevel);
