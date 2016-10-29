@@ -1853,6 +1853,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 								   const CVector &vPos,
 								   const CVector &vVel,
 								   int iDirection,
+								   int iRepeatingCount,
 								   CSpaceObject *pTarget,
 								   DWORD dwFlags,
 								   CSpaceObject **retpShot)
@@ -1978,7 +1979,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 		else if (dwFlags & CWF_WEAPON_FIRE)
 			{
 			if (Source.GetObj() && Source.GetObj()->CanAttack())
-				FireOnSystemWeaponFire(pShot, pDesc, Source, dwFlags);
+				FireOnSystemWeaponFire(pShot, pDesc, Source, iRepeatingCount);
 			}
 		}
 
@@ -2155,6 +2156,7 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 						vPos + CVector(mathRandom(-10, 10) * g_KlicksPerPixel / 10.0, mathRandom(-10, 10) * g_KlicksPerPixel / 10.0),
 						vInitVel + PolarToVector(Angles[i], rSpeed),
 						Angles[i],
+						0,
 						Targets[i],
 						CSystem::CWF_FRAGMENT,
 						&pNewObj))
@@ -2356,7 +2358,7 @@ void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 		}
 	}
 
-void CSystem::FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, DWORD dwFlags)
+void CSystem::FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount)
 
 //	FireOnSystemWeaponFire
 //
@@ -2372,7 +2374,7 @@ void CSystem::FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDes
 	while (pHandler)
 		{
 		if (pHandler->InRange(vPos))
-			pHandler->GetObj()->FireOnSystemWeaponFire(pShot, pSource, dwWeaponUNID, dwFlags);
+			pHandler->GetObj()->FireOnSystemWeaponFire(pShot, pSource, dwWeaponUNID, iRepeatingCount);
 
 		pHandler = pHandler->GetNext();
 		}

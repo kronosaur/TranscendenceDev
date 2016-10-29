@@ -706,6 +706,7 @@ class CSystem
 								  const CVector &vPos,
 								  const CVector &vVel,
 								  int iDirection,
+								  int iRepeatingCount,
 								  CSpaceObject *pTarget,
 								  DWORD dwFlags,
 								  CSpaceObject **retpShot);
@@ -748,7 +749,7 @@ class CSystem
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
-		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, DWORD dwFlags);
+		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount);
 		CString GetAttribsAtPos (const CVector &vPos);
 		inline CSpaceObject *GetDestroyedObject (int iIndex) { return m_DeletedObjects.GetObj(iIndex); }
 		inline int GetDestroyedObjectCount (void) { return m_DeletedObjects.GetCount(); }

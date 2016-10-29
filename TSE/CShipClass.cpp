@@ -1393,6 +1393,7 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 				pShip->GetPos(),
 				pShip->GetVel(),
 				pShip->GetRotation(),
+				0,
 				NULL,
 				CSystem::CWF_EXPLOSION,
 				NULL);

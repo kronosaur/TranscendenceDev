@@ -1931,6 +1931,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 						ShotPos[i],
 						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
 						ShotDir[i],
+						iRepeatingCount,
 						(m_bMIRV ? MIRVTarget[i] : pTarget),
 						dwFlags,
 						&pNewObj);

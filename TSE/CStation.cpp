@@ -517,6 +517,7 @@ void CStation::CreateDestructionEffect (void)
 				GetPos(),
 				GetVel(),
 				0,
+				0,
 				NULL,
 				CSystem::CWF_EXPLOSION,
 				NULL);
@@ -618,6 +619,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 					vHitPos,
 					vVel,
 					iTrajectoryAngle,
+					0,
 					NULL,
 					CSystem::CWF_EJECTA,
 					NULL);
@@ -1105,6 +1107,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 				CDamageSource(this, Explosion.iCause),
 				GetPos(),
 				GetVel(),
+				0,
 				0,
 				NULL,
 				CSystem::CWF_EXPLOSION,

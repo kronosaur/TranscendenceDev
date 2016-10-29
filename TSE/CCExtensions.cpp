@@ -10208,6 +10208,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					vPos,
 					PolarToVector(iDir, rSpeed),
 					iDir,
+					0,
 					pTarget,
 					(bDetonateNow ? CSystem::CWF_EXPLOSION : CSystem::CWF_WEAPON_FIRE),
 					&pObj))
