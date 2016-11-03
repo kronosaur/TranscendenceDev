@@ -3898,7 +3898,13 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	switch (dwData)
 		{
 		case FN_ITEM_ACTUAL_PRICE:
-			pResult = pCC->CreateInteger(Item.GetTradePrice(NULL, true));
+			//	Avoid recursion
+
+			if ((pCtx->InEvent(eventGetTradePrice) || pCtx->InEvent(eventGetGlobalPlayerPriceAdj))
+					&& pCtx->GetItemType() == Item.GetType())
+				pResult = pCC->CreateInteger(Item.GetRawPrice(true));
+			else
+				pResult = pCC->CreateInteger(Item.GetTradePrice(NULL, true));
 			break;
 
 		case FN_ITEM_ARMOR_INSTALLED_LOCATION:
@@ -4060,8 +4066,19 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_PRICE:
 			{
+			//	Avoid recursion
+
+			int iPrice;
+			if ((pCtx->InEvent(eventGetTradePrice) || pCtx->InEvent(eventGetGlobalPlayerPriceAdj))
+					&& pCtx->GetItemType() == Item.GetType())
+				iPrice = Item.GetRawPrice();
+			else
+				iPrice = Item.GetTradePrice();
+
+			//	Convert currency, if necessary
+
 			if (pArgs->GetCount() < 2 || pArgs->GetElement(1)->IsNil())
-				pResult = pCC->CreateInteger(Item.GetTradePrice());
+				pResult = pCC->CreateInteger(iPrice);
 			else
 				{
 				CEconomyType *pEconFrom = pType->GetCurrencyType();
@@ -4072,7 +4089,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				//	Exchange
 
-				return pCC->CreateInteger((int)pEconTo->Exchange(pEconFrom, Item.GetTradePrice()));
+				return pCC->CreateInteger((int)pEconTo->Exchange(pEconFrom, iPrice));
 				}
 			break;
 			}
