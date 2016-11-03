@@ -4199,6 +4199,10 @@ class CExtensionCollection
 			FLAG_AUTO_ONLY =		0x00000080,	//	Only include extensions that are automatic
 			FLAG_ACCUMULATE =		0x00000100,	//	Add to result list
 			FLAG_REGISTERED_ONLY =	0x00000200,	//	Only registered extensions
+
+			//	ComputeBindOrder
+
+			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00000400,
 			};
 
 		CExtensionCollection (void);

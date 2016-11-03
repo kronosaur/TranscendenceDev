@@ -1296,6 +1296,12 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 				return error;
 			}
 
+		//	If the save file we're loading used the compatibility library, force
+		//	include regardess of whether we think we need it.
+
+		if (Ctx.bForceCompatibilityLibrary)
+			dwFlags |= CExtensionCollection::FLAG_FORCE_COMPATIBILITY_LIBRARY;
+
 		//	Get the bind order
 
 		TArray<CExtension *> BindOrder;
@@ -1783,7 +1789,8 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 	else
 		dwLoad = 0;
 
-	m_bRegistered = ((dwLoad & 0x00000001) ? true : false);
+	m_bRegistered =					((dwLoad & 0x00000001) ? true : false);
+	bool bUseCompatibilityLibrary = ((dwLoad & 0x00000002) ? true : false);
 
 	//	Load basic data
 
@@ -1827,6 +1834,30 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 			ExtensionList[i].dwRelease = 0;
 			}
 		}
+
+	//	Previous versions did not save the compatibility library, so we need to
+	//	calculate that here.
+
+	if (Ctx.dwVersion < 28)
+		{
+		for (i = 0; i < ExtensionList.GetCount(); i++)
+			{
+			//	The old versions of the soundtrack and HD extensions used the
+			//	compatibility library, but the new ones do not.
+
+			if (ExtensionList[i].dwUNID == UNID_SOUNDTRACK_EXTENSION
+					|| ExtensionList[i].dwUNID == UNID_HD_EXTENSION)
+				{
+				bUseCompatibilityLibrary = true;
+				break;
+				}
+			}
+		}
+
+	//	If the save file we're loading needs the compatibility library, make sure
+	//	we load it.
+
+	InitCtx.bForceCompatibilityLibrary = bUseCompatibilityLibrary;
 
 	//	Get the actual extensions
 
@@ -2373,6 +2404,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	dwSave = 0;
 	dwSave |= (m_bRegistered ? 0x00000001 : 0);
+	dwSave |= (m_Design.FindExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID) ? 0x00000002 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	pStream->Write((char *)&m_dwNextID, sizeof(DWORD));

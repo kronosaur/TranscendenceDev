@@ -90,11 +90,32 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 	{
 	int i;
 
-	CString sExtensionName;
+	//	In debug mode we output which extension required us to include this library.
 
 	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
-	bool bNeedLibrary = pAdventure->UsesCompatibilityLibrary();
-	if (!bNeedLibrary)
+	CString sExtensionName;
+
+	bool bNeedLibrary = false;
+
+	//	If we're forcing include, then do it.
+
+	if (dwFlags & FLAG_FORCE_COMPATIBILITY_LIBRARY)
+		{
+		bNeedLibrary = true;
+		sExtensionName = CONSTLIT("save file");
+		}
+
+	//	See if the adventure needs it
+
+	else if (pAdventure->UsesCompatibilityLibrary())
+		{
+		bNeedLibrary = true;
+		sExtensionName = pAdventure->GetName();
+		}
+
+	//	Otherwise, see if any extensions need it
+
+	else
 		{
 		for (i = 0; i < Extensions.GetCount(); i++)
 			if (Extensions[i]->UsesCompatibilityLibrary())
