@@ -1149,6 +1149,8 @@ void CItemType::InitComponents (void)
 //	Initializes m_Components
 
 	{
+	DEBUG_TRY
+
 	m_Components.DeleteAll();
 	if (m_pComponents)
 		{
@@ -1158,6 +1160,8 @@ void CItemType::InitComponents (void)
 
 		m_pComponents->AddItems(Ctx);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CItemType::InitRandomNames (void)
@@ -1167,6 +1171,8 @@ void CItemType::InitRandomNames (void)
 //	Initialize random names
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	If we don't have random names for other items then we're done
@@ -1234,6 +1240,8 @@ void CItemType::InitRandomNames (void)
 			j++;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CItemType::IsFuel (void) const

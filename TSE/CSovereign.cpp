@@ -218,6 +218,8 @@ void CSovereign::DeleteRelationships (void)
 //	Delete all relationships
 
 	{
+	DEBUG_TRY
+
 	SRelationship *pRel = m_pFirstRelationship;
 	while (pRel)
 		{
@@ -228,6 +230,8 @@ void CSovereign::DeleteRelationships (void)
 
 	m_pFirstRelationship = NULL;
 	m_bSelfRel = false;
+
+	DEBUG_CATCH
 	}
 
 bool CSovereign::FindDataField (const CString &sField, CString *retsValue) const

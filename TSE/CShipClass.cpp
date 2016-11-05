@@ -3816,6 +3816,8 @@ void CShipClass::OnReinit (void)
 //	Reinitialize the class
 
 	{
+	DEBUG_TRY
+
 	InitShipNamesIndices();
 	m_WreckImage.CleanUp();
 
@@ -3823,6 +3825,8 @@ void CShipClass::OnReinit (void)
 
     if (m_HeroImage.GetBitmapUNID() == 0)
         m_HeroImage.CleanUp();
+
+	DEBUG_CATCH
 	}
 
 void CShipClass::OnSweep (void)
@@ -4026,4 +4030,5 @@ void CShipClass::Reinit (void)
 
 	{
 	m_DefaultPlayerSettings = CPlayerSettings();
+	m_bDefaultPlayerSettingsBound = false;
 	}

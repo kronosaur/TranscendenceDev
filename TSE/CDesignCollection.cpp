@@ -1216,10 +1216,13 @@ void CDesignCollection::Reinit (void)
 //	Reinitialize all types
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Reinitialize some global classes
 
+	CShipClass::Reinit();
 	CStationType::Reinit();
 
 	//	For reinit that requires two passes
@@ -1237,6 +1240,8 @@ void CDesignCollection::Reinit (void)
 		CDesignType *pType = GetEntry(i);
 		pType->Reinit();
 		}
+
+	DEBUG_CATCH
 	}
 
 ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx)
