@@ -25,6 +25,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_LOG				2
 #define FN_PRINT					3
 #define FN_PRINT_TO					4
+#define FN_API_VERSION				5
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -595,6 +596,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"dbgOutput",					fnDebug,		FN_DEBUG_OUTPUT,
 			"(dbgOutput [string]*)",
 			"*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"getAPIVersion",				fnDebug,		FN_API_VERSION,
+			"(getAPIVersion) -> version",
+			NULL,	0,	},
 
 		{	"print",						fnDebug,		FN_PRINT,
 			"(print [string]*)",
@@ -3259,9 +3264,15 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	int i;
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	switch (dwData)
 		{
+		case FN_API_VERSION:
+			return pCC->CreateInteger(pCtx->GetAPIVersion());
+
 		case FN_DEBUG_OUTPUT:
 		case FN_DEBUG_LOG:
 		case FN_PRINT:
