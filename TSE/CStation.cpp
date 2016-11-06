@@ -3776,19 +3776,14 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 			}
 		else if (IsWreck())
 			{
-			if (m_fExplored)
-				Dest.DrawDot(x, y, 
-						CG32bitPixel(128, 128, 128), 
-						markerTinyCircle);
-			else
-				Dest.DrawDot(x, y, 
-						rgbColor, 
-						markerTinyCircle);
+			Dest.DrawDot(x, y, 
+					(m_fExplored ? CG32bitPixel(128, 128, 128) : rgbColor),
+					markerTinyCircle);
 			}
-		else if (m_pType->ShowsMapIcon())
+		else
 			{
 			Dest.DrawDot(x, y, 
-					rgbColor, 
+					rgbColor,
 					markerSmallRound);
 			}
 		}
