@@ -2159,7 +2159,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateShip",				fnSystemCreateShip,	0,
-			"(sysCreateShip unid pos sovereignID [eventHandler]) -> ship",
+			"(sysCreateShip unid pos sovereignID [options|eventHandler|controller]) -> ship or list\n\n"
+				
+			"options:\n\n"
+			
+			"   'controller\n"
+			"   'eventHandler\n"
+			"   'target (for ship tables)\n",
+
 		//		pos is either a position vector or a gate object
 		//		controller 
 		//			""					= standard
@@ -10397,6 +10404,10 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	CCodeChain *pCC = pEvalCtx->pCC;
 	int i;
 
+	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+	if (pSystem == NULL)
+		return StdErrorNoSystem(*pCC);
+
 	//	Get the arguments
 
 	DWORD dwClassID = pArgs->GetElement(0)->GetIntegerValue();
@@ -10409,18 +10420,6 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	CSpaceObject *pGate;
 	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, &pGate) != NOERROR)
 		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
-
-	//	Controller
-
-	IShipController *pController = NULL;
-	CDesignType *pOverride = NULL;
-	if (pArgs->GetCount() > 3)
-		{
-		if (pArgs->GetElement(3)->IsIdentifier())
-			pController = g_pUniverse->CreateShipController(pArgs->GetElement(3)->GetStringValue());
-		else
-			pOverride = g_pUniverse->FindDesignType(pArgs->GetElement(3)->GetIntegerValue());
-		}
 
 	//	Validate
 
@@ -10436,15 +10435,93 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	if (pSovereign == NULL)
 		return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pArgs->GetElement(2));
 
-	//	Create
+	//	Options
 
-	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-	if (pSystem == NULL)
-		return StdErrorNoSystem(*pCC);
+	IShipController *pController = NULL;
+	CDesignType *pOverride = NULL;
+	CSpaceObject *pTarget = NULL;
+	if (pArgs->GetCount() > 3)
+		{
+		if (pArgs->GetElement(3)->IsSymbolTable())
+			{
+			ICCItem *pOptions = pArgs->GetElement(3);
+			ICCItem *pArg;
 
-	CSpaceObjectList ShipsCreated;
-	ALERROR error;
-	if (error = pSystem->CreateShip(dwClassID,
+			if ((pArg = pOptions->GetElement(CONSTLIT("controller")))
+					&& !pArg->IsNil())
+				{
+				pController = g_pUniverse->CreateShipController(pArg->GetStringValue());
+				if (pController == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown controller"), pArg);
+				}
+
+			if ((pArg = pOptions->GetElement(CONSTLIT("eventHandler")))
+					&& !pArg->IsNil())
+				{
+				pOverride = g_pUniverse->FindDesignType(pArg->GetIntegerValue());
+				if (pOverride == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown event handler"), pArg);
+				}
+
+			if (pArg = pOptions->GetElement(CONSTLIT("target")))
+				pTarget = CreateObjFromItem(*pCC, pArg, CCUTIL_FLAG_CHECK_DESTROYED);
+			}
+		else if (pArgs->GetElement(3)->IsIdentifier())
+			pController = g_pUniverse->CreateShipController(pArgs->GetElement(3)->GetStringValue());
+		else
+			pOverride = g_pUniverse->FindDesignType(pArgs->GetElement(3)->GetIntegerValue());
+		}
+
+	//	If we have a ship table, then we go through a totally different path
+
+	if (pType->GetType() == designShipTable)
+		{
+		CShipTable *pTable = CShipTable::AsType(pType);
+		if (pTable == NULL)
+			return pCC->CreateNil();
+
+		SShipCreateCtx CreateCtx;
+		CreateCtx.pSystem = pSystem;
+		CreateCtx.pGate = pGate;
+		CreateCtx.vPos = vPos;
+		CreateCtx.pBaseSovereign = pSovereign;
+		CreateCtx.pEncounterInfo = NULL;
+		CreateCtx.pOverride = pOverride;
+		CreateCtx.pTarget = pTarget;
+		CreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
+
+		//	Create
+
+		pTable->CreateShips(CreateCtx);
+
+		//	Return at least one of the ships created
+
+		if (CreateCtx.Result.GetCount() == 0)
+			return pCC->CreateNil();
+		else if (CreateCtx.Result.GetCount() == 1)
+			return pCC->CreateInteger((int)CreateCtx.Result.GetObj(0));
+		else
+			{
+			ICCItem *pResult = pCC->CreateLinkedList();
+			if (pResult->IsError())
+				return pResult;
+
+			CCLinkedList *pList = (CCLinkedList *)pResult;
+
+			for (i = 0; i < CreateCtx.Result.GetCount(); i++)
+				pList->AppendInteger(*pCC, (int)CreateCtx.Result.GetObj(i));
+
+			return pResult;
+			}
+		}
+
+	//	Otherwise, we create a ship
+
+	else
+		{
+		CShip *pShipCreated;
+		ALERROR error;
+		if (error = pSystem->CreateShip(dwClassID,
 				pController,
 				pOverride,
 				pSovereign,
@@ -10453,36 +10530,20 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				mathRandom(0, 359),
 				pGate,
 				NULL,
-				NULL,
-				&ShipsCreated))
-		{
-		//	ERR_NOTFOUND is not an error--it means that a ship table did not
-		//	create any ships.
+				&pShipCreated))
+			{
+			//	ERR_NOTFOUND is not an error--it means that a ship table did not
+			//	create any ships.
 
-		if (error == ERR_NOTFOUND)
-			return pCC->CreateNil();
-		else
-			return pCC->CreateError(CONSTLIT("Error creating ship"), pCC->CreateInteger(error));
-		}
+			if (error == ERR_NOTFOUND)
+				return pCC->CreateNil();
+			else
+				return pCC->CreateError(CONSTLIT("Error creating ship"), pCC->CreateInteger(error));
+			}
 
-	//	Done
+		//	Done
 
-	if (ShipsCreated.GetCount() == 0)
-		return pCC->CreateNil();
-	else if (ShipsCreated.GetCount() == 1)
-		return pCC->CreateInteger((int)ShipsCreated.GetObj(0));
-	else
-		{
-		ICCItem *pResult = pCC->CreateLinkedList();
-		if (pResult->IsError())
-			return pResult;
-
-		CCLinkedList *pList = (CCLinkedList *)pResult;
-
-		for (i = 0; i < ShipsCreated.GetCount(); i++)
-			pList->AppendInteger(*pCC, (int)ShipsCreated.GetObj(i));
-
-		return pResult;
+		return pCC->CreateInteger((int)pShipCreated);
 		}
 	}
 
