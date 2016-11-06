@@ -9,6 +9,7 @@
 #define ENCOUNTER_TAG							CONSTLIT("Encounter")
 
 #define ENEMY_EXCLUSION_RADIUS_ATTRIB			CONSTLIT("enemyExclusionRadius")
+#define EXCLUSION_RADIUS_ATTRIB					CONSTLIT("exclusionRadius")
 #define LEVEL_FREQUENCY_ATTRIB					CONSTLIT("levelFrequency")
 #define LOCATION_CRITERIA_ATTRIB				CONSTLIT("locationCriteria")
 #define MAX_APPEARING_ATTRIB					CONSTLIT("maxAppearing")
@@ -96,6 +97,20 @@ int CStationEncounterDesc::GetCountOfRandomEncounterLevels (void) const
 		}
 
 	return iCount;
+	}
+
+void CStationEncounterDesc::GetExclusionDesc (SExclusionDesc &Exclusion) const
+
+//	GetExclusionDesc
+//
+//	Returns an exclusion descriptor
+
+	{
+	Exclusion.rAllExclusionRadius2 = m_rExclusionRadius * m_rExclusionRadius;
+	Exclusion.bHasAllExclusion = (m_rExclusionRadius > 0.0);
+
+	Exclusion.rEnemyExclusionRadius2 = m_rEnemyExclusionRadius * m_rEnemyExclusionRadius;
+	Exclusion.bHasEnemyExclusion = (m_rEnemyExclusionRadius > m_rExclusionRadius);
 	}
 
 int CStationEncounterDesc::GetFrequencyByLevel (int iLevel) const
@@ -230,6 +245,12 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 		m_rEnemyExclusionRadius = iRadius * LIGHT_SECOND;
 	else
 		m_rEnemyExclusionRadius = 30 * LIGHT_SECOND;
+
+	if (pDesc->FindAttributeInteger(EXCLUSION_RADIUS_ATTRIB, &iRadius)
+			&& iRadius >= 0)
+		m_rExclusionRadius = iRadius * LIGHT_SECOND;
+	else
+		m_rExclusionRadius = 0.0;
 
 	//	Done
 

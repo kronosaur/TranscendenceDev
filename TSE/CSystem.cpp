@@ -2484,7 +2484,7 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 
 		if (pStationToPlace)
 			{
-			if (!IsAreaClear(pLoc->GetOrbit().GetObjectPos(), 0.0, 0, pStationToPlace))
+			if (!IsExclusionZoneClear(pLoc->GetOrbit().GetObjectPos(), pStationToPlace))
 				continue;
 			}
 
@@ -2852,70 +2852,75 @@ void CSystem::InitVolumetricMask (void)
 		}
 	}
 
-bool CSystem::IsAreaClear (const CVector &vPos, Metric rRadius, DWORD dwFlags, CStationType *pType)
+bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
 
-//	IsAreaClear
+//	IsExclusionZoneClear
 //
-//	Returns TRUE if the region around vPos is clear.
+//	Returns TRUE if the region around vPos is clear enough to place the given 
+//	station type. We consider exclusion zones as defined in the station's
+//	encounter descriptor.
 
 	{
 	int i;
 
-	//	If we have a station type, then compute some stuff
+	//	Compute some stuff about the type
 
-	CSovereign *pSourceSovereign;
-	Metric rSourceExclusionDist2;
-	if (pType)
-		{
-		pSourceSovereign = pType->GetControllingSovereign();
-		rSourceExclusionDist2 = pType->GetEnemyExclusionRadius();
-		rSourceExclusionDist2 *= rSourceExclusionDist2;
-		}
-	else
-		{
-		pSourceSovereign = NULL;
-		rSourceExclusionDist2 = rRadius * rRadius;
-		}
+	CSovereign *pSourceSovereign = pType->GetControllingSovereign();
+	CStationEncounterDesc::SExclusionDesc SourceExclusion;
+	pType->GetExclusionDesc(SourceExclusion);
 
-	//	Now check against all objects in the system
+	//	Check against all objects in the system
 
 	for (i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 
-		if (pObj 
-				&& pObj->GetScale() == scaleStructure
-				&& (pSourceSovereign == NULL 
-					|| (dwFlags & IAC_INCLUDE_NON_ENEMIES)
-					|| (pObj->GetSovereign() && pObj->GetSovereign()->IsEnemy(pSourceSovereign)))
-				&& ((dwFlags & IAC_INCLUDE_NON_ATTACKING) || pObj->CanAttack()))
+		//	Skip any non-structures
+
+		if (pObj == NULL || pObj->GetScale() != scaleStructure)
+			continue;
+
+		//	Get the exclusion zone for this object (because it may exclude more
+		//	than we do). But it is OK if it doesn't have one.
+
+		CStationEncounterDesc::SExclusionDesc Exclusion;
+		CStationType *pObjType = pObj->GetEncounterInfo();
+		if (pObjType)
 			{
-			//	Compute the distance to this obj
+			pObjType->GetExclusionDesc(Exclusion);
 
-			CVector vDist = vPos - pObj->GetPos();
-			Metric rDist2 = vDist.Length2();
+			Exclusion.rAllExclusionRadius2 = Max(Exclusion.rAllExclusionRadius2, SourceExclusion.rAllExclusionRadius2);
+			Exclusion.bHasAllExclusion = (Exclusion.rAllExclusionRadius2 > 0.0);
 
-			//	Compute the exclusion radius of the object
+			Exclusion.rEnemyExclusionRadius2 = Max(Exclusion.rEnemyExclusionRadius2, SourceExclusion.rEnemyExclusionRadius2);
+			Exclusion.bHasEnemyExclusion = (Exclusion.rEnemyExclusionRadius2 > Exclusion.rAllExclusionRadius2);
+			}
+		else
+			Exclusion = SourceExclusion;
 
-			Metric rExclusionDist2;
-			if (dwFlags & IAC_FIXED_RADIUS)
-				rExclusionDist2 = rSourceExclusionDist2;
-			else
-				{
-				CStationType *pObjType = pObj->GetEncounterInfo();
-				if (pObjType)
-					{
-					rExclusionDist2 = pObjType->GetEnemyExclusionRadius();
-					rExclusionDist2 *= rExclusionDist2;
-					rExclusionDist2 = Max(rSourceExclusionDist2, rExclusionDist2);
-					}
-				else
-					rExclusionDist2 = rSourceExclusionDist2;
-				}
+		//	If we have an enemy exclusion zone, and we're enemies, then check 
+		//	distance.
 
-			//	If we're too close to an enemy then zone is not clear
+		Metric rDist2 = 0.0;
+		if (Exclusion.bHasEnemyExclusion
+				&& pSourceSovereign
+				&& pObj->GetSovereign()
+				&& pObj->GetSovereign()->IsEnemy(pSourceSovereign))
+			{
+			rDist2 = (vPos - pObj->GetPos()).Length2();
+			if (rDist2 < Exclusion.rEnemyExclusionRadius2)
+				return false;
+			}
 
-			if (rDist2 < rExclusionDist2)
+		//	Otherwise, if we have an exclusion to all objects, check that 
+		//	distance too.
+
+		if (Exclusion.bHasAllExclusion)
+			{
+			if (rDist2 == 0.0)
+				rDist2 = (vPos - pObj->GetPos()).Length2();
+
+			if (rDist2 < Exclusion.rAllExclusionRadius2)
 				return false;
 			}
 		}

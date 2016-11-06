@@ -2548,8 +2548,19 @@ class CDockScreenType : public CDesignType
 class CStationEncounterDesc
 	{
 	public:
+		struct SExclusionDesc
+			{
+			bool bHasAllExclusion;
+			bool bHasEnemyExclusion;
+
+			Metric rAllExclusionRadius2;
+			Metric rEnemyExclusionRadius2;
+			};
+
 		CStationEncounterDesc (void) :
 				m_bSystemCriteria(false),
+				m_rExclusionRadius(0.0),
+				m_rEnemyExclusionRadius(0.0),
 				m_bAutoLevelFrequency(false),
 				m_bNumberAppearing(false),
 				m_bMaxCountLimit(false),
@@ -2562,6 +2573,8 @@ class CStationEncounterDesc
 		void InitLevelFrequency (void);
 		inline bool CanBeRandomlyEncountered (void) const { return (!m_sLevelFrequency.IsBlank() || m_bNumberAppearing); }
 		int GetCountOfRandomEncounterLevels (void) const;
+		void GetExclusionDesc (SExclusionDesc &Exclusion) const;
+		inline Metric GetExclusionRadius (void) const { return m_rExclusionRadius; }
 		inline Metric GetEnemyExclusionRadius (void) const { return m_rEnemyExclusionRadius; }
 		int GetFrequencyByLevel (int iLevel) const;
 		inline const CString &GetLocationCriteria (void) const { return m_sLocationCriteria; }
@@ -2588,6 +2601,7 @@ class CStationEncounterDesc
 
 		CString m_sLevelFrequency;			//	String array of frequency distribution by level
 		CString m_sLocationCriteria;		//	Criteria for location
+		Metric m_rExclusionRadius;			//	No stations of any kind within this radius
 		Metric m_rEnemyExclusionRadius;		//	No enemy stations within this radius
 		bool m_bAutoLevelFrequency;			//	We generated m_sLevelFrequency and need to save it.
 
@@ -2838,6 +2852,8 @@ class CStationType : public CDesignType
 		inline int GetEjectaAdj (void) { return m_iEjectaAdj; }
 		CWeaponFireDesc *GetEjectaType (void) { return m_pEjectaType; }
 		inline Metric GetEnemyExclusionRadius (void) const { return m_RandomPlacement.GetEnemyExclusionRadius(); }
+		inline void GetExclusionDesc (CStationEncounterDesc::SExclusionDesc &Exclusion) const { m_RandomPlacement.GetExclusionDesc(Exclusion); }
+		inline Metric GetExclusionRadius (void) const { return m_RandomPlacement.GetExclusionRadius(); }
 		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		inline int GetEncounterFrequency (void) { return m_iEncounterFrequency; }
 		inline int GetEncounterMinimum (CTopologyNode *pNode) { return m_EncounterRecord.GetMinimumForNode(pNode, m_RandomPlacement); }

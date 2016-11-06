@@ -632,11 +632,6 @@ class CSystem
 			CWF_EJECTA =					0x00000008,	//	Creating ejecta (or fragments of ejecta)
 			CWF_REPEAT =					0x00000010,	//	Mixed with CWF_WEAPON_FIRE to indicate this is a repeat
 
-			//	IsAreaClear flags
-			IAC_FIXED_RADIUS =				0x00000001,	//	Don't use station exclusion zone
-			IAC_INCLUDE_NON_ENEMIES =		0x00000002,	//	Non-enemies count
-			IAC_INCLUDE_NON_ATTACKING =		0x00000004,	//	Include objects that cannot attack
-
 			//	PaintViewport flags
 			VWP_ENHANCED_DISPLAY =			0x00000001,	//	Show enhanced display markers
 			VWP_NO_STAR_FIELD =				0x00000002,	//	Do not paint star field background
@@ -838,7 +833,7 @@ class CSystem
 		inline bool GetEmptyLocations (TArray<int> *retList) { return m_Locations.GetEmptyLocations(retList); }
 		inline CLocationDef *GetLocation (int iLocID) { return m_Locations.GetLocation(iLocID); }
 		inline int GetLocationCount (void) { return m_Locations.GetCount(); }
-		bool IsAreaClear (const CVector &vPos, Metric rRadius, DWORD dwFlags, CStationType *pType = NULL);
+		bool IsExclusionZoneClear (const CVector &vPos, CStationType *pType = NULL);
 		inline void SetLocationObjID (int iLocID, DWORD dwObjID) { m_Locations.SetObjID(iLocID, dwObjID); }
 
 		static void ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj);

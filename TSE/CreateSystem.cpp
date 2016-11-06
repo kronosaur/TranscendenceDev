@@ -297,7 +297,6 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 									bool *retbAddToCache);
 ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocationCriteria *retCriteria);
 bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric rRadius);
-bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, CStationType *pType);
 ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLElement *pDesc, const COrbit &OrbitDesc);
 inline void PopDebugStack (SSystemCreateCtx *pCtx) { if (g_pUniverse->InDebugMode()) pCtx->DebugStack.Pop(); }
 inline void PushDebugStack (SSystemCreateCtx *pCtx, const CString &sLine) { if (g_pUniverse->InDebugMode()) pCtx->DebugStack.Push(sLine); }
@@ -497,7 +496,7 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 		//	If we want to separate enemies, then see if there are any
 		//	enemies of this station type at this location.
 
-		if (bSeparateEnemies && !IsExclusionZoneClear(pCtx, vPos, Entry.pType))
+		if (bSeparateEnemies && !pCtx->pSystem->IsExclusionZoneClear(vPos, Entry.pType))
 			continue;
 
 		//	Add it
@@ -3285,51 +3284,6 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 
 		if (rDist2 < rExclusionDist2)
 			return false;
-		}
-
-	//	If we get this far, then zone is clear
-
-	return true;
-	}
-
-bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, CStationType *pType)
-
-//	IsExclusionZoneClear
-//
-//	Returns TRUE if the area around vPos is free of enemies of pType. The exclusion zone is
-//	defined by the greatest separation required by pType and any enemies of pType
-
-	{
-	int j;
-	CSovereign *pSovereign = pType->GetControllingSovereign();
-	Metric rExclusionDist2 = pType->GetEnemyExclusionRadius();
-	rExclusionDist2 *= rExclusionDist2;
-
-	for (j = 0; j < pCtx->pSystem->GetObjectCount(); j++)
-		{
-		CSpaceObject *pObj = pCtx->pSystem->GetObject(j);
-
-		if (pObj 
-				&& pObj->GetScale() == scaleStructure
-				&& pObj->GetSovereign()
-				&& pObj->GetSovereign()->IsEnemy(pSovereign))
-			{
-			//	Compute the distance to this obj
-
-			CVector vDist = vPos - pObj->GetPos();
-			Metric rDist2 = vDist.Length2();
-
-			//	Compute the exclusion radius of the object
-
-			CStationType *pObjType = pObj->GetEncounterInfo();
-			Metric rObjExclusionDist2 = (pObjType ? pObjType->GetEnemyExclusionRadius() : 30.0 * LIGHT_SECOND);
-			rObjExclusionDist2 *= rObjExclusionDist2;
-
-			//	If we're too close to an enemy then zone is not clear
-
-			if (rDist2 < Max(rExclusionDist2, rObjExclusionDist2))
-				return false;
-			}
 		}
 
 	//	If we get this far, then zone is clear
