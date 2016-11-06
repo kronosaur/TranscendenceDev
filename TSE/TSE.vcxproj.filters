@@ -63,6 +63,9 @@
     <Filter Include="Source Files\Overlays">
       <UniqueIdentifier>{331f5312-6f2a-462f-a276-15ffb747f4c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Stations">
+      <UniqueIdentifier>{ef3b50ba-f448-4d87-bde8-e87dabfcf8ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -178,12 +181,6 @@
     <ClCompile Include="CAdventureRecord.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CCommunicationsHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CDockingPorts.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CGameFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -193,16 +190,7 @@
     <ClCompile Include="CGameStats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CMoveCtx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CResourceDb.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CShockwaveHitTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CTradingDesc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CUniverse.cpp">
@@ -367,9 +355,6 @@
     <ClCompile Include="CSovereign.cpp">
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
-    <ClCompile Include="CStationType.cpp">
-      <Filter>Source Files\DesignTypes</Filter>
-    </ClCompile>
     <ClCompile Include="C3DConversion.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -413,9 +398,6 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CLanguageDataBlock.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="CNavigationPath.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="ContantsUtilities.cpp">
@@ -664,9 +646,6 @@
     <ClCompile Include="CStaticEffect.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
-    <ClCompile Include="CStation.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="Markers.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
@@ -714,12 +693,6 @@
     </ClCompile>
     <ClCompile Include="CObjectTracker.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="CStationEncounterDesc.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="CStationEncounterCtx.cpp">
-      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="COrderList.cpp">
       <Filter>Source Files\ShipAI</Filter>
@@ -969,6 +942,36 @@
     </ClCompile>
     <ClCompile Include="COverlayType.cpp">
       <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationType.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStation.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockingPorts.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CTradingDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CCommunicationsHandler.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CMoveCtx.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CShockwaveHitTest.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CNavigationPath.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationEncounterCtx.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationEncounterDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
