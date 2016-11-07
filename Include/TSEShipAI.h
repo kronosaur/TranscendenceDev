@@ -321,7 +321,7 @@ class IShipController
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) { }
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
-		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip) { }
+		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) { }
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) { }
 		virtual void OnProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) { }
 		virtual void OnShipStatus (EShipStatusNotifications iEvent, DWORD dwData = 0) { }

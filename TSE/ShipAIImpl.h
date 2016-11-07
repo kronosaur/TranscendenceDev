@@ -347,7 +347,7 @@ class CBaseShipAI : public IShipController
 		virtual void OnWeaponStatusChanged (void) override { m_AICtx.ClearBestWeapon(); }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) override;
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
-		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip) override;
+		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) override;
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) override;
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) override;
 		virtual void OnStatsChanged (void) override { m_AICtx.CalcInvariants(m_pShip); }

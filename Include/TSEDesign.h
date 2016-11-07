@@ -1005,6 +1005,15 @@ class CMapViewportCtx
 		bool m_bNoSpaceBackground;		//	Do not paint a space background
 	};
 
+struct SPlayerChangedShipsCtx
+	{
+	SPlayerChangedShipsCtx (void) :
+			bNoOrderTransfer(false)
+		{ }
+
+	bool bNoOrderTransfer;			//	If TRUE, do not change orders to point to new ship
+	};
+
 //  Resources
 
 #include "TSEImages.h"

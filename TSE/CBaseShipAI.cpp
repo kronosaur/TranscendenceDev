@@ -1181,7 +1181,7 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 		FireOnOrderChanged();
 	}
 
-void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip)
+void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options)
 
 //	OnPlayerChangedShips
 //
@@ -1199,10 +1199,13 @@ void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip)
 
 	//	Loop over all orders and see if we need to change the target
 
-	bool bChanged;
-	m_Orders.OnPlayerChangedShips(pOldShip, pPlayerShip, &bChanged);
-	if (bChanged)
-		FireOnOrderChanged();
+	if (!Options.bNoOrderTransfer)
+		{
+		bool bChanged;
+		m_Orders.OnPlayerChangedShips(pOldShip, pPlayerShip, &bChanged);
+		if (bChanged)
+			FireOnOrderChanged();
+		}
 	}
 
 void CBaseShipAI::OnPlayerObj (CSpaceObject *pPlayer)

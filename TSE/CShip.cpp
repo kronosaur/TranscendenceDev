@@ -4828,14 +4828,14 @@ void CShip::OnPlayerObj (CSpaceObject *pPlayer)
 	m_pController->OnPlayerObj(pPlayer);
 	}
 
-void CShip::OnPlayerChangedShips (CSpaceObject *pOldShip)
+void CShip::OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options)
 
 //	OnPlayerChangedShips
 //
 //	Player has changed ships
 
 	{
-	m_pController->OnPlayerChangedShips(pOldShip);
+	m_pController->OnPlayerChangedShips(pOldShip, Options);
 	}
 
 void CShip::OnReadFromStream (SLoadCtx &Ctx)
