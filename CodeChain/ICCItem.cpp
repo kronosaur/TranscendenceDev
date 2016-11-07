@@ -92,6 +92,17 @@ ICCItem *ICCItem::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	return pCtx->pCC->CreateNil();
 	}
 
+bool ICCItem::GetBooleanAt (const CString &sKey)
+
+//	GetBooleanAt
+//
+//	Returns a boolean value
+
+	{
+	ICCItem *pItem = GetElement(sKey);
+	return (pItem && !pItem->IsNil());
+	}
+
 ICCItem *ICCItem::GetElement (CCodeChain *pCC, int iIndex)
 
 //	GetElement

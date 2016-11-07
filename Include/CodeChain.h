@@ -186,6 +186,7 @@ class ICCItem : public CObject
 
 		//	Symbol/Atom table functions
 
+		bool GetBooleanAt (const CString &sKey);
 		int GetIntegerAt (const CString &sKey, int iDefault = 0);
 		CString GetStringAt (const CString &sKey, const CString &sDefault = NULL_STR);
 		void SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue);
