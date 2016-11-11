@@ -2282,7 +2282,7 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	return pLinkedList;
 	}
 
-ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnList
 //
@@ -2291,18 +2291,59 @@ ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 //	(list exp1 exp2 ... expn)
 
 	{
+	int i;
 	CCodeChain *pCC = pCtx->pCC;
-	ICCItem *pArgs;
 
-	//	Evaluate the arguments
+	switch (dwData)
+		{
+		case FN_LIST:
+			//	Return the args (since they are already in a list!)
+			return pArgs->Reference();
 
-	pArgs = pCC->EvaluateArgs(pCtx, pArguments, CONSTLIT("*"));
-	if (pArgs->IsError())
-		return pArgs;
+		case FN_MAKE:
+			{
+			CString sType = pArgs->GetElement(0)->GetStringValue();
+			if (strEquals(sType, CONSTLIT("sequence")))
+				{
+				int iStart;
+				if (pArgs->GetCount() >= 2)
+					iStart = pArgs->GetElement(1)->GetIntegerValue();
+				else
+					iStart = 0;
 
-	//	Return the args (since they are already in a list!)
+				int iEnd;
+				if (pArgs->GetCount() >= 3)
+					iEnd = pArgs->GetElement(2)->GetIntegerValue();
+				else
+					{
+					//	If only one number, then we create a sequence from 1 to that number
 
-	return pArgs;
+					iEnd = iStart;
+					iStart = 1;
+					}
+
+				int iInc;
+				if (pArgs->GetCount() >= 4)
+					iInc = pArgs->GetElement(3)->GetIntegerValue();
+				else
+					iInc = 1;
+
+				//	Create the sequence.
+
+				ICCItem *pList = pCC->CreateLinkedList();
+				for (i = iStart; i <= iEnd; i += iInc)
+					pList->AppendInteger(*pCC, i);
+
+				return pList;
+				}
+			else
+				return pCC->CreateError(CONSTLIT("Unknown make type"), pArgs->GetElement(0));
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
 	}
 
 ICCItem *fnLogical (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)

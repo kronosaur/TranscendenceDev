@@ -148,9 +148,9 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"link",				fnLink,			0,						"",		"s",	0,	},
-		{	"list",				fnList,			0,
+		{	"list",				fnList,			FN_LIST,
 			"(list i1 i2 ... in) -> list",
-			NULL,	0,	},
+			"*",	0,	},
 
 		{	"lnkAppend",		fnLinkedListAppend,	0,	
 			"(lnkAppend list item) -> list",
@@ -167,6 +167,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"lnkReplace",		fnLinkedList,	FN_LINKEDLIST_REPLACE,
 			"(lnkReplace list index item) -> list",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"make",				fnList,			FN_MAKE,
+			"(make 'sequence count) -> list from 1 to count\n"
+			"(make 'sequence start end [inc]) -> list from start to end",
+			"s*",	0,	},
 
 		{	"map",				fnMap,			0,
 			"(map list ['excludeNil|'original|'reduceMax|'reduceMin] var exp) -> list",

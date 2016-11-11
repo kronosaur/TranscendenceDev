@@ -92,6 +92,8 @@
 #define FN_MATH_FLOOR					88
 #define FN_ITEM_CONVERT_TO				89
 #define FN_JOIN                         90
+#define FN_LIST							91
+#define FN_MAKE							92
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
@@ -112,7 +114,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnItemInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnHelp (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnLambda (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
-ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnLink (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData);
