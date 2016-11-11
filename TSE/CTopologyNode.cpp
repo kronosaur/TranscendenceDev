@@ -40,6 +40,7 @@
 #define PROPERTY_POS							CONSTLIT("pos")
 
 #define SPECIAL_NODE_ID							CONSTLIT("nodeID:")
+#define SPECIAL_SYSTEM_TYPE						CONSTLIT("systemType:")
 
 //	CTopologyNode class --------------------------------------------------------
 
@@ -629,6 +630,11 @@ bool CTopologyNode::HasSpecialAttribute (const CString &sAttrib) const
 		{
 		CString sNodeID = strSubString(sAttrib, SPECIAL_NODE_ID.GetLength());
 		return strEquals(sNodeID, GetID());
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_TYPE))
+		{
+		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_SYSTEM_TYPE.GetLength()), 0xffffffff);
+		return (dwUNID == m_SystemUNID);
 		}
 	else
 		return false;
