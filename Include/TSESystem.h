@@ -797,7 +797,8 @@ class CSystem
 		void PlaceInGate (CSpaceObject *pObj, CSpaceObject *pGate);
 		void PlayerEntered (CSpaceObject *pPlayer);
 		void RegisterEventHandler (CSpaceObject *pObj, Metric rRange);
-		inline void RegisterForOnSystemCreated (CSpaceObject *pObj) { m_DeferredOnCreate.FastAdd(pObj); }
+		inline void RegisterForOnSystemCreated (CSpaceObject *pObj) { m_DeferredOnCreate.Insert(SDeferredOnCreateCtx(pObj)); }
+		void RegisterForOnSystemCreated (CSpaceObject *pObj, CStationType *pEncounter, const COrbit &Orbit);
 		void RemoveObject (SDestroyCtx &Ctx);
 		void RemoveTimersForObj (CSpaceObject *pObj);
 		void RestartTime (void);
@@ -849,6 +850,19 @@ class CSystem
 
 			CSpaceObject *pStarObj;
 			CG8bitSparseImage VolumetricMask;
+			};
+
+		struct SDeferredOnCreateCtx
+			{
+			SDeferredOnCreateCtx (CSpaceObject *pObjArg = NULL) :
+					pObj(pObjArg),
+					pEncounter(NULL)
+				{ }
+
+			CSpaceObject *pObj;				//	Object created
+
+			CStationType *pEncounter;		//	Only for ship encounters
+			COrbit Orbit;					//	Only for ship encounters
 			};
 
 		CSystem (CUniverse *pUniv, CTopologyNode *pTopology);
@@ -922,7 +936,7 @@ class CSystem
 		CSpaceObjectList m_EnhancedDisplayObjs;	//	List of objects to show in viewport periphery
 		CSpaceObjectList m_BackgroundObjs;		//	List of background objects to paint in viewport
 		CSpaceObjectList m_ForegroundObjs;		//	List of foreground objects to paint in viewport
-		CSpaceObjectList m_DeferredOnCreate;	//	Ordered list of objects that need an OnSystemCreated call
+		TArray<SDeferredOnCreateCtx> m_DeferredOnCreate;	//	Ordered list of objects that need an OnSystemCreated call
 		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
 

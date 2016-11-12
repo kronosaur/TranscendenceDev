@@ -156,6 +156,8 @@
 #define SPECIAL_SCALE							CONSTLIT("scale:")
 #define SPECIAL_SIZE_CLASS						CONSTLIT("sizeClass:")
 
+#define ON_CREATE_EVENT							CONSTLIT("OnCreate")
+
 struct SSizeData
 	{
 	int iMinSize;
@@ -1759,6 +1761,34 @@ void CStationType::OnReinit (void)
 	m_EncounterRecord.Reinit(m_RandomPlacement);
 	m_Image.Reinit();
 	m_HeroImage.Reinit();
+	}
+
+void CStationType::OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceObject *pObj, const COrbit &Orbit)
+
+//	OnShipEncounterCreated
+//
+//	This is called at the end of system create for a ship encounter.
+//	pObj is the main ship created (may be NULL).
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_CREATE_EVENT, &Event))
+		{
+		CCodeChainCtx Ctx;
+		Ctx.SetSystemCreateCtx(&CreateCtx);
+
+		Ctx.SaveAndDefineSourceVar(NULL);
+		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
+		Ctx.DefineInteger(CONSTLIT("aEncounterType"), GetUNID());
+		Ctx.SaveAndDefineDataVar(NULL);
+		Ctx.DefineOrbit(CONSTLIT("aOrbit"), Orbit);
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_CREATE_EVENT, pResult);
+		Ctx.Discard(pResult);
+		}
 	}
 
 void CStationType::OnTopologyInitialized (void)

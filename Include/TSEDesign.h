@@ -2935,6 +2935,7 @@ class CStationType : public CDesignType
 		inline bool IsUniqueInSystem (void) const { return m_RandomPlacement.IsUniqueInSystem(); }
 		inline bool IsWall (void) { return (m_fWall ? true : false); }
 		void MarkImages (const CCompositeImageSelector &Selector);
+		void OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceObject *pObj, const COrbit &Orbit);
 		void PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick);
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y);
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y);

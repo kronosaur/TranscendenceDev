@@ -593,6 +593,14 @@ ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 	if (pObj->ClassCanAttack())
 		FlushEnemyObjectCache();
 
+	//	If this is a star, add it to our list of stars
+
+	if (pObj->GetScale() == scaleStar)
+		{
+		SStarDesc *pDesc = m_Stars.Insert();
+		pDesc->pStarObj = pObj;
+		}
+
 	//	Reuse a slot first
 
 	for (i = 0; i < m_AllObjects.GetCount(); i++)
@@ -4015,6 +4023,19 @@ void CSystem::RegisterEventHandler (CSpaceObject *pObj, Metric rRange)
 	CSystemEventHandler *pNew;
 	CSystemEventHandler::Create(pObj, rRange, &pNew);
 	m_EventHandlers.Insert(pNew);
+	}
+
+void CSystem::RegisterForOnSystemCreated (CSpaceObject *pObj, CStationType *pEncounter, const COrbit &Orbit)
+
+//	RegisterForOnSystemCreated
+//
+//	Add a new entry for a deferred call.
+
+	{
+	SDeferredOnCreateCtx *pDeferred = m_DeferredOnCreate.Insert();
+	pDeferred->pObj = pObj;
+	pDeferred->pEncounter = pEncounter;
+	pDeferred->Orbit = Orbit;
 	}
 
 void CSystem::RemoveObject (SDestroyCtx &Ctx)

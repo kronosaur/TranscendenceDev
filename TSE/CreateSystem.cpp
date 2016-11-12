@@ -3631,15 +3631,23 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 
 	for (i = 0; i < pSystem->m_DeferredOnCreate.GetCount(); i++)
 		{
-		CSpaceObject *pObj = pSystem->m_DeferredOnCreate.GetObj(i);
+		const SDeferredOnCreateCtx &Defer = pSystem->m_DeferredOnCreate[i];
 
-		if (pObj && !pObj->IsDestroyed())
-			pObj->OnSystemCreated(Ctx);
+		//	If we have an encounter defined, it means that this is a ship 
+		//	encounter, and we need to treat it specially.
+
+		if (Defer.pEncounter)
+			Defer.pEncounter->OnShipEncounterCreated(Ctx, ((Defer.pObj && !Defer.pObj->IsDestroyed()) ? Defer.pObj : NULL), Defer.Orbit);
+
+		//	Otherwise, we just call the object.
+			
+		else if (Defer.pObj && !Defer.pObj->IsDestroyed())
+			Defer.pObj->OnSystemCreated(Ctx);
 		}
 
 	//	No need for this list anymore.
 
-	pSystem->m_DeferredOnCreate.CleanUp();
+	pSystem->m_DeferredOnCreate.DeleteAll();
 
 	//	Fire any deferred OnCreate events
 
@@ -3880,6 +3888,10 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		//	This type has now been encountered
 
 		pType->SetEncountered(this);
+
+		//	Register so we call OnCreate at the appropriate time.
+
+		RegisterForOnSystemCreated(pStation, pType, (CreateCtx.pOrbit ? *CreateCtx.pOrbit : COrbit()));
 		}
 
 	//	If this is static, create a static object
