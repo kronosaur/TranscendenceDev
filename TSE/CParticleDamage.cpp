@@ -36,7 +36,6 @@ CParticleDamage::~CParticleDamage (void)
 ALERROR CParticleDamage::Create (CSystem *pSystem,
 								 CWeaponFireDesc *pDesc,
 								 CItemEnhancementStack *pEnhancements,
-								 DestructionTypes iCause,
 								 const CDamageSource &Source,
 								 const CVector &vPos,
 								 const CVector &vVel,
@@ -81,7 +80,6 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	pParticles->m_pDesc = pDesc;
 	pParticles->m_pTarget = pTarget;
 	pParticles->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
-	pParticles->m_iCause = iCause;
 	pParticles->m_iEmitTime = Max(1, pSystemDesc->GetEmitLifetime().Roll());
 	pParticles->m_iLifeLeft = pDesc->GetMaxLifetime() + pParticles->m_iEmitTime;
 	pParticles->m_iTick = 0;
@@ -156,7 +154,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	int iInitCount;
 	pParticles->m_Particles.Emit(*pSystemDesc, 
 			vPos - pParticles->GetOrigin(), 
-			(!Source.IsEmpty() ? Source.GetObj()->GetVel() : CVector()), 
+			((!Source.IsEmpty() && !pParticles->m_pDesc->IsTracking()) ? Source.GetObj()->GetVel() : CVector()), 
 			iDirection, 
 			0, 
 			&iInitCount);
@@ -396,13 +394,8 @@ void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load other stuff
 
-	if (Ctx.dwVersion >= 18)
-		{
+	if (Ctx.dwVersion >= 18 && Ctx.dwVersion < 137)
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_iCause = (DestructionTypes)dwLoad;
-		}
-	else
-		m_iCause = killedByDamage;
 
 	Ctx.pStream->Read((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
 	m_Source.ReadFromStream(Ctx);
@@ -506,7 +499,7 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	EffectCtx.pDamageDesc = m_pDesc;
 	EffectCtx.iTotalParticleCount = m_iParticleCount;
 	EffectCtx.pEnhancements = m_pEnhancements;
-	EffectCtx.iCause = m_iCause;
+	EffectCtx.iCause = m_Source.GetCause();
 	EffectCtx.bAutomatedWeapon = IsAutomatedWeapon();
 	EffectCtx.Attacker = m_Source;
 	EffectCtx.pTarget = m_pTarget;
@@ -608,8 +601,6 @@ void CParticleDamage::OnWriteToStream (IWriteStream *pStream)
 	{
 	DWORD dwSave;
 	m_pDesc->GetUNID().WriteToStream(pStream);
-	dwSave = m_iCause;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
 	m_Source.WriteToStream(GetSystem(), pStream);
 	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);

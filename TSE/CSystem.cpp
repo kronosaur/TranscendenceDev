@@ -420,6 +420,9 @@
 //	136: 1.7 Beta 1
 //		Additional flags on CSpaceObject
 //
+//	137: 1.7 Beta 3
+//		Remove m_iCause from objects (since it is already in CDamageSource)
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -1856,7 +1859,6 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 
 ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 								   CItemEnhancementStack *pEnhancements,
-								   DestructionTypes iCause,
 								   const CDamageSource &Source,
 								   const CVector &vPos,
 								   const CVector &vVel,
@@ -1883,7 +1885,6 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			CMissile::Create(this,
 					pDesc,
 					pEnhancements,
-					iCause,
 					Source,
 					vPos,
 					vVel,
@@ -1902,7 +1903,6 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			CAreaDamage::Create(this,
 					pDesc,
 					pEnhancements,
-					iCause,
 					Source,
 					vPos,
 					vVel,
@@ -1919,7 +1919,6 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			CParticleDamage::Create(this,
 					pDesc,
 					pEnhancements,
-					iCause,
 					Source,
 					vPos,
 					vVel,
@@ -1938,7 +1937,6 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			CRadiusDamage::Create(this,
 					pDesc,
 					pEnhancements,
-					iCause,
 					Source,
 					vPos,
 					vVel,
@@ -2001,7 +1999,6 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 
 ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 									    CItemEnhancementStack *pEnhancements,
-									    DestructionTypes iCause,
 									    const CDamageSource &Source,
 									    CSpaceObject *pTarget,
 									    const CVector &vPos,
@@ -2159,7 +2156,6 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 				CSpaceObject *pNewObj;
 				if (error = CreateWeaponFire(pFragDesc->pDesc,
 						pEnhancements,
-						iCause,
 						Source,
 						vPos + CVector(mathRandom(-10, 10) * g_KlicksPerPixel / 10.0, mathRandom(-10, 10) * g_KlicksPerPixel / 10.0),
 						vInitVel + PolarToVector(Angles[i], rSpeed),
@@ -3922,6 +3918,29 @@ void CSystem::PlayerEntered (CSpaceObject *pPlayer)
 
 	if (m_pTopology)
 		m_pTopology->SetKnown();
+	}
+
+void CSystem::GetObjRefFromID (SLoadCtx &Ctx, DWORD dwID, CSpaceObject **retpObj)
+
+//	GetObjRefFromID
+//
+//	Resolves and object reference or adds a forward pointer.
+
+	{
+	//	Initialize
+
+	*retpObj = NULL;
+	if (dwID == OBJID_NULL)
+		return;
+
+	//	Lookup the ID in the map
+
+	if (Ctx.ObjMap.Lookup(dwID, (CObject **)retpObj) == NOERROR)
+		return;
+
+	//	If we could not find it, add the return pointer as a reference
+
+	Ctx.ForwardReferences.InsertRef(dwID, retpObj);
 	}
 
 void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)

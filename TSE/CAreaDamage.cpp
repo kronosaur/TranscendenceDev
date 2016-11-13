@@ -32,7 +32,6 @@ CAreaDamage::~CAreaDamage (void)
 ALERROR CAreaDamage::Create (CSystem *pSystem,
 							 CWeaponFireDesc *pDesc,
 							 CItemEnhancementStack *pEnhancements,
-							 DestructionTypes iCause,
 							 const CDamageSource &Source,
 							 const CVector &vPos,
 							 const CVector &vVel,
@@ -62,7 +61,6 @@ ALERROR CAreaDamage::Create (CSystem *pSystem,
 
 	pArea->m_pDesc = pDesc;
 	pArea->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
-	pArea->m_iCause = iCause;
 	pArea->m_iLifeLeft = pDesc->GetLifetime();
 	pArea->m_Source = Source;
 	pArea->m_iInitialDelay = pDesc->GetInitialDelay();
@@ -211,13 +209,8 @@ void CAreaDamage::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load other stuff
 
-	if (Ctx.dwVersion >= 18)
-		{
+	if (Ctx.dwVersion >= 18 && Ctx.dwVersion < 137)
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_iCause = (DestructionTypes)dwLoad;
-		}
-	else
-		m_iCause = killedByDamage;
 
 	if (Ctx.dwVersion >= 21)
 		Ctx.pStream->Read((char *)&m_iInitialDelay, sizeof(DWORD));
@@ -292,7 +285,7 @@ void CAreaDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	EffectCtx.pDamageDesc = m_pDesc;
 	EffectCtx.pEnhancements = m_pEnhancements;
-	EffectCtx.iCause = m_iCause;
+	EffectCtx.iCause = m_Source.GetCause();
 	EffectCtx.bAutomatedWeapon = IsAutomatedWeapon();
 	EffectCtx.Attacker = m_Source;
 
@@ -313,7 +306,6 @@ void CAreaDamage::OnWriteToStream (IWriteStream *pStream)
 //	Write out to stream
 //
 //	CString			CWeaponFireDesc UNID
-//	DWORD			m_iCause
 //	DWORD			m_iInitialDelay
 //	DWORD			m_iLifeLeft
 //	DWORD			m_Source (CDamageSource)
@@ -324,11 +316,7 @@ void CAreaDamage::OnWriteToStream (IWriteStream *pStream)
 //	CItemEnhancementStack	m_pEnhancements
 
 	{
-	DWORD dwSave;
-
 	m_pDesc->GetUNID().WriteToStream(pStream);
-	dwSave = m_iCause;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	pStream->Write((char *)&m_iInitialDelay, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
 	m_Source.WriteToStream(GetSystem(), pStream);

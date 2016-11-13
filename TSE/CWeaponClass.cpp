@@ -1926,7 +1926,6 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 				pSource->GetSystem()->CreateWeaponFire(pShot,
 						pDevice->GetEnhancements(),
-						killedByDamage,
 						CDamageSource(pSource, killedByDamage),
 						ShotPos[i],
 						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),

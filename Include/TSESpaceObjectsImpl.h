@@ -11,7 +11,6 @@ class CAreaDamage : public CSpaceObject
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
 				CItemEnhancementStack *pEnhancements,
-				DestructionTypes iCause,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -21,13 +20,12 @@ class CAreaDamage : public CSpaceObject
 		//	CSpaceObject virtuals
 		virtual bool CanMove (void) override { return true; }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
-		virtual DestructionTypes GetDamageCauseType (void) override { return m_iCause; }
+		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CAreaDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
-		virtual CSpaceObject *GetSource (void) override { return m_Source.GetObj(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnSystemLoaded (void) override;
@@ -36,7 +34,7 @@ class CAreaDamage : public CSpaceObject
 
 	protected:
 		//	Virtuals to be overridden
-		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
+		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source, m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override { return damagePassthrough; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
@@ -50,7 +48,6 @@ class CAreaDamage : public CSpaceObject
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
-		DestructionTypes m_iCause;				//	Cause of damage
 		IEffectPainter *m_pPainter;				//	Effect painter
 		int m_iInitialDelay;					//	Delay before start
 		int m_iTick;							//	Counter
@@ -71,20 +68,19 @@ class CBeam : public CSpaceObject
 		virtual void CreateReflection (const CVector &vPos, int iDirection) override;
 		virtual Categories GetCategory (void) const override { return catBeam; }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
-		virtual DestructionTypes GetDamageCauseType (void) override { return m_iCause; }
+		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual int GetInteraction (void) override { return 0; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerStations; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
-		virtual CSpaceObject *GetSource (void) override { return m_Source.GetObj(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 
 	protected:
 		//	Virtuals to be overridden
-		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
+		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source, m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override { return damagePassthrough; }
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
@@ -97,7 +93,6 @@ class CBeam : public CSpaceObject
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		int m_iBonus;							//	Bonus damage
-		DestructionTypes m_iCause;				//	Cause of damage
 		int m_iRotation;						//	Direction
 		CVector m_vPaintTo;						//	Paint from old position to this location
 		int m_iTick;							//	Ticks that we have been alive
@@ -377,7 +372,6 @@ class CMissile : public CSpaceObject
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
 				CItemEnhancementStack *pEnhancements,
-				DestructionTypes iCause,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -395,7 +389,7 @@ class CMissile : public CSpaceObject
         virtual CSpaceObject *GetBase (void) const override { return m_Source.GetObj(); }
 		virtual Categories GetCategory (void) const override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
-		virtual DestructionTypes GetDamageCauseType (void) override { return m_iCause; }
+		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual int GetInteraction (void) override { return m_pDesc->GetInteraction(); }
 		virtual int GetLevel (void) const override { return m_pDesc->GetLevel(); }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
@@ -405,7 +399,6 @@ class CMissile : public CSpaceObject
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
-		virtual CSpaceObject *GetSource (void) override { return m_Source.GetObj(); }
 		virtual int GetStealth (void) const override;
         virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override { return m_pTarget; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -421,7 +414,7 @@ class CMissile : public CSpaceObject
 	protected:
 
 		//	Virtuals to be overridden
-		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
+		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source, m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
@@ -445,7 +438,6 @@ class CMissile : public CSpaceObject
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
-		DestructionTypes m_iCause;				//	Cause of damage
 		int m_iLifeLeft;						//	Ticks left
 		int m_iHitPoints;						//	HP left
 		IEffectPainter *m_pPainter;				//	Effect painter
@@ -478,7 +470,6 @@ class CParticleDamage : public CSpaceObject
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
 				CItemEnhancementStack *pEnhancements,
-				DestructionTypes iCause,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -490,20 +481,19 @@ class CParticleDamage : public CSpaceObject
 		//	CSpaceObject virtuals
 		virtual bool CanMove (void) override { return true; }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
-		virtual DestructionTypes GetDamageCauseType (void) override { return m_iCause; }
+		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
-		virtual CSpaceObject *GetSource (void) override { return m_Source.GetObj(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
 
 	protected:
 		//	Virtuals to be overridden
-		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
+		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source, m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override { return damagePassthrough; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
@@ -531,7 +521,6 @@ class CParticleDamage : public CSpaceObject
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
 		CSpaceObject *m_pTarget;				//	Target
-		DestructionTypes m_iCause;				//	Cause of damage
 		int m_iTick;							//	Counter
 		int m_iLifeLeft;						//	Ticks left
 		int m_iRotation;						//	Initial rotation
@@ -760,7 +749,6 @@ class CRadiusDamage : public CSpaceObject
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
 				CItemEnhancementStack *pEnhancements,
-				DestructionTypes iCause,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -772,13 +760,12 @@ class CRadiusDamage : public CSpaceObject
 		virtual bool CanMove (void) override { return true; }
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
-		virtual DestructionTypes GetDamageCauseType (void) override { return m_iCause; }
+		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CRadiusDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
-		virtual CSpaceObject *GetSource (void) override { return m_Source.GetObj(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnSystemLoaded (void) override;
@@ -786,7 +773,7 @@ class CRadiusDamage : public CSpaceObject
 
 	protected:
 		//	Virtuals to be overridden
-		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source.GetObj(), m_pDesc); }
+		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source, m_pDesc); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override { return damagePassthrough; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
@@ -802,7 +789,6 @@ class CRadiusDamage : public CSpaceObject
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
-		DestructionTypes m_iCause;				//	Cause of damage
 		IEffectPainter *m_pPainter;				//	Effect painter
 		int m_iTick;							//	Counter
 		int m_iLifeLeft;						//	Ticks left

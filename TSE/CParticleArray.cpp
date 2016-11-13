@@ -992,7 +992,8 @@ void CParticleArray::PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewpo
 
 			//	Figure out the rotation or variant to paint
 
-			int iFrame = (Desc.bDirectional ? iRotationFrame : (pParticle->iDestiny % Desc.iVariants));
+			//int iFrame = (Desc.bDirectional ? iRotationFrame : (pParticle->iDestiny % Desc.iVariants));
+			int iFrame = (Desc.bDirectional ? Angle2Direction(AngleMod(Ctx.iRotation + pParticle->iRotation), Desc.iVariants) : (pParticle->iDestiny % Desc.iVariants));
 
 			//	Compute the position of the particle
 
@@ -1227,7 +1228,7 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 	//	If we're tracking, change velocity to follow target
 
 	if (Ctx.pTarget && Ctx.pDamageDesc && Ctx.pDamageDesc->IsTrackingTime(Ctx.iTick))
-		UpdateTrackTarget(Ctx.pTarget, Ctx.pDamageDesc->GetManeuverRate(), Ctx.pDamageDesc->GetRatedSpeed());
+		UpdateTrackTarget(Desc, Ctx);
 
 	//	Adjust based on style
 
@@ -1813,13 +1814,17 @@ void CParticleArray::UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metr
 		}
 	}
 
-void CParticleArray::UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate, Metric rMaxSpeed)
+void CParticleArray::UpdateTrackTarget (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
 
 //	UpdateTrackTarget
 //
 //	Change particle velocities to track the given target
 
 	{
+	CSpaceObject *pTarget = Ctx.pTarget;
+	int iManeuverRate = Ctx.pDamageDesc->GetManeuverRate();
+	Metric rMaxSpeed = Ctx.pDamageDesc->GetRatedSpeed();
+
 	//	We need to use real coordinates instead of fixed point
 
 	UseRealCoords();
@@ -1836,9 +1841,11 @@ void CParticleArray::UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate
 	Metric rTimeToIntercept = CalcInterceptTime(vTarget, vTargetVel, rMaxSpeed);
 	
 	CVector vAimPos;
+#if 0
 	if (rTimeToIntercept > 0.0)
 		vAimPos = (pTarget->GetPos() + pTarget->GetVel() * rTimeToIntercept) - m_vOrigin;
 	else
+#endif
 		vAimPos = pTarget->GetPos() - m_vOrigin;
 
 	//	Loop over all particles
@@ -1880,6 +1887,7 @@ void CParticleArray::UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate
 				//	Turn
 
 				pParticle->Vel = PolarToVector(iNewDir, rCurSpeed);
+				pParticle->iRotation = iNewDir;
 				}
 			}
 

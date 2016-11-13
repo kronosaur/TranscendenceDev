@@ -1388,7 +1388,6 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 
 		pShip->GetSystem()->CreateWeaponFire(Explosion.pDesc,
 				pEnhancements,
-				Explosion.iCause,
 				CDamageSource(pShip, Explosion.iCause, pWreck),
 				pShip->GetPos(),
 				pShip->GetVel(),

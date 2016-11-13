@@ -207,9 +207,9 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice,
 
 					if (pObj
 							&& pObj->GetCategory() == CSpaceObject::catMissile
-							&& pObj->GetSource() != pSource
+							&& !pObj->GetDamageSource().IsEqual(pSource)
 							&& !pObj->IsIntangible()
-							&& (pObj->GetSource() == NULL || pSource->IsEnemy(pObj->GetSource())))
+							&& pSource->IsEnemy(pObj->GetDamageSource()))
 						{
 						CVector vRange = pObj->GetPos() - vSourcePos;
 						Metric rDistance2 = vRange.Dot(vRange);

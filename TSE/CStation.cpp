@@ -512,7 +512,6 @@ void CStation::CreateDestructionEffect (void)
 
 		GetSystem()->CreateWeaponFire(Explosion.pDesc,
 				pEnhancements,
-				Explosion.iCause,
 				CDamageSource(this, Explosion.iCause),
 				GetPos(),
 				GetVel(),
@@ -614,7 +613,6 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 
 			GetSystem()->CreateWeaponFire(pEjectaType,
 					0,
-					killedByEjecta,
 					CDamageSource(this, killedByEjecta),
 					vHitPos,
 					vVel,
@@ -1103,7 +1101,6 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 		GetSystem()->CreateWeaponFire(Explosion.pDesc,
 				pEnhancements,
-				Explosion.iCause,
 				CDamageSource(this, Explosion.iCause),
 				GetPos(),
 				GetVel(),

@@ -1140,8 +1140,8 @@ void CWeaponFireDesc::FireOnDestroyShot (CSpaceObject *pShot)
 
 		CCCtx.SaveAndDefineSourceVar(pShot);
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
-		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), pShot->GetSource());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), (pShot->GetSource() ? pShot->GetSource()->GetOrderGiver(pShot->GetDamageCauseType()) : NULL));
+		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), pShot->GetDamageSource().GetObj());
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), pShot->GetDamageSource().GetOrderGiver());
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())

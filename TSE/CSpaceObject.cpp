@@ -5060,6 +5060,22 @@ bool CSpaceObject::IsEnemy (const CSpaceObject *pObj) const
 		return pOurSovereign->IsEnemy(pEnemySovereign);
 	}
 
+bool CSpaceObject::IsEnemy (const CDamageSource &Obj) const
+
+//	IsEnemy
+//
+//	Returns TRUE if the given object is our enemy
+
+	{
+	CSovereign *pOurSovereign = GetSovereign();
+	CSovereign *pEnemySovereign = Obj.GetSovereign();
+
+	if (pOurSovereign == NULL || pEnemySovereign == NULL)
+		return false;
+	else
+		return pOurSovereign->IsEnemy(pEnemySovereign);
+	}
+
 bool CSpaceObject::IsFriend (const CSpaceObject *pObj) const
 
 //	IsFriend
@@ -5567,38 +5583,38 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 	return true;
 	}
 
-bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CSpaceObject *pSource, CWeaponFireDesc *pDesc)
+bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, CWeaponFireDesc *pDesc)
 
 //	MissileCanHitObj
 //
 //	Return TRUE if this object (a missile) can hit the given object (and assuming
-//	that the this object was fired by pSource).
+//	that this object was fired by Source).
 
 	{
 	//	If we have a source...
 
-	if (pSource)
+	if (Source.HasSource())
 		{
 		//	If we can damage our source, then we don't need to check further
 
 		if (pDesc->CanDamageSource())
-			return
+			return (
 				//	We cannot hit another beam/missile from the same source
 				//	(otherwise we get fratricide on fragmentation weapons).
-				(pObj->GetSource() != pSource)
+				!Source.IsEqual(pObj->GetDamageSource())
 
 				//	See if the missile has rules about what it cannot hit
-				&& pDesc->CanHit(pObj);
+				&& pDesc->CanHit(pObj));
 
 		//	Otherwise, we can only hit if we're not hitting our source, etc.
 
 		else
-			return 
+			return (
 				//	We cannot hit the source of the beam...
-				((pObj != pSource) 
+				!Source.IsEqual(pObj)
 
 				//	We cannot hit another beam/missile from the same source...
-				&& (pObj->GetSource() != pSource)
+				&& !Source.IsEqual(pObj->GetDamageSource())
 
 				//	See if the missile has rules about what it cannot hit
 				&& pDesc->CanHit(pObj)
@@ -5606,10 +5622,10 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CSpaceObject *pSource, 
 				//	We cannot hit our friends (if our source can't)
 				//	(NOTE: we check for sovereign as opposed to IsEnemy because
 				//	it is faster. For our purposes, same sovereign is what we want).
-				&& ((CanHitFriends() && pSource->CanHitFriends()) || pSource->GetSovereign() != pObj->GetSovereign())
+				&& ((CanHitFriends() && Source.CanHitFriends()) || Source.GetSovereign() != pObj->GetSovereign())
 				
 				//	We cannot hit if the object cannot be hit by friends
-				&& (pObj->CanBeHitByFriends() || pSource->GetSovereign() != pObj->GetSovereign()));
+				&& (pObj->CanBeHitByFriends() || Source.GetSovereign() != pObj->GetSovereign()));
 		}
 
 	//	If we don't have a source...
@@ -5633,9 +5649,7 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CSpaceObject *pSource, 
 		//	got destroyed (i.e., pSource == NULL) do not hit each other.
 
 		else
-			return (pObj->GetSource()
-					|| (GetDamageCauseType() != pObj->GetDamageCauseType())
-					|| (GetDamageCauseType() != killedByExplosion && GetDamageCauseType() != killedByPlayerCreatedExplosion));
+			return !Source.IsEqual(pObj->GetDamageSource());
 		}
 	}
 

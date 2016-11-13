@@ -1197,6 +1197,7 @@ class CSpaceObject : public CObject
 		bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
 		static bool IsDestroyedInUpdate (void) { return m_bObjDestroyed; }
 		bool IsEnemy (const CSpaceObject *pObj) const;
+		bool IsEnemy (const CDamageSource &Obj) const;
 		bool IsEnemyInRange (Metric rMaxRange, bool bIncludeStations = false);
 		bool IsEscortingFriendOf (const CSpaceObject *pObj) const;
 		bool IsFriend (const CSpaceObject *pObj) const;
@@ -1588,9 +1589,8 @@ class CSpaceObject : public CObject
 		virtual void CreateReflection (const CVector &vPos, int iDirection) { }
 		virtual void DetonateNow (CSpaceObject *pHit) { }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) { return GetNounPhrase(dwFlags); }
-		virtual DestructionTypes GetDamageCauseType (void) { return killedByDamage; }
+		virtual const CDamageSource &GetDamageSource (void) const { return CDamageSource::Null(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) { return NULL; }
-		virtual CSpaceObject *GetSource (void) { return NULL; }
 		virtual CSpaceObject *GetSecondarySource (void) { return NULL; }
 
 		//	...for ships
@@ -1669,7 +1669,7 @@ class CSpaceObject : public CObject
 				const CObjectImageArray &Image2, int iTick2, int iRotation2, const CVector &vPos2);
 		inline bool IsObjectDestructionHooked (void) { return (m_fHookObjectDestruction ? true : false); }
 		inline void ItemEnhancementModified (CItemListManipulator &ItemList) { OnItemEnhanced(ItemList); }
-		bool MissileCanHitObj (CSpaceObject *pObj, CSpaceObject *pSource, CWeaponFireDesc *pDesc);
+		bool MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, CWeaponFireDesc *pDesc);
 		void PaintEffects (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);

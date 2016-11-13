@@ -166,7 +166,7 @@ inline void DebugStopTimer (char *szTiming) { }
 const DWORD API_VERSION =								31;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
 const DWORD UNIVERSE_SAVE_VERSION =						28;
-const DWORD SYSTEM_SAVE_VERSION =						136;	//	See: CSystem.cpp
+const DWORD SYSTEM_SAVE_VERSION =						137;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{
@@ -657,26 +657,34 @@ class CDamageSource
 		CDamageSource (void) : m_pSource(NULL), m_iCause(removedFromSystem), m_dwFlags(0), m_pSecondarySource(NULL) { }
 		CDamageSource (CSpaceObject *pSource, DestructionTypes iCause = killedByDamage, CSpaceObject *pSecondarySource = NULL, const CString &sSourceName = NULL_STR, DWORD dwSourceFlags = 0);
 
+		bool CanHitFriends (void) const;
 		inline DestructionTypes GetCause (void) const { return m_iCause; }
 		CString GetDamageCauseNounPhrase (DWORD dwFlags);
 		CSpaceObject *GetObj (void) const;
+		DWORD GetObjID (void) const;
 		CSpaceObject *GetOrderGiver (void) const;
 		inline CSpaceObject *GetSecondaryObj (void) const { return m_pSecondarySource; }
 		inline const CString &GetSourceName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwSourceNameFlags; return m_sSourceName; }
 		CSovereign *GetSovereign (void) const;
 		DWORD GetSovereignUNID (void) const;
-		inline bool HasDamageCause (void) const { return (m_pSource || !m_sSourceName.IsBlank()); }
+		inline bool HasDamageCause (void) const { return ((m_pSource && !IsObjID()) || !m_sSourceName.IsBlank()); }
+		bool HasSource (void) const;
 		bool IsCausedByEnemyOf (CSpaceObject *pObj) const;
 		bool IsCausedByFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByNonFriendOf (CSpaceObject *pObj) const;
 		inline bool IsCausedByPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER_CAUSED) ? true : false); }
 		inline bool IsEmpty (void) const { return (GetObj() == NULL); }
+		bool IsEnemy (CDamageSource &Src) const;
+		bool IsEqual (const CDamageSource &Src) const;
+		bool IsEqual (CSpaceObject *pSrc) const;
 		inline bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
 		void OnObjDestroyed (CSpaceObject *pObjDestroyed);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
 		void SetObj (CSpaceObject *pSource);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
+
+		static const CDamageSource &Null (void) { return m_Null; }
 		
 	private:
 		enum Flags
@@ -684,7 +692,12 @@ class CDamageSource
 			FLAG_IS_PLAYER					= 0x00000001,
 			FLAG_IS_PLAYER_SUBORDINATE		= 0x00000002,
 			FLAG_IS_PLAYER_CAUSED			= 0x00000004,
+			FLAG_OBJ_ID						= 0x00000008,	//	m_pSource is an ID, not a pointer
 			};
+
+		inline DWORD GetRawObjID (void) const { return (DWORD)m_pSource; }
+		inline bool IsObjPointer (void) const { return (m_pSource && !IsObjID()); }
+		inline bool IsObjID (void) const { return ((m_dwFlags & FLAG_OBJ_ID) == FLAG_OBJ_ID); }
 
 		CSpaceObject *m_pSource;
 		DestructionTypes m_iCause;
@@ -694,6 +707,8 @@ class CDamageSource
 		DWORD m_dwSourceNameFlags;
 
 		CSpaceObject *m_pSecondarySource;
+
+		static CDamageSource m_Null;
 	};
 
 class CDamageAdjDesc

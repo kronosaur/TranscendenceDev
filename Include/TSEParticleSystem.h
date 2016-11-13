@@ -279,7 +279,7 @@ class CParticleArray
 		void PosToXY (const CVector &xy, int *retx, int *rety);
 		void UpdateCollisions (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 		void UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
-		void UpdateTrackTarget (CSpaceObject *pTarget, int iManeuverRate, Metric rMaxSpeed);
+		void UpdateTrackTarget (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 		void UseRealCoords (void);
 		CVector XYToPos (int x, int y);
 

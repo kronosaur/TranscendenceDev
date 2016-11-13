@@ -696,7 +696,6 @@ class CSystem
 							   CSpaceObject **retpStation = NULL);
 		ALERROR CreateWeaponFire (CWeaponFireDesc *pDesc,
 								  CItemEnhancementStack *pEnhancements,
-								  DestructionTypes iCause,
 								  const CDamageSource &Source,
 								  const CVector &vPos,
 								  const CVector &vVel,
@@ -707,7 +706,6 @@ class CSystem
 								  CSpaceObject **retpShot);
 		ALERROR CreateWeaponFragments (CWeaponFireDesc *pDesc,
 									   CItemEnhancementStack *pEnhancements,
-									   DestructionTypes iCause,
 									   const CDamageSource &Source,
 									   CSpaceObject *pTarget,
 									   const CVector &vPos,
@@ -837,6 +835,7 @@ class CSystem
 		bool IsExclusionZoneClear (const CVector &vPos, CStationType *pType = NULL);
 		inline void SetLocationObjID (int iLocID, DWORD dwObjID) { m_Locations.SetObjID(iLocID, dwObjID); }
 
+		static void GetObjRefFromID (SLoadCtx &Ctx, DWORD dwID, CSpaceObject **retpObj);
 		static void ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj);
 		static void ReadObjRefFromStream (SLoadCtx &Ctx, void *pCtx, PRESOLVEOBJIDPROC pfnResolveProc);
 		static void ReadSovereignRefFromStream (SLoadCtx &Ctx, CSovereign **retpSovereign);

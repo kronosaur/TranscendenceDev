@@ -170,7 +170,6 @@ void CBeam::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	CString		CWeaponFireDesc UNID
 //	DWORD		m_iBonus
-//	DWORD		m_iCause
 //	DWORD		m_iRotation
 //	Vector		m_vPaintTo
 //	DWORD		m_iTick
@@ -193,13 +192,8 @@ void CBeam::OnReadFromStream (SLoadCtx &Ctx)
 	m_pDesc = g_pUniverse->FindWeaponFireDesc(sDescUNID);
 
 	Ctx.pStream->Read((char *)&m_iBonus, sizeof(DWORD));
-	if (Ctx.dwVersion >= 18)
-		{
+	if (Ctx.dwVersion >= 18 && Ctx.dwVersion < 137)
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_iCause = (DestructionTypes)dwLoad;
-		}
-	else
-		m_iCause = killedByDamage;
 
 	Ctx.pStream->Read((char *)&m_iRotation, sizeof(DWORD));
 	Ctx.pStream->Read((char *)&m_vPaintTo, sizeof(CVector));
@@ -237,7 +231,7 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		Ctx.pDesc = m_pDesc;
 		Ctx.Damage = m_pDesc->GetDamage();
 		Ctx.Damage.AddBonus(m_iBonus);
-		Ctx.Damage.SetCause(m_iCause);
+		Ctx.Damage.SetCause(m_Source.GetCause());
 		if (IsAutomatedWeapon())
 			Ctx.Damage.SetAutomatedWeapon();
 		Ctx.iDirection = (m_iHitDir + 360 + mathRandom(0, 30) - 15) % 360;
@@ -272,7 +266,6 @@ void CBeam::OnWriteToStream (IWriteStream *pStream)
 //
 //	CString		CWeaponFireDesc UNID
 //	DWORD		m_iBonus
-//	DWORD		m_iCause
 //	DWORD		m_iRotation
 //	Vector		m_vPaintTo
 //	DWORD		m_iTick
@@ -283,11 +276,8 @@ void CBeam::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_iHitDir
 
 	{
-	DWORD dwSave;
 	m_pDesc->GetUNID().WriteToStream(pStream);
 	pStream->Write((char *)&m_iBonus, sizeof(DWORD));
-	dwSave = m_iCause;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	pStream->Write((char *)&m_iRotation, sizeof(DWORD));
 	pStream->Write((char *)&m_vPaintTo, sizeof(m_vPaintTo));
 	pStream->Write((char *)&m_iTick, sizeof(DWORD));

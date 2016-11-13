@@ -30,7 +30,6 @@ CRadiusDamage::~CRadiusDamage (void)
 ALERROR CRadiusDamage::Create (CSystem *pSystem,
 							   CWeaponFireDesc *pDesc,
 							   CItemEnhancementStack *pEnhancements,
-							   DestructionTypes iCause,
 							   const CDamageSource &Source,
 							   const CVector &vPos,
 							   const CVector &vVel,
@@ -62,7 +61,6 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 	pArea->m_iLifeLeft = Max(1, pDesc->GetLifetime());
 	pArea->m_pDesc = pDesc;
 	pArea->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
-	pArea->m_iCause = iCause;
 	pArea->m_Source = Source;
 	pArea->m_pTarget = pTarget;
 	pArea->m_iTick = 0;
@@ -167,7 +165,7 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		Ctx.pDesc = m_pDesc;
 		Ctx.Damage = m_pDesc->GetDamage();
 		Ctx.Damage.AddEnhancements(m_pEnhancements);
-		Ctx.Damage.SetCause(m_iCause);
+		Ctx.Damage.SetCause(m_Source.GetCause());
 		if (IsAutomatedWeapon())
 			Ctx.Damage.SetAutomatedWeapon();
 		Ctx.iDirection = (iAngle + 180) % 360;
@@ -353,13 +351,8 @@ void CRadiusDamage::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load other stuff
 
-	if (Ctx.dwVersion >= 18)
-		{
+	if (Ctx.dwVersion >= 18 && Ctx.dwVersion < 137)
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_iCause = (DestructionTypes)dwLoad;
-		}
-	else
-		m_iCause = killedByDamage;
 
 	Ctx.pStream->Read((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
 	m_Source.ReadFromStream(Ctx);
@@ -416,7 +409,6 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			GetSystem()->CreateWeaponFragments(m_pDesc,
 					m_pEnhancements,
-					m_iCause,
 					m_Source,
 					m_pTarget,
 					GetPos(),
@@ -452,7 +444,6 @@ void CRadiusDamage::OnWriteToStream (IWriteStream *pStream)
 //	Write out to stream
 //
 //	CString			CWeaponFireDesc UNID
-//	DWORD			m_iCause
 //	DWORD			m_iLifeLeft
 //	DWORD			m_Source (CSpaceObject ref)
 //	DWORD			m_pTarget (CSpaceObject ref)
@@ -466,8 +457,6 @@ void CRadiusDamage::OnWriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	m_pDesc->GetUNID().WriteToStream(pStream);
-	dwSave = m_iCause;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
 	m_Source.WriteToStream(GetSystem(), pStream);
 	WriteObjRefToStream(m_pTarget, pStream);

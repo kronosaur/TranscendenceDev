@@ -207,7 +207,6 @@ int CMissile::ComputeVaporTrail (void)
 ALERROR CMissile::Create (CSystem *pSystem,
 						  CWeaponFireDesc *pDesc,
 						  CItemEnhancementStack *pEnhancements,
-						  DestructionTypes iCause,
 						  const CDamageSource &Source,
 						  const CVector &vPos,
 						  const CVector &vVel,
@@ -254,7 +253,6 @@ ALERROR CMissile::Create (CSystem *pSystem,
 
 	pMissile->m_pDesc = pDesc;
 	pMissile->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
-	pMissile->m_iCause = iCause;
 	pMissile->m_iHitPoints = pDesc->GetHitPoints();
 	pMissile->m_iLifeLeft = pDesc->GetLifetime();
 	pMissile->m_iTick = 0;
@@ -343,7 +341,6 @@ void CMissile::CreateFragments (const CVector &vPos)
 	if (m_pDesc->HasFragments())
 		GetSystem()->CreateWeaponFragments(m_pDesc,
 				m_pEnhancements,
-				m_iCause,
 				m_Source,
 				m_pTarget,
 				vPos,
@@ -358,7 +355,7 @@ void CMissile::CreateFragments (const CVector &vPos)
 	Ctx.pDesc = m_pDesc;
 	Ctx.Damage = m_pDesc->GetDamage();
 	Ctx.Damage.AddEnhancements(m_pEnhancements);
-	Ctx.Damage.SetCause(m_iCause);
+	Ctx.Damage.SetCause(m_Source.GetCause());
 	if (IsAutomatedWeapon())
 		Ctx.Damage.SetAutomatedWeapon();
 	Ctx.iDirection = mathRandom(0, 359);
@@ -384,8 +381,7 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection)
 	Create(GetSystem(),
 			m_pDesc,
 			m_pEnhancements,
-			m_iCause,
-			m_Source.GetObj(),
+			m_Source,
 			vPos,
 			PolarToVector(iDirection, GetVel().Length()),
 			iDirection,
@@ -850,7 +846,6 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 //	Read object data from a stream
 //
 //	CString		CWeaponFireDesc UNID
-//	DWORD		m_iCause
 //	DWORD		m_iHitPoints
 //	DWORD		m_iLifeLeft
 //	DWORD		m_Source (CSpaceObject ref)
@@ -902,13 +897,8 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load other stuff
 
-	if (Ctx.dwVersion >= 18)
-		{
+	if (Ctx.dwVersion >= 18 && Ctx.dwVersion < 137)
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_iCause = (DestructionTypes)dwLoad;
-		}
-	else
-		m_iCause = killedByDamage;
 
 	if (Ctx.dwVersion >= 28)
 		Ctx.pStream->Read((char *)&m_iHitPoints, sizeof(DWORD));
@@ -1180,7 +1170,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				DamageCtx.pDesc = m_pDesc;
 				DamageCtx.Damage = m_pDesc->GetDamage();
 				DamageCtx.Damage.AddEnhancements(m_pEnhancements);
-				DamageCtx.Damage.SetCause(m_iCause);
+				DamageCtx.Damage.SetCause(m_Source.GetCause());
 				if (IsAutomatedWeapon())
 					DamageCtx.Damage.SetAutomatedWeapon();
 				DamageCtx.iDirection = (m_iHitDir + 360 + mathRandom(0, 30) - 15) % 360;
@@ -1239,7 +1229,6 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 //	Write the object's data to stream
 //
 //	CString		CWeaponFireDesc UNID
-//	DWORD		m_iCause
 //	DWORD		m_iHitPoints
 //	DWORD		m_iLifeLeft
 //	DWORD		m_Source (CSpaceObject ref)
@@ -1267,8 +1256,6 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	m_pDesc->GetUNID().WriteToStream(pStream);
-	dwSave = m_iCause;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	pStream->Write((char *)&m_iHitPoints, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(DWORD));
 	m_Source.WriteToStream(GetSystem(), pStream);

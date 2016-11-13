@@ -5409,7 +5409,6 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pDesc->HasFragments() && pSystem)
 				pSystem->CreateWeaponFragments(pDesc,
 						0,
-						Ctx.Attacker.GetCause(),
 						Ctx.Attacker,
 						(!pObj->IsDestroyed() ? pObj : NULL),
 						vHitPos,
@@ -10238,7 +10237,6 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject *pObj;
 			if (error = pSystem->CreateWeaponFire(pDesc,
 					pEnhancements,
-					Source.GetCause(),
 					Source,
 					vPos,
 					PolarToVector(iDir, rSpeed),
