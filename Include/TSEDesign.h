@@ -725,6 +725,7 @@ class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
 	{
 	public:
 		CEffectCreatorRef (void) : m_pSingleton(NULL), m_bDelete(false) { }
+		CEffectCreatorRef (const CEffectCreatorRef &Source);
 		~CEffectCreatorRef (void);
 
 		CEffectCreatorRef &operator= (const CEffectCreatorRef &Source);

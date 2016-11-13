@@ -940,7 +940,7 @@ ALERROR GetPosOrObject (CEvalContext *pEvalCtx,
 	return NOERROR;
 	}
 
-CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg)
+CWeaponFireDesc *GetWeaponFireDescArg (CCodeChain &CC, ICCItem *pArg)
 
 //	GetWeaponFireDescArg
 //
@@ -950,6 +950,45 @@ CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg)
 //	Returns NULL on error
 
 	{
+	CItemType *pType;
+	CItemType *pMissileType;
+
+	//	If we have a list with exactly two arguments, and if the first is a
+	//	launcher UNID and the second is a missile UNID, then we assume that's 
+	//	the intent.
+
+	if (pArg->IsList() 
+			&& pArg->GetCount() == 2
+			&& (pType = g_pUniverse->FindItemType(pArg->GetElement(0)->GetIntegerValue()))
+			&& (pMissileType = g_pUniverse->FindItemType(pArg->GetElement(1)->GetIntegerValue())))
+		{
+		return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
+		}
+
+	//	Otherwise, if we have a list, we expect an item.
+
+	else if (pArg->IsList() && pArg->GetCount() >= 2 && pArg->GetElement(1)->GetIntegerValue() != 0)
+		{
+		CItem Item = CreateItemFromList(CC, pArg);
+		if (Item.IsEmpty())
+			return NULL;
+
+		return Item.GetType()->GetWeaponFireDesc(CItemCtx(Item));
+		}
+
+	//	Otherwise we expect an integer value.
+
+	else if (pType = g_pUniverse->FindItemType(pArg->GetElement(0)->GetIntegerValue()))
+		{
+		return pType->GetWeaponFireDesc(CItemCtx());
+		}
+
+	//	Otherwise, error
+
+	else
+		return NULL;
+
+#if 0
 	DWORD dwWeaponUNID;
 	DWORD dwVariantUNID;
 
@@ -992,6 +1031,7 @@ CWeaponFireDesc *GetWeaponFireDescArg (ICCItem *pArg)
 
         return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
         }
+#endif
 	}
 
 bool IsVectorItem (ICCItem *pItem)

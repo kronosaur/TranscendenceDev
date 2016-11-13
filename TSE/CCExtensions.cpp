@@ -5347,7 +5347,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Weapon fire desc
 
-			CWeaponFireDesc *pDesc = GetWeaponFireDescArg(pArgs->GetElement(1));
+			CWeaponFireDesc *pDesc = GetWeaponFireDescArg(*pCC, pArgs->GetElement(1));
 			if (pDesc == NULL)
 				return pCC->CreateNil();
 
@@ -10136,7 +10136,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get parameters
 
-			CWeaponFireDesc *pDesc = GetWeaponFireDescArg(pArgs->GetElement(0));
+			CWeaponFireDesc *pDesc = GetWeaponFireDescArg(*pCC, pArgs->GetElement(0));
 			if (pDesc == NULL)
 				return pCC->CreateError(CONSTLIT("Unable to find specified weapon"));
 

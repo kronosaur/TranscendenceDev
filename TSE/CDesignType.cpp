@@ -2414,6 +2414,20 @@ ALERROR CWeaponFireDescRef::Bind (SDesignLoadCtx &Ctx)
 
 //	CEffectCreatorRef ---------------------------------------------------------
 
+CEffectCreatorRef::CEffectCreatorRef (const CEffectCreatorRef &Source)
+
+//	CEffectCreatorRef copy constructor
+
+	{
+	m_dwUNID = Source.m_dwUNID;
+
+	//	We make a reference
+
+	m_pType = Source.m_pType;
+	m_pSingleton = NULL;
+	m_bDelete = false;
+	}
+
 CEffectCreatorRef::~CEffectCreatorRef (void)
 	{
 	if (m_bDelete && m_pType)
