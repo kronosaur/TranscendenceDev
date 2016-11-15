@@ -1228,7 +1228,7 @@ ALERROR CDesignType::FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, 
 	return NOERROR;
 	}
 
-void CDesignType::FireOnGlobalSystemStarted (const SEventHandlerDesc &Event)
+void CDesignType::FireOnGlobalSystemStarted (const SEventHandlerDesc &Event, DWORD dwElapsedTime)
 
 //	FireOnGlobalSystemStarted
 //
@@ -1236,6 +1236,7 @@ void CDesignType::FireOnGlobalSystemStarted (const SEventHandlerDesc &Event)
 
 	{
 	CCodeChainCtx CCCtx;
+	CCCtx.DefineInteger(CONSTLIT("aElapsedTime"), dwElapsedTime);
 
 	//	Run code
 

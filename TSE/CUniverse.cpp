@@ -2705,9 +2705,10 @@ void CUniverse::StartGame (bool bNewGame)
 
 		FireOnGlobalUniverseCreated();
 
-		//	The current system has started
+		//	The current system has started (0 time has elased since we last
+		//	updated this system).
 
-		m_Design.FireOnGlobalSystemStarted();
+		m_Design.FireOnGlobalSystemStarted(0);
 
 		//	If we have a player then tell objects that the player has entered
 		//	the system.

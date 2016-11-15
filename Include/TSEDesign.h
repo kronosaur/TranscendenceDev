@@ -455,7 +455,7 @@ class CDesignType
 		ALERROR FireOnGlobalPlayerLeftSystem (CString *retsError = NULL);
 		ALERROR FireOnGlobalResurrect (CString *retsError = NULL);
 		ALERROR FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, CString *retsError = NULL);
-		void FireOnGlobalSystemStarted (const SEventHandlerDesc &Event);
+		void FireOnGlobalSystemStarted (const SEventHandlerDesc &Event, DWORD dwElapsedTime);
 		void FireOnGlobalSystemStopped (const SEventHandlerDesc &Event);
 		ALERROR FireOnGlobalTopologyCreated (CString *retsError = NULL);
 		ALERROR FireOnGlobalTypesInit (SDesignLoadCtx &Ctx);
@@ -4415,7 +4415,7 @@ class CDesignCollection
 		void FireOnGlobalPlayerEnteredSystem (void);
 		void FireOnGlobalPlayerLeftSystem (void);
 		void FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx);
-		void FireOnGlobalSystemStarted (void);
+		void FireOnGlobalSystemStarted (DWORD dwElapsedTime);
 		void FireOnGlobalSystemStopped (void);
 		ALERROR FireOnGlobalTypesInit (SDesignLoadCtx &Ctx);
 		void FireOnGlobalUniverseCreated (void);

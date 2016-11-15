@@ -873,7 +873,7 @@ void CDesignCollection::FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCt
 		}
 	}
 
-void CDesignCollection::FireOnGlobalSystemStarted (void)
+void CDesignCollection::FireOnGlobalSystemStarted (DWORD dwElapsedTime)
 
 //	FireOnGlobalSystemStarted
 //
@@ -889,7 +889,7 @@ void CDesignCollection::FireOnGlobalSystemStarted (void)
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalSystemStarted]->GetEntry(i, &Event);
 
-		pType->FireOnGlobalSystemStarted(Event);
+		pType->FireOnGlobalSystemStarted(Event, dwElapsedTime);
 		}
 	}
 
