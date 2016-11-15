@@ -1209,6 +1209,7 @@ class CTopologyNode
 		inline DWORD GetSystemTypeUNID (void) { return m_SystemUNID; }
 		inline bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
+		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
 		ALERROR InitFromAdditionalXML (CXMLElement *pDesc, CString *retsError);
 		ALERROR InitFromAttributesXML (CXMLElement *pAttributes, CString *retsError);
 		ALERROR InitFromSystemXML (CXMLElement *pSystem, CString *retsError);

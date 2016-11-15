@@ -446,6 +446,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_ORBIT_CREATE				31
 #define FN_SYS_HIT_SCAN					32
 #define FN_SYS_LIGHT_INTENSITY			33
+#define FN_SYS_INC_DATA					34
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2356,6 +2357,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysHitScan",					fnSystemGet,	FN_SYS_HIT_SCAN,
 			"(sysHitScan [source] startPos endPos) -> (obj hitPos) or Nil",
 			"*vv",	0,	},
+
+		{	"sysIncData",					fnSystemGet,	FN_SYS_INC_DATA,
+			"(sysIncData [nodeID] attrib increment) -> new value",
+			"s*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysIsKnown",					fnSystemGet,	FN_SYS_IS_KNOWN,
 			"(sysIsKnown [nodeID]) -> True/Nil",
@@ -11193,6 +11198,47 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			return pCC->CreateInteger((int)((rDistance / rSpeed) + 0.5));
+			}
+
+		case FN_SYS_INC_DATA:
+			{
+			int iArg = 0;
+
+			//	If we have 3 args, then we assume the first arg is a node ID.
+
+			CTopologyNode *pNode;
+			if (pArgs->GetCount() >= 3)
+				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+
+			//	Otherwise, we assume the current system.
+
+			else
+				{
+				CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				pNode = pSystem->GetTopology();
+				}
+
+			//	Node better be valid
+
+			if (pNode == NULL)
+				return pCC->CreateNil();
+
+			//	Get the attribute
+
+			CString sAttrib = pArgs->GetElement(iArg++)->GetStringValue();
+
+			//	Get the increment
+
+			ICCItem *pInc = pArgs->GetElement(iArg++);
+
+			//	Increment
+
+			ICCItem *pResult;
+			pNode->IncData(sAttrib, pInc, &pResult);
+			return pResult;
 			}
 
 		case FN_SYS_GET_DATA:
