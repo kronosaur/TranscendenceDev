@@ -3114,11 +3114,6 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
     CalcPerformance();
 
-	//	Events
-
-	m_fHasOnAttackedByPlayerEvent = FindEventHandler(CONSTLIT("OnAttackedByPlayer"));
-	m_fHasOnOrderChangedEvent = FindEventHandler(CONSTLIT("OnOrderChanged"));
-
 	return NOERROR;
 
 Fail:

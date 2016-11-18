@@ -499,7 +499,7 @@ void CBaseShipAI::FireOnOrderChanged (void)
 //	Ship's current order has changed
 
 	{
-	if (m_pShip->GetClass()->HasOnOrderChangedEvent() && !m_fInOnOrderChanged)
+	if (m_pShip->HasOnOrderChangedEvent() && !m_fInOnOrderChanged)
 		{
 		m_fInOnOrderChanged = true;
  		m_pShip->FireOnOrderChanged();
@@ -838,7 +838,7 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pOrderGiver)
 
 	if (pOrderGiver->IsPlayer() 
 			&& m_Blacklist.Hit(m_pShip->GetSystem()->GetTick())
-			&& m_pShip->GetClass()->HasOnAttackedByPlayerEvent())
+			&& m_pShip->HasOnAttackedByPlayerEvent())
 		m_pShip->FireOnAttackedByPlayer();
 
 	//	Otherwise, send the standard message

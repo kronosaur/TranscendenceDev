@@ -258,7 +258,9 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fInsideBarrier(false),
 		m_fHasOnSubordinateAttackedEvent(false),
 		m_fHasOnUpdateEvent(false),
-		m_fHasGetDockScreenEvent(false)
+		m_fHasGetDockScreenEvent(false),
+		m_fHasOnAttackedByPlayerEvent(false),
+		m_fHasOnOrderChangedEvent(false)
 
 //	CSpaceObject constructor
 
@@ -1095,6 +1097,14 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	pObj->m_fHasOnUpdateEvent =			((dwLoad & 0x00000001) ? true : false);
 	pObj->m_fHasGetDockScreenEvent =	((dwLoad & 0x00000002) ? true : false);
+	pObj->m_fHasOnAttackedByPlayerEvent =	((dwLoad & 0x00000004) ? true : false);
+	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
+
+	if (Ctx.dwVersion < 137)
+		{
+		pObj->m_fHasOnAttackedByPlayerEvent = pObj->FindEventHandler(CONSTLIT("OnAttackedByPlayer"));
+		pObj->m_fHasOnOrderChangedEvent = pObj->FindEventHandler(CONSTLIT("OnOrderChanged"));
+		}
 
 	//	No need to save the following
 
@@ -6942,6 +6952,7 @@ void CSpaceObject::SetEventFlags (void)
 	{
 	SetHasGetDockScreenEvent(FindEventHandler(CONSTLIT("GetDockScreen")));
 	SetHasOnAttackedEvent(FindEventHandler(CONSTLIT("OnAttacked")));
+	SetHasOnAttackedByPlayerEvent(FindEventHandler(CONSTLIT("OnAttackedByPlayer")));
 	SetHasOnDamageEvent(FindEventHandler(CONSTLIT("OnDamage")));
 	SetHasOnObjDockedEvent(FindEventHandler(CONSTLIT("OnObjDocked")));
 	SetHasOnUpdateEvent(FindEventHandler(CONSTLIT("OnUpdate")));
@@ -7578,6 +7589,8 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	dwSave |= (m_fHasOnUpdateEvent			? 0x00000001 : 0);
 	dwSave |= (m_fHasGetDockScreenEvent		? 0x00000002 : 0);
+	dwSave |= (m_fHasOnAttackedByPlayerEvent	? 0x00000004 : 0);
+	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data

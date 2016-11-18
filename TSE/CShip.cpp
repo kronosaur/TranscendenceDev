@@ -5230,6 +5230,7 @@ void CShip::OnSetEventFlags (void)
 	{
 	SetHasInterSystemEvent(FindEventHandler(CONSTLIT("OnPlayerLeftSystem")) 
 			|| FindEventHandler(CONSTLIT("OnPlayerEnteredSystem")));
+	SetHasOnOrderChangedEvent(FindEventHandler(CONSTLIT("OnOrderChanged")));
 	SetHasOnOrdersCompletedEvent(FindEventHandler(CONSTLIT("OnOrdersCompleted")));
 	SetHasOnSubordinateAttackedEvent(FindEventHandler(CONSTLIT("OnSubordinateAttacked")));
 	}

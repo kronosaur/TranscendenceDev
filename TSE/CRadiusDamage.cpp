@@ -454,8 +454,6 @@ void CRadiusDamage::OnWriteToStream (IWriteStream *pStream)
 //	CItemEnhancementStack	m_pEnhancements
 
 	{
-	DWORD dwSave;
-
 	m_pDesc->GetUNID().WriteToStream(pStream);
 	pStream->Write((char *)&m_iLifeLeft, sizeof(m_iLifeLeft));
 	m_Source.WriteToStream(GetSystem(), pStream);

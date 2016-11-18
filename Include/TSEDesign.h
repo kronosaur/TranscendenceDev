@@ -2031,8 +2031,6 @@ class CShipClass : public CDesignType
 		void GetWreckImage (CObjectImageArray *retWreckImage);
 		int GetWreckImageVariants (void);
 		inline bool HasDockingPorts (void) { return (m_fHasDockingPorts ? true : false); }
-		inline bool HasOnAttackedByPlayerEvent (void) const { return (m_fHasOnAttackedByPlayerEvent ? true : false); }
-		inline bool HasOnOrderChangedEvent (void) const { return (m_fHasOnOrderChangedEvent ? true : false); }
 		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
         void InitPerformance (SShipPerformanceCtx &Ctx) const;
@@ -2255,8 +2253,8 @@ class CShipClass : public CDesignType
 		DWORD m_fRadioactiveWreck:1;			//	TRUE if wreck is always radioactive
 		DWORD m_fHasDockingPorts:1;				//	TRUE if ship has docking ports
 		DWORD m_fTimeStopImmune:1;				//	TRUE if ship is immune to stop-time
-		DWORD m_fHasOnOrderChangedEvent:1;		//	TRUE if ship has an event on each new order
-		DWORD m_fHasOnAttackedByPlayerEvent:1;	//	TRUE if ship has an event when attacked by player
+		DWORD m_fSpare4a:1;						//	Unused
+		DWORD m_fSpare5a:1;						//	Unused
 		DWORD m_fSpare6a:1;						//	Unused
 		DWORD m_fCommsHandlerInit:1;			//	TRUE if comms handler has been initialized
 		DWORD m_fVirtual:1;						//	TRUE if ship class is virtual (e.g., a base class)
