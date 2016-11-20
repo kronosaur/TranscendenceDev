@@ -560,7 +560,7 @@ void CSpaceObject::Ascend (void)
 
 	//	Remove the object from the old system
 
-	Remove(enteredStargate, CDamageSource());
+	Remove(ascended, CDamageSource());
 
 	//	Done
 

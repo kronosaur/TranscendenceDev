@@ -15,6 +15,7 @@ static CObjectClass<CMission>g_MissionClass(OBJID_CMISSION, NULL);
 #define EVENT_ON_STARTED						CONSTLIT("OnStarted")
 
 #define PROPERTY_ACCEPTED_ON					CONSTLIT("acceptedOn")
+#define PROPERTY_CAN_BE_DECLINED				CONSTLIT("canBeDeclined")
 #define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
 #define PROPERTY_DEBRIEFER_ID					CONSTLIT("debrieferID")
 #define PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF		CONSTLIT("forceUndockAfterDebrief")
@@ -465,6 +466,9 @@ ICCItem *CMission::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	if (strEquals(sName, PROPERTY_ACCEPTED_ON))
 		return (m_fAcceptedByPlayer ? CC.CreateInteger(m_dwAcceptedOn) : CC.CreateNil());
 
+	else if (strEquals(sName, PROPERTY_CAN_BE_DECLINED))
+		return CC.CreateBool(m_pType->CanBeDeclined());
+
 	else if (strEquals(sName, PROPERTY_CAN_BE_DELETED))
 		return CC.CreateBool(m_pType->CanBeDeleted());
 
@@ -752,6 +756,12 @@ void CMission::OnObjDestroyedNotify (SDestroyCtx &Ctx)
 	//	Fire events
 
 	FireOnObjDestroyed(Ctx);
+
+	//	If this object was ascended, then we don't need to do anything else
+	//	(since the pointer is still valid).
+
+	if (Ctx.iCause == ascended)
+		return;
 
 	//	If this is the owner then the mission fails
 
@@ -1176,7 +1186,8 @@ bool CMission::SetDeclined (ICCItem **retpResult)
 	{
 	//	Must be available to player.
 
-	if (m_iStatus != statusOpen)
+	if (m_iStatus != statusOpen
+			|| !m_pType->CanBeDeclined())
 		{
 		if (retpResult)
 			*retpResult = NULL;

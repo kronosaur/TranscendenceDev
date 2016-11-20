@@ -3480,6 +3480,7 @@ class CShipTable : public CDesignType
 class CMissionType : public CDesignType
 	{
 	public:
+		inline bool CanBeDeclined (void) const { return !m_fNoDecline; }
 		inline bool CanBeDeleted (void) const { return m_fAllowDelete; }
 		inline bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iAccepted < m_iMaxAppearing); }
 		inline bool CloseIfOutOfSystem (void) const { return m_fCloseIfOutOfSystem; }
@@ -3538,7 +3539,7 @@ class CMissionType : public CDesignType
 		DWORD m_fCloseIfOutOfSystem:1;		//	If TRUE, mission is closed if player leaves system.
 		DWORD m_fForceUndockAfterDebrief:1;	//	If TRUE, default mission screen undocks after debrief
 		DWORD m_fAllowDelete:1;				//	If TRUE, player can delete mission
-		DWORD m_fSpare7:1;
+		DWORD m_fNoDecline:1;				//	If TRUE, mission cannot be declined once offered.
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:24;

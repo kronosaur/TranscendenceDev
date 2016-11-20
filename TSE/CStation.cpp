@@ -2183,6 +2183,7 @@ void CStation::OnDestroyed (SDestroyCtx &Ctx)
 		{
 		case removedFromSystem:
 		case enteredStargate:
+		case ascended:
 			//	No effect
 			break;
 

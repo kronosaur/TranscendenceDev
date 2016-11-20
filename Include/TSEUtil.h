@@ -646,9 +646,10 @@ enum DestructionTypes
 	killedByOther					= 12,	//	Custom death
 	killedByGravity					= 13,	//	Killed by white dwarf/neutron star/black hole
 	killedByPowerFailure			= 14,	//	Reactor stopped working 
+	ascended						= 15,	//	Only for NPCs
 
 	killedNone						= -1,
-	killedCount						= 15
+	killedCount						= 16
 	};
 
 class CDamageSource

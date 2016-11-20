@@ -4269,6 +4269,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 	//	Figure out if we're creating a wreck or not
 
 	bool bCreateWreck = (Ctx.iCause != removedFromSystem)
+			&& (Ctx.iCause != ascended)
 			&& (Ctx.iCause != enteredStargate)
 			&& (Ctx.iCause != killedByDisintegration)
 			&& (Ctx.iCause != killedByShatter)
@@ -4322,6 +4323,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 		{
 		case removedFromSystem:
 		case enteredStargate:
+		case ascended:
 			//	No effect
 			break;
 

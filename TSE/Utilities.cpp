@@ -170,6 +170,7 @@ static char *g_pszDestructionCauses[killedCount] =
 	"custom",
 	"gravity",
 	"powerFailure",
+	"ascended",
 	};
 
 #define DESTRUCTION_CAUSES_COUNT	(sizeof(g_pszDestructionCauses) / sizeof(g_pszDestructionCauses[0]))

@@ -13,6 +13,7 @@
 #define MAX_APPEARING_ATTRIB					CONSTLIT("maxAppearing")
 #define NAME_ATTRIB								CONSTLIT("name")
 #define NO_DEBRIEF_ATTRIB						CONSTLIT("noDebrief")
+#define NO_DECLINE_ATTRIB						CONSTLIT("noDecline")
 #define NO_FAILURE_ON_OWNER_DESTROYED_ATTRIB	CONSTLIT("noFailureOnOwnerDestroyed")
 #define NO_STATS_ATTRIB							CONSTLIT("noStats")
 #define PRIORITY_ATTRIB							CONSTLIT("priority")
@@ -71,6 +72,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iFailIfOutOfSystem = pDesc->GetAttributeIntegerBounded(FAILURE_AFTER_OUT_OF_SYSTEM_ATTRIB, 0, -1, -1);
 	m_fNoFailureOnOwnerDestroyed = pDesc->GetAttributeBool(NO_FAILURE_ON_OWNER_DESTROYED_ATTRIB);
 	m_fNoDebrief = pDesc->GetAttributeBool(NO_DEBRIEF_ATTRIB);
+	m_fNoDecline = pDesc->GetAttributeBool(NO_DECLINE_ATTRIB);
 	m_fNoStats = pDesc->GetAttributeBool(NO_STATS_ATTRIB);
 	m_fCloseIfOutOfSystem = pDesc->GetAttributeBool(DEBRIEF_AFTER_OUT_OF_SYSTEM_ATTRIB);
 	m_fForceUndockAfterDebrief = pDesc->GetAttributeBool(FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB);
