@@ -63,10 +63,6 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (CTopologyNode *pNode, IAnimat
     TSortMap<CString, SObjDesc> Objs;
     GetObjList(pNode, Objs);
 
-    //  Compute the height of the header
-
-    int cyHeader = m_VI.GetFont(fontHeader).GetHeight() + m_VI.GetFont(fontMedium).GetHeight() + 2 * HEADER_PADDING_Y;
-
     //  Create a sequencer which will be the root pane.
 
     CAniSequencer *pRoot = new CAniSequencer;
@@ -74,12 +70,18 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (CTopologyNode *pNode, IAnimat
 
     //  Create a background for the whole pane
 
+	IAnimatron *pHeaderBack;
     m_VI.CreateFrame(pRoot, NULL_STR, 0, 0, RectWidth(m_rcPane), RectHeight(m_rcPane), CVisualPalette::OPTION_FRAME_TRANS);
-    m_VI.CreateFrameHeader(pRoot, NULL_STR, 0, 0, RectWidth(m_rcPane), cyHeader, 0);
+    m_VI.CreateFrameHeader(pRoot, NULL_STR, 0, 0, 0, 0, 0, &pHeaderBack);
 
     //  Add system information
 
-    CreateSystemHeader(pRoot, pNode);
+    int cyHeader;
+    CreateSystemHeader(pRoot, pNode, &cyHeader);
+
+	//	Now that we know the size of the text, resize
+
+	pHeaderBack->SetPropertyVector(PROP_SCALE, CVector(RectWidth(m_rcPane) - 2, cyHeader - 1));
 
     //  Create a listbox which will hold all stations in the system.
 
@@ -275,7 +277,7 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
     return true;
     }
 
-void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, CTopologyNode *pTopology) const
+void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, CTopologyNode *pTopology, int *retcyHeight) const
 
 //  CreateSystemHeader
 //
@@ -319,6 +321,9 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
         sVisit = strPatternSubst(CONSTLIT("Last visited %s ago."), Span.Format(NULL_STR));
         }
 
+	if (g_pUniverse->InDebugMode())
+		sVisit.Append(strPatternSubst(CONSTLIT("\n%s: %s"), pTopology->GetID(), pTopology->GetAttributes()));
+
     m_VI.CreateTextArea(pContainer, 
             NULL_STR,
             x,
@@ -331,6 +336,11 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
             NULL,
             &cyText);
     y += cyText;
+
+	y += HEADER_PADDING_Y;
+
+	if (retcyHeight)
+		*retcyHeight = y;
     }
 
 bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CString, SObjDesc> &Results) const
