@@ -147,67 +147,6 @@ void CParticleArray::CleanUp (void)
 	m_iCount = 0;
 	}
 
-void CParticleArray::CreateFixedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
-
-//	CreateFixedParticles
-//
-//	Creates particles along the objects path (e.g., missile exhaust).
-
-	{
-	int i;
-	
-	ASSERT(iDirection != -1);
-
-	//	Calculate a vector to our previous position
-	//
-	//	NOTE: In this mode m_vLastEmitPos is the last position of the object.
-
-	CVector vCurPos = (pObj ? pObj->GetPos() : CVector());
-	CVector vToOldPos;
-	if (Desc.IsTrackingObject())
-		{
-		Metric rAveSpeed = Desc.GetXformTime() * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-		vToOldPos = GetLastEmitPos() - (vCurPos + vSource) + ::PolarToVector(180 + GetLastEmitDirection(), rAveSpeed * g_SecondsPerUpdate);
-		}
-	else
-		{
-		Metric rSpeed = (pObj ? pObj->GetVel().Length() : 0.0);
-		vToOldPos = ::PolarToVector(180 + GetLastEmitDirection(), rSpeed * g_SecondsPerUpdate);
-		}
-
-	//	Compute two orthogonal coordinates
-
-	CVector vAxis = ::PolarToVector(iDirection + 180, 1.0);
-	CVector vTangent = ::PolarToVector(iDirection + 90, 1.0);
-
-	//	Create particles
-
-	for (i = 0; i < iCount; i++)
-		{
-		Metric rSlide = mathRandom(0, 9999) / 10000.0;
-
-		//	Compute a position randomly along the line between the current and
-		//	last emit positions.
-
-		CVector vPos = vSource + rSlide * vToOldPos;
-
-		//	Generate a random velocity along the tangent
-
-		Metric rTangentSlide = mathRandom(-9999, 9999) / 10000.0;
-		Metric rAxisJitter = mathRandom(-50, 50) / 100.0;
-		CVector vVel = (vTangent * rTangentSlide * Desc.GetXformTime() * Desc.GetTangentSpeed().Roll() * LIGHT_SPEED / 100.0)
-				+ (vAxis * (Desc.GetEmitSpeed().Roll() + rAxisJitter) * LIGHT_SPEED / 100.0);
-
-		//	Lifetime
-
-		int iLifeLeft = Desc.GetParticleLifetime().Roll();
-
-		//	Add the particle
-
-		AddParticle(vPos, vVel, iLifeLeft, iDirection, -1, iTick);
-		}
-	}
-
 void CParticleArray::CreateInterpolatedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
 
 //	CreateInterpolatedParticles
@@ -390,11 +329,14 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, CSpaceObject *pObj, 
 			break;
 
 		case CParticleSystemDesc::styleExhaust:
-			//	LATER: Same as CParticleSystemEffectPainter::CreateFixedParticles...
+			EmitExhaust(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick, &vLastSource);
 			break;
 
 		case CParticleSystemDesc::styleJet:
-			EmitJet(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick, &vLastSource);
+			if (Desc.IsFixedPos())
+				EmitExhaust(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick, &vLastSource);
+			else
+				EmitJet(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick);
 			break;
 
 		case CParticleSystemDesc::styleRadiate:
@@ -551,17 +493,25 @@ void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, con
 		}
 	}
 
-void CParticleArray::EmitJet (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, CVector *retvLastSource)
+void CParticleArray::EmitExhaust (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, CVector *retvLastSource)
 
-//	EmitJet
+//	EmitExhaust
 //
-//	Emits a jet of particles
+//	Emits missile exhaust.
 
 	{
-	//	Pre-init
+	int i;
+
+	//	Calculate a vector to our previous position
+	//
+	//	NOTE: In this mode m_vLastEmitPos is the last position of the object.
+
+	CVector vCurPos = (pObj ? pObj->GetPos() : CVector());
+
+	//	No matter what we initialize the last source position, so we're ready.
 
 	if (retvLastSource)
-		*retvLastSource = vSource;
+		*retvLastSource = vCurPos + vSource;
 
 	//	If we haven't yet figured out which direction to emit, then we wait.
 	//	(This doesn't happen until paint time).
@@ -569,22 +519,69 @@ void CParticleArray::EmitJet (const CParticleSystemDesc &Desc, CSpaceObject *pOb
 	if (iDirection == -1)
 		return;
 
-	//	If we using object motion (e.g., for missile exhaust, then have a 
-	//	completely different algorithm.
+	//	Calc positions
 
-	if (Desc.IsFixedPos())
+	CVector vToOldPos;
+	if (Desc.IsTrackingObject())
 		{
-		CreateFixedParticles(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick);
-
-		//	NOTE: In this mode m_vLastEmitPos is the last position of the object.
-
-		if (retvLastSource)
-			*retvLastSource = (pObj ? pObj->GetPos() + vSource : vSource);
+		Metric rAveSpeed = Desc.GetXformTime() * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+		vToOldPos = GetLastEmitPos() - (vCurPos + vSource) + ::PolarToVector(180 + GetLastEmitDirection(), rAveSpeed * g_SecondsPerUpdate);
 		}
+	else
+		{
+		Metric rSpeed = (pObj ? pObj->GetVel().Length() : 0.0);
+		vToOldPos = ::PolarToVector(180 + GetLastEmitDirection(), rSpeed * g_SecondsPerUpdate);
+		}
+
+	//	Compute two orthogonal coordinates
+
+	CVector vAxis = ::PolarToVector(iDirection + 180, 1.0);
+	CVector vTangent = ::PolarToVector(iDirection + 90, 1.0);
+
+	//	Create particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		Metric rSlide = mathRandom(0, 9999) / 10000.0;
+
+		//	Compute a position randomly along the line between the current and
+		//	last emit positions.
+
+		CVector vPos = vSource + rSlide * vToOldPos;
+
+		//	Generate a random velocity along the tangent
+
+		Metric rTangentSlide = mathRandom(-9999, 9999) / 10000.0;
+		Metric rAxisJitter = mathRandom(-50, 50) / 100.0;
+		CVector vVel = (vTangent * rTangentSlide * Desc.GetXformTime() * Desc.GetTangentSpeed().Roll() * LIGHT_SPEED / 100.0)
+				+ (vAxis * (Desc.GetEmitSpeed().Roll() + rAxisJitter) * LIGHT_SPEED / 100.0);
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, iLifeLeft, iDirection, -1, iTick);
+		}
+	}
+
+void CParticleArray::EmitJet (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitJet
+//
+//	Emits a jet of particles
+
+	{
+	//	If we haven't yet figured out which direction to emit, then we wait.
+	//	(This doesn't happen until paint time).
+
+	if (iDirection == -1)
+		return;
 
 	//	If our emit direction has changed then we need to interpolate between the two
 
-	else if (iDirection != GetLastEmitDirection())
+	if (iDirection != GetLastEmitDirection())
 		CreateInterpolatedParticles(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick);
 
 	//	Otherwise, just linear creation
