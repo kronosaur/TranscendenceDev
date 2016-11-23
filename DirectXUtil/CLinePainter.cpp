@@ -76,6 +76,9 @@ CLinePainter::ESlopeTypes CLinePainter::CalcIntermediates (const CG32bitImage &I
 		//	Compute boundaries
 
 		const RECT &rcDest = Image.GetClipRect();
+		if (rcDest.left >= rcDest.right
+				|| rcDest.top >= rcDest.bottom)
+			return lineNull;
 
 		//	x1 <= x2
 
@@ -178,6 +181,9 @@ CLinePainter::ESlopeTypes CLinePainter::CalcIntermediates (const CG32bitImage &I
 		//	Compute boundaries
 
 		const RECT &rcDest = Image.GetClipRect();
+		if (rcDest.left >= rcDest.right
+				|| rcDest.top >= rcDest.bottom)
+			return lineNull;
 
 		//	y1 <= y2
 
