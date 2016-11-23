@@ -230,6 +230,7 @@ void COverlay::CreateFromType (COverlayType *pType,
 		{
 		CCreatePainterCtx CreateCtx;
 		CreateCtx.SetLifetime(pField->m_iLifeLeft);
+		CreateCtx.SetUseObjectCenter();
 
 		pField->m_pPainter = pCreator->CreatePainter(CreateCtx);
 		}

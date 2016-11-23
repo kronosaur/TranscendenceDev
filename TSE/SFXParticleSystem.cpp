@@ -42,7 +42,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
-		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)  override{ bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)  override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)  override{ Paint(Dest, x, y, Ctx); }
 		virtual void SetPos (const CVector &vPos) override { m_Particles.SetOrigin(vPos); }
 
@@ -324,6 +324,8 @@ void CParticleSystemEffectPainter::CreateFixedParticles (CSpaceObject *pObj, int
 
 	{
 	int i;
+	
+	ASSERT(m_iCurDirection != -1);
 
 	//	Calculate a vector to our previous position
 	//
@@ -388,6 +390,8 @@ void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pO
 
 	{
 	int i;
+
+	ASSERT(m_iCurDirection != -1);
 
 	//	Compute some basic stuff
 
@@ -468,6 +472,8 @@ void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, in
 
 	{
 	int i;
+
+	ASSERT(m_iCurDirection != -1);
 
 	//	Compute some basic stuff
 
@@ -744,7 +750,7 @@ void CParticleSystemEffectPainter::InitParticles (const CVector &vInitialPos)
 
 		//	Initialize the array
 
-		m_Particles.Init(iMaxParticleCount);
+		m_Particles.Init(iMaxParticleCount, vInitialPos);
 		}
 	}
 
@@ -784,6 +790,11 @@ void CParticleSystemEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBounds
 
 		m_Particles.Move(vToOldPos);
 		}
+
+	//	If we're using the object as the center, then set the origin
+
+	if (m_bUseObjectCenter && Ctx.pObj)
+		m_Particles.SetOrigin(Ctx.pObj->GetPos());
 
 	//	Bounds are always changing
 
@@ -873,13 +884,16 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 		yPaint = y;
 		}
 
-	//	If we haven't created any particles yet, do it now
+	//	Paint with the painter
 
-	if (m_iCurDirection == -1
-			&& !Ctx.bFade)
+	m_Particles.Paint(m_Desc, Dest, xPaint, yPaint, m_pParticlePainter, Ctx);
+
+	//	Update last direction
+
+	if (m_iCurDirection == -1)
 		{
-		m_iLastDirection = iTrailDirection;
 		m_iCurDirection = iTrailDirection;
+		m_iLastDirection = iTrailDirection;
 
 		//	Figure out the position where we create particles
 
@@ -895,18 +909,9 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 		//	Initialize last emit position
 
 		m_vLastEmitPos = (m_bUseObjectMotion && Ctx.pObj ? Ctx.pObj->GetPos() + vPos : vPos);
-
-		//	Create particles
-
 		}
-
-	//	Paint with the painter
-
-	m_Particles.Paint(m_Desc, Dest, xPaint, yPaint, m_pParticlePainter, Ctx);
-
-	//	Update
-
-	m_iCurDirection = iTrailDirection;
+	else
+		m_iCurDirection = iTrailDirection;
 	}
 
 void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
