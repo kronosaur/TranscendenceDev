@@ -57,7 +57,9 @@ CParticleSystemDesc::CParticleSystemDesc (void) :
 		m_iSplashChance(0),
 		m_iMissChance(0),
 		m_bHasWake(false),
-		m_bSprayCompatible(false)
+		m_bSprayCompatible(false),
+		m_bFixedPos(false),
+		m_bTrackingObject(false)
 
 //	CParticleSystemDesc constructor
 

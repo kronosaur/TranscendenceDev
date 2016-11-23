@@ -15,8 +15,6 @@
 #define IS_TRACKING_OBJECT_ATTRIB				CONSTLIT("isTrackingObject")
 #define PARTICLE_LIFETIME_ATTRIB				CONSTLIT("particleLifetime")
 #define SPREAD_ANGLE_ATTRIB						CONSTLIT("spreadAngle")
-#define LAST_DIRECTION_ATTRIB					CONSTLIT("lastDirection")
-#define LAST_EMIT_POS_ATTRIB					CONSTLIT("lastEmitPos")
 #define LIFETIME_ATTRIB							CONSTLIT("lifetime")
 #define STYLE_ATTRIB							CONSTLIT("style")
 #define TANGENT_SPEED_ATTRIB					CONSTLIT("tangentSpeed")
@@ -50,7 +48,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
-		//	NOTE: These values are saved to disk; do not re-order.
+		//	NOTE: These are obsolete. Use the styles in CParticleSystemDesc instead.
 
 		enum EOldStyles
 			{
@@ -64,28 +62,16 @@ class CParticleSystemEffectPainter : public IEffectPainter
 			};
 
 		CVector CalcInitialVel (CSpaceObject *pObj);
-		void CreateFixedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
-		void CreateInterpolatedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
-		void CreateLinearParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
-		void CreateNewParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
-		void CreateRadiateParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick);
-		void InitParticles (const CVector &vInitialPos);
 
 		CParticleSystemEffectCreator *m_pCreator;
 
 		CParticleSystemDesc m_Desc;
 
-		DiceRange m_TangentSpeed;
-		
 		int m_iEmitLifetime;
 		int m_iLifetime;
 		bool m_bUseObjectCenter;
-		bool m_bUseObjectMotion;
-		bool m_bTrackingObject;
 
 		int m_iCurDirection;
-		CVector m_vLastEmitPos;
-		int m_iLastDirection;
 
 		CParticleArray m_Particles;
 		IEffectPainter *m_pParticlePainter;
@@ -158,6 +144,8 @@ IEffectPainter *CParticleSystemEffectCreator::OnCreatePainter (CCreatePainterCtx
 		pPainter->SetParam(Ctx, SPREAD_ANGLE_ATTRIB, m_SpreadAngle);
 	else
 		pPainter->SetParam(Ctx, TANGENT_SPEED_ATTRIB, m_TangentSpeed);
+
+	pPainter->SetParam(Ctx, IS_TRACKING_OBJECT_ATTRIB, CEffectParamDesc(Ctx.IsTracking()));
 
 	//	Initialize via GetParameters, if necessary
 
@@ -276,10 +264,7 @@ CParticleSystemEffectPainter::CParticleSystemEffectPainter (CCreatePainterCtx &C
 		m_pCreator(pCreator),
 		m_iLifetime(0),
 		m_iCurDirection(-1),
-		m_iLastDirection(-1),
-		m_bUseObjectCenter(Ctx.UseObjectCenter()),
-		m_bUseObjectMotion(false),
-		m_bTrackingObject(Ctx.IsTracking())
+		m_bUseObjectCenter(Ctx.UseObjectCenter())
 
 //	CParticleSystemEffectPainter constructor
 
@@ -316,303 +301,6 @@ CVector CParticleSystemEffectPainter::CalcInitialVel (CSpaceObject *pObj)
 #endif
 	}
 
-void CParticleSystemEffectPainter::CreateFixedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
-
-//	CreateFixedParticles
-//
-//	Creates particles along the objects path (e.g., missile exhaust).
-
-	{
-	int i;
-	
-	ASSERT(m_iCurDirection != -1);
-
-	//	Calculate a vector to our previous position
-	//
-	//	NOTE: In this mode m_vLastEmitPos is the last position of the object.
-
-	CVector vCurPos = (pObj ? pObj->GetPos() : CVector());
-	CVector vToOldPos;
-	if (m_bTrackingObject)
-		{
-		Metric rAveSpeed = m_Desc.GetXformTime() * m_Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-		vToOldPos = m_vLastEmitPos - (vCurPos + vInitialPos) + ::PolarToVector(180 + m_iLastDirection, rAveSpeed * g_SecondsPerUpdate);
-		}
-	else
-		{
-		Metric rSpeed = (pObj ? pObj->GetVel().Length() : 0.0);
-		vToOldPos = ::PolarToVector(180 + m_iLastDirection, rSpeed * g_SecondsPerUpdate);
-		}
-
-	//	Compute two orthogonal coordinates
-
-	CVector vAxis = ::PolarToVector(m_iCurDirection + 180, 1.0);
-	CVector vTangent = ::PolarToVector(m_iCurDirection + 90, 1.0);
-
-	//	Create particles
-
-	for (i = 0; i < iCount; i++)
-		{
-		Metric rSlide = mathRandom(0, 9999) / 10000.0;
-
-		//	Compute a position randomly along the line between the current and
-		//	last emit positions.
-
-		CVector vPos = vInitialPos + rSlide * vToOldPos;
-
-		//	Generate a random velocity along the tangent
-
-		Metric rTangentSlide = mathRandom(-9999, 9999) / 10000.0;
-		Metric rAxisJitter = mathRandom(-50, 50) / 100.0;
-		CVector vVel = (vTangent * rTangentSlide * m_Desc.GetXformTime() * m_TangentSpeed.Roll() * LIGHT_SPEED / 100.0)
-				+ (vAxis * (m_Desc.GetEmitSpeed().Roll() + rAxisJitter) * LIGHT_SPEED / 100.0);
-
-		//	Lifetime
-
-		int iLifeLeft = m_Desc.GetParticleLifetime().Roll();
-
-		//	Add the particle
-
-		m_Particles.AddParticle(vPos, vVel, iLifeLeft, m_iCurDirection, -1, iTick);
-		}
-
-	//	Remember the last position
-
-	m_iLastDirection = m_iCurDirection;
-	m_vLastEmitPos = vCurPos + vInitialPos;
-	}
-
-void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
-
-//	CreateInterpolatedParticles
-//
-//	Creates particles interpolated between two directions.
-
-	{
-	int i;
-
-	ASSERT(m_iCurDirection != -1);
-
-	//	Compute some basic stuff
-
-	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
-	Metric rLastRotation = mathDegreesToRadians(180 + m_Desc.GetXformRotation() + m_iLastDirection);
-	Metric rCurRotation = mathDegreesToRadians(180 + m_Desc.GetXformRotation() + m_iCurDirection);
-
-	//	Compute the spread angle, in radians
-
-	Metric rSpread = mathDegreesToRadians(Max(0, m_Desc.GetSpreadAngle().Roll()));
-	Metric rHalfSpread = 0.5 * rSpread;
-
-	//	Calculate where last tick's particles would be based on the last rotation.
-
-	Metric rAveSpeed = m_Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-	CVector vLastStart = (m_vLastEmitPos + (m_Desc.GetXformTime() * ::PolarToVectorRadians(rLastRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
-
-	//	Calculate where last tick's particles would be IF we have used the current
-	//	rotation. This allows us to interpolate a turn.
-
-	CVector vCurStart = (m_vLastEmitPos + (m_Desc.GetXformTime() * ::PolarToVectorRadians(rCurRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
-
-	//	Create particles
-
-	for (i = 0; i < iCount; i++)
-		{
-		Metric rSlide = mathRandom(0, 9999) / 10000.0;
-
-		//	Compute two points along the two slide vectors (last and current)
-
-		CVector vSlide1 = rSlide * vLastStart;
-		CVector vSlide2 = rSlide * vCurStart;
-		CVector vAdj = (rSlide * vSlide1) + ((1.0 - rSlide) * vSlide2);
-
-		//	We place the particle along the line betwen the current
-		//	and last emit positions
-
-		CVector vPos = vInitialPos + vAdj;
-
-		//	We blend the rotation as well
-
-		if (Absolute(rCurRotation - rLastRotation) > PI)
-			{
-			if (rLastRotation < rCurRotation)
-				rLastRotation += PI * 2.0;
-			else
-				rCurRotation += PI * 2.0;
-			}
-
-		Metric rSlideRotation = (rSlide * rLastRotation) + ((1.0 - rSlide) * rCurRotation);
-
-		//	Generate a random velocity backwards
-
-		Metric rRotation = rSlideRotation + (rHalfSpread * mathRandom(-1000, 1000) / 1000.0);
-		Metric rSpeed = m_Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
-		CVector vVel = m_Desc.GetXformTime() * (vInitialVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500)));
-
-		//	Lifetime
-
-		int iLifeLeft = m_Desc.GetParticleLifetime().Roll();
-
-		//	Add the particle
-
-		m_Particles.AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation), -1, iTick);
-		}
-
-	//	Remember the last position
-
-	m_iLastDirection = m_iCurDirection;
-	m_vLastEmitPos = vInitialPos;
-	}
-
-void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
-
-//	CreateLinearParticles
-//
-//	Creates new particles on a straight line
-
-	{
-	int i;
-
-	ASSERT(m_iCurDirection != -1);
-
-	//	Compute some basic stuff
-
-	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
-	Metric rCurRotation = mathDegreesToRadians(180 + m_Desc.GetXformRotation() + m_iCurDirection);
-
-	//	Compute the spread angle, in radians
-
-	Metric rSpread = mathDegreesToRadians(Max(0, m_Desc.GetSpreadAngle().Roll()));
-	Metric rHalfSpread = 0.5 * rSpread;
-
-	//	Calculate where last tick's particles would be based on the last rotation.
-
-	Metric rAveSpeed = m_Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-	CVector vCurStart = (m_vLastEmitPos + (m_Desc.GetXformTime() * ::PolarToVectorRadians(rCurRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
-
-	//	Create particles
-
-	for (i = 0; i < iCount; i++)
-		{
-		Metric rSlide = mathRandom(0, 9999) / 10000.0;
-
-		//	We place the particle along the line betwen the current
-		//	and last emit positions
-
-		CVector vPos = vInitialPos + rSlide * vCurStart;
-
-		//	Generate a random velocity backwards
-
-		Metric rRotation = rCurRotation + (rHalfSpread * mathRandom(-1000, 1000) / 1000.0);
-		Metric rSpeed = m_Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
-		CVector vVel = m_Desc.GetXformTime() * (vInitialVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500)));
-
-		//	Lifetime
-
-		int iLifeLeft = m_Desc.GetParticleLifetime().Roll();
-
-		//	Add the particle
-
-		m_Particles.AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation), -1, iTick);
-		}
-
-	//	Remember the last position
-
-	m_iLastDirection = m_iCurDirection;
-	m_vLastEmitPos = vInitialPos;
-	}
-
-void CParticleSystemEffectPainter::CreateNewParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
-
-//	CreateNewParticles
-//
-//	Create the new particles for a tick
-
-	{
-	//	Make sure we're initialized
-
-	InitParticles(vInitialPos);
-
-	//	Create based on style
-
-	switch (m_Desc.GetStyle())
-		{
-		case CParticleSystemDesc::styleJet:
-			{
-			//	If we haven't yet figured out which direction to emit, then we wait.
-			//	(This doesn't happen until paint time).
-
-			if (m_iCurDirection == -1)
-				return;
-
-			//	If we using object motion (e.g., for missile exhaust, then have a 
-			//	completely different algorithm.
-
-			if (m_bUseObjectMotion)
-				CreateFixedParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
-
-			//	If our emit direction has changed then we need to interpolate between the two
-
-			else if (m_iCurDirection != m_iLastDirection)
-				CreateInterpolatedParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
-
-			//	Otherwise, just linear creation
-
-			else
-				CreateLinearParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
-
-			break;
-			}
-
-		case CParticleSystemDesc::styleRadiate:
-		case CParticleSystemDesc::styleWrithe:
-			CreateRadiateParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
-			break;
-		}
-	}
-
-void CParticleSystemEffectPainter::CreateRadiateParticles (CSpaceObject *pObj, int iCount, const CVector &vInitialPos, const CVector &vInitialVel, int iTick)
-
-//	CreateRadiateParticles
-//
-//	Creates new particles shooting out in all directions
-
-	{
-	int i;
-
-	//	Compute some basic stuff
-
-	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
-
-	//	Calculate where last tick's particles would be based on the last rotation.
-
-	Metric rAveSpeed = m_Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
-
-	//	Create particles
-
-	for (i = 0; i < iCount; i++)
-		{
-		//	Choose a random angle and velocity
-
-		Metric rAngle = 2.0 * PI * (mathRandom(0, 9999) / 10000.0);
-		Metric rSpeed = (m_Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
-		CVector vVel = m_Desc.GetXformTime() * (vInitialVel + ::PolarToVectorRadians(rAngle, rSpeed));
-
-		//	Lifetime
-
-		int iLifeLeft = m_Desc.GetParticleLifetime().Roll();
-
-		//	Add the particle
-
-		m_Particles.AddParticle(vInitialPos, vVel, iLifeLeft, AngleToDegrees(rAngle), -1, iTick);
-		}
-
-	//	Remember the last position
-
-	m_iLastDirection = m_iCurDirection;
-	m_vLastEmitPos = vInitialPos;
-	}
-
 void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
 
 //	GetParam
@@ -633,19 +321,13 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitInteger(m_iEmitLifetime);
 
 	else if (strEquals(sParam, FIXED_POS_ATTRIB))
-		retValue->InitBool(m_bUseObjectMotion);
+		retValue->InitBool(m_Desc.IsFixedPos());
 
 	else if (strEquals(sParam, IS_TRACKING_OBJECT_ATTRIB))
-		retValue->InitBool(m_bTrackingObject);
+		retValue->InitBool(m_Desc.IsTrackingObject());
 
 	else if (strEquals(sParam, PARTICLE_LIFETIME_ATTRIB))
 		retValue->InitDiceRange(m_Desc.GetParticleLifetime());
-
-	else if (strEquals(sParam, LAST_DIRECTION_ATTRIB))
-		retValue->InitInteger(m_iLastDirection);
-
-	else if (strEquals(sParam, LAST_EMIT_POS_ATTRIB))
-		retValue->InitVector(m_vLastEmitPos);
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
 		retValue->InitInteger(m_iLifetime);
@@ -657,7 +339,7 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitInteger(m_Desc.GetStyle());
 
 	else if (strEquals(sParam, TANGENT_SPEED_ATTRIB))
-		retValue->InitDiceRange(m_TangentSpeed);
+		retValue->InitDiceRange(m_Desc.GetTangentSpeed());
 
 	else if (strEquals(sParam, USE_OBJECT_CENTER_ATTRIB))
 		retValue->InitBool(m_bUseObjectCenter);
@@ -683,7 +365,7 @@ bool CParticleSystemEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(17);
+	retList->InsertEmpty(15);
 	retList->GetAt(0) = CUR_DIRECTION_ATTRIB;
 	retList->GetAt(1) = EMIT_RATE_ATTRIB;
 	retList->GetAt(2) = EMIT_SPEED_ATTRIB;
@@ -691,16 +373,14 @@ bool CParticleSystemEffectPainter::GetParamList (TArray<CString> *retList) const
 	retList->GetAt(4) = FIXED_POS_ATTRIB;
 	retList->GetAt(5) = IS_TRACKING_OBJECT_ATTRIB;
 	retList->GetAt(6) = PARTICLE_LIFETIME_ATTRIB;
-	retList->GetAt(7) = LAST_DIRECTION_ATTRIB;
-	retList->GetAt(8) = LAST_EMIT_POS_ATTRIB;
-	retList->GetAt(9) = LIFETIME_ATTRIB;
-	retList->GetAt(10) = SPREAD_ANGLE_ATTRIB;
-	retList->GetAt(11) = STYLE_ATTRIB;
-	retList->GetAt(12) = TANGENT_SPEED_ATTRIB;
-	retList->GetAt(13) = USE_OBJECT_CENTER_ATTRIB;
-	retList->GetAt(14) = WAKE_POTENTIAL_ATTRIB;
-	retList->GetAt(15) = XFORM_ROTATION_ATTRIB;
-	retList->GetAt(16) = XFORM_TIME_ATTRIB;
+	retList->GetAt(7) = LIFETIME_ATTRIB;
+	retList->GetAt(8) = SPREAD_ANGLE_ATTRIB;
+	retList->GetAt(9) = STYLE_ATTRIB;
+	retList->GetAt(10) = TANGENT_SPEED_ATTRIB;
+	retList->GetAt(11) = USE_OBJECT_CENTER_ATTRIB;
+	retList->GetAt(12) = WAKE_POTENTIAL_ATTRIB;
+	retList->GetAt(13) = XFORM_ROTATION_ATTRIB;
+	retList->GetAt(14) = XFORM_TIME_ATTRIB;
 
 	return true;
 	}
@@ -732,28 +412,6 @@ void CParticleSystemEffectPainter::GetRect (RECT *retRect) const
 	*retRect = m_Particles.GetBounds();
 	}
 
-void CParticleSystemEffectPainter::InitParticles (const CVector &vInitialPos)
-
-//	Init
-//
-//	Make sure particle array is initialized
-
-	{
-	if (m_Particles.GetCount() == 0)
-		{
-		//	Compute the maximum number of particles that we could ever have
-
-		int iNewParticleRate = m_Desc.GetEmitRate().GetMaxValue();
-		int iParticleLifetime = m_Desc.GetParticleLifetime().GetMaxValue();
-
-		int iMaxParticleCount = Max(0, iParticleLifetime * iNewParticleRate);
-
-		//	Initialize the array
-
-		m_Particles.Init(iMaxParticleCount, vInitialPos);
-		}
-	}
-
 void CParticleSystemEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
 
 //	OnMove
@@ -772,10 +430,10 @@ void CParticleSystemEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBounds
 
 	//	If we're using the object's motion, adjust now
 
-	if (m_bUseObjectMotion && Ctx.pObj)
+	if (m_Desc.IsFixedPos() && Ctx.pObj)
 		{
 		CVector vToOldPos;
-		if (m_bTrackingObject)
+		if (m_Desc.IsTrackingObject())
 			{
 			CVector vCurPos = Ctx.pObj->GetPos();
 			vToOldPos = Ctx.vOldPos - vCurPos;
@@ -783,7 +441,7 @@ void CParticleSystemEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBounds
 		else
 			{
 			Metric rSpeed = Ctx.pObj->GetVel().Length();
-			vToOldPos = ::PolarToVector(180 + m_iLastDirection, rSpeed * g_SecondsPerUpdate);
+			vToOldPos = ::PolarToVector(180 + m_Particles.GetLastEmitDirection(), rSpeed * g_SecondsPerUpdate);
 			}
 
 		//	Move all particles by the given amount
@@ -832,12 +490,18 @@ void CParticleSystemEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	if (!Ctx.bFade)
 		{
 		if (m_iEmitLifetime <= 0 || Ctx.iTick < m_iEmitLifetime)
-			CreateNewParticles(Ctx.pObj, m_Desc.GetEmitRate().Roll(), Ctx.vEmitPos, CalcInitialVel(Ctx.pObj), Ctx.iTick);
+			m_Particles.Emit(m_Desc, Ctx.pObj, Ctx.vEmitPos, CalcInitialVel(Ctx.pObj), m_iCurDirection, Ctx.iTick);
 		}
 	else
 		{
-		if (m_bUseObjectMotion && Ctx.pObj)
+#if 0
+		//	We don't need this because we should never be emitting particles
+		//	after we've faded out. [If I'm wrong about that, then we need to
+		//	set the last emit position in m_Particles.]
+
+		if (m_Desc.IsFixedPos() && Ctx.pObj)
 			m_vLastEmitPos = Ctx.pObj->GetPos();
+#endif
 
 		//	If we're fading, reset direction (otherwise, when painting thruster 
 		//	effects we'll try to interpolate between stale directions).
@@ -892,9 +556,6 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 
 	if (m_iCurDirection == -1)
 		{
-		m_iCurDirection = iTrailDirection;
-		m_iLastDirection = iTrailDirection;
-
 		//	Figure out the position where we create particles
 
 		CVector vPos;
@@ -908,7 +569,10 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 
 		//	Initialize last emit position
 
-		m_vLastEmitPos = (m_bUseObjectMotion && Ctx.pObj ? Ctx.pObj->GetPos() + vPos : vPos);
+		CVector vEmitPos = (m_Desc.IsFixedPos() && Ctx.pObj ? Ctx.pObj->GetPos() + vPos : vPos);
+
+		m_iCurDirection = iTrailDirection;
+		m_Particles.ResetLastEmit(m_iCurDirection, vEmitPos);
 		}
 	else
 		m_iCurDirection = iTrailDirection;
@@ -934,19 +598,13 @@ void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 		m_iEmitLifetime = Value.EvalIntegerBounded(0, -1, 0);
 
 	else if (strEquals(sParam, FIXED_POS_ATTRIB))
-		m_bUseObjectMotion = Value.EvalBool();
+		m_Desc.SetFixedPos(Value.EvalBool());
 
 	else if (strEquals(sParam, IS_TRACKING_OBJECT_ATTRIB))
-		m_bTrackingObject = Value.EvalBool();
+		m_Desc.SetTrackingObject(Value.EvalBool());
 
 	else if (strEquals(sParam, PARTICLE_LIFETIME_ATTRIB))
 		m_Desc.SetParticleLifetime(Value.EvalDiceRange(10));
-
-	else if (strEquals(sParam, LAST_DIRECTION_ATTRIB))
-		m_iLastDirection = Value.EvalIntegerBounded(0, -1, -1);
-
-	else if (strEquals(sParam, LAST_EMIT_POS_ATTRIB))
-		m_vLastEmitPos = Value.EvalVector();
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
 		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
@@ -985,7 +643,7 @@ void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 		}
 
 	else if (strEquals(sParam, TANGENT_SPEED_ATTRIB))
-		m_TangentSpeed = Value.EvalDiceRange(0);
+		m_Desc.SetTangentSpeed(Value.EvalDiceRange(0));
 
 	else if (strEquals(sParam, USE_OBJECT_CENTER_ATTRIB))
 		m_bUseObjectCenter = Value.EvalBool();

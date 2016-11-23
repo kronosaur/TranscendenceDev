@@ -94,17 +94,21 @@ class CParticleSystemDesc
 		inline int GetSplashChance (void) const { return m_iSplashChance; }
 		inline const DiceRange &GetSpreadAngle (void) const { return m_SpreadAngle; }
 		inline EStyles GetStyle (void) const { return m_iStyle; }
+		inline const DiceRange &GetTangentSpeed (void) const { return m_TangentSpeed; }
 		inline Metric GetWakeFactor (void) const { return m_rWakeFactor; }
 		inline int GetWakePotential (void) const { return mathRound(m_rWakeFactor * 100.0); }
 		inline int GetXformRotation (void) const { return m_iXformRotation; }
 		inline Metric GetXformTime (void) const { return m_rXformTime; }
 		inline bool HasWakeFactor (void) const { return m_bHasWake; }
+		inline bool IsFixedPos (void) const { return m_bFixedPos; }
 		inline bool IsSprayCompatible (void) const { return m_bSprayCompatible; }
+		inline bool IsTrackingObject (void) const { return m_bTrackingObject; }
 		void MarkImages (void);
 		inline void SetEmitLifetime (const DiceRange &Value) { m_EmitLifetime = Value; }
 		inline void SetEmitRate (const DiceRange &Value) { m_EmitRate = Value; }
 		inline void SetEmitSpeed (const DiceRange &Value) { m_EmitSpeed = Value; }
 		inline void SetEmitWidth (const DiceRange &Value) { m_EmitWidth = Value; }
+		inline void SetFixedPos (bool bValue = true) { m_bFixedPos = bValue; }
 		inline void SetParticleLifetime (const DiceRange &Value) { m_ParticleLifetime = Value; }
 		inline void SetMissChance (int iValue) { m_iMissChance = iValue; }
 		inline void SetSplashChance (int iValue) { m_iSplashChance = iValue; }
@@ -112,6 +116,8 @@ class CParticleSystemDesc
 		inline void SetSpreadAngle (const DiceRange &Value) { m_SpreadAngle = Value; }
 		inline void SetStyle (EStyles iStyle) { m_iStyle = iStyle; }
 		void SetStyle (const CEffectParamDesc &Value);
+		inline void SetTangentSpeed (const DiceRange &Value) { m_TangentSpeed = Value; }
+		inline void SetTrackingObject (bool bValue = true) { m_bTrackingObject = bValue; }
 		inline void SetWakePotential (int iValue) { m_rWakeFactor = Max(0, iValue) / 100.0; m_bHasWake = (m_rWakeFactor > 0.0); }
 		inline void SetXformRotation (int iValue) { m_iXformRotation = iValue; }
 		inline void SetXformTime (Metric rValue) { m_rXformTime = rValue; }
@@ -129,6 +135,7 @@ class CParticleSystemDesc
 		DiceRange m_EmitWidth;					//	Width of emission line (pixels)
 		DiceRange m_ParticleLifetime;			//	Lifetime of a particle, in ticks
 		DiceRange m_SpreadAngle;				//	Angle at which particles spread
+		DiceRange m_TangentSpeed;				//	Exhaust spread
 		int m_iXformRotation;					//	Rotation
 		Metric m_rXformTime;					//	Time adjustment
 
@@ -146,6 +153,8 @@ class CParticleSystemDesc
 
 		bool m_bHasWake;						//	m_rWakeFactor > 0.0
 		bool m_bSprayCompatible;				//	In previous versions we used to vary speed.
+		bool m_bFixedPos;						//	Exhaust style particles
+		bool m_bTrackingObject;					//	Emitting objects maneuvers
 	};
 
 class CParticleArray
@@ -177,15 +186,17 @@ class CParticleArray
 		CParticleArray (void);
 		~CParticleArray (void);
 
-		void Emit (const CParticleSystemDesc &Desc, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, int *retiEmitted = NULL);
+		void Emit (const CParticleSystemDesc &Desc, CSpaceObject *pObj, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, int *retiEmitted = NULL);
 		void Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest, int xPos, int yPos, IEffectPainter *pPainter, SViewportPaintCtx &Ctx);
 		void Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 
 		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, Metric rData = 0.0);
+		inline SParticle *GetArray (int *retiCount = NULL) const { if (retiCount) *retiCount = m_iCount; return m_pArray; }
 		const RECT &GetBounds (void) const { return m_rcBounds; }
 		void GetBounds (CVector *retvUR, CVector *retvLL);
 		inline int GetCount (void) const { return m_iCount; }
-		inline SParticle *GetArray (int *retiCount = NULL) const { if (retiCount) *retiCount = m_iCount; return m_pArray; }
+		inline int GetLastEmitDirection (void) const { return m_iLastEmitDirection; }
+		inline const CVector &GetLastEmitPos (void) const { return m_vLastEmitSource; }
 		inline const CVector &GetOrigin (void) const { return m_vOrigin; }
 		void Init (int iMaxCount, const CVector &vOrigin = NullVector);
 		void Move (const CVector &vMove);
@@ -201,6 +212,7 @@ class CParticleArray
 					IEffectPainter *pPainter,
 					Metric rRatedSpeed = 0.0);
 		void ReadFromStream (SLoadCtx &Ctx);
+		void ResetLastEmit (int iLastDirection, const CVector &vLastEmitPos, const CVector &vLastEmitVel = NullVector);
 		inline void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
 		void UpdateMotionLinear (bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
 		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
@@ -254,8 +266,12 @@ class CParticleArray
 			};
 
 		void CleanUp (void);
+		void CreateFixedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
+		void CreateInterpolatedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
+		void CreateLinearParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitAmorphous (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitComet (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
+		void EmitJet (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, CVector *retvLastSource);
 		void EmitRadiate (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 

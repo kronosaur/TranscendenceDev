@@ -93,6 +93,7 @@ class CEffectParamDesc
 			{ Copy(Src); }
 
 		CEffectParamDesc (int iValue) : m_iType(typeIntegerConstant), m_dwData(iValue) { }
+		CEffectParamDesc (bool bValue) : m_iType(typeBoolConstant), m_dwData(bValue ? 1 : 0) { }
 		CEffectParamDesc (EDataTypes iType, int iValue);
 		~CEffectParamDesc (void);
 

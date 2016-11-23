@@ -153,6 +153,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 	int iInitCount;
 	pParticles->m_Particles.Emit(*pSystemDesc, 
+			pParticles,
 			vPos - pParticles->GetOrigin(), 
 			((!Source.IsEmpty() && !pParticles->m_pDesc->IsTracking()) ? Source.GetObj()->GetVel() : CVector()), 
 			iDirection, 
@@ -561,6 +562,7 @@ void CParticleDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Emit
 
 		m_Particles.Emit(*pSystemDesc, 
+				this,
 				m_Source.GetObj()->GetPos() + vPos - GetOrigin(), 
 				m_Source.GetObj()->GetVel() + vVel,
 				AngleMod(iRotation + m_iEmitDirection),

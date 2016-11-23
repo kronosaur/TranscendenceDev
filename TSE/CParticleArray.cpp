@@ -147,7 +147,198 @@ void CParticleArray::CleanUp (void)
 	m_iCount = 0;
 	}
 
-void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, int *retiEmitted)
+void CParticleArray::CreateFixedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	CreateFixedParticles
+//
+//	Creates particles along the objects path (e.g., missile exhaust).
+
+	{
+	int i;
+	
+	ASSERT(iDirection != -1);
+
+	//	Calculate a vector to our previous position
+	//
+	//	NOTE: In this mode m_vLastEmitPos is the last position of the object.
+
+	CVector vCurPos = (pObj ? pObj->GetPos() : CVector());
+	CVector vToOldPos;
+	if (Desc.IsTrackingObject())
+		{
+		Metric rAveSpeed = Desc.GetXformTime() * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+		vToOldPos = GetLastEmitPos() - (vCurPos + vSource) + ::PolarToVector(180 + GetLastEmitDirection(), rAveSpeed * g_SecondsPerUpdate);
+		}
+	else
+		{
+		Metric rSpeed = (pObj ? pObj->GetVel().Length() : 0.0);
+		vToOldPos = ::PolarToVector(180 + GetLastEmitDirection(), rSpeed * g_SecondsPerUpdate);
+		}
+
+	//	Compute two orthogonal coordinates
+
+	CVector vAxis = ::PolarToVector(iDirection + 180, 1.0);
+	CVector vTangent = ::PolarToVector(iDirection + 90, 1.0);
+
+	//	Create particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		Metric rSlide = mathRandom(0, 9999) / 10000.0;
+
+		//	Compute a position randomly along the line between the current and
+		//	last emit positions.
+
+		CVector vPos = vSource + rSlide * vToOldPos;
+
+		//	Generate a random velocity along the tangent
+
+		Metric rTangentSlide = mathRandom(-9999, 9999) / 10000.0;
+		Metric rAxisJitter = mathRandom(-50, 50) / 100.0;
+		CVector vVel = (vTangent * rTangentSlide * Desc.GetXformTime() * Desc.GetTangentSpeed().Roll() * LIGHT_SPEED / 100.0)
+				+ (vAxis * (Desc.GetEmitSpeed().Roll() + rAxisJitter) * LIGHT_SPEED / 100.0);
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, iLifeLeft, iDirection, -1, iTick);
+		}
+	}
+
+void CParticleArray::CreateInterpolatedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	CreateInterpolatedParticles
+//
+//	Creates particles interpolated between two directions.
+
+	{
+	int i;
+
+	ASSERT(iDirection != -1);
+
+	//	Compute some basic stuff
+
+	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
+	Metric rLastRotation = mathDegreesToRadians(180 + Desc.GetXformRotation() + GetLastEmitDirection());
+	Metric rCurRotation = mathDegreesToRadians(180 + Desc.GetXformRotation() + iDirection);
+
+	//	Compute the spread angle, in radians
+
+	Metric rSpread = mathDegreesToRadians(Max(0, Desc.GetSpreadAngle().Roll()));
+	Metric rHalfSpread = 0.5 * rSpread;
+
+	//	Calculate where last tick's particles would be based on the last rotation.
+
+	Metric rAveSpeed = Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	CVector vLastStart = (GetLastEmitPos() + (Desc.GetXformTime() * ::PolarToVectorRadians(rLastRotation, rAveSpeed * g_SecondsPerUpdate))) - vSource;
+
+	//	Calculate where last tick's particles would be IF we have used the current
+	//	rotation. This allows us to interpolate a turn.
+
+	CVector vCurStart = (GetLastEmitPos() + (Desc.GetXformTime() * ::PolarToVectorRadians(rCurRotation, rAveSpeed * g_SecondsPerUpdate))) - vSource;
+
+	//	Create particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		Metric rSlide = mathRandom(0, 9999) / 10000.0;
+
+		//	Compute two points along the two slide vectors (last and current)
+
+		CVector vSlide1 = rSlide * vLastStart;
+		CVector vSlide2 = rSlide * vCurStart;
+		CVector vAdj = (rSlide * vSlide1) + ((1.0 - rSlide) * vSlide2);
+
+		//	We place the particle along the line betwen the current
+		//	and last emit positions
+
+		CVector vPos = vSource + vAdj;
+
+		//	We blend the rotation as well
+
+		if (Absolute(rCurRotation - rLastRotation) > PI)
+			{
+			if (rLastRotation < rCurRotation)
+				rLastRotation += PI * 2.0;
+			else
+				rCurRotation += PI * 2.0;
+			}
+
+		Metric rSlideRotation = (rSlide * rLastRotation) + ((1.0 - rSlide) * rCurRotation);
+
+		//	Generate a random velocity backwards
+
+		Metric rRotation = rSlideRotation + (rHalfSpread * mathRandom(-1000, 1000) / 1000.0);
+		Metric rSpeed = Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
+		CVector vVel = Desc.GetXformTime() * (vSourceVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500)));
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation), -1, iTick);
+		}
+	}
+
+void CParticleArray::CreateLinearParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	CreateLinearParticles
+//
+//	Creates new particles on a straight line
+
+	{
+	int i;
+
+	ASSERT(iDirection != -1);
+
+	//	Compute some basic stuff
+
+	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
+	Metric rCurRotation = mathDegreesToRadians(180 + Desc.GetXformRotation() + iDirection);
+
+	//	Compute the spread angle, in radians
+
+	Metric rSpread = mathDegreesToRadians(Max(0, Desc.GetSpreadAngle().Roll()));
+	Metric rHalfSpread = 0.5 * rSpread;
+
+	//	Calculate where last tick's particles would be based on the last rotation.
+
+	Metric rAveSpeed = Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	CVector vCurStart = (GetLastEmitPos() + (Desc.GetXformTime() * ::PolarToVectorRadians(rCurRotation, rAveSpeed * g_SecondsPerUpdate))) - vSource;
+
+	//	Create particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		Metric rSlide = mathRandom(0, 9999) / 10000.0;
+
+		//	We place the particle along the line betwen the current
+		//	and last emit positions
+
+		CVector vPos = vSource + rSlide * vCurStart;
+
+		//	Generate a random velocity backwards
+
+		Metric rRotation = rCurRotation + (rHalfSpread * mathRandom(-1000, 1000) / 1000.0);
+		Metric rSpeed = Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
+		CVector vVel = Desc.GetXformTime() * (vSourceVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500)));
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rRotation), -1, iTick);
+		}
+	}
+
+void CParticleArray::Emit (const CParticleSystemDesc &Desc, CSpaceObject *pObj, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, int *retiEmitted)
 
 //	Emit
 //
@@ -165,6 +356,29 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSour
 	if (iCount <= 0)
 		return;
 
+	//	Initialize the particle array, if necessary.
+
+	if (GetCount() == 0)
+		{
+		//	Compute the maximum number of particles that we could ever have
+
+		int iNewParticleRate = Desc.GetEmitRate().GetMaxValue();
+		int iParticleLifetime = Desc.GetParticleLifetime().GetMaxValue();
+
+		int iMaxParticleCount = Max(0, iParticleLifetime * iNewParticleRate);
+
+		//	Initialize the array
+
+		Init(iMaxParticleCount, vSource);
+		}
+
+	//	The last source position is not always the same as the input source 
+	//	position. Depending on the style, we might store something different.
+
+	CVector vLastSource = vSource;
+
+	//	Emit particles
+
 	switch (Desc.GetStyle())
 		{
 		case CParticleSystemDesc::styleAmorphous:
@@ -180,10 +394,11 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSour
 			break;
 
 		case CParticleSystemDesc::styleJet:
-			//	LATER: Same as CParticleSystemEffectPainter
+			EmitJet(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick, &vLastSource);
 			break;
 
 		case CParticleSystemDesc::styleRadiate:
+		case CParticleSystemDesc::styleWrithe:
 			EmitRadiate(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
 			break;
 
@@ -194,7 +409,7 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, const CVector &vSour
 
 	//	Remember
 
-	m_vLastEmitSource = vSource;
+	m_vLastEmitSource = vLastSource;
 	m_vLastEmitSourceVel = vSourceVel;
 	m_iLastEmitDirection = iDirection;
 
@@ -334,6 +549,48 @@ void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, con
 
 		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), iCurRotation, -1, iTick, rVelAdj);
 		}
+	}
+
+void CParticleArray::EmitJet (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, CVector *retvLastSource)
+
+//	EmitJet
+//
+//	Emits a jet of particles
+
+	{
+	//	Pre-init
+
+	if (retvLastSource)
+		*retvLastSource = vSource;
+
+	//	If we haven't yet figured out which direction to emit, then we wait.
+	//	(This doesn't happen until paint time).
+
+	if (iDirection == -1)
+		return;
+
+	//	If we using object motion (e.g., for missile exhaust, then have a 
+	//	completely different algorithm.
+
+	if (Desc.IsFixedPos())
+		{
+		CreateFixedParticles(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick);
+
+		//	NOTE: In this mode m_vLastEmitPos is the last position of the object.
+
+		if (retvLastSource)
+			*retvLastSource = (pObj ? pObj->GetPos() + vSource : vSource);
+		}
+
+	//	If our emit direction has changed then we need to interpolate between the two
+
+	else if (iDirection != GetLastEmitDirection())
+		CreateInterpolatedParticles(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick);
+
+	//	Otherwise, just linear creation
+
+	else
+		CreateLinearParticles(Desc, pObj, iCount, vSource, vSourceVel, iDirection, iTick);
 	}
 
 void CParticleArray::EmitRadiate (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
@@ -1230,6 +1487,22 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 				}
 			}
 		}
+	}
+
+void CParticleArray::ResetLastEmit (int iLastDirection, const CVector &vLastEmitPos, const CVector &vLastEmitVel)
+
+//	ResetLastEmit
+//
+//	Reset the last emit variables. This is called when there is a discontinuity in emission
+//	(e.g., thruster turned on/off) and we don't want to interpolate from the previous
+//	emit position/direction.
+
+	{
+	m_iLastEmitDirection = iLastDirection;
+	m_vLastEmitSource = vLastEmitPos;
+
+	if (!vLastEmitVel.IsNull())
+		m_vLastEmitSourceVel = vLastEmitVel;
 	}
 
 void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx)
