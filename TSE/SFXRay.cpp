@@ -1441,38 +1441,38 @@ void CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 
 	{
     if (strEquals(sParam, ANIMATE_ATTRIB))
-        m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
+        m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(ANIMATION_TABLE, animateMax, animateNone);
 
 	else if (strEquals(sParam, ANIMATE_OPACITY_ATTRIB))
-        m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
+        m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(ANIMATION_TABLE, animateMax, animateNone);
 
 	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
-		m_iBlendMode = Value.EvalBlendMode(Ctx);
+		m_iBlendMode = Value.EvalBlendMode();
 
 	else if (strEquals(sParam, INTENSITY_ATTRIB))
-		m_iIntensity = Value.EvalIntegerBounded(Ctx, 0, 100, 50);
+		m_iIntensity = Value.EvalIntegerBounded(0, 100, 50);
 
 	else if (strEquals(sParam, LENGTH_ATTRIB))
-		m_iLength = Value.EvalIntegerBounded(Ctx, 1, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
+		m_iLength = Value.EvalIntegerBounded(1, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
-		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_rgbPrimaryColor = Value.EvalColor(Ctx);
+		m_rgbPrimaryColor = Value.EvalColor();
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_rgbSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor();
 	
 	else if (strEquals(sParam, SHAPE_ATTRIB))
-		m_iShape = (ERayShapes)Value.EvalIdentifier(Ctx, SHAPE_TABLE, shapeMax, shapeStraight);
+		m_iShape = (ERayShapes)Value.EvalIdentifier(SHAPE_TABLE, shapeMax, shapeStraight);
 
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		m_iStyle = (ERayStyles)Value.EvalIdentifier(Ctx, STYLE_TABLE, styleMax, styleGlow);
+		m_iStyle = (ERayStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleGlow);
 
 	else if (strEquals(sParam, WIDTH_ATTRIB))
-		m_iWidth = Value.EvalIntegerBounded(Ctx, 1, -1, 10);
+		m_iWidth = Value.EvalIntegerBounded(1, -1, 10);
 
 	else if (strEquals(sParam, XFORM_ROTATION_ATTRIB))
-		m_iXformRotation = Value.EvalIntegerBounded(Ctx, -359, 359, 0);
+		m_iXformRotation = Value.EvalIntegerBounded(-359, 359, 0);
 	}

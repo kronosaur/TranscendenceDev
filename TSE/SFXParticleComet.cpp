@@ -491,20 +491,20 @@ void CParticleCometEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CStr
 
 	{
 	if (strEquals(sParam, LENGTH_ATTRIB))
-		m_iLength = Value.EvalIntegerBounded(Ctx, 1, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
+		m_iLength = Value.EvalIntegerBounded(1, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
-		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
 
 	else if (strEquals(sParam, PARTICLE_COUNT_ATTRIB))
-		m_iParticleCount = Value.EvalIntegerBounded(Ctx, 0, -1, 100);
+		m_iParticleCount = Value.EvalIntegerBounded(0, -1, 100);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_rgbPrimaryColor = Value.EvalColor(Ctx);
+		m_rgbPrimaryColor = Value.EvalColor();
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_rgbSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor();
 	
 	else if (strEquals(sParam, WIDTH_ATTRIB))
-		m_iWidth = Value.EvalIntegerBounded(Ctx, 1, -1, 8);
+		m_iWidth = Value.EvalIntegerBounded(1, -1, 8);
 	}

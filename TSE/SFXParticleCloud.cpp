@@ -570,11 +570,13 @@ void CParticleCloudPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	//	then we need to hit test against all objects in the system.
 
 	Ctx.pDamageDesc = m_pCreator->GetDamageDesc();
-	Ctx.iWakePotential = m_pCreator->GetWakePotential();
+
+	CParticleSystemDesc Desc;
+	Desc.SetWakePotential(m_pCreator->GetWakePotential());
 
 	//	Update
 
-	m_Particles.Update(CParticleSystemDesc(), Ctx);
+	m_Particles.Update(Desc, Ctx);
 
 	//	Create new particles
 
@@ -711,5 +713,5 @@ void CParticleCloudPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &s
 
 	{
 	if (strEquals(sParam, LIFETIME_ATTRIB))
-		SetLifetime(Value.EvalInteger(Ctx));
+		SetLifetime(Value.EvalInteger());
 	}

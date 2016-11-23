@@ -38,6 +38,7 @@ static LPSTR STYLE_TABLE[] =
 		"jet",
 		"radiate",
 		"spray",
+		"writhe",
 
 		NULL,
 	};
@@ -52,8 +53,10 @@ CParticleSystemDesc::CParticleSystemDesc (void) :
 		m_SpreadAngle(0, 0, 0),
 		m_iXformRotation(0),
 		m_rXformTime(1.0),
+		m_rWakeFactor(0.0),
 		m_iSplashChance(0),
 		m_iMissChance(0),
+		m_bHasWake(false),
 		m_bSprayCompatible(false)
 
 //	CParticleSystemDesc constructor
@@ -178,3 +181,28 @@ void CParticleSystemDesc::MarkImages (void)
 	if (m_pParticleEffect) 
 		m_pParticleEffect->MarkImages(); 
 	}
+
+CParticleSystemDesc::EStyles CParticleSystemDesc::ParseStyle (const CString &sValue)
+
+//	ParseStyle
+//
+//	Returns the style
+
+	{
+	DWORD dwID;
+	if (!CEffectParamDesc::FindIdentifier(sValue, STYLE_TABLE, &dwID))
+		return styleUnknown;
+
+	return (EStyles)dwID;
+	}
+
+void CParticleSystemDesc::SetStyle (const CEffectParamDesc &Value)
+
+//	SetStyle
+//
+//	Sets style based on a parameter descriptor
+
+	{
+	SetStyle((EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleJet));
+	}
+

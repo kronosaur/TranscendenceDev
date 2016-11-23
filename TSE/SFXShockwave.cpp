@@ -236,7 +236,7 @@ void CShockwaveEffectCreator::OnEffectMarkResources (void)
 	m_Image.MarkImage();
 
 	CCreatePainterCtx Ctx;
-	CShockwavePainter::EStyles iStyle = (CShockwavePainter::EStyles)m_Style.EvalIdentifier(Ctx, STYLE_TABLE, CShockwavePainter::styleMax, CShockwavePainter::styleImage);
+	CShockwavePainter::EStyles iStyle = (CShockwavePainter::EStyles)m_Style.EvalIdentifier(STYLE_TABLE, CShockwavePainter::styleMax, CShockwavePainter::styleImage);
 	CShockwavePainter::Mark(iStyle);
 	}
 
@@ -586,30 +586,30 @@ void CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 
 	{
 	if (strEquals(sParam, BLEND_MODE_ATTRIB))
-		m_iBlendMode = Value.EvalBlendMode(Ctx);
+		m_iBlendMode = Value.EvalBlendMode();
 	else if (strEquals(sParam, FADE_START_ATTRIB))
-		m_iFadeStart = Value.EvalIntegerBounded(Ctx, 0, 100, 100);
+		m_iFadeStart = Value.EvalIntegerBounded(0, 100, 100);
 	else if (strEquals(sParam, GLOW_SIZE_ATTRIB))
-		m_iGlowWidth = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iGlowWidth = Value.EvalIntegerBounded(0, -1, 0);
 	else if (strEquals(sParam, INTENSITY_ATTRIB))
-		m_iIntensity = Value.EvalIntegerBounded(Ctx, 0, -1, 50);
+		m_iIntensity = Value.EvalIntegerBounded(0, -1, 50);
 	else if (strEquals(sParam, IMAGE_ATTRIB))
-		m_Image = Value.EvalImage(Ctx);
+		m_Image = Value.EvalImage();
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
-		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_rgbPrimaryColor = Value.EvalColor(Ctx);
+		m_rgbPrimaryColor = Value.EvalColor();
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_rgbSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor();
 	else if (strEquals(sParam, SPEED_ATTRIB))
 		{
-		m_iSpeed = Value.EvalIntegerBounded(Ctx, 0, 100, 20);
+		m_iSpeed = Value.EvalIntegerBounded(0, 100, 20);
 		m_iRadiusInc = Max(1, (int)((m_iSpeed * LIGHT_SPEED * g_SecondsPerUpdate / (100.0 * g_KlicksPerPixel)) + 0.5));
 		}
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		m_iStyle = (EStyles)Value.EvalIdentifier(Ctx, STYLE_TABLE, styleMax, styleImage);
+		m_iStyle = (EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleImage);
 	else if (strEquals(sParam, WIDTH_ATTRIB))
-		m_iWidth = Value.EvalIntegerBounded(Ctx, 0, -1, 1);
+		m_iWidth = Value.EvalIntegerBounded(0, -1, 1);
 	}
 
 void CShockwavePainter::OnUpdate (SEffectUpdateCtx &Ctx)

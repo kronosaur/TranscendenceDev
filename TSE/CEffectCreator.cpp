@@ -917,6 +917,9 @@ void IEffectPainter::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 90)
 		{
+		CCreatePainterCtx ParamCtx;
+		ParamCtx.SetLoadVersion(Ctx.dwVersion);
+
 		//	Read the number of parameters
 
 		DWORD dwCount;
@@ -936,7 +939,7 @@ void IEffectPainter::OnReadFromStream (SLoadCtx &Ctx)
 
 			//	Set it
 
-			SetParam(CCreatePainterCtx(), sParam, Value);
+			SetParam(ParamCtx, sParam, Value);
 			}
 		}
 	}

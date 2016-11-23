@@ -423,6 +423,9 @@
 //	137: 1.7 Beta 3
 //		Remove m_iCause from objects (since it is already in CDamageSource)
 //
+//	138: 1.7 Beta 3
+//		SFXParticleSystem has new style mapping
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

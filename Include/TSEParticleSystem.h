@@ -6,6 +6,7 @@
 #pragma once
 
 struct SEffectUpdateCtx;
+class CEffectParamDesc;
 
 enum ParticlePaintStyles
 	{
@@ -71,8 +72,9 @@ class CParticleSystemDesc
 			styleJet =						4,
 			styleRadiate =					5,
 			styleSpray =					6,
+			styleWrithe =					7,
 
-			styleMax =						6,
+			styleMax =						7,
 			};
 
 		CParticleSystemDesc (void);
@@ -92,8 +94,11 @@ class CParticleSystemDesc
 		inline int GetSplashChance (void) const { return m_iSplashChance; }
 		inline const DiceRange &GetSpreadAngle (void) const { return m_SpreadAngle; }
 		inline EStyles GetStyle (void) const { return m_iStyle; }
+		inline Metric GetWakeFactor (void) const { return m_rWakeFactor; }
+		inline int GetWakePotential (void) const { return mathRound(m_rWakeFactor * 100.0); }
 		inline int GetXformRotation (void) const { return m_iXformRotation; }
 		inline Metric GetXformTime (void) const { return m_rXformTime; }
+		inline bool HasWakeFactor (void) const { return m_bHasWake; }
 		inline bool IsSprayCompatible (void) const { return m_bSprayCompatible; }
 		void MarkImages (void);
 		inline void SetEmitLifetime (const DiceRange &Value) { m_EmitLifetime = Value; }
@@ -106,8 +111,12 @@ class CParticleSystemDesc
 		inline void SetSprayCompatible (bool bValue = true) { m_bSprayCompatible = bValue; }
 		inline void SetSpreadAngle (const DiceRange &Value) { m_SpreadAngle = Value; }
 		inline void SetStyle (EStyles iStyle) { m_iStyle = iStyle; }
+		void SetStyle (const CEffectParamDesc &Value);
+		inline void SetWakePotential (int iValue) { m_rWakeFactor = Max(0, iValue) / 100.0; m_bHasWake = (m_rWakeFactor > 0.0); }
 		inline void SetXformRotation (int iValue) { m_iXformRotation = iValue; }
 		inline void SetXformTime (Metric rValue) { m_rXformTime = rValue; }
+
+		static EStyles ParseStyle (const CString &sValue);
 
 	private:
 		EStyles m_iStyle;						//	System style
@@ -125,6 +134,7 @@ class CParticleSystemDesc
 
 		//	Collision behavior
 
+		Metric m_rWakeFactor;					//	Speed changes when objects pass through
 		int m_iSplashChance;					//	Chance of a particle bouncing off
 		int m_iMissChance;						//	Chance of a particle missing
 
@@ -134,6 +144,7 @@ class CParticleSystemDesc
 
 		//	Flags
 
+		bool m_bHasWake;						//	m_rWakeFactor > 0.0
 		bool m_bSprayCompatible;				//	In previous versions we used to vary speed.
 	};
 

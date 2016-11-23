@@ -40,7 +40,6 @@ struct SEffectUpdateCtx
 			pTarget(NULL),
 
 			iTotalParticleCount(1),
-			iWakePotential(0),
 
 			bDestroy(false)
 		{ }
@@ -64,7 +63,6 @@ struct SEffectUpdateCtx
 
 	//	Particle context
 	int iTotalParticleCount;					//	Total particles
-	int iWakePotential;							//	Objects influence particle motion (0-100)
 
 	//	Outputs
 	CEffectHitResults Hits;						//	Filled in with the objects that hit
@@ -102,16 +100,16 @@ class CEffectParamDesc
 			{ CleanUp(); Copy(Src); return *this; }
 
 		inline ALERROR Bind (SDesignLoadCtx &Ctx) { if (m_iType == typeImage) return m_pImage->OnDesignLoadComplete(Ctx); return NOERROR; }
-		CGDraw::EBlendModes EvalBlendMode (CCreatePainterCtx &Ctx, CGDraw::EBlendModes iDefault = CGDraw::blendNormal) const;
-		bool EvalBool (CCreatePainterCtx &Ctx) const;
-		CG32bitPixel EvalColor (CCreatePainterCtx &Ctx, CG32bitPixel rgbDefault = CG32bitPixel::Null()) const;
-		DiceRange EvalDiceRange (CCreatePainterCtx &Ctx, int iDefault = -1) const;
-		int EvalIdentifier (CCreatePainterCtx &Ctx, LPSTR *pIDMap, int iMax, int iDefault = 0) const;
-		const CObjectImageArray &EvalImage (CCreatePainterCtx &Ctx) const;
-		int EvalInteger (CCreatePainterCtx &Ctx) const;
-		int EvalIntegerBounded (CCreatePainterCtx &Ctx, int iMin, int iMax = -1, int iDefault = -1) const;
-		CString EvalString (CCreatePainterCtx &Ctx) const;
-		CVector EvalVector (CCreatePainterCtx &Ctx) const;
+		CGDraw::EBlendModes EvalBlendMode (CGDraw::EBlendModes iDefault = CGDraw::blendNormal) const;
+		bool EvalBool (void) const;
+		CG32bitPixel EvalColor (CG32bitPixel rgbDefault = CG32bitPixel::Null()) const;
+		DiceRange EvalDiceRange (int iDefault = -1) const;
+		int EvalIdentifier (LPSTR *pIDMap, int iMax, int iDefault = 0) const;
+		const CObjectImageArray &EvalImage (void) const;
+		int EvalInteger (void) const;
+		int EvalIntegerBounded (int iMin, int iMax = -1, int iDefault = -1) const;
+		CString EvalString (void) const;
+		CVector EvalVector (void) const;
 		inline EDataTypes GetType (void) const { return m_iType; }
 		inline void InitBool (bool bValue) { CleanUp(); m_dwData = (bValue ? 1 : 0); m_iType = typeBoolConstant; }
 		inline void InitColor (CG32bitPixel rgbValue) { CleanUp(); m_dwData = rgbValue.AsDWORD(); m_iType = typeColorConstant; }
@@ -186,7 +184,8 @@ class CCreatePainterCtx
 				m_bTracking(false),
 				m_bRaw(false),
 				m_pData(NULL),
-				m_pDefaultParams(NULL)
+				m_pDefaultParams(NULL),
+				m_dwLoadVersion(SYSTEM_SAVE_VERSION)
 			{ }
 
 		~CCreatePainterCtx (void);
@@ -197,11 +196,13 @@ class CCreatePainterCtx
 		ICCItem *GetData (void);
 		inline const CEffectParamDesc *GetDefaultParam (const CString &sParam) const { return (m_pDefaultParams ? m_pDefaultParams->GetParam(sParam) : NULL); }
 		inline int GetLifetime (void) const { return m_iLifetime; }
+		inline DWORD GetLoadVersion (void) const { return m_dwLoadVersion; }
 		inline bool IsRawPainter (void) const { return m_bRaw; }
 		inline bool IsTracking (void) const { return m_bTracking; }
 		inline void SetDamageCtx (SDamageCtx &Ctx) { m_pDamageCtx = &Ctx; }
 		void SetDefaultParam (const CString &sParam, const CEffectParamDesc &Value);
 		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
+		inline void SetLoadVersion (DWORD dwVersion) { m_dwLoadVersion = dwVersion; }
 		inline void SetRawPainter (bool bValue = true) { m_bRaw = bValue; }
 		inline void SetTrackingObject (bool bValue = true) { m_bTracking = bValue; }
 		inline void SetUseObjectCenter (bool bValue = true) { m_bUseObjectCenter = bValue; }
@@ -223,6 +224,7 @@ class CCreatePainterCtx
 		CWeaponFireDesc *m_pWeaponFireDesc;		//	Optional weapon fire desc
 		TArray<SDataEntry> m_Data;				//	Data to add
 		CEffectParamSet *m_pDefaultParams;		//	Default parameters (owned by us)
+		DWORD m_dwLoadVersion;					//	Optional system version at load time
 
 		bool m_bUseObjectCenter;				//	If TRUE, particle clouds always use the object as center
 		bool m_bTracking;						//	If TRUE, object sets velocity

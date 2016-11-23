@@ -1,4 +1,4 @@
-//	SFXParticleJet.cpp
+//	SFXParticleSystem.cpp
 //
 //	CParticleSystemEffectCreator class
 //	Copyright (c) 2014 by Kronosaur Productions, LLC. All Rights Reserved.
@@ -21,6 +21,7 @@
 #define STYLE_ATTRIB							CONSTLIT("style")
 #define TANGENT_SPEED_ATTRIB					CONSTLIT("tangentSpeed")
 #define USE_OBJECT_CENTER_ATTRIB				CONSTLIT("useObjectCenter")
+#define WAKE_POTENTIAL_ATTRIB					CONSTLIT("wakePotential")
 #define XFORM_ROTATION_ATTRIB					CONSTLIT("xformRotation")
 #define XFORM_TIME_ATTRIB						CONSTLIT("xformTime")
 
@@ -31,35 +32,35 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		~CParticleSystemEffectPainter (void);
 
 		//	IEffectPainter virtuals
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual int GetFadeLifetime (void) { return m_ParticleLifetime.GetMaxValue(); }
-		virtual int GetLifetime (void);
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
-		virtual bool GetParamList (TArray<CString> *retList) const;
-		virtual int GetParticleCount (void) { return m_Particles.GetCount(); }
-		virtual void GetRect (RECT *retRect) const;
-		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL);
-		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
-		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
-		virtual void SetPos (const CVector &vPos) { m_Particles.SetOrigin(vPos); }
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
+		virtual int GetFadeLifetime (void)  override{ return m_Desc.GetParticleLifetime().GetMaxValue(); }
+		virtual int GetLifetime (void) override;
+		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
+		virtual bool GetParamList (TArray<CString> *retList) const override;
+		virtual int GetParticleCount (void)  override{ return m_Particles.GetCount(); }
+		virtual void GetRect (RECT *retRect) const override;
+		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
+		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)  override{ bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)  override{ Paint(Dest, x, y, Ctx); }
+		virtual void SetPos (const CVector &vPos) override { m_Particles.SetOrigin(vPos); }
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		//	NOTE: These values are saved to disk; do not re-order.
 
-		enum EStyles
+		enum EOldStyles
 			{
-			styleUnknown =			0,
+			oldstyleUnknown =			0,
 
-			styleJet =				1,
-			styleRadiate =			2,
-			styleWrithe =			3,
+			oldstyleJet =				1,
+			oldstyleRadiate =			2,
+			oldstyleWrithe =			3,
 
-			styleMax =				3,
+			oldstyleMax =				3,
 			};
 
 		CVector CalcInitialVel (CSpaceObject *pObj);
@@ -72,18 +73,12 @@ class CParticleSystemEffectPainter : public IEffectPainter
 
 		CParticleSystemEffectCreator *m_pCreator;
 
-		EStyles m_iStyle;
+		CParticleSystemDesc m_Desc;
 
-		DiceRange m_EmitRate;
-		DiceRange m_EmitSpeed;
-		DiceRange m_ParticleLifetime;
 		DiceRange m_TangentSpeed;
-		DiceRange m_SpreadAngle;
 		
 		int m_iEmitLifetime;
 		int m_iLifetime;
-		int m_iXformRotation;
-		Metric m_rXformTime;
 		bool m_bUseObjectCenter;
 		bool m_bUseObjectMotion;
 		bool m_bTrackingObject;
@@ -96,7 +91,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		IEffectPainter *m_pParticlePainter;
 	};
 
-static LPSTR STYLE_TABLE[] =
+static LPSTR OLD_STYLE_TABLE[] =
 	{
 	//	Must be same order as EStyles
 		"",
@@ -151,11 +146,12 @@ IEffectPainter *CParticleSystemEffectCreator::OnCreatePainter (CCreatePainterCtx
 	pPainter->SetParam(Ctx, FIXED_POS_ATTRIB, m_FixedPos);
 	pPainter->SetParam(Ctx, PARTICLE_LIFETIME_ATTRIB, m_ParticleLifetime);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
+	pPainter->SetParam(Ctx, WAKE_POTENTIAL_ATTRIB, m_WakePotential);
 	pPainter->SetParam(Ctx, XFORM_ROTATION_ATTRIB, m_XformRotation);
 	pPainter->SetParam(Ctx, XFORM_TIME_ATTRIB, m_XformTime);
 	pPainter->SetParam(Ctx, EMIT_STOP_ATTRIB, m_EmitLifetime);
 
-	if (!m_FixedPos.EvalBool(Ctx) || m_EmitSpeed.GetType() != CEffectParamDesc::typeNull)
+	if (!m_FixedPos.EvalBool() || m_EmitSpeed.GetType() != CEffectParamDesc::typeNull)
 		pPainter->SetParam(Ctx, EMIT_SPEED_ATTRIB, m_EmitSpeed);
 
 	if (m_SpreadAngle.GetType() != CEffectParamDesc::typeNull)
@@ -189,8 +185,20 @@ ALERROR CParticleSystemEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx
 
 	m_FixedPos.InitBool(pDesc->GetAttributeBool(FIXED_POS_ATTRIB));
 
-	if (error = m_Style.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(STYLE_ATTRIB), STYLE_TABLE))
-		return error;
+	CString sStyle = pDesc->GetAttribute(STYLE_ATTRIB);
+	if (sStyle.IsBlank())
+		m_Style.InitInteger(CParticleSystemDesc::styleJet);
+	else
+		{
+		CParticleSystemDesc::EStyles iStyle = CParticleSystemDesc::ParseStyle(sStyle);
+		if (iStyle == CParticleSystemDesc::styleUnknown)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid effect param identifier: %s"), pDesc->GetAttribute(STYLE_ATTRIB));
+			return ERR_FAIL;
+			}
+
+		m_Style.InitInteger(iStyle);
+		}
 
 	if (error = m_EmitRate.InitIntegerFromXML(Ctx, pDesc->GetAttribute(EMIT_RATE_ATTRIB)))
 		return error;
@@ -211,6 +219,9 @@ ALERROR CParticleSystemEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx
 		return error;
 
 	if (error = m_TangentSpeed.InitIntegerFromXML(Ctx, pDesc->GetAttribute(TANGENT_SPEED_ATTRIB)))
+		return error;
+
+	if (error = m_WakePotential.InitIntegerFromXML(Ctx, pDesc->GetAttribute(WAKE_POTENTIAL_ATTRIB)))
 		return error;
 
 	if (error = m_XformRotation.InitIntegerFromXML(Ctx, pDesc->GetAttribute(XFORM_ROTATION_ATTRIB)))
@@ -263,9 +274,6 @@ ALERROR CParticleSystemEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 CParticleSystemEffectPainter::CParticleSystemEffectPainter (CCreatePainterCtx &Ctx, CParticleSystemEffectCreator *pCreator) : 
 		m_pCreator(pCreator),
-		m_iStyle(styleJet),
-		m_iXformRotation(0),
-		m_rXformTime(1.0),
 		m_iLifetime(0),
 		m_iCurDirection(-1),
 		m_iLastDirection(-1),
@@ -325,7 +333,7 @@ void CParticleSystemEffectPainter::CreateFixedParticles (CSpaceObject *pObj, int
 	CVector vToOldPos;
 	if (m_bTrackingObject)
 		{
-		Metric rAveSpeed = m_rXformTime * m_EmitSpeed.GetAveValue() * LIGHT_SPEED / 100.0;
+		Metric rAveSpeed = m_Desc.GetXformTime() * m_Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
 		vToOldPos = m_vLastEmitPos - (vCurPos + vInitialPos) + ::PolarToVector(180 + m_iLastDirection, rAveSpeed * g_SecondsPerUpdate);
 		}
 	else
@@ -354,12 +362,12 @@ void CParticleSystemEffectPainter::CreateFixedParticles (CSpaceObject *pObj, int
 
 		Metric rTangentSlide = mathRandom(-9999, 9999) / 10000.0;
 		Metric rAxisJitter = mathRandom(-50, 50) / 100.0;
-		CVector vVel = (vTangent * rTangentSlide * m_rXformTime * m_TangentSpeed.Roll() * LIGHT_SPEED / 100.0)
-				+ (vAxis * (m_EmitSpeed.Roll() + rAxisJitter) * LIGHT_SPEED / 100.0);
+		CVector vVel = (vTangent * rTangentSlide * m_Desc.GetXformTime() * m_TangentSpeed.Roll() * LIGHT_SPEED / 100.0)
+				+ (vAxis * (m_Desc.GetEmitSpeed().Roll() + rAxisJitter) * LIGHT_SPEED / 100.0);
 
 		//	Lifetime
 
-		int iLifeLeft = m_ParticleLifetime.Roll();
+		int iLifeLeft = m_Desc.GetParticleLifetime().Roll();
 
 		//	Add the particle
 
@@ -384,23 +392,23 @@ void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pO
 	//	Compute some basic stuff
 
 	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
-	Metric rLastRotation = mathDegreesToRadians(180 + m_iXformRotation + m_iLastDirection);
-	Metric rCurRotation = mathDegreesToRadians(180 + m_iXformRotation + m_iCurDirection);
+	Metric rLastRotation = mathDegreesToRadians(180 + m_Desc.GetXformRotation() + m_iLastDirection);
+	Metric rCurRotation = mathDegreesToRadians(180 + m_Desc.GetXformRotation() + m_iCurDirection);
 
 	//	Compute the spread angle, in radians
 
-	Metric rSpread = mathDegreesToRadians(Max(0, m_SpreadAngle.Roll()));
+	Metric rSpread = mathDegreesToRadians(Max(0, m_Desc.GetSpreadAngle().Roll()));
 	Metric rHalfSpread = 0.5 * rSpread;
 
 	//	Calculate where last tick's particles would be based on the last rotation.
 
-	Metric rAveSpeed = m_EmitSpeed.GetAveValue() * LIGHT_SPEED / 100.0;
-	CVector vLastStart = (m_vLastEmitPos + (m_rXformTime * ::PolarToVectorRadians(rLastRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
+	Metric rAveSpeed = m_Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	CVector vLastStart = (m_vLastEmitPos + (m_Desc.GetXformTime() * ::PolarToVectorRadians(rLastRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
 
 	//	Calculate where last tick's particles would be IF we have used the current
 	//	rotation. This allows us to interpolate a turn.
 
-	CVector vCurStart = (m_vLastEmitPos + (m_rXformTime * ::PolarToVectorRadians(rCurRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
+	CVector vCurStart = (m_vLastEmitPos + (m_Desc.GetXformTime() * ::PolarToVectorRadians(rCurRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
 
 	//	Create particles
 
@@ -434,12 +442,12 @@ void CParticleSystemEffectPainter::CreateInterpolatedParticles (CSpaceObject *pO
 		//	Generate a random velocity backwards
 
 		Metric rRotation = rSlideRotation + (rHalfSpread * mathRandom(-1000, 1000) / 1000.0);
-		Metric rSpeed = m_EmitSpeed.Roll() * LIGHT_SPEED / 100.0;
-		CVector vVel = m_rXformTime * (vInitialVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500)));
+		Metric rSpeed = m_Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
+		CVector vVel = m_Desc.GetXformTime() * (vInitialVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500)));
 
 		//	Lifetime
 
-		int iLifeLeft = m_ParticleLifetime.Roll();
+		int iLifeLeft = m_Desc.GetParticleLifetime().Roll();
 
 		//	Add the particle
 
@@ -464,17 +472,17 @@ void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, in
 	//	Compute some basic stuff
 
 	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
-	Metric rCurRotation = mathDegreesToRadians(180 + m_iXformRotation + m_iCurDirection);
+	Metric rCurRotation = mathDegreesToRadians(180 + m_Desc.GetXformRotation() + m_iCurDirection);
 
 	//	Compute the spread angle, in radians
 
-	Metric rSpread = mathDegreesToRadians(Max(0, m_SpreadAngle.Roll()));
+	Metric rSpread = mathDegreesToRadians(Max(0, m_Desc.GetSpreadAngle().Roll()));
 	Metric rHalfSpread = 0.5 * rSpread;
 
 	//	Calculate where last tick's particles would be based on the last rotation.
 
-	Metric rAveSpeed = m_EmitSpeed.GetAveValue() * LIGHT_SPEED / 100.0;
-	CVector vCurStart = (m_vLastEmitPos + (m_rXformTime * ::PolarToVectorRadians(rCurRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
+	Metric rAveSpeed = m_Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	CVector vCurStart = (m_vLastEmitPos + (m_Desc.GetXformTime() * ::PolarToVectorRadians(rCurRotation, rAveSpeed * g_SecondsPerUpdate))) - vInitialPos;
 
 	//	Create particles
 
@@ -490,12 +498,12 @@ void CParticleSystemEffectPainter::CreateLinearParticles (CSpaceObject *pObj, in
 		//	Generate a random velocity backwards
 
 		Metric rRotation = rCurRotation + (rHalfSpread * mathRandom(-1000, 1000) / 1000.0);
-		Metric rSpeed = m_EmitSpeed.Roll() * LIGHT_SPEED / 100.0;
-		CVector vVel = m_rXformTime * (vInitialVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500)));
+		Metric rSpeed = m_Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0;
+		CVector vVel = m_Desc.GetXformTime() * (vInitialVel + ::PolarToVectorRadians(rRotation, rSpeed + rJitterFactor * mathRandom(-500, 500)));
 
 		//	Lifetime
 
-		int iLifeLeft = m_ParticleLifetime.Roll();
+		int iLifeLeft = m_Desc.GetParticleLifetime().Roll();
 
 		//	Add the particle
 
@@ -521,9 +529,9 @@ void CParticleSystemEffectPainter::CreateNewParticles (CSpaceObject *pObj, int i
 
 	//	Create based on style
 
-	switch (m_iStyle)
+	switch (m_Desc.GetStyle())
 		{
-		case styleJet:
+		case CParticleSystemDesc::styleJet:
 			{
 			//	If we haven't yet figured out which direction to emit, then we wait.
 			//	(This doesn't happen until paint time).
@@ -550,8 +558,8 @@ void CParticleSystemEffectPainter::CreateNewParticles (CSpaceObject *pObj, int i
 			break;
 			}
 
-		case styleRadiate:
-		case styleWrithe:
+		case CParticleSystemDesc::styleRadiate:
+		case CParticleSystemDesc::styleWrithe:
 			CreateRadiateParticles(pObj, iCount, vInitialPos, vInitialVel, iTick);
 			break;
 		}
@@ -572,7 +580,7 @@ void CParticleSystemEffectPainter::CreateRadiateParticles (CSpaceObject *pObj, i
 
 	//	Calculate where last tick's particles would be based on the last rotation.
 
-	Metric rAveSpeed = m_EmitSpeed.GetAveValue() * LIGHT_SPEED / 100.0;
+	Metric rAveSpeed = m_Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
 
 	//	Create particles
 
@@ -581,12 +589,12 @@ void CParticleSystemEffectPainter::CreateRadiateParticles (CSpaceObject *pObj, i
 		//	Choose a random angle and velocity
 
 		Metric rAngle = 2.0 * PI * (mathRandom(0, 9999) / 10000.0);
-		Metric rSpeed = (m_EmitSpeed.Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
-		CVector vVel = m_rXformTime * (vInitialVel + ::PolarToVectorRadians(rAngle, rSpeed));
+		Metric rSpeed = (m_Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
+		CVector vVel = m_Desc.GetXformTime() * (vInitialVel + ::PolarToVectorRadians(rAngle, rSpeed));
 
 		//	Lifetime
 
-		int iLifeLeft = m_ParticleLifetime.Roll();
+		int iLifeLeft = m_Desc.GetParticleLifetime().Roll();
 
 		//	Add the particle
 
@@ -610,10 +618,10 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitInteger(m_iCurDirection);
 
 	else if (strEquals(sParam, EMIT_RATE_ATTRIB))
-		retValue->InitDiceRange(m_EmitRate);
+		retValue->InitDiceRange(m_Desc.GetEmitRate());
 
 	else if (strEquals(sParam, EMIT_SPEED_ATTRIB))
-		retValue->InitDiceRange(m_EmitSpeed);
+		retValue->InitDiceRange(m_Desc.GetEmitSpeed());
 
 	else if (strEquals(sParam, EMIT_STOP_ATTRIB))
 		retValue->InitInteger(m_iEmitLifetime);
@@ -625,7 +633,7 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitBool(m_bTrackingObject);
 
 	else if (strEquals(sParam, PARTICLE_LIFETIME_ATTRIB))
-		retValue->InitDiceRange(m_ParticleLifetime);
+		retValue->InitDiceRange(m_Desc.GetParticleLifetime());
 
 	else if (strEquals(sParam, LAST_DIRECTION_ATTRIB))
 		retValue->InitInteger(m_iLastDirection);
@@ -637,10 +645,10 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitInteger(m_iLifetime);
 
 	else if (strEquals(sParam, SPREAD_ANGLE_ATTRIB))
-		retValue->InitDiceRange(m_SpreadAngle);
+		retValue->InitDiceRange(m_Desc.GetSpreadAngle());
 
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		retValue->InitInteger(m_iStyle);
+		retValue->InitInteger(m_Desc.GetStyle());
 
 	else if (strEquals(sParam, TANGENT_SPEED_ATTRIB))
 		retValue->InitDiceRange(m_TangentSpeed);
@@ -648,11 +656,14 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 	else if (strEquals(sParam, USE_OBJECT_CENTER_ATTRIB))
 		retValue->InitBool(m_bUseObjectCenter);
 
+	else if (strEquals(sParam, WAKE_POTENTIAL_ATTRIB))
+		retValue->InitInteger(m_Desc.GetWakePotential());
+
 	else if (strEquals(sParam, XFORM_ROTATION_ATTRIB))
-		retValue->InitInteger(m_iXformRotation);
+		retValue->InitInteger(m_Desc.GetXformRotation());
 
 	else if (strEquals(sParam, XFORM_TIME_ATTRIB))
-		retValue->InitInteger((int)(m_rXformTime * 100.0));
+		retValue->InitInteger((int)(m_Desc.GetXformTime() * 100.0));
 
 	else
 		retValue->InitNull();
@@ -666,7 +677,7 @@ bool CParticleSystemEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(16);
+	retList->InsertEmpty(17);
 	retList->GetAt(0) = CUR_DIRECTION_ATTRIB;
 	retList->GetAt(1) = EMIT_RATE_ATTRIB;
 	retList->GetAt(2) = EMIT_SPEED_ATTRIB;
@@ -681,8 +692,9 @@ bool CParticleSystemEffectPainter::GetParamList (TArray<CString> *retList) const
 	retList->GetAt(11) = STYLE_ATTRIB;
 	retList->GetAt(12) = TANGENT_SPEED_ATTRIB;
 	retList->GetAt(13) = USE_OBJECT_CENTER_ATTRIB;
-	retList->GetAt(14) = XFORM_ROTATION_ATTRIB;
-	retList->GetAt(15) = XFORM_TIME_ATTRIB;
+	retList->GetAt(14) = WAKE_POTENTIAL_ATTRIB;
+	retList->GetAt(15) = XFORM_ROTATION_ATTRIB;
+	retList->GetAt(16) = XFORM_TIME_ATTRIB;
 
 	return true;
 	}
@@ -698,7 +710,7 @@ int CParticleSystemEffectPainter::GetLifetime (void)
 		return m_iLifetime;
 
 	else if (m_iEmitLifetime > 0)
-		return (m_iEmitLifetime + m_ParticleLifetime.GetMaxValue());
+		return (m_iEmitLifetime + m_Desc.GetParticleLifetime().GetMaxValue());
 
 	else
 		return m_iLifetime; 
@@ -725,8 +737,8 @@ void CParticleSystemEffectPainter::InitParticles (const CVector &vInitialPos)
 		{
 		//	Compute the maximum number of particles that we could ever have
 
-		int iNewParticleRate = m_EmitRate.GetMaxValue();
-		int iParticleLifetime = m_ParticleLifetime.GetMaxValue();
+		int iNewParticleRate = m_Desc.GetEmitRate().GetMaxValue();
+		int iParticleLifetime = m_Desc.GetParticleLifetime().GetMaxValue();
 
 		int iMaxParticleCount = Max(0, iParticleLifetime * iNewParticleRate);
 
@@ -791,15 +803,6 @@ void CParticleSystemEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	if (m_pParticlePainter)
 		m_pParticlePainter->OnUpdate(Ctx);
 
-	//	Change the velocity based on the style
-
-	switch (m_iStyle)
-		{
-		case styleWrithe:
-			m_Particles.UpdateWrithe(Ctx);
-			break;
-		}
-
 	//	LATER: Support damage
 
 #if 0
@@ -807,19 +810,18 @@ void CParticleSystemEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 	//	then we need to hit test against all objects in the system.
 
 	Ctx.pDamageDesc = m_pCreator->GetDamageDesc();
-	Ctx.iWakePotential = m_pCreator->GetWakePotential();
-
-	//	Update
-
-	m_Particles.Update(CParticleSystemDesc(), Ctx);
 #endif
+
+	//	Update particle behavior
+
+	m_Particles.Update(m_Desc, Ctx);
 
 	//	Create new particles
 
 	if (!Ctx.bFade)
 		{
 		if (m_iEmitLifetime <= 0 || Ctx.iTick < m_iEmitLifetime)
-			CreateNewParticles(Ctx.pObj, m_EmitRate.Roll(), Ctx.vEmitPos, CalcInitialVel(Ctx.pObj), Ctx.iTick);
+			CreateNewParticles(Ctx.pObj, m_Desc.GetEmitRate().Roll(), Ctx.vEmitPos, CalcInitialVel(Ctx.pObj), Ctx.iTick);
 		}
 	else
 		{
@@ -840,7 +842,7 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 //	Paint the effect
 
 	{
-	int iParticleLifetime = m_ParticleLifetime.GetMaxValue();
+	int iParticleLifetime = m_Desc.GetParticleLifetime().GetMaxValue();
 
 	//	Particles move the opposite direction from the shot
 
@@ -896,27 +898,11 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 
 		//	Create particles
 
-		CreateNewParticles(Ctx.pObj, m_EmitRate.Roll(), vPos, CalcInitialVel(Ctx.pObj), Ctx.iTick);
 		}
 
 	//	Paint with the painter
 
-	if (m_pParticlePainter)
-		{
-		//	If we can get a paint descriptor, use that because it is faster
-
-		SParticlePaintDesc Desc;
-		if (m_pParticlePainter->GetParticlePaintDesc(&Desc))
-			{
-			Desc.iMaxLifetime = iParticleLifetime;
-			m_Particles.Paint(Dest, xPaint, yPaint, Ctx, Desc);
-			}
-
-		//	Otherwise, we use the painter for each particle
-
-		else
-			m_Particles.Paint(Dest, xPaint, yPaint, Ctx, m_pParticlePainter);
-		}
+	m_Particles.Paint(m_Desc, Dest, xPaint, yPaint, m_pParticlePainter, Ctx);
 
 	//	Update
 
@@ -931,50 +917,80 @@ void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 
 	{
 	if (strEquals(sParam, CUR_DIRECTION_ATTRIB))
-		m_iCurDirection = Value.EvalIntegerBounded(Ctx, 0, -1, -1);
+		m_iCurDirection = Value.EvalIntegerBounded(0, -1, -1);
 
 	else if (strEquals(sParam, EMIT_RATE_ATTRIB))
-		m_EmitRate = Value.EvalDiceRange(Ctx, 10);
+		m_Desc.SetEmitRate(Value.EvalDiceRange(10));
 
 	else if (strEquals(sParam, EMIT_SPEED_ATTRIB))
-		m_EmitSpeed = Value.EvalDiceRange(Ctx, 50);
+		m_Desc.SetEmitSpeed(Value.EvalDiceRange(50));
 
 	else if (strEquals(sParam, EMIT_STOP_ATTRIB))
-		m_iEmitLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iEmitLifetime = Value.EvalIntegerBounded(0, -1, 0);
 
 	else if (strEquals(sParam, FIXED_POS_ATTRIB))
-		m_bUseObjectMotion = Value.EvalBool(Ctx);
+		m_bUseObjectMotion = Value.EvalBool();
 
 	else if (strEquals(sParam, IS_TRACKING_OBJECT_ATTRIB))
-		m_bTrackingObject = Value.EvalBool(Ctx);
+		m_bTrackingObject = Value.EvalBool();
 
 	else if (strEquals(sParam, PARTICLE_LIFETIME_ATTRIB))
-		m_ParticleLifetime = Value.EvalDiceRange(Ctx, 10);
+		m_Desc.SetParticleLifetime(Value.EvalDiceRange(10));
 
 	else if (strEquals(sParam, LAST_DIRECTION_ATTRIB))
-		m_iLastDirection = Value.EvalIntegerBounded(Ctx, 0, -1, -1);
+		m_iLastDirection = Value.EvalIntegerBounded(0, -1, -1);
 
 	else if (strEquals(sParam, LAST_EMIT_POS_ATTRIB))
-		m_vLastEmitPos = Value.EvalVector(Ctx);
+		m_vLastEmitPos = Value.EvalVector();
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
-		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
 
 	else if (strEquals(sParam, SPREAD_ANGLE_ATTRIB))
-		m_SpreadAngle = Value.EvalDiceRange(Ctx, 5);
+		m_Desc.SetSpreadAngle(Value.EvalDiceRange(5));
 
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		m_iStyle = (EStyles)Value.EvalIdentifier(Ctx, STYLE_TABLE, styleMax, styleJet);
+		{
+		//	Backwards compatibility for older version
+
+		if (Ctx.GetLoadVersion() < 138)
+			{
+			int iOldStyle = Value.EvalIdentifier(OLD_STYLE_TABLE, oldstyleMax, oldstyleJet);
+			switch (iOldStyle)
+				{
+				case oldstyleJet:
+					m_Desc.SetStyle(CParticleSystemDesc::styleJet);
+					break;
+
+				case oldstyleRadiate:
+					m_Desc.SetStyle(CParticleSystemDesc::styleRadiate);
+					break;
+
+				case oldstyleWrithe:
+					m_Desc.SetStyle(CParticleSystemDesc::styleWrithe);
+					break;
+
+				default:
+					m_Desc.SetStyle(CParticleSystemDesc::styleJet);
+					break;
+				}
+			}
+		else
+			m_Desc.SetStyle(Value);
+		}
 
 	else if (strEquals(sParam, TANGENT_SPEED_ATTRIB))
-		m_TangentSpeed = Value.EvalDiceRange(Ctx, 0);
+		m_TangentSpeed = Value.EvalDiceRange(0);
 
 	else if (strEquals(sParam, USE_OBJECT_CENTER_ATTRIB))
-		m_bUseObjectCenter = Value.EvalBool(Ctx);
+		m_bUseObjectCenter = Value.EvalBool();
+
+	else if (strEquals(sParam, WAKE_POTENTIAL_ATTRIB))
+		m_Desc.SetWakePotential(Value.EvalIntegerBounded(0, -1, 0));
 
 	else if (strEquals(sParam, XFORM_ROTATION_ATTRIB))
-		m_iXformRotation = Value.EvalIntegerBounded(Ctx, -359, 359, 0);
+		m_Desc.SetXformRotation(Value.EvalIntegerBounded(-359, 359, 0));
 
 	else if (strEquals(sParam, XFORM_TIME_ATTRIB))
-		m_rXformTime = Value.EvalIntegerBounded(Ctx, 0, -1, 100) / 100.0;
+		m_Desc.SetXformTime(Value.EvalIntegerBounded(0, -1, 100) / 100.0);
 	}

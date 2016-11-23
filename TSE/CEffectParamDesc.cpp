@@ -90,7 +90,7 @@ void CEffectParamDesc::Copy (const CEffectParamDesc &Src)
 		}
 	}
 
-CGDraw::EBlendModes CEffectParamDesc::EvalBlendMode (CCreatePainterCtx &Ctx, CGDraw::EBlendModes iDefault) const
+CGDraw::EBlendModes CEffectParamDesc::EvalBlendMode (CGDraw::EBlendModes iDefault) const
 
 //	EvalBlendMode
 //
@@ -119,7 +119,7 @@ CGDraw::EBlendModes CEffectParamDesc::EvalBlendMode (CCreatePainterCtx &Ctx, CGD
 		}
 	}
 
-bool CEffectParamDesc::EvalBool (CCreatePainterCtx &Ctx) const
+bool CEffectParamDesc::EvalBool (void) const
 
 //	EvalBool
 //
@@ -143,7 +143,7 @@ bool CEffectParamDesc::EvalBool (CCreatePainterCtx &Ctx) const
 		}
 	}
 
-CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx, CG32bitPixel rgbDefault) const
+CG32bitPixel CEffectParamDesc::EvalColor (CG32bitPixel rgbDefault) const
 
 //	EvalColor
 //
@@ -160,7 +160,7 @@ CG32bitPixel CEffectParamDesc::EvalColor (CCreatePainterCtx &Ctx, CG32bitPixel r
 		}
 	}
 
-DiceRange CEffectParamDesc::EvalDiceRange (CCreatePainterCtx &Ctx, int iDefault) const
+DiceRange CEffectParamDesc::EvalDiceRange (int iDefault) const
 
 //	EvalDiceRange
 //
@@ -192,7 +192,7 @@ DiceRange CEffectParamDesc::EvalDiceRange (CCreatePainterCtx &Ctx, int iDefault)
 		}
 	}
 
-int CEffectParamDesc::EvalIdentifier (CCreatePainterCtx &Ctx, LPSTR *pIDMap, int iMax, int iDefault) const
+int CEffectParamDesc::EvalIdentifier (LPSTR *pIDMap, int iMax, int iDefault) const
 
 //	EvalIdentifier
 //
@@ -222,7 +222,7 @@ int CEffectParamDesc::EvalIdentifier (CCreatePainterCtx &Ctx, LPSTR *pIDMap, int
 		}
 	}
 
-const CObjectImageArray &CEffectParamDesc::EvalImage (CCreatePainterCtx &Ctx) const
+const CObjectImageArray &CEffectParamDesc::EvalImage (void) const
 
 //	EvalImage
 //
@@ -239,7 +239,7 @@ const CObjectImageArray &CEffectParamDesc::EvalImage (CCreatePainterCtx &Ctx) co
 		}
 	}
 
-int CEffectParamDesc::EvalInteger (CCreatePainterCtx &Ctx) const
+int CEffectParamDesc::EvalInteger (void) const
 
 //	EvalInteger
 //
@@ -259,7 +259,7 @@ int CEffectParamDesc::EvalInteger (CCreatePainterCtx &Ctx) const
 		}
 	}
 
-int CEffectParamDesc::EvalIntegerBounded (CCreatePainterCtx &Ctx, int iMin, int iMax, int iDefault) const
+int CEffectParamDesc::EvalIntegerBounded (int iMin, int iMax, int iDefault) const
 
 //	EvalIntegerBounded
 //
@@ -293,7 +293,7 @@ int CEffectParamDesc::EvalIntegerBounded (CCreatePainterCtx &Ctx, int iMin, int 
 		return Max(Min(iValue, iMax), iMin);
 	}
 
-CString CEffectParamDesc::EvalString (CCreatePainterCtx &Ctx) const
+CString CEffectParamDesc::EvalString (void) const
 
 //	EvalString
 //
@@ -310,7 +310,7 @@ CString CEffectParamDesc::EvalString (CCreatePainterCtx &Ctx) const
 		}
 	}
 
-CVector CEffectParamDesc::EvalVector (CCreatePainterCtx &Ctx) const
+CVector CEffectParamDesc::EvalVector (void) const
 
 //	EvalVector
 //

@@ -570,6 +570,23 @@ void CParticleArray::Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest,
 
 	else
 		Paint(Dest, xPos, yPos, Ctx, pPainter, Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SECOND / 100.0);
+
+#ifdef DEBUG
+	CVector vUR;
+	CVector vLL;
+
+	GetBounds(&vUR, &vLL);
+	int xUR, yUR;
+	Ctx.XForm.Transform(vUR, &xUR, &yUR);
+
+	int xLL, yLL;
+	Ctx.XForm.Transform(vLL, &xLL, &yLL);
+
+	Dest.DrawLine(xUR, yUR, xUR, yLL, 1, CG32bitPixel(255, 255, 0));
+	Dest.DrawLine(xUR, yLL, xLL, yLL, 1, CG32bitPixel(255, 255, 0));
+	Dest.DrawLine(xLL, yLL, xLL, yUR, 1, CG32bitPixel(255, 255, 0));
+	Dest.DrawLine(xLL, yUR, xUR, yUR, 1, CG32bitPixel(255, 255, 0));
+#endif
 	}
 
 void CParticleArray::Paint (CG32bitImage &Dest,
@@ -1222,7 +1239,7 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 //	Updates the array based on the context
 
 	{
-	if ((Ctx.pDamageDesc || Ctx.iWakePotential > 0) && Ctx.pSystem)
+	if ((Ctx.pDamageDesc || Desc.HasWakeFactor()) && Ctx.pSystem)
 		UpdateCollisions(Desc, Ctx);
 
 	//	If we're tracking, change velocity to follow target
@@ -1236,6 +1253,10 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 		{
 		case CParticleSystemDesc::styleComet:
 			UpdateComet(Desc, Ctx);
+			break;
+
+		case CParticleSystemDesc::styleWrithe:
+			UpdateWrithe(Ctx);
 			break;
 		}
 	}
@@ -1261,7 +1282,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 	//	Compute the velocity of the effect object in Km/tick
 
 	CVector vEffectVel;
-	if (Ctx.iWakePotential)
+	if (Desc.HasWakeFactor())
 		vEffectVel = Ctx.pObj->GetVel() * g_SecondsPerUpdate;
 
 	//	Compute bounds
@@ -1301,29 +1322,35 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 			CVector vVelN;
 			CVector vVelT;
 			Metric rObjVel;
-			Metric rWakeFactor;
 			int iObjMotionAngle;
-			if (Ctx.iWakePotential)
+			bool bDoWake = false;
+			if (Desc.HasWakeFactor())
 				{
-				//	Compute the velocity components of the object that will
-				//	affect the particles
-
 				Metric rSpeed = pObj->GetVel().Length();
-				vVelN = (rSpeed == 0.0 ? CVector(1.0f, 0) : pObj->GetVel() / rSpeed);
-				vVelT = vVelN.Perpendicular();
+				if (rSpeed > 0.0)
+					{
+					//	Compute the velocity components of the object that will
+					//	affect the particles
 
-				//	Object speed in Km/tick
+					vVelN = pObj->GetVel() / rSpeed;
+					vVelT = vVelN.Perpendicular();
 
-				rObjVel = rSpeed * g_SecondsPerUpdate;
+					//	Object speed in Km/tick
 
-				//	How much does velocity of object affect particle
+					rObjVel = rSpeed * g_SecondsPerUpdate;
 
-				rWakeFactor = (Metric)Ctx.iWakePotential / 100.0f;
+					//	Compute the objects direction
 
-				//	Compute the objects direction
+					iObjMotionAngle = VectorToPolar(vVelN);
 
-				iObjMotionAngle = VectorToPolar(vVelN);
+					bDoWake = true;
+					}
 				}
+
+			//	If we're not doing damage or doing a wake, then we can skip
+
+			if (!bDoDamage && !bDoWake)
+				continue;
 
 			//	Initialize context for hit testing
 
@@ -1412,7 +1439,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 
 						//	Surviving particles make be influenced
 
-						else if (Ctx.iWakePotential)
+						else if (bDoWake)
 							{
 							//	Compute whether the particle is to the left or right of the object
 							//	along the object's line of motion.
@@ -1434,12 +1461,12 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 
 							//	Compute the maximum speed of the particle
 
-							Metric rMaxSpeed = Max(rWakeFactor * rObjVel, pParticle->Vel.Length());
+							Metric rMaxSpeed = Max(Desc.GetWakeFactor() * rObjVel, pParticle->Vel.Length());
 
 							//	Figure out how we affect the particle speed along the object's motion
 
-							Metric rNewVelLine = rParticleVelLine + (rWakeFactor * rObjVel);
-							Metric rNewVelPerp = rParticleVelPerp + (rWakeFactor * rObjVel);
+							Metric rNewVelLine = rParticleVelLine + (Desc.GetWakeFactor() * rObjVel);
+							Metric rNewVelPerp = rParticleVelPerp + (Desc.GetWakeFactor() * rObjVel);
 							if (iBearing > 0)
 								rNewVelPerp = -rNewVelPerp;
 

@@ -479,17 +479,17 @@ void CLightningStormEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 
 	{
 	if (strEquals(sParam, INTENSITY_ATTRIB))
-		m_iIntensity = Value.EvalIntegerBounded(Ctx, 0, 100, 50);
+		m_iIntensity = Value.EvalIntegerBounded(0, 100, 50);
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
-		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_rgbPrimaryColor = Value.EvalColor(Ctx);
+		m_rgbPrimaryColor = Value.EvalColor();
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_rgbSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor();
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		m_iStyle = (EStyles)Value.EvalIdentifier(Ctx, STYLE_TABLE, styleMax, styleObjectArcs);
+		m_iStyle = (EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleObjectArcs);
 	}

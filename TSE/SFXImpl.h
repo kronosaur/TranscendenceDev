@@ -716,6 +716,7 @@ class CParticleSystemEffectCreator : public CEffectCreator
 		CEffectParamDesc m_TangentSpeed;	//	Trangental speed (if spread angle is omitted)
 
 		CEffectParamDesc m_Lifetime;		//	lifetime: Lifetime in ticks (optional)
+		CEffectParamDesc m_WakePotential;	//	Wake when objects move through (0 = none, 100 = max)
 		CEffectParamDesc m_XformRotation;	//	XformRotation: Rotations (degrees)
 		CEffectParamDesc m_XformTime;		//	XformTime: 100 = normal speed; <100 = slower
 
@@ -858,7 +859,7 @@ class CShockwaveEffectCreator : public CEffectCreator
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
 		//	CEffectCreator virtuals
-		virtual int GetLifetime (void) override { return m_Lifetime.EvalDiceRange(CCreatePainterCtx()).GetAveValue(); }
+		virtual int GetLifetime (void) override { return m_Lifetime.EvalDiceRange().GetAveValue(); }
 		virtual void SetLifetime (int iLifetime) override { m_Lifetime.InitInteger(iLifetime); }
 
 		static CString GetClassTag (void) { return CONSTLIT("Shockwave"); }

@@ -1140,35 +1140,35 @@ void COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 
 	{
 	if (strEquals(sParam, ANIMATE_ATTRIB))
-		m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(Ctx, ANIMATION_TABLE, animateMax, animateNone);
+		m_iAnimation = (EAnimationTypes)Value.EvalIdentifier(ANIMATION_TABLE, animateMax, animateNone);
 
 	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
-		m_iBlendMode = Value.EvalBlendMode(Ctx);
+		m_iBlendMode = Value.EvalBlendMode();
 
 	else if (strEquals(sParam, DETAIL_ATTRIB))
-		m_iDetail = Value.EvalIntegerBounded(Ctx, 0, 100, 25);
+		m_iDetail = Value.EvalIntegerBounded(0, 100, 25);
 
 	else if (strEquals(sParam, DISTORTION_ATTRIB))
-		m_iDistortion = Value.EvalIntegerBounded(Ctx, 0, 100, 0);
+		m_iDistortion = Value.EvalIntegerBounded(0, 100, 0);
 
 	else if (strEquals(sParam, INTENSITY_ATTRIB))
-		m_iIntensity = Value.EvalIntegerBounded(Ctx, 0, 100, 50);
+		m_iIntensity = Value.EvalIntegerBounded(0, 100, 50);
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
-		m_iLifetime = Value.EvalIntegerBounded(Ctx, 0, -1, 0);
+		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_rgbPrimaryColor = Value.EvalColor(Ctx);
+		m_rgbPrimaryColor = Value.EvalColor();
 
 	else if (strEquals(sParam, RADIUS_ATTRIB))
-		m_iRadius = Value.EvalIntegerBounded(Ctx, 1, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
+		m_iRadius = Value.EvalIntegerBounded(1, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_rgbSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor();
 	
 	else if (strEquals(sParam, SPIKE_COUNT_ATTRIB))
-		m_SpikeCount = Value.EvalDiceRange(Ctx, 0);
+		m_SpikeCount = Value.EvalDiceRange(0);
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		m_iStyle = (EOrbStyles)Value.EvalIdentifier(Ctx, STYLE_TABLE, styleMax, styleSmooth);
+		m_iStyle = (EOrbStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleSmooth);
 	}

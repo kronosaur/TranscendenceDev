@@ -237,13 +237,13 @@ void CSingleParticlePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &
 
 	{
 	if (strEquals(sParam, MAX_WIDTH_ATTRIB))
-		m_iMaxWidth = Value.EvalIntegerBounded(Ctx, 0, -1, 6);
+		m_iMaxWidth = Value.EvalIntegerBounded(0, -1, 6);
 	else if (strEquals(sParam, MIN_WIDTH_ATTRIB))
-		m_iMinWidth = Value.EvalIntegerBounded(Ctx, 0, -1, 1);
+		m_iMinWidth = Value.EvalIntegerBounded(0, -1, 1);
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
-		m_rgbPrimaryColor = Value.EvalColor(Ctx, CG32bitPixel(255, 255, 255));
+		m_rgbPrimaryColor = Value.EvalColor(CG32bitPixel(255, 255, 255));
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
-		m_rgbSecondaryColor = Value.EvalColor(Ctx);
+		m_rgbSecondaryColor = Value.EvalColor();
 	else if (strEquals(sParam, STYLE_ATTRIB))
-		m_iStyle = (ParticlePaintStyles)Value.EvalIdentifier(Ctx, STYLE_TABLE, paintMax, paintPlain);
+		m_iStyle = (ParticlePaintStyles)Value.EvalIdentifier(STYLE_TABLE, paintMax, paintPlain);
 	}
