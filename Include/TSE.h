@@ -670,7 +670,7 @@ class COverlay
 									COverlay **retpField);
 
 		bool AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
-		void AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds);
+		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
 		void Destroy (CSpaceObject *pSource);
 		inline bool Disarms (CSpaceObject *pSource) const { return m_pType->Disarms(); }
 		void FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, ICCItem *pData, ICCItem **retpResult);
@@ -709,10 +709,11 @@ class COverlay
 		bool SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue);
 		inline void SetRotation (int iRotation) { m_iRotation = iRotation; }
 		inline bool Spins (CSpaceObject *pSource) const { return m_pType->Spins(); }
-		void Update (CSpaceObject *pSource);
+		void Update (CSpaceObject *pSource, bool *retbModified = NULL);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		void CalcOffset (int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin = NULL) const;
 		void FireOnUpdate (CSpaceObject *pSource);
 		void CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx);
 
@@ -775,7 +776,7 @@ class COverlayList
 					   DWORD *retdwID = NULL);
 		bool AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		bool AbsorbsWeaponFire (CInstalledDevice *pDevice);
-		void AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds);
+		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
 		bool Damage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		CString DebugCrashInfo (void) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;

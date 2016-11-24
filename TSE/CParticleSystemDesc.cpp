@@ -39,20 +39,24 @@ static LPSTR STYLE_TABLE[] =
 		"radiate",
 		"spray",
 		"writhe",
+		"brownian",
 
 		NULL,
 	};
 
 CParticleSystemDesc::CParticleSystemDesc (void) :
 		m_iStyle(styleJet),
+		m_iEmitChance(100),
 		m_EmitSpeed(6, 1, 0),
 		m_EmitRate(6, 1, 0),
 		m_EmitLifetime(6, 1, 0),
 		m_EmitWidth(0, 0, 0),
 		m_ParticleLifetime(6, 1, 0),
+		m_Radius(0, 0, 64),
 		m_SpreadAngle(0, 0, 0),
 		m_iXformRotation(0),
 		m_rXformTime(1.0),
+		m_rCohesionFactor(0.0),
 		m_rWakeFactor(0.0),
 		m_iSplashChance(0),
 		m_iMissChance(0),
@@ -207,4 +211,3 @@ void CParticleSystemDesc::SetStyle (const CEffectParamDesc &Value)
 	{
 	SetStyle((EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleJet));
 	}
-

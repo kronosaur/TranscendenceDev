@@ -132,7 +132,7 @@ bool COverlay::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 		}
 	}
 
-void COverlay::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
+void COverlay::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds)
 
 //	AccumulateBounds
 //
@@ -152,6 +152,61 @@ void COverlay::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
 				}
 			break;
 			}
+		}
+
+	//	Add painter bounds
+
+	if (m_pPainter)
+		{
+		RECT rcRect;
+		m_pPainter->GetBounds(&rcRect);
+
+		//	Offset based on paint position (which requires iScale and iRotation)
+
+		int xOffset, yOffset;
+		CalcOffset(iScale, iRotation, &xOffset, &yOffset);
+
+		::OffsetRect(&rcRect, xOffset, yOffset);
+
+		//	Adjust resulting RECT to include painter rect
+
+		::UnionRect(ioBounds, ioBounds, &rcRect);
+		}
+	}
+
+void COverlay::CalcOffset (int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin) const
+
+//	CalcOffset
+//
+//	Compute the offset where we should paint the overlay relative to the object
+//	center (in pixels).
+
+	{
+	//	Adjust position, if necessary
+
+	if (m_iPosRadius)
+		{
+		//	Do we rotate with the source?
+
+		int iRotationOrigin = (m_pType->RotatesWithShip() ? iRotation : 0);
+		if (retiRotationOrigin)
+			*retiRotationOrigin = iRotationOrigin;
+
+		//	Adjust based on position
+
+		int xOffset, yOffset;
+		C3DConversion::CalcCoord(iScale, iRotationOrigin + m_iPosAngle, m_iPosRadius, 0, retxOffset, retyOffset);
+		}
+
+	//	Otherwise, we're at the center
+
+	else
+		{
+		*retxOffset = 0;
+		*retyOffset = 0;
+
+		if (retiRotationOrigin)
+			*retiRotationOrigin = 0;
 		}
 	}
 
@@ -540,20 +595,11 @@ void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPai
 //	Paint the field
 
 	{
-	//	Do we rotate with the source?
+	int xOffset, yOffset, iRotationOrigin;
+	CalcOffset(iScale, Ctx.iRotation, &xOffset, &yOffset, &iRotationOrigin);
 
-	int iRotationOrigin = (m_pType->RotatesWithShip() ? Ctx.iRotation : 0);
-
-	//	Adjust position, if necessary
-
-	if (m_iPosRadius)
-		{
-		int xOffset, yOffset;
-		C3DConversion::CalcCoord(iScale, iRotationOrigin + m_iPosAngle, m_iPosRadius, 0, &xOffset, &yOffset);
-
-		x = x + xOffset;
-		y = y + yOffset;
-		}
+	x = x + xOffset;
+	y = y + yOffset;
 
 	//	Adjust rotation
 
@@ -907,7 +953,7 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 	return true;
 	}
 
-void COverlay::Update (CSpaceObject *pSource)
+void COverlay::Update (CSpaceObject *pSource, bool *retbModified)
 
 //	Update
 //
@@ -923,8 +969,16 @@ void COverlay::Update (CSpaceObject *pSource)
 		else
 			Destroy(pSource);
 
+		//	No need to mark as modified; the destruction should take care
+		//	of that.
+
+		if (retbModified)
+			*retbModified = false;
+
 		return;
 		}
+
+	bool bModified = false;
 
 	//	Update paint hit counter
 
@@ -937,6 +991,7 @@ void COverlay::Update (CSpaceObject *pSource)
 			{
 			m_pHitPainter->Delete();
 			m_pHitPainter = NULL;
+			bModified = true;
 			}
 		}
 
@@ -954,15 +1009,25 @@ void COverlay::Update (CSpaceObject *pSource)
 	
 	if (m_pPainter)
 		{
+		bool bBoundsChanged;
+
 		m_pPainter->OnUpdate(UpdateCtx);
-		m_pPainter->OnMove(MoveCtx);
+		m_pPainter->OnMove(MoveCtx, &bBoundsChanged);
+
+		if (bBoundsChanged)
+			bModified = true;
 		}
 
 	if (m_pHitPainter)
 		{
+		bool bBoundsChanged;
+
 		UpdateCtx.iTick = m_iPaintHitTick;
 		m_pHitPainter->OnUpdate(UpdateCtx);
-		m_pHitPainter->OnMove(MoveCtx);
+		m_pHitPainter->OnMove(MoveCtx, &bBoundsChanged);
+
+		if (bBoundsChanged)
+			bModified = true;
 		}
 
 	//	Call OnUpdate
@@ -975,6 +1040,11 @@ void COverlay::Update (CSpaceObject *pSource)
 		}
 
 	m_iTick++;
+
+	//	Done
+
+	if (retbModified)
+		*retbModified = bModified;
 	}
 
 void COverlay::WriteToStream (IWriteStream *pStream)

@@ -77,7 +77,7 @@ bool COverlayList::AbsorbsWeaponFire (CInstalledDevice *pDevice)
 	return false;
 	}
 
-void COverlayList::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
+void COverlayList::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds)
 
 //	AccumulateBounds
 //
@@ -88,7 +88,7 @@ void COverlayList::AccumulateBounds (CSpaceObject *pSource, RECT *ioBounds)
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
-			pField->AccumulateBounds(pSource, ioBounds);
+			pField->AccumulateBounds(pSource, iScale, iRotation, ioBounds);
 
 		pField = pField->GetNext();
 		}
@@ -744,6 +744,8 @@ void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 	{
 	DEBUG_TRY
 
+	bool bModified = false;
+
 	//	First update all fields
 
 	COverlay *pField = m_pFirst;
@@ -752,7 +754,11 @@ void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 		if (!pField->IsDestroyed()
 				|| pField->IsFading())
 			{
-			pField->Update(pSource);
+			bool bOverlayModified;
+
+			pField->Update(pSource, &bOverlayModified);
+			if (bOverlayModified)
+				bModified = true;
 
 			//	If the source got destroyed, then we're done
 
@@ -764,8 +770,6 @@ void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 		}
 
 	//	Do a second pass in which we destroy fields marked for deletion
-
-	bool bModified = false;
 
 	pField = m_pFirst;
 	COverlay *pPrevField = NULL;

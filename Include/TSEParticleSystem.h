@@ -73,8 +73,9 @@ class CParticleSystemDesc
 			styleRadiate =					5,
 			styleSpray =					6,
 			styleWrithe =					7,
+			styleBrownian =					8,
 
-			styleMax =						7,
+			styleMax =						8,
 			};
 
 		CParticleSystemDesc (void);
@@ -84,13 +85,17 @@ class CParticleSystemDesc
 		inline IEffectPainter *CreateParticlePainter (CCreatePainterCtx &Ctx) { return m_pParticleEffect.CreatePainter(Ctx); }
 		ALERROR InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
+		inline Metric GetCohesionFactor (void) const { return m_rCohesionFactor; }
+		inline int GetCohesionPotential (void) const { return mathRound(m_rCohesionFactor * 100.0); }
+		inline int GetEmitChance (void) const { return m_iEmitChance; }
 		inline const DiceRange &GetEmitLifetime (void) const { return m_EmitLifetime; }
 		inline const DiceRange &GetEmitRate (void) const { return m_EmitRate; }
 		inline const DiceRange &GetEmitSpeed (void) const { return m_EmitSpeed; }
 		inline const DiceRange &GetEmitWidth (void) const { return m_EmitWidth; }
+		inline int GetMissChance (void) const { return m_iMissChance; }
 		inline CEffectCreator *GetParticleEffect (void) { return m_pParticleEffect; }
 		inline const DiceRange &GetParticleLifetime (void) const { return m_ParticleLifetime; }
-		inline int GetMissChance (void) const { return m_iMissChance; }
+		inline const DiceRange &GetRadius (void) const { return m_Radius; }
 		inline int GetSplashChance (void) const { return m_iSplashChance; }
 		inline const DiceRange &GetSpreadAngle (void) const { return m_SpreadAngle; }
 		inline EStyles GetStyle (void) const { return m_iStyle; }
@@ -104,13 +109,16 @@ class CParticleSystemDesc
 		inline bool IsSprayCompatible (void) const { return m_bSprayCompatible; }
 		inline bool IsTrackingObject (void) const { return m_bTrackingObject; }
 		void MarkImages (void);
+		inline void SetCohesionPotential (int iValue) { m_rCohesionFactor = Max(0, iValue) / 100.0; }
+		inline void SetEmitChance (int iValue) { m_iEmitChance = iValue; }
 		inline void SetEmitLifetime (const DiceRange &Value) { m_EmitLifetime = Value; }
 		inline void SetEmitRate (const DiceRange &Value) { m_EmitRate = Value; }
 		inline void SetEmitSpeed (const DiceRange &Value) { m_EmitSpeed = Value; }
 		inline void SetEmitWidth (const DiceRange &Value) { m_EmitWidth = Value; }
 		inline void SetFixedPos (bool bValue = true) { m_bFixedPos = bValue; }
-		inline void SetParticleLifetime (const DiceRange &Value) { m_ParticleLifetime = Value; }
 		inline void SetMissChance (int iValue) { m_iMissChance = iValue; }
+		inline void SetParticleLifetime (const DiceRange &Value) { m_ParticleLifetime = Value; }
+		inline void SetRadius (const DiceRange &Value) { m_Radius = Value; }
 		inline void SetSplashChance (int iValue) { m_iSplashChance = iValue; }
 		inline void SetSprayCompatible (bool bValue = true) { m_bSprayCompatible = bValue; }
 		inline void SetSpreadAngle (const DiceRange &Value) { m_SpreadAngle = Value; }
@@ -136,14 +144,20 @@ class CParticleSystemDesc
 		DiceRange m_ParticleLifetime;			//	Lifetime of a particle, in ticks
 		DiceRange m_SpreadAngle;				//	Angle at which particles spread
 		DiceRange m_TangentSpeed;				//	Exhaust spread
-		int m_iXformRotation;					//	Rotation
-		Metric m_rXformTime;					//	Time adjustment
+		int m_iEmitChance;						//	Chance of emitting on a given tick
 
-		//	Collision behavior
+		//	Collision/motion behavior
 
+		DiceRange m_Radius;						//	System radius (for some styles)
+		Metric m_rCohesionFactor;				//	(0-1) Tendency to return to original shape
 		Metric m_rWakeFactor;					//	Speed changes when objects pass through
 		int m_iSplashChance;					//	Chance of a particle bouncing off
 		int m_iMissChance;						//	Chance of a particle missing
+
+		//	Adjustments
+
+		int m_iXformRotation;					//	Rotation
+		Metric m_rXformTime;					//	Time adjustment
 
 		//	Particles
 
@@ -216,7 +230,6 @@ class CParticleArray
 		inline void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
 		void UpdateMotionLinear (bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
 		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
-		void UpdateWrithe (SEffectUpdateCtx &UpdateCtx);
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
@@ -269,6 +282,7 @@ class CParticleArray
 		void CreateInterpolatedParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void CreateLinearParticles (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitAmorphous (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
+		void EmitCloud (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitComet (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitExhaust (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, CVector *retvLastSource);
 		void EmitJet (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
@@ -304,9 +318,11 @@ class CParticleArray
 						CG32bitPixel rgbPrimaryColor,
 						CG32bitPixel rgbSecondaryColor);
 		void PosToXY (const CVector &xy, int *retx, int *rety);
+		void UpdateBrownian (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 		void UpdateCollisions (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 		void UpdateComet (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 		void UpdateTrackTarget (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
+		void UpdateWrithe (SEffectUpdateCtx &UpdateCtx);
 		void UseRealCoords (void);
 		CVector XYToPos (int x, int y);
 

@@ -993,27 +993,43 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	if (!CalcIntermediates())
 		return;
 
+	//	Sometimes we start on a random animation frame
+
+	int iTick;
+	switch (m_iAnimation)
+		{
+		case animateFlicker:
+			iTick = Ctx.iDestiny + Ctx.iTick;
+			break;
+
+		default:
+			iTick = Ctx.iTick;
+			break;
+		}
+
+	//	Paint
+
 	switch (m_iStyle)
 		{
 		case styleCloud:
 		case styleFirecloud:
 		case styleSmoke:
 			{
-			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			m_pPainter->SetParam(CONSTLIT("radiusTable"), Table);
-			m_pPainter->SetParam(CONSTLIT("pixelTable"), m_ColorTable2[Ctx.iTick % m_ColorTable2.GetCount()]);
+			m_pPainter->SetParam(CONSTLIT("pixelTable"), m_ColorTable2[iTick % m_ColorTable2.GetCount()]);
 
-			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[Ctx.iTick % m_TextureFrame.GetCount()]);
+			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[iTick % m_TextureFrame.GetCount()]);
 			break;
 			}
 
 		case styleDiffraction:
 			{
-			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			m_pPainter->SetParam(CONSTLIT("colorTable"), Table);
 			if (UsesColorTable2())
 				{
-				const TArray<CG32bitPixel> &Table2 = m_ColorTable2[Ctx.iTick % m_ColorTable.GetCount()];
+				const TArray<CG32bitPixel> &Table2 = m_ColorTable2[iTick % m_ColorTable.GetCount()];
 				m_pPainter->SetParam(CONSTLIT("colorTable2"), Table2);
 				}
 
@@ -1023,17 +1039,17 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 		case styleFireblast:
 			{
-			const TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			const TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			m_pPainter->SetParam(CONSTLIT("explosionTable"), Table);
-			m_pPainter->SetParam(CONSTLIT("smokeTable"), m_ColorTable2[Ctx.iTick % m_ColorTable2.GetCount()]);
-			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[Ctx.iTick % m_TextureFrame.GetCount()]);
+			m_pPainter->SetParam(CONSTLIT("smokeTable"), m_ColorTable2[iTick % m_ColorTable2.GetCount()]);
+			m_pPainter->Draw(Dest, x, y, Table.GetCount(), m_TextureFrame[iTick % m_TextureFrame.GetCount()]);
 			break;
 			}
 
 		case styleFlare:
 		case styleSmooth:
 			{
-			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
+			TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			CGDraw::Circle(Dest, x, y, Table.GetCount(), Table, m_iBlendMode);
 			break;
 			}
@@ -1041,7 +1057,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	if (HasFlares())
 		{
-		SFlareDesc &Flare = m_FlareDesc[Ctx.iTick % m_FlareDesc.GetCount()];
+		SFlareDesc &Flare = m_FlareDesc[iTick % m_FlareDesc.GetCount()];
 		PaintFlares(Dest, x, y, Flare, Ctx);
 		}
 	}

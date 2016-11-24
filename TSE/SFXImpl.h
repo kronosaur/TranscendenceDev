@@ -708,10 +708,13 @@ class CParticleSystemEffectCreator : public CEffectCreator
 		CEffectParamDesc m_Style;			//	Particles fixed on background (not obj)
 		CEffectParamDesc m_FixedPos;		//	Particles fixed on background (not obj)
 
+		CEffectParamDesc m_Cohesion;		//	Tendency to revert to original shap (0-100)
+		CEffectParamDesc m_EmitChance;		//	Probability of emitting on a given tick
 		CEffectParamDesc m_EmitRate;		//	Particles to create per tick
 		CEffectParamDesc m_EmitSpeed;		//	Particle speed (% of lightspeed)
 		CEffectParamDesc m_EmitLifetime;	//	Emissions lasts for this many ticks
 		CEffectParamDesc m_ParticleLifetime;//	In ticks
+		CEffectParamDesc m_Radius;			//	Radius of system
 		CEffectParamDesc m_SpreadAngle;		//	Full angle of spread
 		CEffectParamDesc m_TangentSpeed;	//	Trangental speed (if spread angle is omitted)
 

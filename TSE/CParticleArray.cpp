@@ -291,6 +291,14 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, CSpaceObject *pObj, 
 //		this should be the motion of the ship/station that fired.
 
 	{
+	//	Do we emit this tick?
+
+	if (Desc.GetEmitChance() < 100
+			&& mathRandom(1, 100) > Desc.GetEmitChance())
+		return;
+
+	//	Figure out how many particles to emit
+
 	int iCount = Desc.GetEmitRate().Roll();
 	if (iCount <= 0)
 		return;
@@ -322,6 +330,10 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, CSpaceObject *pObj, 
 		{
 		case CParticleSystemDesc::styleAmorphous:
 			EmitAmorphous(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			break;
+
+		case CParticleSystemDesc::styleBrownian:
+			EmitCloud(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
 			break;
 
 		case CParticleSystemDesc::styleComet:
@@ -426,6 +438,44 @@ void CParticleArray::EmitAmorphous (const CParticleSystemDesc &Desc, int iCount,
 		//	Add the particle
 
 		AddParticle(vPos, vVel, Desc.GetParticleLifetime().Roll(), AngleToDegrees(rRotation), -1, iTick);
+		}
+	}
+
+void CParticleArray::EmitCloud (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitCloud
+//
+//	Creates randomly in a circle (of a given radius) and with random velocity.
+
+	{
+	int i;
+
+	//	Compute some basic stuff
+
+	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
+	int iRadius = Desc.GetRadius().Roll();
+
+	//	Create particles
+
+	for (i = 0; i < iCount; i++)
+		{
+		//	Choose a position
+
+		CVector vPos = vSource + ::PolarToVector(mathRandom(0, 359), mathRandom(0, iRadius) * g_KlicksPerPixel);
+
+		//	Choose a random angle and velocity
+
+		Metric rAngle = 2.0 * PI * (mathRandom(0, 9999) / 10000.0);
+		Metric rSpeed = (Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
+		CVector vVel = Desc.GetXformTime() * (vSourceVel + ::PolarToVectorRadians(rAngle, rSpeed));
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vPos, vVel, iLifeLeft, AngleToDegrees(rAngle), -1, iTick);
 		}
 	}
 
@@ -825,7 +875,7 @@ void CParticleArray::Paint (const CParticleSystemDesc &Desc, CG32bitImage &Dest,
 	else
 		Paint(Dest, xPos, yPos, Ctx, pPainter, Desc.GetEmitSpeed().GetAveValueFloat() * LIGHT_SECOND / 100.0);
 
-#ifdef DEBUG
+#ifdef DEBUG_PARTICLE_BOUNDS
 	CVector vUR;
 	CVector vLL;
 
@@ -1521,6 +1571,10 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 
 	switch (Desc.GetStyle())
 		{
+		case CParticleSystemDesc::styleBrownian:
+			UpdateBrownian(Desc, Ctx);
+			break;
+
 		case CParticleSystemDesc::styleComet:
 			UpdateComet(Desc, Ctx);
 			break;
@@ -1528,6 +1582,82 @@ void CParticleArray::Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &
 		case CParticleSystemDesc::styleWrithe:
 			UpdateWrithe(Ctx);
 			break;
+		}
+	}
+
+void CParticleArray::UpdateBrownian (const CParticleSystemDesc &Desc, SEffectUpdateCtx &UpdateCtx)
+
+//	UpdateBrownian
+//
+//	Brownian (random) motion within a radius.
+
+	{
+	//	We only update each particle 1/30 ticks.
+
+	const int UPDATE_CYCLE = 30;
+	const Metric IMPULSE_FACTOR = 0.5;
+	const Metric MAX_SPEED_FACTOR = 3.0;
+
+	//	We need to use real coordinates instead of fixed point
+
+	UseRealCoords();
+
+	//	Compute some temporaries
+
+	int iCycleTick = (UpdateCtx.iTick % UPDATE_CYCLE);
+
+	Metric rMaxRadius = Desc.GetRadius().GetMaxValue() * g_KlicksPerPixel;
+	Metric rMaxRadius2 = rMaxRadius * rMaxRadius;
+	bool bCheckRadius = (rMaxRadius > 0.0);
+
+	Metric rCohesionSpeed = g_SecondsPerUpdate * Desc.GetXformTime() * Desc.GetCohesionFactor() * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	Metric rImpulseSpeed = g_SecondsPerUpdate * Desc.GetXformTime() * IMPULSE_FACTOR * Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+	Metric rMaxSpeed = MAX_SPEED_FACTOR * g_SecondsPerUpdate * Desc.GetXformTime() * Desc.GetEmitSpeed().GetMaxValue() * LIGHT_SPEED / 100.0;
+
+	//	Loop over all particles
+
+	SParticle *pParticle = m_pArray;
+	SParticle *pEnd = pParticle + m_iCount;
+
+	CVector vToCenter;
+	Metric rDist2;
+
+	while (pParticle < pEnd)
+		{
+		if (pParticle->fAlive)
+			{
+			//	We only update each particle 1/30 ticks.
+
+			if ((pParticle->iDestiny % UPDATE_CYCLE) != iCycleTick)
+				{ }
+
+			//	If we're outside the maximum radius, then we need to push the
+			//	particle back towards the center.
+
+			else if (bCheckRadius
+					&& (rDist2 = (vToCenter = (m_vLastEmitSource - pParticle->Pos)).Length2()) > rMaxRadius2)
+				{
+				Metric rDist = sqrt(rDist2);
+				CVector vImpulse = (rCohesionSpeed / rDist) * vToCenter;
+
+				pParticle->Vel = pParticle->Vel + vImpulse;
+				pParticle->Vel.Clip(rMaxSpeed);
+				pParticle->iRotation = VectorToPolar(pParticle->Vel);
+				}
+
+			//	Otherwise we give the particle a random impulse
+
+			else
+				{
+				Metric rAngle = 2.0 * PI * (mathRandom(0, 9999) / 10000.0);
+				pParticle->Vel = pParticle->Vel + ::PolarToVectorRadians(rAngle, rImpulseSpeed);
+				pParticle->iRotation = VectorToPolar(pParticle->Vel);
+				}
+			}
+
+		//	Next
+
+		pParticle++;
 		}
 	}
 

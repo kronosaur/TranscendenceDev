@@ -7,13 +7,16 @@
 
 #define PARTICLE_EFFECT_TAG						CONSTLIT("ParticleEffect")
 
+#define COHESION_ATTRIB							CONSTLIT("cohesion")
 #define CUR_DIRECTION_ATTRIB					CONSTLIT("curDirection")
+#define EMIT_CHANCE_ATTRIB						CONSTLIT("emitChance")
 #define EMIT_RATE_ATTRIB						CONSTLIT("emitRate")
 #define EMIT_SPEED_ATTRIB						CONSTLIT("emitSpeed")
 #define EMIT_STOP_ATTRIB						CONSTLIT("emitLifetime")
 #define FIXED_POS_ATTRIB						CONSTLIT("fixedPos")
 #define IS_TRACKING_OBJECT_ATTRIB				CONSTLIT("isTrackingObject")
 #define PARTICLE_LIFETIME_ATTRIB				CONSTLIT("particleLifetime")
+#define RADIUS_ATTRIB							CONSTLIT("radius")
 #define SPREAD_ANGLE_ATTRIB						CONSTLIT("spreadAngle")
 #define LIFETIME_ATTRIB							CONSTLIT("lifetime")
 #define STYLE_ATTRIB							CONSTLIT("style")
@@ -127,15 +130,18 @@ IEffectPainter *CParticleSystemEffectCreator::OnCreatePainter (CCreatePainterCtx
 	//	Initialize the painter parameters
 
 	pPainter->SetParam(Ctx, STYLE_ATTRIB, m_Style);
+	pPainter->SetParam(Ctx, EMIT_CHANCE_ATTRIB, m_EmitChance);
 	pPainter->SetParam(Ctx, EMIT_RATE_ATTRIB, m_EmitRate);
 
 	pPainter->SetParam(Ctx, FIXED_POS_ATTRIB, m_FixedPos);
 	pPainter->SetParam(Ctx, PARTICLE_LIFETIME_ATTRIB, m_ParticleLifetime);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
+	pPainter->SetParam(Ctx, COHESION_ATTRIB, m_Cohesion);
 	pPainter->SetParam(Ctx, WAKE_POTENTIAL_ATTRIB, m_WakePotential);
 	pPainter->SetParam(Ctx, XFORM_ROTATION_ATTRIB, m_XformRotation);
 	pPainter->SetParam(Ctx, XFORM_TIME_ATTRIB, m_XformTime);
 	pPainter->SetParam(Ctx, EMIT_STOP_ATTRIB, m_EmitLifetime);
+	pPainter->SetParam(Ctx, RADIUS_ATTRIB, m_Radius);
 
 	if (!m_FixedPos.EvalBool() || m_EmitSpeed.GetType() != CEffectParamDesc::typeNull)
 		pPainter->SetParam(Ctx, EMIT_SPEED_ATTRIB, m_EmitSpeed);
@@ -188,6 +194,12 @@ ALERROR CParticleSystemEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx
 		m_Style.InitInteger(iStyle);
 		}
 
+	if (error = m_Cohesion.InitIntegerFromXML(Ctx, pDesc->GetAttribute(COHESION_ATTRIB)))
+		return error;
+
+	if (error = m_EmitChance.InitIntegerFromXML(Ctx, pDesc->GetAttribute(EMIT_CHANCE_ATTRIB)))
+		return error;
+
 	if (error = m_EmitRate.InitIntegerFromXML(Ctx, pDesc->GetAttribute(EMIT_RATE_ATTRIB)))
 		return error;
 
@@ -198,6 +210,9 @@ ALERROR CParticleSystemEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx
 		return error;
 
 	if (error = m_ParticleLifetime.InitIntegerFromXML(Ctx, pDesc->GetAttribute(PARTICLE_LIFETIME_ATTRIB)))
+		return error;
+
+	if (error = m_Radius.InitIntegerFromXML(Ctx, pDesc->GetAttribute(RADIUS_ATTRIB)))
 		return error;
 
 	if (error = m_SpreadAngle.InitIntegerFromXML(Ctx, pDesc->GetAttribute(SPREAD_ANGLE_ATTRIB)))
@@ -308,8 +323,14 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 //	Returns the parameter
 
 	{
-	if (strEquals(sParam, CUR_DIRECTION_ATTRIB))
+	if (strEquals(sParam, COHESION_ATTRIB))
+		retValue->InitInteger(m_Desc.GetCohesionPotential());
+
+	else if (strEquals(sParam, CUR_DIRECTION_ATTRIB))
 		retValue->InitInteger(m_iCurDirection);
+
+	else if (strEquals(sParam, EMIT_CHANCE_ATTRIB))
+		retValue->InitInteger(m_Desc.GetEmitChance());
 
 	else if (strEquals(sParam, EMIT_RATE_ATTRIB))
 		retValue->InitDiceRange(m_Desc.GetEmitRate());
@@ -326,11 +347,14 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 	else if (strEquals(sParam, IS_TRACKING_OBJECT_ATTRIB))
 		retValue->InitBool(m_Desc.IsTrackingObject());
 
+	else if (strEquals(sParam, LIFETIME_ATTRIB))
+		retValue->InitInteger(m_iLifetime);
+
 	else if (strEquals(sParam, PARTICLE_LIFETIME_ATTRIB))
 		retValue->InitDiceRange(m_Desc.GetParticleLifetime());
 
-	else if (strEquals(sParam, LIFETIME_ATTRIB))
-		retValue->InitInteger(m_iLifetime);
+	else if (strEquals(sParam, RADIUS_ATTRIB))
+		retValue->InitDiceRange(m_Desc.GetRadius());
 
 	else if (strEquals(sParam, SPREAD_ANGLE_ATTRIB))
 		retValue->InitDiceRange(m_Desc.GetSpreadAngle());
@@ -365,22 +389,25 @@ bool CParticleSystemEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(15);
-	retList->GetAt(0) = CUR_DIRECTION_ATTRIB;
-	retList->GetAt(1) = EMIT_RATE_ATTRIB;
-	retList->GetAt(2) = EMIT_SPEED_ATTRIB;
-	retList->GetAt(3) = EMIT_STOP_ATTRIB;
-	retList->GetAt(4) = FIXED_POS_ATTRIB;
-	retList->GetAt(5) = IS_TRACKING_OBJECT_ATTRIB;
-	retList->GetAt(6) = PARTICLE_LIFETIME_ATTRIB;
-	retList->GetAt(7) = LIFETIME_ATTRIB;
-	retList->GetAt(8) = SPREAD_ANGLE_ATTRIB;
-	retList->GetAt(9) = STYLE_ATTRIB;
-	retList->GetAt(10) = TANGENT_SPEED_ATTRIB;
-	retList->GetAt(11) = USE_OBJECT_CENTER_ATTRIB;
-	retList->GetAt(12) = WAKE_POTENTIAL_ATTRIB;
-	retList->GetAt(13) = XFORM_ROTATION_ATTRIB;
-	retList->GetAt(14) = XFORM_TIME_ATTRIB;
+	retList->InsertEmpty(18);
+	retList->GetAt(0) = COHESION_ATTRIB;
+	retList->GetAt(1) = CUR_DIRECTION_ATTRIB;
+	retList->GetAt(2) = EMIT_CHANCE_ATTRIB;
+	retList->GetAt(3) = EMIT_RATE_ATTRIB;
+	retList->GetAt(4) = EMIT_SPEED_ATTRIB;
+	retList->GetAt(5) = EMIT_STOP_ATTRIB;
+	retList->GetAt(6) = FIXED_POS_ATTRIB;
+	retList->GetAt(7) = IS_TRACKING_OBJECT_ATTRIB;
+	retList->GetAt(8) = LIFETIME_ATTRIB;
+	retList->GetAt(9) = PARTICLE_LIFETIME_ATTRIB;
+	retList->GetAt(10) = RADIUS_ATTRIB;
+	retList->GetAt(11) = SPREAD_ANGLE_ATTRIB;
+	retList->GetAt(12) = STYLE_ATTRIB;
+	retList->GetAt(13) = TANGENT_SPEED_ATTRIB;
+	retList->GetAt(14) = USE_OBJECT_CENTER_ATTRIB;
+	retList->GetAt(15) = WAKE_POTENTIAL_ATTRIB;
+	retList->GetAt(16) = XFORM_ROTATION_ATTRIB;
+	retList->GetAt(17) = XFORM_TIME_ATTRIB;
 
 	return true;
 	}
@@ -585,8 +612,14 @@ void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 //	Sets parameters
 
 	{
-	if (strEquals(sParam, CUR_DIRECTION_ATTRIB))
+	if (strEquals(sParam, COHESION_ATTRIB))
+		m_Desc.SetCohesionPotential(Value.EvalIntegerBounded(0, -1, 20));
+
+	else if (strEquals(sParam, CUR_DIRECTION_ATTRIB))
 		m_iCurDirection = Value.EvalIntegerBounded(0, -1, -1);
+
+	else if (strEquals(sParam, EMIT_CHANCE_ATTRIB))
+		m_Desc.SetEmitChance(Value.EvalIntegerBounded(0, 100, 100));
 
 	else if (strEquals(sParam, EMIT_RATE_ATTRIB))
 		m_Desc.SetEmitRate(Value.EvalDiceRange(10));
@@ -603,11 +636,14 @@ void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 	else if (strEquals(sParam, IS_TRACKING_OBJECT_ATTRIB))
 		m_Desc.SetTrackingObject(Value.EvalBool());
 
+	else if (strEquals(sParam, LIFETIME_ATTRIB))
+		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
+
 	else if (strEquals(sParam, PARTICLE_LIFETIME_ATTRIB))
 		m_Desc.SetParticleLifetime(Value.EvalDiceRange(10));
 
-	else if (strEquals(sParam, LIFETIME_ATTRIB))
-		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
+	else if (strEquals(sParam, RADIUS_ATTRIB))
+		m_Desc.SetRadius(Value.EvalDiceRange(64));
 
 	else if (strEquals(sParam, SPREAD_ANGLE_ATTRIB))
 		m_Desc.SetSpreadAngle(Value.EvalDiceRange(5));

@@ -344,7 +344,7 @@ void CShip::CalcBounds (void)
 
 	//	Overlay bounds
 
-	m_Overlays.AccumulateBounds(this, &rcBounds);
+	m_Overlays.AccumulateBounds(this, Image.GetImageViewportSize(), GetRotation(), &rcBounds);
 
 	//	Set bounds
 

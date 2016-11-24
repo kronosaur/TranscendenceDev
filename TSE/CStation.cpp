@@ -259,7 +259,7 @@ void CStation::CalcBounds (void)
 
 	//	Add overlays
 
-	m_Overlays.AccumulateBounds(this, &rcBounds);
+	m_Overlays.AccumulateBounds(this, Image.GetImageViewportSize(), GetRotation(), &rcBounds);
 
 	//	Set it
 
@@ -336,6 +336,10 @@ void CStation::CalcOverlayImpact (void)
 
 	m_fDisarmedByOverlay = Impact.bDisarm;
 	m_fParalyzedByOverlay = Impact.bParalyze;
+
+	//	Recalc bounds
+
+	CalcBounds();
 	}
 
 bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength)
