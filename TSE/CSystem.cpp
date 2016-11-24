@@ -493,9 +493,9 @@ const int LABEL_OVERLAP_Y =								1;
 
 const Metric BACKGROUND_OBJECT_FACTOR =					4.0;
 
-const int GRID_SIZE =									128;
-const Metric CELL_SIZE =								(1024.0 * g_KlicksPerPixel);
-const Metric CELL_BORDER =								(512.0 * g_KlicksPerPixel);
+const int GRID_SIZE =									256;
+const Metric CELL_SIZE =								(512.0 * g_KlicksPerPixel);
+const Metric CELL_BORDER =								(128.0 * g_KlicksPerPixel);
 
 const Metric SAME_POS_THRESHOLD2 =						(g_KlicksPerPixel * g_KlicksPerPixel);
 
