@@ -1891,6 +1891,9 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 		{
 		bool bNoShotsFired = true;
 
+		if (pShot->GetFireType() == ftContinuousBeam && !pDevice->HasLastShots())
+			pDevice->SetLastShotCount(iShotCount);
+
 		for (i = 0; i < iShotCount; i++)
 			{
 			//	Fire out to event, if the weapon has one.
@@ -1915,30 +1918,50 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 				{
 				CSpaceObject *pNewObj;
 
-				DWORD dwFlags = 0;
-				if (i != 0)
-					dwFlags = CSystem::CWF_FRAGMENT;
+				//	If this is a continuous beam, then we need special code.
+
+				if (pShot->GetFireType() == ftContinuousBeam
+						&& (pNewObj = pDevice->GetLastShot(pSource, i)))
+					{
+					pNewObj->AddContinuousBeam(ShotPos[i],
+							pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
+							ShotDir[i]);
+					}
+
+				//	Otherwise, create a shot
+
 				else
-					dwFlags = CSystem::CWF_WEAPON_FIRE;
+					{
+					DWORD dwFlags = 0;
+					if (i != 0)
+						dwFlags = CSystem::CWF_FRAGMENT;
+					else
+						dwFlags = CSystem::CWF_WEAPON_FIRE;
 
-				if (iRepeatingCount != 0)
-					dwFlags |= CSystem::CWF_REPEAT;
+					if (iRepeatingCount != 0)
+						dwFlags |= CSystem::CWF_REPEAT;
 
-				pSource->GetSystem()->CreateWeaponFire(pShot,
-						pDevice->GetEnhancements(),
-						CDamageSource(pSource, killedByDamage),
-						ShotPos[i],
-						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
-						ShotDir[i],
-						iRepeatingCount,
-						(m_bMIRV ? MIRVTarget[i] : pTarget),
-						dwFlags,
-						&pNewObj);
+					pSource->GetSystem()->CreateWeaponFire(pShot,
+							pDevice->GetEnhancements(),
+							CDamageSource(pSource, killedByDamage),
+							ShotPos[i],
+							pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
+							ShotDir[i],
+							iRepeatingCount,
+							(m_bMIRV ? MIRVTarget[i] : pTarget),
+							dwFlags,
+							&pNewObj);
 
-				//	If this shot was created by automated weapon fire, then set flag
+					//	If this shot was created by automated weapon fire, then set flag
 
-				if (pDevice->IsAutomatedWeapon())
-					pNewObj->SetAutomatedWeapon();
+					if (pDevice->IsAutomatedWeapon())
+						pNewObj->SetAutomatedWeapon();
+
+					//	Remember the shot, if necessary
+
+					if (pShot->GetFireType() == ftContinuousBeam)
+						pDevice->SetLastShot(pNewObj, i);
+					}
 
 				bNoShotsFired = false;
 				}
@@ -3751,6 +3774,11 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo,
 		else if (pShot->GetType() == ftRadius)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radius")));
 
+		//	For continuous beam
+
+		else if (pShot->GetType() == ftContinuousBeam)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("beam")));
+
 		//	For particles...
 
 		else if (pShot->GetType() == ftParticles)
@@ -4206,6 +4234,9 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 		dwContinuous--;
 		SetContinuousFire(pDevice, dwContinuous);
 		}
+	else if (pDevice->HasLastShots()
+			&& (!pDevice->IsTriggered() || pDevice->GetTimeUntilReady() > 1))
+		pDevice->SetLastShotCount(0);
 
 	DEBUG_CATCH
 	}

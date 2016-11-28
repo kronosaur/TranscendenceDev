@@ -194,7 +194,6 @@ void COverlay::CalcOffset (int iScale, int iRotation, int *retxOffset, int *rety
 
 		//	Adjust based on position
 
-		int xOffset, yOffset;
 		C3DConversion::CalcCoord(iScale, iRotationOrigin + m_iPosAngle, m_iPosRadius, 0, retxOffset, retyOffset);
 		}
 

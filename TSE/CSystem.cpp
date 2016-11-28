@@ -426,6 +426,9 @@
 //	138: 1.7 Beta 3
 //		SFXParticleSystem has new style mapping
 //
+//	139: 1.7 Beta 3
+//		m_LastShotIDs in CInstalledDevice
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -1896,6 +1899,24 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 					&pMissile);
 
 			pShot = pMissile;
+			break;
+			}
+
+		case ftContinuousBeam:
+			{
+			CContinuousBeam *pBeam;
+
+			CContinuousBeam::Create(this,
+					pDesc,
+					pEnhancements,
+					Source,
+					vPos,
+					vVel,
+					iDirection,
+					pTarget,
+					&pBeam);
+
+			pShot = pBeam;
 			break;
 			}
 

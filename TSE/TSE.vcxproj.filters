@@ -973,6 +973,9 @@
     <ClCompile Include="CStationEncounterDesc.cpp">
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
+    <ClCompile Include="CContinuousBeam.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

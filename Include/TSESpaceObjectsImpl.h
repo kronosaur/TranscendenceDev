@@ -69,7 +69,7 @@ class CBeam : public CSpaceObject
 		virtual Categories GetCategory (void) const override { return catBeam; }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
-		virtual int GetInteraction (void) override { return 0; }
+		virtual int GetInteraction (void) const override { return 0; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerStations; }
@@ -142,6 +142,110 @@ class CBoundaryMarker : public CSpaceObject
 		TArray<CVector> m_Path;
 
 	friend CObjectClass<CBoundaryMarker>;
+	};
+
+class CContinuousBeam : public CSpaceObject
+	{
+	public:
+		static ALERROR Create (CSystem *pSystem,
+				CWeaponFireDesc *pDesc,
+				CItemEnhancementStack *pEnhancements,
+				const CDamageSource &Source,
+				const CVector &vPos,
+				const CVector &vVel,
+				int iDirection,
+				CSpaceObject *pTarget,
+				CContinuousBeam **retpObj);
+		~CContinuousBeam (void);
+
+		//	CSpaceObject virtuals
+		virtual void AddContinuousBeam (const CVector &vPos, const CVector &vVel, int iDirection) override;
+		virtual bool CanMove (void) override { return true; }
+		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
+		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
+		virtual int GetInteraction (void) const override { return m_pDesc->GetInteraction(); }
+		virtual CString GetName (DWORD *retdwFlags = NULL) override;
+		virtual CString GetObjClassName (void) override { return CONSTLIT("CContinuousBeam"); }
+		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
+		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
+		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
+		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
+
+	protected:
+		//	Virtuals to be overridden
+		virtual bool CanHit (CSpaceObject *pObj) override { return MissileCanHitObj(pObj, m_Source, m_pDesc); }
+		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
+		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override { return damagePassthrough; }
+		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
+
+	private:
+		struct SSegment
+			{
+			SSegment (void) :
+					fAlive(true),
+					fHit(false)
+				{ 
+				}
+
+			CVector vPos;					//	Position of head of segment
+			CVector vDeltaPos;				//	Change in position per tick
+			DWORD dwGeneration;				//	Created on this tick
+			int iDamage;					//	Damage in points
+			
+			DWORD fAlive:1;					//	Segment is still alive
+			DWORD fHit:1;					//	We hit something last frame
+			DWORD dwSpare:30;
+			};
+
+		CContinuousBeam (void);
+		void AddSegment (const CVector &vPos, const CVector &vVel, int iDamage);
+		void DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir, int iDamage);
+		bool HitTestSegment (const CVector &vPos, CVector &vNewPos, CSpaceObject **retpHit, int *retiHitDir);
+		void PaintSegment (CG32bitImage &Dest, const CVector &vFrom, const CVector &vTo, SViewportPaintCtx &Ctx) const;
+		void UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Metric *retrMaxBoundsX, Metric *retrMaxBoundsY);
+
+		//	This is the origin of the particle array in object coordinates. We 
+		//	always use a fixed anchor because the motion of the particles 
+		//	determines the position of the particle damage object (and not vice
+		//	versa, as in SFXParticleSystem).
+		//
+		//	We use 0,0 as a fixed point, which works as long as we can still 
+		//	convert kilometers to pixels and still be in range. We're good for
+		//	at least 1,000 light-minutes. [But if we ever need to scale beyond 
+		//	that, then we should set the origin to the original shot position.]
+
+		inline const CVector &GetOrigin (void) const { return NullVector; }
+
+		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
+		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
+		CSpaceObject *m_pTarget;				//	Target
+		int m_iTick;							//	Counter
+		int m_iLifetime;						//	Lifetime of any one segment
+		int m_iLastDirection;					//	Most recent direction
+		CDamageSource m_Source;					//	Object that fired the beam
+		CSovereign *m_pSovereign;				//	Sovereign
+
+		TArray<SSegment> m_Segments;			//	All beam segments
+
+		IEffectPainter *m_pEffectPainter;		//	Effect for beam
+
+		DWORD m_fSpare1:1;
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+		DWORD m_dwSpare:24;
+
+	friend CObjectClass<CContinuousBeam>;
 	};
 
 class CDisintegrationEffect : public CSpaceObject
@@ -390,7 +494,7 @@ class CMissile : public CSpaceObject
 		virtual Categories GetCategory (void) const override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
-		virtual int GetInteraction (void) override { return m_pDesc->GetInteraction(); }
+		virtual int GetInteraction (void) const override { return m_pDesc->GetInteraction(); }
 		virtual int GetLevel (void) const override { return m_pDesc->GetLevel(); }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMissile"); }

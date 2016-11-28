@@ -293,6 +293,7 @@ enum FireTypes
 	{
 	ftArea,
 	ftBeam,
+	ftContinuousBeam,
 	ftMissile,
 	ftParticles,
 	ftRadius,

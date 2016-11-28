@@ -1187,6 +1187,7 @@ class CSpaceObject : public CObject
 					&& (vLL.GetX() < m_vPos.GetX())
 					&& (vLL.GetY() < m_vPos.GetY()); }
 		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
+		bool InteractsWith (int iInteraction) const;
 		inline bool IsAscended (void) const { return m_fAscended; }
 		bool IsAutoClearDestination (void) { return m_fAutoClearDestination; }
 		bool IsAutoClearDestinationOnDestroy (void) { return m_fAutoClearDestinationOnDestroy; }
@@ -1453,7 +1454,7 @@ class CSpaceObject : public CObject
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
 		virtual const CObjectImageArray &GetImage (void) const;
         virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
-		virtual int GetInteraction (void) { return 100; }
+		virtual int GetInteraction (void) const { return 100; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) { return 0.0; }
 		virtual Metric GetMaxSpeed (void) { return (IsMobile() ? LIGHT_SPEED : 0.0); }
@@ -1591,6 +1592,7 @@ class CSpaceObject : public CObject
 		virtual void SetFireDelay (CInstalledDevice *pWeapon, int iDelay = -1) { }
 
 		//	...for beams, missiles, etc.
+		virtual void AddContinuousBeam (const CVector &vPos, const CVector &vVel, int iDirection) { }
 		virtual void CreateReflection (const CVector &vPos, int iDirection) { }
 		virtual void DetonateNow (CSpaceObject *pHit) { }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) { return GetNounPhrase(dwFlags); }
@@ -1683,6 +1685,7 @@ class CSpaceObject : public CObject
 		inline void SetCannotMove (void) { m_fCannotMove = true; }
 		inline void SetCanBounce (void) { m_fCanBounce = true; }
 		inline void SetBounds (Metric rBounds) { m_rBoundsX = rBounds; m_rBoundsY = rBounds; }
+		inline void SetBounds (Metric rBoundsX, Metric rBoundsY) { m_rBoundsX = rBoundsX; m_rBoundsY = rBoundsY; }
 		inline void SetBounds (const RECT &rcRect, Metric rParallaxDist = 1.0)
 			{
 			m_rBoundsX = Max(1.0, rParallaxDist) * g_KlicksPerPixel * (RectWidth(rcRect) / 2);

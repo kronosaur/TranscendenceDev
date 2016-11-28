@@ -4787,6 +4787,24 @@ bool CSpaceObject::InBarrier (const CVector &vPos)
 	return false;
 	}
 
+bool CSpaceObject::InteractsWith (int iInteraction) const
+
+//	InteractsWith
+//
+//	Returns TRUE if this object interacts with an object of the given interaciton.
+//	NOTE: This is random, so the same call twice might return different results.
+
+	{
+	if (iInteraction >= 100)
+		return true;
+
+	iInteraction = Max(iInteraction, GetInteraction());
+	if (iInteraction >= 100)
+		return true;
+
+	return (iInteraction > 0 && mathRandom(1, 100) <= iInteraction);
+	}
+
 bool CSpaceObject::IsEnemyInRange (Metric rMaxRange, bool bIncludeStations)
 
 //	IsEnemyInRange

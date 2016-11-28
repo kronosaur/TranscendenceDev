@@ -75,6 +75,7 @@
 #define FIELD_SOUND								CONSTLIT("sound")
 
 #define FIRE_TYPE_BEAM							CONSTLIT("beam")
+#define FIRE_TYPE_CONTINUOUS_BEAM				CONSTLIT("continuousBeam")
 #define FIRE_TYPE_MISSILE						CONSTLIT("missile")
 #define FIRE_TYPE_AREA							CONSTLIT("area")
 #define FIRE_TYPE_PARTICLES						CONSTLIT("particles")
@@ -1775,6 +1776,11 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			Ctx.sError = CONSTLIT("Must have <Effect> for area damage.");
 			return ERR_FAIL;
 			}
+		}
+	else if (strEquals(sValue, FIRE_TYPE_CONTINUOUS_BEAM))
+		{
+		m_iFireType = ftContinuousBeam;
+		m_rMaxMissileSpeed = m_rMissileSpeed;
 		}
 	else if (strEquals(sValue, FIRE_TYPE_PARTICLES))
 		{

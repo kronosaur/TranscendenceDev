@@ -3899,6 +3899,7 @@ class CInstalledDevice
 		inline int GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) { return m_pClass->GetDamageType(Ctx, Ammo); }
 		inline int GetDefaultFireAngle (CSpaceObject *pSource) { return m_pClass->GetDefaultFireAngle(this, pSource); }
 		bool GetDeviceEnhancementDesc (CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return m_pClass->GetDeviceEnhancementDesc(this, pSource, pWeapon, retDesc); }
+		CSpaceObject *GetLastShot (CSpaceObject *pSource, int iIndex) const;
 		inline Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		inline Metric GetMaxRange (CItemCtx &ItemCtx) { return m_pClass->GetMaxRange(ItemCtx); }
 		inline CString GetName (void) { return m_pClass->GetName(); }
@@ -3914,6 +3915,7 @@ class CInstalledDevice
 		inline CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		inline int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }
 		inline int GetWeaponEffectiveness (CSpaceObject *pSource, CSpaceObject *pTarget) { return m_pClass->GetWeaponEffectiveness(pSource, this, pTarget); }
+		inline bool HasLastShots (void) const { return (m_LastShotIDs.GetCount() > 0); }
 		int IncCharges (CSpaceObject *pSource, int iChange);
 		inline bool IsAutomatedWeapon (void) { return m_pClass->IsAutomatedWeapon(); }
 		inline bool IsAreaWeapon (CSpaceObject *pSource) { return m_pClass->IsAreaWeapon(pSource, this); }
@@ -3926,6 +3928,8 @@ class CInstalledDevice
 		inline void Reset (CSpaceObject *pShip) { m_pClass->Reset(this, pShip); }
 		inline void SelectFirstVariant (CSpaceObject *pSource) { m_pClass->SelectFirstVariant(pSource, this); }
 		inline void SelectNextVariant (CSpaceObject *pSource, int iDir = 1) { m_pClass->SelectNextVariant(pSource, this, iDir); }
+		void SetLastShot (CSpaceObject *pObj, int iIndex);
+		void SetLastShotCount (int iCount);
 		inline void SetTarget (CSpaceObject *pObj);
 		inline bool ShowActivationDelayCounter (CSpaceObject *pSource) { return m_pClass->ShowActivationDelayCounter(pSource, this); }
 
@@ -3943,9 +3947,10 @@ class CInstalledDevice
 	private:
 		CItem *m_pItem;							//	Item installed in this slot
 		CDeviceClassRef m_pClass;				//	The device class that is installed here
-		COverlay *m_pOverlay;				//	Overlay (if associated)
+		COverlay *m_pOverlay;					//	Overlay (if associated)
 		DWORD m_dwTargetID;						//	ObjID of target (for tracking secondary weapons)
 		CItemEnhancementStack *m_pEnhancements;	//	List of enhancements (may be NULL)
+		TArray<DWORD> m_LastShotIDs;			//	ObjID of last shots (only for continuous beams)
 
 		DWORD m_dwData;							//	Data specific to device class
 

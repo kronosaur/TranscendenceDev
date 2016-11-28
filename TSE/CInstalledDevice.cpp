@@ -61,6 +61,7 @@ CInstalledDevice &CInstalledDevice::operator= (const CInstalledDevice &Obj)
 	m_pClass = Obj.m_pClass;
 	m_pOverlay = Obj.m_pOverlay;
 	m_dwTargetID = Obj.m_dwTargetID;
+	m_LastShotIDs = Obj.m_LastShotIDs;
 	m_pEnhancements = (Obj.m_pEnhancements ? Obj.m_pEnhancements->AddRef() : NULL);
 
 	m_dwData = Obj.m_dwData;
@@ -191,6 +192,21 @@ CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *p
 		return CONSTLIT("+enhanced");
 	else
 		return NULL_STR;
+	}
+
+CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) const
+
+//	GetLastShot
+//
+//	Returns the last projectile object for this index.
+
+	{
+	if (pSource 
+			&& iIndex < m_LastShotIDs.GetCount()
+			&& m_LastShotIDs[iIndex] != 0)
+		return pSource->GetSystem()->FindObject(m_LastShotIDs[iIndex]);
+	else
+		return NULL;
 	}
 
 DWORD CInstalledDevice::GetLinkedFireOptions (void) const
@@ -445,6 +461,10 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 //	DWORD		device: class UNID (0xffffffff if not installed)
 //	DWORD		device: m_dwTargetID
 //	DWORD		device: m_dwData
+//
+//	DWORD		device: DWORD m_LastShotIDs count
+//	DWORD		device: DWORD ID
+//
 //	DWORD		device: low = m_iPosAngle; hi = m_iPosRadius
 //	DWORD		device: low = m_iMinFireArc; hi = m_iMaxFireArc
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
@@ -456,6 +476,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 //	CItemEnhancementStack
 
 	{
+	int i;
 	DWORD dwLoad;
 
 	//	Class
@@ -472,6 +493,16 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&m_dwTargetID, sizeof(DWORD));
 
 	Ctx.pStream->Read((char *)&m_dwData, sizeof(DWORD));
+
+	//	Last shots
+
+	if (Ctx.dwVersion >= 139)
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_LastShotIDs.InsertEmpty(dwLoad);
+		for (i = 0; i < (int)dwLoad; i++)
+			Ctx.pStream->Read((char *)&m_LastShotIDs[i], sizeof(DWORD));
+		}
 
 	//	In 1.08 we changed how we store alternating and repeating counters.
 
@@ -637,6 +668,33 @@ void CInstalledDevice::SetEnhancements (CItemEnhancementStack *pStack)
 	m_pEnhancements = pStack;
 	}
 
+void CInstalledDevice::SetLastShot (CSpaceObject *pObj, int iIndex)
+
+//	SetLastShot
+//
+//	Remembers the last projectile object for this index.
+
+	{
+	if (iIndex < m_LastShotIDs.GetCount())
+		m_LastShotIDs[iIndex] = (pObj ? pObj->GetID() : 0);
+	}
+
+void CInstalledDevice::SetLastShotCount (int iCount)
+
+//	SetLastShotCount
+//
+//	Sets the number of shots
+
+	{
+	int i;
+
+	m_LastShotIDs.DeleteAll();
+
+	m_LastShotIDs.InsertEmpty(iCount);
+	for (i = 0; i < iCount; i++)
+		m_LastShotIDs[i] = 0;
+	}
+
 void CInstalledDevice::SetLinkedFireOptions (DWORD dwOptions)
 
 //	SetLinkedFireOptions
@@ -767,7 +825,12 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //
 //	DWORD		device: class UNID (0xffffffff if not installed)
 //	DWORD		device: m_dwTargetID
+//	DWORD		device: m_dwLastShotID
 //	DWORD		device: m_dwData
+//
+//	DWORD		device: DWORD m_LastShotIDs count
+//	DWORD		device: DWORD ID
+//
 //	DWORD		device: low = m_iPosAngle; hi = m_iPosRadius
 //	DWORD		device: low = m_iMinFireArc; hi = m_iMaxFireArc
 //	DWORD		device: low = m_iTimeUntilReady; hi = m_iFireAngle
@@ -779,6 +842,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //	CItemEnhancementStack
 
 	{
+	int i;
 	DWORD dwSave;
 
 	dwSave = (m_pClass ? m_pClass->GetUNID() : 0xffffffff);
@@ -788,6 +852,11 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 
 	pStream->Write((char *)&m_dwTargetID, sizeof(DWORD));
 	pStream->Write((char *)&m_dwData, sizeof(DWORD));
+
+	dwSave = m_LastShotIDs.GetCount();
+	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	for (i = 0; i < m_LastShotIDs.GetCount(); i++)
+		pStream->Write((char *)&m_LastShotIDs[i], sizeof(DWORD));
 
 	dwSave = MAKELONG(m_iPosAngle, m_iPosRadius);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
