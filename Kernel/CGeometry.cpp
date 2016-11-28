@@ -11,6 +11,24 @@
 const Metric EPSILON = 1e-10;
 const Metric MIN_SEGMENT_LENGTH = 3.0;
 
+void CGeometry::AccumulateBounds (const CVector &vPos, CVector &vLL, CVector &vUR)
+
+//	AccumulateBounds
+//
+//	Updates vLL and vUR
+
+	{
+	if (vPos.GetX() < vLL.GetX())
+		vLL.SetX(vPos.GetX());
+	else if (vPos.GetX() > vUR.GetX())
+		vUR.SetX(vPos.GetX());
+
+	if (vPos.GetY() < vLL.GetY())
+		vLL.SetY(vPos.GetY());
+	else if (vPos.GetY() > vUR.GetY())
+		vUR.SetY(vPos.GetY());
+	}
+
 void CGeometry::AddArcPoints (const CVector &vCenter, Metric rRadius, Metric rFromAngle, Metric rToAngle, TArray<CVector> *ioPoints, DWORD dwFlags)
 
 //	AddArcPoints

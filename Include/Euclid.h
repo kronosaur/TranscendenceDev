@@ -135,6 +135,7 @@ class CGeometry
 			intersect2Points,
 			};
 
+		static void AccumulateBounds (const CVector &vPos, CVector &vLL, CVector &vUR);
 		static void AddArcPoints (const CVector &vCenter, Metric rRadius, Metric rFromAngle, Metric rToAngle, TArray<CVector> *ioPoints, DWORD dwFlags = 0);
 		static EIntersectResults IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1 = NULL, CVector *retvP2 = NULL);
 	};
