@@ -984,6 +984,21 @@ void IEffectPainter::OnWriteToStream (IWriteStream *pStream)
 		}
 	}
 
+void IEffectPainter::PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx)
+
+//	PaintLine
+//
+//	Paints a line. Used for continuous beams.
+
+	{
+	//	By default we just paint the head.
+
+	int x, y;
+	Ctx.XFormRel.Transform(vHead, &x, &y);
+
+	Paint(Dest, x, y, Ctx);
+	}
+
 CString IEffectPainter::ReadUNID (SLoadCtx &Ctx)
 
 //	ReadUNID

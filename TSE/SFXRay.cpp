@@ -27,17 +27,18 @@ class CRayEffectPainter : public IEffectPainter
 		~CRayEffectPainter (void);
 
 		//	IEffectPainter virtuals
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual int GetLifetime (void) { return m_iLifetime; }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
-		virtual bool GetParamList (TArray<CString> *retList) const;
-		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
-		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
+		virtual int GetLifetime (void) override { return m_iLifetime; }
+		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
+		virtual bool GetParamList (TArray<CString> *retList) const override;
+		virtual void GetRect (RECT *retRect) const override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override;
+		virtual void PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx) override;
+		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		enum EAnimationTypes
@@ -106,12 +107,13 @@ class CRayEffectPainter : public IEffectPainter
 
 		void CalcCone (TArray<Metric> &AdjArray);
 		void CalcDiamond (TArray<Metric> &AdjArray);
-		void CalcIntermediates (void);
+		void CalcIntermediates (int iLength);
         int CalcLength (SViewportPaintCtx &Ctx) const;
 		void CalcOval (TArray<Metric> &AdjArray);
 		void CalcRandomWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength);
 		void CalcTaper (TArray<Metric> &AdjArray);
 		void CalcWaves (TArray<Metric> &AdjArray, Metric rAmplitude, Metric rWavelength, Metric rDecay, Metric rCyclePos);
+		void CleanUpIntermediates (void);
         ILinePainter *CreateRenderer (int iWidth, int iLength, int iIntensity, ERayStyles iStyle, ERayShapes iShape, Metric rCyclePos = 0.0);
 		void PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx);
 
@@ -133,7 +135,7 @@ class CRayEffectPainter : public IEffectPainter
 
 		//	Temporary variables based on shape/style/etc.
 
-		bool m_bInitialized;				//	TRUE if values are valid
+		int m_iInitializedLength;			//	If -1, not yet initialized; otherwise, initialized to the given length
         TArray<ILinePainter *> m_RayRenderer;
         TArray<int> m_Length;               //  Length for each frame (only for multi-frame animations)
 	};
@@ -342,7 +344,7 @@ CRayEffectPainter::CRayEffectPainter (CEffectCreator *pCreator) :
 		m_iXformRotation(0),
 		m_iLifetime(0),
 		m_iAnimation(animateNone),
-		m_bInitialized(false)
+		m_iInitializedLength(-1)
 
 //	CRayEffectCreator constructor
 
@@ -354,10 +356,7 @@ CRayEffectPainter::~CRayEffectPainter (void)
 //	CRayEffectCreator destructor
 
 	{
-    int i;
-
-    for (i = 0; i < m_RayRenderer.GetCount(); i++)
-        delete m_RayRenderer[i];
+	CleanUpIntermediates();
 	}
 
 void CRayEffectPainter::CalcCone (TArray<Metric> &AdjArray)
@@ -400,7 +399,7 @@ void CRayEffectPainter::CalcDiamond (TArray<Metric> &AdjArray)
 		AdjArray[i] = rX;
 	}
 
-void CRayEffectPainter::CalcIntermediates (void)
+void CRayEffectPainter::CalcIntermediates (int iLength)
 
 //	CalcIntermediates
 //
@@ -411,10 +410,10 @@ void CRayEffectPainter::CalcIntermediates (void)
 
     //  If already initialized, we're done.
 
-    if (m_bInitialized)
+    if (m_iInitializedLength == iLength)
         return;
-
-    ASSERT(m_RayRenderer.GetCount() == 0);
+	else if (m_iInitializedLength != -1)
+		CleanUpIntermediates();
 
     //  Create the renderer. Depending on our animation option, we either create
     //  one or more renderers.
@@ -432,7 +431,7 @@ void CRayEffectPainter::CalcIntermediates (void)
             for (i = 0; i < m_RayRenderer.GetCount(); i++)
                 {
 				Metric rAnimation = (Metric)i / (Metric)iFrameCount;
-                m_RayRenderer[i] = CreateRenderer(m_iWidth, m_iLength, m_iIntensity, m_iStyle, m_iShape, rAnimation);
+                m_RayRenderer[i] = CreateRenderer(m_iWidth, iLength, m_iIntensity, m_iStyle, m_iShape, rAnimation);
                 }
 			break;
 			}
@@ -448,24 +447,24 @@ void CRayEffectPainter::CalcIntermediates (void)
             for (i = 0; i < m_RayRenderer.GetCount(); i++)
                 {
 				Metric rFlicker = Max(0.5, Min(1.0 + (0.25 * mathRandomGaussian()), 2.0));
-				int iLength = Max(2, (int)(rFlicker * m_iLength));
+				int iFlickerLength = Max(2, (int)(rFlicker * iLength));
 				int iIntensity = (int)(rFlicker * m_iIntensity);
 
-                m_Length[i] = iLength;
-                m_RayRenderer[i] = CreateRenderer(m_iWidth, iLength, iIntensity, m_iStyle, m_iShape);
+                m_Length[i] = iFlickerLength;
+                m_RayRenderer[i] = CreateRenderer(m_iWidth, iFlickerLength, iIntensity, m_iStyle, m_iShape);
                 }
             break;
             }
 
         default:
             m_RayRenderer.InsertEmpty();
-            m_RayRenderer[0] = CreateRenderer(m_iWidth, m_iLength, m_iIntensity, m_iStyle, m_iShape);
+            m_RayRenderer[0] = CreateRenderer(m_iWidth, iLength, m_iIntensity, m_iStyle, m_iShape);
             break;
         }
 
 	//	Done
 
-	m_bInitialized = true;
+	m_iInitializedLength = iLength;
 	}
 
 int CRayEffectPainter::CalcLength (SViewportPaintCtx &Ctx) const
@@ -582,8 +581,10 @@ void CRayEffectPainter::CalcTaper (TArray<Metric> &AdjArray)
 
 	//	Past the peak we decay linearly
 
+	Metric MIN_WIDTH = (1.0 / Max(1, m_iWidth));
+	Metric INC_TOTAL = 1.0 - MIN_WIDTH;
 	Metric rY = 1.0;
-	Metric rYInc = (AdjArray.GetCount() > 0 ? (1.0 / (Metric)(AdjArray.GetCount() - iPeakPoint)) : 0.0);
+	Metric rYInc = (AdjArray.GetCount() > 0 ? (INC_TOTAL / (Metric)(AdjArray.GetCount() - iPeakPoint)) : 0.0);
 	for (i = iPeakPoint; i < AdjArray.GetCount(); i++, rY -= rYInc)
 		AdjArray[i] = rY;
 	}
@@ -1234,6 +1235,22 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
         }
     }
 
+void CRayEffectPainter::CleanUpIntermediates (void)
+
+//	CleanUpIntermediates
+//
+//	Clean up any allocations
+
+	{
+    int i;
+
+    for (i = 0; i < m_RayRenderer.GetCount(); i++)
+        delete m_RayRenderer[i];
+
+	m_RayRenderer.DeleteAll();
+	m_Length.DeleteAll();
+	}
+
 void CRayEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
 
 //	GetParam
@@ -1328,7 +1345,7 @@ void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 	//	Make sure we've computed all our temporaries
 
-	CalcIntermediates();
+	CalcIntermediates(m_iLength);
 
 	//	Compute the two end points of the line. We paint from the head to the tail.
 
@@ -1354,7 +1371,7 @@ void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVecto
 	{
 	//	Make sure we've computed all our temporaries
 
-	CalcIntermediates();
+	CalcIntermediates(m_iLength);
 
 	//	Compute the two end points of the line. We paint from the head to the tail.
 
@@ -1369,6 +1386,26 @@ void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVecto
 	//	Paint the effect
 
 	PaintRay(Dest, xFrom, yFrom, xTo, yTo, Ctx);
+	}
+
+void CRayEffectPainter::PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx)
+
+//	PaintLine
+//
+//	Paints a line given start and end.
+
+	{
+	int iLength = mathRound((vHead - vTail).Length() / g_KlicksPerPixel);
+
+	CalcIntermediates(iLength);
+
+	int xHead, yHead;
+	Ctx.XFormRel.Transform(vHead, &xHead, &yHead);
+
+	int xTail, yTail;
+	Ctx.XFormRel.Transform(vTail, &xTail, &yTail);
+
+	PaintRay(Dest, xHead, yHead, xTail, yTail, Ctx);
 	}
 
 void CRayEffectPainter::PaintRay (CG32bitImage &Dest, int xFrom, int yFrom, int xTo, int yTo, SViewportPaintCtx &Ctx)

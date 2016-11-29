@@ -34,10 +34,53 @@ void CContinuousBeam::AddContinuousBeam (const CVector &vPos, const CVector &vVe
 //	Adds another segment to the beam
 
 	{
-	if (m_pDesc == NULL || m_Segments.GetCount() == 0)
+	if (m_pDesc == NULL)
 		return;
 
-	AddSegment(vPos, vVel, m_pDesc->GetDamage().RollDamage());
+	//	Separate the source velocity from the beam
+
+	CVector vSourceVel = (m_Source.GetObj() ? m_Source.GetObj()->GetVel() : NullVector);
+	CVector vVelRel = vVel - vSourceVel;
+
+	//	Adjust the beam velocity (to simulate light travel time).
+
+	vVelRel = AdjustBeamVelocity(vVelRel);
+
+	//	We either add a new segment or replace the last pseudo segment.
+
+	SSegment *pNewSegment;
+	if (m_Segments.GetCount() == 0)
+		pNewSegment = m_Segments.Insert();
+	else
+		pNewSegment = &m_Segments[m_Segments.GetCount() - 1];
+
+	pNewSegment->vPos = vPos;
+	pNewSegment->vDeltaPos = (vVelRel + vSourceVel) * g_SecondsPerUpdate;
+	pNewSegment->dwGeneration = g_pUniverse->GetTicks();
+	pNewSegment->iDamage = m_pDesc->GetDamage().RollDamage();
+	pNewSegment->fAlive = true;
+	pNewSegment->fHit = false;
+
+	//	Now add a pseudo segment.
+
+	SSegment *pPseudoSegment = m_Segments.Insert();
+
+	//	We want the beam to originate at the source, so the pseudo segment
+	//	is effectively 1 frame behind. We want the pseudo frame to be
+	//	where the source is on the NEXT frame, given the beam velocity.
+
+	pPseudoSegment->vPos = vPos - (vVelRel * g_SecondsPerUpdate);
+	pPseudoSegment->vDeltaPos = pNewSegment->vDeltaPos;
+
+	//	Generate and damage don't matter for the pseudo frame.
+
+	pPseudoSegment->dwGeneration = 0;
+	pPseudoSegment->iDamage = 0;
+
+	//	Pseudo segment is always dead (but even dead segments
+	//	get their position updated).
+
+	pPseudoSegment->fAlive = false;
 	}
 
 void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int iDamage)
@@ -76,6 +119,19 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 	pPseudoSegment->fAlive = false;
 	}
 
+CVector CContinuousBeam::AdjustBeamVelocity (const CVector &vVel)
+
+//	AdjustBeamVelocity
+//
+//	Adjusts the velocity of the beam in the game to simulate light-speed delays.
+//	E.g., at light-speed, you can't see the beam until it hits you.
+
+	{
+	Metric rSpeed = Min(0.92, vVel.Length() / LIGHT_SPEED);
+	Metric rAdj = (1.0 / ((1.0 / rSpeed) - 1.0)) + 1.0;
+	return Min(10.0, rAdj) * vVel;
+	}
+
 ALERROR CContinuousBeam::Create (CSystem *pSystem,
 								 CWeaponFireDesc *pDesc,
 								 CItemEnhancementStack *pEnhancements,
@@ -104,7 +160,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 	if (pBeam == NULL)
 		return ERR_MEMORY;
 
-	pBeam->Place(vPos, vVel);
+	pBeam->Place(vPos, CVector());
 
 	//	Get notifications when other objects are destroyed
 	pBeam->SetObjectDestructionHook();
@@ -140,7 +196,8 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 
 	//	Add a segment
 
-	pBeam->AddSegment(vPos, vVel, pDesc->GetDamage().RollDamage());
+	pBeam->AddContinuousBeam(vPos, vVel, iDirection);
+//	pBeam->AddSegment(vPos, AdjustBeamVelocity(vVel), pDesc->GetDamage().RollDamage());
 
 	//	Add to system
 
@@ -338,17 +395,41 @@ void CContinuousBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	{
 	int i;
 
-	//	Paint each segment, except for the last one (the pseudo segment).
+	CViewportPaintCtxSmartSave Save(Ctx);
+	Ctx.iTick = m_iTick;
+	Ctx.iVariant = 0;
+	Ctx.iRotation = m_iLastDirection;
+	Ctx.iDestiny = GetDestiny();
+	Ctx.iMaxLength = -1;
 
-	for (i = 0; i < m_Segments.GetCount() - 1; i++)
+	//	Keep painting segments live segments
+
+	bool bFoundHead = false;
+	CVector vHead;
+	for (i = 0; i < m_Segments.GetCount(); i++)
 		{
 		SSegment &Segment = m_Segments[i];
-		if (!Segment.fAlive)
-			continue;
 
-		SSegment &NextSegment = m_Segments[i + 1];
+		//	If we haven't year found the head, and this segment is alive, then we just
+		//	found it.
 
-		PaintSegment(Dest, Segment.vPos, NextSegment.vPos, Ctx);
+		if (!bFoundHead)
+			{
+			if (Segment.fAlive)
+				{
+				vHead = Segment.vPos;
+				bFoundHead = true;
+				}
+			}
+
+		//	Otherwise, if we found a dead segment (remember the pseudo segment is always
+		//	dead) then we paint a line.
+
+		else if (!Segment.fAlive)
+			{
+			m_pEffectPainter->PaintLine(Dest, vHead, Segment.vPos, Ctx);
+			bFoundHead = false;
+			}
 		}
 	}
 
@@ -632,19 +713,20 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 
 		//	Our position is the first live segment
 
-		if (pSegment->fAlive)
+		if (!bFoundFirst && pSegment->fAlive)
 			{
-			if (!bFoundFirst)
-				{
-				vPos = pSegment->vPos;
+			vPos = pSegment->vPos;
 
-				vLL = pSegment->vPos;
-				vUR = pSegment->vPos;
-				bFoundFirst = false;
-				}
-			else
-				CGeometry::AccumulateBounds(pSegment->vPos, vLL, vUR);
+			vLL = pSegment->vPos;
+			vUR = pSegment->vPos;
+			bFoundFirst = true;
 			}
+
+		//	If we've already found the first live segment, then accumulate
+		//	positions (either dead or alive).
+
+		else if (bFoundFirst)
+			CGeometry::AccumulateBounds(pSegment->vPos, vLL, vUR);
 		}
 
 	//	Bounds are relative to the object center

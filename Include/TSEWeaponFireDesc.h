@@ -443,6 +443,7 @@ class CWeaponFireDesc
 		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, int iLevel, bool bDamageOnly = false);
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem);
+		inline bool IsCurvedBeam (void) const { return false; }
         inline bool IsDirectionalImage (void) const { return m_fDirectional; }
         inline bool IsFragment (void) const { return m_fFragment; }
         inline bool IsScalable (void) const { return (m_pScalable != NULL); }

@@ -1921,7 +1921,8 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 				//	If this is a continuous beam, then we need special code.
 
 				if (pShot->GetFireType() == ftContinuousBeam
-						&& (pNewObj = pDevice->GetLastShot(pSource, i)))
+						&& (pNewObj = pDevice->GetLastShot(pSource, i))
+						&& (pShot->IsCurvedBeam() || pNewObj->GetRotation() == ShotDir[i]))
 					{
 					pNewObj->AddContinuousBeam(ShotPos[i],
 							pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),

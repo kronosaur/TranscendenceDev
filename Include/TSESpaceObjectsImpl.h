@@ -167,6 +167,7 @@ class CContinuousBeam : public CSpaceObject
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CContinuousBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual int GetRotation (void) const override { return m_iLastDirection; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
@@ -209,6 +210,8 @@ class CContinuousBeam : public CSpaceObject
 		bool HitTestSegment (const CVector &vPos, CVector &vNewPos, CSpaceObject **retpHit, int *retiHitDir);
 		void PaintSegment (CG32bitImage &Dest, const CVector &vFrom, const CVector &vTo, SViewportPaintCtx &Ctx) const;
 		void UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Metric *retrMaxBoundsX, Metric *retrMaxBoundsY);
+
+		static CVector AdjustBeamVelocity (const CVector &vVel);
 
 		//	This is the origin of the particle array in object coordinates. We 
 		//	always use a fixed anchor because the motion of the particles 
