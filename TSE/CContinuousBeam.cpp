@@ -42,10 +42,6 @@ void CContinuousBeam::AddContinuousBeam (const CVector &vPos, const CVector &vVe
 	CVector vSourceVel = (m_Source.GetObj() ? m_Source.GetObj()->GetVel() : NullVector);
 	CVector vVelRel = vVel - vSourceVel;
 
-	//	Adjust the beam velocity (to simulate light travel time).
-
-	vVelRel = AdjustBeamVelocity(vVelRel);
-
 	//	We either add a new segment or replace the last pseudo segment.
 
 	SSegment *pNewSegment;
@@ -119,19 +115,6 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 	pPseudoSegment->fAlive = false;
 	}
 
-CVector CContinuousBeam::AdjustBeamVelocity (const CVector &vVel)
-
-//	AdjustBeamVelocity
-//
-//	Adjusts the velocity of the beam in the game to simulate light-speed delays.
-//	E.g., at light-speed, you can't see the beam until it hits you.
-
-	{
-	Metric rSpeed = Min(0.92, vVel.Length() / LIGHT_SPEED);
-	Metric rAdj = (1.0 / ((1.0 / rSpeed) - 1.0)) + 1.0;
-	return Min(10.0, rAdj) * vVel;
-	}
-
 ALERROR CContinuousBeam::Create (CSystem *pSystem,
 								 CWeaponFireDesc *pDesc,
 								 CItemEnhancementStack *pEnhancements,
@@ -197,7 +180,6 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 	//	Add a segment
 
 	pBeam->AddContinuousBeam(vPos, vVel, iDirection);
-//	pBeam->AddSegment(vPos, AdjustBeamVelocity(vVel), pDesc->GetDamage().RollDamage());
 
 	//	Add to system
 

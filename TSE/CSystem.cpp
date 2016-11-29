@@ -673,6 +673,30 @@ bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
 	return true;
 	}
 
+Metric CSystem::CalcApparentSpeedAdj (Metric rSpeed)
+
+//	CalcApparentSpeedAdj
+//
+//	Calculate adjustment to speed to simulate light-lag.
+
+	{
+	//	We max out at 10x light-speed, apparent speed.
+
+	const Metric MAX_ADJ = 10.0;
+
+	//	Compute speed as a fraction of light-speed. But we get infinities if we
+	//	actually get to light-speed, so we stop near light-speed.
+
+	const Metric NEAR_LIGHT_SPEED = 0.99;
+	Metric rSpeedFrac = Min(NEAR_LIGHT_SPEED, rSpeed / LIGHT_SPEED);
+
+	//	Adjust to simulate speed as seen by observer if object were heading
+	//	straight for observer.
+
+	Metric rAdj = (1.0 / ((1.0 / rSpeedFrac) - 1.0)) + 1.0;
+	return Min(MAX_ADJ, rAdj);
+	}
+
 int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
 
 //	CalculateLightIntensity

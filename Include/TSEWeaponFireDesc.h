@@ -469,6 +469,7 @@ class CWeaponFireDesc
         CWeaponFireDesc & operator= (const CWeaponFireDesc &Desc) = delete;
 
         Metric CalcMaxEffectiveRange (void) const;
+		Metric CalcSpeed (Metric rPercentOfLight) const;
 		CEffectCreator *GetFireEffect (void) const;
         inline SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
         inline SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
@@ -556,7 +557,7 @@ class CWeaponFireDesc
 		DWORD m_fFragment:1;				//	True if this is a fragment of a proximity blast
 		DWORD m_fProximityBlast;			//	This is TRUE if we have fragments or if we have
 											//		and OnFragment event.
-        DWORD m_fSpare5:1;
+        DWORD m_fRelativisticSpeed:1;		//	If TRUE, adjust speed to simulate for light-lag
         DWORD m_fSpare6:1;
         DWORD m_fSpare7:1;
         DWORD m_fSpare8:1;

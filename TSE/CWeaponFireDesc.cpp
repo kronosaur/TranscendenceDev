@@ -59,6 +59,7 @@
 #define PARTICLE_SPREAD_ANGLE_ATTRIB			CONSTLIT("particleSpreadAngle")
 #define PARTICLE_SPREAD_WIDTH_ATTRIB			CONSTLIT("particleSpreadWidth")
 #define PASSTHROUGH_ATTRIB						CONSTLIT("passthrough")
+#define RELATIVISTIC_SPEED_ATTRIB				CONSTLIT("relativisticSpeed")
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
 #define SOUND_ATTRIB							CONSTLIT("sound")
 #define SPEED_ATTRIB							CONSTLIT("speed")
@@ -218,6 +219,23 @@ Metric CWeaponFireDesc::CalcMaxEffectiveRange (void) const
 
     return rRange;
     }
+
+Metric CWeaponFireDesc::CalcSpeed (Metric rPercentOfLight) const
+
+//	CalcSpeed
+//
+//	Converts from 0-100 speed to kps. If necessary, account for light-lag.
+
+	{
+	Metric rSpeed = rPercentOfLight * LIGHT_SPEED / 100.0;
+
+	//	If specified, we increase speed to simulate light-lag.
+
+	if (m_fRelativisticSpeed)
+		rSpeed = CSystem::CalcApparentSpeedAdj(rSpeed) * rSpeed;
+
+	return rSpeed;
+	}
 
 bool CWeaponFireDesc::CanHit (CSpaceObject *pObj) const
 
@@ -1211,7 +1229,7 @@ Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
 
 	{
 	if (m_fVariableInitialSpeed)
-		return (m_MissileSpeed.GetAveValueFloat() * LIGHT_SPEED / 100.0);
+		return CalcSpeed(m_MissileSpeed.GetAveValueFloat());
 	else
 		return GetRatedSpeed();
 	}
@@ -1274,7 +1292,7 @@ Metric CWeaponFireDesc::GetInitialSpeed (void) const
 
 	{
 	if (m_fVariableInitialSpeed)
-		return (double)m_MissileSpeed.Roll() * LIGHT_SPEED / 100;
+		return CalcSpeed(m_MissileSpeed.Roll());
 	else
 		return GetRatedSpeed();
 	}
@@ -1499,6 +1517,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	//	Load missile speed
 
+	m_fRelativisticSpeed = false;
 	m_fVariableInitialSpeed = false;
 	m_MissileSpeed.SetConstant(100);
 	m_rMissileSpeed = LIGHT_SPEED;
@@ -1602,6 +1621,29 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	m_fVariableInitialSpeed = false;
 	m_fFragment = false;
 
+	//	Fire type
+
+	CString sValue = pDesc->GetAttribute(FIRE_TYPE_ATTRIB);
+	if (strEquals(sValue, FIRE_TYPE_MISSILE))
+		m_iFireType = ftMissile;
+	else if (strEquals(sValue, FIRE_TYPE_BEAM))
+		m_iFireType = ftBeam;
+	else if (strEquals(sValue, FIRE_TYPE_AREA))
+		m_iFireType = ftArea;
+	else if (strEquals(sValue, FIRE_TYPE_CONTINUOUS_BEAM))
+		m_iFireType = ftContinuousBeam;
+	else if (strEquals(sValue, FIRE_TYPE_PARTICLES))
+		m_iFireType = ftParticles;
+	else if (strEquals(sValue, FIRE_TYPE_RADIUS))
+		m_iFireType = ftRadius;
+	else if (bDamageOnly)
+		m_iFireType = ftMissile;
+	else
+		{
+		Ctx.sError = CONSTLIT("Invalid weapon fire type");
+		return ERR_FAIL;
+		}
+
 	//	Load basic attributes
 
 	m_sUNID = sUNID;
@@ -1622,6 +1664,11 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load missile speed
 
+	if (m_iFireType == ftContinuousBeam)
+		m_fRelativisticSpeed = true;
+	else
+		m_fRelativisticSpeed = pDesc->GetAttributeBool(RELATIVISTIC_SPEED_ATTRIB);
+	
 	bool bDefaultMissileSpeed = false;
 	CString sData;
 	if (pDesc->FindAttribute(MISSILE_SPEED_ATTRIB, &sData))
@@ -1633,7 +1680,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			}
 
 		m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
-		m_rMissileSpeed = m_MissileSpeed.GetAveValueFloat() * LIGHT_SPEED / 100;
+		m_rMissileSpeed = CalcSpeed(m_MissileSpeed.GetAveValueFloat());
 		}
 	else
 		{
@@ -1641,7 +1688,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		m_MissileSpeed.SetConstant(100);
 		m_fVariableInitialSpeed = false;
-		m_rMissileSpeed = LIGHT_SPEED;
+		m_rMissileSpeed = CalcSpeed(100.0);
 		}
 
 	//	Load the effect to use. By default we expect images to loop (since they need to last
@@ -1672,195 +1719,198 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load specific properties
 
-	CString sValue = pDesc->GetAttribute(FIRE_TYPE_ATTRIB);
-	if (strEquals(sValue, FIRE_TYPE_MISSILE) || strEquals(sValue, FIRE_TYPE_BEAM))
+	switch (m_iFireType)
 		{
-		m_iFireType = (strEquals(sValue, FIRE_TYPE_BEAM) ? ftBeam : ftMissile);
-
-		//	For backwards compatibility, if we don't have an effect, assume
-		//	a beam effect.
-
-		if (m_iFireType == ftBeam && m_pEffect.IsEmpty())
+		case ftBeam:
+		case ftMissile:
 			{
-			if (error = m_pEffect.CreateBeamEffect(Ctx, pDesc, strPatternSubst("%s:e", sUNID)))
-				return error;
+			//	For backwards compatibility, if we don't have an effect, assume
+			//	a beam effect.
+
+			if (m_iFireType == ftBeam && m_pEffect.IsEmpty())
+				{
+				if (error = m_pEffect.CreateBeamEffect(Ctx, pDesc, strPatternSubst("%s:e", sUNID)))
+					return error;
+				}
+
+			//	Load the image for the missile
+
+			CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
+			if (pImage)
+				if (error = SetOldEffects().Image.InitFromXML(Ctx, pImage))
+					return error;
+
+			m_fDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
+			if (m_fDirectional && m_pEffect)
+				m_pEffect->SetVariants(g_RotationRange);
+
+			m_iAccelerationFactor = pDesc->GetAttributeInteger(ACCELERATION_FACTOR_ATTRIB);
+			int iMaxSpeed = pDesc->GetAttributeInteger(MAX_MISSILE_SPEED_ATTRIB);
+			if (iMaxSpeed == 0)
+				m_rMaxMissileSpeed = m_rMissileSpeed;
+			else
+				m_rMaxMissileSpeed = CalcSpeed((Metric)iMaxSpeed);
+
+			//	Hit points and interaction
+
+			m_iHitPoints = pDesc->GetAttributeInteger(HIT_POINTS_ATTRIB);
+			CString sInteraction;
+			if (pDesc->FindAttribute(INTERACTION_ATTRIB, &sInteraction))
+				m_iInteraction = strToInt(sInteraction, 100);
+			else
+				m_iInteraction = (m_iFireType == ftBeam ? 0 : 100);
+
+			//	Load exhaust data
+
+			CXMLElement *pExhaust = pDesc->GetContentElementByTag(MISSILE_EXHAUST_TAG);
+			if (pExhaust)
+				{
+				SExhaustDesc &Exhaust = SetOldEffects().Exhaust;
+				Exhaust.iExhaustRate = pExhaust->GetAttributeInteger(EXHAUST_RATE_ATTRIB);
+				Exhaust.iExhaustLifetime = pExhaust->GetAttributeInteger(EXHAUST_LIFETIME_ATTRIB);
+				Exhaust.rExhaustDrag = pExhaust->GetAttributeInteger(EXHAUST_DRAG_ATTRIB) / 100.0;
+
+				CXMLElement *pImage = pExhaust->GetContentElementByTag(IMAGE_TAG);
+				if (error = Exhaust.ExhaustImage.InitFromXML(Ctx, pImage))
+					return error;
+				}
+
+			break;
 			}
 
-		//	Load the image for the missile
+		case ftArea:
+			{
+			//	If no missile speed specified, then 0
 
-		CXMLElement *pImage = pDesc->GetContentElementByTag(IMAGE_TAG);
-		if (pImage)
-			if (error = SetOldEffects().Image.InitFromXML(Ctx, pImage))
-				return error;
+			if (bDefaultMissileSpeed)
+				{
+				m_MissileSpeed.SetConstant(0);
+				m_fVariableInitialSpeed = false;
+				m_rMissileSpeed = 0.0;
+				}
 
-		m_fDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
-		if (m_fDirectional && m_pEffect)
-			m_pEffect->SetVariants(g_RotationRange);
-
-		m_iAccelerationFactor = pDesc->GetAttributeInteger(ACCELERATION_FACTOR_ATTRIB);
-		int iMaxSpeed = pDesc->GetAttributeInteger(MAX_MISSILE_SPEED_ATTRIB);
-		if (iMaxSpeed == 0)
 			m_rMaxMissileSpeed = m_rMissileSpeed;
-		else
-			m_rMaxMissileSpeed = (Metric)iMaxSpeed * LIGHT_SPEED / 100.0;
 
-		//	Hit points and interaction
+			//	Load expansion speed
 
-		m_iHitPoints = pDesc->GetAttributeInteger(HIT_POINTS_ATTRIB);
-		CString sInteraction;
-		if (pDesc->FindAttribute(INTERACTION_ATTRIB, &sInteraction))
-			m_iInteraction = strToInt(sInteraction, 100);
-		else
-			m_iInteraction = (m_iFireType == ftBeam ? 0 : 100);
-
-		//	Load exhaust data
-
-		CXMLElement *pExhaust = pDesc->GetContentElementByTag(MISSILE_EXHAUST_TAG);
-		if (pExhaust)
-			{
-            SExhaustDesc &Exhaust = SetOldEffects().Exhaust;
-			Exhaust.iExhaustRate = pExhaust->GetAttributeInteger(EXHAUST_RATE_ATTRIB);
-			Exhaust.iExhaustLifetime = pExhaust->GetAttributeInteger(EXHAUST_LIFETIME_ATTRIB);
-			Exhaust.rExhaustDrag = pExhaust->GetAttributeInteger(EXHAUST_DRAG_ATTRIB) / 100.0;
-
-			CXMLElement *pImage = pExhaust->GetContentElementByTag(IMAGE_TAG);
-			if (error = Exhaust.ExhaustImage.InitFromXML(Ctx, pImage))
-				return error;
-			}
-		}
-	else if (strEquals(sValue, FIRE_TYPE_AREA))
-		{
-		m_iFireType = ftArea;
-
-		//	If no missile speed specified, then 0
-
-		if (bDefaultMissileSpeed)
-			{
-			m_MissileSpeed.SetConstant(0);
-			m_fVariableInitialSpeed = false;
-			m_rMissileSpeed = 0.0;
-			}
-
-		m_rMaxMissileSpeed = m_rMissileSpeed;
-
-		//	Load expansion speed
-
-		if (pDesc->FindAttribute(EXPANSION_SPEED_ATTRIB, &sData))
-			{
-			if (error = m_ExpansionSpeed.LoadFromXML(sData))
+			if (pDesc->FindAttribute(EXPANSION_SPEED_ATTRIB, &sData))
 				{
-				Ctx.sError = CONSTLIT("Invalid expansionSpeed attribute");
+				if (error = m_ExpansionSpeed.LoadFromXML(sData))
+					{
+					Ctx.sError = CONSTLIT("Invalid expansionSpeed attribute");
+					return ERR_FAIL;
+					}
+				}
+			else
+				m_ExpansionSpeed.SetConstant(20);
+
+			//	Area damage density
+
+			if (pDesc->FindAttribute(AREA_DAMAGE_DENSITY_ATTRIB, &sData))
+				{
+				if (error = m_AreaDamageDensity.LoadFromXML(sData))
+					{
+					Ctx.sError = CONSTLIT("Invalid areaDamageDensity attribute");
+					return ERR_FAIL;
+					}
+				}
+			else
+				m_AreaDamageDensity.SetConstant(32);
+
+			//	Must have effect
+
+			if (m_pEffect == NULL)
+				{
+				Ctx.sError = CONSTLIT("Must have <Effect> for area damage.");
 				return ERR_FAIL;
 				}
+			break;
 			}
-		else
-			m_ExpansionSpeed.SetConstant(20);
 
-		//	Area damage density
-
-		if (pDesc->FindAttribute(AREA_DAMAGE_DENSITY_ATTRIB, &sData))
+		case ftContinuousBeam:
 			{
-			if (error = m_AreaDamageDensity.LoadFromXML(sData))
+			m_rMaxMissileSpeed = m_rMissileSpeed;
+			break;
+			}
+
+		case ftParticles:
+			{
+			m_iFireType = ftParticles;
+
+			//	Initialize a particle system descriptor
+
+			m_pParticleDesc = new CParticleSystemDesc;
+
+			//	Look for a <ParticleSystem> definition. If we have it, then we let
+			//	it initialize from there.
+
+			CXMLElement *pParticleSystem = pDesc->GetContentElementByTag(PARTICLE_SYSTEM_TAG);
+			if (pParticleSystem)
 				{
-				Ctx.sError = CONSTLIT("Invalid areaDamageDensity attribute");
+				if (error = m_pParticleDesc->InitFromXML(Ctx, pParticleSystem, sUNID))
+					return error;
+
+				//	We take certain values from the particle system.
+
+				m_MissileSpeed = m_pParticleDesc->GetEmitSpeed();
+				m_Lifetime.SetConstant(m_pParticleDesc->GetParticleLifetime().GetMaxValue() + (m_pParticleDesc->GetEmitLifetime().GetMaxValue() - 1));
+				iMaxLifetime = m_Lifetime.GetMaxValue();
+				m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
+				m_rMissileSpeed = CalcSpeed(m_MissileSpeed.GetAveValueFloat());
+				}
+
+			//	Otherwise, we initialize from our root (in backwards compatible mode).
+
+			else
+				{
+				if (error = m_pParticleDesc->InitFromWeaponDescXML(Ctx, pDesc))
+					return error;
+
+				//	In this case we honor settings from pDesc, since we're in 
+				//	backwards compatible mode. [In the normal case we expect these
+				//	settings to be in the <ParticleSystem> element.]
+
+				m_pParticleDesc->SetEmitSpeed(m_MissileSpeed);
+				m_pParticleDesc->SetParticleLifetime(m_Lifetime);
+
+				//	We always set the old compatibility behavior.
+
+				m_pParticleDesc->SetSprayCompatible();
+				}
+
+			//	Minimum damage
+
+			if (error = m_MinDamage.LoadFromXML(pDesc->GetAttribute(MIN_DAMAGE_ATTRIB)))
+				{
+				Ctx.sError = CONSTLIT("Invalid minDamage attribute");
 				return ERR_FAIL;
 				}
+
+			//	Initialize other variables
+
+			m_rMaxMissileSpeed = m_rMissileSpeed;
+			break;
 			}
-		else
-			m_AreaDamageDensity.SetConstant(32);
 
-		//	Must have effect
-
-		if (m_pEffect == NULL)
+		case ftRadius:
 			{
-			Ctx.sError = CONSTLIT("Must have <Effect> for area damage.");
-			return ERR_FAIL;
+			m_iFireType = ftRadius;
+
+			//	If no missile speed specified, then 0
+
+			if (bDefaultMissileSpeed)
+				{
+				m_MissileSpeed.SetConstant(0);
+				m_fVariableInitialSpeed = false;
+				m_rMissileSpeed = 0.0;
+				}
+
+			m_rMaxMissileSpeed = m_rMissileSpeed;
+
+			m_rMinRadius = LIGHT_SECOND * (Metric)pDesc->GetAttributeInteger(MIN_RADIUS_ATTRIB);
+			m_rMaxRadius = LIGHT_SECOND * (Metric)pDesc->GetAttributeInteger(MAX_RADIUS_ATTRIB);
+			break;
 			}
-		}
-	else if (strEquals(sValue, FIRE_TYPE_CONTINUOUS_BEAM))
-		{
-		m_iFireType = ftContinuousBeam;
-		m_rMaxMissileSpeed = m_rMissileSpeed;
-		}
-	else if (strEquals(sValue, FIRE_TYPE_PARTICLES))
-		{
-		m_iFireType = ftParticles;
-
-		//	Initialize a particle system descriptor
-
-		m_pParticleDesc = new CParticleSystemDesc;
-
-		//	Look for a <ParticleSystem> definition. If we have it, then we let
-		//	it initialize from there.
-
-		CXMLElement *pParticleSystem = pDesc->GetContentElementByTag(PARTICLE_SYSTEM_TAG);
-		if (pParticleSystem)
-			{
-			if (error = m_pParticleDesc->InitFromXML(Ctx, pParticleSystem, sUNID))
-				return error;
-
-			//	We take certain values from the particle system.
-
-			m_MissileSpeed = m_pParticleDesc->GetEmitSpeed();
-			m_Lifetime.SetConstant(m_pParticleDesc->GetParticleLifetime().GetMaxValue() + (m_pParticleDesc->GetEmitLifetime().GetMaxValue() - 1));
-			iMaxLifetime = m_Lifetime.GetMaxValue();
-			m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
-			m_rMissileSpeed = m_MissileSpeed.GetAveValueFloat() * LIGHT_SPEED / 100.0;
-			}
-
-		//	Otherwise, we initialize from our root (in backwards compatible mode).
-
-		else
-			{
-			if (error = m_pParticleDesc->InitFromWeaponDescXML(Ctx, pDesc))
-				return error;
-
-			//	In this case we honor settings from pDesc, since we're in 
-			//	backwards compatible mode. [In the normal case we expect these
-			//	settings to be in the <ParticleSystem> element.]
-
-			m_pParticleDesc->SetEmitSpeed(m_MissileSpeed);
-			m_pParticleDesc->SetParticleLifetime(m_Lifetime);
-
-			//	We always set the old compatibility behavior.
-
-			m_pParticleDesc->SetSprayCompatible();
-			}
-
-		//	Minimum damage
-
-		if (error = m_MinDamage.LoadFromXML(pDesc->GetAttribute(MIN_DAMAGE_ATTRIB)))
-			{
-			Ctx.sError = CONSTLIT("Invalid minDamage attribute");
-			return ERR_FAIL;
-			}
-
-		//	Initialize other variables
-
-		m_rMaxMissileSpeed = m_rMissileSpeed;
-		}
-	else if (strEquals(sValue, FIRE_TYPE_RADIUS))
-		{
-		m_iFireType = ftRadius;
-
-		//	If no missile speed specified, then 0
-
-		if (bDefaultMissileSpeed)
-			{
-			m_MissileSpeed.SetConstant(0);
-			m_fVariableInitialSpeed = false;
-			m_rMissileSpeed = 0.0;
-			}
-
-		m_rMaxMissileSpeed = m_rMissileSpeed;
-
-		m_rMinRadius = LIGHT_SECOND * (Metric)pDesc->GetAttributeInteger(MIN_RADIUS_ATTRIB);
-		m_rMaxRadius = LIGHT_SECOND * (Metric)pDesc->GetAttributeInteger(MAX_RADIUS_ATTRIB);
-		}
-	else if (!bDamageOnly)
-		{
-		Ctx.sError = CONSTLIT("Invalid weapon fire type");
-		return ERR_FAIL;
 		}
 
 	//	The effect should have the same lifetime as the shot
@@ -2100,6 +2150,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     m_iFireType = Src.m_iFireType;
     m_iContinuous = Src.m_iContinuous;
 
+	m_fRelativisticSpeed = Src.m_fRelativisticSpeed;
     m_rMissileSpeed = Src.m_rMissileSpeed;
     m_MissileSpeed = Src.m_MissileSpeed;
     m_Lifetime = Src.m_Lifetime;

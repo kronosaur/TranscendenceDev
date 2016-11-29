@@ -211,8 +211,6 @@ class CContinuousBeam : public CSpaceObject
 		void PaintSegment (CG32bitImage &Dest, const CVector &vFrom, const CVector &vTo, SViewportPaintCtx &Ctx) const;
 		void UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Metric *retrMaxBoundsX, Metric *retrMaxBoundsY);
 
-		static CVector AdjustBeamVelocity (const CVector &vVel);
-
 		//	This is the origin of the particle array in object coordinates. We 
 		//	always use a fixed anchor because the motion of the particles 
 		//	determines the position of the particle damage object (and not vice

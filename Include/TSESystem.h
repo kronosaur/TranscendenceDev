@@ -835,6 +835,7 @@ class CSystem
 		bool IsExclusionZoneClear (const CVector &vPos, CStationType *pType = NULL);
 		inline void SetLocationObjID (int iLocID, DWORD dwObjID) { m_Locations.SetObjID(iLocID, dwObjID); }
 
+		static Metric CalcApparentSpeedAdj (Metric rSpeed);
 		static void GetObjRefFromID (SLoadCtx &Ctx, DWORD dwID, CSpaceObject **retpObj);
 		static void ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj);
 		static void ReadObjRefFromStream (SLoadCtx &Ctx, void *pCtx, PRESOLVEOBJIDPROC pfnResolveProc);
