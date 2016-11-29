@@ -25,7 +25,7 @@ CLinePainter::ESlopeTypes CLinePainter::CalcIntermediates (const CG32bitImage &I
 	m_ay = Absolute(m_dy) * 2;
 	m_sy = (m_dy > 0 ? 1 : -1);
 
-	m_rL = sqrt((double)(m_dx*m_dx + m_dy*m_dy));
+	m_rL = sqrt((double)m_dx*m_dx + (double)m_dy*m_dy);
 	m_rHalfWidth = (double)iWidth / 2.0;
 
 	//	Calculate row increment
@@ -233,7 +233,7 @@ CLinePainter::ESlopeTypes CLinePainter::CalcIntermediates (const CG32bitImage &I
 
 				m_xStart = x1;
 				for (i = 0; i < iExtra; i++)
-					NextX(m_xStart, y);
+					NextY(m_xStart, y);
 
 				m_yStart = rcDest.bottom - 1;
 				}
@@ -299,8 +299,8 @@ void CLinePainter::CalcPixelMapping (int x1, int y1, int x2, int y2, double *ret
 	m_rVIncY = (m_sy == 1 ? m_rVPerY : -m_rVPerY);
 	m_rWIncY = (m_sy == 1 ? m_rWPerY : -m_rWPerY);
 
-	double rX = (m_xStart - x1);
-	double rY = (m_yStart - y1);
+	double rX = m_xStart - x1;
+	double rY = m_yStart - y1;
 
 	*retrV = (rX * m_rVPerX) + (rY * m_rVPerY);
 	*retrW = (rX * m_rWPerX) + (rY * m_rWPerY);
