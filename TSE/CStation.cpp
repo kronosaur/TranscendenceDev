@@ -4583,11 +4583,13 @@ void CStation::UpdateReinforcements (int iTick)
 					return;
 				}
 
-			//	Find a stargate
+			//	We either bring in ships from the nearest gate or we build
+			//	them ourselves.
 
-			CSpaceObject *pGate = GetNearestStargate(true);
-			if (pGate == NULL)
-				return;
+			CSpaceObject *pGate;
+			if (m_pType->BuildsReinforcements()
+					|| (pGate = GetNearestStargate(true)) == NULL)
+				pGate = this;
 
 			//	Generate reinforcements
 

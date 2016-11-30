@@ -2841,6 +2841,7 @@ class CStationType : public CDesignType
 
 		inline bool AlertWhenAttacked (void) { return (mathRandom(1, 100) <= m_iAlertWhenAttacked); }
 		inline bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
+		inline bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
 		inline bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
 		inline bool CanBeEncountered (void) { return m_EncounterRecord.CanBeEncountered(m_RandomPlacement); }
 		inline bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, m_RandomPlacement); }
@@ -3060,7 +3061,7 @@ class CStationType : public CDesignType
 		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
 
 		DWORD m_fNoMapLabel:1;							//	If TRUE, do not show a label on system map
-		DWORD m_fSpare2:1;
+		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;

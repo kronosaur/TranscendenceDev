@@ -36,6 +36,7 @@
 #define BACKGROUND_PLANE_ATTRIB					CONSTLIT("backgroundPlane")
 #define BARRIER_EFFECT_ATTRIB					CONSTLIT("barrierEffect")
 #define BEACON_ATTRIB							CONSTLIT("beacon")
+#define BUILD_REINFORCEMENTS_ATTRIB				CONSTLIT("buildReinforcements")
 #define CAN_ATTACK_ATTRIB						CONSTLIT("canAttack")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
 #define CONSTRUCTION_RATE_ATTRIB				CONSTLIT("constructionRate")
@@ -1536,6 +1537,8 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Load initial ships
 
+	m_fBuildReinforcements = false;
+
 	CXMLElement *pShips = pDesc->GetContentElementByTag(SHIPS_TAG);
 	if (pShips)
 		{
@@ -1556,6 +1559,12 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		else
 			m_iMinShips = pShips->GetAttributeInteger(MIN_SHIPS_ATTRIB);
+
+		//	Build instead of gate in
+
+		bool bValue;
+		if (pShips->FindAttributeBool(BUILD_REINFORCEMENTS_ATTRIB, &bValue) && bValue)
+			m_fBuildReinforcements = true;
 		}
 
 	//	Load reinforcements
@@ -1569,6 +1578,12 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		//	Figure out the minimum number of reinforcements at this base
 
 		m_iMinShips = pReinforcements->GetAttributeInteger(MIN_SHIPS_ATTRIB);
+
+		//	Build instead of gate in
+
+		bool bValue;
+		if (pShips->FindAttributeBool(BUILD_REINFORCEMENTS_ATTRIB, &bValue) && bValue)
+			m_fBuildReinforcements = true;
 		}
 
 	//	Load encounter table
