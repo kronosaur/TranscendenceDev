@@ -268,11 +268,8 @@ void CSpaceObjectList::SetAllocSize (int iNewCount)
 //	NOTE that this also empties the list.
 
 	{
-	int iNeeded = (iNewCount - m_List.GetCount());
-	if (iNeeded > 0)
-		m_List.InsertEmpty(iNeeded);
-
 	m_List.DeleteAll();
+	m_List.GrowToFit(iNewCount);
 	}
 
 void CSpaceObjectList::Subtract (const CSpaceObjectList &List)

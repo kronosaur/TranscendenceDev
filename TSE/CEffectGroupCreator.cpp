@@ -20,26 +20,27 @@ class CEffectGroupPainter : public IEffectPainter
 	public:
 		CEffectGroupPainter (CEffectGroupCreator *pCreator, CCreatePainterCtx &Ctx);
 
-		virtual ~CEffectGroupPainter (void);
-		virtual bool CanPaintComposite (void);
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual int GetFadeLifetime (void);
-		virtual int GetLifetime (void);
-		virtual void GetRect (RECT *retRect) const;
-		virtual void OnBeginFade (void);
-		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged);
-		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx);
-		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
-		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue);
+		virtual ~CEffectGroupPainter (void) override;
+		virtual bool CanPaintComposite (void) override;
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
+		virtual int GetFadeLifetime (void) override;
+		virtual int GetLifetime (void) override;
+		virtual void GetRect (RECT *retRect) const override;
+		virtual void OnBeginFade (void) override;
+		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged) override;
+		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override;
+		virtual void PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx) override;
+		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
+		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue) override;
 		virtual void SetVariants (int iVariants);
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		inline bool IsAlive (IEffectPainter *pPainter, int iTick)
@@ -54,6 +55,7 @@ class CEffectGroupPainter : public IEffectPainter
 			}
 
 		SViewportPaintCtx *AdjustCtx (SViewportPaintCtx &Ctx, SViewportPaintCtx &NewCtx, int *retx, int *rety);
+		SViewportPaintCtx *AdjustCtx (SViewportPaintCtx &Ctx, SViewportPaintCtx &NewCtx, CVector &vHead, CVector &vTail);
 
 		CEffectGroupCreator *m_pCreator;
 		TArray<CEffectPainterRef> m_Painters;
@@ -96,6 +98,31 @@ SViewportPaintCtx *CEffectGroupPainter::AdjustCtx (SViewportPaintCtx &Ctx, SView
 
 		*retx += xOffset;
 		*rety += yOffset;
+
+		return &NewCtx;
+		}
+	else
+		return &Ctx;
+	}
+
+SViewportPaintCtx *CEffectGroupPainter::AdjustCtx (SViewportPaintCtx &Ctx, SViewportPaintCtx &NewCtx, CVector &vHead, CVector &vTail)
+
+//	AdjustCtx
+//
+//	Adjusts the context to account for any offsets
+
+	{
+	if (m_pCreator->HasOffsets())
+		{
+		NewCtx = Ctx;
+
+		int xOffset;
+		int yOffset;
+		m_pCreator->ApplyOffsets(&NewCtx, &xOffset, &yOffset);
+
+		CVector vOffset = CVector(xOffset, -yOffset) * g_KlicksPerPixel;
+		vHead = vHead + vOffset;
+		vTail = vTail + vOffset;
 
 		return &NewCtx;
 		}
@@ -348,6 +375,23 @@ void CEffectGroupPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVec
 	for (int i = 0; i < m_Painters.GetCount(); i++)
 		if (m_Painters[i])
 			m_Painters[i]->PaintHit(Dest, x, y, vHitPos, *pCtx);
+	}
+
+void CEffectGroupPainter::PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx)
+
+//	PaintLine
+//
+//	Paints a continuous line
+
+	{
+	SViewportPaintCtx NewCtx;
+	CVector vNewHead = vHead;
+	CVector vNewTail = vTail;
+	SViewportPaintCtx *pCtx = AdjustCtx(Ctx, NewCtx, vNewHead, vNewTail);
+
+	for (int i = 0; i < m_Painters.GetCount(); i++)
+		if (m_Painters[i])
+			m_Painters[i]->PaintLine(Dest, vNewHead, vNewTail, *pCtx);
 	}
 
 bool CEffectGroupPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const
