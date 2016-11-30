@@ -1812,6 +1812,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"\n"
 			"property (stations)\n\n"
 
+			"   'angry True|Nil|ticks\n"
 			"   'barrier True|Nil\n"
 			"   'ignoreFriendlyFire True|Nil\n"
 			"   'hp hitPoints\n"
