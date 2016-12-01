@@ -133,11 +133,12 @@ class CSoundtrackManager
 		CMusicResource *GetCurrentTrack (int *retiPos = NULL);
 		void NextTrack (void);
 		void NotifyEndCombat (void);
+		void NotifyEndMissionTrack (bool bForceTravel = false);
 		void NotifyEnterSystem (CTopologyNode *pNode = NULL, bool bFirstTime = true);
 		inline void NotifyGameStart (void) { Reinit(); }
-		void NotifyStartCombat (void);
-		void NotifyStartCombatMission (void);
+		void NotifyStartCombat (CMusicResource *pTrack = NULL);
 		void NotifyTrackDone (void);
+		void NotifyStartMissionTrack (CMusicResource *pTrack);
 		void NotifyTrackPlaying (CMusicResource *pTrack);
 		void NotifyUndocked (void);
 		void NotifyUpdatePlayPos (int iPos);
@@ -170,19 +171,21 @@ class CSoundtrackManager
 		void Play (CMusicResource *pTrack);
 		void Reinit (void);
 		void TransitionTo (CMusicResource *pTrack, int iPos, bool bFadeIn = false);
-		void TransitionToCombat (void);
+		void TransitionToCombat (CMusicResource *pTrack = NULL);
 		void TransitionToTravel (void);
 
 		CMCIMixer m_Mixer;					//	Music mixer
 		bool m_bEnabled;					//	Music is enabled
 		bool m_bDebugMode;					//	Output debug info
 		EGameStates m_iGameState;			//	Current soundtrack state
-		CMusicResource *m_pNowPlaying;			//	What we've scheduled to play
-		CMusicResource *m_pLastTravel;			//	Travel music track interrupted by combat
+		CMusicResource *m_pNowPlaying;		//	What we've scheduled to play
+		CMusicResource *m_pLastTravel;		//	Travel music track interrupted by combat
+		CMusicResource *m_pMissionTrack;	//	Mission track to play
 
 		TQueue<DWORD> m_LastPlayed;			//	UNID of tracks played.
 		bool m_bSystemTrackPlayed;			//	systemSoundtrack already played in system.
 		bool m_bStartCombatWhenUndocked;	//	If TRUE, we play combat music when we undock
+		bool m_bMissionTrack;				//	If TRUE, we're playing a mission track
 		DWORD m_dwTransition;				//	Tick on which we started a transition
 		DWORD m_dwStartedCombat;			//	Millisecond on which we started combat
 		DWORD m_dwStartedTravel;			//	Millisecond on which we started travel mode

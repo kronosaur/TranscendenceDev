@@ -44,6 +44,7 @@ CSoundtrackManager::CSoundtrackManager (void) :
 		m_iGameState(stateNone),
 		m_pNowPlaying(NULL),
 		m_pLastTravel(NULL),
+		m_pMissionTrack(NULL),
 		m_LastPlayed(10),
 		m_bSystemTrackPlayed(false),
 		m_bStartCombatWhenUndocked(false),
@@ -77,6 +78,11 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 
 	{
 	int i;
+
+	//	If we've got a mission track, then we play that.
+
+	if (m_pMissionTrack)
+		return m_pMissionTrack;
 
 	//	If we didn't find this criteria before, then we're not going to find it
 	//	now.
@@ -376,6 +382,12 @@ void CSoundtrackManager::NextTrack (void)
 	if (InTransition())
 		return;
 
+	//	Done with mission track
+
+	m_pMissionTrack = NULL;
+
+	//	Play next track
+
 	if (m_bEnabled)
 		{
 		CMusicResource *pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState);
@@ -409,12 +421,50 @@ void CSoundtrackManager::NotifyEndCombat (void)
 	if (m_bEnabled
 			&& !InTransition()
 			&& IsPlayingCombatTrack()
+			&& m_pMissionTrack == NULL
 			&& ::sysGetTicksElapsed(m_dwStartedCombat) > MIN_COMBAT_LENGTH)
 		TransitionToTravel();
 
 	//	Regardless of whether we transition, remember our state
 
 	m_iGameState = stateGameTravel;
+	}
+
+void CSoundtrackManager::NotifyEndMissionTrack (bool bForceTravel)
+
+//	NotifyEndMissionTrack
+//
+//	Ends a mission track before its done.
+
+	{
+	if (m_bDebugMode)
+		::kernelDebugLogMessage("Mission ended.");
+
+	bool bPlay = (m_pMissionTrack && m_pNowPlaying == m_pMissionTrack);
+	m_pMissionTrack = NULL;
+
+	//	Play next track
+
+	if (m_bEnabled
+			&& bPlay
+			&& !InTransition())
+		{
+		if (m_iGameState == stateGameCombat)
+			{
+			if (bForceTravel)
+				{
+				m_iGameState = stateGameTravel;
+				TransitionToTravel();
+				}
+
+			//	Otherwise, combat
+
+			else
+				TransitionToCombat();
+			}
+		else
+			TransitionToTravel();
+		}
 	}
 
 void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTime)
@@ -474,7 +524,7 @@ void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTim
 	m_iGameState = stateGameTravel;
 	}
 
-void CSoundtrackManager::NotifyStartCombat (void)
+void CSoundtrackManager::NotifyStartCombat (CMusicResource *pTrack)
 
 //	NotifyStartCombat
 //
@@ -495,21 +545,35 @@ void CSoundtrackManager::NotifyStartCombat (void)
 	if (m_bEnabled
 			&& !InTransition()
 			&& !IsPlayingCombatTrack()
-			&& ::sysGetTicksElapsed(m_dwStartedTravel) > MIN_TRAVEL_LENGTH)
-		TransitionToCombat();
+			&& m_pMissionTrack == NULL
+			&& (pTrack || ::sysGetTicksElapsed(m_dwStartedTravel) > MIN_TRAVEL_LENGTH))
+		TransitionToCombat(pTrack);
 
 	//	Set state
 
 	m_iGameState = stateGameCombat;
 	}
 
-void CSoundtrackManager::NotifyStartCombatMission (void)
+void CSoundtrackManager::NotifyStartMissionTrack (CMusicResource *pTrack)
 
-//	NotifyStartCombatMission
+//	NotifyStartMissionTrack
 //
 //	Player has just started a combat mission.
 
 	{
+	if (pTrack == NULL)
+		return;
+
+	if (m_bDebugMode)
+		::kernelDebugLogMessage("Mission started.");
+
+	//	Set our mission track and transition
+
+	m_pMissionTrack = pTrack;
+
+	if (m_bEnabled
+			&& !InTransition())
+		TransitionTo(pTrack, pTrack->GetNextPlayPos());
 	}
 
 void CSoundtrackManager::NotifyTrackDone (void)
@@ -521,6 +585,11 @@ void CSoundtrackManager::NotifyTrackDone (void)
 	{
 	if (m_bDebugMode)
 		::kernelDebugLogMessage("Track done: %s", (m_pNowPlaying ? m_pNowPlaying->GetFilespec() : CONSTLIT("(none)")));
+
+	//	If we were playing the mission track, then we're done with it.
+
+	if (m_pNowPlaying == m_pMissionTrack)
+		m_pMissionTrack = NULL;
 
 	//	If we're transitioning then we wait for a subsequent play.
 
@@ -598,7 +667,12 @@ void CSoundtrackManager::NotifyUpdatePlayPos (int iPos)
 	if (!InTransition()
 			&& m_bEnabled)
 		{
-		if (IsPlayingCombatTrack())
+		if (m_pMissionTrack && m_pNowPlaying == m_pMissionTrack)
+			{
+			//	If we're playing a mission track, then we keep playing, regardless
+			//	of combat/travel mode.
+			}
+		else if (IsPlayingCombatTrack())
 			{
 			//	If we're playing a combat track and we are not in combat, then
 			//	transition to travel music
@@ -910,7 +984,7 @@ void CSoundtrackManager::TransitionTo (CMusicResource *pTrack, int iPos, bool bF
 		m_Mixer.Play(pTrack, iPos);
 	}
 
-void CSoundtrackManager::TransitionToCombat (void)
+void CSoundtrackManager::TransitionToCombat (CMusicResource *pTrack)
 
 //	TransitionToCombat
 //
@@ -927,13 +1001,14 @@ void CSoundtrackManager::TransitionToCombat (void)
 
 	//	Pick a combat track
 
-	CMusicResource *pCombatTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), stateGameCombat);
-	if (pCombatTrack == NULL)
+	if (pTrack == NULL)
+		pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), stateGameCombat);
+	if (pTrack == NULL)
 		return;
 
 	//	Transition
 
-	TransitionTo(pCombatTrack, pCombatTrack->GetNextPlayPos());
+	TransitionTo(pTrack, pTrack->GetNextPlayPos());
 	m_dwStartedCombat = ::GetTickCount();
 	m_dwStartedTravel = 0;
 	}
