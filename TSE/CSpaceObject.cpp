@@ -1100,12 +1100,6 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fHasOnAttackedByPlayerEvent =	((dwLoad & 0x00000004) ? true : false);
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
 
-	if (Ctx.dwVersion < 137)
-		{
-		pObj->m_fHasOnAttackedByPlayerEvent = pObj->FindEventHandler(CONSTLIT("OnAttackedByPlayer"));
-		pObj->m_fHasOnOrderChangedEvent = pObj->FindEventHandler(CONSTLIT("OnOrderChanged"));
-		}
-
 	//	No need to save the following
 
 	pObj->m_fOnCreateCalled = true;
@@ -1163,6 +1157,14 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	Ctx.iLoadState = loadStateObjSubClass;
 	pObj->OnReadFromStream(Ctx);
+
+	//	We must handle this after we load the subclass
+
+	if (Ctx.dwVersion < 137)
+		{
+		pObj->m_fHasOnAttackedByPlayerEvent = pObj->FindEventHandler(CONSTLIT("OnAttackedByPlayer"));
+		pObj->m_fHasOnOrderChangedEvent = pObj->FindEventHandler(CONSTLIT("OnOrderChanged"));
+		}
 
 	//	Done
 
