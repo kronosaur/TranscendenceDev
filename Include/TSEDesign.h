@@ -787,6 +787,7 @@ class CCurrencyAndValue
 		void Add (const CCurrencyAndValue &Value);
 		inline void Adjust (int iAdj) { m_iValue = iAdj * m_iValue / 100; }
 		ALERROR Bind (SDesignLoadCtx &Ctx);
+		CurrencyValue GetCreditValue (void) const;
 		inline CEconomyType *GetCurrencyType (void) const { return m_pCurrency; }
 		inline CurrencyValue GetValue (void) const { return m_iValue; }
 		inline void Init (CurrencyValue iValue, const CString &sUNID = NULL_STR) { m_iValue = iValue; m_pCurrency.LoadUNID(sUNID); }

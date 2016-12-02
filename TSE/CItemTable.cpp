@@ -70,7 +70,7 @@ class CGroupOfGenerators : public IItemGenerator
 		inline bool SetsAverageValue (void) const { return m_AverageValue.GetCount() > 0; }
 
 		TArray<SEntry> m_Table;
-		TArray<int> m_AverageValue;
+		TArray<CCurrencyAndValue> m_AverageValue;
 		TArray<Metric> m_CountAdj;
 	};
 
@@ -528,7 +528,7 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (int iLevel)
 	if (SetsAverageValue())
 		{
 		if (iLevel >= 0 && iLevel < m_AverageValue.GetCount())
-			return m_AverageValue[iLevel];
+			return m_AverageValue[iLevel].GetCreditValue();
 		else
 			return 0;
 		}
@@ -572,7 +572,7 @@ Metric CGroupOfGenerators::GetCountAdj (int iLevel)
 			//	Compute the factor that we have to multiply the total to get to
 			//	the desired value.
 
-			rCountAdj = (rTotal > 0.0 ? (Metric)m_AverageValue[iLevel] / rTotal : 0.0);
+			rCountAdj = (rTotal > 0.0 ? (Metric)m_AverageValue[iLevel].GetCreditValue() / rTotal : 0.0);
 
 			//	Remember so we don't have to compute it again.
 
@@ -621,25 +621,20 @@ ALERROR CGroupOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	CString sAttrib;
 	if (pDesc->FindAttribute(LEVEL_VALUE_ATTRIB, &sAttrib))
 		{
-		TArray<int> Values;
-		ParseIntegerList(sAttrib, 0, &Values);
+		TArray<CString> Values;
+		ParseStringList(sAttrib, 0, &Values);
 
 		m_AverageValue.InsertEmpty(MAX_ITEM_LEVEL + 1);
-		m_AverageValue[0] = 0;
 		for (i = 0; i < Values.GetCount(); i++)
-			m_AverageValue[i + 1] = Values[i];
-
-		for (i = Values.GetCount() + 1; i <= MAX_ITEM_LEVEL; i++)
-			m_AverageValue[i] = 0;
+			if (error = m_AverageValue[i + 1].InitFromXML(Ctx, Values[i]))
+				return error;
 		}
 	else if (pDesc->FindAttribute(VALUE_ATTRIB, &sAttrib))
 		{
-		int iValue = strToInt(sAttrib, 0);
-
 		m_AverageValue.InsertEmpty(MAX_ITEM_LEVEL + 1);
-		m_AverageValue[0] = 0;
 		for (i = 1; i <= MAX_ITEM_LEVEL; i++)
-			m_AverageValue[i] = iValue;
+			if (error = m_AverageValue[i].InitFromXML(Ctx, sAttrib))
+				return error;
 		}
 
 	return NOERROR;
@@ -660,6 +655,12 @@ ALERROR CGroupOfGenerators::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 		if (error = m_Table[i].pItem->OnDesignLoadComplete(Ctx))
 			return error;
 		}
+
+	//	Bind average values
+
+	for (i = 0; i < m_AverageValue.GetCount(); i++)
+		if (error = m_AverageValue[i].Bind(Ctx))
+			return error;
 
 	//	Initialize count adjustment
 

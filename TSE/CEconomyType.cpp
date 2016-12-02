@@ -251,6 +251,16 @@ ALERROR CCurrencyAndValue::Bind (SDesignLoadCtx &Ctx)
 	return m_pCurrency.Bind(Ctx);
 	}
 
+CurrencyValue CCurrencyAndValue::GetCreditValue (void) const
+
+//	GetCreditValue
+//
+//	Returns the value in credits (converting as appropriate).
+
+	{
+	return CEconomyType::ExchangeToCredits(*this);
+	}
+
 ALERROR CCurrencyAndValue::InitFromXML (SDesignLoadCtx &Ctx, const CString &sDesc)
 
 //	InitFromXML
