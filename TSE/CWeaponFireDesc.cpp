@@ -1668,10 +1668,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load missile speed
 
-	if (m_iFireType == ftContinuousBeam)
-		m_fRelativisticSpeed = true;
-	else
-		m_fRelativisticSpeed = pDesc->GetAttributeBool(RELATIVISTIC_SPEED_ATTRIB);
+	m_fRelativisticSpeed = pDesc->GetAttributeBool(RELATIVISTIC_SPEED_ATTRIB);
 	
 	bool bDefaultMissileSpeed = false;
 	CString sData;
