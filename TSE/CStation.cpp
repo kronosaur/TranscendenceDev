@@ -1479,7 +1479,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
 
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
-		return CC.CreateBool(m_pType->IsBlacklistEnabled() && !m_fNoBlacklist);
+		return CC.CreateBool(!m_pType->IsBlacklistEnabled() || m_fNoBlacklist);
 
 	else if (strEquals(sName, PROPERTY_HP))
 		return CC.CreateInteger(m_iHitPoints);
