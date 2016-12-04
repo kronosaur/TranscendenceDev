@@ -210,7 +210,7 @@ ICCItem *CCodeChain::CreateErrorCode (int iErrorCode)
 	return pError;
 	}
 
-ICCItem *CCodeChain::CreateDouble(double dValue)
+ICCItem *CCodeChain::CreateDouble (double dValue)
 
 //	CreateDouble
 //
@@ -304,6 +304,20 @@ ICCItem *CCodeChain::CreateLinkedList (void)
 
 	pItem->Reset();
 	return pItem->Reference();
+	}
+
+ICCItem *CCodeChain::CreateNumber (double dValue)
+
+//	CreateNumber
+//
+//	Creates either an integer or a double.
+
+	{
+	int iInt = (int)dValue;
+	if (dValue == (double)iInt)
+		return CreateInteger(iInt);
+	else
+		return CreateDouble(dValue);
 	}
 
 ICCItem *CCodeChain::CreateDoubleIfPossible (const CString &sString)

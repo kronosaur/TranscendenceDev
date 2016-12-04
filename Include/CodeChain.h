@@ -833,6 +833,7 @@ class CCodeChain : public CObject
 		ICCItem *CreateLiteral (const CString &sString);
 		inline ICCItem *CreateMemoryError (void) { return m_sMemoryError.Reference(); }
 		inline ICCItem *CreateNil (void) { return m_pNil->Reference(); }
+		ICCItem *CreateNumber (double dValue);
 		ICCItem *CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl);
 		ICCItem *CreateString (const CString &sString);
 		ICCItem *CreateSymbolTable (void);
