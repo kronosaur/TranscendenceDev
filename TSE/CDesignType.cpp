@@ -1523,7 +1523,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         //  enemy, say so.
 
         else if (Ctx.bEnemy)
-            return CONSTLIT("hostile");
+            return CONSTLIT("Hostile");
 
         //  Otherwise, we report no services.
 
