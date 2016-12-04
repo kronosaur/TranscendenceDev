@@ -90,6 +90,7 @@
 #define ON_DESTROY_SHOT_EVENT					CONSTLIT("OnDestroyShot")
 #define ON_FRAGMENT_EVENT						CONSTLIT("OnFragment")
 
+#define PROPERTY_LIFETIME						CONSTLIT("lifetime")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
@@ -636,7 +637,10 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 
 	//	We handle some properties
 
-	if (strEquals(sProperty, PROPERTY_TRACKING))
+	if (strEquals(sProperty, PROPERTY_LIFETIME))
+		return CC.CreateNumber(m_Lifetime.GetAveValueFloat());
+
+	else if (strEquals(sProperty, PROPERTY_TRACKING))
 		return CC.CreateBool(IsTrackingOrHasTrackingFragments());
 
 	//	See if this is one of the special damage properties
