@@ -137,6 +137,8 @@ class CGeometry
 
 		static void AccumulateBounds (const CVector &vPos, CVector &vLL, CVector &vUR);
 		static void AddArcPoints (const CVector &vCenter, Metric rRadius, Metric rFromAngle, Metric rToAngle, TArray<CVector> *ioPoints, DWORD dwFlags = 0);
+		static int AngleArc (int iMinAngle, int iMaxAngle);
+		static void CombineArcs (int iMinAngle1, int iMaxAngle1, int iMinAngle2, int iMaxAngle2, int *retiMin, int *retiMax);
 		static EIntersectResults IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1 = NULL, CVector *retvP2 = NULL);
 	};
 

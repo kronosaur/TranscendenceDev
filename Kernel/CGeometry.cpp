@@ -126,6 +126,59 @@ void CGeometry::AddArcPoints (const CVector &vCenter, Metric rRadius, Metric rFr
 		}
 	}
 
+int CGeometry::AngleArc (int iMinAngle, int iMaxAngle)
+
+//	AngleArc
+//
+//	Returns the size of the arc.
+
+	{
+	if (iMinAngle > iMaxAngle)
+		return (iMinAngle - iMaxAngle) % 360;
+	else
+		return (iMaxAngle - iMinAngle) % 360;
+	}
+
+void CGeometry::CombineArcs (int iMinAngle1, int iMaxAngle1, int iMinAngle2, int iMaxAngle2, int *retiMin, int *retiMax)
+
+//	CombineArcs
+//
+//	Given two arcs, combine them into one large span.
+
+	{
+	//	If either is omni, then we're done.
+
+	if (iMinAngle1 == iMaxAngle1
+			|| iMinAngle2 == iMaxAngle2)
+		{
+		*retiMin = 0;
+		*retiMax = 0;
+		}
+
+	//	If neither cross 0 or both cross 0, then it's simple
+
+	else if ((iMinAngle1 < iMaxAngle1 && iMinAngle2 < iMaxAngle2)
+			|| (iMinAngle1 > iMaxAngle1 && iMinAngle2 > iMaxAngle2))
+		{
+		*retiMin = Min(iMinAngle1, iMinAngle2);
+		*retiMax = Max(iMaxAngle1, iMaxAngle2);
+		}
+
+	//	Otherwise, pick whichever arc is larger
+	//	LATER: We should be smarter about combining them.
+
+	else if (AngleArc(iMinAngle1, iMaxAngle1) > AngleArc(iMinAngle2, iMaxAngle2))
+		{
+		*retiMin = iMinAngle1;
+		*retiMax = iMaxAngle1;
+		}
+	else
+		{
+		*retiMin = iMinAngle2;
+		*retiMax = iMaxAngle2;
+		}
+	}
+
 CGeometry::EIntersectResults CGeometry::IntersectLineCircle (const CVector &vFrom, const CVector &vTo, const CVector &vCenter, Metric rRadius, CVector *retvP1, CVector *retvP2)
 
 //	IntersectLineCircle
