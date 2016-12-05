@@ -7331,10 +7331,10 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	if (CanAttack()
 			&& !IsDestroyed()
 			&& Ctx.pPlayer
-			&& Ctx.pPlayer->IsEnemy(this)
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
 		{
+		bool bIsAngryAtPlayer = IsAngryAt(Ctx.pPlayer);
 		CVector vDist = GetPos() - Ctx.pPlayer->GetPos();
 
 		//	If this is the player's current target, then see if we can actually
@@ -7363,9 +7363,10 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			else if (rDist > GetDetectionRange(Ctx.iPlayerPerception))
 				Ctx.bPlayerTargetOutOfRange = true;
 
-			//	Otherwise, this is a valid target
+			//	Otherwise, if this object is angry at the player, then it is a
+			//	valid auto-target
 
-			else
+			else if (bIsAngryAtPlayer)
 				{
 				Metric rDist2 = rDist * rDist;
 				if (rDist2 < Ctx.rTargetDist2)
@@ -7375,6 +7376,12 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 					}
 				}
 			}
+
+		//	If this object is not angry at us, then it can never be an auto-
+		//	target.
+
+		else if (!bIsAngryAtPlayer)
+			{ }
 
 		//	If the player's weapons has an arc of fire, then limit ourselves to
 		//	targets in the arc.

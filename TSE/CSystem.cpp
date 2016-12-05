@@ -4767,7 +4767,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		//	Check to see if the primary weapon requires autotargetting
 
 		CInstalledDevice *pWeapon = Ctx.pPlayer->GetNamedDevice(devPrimaryWeapon);
-		if (pWeapon)
+		if (pWeapon && pWeapon->IsEnabled())
 			{
 			CItemCtx ItemCtx(Ctx.pPlayer, pWeapon);
 			Ctx.bNeedsAutoTarget = pWeapon->GetClass()->NeedsAutoTarget(ItemCtx, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
@@ -4776,11 +4776,22 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		//	If the primary does not need it, check the missile launcher
 
 		CInstalledDevice *pLauncher;
-		if (!Ctx.bNeedsAutoTarget
-				&& (pLauncher = Ctx.pPlayer->GetNamedDevice(devMissileWeapon)))
+		if ((pLauncher = Ctx.pPlayer->GetNamedDevice(devMissileWeapon))
+				&& pLauncher->IsEnabled())
 			{
 			CItemCtx ItemCtx(Ctx.pPlayer, pLauncher);
-			Ctx.bNeedsAutoTarget = pLauncher->GetClass()->NeedsAutoTarget(ItemCtx, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
+			int iLauncherMinFireArc, iLauncherMaxFireArc;
+			if (pLauncher->GetClass()->NeedsAutoTarget(ItemCtx, &iLauncherMinFireArc, &iLauncherMaxFireArc))
+				{
+				if (Ctx.bNeedsAutoTarget)
+					CGeometry::CombineArcs(Ctx.iMinFireArc, Ctx.iMaxFireArc, iLauncherMinFireArc, iLauncherMaxFireArc, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
+				else
+					{
+					Ctx.bNeedsAutoTarget = true;
+					Ctx.iMinFireArc = iLauncherMinFireArc;
+					Ctx.iMaxFireArc = iLauncherMaxFireArc;
+					}
+				}
 			}
 
 		//	Set up perception and max target dist
