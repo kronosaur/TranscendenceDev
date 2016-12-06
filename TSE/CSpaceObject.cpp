@@ -3507,10 +3507,11 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		ICCItem *pResult = CC.CreateSymbolTable();
 		pResult->SetAt(CC, FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
 		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
+		if (bCanInstall && (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
+			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+
 		if (!sMessageID.IsBlank())
 			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
-		if (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY)
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
 
 		return pResult;
 		}
@@ -3539,10 +3540,14 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		ICCItem *pResult = CC.CreateSymbolTable();
 		pResult->SetAt(CC, FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
 		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
+		if (bCanInstall 
+				&& (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
+			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+
+		//	NOTE: Message is valid even if we cannot install
+
 		if (!sMessageID.IsBlank())
 			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
-		if (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY)
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
 
 		return pResult;
 		}
@@ -3577,10 +3582,12 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		ICCItem *pResult = CC.CreateSymbolTable();
 		pResult->SetAt(CC, FIELD_CAN_REMOVE, (bCanRemove ? CC.CreateTrue() : CC.CreateNil()));
 		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanRemove ? iPrice : -1));
+		if (bCanRemove 
+				&& (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
+			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+
 		if (!sMessageID.IsBlank())
 			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
-		if (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY)
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
 
 		return pResult;
 		}
