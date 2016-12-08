@@ -3684,8 +3684,9 @@ class CSystemMap : public CDesignType
 		inline void GetScale (int *retiInitial, int *retiMin, int *retiMax) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
         inline CG32bitPixel GetStargateLineColor (void) const { return m_rgbStargateLines; }
 		inline const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
+		inline bool IsPrimaryMap (void) const { return (m_pPrimaryMap == NULL); }
 		inline bool IsStartingMap (void) const { return m_bStartingMap; }
-		ALERROR ProcessTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
+		ALERROR ProcessTopology (CTopology &Topology, CSystemMap *pTargetMap, CTopologyNodeList &NodesAdded, CString *retsError);
 
 		//	CDesignType overrides
 		static CSystemMap *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemMap) ? (CSystemMap *)pType : NULL); }

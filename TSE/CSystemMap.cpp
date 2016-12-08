@@ -534,7 +534,7 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 		}
 	}
 
-ALERROR CSystemMap::ProcessTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError)
+ALERROR CSystemMap::ProcessTopology (CTopology &Topology, CSystemMap *pTargetMap, CTopologyNodeList &NodesAdded, CString *retsError)
 
 //	ProcessTopology
 //
@@ -544,37 +544,22 @@ ALERROR CSystemMap::ProcessTopology (CTopology &Topology, TSortMap<DWORD, CTopol
 	ALERROR error;
 	int i;
 
-	//	Get the list of nodes added to this map.
-
-	CTopologyNodeList *pNodesAdded = NodesAdded.GetAt(GetUNID());
-	if (pNodesAdded == NULL)
-		return NOERROR;
-
 	//	Apply any topology processors (in order) on all the newly added nodes
 
 	for (i = 0; i < m_Processors.GetCount(); i++)
 		{
 		//	Make a copy of the node list because each call will destroy it
 
-		CTopologyNodeList NodeList = *pNodesAdded;
+		CTopologyNodeList NodeList = NodesAdded;
 
 		//	Process
 
-		if (error = m_Processors[i]->Process(this, Topology, NodeList, retsError))
+		if (error = m_Processors[i]->Process(pTargetMap, Topology, NodeList, retsError))
 			{
 			*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), GetUNID(), *retsError);
 			return error;
 			}
 		}
-
-	//	Make sure every node added has a system UNID
-
-	for (i = 0; i < pNodesAdded->GetCount(); i++)
-		if (pNodesAdded->GetAt(i)->GetSystemTypeUNID() == 0)
-			{
-			*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): NodeID %s: No system specified"), GetUNID(), pNodesAdded->GetAt(i)->GetID());
-			return ERR_FAIL;
-			}
 
 	return NOERROR;
 	}

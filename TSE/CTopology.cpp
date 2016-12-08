@@ -1833,6 +1833,8 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 	//	topology processors on them later.
 
 	TSortMap<DWORD, CTopologyNodeList> NodesAdded;
+	TArray<CSystemMap *> PrimaryMaps;
+	TArray<CSystemMap *> SecondaryMaps;
 
 	//	Let the maps add their topologies
 
@@ -1850,25 +1852,73 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 
 		if (error = pMap->AddFixedTopology(m_Topology, NodesAdded, retsError))
 			return error;
+
+		//	Keep track of primary vs. secondary maps
+
+		if (pMap->IsPrimaryMap())
+			PrimaryMaps.Insert(pMap);
+		else
+			SecondaryMaps.Insert(pMap);
 		}
 
-	//	Now process all topology elements.
+	//	Run all primary map topology processors. We guarantee that the topology 
+	//	processors of a primary map will run before any secondary ones.
 
-	for (i = 0; i < m_Design.GetCount(designSystemMap); i++)
+	for (i = 0; i < PrimaryMaps.GetCount(); i++)
 		{
-		CSystemMap *pMap = CSystemMap::AsType(m_Design.GetEntry(designSystemMap, i));
-		if (pMap->IsStartingMap() && pMap->GetUNID() != dwStartingMap)
-			continue;
+		CSystemMap *pMap = PrimaryMaps[i];
 
-		//	If this map did not add any nodes, then skip.
+		//	Get the set of nodes that this map operates on.
 
-		if (NodesAdded.GetAt(pMap->GetUNID()) == NULL)
+		CTopologyNodeList *pNodeList = NodesAdded.GetAt(pMap->GetUNID());
+		if (pNodeList == NULL || pNodeList->GetCount() == 0)
 			continue;
 
 		//	Process topology
 
-		if (error = pMap->ProcessTopology(m_Topology, NodesAdded, retsError))
+		if (error = pMap->ProcessTopology(m_Topology, pMap, *pNodeList, retsError))
 			return error;
+		}
+
+	//	Now run all secondary map topology processors
+
+	for (i = 0; i < SecondaryMaps.GetCount(); i++)
+		{
+		CSystemMap *pMap = SecondaryMaps[i];
+
+		//	Secondary maps operate on nodes in a primary map.
+
+		CSystemMap *pTargetMap = pMap->GetDisplayMap();
+		CTopologyNodeList *pNodeList = NodesAdded.GetAt(pTargetMap->GetUNID());
+		if (pNodeList == NULL || pNodeList->GetCount() == 0)
+			continue;
+
+		//	Process topology
+
+		if (error = pMap->ProcessTopology(m_Topology, pTargetMap, *pNodeList, retsError))
+			return error;
+		}
+
+	//	Make sure every node added has a system UNID
+
+	for (i = 0; i < PrimaryMaps.GetCount(); i++)
+		{
+		CSystemMap *pMap = PrimaryMaps[i];
+
+		//	Get the set of nodes that this map operates on.
+
+		CTopologyNodeList *pNodeList = NodesAdded.GetAt(pMap->GetUNID());
+		if (pNodeList == NULL || pNodeList->GetCount() == 0)
+			continue;
+
+		//	Make sure each node has a system type defined
+
+		for (int j = 0; j < pNodeList->GetCount(); j++)
+			if (pNodeList->GetAt(j)->GetSystemTypeUNID() == 0)
+				{
+				*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): NodeID %s: No system specified"), pMap->GetUNID(), pNodeList->GetAt(j)->GetID());
+				return ERR_FAIL;
+				}
 		}
 
 	//	Add the topologies from any enabled extensions
