@@ -40,6 +40,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define CAN_INSTALL_ITEM_EVENT					CONSTLIT("CanInstallItem")
 #define GET_DOCK_SCREEN_EVENT					CONSTLIT("GetDockScreen")
 #define GET_EXPLOSION_TYPE_EVENT				CONSTLIT("GetExplosionType")
+#define GET_PLAYER_PRICE_ADJ_EVENT				CONSTLIT("GetPlayerPriceAdj")
 #define ON_ATTACKED_EVENT						CONSTLIT("OnAttacked")
 #define ON_ATTACKED_BY_PLAYER_EVENT				CONSTLIT("OnAttackedByPlayer")
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
@@ -2069,6 +2070,62 @@ void CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion)
 		retExplosion->iBonus = 0;
 		retExplosion->iCause = killedByExplosion;
 		}
+	}
+
+bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj)
+
+//	FireGetPlayerPriceAdj
+//
+//	Fire GetPlayerPriceAdj
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(GET_PLAYER_PRICE_ADJ_EVENT, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		//	Set up
+
+		Ctx.SetEvent(eventGetTradePrice);
+		if (ServiceCtx.pItem)
+			{
+			Ctx.SaveAndDefineItemVar(*ServiceCtx.pItem);
+			Ctx.SetItemType(ServiceCtx.pItem->GetType());
+			}
+		else if (ServiceCtx.pObj)
+			{
+			Ctx.DefineSpaceObject(CONSTLIT("aObj"), ServiceCtx.pObj);
+			}
+
+		Ctx.DefineString(CONSTLIT("aService"), CTradingDesc::ServiceToString(ServiceCtx.iService));
+		Ctx.DefineSpaceObject(CONSTLIT("aProviderObj"), ServiceCtx.pProvider);
+		if (pData)
+			Ctx.SaveAndDefineDataVar(pData);
+
+		//	Run
+
+		ICCItem *pResult = Ctx.Run(Event);
+
+		int iPriceAdj = 100;
+		if (pResult->IsError())
+			ReportEventError(GET_PLAYER_PRICE_ADJ_EVENT, pResult);
+		else if (pResult->IsNil())
+			;
+		else
+			iPriceAdj = pResult->GetIntegerValue();
+
+		//	Done
+
+		Ctx.Discard(pResult);
+
+		if (retiPriceAdj)
+			*retiPriceAdj = iPriceAdj;
+
+		return (iPriceAdj != 100);
+		}
+	else
+		return false;
 	}
 
 void CSpaceObject::FireOnAttacked (const SDamageCtx &Ctx)

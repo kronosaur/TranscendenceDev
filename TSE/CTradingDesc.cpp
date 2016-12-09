@@ -28,6 +28,7 @@
 
 #define CONSTANT_PREFIX							CONSTLIT("constant")
 #define UNAVAILABLE_PREFIX						CONSTLIT("unavailable")
+#define VARIABLE_PREFIX							CONSTLIT("variable")
 
 const int EXTRA_REPAIR_COST_FACTOR =            3;  //  Damage over 50% cost 3 times more to repair
 
@@ -408,6 +409,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 
 	//	Adjust the price appropriately
 
+	bool bEventAdj = false;
 	CurrencyValue iPrice;
 	CString sPrefix;
 	int iPriceAdj = Commodity.PriceAdj.EvalAsInteger(Ctx.pProvider, &sPrefix);
@@ -418,15 +420,33 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 		iPrice = iPriceAdj;
 	else if (strEquals(sPrefix, UNAVAILABLE_PREFIX))
 		return -1;
+	else if (strEquals(sPrefix, VARIABLE_PREFIX))
+		{
+		iPrice = iBasePrice;
+		bEventAdj = true;
+		}
 	else
 		{
 		kernelDebugLogMessage("Unknown priceAdj prefix: %s", sPrefix);
 		return -1;
 		}
 
-	//	Let global types adjust the price
+	//	Let the provide adjust prices, if it has an event
 
 	int iPlayerPriceAdj;
+	if (bPlayerAdj 
+			&& bEventAdj
+			&& Ctx.pProvider
+			&& Ctx.pProvider->FireGetPlayerPriceAdj(Ctx, NULL, &iPlayerPriceAdj))
+		{
+		if (iPlayerPriceAdj < 0)
+			return -1;
+
+		iPrice = iPlayerPriceAdj * iPrice / 100;
+		}
+
+	//	Let global types adjust the price
+
 	if (bPlayerAdj 
 			&& g_pUniverse->GetDesignCollection().FireGetGlobalPlayerPriceAdj(Ctx, NULL, &iPlayerPriceAdj))
 		{
