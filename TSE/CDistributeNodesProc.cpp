@@ -6,6 +6,8 @@
 
 #define CRITERIA_TAG						CONSTLIT("Criteria")
 
+#define NODE_COUNT_ATTRIB					CONSTLIT("nodeCount")
+
 CDistributeNodesProc::~CDistributeNodesProc (void)
 
 //	CDistributeNodesProc destructor
@@ -57,6 +59,14 @@ ALERROR CDistributeNodesProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *p
 			}
 		}
 
+	//	See how many nodes to distribute
+
+	if (error = m_DistCount.LoadFromXML(pDesc->GetAttribute(NODE_COUNT_ATTRIB)))
+		return error;
+
+	if (m_DistCount.IsEmpty())
+		m_DistCount.SetConstant(m_Systems.GetCount());
+
 	return NOERROR;
 	}
 
@@ -72,9 +82,11 @@ ALERROR CDistributeNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, 
 
 	CTopologyNodeList NodesToDelete;
 
-	//	If no systems, then we're done
+	//	Compute the number of nodes
 
-	if (m_Systems.GetCount() == 0)
+	int iDistCount = m_DistCount.Roll();
+	int iSystemCount = m_Systems.GetCount();
+	if (iSystemCount == 0 || iDistCount == 0)
 		return NOERROR;
 
 	//	If we have a criteria, the filter the nodes
@@ -89,7 +101,7 @@ ALERROR CDistributeNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, 
 
 	//	We better have enough nodes
 
-	if (pNodeList->GetCount() < m_Systems.GetCount())
+	if (pNodeList->GetCount() < iDistCount)
 		{
 		*retsError = CONSTLIT("<DistributeNodes>: Not enough available nodes.");
 		return ERR_FAIL;
@@ -102,9 +114,9 @@ ALERROR CDistributeNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, 
 		{
 		pNodeList->Shuffle();
 
-		for (i = 0; i < m_Systems.GetCount(); i++)
+		for (i = 0; i < iDistCount; i++)
 			{
-			if (error = pNodeList->GetAt(i)->InitFromAdditionalXML(m_Systems[i].pDesc, retsError))
+			if (error = pNodeList->GetAt(i)->InitFromAdditionalXML(m_Systems[i % iSystemCount].pDesc, retsError))
 				return error;
 
 			//	Remove this node from NodeList so that it is not re-used by our callers
@@ -120,11 +132,10 @@ ALERROR CDistributeNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, 
 		pNodeList->Shuffle();
 
 		int iNodeCount = pNodeList->GetCount();
-		int iSystemCount = m_Systems.GetCount();
 
 		int iOffset = 0;
 		TArray<int> Chosen;
-		Chosen.InsertEmpty(iSystemCount);
+		Chosen.InsertEmpty(iDistCount);
 
 		int iBestMatch = -1;
 		TArray<int> Best;
@@ -134,15 +145,15 @@ ALERROR CDistributeNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, 
 			{
 			//	Assign nodes in order
 
-			for (i = 0; i < iSystemCount; i++)
+			for (i = 0; i < iDistCount; i++)
 				Chosen[i] = (i + iOffset) % iNodeCount;
 
 			//	Compute the minimum and maximum internode distance
 
 			int iMin = INFINITE_NODE_DIST;
 			int iMax = 0;
-			for (i = 0; i < iSystemCount - 1; i++)
-				for (j = i + 1; j < iSystemCount; j++)
+			for (i = 0; i < iDistCount - 1; i++)
+				for (j = i + 1; j < iDistCount; j++)
 					{
 					int iDist = Topology.GetDistance(pNodeList->GetAt(Chosen[i])->GetID(), pNodeList->GetAt(Chosen[j])->GetID());
 					if (iDist > iMax)
@@ -184,9 +195,9 @@ ALERROR CDistributeNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, 
 
 		//	Apply the systems
 
-		for (i = 0; i < iSystemCount; i++)
+		for (i = 0; i < iDistCount; i++)
 			{
-			if (error = pNodeList->GetAt(Best[i])->InitFromSystemXML(m_Systems[i].pDesc, retsError))
+			if (error = pNodeList->GetAt(Best[i])->InitFromSystemXML(m_Systems[i % iSystemCount].pDesc, retsError))
 				return error;
 
 			//	Remove this node from NodeList so that it is not re-used by our callers

@@ -91,6 +91,7 @@ class CDistributeNodesProc : public ITopologyProcessor
 			};
 
 		CTopologyNode::SCriteria m_Criteria;
+		DiceRange m_DistCount;
 		TArray<SSystemEntry> m_Systems;
 	};
 
