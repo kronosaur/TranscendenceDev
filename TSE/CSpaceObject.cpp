@@ -2088,6 +2088,7 @@ bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem 
 		//	Set up
 
 		Ctx.SetEvent(eventGetTradePrice);
+		Ctx.SaveAndDefineSourceVar(this);
 		if (ServiceCtx.pItem)
 			{
 			Ctx.SaveAndDefineItemVar(*ServiceCtx.pItem);
