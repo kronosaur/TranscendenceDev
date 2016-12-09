@@ -4498,6 +4498,7 @@ CString GetDamageShortName (DamageTypes iType);
 CString GetDamageType (DamageTypes iType);
 int GetDiceCountFromAttribute(const CString &sValue);
 int GetFrequency (const CString &sValue);
+CString GetFrequencyName (FrequencyTypes iFrequency);
 int GetFrequencyByLevel (const CString &sLevelFrequency, int iLevel);
 CString GetItemCategoryID (ItemCategories iCategory);
 CString GetItemCategoryName (ItemCategories iCategory);

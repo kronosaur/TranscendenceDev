@@ -75,6 +75,7 @@ class CPlayerSettings
 		void InitAsDefault (void);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
 		inline bool IsDebugOnly (void) const { return (m_fDebug ? true : false); }
+		inline bool IsDefault (void) const { return (m_fIsDefault ? true : false); }
 		inline bool IsIncludedInAllAdventures (void) const { return (m_fIncludeInAllAdventures ? true : false); }
 		inline bool IsInitialClass (void) const { return (m_fInitialClass ? true : false); }
         inline bool IsResolved (void) const { return (m_fResolved ? true : false); }
@@ -122,7 +123,7 @@ class CPlayerSettings
 		DWORD m_fIncludeInAllAdventures:1;			//	TRUE if we should always include this ship
         DWORD m_fOwnDockScreenDesc:1;               //  TRUE if we own m_pDockScreenVisuals element
 		DWORD m_fResolved:1;                        //  TRUE if we have resolved all inheritance
-		DWORD m_fSpare6:1;
+		DWORD m_fIsDefault:1;						//	TRUE if this is the default (generic) player settings
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 

@@ -84,7 +84,8 @@ CPlayerSettings::CPlayerSettings (void) :
 		m_fDebug(false),
 		m_fIncludeInAllAdventures(false),
 		m_fOwnDockScreenDesc(false),
-		m_fResolved(false)
+		m_fResolved(false),
+		m_fIsDefault(false)
 
 	//	CPlayerSettings constructor
 
@@ -249,6 +250,7 @@ void CPlayerSettings::Copy (const CPlayerSettings &Src)
 	m_fInitialClass = Src.m_fInitialClass;					//	Use ship class at game start
 	m_fDebug = Src.m_fDebug;
 	m_fIncludeInAllAdventures = Src.m_fIncludeInAllAdventures;
+	m_fIsDefault = Src.m_fIsDefault;
     }
 
 CEffectCreator *CPlayerSettings::FindEffectCreator (const CString &sUNID) const
@@ -319,6 +321,7 @@ void CPlayerSettings::InitAsDefault (void)
 		}
 
 	m_fResolved = true;
+	m_fIsDefault = true;
 	}
 
 ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)

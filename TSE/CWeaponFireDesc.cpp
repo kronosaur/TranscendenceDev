@@ -1668,11 +1668,35 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load missile speed
 
-	m_fRelativisticSpeed = pDesc->GetAttributeBool(RELATIVISTIC_SPEED_ATTRIB);
-	
-	bool bDefaultMissileSpeed = false;
 	CString sData;
-	if (pDesc->FindAttribute(MISSILE_SPEED_ATTRIB, &sData))
+	bool bDefaultMissileSpeed = false;
+
+	if (pDesc->FindAttribute(RELATIVISTIC_SPEED_ATTRIB, &sData))
+		{
+		int iSpeed;
+
+		if (CXMLElement::IsBoolTrueValue(sData))
+			{
+			m_fRelativisticSpeed = true;
+			bDefaultMissileSpeed = true;
+			iSpeed = 100;
+			}
+		else if ((iSpeed = strToInt(sData, -1)) > 0)
+			{
+			m_fRelativisticSpeed = true;
+			}
+		else
+			{
+			m_fRelativisticSpeed = false;
+			bDefaultMissileSpeed = true;
+			iSpeed = 100;
+			}
+
+		m_MissileSpeed.SetConstant(iSpeed);
+		m_fVariableInitialSpeed = false;
+		m_rMissileSpeed = CalcSpeed(iSpeed);
+		}
+	else if (pDesc->FindAttribute(MISSILE_SPEED_ATTRIB, &sData))
 		{
 		if (error = m_MissileSpeed.LoadFromXML(sData))
 			{
@@ -1680,6 +1704,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			return ERR_FAIL;
 			}
 
+		m_fRelativisticSpeed = false;
 		m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
 		m_rMissileSpeed = CalcSpeed(m_MissileSpeed.GetAveValueFloat());
 		}
@@ -1688,6 +1713,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		bDefaultMissileSpeed = true;
 
 		m_MissileSpeed.SetConstant(100);
+		m_fRelativisticSpeed = false;
 		m_fVariableInitialSpeed = false;
 		m_rMissileSpeed = CalcSpeed(100.0);
 		}

@@ -1724,6 +1724,32 @@ int GetFrequency (const CString &sValue)
 		return ftNotRandom;
 	}
 
+CString GetFrequencyName (FrequencyTypes iFrequency)
+
+//	GetFrequencyName
+//
+//	Returns the frequency
+
+	{
+	switch (iFrequency)
+		{
+		case ftCommon:
+			return FREQUENCY_COMMON;
+
+		case ftUncommon:
+			return FREQUENCY_UNCOMMON;
+
+		case ftRare:
+			return FREQUENCY_RARE;
+
+		case ftVeryRare:
+			return FREQUENCY_VERYRARE;
+
+		default:
+			return FREQUENCY_NOTRANDOM;
+		}
+	}
+
 int GetFrequencyByLevel (const CString &sLevelFrequency, int iLevel)
 
 //	GetFrequencyByLevel

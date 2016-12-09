@@ -3705,10 +3705,14 @@ bool CShipClass::OnHasSpecialAttribute (const CString &sAttrib) const
 	if (strStartsWith(sAttrib, SPECIAL_IS_PLAYER_CLASS))
 		{
 		CString sValue = strSubString(sAttrib, SPECIAL_IS_PLAYER_CLASS.GetLength());
-		if (strEquals(sValue, SPECIAL_VALUE_TRUE))
-			return (GetPlayerSettings() != NULL);
-		else
-			return (GetPlayerSettings() == NULL);
+
+		//	For purposes of this attribute, we only consider explicit (non-default)
+		//	player ships. Otherwise, every ship is a player ship.
+
+		const CPlayerSettings *pPlayer = GetPlayerSettings();
+		bool bIsPlayerClass = (pPlayer && !pPlayer->IsDefault());
+
+		return (strEquals(sValue, SPECIAL_VALUE_TRUE) == bIsPlayerClass);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_MANUFACTURER))
 		{
