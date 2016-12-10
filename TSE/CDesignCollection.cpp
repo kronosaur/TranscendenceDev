@@ -25,11 +25,13 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 		"OnGlobalMarkImages",
 
 		"OnGlobalObjDestroyed",
+		"OnGlobalPlayerBoughtItem",
+		"OnGlobalPlayerSoldItem",
 		"OnGlobalSystemStarted",
 		"OnGlobalSystemStopped",
+
 		"OnGlobalUniverseCreated",
 		"OnGlobalUniverseLoad",
-
 		"OnGlobalUniverseSave",
 		"OnGlobalUpdate",
 	};
@@ -805,6 +807,27 @@ void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot,
 		}
 	}
 
+void CDesignCollection::FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price)
+
+//	FireOnGlobalPlayerBoughtItem
+//
+//	Fire event
+
+	{
+	int i;
+	CString sError;
+
+	//	Fire all events
+
+	for (i = 0; i < m_EventsCache[evtOnGlobalPlayerBoughtItem]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalPlayerBoughtItem]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalPlayerBoughtItem(Event, pSellerObj, Item, Price);
+		}
+	}
+
 void CDesignCollection::FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip)
 
 //	FireOnGlobalPlayerChangedShips
@@ -853,6 +876,27 @@ void CDesignCollection::FireOnGlobalPlayerLeftSystem (void)
 		{
 		if (GetEntry(i)->FireOnGlobalPlayerLeftSystem(&sError) != NOERROR)
 			kernelDebugLogMessage(sError);
+		}
+	}
+
+void CDesignCollection::FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price)
+
+//	FireOnGlobalPlayerSoldItem
+//
+//	Fire event
+
+	{
+	int i;
+	CString sError;
+
+	//	Fire all events
+
+	for (i = 0; i < m_EventsCache[evtOnGlobalPlayerSoldItem]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalPlayerSoldItem]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalPlayerSoldItem(Event, pBuyerObj, Item, Price);
 		}
 	}
 

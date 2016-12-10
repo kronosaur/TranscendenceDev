@@ -57,9 +57,11 @@
 #define ON_GLOBAL_MARK_IMAGES_EVENT				CONSTLIT("OnGlobalMarkImages")
 #define ON_GLOBAL_OBJ_DESTROYED_EVENT			CONSTLIT("OnGlobalObjDestroyed")
 #define ON_GLOBAL_DOCK_PANE_INIT_EVENT			CONSTLIT("OnGlobalPaneInit")
+#define ON_GLOBAL_PLAYER_BOUGHT_ITEM_EVENT		CONSTLIT("OnGlobalPlayerBoughtItem")
 #define ON_GLOBAL_PLAYER_CHANGED_SHIPS_EVENT	CONSTLIT("OnGlobalPlayerChangedShips")
 #define ON_GLOBAL_PLAYER_ENTERED_SYSTEM_EVENT	CONSTLIT("OnGlobalPlayerEnteredSystem")
 #define ON_GLOBAL_PLAYER_LEFT_SYSTEM_EVENT		CONSTLIT("OnGlobalPlayerLeftSystem")
+#define ON_GLOBAL_PLAYER_SOLD_ITEM_EVENT		CONSTLIT("OnGlobalPlayerSoldItem")
 #define ON_GLOBAL_RESURRECT_EVENT				CONSTLIT("OnGlobalResurrect")
 #define ON_GLOBAL_TOPOLOGY_CREATED_EVENT		CONSTLIT("OnGlobalTopologyCreated")
 #define ON_GLOBAL_SYSTEM_CREATED_EVENT			CONSTLIT("OnGlobalSystemCreated")
@@ -1056,6 +1058,56 @@ ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, v
 
 	Ctx.Discard(pResult);
 	return NOERROR;
+	}
+
+void CDesignType::FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price)
+
+//	FireOnGlobalPlayerBoughtItem
+//
+//	Player bought an item
+
+	{
+	CCodeChainCtx Ctx;
+
+	//	Set up
+
+	Ctx.DefineSpaceObject(CONSTLIT("aSellerObj"), pSellerObj);
+	Ctx.SaveAndDefineItemVar(Item);
+	Ctx.DefineString(CONSTLIT("aCurrency"), Price.GetCurrencyType()->GetSID());
+	Ctx.DefineInteger(CONSTLIT("aPrice"), (int)Price.GetValue());
+
+	//	Run
+
+	ICCItem *pResult = Ctx.Run(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_PLAYER_BOUGHT_ITEM_EVENT, pResult);
+
+	Ctx.Discard(pResult);
+	}
+
+void CDesignType::FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price)
+
+//	FireOnGlobalPlayerSoldItem
+//
+//	Player sold an item
+
+	{
+	CCodeChainCtx Ctx;
+
+	//	Set up
+
+	Ctx.DefineSpaceObject(CONSTLIT("aBuyerObj"), pBuyerObj);
+	Ctx.SaveAndDefineItemVar(Item);
+	Ctx.DefineString(CONSTLIT("aCurrency"), Price.GetCurrencyType()->GetSID());
+	Ctx.DefineInteger(CONSTLIT("aPrice"), (int)Price.GetValue());
+
+	//	Run
+
+	ICCItem *pResult = Ctx.Run(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_PLAYER_SOLD_ITEM_EVENT, pResult);
+
+	Ctx.Discard(pResult);
 	}
 
 void CDesignType::FireOnGlobalMarkImages (const SEventHandlerDesc &Event)

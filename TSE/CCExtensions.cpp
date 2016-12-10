@@ -220,6 +220,7 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_GET_SHIP_SELL_PRICE	119
 #define FN_OBJ_GET_SHIP_BUY_PRICE	120
 #define FN_OBJ_FIRE_ITEM_INVOKE		121
+#define FN_OBJ_RECORD_BUY_ITEM		122
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1128,6 +1129,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objAddSubordinate",			fnObjSetOld,		FN_OBJ_ADD_SUBORDINATE,
 			"(objAddSubordinate obj subordinate) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objRecordBuyItem",					fnObjSet,		FN_OBJ_RECORD_BUY_ITEM,
+			"(objRecordBuyItem buyerObj sellerObj item [currency] price) -> True/Nil",
+			"iiv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objCanAttack",					fnObjGetOld,		FN_OBJ_CAN_ATTACK,
 			"(objCanAttack obj) -> True/Nil",
@@ -6834,6 +6839,34 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Return the resulting position
 
 			return pArgs->GetElement(1)->Reference();
+			}
+
+		case FN_OBJ_RECORD_BUY_ITEM:
+			{
+			int iArg = 1;
+			CSpaceObject *pSellerObj = CreateObjFromItem(*pCC, pArgs->GetElement(iArg++));
+			if (pSellerObj == NULL)
+				return pCC->CreateNil();
+
+			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(iArg++)));
+
+			CCurrencyAndValue Value;
+			if (pArgs->GetCount() >= 5)
+				{
+				ICCItem *pValue = pArgs->GetElement(iArg++);
+				Value.SetCurrencyType(GetEconomyTypeFromItem(*pCC, pValue));
+				if (Value.GetCurrencyType() == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid economy type"), pValue);
+				}
+			else if (pArgs->GetCount() < 4)
+				return pCC->CreateNil();
+			else
+				Value.SetCurrencyType(pSellerObj->GetDefaultEconomy());
+
+			Value.SetValue(pArgs->GetElement(iArg++)->GetIntegerValue());
+
+			pObj->RecordBuyItem(pSellerObj, Item, Value);
+			return pCC->CreateTrue();
 			}
 
 		case FN_OBJ_REGISTER_SYSTEM_EVENTS:

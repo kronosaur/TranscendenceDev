@@ -6717,6 +6717,55 @@ void CSpaceObject::Reconned (void)
 	m_SubscribedObjs.NotifyOnObjReconned(this);
 	}
 
+void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price)
+
+//	RecordBuyItem
+//
+//	Transfers funds from the buyer to the seller and calls appropriate events.
+//	NOTE: This does not transfer the item.
+
+	{
+	ASSERT(pSellerObj);
+	ASSERT(Price.GetCurrencyType());
+	//	NOTE: It is OK if the Item is null.
+
+	//	Charge the buyer (us)
+
+	ChargeMoney(Price.GetCurrencyType()->GetUNID(), Price.GetValue());
+
+	//	Give money to the seller
+
+	pSellerObj->CreditMoney(Price.GetCurrencyType()->GetUNID(), Price.GetValue());
+
+	//	If the player is buying, then record it as the player buying.
+
+	if (IsPlayer())
+		{
+		CShip *pPlayerShip = AsShip();
+		if (pPlayerShip)
+			pPlayerShip->GetController()->OnItemBought(Item, Price.GetCreditValue());
+
+		//	If the player is buying, then allow types to keep track
+		//	(e.g., Black Market gives out experience points).
+
+		g_pUniverse->FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price);
+		}
+
+	//	Otherwise, if the seller is the player, record it as the player
+	//	selling.
+
+	else if (pSellerObj->IsPlayer())
+		{
+		CShip *pPlayerShip = pSellerObj->AsShip();
+		if (pPlayerShip)
+			pPlayerShip->GetController()->OnItemSold(Item, Price.GetCreditValue());
+
+		//	If the player is selling, then allow types to keep track.
+
+		g_pUniverse->FireOnGlobalPlayerSoldItem(this, Item, Price);
+		}
+	}
+
 void CSpaceObject::Remove (DestructionTypes iCause, const CDamageSource &Attacker)
 
 //	Remove

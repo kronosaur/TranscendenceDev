@@ -8,10 +8,12 @@
 class CCommunicationsHandler;
 class CCompositeImageDesc;
 class CCreatePainterCtx;
+class CCurrencyAndValue;
 class CDockScreen;
 class CDynamicDesignTable;
 class CEffect;
 class CGameStats;
+class CItem;
 class CItemCtx;
 class CItemEnhancementStack;
 class CObjectImageArray;
@@ -450,9 +452,11 @@ class CDesignType
 		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sPane, CString *retsError);
 		void FireOnGlobalMarkImages (const SEventHandlerDesc &Event);
 		void FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDestroyCtx &Ctx);
+		void FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		ALERROR FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip, CString *retsError = NULL);
 		ALERROR FireOnGlobalPlayerEnteredSystem (CString *retsError = NULL);
 		ALERROR FireOnGlobalPlayerLeftSystem (CString *retsError = NULL);
+		void FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		ALERROR FireOnGlobalResurrect (CString *retsError = NULL);
 		ALERROR FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, CString *retsError = NULL);
 		void FireOnGlobalSystemStarted (const SEventHandlerDesc &Event, DWORD dwElapsedTime);
@@ -793,6 +797,8 @@ class CCurrencyAndValue
 		inline void Init (CurrencyValue iValue, const CString &sUNID = NULL_STR) { m_iValue = iValue; m_pCurrency.LoadUNID(sUNID); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sDesc);
 		inline bool IsEmpty (void) const { return (m_pCurrency.IsEmpty() && m_iValue == 0); }
+		inline void SetCurrencyType (CEconomyType *pType) { m_pCurrency.Set(pType); }
+		inline void SetValue (CurrencyValue iValue) { m_iValue = iValue; }
 
 	private:
 		CurrencyValue m_iValue;
@@ -4384,14 +4390,16 @@ class CDesignCollection
 			evtOnGlobalDockPaneInit		= 3,
 			evtOnGlobalMarkImages		= 4,
 			evtOnGlobalObjDestroyed		= 5,
-			evtOnGlobalSystemStarted	= 6,
-			evtOnGlobalSystemStopped	= 7,
-			evtOnGlobalUniverseCreated	= 8,
-			evtOnGlobalUniverseLoad		= 9,
-			evtOnGlobalUniverseSave		= 10,
-			evtOnGlobalUpdate			= 11,
+			evtOnGlobalPlayerBoughtItem	= 6,
+			evtOnGlobalPlayerSoldItem	= 7,
+			evtOnGlobalSystemStarted	= 8,
+			evtOnGlobalSystemStopped	= 9,
+			evtOnGlobalUniverseCreated	= 10,
+			evtOnGlobalUniverseLoad		= 11,
+			evtOnGlobalUniverseSave		= 12,
+			evtOnGlobalUpdate			= 13,
 
-			evtCount					= 12
+			evtCount					= 14
 			};
 
 		enum EFlags
@@ -4418,9 +4426,11 @@ class CDesignCollection
 		void FireOnGlobalMarkImages (void);
 		void FireOnGlobalObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane);
+		void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip);
 		void FireOnGlobalPlayerEnteredSystem (void);
 		void FireOnGlobalPlayerLeftSystem (void);
+		void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx);
 		void FireOnGlobalSystemStarted (DWORD dwElapsedTime);
 		void FireOnGlobalSystemStopped (void);
