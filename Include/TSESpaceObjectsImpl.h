@@ -553,6 +553,7 @@ class CMissile : public CSpaceObject
 		CSpaceObject *m_pHit;					//	Object hit
 		CVector m_vHitPos;						//	Position hit
 		int m_iHitDir;							//	Direction hit
+		int m_iNextDetonation;					//	Detonate on this tick (-1 = none)
 		int m_iRotation;						//	Current rotation (degrees)
 		CSpaceObject *m_pTarget;				//	Target
 		int m_iTick;							//	Number of ticks of life so far

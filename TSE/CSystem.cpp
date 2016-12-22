@@ -429,6 +429,9 @@
 //	139: 1.7 Beta 3
 //		m_LastShotIDs in CInstalledDevice
 //
+//	140: 1.7 Beta 4
+//		m_iNextDetonation in CMissile
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -2149,6 +2152,14 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 							else
 								Angles[i] = VectorToPolar(vInterceptPoint, NULL);
 							}
+						}
+
+					//	If no targets found, an we require a target, then we skip
+
+					else if (pDesc->IsTargetRequired() || pFragDesc->pDesc->IsTargetRequired())
+						{
+						pFragDesc = pFragDesc->pNext;
+						continue;
 						}
 					}
 				}

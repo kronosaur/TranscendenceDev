@@ -14,6 +14,8 @@
 
 const DWORD VAPOR_TRAIL_OPACITY =				80;
 
+const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
+
 static CObjectClass<CMissile>g_Class(OBJID_CMISSILE, NULL);
 
 CMissile::CMissile (void) : CSpaceObject(&g_Class),
@@ -267,6 +269,14 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	pMissile->m_fPainterFade = false;
 	pMissile->m_dwSpareFlags = 0;
 
+	//	If we've got a detonation interval, then set it up
+
+	int iNext;
+	if (pDesc->HasFragmentInterval(&iNext))
+		pMissile->m_iNextDetonation = Max(pDesc->GetProximityFailsafe(), iNext);
+	else
+		pMissile->m_iNextDetonation = -1;
+
 	//	Friendly fire
 
 	if (!pDesc->CanHitFriends())
@@ -322,6 +332,17 @@ void CMissile::CreateFragments (const CVector &vPos)
 
 	{
 	DEBUG_TRY
+
+	//	If we're need a target to detonate and we don't have one, then we're
+	//	done.
+	//
+	//	NOTE: If the shot is MIRVed, then the check will happen inside
+	//	CreateWeaponFragments.
+
+	if (m_pDesc->IsTargetRequired() 
+			&& m_pTarget == NULL
+			&& !m_pDesc->IsMIRV())
+		return;
 
     //  If we triggering inside an object, then we only create half the number
     //  of fragments (as if it hit on the surface).
@@ -856,6 +877,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_iRotation
 //	DWORD		m_pTarget (CSpaceObject ref)
 //	DWORD		m_iTick
+//	DWORD		m_iNextDetonation
 //
 //	IEffectPainter	m_pPainter
 //
@@ -914,6 +936,11 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&m_iRotation, sizeof(DWORD));
 	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
 	Ctx.pStream->Read((char *)&m_iTick, sizeof(DWORD));
+
+	if (Ctx.dwVersion >= 140)
+		Ctx.pStream->Read((char *)&m_iNextDetonation, sizeof(DWORD));
+	else
+		m_iNextDetonation = -1;
 
 	//	Load painter
 
@@ -1143,13 +1170,29 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				m_iSavedRotationsCount++;
 			}
 
-		//	See if the missile hit anything
+		//	Programmed detonation
 
-		if (m_fDetonate && m_pDesc->ProximityBlast())
+		if (m_iNextDetonation != -1 && m_iTick >= m_iNextDetonation)
+			{
+			CreateFragments(GetPos());
+
+			int iNext;
+			if (m_pDesc->HasFragmentInterval(&iNext))
+				m_iNextDetonation = m_iTick + iNext;
+			else
+				bDestroy = true;
+			}
+
+		//	If we're set to detonate now, detonate
+
+		else if (m_fDetonate && m_pDesc->ProximityBlast())
 			{
 			CreateFragments(GetPos());
 			bDestroy = true;
 			}
+
+		//	If we hit something, then do damage
+
 		else if (m_pHit)
 			{
 			//	If we have fragments, then explode now
@@ -1239,6 +1282,7 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_iRotation
 //	DWORD		m_pTarget (CSpaceObject ref)
 //	DWORD		m_iTick
+//	DWORD		m_iNextDetonation
 //
 //	IEffectPainter	m_pPainter
 //
@@ -1266,6 +1310,7 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iRotation, sizeof(DWORD));
 	WriteObjRefToStream(m_pTarget, pStream);
 	pStream->Write((char *)&m_iTick, sizeof(DWORD));
+	pStream->Write((char *)&m_iNextDetonation, sizeof(DWORD));
 
 	//	Write effect
 

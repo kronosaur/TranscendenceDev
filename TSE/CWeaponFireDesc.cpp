@@ -31,6 +31,7 @@
 #define FAILSAFE_ATTRIB							CONSTLIT("failsafe")
 #define FIRE_EFFECT_ATTRIB						CONSTLIT("fireEffect")
 #define FRAGMENT_COUNT_ATTRIB					CONSTLIT("fragmentCount")
+#define FRAGMENT_INTERVAL_ATTRIB				CONSTLIT("fragmentInterval")
 #define FRAGMENT_TARGET_ATTRIB					CONSTLIT("fragmentTarget")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
@@ -64,6 +65,7 @@
 #define SOUND_ATTRIB							CONSTLIT("sound")
 #define SPEED_ATTRIB							CONSTLIT("speed")
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
+#define TARGET_REQUIRED_ATTRIB					CONSTLIT("targetRequired")
 #define TRAIL_ATTRIB							CONSTLIT("trail")
 #define FIRE_TYPE_ATTRIB						CONSTLIT("type")
 #define VAPOR_TRAIL_ATTRIB						CONSTLIT("vaporTrail")
@@ -498,8 +500,9 @@ ALERROR CWeaponFireDesc::FinishBindDesign (SDesignLoadCtx &Ctx)
 		}
 
 	//	If we have an OnFragment event, then we enable proximity blast
+	//	(But only if we don't have periodic fragmentation.)
 
-	if (HasOnFragmentEvent())
+	if (HasOnFragmentEvent() && m_FragInterval.IsEmpty())
 		m_fProximityBlast = true;
 
 	//	Fragment
@@ -1489,6 +1492,23 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 		return NULL;
 	}
 
+bool CWeaponFireDesc::HasFragmentInterval (int *retiInterval) const
+
+//	HasFragmentInterval
+//
+//	Returns TRUE if the shot fragments more than once. If so, returns the 
+//	interval to the next fragmentation.
+
+	{
+	if (m_FragInterval.IsEmpty())
+		return false;
+
+	if (retiInterval)
+		*retiInterval = m_FragInterval.Roll();
+
+	return true;
+	}
+
 void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 //	InitFromDamage
@@ -1508,6 +1528,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_Lifetime.SetConstant(1);
 	m_fCanDamageSource = false;
 	m_fAutoTarget = false;
+	m_fTargetRequired = false;
 	m_InitialDelay.SetConstant(0);
 
 	//	Hit criteria
@@ -1566,6 +1587,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_pFirstFragment = NULL;
 	m_fProximityBlast = false;
 	m_iProximityFailsafe = 0;
+	m_FragInterval.SetConstant(0);
 
 	//	Effects
 
@@ -1655,6 +1677,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	int iMaxLifetime = m_Lifetime.GetMaxValue();
 	m_fCanDamageSource = pDesc->GetAttributeBool(CAN_HIT_SOURCE_ATTRIB);
 	m_fAutoTarget = pDesc->GetAttributeBool(AUTO_TARGET_ATTRIB);
+	m_fTargetRequired = pDesc->GetAttributeBool(TARGET_REQUIRED_ATTRIB);
 	m_InitialDelay.LoadFromXML(pDesc->GetAttribute(INITIAL_DELAY_ATTRIB));
 
 	//	Hit criteria
@@ -2050,6 +2073,22 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	m_fProximityBlast = (iFragCount != 0);
 	m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
 
+	//	If we've got a fragment interval set, then it means we periodically 
+	//	fragment (instead of fragmenting on proximity).
+
+	if (pDesc->FindAttribute(FRAGMENT_INTERVAL_ATTRIB, &sData))
+		{
+		if (error = m_FragInterval.LoadFromXML(pDesc->GetAttribute(FRAGMENT_INTERVAL_ATTRIB)))
+			{
+			Ctx.sError = CONSTLIT("Invalid fragmentInterval attribute");
+			return ERR_FAIL;
+			}
+
+		//	Clear proximity blast flag.
+
+		m_fProximityBlast = false;
+		}
+
 	//	Compute max effective range
 
     m_rMaxEffectiveRange = CalcMaxEffectiveRange();
@@ -2208,10 +2247,12 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     m_fNoImmobileHits = Src.m_fNoImmobileHits;
     m_fNoShipHits = Src.m_fNoShipHits;
     m_fAutoTarget = Src.m_fAutoTarget;
+	m_fTargetRequired = Src.m_fTargetRequired;
     m_fCanDamageSource = Src.m_fCanDamageSource;
     m_fDirectional = Src.m_fDirectional;
     m_fFragment = Src.m_fFragment;
     m_fProximityBlast = Src.m_fProximityBlast;
+	m_FragInterval = Src.m_FragInterval;
 
     m_pEffect = Src.m_pEffect;
     m_pHitEffect = Src.m_pHitEffect;

@@ -438,6 +438,7 @@ class CWeaponFireDesc
 		CItemType *GetWeaponType (CItemType **retpLauncher = NULL) const;
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty(); }
 		inline bool HasFragments (void) const { return m_pFirstFragment != NULL; }
+		bool HasFragmentInterval (int *retiInterval = NULL) const;
 		inline bool HasOnFragmentEvent (void) const { return m_CachedEvents[evtOnFragment].pCode != NULL; }
 		void InitFromDamage (const DamageDesc &Damage);
 		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile);
@@ -446,7 +447,9 @@ class CWeaponFireDesc
 		inline bool IsCurvedBeam (void) const { return false; }
         inline bool IsDirectionalImage (void) const { return m_fDirectional; }
         inline bool IsFragment (void) const { return m_fFragment; }
+		inline bool IsMIRV (void) const { return (m_pFirstFragment ? m_pFirstFragment->bMIRV : false); }
         inline bool IsScalable (void) const { return (m_pScalable != NULL); }
+		inline bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
 		inline bool IsTracking (void) const { return m_iManeuverability != 0; }
 		bool IsTrackingOrHasTrackingFragments (void) const;
 		inline bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
@@ -532,6 +535,7 @@ class CWeaponFireDesc
 		//	Fragmentation
 		SFragmentDesc *m_pFirstFragment;	//	Pointer to first fragment desc (or NULL)
 		int m_iProximityFailsafe;			//	Min ticks before proximity is active
+		DiceRange m_FragInterval;			//	If not empty, we keep fragmenting
 
 		//	Events
 		CEventHandler m_Events;				//	Events
@@ -558,7 +562,7 @@ class CWeaponFireDesc
 		DWORD m_fProximityBlast;			//	This is TRUE if we have fragments or if we have
 											//		and OnFragment event.
         DWORD m_fRelativisticSpeed:1;		//	If TRUE, adjust speed to simulate for light-lag
-        DWORD m_fSpare6:1;
+        DWORD m_fTargetRequired:1;			//	If TRUE, do not fragment unless we have a target
         DWORD m_fSpare7:1;
         DWORD m_fSpare8:1;
 
