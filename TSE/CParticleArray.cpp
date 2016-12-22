@@ -2076,8 +2076,8 @@ void CParticleArray::UpdateMotionLinear (bool *retbAlive, CVector *retvAveragePo
 
 		//	Set bounds
 
-		m_vUR = CVector(xRight, yTop);
-		m_vLL = CVector(xLeft, yBottom);
+		m_vUR = (bAllParticlesDead ? CVector() : CVector(xRight, yTop));
+		m_vLL = (bAllParticlesDead ? CVector() : CVector(xLeft, yBottom));
 
 		int xiRight, xiLeft, yiTop, yiBottom;
 		PosToXY(m_vUR, &xiRight, &yiTop);

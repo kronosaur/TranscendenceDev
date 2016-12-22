@@ -231,9 +231,9 @@ class CIntegralRotationDesc
 
         inline int AlignToRotationAngle (int iAngle) const { return GetRotationAngle(GetFrameIndex(iAngle)); }
 		int CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed) const;
-		inline int GetFrameAngle (void) const { return (int)((360.0 / m_iCount) + 0.5); }
+		inline int GetFrameAngle (void) const { return (m_iCount > 0 ? (int)((360.0 / m_iCount) + 0.5) : 0); }
 		inline int GetFrameCount (void) const { return m_iCount; }
-		inline int GetFrameIndex (int iAngle) const { return m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]; }
+		inline int GetFrameIndex (int iAngle) const { return (m_iCount > 0 ? (m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]) : 0); }
 		int GetManeuverDelay (void) const;
 		inline Metric GetManeuverRatio (void) const { return (Metric)m_iMaxRotationRate / ROTATION_FRACTION; }
 		inline int GetMaxRotationSpeed (void) const { return m_iMaxRotationRate; }
@@ -241,7 +241,7 @@ class CIntegralRotationDesc
 		inline int GetMaxRotationTimeTicks (void) const { Metric rSpeed = GetMaxRotationSpeedDegrees(); return (rSpeed > 0.0 ? (int)(360.0 / rSpeed) : 0); }
 		inline int GetRotationAccel (void) const { return m_iRotationAccel; }
 		inline int GetRotationAccelStop (void) const { return m_iRotationAccelStop; }
-		inline int GetRotationAngle (int iIndex) const { return m_FacingsData[m_iCount].FrameIndexToAngle[iIndex % m_iCount]; }
+		inline int GetRotationAngle (int iIndex) const { return (m_iCount > 0 ? m_FacingsData[m_iCount].FrameIndexToAngle[iIndex % m_iCount] : 0); }
         void InitFromDesc (const CRotationDesc &Desc);
 
         static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_FacingsData[iCount].bInitialized) ? m_FacingsData[iCount].FrameIndexToAngle[iIndex % iCount] : 0); }

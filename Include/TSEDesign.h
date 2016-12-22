@@ -1983,6 +1983,7 @@ class CShipClass : public CDesignType
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
 		CString GenerateShipName (DWORD *retdwFlags) const;
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
+		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
         inline const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
         const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;
 		inline CGenericType *GetCharacter (void) { return m_Character; }
@@ -1990,6 +1991,7 @@ class CShipClass : public CDesignType
 		inline int GetCyberDefenseLevel (void) { return m_iCyberDefenseLevel; }
 		inline DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
 		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
+		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		inline int GetDockingPortCount (void) { return m_DockingPorts.GetCount(); }
 		CVector GetDockingPortOffset (int iRotation);
 		inline const TArray<CVector> &GetDockingPortPositions (void) { return m_DockingPorts; }
@@ -2184,6 +2186,8 @@ class CShipClass : public CDesignType
 
         //  Class limits
 
+		CItemCriteria m_ArmorCriteria;			//	Allowable armor
+		CItemCriteria m_DeviceCriteria;			//	Allowable devices
 		int m_iMaxArmorMass;					//	Max mass of single armor segment
 		int m_iMaxCargoSpace;					//	Max amount of cargo space with expansion (tons)
 		int m_iMaxReactorPower;					//	Max compatible reactor power

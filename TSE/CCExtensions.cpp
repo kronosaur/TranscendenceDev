@@ -1154,6 +1154,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'noNonWeaponSlotsLeft\n"
 			"   'noWeaponSlotsLeft\n"
 			"   'notInstallable\n"
+			"   'notCompatible\n"
 			"   'reactorIncompatible\n"
 			"   'reactorOverloaded\n"
 			"   'reactorTooWeak\n"
@@ -1285,7 +1286,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	0,	},
 
 		{	"objGetBuyPrice",				fnObjGet,		FN_OBJ_GET_BUY_PRICE,	
-			"(objGetBuyPrice obj item [options]) -> price (at which obj sells item)\n\n"
+			"(objGetBuyPrice obj item [options]) -> price (at which obj buys item)\n\n"
 			
 			"options:\n\n"
 			

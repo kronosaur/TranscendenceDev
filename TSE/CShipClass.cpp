@@ -36,6 +36,7 @@
 #define TRADE_TAG								CONSTLIT("Trade")
 #define WRECK_IMAGE_TAG							CONSTLIT("WreckImage")
 
+#define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define AUTOPILOT_ATTRIB						CONSTLIT("autopilot")
 #define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
 #define CHARACTER_ATTRIB						CONSTLIT("character")
@@ -48,6 +49,7 @@
 #define DESC_ATTRIB								CONSTLIT("desc")
 #define DEST_X_ATTRIB							CONSTLIT("destX")
 #define DEST_Y_ATTRIB							CONSTLIT("destY")
+#define DEVICE_CRITERIA_ATTRIB					CONSTLIT("deviceCriteria")
 #define DOCK_SCREEN_ATTRIB						CONSTLIT("dockScreen")
 #define DRIVE_POWER_USE_ATTRIB					CONSTLIT("drivePowerUse")
 #define EQUIPMENT_ATTRIB						CONSTLIT("equipment")
@@ -3186,6 +3188,8 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_iCyberDefenseLevel = pClass->m_iCyberDefenseLevel;
 	m_fCyberDefenseOverride = pClass->m_fCyberDefenseOverride;
 
+	m_ArmorCriteria = pClass->m_ArmorCriteria;
+	m_DeviceCriteria = pClass->m_DeviceCriteria;
 	m_iMaxArmorMass = pClass->m_iMaxArmorMass;
 	m_iMaxCargoSpace = pClass->m_iMaxCargoSpace;
 	m_iMaxReactorPower = pClass->m_iMaxReactorPower;
@@ -3321,6 +3325,17 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
     if (error = m_CargoDesc.InitFromXML(Ctx, pDesc))
         return ComposeLoadError(Ctx, Ctx.sError);
+
+	CString sCriteria;
+	if (pDesc->FindAttribute(ARMOR_CRITERIA_ATTRIB, &sCriteria))
+		CItem::ParseCriteria(sCriteria, &m_ArmorCriteria);
+	else
+		CItem::InitCriteriaAll(&m_ArmorCriteria);
+
+	if (pDesc->FindAttribute(DEVICE_CRITERIA_ATTRIB, &sCriteria))
+		CItem::ParseCriteria(sCriteria, &m_DeviceCriteria);
+	else
+		CItem::InitCriteriaAll(&m_DeviceCriteria);
 
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
 	m_iSize = pDesc->GetAttributeIntegerBounded(SIZE_ATTRIB, 1, -1, 0);

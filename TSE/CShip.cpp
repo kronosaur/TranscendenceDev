@@ -936,9 +936,14 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		{
 		int iMaxArmor = m_pClass->GetMaxArmorMass();
 
-		//	Fire CanBeInstalled to check for custom conditions
+		//	See if we are compatible
 
-		if (!Item.FireCanBeInstalled(this, &sResult))
+		if (!Item.MatchesCriteria(m_pClass->GetArmorCriteria()))
+			iResult = insNotCompatible;
+
+		//	Ask the object if we can install this item
+
+		else if (!FireCanInstallItem(Item, iSlot, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the armor is too heavy
@@ -946,9 +951,9 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		else if (iMaxArmor && Item.GetMassKg() > iMaxArmor)
 			iResult = insArmorTooHeavy;
 
-		//	Ask the object if we can install this item
+		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!FireCanInstallItem(Item, iSlot, &sResult))
+		else if (!Item.FireCanBeInstalled(this, &sResult))
 			iResult = insCannotInstall;
 
 		//	Otherwise, we're OK
@@ -971,14 +976,19 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		CDeviceClass *pDevice = Item.GetType()->GetDeviceClass();
 		ItemCategories iCategory = pDevice->GetCategory();
 
-		//	Fire CanBeInstalled to check for custom conditions
+		//	See if we're compatible
 
-		if (!Item.FireCanBeInstalled(this, &sResult))
-			iResult = insCannotInstall;
+		if (!Item.MatchesCriteria(m_pClass->GetDeviceCriteria()))
+			iResult = insNotCompatible;
 
 		//	Ask the object if we can install this item
 
 		else if (!FireCanInstallItem(Item, -1, &sResult))
+			iResult = insCannotInstall;
+
+		//	Fire CanBeInstalled to check for custom conditions
+
+		else if (!Item.FireCanBeInstalled(this, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the ship's engine core is powerful enough

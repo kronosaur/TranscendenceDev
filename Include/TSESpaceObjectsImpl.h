@@ -26,6 +26,7 @@ class CAreaDamage : public CSpaceObject
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
+		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnSystemLoaded (void) override;
@@ -170,6 +171,7 @@ class CContinuousBeam : public CSpaceObject
 		virtual int GetRotation (void) const override { return m_iLastDirection; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
+		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
@@ -592,6 +594,7 @@ class CParticleDamage : public CSpaceObject
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
+		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
@@ -871,6 +874,7 @@ class CRadiusDamage : public CSpaceObject
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
+		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnSystemLoaded (void) override;

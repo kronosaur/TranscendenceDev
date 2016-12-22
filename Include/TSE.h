@@ -882,6 +882,7 @@ class CSpaceObject : public CObject
 			insReactorIncompatible,				//	Reactor is too powerful for ship class
 			insReactorOverload,					//	Sum of device power > than reactor output
 			insReactorTooWeak,					//	Reactor output too small for device
+			insNotCompatible,					//	Item does not match criteria in ship class
 
 			insReplaceCargo,					//	OK, but cargo device will be replaced
 			insReplaceDrive,					//	OK, but drive device will be replaced
