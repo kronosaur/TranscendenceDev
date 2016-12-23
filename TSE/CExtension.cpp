@@ -46,6 +46,7 @@
 #define CREDITS_ATTRIB							CONSTLIT("credits")
 #define DEBUG_ONLY_ATTRIB						CONSTLIT("debugOnly")
 #define EXTENDS_ATTRIB							CONSTLIT("extends")
+#define EXTENSION_API_VERSION_ATTRIB			CONSTLIT("extensionAPIVersion")
 #define FILENAME_ATTRIB							CONSTLIT("filename")
 #define FOLDER_ATTRIB							CONSTLIT("folder")
 #define NAME_ATTRIB								CONSTLIT("name")
@@ -166,10 +167,20 @@ bool CExtension::CanExtend (CExtension *pAdventure) const
 
 	ASSERT(pAdventure);
 
-	//	If our extend list is empty then we extend everything.
+	//	If this extension is too old for the adventure, then it can't be used.
+	//	NOTE: We only exclude at adventure create-time. We can't exclude at 
+	//	load-time, for obvious reasons.
+
+	if (pAdventure->GetMinExtensionAPIVersion() > GetAPIVersion())
+		return false;
+
+	//	If our extend list is empty then we extend everything. However, if an
+	//	adventure only wants extensions >= API 33, then we assume that they only
+	//	want extensions with explicit extend requirements. This handles the case
+	//	of Part II not including extensions designed for Part I.
 
 	if (m_Extends.GetCount() == 0)
-		return true;
+		return (pAdventure->GetMinExtensionAPIVersion() < 33);
 
 	//	If the extension is on the list, then we can extend it.
 
@@ -590,6 +601,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 	//	Other options
 
 	pExtension->m_dwAutoIncludeAPIVersion = (DWORD)pDesc->GetAttributeIntegerBounded(AUTO_INCLUDE_FOR_COMPATIBILITY_ATTRIB, 0, -1, 0);
+	pExtension->m_dwMinExtensionAPIVersion = (DWORD)pDesc->GetAttributeIntegerBounded(EXTENSION_API_VERSION_ATTRIB, 0, -1, 0);
 
 	//	Done
 

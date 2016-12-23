@@ -4116,6 +4116,7 @@ class CExtension
 		inline const SLibraryDesc &GetLibrary (int iIndex) const { return m_Libraries[iIndex]; }
 		inline int GetLibraryCount (void) const { return m_Libraries.GetCount(); }
 		inline ELoadStates GetLoadState (void) const { return m_iLoadState; }
+		inline DWORD GetMinExtensionAPIVersion (void) const { return m_dwMinExtensionAPIVersion; }
 		inline const CTimeDate &GetModifiedTime (void) const { return m_ModifiedTime; }
 		inline const CString &GetName (void) const { return m_sName; }
 		inline CTopologyDescTable &GetTopology (void) { return m_Topology; }
@@ -4194,6 +4195,7 @@ class CExtension
 
 		TArray<SLibraryDesc> m_Libraries;	//	Extensions that we use.
 		TArray<DWORD> m_Extends;			//	UNIDs that this extension extends
+		DWORD m_dwMinExtensionAPIVersion;	//	Do not allow extensions older than this
 		DWORD m_dwAutoIncludeAPIVersion;	//	Library adds compatibility to any
 											//		extension at or below this
 											//		API version.
