@@ -40,6 +40,20 @@ void CInstalledArmor::FinishInstall (CSpaceObject *pSource)
 		pShip->GetController()->OnItemInstalled(*m_pItem);
 	}
 
+int CInstalledArmor::GetHitPointsPercent (CSpaceObject *pSource)
+
+//	GetHitPointsPercent
+//
+//	Return the armor integrity (hit points) as a % of maximum hp.
+
+	{
+	int iMaxHP = GetMaxHP(pSource);
+	if (iMaxHP == 0 || iMaxHP <= GetHitPoints())
+		return 100;
+
+	return ((1000 * GetHitPoints() / iMaxHP) + 5) / 10;
+	}
+
 int CInstalledArmor::IncCharges (CSpaceObject *pSource, int iChange)
 
 //	IncCharges

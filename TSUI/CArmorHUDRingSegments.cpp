@@ -359,9 +359,8 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 		{
 		const CShipArmorSegmentDesc &Sect = pShip->GetClass()->GetHullSection(i);
 		CInstalledArmor *pArmor = pShip->GetArmorSection(i);
-		int iMaxHP = pArmor->GetMaxHP(pShip);
-		int iWhole = (iMaxHP == 0 ? 100 : (pArmor->GetHitPoints() * 100) / iMaxHP);
-		int iWidth = (iMaxHP == 0 ? 0 : (pArmor->GetHitPoints() * m_iArmorRingWidth) / iMaxHP);
+		int iIntegrity = pArmor->GetHitPointsPercent(pShip);
+		int iWidth = (iIntegrity * m_iArmorRingWidth) / 100;
 
 		//	Draw the full armor size
 
@@ -393,11 +392,11 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 		//	Draw armor integrity box
 
-        int iCenterAngle = Sect.GetCenterAngle();
+        int iCenterAngle = AngleMod(90 + Sect.GetCenterAngle());
 		DrawIntegrityBox(m_Buffer, 
 				iCenterAngle, 
 				iArmorInnerRadius + RING_SPACING, 
-				strPatternSubst(CONSTLIT("%d%%"), iWhole), 
+				strPatternSubst(CONSTLIT("%d%%"), iIntegrity), 
 				(i == Ctx.iSegmentSelected ? rgbSelectionBack : m_rgbArmorTextBack),
 				m_rgbArmorText);
 
@@ -414,16 +413,11 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint shield level
 
-	int iShieldHP = 0;
-	int iShieldMaxHP = 0;
-	if (pShield)
-		pShield->GetStatus(pShip, &iShieldHP, &iShieldMaxHP);
-
-	if (iShieldMaxHP > 0)
+	int iShieldIntegrity = (pShield ? pShield->GetHitPointsPercent(pShip) : -1);
+	if (iShieldIntegrity != -1)
 		{
 		int iShieldInnerRadius = m_iArmorRingRadius + RING_SPACING;
-		int iWhole = (iShieldMaxHP == 0 ? 100 : (iShieldHP * 100) / iShieldMaxHP);
-		int iWidth = (iShieldMaxHP == 0 ? 0 : (iShieldHP * m_iShieldRingWidth) / iShieldMaxHP);
+		int iWidth = (iShieldIntegrity * m_iShieldRingWidth) / 100;
 
 		//	Draw the full shields
 
@@ -458,7 +452,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 		DrawIntegrityBox(m_Buffer, 
 				90, 
 				iShieldInnerRadius + m_iShieldRingWidth, 
-				strPatternSubst(CONSTLIT("%d%%"), iWhole), 
+				strPatternSubst(CONSTLIT("%d%%"), iShieldIntegrity), 
 				m_rgbShieldsTextBack,
 				m_rgbShieldsText);
 

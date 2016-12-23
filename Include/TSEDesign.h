@@ -3834,6 +3834,7 @@ class CInstalledDevice
 		inline CItemEnhancementStack *GetEnhancements (void) const { return m_pEnhancements; }
 		inline int GetFireArc (void) const { return (IsOmniDirectional() ? 360 : AngleRange(m_iMinFireArc, m_iMaxFireArc)); }
 		inline int GetFireAngle (void) const { return m_iFireAngle; }
+		int GetHitPointsPercent (CSpaceObject *pSource);
 		inline CItem *GetItem (void) const { return m_pItem; }
 		DWORD GetLinkedFireOptions (void) const;
         inline int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }

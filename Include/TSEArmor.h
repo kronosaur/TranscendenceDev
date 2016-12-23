@@ -216,6 +216,7 @@ class CInstalledArmor
 		inline CArmorClass *GetClass (void) const { return m_pArmorClass; }
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
+		int GetHitPointsPercent (CSpaceObject *pSource);
         inline int GetLevel (void) const;
 		inline int GetMaxHP (CSpaceObject *pSource);
 		inline const CItemEnhancement &GetMods (void) { return m_pItem->GetMods(); }

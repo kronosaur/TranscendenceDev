@@ -194,6 +194,25 @@ CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *p
 		return NULL_STR;
 	}
 
+int CInstalledDevice::GetHitPointsPercent (CSpaceObject *pSource)
+
+//	GetHitPointsPercent
+//
+//	Returns the integrity of the device (usually a shield) as a percent of max hp.
+
+	{
+	int iHP;
+	int iMaxHP;
+	GetStatus(pSource, &iHP, &iMaxHP);
+
+	if (iMaxHP <= 0)
+		return -1;
+	else if (iMaxHP <= iHP)
+		return 100;
+
+	return ((1000 * iHP / iMaxHP) + 5) / 10;
+	}
+
 CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) const
 
 //	GetLastShot
