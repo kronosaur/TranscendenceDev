@@ -40,7 +40,7 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
     //  If we're running at half speed...
 
-    if (Ctx.bHalfSpeed)
+    if (Ctx.bHalfSpeed || Ctx.bDriveDamaged)
         m_DriveDesc.AdjMaxSpeed(0.5);
 
     //  Cargo space

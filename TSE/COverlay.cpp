@@ -205,7 +205,7 @@ void COverlay::CalcOffset (int iScale, int iRotation, int *retxOffset, int *rety
 		*retyOffset = 0;
 
 		if (retiRotationOrigin)
-			*retiRotationOrigin = 0;
+			*retiRotationOrigin = (m_pType->RotatesWithShip() ? iRotation : 0);
 		}
 	}
 
@@ -284,7 +284,6 @@ void COverlay::CreateFromType (COverlayType *pType,
 		{
 		CCreatePainterCtx CreateCtx;
 		CreateCtx.SetLifetime(pField->m_iLifeLeft);
-		CreateCtx.SetUseObjectCenter();
 
 		pField->m_pPainter = pCreator->CreatePainter(CreateCtx);
 		}
