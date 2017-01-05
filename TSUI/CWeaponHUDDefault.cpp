@@ -30,8 +30,11 @@ const int TARGET_NAME_Y =					27;
 const int TARGET_MASK_RADIUS =				56;
 const BYTE TARGET_MASK_TRANSPARENCY =		0x60;
 
+const int STAT_WIDTH =						52;
+
 const CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
-const CG32bitPixel TARGET_NAME_COLOR =		CG32bitPixel(5, 211, 5);
+const CG32bitPixel TARGET_NAME_COLOR =		CG32bitPixel(80, 255, 80);
+const CG32bitPixel DAMAGED_COLOR =			CG32bitPixel(255, 80, 80);
 
 CWeaponHUDDefault::CWeaponHUDDefault (void) :
 		m_bInvalid(true),
@@ -214,6 +217,30 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 		}
 	}
 
+void CWeaponHUDDefault::PaintStat (int x, int y, const CString &sHeader, const CString &sStat, CG32bitPixel rgbColor)
+
+//	PaintStat
+//
+//	Paints a stat
+
+	{
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
+
+	MediumFont.DrawText(m_Buffer,
+			x,
+			y,
+			rgbColor,
+			sHeader);
+	y += MediumFont.GetHeight();
+
+	MediumFont.DrawText(m_Buffer,
+			x,
+			y,
+			rgbColor,
+			sStat);
+	}
+
 void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 //	Realize
@@ -354,40 +381,42 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 				sName);
 		y += MediumHeavyBoldFont.GetHeight();
 
+		//	We paint various stats horizontally.
+
+		int xStat = x;
+		int yStat = y;
+
 		//	Paint the range
 
 		CVector vDist = pTarget->GetPos() - pShip->GetPos();
 		int iDist = (int)((vDist.Length() / LIGHT_SECOND) + 0.5);
-		CString sStatus = strPatternSubst(CONSTLIT("Range: %d"), iDist);
-		MediumFont.DrawText(m_Buffer,
-				x,
-				y,
-				TARGET_NAME_COLOR,
-				sStatus);
-		y += MediumFont.GetHeight();
+
+		PaintStat(xStat, yStat, CONSTLIT("Range"), strFormatInteger(iDist, -1, FORMAT_THOUSAND_SEPARATOR), TARGET_NAME_COLOR);
+		xStat += STAT_WIDTH;
 
 		//	Paint the damage
 
 		if (pTarget->IsIdentified())
 			{
-			int iDamage = pTarget->GetVisibleDamage();
-			int iShields = pTarget->GetShieldLevel();
-			if (iDamage > 0 || iShields > 0)
-				{
-				CString sDamage;
-				
-				if (iDamage == 0 && iShields > 0)
-					sDamage = strPatternSubst(CONSTLIT("Shields: %d%%"), iShields);
-				else if (iDamage > 0 && iShields <= 0)
-					sDamage = strPatternSubst(CONSTLIT("Damage: %d%%"), iDamage);
-				else if (iDamage > 0)
-					sDamage = strPatternSubst(CONSTLIT("Damage: %d%%  Shields: %d%%"), iDamage, iShields);
+			CSpaceObject::SVisibleDamage Damage;
+			pTarget->GetVisibleDamageDesc(Damage);
 
-				MediumFont.DrawText(m_Buffer,
-						x,
-						y,
-						TARGET_NAME_COLOR,
-						sDamage);
+			if (Damage.iShieldLevel != -1)
+				{
+				PaintStat(xStat, yStat, CONSTLIT("Shields"), strPatternSubst(CONSTLIT("%d%%"), Damage.iShieldLevel), (Damage.iShieldLevel < 20 ? DAMAGED_COLOR : TARGET_NAME_COLOR));
+				xStat += STAT_WIDTH;
+				}
+
+			if (Damage.iArmorLevel != -1)
+				{
+				PaintStat(xStat, yStat, CONSTLIT("Armor"), strPatternSubst(CONSTLIT("%d%%"), Damage.iArmorLevel), (Damage.iArmorLevel < 20 ? DAMAGED_COLOR : TARGET_NAME_COLOR));
+				xStat += STAT_WIDTH;
+				}
+
+			if (Damage.iHullLevel != -1)
+				{
+				PaintStat(xStat, yStat, CONSTLIT("Hull"), strPatternSubst(CONSTLIT("%d%%"), Damage.iHullLevel), (Damage.iHullLevel < 20 ? DAMAGED_COLOR : TARGET_NAME_COLOR));
+				xStat += STAT_WIDTH;
 				}
 			}
 		}

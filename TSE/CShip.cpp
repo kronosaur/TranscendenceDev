@@ -1306,6 +1306,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fDragByOverlay = false;
 	pShip->m_fAlwaysLeaveWreck = false;
 	pShip->m_fOutOfPower = false;
+	pShip->m_fFriendlyFireLock = false;
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -2354,26 +2355,29 @@ AbilityStatus CShip::GetAbility (Abilities iAbility)
 	{
 	switch (iAbility)
 		{
-		case ablShortRangeScanner:
-			return (IsBlind() ? ablDamaged : ablInstalled);
-
-		case ablLongRangeScanner:
-			return ablInstalled;
-
 		case ablAutopilot:
 			return (HasAutopilot() ? ablInstalled : ablUninstalled);
 
 		case ablExtendedScanner:
 			return (IsSRSEnhanced() ? ablInstalled : ablUninstalled);
 
-		case ablTargetingSystem:
-			return (HasTargetingComputer() ? ablInstalled : ablUninstalled);
+		case ablFriendlyFireLock:
+			return (CanTargetFriendlies() ? ablUninstalled : ablInstalled);
+
+		case ablGalacticMap:
+			return (m_fGalacticMap ? ablInstalled : ablUninstalled);
+
+		case ablLongRangeScanner:
+			return ablInstalled;
+
+		case ablShortRangeScanner:
+			return (IsBlind() ? ablDamaged : ablInstalled);
 
 		case ablSystemMap:
 			return ablInstalled;
 
-		case ablGalacticMap:
-			return (m_fGalacticMap ? ablInstalled : ablUninstalled);
+		case ablTargetingSystem:
+			return (HasTargetingComputer() ? ablInstalled : ablUninstalled);
 
 		default:
 			return ablUninstalled;
@@ -3269,6 +3273,90 @@ int CShip::GetVisibleDamage (void)
 		//	Return % damage of the worst armor segment
 
 		return iMaxPercent;
+		}
+	}
+
+void CShip::GetVisibleDamageDesc (SVisibleDamage &Damage)
+
+//	GetVisibleDamageDesc
+//
+//	Returns the amount of damage (%) that the object has taken
+
+	{
+	int i;
+
+	//	Get shield level
+
+	Damage.iShieldLevel = GetShieldLevel();
+
+	//	If we have interior structure then we follow a different algorithm
+
+	if (!m_Interior.IsEmpty())
+		{
+		//	Compute:
+		//
+		//	The sum of max hit points of all armor segments
+		//	The sum of remaining hit points of all armor segments
+		//	The percent damage of the worst armor segment
+
+		int iTotalMaxArmor = 0;
+		int iTotalArmorLeft = 0;
+		int iWorstDamage = 0;
+
+		for (i = 0; i < GetArmorSectionCount(); i++)
+			{
+			CInstalledArmor *pArmor = GetArmorSection(i);
+
+			int iMaxHP = pArmor->GetMaxHP(this);
+			iTotalMaxArmor += iMaxHP;
+
+			int iLeft = pArmor->GetHitPoints();
+			iTotalArmorLeft += iLeft;
+
+			int iDamage = (iMaxHP > 0 ? 100 - (iLeft * 100 / iMaxHP) : 100);
+			if (iDamage > iWorstDamage)
+				iWorstDamage = iDamage;
+			}
+
+		//	Compute the percent damage of all armor segments.
+
+		int iArmorDamage = (iTotalMaxArmor > 0 ? 100 - (iTotalArmorLeft * 100 / iTotalMaxArmor) : 100);
+
+		//	Compute the percent damage of all interior segments.
+
+		int iMaxInterior;
+		int iInteriorLeft;
+		m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iInteriorLeft, &iMaxInterior);
+
+		//	Combine all damage together, scaled so that interior + worst damage are 90%
+		//	of the result.
+
+		Damage.iArmorLevel = 100 - (((20 * iArmorDamage) + (80 * iWorstDamage)) / 100);
+		Damage.iHullLevel = (iMaxInterior > 0 ? (iInteriorLeft * 100 / iMaxInterior) : -1);
+		}
+
+	//	Otherwise, we base it on armor
+
+	else
+		{
+		int iMaxPercent = 0;
+
+		//	Compute max and actual HP
+
+		for (i = 0; i < GetArmorSectionCount(); i++)
+			{
+			CInstalledArmor *pArmor = GetArmorSection(i);
+
+			int iMaxHP = pArmor->GetMaxHP(this);
+			int iDamage = (iMaxHP > 0 ? 100 - (pArmor->GetHitPoints() * 100 / iMaxHP) : 100);
+			if (iDamage > iMaxPercent)
+				iMaxPercent = iDamage;
+			}
+
+		//	Return % damage of the worst armor segment
+
+		Damage.iArmorLevel = 100 - iMaxPercent;
+		Damage.iHullLevel = -1;
 		}
 	}
 
@@ -5030,6 +5118,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
 	m_fOutOfPower =				((dwLoad & 0x01000000) ? true : false);
+	m_fFriendlyFireLock =		((dwLoad & 0x02000000) ? true : false);
 
 	//	We will compute CalcPerformance at the bottom anyways
 	m_fRecalcRotationAccel = false;
@@ -5790,6 +5879,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
 	dwSave |= (m_fOutOfPower ?			0x01000000 : 0);
+	dwSave |= (m_fFriendlyFireLock ?	0x02000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Armor
@@ -6554,38 +6644,6 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 	{
 	switch (iAbility)
 		{
-		case ablShortRangeScanner:
-			{
-			if (iModification == ablDamage)
-				{
-				bool bChanged = (m_iBlindnessTimer == 0);
-				if (m_iBlindnessTimer != -1)
-					{
-					if (iDuration == -1)
-						m_iBlindnessTimer = -1;
-					else
-						m_iBlindnessTimer += iDuration;
-					}
-
-				if (bChanged)
-					m_pController->OnBlindnessChanged(true, ((dwOptions & ablOptionNoMessage) ? true : false));
-
-				return bChanged;
-				}
-			else if (iModification == ablRepair)
-				{
-				bool bChanged = (m_iBlindnessTimer != 0);
-				m_iBlindnessTimer = 0;
-
-				if (bChanged)
-					m_pController->OnBlindnessChanged(false, ((dwOptions & ablOptionNoMessage) ? true : false));
-
-				return bChanged;
-				}
-			else
-				return false;
-			}
-
 		case ablAutopilot:
 			{
 			if (iModification == ablInstall)
@@ -6622,18 +6680,18 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 				return false;
 			}
 
-		case ablTargetingSystem:
+		case ablFriendlyFireLock:
 			{
 			if (iModification == ablInstall)
 				{
-				bool bChanged = !m_fHasTargetingComputer;
-				m_fHasTargetingComputer = true;
+				bool bChanged = !m_fFriendlyFireLock;
+				m_fFriendlyFireLock = true;
 				return bChanged;
 				}
 			else if (iModification == ablRemove)
 				{
-				bool bChanged = m_fHasTargetingComputer;
-				m_fHasTargetingComputer = false;
+				bool bChanged = m_fFriendlyFireLock;
+				m_fFriendlyFireLock = false;
 				return bChanged;
 				}
 			else
@@ -6652,6 +6710,56 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 				{
 				bool bChanged = m_fGalacticMap;
 				m_fGalacticMap = false;
+				return bChanged;
+				}
+			else
+				return false;
+			}
+
+		case ablShortRangeScanner:
+			{
+			if (iModification == ablDamage)
+				{
+				bool bChanged = (m_iBlindnessTimer == 0);
+				if (m_iBlindnessTimer != -1)
+					{
+					if (iDuration == -1)
+						m_iBlindnessTimer = -1;
+					else
+						m_iBlindnessTimer += iDuration;
+					}
+
+				if (bChanged)
+					m_pController->OnBlindnessChanged(true, ((dwOptions & ablOptionNoMessage) ? true : false));
+
+				return bChanged;
+				}
+			else if (iModification == ablRepair)
+				{
+				bool bChanged = (m_iBlindnessTimer != 0);
+				m_iBlindnessTimer = 0;
+
+				if (bChanged)
+					m_pController->OnBlindnessChanged(false, ((dwOptions & ablOptionNoMessage) ? true : false));
+
+				return bChanged;
+				}
+			else
+				return false;
+			}
+
+		case ablTargetingSystem:
+			{
+			if (iModification == ablInstall)
+				{
+				bool bChanged = !m_fHasTargetingComputer;
+				m_fHasTargetingComputer = true;
+				return bChanged;
+				}
+			else if (iModification == ablRemove)
+				{
+				bool bChanged = m_fHasTargetingComputer;
+				m_fHasTargetingComputer = false;
 				return bChanged;
 				}
 			else

@@ -16,6 +16,15 @@ const int RING_SPACING = 2;
 const int NAME_SPACING_X = 20;
 const int NAME_WIDTH = 130;
 
+const int RANGE_OFFSET_X =					-24;
+const int DAMAGE_OFFSET_X =					16;
+
+const int CURVED_OFFSET[3] =				{ 24, 9, -8 };
+
+const int SHIELD_OFFSET_X =					24;
+const int ARMOR_OFFSET_X =					9;
+const int HULL_OFFSET_X =					-8;
+
 CWeaponHUDCircular::CWeaponHUDCircular (void) :
 		m_bInvalid(true)
 
@@ -124,6 +133,7 @@ void CWeaponHUDCircular::PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObj
 	const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 	const CG16bitFont &MediumHeavyBoldFont = VI.GetFont(fontMediumHeavyBold);
+	const CG16bitFont &RangeFont = VI.GetFont(fontLarge);
 
 	CG32bitPixel rgbInfoBack = CG32bitPixel(CG32bitPixel::Darken(m_rgbTargetBack, 128), 180);
 	CG32bitPixel rgbTitle = CG32bitPixel::Darken(m_rgbTargetText, 180);
@@ -184,24 +194,39 @@ void CWeaponHUDCircular::PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObj
 
 	CVector vDist = pTarget->GetPos() - pShip->GetPos();
 	int iDist = (int)((vDist.Length() / LIGHT_SECOND) + 0.5);
-	PaintTargetStat(m_Buffer, xText, yText, CONSTLIT("Range:"), strPatternSubst(CONSTLIT("%,d ls"), iDist));
-	yText += MediumFont.GetHeight();
+	RangeFont.DrawText(m_Buffer,
+			xText + RANGE_OFFSET_X,
+			yText,
+			m_rgbTargetText,
+			strPatternSubst(CONSTLIT("%,d ls"), iDist),
+			CG16bitFont::AlignRight);
 
 	//	Paint the damage
 
 	if (pTarget->IsIdentified())
 		{
-		int iDamage = pTarget->GetVisibleDamage();
-		int iShields = pTarget->GetShieldLevel();
+		CSpaceObject::SVisibleDamage Damage;
+		pTarget->GetVisibleDamageDesc(Damage);
 
-		if (iShields > 0)
+		int iOffset = 0;
+
+		if (Damage.iShieldLevel != -1)
 			{
-			PaintTargetStat(m_Buffer, xText, yText, CONSTLIT("Shields:"), strPatternSubst(CONSTLIT("%d%%"), iShields));
+			PaintTargetStat(m_Buffer, xText + DAMAGE_OFFSET_X + CURVED_OFFSET[iOffset++], yText, CONSTLIT("Shields:"), strPatternSubst(CONSTLIT("%d%%"), Damage.iShieldLevel));
 			yText += MediumFont.GetHeight();
 			}
 
-		PaintTargetStat(m_Buffer, xText, yText, CONSTLIT("Armor:"), strPatternSubst(CONSTLIT("%d%%"), 100 - iDamage));
-		yText += MediumFont.GetHeight();
+		if (Damage.iArmorLevel != -1)
+			{
+			PaintTargetStat(m_Buffer, xText + DAMAGE_OFFSET_X + CURVED_OFFSET[iOffset++], yText, CONSTLIT("Armor:"), strPatternSubst(CONSTLIT("%d%%"), Damage.iArmorLevel));
+			yText += MediumFont.GetHeight();
+			}
+
+		if (Damage.iHullLevel != -1)
+			{
+			PaintTargetStat(m_Buffer, xText + DAMAGE_OFFSET_X + CURVED_OFFSET[iOffset++], yText, CONSTLIT("Hull:"), strPatternSubst(CONSTLIT("%d%%"), Damage.iHullLevel));
+			yText += MediumFont.GetHeight();
+			}
 		}
 	}
 

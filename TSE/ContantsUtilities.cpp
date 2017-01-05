@@ -54,7 +54,7 @@ DWORD StringToConstant (SConstStringTuple *pTable, int iTableSize, const CString
 
 //	CSpaceObject abilities -----------------------------------------------------
 
-static SConstString AbilityTable[] =
+static SConstString AbilityTable[ablCount] =
 	{
 		{	CONSTDEF("SRS") },
 		{	CONSTDEF("LRS") },
@@ -63,6 +63,7 @@ static SConstString AbilityTable[] =
 		{	CONSTDEF("SRSEnhancer") },
 		{	CONSTDEF("TargetingComputer") },
 		{	CONSTDEF("GalacticMap") },
+		{	CONSTDEF("FriendlyFireLock") },
 	};
 
 const int AbilityTableSize = (sizeof(AbilityTable) / sizeof(AbilityTable[0]));

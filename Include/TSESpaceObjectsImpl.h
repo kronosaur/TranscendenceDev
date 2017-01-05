@@ -1002,7 +1002,8 @@ class CShip : public CSpaceObject
 		inline bool IsInGate (void) const { return m_iExitGateTimer > 0; }
 		void SetInGate (CSpaceObject *pGate, int iTickCount);
 
-		inline bool HasTargetingComputer (void) { return m_fHasTargetingComputer; }
+		inline bool CanTargetFriendlies (void) const { return !m_fFriendlyFireLock; }
+		inline bool HasTargetingComputer (void) const { return m_fHasTargetingComputer; }
 
 		inline void ClearSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablRemove, -1, 0); }
 		inline bool IsSRSEnhanced (void) { return (m_fSRSEnhanced ? true : false); }
@@ -1122,6 +1123,7 @@ class CShip : public CSpaceObject
 		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider) override;
 		virtual CDesignType *GetType (void) const override { return m_pClass; }
 		virtual int GetVisibleDamage (void) override;
+		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
 		virtual bool IsAngryAt (CSpaceObject *pObj) override;
@@ -1325,7 +1327,7 @@ class CShip : public CSpaceObject
 		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
 
 		DWORD m_fOutOfPower:1;			        //	TRUE if reactor has 0 output
-		DWORD m_fSpare2:1;
+		DWORD m_fFriendlyFireLock:1;			//	TRUE if we cannot target friendly ships
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
@@ -1465,6 +1467,7 @@ class CStation : public CSpaceObject
 		virtual CTradingDesc *GetTradeDescOverride (void) override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual int GetVisibleDamage (void) override;
+		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override;
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool HasMapLabel (void) override;

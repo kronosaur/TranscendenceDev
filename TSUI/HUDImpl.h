@@ -158,6 +158,7 @@ class CWeaponHUDDefault : public IHUDPainter
 
 	private:
 		void PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x, int y);
+		void PaintStat (int x, int y, const CString &sHeader, const CString &sStat, CG32bitPixel rgbColor);
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions

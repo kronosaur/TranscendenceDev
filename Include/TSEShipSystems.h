@@ -303,6 +303,8 @@ class CIntegralRotation
 	};
 
 //	Equipment (Abilities) ------------------------------------------------------
+//
+//	See AbilityTable in ConstantsUtilities.cpp
 
 enum Abilities
 	{
@@ -315,6 +317,9 @@ enum Abilities
 	ablExtendedScanner =		4,		//	Extended marks on viewscreen
 	ablTargetingSystem =		5,		//	Targeting computer
 	ablGalacticMap =			6,		//	Galactic map display
+	ablFriendlyFireLock =		7,
+
+	ablCount =					8,
 	};
 
 enum AbilityModifications

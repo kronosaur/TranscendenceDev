@@ -1169,6 +1169,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'Autopilot\n"
 			"   'GalacticMap\n"
+			"   'FriendlyFireLock\n"
 			"   'LRS\n"
 			"   'SRS\n"
 			"   'SRSEnhancer\n"
@@ -1340,6 +1341,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'Autopilot\n"
 			"   'GalacticMap\n"
+			"   'FriendlyFireLock\n"
 			"   'LRS\n"
 			"   'SRS\n"
 			"   'SRSEnhancer\n"

@@ -7443,8 +7443,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 
 	//	See if this is the nearest player target
 
-	if (CanAttack()
-			&& !IsDestroyed()
+	if (!IsDestroyed()
 			&& Ctx.pPlayer
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
@@ -7481,7 +7480,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			//	Otherwise, if this object is angry at the player, then it is a
 			//	valid auto-target
 
-			else if (bIsAngryAtPlayer)
+			else if (bIsAngryAtPlayer && CanAttack())
 				{
 				Metric rDist2 = rDist * rDist;
 				if (rDist2 < Ctx.rTargetDist2)
@@ -7491,6 +7490,11 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 					}
 				}
 			}
+
+		//	If the object cannot attack, then it is never an auto-target.
+
+		else if (!CanAttack())
+			{ }
 
 		//	If this object is not angry at us, then it can never be an auto-
 		//	target.

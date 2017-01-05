@@ -1619,6 +1619,36 @@ int CStation::GetVisibleDamage (void)
 		return 0;
 	}
 
+void CStation::GetVisibleDamageDesc (SVisibleDamage &Damage)
+
+//	GetVisibleDamageDesc
+//
+//	Returns the amount of damage (%) that the object has taken
+
+	{
+	int iMaxHP;
+	int iHP;
+
+	Damage.iShieldLevel = -1;
+
+	if (IsAbandoned() && m_iStructuralHP > 0)
+		{
+		iMaxHP = m_iMaxStructuralHP;
+		iHP = m_iStructuralHP;
+
+		Damage.iArmorLevel = -1;
+		Damage.iHullLevel = (iMaxHP > 0 ? (iHP * 100 / iMaxHP) : -1);
+		}
+	else
+		{
+		iMaxHP = m_iMaxHitPoints;
+		iHP = m_iHitPoints;
+
+		Damage.iArmorLevel = (iMaxHP > 0 ? (iHP * 100 / iMaxHP) : -1);
+		Damage.iHullLevel = -1;
+		}
+	}
+
 CDesignType *CStation::GetWreckType (void) const
 
 //	GetWreckType

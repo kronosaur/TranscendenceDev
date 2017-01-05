@@ -1000,6 +1000,19 @@ class CSpaceObject : public CObject
 			const COrbit *pOrbit;
 			};
 
+		struct SVisibleDamage
+			{
+			SVisibleDamage (void) :
+					iShieldLevel(-1),
+					iArmorLevel(-1),
+					iHullLevel(-1)
+				{ }
+
+			int iShieldLevel;				//	0-100: shield level; -1 = no shields
+			int iArmorLevel;				//	0-100: armor integrity; -1 = no armor
+			int iHullLevel;					//	0-100: hull integrity; -1 = no interior compartments
+			};
+
 		CSpaceObject (IObjectClass *pClass);
 		virtual ~CSpaceObject (void);
 		static void CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj);
@@ -1549,6 +1562,7 @@ class CSpaceObject : public CObject
 		virtual CString GetStargateID (void) const { return NULL_STR; }
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetVisibleDamage (void) { return 0; }
+		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) { Damage = SVisibleDamage(); }
 		virtual bool HasMapLabel (void) { return false; }
 		virtual bool IsAngry (void) { return false; }
 		virtual bool IsAngryAt (CSpaceObject *pObj) { return IsEnemy(pObj); }
