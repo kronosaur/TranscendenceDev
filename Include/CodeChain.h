@@ -109,6 +109,7 @@ class ICCItem : public CObject
 		//	Increment and decrement ref counts
 
 		virtual ICCItem *Clone (CCodeChain *pCC) = 0;
+		virtual ICCItem *CloneDeep (CCodeChain *pCC) { return Clone(pCC); }
 		virtual void Discard (CCodeChain *pCC);
 		inline ICCItem *Reference (void) { m_dwRefCount++; return this; }
 		virtual void Reset (void) = 0;
@@ -126,6 +127,7 @@ class ICCItem : public CObject
 		virtual ICCItem *GetElement (const CString &sKey) { return NULL; }
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex);
         virtual CString GetKey (int iIndex) { return NULL_STR; }
+		virtual bool HasReferenceTo (ICCItem *pSrc) { return (pSrc == this); }
 		virtual ICCItem *Head (CCodeChain *pCC) = 0;
 		inline BOOL IsList (void) { return IsNil() || !IsAtom(); }
 		virtual ICCItem *Tail (CCodeChain *pCC) = 0;
@@ -535,9 +537,11 @@ class CCLinkedList : public ICCList
 
 		virtual void Append (CCodeChain &CC, ICCItem *pValue);
 		virtual ICCItem *Clone (CCodeChain *pCC);
+		virtual ICCItem *CloneDeep (CCodeChain *pCC);
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode);
 		virtual int GetCount (void) { return m_iCount; }
 		virtual ICCItem *GetElement (int iIndex);
+		virtual bool HasReferenceTo (ICCItem *pSrc);
 		virtual ICCItem *Head (CCodeChain *pCC) { return GetElement(0); }
 		virtual bool IsExpression (void) { return (GetCount() > 0); }
 		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
@@ -708,6 +712,7 @@ class CCSymbolTable : public ICCList
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC);
+		virtual ICCItem *CloneDeep (CCodeChain *pCC);
 		virtual ValueTypes GetValueType (void) { return Complex; }
 		virtual BOOL IsIdentifier (void) { return FALSE; }
 		virtual BOOL IsFunction (void) { return FALSE; }
@@ -724,6 +729,7 @@ class CCSymbolTable : public ICCList
 		virtual ICCItem *GetElement (const CString &sKey);
 		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex);
         virtual CString GetKey (int iIndex) { return m_Symbols.GetKey(iIndex); }
+		virtual bool HasReferenceTo (ICCItem *pSrc);
 		virtual ICCItem *Head (CCodeChain *pCC) { return GetElement(0); }
 		virtual ICCItem *Tail (CCodeChain *pCC) { return GetElement(1); }
 

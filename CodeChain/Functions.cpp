@@ -2276,9 +2276,23 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	//	At this point pLinkedList is a linked list and it has a ref count
 	//	[All other items have been discarded]
 
-	//	Append the item
+	ICCItem *pItemToAdd = pArgs->GetElement(1);
 
-	pLinkedList->Append(*pCC, pArgs->GetElement(1));
+	//	If the item to add points back to the original linked list, then we 
+	//	need to make deep copy.
+
+	if (pItemToAdd->HasReferenceTo(pLinkedList))
+		{
+		pItemToAdd = pItemToAdd->CloneDeep(pCC);
+		pLinkedList->Append(*pCC, pItemToAdd);
+		pItemToAdd->Discard(pCC);
+		}
+
+	//	Otherwise, we can just append the item
+
+	else
+		pLinkedList->Append(*pCC, pItemToAdd);
+
 	return pLinkedList;
 	}
 

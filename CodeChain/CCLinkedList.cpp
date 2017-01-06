@@ -108,6 +108,39 @@ ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
+ICCItem *CCLinkedList::CloneDeep (CCodeChain *pCC)
+
+//	CloneDeep
+//
+//	Returns a deep copy of the item
+
+	{
+	ICCItem *pNew;
+	CCLinkedList *pClone;
+	CCons *pCons;
+
+	pNew = pCC->CreateLinkedList();
+	if (pNew->IsError())
+		return pNew;
+
+	pClone = dynamic_cast<CCLinkedList *>(pNew);
+	pClone->CloneItem(this);
+
+	//	Copy all the items
+
+	pCons = m_pFirst;
+	while (pCons)
+		{
+		ICCItem *pItemClone = pCons->m_pItem->CloneDeep(pCC);
+		pClone->Append(*pCC, pItemClone);
+		pItemClone->Discard(pCC);
+
+		pCons = pCons->m_pNext;
+		}
+
+	return pClone;
+	}
+
 void CCLinkedList::CreateIndex (void)
 
 //	CreateIndex
@@ -393,6 +426,28 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 	};
 
 };
+
+bool CCLinkedList::HasReferenceTo (ICCItem *pSrc)
+
+//	HasReferenceTo
+//
+//	Returns TRUE if we have a reference to the given item.
+
+	{
+	if (pSrc == this)
+		return true;
+
+	CCons *pNext = m_pFirst;
+	while (pNext)
+		{
+		if (pNext->m_pItem->HasReferenceTo(pSrc))
+			return true;
+
+		pNext = pNext->m_pNext;
+		}
+
+	return false;
+	}
 
 CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
 

@@ -153,6 +153,59 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 	return pNewTable;
 	}
 
+ICCItem *CCSymbolTable::CloneDeep (CCodeChain *pCC)
+
+//	CloneDeep
+//
+//	Clone this item
+
+	{
+	int i;
+
+	ICCItem *pNew = pCC->CreateSymbolTable();
+	CCSymbolTable *pNewTable = dynamic_cast<CCSymbolTable *>(pNew);
+	ASSERT(pNewTable);
+
+	//	Add all the items to the table
+
+	for (i = 0; i < m_Symbols.GetCount(); i++)
+		{
+		CString sKey = m_Symbols.GetKey(i);
+		CObject *pValue = m_Symbols.GetValue(i);
+		ICCItem *pItem = (ICCItem *)pValue;
+
+		//	Add to the new table
+
+		CObject *pOldEntry;
+		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneDeep(pCC), TRUE, &pOldEntry) != NOERROR)
+			return pCC->CreateMemoryError();
+
+		//	We better not have a previous entry (this can only happen if the existing symbol
+		//	table has a duplicate entry).
+
+		ASSERT(pOldEntry == NULL);
+		}
+
+	//	Clone the parent reference
+
+	if (m_pParent)
+		{
+		//	Clone local frames, but not the global frame.
+
+		if (m_pParent->IsLocalFrame())
+			pNewTable->m_pParent = m_pParent->Clone(pCC);
+		else
+			pNewTable->m_pParent = m_pParent->Reference();
+		}
+	else
+		pNewTable->m_pParent = NULL;
+
+	pNewTable->m_bLocalFrame = m_bLocalFrame;
+	pNewTable->m_pDefineHook = m_pDefineHook;
+
+	return pNewTable;
+	}
+
 void CCSymbolTable::DeleteAll (CCodeChain *pCC, bool bLambdaOnly)
 
 //	DeleteAll
@@ -337,6 +390,27 @@ ICCItem *CCSymbolTable::GetElement (CCodeChain *pCC, int iIndex)
 	//	Done
 
 	return pList;
+	}
+
+bool CCSymbolTable::HasReferenceTo (ICCItem *pSrc)
+
+//	HasReferenceTo
+//
+//	Returns TRUE if we have a reference to this item.
+
+	{
+	int i;
+
+	if (this == pSrc)
+		return true;
+
+	for (i = 0; i < GetCount(); i++)
+		{
+		if (GetElement(i)->HasReferenceTo(pSrc))
+			return true;
+		}
+
+	return false;
 	}
 
 ICCItem *CCSymbolTable::ListSymbols (CCodeChain *pCC)
