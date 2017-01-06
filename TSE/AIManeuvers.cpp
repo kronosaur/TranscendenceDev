@@ -790,6 +790,33 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
 				}
 
+			//	If we're attacking a static target then find a good spot
+			//	and shoot from there.
+			//
+			//	NOTE: We need to check this before the code below because otherwise we
+			//	won't get here.
+
+			else if (!pTarget->CanMove())
+				{
+				int iClock = g_pUniverse->GetTicks() / (170 + pShip->GetDestiny() / 3);
+				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
+				Metric rRadius = MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
+
+				//	This is the position that we want to go to
+
+				CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius) + GetPotential();
+
+				//	We don't want to thrust unless we're in position
+
+				bNoThrustThroughTurn = true;
+
+				//	Figure out which way we need to move to end up where we want
+				//	(Note that we don't combine the potential because we've already accounted for
+				//	it above).
+
+				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle);
+				}
+
 			//	If we're not well in range of our primary weapon then
 			//	get closer to the target. (Or if we are not moving)
 
@@ -823,30 +850,6 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					DEBUG_COMBAT_OUTPUT("Close on target");
 					vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
 					}
-				}
-
-			//	If we're attacking a static target then find a good spot
-			//	and shoot from there.
-
-			else if (!pTarget->CanMove())
-				{
-				int iClock = g_pUniverse->GetTicks() / (170 + pShip->GetDestiny() / 3);
-				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
-				Metric rRadius = MIN_STATION_TARGET_DIST + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
-
-				//	This is the position that we want to go to
-
-				CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius) + GetPotential();
-
-				//	We don't want to thrust unless we're in position
-
-				bNoThrustThroughTurn = true;
-
-				//	Figure out which way we need to move to end up where we want
-				//	(Note that we don't combine the potential because we've already accounted for
-				//	it above).
-
-				vDirection = CalcManeuverFormation(pShip, vPos, CVector(), iAngle);
 				}
 
 			//	If we're attacking a station, then keep our distance so that
