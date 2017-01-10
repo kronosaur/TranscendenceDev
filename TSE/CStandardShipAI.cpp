@@ -1811,7 +1811,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 					CSpaceObject *pTarget;
 					if (m_AICtx.IsSecondAttack()
 							&& (pBase = GetCurrentOrderTarget())
-							&& (pBase->IsEnemy(pAttacker) || pBase->IsAngryAt(pAttacker))
+							&& pBase->IsAngryAt(pAttacker)
 							&& (pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver)))
 						m_pShip->Communicate(pBase, msgAttackDeter, pTarget);
 
@@ -2146,29 +2146,10 @@ void CStandardShipAI::OnDestroyedNotify (SDestroyCtx &Ctx)
 		case orderGateOnStationDestroyed:
 			{
 			CSpaceObject *pBase = GetBase();
-			CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
-			CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
-			CSpaceObject *pTarget;
-
-			if (pBase 
-					&& pAttacker 
-					&& pAttacker->CanAttack()
+			if (pBase
 					&& !pBase->IsEnemy(m_pShip)
-					&& (pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver)))
-				{
-				//	If we were attacked by a friend, then we tell our station
-				//	so they can be blacklisted.
-
-				if (pOrderGiver && m_pShip->IsFriend(pOrderGiver)
-						&& pOrderGiver != m_pTarget
-						&& !IsAngryAt(pAttacker))
-					m_pShip->Communicate(pBase, msgDestroyedByFriendlyFire, pTarget);
-
-				//	Otherwise, we deter the target
-
-				else
-					m_pShip->Communicate(pBase, msgDestroyedByHostileFire, pTarget);
-				}
+					&& !pBase->IsDestroyed())
+				pBase->OnSubordinateDestroyed(Ctx);
 
 			break;
 			}

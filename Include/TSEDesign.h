@@ -1038,7 +1038,7 @@ enum MessageTypes
 	msgNone =						0,	//	None
 	msgAttack =						1,	//	Order to attack (pParam1 is target)
 	msgDestroyBroadcast =			2,	//	Broadcast order to destroy target (pParam1 is target)
-	msgHitByFriendlyFire =			3,	//	Hit by friendly fire (pParam1 is attacker)
+	msgHitByFriendlyFire =			3,	//	OBSOLETE: Hit by friendly fire (pParam1 is attacker)
 	msgQueryEscortStatus =			4,	//	Replies with Ack if is escorting pParam1
 	msgQueryFleetStatus =			5,	//	Replies with Ack if is in formation with pParam1
 	msgEscortAttacked =				6,	//	pParam1 attacked escort ship (or defender)
@@ -1055,9 +1055,9 @@ enum MessageTypes
 	msgAttackDeter =				17, //	Attack target, but return after a while (pParam1 is target)
 	msgQueryAttackStatus =			18, //	Replies with Ack if attacking a target
 	msgDockingSequenceEngaged =		19,	//	Sent by a station to anyone docking
-	msgHitByHostileFire =			20,	//	Hit by hostile fire (pParam1 is attacker)
-	msgDestroyedByFriendlyFire =	21,	//	We were destroyed by friendly fire (pParam1 is attacker)
-	msgDestroyedByHostileFire =		22,	//	We were destroyed by hostile fire (pParam is attacker)
+	msgHitByHostileFire =			20,	//	OBSOLETE: Hit by hostile fire (pParam1 is attacker)
+	msgDestroyedByFriendlyFire =	21,	//	OBSOLETE: We were destroyed by friendly fire (pParam1 is attacker)
+	msgDestroyedByHostileFire =		22,	//	OBSOLETE: We were destroyed by hostile fire (pParam is attacker)
 	msgBaseDestroyedByTarget =		23,	//	Our base was destroyed by target (pParam is target)
 	};
 

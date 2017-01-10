@@ -202,7 +202,7 @@ bool CStation::Blacklist (CSpaceObject *pObj)
 
 	//	No need if we don't support blacklist
 
-	if (!m_pType->IsBlacklistEnabled() || m_fNoBlacklist)
+	if (!CanBlacklist())
 		return false;
 
 	//	Remember if we need to send out an event
@@ -1479,7 +1479,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
 
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
-		return CC.CreateBool(!m_pType->IsBlacklistEnabled() || m_fNoBlacklist);
+		return CC.CreateBool(!CanBlacklist());
 
 	else if (strEquals(sName, PROPERTY_HP))
 		return CC.CreateInteger(m_iHitPoints);
@@ -2015,10 +2015,15 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			&& pOrderGiver->CanAttack()
 			&& !Ctx.Damage.IsAutomatedWeapon())
 		{
+		//	Tell our base that we were attacked.
+
+		if (m_pBase && !m_pBase->IsAbandoned() && !m_pBase->IsDestroyed())
+			m_pBase->OnSubordinateHit(Ctx);
+
 		//	If the attacker is a friend then we should keep track of
 		//	friendly fire hits
 
-		if (IsFriendlyFire(pOrderGiver))
+		if (!IsAngryAt(pOrderGiver))
 			OnHitByFriendlyFire(Ctx.Attacker.GetObj(), pOrderGiver);
 
 		//	Otherwise, consider this a hostile act.
@@ -2153,7 +2158,15 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 		if (pOrderGiver && pOrderGiver->CanAttack())
 			{
-			if (IsFriendlyFire(pOrderGiver))
+			//	If we're a subordinate of some base, then let it handle the
+			//	retaliation.
+
+			if (m_pBase && !m_pBase->IsAbandoned() && !m_pBase->IsDestroyed())
+				m_pBase->OnSubordinateDestroyed(DestroyCtx);
+
+			//	We also retailiate
+
+			if (!IsAngryAt(pOrderGiver))
 				OnDestroyedByFriendlyFire(Ctx.Attacker.GetObj(), pOrderGiver);
 			else
 				OnDestroyedByHostileFire(Ctx.Attacker.GetObj(), pOrderGiver);
@@ -2242,33 +2255,17 @@ void CStation::OnDestroyedByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject 
 //	Station destroyed by friendly fire
 
 	{
+	CSpaceObject *pTarget;
+
 	ASSERT(pOrderGiver && pOrderGiver->CanAttack());
 
 	//	If the player attacked us, we need to blacklist her
 
-	if (pOrderGiver->IsPlayer())
+	if (pOrderGiver->IsPlayer()
+			&& CanBlacklist()
+			&& (pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
 		{
-		//	No need if we don't support blacklist
-
-		if (!m_pType->IsBlacklistEnabled() || m_fNoBlacklist)
-			return;
-
-		//	Figure out which target we should attack (based on visibility,
-		//	proximity, etc.).
-
-		CSpaceObject *pTarget = CalcTargetToAttack(pAttacker, pOrderGiver);
-		if (pTarget == NULL)
-			return;
-
-		//	If we're a satellite/turret of another station, we notify our base that
-		//	we were attacked and let it figure out what to do.
-
-		if (m_pBase && !m_pBase->IsAbandoned() && !m_pBase->IsDestroyed())
-			Communicate(m_pBase, msgDestroyedByFriendlyFire, pTarget);
-
-		//	Otherwise, if we should blacklist the player, then attack.
-
-		else if (Blacklist(pOrderGiver))
+		if (Blacklist(pOrderGiver))
 			AvengeAttack(pTarget);
 		}
 	}
@@ -2280,25 +2277,17 @@ void CStation::OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *
 //	Station destroyed by hostile fire
 
 	{
+	CSpaceObject *pTarget;
+
 	ASSERT(pOrderGiver && pOrderGiver->CanAttack());
 
 	//	Figure out which target we should attack (based on visibility,
 	//	proximity, etc.).
 
-	CSpaceObject *pTarget = CalcTargetToAttack(pAttacker, pOrderGiver);
-	if (pTarget == NULL)
-		return;
-
-	//	If we're a satellite/turret of another station, we notify our base that
-	//	we were attacked and let it figure out what to do.
-
-	if (m_pBase && !m_pBase->IsAbandoned() && !m_pBase->IsDestroyed())
-		Communicate(m_pBase, msgDestroyedByHostileFire, pTarget);
-
-	//	Otherwise, we deter the attack ourselves (which may call our subordinates).
-
-	else
+	if ((pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
+		{
 		AvengeAttack(pTarget);
+		}
 	}
 
 void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
@@ -2403,8 +2392,6 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 			return resAck;
 
 		case msgAttackDeter:
-		case msgHitByHostileFire:
-		case msgDestroyedByHostileFire:
 			if (!IsAbandoned())
 				DeterAttack(pParam1);
 			return resAck;
@@ -2452,9 +2439,14 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 			return resAck;
 			}
 
-		//	When our subordinates get hit by friendly fire, we handle it here.
+		//	NOTE: We no longer use these messages. They are here only for backwards 
+		//	compatibility.
 
-		case msgHitByFriendlyFire:
+		case msgHitByHostileFire:
+			if (!IsAbandoned())
+				DeterAttack(pParam1);
+			return resAck;
+
 		case msgDestroyedByFriendlyFire:
 			{
 			//	If we're abandoned, then we don't care.
@@ -2472,7 +2464,7 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 			//	If we don't blacklist, then we don't care.
 
 			if (!pOrderGiver->IsPlayer()
-					|| !m_pType->IsBlacklistEnabled() || m_fNoBlacklist)
+					|| !CanBlacklist())
 				return resAck;
 
 			//	If our sovereign considers the player to be a major threat, then
@@ -2486,13 +2478,60 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 
 			//	If one of our subordinates was destroyed, then we take it seriously.
 
-			else if (iMessage == msgDestroyedByFriendlyFire)
+			else
 				{
 				//	If the player had a good reason for using deadly force, then
 				//	we treat this as an accident.
+				//
+				//	Also, neutral sovereigns don't give us the benefit of the doubt.
 
-				if (IsPlayerAttackJustified())
+				if (IsFriend(pOrderGiver) && IsPlayerAttackJustified())
 					return resAck;
+
+				//	Fall through and blaclist.
+				}
+
+			//	Otherwise, blacklist the player (but go after the target, which 
+			//	might be an auton because the player is hidden).
+
+			if (Blacklist(pOrderGiver))
+				DeterAttack(pTarget);
+
+			return resAck;
+			}
+
+		case msgDestroyedByHostileFire:
+			if (!IsAbandoned())
+				DeterAttack(pParam1);
+			return resAck;
+
+		case msgHitByFriendlyFire:
+			{
+			//	If we're abandoned, then we don't care.
+
+			if (IsAbandoned())
+				return resNoAnswer;
+
+			//	The sender has already figured out which target to retaliate against.
+			//	But we need to recompute the order giver.
+
+			CSpaceObject *pTarget = pParam1;
+			CSpaceObject *pOrderGiver = pTarget->GetOrderGiver();
+
+			//	If this is not the player, then we don't care.
+			//	If we don't blacklist, then we don't care.
+
+			if (!pOrderGiver->IsPlayer()
+					|| !CanBlacklist())
+				return resAck;
+
+			//	If our sovereign considers the player to be a major threat, then
+			//	we immediately blacklist.
+
+			if (GetSovereign()
+					&& GetSovereign()->GetPlayerThreatLevel() >= CSovereign::threatMajor)
+				{
+				//	Fall through and blacklist.
 				}
 
 			//	Otherwise, we treat it like a hit on us.
@@ -2568,41 +2607,28 @@ void CStation::OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrde
 
 	Communicate(pOrderGiver, msgWatchTargets);
 
-	//	If the player attacked us, see if we need to blacklist her.
+	//	See if we should blacklist and retaliate. We only blacklist the player
+	//	and only if we can tell who attacked us.
 
-	if (pOrderGiver->IsPlayer())
+	CSpaceObject *pTarget;
+	if (pOrderGiver->IsPlayer()
+			&& CanBlacklist()
+			&& (pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
 		{
-		//	No need if we don't support blacklist
+		if (
+			//	If our sovereign considers the player to be a major threat, then
+			//	we immediately blacklist.
 
-		if (!m_pType->IsBlacklistEnabled() || m_fNoBlacklist)
-			return;
+				(GetSovereign()
+					&& GetSovereign()->GetPlayerThreatLevel() >= CSovereign::threatMajor)
 
-		//	If we think this might have been accidental, then ignore it.
-		//	(but if the player is considered a major threat, then we stop
-		//	believing in accidents).
+			//	If this doesn't seem like an accident, then blacklist
 
-		if (!m_Blacklist.Hit(GetSystem()->GetTick())
-				&& (GetSovereign() == NULL || GetSovereign()->GetPlayerThreatLevel() < CSovereign::threatMajor))
-			return;
-
-		//	Figure out which target we should attack (based on visibility,
-		//	proximity, etc.).
-
-		CSpaceObject *pTarget = CalcTargetToAttack(pAttacker, pOrderGiver);
-		if (pTarget == NULL)
-			return;
-
-		//	If we're a satellite/turret of another station, we notify our base that
-		//	we were attacked and let it figure out what to do.
-
-		if (m_pBase && !m_pBase->IsAbandoned() && !m_pBase->IsDestroyed())
-			Communicate(m_pBase, msgHitByFriendlyFire, pTarget);
-
-		//	Otherwise, if we should blacklist the player, then we deter an 
-		//	attack.
-
-		else if (Blacklist(pOrderGiver))
-			DeterAttack(pTarget);
+				|| !m_Blacklist.Hit(GetSystem()->GetTick()))
+			{
+			if (Blacklist(pOrderGiver))
+				DeterAttack(pTarget);
+			}
 		}
 	}
 
@@ -2618,20 +2644,11 @@ void CStation::OnHitByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrder
 	//	Figure out which target we should attack (based on visibility,
 	//	proximity, etc.).
 
-	CSpaceObject *pTarget = CalcTargetToAttack(pAttacker, pOrderGiver);
-	if (pTarget == NULL)
-		return;
-
-	//	If we're a satellite/turret of another station, we notify our base that
-	//	we were attacked and let it figure out what to do.
-
-	if (m_pBase && !m_pBase->IsAbandoned() && !m_pBase->IsDestroyed())
-		Communicate(m_pBase, msgHitByHostileFire, pTarget);
-
-	//	Otherwise, we deter the attack ourselves (which may call our subordinates).
-
-	else
+	CSpaceObject *pTarget;
+	if ((pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
+		{
 		DeterAttack(pTarget);
+		}
 	}
 
 void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -3401,6 +3418,121 @@ void CStation::OnStationDestroyed (const SDestroyCtx &Ctx)
 
 	if (Ctx.pObj == m_pTarget)
 		m_pTarget = NULL;
+	}
+
+void CStation::OnSubordinateDestroyed (SDestroyCtx &Ctx)
+
+//	OnSubordinateDestroyed
+//
+//	One of our guards has been destroyed and we might need to retaliate.
+//
+//	NOTE: Do not call this if the subordinate is an enemy of this station
+//	(that can happen in occupation situations).
+
+	{
+	CSpaceObject *pSubordinate = Ctx.pObj;
+	CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
+	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+	CSpaceObject *pTarget;
+
+	if (pAttacker 
+			&& pAttacker->CanAttack()
+			&& pOrderGiver
+			&& !IsAbandoned()
+			&& (pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
+		{
+		//	If we were attacked by a friend, then we tell our station
+		//	so they can be blacklisted.
+
+		if (!IsAngryAt(pOrderGiver))
+			{
+			//	See if we should blacklist and retaliate. We only blacklist the player
+			//	and only if we can tell who attacked us.
+
+			if (pOrderGiver->IsPlayer()
+					&& CanBlacklist())
+				{
+				if (
+					//	If our sovereign considers the player to be a major threat, then
+					//	we immediately blacklist.
+
+						(GetSovereign()
+							&& GetSovereign()->GetPlayerThreatLevel() >= CSovereign::threatMajor)
+
+					//	If we're neutral, then this attack is enough to blacklist
+
+						|| !IsFriend(pOrderGiver)
+
+					//	If the attack is unjustified, then we blacklist
+
+						|| !IsPlayerAttackJustified())
+					{
+					if (Blacklist(pOrderGiver))
+						DeterAttack(pTarget);
+					}
+				}
+			}
+
+		//	Otherwise, we deter the target
+
+		else
+			{
+			DeterAttack(pTarget);
+			}
+		}
+	}
+
+void CStation::OnSubordinateHit (SDamageCtx &Ctx)
+
+//	OnSubordinateHit
+//
+//	One of our subordinates was hit.
+
+	{
+	CSpaceObject *pSubordinate = Ctx.pObj;
+	CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
+	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
+	CSpaceObject *pTarget;
+
+	if (pAttacker 
+			&& pAttacker->CanAttack()
+			&& pOrderGiver
+			&& !IsAbandoned()
+			&& (pTarget = CalcTargetToAttack(pAttacker, pOrderGiver)))
+		{
+		//	If we were attacked by a friend, then we tell our station
+		//	so they can be blacklisted.
+
+		if (!IsAngryAt(pOrderGiver))
+			{
+			if (pOrderGiver->IsPlayer()
+					&& CanBlacklist())
+				{
+				if (
+					//	If our sovereign considers the player to be a major threat,
+					//	then we immediately blacklist.
+
+						(GetSovereign()
+								&& GetSovereign()->GetPlayerThreatLevel() >= CSovereign::threatMajor)
+
+					//	Or if we've been hit enough times that we're sure it's not
+					//	an accident.
+
+						|| m_Blacklist.Hit(GetSystem()->GetTick()))
+					{
+					if (Blacklist(pOrderGiver))
+						DeterAttack(pTarget);
+					}
+				}
+			}
+
+		//	Otherwise, we deter the target
+
+		else
+			{
+			DeterAttack(pTarget);
+			}
+		}
 	}
 
 void CStation::OnSystemCreated (SSystemCreateCtx &CreateCtx)

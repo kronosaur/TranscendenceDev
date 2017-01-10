@@ -295,32 +295,16 @@ void CWaitOrder::OnDestroyed (CShip *pShip, SDestroyCtx &Ctx)
 //	We've been destroyed.
 
 	{
-	CSpaceObject *pTarget;
+	CSpaceObject *pBase;
 
 	//	If we're waiting on a threat at a station, then ask the station to 
 	//	avenge us if we die.
 
 	if (m_fWaitForThreat
-			&& pShip->GetDockedObj()
-			&& Ctx.Attacker.GetObj()
-			&& Ctx.Attacker.GetObj()->CanAttack()
-			&& !pShip->GetDockedObj()->IsEnemy(pShip)
-			&& (pTarget = pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver())))
-		{
-		CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
-
-		//	If we were attacked by a friend, then we tell our station
-		//	so they can be blacklisted.
-
-		if (pOrderGiver 
-				&& pShip->IsFriend(pOrderGiver))
-			pShip->Communicate(pShip->GetDockedObj(), msgDestroyedByFriendlyFire, pTarget);
-
-		//	Otherwise, we deter the target
-
-		else
-			pShip->Communicate(pShip->GetDockedObj(), msgDestroyedByHostileFire, pTarget);
-		}
+			&& (pBase = pShip->GetDockedObj())
+			&& !pBase->IsDestroyed()
+			&& !pBase->IsEnemy(pShip))
+		pBase->OnSubordinateDestroyed(Ctx);
 	}
 
 void CWaitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder)

@@ -1501,6 +1501,8 @@ class CStation : public CSpaceObject
 		virtual void OnObjLeaveGate (CSpaceObject *pObj) override;
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) override;
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) override;
+		virtual void OnSubordinateDestroyed (SDestroyCtx &Ctx) override;
+		virtual void OnSubordinateHit (SDamageCtx &Ctx) override;
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) override;
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
@@ -1559,6 +1561,7 @@ class CStation : public CSpaceObject
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL);
 		int CalcNumberOfShips (void);
 		void CalcOverlayImpact (void);
+		inline bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
 		void CreateDestructionEffect (void);
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);
@@ -1569,7 +1572,6 @@ class CStation : public CSpaceObject
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick, int *retiRotation);
 		bool IsBlacklisted (CSpaceObject *pObj = NULL);
-		inline bool IsFriendlyFire (CSpaceObject *pOrderGiver) { return (!IsEnemy(pOrderGiver) && !IsBlacklisted(pOrderGiver)); }
 		void OnDestroyedByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
