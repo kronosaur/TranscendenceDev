@@ -337,6 +337,7 @@ void CFerianShipAI::BehaviorStart (void)
 				{
 				SetState(stateOnCourseForStargate);
 				m_pBase = pGate;
+				m_pTarget = NULL;
 				}
 
 			break;
@@ -419,6 +420,35 @@ CSpaceObject *CFerianShipAI::FindRandomAsteroid (void)
 		return NULL;
 	else
 		return Table[mathRandom(0, iCount-1)];
+	}
+
+CSpaceObject *CFerianShipAI::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
+
+//	GetTarget
+//
+//	Returns the ship's current target
+
+	{
+	switch (m_State)
+		{
+		case stateOnCourseForMine:
+		case stateOnCourseForTarget:
+		case stateMining:
+		case stateAttackingThreat:
+		case stateOnCourseForStargate:
+		case stateAttackingTarget:
+		case stateWaitForPlayerAtGate:
+			return m_pTarget;
+
+		//	This doesn't count as a target. Otherwise, when we're avoiding
+		//	the player we would count as angry towards the player.
+
+		case stateAvoidThreat:
+			return NULL;
+
+		default:
+			return NULL;
+		}
 	}
 
 bool CFerianShipAI::InRangeOfThreat (CSpaceObject **retpThreat)

@@ -54,7 +54,7 @@ class CFerianShipAI : public CBaseShipAI
 		virtual CString DebugCrashInfo (void) override;
 		virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
 		virtual CString GetClass (void) override { return CONSTLIT("ferian"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override { return m_pTarget; }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
