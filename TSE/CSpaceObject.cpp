@@ -115,6 +115,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
 #define PROPERTY_REFUEL_MAX_LEVEL				CONSTLIT("refuelMaxLevel")
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
+#define PROPERTY_REMOVE_DEVICE_MAX_LEVEL		CONSTLIT("removeDeviceMaxLevel")
 #define PROPERTY_REMOVE_ITEM_STATUS				CONSTLIT("removeItemStatus")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
 #define PROPERTY_SCALE							CONSTLIT("scale")
@@ -4263,6 +4264,12 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_REFUEL_MAX_LEVEL))
 		{
 		int iMaxLevel = GetTradeMaxLevel(serviceRefuel);
+		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
+		}
+
+	else if (strEquals(sName, PROPERTY_REMOVE_DEVICE_MAX_LEVEL))
+		{
+		int iMaxLevel = GetTradeMaxLevel(serviceRemoveDevice);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
 
