@@ -368,11 +368,9 @@ bool CAreaDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPo
 
 	if (m_pPainter)
 		{
-		RECT rcBounds;
-		m_pPainter->GetRect(&rcBounds);
-		Metric rRadius = (RectWidth(rcBounds) / 2) * g_KlicksPerPixel;
+		Metric rRadius = m_pPainter->GetRadius(m_iTick);
 		Metric rRadius2 = rRadius * rRadius;
-		Metric rInnerRadius = rRadius * 0.8;
+		Metric rInnerRadius = rRadius * 0.7;
 		Metric rInnerRadius2 = rInnerRadius * rInnerRadius;
 		CVector vDist = vObjPos - vPointPos;
 		Metric rDist2 = vDist.Length2();
