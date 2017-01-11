@@ -85,7 +85,8 @@ void CSystemEvent::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 //	Subclass data
 
 	{
-	OnWriteClassToStream(pStream);
+	DWORD dwClass = GetClass();
+	pStream->Write((char *)&dwClass, sizeof(DWORD));
 	pStream->Write((char *)&m_dwTick, sizeof(DWORD));
 
 	//	Flags
@@ -199,17 +200,6 @@ bool CTimedEncounterEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return (m_pTarget == pObj);
 	}
 
-void CTimedEncounterEvent::OnWriteClassToStream (IWriteStream *pStream)
-
-//	OnWriteClassToStream
-//
-//	Writes the class
-
-	{
-	DWORD dwSave = cTimedEncounterEvent;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	}
-
 void CTimedEncounterEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	OnWriteToStream
@@ -301,17 +291,6 @@ bool CTimedCustomEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return (m_pObj == pObj);
 	}
 
-void CTimedCustomEvent::OnWriteClassToStream (IWriteStream *pStream)
-
-//	OnWriteClassToStream
-//
-//	Writes the class
-
-	{
-	DWORD dwSave = cTimedCustomEvent;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	}
-
 void CTimedCustomEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	OnWriteToStream
@@ -401,17 +380,6 @@ bool CTimedRecurringEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return (m_pObj == pObj);
 	}
 
-void CTimedRecurringEvent::OnWriteClassToStream (IWriteStream *pStream)
-
-//	OnWriteClassToStream
-//
-//	Writes the class
-
-	{
-	DWORD dwSave = cTimedRecurringEvent;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	}
-
 void CTimedRecurringEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	OnWriteToStream
@@ -490,17 +458,6 @@ void CTimedTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		SetDestroyed();
 
 	DEBUG_CATCH
-	}
-
-void CTimedTypeEvent::OnWriteClassToStream (IWriteStream *pStream)
-
-//	OnWriteClassToStream
-//
-//	Write the event class
-
-	{
-	DWORD dwSave = cTimedTypeEvent;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
 void CTimedTypeEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)

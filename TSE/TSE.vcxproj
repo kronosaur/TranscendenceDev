@@ -242,6 +242,7 @@
     <ClInclude Include="..\Include\TSEArtifactAwakening.h" />
     <ClInclude Include="..\Include\TSEEffects.h" />
     <ClInclude Include="..\Include\TSEEvents.h" />
+    <ClInclude Include="..\Include\TSEEventsImpl.h" />
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEImages.h" />
     <ClInclude Include="..\Include\TSEItems.h" />
@@ -352,6 +353,7 @@
     <ClCompile Include="CIntegralRotation.cpp" />
     <ClCompile Include="CPerceptionCalc.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
+    <ClCompile Include="CRangeTypeEvent.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />
     <ClCompile Include="CItemCtx.cpp" />
     <ClCompile Include="CItemEnhancementStack.cpp" />

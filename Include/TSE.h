@@ -2099,6 +2099,7 @@ class CListWrapper : public IListData
 #include "TSEMissions.h"
 #include "TSEPlayer.h"
 #include "TSEArtifactAwakening.h"
+#include "TSEEventsImpl.h"
 
 //	The Universe ---------------------------------------------------------------
 //

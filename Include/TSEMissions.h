@@ -182,7 +182,7 @@ class CTimedMissionEvent : public CSystemEvent
 		virtual CSpaceObject *GetEventHandlerObj (void) override { return m_pMission; }
 
 	protected:
-		virtual void OnWriteClassToStream (IWriteStream *pStream) override;
+		virtual Classes GetClass (void) const override { return cTimedMissionEvent; }
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:

@@ -67,17 +67,6 @@ void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 	DEBUG_CATCH
 	}
 
-void CTimedMissionEvent::OnWriteClassToStream (IWriteStream *pStream)
-
-//	OnWriteClassToStream
-//
-//	Write the event class
-
-	{
-	DWORD dwSave = cTimedMissionEvent;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	}
-
 void CTimedMissionEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	OnWriteToStream
