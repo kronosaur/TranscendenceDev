@@ -162,7 +162,7 @@
 //		Added iRotation to SEffectNode in CSpaceObject
 //
 //	52: 1.03
-//		Added flags for CTimedEvent
+//		Added flags for CSystemEvent
 //
 //	53: 1.03
 //		Added m_PlayTime and m_GameTime for CPlayerGameStats
@@ -579,7 +579,7 @@ ALERROR CSystem::AddTerritory (CTerritoryDef *pTerritory)
 	return NOERROR;
 	}
 
-ALERROR CSystem::AddTimedEvent (CTimedEvent *pEvent)
+ALERROR CSystem::AddTimedEvent (CSystemEvent *pEvent)
 
 //	AddTimedEvent
 //
@@ -986,7 +986,7 @@ void CSystem::CancelTimedEvent (CDesignType *pSource, const CString &sEvent, boo
 
 	for (i = 0; i < GetTimedEventCount(); i++)
 		{
-		CTimedEvent *pEvent = GetTimedEvent(i);
+		CSystemEvent *pEvent = GetTimedEvent(i);
 		if (pEvent->GetEventHandlerType() == pSource 
 				&& strEquals(pEvent->GetEventHandlerName(), sEvent))
 			{
@@ -1219,7 +1219,7 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 //	DWORD		entrypoint: CSpaceObject ref
 //
 //	DWORD		Number of timed events
-//	CTimedEvent
+//	CSystemEvent
 //
 //	DWORD		Number of environment maps
 //	CTileMap
@@ -4252,7 +4252,7 @@ void CSystem::RemoveTimersForObj (CSpaceObject *pObj)
 
 	for (i = 0; i < GetTimedEventCount(); i++)
 		{
-		CTimedEvent *pEvent = GetTimedEvent(i);
+		CSystemEvent *pEvent = GetTimedEvent(i);
 		if (pEvent->OnObjDestroyed(pObj))
 			pEvent->SetDestroyed();
 		}
@@ -4406,7 +4406,7 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 //	DWORD		entrypoint: CSpaceObject ref
 //
 //	DWORD		Number of timed events
-//	CTimedEvent
+//	CSystemEvent
 //
 //	DWORD		Number of environment maps
 //	CTileMap
@@ -4663,7 +4663,7 @@ CVector CSystem::TileToVector (int x, int y) const
 	return m_pEnvironment->TileToVector(x, y);
 	}
 
-void CSystem::TransferObjEventsIn (CSpaceObject *pObj, CTimedEventList &ObjEvents)
+void CSystem::TransferObjEventsIn (CSpaceObject *pObj, CSystemEventList &ObjEvents)
 
 //	TransferObjEventsIn
 //
@@ -4674,7 +4674,7 @@ void CSystem::TransferObjEventsIn (CSpaceObject *pObj, CTimedEventList &ObjEvent
 
 	for (i = 0; i < ObjEvents.GetCount(); i++)
 		{
-		CTimedEvent *pEvent = ObjEvents.GetEvent(i);
+		CSystemEvent *pEvent = ObjEvents.GetEvent(i);
 
 		//	Set tick to be relative to new system
 
@@ -4687,7 +4687,7 @@ void CSystem::TransferObjEventsIn (CSpaceObject *pObj, CTimedEventList &ObjEvent
 		}
 	}
 
-void CSystem::TransferObjEventsOut (CSpaceObject *pObj, CTimedEventList &ObjEvents)
+void CSystem::TransferObjEventsOut (CSpaceObject *pObj, CSystemEventList &ObjEvents)
 
 //	TransferObjEventsOut
 //
@@ -4699,7 +4699,7 @@ void CSystem::TransferObjEventsOut (CSpaceObject *pObj, CTimedEventList &ObjEven
 
 	for (i = 0; i < GetTimedEventCount(); i++)
 		{
-		CTimedEvent *pEvent = GetTimedEvent(i);
+		CSystemEvent *pEvent = GetTimedEvent(i);
 		if (pEvent->OnObjChangedSystems(pObj))
 			{
 			//	Set the tick to an offset from system time

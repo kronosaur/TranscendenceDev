@@ -1,19 +1,19 @@
-//	CTimedEventList.cpp
+//	CSystemEventList.cpp
 //
-//	CTimedEventList class
+//	CSystemEventList class
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
-CTimedEventList::~CTimedEventList (void)
+CSystemEventList::~CSystemEventList (void)
 
-//	CTimedEvent destructor
+//	CSystemEventList destructor
 
 	{
 	DeleteAll();
 	}
 
-bool CTimedEventList::CancelEvent (CSpaceObject *pObj, bool bInDoEvent)
+bool CSystemEventList::CancelEvent (CSpaceObject *pObj, bool bInDoEvent)
 
 //	CancelEvent
 //
@@ -25,7 +25,7 @@ bool CTimedEventList::CancelEvent (CSpaceObject *pObj, bool bInDoEvent)
 
 	for (i = 0; i < GetCount(); i++)
 		{
-		CTimedEvent *pEvent = GetEvent(i);
+		CSystemEvent *pEvent = GetEvent(i);
 		if (pEvent->GetEventHandlerObj() == pObj)
 			{
 			bFound = true;
@@ -43,7 +43,7 @@ bool CTimedEventList::CancelEvent (CSpaceObject *pObj, bool bInDoEvent)
 	return bFound;
 	}
 
-bool CTimedEventList::CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent)
+bool CSystemEventList::CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent)
 
 //	CancelEvent
 //
@@ -55,7 +55,7 @@ bool CTimedEventList::CancelEvent (CSpaceObject *pObj, const CString &sEvent, bo
 
 	for (i = 0; i < GetCount(); i++)
 		{
-		CTimedEvent *pEvent = GetEvent(i);
+		CSystemEvent *pEvent = GetEvent(i);
 		if (pEvent->GetEventHandlerObj() == pObj 
 				&& strEquals(pEvent->GetEventHandlerName(), sEvent))
 			{
@@ -74,7 +74,7 @@ bool CTimedEventList::CancelEvent (CSpaceObject *pObj, const CString &sEvent, bo
 	return bFound;
 	}
 
-bool CTimedEventList::CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent)
+bool CSystemEventList::CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent)
 
 //	CancelEvent
 //
@@ -86,7 +86,7 @@ bool CTimedEventList::CancelEvent (CDesignType *pType, const CString &sEvent, bo
 
 	for (i = 0; i < GetCount(); i++)
 		{
-		CTimedEvent *pEvent = GetEvent(i);
+		CSystemEvent *pEvent = GetEvent(i);
 		if (pEvent->GetEventHandlerType() == pType 
 				&& strEquals(pEvent->GetEventHandlerName(), sEvent))
 			{
@@ -105,7 +105,7 @@ bool CTimedEventList::CancelEvent (CDesignType *pType, const CString &sEvent, bo
 	return bFound;
 	}
 
-void CTimedEventList::DeleteAll (void)
+void CSystemEventList::DeleteAll (void)
 
 //	DeleteAll
 //
@@ -120,14 +120,14 @@ void CTimedEventList::DeleteAll (void)
 	m_List.DeleteAll();
 	}
 
-void CTimedEventList::ReadFromStream (SLoadCtx &Ctx)
+void CSystemEventList::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
 //
 //	Reads from a stream
 //
 //	DWORD		No of events
-//	CTimedEvent	Event
+//	CSystemEvent	Event
 
 	{
 	int i;
@@ -136,13 +136,13 @@ void CTimedEventList::ReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
 	for (i = 0; i < (int)dwCount; i++)
 		{
-		CTimedEvent *pEvent;
-		CTimedEvent::CreateFromStream(Ctx, &pEvent);
+		CSystemEvent *pEvent;
+		CSystemEvent::CreateFromStream(Ctx, &pEvent);
 		AddEvent(pEvent);
 		}
 	}
 
-void CTimedEventList::Update (DWORD dwTick, CSystem *pSystem)
+void CSystemEventList::Update (DWORD dwTick, CSystem *pSystem)
 
 //	Update
 //
@@ -155,7 +155,7 @@ void CTimedEventList::Update (DWORD dwTick, CSystem *pSystem)
 
 	for (i = 0; i < GetCount(); i++)
 		{
-		CTimedEvent *pEvent = GetEvent(i);
+		CSystemEvent *pEvent = GetEvent(i);
 		SetProgramEvent(pEvent);
 
 		if (!pEvent->IsDestroyed() && pEvent->GetTick() <= dwTick)
@@ -168,7 +168,7 @@ void CTimedEventList::Update (DWORD dwTick, CSystem *pSystem)
 
 	for (i = 0; i < GetCount(); i++)
 		{
-		CTimedEvent *pEvent = GetEvent(i);
+		CSystemEvent *pEvent = GetEvent(i);
 		if (pEvent->IsDestroyed())
 			{
 			RemoveEvent(i);
@@ -179,14 +179,14 @@ void CTimedEventList::Update (DWORD dwTick, CSystem *pSystem)
 	DEBUG_CATCH
 	}
 
-void CTimedEventList::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CSystemEventList::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	WriteToStream
 //
 //	Writes to a stream
 //
 //	DWORD		No of events
-//	CTimedEvent	Event
+//	CSystemEvent	Event
 
 	{
 	int i;
@@ -196,7 +196,7 @@ void CTimedEventList::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 	for (i = 0; i < (int)dwCount; i++)
 		{
-		CTimedEvent *pEvent = GetEvent(i);
+		CSystemEvent *pEvent = GetEvent(i);
 		pEvent->WriteToStream(pSystem, pStream);
 		}
 	}

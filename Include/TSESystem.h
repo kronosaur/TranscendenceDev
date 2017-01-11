@@ -713,7 +713,7 @@ class CSystem
 									   CSpaceObject *pMissileSource,
                                        int iFraction = 100);
 
-		ALERROR AddTimedEvent (CTimedEvent *pEvent);
+		ALERROR AddTimedEvent (CSystemEvent *pEvent);
 		inline void AddToDeleteList (CSpaceObject *pObj) { m_DeletedObjects.FastAdd(pObj); }
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
@@ -811,8 +811,8 @@ class CSystem
 		void StopTime (const CSpaceObjectList &Targets, int iDuration);
 		void StopTimeForAll (int iDuration, CSpaceObject *pExcept);
 		CVector TileToVector (int x, int y) const;
-		void TransferObjEventsIn (CSpaceObject *pObj, CTimedEventList &ObjEvents);
-		void TransferObjEventsOut (CSpaceObject *pObj, CTimedEventList &ObjEvents);
+		void TransferObjEventsIn (CSpaceObject *pObj, CSystemEventList &ObjEvents);
+		void TransferObjEventsOut (CSpaceObject *pObj, CSystemEventList &ObjEvents);
 		void UnnameObject (CSpaceObject *pObj);
 		void UnregisterEventHandler (CSpaceObject *pObj);
 		void Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
@@ -879,7 +879,7 @@ class CSystem
 								  CString *retsError = NULL);
 		void FlushEnemyObjectCache (void);
 		inline int GetTimedEventCount (void) { return m_TimedEvents.GetCount(); }
-		inline CTimedEvent *GetTimedEvent (int iIndex) { return m_TimedEvents.GetEvent(iIndex); }
+		inline CSystemEvent *GetTimedEvent (int iIndex) { return m_TimedEvents.GetEvent(iIndex); }
 		void InitSpaceEnvironment (void) const;
 		void InitVolumetricMask (void);
 		void PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj);
@@ -898,7 +898,7 @@ class CSystem
 		CObjectArray m_AllObjects;				//	Array of CSpaceObject
 		TSortMap<CString, CSpaceObject *> m_NamedObjects;			//	Indexed array of named objects (CSpaceObject *)
 
-		CTimedEventList m_TimedEvents;			//	Array of CTimedEvent
+		CSystemEventList m_TimedEvents;			//	Array of CTimedEvent
 		CEnvironmentGrid mutable *m_pEnvironment;		//	Nebulas, etc.
 		CSystemEventHandlerNode m_EventHandlers;	//	List of system event handler
 		CNavigationPathNode m_NavPaths;			//	List of navigation paths

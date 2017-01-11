@@ -176,6 +176,9 @@
     <ClInclude Include="..\Include\TSESystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -200,9 +203,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Damage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Events.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XMLLoader.cpp">
@@ -682,9 +682,6 @@
     <ClCompile Include="CTimedMissionEvent.cpp">
       <Filter>Source Files\Missions</Filter>
     </ClCompile>
-    <ClCompile Include="CTimedEventList.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CEnvironmentGrid.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
@@ -975,6 +972,12 @@
     </ClCompile>
     <ClCompile Include="CContinuousBeam.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemEventList.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Events.cpp">
+      <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

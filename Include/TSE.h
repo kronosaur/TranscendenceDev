@@ -121,7 +121,7 @@ class CSpaceObject;
 class CStation;
 class CStationType;
 class CSystem;
-class CTimedEvent;
+class CSystemEvent;
 class CTopologyNode;
 class CTradingDesc;
 class CUniverse;
@@ -145,6 +145,7 @@ extern CUniverse *g_pUniverse;
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
 #include "TSEPaint.h"
+#include "TSEEvents.h"
 #include "TSESystem.h"
 
 //	CResourceDb
@@ -402,110 +403,6 @@ class CTopology
 
 		CTopologyNodeList m_Topology;
 		TSortMap<CString, int> m_IDToNode;
-	};
-
-//	Events
-
-class CTimedEncounterEvent : public CTimedEvent
-	{
-	public:
-		CTimedEncounterEvent (void) { } //	Used only for loading
-		CTimedEncounterEvent (int iTick,
-							  CSpaceObject *pTarget,
-							  DWORD dwEncounterTableUNID,
-							  CSpaceObject *pGate,
-							  Metric rDistance);
-
-		virtual CString DebugCrashInfo (void);
-		virtual void DoEvent (DWORD dwTick, CSystem *pSystem);
-		virtual bool OnObjDestroyed (CSpaceObject *pObj);
-
-	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteClassToStream (IWriteStream *pStream);
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream);
-
-	private:
-		CSpaceObject *m_pTarget;
-		DWORD m_dwEncounterTableUNID;
-		CSpaceObject *m_pGate;
-		Metric m_rDistance;
-	};
-
-class CTimedCustomEvent : public CTimedEvent
-	{
-	public:
-		CTimedCustomEvent (void) { }	//	Used only for loading
-		CTimedCustomEvent (int iTick,
-						   CSpaceObject *pObj,
-						   const CString &sEvent);
-
-		virtual CString DebugCrashInfo (void);
-		virtual void DoEvent (DWORD dwTick, CSystem *pSystem);
-		virtual CString GetEventHandlerName (void) { return m_sEvent; }
-		virtual CSpaceObject *GetEventHandlerObj (void) { return m_pObj; }
-		virtual bool OnObjChangedSystems (CSpaceObject *pObj);
-		virtual bool OnObjDestroyed (CSpaceObject *pObj);
-
-	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteClassToStream (IWriteStream *pStream);
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream);
-
-	private:
-		CSpaceObject *m_pObj;
-		CString m_sEvent;
-	};
-
-class CTimedRecurringEvent : public CTimedEvent
-	{
-	public:
-		CTimedRecurringEvent (void) { }	//	Used only for loading
-		CTimedRecurringEvent (int iInterval,
-							  CSpaceObject *pObj,
-							  const CString &sEvent);
-
-		virtual CString DebugCrashInfo (void);
-		virtual void DoEvent (DWORD dwTick, CSystem *pSystem);
-		virtual CString GetEventHandlerName (void) { return m_sEvent; }
-		virtual CSpaceObject *GetEventHandlerObj (void) { return m_pObj; }
-		virtual bool OnObjChangedSystems (CSpaceObject *pObj);
-		virtual bool OnObjDestroyed (CSpaceObject *pObj);
-
-	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteClassToStream (IWriteStream *pStream);
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream);
-
-	private:
-		int m_iInterval;
-		CSpaceObject *m_pObj;
-		CString m_sEvent;
-	};
-
-class CTimedTypeEvent : public CTimedEvent
-	{
-	public:
-		CTimedTypeEvent (void) { }	//	Used only for loading
-		CTimedTypeEvent (int iTick,
-						 int iInterval,
-						 CDesignType *pType,
-						 const CString &sEvent);
-
-		virtual CString DebugCrashInfo (void);
-		virtual void DoEvent (DWORD dwTick, CSystem *pSystem);
-		virtual CString GetEventHandlerName (void) { return m_sEvent; }
-		virtual CDesignType *GetEventHandlerType (void) { return m_pType; }
-
-	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteClassToStream (IWriteStream *pStream);
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream);
-
-	private:
-		int m_iInterval;			//	0 = not recurring
-		CDesignType *m_pType;
-		CString m_sEvent;
 	};
 
 //	Docking ports implementation
@@ -2366,7 +2263,7 @@ class CUniverse
 
 		inline void AddAscendedObj (CSpaceObject *pObj) { m_AscendedObjects.Insert(pObj); }
 		inline ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError) { return m_Design.AddDynamicType(pExtension, dwUNID, pSource, bNewGame, retsError); }
-		void AddEvent (CTimedEvent *pEvent);
+		void AddEvent (CSystemEvent *pEvent);
 		inline void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
 		ALERROR AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem);
 		inline bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, bInDoEvent); }
@@ -2438,7 +2335,7 @@ class CUniverse
 		inline ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
 		inline bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
 		void PlaySound (CSpaceObject *pSource, int iChannel);
-		void PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CTimedEventList &SavedEvents);
+		void PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSystemEventList &SavedEvents);
 		void RefreshCurrentMission (void);
 		inline void RegisterForNotifications (INotifications *pSubscriber) { m_Subscribers.Insert(pSubscriber); }
 		ALERROR Reinit (void);
@@ -2606,7 +2503,7 @@ class CUniverse
 		CTopology m_Topology;					//	Array of CTopologyNode
 		CAscendedObjectList m_AscendedObjects;	//	Ascended objects (objects not in any system)
 		CMissionList m_AllMissions;				//	List of all missions
-		CTimedEventList m_Events;				//	List of all global events
+		CSystemEventList m_Events;				//	List of all global events
 		CObjectTracker m_Objects;				//	Objects across all systems
 		CObjectStats m_ObjStats;				//	Object stats (across all systems)
 

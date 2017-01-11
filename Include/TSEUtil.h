@@ -111,18 +111,18 @@ enum ProgramStates
 #ifdef DEBUG_PROGRAMSTATE
 extern ProgramStates g_iProgramState;
 extern CSpaceObject *g_pProgramObj;
-extern CTimedEvent *g_pProgramEvent;
+extern CSystemEvent *g_pProgramEvent;
 extern CString *g_sProgramError;
 inline void SetProgramState (ProgramStates iState) { g_iProgramState = iState; g_pProgramObj = NULL; }
 inline void SetProgramState (ProgramStates iState, CSpaceObject *pObj) { g_iProgramState = iState; g_pProgramObj = pObj; }
 inline void SetProgramObj (CSpaceObject *pObj) { g_pProgramObj = pObj; }
-inline void SetProgramEvent (CTimedEvent *pEvent) { g_pProgramEvent = pEvent; }
+inline void SetProgramEvent (CSystemEvent *pEvent) { g_pProgramEvent = pEvent; }
 inline void SetProgramError (const CString &sError) { if (g_sProgramError) delete g_sProgramError; g_sProgramError = new CString(sError); g_iProgramState = psCustomError; }
 
 #define DEBUG_SAVE_PROGRAMSTATE		\
 	ProgramStates iDEBUG_SavedState = g_iProgramState;	\
 	CSpaceObject *pDEBUG_SavedObj = g_pProgramObj;	\
-	CTimedEvent *pDEBUG_SavedEvent = g_pProgramEvent;
+	CSystemEvent *pDEBUG_SavedEvent = g_pProgramEvent;
 
 #define DEBUG_RESTORE_PROGRAMSTATE	\
 	g_iProgramState = iDEBUG_SavedState;	\
@@ -133,7 +133,7 @@ inline void SetProgramError (const CString &sError) { if (g_sProgramError) delet
 inline void SetProgramState (ProgramStates iState) { }
 inline void SetProgramState (ProgramStates iState, CSpaceObject *pObj) { }
 inline void SetProgramObj (CSpaceObject *pObj) { }
-inline void SetProgramEvent (CTimedEvent *pEvent) { }
+inline void SetProgramEvent (CSystemEvent *pEvent) { }
 inline void SetProgramError (const CString &sError) { }
 #define DEBUG_SAVE_PROGRAMSTATE
 #define DEBUG_RESTORE_PROGRAMSTATE
@@ -1060,73 +1060,6 @@ class CGameTimeKeeper
 			};
 
 		TArray<SDiscontinuity> m_Discontinuities;
-	};
-
-//	Events
-
-class CTimedEvent
-	{
-	public:
-		enum Classes
-			{
-			//	NOTE: These values are stored in the save file
-			cTimedEncounterEvent,
-			cTimedCustomEvent,
-			cTimedRecurringEvent,
-			cTimedTypeEvent,
-			cTimedMissionEvent,
-			};
-
-		CTimedEvent (DWORD dwTick) : m_dwTick(dwTick), m_bDestroyed(false) { }
-		virtual ~CTimedEvent (void) { }
-		static void CreateFromStream (SLoadCtx &Ctx, CTimedEvent **retpEvent);
-
-		inline DWORD GetTick (void) { return m_dwTick; }
-		inline bool IsDestroyed (void) { return m_bDestroyed; }
-		inline void SetDestroyed (void) { m_bDestroyed = true; }
-		inline void SetTick (DWORD dwTick) { m_dwTick = dwTick; }
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
-
-		virtual CString DebugCrashInfo (void) { return NULL_STR; }
-		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) = 0;
-		virtual CString GetEventHandlerName (void) { return NULL_STR; }
-		virtual CSpaceObject *GetEventHandlerObj (void) { return NULL; }
-		virtual CDesignType *GetEventHandlerType (void) { return NULL; }
-		virtual bool OnObjChangedSystems (CSpaceObject *pObj) { return false; }
-		virtual bool OnObjDestroyed (CSpaceObject *pObj) { return false; }
-
-	protected:
-		CTimedEvent (void) { }
-
-		virtual void OnReadFromStream (SLoadCtx &Ctx) = 0;
-		virtual void OnWriteClassToStream (IWriteStream *pStream) = 0;
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) = 0;
-
-	private:
-		DWORD m_dwTick;
-		bool m_bDestroyed;
-	};
-
-class CTimedEventList
-	{
-	public:
-		~CTimedEventList (void);
-
-		inline void AddEvent (CTimedEvent *pEvent) { m_List.Insert(pEvent); }
-		bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent);
-		bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent);
-		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent);
-		void DeleteAll (void);
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline CTimedEvent *GetEvent (int iIndex) const { return m_List[iIndex]; }
-		inline void MoveEvent (int iIndex, CTimedEventList &Dest) { Dest.AddEvent(m_List[iIndex]); m_List.Delete(iIndex); }
-		void ReadFromStream (SLoadCtx &Ctx);
-		inline void RemoveEvent (int iIndex) { delete m_List[iIndex]; m_List.Delete(iIndex); }
-		void Update (DWORD dwTick, CSystem *pSystem);
-		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
-
-	private:
-		TArray<CTimedEvent *> m_List;
 	};
 
 //	Linked-list template class

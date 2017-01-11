@@ -241,6 +241,7 @@
     <ClInclude Include="..\Include\TSEArmor.h" />
     <ClInclude Include="..\Include\TSEArtifactAwakening.h" />
     <ClInclude Include="..\Include\TSEEffects.h" />
+    <ClInclude Include="..\Include\TSEEvents.h" />
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEImages.h" />
     <ClInclude Include="..\Include\TSEItems.h" />
@@ -408,7 +409,7 @@
     <ClCompile Include="CStationEncounterDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />
     <ClCompile Include="CSystemSpacePainter.cpp" />
-    <ClCompile Include="CTimedEventList.cpp" />
+    <ClCompile Include="CSystemEventList.cpp" />
     <ClCompile Include="CTimedMissionEvent.cpp" />
     <ClCompile Include="CTradingDesc.cpp" />
     <ClCompile Include="CUniverse.cpp">

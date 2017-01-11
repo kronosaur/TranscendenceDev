@@ -167,7 +167,7 @@ class CMissionList
 		bool m_bFree;						//	If TRUE, free missions when removed
 	};
 
-class CTimedMissionEvent : public CTimedEvent
+class CTimedMissionEvent : public CSystemEvent
 	{
 	public:
 		CTimedMissionEvent (void) { }	//	Used only for loading

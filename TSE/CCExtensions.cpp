@@ -411,6 +411,7 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArguments,
 #define FN_ADD_TYPE_TIMER_NORMAL		3
 #define FN_ADD_TYPE_TIMER_RECURRING		4
 #define FN_CANCEL_TYPE_TIMER			5
+#define FN_ADD_TYPE_RANGE_EVENT			6
 
 ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2103,6 +2104,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//		interval in ticks
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"sysAddTypeRangeEvent",			fnSystemAddStationTimerEvent,	FN_ADD_TYPE_RANGE_EVENT,
+			"(sysAddTypeRangeEvent type event options)\n\n"
+				
+			"options:\n\n"
+				
+			"   'center            Fire event when target gets close to this point\n"
+			"   'radius            Within this radius (light-seconds)\n"
+			"   'criteria          Objects that will trigger. If Nil, player triggers\n",
+
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"sysAddTypeTimerEvent",			fnSystemAddStationTimerEvent,	FN_ADD_TYPE_TIMER_NORMAL,
 			"(sysAddTypeTimerEvent delay type event)",
 			"iis",	PPFLAG_SIDEEFFECTS,	},
@@ -3514,7 +3526,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CString sEvent = pArgs->GetElement(2)->GetStringValue();
 
-			CTimedEvent *pEvent;
+			CSystemEvent *pEvent;
 			if (dwData == FN_DESIGN_ADD_TIMER)
 				pEvent = new CTimedTypeEvent(
 						g_pUniverse->GetTicks() + iTime,
@@ -7757,7 +7769,7 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pSystem == NULL)
 				return StdErrorNoSystem(*pCC);
 
-			CTimedEvent *pEvent;
+			CSystemEvent *pEvent;
 			if (dwData == FN_MISSION_ADD_TIMER)
 				pEvent = new CTimedMissionEvent(
 						g_pUniverse->GetTicks() + iTime,
@@ -9777,7 +9789,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 			if (pSystem == NULL)
 				return StdErrorNoSystem(*pCC);
 
-			CTimedEvent *pEvent;
+			CSystemEvent *pEvent;
 			if (dwData == FN_ADD_TIMER_NORMAL)
 				pEvent = new CTimedCustomEvent(
 						pSystem->GetTick() + iTime,
@@ -9790,6 +9802,18 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 						sEvent);
 
 			pSystem->AddTimedEvent(pEvent);
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_ADD_TYPE_RANGE_EVENT:
+			{
+			CDesignType *pTarget = g_pUniverse->FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
+			if (pTarget == NULL)
+				return pCC->CreateNil();
+			CString sEvent = pArgs->GetElement(1)->GetStringValue();
+
+			ICCItem *pOptions = pArgs->GetElement(2);
 
 			return pCC->CreateTrue();
 			}
@@ -9810,7 +9834,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 			if (pSystem == NULL)
 				return StdErrorNoSystem(*pCC);
 
-			CTimedEvent *pEvent;
+			CSystemEvent *pEvent;
 			if (dwData == FN_ADD_TYPE_TIMER_NORMAL)
 				pEvent = new CTimedTypeEvent(
 						pSystem->GetTick() + iTime,

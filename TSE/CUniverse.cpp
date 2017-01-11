@@ -118,7 +118,7 @@ bool g_bDefaultEffectsInit = false;
 #ifdef DEBUG_PROGRAMSTATE
 ProgramStates g_iProgramState = psUnknown;
 CSpaceObject *g_pProgramObj = NULL;
-CTimedEvent *g_pProgramEvent = NULL;
+CSystemEvent *g_pProgramEvent = NULL;
 CString *g_sProgramError = NULL;
 #endif
 
@@ -213,7 +213,7 @@ CUniverse::~CUniverse (void)
 	g_pUniverse = NULL;
 	}
 
-void CUniverse::AddEvent (CTimedEvent *pEvent)
+void CUniverse::AddEvent (CSystemEvent *pEvent)
 
 //	AddEvent
 //
@@ -1717,7 +1717,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 //	IPlayerController m_pPlayer
 //	CMissionList	m_AllMissions
 //	CAscendedObjectList	m_AscendedObjects;
-//	CTimedEventList	m_Events
+//	CSystemEventList	m_Events
 //
 //	DWORD		No of topology nodes
 //	CString		node: Node ID
@@ -2207,7 +2207,7 @@ void CUniverse::PlaySound (CSpaceObject *pSource, int iChannel)
 		}
 	}
 
-void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CTimedEventList &SavedEvents)
+void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSystemEventList &SavedEvents)
 
 //	PutPlayerInSystem
 //
@@ -2372,7 +2372,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 //	IPlayerController m_pPlayer
 //	CMissionList	m_AllMissions
 //	CAscendedObjectList	m_AscendedObjects
-//	CTimedEventList	m_Events
+//	CSystemEventList	m_Events
 //
 //	DWORD		No of topology nodes
 //	CString		node: Node ID

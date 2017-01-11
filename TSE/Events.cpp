@@ -4,7 +4,7 @@
 
 #include "PreComp.h"
 
-void CTimedEvent::CreateFromStream (SLoadCtx &Ctx, CTimedEvent **retpEvent)
+void CSystemEvent::CreateFromStream (SLoadCtx &Ctx, CSystemEvent **retpEvent)
 
 //	CreateFromStream
 //
@@ -19,7 +19,7 @@ void CTimedEvent::CreateFromStream (SLoadCtx &Ctx, CTimedEvent **retpEvent)
 
 	DWORD dwLoad;
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	CTimedEvent *pEvent;
+	CSystemEvent *pEvent;
 	switch (dwLoad)
 		{
 		case cTimedEncounterEvent:
@@ -67,7 +67,7 @@ void CTimedEvent::CreateFromStream (SLoadCtx &Ctx, CTimedEvent **retpEvent)
 	*retpEvent = pEvent;
 	}
 
-void CTimedEvent::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
+void CSystemEvent::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	WriteToStream
 //
@@ -100,7 +100,7 @@ CTimedEncounterEvent::CTimedEncounterEvent (int iTick,
 											DWORD dwEncounterTableUNID,
 											CSpaceObject *pGate,
 											Metric rDistance) :
-		CTimedEvent(iTick),
+		CSystemEvent(iTick),
 		m_pTarget(pTarget),
 		m_dwEncounterTableUNID(dwEncounterTableUNID),
 		m_pGate(pGate),
@@ -229,7 +229,7 @@ void CTimedEncounterEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStr
 CTimedCustomEvent::CTimedCustomEvent (int iTick,
 									  CSpaceObject *pObj,
 									  const CString &sEvent) :
-		CTimedEvent(iTick),
+		CSystemEvent(iTick),
 		m_pObj(pObj),
 		m_sEvent(sEvent)
 
@@ -329,7 +329,7 @@ void CTimedCustomEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream
 CTimedRecurringEvent::CTimedRecurringEvent (int iInterval,
 											CSpaceObject *pObj,
 											const CString &sEvent) :
-		CTimedEvent(pObj->GetSystem()->GetTick() + mathRandom(0, iInterval)),
+		CSystemEvent(pObj->GetSystem()->GetTick() + mathRandom(0, iInterval)),
 		m_iInterval(iInterval),
 		m_pObj(pObj),
 		m_sEvent(sEvent)
@@ -434,7 +434,7 @@ CTimedTypeEvent::CTimedTypeEvent (int iTick,
 								  int iInterval,
 								  CDesignType *pType,
 								  const CString &sEvent) :
-		CTimedEvent(iTick),
+		CSystemEvent(iTick),
 		m_iInterval(iInterval),
 		m_pType(pType),
 		m_sEvent(sEvent)

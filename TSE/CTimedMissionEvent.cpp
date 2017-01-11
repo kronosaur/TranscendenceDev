@@ -9,7 +9,7 @@ CTimedMissionEvent::CTimedMissionEvent (int iTick,
 										int iInterval,
 										CMission *pMission,
 										const CString &sEvent) :
-		CTimedEvent(iTick),
+		CSystemEvent(iTick),
 		m_iInterval(iInterval),
 		m_pMission(pMission),
 		m_sEvent(sEvent)
