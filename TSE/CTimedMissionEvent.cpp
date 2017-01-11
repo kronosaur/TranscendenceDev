@@ -19,6 +19,19 @@ CTimedMissionEvent::CTimedMissionEvent (int iTick,
 	{
 	}
 
+CTimedMissionEvent::CTimedMissionEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
+
+//	CTimedMissionEvent constructor
+
+	{
+	DWORD dwLoad;
+	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	m_pMission = g_pUniverse->FindMission(dwLoad);
+
+	m_sEvent.ReadFromStream(Ctx.pStream);
+	Ctx.pStream->Read((char *)&m_iInterval, sizeof(DWORD));
+	}
+
 CString CTimedMissionEvent::DebugCrashInfo (void)
 
 //	DebugCrashInfo
@@ -52,21 +65,6 @@ void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		SetDestroyed();
 
 	DEBUG_CATCH
-	}
-
-void CTimedMissionEvent::OnReadFromStream (SLoadCtx &Ctx)
-
-//	OnReadFromStream
-//
-//	Read from stream
-
-	{
-	DWORD dwLoad;
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_pMission = g_pUniverse->FindMission(dwLoad);
-
-	m_sEvent.ReadFromStream(Ctx.pStream);
-	Ctx.pStream->Read((char *)&m_iInterval, sizeof(DWORD));
 	}
 
 void CTimedMissionEvent::OnWriteClassToStream (IWriteStream *pStream)

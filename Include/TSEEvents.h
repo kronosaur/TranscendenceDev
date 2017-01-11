@@ -19,7 +19,9 @@ class CSystemEvent
 			};
 
 		CSystemEvent (DWORD dwTick) : m_dwTick(dwTick), m_bDestroyed(false) { }
+		CSystemEvent (SLoadCtx &Ctx);
 		virtual ~CSystemEvent (void) { }
+
 		static void CreateFromStream (SLoadCtx &Ctx, CSystemEvent **retpEvent);
 
 		inline DWORD GetTick (void) { return m_dwTick; }
@@ -37,9 +39,6 @@ class CSystemEvent
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) { return false; }
 
 	protected:
-		CSystemEvent (void) { }
-
-		virtual void OnReadFromStream (SLoadCtx &Ctx) = 0;
 		virtual void OnWriteClassToStream (IWriteStream *pStream) = 0;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) = 0;
 
@@ -74,24 +73,42 @@ class CSystemEventList
 
 class CRangeTypeEvent : public CSystemEvent
 	{
+	public:
+		CRangeTypeEvent (int iTick,
+						 int iInterval,
+						 CDesignType *pType,
+						 const CString &sEvent);
+		CRangeTypeEvent (SLoadCtx &Ctx);
+
+		virtual CString DebugCrashInfo (void) override;
+		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
+		virtual CString GetEventHandlerName (void) override { return m_sEvent; }
+		virtual CDesignType *GetEventHandlerType (void) override { return m_pType; }
+
+	protected:
+		virtual void OnWriteClassToStream (IWriteStream *pStream) override;
+		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+
+	private:
+		CDesignType *m_pType;
+		CString m_sEvent;
 	};
 
 class CTimedEncounterEvent : public CSystemEvent
 	{
 	public:
-		CTimedEncounterEvent (void) { } //	Used only for loading
 		CTimedEncounterEvent (int iTick,
 							  CSpaceObject *pTarget,
 							  DWORD dwEncounterTableUNID,
 							  CSpaceObject *pGate,
 							  Metric rDistance);
+		CTimedEncounterEvent (SLoadCtx &Ctx);
 
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteClassToStream (IWriteStream *pStream) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
@@ -105,10 +122,10 @@ class CTimedEncounterEvent : public CSystemEvent
 class CTimedCustomEvent : public CSystemEvent
 	{
 	public:
-		CTimedCustomEvent (void) { }	//	Used only for loading
 		CTimedCustomEvent (int iTick,
 						   CSpaceObject *pObj,
 						   const CString &sEvent);
+		CTimedCustomEvent (SLoadCtx &Ctx);
 
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
@@ -118,7 +135,6 @@ class CTimedCustomEvent : public CSystemEvent
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteClassToStream (IWriteStream *pStream) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
@@ -130,10 +146,10 @@ class CTimedCustomEvent : public CSystemEvent
 class CTimedRecurringEvent : public CSystemEvent
 	{
 	public:
-		CTimedRecurringEvent (void) { }	//	Used only for loading
 		CTimedRecurringEvent (int iInterval,
 							  CSpaceObject *pObj,
 							  const CString &sEvent);
+		CTimedRecurringEvent (SLoadCtx &Ctx);
 
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
@@ -143,7 +159,6 @@ class CTimedRecurringEvent : public CSystemEvent
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteClassToStream (IWriteStream *pStream) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
@@ -156,11 +171,11 @@ class CTimedRecurringEvent : public CSystemEvent
 class CTimedTypeEvent : public CSystemEvent
 	{
 	public:
-		CTimedTypeEvent (void) { }	//	Used only for loading
 		CTimedTypeEvent (int iTick,
 						 int iInterval,
 						 CDesignType *pType,
 						 const CString &sEvent);
+		CTimedTypeEvent (SLoadCtx &Ctx);
 
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
@@ -168,7 +183,6 @@ class CTimedTypeEvent : public CSystemEvent
 		virtual CDesignType *GetEventHandlerType (void) override { return m_pType; }
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteClassToStream (IWriteStream *pStream) override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 

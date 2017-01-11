@@ -170,21 +170,20 @@ class CMissionList
 class CTimedMissionEvent : public CSystemEvent
 	{
 	public:
-		CTimedMissionEvent (void) { }	//	Used only for loading
 		CTimedMissionEvent (int iTick,
 							int iInterval,
 							CMission *pMission,
 							const CString &sEvent);
+		CTimedMissionEvent (SLoadCtx &Ctx);
 
-		virtual CString DebugCrashInfo (void);
-		virtual void DoEvent (DWORD dwTick, CSystem *pSystem);
-		virtual CString GetEventHandlerName (void) { return m_sEvent; }
-		virtual CSpaceObject *GetEventHandlerObj (void) { return m_pMission; }
+		virtual CString DebugCrashInfo (void) override;
+		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
+		virtual CString GetEventHandlerName (void) override { return m_sEvent; }
+		virtual CSpaceObject *GetEventHandlerObj (void) override { return m_pMission; }
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteClassToStream (IWriteStream *pStream);
-		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream);
+		virtual void OnWriteClassToStream (IWriteStream *pStream) override;
+		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
 		int m_iInterval;			//	0 = not recurring

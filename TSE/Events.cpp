@@ -4,6 +4,28 @@
 
 #include "PreComp.h"
 
+CSystemEvent::CSystemEvent (SLoadCtx &Ctx)
+
+//	CSystemEvent constructo
+
+	{
+	DWORD dwLoad;
+
+	//	Load stuff
+
+	Ctx.pStream->Read((char *)&m_dwTick, sizeof(DWORD));
+
+	//	Load flags
+
+	if (Ctx.dwVersion >= 52)
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_bDestroyed = ((dwLoad & 0x00000001) ? true : false);
+		}
+	else
+		m_bDestroyed = false;
+	}
+
 void CSystemEvent::CreateFromStream (SLoadCtx &Ctx, CSystemEvent **retpEvent)
 
 //	CreateFromStream
@@ -23,44 +45,28 @@ void CSystemEvent::CreateFromStream (SLoadCtx &Ctx, CSystemEvent **retpEvent)
 	switch (dwLoad)
 		{
 		case cTimedEncounterEvent:
-			pEvent = new CTimedEncounterEvent;
+			pEvent = new CTimedEncounterEvent(Ctx);
 			break;
 
 		case cTimedCustomEvent:
-			pEvent = new CTimedCustomEvent;
+			pEvent = new CTimedCustomEvent(Ctx);
 			break;
 
 		case cTimedRecurringEvent:
-			pEvent = new CTimedRecurringEvent;
+			pEvent = new CTimedRecurringEvent(Ctx);
 			break;
 
 		case cTimedTypeEvent:
-			pEvent = new CTimedTypeEvent;
+			pEvent = new CTimedTypeEvent(Ctx);
 			break;
 
 		case cTimedMissionEvent:
-			pEvent = new CTimedMissionEvent;
+			pEvent = new CTimedMissionEvent(Ctx);
 			break;
+
+		default:
+			throw CException(ERR_FAIL);
 		}
-
-	//	Load stuff
-
-	Ctx.pStream->Read((char *)&pEvent->m_dwTick, sizeof(DWORD));
-
-	//	Load flags
-
-	if (Ctx.dwVersion >= 52)
-		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		pEvent->m_bDestroyed = ((dwLoad & 0x00000001) ? true : false);
-		}
-	else
-		pEvent->m_bDestroyed = false;
-	
-
-	//	Load subclass data
-
-	pEvent->OnReadFromStream(Ctx);
 
 	//	Done
 
@@ -109,6 +115,17 @@ CTimedEncounterEvent::CTimedEncounterEvent (int iTick,
 //	CTimedEncounterEvent constructor
 
 	{
+	}
+
+CTimedEncounterEvent::CTimedEncounterEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
+
+//	CTimedEvencounterEvent constructor
+
+	{
+	Ctx.pStream->Read((char *)&m_dwEncounterTableUNID, sizeof(DWORD));
+	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
+	CSystem::ReadObjRefFromStream(Ctx, &m_pGate);
+	Ctx.pStream->Read((char *)&m_rDistance, sizeof(Metric));
 	}
 
 CString CTimedEncounterEvent::DebugCrashInfo (void)
@@ -182,19 +199,6 @@ bool CTimedEncounterEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return (m_pTarget == pObj);
 	}
 
-void CTimedEncounterEvent::OnReadFromStream (SLoadCtx &Ctx)
-
-//	OnReadFromStream
-//
-//	Read data
-
-	{
-	Ctx.pStream->Read((char *)&m_dwEncounterTableUNID, sizeof(DWORD));
-	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
-	CSystem::ReadObjRefFromStream(Ctx, &m_pGate);
-	Ctx.pStream->Read((char *)&m_rDistance, sizeof(Metric));
-	}
-
 void CTimedEncounterEvent::OnWriteClassToStream (IWriteStream *pStream)
 
 //	OnWriteClassToStream
@@ -236,6 +240,15 @@ CTimedCustomEvent::CTimedCustomEvent (int iTick,
 //	CTimedCustomEvent constructor
 
 	{
+	}
+
+CTimedCustomEvent::CTimedCustomEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
+
+//	CTimedCustomEvent constructor
+
+	{
+	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pObj);
+	m_sEvent.ReadFromStream(Ctx.pStream);
 	}
 
 CString CTimedCustomEvent::DebugCrashInfo (void)
@@ -288,17 +301,6 @@ bool CTimedCustomEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return (m_pObj == pObj);
 	}
 
-void CTimedCustomEvent::OnReadFromStream (SLoadCtx &Ctx)
-
-//	OnReadFromStream
-//
-//	Read data
-
-	{
-	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pObj);
-	m_sEvent.ReadFromStream(Ctx.pStream);
-	}
-
 void CTimedCustomEvent::OnWriteClassToStream (IWriteStream *pStream)
 
 //	OnWriteClassToStream
@@ -337,6 +339,16 @@ CTimedRecurringEvent::CTimedRecurringEvent (int iInterval,
 //	CTimedRecurringEvent constructor
 
 	{
+	}
+
+CTimedRecurringEvent::CTimedRecurringEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
+
+//	CTimedRecurringEvent constructor
+
+	{
+	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pObj);
+	m_sEvent.ReadFromStream(Ctx.pStream);
+	Ctx.pStream->Read((char *)&m_iInterval, sizeof(DWORD));
 	}
 
 CString CTimedRecurringEvent::DebugCrashInfo (void)
@@ -389,18 +401,6 @@ bool CTimedRecurringEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return (m_pObj == pObj);
 	}
 
-void CTimedRecurringEvent::OnReadFromStream (SLoadCtx &Ctx)
-
-//	OnReadFromStream
-//
-//	Read data
-
-	{
-	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pObj);
-	m_sEvent.ReadFromStream(Ctx.pStream);
-	Ctx.pStream->Read((char *)&m_iInterval, sizeof(DWORD));
-	}
-
 void CTimedRecurringEvent::OnWriteClassToStream (IWriteStream *pStream)
 
 //	OnWriteClassToStream
@@ -444,6 +444,19 @@ CTimedTypeEvent::CTimedTypeEvent (int iTick,
 	{
 	}
 
+CTimedTypeEvent::CTimedTypeEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
+
+//	CTimedTypeEvent constructor
+
+	{
+	DWORD dwLoad;
+	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	m_pType = g_pUniverse->FindDesignType(dwLoad);
+
+	m_sEvent.ReadFromStream(Ctx.pStream);
+	Ctx.pStream->Read((char *)&m_iInterval, sizeof(DWORD));
+	}
+
 CString CTimedTypeEvent::DebugCrashInfo (void)
 
 //	DebugCrashInfo
@@ -477,21 +490,6 @@ void CTimedTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		SetDestroyed();
 
 	DEBUG_CATCH
-	}
-
-void CTimedTypeEvent::OnReadFromStream (SLoadCtx &Ctx)
-
-//	OnReadFromStream
-//
-//	Read from stream
-
-	{
-	DWORD dwLoad;
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_pType = g_pUniverse->FindDesignType(dwLoad);
-
-	m_sEvent.ReadFromStream(Ctx.pStream);
-	Ctx.pStream->Read((char *)&m_iInterval, sizeof(DWORD));
 	}
 
 void CTimedTypeEvent::OnWriteClassToStream (IWriteStream *pStream)
