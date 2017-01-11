@@ -41,7 +41,7 @@ CString CTimedMissionEvent::DebugCrashInfo (void)
 	{
 	CString sResult;
 
-	sResult.Append(CONSTLIT("TimedMissionEvent\r\n"));
+	sResult.Append(CONSTLIT("CTimedMissionEvent\r\n"));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pMission: 0x%x\r\n"), (m_pMission ? m_pMission->GetID() : 0)));
 	sResult.Append(strPatternSubst(CONSTLIT("event: %s\r\n"), m_sEvent));
 	return sResult;

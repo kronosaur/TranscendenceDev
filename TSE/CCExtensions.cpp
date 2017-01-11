@@ -2161,8 +2161,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateEncounter",			fnSystemCreate,		FN_SYS_CREATE_ENCOUNTER,
-			"(sysCreateEncounter unid) -> True/Nil",
-			"i",	PPFLAG_SIDEEFFECTS,	},
+			"(sysCreateEncounter unid [options]) -> True/Nil\n\n"
+				
+				"options:\n\n"
+				
+				"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
+				"   'gate          Gate to appear at (if Nil, use distance)\n"
+				"   'target        Target of encounter\n",
+
+			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateFlotsam",			fnSystemCreate,		FN_SYS_CREATE_FLOTSAM,
 			"(sysCreateFlotsam item|unid pos sovereignID) -> obj",
@@ -9808,13 +9815,37 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 
 		case FN_ADD_TYPE_RANGE_EVENT:
 			{
-			CDesignType *pTarget = g_pUniverse->FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
-			if (pTarget == NULL)
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			CDesignType *pType = g_pUniverse->FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
+			if (pType == NULL)
 				return pCC->CreateNil();
 			CString sEvent = pArgs->GetElement(1)->GetStringValue();
 
+			//	Options
+
 			ICCItem *pOptions = pArgs->GetElement(2);
 
+			CVector vCenter;
+			CSpaceObject *pCenter;
+			::GetPosOrObject(pEvalCtx, pOptions->GetElement(CONSTLIT("center")), &vCenter, &pCenter);
+			
+			Metric rRadius = pOptions->GetDoubleAt(CONSTLIT("radius")) * LIGHT_SECOND;
+			CString sCriteria = pOptions->GetStringAt(CONSTLIT("criteria"));
+
+			//	If we have a center object, use that. Otherwise, we use a vector
+
+			CSystemEvent *pEvent;
+			if (pCenter)
+				pEvent = new CRangeTypeEvent(pType, sEvent, pCenter, rRadius, sCriteria);
+			else
+				pEvent = new CRangeTypeEvent(pType, sEvent, vCenter, rRadius, sCriteria);
+
+			//	Add to the system
+
+			pSystem->AddTimedEvent(pEvent);
 			return pCC->CreateTrue();
 			}
 
@@ -9909,19 +9940,69 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_SYS_CREATE_ENCOUNTER:
 			{
-			CStationType *pEncounter = g_pUniverse->FindStationType(pArgs->GetElement(0)->GetIntegerValue());
-			if (pEncounter == NULL)
-				return pCC->CreateError(CONSTLIT("Unknown station type ID"), pArgs->GetElement(0));
-
 			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 			if (pSystem == NULL)
 				return StdErrorNoSystem(*pCC);
 
-			IShipGenerator *pTable = pEncounter->GetEncountersTable();
-			if (pTable == NULL)
-				return pCC->CreateNil();
+			CDesignType *pType = g_pUniverse->FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
+			ICCItem *pOptions = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : pCC->CreateNil());
 
-			pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pSystem->GetPlayerShip());
+			CSpaceObject *pTarget = CreateObjFromItem(*pCC, pOptions->GetElement(CONSTLIT("target")));
+			if (pTarget == NULL)
+				pTarget = pSystem->GetPlayerShip();
+
+			Metric rDist = pOptions->GetDoubleAt(CONSTLIT("distance"), 100.0) * LIGHT_SECOND;
+
+			CSpaceObject *pGate = CreateObjFromItem(*pCC, pOptions->GetElement(CONSTLIT("gate")));
+
+			//	If we have a station type, then create its random encounter
+
+			if (pType->GetType() == designStationType)
+				{
+				CStationType *pEncounter = CStationType::AsType(pType);
+				if (pEncounter == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown station type ID"), pArgs->GetElement(0));
+
+				IShipGenerator *pTable = pEncounter->GetEncountersTable();
+				if (pTable == NULL)
+					return pCC->CreateNil();
+
+				pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pTarget);
+				}
+
+			//	If this is a ship table, create an encounter
+
+			else if (pType->GetType() == designShipTable)
+				{
+				CShipTable *pEncounter = CShipTable::AsType(pType);
+
+				SShipCreateCtx Ctx;
+				Ctx.pSystem = pSystem;
+				Ctx.pTarget = pTarget;
+				Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY;
+
+				//	Figure out where the encounter will come from
+
+				if (rDist > 0.0)
+					{
+					if (pTarget)
+						Ctx.vPos = pTarget->GetPos() + ::PolarToVector(mathRandom(0, 359), rDist);
+					Ctx.PosSpread = DiceRange(3, 1, 2);
+					}
+				else if (pGate && pGate->IsActiveStargate())
+					Ctx.pGate = pGate;
+				else if (pGate)
+					{
+					Ctx.vPos = pGate->GetPos();
+					Ctx.PosSpread = DiceRange(2, 1, 2);
+					}
+				else if (pTarget)
+					Ctx.pGate = pTarget->GetNearestStargate(true);
+
+				//	Create ships
+
+				pEncounter->CreateShips(Ctx);
+				}
 
 			return pCC->CreateTrue();
 			}

@@ -16,6 +16,7 @@ class CRangeTypeEvent : public CSystemEvent
 		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
 		virtual CString GetEventHandlerName (void) override { return m_sEvent; }
 		virtual CDesignType *GetEventHandlerType (void) override { return m_pType; }
+		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
 
 	protected:
 		virtual Classes GetClass (void) const override { return cRangeTypeEvent; }
@@ -31,6 +32,7 @@ class CRangeTypeEvent : public CSystemEvent
 		
 		Metric m_rRadius2;					//	Cached for efficiency.
 		CSpaceObject::Criteria m_Criteria;	//	Parsed criteria (cached)
+		bool m_bCriteriaInit;				//	TRUE if we've parsed the criteria
 	};
 
 class CTimedEncounterEvent : public CSystemEvent

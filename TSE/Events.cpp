@@ -64,6 +64,10 @@ void CSystemEvent::CreateFromStream (SLoadCtx &Ctx, CSystemEvent **retpEvent)
 			pEvent = new CTimedMissionEvent(Ctx);
 			break;
 
+		case cRangeTypeEvent:
+			pEvent = new CRangeTypeEvent(Ctx);
+			break;
+
 		default:
 			throw CException(ERR_FAIL);
 		}
@@ -136,7 +140,7 @@ CString CTimedEncounterEvent::DebugCrashInfo (void)
 	{
 	CString sResult;
 
-	sResult.Append(CONSTLIT("TimedEncounterEvent\r\n"));
+	sResult.Append(CONSTLIT("CTimedEncounterEvent\r\n"));
 	return sResult;
 	}
 
@@ -248,7 +252,7 @@ CString CTimedCustomEvent::DebugCrashInfo (void)
 	{
 	CString sResult;
 
-	sResult.Append(CONSTLIT("TimedCustomEvent\r\n"));
+	sResult.Append(CONSTLIT("CTimedCustomEvent\r\n"));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pObj: %s\r\n"), CSpaceObject::DebugDescribe(m_pObj)));
 	sResult.Append(strPatternSubst(CONSTLIT("event: %s\r\n"), m_sEvent));
 	return sResult;
@@ -337,7 +341,7 @@ CString CTimedRecurringEvent::DebugCrashInfo (void)
 	{
 	CString sResult;
 
-	sResult.Append(CONSTLIT("TimedRecurringEvent\r\n"));
+	sResult.Append(CONSTLIT("CTimedRecurringEvent\r\n"));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pObj: %s\r\n"), CSpaceObject::DebugDescribe(m_pObj)));
 	sResult.Append(strPatternSubst(CONSTLIT("event: %s\r\n"), m_sEvent));
 	return sResult;
@@ -434,7 +438,7 @@ CString CTimedTypeEvent::DebugCrashInfo (void)
 	{
 	CString sResult;
 
-	sResult.Append(CONSTLIT("TimedTypeEvent\r\n"));
+	sResult.Append(CONSTLIT("CTimedTypeEvent\r\n"));
 	sResult.Append(strPatternSubst(CONSTLIT("m_pType: 0x%x\r\n"), (m_pType ? m_pType->GetUNID() : 0)));
 	sResult.Append(strPatternSubst(CONSTLIT("event: %s\r\n"), m_sEvent));
 	return sResult;
