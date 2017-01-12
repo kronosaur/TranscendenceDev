@@ -25,6 +25,8 @@ const int SHIELD_OFFSET_X =					24;
 const int ARMOR_OFFSET_X =					9;
 const int HULL_OFFSET_X =					-8;
 
+const CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
+
 CWeaponHUDCircular::CWeaponHUDCircular (void) :
 		m_bInvalid(true)
 
@@ -294,6 +296,14 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 
 	CGDraw::ArcQuadrilateral(m_Buffer, CVector(m_xCenter, m_yCenter), vInnerPos, vOuterPos, cyBack, m_rgbWeaponBack, CGDraw::blendCompositeNormal);
 
+	//	Figure out what color to use
+
+	CG32bitPixel rgbColor;
+	if (pDevice->IsEnabled() && !pDevice->IsDamaged() && !pDevice->IsDisrupted())
+		rgbColor = m_rgbWeaponText;
+	else
+		rgbColor = DISABLED_LABEL_COLOR;
+
 	//	Paint the weapon name
 
 	int xText = m_xCenter + (int)vOuterPos.GetX() - cxAmmo;
@@ -301,7 +311,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 	MediumFont.DrawText(m_Buffer,
 			xText - 2,
 			yText,
-			m_rgbWeaponText,
+			rgbColor,
 			sName,
 			CG16bitFont::AlignRight);
 

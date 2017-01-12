@@ -13,6 +13,8 @@ const int INTER_SEGMENT_SPACING = 2;
 const int NAME_SPACING_X = 20;
 const int NAME_WIDTH = 130;
 
+const CG32bitPixel DISABLED_LABEL_COLOR =	CG32bitPixel(128, 0, 0);
+
 CArmorHUDRingSegments::CArmorHUDRingSegments (void) :
 		m_bInvalid(true)
 
@@ -456,12 +458,18 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				m_rgbShieldsTextBack,
 				m_rgbShieldsText);
 
+		CG32bitPixel rgbText;
+		if (pShield->IsEnabled() && !pShield->IsDamaged() && !pShield->IsDisrupted())
+			rgbText = m_rgbShieldsText;
+		else
+			rgbText = DISABLED_LABEL_COLOR;
+
 		DrawShieldsName(m_Buffer,
 				298,
 				iShieldInnerRadius + m_iShieldRingWidth + RING_SPACING,
 				pShip,
 				pShield,
 				m_rgbShieldsTextBack,
-				m_rgbShieldsText);
+				rgbText);
 		}
 	}
