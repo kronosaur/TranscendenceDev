@@ -197,7 +197,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 	return NOERROR;
 	}
 
-void CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir, int iDamage)
+EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir, int iDamage)
 
 //	DoDamage
 //
@@ -217,7 +217,7 @@ void CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int 
 	DamageCtx.pCause = this;
 	DamageCtx.Attacker = m_Source;
 
-	EDamageResults result = pHit->Damage(DamageCtx);
+	return pHit->Damage(DamageCtx);
 	}
 
 CString CContinuousBeam::GetName (DWORD *retdwFlags)
@@ -475,6 +475,10 @@ void CContinuousBeam::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&Segment.iDamage, sizeof(DWORD));
 
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+
+		Segment.fAlive =		((dwLoad & 0x00000001) ? true : false);
+		Segment.fHit =			((dwLoad & 0x00000002) ? true : false);
+		Segment.fPassthrough =	((dwLoad & 0x00000004) ? true : false);
 		}
 
 	//	For now we don't bother saving the effect painter
@@ -587,6 +591,10 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 		pStream->Write((char *)&Segment.iDamage, sizeof(DWORD));
 
 		dwSave = 0;
+		dwSave |= (Segment.fAlive ?			0x00000001 : 0);
+		dwSave |= (Segment.fHit ?			0x00000002 : 0);
+		dwSave |= (Segment.fPassthrough ?	0x00000004 : 0);
+
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
 		}
 
@@ -664,25 +672,53 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 		if (pSegment->fAlive
 				&& HitTestSegment(pSegment->vPos, vNewPos, &pHit, &iHitDir))
 			{
-			//	Split the segment in two
+			//	See if we pass through
 
-			SSegment *pDeadSegment = m_Segments.InsertAt(i);
-			i++;
-			pSegment = &m_Segments[i];
+			if (m_pDesc->GetPassthrough() > 0
+					&& mathRandom(1, 100) <= m_pDesc->GetPassthrough()
+					&& pHit->GetPassthroughDefault() != damageNoDamageNoPassthrough)
+				{
+				pSegment->vPos = pSegment->vPos + pSegment->vDeltaPos;
+				pSegment->fPassthrough = true;
+				}
 
-			pDeadSegment->vPos = pSegment->vPos;
-			pDeadSegment->vDeltaPos = pSegment->vDeltaPos;
-			pDeadSegment->fAlive = false;
+			//	Otherwise, we split the beam at the point where we hit
 
-			pSegment->vPos = vNewPos;
+			else
+				{
+				//	Split the segment in two
+
+				SSegment *pDeadSegment = m_Segments.InsertAt(i);
+				i++;
+				pSegment = &m_Segments[i];
+
+				pDeadSegment->vPos = pSegment->vPos;
+				pDeadSegment->vDeltaPos = pSegment->vDeltaPos;
+				pDeadSegment->fAlive = false;
+
+				pSegment->vPos = vNewPos;
+				pSegment->fPassthrough = false;
+				}
 
 			//	Do damage
 
-			DoDamage(pHit, vNewPos, iHitDir, pSegment->iDamage);
+			EDamageResults iResult = DoDamage(pHit, vNewPos, iHitDir, pSegment->iDamage);
+
+			//	If we passed through completely, then nothing else to do
+
+			if (pSegment->fPassthrough)
+				{ }
+
+			//	If we hit something that allowed us to pass through, then chance of 
+			//	passthrough.
+
+			else if (iResult == damagePassthrough || iResult == damagePassthroughDestroyed)
+				pSegment->fHit = (mathRandom(1, 100) >=50);
 
 			//	Segment is dead next frame
 
-			pSegment->fHit = true;
+			else
+				pSegment->fHit = true;
 			}
 
 		//	Update

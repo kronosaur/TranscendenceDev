@@ -192,7 +192,8 @@ class CContinuousBeam : public CSpaceObject
 			{
 			SSegment (void) :
 					fAlive(true),
-					fHit(false)
+					fHit(false),
+					fPassthrough(false)
 				{ 
 				}
 
@@ -203,12 +204,13 @@ class CContinuousBeam : public CSpaceObject
 			
 			DWORD fAlive:1;					//	Segment is still alive
 			DWORD fHit:1;					//	We hit something last frame
-			DWORD dwSpare:30;
+			DWORD fPassthrough:1;			//	We passed through.
+			DWORD dwSpare:29;
 			};
 
 		CContinuousBeam (void);
 		void AddSegment (const CVector &vPos, const CVector &vVel, int iDamage);
-		void DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir, int iDamage);
+		EDamageResults DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir, int iDamage);
 		bool HitTestSegment (const CVector &vPos, CVector &vNewPos, CSpaceObject **retpHit, int *retiHitDir);
 		void PaintSegment (CG32bitImage &Dest, const CVector &vFrom, const CVector &vTo, SViewportPaintCtx &Ctx) const;
 		void UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Metric *retrMaxBoundsX, Metric *retrMaxBoundsY);
