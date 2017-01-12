@@ -117,6 +117,20 @@ ICCItem *ICCItem::GetElement (CCodeChain *pCC, int iIndex)
 	return pItem->Reference();
 	}
 
+double ICCItem::GetDoubleAt (const CString &sKey, double rDefault)
+
+//	GetDoubleAt
+//
+//	Returns a double
+
+	{
+	ICCItem *pItem = GetElement(sKey);
+	if (pItem == NULL || pItem->IsNil())
+		return rDefault;
+
+	return pItem->GetDoubleValue();
+	}
+
 int ICCItem::GetIntegerAt (const CString &sKey, int iDefault)
 
 //	GetIntegerAt

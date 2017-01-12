@@ -59,6 +59,8 @@ const int INDEX_SELECTION =					12;
 
 #define ID_SCROLL_ANIMATOR					CONSTLIT("idScrollAnimator")
 
+const int MOUSE_SENSITIVITY =				30;
+
 CAniListBox::CAniListBox (void)
 
 //	CAniListBox constructor
@@ -444,9 +446,7 @@ bool CAniListBox::HandleMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 
 	//	Entries per page
 
-	int iChange = (-iDelta / 60);
-	if (iChange == 0)
-		iChange = -Sign(iDelta);
+	int iChange = -Sign(iDelta / MOUSE_SENSITIVITY);
 
 	//	Scroll
 
