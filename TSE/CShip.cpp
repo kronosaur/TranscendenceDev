@@ -52,7 +52,6 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_CARGO_SPACE					CONSTLIT("cargoSpace")
 #define PROPERTY_CHARACTER						CONSTLIT("character")
-#define PROPERTY_CHARACTER_CLASS				CONSTLIT("characterClass")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
@@ -2884,20 +2883,6 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		{
 		CGenericType *pCharacter = m_pClass->GetCharacter();
 		return (pCharacter ? CC.CreateInteger(pCharacter->GetUNID()) : CC.CreateNil());
-		}
-	else if (strEquals(sName, PROPERTY_CHARACTER_CLASS))
-		{
-		CGenericType *pCharacterClass = m_pClass->GetCharacterClass();
-
-		//	If no character class, see if this is an older mod
-
-		if (pCharacterClass == NULL)
-			{
-			if (GetAPIVersion() < 22)
-				pCharacterClass = g_pUniverse->FindGenericType(UNID_PILGRIM_CHARACTER_CLASS);
-			}
-
-		return (pCharacterClass ? CC.CreateInteger(pCharacterClass->GetUNID()) : CC.CreateNil());
 		}
 	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE) || strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
 		{

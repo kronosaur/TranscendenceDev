@@ -432,6 +432,9 @@
 //	140: 1.7 Beta 4
 //		m_iNextDetonation in CMissile
 //
+//	141: 1.7 Beta 5
+//		m_pCharacterClass in CPlayerShipController
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
