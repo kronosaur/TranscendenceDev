@@ -2588,6 +2588,7 @@ class CStationEncounterDesc
 			{ }
 
 		int CalcLevelFromFrequency (void) const;
+		bool InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError);
 		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitLevelFrequency (void);
@@ -2854,9 +2855,9 @@ class CStationType : public CDesignType
 		inline bool AlertWhenDestroyed (void) { return (mathRandom(1, 100) <= m_iAlertWhenDestroyed); }
 		inline bool BuildsReinforcements (void) const { return (m_fBuildReinforcements ? true : false); }
 		inline bool CanAttack (void) const { return (m_fCanAttack ? true : false); }
-		inline bool CanBeEncountered (void) { return m_EncounterRecord.CanBeEncountered(m_RandomPlacement); }
-		inline bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, m_RandomPlacement); }
-		inline bool CanBeEncounteredRandomly (void) const { return m_RandomPlacement.CanBeRandomlyEncountered(); }
+		inline bool CanBeEncountered (void) { return m_EncounterRecord.CanBeEncountered(GetEncounterDesc()); }
+		inline bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
+		inline bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
 		inline bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		inline bool CanHitFriends (void) { return (m_fNoFriendlyFire ? false : true); }
 		CString GenerateRandomName (const CString &sSubst, DWORD *retdwFlags);
@@ -2872,21 +2873,22 @@ class CStationType : public CDesignType
 		inline CString GetDestEntryPoint (void) { return m_sStargateDestEntryPoint; }
 		inline int GetEjectaAdj (void) { return m_iEjectaAdj; }
 		CWeaponFireDesc *GetEjectaType (void) { return m_pEjectaType; }
-		inline Metric GetEnemyExclusionRadius (void) const { return m_RandomPlacement.GetEnemyExclusionRadius(); }
-		inline void GetExclusionDesc (CStationEncounterDesc::SExclusionDesc &Exclusion) const { m_RandomPlacement.GetExclusionDesc(Exclusion); }
-		inline Metric GetExclusionRadius (void) const { return m_RandomPlacement.GetExclusionRadius(); }
+		const CStationEncounterDesc &GetEncounterDesc (void) const;
+		inline Metric GetEnemyExclusionRadius (void) const { return GetEncounterDesc().GetEnemyExclusionRadius(); }
+		inline void GetExclusionDesc (CStationEncounterDesc::SExclusionDesc &Exclusion) const { GetEncounterDesc().GetExclusionDesc(Exclusion); }
+		inline Metric GetExclusionRadius (void) const { return GetEncounterDesc().GetExclusionRadius(); }
 		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		inline int GetEncounterFrequency (void) { return m_iEncounterFrequency; }
-		inline int GetEncounterMinimum (CTopologyNode *pNode) { return m_EncounterRecord.GetMinimumForNode(pNode, m_RandomPlacement); }
+		inline int GetEncounterMinimum (CTopologyNode *pNode) { return m_EncounterRecord.GetMinimumForNode(pNode, GetEncounterDesc()); }
 		inline CStationEncounterCtx &GetEncounterRecord (void) { return m_EncounterRecord; }
-		inline int GetEncounterRequired (CTopologyNode *pNode) { return m_EncounterRecord.GetRequiredForNode(pNode, m_RandomPlacement); }
+		inline int GetEncounterRequired (CTopologyNode *pNode) { return m_EncounterRecord.GetRequiredForNode(pNode, GetEncounterDesc()); }
 		inline IShipGenerator *GetEncountersTable (void) { return m_pEncounters; }
 		inline int GetFireRateAdj (void) { return m_iFireRateAdj; }
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pFirstDockScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pFirstDockScreen.GetDockScreen(this, retsName); }
-		inline int GetFrequencyByLevel (int iLevel) { return m_EncounterRecord.GetFrequencyByLevel(iLevel, m_RandomPlacement); }
-		inline int GetFrequencyForNode (CTopologyNode *pNode) { return m_EncounterRecord.GetFrequencyForNode(pNode, this, m_RandomPlacement); }
-		inline int GetFrequencyForSystem (CSystem *pSystem) { return m_EncounterRecord.GetFrequencyForSystem(pSystem, this, m_RandomPlacement); }
+		inline int GetFrequencyByLevel (int iLevel) { return m_EncounterRecord.GetFrequencyByLevel(iLevel, GetEncounterDesc()); }
+		inline int GetFrequencyForNode (CTopologyNode *pNode) { return m_EncounterRecord.GetFrequencyForNode(pNode, this, GetEncounterDesc()); }
+		inline int GetFrequencyForSystem (CSystem *pSystem) { return m_EncounterRecord.GetFrequencyForSystem(pSystem, this, GetEncounterDesc()); }
 		inline CEffectCreator *GetGateEffect (void) { return m_pGateEffect; }
 		inline Metric GetGravityRadius (void) const { return m_rGravityRadius; }
 		inline const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(Selector, Modifiers, retiRotation); }
@@ -2896,7 +2898,7 @@ class CStationType : public CDesignType
 		inline int GetInitialHitPoints (void) { return m_iHitPoints; }
 		inline IShipGenerator *GetInitialShips (int iDestiny, int *retiCount) { *retiCount = (!m_ShipsCount.IsEmpty() ? m_ShipsCount.RollSeeded(iDestiny) : 1); return m_pInitialShips; }
 		Metric GetLevelStrength (int iLevel);
-		inline const CString &GetLocationCriteria (void) const { return m_RandomPlacement.GetLocationCriteria(); }
+		inline const CString &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
 		inline Metric GetMass (void) { return m_rMass; }
 		inline int GetMinShips (int iDestiny) { return (!m_ShipsCount.IsEmpty() ? m_ShipsCount.RollSeeded(iDestiny) : m_iMinShips); }
 		inline Metric GetMaxEffectiveRange (void) { return m_rMaxAttackDistance; }
@@ -2927,7 +2929,7 @@ class CStationType : public CDesignType
 		inline bool HasGravity (void) const { return (m_rGravityRadius > 0.0); }
 		inline bool HasRandomNames (void) const { return !m_sRandomNames.IsBlank(); }
 		inline bool HasWreckImage (void) const { return (!IsImmutable() && m_iMaxHitPoints > 0); }
-		inline void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, m_RandomPlacement, iInc); }
+		inline void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, GetEncounterDesc(), iInc); }
 		inline bool IsActive (void) { return (m_fInactive ? false : true); }
 		inline bool IsOutOfPlaneObject (void) { return (m_fOutOfPlane ? true : false); }
 		inline bool IsBeacon (void) { return (m_fBeacon ? true : false); }
@@ -2944,7 +2946,7 @@ class CStationType : public CDesignType
 		inline bool IsShipEncounter (void) { return (m_fShipEncounter ? true : false); }
 		inline bool IsStatic (void) { return (m_fStatic ? true : false); }
 		inline bool IsTimeStopImmune (void) { return (m_fTimeStopImmune ? true : false); }
-		inline bool IsUniqueInSystem (void) const { return m_RandomPlacement.IsUniqueInSystem(); }
+		inline bool IsUniqueInSystem (void) const { return GetEncounterDesc().IsUniqueInSystem(); }
 		inline bool IsWall (void) { return (m_fWall ? true : false); }
 		void MarkImages (const CCompositeImageSelector &Selector);
 		void OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceObject *pObj, const COrbit &Orbit);
@@ -3562,11 +3564,14 @@ class CMissionType : public CDesignType
 class CAdventureDesc : public CDesignType
 	{
 	public:
+		CAdventureDesc (void);
+
 		void FireOnGameEnd (const CGameRecord &Game, const SBasicGameStats &BasicStats);
 		void FireOnGameStart (void);
 		inline const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { return &m_ArmorDamageAdj[iLevel - 1]; }
 		inline DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
 		CString GetDesc (void);
+		const CStationEncounterDesc *GetEncounterDesc (DWORD dwUNID) const;
 		inline DWORD GetExtensionUNID (void) { return m_dwExtensionUNID; }
 		inline const CString &GetName (void) { return m_sName; }
 		inline const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { return &m_ShieldDamageAdj[iLevel - 1]; }
@@ -3575,6 +3580,7 @@ class CAdventureDesc : public CDesignType
 		inline const CString &GetStartingPos (void) { return m_sStartingPos; }
 		ALERROR GetStartingShipClasses (TSortMap<CString, CShipClass *> *retClasses, CString *retsError);
 		inline const CString &GetWelcomeMessage (void) { return m_sWelcomeMessage; }
+		bool InitEncounterOverrides (CString *retsError = NULL);
 		inline bool IsCurrentAdventure (void) { return (m_fIsCurrentAdventure ? true : false); }
 		inline bool IsInDefaultResource (void) { return (m_fInDefaultResource ? true : false); }
 		bool IsValidStartingClass (CShipClass *pClass);
@@ -3614,10 +3620,14 @@ class CAdventureDesc : public CDesignType
 		CDamageAdjDesc m_ArmorDamageAdj[MAX_ITEM_LEVEL];
 		CDamageAdjDesc m_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
+		CXMLElement m_EncounterOverridesXML;
+		TSortMap<DWORD, CStationEncounterDesc> m_Encounters;
+
 		DWORD m_fIsCurrentAdventure:1;			//	TRUE if this is the current adventure
 		DWORD m_fInDefaultResource:1;			//	TRUE if adventure is a module in the default resource
 		DWORD m_fIncludeOldShipClasses:1;		//	TRUE if we should include older extensions (even if 
 												//		they don't match starting ship criteria).
+		DWORD m_fInInitEncounterOverrides:1;	//	TRUE if we're initializing this.
 	};
 
 //	Name Generator -------------------------------------------------------------

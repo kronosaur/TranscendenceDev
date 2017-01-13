@@ -131,6 +131,107 @@ int CStationEncounterDesc::GetFrequencyByLevel (int iLevel) const
 		return ::GetFrequencyByLevel(m_sLevelFrequency, iLevel);
 	}
 
+bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError)
+
+//	InitAsOverride
+//
+//	Initializes as an override. We take all data from the Original except where 
+//	the Override defines something.
+
+	{
+	//	Start as the original
+
+	*this = Original;
+
+	//	Number appearing (at least this number, unique in system)
+
+	CString sAttrib;
+	if (Override.FindAttribute(MIN_APPEARING_ATTRIB, &sAttrib)
+			|| Override.FindAttribute(NUMBER_APPEARING_ATTRIB, &sAttrib))
+		{
+		m_bNumberAppearing = true;
+		if (m_NumberAppearing.LoadFromXML(sAttrib) != NOERROR)
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid numberAppearing parameter."));
+			return false;
+			}
+
+		m_iMaxCountInSystem = 1;
+		}
+
+	//	Get maximum limit (at most this number, unique in system)
+
+	if (Override.FindAttribute(MAX_APPEARING_ATTRIB, &sAttrib))
+		{
+		m_bMaxCountLimit = true;
+		if (m_MaxAppearing.LoadFromXML(sAttrib) != NOERROR)
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid maxAppearing parameter."));
+			return false;
+			}
+
+		m_iMaxCountInSystem = 1;
+		}
+
+	//	Otherwise, we check uniqueness values
+
+	if (Override.FindAttribute(UNIQUE_ATTRIB, &sAttrib))
+		{
+		if (strEquals(sAttrib, UNIQUE_IN_SYSTEM))
+			{
+			m_bMaxCountLimit = false;
+			m_iMaxCountInSystem = 1;
+			}
+		else if (strEquals(sAttrib, UNIQUE_IN_UNIVERSE) || strEquals(sAttrib, VALUE_TRUE))
+			{
+			m_bMaxCountLimit = true;
+			m_MaxAppearing.SetConstant(1);
+			m_iMaxCountInSystem = 1;
+			}
+		}
+
+	//	System criteria
+
+	CXMLElement *pCriteria = Override.GetContentElementByTag(CRITERIA_TAG);
+	if (pCriteria)
+		{
+		if (CTopologyNode::ParseCriteria(pCriteria, &m_SystemCriteria, retsError) != NOERROR)
+			return false;
+
+		m_bSystemCriteria = true;
+		}
+	else if (Override.FindAttribute(SYSTEM_CRITERIA_ATTRIB, &sAttrib))
+		{
+		if (CTopologyNode::ParseCriteria(sAttrib, &m_SystemCriteria, retsError) != NOERROR)
+			return false;
+
+		m_bSystemCriteria = true;
+		}
+
+	//	Level frequency and criteria
+
+	if (Override.FindAttribute(LEVEL_FREQUENCY_ATTRIB, &sAttrib))
+		m_sLevelFrequency = sAttrib;
+
+	if (Override.FindAttribute(LOCATION_CRITERIA_ATTRIB, &sAttrib))
+		m_sLocationCriteria = sAttrib;
+
+	//	Exclusion radius
+
+	int iRadius;
+	if (Override.FindAttributeInteger(ENEMY_EXCLUSION_RADIUS_ATTRIB, &iRadius)
+			&& iRadius >= 0)
+		m_rEnemyExclusionRadius = iRadius * LIGHT_SECOND;
+
+	if (Override.FindAttributeInteger(EXCLUSION_RADIUS_ATTRIB, &iRadius)
+			&& iRadius >= 0)
+		m_rExclusionRadius = iRadius * LIGHT_SECOND;
+
+	//	Done
+
+	return true;
+	}
+
 ALERROR CStationEncounterDesc::InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitFromStationTypeXML

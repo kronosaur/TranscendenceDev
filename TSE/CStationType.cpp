@@ -844,6 +844,25 @@ CSovereign *CStationType::GetControllingSovereign (void)
 		return m_pSovereign;
 	}
 
+const CStationEncounterDesc &CStationType::GetEncounterDesc (void) const
+
+//	GetEncounterDesc
+//
+//	Get the encounter descriptor for this station.
+
+	{
+	//	See if the adventure overrides our encounter descriptor
+
+	CAdventureDesc *pAdventure = g_pUniverse->GetCurrentAdventureDesc();
+	const CStationEncounterDesc *pDesc = (pAdventure ? pAdventure->GetEncounterDesc(GetUNID()) : NULL);
+	if (pDesc)
+		return *pDesc;
+
+	//	Otherwise, we return our own.
+
+	return m_RandomPlacement;
+	}
+
 int CStationType::GetLevel (int *retiMinLevel, int *retiMaxLevel) const
 
 //	GetLevel
@@ -863,7 +882,7 @@ int CStationType::GetLevel (int *retiMinLevel, int *retiMaxLevel) const
 		if (retiMaxLevel) *retiMaxLevel = m_iLevel;
 		return m_iLevel;
 		}
-	else if (iLevel = m_RandomPlacement.CalcLevelFromFrequency())
+	else if (iLevel = GetEncounterDesc().CalcLevelFromFrequency())
 		{
 		if (retiMinLevel) *retiMinLevel = iLevel;
 		if (retiMaxLevel) *retiMaxLevel = iLevel;

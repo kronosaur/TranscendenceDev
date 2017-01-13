@@ -1476,15 +1476,12 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 
 	{
 	ALERROR error;
+	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
 
 	//	If starting map is 0, see if we can get it from the adventure
 
-	if (dwStartingMap == 0)
-		{
-		CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
-		if (pAdventure)
-			dwStartingMap = pAdventure->GetStartingMapUNID();
-		}
+	if (dwStartingMap == 0 && pAdventure)
+		dwStartingMap = pAdventure->GetStartingMapUNID();
 
 	//	Initialize the topology. This is the point at which the topology is created
 
@@ -1495,6 +1492,15 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	//	before we call InitLevelEncounterTable).
 
 	m_Design.NotifyTopologyInit();
+
+	//	Tell the adventure to initialize its encounter tables, which might
+	//	override the encounter desc of specific station types.
+
+	if (pAdventure)
+		{
+		if (!pAdventure->InitEncounterOverrides(retsError))
+			return ERR_FAIL;
+		}
 
 	//	Init encounter tables (this must be done AFTER InitTopoloy because it
 	//	some station encounters specify a topology node).
@@ -2099,6 +2105,12 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 				}
 			}
 		}
+
+	//	Make sure we initialize adventure encounter overrides
+
+	CAdventureDesc *pAdventure = g_pUniverse->GetCurrentAdventureDesc();
+	if (pAdventure)
+		pAdventure->InitEncounterOverrides();
 
 	return NOERROR;
 	}
