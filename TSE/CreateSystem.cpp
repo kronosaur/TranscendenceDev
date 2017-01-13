@@ -3027,7 +3027,7 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit)
 			CSpaceObject *pObj = pCtx->pSystem->GetObject(i);
 			if (pObj 
 					&& pObj != pCenter
-					&& pObj->CanAttack())
+					&& (pObj->CanAttack() || pObj->IsStargate()))
 				{
 				Metric rDist2 = (pObj->GetPos() - vTry).Length2();
 				if (rDist2 < rMinActive2)
@@ -3258,7 +3258,7 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 
 		if (pObj 
 				&& pObj->GetScale() == scaleStructure
-				&& pObj->CanAttack())
+				&& (pObj->CanAttack() || pObj->IsStargate()))
 			{
 			//	Compute the distance to this obj
 

@@ -2965,13 +2965,13 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
 			Exclusion = SourceExclusion;
 
 		//	If we have an enemy exclusion zone, and we're enemies, then check 
-		//	distance.
+		//	distance. NOTE: We count stargates as enemies because enemies often
+		//	come out of them.
 
 		Metric rDist2 = 0.0;
 		if (Exclusion.bHasEnemyExclusion
-				&& pSourceSovereign
-				&& pObj->GetSovereign()
-				&& pObj->GetSovereign()->IsEnemy(pSourceSovereign))
+				&& (pObj->IsStargate()
+					|| (pSourceSovereign && pObj->GetSovereign() && pObj->GetSovereign()->IsEnemy(pSourceSovereign))))
 			{
 			rDist2 = (vPos - pObj->GetPos()).Length2();
 			if (rDist2 < Exclusion.rEnemyExclusionRadius2)
