@@ -400,6 +400,10 @@ CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,
 	{
 	CVector vInterceptPoint;
 
+#ifdef DEBUG_SHIP
+	bool bDebug = pShip->IsSelected();
+#endif
+
 	//	If we don't have a target object, then go to the position
 
 	if (pTarget == NULL)
@@ -1812,7 +1816,7 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 					m_iLastTurn = GetManeuver();
 					m_iLastTurnCount = 0;
 					}
-				else
+				else if (pShip->CanMove())
 					{
 					m_iLastTurnCount++;
 
@@ -1837,8 +1841,8 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 #ifdef DEBUG_SHIP
 			if (bDebug)
 				g_pUniverse->DebugOutput("Turn: %s (%d -> %d)",
-						(m_iManeuver == RotateRight ? "right" : 
-							(m_iManeuver == RotateLeft ? "left" : "none")),
+						(GetManeuver() == RotateRight ? "right" : 
+							(GetManeuver() == RotateLeft ? "left" : "none")),
 						iCurrentDir,
 						iDir);
 #endif
