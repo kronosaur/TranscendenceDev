@@ -219,7 +219,7 @@ ALERROR CXMLElement::DeleteSubElement (int iIndex)
 	return NOERROR;
 	}
 
-bool CXMLElement::FindAttribute (const CString &sName, CString *retsValue)
+bool CXMLElement::FindAttribute (const CString &sName, CString *retsValue) const
 
 //	FindAttribute
 //
@@ -239,7 +239,7 @@ bool CXMLElement::FindAttribute (const CString &sName, CString *retsValue)
 		return false;
 	}
 
-bool CXMLElement::FindAttributeBool (const CString &sName, bool *retbValue)
+bool CXMLElement::FindAttributeBool (const CString &sName, bool *retbValue) const
 
 //	FindAttributeBool
 //
@@ -259,7 +259,7 @@ bool CXMLElement::FindAttributeBool (const CString &sName, bool *retbValue)
 		return false;
 	}
 
-bool CXMLElement::FindAttributeDouble (const CString &sName, double *retrValue)
+bool CXMLElement::FindAttributeDouble (const CString &sName, double *retrValue) const
 
 //	FindAttributeDouble
 //
@@ -278,7 +278,7 @@ bool CXMLElement::FindAttributeDouble (const CString &sName, double *retrValue)
 		return false;
 	}
 
-bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue)
+bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) const
 
 //	FindAttributeInteger
 //
@@ -298,7 +298,7 @@ bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue)
 		return false;
 	}
 
-CString CXMLElement::GetAttribute (const CString &sName)
+CString CXMLElement::GetAttribute (const CString &sName) const
 
 //	GetAttribute
 //
@@ -313,7 +313,7 @@ CString CXMLElement::GetAttribute (const CString &sName)
 		return CString();
 	}
 
-bool CXMLElement::GetAttributeBool (const CString &sName)
+bool CXMLElement::GetAttributeBool (const CString &sName) const
 
 //	GetAttributeBool
 //
@@ -328,7 +328,7 @@ bool CXMLElement::GetAttributeBool (const CString &sName)
 		return false;
 	}
 
-double CXMLElement::GetAttributeDouble (const CString &sName)
+double CXMLElement::GetAttributeDouble (const CString &sName) const
 
 //	GetAttributeDouble
 //
@@ -338,7 +338,7 @@ double CXMLElement::GetAttributeDouble (const CString &sName)
 	return strToDouble(GetAttribute(sName), 0.0);
 	}
 
-double CXMLElement::GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax, double rNull)
+double CXMLElement::GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax, double rNull) const
 
 //	GetAttributeDoubleBounded
 //
@@ -372,7 +372,7 @@ double CXMLElement::GetAttributeDoubleBounded (const CString &sName, double rMin
 		return rNull;
 	}
 
-double CXMLElement::GetAttributeFloat (const CString &sName)
+double CXMLElement::GetAttributeFloat (const CString &sName) const
 
 //	GetAttributeFloat
 //
@@ -382,7 +382,7 @@ double CXMLElement::GetAttributeFloat (const CString &sName)
 	return strToDouble(GetAttribute(sName), 0.0);
 	}
 
-int CXMLElement::GetAttributeInteger (const CString &sName)
+int CXMLElement::GetAttributeInteger (const CString &sName) const
 
 //	GetAttributeInteger
 //
@@ -392,7 +392,7 @@ int CXMLElement::GetAttributeInteger (const CString &sName)
 	return strToInt(GetAttribute(sName), 0, NULL);
 	}
 
-int CXMLElement::GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax, int iNull)
+int CXMLElement::GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax, int iNull) const
 
 //	GetAttributeIntegerBounded
 //
@@ -426,7 +426,7 @@ int CXMLElement::GetAttributeIntegerBounded (const CString &sName, int iMin, int
 		return iNull;
 	}
 
-ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, CIntArray *pList)
+ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, CIntArray *pList) const
 
 //	GetAttributeIntegerList
 //
@@ -436,7 +436,7 @@ ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, CIntArray *p
 	return ParseAttributeIntegerList(GetAttribute(sName), pList);
 	}
 
-bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin, int iMax, int iNullLow, int iNullHigh, bool bAllowInverted)
+bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin, int iMax, int iNullLow, int iNullHigh, bool bAllowInverted) const
 
 //  GetAttributeIntegerRange
 //

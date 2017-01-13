@@ -65,26 +65,26 @@ class CXMLElement : public CObject
 		bool AttributeExists (const CString &sName);
 		CString ConvertToString (void);
 		ALERROR DeleteSubElement (int iIndex);
-		bool FindAttribute (const CString &sName, CString *retsValue = NULL);
-		bool FindAttributeBool (const CString &sName, bool *retbValue = NULL);
-		bool FindAttributeDouble (const CString &sName, double *retrValue = NULL);
-		bool FindAttributeInteger (const CString &sName, int *retiValue = NULL);
-		CString GetAttribute (const CString &sName);
-		inline CString GetAttribute (int iIndex) { return *(CString *)m_Attributes.GetValue(iIndex); }
-		bool GetAttributeBool (const CString &sName);
-		inline int GetAttributeCount (void) { return m_Attributes.GetCount(); }
-		double GetAttributeDouble (const CString &sName);
-		double GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax = -1.0, double rNull = 0.0);
-		int GetAttributeInteger (const CString &sName);
-		int GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax = -1, int iNull = 0);
-		bool GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false);
-		ALERROR GetAttributeIntegerList (const CString &sName, CIntArray *pList);
-		double GetAttributeFloat (const CString &sName);
-		inline CString GetAttributeName (int iIndex) { return m_Attributes.GetKey(iIndex); }
+		bool FindAttribute (const CString &sName, CString *retsValue = NULL) const;
+		bool FindAttributeBool (const CString &sName, bool *retbValue = NULL) const;
+		bool FindAttributeDouble (const CString &sName, double *retrValue = NULL) const;
+		bool FindAttributeInteger (const CString &sName, int *retiValue = NULL) const;
+		CString GetAttribute (const CString &sName) const;
+		inline CString GetAttribute (int iIndex) const { return *(CString *)m_Attributes.GetValue(iIndex); }
+		bool GetAttributeBool (const CString &sName) const;
+		inline int GetAttributeCount (void) const { return m_Attributes.GetCount(); }
+		double GetAttributeDouble (const CString &sName) const;
+		double GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax = -1.0, double rNull = 0.0) const;
+		int GetAttributeInteger (const CString &sName) const;
+		int GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax = -1, int iNull = 0) const;
+		bool GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false) const;
+		ALERROR GetAttributeIntegerList (const CString &sName, CIntArray *pList) const;
+		double GetAttributeFloat (const CString &sName) const;
+		inline CString GetAttributeName (int iIndex) const { return m_Attributes.GetKey(iIndex); }
 		inline int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
 		inline CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
 		CXMLElement *GetContentElementByTag (const CString &sTag) const;
-		inline const CString &GetContentText (int iOrdinal) { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
+		inline const CString &GetContentText (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
 		inline CXMLElement *GetParentElement (void) const { return m_pParent; }
 		inline const CString &GetTag (void) const { return m_sTag; }
 		void MergeFrom (CXMLElement *pElement);
