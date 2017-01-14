@@ -167,6 +167,7 @@ class CSoundtrackManager
 		CMusicResource *CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const;
 		int GetLastPlayedRank (DWORD dwUNID) const;
 		bool IsPlayingCombatTrack (void) const;
+		bool IsPlayingMissionTrack (void) const;
 		bool InTransition (void) const;
 		void Play (CMusicResource *pTrack);
 		void Reinit (void);

@@ -6,6 +6,7 @@
 #include "stdafx.h"
 
 #define ATTRIB_COMBAT_SOUNDTRACK				CONSTLIT("combatSoundtrack")
+#define ATTRIB_MISSION_SOUNDTRACK				CONSTLIT("missionSoundtrack")
 #define ATTRIB_SYSTEM_SOUNDTRACK				CONSTLIT("systemSoundtrack")
 #define ATTRIB_TRAVEL_SOUNDTRACK				CONSTLIT("travelSoundtrack")
 
@@ -91,6 +92,8 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 			&& strEquals(m_NotFoundCache.sRequiredAttrib, sRequiredAttrib))
 		return NULL;
 
+	CMusicResource *pMostRecentTrack = NULL;
+
 	//	Create a probability table of tracks to play.
 
 	TSortMap<int, TProbabilityTable<CMusicResource *>> Table(DescendingSort);
@@ -123,6 +126,9 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 		switch (iLastPlayedRank)
 			{
 			case 0:
+				//	Remember this, because if we have nothing else, we should at least
+				//	play this.
+				pMostRecentTrack = pTrack;
 				iChance = 0;
 				break;
 
@@ -172,12 +178,25 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 
 	if (Table.GetCount() == 0)
 		{
-		if (m_bDebugMode)
-			::kernelDebugLogMessage("Unable to find soundtrack for state %d.", m_iGameState);
+		//	At least we can play the last track, if we've got one.
 
-		m_NotFoundCache.pNode = pNode;
-		m_NotFoundCache.sRequiredAttrib = sRequiredAttrib;
-		return NULL;
+		if (pMostRecentTrack)
+			{
+			TProbabilityTable<CMusicResource *> *pEntry = Table.SetAt(0);
+			pEntry->Insert(pMostRecentTrack, 100);
+			}
+
+		//	Otherwise, error
+
+		else
+			{
+			if (m_bDebugMode)
+				::kernelDebugLogMessage("Unable to find soundtrack for state %d.", m_iGameState);
+
+			m_NotFoundCache.pNode = pNode;
+			m_NotFoundCache.sRequiredAttrib = sRequiredAttrib;
+			return NULL;
+			}
 		}
 
 	//	Otherwise, roll out of the first table.
@@ -372,6 +391,16 @@ bool CSoundtrackManager::IsPlayingCombatTrack (void) const
 	return (m_pNowPlaying && m_pNowPlaying->HasAttribute(ATTRIB_COMBAT_SOUNDTRACK));
 	}
 
+bool CSoundtrackManager::IsPlayingMissionTrack (void) const
+
+//	IsPlayingMissionTrack
+//
+//	Returns TRUE if we're currently playing a mission track.
+
+	{
+	return (m_pNowPlaying && m_pNowPlaying->HasAttribute(ATTRIB_MISSION_SOUNDTRACK));
+	}
+
 void CSoundtrackManager::NextTrack (void)
 
 //	NextTrack
@@ -443,6 +472,11 @@ void CSoundtrackManager::NotifyEndMissionTrack (bool bForceTravel)
 	bool bPlay = (m_pMissionTrack && m_pNowPlaying == m_pMissionTrack);
 	m_pMissionTrack = NULL;
 
+	//	If necessary, force ourselves to the travel track first.
+
+	if (bForceTravel)
+		m_iGameState = stateGameTravel;
+
 	//	Play next track
 
 	if (m_bEnabled
@@ -450,18 +484,7 @@ void CSoundtrackManager::NotifyEndMissionTrack (bool bForceTravel)
 			&& !InTransition())
 		{
 		if (m_iGameState == stateGameCombat)
-			{
-			if (bForceTravel)
-				{
-				m_iGameState = stateGameTravel;
-				TransitionToTravel();
-				}
-
-			//	Otherwise, combat
-
-			else
-				TransitionToCombat();
-			}
+			TransitionToCombat();
 		else
 			TransitionToTravel();
 		}
@@ -567,6 +590,12 @@ void CSoundtrackManager::NotifyStartMissionTrack (CMusicResource *pTrack)
 	if (m_bDebugMode)
 		::kernelDebugLogMessage("Mission started.");
 
+	if (m_pNowPlaying 
+			&& !m_pNowPlaying->HasAttribute(ATTRIB_COMBAT_SOUNDTRACK))
+		m_pLastTravel = m_pNowPlaying;
+	else
+		m_pLastTravel = NULL;
+
 	//	Set our mission track and transition
 
 	m_pMissionTrack = pTrack;
@@ -599,7 +628,16 @@ void CSoundtrackManager::NotifyTrackDone (void)
 	//	Play another appropriate track
 
 	if (m_bEnabled)
+		{
+		//	Track is done, so we clear Now Playing. Otherwise, if we try to play
+		//	the same track twice (which can happen) then we would fail.
+
+		m_pNowPlaying = NULL;
+
+		//	Play
+
 		Play(CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState));
+		}
 	}
 
 void CSoundtrackManager::NotifyTrackPlaying (CMusicResource *pTrack)
@@ -671,6 +709,19 @@ void CSoundtrackManager::NotifyUpdatePlayPos (int iPos)
 			{
 			//	If we're playing a mission track, then we keep playing, regardless
 			//	of combat/travel mode.
+			}
+		else if (IsPlayingMissionTrack())
+			{
+			//	If we're still playing a mission track, but we're not supposed to
+			//	be, then transition back to travel or combat
+
+			if (m_pMissionTrack == NULL)
+				{
+				if (m_iGameState == stateGameTravel)
+					TransitionToTravel();
+				else
+					TransitionToCombat();
+				}
 			}
 		else if (IsPlayingCombatTrack())
 			{
@@ -758,6 +809,10 @@ void CSoundtrackManager::PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScree
 	DebugLines.Insert(strPatternSubst("m_pNowPlaying: %s%s", 
 			(m_pNowPlaying ? m_pNowPlaying->GetFilename() : CONSTLIT("none")), 
 			(IsPlayingCombatTrack() ? CONSTLIT(" [combat]") : NULL_STR)));
+
+	if (m_pMissionTrack)
+		DebugLines.Insert(strPatternSubst("m_pMissionTrack: %s",
+			(m_pMissionTrack ? m_pMissionTrack->GetFilename() : CONSTLIT("none"))));
 
 	if (InTransition())
 		DebugLines.Insert(CONSTLIT("IN TRANSITION"));
