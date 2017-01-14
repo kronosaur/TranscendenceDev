@@ -2624,7 +2624,7 @@ void CStation::OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrde
 
 			//	If this doesn't seem like an accident, then blacklist
 
-				|| !m_Blacklist.Hit(GetSystem()->GetTick()))
+				|| m_Blacklist.Hit(GetSystem()->GetTick()))
 			{
 			if (Blacklist(pOrderGiver))
 				DeterAttack(pTarget);
