@@ -1917,6 +1917,18 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 			if (iResult == resDefault)
 				{
 				CSpaceObject *pNewObj;
+				CDamageSource Source(pSource, killedByDamage);
+
+				//	Flags for the type of shot
+
+				DWORD dwFlags = 0;
+				if (i != 0)
+					dwFlags = CSystem::CWF_FRAGMENT;
+				else
+					dwFlags = CSystem::CWF_WEAPON_FIRE;
+
+				if (iRepeatingCount != 0)
+					dwFlags |= CSystem::CWF_REPEAT;
 
 				//	If this is a continuous beam, then we need special code.
 
@@ -1927,24 +1939,19 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 					pNewObj->AddContinuousBeam(ShotPos[i],
 							pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
 							ShotDir[i]);
+
+					//	Fire system events, which are normally fired inside CreateWeaponFireDesc
+
+					pSource->GetSystem()->FireSystemWeaponEvents(pNewObj, pShot, Source, iRepeatingCount, dwFlags);
 					}
 
 				//	Otherwise, create a shot
 
 				else
 					{
-					DWORD dwFlags = 0;
-					if (i != 0)
-						dwFlags = CSystem::CWF_FRAGMENT;
-					else
-						dwFlags = CSystem::CWF_WEAPON_FIRE;
-
-					if (iRepeatingCount != 0)
-						dwFlags |= CSystem::CWF_REPEAT;
-
 					pSource->GetSystem()->CreateWeaponFire(pShot,
 							pDevice->GetEnhancements(),
-							CDamageSource(pSource, killedByDamage),
+							Source,
 							ShotPos[i],
 							pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
 							ShotDir[i],

@@ -2020,28 +2020,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 
 	//	Fire a system events, if we have any handlers
 
-	if (!m_EventHandlers.IsEmpty())
-		{
-		//	Skip any fragments
-
-		if (dwFlags & CWF_FRAGMENT)
-			NULL;
-
-		//	If this is an explosion, then fire explosion event
-
-		else if (dwFlags & CWF_EXPLOSION)
-			{
-			FireOnSystemExplosion(pShot, pDesc, Source);
-			}
-
-		//	If this is weapons fire, we fire that event
-
-		else if (dwFlags & CWF_WEAPON_FIRE)
-			{
-			if (Source.GetObj() && Source.GetObj()->CanAttack())
-				FireOnSystemWeaponFire(pShot, pDesc, Source, iRepeatingCount);
-			}
-		}
+	FireSystemWeaponEvents(pShot, pDesc, Source, iRepeatingCount, dwFlags);
 
 	//	Done
 
@@ -2443,6 +2422,37 @@ void CSystem::FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDes
 			pHandler->GetObj()->FireOnSystemWeaponFire(pShot, pSource, dwWeaponUNID, iRepeatingCount);
 
 		pHandler = pHandler->GetNext();
+		}
+	}
+
+void CSystem::FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount, DWORD dwFlags)
+
+//	FireSystemWeaponEvents
+//
+//	Fires events when a weapon is fired.
+
+	{
+	if (!m_EventHandlers.IsEmpty())
+		{
+		//	Skip any fragments
+
+		if (dwFlags & CWF_FRAGMENT)
+			NULL;
+
+		//	If this is an explosion, then fire explosion event
+
+		else if (dwFlags & CWF_EXPLOSION)
+			{
+			FireOnSystemExplosion(pShot, pDesc, Source);
+			}
+
+		//	If this is weapons fire, we fire that event
+
+		else if (dwFlags & CWF_WEAPON_FIRE)
+			{
+			if (Source.GetObj() && Source.GetObj()->CanAttack())
+				FireOnSystemWeaponFire(pShot, pDesc, Source, iRepeatingCount);
+			}
 		}
 	}
 
