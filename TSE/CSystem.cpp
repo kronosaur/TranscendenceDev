@@ -533,6 +533,7 @@ CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) :
 		m_fEnemiesInLRS(false),
 		m_fEnemiesInSRS(false),
 		m_fPlayerUnderAttack(false),
+		m_fLocationsBlocked(false),
 		m_pThreadPool(NULL),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 
@@ -677,6 +678,43 @@ bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
 	//	Done
 
 	return true;
+	}
+
+void CSystem::BlockOverlappingLocations (void)
+
+//	BlockOverlappingLocations
+//
+//	Remove any locations that overlap something or are too close to another
+//	location.
+	
+	{
+	int i;
+
+	//	If we've already done this, no need to do it again.
+
+	if (m_fLocationsBlocked)
+		return;
+
+	//	Remove any locations that are directly on top of a planet. We only check 
+	//	for objects above a certain size because we can move/remove asteroids 
+	//	instead of locations.
+
+	for (i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL
+				|| pObj->IsDestroyed()
+				|| (pObj->GetScale() != scaleStar && pObj->GetPlanetarySize() < MIN_PLANET_SIZE))
+			continue;
+
+		//	Fill any locations that overlap with this object.
+
+		m_Locations.FillOverlappingWith(pObj);
+		}
+
+	//	Block any location that is too close to another.
+
+	m_Locations.FillCloseLocations();
 	}
 
 Metric CSystem::CalcApparentSpeedAdj (Metric rSpeed)
@@ -1288,6 +1326,16 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 	Ctx.pSystem->m_fEnemiesInLRS =			((dwLoad & 0x00000008) ? false : true);
 	Ctx.pSystem->m_fEnemiesInSRS =			((dwLoad & 0x00000010) ? false : true);
 	Ctx.pSystem->m_fPlayerUnderAttack =		((dwLoad & 0x00000020) ? false : true);
+
+	if (Ctx.dwVersion >= 141)
+		Ctx.pSystem->m_fLocationsBlocked =	((dwLoad & 0x00000040) ? false : true);
+	else
+		{
+		//	For previous versions we always assume we've already processed 
+		//	locations.
+
+		Ctx.pSystem->m_fLocationsBlocked = true;
+		}
 
 	//	Scales
 
@@ -4451,6 +4499,7 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 	dwSave |= (m_fEnemiesInLRS ?			0x00000008 : 0);
 	dwSave |= (m_fEnemiesInSRS ?			0x00000010 : 0);
 	dwSave |= (m_fPlayerUnderAttack ?		0x00000020 : 0);
+	dwSave |= (m_fLocationsBlocked ?		0x00000040 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Save version

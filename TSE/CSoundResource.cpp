@@ -39,6 +39,12 @@ void CSoundResource::LoadResource (void) const
 	{
 	CString sError;
 
+	//	If no sounds, then skip
+
+	CSoundMgr *pSoundMgr = g_pUniverse->GetSoundMgr();
+	if (pSoundMgr == NULL)
+		return;
+
 	//	If already loaded, nothing to do
 
 	if (m_iChannel != -1)
@@ -55,7 +61,7 @@ void CSoundResource::LoadResource (void) const
 
 	//	Load the sound
 
-	if (ResDb.LoadSound(*g_pUniverse->GetSoundMgr(), NULL_STR, m_sFilename, &m_iChannel) != NOERROR)
+	if (ResDb.LoadSound(*pSoundMgr, NULL_STR, m_sFilename, &m_iChannel) != NOERROR)
 		{
 		::kernelDebugLogMessage(strPatternSubst(CONSTLIT("Unable to load sound: %s"), m_sFilename));
 		m_iChannel = -1;

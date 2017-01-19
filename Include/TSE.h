@@ -1151,6 +1151,12 @@ class CSpaceObject : public CObject
 		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		inline void PaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }
 		inline void Place (const CVector &vPos, const CVector &vVel = NullVector) { m_vPos = vPos; m_vOldPos = vPos; m_vVel = vVel; }
+		inline bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
+			{ 
+			CVector vRelPos = vPos - GetPos();
+			Metric rHalfSize = 0.5 * GetHitSize() + rRadius;
+			return ((Absolute(vRelPos.GetX()) <= rHalfSize) && (Absolute(vRelPos.GetY()) <= rHalfSize));
+			}
 		inline bool PosInBox (const CVector &vUR, const CVector &vLL) const
 			{ return (vUR.GetX() > m_vPos.GetX()) 
 					&& (vUR.GetY() > m_vPos.GetY())

@@ -100,6 +100,7 @@
 #define OBJ_NAME_ATTRIB					CONSTLIT("objName")
 #define OFFSET_ATTRIB					CONSTLIT("offset")
 #define ORDERS_ATTRIB					CONSTLIT("orders")
+#define OVERLAP_CHECK_ATTRIB			CONSTLIT("overlapCheck")
 #define PAINT_LAYER_ATTRIB				CONSTLIT("paintLayer")
 #define PATCHES_ATTRIB					CONSTLIT("patchType")
 #define PATCH_FREQUENCY_ATTRIB			CONSTLIT("patchFrequency")
@@ -263,6 +264,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 						const COrbit &OrbitDesc);
 ALERROR CreateRandomStation (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc);
+ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CXMLElement *pSatellites, const COrbit &OrbitDesc);
 ALERROR CreateShipsForStation (CSpaceObject *pStation, CXMLElement *pShips);
 ALERROR CreateSiblings (SSystemCreateCtx *pCtx, 
 						CXMLElement *pObj, 
@@ -285,7 +287,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 							const COrbit &OrbitDesc,
 							bool bIgnoreChance = false);
 ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
-ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCount, Metric *pAngles);
+ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCount, Metric *pAngles, int iJitter = 0);
 void DumpDebugStack (SSystemCreateCtx *pCtx);
 void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit);
 ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
@@ -300,7 +302,6 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLElement *pDesc, const COrbit &OrbitDesc);
 inline void PopDebugStack (SSystemCreateCtx *pCtx) { if (g_pUniverse->InDebugMode()) pCtx->DebugStack.Pop(); }
 inline void PushDebugStack (SSystemCreateCtx *pCtx, const CString &sLine) { if (g_pUniverse->InDebugMode()) pCtx->DebugStack.Push(sLine); }
-void RemoveOverlappingLabels (SSystemCreateCtx *pCtx, Metric rMinDistance);
 
 //	Helper functions
 
@@ -1306,7 +1307,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 				rEccentricity[i] = 0.99;
 			}
 
-		//	Calculate rotation angles for each object
+		//	Calculate ellipse rotation angles for each object
 
 		if (!sEllipseRotation.IsBlank())
 			{
@@ -1341,7 +1342,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 					rAngle[i] = mathDegreesToRadians(mathRandom(0,3599) / 10.0);
 					bAngleOK = true;
 
-					if (iExclusionRadius != 0)
+					if (iExclusionRadius != 0 || pCtx->iOverlapCheck != SSystemCreateCtx::checkOverlapNone)
 						{
 						COrbit NewOrbit(OrbitDesc.GetObjectPos(),
 								rDistance[i],
@@ -1355,7 +1356,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 						//	Make none we are not near any other point that we 
 						//	just generated.
 
-						if (bAngleOK)
+						if (bAngleOK && iExclusionRadius != 0)
 							{
 							for (j = 0; j < i; j++)
 								{
@@ -1400,16 +1401,19 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 		else
 			{
-			int iTries = 10;
+			const int MAX_TRIES = 10;
+			int iTries = MAX_TRIES;
 
 			do
 				{
-				if (error = GenerateAngles(pCtx, sAngle, iCount, rAngle))
+				int iJitter = 100 * (MAX_TRIES - iTries) / MAX_TRIES;
+
+				if (error = GenerateAngles(pCtx, sAngle, iCount, rAngle, iJitter))
 					return error;
 
 				//	If any of the positions overlap, then the configuration is not OK
 
-				if (iExclusionRadius != 0)
+				if (iExclusionRadius != 0 || pCtx->iOverlapCheck != SSystemCreateCtx::checkOverlapNone)
 					{
 					bConfigurationOK = true;
 					for (i = 0; i < iCount; i++)
@@ -1476,8 +1480,29 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 					rRotation[iPos],
 					rAngle[iPos]);
 
-			if (error = CreateSystemObject(pCtx, pObj->GetContentElement(iObj), NewOrbit))
-				return error;
+			//	If the configuration is NOT OK, then we check to see if this point
+			//	overlaps a planet. If it does, then we skip creation.
+
+			if (!bConfigurationOK
+					&& pCtx->iOverlapCheck != SSystemCreateCtx::checkOverlapNone
+					&& !IsExclusionZoneClear(pCtx, NewOrbit.GetObjectPos(), 0.0))
+				{
+				//	Skip
+
+#ifdef DEBUG
+				::kernelDebugLogMessage("[%s]: Skipped creating %s due to overlap.", pCtx->pSystem->GetName(), pObj->GetContentElement(iObj)->GetTag());
+#endif
+				}
+
+			//	Otherwise, create the object
+
+			else
+				{
+				if (error = CreateSystemObject(pCtx, pObj->GetContentElement(iObj), NewOrbit))
+					return error;
+				}
+
+			//	Next
 
 			iObj = (iObj + 1) % pObj->GetContentElementCount();
 			iPos = (iPos + 1) % iCount;
@@ -1757,6 +1782,49 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 		}
 
 	PopDebugStack(pCtx);
+	return NOERROR;
+	}
+
+ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CXMLElement *pSatellites, const COrbit &OrbitDesc)
+
+//	CreateSatellites
+//
+//	Creates satellites for an object.
+
+	{
+	ALERROR error;
+	int i;
+
+	//	By default, satellites avoid overlapping
+
+	SSystemCreateCtx::EOverlapCheck iOldOverlap = pCtx->iOverlapCheck;
+	CString sCheck;
+	if (pSatellites->FindAttribute(OVERLAP_CHECK_ATTRIB, &sCheck))
+		{
+		if (CXMLElement::IsBoolTrueValue(sCheck)
+				|| strEquals(sCheck, CONSTLIT("planetoids")))
+			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapPlanets;
+		else if (strEquals(sCheck, CONSTLIT("asteroids")))
+			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapAsteroids;
+		else
+			pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapNone;
+		}
+	else
+		pCtx->iOverlapCheck = SSystemCreateCtx::checkOverlapNone;
+
+	//	Create satellites
+
+	for (i = 0; i < pSatellites->GetContentElementCount(); i++)
+		{
+		CXMLElement *pSatDesc = pSatellites->GetContentElement(i);
+		if (error = CreateSystemObject(pCtx, pSatDesc, OrbitDesc))
+			return error;
+		}
+
+	//	Restore
+
+	pCtx->iOverlapCheck = iOldOverlap;
+
 	return NOERROR;
 	}
 
@@ -2565,7 +2633,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		SShipCreateCtx CreateCtx;
 		CreateCtx.pSystem = pCtx->pSystem;
 		CreateCtx.vPos = OrbitDesc.GetObjectPos();
-		if (iCount > 0)
+		if (iCount > 1)
 			CreateCtx.PosSpread = DiceRange(6, 2, 1);
 
 		if (error = pGenerator->ValidateForRandomEncounter())
@@ -2848,11 +2916,12 @@ void DumpDebugStack (SSystemCreateCtx *pCtx)
 		}
 	}
 
-ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCount, Metric *pAngles)
+ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCount, Metric *pAngles, int iJitter)
 
 //	GenerateAngles
 //
-//	Generates random angles based on the angle type
+//	Generates random angles based on the angle type. Jitter is a value from 0-100
+//	indicating a jitter in angle generation.
 
 	{
 	ALERROR error;
@@ -2933,7 +3002,10 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 		int iSeparation = 3600 / iCount;
 
 		for (i = 0; i < iCount; i++)
-			pAngles[i] = mathDegreesToRadians(OffsetRange.Roll() + ((iStart + iSeparation * i) % 3600) / 10.0);
+			{
+			int iAngleJitter = (iJitter > 0 ? iJitter * mathRandom(-iSeparation / 2, iSeparation / 2) / 100 : 0);
+			pAngles[i] = mathDegreesToRadians((Metric)OffsetRange.Roll() + ((3600 + iStart + iAngleJitter + iSeparation * i) % 3600) / 10.0);
+			}
 		}
 	else if (strEquals(sKeyword, INCREMENTING_ANGLE))
 		{
@@ -2961,8 +3033,10 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 			return error;
 			}
 
+		int iAngleJitter = (iJitter > 0 && AngleRange.IsConstant() ? iJitter * mathRandom(-20, 20) / 100 : 0);
+
 		for (i = 0; i < iCount; i++)
-			pAngles[i] = mathDegreesToRadians(AngleRange.Roll());
+			pAngles[i] = mathDegreesToRadians(iAngleJitter + AngleRange.Roll());
 		}
 
 	return NOERROR;
@@ -3250,13 +3324,39 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 	int j;
 	Metric rExclusionDist2 = rRadius * rRadius;
 
+	//	Compute size of world to check for overlap
+
+	int iMinSize;
+	Metric rObjRadius;
+	switch (pCtx->iOverlapCheck)
+		{
+		case SSystemCreateCtx::checkOverlapAsteroids:
+			iMinSize = 1;
+			rObjRadius = LIGHT_SECOND;
+			break;
+
+		case SSystemCreateCtx::checkOverlapPlanets:
+			iMinSize = MIN_PLANET_SIZE;
+			rObjRadius = 3 * LIGHT_SECOND;
+			break;
+
+		default:
+			iMinSize = 0;
+			rObjRadius = 0.0;
+			break;
+		}
+
 	//	See if we are close to any objects
 
 	for (j = 0; j < pCtx->pSystem->GetObjectCount(); j++)
 		{
 		CSpaceObject *pObj = pCtx->pSystem->GetObject(j);
+		if (pObj == NULL || pObj->IsDestroyed())
+			continue;
 
-		if (pObj 
+		//	Check to see if we're too close to an active station
+
+		if (rRadius > 0.0
 				&& pObj->GetScale() == scaleStructure
 				&& (pObj->CanAttack() || pObj->IsStargate()))
 			{
@@ -3270,20 +3370,40 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 			if (rDist2 < rExclusionDist2)
 				return false;
 			}
+
+		//	Check to see if we're overlapping a planet or asteroids
+
+		else if (pCtx->iOverlapCheck != SSystemCreateCtx::checkOverlapNone
+				&& (pObj->GetScale() == scaleStar || pObj->GetPlanetarySize() >= iMinSize))
+			{
+			//	NOTE: For this case we don't even want to be too close (this is 
+			//	excludes more positions than simple overlap).
+
+			if (pObj->PointInHitSizeBox(vPos, rObjRadius))
+				{
+#ifdef DEBUG
+				::kernelDebugLogMessage("[%s]: Point overlaps planet: %s.", pCtx->pSystem->GetName(), pObj->GetNounPhrase(0));
+#endif
+				return false;
+				}
+			}
 		}
 
 	//	See if we are close to any labels
 
-	TArray<int> EmptyLocations;
-	pCtx->pSystem->GetEmptyLocations(&EmptyLocations);
-	for (j = 0; j < EmptyLocations.GetCount(); j++)
+	if (rRadius > 0.0)
 		{
-		CLocationDef *pLoc = pCtx->pSystem->GetLocation(EmptyLocations[j]);
-		CVector vDist = vPos - pLoc->GetOrbit().GetObjectPos();
-		Metric rDist2 = vDist.Length2();
+		TArray<int> EmptyLocations;
+		pCtx->pSystem->GetEmptyLocations(&EmptyLocations);
+		for (j = 0; j < EmptyLocations.GetCount(); j++)
+			{
+			CLocationDef *pLoc = pCtx->pSystem->GetLocation(EmptyLocations[j]);
+			CVector vDist = vPos - pLoc->GetOrbit().GetObjectPos();
+			Metric rDist2 = vDist.Length2();
 
-		if (rDist2 < rExclusionDist2)
-			return false;
+			if (rDist2 < rExclusionDist2)
+				return false;
+			}
 		}
 
 	//	If we get this far, then zone is clear
@@ -3300,7 +3420,6 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 
 	{
 	ALERROR error;
-	int i;
 
 	//	Set the name of the station, if specified by the system
 
@@ -3352,12 +3471,8 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 	CXMLElement *pSatellites = pDesc->GetContentElementByTag(SATELLITES_TAG);
 	if (pSatellites)
 		{
-		for (i = 0; i < pSatellites->GetContentElementCount(); i++)
-			{
-			CXMLElement *pSatDesc = pSatellites->GetContentElement(i);
-			if (error = CreateSystemObject(pCtx, pSatDesc, OrbitDesc))
-				return error;
-			}
+		if (error = CreateSatellites(pCtx, pSatellites, OrbitDesc))
+			return error;
 		}
 
 	//	See if we need to create additional ships
@@ -3381,16 +3496,6 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 	//	Done
 
 	return NOERROR;
-	}
-
-void RemoveOverlappingLabels (SSystemCreateCtx *pCtx, Metric rMinDistance)
-
-//	RemoveOverlappingLabels
-//
-//	Removes labels that are too close together
-
-	{
-	pCtx->pSystem->BlockOverlappingLocations();
 	}
 
 //	CSystem methods
@@ -4059,12 +4164,8 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 		CExtension *pOldExtension = pCtx->pExtension;
 		pCtx->pExtension = pType->GetExtension();
 
-		for (int i = 0; i < pSatellites->GetContentElementCount(); i++)
-			{
-			CXMLElement *pSatDesc = pSatellites->GetContentElement(i);
-			if (error = CreateSystemObject(pCtx, pSatDesc, *CreateCtx.pOrbit))
-				return error;
-			}
+		if (error = CreateSatellites(pCtx, pSatellites, *CreateCtx.pOrbit))
+			return error;
 
 		pCtx->pExtension = pOldExtension;
 		}

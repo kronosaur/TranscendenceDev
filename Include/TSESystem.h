@@ -5,6 +5,8 @@
 
 #pragma once
 
+const int MIN_PLANET_SIZE = 1000;			//	Size at which a world is considered planetary size
+
 //	CNavigationPath
 
 class CNavigationPath : public TSEListNode<CNavigationPath>
@@ -227,8 +229,16 @@ struct SLocationCriteria
 
 struct SSystemCreateCtx
 	{
+	enum EOverlapCheck 
+		{
+		checkOverlapNone,					//	Don't worry about overlaps
+		checkOverlapPlanets,				//	Don't overlap planets (> 1,000 km)
+		checkOverlapAsteroids,				//	Don't overlap asteroids or planets
+		};
+
 	SSystemCreateCtx (void) : 
 			pExtension(NULL),
+			iOverlapCheck(checkOverlapNone),
 			pStats(NULL),
 			pStation(NULL), 
 			dwLastObjID(0)
@@ -241,6 +251,10 @@ struct SSystemCreateCtx
 	CSystem *pSystem;						//	System that we're creating
 
 	TArray<CXMLElement *> LocalTables;		//	Stack of local tables
+
+	//	Options
+
+	EOverlapCheck iOverlapCheck;			//	If TRUE, we adjust locations to avoid overlapping an existing object
 
 	//	Stats
 
@@ -342,6 +356,7 @@ class CLocationList
 		CLocationList (void);
 
 		void FillCloseLocations (void);
+		void FillOverlappingWith (CSpaceObject *pObj);
 		inline int GetCount (void) { return m_List.GetCount(); }
 		bool GetEmptyLocations (TArray<int> *retList);
 		inline CLocationDef *GetLocation (int iIndex) { return &m_List[iIndex]; }
@@ -824,7 +839,7 @@ class CSystem
 
 		//	Locations & Territories
 		ALERROR AddTerritory (CTerritoryDef *pTerritory);
-		inline void BlockOverlappingLocations (void) { m_Locations.FillCloseLocations(); }
+		void BlockOverlappingLocations (void);
 		int CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &Criteria);
 		ALERROR CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, CLocationDef **retpLocation = NULL);
 		bool FindRandomLocation (const SLocationCriteria &Criteria, DWORD dwFlags, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, int *retiLocID);
@@ -920,7 +935,7 @@ class CSystem
 		DWORD m_fEnemiesInLRS:1;				//	TRUE if we found enemies in last LRS update
 		DWORD m_fEnemiesInSRS:1;				//	TRUE if we found enemies in last SRS update
 		DWORD m_fPlayerUnderAttack:1;			//	TRUE if at least one object has player as target
-		DWORD m_fSpare8:1;
+		DWORD m_fLocationsBlocked:1;			//	TRUE if we're already computed overlapping locations
 
 		DWORD m_fSpare:24;
 

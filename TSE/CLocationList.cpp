@@ -7,7 +7,6 @@
 
 const Metric OVERLAP_DIST =	25.0 * LIGHT_SECOND;
 
-
 CLocationList::CLocationList (void) : m_bMinDistCheck(false)
 
 //	CLocationList constructor
@@ -20,7 +19,7 @@ void CLocationList::FillCloseLocations (void)
 //	FillCloseLocations
 //
 //	Make sure that all locations are a minimum distance from
-//	each other. Fill any that are not
+//	each other. Fill any that are not.
 
 	{
 	int i, j;
@@ -96,6 +95,35 @@ void CLocationList::FillCloseLocations (void)
 			}
 
 		m_bMinDistCheck = true;
+		}
+	}
+
+void CLocationList::FillOverlappingWith (CSpaceObject *pObj)
+
+//	FillOverlappingWith
+//
+//	Fills any locations that overlap with the given object.
+
+	{
+	int i;
+
+	for (i = 0; i < m_List.GetCount(); i++)
+		{
+		CLocationDef *pLoc = GetLocation(i);
+		if (pLoc->IsBlocked() || !pLoc->IsEmpty())
+			continue;
+
+		CVector vPos = pLoc->GetOrbit().GetObjectPos();
+
+		if (pObj->PointInHitSizeBox(vPos)
+				&& pObj->PointInObject(pObj->GetPos(), vPos))
+			{
+			pLoc->SetBlocked();
+
+#ifdef DEBUG
+			::kernelDebugLogMessage("[%s]: Blocked location because it overlaps %s.", pObj->GetSystem()->GetName(), pObj->GetNounPhrase(0));
+#endif
+			}
 		}
 	}
 

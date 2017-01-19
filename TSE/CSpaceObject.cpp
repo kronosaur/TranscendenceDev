@@ -4597,7 +4597,7 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 		const COrbit *pOrbit;
 		bool bIsPlanet = (HasAttribute(CONSTLIT("planet"))
 				||  (GetScale() == scaleWorld
-					&& (GetPlanetarySize() >= 1000)
+					&& (GetPlanetarySize() >= MIN_PLANET_SIZE)
 					&& (pOrbit = GetMapOrbit())
 					&& (pOrbit->GetFocus().IsNull() || GetSystem()->IsStarAtPos(pOrbit->GetFocus()))));
 
