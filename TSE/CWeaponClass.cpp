@@ -2550,7 +2550,7 @@ Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevi
 	if (pShot == NULL)
 		return 0.0;
 
-	if (pTarget && !pTarget->CanMove())
+	if (pTarget && !pTarget->CanThrust())
 		{
         Metric rSpeed = pShot->GetAveSpeed();
 		return (rSpeed * (pShot->GetMaxLifetime() * 90 / 100)) + (128.0 * g_KlicksPerPixel);

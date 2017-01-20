@@ -701,7 +701,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're attacking a static target then find a good spot
 			//	and shoot from there.
 
-			else if (!pTarget->CanMove())
+			else if (!pTarget->CanThrust())
 				{
 				int iClock = g_pUniverse->GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
@@ -743,7 +743,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			//	If we're moving too slowly, move away
 
-			else if (pTarget->CanMove()
+			else if (pTarget->CanThrust()
 					&& (pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
 				{
 				DEBUG_COMBAT_OUTPUT("Speed away");
@@ -800,7 +800,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	NOTE: We need to check this before the code below because otherwise we
 			//	won't get here.
 
-			else if (!pTarget->CanMove())
+			else if (!pTarget->CanThrust())
 				{
 				int iClock = g_pUniverse->GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
@@ -917,7 +917,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	Compute the angle line along the target's motion (and make sure
 			//	it is aligned on a rotation angle, so we can get a shot in)
 
-			int iTargetMotion = (pTarget->CanMove() ?
+			int iTargetMotion = (pTarget->CanThrust() ?
 					pShip->AlignToRotationAngle(VectorToPolar(pTarget->GetVel()))
 					: pShip->AlignToRotationAngle(pShip->GetDestiny()));
 
@@ -1010,7 +1010,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			//	If we're moving too slowly, spiral out
 
-			else if (pTarget->CanMove()
+			else if (pTarget->CanThrust()
 					&& (pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
 				{
 				DEBUG_COMBAT_OUTPUT("Speed away");
@@ -1816,7 +1816,7 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 					m_iLastTurn = GetManeuver();
 					m_iLastTurnCount = 0;
 					}
-				else if (pShip->CanMove())
+				else if (pShip->CanThrust())
 					{
 					m_iLastTurnCount++;
 

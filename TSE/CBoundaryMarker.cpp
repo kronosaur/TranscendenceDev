@@ -49,7 +49,6 @@ ALERROR CBoundaryMarker::Create (CSystem *pSystem,
 		return ERR_MEMORY;
 
 	pMarker->Place(vStartPos);
-	pMarker->SetCannotMove();
 	pMarker->SetCannotBeHit();
 
 	//	Initialize

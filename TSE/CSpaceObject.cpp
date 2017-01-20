@@ -226,7 +226,6 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fInPOVLRS(false),
 		m_fCanBounce(false),
 		m_fIsBarrier(false),
-		m_fCannotMove(false),
 
 		m_fNoFriendlyFire(false),
 		m_fTimeStop(false),
@@ -263,7 +262,8 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fHasOnUpdateEvent(false),
 		m_fHasGetDockScreenEvent(false),
 		m_fHasOnAttackedByPlayerEvent(false),
-		m_fHasOnOrderChangedEvent(false)
+		m_fHasOnOrderChangedEvent(false),
+		m_fManualAnchor(false)
 
 //	CSpaceObject constructor
 
@@ -983,7 +983,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 //	DWORD		m_iControlsFrozen
 //	DWORD		flags
 //	CAttributeDataBlock	m_Data
-//	CVector		m_vOldPos (only if m_fCannotMove = false)
+//	CVector		m_vOldPos (only if !IsAnchored())
 //
 //	For each effect:
 //	IEffectPainter (0 == no more)
@@ -1065,7 +1065,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fInPOVLRS =					((dwLoad & 0x00000010) ? true : false);
 	pObj->m_fCanBounce =				((dwLoad & 0x00000020) ? true : false);
 	pObj->m_fIsBarrier =				((dwLoad & 0x00000040) ? true : false);
-	pObj->m_fCannotMove =				((dwLoad & 0x00000080) ? true : false);
+	bool bSavedOldPos =					((dwLoad & 0x00000080) ? false : true);
 	pObj->m_fNoFriendlyFire =			((dwLoad & 0x00000100) ? true : false);
 	pObj->m_fTimeStop =					((dwLoad & 0x00000200) ? true : false);
 	pObj->m_fPlayerTarget =				((dwLoad & 0x00000400) ? true : false);
@@ -1102,6 +1102,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fHasGetDockScreenEvent =	((dwLoad & 0x00000002) ? true : false);
 	pObj->m_fHasOnAttackedByPlayerEvent =	((dwLoad & 0x00000004) ? true : false);
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
+	pObj->m_fManualAnchor =				((dwLoad & 0x00000010) ? true : false);
 
 	//	No need to save the following
 
@@ -1120,13 +1121,10 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	//	Load additional data
 
-	if (!pObj->m_fCannotMove)
-		{
-		if (Ctx.dwVersion >= 65)
-			Ctx.pStream->Read((char *)&pObj->m_vOldPos, sizeof(CVector));
-		else
-			pObj->m_vOldPos = pObj->m_vPos - (pObj->m_vVel * g_SecondsPerUpdate);
-		}
+	if (bSavedOldPos && Ctx.dwVersion >= 65)
+		Ctx.pStream->Read((char *)&pObj->m_vOldPos, sizeof(CVector));
+	else
+		pObj->m_vOldPos = pObj->m_vPos - (pObj->m_vVel * g_SecondsPerUpdate);
 
 	//	Subscriptions
 	//
@@ -5834,7 +5832,7 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 					//	Compute the resulting velocities depending
 					//	on whether the barrier moves or not
 
-					if (pBarrier->CanMove())
+					if (!pBarrier->IsAnchored())
 						{
 						//	For a head-on elastic collision where
 						//	the second object has velocity 0, the equations are:
@@ -7657,7 +7655,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 //	DWORD		m_iControlsFrozen
 //	DWORD		flags
 //	CAttributeDataBlock	m_Data
-//	CVector		m_vOldPos (only if m_fCannotMove = false)
+//	CVector		m_vOldPos (only if !IsAnchored())
 //	CSpaceObjectList m_SubscribedObjs
 //
 //	For each effect:
@@ -7709,7 +7707,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fInPOVLRS					? 0x00000010 : 0);
 	dwSave |= (m_fCanBounce					? 0x00000020 : 0);
 	dwSave |= (m_fIsBarrier					? 0x00000040 : 0);
-	dwSave |= (m_fCannotMove				? 0x00000080 : 0);
+	dwSave |= (IsAnchored()					? 0x00000080 : 0);
 	dwSave |= (m_fNoFriendlyFire			? 0x00000100 : 0);
 	dwSave |= (m_fTimeStop					? 0x00000200 : 0);
 	dwSave |= (m_fPlayerTarget				? 0x00000400 : 0);
@@ -7744,6 +7742,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fHasGetDockScreenEvent		? 0x00000002 : 0);
 	dwSave |= (m_fHasOnAttackedByPlayerEvent	? 0x00000004 : 0);
 	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);
+	dwSave |= (m_fManualAnchor				? 0x00000010 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data
@@ -7752,7 +7751,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 
 	//	Write out other stuff
 
-	if (!m_fCannotMove)
+	if (!IsAnchored())
 		pStream->Write((char *)&m_vOldPos, sizeof(CVector));
 
 	//	Subscriptions

@@ -229,7 +229,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 			//	Every once in a while check to see if we've wandered near
 			//	an enemy station
 
-			if (m_pShip->IsDestinyTime(41) && !IsImmobile() && m_pTarget->CanMove())
+			if (m_pShip->IsDestinyTime(41) && !IsImmobile() && m_pTarget->CanThrust())
 				{
 				CSpaceObject *pEnemy = m_pShip->GetNearestEnemyStation(WANDER_SAFETY_RANGE);
 				if (pEnemy 

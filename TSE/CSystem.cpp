@@ -4999,7 +4999,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 		if (pObj 
                 && !pObj->IsDestroyed()
-                && pObj->IsMobile() 
+                && !pObj->IsAnchored() 
                 && !pObj->IsTimeStopped())
 			{
 			//	Move the objects
@@ -5142,8 +5142,7 @@ void CSystem::UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj)
 		CSpaceObject *pObj = Objs.GetObj(i);
 		if (pObj == pGravityObj 
 				|| pObj->IsDestroyed()
-				|| !pObj->IsMobile()
-				|| pObj->GetDockedObj() != NULL)
+				|| pObj->IsAnchored())
 			continue;
 
 		//	Skip objects outside the maximum range

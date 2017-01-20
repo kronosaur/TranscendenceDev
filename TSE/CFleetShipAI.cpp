@@ -256,7 +256,7 @@ void CFleetShipAI::Behavior (SUpdateCtx &Ctx)
 		case stateAttackTarget:
 			{
 			ASSERT(m_pTarget);
-			if (m_pTarget->CanMove())
+			if (m_pTarget->CanThrust())
 				m_AICtx.ImplementAttackTarget(m_pShip, m_pTarget);
 			else
 				{

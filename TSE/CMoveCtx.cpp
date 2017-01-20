@@ -39,7 +39,7 @@ void CMoveCtx::AddObj (CSpaceObject *pObj)
 		pEntry->pObj = pObj;
 		pEntry->vOldPos = pObj->GetPos();
 
-		pEntry->bMobile = (pObj->IsMobile() && !pObj->IsTimeStopped());
+		pEntry->bMobile = (!pObj->IsAnchored() && !pObj->IsTimeStopped());
 		pEntry->bBarrier = pObj->IsBarrier();
 
 		//	If we moved this tick, then compute bounds around the whole motion

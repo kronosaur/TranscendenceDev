@@ -1446,6 +1446,12 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	pShip->m_DockingPorts.InitPorts(pShip, pShip->m_pClass->GetDockingPortPositions());
 
+	//	If we're a ship with 0 thrust then it means that we're a turret, so we 
+	//	set the anchor flag so that we don't get pulled by gravity.
+
+	if (!pShip->CanThrust())
+		pShip->SetManualAnchor();
+
 	//	If any of our items need an OnInstall call, raise the
 	//	event now.
 
@@ -3928,8 +3934,7 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 	if (m_pExitGate == Ctx.pObj)
 		{
-		if (m_pExitGate->IsMobile())
-			Place(m_pExitGate->GetPos());
+		Place(m_pExitGate->GetPos());
 
 		m_iExitGateTimer = 0;
 		if (!IsVirtual())
@@ -7476,8 +7481,7 @@ void CShip::UpdateInactive (void)
 
         if (--m_iExitGateTimer == 0)
             {
-            if (m_pExitGate && m_pExitGate->IsMobile())
-                Place(m_pExitGate->GetPos());
+			Place(m_pExitGate->GetPos());
 
             if (!IsVirtual())
                 ClearCannotBeHit();

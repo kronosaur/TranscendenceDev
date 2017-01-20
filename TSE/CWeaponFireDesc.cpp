@@ -268,7 +268,7 @@ bool CWeaponFireDesc::CanHit (CSpaceObject *pObj) const
 	//	Can we hit immobile objects
 
 	if (m_fNoImmobileHits
-			&& !pObj->CanMove())
+			&& !pObj->CanThrust())
 		return false;
 
 	//	Can we hit ships?

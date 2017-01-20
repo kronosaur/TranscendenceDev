@@ -163,6 +163,7 @@ ALERROR CParticleEffect::Create (CSystem *pSystem,
 	}
 
 ALERROR CParticleEffect::CreateEmpty (CSystem *pSystem,
+									  CSpaceObject *pAnchor,
 									  const CVector &vPos,
 									  const CVector &vVel,
 									  CParticleEffect **retpEffect)
@@ -181,6 +182,7 @@ ALERROR CParticleEffect::CreateEmpty (CSystem *pSystem,
 
 	pParticles->Place(vPos, vVel);
 	pParticles->SetObjectDestructionHook();
+	pParticles->m_pAnchor = pAnchor;
 
 	//	Add to system
 

@@ -241,7 +241,7 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 			//	Every once in a while check to see if we've wandered near
 			//	an enemy station
 
-			else if (pShip->IsDestinyTime(41) && !Ctx.IsImmobile() && m_Objs[objTarget]->CanMove())
+			else if (pShip->IsDestinyTime(41) && !Ctx.IsImmobile() && m_Objs[objTarget]->CanThrust())
 				{
 				CSpaceObject *pEnemy = pShip->GetNearestEnemyStation(WANDER_SAFETY_RANGE);
 				if (pEnemy 
@@ -255,7 +255,7 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
             //  See if we've wandered outside our area
 
-            else if (m_fStayInArea && pShip->IsDestinyTime(29) && m_Objs[objTarget]->CanMove())
+            else if (m_fStayInArea && pShip->IsDestinyTime(29) && m_Objs[objTarget]->CanThrust())
                 {
                 Metric rDist;
                 CSpaceObject *pCenter = GetTargetArea(pShip, &rDist);

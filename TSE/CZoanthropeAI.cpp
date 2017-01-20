@@ -375,7 +375,7 @@ void CZoanthropeAI::ImplementCombatManeuvers (CSpaceObject *pTarget)
 
 			iFireDir = -1;
 			}
-		else if (pTarget->CanMove()
+		else if (pTarget->CanThrust()
 				&& (m_pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
 			{
 			m_AICtx.ImplementSpiralOut(m_pShip, vTarget);

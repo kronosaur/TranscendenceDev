@@ -100,7 +100,7 @@ void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 	//	See if we should take a nav path
 
 	if (pShip->GetDistance2(pOrderTarget) > NAV_PATH_THRESHOLD2
-			&& !pOrderTarget->CanMove()
+			&& !pOrderTarget->CanThrust()
 			&& Ctx.CalcNavPath(pShip, pOrderTarget))
 		m_iState = stateOnCourseViaNavPath;
 

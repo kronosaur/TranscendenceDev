@@ -381,7 +381,7 @@ bool CStation::CanBlock (CSpaceObject *pObj)
 
 	{
 	return (m_fBlocksShips 
-			|| (pObj->GetCategory() == catStation && pObj->IsMobile()));
+			|| (pObj->GetCategory() == catStation && !pObj->IsAnchored()));
 	}
 
 CurrencyValue CStation::ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
@@ -533,6 +533,7 @@ void CStation::CreateDestructionEffect (void)
 
 	CParticleEffect *pEffect;
 	CParticleEffect::CreateEmpty(GetSystem(),
+			this,
 			GetPos(),
 			GetVel(),
 			&pEffect);
@@ -705,11 +706,9 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_fDestroyIfEmpty = false;
     pStation->m_fIsSegment = CreateCtx.bIsSegment;
 
-	//	We generally don't move
+	//	Handle moving stations
 
-	if (!pType->IsMobile())
-		pStation->SetCannotMove();
-	else
+	if (pType->IsMobile())
 		{
 		//	Mobile objects cannot have a mass of 0 (otherwise the bouncing routines
 		//	might fail).
@@ -1850,7 +1849,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	If this is a momentum attack then we are pushed
 
 	int iMomentum;
-	if (IsMobile() && (iMomentum = Ctx.Damage.GetMomentumDamage()))
+	if (!IsAnchored() && (iMomentum = Ctx.Damage.GetMomentumDamage()))
 		{
 		CVector vAccel = PolarToVector(Ctx.iDirection, -10 * iMomentum * iMomentum);
 		Accelerate(vAccel, g_MomentumConstant);
@@ -3621,7 +3620,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	if (IsMobile() && !GetVel().IsNull())
+	if (!IsAnchored() && !GetVel().IsNull())
 		{
 		//	If we're moving really slowly, force to 0. We do this so that we can optimize calculations
 		//	and not have to compute wreck movement down to infinitesimal distances.

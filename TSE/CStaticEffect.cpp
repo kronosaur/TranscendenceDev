@@ -41,7 +41,6 @@ ALERROR CStaticEffect::Create (CEffectCreator *pType,
 		return ERR_MEMORY;
 
 	pEffect->Place(vPos);
-	pEffect->SetCannotMove();
 
 	ASSERT(pType);
 	pEffect->m_pPainter = pType->CreatePainter(CCreatePainterCtx());
