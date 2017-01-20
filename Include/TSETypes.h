@@ -267,6 +267,7 @@ enum NounPhraseFlags
 	nounTitleCapitalize		= 0x00000400,	//	Title-capitalize
 	nounInstalledState		= 0x00000800,	//	Prefix with "installed" if item is installed
 	nounCountAlways			= 0x00001000,	//	Always prefix with count.
+	nounDuplicateModifier	= 0x00002000,	//	If duplicate device, add disambiguating modifier
 	};
 
 enum FrequencyTypes

@@ -442,7 +442,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 			if (Item.IsInstalled())
 				{
 				CString sEnhancement = Item.GetEnhancedDesc(pShip);
-				CString sItemName = Item.GetNounPhrase(nounActual | nounCountOnly | nounShort);
+				CString sItemName = Item.GetNounPhrase(CItemCtx(), nounActual | nounCountOnly | nounShort);
 				CString sLine = (sEnhancement.IsBlank() ? sItemName : strPatternSubst(CONSTLIT("%s [%s]"), sItemName, sEnhancement));
 
 				bool bInserted;
@@ -464,7 +464,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 			//	Redo the line now that we know the proper count
 
 			CString sEnhancement = InstalledItems[j].GetEnhancedDesc(pShip);
-			CString sItemName = InstalledItems[j].GetNounPhrase(nounActual | nounCountOnly);
+			CString sItemName = InstalledItems[j].GetNounPhrase(CItemCtx(), nounActual | nounCountOnly);
 			CString sLine = (sEnhancement.IsBlank() ? sItemName : strPatternSubst(CONSTLIT("%s [%s]"), sItemName, sEnhancement));
 
 			//	Compute the sort order
@@ -515,7 +515,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 			if (!Item.IsInstalled())
 				{
 				CString sEnhancement = Item.GetEnhancedDesc(pShip);
-				CString sItemName = Item.GetNounPhrase(nounActual | nounCountOnly);
+				CString sItemName = Item.GetNounPhrase(CItemCtx(), nounActual | nounCountOnly);
 				CString sLine = (sEnhancement.IsBlank() ? sItemName : strPatternSubst(CONSTLIT("%s [%s]"), sItemName, sEnhancement));
 				CString sSort = strPatternSubst(CONSTLIT("%03d%s"), 100 - Item.GetType()->GetLevel(), sLine);
 

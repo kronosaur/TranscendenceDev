@@ -2932,7 +2932,7 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 		if (retsLabel)
 			{
 			if (GetCategory() == itemcatLauncher)
-				*retsLabel = Item.GetNounPhrase(nounCapitalize);
+				*retsLabel = Item.GetNounPhrase(Ctx, nounCapitalize);
 			else
 				*retsLabel = CString();
 			}

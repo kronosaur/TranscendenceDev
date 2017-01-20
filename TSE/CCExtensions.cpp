@@ -4199,7 +4199,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pCtx->InEvent(eventGetName) && pCtx->GetItemType() == Item.GetType())
 				dwFlags |= nounNoEvent;
 
-			pResult = pCC->CreateString(Item.GetNounPhrase(dwFlags));
+			pResult = pCC->CreateString(Item.GetNounPhrase(CItemCtx(), dwFlags));
 			break;
 			}
 

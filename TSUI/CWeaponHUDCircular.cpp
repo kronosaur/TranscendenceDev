@@ -273,6 +273,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 	const CG16bitFont &LargeBoldFont = VI.GetFont(fontLargeBold);
 
+	CItemCtx ItemCtx(pShip, pDevice);
 	CDeviceClass *pClass = pDevice->GetClass();
 
 	//	Figure out what we're painting
@@ -280,7 +281,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 	CString sVariant;
 	int iAmmoLeft;
 	pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft);
-	CString sDevName = pClass->GetName();
+	CString sDevName = pDevice->GetItem()->GetNounPhrase(ItemCtx, nounDuplicateModifier);
 	CString sName = (sVariant.IsBlank() ? sDevName : sVariant);
 
 	//	Figure out metrics for the background

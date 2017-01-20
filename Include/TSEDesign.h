@@ -3862,6 +3862,7 @@ class CInstalledDevice
 		inline bool Has3DPos (void) const { return m_f3DPosition; }
 		inline void IncTemperature (int iChange) { m_iTemperature += iChange; }
 		inline bool IsDirectional (void) const { return (m_iMinFireArc != m_iMaxFireArc); }
+		inline bool IsDuplicate (void) const { return (m_fDuplicate ? true : false); }
 		inline bool IsEmpty (void) const { return m_pClass == NULL; }
 		inline bool IsEnabled (void) const { return m_fEnabled; }
 		inline bool IsExternal (void) const { return m_fExternal; }
@@ -3876,6 +3877,7 @@ class CInstalledDevice
 		inline void SetActivateDelay (int iDelay) { m_iActivateDelay = iDelay; }
 		inline void SetData (DWORD dwData) { m_dwData = dwData; }
 		inline void SetDeviceSlot (int iDev) { m_iDeviceSlot = iDev; }
+		inline void SetDuplicate (bool bDuplicate = true) { m_fDuplicate = bDuplicate; }
 		inline void SetEnabled (bool bEnabled) { m_fEnabled = bEnabled; }
 		void SetEnhancements (CItemEnhancementStack *pStack);
 		inline void SetFireAngle (int iAngle) { m_iFireAngle = iAngle; }
@@ -4009,7 +4011,7 @@ class CInstalledDevice
 		DWORD m_fLinkedFireAlways:1;			//	If TRUE, lkfAlways
 		DWORD m_fLinkedFireTarget:1;			//	If TRUE, lkfTarget
 		DWORD m_fLinkedFireEnemy:1;				//	If TRUE, lkfEnemy
-		DWORD m_fSpare7:1;
+		DWORD m_fDuplicate:1;					//	If TRUE, we have multiple version of the same item type installed
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:16;						//	Spare flags

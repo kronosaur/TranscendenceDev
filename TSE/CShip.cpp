@@ -364,12 +364,25 @@ void CShip::CalcDeviceBonus (void)
 
 	int i, j;
 
+	//	Keep track of duplicate installed devices
+
+	TSortMap<DWORD, int> DeviceTypes;
+
 	//	Loop over all devices
 
 	for (i = 0; i < GetDeviceCount(); i++)
 		if (!m_Devices[i].IsEmpty())
 			{
             CItemCtx ItemCtx(this, &m_Devices[i]);
+
+			//	Keep track of device types to see if we have duplicates
+
+			bool bNewDevice;
+			int *pCount = DeviceTypes.SetAt(m_Devices[i].GetClass()->GetUNID(), &bNewDevice);
+			if (bNewDevice)
+				*pCount = 1;
+			else
+				*pCount += 1;
 
 			//	Keep an enhancement stack for this device
 
@@ -439,6 +452,15 @@ void CShip::CalcDeviceBonus (void)
 			//	Take ownership of the stack.
 
 			m_Devices[i].SetEnhancements(pEnhancements);
+			}
+
+	//	Mark devices as duplicate (or not)
+
+	for (i = 0; i < GetDeviceCount(); i++)
+		if (!m_Devices[i].IsEmpty())
+			{
+			int *pCount = DeviceTypes.GetAt(m_Devices[i].GetClass()->GetUNID());
+			m_Devices[i].SetDuplicate(*pCount > 1);
 			}
 
 	//	Make sure we don't overflow fuel (in case we downgrade the reactor)
@@ -3129,10 +3151,10 @@ int CShip::GetStealth (void) const
 	{
 	int iStealth = m_iStealth;
 
-	//	+2 stealth if in nebula
+	//	+6 stealth if in nebula, which decreases detection range by about 3.
 
 	if (m_fHiddenByNebula)
-		iStealth += 2;
+		iStealth += 6;
 
 	return Min((int)stealthMax, iStealth);
 	}

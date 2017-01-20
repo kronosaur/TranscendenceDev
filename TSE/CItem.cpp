@@ -914,7 +914,7 @@ int CItem::GetMassKg (void) const
 	return m_pItemType->GetMassKg(CItemCtx(*this));
 	}
 
-CString CItem::GetNounPhrase (DWORD dwFlags) const
+CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 
 //	GetNounPhrase
 //
@@ -975,6 +975,17 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 				sModifier.Append(CONSTLIT("damaged "));
 			else if (IsEnhanced() || GetMods().IsEnhancement())
 				sModifier.Append(CONSTLIT("enhanced "));
+			}
+
+		if (dwFlags & nounDuplicateModifier)
+			{
+			CInstalledDevice *pDevice;
+			if ((pDevice = Ctx.GetDevice())
+					&& pDevice->IsDuplicate())
+				{
+				if (m_pItemType->IsScalable())
+					sModifier.Append(strPatternSubst(CONSTLIT("level %d "), GetLevel()));
+				}
 			}
 		}
 

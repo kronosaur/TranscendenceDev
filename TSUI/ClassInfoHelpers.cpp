@@ -241,7 +241,7 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 		sSpeedNumber = strPatternSubst(CONSTLIT("%d.%02dc"), iFTL, iFrac);
 		}
 
-	CString sSpeedHeader = (pDriveItem ? pDriveItem->GetNounPhrase(nounActual) : CONSTLIT("main drive"));
+	CString sSpeedHeader = (pDriveItem ? pDriveItem->GetNounPhrase(CItemCtx(), nounActual) : CONSTLIT("main drive"));
 
 	//	Add thrust/mass ratio
 
@@ -356,7 +356,7 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	pName->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
 	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
 	pName->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pName->SetPropertyString(PROP_TEXT, Item.GetNounPhrase(nounActual));
+	pName->SetPropertyString(PROP_TEXT, Item.GetNounPhrase(CItemCtx(), nounActual));
 	if (bRightAlign)
 		pName->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_RIGHT);
 
@@ -431,7 +431,7 @@ void CUIHelper::CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescLis
 	//	Get the icon (OK if this is NULL)
 
 	CItemType *pItemIcon = (pReactorItem ? pReactorItem->GetType() : g_pUniverse->FindItemType(NOVA25_REACTOR_UNID));
-	CString sHeader = (pReactorItem ? CTextBlock::Escape(pReactorItem->GetNounPhrase(nounActual)) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(pClass->GetShortName())));
+	CString sHeader = (pReactorItem ? CTextBlock::Escape(pReactorItem->GetNounPhrase(CItemCtx(), nounActual)) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(pClass->GetShortName())));
 
 	//	Create the info
 

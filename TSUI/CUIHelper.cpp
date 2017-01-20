@@ -1028,7 +1028,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	LargeBold.DrawText(Dest,
 			rcTitle,
 			rgbColorTitle,
-			Item.GetNounPhrase(dwNounPhraseFlags),
+			Item.GetNounPhrase(Ctx, dwNounPhraseFlags),
 			0,
 			CG16bitFont::SmartQuotes | CG16bitFont::TruncateLine,
 			&cyHeight);

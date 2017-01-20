@@ -36,7 +36,8 @@ CInstalledDevice::CInstalledDevice (void) :
 
 		m_fLinkedFireAlways(false),
 		m_fLinkedFireTarget(false),
-		m_fLinkedFireEnemy(false)
+		m_fLinkedFireEnemy(false),
+		m_fDuplicate(false)
 	{
 	}
 
@@ -97,6 +98,8 @@ CInstalledDevice &CInstalledDevice::operator= (const CInstalledDevice &Obj)
 	m_fLinkedFireAlways = Obj.m_fLinkedFireAlways;
 	m_fLinkedFireTarget = Obj.m_fLinkedFireTarget;
 	m_fLinkedFireEnemy = Obj.m_fLinkedFireEnemy;
+
+	m_fDuplicate = Obj.m_fDuplicate;
 
 	return *this;
 	}
@@ -364,6 +367,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 	m_fTriggered = false;
 	m_fRegenerating = false;
 	m_fLastActivateSuccessful = false;
+	m_fDuplicate = false;
 
 	//	Call the class
 
@@ -611,6 +615,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	m_fLinkedFireTarget =	((dwLoad & 0x00002000) ? true : false);
 	m_fLinkedFireEnemy =	((dwLoad & 0x00004000) ? true : false);
 	m_fExternal =			((dwLoad & 0x00008000) ? true : false);
+	m_fDuplicate =			((dwLoad & 0x00010000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -912,6 +917,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fLinkedFireTarget ?	0x00002000 : 0);
 	dwSave |= (m_fLinkedFireEnemy ?		0x00004000 : 0);
 	dwSave |= (m_fExternal ?			0x00008000 : 0);
+	dwSave |= (m_fDuplicate ?			0x00010000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
