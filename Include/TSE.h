@@ -313,8 +313,7 @@ CString ComposeNounPhrase (const CString &sNoun,
 void ComputePercentages (int iCount, int *pTable);
 CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize, bool bShortName);
 
-#define VISUAL_RANGE_INDEX		6
-#define RANGE_INDEX_COUNT		9
+#define RANGE_INDEX_COUNT		16
 Metric RangeIndex2Range (int iIndex);
 
 CString ReactorPower2String (int iPower);
