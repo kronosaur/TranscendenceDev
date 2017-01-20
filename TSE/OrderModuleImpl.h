@@ -277,6 +277,52 @@ class CSendMessageOrder : public IOrderModule
 		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderSendMessage; }
 	};
 
+class CSentryOrder : public IOrderModule
+	{
+	public:
+		CSentryOrder (void);
+
+	protected:
+
+		//	IOrderModule virtuals
+
+		virtual void OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire) override;
+		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
+		virtual void OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) override;
+		virtual DWORD OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
+		virtual void OnDestroyed (CShip *pShip, SDestroyCtx &Ctx) override;
+		virtual CSpaceObject *OnGetBase (void) override { return m_Objs[objBase]; }
+		virtual IShipController::OrderTypes OnGetOrder (void) override { return IShipController::orderSentry; }
+		virtual CSpaceObject *OnGetTarget (void) override { return m_Objs[objTarget]; }
+		virtual void OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj, bool *retbCancelOrder) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
+
+	private:
+		enum Objs
+			{
+			objBase =		0,
+			objTarget =		1,
+
+			objCount =		2,
+			};
+
+		void AttackEnemies (CShip *pShip, CAIBehaviorCtx &Ctx);
+
+		int m_iCountdown;						//	Stop after this time
+
+		DWORD m_fIsAttacking:1;
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:24;
+	};
+
 class CWaitOrder : public IOrderModule
 	{
 	public:

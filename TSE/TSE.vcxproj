@@ -393,6 +393,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CSendMessageOrder.cpp" />
+    <ClCompile Include="CSentryOrder.cpp" />
     <ClCompile Include="CSFXOptions.cpp" />
     <ClCompile Include="CShipArmorDesc.cpp" />
     <ClCompile Include="CShipArmorSegmentDesc.cpp" />

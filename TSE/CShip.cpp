@@ -6929,8 +6929,9 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 				bDockWithBase = true;
 				break;
 
-			case IShipController::orderPatrol:
 			case IShipController::orderMine:
+			case IShipController::orderPatrol:
+			case IShipController::orderSentry:
 				pOrderTarget = Ctx.pBase;
 				bIsSubordinate = true;
 				break;

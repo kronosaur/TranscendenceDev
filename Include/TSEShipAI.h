@@ -233,6 +233,7 @@ class IShipController
 			orderHoldAndAttack,			//	pTarget = target to destroy; dwData = timer.
 			orderGoToPos,				//	dwData = vector destination
 			orderWaitForThreat,			//	dwData = seconds to wait (0 == indefinitely)
+			orderSentry,				//	Sentry mode (for turrets) pTarget = obj to guard; dwData = timer (0 == indefinitely)
 			};
 
 		enum EShipStatusNotifications

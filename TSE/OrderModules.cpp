@@ -118,6 +118,9 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderSendMessage:
 			return new CSendMessageOrder;
 
+		case IShipController::orderSentry:
+			return new CSentryOrder;
+
 		case IShipController::orderHold:
 		case IShipController::orderWait:
 		case IShipController::orderWaitForEnemy:

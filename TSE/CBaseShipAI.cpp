@@ -861,6 +861,7 @@ bool CBaseShipAI::IsAngryAt (CSpaceObject *pObj) const
 		{
 		case IShipController::orderGuard:
 		case IShipController::orderPatrol:
+		case IShipController::orderSentry:
 			return GetCurrentOrderTarget()->IsAngryAt(pObj);
 
 		default:

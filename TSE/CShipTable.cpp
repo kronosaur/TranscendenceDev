@@ -670,12 +670,13 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 		{
 		switch (m_iOrder)
 			{
-			case IShipController::orderGuard:
-			case IShipController::orderMine:
-			case IShipController::orderGateOnThreat:
-			case IShipController::orderPatrol:
 			case IShipController::orderEscort:
 			case IShipController::orderFollow:
+			case IShipController::orderGateOnThreat:
+			case IShipController::orderGuard:
+			case IShipController::orderMine:
+			case IShipController::orderPatrol:
+			case IShipController::orderSentry:
 				GeneratorCtx.pBase = Ctx.pGate;
 				break;
 			}

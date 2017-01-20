@@ -146,6 +146,7 @@ static const SOrderTypeData g_OrderTypes[] =
 		{	"holdAndAttack",			"o",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
 		{	"gotoPos",					"-",	"v",	0 },
 		{	"waitForThreat",			"-",	"i",	0 },
+		{	"sentry",					"o",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
 	};
 
 #define ORDER_TYPES_COUNT		(sizeof(g_OrderTypes) / sizeof(g_OrderTypes[0]))

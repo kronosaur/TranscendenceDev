@@ -2633,6 +2633,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		SShipCreateCtx CreateCtx;
 		CreateCtx.pSystem = pCtx->pSystem;
 		CreateCtx.vPos = OrbitDesc.GetObjectPos();
+		CreateCtx.pBase = pCtx->pStation;
 		if (iCount > 1)
 			CreateCtx.PosSpread = DiceRange(6, 2, 1);
 
