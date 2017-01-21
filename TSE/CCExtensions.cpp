@@ -317,6 +317,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_ORDER_IMMEDIATE		67
 #define FN_SHIP_AI_SETTING			68
 #define FN_SHIP_DAMAGE_ARMOR		69
+#define FN_SHIP_CONSUME_FUEL		70
 
 ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -874,9 +875,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//			string =  custom fail reason
 			"iv",	0,	},
 
-		{	"shpConsumeFuel",				fnShipSetOld,		FN_SHIP_FUEL,
-			"(shpConsumeFuel ship fuel)",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"shpConsumeFuel",				fnShipSet,			FN_SHIP_CONSUME_FUEL,
+			"(shpConsumeFuel ship fuel [useType]) -> fuelLeft\n\n"
+				
+			"useType:\n\n"
+			
+			"   'consume\n"
+			"   'drain\n",
+
+			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpDamageArmor",				fnShipSet,			FN_SHIP_DAMAGE_ARMOR,
 			"(shpDamageArmor ship armorSegment damageType damage ['noSRSFlash]) -> damage done",
@@ -8458,6 +8465,20 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_SHIP_CONSUME_FUEL:
+			{
+			Metric rFuel = pArgs->GetElement(1)->GetDoubleValue();
+			CString sUse = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetStringValue() : NULL_STR);
+			CReactorDesc::EFuelUseTypes iUse;
+			if (strEquals(sUse, CONSTLIT("drain")))
+				iUse = CReactorDesc::fuelDrain;
+			else
+				iUse = CReactorDesc::fuelConsume;
+
+			pShip->ConsumeFuel(rFuel, iUse);
+			return pCC->CreateDouble(Min(pShip->GetFuelLeft(), pShip->GetMaxFuel()));
+			}
+
 		case FN_SHIP_DAMAGE_ARMOR:
 			{
 			CInstalledArmor *pArmor = GetArmorSectionArg(*pCC, pArgs->GetElement(1), pShip);
@@ -8819,14 +8840,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			pShip->AddOverlay(pField, 0, 0, 0, iLifetime);
 			pResult = pCC->CreateTrue();
-			break;
-			}
-
-		case FN_SHIP_FUEL:
-			{
-			pShip->ConsumeFuel(pArgs->GetElement(1)->GetDoubleValue());
-			pResult = pCC->CreateDouble(Min(pShip->GetFuelLeft(), pShip->GetMaxFuel()));
-			pArgs->Discard(pCC);
 			break;
 			}
 

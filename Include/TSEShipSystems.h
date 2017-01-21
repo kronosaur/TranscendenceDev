@@ -406,6 +406,14 @@ class CDriveDesc
 class CReactorDesc
 	{
     public:
+		enum EFuelUseTypes
+			{
+			fuelNone,
+
+			fuelConsume,						//	Normal fuel consumption
+			fuelDrain,							//	Fuel drained/lost by some process
+			};
+
         struct SStdStats
             {
             int iMaxPower;                  //  Max power (1/10 MW)

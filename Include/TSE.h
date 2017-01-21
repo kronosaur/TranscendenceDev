@@ -962,7 +962,7 @@ class CSpaceObject : public CObject
 
 		//	Fuel
 
-		virtual void ConsumeFuel (Metric rFuel) { }
+		virtual void ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse = CReactorDesc::fuelConsume) { }
 		virtual bool IsOutOfPower (void) { return false; }
 		virtual void Refuel (Metric Fuel) { }
 		virtual void Refuel (const CItem &Fuel) { }

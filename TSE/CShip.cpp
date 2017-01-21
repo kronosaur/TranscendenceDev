@@ -1218,7 +1218,7 @@ void CShip::ClearParalyzed (void)
 	m_iParalysisTimer = 0;
 	}
 
-void CShip::ConsumeFuel (Metric rFuel)
+void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
 
 //	ConsumeFuel
 //
@@ -1232,7 +1232,7 @@ void CShip::ConsumeFuel (Metric rFuel)
         Metric rConsumed = Min(m_rFuelLeft, rFuel);
 
         m_rFuelLeft -= rConsumed;
-        m_pController->OnFuelConsumed(rConsumed);
+        m_pController->OnFuelConsumed(rConsumed, iUse);
         }
 	}
 

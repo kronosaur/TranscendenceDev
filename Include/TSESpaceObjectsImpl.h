@@ -1073,7 +1073,7 @@ class CShip : public CSpaceObject
 		virtual bool CanThrust (void) const { return (GetThrust() > 0.0); }
 		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue) override;
 		virtual bool ClassCanAttack (void) override { return true; }
-		virtual void ConsumeFuel (Metric rFuel) override;
+		virtual void ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse = CReactorDesc::fuelConsume) override;
 		virtual CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue) override;
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) override;
 		virtual void DeactivateShields (void) override;

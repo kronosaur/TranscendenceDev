@@ -310,7 +310,7 @@ class IShipController
 		virtual void OnDocked (CSpaceObject *pObj) { }
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { }
-        virtual void OnFuelConsumed (Metric rFuel) { }
+        virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) { }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) { CancelDocking(); }
 		virtual void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice) { }
 		virtual void OnItemDamaged (const CItem &Item, int iHP) { }
