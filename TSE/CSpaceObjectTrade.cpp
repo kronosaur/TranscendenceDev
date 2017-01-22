@@ -166,9 +166,8 @@ CEconomyType *CSpaceObject::GetDefaultEconomy (void)
 		return pTradeOverride->GetEconomyType();
 
 	CDesignType *pType = GetType();
-	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-	if (pTrade)
-		return pTrade->GetEconomyType();
+	if (pType)
+		return pType->GetEconomyType();
 
 	return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
 	}
@@ -180,14 +179,9 @@ DWORD CSpaceObject::GetDefaultEconomyUNID (void)
 //	Returns the default economy
 	
 	{
-	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride)
-		return pTradeOverride->GetEconomyType()->GetUNID();
-
-	CDesignType *pType = GetType();
-	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-	if (pTrade)
-		return pTrade->GetEconomyType()->GetUNID();
+	CEconomyType *pCurrency = GetDefaultEconomy();
+	if (pCurrency)
+		return pCurrency->GetUNID();
 
 	return DEFAULT_ECONOMY_UNID;
 	}

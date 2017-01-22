@@ -1707,6 +1707,21 @@ void CDesignType::AddUniqueHandlers (TSortMap<CString, SEventHandlerDesc> *retIn
 		m_pInheritFrom->AddUniqueHandlers(retInheritedHandlers);
 	}
 
+CEconomyType *CDesignType::GetEconomyType (void) const
+
+//	GetEconomyType
+//
+//	Returns the economy type used by this type. Subclasses should override this
+//	if necessary.
+
+	{
+	CTradingDesc *pTrade = GetTradingDesc();
+	if (pTrade)
+		return pTrade->GetEconomyType();
+
+	return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+	}
+
 void CDesignType::GetEventHandlers (const CEventHandler **retpHandlers, TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers)
 
 //	GetEventHandlers

@@ -2208,6 +2208,34 @@ const CDriveDesc &CShipClass::GetDriveDesc (const CItem **retpDriveItem) const
     return m_Perf.GetDriveDesc();
     }
 
+CEconomyType *CShipClass::GetEconomyType (void) const
+
+//	GetEconomyType
+//
+//	Returns the economy type used by this ship.
+
+	{
+	//	If we have a trading descriptor, use that.
+
+	CTradingDesc *pTrade = GetTradingDesc();
+	if (pTrade)
+		return pTrade->GetEconomyType();
+
+	//	Otherwise, see if we have a hull price from the player settings
+
+	const CPlayerSettings *pPlayer = GetPlayerSettings();
+	if (pPlayer)
+		{
+		CEconomyType *pCurrency = pPlayer->GetHullValue().GetCurrencyType();
+		if (pCurrency)
+			return pCurrency;
+		}
+
+	//	Otherwise, default to credits
+
+	return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+	}
+
 CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const
 
 //	GetExplosionType
