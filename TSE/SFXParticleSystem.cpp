@@ -46,6 +46,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)  override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)  override{ Paint(Dest, x, y, Ctx); }
 		virtual void SetPos (const CVector &vPos) override { m_Particles.SetOrigin(vPos); }
+		virtual bool UsesOrigin (void) const override;
 
 	protected:
 		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
@@ -476,10 +477,18 @@ void CParticleSystemEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBounds
 		m_Particles.Move(vToOldPos);
 		}
 
-	//	If we're using the object as the center, then set the origin
+	//	The origin is used for hit testing, to convert from the particle 
+	//	coordinates, which are relative to the object, to absolute system
+	//	coordinates.
+	//
+	//	Overlays usually set the origin because they are not always on the 
+	//	object center.
 
 	if (m_bUseObjectCenter && Ctx.pObj)
 		m_Particles.SetOrigin(Ctx.pObj->GetPos());
+
+	else if (Ctx.bUseOrigin)
+		m_Particles.SetOrigin(Ctx.vOrigin);
 
 	//	Bounds are always changing
 
@@ -692,4 +701,20 @@ void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 
 	else if (strEquals(sParam, XFORM_TIME_ATTRIB))
 		m_Desc.SetXformTime(Value.EvalIntegerBounded(0, -1, 100) / 100.0);
+	}
+
+bool CParticleSystemEffectPainter::UsesOrigin (void) const
+
+//	UsesOrigin
+//
+//	Returns TRUE if we need an origin.
+
+	{
+	//	If we need to do hit testing, then we need an accurate origin set during
+	//	move.
+
+	if (m_Desc.HasWakeFactor())
+		return true;
+
+	return false;
 	}

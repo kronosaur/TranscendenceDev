@@ -590,7 +590,7 @@ void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPai
 
 //	Paint
 //
-//	Paint the field
+//	Paint the field. x,y is always the screen coordinates of the object center.
 
 	{
 	int xOffset, yOffset, iRotationOrigin;
@@ -951,7 +951,7 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 	return true;
 	}
 
-void COverlay::Update (CSpaceObject *pSource, bool *retbModified)
+void COverlay::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified)
 
 //	Update
 //
@@ -1004,6 +1004,19 @@ void COverlay::Update (CSpaceObject *pSource, bool *retbModified)
 
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = pSource;
+
+	//	If our painter needs an origin, then compute it and set it.
+
+	if (m_pPainter && m_pPainter->UsesOrigin())
+		{
+		int xOffset, yOffset, iRotationOrigin;
+		CalcOffset(iScale, iRotation, &xOffset, &yOffset, &iRotationOrigin);
+
+		MoveCtx.bUseOrigin = true;
+		MoveCtx.vOrigin = pSource->GetPos() + CVector(xOffset * g_KlicksPerPixel, -yOffset * g_KlicksPerPixel);
+		}
+
+	//	Update
 	
 	if (m_pPainter)
 		{

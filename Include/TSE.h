@@ -43,6 +43,7 @@
 //#define DEBUG_LOAD
 //#define DEBUG_NAV_PATH
 //#define DEBUG_NEBULA_PAINTING
+//#define DEBUG_PARTICLE_BOUNDS
 //#define DEBUG_PERFORMANCE
 //#define DEBUG_PROGRAM_UPGRADE
 //#define DEBUG_RANDOM_SEED
@@ -605,7 +606,7 @@ class COverlay
 		bool SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue);
 		inline void SetRotation (int iRotation) { m_iRotation = iRotation; }
 		inline bool Spins (CSpaceObject *pSource) const { return m_pType->Spins(); }
-		void Update (CSpaceObject *pSource, bool *retbModified = NULL);
+		void Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified = NULL);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
@@ -701,7 +702,7 @@ class COverlayList
 		void SetPos (CSpaceObject *pSource, DWORD dwID, const CVector &vPos);
 		bool SetProperty (CSpaceObject *pSource, DWORD dwID, const CString &sName, ICCItem *pValue);
 		void SetRotation (DWORD dwID, int iRotation);
-		void Update (CSpaceObject *pSource, bool *retbModified);
+		void Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:

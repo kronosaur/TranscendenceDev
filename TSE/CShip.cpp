@@ -5678,7 +5678,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     if (!m_Overlays.IsEmpty())
         {
         bool bModified;
-        m_Overlays.Update(this, &bModified);
+
+        m_Overlays.Update(this, m_pClass->GetImage().GetImageViewportSize(), GetRotation(), &bModified);
         if (CSpaceObject::IsDestroyedInUpdate())
             return;
         else if (bModified)

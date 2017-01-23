@@ -1590,7 +1590,7 @@ class CStation : public CSpaceObject
 		void DeterAttack (CSpaceObject *pTarget);
 		void FinishCreation (SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetAttackDistance (void) const;
-		const CObjectImageArray &GetImage (bool bFade, int *retiTick, int *retiRotation);
+		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiRotation = NULL);
 		bool IsBlacklisted (CSpaceObject *pObj = NULL);
 		void OnDestroyedByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);

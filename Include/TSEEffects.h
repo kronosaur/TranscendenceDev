@@ -17,11 +17,15 @@ typedef TArray<SEffectHitDesc> CEffectHitResults;
 struct SEffectMoveCtx
 	{
 	SEffectMoveCtx (void) :
-			pObj(NULL)
+			pObj(NULL),
+			bUseOrigin(false)
 		{ }
 
 	CSpaceObject *pObj;							//	The object that owns the effect
 	CVector vOldPos;							//	Old position of object
+
+	bool bUseOrigin;							//	If TRUE, vOrigin is valid.
+	CVector vOrigin;							//	Effect origin
 	};
 
 struct SEffectUpdateCtx
@@ -305,6 +309,7 @@ class IEffectPainter
 		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue) { return false; }
 		virtual void SetPos (const CVector &vPos) { }
 		virtual void SetVariants (int iVariants) { }
+		virtual bool UsesOrigin (void) const { return false; }
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);

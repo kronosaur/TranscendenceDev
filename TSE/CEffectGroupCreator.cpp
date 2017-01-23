@@ -36,7 +36,8 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual void PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx) override;
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
 		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue) override;
-		virtual void SetVariants (int iVariants);
+		virtual void SetVariants (int iVariants) override;
+		virtual bool UsesOrigin (void) const override;
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
@@ -716,5 +717,22 @@ void CEffectGroupCreator::SetVariants (int iVariants)
 	{
 	for (int i = 0; i < m_iCount; i++)
 		m_pCreators[i]->SetVariants(iVariants);
+	}
+
+bool CEffectGroupPainter::UsesOrigin (void) const
+
+//	UsesOrigin
+//
+//	Returns TRUE if any of our children need an origin.
+
+	{
+	for (int i = 0; i < m_Painters.GetCount(); i++)
+		if (m_Painters[i])
+			if (m_Painters[i]->UsesOrigin())
+				return true;
+
+	//	If we get this far, none of the painters need it.
+
+	return false;
 	}
 

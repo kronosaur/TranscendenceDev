@@ -3636,7 +3636,10 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	if (!m_Overlays.IsEmpty())
 		{
 		bool bModified;
-		m_Overlays.Update(this, &bModified);
+
+		const CObjectImageArray &Image = GetImage(true);
+
+		m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
 		if (CSpaceObject::IsDestroyedInUpdate())
 			return;
 		else if (bModified)

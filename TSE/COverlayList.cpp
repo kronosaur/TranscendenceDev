@@ -734,7 +734,7 @@ void COverlayList::SetRotation (DWORD dwID, int iRotation)
 		}
 	}
 
-void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
+void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified)
 
 //	Update
 //
@@ -756,7 +756,7 @@ void COverlayList::Update (CSpaceObject *pSource, bool *retbModified)
 			{
 			bool bOverlayModified;
 
-			pField->Update(pSource, &bOverlayModified);
+			pField->Update(pSource, iScale, iRotation, &bOverlayModified);
 			if (bOverlayModified)
 				bModified = true;
 
