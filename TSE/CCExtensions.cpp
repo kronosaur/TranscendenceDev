@@ -695,7 +695,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"itmGetMass",					fnItemGet,		FN_ITEM_MASS,
-			"(itmGetMass item|type) -> mass of single item in Kg",
+			"(itmGetMass item|type) -> mass of single item in kg",
 			"v",	0,	},
 
 		{	"itmGetMaxAppearing",			fnItemGet,		FN_ITEM_MAX_APPEARING,
@@ -1304,7 +1304,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"il*",	0,	},
 
 		{	"objGetCargoSpaceLeft",			fnObjGetOld,		FN_OBJ_CARGO_SPACE_LEFT,
-			"(objGetCargoSpaceLeft obj) -> space left in Kg",
+			"(objGetCargoSpaceLeft obj) -> space left in kg",
 			NULL,	0,	},
 
 		{	"objGetCombatPower",			fnObjGetOld,		FN_OBJ_COMBAT_POWER,

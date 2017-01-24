@@ -417,7 +417,7 @@ class CReactorDesc
         struct SStdStats
             {
             int iMaxPower;                  //  Max power (1/10 MW)
-            Metric rFuelDensity;            //  Std fuel rods per 100 Kg
+            Metric rFuelDensity;            //  Std fuel rods per 100 kg
             Metric rCost;                   //  Credits per 100 fuel units
             };
 
