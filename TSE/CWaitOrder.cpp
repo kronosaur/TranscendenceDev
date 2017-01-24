@@ -30,6 +30,9 @@ CWaitOrder::CWaitOrder (IShipController::OrderTypes iOrder) : IOrderModule(objCo
 			m_fDeterEnemies = true;
 			break;
 
+		case IShipController::orderWait:
+			break;
+
 		case IShipController::orderWaitForEnemy:
 			m_fWaitForEnemy = true;
 			m_fAttackEnemies = true;
