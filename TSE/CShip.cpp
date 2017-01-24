@@ -82,8 +82,10 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 
-#define SPEED_HALF								CONSTLIT("half")
+#define SPEED_EMERGENCY							CONSTLIT("emergency")
 #define SPEED_FULL								CONSTLIT("full")
+#define SPEED_HALF								CONSTLIT("half")
+#define SPEED_QUARTER							CONSTLIT("quarter")
 
 const CG32bitPixel RGB_MAP_LABEL =				CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =				CG32bitPixel(165, 140, 83);
@@ -847,7 +849,15 @@ void CShip::CalcPerformance (void)
     SShipPerformanceCtx Ctx;
     Ctx.pShip = this;
     Ctx.bDriveDamaged = IsMainDriveDamaged();
-    Ctx.bHalfSpeed = m_fHalfSpeed;
+
+	if (m_fEmergencySpeed)
+		Ctx.rOperatingSpeedAdj = 1.5;
+	else if (m_fHalfSpeed)
+		Ctx.rOperatingSpeedAdj = 0.5;
+	else if (m_fQuarterSpeed)
+		Ctx.rOperatingSpeedAdj = 0.25;
+	else
+		Ctx.rOperatingSpeedAdj = 1.0;
 
     //  Start with parameters from the class
 
@@ -1328,6 +1338,8 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fAlwaysLeaveWreck = false;
 	pShip->m_fOutOfPower = false;
 	pShip->m_fFriendlyFireLock = false;
+	pShip->m_fEmergencySpeed = false;
+	pShip->m_fQuarterSpeed = false;
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -2989,7 +3001,16 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(GetOpenDockingPortCount());
 
 	else if (strEquals(sName, PROPERTY_OPERATING_SPEED))
-		return CC.CreateString((m_fHalfSpeed ? SPEED_HALF : SPEED_FULL));
+		{
+		if (m_fEmergencySpeed)
+			return CC.CreateString(SPEED_EMERGENCY);
+		else if (m_fHalfSpeed)
+			return CC.CreateString(SPEED_HALF);
+		else if (m_fQuarterSpeed)
+			return CC.CreateString(SPEED_QUARTER);
+		else
+			return CC.CreateString(SPEED_FULL);
+		}
 
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		return CC.CreateBool(m_pController->IsPlayerWingman());
@@ -5131,6 +5152,8 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
 	m_fOutOfPower =				((dwLoad & 0x01000000) ? true : false);
 	m_fFriendlyFireLock =		((dwLoad & 0x02000000) ? true : false);
+	m_fEmergencySpeed =			((dwLoad & 0x04000000) ? true : false);
+	m_fQuarterSpeed =			((dwLoad & 0x08000000) ? true : false);
 
 	//	We will compute CalcPerformance at the bottom anyways
 	m_fRecalcRotationAccel = false;
@@ -5893,6 +5916,8 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
 	dwSave |= (m_fOutOfPower ?			0x01000000 : 0);
 	dwSave |= (m_fFriendlyFireLock ?	0x02000000 : 0);
+	dwSave |= (m_fEmergencySpeed ?		0x04000000 : 0);
+	dwSave |= (m_fQuarterSpeed ?		0x08000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Armor
@@ -7098,10 +7123,14 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	else if (strEquals(sName, PROPERTY_OPERATING_SPEED))
 		{
 		CString sSpeed = pValue->GetStringValue();
-		if (strEquals(sSpeed, SPEED_FULL))
+		if (strEquals(sSpeed, SPEED_EMERGENCY))
+			SetMaxSpeedEmergency();
+		else if (strEquals(sSpeed, SPEED_FULL))
 			ResetMaxSpeed();
 		else if (strEquals(sSpeed, SPEED_HALF))
 			SetMaxSpeedHalf();
+		else if (strEquals(sSpeed, SPEED_QUARTER))
+			SetMaxSpeedQuarter();
 		else
 			{
 			*retsError = strPatternSubst(CONSTLIT("Invalid speed setting: %s"), sSpeed);

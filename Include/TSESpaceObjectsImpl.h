@@ -1046,8 +1046,10 @@ class CShip : public CSpaceObject
 		inline bool IsInertialess (void) { return m_Perf.GetDriveDesc().IsInertialess(); }
 		inline bool IsMainDriveDamaged (void) const { return m_iDriveDamagedTimer != 0; }
 		inline bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_Perf.GetRotationDesc(), iAngle); }
-        inline void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; CalcPerformance(); }
-        inline void ResetMaxSpeed (void) { m_fHalfSpeed = false; CalcPerformance(); }
+		inline void SetMaxSpeedEmergency (void) { m_fHalfSpeed = false; m_fEmergencySpeed = true; m_fQuarterSpeed = false; CalcPerformance(); }
+        inline void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; m_fEmergencySpeed = false; m_fQuarterSpeed = false; CalcPerformance(); }
+        inline void SetMaxSpeedQuarter (void) { m_fHalfSpeed = false; m_fEmergencySpeed = false; m_fQuarterSpeed = true; CalcPerformance(); }
+        inline void ResetMaxSpeed (void) { m_fHalfSpeed = false; m_fEmergencySpeed = false; m_fQuarterSpeed = false; CalcPerformance(); }
 
 		//	Miscellaneous
 		inline IShipController *GetController (void) { return m_pController; }
@@ -1345,7 +1347,8 @@ class CShip : public CSpaceObject
 
 		DWORD m_fOutOfPower:1;			        //	TRUE if reactor has 0 output
 		DWORD m_fFriendlyFireLock:1;			//	TRUE if we cannot target friendly ships
-		DWORD m_fSpare3:1;
+		DWORD m_fEmergencySpeed:1;				//	TRUE if we're operating at 1.5x max speed
+		DWORD m_fQuarterSpeed:1;				//	TRUE if we're operating at 0.25x max speed
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

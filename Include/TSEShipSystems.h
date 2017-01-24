@@ -774,7 +774,7 @@ struct SShipPerformanceCtx
             rSingleArmorFraction(0.0),
             rMaxSpeedBonus(0.0),
             bDriveDamaged(false),
-            bHalfSpeed(false),
+            rOperatingSpeedAdj(1.0),
             CargoDesc(0),
             iMaxCargoSpace(0)
         { }
@@ -788,8 +788,8 @@ struct SShipPerformanceCtx
 
     CDriveDesc DriveDesc;                   //  Drive descriptor
     Metric rMaxSpeedBonus;                  //  % bonus to speed (+/-). 100.0 = +100%
+	Metric rOperatingSpeedAdj;				//	Adjustment to speed based on operations (1.0 = normal)
     bool bDriveDamaged;                     //  If TRUE, cut thrust in half
-    bool bHalfSpeed;                        //  If TRUE, ship is running at half speed
 
     CCargoDesc CargoDesc;                   //  Cargo space descriptor
     int iMaxCargoSpace;                     //  Max cargo space limit imposed by class
