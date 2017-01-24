@@ -3805,6 +3805,11 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo,
 		if (pShot->GetPassthrough() >= 20 && pShot->GetType() != ftArea)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("passthrough")));
 
+		//	Stealth
+
+		if (pRootShot->GetStealth() > CSpaceObject::stealthNormal)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("stealth")));
+
 		//	Blinding
 
 		if (Damage.GetBlindingDamage() > 0)
