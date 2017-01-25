@@ -247,11 +247,6 @@ class CIntegralRotationDesc
         static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_FacingsData[iCount].bInitialized) ? m_FacingsData[iCount].FrameIndexToAngle[iIndex % iCount] : 0); }
 
     private:
-		struct SEntry
-			{
-			int iRotation;					//	Angle at this rotation position
-			};
-
 		struct SFacingsData
 			{
 			SFacingsData (void) :
@@ -287,10 +282,12 @@ class CIntegralRotation
 		inline EManeuverTypes GetLastManeuver (void) const { return m_iLastManeuver; }
 		EManeuverTypes GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const;
 		int GetRotationAngle (const CIntegralRotationDesc &Desc) const;
+		Metric GetRotationSpeedDegrees (const CIntegralRotationDesc &Desc) const;
 		void Init (const CIntegralRotationDesc &Desc, int iRotationAngle = -1);
 		inline bool IsPointingTo (const CIntegralRotationDesc &Desc, int iAngle) const { return (GetManeuverToFace(Desc, iAngle) == NoRotation); }
 		void ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc);
 		void SetRotationAngle (const CIntegralRotationDesc &Desc, int iAngle);
+		void SetRotationSpeedDegrees (const CIntegralRotationDesc &Desc, Metric rDegreesPerTick);
 		void Update (const CIntegralRotationDesc &Desc, EManeuverTypes iManeuver);
 		void WriteToStream (IWriteStream *pStream) const;
 

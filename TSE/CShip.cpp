@@ -75,6 +75,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
+#define PROPERTY_ROTATION_SPEED					CONSTLIT("rotationSpeed")
 #define PROPERTY_SELECTED_LAUNCHER				CONSTLIT("selectedLauncher")
 #define PROPERTY_SELECTED_MISSILE				CONSTLIT("selectedMissile")
 #define PROPERTY_SELECTED_WEAPON				CONSTLIT("selectedWeapon")
@@ -3031,6 +3032,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());
+
+	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))
+		return CC.CreateDouble(m_Rotation.GetRotationSpeedDegrees(m_Perf.GetRotationDesc()));
 
 	else if (strEquals(sName, PROPERTY_SELECTED_LAUNCHER))
 		{
@@ -7149,6 +7153,12 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		SetRotation(pValue->GetIntegerValue());
 		return true;
 		}
+	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))
+		{
+		m_Rotation.SetRotationSpeedDegrees(m_Perf.GetRotationDesc(), pValue->GetDoubleValue());
+		return true;
+		}
+
 	else if (strEquals(sName, PROPERTY_SELECTED_MISSILE))
 		{
 		//	Nil means that we don't want to make a change

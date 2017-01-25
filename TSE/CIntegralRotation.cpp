@@ -117,6 +117,17 @@ int CIntegralRotation::GetRotationAngle (const CIntegralRotationDesc &Desc) cons
 	return Desc.GetRotationAngle(GetFrameIndex(m_iRotationFrame));
 	}
 
+Metric CIntegralRotation::GetRotationSpeedDegrees (const CIntegralRotationDesc &Desc) const
+
+//	GetRotationSpeed
+//
+//	Returns the current rotation speed in degrees per tick.
+//	Negative = counterclockwise.
+
+	{
+	return (360.0 * m_iRotationSpeed) / (Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION);
+	}
+
 void CIntegralRotation::Init (const CIntegralRotationDesc &Desc, int iRotationAngle)
 
 //	Init
@@ -162,6 +173,16 @@ void CIntegralRotation::SetRotationAngle (const CIntegralRotationDesc &Desc, int
 
 	{
 	m_iRotationFrame = CIntegralRotationDesc::ROTATION_FRACTION * Desc.GetFrameIndex(iAngle) + (CIntegralRotationDesc::ROTATION_FRACTION / 2);
+	}
+
+void CIntegralRotation::SetRotationSpeedDegrees (const CIntegralRotationDesc &Desc, Metric rDegreesPerTick)
+
+//	SetRotationSpeedDegree
+//
+//	Sets the current rotation speed.
+
+	{
+	m_iRotationSpeed = mathRound((rDegreesPerTick * Desc.GetFrameCount() * CIntegralRotationDesc::ROTATION_FRACTION) / 360.0);
 	}
 
 void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuverTypes iManeuver)
