@@ -14,15 +14,10 @@ void CDynamicDesignTable::CleanUp (void)
 //	Frees all memory used
 
 	{
-	int i;
-
-	for (i = 0; i < GetCount(); i++)
-		delete GetType(i);
-
 	m_Table.DeleteAll();
 	}
 
-ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CDesignType **retpType, CString *retsError)
+ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CString *retsError)
 
 //	Compile
 //
@@ -49,12 +44,20 @@ ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CDesignType **retpType, CS
 
 	//	Create the type
 
-	error = CreateType(pEntry, pDesc, retpType, retsError);
-	delete pDesc;
-	if (error)
-		return error;
+	error = CreateType(pEntry, pDesc, &pEntry->pType, retsError);
+
+	//	If we're saving XML, then save this with the entry. Otherwise, we 
+	//	discard it.
+
+	if (g_pUniverse->GetExtensionCollection().IsXMLKept())
+		pEntry->pSource = pDesc;
+	else
+		delete pDesc;
 
 	//	Done
+
+	if (error)
+		return error;
 
 	return NOERROR;
 	}
@@ -76,6 +79,7 @@ ALERROR CDynamicDesignTable::CreateType (SEntry *pEntry, CXMLElement *pDesc, CDe
 
 	SDesignLoadCtx Ctx;
 	Ctx.pExtension = pEntry->pExtension;
+	Ctx.bKeepXML = g_pUniverse->GetExtensionCollection().IsXMLKept();
 
 	//	Load the type
 
@@ -118,9 +122,15 @@ ALERROR CDynamicDesignTable::DefineType (CExtension *pExtension, DWORD dwUNID, I
 
 		pEntry->sSource = pDesc->ConvertToString();
 
+		//	If necessary, we save the source. CreateType will keep a pointer to the
+		//	source (but we own it and will free it when we're done).
+
+		if (g_pUniverse->GetExtensionCollection().IsXMLKept())
+			pEntry->pSource = pDesc->OrphanCopy();
+
 		//	Create the type
 
-		if (error = CreateType(pEntry, pDesc, &pEntry->pType, retsError))
+		if (error = CreateType(pEntry, pEntry->pSource, &pEntry->pType, retsError))
 			{
 			m_Table.DeleteAt(dwUNID);
 			return error;
@@ -135,7 +145,7 @@ ALERROR CDynamicDesignTable::DefineType (CExtension *pExtension, DWORD dwUNID, I
 
 		pEntry->sSource = strTrimWhitespace(pSource->GetStringValue());
 
-		if (error = Compile(pEntry, &pEntry->pType, retsError))
+		if (error = Compile(pEntry, retsError))
 			{
 			m_Table.DeleteAt(dwUNID);
 			return error;
@@ -159,12 +169,7 @@ void CDynamicDesignTable::Delete (DWORD dwUNID)
 	{
 	int iIndex;
 	if (m_Table.FindPos(dwUNID, &iIndex))
-		{
-		if (m_Table[iIndex].pType)
-			delete m_Table[iIndex].pType;
-
 		m_Table.Delete(iIndex);
-		}
 	}
 
 void CDynamicDesignTable::ReadFromStream (SUniverseLoadCtx &Ctx)
@@ -209,8 +214,7 @@ void CDynamicDesignTable::ReadFromStream (SUniverseLoadCtx &Ctx)
 		//	parsing errors, since we already successfully parsed this at the
 		//	beginning of the game.
 
-		if (Compile(pEntry, &pEntry->pType) != NOERROR)
-			pEntry->pType = NULL;
+		Compile(pEntry);
 		}
 	}
 

@@ -4288,6 +4288,7 @@ class CExtensionCollection
 		bool GetRequiredResources (TArray<CString> *retFilespecs);
 		void InitEntityResolver (CExtension *pExtension, DWORD dwFlags, CEntityResolverList *retResolver);
 		bool IsRegisteredGame (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags);
+		bool IsXMLKept (void) const { return m_bKeepXML; }
 		ALERROR Load (const CString &sFilespec, DWORD dwFlags, CString *retsError);
 		inline bool LoadedInDebugMode (void) { return m_bLoadedInDebugMode; }
 		ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError);
@@ -4347,14 +4348,30 @@ class CDynamicDesignTable
 	private:
 		struct SEntry
 			{
+			SEntry (void) : pExtension(NULL),
+					dwUNID(0),
+					pSource(NULL),
+					pType(NULL)
+				{ }
+
+			~SEntry (void)
+				{
+				if (pType)
+					delete pType;
+
+				if (pSource)
+					delete pSource;
+				}
+
 			CExtension *pExtension;
 			DWORD dwUNID;
 			CString sSource;
+			CXMLElement *pSource;
 			CDesignType *pType;
 			};
 
 		void CleanUp (void);
-		ALERROR Compile (SEntry *pEntry, CDesignType **retpType, CString *retsError = NULL);
+		ALERROR Compile (SEntry *pEntry, CString *retsError = NULL);
 		ALERROR CreateType (SEntry *pEntry, CXMLElement *pDesc, CDesignType **retpType, CString *retsError = NULL);
 		inline SEntry *GetEntry (int iIndex) const { return &m_Table[iIndex]; }
 
