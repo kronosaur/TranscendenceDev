@@ -435,6 +435,9 @@
 //	141: 1.7 Beta 5
 //		m_pCharacterClass in CPlayerShipController
 //
+//	142: 1.7 Beta 5
+//		sLevelFrequency in CTradingDesc
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

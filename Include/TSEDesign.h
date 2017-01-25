@@ -2769,6 +2769,7 @@ class CTradingDesc
 			CItemTypeRef pItemType;				//	Item type
 			CItemCriteria ItemCriteria;			//	If ItemType is NULL, this is the criteria
 			CFormulaText InventoryAdj;			//	% of item count found at any one time
+			CString sLevelFrequency;			//	Level frequency for inventory adj
 
 			CDesignTypeCriteria TypeCriteria;	//	Type criteria (for selling ships, etc.).
 

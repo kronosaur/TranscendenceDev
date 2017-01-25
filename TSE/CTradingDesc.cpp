@@ -19,6 +19,7 @@
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define INVENTORY_ADJ_ATTRIB					CONSTLIT("inventoryAdj")
 #define ITEM_ATTRIB								CONSTLIT("item")
+#define LEVEL_FREQUENCY_ATTRIB					CONSTLIT("levelFrequency")
 #define MAX_ATTRIB								CONSTLIT("max")
 #define MESSAGE_ID_ATTRIB						CONSTLIT("messageID")
 #define NO_DESCRIPTION_ATTRIB					CONSTLIT("noDescription")
@@ -549,6 +550,10 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CT
 				if (error = pCommodity->InventoryAdj.InitFromString(Ctx, pLine->GetAttribute(INVENTORY_ADJ_ATTRIB)))
 					return error;
 				}
+
+			//	Level frequency
+
+			pCommodity->sLevelFrequency = pLine->GetAttribute(LEVEL_FREQUENCY_ATTRIB);
 
 			//	Other
 
@@ -1340,6 +1345,9 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 				Commodity.PriceAdj.SetInteger(dwLoad);
 				}
 
+			if (Ctx.dwVersion >= 142)
+				Commodity.sLevelFrequency.ReadFromStream(Ctx.pStream);
+
 			if (Ctx.dwVersion >= 113)
 				Commodity.sMessageID.ReadFromStream(Ctx.pStream);
 
@@ -1398,34 +1406,54 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 	bool bCargoChanged = false;
 
 	for (i = 0; i < m_List.GetCount(); i++)
-		if (m_List[i].dwFlags & FLAG_INVENTORY_ADJ)
+		{
+		SServiceDesc &Service = m_List[i];
+		if (!(Service.dwFlags & FLAG_INVENTORY_ADJ))
+			continue;
+
+		//	See if we have a level frequency.
+
+		CString sLevelFrequency = Service.sLevelFrequency;
+		if (strFind(sLevelFrequency, CONSTLIT(":")) != -1)
+			sLevelFrequency = GenerateLevelFrequency(sLevelFrequency, pObj->GetSystem()->GetLevel());
+
+		//	Make a list of all item types that match the given
+		//	criteria.
+
+		TArray<CItemType *> ItemTable;
+		for (j = 0; j < g_pUniverse->GetItemTypeCount(); j++)
 			{
-			//	Make a list of all item types that match the given
-			//	criteria.
-
-			TArray<CItemType *> ItemTable;
-			for (j = 0; j < g_pUniverse->GetItemTypeCount(); j++)
-				{
-				CItemType *pType = g_pUniverse->GetItemType(j);
-				CItem theItem(pType, 1);
-				if (theItem.MatchesCriteria(m_List[i].ItemCriteria))
-					ItemTable.Insert(pType);
-				}
-
-			//	Loop over the count
-
-			if (ItemTable.GetCount() == 0)
-				continue;
-
-			//	Loop over all items refreshing them
-
-			for (j = 0; j < ItemTable.GetCount(); j++)
-				if (iPercent == 100 || mathRandom(1, 100) <= iPercent)
-					{
-					if (SetInventoryCount(pObj, m_List[i], ItemTable[j]))
-						bCargoChanged = true;
-					}
+			CItemType *pType = g_pUniverse->GetItemType(j);
+			CItem theItem(pType, 1);
+			if (theItem.MatchesCriteria(Service.ItemCriteria))
+				ItemTable.Insert(pType);
 			}
+
+		//	Loop over the count
+
+		if (ItemTable.GetCount() == 0)
+			continue;
+
+		//	Loop over all items refreshing them
+
+		for (j = 0; j < ItemTable.GetCount(); j++)
+			{
+			//	Compute the probability of refreshing this item, based on level
+			//	frequency, if necessary.
+
+			int iChance = iPercent;
+			if (!sLevelFrequency.IsBlank())
+				iChance = iChance * GetFrequencyByLevel(sLevelFrequency, ItemTable[j]->GetLevel()) / ftCommon;
+
+			//	Roll
+
+			if (iChance == 100 || mathRandom(1, 100) <= iChance)
+				{
+				if (SetInventoryCount(pObj, Service, ItemTable[j]))
+					bCargoChanged = true;
+				}
+			}
+		}
 
 	if (bCargoChanged)
 		pObj->ItemsModified();
@@ -1561,6 +1589,7 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 //	CString			ItemCriteria or TypeCriteria
 //	CFormulaText	PriceAdj
 //	CFormulaText	InventoryAdj
+//	CString			sLevelFrequency
 //	CString			sMessageID
 //	DWORD			dwFlags
 
@@ -1602,6 +1631,7 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 
 		Commodity.PriceAdj.WriteToStream(pStream);
 		Commodity.InventoryAdj.WriteToStream(pStream);
+		Commodity.sLevelFrequency.WriteToStream(pStream);
 
 		Commodity.sMessageID.WriteToStream(pStream);
 
