@@ -75,6 +75,7 @@
 
 #define SPECIAL_EVENT							CONSTLIT("event:")
 #define SPECIAL_EXTENSION						CONSTLIT("extension:")
+#define SPECIAL_PROPERTY						CONSTLIT("property:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
 #define LANGID_CORE_MAP_DESC                    CONSTLIT("core.mapDesc")
@@ -1584,7 +1585,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         }
     }
 
-ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	GetProperty
 //
@@ -1837,6 +1838,21 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		{
 		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_EXTENSION.GetLength()), 0);
 		return (m_pExtension && (m_pExtension->GetUNID() == dwUNID));
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_PROPERTY))
+		{
+		CString sProperty = strSubString(sAttrib, SPECIAL_PROPERTY.GetLength());
+
+		CCodeChainCtx Ctx;
+		ICCItem *pValue = GetProperty(Ctx, sProperty);
+		if (pValue == NULL)
+			return false;
+		else
+			{
+			bool bResult = !pValue->IsNil();
+			pValue->Discard(&g_pUniverse->GetCC());
+			return bResult;
+			}
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_UNID))
 		{

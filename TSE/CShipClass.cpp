@@ -171,6 +171,7 @@
 
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
+#define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
@@ -3700,7 +3701,7 @@ CString CShipClass::OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const
     return ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounCapitalize);
     }
 
-ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
 //
@@ -3711,6 +3712,9 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? CC.CreateInteger(m_pDefaultSovereign.GetUNID()) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_HAS_TRADE_DESC))
+		return CC.CreateBool(m_pTrade != NULL);
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return CC.CreateInteger(GetMaxStructuralHitPoints());

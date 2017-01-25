@@ -625,7 +625,7 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-ICCItem *CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+ICCItem *CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
 //

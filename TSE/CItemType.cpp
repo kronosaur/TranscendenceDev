@@ -1631,14 +1631,14 @@ ALERROR CItemType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
     return NOERROR;
     }
 
-ICCItem *CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+ICCItem *CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
 //
 //	Return property.
 
 	{
-	CItem Item(this, 1);
+	CItem Item(const_cast<CItemType *>(this), 1);
 	CItemCtx ItemCtx(Item);
 
 	return Item.GetItemProperty(Ctx, ItemCtx, sProperty);

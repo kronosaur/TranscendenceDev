@@ -481,7 +481,7 @@ class CDesignType
 		inline CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		inline CXMLElement *GetLocalScreens (void) const { return m_pLocalScreens; }
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
-		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
+		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		int GetPropertyInteger (const CString &sProperty);
 		CString GetPropertyString (const CString &sProperty);
 		CXMLElement *GetScreen (const CString &sUNID);
@@ -538,7 +538,7 @@ class CDesignType
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const { return false; }
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
-		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) { return NULL; }
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const { return NULL; }
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const { return sAttrib.IsBlank(); }
 		virtual void OnInitFromClone (CDesignType *pSource) { ASSERT(false); }
 		virtual void OnMarkImages (void) { }
@@ -1799,7 +1799,7 @@ class CItemType : public CDesignType
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
         virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
-		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
@@ -2101,7 +2101,7 @@ class CShipClass : public CDesignType
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
         virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const override;
-		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual void OnInitFromClone (CDesignType *pSource) override;
 		virtual void OnMarkImages (void) override { MarkImages(true); }
@@ -3286,7 +3286,7 @@ class CSovereign : public CDesignType
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual void OnPrepareReinit (void) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
