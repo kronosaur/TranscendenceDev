@@ -284,8 +284,15 @@ void CItemListManipulator::MoveItemTo (const CItem &NewItem, const CItem &OldIte
 
 		if (OldItem.IsEqual(NewItem))
 			{
-			CItem &Item = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
-			Item = NewItem;
+			//	We don't need to change the original item, since it is identical to
+			//	the new item, but we make sure we have at least as many as the new
+			//	item.
+
+			if (OldItem.GetCount() < NewItem.GetCount())
+				{
+				CItem &Item = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+				Item.SetCount(NewItem.GetCount());
+				}
 			}
 
 		//	If we're replacing all the old items (and we can't coalesce)
