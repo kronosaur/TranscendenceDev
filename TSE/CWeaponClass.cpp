@@ -116,7 +116,7 @@ const Metric STD_FIRE_DELAY_TICKS =     8.0;
 
 const Metric STD_AMMO_BALANCE =         -100.0;             //  Balance adj from having ammo
 const Metric STD_AMMO_MASS =            10.0;               //  Std ammo mass (kg)
-const Metric BALANCE_AMMO_COST_RATIO =  -0.25;              //  Each percent of ammo price above std is
+const Metric BALANCE_AMMO_COST_RATIO =  -0.20;              //  Each percent of ammo price above std is
                                                             //      0.25% balance penalty.
 const Metric BALANCE_AMMO_MASS_RATIO =  -0.25;              //  Heavier ammo is a balance penalty.
 
@@ -134,7 +134,7 @@ const Metric BALANCE_RANGE_OVER_FACTOR = 0.35;              //  Bonus to balance
 const Metric BALANCE_RANGE_UNDER_FACTOR = 1.0;              //  Penalty to balance for each ls below standard
 
 const Metric BALANCE_SPEED_POWER =      0.5;                //  f(x) = factor * (1 - (x/lightspeed)^power)
-const Metric BALANCE_SPEED_FACTOR =     -20.0;
+const Metric BALANCE_SPEED_FACTOR =     -25.0;
 
 const Metric BALANCE_INTERACTION_FACTOR = 5.0;              //  Bonus to balance for 0 interaction (linear
                                                             //      decrease as interaction reaches 100).
