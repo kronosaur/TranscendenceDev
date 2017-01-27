@@ -3830,12 +3830,7 @@ class CInstalledDevice
 		void ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx);
 		inline void SetClass (CDeviceClass *pClass) { m_pClass.Set(pClass); }
 		void Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList);
-		void Update (CSpaceObject *pSource, 
-					 int iTick, 
-					 bool *retbSourceDestroyed,
-					 bool *retbConsumedItems = NULL,
-					 bool *retbDisrupted = NULL,
-					 bool *retbDeviceRepaired = NULL);
+		void Update (CSpaceObject *pSource, CDeviceClass::SDeviceUpdateCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
 		//	These methods are about CInstalledDevice properties; not about properties
@@ -3882,7 +3877,7 @@ class CInstalledDevice
 		inline void SetData (DWORD dwData) { m_dwData = dwData; }
 		inline void SetDeviceSlot (int iDev) { m_iDeviceSlot = iDev; }
 		inline void SetDuplicate (bool bDuplicate = true) { m_fDuplicate = bDuplicate; }
-		inline void SetEnabled (bool bEnabled) { m_fEnabled = bEnabled; }
+		bool SetEnabled (CSpaceObject *pSource, bool bEnabled);
 		void SetEnhancements (CItemEnhancementStack *pStack);
 		inline void SetFireAngle (int iAngle) { m_iFireAngle = iAngle; }
 		inline void SetFireArc (int iMinFireArc, int iMaxFireArc) { m_iMinFireArc = iMinFireArc; m_iMaxFireArc = iMaxFireArc; }

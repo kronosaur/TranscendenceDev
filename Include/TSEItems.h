@@ -153,6 +153,8 @@ class CItemEnhancement
 		void SetModSpeed (int iAdj, int iMinDelay = 0, int iMaxDelay = 0);
 		void WriteToStream (IWriteStream *pStream) const;
 
+		static const CItemEnhancement &Null (void) { return m_Null; }
+
 	private:
 		bool CalcNewHPBonus (const CItem &Item, const CItemEnhancement &NewEnhancement, int *retiNewBonus) const;
 		bool CanBeCombinedWith (const CItemEnhancement &NewEnhancement) const;
@@ -173,6 +175,8 @@ class CItemEnhancement
 		DWORD m_dwMods;							//	Mod code
 		CItemType *m_pEnhancer;					//	Item that added this mod (may be NULL)
 		int m_iExpireTime;						//	Universe tick when mod expires (-1 == no expiration)
+
+		static CItemEnhancement m_Null;
 	};
 
 class CItemEnhancementStack

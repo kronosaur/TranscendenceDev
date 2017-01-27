@@ -169,7 +169,7 @@ ALERROR CRepairerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	return NOERROR;
 	}
 
-void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int iTick, bool *retbSourceDestroyed, bool *retbConsumedItems)
+void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
 
 //	Update
 //
@@ -181,7 +181,7 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, i
 	int i;
 
 	CShip *pShip = pSource->AsShip();
-	if ((iTick % REPAIR_CYCLE_TIME) == 0 && pShip)
+	if ((Ctx.iTick % REPAIR_CYCLE_TIME) == 0 && pShip)
 		{
 		int iTotalPower = 0;
 
@@ -199,7 +199,7 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, i
 					int iHP;
 					int iPowerPerSegment;
 
-					CalcRegen(pDevice, pShip, i, iTick, &iHP, &iPowerPerSegment);
+					CalcRegen(pDevice, pShip, i, Ctx.iTick, &iHP, &iPowerPerSegment);
 
 					//	Repair armor
 
@@ -218,9 +218,6 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, i
 
 		pDevice->SetData(iTotalPower);
 		}
-
-	if (retbConsumedItems)
-		*retbConsumedItems = false;
 
 	DEBUG_CATCH
 	}

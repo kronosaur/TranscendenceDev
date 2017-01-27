@@ -529,6 +529,34 @@ class CDeviceClass
 			evtCount					= 1,
 			};
 
+		struct SDeviceUpdateCtx
+			{
+			SDeviceUpdateCtx (int iTickArg = 0) :
+					iTick(iTickArg)
+				{
+				ResetOutputs();
+				}
+
+			inline void ResetOutputs (void)
+				{
+				bSourceDestroyed = false;
+				bConsumedItems = false;
+				bDisrupted = false;
+				bRepaired = false;
+				bSetDisabled = false;
+				}
+					
+			int iTick;
+
+			//	Outputs
+
+			bool bSourceDestroyed;
+			bool bConsumedItems;
+			bool bDisrupted;
+			bool bRepaired;
+			bool bSetDisabled;
+			};
+
 		CDeviceClass (void) : m_pItemType(NULL) { }
 		virtual ~CDeviceClass (void) { }
 
@@ -621,11 +649,7 @@ class CDeviceClass
 		virtual bool SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel) { return false; }
 		virtual bool SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual bool ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
-		virtual void Update (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 int iTick,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems = NULL) { }
+		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) { }
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 
 		static bool FindAmmoDataField (CItemType *pItem, const CString &sField, CString *retsValue);
@@ -773,7 +797,8 @@ struct SShipPerformanceCtx
             bDriveDamaged(false),
             rOperatingSpeedAdj(1.0),
             CargoDesc(0),
-            iMaxCargoSpace(0)
+            iMaxCargoSpace(0),
+			bShieldInterference(false)
         { }
 
     CShip *pShip;                           //  Target ship
@@ -791,16 +816,25 @@ struct SShipPerformanceCtx
     CCargoDesc CargoDesc;                   //  Cargo space descriptor
     int iMaxCargoSpace;                     //  Max cargo space limit imposed by class
                                             //      0 = no limit
+
+	bool bShieldInterference;				//	Meteorsteel (or something) is interfering
     };
 
 class CShipPerformanceDesc
     {
     public:
+		CShipPerformanceDesc (void) : 
+				m_fInitialized(false),
+				m_fShieldInterference(false)
+			{ }
+
         inline const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
         inline const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
         inline const CReactorDesc &GetReactorDesc (void) const { return m_ReactorDesc; }
         inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
+		inline bool HasShieldInterference (void) const { return (m_fShieldInterference ? true : false); }
         void Init (SShipPerformanceCtx &Ctx);
+		inline bool IsEmpty (void) const { return (m_fInitialized ? false : true); }
 
         //  Read-Write versions of accessors
 
@@ -809,9 +843,24 @@ class CShipPerformanceDesc
         inline CReactorDesc &GetReactorDesc (void) { return m_ReactorDesc; }
         inline CIntegralRotationDesc &GetRotationDesc (void) { return m_RotationDesc; }
 
+		inline static const CShipPerformanceDesc &Null (void) { return m_Null; }
+
     private:
         CIntegralRotationDesc m_RotationDesc;
 		CReactorDesc m_ReactorDesc;
         CDriveDesc m_DriveDesc;
         CCargoDesc m_CargoDesc;
+
+		DWORD m_fInitialized:1;				//	TRUE if Init called
+		DWORD m_fShieldInterference:1;		//	TRUE if energy shields are suppressed (e.g., by meteorsteel)
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD dwSpare:24;
+
+		static CShipPerformanceDesc m_Null;
     };

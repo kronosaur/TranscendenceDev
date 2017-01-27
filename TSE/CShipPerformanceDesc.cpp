@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+CShipPerformanceDesc CShipPerformanceDesc::m_Null;
+
 void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
 //  Init
@@ -48,4 +50,12 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
     //  Cargo space
 
     m_CargoDesc = Ctx.CargoDesc;
+
+	//	Other flags
+
+	m_fShieldInterference = Ctx.bShieldInterference;
+
+	//	Done
+
+	m_fInitialized = true;
     }

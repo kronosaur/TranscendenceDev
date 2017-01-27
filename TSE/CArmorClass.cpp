@@ -477,6 +477,9 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
     {
     bool bModified = false;
 
+	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+	const CItemEnhancement &Mods = (pArmor ? pArmor->GetMods() : CItemEnhancement::Null());
+
     //  Adjust max speed.
 
     if (m_rMaxSpeedBonus != 0.0)
@@ -484,6 +487,14 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
         Ctx.rMaxSpeedBonus += Ctx.rSingleArmorFraction * m_rMaxSpeedBonus;
         bModified = true;
         }
+
+	//	Shield interference
+
+	if (m_fShieldInterference || Mods.IsShieldInterfering())
+		{
+		Ctx.bShieldInterference = true;
+		bModified = true;
+		}
 
     //  Done
 
@@ -2062,11 +2073,6 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 				}
 			}
 		}
-
-	//	If this armor interferes with shields, then lower shields now
-
-	if (pArmor->GetMods().IsShieldInterfering() || m_fShieldInterference)
-		pObj->DeactivateShields();
 
 	//	Done
 

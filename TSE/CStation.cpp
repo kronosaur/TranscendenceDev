@@ -3582,11 +3582,13 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (m_pDevices)
 		{
-		bool bSourceDestroyed = false;
+		CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
 		for (i = 0; i < maxDevices; i++)
 			{
-			m_pDevices[i].Update(this, iTick, &bSourceDestroyed);
-			if (bSourceDestroyed)
+			DeviceCtx.ResetOutputs();
+
+			m_pDevices[i].Update(this, DeviceCtx);
+			if (DeviceCtx.bSourceDestroyed)
 				return;
 			}
 		}

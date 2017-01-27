@@ -4167,7 +4167,7 @@ void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) c
 	pDevice->SetData((((DWORD)(WORD)(short)iVariant) << 16) | LOWORD(pDevice->GetData()));
 	}
 
-void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int iTick, bool *retbSourceDestroyed, bool *retbConsumedItems)
+void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
 
 //	Update
 //
@@ -4176,16 +4176,11 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 	{
 	DEBUG_TRY
 
-	CItemCtx Ctx(pSource, pDevice);
-
-	if (retbConsumedItems)
-		*retbConsumedItems = false;
-	if (retbSourceDestroyed)
-		*retbSourceDestroyed = false;
+	CItemCtx ItemCtx(pSource, pDevice);
 
 	//	Change counter on update
 
-	if (IsCounterEnabled() && (iTick % m_iCounterUpdateRate) == 0)
+	if (IsCounterEnabled() && (Ctx.iTick % m_iCounterUpdateRate) == 0)
 		{
 		if (m_iCounterUpdate > 0)
 			{
@@ -4218,30 +4213,24 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 		//	-1 is used to skip the first update cycle
 		//	(which happens on the same tick as Activate)
 
-		CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 		SetContinuousFire(pDevice, (pShot ? pShot->GetContinuous() : 0));
 		}
 	else if (dwContinuous > 0)
 		{
-		CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 		if (pShot)
 			{
-			bool bSourceDestroyed;
-
 			FireWeapon(pDevice, 
 					pShot, 
 					pSource, 
 					NULL, 
 					1 + pShot->GetContinuous() - dwContinuous,
-					&bSourceDestroyed,
-					retbConsumedItems);
+					&Ctx.bSourceDestroyed,
+					&Ctx.bConsumedItems);
 
-			if (bSourceDestroyed)
-				{
-				if (retbSourceDestroyed)
-					*retbSourceDestroyed = true;
+			if (Ctx.bSourceDestroyed)
 				return;
-				}
 			}
 
 		dwContinuous--;

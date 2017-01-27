@@ -1472,7 +1472,7 @@ bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 	return true;
 	}
 
-void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int iTick, bool *retbSourceDestroyed, bool *retbConsumedItems)
+void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
 
 //	Update
 //
@@ -1481,15 +1481,23 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 	{
 	DEBUG_TRY
 
+	const CShipPerformanceDesc &Perf = pSource->GetShipPerformance();
 	CItemCtx ItemCtx(pSource, pDevice);
 
 	//	Initialize to not regenerating
 
 	pDevice->SetRegenerating(false);
 
+	//	If there's shield interference, then we disable ourselves
+
+	if (Perf.HasShieldInterference() && pDevice->IsEnabled())
+		{
+		Ctx.bSetDisabled = true;
+		}
+
 	//	If we're not enabled then we drop shields
 
-	if (!pDevice->IsEnabled())
+	if (!pDevice->IsEnabled() || Ctx.bSetDisabled)
 		{
 		if (GetHPLeft(ItemCtx))
 			{
@@ -1507,7 +1515,7 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 
 	if (pDevice->IsDamaged() || pDevice->IsDisrupted())
 		{
-		if ((iTick % 10) == 0 && mathRandom(1, 100) <= 5)
+		if ((Ctx.iTick % 10) == 0 && mathRandom(1, 100) <= 5)
 			{
 			Deplete(pDevice, pSource);
 			pSource->OnDeviceStatus(pDevice, failShieldFailure);
@@ -1534,11 +1542,11 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 
 			if (iHPLeft != iMaxHP)
 				{
-				int iRegenHP = m_Regen.GetRegen(iTick);
+				int iRegenHP = m_Regen.GetRegen(Ctx.iTick);
 
 				//	Figure out how much to regen
 
-				if (m_iExtraRegenPerCharge && ((iTick % 30) == 0))
+				if (m_iExtraRegenPerCharge && ((Ctx.iTick % 30) == 0))
 					{
 					int iCharges = pDevice->GetCharges(pSource);
 					int iExtra180 = (m_iExtraRegenPerCharge * iCharges);
@@ -1562,9 +1570,6 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, int
 				}
 			}
 		}
-
-	if (retbConsumedItems)
-		*retbConsumedItems = false;
 
 	DEBUG_CATCH
 	}

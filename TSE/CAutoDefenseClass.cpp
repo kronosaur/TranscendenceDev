@@ -160,11 +160,7 @@ CString CAutoDefenseClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWO
 		return NULL_STR;
 	}
 
-void CAutoDefenseClass::Update (CInstalledDevice *pDevice, 
-								CSpaceObject *pSource, 
-								int iTick,
-								bool *retbSourceDestroyed,
-								bool *retbConsumedItems)
+void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
 
 //	Update
 //
@@ -177,7 +173,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice,
 
 	//	Update the weapon
 
-	pWeapon->Update(pDevice, pSource, iTick, retbSourceDestroyed, retbConsumedItems);
+	pWeapon->Update(pDevice, pSource, Ctx);
 
 	//	Look for a target and fire
 
@@ -280,7 +276,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice,
 				//	Fire
 
 				pDevice->SetFireAngle(iFireAngle);
-				pWeapon->Activate(pDevice, pSource, pBestTarget, retbSourceDestroyed, retbConsumedItems);
+				pWeapon->Activate(pDevice, pSource, pBestTarget, &Ctx.bSourceDestroyed, &Ctx.bConsumedItems);
 				pDevice->SetTimeUntilReady(m_iRechargeTicks);
 
 				//	Identify

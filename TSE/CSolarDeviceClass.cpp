@@ -42,11 +42,7 @@ ALERROR CSolarDeviceClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-void CSolarDeviceClass::Update (CInstalledDevice *pDevice, 
-								CSpaceObject *pSource, 
-								int iTick,
-								bool *retbSourceDestroyed,
-								bool *retbConsumedItems)
+void CSolarDeviceClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
 
 //	Update
 //
@@ -55,7 +51,7 @@ void CSolarDeviceClass::Update (CInstalledDevice *pDevice,
 	{
 	DEBUG_TRY
 
-	if (((iTick + 7) % CYCLE_TIME) == 0)
+	if (((Ctx.iTick + 7) % CYCLE_TIME) == 0)
 		{
 		int iIntensity = pSource->GetSystem()->CalculateLightIntensity(pSource->GetPos());
 		if (pDevice->IsDamaged() || pDevice->IsDisrupted())

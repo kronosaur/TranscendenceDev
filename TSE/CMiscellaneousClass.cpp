@@ -221,17 +221,11 @@ bool CMiscellaneousClass::ShowActivationDelayCounter (CSpaceObject *pSource, CIn
 	return (m_iPowerToActivate != 0);
 	}
 
-void CMiscellaneousClass::Update (CInstalledDevice *pDevice, 
-								  CSpaceObject *pSource, 
-								  int iTick,
-								  bool *retbSourceDestroyed,
-								  bool *retbConsumedItems)
+void CMiscellaneousClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
 
 //	Update
 //
 //	Update device
 
 	{
-	if (retbConsumedItems)
-		*retbConsumedItems = false;
 	}

@@ -1938,7 +1938,8 @@ void CShip::EnableDevice (int iDev, bool bEnable, bool bSilent)
 	if (iDev < 0 || iDev >= GetDeviceCount())
 		return;
 
-	m_Devices[iDev].SetEnabled(bEnable);
+	if (!m_Devices[iDev].SetEnabled(this, bEnable))
+		return;
 
 	//	Recalc bonuses, etc.
 
@@ -1949,17 +1950,6 @@ void CShip::EnableDevice (int iDev, bool bEnable, bool bSilent)
 	m_pController->OnWeaponStatusChanged();
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	m_pController->OnDeviceEnabledDisabled(iDev, bEnable, bSilent);
-
-	//	Fire event
-
-	CItem *pItem = m_Devices[iDev].GetItem();
-	if (pItem)
-		{
-		if (bEnable)
-			pItem->FireOnEnabled(this);
-		else
-			pItem->FireOnDisabled(this);
-		}
 	}
 
 CInstalledArmor *CShip::FindArmor (const CItem &Item)
@@ -5636,30 +5626,41 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
     //	Update each device
 
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
     m_fDeviceDisrupted = false;
     for (i = 0; i < GetDeviceCount(); i++)
         {
-        bool bSourceDestroyed = false;
-        bool bConsumedItems = false;
-        bool bDisrupted = false;
-		bool bRepaired = false;
-        m_Devices[i].Update(this, iTick, &bSourceDestroyed, &bConsumedItems, &bDisrupted, &bRepaired);
-        if (bSourceDestroyed)
+		DeviceCtx.ResetOutputs();
+
+        m_Devices[i].Update(this, DeviceCtx);
+
+        if (DeviceCtx.bSourceDestroyed)
             return;
 
-        if (bConsumedItems)
+        if (DeviceCtx.bConsumedItems)
             {
             bWeaponStatusChanged = true;
             bCargoChanged = true;
             }
 
-        if (bDisrupted)
+        if (DeviceCtx.bDisrupted)
             m_fDeviceDisrupted = true;
 
 		//	If the device was repaired, then we need to recalc performance, etc.
 
-		if (bRepaired)
+		if (DeviceCtx.bRepaired)
 			bCalcDeviceBonus = true;
+
+		if (DeviceCtx.bSetDisabled && m_Devices[i].SetEnabled(this, false))
+			{
+			bCalcDeviceBonus = true;
+			bCalcPerformance = true;
+
+			bWeaponStatusChanged = true;
+			bArmorStatusChanged = true;
+
+			m_pController->OnDeviceEnabledDisabled(i, false);
+			}
         }
 
     //	Update reactor

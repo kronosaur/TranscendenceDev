@@ -1292,7 +1292,6 @@ class CSpaceObject : public CObject
 		inline void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		inline void SetDebugVector (const CVector &vVector) { }
 #endif
-
 		//	Motion
 		//
 		//	IsAnchored: Anchored objects don't move even if pushed e.g., by
@@ -1363,6 +1362,10 @@ class CSpaceObject : public CObject
 		int GetTradeMaxLevel (ETradeServiceTypes iService);
 		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
+
+		//	Ships
+
+		virtual const CShipPerformanceDesc &GetShipPerformance (void) const { return CShipPerformanceDesc::Null(); }
 
 		//	Stargates (object is a stargate)
 

@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+CItemEnhancement CItemEnhancement::m_Null;
+
 void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const
 
 //	AccumulateAttributes

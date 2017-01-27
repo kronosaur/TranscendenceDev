@@ -21,11 +21,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
 		virtual bool IsAutomatedWeapon (void) override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
-		virtual void Update (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 int iTick,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems = NULL) override;
+		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 	protected:
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
@@ -220,11 +216,7 @@ class CMiscellaneousClass : public CDeviceClass
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual bool SetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes iCounter, int iLevel) override;
 		virtual bool ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
-		virtual void Update (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 int iTick,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems = NULL) override;
+		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 	private:
 		CMiscellaneousClass (void);
@@ -309,11 +301,7 @@ class CRepairerClass : public CDeviceClass
 		virtual int GetPowerRating (CItemCtx &Ctx) const override { return 2 * m_iPowerUse; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
-		virtual void Update (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 int iTick,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems = NULL) override;
+		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 	private:
 		CRepairerClass (void);
@@ -366,11 +354,7 @@ class CShieldClass : public CDeviceClass
 		virtual bool RequiresItems (void) const override;
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError) override;
-		virtual void Update (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 int iTick,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems = NULL) override;
+		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 		static int GetStdCost (int iLevel);
 		static int GetStdEffectiveHP (int iLevel);
@@ -435,11 +419,7 @@ class CSolarDeviceClass : public CDeviceClass
 
 		virtual bool CanBeDisabled (CItemCtx &Ctx) override { return false; }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
-		virtual void Update (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 int iTick,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems = NULL) override;
+		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
 	private:
@@ -574,11 +554,7 @@ class CWeaponClass : public CDeviceClass
 		virtual ItemCategories GetImplCategory (void) const override;
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) override;
 		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const override;
-		virtual void Update (CInstalledDevice *pDevice, 
-							 CSpaceObject *pSource, 
-							 int iTick,
-							 bool *retbSourceDestroyed,
-							 bool *retbConsumedItems = NULL) override;
+		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 		virtual bool FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;

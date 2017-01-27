@@ -673,6 +673,34 @@ int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
 	return ItemList.GetItemAtCursor().GetCharges();
 	}
 
+bool CInstalledDevice::SetEnabled (CSpaceObject *pSource, bool bEnabled)
+
+//	SetEnabled
+//
+//	Enable/disable device. Returns TRUE if the enabled status changed.
+	
+	{
+	if (m_fEnabled == bEnabled)
+		return false;
+
+	m_fEnabled = bEnabled;
+
+	//	Fire event
+
+	CItem *pItem = GetItem();
+	if (pItem)
+		{
+		if (bEnabled)
+			pItem->FireOnEnabled(pSource);
+		else
+			pItem->FireOnDisabled(pSource);
+		}
+
+	//	Done
+
+	return true;
+	}
+
 void CInstalledDevice::SetEnhancements (CItemEnhancementStack *pStack)
 
 //	SetEnhancements
@@ -795,18 +823,13 @@ void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &Item
 	m_fLastActivateSuccessful = false;
 	}
 
-void CInstalledDevice::Update (CSpaceObject *pSource, 
-							   int iTick,
-							   bool *retbSourceDestroyed,
-							   bool *retbConsumedItems,
-							   bool *retbDisrupted,
-							   bool *retbDeviceRepaired)
+void CInstalledDevice::Update (CSpaceObject *pSource, CDeviceClass::SDeviceUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
 	if (!IsEmpty()) 
 		{
-		m_pClass->Update(this, pSource, iTick, retbSourceDestroyed, retbConsumedItems);
+		m_pClass->Update(this, pSource, Ctx);
 
 		//	Counters
 
@@ -823,17 +846,14 @@ void CInstalledDevice::Update (CSpaceObject *pSource,
 		bool bRepaired;
 		if (GetDisruptedStatus(NULL, &bRepaired))
 			{
-			if (retbDisrupted)
-				*retbDisrupted = true;
+			Ctx.bDisrupted = true;
 			}
 
 		//	If disruption was repaired
 
 		if (bRepaired)
 			{
-			if (retbDeviceRepaired)
-				*retbDeviceRepaired = true;
-
+			Ctx.bRepaired = true;
 			pSource->OnDeviceStatus(this, CDeviceClass::statusDisruptionRepaired);
 			}
 		}
