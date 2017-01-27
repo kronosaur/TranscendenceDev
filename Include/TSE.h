@@ -1364,6 +1364,16 @@ class CSpaceObject : public CObject
 		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
 
+		//	Stargates (object is a stargate)
+
+		virtual CString GetStargateID (void) const { return NULL_STR; }
+		virtual bool IsActiveStargate (void) const { return false; }
+		virtual bool IsStargate (void) const { return false; }
+		virtual bool RequestGate (CSpaceObject *pObj);
+		virtual bool SupportsGating (void) { return false; }
+
+		Metric GetMaxGateDist2 (void) const;
+
 		//	Statics
 
 		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
@@ -1484,7 +1494,6 @@ class CSpaceObject : public CObject
 		virtual int GetScore (void) { return 0; }
 		virtual int GetShieldLevel (void) { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
-		virtual CString GetStargateID (void) const { return NULL_STR; }
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetVisibleDamage (void) { return 0; }
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) { Damage = SVisibleDamage(); }
@@ -1563,14 +1572,10 @@ class CSpaceObject : public CObject
 		virtual void AddSubordinate (CSpaceObject *pSubordinate) { }
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const { if (retiFrequency) *retiFrequency = 0; return NULL; }
 		virtual bool IsAbandoned (void) const { return false; }
-		virtual bool IsActiveStargate (void) const { return false; }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const { return false; }
-		virtual bool IsStargate (void) const { return false; }
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) { return false; }
-		virtual bool RequestGate (CSpaceObject *pObj);
         virtual bool ShowMapOrbit (void) const { return false; }
         virtual bool ShowStationDamage (void) const { return false; }
-		virtual bool SupportsGating (void) { return false; }
 
 		//	...for particle effects
 

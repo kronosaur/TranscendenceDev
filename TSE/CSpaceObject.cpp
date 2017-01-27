@@ -3504,6 +3504,17 @@ Metric CSpaceObject::GetHitSize (void) const
 	return Max(RectWidth(rcRect), RectHeight(rcRect)) * g_KlicksPerPixel;
 	}
 
+Metric CSpaceObject::GetMaxGateDist2 (void) const
+
+//	GetMaxGateDist2
+//
+//	Returns the maximum distance at which we can gate through this object.
+
+	{
+	Metric rHitSize = GetHitSize();
+	return (0.25 * rHitSize * rHitSize);
+	}
+
 const CObjectImageArray &CSpaceObject::GetImage (void) const
 
 //	GetImage

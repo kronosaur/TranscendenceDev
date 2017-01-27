@@ -1648,7 +1648,8 @@ void CAIBehaviorCtx::ImplementGating (CShip *pShip, CSpaceObject *pTarget)
 	CVector vTarget = pTarget->GetPos() - pShip->GetPos();
 	Metric rTargetDist2 = vTarget.Dot(vTarget);
 
-	if (rTargetDist2 < (MAX_GATE_DISTANCE * MAX_GATE_DISTANCE))
+	if (rTargetDist2 < (MAX_GATE_DISTANCE * MAX_GATE_DISTANCE)
+			&& rTargetDist2 < pTarget->GetMaxGateDist2())
 		pTarget->RequestGate(pShip);
 	else if (rTargetDist2 < (DOCKING_APPROACH_DISTANCE * DOCKING_APPROACH_DISTANCE))
 		{
