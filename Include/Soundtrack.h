@@ -132,6 +132,7 @@ class CSoundtrackManager
 
 		CMusicResource *GetCurrentTrack (int *retiPos = NULL);
 		void NextTrack (void);
+		void NotifyAddToQueue (CMusicResource *pTrack);
 		void NotifyEndCombat (void);
 		void NotifyEndMissionTrack (bool bForceTravel = false);
 		void NotifyEnterSystem (CTopologyNode *pNode = NULL, bool bFirstTime = true);
@@ -162,15 +163,31 @@ class CSoundtrackManager
 			CString sRequiredAttrib;
 			};
 
+		struct SQueueEntry
+			{
+			SQueueEntry (void) :
+					pTrack(NULL),
+					bJumpIn(false),
+					bFromStart(false)
+				{ }
+
+			CMusicResource *pTrack;			//	Track to play next
+			bool bJumpIn;					//	If TRUE, we play immediately (instead of fading in)
+			bool bFromStart;				//	If TRUE, we play from the beginning (instead of last pos)
+			};
+
 		CMusicResource *CalcGameTrackToPlay (CTopologyNode *pNode, const CString &sRequiredAttrib) const;
 		CMusicResource *CalcRandomTrackToPlay (void) const;
-		CMusicResource *CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const;
+		CMusicResource *CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState, bool *retbTransition = NULL);
 		int GetLastPlayedRank (DWORD dwUNID) const;
+		bool GetQueuedTrack (SQueueEntry *retEntry);
 		bool IsPlayingCombatTrack (void) const;
 		bool IsPlayingMissionTrack (void) const;
 		bool InTransition (void) const;
 		void Play (CMusicResource *pTrack);
 		void Reinit (void);
+		void RememberTravelTrack (void);
+		void ResetTrackState (void);
 		void TransitionTo (CMusicResource *pTrack, int iPos, bool bFadeIn = false);
 		void TransitionToCombat (CMusicResource *pTrack = NULL);
 		void TransitionToTravel (void);
@@ -182,6 +199,7 @@ class CSoundtrackManager
 		CMusicResource *m_pNowPlaying;		//	What we've scheduled to play
 		CMusicResource *m_pLastTravel;		//	Travel music track interrupted by combat
 		CMusicResource *m_pMissionTrack;	//	Mission track to play
+		TQueue<SQueueEntry> m_Queue;		//	Queued up tracks
 
 		TQueue<DWORD> m_LastPlayed;			//	UNID of tracks played.
 		bool m_bSystemTrackPlayed;			//	systemSoundtrack already played in system.

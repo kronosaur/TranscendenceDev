@@ -7,6 +7,7 @@
 
 #define ATTRIB_COMBAT_SOUNDTRACK				CONSTLIT("combatSoundtrack")
 #define ATTRIB_MISSION_SOUNDTRACK				CONSTLIT("missionSoundtrack")
+#define ATTRIB_SPECIAL_SOUNDTRACK				CONSTLIT("specialSoundtrack")
 #define ATTRIB_SYSTEM_SOUNDTRACK				CONSTLIT("systemSoundtrack")
 #define ATTRIB_TRAVEL_SOUNDTRACK				CONSTLIT("travelSoundtrack")
 
@@ -235,6 +236,11 @@ CMusicResource *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 		{
 		CMusicResource *pTrack = g_pUniverse->GetMusicResource(i);
 
+		//	Skip special tracks
+
+		if (pTrack->HasAttribute(ATTRIB_SPECIAL_SOUNDTRACK))
+			continue;
+
 		//	Adjust probability based on when we last played this tack.
 
 		int iChance = 1000;
@@ -301,7 +307,7 @@ CMusicResource *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 	return pResult;
 	}
 
-CMusicResource *CSoundtrackManager::CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState) const
+CMusicResource *CSoundtrackManager::CalcTrackToPlay (CTopologyNode *pNode, EGameStates iNewState, bool *retbTransition)
 
 //	CalcTrackToPlay
 //
@@ -309,6 +315,23 @@ CMusicResource *CSoundtrackManager::CalcTrackToPlay (CTopologyNode *pNode, EGame
 //	if there is nothing to play.
 
 	{
+	//	Initialize
+
+	if (retbTransition)
+		*retbTransition = false;
+
+	//	For combat and travel, if we've got something in the queue, then play
+	//	that instead of calculating a new track.
+
+	SQueueEntry QueueEntry;
+	if ((iNewState == stateGameCombat || iNewState == stateGameTravel)
+			&& GetQueuedTrack(&QueueEntry))
+		{
+		return QueueEntry.pTrack;
+		}
+
+	//	Otherwise, calculate
+
 	switch (iNewState)
 		{
 		case stateProgramLoad:
@@ -321,7 +344,29 @@ CMusicResource *CSoundtrackManager::CalcTrackToPlay (CTopologyNode *pNode, EGame
 			return CalcGameTrackToPlay(pNode, ATTRIB_COMBAT_SOUNDTRACK);
 
 		case stateGameTravel:
+			{
+			//	If we're got a previous travel track, then return to that.
+
+			if (m_pLastTravel
+					&& m_pLastTravel->GetNextPlayPos() != 0)
+				{
+				//	We reset the track so we don't play it again.
+
+				CMusicResource *pTrack = m_pLastTravel;
+				m_pLastTravel = NULL;
+
+				//	Done
+
+				if (retbTransition)
+					*retbTransition = true;
+
+				return pTrack;
+				}
+
+			//	Otherwise, calculate a new travel track.
+
 			return CalcGameTrackToPlay(pNode, ATTRIB_TRAVEL_SOUNDTRACK);
+			}
 
 		default:
 			//	For other states the caller must set a track explicitly.
@@ -369,6 +414,23 @@ int CSoundtrackManager::GetLastPlayedRank (DWORD dwUNID) const
 	//	Not on our list, so treat as if it has never played.
 
 	return -1;
+	}
+
+bool CSoundtrackManager::GetQueuedTrack (SQueueEntry *retEntry)
+
+//	GetQueuedTrack
+//
+//	Checks to see if there is a track in the queue. If there is, we return TRUE 
+//	dequeue the track, returning it in retEntry. Otherwise, we retutn FALSE.
+
+	{
+	if (m_Queue.GetCount() == 0)
+		return false;
+
+	*retEntry = m_Queue.Head();
+	m_Queue.Dequeue();
+
+	return true;
 	}
 
 bool CSoundtrackManager::InTransition (void) const
@@ -427,6 +489,19 @@ void CSoundtrackManager::NextTrack (void)
 
 		TransitionTo(pTrack, pTrack->GetNextPlayPos());
 		}
+	}
+
+void CSoundtrackManager::NotifyAddToQueue (CMusicResource *pTrack)
+
+//	NotifyAddToQueue
+//
+//	Adds the track to the queue.
+
+	{
+	SQueueEntry Entry;
+	Entry.pTrack = pTrack;
+
+	m_Queue.EnqueueAndOverwrite(Entry);
 	}
 
 void CSoundtrackManager::NotifyEndCombat (void)
@@ -502,6 +577,11 @@ void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTim
 	{
 	if (m_bDebugMode)
 		::kernelDebugLogMessage("Entered system.");
+
+	//	Clear the music queue, because they generally apply to the previous
+	//	star system.
+
+	ResetTrackState();
 
 	//	If it's not the first time we've entered the system, then continue 
 	//	playing.
@@ -590,11 +670,7 @@ void CSoundtrackManager::NotifyStartMissionTrack (CMusicResource *pTrack)
 	if (m_bDebugMode)
 		::kernelDebugLogMessage("Mission started.");
 
-	if (m_pNowPlaying 
-			&& !m_pNowPlaying->HasAttribute(ATTRIB_COMBAT_SOUNDTRACK))
-		m_pLastTravel = m_pNowPlaying;
-	else
-		m_pLastTravel = NULL;
+	RememberTravelTrack();
 
 	//	Set our mission track and transition
 
@@ -634,9 +710,17 @@ void CSoundtrackManager::NotifyTrackDone (void)
 
 		m_pNowPlaying = NULL;
 
-		//	Play
+		//	Figure out which track to play
 
-		Play(CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState));
+		bool bTransition;
+		CMusicResource *pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState, &bTransition);
+
+		//	Play or transition
+
+		if (bTransition)
+			TransitionTo(pTrack, pTrack->GetNextPlayPos(), true);
+		else
+			Play(pTrack);
 		}
 	}
 
@@ -880,6 +964,33 @@ void CSoundtrackManager::Reinit (void)
 	m_bStartCombatWhenUndocked = false;
 	}
 
+void CSoundtrackManager::RememberTravelTrack (void)
+
+//	RememberTravelTrack
+//
+//	If we're currently playing a travel track, remember it, and return to it 
+//	when we next return to travel.
+
+	{
+	if (m_pNowPlaying 
+			&& !m_pNowPlaying->HasAttribute(ATTRIB_COMBAT_SOUNDTRACK))
+		m_pLastTravel = m_pNowPlaying;
+	else
+		m_pLastTravel = NULL;
+	}
+
+void CSoundtrackManager::ResetTrackState (void)
+
+//	ResetTrackState
+//
+//	Forget any instructions that affect picking the next track.
+
+	{
+	m_Queue.DeleteAll();
+	m_pMissionTrack = NULL;
+	m_pLastTravel = NULL;
+	}
+
 void CSoundtrackManager::SetGameState (EGameStates iNewState)
 
 //	SetGameState
@@ -904,7 +1015,10 @@ void CSoundtrackManager::SetGameState (EGameStates iNewState)
 	//	than set state)
 
 	else if (iNewState == stateProgramIntro && m_iGameState == stateProgramLoad)
+		{
+		ResetTrackState();
 		m_iGameState = iNewState;
+		}
 
 	//	Otherwise, set the new state
 
@@ -924,6 +1038,10 @@ void CSoundtrackManager::SetGameState (EGameStates iNewState, CMusicResource *pT
 	if (iNewState == m_iGameState
 			&& pTrack == m_pNowPlaying)
 		return;
+
+	//	Clear our queue because we're in a new mode now.
+
+	ResetTrackState();
 
 	//	Set our state
 
@@ -945,6 +1063,10 @@ void CSoundtrackManager::SetMusicEnabled (bool bEnabled)
 		return;
 
 	m_bEnabled = bEnabled;
+
+	//	Clear the queue because we're in a new mode.
+
+	ResetTrackState();
 
 	//	If we're enabling music, play the current track
 
@@ -1048,11 +1170,7 @@ void CSoundtrackManager::TransitionToCombat (CMusicResource *pTrack)
 	{
 	//	If we're in a travel bed track, remember it so we can go back to it later.
 
-	if (m_pNowPlaying 
-			&& !m_pNowPlaying->HasAttribute(ATTRIB_COMBAT_SOUNDTRACK))
-		m_pLastTravel = m_pNowPlaying;
-	else
-		m_pLastTravel = NULL;
+	RememberTravelTrack();
 
 	//	Pick a combat track
 
@@ -1075,22 +1193,11 @@ void CSoundtrackManager::TransitionToTravel (void)
 //	Transition to a travel bed track.
 
 	{
-	CMusicResource *pTrack;
+	//	Pick a travel track
 
-	//	If we interrupted a travel track, see if we can go back to it.
-
-	if (m_pLastTravel
-			&& m_pLastTravel->GetNextPlayPos() != 0)
-		pTrack = m_pLastTravel;
-
-	//	Otherwise, calc a new track
-
-	else
-		{
-		pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), stateGameTravel);
-		if (pTrack == NULL)
-			return;
-		}
+	CMusicResource *pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), stateGameTravel);
+	if (pTrack == NULL)
+		return;
 
 	//	Transition
 
