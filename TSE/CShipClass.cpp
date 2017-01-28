@@ -2256,6 +2256,8 @@ CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const
 	//	Capital ships should define their own explosion type.
 
 	int iLevel = (pShip ? pShip->GetLevel() : GetLevel());
+	int iMinMassLevel = 0;
+	int iMaxMassLevel = 2;
 
 	//	Adjust the level based on the balance type.
 
@@ -2268,21 +2270,31 @@ CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const
 		case typeArmorTooWeak:
 		case typeWeaponsTooWeak:
 			iLevel = Max(1, iLevel - 3);
+			iMaxMassLevel = 0;
 			break;
 
 		case typeStandard:
-			iLevel = Max(1, iLevel - 2);
+			if (GetHullMass() < 750)
+				iMaxMassLevel = 0;
+			else
+				iMaxMassLevel = 1;
 			break;
 
 		case typeElite:
-			iLevel = Max(1, iLevel - 1);
+			if (GetHullMass() < 750)
+				iMaxMassLevel = 1;
+			else
+				{
+				iMinMassLevel = 1;
+				iMaxMassLevel = 2;
+				}
 			break;
 		}
 
 	//	Compute the size of the explosion in the given tier based on where
 	//	we are on the tier (afer adjustments).
 
-	int iMassLevel = (iLevel - 1) % 3;
+	int iMassLevel = Max(iMinMassLevel, Min(iMaxMassLevel, (iLevel - 1) % 3));
 
 	//	We figure out which explosion type based on the level.
 
