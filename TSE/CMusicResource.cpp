@@ -127,6 +127,12 @@ ALERROR CMusicResource::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 		else
 			m_sFilespec = Ctx.pResDb->ResolveFilespec(Ctx.sFolder, m_sFilename);
+
+		if (g_pUniverse->InDebugMode())
+			{
+			if (!pathExists(m_sFilespec))
+				::kernelDebugLogMessage("Cannot find soundtrack file: %s.", m_sFilename);
+			}
 		}
 
 	//	Location criteria
