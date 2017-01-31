@@ -53,6 +53,7 @@ void CEscortOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 		//	Attack the target
 
 		if (!Ctx.IsNonCombatant()
+				&& m_fDeterEnemies
 				&& (m_iState == stateEscorting
 					|| m_iState == stateAttackingThreat))
 			{
@@ -208,7 +209,8 @@ DWORD CEscortOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 			{
 			if (Ctx.IsNonCombatant()
 					|| pParam1 == NULL
-					|| pParam1->IsDestroyed())
+					|| pParam1->IsDestroyed()
+					|| !m_fDeterEnemies)
 				return resNoAnswer;
 
 			switch (m_iState)
@@ -255,7 +257,7 @@ DWORD CEscortOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 			{
 			DWORD dwRes = 0;
 
-			if (!Ctx.IsNonCombatant())
+			if (!Ctx.IsNonCombatant() && m_fDeterEnemies)
 				dwRes |= resCanAttack;
 			if (m_iState == stateAttackingThreat)
 				dwRes |= (resCanAbortAttack | resCanFormUp);
@@ -314,13 +316,16 @@ void CEscortOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iOb
 		{
 		//	Retaliate
 
-		CSpaceObject *pTarget;
-		if (Ctx.Attacker.IsCausedByNonFriendOf(pShip) 
-				&& Ctx.Attacker.GetObj()
-				&& (pTarget = pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver())))
-			pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, pTarget, IShipController::SData());
-		else
-			pShip->GetController()->AddOrder(IShipController::orderAttackNearestEnemy, NULL, IShipController::SData());
+		if (m_fDeterEnemies)
+			{
+			CSpaceObject *pTarget;
+			if (Ctx.Attacker.IsCausedByNonFriendOf(pShip) 
+					&& Ctx.Attacker.GetObj()
+					&& (pTarget = pShip->CalcTargetToAttack(Ctx.Attacker.GetObj(), Ctx.GetOrderGiver())))
+				pShip->GetController()->AddOrder(IShipController::orderDestroyTarget, pTarget, IShipController::SData());
+			else
+				pShip->GetController()->AddOrder(IShipController::orderAttackNearestEnemy, NULL, IShipController::SData());
+			}
 
 		//	Cancel our order
 
