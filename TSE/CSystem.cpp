@@ -5005,7 +5005,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 		if (pObj 
                 && !pObj->IsDestroyed()
-                && !pObj->IsAnchored() 
+                && pObj->CanMove()
                 && !pObj->IsTimeStopped())
 			{
 			//	Move the objects

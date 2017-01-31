@@ -1072,6 +1072,7 @@ class CShip : public CSpaceObject
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual bool CanAttack (void) const override;
 		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
+		virtual bool CanMove (void) const { return true; }
 		virtual bool CanThrust (void) const { return (GetThrust() > 0.0); }
 		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue) override;
 		virtual bool ClassCanAttack (void) override { return true; }

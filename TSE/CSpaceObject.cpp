@@ -5781,7 +5781,7 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 
 	//	Move object
 
-	if (!m_vVel.IsNull() && !m_fNonLinearMove)
+	if (!m_vVel.IsNull() && !m_fNonLinearMove && !IsAnchored())
 		{
 		//	Move the object on a straight line along the velocity vector
 

@@ -1294,11 +1294,17 @@ class CSpaceObject : public CObject
 #endif
 		//	Motion
 		//
+		//	CanMove: This returns TRUE if OnMove should be called for the object.
+		//		Note that ships need to be called at OnMove even if they are
+		//		anchored because they update their particle effects during Move.
+		//		But for most cases, using IsAnchored is better than CanMove.
+		//
 		//	IsAnchored: Anchored objects don't move even if pushed e.g., by
 		//		momentum or gravity). Objects can be temporarily anchored
 		//		(e.g., when docked), so it is possible for an object to return
 		//		TRUE for both CanThrust and IsAnchored.
 
+		virtual bool CanMove (void) const { return !IsAnchored(); }
 		virtual bool CanThrust (void) const { return false; }
 		virtual Metric GetMaxSpeed (void) { return (IsAnchored() ? 0.0 : MAX_SYSTEM_SPEED); }
 		virtual bool IsAnchored (void) const { return IsManuallyAnchored(); }
