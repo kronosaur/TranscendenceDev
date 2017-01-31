@@ -7544,7 +7544,8 @@ void CShip::UpdateInactive (void)
 
         if (--m_iExitGateTimer == 0)
             {
-			Place(m_pExitGate->GetPos());
+			if (m_pExitGate)
+				Place(m_pExitGate->GetPos());
 
             if (!IsVirtual())
                 ClearCannotBeHit();
