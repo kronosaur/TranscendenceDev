@@ -315,6 +315,7 @@ class CParticleArray
 						int xPos,
 						int yPos,
 						SViewportPaintCtx &Ctx,
+						int iLength,
 						CG32bitPixel rgbPrimaryColor,
 						CG32bitPixel rgbSecondaryColor);
 		void PosToXY (const CVector &xy, int *retx, int *rety);

@@ -11,6 +11,8 @@ const CG32bitPixel FLAME_OUTER_COLOR =			CG32bitPixel(255,59,27);
 //const WORD FLAME_MIDDLE_COLOR =					CG32bitPixel(248,200,12);
 //const WORD FLAME_OUTER_COLOR =					CG32bitPixel(189,30,0);
 
+const int DEFAULT_LINE_LENGTH =					30;
+
 #define PAINT_GASEOUS_PARTICLE(Dest,x,y,iWidth,rgbColor,iFade,iFade2)	\
 	{	\
 	switch (iWidth)	\
@@ -939,7 +941,7 @@ void CParticleArray::Paint (CG32bitImage &Dest,
 			break;
 
 		case paintLine:
-			PaintLine(Dest, xPos, yPos, Ctx, Desc.rgbPrimaryColor, Desc.rgbSecondaryColor);
+			PaintLine(Dest, xPos, yPos, Ctx, DEFAULT_LINE_LENGTH, Desc.rgbPrimaryColor, Desc.rgbSecondaryColor);
 			break;
 
 		case paintSmoke:
@@ -1336,6 +1338,7 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 								int xPos,
 								int yPos,
 								SViewportPaintCtx &Ctx,
+								int iLength,
 								CG32bitPixel rgbPrimaryColor,
 								CG32bitPixel rgbSecondaryColor)
 
@@ -1344,13 +1347,6 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 //	Paints particle as a line
 
 	{
-	//	Figure out the velocity of our object
-
-	int xVel = 0;
-	int yVel = 0;
-	if (Ctx.pObj)
-		PosToXY(Ctx.pObj->GetVel(), &xVel, &yVel);
-
 	//	We want the tail to be transparent and the head to be full.
 	//	NOTE: We paint from head to tail.
 
@@ -1371,8 +1367,10 @@ void CParticleArray::PaintLine (CG32bitImage &Dest,
 			int xFrom = xPos + pParticle->x / FIXED_POINT;
 			int yFrom = yPos + pParticle->y / FIXED_POINT;
 
-			int xTo = xFrom - (xVel + pParticle->xVel) / FIXED_POINT;
-			int yTo = yFrom - (yVel + pParticle->yVel) / FIXED_POINT;
+			CVector vTail = PolarToVector(pParticle->iRotation, iLength);
+
+			int xTo = xFrom - (int)vTail.GetX();
+			int yTo = yFrom + (int)vTail.GetY();
 
 			//	Paint the particle
 
