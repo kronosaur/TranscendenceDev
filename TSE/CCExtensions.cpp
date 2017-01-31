@@ -1997,7 +1997,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   a                  Include active player missions\n"
 			"   o                  Include open missions\n"
 			"   r                  Include already debriefed (recorded) missions\n"
-			"   u                  Include unavailable missions\n"
+			"   u                  Include non-player missions\n"
 			"   S                  Only missions owned by source\n"
 			"   +/-{attrib}        Require/exclude missions with given attribute\n"
 			"   +/-ownerID:{id}    Require/exclude missions with given owner\n"
