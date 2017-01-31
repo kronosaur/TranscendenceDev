@@ -293,8 +293,11 @@ class IShipController
 		virtual void AddOrder (OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) { }
 		virtual void CancelAllOrders (void) { }
 		virtual void CancelCurrentOrder (void) { }
+		virtual bool CancelOrder (int iIndex) { return false; }
 		virtual DWORD GetCurrentOrderData (void) { return 0; }
 		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) { return orderNone; }
+		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const { return orderNone; }
+		virtual int GetOrderCount (void) const { return 0; }
 
 		//	Events
 

@@ -6392,6 +6392,14 @@ void CShip::Refuel (const CItem &Fuel)
 
 	{
 	CItemType *pFuelType = Fuel.GetType();
+
+	//	Short-circuit
+
+	if (pFuelType == NULL || Fuel.GetCount() == 0)
+		return;
+
+	//	Refuel
+
 	Metric rFuelPerItem = strToDouble(pFuelType->GetData(), 0.0, NULL);
 	Metric rFuel = rFuelPerItem * Fuel.GetCount();
 

@@ -319,6 +319,8 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 #define FN_SHIP_AI_SETTING			68
 #define FN_SHIP_DAMAGE_ARMOR		69
 #define FN_SHIP_CONSUME_FUEL		70
+#define FN_SHIP_CANCEL_ORDER		71
+#define FN_SHIP_ORDER_COUNT			72
 
 ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -865,6 +867,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	Ship functions
 		//	--------------
 
+		{	"shpCancelOrder",				fnShipSet,			FN_SHIP_CANCEL_ORDER,
+			"(shpCancelOrder ship [orderIndex])",
+			"i*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"shpCancelOrders",				fnShipGetOld,		FN_SHIP_CANCEL_ORDERS,
 			"(shpCancelOrders ship)",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
@@ -970,9 +976,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(shpGetOrder obj) -> order",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"shpGetOrderDesc",				fnShipGet,			FN_SHIP_ORDER_DESC,
-			"(shpGetOrderDesc obj) -> orderDesc",
+		{	"shpGetOrderCount",				fnShipGet,		FN_SHIP_ORDER_COUNT,
+			"(shpGetOrderCount obj) -> count",
 			"i",	0,	},
+
+		{	"shpGetOrderDesc",				fnShipGet,			FN_SHIP_ORDER_DESC,
+			"(shpGetOrderDesc obj [orderIndex]) -> orderDesc",
+			"i*",	0,	},
 
 		{	"shpGetOrderTarget",			fnShipGetOld,		FN_SHIP_ORDER_TARGET,
 			"(shpGetOrderTarget obj) -> obj",
@@ -8155,15 +8165,20 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_MAX_SPEED:
 			return pCC->CreateInteger((int)((100.0 * pShip->GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 
+		case FN_SHIP_ORDER_COUNT:
+			return pCC->CreateInteger(pShip->GetController()->GetOrderCount());
+
 		case FN_SHIP_ORDER_DESC:
 			{
 			IShipController *pController = pShip->GetController();
 			if (pController == NULL)
 				return pCC->CreateNil();
 
+			int iIndex = (pArgs->GetCount() > 1 ? pArgs->GetElement(1)->GetIntegerValue() : 0);
+
 			CSpaceObject *pTarget;
 			IShipController::SData Data;
-			IShipController::OrderTypes iOrder = pController->GetCurrentOrderEx(&pTarget, &Data);
+			IShipController::OrderTypes iOrder = pController->GetOrder(iIndex, &pTarget, &Data);
 			if (iOrder == IShipController::orderNone)
 				return pCC->CreateNil();
 
@@ -8469,6 +8484,12 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 						return pCC->CreateString(sNewValue);
 					}
 				}
+			}
+
+		case FN_SHIP_CANCEL_ORDER:
+			{
+			int iIndex = (pArgs->GetCount() > 1 ? pArgs->GetElement(1)->GetIntegerValue() : 0);
+			return pCC->CreateBool(pShip->GetController()->CancelOrder(iIndex));
 			}
 
 		case FN_SHIP_CAN_INSTALL_ARMOR:

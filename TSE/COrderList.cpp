@@ -15,6 +15,20 @@ COrderList::~COrderList (void)
 	DeleteAll();
 	}
 
+void COrderList::Delete (int iIndex)
+
+//	Delete
+//
+//	Delete the given order
+
+	{
+	if (iIndex < m_List.GetCount())
+		{
+		CleanUp(&m_List[iIndex]);
+		m_List.Delete(iIndex);
+		}
+	}
+
 void COrderList::DeleteAll (void)
 
 //	DeleteAll
@@ -71,44 +85,44 @@ void COrderList::CleanUp (SOrderEntry *pEntry)
 		}
 	}
 
-IShipController::OrderTypes COrderList::GetCurrentOrder (CSpaceObject **retpTarget, IShipController::SData *retData) const
+IShipController::OrderTypes COrderList::GetOrder (int iIndex, CSpaceObject **retpTarget, IShipController::SData *retData) const
 
-//	GetCurrentOrder
+//	GetOrder
 //
-//	Returns the current order and data
+//	Returns the given order
 
 	{
-	const SOrderEntry *pEntry = &GetCurrentEntry();
+	const SOrderEntry &Entry = (iIndex < m_List.GetCount() ? m_List[iIndex] : m_NullOrder);
 
 	if (retpTarget)
-		*retpTarget = pEntry->pTarget;
+		*retpTarget = Entry.pTarget;
 
 	if (retData)
 		{
-		retData->iDataType = (IShipController::EDataTypes)pEntry->dwDataType;
+		retData->iDataType = (IShipController::EDataTypes)Entry.dwDataType;
 
-		switch (pEntry->dwDataType)
+		switch (Entry.dwDataType)
 			{
 			case IShipController::dataInteger:
-				retData->dwData1 = pEntry->dwData;
+				retData->dwData1 = Entry.dwData;
 				break;
 
 			case IShipController::dataPair:
-				retData->dwData1 = LOWORD(pEntry->dwData);
-				retData->dwData2 = HIWORD(pEntry->dwData);
+				retData->dwData1 = LOWORD(Entry.dwData);
+				retData->dwData2 = HIWORD(Entry.dwData);
 				break;
 
 			case IShipController::dataString:
-				retData->sData = (pEntry->dwData ? *(CString *)pEntry->dwData : NULL_STR);
+				retData->sData = (Entry.dwData ? *(CString *)Entry.dwData : NULL_STR);
 				break;
 
 			case IShipController::dataVector:
-				retData->vData = (pEntry->dwData ? *(CVector *)pEntry->dwData : NullVector);
+				retData->vData = (Entry.dwData ? *(CVector *)Entry.dwData : NullVector);
 				break;
 			}
 		}
 
-	return (IShipController::OrderTypes)pEntry->dwOrderType;
+	return (IShipController::OrderTypes)Entry.dwOrderType;
 	}
 
 void COrderList::Insert (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore)

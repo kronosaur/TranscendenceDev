@@ -265,13 +265,15 @@ class COrderList
 	public:
 		~COrderList (void);
 
+		void Delete (int iIndex);
 		void DeleteAll (void);
 		void DeleteCurrent (void);
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline IShipController::OrderTypes GetCurrentOrder (void) const { return (IShipController::OrderTypes)(GetCurrentEntry().dwOrderType); }
-		IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget, IShipController::SData *retData = NULL) const;
+		IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget, IShipController::SData *retData = NULL) const { return GetOrder(0, retpTarget, retData); }
 		inline DWORD GetCurrentOrderData (void) const { return GetCurrentEntry().dwData; }
 		inline CSpaceObject *GetCurrentOrderTarget (void) const { return GetCurrentEntry().pTarget; }
+		IShipController::OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget, IShipController::SData *retData = NULL) const;
 		void Insert (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false);
 		void OnNewSystem (CSystem *pNewSystem, bool *retbCurrentChanged);
 		void OnObjDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged);
@@ -365,8 +367,11 @@ class CBaseShipAI : public IShipController
 		virtual void AddOrder (IShipController::OrderTypes Order, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false) override;
 		virtual void CancelAllOrders (void) override;
 		virtual void CancelCurrentOrder (void) override;
+		virtual bool CancelOrder (int iIndex) override;
 		virtual DWORD GetCurrentOrderData (void) override { return m_Orders.GetCurrentOrderData(); }
-		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override;
+		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override { return m_Orders.GetCurrentOrder(retpTarget, retData); }
+		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const override { return m_Orders.GetOrder(iIndex, retpTarget, retData); }
+		virtual int GetOrderCount (void) const override { return m_Orders.GetCount(); }
 
 	protected:
 		CSpaceObject *CalcEnemyShipInRange (CSpaceObject *pCenter, Metric rRange, CSpaceObject *pExcludeObj = NULL);
@@ -378,11 +383,10 @@ class CBaseShipAI : public IShipController
 		bool CheckOutOfZone (CSpaceObject *pBase, Metric rInnerRadius, Metric rOuterRadius, int iInterval);
 		void FireOnOrderChanged (void);
 		void FireOnOrdersCompleted (void);
-		IShipController::OrderTypes GetCurrentOrder (void) const;
+		IShipController::OrderTypes GetCurrentOrder (void) const { return m_Orders.GetCurrentOrder(); }
 		inline CSpaceObject *GetCurrentOrderTarget (void) const { return m_Orders.GetCurrentOrderTarget(); }
 		inline Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length(); }
 		inline Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length2(); }
-		inline int GetOrderCount (void) const { return m_Orders.GetCount(); }
 		CSpaceObject *GetPlayerOrderGiver (void) const;
 		inline bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);

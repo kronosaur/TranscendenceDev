@@ -399,6 +399,30 @@ void CBaseShipAI::CancelDocking (CSpaceObject *pTarget)
 	m_AICtx.CancelDocking(m_pShip, pTarget);
 	}
 
+bool CBaseShipAI::CancelOrder (int iIndex)
+
+//	CancelOrder
+//
+//	Cancels the current order by index and returns TRUE if we were able to 
+//	cancel it.
+
+	{
+	if (m_Orders.GetCount() == 0)
+		return false;
+	else if (iIndex == 0)
+		{
+		CancelCurrentOrder();
+		return true;
+		}
+	else if (iIndex < m_Orders.GetCount())
+		{
+		m_Orders.Delete(iIndex);
+		return true;
+		}
+	else
+		return false;
+	}
+
 bool CBaseShipAI::CheckForEnemiesInRange (CSpaceObject *pCenter, Metric rRange, int iInterval, CSpaceObject **retpTarget)
 
 //	CheckForEnemiesInRange
@@ -650,26 +674,6 @@ int CBaseShipAI::GetCombatPower (void)
 		return 1;
 	else
 		return iPower;
-	}
-
-IShipController::OrderTypes CBaseShipAI::GetCurrentOrder (void) const
-
-//	GetCurrentOrder
-//
-//	Returns current order
-
-	{
-	return m_Orders.GetCurrentOrder();
-	}
-
-IShipController::OrderTypes CBaseShipAI::GetCurrentOrderEx (CSpaceObject **retpTarget, IShipController::SData *retData)
-
-//	GetCurrentOrderEx
-//
-//	Returns current order and related data
-
-	{
-	return m_Orders.GetCurrentOrder(retpTarget, retData);
 	}
 
 CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
