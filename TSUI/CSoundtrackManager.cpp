@@ -385,7 +385,7 @@ CMusicResource *CSoundtrackManager::GetCurrentTrack (int *retiPos)
 		return NULL;
 
 	if (retiPos)
-		*retiPos = m_Mixer.GetCurrentPlayPos();
+		*retiPos = m_Mixer.GetCurrentPlayPos(5);
 
 	return m_pNowPlaying; 
 	}

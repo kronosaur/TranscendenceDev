@@ -15,7 +15,7 @@ class CMCIMixer
 		void FadeAtPos (int iPos);
 		void FadeNow (void);
 		int GetCurrentPlayLength (void);
-		int GetCurrentPlayPos (void);
+		int GetCurrentPlayPos (DWORD dwTimeout = 5000);
 		void GetDebugInfo (TArray<CString> *retLines) const;
 		bool Play (CMusicResource *pTrack, int iPos = 0);
 		bool PlayFadeIn (CMusicResource *pTrack, int iPos = 0);
@@ -36,6 +36,7 @@ class CMCIMixer
 			{
 			HWND hMCI;
 			EChannelState iState;
+			int iCurPos;
 			};
 
 		enum ERequestType
@@ -83,6 +84,7 @@ class CMCIMixer
 		void ProcessSetPlayPaused (const SRequest &Request);
 		void ProcessStop (const SRequest &Request, bool bNoNotify = false);
 		void ProcessWaitForPos (const SRequest &Request);
+		void UpdatePlayPos (int iChannel, int iPos = -1);
 		bool Wait (DWORD dwTimeout);
 
 		static LONG APIENTRY ParentWndProc (HWND hWnd, UINT message, UINT wParam, LONG lParam);

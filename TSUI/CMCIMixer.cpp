@@ -204,7 +204,7 @@ int CMCIMixer::GetCurrentPlayLength (void)
 	return m_Result.iValue;
 	}
 
-int CMCIMixer::GetCurrentPlayPos (void)
+int CMCIMixer::GetCurrentPlayPos (DWORD dwTimeout)
 
 //	GetCurrentPlayPos
 //
@@ -224,15 +224,12 @@ int CMCIMixer::GetCurrentPlayPos (void)
 
 	//	Wait for result
 
-	if (::WaitForSingleObject(m_hResultEvent, 5000) == WAIT_TIMEOUT)
-		{
-#ifdef DEBUG_SOUNDTRACK
-		::kernelDebugLogMessage("[%x] GetCurrentPlayPos failed.", GetCurrentThreadId());
-#endif
-		return 0;
-		}
+	::WaitForSingleObject(m_hResultEvent, dwTimeout);
 
-	return m_Result.iValue;
+	//	Whether we succeed or not, get the result from the channel structure.
+
+	CSmartLock Lock(m_cs);
+	return m_Channels[m_iCurChannel].iCurPos;
 	}
 
 void CMCIMixer::GetDebugInfo (TArray<CString> *retLines) const
@@ -566,6 +563,8 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 		//	How far into the fade
 
 		int iCurPos = GetPlayPos(hMCI);
+		UpdatePlayPos(m_iCurChannel, iCurPos);
+
 		int iPlaying = iCurPos - Request.iPos;
 		if (iPlaying <= 0 
 				|| iPlaying >= FADE_LENGTH
@@ -618,6 +617,8 @@ void CMCIMixer::ProcessFadeOut (const SRequest &Request)
 		//	How much longer until we fade completely?
 
 		int iCurPos = GetPlayPos(hMCI);
+		UpdatePlayPos(m_iCurChannel, iCurPos);
+
 		int iLeft = Request.iPos - iCurPos;
 		if (iLeft <= 0 
 				|| iCurPos == iPrevPos)
@@ -673,6 +674,7 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 	//	Seek to the proper position
 
 	MCIWndSeek(hMCI, Request.iPos);
+	UpdatePlayPos(m_iCurChannel, Request.iPos);
 	
 	//	Play it
 
@@ -770,6 +772,7 @@ bool CMCIMixer::ProcessRequest (void)
 
 			case typeGetPlayPos:
 				m_Result.iValue = GetPlayPos(m_Channels[m_iCurChannel].hMCI);
+				UpdatePlayPos(m_iCurChannel, m_Result.iValue);
 				::SetEvent(m_hResultEvent);
 				break;
 
@@ -872,6 +875,7 @@ void CMCIMixer::ProcessStop (const SRequest &Request, bool bNoNotify)
 
 			MCIWndStop(m_Channels[i].hMCI);
 			MCIWndClose(m_Channels[i].hMCI);
+			UpdatePlayPos(i, 0);
 			}
 
 	m_bNoStopNotify = bOldNotify;
@@ -905,7 +909,9 @@ void CMCIMixer::ProcessWaitForPos (const SRequest &Request)
 
 		//	Get our current position. If we reached the position, then we're done.
 
-		int iCurPos = MCIWndGetPosition(hMCI);
+		int iCurPos = GetPlayPos(hMCI);
+		UpdatePlayPos(m_iCurChannel, iCurPos);
+
 		if (iCurPos >= Request.iPos
 				|| iCurPos == iPrevPos)
 			return;
@@ -1081,6 +1087,25 @@ void CMCIMixer::TogglePausePlay (void)
 	//	Enqueue
 
 	EnqueueRequest(typePlayPause);
+	}
+
+void CMCIMixer::UpdatePlayPos (int iChannel, int iPos)
+
+//	UpdatePlayPos
+//
+//	Updates the play position
+
+	{
+	//	If iPos is -1 then we get the position from the MCI object. This should
+	//	only be called from inside the processing thread.
+
+	if (iPos == -1)
+		iPos = GetPlayPos(m_Channels[iChannel].hMCI);
+
+	//	Update the position
+
+	CSmartLock Lock(m_cs);
+	m_Channels[iChannel].iCurPos = iPos;
 	}
 
 bool CMCIMixer::Wait (DWORD dwTimeout)
