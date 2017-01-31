@@ -60,7 +60,7 @@ class CMission : public CSpaceObject
 		inline bool IsPlayerMission (void) const { return m_fAcceptedByPlayer; }
 		inline bool IsRecorded (void) const { return (m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure)); }
 		inline bool IsSuccess (void) const { return (m_iStatus == statusSuccess || m_iStatus == statusPlayerSuccess); }
-		inline bool IsUnavailable (void) const { return (m_iStatus == statusClosed || m_iStatus == statusSuccess || m_iStatus == statusPlayerSuccess); }
+		inline bool IsUnavailable (void) const { return (m_iStatus == statusClosed || m_iStatus == statusSuccess || m_iStatus == statusFailure); }
 		inline bool KeepsStats (void) const { return m_pType->KeepsStats(); }
 		bool MatchesCriteria (CSpaceObject *pSource, const SCriteria &Criteria);
 		void OnPlayerEnteredSystem (CSpaceObject *pPlayer);
