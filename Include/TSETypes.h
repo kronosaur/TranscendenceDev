@@ -60,7 +60,8 @@ const int g_RotationAngle = (360 / g_RotationRange);
 const Metric g_Epsilon = 0.0000001;					//	Small value close to 0
 const Metric LIGHT_SPEED = 299792.5;				//	c in Kilometers per second
 const Metric LIGHT_SECOND = LIGHT_SPEED;			//	1 light-second
-const Metric LIGHT_MINUTE = LIGHT_SECOND * 60;	//	1 light-minute
+const Metric LIGHT_MINUTE = LIGHT_SECOND * 60;		//	1 light-minute
+const Metric MAX_SYSTEM_SPEED = 10.0 * LIGHT_SPEED;	//	By default we clip above this
 const Metric g_AU = 149600000.0;					//	1 AU in Kilometers
 
 //	Scales

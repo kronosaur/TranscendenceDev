@@ -1300,7 +1300,7 @@ class CSpaceObject : public CObject
 		//		TRUE for both CanThrust and IsAnchored.
 
 		virtual bool CanThrust (void) const { return false; }
-		virtual Metric GetMaxSpeed (void) { return (IsAnchored() ? LIGHT_SPEED : 0.0); }
+		virtual Metric GetMaxSpeed (void) { return (IsAnchored() ? 0.0 : MAX_SYSTEM_SPEED); }
 		virtual bool IsAnchored (void) const { return IsManuallyAnchored(); }
 
 		void Accelerate (const CVector &vPush, Metric rSeconds);
