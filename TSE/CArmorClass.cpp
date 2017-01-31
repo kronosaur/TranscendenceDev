@@ -59,6 +59,7 @@
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_COMPLETE_HP					CONSTLIT("completeHP")
 #define PROPERTY_COMPLETE_SET					CONSTLIT("completeSet")
+#define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
 #define PROPERTY_DISINTEGRATION_IMMUNE			CONSTLIT("disintegrationImmune")
@@ -1467,6 +1468,9 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 		return CC.CreateBool(pArmor->IsComplete());
 		}
+
+	else if (strEquals(sName, PROPERTY_DAMAGE_ADJ))
+		return Stats.DamageAdj.GetDamageAdjProperty(pEnhancements);
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE))
 		return CC.CreateBool(IsDeviceDamageImmune(Ctx));

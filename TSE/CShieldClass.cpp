@@ -39,6 +39,7 @@
 #define FIELD_REGEN								CONSTLIT("regen")
 #define FIELD_WEAPON_SUPPRESS					CONSTLIT("weaponSuppress")
 
+#define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
@@ -987,7 +988,10 @@ ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	//	Get the property
 
-	if (strEquals(sName, PROPERTY_HP))
+	if (strEquals(sName, PROPERTY_DAMAGE_ADJ))
+		return m_DamageAdj.GetDamageAdjProperty(pEnhancements);
+
+	else if (strEquals(sName, PROPERTY_HP))
 		return CC.CreateInteger(GetHPLeft(Ctx));
 
 	else if (strEquals(sName, PROPERTY_HP_BONUS))

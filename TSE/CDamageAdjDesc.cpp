@@ -128,6 +128,35 @@ int CDamageAdjDesc::GetHPBonus (DamageTypes iDamageType) const
 		}
 	}
 
+ICCItem *CDamageAdjDesc::GetDamageAdjProperty (const CItemEnhancementStack *pEnhancements) const
+
+//	GetDamageAdjProperty
+//
+//	Returns a struct of damage adjustments, one for each damage type.
+
+	{
+	int i;
+
+	CCodeChain &CC = g_pUniverse->GetCC();
+	ICCItem *pResult = CC.CreateSymbolTable();
+
+	for (i = 0; i < damageCount; i++)
+		{
+		DamageTypes iDamageType = (DamageTypes)i;
+		DamageDesc Damage(iDamageType, DiceRange(0, 0, 1));
+
+		int iDefault;
+		int iDamageAdj;
+		GetAdjAndDefault(iDamageType, &iDamageAdj, &iDefault);
+		if (pEnhancements)
+			iDamageAdj = iDamageAdj * pEnhancements->GetDamageAdj(Damage) / 100;
+
+		pResult->SetIntegerAt(CC, ::GetDamageType(iDamageType), iDamageAdj);
+		}
+
+	return pResult;
+	}
+
 ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhancements) const
 
 //	GetHPBonusProperty
