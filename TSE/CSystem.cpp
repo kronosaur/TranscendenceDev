@@ -2959,7 +2959,7 @@ void CSystem::InitSpaceEnvironment (void) const
 //	Initialize if not already
 
 	{
-	if (m_pEnvironment == NULL)
+	if (m_pEnvironment == NULL && m_pType)
 		m_pEnvironment = new CEnvironmentGrid(m_pType->GetSpaceEnvironmentTileSize());
 	}
 
@@ -3195,6 +3195,9 @@ CVector CSystem::OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos)
 //	other objects in the system and see if the coords need to be adjusted
 
 	{
+	if (m_pType == NULL)
+		return vPos;
+
 	//	See if the system wants to change jump coordinates
 
 	CVector vNewPos = vPos;
