@@ -4931,6 +4931,10 @@ ICCItem *fnObjGateTo (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	pArgs->Discard(pCC);
 
 	//	Find the node
+	//
+	//	NOTE: We cannot validate the entrypoint because it could be a named 
+	//	object and we don't know the names until we load the system. Thus we 
+	//	wait until the system is loaded to check.
 
 	CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sNode);
 	if (pNode == NULL)
