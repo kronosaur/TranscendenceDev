@@ -113,6 +113,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_MASS							CONSTLIT("mass")
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
+#define PROPERTY_RADIOACTIVE					CONSTLIT("radioactive")
 #define PROPERTY_REFUEL_MAX_LEVEL				CONSTLIT("refuelMaxLevel")
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
 #define PROPERTY_REMOVE_DEVICE_MAX_LEVEL		CONSTLIT("removeDeviceMaxLevel")
@@ -4269,6 +4270,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		else
 			return CC.CreateNil();
 		}
+
+	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
+		return CC.CreateBool(IsRadioactive());
 
 	else if (strEquals(sName, PROPERTY_REFUEL_MAX_LEVEL))
 		{

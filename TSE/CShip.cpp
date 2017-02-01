@@ -73,6 +73,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
+#define PROPERTY_RADIOACTIVE					CONSTLIT("radioactive")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
 #define PROPERTY_ROTATION_SPEED					CONSTLIT("rotationSpeed")
@@ -7155,6 +7156,20 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		{
 		m_pController->SetPlayerWingman(!pValue->IsNil());
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
+		{
+		if (pValue->IsNil())
+			{
+			if (IsRadioactive())
+				Decontaminate();
+			}
+		else
+			{
+			if (!IsRadioactive())
+				MakeRadioactive();
+			}
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))

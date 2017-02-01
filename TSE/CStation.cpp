@@ -41,6 +41,7 @@
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PARALLAX						CONSTLIT("parallax")
 #define PROPERTY_PLAYER_BACKLISTED				CONSTLIT("playerBlacklisted")
+#define PROPERTY_RADIOACTIVE					CONSTLIT("radioactive")
 #define PROPERTY_SHIP_CONSTRUCTION_ENABLED		CONSTLIT("shipConstructionEnabled")
 #define PROPERTY_SHIP_REINFORCEMENT_ENABLED		CONSTLIT("shipReinforcementEnabled")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
@@ -4505,6 +4506,20 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 				DeterAttack(pPlayer);
 			}
 
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
+		{
+		if (pValue->IsNil())
+			{
+			if (IsRadioactive())
+				Decontaminate();
+			}
+		else
+			{
+			if (!IsRadioactive())
+				MakeRadioactive();
+			}
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_SHIP_CONSTRUCTION_ENABLED))
