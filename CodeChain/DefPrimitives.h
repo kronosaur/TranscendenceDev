@@ -127,7 +127,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"@",				fnItem,			FN_ITEM,
 			"(@ list index)",
-			"vv",	0,	},
+			"v*",	0,	},
 
 		{	"item",				fnItem,			FN_ITEM,
 			"DEPRECATED: Alias of @",

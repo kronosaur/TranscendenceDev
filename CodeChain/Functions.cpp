@@ -1548,14 +1548,30 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pList = pArgs->GetElement(0);
 
+			//	If no second parameter, then we return keys
+
+			if (pArgs->GetCount() < 2)
+				{
+				if (pList->IsSymbolTable() && pList->GetCount() > 0)
+					{
+					ICCItem *pResult = pCC->CreateLinkedList();
+					for (i = 0; i < pList->GetCount(); i++)
+						pResult->AppendString(*pCC, pList->GetKey(i));
+
+					return pResult;
+					}
+				else
+					return pCC->CreateNil();
+				}
+
 			//	If index is nil then we always return nil
 
-			if (pArgs->GetElement(1)->IsNil())
+			else if (pArgs->GetElement(1)->IsNil())
 				return pCC->CreateNil();
 
 			//	Handle symbol tables differently
 
-			if (pList->IsSymbolTable())
+			else if (pList->IsSymbolTable())
 				{
 				BOOL bFound;
 				ICCItem *pResult = pList->LookupEx(pCC, pArgs->GetElement(1), &bFound);
@@ -4989,6 +5005,32 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 						if (iCompare != 0)
 							return iCompare;
 						}
+					return 0;
+					}
+				else if (pFirst->GetCount() > pSecond->GetCount())
+					return 1;
+				else
+					return -1;
+				break;
+				}
+
+			case ICCItem::SymbolTable:
+				{
+				if (pFirst->GetCount() == pSecond->GetCount())
+					{
+					int i;
+
+					for (i = 0; i < pFirst->GetCount(); i++)
+						{
+						int iCompare = strCompare(pFirst->GetKey(i), pSecond->GetKey(i));
+						if (iCompare != 0)
+							return iCompare;
+
+						iCompare = HelperCompareItems(pFirst->GetElement(i), pSecond->GetElement(i));
+						if (iCompare != 0)
+							return iCompare;
+						}
+
 					return 0;
 					}
 				else if (pFirst->GetCount() > pSecond->GetCount())

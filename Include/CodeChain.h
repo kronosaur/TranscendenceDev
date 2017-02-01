@@ -102,6 +102,7 @@ class ICCItem : public CObject
 			Complex,
 			Double,
 			Vector,
+			SymbolTable,
 			};
 
 		ICCItem (IObjectClass *pClass);
@@ -714,7 +715,7 @@ class CCSymbolTable : public ICCList
 
 		virtual ICCItem *Clone (CCodeChain *pCC);
 		virtual ICCItem *CloneDeep (CCodeChain *pCC);
-		virtual ValueTypes GetValueType (void) { return Complex; }
+		virtual ValueTypes GetValueType (void) { return SymbolTable; }
 		virtual BOOL IsIdentifier (void) { return FALSE; }
 		virtual BOOL IsFunction (void) { return FALSE; }
 		virtual BOOL IsLocalFrame (void) { return m_bLocalFrame; }
