@@ -3780,36 +3780,43 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 		int iRange;
 		if (!pObj->IsHidden()
 				&& !pObj->IsVirtual()
-				&& pObj->InBox(vLargeUR, vLargeLL)
-				&& (pObj->GetScale() == scaleStar 
+				&& pObj->InBox(vLargeUR, vLargeLL))
+			{
+			if ((pObj->GetScale() == scaleStar 
 					|| pObj->GetScale() == scaleWorld 
 					|| ((iRange = pObj->GetDetectionRangeIndex(iPerception)) < RANGE_INDEX_COUNT
 						&& pCenter->GetDistance2(pObj) <= rMaxDist2[iRange])))
-			{
-			//	Add to the list
-
-			SPaintEntry *pEntry = PaintList.Insert();
-			pEntry->pObj = pObj;
-
-			//	Figure out the position of the object in pixels
-
-			Trans.Transform(pObj->GetPos(), &pEntry->x, &pEntry->y);
-
-			//	This object is now in the LRS
-
-			bool bNewInLRS = pObj->SetPOVLRS();
-
-			//	If an enemy, keep track
-
-			if (pCenter->IsEnemy(pObj)
-					&& pObj->CanAttack())
 				{
-				if (bNewInLRS 
-						&& pObj->GetCategory() == CSpaceObject::catShip)
-					bNewEnemies = true;
+				//	Add to the list
 
-				m_fEnemiesInLRS = true;
+				SPaintEntry *pEntry = PaintList.Insert();
+				pEntry->pObj = pObj;
+
+				//	Figure out the position of the object in pixels
+
+				Trans.Transform(pObj->GetPos(), &pEntry->x, &pEntry->y);
+
+				//	This object is now in the LRS
+
+				bool bNewInLRS = pObj->SetPOVLRS();
+
+				//	If an enemy, keep track
+
+				if (pCenter->IsEnemy(pObj)
+						&& pObj->CanAttack())
+					{
+					if (bNewInLRS 
+							&& pObj->GetCategory() == CSpaceObject::catShip)
+						bNewEnemies = true;
+
+					m_fEnemiesInLRS = true;
+					}
 				}
+
+			//	NOTE: We don't clear the POVLRS flag until it leaves the large
+			//	bounding box. We do this so that we don't get repeated new enemy
+			//	notifications when ships are circling just outside the edge of the
+			//	LRS.
 			}
 		else
 			{
