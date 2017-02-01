@@ -385,7 +385,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 			bool bInPlace;
 			m_AICtx.ImplementHold(m_pShip, &bInPlace);
 			if (bInPlace)
-				m_AICtx.ImplementAttackTarget(m_pShip, m_pTarget);
+				m_AICtx.ImplementAttackTarget(m_pShip, m_pTarget, true);
 
 			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip, m_pTarget);
 
