@@ -15,10 +15,17 @@
 IHISession::IHISession (CHumanInterface &HI) : IHICommand(HI),
 		m_bNoCursor(false),
 		m_bTransparent(false),
-		m_bCapture(false)
+		m_bSessionCapture(false)
 
 //	IHISession constructor
 	
+	{
+	}
+
+IHISession::~IHISession (void)
+
+//	IHISession destructor
+
 	{
 	}
 
@@ -238,11 +245,7 @@ void IHISession::HILButtonDblClick (int x, int y, DWORD dwFlags)
 
 	bool bCapture = false;
 	if (m_Reanimator.HandleLButtonDblClick(x, y, dwFlags, &bCapture))
-		{
-		if (bCapture)
-			::SetCapture(m_HI.GetHWND());
 		return;
-		}
 
 	OnLButtonDblClick(x, y, dwFlags); 
 	}
@@ -254,20 +257,13 @@ void IHISession::HILButtonDown (int x, int y, DWORD dwFlags)
 //	Handle mouse input
 	
 	{
-	//	This is only set to TRUE if the session itself captures the mouse
-	//	(as opposed to Reanimator).
-
-	m_bCapture = false;
+	m_bSessionCapture = false;
 
 	//	See if the animator will handle it
 
 	bool bCapture = false;
 	if (m_Reanimator.HandleLButtonDown(x, y, dwFlags, &bCapture))
-		{
-		if (bCapture)
-			::SetCapture(m_HI.GetHWND());
 		return;
-		}
 
 	bool bSessionCapture = false;
 	OnLButtonDown(x, y, dwFlags, &bSessionCapture);
@@ -279,10 +275,7 @@ void IHISession::HILButtonDown (int x, int y, DWORD dwFlags)
 	//	the mouse, it doesn't also destroy itself.
 
 	if (bSessionCapture)
-		{
-		m_bCapture = bSessionCapture;
-		::SetCapture(m_HI.GetHWND());
-		}
+		m_bSessionCapture = true;
 	}
 
 void IHISession::HILButtonUp (int x, int y, DWORD dwFlags)
@@ -292,17 +285,77 @@ void IHISession::HILButtonUp (int x, int y, DWORD dwFlags)
 //	Handle mouse input
 	
 	{
-	if (::GetCapture() == m_HI.GetHWND())
-		::ReleaseCapture();
-
 	//	See if the animator will handle it
 
-	if (!m_bCapture
+	if (!m_bSessionCapture 
 			&& m_Reanimator.HandleLButtonUp(x, y, dwFlags))
 		return;
 
+	m_bSessionCapture = false;
 	OnLButtonUp(x, y, dwFlags);
-	m_bCapture = false;
+	}
+
+void IHISession::HIMButtonDblClick (int x, int y, DWORD dwFlags)
+
+//	HIMButtonDblClick
+//
+//	Handle mouse input
+	
+	{
+	//	See if the animator will handle it
+
+#ifdef LATER
+	bool bCapture = false;
+	if (m_Reanimator.HandleMButtonDblClick(x, y, dwFlags, &bCapture))
+		{
+		if (bCapture)
+			::SetCapture(m_HI.GetHWND());
+		return;
+		}
+#endif
+
+	OnMButtonDblClick(x, y, dwFlags); 
+	}
+
+void IHISession::HIMButtonDown (int x, int y, DWORD dwFlags)
+
+//	HIMButtonDown
+//
+//	Handle mouse input
+	
+	{
+	//	See if the animator will handle it
+
+#ifdef LATER
+	bool bCapture = false;
+	if (m_Reanimator.HandleMButtonDown(x, y, dwFlags, &bCapture))
+		{
+		if (bCapture)
+			::SetCapture(m_HI.GetHWND());
+		return;
+		}
+#endif
+
+	bool bSessionCapture = false;
+	OnMButtonDown(x, y, dwFlags, &bSessionCapture);
+	}
+
+void IHISession::HIMButtonUp (int x, int y, DWORD dwFlags)
+
+//	HIMButtonUp
+//
+//	Handle mouse input
+	
+	{
+	//	See if the animator will handle it
+
+#ifdef LATER
+	if (!m_bCapture
+			&& m_Reanimator.HandleMButtonUp(x, y, dwFlags))
+		return;
+#endif
+
+	OnMButtonUp(x, y, dwFlags);
 	}
 
 void IHISession::HIMouseMove (int x, int y, DWORD dwFlags)
@@ -314,7 +367,7 @@ void IHISession::HIMouseMove (int x, int y, DWORD dwFlags)
 	{
 	//	See if the animator will handle it
 
-	if (!m_bCapture
+	if (!m_bSessionCapture
 			&& m_Reanimator.HandleMouseMove(x, y, dwFlags))
 		return;
 
@@ -372,11 +425,7 @@ void IHISession::HIRButtonDblClick (int x, int y, DWORD dwFlags)
 
 	bool bCapture = false;
 	if (m_Reanimator.HandleRButtonDblClick(x, y, dwFlags, &bCapture))
-		{
-		if (bCapture)
-			::SetCapture(m_HI.GetHWND());
 		return;
-		}
 
 	OnRButtonDblClick(x, y, dwFlags); 
 	}
@@ -392,11 +441,7 @@ void IHISession::HIRButtonDown (int x, int y, DWORD dwFlags)
 
 	bool bCapture = false;
 	if (m_Reanimator.HandleRButtonDown(x, y, dwFlags, &bCapture))
-		{
-		if (bCapture)
-			::SetCapture(m_HI.GetHWND());
 		return;
-		}
 
 	OnRButtonDown(x, y, dwFlags);
 	}
@@ -408,9 +453,6 @@ void IHISession::HIRButtonUp (int x, int y, DWORD dwFlags)
 //	Handle mouse input
 	
 	{
-	if (::GetCapture() == m_HI.GetHWND())
-		::ReleaseCapture();
-
 	//	See if the animator will handle it
 
 	if (m_Reanimator.HandleRButtonUp(x, y, dwFlags))

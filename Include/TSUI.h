@@ -129,7 +129,7 @@ class IHISession : public IHICommand, public IAniCommand
 	{
 	public:
 		IHISession (CHumanInterface &HI);
-		virtual ~IHISession (void) { }
+		virtual ~IHISession (void);
 
 		inline void HIAnimate (CG32bitImage &Screen, bool bTopMost) { OnAnimate(Screen, bTopMost); }
 		void HIChar (char chChar, DWORD dwKeyData);
@@ -141,6 +141,9 @@ class IHISession : public IHICommand, public IAniCommand
 		void HILButtonDblClick (int x, int y, DWORD dwFlags);
 		void HILButtonDown (int x, int y, DWORD dwFlags);
 		void HILButtonUp (int x, int y, DWORD dwFlags);
+		void HIMButtonDblClick (int x, int y, DWORD dwFlags);
+		void HIMButtonDown (int x, int y, DWORD dwFlags);
+		void HIMButtonUp (int x, int y, DWORD dwFlags);
 		void HIMouseMove (int x, int y, DWORD dwFlags);
 		void HIMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
 		inline void HIMove (int x, int y) { OnMove(x, y); }
@@ -196,6 +199,9 @@ class IHISession : public IHICommand, public IAniCommand
 		virtual void OnLButtonDblClick (int x, int y, DWORD dwFlags) { }
 		virtual void OnLButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) { }
 		virtual void OnLButtonUp (int x, int y, DWORD dwFlags) { }
+		virtual void OnMButtonDblClick (int x, int y, DWORD dwFlags) { }
+		virtual void OnMButtonDown (int x, int y, DWORD dwFlags, bool *retbCapture) { }
+		virtual void OnMButtonUp (int x, int y, DWORD dwFlags) { }
 		virtual void OnMouseMove (int x, int y, DWORD dwFlags) { }
 		virtual void OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags) { }
 		virtual void OnMove (int x, int y) { }
@@ -221,7 +227,7 @@ class IHISession : public IHICommand, public IAniCommand
 
 		bool m_bNoCursor;						//	If TRUE, we hide the cursor when we show the session.
 		bool m_bTransparent;					//	If TRUE, session below this one shows through.
-		bool m_bCapture;						//	If TRUE, mouse is captured by session subclass (not Reanimator)
+		bool m_bSessionCapture;					//	If TRUE, session has captured mouse
 		CReanimator m_Reanimator;
 	};
 
@@ -722,6 +728,7 @@ class CHumanInterface
 		void HIPostCommand (const CString &sCmd, void *pData = NULL);
 		inline ALERROR HISessionCommand (const CString &sCmd, void *pData = NULL) { return (m_pCurSession ? m_pCurSession->HICommand(sCmd, pData) : NOERROR); }
         inline bool IsLButtonDown (void) const { return m_bLButtonDown; }
+        inline bool IsMButtonDown (void) const { return m_bMButtonDown; }
         inline bool IsRButtonDown (void) const { return m_bRButtonDown; }
 		inline bool IsWindowedMode (void) const { return m_Options.m_bWindowedMode; }
 		ALERROR OpenPopupSession (IHISession *pSession, CString *retsError = NULL);
@@ -763,10 +770,12 @@ class CHumanInterface
 
 		inline void BltScreen (void) { m_ScreenMgr.Render(); }
 		void CalcBackgroundSessions (void);
+		void CaptureMouse (void);
 		void CleanUp (EHIShutdownReasons iShutdownCode);
 		inline void FlipScreen (void) { m_ScreenMgr.Flip(); }
 		void HardCrash (const CString &sProgramState);
 		void PaintFrameRate (void);
+		void ReleaseMouse (void);
 
 		bool CreateMainWindow (HINSTANCE hInst, int nCmdShow, LPSTR lpCmdLine, CString *retsError);
 		void MainLoop (void);
@@ -782,6 +791,9 @@ class CHumanInterface
 		LONG WMLButtonDblClick (int x, int y, DWORD dwFlags);
 		LONG WMLButtonDown (int x, int y, DWORD dwFlags);
 		LONG WMLButtonUp (int x, int y, DWORD dwFlags);
+		LONG WMMButtonDblClick (int x, int y, DWORD dwFlags);
+		LONG WMMButtonDown (int x, int y, DWORD dwFlags);
+		LONG WMMButtonUp (int x, int y, DWORD dwFlags);
 		LONG WMMouseMove (int x, int y, DWORD dwFlags);
 		LONG WMMouseWheel (int iDelta, int x, int y, DWORD dwFlags);
 		LONG WMMove (int x, int y);
@@ -813,7 +825,9 @@ class CHumanInterface
 		CCriticalSection m_cs;				//	Coordinate UI vs. Background
 
         //  Input state
+		int m_iCapture;
         bool m_bLButtonDown;
+		bool m_bMButtonDown;
         bool m_bRButtonDown;
 		char m_chKeyDown;
         int m_xLastMousePos;

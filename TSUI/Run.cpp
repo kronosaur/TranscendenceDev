@@ -291,6 +291,15 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 		case WM_LBUTTONUP:
 			return (g_pHI ? g_pHI->WMLButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam) : 0);
 
+		case WM_MBUTTONDBLCLK:
+			return g_pHI->WMMButtonDblClick((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
+
+		case WM_MBUTTONDOWN:
+			return g_pHI->WMMButtonDown((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
+
+		case WM_MBUTTONUP:
+			return (g_pHI ? g_pHI->WMMButtonUp((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam) : 0);
+
 		case WM_MOUSEMOVE:
 			return g_pHI->WMMouseMove((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam), wParam);
 
@@ -539,6 +548,8 @@ LONG CHumanInterface::WMLButtonDblClick (int x, int y, DWORD dwFlags)
 //	Handle WM_LBUTTONDBLCLICK message
 
 	{
+	CaptureMouse();
+
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
@@ -547,6 +558,7 @@ LONG CHumanInterface::WMLButtonDblClick (int x, int y, DWORD dwFlags)
 		m_pCurSession->HILButtonDblClick(xLocal, yLocal, dwFlags);
 		}
 
+    m_bLButtonDown = true;
 	return 0;
 	}
 LONG CHumanInterface::WMLButtonDown (int x, int y, DWORD dwFlags)
@@ -556,6 +568,8 @@ LONG CHumanInterface::WMLButtonDown (int x, int y, DWORD dwFlags)
 //	Handle WM_LBUTTONDOWN message
 
 	{
+	CaptureMouse();
+
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
@@ -575,6 +589,8 @@ LONG CHumanInterface::WMLButtonUp (int x, int y, DWORD dwFlags)
 //	Handle WM_LBUTTONUP message
 
 	{
+	ReleaseMouse();
+
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
@@ -584,6 +600,68 @@ LONG CHumanInterface::WMLButtonUp (int x, int y, DWORD dwFlags)
 		}
 
     m_bLButtonDown = false;
+	return 0;
+	}
+
+LONG CHumanInterface::WMMButtonDblClick (int x, int y, DWORD dwFlags)
+
+//	WMMButtonDblClick
+//
+//	Handle WM_MBUTTONDBLCLICK message
+
+	{
+	CaptureMouse();
+
+	if (m_pCurSession)
+		{
+		int xLocal, yLocal;
+
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+		m_pCurSession->HIMButtonDblClick(xLocal, yLocal, dwFlags);
+		}
+
+    m_bMButtonDown = true;
+	return 0;
+	}
+LONG CHumanInterface::WMMButtonDown (int x, int y, DWORD dwFlags)
+
+//	WMMButtonDown
+//
+//	Handle WM_MBUTTONDOWN message
+
+	{
+	CaptureMouse();
+
+	if (m_pCurSession)
+		{
+		int xLocal, yLocal;
+
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+		m_pCurSession->HIMButtonDown(xLocal, yLocal, dwFlags);
+		}
+
+    m_bMButtonDown = true;
+	return 0;
+	}
+
+LONG CHumanInterface::WMMButtonUp (int x, int y, DWORD dwFlags)
+
+//	WMMButtonUp
+//
+//	Handle WM_MBUTTONUP message
+
+	{
+	ReleaseMouse();
+
+	if (m_pCurSession)
+		{
+		int xLocal, yLocal;
+
+		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+		m_pCurSession->HIMButtonUp(xLocal, yLocal, dwFlags);
+		}
+
+    m_bMButtonDown = false;
 	return 0;
 	}
 
@@ -650,6 +728,8 @@ LONG CHumanInterface::WMRButtonDblClick (int x, int y, DWORD dwFlags)
 //	Handle WM_RBUTTONDBLCLICK message
 
 	{
+	CaptureMouse();
+
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
@@ -658,8 +738,10 @@ LONG CHumanInterface::WMRButtonDblClick (int x, int y, DWORD dwFlags)
 		m_pCurSession->HIRButtonDblClick(xLocal, yLocal, dwFlags);
 		}
 
+    m_bRButtonDown = true;
 	return 0;
 	}
+
 LONG CHumanInterface::WMRButtonDown (int x, int y, DWORD dwFlags)
 
 //	WMRButtonDown
@@ -667,6 +749,8 @@ LONG CHumanInterface::WMRButtonDown (int x, int y, DWORD dwFlags)
 //	Handle WM_RBUTTONDOWN message
 
 	{
+	CaptureMouse();
+
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;
@@ -686,6 +770,8 @@ LONG CHumanInterface::WMRButtonUp (int x, int y, DWORD dwFlags)
 //	Handle WM_RBUTTONUP message
 
 	{
+	ReleaseMouse();
+
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;

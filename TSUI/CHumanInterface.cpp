@@ -17,7 +17,9 @@ CHumanInterface::CHumanInterface (void) :
 		m_pController(NULL),
 		m_pCurSession(NULL),
 		m_hWnd(NULL),
+		m_iCapture(0),
         m_bLButtonDown(false),
+        m_bMButtonDown(false),
         m_bRButtonDown(false),
 		m_chKeyDown('\0'),
         m_xLastMousePos(-1),
@@ -34,6 +36,9 @@ CHumanInterface::~CHumanInterface (void)
 //	CHumanInterface destructor
 
 	{
+	if (m_iCapture)
+		::ReleaseCapture();
+
 	CleanUp(HIShutdownDestructor);
 	}
 
@@ -114,6 +119,18 @@ void CHumanInterface::CalcBackgroundSessions (void)
 		if (!m_SavedSessions[i]->IsTransparent())
 			return;
 		}
+	}
+
+void CHumanInterface::CaptureMouse (void)
+
+//	CaptureMouse
+//
+//	Captures the mouse. This could be called multiple times if multiple mouse buttons
+//	are down.
+
+	{
+	if (m_iCapture++ == 0)
+		::SetCapture(GetHWND());
 	}
 
 void CHumanInterface::CleanUp (EHIShutdownReasons iShutdownCode)
@@ -571,6 +588,20 @@ void CHumanInterface::PaintFrameRate (void)
 	//	LATER: This should move to EndSessionUpdate
 	if (m_pCurSession)
 		m_pCurSession->HIInvalidate(rcRect);
+	}
+
+void CHumanInterface::ReleaseMouse (void)
+
+//	ReleaseMouse
+//
+//	Release capture
+
+	{
+	if (--m_iCapture <= 0)
+		{
+		::ReleaseCapture();
+		m_iCapture = 0;
+		}
 	}
 
 ALERROR CHumanInterface::ShowSession (IHISession *pSession, CString *retsError)
