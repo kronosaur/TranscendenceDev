@@ -149,26 +149,95 @@ void CLabelArranger::ArrangeSideColumns (TArray<SLabelDesc> &Labels) const
     TSortMap<Metric, int> RightCol(DescendingSort);
     RightCol.GrowToFit(Labels.GetCount());
 
+	//	Keep track of unbound labels, sorted alphabetically
+
+	TSortMap<CString, int> Unbound;
+
     int cxColumn = 0;
     for (i = 0; i < Labels.GetCount(); i++)
         {
         const SLabelDesc &Label = Labels[i];
-        int yDiff = m_yCenter - Label.yDest;
-        Metric rYAdj = pow((Metric)abs(yDiff) / (RectHeight(m_rcBounds) / 2), 1.5);
 
-        CVector vPos(Label.xDest - m_xCenter, rYAdj * yDiff);
-        Metric rAngle = vPos.Polar();
+		//	Labels that are at the center are unbound
 
-        if (cos(rAngle) < 0.0)
-            LeftCol.Insert(sin(rAngle), i);
-        else
-            RightCol.Insert(sin(rAngle), i);
+		if (Label.xDest == m_xCenter && Label.yDest == m_yCenter)
+			Unbound.Insert(Label.sLabel, i);
+		else
+			{
+			int yDiff = m_yCenter - Label.yDest;
+			Metric rYAdj = pow((Metric)abs(yDiff) / (RectHeight(m_rcBounds) / 2), 1.5);
 
-        if (Label.cxWidth > cxColumn)
-            cxColumn = Label.cxWidth;
+			CVector vPos(Label.xDest - m_xCenter, rYAdj * yDiff);
+			Metric rAngle = vPos.Polar();
+
+			if (cos(rAngle) < 0.0)
+				LeftCol.Insert(sin(rAngle), i);
+			else
+				RightCol.Insert(sin(rAngle), i);
+			}
+
+		if (Label.cxWidth > cxColumn)
+			cxColumn = Label.cxWidth;
         }
 
     cxColumn = AlignUp(cxColumn, m_cxGrid);
+
+	//	If we have unbound labels, add them around the two columns.
+
+	if (Unbound.GetCount() > 0)
+		{
+		int iRemaining = Unbound.GetCount();
+		int iAddLeftTop = 0;
+		int iAddLeftBottom = 0;
+		int iAddRightTop = 0;
+		int iAddRightBottom = 0;
+
+		if (LeftCol.GetCount() >= RightCol.GetCount())
+			{
+			int iDiff = Min(iRemaining, LeftCol.GetCount() - RightCol.GetCount());
+			int iDiffHalf = iDiff / 2;
+			iAddRightTop += iDiffHalf;
+			iAddRightBottom += (iDiff - iDiffHalf);
+			iRemaining -= iDiff;
+			}
+		else
+			{
+			int iDiff = Min(iRemaining, RightCol.GetCount() - LeftCol.GetCount());
+			int iDiffHalf = iDiff / 2;
+			iAddLeftTop += iDiffHalf;
+			iAddLeftBottom += (iDiff - iDiffHalf);
+			iRemaining -= iDiff;
+			}
+
+		int iAddLeft = iRemaining / 2;
+		int iLeftHalf = iAddLeft / 2;
+		iAddLeftTop += iLeftHalf;
+		iAddLeftBottom += (iAddLeft - iLeftHalf);
+
+		int iAddRight = iRemaining - iAddLeft;
+		int iRightHalf = iAddRight / 2;
+		iAddRightTop += iRightHalf;
+		iAddRightBottom += (iAddRight - iRightHalf);
+
+		int iNext = 0;
+
+		Metric rPos = (LeftCol.GetCount() > 0 ? LeftCol.GetKey(0) + 100.0 : 100.0);
+		Metric rInc = -0.01;
+		for (i = 0; i < iAddLeftTop; i++, iNext++, rPos += rInc)
+			LeftCol.Insert(rPos, Unbound[iNext]);
+
+		rPos = (LeftCol.GetCount() > 0 ? LeftCol.GetKey(LeftCol.GetCount() - 1) - 0.01 : 0.0);
+		for (i = 0; i < iAddLeftBottom; i++, iNext++, rPos += rInc)
+			LeftCol.Insert(rPos, Unbound[iNext]);
+
+		rPos = (RightCol.GetCount() > 0 ? RightCol.GetKey(0) + 100.0 : 100.0);
+		for (i = 0; i < iAddRightTop; i++, iNext++, rPos += rInc)
+			RightCol.Insert(rPos, Unbound[iNext]);
+
+		rPos = (RightCol.GetCount() > 0 ? RightCol.GetKey(RightCol.GetCount() - 1) - 0.01 : 0.0);
+		for (i = 0; i < iAddRightBottom; i++, iNext++, rPos += rInc)
+			RightCol.Insert(rPos, Unbound[iNext]);
+		}
 
     //  If left and right are unbalanced, move entries around
 

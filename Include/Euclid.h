@@ -433,6 +433,7 @@ class CLabelArranger
             {
             //  Inputs
 
+			CString sLabel;					//	Label
             int cxWidth;                    //  Label width
             int cyHeight;                   //  Label height
             int xDest;                      //  What the label points to
