@@ -255,8 +255,10 @@ DWORD CEscortOrder::OnCommunicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObje
 
 		case msgQueryCommunications:
 			{
-			DWORD dwRes = 0;
+			if (m_Objs[objPrincipal] != pParam1)
+				return resNoAnswer;
 
+			DWORD dwRes = 0;
 			if (!Ctx.IsNonCombatant() && m_fDeterEnemies)
 				dwRes |= resCanAttack;
 			if (m_iState == stateAttackingThreat)
