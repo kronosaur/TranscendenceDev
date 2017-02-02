@@ -294,6 +294,63 @@ void CScreenMgr3D::Invalidate (const RECT &rcRect)
 	{
 	}
 
+void CScreenMgr3D::LocalToClient (int x, int y, int *retx, int *rety) const
+
+//	LocalToClient
+//
+//	Converts local (screen manager) to client coordinates
+
+	{
+	if (m_rScale != 1.0)
+		{
+		x = (int)(x / m_rScale);
+		y = (int)(y / m_rScale);
+		}
+
+	if (m_bWindowedMode)
+		{
+		RECT rcClient;
+		::GetClientRect(m_hWnd, &rcClient);
+
+		int cxClient = RectWidth(rcClient);
+		int cyClient = RectHeight(rcClient);
+
+		//	In DX we stretch the screen to fit into the client area.
+
+		if (m_cxScreen > 0 && m_cyScreen > 0)
+			{
+			*retx = cxClient * x / m_cxScreen;
+			*rety = cxClient * y / m_cyScreen;
+			}
+		else
+			{
+			*retx = x;
+			*rety = y;
+			}
+		}
+	else
+		{
+		*retx = x;
+		*rety = y;
+		}
+	}
+
+void CScreenMgr3D::LocalToGlobal (int x, int y, int *retx, int *rety) const
+
+//	LocalToGlobal
+//
+//	Converts local (screen manager) to global (screen) coordinates.
+
+	{
+	POINT pt;
+	LocalToClient(x, y, (int *)&pt.x, (int *)&pt.y);
+
+	::ClientToScreen(m_hWnd, &pt);
+
+	*retx = (int)pt.x;
+	*rety = (int)pt.y;
+	}
+
 void CScreenMgr3D::OnWMActivateApp (bool bActivate)
 
 //	OnWMActivateApp

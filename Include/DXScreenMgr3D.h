@@ -160,6 +160,8 @@ class CScreenMgr3D
 		void Invalidate (void);
 		void Invalidate (const RECT &rcRect);
 		inline bool IsMinimized (void) const { return m_bMinimized; }
+		void LocalToClient (int x, int y, int *retx, int *rety) const;
+		void LocalToGlobal (int x, int y, int *retx, int *rety) const;
 		void OnWMActivateApp (bool bActivate);
 		void OnWMDisplayChange (int iBitDepth, int cxWidth, int cyHeight);
 		void OnWMMove (int x, int y);
