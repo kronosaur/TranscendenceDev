@@ -72,6 +72,8 @@ const CG32bitPixel RGB_ORBIT_LINE =		CG32bitPixel(115, 149, 229);
 const CG32bitPixel RGB_MAP_LABEL =		CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =		CG32bitPixel(165, 140, 83);
 
+const int REGEN_PER_DAY_FACTOR =		10;
+
 static CObjectClass<CStation>g_Class(OBJID_CSTATION);
 
 static char g_ImageTag[] = "Image";
@@ -3659,6 +3661,20 @@ void CStation::OnUpdateExtended (const CTimeSpan &ExtraTime)
 //	Update after an extended period of time
 
 	{
+	Metric rRepairPer180;
+
+	if (!IsAbandoned()
+			&& m_iMaxHitPoints > 0
+			&& m_iHitPoints < m_iMaxHitPoints
+			&& (rRepairPer180 = m_pType->GetRegenDesc().GetHPPer180(STATION_REPAIR_FREQUENCY)) > 0)
+		{
+		//	For each day elapsed, we repair based on the regen rate. This is
+		//	much less than if we let the regen run for a day because we're 
+		//	simulating real repairs (which take time) vs. ad hoc repairs which
+		//	can be done quickly.
+
+		m_iHitPoints = Min(m_iMaxHitPoints, m_iHitPoints + mathRound(rRepairPer180 * REGEN_PER_DAY_FACTOR));
+		}
 	}
 
 void CStation::OnWriteToStream (IWriteStream *pStream)
