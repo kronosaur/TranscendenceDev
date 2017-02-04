@@ -59,6 +59,7 @@
 #define LOCATION_CRITERIA_TABLE_TAG				CONSTLIT("LocationCriteriaTable")
 #define LOOKUP_TAG								CONSTLIT("Lookup")
 #define TABLE_TAG								CONSTLIT("Table")
+#define VARIANTS_TAG							CONSTLIT("Variants")
 
 #define CHANCE_ATTRIB							CONSTLIT("chance")
 #define COLOR_ATTRIB							CONSTLIT("color")
@@ -426,7 +427,7 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 		pEntry = new CCompositeEntry;
 	else if (strEquals(pDesc->GetTag(), IMAGE_EFFECT_TAG) || strEquals(pDesc->GetTag(), EFFECT_TAG))
 		pEntry = new CEffectEntry;
-	else if (strEquals(pDesc->GetTag(), TABLE_TAG) || strEquals(pDesc->GetTag(), IMAGE_VARIANTS_TAG))
+	else if (strEquals(pDesc->GetTag(), TABLE_TAG) || strEquals(pDesc->GetTag(), IMAGE_VARIANTS_TAG) || strEquals(pDesc->GetTag(), VARIANTS_TAG))
 		pEntry = new CTableEntry;
 	else if (strEquals(pDesc->GetTag(), FILTER_COLORIZE_TAG))
 		pEntry = new CFilterColorizeEntry;
