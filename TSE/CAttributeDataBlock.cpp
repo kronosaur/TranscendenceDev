@@ -277,6 +277,28 @@ void CAttributeDataBlock::IncData (const CString &sAttrib, ICCItem *pValue, ICCI
     pValue->Discard(&CC);
     }
 
+bool CAttributeDataBlock::IsDataNil (const CString &sAttrib) const
+
+//	IsDataNil
+//
+//	Returns TRUE if the given attribute is Nil (or missing)
+
+	{
+    CCodeChain &CC = g_pUniverse->GetCC();
+
+    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+    if (pEntry == NULL || pEntry->sData.IsBlank())
+        return true;
+
+	//	We need to link the entry to see if it is Nil.
+
+	ICCItem *pValue = CC.Link(pEntry->sData, 0, NULL);
+	bool bIsNil = pValue->IsNil();
+	pValue->Discard(&CC);
+
+	return bIsNil;
+	}
+
 bool CAttributeDataBlock::IsEqual (const CAttributeDataBlock &Src)
 
 //	IsEqual

@@ -469,6 +469,7 @@ class CAttributeDataBlock
 		inline int GetDataCount (void) const { return m_Data.GetCount(); }
 		CSpaceObject *GetObjRefData (const CString &sAttrib) const;
         void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL);
+		bool IsDataNil (const CString &sAttrib) const;
 		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0 && m_pObjRefData == NULL); }
 		bool IsEqual (const CAttributeDataBlock &Src);
 		void LoadObjReferences (CSystem *pSystem);

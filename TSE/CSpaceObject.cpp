@@ -4599,7 +4599,7 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 	if (strStartsWith(sAttrib, SPECIAL_DATA))
 		{
 		CString sDataField = strSubString(sAttrib, SPECIAL_DATA.GetLength());
-		return !(GetData(sDataField).IsBlank());
+		return !m_Data.IsDataNil(sDataField);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_IS_PLANET))
 		{
@@ -5525,7 +5525,7 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 	if (Crit.bExcludePlayer && IsPlayer())
 		return false;
 
-	if (!Crit.sData.IsBlank() && GetData(Crit.sData).IsBlank())
+	if (!Crit.sData.IsBlank() && m_Data.IsDataNil(Crit.sData))
 		return false;
 
 	if (!Crit.bIncludeVirtual && IsVirtual())
