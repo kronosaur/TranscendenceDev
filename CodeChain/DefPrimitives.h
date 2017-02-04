@@ -4,22 +4,34 @@
 
 static PRIMITIVEPROCDEF g_DefPrimitives[] =
 	{
-		{	"<",				fnEqualityNumerals,		FN_EQUALITY_LESSER,		"",		NULL,	0,	},
+		{	"<",				fnEqualityNumerals,		FN_EQUALITY_LESSER,
+			"(< x1 x2 ... xn) -> True if x1 < x2 < ... < xn",
+			NULL,	0,	},
+
 		{	"ls",				fnEquality,		FN_EQUALITY_LESSER,		
 			"(ls a b) -> True if a < b",
 			NULL,	0,	},
 
-		{	"<=",				fnEqualityNumerals,		FN_EQUALITY_LESSER_EQ,	"",		NULL,	0,	},
+		{	"<=",				fnEqualityNumerals,		FN_EQUALITY_LESSER_EQ,
+			"(<= x1 x2 ... xn) -> True if x1 <= x2 <= ... <= xn",
+			NULL,	0,	},
+
 		{	"leq",				fnEquality,		FN_EQUALITY_LESSER_EQ,
 			"(leq a b) -> True if a <= b",
 			NULL,	0,	},
 
-		{	">",				fnEqualityNumerals,		FN_EQUALITY_GREATER,	"",		NULL,	0,	},
+		{	">",				fnEqualityNumerals,		FN_EQUALITY_GREATER,
+			"(> x1 x2 ... xn) -> True if x1 > x2 > ... > xn",
+			NULL,	0,	},
+
 		{	"gr",				fnEquality,		FN_EQUALITY_GREATER,
 			"(gr a b) -> True if a > b",
 			NULL,	0,	},
 
-		{	">=",				fnEqualityNumerals,		FN_EQUALITY_GREATER_EQ,	"",		NULL,	0,	},
+		{	">=",				fnEqualityNumerals,		FN_EQUALITY_GREATER_EQ,
+			"(>= x1 x2 ... xn) -> True if x1 >= x2 >= ... >= xn",
+			NULL,	0,	},
+
 		{	"geq",				fnEquality,		FN_EQUALITY_GREATER_EQ,
 			"(geq a b) -> True if a >= b",		NULL,	0,	},
 
@@ -36,7 +48,9 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"n",	0,	},
 
 		{	"and",				fnLogical,		FN_LOGICAL_AND,
-			"(and exp1 exp2 ... expn) -> True/Nil",
+			"(and exp1 exp2 ... expn) -> True/Nil\n\n"
+
+			"Returns Nil if any argument is Nil, otherwise returns last argument",
 			NULL,	0,	},
 
 		{	"append",			fnAppend,		0,
@@ -52,7 +66,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"atmList",			fnAtmTable,		FN_ATMTABLE_LIST,		"",		NULL,	0,	},
 		{	"atmLookup",		fnAtmTable,		FN_ATMTABLE_LOOKUP,		"",		NULL,	0,	},
 		{	"atmAtomTable",		fnAtmCreate,	0,						"",		NULL,	0,	},
-		{	"block",			fnBlock,		FN_BLOCK_BLOCK,			"",		NULL,	0,	},
+
+		{	"block",			fnBlock,		FN_BLOCK_BLOCK,
+			"(block localsList exp1 exp2 ... expn) -> value of expn",
+			NULL,	0,	},
+
 		{	"cat",				fnCat,			0,
 			"(cat s1 s2 ... sn) -> string",		NULL,	0,	},
 
@@ -76,21 +94,33 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"nn",	0,	},
 
 		{	"enum",				fnEnum,			0,
-			"(enum list itemVar exp)",
+			"(enum list itemVar exp) -> value\n\n"
+
+			"Iterate itemVar over list evaluating exp",
 			NULL,	0,	},
 
 		{	"enumwhile",		fnEnum,			FN_ENUM_WHILE,
-			"(enumwhile list condition itemVar exp)",
+			"(enumwhile list condition itemVar exp) -> value\n\n"
+
+			"Iterate itemVar over list evaluating exp while condition is True",
 			NULL,	0,	},
 
-		{	"errblock",			fnBlock,		FN_BLOCK_ERRBLOCK,		"",		NULL,	0,	},
+		{	"errblock",			fnBlock,		FN_BLOCK_ERRBLOCK,
+			"(errblock localsList exp1 exp2 ... expn expErr) -> value of expn or expErr if error occurs\n\n",
+			NULL,	0,	},
 
 		{	"error",			fnSpecial,		FN_ERROR,
 			"(error msg) -> error",
 			"s",	0,	},
 
-		{	"eq",				fnEquality,		FN_EQUALITY_EQ,			"",		NULL,	0,	},
-		{	"=",				fnEqualityNumerals, FN_EQUALITY_EQ,		"", NULL, 0, },
+		{	"eq",				fnEquality,		FN_EQUALITY_EQ,
+			"(eq x1 x2 ... xn) -> True if all arguments are equal",
+			NULL,	0,	},
+
+		{	"=",				fnEqualityNumerals, FN_EQUALITY_EQ,
+			"(= x1 x2 ... xn) -> True if all arguments are equal",
+			NULL, 0, },
+
 		{	"eval",				fnEval,			0,						"",		NULL,	0,	},
 		{	"filter",			fnFilter,		0,
 			"(filter list var boolean-exp) -> filtered list",
@@ -107,7 +137,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"fncHelp",			fnItemInfo,		FN_ITEMINFO_HELP,		"",		NULL,	0,	},
 
 		{	"for",				fnForLoop,		0,
-			"(for var from to exp)",
+			"(for var from to exp) -> value of last expression",
 			NULL,	0,	},
 
 		{	"help",				fnHelp,			0,
@@ -116,17 +146,17 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(help function-name) -> help on function",
 			"*",	0,	},
 
-		{	"if",				fnIf,			0,						"",		NULL,	0,	},
-		{	"int",				fnItemInfo,		FN_ITEMINFO_ASINT,		"",		NULL,	0,	},
-		{	"double",			fnItemInfo,		FN_ITEMINFO_ASDOUBLE,	"",		NULL,	0,  },
-		{	"isatom",			fnItemInfo,		FN_ITEMINFO_ISATOM,		"",		NULL,	0,	},
-		{	"iserror",			fnItemInfo,		FN_ITEMINFO_ISERROR,	"",		NULL,	0,	},
-		{	"isint",			fnItemInfo,		FN_ITEMINFO_ISINT,		"",		NULL,	0,	},
-		{	"isfunction",		fnItemInfo,		FN_ITEMINFO_ISFUNCTION,	"",		NULL,	0,	},
-		{	"isprimitive",		fnItemInfo,		FN_ITEMINFO_ISPRIMITIVE,"",		NULL,	0,	},
+		{	"if",				fnIf,			0,						"(if condition exp1 [exp2]) -> exp1 if condition True, otherwise exp2",		NULL,	0,	},
+		{	"int",				fnItemInfo,		FN_ITEMINFO_ASINT,		"(int x) -> x as an integer",						NULL,	0,	},
+		{	"double",			fnItemInfo,		FN_ITEMINFO_ASDOUBLE,	"(double x) -> x as a double",						NULL,	0,  },
+		{	"isatom",			fnItemInfo,		FN_ITEMINFO_ISATOM,		"(isatom exp) -> True if exp is not a list",		NULL,	0,	},
+		{	"iserror",			fnItemInfo,		FN_ITEMINFO_ISERROR,	"(iserror exp) -> True if exp is an error",			NULL,	0,	},
+		{	"isint",			fnItemInfo,		FN_ITEMINFO_ISINT,		"(isint exp) -> True if exp is an integer",			NULL,	0,	},
+		{	"isfunction",		fnItemInfo,		FN_ITEMINFO_ISFUNCTION,	"(isfunction exp) -> True if exp is a function",	NULL,	0,	},
+		{	"isprimitive",		fnItemInfo,		FN_ITEMINFO_ISPRIMITIVE,"(isprimitive exp) -> True if exp is a primitive",	NULL,	0,	},
 
 		{	"@",				fnItem,			FN_ITEM,
-			"(@ list index)",
+			"(@ list index) -> item index from list",
 			"v*",	0,	},
 
 		{	"item",				fnItem,			FN_ITEM,
@@ -138,13 +168,16 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
             "(join list 'oxfordComma) -> string",
 			"v*",	0,	},
 
-		{	"lambda",			fnLambda,		0,						"",		NULL,	0,	},
+		{	"lambda",			fnLambda,		0,
+			"(lambda args-list exp) -> lambda function",
+			NULL,	0,	},
+
 		{	"lookup",			fnFind,			FN_LOOKUP,
 			"(lookup source target ['ascending|'descending] [keyIndex]) -> found entry",
 			"vv*",	0,	},
 
 		{	"loop",				fnLoop,			0,
-			"(loop condition exp)",
+			"(loop condition exp) -> evaluate exp until condition is Nil",
 			NULL,	0,	},
 
 		{	"link",				fnLink,			0,						"",		"s",	0,	},
@@ -205,16 +238,22 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(* x1 x2 ... xn) -> z",
 			"v*",	0,	},
 
-		{	"neq",				fnEquality,		FN_EQUALITY_NEQ,			"",		NULL,	0,	},
+		{	"neq",				fnEquality,		FN_EQUALITY_NEQ,
+			"(neq x1 x2 ... xn) -> True if any arguments are not equal",
+			NULL,	0,	},
 
-		{	"!=",				fnEqualityNumerals,	FN_EQUALITY_NEQ, "", NULL, 0, },
+		{	"!=",				fnEqualityNumerals,	FN_EQUALITY_NEQ,
+			"(!= x1 x2 ... xn) -> True if any arguments are not equal",
+			NULL, 0, },
 
 		{	"not",				fnLogical,		FN_LOGICAL_NOT,
 			"(not exp) -> True/Nil",
 			NULL,	0,	},
 
 		{	"or",				fnLogical,		FN_LOGICAL_OR,
-			"(or exp1 exp2 ... expn) -> True/Nil",
+			"(or exp1 exp2 ... expn) -> True/Nil\n\n"
+
+			"Returns first non-Nil argument",
 			NULL,	0,	},
 
 		{	"power",			fnMathFractions,		FN_MATH_POWER,
@@ -253,7 +292,9 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(seededRandom seed from to)\n(seededRandom seed list)",
 			"i*",	0,	},
 
-		{	"set",				fnSet,			FN_SET_SET,				"",		NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"set",				fnSet,			FN_SET_SET,
+			"(set string value) -> value",
+			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"set@",				fnItem,			FN_SET_ITEM,
 			"(set@ list-var index value) -> list\n"
@@ -265,7 +306,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"DEPRECATED: Alias of set@",
 			"uvv",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"setq",				fnSet,			FN_SET_SETQ,			"",		NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"setq",				fnSet,			FN_SET_SETQ,
+			"(setq variable value)",
+			NULL,	PPFLAG_SIDEEFFECTS,	},
+
 		{	"shuffle",			fnShuffle,		0,
 			"(shuffle list) -> shuffled list",
 			"l",	0,	},
@@ -279,11 +323,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s*",	0,	},
 
 		{	"sqrt",				fnMath,			FN_MATH_SQRT,
-			"(sqrt x) -> z",
+			"(sqrt x) -> integer z",
 			"v",	0,	},
 
 		{	"sqrtn",				fnMathNumerals,			FN_MATH_SQRT_NUMERALS,
-			"(sqrtn x) -> z",
+			"(sqrtn x) -> real z",
 			"n",	0,	},
 
 		{	"strCapitalize",	fnStrCapitalize,0,
@@ -316,13 +360,17 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(- x y) -> z\n (- x) -> -x",
 			"v*",	0,	},
 
-		{	"switch",			fnSwitch,		0,						"",		NULL,	0,	},
+		{	"switch",			fnSwitch,		0,
+			"(switch [cond1 exp1] ... [condn expn] defultexp) -> value\n\n"
+
+			"Evaluates conditions until one returns non-Nil, then evaluates the corresponding expression",
+			NULL,	0,	},
 
 		//{	"symDeleteEntry",	fnSymTable,		FN_SYMTABLE_DELETEENTRY,"",		NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"sysGlobals",		fnSysInfo,		FN_SYSINFO_GLOBALS,		"",		NULL,	0,	},
-		{	"sysPoolUsage",		fnSysInfo,		FN_SYSINFO_POOLUSAGE,	"",		NULL,	0,	},
-		{	"sysTicks",			fnSysInfo,		FN_SYSINFO_TICKS,		"",		NULL,	0,	},
+		{	"sysGlobals",		fnSysInfo,		FN_SYSINFO_GLOBALS,		"(sysGlobals) -> list of global symbols",		NULL,	0,	},
+		{	"sysPoolUsage",		fnSysInfo,		FN_SYSINFO_POOLUSAGE,	"(sysPoolUsage) -> list of resource usage",		NULL,	0,	},
+		{	"sysTicks",			fnSysInfo,		FN_SYSINFO_TICKS,		"(sysTicks) -> int",		NULL,	0,	},
 
 		{	"typeof",			fnItem,			FN_ITEM_TYPE,
 			"(typeof item) -> type\n\n"
@@ -335,6 +383,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"   list\n"
 			"   nil\n"
 			"   primitive\n"
+			"   real\n"
 			"   string\n"
 			"   struct\n"
 			"   true\n",
