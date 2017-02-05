@@ -1721,8 +1721,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIncVel",					fnObjSet,		FN_OBJ_INCREMENT_VELOCITY,	
-			"(objIncVel obj velVector) -> velVector",
-		//		velVector in % of light-speed
+			"(objIncVel obj velVector) -> velVector\n\n"
+
+			"velVector in % of light-speed\n",
+
 			"il",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objIsAngryAt",				fnObjGet,		FN_OBJ_IS_ANGRY_AT,
@@ -2186,22 +2188,31 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	----------------
 
 		{	"sysAddEncounterEvent",			fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_GATE,
-			"(sysAddEncounterEvent delay target encounterID gate)",
-		//		delay in ticks
+			"(sysAddEncounterEvent delay target encounterID gate)\n\n"
+
+			"delay in ticks\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddEncounterEventAtDist",	fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_DIST,
-			"(sysAddEncounterEventAtDist delay target encounterID distance)",
-		//		delay in ticks
+			"(sysAddEncounterEventAtDist delay target encounterID distance)\n\n"
+
+			"delay in ticks\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddObjTimerEvent",			fnSystemAddStationTimerEvent,	FN_ADD_TIMER_NORMAL,	
-			"(sysAddObjTimerEvent delay obj event)",		"iis",	PPFLAG_SIDEEFFECTS,	},
-		//		delay in ticks
+			"(sysAddObjTimerEvent delay obj event)\n\n"
+
+			"delay in ticks\n",
+
+			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddObjRecurringTimerEvent",	fnSystemAddStationTimerEvent,	FN_ADD_TIMER_RECURRING,	
-			"(sysAddObjRecurringTimerEvent interval obj event)",
-		//		interval in ticks
+			"(sysAddObjRecurringTimerEvent interval obj event)\n\n"
+
+			"interval in ticks\n",
+
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddTypeRangeEvent",			fnSystemAddStationTimerEvent,	FN_ADD_TYPE_RANGE_EVENT,
@@ -2220,8 +2231,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddTypeRecurringTimerEvent",	fnSystemAddStationTimerEvent,	FN_ADD_TYPE_TIMER_RECURRING,	
-			"(sysAddTypeRecurringTimerEvent interval type event)",
-		//		interval in ticks
+			"(sysAddTypeRecurringTimerEvent interval type event)\n\n"
+
+			"interval in ticks\n",
+
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddStargateTopology",			fnSystemGet,	FN_SYS_ADD_STARGATE_TOPOLOGY,
@@ -2291,25 +2304,29 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysCreateShip",				fnSystemCreateShip,	0,
 			"(sysCreateShip unid pos sovereignID [options|eventHandler|controller]) -> ship or list\n\n"
 				
+			"pos is either a position vector or a space object (gate, station, ship)\n\n"
+
 			"options:\n\n"
 			
 			"   'controller\n"
 			"   'eventHandler\n"
-			"   'target (for ship tables)\n",
+			"   'target (for ship tables)\n"
+			"\n"
+			"controller:\n\n"
+			"                     standard\n"
+			"   'auton            auton\n"
+			"   'ferian           Ferian\n"
+			"   'fleet            fleet member\n"
+			"   'fleetcommand     fleet squad leader\n"
+			"   'gaianprocessor   Gaian processor\n",
 
-		//		pos is either a position vector or a gate object
-		//		controller 
-		//			""					= standard
-		//			"auton"				= auton
-		//			"ferian"			= Ferian
-		//			"fleet"				= fleet member
-		//			"fleetcommand"		= fleet squad leader
-		//			"gaianprocessor"	= Gaian processor
 			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateShipwreck",			fnSystemCreate,		FN_SYS_CREATE_SHIPWRECK,
-			"(sysCreateShipwreck unid pos sovereignID) -> shipwreck",
-		//		pos is either a position vector or a gate object
+			"(sysCreateShipwreck unid pos sovereignID) -> shipwreck\n\n"
+
+			"pos is either a position vector or a space object\n",
+
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateStargate",			fnSystemCreateStation,	FN_SYS_CREATE_STARGATE,
@@ -2610,14 +2627,18 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vn",	0,	},
 
 		{	"sysVectorPixelOffset",			fnSystemVectorMath,		FN_VECTOR_PIXEL_OFFSET,
-			"(sysVectorPixelOffset center x y) -> vector",
-		//			center is either Nil, an object, or a vector
+			"(sysVectorPixelOffset center x y) -> vector\n\n"
+
+			"center is either Nil, an object, or a vector\n",
+
 			"vnn",	0,	},
 
 		{	"sysVectorPolarOffset",			fnSystemVectorOffset,	0,
-			"(sysVectorPolarOffset center angle radius) -> vector",
-		//			center is either Nil, an object, or a vector
-		//			radius in light-seconds
+			"(sysVectorPolarOffset center angle radius) -> vector\n\n"
+
+			"center is either Nil, an object, or a vector\n"
+			"radius in light-seconds\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysVectorPolarVelocity",			fnSystemVectorMath,		FN_VECTOR_POLAR_VELOCITY,
@@ -2625,11 +2646,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"nn",	0,	},
 
 		{	"sysVectorRandom",				fnSystemVectorMath,		FN_VECTOR_RANDOM,
-			"(sysVectorRandom center radius minSeparation [filter]) -> vector",
-		//			center is either Nil, an object, or a vector
-		//			radius in light-seconds from center (or a function)
-		//			minSeparation is the min distance from other objects (in light-seconds)
-		//			filter defines the set of objects to be away from
+			"(sysVectorRandom center radius minSeparation [filter]) -> vector\n\n"
+
+			"center is either Nil, an object, or a vector\n"
+			"radius in light-seconds from center (or a function)\n"
+			"minSeparation is the min distance from other objects (in light-seconds)\n"
+			"filter defines the set of objects to be away from\n",
+
 			"vv*",	0,	},
 
 		{	"sysVectorSpeed",			fnSystemVectorMath,		FN_VECTOR_SPEED,
@@ -2834,7 +2857,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	----------------
 
 		{	"sovGetDisposition",			fnSovereignSet,			FN_SOVEREIGN_GET_DISPOSITION,
-			"(sovGetDisposition sovereignID targetSovereignID) -> disposition of sovereign to target",
+			"(sovGetDisposition sovereignID targetSovereignID) -> disposition of sovereign to target\n\n"
+
+			"output is one of:\n\n"
+
+			"   'enemy\n"
+			"   'neutral\n"
+			"   'friend\n",
+
 			"ii",	0,	},
 
 		{	"sovMessage",					fnSovereignSet,			FN_SOVEREIGN_MESSAGE,
@@ -2846,10 +2876,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iiv",	0,	},
 
 		{	"sovSetDisposition",			fnSovereignSet,			FN_SOVEREIGN_DISPOSITION,
-			"(sovSetDisposition sovereignID targetSovereignID disposition)",
-		//			0 = enemy
-		//			1 = neutral
-		//			2 = friend
+			"(sovSetDisposition sovereignID targetSovereignID disposition)\n\n"
+
+				"disposition:\n\n"
+
+				"   0 / 'enemy\n"
+				"   1 / 'neutral\n"
+				"   2 / 'friend\n",
+
 			"iiv",	PPFLAG_SIDEEFFECTS,	},
 
 		//	Resource functions
