@@ -53,8 +53,8 @@ void ICCItem::CloneItem (ICCItem *pItem)
 	//	No need to set the refcount because it has already
 	//	been set to 1
 
-	m_bModified = FALSE;
-	m_bReadOnly = FALSE;
+	m_bModified = false;
+	m_bReadOnly = false;
 
 	m_bQuoted = pItem->m_bQuoted;
 	m_bError = pItem->m_bError;
@@ -198,17 +198,14 @@ bool ICCItem::IsLambdaExpression (void)
 	return (IsList() && GetCount() >= 1 && GetElement(0)->IsLambdaSymbol());
 	}
 
-BOOL ICCItem::IsLambdaSymbol (void)
+bool ICCItem::IsLambdaSymbol (void)
 
 //	IsLambdaSymbol
 //
 //	Returns TRUE if this is the symbol lambda
 
 	{
-	if (IsIdentifier() && strCompareAbsolute(GetStringValue(), CONSTLIT("lambda")) == 0)
-		return TRUE;
-	else
-		return FALSE;
+	return (IsIdentifier() && strCompareAbsolute(GetStringValue(), CONSTLIT("lambda")) == 0);
 	}
 
 ICCItem *ICCItem::NotASymbolTable(CCodeChain *pCC)
@@ -229,11 +226,11 @@ void ICCItem::ResetItem (void)
 
 	{
 	m_dwRefCount = 0;
-	m_bQuoted = FALSE;
-	m_bError = FALSE;
-	m_bModified = FALSE;
-	m_bNoRefCount = FALSE;
-	m_bReadOnly = FALSE;
+	m_bQuoted = false;
+	m_bError = false;
+	m_bModified = false;
+	m_bNoRefCount = false;
+	m_bReadOnly = false;
 	}
 
 void ICCItem::SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
@@ -346,14 +343,14 @@ ICCItem *ICCItem::Unstream (CCodeChain *pCC, IReadStream *pStream)
 
 	//	Map flags
 
-	m_bQuoted = ((dwFlags & ITEM_FLAG_QUOTED) ? TRUE : FALSE);
-	m_bError = ((dwFlags & ITEM_FLAG_ERROR) ? TRUE : FALSE);
-	m_bNoRefCount = ((dwFlags & ITEM_FLAG_NO_REF_COUNT) ? TRUE : FALSE);
-	m_bReadOnly = ((dwFlags & ITEM_FLAG_READ_ONLY) ? TRUE : FALSE);
+	m_bQuoted = ((dwFlags & ITEM_FLAG_QUOTED) ? true : false);
+	m_bError = ((dwFlags & ITEM_FLAG_ERROR) ? true : false);
+	m_bNoRefCount = ((dwFlags & ITEM_FLAG_NO_REF_COUNT) ? true : false);
+	m_bReadOnly = ((dwFlags & ITEM_FLAG_READ_ONLY) ? true : false);
 
 	//	Clear modified
 
-	m_bModified = FALSE;
+	m_bModified = false;
 
 	//	Load the item specific stuff
 

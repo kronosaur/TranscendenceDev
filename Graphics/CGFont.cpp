@@ -21,9 +21,9 @@ CGFont::CGFont (void) : CObject(&g_Class),
 		m_hFont(NULL),
 		m_cxWidth(-1),
 		m_cyHeight(-1),
-		m_fBold(FALSE),
-		m_fItalic(FALSE),
-		m_fUseCellHeight(FALSE),
+		m_fBold(false),
+		m_fItalic(false),
+		m_fUseCellHeight(false),
 		m_iHeight(20)
 
 //	CGFont constructor

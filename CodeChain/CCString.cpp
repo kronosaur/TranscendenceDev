@@ -61,7 +61,7 @@ void CCString::DestroyItem (CCodeChain *pCC)
 	pCC->DestroyString(this);
 	}
 
-BOOL CCString::GetBinding (int *retiFrame, int *retiOffset)
+bool CCString::GetBinding (int *retiFrame, int *retiOffset)
 
 //	GetBinding
 //
@@ -74,12 +74,12 @@ BOOL CCString::GetBinding (int *retiFrame, int *retiOffset)
 	iOffset = HIWORD(m_dwBinding);
 
 	if (iFrame == 0)
-		return FALSE;
+		return false;
 	else
 		{
 		*retiFrame = iFrame - 1;
 		*retiOffset = iOffset;
-		return TRUE;
+		return true;
 		}
 	}
 

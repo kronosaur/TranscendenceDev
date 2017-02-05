@@ -360,7 +360,7 @@ ICCItem *fnAtmTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			ASSERT(false);
 			return NULL;
 		}
 
@@ -811,7 +811,7 @@ bool CompareSucceeds (int iCompare, DWORD dwData)
 			return (iCompare >= 0);
 
 		default:
-			ASSERT(FALSE);
+			ASSERT(false);
 			return false;
 		}
 	}
@@ -1573,7 +1573,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			else if (pList->IsSymbolTable())
 				{
-				BOOL bFound;
+				bool bFound;
 				ICCItem *pResult = pList->LookupEx(pCC, pArgs->GetElement(1), &bFound);
 				if (!bFound)
 					{
@@ -1984,7 +1984,7 @@ ICCItem *fnItemInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			ASSERT(false);
 			return NULL;
 		}
 
@@ -2009,7 +2009,7 @@ ICCItem *fnLambda (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Create a lambda expression based on this list
 
-	pItem = pCC->CreateLambda(pArguments, TRUE);
+	pItem = pCC->CreateLambda(pArguments, true);
 	if (pItem->IsError())
 		return pItem;
 
@@ -2198,7 +2198,7 @@ ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			ASSERT(false);
 			return NULL;
 		}
 
@@ -2470,7 +2470,7 @@ ICCItem *fnLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	ICCItem *pResult;
 	ICCItem *pCondition;
 	ICCItem *pBody;
-	BOOL bDone;
+	bool bDone;
 
 	//	The first argument must be a conditional expression
 
@@ -2491,7 +2491,7 @@ ICCItem *fnLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	//	Keep evaluating the condition and looping
 	//	until we get an error or the condition is Nil
 
-	bDone = FALSE;
+	bDone = false;
 	do
 		{
 		ICCItem *pEval;
@@ -2507,7 +2507,7 @@ ICCItem *fnLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		if (pEval->IsNil())
 			{
 			pEval->Discard(pCC);
-			bDone = TRUE;
+			bDone = true;
 			}
 
 		//	Otherwise, evaluate the body of the loop
@@ -3293,7 +3293,7 @@ ICCItem *fnMathOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 
 		default:
-			ASSERT(FALSE);
+			ASSERT(false);
 		}
 
 	//	Done
@@ -4097,7 +4097,7 @@ ICCItem *fnSubst (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					ICCItem *pKey = pCC->CreateString(sKey);
 
-					BOOL bFound;
+					bool bFound;
 					ICCItem *pResult = pStruct->LookupEx(pCC, pKey, &bFound);
 					pKey->Discard(pCC);
 					if (bFound)
@@ -4285,7 +4285,7 @@ ICCItem *fnSymTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			}
 
 		default:
-			ASSERT(FALSE);
+			ASSERT(false);
 			return NULL;
 		}
 
@@ -4318,7 +4318,7 @@ ICCItem *fnSysInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			return pCC->CreateInteger((int)GetTickCount());
 
 		default:
-			ASSERT(FALSE);
+			ASSERT(false);
 			return NULL;
 		}
 	}
@@ -4461,7 +4461,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		default:
 		{
-			ASSERT(FALSE);
+			ASSERT(false);
 			return NULL;
 		}
 	}
@@ -4479,7 +4479,7 @@ ICCItem *fnVectorOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	CCodeChain *pCC = pCtx->pCC;
 	ICCItem *pArgs;
 	CCVectorOld *pVector;
-	BOOL bOk;
+	bool bOk;
 
 	//	Evaluate the arguments
 
@@ -4563,13 +4563,13 @@ ICCItem *fnVector(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		default:
 			{
-			ASSERT(FALSE);
+			ASSERT(false);
 			return NULL;
 			}
 		}
 	}
 
-BOOL CompareShapeArrays(TArray <int> arr0, TArray <int> arr1)
+bool CompareShapeArrays(TArray <int> arr0, TArray <int> arr1)
 	{
 	int i;
 	int numElements0 = arr0.GetCount();
@@ -4577,18 +4577,18 @@ BOOL CompareShapeArrays(TArray <int> arr0, TArray <int> arr1)
 
 	if (numElements0 != numElements1)
 		{
-		return FALSE;
+		return false;
 		};
 
 	for (i = 0; i < numElements0; i++)
 		{
 		if (arr0[i] != arr1[i])
 			{
-			return FALSE;
+			return false;
 			};
 		};
 
-	return TRUE;
+	return true;
 	};
 
 ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
@@ -4930,7 +4930,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		default:
 			{
-			ASSERT(FALSE);
+			ASSERT(false);
 			return NULL;
 			}
 		}

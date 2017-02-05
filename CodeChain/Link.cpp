@@ -429,8 +429,8 @@ char *CCodeChain::SkipWhiteSpace (char *pPos, int *ioiLine)
 //	Skips white space and comments when parsing
 
 	{
-    BOOL bDone = FALSE;
-    BOOL bInComment = FALSE;
+    bool bDone = false;
+    bool bInComment = false;
     
     while (!bDone)
         {
@@ -438,16 +438,16 @@ char *CCodeChain::SkipWhiteSpace (char *pPos, int *ioiLine)
         	Otherwise, just skip white space */
         
         if (*pPos == '\0')
-            bDone = TRUE;
+            bDone = true;
         else if (bInComment)
             {
 			if (*pPos == '\n')
 				{
 				*ioiLine += 1;
-				bInComment = FALSE;
+				bInComment = false;
 				}
         	else if (*pPos == '\r')
-                bInComment = FALSE;
+                bInComment = false;
 
             pPos++;
         	}
@@ -455,7 +455,7 @@ char *CCodeChain::SkipWhiteSpace (char *pPos, int *ioiLine)
             {
         	if (*pPos == ';')
                 {
-                bInComment = TRUE;
+                bInComment = true;
                 pPos++;
             	}
 			else if (*pPos == '\n')
@@ -466,7 +466,7 @@ char *CCodeChain::SkipWhiteSpace (char *pPos, int *ioiLine)
             else if (*pPos == ' ' || *pPos == '\r' || *pPos == '\t')
                 pPos++;
             else
-                bDone = TRUE;
+                bDone = true;
         	}
     	}
     

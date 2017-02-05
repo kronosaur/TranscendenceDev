@@ -9,7 +9,7 @@ static CObjectClass<CCSymbolTable>g_Class(OBJID_CCSYMBOLTABLE, NULL);
 CCSymbolTable::CCSymbolTable (void) : ICCList(&g_Class),
 		m_Symbols(FALSE, FALSE),
 		m_pParent(NULL),
-		m_bLocalFrame(FALSE),
+		m_bLocalFrame(false),
 		m_pDefineHook(NULL)
 
 //	SymbolTable constructor
@@ -59,7 +59,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 		{
 		CObject *pOldEntry;
 
-		if (m_Symbols.ReplaceEntry(pKey->GetStringValue(), pTransformed, TRUE, &pOldEntry) != NOERROR)
+		if (m_Symbols.ReplaceEntry(pKey->GetStringValue(), pTransformed, true, &pOldEntry) != NOERROR)
 			return pCC->CreateMemoryError();
 
 		//	If we have a previous entry, decrement its refcount since we're
@@ -75,7 +75,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 		{
 		CObject *pOldEntry;
 
-		error = m_Symbols.ReplaceEntry(pKey->GetStringValue(), pTransformed, FALSE, &pOldEntry);
+		error = m_Symbols.ReplaceEntry(pKey->GetStringValue(), pTransformed, false, &pOldEntry);
 		if (error == ERR_NOTFOUND)
 			{
 			ICCItem *pResult = m_pParent->AddEntry(pCC, pKey, pTransformed);
@@ -124,7 +124,7 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 		//	Add to the new table
 
 		CObject *pOldEntry;
-		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->Reference(), TRUE, &pOldEntry) != NOERROR)
+		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->Reference(), true, &pOldEntry) != NOERROR)
 			return pCC->CreateMemoryError();
 
 		//	We better not have a previous entry (this can only happen if the existing symbol
@@ -177,7 +177,7 @@ ICCItem *CCSymbolTable::CloneDeep (CCodeChain *pCC)
 		//	Add to the new table
 
 		CObject *pOldEntry;
-		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneDeep(pCC), TRUE, &pOldEntry) != NOERROR)
+		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneDeep(pCC), true, &pOldEntry) != NOERROR)
 			return pCC->CreateMemoryError();
 
 		//	We better not have a previous entry (this can only happen if the existing symbol
@@ -469,7 +469,7 @@ ICCItem *CCSymbolTable::Lookup (CCodeChain *pCC, ICCItem *pKey)
 	return LookupEx(pCC, pKey, NULL);
 	}
 
-ICCItem *CCSymbolTable::LookupEx (CCodeChain *pCC, ICCItem *pKey, BOOL *retbFound)
+ICCItem *CCSymbolTable::LookupEx (CCodeChain *pCC, ICCItem *pKey, bool *retbFound)
 
 //	LookupEx
 //
@@ -493,7 +493,7 @@ ICCItem *CCSymbolTable::LookupEx (CCodeChain *pCC, ICCItem *pKey, BOOL *retbFoun
 			else
 				{
 				if (retbFound)
-					*retbFound = FALSE;
+					*retbFound = false;
 
 				return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 				}
@@ -506,7 +506,7 @@ ICCItem *CCSymbolTable::LookupEx (CCodeChain *pCC, ICCItem *pKey, BOOL *retbFoun
 	ASSERT(pBinding);
 
 	if (retbFound)
-		*retbFound = TRUE;
+		*retbFound = true;
 
 	return pBinding->Reference();
 	}
@@ -574,11 +574,11 @@ void CCSymbolTable::Reset (void)
 	{
 	m_Symbols.RemoveAll();
 	m_pParent = NULL;
-	m_bLocalFrame = FALSE;
+	m_bLocalFrame = false;
 	m_pDefineHook = NULL;
 	}
 
-ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, BOOL *retbFound, int *retiOffset)
+ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, bool *retbFound, int *retiOffset)
 
 //	SimpleLookup
 //
@@ -596,7 +596,7 @@ ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, BOOL *retb
 		if (error == ERR_NOTFOUND)
 			{
 			if (retbFound)
-				*retbFound = FALSE;
+				*retbFound = false;
 
 			return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 			}
@@ -609,7 +609,7 @@ ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, BOOL *retb
 	ASSERT(pBinding);
 
 	if (retbFound)
-		*retbFound = TRUE;
+		*retbFound = true;
 
 	if (retiOffset)
 		*retiOffset = iOffset;
@@ -713,7 +713,7 @@ ICCItem *CCSymbolTable::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
 
 		//	Append the item to the symbol table
 
-		if (m_Symbols.ReplaceEntry(sKey, pItem, TRUE, &pOldEntry) != NOERROR)
+		if (m_Symbols.ReplaceEntry(sKey, pItem, true, &pOldEntry) != NOERROR)
 			return pCC->CreateMemoryError();
 
 		//	No need to discard pItem because we're adding it to the
@@ -727,7 +727,7 @@ ICCItem *CCSymbolTable::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
 
 	//	We are never a local symbol table
 
-	m_bLocalFrame = FALSE;
+	m_bLocalFrame = false;
 
 	return pCC->CreateTrue();
 	}

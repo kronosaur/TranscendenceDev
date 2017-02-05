@@ -252,7 +252,7 @@ ICCItem *CCodeChain::CreateInteger (int iValue)
 	return pInteger->Reference();
 	}
 
-ICCItem *CCodeChain::CreateLambda (ICCItem *pList, BOOL bArgsOnly)
+ICCItem *CCodeChain::CreateLambda (ICCItem *pList, bool bArgsOnly)
 
 //	CreateLambda
 //
@@ -933,7 +933,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 	CCLinkedList *pEvalList;
 	char *pValidation;
 	int i;
-	BOOL bNoEval;
+	bool bNoEval;
 
 	//	If the argument list if quoted, then it means that the arguments
 	//	have already been evaluated. This happens if we've been called by
@@ -1167,7 +1167,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				}
 
 			default:
-				ASSERT(FALSE);
+				ASSERT(false);
 			}
 
 		//	Add the result to the list
@@ -1236,7 +1236,7 @@ ICCItem *CCodeChain::Lookup (CEvalContext *pCtx, ICCItem *pItem)
 
 	{
 	ICCItem *pBinding = NULL;
-	BOOL bFound;
+	bool bFound;
 	ICCItem *pStart;
 	int iFrame, iOffset;
 
@@ -1258,14 +1258,14 @@ ICCItem *CCodeChain::Lookup (CEvalContext *pCtx, ICCItem *pItem)
 			}
 
 		pBinding = pStart->LookupByOffset(this, iOffset);
-		bFound = TRUE;
+		bFound = true;
 		}
 
 	//	Otherwise, do a lookup
 
 	else
 		{
-		bFound = FALSE;
+		bFound = false;
 		iFrame = 0;
 
 		while (!bFound && pStart)

@@ -258,7 +258,7 @@ ALERROR CIDTable::RemoveEntry (int iKey, CObject **retpOldValue)
 	return NOERROR;
 	}
 
-ALERROR CIDTable::ReplaceEntry (int iKey, CObject *pValue, BOOL bAdd, CObject **retpOldValue)
+ALERROR CIDTable::ReplaceEntry (int iKey, CObject *pValue, bool bAdd, CObject **retpOldValue)
 
 //	ReplaceEntry
 //
@@ -269,7 +269,7 @@ ALERROR CIDTable::ReplaceEntry (int iKey, CObject *pValue, BOOL bAdd, CObject **
 	ALERROR error;
 	int iOldValue;
 	CObject *pOldObj;
-	BOOL bAdded;
+	bool  bAdded;
 
 	//	Let the dictionary code do the actual adding
 

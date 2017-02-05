@@ -26,7 +26,7 @@ ICCItem *CCLambda::Clone (CCodeChain *pCC)
 	ICCItem *pNew;
 	CCLambda *pClone;
 
-	pNew = pCC->CreateLambda(NULL, FALSE);
+	pNew = pCC->CreateLambda(NULL, false);
 	if (pNew->IsError())
 		return pNew;
 
@@ -52,7 +52,7 @@ ICCItem *CCLambda::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, BOOL bArgsOnly)
+ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOnly)
 
 //	CreateFromList
 //
@@ -145,7 +145,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	ICCItem *pArg;
 	ICCItem *pResult;
 	int i;
-	BOOL bNoEval;
+	bool bNoEval;
 
 	//	We must have been initialized
 

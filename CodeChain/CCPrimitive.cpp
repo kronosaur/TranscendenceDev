@@ -21,7 +21,7 @@ ICCItem *CCPrimitive::Clone (CCodeChain *pCC)
 
 	{
 	//	Better not happen
-	ASSERT(FALSE);
+	ASSERT(false);
 	return NULL;
 	}
 
@@ -117,7 +117,7 @@ void CCPrimitive::Reset (void)
 
 	{
 	//	Better not happen
-	ASSERT(FALSE);
+	ASSERT(false);
 	}
 
 void CCPrimitive::SetProc (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)

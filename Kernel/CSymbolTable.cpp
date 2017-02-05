@@ -456,7 +456,7 @@ ALERROR CSymbolTable::RemoveEntry (const CString &sKey, CObject **retpOldValue)
 	return NOERROR;
 	}
 
-ALERROR CSymbolTable::ReplaceEntry (const CString &sKey, CObject *pValue, BOOL bAdd, CObject **retpOldValue)
+ALERROR CSymbolTable::ReplaceEntry (const CString &sKey, CObject *pValue, bool bAdd, CObject **retpOldValue)
 
 //	ReplaceEntry
 //
@@ -468,7 +468,7 @@ ALERROR CSymbolTable::ReplaceEntry (const CString &sKey, CObject *pValue, BOOL b
 	int iOldValue;
 	CObject *pOldObj;
 	CString *pKey;
-	BOOL bAdded;
+	bool bAdded;
 
 	//	We need to allocate a new string in case the key is added
 

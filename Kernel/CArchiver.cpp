@@ -185,7 +185,7 @@ ALERROR CArchiver::Reference2ID (void *pReference, int *retiID)
 
 	{
 	ALERROR error;
-	BOOL bFound;
+	bool bFound;
 	int iID;
 
 	//	We always map NULL to -1

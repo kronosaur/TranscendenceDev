@@ -807,10 +807,10 @@ class CDictionary : public CObject
 		ALERROR AddEntry (int iKey, int iValue);
 		ALERROR Find (int iKey, int *retiValue) const;
 		ALERROR FindEx (int iKey, int *retiEntry) const;
-		ALERROR FindOrAdd (int iKey, int iValue, BOOL *retbFound, int *retiValue);
+		ALERROR FindOrAdd (int iKey, int iValue, bool *retbFound, int *retiValue);
 		inline int GetCount (void) const { return m_Array.GetCount() / 2; }
 		void GetEntry (int iEntry, int *retiKey, int *retiValue) const;
-		ALERROR ReplaceEntry (int iKey, int iValue, BOOL bAdd, BOOL *retbAdded, int *retiOldValue);
+		ALERROR ReplaceEntry (int iKey, int iValue, bool bAdd, bool *retbAdded, int *retiOldValue);
 		ALERROR RemoveAll (void) { return m_Array.RemoveAll(); }
 		ALERROR RemoveEntryByOrdinal (int iEntry, int *retiOldValue = NULL);
 		ALERROR RemoveEntry (int iKey, int *retiOldValue);
@@ -820,7 +820,7 @@ class CDictionary : public CObject
 		inline ALERROR ExpandArray (int iPos, int iCount) { return m_Array.ExpandArray(2 * iPos, 2 * iCount); }
 		void SetEntry (int iEntry, int iKey, int iValue);
 
-		BOOL FindSlot (int iKey, int *retiPos) const;
+		bool FindSlot (int iKey, int *retiPos) const;
 
 		CIntArray m_Array;
 	};
@@ -841,7 +841,7 @@ class CIDTable : public CDictionary
 		ALERROR LookupEx (int iKey, int *retiEntry) const;
 		ALERROR RemoveAll (void);
 		ALERROR RemoveEntry (int iKey, CObject **retpOldValue);
-		ALERROR ReplaceEntry (int iKey, CObject *pValue, BOOL bAdd, CObject **retpOldValue);
+		ALERROR ReplaceEntry (int iKey, CObject *pValue, bool bAdd, CObject **retpOldValue);
 		void SetValue (int iEntry, CObject *pValue, CObject **retpOldValue);
 
 	protected:
@@ -873,7 +873,7 @@ class CSymbolTable : public CDictionary
 		ALERROR RemoveAll (void);
 		ALERROR RemoveEntry (int iEntry, CObject **retpOldValue = NULL);
 		ALERROR RemoveEntry (const CString &sKey, CObject **retpOldValue);
-		ALERROR ReplaceEntry (const CString &sKey, CObject *pValue, BOOL bAdd, CObject **retpOldValue);
+		ALERROR ReplaceEntry (const CString &sKey, CObject *pValue, bool bAdd, CObject **retpOldValue);
 		void SetValue (int iEntry, CObject *pValue, CObject **retpOldValue);
 
 	protected:

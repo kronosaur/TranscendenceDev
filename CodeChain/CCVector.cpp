@@ -694,7 +694,7 @@ void CCVector::Reset(void)
 {
 }
 
-BOOL CCVectorOld::SetElement (int iIndex, int iElement)
+bool CCVectorOld::SetElement (int iIndex, int iElement)
 
 //	SetElement
 //
@@ -702,10 +702,10 @@ BOOL CCVectorOld::SetElement (int iIndex, int iElement)
 
 	{
 	if (iIndex < 0 || iIndex >= m_iCount)
-		return FALSE;
+		return false;
 
 	m_pData[iIndex] = iElement;
-	return TRUE;
+	return true;
 	}
 
 ICCItem *CCVectorOld::SetSize (CCodeChain *pCC, int iNewSize)

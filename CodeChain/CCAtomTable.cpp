@@ -23,9 +23,9 @@ ICCItem *CCAtomTable::AddEntry (CCodeChain *pCC, ICCItem *pAtom, ICCItem *pEntry
 	{
 	ICCItem *pPrevEntry = NULL;
 	int iOldEntry;
-	BOOL bAdded;
+	bool bAdded;
 
-	if (m_Table.ReplaceEntry(pAtom->GetIntegerValue(), (int)pEntry->Reference(), TRUE, &bAdded, &iOldEntry) != NOERROR)
+	if (m_Table.ReplaceEntry(pAtom->GetIntegerValue(), (int)pEntry->Reference(), true, &bAdded, &iOldEntry) != NOERROR)
 		return pCC->CreateMemoryError();
 
 	//	If we have a previous entry, decrement its refcount since we're
@@ -47,7 +47,7 @@ ICCItem *CCAtomTable::Clone (CCodeChain *pCC)
 //	Clone this item
 
 	{
-	ASSERT(FALSE);
+	ASSERT(false);
 	return pCC->CreateNil();
 	}
 
@@ -139,7 +139,7 @@ ICCItem *CCAtomTable::Lookup (CCodeChain *pCC, ICCItem *pAtom)
 	return LookupEx(pCC, pAtom, NULL);
 	}
 
-ICCItem *CCAtomTable::LookupEx (CCodeChain *pCC, ICCItem *pAtom, BOOL *retbFound)
+ICCItem *CCAtomTable::LookupEx (CCodeChain *pCC, ICCItem *pAtom, bool *retbFound)
 
 //	LookupEx
 //
@@ -156,7 +156,7 @@ ICCItem *CCAtomTable::LookupEx (CCodeChain *pCC, ICCItem *pAtom, BOOL *retbFound
 		if (error == ERR_NOTFOUND)
 			{
 			if (retbFound)
-				*retbFound = FALSE;
+				*retbFound = false;
 
 			return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 			}
@@ -168,7 +168,7 @@ ICCItem *CCAtomTable::LookupEx (CCodeChain *pCC, ICCItem *pAtom, BOOL *retbFound
 	ASSERT(pBinding);
 
 	if (retbFound)
-		*retbFound = TRUE;
+		*retbFound = true;
 
 	return pBinding->Reference();
 	}
@@ -271,7 +271,7 @@ ICCItem *CCAtomTable::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
 		{
 		ICCItem *pItem;
 		int iKey, iValue;
-		BOOL bAdded;
+		bool bAdded;
 
 		//	Load the key
 
@@ -291,7 +291,7 @@ ICCItem *CCAtomTable::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
 
 		//	Append the item to the symbol table
 
-		if (m_Table.ReplaceEntry(iKey, (int)pItem, TRUE, &bAdded, &iValue) != NOERROR)
+		if (m_Table.ReplaceEntry(iKey, (int)pItem, true, &bAdded, &iValue) != NOERROR)
 			return pCC->CreateMemoryError();
 
 		//	No need to discard pItem because we're adding it to the

@@ -109,7 +109,7 @@ ALERROR CDictionary::FindEx (int iKey, int *retiEntry) const
 	return NOERROR;
 	}
 
-ALERROR CDictionary::FindOrAdd (int iKey, int iValue, BOOL *retbFound, int *retiValue)
+ALERROR CDictionary::FindOrAdd (int iKey, int iValue, bool *retbFound, int *retiValue)
 
 //	FindOrAdd
 //
@@ -146,7 +146,7 @@ ALERROR CDictionary::FindOrAdd (int iKey, int iValue, BOOL *retbFound, int *reti
 	return NOERROR;
 	}
 
-BOOL CDictionary::FindSlot (int iKey, int *retiPos) const
+bool CDictionary::FindSlot (int iKey, int *retiPos) const
 
 //	FindSlot
 //
@@ -294,7 +294,7 @@ ALERROR CDictionary::RemoveEntryByOrdinal (int iEntry, int *retiOldValue)
 	return NOERROR;
 	}
 
-ALERROR CDictionary::ReplaceEntry (int iKey, int iValue, BOOL bAdd, BOOL *retbAdded, int *retiOldValue)
+ALERROR CDictionary::ReplaceEntry (int iKey, int iValue, bool bAdd, bool *retbAdded, int *retiOldValue)
 
 //	ReplaceEntry
 //
