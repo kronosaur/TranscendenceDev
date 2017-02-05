@@ -27,7 +27,8 @@ bool CDamageSource::CanHitFriends (void) const
 //	Returns TRUE if we know that the source can hit friend.
 
 	{
-	return (IsObjPointer() ? GetObj()->CanHitFriends() : false);
+	CSpaceObject *pObj = GetObj();
+	return (pObj ? pObj->CanHitFriends() : false);
 	}
 
 CString CDamageSource::GetDamageCauseNounPhrase (DWORD dwFlags)
@@ -52,35 +53,40 @@ CSpaceObject *CDamageSource::GetObj (void) const
 //	Returns the source object
 
 	{
-	CSpaceObject *pOrderGiver;
-
-	//	If all we have is an object ID, then we can't return the
-	//	object pointer.
-
-	if (m_dwFlags & FLAG_OBJ_ID)
-		return NULL;
-
 	//	If the source is the player then always return the player
 	//	object (regardless of m_pSource). We do this in case
 	//	the player changes ships.
 
-	else if (m_dwFlags & FLAG_IS_PLAYER)
+	if (m_dwFlags & FLAG_IS_PLAYER)
 		{
 		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 		return (pSystem ? pSystem->GetPlayerShip() : NULL);
 		}
 
-	//	Otherwise, if we're a subordinate and our order giver
-	//	has changed, switch back to the player.
+	//	If we're a player subordinate then we do custom handling because we 
+	//	could return the player if necessary.
 
-	else if ((m_dwFlags & FLAG_IS_PLAYER_SUBORDINATE)
-			&& (m_pSource == NULL
-				|| (pOrderGiver = m_pSource->GetOrderGiver()) == NULL
-				|| !pOrderGiver->IsPlayer()))
+	else if (m_dwFlags & FLAG_IS_PLAYER_SUBORDINATE)
 		{
-		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-		return (pSystem ? pSystem->GetPlayerShip() : NULL);
+		//	If we have a valid object pointer, just return that.
+
+		if (IsObjPointer())
+			return m_pSource;
+
+		//	Otherwise, we return the player.
+
+		else
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			return (pSystem ? pSystem->GetPlayerShip() : NULL);
+			}
 		}
+
+	//	If all we have is an object ID, then we can't return the
+	//	object pointer.
+
+	else if (m_dwFlags & FLAG_OBJ_ID)
+		return NULL;
 
 	//	Otherwise, return the source (even if NULL)
 
@@ -96,34 +102,17 @@ DWORD CDamageSource::GetObjID (void) const
 //	the object pointer.
 //
 //	We return OBJID_NULL if not found.
+//
+//	NOTE: We do not guarantee that the ID of the object returned by GetObj() 
+//	will be the same as this ID. Sometimes, we might return the player object
+//	in GetObj but return a valid (but different) ID here.
 
 	{
-	CSpaceObject *pOrderGiver;
-
 	//	If the source is the player then always return the player
 	//	object (regardless of m_pSource). We do this in case
 	//	the player changes ships.
 
 	if (m_dwFlags & FLAG_IS_PLAYER)
-		{
-		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-		if (pSystem == NULL)
-			return OBJID_NULL;
-
-		CSpaceObject *pPlayerShip = pSystem->GetPlayerShip();
-		if (pPlayerShip == NULL)
-			return OBJID_NULL;
-
-		return pPlayerShip->GetID();
-		}
-
-	//	Otherwise, if we're a subordinate and our order giver
-	//	has changed, switch back to the player.
-
-	else if ((m_dwFlags & FLAG_IS_PLAYER_SUBORDINATE)
-			&& (!IsObjPointer()
-				|| (pOrderGiver = m_pSource->GetOrderGiver()) == NULL
-				|| !pOrderGiver->IsPlayer()))
 		{
 		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 		if (pSystem == NULL)
@@ -159,7 +148,8 @@ CSpaceObject *CDamageSource::GetOrderGiver (void) const
 //	Returns the object which actually gave the order (or NULL)
 	
 	{
-	return (GetObj() ? GetObj()->GetOrderGiver(GetCause()) : NULL);
+	CSpaceObject *pObj = GetObj();
+	return (pObj ? pObj->GetOrderGiver(GetCause()) : NULL);
 	}
 
 CSovereign *CDamageSource::GetSovereign (void) const
@@ -272,10 +262,10 @@ bool CDamageSource::IsEnemy (CDamageSource &Src) const
 //	Returns TRUE if we are an enemy of the given source.
 
 	{
-	if (IsObjPointer() && Src.IsObjPointer())
-		return GetObj()->IsEnemy(Src.GetObj());
-	else
-		return false;
+	CSpaceObject *pObj = GetObj();
+	CSpaceObject *pSrc = Src.GetObj();
+
+	return ((pObj && pSrc) ? pObj->IsEnemy(pSrc) : false);
 	}
 
 bool CDamageSource::IsEqual (const CDamageSource &Src) const
