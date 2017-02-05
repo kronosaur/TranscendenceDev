@@ -680,6 +680,8 @@ bool CInstalledDevice::SetEnabled (CSpaceObject *pSource, bool bEnabled)
 //	Enable/disable device. Returns TRUE if the enabled status changed.
 	
 	{
+	DEBUG_TRY
+
 	if (m_fEnabled == bEnabled)
 		return false;
 
@@ -699,6 +701,8 @@ bool CInstalledDevice::SetEnabled (CSpaceObject *pSource, bool bEnabled)
 	//	Done
 
 	return true;
+
+	DEBUG_CATCH
 	}
 
 void CInstalledDevice::SetEnhancements (CItemEnhancementStack *pStack)

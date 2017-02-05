@@ -836,6 +836,8 @@ void CShip::CalcPerformance (void)
 //  enhancements, etc.
 
     {
+	DEBUG_TRY
+
     int i;
 
     //  Remember current settings so we can detect if something changed.
@@ -901,6 +903,8 @@ void CShip::CalcPerformance (void)
 	if (m_Perf.GetDriveDesc().GetThrust() != iOldThrust
             || m_Perf.GetDriveDesc().GetMaxSpeed() != rOldMaxSpeed)
 		m_pClass->InitEffects(this, &m_Effects);
+
+	DEBUG_CATCH
     }
 
 void CShip::CalcReactorStats (void)
@@ -4056,6 +4060,8 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 //	Some part of the object has changed
 
 	{
+	DEBUG_TRY
+
 	switch (iComponent)
 		{
 		case comArmor:
@@ -4102,6 +4108,8 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 		default:
 			m_pController->OnComponentChanged(iComponent);
 		}
+
+	DEBUG_CATCH
 	}
 
 EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
@@ -6914,10 +6922,14 @@ void CShip::SetFireDelay (CInstalledDevice *pWeapon, int iDelay)
 //	fire rate of the weapon and the AISettings
 
 	{
+	DEBUG_TRY
+
 	if (iDelay == -1)
 		pWeapon->SetTimeUntilReady(m_pController->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10);
 	else
 		pWeapon->SetTimeUntilReady(iDelay);
+
+	DEBUG_CATCH
 	}
 
 void CShip::SetInGate (CSpaceObject *pGate, int iTickCount)
@@ -7420,6 +7432,8 @@ bool CShip::UpdateFuel (int iTick)
 //	NOTE: iTick is a local system tick, not the global universe tick.
 
 	{
+	DEBUG_TRY
+
 	//	If we're out of power, then see if power is restored before we die from
 	//	life-support failure.
 
@@ -7546,6 +7560,8 @@ bool CShip::UpdateFuel (int iTick)
 	//	Done
 
 	return true;
+
+	DEBUG_CATCH
 	}
 
 void CShip::UpdateInactive (void)

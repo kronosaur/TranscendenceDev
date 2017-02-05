@@ -178,6 +178,8 @@ void COverlayList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) con
 //	Returns the impact of this set of overlays on the source.
 
 	{
+	DEBUG_TRY
+
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
@@ -214,6 +216,8 @@ void COverlayList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) con
 
 		pField = pField->GetNext();
 		}
+
+	DEBUG_CATCH
 	}
 
 void COverlayList::AddField (CSpaceObject *pSource, 

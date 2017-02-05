@@ -5707,6 +5707,8 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, 
 //	that this object was fired by Source).
 
 	{
+	DEBUG_TRY
+
 	//	If we have a source...
 
 	if (Source.HasSource())
@@ -5767,6 +5769,8 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, 
 		else
 			return !Source.IsEqual(pObj->GetDamageSource());
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)

@@ -192,6 +192,8 @@ void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuverType
 //	Updates once per tick
 
 	{
+	DEBUG_TRY
+
 	//	Change the rotation velocity
 
 	switch (iManeuver)
@@ -258,6 +260,8 @@ void CIntegralRotation::Update (const CIntegralRotationDesc &Desc, EManeuverType
 		if (m_iRotationFrame < 0)
 			m_iRotationFrame += iFrameMax;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CIntegralRotation::WriteToStream (IWriteStream *pStream) const

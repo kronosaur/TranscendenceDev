@@ -3124,6 +3124,8 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
 //	before calling if not sure.
 
     {
+	DEBUG_TRY
+
     if (m_ShotData.GetCount() == 0)
         return NULL;
 
@@ -3216,6 +3218,8 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
         int iLevel = (ItemCtx.GetItem().IsEmpty() ? -1 : ItemCtx.GetItem().GetLevel());
 	    return (iLevel == -1 ? pRoot : pRoot->GetScaledDesc(iLevel));
         }
+
+	DEBUG_CATCH
     }
 
 ALERROR CWeaponClass::InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType)

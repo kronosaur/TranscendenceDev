@@ -167,6 +167,8 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 //	Update device
 
 	{
+	DEBUG_TRY
+
 	CDeviceClass *pWeapon = GetWeapon();
 	if (pWeapon == NULL)
 		return;
@@ -286,6 +288,8 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 				}
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpDevice)
