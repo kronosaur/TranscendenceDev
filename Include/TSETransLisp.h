@@ -119,23 +119,23 @@ class CFunctionContextWrapper : public ICCAtom
 		inline void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 
 		//	ICCItem virtuals
-		virtual ICCItem *Clone (CCodeChain *pCC);
-		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs);
-		virtual CString GetHelp (void) { return NULL_STR; }
-		virtual CString GetStringValue (void) { return m_pFunction->GetStringValue(); }
-		virtual ValueTypes GetValueType (void) { return Function; }
-		virtual BOOL IsIdentifier (void) { return FALSE; }
-		virtual BOOL IsFunction (void) { return TRUE; }
-		virtual bool IsLambdaFunction (void) { return true; }
-		virtual BOOL IsPrimitive (void) { return FALSE; }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) { return m_pFunction->Print(pCC, dwFlags); }
-		virtual void Reset (void) { }
+		virtual ICCItem *Clone (CCodeChain *pCC) override;
+		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
+		virtual CString GetHelp (void) override { return NULL_STR; }
+		virtual CString GetStringValue (void) override { return m_pFunction->GetStringValue(); }
+		virtual ValueTypes GetValueType (void) override { return Function; }
+		virtual bool IsIdentifier (void) override { return false; }
+		virtual bool IsFunction (void) override { return true; }
+		virtual bool IsLambdaFunction (void) override { return true; }
+		virtual bool IsPrimitive (void) override { return false; }
+		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override { return m_pFunction->Print(pCC, dwFlags); }
+		virtual void Reset (void) override { }
 
 	protected:
 		//	ICCItem virtuals
-		virtual void DestroyItem (CCodeChain *pCC);
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream);
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream);
+		virtual void DestroyItem (CCodeChain *pCC) override;
+		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
+		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream) override;
 
 	private:
 		ICCItem *m_pFunction;
@@ -165,20 +165,20 @@ class CCXMLWrapper : public ICCAtom
 
 		//	ICCItem virtuals
 
-		virtual ICCItem *Clone (CCodeChain *pCC);
-		virtual CString GetStringValue (void) { return m_pXML->ConvertToString(); }
-		virtual CString GetTypeOf (void) { return CONSTLIT("xmlElement"); }
-		virtual ValueTypes GetValueType (void) { return Complex; }
-		virtual BOOL IsIdentifier (void) { return FALSE; }
-		virtual BOOL IsFunction (void) { return FALSE; }
-		virtual BOOL IsPrimitive (void) { return FALSE; }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) { return CCString::Print(GetStringValue(), dwFlags); }
-		virtual void Reset (void) { }
+		virtual ICCItem *Clone (CCodeChain *pCC) override;
+		virtual CString GetStringValue (void) override { return m_pXML->ConvertToString(); }
+		virtual CString GetTypeOf (void) override { return CONSTLIT("xmlElement"); }
+		virtual ValueTypes GetValueType (void) override { return Complex; }
+		virtual bool IsIdentifier (void) override { return false; }
+		virtual bool IsFunction (void) override { return false; }
+		virtual bool IsPrimitive (void) override { return false; }
+		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override { return CCString::Print(GetStringValue(), dwFlags); }
+		virtual void Reset (void) override { }
 
 	protected:
-		virtual void DestroyItem (CCodeChain *pCC);
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream);
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream);
+		virtual void DestroyItem (CCodeChain *pCC) override;
+		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
+		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream) override;
 
 	private:
 		CXMLElement *m_pXML;
