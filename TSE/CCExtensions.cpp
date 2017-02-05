@@ -597,11 +597,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	---------------
 
 		{	"dbgLog",						fnDebug,		FN_DEBUG_LOG,
-			"(dbgLog [string]*)",
+			"(dbgLog [string]*) -> True if in debug mode, else Nil",
 			"*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"dbgOutput",					fnDebug,		FN_DEBUG_OUTPUT,
-			"(dbgOutput [string]*)",
+			"(dbgOutput [string]*) -> True if in debug mode, else Nil",
 			"*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"getAPIVersion",				fnDebug,		FN_API_VERSION,
@@ -609,11 +609,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"print",						fnDebug,		FN_PRINT,
-			"(print [string]*)",
+			"(print [string]*) -> True",
 			"*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"printTo",						fnDebug,		FN_PRINT_TO,
-			"(printTo output [string]*)\n\n"
+			"(printTo output [string]*) -> True\n\n"
 			
 			"output is one or more of:\n\n"
 
@@ -630,15 +630,24 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmCreateByName",				fnItemCreateByName,	0,	
-			"(itmCreateByName criteria name [count]) -> item",
+			"(itmCreateByName criteria name [count]) -> item\n\n"
+
+			"criteria as itmGetTypes\n",
+
 			"ss*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmCreateRandom",				fnItemCreateRandom,	0,
-			"(itmCreateRandom criteria levelDistribution) -> item",
+			"(itmCreateRandom criteria levelDistribution) -> item\n\n"
+
+			"criteria as itmGetTypes\n",
+
 			"ss",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmEnumTypes",					fnItemEnumTypes,	0,
-			"(itmEnumTypes criteria item-var exp)",
+			"(itmEnumTypes criteria item-var exp) -> value of last expression\n\n"
+
+			"criteria as itmGetTypes\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmFireEvent",				fnItemSet,		FN_ITEM_FIRE_EVENT,
@@ -666,7 +675,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"itmGetCount",					fnItemGet,		FN_ITEM_COUNT,
-			"(itmGetCount item)",
+			"(itmGetCount item) -> count of items",
 			"v",	0,	},
 
 		{	"itmGetDamageType",				fnItemGet,		FN_ITEM_DAMAGE_TYPE,
@@ -706,16 +715,20 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"itmGetName",					fnItemGet,		FN_ITEM_NAME,
-			"(itmGetName item|type flags)",
-		//		flag 0x001 (1) = capitalize
-		//		flag 0x002 (2) = pluralize
-		//		flag 0x004 (4) = prefix with 'the' or 'a'
-		//		flag 0x008 (8) = prefix with count (or 'a')
-		//		flag 0x010 (16) = prefix with count
-		//		flag 0x020 (32) = no modifiers
-		//		flag 0x040 (64) = prefix with 'the' or 'this' or 'these'
-		//		flag 0x080 (128) = short form of name
-		//		flag 0x100 (256) = actual name
+			"(itmGetName item|type flags) -> name of item\n\n"
+
+			"flags\n\n"
+
+			"   0x001 capitalize\n"
+			"   0x002 pluralize\n"
+			"   0x004 prefix with 'the' or 'a'\n"
+			"   0x008 prefix with count (or 'a')\n"
+			"   0x010 prefix with count\n"
+			"   0x020 no modifiers\n"
+			"   0x040 prefix with 'the' or 'this' or 'these'\n"
+			"   0x080 short form of name\n"
+			"   0x100 actual name\n",
+
 			"vi",	0,	},
 
 		{	"itmGetPrice",					fnItemGet,		FN_ITEM_PRICE,
@@ -764,11 +777,45 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v*",	0,	},
 
 		{	"itmGetTypes",				fnItemGetTypes,			0,
-			"(itmGetTypes criteria) -> list of itemUNIDs",
+			"(itmGetTypes criteria) -> list of itemUNIDs\n\n"
+
+			"criteria\n\n"
+
+			"   *                  Include all item categories\n"
+			"   a                  Include armor devices\n"
+			"   b                  Include misc devices\n"
+			"   c                  Include cargo hold devices\n"
+			"   d                  Include all devices\n"
+			"   f                  Include fuel\n"
+			"   l                  Include launcher devices\n"
+			"   m/M                Include missiles and ammo / missiles only\n"
+			"   p                  Include primary weapon devices\n"
+			"   r                  Include reactor devices\n"
+			"   s                  Include shield devices\n"
+			"   t                  Include misc items\n"
+			"   u                  Include useful items\n"
+			"   v                  Include drive devices\n"
+			"   w                  Include all weapon devices\n"
+			"   V                  Include virtual items\n"
+			"   ~                  Exclude category\n"
+			"   ^                  Require category\n"
+			"\n"
+			"   +/-xyz             Require / exclude items with attribute\n"
+			"   +/-UNID:xyz        Require / exclude items with unid\n"
+			"   +/-launchedBy:xyz  Require / exclude ammo launched by unid\n"
+			"   +/-damageType:xyz  Require / exclude weapons with damage\n"
+			"\n"
+			"   F:xyz              Only items with the given frequency\n"
+			"   L:x-y              Only Items of level x to y\n"
+			"comparison criteria supported: < <= = => >\n"
+			"   < x                Only items with level less than x\n"
+			"   <$ x               Only items costing less than x\n"
+			"   <# x               Only items massing less than x\n",
+
 			"s",	0,	},
 
 		{	"itmGetUseScreen",				fnItemGet,		FN_ITEM_USE_SCREEN,
-			"(itmGetUseScreen item|type)",
+			"(itmGetUseScreen item|type) -> screenUNID",
 			"v",	0,	},
 
 		{	"itmHasAttribute",				fnItemGet,		FN_ITEM_HAS_MODIFIER,
@@ -776,7 +823,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vs",	0,	},
 
 		{	"itmHasReference",				fnItemGet,		FN_ITEM_REFERENCE,
-			"(itmHasReference item|type)",
+			"(itmHasReference item|type) -> True/Nil",
 			"v",	0,	},
 
 		{	"itmIsEnhanced",				fnItemGet,		FN_ITEM_ENHANCED,
@@ -793,15 +840,18 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vv*",	0,	},
 
 		{	"itmIsInstalled",				fnItemGet,		FN_ITEM_INSTALLED,
-			"(itmIsInstalled item)",
+			"(itmIsInstalled item) -> True/Nil",
 			"v",	0,	},
 
 		{	"itmIsKnown",					fnItemGet,		FN_ITEM_KNOWN,
-			"(itmIsKnown item|type)",
+			"(itmIsKnown item|type) -> True/Nil",
 			"v",	0,	},
 
 		{	"itmMatches",					fnItemGet,		FN_ITEM_MATCHES,
-			"(itmMatches item|type criteria)",
+			"(itmMatches item|type criteria) -> True/Nil"
+
+			"criteria as itmGetTypes\n",
+
 			"vs",	0,	},
 
 		{	"itmSetCount",					fnItemSet,		FN_ITEM_COUNT,
@@ -817,7 +867,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vv",	0,	},
 
 		{	"itmSetKnown",					fnItemTypeSet,	FN_ITEM_TYPE_SET_KNOWN,
-			"(itmSetKnown type|item [True/Nil])",
+			"(itmSetKnown type|item [True/Nil]) -> True/Nil",
 			"v*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmSetProperty",				fnItemSet,		FN_ITEM_PROPERTY,
@@ -834,7 +884,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"vs*",	0,	},
 
 		{	"itmSetReference",				fnItemGet,		FN_ITEM_SET_REFERENCE,
-			"(itmSetReference item)",
+			"(itmSetReference item) -> True/Nil",
 			"v",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmSetTypeData",				fnItemGet,		FN_ITEM_SET_GLOBAL_DATA,
@@ -861,25 +911,29 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0, },
 
 		{	"rollDice",						fnRollDice,		0,
-			"(rollDice count sides bonus)",
+			"(rollDice count sides [bonus]) -> value",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		//	Ship functions
 		//	--------------
 
 		{	"shpCancelOrder",				fnShipSet,			FN_SHIP_CANCEL_ORDER,
-			"(shpCancelOrder ship [orderIndex])",
+			"(shpCancelOrder ship [orderIndex]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpCancelOrders",				fnShipGetOld,		FN_SHIP_CANCEL_ORDERS,
-			"(shpCancelOrders ship)",
+			"(shpCancelOrders ship) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpCanRemoveDevice",			fnShipSet,			FN_SHIP_CAN_REMOVE_DEVICE,
-			"(shpCanRemoveDevice ship item) -> result",
-		//			0 = OK
-		//			1 = Too much cargo to remove cargo hold
-		//			string =  custom fail reason
+			"(shpCanRemoveDevice ship item) -> resultCode\n\n"
+
+			"resultCode\n\n"
+
+			"   0        OK\n"
+			"   1        Too much cargo to remove cargo hold\n"
+			"   2        Device not installed\n"
+			"   string   custom fail reason\n",
 			"iv",	0,	},
 
 		{	"shpConsumeFuel",				fnShipSet,			FN_SHIP_CONSUME_FUEL,
@@ -897,7 +951,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivvi*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpDecontaminate",				fnShipGetOld,		FN_SHIP_DECONTAMINATE,
-			"(shpDecontaminate ship)",
+			"(shpDecontaminate ship) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpGetAISetting",				fnShipGet,			FN_SHIP_AI_SETTING,
@@ -1017,7 +1071,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpIsBlind",					fnShipGetOld,		FN_SHIP_BLINDNESS,
-			"(shpIsBlind ship)",
+			"(shpIsBlind ship) -> True/Nil",
 			NULL,	0,	},
 
 		{	"shpIsFuelCompatible",			fnShipSetOld,		FN_SHIP_IS_FUEL_COMPATIBLE,
@@ -1041,7 +1095,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpMakeRadioactive",			fnShipGetOld,		FN_SHIP_MAKE_RADIOACTIVE,
-			"(shpMakeRadioactive ship)",
+			"(shpMakeRadioactive ship) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpOrder",						fnShipSet,		FN_SHIP_ORDER,
@@ -1053,7 +1107,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpRechargeShield",			fnShipSetOld,		FN_SHIP_RECHARGE_SHIELD,
-			"(shpRechargeShield ship hpToRecharge)",
+			"(shpRechargeShield ship hpToRecharge) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpRefuelFromItem",			fnShipSetOld,		FN_SHIP_REFUEL_FROM_ITEM,
@@ -1069,7 +1123,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpRepairItem",				fnShipSet,		FN_SHIP_REPAIR_ITEM,
-			"(shpRepairItem ship item)",
+			"(shpRepairItem ship item) -> True/Nil",
 			"iv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpSetAISetting",				fnShipSet,			FN_SHIP_AI_SETTING,
@@ -1125,7 +1179,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivi",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objAddItem",					fnObjSet,		FN_OBJ_ADD_ITEM,
-			"(objAddItem obj item|type [count])",
+			"(objAddItem obj item|type [count]) -> True/Nil",
 			"iv*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objAddItemEnhancement",		fnObjSet,		FN_OBJ_ADD_ITEM_ENHANCEMENT,
@@ -1138,7 +1192,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objAddRandomItems",			fnObjAddRandomItems,	0,
-			"(objAddRandomItems obj table count)",
+			"(objAddRandomItems obj table count) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objAddSellOrder",					fnObjSet,		FN_OBJ_ADD_SELL_ORDER,
@@ -1215,11 +1269,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objClearIdentified",			fnObjSet,		FN_OBJ_CLEAR_IDENTIFIED,
-			"(objClearIdentified obj)",
+			"(objClearIdentified obj) -> True/Nil",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objClearShowAsDestination",		fnObjSet,		FN_OBJ_CLEAR_AS_DESTINATION,
-			"(objClearShowAsDestination obj)",
+			"(objClearShowAsDestination obj) -> True/Nil",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objCommunicate",				fnObjComms,		0,
@@ -1258,7 +1312,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivv*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objDepleteShields",			fnObjSet,		FN_OBJ_DEPLETE_SHIELDS,	
-			"(objDepleteShields obj)",
+			"(objDepleteShields obj) -> True/Nil",
 			"i",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objDestroy",					fnObjSet,		FN_OBJ_DESTROY,
@@ -1266,7 +1320,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objEnumItems",					fnObjEnumItems,	0,
-			"(objEnumItems obj criteria itemVar exp)",
+			"(objEnumItems obj criteria itemVar exp) -> value\n\n"
+
+			"criteria as objGetItems\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objFireEvent",					fnObjSet,		FN_OBJ_FIRE_EVENT,
@@ -1286,11 +1343,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objFixParalysis",				fnObjSet,		FN_OBJ_FIX_PARALYSIS,
-			"(objFixParalysis obj)",
+			"(objFixParalysis obj) -> True/Nil",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGateTo",					fnObjGateTo,	0,
-			"(objGateTo obj node entrypoint [effectID])",
+			"(objGateTo obj node entrypoint [effectID]) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetArmorRepairPrice",		fnObjGet,		FN_OBJ_ARMOR_REPAIR_PRICE,
@@ -1413,7 +1470,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivs",	0,	},
 
 		{	"objGetItems",					fnObjItem,		FN_OBJ_ENUM_ITEMS,
-			"(objGetItems obj criteria) -> list of items",
+			"(objGetItems obj criteria) -> list of items\n\n"
+
+			"criteria as itmGetTypes plus\n\n"
+
+			"   I                  Only installed devices\n"
+			"   D                  Only damaged items\n"
+			"   N                  Only undamaged items\n"
+			"   S                  Only usable items\n"
+			"   U                  Only uninstalled items\n",
+
 			NULL,	0,	},
 
 		{	"objGetLevel",					fnObjGet,		FN_OBJ_LEVEL,
@@ -1425,16 +1491,20 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",		0,	},
 
 		{	"objGetName",					fnObjGetOld,		FN_OBJ_NAME,
-			"(objGetName obj [flags]) -> Name of the object",
-		//		flag 0x0001 = capitalize
-		//		flag 0x0002 = pluralize
-		//		flag 0x0004 = prefix with 'the' or 'a'
-		//		flag 0x0008 = prefix with count or singular article
-		//		flag 0x0010 = prefix with count or nothing
-		//		flag 0x0020 = no modifiers ('damaged' etc)
-		//		flag 0x0040 = prefix with 'the', 'this', or 'these'
-		//		flag 0x0080 = short name
-		//		flag 0x0100 = use actual name (not unidentified name)
+			"(objGetName obj [flags]) -> Name of the object\n\n"
+
+			"flags\n\n"
+
+			"   0x001 capitalize\n"
+			"   0x002 pluralize\n"
+			"   0x004 prefix with 'the' or 'a'\n"
+			"   0x008 prefix with count or singular article\n"
+			"   0x010 prefix with count or nothing\n"
+			"   0x020 no modifiers ('damaged' etc)\n"
+			"   0x040 prefix with 'the' or 'this' or 'these'\n"
+			"   0x080 short name\n"
+			"   0x100 actual name (not unidentified name)\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetNamedItems",				fnObjGet,		FN_OBJ_GET_NAMED_ITEM,	
@@ -1672,35 +1742,41 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"objIsKnown",					fnObjGetOld,		FN_OBJ_KNOWN,
-			"(objIsKnown obj)",
+			"(objIsKnown obj) -> True/Nil",
 			NULL,	0,	},
 
 		{	"objIsParalyzed",				fnObjGet,		FN_OBJ_PARALYZED,
-			"(objIsParalyzed obj)",
+			"(objIsParalyzed obj) -> True/Nil",
 			"i",	0,	},
 
 		{	"objIsRadioactive",				fnObjGet,		FN_OBJ_RADIOACTIVE,
-			"(objIsRadioactive obj)",
+			"(objIsRadioactive obj) -> True/Nil",
 			"i",	0,	},
 
 		{	"objJumpTo",					fnObjSetOld,		FN_OBJ_JUMP,
-			"(objJumpTo obj pos)",
+			"(objJumpTo obj pos) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objLowerShields",				fnObjGetOld,		FN_OBJ_LOWER_SHIELDS,
-			"(objLowerShields obj)",
+			"(objLowerShields obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objMakeParalyzed",				fnObjSetOld,		FN_OBJ_PARALYSIS,
-			"(objMakeParalyzed obj ticks)",
+			"(objMakeParalyzed obj ticks) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objMatches",					fnObjGet,			FN_OBJ_MATCHES,
-			"(objMatches obj source filter) -> True/Nil",
+			"(objMatches obj source filter) -> True/Nil\n\n"
+
+			"criteria as sysFindObject\n",
+
 			"iis",	0,	},
 
 		{	"objProgramDamage",				fnProgramDamage,0,
-			"(objProgramDamage obj hacker progName aiLevel code)",
+			"(objProgramDamage obj hacker progName aiLevel code) -> True/Nil\n\n"
+
+			"Chance to execute code is: 90 + 10 * (aiLevel - cyberDefenseLevel)\n",
+
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRecordBuyItem",					fnObjSet,		FN_OBJ_RECORD_BUY_ITEM,
@@ -1708,27 +1784,27 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iiv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRegisterForEvents",			fnObjSetOld,		FN_OBJ_REGISTER_EVENTS,
-			"(objRegisterForEvents target obj)",
+			"(objRegisterForEvents target obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRegisterForSystemEvents",	fnObjSet,		FN_OBJ_REGISTER_SYSTEM_EVENTS,
-			"(objRegisterForSystemEvents target range)",
+			"(objRegisterForSystemEvents target range) -> True/Nil",
 			"ii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItem",				fnObjItem,		FN_OBJ_REMOVE_ITEM,
-			"(objRemoveItem obj item [count])",
+			"(objRemoveItem obj item [count]) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItemEnhancement",		fnObjSet,		FN_OBJ_REMOVE_ITEM_ENHANCEMENT,
-			"(objRemoveItemEnhancement obj item enhancementID)",
+			"(objRemoveItemEnhancement obj item enhancementID) -> True/Nil",
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveOverlay",				fnObjSet,		FN_OBJ_REMOVE_OVERLAY,
-			"(objRemoveOverlay obj overlayID)",
+			"(objRemoveOverlay obj overlayID) -> True/Nil",
 			"ii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objResume",					fnObjSet,		FN_OBJ_RESUME,
-			"(objResume obj [gateObj])",
+			"(objResume obj [gateObj]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSendMessage",				fnObjSendMessage,		FN_OBJ_MESSAGE,
@@ -1736,7 +1812,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetData",					fnObjData,		FN_OBJ_SETDATA,
-			"(objSetData obj attrib data)",
+			"(objSetData obj attrib data) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetDeviceActivationDelay",	fnObjSet,		FN_OBJ_DEVICE_ACTIVATION_DELAY,
@@ -1748,7 +1824,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetIdentified",				fnObjSet,		FN_OBJ_IDENTIFIED,
-			"(objSetIdentified obj)",
+			"(objSetIdentified obj) -> True/Nil",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetItemData",				fnObjSet,		FN_OBJ_SET_ITEM_DATA,
@@ -1774,11 +1850,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetKnown",					fnObjGetOld,		FN_OBJ_SET_KNOWN,
-			"(objSetKnown obj)",
+			"(objSetKnown obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetName",					fnObjSetOld,		FN_OBJ_NAME,
-			"(objSetName obj name [flags])\n\n"
+			"(objSetName obj name [flags]) -> True/Nil\n\n"
 			
 			"flags\n\n"
 			
@@ -1794,7 +1870,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetObjRefData",				fnObjData,		FN_OBJ_SET_OBJREF_DATA,
-			"(objSetObjRefData obj attrib obj)",
+			"(objSetObjRefData obj attrib obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetOverlayData",			fnObjGet,		FN_OBJ_SET_OVERLAY_DATA,
