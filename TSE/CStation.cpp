@@ -4394,7 +4394,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		if (pValue->IsNil())
 			m_iAngryCounter = 0;
 		else if (pValue->IsInteger())
-			m_iAngryCounter = Max(0, pValue->IsInteger());
+			m_iAngryCounter = Max(0, pValue->GetIntegerValue());
 		else
 			SetAngry();
 		return true;
