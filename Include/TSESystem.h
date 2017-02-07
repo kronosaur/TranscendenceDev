@@ -793,7 +793,7 @@ class CSystem
 		CTopologyNode *GetStargateDestination (const CString &sStargate, CString *retsEntryPoint);
 		inline CUniverse *GetUniverse (void) const { return g_pUniverse; }
 		bool HasAttribute (const CVector &vPos, const CString &sAttrib);
-		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, CVector *retvHitPos = NULL);
+		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, bool bExcludeWorlds, CVector *retvHitPos = NULL);
 		inline bool IsCreationInProgress (void) const { return (m_fInCreate ? true : false); }
 		inline bool IsPlayerUnderAttack (void) const { return m_fPlayerUnderAttack; }
 		bool IsStarAtPos (const CVector &vPos);

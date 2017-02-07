@@ -2854,7 +2854,7 @@ bool CSystem::HasAttribute (const CVector &vPos, const CString &sAttrib)
 		}
 	}
 
-CSpaceObject *CSystem::HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, CVector *retvHitPos)
+CSpaceObject *CSystem::HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, bool bExcludeWorlds, CVector *retvHitPos)
 
 //	HitScan
 //
@@ -2897,7 +2897,8 @@ CSpaceObject *CSystem::HitScan (CSpaceObject *pExclude, const CVector &vStart, c
 		if (pObj->IsDestroyed()
 				|| pObj == pExclude
 				|| pObj->IsIntangible()
-				|| (pObj->GetScale() != scaleStructure 
+				|| (bExcludeWorlds
+					&& pObj->GetScale() != scaleStructure 
 					&& pObj->GetScale() != scaleShip))
 			continue;
 

@@ -40,6 +40,7 @@
 //#define DEBUG_FIRE_ON_OPPORTUNITY
 //#define DEBUG_FORMATION
 //#define DEBUG_HENCHMAN
+//#define DEBUG_HIT_SCAN
 //#define DEBUG_LOAD
 //#define DEBUG_NAV_PATH
 //#define DEBUG_NEBULA_PAINTING

@@ -559,6 +559,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_CENTER					CONSTLIT("center")
 #define FIELD_DEVICE_SLOT				CONSTLIT("deviceSlot")
 #define FIELD_ERODE						CONSTLIT("erode")
+#define FIELD_EXCLUDE_WORLDS			CONSTLIT("excludeWorlds")
 #define FIELD_HEIGHT					CONSTLIT("height")
 #define FIELD_LENGTH					CONSTLIT("length")
 #define FIELD_OBJ_TYPE					CONSTLIT("objType")
@@ -2501,8 +2502,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"s*",	0,	},
 
 		{	"sysHitScan",					fnSystemGet,	FN_SYS_HIT_SCAN,
-			"(sysHitScan [source] startPos endPos) -> (obj hitPos) or Nil",
-			"*vv",	0,	},
+			"(sysHitScan source startPos endPos [options]) -> (obj hitPos) or Nil\n\n"
+				
+			"options\n\n"
+				
+			"   'excludeWorlds\n",
+
+			"ivv*",	0,	},
 
 		{	"sysIncData",					fnSystemGet,	FN_SYS_INC_DATA,
 			"(sysIncData [nodeID] attrib increment) -> new value",
@@ -11375,8 +11381,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			int iArg = -1;
 			CSpaceObject *pSource = NULL;
-			if (pArgs->GetCount() >= 3)
-				pSource = CreateObjFromItem(*pCC, pArgs->GetElement(++iArg));
+			pSource = CreateObjFromItem(*pCC, pArgs->GetElement(++iArg));
 
 			//	Get ray
 
@@ -11388,10 +11393,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(++iArg), &vEnd) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(iArg));
 
+			//	Options
+
+			bool bExcludeWorlds = false;
+			if (pArgs->GetCount() >= 4)
+				{
+				ICCItem *pOptions = pArgs->GetElement(++iArg);
+				bExcludeWorlds = pOptions->GetBooleanAt(FIELD_EXCLUDE_WORLDS);
+				}
+
 			//	Hit test
 
 			CVector vHitPos;
-			CSpaceObject *pHitObj = pSystem->HitScan(pSource, vStart, vEnd, &vHitPos);
+			CSpaceObject *pHitObj = pSystem->HitScan(pSource, vStart, vEnd, bExcludeWorlds, &vHitPos);
 			if (pHitObj == NULL)
 				return pCC->CreateNil();
 
