@@ -1,6 +1,7 @@
 //	CContinuousBeam.cpp
 //
 //	CContinuousBeam class
+//	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -197,7 +198,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 	return NOERROR;
 	}
 
-EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir, int iDamage)
+EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir)
 
 //	DoDamage
 //
@@ -234,85 +235,175 @@ CString CContinuousBeam::GetName (DWORD *retdwFlags)
 	return CONSTLIT("enemy weapon");
 	}
 
-bool CContinuousBeam::HitTestSegment (const CVector &vPos, CVector &vNewPos, CSpaceObject **retpHit, int *retiHitDir)
+bool CContinuousBeam::HitTestSegment (SSegment &Segment, CVector *retvHitPos)
 
 //	HitTestSegment
 //
-//	If we hit an object, returns the object hit and the new position of the
-//	segment (which is the hit position).
+//	Hit tests the segment against all objects and initializes the segment's
+//	Hit array. If the segment is stopped by a hit (does not pass through) then
+//	we return TRUE and retvHitPos is where the segment got stopped.
 
 	{
 	int iInteraction = m_pDesc->GetInteraction();
+	CVector vNewPos = Segment.vPos + Segment.vDeltaPos;
 
 	//	Get our bounds
 
-	CVector vLL = vPos;
-	CVector vUR = vPos;
+	CVector vLL = Segment.vPos;
+	CVector vUR = Segment.vPos;
 	CGeometry::AccumulateBounds(vNewPos, vLL, vUR);
 
 	//	Compute the segment length (we need this for stepping and for bounds)
 
-	CVector vDiff = (vNewPos - vPos);
+	CVector vDiff = (vNewPos - Segment.vPos);
 	Metric rLength = vDiff.Length();
 	if (rLength == 0.0)
 		return false;
 
 	Metric rStep = 3.0 * g_KlicksPerPixel;
 	CVector vStep = (rStep / rLength) * vDiff;
+	int iHitDir = AngleMod(180 + VectorToPolar(vStep));
 
 	//	Get the list of objects that intersect the object
 
 	SSpaceObjectGridEnumerator i;
 	GetSystem()->EnumObjectsInBoxStart(i, vUR, vLL);
 
-	//	Track the best (nearest) object that we hit
+	//	If we have passthrough, then we need to get a list of objects hit.
 
-	CSpaceObject *pHit = NULL;
-	CVector vBestHit;
-	Metric rBestDist = rLength;
-
-	//	See if the beam hit anything. We start with a crude first pass.
-	//	Any objects near the beam are then analyzed further to see if
-	//	the beam hit them.
-
-	while (GetSystem()->EnumObjectsInBoxHasMore(i))
+	if (m_pDesc->GetPassthrough() > 0)
 		{
-		CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
-		if (!CanHit(pObj)
-				|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
-				|| !pObj->InteractsWith(iInteraction)
-				|| pObj == this)
-			continue;
+		//	We keep an array of hits sorted by ascending order of distance
+		//	along the travel direction.
 
-		//	See where we hit this object (if at all)
+		TSortMap<Metric, CHitCtx> Hits;
 
-		Metric rTest = 0.0;
-		CVector vTest = vPos;
-		while (rTest < rBestDist)
+		//	See if the beam hit anything. We start with a crude first pass.
+		//	Any objects near the beam are then analyzed further to see if
+		//	the beam hit them.
+
+		while (GetSystem()->EnumObjectsInBoxHasMore(i))
 			{
-			if (pObj->PointInObject(pObj->GetPos(), vTest))
+			CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
+			if (!CanHit(pObj)
+					|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
+					|| !pObj->InteractsWith(iInteraction)
+					|| pObj == this)
+				continue;
+
+			//	See where we hit this object (if at all)
+
+			Metric rTest = 0.0;
+			CVector vTest = Segment.vPos;
+			while (rTest < rLength)
 				{
-				pHit = pObj;
-				vBestHit = vTest;
-				rBestDist = rTest;
+				if (pObj->PointInObject(pObj->GetPos(), vTest))
+					{
+					Hits.Insert(rTest, CHitCtx(pObj, vTest, iHitDir));
+					break;
+					}
+
+				rTest += rStep;
+				vTest = vTest + vStep;
+				}
+			}
+
+		//	Loop over all hits in order and see if they passthrough
+
+		bool bHit = false;
+		TArray<DWORD> NewHits;
+		for (int j = 0; j < Hits.GetCount(); j++)
+			{
+			//	If this object was hit by this same segment last tick, then
+			//	skip it.
+
+			if (Segment.Hits.Find(Hits[j].GetHitObj()->GetID()))
+				continue;
+
+			//	Add this hit to the list
+
+			m_Hits.Insert(Hits[j]);
+			NewHits.Insert(Hits[j].GetHitObj()->GetID());
+
+			//	If we DO NOT pass through, then we're done
+
+			if (mathRandom(1, 100) > m_pDesc->GetPassthrough()
+					|| Hits[j].GetHitObj()->GetPassthroughDefault() == damageNoDamageNoPassthrough)
+				{
+				bHit = true;
+				*retvHitPos = Hits[j].GetHitPos();
 				break;
 				}
-
-			rTest += rStep;
-			vTest = vTest + vStep;
 			}
+
+		//	Reset the list of hits for this segment.
+
+		Segment.Hits = NewHits;
+
+		//	Done
+
+		return bHit;
 		}
 
-	//	Done
+	//	Otherwise, we only have a single object.
 
-	if (pHit == NULL)
-		return false;
+	else
+		{
+		//	Track the best (nearest) object that we hit
 
-	vNewPos = vBestHit;
-	*retpHit = pHit;
-	*retiHitDir = AngleMod(180 + VectorToPolar(vStep));
+		CSpaceObject *pHit = NULL;
+		CVector vBestHit;
+		Metric rBestDist = rLength;
 
-	return true;
+		//	See if the beam hit anything. We start with a crude first pass.
+		//	Any objects near the beam are then analyzed further to see if
+		//	the beam hit them.
+
+		while (GetSystem()->EnumObjectsInBoxHasMore(i))
+			{
+			CSpaceObject *pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
+			if (!CanHit(pObj)
+					|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
+					|| !pObj->InteractsWith(iInteraction)
+					|| pObj == this)
+				continue;
+
+			//	See where we hit this object (if at all)
+
+			Metric rTest = 0.0;
+			CVector vTest = Segment.vPos;
+			while (rTest < rBestDist)
+				{
+				if (pObj->PointInObject(pObj->GetPos(), vTest))
+					{
+					pHit = pObj;
+					vBestHit = vTest;
+					rBestDist = rTest;
+					break;
+					}
+
+				rTest += rStep;
+				vTest = vTest + vStep;
+				}
+			}
+
+		//	If nothing hit, then we're done
+
+		if (pHit == NULL)
+			return false;
+
+		//	Remember what we hit.
+		//
+		//	NOTE: We do not need to remember the object hit in the segment 
+		//	because we only use that to compute passthrough.
+
+		m_Hits.Insert(CHitCtx(pHit, vBestHit, iHitDir));
+
+		//	Return the split position
+
+		*retvHitPos = vBestHit;
+		return true;
+		}
 	}
 
 void CContinuousBeam::OnDestroyed (SDestroyCtx &Ctx)
@@ -362,10 +453,19 @@ void CContinuousBeam::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Called when another object is destroyed
 
 	{
+	int i;
+
 	m_Source.OnObjDestroyed(Ctx.pObj);
 
 	if (Ctx.pObj == m_pTarget)
 		m_pTarget = NULL;
+
+	for (i = 0; i < m_Hits.GetCount(); i++)
+		if (Ctx.pObj == m_Hits[i].GetHitObj())
+			{
+			m_Hits.Delete(i);
+			i--;
+			}
 	}
 
 void CContinuousBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -439,6 +539,9 @@ void CContinuousBeam::OnReadFromStream (SLoadCtx &Ctx)
 //	CItemEnhancementStack	m_pEnhancements
 //
 //	DWORD			Flags
+//
+//	DWORD			No. of hit objects (only if flag set)
+//	CHitCtx			Hit
 
 	{
 	int i;
@@ -474,11 +577,23 @@ void CContinuousBeam::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&Segment.dwGeneration, sizeof(DWORD));
 		Ctx.pStream->Read((char *)&Segment.iDamage, sizeof(DWORD));
 
+		//	Flags
+
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 
 		Segment.fAlive =		((dwLoad & 0x00000001) ? true : false);
 		Segment.fHit =			((dwLoad & 0x00000002) ? true : false);
 		Segment.fPassthrough =	((dwLoad & 0x00000004) ? true : false);
+		bool bHit =				((dwLoad & 0x00000008) ? true : false);
+
+		//	Hits
+
+		if (bHit)
+			{
+			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+			Segment.Hits.InsertEmpty(dwLoad);
+			Ctx.pStream->Read((char *)&Segment.Hits[0], sizeof(DWORD) * dwLoad);
+			}
 		}
 
 	//	For now we don't bother saving the effect painter
@@ -494,6 +609,17 @@ void CContinuousBeam::OnReadFromStream (SLoadCtx &Ctx)
 
 	DWORD dwFlags = 0;
 	Ctx.pStream->Read((char *)&dwFlags, sizeof(DWORD));
+	bool bHit =			((dwFlags & 0x00000001) ? true : false);
+
+	//	Hit objects
+
+	if (bHit)
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_Hits.InsertEmpty(dwLoad);
+		for (i = 0; i < m_Hits.GetCount(); i++)
+			m_Hits[i].ReadFromStream(Ctx);
+		}
 	}
 
 void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
@@ -513,6 +639,23 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	if (m_pEffectPainter)
 		m_pEffectPainter->OnUpdate();
 
+	//	Do damage
+
+	for (i = 0; i < m_Hits.GetCount(); i++)
+		{
+		const CHitCtx &Hit = m_Hits[i];
+
+		//	Do damage
+
+		EDamageResults iResult = DoDamage(Hit.GetHitObj(), Hit.GetHitPos(), Hit.GetHitDir());
+
+		//	NOTE: No need to do anything with the result because we've already
+		//	determined whether the beam/segment needs to be split. We do not 
+		//	check for passthrough here because we already checked in OnMove.
+		//	[And we have to check in OnMove because otherwise we would not
+		//	paint correctly.]
+		}
+
 	//	Update each segment (except for the pseudo segment).
 
 	bool bAlive = false;
@@ -526,7 +669,7 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		bAlive = true;
 
-		//	See if we've expired
+		//	If we've expired or the segment hit something, then we're dead now
 
 		if (Segment.fHit
 				|| dwNow >= Segment.dwGeneration + (DWORD)m_iLifetime)
@@ -559,12 +702,17 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 //	DWORD			iGeneration
 //	DWORD			iDamage
 //	DWORD			Flags
+//	DWORD			No. of objects hit (only if flag set)
+//	DWORD			ObjectID
 //
 //	IEffectPainter
 //
 //	CItemEnhancementStack	m_pEnhancements
 //
 //	DWORD			Flags
+//
+//	DWORD			No. of hit objects (only if flag set)
+//	CHitCtx			Hit
 
 	{
 	int i;
@@ -590,12 +738,24 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 		pStream->Write((char *)&Segment.dwGeneration, sizeof(DWORD));
 		pStream->Write((char *)&Segment.iDamage, sizeof(DWORD));
 
+		//	Flags
+
 		dwSave = 0;
-		dwSave |= (Segment.fAlive ?			0x00000001 : 0);
-		dwSave |= (Segment.fHit ?			0x00000002 : 0);
-		dwSave |= (Segment.fPassthrough ?	0x00000004 : 0);
+		dwSave |= (Segment.fAlive ?				0x00000001 : 0);
+		dwSave |= (Segment.fHit ?				0x00000002 : 0);
+		dwSave |= (Segment.fPassthrough ?		0x00000004 : 0);
+		dwSave |= (Segment.Hits.GetCount() ?	0x00000008 : 0);
 
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+		//	Hits
+
+		if (Segment.Hits.GetCount())
+			{
+			dwSave = Segment.Hits.GetCount();
+			pStream->Write((char *)&dwSave, sizeof(DWORD));
+			pStream->Write((char *)&Segment.Hits[0], sizeof(DWORD) * dwSave);
+			}
 		}
 
 	//	Painter
@@ -609,7 +769,19 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 	//	Flags
 
 	dwSave = 0;
+	dwSave |= (m_Hits.GetCount() ?	0x00000001 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+	//	Save any hit objects
+
+	if (m_Hits.GetCount())
+		{
+		dwSave = m_Hits.GetCount();
+		pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+		for (i = 0; i < m_Hits.GetCount(); i++)
+			m_Hits[i].WriteToStream(GetSystem(), pStream);
+		}
 	}
 
 void CContinuousBeam::PaintSegment (CG32bitImage &Dest, const CVector &vFrom, const CVector &vTo, SViewportPaintCtx &Ctx) const
@@ -652,6 +824,10 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 	CVector vPos = GetPos();
 	bool bFoundFirst = false;
 
+	//	Reset hit information
+
+	m_Hits.DeleteAll();
+
 	//	Keep track of bounds
 
 	CVector vLL = vPos;
@@ -665,60 +841,26 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 		SSegment *pSegment = &m_Segments[i];
 		CVector vNewPos = pSegment->vPos + pSegment->vDeltaPos;
 
-		//	See if we hit anything
+		//	See if we hit anything. HitTestSegment adds hits as appropriate, but
+		//	it only returns TRUE if we need to split the beam at a hit point.
 
-		CSpaceObject *pHit;
-		int iHitDir;
+		CVector vSplitPos;
 		if (pSegment->fAlive
-				&& HitTestSegment(pSegment->vPos, vNewPos, &pHit, &iHitDir))
+				&& HitTestSegment(m_Segments[i], &vSplitPos))
 			{
-			//	See if we pass through
+			//	Split the segment in two
 
-			if (m_pDesc->GetPassthrough() > 0
-					&& mathRandom(1, 100) <= m_pDesc->GetPassthrough()
-					&& pHit->GetPassthroughDefault() != damageNoDamageNoPassthrough)
-				{
-				pSegment->vPos = pSegment->vPos + pSegment->vDeltaPos;
-				pSegment->fPassthrough = true;
-				}
+			SSegment *pDeadSegment = m_Segments.InsertAt(i);
+			i++;
+			pSegment = &m_Segments[i];
 
-			//	Otherwise, we split the beam at the point where we hit
+			pDeadSegment->vPos = pSegment->vPos;
+			pDeadSegment->vDeltaPos = pSegment->vDeltaPos;
+			pDeadSegment->fAlive = false;
 
-			else
-				{
-				//	Split the segment in two
-
-				SSegment *pDeadSegment = m_Segments.InsertAt(i);
-				i++;
-				pSegment = &m_Segments[i];
-
-				pDeadSegment->vPos = pSegment->vPos;
-				pDeadSegment->vDeltaPos = pSegment->vDeltaPos;
-				pDeadSegment->fAlive = false;
-
-				pSegment->vPos = vNewPos;
-				pSegment->fPassthrough = false;
-				}
-
-			//	Do damage
-
-			EDamageResults iResult = DoDamage(pHit, vNewPos, iHitDir, pSegment->iDamage);
-
-			//	If we passed through completely, then nothing else to do
-
-			if (pSegment->fPassthrough)
-				{ }
-
-			//	If we hit something that allowed us to pass through, then chance of 
-			//	passthrough.
-
-			else if (iResult == damagePassthrough || iResult == damagePassthroughDestroyed)
-				pSegment->fHit = (mathRandom(1, 100) >=50);
-
-			//	Segment is dead next frame
-
-			else
-				pSegment->fHit = true;
+			pSegment->vPos = vSplitPos;
+			pSegment->fPassthrough = false;
+			pSegment->fHit = true;
 			}
 
 		//	Update
@@ -763,3 +905,4 @@ void CContinuousBeam::UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Me
 	if (retrMaxBoundsY)
 		*retrMaxBoundsY = Max(Absolute(vLL.GetY()), Absolute(vUR.GetY()));
 	}
+

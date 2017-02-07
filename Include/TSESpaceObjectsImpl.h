@@ -203,6 +203,7 @@ class CContinuousBeam : public CSpaceObject
 			CVector vDeltaPos;				//	Change in position per tick
 			DWORD dwGeneration;				//	Created on this tick
 			int iDamage;					//	Damage in points
+			TArray<DWORD> Hits;				//	Object ID of what we hit last tick
 			
 			DWORD fAlive:1;					//	Segment is still alive
 			DWORD fHit:1;					//	We hit something last frame
@@ -212,8 +213,8 @@ class CContinuousBeam : public CSpaceObject
 
 		CContinuousBeam (void);
 		void AddSegment (const CVector &vPos, const CVector &vVel, int iDamage);
-		EDamageResults DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir, int iDamage);
-		bool HitTestSegment (const CVector &vPos, CVector &vNewPos, CSpaceObject **retpHit, int *retiHitDir);
+		EDamageResults DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir);
+		bool HitTestSegment (SSegment &Segment, CVector *retvHitPos);
 		void PaintSegment (CG32bitImage &Dest, const CVector &vFrom, const CVector &vTo, SViewportPaintCtx &Ctx) const;
 		void UpdateBeamMotion (Metric rSeconds, CVector *retvNewPos, Metric *retrMaxBoundsX, Metric *retrMaxBoundsY);
 
@@ -239,6 +240,7 @@ class CContinuousBeam : public CSpaceObject
 		CSovereign *m_pSovereign;				//	Sovereign
 
 		TArray<SSegment> m_Segments;			//	All beam segments
+		TArray<CHitCtx> m_Hits;					//	Objects hit by this segment last tick
 
 		IEffectPainter *m_pEffectPainter;		//	Effect for beam
 

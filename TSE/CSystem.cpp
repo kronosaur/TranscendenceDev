@@ -438,6 +438,9 @@
 //	142: 1.7 Beta 5
 //		sLevelFrequency in CTradingDesc
 //
+//	143: 1.7 Beta 6
+//		Save hit objects in CContinuousBeam
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

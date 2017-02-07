@@ -342,6 +342,28 @@ class CShockwaveHitTest
 		TArray<int> m_Segments;
 	};
 
+class CHitCtx
+	{
+	public:
+		CHitCtx (CSpaceObject *pHit = NULL, const CVector &vHitPos = NullVector, int iHitDir = -1) :
+				m_pHit(pHit),
+				m_vHitPos(vHitPos),
+				m_iHitDir(iHitDir)
+			{ }
+
+		inline int GetHitDir (void) const { return m_iHitDir; }
+		inline CSpaceObject *GetHitObj (void) const { return m_pHit; }
+		inline const CVector &GetHitPos (void) const { return m_vHitPos; }
+
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
+
+	private:
+		CSpaceObject *m_pHit;
+		CVector m_vHitPos;
+		int m_iHitDir;
+	};
+
 //	Topology
 
 class CTopology
