@@ -407,6 +407,8 @@ void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType,
 //	Paint the system space background.
 
 	{
+	DEBUG_TRY
+
 	//	If we don't want a starfield then we just clear the rect
 
 	if (Ctx.fNoStarfield)
@@ -455,6 +457,8 @@ void CSystemSpacePainter::PaintViewport (CG32bitImage &Dest, CSystemType *pType,
 			PaintStarfield(Dest, Ctx.rcView, xCenter, yCenter, rgbSolid);
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSystemSpacePainter::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSystemType *pType, CMapViewportCtx &Ctx)
