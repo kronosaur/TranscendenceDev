@@ -1759,10 +1759,29 @@ bool CSpaceObject::FireCanInstallItem (const CItem &Item, int iSlot, CString *re
 
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Item);
-		if (iSlot != -1 && Item.IsArmor())
-			Ctx.DefineInteger(CONSTLIT("aArmorSeg"), iSlot);
-		else
+		if (iSlot == -1)
+			{
 			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
+			Ctx.DefineNil(CONSTLIT("aItemToReplace"));
+			}
+		else if (Item.IsArmor())
+			{
+			Ctx.DefineInteger(CONSTLIT("aArmorSeg"), iSlot);
+			Ctx.DefineNil(CONSTLIT("aItemToReplace"));
+			}
+		else
+			{
+			CItemListManipulator ItemList(GetItemList());
+			if (SetCursorAtDevice(ItemList, iSlot))
+				{
+				const CItem &ItemToReplace = ItemList.GetItemAtCursor();
+				Ctx.DefineItem(CONSTLIT("aItemToReplace"), ItemToReplace);
+				}
+			else
+				Ctx.DefineNil(CONSTLIT("aItemToReplace"));
+
+			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
+			}
 
 		ICCItem *pResult = Ctx.Run(Event);
 

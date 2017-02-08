@@ -990,7 +990,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, &sResult))
+		else if (!Item.FireCanBeInstalled(this, iSlot, &sResult))
 			iResult = insCannotInstall;
 
 		//	Otherwise, we're OK
@@ -1020,12 +1020,12 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	Ask the object if we can install this item
 
-		else if (!FireCanInstallItem(Item, -1, &sResult))
+		else if (!FireCanInstallItem(Item, iSlot, &sResult))
 			iResult = insCannotInstall;
 
 		//	Fire CanBeInstalled to check for custom conditions
 
-		else if (!Item.FireCanBeInstalled(this, &sResult))
+		else if (!Item.FireCanBeInstalled(this, iSlot, &sResult))
 			iResult = insCannotInstall;
 
 		//	See if the ship's engine core is powerful enough

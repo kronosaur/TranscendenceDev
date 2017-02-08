@@ -382,7 +382,7 @@ void CItem::Extra (void)
 		}
 	}
 
-bool CItem::FireCanBeInstalled (CSpaceObject *pSource, CString *retsError) const
+bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsError) const
 
 //	FireCanBeInstalled
 //
@@ -396,6 +396,30 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, CString *retsError) const
 
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
+
+		if (iSlot == -1 || pSource == NULL)
+			{
+			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
+			Ctx.DefineNil(CONSTLIT("aItemToReplace"));
+			}
+		else if (IsArmor())
+			{
+			Ctx.DefineInteger(CONSTLIT("aArmorSeg"), iSlot);
+			Ctx.DefineNil(CONSTLIT("aItemToReplace"));
+			}
+		else
+			{
+			CItemListManipulator ItemList(pSource->GetItemList());
+			if (pSource->SetCursorAtDevice(ItemList, iSlot))
+				{
+				const CItem &ItemToReplace = ItemList.GetItemAtCursor();
+				Ctx.DefineItem(CONSTLIT("aItemToReplace"), ItemToReplace);
+				}
+			else
+				Ctx.DefineNil(CONSTLIT("aItemToReplace"));
+
+			Ctx.DefineNil(CONSTLIT("aArmorSeg"));
+			}
 
 		ICCItem *pResult = Ctx.Run(Event);
 
