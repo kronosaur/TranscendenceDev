@@ -207,11 +207,12 @@ bool CCargoSpaceClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerforma
         return false;
 
     //  Add our metrics to the base metrics.
+	//
+	//	NOTE: We don't check for limits (even negative numbers) because there
+	//	could be cargo devices with negative cargo space. Instead, we check at
+	//	the end when we initialize performance.
 
     int iNewSpace = Ctx.CargoDesc.GetCargoSpace() + pDesc->GetCargoSpace();
-    if (Ctx.iMaxCargoSpace > 0)
-        iNewSpace = Min(iNewSpace, Ctx.iMaxCargoSpace);
-
     Ctx.CargoDesc.SetCargoSpace(iNewSpace);
 
     return true;

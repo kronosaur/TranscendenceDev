@@ -49,6 +49,7 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
     //  Cargo space
 
+	Ctx.CargoDesc.ValidateCargoSpace(Ctx.iMaxCargoSpace);
     m_CargoDesc = Ctx.CargoDesc;
 
 	//	Other flags

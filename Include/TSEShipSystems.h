@@ -350,18 +350,22 @@ enum AbilityStatus
 class CCargoDesc
     {
     public:
-        CCargoDesc (int iCargoSpace = -1) :
+        CCargoDesc (int iCargoSpace = 0) :
+				m_bUninitialized(iCargoSpace == 0),
                 m_iCargoSpace(iCargoSpace)
             { }
 
         inline int GetCargoSpace (void) const { return m_iCargoSpace; }
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
         void Interpolate (const CCargoDesc &From, const CCargoDesc &To, Metric rInterpolate = 0.5);
-        inline bool IsEmpty (void) const { return (m_iCargoSpace == -1); }
-        inline void SetCargoSpace (int iCargoSpace) { m_iCargoSpace = iCargoSpace; }
+        inline bool IsEmpty (void) const { return m_bUninitialized; }
+        inline void SetCargoSpace (int iCargoSpace) { m_iCargoSpace = iCargoSpace; m_bUninitialized = false; }
+		void ValidateCargoSpace (int iMaxCargoSpace);
 
     private:
         int m_iCargoSpace;                  //  Cargo space in tons
+
+		bool m_bUninitialized;
     };
 
 //  Drive ----------------------------------------------------------------------
