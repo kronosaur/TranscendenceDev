@@ -10,7 +10,6 @@
 //#define DEBUG_STRESS_TEST
 //#define DEBUG_STATION_TABLES
 //#define DEBUG_STATION_PLACEMENT
-//#define DEBUG_STATION_SEPARATION
 #endif
 
 #define ADD_ATTRIBUTE_TAG				CONSTLIT("AddAttribute")
@@ -765,7 +764,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		DWORD dwSavedLastObjID = pCtx->dwLastObjID;
 		pCtx->dwLastObjID = 0;
 
-#ifdef DEBUG
+#ifdef DEBUG_CREATE_SYSTEM
 		CString sLocAttribs = pLoc->GetAttributes();
 		CString sPosAttribs = pCtx->pSystem->GetAttribsAtPos(pLoc->GetOrbit().GetObjectPos());
 #endif
@@ -1455,7 +1454,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 		//	Log error
 
-#ifdef DEBUG_STATION_SEPARATION
+#ifdef DEBUG_STATION_EXCLUSION_ZONE
 		if (!bConfigurationOK)
 			{
 			if (iExclusionRadius != 0)
@@ -1489,7 +1488,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 				{
 				//	Skip
 
-#ifdef DEBUG
+#ifdef DEBUG_STATION_EXCLUSION_ZONE
 				::kernelDebugLogMessage("[%s]: Skipped creating %s due to overlap.", pCtx->pSystem->GetName(), pObj->GetContentElement(iObj)->GetTag());
 #endif
 				}
@@ -3382,7 +3381,7 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 
 			if (pObj->PointInHitSizeBox(vPos, rObjRadius))
 				{
-#ifdef DEBUG
+#ifdef DEBUG_STATION_EXCLUSION_ZONE
 				::kernelDebugLogMessage("[%s]: Point overlaps planet: %s.", pCtx->pSystem->GetName(), pObj->GetNounPhrase(0));
 #endif
 				return false;
@@ -4040,7 +4039,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 
 	//	Check station separation
 
-#ifdef DEBUG_STATION_SEPARATION
+#ifdef DEBUG_STATION_EXCLUSION_ZONE
 	if (pStation->CanAttack())
 		{
 		//	Count to see how many enemy stations are in range
