@@ -54,10 +54,14 @@ ALERROR JPEGSaveToMemory (HBITMAP hBitmap, int iQuality, CString *retsData)
 
 	DWORD dwPadBytes = IJL_DIB_PAD_BYTES(bmih.biWidth, 3);
 
-	//	Set up information to write from the pixel buffer
+	//	NOTE: Negative heights means bottom-up bits, which is the opposite
+	//	of DIBs.
 
 	jcprops.DIBWidth = bmih.biWidth;
-	jcprops.DIBHeight = bmih.biHeight;
+	jcprops.DIBHeight = -bmih.biHeight;
+
+	//	Set up information to write from the pixel buffer
+
 	jcprops.DIBBytes = reinterpret_cast<BYTE*>(pBits);
 	jcprops.DIBPadBytes = IJL_DIB_PAD_BYTES(bmih.biWidth, 3);
 	jcprops.DIBChannels = 3;
@@ -91,4 +95,3 @@ ALERROR JPEGSaveToMemory (HBITMAP hBitmap, int iQuality, CString *retsData)
 	ijlFree(&jcprops);
 	return NOERROR;
 	}
-
