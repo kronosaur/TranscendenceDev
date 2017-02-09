@@ -1623,7 +1623,7 @@ int CDesignType::GetPropertyInteger (const CString &sProperty)
 	CCodeChainCtx Ctx;
 
 	ICCItem *pItem = GetProperty(Ctx, sProperty);
-	if (pItem == NULL)
+	if (pItem == NULL || pItem->IsNil())
 		return 0;
 
 	int iResult = pItem->GetIntegerValue();
@@ -1642,8 +1642,8 @@ CString CDesignType::GetPropertyString (const CString &sProperty)
 	CCodeChainCtx Ctx;
 
 	ICCItem *pItem = GetProperty(Ctx, sProperty);
-	if (pItem == NULL)
-		return 0;
+	if (pItem == NULL || pItem->IsNil())
+		return NULL_STR;
 
 	CString sResult = pItem->GetStringValue();
 	pItem->Discard(&CC);
