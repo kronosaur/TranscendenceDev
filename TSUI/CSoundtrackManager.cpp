@@ -117,7 +117,7 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 		//	Calculate the chance for this track based on location
 		//	criteria.
 
-		int iChance = (pNode ? pNode->CalcMatchStrength(pTrack->GetLocationCriteria()) : (pTrack->GetLocationCriteria().MatchesAll() ? 1000 : 0));
+		int iChance = (pNode ? pNode->CalcMatchStrength(pTrack->GetLocationCriteria()) : 1000);
 		if (iChance == 0)
 			continue;
 
@@ -179,9 +179,14 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 
 	if (Table.GetCount() == 0)
 		{
+		//	Try finding a track not bound to a node.
+
+		if (pNode)
+			return CalcGameTrackToPlay(NULL, sRequiredAttrib);
+
 		//	At least we can play the last track, if we've got one.
 
-		if (pMostRecentTrack)
+		else if (pMostRecentTrack)
 			{
 			TProbabilityTable<CMusicResource *> *pEntry = Table.SetAt(0);
 			pEntry->Insert(pMostRecentTrack, 100);
