@@ -14,6 +14,9 @@
     <ClCompile Include="Load.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Save.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ijl.h">

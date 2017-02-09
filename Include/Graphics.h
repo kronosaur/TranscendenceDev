@@ -149,11 +149,22 @@ enum EBitmapTypes
 	bitmapRGB,
 	};
 
+enum EAspectRatioTypes
+	{
+	aspectUnknown,
+
+	aspect4x3,
+	aspect16x9,
+	};
+
+EAspectRatioTypes dibCalcAspectRatio (int cxWidth, int cyHeight);
 ALERROR dibConvertToDDB (HBITMAP hDIB, HPALETTE hPalette, HBITMAP *rethBitmap);
 ALERROR dibCreate16bitDIB (int cxWidth, int cyHeight, HBITMAP *rethBitmap, WORD **retpPixel);
 ALERROR dibCreate24bitDIB (int cxWidth, int cyHeight, DWORD dwFlags, HBITMAP *rethBitmap, BYTE **retpPixel);
 ALERROR dibCreate32bitDIB (int cxWidth, int cyHeight, DWORD dwFlags, HBITMAP *rethBitmap, DWORD **retpPixel);
-ALERROR dibGetInfo (HBITMAP hDIB, int *retcxWidth, int *retcyHeight, void **retpBase, int *retiStride);
+ALERROR dibCrop (HBITMAP hDIB, int x, int y, int cxWidth, int cyHeight, HBITMAP *rethBitmap);
+EAspectRatioTypes dibGetAspectRatio (HBITMAP hDIB);
+ALERROR dibGetInfo (HBITMAP hDIB, int *retcxWidth, int *retcyHeight, void **retpBase = NULL, int *retiStride = NULL, BITMAPINFOHEADER *retpBMIH = NULL, void **retpBits = NULL);
 bool dibIs16bit (HBITMAP hDIB);
 bool dibIs24bit (HBITMAP hDIB);
 ALERROR dibLoadFromBlock (IReadBlock &Data, HBITMAP *rethDIB, EBitmapTypes *retiType = NULL);

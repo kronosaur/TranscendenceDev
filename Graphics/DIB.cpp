@@ -17,6 +17,27 @@
 DWORD dibNumColors (LPVOID pv);
 ALERROR ReadDIBInfo (IReadBlock *pBlock, HANDLE *rethDIB, int *retiBitsOffset, BITMAPINFOHEADER *retbi);
 
+bool IsClose (double rX, double rY)
+	{
+	const double EPSILON = 2.0;
+	return (Absolute(rX - rY) < EPSILON);
+	}
+
+EAspectRatioTypes dibCalcAspectRatio (int cxWidth, int cyHeight)
+
+//	dibCalcAspectRatio
+//
+//	Sees if the image is one of our standard aspect ratios.
+
+	{
+	if (IsClose(3.0 * cxWidth, 4.0 * cyHeight))
+		return aspect4x3;
+	else if (IsClose(9.0 * cxWidth, 16.0 * cyHeight))
+		return aspect16x9;
+	else
+		return aspectUnknown;
+	}
+
 ALERROR dibConvertToDDB (HBITMAP hDIB, HPALETTE hPalette, HBITMAP *rethBitmap)
 
 //	dibConvertToDDB
@@ -273,7 +294,59 @@ Fail:
 	return error;
     }
 
-ALERROR dibGetInfo (HBITMAP hDIB, int *retcxWidth, int *retcyHeight, void **retpBase, int *retiStride)
+ALERROR dibCrop (HBITMAP hDIB, int x, int y, int cxWidth, int cyHeight, HBITMAP *rethBitmap)
+
+//	dibCrop
+//
+//	Creates a new DIB
+
+	{
+	//	Create the destination DIB
+
+	HBITMAP hImage;
+	if (dibCreate24bitDIB(cxWidth, cyHeight, 0, &hImage, NULL) != NOERROR)
+		return ERR_FAIL;
+
+	//	Create source DCs
+
+	HDC hSourceDC = ::CreateCompatibleDC(NULL);
+	::SelectObject(hSourceDC, hDIB);
+
+	//	Create destination DCs
+
+	HDC hDestDC = ::CreateCompatibleDC(NULL);
+	::SelectObject(hDestDC, hImage);
+
+	//	Blt
+
+	::BitBlt(hDestDC, 0, 0, cxWidth, cyHeight, hSourceDC, x, y, SRCCOPY);
+
+	//	Done
+
+	::DeleteDC(hSourceDC);
+	::DeleteDC(hDestDC);
+
+	*rethBitmap = hImage;
+	return NOERROR;
+	}
+
+EAspectRatioTypes dibGetAspectRatio (HBITMAP hDIB)
+
+//	dibGetAspectRatio
+//
+//	Returns the aspect ratio of the DIB
+
+	{
+	int cxWidth;
+	int cyHeight;
+
+	if (dibGetInfo(hDIB, &cxWidth, &cyHeight) != NOERROR)
+		return aspectUnknown;
+
+	return dibCalcAspectRatio(cxWidth, cyHeight);
+	}
+
+ALERROR dibGetInfo (HBITMAP hDIB, int *retcxWidth, int *retcyHeight, void **retpBase, int *retiStride, BITMAPINFOHEADER *retpBMIH, void **retpBits)
 
 //	dibGetInfo
 //
@@ -321,6 +394,11 @@ ALERROR dibGetInfo (HBITMAP hDIB, int *retcxWidth, int *retcyHeight, void **retp
 			*retcxWidth = ds.dsBm.bmWidth;
 		if (retcyHeight)
 			*retcyHeight = ds.dsBm.bmHeight;
+
+		if (retpBMIH)
+			*retpBMIH = ds.dsBmih;
+		if (retpBits)
+			*retpBits = ds.dsBm.bmBits;
 		}
 	else
 		return ERR_FAIL;
