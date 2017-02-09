@@ -543,6 +543,11 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 		CExtension *pBest = NULL;
 		for (j = 0; j < ExtensionList.GetCount(); j++)
 			{
+			//	Hidden extensions are not available
+
+			if (ExtensionList[j]->IsHidden())
+				continue;
+
 			//	If this is debug only and we're not in debug mode then skip.
 
 			if (ExtensionList[j]->IsDebugOnly() && !bDebugMode)

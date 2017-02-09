@@ -818,7 +818,7 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 		{
 		CExtension *pExtension = m_Design.GetExtension(i);
 
-		if (!pExtension->IsHidden() && pExtension->GetType() != extLibrary)
+		if (!pExtension->IsPrivate() && pExtension->GetType() != extLibrary)
 			{
 			CString sName = pExtension->GetName();
 

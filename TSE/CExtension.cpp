@@ -49,6 +49,7 @@
 #define EXTENSION_API_VERSION_ATTRIB			CONSTLIT("extensionAPIVersion")
 #define FILENAME_ATTRIB							CONSTLIT("filename")
 #define FOLDER_ATTRIB							CONSTLIT("folder")
+#define HIDDEN_ATTRIB							CONSTLIT("hidden")
 #define NAME_ATTRIB								CONSTLIT("name")
 #define PRIVATE_ATTRIB							CONSTLIT("private")
 #define RELEASE_ATTRIB							CONSTLIT("release")
@@ -79,10 +80,12 @@ CExtension::CExtension (void) :
 		m_bDebugOnly(false),
 		m_bRegistered(false),
 		m_bVerified(false),
+		m_bPrivate(false),
 		m_bDisabled(false),
 		m_bDeleted(false),
 		m_bUsesXML(false),
-		m_bUsesCompatibilityLibrary(false)
+		m_bUsesCompatibilityLibrary(false),
+		m_bHidden(false)
 
 //	CExtension constructor
 
@@ -324,6 +327,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 	pExtension->m_ModifiedTime = fileGetModifiedTime(Ctx.sResDb);
 	pExtension->m_bRegistered = true;
 	pExtension->m_bPrivate = true;
+	pExtension->m_bHidden = true;
 	pExtension->m_bAutoInclude = true;
 	pExtension->m_bUsesXML = false;
 	pExtension->m_bUsesCompatibilityLibrary = false;
@@ -532,6 +536,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 	pExtension->m_bPrivate = pDesc->GetAttributeBool(PRIVATE_ATTRIB);
 	pExtension->m_bAutoInclude = pDesc->GetAttributeBool(AUTO_INCLUDE_ATTRIB);
 	pExtension->m_bUsesXML = pDesc->GetAttributeBool(USES_XML_ATTRIB);
+	pExtension->m_bHidden = pDesc->GetAttributeBool(HIDDEN_ATTRIB);
 
 	//	API version
 

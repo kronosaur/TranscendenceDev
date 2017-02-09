@@ -4139,9 +4139,10 @@ class CExtension
 		inline bool IsAutoInclude (void) const { return m_bAutoInclude; }
 		inline bool IsDebugOnly (void) const { return m_bDebugOnly; }
 		inline bool IsDisabled (void) const { return m_bDisabled; }
-		inline bool IsHidden (void) const { return m_bPrivate; }
+		inline bool IsHidden (void) const { return m_bHidden; }
 		inline bool IsMarked (void) const { return m_bMarked; }
 		inline bool IsOfficial (void) const { return ((m_dwUNID & 0xFF000000) < 0xA0000000); }
+		inline bool IsPrivate (void) const { return m_bPrivate; }
 		inline bool IsRegistered (void) const { return m_bRegistered; }
 		inline bool IsRegistrationVerified (void) { return (m_bRegistered && m_bVerified); }
 		ALERROR Load (ELoadStates iDesiredState, IXMLParserController *pResolver, bool bNoResources, bool bKeepXML, CString *retsError);
@@ -4232,6 +4233,7 @@ class CExtension
 		bool m_bAutoInclude;				//	Extension should always be included (if appropriate)
 		bool m_bUsesXML;					//	Extension uses XML from other extensions
 		bool m_bUsesCompatibilityLibrary;	//	Extension needs the compatibility library
+		bool m_bHidden;						//	Available only for backwards compatibility
 	};
 
 class CExtensionCollection
