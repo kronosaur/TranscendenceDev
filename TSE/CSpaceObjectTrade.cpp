@@ -519,6 +519,31 @@ int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService)
 	return iMaxLevel;
 	}
 
+bool CSpaceObject::HasTradeService (ETradeServiceTypes iService)
+
+//	HasTradeService
+//
+//	Returns TRUE if we provide the given service.
+
+	{
+	//	See if we have an override
+
+	CTradingDesc *pTradeOverride = GetTradeDescOverride();
+	if (pTradeOverride && pTradeOverride->HasService(iService))
+		return true;
+
+	//	Ask base type
+
+	CDesignType *pType = GetType();
+	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
+	if (pTrade && pTrade->HasService(iService))
+		return true;
+
+	//	No service
+
+	return false;
+	}
+
 void CSpaceObject::SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency)
 
 //	SetTradeDesc
@@ -600,12 +625,9 @@ void CSpaceObject::UpdateTradeExtended (const CTimeSpan &ExtraTime)
 	if ((pTrade || pTradeOverride) && ExtraTime.Days() > 0 && !IsAbandoned())
 		{
 		//	Compute the percent of the inventory that need to refresh
+		//	(If % is >100 then we increase availability).
 
-		int iRefreshPercent;
-		if (ExtraTime.Days() >= DAYS_TO_REFRESH_INVENTORY)
-			iRefreshPercent = 100;
-		else
-			iRefreshPercent = 100 * ExtraTime.Days() / DAYS_TO_REFRESH_INVENTORY;
+		int iRefreshPercent = Min(300, 100 * ExtraTime.Days() / DAYS_TO_REFRESH_INVENTORY);
 
 		//	Do it
 

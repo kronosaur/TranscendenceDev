@@ -63,6 +63,8 @@ const Metric MAX_ATTACK_DISTANCE2 =				MAX_ATTACK_DISTANCE * MAX_ATTACK_DISTANCE
 const Metric BEACON_RANGE = 			(LIGHT_SECOND * 20);
 const Metric BEACON_RANGE2 =            (BEACON_RANGE * BEACON_RANGE);
 
+const int INITIAL_INVENTORY_REFRESH =	300;
+
 #define MIN_ANGER						300
 #define MAX_ANGER						1800
 #define ANGER_INC						30
@@ -912,7 +914,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
 	if (pTrade)
-		pTrade->RefreshInventory(pStation);
+		pTrade->RefreshInventory(pStation, INITIAL_INVENTORY_REFRESH);
 
 	//	This type has now been encountered
 

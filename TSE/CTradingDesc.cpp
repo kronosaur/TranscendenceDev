@@ -1427,6 +1427,12 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 			CItem theItem(pType, 1);
 			if (theItem.MatchesCriteria(Service.ItemCriteria))
 				ItemTable.Insert(pType);
+
+			//	Skip if we some percentage of items if we're not refreshing the
+			//	entire inventory.
+
+			if (iPercent < 100 && mathRandom(1, 100) > iPercent)
+				continue;
 			}
 
 		//	Loop over the count
@@ -1438,16 +1444,23 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 
 		for (j = 0; j < ItemTable.GetCount(); j++)
 			{
-			//	Compute the probability of refreshing this item, based on level
-			//	frequency, if necessary.
+			//	Compute the probability based on the item frequency.
 
-			int iChance = iPercent;
+			int iChance = 100 * ItemTable[j]->GetFrequency() / ftCommon;
+
+			//	If the refresh percent is greater than 100, then we multiply the probability.
+
+			if (iPercent > 100)
+				iChance = iPercent * iChance / 100;
+
+			//	Adjust based on level, if necessary.
+
 			if (!sLevelFrequency.IsBlank())
 				iChance = iChance * GetFrequencyByLevel(sLevelFrequency, ItemTable[j]->GetLevel()) / ftCommon;
 
 			//	Roll
 
-			if (iChance == 100 || mathRandom(1, 100) <= iChance)
+			if (iChance >= 100 || mathRandom(1, 100) <= iChance)
 				{
 				if (SetInventoryCount(pObj, Service, ItemTable[j]))
 					bCargoChanged = true;
