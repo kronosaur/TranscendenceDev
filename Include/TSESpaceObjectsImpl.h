@@ -1588,7 +1588,7 @@ class CStation : public CSpaceObject
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL);
 		int CalcNumberOfShips (void);
 		void CalcOverlayImpact (void);
-		inline bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !m_fNoBlacklist); }
+		inline bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
 		void CreateDestructionEffect (void);
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);

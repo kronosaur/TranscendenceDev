@@ -1880,7 +1880,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (IsImmutable())
 		{
-		//	If we don't have ejecta, the decrease damage to 0.
+		//	If we don't have ejecta, then decrease damage to 0.
         //
         //  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
         //  because even level 0 has some WMD. But for this case we only case
