@@ -327,6 +327,7 @@ class CEffect : public CSpaceObject
 
 		//	CSpaceObject virtuals
 
+		virtual bool CanMove (void) const { return true; }
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
@@ -776,6 +777,7 @@ class CParticleEffect : public CSpaceObject
 		//	CSpaceObject virtuals
 
 		virtual bool CanBeHitBy (const DamageDesc &Damage) override;
+		virtual bool CanMove (void) const { return true; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerSpace; }
