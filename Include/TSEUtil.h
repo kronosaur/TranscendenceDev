@@ -756,22 +756,24 @@ class CDamageAdjDesc
 class CPerceptionCalc
 	{
 	public:
+		enum EConstants
+			{
+			RANGE_ARRAY_SIZE = 16,
+			};
+
 		CPerceptionCalc (int iPerception);
 
 		bool CanBeTargeted (CSpaceObject *pTarget, Metric rTargetDist2) const;
 		bool CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTargetDist) const;
 		Metric GetMaxDist (CSpaceObject *pTarget) const;
 		Metric GetMaxDist2 (CSpaceObject *pTarget) const;
-		inline Metric GetRange (int iIndex) const { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
-		inline Metric GetRange2 (int iIndex) const { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }
-		int GetRangeIndex (int iStealth) const;
+		inline int GetRangeIndex (int iStealth) const { return GetRangeIndex(iStealth, m_iPerception); }
+
+		inline static Metric GetRange (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
+		inline static Metric GetRange2 (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }
+		static int GetRangeIndex (int iStealth, int iPerception);
 
 	private:
-		enum EConstants
-			{
-			RANGE_ARRAY_SIZE = 9,
-			};
-
 		bool IsVisibleDueToAttack (CSpaceObject *pTarget) const;
 
 		static void InitRangeTable (void);

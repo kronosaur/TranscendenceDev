@@ -315,9 +315,6 @@ CString ComposeNounPhrase (const CString &sNoun,
 void ComputePercentages (int iCount, int *pTable);
 CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize, bool bShortName);
 
-#define RANGE_INDEX_COUNT		16
-Metric RangeIndex2Range (int iIndex);
-
 CString ReactorPower2String (int iPower);
 
 int NLCompare (TArray<CString> &Input, TArray<CString> &Pattern);
@@ -1116,7 +1113,7 @@ class CSpaceObject : public CObject
 		int GetDataInteger (const CString &sAttrib) const;
 		CString GetDesiredCommsKey (void) const;
 		inline int GetDestiny (void) const { return m_iDestiny; }
-		inline Metric GetDetectionRange (int iPerception) { return RangeIndex2Range(GetDetectionRangeIndex(iPerception)); }
+		inline Metric GetDetectionRange (int iPerception) { return CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception)); }
 		Metric GetDetectionRange2 (int iPerception) const;
 		int GetDetectionRangeIndex (int iPerception) const;
 		CSovereign::Disposition GetDispositionTowards (CSpaceObject *pObj);

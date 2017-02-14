@@ -64,26 +64,6 @@
 #define STORAGE_SERVICE_EXTENSION			CONSTLIT("serviceExtension")
 #define STORAGE_SERVICE_USER				CONSTLIT("serviceUser")
 
-static Metric g_RangeIndex[RANGE_INDEX_COUNT] =
-	{
-	(250.0 * LIGHT_SECOND),
-	(175.0 * LIGHT_SECOND),
-	(145.0 * LIGHT_SECOND),
-	(120.0 * LIGHT_SECOND),
-	(100.0 * LIGHT_SECOND),
-	(83.0 * LIGHT_SECOND),
-	(69.0 * LIGHT_SECOND),
-	(58.0 * LIGHT_SECOND),
-	(48.0 * LIGHT_SECOND),
-	(40.0 * LIGHT_SECOND),
-	(33.0 * LIGHT_SECOND),
-	(28.0 * LIGHT_SECOND),
-	(23.0 * LIGHT_SECOND),
-	(19.0 * LIGHT_SECOND),
-	(16.0 * LIGHT_SECOND),
-	(13.0 * LIGHT_SECOND),
-	};
-
 struct SOrderTypeData
 	{
 	char *szName;
@@ -3322,17 +3302,6 @@ void ParseUNIDList (const CString &sList, DWORD dwFlags, TArray<DWORD> *retList)
 		if (dwUNID != 0)
 			retList->Insert(dwUNID);
 		}
-	}
-
-Metric RangeIndex2Range (int iIndex)
-
-//	RangeIndex2Range
-//
-//	Returns the range for the given range index (0-8)
-
-	{
-	ASSERT(iIndex >= 0 && iIndex < RANGE_INDEX_COUNT);
-	return g_RangeIndex[iIndex];
 	}
 
 CString ReactorPower2String (int iPower)

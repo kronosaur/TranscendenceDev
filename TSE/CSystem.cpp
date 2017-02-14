@@ -3703,13 +3703,13 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	//	Figure out the boundary of the viewport in system coordinates. We generate
 	//	a viewport for each detection range 1-5.
 
-	CVector vUR[RANGE_INDEX_COUNT];
-	CVector vLL[RANGE_INDEX_COUNT];
-	Metric rMaxDist2[RANGE_INDEX_COUNT];
+	CVector vUR[CPerceptionCalc::RANGE_ARRAY_SIZE];
+	CVector vLL[CPerceptionCalc::RANGE_ARRAY_SIZE];
+	Metric rMaxDist2[CPerceptionCalc::RANGE_ARRAY_SIZE];
 
-	for (i = 0; i < RANGE_INDEX_COUNT; i++)
+	for (i = 0; i < CPerceptionCalc::RANGE_ARRAY_SIZE; i++)
 		{
-		Metric rRange = RangeIndex2Range(i);
+		Metric rRange = CPerceptionCalc::GetRange(i);
 
 		//	Player ship can't see beyond LRS range
 
@@ -3788,7 +3788,7 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 			{
 			if ((pObj->GetScale() == scaleStar 
 					|| pObj->GetScale() == scaleWorld 
-					|| ((iRange = pObj->GetDetectionRangeIndex(iPerception)) < RANGE_INDEX_COUNT
+					|| ((iRange = pObj->GetDetectionRangeIndex(iPerception)) < CPerceptionCalc::RANGE_ARRAY_SIZE
 						&& pCenter->GetDistance2(pObj) <= rMaxDist2[iRange])))
 				{
 				//	Add to the list

@@ -3360,7 +3360,7 @@ Metric CSpaceObject::GetDetectionRange2 (int iPerception) const
 //	the given perception.
 
 	{
-	Metric rRange = RangeIndex2Range(GetDetectionRangeIndex(iPerception));
+	Metric rRange = CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception));
 	return rRange * rRange;
 	}
 
@@ -3370,29 +3370,9 @@ int CSpaceObject::GetDetectionRangeIndex (int iPerception) const
 //
 //	Returns the range index at which this object can be detected by
 //	the given perception.
-//
-//	0 = 500 light-seconds
-//	1 = 340 light-seconds
-//	2 = 225 light-seconds
-//	3 = 150 light-seconds
-//	4 = 100 light-seconds
-//	5 = 50 light-seconds
-//	6 = 25 light-seconds
-//	7 = 13 light-seconds
-//	8 = 6 light-seconds
 
 	{
-	int iStealth = GetStealth();
-	int iResult = (iStealth - iPerception) + 4;
-
-	//	We are easily visible at any range
-
-	if (iResult <= 0)
-		return 0;
-
-	//	Otherwise, we could be invisible
-
-	return Min(iResult, RANGE_INDEX_COUNT - 1);
+	return CPerceptionCalc::GetRangeIndex(GetStealth(), iPerception);
 	}
 
 CSovereign::Disposition CSpaceObject::GetDispositionTowards (CSpaceObject *pObj)

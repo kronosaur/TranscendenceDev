@@ -4772,7 +4772,7 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 			&& Ctx.pCenter
 			&& Ctx.pCenter != this)
 		{
-		Metric rRange = RangeIndex2Range(iRangeIndex);
+		Metric rRange = CPerceptionCalc::GetRange(iRangeIndex);
 		Metric rDist = Ctx.pCenter->GetDistance(this);
 		if (rDist <= rRange)
 			byInvisible = 0;

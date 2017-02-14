@@ -14,15 +14,22 @@ bool CPerceptionCalc::m_bRangeTableInitialized = false;
 
 Metric CPerceptionCalc::m_rRange[RANGE_ARRAY_SIZE] = 
 	{
-	(500.0 * LIGHT_SECOND),
-	(340.0 * LIGHT_SECOND),
-	(225.0 * LIGHT_SECOND),
-	(150.0 * LIGHT_SECOND),
+	(250.0 * LIGHT_SECOND),
+	(175.0 * LIGHT_SECOND),
+	(145.0 * LIGHT_SECOND),
+	(120.0 * LIGHT_SECOND),
 	(100.0 * LIGHT_SECOND),
-	(50.0 * LIGHT_SECOND),
-	(25.0 * LIGHT_SECOND),
+	(83.0 * LIGHT_SECOND),
+	(69.0 * LIGHT_SECOND),
+	(58.0 * LIGHT_SECOND),
+	(48.0 * LIGHT_SECOND),
+	(40.0 * LIGHT_SECOND),
+	(33.0 * LIGHT_SECOND),
+	(28.0 * LIGHT_SECOND),
+	(23.0 * LIGHT_SECOND),
+	(19.0 * LIGHT_SECOND),
+	(16.0 * LIGHT_SECOND),
 	(13.0 * LIGHT_SECOND),
-	(6.0 * LIGHT_SECOND),
 	};
 
 Metric CPerceptionCalc::m_rRange2[RANGE_ARRAY_SIZE];
@@ -87,7 +94,7 @@ Metric CPerceptionCalc::GetMaxDist2 (CSpaceObject *pTarget) const
 	return m_rRange2[pTarget->GetDetectionRangeIndex(m_iPerception)];
 	}
 
-int CPerceptionCalc::GetRangeIndex (int iStealth) const
+int CPerceptionCalc::GetRangeIndex (int iStealth, int iPerception)
 
 //	GetRangeIndex
 //
@@ -95,7 +102,7 @@ int CPerceptionCalc::GetRangeIndex (int iStealth) const
 //	stealth.
 
 	{
-	int iResult = (iStealth - m_iPerception) + 4;
+	int iResult = (iStealth - iPerception) + 4;
 
 	//	We are easily visible at any range
 
