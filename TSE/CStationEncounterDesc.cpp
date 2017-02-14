@@ -24,6 +24,8 @@
 #define VALUE_FALSE								CONSTLIT("false")
 #define VALUE_TRUE								CONSTLIT("true")
 
+const Metric DEFAULT_ENEMY_EXCLUSION =			50.0 * LIGHT_SECOND;
+
 int CStationEncounterDesc::CalcLevelFromFrequency (void) const
 
 //	CalcLevelFromFrequency
@@ -345,7 +347,7 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 			&& iRadius >= 0)
 		m_rEnemyExclusionRadius = iRadius * LIGHT_SECOND;
 	else
-		m_rEnemyExclusionRadius = 30 * LIGHT_SECOND;
+		m_rEnemyExclusionRadius = DEFAULT_ENEMY_EXCLUSION;
 
 	if (pDesc->FindAttributeInteger(EXCLUSION_RADIUS_ATTRIB, &iRadius)
 			&& iRadius >= 0)
