@@ -104,6 +104,7 @@
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_FREQUENCY 						CONSTLIT("frequency")
+#define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL  						CONSTLIT("level")
 #define PROPERTY_MAX_CHARGES  					CONSTLIT("maxCharges")
 #define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
@@ -470,6 +471,9 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 
 	else if (strEquals(sProperty, PROPERTY_FREQUENCY))
 		return CC.CreateString(GetFrequencyName((FrequencyTypes)GetFrequency()));
+
+    else if (strEquals(sProperty, PROPERTY_KNOWN))
+        return CC.CreateBool(IsKnown());
 
     else if (strEquals(sProperty, PROPERTY_LEVEL))
         return CC.CreateInteger(GetLevel());

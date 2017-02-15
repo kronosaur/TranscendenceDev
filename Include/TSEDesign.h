@@ -1777,7 +1777,7 @@ class CItemType : public CDesignType
 		bool IsMissile (void) const;
 		inline bool IsScalable (void) const { return (m_fScalable ? true : false); }
 		inline bool IsUsable (void) const { return GetUseDesc(NULL); }
-		inline void SetKnown (void) { m_fKnown = true; }
+		inline void SetKnown (bool bKnown = true) { m_fKnown = bKnown; }
 		inline void SetShowReference (void) { m_fReference = true; }
 		inline bool ShowReference (void) const { return (m_fReference ? true : false); }
 

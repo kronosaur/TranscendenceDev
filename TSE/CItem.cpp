@@ -28,6 +28,7 @@
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
+#define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL  						CONSTLIT("level")
 #define PROPERTY_MAX_CHARGES  					CONSTLIT("maxCharges")
 #define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
@@ -2617,7 +2618,13 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_CHARGES))
+	if (IsEmpty())
+		{
+		if (retsError) *retsError = CONSTLIT("Unable to set propery on a null item.");
+		return false;
+		}
+
+	else if (strEquals(sName, PROPERTY_CHARGES))
 		{
 		if (pValue == NULL || pValue->IsNil())
 			{
@@ -2664,6 +2671,11 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			*retsError = CONSTLIT("Unable to set installation flag on item.");
 			return false;
 			}
+		}
+
+    else if (strEquals(sName, PROPERTY_KNOWN))
+		{
+		m_pItemType->SetKnown(pValue && !pValue->IsNil());
 		}
 
     else if (strEquals(sName, PROPERTY_LEVEL))
