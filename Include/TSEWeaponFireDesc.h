@@ -147,7 +147,7 @@ class DamageDesc
 		DWORD m_WormholeDamage:3;				//	Teleport
 		DWORD m_FuelDamage:3;					//	Drain fuel
 		DWORD m_DisintegrationDamage:3;			//	Disintegration damage
-		DWORD m_ShieldPenetratorAdj:3;			//	Shield penetrator damage
+		DWORD m_ShieldPenetratorAdj:3;			//	Shield penetrator damage	shieldPenetrate:n
 
 		DWORD m_fNoSRSFlash:1;					//	If TRUE, damage should not cause SRS flash
 		DWORD m_fAutomatedWeapon:1;				//	TRUE if this damage is caused by automated weapon
@@ -158,7 +158,7 @@ class DamageDesc
 		DWORD m_ShatterDamage:3;				//	Shatter damage
 		DWORD m_dwSpare2:20;
 
-		BYTE m_ShieldDamage;					//	Shield damage (level)
+		BYTE m_ShieldDamage;					//	Shield damage (level)	shield:level
 		BYTE m_ArmorDamage;						//	Armor damage (level)
 		BYTE m_Spare2;
 		BYTE m_Spare3;

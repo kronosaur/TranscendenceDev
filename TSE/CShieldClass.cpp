@@ -174,10 +174,44 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	if (m_Reflective.InSet(Ctx.Damage.GetDamageType()))
 		iReflectChance = Max(iReflectChance, MAX_REFLECTION_CHANCE);
 	if (iReflectChance 
-			&& Ctx.pCause 
-			&& Ctx.Damage.GetShieldDamageLevel() == 0)
+			&& Ctx.pCause)
 		{
 		CItemCtx ItemCtx(pShip, pDevice);
+
+		//	If the shot has shield damage, we adjust the chance of reflecting.
+		//	Adjust based on difference in level (negative numbers means the shield
+		//	is lower than the damage level):
+		//
+		//	...
+		//	<-3 =	No reflect
+		//	-3  =	50% reflect adj
+		//	-2	=	75% reflect adj
+		//	-1	=	90% reflect adj
+		//	>=0	=	Full reflect
+
+		if (Ctx.Damage.GetShieldDamageLevel() > 0)
+			{
+			int iDiff = GetLevel() - Ctx.Damage.GetShieldDamageLevel();
+			switch (iDiff)
+				{
+				case -3:
+					iReflectChance = 50 * iReflectChance / 100;
+					break;
+
+				case -2:
+					iReflectChance = 75 * iReflectChance / 100;
+					break;
+
+				case -1:
+					iReflectChance = 90 * iReflectChance / 100;
+					break;
+
+				default:
+					if (iDiff < -3)
+						iReflectChance = 0;
+					break;
+				}
+			}
 
 		//	Compute the chance that we will reflect (based on the strength of
 		//	our shields)
