@@ -19,6 +19,7 @@ class CMCIMixer
 		void GetDebugInfo (TArray<CString> *retLines) const;
 		bool Play (CMusicResource *pTrack, int iPos = 0);
 		bool PlayFadeIn (CMusicResource *pTrack, int iPos = 0);
+		void SetDebugMode (bool bDebugMode = true) { m_bDebugMode = bDebugMode; }
 		void SetPlayPaused (bool bPlay);
 		void SetVolume (int iVolume);
 		void Shutdown (void);
@@ -73,6 +74,7 @@ class CMCIMixer
 		inline int GetPlayPos (HWND hMCI) { return MCIWndGetPosition(hMCI); }
 		CString GetRequestDesc (const SRequest &Request) const;
 		bool InitChannels (void);
+		void LogDebug (const CString &sMsg);
 		void LogError (HWND hMCI, const CString &sState, const CString &sFilespec = NULL_STR);
 		LONG OnNotifyMode (HWND hWnd, int iMode);
 		LONG OnNotifyPos (HWND hWnd, int iPos);
@@ -107,6 +109,7 @@ class CMCIMixer
 		HANDLE m_hResultEvent;				//	Thread has a result
 		HANDLE m_hAbortEvent;				//	Tell thread to stop
 		bool m_bNoStopNotify;
+		bool m_bDebugMode;
 
 #ifdef DEBUG_SOUNDTRACK_STATE
 		SRequest m_CurRequest;				//	Request being processed
@@ -146,7 +149,7 @@ class CSoundtrackManager
 		void NotifyUndocked (void);
 		void NotifyUpdatePlayPos (int iPos);
 		void PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen);
-		inline void SetDebugMode (bool bDebugMode = true) { m_bDebugMode = bDebugMode; }
+		inline void SetDebugMode (bool bDebugMode = true) { m_bDebugMode = bDebugMode; m_Mixer.SetDebugMode(bDebugMode); }
 		void SetGameState (EGameStates iNewState);
 		void SetGameState (EGameStates iNewState, CMusicResource *pTrack);
 		void SetMusicEnabled (bool bEnabled = true);

@@ -23,7 +23,8 @@ CMCIMixer::CMCIMixer (int iChannels) :
 		m_hWorkEvent(INVALID_HANDLE_VALUE),
 		m_hResultEvent(INVALID_HANDLE_VALUE),
 		m_hQuitEvent(INVALID_HANDLE_VALUE),
-		m_bNoStopNotify(false)
+		m_bNoStopNotify(false),
+		m_bDebugMode(false)
 
 //	CMCIMixer constructor
 
@@ -331,12 +332,23 @@ bool CMCIMixer::InitChannels (void)
 
 		m_Channels[i].iState = stateNone;
 
-#ifdef DEBUG_SOUNDTRACK
-		::kernelDebugLogMessage("[%x]: Created MCI Window for channel %d: %x", ::GetCurrentThreadId(), i, m_Channels[i].hMCI);
-#endif
+		LogDebug(strPatternSubst(CONSTLIT("Created MCI window %x."), (DWORD)m_Channels[i].hMCI));
 		}
 
 	return true;
+	}
+
+void CMCIMixer::LogDebug (const CString &sMsg)
+
+//	LogDebug
+//
+//	Log debug info
+
+	{
+	if (!m_bDebugMode)
+		return;
+
+	::kernelDebugLogMessage("[%x] MCI DEBUG: %s", GetCurrentThreadId(), sMsg);
 	}
 
 void CMCIMixer::LogError (HWND hMCI, const CString &sState, const CString &sFilespec)
@@ -531,6 +543,8 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 		return;
 		}
 
+	LogDebug(strPatternSubst(CONSTLIT("MCIWndOpen %x %s."), (DWORD)hMCI, sFilespec));
+
 	//	Set state (we need to do this before we play because the callback inside
 	//	MCIWndPlay needs m_pNowPlaying to be valid).
 
@@ -548,6 +562,8 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 		LogError(hMCI, CONSTLIT("ProcessFadeIn MCIWndPlay"), sFilespec);
 		return;
 		}
+
+	LogDebug(strPatternSubst(CONSTLIT("MCIWndPlay %x."), (DWORD)hMCI));
 
 	//	Fade in util we reach this position
 
@@ -666,6 +682,8 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 		return;
 		}
 
+	LogDebug(strPatternSubst(CONSTLIT("MCIWndOpen %x %s."), (DWORD)hMCI, sFilespec));
+
 	//	Set state (we need to do this before we play because the callback inside
 	//	MCIWndPlay needs m_pNowPlaying to be valid).
 
@@ -684,6 +702,8 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 		LogError(hMCI, CONSTLIT("ProcessPlay MCIWndPlay"), sFilespec);
 		return;
 		}
+
+	LogDebug(strPatternSubst(CONSTLIT("MCIWndPlay %x."), (DWORD)hMCI));
 
 #ifdef DEBUG_SOUNDTRACK
 	kernelDebugLogMessage("[%x] ProcessPlay done", GetCurrentThreadId());
@@ -874,8 +894,11 @@ void CMCIMixer::ProcessStop (const SRequest &Request, bool bNoNotify)
 #endif
 
 			MCIWndStop(m_Channels[i].hMCI);
+			LogDebug(strPatternSubst(CONSTLIT("MCIWndStop %x."), (DWORD)m_Channels[i].hMCI));
+
 			MCIWndClose(m_Channels[i].hMCI);
 			UpdatePlayPos(i, 0);
+			LogDebug(strPatternSubst(CONSTLIT("MCIWndClose %x."), (DWORD)m_Channels[i].hMCI));
 			}
 
 	m_bNoStopNotify = bOldNotify;
