@@ -239,7 +239,7 @@ class CItemEnhancementStack
 class CRandomEnhancementGenerator
 	{
 	public:
-		CRandomEnhancementGenerator (void) : m_iChance(0), m_dwMods(0), m_pCode(NULL) { }
+		CRandomEnhancementGenerator (void) : m_iChance(0), m_pCode(NULL) { }
 		~CRandomEnhancementGenerator (void);
 
 		CRandomEnhancementGenerator &operator= (const CRandomEnhancementGenerator &Src);
@@ -250,7 +250,7 @@ class CRandomEnhancementGenerator
 
 	private:
 		int m_iChance;
-		DWORD m_dwMods;
+		CItemEnhancement m_Mods;
 		ICCItem *m_pCode;
 	};
 

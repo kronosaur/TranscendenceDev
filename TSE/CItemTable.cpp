@@ -1712,7 +1712,7 @@ CRandomEnhancementGenerator &CRandomEnhancementGenerator::operator= (const CRand
 
 	{
 	m_iChance = Src.m_iChance;
-	m_dwMods = Src.m_dwMods;
+	m_Mods = Src.m_Mods;
 	m_pCode = (Src.m_pCode ? Src.m_pCode->Reference() : NULL);
 
 	return *this;
@@ -1734,7 +1734,7 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	char *pPos = sEnhancement.GetASCIIZPointer();
 	if (sEnhancement.IsBlank())
 		{
-		m_dwMods = 0;
+		m_Mods = CItemEnhancement();
 		m_pCode = NULL;
 		}
 
@@ -1744,7 +1744,7 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 		{
 		CCodeChain &CC = g_pUniverse->GetCC();
 
-		m_dwMods = 0;
+		m_Mods = CItemEnhancement();
 
 		m_pCode = CC.Link(pPos, 1, NULL);
 		if (m_pCode->IsError())
@@ -1762,10 +1762,12 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 
 	else
 		{
-		m_dwMods = (DWORD)strToInt(sEnhancement, 0, NULL);
+		if (m_Mods.InitFromDesc(Ctx, sEnhancement) != NOERROR)
+			return ERR_FAIL;
+
 		m_pCode = NULL;
 
-		if (m_dwMods != 0 && m_iChance == 0)
+		if (!m_Mods.IsEmpty() && m_iChance == 0)
 			m_iChance = 100;
 		}
 
@@ -1800,18 +1802,24 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 
 		//	If we have an error, report it
 
-		DWORD dwMods;
+		CItemEnhancement Mods;
 		if (pResult->IsError())
 			{
 			CString sError = strPatternSubst(CONSTLIT("Generate Enhancement: %s"), pResult->GetStringValue());
-			kernelDebugLogMessage(sError);
-			dwMods = 0;
+			::kernelDebugLogMessage(sError);
 			}
 
 		//	Otherwise, the result code is the mods
 
 		else
-			dwMods = (DWORD)pResult->GetIntegerValue();
+			{
+			CString sError;
+			if (Mods.InitFromDesc(pResult, &sError) != NOERROR)
+				{
+				::kernelDebugLogMessage("Generate Enhancement: %s", sError);
+				Mods = CItemEnhancement();
+				}
+			}
 
 		//	Done with code
 
@@ -1819,14 +1827,15 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 
 		//	Enhance the item
 
-		Item.AddEnhancement(dwMods);
+		if (!Mods.IsEmpty())
+			Item.AddEnhancement(Mods);
 		}
 
 	//	Otherwise, if we have a constant mod, apply that
 
-	else if (m_dwMods)
+	else if (!m_Mods.IsEmpty())
 		{
-		Item.AddEnhancement(m_dwMods);
+		Item.AddEnhancement(m_Mods);
 		}
 
 	//	Otherwise, we need to generate a random mod appropriate to the
