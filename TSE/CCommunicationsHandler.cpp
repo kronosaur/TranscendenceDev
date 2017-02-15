@@ -1,9 +1,9 @@
 //	CCommunicationsHandler.cpp
 //
 //	CCommunicationsHandler class
+//	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
-
 
 #define ON_SHOW_TAG									CONSTLIT("OnShow")
 #define CODE_TAG									CONSTLIT("Code")

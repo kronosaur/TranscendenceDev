@@ -240,6 +240,7 @@
   <ItemGroup>
     <ClInclude Include="..\Include\TSEArmor.h" />
     <ClInclude Include="..\Include\TSEArtifactAwakening.h" />
+    <ClInclude Include="..\Include\TSEComms.h" />
     <ClInclude Include="..\Include\TSEEffects.h" />
     <ClInclude Include="..\Include\TSEEvents.h" />
     <ClInclude Include="..\Include\TSEEventsImpl.h" />
@@ -307,6 +308,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CCommunicationsStack.cpp" />
     <ClCompile Include="CCompositeImageModifiers.cpp" />
     <ClCompile Include="CCompositeImageType.cpp" />
     <ClCompile Include="CContinuousBeam.cpp" />
@@ -338,6 +340,7 @@
     <ClCompile Include="CEffectParamDesc.cpp" />
     <ClCompile Include="CExplosionColorizer.cpp" />
     <ClCompile Include="CFractalTextureLibrary.cpp" />
+    <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />

@@ -182,6 +182,9 @@
     <ClInclude Include="..\Include\TSEEventsImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEComms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -990,6 +993,12 @@
     </ClCompile>
     <ClCompile Include="CHitCtx.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CCommunicationsStack.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CGenericType.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

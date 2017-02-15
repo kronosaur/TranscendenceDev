@@ -1,6 +1,7 @@
 //	CDesignType.cpp
 //
 //	CDesignType class
+//	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
