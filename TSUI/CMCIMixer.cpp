@@ -1042,6 +1042,7 @@ void CMCIMixer::SetVolume (int iVolume)
 
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
 	MCIWndSetVolume(hMCI, m_iDefaultVolume);
+	LogDebug(strPatternSubst(CONSTLIT("MCIWndSetVolume %x."), (DWORD)hMCI));
 	}
 
 void CMCIMixer::Shutdown (void)
