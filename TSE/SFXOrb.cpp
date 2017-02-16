@@ -22,6 +22,8 @@ const int DEFAULT_FLARE_COUNT =			3;
 const int FLARE_MULITPLE =				4;
 const int FLARE_WIDTH_FRACTION =		32;
 const Metric BLOOM_FACTOR =				1.2;
+const int FLARE_ANGLE =					15;
+const int FLARE_ROTATION =				3;		//	Degrees per pixel
 
 class COrbEffectPainter : public IEffectPainter
 	{
@@ -378,7 +380,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 				int iLifetime = Max(1, m_iLifetime);
 				CStepIncrementor Radius(CStepIncrementor::styleSquareRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
 				CStepIncrementor Intensity(CStepIncrementor::styleLinear, m_iIntensity, 0.0, iLifetime);
-				CStepIncrementor Heat(CStepIncrementor::styleLinear, 100.0, 0.0, iLifetime);
+				CStepIncrementor Heat(CStepIncrementor::styleSquare, 100.0, 0.0, iLifetime);
 
 				Metric rDetail = (m_iDetail / 100.0);
 
@@ -663,11 +665,13 @@ void COrbEffectPainter::CalcSecondaryColorTable (int iRadius, int iIntensity, BY
 
 			CG32bitPixel rgbCenter = CG32bitPixel::Fade(m_rgbPrimaryColor, m_rgbSecondaryColor, iFade);
 			CG32bitPixel rgbEdge = CG32bitPixel::Fade(m_rgbSecondaryColor, CG32bitPixel(0, 0, 0), iFade);
-			CStepIncrementor Opacity(CStepIncrementor::styleQuad, 0.8 * byOpacity, 0.0, iRadius);
 
+			CStepIncrementor Opacity(CStepIncrementor::styleLinear, byOpacity, 0.0, iRadius);
+
+			CStepIncrementor Radius(CStepIncrementor::styleOctRoot, 0.0, 1.0, iRadius);
 			retColorTable->InsertEmpty(iRadius);
 			for (i = 0; i < iRadius; i++)
-				(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(rgbCenter, rgbEdge, (Metric)i / iRadius), (BYTE)Opacity.GetAt(i));
+				(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(rgbCenter, rgbEdge, Radius.GetAt(i)), (BYTE)Opacity.GetAt(i));
 
 			break;
 			}
@@ -780,7 +784,7 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 			const int BLOWN_SIZE = 100 - BLOWN_INTENSITY;
 			const int FIRE_INTENSITY = 80;
 			const int FIRE_SIZE = BLOWN_INTENSITY - FIRE_INTENSITY;
-			const int GLOW_INTENSITY = 55;
+			const int GLOW_INTENSITY = 25;
 			const int GLOW_SIZE = FIRE_INTENSITY - GLOW_INTENSITY;
 			const int FADE_INTENSITY = 0;
 			const int FADE_SIZE = GLOW_INTENSITY - FADE_INTENSITY;
@@ -791,23 +795,23 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 			CG32bitPixel rgbEdge;
 			if (iIntensity > BLOWN_INTENSITY)
 				{
-				CStepIncrementor Intensity(CStepIncrementor::styleLinear, 100, 0, BLOWN_SIZE);
+				CStepIncrementor Intensity(CStepIncrementor::styleOct, 100, 0, BLOWN_SIZE);
 				int iFade = Min((int)Intensity.GetAt(iIntensity - BLOWN_INTENSITY), 100);
 
-				rgbCenter = CG32bitPixel(255, 255, 255);
+				rgbCenter = CG32bitPixel::Fade(CG32bitPixel(255, 255, 255), m_rgbPrimaryColor, iFade);
 				rgbEdge = CG32bitPixel::Fade(CG32bitPixel(255, 255, 255), m_rgbPrimaryColor, iFade);
 				}
 			else if (iIntensity > FIRE_INTENSITY)
 				{
-				CStepIncrementor Intensity(CStepIncrementor::styleLinear, 100, 0, FIRE_SIZE);
+				CStepIncrementor Intensity(CStepIncrementor::styleOct, 100, 0, FIRE_SIZE);
 				int iFade = Min((int)Intensity.GetAt(iIntensity - FIRE_INTENSITY), 100);
 
-				rgbCenter = CG32bitPixel::Fade(CG32bitPixel(255, 255, 255), m_rgbPrimaryColor, iFade);
+				rgbCenter = m_rgbPrimaryColor;
 				rgbEdge = CG32bitPixel::Fade(m_rgbPrimaryColor, m_rgbSecondaryColor, iFade);
 				}
 			else if (iIntensity > GLOW_INTENSITY)
 				{
-				CStepIncrementor Intensity(CStepIncrementor::styleLinear, 100, 0, GLOW_SIZE);
+				CStepIncrementor Intensity(CStepIncrementor::styleOct, 100, 0, GLOW_SIZE);
 				int iFade = Min((int)Intensity.GetAt(iIntensity - GLOW_INTENSITY), 100);
 
 				rgbCenter = CG32bitPixel::Fade(m_rgbPrimaryColor, m_rgbSecondaryColor, iFade);
@@ -815,7 +819,7 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 				}
 			else
 				{
-				CStepIncrementor Intensity(CStepIncrementor::styleLinear, 100, 0, FADE_SIZE);
+				CStepIncrementor Intensity(CStepIncrementor::styleOct, 100, 0, FADE_SIZE);
 				int iFade = Min((int)Intensity.GetAt(iIntensity - FADE_INTENSITY), 100);
 
 				rgbCenter = m_rgbSecondaryColor;
@@ -876,9 +880,10 @@ void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yC
 		iFlareCount = DEFAULT_FLARE_COUNT;
 
 	int iAngle = 360 / iFlareCount;
+	int iOffset = (xCenter / FLARE_ROTATION);
 
 	for (i = 0; i < iFlareCount; i++)
-		CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, iAngle * i, m_iIntensity, Ctx);
+		CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(iOffset + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
 void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
@@ -1129,9 +1134,10 @@ void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCente
 		iFlareCount = DEFAULT_FLARE_COUNT;
 
 	int iAngle = 360 / iFlareCount;
+	int iOffset = (xCenter / FLARE_ROTATION);
 
 	for (i = 0; i < iFlareCount; i++)
-		PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, iAngle * i, m_iIntensity, Ctx);
+		PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(iOffset + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
 bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const
