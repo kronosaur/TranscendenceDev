@@ -18,12 +18,11 @@
 #define SPIKE_COUNT_ATTRIB				CONSTLIT("spikeCount")
 #define STYLE_ATTRIB					CONSTLIT("style")
 
-const int DEFAULT_FLARE_COUNT =			3;
+const int DEFAULT_FLARE_COUNT =			5;
 const int FLARE_MULITPLE =				4;
 const int FLARE_WIDTH_FRACTION =		32;
 const Metric BLOOM_FACTOR =				1.2;
 const int FLARE_ANGLE =					15;
-const int FLARE_ROTATION =				3;		//	Degrees per pixel
 
 class COrbEffectPainter : public IEffectPainter
 	{
@@ -880,10 +879,9 @@ void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yC
 		iFlareCount = DEFAULT_FLARE_COUNT;
 
 	int iAngle = 360 / iFlareCount;
-	int iOffset = (xCenter / FLARE_ROTATION);
 
 	for (i = 0; i < iFlareCount; i++)
-		CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(iOffset + (iAngle * i)), m_iIntensity, Ctx);
+		CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(FLARE_ANGLE + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
 void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
@@ -1134,10 +1132,9 @@ void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCente
 		iFlareCount = DEFAULT_FLARE_COUNT;
 
 	int iAngle = 360 / iFlareCount;
-	int iOffset = (xCenter / FLARE_ROTATION);
 
 	for (i = 0; i < iFlareCount; i++)
-		PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(iOffset + (iAngle * i)), m_iIntensity, Ctx);
+		PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(FLARE_ANGLE + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
 bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const
