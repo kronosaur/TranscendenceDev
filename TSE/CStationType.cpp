@@ -148,6 +148,10 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_WEAPON_STRENGTH					CONSTLIT("weaponStrength")			//	Strength of weapons (100 = level weapon @ 1/4 fire rate).
 
+#define PROPERTY_NAME							CONSTLIT("name")
+#define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
+#define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
+
 #define VALUE_FALSE								CONSTLIT("false")
 #define VALUE_TRUE								CONSTLIT("true")
 
@@ -1698,6 +1702,28 @@ ALERROR CStationType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 
 	{
 	return NOERROR;
+	}
+
+ICCItem *CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+
+//	OnGetProperty
+//
+//	Returns a property
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sProperty, PROPERTY_SOVEREIGN))
+		return (m_pSovereign ? CC.CreateInteger(m_pSovereign->GetUNID()) : CC.CreateNil());
+	else if (strEquals(sProperty, PROPERTY_SOVEREIGN_NAME))
+		{
+		if (m_pSovereign == NULL)
+			return CC.CreateNil();
+
+		return m_pSovereign->GetProperty(Ctx, PROPERTY_NAME);
+		}
+	else
+		return NULL;
 	}
 
 bool CStationType::OnHasSpecialAttribute (const CString &sAttrib) const

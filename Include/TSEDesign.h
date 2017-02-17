@@ -2917,6 +2917,7 @@ class CStationType : public CDesignType
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ICCItem *OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual void OnMarkImages (void) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;

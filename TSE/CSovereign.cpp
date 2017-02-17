@@ -27,6 +27,7 @@
 
 #define FIELD_NAME								CONSTLIT("name")
 
+#define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_PLAYER_THREAT_LEVEL			CONSTLIT("playerThreatLevel")
 #define PROPERTY_SHIPS_DESTROYED_BY_PLAYER		CONSTLIT("shipsDestroyedByPlayer")
 #define PROPERTY_STATIONS_DESTROYED_BY_PLAYER	CONSTLIT("stationsDestroyedByPlayer")
@@ -634,7 +635,10 @@ ICCItem *CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))
+	if (strEquals(sProperty, PROPERTY_NAME))
+		return CC.CreateString(m_sName);
+
+	else if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))
 		return CC.CreateInteger((int)GetPlayerThreatLevel());
 
 	else if (strEquals(sProperty, PROPERTY_SHIPS_DESTROYED_BY_PLAYER))
