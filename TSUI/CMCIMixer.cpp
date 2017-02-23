@@ -17,7 +17,7 @@ const int FADE_DELAY =							25;
 CMCIMixer::CMCIMixer (int iChannels) :
 		m_hParent(NULL),
 		m_iDefaultVolume(NORMAL_VOLUME),
-		m_iCurChannel(0),
+		m_iCurChannel(-1),
 		m_pNowPlaying(NULL),
 		m_hProcessingThread(INVALID_HANDLE_VALUE),
 		m_hWorkEvent(INVALID_HANDLE_VALUE),
@@ -29,17 +29,13 @@ CMCIMixer::CMCIMixer (int iChannels) :
 //	CMCIMixer constructor
 
 	{
-#ifdef DEBUG_SOUNDTRACK
-	::kernelDebugLogMessage("[%x] Starting CMCIMixer.", ::GetCurrentThreadId());
-#endif
-
-	//	Start up a processing thread
+	//	Initialize events so we can post work even before our processing thread
+	//	is running.
 
 	m_hQuitEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hWorkEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hResultEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hAbortEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_hProcessingThread = ::kernelCreateThread(ProcessingThread, this);
 	}
 
 CMCIMixer::~CMCIMixer (void)
@@ -48,6 +44,13 @@ CMCIMixer::~CMCIMixer (void)
 
 	{
 	Shutdown();
+
+	//	Free up our events
+
+	::CloseHandle(m_hWorkEvent);
+	::CloseHandle(m_hResultEvent);
+	::CloseHandle(m_hQuitEvent);
+	::CloseHandle(m_hAbortEvent);
 	}
 
 void CMCIMixer::AbortAllRequests (void)
@@ -59,6 +62,25 @@ void CMCIMixer::AbortAllRequests (void)
 	{
 	CSmartLock Lock(m_cs);
 	m_Request.DeleteAll();
+	}
+
+bool CMCIMixer::Boot (void)
+
+//	Boot
+//
+//	Starts our processing thread running.
+
+	{
+	if (m_hProcessingThread == INVALID_HANDLE_VALUE)
+		{
+#ifdef DEBUG_SOUNDTRACK
+		::kernelDebugLogMessage("[%x] Starting CMCIMixer.", ::GetCurrentThreadId());
+#endif
+
+		m_hProcessingThread = ::kernelCreateThread(ProcessingThread, this);
+		}
+
+	return true;
 	}
 
 bool CMCIMixer::CreateParentWindow (void)
@@ -128,11 +150,6 @@ void CMCIMixer::FadeAtPos (int iPos)
 //	time we reach iPos.
 
 	{
-	if (m_hParent == NULL)
-		return;
-
-	//	Enqueue a wait request
-
 	EnqueueRequest(typeWaitForPos, NULL, iPos - FADE_LENGTH);
 	EnqueueRequest(typeFadeOut, NULL, iPos);
 	EnqueueRequest(typeStop);
@@ -145,11 +162,6 @@ void CMCIMixer::FadeNow (void)
 //	Fades right now.
 
 	{
-	if (m_hParent == NULL)
-		return;
-
-	//	Enqueue a wait request
-
 	EnqueueRequest(typeFadeOut, NULL, Min(GetCurrentPlayPos() + FADE_LENGTH, GetCurrentPlayLength()));
 	EnqueueRequest(typeStop);
 	}
@@ -184,9 +196,6 @@ int CMCIMixer::GetCurrentPlayLength (void)
 //	any processing functions because it will not return.
 
 	{
-	if (m_hParent == NULL)
-		return 0;
-
 	//	Enqueue a request
 
 	::ResetEvent(m_hResultEvent);
@@ -215,9 +224,6 @@ int CMCIMixer::GetCurrentPlayPos (DWORD dwTimeout)
 //	any processing functions because it will not return.
 
 	{
-	if (m_hParent == NULL)
-		return 0;
-
 	//	Enqueue a request
 
 	::ResetEvent(m_hResultEvent);
@@ -230,6 +236,9 @@ int CMCIMixer::GetCurrentPlayPos (DWORD dwTimeout)
 	//	Whether we succeed or not, get the result from the channel structure.
 
 	CSmartLock Lock(m_cs);
+	if (m_iCurChannel == -1)
+		return 0;
+
 	return m_Channels[m_iCurChannel].iCurPos;
 	}
 
@@ -334,6 +343,8 @@ bool CMCIMixer::InitChannels (void)
 
 		LogDebug(strPatternSubst(CONSTLIT("Created MCI window %x."), (DWORD)m_Channels[i].hMCI));
 		}
+
+	m_iCurChannel = 0;
 
 	return true;
 	}
@@ -490,11 +501,6 @@ bool CMCIMixer::Play (CMusicResource *pTrack, int iPos)
 //	Stops all channels and begins playing the given track.
 
 	{
-	if (m_hParent == NULL)
-		return false;
-
-	//	Enqueue
-
 	EnqueueRequest(typePlay, pTrack, iPos);
 	return true;
 	}
@@ -506,11 +512,6 @@ bool CMCIMixer::PlayFadeIn (CMusicResource *pTrack, int iPos)
 //	Stops all channels and begins playing the given track.
 
 	{
-	if (m_hParent == NULL)
-		return false;
-
-	//	Enqueue
-
 	EnqueueRequest(typeFadeIn, pTrack, iPos);
 	return true;
 	}
@@ -804,6 +805,10 @@ bool CMCIMixer::ProcessRequest (void)
 				ProcessPlayPause(Request);
 				break;
 
+			case typeSetVolume:
+				ProcessSetVolume(Request);
+				break;
+
 			case typeStop:
 #ifdef DEBUG_SOUNDTRACK
 				kernelDebugLogMessage("[%x] ProcessStop requested.", GetCurrentThreadId());
@@ -871,6 +876,20 @@ void CMCIMixer::ProcessSetPlayPaused (const SRequest &Request)
 			MCIWndResume(hMCI);
 			}
 		}
+	}
+
+void CMCIMixer::ProcessSetVolume (const SRequest &Request)
+
+//	ProcessSetVolume
+//
+//	Sets the volume
+
+	{
+	m_iDefaultVolume = Max(0, Request.iPos);
+
+	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
+	MCIWndSetVolume(hMCI, m_iDefaultVolume);
+	LogDebug(strPatternSubst(CONSTLIT("MCIWndSetVolume %x."), (DWORD)hMCI));
 	}
 
 void CMCIMixer::ProcessStop (const SRequest &Request, bool bNoNotify)
@@ -1025,9 +1044,6 @@ void CMCIMixer::SetPlayPaused (bool bPlay)
 //	Pause/Play
 
 	{
-	if (m_hParent == NULL)
-		return;
-
 	EnqueueRequest(bPlay ? typeSetUnpaused : typeSetPaused);
 	}
 
@@ -1038,18 +1054,15 @@ void CMCIMixer::SetVolume (int iVolume)
 //	Sets the volume, where 1000 is normal volume and 0 is no volume.
 
 	{
-	m_iDefaultVolume = Max(0, iVolume);
-
-	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
-	MCIWndSetVolume(hMCI, m_iDefaultVolume);
-	LogDebug(strPatternSubst(CONSTLIT("MCIWndSetVolume %x."), (DWORD)hMCI));
+	EnqueueRequest(typeSetVolume, NULL, iVolume);
 	}
 
 void CMCIMixer::Shutdown (void)
 
 //	Shutdown
 //
-//	Program is quitting, so clean up.
+//	Program is quitting, so clean up. NOTE: This is the opposite of Boot, so we
+//	don't clean up our events in case Boot gets called again.
 
 	{
 	if (m_hProcessingThread != INVALID_HANDLE_VALUE)
@@ -1059,19 +1072,10 @@ void CMCIMixer::Shutdown (void)
 
 		::CloseHandle(m_hProcessingThread);
 		m_hProcessingThread = INVALID_HANDLE_VALUE;
-
-		::CloseHandle(m_hWorkEvent);
-		m_hWorkEvent = INVALID_HANDLE_VALUE;
-
-		::CloseHandle(m_hResultEvent);
-		m_hResultEvent = INVALID_HANDLE_VALUE;
-
-		::CloseHandle(m_hQuitEvent);
-		m_hQuitEvent = INVALID_HANDLE_VALUE;
-
-		::CloseHandle(m_hAbortEvent);
-		m_hAbortEvent = INVALID_HANDLE_VALUE;
 		}
+
+	//	Now that the processing thread has stopped, we can clean up all this
+	//	without locking.
 
 	if (m_hParent)
 		{
@@ -1080,6 +1084,8 @@ void CMCIMixer::Shutdown (void)
 		}
 
 	m_Channels.DeleteAll();
+	m_Request.DeleteAll();
+	m_iCurChannel = -1;
 	m_pNowPlaying = NULL;
 	}
 
@@ -1090,11 +1096,6 @@ void CMCIMixer::Stop (void)
 //	Stops playing all.
 
 	{
-	if (m_hParent == NULL)
-		return;
-
-	//	Enqueue
-
 	EnqueueRequest(typeStop);
 	}
 
@@ -1105,11 +1106,6 @@ void CMCIMixer::TogglePausePlay (void)
 //	Pause/Play
 
 	{
-	if (m_hParent == NULL)
-		return;
-
-	//	Enqueue
-
 	EnqueueRequest(typePlayPause);
 	}
 

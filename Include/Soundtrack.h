@@ -12,6 +12,7 @@ class CMCIMixer
 		~CMCIMixer (void);
 
 		void AbortAllRequests (void);
+		bool Boot (void);
 		void FadeAtPos (int iPos);
 		void FadeNow (void);
 		int GetCurrentPlayLength (void);
@@ -43,16 +44,18 @@ class CMCIMixer
 		enum ERequestType
 			{
 			typeNone,
-			typePlay,
-			typeStop,
-			typePlayPause,
-			typeWaitForPos,
+
 			typeFadeIn,
 			typeFadeOut,
-			typeSetPaused,
-			typeSetUnpaused,
 			typeGetPlayLength,
 			typeGetPlayPos,
+			typePlay,
+			typePlayPause,
+			typeSetPaused,
+			typeSetUnpaused,
+			typeSetVolume,
+			typeStop,
+			typeWaitForPos,
 			};
 
 		struct SRequest
@@ -84,6 +87,7 @@ class CMCIMixer
 		void ProcessPlayPause (const SRequest &Request);
 		bool ProcessRequest (void);
 		void ProcessSetPlayPaused (const SRequest &Request);
+		void ProcessSetVolume (const SRequest &Request);
 		void ProcessStop (const SRequest &Request, bool bNoNotify = false);
 		void ProcessWaitForPos (const SRequest &Request);
 		void UpdatePlayPos (int iChannel, int iPos = -1);

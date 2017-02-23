@@ -1067,6 +1067,14 @@ void CSoundtrackManager::SetMusicEnabled (bool bEnabled)
 	if (m_bEnabled == bEnabled)
 		return;
 
+	//	We always boot the mixer, even if we're starting out disabled, because we
+	//	might enable later. The boot call just starts up the processing thread, 
+	//	which we need even to set the volume.
+
+	m_Mixer.Boot();
+
+	//	Set
+
 	m_bEnabled = bEnabled;
 
 	//	Clear the queue because we're in a new mode.
