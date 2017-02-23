@@ -175,6 +175,9 @@
 #define MAX_NEBULAE						100000
 #define OVERLAP_DIST					(25.0 * LIGHT_SECOND)
 
+const Metric DEFAULT_EXCLUSION =		50.0 * LIGHT_SECOND;
+const Metric DEFAULT_EXCLUSION2 =		DEFAULT_EXCLUSION * DEFAULT_EXCLUSION;
+
 static char g_ProbabilitiesAttrib[] = "probabilities";
 
 //	Debugging Support
@@ -288,7 +291,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCount, Metric *pAngles, int iJitter = 0);
 void DumpDebugStack (SSystemCreateCtx *pCtx);
-void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit);
+void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPlace, COrbit *retOrbit);
 ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 									const CString &sCriteria,
 									const CString &sLocationAttribs,
@@ -834,7 +837,7 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 					OrbitDesc.GetSemiMajorAxis() + (rWidth * rPos),
 					OrbitDesc.GetEccentricity(),
 					OrbitDesc.GetRotation(),
-					mathDegreesToRadians(mathRandom(0,3599) / 10.0));
+					COrbit::RandomAngle());
 
 			if (error = CreateSystemObject(pCtx, 
 					pObj->GetContentElement(0), 
@@ -1338,7 +1341,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 				do
 					{
-					rAngle[i] = mathDegreesToRadians(mathRandom(0,3599) / 10.0);
+					rAngle[i] = COrbit::RandomAngle();
 					bAngleOK = true;
 
 					if (iExclusionRadius != 0 || pCtx->iOverlapCheck != SSystemCreateCtx::checkOverlapNone)
@@ -1863,7 +1866,7 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 					OrbitDesc.GetSemiMajorAxis() + (rScale * Distribution.Roll()),
 					OrbitDesc.GetEccentricity(),
 					OrbitDesc.GetRotation(),
-					mathDegreesToRadians(mathRandom(0,3599) / 10.0));
+					COrbit::RandomAngle());
 
 			if (error = CreateSystemObject(pCtx, 
 					pObj->GetContentElement(0), 
@@ -2949,7 +2952,7 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 	if (strEquals(sKeyword, RANDOM_ANGLE))
 		{
 		for (i = 0; i < iCount; i++)
-			pAngles[i] = mathDegreesToRadians(mathRandom(0,3599) / 10.0);
+			pAngles[i] = COrbit::RandomAngle();
 		}
 	else if (strEquals(sKeyword, MIN_SEPARATION_ANGLE))
 		{
@@ -2969,7 +2972,7 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 
 			do 
 				{
-				pAngles[i] = mathDegreesToRadians(mathRandom(0,3599) / 10.0);
+				pAngles[i] = COrbit::RandomAngle();
 				bAngleIsOK = true;
 
 				for (int k = 0; k < i; k++)
@@ -3042,7 +3045,7 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 	return NOERROR;
 	}
 
-void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit)
+void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPlace, COrbit *retOrbit)
 
 //	GenerateRandomPosition
 //
@@ -3068,10 +3071,22 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit)
 			}
 		}
 
+	//	Figure out the minimum distance from other stations based on the 
+	//	exclusion radius
+
+	Metric rExclusionDist2;
+	if (pStationToPlace)
+		{
+		CStationEncounterDesc::SExclusionDesc Exclusion;
+		pStationToPlace->GetExclusionDesc(Exclusion);
+		rExclusionDist2 = Max(DEFAULT_EXCLUSION2, Max(Exclusion.rAllExclusionRadius2, Exclusion.rEnemyExclusionRadius2));
+		}
+	else
+		rExclusionDist2 = DEFAULT_EXCLUSION2;
+
 	//	Keep trying to find random positions that are not too close to any other
 	//	objects.
 
-	Metric rMinActive2 = (50 * 50) * (LIGHT_SECOND * LIGHT_SECOND);
 	COrbit NewOrbit;
 	int iTries = 100;
 	bool bFound = false;
@@ -3082,14 +3097,33 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit)
 
 		CSpaceObject *pCenter = NULL;
 		if (CenterObj.GetCount() == 0)
-			NewOrbit = COrbit(CVector(), LIGHT_SECOND * mathRandom(30, 800));
+			NewOrbit = COrbit(CVector(), LIGHT_SECOND * mathRandom(30, 800), COrbit::RandomAngle());
 
 		//	Otherwise, pick a spot orbiting a random planet
 
 		else
 			{
 			pCenter = CenterObj[mathRandom(0, CenterObj.GetCount() - 1)];
-			NewOrbit = COrbit(pCenter->GetPos(), LIGHT_SECOND * mathRandom(15, 50));
+
+			//	The distance from the planet increases if we've tried many times
+			//	without finding a good spot.
+
+			int iMinDist;
+			int iMaxDist;
+			if (iTries < 50)
+				{
+				iMinDist = 50;
+				iMaxDist = 250;
+				}
+			else
+				{
+				iMinDist = 15;
+				iMaxDist = 50;
+				}
+
+			//	Pick an orbit
+
+			NewOrbit = COrbit(pCenter->GetPos(), LIGHT_SECOND * mathRandom(iMinDist, iMaxDist), COrbit::RandomAngle());
 			}
 
 		//	Check to see if the chosen position is too close to anything.
@@ -3104,7 +3138,7 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit)
 					&& (pObj->CanAttack() || pObj->IsStargate()))
 				{
 				Metric rDist2 = (pObj->GetPos() - vTry).Length2();
-				if (rDist2 < rMinActive2)
+				if (rDist2 < rExclusionDist2)
 					{
 					bFound = false;
 					break;
@@ -3112,6 +3146,9 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, COrbit *retOrbit)
 				}
 			}
 		}
+
+	if (!bFound && g_pUniverse->InDebugMode())
+		::kernelDebugLogMessage("Unable to find appropriate location for %s.", (pStationToPlace ? pStationToPlace->GetNounPhrase() : CONSTLIT("object")));
 
 	//	Done
 
@@ -3672,7 +3709,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 					int iLocation;
 					if (error = ChooseRandomLocation(&Ctx, 
 							pType->GetLocationCriteria(), 
-							NULL,
+							pType,
 							&OrbitDesc, 
 							&sLocationAttribs,
 							&iLocation))
@@ -3683,7 +3720,11 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 
 						if (error == ERR_NOTFOUND)
 							{
-							GenerateRandomPosition(&Ctx, &OrbitDesc);
+							CStationEncounterDesc::SExclusionDesc Exclusion;
+							pType->GetExclusionDesc(Exclusion);
+							Metric rExclusion2 = Max(DEFAULT_EXCLUSION2, Max(Exclusion.rAllExclusionRadius2, Exclusion.rEnemyExclusionRadius2));
+
+							GenerateRandomPosition(&Ctx, pType, &OrbitDesc);
 							iLocation = -1;
 							}
 						else
