@@ -164,6 +164,7 @@ class CContinuousBeam : public CSpaceObject
 		//	CSpaceObject virtuals
 
 		virtual void AddContinuousBeam (const CVector &vPos, const CVector &vVel, int iDirection) override;
+		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual int GetInteraction (void) const override { return m_pDesc->GetInteraction(); }
@@ -242,7 +243,7 @@ class CContinuousBeam : public CSpaceObject
 		TArray<SSegment> m_Segments;			//	All beam segments
 		TArray<CHitCtx> m_Hits;					//	Objects hit by this segment last tick
 
-		IEffectPainter *m_pEffectPainter;		//	Effect for beam
+		IEffectPainter *m_pPainter;				//	Effect for beam
 
 		DWORD m_fSpare1:1;
 		DWORD m_fSpare2:1;

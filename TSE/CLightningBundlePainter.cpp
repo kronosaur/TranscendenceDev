@@ -24,6 +24,8 @@ void CLightningBundlePainter::Draw (CG32bitImage &Dest, int x1, int y1, int x2, 
 //  Draw the bundle
 
     {
+	DEBUG_TRY
+
 	int i;
 
 	//	Generate some intermediates
@@ -73,4 +75,6 @@ void CLightningBundlePainter::Draw (CG32bitImage &Dest, int x1, int y1, int x2, 
 		DrawLightning(Dest, x1, y1, xMid, yMid, m_rgbPrimaryColor, rgbMid, rChaos);
 		DrawLightning(Dest, xMid, yMid, x2, y2, rgbMid, rgbTo, rChaos);
 		}
+
+	DEBUG_CATCH
     }

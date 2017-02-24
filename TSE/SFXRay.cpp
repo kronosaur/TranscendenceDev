@@ -1230,7 +1230,7 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
                 return new CRayRasterizer<CGBlendComposite>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
 
             default:
-                return NULL;
+				return new CRayRasterizer<CGBlendBlend>(iLengthCount, iWidthCount, ColorMap, OpacityMap, WidthAdjTop, WidthAdjBottom);
             }
         }
     }

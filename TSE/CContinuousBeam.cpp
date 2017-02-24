@@ -9,7 +9,7 @@ static CObjectClass<CContinuousBeam>g_Class(OBJID_CCONTINUOUSBEAM, NULL);
 
 CContinuousBeam::CContinuousBeam (void) : CSpaceObject(&g_Class),
 		m_pEnhancements(NULL),
-		m_pEffectPainter(NULL)
+		m_pPainter(NULL)
 
 //	CContinuousBeam constructor
 
@@ -21,8 +21,8 @@ CContinuousBeam::~CContinuousBeam (void)
 //	CContinuousBeam destructor
 
 	{
-	if (m_pEffectPainter)
-		m_pEffectPainter->Delete();
+	if (m_pPainter)
+		m_pPainter->Delete();
 
 	if (m_pEnhancements)
 		m_pEnhancements->Delete();
@@ -169,7 +169,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 	//	Create the effect painter, if we've got one
 
 	bool bIsTracking = pTarget && pDesc->IsTracking();
-	pBeam->m_pEffectPainter = pDesc->CreateEffectPainter(bIsTracking, true);
+	pBeam->m_pPainter = pDesc->CreateEffectPainter(bIsTracking, true);
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 
@@ -196,6 +196,38 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 		*retpObj = pBeam;
 
 	return NOERROR;
+	}
+
+CString CContinuousBeam::DebugCrashInfo (void)
+
+//	DebugCrashInfo
+//
+//	Dump debug information
+
+	{
+	CString sResult;
+
+	sResult.Append(strPatternSubst(CONSTLIT("m_pDesc: %s\r\n"), m_pDesc->GetUNID()));
+	sResult.Append(strPatternSubst(CONSTLIT("m_Source: %s\r\n"), CSpaceObject::DebugDescribe(m_Source.GetObj())));
+	sResult.Append(strPatternSubst(CONSTLIT("m_pTarget: %s\r\n"), CSpaceObject::DebugDescribe(m_pTarget)));
+	sResult.Append(strPatternSubst(CONSTLIT("m_iDestiny: %d\r\n"), GetDestiny()));
+	sResult.Append(strPatternSubst(CONSTLIT("m_iTick: %d\r\n"), m_iTick));
+
+	//	m_pPainter
+
+	try
+		{
+		if (m_pPainter)
+			sResult.Append(strPatternSubst(CONSTLIT("m_pPainter: %s\r\n"), m_pPainter->GetCreator()->GetTypeClassName()));
+		else
+			sResult.Append(CONSTLIT("m_pPainter: none\r\n"));
+		}
+	catch (...)
+		{
+		sResult.Append(strPatternSubst(CONSTLIT("m_pPainter: %x [invalid]\r\n"), (DWORD)m_pPainter));
+		}
+
+	return sResult;
 	}
 
 EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir)
@@ -425,12 +457,12 @@ void CContinuousBeam::OnMove (const CVector &vOldPos, Metric rSeconds)
 	{
 	//	Update the effect painter
 
-	if (m_pEffectPainter)
+	if (m_pPainter)
 		{
 		SEffectMoveCtx Ctx;
 		Ctx.pObj = this;
 
-		m_pEffectPainter->OnMove(Ctx);
+		m_pPainter->OnMove(Ctx);
 		}
 
 	//	Update segment motion
@@ -509,7 +541,7 @@ void CContinuousBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 		else if (!Segment.fAlive)
 			{
-			m_pEffectPainter->PaintLine(Dest, vHead, Segment.vPos, Ctx);
+			m_pPainter->PaintLine(Dest, vHead, Segment.vPos, Ctx);
 			bFoundHead = false;
 			}
 		}
@@ -598,7 +630,7 @@ void CContinuousBeam::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	For now we don't bother saving the effect painter
 
-	m_pEffectPainter = CEffectCreator::CreatePainterFromStreamAndCreator(Ctx, m_pDesc->GetEffect());
+	m_pPainter = CEffectCreator::CreatePainterFromStreamAndCreator(Ctx, m_pDesc->GetEffect());
 
 	//	Enhancements
 
@@ -636,8 +668,8 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Update the effect painter
 
-	if (m_pEffectPainter)
-		m_pEffectPainter->OnUpdate();
+	if (m_pPainter)
+		m_pPainter->OnUpdate();
 
 	//	Do damage
 
@@ -760,7 +792,7 @@ void CContinuousBeam::OnWriteToStream (IWriteStream *pStream)
 
 	//	Painter
 
-	CEffectCreator::WritePainterToStream(pStream, m_pEffectPainter);
+	CEffectCreator::WritePainterToStream(pStream, m_pPainter);
 
 	//	Enhancements
 
