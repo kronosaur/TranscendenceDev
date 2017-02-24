@@ -229,7 +229,7 @@ CG16bitLinePainter::ESlopeTypes CG16bitLinePainter::CalcIntermediates (const CG1
 
 				m_xStart = x1;
 				for (i = 0; i < iExtra; i++)
-					NextX(m_xStart, y);
+					NextY(m_xStart, y);
 
 				m_yStart = rcDest.bottom - 1;
 				}
