@@ -579,6 +579,8 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 //	Object takes damage from the given source
 
 	{
+	DEBUG_TRY
+
 	Ctx.iSectHit = -1;
 
 	//	Compute damage
@@ -645,6 +647,8 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 		Destroy(killedByDamage, Ctx.Attacker);
 		return damagePassthroughDestroyed;
 		}
+
+	DEBUG_CATCH_OBJ(this)
 	}
 
 void CMissile::OnDestroyed (SDestroyCtx &Ctx)

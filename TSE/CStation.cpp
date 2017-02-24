@@ -1815,6 +1815,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 //	Station takes damage
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Stations don't have armor segments
@@ -2211,6 +2213,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 		return damageDestroyedAbandoned;
 		}
+
+	DEBUG_CATCH_OBJ(this)
 	}
 
 void CStation::OnDestroyed (SDestroyCtx &Ctx)

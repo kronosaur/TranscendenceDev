@@ -415,11 +415,15 @@ EDamageResults CParticleEffect::OnDamage (SDamageCtx &Ctx)
 //	Damage the particle field
 
 	{
+	DEBUG_TRY
+
 	//	Create hit effect
 
 	Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
 
 	return damagePassthrough;
+
+	DEBUG_CATCH
 	}
 
 void CParticleEffect::OnMove (const CVector &vOldPos, Metric rSeconds)

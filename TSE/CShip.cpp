@@ -4127,6 +4127,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 //	Ship takes damage from the given source
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Roll for damage
@@ -4338,6 +4340,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			return damageArmorHit;
 			}
 		}
+
+	DEBUG_CATCH_OBJ(this)
 	}
 
 bool CShip::OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker)
