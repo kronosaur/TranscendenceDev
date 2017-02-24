@@ -1184,6 +1184,8 @@ ALERROR CSpaceObject::CreateRandomItems (IItemGenerator *pItems, CSystem *pSyste
 //	that we call this (on create). Thus we rely on pSystem being passed in.
 
 	{
+	DEBUG_TRY
+
 	if (pItems)
 		{
 		CItemListManipulator ItemList(GetItemList());
@@ -1200,6 +1202,8 @@ ALERROR CSpaceObject::CreateRandomItems (IItemGenerator *pItems, CSystem *pSyste
 		}
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CSpaceObject::CreateRandomItems (CXMLElement *pItems, CSystem *pSystem)

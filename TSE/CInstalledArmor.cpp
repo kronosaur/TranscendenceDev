@@ -33,11 +33,15 @@ void CInstalledArmor::FinishInstall (CSpaceObject *pSource)
 //	is created).
 
 	{
+	DEBUG_TRY
+
 	m_pItem->FireOnInstall(pSource);
 
 	CShip *pShip = pSource->AsShip();
 	if (pShip)
 		pShip->GetController()->OnItemInstalled(*m_pItem);
+
+	DEBUG_CATCH
 	}
 
 int CInstalledArmor::GetHitPointsPercent (CSpaceObject *pSource)

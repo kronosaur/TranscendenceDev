@@ -12,6 +12,8 @@ void CArmorSystem::Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool
 //  Install armor segments
 
     {
+	DEBUG_TRY
+
     int i;
     ASSERT(m_Segments.GetCount() == 0);
 
@@ -43,6 +45,8 @@ void CArmorSystem::Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool
     //  Initialize other properties
 
     m_iHealerLeft = 0;
+
+	DEBUG_CATCH
     }
 
 void CArmorSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)

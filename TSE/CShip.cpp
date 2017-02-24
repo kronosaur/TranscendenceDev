@@ -267,6 +267,8 @@ void CShip::CalcArmorBonus (void)
 //	Mark the m_fComplete flag appropriately for all armor segments.
 
 	{
+	DEBUG_TRY
+
 	int i, j;
 	bool bComplete = true;
 
@@ -315,6 +317,8 @@ void CShip::CalcArmorBonus (void)
 
 	if (IsCreated())
 		m_pController->OnStatsChanged();
+
+	DEBUG_CATCH
 	}
 
 void CShip::CalcBounds (void)
@@ -2305,6 +2309,8 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 //	completed creation.
 
 	{
+	DEBUG_TRY
+
 	//	Fire OnCreate
 
 	CSpaceObject::SOnCreate OnCreate;
@@ -2347,6 +2353,8 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 	//	OnCreate ends up setting the name (or something).
 
 	g_pUniverse->GetGlobalObjects().InsertIfTracked(this);
+
+	DEBUG_CATCH
 	}
 
 bool CShip::FollowsObjThroughGate (CSpaceObject *pLeader)

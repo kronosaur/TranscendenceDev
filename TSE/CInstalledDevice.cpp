@@ -126,6 +126,8 @@ void CInstalledDevice::FinishInstall (CSpaceObject *pSource)
 //	is created).
 
 	{
+	DEBUG_TRY
+
 	m_pItem->FireOnInstall(pSource);
 	m_pItem->FireOnEnabled(pSource);
 
@@ -152,6 +154,8 @@ void CInstalledDevice::FinishInstall (CSpaceObject *pSource)
 			SetOverlay(pOverlay);
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource)
@@ -354,6 +358,8 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 //	Installs a new device of the given class
 
 	{
+	DEBUG_TRY
+
 	const CItem &Item = ItemList.GetItemAtCursor();
 
 	m_pClass.Set(Item.GetType()->GetDeviceClass());
@@ -431,6 +437,8 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 
 	if (!bInCreate)
 		FinishInstall(pObj);
+
+	DEBUG_CATCH
 	}
 
 bool CInstalledDevice::IsLinkedFire (CItemCtx &Ctx, ItemCategories iTriggerCat) const

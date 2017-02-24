@@ -914,6 +914,8 @@ void CShipClass::CalcPerformance (void)
 //  m_Perf and uses m_AverageDevices.
 
     {
+	DEBUG_TRY
+
     int i;
 
     //  We generate a context block and accumulate performance stats from the
@@ -955,6 +957,8 @@ void CShipClass::CalcPerformance (void)
     //  Now apply the performance parameters to the descriptor
 
     m_Perf.Init(Ctx);
+
+	DEBUG_CATCH
     }
 
 int CShipClass::CalcScore (void)
