@@ -125,7 +125,7 @@ bool CMCIMixer::CreateParentWindow (void)
 	return true;
 	}
 
-void CMCIMixer::EnqueueRequest (ERequestType iType, CMusicResource *pTrack, int iPos)
+void CMCIMixer::EnqueueRequest (ERequestType iType, CMusicResource *pTrack, int iPos, bool bReplace)
 
 //	EnqueueRequest
 //
@@ -133,6 +133,22 @@ void CMCIMixer::EnqueueRequest (ERequestType iType, CMusicResource *pTrack, int 
 
 	{
 	CSmartLock Lock(m_cs);
+	int i;
+
+	//	If we're replacing a request, the see if this request type is already in the queue
+
+	if (bReplace)
+		{
+		for (i = 0; i < m_Request.GetCount(); i++)
+			if (m_Request[i].iType == iType)
+				{
+				m_Request[i].pTrack = pTrack;
+				m_Request[i].iPos = iPos;
+				return;
+				}
+		}
+
+	//	Add the request
 
 	SRequest &NewRequest = m_Request.EnqueueAndOverwrite();
 	NewRequest.iType = iType;
@@ -196,22 +212,13 @@ int CMCIMixer::GetCurrentPlayLength (void)
 //	any processing functions because it will not return.
 
 	{
-	//	Enqueue a request
+	//	This is always stored in the channel and updated when we start playing.
 
-	::ResetEvent(m_hResultEvent);
-	EnqueueRequest(typeGetPlayLength);
-
-	//	Wait for result
-
-	if (::WaitForSingleObject(m_hResultEvent, 5000) == WAIT_TIMEOUT)
-		{
-#ifdef DEBUG_SOUNDTRACK
-		::kernelDebugLogMessage("[%x] GetCurrentPlayLength failed.", GetCurrentThreadId());
-#endif
+	CSmartLock Lock(m_cs);
+	if (m_iCurChannel == -1)
 		return 0;
-		}
 
-	return m_Result.iValue;
+	return m_Channels[m_iCurChannel].iCurLength;
 	}
 
 int CMCIMixer::GetCurrentPlayPos (DWORD dwTimeout)
@@ -224,10 +231,11 @@ int CMCIMixer::GetCurrentPlayPos (DWORD dwTimeout)
 //	any processing functions because it will not return.
 
 	{
-	//	Enqueue a request
+	//	Enqueue a request. We add TRUE to indicate that we should replace
+	//	any existing GetPlayPos command.
 
 	::ResetEvent(m_hResultEvent);
-	EnqueueRequest(typeGetPlayPos);
+	EnqueueRequest(typeGetPlayPos, NULL, 0, true);
 
 	//	Wait for result
 
@@ -292,6 +300,12 @@ CString CMCIMixer::GetRequestDesc (const SRequest &Request) const
 		case typeSetUnpaused:
 			return CONSTLIT("ProcessSetPlayPaused");
 
+		case typeSetVolume:
+			return CONSTLIT("ProcessSetVolume");
+
+		case typeGetPlayPos:
+			return CONSTLIT("typeGetPlayPos");
+
 		default:
 			return CONSTLIT("Idle");
 		}
@@ -340,6 +354,8 @@ bool CMCIMixer::InitChannels (void)
 		//	Initialize
 
 		m_Channels[i].iState = stateNone;
+		m_Channels[i].iCurPos = 0;
+		m_Channels[i].iCurLength = 0;
 
 		LogDebug(strPatternSubst(CONSTLIT("Created MCI window %x."), (DWORD)m_Channels[i].hMCI));
 		}
@@ -415,6 +431,8 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 
 		case MCI_MODE_PLAY:
 			pChannel->iState = statePlaying;
+			pChannel->iCurLength = GetPlayLength(pChannel->hMCI);
+			pChannel->iCurPos = GetPlayPos(pChannel->hMCI);
 
 			//	Notify that we're playing
 
@@ -429,7 +447,9 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 			break;
 
 		case MCI_MODE_STOP:
-			pChannel->iState = stateNone;
+			pChannel->iState = stateStopped;
+			pChannel->iCurLength = 0;
+			pChannel->iCurPos = 0;
 
 			//	Notify that we're done with this track
 
@@ -786,16 +806,13 @@ bool CMCIMixer::ProcessRequest (void)
 				ProcessFadeOut(Request);
 				break;
 
-			case typeGetPlayLength:
-				m_Result.iValue = GetPlayLength(m_Channels[m_iCurChannel].hMCI);
-				::SetEvent(m_hResultEvent);
-				break;
-
 			case typeGetPlayPos:
-				m_Result.iValue = GetPlayPos(m_Channels[m_iCurChannel].hMCI);
-				UpdatePlayPos(m_iCurChannel, m_Result.iValue);
+				{
+				int iValue = GetPlayPos(m_Channels[m_iCurChannel].hMCI);
+				UpdatePlayPos(m_iCurChannel, iValue);
 				::SetEvent(m_hResultEvent);
 				break;
+				}
 
 			case typePlay:
 				ProcessPlay(Request);
@@ -906,18 +923,23 @@ void CMCIMixer::ProcessStop (const SRequest &Request, bool bNoNotify)
 		m_bNoStopNotify = true;
 
 	for (i = 0; i < m_Channels.GetCount(); i++)
-		if (m_Channels[i].iState == statePlaying)
+		if (m_Channels[i].iState == statePlaying || m_Channels[i].iState == stateStopped)
 			{
 #ifdef DEBUG_SOUNDTRACK
 			kernelDebugLogMessage("[%x] ProcessStop", GetCurrentThreadId());
 #endif
 
-			MCIWndStop(m_Channels[i].hMCI);
-			LogDebug(strPatternSubst(CONSTLIT("MCIWndStop %x."), (DWORD)m_Channels[i].hMCI));
+			if (m_Channels[i].iState != stateStopped)
+				{
+				MCIWndStop(m_Channels[i].hMCI);
+				LogDebug(strPatternSubst(CONSTLIT("MCIWndStop %x."), (DWORD)m_Channels[i].hMCI));
+				}
 
 			MCIWndClose(m_Channels[i].hMCI);
 			UpdatePlayPos(i, 0);
 			LogDebug(strPatternSubst(CONSTLIT("MCIWndClose %x."), (DWORD)m_Channels[i].hMCI));
+
+			m_Channels[i].iState = stateNone;
 			}
 
 	m_bNoStopNotify = bOldNotify;

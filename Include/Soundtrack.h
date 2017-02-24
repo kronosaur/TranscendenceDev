@@ -32,13 +32,15 @@ class CMCIMixer
 			{
 			stateNone,
 			statePlaying,
+			stateStopped,
 			};
 
 		struct SChannel
 			{
 			HWND hMCI;
 			EChannelState iState;
-			int iCurPos;
+			int iCurPos;					//	Current position in track
+			int iCurLength;					//	Current length of track
 			};
 
 		enum ERequestType
@@ -47,7 +49,6 @@ class CMCIMixer
 
 			typeFadeIn,
 			typeFadeOut,
-			typeGetPlayLength,
 			typeGetPlayPos,
 			typePlay,
 			typePlayPause,
@@ -65,13 +66,8 @@ class CMCIMixer
 			int iPos;
 			};
 
-		struct SResult
-			{
-			int iValue;
-			};
-
 		bool CreateParentWindow (void);
-		void EnqueueRequest (ERequestType iType, CMusicResource *pTrack = NULL, int iPos = 0);
+		void EnqueueRequest (ERequestType iType, CMusicResource *pTrack = NULL, int iPos = 0, bool bReplace = false);
 		bool FindChannel (HWND hMCI, SChannel **retpChannel = NULL);
 		inline int GetPlayLength (HWND hMCI) { return MCIWndGetLength(hMCI); }
 		inline int GetPlayPos (HWND hMCI) { return MCIWndGetPosition(hMCI); }
@@ -106,7 +102,6 @@ class CMCIMixer
 
 		mutable CCriticalSection m_cs;
 		TQueue<SRequest> m_Request;			//	Queue of requests
-		SResult m_Result;
 		HANDLE m_hProcessingThread;			//	Processing thread handle
 		HANDLE m_hQuitEvent;				//	Tell thread to quit
 		HANDLE m_hWorkEvent;				//	Tell thread to work
