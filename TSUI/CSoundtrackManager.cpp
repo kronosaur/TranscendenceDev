@@ -710,6 +710,11 @@ void CSoundtrackManager::NotifyTrackDone (void)
 
 	if (m_bEnabled)
 		{
+		//	Reset our last play pos since we completed this track.
+
+		if (m_pNowPlaying)
+			m_pNowPlaying->SetLastPlayPos(0);
+
 		//	Track is done, so we clear Now Playing. Otherwise, if we try to play
 		//	the same track twice (which can happen) then we would fail.
 

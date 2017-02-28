@@ -201,5 +201,14 @@ void CMusicResource::SetLastPlayPos (int iPos)
 //	that next time we start at the following segment.
 
 	{
-	m_iNextSegment = ((FindSegment(iPos) + 1) % GetSegmentCount());
+	//	If setting the last play pos to 0, it means we're resetting to the
+	//	first segment
+
+	if (iPos == 0)
+		m_iNextSegment = 0;
+
+	//	Otherwise, we set it to the segment AFTER this segments
+
+	else
+		m_iNextSegment = ((FindSegment(iPos) + 1) % GetSegmentCount());
 	}
