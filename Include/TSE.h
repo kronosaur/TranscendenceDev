@@ -21,7 +21,7 @@
 
 //	Uncomment out the following define when building a stable release
 
-//#define TRANSCENDENCE_STABLE_RELEASE
+#define TRANSCENDENCE_STABLE_RELEASE
 
 //	Define some debugging symbols
 
