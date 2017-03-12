@@ -619,7 +619,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"output is one or more of:\n\n"
 
 			"   'console\n"
-			"   'log\n",
+			"   'log",
 
 			"v*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -633,21 +633,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmCreateByName",				fnItemCreateByName,	0,	
 			"(itmCreateByName criteria name [count]) -> item\n\n"
 
-			"criteria as itmGetTypes\n",
+			"criteria as itmGetTypes",
 
 			"ss*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmCreateRandom",				fnItemCreateRandom,	0,
 			"(itmCreateRandom criteria levelDistribution) -> item\n\n"
 
-			"criteria as itmGetTypes\n",
+			"criteria as itmGetTypes",
 
 			"ss",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"itmEnumTypes",					fnItemEnumTypes,	0,
 			"(itmEnumTypes criteria item-var exp) -> value of last expression\n\n"
 
-			"criteria as itmGetTypes\n",
+			"criteria as itmGetTypes",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -728,7 +728,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x020 no modifiers\n"
 			"   0x040 prefix with 'the' or 'this' or 'these'\n"
 			"   0x080 short form of name\n"
-			"   0x100 actual name\n",
+			"   0x100 actual name",
 
 			"vi",	0,	},
 
@@ -762,7 +762,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'radiationImmune\n"
 			"   'repairCost\n"
 			"   'repairLevel\n"
-			"   'shatterImmune\n",
+			"   'shatterImmune",
 
 			"vs",	0,	},
 
@@ -812,7 +812,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"comparison criteria supported: < <= = => >\n"
 			"   < x                Only items with level less than x\n"
 			"   <$ x               Only items costing less than x\n"
-			"   <# x               Only items massing less than x\n",
+			"   <# x               Only items massing less than x",
 
 			"s",	0,	},
 
@@ -837,7 +837,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"options\n\n"
 			
-			"   'ignoreInstalled\n",
+			"   'ignoreInstalled",
 
 			"vv*",	0,	},
 
@@ -852,7 +852,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"itmMatches",					fnItemGet,		FN_ITEM_MATCHES,
 			"(itmMatches item|type criteria) -> True/Nil"
 
-			"criteria as itmGetTypes\n",
+			"criteria as itmGetTypes",
 
 			"vs",	0,	},
 
@@ -881,7 +881,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'damaged [True|Nil]\n"
 			"   'disrupted [True|Nil|ticks]\n"
 			"   'incCharges charges\n"
-			"   'installed [True|Nil]\n",
+			"   'installed [True|Nil]",
 
 			"vs*",	0,	},
 
@@ -935,7 +935,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0        OK\n"
 			"   1        Too much cargo to remove cargo hold\n"
 			"   2        Device not installed\n"
-			"   string   custom fail reason\n",
+			"   string   custom fail reason",
 			"iv",	0,	},
 
 		{	"shpConsumeFuel",				fnShipSet,			FN_SHIP_CONSUME_FUEL,
@@ -944,7 +944,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"useType:\n\n"
 			
 			"   'consume\n"
-			"   'drain\n",
+			"   'drain",
 
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1101,7 +1101,50 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpOrder",						fnShipSet,		FN_SHIP_ORDER,
-			"(shpOrder ship order [target] [count]) -> True/Nil",
+			"(shpOrder ship order [target] [count]) -> True/Nil\n\n"
+
+			"order:\n\n"
+			"   'aim            obj               Aim, but do not fire\n"
+			"   'approach       obj [dist]        Approach target\n"
+			"   'attack         obj [time]        Attack target\n"
+			"   'attackArea     obj dist [time]   Attack around target\n"
+			"   'attackHold     obj [time]\n"
+			"   'attackNearestEnemy               Attack nearest enemy\n"
+			"   'attackPlayerOnReturn             Wait and attack player\n"
+			"   'attackStation  obj [?]           Attack target station\n"
+			"   'bombard        obj [time]        Hold and attack target\n"
+			"   'dock           obj               Dock with target\n"
+			"   'escort         obj [ang] [dist]  Escort target\n"
+			"   'fireEvent      obj event         Fire event on target\n"
+			"   'follow         obj               Follow without defending\n"
+			"   'followPlayerThroughGate\n"
+			"   'gate           [obj]             Gate out of system\n"
+			"   'gateOnStationDestroyed           Flee if station destroyed\n"
+			"   'gateOnThreat                     Flee if threatened\n"
+			"   'goto           obj [dist]        Goto target\n"
+			"   'gotoPos        pos               Goto position\n"
+			"   'guard          obj               Guard target\n"
+			"   'hold           [time]            Stay in place\n"
+			"   'holdAndAttack  obj [time]\n"
+			"   'holdCourse     course dist       Hold course\n"
+			"   'loot           obj               Loot target\n"
+			"   'mine           obj               Mine asteroids [base]\n"
+			"   'navPath        navID             Follow nav path ID\n"
+			"   'orbit          obj dist [time]   Orbit target\n"
+			"   'patrol         obj [dist]        Patrol around target\n"
+			"   'scavenge                         Scavenge for scraps\n"
+			"   'sendMessage    obj msg           Send message to target\n"
+			"   'sentry         obj [time]        Guard target (turrets)\n"
+			"   'tradeRoute                       Move between stations\n"
+			"   'turnTo         ang               Turn to face angle\n"
+			"   'wait           [time]            Wait, do not attack\n"
+			"   'waitForEnemy   [time]            Wait until enemy in LRS\n"
+			"   'waitForPlayer                    Wait for player to return\n"
+			"   'waitForTarget  obj [dist] [time] Wait until target in range\n"
+			"   'waitForThreat  [time]\n"
+			"   'waitForUndock  obj [time]        Wait for target to undock\n"
+			"   'wander                           Wander, avoiding enemies",
+
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpOrderImmediate",			fnShipSet,		FN_SHIP_ORDER_IMMEDIATE,
@@ -1157,7 +1200,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'fireAccuracy {percent}\n"
 			"   'fireRangeAdj {percent}\n"
 			"   'fireRateAdj {value; 10 = normal; 20 = twice as slow}\n"
-			"   'perception {value}\n",
+			"   'perception {value}",
 
 			"isv",	0,	},
 
@@ -1233,7 +1276,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'reactorIncompatible\n"
 			"   'reactorOverloaded\n"
 			"   'reactorTooWeak\n"
-			"   'replacementRequired\n",
+			"   'replacementRequired",
 
 			"iv*",	0,	},
 
@@ -1262,7 +1305,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"options\n\n"
 			
-			"   'noMessage\n",
+			"   'noMessage",
 
 			"iss*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1324,7 +1367,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objEnumItems",					fnObjEnumItems,	0,
 			"(objEnumItems obj criteria itemVar exp) -> value\n\n"
 
-			"criteria as objGetItems\n",
+			"criteria as objGetItems",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -1369,7 +1412,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"options:\n\n"
 			
-			"   'noDonations\n",
+			"   'noDonations",
 
 			"il*",	0,	},
 
@@ -1404,7 +1447,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'enemy\n"
 			"   'friend\n"
-			"   'neutral\n",
+			"   'neutral",
 
 			"ii",	0,	},
 
@@ -1430,7 +1473,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'damaged\n"
 			"   'notInstalled\n"
-			"   'ready\n",
+			"   'ready",
 
 			"is",	0,	},
 
@@ -1467,7 +1510,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'removeDeviceStatus\n"
 			"   'secondary\n"
 			"\n"
-			"All properties for itmGetProperty are also valid.\n",
+			"All properties for itmGetProperty are also valid.",
 
 			"ivs",	0,	},
 
@@ -1480,7 +1523,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   D                  Only damaged items\n"
 			"   N                  Only undamaged items\n"
 			"   S                  Only usable items\n"
-			"   U                  Only uninstalled items\n",
+			"   U                  Only uninstalled items",
 
 			NULL,	0,	},
 
@@ -1505,7 +1548,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x020 no modifiers ('damaged' etc)\n"
 			"   0x040 prefix with 'the' or 'this' or 'these'\n"
 			"   0x080 short name\n"
-			"   0x100 actual name (not unidentified name)\n",
+			"   0x100 actual name (not unidentified name)",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -1650,7 +1693,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'sourceObj\n"
 			"   'target\n"
 			"\n"
-			"NOTE: All type properties (accessed via typGetProperty) are also valid object properties.\n",
+			"NOTE: All type properties (accessed via typGetProperty) are also valid object properties.",
 
 			"is",	0,	},
 
@@ -1725,7 +1768,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objIncVel",					fnObjSet,		FN_OBJ_INCREMENT_VELOCITY,	
 			"(objIncVel obj velVector) -> velVector\n\n"
 
-			"velVector in % of light-speed\n",
+			"velVector in % of light-speed",
 
 			"il",		PPFLAG_SIDEEFFECTS,	},
 
@@ -1772,14 +1815,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objMatches",					fnObjGet,			FN_OBJ_MATCHES,
 			"(objMatches obj source filter) -> True/Nil\n\n"
 
-			"criteria as sysFindObject\n",
+			"criteria as sysFindObject",
 
 			"iis",	0,	},
 
 		{	"objProgramDamage",				fnProgramDamage,0,
 			"(objProgramDamage obj hacker progName aiLevel code) -> True/Nil\n\n"
 
-			"Chance to execute code is: 90 + 10 * (aiLevel - cyberDefenseLevel)\n",
+			"Chance to execute code is: 90 + 10 * (aiLevel - cyberDefenseLevel)",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -1849,7 +1892,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'incCharges charges\n"
 			"   'linkedFireOptions list-of-options\n"
 			"   'pos (angle radius [z])\n"
-			"   'secondary [True|Nil]\n",
+			"   'secondary [True|Nil]",
 
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1869,7 +1912,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x0010 Pluralize second word\n"
 			"   0x0020 Reverse 'a' vs 'an'\n"
 			"   0x0040 No article\n"
-			"   0x0080 Personal name\n",
+			"   0x0080 Personal name",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -1897,7 +1940,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'counter\n"
 			"   'counterLabel\n"
 			"   'pos position\n"
-			"   'rotation angle\n",
+			"   'rotation angle",
 
 			"iisv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1940,7 +1983,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'playerBlacklisted True|Nil\n"
 			"   'shipConstructionEnabled True|Nil\n"
 			"   'shipReinforcementEnabled True|Nil\n"
-			"   'structuralHP hitPoints\n",
+			"   'structuralHP hitPoints",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -1953,7 +1996,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'autoClearOnDestroy   Clear when destroyed\n"
 			"   'autoClearOnDock      Clear when player docks\n"
 			"   'showDistance         Show distance\n"
-			"   'showHighlight        Show target highlight\n",
+			"   'showHighlight        Show target highlight",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2046,14 +2089,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"msnAddTimerEvent",				fnMissionSet,		FN_MISSION_ADD_TIMER,
 			"(msnAddTimerEvent missionObj delay event)\n\n"
 			
-			"delay in ticks\n",
+			"delay in ticks",
 
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnAddRecurringTimerEvent",	fnMissionSet,		FN_MISSION_ADD_RECURRING_TIMER,	
 			"(msnAddRecurringTimerEvent missionObj interval event)\n\n"
 			
-			"interval in ticks\n",
+			"interval in ticks",
 
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2063,7 +2106,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"msnCreate",					fnMission,			FN_MISSION_CREATE,
 			"(msnCreate unid owner [data]) -> missionObj|Nil\n"
-			"(msnCreate unid-list owner [data]) -> missionObj|Nil\n",
+			"(msnCreate unid-list owner [data]) -> missionObj|Nil",
 			"vi*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnDecline",					fnMissionSet,		FN_MISSION_DECLINED,
@@ -2091,7 +2134,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   S                  Only missions owned by source\n"
 			"   +/-{attrib}        Require/exclude missions with given attribute\n"
 			"   +/-ownerID:{id}    Require/exclude missions with given owner\n"
-			"   +/-unid:{unid}     Require/exclude missions of given unid\n",
+			"   +/-unid:{unid}     Require/exclude missions of given unid",
 			"*s",	0,	},
 
 		{	"msnFireEvent",					fnObjSet,		FN_OBJ_FIRE_EVENT,
@@ -2128,7 +2171,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'nodeID            ID of the mission's owner system\n"
 			"   'ownerID           ID of the mission's owner object\n"
 			"   'summary           A summary description of the mission\n"
-			"   'unid              Mission type UNID\n",
+			"   'unid              Mission type UNID",
 
 			"is",	0,	},
 
@@ -2170,7 +2213,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'isDeclined True|Nil\n"
 			"   'isIntroShown True|Nil\n"
 			"   'name newName\n"
-			"   'summary newSummary\n",
+			"   'summary newSummary",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2192,28 +2235,28 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysAddEncounterEvent",			fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_GATE,
 			"(sysAddEncounterEvent delay target encounterID gate)\n\n"
 
-			"delay in ticks\n",
+			"delay in ticks",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddEncounterEventAtDist",	fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_DIST,
 			"(sysAddEncounterEventAtDist delay target encounterID distance)\n\n"
 
-			"delay in ticks\n",
+			"delay in ticks",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddObjTimerEvent",			fnSystemAddStationTimerEvent,	FN_ADD_TIMER_NORMAL,	
 			"(sysAddObjTimerEvent delay obj event)\n\n"
 
-			"delay in ticks\n",
+			"delay in ticks",
 
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddObjRecurringTimerEvent",	fnSystemAddStationTimerEvent,	FN_ADD_TIMER_RECURRING,	
 			"(sysAddObjRecurringTimerEvent interval obj event)\n\n"
 
-			"interval in ticks\n",
+			"interval in ticks",
 
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2224,7 +2267,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 			"   'center            Fire event when target gets close to this point\n"
 			"   'radius            Within this radius (light-seconds)\n"
-			"   'criteria          Objects that will trigger. If Nil, player triggers\n",
+			"   'criteria          Objects that will trigger. If Nil, player triggers",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2235,7 +2278,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysAddTypeRecurringTimerEvent",	fnSystemAddStationTimerEvent,	FN_ADD_TYPE_TIMER_RECURRING,	
 			"(sysAddTypeRecurringTimerEvent interval type event)\n\n"
 
-			"interval in ticks\n",
+			"interval in ticks",
 
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2282,7 +2325,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 				"   'distance      Encounter distance (light-seconds), if gate is Nil\n"
 				"   'gate          Gate to appear at (if Nil, use distance)\n"
-				"   'target        Target of encounter\n",
+				"   'target        Target of encounter",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2320,14 +2363,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'ferian           Ferian\n"
 			"   'fleet            fleet member\n"
 			"   'fleetcommand     fleet squad leader\n"
-			"   'gaianprocessor   Gaian processor\n",
+			"   'gaianprocessor   Gaian processor",
 
 			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateShipwreck",			fnSystemCreate,		FN_SYS_CREATE_SHIPWRECK,
 			"(sysCreateShipwreck unid pos sovereignID) -> shipwreck\n\n"
 
-			"pos is either a position vector or a space object\n",
+			"pos is either a position vector or a space object",
 
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2350,7 +2393,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'detonateNow\n"
 			"   'fireEffect\n"
-			"   'soundEffect\n",
+			"   'soundEffect",
 
 			"vvviii*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2407,7 +2450,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   +xyz;       Exclude objects without the given attribute\n"
 			"   -xyz;       Exclude objects with the given attribute\n"
 			"\n"
-			"   =n          Level comparisons\n",
+			"   =n          Level comparisons",
 
 			"is",	0,	},
 
@@ -2458,7 +2501,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'level             The level of the system\n"
 			"   'name              The name of the system\n"
-			"   'pos               Node position on map (x y)\n",
+			"   'pos               Node position on map (x y)",
 
 			"*s",	0,	},
 
@@ -2474,7 +2517,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'attribs           The attributes for the location\n"
 			"   'orbit             The orbital parameters\n"
-			"   'pos               The location position\n",
+			"   'pos               The location position",
 
 			"s*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2507,7 +2550,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 			"options\n\n"
 				
-			"   'excludeWorlds\n",
+			"   'excludeWorlds",
 
 			"ivv*",	0,	},
 
@@ -2540,7 +2583,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"For arcOffset and radiusOffset, n may also be a list with the following"
 			"formats:\n\n"
 			
-			"   (list 'gaussian min max)\n",
+			"   (list 'gaussian min max)",
 
 			"v*",	0,	},
 
@@ -2582,7 +2625,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"         'center: The center position of the patch.\n"
 			"         'height: The height of the patch (in light-seconds).\n"
-			"         'width: The width of the patch (in light-seconds).\n",
+			"         'width: The width of the patch (in light-seconds).",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2599,7 +2642,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
-			"   'pos               Node position on map (x y)\n",
+			"   'pos               Node position on map (x y)",
 
 			"*sv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2636,7 +2679,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysVectorPixelOffset",			fnSystemVectorMath,		FN_VECTOR_PIXEL_OFFSET,
 			"(sysVectorPixelOffset center x y) -> vector\n\n"
 
-			"center is either Nil, an object, or a vector\n",
+			"center is either Nil, an object, or a vector",
 
 			"vnn",	0,	},
 
@@ -2644,7 +2687,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysVectorPolarOffset center angle radius) -> vector\n\n"
 
 			"center is either Nil, an object, or a vector\n"
-			"radius in light-seconds\n",
+			"radius in light-seconds",
 
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
@@ -2658,7 +2701,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"center is either Nil, an object, or a vector\n"
 			"radius in light-seconds from center (or a function)\n"
 			"minSeparation is the min distance from other objects (in light-seconds)\n"
-			"filter defines the set of objects to be away from\n",
+			"filter defines the set of objects to be away from",
 
 			"vv*",	0,	},
 
@@ -2676,14 +2719,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"typAddTimerEvent",				fnDesignGet,		FN_DESIGN_ADD_TIMER,
 			"(typAddTimerEvent unid delay event)\n\n"
 			
-			"delay in ticks\n",
+			"delay in ticks",
 
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"typAddRecurringTimerEvent",	fnDesignGet,		FN_DESIGN_ADD_RECURRING_TIMER,	
 			"(typAddRecurringTimerEvent unid interval event)\n\n"
 			
-			"interval in ticks\n",
+			"interval in ticks",
 
 			"iis",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2708,7 +2751,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   b                  ItemTable\n"
 			"   c                  EffectType\n"
 			"   d                  DockScreen\n"
-			"   e                  SpaceEnvironmenType\n"
+			"   e                  SpaceEnvironmentType\n"
 			"   f                  OverlayType\n"
 			"   h                  ShipTable\n"
 			"   i                  ItemType\n"
@@ -2723,7 +2766,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   y                  SystemType\n"
 			"   z                  SystemMap\n"
 			"   $                  EconomyType\n"
-			"   +/-{attrib}        Require/exclude types with given attribute\n",
+			"   +/-{attrib}        Require/exclude types with given attribute\n"
+			"   =n;                Level comparisons (also supports < etc.)",
 
 			"s",	0,	},
 
@@ -2810,7 +2854,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'thrusterPower\n"
 			"   'treasureValue\n"
 			"   'wreckChance\n"
-			"\n",
+			"",
 
 			"is",	0,	},
 
@@ -2870,7 +2914,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'enemy\n"
 			"   'neutral\n"
-			"   'friend\n",
+			"   'friend",
 
 			"ii",	0,	},
 
@@ -2889,7 +2933,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 				"   0 / 'enemy\n"
 				"   1 / 'neutral\n"
-				"   2 / 'friend\n",
+				"   2 / 'friend",
 
 			"iiv",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2915,10 +2959,12 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   s                  ShipClass\n"
 			"   t                  StationType\n"
 			"   +/-{attrib}        Require/exclude types with given attribute\n\n"
-			
+			"   +/-unid:{unid}     Require/exclude types of given unid\n"
+			"   =n;                Level comparisons (also supports < etc.)\n"
+
 			"entry\n\n"
 			
-			"   ({objID} {type} {nodeID} {objName} {objNameFlags})\n",
+			"   ({objID} {type} {nodeID} {objName} {objNameFlags})",
 
 			"*s",	0,	},
 
@@ -2932,7 +2978,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"format\n\n"
 			
 			"   display:           Elapsed time in display format.\n"
-			"   seconds:           Elapsed time in game seconds.\n",
+			"   seconds:           Elapsed time in game seconds.",
 
 			"*is",	0,	},
 
@@ -2955,7 +3001,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'local\n"
 			"   'serviceExtension\n"
-			"   'serviceUser\n",
+			"   'serviceUser",
 
 			"ssv",	0,	},
 
