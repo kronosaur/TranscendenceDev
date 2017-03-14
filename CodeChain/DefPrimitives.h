@@ -106,7 +106,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"errblock",			fnBlock,		FN_BLOCK_ERRBLOCK,
-			"(errblock localsList exp1 exp2 ... expn expErr) -> value of expn or expErr if error occurs\n\n",
+			"(errblock localsList exp1 exp2 ... expn expErr) -> value of expn or expErr if error occurs",
 			NULL,	0,	},
 
 		{	"error",			fnSpecial,		FN_ERROR,
@@ -361,7 +361,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v*",	0,	},
 
 		{	"switch",			fnSwitch,		0,
-			"(switch [cond1 exp1] ... [condn expn] defultexp) -> value\n\n"
+			"(switch [cond1 exp1] ... [condn expn] defaultexp) -> value\n\n"
 
 			"Evaluates conditions until one returns non-Nil, then evaluates the corresponding expression",
 			NULL,	0,	},
@@ -386,7 +386,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"   real\n"
 			"   string\n"
 			"   struct\n"
-			"   true\n",
+			"   true",
 
 			"v",	0,	},
 
