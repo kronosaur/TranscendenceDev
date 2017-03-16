@@ -2294,6 +2294,7 @@ class CUniverse
 					bDefaultExtensions(false),
 					bForceTDB(false),
                     bNoCollectionLoad(false),
+					bNoCollectionCheck(false),
 					bForceCompatibilityLibrary(false),
 					pAdventure(NULL),
 					dwAdventure(0)
@@ -2314,7 +2315,8 @@ class CUniverse
 			bool bDebugMode;				//	Initialize in debug mode
 			bool bDefaultExtensions;		//	If TRUE, we include all appropriate extensions
 			bool bForceTDB;					//	If TRUE, use Transcendence.tdb even if XMLs exist
-            bool bNoCollectionLoad;         //  If TRUE, don't load collection (only in debug mode)
+			bool bNoCollectionLoad;         //  If TRUE, don't load collection (only in debug mode)
+			bool bNoCollectionCheck;		//  If TRUE, don't check collection digests
 			bool bForceCompatibilityLibrary;//	If TRUE, force include of Compatibility Library
 
 			//	Adventure to bind to (choose one, in order)

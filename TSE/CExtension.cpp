@@ -898,7 +898,7 @@ CString CExtension::GetEntityName (DWORD dwUNID) const
 	return *pName;
 	}
 
-ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pResolver, bool bNoResources, bool bKeepXML, CString *retsError)
+ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pResolver, const SLoadOptions &Options, CString *retsError)
 
 //	Load
 //
@@ -936,8 +936,8 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			Ctx.sResDb = m_sFilespec;
 			Ctx.pResDb = &ExtDb;
 			Ctx.bNoVersionCheck = true;	//	Obsolete now
-			Ctx.bNoResources = bNoResources;
-			Ctx.bKeepXML = bKeepXML;
+			Ctx.bNoResources = Options.bNoResources;
+			Ctx.bKeepXML = Options.bKeepXML;
 			Ctx.bLoadAdventureDesc = (iDesiredState == loadAdventureDesc && m_iType == extAdventure);
 			Ctx.sErrorFilespec = m_sFilespec;
 
@@ -947,7 +947,10 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	We need to do this even if we fail later because we don't want to
 			//	have to recalc it later.
 
-			if (m_Digest.IsEmpty() && GetFolderType() == folderCollection && IsRegistered())
+			if (!Options.bNoDigestCheck 
+					&& m_Digest.IsEmpty() 
+					&& GetFolderType() == folderCollection 
+					&& IsRegistered())
 				{
 				if (error = fileCreateDigest(m_sFilespec, &m_Digest))
 					{
@@ -996,7 +999,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 
 				if (error = LoadDesignElement(Ctx, pItem))
 					{
-					if (!bKeepXML)
+					if (!Options.bKeepXML)
 						{
 						delete m_pRootXML;
 						m_pRootXML = NULL;
@@ -1018,7 +1021,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	Done
 
 			m_iLoadState = (m_iType == extAdventure ? iDesiredState : loadComplete);
-			if (!bKeepXML)
+			if (!Options.bKeepXML)
 				{
 				delete m_pRootXML;
 				m_pRootXML = NULL;

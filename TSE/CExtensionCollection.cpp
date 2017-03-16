@@ -232,7 +232,6 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	if (pExtension->IsMarked())
 		return NOERROR;
 
-	bool bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
 
 	//	Mark now in case there is a circular dependency (in that case, we will
@@ -246,15 +245,20 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	if (pExtension->IsDisabled())
 		return NOERROR;
 
-	//	Create a resolver
+	//	Create load options
 
 	CLibraryResolver Resolver(*this);
 	Resolver.AddDefaults(pExtension);
 	Resolver.ReportLibraryErrors();
 
+	CExtension::SLoadOptions LoadOptions;
+	LoadOptions.bKeepXML = m_bKeepXML;
+	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
+	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+
 	//	Make sure the extension is loaded completely.
 
-	if (error = pExtension->Load(CExtension::loadComplete, &Resolver, bNoResources, m_bKeepXML, retsError))
+	if (error = pExtension->Load(CExtension::loadComplete, &Resolver, LoadOptions, retsError))
 		return error;
 
 	//	Now add any libraries used by this extension to the list.
@@ -1310,10 +1314,14 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 		CLibraryResolver Resolver(*this);
 		Resolver.AddDefaults(pExtension);
 
+		CExtension::SLoadOptions LoadOptions;
+		LoadOptions.bKeepXML = m_bKeepXML;
+		LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
+		LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+
 		if (error = pExtension->Load(CExtension::loadAdventureDesc, 
 				&Resolver, 
-				((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES), 
-				m_bKeepXML, 
+				LoadOptions, 
 				retsError))
 			return error;
 		}
@@ -1583,12 +1591,16 @@ ALERROR CExtensionCollection::LoadFile (const CString &sFilespec, CExtension::EF
 	CLibraryResolver Resolver(*this);
 	Resolver.AddDefaults(pExtension);
 
+	CExtension::SLoadOptions LoadOptions;
+	LoadOptions.bKeepXML = m_bKeepXML;
+	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
+	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+
 	//	Load it
 
 	if (error = pExtension->Load(((dwFlags & FLAG_DESC_ONLY) ? CExtension::loadAdventureDesc : CExtension::loadComplete),
 			&Resolver,
-			((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES),
-			m_bKeepXML,
+			LoadOptions,
 			retsError))
 		{
 		delete pExtension;

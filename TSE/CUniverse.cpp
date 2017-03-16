@@ -1231,6 +1231,9 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
         if (Ctx.bNoCollectionLoad && m_bDebugMode)
             dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION;
 
+		if (Ctx.bNoCollectionCheck)
+			dwFlags |= CExtensionCollection::FLAG_NO_COLLECTION_CHECK;
+
 		//	Load everything
 
 		if (error = m_Extensions.Load(sMainFilespec, dwFlags, retsError))

@@ -4030,6 +4030,19 @@ class CExtension
 			DWORD dwRelease;				//	Release of library that we use
 			};
 
+		struct SLoadOptions
+			{
+			SLoadOptions (void) :
+					bKeepXML(false),
+					bNoResources(false),
+					bNoDigestCheck(false)
+				{ }
+
+			bool bKeepXML;
+			bool bNoResources;
+			bool bNoDigestCheck;
+			};
+
 		CExtension (void);
 		~CExtension (void);
 
@@ -4075,7 +4088,7 @@ class CExtension
 		inline bool IsPrivate (void) const { return m_bPrivate; }
 		inline bool IsRegistered (void) const { return m_bRegistered; }
 		inline bool IsRegistrationVerified (void) { return (m_bRegistered && m_bVerified); }
-		ALERROR Load (ELoadStates iDesiredState, IXMLParserController *pResolver, bool bNoResources, bool bKeepXML, CString *retsError);
+		ALERROR Load (ELoadStates iDesiredState, IXMLParserController *pResolver, const SLoadOptions &Options, CString *retsError);
 		inline void SetDeleted (void) { m_bDeleted = true; }
 		inline void SetDisabled (const CString &sReason) { if (!m_bDisabled) { m_sDisabledReason = sReason; m_bDisabled = true; } }
 		inline void SetDigest (const CIntegerIP &Digest) { m_Digest = Digest; }
@@ -4173,27 +4186,28 @@ class CExtensionCollection
 			{
 			//	Load
 
-			FLAG_NO_RESOURCES =		0x00000001,	//	Do not load resources.
-			FLAG_DEBUG_MODE =		0x00000002,	//	Game run with /debug
-			FLAG_DESC_ONLY =		0x00000004,	//	Load adventure descs only
-			FLAG_ERROR_ON_DISABLE =	0x00000008,	//	Return an error if an extension was loaded disabled
+			FLAG_NO_RESOURCES =			0x00000001,	//	Do not load resources.
+			FLAG_DEBUG_MODE =			0x00000002,	//	Game run with /debug
+			FLAG_DESC_ONLY =			0x00000004,	//	Load adventure descs only
+			FLAG_ERROR_ON_DISABLE =		0x00000008,	//	Return an error if an extension was loaded disabled
 												//		(due to missing dependencies, etc.)
-            FLAG_NO_COLLECTION =    0x00000010, //  Do not load collection
+            FLAG_NO_COLLECTION =		0x00000010, //  Do not load collection
+			FLAG_NO_COLLECTION_CHECK =	0x00000020,	//	Do not check signatures on collection
 
 			//	FindExtension
 
-			FLAG_ADVENTURE_ONLY =	0x00000020,	//	Must be an adventure (not found otherwise)
+			FLAG_ADVENTURE_ONLY =		0x00000040,	//	Must be an adventure (not found otherwise)
 
 			//	ComputeAvailableExtension
 
-			FLAG_INCLUDE_AUTO =		0x00000040,	//	Include extensions that are automatic
-			FLAG_AUTO_ONLY =		0x00000080,	//	Only include extensions that are automatic
-			FLAG_ACCUMULATE =		0x00000100,	//	Add to result list
-			FLAG_REGISTERED_ONLY =	0x00000200,	//	Only registered extensions
+			FLAG_INCLUDE_AUTO =			0x00000080,	//	Include extensions that are automatic
+			FLAG_AUTO_ONLY =			0x00000100,	//	Only include extensions that are automatic
+			FLAG_ACCUMULATE =			0x00000200,	//	Add to result list
+			FLAG_REGISTERED_ONLY =		0x00000400,	//	Only registered extensions
 
 			//	ComputeBindOrder
 
-			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00000400,
+			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00000800,
 			};
 
 		CExtensionCollection (void);
