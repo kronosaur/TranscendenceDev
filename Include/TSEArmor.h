@@ -23,6 +23,44 @@ class CArmorClass
 			evtCount					= 2,
 			};
 
+		struct SBalance
+			{
+			SBalance (void) :
+					rBalance(0.0),
+					iLevel(0),
+					rHP(0.0),
+					rHPBalance(0.0),
+					rDamageAdj(0.0),
+					rDamageEffectAdj(0.0),
+					rRegen(0.0),
+					rArmorComplete(0.0),
+					rStealth(0.0),
+					rPowerUse(0.0),
+					rSpeedAdj(0.0),
+					rDeviceBonus(0.0),
+					rMass(0.0),
+					rCost(0.0)
+				{ }
+
+			Metric rBalance;				//	Total balance (+100 = 100% overpowered)
+			int iLevel;						//	Level for which we balanced
+			Metric rHP;						//	Max HP for armor (counting bonuses, etc.).
+
+			Metric rHPBalance;				//	Balance contribution from raw HP
+			Metric rDamageAdj;				//	Balance contribution from damage adj
+			Metric rDamageEffectAdj;		//	Balance contribution from damage effect adj (EMP-resist, etc.).
+			Metric rRegen;					//	Balance from regeneration/decay/distribution
+			Metric rRepairAdj;				//	Balance from repair level/cost
+			Metric rArmorComplete;			//	Balance from armor complete bonus
+			Metric rStealth;				//	Balance from stealth bonus
+			Metric rPowerUse;				//	Balance from power use
+			Metric rSpeedAdj;				//	Balance from speed bonus/penalty
+			Metric rDeviceBonus;			//	Balance from device bonus
+
+			Metric rMass;					//	Balance from mass
+			Metric rCost;					//	Balance from cost
+			};
+
         struct SStdStats
 	        {
 	        int iHP;								//	HP for std armor at this level
@@ -41,7 +79,7 @@ class CArmorClass
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
-		int CalcBalance (void);
+		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
 		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcPowerUsed (CInstalledArmor *pArmor);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor);
@@ -55,7 +93,7 @@ class CArmorClass
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetInstallCost (CItemCtx &Ctx) const;
 		inline CItemType *GetItemType (void) { return m_pItemType; }
-		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false);
+		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline Metric GetMaxSpeedBonus (void) const { return m_rMaxSpeedBonus; }
 		inline CString GetName (void);
@@ -111,7 +149,14 @@ class CArmorClass
 
         ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
 		int CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
-        void GenerateScaledStats (void);
+		Metric CalcBalanceDamageAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
+		Metric CalcBalanceDamageEffectAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
+		Metric CalcBalanceMass (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
+		Metric CalcBalancePower (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
+		Metric CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
+		Metric CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
+		Metric CalcBalanceSpecial (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
+		void GenerateScaledStats (void);
 		int GetDamageAdj (CItemCtx &ItemCtx, CItemEnhancement Mods, const DamageDesc &Damage) const;
         const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
 		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;

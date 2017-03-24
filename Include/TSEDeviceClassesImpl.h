@@ -535,6 +535,7 @@ class CWeaponClass : public CDeviceClass
 
         static const SStdStats &GetStdStats (int iLevel);
 		static int GetStdDamage (int iLevel);
+		static Metric GetStdDamage180 (int iLevel);
 		static bool IsStdDamageType (DamageTypes iDamageType, int iLevel);
 
 		//	CDeviceClass virtuals

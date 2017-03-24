@@ -87,6 +87,36 @@ const int DEVICE_DAMAGE_IMMUNE_LEVEL =			11;
 
 const int TICKS_PER_UPDATE =					10;
 
+const Metric PHOTO_REPAIR_ADJ =					0.6;
+const Metric MAX_REGEN_BALANCE_BONUS =			500.0;
+const Metric DECAY_BALANCE_ADJ =				3.0;
+const Metric DIST_BALANCE_ADJ =					0.25;
+const Metric RADIATION_IMMUNE_BALANCE_BONUS =	25.0;
+const Metric RADIATION_VULNERABLE_BALANCE_BONUS =	-25.0;
+const Metric BLIND_IMMUNE_BALANCE_BONUS =		10.0;
+const Metric BLIND_VULNERABLE_BALANCE_BONUS =	-10.0;
+const Metric EMP_IMMUNE_BALANCE_BONUS =			25.0;
+const Metric EMP_VULNERABLE_BALANCE_BONUS =		-25.0;
+const Metric DEVICE_DAMAGE_IMMUNE_BALANCE_BONUS =	25.0;
+const Metric DEVICE_DAMAGE_VULNERABLE_BALANCE_BONUS =	-25.0;
+const Metric SHATTER_IMMUNE_BALANCE_BONUS =		20.0;
+const Metric DISINTEGRATION_IMMUNE_BALANCE_BONUS =	10.0;
+const Metric HIGHER_REPAIR_LEVEL_BALANCE_BONUS = -10.0;
+const Metric LOWER_REPAIR_LEVEL_BALANCE_BONUS =	5.0;
+const Metric ARMOR_COMPLETE_BALANCE_ADJ =		-0.20;
+const Metric STEALTH_BALANCE_BONUS =			5.0;
+const Metric REFLECTION_BALANCE_BONUS =			50.0;
+const Metric POWER_USE_BALANCE_ADJ =			-400.0;
+const Metric PHOTO_RECHARGE_BALANCE_ADJ =		25.0;
+const Metric MAX_SPEED_BALANCE_BONUS =			10;
+const Metric SHIELD_INTERFERENCE_BALANCE_BONUS =	-150.0;
+
+const Metric MASS_BALANCE_ADJ =					-25.0;	//	25% penalty for each 100% increase in mass
+const Metric MASS_BALANCE_6_TON_BONUS =			-25.0;
+const Metric MASS_BALANCE_12_TON_BONUS =		-25.0;
+
+const Metric BALANCE_COST_RATIO =				-0.5;	//  Each percent of cost above standard is a 0.5%
+
 static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 	{
 		//						Repair	Install
@@ -97,29 +127,29 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	80,		400,		2,		80,			2900, },
 		{	100,	800,		3,		160,		3000, },
 
-		{	135,	1600,		4,		320,		3200, },
-		{	175,	3200,		6,		640,		3300, },
-		{	225,	6500,		9,		1300,		3500, },
-		{	300,	13000,		15,		2600,		3700, },
-		{	380,	25000,		22,		5000,		3900, },
+		{	135,	1600,		4,		320,		3000, },
+		{	175,	3200,		6,		640,		3000, },
+		{	225,	6500,		9,		1300,		3000, },
+		{	300,	13000,		15,		2600,		3000, },
+		{	380,	25000,		22,		5000,		3000, },
 
-		{	500,	50000,		35,		10000,		4000, },
-		{	650,	100000,		52,		20000,		4300, },
-		{	850,	200000,		80,		40000,		4500, },
-		{	1100,	410000,		125,	82000,		4700, },
-		{	1400,	820000,		190,	164000,		5000, },
+		{	500,	50000,		35,		10000,		3000, },
+		{	650,	100000,		52,		20000,		3000, },
+		{	850,	200000,		80,		40000,		3000, },
+		{	1100,	410000,		125,	82000,		3000, },
+		{	1400,	820000,		190,	164000,		3000, },
 
-		{	1850,	1600000,	300,	320000,		5200, },
-		{	2400,	3250000,	450,	650000,		5500, },
-		{	3100,	6500000,	700,	1300000,	5700, },
-		{	4000,	13000000,	1050,	2600000,	6000, },
-		{	5250,	26000000,	1650,	5200000,	6300, },
+		{	1850,	1600000,	300,	320000,		3000, },
+		{	2400,	3250000,	450,	650000,		3000, },
+		{	3100,	6500000,	700,	1300000,	3000, },
+		{	4000,	13000000,	1050,	2600000,	3000, },
+		{	5250,	26000000,	1650,	5200000,	3000, },
 
-		{	6850,	52000000,	2540,	10400000,	6600, },
-		{	9000,	100000000,	3900,	20000000,	7000, },
-		{	12000,	200000000,	6000,	40000000,	7300, },
-		{	15000,	400000000,	9300,	80000000,	7700, },
-		{	20000,	800000000,	14300,	160000000,	8000, },
+		{	6850,	52000000,	2540,	10400000,	3000, },
+		{	9000,	100000000,	3900,	20000000,	3000, },
+		{	12000,	200000000,	6000,	40000000,	3000, },
+		{	15000,	400000000,	9300,	80000000,	3000, },
+		{	20000,	800000000,	14300,	160000000,	3000, },
 	};
 
 static char *CACHED_EVENTS[CArmorClass::evtCount] =
@@ -643,7 +673,7 @@ int CArmorClass::CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx)
 	return (iCount > 0 ? (int)((rTotalAdj / iCount) + 0.5) : 100);
 	}
 
-int CArmorClass::CalcBalance (void)
+int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 //	CalcBalance
 //
@@ -651,191 +681,391 @@ int CArmorClass::CalcBalance (void)
 //	mean the item is underpowered. Positive numbers mean the item is overpowered.
 
 	{
-	int i;
-	int iBalance = 0;
-	int iLevel = m_pItemType->GetLevel();
+	//	Initialize
 
-	//	Regeneration
+	const SScalableStats &Stats = GetScaledStats(ItemCtx);
+	retBalance.iLevel = Stats.iLevel;
 
-	if (!m_Stats.Regen.IsEmpty())
+	//	Figure out how may HPs standard armor at this level should have.
+
+	const SStdStats &StdStats = GetStdStats(retBalance.iLevel);
+
+	//  Compute the number of balance points (BP) of the damage. +100 = double
+	//  HP relative to standard. -100 = half HP relative to standard.
+
+	retBalance.rHP = (int)GetMaxHP(ItemCtx, true);
+	retBalance.rHPBalance = 100.0 * mathLog2(retBalance.rHP / (Metric)StdStats.iHP);
+	retBalance.rBalance = retBalance.rHPBalance;
+
+	//	Calculate the balance contribution of damage adjustment
+
+	retBalance.rDamageAdj = CalcBalanceDamageAdj(ItemCtx, Stats);
+	retBalance.rBalance += retBalance.rDamageAdj;
+
+	retBalance.rDamageEffectAdj = CalcBalanceDamageEffectAdj(ItemCtx, Stats);
+	retBalance.rBalance += retBalance.rDamageEffectAdj;
+
+	//	Calculate regeneration/decay/etc.
+
+	retBalance.rRegen = CalcBalanceRegen(ItemCtx, Stats);
+	retBalance.rBalance += retBalance.rRegen;
+
+	//	Repair tech
+
+	retBalance.rRepairAdj = CalcBalanceRepair(ItemCtx, Stats);
+	retBalance.rBalance += retBalance.rRepairAdj;
+
+	//	If we have an armor complete bonus, we add a penalty to balance.
+
+	if (m_iArmorCompleteBonus)
 		{
-		if (m_fPhotoRepair)
-			iBalance += m_Stats.Regen.GetHPPerEra();
-		else
-			iBalance += 5 * m_Stats.Regen.GetHPPerEra();
+		retBalance.rArmorComplete = ARMOR_COMPLETE_BALANCE_ADJ * 100.0 * mathLog2((Metric)(m_iArmorCompleteBonus + StdStats.iHP) / (Metric)StdStats.iHP);
+		retBalance.rBalance += retBalance.rArmorComplete;
 		}
-
-	if (!m_Stats.Distribute.IsEmpty())
-		{
-		iBalance += m_Stats.Distribute.GetHPPerEra();
-		}
+	else
+		retBalance.rArmorComplete = 0.0;
 
 	//	Stealth
 
 	if (m_iStealth >= 12)
-		iBalance += 4;
+		retBalance.rStealth = 4.0 * STEALTH_BALANCE_BONUS;
 	else if (m_iStealth >= 10)
-		iBalance += 3;
+		retBalance.rStealth = 3.0 * STEALTH_BALANCE_BONUS;
 	else if (m_iStealth >= 8)
-		iBalance += 2;
+		retBalance.rStealth = 2.0 * STEALTH_BALANCE_BONUS;
 	else if (m_iStealth >= 6)
-		iBalance += 1;
+		retBalance.rStealth = 1.0 * STEALTH_BALANCE_BONUS;
+	else
+		retBalance.rStealth = 0.0;
 
-	//	Immunities
+	retBalance.rBalance += retBalance.rStealth;
 
-	if (m_fDisintegrationImmune)
-		{
-		if (iLevel <= 10)
-			iBalance += 3;
-		}
+	//	Power use
 
-	if (m_Stats.iBlindingDamageAdj <= 20 && iLevel < BLIND_IMMUNE_LEVEL)
-		iBalance += 1;
-	else if (m_Stats.iBlindingDamageAdj > 0 && iLevel >= BLIND_IMMUNE_LEVEL)
-		iBalance -= 1;
+	retBalance.rPowerUse = CalcBalancePower(ItemCtx, Stats);
+	retBalance.rBalance += retBalance.rPowerUse;
 
-	if (m_Stats.fRadiationImmune && iLevel < RADIATION_IMMUNE_LEVEL)
-		iBalance += 2;
-	else if (!m_Stats.fRadiationImmune && iLevel >= RADIATION_IMMUNE_LEVEL)
-		iBalance -= 2;
+	//	Speed adjustment
 
-	if (m_Stats.iEMPDamageAdj <= 20 && iLevel < EMP_IMMUNE_LEVEL)
-		iBalance += 2;
-	else if (m_Stats.iEMPDamageAdj > 0 && iLevel >= EMP_IMMUNE_LEVEL)
-		iBalance -= 2;
+	retBalance.rSpeedAdj = MAX_SPEED_BALANCE_BONUS * m_rMaxSpeedBonus;
+	retBalance.rBalance += retBalance.rSpeedAdj;
 
-	if (m_Stats.iDeviceDamageAdj <= 20 && iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
-		iBalance += 2;
-	else if (m_Stats.iDeviceDamageAdj > 0 && iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL)
-		iBalance -= 2;
+	//	Special features
 
-	if (m_Stats.iBlindingDamageAdj > 20 || m_Stats.iEMPDamageAdj > 20 || m_Stats.iDeviceDamageAdj > 20)
-		{
-		if (m_Stats.iBlindingDamageAdj <= 33 || m_Stats.iEMPDamageAdj <= 33 || m_Stats.iDeviceDamageAdj <= 33)
-			iBalance += 2;
-		else if (m_Stats.iBlindingDamageAdj <= 50 || m_Stats.iEMPDamageAdj <= 50 || m_Stats.iDeviceDamageAdj <= 50)
-			iBalance += 1;
-		}
-
-	if (m_fPhotoRecharge)
-		iBalance += 2;
-
-	//	Matched sets
-
-	if (m_iArmorCompleteBonus)
-		{
-		int iPercent = m_iArmorCompleteBonus * 100 / m_Stats.iHitPoints;
-		iBalance += (iPercent + 5) / 10;
-		}
-
-	//	Damage Adjustment
-
-	int iBalanceAdj = 0;
-	for (i = 0; i < damageCount; i++)
-		{
-		int iStdAdj;
-		int iDamageAdj;
-		m_Stats.DamageAdj.GetAdjAndDefault((DamageTypes)i, &iDamageAdj, &iStdAdj);
-
-		if (iStdAdj != iDamageAdj)
-			{
-			if (iDamageAdj > 0)
-				{
-				int iBonus = (int)((100.0 * (iStdAdj - iDamageAdj) / iDamageAdj) + 0.5);
-
-				if (iBonus > 0)
-					iBalanceAdj += iBonus / 4;
-				else
-					iBalanceAdj -= ((int)((100.0 * iDamageAdj / iStdAdj) + 0.5) - 100) / 4;
-				}
-			else if (iStdAdj > 0)
-				{
-				iBalanceAdj += iStdAdj;
-				}
-			}
-		}
-
-	iBalance += (Max(Min(iBalanceAdj, 100), -100)) / 5;
-
-	//	Reflection
-
-	for (i = 0; i < damageCount; i++)
-		{
-		if (m_Reflective.InSet((DamageTypes)i))
-			iBalance += 8;
-		}
-
-	//	Hit Points
-
-	if (m_Stats.iHitPoints > 0)
-		{
-		int iDiff = (m_Stats.iHitPoints - STD_STATS[iLevel - 1].iHP);
-		if (iDiff > 0)
-			iBalance += iDiff * 20 / STD_STATS[iLevel - 1].iHP;
-		else if (m_Stats.iHitPoints > 0)
-			iBalance -= (STD_STATS[iLevel - 1].iHP * 20 / m_Stats.iHitPoints) - 20;
-		else
-			iBalance -= 40;
-		}
-
+	retBalance.rDeviceBonus = CalcBalanceSpecial(ItemCtx, Stats);
+	retBalance.rBalance += retBalance.rDeviceBonus;
+	
 	//	Mass
 
-	int iMass = CItem(m_pItemType, 1).GetMassKg();
-	if (iMass > 0)
+	retBalance.rMass = CalcBalanceMass(ItemCtx, Stats);
+	retBalance.rBalance += retBalance.rMass;
+
+	//	Cost
+
+	Metric rCost = (Metric)CEconomyType::ExchangeToCredits(m_pItemType->GetCurrencyAndValue(ItemCtx, true));
+	Metric rCostDelta = 100.0 * (rCost - StdStats.iCost) / (Metric)StdStats.iCost;
+	retBalance.rCost = BALANCE_COST_RATIO * rCostDelta;
+	retBalance.rBalance += retBalance.rCost;
+
+	return (int)retBalance.rBalance;
+	}
+
+Metric CArmorClass::CalcBalanceDamageAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+
+//	CalcBalanceDamageAdj
+//
+//	Calculates the balande contribution of damage adjustment. 0 = same as 
+//	standard for level.
+
+	{
+	DamageTypes iDamage;
+
+	//	Loop over all damage types and accumulate balance adjustments.
+
+	Metric rTotalBalance = 0.0;
+	for (iDamage = damageLaser; iDamage < damageCount; iDamage = (DamageTypes)(iDamage + 1))
 		{
-		int iDiff = (iMass - STD_STATS[iLevel - 1].iMass);
+		int iAdj;
+		int iDefaultAdj;
+		Stats.DamageAdj.GetAdjAndDefault(iDamage, &iAdj, &iDefaultAdj);
 
-		//	Armor twice as massive can have double the hit points
+		//	Compare the adjustment and the standard adjustment. [We treat 0
+		//	as 1 to avoid infinity.]
 
-		if (iDiff > 0)
-			iBalance -= iDiff * 20 / STD_STATS[iLevel - 1].iMass;
+		Metric rBalance = (100.0 * mathLog2((Metric)Max(1, iDefaultAdj) / (Metric)Max(1, iAdj)));
 
-		//	Armor half as massive can have 3/4 hit points
+		//	If we reflect this damage, adjust balance
 
-		else if (iMass > 0)
-			iBalance += (STD_STATS[iLevel - 1].iMass * 10 / iMass) - 10;
-		else
-			iBalance += 100;
+		if (m_Reflective.InSet(iDamage))
+			rBalance += REFLECTION_BALANCE_BONUS;
+
+		//	Adjust the based on how common this damage type is at the given 
+		//	armor level.
+
+		rBalance *= CDamageAdjDesc::GetDamageTypeFraction(Stats.iLevel, iDamage);
+
+		//	Accumulate
+
+		rTotalBalance += rBalance;
 		}
 
-	//	Repair tech
+	//	Done
 
-	int iRepair = iLevel - m_iRepairTech;
-	if (iRepair < 0)
-		iBalance += 2 * iRepair;
-	else if (iRepair > 0)
-		iBalance += iRepair;
+	return rTotalBalance;
+	}
 
-	//	Repair cost
+Metric CArmorClass::CalcBalanceDamageEffectAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const
 
-	int iStdRepairCost = STD_STATS[m_iRepairTech - 1].iRepairCost;
-	int iDiff = iStdRepairCost - (int)CEconomyType::Default()->Exchange(m_Stats.RepairCost);
-	if (iDiff < 0)
-		iBalance += Max(-8, 2 * iDiff / iStdRepairCost);
-	else if (iDiff > 0)
-		iBalance += 5 * iDiff / iStdRepairCost;
+//	CalcBalanceDamageEffectAdj
+//
+//	Return balance based on immunity/vulnerability to special damage effects.
 
-	//	Power consumption
+	{
+	Metric rBalance = 0.0;
+
+	//	Immune/vulnerable to radiation?
+
+	if (Stats.fRadiationImmune)
+		{
+		if (Stats.iLevel < RADIATION_IMMUNE_LEVEL)
+			rBalance += RADIATION_IMMUNE_BALANCE_BONUS;
+		}
+	else if (Stats.iLevel >= RADIATION_IMMUNE_LEVEL)
+		rBalance += RADIATION_VULNERABLE_BALANCE_BONUS;
+
+	//	Immune/vulnerable to blinding?
+
+	if (Stats.iBlindingDamageAdj < 50)
+		{
+		if (Stats.iLevel < BLIND_IMMUNE_LEVEL)
+			rBalance += BLIND_IMMUNE_BALANCE_BONUS;
+		}
+	else if (Stats.iLevel >= BLIND_IMMUNE_LEVEL)
+		rBalance += BLIND_VULNERABLE_BALANCE_BONUS;
+
+	//	Immune/vulnerable to EMP?
+
+	if (Stats.iEMPDamageAdj < 50)
+		{
+		if (Stats.iLevel < EMP_IMMUNE_LEVEL)
+			rBalance += EMP_IMMUNE_BALANCE_BONUS;
+		}
+	else if (Stats.iLevel >= EMP_IMMUNE_LEVEL)
+		rBalance += EMP_VULNERABLE_BALANCE_BONUS;
+
+	//	Immune/vulnerable to device damage?
+
+	if (Stats.iDeviceDamageAdj < 50)
+		{
+		if (Stats.iLevel < DEVICE_DAMAGE_IMMUNE_LEVEL)
+			rBalance += DEVICE_DAMAGE_IMMUNE_BALANCE_BONUS;
+		}
+	else if (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL)
+		rBalance += DEVICE_DAMAGE_VULNERABLE_BALANCE_BONUS;
+
+	//	Immune/vulnerable to shatter?
+
+	if (m_fShatterImmune)
+		rBalance += SHATTER_IMMUNE_BALANCE_BONUS;
+
+	//	Immune/vulnerable to disintegration?
+
+	if (m_fDisintegrationImmune)
+		rBalance += DISINTEGRATION_IMMUNE_BALANCE_BONUS;
+
+	return rBalance;
+	}
+
+Metric CArmorClass::CalcBalanceMass (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+
+//	CalcBalanceMass
+//
+//	Calculate balance from armor mass
+
+	{
+	Metric rMass = CItem(m_pItemType, 1).GetMassKg();
+	if (rMass == 0.0)
+		return 0.0;
+
+	//	Compare against standard mass
+
+	Metric rStdMass = GetStdMass(Stats.iLevel);
+
+	//	Greater mass allows for more HP.
+
+	Metric rBalance = MASS_BALANCE_ADJ * mathLog2(rMass / rStdMass);
+
+	//	If over twice std mass, then penalty because it won't fit on the Sapphire.
+
+	if (rMass > 2.0 * rStdMass)
+		rBalance += MASS_BALANCE_6_TON_BONUS;
+
+	//	If over four times std mass, then armor won't fit on Wolfen.
+
+	if (rMass > 4.0 * rStdMass)
+		rBalance += MASS_BALANCE_12_TON_BONUS;
+
+	//	Done
+
+	return rBalance;
+	}
+
+Metric CArmorClass::CalcBalancePower (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+
+//	CalcBalancePower
+//
+//	Calculate balance from consumption/production of power.
+
+	{
+	Metric rTotalBalance = 0.0;
 
 	if (m_iPowerUse)
 		{
-		int iPercent = m_iPowerUse * 100 / CShieldClass::GetStdPower(iLevel);
-		iBalance -= iPercent;
+		//	Compare power consumption to what an average shield requires.
+
+		rTotalBalance += POWER_USE_BALANCE_ADJ * (Metric)m_iPowerUse / CShieldClass::GetStdPower(Stats.iLevel);
 		}
 
-	//	Meteorsteel
+	if (m_fPhotoRecharge)
+		{
+		rTotalBalance += PHOTO_RECHARGE_BALANCE_ADJ * (Metric)150 / CShieldClass::GetStdPower(Stats.iLevel);
+		}
+
+	return rTotalBalance;
+	}
+
+Metric CArmorClass::CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+
+//	CalcBalanceRegen
+//
+//	Calculate balance from regeneration.
+
+	{
+	Metric rTotalBalance = 0.0;
+
+	//	Compute the number of HP regenerated in 180 ticks
+
+	Metric rRegenHP = Stats.Regen.GetHPPer180(TICKS_PER_UPDATE);
+	if (rRegenHP > 0.0)
+		{
+		//	Adjust regen based on type. For example, photo-repair is not quite as
+		//	good as unconditional repair.
+
+		if (m_fPhotoRepair)
+			rRegenHP *= PHOTO_REPAIR_ADJ;
+
+		//	Compare this value against the average weapon damage.
+
+		Metric rWeaponHP = CWeaponClass::GetStdDamage180(Stats.iLevel);
+
+		//	If regen is less than weapon damage, then this is equivalent to
+		//	increasing armor HP for some factor.
+
+		if (rRegenHP < rWeaponHP)
+			{
+			Metric rBalance = (100.0 * mathLog2(rWeaponHP / (rWeaponHP - rRegenHP)));
+			rTotalBalance += Min(rBalance, MAX_REGEN_BALANCE_BONUS);
+			}
+
+		//	Otherwise, we get a large bonus because the average weapon can't 
+		//	hurt us.
+
+		else
+			rTotalBalance += MAX_REGEN_BALANCE_BONUS;
+		}
+
+	//	Decay is a penalty to balance.
+
+	Metric rDecayHP = Stats.Decay.GetHPPer180(TICKS_PER_UPDATE);
+	if (rDecayHP > 0.0)
+		{
+		//	Compare this value against the average weapon damage.
+
+		Metric rWeaponHP = CWeaponClass::GetStdDamage180(Stats.iLevel);
+		Metric rBalance = DECAY_BALANCE_ADJ * (100.0 * mathLog2(rWeaponHP / (rWeaponHP + rDecayHP)));
+		rTotalBalance += rBalance;
+		}
+
+	//	Distribution is a bonus
+
+	Metric rDistHP = Stats.Distribute.GetHPPer180(TICKS_PER_UPDATE);
+	if (rDistHP > 0.0)
+		{
+		//	Compare this value against the average weapon damage.
+
+		Metric rWeaponHP = CWeaponClass::GetStdDamage180(Stats.iLevel);
+
+		//	If regen is less than weapon damage, then this is equivalent to
+		//	increasing armor HP for some factor.
+
+		if (rDistHP < rWeaponHP)
+			{
+			Metric rBalance = (100.0 * mathLog2(rWeaponHP / (rWeaponHP - rDistHP)));
+			rTotalBalance += DIST_BALANCE_ADJ * Min(rBalance, MAX_REGEN_BALANCE_BONUS);
+			}
+
+		//	Otherwise, we get a large bonus because the average weapon can't 
+		//	hurt us.
+
+		else
+			rTotalBalance += DIST_BALANCE_ADJ * MAX_REGEN_BALANCE_BONUS;
+		}
+
+	return rTotalBalance;
+	}
+
+Metric CArmorClass::CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+
+//	CalcBalanceRepair
+//
+//	Calculates the balance for repairing bonuses
+
+	{
+	Metric rTotalBalance = 0.0;
+
+	//	Repair tech (NOTE we use base level as comparison because repair tech
+	//	does not currently scale).
+
+	int iRepair = m_pItemType->GetLevel(CItemCtx()) - m_iRepairTech;
+	if (iRepair < 0)
+		rTotalBalance += HIGHER_REPAIR_LEVEL_BALANCE_BONUS * -iRepair;
+	else if (iRepair > 0)
+		rTotalBalance += LOWER_REPAIR_LEVEL_BALANCE_BONUS * iRepair;
+
+	//	Adjust for repair cost
+
+	Metric rStdCost = STD_STATS[m_iRepairTech - 1].iRepairCost;
+	Metric rDiff = rStdCost - (Metric)CEconomyType::Default()->Exchange(m_Stats.RepairCost);
+	if (rDiff < 0.0)
+		rTotalBalance += Max(-40.0, 10.0 * rDiff / rStdCost);
+	else if (rDiff > 0.0)
+		rTotalBalance += 25.0 * rDiff / rStdCost;
+
+	return rTotalBalance;
+	}
+
+Metric CArmorClass::CalcBalanceSpecial (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+
+//	CalcBalanceSpecial
+//
+//	Calc balance of special features.
+
+	{
+	Metric rTotalBalance = 0.0;
+
+	//	Device bonus
+
+	if (m_iDeviceBonus)
+		{
+		rTotalBalance += m_iDeviceBonus;
+		}
+
+	//	Shield interference
 
 	if (m_fShieldInterference)
-		iBalance -= 12;
+		rTotalBalance += SHIELD_INTERFERENCE_BALANCE_BONUS;
 
-	//	Decay
-
-	if (!m_Stats.Decay.IsEmpty())
-		{
-		iBalance -= 4 * m_Stats.Decay.GetHPPerEra();
-		}
-
-	return 5 * iBalance;
+	return rTotalBalance;
 	}
 
 void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
@@ -1145,7 +1375,7 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 	if (strEquals(sField, FIELD_HP))
 		*retsValue = strFromInt(m_Stats.iHitPoints);
 	else if (strEquals(sField, FIELD_BALANCE))
-		*retsValue = strFromInt(CalcBalance());
+		*retsValue = strFromInt(CalcBalance(CItemCtx(), SBalance()));
 	else if (strEquals(sField, FIELD_EFFECTIVE_HP))
 		{
 		int iHP;
@@ -1524,7 +1754,7 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return NULL;
 	}
 
-int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete)
+int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 
 //	GetMaxHP
 //

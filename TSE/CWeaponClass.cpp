@@ -2952,6 +2952,16 @@ int CWeaponClass::GetStdDamage (int iLevel)
     return GetStdStats(iLevel).iDamage;
 	}
 
+Metric CWeaponClass::GetStdDamage180 (int iLevel)
+
+//	GetStdDamage180
+//
+//	Returns the standard weapon damage at this level.
+
+	{
+	return GetStdStats(iLevel).iDamage * (180.0 / STD_FIRE_DELAY_TICKS);
+	}
+
 const CWeaponClass::SStdStats &CWeaponClass::GetStdStats (int iLevel)
 
 //  GetStdStats
