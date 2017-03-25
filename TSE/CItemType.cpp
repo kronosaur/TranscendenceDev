@@ -100,6 +100,7 @@
 #define FIELD_USE_KEY							CONSTLIT("useKey")
 
 #define PROPERTY_CATEGORY						CONSTLIT("category")
+#define PROPERTY_COMPONENT_PRICE				CONSTLIT("componentPrice")
 #define PROPERTY_COMPONENTS						CONSTLIT("components")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
@@ -445,6 +446,18 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 
 	if (strEquals(sProperty, PROPERTY_CATEGORY))
 		return CC.CreateString(GetItemCategoryID(GetCategory()));
+
+	else if (strEquals(sProperty, PROPERTY_COMPONENT_PRICE))
+		{
+		int iTotalPrice = 0;
+		for (i = 0; i < GetComponents().GetCount(); i++)
+			{
+			const CItem &Component = GetComponents().GetItem(i);
+			iTotalPrice += Component.GetTradePrice(NULL, true) * Component.GetCount();
+			}
+
+		return (iTotalPrice > 0 ? CC.CreateInteger(iTotalPrice) : CC.CreateNil());
+		}
 
 	else if (strEquals(sProperty, PROPERTY_COMPONENTS))
 		{
