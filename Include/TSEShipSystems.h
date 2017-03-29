@@ -598,6 +598,7 @@ class CDeviceClass
 							   CSpaceObject *pTarget,
 							   bool *retbSourceDestroyed,
 							   bool *retbConsumedItems = NULL) { return false; }
+		virtual CShieldClass *AsShieldClass (void) { return NULL; }
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
 		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) { return -1; }
 		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }

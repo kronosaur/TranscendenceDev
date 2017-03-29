@@ -46,48 +46,53 @@
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
-struct SStdStats
+#define MAX_REFLECTION_CHANCE					95
+const Metric STD_FIRE_DELAY_TICKS =				8.0;
+const Metric STD_DEFENSE_RATIO =				1.25;
+const int STD_DEPLETION_DELAY =					360;
+
+const Metric REFLECTION_BALANCE_BONUS =			50.0;
+const Metric BALANCE_COST_RATIO =				-0.5;	//  Each percent of cost above standard is a 0.5%
+const Metric BALANCE_RECOVERY_ADJ =				20.0;	//	Balance points if we recover twice as fast as normal.
+const Metric BALANCE_POWER_RATIO =				-0.5;	//  Each percent of power consumption above standard
+const Metric BALANCE_NO_SLOT =					20.0;	//  Bonus to balance if no slot is used.
+const Metric BALANCE_SLOT_FACTOR =				-40.0;	//  Penalty to balance for every extra slot used 
+const Metric BALANCE_LEAKAGE_FACTOR =			-25.0;	//	Penalty from allowing some damage through
+const Metric BALANCE_LEAKAGE_POWER =			0.5;	//	Curve for leakage
+const Metric BALANCE_MAX_DAMAGE_ADJ =			400.0;	//	Max change in balance due to a single damage type
+
+static CShieldClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 	{
-	int iHP;									//	HP for std shield at this level
-	int iRegen;									//	HP regen each 180 ticks
-	int iCost;									//	Cost for std shield
-	int iPower;									//	Power (in tenths of MWs)
-	};
+		//	HP		Regen	Cost			Power
+		{	35,		12,		500.0,			10, },
+		{	45,		16,		1000.0,			20, },
+		{	60,		20,		2000.0,			50, },
+		{	80,		28,		4000.0,			100, },
+		{	100,	36,		8000.0,			200, },
 
-#define MAX_REFLECTION_CHANCE		95
+		{	135,	45,		16000.0,		300, },
+		{	175,	60,		32000.0,		500, },
+		{	225,	80,		65000.0,		1000, },
+		{	300,	100,	130000.0,		2000, },
+		{	380,	130,	250000.0,		3000, },
 
-static SStdStats STD_STATS[MAX_ITEM_LEVEL] =
-	{
-		//	HP		Regen	Cost	Power
-		{	35,		12,		500,	10, },
-		{	45,		16,		1000,	20, },
-		{	60,		20,		2000,	50, },
-		{	80,		28,		4000,	100, },
-		{	100,	36,		8000,	200, },
+		{	500,	170,	500000.0,		4000, },
+		{	650,	220,	1000000.0,		6000, },
+		{	850,	290,	2000000.0,		8000, },
+		{	1100,	370,	4000000.0,		10000, },
+		{	1400,	490,	8000000.0,		12000, },
 
-		{	135,	45,		16000,	300, },
-		{	175,	60,		32000,	500, },
-		{	225,	80,		65000,	1000, },
-		{	300,	100,	130000,	2000, },
-		{	380,	130,	250000,	3000, },
+		{	1850,	630,	16000000.0,		15000, },
+		{	2400,	820,	32000000.0,		20000, },
+		{	3100,	1100,	65000000.0,		25000, },
+		{	4000,	1400,	130000000.0,	30000, },
+		{	5250,	1800,	260000000.0,	35000, },
 
-		{	500,	170,	500000,	4000, },
-		{	650,	220,	-1,		6000, },
-		{	850,	290,	-2,		8000, },
-		{	1100,	370,	-4,		10000, },
-		{	1400,	490,	-8,		12000, },
-
-		{	1850,	630,	-16,	15000, },
-		{	2400,	820,	-32,	20000, },
-		{	3100,	1100,	-65,	25000, },
-		{	4000,	1400,	-130,	30000, },
-		{	5250,	1800,	-260,	35000, },
-
-		{	6850,	2350,	-525,	40000, },
-		{	9000,	3050,	-1000,	50000, },
-		{	12000,	4000,	-2100,	60000, },
-		{	15000,	5150,	-4200,	70000, },
-		{	20000,	6700,	-8400,	80000, },
+		{	6850,	2350,	525000000.0,	40000, },
+		{	9000,	3050,	1000000000.0,	50000, },
+		{	12000,	4000,	2100000000.0,	60000, },
+		{	15000,	5150,	4200000000.0,	70000, },
+		{	20000,	6700,	8400000000.0,	80000, },
 	};
 
 static char *CACHED_EVENTS[CShieldClass::evtCount] =
@@ -97,7 +102,7 @@ static char *CACHED_EVENTS[CShieldClass::evtCount] =
 		"OnShieldDown",
 	};
 
-inline SStdStats *GetStdStats (int iLevel)
+inline CShieldClass::SStdStats *GetStdStats (int iLevel)
 	{
 	if (iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL)
 		return &STD_STATS[iLevel - 1];
@@ -377,80 +382,170 @@ bool CShieldClass::Activate (CInstalledDevice *pDevice,
 	return false;
 	}
 
-int CShieldClass::CalcBalance (void)
+int CShieldClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 //	CalcBalance
 //
-//	Computes the relative balance of this shield relative to it level
+//	Computes the relative balance of this shield relative to its level
 
 	{
-	int i;
-	int iBalance = 0;
+	//	Initialize
 
-	SStdStats *pStd = GetStdStats(GetLevel());
+	retBalance.iLevel = GetLevel();
+
+	//	Get standard stats at level
+
+	SStdStats *pStd = GetStdStats(retBalance.iLevel);
 	if (pStd == NULL)
 		return 0;
 
-	//	Calc HPs. +1 for each 1% above standard HP
-	//	If hp is below the standard, then invert the ratio
-	//	(i.e., 50% below is 1/0.5 or half strength, which
-	//	counts as -100).
+	//  Get HP/regen stats for the shields
 
 	int iMaxHP;
-	CalcMinMaxHP(CItemCtx(), m_iMaxCharges, 0, 0, NULL, &iMaxHP);
+	CalcMinMaxHP(ItemCtx, m_iMaxCharges, 0, 0, NULL, &iMaxHP);
+	Metric rRegen180 = m_Regen.GetHPPer180();
 
-	int iDiff = (iMaxHP - pStd->iHP);
-	if (iDiff > 0)
-		iBalance += iDiff * 100 / pStd->iHP;
-	else if (iMaxHP > 0)
-		iBalance -= (pStd->iHP * 100 / iMaxHP) - 100;
+	//	Compute our defense ratio
+
+	CalcBalanceDefense(ItemCtx, retBalance.iLevel, iMaxHP, rRegen180, &retBalance.rDefenseRatio);
+
+	//	Compute balance contribution from just HP (with standard regen)
+
+	retBalance.rHPBalance = CalcBalanceDefense(ItemCtx, retBalance.iLevel, iMaxHP, pStd->iRegen);
+	retBalance.rBalance = retBalance.rHPBalance;
+
+	//	Compute balance from regen (with standard HP)
+
+	retBalance.rRegen = CalcBalanceDefense(ItemCtx, retBalance.iLevel, pStd->iHP, rRegen180);
+	retBalance.rBalance += retBalance.rRegen;
+
+	//	Damage adjustment
+
+	retBalance.rDamageAdj = CalcBalanceDamageAdj(ItemCtx);
+	retBalance.rBalance += retBalance.rDamageAdj;
+
+	//	Depletion recovery adj
+
+	retBalance.rRecoveryAdj = BALANCE_RECOVERY_ADJ * mathLog2((Metric)STD_DEPLETION_DELAY / (Metric)Max(1, m_iDepletionTicks));
+	retBalance.rBalance += retBalance.rRecoveryAdj;
+
+	//	Power use
+
+	retBalance.rPowerUse = CalcBalancePowerUse(ItemCtx, *pStd);
+	retBalance.rBalance += retBalance.rPowerUse;
+
+	//  Slots
+
+	if (GetSlotsRequired() == 0)
+		retBalance.rSlots = BALANCE_NO_SLOT;
+	else if (GetSlotsRequired() > 1)
+		retBalance.rSlots = BALANCE_SLOT_FACTOR * (GetSlotsRequired() - 1);
 	else
-		iBalance -= 200;
+		retBalance.rSlots = 0.0;
 
-	//	Compute the regen HP for each 180 ticks
-	//	+1 for each 1% above standard rate
+	retBalance.rBalance += retBalance.rSlots;
 
-	int iRegen = (int)m_Regen.GetHPPer180();
-	iDiff = (iRegen - pStd->iRegen);
-	if (iDiff > 0)
-		iBalance += iDiff * 100 / pStd->iHP;
-	else if (iRegen > 0)
-		iBalance -= (pStd->iRegen * 100 / iRegen) - 100;
-	else
-		iBalance -= 200;
+	//	Cost
 
-	//	Account for damage adjustments
-
-	int iBalanceAdj = 0;
-	for (i = 0; i < damageCount; i++)
-		{
-		int iStdAdj;
-		int iDamageAdj;
-		m_DamageAdj.GetAdjAndDefault((DamageTypes)i, &iDamageAdj, &iStdAdj);
-
-		if (iStdAdj != iDamageAdj)
-			{
-			if (iDamageAdj > 0)
-				{
-				int iBonus = (int)((100.0 * (iStdAdj - iDamageAdj) / iDamageAdj) + 0.5);
-
-				if (iBonus > 0)
-					iBalanceAdj += iBonus / 4;
-				else
-					iBalanceAdj -= ((int)((100.0 * iDamageAdj / iStdAdj) + 0.5) - 100) / 4;
-				}
-			else if (iStdAdj > 0)
-				{
-				iBalanceAdj += iStdAdj;
-				}
-			}
-		}
-
-	iBalance += Max(Min(iBalanceAdj, 100), -100);
+	Metric rCost = (Metric)CEconomyType::ExchangeToCredits(GetItemType()->GetCurrencyAndValue(ItemCtx, true));
+	Metric rCostDelta = 100.0 * (rCost - pStd->rCost) / (Metric)pStd->rCost;
+	retBalance.rCost = BALANCE_COST_RATIO * rCostDelta;
+	retBalance.rBalance += retBalance.rCost;
 
 	//	Done
 
-	return iBalance;
+	return (int)retBalance.rBalance;
+	}
+
+Metric CShieldClass::CalcBalanceDamageAdj (CItemCtx &ItemCtx) const
+
+//	CalcBalanceDamageAdj
+//
+//	Calculate balance contribution from damage adjustment.
+
+	{
+	DamageTypes iDamage;
+
+	//	Loop over all damage types and accumulate balance adjustments.
+
+	Metric rTotalBalance = 0.0;
+	for (iDamage = damageLaser; iDamage < damageCount; iDamage = (DamageTypes)(iDamage + 1))
+		{
+		int iAdj;
+		int iDefaultAdj;
+		m_DamageAdj.GetAdjAndDefault(iDamage, &iAdj, &iDefaultAdj);
+
+		//	Compare the adjustment and the standard adjustment. [We treat 0
+		//	as 1 to avoid infinity.]
+
+		Metric rBalance = (100.0 * mathLog2((Metric)Max(1, iDefaultAdj) / (Metric)Max(1, iAdj)));
+		if (rBalance > BALANCE_MAX_DAMAGE_ADJ)
+			rBalance = BALANCE_MAX_DAMAGE_ADJ;
+		else if (rBalance < -BALANCE_MAX_DAMAGE_ADJ)
+			rBalance = -BALANCE_MAX_DAMAGE_ADJ;
+
+		//	If we reflect this damage, adjust balance
+
+		if (m_Reflective.InSet(iDamage))
+			rBalance += REFLECTION_BALANCE_BONUS;
+
+		//	If we allow some damage through, then we take a penalty
+
+		if (m_iAbsorbAdj[iDamage] < 100)
+			{
+			Metric rLeakage = (100.0 - m_iAbsorbAdj[iDamage]);
+			rBalance += BALANCE_LEAKAGE_FACTOR * pow(rLeakage, BALANCE_LEAKAGE_POWER);
+			}
+
+		//	Adjust the based on how common this damage type is at the given 
+		//	armor level.
+
+		rBalance *= CDamageAdjDesc::GetDamageTypeFraction(GetLevel(), iDamage);
+
+		//	Accumulate
+
+		rTotalBalance += rBalance;
+		}
+
+	//	Done
+
+	return rTotalBalance;
+	}
+
+Metric CShieldClass::CalcBalanceDefense (CItemCtx &ItemCtx, int iLevel, Metric rHP, Metric rRegen180, Metric *retrRatio) const
+
+//	CalcBalanceDefense
+//
+//	Calc defense balance based on level, HP, and regen.
+
+	{
+	Metric rCycles = 6.0;
+	Metric rEffectiveHP = rHP + (rCycles * rRegen180);
+
+	//	Our defense ratio is the ratio of effective HP to 180-tick std weapon
+	//	damage at our level. The standard value for this ratio is 1.25.
+
+	Metric rDefenseRatio = rEffectiveHP / CWeaponClass::GetStdDamage180(iLevel);
+
+	//	Result
+
+	if (retrRatio)
+		*retrRatio = rDefenseRatio;
+
+	return 100.0 * mathLog2(rDefenseRatio / STD_DEFENSE_RATIO);
+	}
+
+Metric CShieldClass::CalcBalancePowerUse (CItemCtx &ItemCtx, const SStdStats &Stats) const
+
+//	CalcBalancePowerUse
+//
+//	Balance contribution from power use.
+
+	{
+	int iPower = m_iPowerUse + (m_iExtraPowerPerCharge * m_iMaxCharges);
+	Metric rPowerDelta = 100.0 * (iPower - Stats.iPower) / (Metric)Stats.iPower;
+
+	return BALANCE_POWER_RATIO * rPowerDelta;
 	}
 
 void CShieldClass::CalcMinMaxHP (CItemCtx &Ctx, int iCharges, int iArmorSegs, int iTotalHP, int *retiMin, int *retiMax) const
@@ -578,7 +673,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		if (pDesc->FindAttributeInteger(DEPLETION_DELAY_ATTRIB, &iDepletion))
 			pShield->m_iDepletionTicks = Max(1, iDepletion);
 		else
-			pShield->m_iDepletionTicks = 360;
+			pShield->m_iDepletionTicks = STD_DEPLETION_DELAY;
 		}
 	else
 		{
@@ -591,7 +686,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		if (pDesc->FindAttributeInteger(DEPLETION_DELAY_ATTRIB, &iDepletion))
 			pShield->m_iDepletionTicks = Max(1, iDepletion * iRegenTime);
 		else
-			pShield->m_iDepletionTicks = 360;
+			pShield->m_iDepletionTicks = STD_DEPLETION_DELAY;
 		}
 
 	//	Load damage adjustment
@@ -728,7 +823,7 @@ bool CShieldClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = sResult;
 		}
 	else if (strEquals(sField, FIELD_BALANCE))
-		*retsValue = strFromInt(CalcBalance());
+		*retsValue = strFromInt(CalcBalance(CItemCtx(), SBalance()));
 	else if (strEquals(sField, FIELD_WEAPON_SUPPRESS))
 		{
 		if (m_WeaponSuppress.IsEmpty())
@@ -1156,7 +1251,7 @@ void CShieldClass::GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	*retiMaxStatus = GetMaxHP(Ctx);
 	}
 
-int CShieldClass::GetStdCost (int iLevel)
+Metric CShieldClass::GetStdCost (int iLevel)
 
 //	GetStdCost
 //
@@ -1164,9 +1259,9 @@ int CShieldClass::GetStdCost (int iLevel)
 
 	{
 	if (iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL)
-		return STD_STATS[iLevel - 1].iCost;
+		return STD_STATS[iLevel - 1].rCost;
 	else
-		return -1;
+		return 0.0;
 	}
 
 int CShieldClass::GetStdEffectiveHP (int iLevel)

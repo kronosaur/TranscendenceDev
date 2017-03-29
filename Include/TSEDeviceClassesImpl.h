@@ -326,7 +326,47 @@ class CShieldClass : public CDeviceClass
 			evtCount					= 3,
 			};
 
+		struct SBalance
+			{
+			SBalance (void) :
+					rBalance(0.0),
+					iLevel(0),
+					rDefenseRatio(0.0),
+					rHPBalance(0.0),
+					rDamageAdj(0.0),
+					rRecoveryAdj(0.0),
+					rPowerUse(0.0),
+                    rSlots(0.0),
+					rSpecial(0.0),
+					rCost(0.0)
+				{ }
+
+			Metric rBalance;				//	Total balance
+			int iLevel;						//	Level for which we balanced
+			Metric rDefenseRatio;			//	Ratio of effective HP to std weapons damage.
+
+			Metric rHPBalance;				//	Balance contribution from raw HP
+			Metric rRegen;					//	Balance contribution from regen
+			Metric rDamageAdj;				//	Balance contribution from damage adj (including reflection)
+			Metric rRecoveryAdj;			//	Balance contribution from fast depletion recovery
+			Metric rPowerUse;				//	Balance from power use
+			Metric rSlots;					//	Balance from slot count
+			Metric rSpecial;				//	Balance from special abilities.
+
+			Metric rCost;					//	Balance from cost
+			};
+
+		struct SStdStats
+			{
+			int iHP;									//	HP for std shield at this level
+			int iRegen;									//	HP regen each 180 ticks
+			Metric rCost;								//	Cost for std shield (credits)
+			int iPower;									//	Power (in tenths of MWs)
+			};
+
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpShield);
+
+		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
 		inline bool FindEventHandlerShieldClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
 
 		//	CDeviceClass virtuals
@@ -338,6 +378,7 @@ class CShieldClass : public CDeviceClass
 							   CSpaceObject *pTarget,
 							   bool *retbSourceDestroyed,
 							   bool *retbConsumedItems = NULL) override;
+		virtual CShieldClass *AsShieldClass (void) override { return this; }
 		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
@@ -356,7 +397,7 @@ class CShieldClass : public CDeviceClass
 		virtual bool SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
-		static int GetStdCost (int iLevel);
+		static Metric GetStdCost (int iLevel);
 		static int GetStdEffectiveHP (int iLevel);
 		static int GetStdHP (int iLevel);
 		static int GetStdPower (int iLevel);
@@ -372,7 +413,9 @@ class CShieldClass : public CDeviceClass
 	private:
 		CShieldClass (void);
 
-		int CalcBalance (void);
+		Metric CalcBalanceDamageAdj (CItemCtx &ItemCtx) const;
+		Metric CalcBalanceDefense (CItemCtx &ItemCtx, int iLevel, Metric rHP, Metric rRegen180, Metric *retrRatio = NULL) const;
+		Metric CalcBalancePowerUse (CItemCtx &ItemCtx, const SStdStats &Stats) const;
 		void CalcMinMaxHP (CItemCtx &Ctx, int iCharges, int iArmorSegs, int iTotalHP, int *retiMin, int *retiMax) const;
 		bool IsDepleted (CInstalledDevice *pDevice);
 		int FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource, int iMaxHP) const;

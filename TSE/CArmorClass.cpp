@@ -116,6 +116,7 @@ const Metric MASS_BALANCE_6_TON_BONUS =			-25.0;
 const Metric MASS_BALANCE_12_TON_BONUS =		-25.0;
 
 const Metric BALANCE_COST_RATIO =				-0.5;	//  Each percent of cost above standard is a 0.5%
+const Metric BALANCE_MAX_DAMAGE_ADJ =			400.0;	//	Max change in balance due to a single damage type
 
 static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 	{
@@ -793,6 +794,10 @@ Metric CArmorClass::CalcBalanceDamageAdj (CItemCtx &ItemCtx, const SScalableStat
 		//	as 1 to avoid infinity.]
 
 		Metric rBalance = (100.0 * mathLog2((Metric)Max(1, iDefaultAdj) / (Metric)Max(1, iAdj)));
+		if (rBalance > BALANCE_MAX_DAMAGE_ADJ)
+			rBalance = BALANCE_MAX_DAMAGE_ADJ;
+		else if (rBalance < -BALANCE_MAX_DAMAGE_ADJ)
+			rBalance = -BALANCE_MAX_DAMAGE_ADJ;
 
 		//	If we reflect this damage, adjust balance
 

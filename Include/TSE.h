@@ -130,6 +130,7 @@ class CParticleEffect;
 class CPower;
 class CRandomEntryResults;
 class CResourceDb;
+class CShieldClass;
 class CShip;
 class CShipClass;
 class CShipTable;
