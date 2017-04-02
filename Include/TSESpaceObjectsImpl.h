@@ -1121,10 +1121,11 @@ class CShip : public CSpaceObject
         virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pClass->GetHeroImage(); }
 		virtual const CObjectImageArray &GetImage (void) const override { return m_pClass->GetImage(); }
 		virtual CString GetInstallationPhrase (const CItem &Item) const override;
+		virtual Metric GetInvMass (void) const override;
 		virtual int GetLastFireTime (void) const override { return m_iLastFireTime; }
 		virtual int GetLastHitTime (void) const override { return m_iLastHitTime; }
 		virtual int GetLevel (void) const override { return m_pClass->GetLevel(); }
-		virtual Metric GetMass (void) override;
+		virtual Metric GetMass (void) const override;
 		virtual int GetMaxPower (void) const override;
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
@@ -1265,7 +1266,7 @@ class CShip : public CSpaceObject
 		int FindRandomDevice (bool bEnabledOnly = false);
 		void FinishCreation (SShipGeneratorCtx *pCtx = NULL, SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetCargoMass (void);
-		Metric GetItemMass (void);
+		Metric GetItemMass (void) const;
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void ReactorOverload (void);
         ALERROR ReportCreateError (const CString &sError) const;
@@ -1313,8 +1314,8 @@ class CShip : public CSpaceObject
 		int m_iLastHitTime;						//	Tick when we last got hit by something
 
 		Metric m_rFuelLeft;						//	Fuel left
-		Metric m_rItemMass;						//	Total mass of all items (including installed)
-		Metric m_rCargoMass;					//	Mass of cargo items (not including installed)
+		mutable Metric m_rItemMass;				//	Total mass of all items (including installed)
+		mutable Metric m_rCargoMass;			//	Mass of cargo items (not including installed)
 		int m_iPowerDrain;						//	(temp) power consumed (1/10 megawatt)
 		int m_iStealth;							//	Computed stealth
 
@@ -1341,7 +1342,7 @@ class CShip : public CSpaceObject
 		DWORD m_fIdentified:1;					//	TRUE if player can see ship class, etc.
 		DWORD m_fManualSuspended:1;				//	TRUE if ship is suspended
 		DWORD m_fGalacticMap:1;					//	TRUE if ship has galactic map installed
-		DWORD m_fRecalcItemMass:1;				//	TRUE if we need to recalculate m_rImageMass
+		mutable DWORD m_fRecalcItemMass:1;		//	TRUE if we need to recalculate m_rImageMass
 
 		DWORD m_fDockingDisabled:1;				//	TRUE if docking is disabled
 		DWORD m_fControllerDisabled:1;			//	TRUE if we want to disable controller
@@ -1471,9 +1472,10 @@ class CStation : public CSpaceObject
 		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pType->GetHeroImage(CCompositeImageSelector(), CCompositeImageModifiers()); }
 		virtual const CObjectImageArray &GetImage (void) const override { return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
         virtual const CCompositeImageSelector &GetImageSelector (void) const override { return m_ImageSelector; }
+		virtual Metric GetInvMass (void) const override;
 		virtual int GetLevel (void) const override { return m_pType->GetLevel(); }
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
-		virtual Metric GetMass (void) override { return m_rMass; }
+		virtual Metric GetMass (void) const override { return m_rMass; }
 		virtual int GetMaxLightDistance (void) override { return m_pType->GetMaxLightDistance(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CString GetName (DWORD *retdwFlags = NULL) override;

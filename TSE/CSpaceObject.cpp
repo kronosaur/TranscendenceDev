@@ -264,7 +264,8 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fHasGetDockScreenEvent(false),
 		m_fHasOnAttackedByPlayerEvent(false),
 		m_fHasOnOrderChangedEvent(false),
-		m_fManualAnchor(false)
+		m_fManualAnchor(false),
+		m_fCollisionTestNeeded(false)
 
 //	CSpaceObject constructor
 
@@ -699,20 +700,20 @@ CSpaceObject *CSpaceObject::CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceO
 		return pAttacker;
 	}
 
-Metric CSpaceObject::CalculateItemMass (Metric *retrCargoMass)
+Metric CSpaceObject::CalculateItemMass (Metric *retrCargoMass) const
 
 //	CalculateCargoMass
 //
 //	Returns the total mass of the items
 
 	{
-	CItemListManipulator Items(GetItemList());
+	int i;
 	Metric rTotal = 0.0;
 	Metric rTotalCargo = 0.0;
 
-	while (Items.MoveCursorForward())
+	for (i = 0; i < m_ItemList.GetCount(); i++)
 		{
-		const CItem &Item = Items.GetItemAtCursor();
+		const CItem &Item = m_ItemList.GetItem(i);
 
 		Metric rMass = Item.GetMass() * Item.GetCount();
 
@@ -5776,7 +5777,7 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, 
 	DEBUG_CATCH
 	}
 
-void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
+void CSpaceObject::Move (SUpdateCtx &Ctx, Metric rSeconds)
 
 //	Move
 //
@@ -5790,149 +5791,10 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 
 	m_vOldPos = m_vPos;
 
-	//	Move object
+	//	Move the object on a straight line along the velocity vector
 
 	if (!m_vVel.IsNull() && !m_fNonLinearMove && !IsAnchored())
-		{
-		//	Move the object on a straight line along the velocity vector
-
 		m_vPos = m_vPos + (m_vVel * g_SecondsPerUpdate);
-
-		//	Check to see if we've bounced against some other object
-
-		if (m_fCanBounce)
-			{
-			int i;
-
-			//	Compute the bounding rect for this object
-
-			CVector vUR, vLL;
-			GetBoundingRect(&vUR, &vLL);
-
-			//	Loop over all other objects and see if we bounce off
-
-			bool bBlocked = false;
-			int iBarrierCount = Barriers.GetCount();
-			for (i = 0; i < iBarrierCount; i++)
-				{
-				CSpaceObject *pBarrier = Barriers.GetObj(i);
-
-				//	If this barrier doesn't block us, then nothing to do
-                //
-                //  NOTE: We make sure the barrier is not destroyed because it
-                //  could have been destroyed in a gravity well AFTER we added
-                //  it to the barrier list.
-
-				if (pBarrier == this 
-                        || pBarrier->IsDestroyed()
-						|| !pBarrier->CanBlock(this))
-					continue;
-
-				//	Compute the bounding rect for the barrier.
-
-				CVector vBarrierUR, vBarrierLL;
-				pBarrier->GetBoundingRect(&vBarrierUR, &vBarrierLL);
-
-				//	If we don't intersect then, nothing
-
-				if (!IntersectRect(vUR, vLL, vBarrierUR, vBarrierLL)
-						|| !pBarrier->ObjectInObject(pBarrier->GetPos(), this, GetPos()))
-					continue;
-
-				//	Otherwise, we're blocked
-				//	
-				//	If we're started out inside a barrier, we continue 
-				//	moving until we're out.
-
-				if (m_fInsideBarrier)
-					bBlocked = true;
-
-				//	Otherwise, we bounce
-
-				else
-					{
-					//	Compute the resulting velocities depending
-					//	on whether the barrier moves or not
-
-					if (!pBarrier->IsAnchored())
-						{
-						//	For a head-on elastic collision where
-						//	the second object has velocity 0, the equations are:
-						//
-						//		  (m1 - m2)
-						//	v1' = --------- v1
-						//		  (m1 + m2)
-						//
-						//		    2m1
-						//	v2' = --------- v1
-						//		  (m1 + m2)
-							
-						Metric rInvM1plusM2 = g_BounceCoefficient / (GetMass() + pBarrier->GetMass());
-						Metric rM1minusM2 = GetMass() - pBarrier->GetMass();
-						Metric r2M1 = 2.0 * GetMass();
-						CVector vVel = GetVel();
-
-						m_vPos = m_vOldPos;
-
-						SetVel(rM1minusM2 * rInvM1plusM2 * vVel);
-						pBarrier->SetVel(r2M1 * rInvM1plusM2 * vVel);
-						}
-					else
-						{
-						//	If we've already been blocked, then make sure that we are not inside
-						//	the second barrier. If we are, then revert the position
-
-						if (bBlocked)
-							{
-							if (pBarrier->PointInObject(pBarrier->GetPos(), m_vPos))
-								m_vPos = m_vOldPos;
-							}
-
-						//	Otherwise, deal with the first barrier
-
-						else
-							{
-							//	Revert the position to before the move
-
-							m_vPos = m_vOldPos;
-
-							//	If the old position is not blocked, then bounce and carry on
-
-							if (!pBarrier->ObjectInObject(pBarrier->GetPos(), this, GetPos()))
-								SetVel(-g_BounceCoefficient * GetVel());
-
-							//	Otherwise, move slowly towards the new position, but make sure that we never
-							//	move the center of the object inside the barrier.
-
-							else
-								{
-								CVector vNewPos = m_vPos + (g_KlicksPerPixel * m_vVel.Normal());
-								if (!pBarrier->PointInObject(pBarrier->GetPos(), vNewPos))
-									m_vPos = vNewPos;
-
-								ClipSpeed(0.01 * LIGHT_SPEED);
-								}
-							}
-						}
-
-					//	Tell the barrier and object
-
-					OnBounce(pBarrier, m_vPos);
-					pBarrier->OnObjBounce(this, m_vPos);
-
-					//	Remember that we already dealt with one barrier
-
-					bBlocked = true;
-					}
-				}
-
-			//	If we started out inside a barrier and now we're outside, then
-			//	we can clear our flag
-
-			if (m_fInsideBarrier && !bBlocked)
-				m_fInsideBarrier = false;
-			}
-		}
 
 	//	Let descendents process the move (if necessary)
 
@@ -5941,6 +5803,15 @@ void CSpaceObject::Move (const CSpaceObjectList &Barriers, Metric rSeconds)
 	//	Clear painted (until the next tick)
 
 	ClearPainted();
+
+	//	Set a flag so we check collisions
+
+	if (IsAnchored())
+		SetCollisionTestNeeded(false);
+	else if (Ctx.bHasShipBarriers)
+		SetCollisionTestNeeded(GetCategory() == CSpaceObject::catShip || GetCategory() == CSpaceObject::catStation);
+	else
+		SetCollisionTestNeeded(GetCategory() == CSpaceObject::catStation);
 
 	DEBUG_CATCH;
 	}

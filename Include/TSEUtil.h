@@ -290,7 +290,9 @@ struct SUpdateCtx
 			rTargetDist2(g_InfiniteDistance * g_InfiniteDistance),
 			iMinFireArc(0),
 			iMaxFireArc(0),
-			bGravityWarning(false)
+			bGravityWarning(false),
+			bHasShipBarriers(false),
+			bHasGravity(false)
 		{ }
 
 	CSystem *pSystem;					//	Current system
@@ -320,6 +322,8 @@ struct SUpdateCtx
 	//	Misc flags
 
 	bool bGravityWarning;				//	Player in a dangerous gravity field
+	bool bHasShipBarriers;				//	TRUE if the system has ship barriers (e.g., Arena)
+	bool bHasGravity;					//	TRUE if the system has gravity
 	};
 
 //	Utility classes

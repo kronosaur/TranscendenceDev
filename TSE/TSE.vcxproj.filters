@@ -185,6 +185,9 @@
     <ClInclude Include="..\Include\TSEComms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEPhysics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -999,6 +1002,12 @@
     </ClCompile>
     <ClCompile Include="CGenericType.cpp">
       <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CPhysicsContactResolver.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CPhysicsContact.cpp">
+      <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

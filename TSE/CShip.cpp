@@ -2699,7 +2699,7 @@ int CShip::GetItemDeviceName (const CItem &Item) const
 	return -1;
 	}
 
-Metric CShip::GetItemMass (void)
+Metric CShip::GetItemMass (void) const
 
 //	GetItemMass
 //
@@ -2715,7 +2715,29 @@ Metric CShip::GetItemMass (void)
 	return m_rItemMass;
 	}
 
-Metric CShip::GetMass (void)
+Metric CShip::GetInvMass (void) const
+
+//	GetInvMass
+//
+//	Get the inverse mass
+
+	{
+	//	For now, anchored ships have infinite mass. In the future, a ship 
+	//	docked with another ship should have a physics engine contact.
+
+	if (IsAnchored())
+		return 0.0;
+
+	//	Inverse mass.
+
+	Metric rMass = GetMass();
+	if (rMass <= 0.0)
+		return 0.0;
+
+	return (1.0 / rMass);
+	}
+
+Metric CShip::GetMass (void) const
 
 //	GetMass
 //

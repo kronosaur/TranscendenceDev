@@ -184,7 +184,7 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 
 	ASSERT(iOrder != IShipController::orderNone);
 
-	//	If we're using old style behavior, then just call our derrived class to
+	//	If we're using old style behavior, then just call our derived class to
 	//	handle it.
 
 	if (m_fOldStyleBehaviors)
@@ -948,7 +948,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 			}
 		}
 
-	//	Notify our order module (or derrived class if we're doing it old-style)
+	//	Notify our order module (or derived class if we're doing it old-style)
 
 	if (m_pOrderModule)
 		m_pOrderModule->Attacked(m_pShip, m_AICtx, pAttacker, Damage, bFriendlyFire);
@@ -982,7 +982,7 @@ void CBaseShipAI::OnDestroyed (SDestroyCtx &Ctx)
 //	The ship was destroyed
 
 	{
-	//	Notify our order module (or derrived class if we're doing it old-style)
+	//	Notify our order module (or derived class if we're doing it old-style)
 
 	if (m_pOrderModule)
 		m_pOrderModule->Destroyed(m_pShip, Ctx);

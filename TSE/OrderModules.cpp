@@ -208,17 +208,17 @@ void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 			if (GetTarget() == Ctx.pObj && Ctx.Attacker.IsCausedByFriendOf(pShip) && Ctx.Attacker.GetObj())
 				pShip->Communicate(Ctx.Attacker.GetObj(), msgNiceShooting);
 
-			//	Clear out the variable. We do this first because the derrived class
+			//	Clear out the variable. We do this first because the derived class
 			//	might set it to something else (thus we don't want to clear it after
 			//	the OnObjDestroyed call).
 
 			m_Objs[i] = NULL;
 
-			//	Let our derrived class handle it
+			//	Let our derived class handle it
 				
 			OnObjDestroyed(pShip, Ctx, i, &bCancelOrder);
 
-			//	If our derrived class wants us to cancel the order, then we're done.
+			//	If our derived class wants us to cancel the order, then we're done.
 			//	(After we cancel the order, the order module will be invalid, so
 			//	we need to leave.
 
@@ -254,7 +254,7 @@ void IOrderModule::ReadFromStream (SLoadCtx &Ctx)
 			}
 		}
 
-	//	Let our derrived class load
+	//	Let our derived class load
 
 	OnReadFromStream(Ctx); 
 	}
@@ -275,7 +275,7 @@ void IOrderModule::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 	for (i = 0; i < (int)dwCount; i++)
 		pSystem->WriteObjRefToStream(m_Objs[i], pStream);
 
-	//	Let our derrived class save
+	//	Let our derived class save
 
 	OnWriteToStream(pSystem, pStream);
 	}
