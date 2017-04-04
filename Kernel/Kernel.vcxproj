@@ -751,6 +751,7 @@
     <ClInclude Include="..\Include\Lingua.h" />
     <ClInclude Include="..\Include\Euclid3D.h" />
     <ClInclude Include="..\Include\TArray.h" />
+    <ClInclude Include="..\Include\TLinkedList.h" />
     <ClInclude Include="..\Include\TMap.h" />
     <ClInclude Include="..\Include\TMath.h" />
     <ClInclude Include="..\Include\TQueue.h" />

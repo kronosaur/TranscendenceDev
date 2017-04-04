@@ -179,6 +179,7 @@ class IWriteStream;
 //	Templates
 
 #include "TArray.h"
+#include "TLinkedList.h"
 #include "TMap.h"
 #include "TQueue.h"
 #include "TStack.h"
@@ -470,59 +471,6 @@ class CINTDynamicArray
 		int m_iAllocSize;						//	Allocated size of the array
 		HANDLE m_hHeap;							//	Heap to use
 		BYTE *m_pArray;							//	Array data
-	};
-
-//	Link list classes
-
-template <class TYPE> class TListNode
-	{
-	public:
-		TListNode (void) : m_pNext(NULL) { }
-		virtual ~TListNode (void) { }
-
-		int GetCount (void)
-			{
-			int iCount = 0;
-			TListNode<TYPE> *pNext = m_pNext;
-			while (pNext)
-				{
-				iCount++;
-				pNext = pNext->m_pNext;
-				}
-			return iCount;
-			}
-
-		inline TYPE *GetNext (void) { return (TYPE *)m_pNext; }
-
-		void Insert (TListNode<TYPE> *pNewNode)
-			{
-			pNewNode->m_pNext = m_pNext;
-			m_pNext = pNewNode;
-			}
-
-		void Remove (TListNode<TYPE> *pNodeToRemove)
-			{
-			TListNode<TYPE> *pNext = m_pNext;
-			while (pNext)
-				{
-				if (pNext == pNodeToRemove)
-					{
-					RemoveNext();
-					break;
-					}
-				pNext = pNext->m_pNext;
-				}
-			}
-
-	private:
-		void RemoveNext (void)
-			{
-			TListNode<TYPE> *pDelete = m_pNext;
-			m_pNext = m_pNext->m_pNext;
-			delete pDelete;
-			}
-
-		TListNode<TYPE> *m_pNext;
 	};
 
 //	CIntArray. Implementation of a dynamic array of integers

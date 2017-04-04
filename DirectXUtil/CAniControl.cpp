@@ -44,7 +44,7 @@ IAnimatron *CAniControl::GetStyle (const CString &sComponent) const
 //	Returns a style by name
 
 	{
-	//	Ask our derrived class to map a name to an index
+	//	Ask our derived class to map a name to an index
 
 	int iIndex = MapStyleName(sComponent);
 	if (iIndex == -1)
@@ -122,7 +122,7 @@ void CAniControl::SetStyle (const CString &sComponent, IAnimatron *pImpl)
 //	Sets a style by name
 
 	{
-	//	Ask our derrived class to map a name to an index
+	//	Ask our derived class to map a name to an index
 
 	int iIndex = MapStyleName(sComponent);
 	if (iIndex == -1)
