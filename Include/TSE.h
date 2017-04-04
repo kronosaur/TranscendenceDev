@@ -164,8 +164,6 @@ extern CUniverse *g_pUniverse;
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
 #include "TSEPaint.h"
-#include "TSEEvents.h"
-#include "TSEPhysics.h"
 #include "TSESystem.h"
 
 //	CResourceDb

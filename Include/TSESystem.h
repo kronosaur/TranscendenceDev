@@ -5,6 +5,12 @@
 
 #pragma once
 
+//	Include help classes
+
+#include "TSEEvents.h"
+#include "TSEPhysics.h"
+#include "TSEObjectJoints.h"
+
 const int MIN_PLANET_SIZE = 1000;			//	Size at which a world is considered planetary size
 
 //	CNavigationPath

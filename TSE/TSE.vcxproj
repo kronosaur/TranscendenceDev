@@ -247,6 +247,7 @@
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEImages.h" />
     <ClInclude Include="..\Include\TSEItems.h" />
+    <ClInclude Include="..\Include\TSEObjectJoints.h" />
     <ClInclude Include="..\Include\TSEParticleSystem.h" />
     <ClInclude Include="..\Include\TSEPhysics.h" />
     <ClInclude Include="..\Include\TSEPlayer.h" />
