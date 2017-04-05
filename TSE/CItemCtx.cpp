@@ -303,6 +303,23 @@ const CItemEnhancement &CItemCtx::GetMods(void)
 	return GetItem().GetMods();
 	}
 
+CShipClass *CItemCtx::GetSourceShipClass (void) const
+
+//	GetSourceShipClass
+//
+//	If the source is a ship, we return the ship class. NULL otherwise.
+
+	{
+	if (m_pSource == NULL)
+		return NULL;
+
+	CShip *pShip = m_pSource->AsShip();
+	if (pShip == NULL)
+		return NULL;
+
+	return pShip->GetClass();
+	}
+
 bool CItemCtx::IsDeviceEnabled (void)
 
 //  IsDeviceEnabled

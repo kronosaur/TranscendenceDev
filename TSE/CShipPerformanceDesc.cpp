@@ -35,6 +35,9 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
         m_DriveDesc.AdjMaxSpeed(rAdj);
         }
 
+	if (Ctx.rArmorSpeedBonus != 0.0)
+		m_DriveDesc.AddMaxSpeed(Ctx.rArmorSpeedBonus);
+
     //  If drive damaged, cut thrust in half
 
     if (Ctx.bDriveDamaged)

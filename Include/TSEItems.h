@@ -306,6 +306,7 @@ class CItem
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
 		bool GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const;
 		bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags, DamageTypes *retiDamage, CString *retsReference) const;
+		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
 		CString GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags = 0) const;
 		inline int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
 		int GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
@@ -496,6 +497,7 @@ class CItemCtx
 		const CItem &GetItem (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
+		CShipClass *GetSourceShipClass (void) const;
 		inline int GetVariant (void) const { return m_iVariant; }
 		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
         inline const CItem &GetVariantItem (void) const { return m_Variant; }

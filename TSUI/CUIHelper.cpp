@@ -980,11 +980,13 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
     CG32bitPixel rgbColorRef = rgbText;
 	CG32bitPixel rgbColorDescSel = CG32bitPixel(200,200,200);
 	CG32bitPixel rgbColorDesc = CG32bitPixel(128,128,128);
+	CG32bitPixel rgbDisavantage = VI.GetColor(colorTextDisadvantage);
 
 	bool bSelected = ((dwOptions & OPTION_SELECTED) == OPTION_SELECTED);
 	bool bNoIcon = ((dwOptions & OPTION_NO_ICON) == OPTION_NO_ICON);
 	bool bTitle = ((dwOptions & OPTION_TITLE) == OPTION_TITLE);
 	bool bNoPadding = ((dwOptions & OPTION_NO_PADDING) == OPTION_NO_PADDING);
+	bool bNoArmorSpeedDisplay = ((dwOptions & OPTION_NO_ARMOR_SPEED_DISPLAY) == OPTION_NO_ARMOR_SPEED_DISPLAY);
 
 	//	Icons size
 
@@ -1112,9 +1114,38 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 		rcDrawRect.top += cyHeight;
 
+		//	If we have a speed bonus/penalty for armor, then show it.
+		//	Usually we show penalty relative to the player.
+
+		CSpaceObject *pBonusSource = g_pUniverse->GetPlayerShip();
+		CItemCtx BonusCtx(&Item, pBonusSource);
+
+		int iSpeedBonus;
+		if (!bNoArmorSpeedDisplay && Item.GetReferenceSpeedBonus(BonusCtx, &iSpeedBonus))
+			{
+			int cx = rcDrawRect.left;
+			sReference = strPatternSubst(CONSTLIT("%s — "), sReference);
+			cx += Medium.MeasureText(sReference);
+
+			Medium.DrawText(Dest,
+					rcDrawRect,
+					rgbColorRef,
+					sReference,
+					0,
+					0,
+					&cyHeight);
+
+			if (iSpeedBonus > 0)
+				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbColorRef, strPatternSubst(CONSTLIT("+.%02dc bonus"), iSpeedBonus));
+			else
+				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbDisavantage, strPatternSubst(CONSTLIT("-.%02dc penalty"), -iSpeedBonus));
+
+			rcDrawRect.top += cyHeight;
+			}
+
 		//	Paint additional reference in the line below
 
-		if (!sReference.IsBlank())
+		else if (!sReference.IsBlank())
 			{
 			Medium.DrawText(Dest, 
 					rcDrawRect,

@@ -88,9 +88,6 @@ const int DEVICE_DAMAGE_IMMUNE_LEVEL =			11;
 const int TICKS_PER_UPDATE =					10;
 
 const Metric PHOTO_REPAIR_ADJ =					0.6;
-const Metric MAX_REGEN_BALANCE_BONUS =			500.0;
-const Metric DECAY_BALANCE_ADJ =				3.0;
-const Metric DIST_BALANCE_ADJ =					0.25;
 const Metric RADIATION_IMMUNE_BALANCE_BONUS =	25.0;
 const Metric RADIATION_VULNERABLE_BALANCE_BONUS =	-25.0;
 const Metric BLIND_IMMUNE_BALANCE_BONUS =		10.0;
@@ -101,8 +98,8 @@ const Metric DEVICE_DAMAGE_IMMUNE_BALANCE_BONUS =	25.0;
 const Metric DEVICE_DAMAGE_VULNERABLE_BALANCE_BONUS =	-25.0;
 const Metric SHATTER_IMMUNE_BALANCE_BONUS =		20.0;
 const Metric DISINTEGRATION_IMMUNE_BALANCE_BONUS =	10.0;
-const Metric HIGHER_REPAIR_LEVEL_BALANCE_BONUS = -10.0;
-const Metric LOWER_REPAIR_LEVEL_BALANCE_BONUS =	5.0;
+const Metric HIGHER_REPAIR_LEVEL_BALANCE_BONUS = -5.0;
+const Metric LOWER_REPAIR_LEVEL_BALANCE_BONUS =	2.5;
 const Metric ARMOR_COMPLETE_BALANCE_ADJ =		-0.20;
 const Metric STEALTH_BALANCE_BONUS =			5.0;
 const Metric REFLECTION_BALANCE_BONUS =			50.0;
@@ -111,9 +108,16 @@ const Metric PHOTO_RECHARGE_BALANCE_ADJ =		25.0;
 const Metric MAX_SPEED_BALANCE_BONUS =			10;
 const Metric SHIELD_INTERFERENCE_BALANCE_BONUS =	-150.0;
 
-const Metric MASS_BALANCE_ADJ =					-25.0;	//	25% penalty for each 100% increase in mass
-const Metric MASS_BALANCE_6_TON_BONUS =			-25.0;
-const Metric MASS_BALANCE_12_TON_BONUS =		-25.0;
+const Metric REGEN_BALANCE_ADJ =				10.0;	//	For each percent of regen/stdweapon ratio
+const Metric DECAY_BALANCE_ADJ =				-3.0;
+const Metric DIST_BALANCE_ADJ =					2.0;
+const Metric MAX_REGEN_BALANCE_BONUS = 500.0;
+
+const Metric MASS_BALANCE_K0 =					1.284;
+const Metric MASS_BALANCE_K1 =					-0.47;
+const Metric MASS_BALANCE_K2 =					0.014;
+const Metric MASS_BALANCE_ADJ =					60.0;	//	Linear relationship between curve and mass balance
+const Metric MASS_BALANCE_LIMIT =				16.0;	//	Above this mass (in tons) we don't get any additional bonus
 
 const Metric BALANCE_COST_RATIO =				-0.5;	//  Each percent of cost above standard is a 0.5%
 const Metric BALANCE_MAX_DAMAGE_ADJ =			400.0;	//	Max change in balance due to a single damage type
@@ -888,31 +892,20 @@ Metric CArmorClass::CalcBalanceMass (CItemCtx &ItemCtx, const SScalableStats &St
 //	Calculate balance from armor mass
 
 	{
-	Metric rMass = CItem(m_pItemType, 1).GetMassKg();
+	//	Mass in metric tons.
+
+	Metric rMass = CItem(m_pItemType, 1).GetMass();
 	if (rMass == 0.0)
 		return 0.0;
 
-	//	Compare against standard mass
+	//	Because this is an x^2 curve, we need a limit on mass or else we will start
+	//	to curve up (more mass = bonus, which we don't want).
 
-	Metric rStdMass = GetStdMass(Stats.iLevel);
+	rMass = Min(rMass, MASS_BALANCE_LIMIT);
 
-	//	Greater mass allows for more HP.
+	//	This polynomial generates a balance based on mass.
 
-	Metric rBalance = MASS_BALANCE_ADJ * mathLog2(rMass / rStdMass);
-
-	//	If over twice std mass, then penalty because it won't fit on the Sapphire.
-
-	if (rMass > 2.0 * rStdMass)
-		rBalance += MASS_BALANCE_6_TON_BONUS;
-
-	//	If over four times std mass, then armor won't fit on Wolfen.
-
-	if (rMass > 4.0 * rStdMass)
-		rBalance += MASS_BALANCE_12_TON_BONUS;
-
-	//	Done
-
-	return rBalance;
+	return MASS_BALANCE_ADJ * ((MASS_BALANCE_K2 * rMass * rMass) + MASS_BALANCE_K1 * rMass + MASS_BALANCE_K0);
 	}
 
 Metric CArmorClass::CalcBalancePower (CItemCtx &ItemCtx, const SScalableStats &Stats) const
@@ -968,7 +961,7 @@ Metric CArmorClass::CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &S
 
 		if (rRegenHP < rWeaponHP)
 			{
-			Metric rBalance = (100.0 * mathLog2(rWeaponHP / (rWeaponHP - rRegenHP)));
+			Metric rBalance = REGEN_BALANCE_ADJ * 100.0 * rRegenHP / rWeaponHP;
 			rTotalBalance += Min(rBalance, MAX_REGEN_BALANCE_BONUS);
 			}
 
@@ -987,7 +980,7 @@ Metric CArmorClass::CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &S
 		//	Compare this value against the average weapon damage.
 
 		Metric rWeaponHP = CWeaponClass::GetStdDamage180(Stats.iLevel);
-		Metric rBalance = DECAY_BALANCE_ADJ * (100.0 * mathLog2(rWeaponHP / (rWeaponHP + rDecayHP)));
+		Metric rBalance = DECAY_BALANCE_ADJ * 100.0 * rDecayHP / rWeaponHP;
 		rTotalBalance += rBalance;
 		}
 
@@ -1005,8 +998,8 @@ Metric CArmorClass::CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &S
 
 		if (rDistHP < rWeaponHP)
 			{
-			Metric rBalance = (100.0 * mathLog2(rWeaponHP / (rWeaponHP - rDistHP)));
-			rTotalBalance += DIST_BALANCE_ADJ * Min(rBalance, MAX_REGEN_BALANCE_BONUS);
+			Metric rBalance = DIST_BALANCE_ADJ * 100.0 * rDistHP / rWeaponHP;
+			rTotalBalance += Min(rBalance, MAX_REGEN_BALANCE_BONUS);
 			}
 
 		//	Otherwise, we get a large bonus because the average weapon can't 

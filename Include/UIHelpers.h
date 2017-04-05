@@ -130,6 +130,7 @@ class CUIHelper
 			OPTION_TITLE =							0x00000004,
 			OPTION_SMALL_ICON =						0x00000008,		//	Paint icon at 64x64
 			OPTION_NO_PADDING =						0x00000010,		//	No padding around item
+			OPTION_NO_ARMOR_SPEED_DISPLAY =			0x00000020,		//	Do not show bonus/penalty for armo
 
 			//	SMenuEntry flags
 			MENU_TEXT =								0x00000001,		//	Show on left-hand text menu

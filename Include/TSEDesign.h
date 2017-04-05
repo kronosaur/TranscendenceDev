@@ -1904,6 +1904,7 @@ class CShipClass : public CDesignType
 
 		inline int Angle2Direction (int iAngle) const { return m_Perf.GetRotationDesc().GetFrameIndex(iAngle); }
 		inline int AlignToRotationAngle (int iAngle) const { return m_Perf.GetRotationDesc().AlignToRotationAngle(iAngle); }
+		int CalcArmorSpeedBonus (int iTotalArmorMass) const;
 		Metric CalcMass (const CDeviceDescList &Devices) const;
 		int CalcScore (void);
 		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
@@ -2120,7 +2121,11 @@ class CShipClass : public CDesignType
 
 		CItemCriteria m_ArmorCriteria;			//	Allowable armor
 		CItemCriteria m_DeviceCriteria;			//	Allowable devices
+		int m_iStdArmorMass;					//	No penalty at this armor mass
 		int m_iMaxArmorMass;					//	Max mass of single armor segment
+		int m_iMaxArmorSpeedPenalty;			//	Change to speed at max armor mass (1/100th light-speed)
+		int m_iMinArmorSpeedBonus;				//	Change to speed at 1/2 std armor mass
+
 		int m_iMaxCargoSpace;					//	Max amount of cargo space with expansion (tons)
 		int m_iMaxReactorPower;					//	Max compatible reactor power
 		int m_iMaxDevices;						//	Max number of devices

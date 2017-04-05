@@ -376,7 +376,8 @@ class CDriveDesc
         CDriveDesc (void);
 
         void Add (const CDriveDesc &Src);
-        Metric AdjMaxSpeed (Metric rAdj);
+		Metric AddMaxSpeed (Metric rChange);
+		Metric AdjMaxSpeed (Metric rAdj);
         int AdjPowerUse (Metric rAdj);
         int AdjThrust (Metric rAdj);
         inline Metric GetMaxSpeed (void) const { return m_rMaxSpeed; }
@@ -801,6 +802,7 @@ struct SShipPerformanceCtx
             rMaxSpeedBonus(0.0),
             bDriveDamaged(false),
             rOperatingSpeedAdj(1.0),
+			rArmorSpeedBonus(0.0),
             CargoDesc(0),
             iMaxCargoSpace(0),
 			bShieldInterference(false)
@@ -816,6 +818,7 @@ struct SShipPerformanceCtx
     CDriveDesc DriveDesc;                   //  Drive descriptor
     Metric rMaxSpeedBonus;                  //  % bonus to speed (+/-). 100.0 = +100%
 	Metric rOperatingSpeedAdj;				//	Adjustment to speed based on operations (1.0 = normal)
+	Metric rArmorSpeedBonus;				//	Increase/decrease in speed
     bool bDriveDamaged;                     //  If TRUE, cut thrust in half
 
     CCargoDesc CargoDesc;                   //  Cargo space descriptor

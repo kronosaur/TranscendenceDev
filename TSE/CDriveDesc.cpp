@@ -58,6 +58,21 @@ void CDriveDesc::Add (const CDriveDesc &Src)
         m_fInertialess = true;
     }
 
+Metric CDriveDesc::AddMaxSpeed (Metric rChange)
+
+//	AddMaxSpeed
+//
+//	Adds/subtracts to max speed.
+
+	{
+	if (rChange >= 0.0)
+		m_rMaxSpeed = Min(m_rMaxSpeed + rChange, LIGHT_SPEED);
+	else
+		m_rMaxSpeed = Max(0.0, m_rMaxSpeed + rChange);
+
+	return m_rMaxSpeed;
+	}
+
 Metric CDriveDesc::AdjMaxSpeed (Metric rAdj)
 
 //  AdjMaxSpeed

@@ -873,10 +873,13 @@ void CShip::CalcPerformance (void)
 
     //  Accumulate settings from armor
 
+	int iArmorMass = 0;
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
         CItemCtx ItemCtx(this, GetArmorSection(i));
         ItemCtx.GetArmor()->AccumulatePerformance(ItemCtx, Ctx);
+
+		iArmorMass += ItemCtx.GetItem().GetMassKg();
 		}
 
     //  Accumulate settings from devices
@@ -892,7 +895,10 @@ void CShip::CalcPerformance (void)
     //  ship mass.
 
     if (m_fTrackMass)
+		{
         Ctx.RotationDesc.AdjForShipMass(m_pClass->GetHullMass(), GetItemMass());
+		Ctx.rArmorSpeedBonus = m_pClass->CalcArmorSpeedBonus(iArmorMass) * LIGHT_SPEED * 0.01;
+		}
 
     //  Now apply the performance parameters to the descriptor
 

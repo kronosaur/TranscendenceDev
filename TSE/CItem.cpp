@@ -1361,6 +1361,29 @@ bool CItem::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFl
 		return false;
 	}
 
+bool CItem::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const
+
+//	GetReferenceSpeedBonus
+//
+//	Returns TRUE we this armor item gives a speed bonus or penalty to the given
+//	ship class.
+
+	{
+	CShipClass *pShipClass;
+	if (!IsArmor()
+			|| (pShipClass = Ctx.GetSourceShipClass()) == NULL)
+		return false;
+
+	int iBonus = pShipClass->CalcArmorSpeedBonus(GetMassKg() * pShipClass->GetArmorDesc().GetCount());
+	if (iBonus == 0)
+		return false;
+
+	if (retiSpeedBonus)
+		*retiSpeedBonus = iBonus;
+
+	return true;
+	}
+
 int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
