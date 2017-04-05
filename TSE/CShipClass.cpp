@@ -2905,6 +2905,12 @@ void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
 	Ctx.ReactorDesc = m_ReactorDesc;
     Ctx.DriveDesc = m_DriveDesc;
     Ctx.CargoDesc = m_CargoDesc;
+
+	//	Track maximum speed after bonuses. We start with the class speed; 
+	//	devices and other items should increase this in their handling of
+	//	AccumulatePerformance.
+
+	Ctx.rMaxSpeedLimit = m_DriveDesc.GetMaxSpeed();
     }
 
 void CShipClass::InitShipNamesIndices (void)

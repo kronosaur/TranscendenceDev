@@ -423,6 +423,13 @@ bool CDriveClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCt
     Ctx.DriveDesc.Add(pDesc->DriveDesc);
     Ctx.RotationDesc.Add(pDesc->ManeuverDesc);
 
+	//	Set the maximum speed
+
+	if (pDesc->DriveDesc.GetMaxSpeedLimit() == -1)
+		Ctx.rMaxSpeedLimit = LIGHT_SPEED;
+	else
+		Ctx.rMaxSpeedLimit = Max(Ctx.rMaxSpeedLimit, pDesc->DriveDesc.GetMaxSpeedLimit() * LIGHT_SPEED / 100.0);
+
     return true;
     }
 
@@ -444,7 +451,16 @@ CString CDriveClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwF
 	//	Max speed
 
 	int iSpeed = (int)(100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED);
-	AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("max speed 0.%02dc"), iSpeed));
+	if (pDesc->DriveDesc.GetMaxSpeedInc() > 0)
+		{
+		if (pDesc->DriveDesc.GetMaxSpeedLimit() != -1)
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("+.%02dc (up to .%02dc)"), pDesc->DriveDesc.GetMaxSpeedInc(), iSpeed));
+		else
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("+.%02dc"), pDesc->DriveDesc.GetMaxSpeedInc()));
+		}
+
+	else if (pDesc->DriveDesc.GetMaxSpeedLimit() != -1)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("max speed 0.%02dc"), iSpeed));
 
 	//	Thrust
 

@@ -7,15 +7,18 @@
 
 #define INERTIALESS_DRIVE_ATTRIB	CONSTLIT("inertialessDrive")
 #define MAX_SPEED_ATTRIB			CONSTLIT("maxSpeed")
+#define MAX_SPEED_INC_ATTRIB		CONSTLIT("maxSpeedInc")
 #define POWER_USE_ATTRIB			CONSTLIT("powerUse")
 #define POWER_USED_ATTRIB			CONSTLIT("powerUsed")
 #define THRUST_ATTRIB				CONSTLIT("thrust")
 
 CDriveDesc::CDriveDesc (void) :
         m_dwUNID(0),
-        m_rMaxSpeed(0.0),
+		m_iMaxSpeedInc(0),
+		m_iMaxSpeedLimit(-1),
         m_iThrust(0),
         m_iPowerUse(0),
+        m_rMaxSpeed(0.0),
         m_fInertialess(false)
 
 //  CDriveDesc constructor
@@ -37,9 +40,16 @@ void CDriveDesc::Add (const CDriveDesc &Src)
     if (Src.m_dwUNID)
 		m_dwUNID = Src.m_dwUNID;
 
-    //  Take the highest max speed.
+    //  Compute max speed based on our adjustments. If the drive enhancement
+	//	is relative, then increase/decrease max speed.
 
-    m_rMaxSpeed = Max(m_rMaxSpeed, Src.m_rMaxSpeed);
+	if (Src.m_iMaxSpeedInc)
+		m_rMaxSpeed = Max(0.0, m_rMaxSpeed + (Src.m_iMaxSpeedInc * LIGHT_SPEED / 100.0));
+
+	//	Otherwise, we bring max speed up to the upgrade's speed.
+
+	else
+		m_rMaxSpeed = Max(m_rMaxSpeed, Src.m_rMaxSpeed);
 
     //  Thrust adds
 
@@ -120,7 +130,9 @@ ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD 
 
     {
     m_dwUNID = dwUNID;
-	m_rMaxSpeed = (double)pDesc->GetAttributeInteger(MAX_SPEED_ATTRIB) * LIGHT_SPEED / 100;
+	m_iMaxSpeedInc = pDesc->GetAttributeIntegerBounded(MAX_SPEED_INC_ATTRIB, -100, 100, 0);
+	m_iMaxSpeedLimit = pDesc->GetAttributeIntegerBounded(MAX_SPEED_ATTRIB, 0, 100, -1);
+	m_rMaxSpeed = (m_iMaxSpeedLimit > 0 ? m_iMaxSpeedLimit * LIGHT_SPEED / 100.0 : 0.0);
 
     //  Thrust
 

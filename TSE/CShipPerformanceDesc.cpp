@@ -38,7 +38,11 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 	if (Ctx.rArmorSpeedBonus != 0.0)
 		m_DriveDesc.AddMaxSpeed(Ctx.rArmorSpeedBonus);
 
-    //  If drive damaged, cut thrust in half
+	//	Apply the speed limit
+
+	m_DriveDesc.SetMaxSpeed(Min(m_DriveDesc.GetMaxSpeed(), Ctx.rMaxSpeedLimit));
+
+	//  If drive damaged, cut thrust in half
 
     if (Ctx.bDriveDamaged)
         m_DriveDesc.AdjThrust(0.5);

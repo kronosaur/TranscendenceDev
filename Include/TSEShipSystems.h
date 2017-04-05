@@ -381,6 +381,8 @@ class CDriveDesc
         int AdjPowerUse (Metric rAdj);
         int AdjThrust (Metric rAdj);
         inline Metric GetMaxSpeed (void) const { return m_rMaxSpeed; }
+		inline int GetMaxSpeedInc (void) const { return m_iMaxSpeedInc; }
+		inline int GetMaxSpeedLimit (void) const { return m_iMaxSpeedLimit; }
         inline int GetPowerUse (void) const { return m_iPowerUse; }
         inline int GetThrust (void) const { return m_iThrust; }
         inline DWORD GetUNID (void) const { return m_dwUNID; }
@@ -395,11 +397,14 @@ class CDriveDesc
 
     private:
 	    DWORD m_dwUNID;						//	UNID source (either ship class or device)
-	    Metric m_rMaxSpeed;					//	Max speed (Km/sec)
+		int m_iMaxSpeedInc;					//	Increase in max speed (0 = always increase to m_iMaxSpeedLimit)
+		int m_iMaxSpeedLimit;				//	Do not increase above this limit (-1 = no limit)
 	    int m_iThrust;						//	Thrust (GigaNewtons--gasp!)
 	    int m_iPowerUse;					//	Power used while thrusting (1/10 megawatt)
 
-	    DWORD m_fInertialess:1;				//	Inertialess drive
+		Metric m_rMaxSpeed;					//	Computed max speed (Km/sec)
+
+		DWORD m_fInertialess:1;				//	Inertialess drive
 	    DWORD m_dwSpare:31;
 	};
 
@@ -800,9 +805,10 @@ struct SShipPerformanceCtx
             pShip(NULL),
             rSingleArmorFraction(0.0),
             rMaxSpeedBonus(0.0),
-            bDriveDamaged(false),
             rOperatingSpeedAdj(1.0),
 			rArmorSpeedBonus(0.0),
+			rMaxSpeedLimit(LIGHT_SPEED),
+            bDriveDamaged(false),
             CargoDesc(0),
             iMaxCargoSpace(0),
 			bShieldInterference(false)
@@ -819,7 +825,8 @@ struct SShipPerformanceCtx
     Metric rMaxSpeedBonus;                  //  % bonus to speed (+/-). 100.0 = +100%
 	Metric rOperatingSpeedAdj;				//	Adjustment to speed based on operations (1.0 = normal)
 	Metric rArmorSpeedBonus;				//	Increase/decrease in speed
-    bool bDriveDamaged;                     //  If TRUE, cut thrust in half
+	Metric rMaxSpeedLimit;					//	Bonuses should not increase speed above this limit
+	bool bDriveDamaged;                     //  If TRUE, cut thrust in half
 
     CCargoDesc CargoDesc;                   //  Cargo space descriptor
     int iMaxCargoSpace;                     //  Max cargo space limit imposed by class
