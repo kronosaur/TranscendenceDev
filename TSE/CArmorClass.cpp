@@ -72,6 +72,7 @@
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
 #define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+#define PROPERTY_STD_HP							CONSTLIT("stdHP")
 
 static char g_HitPointsAttrib[] = "hitPoints";
 static char g_DamageAdjAttrib[] = "damageAdj";
@@ -1747,6 +1748,9 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return CC.CreateBool(IsShatterImmune(Ctx));
+
+	else if (strEquals(sName, PROPERTY_STD_HP))
+		return CC.CreateInteger(GetStdHP(Stats.iLevel));
 
 	else
 		return NULL;

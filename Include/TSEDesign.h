@@ -2082,6 +2082,7 @@ class CShipClass : public CDesignType
 		CString GetGenericName (DWORD *retdwFlags = NULL) const;
 		inline int GetManeuverDelay (void) const { return m_Perf.GetRotationDesc().GetManeuverDelay(); }
 		CStationType *GetWreckDesc (void);
+		void InitDefaultArmorLimits (Metric rHullMass, int iMaxSpeed, Metric rThrustRatio);
 		void InitShipNamesIndices (void);
 		void PaintThrust (CG32bitImage &Dest, 
 						int x, 

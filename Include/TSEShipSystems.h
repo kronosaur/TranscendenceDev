@@ -380,7 +380,8 @@ class CDriveDesc
 		Metric AdjMaxSpeed (Metric rAdj);
         int AdjPowerUse (Metric rAdj);
         int AdjThrust (Metric rAdj);
-        inline Metric GetMaxSpeed (void) const { return m_rMaxSpeed; }
+		inline Metric GetMaxSpeed (void) const { return m_rMaxSpeed; }
+		inline int GetMaxSpeedFrac (void) const { return (m_iMaxSpeedLimit != -1 ? m_iMaxSpeedLimit : mathRound(100.0 * m_rMaxSpeed / LIGHT_SPEED)); }
 		inline int GetMaxSpeedInc (void) const { return m_iMaxSpeedInc; }
 		inline int GetMaxSpeedLimit (void) const { return m_iMaxSpeedLimit; }
         inline int GetPowerUse (void) const { return m_iPowerUse; }
@@ -394,6 +395,9 @@ class CDriveDesc
         inline void SetPowerUse (int iPowerUse) { m_iPowerUse = iPowerUse; }
         inline void SetThrust (int iThrust) { m_iThrust = iThrust; }
         inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
+
+		static int CalcThrust (Metric rThrustRatio, Metric rMassInTons);
+		static Metric CalcThrustRatio (int iThrust, Metric rMassInTons);
 
     private:
 	    DWORD m_dwUNID;						//	UNID source (either ship class or device)

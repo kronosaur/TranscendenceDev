@@ -122,6 +122,29 @@ int CDriveDesc::AdjThrust (Metric rAdj)
     return m_iThrust;
     }
 
+int CDriveDesc::CalcThrust (Metric rThrustRatio, Metric rMassInTons)
+
+//	CalcThrust
+//
+//	Computes the given thrust from a thrust ratio
+
+	{
+	return (int)(((rThrustRatio * rMassInTons) / 2.0) + 0.5);
+	}
+
+Metric CDriveDesc::CalcThrustRatio (int iThrust, Metric rMassInTons)
+
+//	CalcThrustRatio
+//
+//	Calcs the thrust ratio based on thrust and mass.
+
+	{
+	if (rMassInTons <= 0.0)
+		return 0.0;
+
+	return 2.0 * ((Metric)iThrust / rMassInTons);
+	}
+
 ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass)
 
 //  InitFromXML

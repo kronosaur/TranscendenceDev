@@ -176,8 +176,12 @@
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
+#define PROPERTY_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
+#define PROPERTY_MAX_SPEED_AT_MAX_ARMOR			CONSTLIT("maxSpeedAtMaxArmor")
+#define PROPERTY_MAX_SPEED_AT_MIN_ARMOR			CONSTLIT("maxSpeedAtMinArmor")
 #define PROPERTY_POWER							CONSTLIT("power")
+#define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
@@ -2793,6 +2797,55 @@ int CShipClass::GetWreckImageVariants (void)
 	return WRECK_IMAGE_VARIANTS;
 	}
 
+void CShipClass::InitDefaultArmorLimits (Metric rHullMass, int iMaxSpeed, Metric rThrustRatio)
+
+//	InitDefaultArmorLimits
+//
+//	If no armor limits are specified, we initialize them here based on mass, 
+//	speed, and thrust
+
+	{
+	//	If we're more than 1000 tons, then no limits
+
+	if (rHullMass > 1000.0)
+		return;
+
+	//	Compute the heaviest segment of armor we can install.
+
+	const Metric MAX_ARMOR_POWER = 0.7;
+	const Metric MAX_ARMOR_FACTOR = 0.6;
+	const Metric STD_THRUST_RATIO = 7.0;
+	const int MAX_ARMOR_MAX = 50;
+
+	int iMaxArmorTons = Min(MAX_ARMOR_MAX, mathRound(MAX_ARMOR_FACTOR * pow(rHullMass, MAX_ARMOR_POWER) * Max(1.0, rThrustRatio / STD_THRUST_RATIO)));
+	m_iMaxArmorMass = 1000 * iMaxArmorTons;
+
+	//	Compute the mass of standard armor
+
+	const Metric STD_ARMOR_POWER = 0.8;
+	const Metric STD_ARMOR_FACTOR = 0.8;
+
+	int iStdArmorTons = mathRound(STD_ARMOR_FACTOR * pow((Metric)iMaxArmorTons, STD_ARMOR_POWER));
+	m_iStdArmorMass = 1000 * iStdArmorTons;
+
+	//	Compute the max speed at maximum armor
+
+	const Metric MAX_ARMOR_SPEED_ADJ = 0.1;
+
+	int iSpeedDec = mathRound((Metric)iMaxSpeed * MAX_ARMOR_SPEED_ADJ);
+	m_iMaxArmorSpeedPenalty = -iSpeedDec;
+
+	//	Compute the max speed at minimum armor
+
+	const int MIN_ARMOR_SPEED_OFFSET = 26;
+	const Metric MIN_ARMOR_SPEED_ADJ = 0.25;
+	const Metric MIN_ARMOR_THRUST_ADJ = 0.5;
+
+	Metric rThrustRatioLimit = Max(1.0, MIN_ARMOR_THRUST_ADJ * rThrustRatio);
+	int iSpeedInc = Max(0, mathRound(Min(rThrustRatioLimit, (MIN_ARMOR_SPEED_OFFSET - iMaxSpeed) * MIN_ARMOR_SPEED_ADJ)));
+	m_iMinArmorSpeedBonus = iSpeedInc;
+	}
+
 void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 
 //	InitEffects
@@ -3194,7 +3247,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 		{
 		Metric rMass = CalcMass(m_AverageDevices);
 		if (rMass > 0.0)
-			m_DriveDesc.SetThrust((int)(((m_rThrustRatio * rMass) / 2.0) + 0.5));
+			m_DriveDesc.SetThrust(CDriveDesc::CalcThrust(m_rThrustRatio, rMass));
 		}
 
 	//	For later APIs compute the drive power usage, if not specified
@@ -3457,24 +3510,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	int iMaxSpeed = pDesc->GetAttributeIntegerBounded(MAX_SPEED_ATTRIB, 0, 100, 0);
 	m_DriveDesc.SetMaxSpeed((double)iMaxSpeed * LIGHT_SPEED / 100);
 
-	//	Armor limits
-
-	m_iMaxArmorMass = pDesc->GetAttributeInteger(MAX_ARMOR_ATTRIB);
-	m_iStdArmorMass = pDesc->GetAttributeIntegerBounded(STD_ARMOR_ATTRIB, 0, m_iMaxArmorMass, m_iMaxArmorMass / 2);
-	m_iMaxArmorSpeedPenalty = pDesc->GetAttributeIntegerBounded(MAX_ARMOR_SPEED_ATTRIB, 0, iMaxSpeed, iMaxSpeed) - iMaxSpeed;
-	m_iMinArmorSpeedBonus = pDesc->GetAttributeIntegerBounded(MIN_ARMOR_SPEED_ATTRIB, iMaxSpeed, 100, iMaxSpeed) - iMaxSpeed;
-
-	//	Load effects
-
-	CXMLElement *pEffects = pDesc->GetContentElementByTag(EFFECTS_TAG);
-	if (pEffects)
-		{
-		if (error = m_Effects.InitFromXML(Ctx, 
-				strPatternSubst(CONSTLIT("%d"), GetUNID()), 
-				pEffects))
-			return ComposeLoadError(Ctx, Ctx.sError);
-		}
-
 	//	We also accept a thrust ratio
 
 	if (pDesc->FindAttributeDouble(THRUST_RATIO_ATTRIB, &m_rThrustRatio))
@@ -3488,6 +3523,31 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	-1 means default. We will compute a proper default in Bind
 	m_DriveDesc.SetPowerUse(pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1));
 	m_DriveDesc.SetInertialess(pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB));
+
+	//	Armor limits
+
+	m_iMaxArmorMass = pDesc->GetAttributeInteger(MAX_ARMOR_ATTRIB);
+	m_iStdArmorMass = pDesc->GetAttributeIntegerBounded(STD_ARMOR_ATTRIB, 0, m_iMaxArmorMass, m_iMaxArmorMass / 2);
+	m_iMaxArmorSpeedPenalty = pDesc->GetAttributeIntegerBounded(MAX_ARMOR_SPEED_ATTRIB, 0, iMaxSpeed, iMaxSpeed) - iMaxSpeed;
+	m_iMinArmorSpeedBonus = pDesc->GetAttributeIntegerBounded(MIN_ARMOR_SPEED_ATTRIB, iMaxSpeed, 100, iMaxSpeed) - iMaxSpeed;
+
+	//	If we have no max armor limit, then we compute default values.
+
+	if (m_iMaxArmorMass == 0)
+		InitDefaultArmorLimits(m_iMass, iMaxSpeed, (m_rThrustRatio > 0.0 ? m_rThrustRatio : CDriveDesc::CalcThrustRatio(m_DriveDesc.GetThrust(), m_iMass)));
+
+	//	Load effects
+
+	CXMLElement *pEffects = pDesc->GetContentElementByTag(EFFECTS_TAG);
+	if (pEffects)
+		{
+		if (error = m_Effects.InitFromXML(Ctx, 
+				strPatternSubst(CONSTLIT("%d"), GetUNID()), 
+				pEffects))
+			return ComposeLoadError(Ctx, Ctx.sError);
+		}
+
+	//	Other devices
 
 	if (error = m_ReactorDesc.InitFromXML(Ctx, pDesc, GetUNID(), true))
 		return error;
@@ -3801,6 +3861,18 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	else if (strEquals(sProperty, PROPERTY_HAS_TRADE_DESC))
 		return CC.CreateBool(m_pTrade != NULL);
+
+	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_MASS))
+		return (m_iMaxArmorMass > 0 ? CC.CreateInteger(m_iMaxArmorMass) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MAX_ARMOR))
+		return (m_iMaxArmorSpeedPenalty != 0 ? CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_iMaxArmorSpeedPenalty) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MIN_ARMOR))
+		return (m_iMinArmorSpeedBonus != 0 ? CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_iMinArmorSpeedBonus) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
+		return (m_iStdArmorMass > 0 ? CC.CreateInteger(m_iStdArmorMass) : CC.CreateNil());
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return CC.CreateInteger(GetMaxStructuralHitPoints());
