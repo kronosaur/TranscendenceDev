@@ -90,8 +90,23 @@ Metric CDriveDesc::AdjMaxSpeed (Metric rAdj)
 //  Adjust speed
 
     {
-    if (rAdj >= 0.0)
-        m_rMaxSpeed = Min(m_rMaxSpeed * rAdj, LIGHT_SPEED);
+	if (rAdj >= 0.0)
+		{
+		if (m_iMaxSpeedInc)
+			{
+			int iSpeed = (m_iMaxSpeedLimit > 0 ? m_iMaxSpeedLimit : 20);
+			int iInc = mathRound(iSpeed * (rAdj - 1.0));
+			m_iMaxSpeedInc = Max(0, m_iMaxSpeedInc + iInc);
+
+			if (m_iMaxSpeedLimit != -1)
+				{
+				m_iMaxSpeedLimit = Max(0, m_iMaxSpeedLimit + iInc);
+				m_rMaxSpeed = (m_iMaxSpeedLimit > 0 ? m_iMaxSpeedLimit * LIGHT_SPEED / 100.0 : 0.0);
+				}
+			}
+		else
+			m_rMaxSpeed = Min(m_rMaxSpeed * rAdj, LIGHT_SPEED);
+		}
 
     return m_rMaxSpeed;
     }
@@ -153,6 +168,15 @@ ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD 
 
     {
     m_dwUNID = dwUNID;
+
+	//	There are two different modes of operation:
+	//
+	//	If m_iMaxSpeedInc is non-zero, then this the descriptor for a drive 
+	//	upgrade. In that case, m_iMaxSpeedInc is the increase in speed and
+	//	m_rMaxSpeed is the maximum speed that we upgrade to.
+	//
+	//	Otherwise, m_rMaxSpeed is the max speed of the ship.
+
 	m_iMaxSpeedInc = pDesc->GetAttributeIntegerBounded(MAX_SPEED_INC_ATTRIB, -100, 100, 0);
 	m_iMaxSpeedLimit = pDesc->GetAttributeIntegerBounded(MAX_SPEED_ATTRIB, 0, 100, -1);
 	m_rMaxSpeed = (m_iMaxSpeedLimit > 0 ? m_iMaxSpeedLimit * LIGHT_SPEED / 100.0 : 0.0);
