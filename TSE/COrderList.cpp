@@ -229,12 +229,15 @@ void COrderList::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNe
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
 		SOrderEntry *pEntry = &m_List[i];
+		IShipController::OrderTypes iOrder = GetOrder(i);
+		DWORD dwFlags = ::GetOrderFlags(iOrder);
 
 		if (pEntry->pTarget == pOldShip
-				&& (((IShipController::OrderTypes)pEntry->dwOrderType) & ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP))
+				&& (dwFlags & ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP))
 			{
 			pEntry->pTarget = pNewShip;
-			bCurrentChanged = (i == 0);
+			if (i == 0)
+				bCurrentChanged = true;
 			}
 		}
 
@@ -257,8 +260,11 @@ void COrderList::OnStationDestroyed (CSpaceObject *pObj, bool *retbCurrentChange
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
 		SOrderEntry *pEntry = &m_List[i];
+		IShipController::OrderTypes iOrder = GetOrder(i);
+		DWORD dwFlags = ::GetOrderFlags(iOrder);
+
 		if (pEntry->pTarget == pObj
-				&& (GetOrderFlags((IShipController::OrderTypes)pEntry->dwOrderType) & ORDER_FLAG_DELETE_ON_STATION_DESTROYED))
+				&& (dwFlags & ORDER_FLAG_DELETE_ON_STATION_DESTROYED))
 			{
 			//	Remember if this is the current order (because our caller may
 			//	want to know).
