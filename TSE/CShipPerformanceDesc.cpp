@@ -29,12 +29,6 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
     //  Adjust max speed.
 
-    if (Ctx.rMaxSpeedBonus != 0.0)
-        {
-        Metric rAdj = Max(0.0, 1.0 + (0.01 * Ctx.rMaxSpeedBonus));
-        m_DriveDesc.AdjMaxSpeed(rAdj);
-        }
-
 	if (Ctx.rArmorSpeedBonus != 0.0)
 		m_DriveDesc.AddMaxSpeed(Ctx.rArmorSpeedBonus);
 

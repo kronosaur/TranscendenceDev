@@ -808,7 +808,6 @@ struct SShipPerformanceCtx
     SShipPerformanceCtx (void) :
             pShip(NULL),
             rSingleArmorFraction(0.0),
-            rMaxSpeedBonus(0.0),
             rOperatingSpeedAdj(1.0),
 			rArmorSpeedBonus(0.0),
 			rMaxSpeedLimit(LIGHT_SPEED),
@@ -826,7 +825,6 @@ struct SShipPerformanceCtx
 	CReactorDesc ReactorDesc;				//	Reactor descriptor
 
     CDriveDesc DriveDesc;                   //  Drive descriptor
-    Metric rMaxSpeedBonus;                  //  % bonus to speed (+/-). 100.0 = +100%
 	Metric rOperatingSpeedAdj;				//	Adjustment to speed based on operations (1.0 = normal)
 	Metric rArmorSpeedBonus;				//	Increase/decrease in speed
 	Metric rMaxSpeedLimit;					//	Bonuses should not increase speed above this limit

@@ -95,10 +95,10 @@ class CArmorClass
 		inline CItemType *GetItemType (void) { return m_pItemType; }
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
-		inline Metric GetMaxSpeedBonus (void) const { return m_rMaxSpeedBonus; }
 		inline CString GetName (void);
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem());
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
+		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
 		inline int GetRepairCost (CItemCtx &Ctx) const;
 		inline int GetRepairTech (void) { return m_iRepairTech; }
         Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
@@ -170,7 +170,8 @@ class CArmorClass
 		int m_iPowerUse;						//	Power consumed (1/10 MWs)
 		int m_iIdlePowerUse;					//	Power consumed when not regenerating
 		int m_iMaxHPBonus;						//	Max HP bonus allowed for this armor
-		Metric m_rMaxSpeedBonus;				//	Bonus (or penalty) to ship's max speed (10 = 10% bonus)
+		int m_iMaxSpeedInc;						//	Add/subtract to ship's max speed
+		int m_iMaxSpeedLimit;					//	Do not increase speed above this value
 		CString m_sEnhancementType;				//	Type of enhancements
 		int m_iDeviceBonus;						//	Bonus to devices
 		CItemCriteria m_DeviceCriteria;			//	Only enhances devices that match criteria

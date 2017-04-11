@@ -1121,7 +1121,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 		CItemCtx BonusCtx(&Item, pBonusSource);
 
 		int iSpeedBonus;
-		if (!bNoArmorSpeedDisplay && Item.GetReferenceSpeedBonus(BonusCtx, &iSpeedBonus))
+		if (!bNoArmorSpeedDisplay && Item.GetReferenceSpeedBonus(BonusCtx, 0, &iSpeedBonus))
 			{
 			int cx = rcDrawRect.left;
 			sReference = strPatternSubst(CONSTLIT("%s — "), sReference);

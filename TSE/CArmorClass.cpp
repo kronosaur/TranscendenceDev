@@ -25,7 +25,8 @@
 #define INSTALL_COST_ATTRIB						CONSTLIT("installCost")
 #define INSTALL_COST_ADJ_ATTRIB					CONSTLIT("installCostAdj")
 #define MAX_HP_BONUS_ATTRIB						CONSTLIT("maxHPBonus")
-#define MAX_SPEED_BONUS_ATTRIB					CONSTLIT("maxSpeedBonus")
+#define MAX_SPEED_ATTRIB						CONSTLIT("maxSpeed")
+#define MAX_SPEED_INC_ATTRIB					CONSTLIT("maxSpeedInc")
 #define PHOTO_RECHARGE_ATTRIB					CONSTLIT("photoRecharge")
 #define PHOTO_REPAIR_ATTRIB						CONSTLIT("photoRepair")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
@@ -512,18 +513,49 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 //  Returns TRUE if any improvements were added.
 
     {
+	int i;
     bool bModified = false;
 
+	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 	const CItemEnhancement &Mods = (pArmor ? pArmor->GetMods() : CItemEnhancement::Null());
 
     //  Adjust max speed.
 
-    if (m_rMaxSpeedBonus != 0.0)
-        {
-        Ctx.rMaxSpeedBonus += Ctx.rSingleArmorFraction * m_rMaxSpeedBonus;
-        bModified = true;
-        }
+	CArmorSystem *pArmorSet;
+	if (m_iMaxSpeedInc 
+			&& pSource 
+			&& pArmor 
+			&& pArmor->IsPrime()
+			&& (pArmorSet = pSource->GetArmorSystem())
+			&& pArmorSet->GetSegmentCount() > 0)
+		{
+		//	Count how many armor segments of this type
+
+		int iCount = 0;
+		for (i = 0; i < pArmorSet->GetSegmentCount(); i++)
+			if (pArmorSet->GetSegment(i).GetClass() == pArmor->GetClass())
+				iCount++;
+
+		//	Compute the fraction of segments that are this type
+
+		Metric rSetFraction = (Metric)iCount / (Metric)pArmorSet->GetSegmentCount();
+
+		//	Prorate the speed bonud
+
+		int iSpeed = mathRound(m_iMaxSpeedInc * rSetFraction);
+		if (iSpeed != 0)
+			{
+			Ctx.DriveDesc.AddMaxSpeed(iSpeed * LIGHT_SECOND / 100.0);
+
+			//	Set the maximum speed
+
+			if (m_iMaxSpeedLimit == -1)
+				Ctx.rMaxSpeedLimit = LIGHT_SPEED;
+			else
+				Ctx.rMaxSpeedLimit = Max(Ctx.rMaxSpeedLimit, m_iMaxSpeedLimit * LIGHT_SPEED / 100.0);
+			}
+		}
 
 	//	Shield interference
 
@@ -753,7 +785,7 @@ int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//	Speed adjustment
 
-	retBalance.rSpeedAdj = MAX_SPEED_BALANCE_BONUS * m_rMaxSpeedBonus;
+	retBalance.rSpeedAdj = MAX_SPEED_BALANCE_BONUS * m_iMaxSpeedInc;
 	retBalance.rBalance += retBalance.rSpeedAdj;
 
 	//	Special features
@@ -1348,7 +1380,8 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	//	Ship speed bonus
 
-	pArmor->m_rMaxSpeedBonus = pDesc->GetAttributeDoubleBounded(MAX_SPEED_BONUS_ATTRIB, -100.0, 1000.0, 0.0);
+	pArmor->m_iMaxSpeedInc = pDesc->GetAttributeIntegerBounded(MAX_SPEED_INC_ATTRIB, -100, 100, 0);
+	pArmor->m_iMaxSpeedLimit = pDesc->GetAttributeIntegerBounded(MAX_SPEED_ATTRIB, 0, 100, -1);
 
     //  If we're scalable, generate stats for all levels.
 
@@ -1837,6 +1870,32 @@ bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInst
 		if (retArray)
 			retArray[i] = CalcHPDamageAdj(iHP, iAdj);
 		}
+
+	return true;
+	}
+
+bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const
+
+//	GetReferenceSpeedBonus
+//
+//	Returns the speed bonus/penalty (both intrinsic and due to mass).
+
+	{
+	int iBonus = m_iMaxSpeedInc;
+
+	//	Include adjustment for mass
+
+	CShipClass *pShipClass;
+	if (pShipClass = Ctx.GetSourceShipClass())
+		iBonus += pShipClass->CalcArmorSpeedBonus(m_pItemType->GetMassKg(Ctx) * pShipClass->GetArmorDesc().GetCount());
+
+	//	Done
+
+	if (iBonus == 0)
+		return false;
+
+	if (retiSpeedBonus)
+		*retiSpeedBonus = iBonus;
 
 	return true;
 	}

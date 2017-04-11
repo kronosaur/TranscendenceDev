@@ -895,15 +895,16 @@ void CShip::CalcPerformance (void)
     //  ship mass.
 
     if (m_fTrackMass)
-		{
         Ctx.RotationDesc.AdjForShipMass(m_pClass->GetHullMass(), GetItemMass());
-		Ctx.rArmorSpeedBonus = m_pClass->CalcArmorSpeedBonus(iArmorMass) * LIGHT_SPEED * 0.01;
 
-		//	If this is positive (a bonus) then increase the speed limit.
+	//	Adjust speed if our armor is too heavy or too light
 
-		if (Ctx.rArmorSpeedBonus > 0.0)
-			Ctx.rMaxSpeedLimit = Min(Ctx.rMaxSpeedLimit + Ctx.rArmorSpeedBonus, LIGHT_SPEED);
-		}
+	Ctx.rArmorSpeedBonus = m_pClass->CalcArmorSpeedBonus(iArmorMass) * LIGHT_SPEED * 0.01;
+
+	//	If this is positive (a bonus) then increase the speed limit.
+
+	if (Ctx.rArmorSpeedBonus > 0.0)
+		Ctx.rMaxSpeedLimit = Min(Ctx.rMaxSpeedLimit + Ctx.rArmorSpeedBonus, LIGHT_SPEED);
 
     //  Now apply the performance parameters to the descriptor
 

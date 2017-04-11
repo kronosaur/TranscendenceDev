@@ -1361,7 +1361,7 @@ bool CItem::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFl
 		return false;
 	}
 
-bool CItem::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const
+bool CItem::GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeedBonus) const
 
 //	GetReferenceSpeedBonus
 //
@@ -1369,19 +1369,22 @@ bool CItem::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const
 //	ship class.
 
 	{
-	CShipClass *pShipClass;
-	if (!IsArmor()
-			|| (pShipClass = Ctx.GetSourceShipClass()) == NULL)
+	CArmorClass *pArmor;
+
+	//	If this item is unknown, then we don't include reference
+
+	if (!m_pItemType->IsKnown() && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
 		return false;
 
-	int iBonus = pShipClass->CalcArmorSpeedBonus(GetMassKg() * pShipClass->GetArmorDesc().GetCount());
-	if (iBonus == 0)
+	//	If this is armor, ask the armor
+
+	else if (pArmor = m_pItemType->GetArmorClass())
+		return pArmor->GetReferenceSpeedBonus(Ctx, retiSpeedBonus);
+
+	//	Otherwise, nothing
+
+	else
 		return false;
-
-	if (retiSpeedBonus)
-		*retiSpeedBonus = iBonus;
-
-	return true;
 	}
 
 int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const

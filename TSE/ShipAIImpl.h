@@ -273,7 +273,7 @@ class COrderList
 		IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget, IShipController::SData *retData = NULL) const { return GetOrder(0, retpTarget, retData); }
 		inline DWORD GetCurrentOrderData (void) const { return GetCurrentEntry().dwData; }
 		inline CSpaceObject *GetCurrentOrderTarget (void) const { return GetCurrentEntry().pTarget; }
-		IShipController::OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget, IShipController::SData *retData = NULL) const;
+		IShipController::OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const;
 		void Insert (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false);
 		void OnNewSystem (CSystem *pNewSystem, bool *retbCurrentChanged);
 		void OnObjDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged);
