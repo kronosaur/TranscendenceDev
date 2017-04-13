@@ -12,25 +12,48 @@ class CObjectJoint
 			{
 			jointNone,
 
+			jointHinge,						//	A connection at a single point
 			jointRod,						//	A straight, solid rod.
 			};
 
-		CObjectJoint (void) : m_iType(jointNone)
-			{ }
+		CObjectJoint (ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo);
+		static void CreateFromStream (SLoadCtx &Ctx, CObjectJoint **retpJoint);
 
-		void InitRod (CSpaceObject *pFrom, CSpaceObject *pTo, int iLength);
+		inline DWORD GetID (void) const { return m_dwID; }
+		inline CSpaceObject *GetObj1 (void) const { return m_P1.pObj; }
+		inline CSpaceObject *GetObj2 (void) const { return m_P2.pObj; }
 		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
-		void SetMotionArc (CSpaceObject *pObj, int iMinArc, int iMaxArc);
+		inline void SetMaxLength (int iLength) { m_iMaxLength = iLength; }
+		void SetMotionArc (int iMinArc1, int iMaxArc1, int iMinArc2 = -1, int iMaxArc2 = -1);
+		void SetNextJoint (CSpaceObject *pObj, CObjectJoint *pNext);
+		void SetPos (const C3DObjectPos &Pos1, const C3DObjectPos &Pos2);
+		void WriteToStream (CSystem *pSystem, IWriteStream &Stream);
+
+		static ETypes ParseType (const CString &sValue);
 
 	private:
 		struct SAttachPoint
 			{
+			SAttachPoint (void) :
+					pObj(NULL),
+					iMinArc(-1),
+					iMaxArc(-1),
+					pNext(NULL)
+				{ }
+
 			CSpaceObject *pObj;				//	Object we're attached to
 
+			C3DObjectPos Pos;				//	Position relative to object center
 			int iMinArc:16;					//	Min angle of motion arc (degrees) -1 = unconstrained
 			int iMaxArc:16;					//	Max angle of motion arc (degrees)
-			DWORD dwOverlayID;				//	If non-zero, attached at the overlay (otherwise, at center)
+
+			CObjectJoint *pNext;			//	Next joint for this object
 			};
+
+		CObjectJoint (void) { }
+		void WriteToStream (CSystem *pSystem, IWriteStream &Stream, const SAttachPoint &Point);
+
+		static void ReadFromStream (SLoadCtx &Ctx, SAttachPoint &Point);
 
 		ETypes m_iType;						//	Type of joint
 		DWORD m_dwID;						//	Global ID
@@ -54,9 +77,17 @@ class CObjectJoint
 class CObjectJointList
 	{
 	public:
-		void CreateRod (CSpaceObject *pFrom, CSpaceObject *pTo, int iLength, DWORD *retdwID = NULL);
+		~CObjectJointList (void) { DeleteAll(); }
+
+		void CreateJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, CObjectJoint **retpJoint = NULL);
+		void DeleteAll (void);
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (CSystem *pSystem, IWriteStream &Stream);
 
 	private:
-		TLinkedList<CObjectJoint> m_List;
+		void AddJointToObjList (CObjectJoint *pJoint, CSpaceObject *pObj);
+
+		TArray<CObjectJoint *> m_AllJoints;
+		TSortMap<DWORD, CObjectJoint *> m_FirstJoint;
 	};
 

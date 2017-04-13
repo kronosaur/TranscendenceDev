@@ -51,6 +51,24 @@ struct STargetingCtx
 	bool bRecalcTargets;
 	};
 
+class C3DObjectPos
+	{
+	public:
+		C3DObjectPos (void) :
+			m_iPosAngle(0),
+			m_iPosRadius(0),
+			m_iPosZ(0)
+		{ }
+
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (IWriteStream &Stream) const;
+
+	private:
+		int m_iPosAngle:16;					//	Angle relative to obj center (degrees)
+		int m_iPosRadius:16;				//	Distance relative to obj center (pixels)
+		int m_iPosZ:16;						//	Height relative to obj center
+	};
+
 //	Ship Structure and Compartments --------------------------------------------
 
 enum ECompartmentTypes

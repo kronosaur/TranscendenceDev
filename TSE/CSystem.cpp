@@ -437,9 +437,10 @@
 //
 //	142: 1.7 Beta 5
 //		sLevelFrequency in CTradingDesc
-//
-//	143: 1.7 Beta 6
 //		Save hit objects in CContinuousBeam
+//
+//	143: 1.8 Alpha 1
+//		m_Joints in CSystem
 //
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
@@ -566,6 +567,22 @@ CSystem::~CSystem (void)
 
 	if (m_pThreadPool)
 		delete m_pThreadPool;
+	}
+
+bool CSystem::AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID)
+
+//	AddJoint
+//
+//	Adds a new joint between two objects.
+
+	{
+	CObjectJoint *pJoint;
+	m_Joints.CreateJoint(iType, pFrom, pTo, &pJoint);
+
+	if (retdwID)
+		*retdwID = pJoint->GetID();
+
+	return true;
 	}
 
 ALERROR CSystem::AddTerritory (CTerritoryDef *pTerritory)
@@ -1354,8 +1371,9 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 //	DWORD		Number of environment maps
 //	CTileMap
 //
-//	CLocationList	m_Locations
-//	CTerritoryList	m_Territories
+//	CLocationList		m_Locations
+//	CTerritoryList		m_Territories
+//	CObjectJointList	m_Joints
 
 	{
 	int i;
@@ -1564,6 +1582,11 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 
 	if (Ctx.dwVersion >= 60)
 		Ctx.pSystem->m_Territories.ReadFromStream(Ctx);
+
+	//	Load joints
+
+	if (Ctx.dwVersion >= 143)
+		Ctx.pSystem->m_Joints.ReadFromStream(Ctx);
 
 	//	Create the background star field
 
@@ -4595,6 +4618,7 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 //
 //	CLocationList	m_Locations
 //	CTerritoryList	m_Territories
+//	CObjectJointList	m_Joints
 
 	{
 	int i;
@@ -4697,6 +4721,10 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 
 	m_Locations.WriteToStream(pStream);
 	m_Territories.WriteToStream(pStream);
+
+	//	Joints
+
+	m_Joints.WriteToStream(this, *pStream);
 
 	return NOERROR;
 	}

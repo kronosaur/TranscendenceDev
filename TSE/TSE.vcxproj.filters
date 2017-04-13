@@ -66,6 +66,9 @@
     <Filter Include="Source Files\Stations">
       <UniqueIdentifier>{ef3b50ba-f448-4d87-bde8-e87dabfcf8ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{a023d886-b4dc-4e47-b336-17dcc88f249c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -1006,11 +1009,20 @@
     <ClCompile Include="CGenericType.cpp">
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
-    <ClCompile Include="CPhysicsContactResolver.cpp">
-      <Filter>Source Files\StarSystem</Filter>
-    </ClCompile>
     <ClCompile Include="CPhysicsContact.cpp">
-      <Filter>Source Files\StarSystem</Filter>
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="CPhysicsContactResolver.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectJointList.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectJoint.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C3DObjectPos.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

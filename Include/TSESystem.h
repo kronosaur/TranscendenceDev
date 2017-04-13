@@ -5,7 +5,7 @@
 
 #pragma once
 
-//	Include help classes
+//	Include helper classes
 
 #include "TSEEvents.h"
 #include "TSEPhysics.h"
@@ -736,6 +736,7 @@ class CSystem
 									   CSpaceObject *pMissileSource,
                                        int iFraction = 100);
 
+		bool AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID = NULL);
 		ALERROR AddTimedEvent (CSystemEvent *pEvent);
 		inline void AddToDeleteList (CSpaceObject *pObj) { m_DeletedObjects.FastAdd(pObj); }
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
@@ -933,6 +934,7 @@ class CSystem
 		CNavigationPathNode m_NavPaths;			//	List of navigation paths
 		CLocationList m_Locations;				//	List of point locations
 		CTerritoryList m_Territories;			//	List of defined territories
+		CObjectJointList m_Joints;				//	List of object joints
 
 		int m_iTick;							//	Ticks since beginning of time
 		int m_iNextEncounter;					//	Time of next random encounter

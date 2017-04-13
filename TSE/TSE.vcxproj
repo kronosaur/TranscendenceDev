@@ -281,6 +281,7 @@
     <ClInclude Include="TopologyProcessorsImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="C3DObjectPos.cpp" />
     <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAISettings.cpp" />
@@ -346,6 +347,8 @@
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
+    <ClCompile Include="CObjectJoint.cpp" />
+    <ClCompile Include="CObjectJointList.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
