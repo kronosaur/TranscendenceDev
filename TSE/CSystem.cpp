@@ -579,6 +579,12 @@ bool CSystem::AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceO
 	CObjectJoint *pJoint;
 	m_Joints.CreateJoint(iType, pFrom, pTo, &pJoint);
 
+	//	Apply the options
+
+	pJoint->ApplyOptions(pOptions);
+
+	//	Done
+
 	if (retdwID)
 		*retdwID = pJoint->GetID();
 
@@ -3567,6 +3573,10 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 				pObj->ClearPlayerDestination();
 			}
 
+	//	Paint all joints
+
+	m_Joints.Paint(Dest, Ctx);
+
 	//	Paint foreground objects
 
 	SavedXForm = Ctx.XForm;
@@ -4379,6 +4389,10 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 	m_EventHandlers.ObjDestroyed(Ctx.pObj);
 
+	//	Deal with joints
+
+	m_Joints.ObjDestroyed(Ctx.pObj);
+
 	//	Check to see if this was the POV
 
 	if (Ctx.pObj == g_pUniverse->GetPOV())
@@ -5117,6 +5131,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	of collisions.
 
 	UpdateCollisionTesting(Ctx);
+
+	//	Add contacts from joints
+
+	m_Joints.AddContacts(m_ContactResolver);
 
 	//	Now resolve all contacts
 

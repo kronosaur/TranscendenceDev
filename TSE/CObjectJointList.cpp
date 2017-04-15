@@ -5,6 +5,37 @@
 
 #include "PreComp.h"
 
+void CObjectJointList::AddContacts (CPhysicsContactResolver &Resolver)
+
+//	AddContacts
+//
+//	Adds contacts to the resolver.
+
+	{
+	int i;
+
+	for (i = 0; i < m_AllJoints.GetCount(); i++)
+		{
+		//	While we're here we delete any destroyed joints
+
+		if (m_AllJoints[i]->IsDestroyed())
+			{
+			delete m_AllJoints[i];
+			m_AllJoints.Delete(i);
+			i--;
+			continue;
+			}
+
+		//	Clear the paint needed flag in preparation for next paint cycle
+
+		m_AllJoints[i]->SetPaintNeeded(false);
+
+		//	Add contacts for this joint
+
+		m_AllJoints[i]->AddContacts(Resolver);
+		}
+	}
+
 void CObjectJointList::AddJointToObjList (CObjectJoint *pJoint, CSpaceObject *pObj)
 
 //	AddJointToObjList
@@ -12,14 +43,8 @@ void CObjectJointList::AddJointToObjList (CObjectJoint *pJoint, CSpaceObject *pO
 //	Adds this joint to the list of joints for the given object.
 
 	{
-	bool bNew;
-	CObjectJoint **ppFirstJoint = m_FirstJoint.SetAt(pObj->GetID(), &bNew);
-	if (bNew)
-		pJoint->SetNextJoint(pObj, NULL);
-	else
-		pJoint->SetNextJoint(pObj, *ppFirstJoint);
-
-	*ppFirstJoint = pJoint;
+	pJoint->SetNextJoint(pObj, pObj->GetFirstJoint());
+	pObj->SetFirstJoint(pJoint);
 	}
 
 void CObjectJointList::CreateJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, CObjectJoint **retpJoint)
@@ -63,7 +88,48 @@ void CObjectJointList::DeleteAll (void)
 		delete m_AllJoints[i];
 
 	m_AllJoints.DeleteAll();
-	m_FirstJoint.DeleteAll();
+	}
+
+void CObjectJointList::ObjDestroyed (CSpaceObject *pObj)
+
+//	ObjDestroyed
+//
+//	Delete any joints for the given object.
+
+	{
+	CObjectJoint *pNext = pObj->GetFirstJoint();
+	while (pNext)
+		{
+		//	Destroy this joint.
+
+		pNext->Destroy();
+
+		//	Remove it from the list of the other object.
+
+		RemoveJointFromObjList(pNext, pNext->GetOtherObj(pObj));
+
+		//	Next
+
+		pNext = pNext->GetNextJoint(pObj);
+		}
+
+	//	This object has no joints (since it is destroyed).
+
+	pObj->SetFirstJoint(NULL);
+	}
+
+void CObjectJointList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx)
+
+//	Paint
+//
+//	Paint all joints
+
+	{
+	int i;
+
+	for (i = 0; i < m_AllJoints.GetCount(); i++)
+		if (m_AllJoints[i]->IsPaintNeeded())
+			m_AllJoints[i]->Paint(Dest, Ctx);
 	}
 
 void CObjectJointList::ReadFromStream (SLoadCtx &Ctx)
@@ -101,6 +167,34 @@ void CObjectJointList::ReadFromStream (SLoadCtx &Ctx)
 		}
 	}
 
+void CObjectJointList::RemoveJointFromObjList (CObjectJoint *pJoint, CSpaceObject *pObj)
+
+//	RemoveJointFromObjList
+//
+//	Removes the joint from the list.
+
+	{
+	CObjectJoint *pPrev = NULL;
+	CObjectJoint *pTest = pObj->GetFirstJoint();
+	while (pTest)
+		{
+		CObjectJoint *pNext = pTest->GetNextJoint(pObj);
+
+		if (pTest == pJoint)
+			{
+			if (pPrev == NULL)
+				pObj->SetFirstJoint(pNext);
+			else
+				pPrev->SetNextJoint(pObj, pNext);
+
+			break;
+			}
+
+		pPrev = pTest;
+		pTest = pNext;
+		}
+	}
+
 void CObjectJointList::WriteToStream (CSystem *pSystem, IWriteStream &Stream)
 
 //	WriteToStream
@@ -112,6 +206,20 @@ void CObjectJointList::WriteToStream (CSystem *pSystem, IWriteStream &Stream)
 
 	{
 	int i;
+
+	//	Remove all destroyed joints first (no need to save them)
+
+	for (i = 0; i < m_AllJoints.GetCount(); i++)
+		{
+		if (m_AllJoints[i]->IsDestroyed())
+			{
+			delete m_AllJoints[i];
+			m_AllJoints.Delete(i);
+			i--;
+			}
+		}
+
+	//	Write it out
 
 	DWORD dwSave = m_AllJoints.GetCount();
 	Stream.Write(dwSave);

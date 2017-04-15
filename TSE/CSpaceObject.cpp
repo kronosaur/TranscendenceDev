@@ -216,6 +216,7 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 
 		m_pFirstEffect(NULL),
 		m_pOverride(NULL),
+		m_pFirstJoint(NULL),
 
 		m_iControlsFrozen(0),
 		m_iSpare(0),
@@ -5919,6 +5920,11 @@ void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 
 	if (m_pFirstEffect)
 		PaintEffects(Dest, x, y, Ctx);
+
+	//	Mark this object's joints as needed to be painted
+
+	if (m_pFirstJoint)
+		m_pFirstJoint->SetObjListPaintNeeded(this);
 
 	//	Paint annotations about the object (damage bar, etc.)
 

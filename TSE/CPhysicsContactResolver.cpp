@@ -22,6 +22,30 @@ void CPhysicsContactResolver::AddCollision (CSpaceObject *pObj, CSpaceObject *pC
 	pContact->InitCollision(pObj, pContactObj);
 	}
 
+void CPhysicsContactResolver::AddRod (CSpaceObject *pObj1, CSpaceObject *pObj2, Metric rLength)
+
+//	AddRod
+//
+//	Adds a rod between the two objects.
+
+	{
+	//	Compute the position of obj2 relative to obj1
+
+	CVector vDist = pObj2->GetPos() - pObj1->GetPos();
+	Metric rDist;
+	CVector vNormal = vDist.Normal(&rDist);
+
+	//	First add a contact that will resolve when the rod is too short.
+
+	CPhysicsContact *pContact = m_Contacts.Insert();
+	pContact->Init(pObj1, pObj2, -vNormal, rLength - rDist, 0.0);
+
+	//	Next add a contact that will resolve when the rod is too long.
+
+	pContact = m_Contacts.Insert();
+	pContact->Init(pObj1, pObj2, vNormal, rDist - rLength, 0.0);
+	}
+
 void CPhysicsContactResolver::BeginUpdate (void)
 
 //	BeginUpdate

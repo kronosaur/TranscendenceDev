@@ -1370,6 +1370,24 @@ class CComplexArea
 
 //	C3DConversion --------------------------------------------------------------
 
+class C3DObjectPos
+	{
+	public:
+		C3DObjectPos (int iAngle = 0, int iRadius = 0, int iZ = 0) :
+			m_iPosAngle(iAngle),
+			m_iPosRadius(iRadius),
+			m_iPosZ(iZ)
+			{ }
+
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (IWriteStream &Stream) const;
+
+	private:
+		int m_iPosAngle : 16;					//	Angle relative to obj center (degrees)
+		int m_iPosRadius : 16;				//	Distance relative to obj center (pixels)
+		int m_iPosZ : 16;						//	Height relative to obj center
+	};
+
 class C3DConversion
 	{
 	public:

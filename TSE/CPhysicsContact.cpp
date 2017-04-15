@@ -25,6 +25,23 @@ Metric CPhysicsContact::GetSeparatingVel (void) const
 	return m_rSeparatingVel;
 	}
 
+void CPhysicsContact::Init (CSpaceObject *pObj, CSpaceObject *pContactObj, const CVector &vNormal, Metric rPenetration, Metric rRestitution)
+
+//	Init
+//
+//	Initializes a contact
+
+	{
+	m_pObj = pObj;
+	m_pContactObj = pContactObj;
+	m_iType = contactCollision;
+	m_vContactNormal = vNormal;
+	m_rPenetration = rPenetration;
+	m_rRestitution = rRestitution;
+
+	InitDerivedValues();
+	}
+
 void CPhysicsContact::InitCollision (CSpaceObject *pObj, CSpaceObject *pContactObj)
 
 //	InitCollision

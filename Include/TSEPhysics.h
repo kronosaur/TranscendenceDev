@@ -29,6 +29,7 @@ class CPhysicsContact
 		inline CSpaceObject *GetObj2 (void) const { return m_pContactObj; }
 		inline Metric GetPenetration (void) const { return m_rPenetration; }
 		Metric GetSeparatingVel (void) const;
+		void Init (CSpaceObject *pObj, CSpaceObject *pContactObj, const CVector &vNormal, Metric rPenetration, Metric rRestitution);
 		void InitCollision (CSpaceObject *pObj, CSpaceObject *pContactObj);
 		void OnUpdateDone (void);
 		void Recalc (const CVector &vMove);
@@ -69,6 +70,7 @@ class CPhysicsContactResolver
 	{
 	public:
 		void AddCollision (CSpaceObject *pObj, CSpaceObject *pContactObj);
+		void AddRod (CSpaceObject *pObj1, CSpaceObject *pObj2, Metric rLength);
 		void BeginUpdate (void);
 		void Update (void);
 

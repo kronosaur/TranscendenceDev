@@ -1136,6 +1136,7 @@ class CSpaceObject : public CObject
 		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		CDesignType *GetFirstDockScreen (CString *retsScreen, ICCItem **retpData);
+		inline CObjectJoint *GetFirstJoint (void) const { return m_pFirstJoint; }
 		inline const CString &GetHighlightText (void) const { return m_sHighlightText; }
 		void GetHitRect (CVector *retvUR, CVector *retvLL);
 		Metric GetHitSize (void) const;
@@ -1278,6 +1279,7 @@ class CSpaceObject : public CObject
 		void SetDataInteger (const CString &sAttrib, int iValue);
 		inline void SetDestructionNotify (bool bNotify = true) { m_fNoObjectDestructionNotify = !bNotify; }
 		void SetEventFlags (void);
+		inline void SetFirstJoint (CObjectJoint *pJoint) { m_pFirstJoint = pJoint; }
 		inline void SetHasGetDockScreenEvent (bool bHasEvent) { m_fHasGetDockScreenEvent = bHasEvent; }
 		inline void SetHasOnAttackedEvent (bool bHasEvent) { m_fHasOnAttackedEvent = bHasEvent; }
 		inline void SetHasOnAttackedByPlayerEvent (bool bHasEvent) { m_fHasOnAttackedByPlayerEvent = bHasEvent; }
@@ -1753,6 +1755,7 @@ class CSpaceObject : public CObject
 		CItemEventDispatcher m_ItemEvents;		//	Item event dispatcher
 		CDesignType *m_pOverride;				//	Override event handler
 		CSpaceObjectList m_SubscribedObjs;		//	List of objects to notify when something happens
+		CObjectJoint *m_pFirstJoint;			//	List of joints
 
 		int m_iControlsFrozen:8;				//	Object will not respond to controls
 		int m_iSpare:24;
