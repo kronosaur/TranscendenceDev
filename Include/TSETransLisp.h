@@ -73,6 +73,8 @@ class CCodeChainCtx
 		inline void SetScreensRoot (CDesignType *pRoot) { m_pScreensRoot = pRoot; }
 		inline void SetSystemCreateCtx (SSystemCreateCtx *pCtx) { m_pSysCreateCtx = pCtx; }
 
+		C3DObjectPos As3DObjectPos (CSpaceObject *pObj, ICCItem *pItem, bool bAsoluteRotation = false);
+		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
 		CVector AsVector (ICCItem *pItem);
 		inline void Discard (ICCItem *pItem) { pItem->Discard(&m_CC); }

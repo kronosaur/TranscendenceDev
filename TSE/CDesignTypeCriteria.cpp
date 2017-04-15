@@ -158,24 +158,24 @@ CString CDesignTypeCriteria::AsString (void) const
 	//	Write out all the attributes
 
 	for (i = 0; i < m_sRequire.GetCount(); i++)
-		Output.WriteString(strPatternSubst(CONSTLIT(" +%s;"), m_sRequire[i]));
+		Output.WriteChars(strPatternSubst(CONSTLIT(" +%s;"), m_sRequire[i]));
 
 	for (i = 0; i < m_sRequireSpecial.GetCount(); i++)
-		Output.WriteString(strPatternSubst(CONSTLIT(" +%s;"), m_sRequireSpecial[i]));
+		Output.WriteChars(strPatternSubst(CONSTLIT(" +%s;"), m_sRequireSpecial[i]));
 
 	for (i = 0; i < m_sExclude.GetCount(); i++)
-		Output.WriteString(strPatternSubst(CONSTLIT(" -%s;"), m_sExclude[i]));
+		Output.WriteChars(strPatternSubst(CONSTLIT(" -%s;"), m_sExclude[i]));
 
 	for (i = 0; i < m_sExcludeSpecial.GetCount(); i++)
-		Output.WriteString(strPatternSubst(CONSTLIT(" -%s;"), m_sExcludeSpecial[i]));
+		Output.WriteChars(strPatternSubst(CONSTLIT(" -%s;"), m_sExcludeSpecial[i]));
 
 	//	Level
 
 	if (m_iGreaterThanLevel != INVALID_COMPARE)
-		Output.WriteString(strPatternSubst(CONSTLIT(" >%d"), m_iGreaterThanLevel));
+		Output.WriteChars(strPatternSubst(CONSTLIT(" >%d"), m_iGreaterThanLevel));
 
 	if (m_iLessThanLevel != INVALID_COMPARE)
-		Output.WriteString(strPatternSubst(CONSTLIT(" >%d"), m_iLessThanLevel));
+		Output.WriteChars(strPatternSubst(CONSTLIT(" >%d"), m_iLessThanLevel));
 
 	//	Done
 

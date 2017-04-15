@@ -1387,6 +1387,19 @@ const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *ret
 		}
 	}
 
+Metric CStation::GetInvMass (void) const
+
+//	GetInvMass
+//
+//	Return inverse mass.
+
+	{
+	if (IsAnchored() || m_rMass <= 0.0)
+		return 0.0;
+
+	return (1.0 / m_rMass);
+	}
+
 Metric CStation::GetMaxWeaponRange (void) const
 
 //	GetMaxWeaponRange

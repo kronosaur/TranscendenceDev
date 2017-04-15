@@ -164,7 +164,6 @@ extern CUniverse *g_pUniverse;
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
 #include "TSEPaint.h"
-#include "TSEEvents.h"
 #include "TSESystem.h"
 
 //	CResourceDb
@@ -1137,6 +1136,7 @@ class CSpaceObject : public CObject
 		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		CDesignType *GetFirstDockScreen (CString *retsScreen, ICCItem **retpData);
+		inline CObjectJoint *GetFirstJoint (void) const { return m_pFirstJoint; }
 		inline const CString &GetHighlightText (void) const { return m_sHighlightText; }
 		void GetHitRect (CVector *retvUR, CVector *retvLL);
 		Metric GetHitSize (void) const;
@@ -1210,6 +1210,7 @@ class CSpaceObject : public CObject
 		bool IsAutoClearDestinationOnDock (void) { return m_fAutoClearDestinationOnDock; }
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
+		inline bool IsCollisionTestNeeded (void) { return m_fCollisionTestNeeded; }
 		bool IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL);
 		bool IsCovering (CSpaceObject *pObj);
 		bool IsCreated (void) { return m_fOnCreateCalled; }
@@ -1271,12 +1272,14 @@ class CSpaceObject : public CObject
 		inline void SetAutoClearDestinationOnDestroy (void) { m_fAutoClearDestinationOnDestroy = true; }
 		inline void SetAutoClearDestinationOnDock (void) { m_fAutoClearDestinationOnDock = true; }
 		inline void SetAutomatedWeapon (void) { m_fAutomatedWeapon = true; }
+		inline void SetCollisionTestNeeded (bool bNeeded = true) { m_fCollisionTestNeeded = bNeeded; }
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
 		inline void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
 		inline void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
 		void SetDataInteger (const CString &sAttrib, int iValue);
 		inline void SetDestructionNotify (bool bNotify = true) { m_fNoObjectDestructionNotify = !bNotify; }
 		void SetEventFlags (void);
+		inline void SetFirstJoint (CObjectJoint *pJoint) { m_pFirstJoint = pJoint; }
 		inline void SetHasGetDockScreenEvent (bool bHasEvent) { m_fHasGetDockScreenEvent = bHasEvent; }
 		inline void SetHasOnAttackedEvent (bool bHasEvent) { m_fHasOnAttackedEvent = bHasEvent; }
 		inline void SetHasOnAttackedByPlayerEvent (bool bHasEvent) { m_fHasOnAttackedByPlayerEvent = bHasEvent; }
@@ -1352,10 +1355,12 @@ class CSpaceObject : public CObject
 		inline const CVector &DeltaV (const CVector &vDelta) { m_vVel = m_vVel + vDelta; return m_vVel; }
 		inline const CVector &GetOldPos (void) const { return m_vOldPos; }
 		inline const CVector &GetVel (void) const { return m_vVel; }
+		inline bool IsInsideBarrier (void) const { return m_fInsideBarrier; }
 		inline bool IsManuallyAnchored (void) const { return m_fManualAnchor; }
 		void Jump (const CVector &vPos);
-		void Move (const CSpaceObjectList &Barriers, Metric rSeconds);
+		void Move (SUpdateCtx &Ctx, Metric rSeconds);
 		inline void Place (const CVector &vPos, const CVector &vVel = NullVector) { m_vPos = vPos; m_vOldPos = vPos; m_vVel = vVel; }
+		inline void SetInsideBarrier (bool bInside = true) { m_fInsideBarrier = bInside; }
 		inline void SetManualAnchor (bool bAnchored = true) { m_fManualAnchor = bAnchored; }
 		inline void SetPos (const CVector &vPos) { m_vPos = vPos; }
 		inline void SetVel (const CVector &vVel) { m_vVel = vVel; }
@@ -1453,8 +1458,9 @@ class CSpaceObject : public CObject
 		virtual const CObjectImageArray &GetImage (void) const;
         virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
 		virtual int GetInteraction (void) const { return 100; }
+		virtual Metric GetInvMass (void) const { return 0.0; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
-		virtual Metric GetMass (void) { return 0.0; }
+		virtual Metric GetMass (void) const { return 0.0; }
 		virtual CString GetName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return LITERAL("unknown object"); }
 		virtual CString GetObjClassName (void) { return CONSTLIT("unknown"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerStations; }
@@ -1667,7 +1673,7 @@ class CSpaceObject : public CObject
 		//	Helper functions
 		void AddEffect (IEffectPainter *pPainter, int xOffset, int yOffset, int iTick = 0, int iRotation = 0);
 		void CalcInsideBarrier (void);
-		Metric CalculateItemMass (Metric *retrCargoMass = NULL);
+		Metric CalculateItemMass (Metric *retrCargoMass = NULL) const;
 		bool CanFireOnObjHelper (CSpaceObject *pObj);
 		inline void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
 		inline void ClearInDamageCode (void) { m_fInDamage = false; }
@@ -1749,6 +1755,7 @@ class CSpaceObject : public CObject
 		CItemEventDispatcher m_ItemEvents;		//	Item event dispatcher
 		CDesignType *m_pOverride;				//	Override event handler
 		CSpaceObjectList m_SubscribedObjs;		//	List of objects to notify when something happens
+		CObjectJoint *m_pFirstJoint;			//	List of joints
 
 		int m_iControlsFrozen:8;				//	Object will not respond to controls
 		int m_iSpare:24;
@@ -1802,7 +1809,7 @@ class CSpaceObject : public CObject
 		DWORD m_fHasOnAttackedByPlayerEvent:1;	//	TRUE if we have an <OnAttackedByPlayer> event
 		DWORD m_fHasOnOrderChangedEvent:1;		//	TRUE if we have an <OnOrderChanged> event
 		DWORD m_fManualAnchor:1;				//	TRUE if object is temporarily anchored
-		DWORD m_fSpare5:1;
+		DWORD m_fCollisionTestNeeded:1;			//	TRUE if object needs to check collisions with barriers
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

@@ -437,9 +437,10 @@
 //
 //	142: 1.7 Beta 5
 //		sLevelFrequency in CTradingDesc
-//
-//	143: 1.7 Beta 6
 //		Save hit objects in CContinuousBeam
+//
+//	143: 1.8 Alpha 1
+//		m_Joints in CSystem
 //
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
@@ -566,6 +567,28 @@ CSystem::~CSystem (void)
 
 	if (m_pThreadPool)
 		delete m_pThreadPool;
+	}
+
+bool CSystem::AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID)
+
+//	AddJoint
+//
+//	Adds a new joint between two objects.
+
+	{
+	CObjectJoint *pJoint;
+	m_Joints.CreateJoint(iType, pFrom, pTo, &pJoint);
+
+	//	Apply the options
+
+	pJoint->ApplyOptions(pOptions);
+
+	//	Done
+
+	if (retdwID)
+		*retdwID = pJoint->GetID();
+
+	return true;
 	}
 
 ALERROR CSystem::AddTerritory (CTerritoryDef *pTerritory)
@@ -747,6 +770,55 @@ Metric CSystem::CalcApparentSpeedAdj (Metric rSpeed)
 	return Min(MAX_ADJ, rAdj);
 	}
 
+void CSystem::CalcAutoTarget (SUpdateCtx &Ctx)
+
+//	CalcAutoTarget
+//
+//	Initializes various fields in the context to figure out what the player's
+//	auto-target is.
+
+	{
+	if (Ctx.pPlayer == NULL)
+		return;
+
+	Ctx.pPlayerTarget = Ctx.pPlayer->GetTarget(CItemCtx(), true);
+
+	//	Check to see if the primary weapon requires autotargetting
+
+	CInstalledDevice *pWeapon = Ctx.pPlayer->GetNamedDevice(devPrimaryWeapon);
+	if (pWeapon && pWeapon->IsEnabled())
+		{
+		CItemCtx ItemCtx(Ctx.pPlayer, pWeapon);
+		Ctx.bNeedsAutoTarget = pWeapon->GetClass()->NeedsAutoTarget(ItemCtx, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
+		}
+
+	//	If the primary does not need it, check the missile launcher
+
+	CInstalledDevice *pLauncher;
+	if ((pLauncher = Ctx.pPlayer->GetNamedDevice(devMissileWeapon))
+		&& pLauncher->IsEnabled())
+		{
+		CItemCtx ItemCtx(Ctx.pPlayer, pLauncher);
+		int iLauncherMinFireArc, iLauncherMaxFireArc;
+		if (pLauncher->GetClass()->NeedsAutoTarget(ItemCtx, &iLauncherMinFireArc, &iLauncherMaxFireArc))
+			{
+			if (Ctx.bNeedsAutoTarget)
+				CGeometry::CombineArcs(Ctx.iMinFireArc, Ctx.iMaxFireArc, iLauncherMinFireArc, iLauncherMaxFireArc, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
+			else
+				{
+				Ctx.bNeedsAutoTarget = true;
+				Ctx.iMinFireArc = iLauncherMinFireArc;
+				Ctx.iMaxFireArc = iLauncherMaxFireArc;
+				}
+			}
+		}
+
+	//	Set up perception and max target dist
+
+	Ctx.iPlayerPerception = Ctx.pPlayer->GetPerception();
+	Ctx.rTargetDist2 = MAX_AUTO_TARGET_DISTANCE * MAX_AUTO_TARGET_DISTANCE;
+	}
+
 int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
 
 //	CalculateLightIntensity
@@ -873,6 +945,40 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &C
 	//	Done
 
 	return iWeight;
+	}
+
+void CSystem::CalcObjGrid (SUpdateCtx &Ctx)
+
+//	CalcObjGrid
+//
+//	Loops over all objects and adds them to m_ObjGrid so we can do fast finds.
+
+	{
+	int i;
+
+	DebugStartTimer();
+	m_ObjGrid.DeleteAll();
+	for (i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL)
+			continue;
+
+		if (pObj->CanBeHit())
+			{
+			m_ObjGrid.AddObject(pObj);
+
+			//	If this is an object that can block ships, then we remember it
+			//	so that we can optimize systems without it.
+			//
+			//	LATER: We should implement this as a system variable that we
+			//	change in create/delete object.
+
+			if (pObj->BlocksShips())
+				Ctx.bHasShipBarriers = true;
+			}
+		}
+	DebugStopTimer("Adding objects to grid");
 	}
 
 CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
@@ -1271,8 +1377,9 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 //	DWORD		Number of environment maps
 //	CTileMap
 //
-//	CLocationList	m_Locations
-//	CTerritoryList	m_Territories
+//	CLocationList		m_Locations
+//	CTerritoryList		m_Territories
+//	CObjectJointList	m_Joints
 
 	{
 	int i;
@@ -1481,6 +1588,11 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 
 	if (Ctx.dwVersion >= 60)
 		Ctx.pSystem->m_Territories.ReadFromStream(Ctx);
+
+	//	Load joints
+
+	if (Ctx.dwVersion >= 143)
+		Ctx.pSystem->m_Joints.ReadFromStream(Ctx);
 
 	//	Create the background star field
 
@@ -2510,6 +2622,27 @@ void CSystem::FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDes
 		}
 	}
 
+void CSystem::FlushDeletedObjects (void)
+
+//	FlushDeletedObjects
+//
+//	Flush deleted objects from the deleted list.
+
+	{
+	int i;
+
+	for (i = 0; i < m_DeletedObjects.GetCount(); i++)
+		{
+		CSpaceObject *pObj = m_DeletedObjects.GetObj(i);
+		if (pObj->IsNamed())
+			{
+			}
+
+		delete pObj;
+		}
+	m_DeletedObjects.RemoveAll();
+	}
+
 void CSystem::FlushEnemyObjectCache (void)
 
 //	FlushEnemyObjectCache
@@ -3440,6 +3573,10 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 				pObj->ClearPlayerDestination();
 			}
 
+	//	Paint all joints
+
+	m_Joints.Paint(Dest, Ctx);
+
 	//	Paint foreground objects
 
 	SavedXForm = Ctx.XForm;
@@ -4252,6 +4389,10 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 	m_EventHandlers.ObjDestroyed(Ctx.pObj);
 
+	//	Deal with joints
+
+	m_Joints.ObjDestroyed(Ctx.pObj);
+
 	//	Check to see if this was the POV
 
 	if (Ctx.pObj == g_pUniverse->GetPOV())
@@ -4491,6 +4632,7 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 //
 //	CLocationList	m_Locations
 //	CTerritoryList	m_Territories
+//	CObjectJointList	m_Joints
 
 	{
 	int i;
@@ -4594,6 +4736,10 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 	m_Locations.WriteToStream(pStream);
 	m_Territories.WriteToStream(pStream);
 
+	//	Joints
+
+	m_Joints.WriteToStream(this, *pStream);
+
 	return NOERROR;
 	}
 
@@ -4618,6 +4764,23 @@ void CSystem::SetObjectSovereign (CSpaceObject *pObj, CSovereign *pSovereign)
 	{
 	pObj->SetSovereign(pSovereign);
 	FlushEnemyObjectCache();
+	}
+
+void CSystem::SetPainted (void)
+
+//	SetPainted
+//
+//	Set all objects as painted.
+
+	{
+	int i;
+
+	for (i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj)
+			pObj->SetPainted();
+		}
 	}
 
 void CSystem::SetPOVLRS (CSpaceObject *pCenter)
@@ -4850,60 +5013,13 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.
 
-	if (Ctx.pPlayer)
-		{
-		Ctx.pPlayerTarget = Ctx.pPlayer->GetTarget(CItemCtx(), true);
-
-		//	Check to see if the primary weapon requires autotargetting
-
-		CInstalledDevice *pWeapon = Ctx.pPlayer->GetNamedDevice(devPrimaryWeapon);
-		if (pWeapon && pWeapon->IsEnabled())
-			{
-			CItemCtx ItemCtx(Ctx.pPlayer, pWeapon);
-			Ctx.bNeedsAutoTarget = pWeapon->GetClass()->NeedsAutoTarget(ItemCtx, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
-			}
-
-		//	If the primary does not need it, check the missile launcher
-
-		CInstalledDevice *pLauncher;
-		if ((pLauncher = Ctx.pPlayer->GetNamedDevice(devMissileWeapon))
-				&& pLauncher->IsEnabled())
-			{
-			CItemCtx ItemCtx(Ctx.pPlayer, pLauncher);
-			int iLauncherMinFireArc, iLauncherMaxFireArc;
-			if (pLauncher->GetClass()->NeedsAutoTarget(ItemCtx, &iLauncherMinFireArc, &iLauncherMaxFireArc))
-				{
-				if (Ctx.bNeedsAutoTarget)
-					CGeometry::CombineArcs(Ctx.iMinFireArc, Ctx.iMaxFireArc, iLauncherMinFireArc, iLauncherMaxFireArc, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
-				else
-					{
-					Ctx.bNeedsAutoTarget = true;
-					Ctx.iMinFireArc = iLauncherMinFireArc;
-					Ctx.iMaxFireArc = iLauncherMaxFireArc;
-					}
-				}
-			}
-
-		//	Set up perception and max target dist
-
-		Ctx.iPlayerPerception = Ctx.pPlayer->GetPerception();
-		Ctx.rTargetDist2 = MAX_AUTO_TARGET_DISTANCE * MAX_AUTO_TARGET_DISTANCE;
-		}
+	CalcAutoTarget(Ctx);
 
 	//	Delete all objects in the deleted list (we do this at the
 	//	beginning because we want to keep the list after the update
 	//	so that callers can examine it).
 
-	for (i = 0; i < m_DeletedObjects.GetCount(); i++)
-		{
-		CSpaceObject *pObj = m_DeletedObjects.GetObj(i);
-		if (pObj->IsNamed())
-			{
-			}
-
-		delete pObj;
-		}
-	m_DeletedObjects.RemoveAll();
+	FlushDeletedObjects();
 
 	//	Fire timed events
 	//	NOTE: We only do this if we have a player because otherwise, some
@@ -4917,27 +5033,12 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Add all objects to the grid so that we can do faster
 	//	hit tests
 
-	DebugStartTimer();
-	m_ObjGrid.DeleteAll();
-	for (i = 0; i < GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = GetObject(i);
-		if (pObj && pObj->CanBeHit())
-			m_ObjGrid.AddObject(pObj);
-		}
-	DebugStopTimer("Adding objects to grid");
+	CalcObjGrid(Ctx);
 
 	//	If necessary, mark as painted so that objects update correctly.
 
 	if (SystemCtx.bForcePainted)
-		{
-		for (i = 0; i < GetObjectCount(); i++)
-			{
-			CSpaceObject *pObj = GetObject(i);
-			if (pObj)
-				pObj->SetPainted();
-			}
-		}
+		SetPainted();
 
 	//	Give all objects a chance to react
 
@@ -4970,23 +5071,21 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Initialize a structure that holds context for motion
 
 	DebugStartTimer();
-
-	m_BarrierObjects.SetAllocSize(GetObjectCount());
-	m_GravityObjects.SetAllocSize(GetObjectCount());
 	bool bTrackPlayerShips = (Ctx.pPlayer == NULL);
 
-	//	Make a list of all barrier and gravity objects
+	//	Start physics
+
+	m_ContactResolver.BeginUpdate();
+
+	//	Do a pass before move to update gravity and other things.
 
 	for (i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj && !pObj->IsDestroyed())
 			{
-			if (pObj->IsBarrier())
-				m_BarrierObjects.FastAdd(pObj);
-
 			if (pObj->HasGravity())
-				m_GravityObjects.FastAdd(pObj);
+				UpdateGravity(Ctx, pObj);
 
 			//	If necessary, keep track of objects that belong to the player
 
@@ -5000,11 +5099,6 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 			}
 		}
 
-	//	Accelerate objects affected by gravity
-
-	for (i = 0; i < m_GravityObjects.GetCount(); i++)
-		UpdateGravity(Ctx, m_GravityObjects.GetObj(i));
-
 	//	Move all objects. Note: We always move last because we want to
 	//	paint right after a move. Otherwise, when a laser/missile hits
 	//	an object, the laser/missile is deleted (in update) before it
@@ -5017,12 +5111,13 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 		if (pObj 
                 && !pObj->IsDestroyed()
                 && pObj->CanMove()
+				&& !pObj->IsSuspended()
                 && !pObj->IsTimeStopped())
 			{
 			//	Move the objects
 
 			SetProgramState(psUpdatingMove, pObj);
-			pObj->Move(m_BarrierObjects, SystemCtx.rSecondsPerTick);
+			pObj->Move(Ctx, SystemCtx.rSecondsPerTick);
 
 #ifdef DEBUG_PERFORMANCE
 			iMoveObj++;
@@ -5030,6 +5125,20 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 			}
 		}
 	DebugStopTimer("Moving objects");
+
+	//	Update collisions. This function will iterate over each object that 
+	//	needs collision testing and add a CPhysicsContact for each unique pair
+	//	of collisions.
+
+	UpdateCollisionTesting(Ctx);
+
+	//	Add contacts from joints
+
+	m_Joints.AddContacts(m_ContactResolver);
+
+	//	Now resolve all contacts
+
+	m_ContactResolver.Update();
 
 	//	Update random encounters
 
@@ -5064,11 +5173,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 #ifdef DEBUG_PERFORMANCE
 	{
 	char szBuffer[1024];
-	wsprintf(szBuffer, "Objects: %d  Updating: %d  Moving: %d  Barriers: %d\n", 
+	wsprintf(szBuffer, "Objects: %d  Updating: %d  Moving: %d\n", 
 			GetObjectCount(), 
 			iUpdateObj, 
-			iMoveObj,
-			m_BarrierObjects.GetCount());
+			iMoveObj);
 	::OutputDebugString(szBuffer);
 	}
 #endif
@@ -5076,6 +5184,85 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Next
 
 	m_iTick++;
+	}
+
+void CSystem::UpdateCollisionTesting (SUpdateCtx &Ctx)
+
+//	UpdateCollisionTesting
+//
+//	Loops over all objects that need collision testing and adds physics 
+//	contacts for every unique pair of collisions detected.
+
+	{
+	int i;
+
+	for (i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL || !pObj->IsCollisionTestNeeded())
+			continue;
+
+		//	Reset the collision flag so we don't consider this object again.
+
+		pObj->SetCollisionTestNeeded(false);
+		bool bBlocked = false;
+
+		//	Loop over all objects in range.
+
+		SSpaceObjectGridEnumerator j;
+		EnumObjectsInBoxStart(j, pObj->GetPos(), g_SecondsPerUpdate * LIGHT_SECOND);
+		while (EnumObjectsInBoxHasMore(j))
+			{
+			CSpaceObject *pContactObj = EnumObjectsInBoxGetNext(j);
+
+			//	If this contact object is a moving object and if we've already
+			//	handled it, then we don't need anything further. This can happen,
+			//	for example, with two wrecks running into each other.
+
+			if (pContactObj->CanMove() 
+					&& !pContactObj->IsCollisionTestNeeded())
+				continue;
+
+			//	If the contact object cannot block us, then continue.
+
+			if (!pContactObj->Blocks(pObj))
+				continue;
+
+			//	See if we collided. For objects against immobile barriers we do a
+			//	point test because we might get stuck due to rotation changes.
+
+			if (pContactObj->IsAnchored())
+				{
+				if (!pContactObj->PointInObject(pContactObj->GetPos(), pObj->GetPos()))
+					continue;
+				}
+
+			//	See if we intersect. If we do, then we add a collision.
+
+			else if (!pObj->ObjectInObject(pObj->GetPos(), pContactObj, pContactObj->GetPos()))
+				continue;
+
+			//	At this point we know that we've hit pContactObj.
+
+			bBlocked = true;
+
+			//	If we were born inside a barrier, then we remember that we're 
+			//	still blocked, but we continue without bouncing until we're out.
+
+			if (pObj->IsInsideBarrier())
+				continue;
+
+			//	Add a collision contact
+
+			m_ContactResolver.AddCollision(pObj, pContactObj);
+			}
+
+		//	If we were inside a barrier but we're no longer blocked, then clear
+		//	the flag.
+
+		if (pObj->IsInsideBarrier() && !bBlocked)
+			pObj->SetInsideBarrier(false);
+		}
 	}
 
 void CSystem::UpdateExtended (const CTimeSpan &ExtraTime)

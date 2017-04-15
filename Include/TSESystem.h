@@ -5,6 +5,12 @@
 
 #pragma once
 
+//	Include helper classes
+
+#include "TSEEvents.h"
+#include "TSEPhysics.h"
+#include "TSEObjectJoints.h"
+
 const int MIN_PLANET_SIZE = 1000;			//	Size at which a world is considered planetary size
 
 //	CNavigationPath
@@ -730,6 +736,7 @@ class CSystem
 									   CSpaceObject *pMissileSource,
                                        int iFraction = 100);
 
+		bool AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID = NULL);
 		ALERROR AddTimedEvent (CSystemEvent *pEvent);
 		inline void AddToDeleteList (CSpaceObject *pObj) { m_DeletedObjects.FastAdd(pObj); }
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
@@ -885,6 +892,8 @@ class CSystem
 
 		CSystem (CUniverse *pUniv, CTopologyNode *pTopology);
 
+		void CalcAutoTarget (SUpdateCtx &Ctx);
+		void CalcObjGrid (SUpdateCtx &Ctx);
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
 		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
 		void ComputeMapLabels (void);
@@ -895,6 +904,7 @@ class CSystem
 								  SObjCreateCtx &CreateCtx,
 								  CSpaceObject **retpStation,
 								  CString *retsError = NULL);
+		void FlushDeletedObjects (void);
 		void FlushEnemyObjectCache (void);
 		inline int GetTimedEventCount (void) { return m_TimedEvents.GetCount(); }
 		inline CSystemEvent *GetTimedEvent (int iIndex) { return m_TimedEvents.GetEvent(iIndex); }
@@ -903,6 +913,8 @@ class CSystem
 		void PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj);
 		void PaintViewportAnnotations (CG32bitImage &Dest, SViewportAnnotations &Annotations, SViewportPaintCtx &Ctx);
 		void RemoveVolumetricShadow (CSpaceObject *pObj);
+		void SetPainted (void);
+		void UpdateCollisionTesting (SUpdateCtx &Ctx);
 		void UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj);
 		void UpdateRandomEncounters (void);
 
@@ -922,6 +934,7 @@ class CSystem
 		CNavigationPathNode m_NavPaths;			//	List of navigation paths
 		CLocationList m_Locations;				//	List of point locations
 		CTerritoryList m_Territories;			//	List of defined territories
+		CObjectJointList m_Joints;				//	List of object joints
 
 		int m_iTick;							//	Ticks since beginning of time
 		int m_iNextEncounter;					//	Time of next random encounter
@@ -945,8 +958,6 @@ class CSystem
 
 		CThreadPool *m_pThreadPool;				//	Thread pool for painting
 		CSpaceObjectList m_EncounterObjs;		//	List of objects that generate encounters
-		CSpaceObjectList m_BarrierObjects;		//	List of barrier objects
-		CSpaceObjectList m_GravityObjects;		//	List of objects that have gravity
 		TArray<SStarDesc> m_Stars;				//	List of stars in the system
 		CSpaceObjectGrid m_ObjGrid;				//	Grid to help us hit test
 		CSpaceObjectList m_DeletedObjects;		//	List of objects deleted in the current update
@@ -957,6 +968,7 @@ class CSystem
 		TArray<SDeferredOnCreateCtx> m_DeferredOnCreate;	//	Ordered list of objects that need an OnSystemCreated call
 		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
+		CPhysicsContactResolver m_ContactResolver;	//	Resolves physics contacts
 
 		static const Metric g_MetersPerKlick;
 	};

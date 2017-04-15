@@ -4,6 +4,13 @@
 
 #include "PreComp.h"
 
+#define FIELD_ANGLE								CONSTLIT("angle")
+#define FIELD_MAX								CONSTLIT("max")
+#define FIELD_MIN								CONSTLIT("min")
+#define FIELD_OMNIDIRECTIONAL					CONSTLIT("omnidirectional")
+#define FIELD_RADIUS							CONSTLIT("radius")
+#define FIELD_Z									CONSTLIT("z")
+
 #define STR_G_DATA								CONSTLIT("gData")
 #define STR_G_ITEM								CONSTLIT("gItem")
 #define STR_G_SOURCE							CONSTLIT("gSource")
@@ -56,6 +63,102 @@ void CCodeChainCtx::AddFrame (void)
 	SInvokeFrame *pFrame = g_Invocations.Insert();
 	pFrame->iEvent = m_iEvent;
 	pFrame->pListData = m_pListData;
+	}
+
+C3DObjectPos CCodeChainCtx::As3DObjectPos (CSpaceObject *pObj, ICCItem *pItem, bool bAbsoluteRotation)
+
+//	As3DObjectPos
+//
+//	Converts to C3DObjectPos
+
+	{
+	if (pItem == NULL || pItem->IsNil())
+		return C3DObjectPos();
+	else if (pItem->IsSymbolTable())
+		{
+		int iAngle = AngleMod(pItem->GetIntegerAt(FIELD_ANGLE));
+		int iRadius = Max(0, pItem->GetIntegerAt(FIELD_RADIUS));
+		int iZ = pItem->GetIntegerAt(FIELD_Z);
+
+		return C3DObjectPos(iAngle, iRadius, iZ);
+		}
+	else
+		{
+		CVector vPos = AsVector(pItem);
+
+		Metric rRadius;
+		int iDirection = ::VectorToPolar(vPos - pObj->GetPos(), &rRadius);
+		int iRotationOrigin = (!bAbsoluteRotation ? pObj->GetRotation() : 0);
+		int iAngle = AngleMod(iDirection - iRotationOrigin);
+		int iRadius = mathRound(rRadius / g_KlicksPerPixel);
+
+		return C3DObjectPos(iAngle, iRadius);
+		}
+	}
+
+bool CCodeChainCtx::AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional)
+
+//	AsArc
+//
+//	Converts to a fire arc
+
+	{
+	//	A value of nil means default value.
+
+	if (pItem == NULL || pItem->IsNil())
+		{
+		if (retbOmnidirectional) *retbOmnidirectional = false;
+		if (retiMinArc) *retiMinArc = -1;
+		if (retiMaxArc) *retiMaxArc = -1;
+		}
+
+	//	A struct has fields
+
+	else if (pItem->IsSymbolTable())
+		{
+		if (retbOmnidirectional) *retbOmnidirectional = false;
+		if (retiMinArc) *retiMinArc = AngleMod(pItem->GetIntegerAt(FIELD_MIN));
+		if (retiMaxArc) *retiMaxArc = AngleMod(pItem->GetIntegerAt(FIELD_MAX));
+		}
+
+	//	A value of "omnidirectional" counts
+
+	else if (strEquals(pItem->GetStringValue(), FIELD_OMNIDIRECTIONAL))
+		{
+		if (retbOmnidirectional) *retbOmnidirectional = true;
+		if (retiMinArc) *retiMinArc = 0;
+		if (retiMaxArc) *retiMaxArc = 0;
+		}
+
+	//	A single value means that we just point in a direction
+
+	else if (pItem->GetCount() == 1)
+		{
+		int iMinFireArc = AngleMod(pItem->GetElement(0)->GetIntegerValue());
+
+		if (retbOmnidirectional) *retbOmnidirectional = false;
+		if (retiMinArc) *retiMinArc = iMinFireArc;
+		if (retiMaxArc) *retiMaxArc = iMinFireArc;
+		}
+
+	//	Otherwise we expect a list with two elements
+
+	else if (pItem->GetCount() >= 2)
+		{
+		int iMinFireArc = AngleMod(pItem->GetElement(0)->GetIntegerValue());
+		int iMaxFireArc = AngleMod(pItem->GetElement(1)->GetIntegerValue());
+
+		if (retbOmnidirectional) *retbOmnidirectional = false;
+		if (retiMinArc) *retiMinArc = iMinFireArc;
+		if (retiMaxArc) *retiMaxArc = iMaxFireArc;
+		}
+
+	//	Invalid
+
+	else
+		return false;
+
+	return true;
 	}
 
 CSpaceObject *CCodeChainCtx::AsSpaceObject (ICCItem *pItem)

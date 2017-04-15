@@ -247,7 +247,9 @@
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEImages.h" />
     <ClInclude Include="..\Include\TSEItems.h" />
+    <ClInclude Include="..\Include\TSEObjectJoints.h" />
     <ClInclude Include="..\Include\TSEParticleSystem.h" />
+    <ClInclude Include="..\Include\TSEPhysics.h" />
     <ClInclude Include="..\Include\TSEPlayer.h" />
     <ClInclude Include="..\Include\TSEPlayerSettings.h" />
     <ClInclude Include="..\Include\TSEShipAI.h" />
@@ -279,6 +281,7 @@
     <ClInclude Include="TopologyProcessorsImpl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="C3DObjectPos.cpp" />
     <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAISettings.cpp" />
@@ -344,6 +347,8 @@
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
+    <ClCompile Include="CObjectJoint.cpp" />
+    <ClCompile Include="CObjectJointList.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
@@ -356,6 +361,8 @@
     <ClCompile Include="CInstalledDevice.cpp" />
     <ClCompile Include="CIntegralRotation.cpp" />
     <ClCompile Include="CPerceptionCalc.cpp" />
+    <ClCompile Include="CPhysicsContact.cpp" />
+    <ClCompile Include="CPhysicsContactResolver.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
     <ClCompile Include="CRangeTypeEvent.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />

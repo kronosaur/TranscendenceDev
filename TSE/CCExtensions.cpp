@@ -222,6 +222,7 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_FIRE_ITEM_INVOKE		121
 #define FN_OBJ_RECORD_BUY_ITEM		122
 #define FN_OBJ_CALC_BEST_TARGET		123
+#define FN_OBJ_ADD_CONNECTION		124
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1222,6 +1223,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objAddBuyOrder",					fnObjSet,		FN_OBJ_ADD_BUY_ORDER,
 			"(objAddBuyOrder obj criteria priceAdj) -> True/Nil",
 			"ivi",		PPFLAG_SIDEEFFECTS,	},
+
+		{	"objAddConnection",				fnObjSet,		FN_OBJ_ADD_CONNECTION,
+			"(objAddConnection obj1 connectType obj2 [options]) -> connectionID\n\n"
+
+			"connectType:\n\n"
+
+			"   'hinge\n"
+			"   'rod\n\n"
+			
+			"options:\n\n"
+			
+			"   'pos1: position relative to obj1\n"
+			"   'pos2: position relative to obj2\n",
+
+			"isi*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objAddItem",					fnObjSet,		FN_OBJ_ADD_ITEM,
 			"(objAddItem obj item|type [count]) -> True/Nil",
@@ -6683,6 +6699,29 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pObj->AddSellOrder(pType, sCriteria, iPriceAdj);
 
 			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_ADD_CONNECTION:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			CObjectJoint::ETypes iType = CObjectJoint::ParseType(pArgs->GetElement(1)->GetStringValue());
+			if (iType == CObjectJoint::jointNone)
+				return pCC->CreateError(CONSTLIT("Unknown connection type"), pArgs->GetElement(1));
+
+			CSpaceObject *pObj2 = CreateObjFromItem(*pCC, pArgs->GetElement(2), CCUTIL_FLAG_CHECK_DESTROYED);
+			if (pObj2 == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid object"), pArgs->GetElement(2));
+
+			ICCItem *pOptions = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
+
+			DWORD dwID;
+			if (!pSystem->AddJoint(iType, pObj, pObj2, pOptions, &dwID))
+				return pCC->CreateNil();
+
+			return pCC->CreateInteger(dwID);
 			}
 
 		case FN_OBJ_ADD_ITEM:
