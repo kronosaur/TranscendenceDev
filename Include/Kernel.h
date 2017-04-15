@@ -957,8 +957,15 @@ class IWriteStream
 		virtual ALERROR Close (void) = 0;
 		virtual ALERROR Create (void) = 0;
 		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) = 0;
-		virtual ALERROR WriteChar (char chChar, int iLength = 1);
-		virtual ALERROR WriteString (const CString &sString, int *retiBytesWritten = NULL) { return Write(sString.GetASCIIZPointer(), sString.GetLength(), retiBytesWritten); }
+
+		inline ALERROR Write (char chChar, int iLength = 1) { return WriteChar(chChar, iLength); }
+		inline ALERROR Write (int iValue) { return Write((char *)&iValue, sizeof(DWORD)); }
+		inline ALERROR Write (DWORD dwValue) { return Write((char *)&dwValue, sizeof(DWORD)); }
+		inline ALERROR Write (double rValue) { return Write((char *)&rValue, sizeof(double)); }
+		inline ALERROR Write (const CString &sString) { sString.WriteToStream(this); return NOERROR; }
+
+		ALERROR WriteChar (char chChar, int iLength = 1);
+		ALERROR WriteChars (const CString &sString, int *retiBytesWritten = NULL) { return Write(sString.GetASCIIZPointer(), sString.GetLength(), retiBytesWritten); }
 	};
 
 class IReadStream
@@ -967,6 +974,11 @@ class IReadStream
 		virtual ALERROR Close (void) = 0;
 		virtual ALERROR Open (void) = 0;
 		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL) = 0;
+
+		inline ALERROR Read (int &iValue) { return Read((char *)&iValue, sizeof(DWORD)); }
+		inline ALERROR Read (DWORD &dwValue) { return Read((char *)&dwValue, sizeof(DWORD)); }
+		inline ALERROR Read (double &rValue) { return Read((char *)&rValue, sizeof(double)); }
+		inline ALERROR Read (CString &sValue) { sValue.ReadFromStream(this); return NOERROR; }
 	};
 
 //	CMemoryWriteStream. This object is used to write variable length
@@ -983,9 +995,13 @@ class CMemoryWriteStream : public CObject, public IWriteStream
 
 		//	IWriteStream virtuals
 
-		virtual ALERROR Close (void);
-		virtual ALERROR Create (void);
-		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL);
+		virtual ALERROR Close (void) override;
+		virtual ALERROR Create (void) override;
+		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) override;
+
+		//	We want to inherit all the overloaded versions of Write.
+
+		using IWriteStream::Write;
 
 	private:
 		enum Constants
@@ -1028,9 +1044,13 @@ class CMemoryReadStream : public CObject, public IReadStream
 
 		//	IReadStream virtuals
 
-		virtual ALERROR Close (void) { return NOERROR; }
-		virtual ALERROR Open (void) { m_iPos = 0; return NOERROR; }
-		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL);
+		virtual ALERROR Close (void) override { return NOERROR; }
+		virtual ALERROR Open (void) override { m_iPos = 0; return NOERROR; }
+		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL) override;
+
+		//	We want to inherit all the overloaded versions of Read.
+
+		using IReadStream::Read;
 
 	private:
 		char *m_pData;
@@ -1051,9 +1071,13 @@ class CFileWriteStream : public CObject, public IWriteStream
 
 		//	IWriteStream virtuals
 
-		virtual ALERROR Close (void);
-		virtual ALERROR Create (void);
-		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL);
+		virtual ALERROR Close (void) override;
+		virtual ALERROR Create (void) override;
+		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) override;
+
+		//	We want to inherit all the overloaded versions of Write.
+
+		using IWriteStream::Write;
 
 	private:
 		CString m_sFilename;
@@ -1074,9 +1098,13 @@ class CFileReadStream : public CObject, public IReadStream
 
 		//	IReadStream virtuals
 
-		virtual ALERROR Close (void);
-		virtual ALERROR Open (void);
-		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL);
+		virtual ALERROR Close (void) override;
+		virtual ALERROR Open (void) override;
+		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL) override;
+
+		//	We want to inherit all the overloaded versions of Read.
+
+		using IReadStream::Read;
 
 	private:
 		CString m_sFilename;

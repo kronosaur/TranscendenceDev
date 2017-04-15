@@ -230,6 +230,10 @@ ALERROR CMemoryReadStream::Read (char *pData, int iLength, int *retiBytesRead)
 
 //	IWriteStream ----------------------------------------------------------------
 
+ALERROR Write (int iValue);
+ALERROR Write (DWORD dwValue);
+ALERROR Write (const CString &sString);
+
 ALERROR IWriteStream::WriteChar (char chChar, int iLength)
 
 //	WriteChar

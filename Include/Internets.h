@@ -132,9 +132,13 @@ class CHTTPClientSession : public IReadStream
 
 		//	IReadStream interface
 
-		virtual ALERROR Close (void) { m_sBuffer = NULL_STR; return NOERROR; }
-		virtual ALERROR Open (void) { m_sBuffer = NULL_STR; m_pBufferStart = NULL; m_dwBufferLeft = 0; return NOERROR; }
-		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL);
+		virtual ALERROR Close (void) override { m_sBuffer = NULL_STR; return NOERROR; }
+		virtual ALERROR Open (void) override { m_sBuffer = NULL_STR; m_pBufferStart = NULL; m_dwBufferLeft = 0; return NOERROR; }
+		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL) override;
+
+		//	We want to inherit all the overloaded versions of Read.
+
+		using IReadStream::Read;
 
 	private:
 		enum EInternetStatuses
@@ -222,9 +226,14 @@ class CBase64Decoder : public IReadStream
 		CBase64Decoder (IReadStream *pInput, DWORD dwFlags = 0);
 
 		//	IReadStream
-		virtual ALERROR Close (void) { return NOERROR; }
-		virtual ALERROR Open (void) { return NOERROR; }
-		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL);
+
+		virtual ALERROR Close (void) override { return NOERROR; }
+		virtual ALERROR Open (void) override { return NOERROR; }
+		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL) override;
+
+		//	We want to inherit all the overloaded versions of Read.
+
+		using IReadStream::Read;
 
 	private:
 		BYTE CharToByte (char chChar);
@@ -242,9 +251,14 @@ class CBase64Encoder : public IWriteStream
 		~CBase64Encoder (void) { Close(); }
 
 		//	IWriteStream
-		virtual ALERROR Close (void);
-		virtual ALERROR Create (void) { return NOERROR; }
-		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL);
+
+		virtual ALERROR Close (void) override;
+		virtual ALERROR Create (void) override { return NOERROR; }
+		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) override;
+
+		//	We want to inherit all the overloaded versions of Write.
+
+		using IWriteStream::Write;
 
 	private:
 		int WriteTriplet (void *pData);

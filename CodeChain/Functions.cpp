@@ -1640,7 +1640,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
             //  We always start with the first element
 
-            Stream.WriteString(pList->GetElement(0)->GetStringValue());
+            Stream.WriteChars(pList->GetElement(0)->GetStringValue());
 
             //  If no separator, then we just concatenate all entries
 
@@ -1648,7 +1648,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
             if (sSeparator.IsBlank())
                 {
                 for (i = 1; i < pList->GetCount(); i++)
-                    Stream.WriteString(pList->GetElement(i)->GetStringValue());
+                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
                 }
 
             //  If oxford comma, concatenate
@@ -1662,16 +1662,16 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                     if (i == pList->GetCount() - 1)
                         {
                         if (pList->GetCount() == 2)
-                            Stream.WriteString(CONSTLIT(" and "));
+                            Stream.WriteChars(CONSTLIT(" and "));
                         else
-                            Stream.WriteString(CONSTLIT(", and "));
+                            Stream.WriteChars(CONSTLIT(", and "));
                         }
                     else
-                        Stream.WriteString(CONSTLIT(", "));
+                        Stream.WriteChars(CONSTLIT(", "));
 
                     //  Write entry
 
-                    Stream.WriteString(pList->GetElement(i)->GetStringValue());
+                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
                     }
                 }
 
@@ -1683,11 +1683,11 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                     {
                     //  Write separator
 
-                    Stream.WriteString(sSeparator);
+                    Stream.WriteChars(sSeparator);
 
                     //  Write entry
 
-                    Stream.WriteString(pList->GetElement(i)->GetStringValue());
+                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
                     }
                 }
 
