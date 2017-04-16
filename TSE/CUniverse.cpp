@@ -1249,8 +1249,25 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 			if (!m_Extensions.FindBestExtension(Ctx.dwAdventure, 0, dwFindFlags, &Ctx.pAdventure))
 				{
-				*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x."), Ctx.dwAdventure);
-				return ERR_FAIL;
+				//	Try to recover, if necessary
+
+				if (Ctx.bRecoverAdventureError
+						&& Ctx.dwAdventure != DEFAULT_ADVENTURE_EXTENSION_UNID
+						&& m_Extensions.FindBestExtension(DEFAULT_ADVENTURE_EXTENSION_UNID, 0, dwFindFlags, &Ctx.pAdventure))
+
+					{
+					//	Continue
+
+					Ctx.dwAdventure = DEFAULT_ADVENTURE_EXTENSION_UNID;
+					}
+
+				//	Otherwise, we fail
+
+				else
+					{
+					*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x."), Ctx.dwAdventure);
+					return ERR_FAIL;
+					}
 				}
 			}
 

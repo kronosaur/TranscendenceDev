@@ -2304,6 +2304,7 @@ class CUniverse
                     bNoCollectionLoad(false),
 					bNoCollectionCheck(false),
 					bForceCompatibilityLibrary(false),
+					bRecoverAdventureError(false),
 					pAdventure(NULL),
 					dwAdventure(0)
 				{ }
@@ -2326,6 +2327,7 @@ class CUniverse
 			bool bNoCollectionLoad;         //  If TRUE, don't load collection (only in debug mode)
 			bool bNoCollectionCheck;		//  If TRUE, don't check collection digests
 			bool bForceCompatibilityLibrary;//	If TRUE, force include of Compatibility Library
+			bool bRecoverAdventureError;	//	If TRUE, we try to recover if given adventure not found
 
 			//	Adventure to bind to (choose one, in order)
 
