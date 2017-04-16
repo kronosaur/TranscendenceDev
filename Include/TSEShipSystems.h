@@ -484,6 +484,47 @@ class CReactorDesc
         static SStdStats m_Stats[MAX_ITEM_LEVEL];
 	};
 
+class CPowerConsumption
+	{
+	public:
+		CPowerConsumption (void) :
+				m_rFuelLeft(0.0),
+				m_iPowerDrain(0),
+				m_iPowerGenerated(0),
+				m_iReactorGraceTimer(0),
+				m_fOutOfFuel(false),
+				m_fOutOfPower(false)
+			{ }
+
+		Metric ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse);
+		void ConsumeFuelForPowerUsed (Metric rEfficiency);
+		inline Metric GetFuelLeft (void) const { return (m_fOutOfFuel ? 0.0 : m_rFuelLeft); }
+		inline int GetGraceTimer (void) const { return m_iReactorGraceTimer; }
+		inline int GetPowerUsed (int *retiGenerated = NULL) { if (retiGenerated) *retiGenerated = m_iPowerGenerated; return Max(0, (m_iPowerDrain - m_iPowerGenerated)); }
+		inline bool IsOutOfFuel (void) const { return m_fOutOfFuel; }
+		inline bool IsOutOfPower (void) const { return m_fOutOfPower; }
+		void ReadFromStream (SLoadCtx &Ctx);
+		void Refuel (Metric rFuel, Metric rMaxFuel);
+		inline void SetFuelLeft (Metric rFuel) { m_rFuelLeft = rFuel; }
+		inline void SetGraceTimer (int iTime) { m_iReactorGraceTimer = iTime; }
+		void SetMaxFuel (Metric rMaxFuel);
+		inline void SetOutOfFuel (bool bValue = true) { m_fOutOfFuel = bValue; }
+		inline void SetOutOfPower (bool bValue = true) { m_fOutOfPower = bValue; }
+		inline void SetPowerUsed (int iPower) { m_iPowerDrain = iPower; }
+		bool UpdateGraceTimer (void);
+		void WriteToStream (CSpaceObject *pObj, IWriteStream &Stream) const;
+
+	private:
+		Metric m_rFuelLeft;					//	Fuel left
+		int m_iPowerDrain;					//	Power consumed last tick (1/10th MW)
+		int m_iPowerGenerated;				//	Power generated last tick (1/10th MW)
+
+		int m_iReactorGraceTimer:16;		//	Ticks left to live when no power or no fuel
+
+		DWORD m_fOutOfFuel:1;				//	TRUE if ship is out of fuel
+		DWORD m_fOutOfPower:1;				//	TRUE if reactor generating no power
+	};
+
 //  Devices --------------------------------------------------------------------
 
 enum DeviceNames

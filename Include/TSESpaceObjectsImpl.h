@@ -1030,10 +1030,10 @@ class CShip : public CSpaceObject
 		inline void SetSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablInstall, -1, 0); }
 
 		//	Reactor methods
-		inline Metric GetFuelLeft (void) { return (m_fOutOfFuel ? 0.0 : m_rFuelLeft); }
+		inline Metric GetFuelLeft (void) { return (m_pPowerUse ? m_pPowerUse->GetFuelLeft() : 0.0); }
 		Metric GetMaxFuel (void);
 		inline const CReactorDesc &GetReactorDesc (void) { return m_Perf.GetReactorDesc(); }
-		inline void TrackFuel (bool bTrack = true) { m_fTrackFuel = bTrack; }
+		void TrackFuel (bool bTrack = true);
 		inline void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
 		int GetPowerConsumption (void);
 		bool IsFuelCompatible (const CItem &Item);
@@ -1162,7 +1162,7 @@ class CShip : public CSpaceObject
 		virtual bool IsIntangible (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0 || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return !m_Interior.IsEmpty(); }
-		virtual bool IsOutOfPower (void) override { return m_fOutOfFuel || m_fOutOfPower; }
+		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
 		virtual bool IsParalyzed (void) override { return m_fParalyzedByOverlay || m_iParalysisTimer != 0; }
 		virtual bool IsPlayer (void) const override;
 		virtual bool IsRadioactive (void) override { return (m_fRadioactive ? true : false); }
@@ -1294,10 +1294,10 @@ class CShip : public CSpaceObject
 		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
 		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
 		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
+		CPowerConsumption *m_pPowerUse;			//	Power consumption variables (may be NULL if not tracking fuel)
 
 		int m_iFireDelay:16;					//	Ticks until next fire
 		int m_iMissileFireDelay:16;				//	Ticks until next missile fire
-		int m_iReactorGraceTimer:16;			//	Ticks left to live when no power
 		int m_iContaminationTimer:16;			//	Ticks left to live
 		int m_iBlindnessTimer:16;				//	Ticks until blindness wears off
 												//	(-1 = permanent)
@@ -1313,10 +1313,8 @@ class CShip : public CSpaceObject
 		int m_iLastFireTime;					//	Tick when we last fired a weapon
 		int m_iLastHitTime;						//	Tick when we last got hit by something
 
-		Metric m_rFuelLeft;						//	Fuel left
 		mutable Metric m_rItemMass;				//	Total mass of all items (including installed)
 		mutable Metric m_rCargoMass;			//	Mass of cargo items (not including installed)
-		int m_iPowerDrain;						//	(temp) power consumed (1/10 megawatt)
 		int m_iStealth;							//	Computed stealth
 
 		CSpaceObject *m_pDocked;				//	If not NULL, object we are docked to.
@@ -1326,37 +1324,36 @@ class CShip : public CSpaceObject
 
         CShipPerformanceDesc m_Perf;            //  Computed performance parameters (not saved)
 
-		DWORD m_fOutOfFuel:1;					//	TRUE if ship is out of fuel
 		DWORD m_fRadioactive:1;					//	TRUE if radioactive
 		DWORD m_fHasAutopilot:1;				//	TRUE if ship has autopilot
 		DWORD m_fDestroyInGate:1;				//	TRUE if ship has entered a gate
 		DWORD m_fHalfSpeed:1;					//	TRUE if ship is at half speed
 		DWORD m_fHasTargetingComputer:1;		//	TRUE if ship has targeting computer
-		DWORD m_fTrackFuel:1;					//	TRUE if ship keeps track of fuel (only player ship does)
 		DWORD m_fSRSEnhanced:1;					//	TRUE if ship's SRS is enhanced
-		
 		DWORD m_fDeviceDisrupted:1;				//	TRUE if at least one device is disrupted
 		DWORD m_fKnown:1;						//	TRUE if we know about this ship
+
 		DWORD m_fHiddenByNebula:1;				//	TRUE if ship is hidden by nebula
 		DWORD m_fTrackMass:1;					//	TRUE if ship keeps track of mass to compute performance
 		DWORD m_fIdentified:1;					//	TRUE if player can see ship class, etc.
 		DWORD m_fManualSuspended:1;				//	TRUE if ship is suspended
 		DWORD m_fGalacticMap:1;					//	TRUE if ship has galactic map installed
 		mutable DWORD m_fRecalcItemMass:1;		//	TRUE if we need to recalculate m_rImageMass
-
 		DWORD m_fDockingDisabled:1;				//	TRUE if docking is disabled
 		DWORD m_fControllerDisabled:1;			//	TRUE if we want to disable controller
+
 		DWORD m_fRecalcRotationAccel:1;			//	TRUE if we need to recalc rotation acceleration
 		DWORD m_fParalyzedByOverlay:1;			//	TRUE if one or more overlays paralyze the ship.
 		DWORD m_fDisarmedByOverlay:1;			//	TRUE if one or more overlays disarmed the ship.
 		DWORD m_fSpinningByOverlay:1;			//	TRUE if we should spin wildly
 		DWORD m_fDragByOverlay:1;				//	TRUE if overlay imposes drag
 		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
-
-		DWORD m_fOutOfPower:1;			        //	TRUE if reactor has 0 output
 		DWORD m_fFriendlyFireLock:1;			//	TRUE if we cannot target friendly ships
 		DWORD m_fEmergencySpeed:1;				//	TRUE if we're operating at 1.5x max speed
+
 		DWORD m_fQuarterSpeed:1;				//	TRUE if we're operating at 0.25x max speed
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

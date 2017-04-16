@@ -1,6 +1,7 @@
 //	CShip.cpp
 //
 //	CShip class
+//	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -115,11 +116,11 @@ const DWORD CONTROLLER_PLAYERSHIP =				0x100000 + 100;
 CShip::CShip (void) : CSpaceObject(&g_Class),
 		m_pDocked(NULL),
 		m_pController(NULL),
-		m_iPowerDrain(0),
 		m_iDeviceCount(0),
 		m_Devices(NULL),
 		m_pEncounterInfo(NULL),
 		m_pTrade(NULL),
+		m_pPowerUse(NULL),
 		m_dwNameFlags(0),
 		m_pExitGate(NULL),
 		m_pDeferredOrders(NULL)
@@ -145,6 +146,9 @@ CShip::~CShip (void)
 
 	if (m_pTrade)
 		delete m_pTrade;
+
+	if (m_pPowerUse)
+		delete m_pPowerUse;
 	}
 
 bool CShip::AbsorbWeaponFire (CInstalledDevice *pWeapon)
@@ -473,8 +477,8 @@ void CShip::CalcDeviceBonus (void)
 
 	//	Make sure we don't overflow fuel (in case we downgrade the reactor)
 
-	if (!m_fOutOfFuel)
-		m_rFuelLeft = Min(m_rFuelLeft, GetMaxFuel());
+	if (m_pPowerUse)
+		m_pPowerUse->SetMaxFuel(GetMaxFuel());
 
 	DEBUG_CATCH
 	}
@@ -930,33 +934,37 @@ void CShip::CalcReactorStats (void)
 //	Computes power consumption and generation
 
 	{
+	ASSERT(m_pPowerUse);
+
 	int i;
 
 	//	Calculate power usage
 
-	m_iPowerDrain = 0;
+	int iPowerDrain = 0;
 
 	//	We always consume some power for life-support
 
-	m_iPowerDrain += 5;
+	iPowerDrain += 5;
 
 	//	If we're thrusting, then we consume power
 
 	if (!IsParalyzed() && m_pController->GetThrust())
-		m_iPowerDrain += m_Perf.GetDriveDesc().GetPowerUse();
+		iPowerDrain += m_Perf.GetDriveDesc().GetPowerUse();
 
 	//	Compute power drain of all devices
 
 	for (i = 0; i < GetDeviceCount(); i++)
-		m_iPowerDrain += m_Devices[i].CalcPowerUsed(this);
+		iPowerDrain += m_Devices[i].CalcPowerUsed(this);
 
 	//	Compute power drain from armor
 
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
 		CInstalledArmor *pArmor = GetArmorSection(i);
-		m_iPowerDrain += pArmor->GetClass()->CalcPowerUsed(pArmor);
+		iPowerDrain += pArmor->GetClass()->CalcPowerUsed(pArmor);
 		}
+
+	m_pPowerUse->SetPowerUsed(iPowerDrain);
 	}
 
 bool CShip::CanAttack (void) const
@@ -1257,13 +1265,11 @@ void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
 //	Consumes some amount of fuel
 
 	{
-    if (m_fTrackFuel 
+    if (m_pPowerUse
 			&& !IsOutOfPower()
 			&& m_Perf.GetReactorDesc().UsesFuel())
         {
-        Metric rConsumed = Min(m_rFuelLeft, rFuel);
-
-        m_rFuelLeft -= rConsumed;
+		Metric rConsumed = m_pPowerUse->ConsumeFuel(rFuel, iUse);
         m_pController->OnFuelConsumed(rConsumed, iUse);
         }
 	}
@@ -1318,7 +1324,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_Rotation.Init(pClass->GetRotationDesc(), iRotation);
 	pShip->m_iFireDelay = 0;
 	pShip->m_iMissileFireDelay = 0;
-	pShip->m_iReactorGraceTimer = 0;
 	pShip->m_iContaminationTimer = 0;
 	pShip->m_iBlindnessTimer = 0;
 	pShip->m_iLRSBlindnessTimer = 0;
@@ -1333,9 +1338,8 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_rItemMass = 0.0;
 	pShip->m_rCargoMass = 0.0;
 	pShip->m_pTrade = NULL;
+	pShip->m_pPowerUse = NULL;
 
-	pShip->m_fOutOfFuel = false;
-	pShip->m_fTrackFuel = false;
 	pShip->m_fTrackMass = false;
 	pShip->m_fRadioactive = false;
 	pShip->m_fHasAutopilot = false;
@@ -1358,7 +1362,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fSpinningByOverlay = false;
 	pShip->m_fDragByOverlay = false;
 	pShip->m_fAlwaysLeaveWreck = false;
-	pShip->m_fOutOfPower = false;
 	pShip->m_fFriendlyFireLock = false;
 	pShip->m_fEmergencySpeed = false;
 	pShip->m_fQuarterSpeed = false;
@@ -1488,10 +1491,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->CalcArmorBonus();
 	pShip->CalcDeviceBonus();
     pShip->CalcPerformance();
-
-	//	Initialize fuel now that we know our maximum
-
-	pShip->m_rFuelLeft = pShip->GetMaxFuel();
 
 	//	Set the bounds for this object
 
@@ -2903,8 +2902,8 @@ int CShip::GetPowerConsumption (void)
 //	Returns the amount of power consumed this turn
 
 	{
-	if (m_fTrackFuel)
-		return m_iPowerDrain;
+	if (m_pPowerUse)
+		return m_pPowerUse->GetPowerUsed();
 	else
 		return 0;
 	}
@@ -3648,8 +3647,8 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 		//	new reactor. Note that on a downgrade, we will clip the fuel to the
 		//	maximum when we do a CalcDeviceBonus).
 
-		if (rOldFuel != -1.0 && !m_fOutOfFuel)
-			m_rFuelLeft = rOldFuel;
+		if (rOldFuel != -1.0 && m_pPowerUse && !m_pPowerUse->IsOutOfFuel())
+			m_pPowerUse->SetFuelLeft(rOldFuel);
 		}
 
 	//	Look for a free slot to install to
@@ -5032,11 +5031,10 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_dwNameFlags
 //	CIntegralRotation	m_Rotation
 //	DWORD		low = m_iFireDelay; hi = m_iMissileFireDelay
-//	DWORD		low = m_iReactorGraceTimer; hi = m_iContaminationTimer
+//	DWORD		low = unused; hi = m_iContaminationTimer
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
 //	DWORD		low = m_iExitGateTimer; hi = m_iDisarmedTimer
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
-//	Metric		m_rFuelLeft
 //	Metric		m_rItemMass (V2)
 //	Metric		m_rCargoMass
 //	DWORD		m_pDocked (CSpaceObject ref)
@@ -5048,6 +5046,8 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	CArmorSystem m_Armor
 //
 //	DWORD		m_iStealth
+//
+//	CPowerConsumption	m_pPowerUse (if tracking fuel)
 //
 //	DWORD		Number of devices
 //	DWORD		device: class UNID
@@ -5086,6 +5086,14 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_pClass = g_pUniverse->FindShipClass(dwLoad);
+
+	//	In 144 we started saving the power consumption members in a separate
+	//	structure. We load the old fields if necessary.
+
+	int iReactorGraceTimer143;
+	Metric rFuelLeft143;
+	bool bOutOfFuel143;
+	bool bOutOfPower143;
 
 	//	In previous versions there was a bug in which some effects were not
 	//	read properly. In those cases, the class UNID is invalid.
@@ -5134,9 +5142,12 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iFireDelay = (int)LOWORD(dwLoad);
 	m_iMissileFireDelay = (int)HIWORD(dwLoad);
+
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_iReactorGraceTimer = (int)LOWORD(dwLoad);
+	if (Ctx.dwVersion < 144)
+		iReactorGraceTimer143 = (int)LOWORD(dwLoad);
 	m_iContaminationTimer = (int)HIWORD(dwLoad);
+
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iBlindnessTimer = (int)LOWORD(dwLoad);
 	m_iParalysisTimer = (int)HIWORD(dwLoad);
@@ -5146,12 +5157,16 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iLRSBlindnessTimer = (int)LOWORD(dwLoad);
 	m_iDriveDamagedTimer = (int)HIWORD(dwLoad);
-	if (Ctx.dwVersion >= 123)
-		Ctx.pStream->Read((char *)&m_rFuelLeft, sizeof(Metric));
-	else
+
+	if (Ctx.dwVersion < 144)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_rFuelLeft = (Metric)(int)dwLoad;
+		if (Ctx.dwVersion >= 123)
+			Ctx.pStream->Read(rFuelLeft143);
+		else
+			{
+			Ctx.pStream->Read(dwLoad);
+			rFuelLeft143 = (Metric)(int)dwLoad;
+			}
 		}
 
 	if (Ctx.dwVersion >= 2)
@@ -5172,13 +5187,14 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Load flags
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_fOutOfFuel =				((dwLoad & 0x00000001) ? true : false);
+	if (Ctx.dwVersion < 144)
+		bOutOfFuel143 =			((dwLoad & 0x00000001) ? true : false);
 	m_fRadioactive =			((dwLoad & 0x00000002) ? true : false);
 	m_fHasAutopilot =			((dwLoad & 0x00000004) ? true : false);
 	m_fDestroyInGate =			((dwLoad & 0x00000008) ? true : false);
 	m_fHalfSpeed =				((dwLoad & 0x00000010) ? true : false);
 	m_fHasTargetingComputer =	((dwLoad & 0x00000020) ? true : false);
-	m_fTrackFuel =				((dwLoad & 0x00000040) ? true : false);
+	bool bTrackFuel =			((dwLoad & 0x00000040) ? true : false);
 	//	0x00000080 unused at version 77
 	m_fSRSEnhanced =			((dwLoad & 0x00000100) ? true : false);
 	m_fRecalcItemMass =			((dwLoad & 0x00000200) ? true : false);
@@ -5199,7 +5215,8 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fSpinningByOverlay =		((dwLoad & 0x00200000) ? true : false);
 	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
-	m_fOutOfPower =				((dwLoad & 0x01000000) ? true : false);
+	if (Ctx.dwVersion < 144)
+		bOutOfPower143 =		((dwLoad & 0x01000000) ? true : false);
 	m_fFriendlyFireLock =		((dwLoad & 0x02000000) ? true : false);
 	m_fEmergencySpeed =			((dwLoad & 0x04000000) ? true : false);
 	m_fQuarterSpeed =			((dwLoad & 0x08000000) ? true : false);
@@ -5220,6 +5237,25 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&m_iStealth, sizeof(DWORD));
 	else
 		m_iStealth = stealthNormal;
+
+	//	Fuel consumption
+
+	if (bTrackFuel)
+		{
+		m_pPowerUse = new CPowerConsumption;
+
+		if (Ctx.dwVersion >= 144)
+			m_pPowerUse->ReadFromStream(Ctx);
+		else
+			{
+			m_pPowerUse->SetFuelLeft(rFuelLeft143);
+			m_pPowerUse->SetGraceTimer(iReactorGraceTimer143);
+			m_pPowerUse->SetOutOfFuel(bOutOfFuel143);
+			m_pPowerUse->SetOutOfPower(bOutOfPower143);
+			}
+		}
+	else
+		m_pPowerUse = NULL;
 
 	//	Initialize named devices
 
@@ -5720,7 +5756,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
     //	Update reactor
 
-	if (m_fTrackFuel)
+	if (m_pPowerUse)
 		if (!UpdateFuel(iTick))
 			return;
 
@@ -5874,11 +5910,10 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_dwNameFlags
 //	CIntegralRotation m_Rotation
 //	DWORD		low = m_iFireDelay; hi = m_iMissileFireDelay
-//	DWORD		low = m_iReactorGraceTimer; hi = m_iContaminationTimer
+//	DWORD		low = unused; hi = m_iContaminationTimer
 //	DWORD		low = m_iBlindnessTimer; hi = m_iParalysisTimer
 //	DWORD		low = m_iExitGateTimer; hi = m_iDisarmedTimer
 //	DWORD		low = m_iLRSBlindnessTimer; hi = m_iDriveDamagedTimer
-//	Metric		m_rFuelLeft
 //	Metric		m_rItemMass
 //	Metric		m_rCargoMass
 //	DWORD		m_pDocked (CSpaceObject ref)
@@ -5890,6 +5925,8 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //  CArmorSystem m_Armor
 //
 //	DWORD		m_iStealth
+//
+//	CPowerConsumption	m_pPowerUse (if tracking fuel)
 //
 //	DWORD		device: class UNID
 //	DWORD		device: m_dwData
@@ -5932,7 +5969,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	dwSave = MAKELONG(m_iFireDelay, m_iMissileFireDelay);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	dwSave = MAKELONG(m_iReactorGraceTimer, m_iContaminationTimer);
+	dwSave = MAKELONG(0, m_iContaminationTimer);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	dwSave = MAKELONG(m_iBlindnessTimer, m_iParalysisTimer);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
@@ -5941,7 +5978,6 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iLRSBlindnessTimer, m_iDriveDamagedTimer);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	pStream->Write((char *)&m_rFuelLeft, sizeof(Metric));
 	pStream->Write((char *)&m_rItemMass, sizeof(Metric));
 	pStream->Write((char *)&m_rCargoMass, sizeof(Metric));
 	WriteObjRefToStream(m_pDocked, pStream);
@@ -5950,13 +5986,13 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iLastHitTime, sizeof(DWORD));
 
 	dwSave = 0;
-	dwSave |= (m_fOutOfFuel ?			0x00000001 : 0);
+	//	0x00000001 unused at version 144
 	dwSave |= (m_fRadioactive ?			0x00000002 : 0);
 	dwSave |= (m_fHasAutopilot ?		0x00000004 : 0);
 	dwSave |= (m_fDestroyInGate ?		0x00000008 : 0);
 	dwSave |= (m_fHalfSpeed ?			0x00000010 : 0);
 	dwSave |= (m_fHasTargetingComputer ? 0x00000020 : 0);
-	dwSave |= (m_fTrackFuel ?			0x00000040 : 0);
+	dwSave |= (m_pPowerUse ?			0x00000040 : 0);
 	//	0x00000080 unused at version 77
 	dwSave |= (m_fSRSEnhanced ?			0x00000100 : 0);
 	dwSave |= (m_fRecalcItemMass ?		0x00000200 : 0);
@@ -5974,7 +6010,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fSpinningByOverlay ?	0x00200000 : 0);
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
-	dwSave |= (m_fOutOfPower ?			0x01000000 : 0);
+	//	0x01000000 unused at version 144
 	dwSave |= (m_fFriendlyFireLock ?	0x02000000 : 0);
 	dwSave |= (m_fEmergencySpeed ?		0x04000000 : 0);
 	dwSave |= (m_fQuarterSpeed ?		0x08000000 : 0);
@@ -5987,6 +6023,11 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	//	Stealth
 
 	pStream->Write((char *)&m_iStealth, sizeof(DWORD));
+
+	//	Fuel consumption
+
+	if (m_pPowerUse)
+		m_pPowerUse->WriteToStream(this, *pStream);
 
 	//	Devices
 
@@ -6251,13 +6292,15 @@ void CShip::ReactorOverload (void)
 //	This is called every FUEL_CHECK_CYCLE when the reactor is overloading
 
 	{
+	ASSERT(m_pPowerUse);
+
 	int i;
 
 	//	There is a 1 in 10 chance that something bad will happen
 	//	(or, if the overload is severe, something bad always happens)
 
 	if (mathRandom(1, 100) <= 10
-			|| (m_iPowerDrain > 2 * m_Perf.GetReactorDesc().GetMaxPower()))
+			|| (m_pPowerUse->GetPowerUsed() > 2 * m_Perf.GetReactorDesc().GetMaxPower()))
 		{
 		//	See if there is an OnReactorOverload event that will
 		//	handle this.
@@ -6430,13 +6473,8 @@ void CShip::Refuel (Metric rFuel)
 //	Refuels the ship
 
 	{
-	if (m_fOutOfFuel)
-		{
-		m_rFuelLeft = 0.0;
-		m_fOutOfFuel = false;
-		}
-
-	m_rFuelLeft = Min(GetMaxFuel(), m_rFuelLeft + rFuel);
+	if (m_pPowerUse)
+		m_pPowerUse->Refuel(rFuel, GetMaxFuel());
 	}
 
 void CShip::Refuel (const CItem &Fuel)
@@ -7171,13 +7209,15 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
     else if (strEquals(sName, PROPERTY_FUEL_LEFT))
         {
-        m_rFuelLeft = Max(0.0, Min(pValue->GetIntegerValue() * FUEL_UNITS_PER_STD_ROD, GetMaxFuel()));
+		if (m_pPowerUse)
+			m_pPowerUse->SetFuelLeft(Max(0.0, Min(pValue->GetIntegerValue() * FUEL_UNITS_PER_STD_ROD, GetMaxFuel())));
         return true;
         }
 
     else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
         {
-        m_rFuelLeft = Max(0.0, Min(pValue->GetDoubleValue(), GetMaxFuel()));
+		if (m_pPowerUse)
+			m_pPowerUse->SetFuelLeft(Max(0.0, Min(pValue->GetDoubleValue(), GetMaxFuel())));
         return true;
         }
 
@@ -7367,6 +7407,25 @@ void CShip::SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered)
 		}
 	}
 
+void CShip::TrackFuel (bool bTrack)
+
+//	TrackFuel
+//
+//	Ship should track fuel and power use.
+
+	{
+	if (bTrack && m_pPowerUse == NULL)
+		{
+		m_pPowerUse = new CPowerConsumption;
+		m_pPowerUse->SetFuelLeft(GetMaxFuel());
+		}
+	else if (!bTrack && m_pPowerUse != NULL)
+		{
+		delete m_pPowerUse;
+		m_pPowerUse = NULL;
+		}
+	}
+
 void CShip::Undock (void)
 
 //	Undock
@@ -7478,24 +7537,26 @@ bool CShip::UpdateFuel (int iTick)
 //	NOTE: iTick is a local system tick, not the global universe tick.
 
 	{
+	ASSERT(m_pPowerUse);
+
 	DEBUG_TRY
 
 	//	If we're out of power, then see if power is restored before we die from
 	//	life-support failure.
 
-	if (m_fOutOfPower)
+	if (m_pPowerUse->IsOutOfPower())
 		{
 		//	If we've got power back, then we're OK
 
 		if (m_Perf.GetReactorDesc().GetMaxPower() > 0)
 			{
-			m_fOutOfPower = false;
+			m_pPowerUse->SetOutOfPower(false);
 			m_pController->OnShipStatus(IShipController::statusReactorRestored);
 			}
 
         //	Countdown grace period
 
-        else if (--m_iReactorGraceTimer <= 0.0)
+        else if (m_pPowerUse->UpdateGraceTimer())
             {
             Destroy(killedByPowerFailure, CDamageSource(NULL, killedByPowerFailure));
 
@@ -7504,16 +7565,16 @@ bool CShip::UpdateFuel (int iTick)
             return false;
             }
         else
-            m_pController->OnShipStatus(IShipController::statusLifeSupportWarning, m_iReactorGraceTimer / g_TicksPerSecond);
+            m_pController->OnShipStatus(IShipController::statusLifeSupportWarning, m_pPowerUse->GetGraceTimer() / g_TicksPerSecond);
 		}
 
 	//	If we're out of fuel, then count down until we die
 
-	else if (m_fOutOfFuel)
+	else if (m_pPowerUse->IsOutOfFuel())
 		{
         //	Countdown grace period
 
-        if (--m_iReactorGraceTimer <= 0.0)
+        if (m_pPowerUse->UpdateGraceTimer())
             {
             Destroy(killedByRunningOutOfFuel, CDamageSource(NULL, killedByRunningOutOfFuel));
 
@@ -7522,7 +7583,7 @@ bool CShip::UpdateFuel (int iTick)
             return false;
             }
         else
-            m_pController->OnShipStatus(IShipController::statusLifeSupportWarning, m_iReactorGraceTimer / g_TicksPerSecond);
+            m_pController->OnShipStatus(IShipController::statusLifeSupportWarning, m_pPowerUse->GetGraceTimer() / g_TicksPerSecond);
 		}
 
 	//	Otherwise, consume fuel
@@ -7533,7 +7594,7 @@ bool CShip::UpdateFuel (int iTick)
 
         //	Consume fuel
 
-        ConsumeFuel(m_iPowerDrain / m_Perf.GetReactorDesc().GetEfficiency());
+		m_pPowerUse->ConsumeFuelForPowerUsed(m_Perf.GetReactorDesc().GetEfficiency());
 
         //	Make sure everything is running smoothly.
 
@@ -7545,7 +7606,7 @@ bool CShip::UpdateFuel (int iTick)
 			//	If we're consuming more power than the reactor can output, then 
 			//	we overload.
 
-			if (m_iPowerDrain > iMaxPower)
+			if (m_pPowerUse->GetPowerUsed() > iMaxPower)
 				{
                 m_pController->OnShipStatus(IShipController::statusReactorOverloadWarning, iTick / FUEL_CHECK_CYCLE);
 
@@ -7559,9 +7620,9 @@ bool CShip::UpdateFuel (int iTick)
 
 			if (iMaxPower == 0)
 				{
-				m_fOutOfPower = true;
+				m_pPowerUse->SetOutOfPower(true);
+				m_pPowerUse->SetGraceTimer(FUEL_GRACE_PERIOD);
 				DisableAllDevices();
-				m_iReactorGraceTimer = FUEL_GRACE_PERIOD;
                 m_pController->OnShipStatus(IShipController::statusReactorPowerFailure);
 				}
 
@@ -7579,9 +7640,9 @@ bool CShip::UpdateFuel (int iTick)
 
                 if (HasFuelItem())
                     {
-                    m_fOutOfFuel = true;
+					m_pPowerUse->SetOutOfFuel(true);
+					m_pPowerUse->SetGraceTimer(FUEL_GRACE_PERIOD);
 					DisableAllDevices();
-                    m_iReactorGraceTimer = FUEL_GRACE_PERIOD;
                     m_pController->OnShipStatus(IShipController::statusFuelLowWarning, -1);
                     }
 

@@ -364,6 +364,7 @@
     <ClCompile Include="CPhysicsContact.cpp" />
     <ClCompile Include="CPhysicsContactResolver.cpp" />
     <ClCompile Include="CPlayerGameStats.cpp" />
+    <ClCompile Include="CPowerConsumption.cpp" />
     <ClCompile Include="CRangeTypeEvent.cpp" />
     <ClCompile Include="CRotationDesc.cpp" />
     <ClCompile Include="CItemCtx.cpp" />

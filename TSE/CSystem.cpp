@@ -442,6 +442,9 @@
 //	143: 1.8 Alpha 1
 //		m_Joints in CSystem
 //
+//	144: 1.8 Alpha 1
+//		m_pPowerUse in CShip
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
