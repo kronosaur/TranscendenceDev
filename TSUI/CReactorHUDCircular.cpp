@@ -126,7 +126,7 @@ void CReactorHUDCircular::OnUpdate (SHUDUpdateCtx &Ctx)
 		}
 	}
 
-void CReactorHUDCircular::PaintChargesGauge (CShip *pShip)
+void CReactorHUDCircular::PaintChargesGauge (const SReactorStats &Stats)
 
 //	PaintChargesGauge
 //
@@ -140,27 +140,18 @@ void CReactorHUDCircular::PaintChargesGauge (CShip *pShip)
 	const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 
-	//	Figure out the number of charges
-
-	CInstalledDevice *pReactor = pShip->GetNamedDevice(devReactor);
-	if (pReactor == NULL)
-		return;
-
-	int iCharges = pReactor->GetItem()->GetCharges();
-	int iMaxCharges = Max(1, Max(iCharges, pReactor->GetItem()->GetType()->GetMaxCharges()));
-
 	//	Compute some metrics
 
 	Metric rTotalArc = PI;
-	Metric rChargeArc = rTotalArc / iMaxCharges;
+	Metric rChargeArc = rTotalArc / Stats.iMaxCharges;
 	Metric rStartAngle = 1.5 * PI;
 	Metric rAngle = rStartAngle;
 
 	//	Paint all the charges
 
-	for (i = 0; i < iMaxCharges; i++)
+	for (i = 0; i < Stats.iMaxCharges; i++)
 		{
-		CG32bitPixel rgbColor = (i < iCharges ? m_rgbFuelGauge : m_rgbGaugeBack);
+		CG32bitPixel rgbColor = (i < Stats.iChargesLeft ? m_rgbFuelGauge : m_rgbGaugeBack);
 
 		CGDraw::Arc(m_Buffer,
 				CVector(m_xCenter, m_yCenter),
@@ -177,7 +168,7 @@ void CReactorHUDCircular::PaintChargesGauge (CShip *pShip)
 		}
 	}
 
-void CReactorHUDCircular::PaintFuelGauge (CShip *pShip)
+void CReactorHUDCircular::PaintFuelGauge (const SReactorStats &Stats)
 
 //	PaintFuelGauge
 //
@@ -190,9 +181,7 @@ void CReactorHUDCircular::PaintFuelGauge (CShip *pShip)
 
 	//	Calculate fuel values
 
-	Metric rMaxFuel = pShip->GetMaxFuel();
-	Metric rFuelLeft = Max(0.0, Min(pShip->GetFuelLeft(), rMaxFuel));
-	Metric rFuelLevel = (rMaxFuel > 0.0 ? (Min(rFuelLeft / rMaxFuel, 1.0)) : 0.0);
+	Metric rFuelLevel = Stats.iFuelLevel / 100.0;
 
 	//	Paint the background
 
@@ -209,7 +198,7 @@ void CReactorHUDCircular::PaintFuelGauge (CShip *pShip)
 
 	//	Figure out how we should paint
 
-	bool bWarning = (rFuelLeft < 0.15);
+	bool bWarning = (rFuelLevel < 0.15);
 	CG32bitPixel rgbColor = (bWarning ? m_rgbGaugeWarning : m_rgbFuelGauge);
 
 	//	If in warning mode, we blink
@@ -245,7 +234,7 @@ void CReactorHUDCircular::PaintFuelGauge (CShip *pShip)
 	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), (int)((100.0 * rFuelLevel) + 0.5)), CG16bitFont::AlignRight);
 	}
 
-void CReactorHUDCircular::PaintPowerGauge (CShip *pShip)
+void CReactorHUDCircular::PaintPowerGauge (const SReactorStats &Stats)
 
 //	PaintPowerGauge
 //
@@ -256,8 +245,8 @@ void CReactorHUDCircular::PaintPowerGauge (CShip *pShip)
 	const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 
-	Metric rPowerUsage = pShip->GetPowerConsumption();
-	Metric rMaxPower = pShip->GetMaxPower();
+	Metric rPowerUsage = Stats.iPowerConsumed;
+	Metric rMaxPower = Stats.iReactorPower;
 	Metric rPowerLevel = (rMaxPower > 0.0 ? Min(rPowerUsage / rMaxPower, 1.0) : 0.0);
 
 	//	Paint the background
@@ -311,7 +300,7 @@ void CReactorHUDCircular::PaintPowerGauge (CShip *pShip)
 	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), (int)((100.0 * rPowerLevel) + 0.5)));
 	}
 
-void CReactorHUDCircular::PaintReactorItem (CShip *pShip)
+void CReactorHUDCircular::PaintReactorItem (const SReactorStats &Stats)
 
 //	PaintReactorItem
 //
@@ -323,20 +312,17 @@ void CReactorHUDCircular::PaintReactorItem (CShip *pShip)
 
 	//	Paint the icon
 
-	CInstalledDevice *pReactor = pShip->GetNamedDevice(devReactor);
-	CItem *pReactorItem = (pReactor ? pReactor->GetItem() : NULL);
-	if (pReactorItem)
+	if (Stats.pReactorImage)
 		{
 		int cxSize = 4 * (m_iGaugeRadius / 3);
-		DrawItemTypeIcon(m_Buffer, m_xCenter - (cxSize / 2), m_yCenter - (cxSize / 2), pReactorItem->GetType(), cxSize, cxSize);
+		Stats.pReactorImage->PaintScaledImage(m_Buffer, m_xCenter, m_yCenter, 0, 0, cxSize, cxSize, 0);
 		}
 
 	//	Paint the name
 
-	int iMaxPower = pShip->GetMaxPower();
 	CString sReactorName = strPatternSubst(CONSTLIT("%s (%s)"), 
-			pShip->GetReactorName(),
-			ReactorPower2String(iMaxPower));
+			Stats.sReactorName,
+			ReactorPower2String(Stats.iReactorPower));
 
 	CVector vInnerPos = CVector::FromPolarInv(0.0, m_iGaugeRadius + RING_SPACING + m_iGaugeWidth + RING_SPACING);
 	CVector vOuterPos = vInnerPos + CVector(RIGHT_CONTROL_WIDTH, 0.0);
@@ -349,7 +335,7 @@ void CReactorHUDCircular::PaintReactorItem (CShip *pShip)
 	CGDraw::ArcQuadrilateral(m_Buffer, CVector(m_xCenter, m_yCenter), vInnerPos, vOuterPos, cyHeight, m_rgbGaugeBack, CGDraw::blendCompositeNormal);
 
 	CG32bitPixel rgbColor;
-	if (pReactor && pReactor->IsDamaged())
+	if (Stats.bReactorDamaged)
 		rgbColor = DAMAGED_TEXT_COLOR;
 	else
 		rgbColor = VI.GetColor(colorTextHighlight);
@@ -375,6 +361,9 @@ void CReactorHUDCircular::Realize (SHUDPaintCtx &Ctx)
 			|| (pShip = Ctx.pSource->AsShip()) == NULL)
 		return;
 
+	SReactorStats Stats;
+	pShip->GetReactorStats(Stats);
+
 	//	Set up some metrics
 
 	const CVisualPalette &VI = g_pHI->GetVisuals();
@@ -394,13 +383,13 @@ void CReactorHUDCircular::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint the reactor item on top
 
-	PaintReactorItem(pShip);
+	PaintReactorItem(Stats);
 
 	//	Paint gauges
 
-	if (pShip->GetReactorDesc().UsesFuel())
-		PaintFuelGauge(pShip);
+	if (Stats.bUsesCharges)
+		PaintChargesGauge(Stats);
 	else
-		PaintChargesGauge(pShip);
-	PaintPowerGauge(pShip);
+		PaintFuelGauge(Stats);
+	PaintPowerGauge(Stats);
 	}

@@ -26,17 +26,6 @@ Metric CPowerConsumption::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes
 		}
 	}
 
-void CPowerConsumption::ConsumeFuelForPowerUsed (Metric rEfficiency)
-
-//	ConsumeFuelForPowerUsed
-//
-//	Consumes fuel for the current power used.
-
-	{
-	ASSERT(rEfficiency > 0.0);
-	ConsumeFuel(GetPowerUsed() / rEfficiency, CReactorDesc::fuelConsume);
-	}
-
 void CPowerConsumption::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
@@ -60,30 +49,6 @@ void CPowerConsumption::ReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read(dwFlags);
 	m_fOutOfFuel = ((dwLoad &	0x00000001) ? true : false);
 	m_fOutOfPower = ((dwLoad &	0x00000002) ? true : false);
-	}
-
-void CPowerConsumption::WriteToStream (CSpaceObject *pObj, IWriteStream &Stream) const
-
-//	WriteToStream
-//
-//	Metric			m_rFuelLeft
-//	DWORD			m_iPowerDrain
-//	DWORD			m_iPowerGenerated
-//	DWORD			m_iReactorGraceTimer; unused
-//	DWORD			flags
-
-	{
-	Stream.Write(m_rFuelLeft);
-	Stream.Write(m_iPowerDrain);
-	Stream.Write(m_iPowerGenerated);
-
-	DWORD dwSave = MAKELONG(m_iReactorGraceTimer, 0);
-	Stream.Write(dwSave);
-
-	DWORD dwFlags = 0;
-	dwFlags |= (m_fOutOfFuel ?	0x00000001 : 0);
-	dwFlags |= (m_fOutOfPower ? 0x00000001 : 0);
-	Stream.Write(dwFlags);
 	}
 
 void CPowerConsumption::Refuel (Metric rFuel, Metric rMaxFuel)
@@ -128,3 +93,45 @@ bool CPowerConsumption::UpdateGraceTimer (void)
 
 	return (m_iReactorGraceTimer <= 0);
 	}
+
+void CPowerConsumption::UpdatePowerUse (int iPowerDrained, int iPowerGenerated, Metric rEfficiency)
+
+//	UpdatePowerUse
+//
+//	Sets the power stats
+
+	{
+	ASSERT(rEfficiency > 0.0);
+	ASSERT(iPowerDrained >= 0);
+	ASSERT(iPowerGenerated >= 0);
+
+	m_iPowerDrain = iPowerDrained;
+	m_iPowerGenerated = iPowerGenerated;
+
+	ConsumeFuel(GetPowerNeeded() / rEfficiency, CReactorDesc::fuelConsume);
+	}
+
+void CPowerConsumption::WriteToStream (CSpaceObject *pObj, IWriteStream &Stream) const
+
+//	WriteToStream
+//
+//	Metric			m_rFuelLeft
+//	DWORD			m_iPowerDrain
+//	DWORD			m_iPowerGenerated
+//	DWORD			m_iReactorGraceTimer; unused
+//	DWORD			flags
+
+	{
+	Stream.Write(m_rFuelLeft);
+	Stream.Write(m_iPowerDrain);
+	Stream.Write(m_iPowerGenerated);
+
+	DWORD dwSave = MAKELONG(m_iReactorGraceTimer, 0);
+	Stream.Write(dwSave);
+
+	DWORD dwFlags = 0;
+	dwFlags |= (m_fOutOfFuel ? 0x00000001 : 0);
+	dwFlags |= (m_fOutOfPower ? 0x00000001 : 0);
+	Stream.Write(dwFlags);
+	}
+

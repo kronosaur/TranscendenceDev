@@ -1483,34 +1483,108 @@ void CObjectImageArray::PaintRotatedImage (CG32bitImage &Dest,
 	CGDraw::BltTransformed(Dest, x, y, 1.0, 1.0, iRotation, *pSource, xSrc, ySrc, cxSrc, cySrc);
 	}
 
-void CObjectImageArray::PaintScaledImage (CG32bitImage &Dest,
-										  int x,
-										  int y,
-										  int iTick,
-										  int iRotation,
-										  int cxWidth,
-										  int cyHeight,
-										  bool bComposite) const
+void CObjectImageArray::PaintScaledImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, int cxWidth, int cyHeight, DWORD dwFlags) const
 
 //	PaintScaledImage
 //
 //	Paint scaled image
 
 	{
-	//	Make sure we have the scaled image
+	if (m_pImage == NULL)
+		return;
 
-	GenerateScaledImages(iRotation, cxWidth, cyHeight);
+	//	Compute source
 
-	//	Paint the image
+	CG32bitImage *pSrc;
+	bool bScale;
+	int xSrc, ySrc, cxSrc, cySrc;
+	if (dwFlags & FLAG_CACHED)
+		{
+		GenerateScaledImages(iRotation, cxWidth, cyHeight);
 
-	Dest.Blt(0,
-			0,
-			cxWidth,
-			cyHeight,
-			255,
-			m_pScaledImages[iRotation],
-			x - (cxWidth / 2),
-			y - (cyHeight / 2));
+		pSrc = &m_pScaledImages[iRotation];
+		xSrc = 0;
+		ySrc = 0;
+		cxSrc = cxWidth;
+		cySrc = cyHeight;
+		bScale = false;
+		}
+	else
+		{
+		pSrc = &GetImage(NULL_STR);
+		ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
+		cxSrc = RectWidth(m_rcImage);
+		cySrc = RectHeight(m_rcImage);
+		bScale = (cxSrc != cxWidth || cySrc != cyHeight);
+		}
+
+	//	If necessary we paint a scaled image
+
+	if (bScale)
+		{
+		//	For scaled images, we need to specify the destination as the center
+		//	of the image.
+
+		int xDest = x;
+		int yDest = y;
+		if (dwFlags & FLAG_UPPER_LEFT)
+			{
+			xDest += (cxWidth / 2);
+			yDest += (cyHeight / 2);
+			}
+
+		//	Paint
+
+		if (dwFlags & FLAG_GRAYED)
+			{
+			CGDraw::BltTransformedGray(Dest,
+					xDest,
+					yDest,
+					(Metric)cxWidth / (Metric)cxSrc,
+					(Metric)cyHeight / (Metric)cySrc,
+					0.0,
+					*pSrc,
+					xSrc,
+					ySrc,
+					cxSrc,
+					cySrc,
+					128);
+			}
+		else
+			{
+			CGDraw::BltTransformed(Dest,
+					xDest,
+					yDest,
+					(Metric)cxWidth / (Metric)cxSrc,
+					(Metric)cyHeight / (Metric)cySrc,
+					0.0,
+					*pSrc,
+					xSrc,
+					ySrc,
+					cxSrc,
+					cySrc);
+			}
+		}
+	else
+		{
+		//	x,y is center of the image, unless otherwise specified.
+
+		int xDest = x;
+		int yDest = y;
+
+		if (!(dwFlags & FLAG_UPPER_LEFT))
+			{
+			xDest -= (cxWidth / 2);
+			yDest -= (cyHeight / 2);
+			}
+
+		//	Paint
+
+		if (dwFlags & FLAG_GRAYED)
+			CGDraw::BltGray(Dest, xDest, yDest, *pSrc, xSrc, ySrc, cxSrc, cySrc, 128);
+		else
+			Dest.Blt(xSrc, ySrc, cxSrc, cySrc, 255, *pSrc, xDest, yDest);
+		}
 	}
 
 void CObjectImageArray::PaintSilhoutte (CG32bitImage &Dest,

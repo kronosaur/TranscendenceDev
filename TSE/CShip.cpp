@@ -927,44 +927,56 @@ void CShip::CalcPerformance (void)
 	DEBUG_CATCH
     }
 
-void CShip::CalcReactorStats (void)
+int CShip::CalcPowerUsed (int *retiPowerGenerated)
 
-//	CalcReactorStats
+//	CalcPowerUsed
 //
-//	Computes power consumption and generation
+//	Computes power consumption and generation. Power generation is only for non-
+//	reactor sources.
 
 	{
-	ASSERT(m_pPowerUse);
-
 	int i;
-
-	//	Calculate power usage
-
-	int iPowerDrain = 0;
+	int iPowerUsed = 0;
+	int iPowerGenerated = 0;
 
 	//	We always consume some power for life-support
 
-	iPowerDrain += 5;
+	iPowerUsed += 5;
 
 	//	If we're thrusting, then we consume power
 
 	if (!IsParalyzed() && m_pController->GetThrust())
-		iPowerDrain += m_Perf.GetDriveDesc().GetPowerUse();
+		iPowerUsed += m_Perf.GetDriveDesc().GetPowerUse();
 
 	//	Compute power drain of all devices
 
 	for (i = 0; i < GetDeviceCount(); i++)
-		iPowerDrain += m_Devices[i].CalcPowerUsed(this);
+		{
+		int iDevicePower = m_Devices[i].CalcPowerUsed(this);
+		if (iDevicePower >= 0)
+			iPowerUsed += iDevicePower;
+		else
+			iPowerGenerated += -iDevicePower;
+		}
 
 	//	Compute power drain from armor
 
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
 		CInstalledArmor *pArmor = GetArmorSection(i);
-		iPowerDrain += pArmor->GetClass()->CalcPowerUsed(pArmor);
+		int iArmorPower = pArmor->GetClass()->CalcPowerUsed(pArmor);
+		if (iArmorPower >= 0)
+			iPowerUsed += iArmorPower;
+		else
+			iPowerGenerated += -iArmorPower;
 		}
 
-	m_pPowerUse->SetPowerUsed(iPowerDrain);
+	//	Done
+
+	if (retiPowerGenerated)
+		*retiPowerGenerated = iPowerGenerated;
+
+	return iPowerUsed;
 	}
 
 bool CShip::CanAttack (void) const
@@ -2773,7 +2785,7 @@ Metric CShip::GetMaxAcceleration (void)
 	return GetThrust() * 1000.0 / rMass;
 	}
 
-Metric CShip::GetMaxFuel (void)
+Metric CShip::GetMaxFuel (void) const
 
 //	GetMaxFuel
 //
@@ -2899,11 +2911,12 @@ int CShip::GetPowerConsumption (void)
 
 //	GetPowerConsumption
 //
-//	Returns the amount of power consumed this turn
+//	Returns the amount of power consumed from the ship's reactor (and its fuel)
+//	this tick.
 
 	{
 	if (m_pPowerUse)
-		return m_pPowerUse->GetPowerUsed();
+		return m_pPowerUse->GetPowerNeeded();
 	else
 		return 0;
 	}
@@ -3170,18 +3183,60 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CSpaceObject::GetProperty(Ctx, sName);
 	}
 
-CString CShip::GetReactorName (void)
+void CShip::GetReactorStats (SReactorStats &Stats) const
 
-//	GetReactorName
+//	GetReactorStats
 //
-//	Returns he name of the ship's reactor
+//	Returns power/reactor stats for HUD
 
 	{
+	//	Reactor
+
 	CInstalledDevice *pReactor = GetNamedDevice(devReactor);
 	if (pReactor)
-		return pReactor->GetClass()->GetItemType()->GetNounPhrase();
+		{
+		Stats.sReactorName = pReactor->GetClass()->GetItemType()->GetNounPhrase();
+		Stats.pReactorImage = &pReactor->GetItem()->GetType()->GetImage();
+		Stats.bReactorDamaged = pReactor->IsDamaged();
+		}
 	else
-		return strPatternSubst(CONSTLIT("%s reactor"), m_pClass->GetShortName());
+		{
+		Stats.sReactorName = strPatternSubst(CONSTLIT("%s reactor"), m_pClass->GetShortName());
+		Stats.pReactorImage = NULL;
+		Stats.bReactorDamaged = false;
+		}
+
+	//	If we track power then initialize the others
+
+	if (m_pPowerUse)
+		{
+		//	Fuel level
+
+		Metric rMaxFuel = GetMaxFuel();
+		Metric rFuelLeft = Min(m_pPowerUse->GetFuelLeft(), rMaxFuel);
+		Stats.iFuelLevel = (rMaxFuel > 0.0 ? ((int)Min((rFuelLeft * 100.0 / rMaxFuel) + 1.0, 100.0)) : 0);
+
+		//	Power sources
+
+		Stats.iReactorPower = GetMaxPower();
+		Stats.iOtherPower = m_pPowerUse->GetPowerGenerated();
+
+		//	Total power consumed
+
+		Stats.iPowerConsumed = m_pPowerUse->GetPowerConsumed();
+		}
+
+	//	Charges
+
+	Stats.bUsesCharges = (pReactor && !GetReactorDesc().UsesFuel());
+	if (Stats.bUsesCharges)
+		{
+		Stats.iChargesLeft = pReactor->GetItem()->GetCharges();
+
+		//	The max must be at least 1 or else the HUD will fail (division by zero).
+
+		Stats.iMaxCharges = Max(1, Max(Stats.iChargesLeft, pReactor->GetItem()->GetType()->GetMaxCharges()));
+		}
 	}
 
 int CShip::GetShieldLevel (void)
@@ -6285,22 +6340,20 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 	m_pController->OnProgramDamage(pHacker, Program);
 	}
 
-void CShip::ReactorOverload (void)
+void CShip::ReactorOverload (int iPowerDrain)
 
 //	ReactorOverload
 //
 //	This is called every FUEL_CHECK_CYCLE when the reactor is overloading
 
 	{
-	ASSERT(m_pPowerUse);
-
 	int i;
 
 	//	There is a 1 in 10 chance that something bad will happen
 	//	(or, if the overload is severe, something bad always happens)
 
 	if (mathRandom(1, 100) <= 10
-			|| (m_pPowerUse->GetPowerUsed() > 2 * m_Perf.GetReactorDesc().GetMaxPower()))
+			|| (iPowerDrain > 2 * m_Perf.GetReactorDesc().GetMaxPower()))
 		{
 		//	See if there is an OnReactorOverload event that will
 		//	handle this.
@@ -7590,11 +7643,12 @@ bool CShip::UpdateFuel (int iTick)
 
 	else
 		{
-        CalcReactorStats();
+		int iPowerGenerated;
+		int iPowerUsed = CalcPowerUsed(&iPowerGenerated);
 
-        //	Consume fuel
+        //	Update our power use for this tick
 
-		m_pPowerUse->ConsumeFuelForPowerUsed(m_Perf.GetReactorDesc().GetEfficiency());
+		m_pPowerUse->UpdatePowerUse(iPowerUsed, iPowerGenerated, m_Perf.GetReactorDesc().GetEfficiency());
 
         //	Make sure everything is running smoothly.
 
@@ -7602,17 +7656,18 @@ bool CShip::UpdateFuel (int iTick)
             {
             Metric rFuelLeft;
 			int iMaxPower = m_Perf.GetReactorDesc().GetMaxPower();
+			int iPowerDrain = m_pPowerUse->GetPowerNeeded();
 
 			//	If we're consuming more power than the reactor can output, then 
 			//	we overload.
 
-			if (m_pPowerUse->GetPowerUsed() > iMaxPower)
+			if (iPowerDrain > iMaxPower)
 				{
                 m_pController->OnShipStatus(IShipController::statusReactorOverloadWarning, iTick / FUEL_CHECK_CYCLE);
 
                 //	Consequences of reactor overload
 
-                ReactorOverload();
+                ReactorOverload(iPowerDrain);
 				}
 
 			//	If our reactor has 0 power, then we can't even run life-support,

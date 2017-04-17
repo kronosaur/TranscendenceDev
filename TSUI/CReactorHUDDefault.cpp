@@ -177,7 +177,8 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 			|| (pShip = Ctx.pSource->AsShip()) == NULL)
 		return;
 
-	CInstalledDevice *pReactor = pShip->GetNamedDevice(devReactor);
+	SReactorStats Stats;
+	pShip->GetReactorStats(Stats);
 
 	//	Set up some metrics
 
@@ -198,18 +199,12 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 	m_ReactorImage.PaintImageUL(m_Buffer, 0, yOffset, 0, 0);
 
-	//	Calculate fuel values
-
-	Metric rMaxFuel = pShip->GetMaxFuel();
-	Metric rFuelLeft = Min(pShip->GetFuelLeft(), rMaxFuel);
-	int iFuelLevel = (rMaxFuel > 0.0 ? ((int)Min((rFuelLeft * 100.0 / rMaxFuel) + 1.0, 100.0)) : 0);
-
 	//	Paint the fuel level
 
 	CG32bitImage *pFuelImage = NULL;
 	RECT rcSrcRect;
 	bool bBlink;
-	if (iFuelLevel < 15)
+	if (Stats.iFuelLevel < 15)
 		{
 		pFuelImage = &m_FuelLowLevelImage.GetImage(NULL_STR);
 		rcSrcRect = m_FuelLowLevelImage.GetImageRect();
@@ -224,7 +219,7 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 	if (!bBlink || ((m_iTick % 2) == 0))
 		{
-		int cxFuelLevel = RectWidth(rcSrcRect) * iFuelLevel / 100;
+		int cxFuelLevel = RectWidth(rcSrcRect) * Stats.iFuelLevel / 100;
 		m_Buffer.Blt(rcSrcRect.left,
 				rcSrcRect.top,
 				cxFuelLevel,
@@ -254,11 +249,9 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 	//	Calculate the power level
 
-	int iPowerUsage = pShip->GetPowerConsumption();
-	int iMaxPower = pShip->GetMaxPower();
 	int iPowerLevel;
-	if (iMaxPower)
-		iPowerLevel = Min((iPowerUsage * 100 / iMaxPower) + 1, 120);
+	if (Stats.iReactorPower)
+		iPowerLevel = Min((Stats.iPowerConsumed * 100 / Stats.iReactorPower) + 1, 120);
 	else
 		iPowerLevel = 0;
 
@@ -302,14 +295,14 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 	//	Paint the reactor name (we paint on top of the levels)
 
 	CG32bitPixel rgbColor;
-	if (pReactor && pReactor->IsDamaged())
+	if (Stats.bReactorDamaged)
 		rgbColor = DAMAGED_TEXT_COLOR;
 	else
 		rgbColor = VI.GetColor(colorTextHighlight);
 
 	CString sReactorName = strPatternSubst(CONSTLIT("%s (%s)"), 
-			pShip->GetReactorName(),
-			ReactorPower2String(iMaxPower));
+			Stats.sReactorName,
+			ReactorPower2String(Stats.iReactorPower));
 
 	MediumFont.DrawText(m_Buffer,
 			m_rcReactorText.left,

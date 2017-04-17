@@ -118,6 +118,13 @@ class CObjectImage : public CDesignType
 class CObjectImageArray : public CObject
 	{
 	public:
+		enum EFlags
+			{
+			FLAG_UPPER_LEFT =	0x00000001,	//	x,y coordinates are upper-left of image (not center)
+			FLAG_GRAYED =		0x00000002,	//	Grayed out
+			FLAG_CACHED =		0x00000004,	//	Cache scaled image
+			};
+
 		CObjectImageArray (void);
 		CObjectImageArray (const CObjectImageArray &Source);
 		~CObjectImageArray (void);
@@ -173,14 +180,7 @@ class CObjectImageArray : public CObject
 								int iTick,
 								int iRotation,
 								bool bComposite = false) const;
-		void PaintScaledImage (CG32bitImage &Dest,
-							   int x,
-							   int y,
-							   int iTick,
-							   int iRotation,
-							   int cxWidth,
-							   int cyHeight,
-							   bool bComposite = false) const;
+		void PaintScaledImage (CG32bitImage &Dest, int x, int y, int iTick, int iRotation, int cxWidth, int cyHeight, DWORD dwFlags = 0) const;
 		void PaintSilhoutte (CG32bitImage &Dest,
 							 int x,
 							 int y,

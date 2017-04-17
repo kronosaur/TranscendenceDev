@@ -998,7 +998,6 @@ class CShip : public CSpaceObject
 		void SetWeaponTriggered (DeviceNames iDev, bool bTriggered = true);
 		void SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered = true);
 		CDeviceClass *GetNamedDeviceClass (DeviceNames iDev);
-		CString GetReactorName (void);
 		bool GetWeaponIsReady (DeviceNames iDev);
         Metric GetWeaponRange (DeviceNames iDev);
 		bool IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL, int *retiFacingAngle = NULL);
@@ -1031,8 +1030,9 @@ class CShip : public CSpaceObject
 
 		//	Reactor methods
 		inline Metric GetFuelLeft (void) { return (m_pPowerUse ? m_pPowerUse->GetFuelLeft() : 0.0); }
-		Metric GetMaxFuel (void);
-		inline const CReactorDesc &GetReactorDesc (void) { return m_Perf.GetReactorDesc(); }
+		Metric GetMaxFuel (void) const;
+		inline const CReactorDesc &GetReactorDesc (void) const { return m_Perf.GetReactorDesc(); }
+		void GetReactorStats (SReactorStats &Stats) const;
 		void TrackFuel (bool bTrack = true);
 		inline void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
 		int GetPowerConsumption (void);
@@ -1258,7 +1258,7 @@ class CShip : public CSpaceObject
 		DWORD CalcEffectsMask (void);
 		void CalcOverlayImpact (void);
         void CalcPerformance (void);
-		void CalcReactorStats (void);
+		int CalcPowerUsed (int *retiPowerGenerated = NULL);
 		int FindDeviceIndex (CInstalledDevice *pDevice) const;
 		int FindFreeDeviceSlot (void);
 		bool FindInstalledDeviceSlot (const CItem &Item, int *retiDev = NULL);
@@ -1268,7 +1268,7 @@ class CShip : public CSpaceObject
 		Metric GetCargoMass (void);
 		Metric GetItemMass (void) const;
 		bool IsSingletonDevice (ItemCategories iItemCat);
-		void ReactorOverload (void);
+		void ReactorOverload (int iPowerDrain);
         ALERROR ReportCreateError (const CString &sError) const;
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		inline bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }

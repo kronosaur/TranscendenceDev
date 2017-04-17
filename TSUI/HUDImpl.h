@@ -244,10 +244,10 @@ class CReactorHUDCircular : public IHUDPainter
 		virtual void OnUpdate (SHUDUpdateCtx &Ctx);
 
 	private:
-		void PaintChargesGauge (CShip *pShip);
-		void PaintFuelGauge (CShip *pShip);
-		void PaintPowerGauge (CShip *pShip);
-		void PaintReactorItem (CShip *pShip);
+		void PaintChargesGauge (const SReactorStats &Stats);
+		void PaintFuelGauge (const SReactorStats &Stats);
+		void PaintPowerGauge (const SReactorStats &Stats);
+		void PaintReactorItem (const SReactorStats &Stats);
 		void Realize (SHUDPaintCtx &Ctx);
 
 		//	Definitions

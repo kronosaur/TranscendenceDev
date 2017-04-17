@@ -4174,7 +4174,7 @@ void CShipClass::PaintMap (CMapViewportCtx &Ctx,
 //	Paints the ship class on the map
 
 	{
-	GetImage().PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24);
+	GetImage().PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24, CObjectImageArray::FLAG_CACHED);
 	}
 
 void CShipClass::PaintScaled (CG32bitImage &Dest,
@@ -4190,7 +4190,7 @@ void CShipClass::PaintScaled (CG32bitImage &Dest,
 	//	Paints a scaled image
 
 	{
-	GetImage().PaintScaledImage(Dest, x, y, iTick, iDirection, cxWidth, cyHeight);
+	GetImage().PaintScaledImage(Dest, x, y, iTick, iDirection, cxWidth, cyHeight, CObjectImageArray::FLAG_CACHED);
 	}
 
 void CShipClass::PaintThrust (CG32bitImage &Dest, 
