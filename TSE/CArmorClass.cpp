@@ -1208,14 +1208,16 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		Ctx.iDamage = Ctx.iDamage / 2;
 	}
 
-int CArmorClass::CalcPowerUsed (CInstalledArmor *pArmor)
+int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstalledArmor *pArmor)
 
 //	CalcPowerUsed
 //
 //	Computes the amount of power used by this armor segment (this
-//	only applies to powered armor)
+//	only applies to powered armor). Negative numbers mean we generate power.
 
 	{
+	int iTotalPower = 0;
+
 	//	If we did work (regenerated), then we use full power. Otherwise, we use
 	//	idle power.
 	//
@@ -1223,9 +1225,25 @@ int CArmorClass::CalcPowerUsed (CInstalledArmor *pArmor)
 	//	have different values.
 
 	if (pArmor->ConsumedPower())
-		return m_iPowerUse;
+		iTotalPower = m_iPowerUse;
 	else
-		return m_iIdlePowerUse;
+		iTotalPower = m_iIdlePowerUse;
+
+	//	See if we generate solar power
+
+	if (m_iPowerGen > 0)
+		{
+		if (m_fPhotoRecharge)
+			{
+			iTotalPower -= (m_iPowerGen * Ctx.GetLightIntensity(pSource) / 100);
+			}
+		else
+			iTotalPower -= m_iPowerGen;
+		}
+
+	//	Done
+
+	return iTotalPower;
 	}
 
 ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor)
@@ -1346,11 +1364,31 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_fDisintegrationImmune = pDesc->GetAttributeBool(DISINTEGRATION_IMMUNE_ATTRIB);
 
 	pArmor->m_fPhotoRepair = pDesc->GetAttributeBool(PHOTO_REPAIR_ATTRIB);
-	pArmor->m_fPhotoRecharge = pDesc->GetAttributeBool(PHOTO_RECHARGE_ATTRIB);
 	pArmor->m_fShieldInterference = pDesc->GetAttributeBool(SHIELD_INTERFERENCE_ATTRIB);
 	pArmor->m_fChargeRepair = pDesc->GetAttributeBool(CHARGE_REGEN_ATTRIB);
 	pArmor->m_fChargeDecay = pDesc->GetAttributeBool(CHARGE_DECAY_ATTRIB);
     pArmor->m_fHealerRepair = pDesc->GetAttributeBool(HEALER_REGEN_ATTRIB);
+
+	//	Solar power
+
+	CString sAttrib = pDesc->GetAttribute(PHOTO_RECHARGE_ATTRIB);
+	if (sAttrib.IsBlank())
+		{
+		pArmor->m_fPhotoRecharge = false;
+		pArmor->m_iPowerGen = 0;
+		}
+	else if (CXMLElement::IsBoolTrueValue(sAttrib))
+		{
+		pArmor->m_fPhotoRecharge = true;
+		pArmor->m_iPowerGen = 0;
+		}
+	else
+		{
+		pArmor->m_iPowerGen = Max(0, strToInt(sAttrib, 0));
+		pArmor->m_fPhotoRecharge = (pArmor->m_iPowerGen > 0);
+		}
+
+	//	Stealth
 
 	pArmor->m_iStealth = pDesc->GetAttributeInteger(STEALTH_ATTRIB);
 	if (pArmor->m_iStealth == 0)
@@ -2231,9 +2269,11 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 			}
 		}
 
-	//	If this is solar armor then recharge the object
+	//	If this is solar armor then recharge the object. This is the old-style
+	//	solar armor which creates fuel instead of generating power.
 
-	if (pArmor->GetMods().IsPhotoRecharge() || m_fPhotoRecharge)
+	if ((pArmor->GetMods().IsPhotoRecharge() || m_fPhotoRecharge)
+			&& m_iPowerGen == 0)
 		{
 		int iIntensity = pObj->GetSystem()->CalculateLightIntensity(pObj->GetPos());
 

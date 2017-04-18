@@ -1152,7 +1152,7 @@ int CWeaponClass::CalcLevel (CWeaponFireDesc *pShot) const
     return Max(1, Min(pShot->GetLevel(), MAX_ITEM_LEVEL));
     }
 
-int CWeaponClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CWeaponClass::CalcPowerUsed (SUpdateCtx &UpdateCtx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	CalcPowerUsed
 //

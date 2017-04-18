@@ -81,7 +81,7 @@ class CArmorClass
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
 		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
 		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx);
-		int CalcPowerUsed (CInstalledArmor *pArmor);
+		int CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstalledArmor *pArmor);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor);
 		bool FindDataField (const CString &sField, CString *retsValue);
 		inline bool FindEventHandlerArmorClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
@@ -167,8 +167,9 @@ class CArmorClass
 		int m_iRepairTech;						//	Tech required to repair
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
 		int m_iStealth;							//	Stealth level
-		int m_iPowerUse;						//	Power consumed (1/10 MWs)
+		int m_iPowerUse;						//	Power consumed (1/10th MWs)
 		int m_iIdlePowerUse;					//	Power consumed when not regenerating
+		int m_iPowerGen;						//	Power generation, usually solar (1/10th MWs)
 		int m_iMaxHPBonus;						//	Max HP bonus allowed for this armor
 		int m_iMaxSpeedInc;						//	Add/subtract to ship's max speed
 		int m_iMaxSpeedLimit;					//	Do not increase speed above this value

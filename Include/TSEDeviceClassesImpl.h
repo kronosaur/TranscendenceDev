@@ -12,7 +12,7 @@ class CAutoDefenseClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
@@ -176,7 +176,7 @@ class CEnhancerClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual bool GetDeviceEnhancementDesc (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override { return m_iPowerUse; }
@@ -209,7 +209,7 @@ class CMiscellaneousClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) override;
@@ -296,7 +296,7 @@ class CRepairerClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const override { return 2 * m_iPowerUse; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
@@ -379,7 +379,7 @@ class CShieldClass : public CDeviceClass
 							   bool *retbSourceDestroyed,
 							   bool *retbConsumedItems = NULL) override;
 		virtual CShieldClass *AsShieldClass (void) override { return this; }
-		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
@@ -460,6 +460,7 @@ class CSolarDeviceClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
+		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool CanBeDisabled (CItemCtx &Ctx) override { return false; }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
@@ -468,6 +469,7 @@ class CSolarDeviceClass : public CDeviceClass
 	private:
 		CSolarDeviceClass (void);
 
+		int m_iPowerGen;						//	Power generated at maximum solar intensity (1/10th MW).
 		int m_iRefuel;							//	Units of fuel recharged per 10 ticks
 												//	at 100% intensity.
 	};
@@ -590,7 +592,7 @@ class CWeaponClass : public CDeviceClass
 							   bool *retbConsumedItems = NULL) override;
 		virtual CWeaponClass *AsWeaponClass (void) override { return this; }
 		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) override;
-		virtual int CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const override;
         virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;

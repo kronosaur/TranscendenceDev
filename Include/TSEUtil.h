@@ -281,6 +281,8 @@ struct SUpdateCtx
 			pSystem(NULL),
 			pPlayer(NULL),
 			pAnnotations(NULL),
+			pCacheObj(NULL),
+			iLightIntensity(-1),
 			pDockingObj(NULL),
 			bNeedsAutoTarget(false),
 			bPlayerTargetOutOfRange(false),
@@ -295,10 +297,17 @@ struct SUpdateCtx
 			bHasGravity(false)
 		{ }
 
+	int GetLightIntensity (CSpaceObject *pObj) const;
+
 	CSystem *pSystem;					//	Current system
 	CSpaceObject *pPlayer;				//	The player
 	TArray<CSpaceObject *> PlayerObjs;	//	List of player objects, if pPlayer == NULL
 	SViewportAnnotations *pAnnotations;	//	Extra structure to deliver to PaintViewport
+
+	//	Cached computed values
+
+	mutable CSpaceObject *pCacheObj;	//	Cached values apply to this object.
+	mutable int iLightIntensity;		//	Light intensity at pCacheObj (-1 if not computed).
 
 	//	Used to compute nearest docking port to player
 

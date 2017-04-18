@@ -3846,7 +3846,7 @@ class CInstalledDevice
 							  bool *retbSourceDestroyed,
 							  bool *retbConsumedItems = NULL)
 			{ return m_pClass->Activate(this, pSource, pTarget, retbSourceDestroyed, retbConsumedItems); }
-		int CalcPowerUsed (CSpaceObject *pSource);
+		int CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource);
 		inline bool CanBeDamaged (void) { return m_pClass->CanBeDamaged(); }
 		inline bool CanBeDisabled (CItemCtx &Ctx) { return m_pClass->CanBeDisabled(Ctx); }
 		inline bool CanHitFriends (void) { return m_pClass->CanHitFriends(); }

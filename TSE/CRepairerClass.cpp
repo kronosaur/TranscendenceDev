@@ -20,7 +20,7 @@ CRepairerClass::CRepairerClass (void)
 	{
 	}
 
-int CRepairerClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CRepairerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	CalcPowerUsed
 //

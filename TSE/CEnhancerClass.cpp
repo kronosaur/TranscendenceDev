@@ -20,7 +20,7 @@ CEnhancerClass::CEnhancerClass (void)
 	{
 	}
 
-int CEnhancerClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CEnhancerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	CalcPowerUsed
 //

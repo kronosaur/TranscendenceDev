@@ -1258,7 +1258,7 @@ class CShip : public CSpaceObject
 		DWORD CalcEffectsMask (void);
 		void CalcOverlayImpact (void);
         void CalcPerformance (void);
-		int CalcPowerUsed (int *retiPowerGenerated = NULL);
+		int CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated = NULL);
 		int FindDeviceIndex (CInstalledDevice *pDevice) const;
 		int FindFreeDeviceSlot (void);
 		bool FindInstalledDeviceSlot (const CItem &Item, int *retiDev = NULL);
@@ -1273,7 +1273,7 @@ class CShip : public CSpaceObject
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		inline bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
 		void UpdateDestroyInGate (void);
-		bool UpdateFuel (int iTick);
+		bool UpdateFuel (SUpdateCtx &Ctx, int iTick);
 		void UpdateInactive (void);
 
 		CShipClass *m_pClass;					//	Ship class

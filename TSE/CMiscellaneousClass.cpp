@@ -18,7 +18,7 @@ CMiscellaneousClass::CMiscellaneousClass (void)
 	{
 	}
 
-int CMiscellaneousClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CMiscellaneousClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	CalcPowerUsed
 //

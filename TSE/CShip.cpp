@@ -927,7 +927,7 @@ void CShip::CalcPerformance (void)
 	DEBUG_CATCH
     }
 
-int CShip::CalcPowerUsed (int *retiPowerGenerated)
+int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 
 //	CalcPowerUsed
 //
@@ -952,7 +952,7 @@ int CShip::CalcPowerUsed (int *retiPowerGenerated)
 
 	for (i = 0; i < GetDeviceCount(); i++)
 		{
-		int iDevicePower = m_Devices[i].CalcPowerUsed(this);
+		int iDevicePower = m_Devices[i].CalcPowerUsed(Ctx, this);
 		if (iDevicePower >= 0)
 			iPowerUsed += iDevicePower;
 		else
@@ -964,7 +964,7 @@ int CShip::CalcPowerUsed (int *retiPowerGenerated)
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
 		CInstalledArmor *pArmor = GetArmorSection(i);
-		int iArmorPower = pArmor->GetClass()->CalcPowerUsed(pArmor);
+		int iArmorPower = pArmor->GetClass()->CalcPowerUsed(Ctx, this, pArmor);
 		if (iArmorPower >= 0)
 			iPowerUsed += iArmorPower;
 		else
@@ -5812,7 +5812,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     //	Update reactor
 
 	if (m_pPowerUse)
-		if (!UpdateFuel(iTick))
+		if (!UpdateFuel(Ctx, iTick))
 			return;
 
     //	Radiation
@@ -7580,7 +7580,7 @@ void CShip::UpdateDestroyInGate (void)
         Destroy(enteredStargate, CDamageSource());
 	}
 
-bool CShip::UpdateFuel (int iTick)
+bool CShip::UpdateFuel (SUpdateCtx &Ctx, int iTick)
 
 //	UpdateFuel
 //
@@ -7644,7 +7644,7 @@ bool CShip::UpdateFuel (int iTick)
 	else
 		{
 		int iPowerGenerated;
-		int iPowerUsed = CalcPowerUsed(&iPowerGenerated);
+		int iPowerUsed = CalcPowerUsed(Ctx, &iPowerGenerated);
 
         //	Update our power use for this tick
 

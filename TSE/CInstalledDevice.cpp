@@ -104,7 +104,7 @@ CInstalledDevice &CInstalledDevice::operator= (const CInstalledDevice &Obj)
 	return *this;
 	}
 
-int CInstalledDevice::CalcPowerUsed (CSpaceObject *pSource)
+int CInstalledDevice::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource)
 
 //	CalcPowerUsed
 //
@@ -112,7 +112,7 @@ int CInstalledDevice::CalcPowerUsed (CSpaceObject *pSource)
 
 	{
 	if (!IsEmpty()) 
-		return m_pClass->CalcPowerUsed(this, pSource);
+		return m_pClass->CalcPowerUsed(Ctx, this, pSource);
 	else
 		return 0;
 	}

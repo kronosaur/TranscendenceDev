@@ -1273,7 +1273,14 @@ void CPlayerGameStats::OnItemUninstalled (const CItem &Item)
 
 	{
 	SItemTypeStats *pStats = GetItemStats(Item.GetType()->GetUNID());
-	ASSERT(pStats->iCountInstalled > 0);
+
+	//	NOTE: This code does not work properly when switching ships.
+	//	Since we don't count items on switched ships, when we try to
+	//	uninstall, we will underflow.
+	//
+	//	We need to fix this by adding all installed items to stats 
+	//	when we switch ships.
+
 	if (pStats->iCountInstalled <= 0)
 		return;
 

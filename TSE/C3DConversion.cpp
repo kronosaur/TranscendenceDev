@@ -1,6 +1,7 @@
 //	C3DConversion.cpp
 //
 //	C3DConversion class
+//	Copyright (c) 2017 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 

@@ -596,7 +596,7 @@ void CShieldClass::CalcMinMaxHP (CItemCtx &Ctx, int iCharges, int iArmorSegs, in
 		*retiMax = iMax;
 	}
 
-int CShieldClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CShieldClass::CalcPowerUsed (SUpdateCtx &UpdateCtx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	CalcPowerUsed
 //

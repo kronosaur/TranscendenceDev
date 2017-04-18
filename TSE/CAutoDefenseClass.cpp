@@ -36,7 +36,7 @@ int CAutoDefenseClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject
 	return m_iRechargeTicks;
 	}
 
-int CAutoDefenseClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CAutoDefenseClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	CalcPowerUsed
 //
@@ -48,7 +48,7 @@ int CAutoDefenseClass::CalcPowerUsed (CInstalledDevice *pDevice, CSpaceObject *p
 	if (pWeapon == NULL || !pDevice->IsEnabled())
 		return 0;
 
-	return pWeapon->CalcPowerUsed(pDevice, pSource);
+	return pWeapon->CalcPowerUsed(Ctx, pDevice, pSource);
 	}
 
 DamageTypes CAutoDefenseClass::GetDamageType (CItemCtx &Ctx, const CItem &Ammo) const
