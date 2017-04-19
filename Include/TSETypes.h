@@ -175,6 +175,7 @@ const DWORD g_LRSImageUNID =				0x0000F006;	//	rsZubrinLRS
 const DWORD UNID_TARGETING_HUD_BACKGROUND =	0x0000F007;	//	rsZubrinTargeting
 const DWORD g_SRSSnowImageUNID =			0x0000F008;	//	rsSRSSnow
 const DWORD g_LRSBorderUNID =				0x0000F009;	//	rsZubrinLRSBorder
+const DWORD DEFAULT_REACTOR_DISPLAY_IMAGE = 0x0000F00C;	//	rsZubrinReactor
 const DWORD DEFAULT_DOCK_SCREEN_IMAGE_UNID = 0x0000F013;	//	Default dock screen background
 const DWORD DEFAULT_DOCK_SCREEN_MASK_UNID =	0x0000F014;	//	Default dock screen mask
 const DWORD g_ShipExplosionParticlesUNID =	0x0000F114;	//	rsDebris1

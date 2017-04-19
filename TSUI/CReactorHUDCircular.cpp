@@ -8,6 +8,7 @@
 #define BACKGROUND_COLOR_ATTRIB				CONSTLIT("backgroundColor")
 #define FUEL_COLOR_ATTRIB					CONSTLIT("fuelColor")
 #define POWER_COLOR_ATTRIB					CONSTLIT("powerColor")
+#define POWER_GEN_COLOR_ATTRIB				CONSTLIT("powerGenColor")
 #define WARNING_COLOR_ATTRIB				CONSTLIT("warningColor")
 
 const int RING_SPACING = 2;
@@ -71,6 +72,7 @@ ALERROR CReactorHUDCircular::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClas
 	m_rgbGaugeBack = ::LoadRGBColor(pDesc->GetAttribute(BACKGROUND_COLOR_ATTRIB), CG32bitPixel(55, 58, 64));
 	m_rgbFuelGauge = ::LoadRGBColor(pDesc->GetAttribute(FUEL_COLOR_ATTRIB), CG32bitPixel(5, 211, 5));
 	m_rgbPowerGauge = ::LoadRGBColor(pDesc->GetAttribute(POWER_COLOR_ATTRIB), CG32bitPixel(5, 211, 5));
+	m_rgbOtherPower = ::LoadRGBColor(pDesc->GetAttribute(POWER_GEN_COLOR_ATTRIB), CG32bitPixel(4, 108, 212));
 	m_rgbGaugeWarning = ::LoadRGBColor(pDesc->GetAttribute(WARNING_COLOR_ATTRIB), CG32bitPixel(211, 5, 5));
 
 	//	Calculate metrics
@@ -245,10 +247,6 @@ void CReactorHUDCircular::PaintPowerGauge (const SReactorStats &Stats)
 	const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 
-	Metric rPowerUsage = Stats.iPowerConsumed;
-	Metric rMaxPower = Stats.iReactorPower;
-	Metric rPowerLevel = (rMaxPower > 0.0 ? Min(rPowerUsage / rMaxPower, 1.0) : 0.0);
-
 	//	Paint the background
 
 	CGDraw::Arc(m_Buffer,
@@ -262,25 +260,92 @@ void CReactorHUDCircular::PaintPowerGauge (const SReactorStats &Stats)
 			RING_SPACING / 2,
 			CGDraw::ARC_INNER_RADIUS);
 
-	//	Figure out how we should paint
+	//	Compute power usage
 
-	bool bWarning = (rPowerLevel > 0.90);
-	CG32bitPixel rgbColor = (bWarning ? m_rgbGaugeWarning : m_rgbPowerGauge);
+	Metric rPowerUsage = Stats.iPowerConsumed;
+	Metric rMaxPower = Stats.iReactorPower;
+	Metric rPowerLevel = (rMaxPower > 0.0 ? Min(rPowerUsage / rMaxPower, 1.0) : 0.0);
 
-	//	If in warning mode, we blink
+	//	If we're getting some solar power, then we paint a different bar.
 
-	if (!bWarning || (m_iTick % 2) == 0)
+	if (Stats.iOtherPower > 0)
 		{
-		CGDraw::Arc(m_Buffer,
-				CVector(m_xCenter, m_yCenter),
-				m_iGaugeRadius + RING_SPACING,
-				1.5 * PI,
-				mathAngleMod(1.5 * PI + (PI * rPowerLevel)),
-				m_iGaugeWidth,
-				rgbColor,
-				CGDraw::blendCompositeNormal,
-				RING_SPACING / 2,
-				CGDraw::ARC_INNER_RADIUS);
+		//	If we're getting all our power from solar, then we just need a single bar
+		//	(with no chance of overload).
+
+		if (Stats.iPowerConsumed <= Stats.iOtherPower)
+			{
+			CGDraw::Arc(m_Buffer,
+					CVector(m_xCenter, m_yCenter),
+					m_iGaugeRadius + RING_SPACING,
+					1.5 * PI,
+					mathAngleMod(1.5 * PI + (PI * rPowerLevel)),
+					m_iGaugeWidth,
+					m_rgbOtherPower,
+					CGDraw::blendCompositeNormal,
+					RING_SPACING / 2,
+					CGDraw::ARC_INNER_RADIUS);
+			}
+
+		//	Otherwise we need to paint two bars.
+
+		else
+			{
+			Metric rSolarLevel = (rMaxPower > 0.0 ? Min((Metric)Stats.iOtherPower / rMaxPower, 1.0) : 0.0);
+			Metric rSolarArc = PI * rSolarLevel;
+			Metric rStart = 1.5 * PI;
+
+			CGDraw::Arc(m_Buffer,
+					CVector(m_xCenter, m_yCenter),
+					m_iGaugeRadius + RING_SPACING,
+					rStart,
+					mathAngleMod(rStart + rSolarArc),
+					m_iGaugeWidth,
+					m_rgbOtherPower,
+					CGDraw::blendCompositeNormal,
+					RING_SPACING / 2,
+					CGDraw::ARC_INNER_RADIUS);
+
+			rStart += rSolarArc;
+			Metric rPowerArc = PI * (rPowerLevel - rSolarLevel);
+
+			CGDraw::Arc(m_Buffer,
+					CVector(m_xCenter, m_yCenter),
+					m_iGaugeRadius + RING_SPACING,
+					rStart,
+					mathAngleMod(rStart + rPowerArc),
+					m_iGaugeWidth,
+					m_rgbPowerGauge,
+					CGDraw::blendCompositeNormal,
+					RING_SPACING / 2,
+					CGDraw::ARC_INNER_RADIUS);
+			}
+		}
+
+	//	Otherwise we just paint power consumption
+
+	else
+		{
+		//	Figure out how we should paint
+
+		bool bWarning = (rPowerLevel > 0.90);
+		CG32bitPixel rgbColor = (bWarning ? m_rgbGaugeWarning : m_rgbPowerGauge);
+
+		//	If in warning mode, we blink
+
+		if (!bWarning || (m_iTick % 2) == 0)
+			{
+			CGDraw::Arc(m_Buffer,
+					CVector(m_xCenter, m_yCenter),
+					m_iGaugeRadius + RING_SPACING,
+					1.5 * PI,
+					mathAngleMod(1.5 * PI + (PI * rPowerLevel)),
+					m_iGaugeWidth,
+					rgbColor,
+					CGDraw::blendCompositeNormal,
+					RING_SPACING / 2,
+					CGDraw::ARC_INNER_RADIUS);
+			}
 		}
 
 	//	Paint the power percent

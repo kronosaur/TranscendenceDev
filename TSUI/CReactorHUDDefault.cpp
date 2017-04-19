@@ -9,6 +9,7 @@
 #define FUEL_LEVEL_TEXT_TAG					CONSTLIT("FuelLevelText")
 #define FUEL_LOW_LEVEL_IMAGE_TAG			CONSTLIT("FuelLowLevelImage")
 #define IMAGE_TAG							CONSTLIT("Image")
+#define POWER_GEN_IMAGE_TAG					CONSTLIT("PowerGenImage")
 #define POWER_LEVEL_IMAGE_TAG				CONSTLIT("PowerLevelImage")
 #define POWER_LEVEL_TEXT_TAG				CONSTLIT("PowerLevelText")
 #define REACTOR_DISPLAY_TAG					CONSTLIT("ReactorDisplay")
@@ -58,6 +59,9 @@ ALERROR CReactorHUDDefault::Bind (SDesignLoadCtx &Ctx)
 	if (error = m_PowerLevelImage.OnDesignLoadComplete(Ctx))
 		return error;
 
+	if (error = m_PowerGenImage.OnDesignLoadComplete(Ctx))
+		return error;
+
 	if (error = m_FuelLevelImage.OnDesignLoadComplete(Ctx))
 		return error;
 
@@ -87,9 +91,13 @@ ALERROR CReactorHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass
 	{
 	ALERROR error;
 
+	//	Background image
+
 	if (error = m_ReactorImage.InitFromXML(Ctx,
 			pDesc->GetContentElementByTag(IMAGE_TAG)))
 		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+
+	//	Power level image
 
 	CXMLElement *pImage = pDesc->GetContentElementByTag(POWER_LEVEL_IMAGE_TAG);
 	if (pImage == NULL || (error = m_PowerLevelImage.InitFromXML(Ctx, pImage)))
@@ -98,12 +106,49 @@ ALERROR CReactorHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass
 	m_xPowerLevelImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
 	m_yPowerLevelImage = pImage->GetAttributeInteger(DEST_Y_ATTRIB);
 
+	//	Power generation image
+
+	pImage = pDesc->GetContentElementByTag(POWER_GEN_IMAGE_TAG);
+	if (pImage)
+		{
+		if (error = m_PowerGenImage.InitFromXML(Ctx, pImage))
+			return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
+
+		m_xPowerGenImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
+		m_yPowerGenImage = pImage->GetAttributeInteger(DEST_Y_ATTRIB);
+		}
+	else
+		{
+		if (m_PowerLevelImage.GetBitmapUNID() == DEFAULT_REACTOR_DISPLAY_IMAGE)
+			{
+			RECT rcRect;
+			rcRect.left = 0;
+			rcRect.top = 102;
+			rcRect.right = 202;
+			rcRect.bottom = 116;
+
+			m_PowerGenImage.Init(DEFAULT_REACTOR_DISPLAY_IMAGE, rcRect, 1, 1);
+			m_xPowerGenImage = m_xPowerLevelImage;
+			m_yPowerGenImage = m_yPowerLevelImage;
+			}
+		else
+			{
+			m_PowerGenImage = m_PowerLevelImage;
+			m_xPowerGenImage = m_xPowerLevelImage;
+			m_yPowerGenImage = m_yPowerLevelImage;
+			}
+		}
+
+	//	Fuel level image
+
 	pImage = pDesc->GetContentElementByTag(FUEL_LEVEL_IMAGE_TAG);
 	if (pImage == NULL || (error = m_FuelLevelImage.InitFromXML(Ctx, pImage)))
 		return ComposeLoadError(Ctx, ERR_REACTOR_DISPLAY_NEEDED);
 
 	m_xFuelLevelImage = pImage->GetAttributeInteger(DEST_X_ATTRIB);
 	m_yFuelLevelImage = pImage->GetAttributeInteger(DEST_Y_ATTRIB);
+
+	//	Low fuel level image
 
 	pImage = pDesc->GetContentElementByTag(FUEL_LOW_LEVEL_IMAGE_TAG);
 	if (pImage == NULL || (error = m_FuelLowLevelImage.InitFromXML(Ctx, pImage)))
@@ -255,23 +300,86 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 	else
 		iPowerLevel = 0;
 
-	bBlink = (iPowerLevel >= 100);
+	//	If we've got power generation, we paint that.
 
-	//	Paint the power level
-
-	if (!bBlink || ((m_iTick % 2) == 0))
+	if (Stats.iOtherPower > 0)
 		{
-		CG32bitImage *pPowerImage = &m_PowerLevelImage.GetImage(NULL_STR);
-		rcSrcRect = m_PowerLevelImage.GetImageRect();
-		int cxPowerLevel = RectWidth(rcSrcRect) * iPowerLevel / 120;
-		m_Buffer.Blt(rcSrcRect.left,
-				rcSrcRect.top,
-				cxPowerLevel,
-				RectHeight(rcSrcRect),
-				255,
-				*pPowerImage,
-				m_xPowerLevelImage,
-				yOffset + m_yPowerLevelImage);
+		CG32bitImage *pGenImage = &m_PowerGenImage.GetImage(NULL_STR);
+		RECT rcGenRect = m_PowerGenImage.GetImageRect();
+
+		//	If we're not consuming any reactor power, then just paint that line.
+
+		if (Stats.iOtherPower >= Stats.iPowerConsumed)
+			{
+			int iGenLevel = (Stats.iReactorPower > 0 ? Min((Stats.iPowerConsumed * 100 / Stats.iReactorPower) + 1, 120) : 0);
+			int cxGenLevel = RectWidth(rcGenRect) * iGenLevel / 120;
+
+			m_Buffer.Blt(rcGenRect.left,
+					rcGenRect.top,
+					cxGenLevel,
+					RectHeight(rcGenRect),
+					255,
+					*pGenImage,
+					m_xPowerGenImage,
+					yOffset + m_yPowerGenImage);
+			}
+
+		//	Otherwise, we need to paint two lines
+
+		else
+			{
+			//	Paint the power generation
+
+			int iGenLevel = (Stats.iReactorPower > 0 ? Min((Stats.iOtherPower * 100 / Stats.iReactorPower) + 1, 120) : 0);
+			int cxGenLevel = RectWidth(rcGenRect) * iGenLevel / 120;
+
+			m_Buffer.Blt(rcGenRect.left,
+					rcGenRect.top,
+					cxGenLevel,
+					RectHeight(rcGenRect),
+					255,
+					*pGenImage,
+					m_xPowerGenImage,
+					yOffset + m_yPowerGenImage);
+
+			//	Paint the remainder as normal reactor power
+
+			CG32bitImage *pPowerImage = &m_PowerLevelImage.GetImage(NULL_STR);
+			rcSrcRect = m_PowerLevelImage.GetImageRect();
+			int cxPowerLevel = (RectWidth(rcSrcRect) * iPowerLevel / 120);
+
+			m_Buffer.Blt(rcSrcRect.left + cxGenLevel,
+					rcSrcRect.top,
+					cxPowerLevel - cxGenLevel,
+					RectHeight(rcSrcRect),
+					255,
+					*pPowerImage,
+					m_xPowerLevelImage + cxGenLevel,
+					yOffset + m_yPowerLevelImage);
+			}
+		}
+
+	//	Otherwise, just paint the normal power level
+
+	else
+		{
+		bBlink = (iPowerLevel >= 100);
+
+		if (!bBlink || ((m_iTick % 2) == 0))
+			{
+			CG32bitImage *pPowerImage = &m_PowerLevelImage.GetImage(NULL_STR);
+			rcSrcRect = m_PowerLevelImage.GetImageRect();
+			int cxPowerLevel = RectWidth(rcSrcRect) * iPowerLevel / 120;
+
+			m_Buffer.Blt(rcSrcRect.left,
+					rcSrcRect.top,
+					cxPowerLevel,
+					RectHeight(rcSrcRect),
+					255,
+					*pPowerImage,
+					m_xPowerLevelImage,
+					yOffset + m_yPowerLevelImage);
+			}
 		}
 
 	//	Paint power level text

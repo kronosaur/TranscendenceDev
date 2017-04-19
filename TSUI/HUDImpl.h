@@ -90,6 +90,10 @@ class CReactorHUDDefault : public IHUDPainter
 		int m_xPowerLevelImage;
 		int m_yPowerLevelImage;
 
+		CObjectImageArray m_PowerGenImage;
+		int m_xPowerGenImage;
+		int m_yPowerGenImage;
+
 		CObjectImageArray m_FuelLevelImage;
 		int m_xFuelLevelImage;
 		int m_yFuelLevelImage;
@@ -259,6 +263,7 @@ class CReactorHUDCircular : public IHUDPainter
 		CG32bitPixel m_rgbFuelGauge;		//	Color of fuel bar
 		CG32bitPixel m_rgbPowerGauge;		//	Color of power gauge
 		CG32bitPixel m_rgbGaugeWarning;		//	Color when in warning mode
+		CG32bitPixel m_rgbOtherPower;		//	Color of other (usually solar) power
 
 		//	Metrics
 
