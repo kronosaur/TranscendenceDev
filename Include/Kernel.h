@@ -1405,7 +1405,8 @@ extern char g_LowerCaseAbsoluteTable[256];
 
 void kernelCleanUp (void);
 void kernelClearDebugLog (void);
-void kernelDebugLogMessage (char *pszLine, ...);
+void kernelDebugLogPattern (char *pszLine, ...);
+void kernelDebugLogString (const CString &sLine);
 CString kernelGetSessionDebugLog (void);
 
 #define KERNEL_FLAG_INTERNETS					0x00000001

@@ -38,7 +38,7 @@ bool CDXScreen::BeginScene (void)
 
 		if (hr == D3DERR_DEVICELOST)
 			{
-            ::kernelDebugLogMessage("[DX] Device lost at BeginScene.");
+            ::kernelDebugLogPattern("[DX] Device lost at BeginScene.");
 			m_bDeviceLost = true;
 			return false;
 			}
@@ -338,12 +338,12 @@ void CDXScreen::DebugOutputStats (void)
 //	Output stats about the DX stack
 
 	{
-	::kernelDebugLogMessage("DeviceType: 0x%x", m_DeviceCaps.DeviceType);
-	::kernelDebugLogMessage("Caps: 0x%08x", m_DeviceCaps.Caps);
-	::kernelDebugLogMessage("Caps2: 0x%08x", m_DeviceCaps.Caps2);
-	::kernelDebugLogMessage("Caps3: 0x%08x", m_DeviceCaps.Caps3);
-	::kernelDebugLogMessage("DevCaps: 0x%08x", m_DeviceCaps.DevCaps);
-	::kernelDebugLogMessage("DevCaps2: 0x%08x", m_DeviceCaps.DevCaps2);
+	::kernelDebugLogPattern("DeviceType: 0x%x", m_DeviceCaps.DeviceType);
+	::kernelDebugLogPattern("Caps: 0x%08x", m_DeviceCaps.Caps);
+	::kernelDebugLogPattern("Caps2: 0x%08x", m_DeviceCaps.Caps2);
+	::kernelDebugLogPattern("Caps3: 0x%08x", m_DeviceCaps.Caps3);
+	::kernelDebugLogPattern("DevCaps: 0x%08x", m_DeviceCaps.DevCaps);
+	::kernelDebugLogPattern("DevCaps2: 0x%08x", m_DeviceCaps.DevCaps2);
 
 	//	Get the backbuffer so we can output some stats
 
@@ -352,7 +352,7 @@ void CDXScreen::DebugOutputStats (void)
 		IDirect3DSurface9 *pBackBuffer;
 		if (FAILED(m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
 			{
-			::kernelDebugLogMessage("[DX] Unable to get back buffer surface.");
+			::kernelDebugLogPattern("[DX] Unable to get back buffer surface.");
 			return;
 			}
 
@@ -360,11 +360,11 @@ void CDXScreen::DebugOutputStats (void)
 		if (FAILED(pBackBuffer->GetDesc(&Desc)))
 			{
 			pBackBuffer->Release();
-			::kernelDebugLogMessage("[DX] Unable to back buffer descriptor.");
+			::kernelDebugLogPattern("[DX] Unable to back buffer descriptor.");
 			return;
 			}
 
-		::kernelDebugLogMessage("[DX] Buffer Format: %d", Desc.Format);
+		::kernelDebugLogPattern("[DX] Buffer Format: %d", Desc.Format);
 
 		pBackBuffer->Release();
 		}
@@ -503,7 +503,7 @@ bool CDXScreen::InitLayerResources (void)
 			SLayer &Layer = m_Layers[i];
 			if (!CreateLayerResources(Layer))
 				{
-				::kernelDebugLogMessage("[DX] CreateLayerResources failed.");
+				::kernelDebugLogPattern("[DX] CreateLayerResources failed.");
 				return false;
 				}
 			}
@@ -536,7 +536,7 @@ bool CDXScreen::Present (void)
         {
         if (hr == D3DERR_DEVICELOST)
             {
-            ::kernelDebugLogMessage("[DX] Device lost at Present.");
+            ::kernelDebugLogPattern("[DX] Device lost at Present.");
             m_bDeviceLost = true;
             return false;
             }
@@ -678,7 +678,7 @@ void CDXScreen::RenderError (const CString &sError)
 	{
 	if (!m_bErrorReported)
 		{
-		::kernelDebugLogMessage("[DX] %s", sError);
+		::kernelDebugLogPattern("[DX] %s", sError);
 		m_bErrorReported = true;
 		}
 	}
@@ -736,13 +736,13 @@ bool CDXScreen::ResetDevice (void)
 
 		if (hr == D3DERR_DEVICELOST)
 			{
-			::kernelDebugLogMessage("[DX] Device lost after reset.");
+			::kernelDebugLogPattern("[DX] Device lost after reset.");
 			return false;
 			}
 
 		//	Otherwise, this is a real error.
 
-		::kernelDebugLogMessage("[DX] Device reset failed: %x", hr);
+		::kernelDebugLogPattern("[DX] Device reset failed: %x", hr);
 		return false;
 		}
 
@@ -775,7 +775,7 @@ void CDXScreen::SwapBuffers (void)
 
 	            if (!InitDevice())
 		            {
-		            ::kernelDebugLogMessage("[DX] InitDevice failed.");
+		            ::kernelDebugLogPattern("[DX] InitDevice failed.");
 		            return;
 		            }
 
@@ -783,7 +783,7 @@ void CDXScreen::SwapBuffers (void)
 
                 if (!InitLayerResources())
                     {
-    	            ::kernelDebugLogMessage("[DX] CreateLayerResources failed.");
+    	            ::kernelDebugLogPattern("[DX] CreateLayerResources failed.");
                     return;
 		            }
 
@@ -791,7 +791,7 @@ void CDXScreen::SwapBuffers (void)
 
 	            m_bDeviceLost = false;
 	            m_bErrorReported = false;
-	            ::kernelDebugLogMessage("[DX] Device reset successfully.");
+	            ::kernelDebugLogPattern("[DX] Device reset successfully.");
                 break;
                 }
 
@@ -806,7 +806,7 @@ void CDXScreen::SwapBuffers (void)
                 break;
 
             default:
-                ::kernelDebugLogMessage("[DX] TestCooperativeLevel failed.");
+                ::kernelDebugLogPattern("[DX] TestCooperativeLevel failed.");
                 return;
             }
 		}

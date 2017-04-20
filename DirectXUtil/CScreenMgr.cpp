@@ -318,39 +318,39 @@ void CScreenMgr::DebugOutputStats (void)
 		{
 		//	DirectX info
 
-		kernelDebugLogMessage("DIRECT X");
+		kernelDebugLogPattern("DIRECT X");
 		if (m_bExclusiveMode)
-			kernelDebugLogMessage("exclusive mode");
-		kernelDebugLogMessage("Screen: %d x %d (%d-bit color)", m_cxScreen, m_cyScreen, m_iColorDepth);
-		kernelDebugLogMessage("Scale: %d.%02d", (int)m_rScale, (int)(((m_rScale - floor(m_rScale)) * 100.0) + 0.5));
+			kernelDebugLogPattern("exclusive mode");
+		kernelDebugLogPattern("Screen: %d x %d (%d-bit color)", m_cxScreen, m_cyScreen, m_iColorDepth);
+		kernelDebugLogPattern("Scale: %d.%02d", (int)m_rScale, (int)(((m_rScale - floor(m_rScale)) * 100.0) + 0.5));
 		if (m_PrimaryType == r5g5b5)
-			kernelDebugLogMessage("Pixels: 5-5-5");
+			kernelDebugLogPattern("Pixels: 5-5-5");
 		else
-			kernelDebugLogMessage("Pixels: 5-6-5");
+			kernelDebugLogPattern("Pixels: 5-6-5");
 
-		//kernelDebugLogMessage("Video Memory: %d", caps.dwVidMemTotal);
+		//kernelDebugLogPattern("Video Memory: %d", caps.dwVidMemTotal);
 
 		//	Output some stats about the DC
 
 		HDC hDC = ::GetDC(m_hWnd);
-		kernelDebugLogMessage("LogPixelsY: %d", ::GetDeviceCaps(hDC, LOGPIXELSY));
+		kernelDebugLogPattern("LogPixelsY: %d", ::GetDeviceCaps(hDC, LOGPIXELSY));
 		::ReleaseDC(m_hWnd, hDC);
 
 		//	Primary surface
 
 #if 0
-		kernelDebugLogMessage("PRIMARY SURFACE");
+		kernelDebugLogPattern("PRIMARY SURFACE");
 
 		if (!FAILED(hr))
 			DebugOutputSurfaceDesc(desc);
 		else
-			kernelDebugLogMessage("GetSurfaceDesc failed: %x", hr);
+			kernelDebugLogPattern("GetSurfaceDesc failed: %x", hr);
 
 		//	Back buffer
 
 		if (m_pBack)
 			{
-			kernelDebugLogMessage("SECONDARY SURFACE");
+			kernelDebugLogPattern("SECONDARY SURFACE");
 
 			DDSURFACEDESC2 desc;
 			ZeroMemory(&desc, sizeof(desc));
@@ -360,7 +360,7 @@ void CScreenMgr::DebugOutputStats (void)
 			if (!FAILED(hr))
 				DebugOutputSurfaceDesc(desc);
 			else
-				kernelDebugLogMessage("GetSurfaceDesc failed: %x", hr);
+				kernelDebugLogPattern("GetSurfaceDesc failed: %x", hr);
 			}
 #endif
 		}
@@ -379,7 +379,7 @@ void CScreenMgr::FlipInt (void)
 
 	HRESULT hr = m_pPrimary->Flip(NULL, DDFLIP_WAIT);
 	if (FAILED(hr))
-		kernelDebugLogMessage("Flip failed: %x", hr);
+		kernelDebugLogPattern("Flip failed: %x", hr);
 	}
 
 void CScreenMgr::GlobalToLocal (int x, int y, int *retx, int *rety)
@@ -622,7 +622,7 @@ ALERROR CScreenMgr::Init (SScreenMgrOptions &Options, CString *retsError)
 
 		if (m_PrimaryType == stUnknown)
 			{
-			kernelDebugLogMessage("Unknown pixel format");
+			kernelDebugLogPattern("Unknown pixel format");
 			m_PrimaryType = r5g5b5;
 			}
 

@@ -64,7 +64,7 @@ ALERROR CMemoryWriteStream::Create (void)
 		m_pBlock = (char *)VirtualAlloc(NULL, m_iMaxSize, MEM_RESERVE, PAGE_NOACCESS);
 		if (m_pBlock == NULL)
 			{
-			::kernelDebugLogMessage("Out of Memory: VirtualAlloc failed reserving %d bytes.", m_iMaxSize);
+			::kernelDebugLogPattern("Out of Memory: VirtualAlloc failed reserving %d bytes.", m_iMaxSize);
 			return ERR_MEMORY;
 			}
 
@@ -112,7 +112,7 @@ ALERROR CMemoryWriteStream::Write (char *pData, int iLength, int *retiBytesWritt
 			char *pNewBlock = (char *)::VirtualAlloc(NULL, iNewMaxSize, MEM_RESERVE, PAGE_NOACCESS);
 			if (pNewBlock == NULL)
 				{
-				::kernelDebugLogMessage("Out of Memory: VirtualAlloc failed reserving %d bytes.", iNewMaxSize);
+				::kernelDebugLogPattern("Out of Memory: VirtualAlloc failed reserving %d bytes.", iNewMaxSize);
 				return ERR_MEMORY;
 				}
 
@@ -122,7 +122,7 @@ ALERROR CMemoryWriteStream::Write (char *pData, int iLength, int *retiBytesWritt
 				{
 				if (::VirtualAlloc(pNewBlock, m_iCommittedSize, MEM_COMMIT, PAGE_READWRITE) == NULL)
 					{
-					::kernelDebugLogMessage("Out of Memory: VirtualAlloc failed committing %d bytes.", m_iCommittedSize);
+					::kernelDebugLogPattern("Out of Memory: VirtualAlloc failed committing %d bytes.", m_iCommittedSize);
 					return ERR_MEMORY;
 					}
 
@@ -152,7 +152,7 @@ ALERROR CMemoryWriteStream::Write (char *pData, int iLength, int *retiBytesWritt
 				MEM_COMMIT,
 				PAGE_READWRITE) == NULL)
 			{
-			::kernelDebugLogMessage("Out of Memory: VirtualAlloc failed committing %d bytes.", m_iCommittedSize + iAdditionalSize);
+			::kernelDebugLogPattern("Out of Memory: VirtualAlloc failed committing %d bytes.", m_iCommittedSize + iAdditionalSize);
 			return ERR_MEMORY;
 			}
 

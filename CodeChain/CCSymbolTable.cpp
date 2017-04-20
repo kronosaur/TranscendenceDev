@@ -223,7 +223,7 @@ void CCSymbolTable::DeleteAll (CCodeChain *pCC, bool bLambdaOnly)
 			continue;
 
 #ifdef DEBUG
-		::kernelDebugLogMessage(m_Symbols.GetKey(i).GetASCIIZPointer());
+		::kernelDebugLogString(m_Symbols.GetKey(i));
 #endif
 		pItem->Discard(pCC);
 		m_Symbols.RemoveEntry(i);

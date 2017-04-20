@@ -256,9 +256,9 @@ ALERROR kernelSetDebugLog (CTextFileLog *pLog, bool bAppend, bool bFreeLog)
 	return NOERROR;
 	}
 
-void kernelDebugLogMessage (char *pszLine, ...)
+void kernelDebugLogPattern (char *pszLine, ...)
 
-//	kernelDebugLogMessage
+//	kernelDebugLogPattern
 //
 //	Log debug output
 
@@ -274,6 +274,21 @@ void kernelDebugLogMessage (char *pszLine, ...)
 
 		g_pDebugLog->LogOutput(ILOG_FLAG_TIMEDATE, sParsedLine);
 		}
+
+	LeaveCriticalSection(&g_csKernel);
+	}
+
+void kernelDebugLogString (const CString &sLine)
+
+//	kernelDebugLogString
+//
+//	Log debug output
+
+	{
+	EnterCriticalSection(&g_csKernel);
+
+	if (g_pDebugLog)
+		g_pDebugLog->LogOutput(ILOG_FLAG_TIMEDATE, sLine);
 
 	LeaveCriticalSection(&g_csKernel);
 	}

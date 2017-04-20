@@ -383,7 +383,7 @@ ALERROR CG16bitFont::CreateFromFont (HFONT hFont)
 		m_Metrics.Insert(Metrics);
 
 #ifdef MOREDEBUG
-		kernelDebugLogMessage("char: %d  width: %d  advance: %d", (int)chChar, Metrics.cxWidth, Metrics.cxAdvance);
+		kernelDebugLogPattern("char: %d  width: %d  advance: %d", (int)chChar, Metrics.cxWidth, Metrics.cxAdvance);
 #endif
 
 		//	Next

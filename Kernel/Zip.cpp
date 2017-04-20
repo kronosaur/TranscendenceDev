@@ -82,7 +82,7 @@ bool zipDecompress (IReadBlock &Data, ECompressionTypes iFormat, IWriteStream &O
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash decompressing data.");
+		::kernelDebugLogPattern("Crash decompressing data.");
 		if (retsError)
 			*retsError = CONSTLIT("Crash decompressing data.");
 		return false;

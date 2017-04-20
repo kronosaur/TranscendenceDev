@@ -876,7 +876,7 @@ ALERROR CDataFile::ReadBuffer (DWORD dwFilePos, DWORD dwLen, void *pBuffer)
 		{
 		if (dwFilePos + dwLen > (DWORD)m_pFile->GetLength())
 			{
-			::kernelDebugLogMessage("I/O Error [%s]: Not enough data in file.", m_sFilename);
+			::kernelDebugLogPattern("I/O Error [%s]: Not enough data in file.", m_sFilename);
 			return ERR_FAIL;
 			}
 
@@ -889,7 +889,7 @@ ALERROR CDataFile::ReadBuffer (DWORD dwFilePos, DWORD dwLen, void *pBuffer)
 
 		if (::SetFilePointer(m_hFile, dwFilePos, NULL, FILE_BEGIN) == 0xFFFFFFFF)
 			{
-			::kernelDebugLogMessage("I/O Error [%s]: Cannot seek to %d.", m_sFilename, dwFilePos);
+			::kernelDebugLogPattern("I/O Error [%s]: Cannot seek to %d.", m_sFilename, dwFilePos);
 			return ERR_FAIL;
 			}
 
@@ -898,7 +898,7 @@ ALERROR CDataFile::ReadBuffer (DWORD dwFilePos, DWORD dwLen, void *pBuffer)
 		DWORD dwRead;
 		if (!::ReadFile(m_hFile, pBuffer, dwLen, &dwRead, NULL) || dwRead != dwLen)
 			{
-			::kernelDebugLogMessage("I/O Error [%s]: Cannot read %d bytes at %d.", m_sFilename, dwLen, dwFilePos);
+			::kernelDebugLogPattern("I/O Error [%s]: Cannot read %d bytes at %d.", m_sFilename, dwLen, dwFilePos);
 			return ERR_FAIL;
 			}
 		}

@@ -62,21 +62,21 @@ void *SurfaceLock (LPDIRECTDRAWSURFACE7 pSurface, DDSURFACEDESC2 *retpDesc)
 			::Sleep(500);
 
 			if (FAILED(hr))
-				kernelDebugLogMessage("Surface restore failed: %x", hr);
+				kernelDebugLogPattern("Surface restore failed: %x", hr);
 			}
 
 		//	Fail with an error otherwise
 
 		else
 			{
-			kernelDebugLogMessage("Lock failed: %x", hr);
+			kernelDebugLogPattern("Lock failed: %x", hr);
 			return NULL;
 			}
 		}
 
 	//	If we've tried 10 times (5 seconds) and still nothing, then we give up
 
-	kernelDebugLogMessage("Unable to lock surface");
+	kernelDebugLogPattern("Unable to lock surface");
 	return NULL;
 	}
 
@@ -97,7 +97,7 @@ void LogDDError (HRESULT hr)
 		{
 		if (pEntry->hr == hr)
 			{
-			kernelDebugLogMessage(pEntry->pszText);
+			kernelDebugLogString(CString(pEntry->pszText));
 			break;
 			}
 		pEntry++;

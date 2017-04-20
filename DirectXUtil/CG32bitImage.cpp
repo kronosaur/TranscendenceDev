@@ -688,7 +688,7 @@ bool CG32bitImage::CreateFromBitmap (HBITMAP hImage, HBITMAP hMask, EBitmapTypes
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash in CG32bitImage::CreateFromBitmap.");
+		::kernelDebugLogPattern("Crash in CG32bitImage::CreateFromBitmap.");
 		return false;
 		}
 	}
@@ -767,7 +767,7 @@ bool CG32bitImage::CreateFromFile (const CString &sImageFilespec, const CString 
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash loading image: %s.", sImageFilespec);
+		::kernelDebugLogPattern("Crash loading image: %s.", sImageFilespec);
 		return false;
 		}
 	}

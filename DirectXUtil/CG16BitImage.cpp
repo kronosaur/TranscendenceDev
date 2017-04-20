@@ -118,7 +118,7 @@ void CG16bitImage::AssociateSurface (LPDIRECTDRAW7 pDD)
 		// Create the surface
 		HRESULT hr = pDD->CreateSurface(&ddsd2, &m_pSurface, NULL);
 		if (FAILED(hr))
-			kernelDebugLogMessage("Unable to associate surface: %x", hr);
+			kernelDebugLogPattern("Unable to associate surface: %x", hr);
 		}
 	}
 
@@ -617,7 +617,7 @@ void CG16bitImage::BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iTy
 			HRESULT hr = pSurface->Blt(NULL, m_pSurface, NULL, DDBLT_WAIT, NULL);
 			if (FAILED(hr))
 				{
-				::kernelDebugLogMessage("Unable to blt surface: %x", hr);
+				::kernelDebugLogPattern("Unable to blt surface: %x", hr);
 				m_pSurface->Release();
 				m_pSurface = NULL;
 				}
@@ -2212,7 +2212,7 @@ ALERROR CG16bitImage::CreateFromBitmap (HBITMAP hBitmap, HBITMAP hBitmask, DWORD
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash in CG16bitImage::CreateFromBitmap.");
+		::kernelDebugLogPattern("Crash in CG16bitImage::CreateFromBitmap.");
 		return ERR_FAIL;
 		}
 	}
@@ -3639,7 +3639,7 @@ void CG16bitImage::SetTransparentColor (WORD wColor)
 		}
 	catch (...)
 		{
-		kernelDebugLogMessage("Crash in CG16bitImage::SetTransparentColor.");
+		kernelDebugLogPattern("Crash in CG16bitImage::SetTransparentColor.");
 		}
 	}
 

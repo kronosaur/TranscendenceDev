@@ -170,7 +170,7 @@ ALERROR CArrayBase::Resize (int iNewSize, bool bPreserve, int iAllocQuantum)
 		SHeader *pNewBlock = (SHeader *)::HeapAlloc(GetHeap(), 0, iNewAllocSize);
 		if (pNewBlock == NULL)
 			{
-			::kernelDebugLogMessage("Out of memory allocating array of %d bytes.", iNewAllocSize);
+			::kernelDebugLogPattern("Out of memory allocating array of %d bytes.", iNewAllocSize);
 			throw CException(ERR_MEMORY);
 			}
 
