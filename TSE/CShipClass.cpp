@@ -180,6 +180,7 @@
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_MAX_SPEED_AT_MAX_ARMOR			CONSTLIT("maxSpeedAtMaxArmor")
 #define PROPERTY_MAX_SPEED_AT_MIN_ARMOR			CONSTLIT("maxSpeedAtMinArmor")
+#define PROPERTY_MAX_SPEED_BY_ARMOR_MASS		CONSTLIT("maxSpeedByArmorMass")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
@@ -960,6 +961,97 @@ Metric CShipClass::CalcMass (const CDeviceDescList &Devices) const
 		}
 
 	return rMass;
+	}
+
+ICCItem *CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
+
+//	CalcMaxSpeedByArmorMass
+//
+//	Returns a struct with entries for each value of max speed. Each entry has the
+//	smallest armor mass which results in the given speed.
+//
+//	If there is no variation in speed, we return a single speed value.
+
+	{
+	int i;
+
+	CCodeChain &CC = g_pUniverse->GetCC();
+	int iStdSpeed = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
+	ICCItem *pResult = CC.CreateSymbolTable();
+
+	//	If we don't change speed based on armor mass, then we just return one speed.
+
+	if (m_iMaxArmorMass == 0 || (m_iMaxArmorSpeedPenalty == 0 && m_iMinArmorSpeedBonus == 0))
+		pResult->SetAt(CC, strFromInt(iStdSpeed), CC.CreateNil());
+
+	//	Otherwise, loop over every speed.
+
+	else
+		{
+		int iMinSpeed = iStdSpeed + m_iMaxArmorSpeedPenalty;
+		int iMaxSpeed = iStdSpeed + m_iMinArmorSpeedBonus;
+
+		for (i = iMinSpeed; i <= iMaxSpeed; i++)
+			{
+			CString sLine;
+
+			if (i == iMinSpeed)
+				sLine = strPatternSubst(CONSTLIT("%d-%d"), CalcMinArmorMassForSpeed(i), m_iMaxArmorMass);
+			else if (i == iMaxSpeed)
+				{
+				if (i == iStdSpeed && i > iMinSpeed)
+					sLine = strPatternSubst(CONSTLIT("0-%d"), CalcMinArmorMassForSpeed(i - 1) - 1);
+				else
+					sLine = strPatternSubst(CONSTLIT("0-%d"), CalcMinArmorMassForSpeed(i));
+				}
+			else if (i > iStdSpeed)
+				sLine = strPatternSubst(CONSTLIT("%d-%d"), CalcMinArmorMassForSpeed(i + 1) + 1, CalcMinArmorMassForSpeed(i));
+			else
+				sLine = strPatternSubst(CONSTLIT("%d-%d"), CalcMinArmorMassForSpeed(i), CalcMinArmorMassForSpeed(i - 1) - 1);
+
+			pResult->SetStringAt(CC, strFromInt(i), sLine);
+			}
+		}
+
+	return pResult;
+	}
+
+int CShipClass::CalcMinArmorMassForSpeed (int iSpeed) const
+
+//	CalcMinArmorMassForSpeed
+//
+//	Returns the smallest armor mass that is compatible with the given speed.
+
+	{
+	int iStdSpeed = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
+
+	int iMinSpeed = iStdSpeed + m_iMaxArmorSpeedPenalty;
+	int iMaxSpeed = iStdSpeed + m_iMinArmorSpeedBonus;
+
+	int iPenaltyRange = m_iMaxArmorMass - m_iStdArmorMass;
+	int iPenaltyMassPerPoint = iPenaltyRange / (1 - m_iMaxArmorSpeedPenalty);
+
+	int iMinArmorMass = m_iStdArmorMass / 2;
+	int iBonusRange = m_iStdArmorMass - iMinArmorMass;
+	int iBonusMassPerPoint = (m_iMinArmorSpeedBonus > 0 ? iBonusRange / m_iMinArmorSpeedBonus : 0);
+
+	if (iSpeed < iStdSpeed)
+		{
+		int iDiff = iStdSpeed - iSpeed;
+		return m_iStdArmorMass + (iPenaltyMassPerPoint * iDiff);
+		}
+	else if (iSpeed == iStdSpeed)
+		{
+		if (iMinSpeed == iMaxSpeed)
+			return m_iStdArmorMass;
+		else
+			return (m_iStdArmorMass - iBonusMassPerPoint) + 1;
+		}
+	else
+		{
+		int iDiff = iSpeed - iStdSpeed;
+		return m_iStdArmorMass - (iBonusMassPerPoint * iDiff);
+		}
 	}
 
 void CShipClass::CalcPerformance (void)
@@ -3870,6 +3962,9 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MIN_ARMOR))
 		return (m_iMinArmorSpeedBonus != 0 ? CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_iMinArmorSpeedBonus) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_BY_ARMOR_MASS))
+		return CalcMaxSpeedByArmorMass(Ctx);
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
 		return (m_iStdArmorMass > 0 ? CC.CreateInteger(m_iStdArmorMass) : CC.CreateNil());

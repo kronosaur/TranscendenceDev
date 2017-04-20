@@ -2067,6 +2067,8 @@ class CShipClass : public CDesignType
 		inline Metric CalcDodgeRate (void) const { return CalcManeuverValue(true); }
 		int CalcLevel (void) const;
 		Metric CalcManeuverValue (bool bDodge = false) const;
+		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const;
+		int CalcMinArmorMassForSpeed (int iSpeed) const;
         void CalcPerformance (void);
 		int ComputeDeviceLevel (const SDeviceDesc &Device) const;
 		void ComputeMovementStats (int *retiSpeed, int *retiThrust, int *retiManeuver);
