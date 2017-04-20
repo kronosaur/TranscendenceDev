@@ -1079,10 +1079,8 @@ class CShip : public CSpaceObject
 		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
 		virtual bool CanMove (void) const { return true; }
 		virtual bool CanThrust (void) const { return (GetThrust() > 0.0); }
-		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue) override;
 		virtual bool ClassCanAttack (void) override { return true; }
 		virtual void ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse = CReactorDesc::fuelConsume) override;
-		virtual CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue) override;
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) override;
 		virtual void DeactivateShields (void) override;
 		virtual CString DebugCrashInfo (void) override;
@@ -1098,12 +1096,12 @@ class CShip : public CSpaceObject
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
 		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
-		virtual CurrencyValue GetBalance (DWORD dwEconomyUNID) override;
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual Metric GetCargoSpaceLeft (void) override;
 		virtual Categories GetCategory (void) const override { return catShip; }
 		virtual DWORD GetClassUNID (void) override { return m_pClass->GetUNID(); }
 		virtual int GetCombatPower (void) override;
+		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetCyberDefenseLevel (void) override { return m_pClass->GetCyberDefenseLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DamageTypes GetDamageType (void) override;
@@ -1294,6 +1292,7 @@ class CShip : public CSpaceObject
 		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
 		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
 		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
+		CCurrencyBlock *m_pMoney;				//	Store of money (may be NULL)
 		CPowerConsumption *m_pPowerUse;			//	Power consumption variables (may be NULL if not tracking fuel)
 
 		int m_iFireDelay:16;					//	Ticks until next fire
@@ -1447,16 +1446,14 @@ class CStation : public CSpaceObject
 		virtual bool CanBeDestroyed (void) override { return (m_iStructuralHP > 0); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
-		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue) override;
 		virtual bool ClassCanAttack (void) override;
 		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, int iCount = 1) override;
 		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) override;
-		virtual CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void Decontaminate (void) override { m_fRadioactive = false; }
-		virtual CurrencyValue GetBalance (DWORD dwEconomyUNID) override;
 		virtual Categories GetCategory (void) const override { return catStation; }
 		virtual DWORD GetClassUNID (void) override { return m_pType->GetUNID(); }
+		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pType->GetDefaultBkgnd(); }
 		virtual CInstalledDevice *GetDevice (int iDev) const override { return &m_pDevices[iDev]; }

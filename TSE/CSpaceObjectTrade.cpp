@@ -31,6 +31,48 @@ void CSpaceObject::AddSellOrder (CItemType *pType, const CString &sCriteria, int
 	pTrade->AddSellOrder(pType, sCriteria, iPriceAdj);
 	}
 
+CurrencyValue CSpaceObject::ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
+
+//	ChargeMoney
+//
+//	Subtract money. We return the remaining station balance or -1 if there
+//	isn't enough.
+
+	{
+	CCurrencyBlock *pMoney = GetCurrencyBlock();
+	if (pMoney == NULL)
+		return -1;
+
+	if (dwEconomyUNID == 0)
+		dwEconomyUNID = GetDefaultEconomyUNID();
+
+	if (iValue < 0 || pMoney->GetCredits(dwEconomyUNID) < iValue)
+		return -1;
+
+	return pMoney->IncCredits(dwEconomyUNID, -iValue);
+	}
+
+CurrencyValue CSpaceObject::CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
+
+//	CreditMoney
+//
+//	Add money to the account. We return the new balance or -1 if we failed
+//	somehow.
+
+	{
+	CCurrencyBlock *pMoney = GetCurrencyBlock(true);
+	if (pMoney == NULL)
+		return -1;
+
+	if (dwEconomyUNID == 0)
+		dwEconomyUNID = GetDefaultEconomyUNID();
+
+	if (iValue > 0)
+		return pMoney->IncCredits(dwEconomyUNID, iValue);
+	else
+		return pMoney->GetCredits(dwEconomyUNID);
+	}
+
 bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason)
 
 //	GetArmorInstallPrice
@@ -115,6 +157,23 @@ bool CSpaceObject::GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item
 	//	Otherwise, we do not repair
 
 	return false;
+	}
+
+CurrencyValue CSpaceObject::GetBalance (DWORD dwEconomyUNID)
+
+//	GetBalance
+//
+//	Returns the current balance.
+
+	{
+	CCurrencyBlock *pMoney = GetCurrencyBlock();
+	if (pMoney == NULL)
+		return 0;
+
+	if (dwEconomyUNID == 0)
+		dwEconomyUNID = GetDefaultEconomyUNID();
+
+	return pMoney->GetCredits(dwEconomyUNID);
 	}
 
 int CSpaceObject::GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount)

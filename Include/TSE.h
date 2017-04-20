@@ -1392,13 +1392,17 @@ class CSpaceObject : public CObject
 		//	Trade
 
 		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
+		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) { return NULL; }
 		virtual CTradingDesc *GetTradeDescOverride (void) { return NULL; }
 		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider) { return CCurrencyAndValue(0, GetDefaultEconomy()); }
 
 		void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
 		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
+		CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
+		CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		bool GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL);
 		bool GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice);
+		CurrencyValue GetBalance (DWORD dwEconomyUNID);
 		int GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount = NULL);
 		CEconomyType *GetDefaultEconomy (void);
 		DWORD GetDefaultEconomyUNID (void);
@@ -1512,8 +1516,6 @@ class CSpaceObject : public CObject
 		//	...for active/intelligent objects (ships, stations, etc.)
 
 		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL);
-		virtual CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue) { return 0; }
-		virtual CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue) { return 0; }
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) { }
 		virtual void DeactivateShields (void) { }
 		virtual void Decontaminate (void) { }
@@ -1525,7 +1527,6 @@ class CSpaceObject : public CObject
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
 		virtual CArmorSystem *GetArmorSystem (void) { return NULL; }
-		virtual CurrencyValue GetBalance (DWORD dwEconomyUNID) { return 0; }
 		virtual Metric GetCargoSpaceLeft (void) { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
 		virtual int GetCyberDefenseLevel (void) { return GetLevel(); }

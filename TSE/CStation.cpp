@@ -390,23 +390,6 @@ bool CStation::CanBlock (CSpaceObject *pObj)
 			|| (pObj->GetCategory() == catStation && !pObj->IsAnchored()));
 	}
 
-CurrencyValue CStation::ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
-
-//	ChargeMoney
-//
-//	Charge the amount out of the station's balance
-//	Returns the remaining balance (or -1 if there is not enough)
-
-	{
-	if (dwEconomyUNID == 0)
-		dwEconomyUNID = GetDefaultEconomyUNID();
-
-	if (m_pMoney && m_pMoney->GetCredits(dwEconomyUNID) >= iValue && iValue >= 0)
-		return m_pMoney->IncCredits(dwEconomyUNID, -iValue);
-	else
-		return -1;
-	}
-
 bool CStation::ClassCanAttack (void)
 
 //	ClassCanAttack
@@ -460,36 +443,6 @@ void CStation::ClearBlacklist (CSpaceObject *pObj)
 
 		for (int i = 0; i < m_Subordinates.GetCount(); i++)
 			Communicate(m_Subordinates.GetObj(i), msgAbort, pObj);
-		}
-	}
-
-CurrencyValue CStation::CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
-
-//	CreditMoney
-//
-//	Credits the amount to the station's balance. Return the new balance.
-
-	{
-	if (dwEconomyUNID == 0)
-		dwEconomyUNID = GetDefaultEconomyUNID();
-
-	if (m_pMoney == NULL)
-		{
-		if (iValue > 0)
-			{
-			m_pMoney = new CCurrencyBlock;
-			m_pMoney->SetCredits(dwEconomyUNID, iValue);
-			return iValue;
-			}
-		else
-			return 0;
-		}
-	else
-		{
-		if (iValue > 0)
-			return m_pMoney->IncCredits(dwEconomyUNID, iValue);
-		else
-			return m_pMoney->GetCredits(dwEconomyUNID);
 		}
 	}
 
@@ -1267,20 +1220,17 @@ Metric CStation::GetAttackDistance (void) const
 		return MAX_ATTACK_DISTANCE;
 	}
 
-CurrencyValue CStation::GetBalance (DWORD dwEconomyUNID)
+CCurrencyBlock *CStation::GetCurrencyBlock (bool bCreate)
 
-//	GetBalance
+//	GetCurrencyBlock
 //
-//	Returns the amount of money the station has left
+//	Returns our currency store, creating one if required.
 
 	{
-	if (dwEconomyUNID == 0)
-		dwEconomyUNID = GetDefaultEconomyUNID();
+	if (m_pMoney == NULL && bCreate)
+		m_pMoney = new CCurrencyBlock;
 
-	if (m_pMoney)
-		return (int)m_pMoney->GetCredits(dwEconomyUNID);
-	else
-		return 0;
+	return m_pMoney;
 	}
 
 int CStation::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon)

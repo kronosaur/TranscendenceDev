@@ -120,6 +120,7 @@ CShip::CShip (void) : CSpaceObject(&g_Class),
 		m_Devices(NULL),
 		m_pEncounterInfo(NULL),
 		m_pTrade(NULL),
+		m_pMoney(NULL),
 		m_pPowerUse(NULL),
 		m_dwNameFlags(0),
 		m_pExitGate(NULL),
@@ -146,6 +147,9 @@ CShip::~CShip (void)
 
 	if (m_pTrade)
 		delete m_pTrade;
+
+	if (m_pMoney)
+		delete m_pMoney;
 
 	if (m_pPowerUse)
 		delete m_pPowerUse;
@@ -1202,23 +1206,6 @@ CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *re
 	return remOK;
 	}
 
-CurrencyValue CShip::ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
-
-//	ChargeMoney
-//
-//	Charge the amount out of the station's balance
-//	Returns the remaining balance (or -1 if there is not enough)
-
-	{
-	ASSERT(m_pController);
-
-	CCurrencyBlock *pMoney = m_pController->GetCurrencyBlock();
-	if (pMoney && pMoney->GetCredits(dwEconomyUNID) >= iValue && iValue >= 0)
-		return pMoney->IncCredits(dwEconomyUNID, -iValue);
-	else
-		return -1;
-	}
-
 void CShip::ClearAllTriggered (void)
 
 //	ClearAllTriggered
@@ -1350,6 +1337,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_rItemMass = 0.0;
 	pShip->m_rCargoMass = 0.0;
 	pShip->m_pTrade = NULL;
+	pShip->m_pMoney = NULL;
 	pShip->m_pPowerUse = NULL;
 
 	pShip->m_fTrackMass = false;
@@ -1616,25 +1604,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	return NOERROR;
 
 	DEBUG_CATCH
-	}
-
-CurrencyValue CShip::CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
-
-//	CreditMoney
-//
-//	Credits the amount to the station's balance. Return the new balance.
-
-	{
-	ASSERT(m_pController);
-
-	CCurrencyBlock *pMoney = m_pController->GetCurrencyBlock();
-	if (pMoney == NULL)
-		return -1;
-
-	if (iValue > 0)
-		return pMoney->IncCredits(dwEconomyUNID, iValue);
-	else
-		return pMoney->GetCredits(dwEconomyUNID);
 	}
 
 void CShip::DamageCargo (SDamageCtx &Ctx)
@@ -2450,22 +2419,6 @@ AbilityStatus CShip::GetAbility (Abilities iAbility)
 		}
 	}
 
-CurrencyValue CShip::GetBalance (DWORD dwEconomyUNID)
-
-//	GetBalance
-//
-//	Returns the amount of money the station has left
-
-	{
-	ASSERT(m_pController);
-
-	CCurrencyBlock *pMoney = m_pController->GetCurrencyBlock();
-	if (pMoney)
-		return (int)pMoney->GetCredits(dwEconomyUNID);
-	else
-		return 0;
-	}
-
 CSpaceObject *CShip::GetBase (void) const
 
 //	GetBase
@@ -2531,6 +2484,30 @@ int CShip::GetCombatPower (void)
 
 	{
 	return m_pController->GetCombatPower();
+	}
+
+CCurrencyBlock *CShip::GetCurrencyBlock (bool bCreate)
+
+//	GetCurrencyBlock
+//
+//	Returns the currency store object.
+
+	{
+	//	If our controller has a block, then use that (this is how the player
+	//	stores money).
+
+	CCurrencyBlock *pMoney = m_pController->GetCurrencyBlock();
+	if (pMoney)
+		return pMoney;
+
+	//	Otherwise, see if we need to create one.
+
+	if (m_pMoney == NULL && bCreate)
+		m_pMoney = new CCurrencyBlock;
+
+	//	Done
+
+	return m_pMoney;
 	}
 
 int CShip::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon)
@@ -5120,6 +5097,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	CShipInterior
 //	CDockingPorts
 //	CTradeDesc	m_pTrade
+//	CCurrencyBlock m_pMoney
 //
 //	DWORD		No of registered objects
 //	DWORD		registered object (CSpaceObject ref)
@@ -5250,7 +5228,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fHalfSpeed =				((dwLoad & 0x00000010) ? true : false);
 	m_fHasTargetingComputer =	((dwLoad & 0x00000020) ? true : false);
 	bool bTrackFuel =			((dwLoad & 0x00000040) ? true : false);
-	//	0x00000080 unused at version 77
+	bool bHasMoney =			((dwLoad & 0x00000080) ? true : false) && (Ctx.dwVersion >= 145);
 	m_fSRSEnhanced =			((dwLoad & 0x00000100) ? true : false);
 	m_fRecalcItemMass =			((dwLoad & 0x00000200) ? true : false);
 	m_fKnown =					((dwLoad & 0x00000400) ? true : false);
@@ -5382,6 +5360,16 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		}
 	else
 		m_pTrade = NULL;
+
+	//	Money
+
+	if (bHasMoney)
+		{
+		m_pMoney = new CCurrencyBlock;
+		m_pMoney->ReadFromStream(Ctx);
+		}
+	else
+		m_pMoney = NULL;
 
 	//	Registered objects / subscriptions
 
@@ -5999,6 +5987,8 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //
 //	CShipInterior
 //	CDockingPorts
+//	CTradeDesc
+//	CCurrencyBlock
 //
 //	DWORD		No of registered objects
 //	DWORD		registered object (CSpaceObject ref)
@@ -6048,7 +6038,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fHalfSpeed ?			0x00000010 : 0);
 	dwSave |= (m_fHasTargetingComputer ? 0x00000020 : 0);
 	dwSave |= (m_pPowerUse ?			0x00000040 : 0);
-	//	0x00000080 unused at version 77
+	dwSave |= (m_pMoney ?				0x00000080 : 0);
 	dwSave |= (m_fSRSEnhanced ?			0x00000100 : 0);
 	dwSave |= (m_fRecalcItemMass ?		0x00000200 : 0);
 	dwSave |= (m_fKnown ?				0x00000400 : 0);
@@ -6127,6 +6117,11 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 		dwSave = 0xffffffff;
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
 		}
+
+	//	Money
+
+	if (m_pMoney)
+		m_pMoney->WriteToStream(pStream);
 
 	//	Encounter info
 

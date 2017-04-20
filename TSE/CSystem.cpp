@@ -445,6 +445,9 @@
 //	144: 1.8 Alpha 1
 //		m_pPowerUse in CShip
 //
+//	145: 1.8 Alpha 1
+//		m_pMoney in CShip
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
