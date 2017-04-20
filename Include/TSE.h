@@ -983,7 +983,8 @@ class CSpaceObject : public CObject
 		inline bool IsObjDocked (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDocked(pObj) : false); }
 		inline bool IsObjDockedOrDocking (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDockedOrDocking(pObj) : false); }
 		inline void PlaceAtRandomDockPort (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); if (pPorts) pPorts->DockAtRandomPort(this, pObj); }
-		inline bool SupportsDocking (bool bPlayer = false) { return ((!bPlayer || GetDefaultDockScreen() != NULL || FireGetDockScreen()) && GetDockingPortCount() > 0); }
+		bool SupportsDocking (bool bPlayer = false);
+		inline bool SupportsDockingFast (void) const { return (m_fHasDockScreenMaybe ? true : false); }
 
 		//	Dock Screens
 
@@ -1810,7 +1811,7 @@ class CSpaceObject : public CObject
 		DWORD m_fHasOnOrderChangedEvent:1;		//	TRUE if we have an <OnOrderChanged> event
 		DWORD m_fManualAnchor:1;				//	TRUE if object is temporarily anchored
 		DWORD m_fCollisionTestNeeded:1;			//	TRUE if object needs to check collisions with barriers
-		DWORD m_fSpare6:1;
+		DWORD m_fHasDockScreenMaybe:1;			//	TRUE if object has a dock screen for player (may be stale)
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 

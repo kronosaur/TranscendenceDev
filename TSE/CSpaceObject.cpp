@@ -266,7 +266,8 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fHasOnAttackedByPlayerEvent(false),
 		m_fHasOnOrderChangedEvent(false),
 		m_fManualAnchor(false),
-		m_fCollisionTestNeeded(false)
+		m_fCollisionTestNeeded(false),
+		m_fHasDockScreenMaybe(false)
 
 //	CSpaceObject constructor
 
@@ -4238,7 +4239,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		}
 
 	else if (strEquals(sName, PROPERTY_HAS_DOCKING_PORTS))
-		return CC.CreateBool(SupportsDocking());
+		return CC.CreateBool(GetDockingPortCount() > 0);
 
 	else if (strEquals(sName, PROPERTY_ID))
 		return CC.CreateInteger(GetID());
@@ -7221,6 +7222,20 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 		return false;
 	}
 
+bool CSpaceObject::SupportsDocking (bool bPlayer)
+
+//	SupportsDocking
+//
+//	Returns TRUE if this object supports docking.
+
+	{
+	return (GetDockingPortCount() > 0) 
+			&& (!bPlayer 
+				|| GetDefaultDockScreen() != NULL 
+				|| FireGetDockScreen()
+				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL));
+	}
+
 bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult)
 
 //	Translate
@@ -7436,6 +7451,18 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 				Ctx.rTargetDist2 = rDist2;
 				}
 			}
+		}
+
+	//	See if we have a dock screen. We only check every 20 ticks or so, so this
+	//	information might be stale. Use this for the docking ports animation, but
+	//	not for actually determining if we can dock.
+
+	if (IsDestinyTime(21, 8)
+			&& GetDockingPortCount() > 0)
+		{
+		m_fHasDockScreenMaybe = (GetDefaultDockScreen() != NULL 
+				|| FireGetDockScreen() 
+				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL));
 		}
 
 	//	Update the specific object

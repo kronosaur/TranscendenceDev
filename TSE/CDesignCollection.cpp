@@ -654,6 +654,20 @@ bool CDesignCollection::FireGetGlobalDockScreen (CSpaceObject *pObj, CString *re
 		ICCItem *pData;
 		if (pType->FireGetGlobalDockScreen(Event, pObj, &sScreen, &pData, &iPriority))
 			{
+			//	If we don't care about a specific screen then only want to know
+			//	whether there is at least one global dock screen, so we take a
+			//	short cut.
+
+			if (retsScreen == NULL)
+				{
+				if (pData)
+					pData->Discard(&CC);
+
+				return true;
+				}
+
+			//	Otherwise, see if this is better.
+
 			if (iPriority > iBestPriority)
 				{
 				iBestPriority = iPriority;

@@ -780,7 +780,7 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 
 	//	Don't bother if the docking is disabled (for the player)
 
-	if (pPlayer && !pOwner->SupportsDocking(true))
+	if (pPlayer && !pOwner->SupportsDockingFast())
 		pPlayer = NULL;
 
 	//	Loop over all ports
