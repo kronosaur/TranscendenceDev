@@ -223,6 +223,9 @@ void CSystemMapThumbnails::DrawThumbnail (CTopologyNode *pNode, CG32bitImage &De
 
         for (i = 0; i < Stars.GetCount(); i++)
             {
+			if (Stars[i].pStar == NULL)
+				continue;
+
             CGDraw::BltTransformedHD(Dest,
                     x + rScale * Stars[i].vPos.GetX(),
                     y - rScale * Stars[i].vPos.GetY(),
