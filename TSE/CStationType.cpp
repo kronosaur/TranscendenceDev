@@ -1066,7 +1066,7 @@ void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	m_HeroImage.AddTypesUsed(retTypesUsed);
 
 	for (i = 0; i < m_ShipWrecks.GetCount(); i++)
-		retTypesUsed->SetAt(m_ShipWrecks.GetElement(i), true);
+		retTypesUsed->SetAt(m_ShipWrecks[i], true);
 
 	for (i = 0; i < m_iAnimationsCount; i++)
 		retTypesUsed->SetAt(m_pAnimations[i].m_Image.GetBitmapUNID(), true);
@@ -2050,7 +2050,7 @@ void CStationType::SetImageSelector (SSelectorInitCtx &InitCtx, CCompositeImageS
 	{
 	if (m_ShipWrecks.GetCount())
 		{
-		DWORD dwShipwreckID = (DWORD)m_ShipWrecks.GetElement(mathRandom(0, m_ShipWrecks.GetCount()-1));
+		DWORD dwShipwreckID = m_ShipWrecks[mathRandom(0, m_ShipWrecks.GetCount()-1)];
 		CShipClass *pClass = g_pUniverse->FindShipClass(dwShipwreckID);
 		if (pClass == NULL)
 			return;

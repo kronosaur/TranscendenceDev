@@ -288,7 +288,7 @@ CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criter
 	{
 	int i;
 
-	CIntArray List;
+	TArray<CItemType *> List;
 
 	//	Prepare the input name
 
@@ -329,9 +329,9 @@ CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criter
 		if (iMatch >= iBestMatch)
 			{
 			if (iMatch > iBestMatch)
-				List.RemoveAll();
+				List.DeleteAll();
 
-			List.AppendElement((int)pType, NULL);
+			List.Insert(pType);
 			iBestMatch = iMatch;
 			}
 		}
@@ -352,15 +352,15 @@ CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criter
 	//	we don't match anything
 
 	if (iBestMatch == 0 && List.GetCount() > 1)
-		List.RemoveAll();
+		List.DeleteAll();
 	else if (iBestNonCriteriaMatch > iBestMatch && List.GetCount() > 1)
-		List.RemoveAll();
+		List.DeleteAll();
 
 	//	Pick a random item
 
 	if (List.GetCount())
 		{
-		CItemType *pBest = (CItemType *)List.GetElement(mathRandom(0, List.GetCount()-1));
+		CItemType *pBest = List[mathRandom(0, List.GetCount()-1)];
 		return CItem(pBest, pBest->GetNumberAppearing().Roll());
 		}
 	else

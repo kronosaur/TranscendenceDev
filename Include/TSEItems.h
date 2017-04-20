@@ -468,7 +468,7 @@ class CItemListManipulator
 
 		CItemList &m_ItemList;
 		int m_iCursor;
-		CIntArray m_ViewMap;
+		TArray<int> m_ViewMap;
 
 		bool m_bUseFilter;
 		CItemCriteria m_Filter;

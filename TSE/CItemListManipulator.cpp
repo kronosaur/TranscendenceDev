@@ -45,14 +45,14 @@ void CItemListManipulator::AddItem (const CItem &Item)
 	int iIndex = FindItem(Item);
 	if (iIndex != -1)
 		{
-		CItem &ThisItem = m_ItemList.GetItem(m_ViewMap.GetElement(iIndex));
+		CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[iIndex]);
 		ThisItem.SetCount(Item.GetCount() + ThisItem.GetCount());
 		m_iCursor = iIndex;
 		}
 	else
 		{
 		m_iCursor = m_ViewMap.GetCount();
-		m_ViewMap.AppendElement(m_ItemList.GetCount(), NULL);
+		m_ViewMap.Insert(m_ItemList.GetCount());
 		m_ItemList.AddItem(Item);
 		}
 	}
@@ -65,8 +65,8 @@ DWORD CItemListManipulator::AddItemEnhancementAtCursor (const CItemEnhancement &
 
 	{
 	ASSERT(m_iCursor != -1);
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 
 	NewItem.AddEnhancement(Mods);
 	if (iCount != -1)
@@ -97,11 +97,11 @@ void CItemListManipulator::ClearDisruptedAtCursor (int iCount)
 	{
 	ASSERT(m_iCursor != -1);
 
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 
 	//	Generate a new item
 
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (iCount != -1)
 		NewItem.SetCount(Min(iCount, OldItem.GetCount()));
 	NewItem.ClearDisrupted();
@@ -120,13 +120,13 @@ void CItemListManipulator::DeleteAtCursor (int iCount)
 	{
 	ASSERT(m_iCursor != -1);
 
-	CItem &ThisItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 
 	if (ThisItem.GetCount() > iCount)
 		ThisItem.SetCount(ThisItem.GetCount() - iCount);
 	else
 		{
-		m_ItemList.DeleteItem(m_ViewMap.GetElement(m_iCursor));
+		m_ItemList.DeleteItem(m_ViewMap[m_iCursor]);
 		GenerateViewMap();
 		if (m_iCursor >= m_ViewMap.GetCount())
 			m_iCursor = m_ViewMap.GetCount() - 1;
@@ -162,7 +162,7 @@ int CItemListManipulator::FindItem (const CItem &Item)
 	{
 	for (int i = 0; i < m_ViewMap.GetCount(); i++)
 		{
-		CItem &ThisItem = m_ItemList.GetItem(m_ViewMap.GetElement(i));
+		CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[i]);
 
 		if (ThisItem.IsEqual(Item))
 			return i;
@@ -178,14 +178,14 @@ void CItemListManipulator::GenerateViewMap (void)
 //	Generates a mapping from index to an index into the item list
 
 	{
-	m_ViewMap.RemoveAll();
+	m_ViewMap.DeleteAll();
 
 	for (int i = 0; i < m_ItemList.GetCount(); i++)
 		{
 		CItem &ThisItem = m_ItemList.GetItem(i);
 
 		if (!m_bUseFilter || ThisItem.MatchesCriteria(m_Filter))
-			m_ViewMap.AppendElement(i, NULL);
+			m_ViewMap.Insert(i);
 		}
 	}
 
@@ -197,7 +197,7 @@ const CItem &CItemListManipulator::GetItemAtCursor (void)
 
 	{
 	ASSERT(m_iCursor != -1);
-	return m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	return m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	}
 
 CItem *CItemListManipulator::GetItemPointerAtCursor (void)
@@ -208,7 +208,7 @@ CItem *CItemListManipulator::GetItemPointerAtCursor (void)
 
 	{
 	ASSERT(m_iCursor != -1);
-	return &m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	return &m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	}
 
 void CItemListManipulator::MarkDeleteAtCursor (int iCount)
@@ -223,7 +223,7 @@ void CItemListManipulator::MarkDeleteAtCursor (int iCount)
 	{
 	ASSERT(m_iCursor != -1);
 
-	CItem &ThisItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 
 	if (ThisItem.GetCount() > iCount)
 		ThisItem.SetCount(ThisItem.GetCount() - iCount);
@@ -290,7 +290,7 @@ void CItemListManipulator::MoveItemTo (const CItem &NewItem, const CItem &OldIte
 
 			if (OldItem.GetCount() < NewItem.GetCount())
 				{
-				CItem &Item = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+				CItem &Item = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 				Item.SetCount(NewItem.GetCount());
 				}
 			}
@@ -301,7 +301,7 @@ void CItemListManipulator::MoveItemTo (const CItem &NewItem, const CItem &OldIte
 		else if (OldItem.GetCount() <= NewItem.GetCount()
 				&& FindItem(NewItem) == -1)
 			{
-			CItem &Item = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+			CItem &Item = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 			Item = NewItem;
 			}
 
@@ -351,8 +351,8 @@ void CItemListManipulator::RemoveItemEnhancementAtCursor (DWORD dwID, int iCount
 
 	{
 	ASSERT(m_iCursor != -1);
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 
 	if (iCount != -1)
 		NewItem.SetCount(Min(iCount, OldItem.GetCount()));
@@ -379,8 +379,8 @@ void CItemListManipulator::SetChargesAtCursor (int iCharges, int iCount)
 
 	{
 	ASSERT(m_iCursor != -1);
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (iCount != -1)
 		NewItem.SetCount(Max(0, Min(iCount, OldItem.GetCount())));
 	NewItem.SetCharges(iCharges);
@@ -396,7 +396,7 @@ void CItemListManipulator::SetCountAtCursor (int iCount)
 
 	{
 	ASSERT(m_iCursor != -1);
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 
 	if (iCount <= 0)
 		DeleteAtCursor(OldItem.GetCount());
@@ -431,13 +431,13 @@ void CItemListManipulator::SetDamagedAtCursor (bool bDamaged, int iCount)
 
 	//	Get the item at the cursor. Abort if there is nothing to do
 
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (OldItem.IsDamaged() == bDamaged)
 		return;
 
 	//	Generate a new item
 
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (iCount != -1)
 		NewItem.SetCount(Min(iCount, OldItem.GetCount()));
 	NewItem.SetDamaged(bDamaged);
@@ -453,8 +453,8 @@ void CItemListManipulator::SetDataAtCursor (const CString &sAttrib, const CStrin
 
 	{
 	ASSERT(m_iCursor != -1);
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (iCount != -1)
 		NewItem.SetCount(Min(iCount, OldItem.GetCount()));
 	NewItem.SetData(sAttrib, sData);
@@ -471,11 +471,11 @@ void CItemListManipulator::SetDisruptedAtCursor (DWORD dwDuration, int iCount)
 	{
 	ASSERT(m_iCursor != -1);
 
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 
 	//	Generate a new item
 
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (iCount != -1)
 		NewItem.SetCount(Min(iCount, OldItem.GetCount()));
 	NewItem.SetDisrupted(dwDuration);
@@ -494,13 +494,13 @@ void CItemListManipulator::SetEnhancedAtCursor (bool bEnhanced)
 
 	//	Get the item at the cursor. Abort if there is nothing to do
 
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (OldItem.IsEnhanced() == bEnhanced)
 		return;
 
 	//	Generate a new item
 
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	NewItem.SetCount(1);
 	NewItem.SetEnhanced(bEnhanced);
 
@@ -540,8 +540,8 @@ void CItemListManipulator::SetInstalledAtCursor (int iInstalled)
 
 	{
 	ASSERT(m_iCursor != -1);
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	NewItem.SetCount(1);
 	NewItem.SetInstalled(iInstalled);
 
@@ -556,8 +556,8 @@ bool CItemListManipulator::SetPropertyAtCursor (CSpaceObject *pSource, const CSt
 
 	{
 	ASSERT(m_iCursor != -1);
-	CItem &OldItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
-	CItem NewItem = m_ItemList.GetItem(m_ViewMap.GetElement(m_iCursor));
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (iCount != -1)
 		NewItem.SetCount(Max(0, Min(iCount, OldItem.GetCount())));
 

@@ -700,12 +700,12 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	CString sAbsorbAdj;
 	if (pDesc->FindAttribute(ABSORB_ADJ_ATTRIB, &sAbsorbAdj))
 		{
-		CIntArray AbsorbAdj;
+		TArray<int> AbsorbAdj;
 		if (error = ::ParseAttributeIntegerList(sAbsorbAdj, &AbsorbAdj))
 			return error;
 
 		for (i = 0; i < damageCount; i++)
-			pShield->m_iAbsorbAdj[i] = (i < AbsorbAdj.GetCount() ? AbsorbAdj.GetElement(i) : 0);
+			pShield->m_iAbsorbAdj[i] = (i < AbsorbAdj.GetCount() ? AbsorbAdj[i] : 0);
 		}
 	else
 		{

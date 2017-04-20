@@ -413,13 +413,13 @@ ALERROR C3DConversion::OverridePaintFirst (const CString &sAttrib, bool bPaintFi
 		}
 	else
 		{
-		CIntArray List;
+		TArray<int> List;
 		if (error = ParseAttributeIntegerList(sAttrib, &List))
 			return error;
 
 		for (i = 0; i < List.GetCount(); i++)
 			{
-			int iDir = List.GetElement(i);
+			int iDir = List[i];
 			if (iDir >= 0 && iDir < m_Cache.GetCount())
 				m_Cache[iDir].bPaintFirst = bPaintFirstValue;
 			}

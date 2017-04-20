@@ -1191,6 +1191,12 @@ void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int i
 //	Takes an array of damage type adj values and displays them
 
 	{
+	struct SEntry
+		{
+		int iDamageType;
+		int iDamageAdj;
+		};
+
 	int i;
 	bool bSortByDamageType = true;
 	bool bOptionShowDamageAdjAsHP = false;
@@ -1206,7 +1212,7 @@ void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int i
 
 	//	Sort damage types from highest to lowest
 
-	CSymbolTable Sorted;
+	TSortMap<CString, SEntry> Sorted;
 	int iLengthEstimate = 0;
 	int iImmuneCount = 0;
 	for (i = 0; i < damageCount; i++)
@@ -1235,9 +1241,9 @@ void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int i
 
 		//	Add to list
 
-		DWORD dwValue = MAKELONG((WORD)i, (WORD)(short)iDamageAdj[i]);
-
-		Sorted.AddEntry(sKey, (CObject *)dwValue);
+		SEntry *pEntry = Sorted.SetAt(sKey);
+		pEntry->iDamageType = i;
+		pEntry->iDamageAdj = iDamageAdj[i];
 
 		//	Estimate how many entries we will have (so we can decide the font size)
 		//	We assume that immune entries get collapsed.
@@ -1258,9 +1264,9 @@ void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int i
 
 	for (i = 0; i < Sorted.GetCount(); i++)
 		{
-		DWORD dwValue = (DWORD)Sorted.GetValue(i);
-		int iDamageType = LOWORD(dwValue);
-		int iDamageAdj = (int)(short)HIWORD(dwValue);
+		const SEntry &Entry = Sorted[i];
+		int iDamageType = Entry.iDamageType;
+		int iDamageAdj = Entry.iDamageAdj;
 		int iPercentAdj = (100 * (iDamageAdj - iHP) / iHP);
 
 		//	Prettify the % by rounding to a number divisible by 5
@@ -1281,7 +1287,7 @@ void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int i
 
 		if (i < (Sorted.GetCount() - 1)
 				&& iDamageAdj == -1
-				&& (iDamageAdj == (int)(short)HIWORD((DWORD)Sorted.GetValue(i + 1))))
+				&& (iDamageAdj == Sorted[i + 1].iDamageAdj))
 			continue;
 
 		//	Figure out how to display damage adj

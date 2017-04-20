@@ -3026,7 +3026,7 @@ class CStationType : public CDesignType
 
 		//	Images
 		CCompositeImageDesc m_Image;
-		CIntArray m_ShipWrecks;							//	Class IDs to use as image (for shipwrecks)
+		TArray<DWORD> m_ShipWrecks;						//	Class IDs to use as image (for shipwrecks)
 		int m_iAnimationsCount;							//	Number of animation sections
 		SAnimationSection *m_pAnimations;				//	Animation sections (may be NULL)
 		CCompositeImageDesc m_HeroImage;				//	For use in dock screens and covers

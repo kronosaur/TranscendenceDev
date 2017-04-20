@@ -115,7 +115,7 @@ class CObjectImage : public CDesignType
 		mutable bool m_bLoadError;		//	If TRUE, load failed
 	};
 
-class CObjectImageArray : public CObject
+class CObjectImageArray
 	{
 	public:
 		enum EFlags

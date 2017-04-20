@@ -4,8 +4,6 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CObjectImageArray>g_Class(OBJID_COBJECTIMAGEARRAY, NULL);
-
 #define ANIMATION_COLUMNS_ATTRIB		CONSTLIT("animationColumns")
 #define FLASH_TICKS_ATTRIB				CONSTLIT("flashTicks")
 #define ROTATE_OFFSET_ATTRIB			CONSTLIT("rotationOffset")
@@ -52,7 +50,7 @@ static char g_ImageTicksPerFrameAttrib[] = "imageTicksPerFrame";
 CG32bitImage CObjectImageArray::m_NullImage;
 CObjectImageArray CObjectImageArray::m_Null;
 
-CObjectImageArray::CObjectImageArray (void) : CObject(&g_Class),
+CObjectImageArray::CObjectImageArray (void) : 
 		m_pImage(NULL),
 		m_pRotationOffset(NULL),
 		m_pGlowImages(NULL),
@@ -65,7 +63,7 @@ CObjectImageArray::CObjectImageArray (void) : CObject(&g_Class),
 	{
 	}
 
-CObjectImageArray::CObjectImageArray (const CObjectImageArray &Source) : CObject(&g_Class)
+CObjectImageArray::CObjectImageArray (const CObjectImageArray &Source)
 
 //	CObjectImageArray copy constructor
 

@@ -1204,9 +1204,10 @@ void CItemType::InitRandomNames (void)
 
 	//	Randomize the names
 
-	CIntArray Randomize;
+	TArray<int> Randomize;
+	Randomize.InsertEmpty(0);
 	for (i = 0; i < iCount; i++)
-		Randomize.AppendElement(i, NULL);
+		Randomize[i] = i;
 
 	Randomize.Shuffle();
 
@@ -1223,7 +1224,7 @@ void CItemType::InitRandomNames (void)
 		CItemType *pType = g_pUniverse->GetItemType(i);
 		if (pType->m_pUnknownType.GetUNID() == GetUNID())
 			{
-			CString sTemplate = m_UnknownNames[Randomize.GetElement(j % iCount)];
+			CString sTemplate = m_UnknownNames[Randomize[j % iCount]];
 
 			//	See if the template has replaceable parameters.
 

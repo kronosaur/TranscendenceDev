@@ -2292,13 +2292,13 @@ ALERROR LoadDamageAdj (CXMLElement *pItem, const CString &sAttrib, int *retiAdj,
 	{
 	ALERROR error;
 	int i;
-	CIntArray Adj;
+	TArray<int> Adj;
 
 	if (error = pItem->GetAttributeIntegerList(sAttrib, &Adj))
 		return error;
 
 	for (i = 0; i < damageCount; i++)
-		retiAdj[i] = (i < Adj.GetCount() ? Adj.GetElement(i) : 0);
+		retiAdj[i] = (i < Adj.GetCount() ? Adj[i] : 0);
 
 	if (retiCount)
 		*retiCount = Adj.GetCount();

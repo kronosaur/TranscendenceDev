@@ -1663,8 +1663,8 @@ bool CUniverse::IsGlobalResurrectPending (CDesignType **retpType)
 
 	{
 	int i;
-	CIntArray Types;
-	CIntArray Chances;
+	TArray<int> Types;
+	TArray<int> Chances;
 	int iTotalChance = 0;
 
 	//	Ask all design types if they are prepared to resurrect
@@ -1675,8 +1675,8 @@ bool CUniverse::IsGlobalResurrectPending (CDesignType **retpType)
 		int iChance = m_Design.GetEntry(i)->FireGetGlobalResurrectPotential();
 		if (iChance > 0)
 			{
-			Types.AppendElement(i);
-			Chances.AppendElement(iTotalChance + iChance);
+			Types.Insert(i);
+			Chances.Insert(iTotalChance + iChance);
 
 			iTotalChance += iChance;
 			}
@@ -1692,9 +1692,9 @@ bool CUniverse::IsGlobalResurrectPending (CDesignType **retpType)
 
 	int iRoll = mathRandom(0, iTotalChance-1);
 	for (i = 0; i < Types.GetCount(); i++)
-		if (iRoll < Chances.GetElement(i))
+		if (iRoll < Chances[i])
 			{
-			*retpType = m_Design.GetEntry(Types.GetElement(i));
+			*retpType = m_Design.GetEntry(Types[i]);
 			return true;
 			}
 
