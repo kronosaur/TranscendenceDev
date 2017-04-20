@@ -72,17 +72,17 @@ bool CHexarcSession::Connect (CString *retsError)
 			{
 			case inetsDNSError:
 				*retsError = strPatternSubst(ERR_DNS_ERROR, GetHostspec());
-				kernelDebugLogMessage(*retsError);
+				kernelDebugLogString(*retsError);
 				return false;
 
 			case inetsCannotConnect:
 				*retsError = strPatternSubst(ERR_CONNECT_ERROR, GetHostspec());
-				kernelDebugLogMessage(*retsError);
+				kernelDebugLogString(*retsError);
 				return false;
 
 			default:
 				*retsError = strPatternSubst(ERR_INTERNAL, GetHostspec());
-				kernelDebugLogMessage(*retsError);
+				kernelDebugLogString(*retsError);
 				return false;
 			}
 		}
@@ -109,7 +109,7 @@ bool CHexarcSession::Connect (CString *retsError)
 		{
 		m_Session.Disconnect();
 		*retsError = strPatternSubst(ERR_REQUEST_FAILED, GetHostspec());
-		kernelDebugLogMessage(*retsError);
+		kernelDebugLogString(*retsError);
 		return false;
 		}
 
@@ -122,7 +122,7 @@ bool CHexarcSession::Connect (CString *retsError)
 		//	LATER: Set up the new host and recurse
 		//	LATER: Keep track of recursion count, in case of ping-pong redirects
 		*retsError = CONSTLIT("LATER: Redirect");
-		kernelDebugLogMessage(*retsError);
+		kernelDebugLogString(*retsError);
 		return false;
 		}
 
@@ -132,7 +132,7 @@ bool CHexarcSession::Connect (CString *retsError)
 		{
 		m_Session.Disconnect();
 		*retsError = strPatternSubst(ERR_FROM_SERVER, GetHostspec(), Response.GetStatusMsg());
-		kernelDebugLogMessage(*retsError);
+		kernelDebugLogString(*retsError);
 		return false;
 		}
 
@@ -151,7 +151,7 @@ bool CHexarcSession::Connect (CString *retsError)
 	if (CHexarc::IsError(ResponseData, NULL, retsError))
 		{
 		m_Session.Disconnect();
-		kernelDebugLogMessage(*retsError);
+		kernelDebugLogString(*retsError);
 		return false;
 		}
 
@@ -250,7 +250,7 @@ ALERROR CHexarcSession::ServerCommand (const CHTTPMessage &Request, CJSONValue *
 		if (!m_Session.IsInternetAvailable())
 			{
 			*retResult = CJSONValue(ERR_NO_INTERNET);
-			kernelDebugLogMessage("Unable to verify connection to the Internet.");
+			kernelDebugLogPattern("Unable to verify connection to the Internet.");
 			}
 		else
 			*retResult = CJSONValue(sError);
@@ -277,7 +277,7 @@ ALERROR CHexarcSession::ServerCommand (const CHTTPMessage &Request, CJSONValue *
 		else if (!m_Session.IsInternetAvailable())
 			{
 			*retResult = CJSONValue(ERR_NO_INTERNET);
-			kernelDebugLogMessage("Unable to verify connection to the Internet.");
+			kernelDebugLogPattern("Unable to verify connection to the Internet.");
 			return ERR_FAIL;
 			}
 
@@ -286,7 +286,7 @@ ALERROR CHexarcSession::ServerCommand (const CHTTPMessage &Request, CJSONValue *
 		else
 			{
 			*retResult = CJSONValue(ERR_CANNOT_SEND);
-			kernelDebugLogMessage(strPatternSubst(CONSTLIT("%s: Unable to send command to server."), Request.GetURL()));
+			kernelDebugLogPattern("%s: Unable to send command to server.", Request.GetURL());
 			return ERR_FAIL;
 			}
 		}
@@ -296,7 +296,7 @@ ALERROR CHexarcSession::ServerCommand (const CHTTPMessage &Request, CJSONValue *
 	if (Response.GetStatusCode() != 200)
 		{
 		*retResult = CJSONValue(Response.GetStatusMsg());
-		kernelDebugLogMessage(strPatternSubst(CONSTLIT("%s: %s."), Request.GetURL(), Response.GetStatusMsg()));
+		kernelDebugLogPattern("%s: %s.", Request.GetURL(), Response.GetStatusMsg());
 		return ERR_FAIL;
 		}
 
@@ -306,7 +306,7 @@ ALERROR CHexarcSession::ServerCommand (const CHTTPMessage &Request, CJSONValue *
 		{
 		sError = strPatternSubst(ERR_INVALID_JSON, GetHostspec(), sError);
 		*retResult = CJSONValue(sError);
-		kernelDebugLogMessage(strPatternSubst(CONSTLIT("%s: %s"), Request.GetURL(), sError));
+		kernelDebugLogPattern("%s: %s", Request.GetURL(), sError);
 		return ERR_FAIL;
 		}
 
@@ -317,7 +317,7 @@ ALERROR CHexarcSession::ServerCommand (const CHTTPMessage &Request, CJSONValue *
 	if (CHexarc::IsError(*retResult, &sErrorCode, &sErrorDesc))
 		{
 		*retResult = CJSONValue(sErrorDesc);
-		kernelDebugLogMessage(strPatternSubst(CONSTLIT("%s: Server returned error: %s"), Request.GetURL(), sErrorDesc));
+		kernelDebugLogPattern("%s: Server returned error: %s", Request.GetURL(), sErrorDesc);
 
 		//	If this is Error.outOfDate then we return a different error code
 

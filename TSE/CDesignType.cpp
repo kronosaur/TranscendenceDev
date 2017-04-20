@@ -246,7 +246,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash in OnBindDesign [UNID: %08x]", m_dwUNID);
+		::kernelDebugLogPattern("Crash in OnBindDesign [UNID: %08x]", m_dwUNID);
 		Ctx.pType = NULL;
 		throw;
 		}
@@ -2288,7 +2288,7 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError)
 	if (pPlayer)
 		pPlayer->SendMessage(NULL, sError);
 
-	kernelDebugLogMessage(sError);
+	kernelDebugLogString(sError);
 	}
 
 bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const
@@ -2556,7 +2556,7 @@ ALERROR CEffectCreatorRef::Bind (SDesignLoadCtx &Ctx)
 			}
 		catch (...)
 			{
-			::kernelDebugLogMessage("Crash deleting singleton: %08x. UNID = %08x", (DWORD)m_pSingleton, m_dwUNID);
+			::kernelDebugLogPattern("Crash deleting singleton: %08x. UNID = %08x", (DWORD)m_pSingleton, m_dwUNID);
 			throw;
 			}
 
@@ -2667,7 +2667,7 @@ IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffec
 		m_pSingleton = pPainter;
 
 #ifdef DEBUG_SINGLETON_EFFECTS
-		::kernelDebugLogMessage("Create singleton painter UNID = %08x: %08x", m_dwUNID, (DWORD)pPainter);
+		::kernelDebugLogPattern("Create singleton painter UNID = %08x: %08x", m_dwUNID, (DWORD)pPainter);
 #endif
 		}
 

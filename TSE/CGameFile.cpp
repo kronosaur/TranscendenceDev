@@ -329,7 +329,7 @@ ALERROR CGameFile::LoadSystem (DWORD dwUNID,
 
 	if (m_Header.dwFlags & GAME_FLAG_IN_STARGATE)
 		{
-		kernelDebugLogMessage("Recovering from corrupt save file system: %x", dwEntry);
+		kernelDebugLogPattern("Recovering from corrupt save file system: %x", dwEntry);
 
 		//	Read the version history. We should have a previous version
 
@@ -609,7 +609,7 @@ ALERROR CGameFile::SaveGameHeader (SGameHeader &Header)
 
 	if (error = m_pFile->WriteEntry(m_iHeaderID, sData))
 		{
-		kernelDebugLogMessage("Unable to write game header");
+		kernelDebugLogPattern("Unable to write game header");
 		return error;
 		}
 
@@ -690,7 +690,7 @@ ALERROR CGameFile::SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags)
 
 	if (error = pSystem->SaveToStream(&Stream))
 		{
-		kernelDebugLogMessage("Unable to save system to stream");
+		kernelDebugLogPattern("Unable to save system to stream");
 		return error;
 		}
 
@@ -715,7 +715,7 @@ ALERROR CGameFile::SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags)
 
 			if (error = m_pFile->WriteVersion(dwEntry, sStream))
 				{
-				kernelDebugLogMessage("Unable to write system version: %x", dwUNID);
+				kernelDebugLogPattern("Unable to write system version: %x", dwUNID);
 				return error;
 				}
 
@@ -725,7 +725,7 @@ ALERROR CGameFile::SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags)
 			m_Header.dwPartialSave = dwEntry;
 			if (error = SaveGameHeader(m_Header))
 				{
-				kernelDebugLogMessage("Unable to write game header");
+				kernelDebugLogPattern("Unable to write game header");
 				return error;
 				}
 			}
@@ -738,7 +738,7 @@ ALERROR CGameFile::SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags)
 
 			if (error = m_pFile->WriteEntry(dwEntry, sStream))
 				{
-				kernelDebugLogMessage("Unable to write system: %x", dwUNID);
+				kernelDebugLogPattern("Unable to write system: %x", dwUNID);
 				return error;
 				}
 			}
@@ -752,7 +752,7 @@ ALERROR CGameFile::SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags)
 
 		if (error = m_pFile->AddEntry(sStream, (int *)&dwEntry))
 			{
-			kernelDebugLogMessage("Unable to add system: %x", dwUNID);
+			kernelDebugLogPattern("Unable to add system: %x", dwUNID);
 			return error;
 			}
 
@@ -767,7 +767,7 @@ ALERROR CGameFile::SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags)
 
 		if (error = m_pFile->WriteEntry(m_Header.dwSystemMap, sData))
 			{
-			kernelDebugLogMessage("Unable to write system map");
+			kernelDebugLogPattern("Unable to write system map");
 			return error;
 			}
 		}
@@ -920,7 +920,7 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 		TArray<CDataFile::SVersionInfo> History;
 		if (error = m_pFile->ReadHistory(m_Header.dwPartialSave, &History))
 			{
-			kernelDebugLogMessage("Unable to read entry history: %x", m_Header.dwPartialSave);
+			kernelDebugLogPattern("Unable to read entry history: %x", m_Header.dwPartialSave);
 			return error;
 			}
 
@@ -933,14 +933,14 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 
 			if (error = m_pFile->DeleteEntry(History[1].iEntry))
 				{
-				kernelDebugLogMessage("Unable to delete old system version: %x", m_Header.dwPartialSave);
+				kernelDebugLogPattern("Unable to delete old system version: %x", m_Header.dwPartialSave);
 				return error;
 				}
 			}
 		else
 			{
 			ASSERT(false);
-			kernelDebugLogMessage("Unable to find previous version for system: %x", m_Header.dwPartialSave);
+			kernelDebugLogPattern("Unable to find previous version for system: %x", m_Header.dwPartialSave);
 			}
 		}
 

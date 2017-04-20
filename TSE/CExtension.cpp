@@ -771,26 +771,26 @@ void CExtension::DebugDump (CExtension *pExtension, bool bFull)
 	{
 	if (pExtension == NULL)
 		{
-		::kernelDebugLogMessage("Null extension pointer.");
+		::kernelDebugLogPattern("Null extension pointer.");
 		return;
 		}
 
 	try
 		{
-		::kernelDebugLogMessage("%08x %s [%08x]", pExtension->m_dwUNID, pExtension->m_sFilespec, (DWORD)pExtension);
+		::kernelDebugLogPattern("%08x %s [%08x]", pExtension->m_dwUNID, pExtension->m_sFilespec, (DWORD)pExtension);
 		if (bFull)
 			{
 			if (pExtension->m_bDeleted)
-				::kernelDebugLogMessage("DELETED");
+				::kernelDebugLogPattern("DELETED");
 			if (pExtension->m_bDisabled)
-				::kernelDebugLogMessage("DISABLED: %s", pExtension->m_sDisabledReason);
+				::kernelDebugLogPattern("DISABLED: %s", pExtension->m_sDisabledReason);
 			if (pExtension->m_bVerified)
-				::kernelDebugLogMessage("VERIFIED");
+				::kernelDebugLogPattern("VERIFIED");
 			}
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Invalid extension pointer.");
+		::kernelDebugLogPattern("Invalid extension pointer.");
 		}
 	}
 
@@ -1039,17 +1039,17 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 				{
 				case extAdventure:
 					if (m_iLoadState == loadAdventureDesc)
-						kernelDebugLogMessage("Loaded adventure desc: %s", m_sFilespec);
+						kernelDebugLogPattern("Loaded adventure desc: %s", m_sFilespec);
 					else
-						kernelDebugLogMessage("Loaded adventure: %s", m_sFilespec);
+						kernelDebugLogPattern("Loaded adventure: %s", m_sFilespec);
 					break;
 
 				case extExtension:
-					kernelDebugLogMessage("Loaded extension: %s", m_sFilespec);
+					kernelDebugLogPattern("Loaded extension: %s", m_sFilespec);
 					break;
 
 				case extLibrary:
-					kernelDebugLogMessage("Loaded library: %s", m_sFilespec);
+					kernelDebugLogPattern("Loaded library: %s", m_sFilespec);
 					break;
 				}
 
@@ -1285,7 +1285,7 @@ ALERROR CExtension::LoadGlobalsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	pEntry->sFilespec = Ctx.sErrorFilespec;
 
 #ifdef DEBUG_GLOBALS
-	::kernelDebugLogMessage("Loading globals in %s", Ctx.sErrorFilespec);
+	::kernelDebugLogPattern("Loading globals in %s", Ctx.sErrorFilespec);
 #endif
 
 	return NOERROR;

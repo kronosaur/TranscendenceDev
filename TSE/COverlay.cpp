@@ -814,7 +814,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 	m_pType = g_pUniverse->FindShipEnergyFieldType(dwLoad);
 	if (m_pType == NULL)
 		{
-		kernelDebugLogMessage("Unable to find overlay type: %x", dwLoad);
+		kernelDebugLogPattern("Unable to find overlay type: %x", dwLoad);
 		throw CException(ERR_FAIL);
 		}
 

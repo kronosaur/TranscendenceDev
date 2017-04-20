@@ -283,7 +283,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 		} catch (...)
 			{
 			m_bInBindDesign = false;
-			::kernelDebugLogMessage("Crash processing extension:");
+			::kernelDebugLogPattern("Crash processing extension:");
 			CExtension::DebugDump(pExtension, true);
 			throw;
 			}
@@ -817,7 +817,7 @@ void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot,
 				sScreenUNID,
 				sPane,
 				&sError) != NOERROR)
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 		}
 	}
 
@@ -855,7 +855,7 @@ void CDesignCollection::FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip)
 	for (i = 0; i < GetCount(); i++)
 		{
 		if (GetEntry(i)->FireOnGlobalPlayerChangedShips(pOldShip, &sError) != NOERROR)
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 		}
 	}
 
@@ -872,7 +872,7 @@ void CDesignCollection::FireOnGlobalPlayerEnteredSystem (void)
 	for (i = 0; i < GetCount(); i++)
 		{
 		if (GetEntry(i)->FireOnGlobalPlayerEnteredSystem(&sError) != NOERROR)
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 		}
 	}
 
@@ -889,7 +889,7 @@ void CDesignCollection::FireOnGlobalPlayerLeftSystem (void)
 	for (i = 0; i < GetCount(); i++)
 		{
 		if (GetEntry(i)->FireOnGlobalPlayerLeftSystem(&sError) != NOERROR)
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 		}
 	}
 
@@ -927,7 +927,7 @@ void CDesignCollection::FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCt
 	for (i = 0; i < GetCount(); i++)
 		{
 		if (GetEntry(i)->FireOnGlobalSystemCreated(SysCreateCtx, &sError) != NOERROR)
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 		}
 	}
 
@@ -1129,7 +1129,7 @@ CG32bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags)
 		CG32bitImage *pRawImage = pImage->GetImage(strFromInt(dwUNID), &sError);
 
 		if (pRawImage == NULL)
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 
 		//	Lock, if requested. NOTE: Since we obtained the image above,
 		//	this call is guaranteed to succeed.

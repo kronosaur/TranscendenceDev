@@ -82,7 +82,7 @@ void CLocationList::FillCloseLocations (void)
 					else
 						{
 						//	Technically, this should never happen.
-						::kernelDebugLogMessage("Found two non-empty locations within 25 light-seconds.");
+						::kernelDebugLogPattern("Found two non-empty locations within 25 light-seconds.");
 						}
 
 					//	Continue looping, since there could be another location that is
@@ -121,7 +121,7 @@ void CLocationList::FillOverlappingWith (CSpaceObject *pObj)
 			pLoc->SetBlocked();
 
 #ifdef DEBUG
-			::kernelDebugLogMessage("[%s]: Blocked location because it overlaps %s.", pObj->GetSystem()->GetName(), pObj->GetNounPhrase(0));
+			::kernelDebugLogPattern("[%s]: Blocked location because it overlaps %s.", pObj->GetSystem()->GetName(), pObj->GetNounPhrase(0));
 #endif
 			}
 		}

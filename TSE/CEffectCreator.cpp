@@ -401,7 +401,7 @@ IEffectPainter *CEffectCreator::CreatePainterFromStream (SLoadCtx &Ctx, bool bNu
 		if (pCreator == NULL)
 			{
 			if (!sUNID.IsBlank())
-				kernelDebugLogMessage("Invalid painter creator: %s", sUNID);
+				kernelDebugLogPattern("Invalid painter creator: %s", sUNID);
 			return NULL;
 			}
 		}
@@ -423,7 +423,7 @@ IEffectPainter *CEffectCreator::CreatePainterFromStream (SLoadCtx &Ctx, bool bNu
 
 		if (pCreator == NULL)
 			{
-			kernelDebugLogMessage("Invalid painter creator: %x", dwUNID);
+			kernelDebugLogPattern("Invalid painter creator: %x", dwUNID);
 			return NULL;
 			}
 		}
@@ -567,7 +567,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())
-			::kernelDebugLogMessage(CONSTLIT("EffectType %x GetParameters: %s"), GetUNID(), (LPSTR)pResult->GetStringValue());
+			::kernelDebugLogPattern("EffectType %x GetParameters: %s", GetUNID(), (LPSTR)pResult->GetStringValue());
 		else if (pResult->IsSymbolTable())
 			{
 			int i;
@@ -577,7 +577,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 				pPainter->SetParamFromItem(Ctx, pTable->GetKey(i), pTable->GetElement(i));
 			}
 		else
-			::kernelDebugLogMessage(CONSTLIT("EffectType %x GetParameters: Expected struct result."), GetUNID());
+			::kernelDebugLogPattern("EffectType %x GetParameters: Expected struct result.", GetUNID());
 
 		CCCtx.Discard(pResult);
 		}
@@ -679,7 +679,7 @@ ALERROR CEffectCreator::OnBindDesign (SDesignLoadCtx &Ctx)
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash in CEffectCreator::OnBindDesign. [m_sUNID = %s]", m_sUNID);
+		::kernelDebugLogPattern("Crash in CEffectCreator::OnBindDesign. [m_sUNID = %s]", m_sUNID);
 		throw;
 		}
 	}
@@ -1104,7 +1104,7 @@ ALERROR IEffectPainter::ValidateClass (SLoadCtx &Ctx, const CString &sOriginalCl
 				CEffectCreator *pOriginalCreator;
 				if (CEffectCreator::CreateFromTag(sClass, &pOriginalCreator) != NOERROR)
 					{
-					kernelDebugLogMessage("Unable to find original effect creator: %s", sClass);
+					kernelDebugLogPattern("Unable to find original effect creator: %s", sClass);
 					return ERR_FAIL;
 					}
 

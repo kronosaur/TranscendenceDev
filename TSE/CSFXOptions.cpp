@@ -90,7 +90,7 @@ void CSFXOptions::SetSFXQualityAuto (void)
 	if (dwElapsed > 500)
 		{
 		SetSFXQuality(sfxMinimum);
-		::kernelDebugLogMessage("Graphics quality minimum (max performance): %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
+		::kernelDebugLogPattern("Graphics quality minimum (max performance): %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
 		}
 
 	//	If more than 200 ms, or if we have less than four processors, then
@@ -99,7 +99,7 @@ void CSFXOptions::SetSFXQualityAuto (void)
 	else if (dwElapsed > 200 || iProcCount < 2)
 		{
 		SetSFXQuality(sfxStandard);
-		::kernelDebugLogMessage("Graphics quality standard (balanced performance): %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
+		::kernelDebugLogPattern("Graphics quality standard (balanced performance): %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
 		}
 
 	//	Otherwise, we go to 11
@@ -107,7 +107,7 @@ void CSFXOptions::SetSFXQualityAuto (void)
 	else
 		{
 		SetSFXQuality(sfxMaximum);
-		::kernelDebugLogMessage("Graphics quality maximum: %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
+		::kernelDebugLogPattern("Graphics quality maximum: %d ms; %d cores.", (DWORD)dwElapsed, iProcCount);
 		}
 	}
 

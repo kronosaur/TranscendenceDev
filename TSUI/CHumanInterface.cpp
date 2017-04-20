@@ -395,7 +395,7 @@ void CHumanInterface::HardCrash (const CString &sProgramState)
 			sSessionMessage
 			);
 
-	kernelDebugLogMessage(sMessage);
+	kernelDebugLogString(sMessage);
 	ShowHardCrashSession(CONSTLIT("Transcendence System Crash"), sMessage);
 
 	//	Ask the controller to post a crash report
@@ -417,7 +417,7 @@ void CHumanInterface::HIPostCommand (const CString &sCmd, void *pData)
 	pMsg->pData = pData;
 
 	if (!::PostMessage(m_hWnd, WM_HI_COMMAND, 0, (LPARAM)pMsg))
-		::kernelDebugLogMessage("Unable to send post HICommand (PostMessage failed): %s.", sCmd);
+		::kernelDebugLogPattern("Unable to send post HICommand (PostMessage failed): %s.", sCmd);
 	}
 
 void CHumanInterface::OnAnimate (void)

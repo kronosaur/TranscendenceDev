@@ -90,7 +90,7 @@ CSteamService::CSteamService (CHumanInterface &HI) : ICIService(HI)
 
 	if (!SteamAPI_Init())
 		{
-		::kernelDebugLogMessage("Unable to initialize Steam API.");
+		::kernelDebugLogPattern("Unable to initialize Steam API.");
 		m_bConnected = false;
 		return;
 		}
@@ -101,7 +101,7 @@ CSteamService::CSteamService (CHumanInterface &HI) : ICIService(HI)
 
 	if (!SteamUser()->BLoggedOn())
 		{
-		::kernelDebugLogMessage("Steam user is not logged in.");
+		::kernelDebugLogPattern("Steam user is not logged in.");
 		m_bConnected = false;
 		return;
 		}
@@ -112,7 +112,7 @@ CSteamService::CSteamService (CHumanInterface &HI) : ICIService(HI)
 	m_bConnected = true;
 
 #ifdef DEBUG
-	::kernelDebugLogMessage("Username: %s", m_sUsername);
+	::kernelDebugLogPattern("Username: %s", m_sUsername);
 #endif
 	}
 

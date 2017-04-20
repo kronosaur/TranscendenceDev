@@ -246,7 +246,7 @@ int CAttributeCriteria::CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMa
 
 	if (iAttribFreq <= 0 || iAttribFreq >= 100)
 		{
-		::kernelDebugLogMessage("ERROR: Invalid attribute frequency: %d", iAttribFreq);
+		::kernelDebugLogPattern("ERROR: Invalid attribute frequency: %d", iAttribFreq);
 		return 1000;
 		}
 

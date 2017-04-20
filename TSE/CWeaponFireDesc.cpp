@@ -485,7 +485,7 @@ ALERROR CWeaponFireDesc::FinishBindDesign (SDesignLoadCtx &Ctx)
     CItemType *pDevice;
 	CItemType *pAmmo = GetWeaponType(&pDevice);
     if (pAmmo)
-        ::kernelDebugLogMessage("Bind design for: %s [%s]\n", pAmmo->GetNounPhrase(), GetUNID());
+        ::kernelDebugLogPattern("Bind design for: %s [%s]\n", pAmmo->GetNounPhrase(), GetUNID());
 #endif
 
 	//	Load some events for efficiency

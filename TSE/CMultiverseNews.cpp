@@ -191,7 +191,7 @@ ALERROR CMultiverseNews::SetNews (const CJSONValue &Data, const CString &sCacheF
 
 	CString sReadStateFilespec = pathAddComponent(sCacheFilespec, FILENAME_NEWS);
 	if (LoadReadState(sReadStateFilespec, &sError) != NOERROR)
-		::kernelDebugLogMessage(sError.GetASCIIZPointer());
+		::kernelDebugLogString(sError);
 
 	//	Read all news entries
 
@@ -205,7 +205,7 @@ ALERROR CMultiverseNews::SetNews (const CJSONValue &Data, const CString &sCacheF
 		CMultiverseNewsEntry *pNewEntry;
 		if (CMultiverseNewsEntry::CreateFromJSON(Entry, &pNewEntry, &sError) != NOERROR)
 			{
-			::kernelDebugLogMessage("ERROR: Unable to load Multiverse news entry: %s.", sError);
+			::kernelDebugLogPattern("ERROR: Unable to load Multiverse news entry: %s.", sError);
 			continue;
 			}
 

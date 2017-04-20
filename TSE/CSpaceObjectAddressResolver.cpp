@@ -35,7 +35,7 @@ bool CSpaceObjectAddressResolver::HasUnresolved (void)
 
 			else
 				{
-				kernelDebugLogMessage("Unresolved object: %x", m_List.GetKey(i));
+				kernelDebugLogPattern("Unresolved object: %x", m_List.GetKey(i));
 				bUnresolved = true;
 				}
 			}

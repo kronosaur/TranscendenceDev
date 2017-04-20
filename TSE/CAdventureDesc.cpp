@@ -160,7 +160,7 @@ void CAdventureDesc::FireOnGameEnd (const CGameRecord &Game, const SBasicGameSta
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
-			kernelDebugLogMessage("OnGameEnd error: %s", pResult->GetStringValue());
+			kernelDebugLogPattern("OnGameEnd error: %s", pResult->GetStringValue());
 		Ctx.Discard(pResult);
 		}
 	}
@@ -182,7 +182,7 @@ void CAdventureDesc::FireOnGameStart (void)
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
-			kernelDebugLogMessage("OnGameStart error: %s", pResult->GetStringValue());
+			kernelDebugLogPattern("OnGameStart error: %s", pResult->GetStringValue());
 		Ctx.Discard(pResult);
 		}
 	}
@@ -334,7 +334,7 @@ bool CAdventureDesc::InitEncounterOverrides (CString *retsError)
 		if (pType == NULL)
 			{
 			if (g_pUniverse->InDebugMode())
-				::kernelDebugLogMessage("Skipping encounter override %08x because type is not found.", dwUNID);
+				::kernelDebugLogPattern("Skipping encounter override %08x because type is not found.", dwUNID);
 			continue;
 			}
 

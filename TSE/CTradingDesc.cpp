@@ -428,7 +428,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 		}
 	else
 		{
-		kernelDebugLogMessage("Unknown priceAdj prefix: %s", sPrefix);
+		kernelDebugLogPattern("Unknown priceAdj prefix: %s", sPrefix);
 		return -1;
 		}
 

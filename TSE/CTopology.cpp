@@ -511,7 +511,7 @@ ALERROR CTopology::AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTo
 			RouteDesc.pToNode = pTo;
 
 			if (error = CTopologyNode::CreateStargateRoute(RouteDesc))
-				::kernelDebugLogMessage("Error creating a stargate in <Random> generation.");
+				::kernelDebugLogPattern("Error creating a stargate in <Random> generation.");
 			}
 		}
 
@@ -538,7 +538,7 @@ ALERROR CTopology::AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTo
 		RouteDesc.pToNode = pExitNode;
 
 		if (error = CTopologyNode::CreateStargateRoute(RouteDesc))
-			::kernelDebugLogMessage("Error creating a stargate in <Random> generation.");
+			::kernelDebugLogPattern("Error creating a stargate in <Random> generation.");
 		}
 
 	//	See if we have an effect (and if so, add it)
@@ -1003,7 +1003,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 				{
 				//	A duplicate name is not an error--just a warning
 				CString sWarning = strPatternSubst(CONSTLIT("Topology %s: Duplicate stargate name: %s."), pNode->GetID(), sGateName);
-				::kernelDebugLogMessage(sWarning);
+				::kernelDebugLogString(sWarning);
 				}
 			}
 
@@ -1067,7 +1067,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		//	A duplicate name is not an error--just a warning
 
 		CString sWarning = strPatternSubst(CONSTLIT("Topology %s: Duplicate stargate name: %s."), pNode->GetID(), sGateName);
-		::kernelDebugLogMessage(sWarning);
+		::kernelDebugLogString(sWarning);
 		}
 
 	return NOERROR;

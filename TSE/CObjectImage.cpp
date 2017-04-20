@@ -201,7 +201,7 @@ CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsE
 		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
 		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, retsError) != NOERROR)
 			{
-			::kernelDebugLogMessage("Unable to open resource db: %s", m_sResourceDb);
+			::kernelDebugLogPattern("Unable to open resource db: %s", m_sResourceDb);
 			m_bLoadError = true;
 			return NULL;
 			}
@@ -212,7 +212,7 @@ CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsE
 		m_pBitmap = LoadImageFromDb(ResDb, sLoadReason, &sError);
 		if (m_pBitmap == NULL)
 			{
-			::kernelDebugLogMessage(sError);
+			::kernelDebugLogString(sError);
 			m_bLoadError = true;
 			if (retsError) *retsError = sError;
 			return NULL;
@@ -274,7 +274,7 @@ CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &
 	//	to debug issues with loading images in the middle of play).
 
 	if (g_pUniverse->InDebugMode() && g_pUniverse->LogImageLoad())
-		kernelDebugLogMessage("Loading image %s for %s.", m_sBitmap, sLoadReason);
+		kernelDebugLogPattern("Loading image %s for %s.", m_sBitmap, sLoadReason);
 
 	//	Load the images
 
@@ -356,7 +356,7 @@ bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
 		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
 		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
 			{
-			::kernelDebugLogMessage("Unable to load %s: %s", sFilespec, sError);
+			::kernelDebugLogPattern("Unable to load %s: %s", sFilespec, sError);
 			return false;
 			}
 
@@ -366,7 +366,7 @@ bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
 		EBitmapTypes iMaskType;
 		if (ResDb.LoadImage(NULL_STR, sFilespec, &hDIB, &iMaskType))
 			{
-			::kernelDebugLogMessage("Unable to load %s.", sFilespec);
+			::kernelDebugLogPattern("Unable to load %s.", sFilespec);
 			return false;
 			}
 
@@ -375,7 +375,7 @@ bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
 		CG32bitImage *pMask = new CG32bitImage;
 		if (pMask == NULL)
 			{
-			::kernelDebugLogMessage("Out of memory loading mask.");
+			::kernelDebugLogPattern("Out of memory loading mask.");
 			return false;
 			}
 
@@ -387,7 +387,7 @@ bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
 		if (!bSuccess)
 			{
 			delete pMask;
-			::kernelDebugLogMessage("Unable to create %s image.", sFilespec);
+			::kernelDebugLogPattern("Unable to create %s image.", sFilespec);
 			return false;
 			}
 
@@ -398,7 +398,7 @@ bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash loading %s.", sFilespec);
+		::kernelDebugLogPattern("Crash loading %s.", sFilespec);
 		return false;
 		}
 	}
@@ -465,12 +465,12 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	CString sTransColor;
 	if (pDesc->FindAttribute(BACK_COLOR_ATTRIB, &sTransColor))
-		::kernelDebugLogMessage("backColor not supported: %s.", m_sBitmap);
+		::kernelDebugLogPattern("backColor not supported: %s.", m_sBitmap);
 
 	//	Sprite
 
 	if (pDesc->GetAttributeBool(SPRITE_ATTRIB))
-		::kernelDebugLogMessage("Sprites not yet supported.");
+		::kernelDebugLogPattern("Sprites not yet supported.");
 
 	//	Pre-multiply transparency.
 	//

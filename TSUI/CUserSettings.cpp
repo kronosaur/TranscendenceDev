@@ -139,7 +139,7 @@ ALERROR CUserSettings::Load (CHumanInterface &HI, const CString &sFilespec, SOpt
 			SOption *pOption = m_Options.GetAt(pItem->GetAttribute(NAME_ATTRIB));
 			if (pOption == NULL)
 				{
-				::kernelDebugLogMessage("Unknown option: %s", pItem->GetAttribute(NAME_ATTRIB));
+				::kernelDebugLogPattern("Unknown option: %s", pItem->GetAttribute(NAME_ATTRIB));
 				continue;
 				}
 

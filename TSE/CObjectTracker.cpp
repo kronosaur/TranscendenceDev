@@ -486,7 +486,7 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
             sNodeID.ReadFromStream(Ctx.pStream);
             CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sNodeID);
 			if (pNode == NULL)
-				::kernelDebugLogMessage("Galactic Map: Unable to find nodeID: %s", sNodeID);
+				::kernelDebugLogPattern("Galactic Map: Unable to find nodeID: %s", sNodeID);
 
             //  Get the node data entry
 
@@ -507,7 +507,7 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                 Ctx.pStream->Read((char *)&dwUNID, sizeof(DWORD));
                 CDesignType *pType = g_pUniverse->FindDesignType(dwUNID);
 				if (pType == NULL)
-					::kernelDebugLogMessage("Galactic Map: Unable to find type: %08x", dwUNID);
+					::kernelDebugLogPattern("Galactic Map: Unable to find type: %08x", dwUNID);
 
                 //  Number of objects
 

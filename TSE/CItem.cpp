@@ -140,7 +140,7 @@ void CItem::AccumulateCustomAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	ICCItem *pResult = Ctx.Run(Event);
 	if (pResult->IsError())
-		::kernelDebugLogMessage("[%08x] <GetDisplayAttributes>: %s", GetType()->GetUNID(), pResult->GetStringValue());
+		::kernelDebugLogPattern("[%08x] <GetDisplayAttributes>: %s", GetType()->GetUNID(), pResult->GetStringValue());
 	else if (!pResult->IsNil())
 		{
 		//	We expect a list of attributes.
@@ -513,7 +513,7 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 			if (ItemCtx.GetSource())
 				ItemCtx.GetSource()->ReportEventError(strPatternSubst(CONSTLIT("Item %x %s"), GetType()->GetUNID(), sEvent), pResult);
 			else
-				::kernelDebugLogMessage("[%08x] <%s>: %s", GetType()->GetUNID(), sEvent, pResult->GetStringValue());
+				::kernelDebugLogPattern("[%08x] <%s>: %s", GetType()->GetUNID(), sEvent, pResult->GetStringValue());
 			}
 
 		//	Either return the event result or discard it

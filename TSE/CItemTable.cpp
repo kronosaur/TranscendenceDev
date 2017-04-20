@@ -1806,7 +1806,7 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 		if (pResult->IsError())
 			{
 			CString sError = strPatternSubst(CONSTLIT("Generate Enhancement: %s"), pResult->GetStringValue());
-			::kernelDebugLogMessage(sError);
+			::kernelDebugLogString(sError);
 			}
 
 		//	Otherwise, the result code is the mods
@@ -1816,7 +1816,7 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 			CString sError;
 			if (Mods.InitFromDesc(pResult, &sError) != NOERROR)
 				{
-				::kernelDebugLogMessage("Generate Enhancement: %s", sError);
+				::kernelDebugLogPattern("Generate Enhancement: %s", sError);
 				Mods = CItemEnhancement();
 				}
 			}

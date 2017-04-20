@@ -285,7 +285,7 @@ ALERROR CListSaveFilesTask::OnExecute (ITaskProcessor *pProcessor, CString *rets
 	for (i = 0; i < m_Folders.GetCount(); i++)
 		{
 		if (!fileGetFileList(m_Folders[i], NULL_STR, CONSTLIT("*.sav"), 0, &SaveFiles))
-			::kernelDebugLogMessage("Unable to read from save file folder: %s", m_Folders[i]);
+			::kernelDebugLogPattern("Unable to read from save file folder: %s", m_Folders[i]);
 		else
 			bAtLeastOneFolder = true;
 		}

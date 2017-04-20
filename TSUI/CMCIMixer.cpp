@@ -74,7 +74,7 @@ bool CMCIMixer::Boot (void)
 	if (m_hProcessingThread == INVALID_HANDLE_VALUE)
 		{
 #ifdef DEBUG_SOUNDTRACK
-		::kernelDebugLogMessage("[%x] Starting CMCIMixer.", ::GetCurrentThreadId());
+		::kernelDebugLogPattern("[%x] Starting CMCIMixer.", ::GetCurrentThreadId());
 #endif
 
 		m_hProcessingThread = ::kernelCreateThread(ProcessingThread, this);
@@ -375,7 +375,7 @@ void CMCIMixer::LogDebug (const CString &sMsg)
 	if (!m_bDebugMode)
 		return;
 
-	::kernelDebugLogMessage("[%x] MCI DEBUG: %s", GetCurrentThreadId(), sMsg);
+	::kernelDebugLogPattern("[%x] MCI DEBUG: %s", GetCurrentThreadId(), sMsg);
 	}
 
 void CMCIMixer::LogError (HWND hMCI, const CString &sState, const CString &sFilespec)
@@ -391,9 +391,9 @@ void CMCIMixer::LogError (HWND hMCI, const CString &sState, const CString &sFile
 	sError.Truncate(lstrlen(pDest));
 
 	if (!sFilespec.IsBlank())
-		::kernelDebugLogMessage("[%x] MCI ERROR %s [%s]: %s", GetCurrentThreadId(), sState, sFilespec, sError);
+		::kernelDebugLogPattern("[%x] MCI ERROR %s [%s]: %s", GetCurrentThreadId(), sState, sFilespec, sError);
 	else
-		::kernelDebugLogMessage("[%x] MCI ERROR %s: %s", GetCurrentThreadId(), sState, sError);
+		::kernelDebugLogPattern("[%x] MCI ERROR %s: %s", GetCurrentThreadId(), sState, sError);
 	}
 
 LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
@@ -406,14 +406,14 @@ LONG CMCIMixer::OnNotifyMode (HWND hWnd, int iMode)
 	CSmartLock Lock(m_cs);
 
 #ifdef DEBUG_SOUNDTRACK
-	::kernelDebugLogMessage("[%x] OnNotifyMode[%x]: notify mode = %d.", ::GetCurrentThreadId(), (DWORD)hWnd, iMode);
+	::kernelDebugLogPattern("[%x] OnNotifyMode[%x]: notify mode = %d.", ::GetCurrentThreadId(), (DWORD)hWnd, iMode);
 #endif
 
 	SChannel *pChannel;
 	if (!FindChannel(hWnd, &pChannel))
 		{
 #ifdef DEBUG_SOUNDTRACK
-		::kernelDebugLogMessage("OnNotifyMode: Unable to find channel for hWnd: %x.", (DWORD)hWnd);
+		::kernelDebugLogPattern("OnNotifyMode: Unable to find channel for hWnd: %x.", (DWORD)hWnd);
 #endif
 		return 0;
 		}
@@ -544,7 +544,7 @@ void CMCIMixer::ProcessFadeIn (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("[%x] ProcessFadeIn", GetCurrentThreadId());
+	kernelDebugLogPattern("[%x] ProcessFadeIn", GetCurrentThreadId());
 #endif
 
 	//	Stop all channels
@@ -630,7 +630,7 @@ void CMCIMixer::ProcessFadeOut (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("[%x] ProcessFadeOut", GetCurrentThreadId());
+	kernelDebugLogPattern("[%x] ProcessFadeOut", GetCurrentThreadId());
 #endif
 
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
@@ -683,7 +683,7 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("[%x] ProcessPlay: %s", GetCurrentThreadId(), Request.pTrack->GetFilespec());
+	kernelDebugLogPattern("[%x] ProcessPlay: %s", GetCurrentThreadId(), Request.pTrack->GetFilespec());
 #endif
 
 	//	Stop all channels
@@ -727,7 +727,7 @@ void CMCIMixer::ProcessPlay (const SRequest &Request)
 	LogDebug(strPatternSubst(CONSTLIT("MCIWndPlay %x."), (DWORD)hMCI));
 
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("[%x] ProcessPlay done", GetCurrentThreadId());
+	kernelDebugLogPattern("[%x] ProcessPlay done", GetCurrentThreadId());
 #endif
 	}
 
@@ -739,7 +739,7 @@ void CMCIMixer::ProcessPlayPause (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("[%x] ProcessPlayPause", GetCurrentThreadId());
+	kernelDebugLogPattern("[%x] ProcessPlayPause", GetCurrentThreadId());
 #endif
 
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;
@@ -828,7 +828,7 @@ bool CMCIMixer::ProcessRequest (void)
 
 			case typeStop:
 #ifdef DEBUG_SOUNDTRACK
-				kernelDebugLogMessage("[%x] ProcessStop requested.", GetCurrentThreadId());
+				kernelDebugLogPattern("[%x] ProcessStop requested.", GetCurrentThreadId());
 
 #endif
 				ProcessStop(Request);
@@ -846,7 +846,7 @@ bool CMCIMixer::ProcessRequest (void)
 		}
 	catch (...)
 		{
-		::kernelDebugLogMessage("Crash in CMCIMixer::ProcessRequest.");
+		::kernelDebugLogPattern("Crash in CMCIMixer::ProcessRequest.");
 		}
 
 #ifdef DEBUG_SOUNDTRACK_STATE
@@ -878,7 +878,7 @@ void CMCIMixer::ProcessSetPlayPaused (const SRequest &Request)
 		if (iMode == MCI_MODE_PLAY)
 			{
 #ifdef DEBUG_SOUNDTRACK
-			kernelDebugLogMessage("[%x] ProcessSetPlayPaused: Pause", GetCurrentThreadId());
+			kernelDebugLogPattern("[%x] ProcessSetPlayPaused: Pause", GetCurrentThreadId());
 #endif
 			MCIWndPause(hMCI);
 			}
@@ -888,7 +888,7 @@ void CMCIMixer::ProcessSetPlayPaused (const SRequest &Request)
 		if (iMode == MCI_MODE_PAUSE)
 			{
 #ifdef DEBUG_SOUNDTRACK
-			kernelDebugLogMessage("[%x] ProcessSetPlayPaused: Resume", GetCurrentThreadId());
+			kernelDebugLogPattern("[%x] ProcessSetPlayPaused: Resume", GetCurrentThreadId());
 #endif
 			MCIWndResume(hMCI);
 			}
@@ -926,7 +926,7 @@ void CMCIMixer::ProcessStop (const SRequest &Request, bool bNoNotify)
 		if (m_Channels[i].iState == statePlaying || m_Channels[i].iState == stateStopped)
 			{
 #ifdef DEBUG_SOUNDTRACK
-			kernelDebugLogMessage("[%x] ProcessStop", GetCurrentThreadId());
+			kernelDebugLogPattern("[%x] ProcessStop", GetCurrentThreadId());
 #endif
 
 			if (m_Channels[i].iState != stateStopped)
@@ -954,7 +954,7 @@ void CMCIMixer::ProcessWaitForPos (const SRequest &Request)
 
 	{
 #ifdef DEBUG_SOUNDTRACK
-	kernelDebugLogMessage("[%x] ProcessWaitForPos", GetCurrentThreadId());
+	kernelDebugLogPattern("[%x] ProcessWaitForPos", GetCurrentThreadId());
 #endif
 
 	HWND hMCI = m_Channels[m_iCurChannel].hMCI;

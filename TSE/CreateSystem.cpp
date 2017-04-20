@@ -601,7 +601,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 		if (g_pUniverse->InDebugMode())
 			{
 			PushDebugStack(pCtx, strPatternSubst(CONSTLIT("FillLocations locationCriteria=%s"), pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB)));
-			kernelDebugLogMessage("Warning: No locations found.");
+			kernelDebugLogPattern("Warning: No locations found.");
 			DumpDebugStack(pCtx);
 			PopDebugStack(pCtx);
 			}
@@ -747,7 +747,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 
 				if (--iTries == 0 && g_pUniverse->InDebugMode())
 					{
-					kernelDebugLogMessage("Warning: Ran out of tries in FillLocations");
+					kernelDebugLogPattern("Warning: Ran out of tries in FillLocations");
 					DumpDebugStack(pCtx);
 					}
 
@@ -1062,7 +1062,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 		{
 		if (g_pUniverse->InDebugMode())
 			{
-			kernelDebugLogMessage("Warning: No locations found for RandomLocation");
+			kernelDebugLogPattern("Warning: No locations found for RandomLocation");
 			DumpDebugStack(pCtx);
 			}
 
@@ -1096,7 +1096,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 			{
 			if (g_pUniverse->InDebugMode())
 				{
-				kernelDebugLogMessage("Warning: Ran out of locations in RandomLocation directive");
+				kernelDebugLogPattern("Warning: Ran out of locations in RandomLocation directive");
 				DumpDebugStack(pCtx);
 				}
 
@@ -1133,7 +1133,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 		Table.Delete(iRollPos);
 
 #ifdef DEBUG_STATION_EXCLUSION_ZONE
-		::kernelDebugLogMessage("CreateObjectAtRandomLocation: Created %s",
+		::kernelDebugLogPattern("CreateObjectAtRandomLocation: Created %s",
 				pDesc->GetContentElement(i % iChildCount)->GetTag());
 #endif
 		}
@@ -1461,11 +1461,11 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 		if (!bConfigurationOK)
 			{
 			if (iExclusionRadius != 0)
-				kernelDebugLogMessage("<Orbitals>: Unable to find clear exclusion zone: %d ls radius.", iExclusionRadius);
+				kernelDebugLogPattern("<Orbitals>: Unable to find clear exclusion zone: %d ls radius.", iExclusionRadius);
 			else if (bNoOverlap)
-				kernelDebugLogMessage("<Orbitals>: Unable to find non-overlapping configuration.");
+				kernelDebugLogPattern("<Orbitals>: Unable to find non-overlapping configuration.");
 			else
-				kernelDebugLogMessage("<Orbitals>: Unable to find valid configuration.");
+				kernelDebugLogPattern("<Orbitals>: Unable to find valid configuration.");
 			}
 #endif
 
@@ -1492,7 +1492,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 				//	Skip
 
 #ifdef DEBUG_STATION_EXCLUSION_ZONE
-				::kernelDebugLogMessage("[%s]: Skipped creating %s due to overlap.", pCtx->pSystem->GetName(), pObj->GetContentElement(iObj)->GetTag());
+				::kernelDebugLogPattern("[%s]: Skipped creating %s due to overlap.", pCtx->pSystem->GetName(), pObj->GetContentElement(iObj)->GetTag());
 #endif
 				}
 
@@ -2021,14 +2021,14 @@ ALERROR CreateShipsForStation (CSpaceObject *pStation, CXMLElement *pShips)
 	if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pShips, &pGenerator))
 		{
 		ASSERT(false);
-		kernelDebugLogMessage("Unable to load ship generator: %s", Ctx.sError);
+		kernelDebugLogPattern("Unable to load ship generator: %s", Ctx.sError);
 		return error;
 		}
 
 	if (error = pGenerator->OnDesignLoadComplete(Ctx))
 		{
 		ASSERT(false);
-		kernelDebugLogMessage("Unable to load ship generator: %s", Ctx.sError);
+		kernelDebugLogPattern("Unable to load ship generator: %s", Ctx.sError);
 		return error;
 		}
 
@@ -2856,7 +2856,7 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 
 			sOutput = strPatternSubst(CONSTLIT("%s\n\tActive variants: %s"), sOutput, sActive);
 
-			kernelDebugLogMessage((LPSTR)sOutput);
+			kernelDebugLogString(sOutput);
 			DumpDebugStack(pCtx);
 			}
 
@@ -2915,7 +2915,7 @@ void DumpDebugStack (SSystemCreateCtx *pCtx)
 				sStack = strPatternSubst(CONSTLIT("%s\n\t%2d: %s"), sStack, i+1, pCtx->DebugStack[i]);
 			}
 
-		kernelDebugLogMessage((LPSTR)sStack);
+		kernelDebugLogString(sStack);
 		}
 	}
 
@@ -3148,7 +3148,7 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPla
 		}
 
 	if (!bFound && g_pUniverse->InDebugMode())
-		::kernelDebugLogMessage("Unable to find appropriate location for %s.", (pStationToPlace ? pStationToPlace->GetNounPhrase() : CONSTLIT("object")));
+		::kernelDebugLogPattern("Unable to find appropriate location for %s.", (pStationToPlace ? pStationToPlace->GetNounPhrase() : CONSTLIT("object")));
 
 	//	Done
 
@@ -3419,7 +3419,7 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 			if (pObj->PointInHitSizeBox(vPos, rObjRadius))
 				{
 #ifdef DEBUG_STATION_EXCLUSION_ZONE
-				::kernelDebugLogMessage("[%s]: Point overlaps planet: %s.", pCtx->pSystem->GetName(), pObj->GetNounPhrase(0));
+				::kernelDebugLogPattern("[%s]: Point overlaps planet: %s.", pCtx->pSystem->GetName(), pObj->GetNounPhrase(0));
 #endif
 				return false;
 				}
@@ -3676,7 +3676,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 		{
 		if (retsError)
 			*retsError = Ctx.sError;
-		kernelDebugLogMessage("Unable to create system: %s", Ctx.sError);
+		kernelDebugLogPattern("Unable to create system: %s", Ctx.sError);
 		DumpDebugStack(&Ctx);
 		return error;
 		}
@@ -3684,7 +3684,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 	//	Invoke OnCreate event
 
 	if (error = pType->FireOnCreate(Ctx, &Ctx.sError))
-		kernelDebugLogMessage("%s", Ctx.sError);
+		kernelDebugLogPattern("%s", Ctx.sError);
 
 	//	Now invoke OnGlobalSystemCreated
 
@@ -3758,7 +3758,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 		}
 
 #ifdef DEBUG_STATION_TABLE_CACHE
-	kernelDebugLogMessage("Station table cache hit rate: %3d%%  size: %d", Ctx.StationTables.GetCacheHitRate(), Ctx.StationTables.GetCacheSize());
+	kernelDebugLogPattern("Station table cache hit rate: %3d%%  size: %d", Ctx.StationTables.GetCacheHitRate(), Ctx.StationTables.GetCacheSize());
 #endif
 
 	STOP_STRESS_TEST;
@@ -3798,7 +3798,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 	//	Fire any deferred OnCreate events
 
 	if (error = Ctx.Events.FireDeferredEvent(ON_CREATE_EVENT, &Ctx.sError))
-		kernelDebugLogMessage("Deferred OnCreate: %s", Ctx.sError);
+		kernelDebugLogPattern("Deferred OnCreate: %s", Ctx.sError);
 
 	//	Make sure this system has all the stargates that it needs
 
@@ -3806,7 +3806,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 		if (pSystem->GetNamedObject(pTopology->GetStargate(i)) == NULL)
 			{
 			//	Log, but for backwards compatibility with <1.1 extensions continue running.
-			kernelDebugLogMessage("Warning: Unable to find required stargate: %s", pTopology->GetStargate(i));
+			kernelDebugLogPattern("Warning: Unable to find required stargate: %s", pTopology->GetStargate(i));
 			DumpDebugStack(&Ctx);
 			}
 
@@ -3981,7 +3981,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		if (pShipRegistry == NULL)
 			{
 			ASSERT(false);
-			kernelDebugLogMessage("No ship for ship encounter: %s", pType->GetNounPhrase());
+			kernelDebugLogPattern("No ship for ship encounter: %s", pType->GetNounPhrase());
 			DumpDebugStack(pCtx);
 			if (retpStation)
 				*retpStation = NULL;
@@ -4097,7 +4097,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 				int iLSDist = (int)((rDist / LIGHT_SECOND) + 0.5);
 				if (iLSDist < 30)
 					{
-					::kernelDebugLogMessage("%s: %s (%x) and %s (%x) within %d ls.",
+					::kernelDebugLogPattern("%s: %s (%x) and %s (%x) within %d ls.",
 							GetName(),
 							pStation->GetName(),
 							pStation->GetID(),
@@ -4170,9 +4170,9 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 		if (!g_Collect && g_Index < 9999)
 			{
 			if (dwOldSeed != g_ValuesOld[g_Index])
-				::kernelDebugLogMessage("%s (%x): Discrepancy before create", pType->GetName(), pType->GetUNID());
+				::kernelDebugLogPattern("%s (%x): Discrepancy before create", pType->GetName(), pType->GetUNID());
 			else if (dwNewSeed != g_Values[g_Index])
-				::kernelDebugLogMessage("%s (%x): Discrepancy during create", pType->GetName(), pType->GetUNID());
+				::kernelDebugLogPattern("%s (%x): Discrepancy during create", pType->GetName(), pType->GetUNID());
 
 			g_Index++;
 			}

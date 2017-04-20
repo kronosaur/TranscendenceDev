@@ -313,7 +313,7 @@ ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWOR
 		//	Warn if older method is used
 
 		if (pDesc->AttributeExists(MIN_FUEL_TECH_ATTRIB) || pDesc->AttributeExists(MAX_FUEL_TECH_ATTRIB))
-			::kernelDebugLogMessage("Warning: minFuelTech and maxFuelTech ignored if fuelCriteria specified.");
+			::kernelDebugLogPattern("Warning: minFuelTech and maxFuelTech ignored if fuelCriteria specified.");
 		}
 
 	//	If we have no fuel criteria, then use the older method

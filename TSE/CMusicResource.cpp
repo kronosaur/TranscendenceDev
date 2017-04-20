@@ -131,7 +131,7 @@ ALERROR CMusicResource::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		if (g_pUniverse->InDebugMode())
 			{
 			if (!pathExists(m_sFilespec))
-				::kernelDebugLogMessage("Cannot find soundtrack file: %s.", m_sFilename);
+				::kernelDebugLogPattern("Cannot find soundtrack file: %s.", m_sFilename);
 			}
 		}
 

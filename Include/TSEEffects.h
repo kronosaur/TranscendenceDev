@@ -277,7 +277,7 @@ class IEffectPainter
 			{
 			if (m_bSingleton)
 				{
-				::kernelDebugLogMessage("Delete singleton painter: %08x", (DWORD)this);
+				::kernelDebugLogPattern("Delete singleton painter: %08x", (DWORD)this);
 				}
 			}
 #else

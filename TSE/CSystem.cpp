@@ -2051,7 +2051,7 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 	//	Fire deferred OnCreate
 
 	if (error = Ctx.Events.FireDeferredEvent(ON_CREATE_EVENT, &Ctx.sError))
-		kernelDebugLogMessage("Deferred OnCreate: %s", Ctx.sError);
+		kernelDebugLogPattern("Deferred OnCreate: %s", Ctx.sError);
 
 	//	Recompute encounter table
 
@@ -4454,7 +4454,7 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 			CString sObj = CONSTLIT("ERROR: Destroying barrier during move.\r\n");
 
 			ReportCrashObj(&sObj, Ctx.pObj);
-			kernelDebugLogMessage(sObj);
+			kernelDebugLogString(sObj);
 
 #ifdef DEBUG
 			DebugBreak();
@@ -4708,7 +4708,7 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 				{
 				CString sError = CONSTLIT("Unable to save object:\r\n");
 				ReportCrashObj(&sError, pObj);
-				kernelDebugLogMessage(sError);
+				kernelDebugLogString(sError);
 				return ERR_FAIL;
 				}
 			}
@@ -5537,18 +5537,18 @@ void CSystem::WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CS
 		CSystem *pObjSystem = pObj->GetSystem();
 		if (pObjSystem && pObjSystem != this)
 			{
-			kernelDebugLogMessage("Save file error: Saving reference to object in another system");
+			kernelDebugLogPattern("Save file error: Saving reference to object in another system");
 
 			CString sError;
 			ReportCrashObj(&sError, pObj);
-			kernelDebugLogMessage("Object being referenced:");
-			kernelDebugLogMessage(sError);
+			kernelDebugLogPattern("Object being referenced:");
+			kernelDebugLogString(sError);
 
 			if (pReferrer)
 				{
 				ReportCrashObj(&sError, pReferrer);
-				kernelDebugLogMessage("Referring object:");
-				kernelDebugLogMessage(sError);
+				kernelDebugLogPattern("Referring object:");
+				kernelDebugLogString(sError);
 				}
 
 			dwSave = OBJID_NULL;

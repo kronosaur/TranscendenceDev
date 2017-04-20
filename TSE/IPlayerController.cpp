@@ -24,7 +24,7 @@ CSovereign *IPlayerController::GetSovereign (void) const
 		{
 		m_pSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
 		if (m_pSovereign == NULL)
-			kernelDebugLogMessage("ERROR: Unable to find player sovereign");
+			kernelDebugLogPattern("ERROR: Unable to find player sovereign");
 		}
 
 	return m_pSovereign;

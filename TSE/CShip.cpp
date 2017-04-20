@@ -5468,7 +5468,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 				break;
 
 			default:
-				::kernelDebugLogMessage("Unable to find AI controller: %x.", dwLoad);
+				::kernelDebugLogPattern("Unable to find AI controller: %x.", dwLoad);
 				m_pController = NULL;
 				ASSERT(false);
 			}
@@ -6732,7 +6732,7 @@ ALERROR CShip::ReportCreateError (const CString &sError) const
 //  Reports an error while creating a ship.
 
     {
-    ::kernelDebugLogMessage("Error creating ship %08x: %s", (m_pClass ? m_pClass->GetUNID() : 0), sError);
+    ::kernelDebugLogPattern("Error creating ship %08x: %s", (m_pClass ? m_pClass->GetUNID() : 0), sError);
     return ERR_FAIL;
     }
 
@@ -7193,7 +7193,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			if (Ctx.pBase)
 				Ctx.pBase->PlaceAtRandomDockPort(this);
 			else
-				kernelDebugLogMessage("Base expected for ship class %x", GetType()->GetUNID());
+				kernelDebugLogPattern("Base expected for ship class %x", GetType()->GetUNID());
 			}
 
 		//	Otherwise, if we need a dock order to get to our base, add that now
@@ -7204,7 +7204,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			if (Ctx.pBase)
 				GetController()->AddOrder(IShipController::orderDock, Ctx.pBase, IShipController::SData());
 			else
-				kernelDebugLogMessage("Unable to add ship order %d to ship class %x; no target specified", IShipController::orderDock, GetType()->GetUNID());
+				kernelDebugLogPattern("Unable to add ship order %d to ship class %x; no target specified", IShipController::orderDock, GetType()->GetUNID());
 			}
 
 		//	Add main order
@@ -7216,7 +7216,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			bool bTargetRequired;
 			OrderHasTarget(Ctx.iOrder, &bTargetRequired);
 			if (bTargetRequired && pOrderTarget == NULL)
-				kernelDebugLogMessage("Unable to add ship order %d to ship class %x; no target specified", Ctx.iOrder, GetType()->GetUNID());
+				kernelDebugLogPattern("Unable to add ship order %d to ship class %x; no target specified", Ctx.iOrder, GetType()->GetUNID());
 
 			//	Add the order
 

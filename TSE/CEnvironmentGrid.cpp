@@ -623,7 +623,7 @@ void CEnvironmentGrid::Paint (SViewportPaintCtx &Ctx, CG32bitImage &Dest)
 	g_iTimingCount++;
 
 	if ((g_iTimingCount % 100) == 0)
-		::kernelDebugLogMessage("Nebula paint time: %d.%02d", g_dwTotalTime / g_iTimingCount, (100 * g_dwTotalTime / g_iTimingCount) % 100);
+		::kernelDebugLogPattern("Nebula paint time: %d.%02d", g_dwTotalTime / g_iTimingCount, (100 * g_dwTotalTime / g_iTimingCount) % 100);
 #endif
 
 	DEBUG_CATCH

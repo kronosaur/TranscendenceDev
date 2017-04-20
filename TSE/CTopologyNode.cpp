@@ -142,7 +142,7 @@ ALERROR CTopologyNode::AddStargateAndReturn (const CString &sGateID, const CStri
 	CTopologyNode *pDestNode = g_pUniverse->FindTopologyNode(sDestNodeID);
 	if (pDestNode == NULL)
 		{
-		kernelDebugLogMessage("Unable to find destination node: %s", sDestNodeID);
+		kernelDebugLogPattern("Unable to find destination node: %s", sDestNodeID);
 		return ERR_FAIL;
 		}
 
@@ -152,7 +152,7 @@ ALERROR CTopologyNode::AddStargateAndReturn (const CString &sGateID, const CStri
 	CString sReturnEntryPoint;
 	if (!pDestNode->FindStargate(sDestGateID, &sReturnNodeID, &sReturnEntryPoint))
 		{
-		kernelDebugLogMessage("Unable to find destination stargate: %s", sDestGateID);
+		kernelDebugLogPattern("Unable to find destination stargate: %s", sDestGateID);
 		return ERR_FAIL;
 		}
 

@@ -66,22 +66,22 @@
 //	Debugging help
 
 #define DEBUG_TRY					try {
-#define DEBUG_CATCH					} catch (...) { kernelDebugLogMessage("Crash in %s", CString(__FUNCTION__)); throw; }
-#define DEBUG_CATCH_CONTINUE		} catch (...) { kernelDebugLogMessage("Crash in %s", CString(__FUNCTION__)); }
-#define DEBUG_CATCH_MSG(msg)		} catch (...) { kernelDebugLogMessage((msg)); throw; }
-#define DEBUG_CATCH_MSG1(msg,p1)	} catch (...) { kernelDebugLogMessage((msg),(p1)); throw; }
+#define DEBUG_CATCH					} catch (...) { kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); throw; }
+#define DEBUG_CATCH_CONTINUE		} catch (...) { kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); }
+#define DEBUG_CATCH_MSG(msg)		} catch (...) { kernelDebugLogPattern((msg)); throw; }
+#define DEBUG_CATCH_MSG1(msg,p1)	} catch (...) { kernelDebugLogPattern((msg),(p1)); throw; }
 #define DEBUG_CATCH_OBJ(pObj)		} catch (...) \
 		{ \
-		kernelDebugLogMessage("Crash in %s", CString(__FUNCTION__)); \
+		kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); \
 		\
 		if ((pObj) == NULL) \
-			kernelDebugLogMessage("pObj = NULL"); \
+			kernelDebugLogPattern("pObj = NULL"); \
 		else \
 			{ \
 			CString sError; \
 			ReportCrashObj(&sError, (pObj)); \
-			kernelDebugLogMessage("pObj = "); \
-			kernelDebugLogMessage(sError); \
+			kernelDebugLogPattern("pObj = "); \
+			kernelDebugLogString(sError); \
 			} \
 		\
 		throw; \
@@ -90,16 +90,16 @@
 #define DEBUG_TRY_OBJ_LOOP		CSpaceObject *pObj = NULL; try {
 #define DEBUG_CATCH_OBJ_LOOP	} catch (...) \
 		{ \
-		kernelDebugLogMessage("Crash in %s", CString(__FUNCTION__)); \
+		kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); \
 		\
 		if (pObj == NULL) \
-			kernelDebugLogMessage("pObj = NULL"); \
+			kernelDebugLogPattern("pObj = NULL"); \
 		else \
 			{ \
 			CString sError; \
 			ReportCrashObj(&sError, pObj); \
-			kernelDebugLogMessage("pObj = "); \
-			kernelDebugLogMessage(sError); \
+			kernelDebugLogPattern("pObj = "); \
+			kernelDebugLogString(sError); \
 			} \
 		\
 		throw; \

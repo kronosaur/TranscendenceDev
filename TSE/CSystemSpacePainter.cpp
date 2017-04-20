@@ -316,7 +316,7 @@ void CSystemSpacePainter::PaintSpaceBackground (CG32bitImage &Dest, int xCenter,
 	g_iTimingCount++;
 
 	if ((g_iTimingCount % 100) == 0)
-		::kernelDebugLogMessage("Space background time: %d.%02d", g_dwTotalTime / g_iTimingCount, (100 * g_dwTotalTime / g_iTimingCount) % 100);
+		::kernelDebugLogPattern("Space background time: %d.%02d", g_dwTotalTime / g_iTimingCount, (100 * g_dwTotalTime / g_iTimingCount) % 100);
 #endif
 	}
 

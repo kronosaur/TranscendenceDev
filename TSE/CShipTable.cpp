@@ -687,7 +687,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 	IShipController *pController = g_pUniverse->CreateShipController(m_sController);
 	if (pController == NULL)
 		{
-		kernelDebugLogMessage("Cannot create ship %x; invalid controller: %s", dwClass, m_sController);
+		kernelDebugLogPattern("Cannot create ship %x; invalid controller: %s", dwClass, m_sController);
 		if (retpShip)
 			*retpShip = NULL;
 		return;
@@ -707,7 +707,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 			&GeneratorCtx,
 			&pShip) != NOERROR)
 		{
-		kernelDebugLogMessage("Error creating ship: %x", dwClass);
+		kernelDebugLogPattern("Error creating ship: %x", dwClass);
 		if (retpShip)
 			*retpShip = NULL;
 		return;
@@ -772,7 +772,7 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx)
 	else
 		{
 		ASSERT(false);
-		kernelDebugLogMessage("Unable to create ships: no sovereign specified");
+		kernelDebugLogPattern("Unable to create ships: no sovereign specified");
 		return;
 		}
 
@@ -928,7 +928,7 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			&& m_pOnCreate == NULL
 			&& m_sController.IsBlank())
 		{
-		::kernelDebugLogMessage("%s (%08x): Warning: Ship in table has no orders.", Ctx.pType->GetTypeNounPhrase(), Ctx.pType->GetUNID());
+		::kernelDebugLogPattern("%s (%08x): Warning: Ship in table has no orders.", Ctx.pType->GetTypeNounPhrase(), Ctx.pType->GetUNID());
 		}
 #endif
 

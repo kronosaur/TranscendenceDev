@@ -55,7 +55,7 @@ void CSoundResource::LoadResource (void) const
 	CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
 	if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
 		{
-		::kernelDebugLogMessage("Unable to open resource db: %s", m_sResourceDb);
+		::kernelDebugLogPattern("Unable to open resource db: %s", m_sResourceDb);
 		return;
 		}
 
@@ -63,7 +63,7 @@ void CSoundResource::LoadResource (void) const
 
 	if (ResDb.LoadSound(*pSoundMgr, NULL_STR, m_sFilename, &m_iChannel) != NOERROR)
 		{
-		::kernelDebugLogMessage(strPatternSubst(CONSTLIT("Unable to load sound: %s"), m_sFilename));
+		::kernelDebugLogPattern("Unable to load sound: %s", m_sFilename);
 		m_iChannel = -1;
 		return;
 		}

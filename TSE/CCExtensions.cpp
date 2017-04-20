@@ -3592,7 +3592,7 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				g_pUniverse->GetHost()->ConsoleOutput(sResult);
 
 			if (dwOutput & OUTPUT_LOG)
-				kernelDebugLogMessage(sResult);
+				kernelDebugLogString(sResult);
 
 			//	Result
 
@@ -7017,7 +7017,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pData = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
 			pObj->FireCustomEvent(pArgs->GetElement(1)->GetStringValue(), eventObjFireEvent, pData, &pResult);
             if (pResult->IsError() && g_pUniverse->InDebugMode())
-                ::kernelDebugLogMessage("[%s %s]: %s", pObj->GetName(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
+                ::kernelDebugLogPattern("[%s %s]: %s", pObj->GetName(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
 			return pResult;
 			}
 
@@ -7047,7 +7047,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pObj->UseItem(Item, &sError);
 			if (sError.IsBlank())
 				{
-				::kernelDebugLogMessage("[%s %s Invoke]: %s", pObj->GetName(), pType->GetName(NULL), sError);
+				::kernelDebugLogPattern("[%s %s Invoke]: %s", pObj->GetName(), pType->GetName(NULL), sError);
 				return pCC->CreateNil();
 				}
 
@@ -8924,7 +8924,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (g_pUniverse->InDebugMode())
 					return pCC->CreateError(CONSTLIT("shpOrder requires target"), pArgs->GetElement(1));
 
-				::kernelDebugLogMessage("ERROR: shpOrder %s requires target.", pArgs->GetElement(1)->GetStringValue());
+				::kernelDebugLogPattern("ERROR: shpOrder %s requires target.", pArgs->GetElement(1)->GetStringValue());
 				return pCC->CreateNil();
 				}
 
@@ -8933,7 +8933,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (g_pUniverse->InDebugMode())
 					return pCC->CreateError(CONSTLIT("shpOrder target already destroyed"), pArgs->GetElement(1));
 
-				::kernelDebugLogMessage("ERROR: shpOrder %s target already destroyed.", pArgs->GetElement(1)->GetStringValue());
+				::kernelDebugLogPattern("ERROR: shpOrder %s target already destroyed.", pArgs->GetElement(1)->GetStringValue());
 				return pCC->CreateNil();
 				}
 
@@ -11024,7 +11024,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 		if (error == ERR_NOTFOUND)
 			{
 			if (g_pUniverse->InDebugMode())
-				::kernelDebugLogMessage("WARNING: Unable to create station at %s (in %s)", pArgs->GetElement(1)->Print(pCC), pSystem->GetName());
+				::kernelDebugLogPattern("WARNING: Unable to create station at %s (in %s)", pArgs->GetElement(1)->Print(pCC), pSystem->GetName());
 			return pCC->CreateNil();
 			}
 

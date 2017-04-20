@@ -536,7 +536,7 @@ ALERROR CResourceDb::LoadImage (const CString &sFolder, const CString &sFilename
 						NULL,
 						rethImage))
 					{
-					kernelDebugLogMessage("Unable to load JPEG resource '%s'", sFilename);
+					kernelDebugLogPattern("Unable to load JPEG resource '%s'", sFilename);
 					return error;
 					}
 
@@ -549,7 +549,7 @@ ALERROR CResourceDb::LoadImage (const CString &sFolder, const CString &sFilename
 
 				if (error = dibLoadFromBlock(Data, rethImage, retiImageType))
 					{
-					kernelDebugLogMessage("Unable to load DIB resource '%s'", sFilename);
+					kernelDebugLogPattern("Unable to load DIB resource '%s'", sFilename);
 					return error;
 					}
 				}
@@ -566,7 +566,7 @@ ALERROR CResourceDb::LoadImage (const CString &sFolder, const CString &sFilename
 
 				if (error = JPEGLoadFromFile(sFilespec, JPEG_LFR_DIB, NULL, rethImage))
 					{
-					kernelDebugLogMessage("Unable to load JPEG file '%s'", sFilename);
+					kernelDebugLogPattern("Unable to load JPEG file '%s'", sFilename);
 					return error;
 					}
 
@@ -579,7 +579,7 @@ ALERROR CResourceDb::LoadImage (const CString &sFolder, const CString &sFilename
 
 				if (error = dibLoadFromFile(sFilespec, rethImage, retiImageType))
 					{
-					kernelDebugLogMessage("Unable to load DIB file '%s'", sFilename);
+					kernelDebugLogPattern("Unable to load DIB file '%s'", sFilename);
 					return error;
 					}
 				}
@@ -587,7 +587,7 @@ ALERROR CResourceDb::LoadImage (const CString &sFolder, const CString &sFilename
 		}
 	catch (...)
 		{
-		kernelDebugLogMessage("Crash loading image from resource db: %s.", sFilename);
+		kernelDebugLogPattern("Crash loading image from resource db: %s.", sFilename);
 		return ERR_FAIL;
 		}
 

@@ -197,7 +197,7 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 		else
 			{
 			if (m_bDebugMode)
-				::kernelDebugLogMessage("Unable to find soundtrack for state %d.", m_iGameState);
+				::kernelDebugLogPattern("Unable to find soundtrack for state %d.", m_iGameState);
 
 			m_NotFoundCache.pNode = pNode;
 			m_NotFoundCache.sRequiredAttrib = sRequiredAttrib;
@@ -217,8 +217,8 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 
 	if (m_bDebugMode)
 		{
-		::kernelDebugLogMessage("State: %d: Found %d tracks in priority %d table.", m_iGameState, Table[0].GetCount(), Table.GetKey(0));
-		::kernelDebugLogMessage("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
+		::kernelDebugLogPattern("State: %d: Found %d tracks in priority %d table.", m_iGameState, Table[0].GetCount(), Table.GetKey(0));
+		::kernelDebugLogPattern("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
 		}
 
 	return pResult;
@@ -294,7 +294,7 @@ CMusicResource *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 	if (Table.GetCount() == 0)
 		{
 		if (m_bDebugMode)
-			::kernelDebugLogMessage("Unable to find soundtrack for state %d.", m_iGameState);
+			::kernelDebugLogPattern("Unable to find soundtrack for state %d.", m_iGameState);
 
 		return NULL;
 		}
@@ -305,8 +305,8 @@ CMusicResource *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 
 	if (m_bDebugMode)
 		{
-		::kernelDebugLogMessage("State: %d: Found %d tracks in priority table.", m_iGameState, Table.GetCount());
-		::kernelDebugLogMessage("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
+		::kernelDebugLogPattern("State: %d: Found %d tracks in priority table.", m_iGameState, Table.GetCount());
+		::kernelDebugLogPattern("Chose: %s", (pResult ? pResult->GetFilespec() : CONSTLIT("(none)")));
 		}
 
 	return pResult;
@@ -517,7 +517,7 @@ void CSoundtrackManager::NotifyEndCombat (void)
 
 	{
 	if (m_bDebugMode)
-		::kernelDebugLogMessage("Combat done.");
+		::kernelDebugLogPattern("Combat done.");
 
 	//	If we're not in combat, then nothing to do
 
@@ -547,7 +547,7 @@ void CSoundtrackManager::NotifyEndMissionTrack (bool bForceTravel)
 
 	{
 	if (m_bDebugMode)
-		::kernelDebugLogMessage("Mission ended.");
+		::kernelDebugLogPattern("Mission ended.");
 
 	bool bPlay = (m_pMissionTrack && m_pNowPlaying == m_pMissionTrack);
 	m_pMissionTrack = NULL;
@@ -581,7 +581,7 @@ void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTim
 
 	{
 	if (m_bDebugMode)
-		::kernelDebugLogMessage("Entered system.");
+		::kernelDebugLogPattern("Entered system.");
 
 	//	Clear the music queue, because they generally apply to the previous
 	//	star system.
@@ -640,7 +640,7 @@ void CSoundtrackManager::NotifyStartCombat (CMusicResource *pTrack)
 
 	{
 	if (m_bDebugMode)
-		::kernelDebugLogMessage("Combat started.");
+		::kernelDebugLogPattern("Combat started.");
 
 	//	If we're already in combat, then nothing to do
 
@@ -673,7 +673,7 @@ void CSoundtrackManager::NotifyStartMissionTrack (CMusicResource *pTrack)
 		return;
 
 	if (m_bDebugMode)
-		::kernelDebugLogMessage("Mission started.");
+		::kernelDebugLogPattern("Mission started.");
 
 	RememberTravelTrack();
 
@@ -694,7 +694,7 @@ void CSoundtrackManager::NotifyTrackDone (void)
 
 	{
 	if (m_bDebugMode)
-		::kernelDebugLogMessage("Track done: %s", (m_pNowPlaying ? m_pNowPlaying->GetFilespec() : CONSTLIT("(none)")));
+		::kernelDebugLogPattern("Track done: %s", (m_pNowPlaying ? m_pNowPlaying->GetFilespec() : CONSTLIT("(none)")));
 
 	//	If we were playing the mission track, then we're done with it.
 
@@ -742,7 +742,7 @@ void CSoundtrackManager::NotifyTrackPlaying (CMusicResource *pTrack)
 
 	{
 	if (m_bDebugMode)
-		::kernelDebugLogMessage("Track playing: %s", (pTrack ? pTrack->GetFilespec() : CONSTLIT("(none)")));
+		::kernelDebugLogPattern("Track playing: %s", (pTrack ? pTrack->GetFilespec() : CONSTLIT("(none)")));
 
 	if (pTrack)
 		{
@@ -953,7 +953,7 @@ void CSoundtrackManager::Play (CMusicResource *pTrack)
 		CString sFilespec = pTrack->GetFilespec();
 		if (sFilespec.IsBlank())
 			{
-			::kernelDebugLogMessage("Unable to find soundtrack: %x", pTrack->GetUNID());
+			::kernelDebugLogPattern("Unable to find soundtrack: %x", pTrack->GetUNID());
 			return;
 			}
 

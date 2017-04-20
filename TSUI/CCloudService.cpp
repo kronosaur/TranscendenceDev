@@ -215,7 +215,7 @@ ALERROR CCloudService::InitFromXML (CHumanInterface &HI, CXMLElement *pDesc, boo
 		{
 		if (error = m_Boot[i]->InitFromXML((pDesc ? pDesc->GetContentElementByTag(m_Boot[i]->GetTag()) : NULL), &bModified))
 			{
-			::kernelDebugLogMessage("Error initializing service: %s", m_Boot[i]->GetTag());
+			::kernelDebugLogPattern("Error initializing service: %s", m_Boot[i]->GetTag());
 			continue;
 			}
 

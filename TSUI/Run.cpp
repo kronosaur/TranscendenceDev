@@ -415,7 +415,7 @@ bool CHumanInterface::WMCreate (HWND hWnd, CString *retsError)
 		{
 		//	Report error, but don't abort
 
-		kernelDebugLogMessage("Unable to initialize sound manager.");
+		kernelDebugLogPattern("Unable to initialize sound manager.");
 		}
 
 	m_SoundMgr.SetWaveVolume(m_Options.m_iSoundVolume);

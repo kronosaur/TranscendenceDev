@@ -1164,7 +1164,7 @@ void CObjectImageArray::MarkImage (void) const
         if (m_rcImage.right > m_pImage->GetWidth() || m_rcImage.bottom > m_pImage->GetHeight())
             {
             ASSERT(false);
-            ::kernelDebugLogMessage("[0x%08x %s]: Image rect too big for bitmap.", m_pImage->GetUNID(), m_pImage->GetImageFilename());
+            ::kernelDebugLogPattern("[0x%08x %s]: Image rect too big for bitmap.", m_pImage->GetUNID(), m_pImage->GetImageFilename());
             }
         }
 	}

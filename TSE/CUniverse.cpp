@@ -1369,7 +1369,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		} 
 	catch (...)
 		{
-		kernelDebugLogMessage("Crash in CUniverse::Init");
+		kernelDebugLogPattern("Crash in CUniverse::Init");
 		m_Extensions.DebugDump();
 		*retsError = CONSTLIT("Unable to initialize universe.");
 		return ERR_FAIL;
@@ -1569,7 +1569,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 
 		if (Table.GetCount() == 0)
 			{
-			kernelDebugLogMessage("Warning: Not enough appropriate systems to create %d %s [%08x].", iCount, pType->GetNounPhrase(iCount > 1 ? nounPlural : 0), pType->GetUNID());
+			kernelDebugLogPattern("Warning: Not enough appropriate systems to create %d %s [%08x].", iCount, pType->GetNounPhrase(iCount > 1 ? nounPlural : 0), pType->GetUNID());
 			continue;
 			}
 
@@ -1579,7 +1579,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 		if (pType->IsUniqueInSystem() && iCount > Table.GetCount())
 			{
 			iCount = Table.GetCount();
-			kernelDebugLogMessage("Warning: Decreasing number appearing of %s [%08x] to %d due to lack of appropriate systems.", pType->GetNounPhrase(nounPlural), pType->GetUNID(), iCount);
+			kernelDebugLogPattern("Warning: Decreasing number appearing of %s [%08x] to %d due to lack of appropriate systems.", pType->GetNounPhrase(nounPlural), pType->GetUNID(), iCount);
 			}
 
 		//	Loop over the required number and place them in appropriate nodes.
@@ -2488,7 +2488,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 		m_pPOV->GetSystem()->WriteObjRefToStream(m_pPOV, pStream);
 
 		if (!m_pPOV->IsPlayer())
-			kernelDebugLogMessage("ERROR: Saving without player ship.");
+			kernelDebugLogPattern("ERROR: Saving without player ship.");
 		}
 
 	//	Calculate the amount of time that we've been playing the game

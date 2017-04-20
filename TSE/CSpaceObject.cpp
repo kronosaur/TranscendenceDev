@@ -955,7 +955,7 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
                 else if (strEquals(sOption, CONSTLIT("copy")))
                     pDesc->iOption = CAttributeDataBlock::transCopy;
                 else
-                	kernelDebugLogMessage(strPatternSubst(CONSTLIT("Unknown transfer option: %s"), sOption));
+                	kernelDebugLogPattern("Unknown transfer option: %s", sOption);
                 }
             }
 
@@ -1230,7 +1230,7 @@ ALERROR CSpaceObject::CreateRandomItems (CXMLElement *pItems, CSystem *pSystem)
 		{
 		CString sError = strPatternSubst(CONSTLIT("ERROR: Unable to create random items: %s\r\n"), Ctx.sError);
 		ReportCrashObj(&sError, this);
-		kernelDebugLogMessage(sError);
+		kernelDebugLogString(sError);
 		ASSERT(false);
 		return error;
 		}
@@ -3462,7 +3462,7 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **re
 			}
 		else
 			{
-			::kernelDebugLogMessage("Unable to resolve screen: %s", sScreen);
+			::kernelDebugLogPattern("Unable to resolve screen: %s", sScreen);
 
 			if (pData)
 				{
@@ -6455,7 +6455,7 @@ void CSpaceObject::ParseCriteria (CSpaceObject *pSource, const CString &sCriteri
 					{
 					retCriteria->iOrder = ::GetOrderType(sAttrib);
 					if (retCriteria->iOrder == IShipController::orderNone)
-						::kernelDebugLogMessage("Invalid sysFindObject order: %s", sAttrib);
+						::kernelDebugLogPattern("Invalid sysFindObject order: %s", sAttrib);
 					}
 				break;
 				}
@@ -6838,7 +6838,7 @@ void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError)
 	if (pPlayer)
 		pPlayer->SendMessage(this, sError);
 
-	kernelDebugLogMessage(sError);
+	kernelDebugLogString(sError);
 	}
 
 bool CSpaceObject::RequestGate (CSpaceObject *pObj)

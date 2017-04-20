@@ -130,7 +130,7 @@ ALERROR CExtensionCollection::AddCompatibilityLibrary (CExtension *pAdventure, c
 		return NOERROR;
 
 	if (bDebugMode)
-		::kernelDebugLogMessage("Adding compatibility library because of %s.", sExtensionName);
+		::kernelDebugLogPattern("Adding compatibility library because of %s.", sExtensionName);
 
 	//	Add the library
 
@@ -187,7 +187,7 @@ void CExtensionCollection::AddOrReplace (CExtension *pExtension)
 
 		pPreviousExtension->SetDeleted();
 		m_Deleted.Insert(pPreviousExtension);
-		::kernelDebugLogMessage("Replaced extension: %s", pPreviousExtension->GetFilespec());
+		::kernelDebugLogPattern("Replaced extension: %s", pPreviousExtension->GetFilespec());
 		}
 
 	//	Insert
@@ -318,7 +318,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 		retList->Insert(pExtension);
 
 		if (bDebugMode)
-			::kernelDebugLogMessage("Adding: %s.", pExtension->GetName());
+			::kernelDebugLogPattern("Adding: %s.", pExtension->GetName());
 		}
 
 	//	Success.
@@ -654,7 +654,7 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 		retList->Insert(CoreLibraries[i]);
 
 		if (bDebugMode)
-			::kernelDebugLogMessage("Adding core library: %s", CoreLibraries[i]->GetName());
+			::kernelDebugLogPattern("Adding core library: %s", CoreLibraries[i]->GetName());
 		}
 
 	//	Make a list of all compatibility libraries
@@ -891,7 +891,7 @@ ALERROR CExtensionCollection::ComputeFilesToLoad (const CString &sFilespec, CExt
 
 			if (ExtDb.IsTDB())
 				{
-				::kernelDebugLogMessage("Unable to load extension: %s", sFilepath);
+				::kernelDebugLogPattern("Unable to load extension: %s", sFilepath);
 				continue;
 				}
 
@@ -931,14 +931,14 @@ void CExtensionCollection::DebugDump (void)
 	CSmartLock Lock(m_cs);
 	int i, j;
 
-	::kernelDebugLogMessage("m_pBase:");
+	::kernelDebugLogPattern("m_pBase:");
 	CExtension::DebugDump(m_pBase);
 
-	::kernelDebugLogMessage("m_Extensions:");
+	::kernelDebugLogPattern("m_Extensions:");
 	for (i = 0; i < m_Extensions.GetCount(); i++)
 		CExtension::DebugDump(m_Extensions[i], true);
 
-	::kernelDebugLogMessage("m_ByUNID:");
+	::kernelDebugLogPattern("m_ByUNID:");
 	for (i = 0; i < m_ByUNID.GetCount(); i++)
 		{
 		const TArray<CExtension *> &List = m_ByUNID[i];
@@ -946,7 +946,7 @@ void CExtensionCollection::DebugDump (void)
 			CExtension::DebugDump(List[j]);
 		}
 
-	::kernelDebugLogMessage("m_ByFilespec:");
+	::kernelDebugLogPattern("m_ByFilespec:");
 	for (i = 0; i < m_ByFilespec.GetCount(); i++)
 		CExtension::DebugDump(m_ByFilespec[i]);
 	}
@@ -1185,7 +1185,7 @@ bool CExtensionCollection::GetRequiredResources (TArray<CString> *retFilespecs)
 			if (!::pathExists(Resources[j]))
 				{
 				retFilespecs->Insert(Resources[j]);
-				::kernelDebugLogMessage("Request download: %s", Resources[j]);
+				::kernelDebugLogPattern("Request download: %s", Resources[j]);
 				}
 			}
 		}
@@ -1357,10 +1357,10 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	//	Log whether or not we're using the XML or TDB files.
 
 	if (Resources.IsUsingExternalGameFile())
-		kernelDebugLogMessage("Using external %s", sFilespec);
+		kernelDebugLogPattern("Using external %s", sFilespec);
 
 	if (Resources.IsUsingExternalResources())
-		kernelDebugLogMessage("Using external resource files");
+		kernelDebugLogPattern("Using external resource files");
 
 	//	Figure out what game we're running.
 

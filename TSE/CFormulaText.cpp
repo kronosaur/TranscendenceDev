@@ -53,7 +53,7 @@ int CFormulaText::EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix, CSt
 			if (retsError)
 				*retsError = sError;
 
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 			Ctx.Discard(pResult);
 			return 0;
 			}

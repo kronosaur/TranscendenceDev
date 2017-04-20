@@ -301,7 +301,7 @@ bool CMultiverseModel::GetResourceFileRefs (const TArray<CString> &Filespecs, TA
 		SResourceDesc *pDesc = m_Resources.GetAt(sFilename);
 		if (pDesc == NULL)
 			{
-			::kernelDebugLogMessage("Unable to find TDB resource file: %s.", sFilename);
+			::kernelDebugLogPattern("Unable to find TDB resource file: %s.", sFilename);
 			continue;
 			}
 
@@ -568,7 +568,7 @@ void CMultiverseModel::SetUpgradeVersion (const CJSONValue &Entry)
 	m_sUpgradeURL = Entry.GetElement(FIELD_DOWNLOAD_URL).AsString();
 	if (m_sUpgradeURL.IsBlank())
 		{
-		::kernelDebugLogMessage("Missing download URL in upgrade entry.");
+		::kernelDebugLogPattern("Missing download URL in upgrade entry.");
 		return;
 		}
 
@@ -580,7 +580,7 @@ void CMultiverseModel::SetUpgradeVersion (const CJSONValue &Entry)
 	if (::strDelimit(m_UpgradeVersion.sProductVersion, '.', 0, &Parts) != NOERROR
 			|| Parts.GetCount() != 4)
 		{
-		::kernelDebugLogMessage("Invalid upgrade entry fileVersion: %s", m_UpgradeVersion.sProductVersion);
+		::kernelDebugLogPattern("Invalid upgrade entry fileVersion: %s", m_UpgradeVersion.sProductVersion);
 		return;
 		}
 

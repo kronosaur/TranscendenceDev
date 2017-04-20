@@ -794,7 +794,7 @@ ALERROR CCompositeEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CX
 	int iCount = pDesc->GetContentElementCount();
 	if (iCount == 0)
 		{
-		::kernelDebugLogMessage("Warning: No entries in composite image for %08x.", (Ctx.pType ? Ctx.pType->GetUNID() : 0));
+		::kernelDebugLogPattern("Warning: No entries in composite image for %08x.", (Ctx.pType ? Ctx.pType->GetUNID() : 0));
 		return NOERROR;
 		}
 

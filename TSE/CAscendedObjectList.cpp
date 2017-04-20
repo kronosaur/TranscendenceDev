@@ -64,7 +64,7 @@ void CAscendedObjectList::ReadFromStream (SLoadCtx &Ctx)
 		catch (...)
 			{
 			CString sError = CSpaceObject::DebugLoadError(Ctx);
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 			return;
 			}
 
@@ -116,7 +116,7 @@ void CAscendedObjectList::WriteToStream (IWriteStream *pStream)
 			{
 			CString sError = CONSTLIT("Unable to save ascended object:\r\n");
 			ReportCrashObj(&sError, m_List[i]);
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 			return;
 			}
 		}

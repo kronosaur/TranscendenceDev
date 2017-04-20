@@ -275,7 +275,7 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
             if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
                 {
                 if (g_pUniverse->InDebugMode())
-                    ::kernelDebugLogMessage(sError);
+                    ::kernelDebugLogString(sError);
                 }
             }
 

@@ -137,7 +137,7 @@ ALERROR CMissionList::WriteToStream (IWriteStream *pStream, CString *retsError)
 			{
 			CString sError = CONSTLIT("Unable to save mission:\r\n");
 			ReportCrashObj(&sError, m_List[i]);
-			kernelDebugLogMessage(sError);
+			kernelDebugLogString(sError);
 			return ERR_FAIL;
 			}
 		}
