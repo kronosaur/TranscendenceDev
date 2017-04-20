@@ -18,9 +18,7 @@
 
 #define POOL_COUNT									9
 
-static CObjectClass<CCodeChain>g_Class(OBJID_CCODECHAIN, NULL);
-
-CCodeChain::CCodeChain (void) : CObject(&g_Class),
+CCodeChain::CCodeChain (void) :
 		m_pGlobalSymbols(NULL)
 
 //	CCodeChain constructor

@@ -9,9 +9,7 @@
 #include "KernelObjID.h"
 #include "Graphics.h"
 
-static CObjectClass<CGBitmap>g_Class(OBJID_CGBITMAP, NULL);
-
-CGBitmap::CGBitmap (void) : CObject(&g_Class),
+CGBitmap::CGBitmap (void) :
 		m_pMediaDb(NULL),
 		m_dwUNID(0),
 		m_dwMaskUNID(0),
@@ -26,7 +24,7 @@ CGBitmap::CGBitmap (void) : CObject(&g_Class),
 CGBitmap::CGBitmap (IGMediaDb *pMediaDb, 
 					  DWORD dwUNID,
 					  DWORD dwMaskUNID,
-					  int x, int y, int cxWidth, int cyHeight) : CObject(&g_Class),
+					  int x, int y, int cxWidth, int cyHeight) :
 		m_pMediaDb(pMediaDb),
 		m_dwUNID(dwUNID),
 		m_dwMaskUNID(dwMaskUNID),

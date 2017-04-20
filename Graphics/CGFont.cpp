@@ -9,15 +9,7 @@
 #include "KernelObjID.h"
 #include "Graphics.h"
 
-static DATADESCSTRUCT g_DataDesc[] =
-	{	{ DATADESC_OPCODE_ZERO,			1,	0 },		//	m_hFont
-		{ DATADESC_OPCODE_INT,			1,	0 },		//	m_fBold, m_fItalic
-		{ DATADESC_OPCODE_INT,			1,	0 },		//	m_iHeight
-		{ DATADESC_OPCODE_EMBED_OBJ,	1,	0 },		//	m_sTypeface
-		{ DATADESC_OPCODE_STOP,	0,	0 } };
-static CObjectClass<CGFont>g_Class(OBJID_CGFONT, g_DataDesc);
-
-CGFont::CGFont (void) : CObject(&g_Class),
+CGFont::CGFont (void) :
 		m_hFont(NULL),
 		m_cxWidth(-1),
 		m_cyHeight(-1),
@@ -40,7 +32,6 @@ CGFont::~CGFont (void)
 	}
 
 CGFont::CGFont (const CGFont &NewFont) :
-		CObject(&g_Class),
 		m_hFont(NULL),
 		m_fBold(NewFont.m_fBold),
 		m_fItalic(NewFont.m_fItalic),

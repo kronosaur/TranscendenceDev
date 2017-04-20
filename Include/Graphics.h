@@ -14,7 +14,7 @@ typedef DWORD RAWPIXEL;
 
 //	CGBitmap: A wrapper for a Windows bitmap reference
 
-class CGBitmap : public CObject
+class CGBitmap
 	{
 	public:
 		CGBitmap (void);
@@ -55,7 +55,7 @@ class CGBitmap : public CObject
 
 //	CGFont: A wrapper for a Windows font
 
-class CGFont : public CObject
+class CGFont
 	{
 	public:
 		CGFont (void);
@@ -96,7 +96,7 @@ class IGMediaDb
 		virtual HDC SelectBitmap (HBITMAP hBitmap) = 0;
 	};
 
-class CGResourceFile : public CObject, public IGMediaDb
+class CGResourceFile : public IGMediaDb
 	{
 	public:
 		CGResourceFile (void);

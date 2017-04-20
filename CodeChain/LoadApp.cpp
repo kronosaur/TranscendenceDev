@@ -64,7 +64,7 @@ ALERROR CCodeChain::LoadDefinitions (IReadBlock *pBlock)
 	int iLength = pBlock->GetLength();
 	HEADERSTRUCT header;
 	int i, iEntries;
-	CIntArray Offsets;
+	TArray<DWORD> Offsets;
 	TArray<CString> Names;
 
 	//	Read the header
@@ -99,8 +99,7 @@ ALERROR CCodeChain::LoadDefinitions (IReadBlock *pBlock)
 		pData += sizeof(DWORD);
 		iLength -= sizeof(DWORD);
 
-		if (error = Offsets.AppendElement(dwOffset, NULL))
-			return error;
+		Offsets.Insert(dwOffset);
 		}
 
 	//	Skip text block size
@@ -152,12 +151,12 @@ ALERROR CCodeChain::LoadDefinitions (IReadBlock *pBlock)
 	for (i = 0; i < iEntries; i++)
 		{
 		CString sName = Names[i];
-		int iOffset = Offsets.GetElement(i);
+		DWORD dwOffset = Offsets[i];
 		ICCItem *pName;
 		ICCItem *pDefinition;
 		ICCItem *pError;
 
-		if (iOffset >= iLength)
+		if (dwOffset >= (DWORD)iLength)
 			return ERR_FAIL;
 
 		//	Create a constant string of the piece
@@ -167,7 +166,7 @@ ALERROR CCodeChain::LoadDefinitions (IReadBlock *pBlock)
 		//	so it doesn't matter how big it is.
 
 		{
-		CMemoryReadStream DataStream(pData + iOffset, iLength - iOffset);
+		CMemoryReadStream DataStream(pData + dwOffset, (DWORD)iLength - dwOffset);
 
 		if (error = DataStream.Open())
 			return error;

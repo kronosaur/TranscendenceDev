@@ -237,14 +237,13 @@ ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **r
 	return NOERROR;
 	}
 
-ALERROR ParseAttributeIntegerList (const CString &sValue, CIntArray *pList)
+ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList)
 
 //	ParseAttributeIntegerList
 //
 //	Parses a string into an integer list
 
 	{
-	ALERROR error;
 	char *pPos = sValue.GetPointer();
 
 	while (*pPos != '\0')
@@ -265,10 +264,7 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, CIntArray *pList)
 			//	If we have a valid integer then add it
 
 			if (!bNull)
-				{
-				if (error = pList->AppendElement(iInt, NULL))
-					return error;
-				}
+				pList->Insert(iInt);
 			else
 				break;
 			}
@@ -276,3 +272,40 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, CIntArray *pList)
 
 	return NOERROR;
 	}
+
+ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList)
+
+//	ParseAttributeIntegerList
+//
+//	Parses a string into an integer list
+
+	{
+	char *pPos = sValue.GetPointer();
+
+	while (*pPos != '\0')
+		{
+		//	Skip non-numbers
+
+		while (*pPos != '\0' && (*pPos < '0' || *pPos > '9') && *pPos != '-' && *pPos != '+')
+			pPos++;
+
+		//	Parse an integer
+
+		if (*pPos != '\0')
+			{
+			bool bNull;
+			DWORD dwInt;
+			dwInt = (DWORD)strParseInt(pPos, 0, &pPos, &bNull);
+
+			//	If we have a valid integer then add it
+
+			if (!bNull)
+				pList->Insert(dwInt);
+			else
+				break;
+			}
+		}
+
+	return NOERROR;
+	}
+

@@ -32,7 +32,7 @@ class IXMLParserController
 		virtual CString ResolveExternalEntity (const CString &sName, bool *retbFound = NULL) = 0;
 	};
 
-class CXMLElement : public CObject
+class CXMLElement
 	{
 	public:
 		CXMLElement (void);
@@ -78,7 +78,8 @@ class CXMLElement : public CObject
 		int GetAttributeInteger (const CString &sName) const;
 		int GetAttributeIntegerBounded (const CString &sName, int iMin, int iMax = -1, int iNull = 0) const;
 		bool GetAttributeIntegerRange (const CString &sName, int *retiLow, int *retiHigh, int iMin = 0, int iMax = -1, int iNullLow = 0, int iNullHigh = 0, bool bAllowInverted = false) const;
-		ALERROR GetAttributeIntegerList (const CString &sName, CIntArray *pList) const;
+		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const;
+		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const;
 		double GetAttributeFloat (const CString &sName) const;
 		inline CString GetAttributeName (int iIndex) const { return m_Attributes.GetKey(iIndex); }
 		inline int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
@@ -143,4 +144,5 @@ class CEntityResolverList : public IXMLParserController
 //	Some utilities
 
 ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **retpElement);
-ALERROR ParseAttributeIntegerList (const CString &sValue, CIntArray *pList);
+ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList);
+ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList);

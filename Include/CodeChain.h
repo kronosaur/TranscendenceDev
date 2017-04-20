@@ -818,7 +818,7 @@ class CEvalContext
 
 //	This is the main CodeChain context
 
-class CCodeChain : public CObject
+class CCodeChain
 	{
 	public:
 		CCodeChain (void);

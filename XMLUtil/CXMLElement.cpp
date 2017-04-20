@@ -6,9 +6,7 @@
 #include "Alchemy.h"
 #include "XMLUtil.h"
 
-static CObjectClass<CXMLElement>g_Class(OBJID_CXMLELEMENT, NULL);
-
-CXMLElement::CXMLElement (void) : CObject(&g_Class),
+CXMLElement::CXMLElement (void) :
 		m_pParent(NULL),
 		m_Attributes(TRUE, FALSE)
 
@@ -17,7 +15,7 @@ CXMLElement::CXMLElement (void) : CObject(&g_Class),
 	{
 	}
 
-CXMLElement::CXMLElement (const CXMLElement &Obj) : CObject(&g_Class)
+CXMLElement::CXMLElement (const CXMLElement &Obj)
 
 //	CXMLElement constructor
 
@@ -34,7 +32,7 @@ CXMLElement::CXMLElement (const CXMLElement &Obj) : CObject(&g_Class)
 		m_ContentElements[i] = new CXMLElement(*Obj.m_ContentElements[i]);
 	}
 
-CXMLElement::CXMLElement (const CString &sTag, CXMLElement *pParent) : CObject(&g_Class),
+CXMLElement::CXMLElement (const CString &sTag, CXMLElement *pParent) : 
 		m_sTag(sTag),
 		m_pParent(pParent),
 		m_Attributes(TRUE, FALSE)
@@ -53,7 +51,6 @@ CXMLElement &CXMLElement::operator= (const CXMLElement &Obj)
 
 	CleanUp();
 
-	CObject::operator=(Obj);
 	m_sTag = Obj.m_sTag;
 	m_pParent = Obj.m_pParent;
 	m_Attributes = Obj.m_Attributes;
@@ -426,7 +423,17 @@ int CXMLElement::GetAttributeIntegerBounded (const CString &sName, int iMin, int
 		return iNull;
 	}
 
-ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, CIntArray *pList) const
+ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const
+
+//	GetAttributeIntegerList
+//
+//	Appends a list of integers separated by commas
+
+	{
+	return ParseAttributeIntegerList(GetAttribute(sName), pList);
+	}
+
+ALERROR CXMLElement::GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const
 
 //	GetAttributeIntegerList
 //

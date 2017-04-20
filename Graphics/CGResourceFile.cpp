@@ -9,9 +9,7 @@
 #include "KernelObjID.h"
 #include "Graphics.h"
 
-static CObjectClass<CGResourceFile>g_Class(OBJID_CGRESOURCEFILE, NULL);
-
-CGResourceFile::CGResourceFile (void) : CObject(&g_Class),
+CGResourceFile::CGResourceFile (void) :
 		m_BitmapCache(sizeof(CACHEENTRY), 10)
 
 //	CGResourceFile constructor
@@ -19,7 +17,7 @@ CGResourceFile::CGResourceFile (void) : CObject(&g_Class),
 	{
 	}
 
-CGResourceFile::CGResourceFile (HINSTANCE hModule) : CObject(&g_Class),
+CGResourceFile::CGResourceFile (HINSTANCE hModule) :
 		m_hModule(hModule),
 		m_BitmapCache(sizeof(CACHEENTRY), 10),
 		m_hBitmapDC(NULL),
