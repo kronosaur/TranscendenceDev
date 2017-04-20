@@ -1205,7 +1205,7 @@ void CItemType::InitRandomNames (void)
 	//	Randomize the names
 
 	TArray<int> Randomize;
-	Randomize.InsertEmpty(0);
+	Randomize.InsertEmpty(iCount);
 	for (i = 0; i < iCount; i++)
 		Randomize[i] = i;
 
