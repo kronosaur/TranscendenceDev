@@ -1365,6 +1365,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fFriendlyFireLock = false;
 	pShip->m_fEmergencySpeed = false;
 	pShip->m_fQuarterSpeed = false;
+	pShip->m_fLRSDisabledByNebula = false;
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -5220,8 +5221,8 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Load flags
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	if (Ctx.dwVersion < 144)
-		bOutOfFuel143 =			((dwLoad & 0x00000001) ? true : false);
+
+	bool bBit01 =				((dwLoad & 0x00000001) ? true : false);
 	m_fRadioactive =			((dwLoad & 0x00000002) ? true : false);
 	m_fHasAutopilot =			((dwLoad & 0x00000004) ? true : false);
 	m_fDestroyInGate =			((dwLoad & 0x00000008) ? true : false);
@@ -5253,6 +5254,19 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fFriendlyFireLock =		((dwLoad & 0x02000000) ? true : false);
 	m_fEmergencySpeed =			((dwLoad & 0x04000000) ? true : false);
 	m_fQuarterSpeed =			((dwLoad & 0x08000000) ? true : false);
+
+	//	Bit 1 means different things depending on the version
+
+	if (Ctx.dwVersion >= 144)
+		{
+		bOutOfFuel143 = false;
+		m_fLRSDisabledByNebula = bBit01;
+		}
+	else
+		{
+		bOutOfFuel143 = bBit01;
+		m_fLRSDisabledByNebula = false;
+		}
 
 	//	We will compute CalcPerformance at the bottom anyways
 	m_fRecalcRotationAccel = false;
@@ -5828,7 +5842,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
     if (m_iBlindnessTimer > 0)
         if (--m_iBlindnessTimer == 0)
-            m_pController->OnBlindnessChanged(false);
+            m_pController->OnAbilityChanged(ablShortRangeScanner, ablRepair);
 
     //	LRS blindness
 
@@ -5865,11 +5879,14 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
             if (pEnvironment->IsLRSJammer())
                 {
-                MakeLRSBlind(ENVIRONMENT_ON_UPDATE_CYCLE);
+				m_fLRSDisabledByNebula = true;
                 m_fHiddenByNebula = true;
                 }
             else
+				{
+				m_fLRSDisabledByNebula = false;
                 m_fHiddenByNebula = false;
+				}
 
             //	See if the environment causes drag
 
@@ -5891,6 +5908,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
             }
         else
             {
+			m_fLRSDisabledByNebula = false;
             m_fHiddenByNebula = false;
             }
         }
@@ -6031,7 +6049,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iLastHitTime, sizeof(DWORD));
 
 	dwSave = 0;
-	//	0x00000001 unused at version 144
+	dwSave |= (m_fLRSDisabledByNebula ? 0x00000001 : 0);
 	dwSave |= (m_fRadioactive ?			0x00000002 : 0);
 	dwSave |= (m_fHasAutopilot ?		0x00000004 : 0);
 	dwSave |= (m_fDestroyInGate ?		0x00000008 : 0);
@@ -6908,6 +6926,38 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 				return false;
 			}
 
+		case ablLongRangeScanner:
+			{
+			if (iModification == ablDamage)
+				{
+				bool bChanged = (m_iLRSBlindnessTimer == 0);
+				if (m_iLRSBlindnessTimer != -1)
+					{
+					if (iDuration == -1)
+						m_iLRSBlindnessTimer = -1;
+					else
+						m_iLRSBlindnessTimer += iDuration;
+					}
+
+				if (bChanged)
+					m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
+
+				return bChanged;
+				}
+			else if (iModification == ablRepair)
+				{
+				bool bChanged = (m_iLRSBlindnessTimer != 0);
+				m_iLRSBlindnessTimer = 0;
+
+				if (bChanged)
+					m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
+				
+				return bChanged;
+				}
+			else
+				return false;
+			}
+
 		case ablShortRangeScanner:
 			{
 			if (iModification == ablDamage)
@@ -6922,8 +6972,8 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 					}
 
 				if (bChanged)
-					m_pController->OnBlindnessChanged(true, ((dwOptions & ablOptionNoMessage) ? true : false));
-
+					m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
+				
 				return bChanged;
 				}
 			else if (iModification == ablRepair)
@@ -6932,8 +6982,8 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 				m_iBlindnessTimer = 0;
 
 				if (bChanged)
-					m_pController->OnBlindnessChanged(false, ((dwOptions & ablOptionNoMessage) ? true : false));
-
+					m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
+				
 				return bChanged;
 				}
 			else

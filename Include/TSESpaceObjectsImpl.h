@@ -1011,7 +1011,7 @@ class CShip : public CSpaceObject
 		void MakeDisarmed (int iTickCount = -1);
 
 		void ClearLRSBlindness (void);
-		inline bool IsLRSBlind (void) { return m_iLRSBlindnessTimer != 0; }
+		inline bool IsLRSBlind (void) { return m_fLRSDisabledByNebula || (m_iLRSBlindnessTimer != 0); }
 		void MakeLRSBlind (int iTickCount = -1);
 
 		void ClearParalyzed (void);
@@ -1351,7 +1351,7 @@ class CShip : public CSpaceObject
 		DWORD m_fEmergencySpeed:1;				//	TRUE if we're operating at 1.5x max speed
 
 		DWORD m_fQuarterSpeed:1;				//	TRUE if we're operating at 0.25x max speed
-		DWORD m_fSpare2:1;
+		DWORD m_fLRSDisabledByNebula:1;			//	TRUE if LRS is disabled due to environment
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
