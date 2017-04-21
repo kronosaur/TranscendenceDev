@@ -8043,7 +8043,7 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_MISSION_ADD_RECURRING_TIMER:
 			{
 			int iTime = pArgs->GetElement(1)->GetIntegerValue();
-			if (iTime < 0 || (iTime == 0 && dwData == FN_MISSION_ADD_RECURRING_TIMER))
+			if (iTime <= 0 && dwData == FN_MISSION_ADD_RECURRING_TIMER)
 				return pCC->CreateError(CONSTLIT("Invalid recurring time"), pArgs->GetElement(1));
 
 			CString sEvent = pArgs->GetElement(2)->GetStringValue();
@@ -8055,13 +8055,13 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSystemEvent *pEvent;
 			if (dwData == FN_MISSION_ADD_TIMER)
 				pEvent = new CTimedMissionEvent(
-						g_pUniverse->GetTicks() + iTime,
+						Max(0, g_pUniverse->GetTicks() + iTime),
 						0,
 						pMission,
 						sEvent);
 			else
 				pEvent = new CTimedMissionEvent(
-						g_pUniverse->GetTicks() + mathRandom(0, iTime),
+						Max(0, g_pUniverse->GetTicks() + mathRandom(0, iTime)),
 						iTime,
 						pMission,
 						sEvent);
