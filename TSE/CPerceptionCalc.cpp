@@ -76,7 +76,7 @@ bool CPerceptionCalc::CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTarget
 
 Metric CPerceptionCalc::GetMaxDist (CSpaceObject *pTarget) const
 
-//	GetMaxDist2
+//	GetMaxDist
 //
 //	Returns the maximum distance at which we can see the given object.
 

@@ -223,6 +223,7 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_RECORD_BUY_ITEM		122
 #define FN_OBJ_CALC_BEST_TARGET		123
 #define FN_OBJ_ADD_CONNECTION		124
+#define FN_OBJ_GET_DETECT_RANGE		125
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1451,6 +1452,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetDataField",				fnObjGet,		FN_OBJ_DATA_FIELD,
 			"(objGetDataField obj field) -> data",
 			"is",	0,	},
+
+		{	"objGetDetectRange",			fnObjGet,		FN_OBJ_GET_DETECT_RANGE,
+			"(objGetDetectRange obj targetObj) -> range in light-seconds",
+			"ii",	0,	},
 
 		{	"objGetDestiny",				fnObjGetOld,		FN_OBJ_DESTINY,
 			"(objGetDestiny obj) -> 0-359",
@@ -5826,6 +5831,16 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateInteger(iValue);
 			else
 				return pCC->CreateNil();
+			}
+
+		case FN_OBJ_GET_DETECT_RANGE:
+			{
+			CSpaceObject *pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			if (pTarget == NULL)
+				return pCC->CreateNil();
+
+			CPerceptionCalc Perception(pObj->GetPerception());
+			return pCC->CreateInteger(mathRound(Perception.GetMaxDist(pTarget) / LIGHT_SECOND));
 			}
 
 		case FN_OBJ_GET_DISPOSITION:
