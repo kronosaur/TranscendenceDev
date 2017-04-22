@@ -46,12 +46,13 @@ const Metric FLOCK_COMBAT_RANGE2 =		(FLOCK_COMBAT_RANGE * FLOCK_COMBAT_RANGE);
 const Metric CLOSE_DELTA_V_RATIO =		0.12;
 const Metric MIN_SPEED_RATIO =			0.01;
 const Metric FORMATION_MAX_TIME =		5.0;
+const Metric POTENTIAL_TO_POS_ADJ = 100.0;
 
 const Metric MAX_IMMOBILE_SPEED =		(1.0 * KLICKS_PER_PIXEL);
 const Metric MAX_IMMOBILE_SPEED2 =		MAX_IMMOBILE_SPEED * MAX_IMMOBILE_SPEED;
 
 #ifdef DEBUG_COMBAT
-#define DEBUG_COMBAT_OUTPUT(x)			{ if (g_pUniverse->GetPlayerShip()) g_pUniverse->GetPlayerShip()->SendMessage(pShip, strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(x))); }
+#define DEBUG_COMBAT_OUTPUT(x)			{ pShip->Highlight(strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(x))); }
 #else
 #define DEBUG_COMBAT_OUTPUT(x)
 #endif
@@ -483,10 +484,14 @@ CVector CAIBehaviorCtx::CalcManeuverFormation (CShip *pShip, const CVector vDest
 	if (bCloseEnough)
 		{
 		if (!pShip->IsParalyzed())
+			{
 			pShip->Accelerate(vDeltaV * pShip->GetMass() / 2000.0, g_SecondsPerUpdate);
-#if 0
-		ImplementTurnTo(iDestFacing);
+
+#ifdef DEBUG_ATTACK_TARGET_MANEUVERS
+			pShip->SetDebugVector(vDeltaV.Normal() * 100. * g_KlicksPerPixel);
 #endif
+			}
+
 		return CVector();
 		}
 
@@ -709,7 +714,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 				//	This is the position that we want to go to
 
-				CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius) + GetPotential();
+				CVector vPos;
+				if (m_fHasAvoidPotential)
+					vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
+				else
+					vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
 
 				//	We don't want to thrust unless we're in position
 
@@ -808,7 +817,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 				//	This is the position that we want to go to
 
-				CVector vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius) + GetPotential();
+				CVector vPos;
+				if (m_fHasAvoidPotential)
+					vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
+				else
+					vPos = pTarget->GetPos() + PolarToVector(iAngle + 180, rRadius);
 
 				//	We don't want to thrust unless we're in position
 
@@ -830,12 +843,25 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 				if (bWeAreFaster)
 					{
-					DEBUG_COMBAT_OUTPUT("Close to aim point");
-
-					//	Pick a position at the flank distance between us and the target
-
 					CVector vToTargetN = (pTarget->GetPos() - pShip->GetPos()).Normal();
-					CVector vPos = pTarget->GetPos() + (vToTargetN * -rMaxAimDist);
+
+					//	Compute the position we want
+
+					CVector vPos;
+					if (m_fHasAvoidPotential)
+						{
+						DEBUG_COMBAT_OUTPUT("Avoid hazards");
+
+						vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
+						}
+					else
+						{
+						DEBUG_COMBAT_OUTPUT("Close to aim point");
+
+						//	Pick a position at the flank distance between us and the target
+
+						vPos = pTarget->GetPos() + (vToTargetN * -rMaxAimDist);
+						}
 
 					//	We want to end with a non-zero velocity. Otherwise, we'll be a
 					//	sitting duck.
@@ -844,7 +870,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 					//	Maneuver to that point
 
-					vDirection = CombinePotential(CalcManeuverFormation(pShip, vPos, vVel, 0));
+					vDirection = CalcManeuverFormation(pShip, vPos, vVel, 0);
 					}
 
 				//	Otherwise, we just try to close as best as possible
@@ -929,7 +955,11 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	Pick a point behind the target (and add hazard potential)
 
 			Metric rRange = Min(0.5 * m_rBestWeaponRange, 10.0 * LIGHT_SECOND);
-			CVector vPos = pTarget->GetPos() + PolarToVector(iTargetMotion + 180, rRange) + GetPotential();
+			CVector vPos;
+			if (m_fHasAvoidPotential)
+				vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
+			else
+				vPos = pTarget->GetPos() + PolarToVector(iTargetMotion + 180, rRange);
 
 			//	Figure out which way we need to move to end up where we want
 			//	(Note that we don't combine the potential because we've already accounter for
@@ -1037,7 +1067,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 	ImplementManeuver(pShip, VectorToPolar(vDirection), true, bNoThrustThroughTurn);
 
 #ifdef DEBUG_ATTACK_TARGET
-	pShip->SetDebugVector(vDirection);
+	pShip->SetDebugVector(vDirection.Normal() * 100.0 * g_KlicksPerPixel);
 #endif
 
 	//	Done

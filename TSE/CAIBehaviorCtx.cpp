@@ -49,7 +49,8 @@ CAIBehaviorCtx::CAIBehaviorCtx (void) :
 		m_fHasMultiplePrimaries(false),
 		m_fRecalcBestWeapon(true),
 		m_fHasEscorts(false),
-		m_fFreeNavPath(false)
+		m_fFreeNavPath(false),
+		m_fHasAvoidPotential(false)
 
 //	CAIBehaviorCtx constructor
 
@@ -76,8 +77,14 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 	{
 	if (pShip->IsDestinyTime(11))
 		{
+		//	Start with no potential
+
+		m_vPotential = CVector();
+		m_fHasAvoidPotential = false;
+
+		//	Set up
+
 		Metric rDist;
-		CVector vPotential;
 		Metric rMinSeparation2 = GetMinCombatSeparation() * GetMinCombatSeparation();
 		Metric rSeparationForce = g_KlicksPerPixel * 40.0 / GetMinCombatSeparation();
 
@@ -102,7 +109,10 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 					{
 					CVector vTargetN = vTarget.Normal(&rDist);
 					if (rDist > 0.0)
-						vPotential = vPotential - (vTargetN * 500.0 * g_KlicksPerPixel * (GRAVITY_WELL_RANGE / rDist));
+						{
+						m_vPotential = m_vPotential - (vTargetN * 500.0 * g_KlicksPerPixel * (GRAVITY_WELL_RANGE / rDist));
+						m_fHasAvoidPotential = true;
+						}
 					}
 				}
 			else if (pObj->Blocks(pShip))
@@ -130,7 +140,10 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 								{
 								CVector vTest = PolarToVector(iAngle, 1.0);
 								if (pObj->PointInObject(pObj->GetPos(), pShip->GetPos() + (rRange * vTest)))
-									vPotential = vPotential - (rStrength * vTest);
+									{
+									m_vPotential = m_vPotential - (rStrength * vTest);
+									m_fHasAvoidPotential = true;
+									}
 								}
 							}
 						}
@@ -141,7 +154,10 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 						{
 						CVector vTargetN = vTarget.Normal(&rDist);
 						if (rDist > 0.0)
-							vPotential = vPotential - (vTargetN * 50.0 * g_KlicksPerPixel * (WALL_RANGE / rDist));
+							{
+							m_vPotential = m_vPotential - (vTargetN * 50.0 * g_KlicksPerPixel * (WALL_RANGE / rDist));
+							m_fHasAvoidPotential = true;
+							}
 						}
 					}
 				}
@@ -158,18 +174,15 @@ void CAIBehaviorCtx::CalcAvoidPotential (CShip *pShip, CSpaceObject *pTarget)
 					if (rDist > 0.0)
 						{
 						Metric rCloseness = GetMinCombatSeparation() - rDist;
-						vPotential = vPotential - (vTargetN * rSeparationForce * rCloseness);
+						m_vPotential = m_vPotential - (vTargetN * rSeparationForce * rCloseness);
+						m_fHasAvoidPotential = true;
 						}
 					}
 				}
 			}
 
-		//	Sets the potential
-
-		m_vPotential = vPotential;
-
 #ifdef DEBUG_AVOID_POTENTIAL
-		pShip->SetDebugVector(vPotential);
+		pShip->SetDebugVector(m_vPotential);
 #endif
 		}
 	}
@@ -1029,6 +1042,7 @@ void CAIBehaviorCtx::ReadFromStream (SLoadCtx &Ctx)
 	//	These flags do not need to be saved
 
 	m_fRecalcBestWeapon = true;
+	m_fHasAvoidPotential = (m_vPotential.Length2() > 1.0);
 	}
 
 void CAIBehaviorCtx::SetBarrierClock (CShip *pShip)

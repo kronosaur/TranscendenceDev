@@ -208,7 +208,7 @@ class CAIBehaviorCtx
 
 		DWORD m_fHasMultiplePrimaries:1;		//	TRUE if ship has multiple primary weapons (non-launchers)
 		DWORD m_fFreeNavPath:1;					//	TRUE if we own the nav path object
-		DWORD m_fSpare3:1;
+		DWORD m_fHasAvoidPotential:1;			//	TRUE if there is something to avoid
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
