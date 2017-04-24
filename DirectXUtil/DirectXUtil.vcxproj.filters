@@ -37,6 +37,9 @@
     <Filter Include="Source Files\Paths and Regions">
       <UniqueIdentifier>{b6cfa6be-bfd2-4494-863d-88adf3116707}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AG">
+      <UniqueIdentifier>{c421fc6d-c6f2-4bd3-b8f0-1be22a8c7bad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NoiseImpl.h">
@@ -122,25 +125,7 @@
     <ClCompile Include="8bitImageDrawing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AGArea.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AGScreen.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CFrameRateCounter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CGButtonArea.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CGFrameArea.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CGImageArea.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CGTextArea.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Debug.cpp">
@@ -272,9 +257,6 @@
     <ClCompile Include="CLinePainter.cpp">
       <Filter>Source Files\32bit</Filter>
     </ClCompile>
-    <ClCompile Include="CGImagePlane.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="16bitBlt.cpp">
       <Filter>Source Files\16bit</Filter>
     </ClCompile>
@@ -379,6 +361,27 @@
     </ClCompile>
     <ClCompile Include="CGImageCache.cpp">
       <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="AGArea.cpp">
+      <Filter>Source Files\AG</Filter>
+    </ClCompile>
+    <ClCompile Include="AGScreen.cpp">
+      <Filter>Source Files\AG</Filter>
+    </ClCompile>
+    <ClCompile Include="CGButtonArea.cpp">
+      <Filter>Source Files\AG</Filter>
+    </ClCompile>
+    <ClCompile Include="CGFrameArea.cpp">
+      <Filter>Source Files\AG</Filter>
+    </ClCompile>
+    <ClCompile Include="CGImageArea.cpp">
+      <Filter>Source Files\AG</Filter>
+    </ClCompile>
+    <ClCompile Include="CGImagePlane.cpp">
+      <Filter>Source Files\AG</Filter>
+    </ClCompile>
+    <ClCompile Include="CGTextArea.cpp">
+      <Filter>Source Files\AG</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

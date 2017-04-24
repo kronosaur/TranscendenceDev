@@ -199,7 +199,7 @@ class CGButtonArea : public AGArea
 		inline void SetDescFont (const CG16bitFont *pFont) { m_pDescFont = pFont; }
 		inline void SetDisabled (bool bDisabled = true) { m_bDisabled = bDisabled; }
 		inline void SetLabel (const CString &sText) { m_sLabel = sText; m_iAccelerator = -1; }
-		void SetLabelAccelerator (const CString &sKey);
+		void SetLabelAccelerator (const CString &sKey, int iKeyOffset = -1);
 		inline void SetLabelColor (CG32bitPixel rgbColor) { m_rgbLabelColor = rgbColor; }
 		inline void SetLabelFont (const CG16bitFont *pFont) { m_pLabelFont = pFont; }
 		inline void SetPadding (int iPadding) { m_rcPadding.left = iPadding; m_rcPadding.top = iPadding; m_rcPadding.right = iPadding; m_rcPadding.bottom = iPadding; }

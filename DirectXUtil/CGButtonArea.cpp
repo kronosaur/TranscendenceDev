@@ -259,7 +259,7 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 		}
 	}
 
-void CGButtonArea::SetLabelAccelerator (const CString &sKey)
+void CGButtonArea::SetLabelAccelerator (const CString &sKey, int iKeyOffset)
 
 //	SetLabelAccelerator
 //
@@ -267,10 +267,22 @@ void CGButtonArea::SetLabelAccelerator (const CString &sKey)
 
 	{
 	if (sKey.IsBlank())
+		{
+		m_sAccelerator = NULL_STR;
 		m_iAccelerator = -1;
+		}
 
 	else if (sKey.GetLength() > 1)
+		{
 		m_sAccelerator = sKey;
+		m_iAccelerator = -1;
+		}
+
+	else if (iKeyOffset != -1)
+		{
+		m_sAccelerator = NULL_STR;
+		m_iAccelerator = iKeyOffset;
+		}
 
 	else
 		{
@@ -304,5 +316,9 @@ void CGButtonArea::SetLabelAccelerator (const CString &sKey)
 		//	Otherwise, look for the any matching letter
 
 		m_iAccelerator = strFind(m_sLabel, sKey);
+
+		//	No long accelerator
+
+		m_sAccelerator = NULL_STR;
 		}
 	}
