@@ -1013,6 +1013,13 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 				retCriteria->bIncludeActive = true;
 				break;
 
+			//	This character is used in typFind to return mission objects. For
+			//	compatibility, we allow this character here (even though it does
+			//	nothing).
+
+			case 'n':
+				break;
+
 			case 'o':
 				retCriteria->bIncludeOpen = true;
 				break;

@@ -22,6 +22,8 @@
 #define SHIPWRECK_UNID_ATTRIB					CONSTLIT("shipwreckID")
 #define NAME_ATTRIB								CONSTLIT("name")
 
+#define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
+
 #define PAINT_LAYER_OVERHANG					CONSTLIT("overhang")
 
 #define PROPERTY_ABANDONED						CONSTLIT("abandoned")
@@ -4095,7 +4097,7 @@ bool CStation::RequestDock (CSpaceObject *pObj, int iPort)
 			&& !m_pType->IsEnemyDockingAllowed()
 			&& (IsEnemy(pObj) || IsBlacklisted(pObj)))
 		{
-		pObj->SendMessage(this, CONSTLIT("Docking request denied"));
+		pObj->SendMessage(this, pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, CONSTLIT("Docking request denied")));
 		return false;
 		}
 

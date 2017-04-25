@@ -22,6 +22,8 @@ const Metric MAX_MANEUVER_DELAY	=				8.0;
 const Metric MANEUVER_MASS_FACTOR =				0.4;
 const Metric MAX_SPEED_FOR_DOCKING2 =			(0.04 * 0.04 * LIGHT_SPEED * LIGHT_SPEED);
 
+#define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
+
 #define MAX_DELTA								(2.0 * g_KlicksPerPixel)
 #define MAX_DELTA2								(MAX_DELTA * MAX_DELTA)
 #define MAX_DELTA_VEL							(g_KlicksPerPixel / 2.0)
@@ -6775,7 +6777,7 @@ bool CShip::RequestDock (CSpaceObject *pObj, int iPort)
 
 	if (IsEnemy(pObj))
 		{
-		pObj->SendMessage(this, CONSTLIT("Docking request denied"));
+		pObj->SendMessage(this, pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, CONSTLIT("Docking request denied")));
 		return false;
 		}
 

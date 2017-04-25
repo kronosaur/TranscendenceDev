@@ -32,6 +32,7 @@
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
+#define PROPERTY_EXTERNAL						CONSTLIT("external")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
@@ -463,6 +464,9 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
     else if (strEquals(sName, PROPERTY_ENABLED))
         return (pDevice ? CC.CreateBool(pDevice->IsEnabled()) : CC.CreateNil());
 
+	else if (strEquals(sName, PROPERTY_EXTERNAL))
+		return CC.CreateBool(pDevice ? pDevice->IsExternal() : IsExternal());
+
     else if (strEquals(sName, PROPERTY_POS))
         {
         if (pDevice == NULL)
@@ -800,6 +804,24 @@ bool CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
             return false;
             }
         }
+	else if (strEquals(sName, PROPERTY_EXTERNAL))
+		{
+		bool bSetExternal = (pValue && !pValue->IsNil());
+		if (pDevice->IsExternal() != bSetExternal)
+			{
+			//	If the class is external and we don't want it to be external, then
+			//	we cannot comply.
+
+			if (IsExternal() && !bSetExternal)
+				{
+				*retsError = CONSTLIT("Device is natively external and cannot be made internal.");
+				return false;
+				}
+
+			pDevice->SetExternal(bSetExternal);
+			}
+		}
+
 	else if (strEquals(sName, PROPERTY_FIRE_ARC))
 		{
 		//	A value of nil means no fire arc (and no omni)

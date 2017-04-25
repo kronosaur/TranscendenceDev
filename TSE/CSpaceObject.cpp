@@ -7294,6 +7294,20 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, CString *retsT
 	return false;
 	}
 
+CString CSpaceObject::Translate (const CString &sID, ICCItem *pData, const CString &sDefault)
+
+//	Translate
+//
+//	Translate a message by ID
+
+	{
+	CString sMsg;
+	if (!Translate(sID, pData, &sMsg))
+		return sDefault;
+
+	return sMsg;
+	}
+
 void CSpaceObject::Update (SUpdateCtx &Ctx)
 
 //	Update

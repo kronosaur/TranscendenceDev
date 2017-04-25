@@ -3817,6 +3817,7 @@ class CInstalledDevice
 		inline void SetDuplicate (bool bDuplicate = true) { m_fDuplicate = bDuplicate; }
 		bool SetEnabled (CSpaceObject *pSource, bool bEnabled);
 		void SetEnhancements (CItemEnhancementStack *pStack);
+		inline void SetExternal (bool bValue) { m_fExternal = bValue; }
 		inline void SetFireAngle (int iAngle) { m_iFireAngle = iAngle; }
 		inline void SetFireArc (int iMinFireArc, int iMaxFireArc) { m_iMinFireArc = iMinFireArc; m_iMaxFireArc = iMaxFireArc; }
 		inline void SetLastActivateSuccessful (bool bSuccessful) { m_fLastActivateSuccessful = bSuccessful; }
