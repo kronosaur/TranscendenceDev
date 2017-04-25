@@ -980,7 +980,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
     CG32bitPixel rgbColorRef = rgbText;
 	CG32bitPixel rgbColorDescSel = CG32bitPixel(200,200,200);
 	CG32bitPixel rgbColorDesc = CG32bitPixel(128,128,128);
-	CG32bitPixel rgbDisavantage = VI.GetColor(colorTextDisadvantage);
+	CG32bitPixel rgbDisadvantage = VI.GetColor(colorTextDisadvantage);
 
 	bool bSelected = ((dwOptions & OPTION_SELECTED) == OPTION_SELECTED);
 	bool bNoIcon = ((dwOptions & OPTION_NO_ICON) == OPTION_NO_ICON);
@@ -1135,10 +1135,12 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 					0,
 					&cyHeight);
 
-			if (iSpeedBonus > 0)
+			if (iSpeedBonus == 0)
+				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbDisadvantage, CONSTLIT("too heavy"), iSpeedBonus);
+			else if (iSpeedBonus > 0)
 				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbColorRef, strPatternSubst(CONSTLIT("+.%02dc bonus"), iSpeedBonus));
 			else
-				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbDisavantage, strPatternSubst(CONSTLIT("-.%02dc penalty"), -iSpeedBonus));
+				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbDisadvantage, strPatternSubst(CONSTLIT("-.%02dc penalty"), -iSpeedBonus));
 
 			rcDrawRect.top += cyHeight;
 			}

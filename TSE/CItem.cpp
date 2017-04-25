@@ -1367,6 +1367,9 @@ bool CItem::GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeed
 //
 //	Returns TRUE we this armor item gives a speed bonus or penalty to the given
 //	ship class.
+//
+//	If the armor is too heavy to be used by the ship class, we return TRUE but
+//	retiSpeedBonus is set to 0.
 
 	{
 	CArmorClass *pArmor;
