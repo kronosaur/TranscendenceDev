@@ -269,7 +269,7 @@ class CInstalledArmor
 		inline const CItemEnhancement &GetMods (void) { return m_pItem->GetMods(); }
 		inline int GetSect (void) const { return m_iSect; }
 		int IncCharges (CSpaceObject *pSource, int iChange);
-		inline int IncHitPoints (int iChange) { m_iHitPoints += iChange; return m_iHitPoints; }
+		inline int IncHitPoints (int iChange) { m_iHitPoints = Max(0, m_iHitPoints + iChange); return m_iHitPoints; }
 		void Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
 		inline bool IsComplete (void) const { return (m_fComplete ? true : false); }
 		inline bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }

@@ -2027,7 +2027,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		if (IsDestroyed())
 			return damageDestroyed;
 
-		//	Adjust the damage for the armor
+		//	Compute the damage for the armor
 
 		m_pArmorClass->CalcAdjustedDamage(ItemCtx, Ctx);
 
@@ -2039,6 +2039,10 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			Ctx.pCause->CreateReflection(Ctx.vHitPos, (Ctx.iDirection + 120 + mathRandom(0, 120)) % 360);
 			return damageNoDamage;
 			}
+
+		//	For stations, armor damage is passed through.
+
+		Ctx.iDamage = Ctx.iArmorDamage;
 		}
 
 	//	If we're a multi-hull object then we adjust for mass destruction

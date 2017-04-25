@@ -197,7 +197,8 @@ struct SDamageCtx
 			iShieldDamage(0),
 			iOriginalAbsorb(0),
 			iOriginalShieldDamage(0),
-			iUnadjustedDamage(0),
+			iArmorAbsorb(0),
+			iArmorDamage(0),
 			bBlind(false),
 			iBlindTime(0),
 			bDeviceDisrupt(false),
@@ -231,12 +232,13 @@ struct SDamageCtx
 	int iArmorHitDamage;						//	HP that hit armor
 
 	//	These are used within armor/shield processing
-	int iHPLeft;								//	HP left on armor/shields (before damage)
+	int iHPLeft;								//	HP left on shields (before damage)
 	int iAbsorb;								//	Damage absorbed by shields
 	int iShieldDamage;							//	Damage taken by shields
 	int iOriginalAbsorb;						//	Computed absorb value, if shot had not been reflected
 	int iOriginalShieldDamage;					//	Computed shield damage value, if shot had not been reflected
-	int iUnadjustedDamage;						//	HP hit on armor before damage type adjustment
+	int iArmorAbsorb;							//	Damage absorbed by armor
+	int iArmorDamage;							//	Damage taken by armor
 
 	//	Damage effects
 	bool bBlind;								//	If true, shot will blind the target

@@ -2309,7 +2309,7 @@ void CSpaceObject::FireOnDamage (SDamageCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
-		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
+		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iArmorDamage);
 		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
 
@@ -2319,7 +2319,7 @@ void CSpaceObject::FireOnDamage (SDamageCtx &Ctx)
 
 		//	Result is the amount of damage
 
-		Ctx.iDamage = pResult->GetIntegerValue();
+		Ctx.iArmorDamage = pResult->GetIntegerValue();
 		CCCtx.Discard(pResult);
 		}
 	}

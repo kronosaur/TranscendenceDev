@@ -214,7 +214,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	if (pSource->IsDestroyed())
 		return damageDestroyed;
 
-	//	Damage adjustment
+	//	Damage adjustment. This initializes Ctx.iArmorDamage.
 
 	CalcAdjustedDamage(ItemCtx, Ctx);
 
@@ -286,11 +286,6 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	if (!Ctx.bNoHitEffect)
 		Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
 
-	//	If no damage has reached us, then we're done
-
-	if (Ctx.iDamage == 0 && !bCustomDamage)
-		return damageNoDamage;
-
 	//	Give source events a chance to change the damage before we
 	//	subtract from armor.
 
@@ -301,20 +296,27 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 			return damageDestroyed;
 		}
 
-	//	Take damage
+	//	Compute how much damage the armor absorbs based on how much damage it
+	//	took.
 
-	if (Ctx.iDamage <= pArmor->GetHitPoints())
-		{
-		pArmor->IncHitPoints(-Ctx.iDamage);
-		Ctx.iDamage = 0;
-		}
+	if (pArmor->GetHitPoints() == 0)
+		Ctx.iArmorAbsorb = 0;
+	else if (Ctx.iArmorDamage <= pArmor->GetHitPoints())
+		Ctx.iArmorAbsorb = Ctx.iDamage;
 	else
-		{
-		Ctx.iDamage -= pArmor->GetHitPoints();
-		pArmor->SetHitPoints(0);
-		}
+		Ctx.iArmorAbsorb = pArmor->GetHitPoints() * Ctx.iDamage / Ctx.iArmorDamage;
 
-	return damageArmorHit;
+	//	Absorb damage
+
+	Ctx.iDamage = Max(0, Ctx.iDamage - Ctx.iArmorAbsorb);
+	pArmor->IncHitPoints(-Ctx.iArmorDamage);
+
+	//	If we took no damage, then say so.
+
+	if (Ctx.iArmorDamage == 0 && !bCustomDamage)
+		return damageNoDamage;
+	else
+		return damageArmorHit;
 
 	DEBUG_CATCH
 	}
@@ -613,12 +615,10 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 //	CalcAdjustedDamage
 //
-//	Modifies Ctx.iDamage to account for damage type adjustments, etc.
+//	Initializes Ctx.iArmorDamage to account for damage type adjustments, etc.
 
 	{
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
-
-	Ctx.iUnadjustedDamage = Ctx.iDamage;
 
 	//	Adjust for special armor damage:
 	//
@@ -630,12 +630,14 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	int iDamageLevel = Ctx.Damage.GetArmorDamageLevel();
 	if (iDamageLevel > 0)
-		Ctx.iDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(ItemCtx, Ctx.Damage));
+		Ctx.iArmorDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(ItemCtx, Ctx.Damage));
+	else
+		Ctx.iArmorDamage = Ctx.iDamage;
 
 	//	Adjust for damage type
 
 	int iDamageAdj = GetDamageAdj(ItemCtx, (pArmor ? pArmor->GetMods() : CItemEnhancement()), Ctx.Damage);
-	Ctx.iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
+	Ctx.iArmorDamage = mathAdjust(Ctx.iArmorDamage, iDamageAdj);
 	}
 
 int CArmorClass::CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const
@@ -1110,12 +1112,6 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 
-	//	Compute all the effects (if we don't have installed armor, then the 
-	//	caller is responsible for setting this).
-
-	if (pArmor)
-		Ctx.iHPLeft = pArmor->GetHitPoints();
-
 	//	Reflect
 
 	Ctx.bReflect = (IsReflective(ItemCtx, Ctx.Damage) && Ctx.iDamage > 0);
@@ -1558,19 +1554,21 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	SEventHandlerDesc Event;
 	if (FindEventHandlerArmorClass(evtOnArmorDamage, &Event))
 		{
+		CInstalledArmor *pArmor = ItemCtx.GetArmor();
+
 		//	Setup arguments
 
 		CCodeChainCtx CCCtx;
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
 
-		CCCtx.DefineInteger(CONSTLIT("aArmorHP"), Ctx.iHPLeft);
+		CCCtx.DefineInteger(CONSTLIT("aArmorHP"), (pArmor ? pArmor->GetHitPoints() : 0));
 		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineDamageEffects(CONSTLIT("aDamageEffects"), Ctx);
-		CCCtx.DefineInteger(CONSTLIT("aFullDamageHP"), Ctx.iUnadjustedDamage);
-		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
+		CCCtx.DefineInteger(CONSTLIT("aFullDamageHP"), Ctx.iDamage);
+		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iArmorDamage);
 		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
 		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
@@ -1587,7 +1585,7 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		//	If we return an integer, then this is the damage that armor should take
 
 		else if (pResult->IsInteger())
-			Ctx.iDamage = pResult->GetIntegerValue();
+			Ctx.iArmorDamage = pResult->GetIntegerValue();
 
 		//	If we return a list, then we it to be a DamageEffects list (modifications to
 		//	aDamageEffects)
