@@ -106,6 +106,10 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 
 	ItemList.SetInstalledAtCursor(iSect);
 
+	//	Clear the damage bit, since we restore it properly on uninstall.
+
+	ItemList.SetDamagedAtCursor(false);
+
 	//	After we've installed, set the item pointer
 	//	(we have to wait until after installation so that we
 	//	have the proper pointer)
