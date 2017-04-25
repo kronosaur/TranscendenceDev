@@ -864,7 +864,7 @@ void CShip::CalcPerformance (void)
     //
     //  These fields are context for the ship that we're computing.
 
-    SShipPerformanceCtx Ctx;
+    SShipPerformanceCtx Ctx(GetClass());
     Ctx.pShip = this;
     Ctx.bDriveDamaged = IsMainDriveDamaged();
 
@@ -883,13 +883,10 @@ void CShip::CalcPerformance (void)
 
     //  Accumulate settings from armor
 
-	int iArmorMass = 0;
 	for (i = 0; i < GetArmorSectionCount(); i++)
 		{
         CItemCtx ItemCtx(this, GetArmorSection(i));
         ItemCtx.GetArmor()->AccumulatePerformance(ItemCtx, Ctx);
-
-		iArmorMass += ItemCtx.GetItem().GetMassKg();
 		}
 
     //  Accumulate settings from devices
@@ -906,15 +903,6 @@ void CShip::CalcPerformance (void)
 
     if (m_fTrackMass)
         Ctx.RotationDesc.AdjForShipMass(m_pClass->GetHullMass(), GetItemMass());
-
-	//	Adjust speed if our armor is too heavy or too light
-
-	Ctx.rArmorSpeedBonus = m_pClass->CalcArmorSpeedBonus(iArmorMass) * LIGHT_SPEED * 0.01;
-
-	//	If this is positive (a bonus) then increase the speed limit.
-
-	if (Ctx.rArmorSpeedBonus > 0.0)
-		Ctx.rMaxSpeedLimit = Min(Ctx.rMaxSpeedLimit + Ctx.rArmorSpeedBonus, LIGHT_SPEED);
 
     //  Now apply the performance parameters to the descriptor
 

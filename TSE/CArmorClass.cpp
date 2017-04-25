@@ -522,6 +522,10 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 	const CItemEnhancement &Mods = (pArmor ? pArmor->GetMods() : CItemEnhancement::Null());
 
+	//	Increment total armor mass
+
+	Ctx.iArmorMass += ItemCtx.GetItem().GetMassKg();
+
     //  Adjust max speed.
 
 	CArmorSystem *pArmorSet;

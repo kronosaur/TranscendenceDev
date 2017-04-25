@@ -1071,7 +1071,7 @@ void CShipClass::CalcPerformance (void)
     //
     //  These fields are context for the ship that we're computing.
 
-    SShipPerformanceCtx Ctx;
+    SShipPerformanceCtx Ctx(this);
 
     //  Start with parameters from the class
 

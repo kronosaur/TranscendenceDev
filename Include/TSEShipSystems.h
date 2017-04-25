@@ -877,9 +877,11 @@ class IDeviceGenerator
 
 struct SShipPerformanceCtx
     {
-    SShipPerformanceCtx (void) :
+    SShipPerformanceCtx (CShipClass *pClassArg) :
+			pClass(pClassArg),
             pShip(NULL),
             rSingleArmorFraction(0.0),
+			iArmorMass(0),
             rOperatingSpeedAdj(1.0),
 			rArmorSpeedBonus(0.0),
 			rMaxSpeedLimit(LIGHT_SPEED),
@@ -889,8 +891,10 @@ struct SShipPerformanceCtx
 			bShieldInterference(false)
         { }
 
-    CShip *pShip;                           //  Target ship
+	CShipClass *pClass;						//	Class (required)
+    CShip *pShip;                           //  Target ship (may be NULL, if computing class perf)
     Metric rSingleArmorFraction;            //  Fraction of all armor segments represented by 1 segment (= 1/segment-count)
+	int iArmorMass;							//	Total mass of all armor segments (kg)
 
     CRotationDesc RotationDesc;             //  Double precision rotation descriptor
 
