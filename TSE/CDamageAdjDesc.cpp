@@ -93,7 +93,7 @@ void CDamageAdjDesc::Compute (const CDamageAdjDesc *pDefault)
 					if (iInc > -100)
 						m_iDamageAdj[i] = 10000 / (100 + iInc);
 					else
-						m_iDamageAdj[i] = 10000000;
+						m_iDamageAdj[i] = MAX_DAMAGE_ADJ;
 					}
 				else
 					m_iDamageAdj[i] = 100;

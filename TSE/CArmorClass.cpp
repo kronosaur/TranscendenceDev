@@ -1669,9 +1669,17 @@ int CArmorClass::GetDamageAdj (CItemCtx &ItemCtx, CItemEnhancement Mods, const D
 
 	{
 	int iDamageAdj = GetDamageAdj(ItemCtx, Damage.GetDamageType());
+	if (iDamageAdj >= CDamageAdjDesc::MAX_DAMAGE_ADJ)
+		return CDamageAdjDesc::MAX_DAMAGE_ADJ;
 
 	if (Mods.IsNotEmpty())
-		return iDamageAdj * Mods.GetDamageAdj(Damage) / 100;
+		{
+		int iEnhanceAdj = Mods.GetDamageAdj(Damage);
+		if (iEnhanceAdj >= CDamageAdjDesc::MAX_DAMAGE_ADJ)
+			return CDamageAdjDesc::MAX_DAMAGE_ADJ;
+
+		return iDamageAdj * iEnhanceAdj / 100;
+		}
 	else
 		return iDamageAdj;
 	}

@@ -1017,6 +1017,8 @@ int CShieldClass::GetDamageAdj (const DamageDesc &Damage, const CItemEnhancement
 	//	The adjustment varies by shield class
 
 	int iAdj = m_DamageAdj.GetAdj(Damage.GetDamageType());
+	if (iAdj >= CDamageAdjDesc::MAX_DAMAGE_ADJ)
+		return CDamageAdjDesc::MAX_DAMAGE_ADJ;
 
 	//	Adjust based on difference in level (negative numbers means the shield
 	//	is lower than the damage level):
@@ -1032,12 +1034,24 @@ int CShieldClass::GetDamageAdj (const DamageDesc &Damage, const CItemEnhancement
 	//	>3	=	1x damage
 
 	if (Damage.GetShieldDamageLevel())
-		iAdj = iAdj * Max(100, 300 + (50 * (Damage.GetShieldDamageLevel() - GetLevel()))) / 100;
+		{
+		int iShieldAdj = Max(100, 300 + (50 * (Damage.GetShieldDamageLevel() - GetLevel())));
+		if (iShieldAdj >= CDamageAdjDesc::MAX_DAMAGE_ADJ)
+			return CDamageAdjDesc::MAX_DAMAGE_ADJ;
+
+		iAdj = iAdj * iShieldAdj / 100;
+		}
 
 	//	Adjust based on enhancements
 
 	if (pEnhancements)
-		iAdj = iAdj * pEnhancements->GetDamageAdj(Damage) / 100;
+		{
+		int iEnhanceAdj = pEnhancements->GetDamageAdj(Damage);
+		if (iEnhanceAdj >= CDamageAdjDesc::MAX_DAMAGE_ADJ)
+			return CDamageAdjDesc::MAX_DAMAGE_ADJ;
+
+		iAdj = iAdj * iEnhanceAdj / 100;
+		}
 
 	return iAdj;
 	}
