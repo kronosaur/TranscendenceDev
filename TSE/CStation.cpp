@@ -685,6 +685,11 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 		pStation->m_pRotation = new CIntegralRotation;
 		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), CreateCtx.iRotation);
 		}
+	else if (pType->GetImage().IsRotatable())
+		{
+		pStation->m_pRotation = new CIntegralRotation;
+		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), mathRandom(0, 359));
+		}
 	else
 		pStation->m_pRotation = NULL;
 

@@ -16,6 +16,7 @@
 #define ADD_TERRITORY_TAG				CONSTLIT("AddTerritory")
 #define ANTI_TROJAN_TAG					CONSTLIT("AntiTrojan")
 #define CODE_TAG						CONSTLIT("Code")
+#define ENCOUNTER_GROUP_TAG				CONSTLIT("EncounterGroup")
 #define ESCORTS_TAG						CONSTLIT("Escorts")
 #define EVENTS_TAG						CONSTLIT("Events")
 #define FILL_LOCATIONS_TAG				CONSTLIT("FillLocations")
@@ -2376,7 +2377,9 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 		PopDebugStack(pCtx);
 		}
-	else if (strEquals(sTag, GROUP_TAG) || strEquals(sTag, SYSTEM_GROUP_TAG))
+	else if (strEquals(sTag, ENCOUNTER_GROUP_TAG)	
+			|| strEquals(sTag, GROUP_TAG) 
+			|| strEquals(sTag, SYSTEM_GROUP_TAG))
 		{
 		for (int i = 0; i < pObj->GetContentElementCount(); i++)
 			{
@@ -3973,9 +3976,37 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 	ALERROR error;
 	CSpaceObject *pStation = NULL;
 
+	//	If this is a station encounter, then just create
+
+	if (pType->IsStationEncounter())
+		{
+		CXMLElement *pDesc = pType->GetDesc()->GetContentElementByTag(ENCOUNTER_GROUP_TAG);
+		if (pDesc == NULL)
+			{
+			ASSERT(false);
+			kernelDebugLogPattern("No <EncounterGroup> for <EncounterType>: %s", pType->GetNounPhrase());
+			DumpDebugStack(pCtx);
+			if (retpStation)
+				*retpStation = NULL;
+			return NOERROR;
+			}
+
+		if (CreateCtx.pOrbit == NULL)
+			{
+			kernelDebugLogPattern("No orbit defined for <EncounterType>: %s", pType->GetNounPhrase());
+			DumpDebugStack(pCtx);
+			if (retpStation)
+				*retpStation = NULL;
+			return NOERROR;
+			}
+
+		if (error = CreateSystemObject(pCtx, pDesc, *CreateCtx.pOrbit))
+			return error;
+		}
+
 	//	If this is a ship encounter, then just create the ship
 
-	if (pType->IsShipEncounter())
+	else if (pType->IsShipEncounter())
 		{
 		CXMLElement *pShipRegistry = pType->GetDesc()->GetContentElementByTag(SHIPS_TAG);
 		if (pShipRegistry == NULL)

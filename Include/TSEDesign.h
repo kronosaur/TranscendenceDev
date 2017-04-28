@@ -2887,6 +2887,7 @@ class CStationType : public CDesignType
 		bool IsSizeClass (ESizeClass iClass) const;
 		inline bool IsShipEncounter (void) { return (m_fShipEncounter ? true : false); }
 		inline bool IsStatic (void) { return (m_fStatic ? true : false); }
+		inline bool IsStationEncounter (void) { return (m_fStationEncounter ? true : false); }
 		inline bool IsTimeStopImmune (void) { return (m_fTimeStopImmune ? true : false); }
 		inline bool IsUniqueInSystem (void) const { return GetEncounterDesc().IsUniqueInSystem(); }
 		inline bool IsWall (void) { return (m_fWall ? true : false); }
@@ -3018,7 +3019,7 @@ class CStationType : public CDesignType
 
 		DWORD m_fNoMapLabel:1;							//	If TRUE, do not show a label on system map
 		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
-		DWORD m_fSpare3:1;
+		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

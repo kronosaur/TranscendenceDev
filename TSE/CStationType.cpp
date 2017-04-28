@@ -11,6 +11,8 @@
 #define DEVICES_TAG								CONSTLIT("Devices")
 #define DOCKING_PORTS_TAG						CONSTLIT("DockingPorts")
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
+#define ENCOUNTER_GROUP_TAG						CONSTLIT("EncounterGroup")
+#define ENCOUNTER_TYPE_TAG						CONSTLIT("EncounterType")
 #define ENCOUNTERS_TAG							CONSTLIT("Encounters")
 #define EVENTS_TAG								CONSTLIT("Events")
 #define HERO_IMAGE_TAG							CONSTLIT("HeroImage")
@@ -1242,13 +1244,14 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 			&& (m_pEncounters == NULL)
 			&& (m_pConstruction == NULL)
 			&& (m_pItems == NULL)
-			&& (!HasEvents())
+			&& !HasEvents()
 			&& (m_pBarrierEffect == NULL)
-			&& (!m_fMobile)
-			&& (!m_fWall)
-			&& (!m_fSign)
-			&& (!m_fBeacon)
-			&& (!m_fShipEncounter);
+			&& !m_fMobile
+			&& !m_fWall
+			&& !m_fSign
+			&& !m_fBeacon
+			&& !m_fShipEncounter
+			&& !m_fStationEncounter;
 
 	//	Any object has not HP and is a star or a world is immutable
 	//	by default.
@@ -1305,7 +1308,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
 	m_fCanAttack = pDesc->GetAttributeBool(CAN_ATTACK_ATTRIB);
 	m_fReverseArticle = pDesc->GetAttributeBool(REVERSE_ARTICLE_ATTRIB);
-	m_fShipEncounter = pDesc->GetAttributeBool(SHIP_ENCOUNTER_ATTRIB);
 	m_fImmutable = pDesc->GetAttributeBool(IMMUTABLE_ATTRIB);
 	m_fNoBlacklist = pDesc->GetAttributeBool(NO_BLACKLIST_ATTRIB);
 	m_iAlertWhenAttacked = pDesc->GetAttributeInteger(ALERT_WHEN_ATTACKED_ATTRIB);
@@ -1319,6 +1321,46 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_fPaintOverhang = true;
 	else
 		m_fPaintOverhang = false;
+
+	//	Get the scale (default to structure)
+
+	m_iScale = ParseScale(pDesc->GetAttribute(SCALE_ATTRIB));
+	if (m_iScale == scaleNone)
+		m_iScale = scaleStructure;
+
+	//	Encounter wrapper
+
+	if (strEquals(pDesc->GetTag(), ENCOUNTER_TYPE_TAG))
+		{
+		//	If we have an <EncounterGroup> tag then this is an encounter group
+		//	handled by CreateSystem.
+
+		if (pDesc->GetContentElementByTag(ENCOUNTER_GROUP_TAG))
+			{
+			m_fStationEncounter = true;
+			m_fShipEncounter = false;
+			}
+
+		//	Otherwise, if we have a <Ships> tag, then we handle this as a ship
+		//	encounter.
+
+		else if (pDesc->GetContentElementByTag(SHIPS_TAG))
+			{
+			m_fStationEncounter = false;
+			m_fShipEncounter = true;
+			m_iScale = scaleShip;
+			}
+
+		//	Otherwise this is an error.
+
+		else
+			return ComposeLoadError(Ctx, CONSTLIT("Expected <EncounterGroup>."));
+		}
+	else
+		{
+		m_fStationEncounter = false;
+		m_fShipEncounter = pDesc->GetAttributeBool(SHIP_ENCOUNTER_ATTRIB);
+		}
 
 	//	Repair rate
 
@@ -1416,12 +1458,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		else if (m_iMaxStructuralHP == -1)
 			m_iMaxStructuralHP = m_iStructuralHP;
 		}
-
-	//	Get the scale (default to structure)
-
-	m_iScale = ParseScale(pDesc->GetAttribute(SCALE_ATTRIB));
-	if (m_iScale == scaleNone)
-		m_iScale = scaleStructure;
 
 	//	Mass & Size
 	

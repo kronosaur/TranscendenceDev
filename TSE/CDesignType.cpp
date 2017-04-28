@@ -15,6 +15,7 @@
 #define EFFECT_TAG								CONSTLIT("Effect")
 #define EFFECT_TYPE_TAG							CONSTLIT("EffectType")
 #define ENCOUNTER_TABLE_TAG						CONSTLIT("EncounterTable")
+#define ENCOUNTER_TYPE_TAG						CONSTLIT("EncounterType")
 #define EVENTS_TAG								CONSTLIT("Events")
 #define GLOBAL_DATA_TAG							CONSTLIT("GlobalData")
 #define IMAGE_TAG								CONSTLIT("Image")
@@ -440,7 +441,8 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			pType = new COverlayType;
 		else if (strEquals(pDesc->GetTag(), SYSTEM_TYPE_TAG))
 			pType = new CSystemType;
-		else if (strEquals(pDesc->GetTag(), STATION_TYPE_TAG))
+		else if (strEquals(pDesc->GetTag(), STATION_TYPE_TAG)
+				|| strEquals(pDesc->GetTag(), ENCOUNTER_TYPE_TAG))
 			pType = new CStationType;
 		else if (strEquals(pDesc->GetTag(), SOUNDTRACK_TAG))
 			pType = new CMusicResource;
@@ -2216,7 +2218,7 @@ ALERROR CDesignType::PrepareBindDesign (SDesignLoadCtx &Ctx)
 		{
 		m_pInheritFrom = g_pUniverse->FindDesignType(m_dwInheritFrom);
 		if (m_pInheritFrom == NULL)
-			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown inherit design type: %x"), m_dwInheritFrom));
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown inherit design type: %08x"), m_dwInheritFrom));
 
 		if (m_pInheritFrom->GetType() != GetType() && m_pInheritFrom->GetType() != designGenericType)
 			return ComposeLoadError(Ctx, CONSTLIT("Cannot inherit from a different type."));

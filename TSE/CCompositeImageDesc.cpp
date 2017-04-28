@@ -62,6 +62,7 @@
 #define IMAGE_VARIANTS_TAG						CONSTLIT("ImageVariants")
 #define LOCATION_CRITERIA_TABLE_TAG				CONSTLIT("LocationCriteriaTable")
 #define LOOKUP_TAG								CONSTLIT("Lookup")
+#define ROTATION_TABLE_TAG						CONSTLIT("RotationTable")
 #define TABLE_TAG								CONSTLIT("Table")
 #define VARIANTS_TAG							CONSTLIT("Variants")
 
@@ -88,6 +89,7 @@ class CCompositeEntry : public IImageEntry
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override;
+		virtual bool IsRotatable (void) const override;
 		virtual void MarkImage (void) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
@@ -131,6 +133,7 @@ class CFilterColorizeEntry : public IImageEntry
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override;
+		virtual bool IsRotatable (void) const override;
 		virtual void MarkImage (void) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
@@ -174,6 +177,7 @@ class CLocationCriteriaTableEntry : public IImageEntry
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
+		virtual bool IsRotatable (void) const override;
 		virtual void MarkImage (void) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
@@ -201,6 +205,7 @@ class CRotationTableEntry : public IImageEntry
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override;
+		virtual bool IsRotatable (void) const override { return true; }
 		virtual void MarkImage (void) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
@@ -227,6 +232,7 @@ class CTableEntry : public IImageEntry
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
+		virtual bool IsRotatable (void) const override;
 		virtual void MarkImage (void) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
@@ -464,6 +470,8 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 		pEntry = new CFilterColorizeEntry;
 	else if (strEquals(pDesc->GetTag(), LOCATION_CRITERIA_TABLE_TAG))
 		pEntry = new CLocationCriteriaTableEntry;
+	else if (strEquals(pDesc->GetTag(), ROTATION_TABLE_TAG))
+		pEntry = new CRotationTableEntry;
 	else if (strEquals(pDesc->GetTag(), LOOKUP_TAG) || strEquals(pDesc->GetTag(), IMAGE_LOOKUP_TAG))
 		{
 		DWORD dwUNID = pDesc->GetAttributeInteger(IMAGE_ID_ATTRIB);
@@ -870,6 +878,22 @@ bool CCompositeEntry::IsConstant (void)
 	return true;
 	}
 
+bool CCompositeEntry::IsRotatable (void) const
+
+//	IsRotatable
+//
+//	Returns TRUE if we use rotation.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Layers.GetCount(); i++)
+		if (m_Layers[i]->IsRotatable())
+			return true;
+
+	return false;
+	}
+
 void CCompositeEntry::MarkImage (void)
 
 //	MarkImage
@@ -1223,6 +1247,19 @@ bool CFilterColorizeEntry::IsConstant (void)
 	return m_pSource->IsConstant();
 	}
 
+bool CFilterColorizeEntry::IsRotatable (void) const
+
+//	IsRotatable
+//
+//	Returns TRUE if this entry uses rotation
+
+	{
+	if (m_pSource == NULL)
+		return false;
+
+	return m_pSource->IsRotatable();
+	}
+
 void CFilterColorizeEntry::MarkImage (void)
 
 //	MarkImage
@@ -1458,6 +1495,22 @@ void CLocationCriteriaTableEntry::InitSelector (SSelectorInitCtx &InitCtx, CComp
 		retSelector->AddVariant(GetID(), iIndex);
 		m_Table[iIndex].pImage->InitSelector(InitCtx, retSelector);
 		}
+	}
+
+bool CLocationCriteriaTableEntry::IsRotatable (void) const
+
+//	IsRotatable
+//
+//	Returns TRUE if we use rotation.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pImage->IsRotatable())
+			return true;
+
+	return false;
 	}
 
 void CLocationCriteriaTableEntry::MarkImage (void)
@@ -1840,6 +1893,22 @@ void CTableEntry::InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelect
 			}
 		else
 			iRoll -= m_Table[i].iChance;
+	}
+
+bool CTableEntry::IsRotatable (void) const
+
+//	IsRotatable
+//
+//	Returns TRUE if we use rotation.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pImage->IsRotatable())
+			return true;
+
+	return false;
 	}
 
 void CTableEntry::MarkImage (void)

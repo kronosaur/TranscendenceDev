@@ -326,6 +326,7 @@ class IImageEntry
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) { return NOERROR; }
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) { }
 		virtual bool IsConstant (void) = 0;
+		virtual bool IsRotatable (void) const { return false; }
 		virtual void MarkImage (void) { }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
@@ -390,6 +391,7 @@ class CCompositeImageDesc
 		ALERROR InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1);
 		inline bool IsConstant (void) const { return m_bConstant; }
 		inline bool IsEmpty (void) { return (GetVariantCount() == 0); }
+		inline bool IsRotatable (void) const { return (m_pRoot ? m_pRoot->IsRotatable() : false); }
 		void MarkImage (void);
 		void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers());
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
