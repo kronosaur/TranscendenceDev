@@ -448,6 +448,9 @@
 //	145: 1.8 Alpha 1
 //		m_pMoney in CShip
 //
+//	146: 1.8 Alpha 2
+//		m_pRotation in CStation
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

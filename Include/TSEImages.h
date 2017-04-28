@@ -5,6 +5,8 @@
 
 #pragma once
 
+class CCompositeImageModifiers;
+
 struct SPointInObjectCtx
 	{
 	SPointInObjectCtx (void) :
@@ -317,7 +319,7 @@ class IImageEntry
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
         virtual IImageEntry *Clone (void) = 0;
 		inline DWORD GetID (void) { return m_dwID; }
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) = 0;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) = 0;
 		virtual int GetMaxLifetime (void) const { return 0; }
         virtual CObjectImageArray &GetSimpleImage (void);
 		virtual int GetVariantCount (void) = 0;
@@ -335,6 +337,7 @@ class CCompositeImageModifiers
 	{
 	public:
 		CCompositeImageModifiers (void) :
+				m_iRotation(0),
 				m_rgbFadeColor(0),
 				m_wFadeOpacity(0),
 				m_fStationDamage(false)
@@ -343,8 +346,10 @@ class CCompositeImageModifiers
 		bool operator== (const CCompositeImageModifiers &Val) const;
 
 		void Apply (CObjectImageArray *retImage) const;
+		inline int GetRotation (void) const { return m_iRotation; }
 		inline bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_fStationDamage); }
 		inline void SetFadeColor (CG32bitPixel rgbColor, DWORD dwOpacity) { m_rgbFadeColor = rgbColor; m_wFadeOpacity = (WORD)dwOpacity; }
+		inline void SetRotation (int iRotation) { m_iRotation = AngleMod(iRotation); }
 		inline void SetStationDamage (bool bValue = true) { m_fStationDamage = bValue; }
 
 		static void Reinit (void);
@@ -355,6 +360,7 @@ class CCompositeImageModifiers
 
 		CG32bitImage *CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const;
 
+		int m_iRotation;					//	Rotation
 		CG32bitPixel m_rgbFadeColor;		//	Apply a wash on top of image
 		WORD m_wFadeOpacity;				//		0 = no wash
 

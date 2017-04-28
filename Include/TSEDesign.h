@@ -2856,6 +2856,7 @@ class CStationType : public CDesignType
 		inline DWORD GetRandomNameFlags (void) { return m_dwRandomNameFlags; }
 		inline const CRegenDesc &GetRegenDesc (void) { return m_Regen; }
 		IShipGenerator *GetReinforcementsTable (void);
+		const CIntegralRotationDesc &GetRotationDesc (void);
 		inline CXMLElement *GetSatellitesDesc (void) { return m_pSatellitesDesc; }
 		inline ScaleTypes GetScale (void) const { return m_iScale; }
 		inline int GetSize (void) const { return m_iSize; }
@@ -3089,6 +3090,8 @@ class CStationType : public CDesignType
 														//	(e.g., centauri occupation)
 		//	Temporary
 		int m_iChance;									//	Used when computing chance of encounter
+
+		static CIntegralRotationDesc m_DefaultRotation;
 	};
 
 //	CEconomyType --------------------------------------------------------------

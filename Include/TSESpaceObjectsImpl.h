@@ -1429,6 +1429,7 @@ class CStation : public CSpaceObject
 		inline void SetNoReinforcements (void) { m_fNoReinforcements = true; }
 		inline void SetPaintOverhang (bool bOverhang = true) { m_fPaintOverhang = bOverhang; }
 		inline void SetReconned (void) { m_fReconned = true; }
+		inline void SetRotation (int iAngle) { if (m_pRotation) m_pRotation->SetRotationAngle(m_pType->GetRotationDesc(), iAngle); }
 		inline void SetShowMapLabel (bool bShow = true) { m_fNoMapLabel = !bShow; }
 		void SetStargate (const CString &sDestNode, const CString &sDestEntryPoint);
 		inline void SetStructuralHitPoints (int iHP) { m_iStructuralHP = iHP; }
@@ -1481,6 +1482,7 @@ class CStation : public CSpaceObject
 		virtual int GetPlanetarySize (void) const override { return (GetScale() == scaleWorld ? m_pType->GetSize() : 0); }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const override;
+		virtual int GetRotation (void) const override { return (m_pRotation ? m_pRotation->GetRotationAngle(m_pType->GetRotationDesc()) : 0); }
 		virtual ScaleTypes GetScale (void) const override { return m_Scale; }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pType->GetScreen(sName); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
@@ -1613,6 +1615,7 @@ class CStation : public CSpaceObject
 		CSovereign *m_pSovereign;				//	Allegiance
 		ScaleTypes m_Scale;						//	Scale of station
 		Metric m_rMass;							//	Mass of station (depends on scale)
+		CIntegralRotation *m_pRotation;			//	Rotation parameters (may be NULL)
 
 		CCompositeImageSelector m_ImageSelector;//	Image variant to display
 		int m_iDestroyedAnimation;				//	Frames left of destroyed animation
@@ -1631,7 +1634,7 @@ class CStation : public CSpaceObject
 		int m_iMaxStructuralHP;					//	Max structural hp
 
 		CInstalledDevice *m_pDevices;			//	Array of devices
-		COverlayList m_Overlays;			//	List of overlays
+		COverlayList m_Overlays;				//	List of overlays
 		CDockingPorts m_DockingPorts;			//	Docking ports
 
 		CSpaceObject *m_pTarget;				//	Target to hit (by our weapons)

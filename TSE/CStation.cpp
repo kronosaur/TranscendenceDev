@@ -44,6 +44,8 @@
 #define PROPERTY_PARALLAX						CONSTLIT("parallax")
 #define PROPERTY_PLAYER_BACKLISTED				CONSTLIT("playerBlacklisted")
 #define PROPERTY_RADIOACTIVE					CONSTLIT("radioactive")
+#define PROPERTY_ROTATION						CONSTLIT("rotation")
+#define PROPERTY_ROTATION_SPEED					CONSTLIT("rotationSpeed")
 #define PROPERTY_SHIP_CONSTRUCTION_ENABLED		CONSTLIT("shipConstructionEnabled")
 #define PROPERTY_SHIP_REINFORCEMENT_ENABLED		CONSTLIT("shipReinforcementEnabled")
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
@@ -105,6 +107,7 @@ CStation::CStation (void) : CSpaceObject(&g_Class),
 		m_fArmed(false),
 		m_dwSpare(0),
 		m_pType(NULL),
+		m_pRotation(NULL),
 		m_pMapOrbit(NULL),
 		m_pArmorClass(NULL),
 		m_pTarget(NULL),
@@ -125,6 +128,9 @@ CStation::~CStation (void)
 //	CStation destructor
 
 	{
+	if (m_pRotation)
+		delete m_pRotation;
+
 	if (m_pMapOrbit)
 		delete m_pMapOrbit;
 
@@ -287,6 +293,11 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 		{
 		if (ShowStationDamage())
 			retModifiers->SetStationDamage(true);
+
+		//	Rotation
+
+		if (m_pRotation)
+			retModifiers->SetRotation(m_pRotation->GetRotationAngle(m_pType->GetRotationDesc()));
 		}
 
 	//	Tick
@@ -666,6 +677,16 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
 	pStation->m_fDestroyIfEmpty = false;
     pStation->m_fIsSegment = CreateCtx.bIsSegment;
+
+	//	Set up rotation, if necessary
+
+	if (CreateCtx.iRotation != -1)
+		{
+		pStation->m_pRotation = new CIntegralRotation;
+		pStation->m_pRotation->SetRotationAngle(pType->GetRotationDesc(), CreateCtx.iRotation);
+		}
+	else
+		pStation->m_pRotation = NULL;
 
 	//	Handle moving stations
 
@@ -1474,6 +1495,12 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_PLAYER_BACKLISTED))
 		return CC.CreateBool(IsBlacklisted(NULL));
+
+	else if (strEquals(sName, PROPERTY_ROTATION))
+		return CC.CreateInteger(GetRotation());
+
+	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))
+		return CC.CreateDouble(m_pRotation ? m_pRotation->GetRotationSpeedDegrees(m_pType->GetRotationDesc()) : 0.0);
 
 	else if (strEquals(sName, PROPERTY_SHIP_CONSTRUCTION_ENABLED))
 		return CC.CreateBool(m_fNoConstruction);
@@ -3072,6 +3099,8 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	DWORD		m_dwWreckUNID
 //	DWORD		flags
+//
+//	CIntegralRotation m_pRotation
 
 	{
 #ifdef DEBUG_LOAD
@@ -3326,7 +3355,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fKnown =				((dwLoad & 0x00000002) ? true : false);
 	m_fNoMapLabel =			((dwLoad & 0x00000004) ? true : false);
 	m_fRadioactive =		((dwLoad & 0x00000008) ? true : false);
-	//	0x00000010 UNUSED m_fCustomImage
+	bool bHasRotation =		(Ctx.dwVersion >= 146 ? ((dwLoad & 0x00000010) ? true : false) : false);
 	m_fActive =				((dwLoad & 0x00000020) ? true : false);
 	m_fNoReinforcements =	((dwLoad & 0x00000040) ? true : false);
 	m_fReconned =			((dwLoad & 0x00000080) ? true : false);
@@ -3375,6 +3404,16 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 				&& m_pType->GetEjectaAdj() != 0)
 			m_fImmutable = m_pType->IsImmutable();
 		}
+
+	//	Rotation
+
+	if (bHasRotation)
+		{
+		m_pRotation = new CIntegralRotation;
+		m_pRotation->ReadFromStream(Ctx, m_pType->GetRotationDesc());
+		}
+	else
+		m_pRotation = NULL;
 	}
 
 void CStation::OnSetEventFlags (void)
@@ -3717,6 +3756,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //
 //	DWORD		m_dwWreckUNID
 //	DWORD		flags
+//
+//	CIntegralRotation	m_pRotation
 
 	{
 	int i;
@@ -3817,7 +3858,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fKnown ?				0x00000002 : 0);
 	dwSave |= (m_fNoMapLabel ?			0x00000004 : 0);
 	dwSave |= (m_fRadioactive ?			0x00000008 : 0);
-	//	0x00000010 retired
+	dwSave |= (m_pRotation ?			0x00000010 : 0);
 	dwSave |= (m_fActive ?				0x00000020 : 0);
 	dwSave |= (m_fNoReinforcements ?	0x00000040 : 0);
 	dwSave |= (m_fReconned ?			0x00000080 : 0);
@@ -3835,6 +3876,11 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fDestroyIfEmpty ?		0x00080000 : 0);
 	dwSave |= (m_fIsSegment ?		    0x00100000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+	//	Rotation
+
+	if (m_pRotation)
+		m_pRotation->WriteToStream(pStream);
 	}
 
 void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
@@ -4515,6 +4561,17 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 			if (!IsRadioactive())
 				MakeRadioactive();
 			}
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_ROTATION))
+		{
+		SetRotation(pValue->GetIntegerValue());
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))
+		{
+		if (m_pRotation)
+			m_pRotation->SetRotationSpeedDegrees(m_pType->GetRotationDesc(), pValue->GetDoubleValue());
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_SHIP_CONSTRUCTION_ENABLED))

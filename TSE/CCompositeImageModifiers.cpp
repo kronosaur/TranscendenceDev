@@ -13,7 +13,8 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 //	operator ==
 
 	{
-	return (m_rgbFadeColor == Val.m_rgbFadeColor
+	return (m_iRotation == Val.m_iRotation
+			&& m_rgbFadeColor == Val.m_rgbFadeColor
 			&& m_wFadeOpacity == Val.m_wFadeOpacity
 			&& m_fStationDamage == Val.m_fStationDamage);
 	}

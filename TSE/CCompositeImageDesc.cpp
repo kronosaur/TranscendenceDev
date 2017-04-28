@@ -24,6 +24,10 @@
 //
 //	<Lookup unid="..."/>
 //
+//	<RotationTable>
+//		<{entry} rotation="..." />
+//	</RtationTable>
+//
 //	<Table>
 //		{set of entries}
 //	</Table>
@@ -67,6 +71,7 @@
 #define EFFECT_ATTRIB							CONSTLIT("effect")
 #define HUE_ATTRIB								CONSTLIT("hue")
 #define IMAGE_ID_ATTRIB							CONSTLIT("imageID")
+#define ROTATION_ATTRIB							CONSTLIT("rotation")
 #define SATURATION_ATTRIB						CONSTLIT("saturation")
 
 class CCompositeEntry : public IImageEntry
@@ -77,7 +82,7 @@ class CCompositeEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
         virtual IImageEntry *Clone (void) override;
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return 1; }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
@@ -100,7 +105,7 @@ class CEffectEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pEffect) m_pEffect->AddTypesUsed(retTypesUsed); }
         virtual IImageEntry *Clone (void) override;
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return 1; }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
@@ -120,7 +125,7 @@ class CFilterColorizeEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pSource) m_pSource->AddTypesUsed(retTypesUsed); }
         virtual IImageEntry *Clone (void) override;
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return 1; }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
@@ -143,7 +148,7 @@ class CImageEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
         virtual IImageEntry *Clone (void) override;
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override { *retImage = m_Image; }
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override { *retImage = m_Image; }
 		virtual int GetMaxLifetime (void) const override { return m_Image.GetFrameCount() * m_Image.GetTicksPerFrame(); }
         virtual CObjectImageArray &GetSimpleImage (void) override { return m_Image; }
 		virtual int GetVariantCount (void) override { return 1; }
@@ -163,7 +168,7 @@ class CLocationCriteriaTableEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
         virtual IImageEntry *Clone (void) override;
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
@@ -183,6 +188,32 @@ class CLocationCriteriaTableEntry : public IImageEntry
 		int m_iDefault;
 	};
 
+class CRotationTableEntry : public IImageEntry
+	{
+	public:
+		virtual ~CRotationTableEntry (void);
+
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+        virtual IImageEntry *Clone (void) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
+		virtual int GetMaxLifetime (void) const override;
+		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
+		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
+		virtual bool IsConstant (void) override;
+		virtual void MarkImage (void) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
+
+	private:
+		struct SEntry
+			{
+			IImageEntry *pImage;
+			int iRotation;
+			};
+
+		TArray<SEntry> m_Table;
+	};
+
 class CTableEntry : public IImageEntry
 	{
 	public:
@@ -190,7 +221,7 @@ class CTableEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
         virtual IImageEntry *Clone (void) override;
-		virtual void GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage) override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
@@ -371,7 +402,7 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 		pEntry = m_Cache.Insert();
 		pEntry->Selector = Selector;
 		pEntry->Modifiers = Modifiers;
-		m_pRoot->GetImage(Selector, &pEntry->Image);
+		m_pRoot->GetImage(Selector, Modifiers, &pEntry->Image);
 
 		//	Apply modifiers
 
@@ -656,7 +687,7 @@ IImageEntry *CCompositeEntry::Clone (void)
     return pDest;
     }
 
-void CCompositeEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
+void CCompositeEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
 //
@@ -678,7 +709,7 @@ void CCompositeEntry::GetImage (const CCompositeImageSelector &Selector, CObject
 	TArray<CObjectImageArray> Result;
 	Result.InsertEmpty(m_Layers.GetCount());
 	for (i = 0; i < m_Layers.GetCount(); i++)
-		m_Layers[i]->GetImage(Selector, &Result[i]);
+		m_Layers[i]->GetImage(Selector, Modifiers, &Result[i]);
 
 	//	Create the composited image
 	//
@@ -894,7 +925,7 @@ IImageEntry *CEffectEntry::Clone (void)
     return pDest;
     }
 
-void CEffectEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
+void CEffectEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
 //
@@ -1054,7 +1085,7 @@ IImageEntry *CFilterColorizeEntry::Clone (void)
     return pDest;
     }
 
-void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
+void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
 //
@@ -1072,7 +1103,7 @@ void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, CO
 	//	Get the source image (which we want to colorize)
 
 	CObjectImageArray Source;
-	m_pSource->GetImage(Selector, &Source);
+	m_pSource->GetImage(Selector, Modifiers, &Source);
 	const RECT &rcSource = Source.GetImageRect();
 	CG32bitImage &SourceImage = Source.GetImage(NULL_STR);
 	int cxWidth = RectWidth(rcSource);
@@ -1306,7 +1337,7 @@ IImageEntry *CLocationCriteriaTableEntry::Clone (void)
     return pDest;
     }
 
-void CLocationCriteriaTableEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
+void CLocationCriteriaTableEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
 //
@@ -1320,7 +1351,7 @@ void CLocationCriteriaTableEntry::GetImage (const CCompositeImageSelector &Selec
 		return;
 		}
 
-	m_Table[iIndex].pImage->GetImage(Selector, retImage);
+	m_Table[iIndex].pImage->GetImage(Selector, Modifiers, retImage);
 	}
 
 int CLocationCriteriaTableEntry::GetMaxLifetime (void) const
@@ -1461,6 +1492,208 @@ ALERROR CLocationCriteriaTableEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
+//	CRotationTableEntry --------------------------------------------------------
+
+CRotationTableEntry::~CRotationTableEntry (void)
+
+//	CRotationTableEntry destructor
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		delete m_Table[i].pImage;
+	}
+
+void CRotationTableEntry::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
+
+//	AddTypesUsed
+//
+//	Add types used by this entry
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		m_Table[i].pImage->AddTypesUsed(retTypesUsed);
+	}
+
+IImageEntry *CRotationTableEntry::Clone (void)
+
+//  Clone
+//
+//  Create a new copy
+
+    {
+    int i;
+
+    CRotationTableEntry *pDest = new CRotationTableEntry;
+    pDest->m_dwID = m_dwID;
+
+    pDest->m_Table.InsertEmpty(m_Table.GetCount());
+    for (i = 0; i < m_Table.GetCount(); i++)
+        {
+        m_Table[i].pImage = (m_Table[i].pImage ? m_Table[i].pImage->Clone() : NULL);
+        m_Table[i].iRotation = m_Table[i].iRotation;
+        }
+
+    return pDest;
+    }
+
+void CRotationTableEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
+
+//	GetImage
+//
+//	Returns the image
+
+	{
+	int i;
+
+	//	Look for the closes rotation to the given one.
+
+	int iBest = -1;
+	int iBestDiff = 360;
+	for (i = 0; i < m_Table.GetCount(); i++)
+		{
+		int iDiff = Absolute(AngleOffset(Modifiers.GetRotation(), m_Table[i].iRotation));
+		if (iDiff < iBestDiff)
+			{
+			iBest = i;
+			iBestDiff = iDiff;
+			}
+		}
+
+	if (iBest == -1)
+		{
+		*retImage = EMPTY_IMAGE;
+		return;
+		}
+
+	m_Table[iBest].pImage->GetImage(Selector, Modifiers, retImage);
+	}
+
+int CRotationTableEntry::GetMaxLifetime (void) const
+
+//	GetMaxLifetime
+//
+//	Returns the maximum lifetime
+
+	{
+	int i;
+	int iMaxLifetime = 0;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		{
+		int iLifetime = m_Table[i].pImage->GetMaxLifetime();
+		if (iLifetime > iMaxLifetime)
+			iMaxLifetime = iLifetime;
+		}
+
+	return iMaxLifetime;
+	}
+
+ALERROR CRotationTableEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc)
+
+//	InitFromXML
+//
+//	Initialize from XML
+
+	{
+	ALERROR error;
+	int i;
+
+	m_dwID = IDGen.GetID();
+
+	//	Load each sub-entry in turn
+
+	int iCount = pDesc->GetContentElementCount();
+	if (iCount == 0)
+		return NOERROR;
+
+	m_Table.InsertEmpty(iCount);
+	for (i = 0; i < iCount; i++)
+		{
+		CXMLElement *pItem = pDesc->GetContentElement(i);
+
+		if (error = CCompositeImageDesc::InitEntryFromXML(Ctx, pItem, IDGen, &m_Table[i].pImage))
+			return error;
+
+		//	Load the chance
+
+		m_Table[i].iRotation = AngleMod(pItem->GetAttributeIntegerBounded(ROTATION_ATTRIB, -360, 360, 1));
+		}
+
+	//	Done
+
+	return NOERROR;
+	}
+
+void CRotationTableEntry::InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector)
+
+//	InitSelector
+//
+//	Initializes the selector
+
+	{
+	int i;
+
+	//	Since the rotation could change at runtime, we initialize all selectors.
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		m_Table[i].pImage->InitSelector(InitCtx, retSelector);
+	}
+
+bool CRotationTableEntry::IsConstant (void)
+
+//	IsConstant
+//
+//	Returns TRUE if we don't change based on selector.
+
+	{
+	int i;
+
+	//	Since we only change due to rotation (which comes from modifiers), we're
+	//	constant as long as all our images are constant.
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (!m_Table[i].pImage->IsConstant())
+			return false;
+
+	return true;
+	}
+
+void CRotationTableEntry::MarkImage (void)
+
+//	MarkImage
+//
+//	Mark all images
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		m_Table[i].pImage->MarkImage();
+	}
+
+ALERROR CRotationTableEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
+
+//	OnDesignLoadComplete
+//
+//	Bind design
+
+	{
+	ALERROR error;
+	int i;
+	
+	for (i = 0; i < m_Table.GetCount(); i++)
+		{
+		if (error = m_Table[i].pImage->OnDesignLoadComplete(Ctx))
+			return error;
+		}
+
+	return NOERROR;
+	}
+
 //	CTableEntry ----------------------------------------------------------------
 
 CTableEntry::~CTableEntry (void)
@@ -1511,7 +1744,7 @@ IImageEntry *CTableEntry::Clone (void)
     return pDest;
     }
 
-void CTableEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImageArray *retImage)
+void CTableEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
 //
@@ -1525,7 +1758,7 @@ void CTableEntry::GetImage (const CCompositeImageSelector &Selector, CObjectImag
 		return;
 		}
 
-	m_Table[iIndex].pImage->GetImage(Selector, retImage);
+	m_Table[iIndex].pImage->GetImage(Selector, Modifiers, retImage);
 	}
 
 int CTableEntry::GetMaxLifetime (void) const

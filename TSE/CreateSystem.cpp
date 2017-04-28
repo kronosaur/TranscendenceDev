@@ -4276,6 +4276,9 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CreateCtx.pExtraData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
     CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
 
+	if (!pDesc->FindAttributeInteger(ROTATION_ATTRIB, &CreateCtx.iRotation))
+		CreateCtx.iRotation = -1;
+
 	//	Since this is an explicit creation of a station, ignore limits
 
 	CreateCtx.bIgnoreLimits = true;

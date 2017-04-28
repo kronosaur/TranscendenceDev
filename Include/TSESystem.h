@@ -601,6 +601,7 @@ class CSystemSpacePainter
 struct SObjCreateCtx
 	{
 	SObjCreateCtx (void) :
+			iRotation(-1),
 			pLoc(NULL),
 			pOrbit(NULL),
 			pExtraData(NULL),
@@ -615,6 +616,7 @@ struct SObjCreateCtx
 											//		always be set properly, even if orbit
 											//		or location is also provided.
 	CVector vVel;							//	Initial velocity.
+	int iRotation;							//	-1 = default rotation
 
 	const CLocationDef *pLoc;				//	Optional location (may be NULL)
 	const COrbit *pOrbit;					//	Optional orbit (may be NULL)

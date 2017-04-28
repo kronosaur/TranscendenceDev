@@ -73,19 +73,19 @@ Metric CIntegralRotationDesc::GetMaxRotationSpeedDegrees (void) const
 	return 360.0 * m_iMaxRotationRate / (ROTATION_FRACTION * m_iCount); 
 	}
 
-void CIntegralRotationDesc::InitFromDesc (const CRotationDesc &Desc)
+void CIntegralRotationDesc::Init (int iFrameCount, Metric rMaxRotation, Metric rAccel, Metric rAccelStop)
 
-//  InitFromDesc
+//	Init
 //
-//  Initialize from a descriptor (which uses double precision)
+//	Initialize from constants
 
-    {
+	{
     int i;
 
-    m_iCount = Desc.GetFrameCount();
-	m_iMaxRotationRate = Max(1, mathRound(ROTATION_FRACTION * Desc.GetMaxRotationPerTick() * m_iCount / 360.0));
-	m_iRotationAccel = Max(1, mathRound(ROTATION_FRACTION * Desc.GetRotationAccelPerTick() * m_iCount / 360.0));
-	m_iRotationAccelStop = Max(1, mathRound(ROTATION_FRACTION * Desc.GetRotationAccelStopPerTick() * m_iCount / 360.0));
+    m_iCount = iFrameCount;
+	m_iMaxRotationRate = Max(1, mathRound(ROTATION_FRACTION * rMaxRotation * m_iCount / 360.0));
+	m_iRotationAccel = Max(1, mathRound(ROTATION_FRACTION * rAccel * m_iCount / 360.0));
+	m_iRotationAccelStop = Max(1, mathRound(ROTATION_FRACTION * rAccelStop * m_iCount / 360.0));
 
 	if (m_iCount > 0 && m_iCount <= 360 && !m_FacingsData[m_iCount].bInitialized)
 		{
@@ -102,4 +102,14 @@ void CIntegralRotationDesc::InitFromDesc (const CRotationDesc &Desc)
 
 		m_FacingsData[m_iCount].bInitialized = true;
 		}
+	}
+
+void CIntegralRotationDesc::InitFromDesc (const CRotationDesc &Desc)
+
+//  InitFromDesc
+//
+//  Initialize from a descriptor (which uses double precision)
+
+    {
+	Init(Desc.GetFrameCount(), Desc.GetMaxRotationPerTick(), Desc.GetRotationAccelPerTick(), Desc.GetRotationAccelStopPerTick());
     }

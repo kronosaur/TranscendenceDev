@@ -235,6 +235,8 @@ static SStdStationDesc STD_STATION_DATA[] =
 		{	4200000000,	},
 	};
 
+CIntegralRotationDesc CStationType::m_DefaultRotation;
+
 CStationType::CStationType (void) : 
 		m_pDesc(NULL),
 		m_pInitialShips(NULL),
@@ -985,6 +987,19 @@ IShipGenerator *CStationType::GetReinforcementsTable (void)
 
 	else
 		return m_pInitialShips;
+	}
+
+const CIntegralRotationDesc &CStationType::GetRotationDesc (void)
+
+//	GetRotationDesc
+//
+//	Returns the rotation parameters.
+
+	{
+	if (m_DefaultRotation.GetFrameCount() != 360)
+		m_DefaultRotation.Init(360);
+
+	return m_DefaultRotation;
 	}
 
 bool CStationType::IsSizeClass (ESizeClass iClass) const
