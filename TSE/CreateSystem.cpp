@@ -4255,7 +4255,7 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 
 	//	Load images, if necessary
 
-	if (!IsCreationInProgress())
+	if (pStation && !IsCreationInProgress())
 		pStation->MarkImages();
 
 	//	Done
