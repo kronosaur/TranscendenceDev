@@ -602,6 +602,7 @@ struct SObjCreateCtx
 	{
 	SObjCreateCtx (void) :
 			iRotation(-1),
+			rParallax(1.0),
 			pLoc(NULL),
 			pOrbit(NULL),
 			pExtraData(NULL),
@@ -617,6 +618,7 @@ struct SObjCreateCtx
 											//		or location is also provided.
 	CVector vVel;							//	Initial velocity.
 	int iRotation;							//	-1 = default rotation
+	Metric rParallax;						//	Parallax
 
 	const CLocationDef *pLoc;				//	Optional location (may be NULL)
 	const COrbit *pOrbit;					//	Optional orbit (may be NULL)

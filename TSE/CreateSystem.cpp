@@ -61,6 +61,7 @@
 #define ARC_INC_ATTRIB					CONSTLIT("arcInc")
 #define ARC_LENGTH_ATTRIB				CONSTLIT("arcLength")
 #define ATTRIBUTES_ATTRIB				CONSTLIT("attributes")
+#define BACKGROUND_PLANE_ATTRIB			CONSTLIT("backgroundPlane")
 #define BODE_DISTANCE_END_ATTRIB		CONSTLIT("BodeDistanceEnd")
 #define BODE_DISTANCE_START_ATTRIB		CONSTLIT("BodeDistanceStart")
 #define CHANCE_ATTRIB					CONSTLIT("chance")
@@ -4309,6 +4310,10 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 
 	if (!pDesc->FindAttributeInteger(ROTATION_ATTRIB, &CreateCtx.iRotation))
 		CreateCtx.iRotation = -1;
+
+	int iParallax = pDesc->GetAttributeIntegerBounded(BACKGROUND_PLANE_ATTRIB, 1, -1, 100);
+	if (iParallax != 100)
+		CreateCtx.rParallax = iParallax / 100.0;
 
 	//	Since this is an explicit creation of a station, ignore limits
 

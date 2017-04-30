@@ -706,7 +706,10 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	Background objects cannot be hit
 
-	pStation->m_rParallaxDist = pType->GetParallaxDist();
+	if (CreateCtx.rParallax != 1.0)
+		pStation->m_rParallaxDist = CreateCtx.rParallax;
+	else
+		pStation->m_rParallaxDist = pType->GetParallaxDist();
 	if (pStation->m_rParallaxDist != 1.0)
 		pStation->SetOutOfPlaneObj(true);
 
