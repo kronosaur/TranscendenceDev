@@ -2928,7 +2928,23 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 //	GenerateAngles
 //
 //	Generates random angles based on the angle type. Jitter is a value from 0-100
-//	indicating a jitter in angle generation.
+//	indicating a jitter in angle generation. Our caller will increase jitter to
+//	try to find non-overlapping patterns.
+//
+//	SYNTAX
+//
+//	"n"							Position object at given angle
+//	"{dice}"					Roll angle to determine position
+//
+//	"equidistant"				Start at random angle and distribute evenly.
+//	"equidistant:n"				Start at angle n and distribute objects evenly.
+//	"equidistant:{dice}"		Start at random angle and offset each position
+//									by given param.
+//
+//	"incrementing:{dice}"		Start at random angle and increment angle by
+//									param for each subsequent object.
+//
+//	"minSeparation:{dice}"		Random, but not closer than param (in degrees)
 
 	{
 	ALERROR error;
@@ -2996,6 +3012,10 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 	else if (strEquals(sKeyword, EQUIDISTANT_ANGLE))
 		{
 		DiceRange OffsetRange(0, 0, 0);
+		int iStart;
+
+		//	If we have a parameter, then treat that as an angle start
+
 		if (!sValue.IsBlank())
 			{
 			if (error = OffsetRange.LoadFromXML(sValue))
@@ -3003,11 +3023,22 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 				pCtx->sError = CONSTLIT("Invalid equidistant range in orbitals");
 				return error;
 				}
+
+			//	If the offset is constant, the we assume it is a start angle.
+			//	Otherwise, it is just an offset.
+
+			if (OffsetRange.IsConstant())
+				iStart = 0;
+			else
+				iStart = mathRandom(0, 3599);
 			}
 
-		int iStart = mathRandom(0, 3599);
-		int iSeparation = 3600 / iCount;
+		//	Otherwise, we randomize the start angle.
 
+		else
+			iStart = mathRandom(0, 3599);
+
+		int iSeparation = 3600 / iCount;
 		for (i = 0; i < iCount; i++)
 			{
 			int iAngleJitter = (iJitter > 0 ? iJitter * mathRandom(-iSeparation / 2, iSeparation / 2) / 100 : 0);
