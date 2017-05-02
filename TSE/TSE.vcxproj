@@ -241,6 +241,7 @@
     <ClInclude Include="..\Include\TSEArmor.h" />
     <ClInclude Include="..\Include\TSEArtifactAwakening.h" />
     <ClInclude Include="..\Include\TSEComms.h" />
+    <ClInclude Include="..\Include\TSEDocking.h" />
     <ClInclude Include="..\Include\TSEEffects.h" />
     <ClInclude Include="..\Include\TSEEvents.h" />
     <ClInclude Include="..\Include\TSEEventsImpl.h" />

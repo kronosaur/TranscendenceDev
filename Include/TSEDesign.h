@@ -10,6 +10,7 @@ class CCompositeImageDesc;
 class CCreatePainterCtx;
 class CCurrencyAndValue;
 class CDockScreen;
+class CDockingPorts;
 class CDynamicDesignTable;
 class CEffect;
 class CGameStats;
@@ -1846,6 +1847,7 @@ class CItemTable : public CDesignType
 #include "TSEShipAI.h"
 #include "TSEPlayerSettings.h"
 #include "TSEShipCreator.h"
+#include "TSEDocking.h"
 
 //	CShipClass ----------------------------------------------------------------
 
@@ -1924,9 +1926,8 @@ class CShipClass : public CDesignType
 		inline DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
 		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
 		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
-		inline int GetDockingPortCount (void) { return m_DockingPorts.GetCount(); }
+		inline const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);
-		inline const TArray<CVector> &GetDockingPortPositions (void) { return m_DockingPorts; }
         const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
 		inline CObjectEffectDesc &GetEffectsDesc (void) { return m_Effects; }
 		IShipGenerator *GetEscorts (void) { return m_pEscorts; }
@@ -1991,6 +1992,7 @@ class CShipClass : public CDesignType
 					bool bThrusting = false,
 					bool bRadioactive = false,
 					DWORD byInvisible = 0);
+		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation);
 		void PaintMap (CMapViewportCtx &Ctx, 
 					CG32bitImage &Dest, 
 					int x, 
@@ -2171,7 +2173,7 @@ class CShipClass : public CDesignType
 
 		//	Docking
 
-		TArray<CVector> m_DockingPorts;			//	Position of docking ports
+		CDockingPorts m_DockingPorts;			//	Docking port definitions
 		CDockScreenTypeRef m_pDefaultScreen;	//	Default screen
 		DWORD m_dwDefaultBkgnd;					//	Default background screen
 		CTradingDesc *m_pTrade;					//	Trade descriptors

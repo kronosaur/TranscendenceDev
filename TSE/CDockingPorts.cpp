@@ -46,13 +46,78 @@ CDockingPorts::CDockingPorts (void) :
 	{
 	}
 
-CDockingPorts::~CDockingPorts (void)
+void CDockingPorts::CleanUp (void)
 
-//	CDockingPorts destructor
+//	CleanUp
+//
+//	Free resources
 
 	{
 	if (m_pPort)
 		delete [] m_pPort;
+
+	m_iPortCount = 0;
+	m_pPort = NULL;
+	m_iMaxDist = DEFAULT_DOCK_DISTANCE_LS;
+	m_iLastRotation = -1;
+	}
+
+void CDockingPorts::Copy (const CDockingPorts &Src)
+
+//	Copy
+//
+//	Copy. We assume we are clean (no resources allocated).
+
+	{
+	int i;
+
+	m_iPortCount = Src.m_iPortCount;
+	if (Src.m_pPort)
+		{
+		m_pPort = new SDockingPort [m_iPortCount];
+		for (i = 0; i < m_iPortCount; i++)
+			m_pPort[i] = Src.m_pPort[i];
+		}
+	else
+		m_pPort = NULL;
+
+	m_iMaxDist = Src.m_iMaxDist;
+	m_iLastRotation = Src.m_iLastRotation;
+	}
+
+void CDockingPorts::DebugPaint (CG32bitImage &Dest, int x, int y, int iOwnerRotation, int iScale) const
+
+//	DebugPaint
+//
+//	Paint the docking ports
+
+	{
+	int i;
+
+	for (i = 0; i < GetPortCount(); i++)
+		{
+		int iRotation;
+		bool bInFront;
+		CVector vPos = GetPortPosAtRotation(iOwnerRotation, iScale, i, &bInFront, &iRotation);
+
+		//	Colors
+
+		CG32bitPixel rgbArrowColor = (bInFront ? CG32bitPixel(0x00, 0x40, 0x80) : CG32bitPixel(0x80, 0x40, 0x00));
+		CG32bitPixel rgbCenterColor = (bInFront ? CG32bitPixel(0x00, 0x7f, 0xff) : CG32bitPixel(0xff, 0x7f, 0x00));
+
+		//	Get the position
+
+		int xPos = x + (int)(vPos.GetX() / g_KlicksPerPixel);
+		int yPos = y - (int)(vPos.GetY() / g_KlicksPerPixel);
+
+		//	Paint arrow
+
+		CPaintHelper::PaintArrow(Dest, xPos, yPos, iRotation, rgbArrowColor);
+
+		//	Paint center crosshairs
+
+		Dest.DrawDot(xPos, yPos, rgbCenterColor, markerMediumCross);
+		}
 	}
 
 void CDockingPorts::DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj)
@@ -518,8 +583,6 @@ void CDockingPorts::InitXYPortPos (CSpaceObject *pOwner, int iScale) const
 //	Initializes the x,y coordinates of the port based on the polar coordinates.
 
 	{
-	int i;
-
 	if (m_iPortCount == 0)
 		return;
 

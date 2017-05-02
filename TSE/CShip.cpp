@@ -1490,7 +1490,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Initialize docking ports (if any)
 
-	pShip->m_DockingPorts.InitPorts(pShip, pShip->m_pClass->GetDockingPortPositions());
+	pShip->m_DockingPorts = pShip->m_pClass->GetDockingPorts();
 
 	//	If we're a ship with 0 thrust then it means that we're a turret, so we 
 	//	set the anchor flag so that we don't get pulled by gravity.

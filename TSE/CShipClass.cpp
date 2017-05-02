@@ -3790,14 +3790,9 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Initialize docking data
 
-	CDockingPorts DockingPorts;
-	DockingPorts.InitPortsFromXML(NULL, pDesc);
-	m_DockingPorts.InsertEmpty(DockingPorts.GetPortCount(NULL));
-	if (m_DockingPorts.GetCount() > 0)
+	m_DockingPorts.InitPortsFromXML(NULL, pDesc, GetImage().GetImageViewportSize());
+	if (m_DockingPorts.GetPortCount() > 0)
 		{
-		for (i = 0; i < m_DockingPorts.GetCount(); i++)
-			m_DockingPorts[i] = DockingPorts.GetPortPos(NULL, i, NULL);
-
 		//	Load the default screen
 
 		m_pDefaultScreen.LoadUNID(Ctx, pDesc->GetAttribute(DOCK_SCREEN_ATTRIB));
@@ -4253,6 +4248,17 @@ void CShipClass::Paint (CG32bitImage &Dest,
 		}
 	}
 #endif
+	}
+
+void CShipClass::PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation)
+
+//	PaintDockPortPositions
+//
+//	Paint docking ports
+
+	{
+	int iScale = GetImage().GetImageViewportSize();
+	m_DockingPorts.DebugPaint(Dest, x, y, iShipRotation, iScale);
 	}
 
 void CShipClass::PaintMap (CMapViewportCtx &Ctx, 

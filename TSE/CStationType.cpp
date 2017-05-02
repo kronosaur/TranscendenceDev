@@ -2003,8 +2003,6 @@ void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 //	Paints the position of all the docking ports for this type.
 
 	{
-	int i;
-
 	//	Get an image
 
 	SSelectorInitCtx InitCtx;
@@ -2024,30 +2022,7 @@ void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 
 	//	Paint all ports
 
-	for (i = 0; i < Ports.GetPortCount(NULL); i++)
-		{
-		int iRotation;
-		bool bInFront;
-		CVector vPos = Ports.GetPortPosAtRotation(iStationRotation, iScale, i, &bInFront, &iRotation);
-
-		//	Colors
-
-		CG32bitPixel rgbArrowColor = (bInFront ? CG32bitPixel(0x00, 0x40, 0x80) : CG32bitPixel(0x80, 0x40, 0x00));
-		CG32bitPixel rgbCenterColor = (bInFront ? CG32bitPixel(0x00, 0x7f, 0xff) : CG32bitPixel(0xff, 0x7f, 0x00));
-
-		//	Get the position
-
-		int xPos = x + (int)(vPos.GetX() / g_KlicksPerPixel);
-		int yPos = y - (int)(vPos.GetY() / g_KlicksPerPixel);
-
-		//	Paint arrow
-
-		CPaintHelper::PaintArrow(Dest, xPos, yPos, iRotation, rgbArrowColor);
-
-		//	Paint center crosshairs
-
-		Dest.DrawDot(xPos, yPos, rgbCenterColor, markerMediumCross);
-		}
+	Ports.DebugPaint(Dest, x, y, iStationRotation, iScale);
 	}
 
 ScaleTypes CStationType::ParseScale (const CString sValue)
