@@ -83,6 +83,7 @@ class CCompositeEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
         virtual IImageEntry *Clone (void) override;
+		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return 1; }
@@ -127,6 +128,7 @@ class CFilterColorizeEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pSource) m_pSource->AddTypesUsed(retTypesUsed); }
         virtual IImageEntry *Clone (void) override;
+		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return 1; }
@@ -171,6 +173,7 @@ class CLocationCriteriaTableEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
         virtual IImageEntry *Clone (void) override;
+		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
@@ -199,6 +202,7 @@ class CRotationTableEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
         virtual IImageEntry *Clone (void) override;
+		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
@@ -226,6 +230,7 @@ class CTableEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
         virtual IImageEntry *Clone (void) override;
+		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
 		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
@@ -695,6 +700,24 @@ IImageEntry *CCompositeEntry::Clone (void)
     return pDest;
     }
 
+int CCompositeEntry::GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const
+
+//	GetActualRotation
+//
+//	Returns the actual rotation of the image given the selector and modifiers.
+
+	{
+	int i;
+
+	//	We return the rotation for the first rotatable layer.
+
+	for (i = 0; i < m_Layers.GetCount(); i++)
+		if (m_Layers[i]->IsRotatable())
+			return m_Layers[i]->GetActualRotation(Selector, Modifiers);
+
+	return 0;
+	}
+
 void CCompositeEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
@@ -1109,6 +1132,19 @@ IImageEntry *CFilterColorizeEntry::Clone (void)
     return pDest;
     }
 
+int CFilterColorizeEntry::GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const
+
+//	GetActualRotation
+//
+//	Returns the actual rotation given selector and modifiers
+
+	{
+	if (m_pSource == NULL)
+		return 0;
+
+	return m_pSource->GetActualRotation(Selector, Modifiers);
+	}
+
 void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
@@ -1374,6 +1410,20 @@ IImageEntry *CLocationCriteriaTableEntry::Clone (void)
     return pDest;
     }
 
+int CLocationCriteriaTableEntry::GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const
+
+//	GetActualRotation
+//
+//	Returns the actual rotation given selector and modifiers
+
+	{
+	int iIndex = Selector.GetVariant(GetID());
+	if (iIndex < 0 || iIndex >= m_Table.GetCount())
+		return 0;
+
+	return m_Table[iIndex].pImage->GetActualRotation(Selector, Modifiers);
+	}
+
 void CLocationCriteriaTableEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
@@ -1593,6 +1643,35 @@ IImageEntry *CRotationTableEntry::Clone (void)
     return pDest;
     }
 
+int CRotationTableEntry::GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const
+
+//	GetActualRotation
+//
+//	Returns the actual rotation given selector and modifiers
+
+	{
+	int i;
+
+	//	Look for the closes rotation to the given one.
+
+	int iBest = -1;
+	int iBestDiff = 360;
+	for (i = 0; i < m_Table.GetCount(); i++)
+		{
+		int iDiff = Absolute(AngleOffset(Modifiers.GetRotation(), m_Table[i].iRotation));
+		if (iDiff < iBestDiff)
+			{
+			iBest = i;
+			iBestDiff = iDiff;
+			}
+		}
+
+	if (iBest == -1)
+		return 0;
+
+	return m_Table[iBest].iRotation;
+	}
+
 void CRotationTableEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 
 //	GetImage
@@ -1796,6 +1875,20 @@ IImageEntry *CTableEntry::Clone (void)
 
     return pDest;
     }
+
+int CTableEntry::GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const
+
+//	GetActualRotation
+//
+//	Returns the actual rotation given selector and modifiers
+
+	{
+	int iIndex = Selector.GetVariant(GetID());
+	if (iIndex < 0 || iIndex >= m_Table.GetCount())
+		return 0;
+
+	return m_Table[iIndex].pImage->GetActualRotation(Selector, Modifiers);
+	}
 
 void CTableEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
 

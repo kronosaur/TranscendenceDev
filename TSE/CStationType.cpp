@@ -2012,10 +2012,15 @@ void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 	SetImageSelector(InitCtx, &Selector);
 	const CObjectImageArray &Image = GetImage(Selector, CCompositeImageModifiers());
 
+	//	Compute some image properties
+
+	int iScale = Image.GetImageViewportSize();
+	int iStationRotation = m_Image.GetActualRotation(Selector);
+
 	//	We need to initialize a docking ports structure
 
 	CDockingPorts Ports;
-	Ports.InitPortsFromXML(NULL, m_pDesc, Image.GetImageViewportSize());
+	Ports.InitPortsFromXML(NULL, m_pDesc, iScale);
 
 	//	Paint all ports
 
@@ -2023,7 +2028,7 @@ void CStationType::PaintDockPortPositions (CG32bitImage &Dest, int x, int y)
 		{
 		int iRotation;
 		bool bInFront;
-		CVector vPos = Ports.GetPortPos(NULL, i, NULL, &bInFront, &iRotation);
+		CVector vPos = Ports.GetPortPosAtRotation(iStationRotation, iScale, i, &bInFront, &iRotation);
 
 		//	Colors
 

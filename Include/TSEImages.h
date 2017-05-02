@@ -318,7 +318,8 @@ class IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
         virtual IImageEntry *Clone (void) = 0;
-		inline DWORD GetID (void) { return m_dwID; }
+		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const { return 0; }
+		inline DWORD GetID (void) const { return m_dwID; }
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) = 0;
 		virtual int GetMaxLifetime (void) const { return 0; }
         virtual CObjectImageArray &GetSimpleImage (void);
@@ -379,6 +380,7 @@ class CCompositeImageDesc
 		CCompositeImageDesc &operator= (const CCompositeImageDesc &Src);
 
 		inline void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { if (m_pRoot) m_pRoot->AddTypesUsed(retTypesUsed); }
+		inline int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers()) const { return (m_pRoot ? m_pRoot->GetActualRotation(Selector, Modifiers) : 0); }
 		CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiFrameIndex = NULL) const;
 		int GetMaxLifetime (void) const;
 		inline IImageEntry *GetRoot (void) const { return m_pRoot; }
