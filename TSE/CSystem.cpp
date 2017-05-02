@@ -451,6 +451,9 @@
 //	146: 1.8 Alpha 2
 //		m_pRotation in CStation
 //
+//	147: 1.8 Alpha 2
+//		Pos in CDockingPorts::SDockingPort
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

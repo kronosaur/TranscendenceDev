@@ -139,6 +139,40 @@ void C3DConversion::CalcCoordCompatible (int iAngle, int iRadius, int *retx, int
 	*rety = -(int)vPos.GetY();
 	}
 
+void C3DConversion::CalcPolar (int iScale, const CVector &vPos, int iZ, Metric *retrAngle, Metric *retrRadius)
+
+//	CalcPolar
+//
+//	Reverse engineers polar coordinates from x,y projection coordinates.
+//	We expect vPos to be in kilometers, but the resulting radius will be
+//	in pixels.
+//
+//	Angle is in radians.
+
+	{
+	Metric rScale = (Metric)iScale;
+	Metric rZ = -(Metric)iZ / rScale;
+	Metric rD = rScale * 2.0f;
+
+	Metric rXp = vPos.GetX() / g_KlicksPerPixel;
+	Metric rYp = vPos.GetY() / g_KlicksPerPixel;
+
+	Metric rDen = (rYp * g_rK1) - (rD * g_rK2);
+	if (rDen == 0.0)
+		rDen = 0.1;
+
+	Metric rY = (-(rZ * g_rK1 * rD) - (rYp * rZ * g_rK2) - (2.0 * rYp)) / rDen;
+	Metric rYg = rY * g_rK2 - rZ * g_rK1;
+	Metric rX = (rYp == 0.0 ? rXp : rXp * rYg / rYp);
+
+	rY = rY * rScale;
+	rX = rX * rScale;
+
+	Metric rAngle = VectorToPolarRadians(CVector(rX, rY), retrRadius);
+	if (retrAngle)
+		*retrAngle = rAngle;
+	}
+
 ALERROR C3DConversion::Init (CXMLElement *pDesc)
 
 //	Init

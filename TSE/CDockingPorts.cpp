@@ -21,6 +21,7 @@
 #define PORT_ANGLE_ATTRIB						CONSTLIT("portAngle")
 #define PORT_COUNT_ATTRIB						CONSTLIT("portCount")
 #define PORT_RADIUS_ATTRIB						CONSTLIT("portRadius")
+#define POS_Z_ATTRIB							CONSTLIT("posZ")
 #define ROTATION_ATTRIB							CONSTLIT("rotation")
 #define SEND_TO_BACK_ATTRIB						CONSTLIT("sendToBack")
 #define X_ATTRIB								CONSTLIT("x")
@@ -37,7 +38,8 @@ const Metric GATE_DIST2 =						GATE_DIST * GATE_DIST;
 CDockingPorts::CDockingPorts (void) : 
 		m_iPortCount(0),
 		m_pPort(NULL),
-		m_iMaxDist(DEFAULT_DOCK_DISTANCE_LS)
+		m_iMaxDist(DEFAULT_DOCK_DISTANCE_LS),
+		m_iLastRotation(-1)
 
 //	CDockingPorts constructor
 
@@ -373,6 +375,19 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 		int iDefaultDist = Max(DEFAULT_DOCK_DISTANCE_LS, (pOwner ? 8 + (int)((pOwner->GetBoundsRadius() / LIGHT_SECOND) + 0.5) : 0));
 		m_iMaxDist = pDockingPorts->GetAttributeIntegerBounded(MAX_DIST_ATTRIB, 1, -1, iDefaultDist);
 
+		//	Sometimes we specify x,y coordinate but want to convert to rotating 
+		//	polar coordinate.
+
+		int iConvertRotation = -1;
+		CString sAttrib;
+		if (pDockingPorts->FindAttribute(ROTATION_ATTRIB, &sAttrib))
+			{
+			if (CXMLElement::IsBoolTrueValue(sAttrib))
+				iConvertRotation = 0;
+			else
+				iConvertRotation = strToInt(sAttrib, 0);
+			}
+
 		//	If we have sub-elements then these are port definitions.
 
 		m_iPortCount = pDockingPorts->GetContentElementCount();
@@ -383,15 +398,46 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 			for (i = 0; i < m_iPortCount; i++)
 				{
 				CXMLElement *pPort = pDockingPorts->GetContentElement(i);
-				CVector vDockPos((pPort->GetAttributeInteger(X_ATTRIB) * g_KlicksPerPixel),
-						(pPort->GetAttributeInteger(Y_ATTRIB) * g_KlicksPerPixel));
 
-				m_pPort[i].vPos = vDockPos;
+				//	See if the port position is specified with polar coordinate.
+				//	If NOT, then we load Cartessian coordinates.
+
+				if (!m_pPort[i].Pos.InitFromXML(pPort, C3DObjectPos::FLAG_NO_XY))
+					{
+					CVector vDockPos((pPort->GetAttributeInteger(X_ATTRIB) * g_KlicksPerPixel),
+							(pPort->GetAttributeInteger(Y_ATTRIB) * g_KlicksPerPixel));
+
+					m_pPort[i].vPos = vDockPos;
+
+					//	If we expect this to be rotatable, then we reverse engineer
+					//	the polar coordinates.
+
+					if (iConvertRotation != -1)
+						{
+						if (iScale <= 0)
+							iScale = ((pOwner && !pOwner->GetImage().IsEmpty()) ? pOwner->GetImage().GetImageViewportSize() : 512);
+
+						m_pPort[i].Pos.InitFromXY(iScale, vDockPos, pPort->GetAttributeInteger(POS_Z_ATTRIB));
+
+						//	If the conversion rotation is non-zero then it means that the port
+						//	x,y coordinates are for the given rotation, and thus we need to 
+						//	compensate.
+
+						if (iConvertRotation != 0)
+							m_pPort[i].Pos.SetAngle(m_pPort[i].Pos.GetAngle() - iConvertRotation);
+						}
+					}
+
+				//	Get the ship's rotation when docked at this port.
 
 				if (pPort->FindAttributeInteger(ROTATION_ATTRIB, &m_pPort[i].iRotation))
-					m_pPort[i].iRotation = (m_pPort[i].iRotation % 360);
+					m_pPort[i].iRotation = AngleMod(m_pPort[i].iRotation);
+				else if (!m_pPort[i].Pos.IsEmpty())
+					m_pPort[i].iRotation = AngleMod(m_pPort[i].Pos.GetAngle() + 180);
 				else
-					m_pPort[i].iRotation = (VectorToPolar(vDockPos) + 180) % 360;
+					m_pPort[i].iRotation = AngleMod(VectorToPolar(m_pPort[i].vPos) + 180);
+
+				//	Layer options
 
 				if (pPort->GetAttributeBool(BRING_TO_FRONT_ATTRIB))
 					m_pPort[i].iLayer = plBringToFront;
@@ -408,22 +454,14 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 			int iStartAngle = AngleMod(pDockingPorts->GetAttributeInteger(PORT_ANGLE_ATTRIB));
 			int iAngle = 360 / m_iPortCount;
 
-			//	We need the image scale to adjust coordinates
-			//
-			//	NOTE: Sometimes we don't have an image yet. For example, when
-			//	creating a wreck, we're still inside CStation::CreateFromType 
-			//	and have not yet assigned an image.
-
-			if (iScale <= 0)
-				iScale = ((pOwner && !pOwner->GetImage().IsEmpty()) ? pOwner->GetImage().GetImageViewportSize() : 512);
-
 			//	Initialize ports
 
 			m_pPort = new SDockingPort[m_iPortCount];
 			for (i = 0; i < m_iPortCount; i++)
 				{
-				C3DConversion::CalcCoord(iScale, (iStartAngle + i * iAngle) % 360, iRadius, 0, &m_pPort[i].vPos);
-				m_pPort[i].iRotation = (iStartAngle + (i * iAngle) + 180) % 360;
+				int iAngle = AngleMod(iStartAngle + i * iAngle);
+				m_pPort[i].Pos = C3DObjectPos(iAngle, iRadius);
+				m_pPort[i].iRotation = AngleMod(iAngle + 180);
 				}
 			}
 
@@ -434,6 +472,10 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 			m_iPortCount = 0;
 			m_pPort = NULL;
 			}
+
+		//	Convert from polar to Cartessian
+
+		InitXYPortPos(pOwner, iScale);
 		}
 
 	//	Otherwise, initialize ports based on a count
@@ -442,6 +484,44 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 		InitPorts(pOwner,
 				pElement->GetAttributeInteger(DOCKING_PORTS_ATTRIB),
 				64 * g_KlicksPerPixel);
+	}
+
+void CDockingPorts::InitXYPortPos (CSpaceObject *pOwner, int iScale)
+
+//	InitXYPortPos
+//
+//	Initializes the x,y coordinates of the port based on the polar coordinates.
+
+	{
+	int i;
+
+	if (m_iPortCount == 0)
+		return;
+
+	//	If we've already computed x,y for this object rotation, then we're done.
+
+	int iRotation = (pOwner ? pOwner->GetRotation() : 0);
+	if (m_iLastRotation == iRotation)
+		return;
+
+	//	We need the image scale to adjust coordinates
+	//
+	//	NOTE: Sometimes we don't have an image yet. For example, when
+	//	creating a wreck, we're still inside CStation::CreateFromType 
+	//	and have not yet assigned an image.
+
+	if (iScale <= 0)
+		iScale = ((pOwner && !pOwner->GetImage().IsEmpty()) ? pOwner->GetImage().GetImageViewportSize() : 512);
+
+	//	Compute coordinates for each port
+
+	for (i = 0; i < m_iPortCount; i++)
+		if (!m_pPort[i].Pos.IsEmpty())
+			m_pPort[i].Pos.CalcCoord(iScale, iRotation, &m_pPort[i].vPos);
+
+	//	Done
+
+	m_iLastRotation = iRotation;
 	}
 
 bool CDockingPorts::IsDocked (CSpaceObject *pObj)
@@ -567,20 +647,30 @@ void CDockingPorts::ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx)
 	{
 	DWORD dwLoad;
 
-	Ctx.pStream->Read((char *)&m_iPortCount, sizeof(DWORD));
+	Ctx.pStream->Read(m_iPortCount);
 	if (m_iPortCount > 0)
 		{
 		m_pPort = new SDockingPort[m_iPortCount];
 		for (int i = 0; i < m_iPortCount; i++)
 			{
-			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+			Ctx.pStream->Read(dwLoad);
+			bool bHas3DPos = (dwLoad & 0x80000000 ? true : false);
+			dwLoad &= 0x7fffffff;
+
 			m_pPort[i].iStatus = (DockingPortStatus)LOWORD(dwLoad);
 			m_pPort[i].iLayer = (DockingPortLayer)HIWORD(dwLoad);
 
+			//	Read the 3D object coordinates (if we have it)
+
+			if (bHas3DPos)
+				m_pPort[i].Pos.ReadFromStream(Ctx);
+
+			//	Other params
+
 			CSystem::ReadObjRefFromStream(Ctx, &m_pPort[i].pObj);
-			Ctx.pStream->Read((char *)&m_pPort[i].vPos, sizeof(CVector));
+			m_pPort[i].vPos.ReadFromStream(*Ctx.pStream);
 			if (Ctx.dwVersion >= 24)
-				Ctx.pStream->Read((char *)&m_pPort[i].iRotation, sizeof(DWORD));
+				Ctx.pStream->Read(m_pPort[i].iRotation);
 
 			//	In previous versions we did not set rotation, so set it now
 
@@ -590,7 +680,7 @@ void CDockingPorts::ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx)
 		}
 
 	if (Ctx.dwVersion >= 81)
-		Ctx.pStream->Read((char *)&m_iMaxDist, sizeof(DWORD));
+		Ctx.pStream->Read(m_iMaxDist);
 	else
 		m_iMaxDist = DEFAULT_DOCK_DISTANCE_LS;
 	}
@@ -963,17 +1053,29 @@ void CDockingPorts::WriteToStream (CSpaceObject *pOwner, IWriteStream *pStream)
 	{
 	DWORD dwSave;
 
-	pStream->Write((char *)&m_iPortCount, sizeof(DWORD));
+	pStream->Write(m_iPortCount);
 	for (int i = 0; i < m_iPortCount; i++)
 		{
+		//	Save flags
+
 		dwSave = MAKELONG((WORD)m_pPort[i].iStatus, (WORD)m_pPort[i].iLayer);
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+		//	We use the high-bit to store whether or not we have a 3D object position.
+
+		dwSave |= (!m_pPort[i].Pos.IsEmpty() ?	0x80000000 : 0);
+		pStream->Write(dwSave);
+
+		//	3D position
+
+		if (!m_pPort[i].Pos.IsEmpty())
+			m_pPort[i].Pos.WriteToStream(*pStream);
+
+		//	Other params
 
 		pOwner->WriteObjRefToStream(m_pPort[i].pObj, pStream);
-		pStream->Write((char *)&m_pPort[i].vPos, sizeof(CVector));
-		pStream->Write((char *)&m_pPort[i].iRotation, sizeof(DWORD));
+		m_pPort[i].vPos.WriteToStream(*pStream);
+		pStream->Write(m_pPort[i].iRotation);
 		}
 
-	pStream->Write((char *)&m_iMaxDist, sizeof(DWORD));
+	pStream->Write(m_iMaxDist);
 	}
-

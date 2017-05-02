@@ -5341,7 +5341,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	m_DockingPorts.ReadFromStream(this, Ctx);
 
-#ifdef DEBUG
+#ifdef DEBUG_PORTS
 	if (m_pClass->HasDockingPorts()
 			&& m_DockingPorts.GetPortCount(this) == 0)
 		{

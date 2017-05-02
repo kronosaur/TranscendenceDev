@@ -166,7 +166,7 @@ inline void DebugStopTimer (char *szTiming) { }
 const DWORD API_VERSION =								36;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
 const DWORD UNIVERSE_SAVE_VERSION =						29;
-const DWORD SYSTEM_SAVE_VERSION =						146;	//	See: CSystem.cpp
+const DWORD SYSTEM_SAVE_VERSION =						147;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{
@@ -1387,19 +1387,35 @@ class CComplexArea
 class C3DObjectPos
 	{
 	public:
+		enum EFlags
+			{
+			FLAG_NO_XY =					0x00000001,
+			};
+
 		C3DObjectPos (int iAngle = 0, int iRadius = 0, int iZ = 0) :
-			m_iPosAngle(iAngle),
-			m_iPosRadius(iRadius),
-			m_iPosZ(iZ)
+				m_iPosAngle(iAngle),
+				m_iPosRadius(iRadius),
+				m_iPosZ(iZ)
 			{ }
 
+		explicit C3DObjectPos (const CVector &vPos, int iZ = 0);
+
+		void CalcCoord (int iScale, CVector *retvPos);
+		void CalcCoord (int iScale, int iRotation, CVector *retvPos);
+		inline int GetAngle (void) const { return m_iPosAngle; }
+		inline int GetRadius (void) const { return m_iPosRadius; }
+		inline int GetZ (void) const { return m_iPosZ; }
+		bool InitFromXY (int iScale, const CVector &vPos, int iZ = 0);
+		bool InitFromXML (CXMLElement *pDesc, DWORD dwFlags = 0);
+		inline bool IsEmpty (void) const { return m_iPosRadius == 0; }
 		void ReadFromStream (SLoadCtx &Ctx);
+		inline void SetAngle (int iAngle) { m_iPosAngle = AngleMod(iAngle); }
 		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
-		int m_iPosAngle : 16;					//	Angle relative to obj center (degrees)
-		int m_iPosRadius : 16;				//	Distance relative to obj center (pixels)
-		int m_iPosZ : 16;						//	Height relative to obj center
+		int m_iPosAngle:16;					//	Angle relative to obj center (degrees)
+		int m_iPosRadius:16;				//	Distance relative to obj center (pixels)
+		int m_iPosZ:16;						//	Height relative to obj center
 	};
 
 class C3DConversion
@@ -1409,6 +1425,7 @@ class C3DConversion
 		static void CalcCoord (int iScale, int iAngle, int iRadius, int iZ, CVector *retvPos);
 		static void CalcCoord (Metric rScale, const CVector &vPos, Metric rPosZ, CVector *retvPos);
 		static void CalcCoordCompatible (int iAngle, int iRadius, int *retx, int *rety);
+		static void CalcPolar (int iScale, const CVector &vPos, int iZ, Metric *retrAngle, Metric *retrRadius);
 
 		inline void CleanUp (void) { m_Cache.DeleteAll(); }
 		ALERROR Init (CXMLElement *pDesc);

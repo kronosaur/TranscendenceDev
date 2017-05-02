@@ -479,17 +479,17 @@ class CDockingPorts
 	private:
 		enum DockingPortStatus
 			{
-			psEmpty,
-			psDocking,
-			psInUse
+			psEmpty =						0,
+			psDocking =						1,
+			psInUse =						2,
 			};
 
 		enum DockingPortLayer
 			{
-			plStandard,							//	Depends on position
+			plStandard =					0,	//	Depends on position
 
-			plBringToFront,						//	Ship is always in front of station
-			plSendToBack,						//	Ship is always behind station
+			plBringToFront =				1,	//	Ship is always in front of station
+			plSendToBack =					2,	//	Ship is always behind station
 			};
 
 		struct SDockingPort
@@ -504,11 +504,13 @@ class CDockingPorts
 			DockingPortStatus iStatus;			//	Status of port
 			DockingPortLayer iLayer;			//	Port layer relative to station
 			CSpaceObject *pObj;					//	Object docked at this port
-			CVector vPos;						//	Position of dock (relative coords)
+			C3DObjectPos Pos;					//	Position of dock relative to object
+			CVector vPos;						//	Calculated position of dock (relative coords)
 			int iRotation;						//	Rotation of ship at dock
 			};
 
 		CVector GetPortPos (CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
+		void InitXYPortPos (CSpaceObject *pOwner, int iScale = -1);
 		bool IsDocked (CSpaceObject *pObj);
 		bool IsDockedOrDocking (CSpaceObject *pObj);
 		bool ShipsNearPort (CSpaceObject *pOwner, CSpaceObject *pRequestingObj, const CVector &vPortPos);
@@ -517,6 +519,8 @@ class CDockingPorts
 		int m_iPortCount;						//	Number of docking ports
 		SDockingPort *m_pPort;					//	Array of docking ports
 		int m_iMaxDist;							//	Max distance for docking (in light-seconds)
+
+		mutable int m_iLastRotation;			//	Last owner rotation that we calculated port position for
 	};
 
 //	Attack Detector
