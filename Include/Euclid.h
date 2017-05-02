@@ -87,11 +87,13 @@ class CVector
 			}
 		inline CVector Perpendicular (void) const { return CVector(-y, x); }
 		Metric Polar (Metric *retrRadius = NULL) const;
+		void ReadFromStream (IReadStream &Stream) { Stream.Read((char *)this, sizeof(CVector)); }
 		inline CVector Reflect (void) const { return CVector(-x, -y); }
 		CVector Rotate (int iAngle) const;
 		CVector Rotate (Metric rRadians) const;
 		inline void SetX (Metric NewX) { x = NewX; }
 		inline void SetY (Metric NewY) { y = NewY; }
+		void WriteToStream (IWriteStream &Stream) const { Stream.Write((char *)this, sizeof(CVector)); }
 
 		static CVector FromPolar (const CVector &vA) { return CVector(vA.y * cos(vA.x), vA.y * sin(vA.x)); }
 		static CVector FromPolar (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), rRadius * sin(rAngle)); }
