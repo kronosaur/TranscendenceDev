@@ -379,7 +379,7 @@ class CCompositeImageDesc
 		CCompositeImageDesc &operator= (const CCompositeImageDesc &Src);
 
 		inline void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { if (m_pRoot) m_pRoot->AddTypesUsed(retTypesUsed); }
-		CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiRotation = NULL) const;
+		CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiFrameIndex = NULL) const;
 		int GetMaxLifetime (void) const;
 		inline IImageEntry *GetRoot (void) const { return m_pRoot; }
         inline const CObjectImageArray &GetSimpleImage (void) const { return (m_pRoot ? m_pRoot->GetSimpleImage() : CObjectImageArray::Null()); }

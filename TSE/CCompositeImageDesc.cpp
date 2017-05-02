@@ -358,7 +358,7 @@ CCompositeImageDesc::SCacheEntry *CCompositeImageDesc::FindCacheEntry (const CCo
 	return NULL;
 	}
 
-CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation) const
+CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiFrameIndex) const
 
 //	GetImage
 //
@@ -371,8 +371,8 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 
 	if (iType == CCompositeImageSelector::typeShipClass)
 		{
-		if (retiRotation)
-			*retiRotation = Selector.GetVariant(DEFAULT_SELECTOR_ID);
+		if (retiFrameIndex)
+			*retiFrameIndex = Selector.GetVariant(DEFAULT_SELECTOR_ID);
 
 		return Selector.GetShipwreckImage(DEFAULT_SELECTOR_ID);
 		}
@@ -381,8 +381,8 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 
 	else if (iType == CCompositeImageSelector::typeItemType)
 		{
-		if (retiRotation)
-			*retiRotation = 0;
+		if (retiFrameIndex)
+			*retiFrameIndex = 0;
 
 		return Selector.GetFlotsamImage(DEFAULT_SELECTOR_ID);
 		}
@@ -394,8 +394,8 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 		//	retiRotation is used as the vertical index into the image.
 		//	Since each variant is expected to be its own image, we set to 0.
 
-		if (retiRotation)
-			*retiRotation = 0;
+		if (retiFrameIndex)
+			*retiFrameIndex = 0;
 
 		//	Look in the cache
 

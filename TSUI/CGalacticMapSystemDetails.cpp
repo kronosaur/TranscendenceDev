@@ -226,10 +226,10 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
     if (Obj.fShowDestroyed)
         Modifiers.SetStationDamage(true);
 
-    int iRotation;
-    const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(Obj.ImageSel, Modifiers, &iRotation);
+    int iVariant;
+    const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(Obj.ImageSel, Modifiers, &iVariant);
     CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(CONSTLIT("Galactic map")) : NULL);
-	RECT rcBmpImage = FullImage.GetImageRect(0, iRotation);
+	RECT rcBmpImage = FullImage.GetImageRect(0, iVariant);
     if (pBmpImage == NULL)
         {
         CStationType *pStationType = CStationType::AsType(Obj.pType);
@@ -238,12 +238,12 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 
         //  If we can't find the standard image, see if we have a hero image.
 
-        const CObjectImageArray &HeroImage = pStationType->GetHeroImage(CCompositeImageSelector(), Modifiers, &iRotation);
+        const CObjectImageArray &HeroImage = pStationType->GetHeroImage(CCompositeImageSelector(), Modifiers, &iVariant);
         pBmpImage = (HeroImage.IsLoaded() ? &HeroImage.GetImage(CONSTLIT("Galactic map")) : NULL);
         if (pBmpImage == NULL)
             return false;
 
-        rcBmpImage = HeroImage.GetImageRect(0, iRotation);
+        rcBmpImage = HeroImage.GetImageRect(0, iVariant);
         }
 
     int iSize = Max(RectWidth(rcBmpImage), RectHeight(rcBmpImage));

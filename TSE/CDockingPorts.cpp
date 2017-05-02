@@ -459,9 +459,9 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 			m_pPort = new SDockingPort[m_iPortCount];
 			for (i = 0; i < m_iPortCount; i++)
 				{
-				int iAngle = AngleMod(iStartAngle + i * iAngle);
-				m_pPort[i].Pos = C3DObjectPos(iAngle, iRadius);
-				m_pPort[i].iRotation = AngleMod(iAngle + 180);
+				int iPortAngle = AngleMod(iStartAngle + i * iAngle);
+				m_pPort[i].Pos = C3DObjectPos(iPortAngle, iRadius);
+				m_pPort[i].iRotation = AngleMod(iPortAngle + 180);
 				}
 			}
 

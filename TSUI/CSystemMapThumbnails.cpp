@@ -262,15 +262,15 @@ CG32bitImage *CSystemMapThumbnails::GetObjImage (const CObjectTracker::SBackgrou
 
     CCompositeImageSelector ImageSel;
 	CCompositeImageModifiers Modifiers;
-    int iRotation;
-    const CObjectImageArray &FullImage = ObjEntry.pType->GetTypeImage().GetImage((ObjEntry.pImageSel ? *ObjEntry.pImageSel : ImageSel), Modifiers, &iRotation);
+    int iVariant;
+    const CObjectImageArray &FullImage = ObjEntry.pType->GetTypeImage().GetImage((ObjEntry.pImageSel ? *ObjEntry.pImageSel : ImageSel), Modifiers, &iVariant);
     CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(CONSTLIT("System thumbnail")) : NULL);
     if (pBmpImage == NULL)
         return NULL;
 
     //  Figure out the image size
 
-	RECT rcBmpImage = FullImage.GetImageRect(0, iRotation);
+	RECT rcBmpImage = FullImage.GetImageRect(0, iVariant);
     int iSize = Max(RectWidth(rcBmpImage), RectHeight(rcBmpImage));
     if (iSize <= 0)
         return NULL;

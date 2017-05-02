@@ -971,13 +971,13 @@ ALERROR CStation::CreateMapImage (void)
 
 	//	Get it from the image
 
-	int iTick, iRotation;
-	const CObjectImageArray &Image = GetImage(false, &iTick, &iRotation);
+	int iTick, iVariant;
+	const CObjectImageArray &Image = GetImage(false, &iTick, &iVariant);
 	if (!Image.IsLoaded())
 		return NOERROR;
 
 	CG32bitImage *pBmpImage = &Image.GetImage(strFromInt(m_pType->GetUNID()));
-	RECT rcBmpImage = Image.GetImageRect(iTick, iRotation);
+	RECT rcBmpImage = Image.GetImageRect(iTick, iVariant);
 
 	//	Create the image
 
@@ -1335,7 +1335,7 @@ Metric CStation::GetGravity (Metric *retrRadius) const
 	return r1EAccel;
 	}
 
-const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *retiRotation)
+const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *retiVariant)
 
 //	GetImage
 //
@@ -1349,8 +1349,8 @@ const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *ret
 		if (retiTick)
 			*retiTick = 0;
 
-		if (retiRotation)
-			*retiRotation = 0;
+		if (retiVariant)
+			*retiVariant = 0;
 
 		return m_StarlightImage;
 		}
@@ -1364,7 +1364,7 @@ const CObjectImageArray &CStation::GetImage (bool bFade, int *retiTick, int *ret
 
 		//	Image
 
-		return m_pType->GetImage(m_ImageSelector, Modifiers, retiRotation);
+		return m_pType->GetImage(m_ImageSelector, Modifiers, retiVariant);
 		}
 	}
 
@@ -3626,8 +3626,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (m_iDestroyedAnimation)
 		{
-		int iTick, iRotation;
-		const CObjectImageArray &Image = GetImage(false, &iTick, &iRotation);
+		const CObjectImageArray &Image = GetImage(false);
 		int cxWidth = RectWidth(Image.GetImageRect());
 
 		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_StationDestroyedUNID);
