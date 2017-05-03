@@ -62,7 +62,7 @@ void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 	pEntry->pCode = NULL;
 	}
 
-ICCItem *CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, const CString &sPlayerName, GenomeTypes iPlayerGenome) const
+ICCItem *CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, const CString &sPlayerName, GenomeTypes iPlayerGenome, ICCItem *pData) const
 
 //	ComposeCCItem
 //
@@ -80,7 +80,7 @@ ICCItem *CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, con
 		CCSymbolTable *pTable = (CCSymbolTable *)pResult;
 		for (i = 0; i < pValue->GetCount(); i++)
 			{
-			ICCItem *pElement = ComposeCCItem(CC, pSource->GetElement(i), sPlayerName, iPlayerGenome);
+			ICCItem *pElement = ComposeCCItem(CC, pSource->GetElement(i), sPlayerName, iPlayerGenome, pData);
 			ICCItem *pKey = CC.CreateString(pSource->GetKey(i));
 			pTable->AddEntry(&CC, pKey, pElement);
 			pElement->Discard(&CC);
@@ -91,7 +91,7 @@ ICCItem *CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, con
 		}
 
 	else if (pValue->IsIdentifier())
-		return CC.CreateString(::ComposePlayerNameString(pValue->GetStringValue(), sPlayerName, iPlayerGenome));
+		return CC.CreateString(::ComposePlayerNameString(pValue->GetStringValue(), sPlayerName, iPlayerGenome, pData));
 
 	else if (pValue->IsList())
 		{
@@ -100,7 +100,7 @@ ICCItem *CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, con
 		CCLinkedList *pList = (CCLinkedList *)(pResult);
 		for (i = 0; i < pValue->GetCount(); i++)
 			{
-			ICCItem *pElement = ComposeCCItem(CC, pValue->GetElement(i), sPlayerName, iPlayerGenome);
+			ICCItem *pElement = ComposeCCItem(CC, pValue->GetElement(i), sPlayerName, iPlayerGenome, pData);
 			pList->Append(CC, pElement);
 			pElement->Discard(&CC);
 			}
@@ -150,16 +150,6 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 		if (strEquals(pItem->GetTag(), TEXT_TAG))
 			{
-			//	Link the code
-
-			CCodeChainCtx CCCtx;
-			ICCItem *pCode = CCCtx.Link(pItem->GetContentText(0), 0, NULL);
-			if (pCode->IsError())
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Language id: %s : %s"), sID, pCode->GetStringValue());
-				return ERR_FAIL;
-				}
-
 			//	Add an entry
 
 			bool bIsNew;
@@ -170,23 +160,46 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				return ERR_FAIL;
 				}
 
-			//	If pCode is a string and not an identifier, then we can just
-			//	store it directly.
+			//	If this is code, then link it.
 
-			if (pCode->IsIdentifier() && pCode->IsQuoted())
+			if (IsCode(pItem->GetContentText(0)))
 				{
-				pEntry->pCode = NULL;
-				pEntry->sText = pCode->GetStringValue();
+				//	Link the code
+
+				CCodeChainCtx CCCtx;
+				ICCItem *pCode = CCCtx.Link(pItem->GetContentText(0), 0, NULL);
+				if (pCode->IsError())
+					{
+					Ctx.sError = strPatternSubst(CONSTLIT("Language id: %s : %s"), sID, pCode->GetStringValue());
+					return ERR_FAIL;
+					}
+
+				//	If pCode is a string and not an identifier, then we can just
+				//	store it directly.
+
+				if (pCode->IsIdentifier() && pCode->IsQuoted())
+					{
+					pEntry->pCode = NULL;
+					pEntry->sText = pCode->GetStringValue();
+					}
+
+				//	Otherwise we store the code
+
+				else
+					pEntry->pCode = pCode->Reference();
+
+				//	Done
+
+				CCCtx.Discard(pCode);
 				}
 
-			//	Otherwise we store the code
+			//	Otherwise, we parse it into a string.
 
 			else
-				pEntry->pCode = pCode->Reference();
-
-			//	Done
-
-			CCCtx.Discard(pCode);
+				{
+				pEntry->pCode = NULL;
+				pEntry->sText = ParseTextBlock(pItem->GetContentText(0));
+				}
 			}
 		else if (strEquals(pItem->GetTag(), MESSAGE_TAG))
 			{
@@ -213,6 +226,65 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		}
 
 	return NOERROR;
+	}
+
+bool CLanguageDataBlock::IsCode (const CString &sText) const
+
+//	IsCode
+//
+//	Returns TRUE if the given string is a piece of code that should be executed,
+//	as opposed to plain text (without surrounding quotes).
+
+	{
+	char *pPos = sText.GetASCIIZPointer();
+	char *pPosEnd = pPos + sText.GetLength();
+
+	//	Skip any leading whitespace
+
+	while (pPos < pPosEnd && strIsWhitespace(pPos))
+		pPos++;
+
+	if (pPos == pPosEnd)
+		return false;
+
+	//	If this is a paren or a brace or a comment start, then we automatically 
+	//	assume it is code.
+
+	if (*pPos == '(' || *pPos == '{' || *pPos == ';')
+		return true;
+
+	//	If this is a quote, then we need to do a bit more work.
+
+	else if (*pPos == '\"')
+		{
+		//	If we have any embedded CRLFs then we assume that this is a
+		//	paragraph of text with quotes instead of a quoted string (the latter
+		//	needs to be treated as code).
+
+		while (pPos < pPosEnd && *pPos != '\n' && *pPos != '\r')
+			pPos++;
+
+		//	Skip all whitespace.
+
+		while (pPos < pPosEnd && strIsWhitespace(pPos))
+			pPos++;
+
+		//	If we've hit the end of the text, then we assume this is a one-line
+		//	literal string (which is treated as code)
+
+		if (pPos == pPosEnd)
+			return true;
+
+		//	Otherwise, we have embedded CRLFs, which means this is a plain text
+		//	block (and not code).
+
+		return false;
+		}
+
+	//	Otherwise, this is not code
+
+	else
+		return false;
 	}
 
 void CLanguageDataBlock::MergeFrom (const CLanguageDataBlock &Source)
@@ -245,6 +317,135 @@ void CLanguageDataBlock::MergeFrom (const CLanguageDataBlock &Source)
 	DEBUG_CATCH
 	}
 
+CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
+
+//	ParseTextBlock
+//
+//	Parses a block of text and trims and whitespace separating different lines.
+
+	{
+	enum EStates
+		{
+		stateStart,
+		stateText,
+		stateSpace,
+		stateLine,
+		stateLineAfterSpace,
+		stateDoubleLine,
+		};
+
+	char *pPos = sText.GetASCIIZPointer();
+	char *pPosEnd = pPos + sText.GetLength();
+
+	//	We assume the output is no larger than the input, since we only remove
+	//	characters.
+
+	CString sOutput;
+	char *pDest = sOutput.GetWritePointer(sText.GetLength());
+	char *pDestStart = pDest;
+
+	//	Loop
+
+	EStates iState = stateStart;
+	while (pPos < pPosEnd)
+		{
+		switch (iState)
+			{
+			case stateStart:
+				if (!strIsWhitespace(pPos))
+					{
+					*pDest++ = *pPos;
+					iState = stateText;
+					}
+				break;
+
+			case stateText:
+				if (*pPos == ' ' || *pPos == '\t')
+					{
+					*pDest++ = ' ';
+					iState = stateSpace;
+					}
+				else if (*pPos == '\r')
+					{ }
+				else if (*pPos == '\n')
+					iState = stateLine;
+				else
+					*pDest++ = *pPos;
+				break;
+
+			case stateSpace:
+				if (*pPos == ' ' || *pPos == '\t')
+					{ }
+				else if (*pPos == '\r')
+					{ }
+				else if (*pPos == '\n')
+					iState = stateLineAfterSpace;
+				else
+					{
+					*pDest++ = *pPos;
+					iState = stateText;
+					}
+				break;
+
+			case stateLine:
+				if (*pPos == ' ' || *pPos == '\t')
+					{ }
+				else if (*pPos == '\r')
+					{ }
+				else if (*pPos == '\n')
+					{
+					*pDest++ = '\n';
+					*pDest++ = '\n';
+					iState = stateDoubleLine;
+					}
+				else
+					{
+					*pDest++ = ' ';
+					*pDest++ = *pPos;
+					iState = stateText;
+					}
+				break;
+
+			case stateLineAfterSpace:
+				if (*pPos == ' ' || *pPos == '\t')
+					{ }
+				else if (*pPos == '\r')
+					{ }
+				else if (*pPos == '\n')
+					{
+					*pDest++ = '\n';
+					*pDest++ = '\n';
+					iState = stateDoubleLine;
+					}
+				else
+					{
+					*pDest++ = *pPos;
+					iState = stateText;
+					}
+				break;
+
+			case stateDoubleLine:
+				if (*pPos == ' ' || *pPos == '\t')
+					iState = stateSpace;
+				else if (*pPos == '\r' || *pPos == '\n')
+					{ }
+				else
+					{
+					*pDest++ = *pPos;
+					iState = stateText;
+					}
+				break;
+			}
+
+		pPos++;
+		}
+
+	//	Done
+
+	sOutput.Truncate((int)(pDest - pDestStart));
+	return sOutput;
+	}
+
 CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult) const
 
 //	Translate
@@ -272,7 +473,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (CSpaceObject
 		{
 		if (retsText)
 			{
-			*retsText = ::ComposePlayerNameString(pEntry->sText, g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome());
+			*retsText = ::ComposePlayerNameString(pEntry->sText, g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome(), pData);
 			return resultString;
 			}
 		else
@@ -300,7 +501,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (CSpaceObject
 		{
 		if (retsText)
 			{
-			*retsText = ::ComposePlayerNameString(pResult->GetStringValue(), g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome());
+			*retsText = ::ComposePlayerNameString(pResult->GetStringValue(), g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome(), pData);
 			iResult = resultString;
 			}
 		else
@@ -320,7 +521,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (CSpaceObject
 
 			retText->InsertEmpty(pResult->GetCount());
 			for (i = 0; i < pResult->GetCount(); i++)
-				retText->GetAt(i) = ::ComposePlayerNameString(pResult->GetElement(i)->GetStringValue(), sPlayerName, iPlayerGenome);
+				retText->GetAt(i) = ::ComposePlayerNameString(pResult->GetElement(i)->GetStringValue(), sPlayerName, iPlayerGenome, pData);
 
 			iResult = resultArray;
 			}
@@ -388,7 +589,7 @@ bool CLanguageDataBlock::Translate (CSpaceObject *pObj, const CString &sID, ICCI
 			CString sPlayerName = g_pUniverse->GetPlayerName();
 			GenomeTypes iPlayerGenome = g_pUniverse->GetPlayerGenome();
 
-			*retpResult = ComposeCCItem(g_pUniverse->GetCC(), pResult, sPlayerName, iPlayerGenome);
+			*retpResult = ComposeCCItem(g_pUniverse->GetCC(), pResult, sPlayerName, iPlayerGenome, pData);
 			pResult->Discard(&g_pUniverse->GetCC());
 			return true;
 			}

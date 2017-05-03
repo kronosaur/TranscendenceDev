@@ -636,7 +636,9 @@ class CLanguageDataBlock
 			ICCItem *pCode;
 			};
 
-		ICCItem *ComposeCCItem (CCodeChain &CC, ICCItem *pValue, const CString &sPlayerName, GenomeTypes iPlayerGenome) const;
+		ICCItem *ComposeCCItem (CCodeChain &CC, ICCItem *pValue, const CString &sPlayerName, GenomeTypes iPlayerGenome, ICCItem *pData) const;
+		bool IsCode (const CString &sText) const;
+		CString ParseTextBlock (const CString &sText) const;
 		ETranslateResult Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult = NULL) const;
 
 		TSortMap<CString, SEntry> m_Data;

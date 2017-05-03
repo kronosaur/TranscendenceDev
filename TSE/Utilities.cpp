@@ -1000,6 +1000,10 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 	int iOutLeft = sString.GetLength() * 2;
 	char *pOut = sOutput.GetWritePointer(iOutLeft);
 
+	//	If pArgs is a structure, then we look up variable names in it.
+
+	bool bHasData = (pArgs && pArgs->IsSymbolTable());
+
 	//	Compose. Loop once for each segment that we need to add
 
 	bool bDone = false;
@@ -1008,6 +1012,7 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 	while (!bDone)
 		{
 		CString sVar;
+		CString sValue;
 		char *pSeg;
 		char *pSegEnd;
 
@@ -1040,6 +1045,14 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 
 			if (sVar.IsBlank())
 				sVar = CONSTLIT("%");
+
+			//	Check to see if this is a variable referencing gData.
+
+			else if (bHasData && !(sValue = pArgs->GetStringAt(sVar)).IsBlank())
+				sVar = sValue;
+
+			//	Otherwise we look for standard variables
+
 			else if (strEquals(sVar, CONSTLIT("name")))
 				sVar = sPlayerName;
 			else if (strEquals(sVar, CONSTLIT("he")))
@@ -1098,6 +1111,10 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 				else
 					sVar = CONSTLIT("daughter");
 				}
+
+			//	If we still haven't found it, then assume this is an index into 
+			//	and array of values.
+
 			else if (pArgs)
 				{
 				int iArg = strToInt(sVar, 0);
