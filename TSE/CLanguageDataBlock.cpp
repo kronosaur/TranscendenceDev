@@ -332,6 +332,7 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 		stateLine,
 		stateLineAfterSpace,
 		stateDoubleLine,
+		stateEscape,
 		};
 
 	char *pPos = sText.GetASCIIZPointer();
@@ -352,7 +353,9 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 		switch (iState)
 			{
 			case stateStart:
-				if (!strIsWhitespace(pPos))
+				if (*pPos == '\\')
+					iState = stateEscape;
+				else if (!strIsWhitespace(pPos))
 					{
 					*pDest++ = *pPos;
 					iState = stateText;
@@ -369,6 +372,8 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 					{ }
 				else if (*pPos == '\n')
 					iState = stateLine;
+				else if (*pPos == '\\')
+					iState = stateEscape;
 				else
 					*pDest++ = *pPos;
 				break;
@@ -380,6 +385,8 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 					{ }
 				else if (*pPos == '\n')
 					iState = stateLineAfterSpace;
+				else if (*pPos == '\\')
+					iState = stateEscape;
 				else
 					{
 					*pDest++ = *pPos;
@@ -397,6 +404,11 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 					*pDest++ = '\n';
 					*pDest++ = '\n';
 					iState = stateDoubleLine;
+					}
+				else if (*pPos == '\\')
+					{
+					*pDest++ = ' ';
+					iState = stateEscape;
 					}
 				else
 					{
@@ -417,6 +429,8 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 					*pDest++ = '\n';
 					iState = stateDoubleLine;
 					}
+				else if (*pPos == '\\')
+					iState = stateEscape;
 				else
 					{
 					*pDest++ = *pPos;
@@ -429,6 +443,32 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 					iState = stateSpace;
 				else if (*pPos == '\r' || *pPos == '\n')
 					{ }
+				else if (*pPos == '\\')
+					iState = stateEscape;
+				else
+					{
+					*pDest++ = *pPos;
+					iState = stateText;
+					}
+				break;
+
+			case stateEscape:
+				if (*pPos == '\\')
+					{
+					*pDest++ = '\\';
+					iState = stateText;
+					}
+				else if (*pPos == 'n')
+					{
+					*pDest++ = '\n';
+					iState = stateDoubleLine;
+					}
+				else if (*pPos == '%')
+					{
+					*pDest++ = '%';
+					*pDest++ = '%';
+					iState = stateText;
+					}
 				else
 					{
 					*pDest++ = *pPos;
