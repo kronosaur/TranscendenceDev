@@ -98,6 +98,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
+#define PROPERTY_DESTINY						CONSTLIT("destiny")
 #define PROPERTY_DOCKING_PORTS					CONSTLIT("dockingPorts")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_HAS_DOCKING_PORTS				CONSTLIT("hasDockingPorts")
@@ -4199,6 +4200,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
 		return CC.CreateInteger(GetCyberDefenseLevel());
+
+	else if (strEquals(sName, PROPERTY_DESTINY))
+		return CC.CreateInteger(GetDestiny());
 
 	else if (strEquals(sName, PROPERTY_DOCKING_PORTS))
 		{

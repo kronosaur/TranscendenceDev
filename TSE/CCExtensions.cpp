@@ -1457,10 +1457,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetDetectRange obj targetObj) -> range in light-seconds",
 			"ii",	0,	},
 
-		{	"objGetDestiny",				fnObjGetOld,		FN_OBJ_DESTINY,
-			"(objGetDestiny obj) -> 0-359",
-			NULL,	0,	},
-
 		{	"objGetDisposition",			fnObjGet,		FN_OBJ_GET_DISPOSITION,
 			"(objGetDisposition obj targetObj) -> disposition of obj towards targetObj\n\n"
 			
@@ -1642,6 +1638,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'ascended\n"
 			"   'category\n"
 			"   'cyberDefenseLevel\n"
+			"   'destiny\n"
 			"   'dockingPorts\n"
 			"   'hasDockingPorts\n"
 			"   'id\n"
@@ -3091,6 +3088,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"objGetDestiny",				fnObjGetOld,		FN_OBJ_DESTINY,
+			"DEPRECATED: Use (objGetProperty obj 'destiny) instead.",
+			NULL,	0,	},
 
 		{	"unvFindObj",					fnUniverseGet,		FN_UNIVERSE_FIND_OBJ,
 			"DEPRECATED: Use unvFindObject instead.",
