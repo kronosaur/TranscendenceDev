@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 #define MESSAGE_TAG								CONSTLIT("Message")
+#define STRING_TAG								CONSTLIT("String")
 #define TEXT_TAG								CONSTLIT("Text")
 
 #define ID_ATTRIB								CONSTLIT("id")
@@ -148,18 +149,20 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 			return ERR_FAIL;
 			}
 
+		//	Add an entry
+
+		bool bIsNew;
+		SEntry *pEntry = m_Data.SetAt(sID, &bIsNew);
+		if (!bIsNew)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Duplicate <Language> element: %s"), sID);
+			return ERR_FAIL;
+			}
+
+		//	Read the text
+
 		if (strEquals(pItem->GetTag(), TEXT_TAG))
 			{
-			//	Add an entry
-
-			bool bIsNew;
-			SEntry *pEntry = m_Data.SetAt(sID, &bIsNew);
-			if (!bIsNew)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Duplicate <Language> element: %s"), sID);
-				return ERR_FAIL;
-				}
-
 			//	If this is code, then link it.
 
 			if (IsCode(pItem->GetContentText(0)))
@@ -201,20 +204,13 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				pEntry->sText = ParseTextBlock(pItem->GetContentText(0));
 				}
 			}
+		else if (strEquals(pItem->GetTag(), STRING_TAG))
+			{
+			pEntry->pCode = NULL;
+			pEntry->sText = ParseTextBlock(pItem->GetContentText(0));
+			}
 		else if (strEquals(pItem->GetTag(), MESSAGE_TAG))
 			{
-			//	Add an entry
-
-			bool bIsNew;
-			SEntry *pEntry = m_Data.SetAt(sID, &bIsNew);
-			if (!bIsNew)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Duplicate <Language> element: %s"), sID);
-				return ERR_FAIL;
-				}
-
-			//	Set the text
-
 			pEntry->pCode = NULL;
 			pEntry->sText = pItem->GetAttribute(TEXT_ATTRIB);
 			}
