@@ -1516,7 +1516,7 @@ bool CItem::IsEqual (const CItem &Item, DWORD dwFlags) const
 			&& IsExtraEqual(Item.m_pExtra, dwFlags));
 	}
 
-bool CItem::IsExtraEmpty (const SExtra *pExtra)
+bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags)
 
 //	IsExtraEmpty
 //
@@ -1524,7 +1524,9 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra)
 //	(set to initial values)
 
 	{
-	return (pExtra->m_dwCharges == 0
+	const bool bIgnoreCharges = (dwFlags & FLAG_IGNORE_CHARGES ? true : false);
+
+	return ((bIgnoreCharges || pExtra->m_dwCharges == 0)
 			&& pExtra->m_dwVariant == 0
 			&& (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < (DWORD)g_pUniverse->GetTicks())
 			&& pExtra->m_Mods.IsEmpty()
@@ -1559,9 +1561,9 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 	//	One has extra struct, but it's empty
 
 	else if (m_pExtra == NULL)
-		return IsExtraEmpty(pSrc);
+		return IsExtraEmpty(pSrc, dwFlags);
 	else if (pSrc == NULL)
-		return IsExtraEmpty(m_pExtra);
+		return IsExtraEmpty(m_pExtra, dwFlags);
 
 	//	Extra structs don't match at all
 

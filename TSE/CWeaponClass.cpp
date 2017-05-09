@@ -1289,16 +1289,14 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
 		if (pShot->GetAmmoType()->AreChargesAmmo())
 			{
 			const CItem &AmmoItem = ItemList.GetItemAtCursor();
-			if (AmmoItem.GetCharges() <= 0)
-				{
-				//	This should never happen, since we delete items when they
-				//	run out of charges.
-				return false;
-				}
 
 			//	If we only have 1 charge left, we need to delete the item
+			//
+			//	(We should never have 0 charges because we delete items when we 
+			//	use up the last charge. But if somehow we get it, we destroy it
+			//	here too.)
 
-			else if (AmmoItem.GetCharges() == 1)
+			if (AmmoItem.GetCharges() <= 1)
 				{
 				ItemList.DeleteAtCursor(1);
 

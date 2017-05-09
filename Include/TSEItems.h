@@ -387,7 +387,7 @@ class CItem
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
 
 		static bool IsDisruptionEqual (DWORD dwD1, DWORD dwD2);
-		static bool IsExtraEmpty (const SExtra *pExtra);
+		static bool IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags);
 
 		CItemType *m_pItemType;
 
