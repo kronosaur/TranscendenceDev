@@ -257,6 +257,14 @@ class CRandomEnhancementGenerator
 class CItem
 	{
 	public:
+		enum EFlags
+			{
+			//	IsEqual
+
+			FLAG_IGNORE_INSTALLED =			0x00000001,
+			FLAG_IGNORE_CHARGES =			0x00000002,
+			};
+
 		CItem (void);
 		CItem (const CItem &Copy);
 		CItem (CItemType *pItemType, int iCount);
@@ -271,7 +279,7 @@ class CItem
 		static CItem CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		inline bool IsArmor (void) const;
 		inline bool IsDevice (void) const;
-		bool IsEqual (const CItem &Item, bool bIgnoreInstalled = false) const;
+		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
 		bool FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsError) const;
 		bool FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) const;
 		void FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const;
@@ -375,7 +383,7 @@ class CItem
 		void AccumulateCustomAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);
 		int GetValue (bool bActual = false) const;
-		bool IsExtraEqual (SExtra *pSrc) const;
+		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
 
 		static bool IsDisruptionEqual (DWORD dwD1, DWORD dwD2);
 		static bool IsExtraEmpty (const SExtra *pExtra);
@@ -433,7 +441,7 @@ class CItemListManipulator
 		inline int GetCount (void) { return m_ViewMap.GetCount(); }
 		inline int GetCursor (void) { return m_iCursor; }
 		inline void SetCursor (int iCursor) { m_iCursor = Min(Max(-1, iCursor), GetCount() - 1); }
-		bool SetCursorAtItem (const CItem &Item);
+		bool SetCursorAtItem (const CItem &Item, DWORD dwFlags = 0);
 		void SetFilter (const CItemCriteria &Filter);
 		bool Refresh (const CItem &Item);
 
@@ -462,7 +470,7 @@ class CItemListManipulator
 		void TransferAtCursor (int iCount, CItemList &DestList);
 
 	private:
-		int FindItem (const CItem &Item);
+		int FindItem (const CItem &Item, DWORD dwFlags = 0);
 		void GenerateViewMap (void);
 		void MoveItemTo (const CItem &NewItem, const CItem &OldItem);
 

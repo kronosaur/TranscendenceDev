@@ -4257,7 +4257,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Options
 
-			bool bIgnoreInstalled = false;
+			DWORD dwFlags = 0;
 			ICCItem *pOptions = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
 			if (pOptions)
 				{
@@ -4265,11 +4265,11 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					ICCItem *pOption = pOptions->GetElement(i);
 					if (strEquals(pOption->GetStringValue(), CONSTLIT("ignoreInstalled")))
-						bIgnoreInstalled = true;
+						dwFlags |= CItem::FLAG_IGNORE_INSTALLED;
 					}
 				}
 
-			pResult = pCC->CreateBool(Item.IsEqual(Item2, bIgnoreInstalled));
+			pResult = pCC->CreateBool(Item.IsEqual(Item2, dwFlags));
 			break;
 			}
 

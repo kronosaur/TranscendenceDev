@@ -1489,7 +1489,7 @@ bool CItem::IsDisruptionEqual (DWORD dwD1, DWORD dwD2)
 	return (dwD1 < dwNow && dwD2 < dwNow);
 	}
 
-bool CItem::IsEqual (const CItem &Item, bool bIgnoreInstalled) const
+bool CItem::IsEqual (const CItem &Item, DWORD dwFlags) const
 
 //	IsEqual
 //
@@ -1497,10 +1497,12 @@ bool CItem::IsEqual (const CItem &Item, bool bIgnoreInstalled) const
 //	item except for the count
 
 	{
+	const bool bIgnoreInstalled = (dwFlags & FLAG_IGNORE_INSTALLED ? true : false);
+
 	return (m_pItemType == Item.m_pItemType
 			&& m_dwFlags == Item.m_dwFlags
 			&& (bIgnoreInstalled || m_dwInstalled == Item.m_dwInstalled)
-			&& IsExtraEqual(Item.m_pExtra));
+			&& IsExtraEqual(Item.m_pExtra, dwFlags));
 	}
 
 bool CItem::IsExtraEmpty (const SExtra *pExtra)
@@ -1518,7 +1520,7 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra)
 			&& pExtra->m_Data.IsEmpty());
 	}
 
-bool CItem::IsExtraEqual (SExtra *pSrc) const
+bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 
 //	IsExtraEqual
 //
@@ -1529,7 +1531,9 @@ bool CItem::IsExtraEqual (SExtra *pSrc) const
 
 	if (m_pExtra && pSrc)
 		{
-		return (m_pExtra->m_dwCharges == pSrc->m_dwCharges
+		const bool bIgnoreCharges = (dwFlags & FLAG_IGNORE_CHARGES ? true : false);
+
+		return ((bIgnoreCharges || m_pExtra->m_dwCharges == pSrc->m_dwCharges)
 				&& m_pExtra->m_dwVariant == pSrc->m_dwVariant
 				&& IsDisruptionEqual(m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime)
 				&& m_pExtra->m_Mods.IsEqual(pSrc->m_Mods)

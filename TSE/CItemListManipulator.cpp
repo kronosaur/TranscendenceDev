@@ -152,7 +152,7 @@ void CItemListManipulator::DeleteMarkedItems (void)
 		}
 	}
 
-int CItemListManipulator::FindItem (const CItem &Item)
+int CItemListManipulator::FindItem (const CItem &Item, DWORD dwFlags)
 
 //	FindItem
 //
@@ -164,7 +164,7 @@ int CItemListManipulator::FindItem (const CItem &Item)
 		{
 		CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[i]);
 
-		if (ThisItem.IsEqual(Item))
+		if (ThisItem.IsEqual(Item, dwFlags))
 			return i;
 		}
 
@@ -404,7 +404,7 @@ void CItemListManipulator::SetCountAtCursor (int iCount)
 		OldItem.SetCount(iCount);
 	}
 
-bool CItemListManipulator::SetCursorAtItem (const CItem &Item)
+bool CItemListManipulator::SetCursorAtItem (const CItem &Item, DWORD dwFlags)
 
 //	SetCursorAtItem
 //
@@ -412,7 +412,7 @@ bool CItemListManipulator::SetCursorAtItem (const CItem &Item)
 //	Return true if the item was found
 
 	{
-	int iPos = FindItem(Item);
+	int iPos = FindItem(Item, dwFlags);
 	if (iPos == -1)
 		return false;
 

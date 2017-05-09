@@ -399,6 +399,9 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
         //  standard. -1 = ammo is 1% cheaper than standard.
 
         Metric rAmmoCost = (Metric)CEconomyType::ExchangeToCredits(pShot->GetAmmoType()->GetCurrencyAndValue(ItemCtx, true));
+		if (pShot->GetAmmoType()->AreChargesAmmo() && pShot->GetAmmoType()->GetMaxCharges() > 0)
+			rAmmoCost /= (Metric)pShot->GetAmmoType()->GetMaxCharges();
+
         Metric rAmmoCostDelta = 100.0 * (rAmmoCost - retBalance.rStdAmmoCost) / retBalance.rStdAmmoCost;
         retBalance.rAmmo += rAmmoCostDelta * BALANCE_AMMO_COST_RATIO;
 
@@ -1254,6 +1257,99 @@ bool CWeaponClass::CanRotate (CItemCtx &Ctx, int *retiMinFireArc, int *retiMaxFi
 		return false;
 	}
 
+bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
+
+//	ConsumeAmmo
+//
+//	Consumes ammunition from the source. Returns TRUE if we were able to consume
+//	all ammo. If no ammo needs to be consumed, we still return TRUE.
+
+	{
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	if (pSource == NULL)
+		return false;
+
+	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	if (pDevice == NULL)
+		return false;
+
+	bool bNextVariant = false;
+	if (pShot->GetAmmoType())
+		{
+		//	Select the ammo. If we could not select it, then it means that we
+		//	have none, so we fail.
+
+		CItemListManipulator ItemList(pSource->GetItemList());
+		CItem Item(pShot->GetAmmoType(), 1);
+		if (!ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
+			return false;
+
+		//	If the ammo uses charges, then we need a different algorithm.
+
+		if (pShot->GetAmmoType()->AreChargesAmmo())
+			{
+			const CItem &AmmoItem = ItemList.GetItemAtCursor();
+			if (AmmoItem.GetCharges() <= 0)
+				{
+				//	This should never happen, since we delete items when they
+				//	run out of charges.
+				return false;
+				}
+
+			//	If we only have 1 charge left, we need to delete the item
+
+			else if (AmmoItem.GetCharges() == 1)
+				{
+				ItemList.DeleteAtCursor(1);
+
+				//	See if we have any other items with charges. If not, then
+				//	we need to select the next weapon.
+
+				if (!ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
+					bNextVariant = true;
+				}
+
+			//	Otherwise, we decrement.
+
+			else
+				ItemList.SetChargesAtCursor(AmmoItem.GetCharges() - 1);
+			}
+
+		//	Otherwise, consume an item
+
+		else
+			{
+			//	If we've exhausted our ammunition, remember to
+			//	select the next variant
+
+			if (ItemList.GetItemAtCursor().GetCount() == 1)
+				bNextVariant = true;
+
+			ItemList.DeleteAtCursor(1);
+			}
+		}
+	else if (m_bCharges)
+		{
+		//	If no charges left, then we cannot consume
+
+		if (pDevice->GetCharges(pSource) <= 0)
+			return false;
+
+		//	Consume charges
+
+		pDevice->IncCharges(pSource, -1);
+		}
+
+	//	Switch to the next variant if necessary
+
+	if (bNextVariant)
+		pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
+
+	//	Success!
+
+	return true;
+	}
+
 ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpWeapon)
 
 //	CreateFromXML
@@ -1851,29 +1947,8 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	if (iRepeatingCount == 0)
 		{
-		if (pShot->GetAmmoType())
-			{
-			//	Select the ammo
-
-			CItemListManipulator ItemList(pSource->GetItemList());
-			CItem Item(pShot->GetAmmoType(), iShotCount);
-			bool bAmmoSelected = ItemList.SetCursorAtItem(Item);
-
-			//	If we could not select ammo (because we don't have any)
-			//	and this is the first shot, then we can't fire at all
-
-			if (!bAmmoSelected)
-				{
-				return false;
-				}
-			}
-		else if (m_bCharges)
-			{
-			if (pDevice->GetCharges(pSource) <= 0)
-				{
-				return false;
-				}
-			}
+		if (!HasAmmoLeft(ItemCtx, pShot))
+			return false;
 		}
 
 	//	Create barrel flash effect
@@ -1993,45 +2068,12 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	//	Consume ammo
 
-	bool bNextVariant = false;
 	if (iRepeatingCount == pShot->GetContinuous())
 		{
-		if (pShot->GetAmmoType())
+		if (ConsumeAmmo(ItemCtx, pShot))
 			{
-			//	Select the ammo
-
-			CItemListManipulator ItemList(pSource->GetItemList());
-			CItem Item(pShot->GetAmmoType(), iShotCount);
-			bool bAmmoSelected = ItemList.SetCursorAtItem(Item);
-
-			//	If we selected some ammo and this is the last
-			//	shot in the series, then consume ammo
-
-			if (bAmmoSelected)
-				{
-				//	If we've exhausted our ammunition, remember to
-				//	select the next variant
-
-				if (ItemList.GetItemAtCursor().GetCount() == 1)
-					bNextVariant = true;
-
-				ItemList.DeleteAtCursor(1);
-
-				//	Remember to tell the ship that we've consumed items
-
-				if (retbConsumedItems)
-					*retbConsumedItems = true;
-				}
-			}
-		else if (m_bCharges)
-			{
-			if (pDevice->GetCharges(pSource) > 0)
-				{
-				pDevice->IncCharges(pSource, -1);
-
-				if (retbConsumedItems)
-					*retbConsumedItems = true;
-				}
+			if (retbConsumedItems)
+				*retbConsumedItems = true;
 			}
 		}
 
@@ -2048,11 +2090,6 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 		pSource->Accelerate(vAccel, g_MomentumConstant);
 		pSource->ClipSpeed(pSource->GetMaxSpeed());
 		}
-
-	//	Switch to the next variant if necessary
-
-	if (bNextVariant)
-		pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
 
 	//	Create an explosion if weapon damage
 
@@ -2124,6 +2161,44 @@ int CWeaponClass::GetAmmoItemCount (void) const
     else
         return 1;
     }
+
+bool CWeaponClass::HasAmmoLeft (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const
+
+//	HasAmmoLeft
+//
+//	Returns TRUE if we can fire at least one shot.
+
+	{
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	if (pSource == NULL)
+		return false;
+
+	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	if (pDevice == NULL)
+		return false;
+
+	//	If ammo items...
+
+	if (pShot->GetAmmoType())
+		{
+		CItemListManipulator ItemList(pSource->GetItemList());
+		CItem Item(pShot->GetAmmoType(), 1);
+		if (!ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
+			return false;
+		}
+
+	//	If charges...
+
+	else if (m_bCharges)
+		{
+		if (pDevice->GetCharges(pSource) <= 0)
+			return false;
+		}
+
+	//	Otherwise, we can fire.
+
+	return true;
+	}
 
 ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty)
 
@@ -2897,36 +2972,43 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 			*retpType = NULL;
 		}
 
-    //  If we don't have ammo, then we return info based on charges
+    //  If we use ammo, return that
 
-	else if (pShot->GetAmmoType() == NULL)
+	else if (pShot->GetAmmoType())
 		{
-		if (retsLabel)
-			*retsLabel = CString();
-		if (retiAmmoLeft)
-			{
-			if (m_bCharges)
-				*retiAmmoLeft = pDevice->GetCharges(pSource);
-			else
-				*retiAmmoLeft = -1;
-			}
-		if (retpType)
-			*retpType = GetItemType();
-		}
-
-    //  Otherwise, we return ammo counts
-
-	else
-		{
-    	CItemListManipulator ItemList(pSource->GetItemList());
 		CItem Item(pShot->GetAmmoType(), 1);
 
+		//	Calc ammo left
+
 		if (retiAmmoLeft)
 			{
-			if (ItemList.SetCursorAtItem(Item))
-				*retiAmmoLeft = ItemList.GetItemAtCursor().GetCount();
+			//	If each ammo item uses charges, then we need a different method.
+
+			if (pShot->GetAmmoType()->AreChargesAmmo())
+				{
+				int iCharges = 0;
+				CItemListManipulator ItemList(pSource->GetItemList());
+				while (ItemList.MoveCursorForward())
+					{
+					const CItem &Item = ItemList.GetItemAtCursor();
+					if (Item.GetType() == pShot->GetAmmoType())
+						iCharges += Item.GetCount() * Item.GetCharges();
+					}
+
+				*retiAmmoLeft = iCharges;
+				}
+
+			//	Otherwise, we just return the number of items
+
 			else
-				*retiAmmoLeft = 0;
+				{
+				CItemListManipulator ItemList(pSource->GetItemList());
+				CItem Item(pShot->GetAmmoType(), 1);
+				if (ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
+					*retiAmmoLeft = ItemList.GetItemAtCursor().GetCount();
+				else
+					*retiAmmoLeft = 0;
+				}
 			}
 
 		if (retsLabel)
@@ -2939,6 +3021,34 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 
 		if (retpType)
 			*retpType = pShot->GetAmmoType();
+		}
+
+	//	Else if we use charges, return that
+
+	else if (m_bCharges)
+		{
+		if (retsLabel)
+			*retsLabel = CString();
+
+		if (retiAmmoLeft)
+			*retiAmmoLeft = pDevice->GetCharges(pSource);
+
+		if (retpType)
+			*retpType = GetItemType();
+		}
+
+	//	Otherwise, we don't use ammo
+
+	else
+		{
+		if (retsLabel)
+			*retsLabel = CString();
+
+		if (retiAmmoLeft)
+			*retiAmmoLeft = -1;
+
+		if (retpType)
+			*retpType = GetItemType();
 		}
 	}
 
@@ -4287,28 +4397,15 @@ bool CWeaponClass::VariantIsValid (CSpaceObject *pSource, CInstalledDevice *pDev
 //	Returns TRUE if the variant is valid
 
 	{
-	//	If we have charges, then we're only valid if we have charges left.
+	CItemCtx ItemCtx(pSource, pDevice);
 
-	if (m_bCharges)
-		{
-		if (pDevice->GetCharges(pSource) == 0)
-			return false;
-		}
+	//	If no ammo, then variant is not valid
 
-	//	If we do not need ammo, then we're always valid
+	if (!HasAmmoLeft(ItemCtx, &ShotData))
+		return false;
 
-	if (ShotData.GetAmmoType() == NULL)
-		return true;
+	//	Otherwise, valid
 
-	//	Otherwise, check to see if we have enough ammo
-
-	CItemListManipulator ItemList(pSource->GetItemList());
-	CItem Item(ShotData.GetAmmoType(), 1);
-	if (ItemList.SetCursorAtItem(Item))
-		return true;
-
-	//	Not valid
-
-	return false;
+	return true;
 	}
 

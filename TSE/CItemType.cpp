@@ -27,6 +27,7 @@
 #define SOLAR_DEVICE_CLASS_TAG					CONSTLIT("SolarDevice")
 #define WEAPON_CLASS_TAG						CONSTLIT("Weapon")
 
+#define AMMO_CHARGES_ATTRIB						CONSTLIT("ammoCharges")
 #define AS_ARMOR_SET_ATTRIB						CONSTLIT("asArmorSet")
 #define INSTANCE_DATA_ATTRIB					CONSTLIT("charges")
 #define COMPLETE_ARMOR_ONLY_ATTRIB				CONSTLIT("completeArmorOnly")
@@ -1438,6 +1439,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_iExtraMassPerCharge = pDesc->GetAttributeIntegerBounded(MASS_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	m_iExtraValuePerCharge = pDesc->GetAttributeInteger(VALUE_BONUS_PER_CHARGE_ATTRIB);	//	May be negative
+	m_fAmmoCharges = pDesc->GetAttributeBool(AMMO_CHARGES_ATTRIB);
 	m_fValueCharges = pDesc->GetAttributeBool(VALUE_CHARGES_ATTRIB);
 
 	//	Flags

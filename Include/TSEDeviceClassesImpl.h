@@ -573,6 +573,7 @@ class CWeaponClass : public CDeviceClass
 		virtual ~CWeaponClass (void);
 
 		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
+		bool ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
 		inline bool FindEventHandlerWeaponClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
         CItemType *GetAmmoItem (int iIndex) const;
         int GetAmmoItemCount (void) const;
@@ -714,6 +715,7 @@ class CWeaponClass : public CDeviceClass
 						 bool *retbConsumedItems);
 		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;
+		bool HasAmmoLeft (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const;
 		ALERROR InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
 		inline bool IsCapacitorEnabled (void) { return (m_Counter == cntCapacitor); }
 		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
