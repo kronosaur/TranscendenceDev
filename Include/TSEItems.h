@@ -280,6 +280,7 @@ class CItem
 		inline bool IsArmor (void) const;
 		inline bool IsDevice (void) const;
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
+		bool IsUsed (void) const;
 		bool FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsError) const;
 		bool FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) const;
 		void FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const;

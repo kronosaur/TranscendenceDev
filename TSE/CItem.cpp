@@ -35,6 +35,7 @@
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
+#define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
 CItemEnhancement CItem::m_NullMod;
@@ -275,7 +276,14 @@ CString CItem::CalcSortKey (void) const
 		sCat.Append(CONSTLIT("1"));
 
 	CString sName = pType->GetSortName();
-	return strPatternSubst(CONSTLIT("%s%s%s%d"), sInstalled, sCat, sName, ((DWORD)(int)this) % 0x10000);
+
+	//	For ammo charges, sort used magazines first
+
+	CString sCharges;
+	if (pType->AreChargesAmmo())
+		sCharges = strPatternSubst(CONSTLIT("-%08d"), GetCharges());
+
+	return strPatternSubst(CONSTLIT("%s%s%s%s%d"), sInstalled, sCat, sName, sCharges, ((DWORD)(int)this) % 0x10000);
 	}
 
 CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName)
@@ -1099,6 +1107,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
     else if (strEquals(sProperty, PROPERTY_LEVEL))
         return CC.CreateInteger(GetType()->GetLevel(Ctx));
 
+	else if (strEquals(sProperty, PROPERTY_USED))
+		return CC.CreateBool(IsUsed());
+
 	//	Next we handle all properties for devices, armor, etc. Note that this
 	//	includes both installed properties (e.g., armor segment) and static
 	//	properties (e.g., armor HP). But it DOES NOT include item type 
@@ -1556,6 +1567,23 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 
 	else
 		return false;
+	}
+
+bool CItem::IsUsed (void) const
+
+//	IsUsed
+//
+//	Returns TRUE if the item has been used.
+
+	{
+	//	For now, the only case that we handle is when charges have been used.
+
+	if (GetCharges() < m_pItemType->GetMaxCharges())
+		return true;
+
+	//	Not used
+
+	return false;
 	}
 
 bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const

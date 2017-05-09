@@ -39,6 +39,7 @@
 #define KEY_ATTRIB								CONSTLIT("key")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MASS_BONUS_PER_CHARGE_ATTRIB			CONSTLIT("massBonusPerCharge")
+#define NO_SALE_IF_USED_ATTRIB					CONSTLIT("noSaleIfUsed")
 #define NUMBER_APPEARING_ATTRIB					CONSTLIT("numberAppearing")
 #define PLURAL_NAME_ATTRIB						CONSTLIT("pluralName")
 #define REVERSE_ARTICLE_ATTRIB					CONSTLIT("reverseArticle")
@@ -1444,6 +1445,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Flags
 
+	m_fNoSaleIfUsed = pDesc->GetAttributeBool(NO_SALE_IF_USED_ATTRIB);
 	m_fRandomDamaged = pDesc->GetAttributeBool(CONSTLIT(g_RandomDamagedAttrib));
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
 	if (m_fVirtual)

@@ -759,6 +759,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'hp\n"
 			"   'installed\n"
 			"   'known\n"
+			"   'maxCharges\n"
 			"   'maxHP\n"
 			"   'omnidirectional\n"
 			"   'radiationImmune\n"

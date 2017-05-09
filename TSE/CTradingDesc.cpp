@@ -402,6 +402,21 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 			break;
 			}
 
+		case serviceBuy:
+			{
+			//	If this item cannot be sold when used, then check if it is used.
+
+			if (!Ctx.pItem->GetType()->CanBeSoldIfUsed()
+					&& Ctx.pItem->IsUsed())
+				return -1;
+
+			//	Otherwise, normal price
+
+			iBasePrice = Ctx.iCount * Ctx.pItem->GetTradePrice(Ctx.pProvider, bActual);
+			pBaseEconomy = Ctx.pItem->GetCurrencyType();
+			break;
+			}
+
 		default:
 			iBasePrice = Ctx.iCount * Ctx.pItem->GetTradePrice(Ctx.pProvider, bActual);
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();

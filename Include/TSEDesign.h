@@ -1656,6 +1656,7 @@ class CItemType : public CDesignType
 		inline void AddWeapon (CDeviceClass *pWeapon) { ASSERT(!m_Weapons.Find(pWeapon)); m_Weapons.Insert(pWeapon); }
 		inline bool AreChargesAmmo (void) const { return (m_fAmmoCharges ? true : false); }
 		inline bool AreChargesValued (void) const { return (m_fValueCharges ? true : false); }
+		inline bool CanBeSoldIfUsed (void) const { return (m_fNoSaleIfUsed ? false : true); }
 		inline void ClearKnown (void) { m_fKnown = false; }
 		inline void ClearShowReference (void) { m_fReference = false; }
 		void CreateEmptyFlotsam (CSystem *pSystem, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpFlotsam);
@@ -1808,7 +1809,7 @@ class CItemType : public CDesignType
 		DWORD m_fUseCompleteArmor:1;			//	If TRUE, item can be used as a complete armor set
 		DWORD m_fUseAsArmorSet:1;				//	If TRUE, we only show item once for armor set
 		DWORD m_fAmmoCharges:1;					//	If TRUE, charges are ammo
-		DWORD m_fSpare7:1;
+		DWORD m_fNoSaleIfUsed:1;				//	If TRUE, cannot be sold once it's been used
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:16;
