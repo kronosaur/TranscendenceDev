@@ -268,7 +268,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 						const COrbit &OrbitDesc);
 ALERROR CreateRandomStation (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc);
-ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CXMLElement *pSatellites, const COrbit &OrbitDesc);
+ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, CXMLElement *pSatellites, const COrbit &OrbitDesc);
 ALERROR CreateShipsForStation (CSpaceObject *pStation, CXMLElement *pShips);
 ALERROR CreateSiblings (SSystemCreateCtx *pCtx, 
 						CXMLElement *pObj, 
@@ -1789,7 +1789,7 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 	return NOERROR;
 	}
 
-ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CXMLElement *pSatellites, const COrbit &OrbitDesc)
+ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, CXMLElement *pSatellites, const COrbit &OrbitDesc)
 
 //	CreateSatellites
 //
@@ -1798,6 +1798,11 @@ ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CXMLElement *pSatellites, cons
 	{
 	ALERROR error;
 	int i;
+
+	//	Set the main station so we can set up subordinate relationships
+
+	CSpaceObject *pOldStation = pCtx->pStation;
+	pCtx->pStation = pStation;
 
 	//	By default, satellites avoid overlapping
 
@@ -1828,6 +1833,7 @@ ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CXMLElement *pSatellites, cons
 	//	Restore
 
 	pCtx->iOverlapCheck = iOldOverlap;
+	pCtx->pStation = pOldStation;
 
 	return NOERROR;
 	}
@@ -3543,7 +3549,7 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 	CXMLElement *pSatellites = pDesc->GetContentElementByTag(SATELLITES_TAG);
 	if (pSatellites)
 		{
-		if (error = CreateSatellites(pCtx, pSatellites, OrbitDesc))
+		if (error = CreateSatellites(pCtx, pStation, pSatellites, OrbitDesc))
 			return error;
 		}
 
@@ -4252,9 +4258,6 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 
 	//	Create any satellites of the station
 
-	CSpaceObject *pSavedStation = pCtx->pStation;
-	pCtx->pStation = pStation;
-
 	CXMLElement *pSatellites = pType->GetSatellitesDesc();
 	if (pSatellites 
 			&& CreateCtx.bCreateSatellites
@@ -4268,13 +4271,11 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 		CExtension *pOldExtension = pCtx->pExtension;
 		pCtx->pExtension = pType->GetExtension();
 
-		if (error = CreateSatellites(pCtx, pSatellites, *CreateCtx.pOrbit))
+		if (error = CreateSatellites(pCtx, pStation, pSatellites, *CreateCtx.pOrbit))
 			return error;
 
 		pCtx->pExtension = pOldExtension;
 		}
-
-	pCtx->pStation = pSavedStation;
 
 #ifdef DEBUG_STATION_PLACEMENT2
 	if (pStation && pStation->GetScale() == scaleStructure)
