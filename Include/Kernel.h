@@ -19,6 +19,7 @@
 #ifdef DEBUG
 //#define DEBUG_MEMORY_LEAKS
 //#define DEBUG_STRING_LEAKS
+#define DEBUG_ARRAY_STATS
 #endif
 
 #ifdef DEBUG_MEMORY_LEAKS
@@ -171,7 +172,6 @@ class CArchiver;
 class CObject;
 class CUnarchiver;
 class CString;
-class CStructArray;
 class CIDTable;
 class IReadStream;
 class IWriteStream;
@@ -505,69 +505,6 @@ class CIntArray : public CObject
 		int m_iLength;						//	Number of integers used
 	};
 
-#ifdef LATER
-class CSet : public CObject
-	{
-	public:
-		CSet (void);
-		virtual ~CSet (void);
-
-		virtual ALERROR AddElement (DWORD dwElement);
-		virtual int GetCount (void);
-		virtual ALERROR GetAllElement (CIntArray *retpArray);
-		virtual BOOL IsMember (DWORD dwElement);
-		virtual ALERROR RemoveElement (DWORD dwElement);
-		virtual void RemoveAll (void);
-
-	private:
-		const int RUN_LENGTH = 128;
-
-		class CRun
-			{
-			int iCount;
-			DWORD Bits[RUN_LENGTH / sizeof(DWORD)];
-			};
-
-		CStructArray m_Runs;				//	Run array
-		int m_iCount;						//	Number of elements
-	};
-#endif
-
-//	CObjectArray. Implements a dynamic array of objects
-
-class CObjectArray : public CObject
-	{
-	public:
-		CObjectArray (void);
-		CObjectArray (BOOL bOwned);
-		virtual ~CObjectArray (void);
-
-		ALERROR AppendObject (CObject *pObj, int *retiIndex = NULL)
-				{ return m_Array.AppendElement((int)pObj, retiIndex); }
-		CObject *DetachObject (int iIndex);
-		int FindObject (CObject *pObj);
-		int GetCount (void) const { return m_Array.GetCount(); }
-		inline CObject *GetObject (int iIndex) const
-				{ return (CObject *)m_Array.GetElement(iIndex); }
-		ALERROR InsertObject (CObject *pObj, int iPos, int *retiIndex)
-				{ return m_Array.InsertElement((int)pObj, iPos, retiIndex); }
-		ALERROR Set (int iCount, CObject **pData)
-				{ return m_Array.Set(iCount, (int *)pData); }
-		void RemoveAll (void);
-		void RemoveObject (int iPos);
-		void ReplaceObject (int iPos, CObject *pObj, bool bDelete = true);
-
-	protected:
-		virtual void CopyHandler (CObject *pOriginal);
-		virtual ALERROR LoadDoneHandler (void);
-		virtual ALERROR LoadHandler (CUnarchiver *pUnarchiver);
-		virtual ALERROR SaveHandler (CArchiver *pArchiver);
-
-	private:
-		BOOL m_bOwned;
-		CIntArray m_Array;
-	};
-
 //	CString. Implementation of a standard string class
 
 #define LITERAL(str)		((CString)(str))
@@ -690,57 +627,6 @@ class CString : public CObject
 		static PSTORESTRUCT g_pStore;
 		static int g_iStoreSize;
 		static PSTORESTRUCT g_pFreeStore;
-	};
-
-//	CStructArray. Implements a dynamic array of simple structures
-
-class CStructArray : public CObject
-	{
-	public:
-		CStructArray (void);
-		CStructArray (int iElementSize, int iInitSize);
-
-		inline ALERROR AppendStruct (void *pData, int *retiIndex = NULL) { return InsertStruct(pData, -1, retiIndex); }
-		ALERROR ExpandArray (int iPos, int iCount);
-		int GetCount (void) const;
-		inline int GetElementSize (void) { return m_iElementSize; }
-		void *GetStruct (int iIndex) const;
-		ALERROR InsertStruct (void *pData, int iPos, int *retiIndex);
-		void Remove (int iIndex);
-		void RemoveAll (void);
-		void SetStruct (int iIndex, void *pData);
-
-	protected:
-		virtual void CopyHandler (CObject *pOriginal);
-		virtual ALERROR LoadHandler (CUnarchiver *pUnarchiver);
-		virtual ALERROR SaveHandler (CArchiver *pArchiver);
-
-	private:
-		CINTDynamicArray m_Array;
-
-		int m_iElementSize;
-		int m_iInitSize;
-	};
-
-//	CSharedObjectQueue. Implements a thread-safe queue of objects
-
-class CSharedObjectQueue : public CObject
-	{
-	public:
-		CSharedObjectQueue (void);
-		virtual ~CSharedObjectQueue (void);
-
-		CObject *DequeueObject (void);
-		ALERROR EnqueueObject (CObject *pObj);
-		inline HANDLE GetQueueEvent (void) { return m_hEvent; }
-
-	private:
-		CObjectArray m_Array;
-		int m_iHead;
-		int m_iTail;
-
-		CRITICAL_SECTION m_csLock;
-		HANDLE m_hEvent;			//	Set if there is at least one object in queue
 	};
 
 //	CDictionary. Implementation of a dynamic array of entries
@@ -1140,7 +1026,7 @@ class CArchiver : public CObject
 
 	private:
 		IWriteStream *m_pStream;					//	Stream to save to
-		CObjectArray m_List;						//	List of objects to save
+		TArray<CObject *> m_List;					//	List of objects to save
 		CDictionary m_ReferenceList;				//	Pointer references
 		CSymbolTable m_ExternalReferences;			//	List of external references
 		int m_iNextID;								//	Next ID to use for references
@@ -1159,7 +1045,7 @@ class CUnarchiver : public CObject
 
 		ALERROR BeginUnarchive (void);
 		ALERROR EndUnarchive (void);
-		inline CObjectArray *GetList (void) { return &m_List; }
+		inline TArray<CObject *> &GetList (void) { return m_List; }
 		CObject *GetObject (int iIndex);
 		DWORD GetVersion (void) { return m_dwVersion; }
 		ALERROR ResolveExternalReference (CString sTag, void *pReference);
@@ -1174,7 +1060,7 @@ class CUnarchiver : public CObject
 
 	private:
 		IReadStream *m_pStream;
-		CObjectArray m_List;
+		TArray<CObject *> m_List;
 		CSymbolTable *m_pExternalReferences;
 		CIntArray m_ReferenceList;
 		CIntArray m_FixupTable;

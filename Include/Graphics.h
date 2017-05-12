@@ -96,6 +96,7 @@ class IGMediaDb
 		virtual HDC SelectBitmap (HBITMAP hBitmap) = 0;
 	};
 
+#ifdef OBSOLETE
 class CGResourceFile : public IGMediaDb
 	{
 	public:
@@ -112,22 +113,23 @@ class CGResourceFile : public IGMediaDb
 		virtual HDC SelectBitmap (HBITMAP hBitmap);
 
 	private:
-		typedef struct
+		struct SCacheEntry
 			{
 			DWORD dwUNID;
 			HBITMAP hBitmap;
 			int iRefCount;
-			} CACHEENTRY;
+			};
 
-		CACHEENTRY *FindInCache (DWORD dwUNID);
+		SCacheEntry *FindInCache (DWORD dwUNID);
 
 		HINSTANCE m_hModule;
-		CStructArray m_BitmapCache;
+		TArray<SCacheEntry> m_BitmapCache;
 
 		HDC m_hBitmapDC;
 		HBITMAP m_hCurBitmap;
 		HBITMAP m_hOldBitmap;
 	};
+#endif
 
 //	Inlines
 

@@ -9,8 +9,9 @@
 #include "KernelObjID.h"
 #include "Graphics.h"
 
-CGResourceFile::CGResourceFile (void) :
-		m_BitmapCache(sizeof(CACHEENTRY), 10)
+#ifdef OBSOLETE
+
+CGResourceFile::CGResourceFile (void)
 
 //	CGResourceFile constructor
 
@@ -19,7 +20,6 @@ CGResourceFile::CGResourceFile (void) :
 
 CGResourceFile::CGResourceFile (HINSTANCE hModule) :
 		m_hModule(hModule),
-		m_BitmapCache(sizeof(CACHEENTRY), 10),
 		m_hBitmapDC(NULL),
 		m_hCurBitmap(NULL),
 		m_hOldBitmap(NULL)
@@ -38,10 +38,10 @@ CGResourceFile::~CGResourceFile (void)
 
 	for (i = 0; i < m_BitmapCache.GetCount(); i++)
 		{
-		CACHEENTRY *pEntry = (CACHEENTRY *)m_BitmapCache.GetStruct(i);
+		const SCacheEntry &Entry = m_BitmapCache[i];
 
-		if (pEntry->hBitmap)
-			DeleteObject(pEntry->hBitmap);
+		if (Entry.hBitmap)
+			DeleteObject(Entry.hBitmap);
 		}
 
 	if (m_hBitmapDC)
@@ -63,7 +63,7 @@ void CGResourceFile::DeselectBitmap (void)
 	m_hCurBitmap = NULL;
 	}
 
-CGResourceFile::CACHEENTRY *CGResourceFile::FindInCache (DWORD dwUNID)
+CGResourceFile::SCacheEntry *CGResourceFile::FindInCache (DWORD dwUNID)
 
 //	FindInCache
 //
@@ -75,7 +75,7 @@ CGResourceFile::CACHEENTRY *CGResourceFile::FindInCache (DWORD dwUNID)
 
 	for (i = 0; i < m_BitmapCache.GetCount(); i++)
 		{
-		CACHEENTRY *pEntry = (CACHEENTRY *)m_BitmapCache.GetStruct(i);
+		SCacheEntry *pEntry = &m_BitmapCache[i];
 
 		if (dwUNID == pEntry->dwUNID && pEntry->hBitmap)
 			return pEntry;
@@ -94,9 +94,9 @@ ALERROR CGResourceFile::GetBitmap (DWORD dwUNID, HBITMAP *rethBitmap)
 
 	{
 	ALERROR error;
-	CACHEENTRY *pEntry;
+	SCacheEntry *pEntry;
 	HBITMAP hBitmap;
-	CACHEENTRY NewEntry;
+	SCacheEntry NewEntry;
 
 	//	Look for the bitmap in the cache
 
@@ -115,7 +115,7 @@ ALERROR CGResourceFile::GetBitmap (DWORD dwUNID, HBITMAP *rethBitmap)
 
 		for (iIndex = 0; iIndex < m_BitmapCache.GetCount(); iIndex++)
 			{
-			CACHEENTRY *pEntry = (CACHEENTRY *)m_BitmapCache.GetStruct(iIndex);
+			SCacheEntry *pEntry = &m_BitmapCache[iIndex];
 			if (pEntry->hBitmap == NULL)
 				break;
 			}
@@ -128,20 +128,17 @@ ALERROR CGResourceFile::GetBitmap (DWORD dwUNID, HBITMAP *rethBitmap)
 			NewEntry.hBitmap = hBitmap;
 			NewEntry.iRefCount = 0;
 
-			if (error = m_BitmapCache.AppendStruct(&NewEntry, &iIndex))
-				{
-				DeleteObject(hBitmap);
-				return error;
-				}
+			iIndex = m_BitmapCache.GetCount();
+			m_BitmapCache.Insert(NewEntry);
 
-			pEntry = (CACHEENTRY *)m_BitmapCache.GetStruct(iIndex);
+			pEntry = &m_BitmapCache[iIndex];
 			}
 
 		//	Otherwise just modify the slot
 
 		else
 			{
-			pEntry = (CACHEENTRY *)m_BitmapCache.GetStruct(iIndex);
+			pEntry = &m_BitmapCache[iIndex];
 
 			pEntry->dwUNID = dwUNID;
 			pEntry->hBitmap = hBitmap;
@@ -193,7 +190,7 @@ void CGResourceFile::ReleaseBitmap (DWORD dwUNID)
 //	Releases a bitmap loaded by GetBitmap
 
 	{
-	CACHEENTRY *pEntry;
+	SCacheEntry *pEntry;
 
 	pEntry = FindInCache(dwUNID);
 	ASSERT(pEntry);
@@ -240,3 +237,4 @@ HDC CGResourceFile::SelectBitmap (HBITMAP hBitmap)
 	return m_hBitmapDC;
 	}
 
+#endif

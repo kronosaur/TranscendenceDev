@@ -38,7 +38,6 @@ CArchiver::CArchiver (void) :
 CArchiver::CArchiver (IWriteStream *pStream) :
 		CObject(&g_ArchiverClass),
 		m_pStream(pStream),
-		m_List(FALSE),
 		m_ExternalReferences(FALSE, TRUE),
 		m_dwVersion(0)
 
@@ -96,7 +95,8 @@ ALERROR CArchiver::AddObject (CObject *pObject)
 	if (error = Reference2ID(pObject, &iID))
 		return error;
 
-	return m_List.AppendObject(pObject, NULL);
+	m_List.Insert(pObject);
+	return NOERROR;
 	}
 
 ALERROR CArchiver::BeginArchive (void)
@@ -160,7 +160,7 @@ ALERROR CArchiver::EndArchive (void)
 
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
-		CObject *pObject = m_List.GetObject(i);
+		CObject *pObject = m_List[i];
 
 		if (error = SaveObject(pObject))
 			{
@@ -265,7 +265,6 @@ CUnarchiver::CUnarchiver (void) :
 CUnarchiver::CUnarchiver (IReadStream *pStream) :
 		CObject(&g_UnarchiverClass),
 		m_pStream(pStream),
-		m_List(FALSE),
 		m_pExternalReferences(NULL),
 		m_dwMinVersion(0),
 		m_dwVersion(0)
@@ -375,11 +374,7 @@ ALERROR CUnarchiver::BeginUnarchive (void)
 
 		//	Add the object to our list
 
-		if (error = m_List.AppendObject(pObject, NULL))
-			{
-			delete pObject;
-			goto Fail;
-			}
+		m_List.Insert(pObject);
 		}
 
 	m_pStream->Close();
@@ -425,7 +420,7 @@ ALERROR CUnarchiver::EndUnarchive (void)
 
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
-		CObject *pObject = m_List.GetObject(i);
+		CObject *pObject = m_List[i];
 
 		if (error = pObject->LoadDone())
 			return error;
@@ -445,7 +440,7 @@ CObject *CUnarchiver::GetObject (int iIndex)
 	if (iIndex < 0 || iIndex >= m_List.GetCount())
 		return NULL;
 
-	return m_List.GetObject(iIndex);
+	return m_List[iIndex];
 	}
 
 ALERROR CUnarchiver::LoadObject (CObject **retpObject)

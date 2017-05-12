@@ -27,6 +27,8 @@ class CArrayBase
 	public:
 		inline void SetGranularity (int iGranularity) { if (m_pBlock == NULL) AllocBlock(::GetProcessHeap(), iGranularity); else m_pBlock->m_iGranularity = iGranularity; }
 
+		static CString DebugGetStats (void);
+
 	protected:
 		struct SHeader
 			{

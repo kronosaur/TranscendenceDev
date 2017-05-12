@@ -91,9 +91,6 @@
     <ClCompile Include="CObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CObjectArray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CPeriodicWaiter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -103,16 +100,10 @@
     <ClCompile Include="CResourceReadBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CSharedObjectQueue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CStackBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CStructArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CSymbolTable.cpp">

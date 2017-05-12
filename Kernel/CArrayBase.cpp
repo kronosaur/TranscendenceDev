@@ -5,6 +5,13 @@
 #include "Kernel.h"
 #include "KernelObjID.h"
 
+#ifdef DEBUG_ARRAY_STATS
+DWORD g_dwArraysCreated = 0;
+DWORD g_dwTotalBytesAllocated = 0;
+DWORD g_dwTotalBytesMoved = 0;
+DWORD g_dwArraysResized = 0;
+#endif
+
 placement_new_class placement_new;
 
 CArrayBase::CArrayBase (HANDLE hHeap, int iGranularity) : m_pBlock(NULL)
@@ -30,7 +37,13 @@ CArrayBase::~CArrayBase (void)
 
 	{
 	if (m_pBlock)
+		{
+#ifdef DEBUG_ARRAY_STATS
+		g_dwArraysCreated--;
+		g_dwTotalBytesAllocated -= (m_pBlock->m_iAllocSize - sizeof(SHeader));
+#endif
 		::HeapFree(m_pBlock->m_hHeap, 0, m_pBlock);
+		}
 	}
 
 void CArrayBase::AllocBlock (HANDLE hHeap, int iGranularity)
@@ -41,6 +54,10 @@ void CArrayBase::AllocBlock (HANDLE hHeap, int iGranularity)
 
 	{
 	ASSERT(m_pBlock == NULL);
+
+#ifdef DEBUG_ARRAY_STATS
+	g_dwArraysCreated++;
+#endif
 
 	m_pBlock = (SHeader *)::HeapAlloc(hHeap, 0, sizeof(SHeader));
 	m_pBlock->m_hHeap = hHeap;
@@ -63,6 +80,11 @@ void CArrayBase::CopyOptions (const CArrayBase &Src)
 		{
 		ASSERT(GetSize() == 0);
 
+#ifdef DEBUG_ARRAY_STATS
+		if (m_pBlock == NULL)
+			g_dwArraysCreated++;
+#endif
+
 		if (m_pBlock)
 			::HeapFree(m_pBlock->m_hHeap, 0, m_pBlock);
 
@@ -80,6 +102,24 @@ void CArrayBase::CopyOptions (const CArrayBase &Src)
 		ASSERT(m_pBlock);
 		m_pBlock->m_iGranularity = Src.GetGranularity();
 		}
+	}
+
+CString CArrayBase::DebugGetStats (void)
+
+//	DebugGetStats
+//
+//	Get performance stats
+
+	{
+#ifdef DEBUG_ARRAY_STATS
+	return strPatternSubst(CONSTLIT("Arrays Created: %,d\nArrays Resized: %,d\nTotal Bytes: %,d\nBytes Moved: %,d\n"),
+			g_dwArraysCreated,
+			g_dwArraysResized,
+			g_dwTotalBytesAllocated,
+			g_dwTotalBytesMoved);
+#else
+	return NULL_STR;
+#endif
 	}
 
 void CArrayBase::DeleteBytes (int iOffset, int iLength)
@@ -179,6 +219,20 @@ ALERROR CArrayBase::Resize (int iNewSize, bool bPreserve, int iAllocQuantum)
 		pNewBlock->m_iGranularity = GetGranularity();
 		pNewBlock->m_iSize = GetSize();
 
+#ifdef DEBUG_ARRAY_STATS
+		if (m_pBlock == NULL)
+			{
+			g_dwArraysCreated++;
+			g_dwTotalBytesAllocated += pNewBlock->m_iAllocSize - sizeof(SHeader);
+			}
+		else
+			{
+			g_dwArraysResized++;
+			g_dwTotalBytesAllocated += -(m_pBlock->m_iAllocSize - (int)sizeof(SHeader)) + (pNewBlock->m_iAllocSize - (int)sizeof(SHeader));
+			g_dwTotalBytesMoved += (bPreserve ? GetSize() : 0);
+			}
+#endif
+
 		//	Transfer the contents, if necessary
 
 		if (m_pBlock && bPreserve)
@@ -210,7 +264,13 @@ void CArrayBase::TakeHandoffBase (CArrayBase &Src)
 
 	{
 	if (m_pBlock)
+		{
 		::HeapFree(m_pBlock->m_hHeap, 0, m_pBlock);
+
+#ifdef DEBUG_ARRAY_STATS
+		g_dwArraysCreated--;
+#endif
+		}
 
 	m_pBlock = Src.m_pBlock;
 	Src.m_pBlock = NULL;
