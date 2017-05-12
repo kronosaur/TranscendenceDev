@@ -537,7 +537,6 @@ void SetLabelRight (SLabelEntry &Entry, int cyChar);
 CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) : 
 		m_dwID(OBJID_NULL),
 		m_pTopology(pTopology),
-		m_AllObjects(TRUE),
 		m_pEnvironment(NULL),
 		m_iTick(0),
         m_iNextEncounter(0),
@@ -568,6 +567,8 @@ CSystem::~CSystem (void)
 //	CSystem destructor
 
 	{
+	int i;
+
 	//	Set our topology node to NULL so that a new system is
 	//	created next time we access this node.
 
@@ -579,6 +580,10 @@ CSystem::~CSystem (void)
 
 	if (m_pThreadPool)
 		delete m_pThreadPool;
+
+	for (i = 0; i < m_AllObjects.GetCount(); i++)
+		if (m_AllObjects[i])
+			delete m_AllObjects[i];
 	}
 
 bool CSystem::AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID)
@@ -662,9 +667,9 @@ ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 
 	for (i = 0; i < m_AllObjects.GetCount(); i++)
 		{
-		if (m_AllObjects.GetObject(i) == NULL)
+		if (m_AllObjects[i] == NULL)
 			{
-			m_AllObjects.ReplaceObject(i, pObj);
+			m_AllObjects[i] = pObj;
 			if (retiIndex)
 				*retiIndex = i;
 			return NOERROR;
@@ -673,7 +678,11 @@ ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 
 	//	If we could not find a free place, add a new object
 
-	return m_AllObjects.AppendObject(pObj, retiIndex);
+	if (retiIndex)
+		*retiIndex = m_AllObjects.GetCount();
+
+	m_AllObjects.Insert(pObj);
+	return NOERROR;
 	}
 
 bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
@@ -4424,7 +4433,7 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 			}
 		}
 
-	m_AllObjects.ReplaceObject(Ctx.pObj->GetIndex(), NULL, false);
+	m_AllObjects[Ctx.pObj->GetIndex()] = NULL;
 
 	//	Invalidate cache of enemy objects
 

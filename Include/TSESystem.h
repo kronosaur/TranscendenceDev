@@ -783,8 +783,8 @@ class CSystem
 		inline const CString &GetName (void) { return m_sName; }
 		CNavigationPath *GetNavPath (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
 		CNavigationPath *GetNavPathByID (DWORD dwID);
-		CSpaceObject *GetObject (int iIndex) const { return (CSpaceObject *)m_AllObjects.GetObject(iIndex); }
-		int GetObjectCount (void) const { return m_AllObjects.GetCount(); }
+		inline CSpaceObject *GetObject (int iIndex) const { return m_AllObjects[iIndex]; }
+		inline int GetObjectCount (void) const { return m_AllObjects.GetCount(); }
 		inline void GetObjectsInBox (const CVector &vPos, Metric rRange, CSpaceObjectList &Result)
 			{
 			CVector vRange = CVector(rRange, rRange);
@@ -929,7 +929,7 @@ class CSystem
 		CString m_sName;						//	Name of system
 		CTopologyNode *m_pTopology;				//	Topology descriptor
 
-		CObjectArray m_AllObjects;				//	Array of CSpaceObject
+		TArray<CSpaceObject *> m_AllObjects;	//	Array of CSpaceObject
 		TSortMap<CString, CSpaceObject *> m_NamedObjects;			//	Indexed array of named objects (CSpaceObject *)
 
 		CSystemEventList m_TimedEvents;			//	Array of CTimedEvent
