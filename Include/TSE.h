@@ -2509,7 +2509,7 @@ class CUniverse
 
 		CString m_sResourceDb;					//	Resource database
 
-		CObjectArray m_LevelEncounterTables;	//	Array of SLevelEncounter arrays
+		TArray<TArray<SLevelEncounter>> m_LevelEncounterTables;	//	Array of SLevelEncounter arrays
 		bool m_bBasicInit;						//	TRUE if we've initialized CodeChain, etc.
 
 		//	Game instance data

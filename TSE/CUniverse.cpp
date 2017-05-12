@@ -138,7 +138,6 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	};
 
 CUniverse::CUniverse (void) : 
-		m_LevelEncounterTables(TRUE),
 		m_bBasicInit(false),
 
 		m_bRegistered(false),
@@ -1061,13 +1060,13 @@ void CUniverse::GetRandomLevelEncounter (int iLevel,
 
 	//	Get the level table
 
-	CStructArray *pTable = (CStructArray *)m_LevelEncounterTables.GetObject(iLevel);
+	const TArray<SLevelEncounter> &Table = m_LevelEncounterTables[iLevel];
 
 	//	Compute the totals for the table
 
 	int iTotal = 0;
-	for (i = 0; i < pTable->GetCount(); i++)
-		iTotal += ((SLevelEncounter *)pTable->GetStruct(i))->iWeight;
+	for (i = 0; i < Table.GetCount(); i++)
+		iTotal += Table[i].iWeight;
 
 	if (iTotal == 0)
 		{
@@ -1084,14 +1083,14 @@ void CUniverse::GetRandomLevelEncounter (int iLevel,
 
 	//	Get the position
 
-	while (((SLevelEncounter *)pTable->GetStruct(iPos))->iWeight <= iRoll)
-		iRoll -= ((SLevelEncounter *)pTable->GetStruct(iPos++))->iWeight;
+	while (Table[iPos].iWeight <= iRoll)
+		iRoll -= Table[iPos++].iWeight;
 
 	//	Done
 
-	*retpType = ((SLevelEncounter *)pTable->GetStruct(iPos))->pType;
-	*retpTable = ((SLevelEncounter *)pTable->GetStruct(iPos))->pTable;
-	*retpBaseSovereign = ((SLevelEncounter *)pTable->GetStruct(iPos))->pBaseSovereign;
+	*retpType = Table[iPos].pType;
+	*retpTable = Table[iPos].pTable;
+	*retpBaseSovereign = Table[iPos].pBaseSovereign;
 	}
 
 ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)

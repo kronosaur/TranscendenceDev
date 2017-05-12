@@ -64,11 +64,15 @@ ALERROR CUniverse::InitLevelEncounterTables (void)
 //	tables of all the stations for each level.
 
 	{
-	m_LevelEncounterTables.RemoveAll();
+	m_LevelEncounterTables.DeleteAll();
+	m_LevelEncounterTables.InsertEmpty(MAX_ITEM_LEVEL);
 
 	for (int i = 1; i <= MAX_ITEM_LEVEL; i++)
 		{
-		CStructArray *pTable = new CStructArray(sizeof(SLevelEncounter), 8);
+		//	NOTE: m_LevelEncounterTables is 0 based. I.e., level 1 will be 
+		//	index 0 in the table.
+
+		TArray<SLevelEncounter> &Table = m_LevelEncounterTables[i - 1];
 
 		for (int j = 0; j < GetStationTypeCount(); j++)
 			{
@@ -86,8 +90,7 @@ ALERROR CUniverse::InitLevelEncounterTables (void)
 
 			if (iFreq > 0)
 				{
-				pTable->ExpandArray(pTable->GetCount(), 1);
-				SLevelEncounter *pEntry = (SLevelEncounter *)pTable->GetStruct(pTable->GetCount()-1);
+				SLevelEncounter *pEntry = Table.Insert();
 
 				pEntry->pType = pType;
 				pEntry->iWeight = iFreq;
@@ -95,8 +98,6 @@ ALERROR CUniverse::InitLevelEncounterTables (void)
 				pEntry->pTable = pType->GetEncountersTable();
 				}
 			}
-
-		m_LevelEncounterTables.AppendObject(pTable, NULL);
 		}
 
 	return NOERROR;

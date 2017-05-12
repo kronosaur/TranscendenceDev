@@ -286,12 +286,14 @@ struct SSystemUpdateCtx
 	{
 	SSystemUpdateCtx (void) : rSecondsPerTick(g_SecondsPerUpdate),
 			bForceEventFiring(false),
-			bForcePainted(false)
+			bForcePainted(false),
+			bTrackPlayerObjs(false)
 		{ }
 
 	Metric rSecondsPerTick;
 	bool bForceEventFiring;					//	If TRUE, fire events even if no player ship
 	bool bForcePainted;						//	If TRUE, mark objects as painted 
+	bool bTrackPlayerObjs;					//	If TRUE, make a list of player objects
 	};
 
 //	CMoveCtx is currently unused; it was part of an experiment to see

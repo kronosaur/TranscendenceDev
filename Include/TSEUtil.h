@@ -820,7 +820,13 @@ class CRandomEntryResults
 		int GetResultCount (int iIndex);
 
 	private:
-		CStructArray m_Results;
+		struct SResultEntry
+			{
+			int iCount;
+			CXMLElement *pElement;
+			};
+
+		TArray<SResultEntry> m_Results;
 	};
 
 class CRandomEntryGenerator

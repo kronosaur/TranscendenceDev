@@ -5092,7 +5092,6 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Initialize a structure that holds context for motion
 
 	DebugStartTimer();
-	bool bTrackPlayerShips = (Ctx.pPlayer == NULL);
 
 	//	Start physics
 
@@ -5111,7 +5110,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 			//	If necessary, keep track of objects that belong to the player
 
 			CSovereign *pSovereign;
-			if (bTrackPlayerShips
+			if (SystemCtx.bTrackPlayerObjs
 					&& (pSovereign = pObj->GetSovereign())
 					&& pSovereign->GetUNID() == g_PlayerSovereignUNID
 					&& (pObj->GetCategory() == CSpaceObject::catShip

@@ -465,13 +465,7 @@ void CNode::Generate (CRandomEntryResults &Results)
 
 //	CRandomEntryResults -------------------------------------------------------
 
-struct ResultEntry
-	{
-	int iCount;
-	CXMLElement *pElement;
-	};
-
-CRandomEntryResults::CRandomEntryResults (void) : m_Results(sizeof(ResultEntry), 5)
+CRandomEntryResults::CRandomEntryResults (void)
 
 //	CRandomEntryResults constructor
 
@@ -492,12 +486,10 @@ void CRandomEntryResults::AddResult (CXMLElement *pElement, int iCount)
 //	Adds a result
 
 	{
-	ResultEntry Entry;
+	SResultEntry *pEntry = m_Results.Insert();
 
-	Entry.iCount = iCount;
-	Entry.pElement = pElement;
-
-	m_Results.AppendStruct(&Entry, NULL);
+	pEntry->iCount = iCount;
+	pEntry->pElement = pElement;
 	}
 
 CXMLElement *CRandomEntryResults::GetResult (int iIndex)
@@ -507,8 +499,7 @@ CXMLElement *CRandomEntryResults::GetResult (int iIndex)
 //	Returns a result
 
 	{
-	ResultEntry *pEntry = (ResultEntry *)m_Results.GetStruct(iIndex);
-	return pEntry->pElement;
+	return m_Results[iIndex].pElement;
 	}
 
 int CRandomEntryResults::GetResultCount (int iIndex)
@@ -518,6 +509,5 @@ int CRandomEntryResults::GetResultCount (int iIndex)
 //	Returns the count for a result
 
 	{
-	ResultEntry *pEntry = (ResultEntry *)m_Results.GetStruct(iIndex);
-	return pEntry->iCount;
+	return m_Results[iIndex].iCount;
 	}
