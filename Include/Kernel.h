@@ -19,7 +19,7 @@
 #ifdef DEBUG
 //#define DEBUG_MEMORY_LEAKS
 //#define DEBUG_STRING_LEAKS
-#define DEBUG_ARRAY_STATS
+//#define DEBUG_ARRAY_STATS
 #endif
 
 #ifdef DEBUG_MEMORY_LEAKS
