@@ -51,6 +51,8 @@
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
+#define PROPERTY_SUBORDINATES					CONSTLIT("subordinates")
+#define PROPERTY_SUPERIOR						CONSTLIT("superior")
 
 #define STR_TRUE								CONSTLIT("true")
 
@@ -1454,6 +1456,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
+	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sName, PROPERTY_ABANDONED))
@@ -1533,6 +1536,25 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_STRUCTURAL_HP))
 		return CC.CreateInteger(m_iStructuralHP);
+
+	else if (strEquals(sName, PROPERTY_SUBORDINATES))
+		{
+		if (GetSubordinateCount() == 0)
+			return CC.CreateNil();
+
+		ICCItem *pResult = CC.CreateLinkedList();
+		for (i = 0; i < GetSubordinateCount(); i++)
+			{
+			ICCItem *pItem = CreateObjPointer(CC, GetSubordinate(i));
+			pResult->Append(CC, pItem);
+			pItem->Discard(&CC);
+			}
+
+		return pResult;
+		}
+
+	else if (strEquals(sName, PROPERTY_SUPERIOR))
+		return CreateObjPointer(CC, GetBase());
 
 	else
 		return CSpaceObject::GetProperty(Ctx, sName);
