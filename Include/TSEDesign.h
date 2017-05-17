@@ -3218,7 +3218,8 @@ class CSovereign : public CDesignType
 		void MessageFromObj (CSpaceObject *pSender, const CString &sText);
 		void OnObjDestroyedByPlayer (CSpaceObject *pObj);
 		static Alignments ParseAlignment (const CString &sAlign);
-		void SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp);
+		void SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp, bool bMutual = false);
+		void SetDispositionTowards (Alignments iAlignment, Disposition iDisp, bool bMutual = false);
 		bool SetPropertyInteger (const CString &sProperty, int iValue);
 		bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList);
 		bool SetPropertyString (const CString &sProperty, const CString &sValue);
@@ -3227,6 +3228,8 @@ class CSovereign : public CDesignType
 		static CSovereign *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSovereign) ? (CSovereign *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual DesignTypes GetType (void) const override { return designSovereign; }
+
+		static Disposition ParseDisposition (const CString &sValue);
 
 	protected:
 		//	CDesignType overrides

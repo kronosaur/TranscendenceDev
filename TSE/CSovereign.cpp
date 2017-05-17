@@ -474,45 +474,49 @@ void CSovereign::InitRelationships (void)
 		for (i = 0; i < m_pInitialRelationships->GetContentElementCount(); i++)
 			{
 			CXMLElement *pRelDesc = m_pInitialRelationships->GetContentElement(i);
-			CSovereign *pTarget = g_pUniverse->FindSovereign(pRelDesc->GetAttributeInteger(SOVEREIGN_ATTRIB));
-			if (pTarget)
+			CString sTarget;
+
+			//	Disposition
+
+			Disposition iDisp = ParseDisposition(pRelDesc->GetAttribute(DISPOSITION_ATTRIB));
+			bool bMutual = pRelDesc->GetAttributeBool(MUTUAL_ATTRIB);
+
+			//	If this relationship is towards an alignment, then handle it
+
+			if (pRelDesc->FindAttribute(ALIGNMENT_ATTRIB, &sTarget))
 				{
-				CString sDisposition = pRelDesc->GetAttribute(DISPOSITION_ATTRIB);
-				Disposition iDisp;
-				if (strEquals(sDisposition, DISP_FRIEND))
-					iDisp = dispFriend;
-				else if (strEquals(sDisposition, DISP_NEUTRAL))
-					iDisp = dispNeutral;
-				else if (strEquals(sDisposition, DISP_ENEMY))
-					iDisp = dispEnemy;
-				else
-					iDisp = dispNeutral;
-
-				SetDispositionTowards(pTarget, iDisp);
-
-				//	If the disposition is mutual, set the target's disposition
-				//	towards us
-
-				if (pRelDesc->GetAttributeBool(MUTUAL_ATTRIB)
-						&& pTarget != this)
+				Alignments iAlignment = ParseAlignment(sTarget);
+				if (iAlignment == alignUnknown)
 					{
-					Disposition iReverseDisp = pTarget->GetDispositionTowards(this, false);
-					if (iReverseDisp != iDisp)
-						{
-						//	Check to see if we already have an explicit relationship
-						//	If we don't, then set the reverse relationship;
-						//	If the reverse disposition is neutral, then we override
-						//	If the reverse disposition is friendly, then we override if we're enemies
-
-						SRelationship *pRel = pTarget->FindRelationship(this);
-						if (pRel == NULL
-								|| iReverseDisp == dispNeutral
-								|| (iReverseDisp == dispFriend && iDisp == dispEnemy))
-							{
-							pTarget->SetDispositionTowards(this, iDisp);
-							}
-						}
+					::kernelDebugLogPattern("[%08x]: Unknown alignment: %s.", GetUNID(), sTarget);
+					continue;
 					}
+
+				//	Set the disposition for all sovereigns of the given 
+				//	alignment.
+
+				SetDispositionTowards(iAlignment, iDisp, bMutual);
+				}
+
+			//	Otherwise, see if this is towards a sovereign
+
+			else if (pRelDesc->FindAttribute(SOVEREIGN_ATTRIB, &sTarget))
+				{
+				CSovereign *pTarget = g_pUniverse->FindSovereign(strToInt(sTarget, 0));
+				if (pTarget == NULL)
+					{
+					::kernelDebugLogPattern("[%08x]: Unknown sovereign: %s.", GetUNID(), sTarget);
+					continue;
+					}
+
+				SetDispositionTowards(pTarget, iDisp, bMutual);
+				}
+
+			//	Otherwise, this is an error
+
+			else
+				{
+				::kernelDebugLogPattern("[%08x]: <Relationship> must have a target.", GetUNID());
 				}
 			}
 		}
@@ -825,7 +829,25 @@ CSovereign::Alignments CSovereign::ParseAlignment (const CString &sAlign)
 	return alignUnknown;
 	}
 
-void CSovereign::SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp)
+CSovereign::Disposition CSovereign::ParseDisposition (const CString &sValue)
+
+//	ParseDisposition
+//
+//	Parses a disposition.
+
+	{
+	if (strEquals(sValue, DISP_FRIEND))
+		return dispFriend;
+	else if (strEquals(sValue, DISP_NEUTRAL))
+		return dispNeutral;
+	else if (strEquals(sValue, DISP_ENEMY))
+		return dispEnemy;
+	else
+		//	LATER: We should return an error code
+		return dispNeutral;
+	}
+
+void CSovereign::SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp, bool bMutual)
 
 //	SetDispositionTowards
 //
@@ -849,6 +871,48 @@ void CSovereign::SetDispositionTowards (CSovereign *pSovereign, Disposition iDis
 	//	Flush cache of enemy objects
 
 	FlushEnemyObjectCache();
+
+	//	If this is a mutual relationship, try to set it.
+
+	if (bMutual && pSovereign != this)
+		{
+		Disposition iReverseDisp = pSovereign->GetDispositionTowards(this, false);
+		if (iReverseDisp != iDisp)
+			{
+			//	Check to see if we already have an explicit relationship
+			//	If we don't, then set the reverse relationship;
+			//	If the reverse disposition is neutral, then we override
+			//	If the reverse disposition is friendly, then we override if we're enemies
+
+			SRelationship *pRel = pSovereign->FindRelationship(this);
+			if (pRel == NULL
+					|| iReverseDisp == dispNeutral
+					|| (iReverseDisp == dispFriend && iDisp == dispEnemy))
+				{
+				pSovereign->SetDispositionTowards(this, iDisp, false);
+				}
+			}
+		}
+	}
+
+void CSovereign::SetDispositionTowards (Alignments iAlignment, Disposition iDisp, bool bMutual)
+
+//	SetDispositionTowards
+//
+//	Sets disposition towards all sovereigns of the given alignment
+
+	{
+	int i;
+
+	for (i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+		{
+		CSovereign *pTarget = g_pUniverse->GetSovereign(i);
+		if (pTarget->GetAlignment() != iAlignment
+				|| pTarget == this)
+			continue;
+
+		SetDispositionTowards(pTarget, iDisp, bMutual);
+		}
 	}
 
 bool CSovereign::SetPropertyInteger (const CString &sProperty, int iValue)
