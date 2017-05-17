@@ -121,6 +121,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_REMOVE_ITEM_STATUS				CONSTLIT("removeItemStatus")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
 #define PROPERTY_SCALE							CONSTLIT("scale")
+#define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
 
@@ -4325,6 +4326,15 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			default:
 				return CC.CreateNil();
 			}
+		}
+
+	else if (strEquals(sName, PROPERTY_SOVEREIGN))
+		{
+		CSovereign *pSovereign = GetSovereign();
+		if (pSovereign)
+			return CC.CreateInteger(pSovereign->GetUNID());
+		else
+			return CC.CreateNil();
 		}
 
 	else if (strEquals(sName, PROPERTY_STEALTH))
