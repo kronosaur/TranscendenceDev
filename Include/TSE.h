@@ -886,6 +886,10 @@ class CSpaceObject : public CObject
 		void Remove (DestructionTypes iCause, const CDamageSource &Attacker);
 		inline void SetAscended (bool bAscended = true) { m_fAscended = bAscended; }
 
+		//	Basics
+
+		void SetSovereign (CSovereign *pSovereign);
+
 		//	Docking
 
 		virtual CSpaceObject *GetDockedObj (void) { return NULL; }
@@ -1431,7 +1435,6 @@ class CSpaceObject : public CObject
 		virtual void SetKnown (bool bKnown = true) { }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) { }
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
-		virtual void SetSovereign (CSovereign *pSovereign) { }
 
 		virtual bool IsHidden (void) const { return false; }
 		virtual bool IsInactive (void) const { return IsSuspended(); }
@@ -1590,6 +1593,7 @@ class CSpaceObject : public CObject
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
 		virtual void OnSetEventFlags (void) { }
+		virtual void OnSetSovereign (CSovereign *pSovereign) { }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }
 		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime) { }
 		virtual void OnUpdatePlayer (SUpdateCtx &Ctx) { }

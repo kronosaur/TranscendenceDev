@@ -1216,7 +1216,6 @@ class CShip : public CSpaceObject
         virtual void SetKnown (bool bKnown = true) override { m_fKnown = bKnown; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override { m_sName = sName; m_dwNameFlags = dwFlags; }
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
-        virtual void SetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
 		virtual void Suspend (void) override { Undock(); m_fManualSuspended = true; SetCannotBeHit(); }
 		virtual void Undock (CSpaceObject *pObj) override;
 		virtual void UpdateArmorItems (void) override;
@@ -1238,6 +1237,7 @@ class CShip : public CSpaceObject
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) override { m_pController->OnPaintSRSEnhancements(Dest, Ctx); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnSetEventFlags (void) override;
+        virtual void OnSetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
 		virtual void OnUpdatePlayer (SUpdateCtx &Ctx) override { m_pController->OnUpdatePlayer(Ctx); }
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
@@ -1550,7 +1550,6 @@ class CStation : public CSpaceObject
 		virtual void SetMapLabelPos (int x, int y) override { m_xMapLabel = x; m_yMapLabel = y; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
-        virtual void SetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
         virtual bool ShowMapOrbit (void) const override { return (m_fShowMapOrbit ? true : false); }
         virtual bool ShowStationDamage (void) const override { return (IsAbandoned() && m_iMaxHitPoints > 0); }
 		virtual bool SupportsGating (void) override { return IsActiveStargate(); }
@@ -1571,6 +1570,7 @@ class CStation : public CSpaceObject
 		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnSetEventFlags (void) override;
+        virtual void OnSetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
 		virtual void OnUpdateExtended (const CTimeSpan &ExtraTime) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;

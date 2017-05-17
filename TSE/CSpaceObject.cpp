@@ -7236,8 +7236,37 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 		SetKnown(!pValue->IsNil());
 		return true;
 		}
+	else if (strEquals(sName, PROPERTY_SOVEREIGN))
+		{
+		CSovereign *pSovereign = g_pUniverse->FindSovereign(pValue->GetIntegerValue());
+		if (pSovereign == NULL)
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown sovereign: %s."), pValue->GetStringValue());
+			return false;
+			}
+
+		SetSovereign(pSovereign);
+		return true;
+		}
 	else
 		return false;
+	}
+
+void CSpaceObject::SetSovereign (CSovereign *pSovereign)
+
+//	SetSovereign
+//
+//	Sets the object sovereign
+
+	{
+	OnSetSovereign(pSovereign);
+
+	//	If we're part of a system, we need to flush the enemy object cache when
+	//	we change sovereigns.
+
+	CSystem *pSystem;
+	if (ClassCanAttack() && (pSystem = GetSystem()))
+		pSystem->FlushEnemyObjectCache();
 	}
 
 bool CSpaceObject::SupportsDocking (bool bPlayer)

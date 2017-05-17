@@ -774,6 +774,7 @@ class CSystem
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount);
 		void FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount, DWORD dwFlags);
+		void FlushEnemyObjectCache (void);
 		CString GetAttribsAtPos (const CVector &vPos);
 		inline CSpaceObject *GetDestroyedObject (int iIndex) { return m_DeletedObjects.GetObj(iIndex); }
 		inline int GetDestroyedObjectCount (void) { return m_DeletedObjects.GetCount(); }
@@ -834,7 +835,6 @@ class CSystem
 		ALERROR SaveToStream (IWriteStream *pStream);
 		inline void SetID (DWORD dwID) { m_dwID = dwID; }
 		void SetLastUpdated (void);
-		void SetObjectSovereign (CSpaceObject *pObj, CSovereign *pSovereign);
 		inline void SetPlayerUnderAttack (void) { m_fPlayerUnderAttack = true; }
 		void SetPOVLRS (CSpaceObject *pCenter);
 		void SetSpaceEnvironment (int xTile, int yTile, CSpaceEnvironmentType *pEnvironment);
@@ -911,7 +911,6 @@ class CSystem
 								  CSpaceObject **retpStation,
 								  CString *retsError = NULL);
 		void FlushDeletedObjects (void);
-		void FlushEnemyObjectCache (void);
 		inline int GetTimedEventCount (void) { return m_TimedEvents.GetCount(); }
 		inline CSystemEvent *GetTimedEvent (int iIndex) { return m_TimedEvents.GetEvent(iIndex); }
 		void InitSpaceEnvironment (void) const;

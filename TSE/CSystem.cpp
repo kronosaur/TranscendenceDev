@@ -4775,18 +4775,6 @@ void CSystem::SetLastUpdated (void)
 	m_iLastUpdated = g_pUniverse->GetTicks();
 	}
 
-void CSystem::SetObjectSovereign (CSpaceObject *pObj, CSovereign *pSovereign)
-
-//	SetObjectSovereign
-//
-//	Sets the sovereign for the object. We need to do this through the system
-//	because we need to flush the enemy object cache.
-
-	{
-	pObj->SetSovereign(pSovereign);
-	FlushEnemyObjectCache();
-	}
-
 void CSystem::SetPainted (void)
 
 //	SetPainted

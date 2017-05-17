@@ -1648,6 +1648,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'paintLayer\n"
 			"   'playerMissionsGiven\n"
 			"   'scale\n"
+			"   'sovereign\n"
 			"   'underAttack\n"
 			"\n"
 			"property (ships)\n\n"
@@ -1739,10 +1740,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetShipwreckType",			fnObjGet,		FN_OBJ_SHIPWRECK_TYPE,
 			"(objGetShipwreckType obj) -> unid",
 			"i",	0,	},
-
-		{	"objGetSovereign",				fnObjGetOld,		FN_OBJ_SOVEREIGN,
-			"(objGetSovereign obj) -> sovereignID",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetStaticData",				fnObjData,		FN_OBJ_GET_STATIC_DATA,
 			"(objGetStaticData obj attrib) -> data",
@@ -1985,6 +1982,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'rotation angle\n"
 			"   'selectedMissile type|item\n"
 			"   'selectedWeapon type|item\n"
+			"   'sovereign type\n"
 			"\n"
 			"property (stations)\n\n"
 
@@ -2002,6 +2000,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'playerBlacklisted True|Nil\n"
 			"   'shipConstructionEnabled True|Nil\n"
 			"   'shipReinforcementEnabled True|Nil\n"
+			"   'sovereign type\n"
 			"   'structuralHP hitPoints",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
@@ -2018,10 +2017,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showHighlight        Show target highlight",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
-
-		{	"objSetSovereign",				fnObjSetOld,		FN_OBJ_SOVEREIGN,
-			"(objSetSovereign obj sovereignID) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetTradeDesc",				fnObjSet,		FN_OBJ_SET_TRADE_DESC,
 			"(objSetTradeDesc obj currency [maxCurrency replenishCurrency]) -> True/Nil",
@@ -3089,6 +3084,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	DEPRECATED FUNCTIONS
 		//	--------------------
+
+		{	"objSetSovereign",				fnObjSetOld,		FN_OBJ_SOVEREIGN,
+			"DEPRECATED: Use (objSetProperty obj 'sovereign sovereign) instead.",
+			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objGetSovereign",				fnObjGetOld,		FN_OBJ_SOVEREIGN,
+			"DEPRECATED: Use (objGetProperty obj 'sovereign) instead.",
+			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetDestiny",				fnObjGetOld,		FN_OBJ_DESTINY,
 			"DEPRECATED: Use (objGetProperty obj 'destiny) instead.",
@@ -7681,14 +7684,10 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			DWORD dwSovereignID = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard(pCC);
 
-			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-			if (pSystem == NULL)
-				return StdErrorNoSystem(*pCC);
-
 			CSovereign *pSovereign = g_pUniverse->FindSovereign(dwSovereignID);
 			if (pSovereign)
 				{
-				pSystem->SetObjectSovereign(pObj, pSovereign);
+				pObj->SetSovereign(pSovereign);
 				pResult = pCC->CreateTrue();
 				}
 			else
