@@ -3258,7 +3258,9 @@ class CSovereign : public CDesignType
 		void InitEnemyObjectList (CSystem *pSystem);
 		void InitRelationships (void);
 
-		CString m_sName;
+		CString m_sName;						//	"|the United States of America" 
+		CString m_sShortName;					//	"|the USA" (must be one word after the article)
+		CString m_sDemonym;						//	"American"
 		Alignments m_iAlignment;
 		CXMLElement *m_pInitialRelationships;
 

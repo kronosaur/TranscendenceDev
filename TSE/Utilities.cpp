@@ -891,7 +891,8 @@ CString ComposeNounPhrase (const CString &sNoun,
 
 	//	Get the proper noun form
 
-	CString sNounForm = ParseNounForm(sNoun, dwNounFlags, bPluralize, (dwComposeFlags & nounShort) != 0);
+	CString sDefaultArticle;
+	CString sNounForm = ParseNounForm(sNoun, sModifier, dwNounFlags, bPluralize, (dwComposeFlags & nounShort) != 0, &sDefaultArticle);
 
 	//	Get the appropriate article
 
@@ -899,54 +900,12 @@ CString ComposeNounPhrase (const CString &sNoun,
 	if ((dwComposeFlags & nounArticle)
 			|| ((dwComposeFlags & nounCount) && iCount == 1))
 		{
-		if (dwNounFlags & nounNoArticle)
-			sArticle = NULL_STR;
-		else if (dwNounFlags & nounDefiniteArticle)
-			sArticle = CONSTLIT("the ");
-		else
-			{
-			char *pFirstLetter;
-			if (sModifier.IsBlank())
-				pFirstLetter = sNounForm.GetPointer();
-			else
-				pFirstLetter = sModifier.GetPointer();
-
-			switch (*pFirstLetter)
-				{
-				case 'A':
-				case 'a':
-				case 'E':
-				case 'e':
-				case 'I':
-				case 'i':
-				case 'O':
-				case 'o':
-				case 'U':
-				case 'u':
-					{
-					if ((dwNounFlags & nounVowelArticle) && sModifier.IsBlank())
-						sArticle = CONSTLIT("a ");
-					else
-						sArticle = CONSTLIT("an ");
-					break;
-					}
-
-				default:
-					{
-					if ((dwNounFlags & nounVowelArticle) && sModifier.IsBlank())
-						sArticle = CONSTLIT("an ");
-					else
-						sArticle = CONSTLIT("a ");
-					}
-				}
-			}
+		sArticle = sDefaultArticle;
 		}
 	else if (dwComposeFlags & nounDemonstrative)
 		{
-		if (dwNounFlags & nounNoArticle)
-			sArticle = NULL_STR;
-		else if (dwNounFlags & nounDefiniteArticle)
-			sArticle = CONSTLIT("the ");
+		if (sDefaultArticle.IsBlank() || *sDefaultArticle.GetPointer() == 't')
+			sArticle = sDefaultArticle;
 		else
 			{
 			if (iCount > 1)
@@ -2948,19 +2907,105 @@ void ParseKeyValuePair (const CString &sString, DWORD dwFlags, CString *retsKey,
 		*retsValue = sValue;
 	}
 
-CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize, bool bShortName)
+CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, CString *retsArticle)
 
 //	ParseNounForm
 //
 //	Parses a string of the form:
 //
+//	abc(s)
+//	:an abcdef(s)
+//	: abcdef(s)
+//	[abc]def(s)
 //	[abc]def| [hij]klm
+//	:the [abc]def| [hij]klm
 //
 //	Using the noun flags and the required result, it parses out the various component
 //	of the noun (plural form, short name) and returns the required noun
 
 	{
 	char *pPos = sNoun.GetASCIIZPointer();
+
+	//	Parse the article, if we have one.
+
+	char *pArticleStart = NULL;
+	char *pArticleEnd = NULL;
+	if (*pPos == ':')
+		{
+		pPos++;
+		char *pArticleStart = pPos;
+
+		//	Skip to the end of the article
+
+		while (pPos != '\0' && *pPos != ' ')
+			pPos++;
+
+		//	No article?
+
+		if (pPos == pArticleStart)
+			{
+			pArticleEnd = pPos;
+
+			if (*pPos == ' ')
+				pPos++;
+			}
+
+		//	Otherwise, include a trailing space in the article
+
+		else
+			{
+			if (*pPos == ' ')
+				pPos++;
+
+			pArticleEnd = pPos;
+			}
+		}
+
+	//	See if we know enough to compute the article now
+
+	bool bNeedArticle = true;
+	if (retsArticle)
+		{
+		//	If we have a modifier, then we always use that to calculate the article.
+		//	(And we assume it follows regular rules.)
+
+		if (!sModifier.IsBlank())
+			{
+			switch (*sModifier.GetASCIIZPointer())
+				{
+				case 'A':
+				case 'a':
+				case 'E':
+				case 'e':
+				case 'I':
+				case 'i':
+				case 'O':
+				case 'o':
+				case 'U':
+				case 'u':
+					*retsArticle = CONSTLIT("an ");
+					break;
+
+				default:
+					*retsArticle = CONSTLIT("a ");
+					break;
+				}
+
+			bNeedArticle = false;
+			}
+
+		//	Otherwise, if we've got the article above, use that.
+
+		else if (pArticleStart)
+			{
+			if (retsArticle)
+				*retsArticle = CString(pArticleStart, (int)(pArticleEnd - pArticleStart));
+
+			bNeedArticle = false;
+			}
+		}
+
+	//	Parse the noun
 
 	CString sDest;
 	char *pDest = sDest.GetWritePointer(sNoun.GetLength() + 10);
@@ -3049,7 +3094,7 @@ CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize,
 
 		else if (*pPos == ';' || *pPos == '|')
 			{
-			//	If we don't need to plural form, then we've reached
+			//	If we don't need the plural form, then we've reached
 			//	the end of the singular form, so we're done
 
 			if (!bPluralize)
@@ -3115,10 +3160,53 @@ CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize,
 			*pDest++ = 's';
 		}
 
-	//	Done
+	//	Done with name
 
 	*pDest++ = '\0';
 	sDest.Truncate(pDest - sDest.GetASCIIZPointer() - 1);
+
+	//	If we still need an article, compute it now
+
+	if (bNeedArticle && retsArticle)
+		{
+		if (dwNounFlags & nounNoArticle)
+			*retsArticle = NULL_STR;
+		else if (dwNounFlags & nounDefiniteArticle)
+			*retsArticle = CONSTLIT("the ");
+		else
+			{
+			switch (*sDest.GetASCIIZPointer())
+				{
+				case 'A':
+				case 'a':
+				case 'E':
+				case 'e':
+				case 'I':
+				case 'i':
+				case 'O':
+				case 'o':
+				case 'U':
+				case 'u':
+					{
+					if (dwNounFlags & nounVowelArticle)
+						*retsArticle = CONSTLIT("a ");
+					else
+						*retsArticle = CONSTLIT("an ");
+					break;
+					}
+
+				default:
+					{
+					if (dwNounFlags & nounVowelArticle)
+						*retsArticle = CONSTLIT("an ");
+					else
+						*retsArticle = CONSTLIT("a ");
+					break;
+					}
+				}
+			}
+		}
+
 	return sDest;
 	}
 

@@ -330,7 +330,7 @@ CString ComposeNounPhrase (const CString &sNoun,
 						   DWORD dwNounFlags, 
 						   DWORD dwComposeFlags);
 void ComputePercentages (int iCount, int *pTable);
-CString ParseNounForm (const CString &sNoun, DWORD dwNounFlags, bool bPluralize, bool bShortName);
+CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, CString *retsArticle = NULL);
 
 CString ReactorPower2String (int iPower);
 
