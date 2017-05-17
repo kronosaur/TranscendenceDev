@@ -942,29 +942,17 @@ Metric CStationType::GetLevelStrength (int iLevel)
 	return rTotal;
 	}
 
-const CString &CStationType::GetNamePattern (DWORD *retdwFlags) const
+CString CStationType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
 
 //	GetNamePattern
 //
-//	Returns the name of the type
+//	Returns the noun pattern.
 
 	{
 	if (retdwFlags)
 		*retdwFlags = m_dwNameFlags;
 
 	return m_sName;
-	}
-
-CString CStationType::GetNounPhrase (DWORD dwFlags) const
-
-//	GetNounPhrase
-//
-//	Gets the station name
-
-	{
-	DWORD dwNameFlags;
-	CString sName = GetNamePattern(&dwNameFlags);
-	return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
 	}
 
 IShipGenerator *CStationType::GetReinforcementsTable (void)

@@ -1968,14 +1968,13 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 
 	if (strEquals(sField, FIELD_CARGO_SPACE))
 		*retsValue = strFromInt(CalcMaxCargoSpace());
+
 	else if (strEquals(sField, FIELD_MAX_SPEED))
 		*retsValue = strFromInt((int)((100.0 * GetMaxSpeed() / LIGHT_SPEED) + 0.5), false);
+
 	else if (strEquals(sField, FIELD_NAME))
-		{
-		DWORD dwFlags;
-		CString sName = GetName(&dwFlags);
-		*retsValue = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, 0x00);
-		}
+		*retsValue = GetNounPhrase();
+
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR))
 		{
 		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_ARMOR_UNID), 0));
@@ -2817,7 +2816,7 @@ CString CShip::GetName (DWORD *retdwFlags)
 
 	{
 	if (m_sName.IsBlank())
-		return m_pClass->GetName(retdwFlags);
+		return m_pClass->GetNamePattern(0, retdwFlags);
 	else
 		{
 		if (retdwFlags)
@@ -5003,11 +5002,7 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 		Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
 
 		if (m_sMapLabel.IsBlank())
-			{
-			DWORD dwFlags;
-			CString sName = GetName(&dwFlags);
-			m_sMapLabel = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounTitleCapitalize);
-			}
+			m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
 
 		g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 				x + MAP_LABEL_X + 1, 
@@ -6177,11 +6172,7 @@ void CShip::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewport
 	if (m_fKnown && m_pClass->HasDockingPorts())
 		{
 		if (m_sMapLabel.IsBlank())
-			{
-			DWORD dwFlags;
-			CString sName = GetName(&dwFlags);
-			m_sMapLabel = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounTitleCapitalize);
-			}
+			m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
 
 		g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 				x + MAP_LABEL_X, 

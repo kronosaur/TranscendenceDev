@@ -110,7 +110,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 	//	Now add some additional information
 
 	CShipClass *pClass = g_pUniverse->FindShipClass(GameFile.GetPlayerShip());
-	CString sShipClass = (pClass ? pClass->GetName() : NULL_STR);
+	CString sShipClass = (pClass ? pClass->GetNounPhrase() : NULL_STR);
 	CString sGenome = strCapitalize(GetGenomeName(GameFile.GetPlayerGenome()));
 
 	CString sState;

@@ -483,13 +483,13 @@ class CDesignType
 		inline CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		inline CXMLElement *GetLocalScreens (void) const { return m_pLocalScreens; }
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
+		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		int GetPropertyInteger (const CString &sProperty);
 		CString GetPropertyString (const CString &sProperty);
 		CXMLElement *GetScreen (const CString &sUNID);
 		const CString &GetStaticData (const CString &sAttrib) const;
 		CString GetTypeClassName (void) const;
-        CString GetTypeNounPhrase (DWORD dwFlags = 0) const;
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline CXMLElement *GetXMLElement (void) const { return m_pXML; }
 		bool HasAttribute (const CString &sAttrib) const;
@@ -518,7 +518,7 @@ class CDesignType
 		virtual CEconomyType *GetEconomyType (void) const;
 		virtual CTradingDesc *GetTradingDesc (void) const { return NULL; }
         virtual const CCompositeImageDesc &GetTypeImage (void) const;
-		virtual CString GetTypeName (DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const { if (retiMinLevel) *retiMinLevel = -1; if (retiMaxLevel) *retiMaxLevel = -1; return -1; }
 		virtual DesignTypes GetType (void) const = 0;
 		virtual bool IsVirtual (void) const { return false; }
@@ -1688,8 +1688,6 @@ class CItemType : public CDesignType
         inline int GetMaxLevel (void) const { return m_iMaxLevel; }
 		inline CWeaponFireDesc *GetMissileDesc (void) const { return m_pMissile;  }
 		inline DWORD GetModCode (void) const { return m_dwModCode; }
-		CString GetName (DWORD *retdwFlags, bool bActualName = false) const;
-		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
 		CString GetSortName (void) const;
@@ -1717,6 +1715,7 @@ class CItemType : public CDesignType
 		static CItemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return m_iLevel; }
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual DesignTypes GetType (void) const override { return designItemType; }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
@@ -1954,8 +1953,6 @@ class CShipClass : public CDesignType
 		inline int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
 		int GetMaxStructuralHitPoints (void) const;
 		inline int GetMaxWeapons (void) const { return m_iMaxWeapons; }
-		CString GetName (DWORD *retdwFlags = NULL) const;
-		CString GetNounPhrase (DWORD dwFlags) const;
         const CPlayerSettings *GetPlayerSettings (void) const;
 		CString GetPlayerSortString (void) const;
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
@@ -2017,10 +2014,10 @@ class CShipClass : public CDesignType
 		virtual CCommunicationsHandler *GetCommsHandler (void) override;
 		virtual CEconomyType *GetEconomyType (void) const;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iLevel; return m_iLevel; }
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
 		virtual DesignTypes GetType (void) const override { return designShipClass; }
         virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
-		virtual CString GetTypeName (DWORD *retdwFlags = NULL) const override { return GetName(retdwFlags); }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static Metric GetStdCombatStrength (int iLevel);
@@ -2851,9 +2848,7 @@ class CStationType : public CDesignType
 		inline int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
 		inline int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
 		inline int GetMaxStructuralHitPoints (void) { return m_iMaxStructuralHP; }
-		const CString &GetNamePattern (DWORD *retdwFlags = NULL) const;
 		inline DWORD GetNameFlags (void) { return m_dwNameFlags; }
-		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
 		inline Metric GetParallaxDist (void) const { return m_rParallaxDist; }
 		inline IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
@@ -2913,10 +2908,10 @@ class CStationType : public CDesignType
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual CCommunicationsHandler *GetCommsHandler (void) override;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
 		virtual DesignTypes GetType (void) const override { return designStationType; }
         virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
-		virtual CString GetTypeName (DWORD *retdwFlags = NULL) const override { return GetNamePattern(retdwFlags); }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
 		static Metric CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance = false);
@@ -4562,7 +4557,7 @@ inline bool CArmorClass::IsShatterImmune (CItemCtx &ItemCtx) { return (m_fShatte
 inline bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx) { return (m_fShieldInterference || ItemCtx.GetMods().IsShieldInterfering()); }
 
 inline int CDeviceClass::GetLevel (void) const { return m_pItemType->GetLevel(); }
-inline CString CDeviceClass::GetName (void) { return m_pItemType->GetName(NULL); }
+inline CString CDeviceClass::GetName (void) { return m_pItemType->GetNounPhrase(); }
 inline DWORD CDeviceClass::GetUNID (void) { return m_pItemType->GetUNID(); }
 
 inline CDesignType *CItemType::GetUseScreen (CString *retsName) const { return m_pUseScreen.GetDockScreen((CDesignType *)this, retsName); }

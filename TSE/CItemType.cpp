@@ -224,7 +224,7 @@ void CItemType::CreateEmptyFlotsam (CSystem *pSystem,
 	pFlotsam->SetFlotsamImage(this);
 
 	DWORD dwFlags;
-	CString sName = GetName(&dwFlags);
+	CString sName = GetNamePattern(0, &dwFlags);
 	pFlotsam->SetName(sName, dwFlags);
 
 	//	Done
@@ -847,40 +847,27 @@ int CItemType::GetMaxHPBonus (void) const
 		return 150;
 	}
 
-CString CItemType::GetName (DWORD *retdwFlags, bool bActualName) const
+CString CItemType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
 
-//	GetName
+//	GetNamePattern
 //
-//	Returns the name of the item and flags about the name
+//	Returns the noun pattern
 
 	{
+	bool bActualName = (dwNounFormFlags & nounActual) != 0;
+
 	if (!IsKnown() && !bActualName && !m_sUnknownName.IsBlank())
 		{
 		if (retdwFlags)
 			*retdwFlags = 0;
+
 		return m_sUnknownName;
 		}
 
 	if (retdwFlags)
-		{
 		*retdwFlags = m_dwNameFlags;
-		return m_sName;
-		}
-	else
-		return GetNounPhrase();
-	}
 
-CString CItemType::GetNounPhrase (DWORD dwFlags) const
-
-//	GetNounPhrase
-//
-//	Returns the generic name of the item
-
-	{
-	DWORD dwNameFlags;
-	CString sName = GetName(&dwNameFlags, (dwFlags & nounActual) != 0);
-
-	return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
+	return m_sName;
 	}
 
 CString CItemType::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) const
@@ -942,7 +929,7 @@ CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)
 	if (iIndex != -1 && iIndex < m_UnknownNames.GetCount())
 		return m_UnknownNames[iIndex];
 
-	return GetName(retdwFlags);
+	return GetNamePattern(0, retdwFlags);
 	}
 
 bool CItemType::GetUseDesc (SUseDesc *retDesc) const

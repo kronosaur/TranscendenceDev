@@ -7067,7 +7067,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pObj->UseItem(Item, &sError);
 			if (sError.IsBlank())
 				{
-				::kernelDebugLogPattern("[%s %s Invoke]: %s", pObj->GetName(), pType->GetName(NULL), sError);
+				::kernelDebugLogPattern("[%s %s Invoke]: %s", pObj->GetName(), pType->GetNounPhrase(), sError);
 				return pCC->CreateNil();
 				}
 
@@ -8242,11 +8242,7 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_CLASS_NAME:
 			{
 			DWORD dwFlags = pArgs->GetElement(1)->GetIntegerValue();
-
-			DWORD dwNounFlags;
-			CString sName = pClass->GetName(&dwNounFlags);
-
-			pResult = pCC->CreateString(ComposeNounPhrase(sName, 1, CString(), dwNounFlags, dwFlags));
+			pResult = pCC->CreateString(pClass->GetNounPhrase(dwFlags));
 			break;
 			}
 
@@ -12897,7 +12893,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					CItemType *pType = g_pUniverse->GetItemType(i);
 					if (!pType->IsVirtual() 
-							&& strEquals(sName, pType->GetName(NULL, true)))
+							&& strEquals(sName, pType->GetNounPhrase(nounActual)))
 						{
 						bFound = true;
 						pFoundItem = pType;
@@ -12950,13 +12946,13 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					sType = UNID_TYPE_ITEM_TYPE;
 					dwUNID = pFoundItem->GetUNID();
-					sName = pFoundItem->GetName(NULL, true);
+					sName = pFoundItem->GetNounPhrase(nounActual);
 					}
 				else if (pFoundShip)
 					{
 					sType = UNID_TYPE_SHIP_CLASS;
 					dwUNID = pFoundShip->GetUNID();
-					sName = pFoundShip->GetName(NULL);
+					sName = pFoundShip->GetNounPhrase();
 					}
 				else
 					ASSERT(false);

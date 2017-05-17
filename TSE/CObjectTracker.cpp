@@ -78,7 +78,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
         pEntry->sNotes = ObjData.pExtra->sNotes;
 		}
 	else
-		pEntry->sName = ObjList.pType->GetTypeName(&pEntry->dwNameFlags);
+		pEntry->sName = ObjList.pType->GetNamePattern(0, &pEntry->dwNameFlags);
 
     //  If we've got custom notes stored with the object, then use those.
 
@@ -854,7 +854,7 @@ void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceOb
 	CString sName = pObj->GetName(&dwNameFlags);
 	if (!pType->GetTypeImage().IsConstant()
             || bHasCustomNotes
-            || !strEquals(sName, pType->GetTypeName(&dwDummyFlags)))
+            || !strEquals(sName, pType->GetNamePattern(0, &dwDummyFlags)))
 		{
         SObjExtra &Extra = pObjData->SetExtra();
 		Extra.sName = sName;

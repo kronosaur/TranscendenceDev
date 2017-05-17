@@ -537,7 +537,7 @@ ALERROR CSingleDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	if (m_pItemType)
 		if (m_pItemType->GetDeviceClass() == NULL)
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("%s is not a device"), m_pItemType->GetName(NULL, true));
+			Ctx.sError = strPatternSubst(CONSTLIT("%s is not a device"), m_pItemType->GetNounPhrase(nounActual));
 			return ERR_FAIL;
 			}
 

@@ -2658,38 +2658,26 @@ int CShipClass::GetMaxStructuralHitPoints (void) const
 	return (int)(pow(1.3, m_iLevel) * (sqrt(m_iMass) + 10.0));
 	}
 
-CString CShipClass::GetName (DWORD *retdwFlags) const
+CString CShipClass::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
 
-//	GetName
+//	GetNamePattern
 //
-//	Returns the name of the ship class
+//	Returns the name pattern
 
 	{
-	if (!m_sShipNames.IsBlank() && ::IsConstantName(m_sShipNames))
-		return GenerateShipName(retdwFlags);
-	else
-		return GetGenericName(retdwFlags);
-	}
-
-CString CShipClass::GetNounPhrase (DWORD dwFlags) const
-
-//	GetNounPhrase
-//
-//	Returns the generic name of the ship
-
-	{
-	DWORD dwNameFlags;
-
-	CString sName;
-	if (dwFlags & nounShort)
+	if (dwNounFormFlags & nounShort)
 		{
-		sName = GetShortName();
-		dwNameFlags = m_dwClassNameFlags;
-		}
-	else
-		sName = GetName(&dwNameFlags);
+		if (retdwFlags)
+			*retdwFlags = m_dwClassNameFlags;
 
-	return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
+		return GetShortName();
+		}
+	else if ((dwNounFormFlags & nounGeneric)
+			|| m_sShipNames.IsBlank() 
+			|| ::IsConstantName(m_sShipNames))
+		return GetGenericName(retdwFlags);
+	else
+		return GenerateShipName(retdwFlags);
 	}
 
 const CPlayerSettings *CShipClass::GetPlayerSettings (void) const
@@ -3929,9 +3917,7 @@ CString CShipClass::OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const
     if (Ctx.bEnemy)
         return CONSTLIT("Hostile");
 
-    DWORD dwFlags;
-    CString sName = GetGenericName(&dwFlags);
-    return ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounCapitalize);
+	return GetNounPhrase(nounGeneric | nounCapitalize);
     }
 
 ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const

@@ -1334,7 +1334,7 @@ void CPlayerGameStats::OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD 
 	//	If the object name is the same as the type name then we don't bother
 	//	storing it in the event (to save memory)
 
-	if (sName.IsBlank() || strEquals(sName, pType->GetTypeName()))
+	if (sName.IsBlank() || strEquals(sName, pType->GetNamePattern()))
 		{
 		sName = NULL_STR;
 		dwNameFlags = 0;

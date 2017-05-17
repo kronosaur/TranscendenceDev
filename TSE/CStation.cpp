@@ -1411,7 +1411,7 @@ CString CStation::GetName (DWORD *retdwFlags)
 
 	{
 	if (m_sName.IsBlank())
-		return m_pType->GetNamePattern(retdwFlags);
+		return m_pType->GetNamePattern(0, retdwFlags);
 
 	if (retdwFlags)
 		*retdwFlags = m_dwNameFlags;
@@ -1757,7 +1757,7 @@ bool CStation::IsNameSet (void) const
 
 	//	If the type has a valid name, then we're done.
 
-	const CString &sName = m_pType->GetNamePattern();
+	CString sName = m_pType->GetNamePattern();
 	if (!sName.IsBlank() && *sName.GetASCIIZPointer() != '(')
 		return true;
 
@@ -3016,11 +3016,7 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 		if (!m_fNoMapLabel)
 			{
 			if (m_sMapLabel.IsBlank())
-				{
-				DWORD dwFlags;
-				CString sName = GetName(&dwFlags);
-				m_sMapLabel = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounTitleCapitalize);
-				}
+				m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
 
 			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel + 1, 
@@ -3948,11 +3944,7 @@ void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewp
 				&& !m_fNoMapLabel)
 			{
 			if (m_sMapLabel.IsBlank())
-				{
-				DWORD dwFlags;
-				CString sName = GetName(&dwFlags);
-				m_sMapLabel = ::ComposeNounPhrase(sName, 1, NULL_STR, dwFlags, nounTitleCapitalize);
-				}
+				m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
 
 			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel, 
@@ -4403,7 +4395,7 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 
 		else
 			{
-			sName = strPatternSubst(CONSTLIT("%s wreck"), pWreckClass->GetName());
+			sName = strPatternSubst(CONSTLIT("%s wreck"), pWreckClass->GetNamePattern());
 			dwFlags = 0;
 			}
 

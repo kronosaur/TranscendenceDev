@@ -728,7 +728,7 @@ CShipClass *CUniverse::FindShipClassByName (const CString &sName)
 		CShipClass *pClass = GetShipClass(i);
 		if (!pClass->IsVirtual()
 				&& pClass->HasLiteralAttribute(CONSTLIT("genericClass"))
-				&& strEquals(sName, pClass->GetName()))
+				&& strEquals(sName, pClass->GetNounPhrase(nounGeneric)))
 			return pClass;
 		}
 
@@ -739,7 +739,7 @@ CShipClass *CUniverse::FindShipClassByName (const CString &sName)
 		CShipClass *pClass = GetShipClass(i);
 		if (!pClass->IsVirtual()
 				&& pClass->HasLiteralAttribute(CONSTLIT("genericClass"))
-				&& strFind(pClass->GetName(), sName) != -1)
+				&& strFind(pClass->GetNounPhrase(nounGeneric), sName) != -1)
 			return pClass;
 		}
 
@@ -750,7 +750,7 @@ CShipClass *CUniverse::FindShipClassByName (const CString &sName)
 		{
 		CShipClass *pClass = GetShipClass(i);
 		if (!pClass->IsVirtual()
-				&& strFind(pClass->GetName(), sName) != -1)
+				&& strFind(pClass->GetNounPhrase(), sName) != -1)
 			return pClass;
 		}
 

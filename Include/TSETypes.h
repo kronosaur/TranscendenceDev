@@ -270,6 +270,7 @@ enum NounPhraseFlags
 	nounInstalledState		= 0x00000800,	//	Prefix with "installed" if item is installed
 	nounCountAlways			= 0x00001000,	//	Always prefix with count.
 	nounDuplicateModifier	= 0x00002000,	//	If duplicate device, add disambiguating modifier
+	nounGeneric				= 0x00004000,	//	Generic name (e.g., ship class name instead of ship name)
 	};
 
 enum FrequencyTypes

@@ -994,7 +994,7 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 
 	else
 		{
-		sName = m_pItemType->GetName(&dwNounFlags, ((dwFlags & nounActual) ? true : false));
+		sName = m_pItemType->GetNamePattern(dwFlags, &dwNounFlags);
 
 		//	Modifiers
 

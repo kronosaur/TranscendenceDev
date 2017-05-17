@@ -1087,7 +1087,7 @@ class CSpaceObject : public CObject
 
 		CSpaceObject *GetNearestVisibleEnemy (Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CSpaceObject *GetNearestVisibleEnemyInArc (int iMinFireArc, int iMaxFireArc, Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
-		CString GetNounPhrase (DWORD dwFlags);
+		CString GetNounPhrase (DWORD dwFlags = 0);
 		inline CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
 		CSpaceObject *GetOrderGiver (DestructionTypes iCause = killedNone);
 		inline CDesignType *GetOverride (void) { return m_pOverride; }

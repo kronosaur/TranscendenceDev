@@ -263,7 +263,7 @@ ALERROR CDesignType::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sErro
 //	Sets Ctx.sError appropriately and returns ERR_FAIL
 
 	{
-	Ctx.sError = strPatternSubst("%s (%x): %s", GetTypeNounPhrase(), GetUNID(), sError);
+	Ctx.sError = strPatternSubst("%s (%x): %s", GetNounPhrase(), GetUNID(), sError);
 	return ERR_FAIL;
 	}
 
@@ -1588,6 +1588,18 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         }
     }
 
+CString CDesignType::GetNounPhrase (DWORD dwFlags) const
+
+//  GetNounPhrase
+//
+//  Composes a noun phrase
+    
+    {
+    DWORD dwNameFlags;
+    CString sName = GetNamePattern(dwFlags, &dwNameFlags); 
+    return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
+    }
+
 ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	GetProperty
@@ -1652,18 +1664,6 @@ CString CDesignType::GetPropertyString (const CString &sProperty)
 	pItem->Discard(&CC);
 	return sResult;
 	}
-
-CString CDesignType::GetTypeNounPhrase (DWORD dwFlags) const
-
-//  GetTypeNounPhrase
-//
-//  Composes a noun phrase
-    
-    {
-    DWORD dwNameFlags;
-    CString sName = GetTypeName(&dwNameFlags); 
-    return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
-    }
 
 bool CDesignType::IsValidLoadXML (const CString &sTag)
 

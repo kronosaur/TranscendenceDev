@@ -928,7 +928,7 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			&& m_pOnCreate == NULL
 			&& m_sController.IsBlank())
 		{
-		::kernelDebugLogPattern("%s (%08x): Warning: Ship in table has no orders.", Ctx.pType->GetTypeNounPhrase(), Ctx.pType->GetUNID());
+		::kernelDebugLogPattern("%s (%08x): Warning: Ship in table has no orders.", Ctx.pType->GetNounPhrase(), Ctx.pType->GetUNID());
 		}
 #endif
 
