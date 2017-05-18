@@ -43,6 +43,7 @@ class CCodeChainCtx
 		inline void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
 		inline void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);
+		inline void Discard (ICCItem *pItem) { pItem->Discard(&m_CC); }
 		DWORD GetAPIVersion (void) const;
 		inline CG32bitImage *GetCanvas (void) const { return m_pCanvas; }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
@@ -75,9 +76,9 @@ class CCodeChainCtx
 
 		C3DObjectPos As3DObjectPos (CSpaceObject *pObj, ICCItem *pItem, bool bAsoluteRotation = false);
 		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
+		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
 		CVector AsVector (ICCItem *pItem);
-		inline void Discard (ICCItem *pItem) { pItem->Discard(&m_CC); }
 
 	private:
 		struct SInvokeFrame

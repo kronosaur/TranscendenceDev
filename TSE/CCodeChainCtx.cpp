@@ -161,6 +161,30 @@ bool CCodeChainCtx::AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, boo
 	return true;
 	}
 
+DWORD CCodeChainCtx::AsNameFlags (ICCItem *pItem)
+
+//	AsNameFlags
+//
+//	Parse name flags
+
+	{
+	int i;
+
+	if (pItem->IsInteger())
+		return pItem->GetIntegerValue();
+	else if (pItem->IsIdentifier())
+		return CLanguage::ParseNounFlags(pItem->GetStringValue());
+	else
+		{
+		DWORD dwFlags = 0;
+
+		for (i = 0; i < pItem->GetCount(); i++)
+			dwFlags |= CLanguage::ParseNounFlags(pItem->GetElement(i)->GetStringValue());
+
+		return dwFlags;
+		}
+	}
+
 CSpaceObject *CCodeChainCtx::AsSpaceObject (ICCItem *pItem)
 
 //	AsSpaceObject

@@ -1597,7 +1597,7 @@ CString CDesignType::GetNounPhrase (DWORD dwFlags) const
     {
     DWORD dwNameFlags;
     CString sName = GetNamePattern(dwFlags, &dwNameFlags); 
-    return ::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
+    return CLanguage::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
     }
 
 ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const

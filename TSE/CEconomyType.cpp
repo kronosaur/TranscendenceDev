@@ -125,11 +125,11 @@ ALERROR CEconomyType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (m_sCurrencyName.IsBlank())
 		return ComposeLoadError(Ctx, CONSTLIT("Invalid currency name"));
 
-	m_sCurrencySingular = ParseNounForm(m_sCurrencyName, NULL_STR, 0, false, true);
+	m_sCurrencySingular = CLanguage::ParseNounForm(m_sCurrencyName, NULL_STR, 0, false, true);
 	if (m_sCurrencySingular.IsBlank())
 		return ComposeLoadError(Ctx, CONSTLIT("Invalid singular form of currency name"));
 
-	m_sCurrencyPlural = ParseNounForm(m_sCurrencyName, NULL_STR, 0, true, true);
+	m_sCurrencyPlural = CLanguage::ParseNounForm(m_sCurrencyName, NULL_STR, 0, true, true);
 	if (m_sCurrencyPlural.IsBlank())
 		return ComposeLoadError(Ctx, CONSTLIT("Invalid plural form of currency name"));
 

@@ -1024,7 +1024,7 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 
 	//	Compose phrase
 
-	return ComposeNounPhrase(sName, (int)m_dwCount, sModifier, dwNounFlags, dwFlags);
+	return CLanguage::ComposeNounPhrase(sName, (int)m_dwCount, sModifier, dwNounFlags, dwFlags);
 	}
 
 ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const

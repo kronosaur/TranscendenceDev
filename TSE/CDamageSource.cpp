@@ -41,7 +41,7 @@ CString CDamageSource::GetDamageCauseNounPhrase (DWORD dwFlags)
 	if (IsObjPointer())
 		return m_pSource->GetDamageCauseNounPhrase(dwFlags);
 	else if (!m_sSourceName.IsBlank())
-		return ::ComposeNounPhrase(m_sSourceName, 1, NULL_STR, m_dwSourceNameFlags, dwFlags);
+		return CLanguage::ComposeNounPhrase(m_sSourceName, 1, NULL_STR, m_dwSourceNameFlags, dwFlags);
 	else
 		return CONSTLIT("damage");
 	}

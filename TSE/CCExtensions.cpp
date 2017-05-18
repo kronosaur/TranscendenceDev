@@ -531,11 +531,13 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 #define FN_SOVEREIGN_GET_DISPOSITION	1
 #define FN_SOVEREIGN_MESSAGE			2
 #define FN_SOVEREIGN_MESSAGE_FROM_OBJ	3
+#define FN_SOVEREIGN_NAME				4
 
 #define DISP_NEUTRAL					CONSTLIT("neutral")
 #define DISP_ENEMY						CONSTLIT("enemy")
 #define DISP_FRIEND						CONSTLIT("friend")
 
+ICCItem *fnSovereignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_XML_GET_TAG					0
@@ -1553,7 +1555,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetMass obj) -> mass in tons",
 			"i",		0,	},
 
-		{	"objGetName",					fnObjGetOld,		FN_OBJ_NAME,
+		{	"objGetName",					fnObjGet,		FN_OBJ_NAME,
 			"(objGetName obj [flags]) -> Name of the object\n\n"
 
 			"flags\n\n"
@@ -1568,7 +1570,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x080 short name\n"
 			"   0x100 actual name (not unidentified name)",
 
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetNamedItems",				fnObjGet,		FN_OBJ_GET_NAMED_ITEM,	
 			"(objGetNamedItems obj name) -> list of items",
@@ -2932,6 +2934,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"ii",	0,	},
 
+		{	"sovGetName",					fnSovereignGet,			FN_SOVEREIGN_NAME,
+			"(sovGetName sovereignID [flags]) -> name",
+			"i*",	0,	},
+
 		{	"sovMessage",					fnSovereignSet,			FN_SOVEREIGN_MESSAGE,
 			"(sovMessage sovereignID text) -> True/Nil",
 			"iv",	0,	},
@@ -3977,7 +3983,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iCount = pArgs->GetElement(2)->GetIntegerValue();
 			DWORD dwFlags = (DWORD)pArgs->GetElement(3)->GetIntegerValue();
 
-			return pCC->CreateString(::ComposeNounPhrase(sName, iCount, NULL_STR, dwNameFlags, dwFlags));
+			return pCC->CreateString(CLanguage::ComposeNounPhrase(sName, iCount, NULL_STR, dwNameFlags, dwFlags));
 			}
 
         case FN_NUMBER:
@@ -4405,7 +4411,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_NAME:
 			{
-			DWORD dwFlags = pArgs->GetElement(1)->GetIntegerValue();
+			DWORD dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1));
 
 			//	If we're inside the GetName event, then don't recurse
 
@@ -6245,6 +6251,16 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateBool(pObj->MatchesCriteria(Ctx, Criteria));
 			}
 
+		case FN_OBJ_NAME:
+			{
+			DWORD dwFlags;
+			if (pArgs->GetCount() > 1)
+				dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1));
+			else
+				dwFlags = 0;
+			return pCC->CreateString(pObj->GetNounPhrase(dwFlags));
+			}
+
 		case FN_OBJ_OPEN_DOCKING_PORT_COUNT:
 			return pCC->CreateInteger(pObj->GetOpenDockingPortCount());
 
@@ -6487,10 +6503,6 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_OBJ_SHIELD_LEVEL:
 			pResult = pCC->CreateInteger(pObj->GetShieldLevel());
-			break;
-
-		case FN_OBJ_NAME:
-			pResult = pCC->CreateString(pObj->GetNounPhrase(dwFlags));
 			break;
 
 		case FN_OBJ_INSTALLED_ITEM_DESC:
@@ -8219,6 +8231,10 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
+
 	ICCItem *pResult;
 
 	//	Convert the first argument into a ship class
@@ -8241,7 +8257,7 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_SHIP_CLASS_NAME:
 			{
-			DWORD dwFlags = pArgs->GetElement(1)->GetIntegerValue();
+			DWORD dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1));
 			pResult = pCC->CreateString(pClass->GetNounPhrase(dwFlags));
 			break;
 			}
@@ -9602,6 +9618,44 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		}
 
 	return pResult;
+	}
+
+ICCItem *fnSovereignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
+
+//	fnSovereignGet
+
+	{
+	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
+
+	//	Get the sovereign
+
+	DWORD dwSovereignID = pArgs->GetElement(0)->GetIntegerValue();
+	CSovereign *pSovereign = g_pUniverse->FindSovereign(dwSovereignID);
+	if (pSovereign == NULL)
+		return pCC->CreateNil();
+
+	//	Handle the command
+
+	switch (dwData)
+		{
+		case FN_SOVEREIGN_NAME:
+			{
+			DWORD dwFlags;
+			if (pArgs->GetCount() > 1)
+				dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1));
+			else
+				dwFlags = 0;
+
+			return pCC->CreateString(pSovereign->GetNounPhrase(dwFlags));
+			}
+
+		default:
+			ASSERT(false);
+			return NULL;
+		}
 	}
 
 ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)

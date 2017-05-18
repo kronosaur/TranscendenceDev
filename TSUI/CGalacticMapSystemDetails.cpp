@@ -155,7 +155,7 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 
     //  Add the object name
 
-    CString sHeading = ::ComposeNounPhrase(Obj.ObjData.sName, Obj.iCount, NULL_STR, Obj.ObjData.dwNameFlags, nounCountOnly | nounTitleCapitalize);
+    CString sHeading = CLanguage::ComposeNounPhrase(Obj.ObjData.sName, Obj.iCount, NULL_STR, Obj.ObjData.dwNameFlags, nounCountOnly | nounTitleCapitalize);
 	int xText = x + MAX_ICON_SIZE + ICON_SPACING_HORZ;
     int cxText = cxWidth - (MAX_ICON_SIZE + ICON_SPACING_HORZ);
 

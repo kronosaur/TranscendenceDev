@@ -197,6 +197,9 @@
     <ClInclude Include="..\Include\TSEDocking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSELanguage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1031,6 +1034,9 @@
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
     <ClCompile Include="SUpdateCtx.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CLanguage.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>

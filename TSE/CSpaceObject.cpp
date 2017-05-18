@@ -4105,7 +4105,7 @@ CString CSpaceObject::GetNounPhrase (DWORD dwFlags)
 	DWORD dwNounFlags;
 	CString sName = GetName(&dwNounFlags);
 
-	return ComposeNounPhrase(sName, 1, CString(), dwNounFlags, dwFlags);
+	return CLanguage::ComposeNounPhrase(sName, 1, CString(), dwNounFlags, dwFlags);
 	}
 
 CSpaceObject *CSpaceObject::GetOrderGiver (DestructionTypes iCause)

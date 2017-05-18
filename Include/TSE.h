@@ -159,6 +159,7 @@ extern CUniverse *g_pUniverse;
 
 #include "TSEGeometry.h"
 #include "TSETypes.h"
+#include "TSELanguage.h"
 #include "TSEUtil.h"
 #include "TSETransLisp.h"
 #include "TSEDesign.h"
@@ -324,13 +325,7 @@ void DrawParticle (CG32bitImage &Dest,
 //	Helper functions
 
 CString ComposeDamageAdjReference (int *AdjRow, int *StdRow);
-CString ComposeNounPhrase (const CString &sNoun, 
-						   int iCount, 
-						   const CString &sModifier, 
-						   DWORD dwNounFlags, 
-						   DWORD dwComposeFlags);
 void ComputePercentages (int iCount, int *pTable);
-CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, CString *retsArticle = NULL);
 
 CString ReactorPower2String (int iPower);
 

@@ -248,6 +248,7 @@
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEImages.h" />
     <ClInclude Include="..\Include\TSEItems.h" />
+    <ClInclude Include="..\Include\TSELanguage.h" />
     <ClInclude Include="..\Include\TSEObjectJoints.h" />
     <ClInclude Include="..\Include\TSEParticleSystem.h" />
     <ClInclude Include="..\Include\TSEPhysics.h" />
@@ -347,6 +348,7 @@
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
+    <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
     <ClCompile Include="CObjectJoint.cpp" />
     <ClCompile Include="CObjectJointList.cpp" />
