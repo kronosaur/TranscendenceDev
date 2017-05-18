@@ -8,12 +8,16 @@
 #define RELATIONSHIPS_TAG						CONSTLIT("Relationships")
 #define RELATIONSHIP_TAG						CONSTLIT("Relationship")
 
+#define ADJECTIVE_ATTRIB						CONSTLIT("adjective")
 #define ALIGNMENT_ATTRIB						CONSTLIT("alignment")
-#define ID_ATTRIB								CONSTLIT("id")
-#define TEXT_ATTRIB								CONSTLIT("text")
-#define SOVEREIGN_ATTRIB						CONSTLIT("sovereign")
+#define DEMONYM_ATTRIB							CONSTLIT("demonym")
 #define DISPOSITION_ATTRIB						CONSTLIT("disposition")
+#define ID_ATTRIB								CONSTLIT("id")
 #define MUTUAL_ATTRIB							CONSTLIT("mutual")
+#define NAME_ATTRIB								CONSTLIT("name")
+#define TEXT_ATTRIB								CONSTLIT("text")
+#define SHORT_NAME_ATTRIB						CONSTLIT("shortName")
+#define SOVEREIGN_ATTRIB						CONSTLIT("sovereign")
 
 #define CONSTRUCTIVE_CHAOS_ALIGN				CONSTLIT("constructive chaos")
 #define CONSTRUCTIVE_ORDER_ALIGN				CONSTLIT("constructive order")
@@ -243,7 +247,7 @@ bool CSovereign::FindDataField (const CString &sField, CString *retsValue) const
 
 	{
 	if (strEquals(sField, FIELD_NAME))
-		*retsValue = m_sName;
+		*retsValue = GetNounPhrase();
 	else
 		return false;
 
@@ -316,6 +320,28 @@ CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereig
 	//	Consult the table
 
 	return g_DispositionTable[iOurDispClass][iTheirDispClass];
+	}
+
+CString CSovereign::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
+
+//	GetNamePattern
+//
+//	Returns the name pattern
+
+	{
+	//	All flags are encoded in the name
+
+	if (retdwFlags)
+		*retdwFlags = 0;
+
+	if (dwNounFormFlags & nounShort)
+		return m_sShortName;
+	else if (dwNounFormFlags & nounAdjective)
+		return m_sAdjective;
+	else if (dwNounFormFlags & nounDemonym)
+		return m_sDemonym;
+	else
+		return m_sName;
 	}
 
 CSovereign::EThreatLevels CSovereign::GetPlayerThreatLevel (void) const
@@ -594,7 +620,16 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	{
 	//	Initialize
 
-	m_sName = pDesc->GetAttribute(CONSTLIT(g_NameAttrib));
+	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
+
+	if (!pDesc->FindAttribute(SHORT_NAME_ATTRIB, &m_sShortName))
+		m_sShortName = m_sName;
+
+	if (!pDesc->FindAttribute(ADJECTIVE_ATTRIB, &m_sAdjective))
+		m_sAdjective = m_sShortName;
+
+	if (!pDesc->FindAttribute(DEMONYM_ATTRIB, &m_sDemonym))
+		m_sDemonym = m_sAdjective;
 
 	//	Alignment
 
@@ -640,7 +675,7 @@ ICCItem *CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_NAME))
-		return CC.CreateString(m_sName);
+		return CC.CreateString(GetNounPhrase());
 
 	else if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))
 		return CC.CreateInteger((int)GetPlayerThreatLevel());

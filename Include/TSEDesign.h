@@ -3222,6 +3222,7 @@ class CSovereign : public CDesignType
 		//	CDesignType overrides
 		static CSovereign *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSovereign) ? (CSovereign *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const;
 		virtual DesignTypes GetType (void) const override { return designSovereign; }
 
 		static Disposition ParseDisposition (const CString &sValue);
@@ -3253,9 +3254,10 @@ class CSovereign : public CDesignType
 		void InitEnemyObjectList (CSystem *pSystem);
 		void InitRelationships (void);
 
-		CString m_sName;						//	"|the United States of America" 
-		CString m_sShortName;					//	"|the USA" (must be one word after the article)
-		CString m_sDemonym;						//	"American"
+		CString m_sName;						//	":the United States of America"
+		CString m_sShortName;					//	":the USA" (must be one word after the article)
+		CString m_sAdjective;					//	"American"
+		CString m_sDemonym;						//	":an American(s)"
 		Alignments m_iAlignment;
 		CXMLElement *m_pInitialRelationships;
 
