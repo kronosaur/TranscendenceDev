@@ -200,6 +200,9 @@
     <ClInclude Include="..\Include\TSELanguage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LanguageDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">

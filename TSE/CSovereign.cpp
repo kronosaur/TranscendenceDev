@@ -15,6 +15,7 @@
 #define ID_ATTRIB								CONSTLIT("id")
 #define MUTUAL_ATTRIB							CONSTLIT("mutual")
 #define NAME_ATTRIB								CONSTLIT("name")
+#define PLURAL_ATTRIB							CONSTLIT("plural")
 #define TEXT_ATTRIB								CONSTLIT("text")
 #define SHORT_NAME_ATTRIB						CONSTLIT("shortName")
 #define SOVEREIGN_ATTRIB						CONSTLIT("sovereign")
@@ -33,6 +34,7 @@
 
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_PLAYER_THREAT_LEVEL			CONSTLIT("playerThreatLevel")
+#define PROPERTY_PLURAL							CONSTLIT("plural")
 #define PROPERTY_SHIPS_DESTROYED_BY_PLAYER		CONSTLIT("shipsDestroyedByPlayer")
 #define PROPERTY_STATIONS_DESTROYED_BY_PLAYER	CONSTLIT("stationsDestroyedByPlayer")
 
@@ -631,6 +633,8 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (!pDesc->FindAttribute(DEMONYM_ATTRIB, &m_sDemonym))
 		m_sDemonym = m_sAdjective;
 
+	m_bPluralForm = pDesc->GetAttributeBool(PLURAL_ATTRIB);
+
 	//	Alignment
 
 	CString sAlignment = pDesc->GetAttribute(ALIGNMENT_ATTRIB);
@@ -679,6 +683,9 @@ ICCItem *CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	else if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))
 		return CC.CreateInteger((int)GetPlayerThreatLevel());
+
+	else if (strEquals(sProperty, PROPERTY_PLURAL))
+		return CC.CreateBool(m_bPluralForm);
 
 	else if (strEquals(sProperty, PROPERTY_SHIPS_DESTROYED_BY_PLAYER))
 		return CC.CreateInteger(m_iShipsDestroyedByPlayer);

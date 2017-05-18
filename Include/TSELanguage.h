@@ -43,7 +43,13 @@ enum NounPhraseFlags
 class CLanguage
 	{
 	public:
+		enum EVerbFlags
+			{
+			verbPluralize =					0x00000001,	//	Use the plural form of the verb
+			};
+
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
+		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static DWORD ParseNounFlags (const CString &sValue);
 		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, CString *retsArticle = NULL);
 	};

@@ -4,50 +4,7 @@
 //	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
-
-static TStaticStringTable<TStaticStringEntry<DWORD>, 18> NOUN_FLAG_TABLE = {
-	"actual",				nounActual,
-	"adjective",			nounAdjective,
-	"article",				nounArticle,
-	"capitalize",			nounCapitalize,
-	"count",				nounCount,
-	"countAlways",			nounCountAlways,
-	"countOnly",			nounCountOnly,
-	"demonstrative",		nounDemonstrative,
-	"demonym",				nounDemonym,
-	"duplicateModifier",	nounDuplicateModifier,
-	"generic",				nounGeneric,
-	"installedState",		nounInstalledState,
-	"noEvent",				nounNoEvent,
-	"noModifiers",			nounNoModifiers,
-	"plural",				nounPlural,
-	"short",				nounShort,
-	"titleCapitalize",		nounTitleCapitalize,
-	"tokenize",				nounTokenize,
-	};
-
-static const char *TITLE_CAP_EXCEPTIONS[] =
-	{
-	"a",
-	"an",
-	"and",
-	"at",
-	"by",
-	"for",
-	"in",
-	"near",
-	"not",
-	"of",
-	"on",
-	"or",
-	"rce",		//	(abbr.) Registerd Corporate Entity 
-	"the",
-	"to",
-	"under",
-	"upon",
-	};
-
-static int TITLE_CAP_EXCEPTIONS_COUNT = sizeof(TITLE_CAP_EXCEPTIONS) / sizeof(TITLE_CAP_EXCEPTIONS[0]);
+#include "LanguageDefs.h"
 
 CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags)
 
@@ -111,6 +68,23 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 		return strCapitalize(sNounPhrase);
 	else
 		return sNounPhrase;
+	}
+
+CString CLanguage::ComposeVerb (const CString &sVerb, DWORD dwVerbFlags)
+
+//	ComposeVerb
+//
+//	Generates the proper verb form based on the given flags.
+
+	{
+	const SVerbData *pVerbData = VERB_FORM_TABLE.GetAt(sVerb);
+	if (pVerbData == NULL)
+		return sVerb;
+
+	if (dwVerbFlags & verbPluralize)
+		return CString(pVerbData->pszPlural, -1, TRUE);
+
+	return sVerb;
 	}
 
 DWORD CLanguage::ParseNounFlags (const CString &sValue)

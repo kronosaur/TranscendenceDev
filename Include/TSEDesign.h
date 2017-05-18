@@ -3255,9 +3255,11 @@ class CSovereign : public CDesignType
 		void InitRelationships (void);
 
 		CString m_sName;						//	":the United States of America"
-		CString m_sShortName;					//	":the USA" (must be one word after the article)
+		CString m_sShortName;					//	":the USA"
 		CString m_sAdjective;					//	"American"
 		CString m_sDemonym;						//	":an American(s)"
+		bool m_bPluralForm;						//	"The United States ARE..."
+
 		Alignments m_iAlignment;
 		CXMLElement *m_pInitialRelationships;
 

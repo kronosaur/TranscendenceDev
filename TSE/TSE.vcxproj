@@ -262,6 +262,7 @@
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
     <ClInclude Include="CrewAIImpl.h" />
+    <ClInclude Include="LanguageDefs.h" />
     <ClInclude Include="LegacyAIImpl.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="..\Include\TSE.h" />

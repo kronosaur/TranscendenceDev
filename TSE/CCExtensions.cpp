@@ -33,6 +33,7 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_NAME						2
 #define FN_NUMBER                   3
 #define FN_POWER					4
+#define FN_VERB						5
 
 ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -916,6 +917,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"fmtPower",						fnFormat,		FN_POWER,
 			"(fmtPower powerInKWs) -> string",
 			"v",	0, },
+
+		{	"fmtVerb",						fnFormat,		FN_VERB,
+			"(fmtVerb verb pluralize) -> string",
+			"sv",	0, },
 
 		{	"rollDice",						fnRollDice,		0,
 			"(rollDice count sides [bonus]) -> value",
@@ -4004,6 +4009,20 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateString(strPatternSubst(CONSTLIT("%s GW"), strFromDouble(rValue / 1000000.0, 1)));
 			else
 				return pCC->CreateString(strPatternSubst(CONSTLIT("%d GW"), mathRound(rValue / 1000000.0)));
+			}
+
+		case FN_VERB:
+			{
+			CString sVerb = pArgs->GetElement(0)->GetStringValue();
+
+			DWORD dwFlags = 0;
+			ICCItem *pPlural = pArgs->GetElement(1);
+			if (pPlural->IsInteger())
+				dwFlags |= ((pPlural->GetIntegerValue() != 1) ? CLanguage::verbPluralize : 0);
+			else
+				dwFlags |= (pPlural->IsNil() ? 0 : CLanguage::verbPluralize);
+
+			return pCC->CreateString(CLanguage::ComposeVerb(sVerb, dwFlags));
 			}
 
 		default:
