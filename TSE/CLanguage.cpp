@@ -60,7 +60,7 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 				sNounForm);
 
 	if (dwComposeFlags & nounTokenize)
-		sNounPhrase = strConvertToToken(sNounPhrase);
+		sNounPhrase = strConvertToToken(sNounPhrase, true);
 
 	if (dwComposeFlags & nounTitleCapitalize)
 		return strTitleCapitalize(sNounPhrase, TITLE_CAP_EXCEPTIONS, TITLE_CAP_EXCEPTIONS_COUNT);
