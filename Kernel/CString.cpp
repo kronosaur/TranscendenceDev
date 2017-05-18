@@ -32,7 +32,7 @@ char g_LowerCaseAbsoluteTable[256];
 //
 //	For the full list see: http://en.wikipedia.org/wiki/List_of_English_prepositions
 
-static char *TITLE_CAP_EXCEPTIONS_SHORT[] =
+static const char *TITLE_CAP_EXCEPTIONS_SHORT[] =
 	{
 	"a",
 	"an",
@@ -184,7 +184,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 		}
 	}
 
-CString::CString (char *pString, int iLength, BOOL bExternal) :
+CString::CString (const char *pString, int iLength, BOOL bExternal) :
 		CObject(&g_Class),
 		m_pStore(NULL)
 
@@ -210,7 +210,7 @@ CString::CString (char *pString, int iLength, BOOL bExternal) :
 
 					m_pStore->iAllocSize = -iLength;
 					m_pStore->iLength = iLength;
-					m_pStore->pString = pString;
+					m_pStore->pString = const_cast<char *>(pString);
 					}
 				}
 			}
@@ -1024,6 +1024,30 @@ int strCompareAbsolute (const CString &sString1, const CString &sString2)
 		return 0;
 	}
 
+int strCompareAbsolute (const char *pS1, const char *pS2)
+	{
+	while (*pS1 != '\0' && *pS2 != '\0')
+		{
+		char chChar1 = strLowerCaseAbsolute(*pS1++);
+		char chChar2 = strLowerCaseAbsolute(*pS2++);
+
+		if (chChar1 > chChar2)
+			return 1;
+		else if (chChar1 < chChar2)
+			return -1;
+		}
+
+	//	If the strings match up to a point, check to see if we hit
+	//	the end of both.
+
+	if (*pS2 == '\0' && *pS1 == '\0')
+		return 0;
+	else if (*pS2 == '\0')
+		return 1;
+	else
+		return -1;
+	}
+
 ALERROR strDelimitEx (const CString &sString, 
 					  char cDelim, 
 					  DWORD dwFlags,
@@ -1675,6 +1699,33 @@ CString strCEscapeCodes (const CString &sString)
 	return sResult;
 	}
 
+CString strConvertToToken (const CString &sString)
+
+//	strConvertToToken
+//
+//	Substitutes all non-alphanumeric characters with an underscore.
+
+	{
+	char *pSrc = sString.GetASCIIZPointer();
+	char *pSrcEnd = pSrc + sString.GetLength();
+
+	CString sResult;
+	char *pDest = sResult.GetWritePointer(sString.GetLength());
+
+	while (pSrc < pSrcEnd)
+		{
+		if (strIsAlphaNumeric(pSrc))
+			*pDest++ = *pSrc++;
+		else
+			{
+			*pDest++ = '_';
+			pSrc++;
+			}
+		}
+
+	return sResult;
+	}
+
 bool strEndsWith (const CString &sString, const CString &sStringToFind)
 
 //	strEndsWith
@@ -2160,7 +2211,7 @@ bool strStartsWith (const CString &sString, const CString &sStringToFind)
 	return true;
 	}
 
-CString strTitleCapitalize (const CString &sString, char **pExceptions, int iExceptionsCount)
+CString strTitleCapitalize (const CString &sString, const char **pExceptions, int iExceptionsCount)
 
 //	strTitleCapitalize
 //
@@ -2176,7 +2227,7 @@ CString strTitleCapitalize (const CString &sString, char **pExceptions, int iExc
 
 	//	Get the exception list
 
-	char **pExceptionList = (pExceptions ? pExceptions : TITLE_CAP_EXCEPTIONS_SHORT);
+	const char **pExceptionList = (pExceptions ? pExceptions : TITLE_CAP_EXCEPTIONS_SHORT);
 	int iExceptionListCount = (iExceptionsCount ? iExceptionsCount : TITLE_CAP_EXCEPTIONS_SHORT_COUNT);
 
 	//	Generate a new string with title capitalization

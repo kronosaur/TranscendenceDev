@@ -541,7 +541,7 @@ class CString : public CObject
 		CString (const char *pString);
 		CString (CharacterSets iCharSet, const char *pString);
 		CString (char *pString, int iLength);
-		CString (char *pString, int iLength, BOOL bExternal);
+		CString (const char *pString, int iLength, BOOL bExternal);
 		virtual ~CString (void);
 
 		CString (const CString &pString);
@@ -1307,6 +1307,7 @@ bool kernelDispatchUntilEventSet (HANDLE hEvent, DWORD dwTimeout = INFINITE);
 CString strCat (const CString &sString1, const CString &sString2);
 int strCompare (const CString &sString1, const CString &sString2);
 int strCompareAbsolute (const CString &sString1, const CString &sString2);
+int strCompareAbsolute (const char *pS1, const char *pS2);
 CString strConvert (const CString &sText, DWORD dwFromCP, DWORD dwToCP);
 inline CString strANSIToUTF8 (const CString &sText) { return strConvert(sText, CP_ACP, CP_UTF8); }
 inline CString strUTF8ToANSI (const CString &sText) { return strConvert(sText, CP_UTF8, CP_ACP); }
@@ -1324,6 +1325,7 @@ CString strDelimitGet (const CString &sString, char cDelim, DWORD dwFlags, int i
 CString strCapitalize (const CString &sString, int iOffset = 0);
 CString strCapitalizeWords (const CString &sString);
 CString strCEscapeCodes (const CString &sString);
+CString strConvertToToken (const CString &sString);
 CString strEncodeUTF8Char (DWORD dwCodePoint);
 CString strEncodeW1252ToUTF8Char (char chChar);
 bool strEndsWith (const CString &sString, const CString &sStringToFind);
@@ -1367,7 +1369,7 @@ CString strRepeat (const CString &sString, int iCount);
 CString strRomanNumeral (int i);
 bool strStartsWith (const CString &sString, const CString &sStringToFind);
 CString strSubString (const CString &sString, int iOffset, int iLength = -1);
-CString strTitleCapitalize (const CString &sString, char **pExceptions = NULL, int iExceptionsCount = 0);
+CString strTitleCapitalize (const CString &sString, const char **pExceptions = NULL, int iExceptionsCount = 0);
 double strToDouble (const CString &sString, double rFailResult, bool *retbFailed = NULL);
 CString strToFilename (const CString &sString);
 int strToInt (const CString &sString, int iFailResult, bool *retbFailed = NULL);

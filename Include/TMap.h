@@ -608,6 +608,112 @@ template <class KEY, class VALUE> class TSortMap
 		TArray<int> m_Free;
 	};
 
+template <class ENTRY, size_t N> class TStaticStringTable
+	{
+	public:
+		ENTRY &operator [] (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < N); return m_Array[iIndex]; }
+		
+		bool FindPos (const CString &sKey, int *retiPos = NULL) const
+			{
+			char *pKey = sKey.GetASCIIZPointer();
+			char *pKeyEnd = pKey + sKey.GetASCIIZPointer();
+			return FindPos(pKey, pKeyEnd, retiPos);
+			}
+
+		bool FindPos (const char *pKey, const char *pKeyEnd, int *retiPos = NULL) const
+			{
+			int iCount = N;
+			int iMin = 0;
+			int iMax = iCount;
+			int iTry = iMax / 2;
+
+			while (true)
+				{
+				if (iMax <= iMin)
+					{
+					if (retiPos)
+						*retiPos = iMin;
+					return false;
+					}
+
+				int iCompare = Compare(pKey, pKeyEnd, GetKey(iTry));
+				if (iCompare == 0)
+					{
+					if (retiPos)
+						*retiPos = iTry;
+					return true;
+					}
+				else if (iCompare == -1)
+					{
+					iMin = iTry + 1;
+					iTry = iMin + (iMax - iMin) / 2;
+					}
+				else if (iCompare == 1)
+					{
+					iMax = iTry;
+					iTry = iMin + (iMax - iMin) / 2;
+					}
+				}
+
+			return false;
+			}
+
+		const ENTRY *GetAt (const CString &sKey) const
+			{
+			int iPos;
+			if (!FindPos(sKey, &iPos))
+				return NULL;
+
+			return &m_Array[iPos];
+			}
+
+		const ENTRY *GetAt (const char *pKey, const char *pKeyEnd) const
+			{
+			int iPos;
+			if (!FindPos(pKey, pKeyEnd, &iPos))
+				return NULL;
+
+			return &m_Array[iPos];
+			}
+
+		int GetCount (void) const { return N; }
+
+		const char *GetKey (int iIndex) const { return m_Array[iIndex].pszKey; }
+
+		ENTRY m_Array[N];
+
+	private:
+		int Compare (const char *pS1, const char *pS1End, const char *pS2) const
+			{
+			while (pS1 < pS1End && *pS2 != '\0')
+				{
+				char chChar1 = strLowerCaseAbsolute(*pS1++);
+				char chChar2 = strLowerCaseAbsolute(*pS2++);
+
+				if (chChar1 > chChar2)
+					return -1;
+				else if (chChar1 < chChar2)
+					return 1;
+				}
+
+			//	If the strings match up to a point, check to see if we hit
+			//	the end of both.
+
+			if (*pS2 == '\0' && pS1 == pS1End)
+				return 0;
+			else if (*pS2 == '\0')
+				return -1;
+			else
+				return 1;
+			}
+	};
+
+template <class VALUE> struct TStaticStringEntry
+	{
+	const char *pszKey;
+	VALUE Value;
+	};
+
 //	Simple map classes
 
 template <class VALUE> class TStringMap : public TMap<CString, VALUE> { };
