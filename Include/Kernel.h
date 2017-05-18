@@ -1325,7 +1325,7 @@ CString strDelimitGet (const CString &sString, char cDelim, DWORD dwFlags, int i
 CString strCapitalize (const CString &sString, int iOffset = 0);
 CString strCapitalizeWords (const CString &sString);
 CString strCEscapeCodes (const CString &sString);
-CString strConvertToToken (const CString &sString);
+CString strConvertToToken (const CString &sString, bool bLowercase = false);
 CString strEncodeUTF8Char (DWORD dwCodePoint);
 CString strEncodeW1252ToUTF8Char (char chChar);
 bool strEndsWith (const CString &sString, const CString &sStringToFind);

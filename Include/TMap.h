@@ -616,7 +616,7 @@ template <class ENTRY, size_t N> class TStaticStringTable
 		bool FindPos (const CString &sKey, int *retiPos = NULL) const
 			{
 			char *pKey = sKey.GetASCIIZPointer();
-			char *pKeyEnd = pKey + sKey.GetASCIIZPointer();
+			char *pKeyEnd = pKey + sKey.GetLength();
 			return FindPos(pKey, pKeyEnd, retiPos);
 			}
 

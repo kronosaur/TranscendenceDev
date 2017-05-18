@@ -1699,7 +1699,7 @@ CString strCEscapeCodes (const CString &sString)
 	return sResult;
 	}
 
-CString strConvertToToken (const CString &sString)
+CString strConvertToToken (const CString &sString, bool bLowercase)
 
 //	strConvertToToken
 //
@@ -1715,7 +1715,12 @@ CString strConvertToToken (const CString &sString)
 	while (pSrc < pSrcEnd)
 		{
 		if (strIsAlphaNumeric(pSrc))
-			*pDest++ = *pSrc++;
+			{
+			if (bLowercase)
+				*pDest++ = (char)(DWORD)CharLower((LPTSTR)(BYTE)(*pSrc++));
+			else
+				*pDest++ = *pSrc++;
+			}
 		else
 			{
 			*pDest++ = '_';
