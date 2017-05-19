@@ -1462,7 +1462,18 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 		switch (iSpecial)
 			{
 			case specialArmor:
+			case specialBlinding:
+			case specialDeviceDamage:
+			case specialDeviceDisrupt:
+			case specialDisintegration:
+			case specialEMP:
+			case specialMining:
+			case specialMomentum:
+			case specialRadiation:
+			case specialShatter:
 			case specialShieldDisrupt:
+			case specialShieldPenetrator:
+			case specialWMD:
 				{
 				if (bDisadvantage)
 					{
