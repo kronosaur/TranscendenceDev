@@ -11,6 +11,7 @@
 #define DAMAGE_ADJ_ATTRIB						CONSTLIT("damageAdj")
 #define DAMAGE_ADJ_LEVEL_ATTRIB					CONSTLIT("damageAdjLevel")
 #define DEPLETION_DELAY_ATTRIB					CONSTLIT("depletionDelay")
+#define HAS_NON_REGEN_HP_ATTRIB					CONSTLIT("hasNonRegenHP")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
@@ -326,7 +327,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 		if (Ctx.iShieldDamage >= Ctx.iHPLeft)
 			SetDepleted(pDevice, pShip);
 		else
-			SetHPLeft(pDevice, Ctx.iHPLeft - Ctx.iShieldDamage);
+			SetHPLeft(pDevice, pShip, Ctx.iHPLeft - Ctx.iShieldDamage, true);
 
 		pShip->OnComponentChanged(comShields);
 		}
@@ -564,6 +565,8 @@ void CShieldClass::CalcMinMaxHP (CItemCtx &Ctx, int iCharges, int iArmorSegs, in
 
 	if (m_iExtraHPPerCharge)
 		iMax = Max(0, iMax + (m_iExtraHPPerCharge * iCharges));
+	else if (m_fHasNonRegenHPBonus)
+		iMax = Max(0, iMax + iCharges);
 
 	if (m_iArmorShield)
 		{
@@ -656,10 +659,14 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pShield->m_iArmorShield = pDesc->GetAttributeInteger(ARMOR_SHIELD_ATTRIB);
 	pShield->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
 	pShield->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pShield->m_iPowerUse / 2);
+
+	//	Charges
+
 	pShield->m_iExtraHPPerCharge = pDesc->GetAttributeInteger(HP_ADJ_PER_CHARGE_ATTRIB);
 	pShield->m_iExtraPowerPerCharge = pDesc->GetAttributeInteger(POWER_ADJ_PER_CHARGE_ATTRIB);
 	pShield->m_iExtraRegenPerCharge = pDesc->GetAttributeInteger(REGEN_ADJ_PER_CHARGE_ATTRIB);
 	pShield->m_iMaxCharges = pDesc->GetAttributeInteger(MAX_CHARGES_ATTRIB);
+	pShield->m_fHasNonRegenHPBonus = pDesc->GetAttributeBool(HAS_NON_REGEN_HP_ATTRIB);
 
 	//	Load regen value
 
@@ -1165,6 +1172,8 @@ int CShieldClass::GetMaxHP (CItemCtx &Ctx)
 
 	if (m_iExtraHPPerCharge)
 		iMax = Max(0, iMax + m_iExtraHPPerCharge * Ctx.GetDeviceCharges());
+	else if (m_fHasNonRegenHPBonus)
+		iMax = Max(0, iMax + Ctx.GetDeviceCharges());
 
 	//	Adjust if shield is based on armor strength
 
@@ -1231,7 +1240,7 @@ bool CShieldClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pIns
 	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
 
 	int iMinHP, iMaxHP;
-	CalcMinMaxHP(Ctx, m_iMaxCharges, 0, 0, &iMinHP, &iMaxHP);
+	CalcMinMaxHP(Ctx, pItem->GetCharges(), 0, 0, &iMinHP, &iMaxHP);
 
 	if (retiHP)
 		*retiHP = iMaxHP;
@@ -1472,11 +1481,19 @@ void CShieldClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 //	Called when the device is installed
 
 	{
-	CItemCtx Ctx(pSource, pDevice);
+	//	NOTE: We in the middle of CInstalledDevice::Install, and not all variables
+	//	are set. In particular, the device's m_pItem variable is not initialized yet,
+	//	so we pass in the item from the cursor (otherwise we might not get the proper
+	//	charges count).
+	//
+	//	LATER: see if we can reorder CInstalledDevice::Install to define m_pItem
+	//	first.
+
+	CItemCtx Ctx(&ItemList.GetItemAtCursor(), pSource, pDevice);
 
 	//	Set shields to max HP
 
-	SetHPLeft(pDevice, GetMaxHP(Ctx));
+	SetHPLeft(pDevice, pSource, GetMaxHP(Ctx));
 
 	//	Identified
 
@@ -1507,7 +1524,7 @@ void CShieldClass::Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatu
 
 	int iMaxHP = GetMaxHP(Ctx);
 	int iHPLeft = GetHPLeft(Ctx);
-	SetHPLeft(pDevice, Min(iMaxHP, iHPLeft + iStatus));
+	SetHPLeft(pDevice, pShip, Min(iMaxHP, iHPLeft + iStatus));
 	pShip->OnComponentChanged(comShields);
 	}
 
@@ -1536,7 +1553,7 @@ void CShieldClass::Reset (CInstalledDevice *pDevice, CSpaceObject *pSource)
 	//	Note: We do not call Deplete because we don't want to invoke the
 	//	OnShieldDown event
 
-	SetHPLeft(pDevice, 0);
+	SetHPLeft(pDevice, pSource, 0);
 	pSource->OnComponentChanged(comShields);
 	}
 
@@ -1549,6 +1566,9 @@ void CShieldClass::SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource
 	{
 	pDevice->SetData((DWORD)(-m_iDepletionTicks));
 
+	if (m_fHasNonRegenHPBonus)
+		pDevice->SetCharges(pSource, 0);
+
 	//	Fire event (We don't fire the event if we're disabled because we
 	//	don't want something like the Invincible deflector to disable the ship
 	//	if the shield is not enabled)
@@ -1557,13 +1577,18 @@ void CShieldClass::SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource
 		FireOnShieldDown(pDevice, pSource);
 	}
 
-void CShieldClass::SetHPLeft (CInstalledDevice *pDevice, int iHP)
+void CShieldClass::SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges)
 
 //	SetHPLeft
 //
 //	Sets HP left on shields
 
 	{
+	if (bConsumeCharges 
+			&& m_fHasNonRegenHPBonus 
+			&& iHP < pDevice->GetCharges(pSource))
+		pDevice->SetCharges(pSource, iHP);
+		
 	pDevice->SetData((DWORD)iHP);
 	}
 
@@ -1604,7 +1629,7 @@ bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 			int iHP = pValue->GetIntegerValue();
 			int iMaxHP = GetMaxHP(Ctx);
 
-			SetHPLeft(pDevice, Min(iMaxHP, iHP));
+			SetHPLeft(pDevice, pSource, Min(iMaxHP, iHP));
 			pSource->OnComponentChanged(comShields);
 			}
 		}
@@ -1651,7 +1676,7 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 			//	Note: We don't call SetDepleted because we don't want to fire the OnShieldDown
 			//	event. If necessary, we should add an OnDeviceDisabled event.
 
-			SetHPLeft(pDevice, 0);
+			SetHPLeft(pDevice, pSource, 0);
 			pSource->OnComponentChanged(comShields);
 			}
 
@@ -1705,9 +1730,17 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 						iRegenHP += 1;
 					}
 
+				//	If we have non-regenerating HP and we're below that level,
+				//	then bring it back up. This can happen when we disable and
+				//	re-enable a device.
+
+				if (m_fHasNonRegenHPBonus
+						&& iHPLeft + iRegenHP < pDevice->GetCharges(pSource))
+					iRegenHP = pDevice->GetCharges(pSource) - iHPLeft;
+
 				//	Regen
 
-				SetHPLeft(pDevice, min(iMaxHP, iHPLeft + iRegenHP));
+				SetHPLeft(pDevice, pSource, Min(iMaxHP, iHPLeft + iRegenHP));
 				pSource->OnComponentChanged(comShields);
 
 				//	Remember that we regenerated this turn (so that we can

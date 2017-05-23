@@ -150,13 +150,11 @@ int CItemCtx::GetDeviceCharges (void)
 //	Returns the number of charges for the device (or 0).
 
 	{
-	CSpaceObject *pSource = GetSource();
-	CInstalledDevice *pDevice = GetDevice();
-
-	if (pSource == NULL || pDevice == NULL)
+	const CItem &Item = GetItem();
+	if (Item.IsEmpty())
 		return 0;
 
-	return pDevice->GetCharges(pSource);
+	return Item.GetCharges();
 	}
 
 CDeviceClass *CItemCtx::GetDeviceClass(void)

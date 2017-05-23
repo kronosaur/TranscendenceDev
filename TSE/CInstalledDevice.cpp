@@ -681,6 +681,22 @@ int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
 	return ItemList.GetItemAtCursor().GetCharges();
 	}
 
+void CInstalledDevice::SetCharges (CSpaceObject *pSource, int iCharges)
+
+//	SetCharges
+//
+//	Sets charges to this value.
+
+	{
+	CShip *pShip = pSource->AsShip();
+	if (pShip == NULL)
+		return;
+
+	CItemListManipulator ItemList(pSource->GetItemList());
+	pShip->SetCursorAtDevice(ItemList, m_iDeviceSlot);
+	pShip->RechargeItem(ItemList, iCharges - ItemList.GetItemAtCursor().GetCharges());
+	}
+
 bool CInstalledDevice::SetEnabled (CSpaceObject *pSource, bool bEnabled)
 
 //	SetEnabled

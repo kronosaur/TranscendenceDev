@@ -426,7 +426,7 @@ class CShieldClass : public CDeviceClass
 		int GetMaxHP (CItemCtx &Ctx);
 		bool UpdateDepleted (CInstalledDevice *pDevice);
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
-		void SetHPLeft (CInstalledDevice *pDevice, int iHP);
+		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);
 
 		int m_iHitPoints;						//	Max HP
 		int m_iArmorShield;						//	If non-zero then this is the
@@ -447,6 +447,16 @@ class CShieldClass : public CDeviceClass
 		int m_iExtraHPPerCharge;				//	Extra HP for each point of charge
 		int m_iExtraPowerPerCharge;				//	Extra power use for each point of charge (1/10 megawatt)
 		int m_iExtraRegenPerCharge;				//	Extra regen/180 ticks per point of charge
+
+		DWORD m_fHasNonRegenHPBonus:1;			//	If TRUE, charges are non-regenerating HP
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+		DWORD m_dwSpare:24;
 
 		SEventHandlerDesc m_CachedEvents[evtCount];		//	Cached events
 

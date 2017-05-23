@@ -735,7 +735,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x080 short form of name\n"
 			"   0x100 actual name",
 
-			"vi",	0,	},
+			"vv",	0,	},
 
 		{	"itmGetPrice",					fnItemGet,		FN_ITEM_PRICE,
 			"(itmGetPrice item|type [currency]) -> price of a single item",
@@ -908,7 +908,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"fmtNoun",						fnFormat,		FN_NAME,
 			"(fmtNoun name nameFlags count formatFlags) -> string",
-			"siii",	0, },
+			"siiv",	0, },
 
 		{	"fmtNumber",					fnFormat,		FN_NUMBER,
 			"(fmtNumber value) -> string",
@@ -3943,6 +3943,9 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
 	//	Implement
 
@@ -3986,7 +3989,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CString sName = pArgs->GetElement(0)->GetStringValue();
 			DWORD dwNameFlags = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
 			int iCount = pArgs->GetElement(2)->GetIntegerValue();
-			DWORD dwFlags = (DWORD)pArgs->GetElement(3)->GetIntegerValue();
+			DWORD dwFlags = pCtx->AsNameFlags(pArgs->GetElement(3));
 
 			return pCC->CreateString(CLanguage::ComposeNounPhrase(sName, iCount, NULL_STR, dwNameFlags, dwFlags));
 			}

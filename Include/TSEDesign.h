@@ -3904,6 +3904,7 @@ class CInstalledDevice
 		inline void Reset (CSpaceObject *pShip) { m_pClass->Reset(this, pShip); }
 		inline void SelectFirstVariant (CSpaceObject *pSource) { m_pClass->SelectFirstVariant(pSource, this); }
 		inline void SelectNextVariant (CSpaceObject *pSource, int iDir = 1) { m_pClass->SelectNextVariant(pSource, this, iDir); }
+		void SetCharges (CSpaceObject *pSource, int iCharges);
 		void SetLastShot (CSpaceObject *pObj, int iIndex);
 		void SetLastShotCount (int iCount);
 		inline void SetTarget (CSpaceObject *pObj);
