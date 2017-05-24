@@ -99,8 +99,25 @@ bool ICCItem::GetBooleanAt (const CString &sKey)
 //	Returns a boolean value
 
 	{
-	ICCItem *pItem = GetElement(sKey);
-	return (pItem && !pItem->IsNil());
+	if (IsNil())
+		return false;
+	else if (IsIdentifier())
+		return strEquals(sKey, GetStringValue());
+	else if (IsList())
+		{
+		int i;
+		for (i = 0; i < GetCount(); i++)
+			{
+			if (strEquals(sKey, GetElement(i)->GetStringValue()))
+				return true;
+			}
+		return false;
+		}
+	else
+		{
+		ICCItem *pItem = GetElement(sKey);
+		return (pItem && !pItem->IsNil());
+		}
 	}
 
 ICCItem *ICCItem::GetElement (CCodeChain *pCC, int iIndex)
