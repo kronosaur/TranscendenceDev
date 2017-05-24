@@ -456,6 +456,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_HIT_SCAN					32
 #define FN_SYS_LIGHT_INTENSITY			33
 #define FN_SYS_INC_DATA					34
+#define FN_SYS_HIT_TEST					35
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -508,6 +509,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_RESOURCE_CREATE_IMAGE_DESC	1
 #define FN_RESOURCE_COLOR_BLEND			2
+#define FN_RESOURCE_GET_IMAGE_PROPERTY	3
 
 ICCItem *fnResourceGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -574,6 +576,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_REMOVE					CONSTLIT("remove")
 #define FIELD_ROTATION					CONSTLIT("rotation")
 #define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex")
+#define FIELD_SOURCE_ONLY				CONSTLIT("sourceOnly")
 #define FIELD_WIDTH						CONSTLIT("width")
 #define FIELD_WIDTH_VARIATION			CONSTLIT("widthVariation")
 
@@ -2575,6 +2578,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"ivv*",	0,	},
 
+		{	"sysHitTest",					fnSystemGet,	FN_SYS_HIT_TEST,
+			"(sysHitTest source pos [options]) -> obj or Nil\n\n"
+				
+			"options\n\n"
+				
+			"   'excludeWorlds\n"
+			"   'sourceOnly",
+
+			"iv*",	0,	},
+
 		{	"sysIncData",					fnSystemGet,	FN_SYS_INC_DATA,
 			"(sysIncData [nodeID] attrib increment) -> new value",
 			"s*",	PPFLAG_SIDEEFFECTS,	},
@@ -2972,6 +2985,16 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"resCreateImageDesc",			fnResourceGet,	FN_RESOURCE_CREATE_IMAGE_DESC,
 			"(resCreateImageDesc imageUNID x y width height) -> imageDesc",
 			"iiiii",	0,	},
+
+		{	"resGetImageProperty",			fnResourceGet,	FN_RESOURCE_GET_IMAGE_PROPERTY,
+			"(resGetImageProperty imageDesc property) -> value\n\n"
+			
+			"property\n\n"
+			
+			"   'height\n"
+			"   'width",
+
+			"vs",	0,	},
 
 		//	Universe functions
 		//	----------------
@@ -8206,6 +8229,14 @@ ICCItem *fnResourceGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	For now, image descs are pretty simple
 			return pArgs->Reference();
 
+		case FN_RESOURCE_GET_IMAGE_PROPERTY:
+			{
+			ICCItem *pImageDesc = pArgs->GetElement(0);
+			CString sProperty = pArgs->GetElement(1)->GetStringValue();
+
+			return GetImageDescProperty(*pCC, pImageDesc, sProperty);
+			}
+
 		default:
 			ASSERT(FALSE);
 		}
@@ -11586,7 +11617,9 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Create a list
 
 			ICCItem *pResult = pCC->CreateLinkedList();
-			pResult->AppendInteger(*pCC, (int)pHitObj);
+			ICCItem *pObjItem = ::CreateObjPointer(*pCC, pHitObj);
+			pResult->Append(*pCC, pObjItem);
+			pObjItem->Discard(pCC);
 
 			ICCItem *pVector = CreateListFromVector(*pCC, vHitPos);
 			pResult->Append(*pCC, pVector);
@@ -11595,6 +11628,50 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pResult;
+			}
+
+		case FN_SYS_HIT_TEST:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			//	Source
+
+			int iArg = -1;
+			CSpaceObject *pSource = NULL;
+			pSource = CreateObjFromItem(*pCC, pArgs->GetElement(++iArg));
+
+			//	Get the position
+
+			CVector vPos;
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(++iArg), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(iArg));
+
+			//	Options
+
+			bool bSourceOnly = false;
+			bool bExcludeWorlds = false;
+			if (pArgs->GetCount() >= 2)
+				{
+				ICCItem *pOptions = pArgs->GetElement(++iArg);
+				bSourceOnly = pOptions->GetBooleanAt(FIELD_SOURCE_ONLY);
+				bExcludeWorlds = pOptions->GetBooleanAt(FIELD_EXCLUDE_WORLDS);
+				}
+
+			//	If we only care about the source, then just test it.
+
+			if (bSourceOnly)
+				{
+				if (pSource && pSource->PointInObject(pSource->GetPos(), vPos))
+					return ::CreateObjPointer(*pCC, pSource);
+				else
+					return pCC->CreateNil();
+				}
+
+			//	Hit test
+
+			return ::CreateObjPointer(*pCC, pSystem->HitTest(pSource, vPos, bExcludeWorlds));
 			}
 
 		case FN_SYS_RANDOM_LOCATION:

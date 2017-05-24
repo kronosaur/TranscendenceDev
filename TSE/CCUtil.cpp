@@ -12,6 +12,9 @@
 
 #define FIELD_GAUSSIAN					CONSTLIT("gaussian")
 
+#define PROPERTY_HEIGHT					CONSTLIT("height")
+#define PROPERTY_WIDTH					CONSTLIT("width")
+
 Metric CalcRandomMetric (CCodeChain &CC, ICCItem *pItem)
 
 //	CalcRandomMetric
@@ -792,6 +795,32 @@ void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBi
 	retrcRect->top = pList->GetElement(2)->GetIntegerValue();
 	retrcRect->right = retrcRect->left + pList->GetElement(3)->GetIntegerValue();
 	retrcRect->bottom = retrcRect->top + pList->GetElement(4)->GetIntegerValue();
+	}
+
+ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CString &sProperty)
+
+//	GetImageDescProperty
+//
+//	Returns a property. Callers must discard.
+
+	{
+	if (pImageDesc->GetCount() < 5)
+		return CC.CreateError(CONSTLIT("Invalid imageDesc"), pImageDesc);
+
+	if (strEquals(sProperty, PROPERTY_HEIGHT))
+		{
+		int yTop = pImageDesc->GetElement(2)->GetIntegerValue();
+		int yBottom = pImageDesc->GetElement(4)->GetIntegerValue();
+		return CC.CreateInteger(yBottom - yTop);
+		}
+	else if (strEquals(sProperty, PROPERTY_WIDTH))
+		{
+		int xLeft = pImageDesc->GetElement(1)->GetIntegerValue();
+		int xRight = pImageDesc->GetElement(3)->GetIntegerValue();
+		return CC.CreateInteger(xRight - xLeft);
+		}
+	else
+		return CC.CreateNil();
 	}
 
 CItem GetItemFromArg (CCodeChain &CC, ICCItem *pArg)

@@ -2644,6 +2644,7 @@ CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem);
 CEconomyType *GetEconomyTypeFromString (const CString &sCurrency);
 ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNID);
 void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
+ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CString &sProperty);
 CItem GetItemFromArg (CCodeChain &CC, ICCItem *pArg);
 CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg);
 bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsError);

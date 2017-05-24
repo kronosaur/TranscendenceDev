@@ -3110,6 +3110,41 @@ CSpaceObject *CSystem::HitScan (CSpaceObject *pExclude, const CVector &vStart, c
 	return pHitObj;
 	}
 
+CSpaceObject *CSystem::HitTest (CSpaceObject *pExclude, const CVector &vPos, bool bExcludeWorlds)
+
+//	HitTest
+//
+//	Return the object at the given position (if any).
+
+	{
+	SSpaceObjectGridEnumerator i;
+	EnumObjectsInBoxStart(i, vPos, LIGHT_SECOND);
+
+	while (EnumObjectsInBoxHasMore(i))
+		{
+		CSpaceObject *pObj = EnumObjectsInBoxGetNext(i);
+
+		//	Skip objects we don't care about
+
+		if (pObj->IsDestroyed()
+				|| pObj == pExclude
+				|| pObj->IsIntangible()
+				|| (bExcludeWorlds
+					&& pObj->GetScale() != scaleStructure 
+					&& pObj->GetScale() != scaleShip))
+			continue;
+
+		//	See if the point is on this object.
+
+		if (pObj->PointInObject(pObj->GetPos(), vPos))
+			return pObj;
+		}
+
+	//	If we get this far, no objects
+
+	return NULL;
+	}
+
 void CSystem::InitSpaceEnvironment (void) const
 
 //	InitSpaceEnvironment
