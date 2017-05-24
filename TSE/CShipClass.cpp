@@ -686,6 +686,30 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 	return rTotalDamageRate;
 	}
 
+int CShipClass::CalcDefaultSize (const CObjectImageArray &Image)
+
+//	CalcDefaultSize
+//
+//	Computes the size of the ship (in meters) based on the image size.
+
+	{
+	const Metric K0 = 0.2;
+	const Metric K1 = 1.0 / 0.68;
+
+	//	Start with the size of the frame in pixels. Adjust a little because 
+	//	ships don't usually go out to the edge.
+
+	Metric rPixelSize = 0.8 * (Metric)Image.GetImageWidth();
+
+	//	Convert to meters using our standard scale
+
+	Metric rMeterSize = pow(K0 * rPixelSize, K1);
+
+	//	Done
+
+	return (int)mathRound(rMeterSize);
+	}
+
 Metric CShipClass::CalcDefenseRate (void) const
 
 //	CalcDefenseRate
@@ -1950,7 +1974,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_MAX_STRUCTURAL_HP))
 		*retsValue = strFromInt(m_Interior.GetHitPoints());
 	else if (strEquals(sField, FIELD_NAME))
-		*retsValue = GetNounPhrase(0x00);
+		*retsValue = GetNounPhrase(nounGeneric);
 	else if (strEquals(sField, FIELD_PLAYER_DESC))
 		{
 		const CPlayerSettings *pPlayer = GetPlayerSettings();
@@ -3577,9 +3601,17 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		CItem::InitCriteriaAll(&m_DeviceCriteria);
 
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
-	m_iSize = pDesc->GetAttributeIntegerBounded(SIZE_ATTRIB, 1, -1, 0);
 	m_iMaxCargoSpace = Max(m_CargoDesc.GetCargoSpace(), pDesc->GetAttributeInteger(MAX_CARGO_SPACE_ATTRIB));
 	m_iMaxReactorPower = pDesc->GetAttributeInteger(MAX_REACTOR_POWER_ATTRIB);
+
+	//	Ship size
+
+	m_iSize = pDesc->GetAttributeIntegerBounded(SIZE_ATTRIB, 1, -1, 0);
+
+	//	If 0 size, come up with a reasonable default based on image size.
+
+	if (m_iSize == 0 && !m_Image.IsEmpty())
+		m_iSize = CalcDefaultSize(GetImage());
 
 	//	Maneuvering and speed
 

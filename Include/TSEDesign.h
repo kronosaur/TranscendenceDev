@@ -1964,6 +1964,7 @@ class CShipClass : public CDesignType
 		inline int GetScore (void) { return m_iScore; }
 		inline DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
 		CString GetShortName (void) const;
+		inline int GetSize (void) const { return m_iSize; }
 		inline const CString &GetClassName (void) const { return m_sName; }
 		inline const CString &GetManufacturerName (void) const { return m_sManufacturer; }
 		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
@@ -2094,6 +2095,8 @@ class CShipClass : public CDesignType
 						int iDirection, 
 						int iTick,
 						bool bInFrontOnly);
+
+		static int CalcDefaultSize (const CObjectImageArray &Image);
 
 		CString m_sManufacturer;				//	Name of manufacturer
 		CString m_sName;						//	Class name

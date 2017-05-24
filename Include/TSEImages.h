@@ -148,13 +148,15 @@ class CObjectImageArray
 		CString GetFilename (void) const;
 		inline int GetFrameCount (void) const { return m_iFrameCount; }
 		inline CG32bitImage &GetImage (const CString &sLoadReason) const { CG32bitImage *pBmp = (m_pImage ? m_pImage->GetImage(sLoadReason) : NULL); return (pBmp ? *pBmp : m_NullImage); }
+		inline int GetImageHeight (void) const { return RectHeight(m_rcImage); }
 		inline const RECT &GetImageRect (void) const { return m_rcImage; }
 		RECT GetImageRect (int iTick, int iRotation, int *retxCenter = NULL, int *retyCenter = NULL) const;
 		RECT GetImageRectAtPoint (int x, int y) const;
-		int GetImageViewportSize (void) const;
 		bool GetImageOffset (int iTick, int iRotation, int *retx, int *rety) const;
 		inline int GetRotationCount (void) const { return m_iRotationCount; }
 		inline int GetTicksPerFrame (void) const { return m_iTicksPerFrame; }
+		int GetImageViewportSize (void) const;
+		inline int GetImageWidth (void) const { return RectWidth(m_rcImage); }
 		inline bool HasAlpha (void) const { return (m_pImage ? m_pImage->HasAlpha() : false); }
 		bool ImagesIntersect (int iTick, int iRotation, int x, int y, const CObjectImageArray &Image2, int iTick2, int iRotation2) const;
 		inline bool IsEmpty (void) const { return ((m_pImage == NULL) && (m_dwBitmapUNID == 0)); }
