@@ -583,7 +583,6 @@ class CWeaponClass : public CDeviceClass
 		virtual ~CWeaponClass (void);
 
 		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
-		bool ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
 		inline bool FindEventHandlerWeaponClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
         CItemType *GetAmmoItem (int iIndex) const;
         int GetAmmoItemCount (void) const;
@@ -710,6 +709,9 @@ class CWeaponClass : public CDeviceClass
 		int CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject *pTarget, bool *retbOutOfArc);
         int CalcLevel (CWeaponFireDesc *pShot) const;
         int CalcRotateRange (CItemCtx &ItemCtx) const;
+		bool ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount, bool *retbConsumed);
+		bool ConsumeCapacitor (CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
+		void FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, bool *retbSourceDestroyed);
 		EOnFireWeaponResults FireOnFireWeapon (CItemCtx &ItemCtx, 
 											   CWeaponFireDesc *pShot,
 											   const CVector &vSource,
@@ -734,6 +736,7 @@ class CWeaponClass : public CDeviceClass
 		inline bool IsLauncherWithAmmo (void) const { return (IsLauncher() && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool IsOmniDirectional (CInstalledDevice *pDevice);
 		inline bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
+		bool UpdateTemperature (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed);
 		inline bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool VariantIsValid (CSpaceObject *pSource, CInstalledDevice *pDevice, CWeaponFireDesc &ShotData);
 
@@ -776,7 +779,12 @@ class CWeaponClass : public CDeviceClass
 
 		bool m_bTargetStationsOnly;				//	Do not target ships
 
+		CFailureDesc m_DamageFailure;			//	Failure mode when damaged/disrupted
+		CFailureDesc m_OverheatFailure;
+
 		SEventHandlerDesc m_CachedEvents[evtCount];	//	Cached events
+
+		static CFailureDesc g_DefaultFailure;
 
 	friend CObjectClass<CWeaponClass>;
 	};

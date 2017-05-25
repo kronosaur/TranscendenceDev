@@ -576,6 +576,44 @@ enum DeviceNames
 	devNamesCount = 12
 	};
 
+class CFailureDesc
+	{
+	public:
+		enum EProfile
+			{
+			profileNone,
+
+			profileWeaponFailure,
+			profileWeaponOverheat,
+			};
+
+		enum EFailureTypes
+			{
+			failError =				-1,
+			failNone =				0,
+
+			failExplosion =			1,
+			failHeatDamage =		2,
+			failJammed =			3,
+			failMisfire =			4,
+			failSafeMode =			5,		//	Device disabled
+
+			failCustom =			6,		//	Fire OnFailure event
+			};
+
+		CFailureDesc (EProfile iProfile = profileNone);
+
+		EFailureTypes Failure (CSpaceObject *pSource, CInstalledDevice *pDevice) const;
+		ALERROR InitFromDefaults (EProfile iDefault);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, EProfile iDefault = profileNone);
+		inline bool IsEmpty (void) const { return (m_FailTable.GetCount() == 0); }
+
+		static EFailureTypes ParseFailureType (const CString &sValue);
+
+	private:
+		TProbabilityTable<EFailureTypes> m_FailTable;
+	};
+
 class CDeviceClass
 	{
 	public:
@@ -596,6 +634,7 @@ class CDeviceClass
 			failDeviceHitByDamage,
 			failDeviceHitByDisruption,
 			failDeviceOverheat,
+			failDeviceDisabledByOverheat,
 			failShieldFailure,
 			failWeaponExplosion,
 			failWeaponJammed,

@@ -5,7 +5,9 @@
 #include "PreComp.h"
 
 #define CONFIGURATION_TAG						CONSTLIT("Configuration")
+#define DAMAGE_FAILURE_TAG						CONSTLIT("DamageFailure")
 #define MISSILES_TAG							CONSTLIT("Missiles")
+#define OVERHEAT_FAILURE_TAG					CONSTLIT("OverheatFailure")
 #define VARIANTS_TAG							CONSTLIT("Variants")
 
 #define AIM_TOLERANCE_ATTRIB					CONSTLIT("aimTolerance")
@@ -203,6 +205,8 @@ static char *CACHED_EVENTS[CWeaponClass::evtCount] =
 	{
 		"OnFireWeapon",
 	};
+
+CFailureDesc CWeaponClass::g_DefaultFailure(CFailureDesc::profileWeaponFailure);
 
 CWeaponClass::CWeaponClass (void) : 
 		m_pConfig(NULL),
@@ -1257,14 +1261,23 @@ bool CWeaponClass::CanRotate (CItemCtx &Ctx, int *retiMinFireArc, int *retiMaxFi
 		return false;
 	}
 
-bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
+bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount, bool *retbConsumed)
 
 //	ConsumeAmmo
 //
 //	Consumes ammunition from the source. Returns TRUE if we were able to consume
 //	all ammo. If no ammo needs to be consumed, we still return TRUE.
+//
+//	retbConsumed is set to TRUE if we consumed either ammo or charges.
 
 	{
+	//	Default to no consumption.
+
+	if (retbConsumed)
+		*retbConsumed = false;
+
+	//	Get source and device
+
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	if (pSource == NULL)
 		return false;
@@ -1272,6 +1285,46 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
 	if (pDevice == NULL)
 		return false;
+
+	//	For repeating weapons, we check at the beginning and consume at the end.
+	
+	if (pShot->GetContinuous() > 0)
+		{
+		if (iRepeatingCount == 0)
+			{
+			//	If ammo items...
+
+			if (pShot->GetAmmoType())
+				{
+				CItemListManipulator ItemList(pSource->GetItemList());
+				CItem Item(pShot->GetAmmoType(), 1);
+				if (!ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
+					return false;
+				}
+
+			//	If charges...
+
+			else if (m_bCharges)
+				{
+				if (pDevice->GetCharges(pSource) <= 0)
+					return false;
+				}
+
+			//	We don't consume yet
+
+			return true;
+			}
+		else if (iRepeatingCount != pShot->GetContinuous())
+			{
+			//	We don't consume until the last shot.
+
+			return true;
+			}
+
+		//	Fall through and consume ammo
+		}
+
+	//	Check based on the type of ammo
 
 	bool bNextVariant = false;
 	if (pShot->GetAmmoType())
@@ -1325,6 +1378,11 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
 
 			ItemList.DeleteAtCursor(1);
 			}
+
+		//	We consumed an item
+
+		if (retbConsumed)
+			*retbConsumed = true;
 		}
 	else if (m_bCharges)
 		{
@@ -1336,6 +1394,8 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
 		//	Consume charges
 
 		pDevice->IncCharges(pSource, -1);
+		if (retbConsumed)
+			*retbConsumed = true;
 		}
 
 	//	Switch to the next variant if necessary
@@ -1344,6 +1404,37 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
 		pSource->OnDeviceStatus(pDevice, statusUsedLastAmmo);
 
 	//	Success!
+
+	return true;
+	}
+
+bool CWeaponClass::ConsumeCapacitor (CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
+
+//	ConsumeCapacitor
+//
+//	If we have enough capacitor power, we consume it and return TRUE. Otherwise,
+//	we return FALSE.
+
+	{
+	//	Get source and device
+
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	if (pSource == NULL)
+		return false;
+
+	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	if (pDevice == NULL)
+		return false;
+
+	//	If we don't have enough capacitor power, then we can't fire
+
+	if (pDevice->GetTemperature() < m_iCounterActivate)
+		return false;
+
+	//	Consume capacitor
+
+	pDevice->IncTemperature(m_iCounterActivate);
+	pSource->OnComponentChanged(comDeviceCounter);
 
 	return true;
 	}
@@ -1476,6 +1567,21 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	else
 		pWeapon->m_dwLinkedFireOptions = 0;
 
+	//	Failure modes.
+
+	CXMLElement *pFailure = pDesc->GetContentElementByTag(DAMAGE_FAILURE_TAG);
+	if (pFailure)
+		{
+		if (error = pWeapon->m_DamageFailure.InitFromXML(Ctx, pFailure))
+			return error;
+		}
+
+	if (pWeapon->m_Counter == cntTemperature)
+		{
+		if (error = pWeapon->m_OverheatFailure.InitFromXML(Ctx, pDesc->GetContentElementByTag(OVERHEAT_FAILURE_TAG), CFailureDesc::profileWeaponOverheat))
+			return error;
+		}
+
 	//	Initialize the variants, whether from missiles, level scaling, or 
 	//	charges.
 
@@ -1487,6 +1593,40 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	*retpWeapon = pWeapon;
 
 	return NOERROR;
+	}
+
+void CWeaponClass::FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, bool *retbSourceDestroyed)
+
+//	FailureExplosion
+//
+//	Weapon explodes.
+
+	{
+	//	Get source and device
+
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	if (pSource == NULL || pSource->IsDestroyed())
+		return;
+
+	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	if (pDevice == NULL)
+		return;
+
+	SDamageCtx Ctx;
+	Ctx.pObj = pSource;
+	Ctx.pDesc = pShot;
+	Ctx.Damage = pShot->GetDamage();
+	Ctx.Damage.SetCause(killedByWeaponMalfunction);
+	Ctx.iDirection = (pDevice->GetPosAngle() + 360 + mathRandom(0, 30) - 15) % 360;
+	Ctx.vHitPos = pDevice->GetPos(pSource);
+	Ctx.pCause = pSource;
+	Ctx.Attacker = CDamageSource(pSource, killedByWeaponMalfunction);
+
+	EDamageResults iResult = pSource->Damage(Ctx);
+
+	if (iResult == damageDestroyed 
+			|| iResult == damagePassthroughDestroyed)
+		*retbSourceDestroyed = true;
 	}
 
 bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const
@@ -1708,6 +1848,78 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	int i;
     CItemCtx ItemCtx(pSource, pDevice);
 
+	//	Pre-init
+
+	if (retbSourceDestroyed)
+		*retbSourceDestroyed = false;
+
+	//	There are various ways in which we can fail.
+
+	CFailureDesc::EFailureTypes iFailureMode = CFailureDesc::failNone;
+
+	//	See if we have enough ammo/charges to proceed. If we don't then we 
+	//	cannot continue.
+
+	if (!ConsumeAmmo(ItemCtx, pShot, iRepeatingCount, retbConsumedItems))
+		return false;
+
+	//	Update capacitor counters
+
+	if (m_Counter == cntCapacitor)
+		{
+		if (!ConsumeCapacitor(ItemCtx, pShot))
+			return false;
+		}
+
+	//	Update temperature counters
+
+	else if (m_Counter == cntTemperature)
+		{
+		if (!UpdateTemperature(ItemCtx, pShot, &iFailureMode, retbSourceDestroyed))
+			//	We return TRUE because we always consume energy, regardless of
+			//	outcome.
+			return true;
+		}
+
+	//	If we're damaged, disabled, or badly designed, we have a chance of 
+	//	failure.
+
+	if (pDevice->IsDamaged()
+			|| pDevice->IsDisrupted()
+			|| (m_iFailureChance > 0
+				&& (mathRandom(1, 100) <= m_iFailureChance)))
+		{
+		const CFailureDesc &DamageFailure = (m_DamageFailure.IsEmpty() ? g_DefaultFailure : m_DamageFailure);
+		CFailureDesc::EFailureTypes iDamageFailure = DamageFailure.Failure(pSource, pDevice);
+		switch (iDamageFailure)
+			{
+			case CFailureDesc::failNone:
+				break;
+
+			case CFailureDesc::failExplosion:
+				FailureExplosion(ItemCtx, pShot, retbSourceDestroyed);
+				return true;
+
+			case CFailureDesc::failMisfire:
+				iFailureMode = CFailureDesc::failMisfire;
+				break;
+
+			//	For other failure modes, nothing happens (but we still consume power).
+
+			default:
+				return true;
+			}
+		}
+
+	//	If some energy field on the ship prevents us from firing, then we're 
+	//	done.
+
+	if (pSource->AbsorbWeaponFire(pDevice))
+		return true;
+
+	//	After this point, we will always fire a shot. iFailureMode is either 
+	//	failNone or failMisfire.
+
 	//	Figure out the source of the shot
 
 	CVector vSource = pDevice->GetPos(pSource);
@@ -1737,148 +1949,9 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 		iFireAngle = CalcFireAngle(ItemCtx, rSpeed, pTarget, &bOutOfArc);
 		}
 
-	//	Pre-init
+	//	If we're misfiring, then we change the fire angle
 
-	if (retbConsumedItems)
-		*retbConsumedItems = false;
-	if (retbSourceDestroyed)
-		*retbSourceDestroyed = false;
-
-	//	Figure out if fire is suppressed by some other object
-	//	on the source
-
-	bool bFireSuppressed = pSource->AbsorbWeaponFire(pDevice);
-
-	//	If we're prone to failure, then bad things happen
-
-	bool bFailure = false;
-	if (m_iFailureChance > 0)
-		{
-		if (mathRandom(1, 100) <= m_iFailureChance)
-			bFailure = true;
-		}
-
-	//	If we're damaged, figure out what bad things happen
-
-	if (pDevice->IsDamaged() || pDevice->IsDisrupted())
-		bFailure = true;
-
-	bool bMisfire = false;
-	bool bExplosion = false;
-	if (bFailure)
-		{
-		int iRoll = mathRandom(1, 100);
-
-		//	10% of the time, everything works OK
-
-		if (iRoll <= 10)
-			;
-
-		//	60% of the time, nothing happens
-
-		else if (iRoll <= 70)
-			{
-			pSource->OnDeviceStatus(pDevice, failWeaponJammed);
-
-			//	Still counts--we should consume power
-
-			return true;
-			}
-
-		//	20% of the time, we fire in a random direction
-
-		else if (iRoll <= 90)
-			{
-			bMisfire = true;
-			pSource->OnDeviceStatus(pDevice, failWeaponMisfire);
-			}
-
-		//	10% of the time, the shot explodes
-
-		else
-			{
-			bExplosion = true;
-			bFireSuppressed = true;
-			pSource->OnDeviceStatus(pDevice, failWeaponExplosion);
-			}
-		}
-
-	//	Deal with counter
-
-	switch (m_Counter)
-		{
-		case cntTemperature:
-			{
-			if (pDevice->GetTemperature() >= OVERHEAT_TEMP)
-				{
-				if (pDevice->GetTemperature() >= MAX_TEMP)
-					{
-					pSource->OnDeviceStatus(pDevice, failWeaponJammed);
-
-					//	Still counts--consume power
-
-					return true;
-					}
-				else
-					{
-					int iRoll = mathRandom(1, 100);
-
-					//	25% of the time, everything works OK
-
-					if (iRoll <= 25)
-						;
-
-					//	25% of the time, the weapon jams
-
-					else if (iRoll <= 50)
-						{
-						pSource->OnDeviceStatus(pDevice, failWeaponJammed);
-						return true;
-						}
-
-					//	25% of the time, the weapon is disabled
-
-					else if (iRoll <= 75)
-						{
-						pSource->DisableDevice(pDevice);
-						return true;
-						}
-
-					//	25% of the time, the weapon is damaged
-
-					else
-						{
-						pSource->DamageItem(pDevice);
-						pSource->OnDeviceStatus(pDevice, failDeviceOverheat);
-						}
-					}
-				}
-
-			//	Update temperature
-
-			pDevice->IncTemperature(m_iCounterActivate);
-			pSource->OnComponentChanged(comDeviceCounter);
-			break;
-			}
-
-		case cntCapacitor:
-			{
-			//	If we don't have enough capacitor power, then we can't fire
-
-			if (pDevice->GetTemperature() < m_iCounterActivate)
-				return false;
-
-			//	Consume capacitor
-
-			pDevice->IncTemperature(m_iCounterActivate);
-			pSource->OnComponentChanged(comDeviceCounter);
-			break;
-			}
-		}
-
-	//	If this is a misfire, adjust the angle
-
-	if (bMisfire)
+	if (iFailureMode == CFailureDesc::failMisfire)
 		iFireAngle = (iFireAngle + mathRandom(-60, 60) + 360) % 360;
 
 	//	Figure out how many shots to create
@@ -1940,174 +2013,126 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
             }
 		}
 
-	//	If the shot requires ammo, check to see that the source has
-	//	enough ammo for all shots
-
-	if (iRepeatingCount == 0)
-		{
-		if (!HasAmmoLeft(ItemCtx, pShot))
-			return false;
-		}
-
 	//	Create barrel flash effect
 
-	if (!bFireSuppressed)
-		{
-		for (i = 0; i < iShotCount; i++)
-			pShot->CreateFireEffect(pSource->GetSystem(), pSource, ShotPos[i], CVector(), ShotDir[i]);
-		}
+	for (i = 0; i < iShotCount; i++)
+		pShot->CreateFireEffect(pSource->GetSystem(), pSource, ShotPos[i], CVector(), ShotDir[i]);
 
 	//	Create all the shots
 
 	CVector vRecoil;
-	if (!bFireSuppressed)
+	bool bNoShotsFired = true;
+
+	if (pShot->GetFireType() == ftContinuousBeam && !pDevice->HasLastShots())
+		pDevice->SetLastShotCount(iShotCount);
+
+	for (i = 0; i < iShotCount; i++)
 		{
-		bool bNoShotsFired = true;
+		//	Fire out to event, if the weapon has one.
+		//	Otherwise, we create weapon fire
 
-		if (pShot->GetFireType() == ftContinuousBeam && !pDevice->HasLastShots())
-			pDevice->SetLastShotCount(iShotCount);
+		EOnFireWeaponResults iResult;
+		iResult = FireOnFireWeapon(ItemCtx, 
+				pShot, 
+				ShotPos[i], 
+				(m_bMIRV ? MIRVTarget[i] : pTarget),
+				ShotDir[i], 
+				iRepeatingCount);
 
-		for (i = 0; i < iShotCount; i++)
+		//	Did we destroy the source?
+
+		if (pSource->IsDestroyed())
+			*retbSourceDestroyed = true;
+
+		//	If we didn't fire a shot in the event handler, do it now
+
+		if (iResult == resDefault)
 			{
-			//	Fire out to event, if the weapon has one.
-			//	Otherwise, we create weapon fire
+			CSpaceObject *pNewObj;
+			CDamageSource Source(pSource, killedByDamage);
 
-			EOnFireWeaponResults iResult;
-			iResult = FireOnFireWeapon(ItemCtx, 
-					pShot, 
-					ShotPos[i], 
-					(m_bMIRV ? MIRVTarget[i] : pTarget),
-					ShotDir[i], 
-					iRepeatingCount);
+			//	Flags for the type of shot
 
-			//	Did we destroy the source?
+			DWORD dwFlags = 0;
+			if (i != 0)
+				dwFlags = CSystem::CWF_FRAGMENT;
+			else
+				dwFlags = CSystem::CWF_WEAPON_FIRE;
 
-			if (pSource->IsDestroyed())
-				*retbSourceDestroyed = true;
+			if (iRepeatingCount != 0)
+				dwFlags |= CSystem::CWF_REPEAT;
 
-			//	If we didn't fire a shot in the event handler, do it now
+			//	If this is a continuous beam, then we need special code.
 
-			if (iResult == resDefault)
+			if (pShot->GetFireType() == ftContinuousBeam
+					&& (pNewObj = pDevice->GetLastShot(pSource, i))
+					&& (pShot->IsCurvedBeam() || pNewObj->GetRotation() == ShotDir[i]))
 				{
-				CSpaceObject *pNewObj;
-				CDamageSource Source(pSource, killedByDamage);
+				pNewObj->AddContinuousBeam(ShotPos[i],
+						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
+						ShotDir[i]);
 
-				//	Flags for the type of shot
+				//	Fire system events, which are normally fired inside CreateWeaponFireDesc
 
-				DWORD dwFlags = 0;
-				if (i != 0)
-					dwFlags = CSystem::CWF_FRAGMENT;
-				else
-					dwFlags = CSystem::CWF_WEAPON_FIRE;
-
-				if (iRepeatingCount != 0)
-					dwFlags |= CSystem::CWF_REPEAT;
-
-				//	If this is a continuous beam, then we need special code.
-
-				if (pShot->GetFireType() == ftContinuousBeam
-						&& (pNewObj = pDevice->GetLastShot(pSource, i))
-						&& (pShot->IsCurvedBeam() || pNewObj->GetRotation() == ShotDir[i]))
-					{
-					pNewObj->AddContinuousBeam(ShotPos[i],
-							pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
-							ShotDir[i]);
-
-					//	Fire system events, which are normally fired inside CreateWeaponFireDesc
-
-					pSource->GetSystem()->FireSystemWeaponEvents(pNewObj, pShot, Source, iRepeatingCount, dwFlags);
-					}
-
-				//	Otherwise, create a shot
-
-				else
-					{
-					pSource->GetSystem()->CreateWeaponFire(pShot,
-							pDevice->GetEnhancements(),
-							Source,
-							ShotPos[i],
-							pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
-							ShotDir[i],
-							iRepeatingCount,
-							(m_bMIRV ? MIRVTarget[i] : pTarget),
-							dwFlags,
-							&pNewObj);
-
-					//	If this shot was created by automated weapon fire, then set flag
-
-					if (pDevice->IsAutomatedWeapon())
-						pNewObj->SetAutomatedWeapon();
-
-					//	Remember the shot, if necessary
-
-					if (pShot->GetFireType() == ftContinuousBeam)
-						pDevice->SetLastShot(pNewObj, i);
-					}
-
-				bNoShotsFired = false;
+				pSource->GetSystem()->FireSystemWeaponEvents(pNewObj, pShot, Source, iRepeatingCount, dwFlags);
 				}
 
-			//	This result means that OnFireWeapon fired a shot
+			//	Otherwise, create a shot
 
-			else if (iResult == resShotFired)
-				bNoShotsFired = false;
+			else
+				{
+				pSource->GetSystem()->CreateWeaponFire(pShot,
+						pDevice->GetEnhancements(),
+						Source,
+						ShotPos[i],
+						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
+						ShotDir[i],
+						iRepeatingCount,
+						(m_bMIRV ? MIRVTarget[i] : pTarget),
+						dwFlags,
+						&pNewObj);
 
-			//	Add up all the shot directions to end up with a recoil dir
+				//	If this shot was created by automated weapon fire, then set flag
 
-			if (m_iRecoil && iResult != resNoShot)
-				vRecoil = vRecoil + PolarToVector(ShotDir[i], 1.0);
+				if (pDevice->IsAutomatedWeapon())
+					pNewObj->SetAutomatedWeapon();
+
+				//	Remember the shot, if necessary
+
+				if (pShot->GetFireType() == ftContinuousBeam)
+					pDevice->SetLastShot(pNewObj, i);
+				}
+
+			bNoShotsFired = false;
 			}
 
-		//	If no shots were fired, then we're done
+		//	This result means that OnFireWeapon fired a shot
 
-		if (bNoShotsFired)
-			return false;
+		else if (iResult == resShotFired)
+			bNoShotsFired = false;
+
+		//	Add up all the shot directions to end up with a recoil dir
+
+		if (m_iRecoil && iResult != resNoShot)
+			vRecoil = vRecoil + PolarToVector(ShotDir[i], 1.0);
 		}
 
-	//	Consume ammo
+	//	If no shots were fired, then we're done
 
-	if (iRepeatingCount == pShot->GetContinuous())
-		{
-		if (ConsumeAmmo(ItemCtx, pShot))
-			{
-			if (retbConsumedItems)
-				*retbConsumedItems = true;
-			}
-		}
+	if (bNoShotsFired)
+		return false;
 
 	//	Sound effect
 
-	if (!bFireSuppressed)
-		pShot->PlayFireSound(pSource);
+	pShot->PlayFireSound(pSource);
 
 	//	Recoil
 
-	if (!bFireSuppressed && m_iRecoil)
+	if (m_iRecoil)
 		{
 		CVector vAccel = vRecoil.Normal() * (Metric)(-10 * m_iRecoil * m_iRecoil);
 		pSource->Accelerate(vAccel, g_MomentumConstant);
 		pSource->ClipSpeed(pSource->GetMaxSpeed());
-		}
-
-	//	Create an explosion if weapon damage
-
-	if (bExplosion && !pSource->IsDestroyed())
-		{
-		SDamageCtx Ctx;
-		Ctx.pObj = pSource;
-		Ctx.pDesc = pShot;
-		Ctx.Damage = pShot->GetDamage();
-		Ctx.Damage.SetCause(killedByWeaponMalfunction);
-		Ctx.iDirection = (pDevice->GetPosAngle() + 360 + mathRandom(0, 30) - 15) % 360;
-		Ctx.vHitPos = vSource;
-		Ctx.pCause = pSource;
-		Ctx.Attacker = CDamageSource(pSource, killedByWeaponMalfunction);
-
-		EDamageResults iResult = pSource->Damage(Ctx);
-
-		if (iResult == damageDestroyed 
-				|| iResult == damagePassthroughDestroyed)
-			*retbSourceDestroyed = true;
 		}
 
 	//	Done!
@@ -4363,6 +4388,82 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		pDevice->SetLastShotCount(0);
 
 	DEBUG_CATCH
+	}
+
+bool CWeaponClass::UpdateTemperature (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed)
+
+//	UpdateTemperature
+//
+//	Updates the temperature. We return FALSE if no shot was created and we need 
+//	to skip out on the rest of firing.
+//
+//	Otherwise, TRUE means that retiFailureMode is valid. It is either failNone,
+//	which means we succeeded, or failMisfire, which means we fire in the wrong
+//	direction.
+
+	{
+	//	Get source and device
+
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	if (pSource == NULL)
+		return false;
+
+	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	if (pDevice == NULL)
+		return false;
+
+	//	If we're overheating, then something happens
+
+	CFailureDesc::EFailureTypes iFailure = CFailureDesc::failNone;
+	if (pDevice->GetTemperature() >= OVERHEAT_TEMP)
+		{
+		//	If we're already past our max temperature, then the weapon does 
+		//	nothing.
+
+		if (pDevice->GetTemperature() >= MAX_TEMP)
+			{
+			pSource->OnDeviceStatus(pDevice, failWeaponJammed);
+			return false;
+			}
+
+		//	Otherwise, see what kind of failure we might have.
+
+		iFailure = m_OverheatFailure.Failure(pSource, pDevice);
+		switch (iFailure)
+			{
+			//	If nothing happens, or if we misfire, we continue on. The
+			//	temperature will increase and we return the failure mode.
+
+			case CFailureDesc::failNone:
+			case CFailureDesc::failMisfire:
+				break;
+
+			//	For an explosion, we cause damage and the temperature does not
+			//	continue to go up.
+
+			case CFailureDesc::failExplosion:
+				FailureExplosion(ItemCtx, pShot, retbSourceDestroyed);
+				return false;
+
+			//	For other failure modes, nothing happens, and the temperature
+			//	does not continue to go up.
+
+			default:
+				return false;
+			}
+		}
+
+	//	Update temperature
+
+	pDevice->IncTemperature(m_iCounterActivate);
+	pSource->OnComponentChanged(comDeviceCounter);
+
+	//	Done
+
+	if (retiFailureMode)
+		*retiFailureMode = iFailure;
+
+	return true;
 	}
 
 bool CWeaponClass::ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice)
