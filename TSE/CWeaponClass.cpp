@@ -1621,6 +1621,8 @@ void CWeaponClass::FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 	Ctx.vHitPos = pDevice->GetPos(pSource);
 	Ctx.pCause = pSource;
 	Ctx.Attacker = CDamageSource(pSource, killedByWeaponMalfunction);
+	Ctx.bIgnoreOverlays = true;
+	Ctx.bIgnoreShields = true;
 
 	EDamageResults iResult = pSource->Damage(Ctx);
 

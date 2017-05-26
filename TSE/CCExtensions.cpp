@@ -1379,8 +1379,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"options:\n\n"
 
-			"   'fullResult\n"
-			"   'noHitEffect",
+			"   'fullResult           Return result as struct\n"
+			"   'ignoreOverlays       Hit shields and below\n"
+			"   'ignoreShields        Hit armor and below\n"
+			"   'noHitEffect          No hit effect created",
 
 			"ivv*",		PPFLAG_SIDEEFFECTS,	},
 
@@ -5716,19 +5718,15 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			bool bFullResult = false;
 			bool bNoHitEffect = false;
+			bool bIgnoreOverlays = false;
+			bool bIgnoreShields = false;
 			if (pArgs->GetCount() > iArg)
 				{
 				ICCItem *pOptions = pArgs->GetElement(iArg++);
-				for (int i = 0; i < pOptions->GetCount(); i++)
-					{
-					CString sOption = pOptions->GetElement(i)->GetStringValue();
-					if (strEquals(sOption, CONSTLIT("fullResult")))
-						bFullResult = true;
-					else if (strEquals(sOption, CONSTLIT("noHitEffect")))
-						bNoHitEffect = true;
-					else
-						return pCC->CreateError(CONSTLIT("objDamage: Invalid option"), pOptions->GetElement(i));
-					}
+				bFullResult = pOptions->GetBooleanAt(CONSTLIT("fullResult"));
+				bNoHitEffect = pOptions->GetBooleanAt(CONSTLIT("noHitEffect"));
+				bIgnoreOverlays = pOptions->GetBooleanAt(CONSTLIT("ignoreOverlays"));
+				bIgnoreShields = pOptions->GetBooleanAt(CONSTLIT("ignoreShields"));
 				}
 
 			//	Direction
@@ -5749,6 +5747,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			Ctx.Attacker = GetDamageSourceArg(*pCC, pArgs->GetElement(2));
 			Ctx.pCause = Ctx.Attacker.GetObj();
 			Ctx.bNoHitEffect = bNoHitEffect;
+			Ctx.bIgnoreOverlays = bIgnoreOverlays;
+			Ctx.bIgnoreShields = bIgnoreShields;
 
 			EDamageResults result = pObj->Damage(Ctx);
 

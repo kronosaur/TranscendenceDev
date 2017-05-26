@@ -187,6 +187,8 @@ struct SDamageCtx
 			iDirection(-1),
 			pCause(NULL),
 			bNoHitEffect(false),
+			bIgnoreOverlays(false),
+			bIgnoreShields(false),
 			iDamage(0),
 			iSectHit(-1),
 			iOverlayHitDamage(0),
@@ -222,6 +224,8 @@ struct SDamageCtx
 	CSpaceObject *pCause;						//	Object that directly caused the damage
 	CDamageSource Attacker;						//	Ultimate attacker
 	bool bNoHitEffect;							//	No hit effect
+	bool bIgnoreOverlays;						//	Start damage at shields
+	bool bIgnoreShields;						//	Start damage at armor
 
 	int iDamage;								//	Damage hp
 	int iSectHit;								//	Armor section hit on object

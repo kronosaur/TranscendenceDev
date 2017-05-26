@@ -4227,7 +4227,9 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	See if the damage is blocked by some external defense
 
 	Ctx.iOverlayHitDamage = Ctx.iDamage;
-	if (m_Overlays.AbsorbDamage(this, Ctx))
+	if (!Ctx.bIgnoreOverlays 
+			&& !Ctx.bIgnoreShields 
+			&& m_Overlays.AbsorbDamage(this, Ctx))
 		{
 		if (IsDestroyed())
 			return damageDestroyed;
@@ -4249,26 +4251,29 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Let our shield generators take a crack at it
 
 	Ctx.iShieldHitDamage = Ctx.iDamage;
-	for (i = 0; i < GetDeviceCount(); i++)
+	if (!Ctx.bIgnoreShields)
 		{
-		bool bAbsorbed = m_Devices[i].AbsorbDamage(this, Ctx);
-
-		//	If this is the player, report stats
-
-		if (bIsPlayer
-				&& Ctx.iAbsorb > 0)
+		for (i = 0; i < GetDeviceCount(); i++)
 			{
-			CItem *pItem = m_Devices[i].GetItem();
-			if (pItem)
-				GetController()->OnItemDamaged(*pItem, Ctx.iAbsorb);
+			bool bAbsorbed = m_Devices[i].AbsorbDamage(this, Ctx);
+
+			//	If this is the player, report stats
+
+			if (bIsPlayer
+					&& Ctx.iAbsorb > 0)
+				{
+				CItem *pItem = m_Devices[i].GetItem();
+				if (pItem)
+					GetController()->OnItemDamaged(*pItem, Ctx.iAbsorb);
+				}
+
+			//	If destroyed or completely absorbed, we're done
+
+			if (IsDestroyed())
+				return damageDestroyed;
+			else if (bAbsorbed)
+				return damageAbsorbedByShields;
 			}
-
-		//	If destroyed or completely absorbed, we're done
-
-		if (IsDestroyed())
-			return damageDestroyed;
-		else if (bAbsorbed)
-			return damageAbsorbedByShields;
 		}
 
 	//	Let any overlays take damage
