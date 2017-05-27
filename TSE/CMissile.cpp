@@ -780,6 +780,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 	if (m_pPainter)
 		{
 		CViewportPaintCtxSmartSave Save(Ctx);
+
 		Ctx.iTick = m_iTick;
 		Ctx.iVariant = 0;
 		Ctx.iRotation = m_iRotation;
@@ -791,7 +792,12 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		else if (m_pHit)
 			m_pPainter->PaintHit(Dest, x, y, m_vHitPos, Ctx);
 		else if (m_fPainterFade)
+			{
+			//	When fading, we encode the fade lifetime in m_iHitDir
+
+			Ctx.iStartFade = m_iTick + m_iLifeLeft - m_iHitDir;
 			m_pPainter->PaintFade(Dest, x, y, Ctx);
+			}
 
 		//	For backwards compatibility, we also paint an image for beams
 		//	LATER: We should incorporate this into the painter when we

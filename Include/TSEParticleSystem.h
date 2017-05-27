@@ -59,6 +59,66 @@ struct SParticlePaintDesc
 	TArray<CG32bitPixel> *pColorTable;			//	Indexed by alpha value
 	};
 
+class CFireAndSmokePainter
+	{
+	public:
+		enum EStyles
+			{
+			styleNone,
+
+			styleFlame,
+			styleSmoke,
+			};
+
+		CFireAndSmokePainter (EStyles iStyle, int iLifetime, int iMinWidth, int iMaxWidth);
+		CFireAndSmokePainter (int iLifetime, int iMinWidth, int iMaxWidth, int iCore, int iFlame, int iSmoke, int iSmokeBrightness);
+
+		void Paint (CG32bitImage &Dest, int x, int y, int iAge, int iDestiny) const;
+
+	private:
+		void Init (int iLifetime, int iMinWidth, int iMaxWidth, int iCore, int iFlame, int iSmoke, int iSmokeBrightness);
+
+		int m_iLifetime;					//	Maximum lifetime of particles
+		int m_iMinWidth;
+		int m_iWidthRange;
+
+		int m_iCore;
+		int m_iFlame;
+		int m_iSmoke;
+
+		int m_iSmokeBrightness;
+	};
+
+class CGaseousPainter
+	{
+	public:
+		CGaseousPainter (int iLifetime, int iMinWidth, int iMaxWidth, CG32bitPixel rgbPrimaryColor, CG32bitPixel rgbSecondaryColor);
+
+		void Paint (CG32bitImage &Dest, int x, int y, int iAge) const;
+
+	private:
+		int m_iLifetime;
+		int m_iMinWidth;
+		int m_iWidthRange;
+
+		CG32bitPixel m_rgbPrimary;
+		CG32bitPixel m_rgbSecondary;
+	};
+
+class CGlitterPainter
+	{
+	public:
+		CGlitterPainter (int iWidth, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary);
+
+		void Paint (CG32bitImage &Dest, int x, int y, int iRotation) const;
+
+	private:
+		int m_iWidth;
+
+		CG32bitPixel m_rgbPrimary;
+		CG32bitPixel m_rgbSecondary;
+	};
+
 class CParticleSystemDesc
 	{
 	public:

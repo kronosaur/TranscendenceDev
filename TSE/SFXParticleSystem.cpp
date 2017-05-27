@@ -34,17 +34,17 @@ class CParticleSystemEffectPainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
-		virtual int GetFadeLifetime (void)  override{ return m_Desc.GetParticleLifetime().GetMaxValue(); }
+		virtual int GetFadeLifetime (void) override { return m_Desc.GetParticleLifetime().GetMaxValue(); }
 		virtual int GetLifetime (void) override;
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
 		virtual bool GetParamList (TArray<CString> *retList) const override;
-		virtual int GetParticleCount (void)  override{ return m_Particles.GetCount(); }
+		virtual int GetParticleCount (void) override { return m_Particles.GetCount(); }
 		virtual void GetRect (RECT *retRect) const override;
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
-		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)  override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
-		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx)  override{ Paint(Dest, x, y, Ctx); }
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override { Paint(Dest, x, y, Ctx); }
 		virtual void SetPos (const CVector &vPos) override { m_Particles.SetOrigin(vPos); }
 		virtual bool UsesOrigin (void) const override;
 

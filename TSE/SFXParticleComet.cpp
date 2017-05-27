@@ -4,30 +4,52 @@
 
 #include "PreComp.h"
 
+#define PARTICLE_EFFECT_TAG						CONSTLIT("ParticleEffect")
+
 #define LENGTH_ATTRIB							CONSTLIT("length")
 #define LIFETIME_ATTRIB							CONSTLIT("lifetime")
 #define PARTICLE_COUNT_ATTRIB					CONSTLIT("particleCount")
+#define PARTICLE_SPEED_ATTRIB					CONSTLIT("particleSpeed")
 #define PRIMARY_COLOR_ATTRIB					CONSTLIT("primaryColor")
 #define SECONDARY_COLOR_ATTRIB					CONSTLIT("secondaryColor")
+#define SPREAD_ANGLE_ATTRIB						CONSTLIT("spreadAngle")
+#define STYLE_ATTRIB							CONSTLIT("style")
 #define WIDTH_ATTRIB							CONSTLIT("width")
 
 const int POINT_COUNT =							100;
+const int FADE_LIFETIME =						10;
+const int DEFAULT_LINE_LENGTH =					25;
+
+static LPSTR STYLE_TABLE[] =
+	{
+	//	Must be same order as EStyles
+		"",
+
+		"comet",
+		"jet",
+
+		NULL,
+	};
 
 class CParticleCometEffectPainter : public IEffectPainter
 	{
 	public:
-		CParticleCometEffectPainter (CEffectCreator *pCreator);
+		CParticleCometEffectPainter (CCreatePainterCtx &Ctx, CParticleCometEffectCreator *pCreator);
 		~CParticleCometEffectPainter (void);
 
 		//	IEffectPainter virtuals
 
 		virtual bool CanPaintComposite (void) { return true; }
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
+		virtual int GetFadeLifetime (void) override { return FADE_LIFETIME; }
 		virtual int GetLifetime (void) { return m_iLifetime; }
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
 		virtual bool GetParamList (TArray<CString> *retList) const;
 		virtual void GetRect (RECT *retRect) const;
+		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
+		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
 		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
@@ -37,30 +59,53 @@ class CParticleCometEffectPainter : public IEffectPainter
 		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
 
 	private:
+		enum EStyles
+			{
+			styleUnknown =					0,
+			
+			styleComet =					1,
+			styleJet =						2,
+
+			styleMax =						2,
+			};
+
 		struct SParticle
 			{
 			int iPos;
 			CVector vScale;
+			int iRotationAdj;
 			};
 
 		bool CalcIntermediates (void);
 		static void InitSplinePoints (void);
 		inline int GetMaxAge (void) const { return m_Points.GetCount() - 1; }
-		CVector GetParticlePos (int iParticle, int iTick, int iDirection, int *retiAge = NULL, int *retiLength = NULL);
+		bool GetPaintInfo (int iParticle, int xPos, int yPos, SViewportPaintCtx &Ctx, int *retxPos, int *retyPos, int *retiAge);
+		void Paint (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
+		void Paint (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, IEffectPainter *pPainter);
+		void PaintFireAndSmoke (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, const CFireAndSmokePainter &Painter);
+		void PaintGaseous (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
+		void PaintGlitter (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
+		void PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
+		void PaintLine (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc);
 
 		CEffectCreator *m_pCreator;
 
+		EStyles m_iStyle;
 		int m_iLifetime;
 		int m_iParticleCount;
 		int m_iWidth;
 		int m_iLength;
+		int m_iParticleSpeed;				//	Desired speed of particles
+		DiceRange m_SpreadAngle;			//	Angle at which particles spread
 		CG32bitPixel m_rgbPrimaryColor;
 		CG32bitPixel m_rgbSecondaryColor;
+		IEffectPainter *m_pParticlePainter;
 
 		//	Temporary variables based on shape/style/etc.
 
 		bool m_bInitialized;				//	TRUE if values are valid
 		TArray<SParticle> m_Particles;
+		Metric m_rTickAdj;					//	Speed adjustment
 
 		static TArray<CVector> m_Points;
 	};
@@ -68,6 +113,7 @@ class CParticleCometEffectPainter : public IEffectPainter
 //	CParticleCometEffectCreator object
 
 CParticleCometEffectCreator::CParticleCometEffectCreator (void) : 
+		m_pParticleEffect(NULL),
 		m_pSingleton(NULL)
 
 //	CParticleCometEffectCreator constructor
@@ -109,15 +155,18 @@ IEffectPainter *CParticleCometEffectCreator::OnCreatePainter (CCreatePainterCtx 
 	//	Otherwise we need to create a painter with the actual
 	//	parameters.
 
-	IEffectPainter *pPainter = new CParticleCometEffectPainter(this);
+	IEffectPainter *pPainter = new CParticleCometEffectPainter(Ctx, this);
 
 	//	Initialize the painter parameters
 
 	pPainter->SetParam(Ctx, LENGTH_ATTRIB, m_Length);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
 	pPainter->SetParam(Ctx, PARTICLE_COUNT_ATTRIB, m_ParticleCount);
+	pPainter->SetParam(Ctx, PARTICLE_SPEED_ATTRIB, m_ParticleSpeed);
 	pPainter->SetParam(Ctx, PRIMARY_COLOR_ATTRIB, m_PrimaryColor);
 	pPainter->SetParam(Ctx, SECONDARY_COLOR_ATTRIB, m_SecondaryColor);
+	pPainter->SetParam(Ctx, SPREAD_ANGLE_ATTRIB, m_SpreadAngle);
+	pPainter->SetParam(Ctx, STYLE_ATTRIB, m_Style);
 	pPainter->SetParam(Ctx, WIDTH_ATTRIB, m_Width);
 
 	//	Initialize via GetParameters, if necessary
@@ -142,12 +191,20 @@ ALERROR CParticleCometEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 //	Resolve loading
 
 	{
+	ALERROR error;
+
 	//	Clean up, because we might want to recompute for next time.
 
 	if (m_pSingleton)
 		{
 		delete m_pSingleton;
 		m_pSingleton = NULL;
+		}
+
+	if (m_pParticleEffect)
+		{
+		if (error = m_pParticleEffect->BindDesign(Ctx))
+			return error;
 		}
 
 	return NOERROR;
@@ -171,14 +228,34 @@ ALERROR CParticleCometEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx,
 	if (error = m_ParticleCount.InitIntegerFromXML(Ctx, pDesc->GetAttribute(PARTICLE_COUNT_ATTRIB)))
 		return error;
 
+	if (error = m_ParticleSpeed.InitIntegerFromXML(Ctx, pDesc->GetAttribute(PARTICLE_SPEED_ATTRIB)))
+		return error;
+
 	if (error = m_PrimaryColor.InitColorFromXML(Ctx, pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB)))
 		return error;
 
 	if (error = m_SecondaryColor.InitColorFromXML(Ctx, pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB)))
 		return error;
 
+	if (error = m_SpreadAngle.InitIntegerFromXML(Ctx, pDesc->GetAttribute(SPREAD_ANGLE_ATTRIB)))
+		return error;
+
+	if (error = m_Style.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(STYLE_ATTRIB), STYLE_TABLE))
+		return error;
+
 	if (error = m_Width.InitIntegerFromXML(Ctx, pDesc->GetAttribute(WIDTH_ATTRIB)))
 		return error;
+
+	//	Load the effect to use for particles
+
+	CXMLElement *pEffect = pDesc->GetContentElementByTag(PARTICLE_EFFECT_TAG);
+	if (pEffect)
+		{
+		if (error = CEffectCreator::CreateFromXML(Ctx, pEffect, NULL_STR, &m_pParticleEffect))
+			return error;
+		}
+	else
+		m_pParticleEffect = NULL;
 
 	return NOERROR;
 	}
@@ -187,10 +264,12 @@ ALERROR CParticleCometEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx,
 
 TArray<CVector> CParticleCometEffectPainter::m_Points;
 
-CParticleCometEffectPainter::CParticleCometEffectPainter (CEffectCreator *pCreator) :
+CParticleCometEffectPainter::CParticleCometEffectPainter (CCreatePainterCtx &Ctx, CParticleCometEffectCreator *pCreator) :
 		m_pCreator(pCreator),
+		m_iStyle(styleComet),
 		m_iLifetime(0),
 		m_iParticleCount(100),
+		m_iParticleSpeed(-1),
 		m_iWidth(8),
 		m_iLength(100),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
@@ -201,6 +280,14 @@ CParticleCometEffectPainter::CParticleCometEffectPainter (CEffectCreator *pCreat
 
 	{
 	InitSplinePoints();
+
+	//	Initialize the single particle painter
+
+	CEffectCreator *pEffect = pCreator->GetParticleEffect();
+	if (pEffect)
+		m_pParticlePainter = pEffect->CreatePainter(Ctx);
+	else
+		m_pParticlePainter = NULL;
 	}
 
 CParticleCometEffectPainter::~CParticleCometEffectPainter (void)
@@ -208,6 +295,8 @@ CParticleCometEffectPainter::~CParticleCometEffectPainter (void)
 //	CParticleCometEffectPainter destructor
 
 	{
+	if (m_pParticlePainter)
+		m_pParticlePainter->Delete();
 	}
 
 bool CParticleCometEffectPainter::CalcIntermediates (void)
@@ -224,6 +313,23 @@ bool CParticleCometEffectPainter::CalcIntermediates (void)
 
 	if (!m_bInitialized)
 		{
+		//	Compute how fast each particle moves along the point array.
+
+		if (m_iParticleSpeed == -1 || m_iLength <= 0)
+			m_rTickAdj = 1.0;
+		else
+			{
+			Metric rLengthPerPoint = (m_iLength * g_KlicksPerPixel) / (Metric)POINT_COUNT;
+			Metric rSpeedPerTick = (LIGHT_SPEED * m_iParticleSpeed / 100.0) * g_SecondsPerUpdate;
+			Metric rPointsPerTick = rSpeedPerTick / rLengthPerPoint;
+			m_rTickAdj = rPointsPerTick;
+			}
+
+		//	Compute some spread angle values
+
+		int iSpreadAngle = m_SpreadAngle.GetMaxValue();
+		int iHalfAngle = (iSpreadAngle + 1) / 2;
+
 		//	We need to increase the width a bit because the template (the spline
 		//	points) are not full width.
 
@@ -237,10 +343,30 @@ bool CParticleCometEffectPainter::CalcIntermediates (void)
 		for (i = 0; i < m_iParticleCount; i++)
 			{
 			m_Particles[i].iPos = mathRandom(0, m_Points.GetCount() - 1);
-			m_Particles[i].vScale = CVector(
-					PolarToVector(mathRandom(0, 179), (Metric)iAdjWidth).GetX(),
-					m_iLength * mathRandom(80, 150) / 100.0
-					);
+
+			switch (m_iStyle)
+				{
+				case styleJet:
+					m_Particles[i].vScale = CVector(
+							mathRandomGaussian() * m_iWidth,
+							m_iLength * mathRandom(80, 150) / 100.0
+							);
+					break;
+
+				default:
+					m_Particles[i].vScale = CVector(
+							PolarToVector(mathRandom(0, 179), (Metric)iAdjWidth).GetX(),
+							m_iLength * mathRandom(80, 150) / 100.0
+							);
+					break;
+				}
+
+			if (iSpreadAngle == 0)
+				m_Particles[i].iRotationAdj = 0;
+			else if (m_SpreadAngle.IsConstant())
+				m_Particles[i].iRotationAdj = mathRandom(0, iSpreadAngle) - iHalfAngle;
+			else
+				m_Particles[i].iRotationAdj = m_SpreadAngle.Roll() - iHalfAngle;
 			}
 
 		m_bInitialized = true;
@@ -265,11 +391,20 @@ void CParticleCometEffectPainter::GetParam (const CString &sParam, CEffectParamD
 	else if (strEquals(sParam, PARTICLE_COUNT_ATTRIB))
 		retValue->InitInteger(m_iParticleCount);
 
+	else if (strEquals(sParam, PARTICLE_SPEED_ATTRIB))
+		retValue->InitInteger(m_iParticleSpeed);
+
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
 		retValue->InitColor(m_rgbPrimaryColor);
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
 		retValue->InitColor(m_rgbSecondaryColor);
+
+	else if (strEquals(sParam, SPREAD_ANGLE_ATTRIB))
+		retValue->InitDiceRange(m_SpreadAngle);
+
+	else if (strEquals(sParam, STYLE_ATTRIB))
+		retValue->InitInteger(m_iStyle);
 
 	else if (strEquals(sParam, WIDTH_ATTRIB))
 		retValue->InitInteger(m_iWidth);
@@ -286,39 +421,55 @@ bool CParticleCometEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(6);
+	retList->InsertEmpty(9);
 	retList->GetAt(0) = LENGTH_ATTRIB;
 	retList->GetAt(1) = LIFETIME_ATTRIB;
 	retList->GetAt(2) = PARTICLE_COUNT_ATTRIB;
-	retList->GetAt(3) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(4) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(5) = WIDTH_ATTRIB;
+	retList->GetAt(3) = PARTICLE_SPEED_ATTRIB;
+	retList->GetAt(4) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(5) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(6) = SPREAD_ANGLE_ATTRIB;
+	retList->GetAt(7) = STYLE_ATTRIB;
+	retList->GetAt(8) = WIDTH_ATTRIB;
 
 	return true;
 	}
 
-CVector CParticleCometEffectPainter::GetParticlePos (int iParticle, int iTick, int iDirection, int *retiAge, int *retiLength)
+bool CParticleCometEffectPainter::GetPaintInfo (int iParticle, int xPos, int yPos, SViewportPaintCtx &Ctx, int *retxPos, int *retyPos, int *retiAge)
 
-//	GetParticlePos
+//	GetPaintInfo
 //
-//	Returns the position of the given particle
+//	Returns paint information. If we return FALSE, then this particle should not
+//	be painted.
 
 	{
-	int iAge = (iTick + m_Particles[iParticle].iPos) % m_Points.GetCount();
+	SParticle *pParticle = &m_Particles[iParticle];
+	int iAge = ((int)(Ctx.iTick * m_rTickAdj) + pParticle->iPos) % m_Points.GetCount();
 
 	CVector vPos = m_Points[iAge];
 	vPos = CVector(
-			vPos.GetX() * m_Particles[iParticle].vScale.GetY(),
-			vPos.GetY() * m_Particles[iParticle].vScale.GetX()
+			vPos.GetX() * pParticle->vScale.GetY(),
+			vPos.GetY() * pParticle->vScale.GetX()
 			);
 
-	if (retiAge)
-		*retiAge = iAge;
+	vPos = vPos.Rotate(Ctx.iRotation + 180 + pParticle->iRotationAdj);
 
-	if (retiLength)
-		*retiLength = (int)vPos.GetX();
+	//	If we're fading, then some particles wink out
 
-	return vPos.Rotate(iDirection + 180);
+	if (Ctx.bFade && (iParticle % FADE_LIFETIME) < (Ctx.iTick - Ctx.iStartFade))
+		return false;
+
+	//	If this position is beyond our length, then we skip it.
+
+	int iLength = (int)vPos.GetX();
+	if (Ctx.iMaxLength != -1 && iLength > Ctx.iMaxLength)
+		return false;
+
+	*retxPos = xPos + (int)vPos.GetX();
+	*retyPos = yPos - (int)vPos.GetY();
+	*retiAge = iAge;
+
+	return true;
 	}
 
 void CParticleCometEffectPainter::GetRect (RECT *retRect) const
@@ -395,6 +546,35 @@ void CParticleCometEffectPainter::InitSplinePoints (void)
 		}
 	}
 
+void CParticleCometEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
+
+//	OnMove
+//
+//	Move the particles
+
+	{
+	//	Update the single-particle painter
+
+	if (m_pParticlePainter)
+		m_pParticlePainter->OnMove(Ctx);
+
+	if (retbBoundsChanged) 
+		*retbBoundsChanged = false; 
+	}
+
+void CParticleCometEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
+
+//	OnUpdate
+//
+//	Update
+
+	{
+	//	Update the single-particle painter
+
+	if (m_pParticlePainter)
+		m_pParticlePainter->OnUpdate(Ctx);
+	}
+
 void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
@@ -407,27 +587,46 @@ void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SView
 	if (!CalcIntermediates())
 		return;
 
-	int iParticleSize = 2;
-	int iMaxAge = GetMaxAge();
+	//	If we've got a painter, then use that
+
+	if (m_pParticlePainter)
+		{
+		//	See if the painter has a paint descriptor (which is faster for us).
+
+		SParticlePaintDesc PaintDesc;
+		if (m_pParticlePainter->GetParticlePaintDesc(&PaintDesc))
+			{
+			PaintDesc.iMaxLifetime = GetMaxAge();
+			Paint(Dest, x, y, Ctx, PaintDesc);
+			}
+
+		//	Otherwise, we use the painter for each particle
+
+		else
+			Paint(Dest, x, y, Ctx, m_pParticlePainter);
+		}
 
 	//	If we fade the color then we need a different loop
 
-	if (!m_rgbSecondaryColor.IsNull() && m_rgbPrimaryColor != m_rgbSecondaryColor)
+	else if (!m_rgbSecondaryColor.IsNull() && m_rgbPrimaryColor != m_rgbSecondaryColor)
 		{
+		int iParticleSize = 2;
+		int iMaxAge = GetMaxAge();
+
 		for (i = 0; i < m_Particles.GetCount(); i++)
 			{
 			int iAge;
-			int iLengthPos;
-			CVector vPos = GetParticlePos(i, Ctx.iTick, Ctx.iRotation, &iAge, &iLengthPos);
-			if (Ctx.iMaxLength != -1 && iLengthPos > Ctx.iMaxLength)
+			int xParticle;
+			int yParticle;
+			if (!GetPaintInfo(i, x, y, Ctx, &xParticle, &yParticle, &iAge))
 				continue;
 
 			DWORD dwOpacity = 255 - (iAge * 255 / iMaxAge);
 			CG32bitPixel rgbColor = CG32bitPixel::Fade(m_rgbPrimaryColor, m_rgbSecondaryColor, 100 * iAge / iMaxAge);
 
 			DrawParticle(Dest,
-					x + (int)vPos.GetX(),
-					y - (int)vPos.GetY(),
+					xParticle,
+					yParticle,
 					rgbColor,
 					iParticleSize,
 					dwOpacity);
@@ -438,24 +637,114 @@ void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SView
 
 	else
 		{
+		int iParticleSize = 2;
+		int iMaxAge = GetMaxAge();
+
 		for (i = 0; i < m_Particles.GetCount(); i++)
 			{
 			int iAge;
-			int iLengthPos;
-			CVector vPos = GetParticlePos(i, Ctx.iTick, Ctx.iRotation, &iAge, &iLengthPos);
-			if (Ctx.iMaxLength != -1 && iLengthPos > Ctx.iMaxLength)
+			int xParticle;
+			int yParticle;
+			if (!GetPaintInfo(i, x, y, Ctx, &xParticle, &yParticle, &iAge))
 				continue;
 
 			DWORD dwOpacity = 255 - (iAge * 255 / iMaxAge);
 
 			DrawParticle(Dest,
-					x + (int)vPos.GetX(),
-					y - (int)vPos.GetY(),
+					xParticle,
+					yParticle,
 					m_rgbPrimaryColor,
 					iParticleSize,
 					dwOpacity);
 			}
 		}
+	}
+
+void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+
+//	Paint
+//
+//	Paint each particle with a paint effect.
+
+	{
+	//	Paint based on style
+
+	switch (Desc.iStyle)
+		{
+		case paintFlame:
+			{
+			CFireAndSmokePainter FireAndSmoke(CFireAndSmokePainter::styleFlame, Desc.iMaxLifetime, Desc.iMinWidth, Desc.iMaxWidth);
+			PaintFireAndSmoke(Dest, xPos, yPos, Ctx, FireAndSmoke);
+			break;
+			}
+
+		case paintGlitter:
+			PaintGlitter(Dest, xPos, yPos, Ctx, Desc);
+			break;
+
+		case paintImage:
+			PaintImage(Dest, xPos, yPos, Ctx, Desc);
+			break;
+
+		case paintLine:
+			PaintLine(Dest, xPos, yPos, Ctx, Desc);
+			break;
+
+		case paintSmoke:
+			{
+			CFireAndSmokePainter FireAndSmoke(CFireAndSmokePainter::styleSmoke, Desc.iMaxLifetime, Desc.iMinWidth, Desc.iMaxWidth);
+			PaintFireAndSmoke(Dest, xPos, yPos, Ctx, FireAndSmoke);
+			break;
+			}
+
+		default:
+			PaintGaseous(Dest, xPos, yPos, Ctx, Desc);
+			break;
+		}
+	}
+
+void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, IEffectPainter *pPainter)
+
+//	Paint
+//
+//	Paint each particle with an effect
+
+	{
+	int i;
+	int iSavedTick = Ctx.iTick;
+	int iSavedDestiny = Ctx.iDestiny;
+	int iSavedRotation = Ctx.iRotation;
+	int iSavedMaxLength = Ctx.iMaxLength;
+
+	int iMaxAge = GetMaxAge();
+
+	//	Loop
+
+	for (i = 0; i < m_Particles.GetCount(); i++)
+		{
+		int iAge;
+		int xParticle;
+		int yParticle;
+		if (!GetPaintInfo(i, xPos, yPos, Ctx, &xParticle, &yParticle, &iAge))
+			continue;
+
+		//	Paint the particle
+
+		Ctx.iTick = Max(0, iAge);
+		Ctx.iDestiny = i;
+
+		pPainter->Paint(Dest, 
+				xParticle, 
+				yParticle, 
+				Ctx);
+		}
+
+	//	Clean Up
+
+	Ctx.iTick = iSavedTick;
+	Ctx.iDestiny = iSavedDestiny;
+	Ctx.iRotation = iSavedRotation;
+	Ctx.iMaxLength = iSavedMaxLength;
 	}
 
 void CParticleCometEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -467,6 +756,168 @@ void CParticleCometEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int
 	{
 	if (!CalcIntermediates())
 		return;
+	}
+
+void CParticleCometEffectPainter::PaintFireAndSmoke (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, const CFireAndSmokePainter &Painter)
+
+//	PaintFireAndSmoke
+//
+//	Paints with fire and smoke
+
+	{
+	int i;
+
+	for (i = 0; i < m_Particles.GetCount(); i++)
+		{
+		int iAge;
+		int xParticle;
+		int yParticle;
+		if (!GetPaintInfo(i, xPos, yPos, Ctx, &xParticle, &yParticle, &iAge))
+			continue;
+
+		Painter.Paint(Dest,
+				xParticle,
+				yParticle,
+				iAge,
+				i
+				);
+		}
+	}
+
+void CParticleCometEffectPainter::PaintGaseous (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+
+//	PaintGaseous
+//
+//	Paint gaseous particles
+
+	{
+	int i;
+
+	CGaseousPainter Painter(GetMaxAge(), Desc.iMinWidth, Desc.iMaxWidth, Desc.rgbPrimaryColor, Desc.rgbSecondaryColor);
+
+	for (i = 0; i < m_Particles.GetCount(); i++)
+		{
+		int iAge;
+		int xParticle;
+		int yParticle;
+		if (!GetPaintInfo(i, xPos, yPos, Ctx, &xParticle, &yParticle, &iAge))
+			continue;
+
+		Painter.Paint(Dest,
+				xParticle,
+				yParticle,
+				iAge
+				);
+		}
+	}
+
+void CParticleCometEffectPainter::PaintGlitter (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+
+//	PaintGlitter
+//
+//	Paint a glittering particle
+
+	{
+	int i;
+
+	CGlitterPainter Painter(Desc.iMaxWidth, Desc.rgbPrimaryColor, Desc.rgbSecondaryColor);
+
+	for (i = 0; i < m_Particles.GetCount(); i++)
+		{
+		int iAge;
+		int xParticle;
+		int yParticle;
+		if (!GetPaintInfo(i, xPos, yPos, Ctx, &xParticle, &yParticle, &iAge))
+			continue;
+
+		Painter.Paint(Dest,
+				xParticle,
+				yParticle,
+				i + Ctx.iTick
+				);
+		}
+	}
+
+void CParticleCometEffectPainter::PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+
+//	PaintImage
+//
+//	Paint image particle
+
+	{
+	int i;
+
+	int iRotationFrame = 0;
+	if (Desc.bDirectional)
+		iRotationFrame = Angle2Direction(Ctx.iRotation, Desc.iVariants);
+
+	for (i = 0; i < m_Particles.GetCount(); i++)
+		{
+		int iAge;
+		int xParticle;
+		int yParticle;
+		if (!GetPaintInfo(i, xPos, yPos, Ctx, &xParticle, &yParticle, &iAge))
+			continue;
+
+		//	Figure out the animation frame to paint
+
+		int iTick;
+		if (Desc.bRandomStartFrame)
+			iTick = Ctx.iTick + i;
+		else
+			iTick = Ctx.iTick;
+
+		//	Figure out the rotation or variant to paint
+
+		int iFrame = (Desc.bDirectional ? Angle2Direction(AngleMod(Ctx.iRotation), Desc.iVariants) : (i % Desc.iVariants));
+
+		//	Paint the particle
+
+		Desc.pImage->PaintImage(Dest, 
+				xParticle,
+				yParticle,
+				iTick,
+				iFrame);
+		}
+	}
+
+void CParticleCometEffectPainter::PaintLine (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+
+//	PaintLine
+//
+//	Paint line particles
+
+	{
+	int i;
+
+	//	We want the tail to be transparent and the head to be full.
+	//	NOTE: We paint from head to tail.
+
+	CG32bitPixel rgbFrom = Desc.rgbPrimaryColor;
+	CG32bitPixel rgbTo = CG32bitPixel(Desc.rgbSecondaryColor, 0);
+
+	for (i = 0; i < m_Particles.GetCount(); i++)
+		{
+		int iAge;
+		int xParticle;
+		int yParticle;
+		if (!GetPaintInfo(i, xPos, yPos, Ctx, &xParticle, &yParticle, &iAge))
+			continue;
+
+		//	Compute the position of the particle
+
+		int xFrom = xParticle;
+		int yFrom = yParticle;
+
+		CVector vTail = PolarToVector(Ctx.iRotation, DEFAULT_LINE_LENGTH);
+
+		int xTo = xFrom - (int)vTail.GetX();
+		int yTo = yFrom + (int)vTail.GetY();
+
+		//	Paint the particle
+
+		CGDraw::LineGradient(Dest, xFrom, yFrom, xTo, yTo, 1, rgbFrom, rgbTo);
+		}
 	}
 
 bool CParticleCometEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const
@@ -499,12 +950,21 @@ void CParticleCometEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CStr
 	else if (strEquals(sParam, PARTICLE_COUNT_ATTRIB))
 		m_iParticleCount = Value.EvalIntegerBounded(0, -1, 100);
 
+	else if (strEquals(sParam, PARTICLE_SPEED_ATTRIB))
+		m_iParticleSpeed = Value.EvalIntegerBounded(0, 100, -1);
+
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
 		m_rgbPrimaryColor = Value.EvalColor();
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
 		m_rgbSecondaryColor = Value.EvalColor();
 	
+	else if (strEquals(sParam, SPREAD_ANGLE_ATTRIB))
+		m_SpreadAngle = Value.EvalDiceRange(0);
+
+	else if (strEquals(sParam, STYLE_ATTRIB))
+		m_iStyle = (EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleComet);
+
 	else if (strEquals(sParam, WIDTH_ATTRIB))
 		m_iWidth = Value.EvalIntegerBounded(1, -1, 8);
 	}

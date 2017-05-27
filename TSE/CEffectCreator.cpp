@@ -164,7 +164,8 @@ ALERROR CEffectCreator::CreateFromTag (const CString &sTag, CEffectCreator **ret
 		pCreator = new CImageAndTailEffectCreator;
 	else if (strEquals(sTag, CFlareEffectCreator::GetClassTag()))
 		pCreator = new CFlareEffectCreator;
-	else if (strEquals(sTag, CParticleCometEffectCreator::GetClassTag()))
+	else if (strEquals(sTag, CParticleCometEffectCreator::GetClassTag())
+			|| strEquals(sTag, CONSTLIT("ParticleComet")))
 		pCreator = new CParticleCometEffectCreator;
 	else if (strEquals(sTag, CSmokeTrailEffectCreator::GetClassTag()))
 		pCreator = new CSmokeTrailEffectCreator;

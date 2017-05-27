@@ -631,7 +631,9 @@ class CParticleCometEffectCreator : public CEffectCreator
 		CParticleCometEffectCreator (void);
 		virtual ~CParticleCometEffectCreator (void);
 
-		static CString GetClassTag (void) { return CONSTLIT("ParticleComet"); }
+		inline CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
+
+		static CString GetClassTag (void) { return CONSTLIT("ParticlePattern"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
 		//	CEffectCreator virtuals
@@ -645,12 +647,17 @@ class CParticleCometEffectCreator : public CEffectCreator
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
 
 	private:
+		CEffectParamDesc m_Style;			//	Pattern style
 		CEffectParamDesc m_Length;
 		CEffectParamDesc m_Lifetime;
 		CEffectParamDesc m_ParticleCount;
 		CEffectParamDesc m_PrimaryColor;
 		CEffectParamDesc m_SecondaryColor;
 		CEffectParamDesc m_Width;
+		CEffectParamDesc m_SpreadAngle;		//	Full angle of spread
+		CEffectParamDesc m_ParticleSpeed;	//	Speed of particles along path
+
+		CEffectCreator *m_pParticleEffect;	//	Effect to use to paint particles (may be NULL)
 
 		IEffectPainter *m_pSingleton;
 	};
@@ -705,7 +712,7 @@ class CParticleSystemEffectCreator : public CEffectCreator
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
 
 	private:
-		CEffectParamDesc m_Style;			//	Particles fixed on background (not obj)
+		CEffectParamDesc m_Style;			//	System style
 		CEffectParamDesc m_FixedPos;		//	Particles fixed on background (not obj)
 
 		CEffectParamDesc m_Cohesion;		//	Tendency to revert to original shap (0-100)

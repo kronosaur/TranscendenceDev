@@ -839,7 +839,8 @@ struct SViewportPaintCtx
 			iVariant(0),
 			iDestiny(0),
 			iRotation(0),
-			iMaxLength(-1)
+			iMaxLength(-1),
+			iStartFade(0)
 		{ }
 
 	inline void Save (void)
@@ -938,6 +939,7 @@ struct SViewportPaintCtx
 	int iDestiny;
 	int iRotation;						//	An angle 0-359
 	int iMaxLength;						//	Max length of object (used for projectiles); -1 == no limit
+	int iStartFade;						//	If bFade is TRUE this is the tick on which we started fading
 
 	private:
 		struct SVariants

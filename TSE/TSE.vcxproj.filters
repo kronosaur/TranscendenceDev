@@ -1045,6 +1045,9 @@
     <ClCompile Include="CFailureDesc.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
+    <ClCompile Include="CFireAndSmokePainter.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">
