@@ -42,23 +42,23 @@ class CParticleCloudPainter : public IEffectPainter
 		CParticleCloudPainter (CCreatePainterCtx &Ctx, CParticleCloudEffectCreator *pCreator);
 
 		//	IEffectPainter virtuals
-		virtual ~CParticleCloudPainter (void);
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual int GetFadeLifetime (void) { return m_pCreator->GetParticleLifetimeMax(); }
-		virtual int GetParticleCount (void) { return m_Particles.GetCount(); }
-		virtual void GetRect (RECT *retRect) const;
-		virtual void OnBeginFade (void) { m_iEmitLifetime = 0; }
-		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL);
-		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
-		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
-		virtual void SetPos (const CVector &vPos) { m_Particles.SetOrigin(vPos); }
+		virtual ~CParticleCloudPainter (void) override;
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
+		virtual int GetFadeLifetime (bool bHit) const override { return m_pCreator->GetParticleLifetimeMax(); }
+		virtual int GetParticleCount (void) override { return m_Particles.GetCount(); }
+		virtual void GetRect (RECT *retRect) const override;
+		virtual void OnBeginFade (void) override { m_iEmitLifetime = 0; }
+		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
+		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override { Paint(Dest, x, y, Ctx); }
+		virtual void SetPos (const CVector &vPos) override { m_Particles.SetOrigin(vPos); }
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		void CreateInitialParticles (int iCount, const CVector &vInitialPos);

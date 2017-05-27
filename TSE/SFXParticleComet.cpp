@@ -41,7 +41,7 @@ class CParticleCometEffectPainter : public IEffectPainter
 
 		virtual bool CanPaintComposite (void) { return true; }
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual int GetFadeLifetime (void) override { return FADE_LIFETIME; }
+		virtual int GetFadeLifetime (bool bHit) const override { return (bHit ? 0 : FADE_LIFETIME); }
 		virtual int GetLifetime (void) { return m_iLifetime; }
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
 		virtual bool GetParamList (TArray<CString> *retList) const;

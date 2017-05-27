@@ -286,7 +286,7 @@ class IEffectPainter
 		virtual bool CanPaintComposite (void) { return false; }
 		virtual void Delete (void) { if (!m_bSingleton) delete this; }
 		virtual CEffectCreator *GetCreator (void) = 0;
-		virtual int GetFadeLifetime (void) { return 0; }
+		virtual int GetFadeLifetime (bool bHit) const { return 0; }
 		virtual int GetLifetime (void) { return GetInitialLifetime(); }
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) { retValue->InitNull(); }
 		virtual bool GetParamList (TArray<CString> *retList) const { return false; }

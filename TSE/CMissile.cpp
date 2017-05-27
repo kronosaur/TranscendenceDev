@@ -1424,7 +1424,7 @@ bool CMissile::SetMissileFade (void)
 	//	the missile object alive
 
 	int iPainterFadeLife;
-	if (m_pPainter && (iPainterFadeLife = m_pPainter->GetFadeLifetime()))
+	if (m_pPainter && (iPainterFadeLife = m_pPainter->GetFadeLifetime(m_iLifeLeft > 0)))
 		{
 		m_pPainter->OnBeginFade();
 		m_fPainterFade = true;

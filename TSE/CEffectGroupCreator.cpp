@@ -23,7 +23,7 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual ~CEffectGroupPainter (void) override;
 		virtual bool CanPaintComposite (void) override;
 		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
-		virtual int GetFadeLifetime (void) override;
+		virtual int GetFadeLifetime (bool bHit) const override;
 		virtual int GetLifetime (void) override;
 		virtual void GetRect (RECT *retRect) const override;
 		virtual void OnBeginFade (void) override;
@@ -148,7 +148,7 @@ bool CEffectGroupPainter::CanPaintComposite (void)
 	return true;
 	}
 
-int CEffectGroupPainter::GetFadeLifetime (void)
+int CEffectGroupPainter::GetFadeLifetime (bool bHit) const
 
 //	GetFadeLifetime
 //
@@ -159,7 +159,7 @@ int CEffectGroupPainter::GetFadeLifetime (void)
 
 	for (int i = 0; i < m_Painters.GetCount(); i++)
 		if (m_Painters[i])
-			iMaxLifetime = Max(iMaxLifetime, m_Painters[i]->GetFadeLifetime());
+			iMaxLifetime = Max(iMaxLifetime, m_Painters[i]->GetFadeLifetime(bHit));
 
 	return iMaxLifetime;
 	}

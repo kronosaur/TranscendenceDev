@@ -313,7 +313,7 @@ void COverlay::Destroy (CSpaceObject *pSource)
 
 		int iPainterFade;
 		if (m_pPainter 
-				&& (iPainterFade = m_pPainter->GetFadeLifetime()) > 0)
+				&& (iPainterFade = m_pPainter->GetFadeLifetime(false)) > 0)
 			{
 			m_pPainter->OnBeginFade();
 			m_iLifeLeft = iPainterFade;

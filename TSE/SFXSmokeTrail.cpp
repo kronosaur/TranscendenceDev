@@ -25,19 +25,19 @@ class CSmokeTrailPainter : public IEffectPainter
 		CSmokeTrailPainter (CCreatePainterCtx &Ctx, CSmokeTrailEffectCreator *pCreator);
 
 		//	IEffectPainter virtuals
-		virtual ~CSmokeTrailPainter (void);
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual int GetFadeLifetime (void) { return m_pCreator->GetParticleLifetimeMax(); }
-		virtual void GetRect (RECT *retRect) const;
-		virtual void OnBeginFade (void) { m_iEmitLifetime = 0; }
-		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
-		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) { Paint(Dest, x, y, Ctx); }
+		virtual ~CSmokeTrailPainter (void) override;
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
+		virtual int GetFadeLifetime (bool bHit) const override { return m_pCreator->GetParticleLifetimeMax(); }
+		virtual void GetRect (RECT *retRect) const override;
+		virtual void OnBeginFade (void) override { m_iEmitLifetime = 0; }
+		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { Paint(Dest, x, y, Ctx); }
+		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override { Paint(Dest, x, y, Ctx); }
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		void CreateNewParticles (int iCount, int iDirection);

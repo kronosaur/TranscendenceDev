@@ -654,7 +654,7 @@ bool CParticleDamage::SetMissileFade (void)
 	//	the missile object alive
 
 	int iPainterFadeLife;
-	if (m_pEffectPainter && (iPainterFadeLife = m_pEffectPainter->GetFadeLifetime()))
+	if (m_pEffectPainter && (iPainterFadeLife = m_pEffectPainter->GetFadeLifetime(m_iLifeLeft > 0)))
 		{
 		m_pEffectPainter->OnBeginFade();
 		m_fPainterFade = true;

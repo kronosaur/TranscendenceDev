@@ -34,7 +34,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
-		virtual int GetFadeLifetime (void) override { return m_Desc.GetParticleLifetime().GetMaxValue(); }
+		virtual int GetFadeLifetime (bool bHit) const override { return m_Desc.GetParticleLifetime().GetMaxValue(); }
 		virtual int GetLifetime (void) override;
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
 		virtual bool GetParamList (TArray<CString> *retList) const override;
