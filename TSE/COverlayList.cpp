@@ -4,6 +4,8 @@
 
 #include "PreComp.h"
 
+#define EVENT_ON_REMOVE_AT_DOCK_SERVICES		CONSTLIT("OnRemoveAtDockServices")
+
 COverlayList::COverlayList (void) :
 		m_pFirst(NULL)
 
@@ -643,6 +645,37 @@ void COverlayList::RemoveField (CSpaceObject *pSource, DWORD dwID)
 			{
 			pField->Destroy(pSource);
 			return;
+			}
+
+		pField = pField->GetNext();
+		}
+	}
+
+void COverlayList::ScrapeHarmfulOverlays (CSpaceObject *pSource, int iMaxRemoved)
+
+//	ScrapeHarmfulOverlays
+//
+//	Remove any harmful overlays
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	int iRemoved = 0;
+
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed()
+				&& pField->GetType()->FindEventHandler(EVENT_ON_REMOVE_AT_DOCK_SERVICES))
+			{
+			//	Invoke the event to remove it.
+
+			pField->FireCustomEvent(pSource, EVENT_ON_REMOVE_AT_DOCK_SERVICES, NULL, NULL);
+
+			//	We assume the event removes the object.
+
+			iRemoved++;
+			if (iRemoved >= iMaxRemoved)
+				return;
 			}
 
 		pField = pField->GetNext();

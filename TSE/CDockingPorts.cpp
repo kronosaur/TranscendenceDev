@@ -807,6 +807,7 @@ void CDockingPorts::RepairAll (CSpaceObject *pOwner, int iRepairRate)
 				{
 				m_pPort[i].pObj->RepairDamage(iRepairRate);
 				m_pPort[i].pObj->Decontaminate();
+				m_pPort[i].pObj->ScrapeOverlays();
 				}
 		}
 

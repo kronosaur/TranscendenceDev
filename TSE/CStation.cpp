@@ -4781,8 +4781,16 @@ void CStation::UpdateReinforcements (int iTick)
 		{
 		//	Repair damage to station
 
-		if (!m_pType->GetRegenDesc().IsEmpty() && m_iHitPoints < m_iMaxHitPoints)
-			m_iHitPoints = Min(m_iMaxHitPoints, m_iHitPoints + m_pType->GetRegenDesc().GetRegen(iTick, STATION_REPAIR_FREQUENCY));
+		if (!m_pType->GetRegenDesc().IsEmpty())
+			{
+			if (m_iHitPoints < m_iMaxHitPoints)
+				m_iHitPoints = Min(m_iMaxHitPoints, m_iHitPoints + m_pType->GetRegenDesc().GetRegen(iTick, STATION_REPAIR_FREQUENCY));
+
+			//	Remove any harmful overlays
+
+			if (mathRandom(1, 100) <= 20)
+				ScrapeOverlays();
+			}
 
 		//	Repair damage to ships
 

@@ -6870,6 +6870,20 @@ bool CSpaceObject::RequestGate (CSpaceObject *pObj)
 	return true;
 	}
 
+void CSpaceObject::ScrapeOverlays (void)
+
+//	ScrapeOverlays
+//
+//	Remove attached, foreign overlays
+
+	{
+	COverlayList *pOverlays = GetOverlays();
+	if (pOverlays == NULL)
+		return;
+
+	pOverlays->ScrapeHarmfulOverlays(this);
+	}
+
 void CSpaceObject::SetCriteriaSource (Criteria &Crit, CSpaceObject *pSource)
 
 //	SetCriteriaSource

@@ -652,6 +652,7 @@ class COverlayList
 		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource);
 		void RemoveField (CSpaceObject *pSource, DWORD dwID);
+		void ScrapeHarmfulOverlays (CSpaceObject *pSource, int iMaxRemoved = 1);
 		void SetData (DWORD dwID, const CString &sAttrib, const CString &sData);
 		bool SetEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue);
 		void SetPos (CSpaceObject *pSource, DWORD dwID, const CVector &vPos);
@@ -1306,7 +1307,7 @@ class CSpaceObject : public CObject
 		inline CVector GetOverlayPos (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetPos(this, dwID) : GetPos()); }
 		ICCItem *GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName);
 		inline int GetOverlayRotation (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetRotation(dwID) : -1); }
-		inline COverlayType *GetOverlayType(DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetType(dwID) : NULL); }
+		inline COverlayType *GetOverlayType (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetType(dwID) : NULL); }
 		inline void SetOverlayData (DWORD dwID, const CString &sAttribute, const CString &sData) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetData(dwID, sAttribute, sData); }
 		inline bool SetOverlayEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->SetEffectProperty(dwID, sProperty, pValue) : false); }
 		inline void SetOverlayPos (DWORD dwID, const CVector &vPos) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetPos(this, dwID, vPos); }
@@ -1544,6 +1545,7 @@ class CSpaceObject : public CObject
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }
+		void ScrapeOverlays (void);
 
 		//	...for stations
 
