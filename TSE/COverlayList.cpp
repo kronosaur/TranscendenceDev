@@ -352,6 +352,23 @@ void COverlayList::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx 
 	DEBUG_CATCH
 	}
 
+void COverlayList::FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const
+
+//	FireOnObjDocked
+//
+//	Calls OnObjDocked on all overlays
+
+	{
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed())
+			pField->FireOnObjDocked(pSource, pShip);
+
+		pField = pField->GetNext();
+		}
+	}
+
 const CString &COverlayList::GetData (DWORD dwID, const CString &sAttrib)
 
 //	GetData

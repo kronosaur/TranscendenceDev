@@ -1059,7 +1059,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 
 		Port.iStatus = psInUse;
 
-		//	Tell the owner that somone has docked with it first
+		//	Tell the owner that someone has docked with it first
 		//	(We do this because sometimes we want to handle stuff
 		//	in OnObjDocked before we show the player a dock screen)
 
@@ -1069,6 +1069,16 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 				&& !pOwner->IsDestroyed()
 				&& pShip->IsSubscribedToEvents(pOwner))
 			pOwner->FireOnObjDocked(pShip, pOwner);
+
+		//	Notify any overlays on the station that a ship docked.
+		//	Sometimes overlays react to dockings.
+
+		COverlayList *pOverlays;
+		if (pOwner
+				&& (pOverlays = pOwner->GetOverlays())
+				&& pOwner != pShip
+				&& !pOwner->IsDestroyed())
+			pOverlays->FireOnObjDocked(pOwner, pShip);
 
 		//	Set the owner as "explored" (if the ship is the player)
 

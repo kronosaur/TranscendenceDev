@@ -531,6 +531,7 @@ class COverlay
 		bool FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		void FireOnDestroy (CSpaceObject *pSource);
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
+		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
 		inline int GetCounter (void) const { return m_iCounter; }
 		inline const CString &GetData (const CString &sAttrib) { return m_Data.GetData(sAttrib); }
 		inline int GetDevice (void) const { return m_iDevice; }
@@ -634,6 +635,7 @@ class COverlayList
 		CString DebugCrashInfo (void) const;
 		bool FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen = NULL, int *retiPriority = NULL, ICCItem **retpData = NULL) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
+		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
 		int GetCountOfType (COverlayType *pType);
 		const CString &GetData (DWORD dwID, const CString &sAttrib);
 		void GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const;

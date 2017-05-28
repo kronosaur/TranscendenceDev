@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 #define EVENT_GET_DOCK_SCREEN					CONSTLIT("GetDockScreen")
+#define EVENT_ON_OBJ_DOCKED						CONSTLIT("OnObjDocked")
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 #define ON_DAMAGE_EVENT							CONSTLIT("OnDamage")
@@ -572,6 +573,30 @@ void COverlay::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Overlay OnObjDestroyed: %s"), pResult->GetStringValue()), pResult);
 
 		CCCtx.Discard(pResult);
+		}
+	}
+
+void COverlay::FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const
+
+//	FireOnObjDocked
+//
+//	Calls OnObjDocked on all overlays
+
+	{
+	SEventHandlerDesc Event;
+	if (m_pType->FindEventHandler(EVENT_ON_OBJ_DOCKED, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SaveAndDefineSourceVar(pSource);
+		Ctx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		Ctx.DefineSpaceObject(CONSTLIT("aObjDocked"), pShip);
+		Ctx.DefineSpaceObject(CONSTLIT("aDockTarget"), pSource);
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			pSource->ReportEventError(EVENT_ON_OBJ_DOCKED, pResult);
+		Ctx.Discard(pResult);
 		}
 	}
 
