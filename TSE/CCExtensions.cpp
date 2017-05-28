@@ -1628,7 +1628,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	0,	},
 
 		{	"objGetOverlays",			fnObjGet,		FN_OBJ_GET_OVERLAYS,
-			"(objGetOverlays obj [criteria]) -> list of overlayIDs",
+			"(objGetOverlays obj [criteria|overlayType]) -> list of overlayIDs",
 			"i*",	0,	},
 
 		{	"objGetOverlayType",			fnObjGet,		FN_OBJ_GET_OVERLAY_TYPE,
@@ -6051,15 +6051,23 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
             //  See if we have a criteria
 
+			DWORD dwType = 0;
             CDesignTypeCriteria Criteria;
             if (pArgs->GetCount() >= 2)
                 {
-                if (CDesignTypeCriteria::ParseCriteria(pArgs->GetElement(1)->GetStringValue(), &Criteria) != NOERROR)
-                    return pCC->CreateError(CONSTLIT("Invalid criteria"), pArgs->GetElement(1));
+				if (pArgs->GetElement(1)->IsInteger())
+					{
+					dwType = pArgs->GetElement(1)->GetIntegerValue();
+					}
+				else
+					{
+					if (CDesignTypeCriteria::ParseCriteria(pArgs->GetElement(1)->GetStringValue(), &Criteria) != NOERROR)
+						return pCC->CreateError(CONSTLIT("Invalid criteria"), pArgs->GetElement(1));
 
-                //  Make sure we include overlay types
+					//  Make sure we include overlay types
 
-                Criteria.IncludeType(designOverlayType);
+					Criteria.IncludeType(designOverlayType);
+					}
                 }
 
             //  Get the list of overlays
@@ -6073,6 +6081,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			for (int i = 0; i < List.GetCount(); i++)
 				{
+				//	If we don't match the type, skip.
+
+				if (dwType != 0 && List[i]->GetType()->GetUNID() != dwType)
+					continue;
+
                 //  If we don't match the criteria, skip
 
                 if (!Criteria.IsEmpty() && !List[i]->GetType()->MatchesCriteria(Criteria))
