@@ -253,10 +253,6 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		return error;
 		}
 
-	//	Keep track of the events that we have
-
-	m_fHasOnUpdateEvent = FindEventHandler(ON_UPDATE_EVENT);
-
 	//	Are we a field/shield overlay (or part of hull)?
 	//	By default, we are a shield overlay if we absorb damage.
 

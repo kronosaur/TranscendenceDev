@@ -264,7 +264,6 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fHasGravity(false),
 		m_fInsideBarrier(false),
 		m_fHasOnSubordinateAttackedEvent(false),
-		m_fHasOnUpdateEvent(false),
 		m_fHasGetDockScreenEvent(false),
 		m_fHasOnAttackedByPlayerEvent(false),
 		m_fHasOnOrderChangedEvent(false),
@@ -1105,7 +1104,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	else
 		dwLoad = 0;
 
-	pObj->m_fHasOnUpdateEvent =			((dwLoad & 0x00000001) ? true : false);
+	//	0x00000001 unused since version 148
 	pObj->m_fHasGetDockScreenEvent =	((dwLoad & 0x00000002) ? true : false);
 	pObj->m_fHasOnAttackedByPlayerEvent =	((dwLoad & 0x00000004) ? true : false);
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
@@ -3272,7 +3271,7 @@ void CSpaceObject::FireOnUpdate (void)
 	{
 	SEventHandlerDesc Event;
 
-	if (FindEventHandler(ON_UPDATE_EVENT, &Event))
+	if (FindEventHandler(CDesignType::evtOnUpdate, &Event))
 		{
 		CCodeChainCtx Ctx;
 
@@ -3419,6 +3418,31 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **re
 	if (!g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, &sScreen, &pData, &iPriority))
 		iPriority = -1;
 
+	//	See if any overlays have dock screens
+
+	COverlayList *pOverlays;
+	if (pOverlays = GetOverlays())
+		{
+		CString sOverlayScreen;
+		int iOverlayPriority;
+		ICCItem *pOverlayData;
+		if (pOverlays->FireGetDockScreen(this, &sOverlayScreen, &iOverlayPriority, &pOverlayData))
+			{
+			if (iOverlayPriority > iPriority)
+				{
+				sScreen = sOverlayScreen;
+				iPriority = iOverlayPriority;
+
+				if (pData)
+					pData->Discard(&CC);
+
+				pData = pOverlayData;
+				}
+			else
+				pOverlayData->Discard(&CC);
+			}
+		}
+
 	//	Next see if we have an event that handles this
 
 	CString sCustomScreen;
@@ -3437,9 +3461,7 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **re
 			pData = pCustomData;
 			}
 		else
-			{
 			pCustomData->Discard(&CC);
-			}
 		}
 
 	//	If an event has overridden the dock screen, then resolve
@@ -7027,7 +7049,6 @@ void CSpaceObject::SetEventFlags (void)
 	SetHasOnAttackedByPlayerEvent(FindEventHandler(CONSTLIT("OnAttackedByPlayer")));
 	SetHasOnDamageEvent(FindEventHandler(CONSTLIT("OnDamage")));
 	SetHasOnObjDockedEvent(FindEventHandler(CONSTLIT("OnObjDocked")));
-	SetHasOnUpdateEvent(FindEventHandler(CONSTLIT("OnUpdate")));
 
 	//	Let subclasses do their bit
 
@@ -7290,11 +7311,14 @@ bool CSpaceObject::SupportsDocking (bool bPlayer)
 //	Returns TRUE if this object supports docking.
 
 	{
+	COverlayList *pOverlays;
+
 	return (GetDockingPortCount() > 0) 
 			&& (!bPlayer 
 				|| GetDefaultDockScreen() != NULL 
 				|| FireGetDockScreen()
-				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL));
+				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL)
+				|| ((pOverlays = GetOverlays()) && pOverlays->FireGetDockScreen(this)));
 	}
 
 bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult)
@@ -7429,7 +7453,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	//	Update object
 
 	CDesignType *pType;
-	if (HasOnUpdateEvent() 
+	if (FindEventHandler(CDesignType::evtOnUpdate)
 			&& IsDestinyTime(OBJECT_ON_UPDATE_CYCLE, OBJECT_ON_UPDATE_OFFSET)
 			&& (pType = GetType())
 			&& pType->GetAPIVersion() >= 31)
@@ -7739,7 +7763,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	//	More flags
 
 	dwSave = 0;
-	dwSave |= (m_fHasOnUpdateEvent			? 0x00000001 : 0);
+	//	0x00000001 unused
 	dwSave |= (m_fHasGetDockScreenEvent		? 0x00000002 : 0);
 	dwSave |= (m_fHasOnAttackedByPlayerEvent	? 0x00000004 : 0);
 	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);

@@ -400,8 +400,9 @@ class CDesignType
 			evtOnObjDestroyed			= 3,
 			evtOnSystemObjAttacked		= 4,
 			evtOnSystemWeaponFire		= 5,
+			evtOnUpdate					= 6,
 
-			evtCount					= 6,
+			evtCount					= 7,
 			};
 
         struct SMapDescriptionCtx
@@ -2363,7 +2364,6 @@ class COverlayType : public CDesignType
 		inline CEffectCreator *GetEffectCreator (void) const { return m_pEffect; }
 		inline CEffectCreator *GetHitEffectCreator (void) const { return m_pHitEffect; }
 		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
-		inline bool HasOnUpdateEvent (void) { return m_fHasOnUpdateEvent; }
 		inline bool IsHitEffectAlt (void) { return m_fAltHitEffect; }
 		inline bool IsShieldOverlay (void) { return m_fShieldOverlay; }
 		inline bool IsShipScreenDisabled (void) { return m_fDisableShipScreen; }
@@ -2398,7 +2398,6 @@ class COverlayType : public CDesignType
 		int m_iCounterMax;						//	Max value of counter (for progress bar)
 		CG32bitPixel m_rgbCounterColor;					//	Counter color
 
-		DWORD m_fHasOnUpdateEvent:1;			//	TRUE if we have OnUpdate
 		DWORD m_fAltHitEffect:1;				//	If TRUE, hit effect replaces normal effect
 		DWORD m_fRotateWithShip:1;				//	If TRUE, we rotate along with source rotation
 		DWORD m_fShieldOverlay:1;				//	If TRUE, we are above hull/armor
@@ -2406,8 +2405,9 @@ class COverlayType : public CDesignType
 		DWORD m_fDisarmShip:1;					//	If TRUE, ship is disarmed
 		DWORD m_fDisableShipScreen:1;			//	If TRUE, player cannot bring up ship screen
 		DWORD m_fSpinShip:1;					//	If TRUE, ship spins uncontrollably
-
 		DWORD m_fShowOnMap:1;					//	If TRUE, we show on the system map
+
+		DWORD m_fSpare1:1;
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;

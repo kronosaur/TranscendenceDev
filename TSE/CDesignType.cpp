@@ -166,6 +166,7 @@ static char *CACHED_EVENTS[CDesignType::evtCount] =
 		"OnObjDestroyed",
 		"OnSystemObjAttacked",
 		"OnSystemWeaponFire",
+		"OnUpdate",
 	};
 
 CString ParseAchievementSection (ICCItem *pItem);

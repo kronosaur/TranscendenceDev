@@ -152,6 +152,66 @@ CString COverlayList::DebugCrashInfo (void) const
 		}
 	}
 
+bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItem **retpData) const
+
+//	FireGetDockScreen
+//
+//	Fires <GetDockScreen> event for overlay. If we return TRUE, the caller must
+//	discard retpData.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	CString sBestScreen;
+	int iBestPriority = -1;
+	ICCItem *pBestData = NULL;
+
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed())
+			{
+			CString sScreen;
+			int iPriority;
+			ICCItem *pData;
+
+			if (pField->FireGetDockScreen(pSource, &sScreen, &iPriority, &pData))
+				{
+				if (iPriority > iBestPriority)
+					{
+					sBestScreen = sScreen;
+					iBestPriority = iPriority;
+
+					if (pBestData)
+						pBestData->Discard(&CC);
+
+					pBestData = pData;
+					}
+				else
+					pData->Discard(&CC);
+				}
+			}
+
+		pField = pField->GetNext();
+		}
+
+	if (iBestPriority == -1)
+		return false;
+
+	if (retsScreen)
+		*retsScreen = sBestScreen;
+
+	if (retiPriority)
+		*retiPriority = iBestPriority;
+
+	if (retpData)
+		*retpData = pBestData;
+	else
+		pBestData->Discard(&CC);
+
+	return true;
+	}
+
 int COverlayList::GetCountOfType (COverlayType *pType)
 
 //	GetCountOfType
