@@ -350,7 +350,7 @@ void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, IC
 
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
-		Ctx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		Ctx.SaveAndDefineOverlayID(m_dwID);
 
 		//	Execute
 
@@ -380,7 +380,7 @@ bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, in
 		{
 		CCodeChainCtx Ctx;
 		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		Ctx.SaveAndDefineOverlayID(m_dwID);
 
 		bool bResult;
 
@@ -442,8 +442,9 @@ void COverlay::FireOnCreate (CSpaceObject *pSource)
 
 		//	Setup 
 
+		Ctx.SetEvent(eventOverlayEvent);
 		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		Ctx.SaveAndDefineOverlayID(m_dwID);
 
 		//	Execute
 
@@ -472,8 +473,9 @@ bool COverlay::FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 		//	Setup 
 
+		CCCtx.SetEvent(eventOverlayEvent);
 		CCCtx.SaveAndDefineSourceVar(pSource);
-		CCCtx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		CCCtx.SaveAndDefineOverlayID(m_dwID);
 		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
 		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
@@ -525,8 +527,9 @@ void COverlay::FireOnDestroy (CSpaceObject *pSource)
 
 		//	Setup 
 
+		Ctx.SetEvent(eventOverlayEvent);
 		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		Ctx.SaveAndDefineOverlayID(m_dwID);
 
 		//	Execute
 
@@ -555,8 +558,9 @@ void COverlay::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx
 
 		//	Setup
 
+		CCCtx.SetEvent(eventOverlayEvent);
 		CCCtx.SaveAndDefineSourceVar(pSource);
-		CCCtx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		CCCtx.SaveAndDefineOverlayID(m_dwID);
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
@@ -588,8 +592,9 @@ void COverlay::FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) cons
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.SetEvent(eventOverlayEvent);
 		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		Ctx.SaveAndDefineOverlayID(m_dwID);
 		Ctx.DefineSpaceObject(CONSTLIT("aObjDocked"), pShip);
 		Ctx.DefineSpaceObject(CONSTLIT("aDockTarget"), pSource);
 
@@ -614,8 +619,9 @@ void COverlay::FireOnUpdate (CSpaceObject *pSource)
 
 		//	Setup 
 
+		Ctx.SetEvent(eventOverlayEvent);
 		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.DefineInteger(CONSTLIT("aOverlayID"), m_dwID);
+		Ctx.SaveAndDefineOverlayID(m_dwID);
 
 		//	Execute
 

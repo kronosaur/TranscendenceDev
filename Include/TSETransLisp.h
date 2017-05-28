@@ -20,6 +20,7 @@ enum ECodeChainEvents
 	eventGetGlobalPlayerPriceAdj =		8,
 	eventGetDescription =				9,
 	eventInitDockScreenList =			10,		//	Code inside <ListOptions> to (e.g.) set list filter
+	eventOverlayEvent =					11,
 	};
 
 class CCodeChainCtx
@@ -51,7 +52,6 @@ class CCodeChainCtx
 		inline CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		inline SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
 		inline CUniverse &GetUniverse (void) { return *g_pUniverse; }
-		bool InEvent (ECodeChainEvents iEvent) const;
 		inline ICCItem *Link (const CString &sString, int iOffset, int *retiLinked) { return m_CC.Link(sString, iOffset, retiLinked); }
 		void RestoreVars (void);
 		ICCItem *Run (ICCItem *pCode);
@@ -61,12 +61,13 @@ class CCodeChainCtx
 		void SaveAndDefineDataVar (ICCItem *pData);
 		void SaveAndDefineItemVar (const CItem &Item);
 		void SaveAndDefineItemVar (CItemCtx &ItemCtx);
+		void SaveAndDefineOverlayID (DWORD dwID);
 		void SaveAndDefineSourceVar (CSpaceObject *pSource);
 		void SaveItemVar (void);
 		void SaveSourceVar (void);
 		inline void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }
 		inline void SetCanvas (CG32bitImage *pCanvas) { m_pCanvas = pCanvas; }
-		inline void SetEvent (ECodeChainEvents iEvent) { m_iEvent = iEvent; }
+		void SetEvent (ECodeChainEvents iEvent);
 		inline void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 		void SetGlobalDefineWrapper (CExtension *pExtension);
 		inline void SetItemType (CItemType *pType) { m_pItemType = pType; }
@@ -79,6 +80,8 @@ class CCodeChainCtx
 		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
 		CVector AsVector (ICCItem *pItem);
+
+		static bool InEvent (ECodeChainEvents iEvent);
 
 	private:
 		struct SInvokeFrame
@@ -107,6 +110,7 @@ class CCodeChainCtx
 		ICCItem *m_pOldData;
 		ICCItem *m_pOldSource;
 		ICCItem *m_pOldItem;
+		ICCItem *m_pOldOverlayID;
 
 		bool m_bRestoreGlobalDefineHook;
 		IItemTransform *m_pOldGlobalDefineHook;

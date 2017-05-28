@@ -11,6 +11,7 @@
 #define FIELD_RADIUS							CONSTLIT("radius")
 #define FIELD_Z									CONSTLIT("z")
 
+#define STR_A_OVERLAY_ID						CONSTLIT("aOverlayID")
 #define STR_G_DATA								CONSTLIT("gData")
 #define STR_G_ITEM								CONSTLIT("gItem")
 #define STR_G_SOURCE							CONSTLIT("gSource")
@@ -30,6 +31,7 @@ CCodeChainCtx::CCodeChainCtx (void) :
 		m_pOldData(NULL),
 		m_pOldSource(NULL),
 		m_pOldItem (NULL),
+		m_pOldOverlayID(NULL),
 		m_bRestoreGlobalDefineHook(false),
 		m_pOldGlobalDefineHook(NULL)
 
@@ -339,7 +341,7 @@ DWORD CCodeChainCtx::GetAPIVersion (void) const
 	return (m_pExtension ? m_pExtension->GetAPIVersion() : API_VERSION);
 	}
 
-bool CCodeChainCtx::InEvent (ECodeChainEvents iEvent) const
+bool CCodeChainCtx::InEvent (ECodeChainEvents iEvent)
 
 //	InEvent
 //
@@ -393,6 +395,13 @@ void CCodeChainCtx::RestoreVars (void)
 		m_CC.DefineGlobal(STR_G_DATA, m_pOldData);
 		m_pOldData->Discard(&m_CC);
 		m_pOldData = NULL;
+		}
+
+	if (m_pOldOverlayID)
+		{
+		m_CC.DefineGlobal(STR_A_OVERLAY_ID, m_pOldOverlayID);
+		m_pOldOverlayID->Discard(&m_CC);
+		m_pOldOverlayID = NULL;
 		}
 	}
 
@@ -548,6 +557,19 @@ void CCodeChainCtx::SaveAndDefineItemVar (CItemCtx &ItemCtx)
 	DefineItem(STR_G_ITEM, ItemCtx);
 	}
 
+void CCodeChainCtx::SaveAndDefineOverlayID (DWORD dwID)
+
+//	SaveAndDefineOverlayID
+//
+//	Save the overlay ID
+
+	{
+	//	NOTE: We save the previous overlayID in SetEvent. Callers must call
+	//	SetEvent(eventOverlayEvent) before this method.
+
+	DefineInteger(STR_A_OVERLAY_ID, (int)dwID);
+	}
+
 void CCodeChainCtx::SaveAndDefineSourceVar (CSpaceObject *pSource)
 
 //	SaveAndDefineSourceVar
@@ -581,6 +603,25 @@ void CCodeChainCtx::SaveSourceVar (void)
 	{
 	if (m_pOldSource == NULL)
 		m_pOldSource = m_CC.LookupGlobal(STR_G_SOURCE, this);
+	}
+
+void CCodeChainCtx::SetEvent (ECodeChainEvents iEvent)
+
+//	SetEvent
+//
+//	Sets the event that we're about to invoke.
+
+	{
+	//	If we're about to invoke an overlay event, and we're currently inside an
+	//	overlay event, then save aOverlayID.
+
+	if (iEvent == eventOverlayEvent && InEvent(eventOverlayEvent))
+		{
+		if (m_pOldOverlayID == NULL)
+			m_pOldOverlayID = m_CC.LookupGlobal(STR_A_OVERLAY_ID, this);
+		}
+
+	m_iEvent = iEvent;
 	}
 
 void CCodeChainCtx::SetGlobalDefineWrapper (CExtension *pExtension)
