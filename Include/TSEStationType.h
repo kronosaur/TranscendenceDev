@@ -173,7 +173,6 @@ class CStationType : public CDesignType
 		inline bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
 		inline bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		inline bool CanHitFriends (void) { return (m_fNoFriendlyFire ? false : true); }
-		CString GenerateRandomName (const CString &sSubst, DWORD *retdwFlags);
 		inline CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		inline CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
 		inline CArmorClass *GetArmorClass (void) { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
@@ -219,11 +218,10 @@ class CStationType : public CDesignType
 		inline int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
 		inline int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
 		inline int GetMaxStructuralHitPoints (void) { return m_iMaxStructuralHP; }
-		inline DWORD GetNameFlags (void) { return m_dwNameFlags; }
+		inline const CNameDesc &GetNameDesc (void) const { return m_Name; }
 		inline int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
 		inline Metric GetParallaxDist (void) const { return m_rParallaxDist; }
 		inline IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
-		inline DWORD GetRandomNameFlags (void) { return m_dwRandomNameFlags; }
 		inline const CRegenDesc &GetRegenDesc (void) { return m_Regen; }
 		IShipGenerator *GetReinforcementsTable (void);
 		const CIntegralRotationDesc &GetRotationDesc (void);
@@ -239,7 +237,6 @@ class CStationType : public CDesignType
 		inline int GetTempChance (void) const { return m_iChance; }
 		inline bool HasAnimations (void) const { return (m_pAnimations != NULL); }
 		inline bool HasGravity (void) const { return (m_rGravityRadius > 0.0); }
-		inline bool HasRandomNames (void) const { return !m_sRandomNames.IsBlank(); }
 		inline bool HasWreckImage (void) const { return (!IsImmutable() && m_iMaxHitPoints > 0); }
 		inline void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, GetEncounterDesc(), iInc); }
 		inline bool IsActive (void) { return (m_fInactive ? false : true); }
@@ -325,10 +322,8 @@ class CStationType : public CDesignType
 		CXMLElement *m_pDesc;
 
 		//	Basic station descriptors
-		CString m_sName;								//	Name
-		DWORD m_dwNameFlags;							//	Flags
-		CString m_sRandomNames;							//	Random names
-		DWORD m_dwRandomNameFlags;						//	Flags
+
+		CNameDesc m_Name;								//	Name
 		CSovereignRef m_pSovereign;						//	Sovereign
 		ScaleTypes m_iScale;							//	Scale
 		Metric m_rParallaxDist;							//	Parallax distance for background objects

@@ -208,7 +208,9 @@ void CItemType::CreateEmptyFlotsam (CSystem *pSystem,
 //	Creates an empty flotsam station
 
 	{
-	SObjCreateCtx CreateCtx;
+	SSystemCreateCtx Ctx(pSystem);
+
+	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;
 	CreateCtx.vVel = vVel;
 
@@ -1379,7 +1381,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (!pDesc->FindAttribute(PLURAL_NAME_ATTRIB, &m_sName))
 		m_sName = pDesc->GetAttribute(CONSTLIT(g_NameAttrib));
 
-	m_dwNameFlags = ::LoadNameFlags(pDesc);
+	m_dwNameFlags = CLanguage::LoadNameFlags(pDesc);
 
 	m_sSortName = pDesc->GetAttribute(SORT_NAME_ATTRIB);
 	if (m_sSortName.IsBlank())

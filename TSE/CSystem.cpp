@@ -2013,10 +2013,7 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 
 	//	Generate context block
 
-	SSystemCreateCtx Ctx;
-	Ctx.pTopologyNode = GetTopology();
-	Ctx.pSystem = this;
-	Ctx.pStats = NULL;
+	SSystemCreateCtx Ctx(this);
 
 	CXMLElement *pLocalTable = (m_pType ? m_pType->GetLocalSystemTables() : NULL);
 	if (pLocalTable)
@@ -2050,7 +2047,7 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 
 	//	Create the station
 
-	SObjCreateCtx CreateCtx;
+	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;
 	CreateCtx.pOrbit = &NewOrbit;
 	CreateCtx.bCreateSatellites = true;

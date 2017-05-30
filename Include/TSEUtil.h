@@ -604,46 +604,6 @@ class CGlobalEventCache
 		TArray<SEntry> m_Cache;
 	};
 
-class CLanguageDataBlock
-	{
-	public:
-		~CLanguageDataBlock (void);
-
-		CLanguageDataBlock &operator= (const CLanguageDataBlock &Src);
-
-		void AddEntry (const CString &sID, const CString &sText);
-		void DeleteAll (void);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		void MergeFrom (const CLanguageDataBlock &Source);
-		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const;
-		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText) const;
-		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
-
-	private:
-		enum ETranslateResult
-			{
-			resultArray,
-			resultString,
-			resultCCItem,
-
-			resultFound,
-			resultNotFound,
-			};
-
-		struct SEntry
-			{
-			CString sText;
-			ICCItem *pCode;
-			};
-
-		ICCItem *ComposeCCItem (CCodeChain &CC, ICCItem *pValue, const CString &sPlayerName, GenomeTypes iPlayerGenome, ICCItem *pData) const;
-		bool IsCode (const CString &sText) const;
-		CString ParseTextBlock (const CString &sText) const;
-		ETranslateResult Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult = NULL) const;
-
-		TSortMap<CString, SEntry> m_Data;
-	};
-
 enum DestructionTypes
 	{
 	removedFromSystem				= 0,

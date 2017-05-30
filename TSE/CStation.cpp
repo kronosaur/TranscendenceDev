@@ -728,8 +728,9 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	Name
 
-	if (pType->HasRandomNames())
-		pStation->m_sName = pType->GenerateRandomName(pSystem->GetName(), &pStation->m_dwNameFlags);
+	const CNameDesc &Name = pType->GetNameDesc();
+	if (!Name.IsConstant())
+		pStation->m_sName = Name.GenerateName(&CreateCtx.SystemCtx.NameParams, &pStation->m_dwNameFlags);
 	else
 		pStation->m_dwNameFlags = 0;
 
@@ -3405,10 +3406,6 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		if (fNoArticle)
 			m_dwNameFlags = nounNoArticle;
-		else if (m_pType->HasRandomNames())
-			m_dwNameFlags = m_pType->GetRandomNameFlags();
-		else
-			m_dwNameFlags = m_pType->GetNameFlags();
 		}
 
 	//	Previous versions did not store m_fImmutable

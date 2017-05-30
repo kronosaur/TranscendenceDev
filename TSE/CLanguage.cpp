@@ -6,6 +6,15 @@
 #include "PreComp.h"
 #include "LanguageDefs.h"
 
+#define CUSTOM_PLURAL_ATTRIB				CONSTLIT("customPlural")
+#define DEFINITE_ARTICLE_ATTRIB				CONSTLIT("definiteArticle")
+#define ES_PLURAL_ATTRIB					CONSTLIT("esPlural")
+#define FIRST_PLURAL_ATTRIB					CONSTLIT("firstPlural")
+#define NO_ARTICLE_ATTRIB					CONSTLIT("noArticle")
+#define PERSONAL_NAME_ATTRIB				CONSTLIT("personalName")
+#define SECOND_PLURAL_ATTRIB				CONSTLIT("secondPlural")
+#define VOWEL_ARTICLE_ATTRIB				CONSTLIT("reverseArticle")
+
 CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags)
 
 //	ComposeNounPhrase
@@ -85,6 +94,35 @@ CString CLanguage::ComposeVerb (const CString &sVerb, DWORD dwVerbFlags)
 		return CString(pVerbData->pszPlural, -1, TRUE);
 
 	return sVerb;
+	}
+
+DWORD CLanguage::LoadNameFlags (CXMLElement *pDesc)
+
+//	LoadNameFlags
+//
+//	Returns flags word with NounFlags
+
+	{
+	DWORD dwFlags = 0;
+
+	if (pDesc->GetAttributeBool(DEFINITE_ARTICLE_ATTRIB))
+		dwFlags |= nounDefiniteArticle;
+	if (pDesc->GetAttributeBool(FIRST_PLURAL_ATTRIB))
+		dwFlags |= nounFirstPlural;
+	if (pDesc->GetAttributeBool(ES_PLURAL_ATTRIB))
+		dwFlags |= nounPluralES;
+	if (pDesc->GetAttributeBool(CUSTOM_PLURAL_ATTRIB))
+		dwFlags |= nounCustomPlural;
+	if (pDesc->GetAttributeBool(SECOND_PLURAL_ATTRIB))
+		dwFlags |= nounSecondPlural;
+	if (pDesc->GetAttributeBool(VOWEL_ARTICLE_ATTRIB))
+		dwFlags |= nounVowelArticle;
+	if (pDesc->GetAttributeBool(NO_ARTICLE_ATTRIB))
+		dwFlags |= nounNoArticle;
+	if (pDesc->GetAttributeBool(PERSONAL_NAME_ATTRIB))
+		dwFlags |= nounPersonalName;
+
+	return dwFlags;
 	}
 
 DWORD CLanguage::ParseNounFlags (const CString &sValue)

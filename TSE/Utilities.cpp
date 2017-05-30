@@ -6,18 +6,10 @@
 #include <math.h>
 
 #define CLASS_ATTRIB						CONSTLIT("class")
-#define CUSTOM_PLURAL_ATTRIB				CONSTLIT("customPlural")
 #define DAMAGE_ADJ_ATTRIB					CONSTLIT("damageAdj")
-#define DEFINITE_ARTICLE_ATTRIB				CONSTLIT("definiteArticle")
-#define ES_PLURAL_ATTRIB					CONSTLIT("esPlural")
-#define FIRST_PLURAL_ATTRIB					CONSTLIT("firstPlural")
 #define HP_BONUS_ATTRIB						CONSTLIT("hpBonus")
-#define NO_ARTICLE_ATTRIB					CONSTLIT("noArticle")
-#define PERSONAL_NAME_ATTRIB				CONSTLIT("personalName")
 #define SCALE_ATTRIB						CONSTLIT("scale")
-#define SECOND_PLURAL_ATTRIB				CONSTLIT("secondPlural")
 #define SOVEREIGN_ATTRIB					CONSTLIT("sovereign")
-#define VOWEL_ARTICLE_ATTRIB				CONSTLIT("reverseArticle")
 
 #define FREQUENCY_COMMON					CONSTLIT("common")
 #define FREQUENCY_UNCOMMON					CONSTLIT("uncommon")
@@ -2225,35 +2217,6 @@ DWORD LoadExtensionVersion (const CString &sVersion)
 		return 1;
 	else
 		return 0;
-	}
-
-DWORD LoadNameFlags (CXMLElement *pDesc)
-
-//	LoadNameFlags
-//
-//	Returns flags word with NounFlags
-
-	{
-	DWORD dwFlags = 0;
-
-	if (pDesc->GetAttributeBool(DEFINITE_ARTICLE_ATTRIB))
-		dwFlags |= nounDefiniteArticle;
-	if (pDesc->GetAttributeBool(FIRST_PLURAL_ATTRIB))
-		dwFlags |= nounFirstPlural;
-	if (pDesc->GetAttributeBool(ES_PLURAL_ATTRIB))
-		dwFlags |= nounPluralES;
-	if (pDesc->GetAttributeBool(CUSTOM_PLURAL_ATTRIB))
-		dwFlags |= nounCustomPlural;
-	if (pDesc->GetAttributeBool(SECOND_PLURAL_ATTRIB))
-		dwFlags |= nounSecondPlural;
-	if (pDesc->GetAttributeBool(VOWEL_ARTICLE_ATTRIB))
-		dwFlags |= nounVowelArticle;
-	if (pDesc->GetAttributeBool(NO_ARTICLE_ATTRIB))
-		dwFlags |= nounNoArticle;
-	if (pDesc->GetAttributeBool(PERSONAL_NAME_ATTRIB))
-		dwFlags |= nounPersonalName;
-
-	return dwFlags;
 	}
 
 CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)

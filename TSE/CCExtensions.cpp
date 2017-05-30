@@ -11225,7 +11225,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 		{
 		CLocationDef *pLoc = pSystem->GetLocation(iLocID);
 
-		SObjCreateCtx CreateCtx;
+		SObjCreateCtx CreateCtx(*pSysCreateCtx);
 		CreateCtx.vPos = vPos;
 		CreateCtx.pLoc = pLoc;
 		CreateCtx.pOrbit = &pLoc->GetOrbit();

@@ -800,19 +800,6 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 	return true;
 	}
 
-CString CStationType::GenerateRandomName (const CString &sSubst, DWORD *retdwFlags)
-
-//	GenerateRandomName
-//
-//	Generates a random name
-
-	{
-	if (retdwFlags)
-		*retdwFlags = m_dwRandomNameFlags;
-
-	return ::GenerateRandomName(m_sRandomNames, sSubst);
-	}
-
 CCommunicationsHandler *CStationType::GetCommsHandler (void)
 
 //	GetCommsHandler
@@ -949,10 +936,7 @@ CString CStationType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) 
 //	Returns the noun pattern.
 
 	{
-	if (retdwFlags)
-		*retdwFlags = m_dwNameFlags;
-
-	return m_sName;
+	return m_Name.GetConstantName(retdwFlags);
 	}
 
 IShipGenerator *CStationType::GetReinforcementsTable (void)
@@ -1379,20 +1363,8 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Load names
 
-	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
-	m_dwNameFlags = LoadNameFlags(pDesc);
-
-	CXMLElement *pNames = pDesc->GetContentElementByTag(NAMES_TAG);
-	if (pNames)
-		{
-		m_sRandomNames = pNames->GetContentText(0);
-		m_dwRandomNameFlags = LoadNameFlags(pNames);
-		}
-	else
-		{
-		m_sRandomNames = NULL_STR;
-		m_dwRandomNameFlags = 0;
-		}
+	if (error = m_Name.InitFromXML(Ctx, pDesc))
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Placement
 
@@ -1857,6 +1829,7 @@ void CStationType::OnReinit (void)
 //	Reinitialize the type
 
 	{
+	m_Name.Reinit();
 	m_EncounterRecord.Reinit(m_RandomPlacement);
 	m_Image.Reinit();
 	m_HeroImage.Reinit();

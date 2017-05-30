@@ -69,6 +69,9 @@
     <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{a023d886-b4dc-4e47-b336-17dcc88f249c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Language">
+      <UniqueIdentifier>{f2da3398-611e-4ffd-8ba3-992dfed6f45a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -476,9 +479,6 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CGlobalEventCache.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="CLanguageDataBlock.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="ContantsUtilities.cpp">
@@ -1096,14 +1096,20 @@
     <ClCompile Include="SUpdateCtx.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="CLanguage.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CFailureDesc.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
     <ClCompile Include="CFireAndSmokePainter.cpp">
       <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CLanguage.cpp">
+      <Filter>Source Files\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="CLanguageDataBlock.cpp">
+      <Filter>Source Files\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="CNameDesc.cpp">
+      <Filter>Source Files\Language</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

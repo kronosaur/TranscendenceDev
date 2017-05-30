@@ -605,7 +605,7 @@ class CGenericType : public CDesignType
 #include "TSEArmor.h"
 #include "TSEDevices.h"
 
-//	CItemType -----------------------------------------------------------------
+//	CItemType ------------------------------------------------------------------
 
 #include "TSEItemType.h"
 
@@ -617,7 +617,7 @@ class CGenericType : public CDesignType
 #include "TSEDocking.h"
 #include "TSEOverlayType.h"
 
-//	CShipClass ----------------------------------------------------------------
+//	CShipClass -----------------------------------------------------------------
 
 #include "TSEShipClass.h"
 

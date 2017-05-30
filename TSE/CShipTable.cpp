@@ -877,7 +877,7 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pNames)
 		{
 		m_sShipName = pNames->GetContentText(0);
-		m_dwShipNameFlags = LoadNameFlags(pNames);
+		m_dwShipNameFlags = CLanguage::LoadNameFlags(pNames);
 		}
 	else
 		{

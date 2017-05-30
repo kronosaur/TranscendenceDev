@@ -375,6 +375,7 @@
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
+    <ClCompile Include="CNameDesc.cpp" />
     <ClCompile Include="CObjectJoint.cpp" />
     <ClCompile Include="CObjectJointList.cpp" />
     <ClCompile Include="COverlay.cpp" />

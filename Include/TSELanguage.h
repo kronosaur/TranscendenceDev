@@ -5,6 +5,8 @@
 
 #pragma once
 
+struct SDesignLoadCtx;
+
 enum NounFlags
 	{
 	nounDefiniteArticle		= 0x00000001,	//	Article must be "the"
@@ -50,6 +52,71 @@ class CLanguage
 
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
+		static DWORD LoadNameFlags (CXMLElement *pDesc);
 		static DWORD ParseNounFlags (const CString &sValue);
 		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, CString *retsArticle = NULL);
+	};
+
+class CLanguageDataBlock
+	{
+	public:
+		~CLanguageDataBlock (void);
+
+		CLanguageDataBlock &operator= (const CLanguageDataBlock &Src);
+
+		void AddEntry (const CString &sID, const CString &sText);
+		void DeleteAll (void);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		void MergeFrom (const CLanguageDataBlock &Source);
+		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const;
+		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText) const;
+		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
+
+	private:
+		enum ETranslateResult
+			{
+			resultArray,
+			resultString,
+			resultCCItem,
+
+			resultFound,
+			resultNotFound,
+			};
+
+		struct SEntry
+			{
+			CString sText;
+			ICCItem *pCode;
+			};
+
+		ICCItem *ComposeCCItem (CCodeChain &CC, ICCItem *pValue, const CString &sPlayerName, GenomeTypes iPlayerGenome, ICCItem *pData) const;
+		bool IsCode (const CString &sText) const;
+		CString ParseTextBlock (const CString &sText) const;
+		ETranslateResult Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult = NULL) const;
+
+		TSortMap<CString, SEntry> m_Data;
+	};
+
+class CNameDesc
+	{
+	public:
+		CNameDesc (void);
+
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+//		CString GenerateName (CSystem *pSystem, DWORD *retdwNameFlags) const;
+		CString GenerateName (TSortMap<CString, CString> *pParams, DWORD *retdwNameFlags) const;
+		inline const CString &GetConstantName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwConstantNameFlags; return m_sConstantName; }
+		inline bool IsConstant (void) const { return (m_Names.GetCount() == 0); }
+		inline bool IsEmpty (void) const { return m_sConstantName.IsBlank(); }
+		void Reinit (void);
+
+	private:
+		CString GenerateName (const CString &sName, TSortMap<CString, CString> *pParams) const;
+
+		CString m_sConstantName;						//	Generic name (must be constant)
+		DWORD m_dwConstantNameFlags;
+
+		TArray<CString> m_Names;						//	List of name patterns.
+		DWORD m_dwNameFlags;							//	For backwards compatibility.
+		mutable int m_iNamesGenerated;					//	Number of names generated so far.
 	};

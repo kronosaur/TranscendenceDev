@@ -244,13 +244,7 @@ struct SSystemCreateCtx
 		checkOverlapAsteroids,				//	Don't overlap asteroids or planets
 		};
 
-	SSystemCreateCtx (void) : 
-			pExtension(NULL),
-			iOverlapCheck(checkOverlapNone),
-			pStats(NULL),
-			pStation(NULL), 
-			dwLastObjID(0)
-		{ }
+	SSystemCreateCtx (CSystem *pSystemArg);
 
 	//	Context
 
@@ -259,6 +253,7 @@ struct SSystemCreateCtx
 	CSystem *pSystem;						//	System that we're creating
 
 	TArray<CXMLElement *> LocalTables;		//	Stack of local tables
+	TSortMap<CString, CString> NameParams;	//	Parameters passed in to CNameDesc
 
 	//	Options
 
@@ -602,7 +597,8 @@ class CSystemSpacePainter
 
 struct SObjCreateCtx
 	{
-	SObjCreateCtx (void) :
+	SObjCreateCtx (SSystemCreateCtx &SystemCtxArg) :
+			SystemCtx(SystemCtxArg),
 			iRotation(-1),
 			rParallax(1.0),
 			pLoc(NULL),
@@ -615,6 +611,7 @@ struct SObjCreateCtx
 			bIgnoreLimits(false)
 		{ }
 
+	SSystemCreateCtx &SystemCtx;			//	System create context
 	CVector vPos;							//	Create at this position. This should
 											//		always be set properly, even if orbit
 											//		or location is also provided.

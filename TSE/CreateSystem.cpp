@@ -776,7 +776,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 
 		//	Create the station at the location
 
-		SObjCreateCtx CreateCtx;
+		SObjCreateCtx CreateCtx(*pCtx);
 		CreateCtx.vPos = pLoc->GetOrbit().GetObjectPos();
 		CreateCtx.pLoc = pLoc;
 		CreateCtx.pOrbit = &pLoc->GetOrbit();
@@ -1657,7 +1657,7 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 
 	//	Create the station at the location
 
-	SObjCreateCtx CreateCtx;
+	SObjCreateCtx CreateCtx(*pCtx);
 	CreateCtx.vPos = OrbitDesc.GetObjectPos();
 	CreateCtx.pOrbit = &OrbitDesc;
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
@@ -1766,7 +1766,7 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 
 		//	Create the station at the location
 
-		SObjCreateCtx CreateCtx;
+		SObjCreateCtx CreateCtx(*pCtx);
 		CreateCtx.vPos = OrbitDesc.GetObjectPos();
 		CreateCtx.pLoc = pCtx->pSystem->GetLocation(iLocation);
 		CreateCtx.pOrbit = &OrbitDesc;
@@ -3501,9 +3501,16 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 
 	//	Set the name of the station, if specified by the system
 
-	CString sName = pDesc->GetAttribute(NAME_ATTRIB);
-	if (!sName.IsBlank())
-		pStation->SetName(sName, LoadNameFlags(pDesc));
+	CNameDesc Name;
+	if (error = Name.InitFromXML(SDesignLoadCtx(), pDesc))
+		return error;
+
+	if (!Name.IsEmpty())
+		{
+		DWORD dwNameFlags;
+		CString sName = Name.GenerateName(&pCtx->NameParams, &dwNameFlags);
+		pStation->SetName(sName, dwNameFlags);
+		}
 
 	//	If we want to show the orbit for this station, set the orbit desc
 
@@ -3684,10 +3691,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 
 	//	Create the group
 
-	SSystemCreateCtx Ctx;
-	Ctx.pExtension = pType->GetExtension();
-	Ctx.pTopologyNode = pTopology;
-	Ctx.pSystem = pSystem;
+	SSystemCreateCtx Ctx(pSystem);
 	Ctx.pStats = pStats;
 
 	//	Add local tables
@@ -3779,7 +3783,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 
 					//	Create the station at the location
 
-					SObjCreateCtx CreateCtx;
+					SObjCreateCtx CreateCtx(Ctx);
 					CreateCtx.vPos = OrbitDesc.GetObjectPos();
 					CreateCtx.pLoc = (iLocation != -1 ? Ctx.pSystem->GetLocation(iLocation) : NULL);
 					CreateCtx.pOrbit = &OrbitDesc;
@@ -4333,7 +4337,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 
 	//	Set up parameters for station creation
 
-	SObjCreateCtx CreateCtx;
+	SObjCreateCtx CreateCtx(*pCtx);
 	CreateCtx.vPos = vPos;
 	CreateCtx.pOrbit = &OrbitDesc;
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
@@ -4401,4 +4405,22 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 		*retpStation = pStation;
 
 	return NOERROR;
+	}
+
+//	SSystemCreateCtx -----------------------------------------------------------
+
+SSystemCreateCtx::SSystemCreateCtx (CSystem *pSystemArg) : 
+			pExtension(pSystemArg->GetType() ? pSystemArg->GetType()->GetExtension() : NULL),
+			pTopologyNode(pSystemArg->GetTopology()),
+			pSystem(pSystemArg),
+			iOverlapCheck(checkOverlapNone),
+			pStats(NULL),
+			pStation(NULL), 
+			dwLastObjID(0)
+
+//	SSystemCreateCtx constructor
+
+	{
+	ASSERT(pSystemArg);
+	NameParams.SetAt(CONSTLIT("systemName"), pSystem->GetName());
 	}

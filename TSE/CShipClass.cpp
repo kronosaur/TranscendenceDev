@@ -1509,7 +1509,9 @@ bool CShipClass::CreateEmptyWreck (CSystem *pSystem,
 	{
 	DEBUG_TRY
 
-	SObjCreateCtx CreateCtx;
+	SSystemCreateCtx Ctx(pSystem);
+
+	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;
 	CreateCtx.vVel = vVel;
 
@@ -3548,7 +3550,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_sManufacturer = pDesc->GetAttribute(CONSTLIT(g_ManufacturerAttrib));
 	m_sName = pDesc->GetAttribute(CONSTLIT(g_ClassAttrib));
 	m_sTypeName = pDesc->GetAttribute(CONSTLIT(g_TypeAttrib));
-	m_dwClassNameFlags = LoadNameFlags(pDesc);
+	m_dwClassNameFlags = CLanguage::LoadNameFlags(pDesc);
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
 
 	if (error = m_pDefaultSovereign.LoadUNID(Ctx, pDesc->GetAttribute(DEFAULT_SOVEREIGN_ATTRIB)))
@@ -3565,7 +3567,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pNames)
 		{
 		m_sShipNames = pNames->GetContentText(0);
-		m_dwShipNameFlags = LoadNameFlags(pNames);
+		m_dwShipNameFlags = CLanguage::LoadNameFlags(pNames);
 		}
 	else
 		m_dwShipNameFlags = 0;
