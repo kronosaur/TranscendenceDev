@@ -81,3 +81,30 @@ struct SShipGeneratorCtx
 	CSpaceObject *pBase;						//	Base for ship (may be NULL)
 	CSpaceObject *pTarget;						//	Target for ship (may be NULL)
 	};
+
+//	CShipTable ----------------------------------------------------------------
+
+class CShipTable : public CDesignType
+	{
+	public:
+		CShipTable (void);
+		virtual ~CShipTable (void);
+
+		inline void CreateShips (SShipCreateCtx &Ctx) { if (m_pGenerator) m_pGenerator->CreateShips(Ctx); }
+		inline Metric GetAverageLevelStrength (int iLevel) { return (m_pGenerator ? m_pGenerator->GetAverageLevelStrength(iLevel) : 0.0); }
+		ALERROR ValidateForRandomEncounter (void) { if (m_pGenerator) return m_pGenerator->ValidateForRandomEncounter(); }
+
+		//	CDesignType overrides
+		static CShipTable *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designShipTable) ? (CShipTable *)pType : NULL); }
+		virtual DesignTypes GetType (void) const override { return designShipTable; }
+
+	protected:
+		//	CDesignType overrides
+		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pGenerator) m_pGenerator->AddTypesUsed(retTypesUsed); }
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+
+	private:
+		IShipGenerator *m_pGenerator;
+	};
+

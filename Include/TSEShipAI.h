@@ -32,6 +32,15 @@ struct SCrewMetrics
 	int iLoyalty;							//	Loyalty for all crew members
 	};
 
+struct SPlayerChangedShipsCtx
+	{
+	SPlayerChangedShipsCtx (void) :
+			bNoOrderTransfer(false)
+		{ }
+
+	bool bNoOrderTransfer;			//	If TRUE, do not change orders to point to new ship
+	};
+
 //  CAISettings ----------------------------------------------------------------
 
 enum AICombatStyles

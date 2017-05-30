@@ -1508,8 +1508,6 @@ class CDeviceStorage
 		bool m_bModified;
 	};
 
-//	Integral Rotation Class ----------------------------------------------------
-
 //	IListData ------------------------------------------------------------------
 
 extern const CItem g_DummyItem;
@@ -1536,6 +1534,23 @@ class IListData
 		virtual void SetCursor (int iCursor) { }
 		virtual void SetFilter (const CItemCriteria &Filter) { }
 		virtual void SyncCursor (void) { }
+	};
+
+//	CFormulaText ---------------------------------------------------------------
+
+class CFormulaText
+	{
+	public:
+		int EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix = NULL, CString *retsSuffix = NULL, CString *retsError = NULL) const;
+		inline void InitFromInteger (int iValue) { m_sText = strFromInt(iValue); }
+		ALERROR InitFromString (SDesignLoadCtx &Ctx, const CString &sText);
+		inline bool IsEmpty (void) const { return m_sText.IsBlank(); }
+		void ReadFromStream (SLoadCtx &Ctx);
+		inline void SetInteger (int iValue) { m_sText = strFromInt(iValue); }
+		void WriteToStream (IWriteStream *pStream) const;
+
+	private:
+		CString m_sText;
 	};
 
 //	Miscellaneous utility functions

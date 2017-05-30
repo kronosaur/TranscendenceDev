@@ -423,3 +423,98 @@ class CObjectEffectList
 
 		TArray<SFixedEffect> m_FixedEffects;
 	};
+
+//	CEffectCreator ------------------------------------------------------------
+
+class CEffectCreator : public CDesignType
+	{
+	public:
+		enum ECachedHandlers
+			{
+			evtGetParameters			= 0,
+
+			evtCount					= 1,
+			};
+
+		enum EInstanceTypes
+			{
+			instGame,
+			instOwner,
+			instCreator,
+			};
+
+		CEffectCreator (void);
+		virtual ~CEffectCreator (void);
+
+		static ALERROR CreateBeamEffect (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CEffectCreator **retpCreator);
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CEffectCreator **retpCreator);
+		static ALERROR CreateSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CEffectCreator **retpCreator);
+		static ALERROR CreateTypeFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CEffectCreator **retpCreator);
+		static ALERROR CreateFromTag (const CString &sTag, CEffectCreator **retpCreator);
+		static IEffectPainter *CreatePainterFromStream (SLoadCtx &Ctx, bool bNullCreator = false);
+		static IEffectPainter *CreatePainterFromStreamAndCreator (SLoadCtx &Ctx, CEffectCreator *pCreator);
+		static IEffectPainter *CreatePainterFromTag (const CString &sTag);
+		static CEffectCreator *FindEffectCreator (const CString &sUNID);
+		static void WritePainterToStream (IWriteStream *pStream, IEffectPainter *pPainter);
+
+		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx);
+		inline bool FindEventHandlerEffectType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
+		inline CWeaponFireDesc *GetDamageDesc (void) { return m_pDamage; }
+		inline EInstanceTypes GetInstance (void) const { return m_iInstance; }
+		inline const CString &GetUNIDString (void) { return m_sUNID; }
+		bool IsValidUNID (void);
+		void PlaySound (CSpaceObject *pSource = NULL);
+
+		//	Virtuals
+
+		virtual ALERROR CreateEffect (CSystem *pSystem,
+									  CSpaceObject *pAnchor,
+									  const CVector &vPos,
+									  const CVector &vVel,
+									  int iRotation,
+									  int iVariant = 0,
+									  CSpaceObject **retpEffect = NULL);
+		virtual int GetLifetime (void) { return 0; }
+		virtual CEffectCreator *GetSubEffect (int iIndex) { return NULL; }
+		virtual CString GetTag (void) = 0;
+		virtual void SetLifetime (int iLifetime) { }
+		virtual void SetVariants (int iVariants) { }
+
+		//	CDesignType overrides
+		static CEffectCreator *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designEffectType) ? (CEffectCreator *)pType : NULL); }
+		virtual DesignTypes GetType (void) const override { return designEffectType; }
+
+	protected:
+
+		//	CDesignType overrides
+		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
+		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const override;
+		virtual void OnMarkImages (void) override { m_Sound.Mark(); OnEffectMarkResources(); }
+
+		//	CEffectCreator virtuals
+
+		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) = 0;
+		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) { return NOERROR; }
+		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
+		virtual void OnEffectMarkResources (void) { }
+		virtual void OnEffectPlaySound (CSpaceObject *pSource);
+
+		void InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPainter *pPainter);
+
+	private:
+		ALERROR InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitInstanceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+
+		CString m_sUNID;
+		CSoundRef m_Sound;
+		EInstanceTypes m_iInstance;
+
+		CWeaponFireDesc *m_pDamage;
+
+		//	Events
+		CEventHandler m_Events;				//	Local events
+		SEventHandlerDesc m_CachedEvents[evtCount];
+	};
+

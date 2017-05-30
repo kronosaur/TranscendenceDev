@@ -240,27 +240,47 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Include\TSEAdventureDesc.h" />
     <ClInclude Include="..\Include\TSEArmor.h" />
     <ClInclude Include="..\Include\TSEArtifactAwakening.h" />
     <ClInclude Include="..\Include\TSEComms.h" />
+    <ClInclude Include="..\Include\TSECurrency.h" />
+    <ClInclude Include="..\Include\TSEDevices.h" />
     <ClInclude Include="..\Include\TSEDocking.h" />
+    <ClInclude Include="..\Include\TSEDockScreenType.h" />
+    <ClInclude Include="..\Include\TSEEconomyType.h" />
     <ClInclude Include="..\Include\TSEEffects.h" />
     <ClInclude Include="..\Include\TSEEvents.h" />
     <ClInclude Include="..\Include\TSEEventsImpl.h" />
+    <ClInclude Include="..\Include\TSEGameRecords.h" />
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEImages.h" />
+    <ClInclude Include="..\Include\TSEItemDefs.h" />
     <ClInclude Include="..\Include\TSEItems.h" />
+    <ClInclude Include="..\Include\TSEItemType.h" />
     <ClInclude Include="..\Include\TSELanguage.h" />
+    <ClInclude Include="..\Include\TSEMissionType.h" />
     <ClInclude Include="..\Include\TSEObjectJoints.h" />
+    <ClInclude Include="..\Include\TSEOverlayType.h" />
+    <ClInclude Include="..\Include\TSEPaint.h" />
     <ClInclude Include="..\Include\TSEParticleSystem.h" />
     <ClInclude Include="..\Include\TSEPhysics.h" />
     <ClInclude Include="..\Include\TSEPlayer.h" />
     <ClInclude Include="..\Include\TSEPlayerSettings.h" />
+    <ClInclude Include="..\Include\TSEPower.h" />
     <ClInclude Include="..\Include\TSEShipAI.h" />
+    <ClInclude Include="..\Include\TSEShipClass.h" />
     <ClInclude Include="..\Include\TSEShipCreator.h" />
     <ClInclude Include="..\Include\TSEShipSystems.h" />
     <ClInclude Include="..\Include\TSESounds.h" />
+    <ClInclude Include="..\Include\TSESovereign.h" />
+    <ClInclude Include="..\Include\TSESpaceEnvironment.h" />
+    <ClInclude Include="..\Include\TSEStationType.h" />
     <ClInclude Include="..\Include\TSESystem.h" />
+    <ClInclude Include="..\Include\TSESystemMap.h" />
+    <ClInclude Include="..\Include\TSESystemType.h" />
+    <ClInclude Include="..\Include\TSETopology.h" />
+    <ClInclude Include="..\Include\TSETrade.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
     <ClInclude Include="CrewAIImpl.h" />
@@ -272,7 +292,7 @@
     <ClInclude Include="..\Include\TSEDeviceClassesImpl.h" />
     <ClInclude Include="..\Include\TSEMissions.h" />
     <ClInclude Include="..\Include\TSEMultiverse.h" />
-    <ClInclude Include="..\Include\TSEPaint.h" />
+    <ClInclude Include="..\Include\TSEPaintUtil.h" />
     <ClInclude Include="..\Include\TSESpaceObjectsImpl.h" />
     <ClInclude Include="..\Include\TSEStorage.h" />
     <ClInclude Include="..\Include\TSETransLisp.h" />
@@ -703,7 +723,6 @@
     <ClCompile Include="CExtension.cpp" />
     <ClCompile Include="CExtensionCollection.cpp" />
     <ClCompile Include="CMissionType.cpp" />
-    <ClCompile Include="CNameGenerator.cpp" />
     <ClCompile Include="CPower.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

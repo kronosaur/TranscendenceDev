@@ -126,10 +126,6 @@ CString CDesignTypeCriteria::AsString (void) const
 						Output.WriteChar(charSystemMap);
 						break;
 
-					case designNameGenerator:
-						Output.WriteChar(charNameGenerator);
-						break;
-
 					case designEconomyType:
 						Output.WriteChar(charEconomyType);
 						break;
@@ -316,10 +312,6 @@ ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTyp
 
 			case charSystemMap:
 				retCriteria->m_dwTypeSet |= (1 << designSystemMap);
-				break;
-
-			case charNameGenerator:
-				retCriteria->m_dwTypeSet |= (1 << designNameGenerator);
 				break;
 
 			case charTemplateType:
