@@ -45,16 +45,30 @@ enum NounPhraseFlags
 class CLanguage
 	{
 	public:
+		enum ENumberFormatTypes
+			{
+			numberNone,
+			numberError,
+
+			numberInteger,					//	1,000,000
+			numberPower,					//	1.1 MW
+			numberSpeed,					//	.05c
+			};
+
 		enum EVerbFlags
 			{
 			verbPluralize =					0x00000001,	//	Use the plural form of the verb
 			};
 
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
+		static CString ComposeNumber (ENumberFormatTypes iFormat, int iNumber);
+		static CString ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber);
+		static CString ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber);
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static DWORD LoadNameFlags (CXMLElement *pDesc);
 		static DWORD ParseNounFlags (const CString &sValue);
 		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, CString *retsArticle = NULL);
+		static ENumberFormatTypes ParseNumberFormat (const CString &sValue);
 	};
 
 class CLanguageDataBlock

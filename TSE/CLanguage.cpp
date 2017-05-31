@@ -79,6 +79,73 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 		return sNounPhrase;
 	}
 
+CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, int iNumber)
+
+//	ComposeNumber
+//
+//	Converts to a string of the appropriate format.
+
+	{
+	switch (iFormat)
+		{
+		case numberPower:
+			return ComposeNumber(iFormat, (Metric)iNumber);
+
+		case numberSpeed:
+			return strPatternSubst(CONSTLIT(".%02dc"), iNumber);
+
+		//	Defaults to integer
+
+		default:
+			return strFormatInteger(iNumber, -1, FORMAT_THOUSAND_SEPARATOR);
+		}
+	}
+
+CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
+
+//	ComposeNumber
+//
+//	Converts to a string of the appropriate format.
+
+	{
+	switch (iFormat)
+		{
+		//	For power, we assume the value in in KWs.
+
+		case numberPower:
+			if (rNumber < 9950.0)
+				return strPatternSubst(CONSTLIT("%s MW"), strFromDouble(rNumber / 1000.0, 1));
+			else if (rNumber < 999500.0)
+				return strPatternSubst(CONSTLIT("%d MW"), mathRound(rNumber / 1000.0));
+			else if (rNumber < 9950000.0)
+				return strPatternSubst(CONSTLIT("%s GW"), strFromDouble(rNumber / 1000000.0, 1));
+			else
+				return strPatternSubst(CONSTLIT("%d GW"), mathRound(rNumber / 1000000.0));
+			break;
+
+		case numberSpeed:
+			return ComposeNumber(iFormat, (int)mathRound(100.0 * rNumber / LIGHT_SPEED));
+
+		//	Defaults to integer
+
+		default:
+			return strFormatInteger((int)mathRound(rNumber), -1, FORMAT_THOUSAND_SEPARATOR);
+		}
+	}
+
+CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber)
+
+//	ComposeNumber
+//
+//	Converst to a string of the appropriate format.
+
+	{
+	if (pNumber->IsDouble())
+		return ComposeNumber(iFormat, pNumber->GetDoubleValue());
+	else
+		return ComposeNumber(iFormat, pNumber->GetIntegerValue());
+	}
+
 CString CLanguage::ComposeVerb (const CString &sVerb, DWORD dwVerbFlags)
 
 //	ComposeVerb
@@ -462,3 +529,19 @@ CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier
 	return sDest;
 	}
 
+CLanguage::ENumberFormatTypes CLanguage::ParseNumberFormat (const CString &sValue)
+
+//	ParseNumberFormat
+//
+//	Parses a number format string.
+
+	{
+	if (sValue.IsBlank())
+		return numberNone;
+
+	const TStaticStringEntry<ENumberFormatTypes> *pEntry = NUMBER_FORMAT_TABLE.GetAt(sValue);
+	if (pEntry == NULL)
+		return numberError;
+
+	return pEntry->Value;
+	}

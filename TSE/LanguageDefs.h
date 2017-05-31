@@ -28,6 +28,12 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 18> NOUN_FLAG_TABLE = {
 	"tokenize",				nounTokenize,
 	};
 
+static TStaticStringTable<TStaticStringEntry<CLanguage::ENumberFormatTypes>, 3> NUMBER_FORMAT_TABLE = {
+	"integer",				CLanguage::numberInteger,
+	"power",				CLanguage::numberPower,
+	"speed",				CLanguage::numberSpeed,
+	};
+
 //	List of words to NOT capitalize in title capitalization.
 
 static const char *TITLE_CAP_EXCEPTIONS[] =

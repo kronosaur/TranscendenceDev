@@ -914,8 +914,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"siiv",	0, },
 
 		{	"fmtNumber",					fnFormat,		FN_NUMBER,
-			"(fmtNumber value) -> string",
-			"v",	0, },
+			"(fmtNumber [type] value) -> string\n\n"
+			
+			"type:\n\n"
+			
+			"   'integer\n"
+			"   'power\n"
+			"   'speed",
+
+			"v*",	0, },
 
 		{	"fmtPower",						fnFormat,		FN_POWER,
 			"(fmtPower powerInKWs) -> string",
@@ -4021,23 +4028,20 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
         case FN_NUMBER:
             {
-            ICCItem *pValue = pArgs->GetElement(0);
-            return pCC->CreateString(strFormatInteger(pValue->GetIntegerValue(), -1, FORMAT_THOUSAND_SEPARATOR));
+			if (pArgs->GetCount() == 1)
+				return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberInteger, pArgs->GetElement(0)->GetIntegerValue()));
+			else
+				{
+				CLanguage::ENumberFormatTypes iFormat = CLanguage::ParseNumberFormat(pArgs->GetElement(0)->GetStringValue());
+				if (iFormat == CLanguage::numberError)
+					return pCC->CreateError(CONSTLIT("Unknown number format"), pArgs->GetElement(0));
+
+				return pCC->CreateString(CLanguage::ComposeNumber(iFormat, pArgs->GetElement(1)));
+				}
             }
 
 		case FN_POWER:
-			{
-			double rValue = pArgs->GetElement(0)->GetDoubleValue();
-
-			if (rValue < 9950.0)
-				return pCC->CreateString(strPatternSubst(CONSTLIT("%s MW"), strFromDouble(rValue / 1000.0, 1)));
-			else if (rValue < 999500.0)
-				return pCC->CreateString(strPatternSubst(CONSTLIT("%d MW"), mathRound(rValue / 1000.0)));
-			else if (rValue < 9950000.0)
-				return pCC->CreateString(strPatternSubst(CONSTLIT("%s GW"), strFromDouble(rValue / 1000000.0, 1)));
-			else
-				return pCC->CreateString(strPatternSubst(CONSTLIT("%d GW"), mathRound(rValue / 1000000.0)));
-			}
+			return pCC->CreateString(CLanguage::ComposeNumber(CLanguage::numberPower, pArgs->GetElement(0)->GetDoubleValue()));
 
 		case FN_VERB:
 			{
