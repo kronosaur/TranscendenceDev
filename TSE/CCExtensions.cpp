@@ -8323,7 +8323,11 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_SHIP_CLASS_NAME:
 			{
-			DWORD dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1));
+			//	We always add generic, or else we could get a personal name or 
+			//	randomized ship name.
+
+			DWORD dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1)) | nounGeneric;
+
 			pResult = pCC->CreateString(pClass->GetNounPhrase(dwFlags));
 			break;
 			}

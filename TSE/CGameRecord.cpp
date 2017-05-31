@@ -345,7 +345,7 @@ void CGameRecord::SetShipClass (DWORD dwUNID)
 
 	CShipClass *pClass = g_pUniverse->FindShipClass(dwUNID);
 	if (pClass)
-		m_sShipClass = pClass->GetNounPhrase();
+		m_sShipClass = pClass->GetNounPhrase(nounGeneric);
 	else
 		m_sShipClass = CONSTLIT("Unknown");
 	}

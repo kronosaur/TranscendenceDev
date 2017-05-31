@@ -379,7 +379,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 		if (pClass == NULL)
 			continue;
 
-		CString sName = pClass->GetNounPhrase(0);
+		CString sName = pClass->GetNounPhrase(nounGeneric);
 		CString sSort = strPatternSubst(CONSTLIT("%09d%s"), 100000000 - pClass->GetScore(), sName);
 
 		if (pStats->iEnemyDestroyed > 0)
