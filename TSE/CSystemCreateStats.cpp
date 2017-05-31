@@ -108,7 +108,12 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 
 	CString sEnemyStationCriteria = strPatternSubst(CONSTLIT("%s,%s"), sStationCriteria, CONSTLIT("*enemy"));
 	CAttributeCriteria StationCriteria;
+#ifdef DEBUG
+	//	LATER: We should always add everything and filter in TransData
+	StationCriteria.Parse(sStationCriteria, 0);
+#else
 	StationCriteria.Parse(sEnemyStationCriteria, 0);
+#endif
 
 	//	Start by generating a base probability for all station encounters 
 	//	relative to the system.

@@ -60,7 +60,8 @@ bool CStationEncounterCtx::CanBeEncounteredInSystem (CSystem *pSystem, CStationT
 	{
 	if (pSystem)
 		{
-		if (Desc.IsUniqueInSystem() && pSystem->IsStationInSystem(pStationType))
+		int iLimit;
+		if (Desc.HasSystemLimit(&iLimit) && GetCountInSystem(pSystem, pStationType) >= iLimit)
 			return false;
 
 		//	Check for a level limit
@@ -110,6 +111,24 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
 
     return pStats->iNodeCriteria;
     }
+
+int CStationEncounterCtx::GetCountInSystem (CSystem *pSystem, CStationType *pStationType) const
+
+//	GetCountInSystem
+//
+//	Get the number of stations of this type already in the system.
+
+	{
+	CTopologyNode *pNode = (pSystem ? pSystem->GetTopology() : NULL);
+	if (pNode == NULL)
+		return 0;
+
+	SEncounterStats *pCount = m_ByNode.GetAt(pNode->GetID());
+	if (pCount == NULL)
+		return 0;
+
+	return pCount->iCount;
+	}
 
 int CStationEncounterCtx::GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc)
 
@@ -162,8 +181,9 @@ int CStationEncounterCtx::GetFrequencyForSystem (CSystem *pSystem, CStationType 
 	//	If this station is unique in the system, see if there are other
 	//	stations of this type in the system
 
-	if (Desc.IsUniqueInSystem() && pSystem->IsStationInSystem(pStation))
-		return 0;
+	int iLimit;
+	if (Desc.HasSystemLimit(&iLimit) && GetCountInSystem(pSystem, pStation) >= iLimit)
+		return false;
 
 	//	Check for a level limit
 
@@ -204,8 +224,9 @@ int CStationEncounterCtx::GetRequiredForNode (CTopologyNode *pNode, const CStati
 
 	//	If we're unique in the system and we're already here, then nothing more
 
-	if (Desc.IsUniqueInSystem() && pStats->iCount > 0)
-		return 0;
+	int iLimit;
+	if (Desc.HasSystemLimit(&iLimit) && pStats->iCount >= iLimit)
+		return false;
 
 	//	Check node minimums
 

@@ -13,6 +13,7 @@
 #define LEVEL_FREQUENCY_ATTRIB					CONSTLIT("levelFrequency")
 #define LOCATION_CRITERIA_ATTRIB				CONSTLIT("locationCriteria")
 #define MAX_APPEARING_ATTRIB					CONSTLIT("maxAppearing")
+#define MAX_IN_SYSTEM_ATTRIB					CONSTLIT("maxInSystem")
 #define MIN_APPEARING_ATTRIB					CONSTLIT("minAppearing")
 #define NUMBER_APPEARING_ATTRIB					CONSTLIT("numberAppearing")
 #define SYSTEM_CRITERIA_ATTRIB					CONSTLIT("systemCriteria")
@@ -309,6 +310,11 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 			m_bMaxCountLimit = true;
 			m_MaxAppearing.SetConstant(1);
 			m_iMaxCountInSystem = 1;
+			}
+		else if (pDesc->FindAttributeInteger(MAX_IN_SYSTEM_ATTRIB, &m_iMaxCountInSystem))
+			{
+			m_bMaxCountLimit = false;
+			m_iMaxCountInSystem = Max(1, m_iMaxCountInSystem);
 			}
 		else
 			{

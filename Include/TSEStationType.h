@@ -52,6 +52,7 @@ class CStationEncounterDesc
             else
                 return false;
             }
+		inline bool HasSystemLimit (int *retiLimit = NULL) const { if (retiLimit) *retiLimit = m_iMaxCountInSystem; return (m_iMaxCountInSystem != -1); }
 		inline bool IsUniqueInSystem (void) const { return (m_iMaxCountInSystem == 1); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
@@ -112,6 +113,7 @@ class CStationEncounterCtx
 			};
 
 		int GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
+		int GetCountInSystem (CSystem *pSystem, CStationType *pStationType) const;
 
 		SEncounterStats m_Total;			//	Encounters in entire game
 		TSortMap<int, SEncounterStats> m_ByLevel;	//	Encounters by system level
