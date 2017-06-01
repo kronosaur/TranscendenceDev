@@ -1448,7 +1448,7 @@ class CStation : public CSpaceObject
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
 		virtual bool ClassCanAttack (void) override;
-		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, int iCount = 1) override;
+		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, const CShipChallengeDesc &Needed = CShipChallengeDesc()) override;
 		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void Decontaminate (void) override { m_fRadioactive = false; }

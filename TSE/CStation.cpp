@@ -893,10 +893,9 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	Create any ships registered to this station
 
-	int iShipCount;
-	IShipGenerator *pShipGenerator = pType->GetInitialShips(pStation->GetDestiny(), &iShipCount);
+	IShipGenerator *pShipGenerator = pType->GetInitialShips();
 	if (pShipGenerator)
-		pStation->CreateRandomDockedShips(pShipGenerator, iShipCount);
+		pStation->CreateRandomDockedShips(pShipGenerator, pType->GetDefenderCount());
 
 	//	If we have a trade descriptor, create appropriate items
 
@@ -1000,7 +999,7 @@ ALERROR CStation::CreateMapImage (void)
 	return NOERROR;
 	}
 
-void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, int iCount)
+void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, const CShipChallengeDesc &Needed)
 
 //	CreateRandomDockedShips
 //
@@ -1016,11 +1015,25 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, int iCou
 	Ctx.PosSpread = DiceRange(8, 1, 1);
 	Ctx.dwFlags = SShipCreateCtx::SHIPS_FOR_STATION | SShipCreateCtx::RETURN_RESULT;
 
-	//	Create the ships until we've gotten all we need
+	//	Otherwise, we continue creating until we've got enough
 
-	int iMaxLoops = iCount;
-	while (iMaxLoops-- > 0 && Ctx.Result.GetCount() < iCount)
+	CShipChallengeCtx CreatedSoFar;
+
+	int iMaxLoops = 20;
+	while (iMaxLoops-- > 0 && Needed.NeedsMoreInitialShips(this, CreatedSoFar))
+		{
+		//	These accumulate, so we need to clear it each time.
+
+		Ctx.Result.RemoveAll();
+
+		//	Create the ships.
+
 		pShipGenerator->CreateShips(Ctx);
+
+		//	Keep track of the ships we created.
+
+		CreatedSoFar.AddShips(Ctx.Result);
+		}
 	}
 
 void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
@@ -4820,62 +4833,44 @@ void CStation::UpdateReinforcements (int iTick)
 
 	//	Get reinforcements
 
-	int iMinShips;
 	if ((iTick % STATION_REINFORCEMENT_FREQUENCY) == 0
 			&& !m_fNoReinforcements
-			&& (iMinShips = m_pType->GetMinShips(GetDestiny())) > 0)
+			&& m_pType->GetDefenderCount().NeedsMoreReinforcements(this))
 		{
-		//	Iterate over all ships and count the number that are
-		//	associated with the station.
+		//	If we've requested several rounds of reinforcements but have
+		//	never received any, then it's likely that they are being
+		//	destroyed at the gate, so we stop requesting so many
 
-		int iCount = CalcNumberOfShips();
-
-		//	If we don't have the minimum number of ships at the
-		//	station then send reinforcements.
-
-		if (iCount < iMinShips)
+		if (m_iReinforceRequestCount > 0)
 			{
-			//	If we've requested several rounds of reinforcements but have
-			//	never received any, then it's likely that they are being
-			//	destroyed at the gate, so we stop requesting so many
-
-			if (m_iReinforceRequestCount > 0)
-				{
-				int iLongTick = (iTick / STATION_REINFORCEMENT_FREQUENCY);
-				int iCycle = Min(32, m_iReinforceRequestCount * m_iReinforceRequestCount);
-				if ((iLongTick % iCycle) != 0)
-					return;
-				}
-
-			//	We either bring in ships from the nearest gate or we build
-			//	them ourselves.
-
-			CSpaceObject *pGate;
-			if (m_pType->BuildsReinforcements()
-					|| (pGate = GetNearestStargate(true)) == NULL)
-				pGate = this;
-
-			//	Generate reinforcements
-
-			SShipCreateCtx Ctx;
-			Ctx.pSystem = GetSystem();
-			Ctx.pBase = this;
-			Ctx.pGate = pGate;
-			m_pType->GetReinforcementsTable()->CreateShips(Ctx);
-
-			//	Increment counter
-
-			m_iReinforceRequestCount++;
+			int iLongTick = (iTick / STATION_REINFORCEMENT_FREQUENCY);
+			int iCycle = Min(32, m_iReinforceRequestCount * m_iReinforceRequestCount);
+			if ((iLongTick % iCycle) != 0)
+				return;
 			}
 
-		//	If we have the required number of ships, then reset the reinforcement
-		//	request count
+		//	We either bring in ships from the nearest gate or we build
+		//	them ourselves.
 
-		else
-			{
-			m_iReinforceRequestCount = 0;
-			}
+		CSpaceObject *pGate;
+		if (m_pType->BuildsReinforcements()
+				|| (pGate = GetNearestStargate(true)) == NULL)
+			pGate = this;
+
+		//	Generate reinforcements
+
+		SShipCreateCtx Ctx;
+		Ctx.pSystem = GetSystem();
+		Ctx.pBase = this;
+		Ctx.pGate = pGate;
+		m_pType->GetReinforcementsTable()->CreateShips(Ctx);
+
+		//	Increment counter
+
+		m_iReinforceRequestCount++;
 		}
+	else
+		m_iReinforceRequestCount = 0;
 
 	//	Attack targets on the target list
 

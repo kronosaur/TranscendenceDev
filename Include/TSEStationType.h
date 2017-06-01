@@ -182,6 +182,7 @@ class CStationType : public CDesignType
 		inline IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
 		CSovereign *GetControllingSovereign (void);
 		inline DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
+		inline const CShipChallengeDesc &GetDefenderCount (void) const { return m_DefenderCount; }
 		inline CXMLElement *GetDesc (void) { return m_pDesc; }
 		inline CString GetDestNodeID (void) { return m_sStargateDestNode; }
 		inline CString GetDestEntryPoint (void) { return m_sStargateDestEntryPoint; }
@@ -210,11 +211,10 @@ class CStationType : public CDesignType
 		inline const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_Image.GetImage(Selector, Modifiers, retiRotation); }
 		inline int GetImageVariants (void) { return m_Image.GetVariantCount(); }
 		inline int GetInitialHitPoints (void) { return m_iHitPoints; }
-		inline IShipGenerator *GetInitialShips (int iDestiny, int *retiCount) { *retiCount = (!m_ShipsCount.IsEmpty() ? m_ShipsCount.RollSeeded(iDestiny) : 1); return m_pInitialShips; }
+		inline IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
 		Metric GetLevelStrength (int iLevel);
 		inline const CString &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
 		inline Metric GetMass (void) { return m_rMass; }
-		inline int GetMinShips (int iDestiny) { return (!m_ShipsCount.IsEmpty() ? m_ShipsCount.RollSeeded(iDestiny) : m_iMinShips); }
 		inline Metric GetMaxEffectiveRange (void) { return m_rMaxAttackDistance; }
 		inline int GetMaxHitPoints (void) { return m_iMaxHitPoints; }
 		inline int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
@@ -418,10 +418,9 @@ class CStationType : public CDesignType
 		CStationEncounterCtx m_EncounterRecord;			//	Record of encounters so far
 
 		//	Ships
-		DiceRange m_ShipsCount;							//	Station should have this number of ship
+		CShipChallengeDesc m_DefenderCount;				//	Station should have this number of ships
 		IShipGenerator *m_pInitialShips;				//	Ships at creation time
 		IShipGenerator *m_pReinforcements;				//	Reinforcements table
-		int m_iMinShips;								//	Min ships at station
 		IShipGenerator *m_pEncounters;					//	Random encounters table
 		int m_iEncounterFrequency;						//	Frequency of random encounter
 		CRegenDesc m_ShipRegen;							//	Regen for ships docked with us

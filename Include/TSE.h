@@ -899,7 +899,7 @@ class CSpaceObject : public CObject
 
 		//	Docking Ports
 
-		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, int iCount = 1) { }
+		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, const CShipChallengeDesc &ShipsNeeded = CShipChallengeDesc()) { }
 		virtual CDockingPorts *GetDockingPorts (void) { return NULL; }
 		virtual bool RequestDock (CSpaceObject *pObj, int iPort = -1) { return false; }
 		virtual void Undock (CSpaceObject *pObj) { }

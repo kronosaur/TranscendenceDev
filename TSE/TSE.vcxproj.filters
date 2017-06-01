@@ -1111,6 +1111,9 @@
     <ClCompile Include="CNameDesc.cpp">
       <Filter>Source Files\Language</Filter>
     </ClCompile>
+    <ClCompile Include="CShipChallengeDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

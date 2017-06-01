@@ -40,6 +40,7 @@
 #define BEACON_ATTRIB							CONSTLIT("beacon")
 #define BUILD_REINFORCEMENTS_ATTRIB				CONSTLIT("buildReinforcements")
 #define CAN_ATTACK_ATTRIB						CONSTLIT("canAttack")
+#define CHALLENGE_ATTRIB						CONSTLIT("challenge")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
 #define CONSTRUCTION_RATE_ATTRIB				CONSTLIT("constructionRate")
 #define CONTROLLING_SOVEREIGN_ATTRIB			CONSTLIT("controllingSovereign")
@@ -246,7 +247,6 @@ CStationType::CStationType (void) :
 		m_pEncounters(NULL),
 		m_iEncounterFrequency(ftNotRandom),
 		m_pSatellitesDesc(NULL),
-		m_iMinShips(0),
 		m_pConstruction(NULL),
 		m_iShipConstructionRate(0),
 		m_iMaxConstruction(0),
@@ -949,7 +949,7 @@ IShipGenerator *CStationType::GetReinforcementsTable (void)
 	//	If we have a ship count structure, then we always use the main ship 
 	//	table.
 
-	if (!m_ShipsCount.IsEmpty())
+	if (m_DefenderCount.GetCountType() == CShipChallengeDesc::countStanding)
 		return m_pInitialShips;
 
 	//	Otherwise, if we have an explicit reinforcements table, use that.
@@ -1579,20 +1579,32 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pShips, &m_pInitialShips))
 			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Ships>: %s"), Ctx.sError));
 
-		//	If defined, we use this count to create initial ships AND reinforcements.
+		//	See if we have a challenge rating; in that case, we use it as both
+		//	initial ships and reinforcements.
 
 		CString sCount;
-		if (pShips->FindAttribute(STANDING_COUNT_ATTRIB, &sCount))
+		if (pShips->FindAttribute(CHALLENGE_ATTRIB, &sCount))
 			{
-			if (error = m_ShipsCount.LoadFromXML(sCount))
+			if (!m_DefenderCount.InitFromChallengeRating(sCount))
+				return ComposeLoadError(Ctx, CONSTLIT("Invalid challenge attribute in <Ships>"));
+			}
+
+		//	If defined, we use this count to create initial ships AND reinforcements.
+
+		else if (pShips->FindAttribute(STANDING_COUNT_ATTRIB, &sCount))
+			{
+			if (!m_DefenderCount.Init(CShipChallengeDesc::countStanding, sCount))
 				return ComposeLoadError(Ctx, CONSTLIT("Invalid count attribute in <Ships>"));
 			}
 
 		//	Otherwise, see if we define minShips, in which case we use that value for
 		//	reinforcements only.
 
-		else
-			m_iMinShips = pShips->GetAttributeInteger(MIN_SHIPS_ATTRIB);
+		else if (pShips->FindAttribute(MIN_SHIPS_ATTRIB, &sCount))
+			{
+			if (!m_DefenderCount.Init(CShipChallengeDesc::countReinforcements, sCount))
+				return ComposeLoadError(Ctx, CONSTLIT("Invalid count attribute in <Ships>"));
+			}
 
 		//	Build instead of gate in
 
@@ -1611,12 +1623,13 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		//	Figure out the minimum number of reinforcements at this base
 
-		m_iMinShips = pReinforcements->GetAttributeInteger(MIN_SHIPS_ATTRIB);
+		if (!m_DefenderCount.Init(CShipChallengeDesc::countReinforcements, pReinforcements->GetAttribute(MIN_SHIPS_ATTRIB)))
+			return ComposeLoadError(Ctx, CONSTLIT("Invalid count attribute in <Reinforcements>"));
 
 		//	Build instead of gate in
 
 		bool bValue;
-		if (pShips->FindAttributeBool(BUILD_REINFORCEMENTS_ATTRIB, &bValue) && bValue)
+		if (pReinforcements->FindAttributeBool(BUILD_REINFORCEMENTS_ATTRIB, &bValue) && bValue)
 			m_fBuildReinforcements = true;
 		}
 

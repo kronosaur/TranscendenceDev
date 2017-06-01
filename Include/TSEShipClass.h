@@ -76,6 +76,7 @@ class CShipClass : public CDesignType
         const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;
 		inline CGenericType *GetCharacter (void) { return m_Character; }
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
+		inline Metric GetCombatStrength (void) const { return m_rCombatStrength; }
 		inline int GetCyberDefenseLevel (void) { return m_iCyberDefenseLevel; }
 		inline DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
 		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
@@ -214,7 +215,7 @@ class CShipClass : public CDesignType
 			C3DConversion PosCalc;
 			};
 
-		EBalanceTypes CalcBalanceType (CString *retsDesc = NULL) const;
+		EBalanceTypes CalcBalanceType (CString *retsDesc = NULL, Metric *retrCombatStrength = NULL) const;
 		CItemType *CalcBestMissile (const SDeviceDesc &Device) const;
 		Metric CalcCombatStrength (void) const;
 		Metric CalcDamageRate (int *retiAveWeaponLevel = NULL, int *retiMaxWeaponLevel = NULL) const;
@@ -265,6 +266,7 @@ class CShipClass : public CDesignType
 		int m_iScore;							//	Score when destroyed
 		int m_iLevel;							//	Ship class level
 		EBalanceTypes m_iLevelType;				//	Type of ships for level
+		Metric m_rCombatStrength;				//	Combat strength
 
         //  Hull properties
 

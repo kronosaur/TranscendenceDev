@@ -368,7 +368,7 @@ int CShipClass::CalcArmorSpeedBonus (int iTotalArmorMass) const
 		}
 	}
 
-CShipClass::EBalanceTypes CShipClass::CalcBalanceType (CString *retsDesc) const
+CShipClass::EBalanceTypes CShipClass::CalcBalanceType (CString *retsDesc, Metric *retrCombatStrength) const
 
 //	CalcBalanceType
 //
@@ -381,6 +381,9 @@ CShipClass::EBalanceTypes CShipClass::CalcBalanceType (CString *retsDesc) const
 	Metric rAttackDefenseRatio = (rDefense > 0.0 ? rAttack / rDefense : 1000.0);
 
 	int iLevel = GetLevel();
+
+	if (retrCombatStrength)
+		*retrCombatStrength = rCombat;
 
 	//	Calculate the standard combat strength for ships of this level.
 
@@ -3403,7 +3406,7 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 	if (!m_fCyberDefenseOverride)
 		m_iCyberDefenseLevel = m_iLevel;
 
-	m_iLevelType = CalcBalanceType();
+	m_iLevelType = CalcBalanceType(NULL, &m_rCombatStrength);
 
 	//	Done
 
@@ -3439,6 +3442,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_iLevel = pClass->m_iLevel;
 	m_fScoreOverride = pClass->m_fScoreOverride;
 	m_fLevelOverride = pClass->m_fLevelOverride;
+	//	m_iLevelType and m_rCombatStrength will get computed during Bind.
 
 	m_iMass = pClass->m_iMass;
 	m_iSize = pClass->m_iSize;
