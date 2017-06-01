@@ -4044,6 +4044,10 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 
 		if (error = CreateSystemObject(pCtx, pDesc, *CreateCtx.pOrbit))
 			return error;
+
+		//	This type has now been encountered
+
+		pType->SetEncountered(this);
 		}
 
 	//	If this is a ship encounter, then just create the ship
