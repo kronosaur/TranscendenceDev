@@ -52,7 +52,7 @@
 #define DOCK_SCREEN_ATTRIB						CONSTLIT("dockScreen")
 #define DOCKING_PORTS_ATTRIB					CONSTLIT("dockingPorts")
 #define ENEMY_EXCLUSION_RADIUS_ATTRIB			CONSTLIT("enemyExclusionRadius")
-#define EJECTA_ADJ_ATTRIB						CONSTLIT("ejactaAdj")
+#define EJECTA_ADJ_ATTRIB						CONSTLIT("ejectaAdj")
 #define EJECTA_TYPE_ATTRIB						CONSTLIT("ejectaType")
 #define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define FIRE_RATE_ADJ_ATTRIB					CONSTLIT("fireRateAdj")
