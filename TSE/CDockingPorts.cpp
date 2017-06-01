@@ -147,7 +147,9 @@ void CDockingPorts::DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj)
 		{
 		m_pPort[iDockingPort].pObj = pObj;
 		m_pPort[iDockingPort].iStatus = psInUse;
-		pObj->Place(GetPortPos(pOwner, m_pPort[iDockingPort], pObj));
+
+		int iRotation;
+		pObj->Place(GetPortPos(pOwner, m_pPort[iDockingPort], pObj, NULL, &iRotation));
 		pObj->OnDocked(pOwner);
 
 		//	Set the ship's rotation. We do this because this is only called
@@ -155,7 +157,7 @@ void CDockingPorts::DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj)
 
 		CShip *pShip = pObj->AsShip();
 		if (pShip)
-			pShip->SetRotation(m_pPort[iDockingPort].iRotation);
+			pShip->SetRotation(iRotation);
 		}
 	else
 		{
@@ -366,7 +368,7 @@ CVector CDockingPorts::GetPortPosAtRotation (int iOwnerRotation, int iScale, int
 	//	Ship rotation
 
 	if (retiRotation)
-		*retiRotation = Port.iRotation;
+		*retiRotation = AngleMod(Port.iRotation + m_iLastRotation);
 
 	//	Return the absolute position
 
@@ -521,7 +523,7 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 				//	Get the ship's rotation when docked at this port.
 
 				if (pPort->FindAttributeInteger(ROTATION_ATTRIB, &m_pPort[i].iRotation))
-					m_pPort[i].iRotation = AngleMod(m_pPort[i].iRotation);
+					m_pPort[i].iRotation = AngleMod(m_pPort[i].iRotation - (iConvertRotation != -1 ? iConvertRotation : 0));
 				else if (!m_pPort[i].Pos.IsEmpty())
 					m_pPort[i].iRotation = AngleMod(m_pPort[i].Pos.GetAngle() + 180);
 				else
@@ -1038,7 +1040,8 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 	if (pShip == NULL)
 		return;
 
-	CVector vDest = GetPortPos(pOwner, Port, pShip);
+	int iPortRotation;
+	CVector vDest = GetPortPos(pOwner, Port, pShip, NULL, &iPortRotation);
 	CVector vDestVel = pOwner->GetVel();
 
 	//	Figure out how far we are from where we want to be
@@ -1050,7 +1053,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 
 	Metric rDelta2 = vDelta.Length2();
 	if (rDelta2 < DOCKING_THRESHOLD2 
-			&& (pShip == g_pUniverse->GetPlayerShip() || pShip->IsPointingTo(Port.iRotation)))
+			&& (pShip == g_pUniverse->GetPlayerShip() || pShip->IsPointingTo(iPortRotation)))
 		{
 		pShip->Place(vDest);
 		pShip->UnfreezeControls();
@@ -1138,7 +1141,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 			//	If we're close enough, align to rotation angle
 
 			if (rDelta2 < FINAL_APPROACH2)
-				pController->SetManeuver(pShip->GetManeuverToFace(Port.iRotation));
+				pController->SetManeuver(pShip->GetManeuverToFace(iPortRotation));
 
 			//	Otherwise, align along delta v
 
