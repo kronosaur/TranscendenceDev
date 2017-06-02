@@ -881,6 +881,7 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 
 		if (bVar)
 			{
+			int iArg;
 			ASSERT(*pPos == '%');
 
 			//	Skip %
@@ -978,21 +979,21 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 			//	If we still haven't found it, then assume this is an index into 
 			//	and array of values.
 
-			else if (pArgs)
+			else if (pArgs 
+					&& pArgs->IsList() 
+					&& !pArgs->IsSymbolTable()
+					&& (iArg = strToInt(sVar, 0)) != 0
+					&& Absolute(iArg) + 1 < pArgs->GetCount())
 				{
-				int iArg = strToInt(sVar, 0);
 				if (iArg < 0)
 					{
 					iArg = -iArg;
 					bCapitalize = true;
 					}
 
-				if (iArg > 0)
-					{
-					ICCItem *pArg = pArgs->GetElement(iArg + 1);
-					if (pArg)
-						sVar = pArg->GetStringValue();
-					}
+				ICCItem *pArg = pArgs->GetElement(iArg + 1);
+				if (pArg)
+					sVar = pArg->GetStringValue();
 				}
 
 			//	If we could not find a valid var, then we assume a
