@@ -84,6 +84,7 @@
 #define ROTATION_COUNT_ATTRIB					CONSTLIT("rotationCount")
 #define SCORE_ATTRIB							CONSTLIT("score")
 #define SIZE_ATTRIB								CONSTLIT("size")
+#define SHIP_COMPARTMENT_ATTRIB					CONSTLIT("shipCompartment")
 #define SHIP_SCREEN_ATTRIB						CONSTLIT("shipScreen")
 #define START_AT_ATTRIB							CONSTLIT("startAt")
 #define STARTING_CREDITS_ATTRIB					CONSTLIT("startingCredits")
@@ -3444,6 +3445,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_fLevelOverride = pClass->m_fLevelOverride;
 	//	m_iLevelType and m_rCombatStrength will get computed during Bind.
 
+	m_fShipCompartment = pClass->m_fShipCompartment;
 	m_iMass = pClass->m_iMass;
 	m_iSize = pClass->m_iSize;
 	m_CargoDesc = pClass->m_CargoDesc;
@@ -3556,6 +3558,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_sTypeName = pDesc->GetAttribute(CONSTLIT(g_TypeAttrib));
 	m_dwClassNameFlags = CLanguage::LoadNameFlags(pDesc);
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
+	m_fShipCompartment = pDesc->GetAttributeBool(SHIP_COMPARTMENT_ATTRIB);
 
 	if (error = m_pDefaultSovereign.LoadUNID(Ctx, pDesc->GetAttribute(DEFAULT_SOVEREIGN_ATTRIB)))
 		return error;

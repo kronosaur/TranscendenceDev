@@ -11019,12 +11019,16 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	IShipController *pController = NULL;
 	CDesignType *pOverride = NULL;
 	CSpaceObject *pTarget = NULL;
+	CSpaceObject *pBase = NULL;
 	if (pArgs->GetCount() > 3)
 		{
 		if (pArgs->GetElement(3)->IsSymbolTable())
 			{
 			ICCItem *pOptions = pArgs->GetElement(3);
 			ICCItem *pArg;
+
+			if (pArg = pOptions->GetElement(CONSTLIT("base")))
+				pBase = CreateObjFromItem(*pCC, pArg, CCUTIL_FLAG_CHECK_DESTROYED);
 
 			if ((pArg = pOptions->GetElement(CONSTLIT("controller")))
 					&& !pArg->IsNil())

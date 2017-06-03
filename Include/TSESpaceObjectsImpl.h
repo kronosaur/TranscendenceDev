@@ -969,6 +969,14 @@ class CShip : public CSpaceObject
 		void SetCursorAtArmor (CItemListManipulator &ItemList, int iSect);
 		void UninstallArmor (CItemListManipulator &ItemList);
 
+		//	Compartments
+		virtual bool IsMultiHull (void) override { return !m_Interior.IsEmpty(); }
+
+		void AddShipCompartment (CShip *pCompartment);
+		inline bool IsShipCompartment (void) const { return m_fShipCompartment; }
+		inline bool HasShipCompartments (void) const { return m_fHasShipCompartments; }
+		void SetAsCompartment (CShip *pMain);
+
 		//	Device methods
 		int CalcDeviceSlotsInUse (int *retiWeaponSlots = NULL, int *retiNonWeapon = NULL) const;
 		RemoveDeviceStatus CanRemoveDevice (const CItem &Item, CString *retsResult);
@@ -1107,7 +1115,7 @@ class CShip : public CSpaceObject
 		virtual DamageTypes GetDamageType (void) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pClass->GetDefaultBkgnd(); }
 		virtual CSpaceObject *GetDestination (void) const override { return m_pController->GetDestination(); }
-		virtual CSpaceObject *GetDockedObj (void) override { return m_pDocked; }
+		virtual CSpaceObject *GetDockedObj (void) const override { return (m_fShipCompartment ? NULL : m_pDocked); }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) override;
 		virtual CInstalledDevice *GetDevice (int iDev) const override { return &m_Devices[iDev]; }
@@ -1129,7 +1137,7 @@ class CShip : public CSpaceObject
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerShips; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
 		virtual int GetPerception (void) override;
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetRotationDesc()); }
@@ -1150,8 +1158,9 @@ class CShip : public CSpaceObject
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
-		virtual bool IsAnchored (void) const override { return (m_pDocked != NULL) || IsManuallyAnchored(); }
+		virtual bool IsAnchored (void) const override { return (GetDockedObj() != NULL) || IsManuallyAnchored(); }
 		virtual bool IsAngryAt (CSpaceObject *pObj) override;
+		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
 		virtual bool IsBlind (void) override { return m_iBlindnessTimer != 0; }
 		virtual bool IsDisarmed (void) override { return m_fDisarmedByOverlay || m_iDisarmedTimer != 0; }
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
@@ -1159,7 +1168,6 @@ class CShip : public CSpaceObject
 		virtual bool IsInactive (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsIntangible (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0 || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
-		virtual bool IsMultiHull (void) override { return !m_Interior.IsEmpty(); }
 		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
 		virtual bool IsParalyzed (void) override { return m_fParalyzedByOverlay || m_iParalysisTimer != 0; }
 		virtual bool IsPlayer (void) const override;
@@ -1266,6 +1274,8 @@ class CShip : public CSpaceObject
 		Metric GetCargoMass (void);
 		Metric GetItemMass (void) const;
 		bool IsSingletonDevice (ItemCategories iItemCat);
+		void PaintShipCompartmentChain (CG32bitImage &Dest, CSpaceObject *pJointObj, SViewportPaintCtx &Ctx);
+		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
 		void ReactorOverload (int iPowerDrain);
         ALERROR ReportCreateError (const CString &sError) const;
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
@@ -1352,8 +1362,8 @@ class CShip : public CSpaceObject
 
 		DWORD m_fQuarterSpeed:1;				//	TRUE if we're operating at 0.25x max speed
 		DWORD m_fLRSDisabledByNebula:1;			//	TRUE if LRS is disabled due to environment
-		DWORD m_fSpare3:1;
-		DWORD m_fSpare4:1;
+		DWORD m_fShipCompartment:1;				//	TRUE if we're part of another ship (m_pDocked is the root ship)
+		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;

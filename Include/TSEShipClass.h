@@ -134,6 +134,7 @@ class CShipClass : public CDesignType
         inline bool IsDebugOnly (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsDebugOnly()); }
 		inline bool IsIncludedInAllAdventures (void) { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsIncludedInAllAdventures()); }
 		inline bool IsPlayerShip (void) { return (GetPlayerSettings() != NULL); }
+		inline bool IsShipCompartment (void) const { return m_fShipCompartment; }
 		inline bool IsShownAtNewGame (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsInitialClass() && !IsVirtual()); }
 		inline bool IsTimeStopImmune (void) { return (m_fTimeStopImmune ? true : false); }
 		void MarkImages (bool bMarkDevices);
@@ -378,7 +379,7 @@ class CShipClass : public CDesignType
 		DWORD m_fCyberDefenseOverride:1;		//	TRUE if cyberDefenseLevel is specified in XML
 		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 
-		DWORD m_fSpare1:1;
+		DWORD m_fShipCompartment:1;				//	TRUE if we represent an attached compartment/segment
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;

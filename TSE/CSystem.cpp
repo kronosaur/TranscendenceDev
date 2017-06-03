@@ -454,6 +454,9 @@
 //	147: 1.8 Alpha 2
 //		Pos in CDockingPorts::SDockingPort
 //
+//	148: 1.8 Alpha 2
+//		Flags in CObjectJoint
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -1821,9 +1824,20 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 			&pShip))
 		return error;
 
+	//	If this is a compartment of another ship, then we expect the gate object
+	//	to be the root ship.
+
+	if (pClass->IsShipCompartment())
+		{
+		if (pExitGate == NULL || pExitGate->AsShip() == NULL)
+			return ERR_FAIL;
+
+		pShip->SetAsCompartment(pExitGate->AsShip());
+		}
+
 	//	If we're coming out of a gate, set the timer
 
-	if (pExitGate)
+	else if (pExitGate)
 		PlaceInGate(pShip, pExitGate);
 
 	//	Load images, if necessary
@@ -5179,6 +5193,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Now resolve all contacts
 
 	m_ContactResolver.Update();
+	m_Joints.Update(Ctx);
 
 	//	Update random encounters
 

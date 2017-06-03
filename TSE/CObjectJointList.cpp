@@ -30,8 +30,9 @@ void CObjectJointList::AddContacts (CPhysicsContactResolver &Resolver)
 
 		m_AllJoints[i]->SetPaintNeeded(false);
 
-		//	Add contacts for this joint
+		//	Add contacts & forces for this joint
 
+		m_AllJoints[i]->AddForces();
 		m_AllJoints[i]->AddContacts(Resolver);
 		}
 	}
@@ -193,6 +194,20 @@ void CObjectJointList::RemoveJointFromObjList (CObjectJoint *pJoint, CSpaceObjec
 		pPrev = pTest;
 		pTest = pNext;
 		}
+	}
+
+void CObjectJointList::Update (SUpdateCtx &Ctx)
+
+//	Update
+//
+//	Update all joints
+
+	{
+	int i;
+
+	for (i = 0; i < m_AllJoints.GetCount(); i++)
+		if (!m_AllJoints[i]->IsDestroyed())
+			m_AllJoints[i]->Update(Ctx);
 	}
 
 void CObjectJointList::WriteToStream (CSystem *pSystem, IWriteStream &Stream)

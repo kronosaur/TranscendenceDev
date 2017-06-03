@@ -216,6 +216,16 @@ void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int 
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	}
 
+void CShip::AddShipCompartment (CShip *pCompartment)
+
+//	AddShipCompartment
+//
+//	Add the given ship as a compartment.
+
+	{
+	m_fHasShipCompartments = true;
+	}
+
 CTradingDesc *CShip::AllocTradeDescOverride (void)
 
 //	AllocTradeDescOverride
@@ -1356,6 +1366,8 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fEmergencySpeed = false;
 	pShip->m_fQuarterSpeed = false;
 	pShip->m_fLRSDisabledByNebula = false;
+	pShip->m_fShipCompartment = false;
+	pShip->m_fHasShipCompartments = false;
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -1495,7 +1507,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	//	If we're a ship with 0 thrust then it means that we're a turret, so we 
 	//	set the anchor flag so that we don't get pulled by gravity.
 
-	if (!pShip->CanThrust())
+	if (!pShip->CanThrust() && !pShip->m_pClass->IsShipCompartment())
 		pShip->SetManualAnchor();
 
 	//	If any of our items need an OnInstall call, raise the
@@ -2580,7 +2592,7 @@ CDesignType *CShip::GetDefaultDockScreen (CString *retsName)
 	//	can dock with us.
 
 	if (m_fDockingDisabled 
-			|| m_pDocked != NULL
+			|| GetDockedObj() != NULL
 			|| IsDestroyed())
 		return NULL;
 
@@ -2964,7 +2976,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
 		}
 	else if (strEquals(sName, PROPERTY_DOCKED_AT_ID))
-		return (m_pDocked ? CC.CreateInteger(m_pDocked->GetID()) : CC.CreateNil());
+		return (!m_fShipCompartment && m_pDocked ? CC.CreateInteger(m_pDocked->GetID()) : CC.CreateNil());
 
 	else if (strEquals(sName, PROPERTY_DOCKING_ENABLED))
 		return CC.CreateBool(SupportsDocking(true));
@@ -4241,7 +4253,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	int iMomentum;
 	if ((iMomentum = Ctx.Damage.GetMomentumDamage())
-			&& m_pDocked == NULL)
+			&& !IsAnchored())
 		{
 		CVector vAccel = PolarToVector(Ctx.iDirection, -10 * iMomentum * iMomentum);
 		Accelerate(vAccel, g_MomentumConstant);
@@ -4593,6 +4605,8 @@ void CShip::OnDocked (CSpaceObject *pObj)
 //	Object has docked
 
 	{
+	ASSERT(!m_fShipCompartment);
+
 	m_pDocked = pObj;
 
 	//	If we've docked with a radioactive object then we become radioactive
@@ -4868,6 +4882,12 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 		Ctx.bInFront = false;
 		m_Effects.Paint(Ctx, m_pClass->GetEffectsDesc(), dwEffects, Dest, x, y);
 		}
+
+	//	If we've got attached compartment objects, then we are responsible for
+	//	painting them.
+
+	if (m_fHasShipCompartments)
+		PaintShipCompartments(Dest, Ctx);
 
 	//	Paint the ship
 
@@ -5240,10 +5260,16 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
 	if (Ctx.dwVersion < 144)
+		{
 		bOutOfPower143 =		((dwLoad & 0x01000000) ? true : false);
+		m_fShipCompartment = false;
+		}
+	else
+		m_fShipCompartment =	((dwLoad & 0x01000000) ? true : false);
 	m_fFriendlyFireLock =		((dwLoad & 0x02000000) ? true : false);
 	m_fEmergencySpeed =			((dwLoad & 0x04000000) ? true : false);
 	m_fQuarterSpeed =			((dwLoad & 0x08000000) ? true : false);
+	m_fHasShipCompartments =	((dwLoad & 0x10000000) ? true : false);
 
 	//	Bit 1 means different things depending on the version
 
@@ -5700,7 +5726,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         {
         //	Rotate wildly
 
-        if (m_pDocked == NULL)
+        if (!IsAnchored())
             m_Rotation.Update(m_Perf.GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
 
         //	Slow down
@@ -5717,7 +5743,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         {
         //	Spin wildly
 
-        if (m_pDocked == NULL && m_fSpinningByOverlay)
+        if (!IsAnchored() && m_fSpinningByOverlay)
             m_Rotation.Update(m_Perf.GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
         }
 
@@ -6063,10 +6089,11 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fSpinningByOverlay ?	0x00200000 : 0);
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
-	//	0x01000000 unused at version 144
+	dwSave |= (m_fShipCompartment ?		0x01000000 : 0);
 	dwSave |= (m_fFriendlyFireLock ?	0x02000000 : 0);
 	dwSave |= (m_fEmergencySpeed ?		0x04000000 : 0);
 	dwSave |= (m_fQuarterSpeed ?		0x08000000 : 0);
+	dwSave |= (m_fHasShipCompartments ?	0x10000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Armor
@@ -6217,6 +6244,64 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	m_fIdentified = true;
 
 	DEBUG_CATCH_MSG1("Crash in CShip::PaintLRSForeground: type: %08x", m_pClass->GetUNID());
+	}
+
+void CShip::PaintShipCompartmentChain (CG32bitImage &Dest, CSpaceObject *pJointObj, SViewportPaintCtx &Ctx)
+
+//	PaintShipCompartmentChain
+//
+//	Recursively paints all ship compartments following this joint.
+
+	{
+	//	Mark this object as painted so we don't paint it again while recursing.
+
+	pJointObj->ClearPaintNeeded();
+
+	//	Recurse into all the other components attached to this object.
+
+	CObjectJoint *pNext = pJointObj->GetFirstJoint();
+	while (pNext)
+		{
+		CSpaceObject *pOther = pNext->GetOtherObj(pJointObj);
+		if (pNext->IsShipCompartment() && pOther->IsAttached() && pOther->IsPaintNeeded())
+			PaintShipCompartmentChain(Dest, pOther, Ctx);
+
+		pNext = pNext->GetNextJoint(pJointObj);
+		}
+
+	//	Now paint this on top
+
+	int xPos, yPos;
+	Ctx.XForm.Transform(pJointObj->GetPos(), &xPos, &yPos);
+
+	//	Paint the object in the viewport
+
+	CSpaceObject *pOldObj = Ctx.pObj;
+
+	Ctx.pObj = pJointObj;
+	Ctx.pObj->Paint(Dest, 
+			xPos,
+			yPos,
+			Ctx);
+
+	Ctx.pObj = pOldObj;
+	}
+
+void CShip::PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx)
+
+//	PaintShipCompartments
+//
+//	Paints any ship compartments
+
+	{
+	CObjectJoint *pNext = GetFirstJoint();
+	while (pNext)
+		{
+		if (pNext->IsShipCompartment())
+			PaintShipCompartmentChain(Dest, pNext->GetOtherObj(this), Ctx);
+
+		pNext = pNext->GetNextJoint(this);
+		}
 	}
 
 bool CShip::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
@@ -6999,6 +7084,31 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 		}
 	}
 
+void CShip::SetAsCompartment (CShip *pMain)
+
+//	SetAsCompartment
+//
+//	This ship is a piece of another ship.
+
+	{
+	if (pMain)
+		{
+		m_fShipCompartment = true;
+		m_fControllerDisabled = true;
+		SetNoFriendlyTarget();
+
+		m_pDocked = pMain;
+		pMain->AddShipCompartment(this);
+		}
+	else
+		{
+		m_fShipCompartment = false;
+		m_fControllerDisabled = false;
+
+		m_pDocked = NULL;
+		}
+	}
+
 void CShip::SetCommandCode (ICCItem *pCode)
 
 //	SetCommandCode
@@ -7517,6 +7627,8 @@ void CShip::Undock (void)
 //	Undock from station
 
 	{
+	ASSERT(!m_fShipCompartment);
+
 	if (m_pDocked)
 		{
 		m_pDocked->Undock(this);
