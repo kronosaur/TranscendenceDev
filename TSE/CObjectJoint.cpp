@@ -17,6 +17,8 @@
 
 const Metric SPINE_MAX_DIST2 =			(0.0 * g_KlicksPerPixel * g_KlicksPerPixel);
 const Metric SPINE_SPRING_K =			0.05;
+const Metric SPINE_DAMPING =			0.05;
+const Metric SPINE_GAMMA =				0.5 * sqrt(4.0 * SPINE_SPRING_K - SPINE_DAMPING * SPINE_DAMPING);
 
 CObjectJoint::CObjectJoint (ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo) :
 		m_iType(iType),
@@ -103,22 +105,28 @@ void CObjectJoint::AddForces (void)
 
 			//	If we've close to the desired position, then we don't have any forces
 
-			CVector vDiff = vDesiredPos - m_P2.pObj->GetPos();
+			CVector vDiff = m_P2.pObj->GetPos() - vDesiredPos;
 			Metric rDist2 = vDiff.Length2();
 			if (rDist2 < SPINE_MAX_DIST2)
 				break;
 
-			//	Otherwise, we accelerate P2 towards the desired point, proportionally to
-			//	our distance.
+			//	Get velocity relative to our anchor.
 
-			Metric rDist = sqrt(rDist2);
-			CVector vAccelUnit = (vDesiredPos - m_P2.pObj->GetPos()).Normal(&rDist);
-			CVector vAccel = vAccelUnit * rDist * SPINE_SPRING_K;
+			CSpaceObject *pRoot = m_P2.pObj->GetAttachedRoot();
+			CVector vCurVel = (pRoot ? m_P2.pObj->GetVel() - pRoot->GetVel() : m_P2.pObj->GetVel());
 
-			//	NOTE: We change the velocity directly instead of proportionally to mass
-			//	because we assume the spring is stronger for heavier objects (which
-			//	makes sense for attached objects).
+			//	Compute where we will be next tick based on equations for a damped-harmonic
+			//	oscillator.
+			//
+			//	See: Game Physics Engine Development, Ian Millington, pg.107.
 
+			CVector vC = (vDiff * (SPINE_DAMPING / (2.0 * SPINE_GAMMA))) + (vCurVel * (1.0 / SPINE_GAMMA));
+			CVector vTarget = (vDiff * cos(SPINE_GAMMA * g_SecondsPerUpdate)) + (vC * sin(SPINE_GAMMA * g_SecondsPerUpdate));
+			vTarget = vTarget * exp(-0.5 * g_SecondsPerUpdate * SPINE_DAMPING);
+
+			//	Calculate the acceleration
+
+			CVector vAccel = (vTarget - vDiff) * (1.0 / g_SecondsPerUpdate * g_SecondsPerUpdate) - (vCurVel * g_SecondsPerUpdate);
 			m_P2.pObj->DeltaV(vAccel);
 
 			break;

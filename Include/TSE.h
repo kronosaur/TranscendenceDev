@@ -964,6 +964,7 @@ class CSpaceObject : public CObject
 
 		//	Joints
 
+		virtual CSpaceObject *GetAttachedRoot (void) const { return NULL; }
 		virtual bool IsAttached (void) const { return false; }
 
 		inline CObjectJoint *GetFirstJoint (void) const { return m_pFirstJoint; }

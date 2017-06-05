@@ -1104,6 +1104,7 @@ class CShip : public CSpaceObject
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
 		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
+		virtual CSpaceObject *GetAttachedRoot (void) const { return (m_fShipCompartment ? m_pDocked : NULL); }
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual Metric GetCargoSpaceLeft (void) override;
 		virtual Categories GetCategory (void) const override { return catShip; }
