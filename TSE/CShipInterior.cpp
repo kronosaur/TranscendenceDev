@@ -88,6 +88,27 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 	return damageArmorHit;
 	}
 
+bool CShipInterior::FindAttachedObject (const CShipInteriorDesc &Desc, const CString &sID, CSpaceObject **retpObj) const
+
+//	FindAttachedObject
+//
+//	Returns an attached object by ID.
+
+	{
+	int i;
+
+	for (i = 0; i < Desc.GetCount(); i++)
+		if (strEquals(sID, Desc.GetCompartment(i).sID))
+			{
+			if (retpObj)
+				*retpObj = m_Compartments[i].pAttached;
+
+			return (m_Compartments[i].pAttached != NULL);
+			}
+
+	return false;
+	}
+
 int CShipInterior::FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int yHitPos)
 
 //	FindCompartmentHit
@@ -113,6 +134,12 @@ int CShipInterior::FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int
 			DWORD dwPriority;
 			const SCompartmentDesc &CompDesc = HitCtx.Desc.GetCompartment(i);
 
+			//	Attached compartments are not hit via this code (they are
+			//	separate objects).
+
+			if (CompDesc.fIsAttached)
+				continue;
+
 			//	Check to see if the compartment was hit directly.
 
 			m_Compartments[i].bHit = PointInCompartment(HitCtx, CompDesc, xHitPos, yHitPos);
@@ -137,11 +164,11 @@ int CShipInterior::FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int
 			//	Add to the ordered list.
 
 			HitCtx.HitOrder.Insert(dwPriority, i);
-
-			//	Start at the beginning
-
-			HitCtx.iPos = 0;
 			}
+
+		//	Start at the beginning
+
+		HitCtx.iPos = 0;
 		}
 
 	//	If we're at the end of the list, then we're done
@@ -220,6 +247,7 @@ void CShipInterior::ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc,
 //	
 //	For each compartment
 //		DWORD		iHP
+//		DWORD		pAttached
 
 	{
 	int i;
@@ -233,13 +261,18 @@ void CShipInterior::ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc,
 	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
 	for (i = 0; i < (int)dwCount; i++)
 		{
-		DWORD dwHP;
-		Ctx.pStream->Read((char *)&dwHP, sizeof(DWORD));
-
-		if (i < m_Compartments.GetCount())
+		if (i >= m_Compartments.GetCount())
 			{
-			m_Compartments[i].iHP = (int)dwHP;
+			DWORD dwDummy;
+			Ctx.pStream->Read(dwDummy);
+			if (Ctx.dwVersion >= 149)
+				Ctx.pStream->Read(dwDummy);
+			continue;
 			}
+
+		Ctx.pStream->Read(m_Compartments[i].iHP);
+		if (Ctx.dwVersion >= 149)
+			Ctx.pSystem->ReadObjRefFromStream(Ctx, &m_Compartments[i].pAttached);
 		}
 	}
 
@@ -301,7 +334,7 @@ void CShipInterior::SetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, i
 		}
 	}
 
-void CShipInterior::WriteToStream (IWriteStream *pStream)
+void CShipInterior::WriteToStream (CShip *pShip, IWriteStream *pStream)
 
 //	WriteToStream
 //
@@ -314,6 +347,7 @@ void CShipInterior::WriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	for (i = 0; i < m_Compartments.GetCount(); i++)
 		{
-		pStream->Write((char *)&m_Compartments[i].iHP, sizeof(DWORD));
+		pStream->Write(m_Compartments[i].iHP);
+		pShip->GetSystem()->WriteObjRefToStream(m_Compartments[i].pAttached, pStream);
 		}
 	}

@@ -972,10 +972,8 @@ class CShip : public CSpaceObject
 		//	Compartments
 		virtual bool IsMultiHull (void) override { return !m_Interior.IsEmpty(); }
 
-		void AddShipCompartment (CShip *pCompartment);
 		inline bool IsShipCompartment (void) const { return m_fShipCompartment; }
 		inline bool HasShipCompartments (void) const { return m_fHasShipCompartments; }
-		void SetAsCompartment (CShip *pMain);
 
 		//	Device methods
 		int CalcDeviceSlotsInUse (int *retiWeaponSlots = NULL, int *retiNonWeapon = NULL) const;
@@ -1104,7 +1102,7 @@ class CShip : public CSpaceObject
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
 		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
-		virtual CSpaceObject *GetAttachedRoot (void) const { return (m_fShipCompartment ? m_pDocked : NULL); }
+		virtual CSpaceObject *GetAttachedRoot (void) const;
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual Metric GetCargoSpaceLeft (void) override;
 		virtual Categories GetCategory (void) const override { return catShip; }
@@ -1266,6 +1264,7 @@ class CShip : public CSpaceObject
 		void CalcOverlayImpact (void);
         void CalcPerformance (void);
 		int CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated = NULL);
+		void CreateAttachedSections (void);
 		int FindDeviceIndex (CInstalledDevice *pDevice) const;
 		int FindFreeDeviceSlot (void);
 		bool FindInstalledDeviceSlot (const CItem &Item, int *retiDev = NULL);
@@ -1279,6 +1278,7 @@ class CShip : public CSpaceObject
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
 		void ReactorOverload (int iPowerDrain);
         ALERROR ReportCreateError (const CString &sError) const;
+		void SetAsCompartment (CShip *pMain);
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		inline bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
 		void UpdateDestroyInGate (void);

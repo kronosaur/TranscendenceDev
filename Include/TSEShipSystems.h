@@ -67,7 +67,8 @@ struct SCompartmentDesc
 	SCompartmentDesc (void) :
 			iType(deckUnknown),
 			iMaxHP(0),
-			fDefault(false)
+			fDefault(false),
+			fIsAttached(false)
 		{
 		rcPos.left = 0;
 		rcPos.top = 0;
@@ -75,12 +76,18 @@ struct SCompartmentDesc
 		rcPos.bottom = 0;
 		}
 
+	CString sID;							//	Programmatic ID
 	CString sName;							//	User-visible name (e.g., "bridge")
+	CShipClassRef Class;					//	For attached sections
 	ECompartmentTypes iType;				//	Type of compartment
 	int iMaxHP;								//	Initial HP
 	RECT rcPos;								//	Position and size relative to image
 
+	CString sAttachID;						//	ID of compartment we're attached to (NULL = root object)
+	C3DObjectPos AttachPos;					//	Attach position relative to sAttachID
+
 	DWORD fDefault:1;						//	Default compartment (any space not used by another compartment)
+	DWORD fIsAttached:1;					//	TRUE if this is an attached section (a separate CSpaceObject)
 	};
 
 class CShipInteriorDesc
@@ -93,6 +100,8 @@ class CShipInteriorDesc
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
 
+		static ECompartmentTypes ParseCompartmentType (const CString &sValue);
+
 	private:
 		TArray<SCompartmentDesc> m_Compartments;
 	};
@@ -101,21 +110,25 @@ class CShipInterior
 	{
 	public:
 		EDamageResults Damage (CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx);
+		bool FindAttachedObject (const CShipInteriorDesc &Desc, const CString &sID, CSpaceObject **retpObj) const;
 		void GetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP = NULL) const;
 		void Init (const CShipInteriorDesc &Desc);
 		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
 		void ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc, SLoadCtx &Ctx);
+		inline void SetAttached (int iIndex, CSpaceObject *pAttached) { m_Compartments[iIndex].pAttached = pAttached; }
 		void SetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int iHP);
-		void WriteToStream (IWriteStream *pStream);
+		void WriteToStream (CShip *pShip, IWriteStream *pStream);
 
 	private:
 		struct SCompartmentEntry
 			{
 			SCompartmentEntry (void) :
-					iHP(0)
+					iHP(0),
+					pAttached(NULL)
 				{ }
 
 			int iHP;						//	HP left
+			CSpaceObject *pAttached;		//	May be NULL
 
 			//	Temporaries
 			bool bHit;						//	TRUE if this compartment got a direct hit

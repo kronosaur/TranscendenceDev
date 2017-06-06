@@ -457,6 +457,9 @@
 //	148: 1.8 Alpha 2
 //		Flags in CObjectJoint
 //
+//	149: 1.8 Alpha 2
+//		pAttached in CShipInterior::SCompartmentEntry
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"
@@ -587,6 +590,17 @@ CSystem::~CSystem (void)
 	for (i = 0; i < m_AllObjects.GetCount(); i++)
 		if (m_AllObjects[i])
 			delete m_AllObjects[i];
+	}
+
+bool CSystem::AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, CObjectJoint **retpJoint)
+
+//	AddJoint
+//
+//	Creates a new joint and returns it.
+
+	{
+	m_Joints.CreateJoint(iType, pFrom, pTo, retpJoint);
+	return true;
 	}
 
 bool CSystem::AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID)
@@ -1824,20 +1838,9 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 			&pShip))
 		return error;
 
-	//	If this is a compartment of another ship, then we expect the gate object
-	//	to be the root ship.
-
-	if (pClass->IsShipCompartment())
-		{
-		if (pExitGate == NULL || pExitGate->AsShip() == NULL)
-			return ERR_FAIL;
-
-		pShip->SetAsCompartment(pExitGate->AsShip());
-		}
-
 	//	If we're coming out of a gate, set the timer
 
-	else if (pExitGate)
+	if (pExitGate)
 		PlaceInGate(pShip, pExitGate);
 
 	//	Load images, if necessary

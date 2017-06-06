@@ -216,16 +216,6 @@ void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int 
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	}
 
-void CShip::AddShipCompartment (CShip *pCompartment)
-
-//	AddShipCompartment
-//
-//	Add the given ship as a compartment.
-
-	{
-	m_fHasShipCompartments = true;
-	}
-
 CTradingDesc *CShip::AllocTradeDescOverride (void)
 
 //	AllocTradeDescOverride
@@ -1273,6 +1263,85 @@ void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
         }
 	}
 
+void CShip::CreateAttachedSections (void)
+
+//	CreateAttachedSections
+//
+//	Create sections that are supposed to be attached to us.
+
+	{
+	int i;
+
+	CSystem *pSystem = GetSystem();
+
+	const CShipInteriorDesc &Desc = m_pClass->GetInteriorDesc();
+	for (i = 0; i < Desc.GetCount(); i++)
+		{
+		const SCompartmentDesc &Comp = Desc.GetCompartment(i);
+		if (!Comp.fIsAttached)
+			continue;
+
+		//	Class must be a segment
+
+		if (!Comp.Class->IsShipCompartment())
+			{
+			::kernelDebugLogPattern("Ship class %08x must be a ship compartment.", Comp.Class.GetUNID());
+			continue;
+			}
+
+		//	Compute the position to which we are attached.
+
+		CSpaceObject *pAttachedTo;
+		if (Comp.sAttachID.IsBlank() || !m_Interior.FindAttachedObject(Desc, Comp.sAttachID, &pAttachedTo))
+			pAttachedTo = this;
+
+		//	Compute the position of the attached object.
+		//
+		//	NOTE: We assume a rotation of 0 and then rotate in 2D to match the 
+		//	ship's rotation. We don't do a 3D rotation because the position of
+		//	sections is constant no matter the ship rotation.
+		//
+		//	If we want the section position to change, we need to be able to 
+		//	specify object joints as 3D positions.
+
+		CVector vPos;
+		Comp.AttachPos.CalcCoord(m_pClass->GetImage().GetImageViewportSize(), &vPos);
+		vPos.Rotate(GetRotation());
+		vPos = pAttachedTo->GetPos() + vPos;
+
+		//	Create the new section
+
+		CShip *pNewSection;
+		if (pSystem->CreateShip(Comp.Class.GetUNID(),
+				NULL,
+				NULL,
+				GetSovereign(),
+				vPos,
+				CVector(),
+				0,
+				NULL,
+				NULL,
+				&pNewSection) != NOERROR)
+			{
+			::kernelDebugLogPattern("Unable to create section %08x for ship class %08x", Comp.Class.GetUNID(), m_pClass->GetUNID());
+			continue;
+			}
+
+		//	Set the ship as a compartment of us.
+
+		pNewSection->SetAsCompartment(this);
+
+		//	We remember this ship.
+
+		m_fHasShipCompartments = true;
+		m_Interior.SetAttached(i, pNewSection);
+
+		//	Create a joint
+
+		pSystem->AddJoint(CObjectJoint::jointSpine, pAttachedTo, pNewSection);
+		}
+	}
+
 ALERROR CShip::CreateFromClass (CSystem *pSystem, 
 								CShipClass *pClass,
 								IShipController *pController,
@@ -1572,6 +1641,10 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 		if (!pCtx->InitialData.IsEmpty())
 			pShip->SetDataFromDataBlock(pCtx->InitialData);
 		}
+
+	//	If necessary, create any attached objects
+
+	pShip->CreateAttachedSections();
 
 	//	Fire OnCreate
 
@@ -2419,6 +2492,22 @@ AbilityStatus CShip::GetAbility (Abilities iAbility)
 		default:
 			return ablUninstalled;
 		}
+	}
+
+CSpaceObject *CShip::GetAttachedRoot (void) const
+
+//	GetAttachedRoot
+//
+//	For composite objects (ships with attached compartments) we return the root
+//	object.
+
+	{
+	if (m_fShipCompartment)
+		return m_pDocked;
+	else if (HasShipCompartments())
+		return const_cast<CShip *>(this);
+	else
+		return NULL;
 	}
 
 CSpaceObject *CShip::GetBase (void) const
@@ -6132,7 +6221,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	//	Ship interior
 
-	m_Interior.WriteToStream(pStream);
+	m_Interior.WriteToStream(this, pStream);
 
 	//	Docking ports
 
@@ -7098,7 +7187,6 @@ void CShip::SetAsCompartment (CShip *pMain)
 		SetNoFriendlyTarget();
 
 		m_pDocked = pMain;
-		pMain->AddShipCompartment(this);
 		}
 	else
 		{

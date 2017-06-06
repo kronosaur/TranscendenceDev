@@ -68,12 +68,15 @@ void CObjectJoint::AddContacts (CPhysicsContactResolver &Resolver)
 	switch (m_iType)
 		{
 		case jointHinge:
-			Resolver.AddRod(m_P1.pObj, m_P2.pObj, 0.0);
+			Resolver.AddRod(CPhysicsContact::contactCollision, m_P1.pObj, m_P2.pObj, 0.0);
 			break;
 
 		case jointRod:
 		case jointSpine:
-			Resolver.AddRod(m_P1.pObj, m_P2.pObj, m_iMaxLength * g_KlicksPerPixel);
+			if (m_P1.pObj->GetAttachedRoot() == m_P2.pObj->GetAttachedRoot())
+				Resolver.AddRod(CPhysicsContact::contactSelfContact, m_P1.pObj, m_P2.pObj, m_iMaxLength * g_KlicksPerPixel);
+			else
+				Resolver.AddRod(CPhysicsContact::contactCollision, m_P1.pObj, m_P2.pObj, m_iMaxLength * g_KlicksPerPixel);
 			break;
 		}
 	}

@@ -25,7 +25,7 @@ Metric CPhysicsContact::GetSeparatingVel (void) const
 	return m_rSeparatingVel;
 	}
 
-void CPhysicsContact::Init (CSpaceObject *pObj, CSpaceObject *pContactObj, const CVector &vNormal, Metric rPenetration, Metric rRestitution)
+void CPhysicsContact::Init (ETypes iType, CSpaceObject *pObj, CSpaceObject *pContactObj, const CVector &vNormal, Metric rPenetration, Metric rRestitution)
 
 //	Init
 //
@@ -34,7 +34,7 @@ void CPhysicsContact::Init (CSpaceObject *pObj, CSpaceObject *pContactObj, const
 	{
 	m_pObj = pObj;
 	m_pContactObj = pContactObj;
-	m_iType = contactCollision;
+	m_iType = iType;
 	m_vContactNormal = vNormal;
 	m_rPenetration = rPenetration;
 	m_rRestitution = rRestitution;
@@ -118,6 +118,12 @@ void CPhysicsContact::OnUpdateDone (void)
 		case contactBarrierCollision:
 			m_pObj->OnBounce(m_pContactObj, m_pObj->GetPos());
 			m_pContactObj->OnObjBounce(m_pObj, m_pObj->GetPos());
+			break;
+
+		case contactSelfContact:
+			//	No bounce notification since this is just an internal movement
+			//	between attached pieces. Otherwise, docking would get cancelled
+			//	because it thinks we've been blocked.
 			break;
 		}
 	}

@@ -166,7 +166,7 @@ inline void DebugStopTimer (char *szTiming) { }
 const DWORD API_VERSION =								36;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
 const DWORD UNIVERSE_SAVE_VERSION =						29;
-const DWORD SYSTEM_SAVE_VERSION =						148;	//	See: CSystem.cpp
+const DWORD SYSTEM_SAVE_VERSION =						149;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{
@@ -1368,8 +1368,8 @@ class C3DObjectPos
 
 		explicit C3DObjectPos (const CVector &vPos, int iZ = 0);
 
-		void CalcCoord (int iScale, CVector *retvPos);
-		void CalcCoord (int iScale, int iRotation, CVector *retvPos);
+		void CalcCoord (int iScale, CVector *retvPos) const;
+		void CalcCoord (int iScale, int iRotation, CVector *retvPos) const;
 		inline int GetAngle (void) const { return m_iPosAngle; }
 		inline int GetRadius (void) const { return m_iPosRadius; }
 		inline int GetZ (void) const { return m_iPosZ; }

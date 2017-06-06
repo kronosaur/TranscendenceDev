@@ -23,7 +23,7 @@ C3DObjectPos::C3DObjectPos (const CVector &vPos, int iZ)
 	m_iPosZ = iZ;
 	}
 
-void C3DObjectPos::CalcCoord (int iScale, CVector *retvPos)
+void C3DObjectPos::CalcCoord (int iScale, CVector *retvPos) const
 
 //	CalcCoord
 //
@@ -33,7 +33,7 @@ void C3DObjectPos::CalcCoord (int iScale, CVector *retvPos)
 	C3DConversion::CalcCoord(iScale, GetAngle(), GetRadius(), GetZ(), retvPos);
 	}
 
-void C3DObjectPos::CalcCoord (int iScale, int iRotation, CVector *retvPos)
+void C3DObjectPos::CalcCoord (int iScale, int iRotation, CVector *retvPos) const
 
 //	CalcCoord
 //
