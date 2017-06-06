@@ -48,6 +48,145 @@ ALERROR CShipInteriorDesc::BindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
+void CShipInteriorDesc::CalcCompartmentPositions (int iScale, TArray<CVector> &Result) const
+
+//	CalcCompartmentPositions
+//
+//	Creates an array of all compartments and stores the position relative to
+//	the center of the root object. Positions are Cartessian and in pixels.
+
+	{
+	int i;
+
+	//	Initialize
+
+	Result.DeleteAll();
+	Result.InsertEmpty(m_Compartments.GetCount());
+
+	//	Positions may be relative to other compartments, so we first need to
+	//	generate a map of positions by ID
+
+	TSortMap<CString, CVector> PosByID;
+
+	//	Add rectangles for each compartment.
+
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		{
+		const SCompartmentDesc &CompDesc = m_Compartments[i];
+		if (!CompDesc.fIsAttached)
+			continue;
+
+		//	Compute the position of what we're attached to.
+
+		CVector vOrigin;
+		if (CompDesc.sAttachID.IsBlank() || !PosByID.Find(CompDesc.sAttachID, &vOrigin))
+			vOrigin = CVector();
+
+		//	Compute the position
+
+		CVector vPos;
+		m_Compartments[i].AttachPos.CalcCoord(iScale, &vPos);
+		Result[i] = vOrigin + (vPos / g_KlicksPerPixel);
+
+		//	Set this position in the map
+
+		if (CompDesc.sID)
+			PosByID.SetAt(CompDesc.sID, Result[i]);
+		}
+	}
+
+int CShipInteriorDesc::CalcImageSize (CShipClass *pClass, CVector *retvOrigin) const
+
+//	CalcImageSize
+//
+//	Computes the size of the resulting image if we paint all the attached 
+//	components together.
+
+	{
+	int i;
+
+	int iScale = pClass->GetImage().GetImageViewportSize();
+
+	//	Compute the position of all compartments
+
+	TArray<CVector> Pos;
+	CalcCompartmentPositions(iScale, Pos);
+
+	//	We start with a rectangle for the main (root) image (centered at 0,0).
+
+	int cxWidth = pClass->GetImage().GetImageWidth();
+	int cxHalfWidth = cxWidth / 2;
+	RECT rcImage;
+	rcImage.left = -cxHalfWidth;
+	rcImage.right = rcImage.left + cxWidth;
+	rcImage.top = -cxHalfWidth;
+	rcImage.bottom = rcImage.top + cxWidth;
+
+	//	Add rectangles for each compartment.
+
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		{
+		const SCompartmentDesc &CompDesc = m_Compartments[i];
+		CShipClass *pClass = CompDesc.Class;
+		if (pClass == NULL)
+			continue;
+
+		cxWidth = pClass->GetImage().GetImageWidth();
+		cxHalfWidth = cxWidth / 2;
+
+		//	Offset from center of rect
+
+		int x = (int)mathRound(Pos[i].GetX());
+		int y = -(int)mathRound(Pos[i].GetY());
+
+		//	Create a rectangle.
+
+		RECT rcComp;
+		rcComp.left = x - cxHalfWidth;
+		rcComp.right = rcComp.left + cxWidth;
+		rcComp.top = y - cxHalfWidth;
+		rcComp.bottom = rcComp.top + cxWidth;
+
+		//	Add to rect
+
+		::UnionRect(&rcImage, &rcImage, &rcComp);
+		}
+
+	//	Make sure the resuting rect is square
+
+	int cxImage = RectWidth(rcImage);
+	int cyImage = RectHeight(rcImage);
+	int cxSize = Max(cxImage, cyImage);
+
+	if (cxSize > cxImage)
+		{
+		int cxExtra = cxSize - cxImage;
+		int cxHalfExtra = cxExtra / 2;
+
+		rcImage.left -= cxHalfExtra;
+		rcImage.right += cxExtra - cxHalfExtra;
+		}
+
+	else if (cxSize > cyImage)
+		{
+		int cyExtra = cxSize - cyImage;
+		int cyHalfExtra = cyExtra / 2;
+
+		rcImage.top -= cyHalfExtra;
+		rcImage.bottom += cyExtra - cyHalfExtra;
+		}
+
+	//	If necessary, compute the origin of the rect (where the main object is 
+	//	centered) relative to the center of the rect.
+
+	if (retvOrigin)
+		*retvOrigin = CVector(-(cxSize / 2) - rcImage.left, (cxSize / 2) + rcImage.top);
+
+	//	Return the size
+
+	return cxSize;
+	}
+
 int CShipInteriorDesc::GetHitPoints (void) const
 
 //	GetHitPoints
@@ -73,6 +212,8 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	{
 	ALERROR error;
 	int i;
+
+	m_fHasAttached = false;
 
 	//	Load all compartments
 
@@ -151,6 +292,7 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				}
 
 			Comp.fIsAttached = true;
+			m_fHasAttached = true;
 			}
 		else
 			{

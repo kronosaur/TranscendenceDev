@@ -65,6 +65,7 @@ class CShipClass : public CDesignType
 		int CalcScore (void);
 		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
 		void CreateExplosion (CShip *pShip, CSpaceObject *pWreck = NULL);
+		void CreateScaledImage (CG32bitImage &Dest, int iTick, int iDirection, int cxWidth, int cyHeight);
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
 		inline bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(iDev, retDesc) : false); }
 		inline bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(Item, retDesc) : false); }
@@ -161,7 +162,7 @@ class CShipClass : public CDesignType
 					int y,
 					int cxWidth,
 					int cyHeight,
-					int iDirection,
+					int iRotation,
 					int iTick);
 
 		//	CDesignType overrides

@@ -352,7 +352,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint the ship
 
-	pShip->GetClass()->PaintScaled(m_Buffer, m_xCenter, m_yCenter, 2 * iArmorInnerRadius, 2 * iArmorInnerRadius, 0, 0);
+	pShip->GetClass()->PaintScaled(m_Buffer, m_xCenter, m_yCenter, 2 * iArmorInnerRadius, 2 * iArmorInnerRadius, 90, 0);
 	CGDraw::Circle(m_Buffer, m_xCenter, m_yCenter, iArmorInnerRadius, CG32bitPixel(CG32bitPixel::Desaturate(m_rgbArmor), 80), CGDraw::blendCompositeNormal);
 
 	//	Paint each of the armor segments, one at a time.
