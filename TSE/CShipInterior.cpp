@@ -5,6 +5,108 @@
 
 #include "PreComp.h"
 
+void CShipInterior::CalcAttachPos (CShip *pShip, const CShipInteriorDesc &Desc, int iIndex, CSpaceObject **retpAttachedTo, CVector *retvPos) const
+
+//	CalcAttachPos
+//
+//	Computes the attach position for a compartment.
+
+	{
+	const SCompartmentDesc &CompDesc = Desc.GetCompartment(iIndex);
+	ASSERT(CompDesc.fIsAttached);
+
+	//	Compute the object to which we are attached.
+
+	CSpaceObject *pAttachedTo;
+	if (CompDesc.sAttachID.IsBlank() || !FindAttachedObject(Desc, CompDesc.sAttachID, &pAttachedTo))
+		pAttachedTo = pShip;
+
+	//	Compute the position of the attached object.
+	//
+	//	NOTE: We assume a rotation of 0 and then rotate in 2D to match the 
+	//	ship's rotation. We don't do a 3D rotation because the position of
+	//	sections is constant no matter the ship rotation.
+	//
+	//	If we want the section position to change, we need to be able to 
+	//	specify object joints as 3D positions.
+
+	CVector vPos;
+	CompDesc.AttachPos.CalcCoord(pShip->GetClass()->GetImage().GetImageViewportSize(), &vPos);
+	vPos.Rotate(pShip->GetRotation());
+	vPos = pAttachedTo->GetPos() + vPos;
+
+	//	Done
+
+	if (retpAttachedTo)
+		*retpAttachedTo = pAttachedTo;
+
+	if (retvPos)
+		*retvPos = vPos;
+	}
+
+void CShipInterior::CreateAttached (CShip *pShip, const CShipInteriorDesc &Desc)
+
+//	CreateAttached
+//
+//	Create attached compartments.
+
+	{
+	int i;
+
+	CSystem *pSystem = pShip->GetSystem();
+
+	for (i = 0; i < Desc.GetCount(); i++)
+		{
+		const SCompartmentDesc &Comp = Desc.GetCompartment(i);
+		if (!Comp.fIsAttached)
+			continue;
+
+		//	Class must be a segment
+
+		if (!Comp.Class->IsShipCompartment())
+			{
+			::kernelDebugLogPattern("Ship class %08x must be a ship compartment.", Comp.Class.GetUNID());
+			continue;
+			}
+
+		//	Compute the position to which we are attached.
+
+		CSpaceObject *pAttachedTo;
+		CVector vPos;
+		CalcAttachPos(pShip, Desc, i, &pAttachedTo, &vPos);
+
+		//	Create the new section
+
+		CShip *pNewSection;
+		if (pSystem->CreateShip(Comp.Class.GetUNID(),
+				NULL,
+				NULL,
+				pShip->GetSovereign(),
+				vPos,
+				CVector(),
+				0,
+				NULL,
+				NULL,
+				&pNewSection) != NOERROR)
+			{
+			::kernelDebugLogPattern("Unable to create section %08x for ship class %08x", Comp.Class.GetUNID(), pShip->GetClass()->GetUNID());
+			continue;
+			}
+
+		//	Set the ship as a compartment of us.
+
+		pNewSection->SetAsCompartment(pShip);
+
+		//	We remember this ship.
+
+		SetAttached(i, pNewSection);
+
+		//	Create a joint
+
+		pSystem->AddJoint(CObjectJoint::jointSpine, pAttachedTo, pNewSection);
+		}
+	}
+
 EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx)
 
 //	Damage
@@ -223,6 +325,39 @@ void CShipInterior::Init (const CShipInteriorDesc &Desc)
 		SCompartmentEntry &Entry = m_Compartments[i];
 
 		Entry.iHP = CompDesc.iMaxHP;
+		}
+	}
+
+void CShipInterior::OnNewSystem (CSystem *pSystem, CShip *pShip, const CShipInteriorDesc &Desc)
+
+//	OnNewSystem
+//
+//	Our root object has entered a new system, so we need to recreate the joint
+//	structure.
+
+	{
+	int i;
+
+	for (i = 0; i < Desc.GetCount(); i++)
+		{
+		const SCompartmentDesc &Comp = Desc.GetCompartment(i);
+		if (!Comp.fIsAttached || m_Compartments[i].pAttached == NULL)
+			continue;
+
+		//	Compute the position to which we are attached.
+
+		CSpaceObject *pAttachedTo;
+		CVector vPos;
+		CalcAttachPos(pShip, Desc, i, &pAttachedTo, &vPos);
+
+		//	Place the object
+
+		m_Compartments[i].pAttached->Place(vPos, pShip->GetVel());
+		m_Compartments[i].pAttached->AddToSystem(pSystem);
+
+		//	Create a joint
+
+		pSystem->AddJoint(CObjectJoint::jointSpine, pAttachedTo, m_Compartments[i].pAttached);
 		}
 	}
 

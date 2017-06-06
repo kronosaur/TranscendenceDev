@@ -109,11 +109,13 @@ class CShipInteriorDesc
 class CShipInterior
 	{
 	public:
+		void CreateAttached (CShip *pShip, const CShipInteriorDesc &Desc);
 		EDamageResults Damage (CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx);
 		bool FindAttachedObject (const CShipInteriorDesc &Desc, const CString &sID, CSpaceObject **retpObj) const;
 		void GetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP = NULL) const;
 		void Init (const CShipInteriorDesc &Desc);
 		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
+		void OnNewSystem (CSystem *pSystem, CShip *pShip, const CShipInteriorDesc &Desc);
 		void OnPlace (CShip *pShip, const CVector &vOldPos);
 		void ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc, SLoadCtx &Ctx);
 		inline void SetAttached (int iIndex, CSpaceObject *pAttached) { m_Compartments[iIndex].pAttached = pAttached; }
@@ -150,6 +152,7 @@ class CShipInterior
 			TSortMap<DWORD, int> HitOrder;
 			};
 
+		void CalcAttachPos (CShip *pShip, const CShipInteriorDesc &Desc, int iIndex, CSpaceObject **retpAttachedTo, CVector *retvPos) const;
 		int FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int yHitPos);
 		bool PointInCompartment (SHitTestCtx &HitCtx, const SCompartmentDesc &CompDesc, int xHitPos, int yHitPos) const;
 

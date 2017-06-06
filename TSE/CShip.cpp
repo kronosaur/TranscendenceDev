@@ -1263,85 +1263,6 @@ void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
         }
 	}
 
-void CShip::CreateAttachedSections (void)
-
-//	CreateAttachedSections
-//
-//	Create sections that are supposed to be attached to us.
-
-	{
-	int i;
-
-	CSystem *pSystem = GetSystem();
-
-	const CShipInteriorDesc &Desc = m_pClass->GetInteriorDesc();
-	for (i = 0; i < Desc.GetCount(); i++)
-		{
-		const SCompartmentDesc &Comp = Desc.GetCompartment(i);
-		if (!Comp.fIsAttached)
-			continue;
-
-		//	Class must be a segment
-
-		if (!Comp.Class->IsShipCompartment())
-			{
-			::kernelDebugLogPattern("Ship class %08x must be a ship compartment.", Comp.Class.GetUNID());
-			continue;
-			}
-
-		//	Compute the position to which we are attached.
-
-		CSpaceObject *pAttachedTo;
-		if (Comp.sAttachID.IsBlank() || !m_Interior.FindAttachedObject(Desc, Comp.sAttachID, &pAttachedTo))
-			pAttachedTo = this;
-
-		//	Compute the position of the attached object.
-		//
-		//	NOTE: We assume a rotation of 0 and then rotate in 2D to match the 
-		//	ship's rotation. We don't do a 3D rotation because the position of
-		//	sections is constant no matter the ship rotation.
-		//
-		//	If we want the section position to change, we need to be able to 
-		//	specify object joints as 3D positions.
-
-		CVector vPos;
-		Comp.AttachPos.CalcCoord(m_pClass->GetImage().GetImageViewportSize(), &vPos);
-		vPos.Rotate(GetRotation());
-		vPos = pAttachedTo->GetPos() + vPos;
-
-		//	Create the new section
-
-		CShip *pNewSection;
-		if (pSystem->CreateShip(Comp.Class.GetUNID(),
-				NULL,
-				NULL,
-				GetSovereign(),
-				vPos,
-				CVector(),
-				0,
-				NULL,
-				NULL,
-				&pNewSection) != NOERROR)
-			{
-			::kernelDebugLogPattern("Unable to create section %08x for ship class %08x", Comp.Class.GetUNID(), m_pClass->GetUNID());
-			continue;
-			}
-
-		//	Set the ship as a compartment of us.
-
-		pNewSection->SetAsCompartment(this);
-
-		//	We remember this ship.
-
-		m_fHasShipCompartments = true;
-		m_Interior.SetAttached(i, pNewSection);
-
-		//	Create a joint
-
-		pSystem->AddJoint(CObjectJoint::jointSpine, pAttachedTo, pNewSection);
-		}
-	}
-
 ALERROR CShip::CreateFromClass (CSystem *pSystem, 
 								CShipClass *pClass,
 								IShipController *pController,
@@ -1644,7 +1565,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	If necessary, create any attached objects
 
-	pShip->CreateAttachedSections();
+	pShip->m_Interior.CreateAttached(pShip, pClass->GetInteriorDesc());
 
 	//	Fire OnCreate
 
@@ -4120,13 +4041,21 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	If another object got destroyed, we do something
 
 	{
+	//	If our main body got destroyed, then we need to leave the system too.
+
+	if (m_fShipCompartment && Ctx.pObj == GetAttachedRoot())
+		{
+		Remove(removedFromSystem, CDamageSource(GetAttachedRoot(), removedFromSystem));
+		return;
+		}
+
 	//	Give the controller a chance to handle it
 
 	m_pController->OnObjDestroyed(Ctx);
 
 	//	If what we're docked with got destroyed, clear it
 
-	if (m_pDocked == Ctx.pObj)
+	if (GetDockedObj() == Ctx.pObj)
 		m_pDocked = NULL;
 
 	//	If this object is docked with us, remove it from the
@@ -4896,6 +4825,10 @@ void CShip::OnNewSystem (CSystem *pSystem)
 	//	If we have any objects docked with us, then remove them.
 
 	m_DockingPorts.OnNewSystem(pSystem);
+
+	//	Restore any attached objects and their joints
+
+	m_Interior.OnNewSystem(pSystem, this, m_pClass->GetInteriorDesc());
 
 	//	Let the controller handle it.
 
@@ -6003,10 +5936,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
                 m_fHiddenByNebula = false;
 				}
 
-            //	See if the environment causes drag
+            //	See if the environment causes drag (attached ship compartments
+			//	are immune to drag, since they follow the main ship).
 
             Metric rDrag = pEnvironment->GetDragFactor();
-            if (rDrag != 1.0)
+            if (!m_fShipCompartment && rDrag != 1.0)
                 {
                 SetVel(CVector(GetVel().GetX() * rDrag,
                     GetVel().GetY() * rDrag));
@@ -7197,13 +7131,10 @@ void CShip::SetAsCompartment (CShip *pMain)
 		SetNoFriendlyTarget();
 
 		m_pDocked = pMain;
-		}
-	else
-		{
-		m_fShipCompartment = false;
-		m_fControllerDisabled = false;
 
-		m_pDocked = NULL;
+		//	We remember that the main ship has compartments
+
+		pMain->m_fHasShipCompartments = true;
 		}
 	}
 
