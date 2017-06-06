@@ -5024,6 +5024,9 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 	if (GetUniverse()->GetPOV() == this)
 		{
+		if (m_fHasShipCompartments)
+			PaintMapShipCompartments(Dest, x, y, Ctx);
+
 		m_pClass->PaintMap(Ctx,
 				Dest, 
 				x, 
@@ -6277,6 +6280,56 @@ void CShip::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewport
 	m_fIdentified = true;
 
 	DEBUG_CATCH_MSG1("Crash in CShip::PaintLRSForeground: type: %08x", m_pClass->GetUNID());
+	}
+
+void CShip::PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapViewportCtx &Ctx)
+
+//	PaintMapShipCompartments
+//
+//	Paints any ship compartments on the map
+
+	{
+	int i;
+
+	int cxWidth = m_pClass->GetImage().GetImageWidth();
+	if (cxWidth == 0)
+		return;
+
+	//	Compute the scale for the ship.
+
+	Metric rScale = 24.0 / (Metric)cxWidth;
+
+	//	We need a different transform because the ship is at a different scale from
+	//	the map.
+
+	Metric rMapScale = g_KlicksPerPixel / rScale;
+	ViewportTransform Trans(GetPos(), 
+			rMapScale, 
+			rMapScale,
+			x,
+			y);
+
+	for (i = 0; i < m_Interior.GetCount(); i++)
+		{
+		CSpaceObject *pAttached = m_Interior.GetAttached(i);
+		CShip *pShip = (pAttached ? pAttached->AsShip() : NULL);
+		if (pShip == NULL)
+			continue;
+
+		int xPos, yPos;
+		Trans.Transform(pShip->GetPos(), &xPos, &yPos);
+
+		int cxSize = (int)mathRound(rScale * pShip->GetClass()->GetImage().GetImageWidth());
+
+		pShip->GetClass()->GetImage().PaintScaledImage(Dest, 
+				xPos, 
+				yPos, 
+				GetSystem()->GetTick(),
+				pShip->m_Rotation.GetFrameIndex(), 
+				cxSize, 
+				cxSize, 
+				CObjectImageArray::FLAG_CACHED);
+		}
 	}
 
 void CShip::PaintShipCompartmentChain (CG32bitImage &Dest, CSpaceObject *pJointObj, SViewportPaintCtx &Ctx)

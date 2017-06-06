@@ -176,6 +176,8 @@ class CMapViewportCtx
 
 		inline CSpaceObject *GetCenterObj (void) const { return m_pCenter; }
 		inline const CVector &GetCenterPos (void) const { return m_vCenter; }
+		inline int GetCenterX (void) const { return m_xCenter; }
+		inline int GetCenterY (void) const { return m_yCenter; }
 		inline const RECT &GetViewportRect (void) const { return m_rcView; }
 		inline ViewportTransform &GetXform (void) { return m_Trans; }
 		bool IsInViewport (CSpaceObject *pObj) const;

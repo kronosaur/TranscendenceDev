@@ -112,6 +112,8 @@ class CShipInterior
 		void CreateAttached (CShip *pShip, const CShipInteriorDesc &Desc);
 		EDamageResults Damage (CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx);
 		bool FindAttachedObject (const CShipInteriorDesc &Desc, const CString &sID, CSpaceObject **retpObj) const;
+		inline CSpaceObject *GetAttached (int iIndex) const { return m_Compartments[iIndex].pAttached; }
+		inline int GetCount (void) const { return m_Compartments.GetCount(); }
 		void GetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP = NULL) const;
 		void Init (const CShipInteriorDesc &Desc);
 		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
