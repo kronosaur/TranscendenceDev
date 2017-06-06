@@ -226,6 +226,21 @@ void CShipInterior::Init (const CShipInteriorDesc &Desc)
 		}
 	}
 
+void CShipInterior::OnPlace (CShip *pShip, const CVector &vOldPos)
+
+//	OnPlace
+//
+//	Move all attached compartments.
+
+	{
+	int i;
+	CVector vMove = pShip->GetPos() - vOldPos;
+
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		if (m_Compartments[i].pAttached)
+			m_Compartments[i].pAttached->Place(m_Compartments[i].pAttached->GetPos() + vMove, pShip->GetVel());
+	}
+
 bool CShipInterior::PointInCompartment (SHitTestCtx &HitCtx, const SCompartmentDesc &CompDesc, int xHitPos, int yHitPos) const
 
 //	PointInCompartment

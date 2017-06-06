@@ -114,6 +114,7 @@ class CShipInterior
 		void GetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP = NULL) const;
 		void Init (const CShipInteriorDesc &Desc);
 		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
+		void OnPlace (CShip *pShip, const CVector &vOldPos);
 		void ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc, SLoadCtx &Ctx);
 		inline void SetAttached (int iIndex, CSpaceObject *pAttached) { m_Compartments[iIndex].pAttached = pAttached; }
 		void SetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int iHP);

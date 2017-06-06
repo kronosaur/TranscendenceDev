@@ -1293,7 +1293,7 @@ class CSpaceObject : public CObject
 		inline bool IsManuallyAnchored (void) const { return m_fManualAnchor; }
 		void Jump (const CVector &vPos);
 		void Move (SUpdateCtx &Ctx, Metric rSeconds);
-		inline void Place (const CVector &vPos, const CVector &vVel = NullVector) { m_vPos = vPos; m_vOldPos = vPos; m_vVel = vVel; }
+		inline void Place (const CVector &vPos, const CVector &vVel = NullVector) { CVector vOldPos = m_vPos; m_vPos = vPos; m_vOldPos = vPos; m_vVel = vVel; OnPlace(vOldPos); }
 		inline void SetInsideBarrier (bool bInside = true) { m_fInsideBarrier = bInside; }
 		inline void SetManualAnchor (bool bAnchored = true) { m_fManualAnchor = bAnchored; }
 		inline void SetPos (const CVector &vPos) { m_vPos = vPos; }
@@ -1596,6 +1596,7 @@ class CSpaceObject : public CObject
 		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
 		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) { }
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
+		virtual void OnPlace (const CVector &vOldPos) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnSetSovereign (CSovereign *pSovereign) { }

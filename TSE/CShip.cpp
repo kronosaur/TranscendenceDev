@@ -5131,6 +5131,16 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 		}
 	}
 
+void CShip::OnPlace (const CVector &vOldPos)
+
+//	OnPlace
+//
+//	Ship has been manually moved to a spot.
+
+	{
+	m_Interior.OnPlace(this, vOldPos);
+	}
+
 void CShip::OnPlayerObj (CSpaceObject *pPlayer)
 
 //	OnPlayerObj

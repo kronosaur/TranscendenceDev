@@ -1242,6 +1242,7 @@ class CShip : public CSpaceObject
 		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) override;
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) override { m_pController->OnPaintSRSEnhancements(Dest, Ctx); }
+		virtual void OnPlace (const CVector &vOldPos) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnSetEventFlags (void) override;
         virtual void OnSetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
