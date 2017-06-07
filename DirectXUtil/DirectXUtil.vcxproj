@@ -262,8 +262,10 @@
     <ClInclude Include="..\Include\TBlt.h" />
     <ClInclude Include="..\Include\TCirclePainter.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
+    <ClInclude Include="..\Include\TFill.h" />
     <ClInclude Include="..\Include\TLinePainter.h" />
     <ClInclude Include="..\Include\TRegionPainter.h" />
+    <ClInclude Include="..\Include\TRoundedRectPainter.h" />
     <ClInclude Include="DrawImpl.h" />
     <ClInclude Include="DrawRegionImpl.h" />
     <ClInclude Include="DX3DImpl.h" />
@@ -483,6 +485,7 @@
     </ClCompile>
     <ClCompile Include="DrawCircle.cpp" />
     <ClCompile Include="DrawClouds.cpp" />
+    <ClCompile Include="DrawFill.cpp" />
     <ClCompile Include="DrawLine.cpp" />
     <ClCompile Include="DrawQuadCurve.cpp" />
     <ClCompile Include="DrawRect.cpp" />

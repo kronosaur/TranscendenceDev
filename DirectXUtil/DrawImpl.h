@@ -256,6 +256,21 @@ template <class BLENDER> class TFillImageSolid : public TImagePainter<TFillImage
 	friend TImagePainter;
 	};
 
+//	Fill Painters --------------------------------------------------------------
+
+class CSolidFill
+	{
+	public:
+		CSolidFill (CG32bitPixel rgbColor) :
+				m_rgbColor(rgbColor)
+			{ }
+
+		inline CG32bitPixel GetColor (void) const { return m_rgbColor; }
+
+	private:
+		CG32bitPixel m_rgbColor;
+	};
+
 //	Circle Painters ------------------------------------------------------------
 
 template <class BLENDER> class CImageCirclePainter : public TCirclePainter32<CImageCirclePainter<BLENDER>, BLENDER>

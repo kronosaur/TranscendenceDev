@@ -273,6 +273,12 @@ class CGDraw
 		static void BltWithBackColor (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG32bitPixel rgbBackColor);
 		static void CopyColorize (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, Metric rHue, Metric rSaturation);
 
+		//	Fill
+
+		static void Fill (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void FillColumn (CG32bitImage &Dest, int x, int y, int cyHeight, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+		static void FillLine (CG32bitImage &Dest, int x, int y, int cxWidth, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
+
 		//	Lines
 
 		inline static void Line (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor) 
@@ -288,7 +294,7 @@ class CGDraw
 		static void OctaRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iCorner, int iLineWidth, CG32bitPixel rgbColor);
 		static void RectGradient (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbStart, CG32bitPixel rgbEnd, GradientDirections iDir = gradientHorizontal);
 		static void RectOutlineDotted (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbColor);
-		static void RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor);
+		static void RoundedRect (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, CG32bitPixel rgbColor, EBlendModes iMode = blendNormal);
 		static void RoundedRectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, int iRadius, int iLineWidth, CG32bitPixel rgbColor);
         static void TriangleCorner (CG32bitImage &Dest, int x, int y, int iDir, int iSize, CG32bitPixel rgbColor);
 
@@ -508,8 +514,10 @@ class CGBlendScreen : public TBlendImpl<CGBlendScreen>
 //	Implementation Helpers -----------------------------------------------------
 
 #include "TBlt.h"
+#include "TFill.h"
 #include "TCirclePainter.h"
 #include "TLinePainter.h"
+#include "TRoundedRectPainter.h"
 
 //	Utilities
 

@@ -117,6 +117,12 @@
     <ClInclude Include="..\Include\TLinePainter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TRoundedRectPainter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TFill.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="8bitDrawCircle.cpp">
@@ -382,6 +388,9 @@
     </ClCompile>
     <ClCompile Include="CGTextArea.cpp">
       <Filter>Source Files\AG</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawFill.cpp">
+      <Filter>Source Files\32bit</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
