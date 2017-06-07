@@ -892,7 +892,7 @@ bool CDockingPorts::ShipsNearPort (CSpaceObject *pOwner, CSpaceObject *pRequesti
 		CSpaceObject *pObj = pSystem->GetObject(i);
 		if (pObj
 				&& pObj->GetCategory() == CSpaceObject::catShip
-				&& !pObj->IsIntangible()
+				&& pObj->CanAttack()	//	Excludes ship sections
 				&& pObj != pRequestingObj)
 			{
 			Metric rDist2 = (pObj->GetPos() - vPortPos).Length2();

@@ -166,7 +166,7 @@ bool CAIBehaviorCtx::CalcFlockingFormationCloud (CShip *pShip, CSpaceObject *pLe
 		if (pObj 
 				&& pObj->GetSovereign() == pShip->GetSovereign()
 				&& pObj->GetCategory() == CSpaceObject::catShip
-				&& !pObj->IsIntangible()
+				&& pObj->CanAttack()	//	Excludes attached ship sections
 				&& pObj != pShip
 				&& pObj != pLeader)
 			{

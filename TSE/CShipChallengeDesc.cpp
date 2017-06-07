@@ -176,7 +176,7 @@ bool CShipChallengeDesc::NeedsMoreReinforcements (CSpaceObject *pBase) const
 		if (pObj
 				&& pObj->GetBase() == pBase
 				&& pObj->GetCategory() == CSpaceObject::catShip
-				&& !pObj->IsIntangible()
+				&& pObj->CanAttack()	//	Excludes attached ship sections
 				&& pObj != pBase)
 			{
 			iCurCount++;

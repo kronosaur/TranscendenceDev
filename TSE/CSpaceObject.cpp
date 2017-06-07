@@ -762,6 +762,11 @@ bool CSpaceObject::CanCommunicateWith (CSpaceObject *pSender)
 	if (IsIntangible() && !IsVirtual())
 		return false;
 
+	//	Can't communicate if we're part of a different object
+
+	if (IsAttached())
+		return false;
+
 	//	We can't communicate if we are out of range
 
 	if ((pSender->GetPos() - m_vPos).Length2() > g_rMaxCommsRange2)

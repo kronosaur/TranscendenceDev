@@ -188,7 +188,7 @@ CVector CGladiatorAI::ComputePotential (void)
 		{
 		CSpaceObject *pObj = m_pShip->GetSystem()->GetObject(i);
 
-		if (pObj  == NULL || pObj == m_pShip || pObj->IsIntangible())
+		if (pObj  == NULL || pObj == m_pShip || !pObj->CanAttack())
 			NULL;
 		else if (pObj->Blocks(m_pShip))
 			{

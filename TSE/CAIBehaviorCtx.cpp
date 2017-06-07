@@ -909,7 +909,7 @@ void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage
 			if (pObj 
 					&& pObj->GetCategory() == CSpaceObject::catShip
 					&& pObj != pShip
-					&& !pObj->IsIntangible()
+					&& pObj->CanAttack()	//	Excludes attached ship sections
 					&& pObj->GetEscortPrincipal() == pShip)
 				{
 				pShip->Communicate(pObj, iMessage, pParam1, dwParam2);

@@ -332,7 +332,7 @@ int CStation::CalcNumberOfShips (void)
 		if (pObj
 				&& pObj->GetBase() == this
 				&& pObj->GetCategory() == catShip
-				&& !pObj->IsIntangible()
+				&& pObj->CanAttack()	//	Exclude ship sections
 				&& pObj != this)
 			iCount++;
 		}

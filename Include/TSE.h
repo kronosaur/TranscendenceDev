@@ -963,6 +963,10 @@ class CSpaceObject : public CObject
 		void ItemsModified (void);
 
 		//	Joints
+		//
+		//	NOTE: "Attached" implies a permanent joint as when a ship is 
+		//	composed of multiple sections. An object that is attached is NOT an
+		//	independent object.
 
 		virtual CSpaceObject *GetAttachedRoot (void) const { return NULL; }
 		virtual bool IsAttached (void) const { return false; }
