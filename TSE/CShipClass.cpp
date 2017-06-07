@@ -1687,12 +1687,6 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 	int xOrigin = xCenter + (int)mathRound(vOrigin.GetX());
 	int yOrigin = yCenter -(int)mathRound(vOrigin.GetY());
 
-	//	Blt the main image
-
-	int cxScaledSize = (int)mathRound(rScale * GetImage().GetImageWidth());
-	int iDirection = GetRotationDesc().GetFrameIndex(iRotation);
-	GetImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
-
 	//	Get the positions of all attached components
 
 	TArray<CVector> Pos;
@@ -1703,17 +1697,19 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 	for (i = 0; i < Pos.GetCount(); i++)
 		Pos[i] = rScale * Pos[i].Rotate(iRotation);
 
-	//	Blt each compartment
+	//	Blt each compartment (in paint order)
 
-	for (i = 0; i < m_Interior.GetCount(); i++)
+	for (i = 0; i < m_Interior.GetPaintOrder().GetCount(); i++)
 		{
-		CShipClass *pClass = m_Interior.GetCompartment(i).Class;
+		int iIndex = m_Interior.GetPaintOrder().GetAt(i);
+
+		CShipClass *pClass = m_Interior.GetCompartment(iIndex).Class;
 		if (pClass == NULL)
 			continue;
 
 		//	Paint the class on our image
 
-		CVector vPos = vOrigin + Pos[i];
+		CVector vPos = vOrigin + Pos[iIndex];
 		int xPos = xCenter + (int)mathRound(vPos.GetX());
 		int yPos = yCenter -(int)mathRound(vPos.GetY());
 
@@ -1722,6 +1718,12 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 
 		pClass->GetImage().PaintScaledImage(Dest, xPos, yPos, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 		}
+
+	//	Blt the main image on top
+
+	int cxScaledSize = (int)mathRound(rScale * GetImage().GetImageWidth());
+	int iDirection = GetRotationDesc().GetFrameIndex(iRotation);
+	GetImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 	}
 
 bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)

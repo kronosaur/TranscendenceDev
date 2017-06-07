@@ -187,6 +187,48 @@ int CShipInteriorDesc::CalcImageSize (CShipClass *pClass, CVector *retvOrigin) c
 	return cxSize;
 	}
 
+int CShipInteriorDesc::CalcPaintOrder (int iIndex, const TSortMap<CString, int> &ByID, TArray<int> &PaintOrder) const
+
+//	CalcPaintOrder
+//
+//	Recursively calculates paint order based on what we're attached to. PaintOrder
+//	is an array of all compartments. Higher numbers paint before lower numbers.
+
+	{
+	const SCompartmentDesc &Desc = m_Compartments[iIndex];
+
+	//	If we're not attached to another section, then it means that we're 
+	//	attached to the main body, so our paint order is 0.
+
+	if (Desc.sAttachID.IsBlank())
+		return 0;
+
+	//	Otherwise, lookup the index of what we're attached to.
+
+	int iAttachedTo;
+	if (!ByID.Find(Desc.sAttachID, &iAttachedTo) || iAttachedTo == iIndex)
+		return 0;
+
+	//	If we don't have a paint order we need to recursively figure it out.
+
+	if (PaintOrder[iAttachedTo] == -1)
+		{
+		//	We initialize ourselves to some value in case there is a circular
+		//	loop.
+
+		PaintOrder[iIndex] = 0;
+
+		//	Recurse.
+
+		PaintOrder[iAttachedTo] = CalcPaintOrder(iAttachedTo, ByID, PaintOrder);
+		}
+
+	//	If we have a paint order for that, then we're +1 that (that is, we
+	//	paint before what we're attached to).
+
+	return PaintOrder[iAttachedTo] + 1;
+	}
+
 int CShipInteriorDesc::GetHitPoints (void) const
 
 //	GetHitPoints
@@ -216,6 +258,10 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fHasAttached = false;
 	m_fIsMultiHull = false;
 
+	//	Keep a temporary map of IDs to section
+
+	TSortMap<CString, int> ByID;
+
 	//	Load all compartments
 
 	m_Compartments.InsertEmpty(pDesc->GetContentElementCount());
@@ -227,6 +273,8 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		//	Init data common to all
 
 		Comp.sID = pComp->GetAttribute(ID_ATTRIB);
+		if (!Comp.sID.IsBlank())
+			ByID.SetAt(Comp.sID, i);
 
 		if (!pComp->FindAttribute(NAME_ATTRIB, &Comp.sName))
 			Comp.sName = CONSTLIT("interior compartment");
@@ -302,6 +350,40 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			Ctx.sError = strPatternSubst(CONSTLIT("Invalid interior element: %s"), pComp->GetTag());
 			return ERR_FAIL;
 			}
+		}
+
+	//	Initialize the paint order based on which section attached to which. In general, 
+	//	whatever we're attached to paints on top.
+	//
+	//	We generate a map indexed for each section and compute its paint order 
+	//	recursively.
+
+	if (m_fHasAttached)
+		{
+		TArray<int> PaintOrder;
+		PaintOrder.InsertEmpty(m_Compartments.GetCount());
+		for (i = 0; i < PaintOrder.GetCount(); i++)
+			PaintOrder[i] = -1;
+
+		for (i = 0; i < PaintOrder.GetCount(); i++)
+			{
+			if (PaintOrder[i] != -1)
+				continue;
+
+			PaintOrder[i] = CalcPaintOrder(i, ByID, PaintOrder);
+			}
+
+		//	Sort the paint order by highest to lowest
+
+		TSortMap<int, int> SortedOrder(DescendingSort);
+		for (i = 0; i < PaintOrder.GetCount(); i++)
+			SortedOrder.Insert(PaintOrder[i], i);
+
+		//	Now we've got a valid paint order.
+
+		m_PaintOrder.InsertEmpty(SortedOrder.GetCount());
+		for (i = 0; i < SortedOrder.GetCount(); i++)
+			m_PaintOrder[i] = SortedOrder[i];
 		}
 
 	return NOERROR;

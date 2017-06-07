@@ -6386,47 +6386,6 @@ void CShip::PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapView
 		}
 	}
 
-void CShip::PaintShipCompartmentChain (CG32bitImage &Dest, CSpaceObject *pJointObj, SViewportPaintCtx &Ctx)
-
-//	PaintShipCompartmentChain
-//
-//	Recursively paints all ship compartments following this joint.
-
-	{
-	//	Mark this object as painted so we don't paint it again while recursing.
-
-	pJointObj->ClearPaintNeeded();
-
-	//	Recurse into all the other components attached to this object.
-
-	CObjectJoint *pNext = pJointObj->GetFirstJoint();
-	while (pNext)
-		{
-		CSpaceObject *pOther = pNext->GetOtherObj(pJointObj);
-		if (pNext->IsShipSection() && pOther->IsAttached() && pOther->IsPaintNeeded())
-			PaintShipCompartmentChain(Dest, pOther, Ctx);
-
-		pNext = pNext->GetNextJoint(pJointObj);
-		}
-
-	//	Now paint this on top
-
-	int xPos, yPos;
-	Ctx.XForm.Transform(pJointObj->GetPos(), &xPos, &yPos);
-
-	//	Paint the object in the viewport
-
-	CSpaceObject *pOldObj = Ctx.pObj;
-
-	Ctx.pObj = pJointObj;
-	Ctx.pObj->Paint(Dest, 
-			xPos,
-			yPos,
-			Ctx);
-
-	Ctx.pObj = pOldObj;
-	}
-
 void CShip::PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx)
 
 //	PaintShipCompartments
@@ -6434,13 +6393,35 @@ void CShip::PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx)
 //	Paints any ship compartments
 
 	{
-	CObjectJoint *pNext = GetFirstJoint();
-	while (pNext)
-		{
-		if (pNext->IsShipSection())
-			PaintShipCompartmentChain(Dest, pNext->GetOtherObj(this), Ctx);
+	int i;
 
-		pNext = pNext->GetNextJoint(this);
+	//	Paint by paint order
+
+	const TArray<int> &PaintOrder = m_pClass->GetInteriorDesc().GetPaintOrder();
+	for (i = 0; i < PaintOrder.GetCount(); i++)
+		{
+		CSpaceObject *pAttached = m_Interior.GetAttached(PaintOrder[i]);
+		if (pAttached == NULL)
+			continue;
+
+		//	Now paint this on top
+
+		int xPos, yPos;
+		Ctx.XForm.Transform(pAttached->GetPos(), &xPos, &yPos);
+
+		//	Paint the object in the viewport
+
+		CSpaceObject *pOldObj = Ctx.pObj;
+
+		Ctx.pObj = pAttached;
+		Ctx.pObj->Paint(Dest, 
+				xPos,
+				yPos,
+				Ctx);
+
+		Ctx.pObj = pOldObj;
+
+		pAttached->ClearPaintNeeded();
 		}
 	}
 

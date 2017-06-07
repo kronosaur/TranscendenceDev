@@ -99,6 +99,7 @@ class CShipInteriorDesc
 		inline int GetCount (void) const { return m_Compartments.GetCount(); }
 		inline const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
 		int GetHitPoints (void) const;
+		const TArray<int> &GetPaintOrder (void) const { return m_PaintOrder; }
 		inline bool HasAttached (void) const { return (m_fHasAttached ? true : false); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
@@ -107,7 +108,10 @@ class CShipInteriorDesc
 		static ECompartmentTypes ParseCompartmentType (const CString &sValue);
 
 	private:
+		int CalcPaintOrder (int iIndex, const TSortMap<CString, int> &ByID, TArray<int> &PaintOrder) const;
+
 		TArray<SCompartmentDesc> m_Compartments;
+		TArray<int> m_PaintOrder;
 
 		DWORD m_fHasAttached:1;
 		DWORD m_fIsMultiHull:1;

@@ -1287,7 +1287,6 @@ class CShip : public CSpaceObject
 		Metric GetItemMass (void) const;
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapViewportCtx &Ctx);
-		void PaintShipCompartmentChain (CG32bitImage &Dest, CSpaceObject *pJointObj, SViewportPaintCtx &Ctx);
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
 		void ReactorOverload (int iPowerDrain);
         ALERROR ReportCreateError (const CString &sError) const;
