@@ -31,7 +31,7 @@ class CObjectJoint
 		inline CSpaceObject *GetOtherObj (CSpaceObject *pObj) const { if (pObj == m_P1.pObj) return m_P2.pObj; else if (pObj == m_P2.pObj) return m_P1.pObj; else return NULL; }
 		inline bool IsDestroyed (void) const { return m_fDestroyed; }
 		inline bool IsPaintNeeded (void) const { return m_fPaintNeeded; }
-		inline bool IsShipCompartment (void) const { return m_fShipCompartment; }
+		inline bool IsShipSection (void) const { return m_fShipCompartment; }
 		void Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx) const;
 		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
 		inline void SetMaxLength (int iLength) { m_iMaxLength = iLength; }

@@ -940,6 +940,14 @@ class CShip : public CSpaceObject
 			remCannotRemove			= 3,	//	Custom reason
 			};
 
+		struct SAttachedSectionInfo
+			{
+			CShip *pObj;
+			int iHP;						//	Total hit points (all armor segments)
+			int iMaxHP;						//	Max hit points
+			CVector vPos;					//	Origin is center of image, scaled to unit vector
+			};
+
 		static ALERROR CreateFromClass (CSystem *pSystem, 
 										CShipClass *pClass, 
 										IShipController *pController,
@@ -958,6 +966,8 @@ class CShip : public CSpaceObject
 		inline DWORD GetCurrentOrderData (void) { return m_pController->GetCurrentOrderData(); }
 
 		//	Armor methods
+		inline CArmorSystem &GetArmor (void) { return m_Armor; }
+		inline const CArmorSystem &GetArmor (void) const { return m_Armor; }
 		inline CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor.GetSegment(iSect); }
 		inline int GetArmorSectionCount (void) { return m_Armor.GetSegmentCount(); }
 		int DamageArmor (int iSect, DamageDesc &Damage);
@@ -970,11 +980,12 @@ class CShip : public CSpaceObject
 		void UninstallArmor (CItemListManipulator &ItemList);
 
 		//	Compartments
-		virtual bool IsMultiHull (void) override { return !m_Interior.IsEmpty(); }
+		virtual bool IsMultiHull (void) override { return m_pClass->GetInteriorDesc().IsMultiHull(); }
 
-		inline bool IsShipCompartment (void) const { return m_fShipCompartment; }
-		inline bool HasShipCompartments (void) const { return m_fHasShipCompartments; }
-		void SetAsCompartment (CShip *pMain);
+		void GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const;
+		inline bool HasAttachedSections (void) const { return m_fHasShipCompartments; }
+		inline bool IsShipSection (void) const { return m_fShipCompartment; }
+		void SetAsShipSection (CShip *pMain);
 
 		//	Device methods
 		int CalcDeviceSlotsInUse (int *retiWeaponSlots = NULL, int *retiNonWeapon = NULL) const;

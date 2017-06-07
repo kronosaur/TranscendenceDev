@@ -1497,7 +1497,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	//	If we're a ship with 0 thrust then it means that we're a turret, so we 
 	//	set the anchor flag so that we don't get pulled by gravity.
 
-	if (!pShip->CanThrust() && !pShip->m_pClass->IsShipCompartment())
+	if (!pShip->CanThrust() && !pShip->m_pClass->IsShipSection())
 		pShip->SetManualAnchor();
 
 	//	If any of our items need an OnInstall call, raise the
@@ -2425,10 +2425,64 @@ CSpaceObject *CShip::GetAttachedRoot (void) const
 	{
 	if (m_fShipCompartment)
 		return m_pDocked;
-	else if (HasShipCompartments())
+	else if (HasAttachedSections())
 		return const_cast<CShip *>(this);
 	else
 		return NULL;
+	}
+
+void CShip::GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const
+
+//	GetAttachedSectionInfo
+//
+//	Return an array of each section, including the main ship.
+
+	{
+	int i;
+
+	const CShipInteriorDesc &Desc = m_pClass->GetInteriorDesc();
+	int iScale = m_pClass->GetImage().GetImageViewportSize();
+
+	Result.DeleteAll();
+
+	//	Compute the size of the full ship, including the center (main ship)
+
+	CVector vOrigin;
+	int cxSize = Desc.CalcImageSize(m_pClass, &vOrigin);
+	if (cxSize == 0)
+		return;
+
+	//	We scale all positions so that 0,0 is the center of the image and
+	//	0.5, 0.5 is the upper-right (Cartessian coordinates).
+
+	Metric rPosAdj = 1.0 / cxSize;
+
+	//	Now compute the position of all attached sections
+
+	TArray<CVector> Pos;
+	Desc.CalcCompartmentPositions(iScale, Pos);
+
+	//	Start by adding the main section to the result set
+
+	SAttachedSectionInfo *pSection = Result.Insert();
+	pSection->pObj = const_cast<CShip *>(this);
+	pSection->vPos = rPosAdj * vOrigin;
+	pSection->iHP = GetArmor().CalcTotalHitPoints(const_cast<CShip *>(this), &pSection->iMaxHP);
+
+	//	Now add all attached sections
+
+	for (i = 0; i < m_Interior.GetCount(); i++)
+		{
+		CSpaceObject *pAttached = m_Interior.GetAttached(i);
+		CShip *pShip = (pAttached ? pAttached->AsShip() : NULL);
+		if (pShip == NULL)
+			continue;
+
+		pSection = Result.Insert();
+		pSection->pObj = pShip;
+		pSection->vPos = rPosAdj * (vOrigin + Pos[i]);
+		pSection->iHP = pShip->GetArmor().CalcTotalHitPoints(pShip, &pSection->iMaxHP);
+		}
 	}
 
 CSpaceObject *CShip::GetBase (void) const
@@ -6349,7 +6403,7 @@ void CShip::PaintShipCompartmentChain (CG32bitImage &Dest, CSpaceObject *pJointO
 	while (pNext)
 		{
 		CSpaceObject *pOther = pNext->GetOtherObj(pJointObj);
-		if (pNext->IsShipCompartment() && pOther->IsAttached() && pOther->IsPaintNeeded())
+		if (pNext->IsShipSection() && pOther->IsAttached() && pOther->IsPaintNeeded())
 			PaintShipCompartmentChain(Dest, pOther, Ctx);
 
 		pNext = pNext->GetNextJoint(pJointObj);
@@ -6383,7 +6437,7 @@ void CShip::PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx)
 	CObjectJoint *pNext = GetFirstJoint();
 	while (pNext)
 		{
-		if (pNext->IsShipCompartment())
+		if (pNext->IsShipSection())
 			PaintShipCompartmentChain(Dest, pNext->GetOtherObj(this), Ctx);
 
 		pNext = pNext->GetNextJoint(this);
@@ -7170,9 +7224,9 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 		}
 	}
 
-void CShip::SetAsCompartment (CShip *pMain)
+void CShip::SetAsShipSection (CShip *pMain)
 
-//	SetAsCompartment
+//	SetAsShipSection
 //
 //	This ship is a piece of another ship.
 

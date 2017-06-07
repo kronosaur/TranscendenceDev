@@ -102,6 +102,7 @@ class CShipInteriorDesc
 		inline bool HasAttached (void) const { return (m_fHasAttached ? true : false); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
+		inline bool IsMultiHull (void) const { return (m_fIsMultiHull ? true : false); }
 
 		static ECompartmentTypes ParseCompartmentType (const CString &sValue);
 
@@ -109,6 +110,7 @@ class CShipInteriorDesc
 		TArray<SCompartmentDesc> m_Compartments;
 
 		DWORD m_fHasAttached:1;
+		DWORD m_fIsMultiHull:1;
 	};
 
 class CShipInterior

@@ -63,7 +63,7 @@ void CShipInterior::CreateAttached (CShip *pShip, const CShipInteriorDesc &Desc)
 
 		//	Class must be a segment
 
-		if (!Comp.Class->IsShipCompartment())
+		if (!Comp.Class->IsShipSection())
 			{
 			::kernelDebugLogPattern("Ship class %08x must be a ship compartment.", Comp.Class.GetUNID());
 			continue;
@@ -95,7 +95,7 @@ void CShipInterior::CreateAttached (CShip *pShip, const CShipInteriorDesc &Desc)
 
 		//	Set the ship as a compartment of us.
 
-		pNewSection->SetAsCompartment(pShip);
+		pNewSection->SetAsShipSection(pShip);
 
 		//	We remember this ship.
 

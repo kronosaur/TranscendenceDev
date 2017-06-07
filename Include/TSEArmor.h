@@ -302,6 +302,7 @@ class CArmorSystem
                 m_iHealerLeft(0)
             { }
 
+		int CalcTotalHitPoints (CSpaceObject *pSource, int *retiMaxHP = NULL) const;
         inline int GetHealerLeft (void) const { return m_iHealerLeft; }
 		inline CInstalledArmor &GetSegment (int iSeg) { return m_Segments[iSeg]; }
 		inline int GetSegmentCount (void) const { return m_Segments.GetCount(); }

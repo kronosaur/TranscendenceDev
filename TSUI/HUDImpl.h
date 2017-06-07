@@ -322,3 +322,64 @@ class CWeaponHUDCircular : public IHUDPainter
 		CG8bitImage m_TargetMask;			//	Mask for the target
 		CGRegion m_InfoArea;				//	Info area semi-circle region
 	};
+
+//	Rectangular Set -------------------------------------------------------------
+//
+//	Procedurally generated HUDs using rounded-rectangles and a horizontal
+//	orientation.
+
+class CArmorHUDRectangular : public IHUDPainter
+	{
+	public:
+		CArmorHUDRectangular (void);
+
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual void Invalidate (void) { m_bInvalid = true;  }
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	private:
+		struct SLabelEntry
+			{
+			int xPos;						//	Position that we're marking
+			int yPos;						//	(this is where the actual section/armor is)
+			RECT rcLabel;					//	Rect for the label
+			int xHandle;					//	Point on the label to connect
+			int yHandle;
+			};
+
+		void InitLabelDistribution (void);
+		void InitLabelDistributionForRow (const TSortMap<int, int> &Row);
+		void InitShipSectionLabels (const TArray<CShip::SAttachedSectionInfo> &SectionInfo);
+		void PaintArmorSegments (SHUDPaintCtx &Ctx, CShip *pShip);
+		void PaintShipSections (SHUDPaintCtx &Ctx, CShip *pShip);
+		void Realize (SHUDPaintCtx &Ctx);
+
+		//	Definitions
+
+		CG32bitPixel m_rgbArmor;			//	Color of armor segment
+		CG32bitPixel m_rgbArmorText;		//	Color of text
+		CG32bitPixel m_rgbArmorTextBack;	//	Armor text background color
+		CG32bitPixel m_rgbShields;			//	Color of shields
+		CG32bitPixel m_rgbShieldsText;		//	Shield text color
+		CG32bitPixel m_rgbShieldsTextBack;	//	Shield text background color
+
+		//	Metrics
+
+		int m_cxDisplay;					//	Total width of display
+		int m_cyDisplay;					//	Total height of display
+		int m_cyRow;
+		int m_cxShipSize;
+		int m_cxMaxValue;
+		int m_cyMaxValue;
+		TArray<SLabelEntry> m_Labels;
+		
+		//	Runtime State
+
+		bool m_bInvalid;
+		CG32bitImage m_Buffer;
+	};
+

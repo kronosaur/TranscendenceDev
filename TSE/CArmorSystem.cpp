@@ -5,6 +5,30 @@
 
 #include "PreComp.h"
 
+int CArmorSystem::CalcTotalHitPoints (CSpaceObject *pSource, int *retiMaxHP) const
+
+//	CalcTotalHitPoints
+//
+//	Computes total hit points (and max hit points) for all armor segments.
+
+	{
+	int i;
+
+	int iTotalHP = 0;
+	int iMaxHP = 0;
+
+	for (i = 0; i < m_Segments.GetCount(); i++)
+		{
+		iTotalHP += m_Segments[i].GetHitPoints();
+		iMaxHP += m_Segments[i].GetMaxHP(pSource);
+		}
+
+	if (retiMaxHP)
+		*retiMaxHP = iMaxHP;
+
+	return iTotalHP;
+	}
+
 void CArmorSystem::Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool bInCreate)
 
 //  Install

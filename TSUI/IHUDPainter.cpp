@@ -14,6 +14,7 @@
 
 #define STYLE_DEFAULT							CONSTLIT("default")
 #define STYLE_CIRCULAR							CONSTLIT("circular")
+#define STYLE_RECTANGULAR						CONSTLIT("rectangular")
 
 IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDTypes iType)
 
@@ -50,6 +51,8 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDT
 				pPainter = new CArmorHUDImages;
 			else if (strEquals(sStyle, STYLE_CIRCULAR))
 				pPainter = new CArmorHUDRingSegments;
+			else if (strEquals(sStyle, STYLE_RECTANGULAR))
+				pPainter = new CArmorHUDRectangular;
 			else
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("Invalid armor display style: %s."), sStyle);

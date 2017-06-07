@@ -214,6 +214,7 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	int i;
 
 	m_fHasAttached = false;
+	m_fIsMultiHull = false;
 
 	//	Load all compartments
 
@@ -264,6 +265,8 @@ ALERROR CShipInteriorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 			if (cxWidth == 0 && cyHeight == 0)
 				Comp.fDefault = true;
+
+			m_fIsMultiHull = true;
 			}
 
 		//	Parse an attached section

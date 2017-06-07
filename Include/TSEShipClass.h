@@ -135,7 +135,7 @@ class CShipClass : public CDesignType
         inline bool IsDebugOnly (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsDebugOnly()); }
 		inline bool IsIncludedInAllAdventures (void) { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsIncludedInAllAdventures()); }
 		inline bool IsPlayerShip (void) { return (GetPlayerSettings() != NULL); }
-		inline bool IsShipCompartment (void) const { return m_fShipCompartment; }
+		inline bool IsShipSection (void) const { return m_fShipCompartment; }
 		inline bool IsShownAtNewGame (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsInitialClass() && !IsVirtual()); }
 		inline bool IsTimeStopImmune (void) { return (m_fTimeStopImmune ? true : false); }
 		void MarkImages (bool bMarkDevices);
