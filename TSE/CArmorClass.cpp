@@ -2170,7 +2170,6 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
     ASSERT(pArmor);
     ASSERT(pObj);
 
-	int i;
 	bool bModified = false;
 	CItemCtx ItemCtx(pObj, pArmor);
     const SScalableStats &Stats = GetScaledStats(ItemCtx);
@@ -2186,66 +2185,8 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 			|| pArmor->GetMods().IsPhotoRegenerating()
 			|| !Stats.Regen.IsEmpty())
 		{
-
-		int iHPNeeded = GetMaxHP(ItemCtx) - pArmor->GetHitPoints();
-
-		//	If we require charges, then we're limited to the charges we have
-
-        if (m_fChargeRepair)
-            iHPNeeded = Min(iHPNeeded, pArmor->GetCharges(pObj));
-        else if (m_fHealerRepair && pObj->GetArmorSystem())
-            iHPNeeded = Min(iHPNeeded, pObj->GetArmorSystem()->GetHealerLeft());
-
-		//	Regen
-
-		if (iHPNeeded > 0)
-			{
-			//	Combine all regeneration
-
-			const CRegenDesc *pRegen;
-			CRegenDesc RegenWithMod;
-			if (pArmor->GetMods().IsRegenerating() || pArmor->GetMods().IsPhotoRegenerating())
-				{
-				//	Standard regeneration is 1% of armor HP per 180 ticks
-
-				RegenWithMod.InitFromRegen(0.01 * GetStdHP(ItemCtx.GetItem().GetLevel()), TICKS_PER_UPDATE);
-				RegenWithMod.Add(Stats.Regen);
-				pRegen = &RegenWithMod;
-				}
-			else
-				pRegen = &Stats.Regen;
-
-			//	Compute the HP that we regenerate this cycle
-
-			int iHP = Min(iHPNeeded, pRegen->GetRegen(iTick, TICKS_PER_UPDATE));
-
-			//	If this is photo-repair armor then adjust the cycle
-			//	based on how far away we are from the sun.
-
-			if (iHP > 0)
-				if (m_fPhotoRepair || pArmor->GetMods().IsPhotoRegenerating())
-					{
-					int iIntensity = pObj->GetSystem()->CalculateLightIntensity(pObj->GetPos());
-					if (mathRandom(1, 100) > iIntensity)
-						iHP = 0;
-					}
-
-			//	Repair
-
-			if (iHP > 0)
-				{
-				//	If we require charges to regen, then consume charges
-
-                if (m_fChargeRepair)
-                    pArmor->IncCharges(pObj, -iHP);
-                else if (m_fHealerRepair && pObj->GetArmorSystem())
-                    pObj->GetArmorSystem()->IncHealerLeft(-iHP);
-
-				pArmor->IncHitPoints(iHP);
-				pArmor->SetConsumePower(true);
-				bModified = true;
-				}
-			}
+		if (UpdateRegen(ItemCtx, Stats, iTick))
+			bModified = true;
 		}
 
 	//	See if we're decaying
@@ -2253,46 +2194,8 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	if (pArmor->GetHitPoints() > 0
 			&& (pArmor->GetMods().IsDecaying() || !Stats.Decay.IsEmpty()))
 		{
-		//	If we require charges, then we're limited to the charges we have
-
-		int iMaxDecay = pArmor->GetHitPoints();
-		if (m_fChargeDecay)
-			iMaxDecay = Min(iMaxDecay, pArmor->GetCharges(pObj));
-
-		//	Decay
-
-		if (iMaxDecay > 0)
-			{
-			//	Combine decay with mod
-
-			const CRegenDesc *pDecay;
-			CRegenDesc DecayWithMod;
-			if (pArmor->GetMods().IsDecaying())
-				{
-				DecayWithMod.Init(4);
-				DecayWithMod.Add(Stats.Decay);
-				pDecay = &DecayWithMod;
-				}
-			else
-				pDecay = &Stats.Decay;
-
-			//	Compute the HP that we decay this cycle
-
-			int iHP = Min(iMaxDecay, pDecay->GetRegen(iTick, TICKS_PER_UPDATE));
-
-			//	Decrement
-
-			if (iHP > 0)
-				{
-				//	Consume charges
-
-				if (m_fChargeDecay)
-					pArmor->IncCharges(pObj, -iHP);
-
-				pArmor->IncHitPoints(-iHP);
-				bModified = true;
-				}
-			}
+		if (UpdateDecay(ItemCtx, Stats, iTick))
+			bModified = true;
 		}
 
 	//	If this is solar armor then recharge the object. This is the old-style
@@ -2316,123 +2219,8 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	if (!Stats.Distribute.IsEmpty() 
 			&& pArmor->IsPrime())
 		{
-		//	Only works on ships (with segments).
-		//	LATER: Introduce the concept of segments to stations.
-
-		CShip *pShip = pObj->AsShip();
-
-		//	Compute the HP that we distribute this cycle
-
-		int iHP = Stats.Distribute.GetRegen(iTick, TICKS_PER_UPDATE);
-		if (pShip && iHP > 0)
-			{
-			TArray<int> MaxHP;
-			MaxHP.InsertEmpty(pShip->GetArmorSectionCount());
-
-			//	Compute some stats for all armor segments of the same type.
-
-			int iSegCount = 0;
-			int iTotalMaxHP = 0;
-			int iTotalHP = 0;
-			int iTotalRepairNeeded = 0;
-			int iMinRepairNeeded = 1000000000;
-			int iMaxRepairNeeded = 0;
-			for (i = 0; i < pShip->GetArmorSectionCount(); i++)
-				{
-				CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
-				if (pDistArmor->GetClass() != pArmor->GetClass())
-					continue;
-
-				CItemCtx ItemCtx(pObj, pDistArmor);
-
-				MaxHP[i] = GetMaxHP(ItemCtx);
-
-				iSegCount++;
-				int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
-
-				if (iRepairNeeded < iMinRepairNeeded)
-					iMinRepairNeeded = iRepairNeeded;
-				if (iRepairNeeded > iMaxRepairNeeded)
-					iMaxRepairNeeded = iRepairNeeded;
-
-				iTotalRepairNeeded += MaxHP[i] - pDistArmor->GetHitPoints();
-				}
-
-			//	If we need repairs, distribute
-
-			int iAverageRepairNeeded = (iTotalRepairNeeded / iSegCount);
-			if ((iMaxRepairNeeded > iAverageRepairNeeded)
-					&& (iMinRepairNeeded < iAverageRepairNeeded))
-				{
-				int iHPRemoved = 0;
-
-				//	Loop and remove HP from any armor segment that has more
-				//	HP than average, without exceeding our iHP budget.
-
-				for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved < iHP; i++)
-					{
-					CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
-					if (pDistArmor->GetClass() != pArmor->GetClass())
-						continue;
-
-					int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
-					if (iRepairNeeded < iAverageRepairNeeded)
-						{
-						int iHPToRemove = Min(iHP - iHPRemoved, iAverageRepairNeeded - iRepairNeeded);
-						pDistArmor->IncHitPoints(-iHPToRemove);
-						iHPRemoved += iHPToRemove;
-						}
-					}
-
-				//	Now loop and distribute the HP to any armor segment that has
-				//	less than average.
-
-				for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved > 0; i++)
-					{
-					CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
-					if (pDistArmor->GetClass() != pArmor->GetClass())
-						continue;
-
-					int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
-					if (iRepairNeeded > iAverageRepairNeeded)
-						{
-						int iHPToAdd = Min(iHPRemoved, iRepairNeeded - iAverageRepairNeeded);
-						pDistArmor->IncHitPoints(iHPToAdd);
-						iHPRemoved -= iHPToAdd;
-						}
-					}
-
-				//	This should never happen, but if we have some HP left, then 
-				//	add it back to each segment.
-
-				if (iHPRemoved > 0)
-					{
-					ASSERT(false);
-
-					for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved > 0; i++)
-						{
-						CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
-						if (pDistArmor->GetClass() != pArmor->GetClass())
-							continue;
-
-						int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
-						if (iRepairNeeded > 0)
-							{
-							pDistArmor->IncHitPoints(1);
-							iHPRemoved -= 1;
-							}
-						}
-					}
-
-				//	We've modified the armor
-				//
-				//	LATER: For now, only the prime segment will consume power, so we need to
-				//	compute the number of distributed segments in the CalcPowerUsed method.
-
-				pArmor->SetConsumePower(true);
-				bModified = true;
-				}
-			}
+		if (UpdateDistribute(ItemCtx, Stats, iTick))
+			bModified = true;
 		}
 
 	//	Done
@@ -2440,4 +2228,270 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	*retbModified = bModified;
 
 	DEBUG_CATCH
+	}
+
+bool CArmorClass::UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)
+
+//	UpdateDecay
+//
+//	Decays hit points. We return TRUE if any hit points lost.
+
+	{
+	CSpaceObject *pObj = ItemCtx.GetSource();
+	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+
+	//	If we require charges, then we're limited to the charges we have
+
+	int iMaxDecay = pArmor->GetHitPoints();
+	if (m_fChargeDecay)
+		iMaxDecay = Min(iMaxDecay, pArmor->GetCharges(pObj));
+
+	//	Decay
+
+	if (iMaxDecay <= 0)
+		return false;
+
+	//	Combine decay with mod
+
+	const CRegenDesc *pDecay;
+	CRegenDesc DecayWithMod;
+	if (pArmor->GetMods().IsDecaying())
+		{
+		DecayWithMod.Init(4);
+		DecayWithMod.Add(Stats.Decay);
+		pDecay = &DecayWithMod;
+		}
+	else
+		pDecay = &Stats.Decay;
+
+	//	Compute the HP that we decay this cycle
+
+	int iHP = Min(iMaxDecay, pDecay->GetRegen(iTick, TICKS_PER_UPDATE));
+	if (iHP <= 0)
+		return false;
+
+	//	Consume charges
+
+	if (m_fChargeDecay)
+		pArmor->IncCharges(pObj, -iHP);
+
+	//	Decrement
+
+	pArmor->IncHitPoints(-iHP);
+	return true;
+	}
+
+bool CArmorClass::UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)
+
+//	UpdateDistribute
+//
+//	Distribute hit points. We return TRUE if any hit points were distributed.
+
+	{
+	int i;
+	CSpaceObject *pObj = ItemCtx.GetSource();
+	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+
+	//	Only works on ships (with segments).
+	//	LATER: Introduce the concept of segments to stations.
+
+	CShip *pShip = pObj->AsShip();
+	if (pShip == NULL)
+		return false;
+
+	//	Compute the HP that we distribute this cycle
+
+	int iHP = Stats.Distribute.GetRegen(iTick, TICKS_PER_UPDATE);
+	if (iHP <= 0)
+		return false;
+
+	TArray<int> MaxHP;
+	MaxHP.InsertEmpty(pShip->GetArmorSectionCount());
+
+	//	Compute some stats for all armor segments of the same type.
+
+	int iSegCount = 0;
+	int iTotalMaxHP = 0;
+	int iTotalHP = 0;
+	int iTotalRepairNeeded = 0;
+	int iMinRepairNeeded = 1000000000;
+	int iMaxRepairNeeded = 0;
+	for (i = 0; i < pShip->GetArmorSectionCount(); i++)
+		{
+		CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+		if (pDistArmor->GetClass() != pArmor->GetClass())
+			continue;
+
+		CItemCtx ItemCtx(pObj, pDistArmor);
+
+		MaxHP[i] = GetMaxHP(ItemCtx);
+
+		iSegCount++;
+		int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+
+		if (iRepairNeeded < iMinRepairNeeded)
+			iMinRepairNeeded = iRepairNeeded;
+		if (iRepairNeeded > iMaxRepairNeeded)
+			iMaxRepairNeeded = iRepairNeeded;
+
+		iTotalRepairNeeded += MaxHP[i] - pDistArmor->GetHitPoints();
+		}
+
+	//	If we need repairs, distribute
+
+	int iAverageRepairNeeded = (iTotalRepairNeeded / iSegCount);
+	if ((iMaxRepairNeeded <= iAverageRepairNeeded)
+			|| (iMinRepairNeeded >= iAverageRepairNeeded))
+		return false;
+
+	int iHPRemoved = 0;
+
+	//	Loop and remove HP from any armor segment that has more
+	//	HP than average, without exceeding our iHP budget.
+
+	for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved < iHP; i++)
+		{
+		CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+		if (pDistArmor->GetClass() != pArmor->GetClass())
+			continue;
+
+		int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+		if (iRepairNeeded < iAverageRepairNeeded)
+			{
+			int iHPToRemove = Min(iHP - iHPRemoved, iAverageRepairNeeded - iRepairNeeded);
+			pDistArmor->IncHitPoints(-iHPToRemove);
+			iHPRemoved += iHPToRemove;
+			}
+		}
+
+	//	Now loop and distribute the HP to any armor segment that has
+	//	less than average.
+
+	for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved > 0; i++)
+		{
+		CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+		if (pDistArmor->GetClass() != pArmor->GetClass())
+			continue;
+
+		int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+		if (iRepairNeeded > iAverageRepairNeeded)
+			{
+			int iHPToAdd = Min(iHPRemoved, iRepairNeeded - iAverageRepairNeeded);
+			pDistArmor->IncHitPoints(iHPToAdd);
+			iHPRemoved -= iHPToAdd;
+			}
+		}
+
+	//	This should never happen, but if we have some HP left, then 
+	//	add it back to each segment.
+
+	if (iHPRemoved > 0)
+		{
+		ASSERT(false);
+
+		for (i = 0; i < pShip->GetArmorSectionCount() && iHPRemoved > 0; i++)
+			{
+			CInstalledArmor *pDistArmor = pShip->GetArmorSection(i);
+			if (pDistArmor->GetClass() != pArmor->GetClass())
+				continue;
+
+			int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
+			if (iRepairNeeded > 0)
+				{
+				pDistArmor->IncHitPoints(1);
+				iHPRemoved -= 1;
+				}
+			}
+		}
+
+	//	We've modified the armor
+	//
+	//	LATER: For now, only the prime segment will consume power, so we need to
+	//	compute the number of distributed segments in the CalcPowerUsed method.
+
+	pArmor->SetConsumePower(true);
+	return true;
+	}
+
+bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)
+
+//	UpdateRegen
+//
+//	Regenerates hit points. We return TRUE if any hit points were regenerated.
+
+	{
+	CSpaceObject *pObj = ItemCtx.GetSource();
+	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+
+	int iHPNeeded = GetMaxHP(ItemCtx) - pArmor->GetHitPoints();
+	if (iHPNeeded <= 0)
+		return false;
+
+	//	Sometimes we need access to the armor system that track healer
+	//	points. In the case of ships with multiple sections, we need the
+	//	root object.
+
+	CArmorSystem *pHealerSystem = NULL;
+	if (m_fHealerRepair)
+		{
+		CSpaceObject *pRoot = pObj->GetAttachedRoot();
+		pHealerSystem = (pRoot ? pRoot->GetArmorSystem() : pObj->GetArmorSystem());
+		}
+
+	//	If we require charges, then we're limited to the charges we have
+
+    if (m_fChargeRepair)
+        iHPNeeded = Min(iHPNeeded, pArmor->GetCharges(pObj));
+    else if (m_fHealerRepair && pHealerSystem)
+        iHPNeeded = Min(iHPNeeded, pHealerSystem->GetHealerLeft());
+
+	//	Regen
+
+	if (iHPNeeded <= 0)
+		return false;
+
+	//	Combine all regeneration
+
+	const CRegenDesc *pRegen;
+	CRegenDesc RegenWithMod;
+	if (pArmor->GetMods().IsRegenerating() || pArmor->GetMods().IsPhotoRegenerating())
+		{
+		//	Standard regeneration is 1% of armor HP per 180 ticks
+
+		RegenWithMod.InitFromRegen(0.01 * GetStdHP(ItemCtx.GetItem().GetLevel()), TICKS_PER_UPDATE);
+		RegenWithMod.Add(Stats.Regen);
+		pRegen = &RegenWithMod;
+		}
+	else
+		pRegen = &Stats.Regen;
+
+	//	Compute the HP that we regenerate this cycle
+
+	int iHP = Min(iHPNeeded, pRegen->GetRegen(iTick, TICKS_PER_UPDATE));
+	if (iHP <= 0)
+		return false;
+
+	//	If this is photo-repair armor then adjust the cycle
+	//	based on how far away we are from the sun.
+
+	if (m_fPhotoRepair || pArmor->GetMods().IsPhotoRegenerating())
+		{
+		int iIntensity = pObj->GetSystem()->CalculateLightIntensity(pObj->GetPos());
+		if (mathRandom(1, 100) > iIntensity)
+			return false;
+		}
+
+	//	Repair
+	//
+	//	If we require charges to regen, then consume charges
+
+    if (m_fChargeRepair)
+        pArmor->IncCharges(pObj, -iHP);
+    else if (m_fHealerRepair && pHealerSystem)
+        pHealerSystem->IncHealerLeft(-iHP);
+
+	pArmor->IncHitPoints(iHP);
+	pArmor->SetConsumePower(true);
+
+	return true;
 	}

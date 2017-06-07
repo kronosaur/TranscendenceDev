@@ -966,8 +966,6 @@ class CShip : public CSpaceObject
 		inline DWORD GetCurrentOrderData (void) { return m_pController->GetCurrentOrderData(); }
 
 		//	Armor methods
-		inline CArmorSystem &GetArmor (void) { return m_Armor; }
-		inline const CArmorSystem &GetArmor (void) const { return m_Armor; }
 		inline CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor.GetSegment(iSect); }
 		inline int GetArmorSectionCount (void) { return m_Armor.GetSegmentCount(); }
 		int DamageArmor (int iSect, DamageDesc &Damage);

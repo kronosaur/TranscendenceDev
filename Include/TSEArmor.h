@@ -161,6 +161,9 @@ class CArmorClass
         const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
 		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
+		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
+		bool UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
+		bool UpdateRegen (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 
         SScalableStats m_Stats;                 //  Base stats capable of being scaled
 

@@ -982,7 +982,7 @@ bool CShip::CanAttack (void) const
 //	do damage (perhaps because it has no weapons) we still mark it as CanAttack.
 
 	{
-	return !IsIntangible();
+	return !IsIntangible() && !m_fShipCompartment;
 	}
 
 bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
@@ -2467,7 +2467,7 @@ void CShip::GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const
 	SAttachedSectionInfo *pSection = Result.Insert();
 	pSection->pObj = const_cast<CShip *>(this);
 	pSection->vPos = rPosAdj * vOrigin;
-	pSection->iHP = GetArmor().CalcTotalHitPoints(const_cast<CShip *>(this), &pSection->iMaxHP);
+	pSection->iHP = m_Armor.CalcTotalHitPoints(const_cast<CShip *>(this), &pSection->iMaxHP);
 
 	//	Now add all attached sections
 
@@ -2481,7 +2481,7 @@ void CShip::GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const
 		pSection = Result.Insert();
 		pSection->pObj = pShip;
 		pSection->vPos = rPosAdj * (vOrigin + Pos[i]);
-		pSection->iHP = pShip->GetArmor().CalcTotalHitPoints(pShip, &pSection->iMaxHP);
+		pSection->iHP = pShip->m_Armor.CalcTotalHitPoints(pShip, &pSection->iMaxHP);
 		}
 	}
 
