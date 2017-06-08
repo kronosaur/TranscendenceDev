@@ -184,43 +184,31 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	//	Create an image of the ship class
 
-	if (pClass)
+	if (pClass && pClass->GetImage().IsLoaded())
 		{
-		const CObjectImageArray &ObjImage = pClass->GetImage();
-		if (ObjImage.IsLoaded())
-			{
-			RECT rcRect = ObjImage.GetImageRect();
-			CG32bitImage &Image = ObjImage.GetImage(NULL_STR);
-			int cxImage = RectWidth(rcRect);
-			int cyImage = RectHeight(rcRect);
+		//	Figure out the size of the image. We use the original size or 96 
+		//	pixels, whichever is smaller.
 
-			int cxNewWidth = Min(SHIP_IMAGE_WIDTH, cxImage);
-			int cyNewHeight = cxNewWidth;
+		int cxIcon = Min(SHIP_IMAGE_WIDTH, pClass->CalcImageSize());
 
-			CG32bitImage *pNewImage = new CG32bitImage;
-			pNewImage->CreateFromImageTransformed(Image, 
-					rcRect.left, 
-					rcRect.top, 
-					cxImage,
-					cyImage,
-					(Metric)cxNewWidth / cxImage,
-					(Metric)cyNewHeight / cyImage,
-					0.0);
+		//	Create the image, scaled to the right size
 
-			//	Position
+		CG32bitImage *pNewImage = new CG32bitImage;
+		pClass->CreateScaledImage(*pNewImage, 0, 90, cxIcon, cxIcon);
 
-			int xImage = x + m_cxWidth - SHIP_IMAGE_WIDTH + (SHIP_IMAGE_WIDTH - cxNewWidth) / 2;
-			int yImage = (SHIP_IMAGE_HEIGHT - cyNewHeight) / 2;
+		//	Position
 
-			//	New image frame
+		int xImage = x + m_cxWidth - SHIP_IMAGE_WIDTH + (SHIP_IMAGE_WIDTH - cxIcon) / 2;
+		int yImage = (SHIP_IMAGE_HEIGHT - cxIcon) / 2;
 
-			IAnimatron *pImageFrame = new CAniRect;
-			pImageFrame->SetPropertyVector(PROP_POSITION, CVector(xImage, yImage));
-			pImageFrame->SetPropertyVector(PROP_SCALE, CVector(cxNewWidth, cyNewHeight));
-			pImageFrame->SetFillMethod(new CAniImageFill(pNewImage, true));
+		//	New image frame
 
-			pRoot->AddTrack(pImageFrame, 0);
-			}
+		IAnimatron *pImageFrame = new CAniRect;
+		pImageFrame->SetPropertyVector(PROP_POSITION, CVector(xImage, yImage));
+		pImageFrame->SetPropertyVector(PROP_SCALE, CVector(cxIcon, cxIcon));
+		pImageFrame->SetFillMethod(new CAniImageFill(pNewImage, true));
+
+		pRoot->AddTrack(pImageFrame, 0);
 		}
 
 	//	Extra information

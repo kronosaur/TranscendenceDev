@@ -61,11 +61,12 @@ class CShipClass : public CDesignType
 		inline int Angle2Direction (int iAngle) const { return m_Perf.GetRotationDesc().GetFrameIndex(iAngle); }
 		inline int AlignToRotationAngle (int iAngle) const { return m_Perf.GetRotationDesc().AlignToRotationAngle(iAngle); }
 		int CalcArmorSpeedBonus (int iTotalArmorMass) const;
+		inline int CalcImageSize (void) const { return m_Interior.CalcImageSize(const_cast<CShipClass *>(this)); }
 		Metric CalcMass (const CDeviceDescList &Devices) const;
 		int CalcScore (void);
 		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
 		void CreateExplosion (CShip *pShip, CSpaceObject *pWreck = NULL);
-		void CreateScaledImage (CG32bitImage &Dest, int iTick, int iDirection, int cxWidth, int cyHeight);
+		void CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation, int cxWidth, int cyHeight);
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
 		inline bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(iDev, retDesc) : false); }
 		inline bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(Item, retDesc) : false); }

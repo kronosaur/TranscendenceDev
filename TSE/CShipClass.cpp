@@ -1664,6 +1664,9 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 	{
 	int i;
 
+	if (!GetImage().IsLoaded())
+		return;
+
 	//	Create the destination
 
 	Dest.Create(cxWidth, cyHeight, CG32bitImage::alpha8, CG32bitPixel::Null());
