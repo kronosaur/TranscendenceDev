@@ -11,6 +11,9 @@
 const int CORNER_RADIUS =						8;
 const int LABEL_SPACING =						8;
 const int LINE_WIDTH =							2;
+const int BAR_SPACING_X =						2;
+const int BAR_SPACING_Y =						2;
+const int BAR_HEIGHT =							16;
 
 CArmorHUDRectangular::CArmorHUDRectangular (void) :
 		m_bInvalid(true)
@@ -316,6 +319,93 @@ void CArmorHUDRectangular::PaintArmorSegments (SHUDPaintCtx &Ctx, CShip *pShip)
 	{
 	}
 
+void CArmorHUDRectangular::PaintBar (int x, int y, int cxWidth, int cyHeight, int iLevel, CG32bitPixel rgbColor)
+
+//	PaintBar
+//
+//	Paints a level bar.
+
+	{
+	int xMidPoint = iLevel * cxWidth / 100;
+
+	//	Paint the bright part of the bar. We clip out the dark part
+
+	RECT rcOldClip = m_Buffer.GetClipRect();
+	RECT rcClip;
+	rcClip.left = x;
+	rcClip.right = x + xMidPoint;
+	rcClip.top = y;
+	rcClip.bottom = y + cyHeight;
+	m_Buffer.SetClipRect(rcClip);
+
+	//	Paint the bright part as a rounded rect
+
+	CGDraw::RoundedRect(m_Buffer, x, y, cxWidth, cyHeight, CORNER_RADIUS - BAR_SPACING_X, rgbColor);
+
+	//	Clip the dark part
+
+	rcClip.left = x + xMidPoint;
+	rcClip.right = x + cxWidth;
+	m_Buffer.SetClipRect(rcClip);
+
+	//	Paint it as a darker, faded color
+
+	CG32bitPixel rgbDark = CG32bitPixel(CG32bitPixel::Darken(rgbColor, 0x80), 0x80);
+	CGDraw::RoundedRect(m_Buffer, x, y, cxWidth, cyHeight, CORNER_RADIUS - BAR_SPACING_X, rgbDark);
+
+	//	Restore
+
+	m_Buffer.SetClipRect(rcOldClip);
+	}
+
+void CArmorHUDRectangular::PaintHealerLevel (SHUDPaintCtx &Ctx, CShip *pShip)
+
+//	PaintHealerLevel
+//
+//	Paints the % healer available.
+
+	{
+	int i;
+
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+	const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
+
+	//	Healer applies to all sections, so we need to do this. This function
+	//	works even if the ship has no sections.
+
+	if (Ctx.SectionInfo.GetCount() == 0)
+		pShip->GetAttachedSectionInfo(Ctx.SectionInfo);
+
+	//	Add up the max HP
+
+	int iMaxHealer = 0;
+	for (i = 0; i < Ctx.SectionInfo.GetCount(); i++)
+		iMaxHealer += Ctx.SectionInfo[i].iMaxHP;
+
+	if (iMaxHealer == 0)
+		return;
+
+	//	Compute healer left.
+
+	int iHealerLeft = pShip->GetArmorSystem()->GetHealerLeft();
+
+	//	Calc the percentage level. NOTE: It is OK if we have > 100% healer,
+	//	but we top out at 100%.
+
+	int iLevel = Min(100 * iHealerLeft / iMaxHealer, 100);
+
+	//	Paint bar
+
+	int xBar = BAR_SPACING_X;
+	int yBar = m_cyDisplay - BAR_SPACING_Y - BAR_HEIGHT;
+	int cxBar = m_cxDisplay - (2 * BAR_SPACING_X);
+	PaintBar(xBar, yBar, cxBar, BAR_HEIGHT, iLevel, m_rgbShields);
+
+	//	Paint label
+
+	SmallFont.DrawText(m_Buffer, CORNER_RADIUS, yBar - SmallFont.GetHeight(), CG32bitPixel(0x80,0x80,0x80), CONSTLIT("Healing Reserves"));
+	}
+
 void CArmorHUDRectangular::PaintShipSections (SHUDPaintCtx &Ctx, CShip *pShip)
 
 //	PaintShipSections
@@ -330,20 +420,20 @@ void CArmorHUDRectangular::PaintShipSections (SHUDPaintCtx &Ctx, CShip *pShip)
 
 	//	Get info on all attached sections
 
-	TArray<CShip::SAttachedSectionInfo> SectionInfo;
-	pShip->GetAttachedSectionInfo(SectionInfo);
+	if (Ctx.SectionInfo.GetCount() == 0)
+		pShip->GetAttachedSectionInfo(Ctx.SectionInfo);
 
 	//	If we haven't yet initialized the label structure, do it now.
 
-	if (m_Labels.GetCount() != SectionInfo.GetCount())
-		InitShipSectionLabels(SectionInfo);
+	if (m_Labels.GetCount() != Ctx.SectionInfo.GetCount())
+		InitShipSectionLabels(Ctx.SectionInfo);
 
 	//	Now paint each label.
 
 	for (i = 0; i < m_Labels.GetCount(); i++)
 		{
 		const SLabelEntry &Label = m_Labels[i];
-		const CShip::SAttachedSectionInfo &Section = SectionInfo[i];
+		const CShip::SAttachedSectionInfo &Section = Ctx.SectionInfo[i];
 
 		int iIntegrity = 100 * Section.iHP / Section.iMaxHP;
 		CString sHP = strPatternSubst("%d%%", iIntegrity);
@@ -413,124 +503,9 @@ void CArmorHUDRectangular::Realize (SHUDPaintCtx &Ctx)
 	else
 		PaintArmorSegments(Ctx, pShip);
 
-#if 0
+	//	If we use healing reserves, paint those.
 
-	//	Paint each of the armor segments, one at a time.
-
-	for (i = 0; i < pShip->GetArmorSectionCount(); i++)
-		{
-		const CShipArmorSegmentDesc &Sect = pShip->GetClass()->GetHullSection(i);
-		CInstalledArmor *pArmor = pShip->GetArmorSection(i);
-		int iIntegrity = pArmor->GetHitPointsPercent(pShip);
-		int iWidth = (iIntegrity * m_iArmorRingWidth) / 100;
-
-		//	Draw the full armor size
-
-		CGDraw::Arc(m_Buffer, 
-				m_xCenter, 
-				m_yCenter, 
-				iArmorInnerRadius, 
-				AngleMod(90 + Sect.GetStartAngle()), 
-				AngleMod(90 + Sect.GetStartAngle() + Sect.GetSpan()), 
-				m_iArmorRingWidth, 
-				rgbArmorBack, 
-				CGDraw::blendCompositeNormal, 
-				INTER_SEGMENT_SPACING,
-				CGDraw::ARC_INNER_RADIUS);
-
-		//	Draw an arc representing how much armor we have
-
-		CGDraw::Arc(m_Buffer, 
-				m_xCenter, 
-				m_yCenter, 
-				iArmorInnerRadius, 
-				AngleMod(90 + Sect.GetStartAngle()), 
-				AngleMod(90 + Sect.GetStartAngle() + Sect.GetSpan()), 
-				iWidth, 
-				m_rgbArmor, 
-				CGDraw::blendCompositeNormal, 
-				INTER_SEGMENT_SPACING,
-				CGDraw::ARC_INNER_RADIUS);
-
-		//	Draw armor integrity box
-
-        int iCenterAngle = AngleMod(90 + Sect.GetCenterAngle());
-		DrawIntegrityBox(m_Buffer, 
-				iCenterAngle, 
-				iArmorInnerRadius + RING_SPACING, 
-				strPatternSubst(CONSTLIT("%d%%"), iIntegrity), 
-				(i == Ctx.iSegmentSelected ? rgbSelectionBack : m_rgbArmorTextBack),
-				m_rgbArmorText);
-
-		//	Draw armor text
-
-		DrawArmorName(m_Buffer, 
-				iCenterAngle, 
-				iArmorNameRadius, 
-				pShip, 
-				pArmor,
-				(i == Ctx.iSegmentSelected ? rgbSelectionBack : m_rgbArmorTextBack),
-				m_rgbArmorText);
-		}
-
-	//	Paint shield level
-
-	int iShieldIntegrity = (pShield ? pShield->GetHitPointsPercent(pShip) : -1);
-	if (iShieldIntegrity != -1)
-		{
-		int iShieldInnerRadius = m_iArmorRingRadius + RING_SPACING;
-		int iWidth = (iShieldIntegrity * m_iShieldRingWidth) / 100;
-
-		//	Draw the full shields
-
-		CGDraw::Arc(m_Buffer,
-				m_xCenter,
-				m_yCenter,
-				iShieldInnerRadius,
-				0,
-				0,
-				m_iShieldRingWidth,
-				rgbShieldsBack,
-				CGDraw::blendCompositeNormal,
-				0,
-				CGDraw::ARC_INNER_RADIUS);
-
-		//	Draw the shield level
-
-		CGDraw::Arc(m_Buffer,
-				m_xCenter,
-				m_yCenter,
-				iShieldInnerRadius,
-				0,
-				0,
-				iWidth,
-				m_rgbShields,
-				CGDraw::blendCompositeNormal,
-				0,
-				CGDraw::ARC_INNER_RADIUS);
-
-		//	Draw shield integrity box
-
-		DrawIntegrityBox(m_Buffer, 
-				90, 
-				iShieldInnerRadius + m_iShieldRingWidth, 
-				strPatternSubst(CONSTLIT("%d%%"), iShieldIntegrity), 
-				m_rgbShieldsTextBack,
-				m_rgbShieldsText);
-
-		CG32bitPixel rgbText;
-		if (pShield->IsEnabled() && !pShield->IsDamaged() && !pShield->IsDisrupted())
-			rgbText = m_rgbShieldsText;
-		else
-			rgbText = DISABLED_LABEL_COLOR;
-
-		DrawShieldsName(m_Buffer,
-				298,
-				iShieldInnerRadius + m_iShieldRingWidth + RING_SPACING,
-				pShip,
-				pShield,
-				m_rgbShieldsTextBack,
-				rgbText);
-		}
-#endif
+	CArmorSystem *pArmor = pShip->GetArmorSystem();
+	if (pArmor && pArmor->GetHealerLeft() > 0)
+		PaintHealerLevel(Ctx, pShip);
 	}

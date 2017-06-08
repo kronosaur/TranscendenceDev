@@ -351,6 +351,7 @@ class CBaseShipAI : public IShipController
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) override;
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) override;
+		virtual void OnShipStatus (EShipStatusNotifications iEvent, DWORD dwData = 0) override;
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) override;
 		virtual void OnStatsChanged (void) override { m_AICtx.CalcInvariants(m_pShip); }
 		virtual void OnSystemLoaded (void) override { m_AICtx.CalcInvariants(m_pShip); OnSystemLoadedNotify(); }

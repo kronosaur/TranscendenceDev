@@ -31,6 +31,8 @@ struct SHUDPaintCtx
 	BYTE byOpacity;							//	Opacity to paint with
 	int iSegmentSelected;					//	Armor segment selected
 	IHUDPainter *pShieldsHUD;				//	Armor display also paints shields
+
+	TArray<CShip::SAttachedSectionInfo> SectionInfo;	//	Used during Realize
 	};
 
 struct SHUDUpdateCtx

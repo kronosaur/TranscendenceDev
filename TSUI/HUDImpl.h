@@ -355,6 +355,8 @@ class CArmorHUDRectangular : public IHUDPainter
 		void InitLabelDistributionForRow (const TSortMap<int, int> &Row);
 		void InitShipSectionLabels (const TArray<CShip::SAttachedSectionInfo> &SectionInfo);
 		void PaintArmorSegments (SHUDPaintCtx &Ctx, CShip *pShip);
+		void PaintBar (int x, int y, int cxWidth, int cyHeight, int iLevel, CG32bitPixel rgbColor);
+		void PaintHealerLevel (SHUDPaintCtx &Ctx, CShip *pShip);
 		void PaintShipSections (SHUDPaintCtx &Ctx, CShip *pShip);
 		void Realize (SHUDPaintCtx &Ctx);
 

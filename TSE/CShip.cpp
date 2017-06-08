@@ -66,9 +66,11 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_FUEL_LEFT      				CONSTLIT("fuelLeft")
 #define PROPERTY_FUEL_LEFT_EXACT				CONSTLIT("fuelLeftExact")
 #define PROPERTY_HEALER_LEFT        			CONSTLIT("healerLeft")
+#define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
 #define PROPERTY_MAX_FUEL						CONSTLIT("maxFuel")
 #define PROPERTY_MAX_FUEL_EXACT					CONSTLIT("maxFuelExact")
+#define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_MAX_INTERIOR_HP				CONSTLIT("maxInteriorHP")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
@@ -3069,6 +3071,18 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
     else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
         return CC.CreateDouble(GetFuelLeft());
 
+	else if (strEquals(sName, PROPERTY_HP))
+		{
+		TArray<CShip::SAttachedSectionInfo> SectionInfo;
+		GetAttachedSectionInfo(SectionInfo);
+
+		int iHP = 0;
+		for (i = 0; i < SectionInfo.GetCount(); i++)
+			iHP += SectionInfo[i].iHP;
+
+		return CC.CreateInteger(iHP);
+		}
+
 	else if (strEquals(sName, PROPERTY_INTERIOR_HP))
 		{
 		int iHP;
@@ -3081,6 +3095,18 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
     else if (strEquals(sName, PROPERTY_MAX_FUEL_EXACT))
         return CC.CreateDouble(GetMaxFuel());
+
+	else if (strEquals(sName, PROPERTY_MAX_HP))
+		{
+		TArray<CShip::SAttachedSectionInfo> SectionInfo;
+		GetAttachedSectionInfo(SectionInfo);
+
+		int iMaxHP = 0;
+		for (i = 0; i < SectionInfo.GetCount(); i++)
+			iMaxHP += SectionInfo[i].iMaxHP;
+
+		return CC.CreateInteger(iMaxHP);
+		}
 
 	else if (strEquals(sName, PROPERTY_MAX_INTERIOR_HP))
 		{
@@ -7535,6 +7561,10 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
     else if (strEquals(sName, PROPERTY_HEALER_LEFT))
         {
         m_Armor.SetHealerLeft(pValue->GetIntegerValue());
+
+		//	Update the armor status because some armor HUDs show healer level.
+
+		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
         return true;
         }
 

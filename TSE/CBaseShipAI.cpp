@@ -1266,6 +1266,24 @@ void CBaseShipAI::OnPlayerObj (CSpaceObject *pPlayer)
 		}
 	}
 
+void CBaseShipAI::OnShipStatus (EShipStatusNotifications iEvent, DWORD dwData)
+
+//	OnShipStatus
+//
+//	Status has changed
+
+	{
+	//	If we're just a section, notify our main ship.
+
+	if (m_pShip->IsShipSection())
+		{
+		CSpaceObject *pRoot = m_pShip->GetAttachedRoot();
+		CShip *pRootShip = (pRoot ? pRoot->AsShip() : NULL);
+		if (pRootShip)
+			pRootShip->GetController()->OnShipStatus(iEvent, dwData);
+		}
+	}
+
 void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 
 //	OnStationDestroyed
