@@ -265,6 +265,7 @@ struct SDestroyCtx
 		pWreck(NULL),
 		iCause(removedFromSystem),
 		bResurrectPending(false),
+		bRemovedByOwner(false),
 		pResurrectedObj(NULL) { }
 
 	CSpaceObject *GetOrderGiver (void) const;
@@ -275,6 +276,7 @@ struct SDestroyCtx
 	DestructionTypes iCause;					//	Cause of damage
 
 	bool bResurrectPending;						//	TRUE if this object will be resurrected
+	bool bRemovedByOwner;						//	TRUE if this is an attached obj removed by its parent
 	CSpaceObject *pResurrectedObj;				//	Pointer to resurrected object
 	};
 

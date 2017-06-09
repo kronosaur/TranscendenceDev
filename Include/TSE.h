@@ -883,7 +883,7 @@ class CSpaceObject : public CObject
 		inline CSystem *GetSystem (void) const { return m_pSystem; }
 		inline CUniverse *GetUniverse (void) const { return m_pSystem->GetUniverse(); }
 		inline bool IsAscended (void) const { return m_fAscended; }
-		void Remove (DestructionTypes iCause, const CDamageSource &Attacker);
+		void Remove (DestructionTypes iCause, const CDamageSource &Attacker, bool bRemovedByOwner = false);
 		inline void SetAscended (bool bAscended = true) { m_fAscended = bAscended; }
 
 		//	Basics
@@ -986,6 +986,7 @@ class CSpaceObject : public CObject
 		bool CanDetect (int Perception, CSpaceObject *pObj);
 		bool CanCommunicateWith (CSpaceObject *pSender);
 		inline bool CanHitFriends (void) { return !m_fNoFriendlyFire; }
+		inline void ClearNoFriendlyTarget (void) { m_fNoFriendlyTarget = false; }
 		inline void ClearPaintNeeded (void) { m_fPaintNeeded = false; }
 		inline void ClearPlayerDestination (void) { m_fPlayerDestination = false; m_fAutoClearDestination = false; m_fAutoClearDestinationOnDock = false; m_fAutoClearDestinationOnDestroy = false; m_fShowDistanceAndBearing = false; m_fShowHighlight = false; }
 		inline void ClearPlayerDocked (void) { m_fPlayerDocked = false; }
@@ -1602,6 +1603,7 @@ class CSpaceObject : public CObject
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnPlace (const CVector &vOldPos) { }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) { }
+		virtual void OnRemoved (SDestroyCtx &Ctx) { }
 		virtual void OnSetEventFlags (void) { }
 		virtual void OnSetSovereign (CSovereign *pSovereign) { }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) { }

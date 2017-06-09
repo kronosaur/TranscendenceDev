@@ -190,6 +190,75 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 	return damageArmorHit;
 	}
 
+void CShipInterior::DetachChain (CShip *pShip, CSpaceObject *pBreak)
+
+//	DetachChain
+//
+//	Check all our attached objects. If any of them are no longer connected to 
+//	the root after pBreak has been removed, then we remove them.
+
+	{
+	int i;
+
+	//	Clear our state.
+	//
+	//	bMarked is TRUE if we have determined whether this section is 
+	//	attached or not.
+	//
+	//	bHit is TRUE if the section is attached (valid only if bMarked).
+
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		{
+		m_Compartments[i].bHit = false;
+		m_Compartments[i].bMarked = false;
+		}
+
+	//	Now recursively see which are attached or not.
+
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		{
+		CSpaceObject *pAttached = GetAttached(i);
+		if (pAttached)
+			{
+			if (!MarkIfAttached(pShip, i, pBreak))
+				{
+				//	No longer part of a larger ship
+
+				CShip *pShip = m_Compartments[i].pAttached->AsShip();
+				if (pShip)
+					pShip->SetAsShipSection(NULL);
+
+				//	Remove it.
+
+				m_Compartments[i].pAttached = NULL;
+				}
+			}
+		}
+	}
+
+bool CShipInterior::FindAttachedObject (CSpaceObject *pAttached, int *retiIndex) const
+
+//	FindAttachedObject
+//
+//	Finds the object in our list.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		{
+		if (m_Compartments[i].pAttached == pAttached)
+			{
+			if (retiIndex)
+				*retiIndex = i;
+
+			return true;
+			}
+		}
+
+	return false;
+	}
+
 bool CShipInterior::FindAttachedObject (const CShipInteriorDesc &Desc, const CString &sID, CSpaceObject **retpObj) const
 
 //	FindAttachedObject
@@ -325,6 +394,128 @@ void CShipInterior::Init (const CShipInteriorDesc &Desc)
 		SCompartmentEntry &Entry = m_Compartments[i];
 
 		Entry.iHP = CompDesc.iMaxHP;
+		}
+	}
+
+bool CShipInterior::MarkIfAttached (CShip *pShip, int iSection, CSpaceObject *pBreak)
+
+//	MarkIfAttached
+//
+//	Returns TRUE if pSection is still attached to pShip even after pBreak has
+//	been removed.
+//
+//	We rely on obj marking to not have to recalculate markings.
+
+	{
+	SCompartmentEntry &Section = m_Compartments[iSection];
+	CSpaceObject *pSection = Section.pAttached;
+
+	//	If we're already marked it means that we know whether we're attached or not.
+
+	if (Section.bMarked)
+		return Section.bHit;
+
+	//	Mark this as processing, so we don't recurse.
+
+	Section.bHit = true;
+
+	//	Loop over all our joints.
+
+	int iAttachedTo;
+	CObjectJoint *pNext = pSection->GetFirstJoint();
+	while (pNext)
+		{
+		CSpaceObject *pJoinedTo = pNext->GetOtherObj(pSection);
+
+		//	If we're joined to the ship, then we're clearly attached.
+
+		if (pJoinedTo == pShip)
+			{
+			Section.bMarked = true;
+			Section.bHit = true;
+			return true;
+			}
+
+		//	If this is a joint to the break, then skip it, since it doesn't
+		//	count.
+
+		else if (pJoinedTo == pBreak)
+			{ }
+
+		//	Otherwise, see if this is a section.
+
+		else if (FindAttachedObject(pJoinedTo, &iAttachedTo))
+			{
+			SCompartmentEntry &AttachedTo = m_Compartments[iAttachedTo];
+
+			//	If we already have a result, then see if we're attached.
+
+			if (AttachedTo.bMarked)
+				{
+				if (AttachedTo.bHit)
+					{
+					Section.bMarked = true;
+					Section.bHit = true;
+					return true;
+					}
+				}
+
+			//	If we're processing, skip
+
+			else if (AttachedTo.bHit)
+				{ }
+
+			//	Otherwise, we might need to recurse
+
+			else
+				{
+				if (MarkIfAttached(pShip, iAttachedTo, pBreak))
+					{
+					Section.bMarked = true;
+					Section.bHit = true;
+					return true;
+					}
+				}
+			}
+
+		//	Otherwise, this is some other joined object, so we don't care.
+
+		//	Next
+
+		pNext = pNext->GetNextJoint(pSection);
+		}
+
+	//	If we get this far, then we're not attached.
+
+	Section.bMarked = true;
+	Section.bHit = false;
+
+	return false;
+	}
+
+void CShipInterior::OnDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
+
+//	OnDestroyed
+//
+//	See if one of our attached objects has been destroyed.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		{
+		CSpaceObject *pAttached = GetAttached(i);
+		if (pAttached == Ctx.pObj)
+			{
+			//	Remove this object from the list.
+
+			m_Compartments[i].pAttached = NULL;
+
+			//	Figure out which other objects in our list need to be detached.
+
+			DetachChain(pShip, pAttached);
+			break;
+			}
 		}
 	}
 

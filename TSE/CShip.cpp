@@ -140,6 +140,8 @@ CShip::~CShip (void)
 //	CShip destructor
 
 	{
+	int i;
+
 	if (m_pController)
 		delete dynamic_cast<CObject *>(m_pController);
 
@@ -157,6 +159,15 @@ CShip::~CShip (void)
 
 	if (m_pPowerUse)
 		delete m_pPowerUse;
+
+	//	We own any attached objects.
+
+	for (i = 0; i < m_Interior.GetCount(); i++)
+		{
+		CSpaceObject *pAttached = m_Interior.GetAttached(i);
+		if (pAttached)
+			delete pAttached;
+		}
 	}
 
 bool CShip::AbsorbWeaponFire (CInstalledDevice *pWeapon)
@@ -4121,14 +4132,6 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	If another object got destroyed, we do something
 
 	{
-	//	If our main body got destroyed, then we need to leave the system too.
-
-	if (m_fShipCompartment && Ctx.pObj == GetAttachedRoot())
-		{
-		Remove(removedFromSystem, CDamageSource(GetAttachedRoot(), removedFromSystem));
-		return;
-		}
-
 	//	Give the controller a chance to handle it
 
 	m_pController->OnObjDestroyed(Ctx);
@@ -4162,6 +4165,19 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 	if (m_pIrradiatedBy)
 		m_pIrradiatedBy->OnObjDestroyed(Ctx.pObj);
+
+	//	If we've got attached objects, see if one of them got destroyed.
+
+	if (HasAttachedSections() && !Ctx.bRemovedByOwner)
+		{
+		//	Clear out this object from our list (if it is there).
+		//
+		//	This will also remove any objects that are joined to 
+		//	this object. Those need to be removed from our interior list, 
+		//	since they will become detached when the joint is severed.
+
+		m_Interior.OnDestroyed(this, Ctx);
+		}
 	}
 
 bool CShip::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -5628,6 +5644,31 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Initialize effects
 
 	m_pClass->InitEffects(this, &m_Effects);
+	}
+
+void CShip::OnRemoved (SDestroyCtx &Ctx)
+
+//	OnRemoved
+//
+//	Ship has been removed from the system. This is called both when destroyed
+//	and when gating.
+
+	{
+	int i;
+
+	//	If we've got attached sections, then those need to be removed too.
+
+	if (HasAttachedSections())
+		{
+		for (i = 0; i < m_Interior.GetCount(); i++)
+			{
+			CSpaceObject *pAttached = m_Interior.GetAttached(i);
+			if (pAttached == NULL)
+				continue;
+
+			pAttached->Remove(removedFromSystem, CDamageSource(this, removedFromSystem), true);
+			}
+		}
 	}
 
 void CShip::OnSetEventFlags (void)
@@ -7250,6 +7291,13 @@ void CShip::SetAsShipSection (CShip *pMain)
 
 		pMain->m_fHasShipCompartments = true;
 		}
+	else
+		{
+		m_fShipCompartment = false;
+		m_fControllerDisabled = false;
+		ClearNoFriendlyTarget();
+		m_pDocked = NULL;
+		}
 	}
 
 void CShip::SetCommandCode (ICCItem *pCode)
@@ -7863,6 +7911,7 @@ void CShip::UpdateDestroyInGate (void)
             {
             Remove(enteredStargate, CDamageSource());
             AddToSystem(pSystem);
+			OnNewSystem(pSystem);
             m_fDestroyInGate = false;
             }
         }

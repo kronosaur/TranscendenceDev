@@ -1434,6 +1434,13 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 	m_pSystem = NULL;
 	if (m_iIndex != -1)
 		{
+		//	Give our descendants a chance to remove. For example, ships will
+		//	deal with attached sections.
+
+		OnRemoved(Ctx);
+
+		//	Remove from system
+
 		pSystem->RemoveObject(Ctx);
 		m_iIndex = -1;
 
@@ -6717,7 +6724,7 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 		}
 	}
 
-void CSpaceObject::Remove (DestructionTypes iCause, const CDamageSource &Attacker)
+void CSpaceObject::Remove (DestructionTypes iCause, const CDamageSource &Attacker, bool bRemovedByOwner)
 
 //	Remove
 //
@@ -6750,10 +6757,16 @@ void CSpaceObject::Remove (DestructionTypes iCause, const CDamageSource &Attacke
 		Ctx.Attacker = Attacker;
 		Ctx.pWreck = NULL;
 		Ctx.bResurrectPending = false;
+		Ctx.bRemovedByOwner = bRemovedByOwner;
 		Ctx.pResurrectedObj = NULL;
 
 		CSystem *pSystem = m_pSystem;
 		m_pSystem = NULL;
+
+		//	Give our descendants a chance to remove. For example, ships will
+		//	deal with attached sections.
+
+		OnRemoved(Ctx);
 
 		//	This will call OnObjDestroyed for all interested objects
 

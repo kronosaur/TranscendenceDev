@@ -587,9 +587,21 @@ CSystem::~CSystem (void)
 	if (m_pThreadPool)
 		delete m_pThreadPool;
 
+	//	Clear out any attached object because those are freed by their owners.
+
+	for (i = 0; i < m_AllObjects.GetCount(); i++)
+		if (m_AllObjects[i] && m_AllObjects[i]->IsAttached())
+			m_AllObjects[i] = NULL;
+
+	//	Free objects
+
 	for (i = 0; i < m_AllObjects.GetCount(); i++)
 		if (m_AllObjects[i])
 			delete m_AllObjects[i];
+
+	//	Deleted objects
+
+	FlushDeletedObjects();
 	}
 
 bool CSystem::AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, CObjectJoint **retpJoint)
@@ -2449,6 +2461,7 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 
 	pObj->Place(vPos);
 	pObj->AddToSystem(this);
+	pObj->NotifyOnNewSystem(this);
 	pObj->Resume();
 
 	//	Done
@@ -2675,6 +2688,7 @@ void CSystem::FlushDeletedObjects (void)
 
 		delete pObj;
 		}
+
 	m_DeletedObjects.RemoveAll();
 	}
 

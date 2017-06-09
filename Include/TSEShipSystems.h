@@ -128,6 +128,7 @@ class CShipInterior
 		void GetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP = NULL) const;
 		void Init (const CShipInteriorDesc &Desc);
 		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
+		void OnDestroyed (CShip *pShip, const SDestroyCtx &Ctx);
 		void OnNewSystem (CSystem *pSystem, CShip *pShip, const CShipInteriorDesc &Desc);
 		void OnPlace (CShip *pShip, const CVector &vOldPos);
 		void ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc, SLoadCtx &Ctx);
@@ -148,6 +149,7 @@ class CShipInterior
 
 			//	Temporaries
 			bool bHit;						//	TRUE if this compartment got a direct hit
+			bool bMarked;					//	Temporary
 			};
 
 		struct SHitTestCtx
@@ -166,7 +168,10 @@ class CShipInterior
 			};
 
 		void CalcAttachPos (CShip *pShip, const CShipInteriorDesc &Desc, int iIndex, CSpaceObject **retpAttachedTo, CVector *retvPos) const;
+		void DetachChain (CShip *pShip, CSpaceObject *pBreak);
+		bool FindAttachedObject (CSpaceObject *pAttached, int *retiIndex = NULL) const;
 		int FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int yHitPos);
+		bool MarkIfAttached (CShip *pShip, int iSection, CSpaceObject *pBreak);
 		bool PointInCompartment (SHitTestCtx &HitCtx, const SCompartmentDesc &CompDesc, int xHitPos, int yHitPos) const;
 
 		TArray<SCompartmentEntry> m_Compartments;
