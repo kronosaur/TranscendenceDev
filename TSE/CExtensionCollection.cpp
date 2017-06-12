@@ -1554,6 +1554,7 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 			delete pRoot;
 		delete pExtEntities;
 		Ctx.sError = ExtCtx.sError;
+		Ctx.sErrorFilespec = ExtCtx.sErrorFilespec;
 		return error;
 		}
 
