@@ -953,7 +953,6 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			Ctx.sResDb = m_sFilespec;
 			Ctx.pResDb = &ExtDb;
 			Ctx.bNoResources = Options.bNoResources;
-			Ctx.bKeepXML = Options.bKeepXML;
 			Ctx.bLoadAdventureDesc = (iDesiredState == loadAdventureDesc && m_iType == extAdventure);
 			Ctx.sErrorFilespec = m_sFilespec;
 
@@ -1015,12 +1014,6 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 
 				if (error = LoadDesignElement(Ctx, pItem))
 					{
-					if (!Options.bKeepXML)
-						{
-						delete m_pRootXML;
-						m_pRootXML = NULL;
-						}
-
 					if (g_pUniverse->InDebugMode()
 							&& !ExtDb.IsTDB())
 						return ComposeLoadError(Ctx, retsError);
@@ -1037,11 +1030,6 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	Done
 
 			m_iLoadState = (m_iType == extAdventure ? iDesiredState : loadComplete);
-			if (!Options.bKeepXML)
-				{
-				delete m_pRootXML;
-				m_pRootXML = NULL;
-				}
 
 			//	If we get this far and we have no libraries, then include the 
 			//	compatibility library.
@@ -1409,10 +1397,7 @@ ALERROR CExtension::LoadModuleElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	If we're keeping the XML, then add it to our table
 
-	if (Ctx.bKeepXML && !m_ModuleXML.Find(sFilename))
-		m_ModuleXML.Insert(sFilename, pModuleXML);
-	else
-		delete pModuleXML;
+	m_ModuleXML.Insert(sFilename, pModuleXML);
 
 	return NOERROR;
 	}

@@ -46,13 +46,9 @@ ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CString *retsError)
 
 	error = CreateType(pEntry, pDesc, &pEntry->pType, retsError);
 
-	//	If we're saving XML, then save this with the entry. Otherwise, we 
-	//	discard it.
+	//	We always save the XML.
 
-	if (g_pUniverse->GetExtensionCollection().IsXMLKept())
-		pEntry->pSource = pDesc;
-	else
-		delete pDesc;
+	pEntry->pSource = pDesc;
 
 	//	Done
 
@@ -79,7 +75,6 @@ ALERROR CDynamicDesignTable::CreateType (SEntry *pEntry, CXMLElement *pDesc, CDe
 
 	SDesignLoadCtx Ctx;
 	Ctx.pExtension = pEntry->pExtension;
-	Ctx.bKeepXML = g_pUniverse->GetExtensionCollection().IsXMLKept();
 
 	//	Load the type
 
@@ -125,8 +120,7 @@ ALERROR CDynamicDesignTable::DefineType (CExtension *pExtension, DWORD dwUNID, I
 		//	If necessary, we save the source. CreateType will keep a pointer to the
 		//	source (but we own it and will free it when we're done).
 
-		if (g_pUniverse->GetExtensionCollection().IsXMLKept())
-			pEntry->pSource = pDesc->OrphanCopy();
+		pEntry->pSource = pDesc->OrphanCopy();
 
 		//	Create the type
 

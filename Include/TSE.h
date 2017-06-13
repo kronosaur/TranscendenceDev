@@ -2241,7 +2241,6 @@ class CUniverse
 					bNoCollectionCheck(false),
 					bForceCompatibilityLibrary(false),
 					bRecoverAdventureError(false),
-					bKeepXML(false),
 					pAdventure(NULL),
 					dwAdventure(0)
 				{ }
@@ -2265,7 +2264,6 @@ class CUniverse
 			bool bNoCollectionCheck;		//  If TRUE, don't check collection digests
 			bool bForceCompatibilityLibrary;//	If TRUE, force include of Compatibility Library
 			bool bRecoverAdventureError;	//	If TRUE, we try to recover if given adventure not found
-			bool bKeepXML;					//	If TRUE, we keep XML structures after load
 
 			//	Adventure to bind to (choose one, in order)
 

@@ -749,12 +749,10 @@ class CExtension
 		struct SLoadOptions
 			{
 			SLoadOptions (void) :
-					bKeepXML(false),
 					bNoResources(false),
 					bNoDigestCheck(false)
 				{ }
 
-			bool bKeepXML;
 			bool bNoResources;
 			bool bNoDigestCheck;
 			};
@@ -910,22 +908,21 @@ class CExtensionCollection
 												//		(due to missing dependencies, etc.)
             FLAG_NO_COLLECTION =		0x00000010, //  Do not load collection
 			FLAG_NO_COLLECTION_CHECK =	0x00000020,	//	Do not check signatures on collection
-			FLAG_KEEP_XML =				0x00000040,	//	Keep XML structures
 
 			//	FindExtension
 
-			FLAG_ADVENTURE_ONLY =		0x00000080,	//	Must be an adventure (not found otherwise)
+			FLAG_ADVENTURE_ONLY =		0x00000040,	//	Must be an adventure (not found otherwise)
 
 			//	ComputeAvailableExtension
 
-			FLAG_INCLUDE_AUTO =			0x00000100,	//	Include extensions that are automatic
-			FLAG_AUTO_ONLY =			0x00000200,	//	Only include extensions that are automatic
-			FLAG_ACCUMULATE =			0x00000400,	//	Add to result list
-			FLAG_REGISTERED_ONLY =		0x00000800,	//	Only registered extensions
+			FLAG_INCLUDE_AUTO =			0x00000080,	//	Include extensions that are automatic
+			FLAG_AUTO_ONLY =			0x00000100,	//	Only include extensions that are automatic
+			FLAG_ACCUMULATE =			0x00000200,	//	Add to result list
+			FLAG_REGISTERED_ONLY =		0x00000400,	//	Only registered extensions
 
 			//	ComputeBindOrder
 
-			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00001000,
+			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00000800,
 			};
 
 		CExtensionCollection (void);
@@ -948,7 +945,6 @@ class CExtensionCollection
 		bool GetRequiredResources (TArray<CString> *retFilespecs);
 		void InitEntityResolver (CExtension *pExtension, DWORD dwFlags, CEntityResolverList *retResolver);
 		bool IsRegisteredGame (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags);
-		bool IsXMLKept (void) const { return m_bKeepXML; }
 		ALERROR Load (const CString &sFilespec, DWORD dwFlags, CString *retsError);
 		inline bool LoadedInDebugMode (void) { return m_bLoadedInDebugMode; }
 		ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError);
@@ -980,7 +976,6 @@ class CExtensionCollection
 		TArray<CExtension *> m_Extensions;	//	All loaded extensions
 		bool m_bReloadNeeded;				//	If TRUE we need to reload our folders
 		bool m_bLoadedInDebugMode;			//	If TRUE we loaded in debug mode
-		bool m_bKeepXML;					//	If TRUE we need to keep XML for all types
 
 		TArray<CExtension *> m_Deleted;		//	Keep around until next bind
 
@@ -1046,7 +1041,6 @@ struct SDesignLoadCtx
 			pType(NULL),
 			bBindAsNewGame(false),
 			bNoResources(false),
-			bKeepXML(false),
             bLoopImages(false),
 			bLoadAdventureDesc(false),
 			bLoadModule(false),
@@ -1068,7 +1062,6 @@ struct SDesignLoadCtx
 	//	Options
 	bool bBindAsNewGame;					//	If TRUE, then we are binding a new game
 	bool bNoResources;
-	bool bKeepXML;							//	Keep XML around
     bool bLoopImages;                       //  If TRUE, image effects loop by default
 
 	//	Output

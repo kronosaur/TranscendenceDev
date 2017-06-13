@@ -1219,9 +1219,6 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		if (m_bDebugMode)
 			dwFlags |= CExtensionCollection::FLAG_DEBUG_MODE;
 
-		if (Ctx.bKeepXML)
-			dwFlags |= CExtensionCollection::FLAG_KEEP_XML;
-
 		//	If requested we don't load resources
 
 		if (Ctx.bNoResources)

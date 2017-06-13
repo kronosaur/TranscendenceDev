@@ -64,8 +64,7 @@ CExtensionCollection::CExtensionCollection (void) :
 		m_sCollectionFolder(FILESPEC_COLLECTION_FOLDER),
 		m_pBase(NULL),
 		m_bReloadNeeded(true),
-		m_bLoadedInDebugMode(false),
-		m_bKeepXML(false)
+		m_bLoadedInDebugMode(false)
 
 //	CExtensionCollection constructor
 
@@ -252,7 +251,6 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	Resolver.ReportLibraryErrors();
 
 	CExtension::SLoadOptions LoadOptions;
-	LoadOptions.bKeepXML = m_bKeepXML;
 	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
 
@@ -1275,7 +1273,6 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 		return NOERROR;
 
 	m_bLoadedInDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
-	m_bKeepXML = ((dwFlags & FLAG_KEEP_XML) == FLAG_KEEP_XML);
 
 	//	Load base file
 
@@ -1316,7 +1313,6 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 		Resolver.AddDefaults(pExtension);
 
 		CExtension::SLoadOptions LoadOptions;
-		LoadOptions.bKeepXML = m_bKeepXML;
 		LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 		LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
 
@@ -1405,10 +1401,6 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	Ctx.pResDb = &Resources;
 	Ctx.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) ? true : false);
 	Ctx.sErrorFilespec = sFilespec;
-
-	//	Always keep the base file XML because we can't tell yet if we need it.
-
-	Ctx.bKeepXML = true;
 
 	//	Load it.
 	//
@@ -1529,7 +1521,6 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	ExtCtx.sResDb = Ctx.sResDb;
 	ExtCtx.pResDb = Ctx.pResDb;
 	ExtCtx.bNoResources = Ctx.bNoResources;
-	ExtCtx.bKeepXML = Ctx.bKeepXML;
 	ExtCtx.dwInheritAPIVersion = m_pBase->GetAPIVersion();
 	//	No need to set bBindAsNewGame because it is only useful during Bind.
 	//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;
@@ -1592,7 +1583,6 @@ ALERROR CExtensionCollection::LoadFile (const CString &sFilespec, CExtension::EF
 	Resolver.AddDefaults(pExtension);
 
 	CExtension::SLoadOptions LoadOptions;
-	LoadOptions.bKeepXML = m_bKeepXML;
 	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
 
@@ -1707,12 +1697,6 @@ ALERROR CExtensionCollection::LoadFolderStubsOnly (const CString &sFilespec, CEx
 
 		if (error = CExtension::CreateExtensionStub(sExtensionFilespec, iFolder, &pExtension, retsError))
 			return error;
-
-		//	If this extension needs XML, then we remember that so that we keep
-		//	XML around after load.
-
-		if (pExtension->UsesXML())
-			m_bKeepXML = true;
 
 		//	Add the extensions to our list. We lock because we expect this function
 		//	to be called without a lock; we don't want to lock while doing the

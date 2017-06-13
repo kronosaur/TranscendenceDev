@@ -1949,10 +1949,11 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 	if (!sExtends.IsBlank())
 		ParseUNIDList(sExtends, 0, &m_Extends);
 
-	//	Remember XML if necessary
+	//	Remember XML; CExtension will always keep a copy of the XML (to which
+	//	we're pointing) and we will get called appropriately if we need to 
+	//	invalidate.
 
-	if (Ctx.bKeepXML)
-		m_pXML = pDesc;
+	m_pXML = pDesc;
 
 	//	Inheritance
 
