@@ -70,7 +70,7 @@ class CXMLElement
 		bool FindAttributeDouble (const CString &sName, double *retrValue = NULL) const;
 		bool FindAttributeInteger (const CString &sName, int *retiValue = NULL) const;
 		CString GetAttribute (const CString &sName) const;
-		inline CString GetAttribute (int iIndex) const { return *(CString *)m_Attributes.GetValue(iIndex); }
+		inline CString GetAttribute (int iIndex) const { return m_Attributes[iIndex]; }
 		bool GetAttributeBool (const CString &sName) const;
 		inline int GetAttributeCount (void) const { return m_Attributes.GetCount(); }
 		double GetAttributeDouble (const CString &sName) const;
@@ -81,30 +81,35 @@ class CXMLElement
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const;
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const;
 		double GetAttributeFloat (const CString &sName) const;
-		inline CString GetAttributeName (int iIndex) const { return m_Attributes.GetKey(iIndex); }
+		inline const CString &GetAttributeName (int iIndex) const { return m_Keywords.GetIdentifier(m_Attributes.GetKey(iIndex)); }
 		inline int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
 		inline CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
 		CXMLElement *GetContentElementByTag (const CString &sTag) const;
 		inline const CString &GetContentText (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
+		int GetMemoryUsage (void) const;
 		inline CXMLElement *GetParentElement (void) const { return m_pParent; }
-		inline const CString &GetTag (void) const { return m_sTag; }
+		inline const CString &GetTag (void) const { return m_Keywords.GetIdentifier(m_dwTag); }
 		void MergeFrom (CXMLElement *pElement);
 		CXMLElement *OrphanCopy (void);
 		ALERROR SetAttribute (const CString &sName, const CString &sValue);
 		ALERROR SetContentText (const CString &sContent, int iIndex = -1);
 		ALERROR WriteToStream (IWriteStream *pStream);
 
-		static CString MakeAttribute (const CString &sText) { return strToXMLText(sText); }
+		static int GetKeywordCount (void) { return m_Keywords.GetCount(); }
+		static int GetKeywordMemoryUsage (void) { return m_Keywords.GetMemoryUsage(); }
 		static bool IsBoolTrueValue (const CString &sValue) { return (strEquals(sValue, CONSTLIT("true")) || strEquals(sValue, CONSTLIT("1"))); }
+		static CString MakeAttribute (const CString &sText) { return strToXMLText(sText); }
 
 	private:
 		void CleanUp (void);
 
-		CString m_sTag;							//	Element tag
+		DWORD m_dwTag;							//	Tag atom
 		CXMLElement *m_pParent;					//	Parent of this element
-		CSymbolTable m_Attributes;				//	Table of CStrings
+		TSortMap<DWORD, CString> m_Attributes;	//	Attributes for this element
 		TArray<CXMLElement *> m_ContentElements;//	Array of sub elements
 		TArray<CString> m_ContentText;			//	Interleaved content
+
+	static CAtomizer m_Keywords;
 	};
 
 class CExternalEntityTable : public IXMLParserController

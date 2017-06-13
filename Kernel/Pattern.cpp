@@ -71,6 +71,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 				int iMinFieldWidth = 0;
 				bool bPadWithZeros = false;
 				bool b1000Separator = false;
+				bool b64bit = false;
 
 				//	A leading comma means add a thousands separator
 
@@ -79,6 +80,21 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					b1000Separator = true;
 					pPos++;
 					iLength--;
+					}
+
+				//	See if this is a long long
+
+				if (*pPos == 'l')
+					{
+					pPos++;
+					iLength--;
+
+					if (*pPos == 'l')
+						{
+						b64bit = true;
+						pPos++;
+						iLength--;
+						}
 					}
 
 				//	See if we've got a field width value
@@ -114,23 +130,49 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					}
 				else if (*pPos == 'd')
 					{
-					int *pInt = (int *)pArgs;
+					if (b64bit)
+						{
+						INT64 *pVar = (INT64 *)pArgs;
 
-					DWORD dwFlags = (b1000Separator ? FORMAT_THOUSAND_SEPARATOR : 0)
-							| (bPadWithZeros ? FORMAT_LEADING_ZERO : 0);
+						DWORD dwFlags = (b1000Separator ? FORMAT_THOUSAND_SEPARATOR : 0)
+								| (bPadWithZeros ? FORMAT_LEADING_ZERO : 0);
 
-					CString sNew = strFormatInteger(*pInt, iMinFieldWidth, dwFlags);
+						CString sNew = strFormatInteger(*pVar, iMinFieldWidth, dwFlags);
 
-					if (error = Stream.Write(sNew.GetPointer(), sNew.GetLength(), NULL))
-						return LITERAL("%ERROR");
+						if (error = Stream.Write(sNew.GetPointer(), sNew.GetLength(), NULL))
+							return LITERAL("%ERROR");
 
-					//	Remember the last integer
+						//	Remember the last integer (all we care about is whether it
+						//	is 1 or not, for pluralization).
 
-					iLastInteger = *pInt;
+						iLastInteger = (*pVar == 1 ? 1 : 0);
 
-					//	Next
+						//	Next
 
-					pArgs++;
+						pArgs++;
+						pArgs++;
+						}
+					else
+						{
+						int *pInt = (int *)pArgs;
+
+						DWORD dwFlags = (b1000Separator ? FORMAT_THOUSAND_SEPARATOR : 0)
+								| (bPadWithZeros ? FORMAT_LEADING_ZERO : 0);
+
+						CString sNew = strFormatInteger(*pInt, iMinFieldWidth, dwFlags);
+
+						if (error = Stream.Write(sNew.GetPointer(), sNew.GetLength(), NULL))
+							return LITERAL("%ERROR");
+
+						//	Remember the last integer
+
+						iLastInteger = *pInt;
+
+						//	Next
+
+						pArgs++;
+						}
+
 					pPos++;
 					iLength--;
 					}

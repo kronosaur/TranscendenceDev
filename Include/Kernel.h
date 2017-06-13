@@ -549,10 +549,11 @@ class CString : public CObject
 		inline operator LPSTR () const { return GetASCIIZPointer(); }
 		bool operator== (const CString &sValue) const;
 
-		char *GetASCIIZPointer (void) const;
 		ALERROR Append (const CString &sString);
 		void Capitalize (CapitalizeOptions iOption);
+		char *GetASCIIZPointer (void) const;
 		int GetLength (void) const;
+		int GetMemoryUsage (void) const;
 		char *GetPointer (void) const;
 		char *GetWritePointer (int iLength);
 		inline bool IsBlank (void) const { return (GetLength() == 0); }
@@ -756,6 +757,24 @@ class CLargeSet
 
 	private:
 		TArray<DWORD> m_Set;
+	};
+
+//	Atomizer
+
+class CAtomizer
+	{
+	public:
+		CAtomizer (void);
+
+		DWORD Atomize (const CString &sIdentifier);
+		inline int GetCount (void) const { return m_StringToAtom.GetCount(); }
+		const CString &GetIdentifier (DWORD dwAtom) const;
+		int GetMemoryUsage (void) const;
+
+	private:
+		DWORD m_dwNextID;
+		TSortMap<CString, DWORD> m_StringToAtom;
+		TArray<CString> m_AtomToString;
 	};
 
 //	Memory Blocks
@@ -1338,6 +1357,7 @@ CString strFormatBytes (DWORD dwBytes);
 #define FORMAT_THOUSAND_SEPARATOR				0x00000002
 #define FORMAT_UNSIGNED							0x00000004
 CString strFormatInteger (int iValue, int iMinFieldWidth = -1, DWORD dwFlags = 0);
+CString strFormatInteger (INT64 iValue, int iMinFieldWidth = -1, DWORD dwFlags = 0);
 
 CString strFormatMicroseconds (DWORD dwMicroseconds);
 CString strFormatMilliseconds (DWORD dwMilliseconds);

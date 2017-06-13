@@ -6,9 +6,11 @@
 #include "Alchemy.h"
 #include "XMLUtil.h"
 
+CAtomizer CXMLElement::m_Keywords;
+
 CXMLElement::CXMLElement (void) :
-		m_pParent(NULL),
-		m_Attributes(TRUE, FALSE)
+		m_dwTag(0),
+		m_pParent(NULL)
 
 //	CXMLElement constructor
 
@@ -22,7 +24,7 @@ CXMLElement::CXMLElement (const CXMLElement &Obj)
 	{
 	int i;
 
-	m_sTag = Obj.m_sTag;
+	m_dwTag = Obj.m_dwTag;
 	m_pParent = Obj.m_pParent;
 	m_Attributes = Obj.m_Attributes;
 	m_ContentText = Obj.m_ContentText;
@@ -33,9 +35,8 @@ CXMLElement::CXMLElement (const CXMLElement &Obj)
 	}
 
 CXMLElement::CXMLElement (const CString &sTag, CXMLElement *pParent) : 
-		m_sTag(sTag),
-		m_pParent(pParent),
-		m_Attributes(TRUE, FALSE)
+		m_dwTag(m_Keywords.Atomize(sTag)),
+		m_pParent(pParent)
 
 //	CXMLElement constructor
 
@@ -51,7 +52,7 @@ CXMLElement &CXMLElement::operator= (const CXMLElement &Obj)
 
 	CleanUp();
 
-	m_sTag = Obj.m_sTag;
+	m_dwTag = Obj.m_dwTag;
 	m_pParent = Obj.m_pParent;
 	m_Attributes = Obj.m_Attributes;
 	m_ContentText = Obj.m_ContentText;
@@ -70,19 +71,7 @@ ALERROR CXMLElement::AddAttribute (const CString &sAttribute, const CString &sVa
 //	Add the given attribute to our table
 
 	{
-	ALERROR error;
-	CString *pValue;
-
-	pValue = new CString(sValue);
-	if (pValue == NULL)
-		return ERR_MEMORY;
-
-	if (error = m_Attributes.AddEntry(sAttribute, pValue))
-		{
-		delete pValue;
-		return error;
-		}
-
+	m_Attributes.SetAt(m_Keywords.Atomize(sAttribute), sValue);
 	return NOERROR;
 	}
 
@@ -158,12 +147,7 @@ bool CXMLElement::AttributeExists (const CString &sName)
 //	Returns TRUE if the attribute exists in the element
 
 	{
-	CString *pValue;
-
-	if (m_Attributes.Lookup(sName, (CObject **)&pValue) == NOERROR)
-		return true;
-	else
-		return false;
+	return m_Attributes.Find(m_Keywords.Atomize(sName));
 	}
 
 void CXMLElement::CleanUp (void)
@@ -224,16 +208,7 @@ bool CXMLElement::FindAttribute (const CString &sName, CString *retsValue) const
 //	Otherwise, returns FALSE
 
 	{
-	CString *pValue;
-
-	if (m_Attributes.Lookup(sName, (CObject **)&pValue) == NOERROR)
-		{
-		if (retsValue)
-			*retsValue = *pValue;
-		return true;
-		}
-	else
-		return false;
+	return m_Attributes.Find(m_Keywords.Atomize(sName), retsValue);
 	}
 
 bool CXMLElement::FindAttributeBool (const CString &sName, bool *retbValue) const
@@ -244,16 +219,13 @@ bool CXMLElement::FindAttributeBool (const CString &sName, bool *retbValue) cons
 //	Otherwise, returns FALSE
 
 	{
-	CString *pValue;
-
-	if (m_Attributes.Lookup(sName, (CObject **)&pValue) == NOERROR)
-		{
-		if (retbValue)
-			*retbValue = IsBoolTrueValue(*pValue);
-		return true;
-		}
-	else
+	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
 		return false;
+
+	if (retbValue)
+		*retbValue = IsBoolTrueValue(*pValue);
+	return true;
 	}
 
 bool CXMLElement::FindAttributeDouble (const CString &sName, double *retrValue) const
@@ -263,16 +235,13 @@ bool CXMLElement::FindAttributeDouble (const CString &sName, double *retrValue) 
 //	Finds an attribute.
 
 	{
-	CString *pValue;
-
-	if (m_Attributes.Lookup(sName, (CObject **)&pValue) == NOERROR)
-		{
-		if (retrValue)
-			*retrValue = strToDouble(*pValue, 0.0);
-		return true;
-		}
-	else
+	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
 		return false;
+
+	if (retrValue)
+		*retrValue = strToDouble(*pValue, 0.0);
+	return true;
 	}
 
 bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) const
@@ -283,16 +252,13 @@ bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) co
 //	Otherwise, returns FALSE
 
 	{
-	CString *pValue;
-
-	if (m_Attributes.Lookup(sName, (CObject **)&pValue) == NOERROR)
-		{
-		if (retiValue)
-			*retiValue = strToInt(*pValue, 0, NULL);
-		return true;
-		}
-	else
+	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
 		return false;
+
+	if (retiValue)
+		*retiValue = strToInt(*pValue, 0, NULL);
+	return true;
 	}
 
 CString CXMLElement::GetAttribute (const CString &sName) const
@@ -302,12 +268,11 @@ CString CXMLElement::GetAttribute (const CString &sName) const
 //	Returns the attribute
 
 	{
-	CString *pValue;
+	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
+		return NULL_STR;
 
-	if (m_Attributes.Lookup(sName, (CObject **)&pValue) == NOERROR)
-		return *pValue;
-	else
-		return CString();
+	return *pValue;
 	}
 
 bool CXMLElement::GetAttributeBool (const CString &sName) const
@@ -317,12 +282,11 @@ bool CXMLElement::GetAttributeBool (const CString &sName) const
 //	Returns TRUE or FALSE for the attribute
 
 	{
-	CString *pValue;
-
-	if (m_Attributes.Lookup(sName, (CObject **)&pValue) == NOERROR)
-		return IsBoolTrueValue(*pValue);
-	else
+	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
 		return false;
+
+	return IsBoolTrueValue(*pValue);
 	}
 
 double CXMLElement::GetAttributeDouble (const CString &sName) const
@@ -539,6 +503,31 @@ CXMLElement *CXMLElement::GetContentElementByTag (const CString &sTag) const
 	return NULL;
 	}
 
+int CXMLElement::GetMemoryUsage (void) const
+
+//	GetMemoryUsage
+//
+//	Returns the number of bytes allocated for this element (and all its 
+//	children), excluding allocation overhead.
+
+	{
+	int i;
+
+	int iTotal = sizeof(DWORD);
+
+	iTotal += m_Attributes.GetCount() * sizeof(DWORD);
+	for (i = 0; i < m_Attributes.GetCount(); i++)
+		iTotal += GetAttribute(i).GetMemoryUsage();
+
+	for (i = 0; i < m_ContentElements.GetCount(); i++)
+		iTotal += m_ContentElements[i]->GetMemoryUsage();
+
+	for (i = 0; i < m_ContentText.GetCount(); i++)
+		iTotal += m_ContentText[i].GetMemoryUsage();
+
+	return iTotal;
+	}
+
 void CXMLElement::MergeFrom (CXMLElement *pElement)
 
 //	MergeFrom
@@ -608,19 +597,7 @@ ALERROR CXMLElement::SetAttribute (const CString &sName, const CString &sValue)
 //	Sets an attribute on the element.
 
 	{
-	ALERROR error;
-	CString *pValue;
-
-	pValue = new CString(sValue);
-	if (pValue == NULL)
-		return ERR_MEMORY;
-
-	if (error = m_Attributes.ReplaceEntry(sName, pValue, TRUE, NULL))
-		{
-		delete pValue;
-		return error;
-		}
-
+	m_Attributes.SetAt(m_Keywords.Atomize(sName), sValue);
 	return NOERROR;
 	}
 
@@ -655,8 +632,9 @@ ALERROR CXMLElement::WriteToStream (IWriteStream *pStream)
 
 	//	Open tag
 
+	const CString &sTag = m_Keywords.GetIdentifier(m_dwTag);
 	pStream->Write("<", 1);
-	pStream->Write(m_sTag.GetASCIIZPointer(), m_sTag.GetLength());
+	pStream->Write(sTag.GetASCIIZPointer(), sTag.GetLength());
 
 	//	If we have attributes, write them out
 
@@ -709,7 +687,7 @@ ALERROR CXMLElement::WriteToStream (IWriteStream *pStream)
 	//	Close the element
 
 	pStream->Write("</", 2);
-	pStream->Write(m_sTag.GetASCIIZPointer(), m_sTag.GetLength());
+	pStream->Write(sTag.GetASCIIZPointer(), sTag.GetLength());
 	pStream->Write(">", 1);
 
 	//	Done
