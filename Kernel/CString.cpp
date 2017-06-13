@@ -1638,7 +1638,7 @@ void CString::INTStringCleanUp (void)
 //	Cleans up the basic global data
 
 	{
-	DeleteCriticalSection(&g_csStore);
+	//DeleteCriticalSection(&g_csStore);
 	}
 
 ALERROR CString::INTStringInit (void)

@@ -759,6 +759,23 @@ class CLargeSet
 		TArray<DWORD> m_Set;
 	};
 
+//	Atomizer
+
+class CAtomizer
+	{
+	public:
+		CAtomizer (void);
+
+		DWORD Atomize (const CString &sIdentifier);
+		CString GetIdentifier (DWORD dwAtom) const;
+		int GetMemoryUsage (void) const;
+
+	private:
+		DWORD m_dwNextID;
+		TSortMap<CString, DWORD> m_StringToAtom;
+		TArray<CString> m_AtomToString;
+	};
+
 //	Memory Blocks
 
 class IReadBlock

@@ -223,6 +223,9 @@
     <ClCompile Include="CProjection3D.cpp">
       <Filter>Source Files\Euclid</Filter>
     </ClCompile>
+    <ClCompile Include="CAtomizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">
