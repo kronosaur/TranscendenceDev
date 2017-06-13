@@ -767,6 +767,7 @@ class CAtomizer
 		CAtomizer (void);
 
 		DWORD Atomize (const CString &sIdentifier);
+		inline int GetCount (void) const { return m_StringToAtom.GetCount(); }
 		const CString &GetIdentifier (DWORD dwAtom) const;
 		int GetMemoryUsage (void) const;
 

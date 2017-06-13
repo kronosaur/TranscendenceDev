@@ -95,6 +95,7 @@ class CXMLElement
 		ALERROR SetContentText (const CString &sContent, int iIndex = -1);
 		ALERROR WriteToStream (IWriteStream *pStream);
 
+		static int GetKeywordCount (void) { return m_Keywords.GetCount(); }
 		static int GetKeywordMemoryUsage (void) { return m_Keywords.GetMemoryUsage(); }
 		static bool IsBoolTrueValue (const CString &sValue) { return (strEquals(sValue, CONSTLIT("true")) || strEquals(sValue, CONSTLIT("1"))); }
 		static CString MakeAttribute (const CString &sText) { return strToXMLText(sText); }
