@@ -767,7 +767,7 @@ class CAtomizer
 		CAtomizer (void);
 
 		DWORD Atomize (const CString &sIdentifier);
-		CString GetIdentifier (DWORD dwAtom) const;
+		const CString &GetIdentifier (DWORD dwAtom) const;
 		int GetMemoryUsage (void) const;
 
 	private:

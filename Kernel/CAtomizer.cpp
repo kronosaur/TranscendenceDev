@@ -38,7 +38,7 @@ DWORD CAtomizer::Atomize (const CString &sIdentifier)
 	return *pAtom;
 	}
 
-CString CAtomizer::GetIdentifier (DWORD dwAtom) const
+const CString &CAtomizer::GetIdentifier (DWORD dwAtom) const
 
 //	GetIdentifier
 //

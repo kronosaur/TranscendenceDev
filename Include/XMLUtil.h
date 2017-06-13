@@ -81,14 +81,14 @@ class CXMLElement
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const;
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const;
 		double GetAttributeFloat (const CString &sName) const;
-		inline CString GetAttributeName (int iIndex) const { return m_Keywords.GetIdentifier(m_Attributes.GetKey(iIndex)); }
+		inline const CString &GetAttributeName (int iIndex) const { return m_Keywords.GetIdentifier(m_Attributes.GetKey(iIndex)); }
 		inline int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
 		inline CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
 		CXMLElement *GetContentElementByTag (const CString &sTag) const;
 		inline const CString &GetContentText (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
 		int GetMemoryUsage (void) const;
 		inline CXMLElement *GetParentElement (void) const { return m_pParent; }
-		inline const CString &GetTag (void) const { return m_sTag; }
+		inline const CString &GetTag (void) const { return m_Keywords.GetIdentifier(m_dwTag); }
 		void MergeFrom (CXMLElement *pElement);
 		CXMLElement *OrphanCopy (void);
 		ALERROR SetAttribute (const CString &sName, const CString &sValue);
@@ -102,7 +102,7 @@ class CXMLElement
 	private:
 		void CleanUp (void);
 
-		CString m_sTag;							//	Element tag
+		DWORD m_dwTag;							//	Tag atom
 		CXMLElement *m_pParent;					//	Parent of this element
 		TSortMap<DWORD, CString> m_Attributes;	//	Attributes for this element
 		TArray<CXMLElement *> m_ContentElements;//	Array of sub elements

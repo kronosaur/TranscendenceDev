@@ -9,6 +9,7 @@
 CAtomizer CXMLElement::m_Keywords;
 
 CXMLElement::CXMLElement (void) :
+		m_dwTag(0),
 		m_pParent(NULL)
 
 //	CXMLElement constructor
@@ -23,7 +24,7 @@ CXMLElement::CXMLElement (const CXMLElement &Obj)
 	{
 	int i;
 
-	m_sTag = Obj.m_sTag;
+	m_dwTag = Obj.m_dwTag;
 	m_pParent = Obj.m_pParent;
 	m_Attributes = Obj.m_Attributes;
 	m_ContentText = Obj.m_ContentText;
@@ -34,7 +35,7 @@ CXMLElement::CXMLElement (const CXMLElement &Obj)
 	}
 
 CXMLElement::CXMLElement (const CString &sTag, CXMLElement *pParent) : 
-		m_sTag(sTag),
+		m_dwTag(m_Keywords.Atomize(sTag)),
 		m_pParent(pParent)
 
 //	CXMLElement constructor
@@ -51,7 +52,7 @@ CXMLElement &CXMLElement::operator= (const CXMLElement &Obj)
 
 	CleanUp();
 
-	m_sTag = Obj.m_sTag;
+	m_dwTag = Obj.m_dwTag;
 	m_pParent = Obj.m_pParent;
 	m_Attributes = Obj.m_Attributes;
 	m_ContentText = Obj.m_ContentText;
@@ -512,7 +513,7 @@ int CXMLElement::GetMemoryUsage (void) const
 	{
 	int i;
 
-	int iTotal = m_sTag.GetLength();
+	int iTotal = sizeof(DWORD);
 
 	iTotal += m_Attributes.GetCount() * sizeof(DWORD);
 	for (i = 0; i < m_Attributes.GetCount(); i++)
@@ -631,8 +632,9 @@ ALERROR CXMLElement::WriteToStream (IWriteStream *pStream)
 
 	//	Open tag
 
+	const CString &sTag = m_Keywords.GetIdentifier(m_dwTag);
 	pStream->Write("<", 1);
-	pStream->Write(m_sTag.GetASCIIZPointer(), m_sTag.GetLength());
+	pStream->Write(sTag.GetASCIIZPointer(), sTag.GetLength());
 
 	//	If we have attributes, write them out
 
@@ -685,7 +687,7 @@ ALERROR CXMLElement::WriteToStream (IWriteStream *pStream)
 	//	Close the element
 
 	pStream->Write("</", 2);
-	pStream->Write(m_sTag.GetASCIIZPointer(), m_sTag.GetLength());
+	pStream->Write(sTag.GetASCIIZPointer(), sTag.GetLength());
 	pStream->Write(">", 1);
 
 	//	Done
