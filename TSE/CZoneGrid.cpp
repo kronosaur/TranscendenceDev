@@ -196,7 +196,7 @@ ALERROR CZoneGrid::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_cySize = pDesc->GetAttributeIntegerBounded(SIZE_Y_ATTRIB, 1, -1);
 	m_iCellSize = pDesc->GetAttributeIntegerBounded(CELL_SIZE_ATTRIB, 1, Min(m_cxSize, m_cySize));
 
-	m_pDesc = pDesc->OrphanCopy();
+	m_pDesc = pDesc;
 
 	return NOERROR;
 	}

@@ -19,8 +19,6 @@ CDockScreenType::~CDockScreenType (void)
 //	CDockScreenType destructor
 
 	{
-	if (m_pDesc)
-		delete m_pDesc;
 	}
 
 CXMLElement *CDockScreenType::GetPane (const CString &sPane)
@@ -77,7 +75,7 @@ ALERROR CDockScreenType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 //	Create from XML
 
 	{
-	m_pDesc = pDesc->OrphanCopy();
+	m_pDesc = pDesc;
 	return NOERROR;
 	}
 

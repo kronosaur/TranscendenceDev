@@ -191,8 +191,6 @@ CDesignType::~CDesignType (void)
 //	CDesignType destructor
 
 	{
-	if (m_pLocalScreens)
-		delete m_pLocalScreens;
 	}
 
 void CDesignType::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -403,7 +401,7 @@ void CDesignType::CreateClone (CDesignType **retpType)
 	pClone->m_InitGlobalData = m_InitGlobalData;
 	pClone->m_Language = m_Language;
 	pClone->m_Events = m_Events;
-	pClone->m_pLocalScreens = (m_pLocalScreens ? m_pLocalScreens->OrphanCopy() : NULL);
+	pClone->m_pLocalScreens = m_pLocalScreens;
 	pClone->m_DisplayAttribs = m_DisplayAttribs;
 
 	//	Let our subclass initialize
@@ -2002,7 +2000,7 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 			m_GlobalData = m_InitGlobalData;
 			}
 		else if (strEquals(pItem->GetTag(), DOCK_SCREENS_TAG))
-			m_pLocalScreens = pItem->OrphanCopy();
+			m_pLocalScreens = pItem;
 		else if (strEquals(pItem->GetTag(), LANGUAGE_TAG))
 			{
 			if (error = m_Language.InitFromXML(Ctx, pItem))

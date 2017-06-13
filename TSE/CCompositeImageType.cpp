@@ -25,8 +25,6 @@ CCompositeImageType::~CCompositeImageType (void)
 //	CCompositeImageType destructor
 
 	{
-	if (m_pDesc)
-		delete m_pDesc;
 	}
 
 ALERROR CCompositeImageType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -50,7 +48,7 @@ ALERROR CCompositeImageType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	//	Keep a copy
 
-	m_pDesc = pImage->OrphanCopy();
+	m_pDesc = pImage;
 
 	return NOERROR;
 	}

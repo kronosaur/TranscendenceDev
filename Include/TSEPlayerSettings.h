@@ -88,11 +88,13 @@ class CPlayerSettings
 			{
 			SHUDDesc (void) :
 					pDesc(NULL),
-					bOwned(false)
+					bOwned(false),
+					bFree(false)
 				{ }
 
 			CXMLElement *pDesc;						//	HUD descriptor
 			bool bOwned;							//	If TRUE, we own this element
+			bool bFree;								//	If TRUE, we need to free this element
 			};
 
 		void CleanUp (void);

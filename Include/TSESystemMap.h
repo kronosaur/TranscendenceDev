@@ -133,7 +133,7 @@ class CSystemTable : public CDesignType
 
 	protected:
 		//	CDesignType overrides
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override { m_pTable = pDesc->OrphanCopy(); return NOERROR; }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override { m_pTable = pDesc; return NOERROR; }
 
 	private:
 		CXMLElement *m_pTable;

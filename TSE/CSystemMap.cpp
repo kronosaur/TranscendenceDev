@@ -50,9 +50,6 @@ CSystemMap::~CSystemMap (void)
 	{
 	int i;
 
-	for (i = 0; i < m_Creators.GetCount(); i++)
-		delete m_Creators[i];
-
 	for (i = 0; i < m_Processors.GetCount(); i++)
 		delete m_Processors[i];
 
@@ -334,7 +331,7 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (strEquals(pItem->GetTag(), TOPOLOGY_CREATOR_TAG)
 				|| strEquals(pItem->GetTag(), ROOT_NODE_TAG))
 			{
-			m_Creators.Insert(pItem->OrphanCopy());
+			m_Creators.Insert(pItem);
 
 			if (strEquals(pItem->GetTag(), ROOT_NODE_TAG))
 				RootNodes.Insert(pItem->GetAttribute(ID_ATTRIB));

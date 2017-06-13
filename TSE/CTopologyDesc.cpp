@@ -42,9 +42,6 @@ CTopologyDesc::~CTopologyDesc (void)
 //	CTopologyDesc destructor
 
 	{
-	if (m_pDesc)
-		delete m_pDesc;
-
 	if (m_pDescList)
 		delete m_pDescList;
 	}
@@ -214,7 +211,7 @@ ALERROR CTopologyDesc::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pXMLDesc, 
 	//	Keep a copy of the full node descriptor (because we are too lazy to turn
 	//	it into a structure).
 
-	m_pDesc = pXMLDesc->OrphanCopy();
+	m_pDesc = pXMLDesc;
 
 	//	Initialize ID
 

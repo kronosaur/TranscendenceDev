@@ -187,9 +187,12 @@ void CPlayerSettings::CleanUp (void)
 	for (i = 0; i < hudCount; i++)
 		if (m_HUDDesc[i].bOwned)
 			{
-			delete m_HUDDesc[i].pDesc;
+			if (m_HUDDesc[i].bFree)
+				delete m_HUDDesc[i].pDesc;
+
 			m_HUDDesc[i].pDesc = NULL;
 			m_HUDDesc[i].bOwned = false;
+			m_HUDDesc[i].bFree = false;
 			}
 	}
 
@@ -240,8 +243,9 @@ void CPlayerSettings::Copy (const CPlayerSettings &Src)
 		{
         if (Src.m_HUDDesc[i].bOwned)
             {
-			m_HUDDesc[i].pDesc = m_HUDDesc[i].pDesc->OrphanCopy();
+			m_HUDDesc[i].pDesc = m_HUDDesc[i].pDesc;
             m_HUDDesc[i].bOwned = true;
+            m_HUDDesc[i].bFree = false;
             }
 		}
 
@@ -304,6 +308,7 @@ void CPlayerSettings::InitAsDefault (void)
 		m_HUDDesc[hudArmor].pDesc = new CXMLElement(ARMOR_DISPLAY_TAG, NULL);
 		m_HUDDesc[hudArmor].pDesc->SetAttribute(STYLE_ATTRIB, CONSTLIT("circular"));
 		m_HUDDesc[hudArmor].bOwned = true;
+		m_HUDDesc[hudArmor].bFree = true;
 		}
 
 	if (m_HUDDesc[hudReactor].pDesc == NULL)
@@ -311,6 +316,7 @@ void CPlayerSettings::InitAsDefault (void)
 		m_HUDDesc[hudReactor].pDesc = new CXMLElement(REACTOR_DISPLAY_TAG, NULL);
 		m_HUDDesc[hudReactor].pDesc->SetAttribute(STYLE_ATTRIB, CONSTLIT("circular"));
 		m_HUDDesc[hudReactor].bOwned = true;
+		m_HUDDesc[hudReactor].bFree = true;
 		}
 
 	if (m_HUDDesc[hudTargeting].pDesc == NULL)
@@ -318,6 +324,7 @@ void CPlayerSettings::InitAsDefault (void)
 		m_HUDDesc[hudTargeting].pDesc = new CXMLElement(WEAPON_DISPLAY_TAG, NULL);
 		m_HUDDesc[hudTargeting].pDesc->SetAttribute(STYLE_ATTRIB, CONSTLIT("circular"));
 		m_HUDDesc[hudTargeting].bOwned = true;
+		m_HUDDesc[hudTargeting].bFree = true;
 		}
 
 	m_fResolved = true;
@@ -430,8 +437,8 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 		{
 		if (m_HUDDesc[i].pDesc)
 			{
-			m_HUDDesc[i].pDesc = m_HUDDesc[i].pDesc->OrphanCopy();
 			m_HUDDesc[i].bOwned = true;
+			m_HUDDesc[i].bFree = false;
 			}
 		}
 
@@ -453,11 +460,12 @@ void CPlayerSettings::MergeFrom (const CPlayerSettings &Src)
 		{
         if (Src.m_HUDDesc[i].bOwned)
             {
-            if (m_HUDDesc[i].bOwned)
+            if (m_HUDDesc[i].bFree)
                 delete m_HUDDesc[i].pDesc;
 
-            m_HUDDesc[i].pDesc = Src.m_HUDDesc[i].pDesc->OrphanCopy();
+            m_HUDDesc[i].pDesc = Src.m_HUDDesc[i].pDesc;
             m_HUDDesc[i].bOwned = true;
+			m_HUDDesc[i].bFree = false;
             }
 		}
 

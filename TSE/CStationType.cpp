@@ -269,9 +269,6 @@ CStationType::~CStationType (void)
 	if (m_Devices)
 		delete [] m_Devices;
 
-	if (m_pDesc)
-		delete m_pDesc;
-
 	if (m_pItems)
 		delete m_pItems;
 
@@ -283,9 +280,6 @@ CStationType::~CStationType (void)
 
 	if (m_pEncounters)
 		delete m_pEncounters;
-
-	if (m_pSatellitesDesc)
-		delete m_pSatellitesDesc;
 
 	if (m_pAnimations)
 		delete [] m_pAnimations;
@@ -1253,6 +1247,8 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	int i;
 	ALERROR error;
 
+	ASSERT(pDesc);
+
 	//	Initialize basic info
 
 	m_iLevel = pDesc->GetAttributeInteger(LEVEL_ATTRIB);
@@ -1451,17 +1447,9 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	else
 		m_iDevicesCount = 0;
 
-	//	Make a copy of the descriptor (We should stop doing this when we
-	//	move all the data in the descriptor to private member variables.
-	//	The only problem will be fixing the m_pReinforcements and m_pEncounters
-	//	field which assumes that we have a copy of this).
+	//	Keep the descriptor
 	
-	m_pDesc = pDesc->OrphanCopy();
-	if (m_pDesc == NULL)
-		{
-		Ctx.sError = CONSTLIT("Out of memory");
-		return ERR_MEMORY;
-		}
+	m_pDesc = pDesc;
 
 	//	Load items
 
@@ -1666,9 +1654,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Load satellites
 
-	CXMLElement *pSatellitesDesc = pDesc->GetContentElementByTag(SATELLITES_TAG);
-	if (pSatellitesDesc)
-		m_pSatellitesDesc = pSatellitesDesc->OrphanCopy();
+	m_pSatellitesDesc = pDesc->GetContentElementByTag(SATELLITES_TAG);
 
 	//	Explosion
 

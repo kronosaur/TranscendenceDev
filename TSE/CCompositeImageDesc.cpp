@@ -298,11 +298,7 @@ void CCompositeImageDesc::CleanUp (void)
 //  Restore to initial state.
 
     {
-    if (m_pDesc)
-        {
-        delete m_pDesc;
-        m_pDesc = NULL;
-        }
+	m_pDesc = NULL;
 
     if (m_pRoot)
         {
@@ -320,10 +316,7 @@ void CCompositeImageDesc::Copy (const CCompositeImageDesc &Src)
 //  Copy from source. (We assume that we are empty).
 
     {
-    if (Src.m_pDesc)
-        m_pDesc = Src.m_pDesc->OrphanCopy();
-    else
-        m_pDesc = NULL;
+    m_pDesc = Src.m_pDesc;
 
     if (Src.m_pRoot)
         m_pRoot = Src.m_pRoot->Clone();
@@ -524,7 +517,7 @@ ALERROR CCompositeImageDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	//	support shared ImageComposite types, which may not be loaded yet at this
 	//	point.
 
-	m_pDesc = pDesc->OrphanCopy();
+	m_pDesc = pDesc;
 
 	return NOERROR;
 	}

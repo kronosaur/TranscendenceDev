@@ -13,10 +13,6 @@ CDistributeNodesProc::~CDistributeNodesProc (void)
 //	CDistributeNodesProc destructor
 
 	{
-	int i;
-
-	for (i = 0; i < m_Systems.GetCount(); i++)
-		delete m_Systems[i].pDesc;
 	}
 
 ALERROR CDistributeNodesProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
@@ -55,7 +51,7 @@ ALERROR CDistributeNodesProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *p
 		else
 			{
 			SSystemEntry *pEntry = m_Systems.Insert();
-			pEntry->pDesc = pItem->OrphanCopy();
+			pEntry->pDesc = pItem;
 			}
 		}
 

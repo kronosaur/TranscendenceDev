@@ -9,8 +9,6 @@ CApplySystemProc::~CApplySystemProc (void)
 //	CApplySystemProc destructor
 
 	{
-	if (m_pSystemDesc)
-		delete m_pSystemDesc;
 	}
 
 ALERROR CApplySystemProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
@@ -22,7 +20,7 @@ ALERROR CApplySystemProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	{
 	//	Treat the content as a system definition
 
-	m_pSystemDesc = pDesc->OrphanCopy();
+	m_pSystemDesc = pDesc;
 
 	return NOERROR;
 	}

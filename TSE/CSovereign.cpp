@@ -198,9 +198,6 @@ CSovereign::~CSovereign (void)
 //	CSovereign destructor
 
 	{
-	if (m_pInitialRelationships)
-		delete m_pInitialRelationships;
-
 	DeleteRelationships();
 	}
 
@@ -661,8 +658,6 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Load relationships
 
 	m_pInitialRelationships = pDesc->GetContentElementByTag(RELATIONSHIPS_TAG);
-	if (m_pInitialRelationships)
-		m_pInitialRelationships = m_pInitialRelationships->OrphanCopy();
 
 	//	Done
 

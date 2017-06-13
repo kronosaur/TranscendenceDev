@@ -42,11 +42,6 @@ CSystemType::~CSystemType (void)
 //	CSystemType destructor
 
 	{
-	if (m_pDesc)
-		delete m_pDesc;
-
-	if (m_pLocalTables)
-		delete m_pLocalTables;
 	}
 
 ALERROR CSystemType::FireOnCreate (SSystemCreateCtx &SysCreateCtx, CString *retsError)
@@ -219,13 +214,11 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pRoot == NULL)
 		return ComposeLoadError(Ctx, CONSTLIT("Unable to find <SystemGroup> element."));
 
-	m_pDesc = pRoot->OrphanCopy();
+	m_pDesc = pRoot;
 
 	//	We also need to keep the local tables
 
-	CXMLElement *pLocalTables = pDesc->GetContentElementByTag(TABLES_TAG);
-	if (pLocalTables)
-		m_pLocalTables = pLocalTables->OrphanCopy();
+	m_pLocalTables = pDesc->GetContentElementByTag(TABLES_TAG);
 
 	return NOERROR;
 	}

@@ -30,8 +30,6 @@ CRandomPointsProc::~CRandomPointsProc (void)
 //	CRandomPointsProc destructor
 
 	{
-	if (m_pAreaDef)
-		delete m_pAreaDef;
 	}
 
 int CRandomPointsProc::GenerateRotation (int x, int y)
@@ -224,7 +222,7 @@ ALERROR CRandomPointsProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 			}
 		else if (strEquals(pItem->GetTag(), AREA_TAG))
 			{
-			m_pAreaDef = pItem->OrphanCopy();
+			m_pAreaDef = pItem;
 			}
 		else if (strEquals(pItem->GetTag(), ROTATION_TAG))
 			{
