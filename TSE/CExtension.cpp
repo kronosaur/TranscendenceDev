@@ -952,7 +952,6 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			SDesignLoadCtx Ctx;
 			Ctx.sResDb = m_sFilespec;
 			Ctx.pResDb = &ExtDb;
-			Ctx.bNoVersionCheck = true;	//	Obsolete now
 			Ctx.bNoResources = Options.bNoResources;
 			Ctx.bKeepXML = Options.bKeepXML;
 			Ctx.bLoadAdventureDesc = (iDesiredState == loadAdventureDesc && m_iType == extAdventure);

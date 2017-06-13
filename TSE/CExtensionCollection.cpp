@@ -1404,7 +1404,6 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	Ctx.sResDb = sFilespec;
 	Ctx.pResDb = &Resources;
 	Ctx.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) ? true : false);
-	Ctx.bNoVersionCheck = true;	//	Obsolete now
 	Ctx.sErrorFilespec = sFilespec;
 
 	//	Always keep the base file XML because we can't tell yet if we need it.
@@ -1531,7 +1530,6 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	ExtCtx.pResDb = Ctx.pResDb;
 	ExtCtx.bNoResources = Ctx.bNoResources;
 	ExtCtx.bKeepXML = Ctx.bKeepXML;
-	ExtCtx.bNoVersionCheck = true;	//	Obsolete now
 	ExtCtx.dwInheritAPIVersion = m_pBase->GetAPIVersion();
 	//	No need to set bBindAsNewGame because it is only useful during Bind.
 	//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;

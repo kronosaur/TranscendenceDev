@@ -1046,7 +1046,6 @@ struct SDesignLoadCtx
 			pType(NULL),
 			bBindAsNewGame(false),
 			bNoResources(false),
-			bNoVersionCheck(false),
 			bKeepXML(false),
             bLoopImages(false),
 			bLoadAdventureDesc(false),
@@ -1069,7 +1068,6 @@ struct SDesignLoadCtx
 	//	Options
 	bool bBindAsNewGame;					//	If TRUE, then we are binding a new game
 	bool bNoResources;
-	bool bNoVersionCheck;
 	bool bKeepXML;							//	Keep XML around
     bool bLoopImages;                       //  If TRUE, image effects loop by default
 
