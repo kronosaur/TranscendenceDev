@@ -539,6 +539,33 @@ CXMLElement *CXMLElement::GetContentElementByTag (const CString &sTag) const
 	return NULL;
 	}
 
+int CXMLElement::GetMemoryUsage (void) const
+
+//	GetMemoryUsage
+//
+//	Returns the number of bytes allocated for this element (and all its 
+//	children), excluding allocation overhead.
+
+	{
+	int i;
+
+	int iTotal = m_sTag.GetLength();
+
+	for (i = 0; i < m_Attributes.GetCount(); i++)
+		{
+		iTotal += GetAttributeName(i).GetMemoryUsage();
+		iTotal += GetAttribute(i).GetMemoryUsage();
+		}
+
+	for (i = 0; i < m_ContentElements.GetCount(); i++)
+		iTotal += m_ContentElements[i]->GetMemoryUsage();
+
+	for (i = 0; i < m_ContentText.GetCount(); i++)
+		iTotal += m_ContentText[i].GetMemoryUsage();
+
+	return iTotal;
+	}
+
 void CXMLElement::MergeFrom (CXMLElement *pElement)
 
 //	MergeFrom

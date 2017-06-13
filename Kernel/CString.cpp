@@ -558,6 +558,19 @@ int CString::GetLength (void) const
 		return 0;
 	}
 
+int CString::GetMemoryUsage (void) const
+
+//	GetMemoryUsage
+//
+//	Returns the total memory used.
+
+	{
+	if (m_pStore == NULL || m_pStore->iAllocSize <= 0)
+		return 0;
+
+	return (sizeof STORESTRUCT) + m_pStore->iAllocSize;
+	}
+
 char *CString::GetPointer (void) const
 
 //	GetPointer
@@ -1383,6 +1396,80 @@ CString strFormatInteger (int iValue, int iMinFieldWidth, DWORD dwFlags)
 	do
 		{
 		Result[iDigitCount] = (dwRemainder % dwRadix);
+
+		iDigitCount++;
+		dwRemainder = dwRemainder / dwRadix;
+		}
+	while (dwRemainder > 0);
+
+	//	Compute the length of the result (not counting padding,
+	//	but including thousands separators).
+
+	int iResultLength = iDigitCount;
+	if (dwFlags & FORMAT_THOUSAND_SEPARATOR)
+		iResultLength += (iDigitCount - 1) / 3;
+
+	if (bNegative)
+		iResultLength += 1;
+
+	//	Total length
+
+	int iTotalLength = (iMinFieldWidth == -1 ? iResultLength : Max(iResultLength, iMinFieldWidth));
+
+	//	Allocate result string
+
+	CString sResult;
+	char *pPos = sResult.GetWritePointer(iTotalLength);
+
+	//	Padding
+
+	char *pEndPos = pPos + (iTotalLength - iResultLength);
+	while (pPos < pEndPos)
+		*pPos++ = ((dwFlags & FORMAT_LEADING_ZERO) ? '0' : ' ');
+
+	//	Sign
+
+	if (bNegative)
+		*pPos++ = '-';
+
+	//	Write the result backwards
+
+	char *pDigitPos = sResult.GetPointer() + (iTotalLength - 1);
+	for (i = 0; i < iDigitCount; i++)
+		{
+		if ((dwFlags & FORMAT_THOUSAND_SEPARATOR) && i > 0 && (i % 3) == 0)
+			*pDigitPos-- = ',';
+
+		*pDigitPos-- = (char)('0' + Result[i]);
+		}
+
+	//	Done
+
+	return sResult;
+	}
+
+CString strFormatInteger (INT64 iValue, int iMinFieldWidth, DWORD dwFlags)
+
+//	strFormatInteger
+//
+//	Converts an integer to a string
+
+	{
+	int i;
+
+	DWORDLONG dwRadix = 10;
+	bool bNegative = (iValue < 0) && !(dwFlags & FORMAT_UNSIGNED);
+	DWORDLONG dwValue = (bNegative ? (DWORD)(-iValue) : (DWORD)iValue);
+
+	//	Convert to new base (we end up in reverse order)
+
+	DWORD Result[100];
+	int iDigitCount = 0;
+	DWORDLONG dwRemainder = dwValue;
+
+	do
+		{
+		Result[iDigitCount] = (DWORD)(dwRemainder % dwRadix);
 
 		iDigitCount++;
 		dwRemainder = dwRemainder / dwRadix;

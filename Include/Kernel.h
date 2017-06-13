@@ -549,10 +549,11 @@ class CString : public CObject
 		inline operator LPSTR () const { return GetASCIIZPointer(); }
 		bool operator== (const CString &sValue) const;
 
-		char *GetASCIIZPointer (void) const;
 		ALERROR Append (const CString &sString);
 		void Capitalize (CapitalizeOptions iOption);
+		char *GetASCIIZPointer (void) const;
 		int GetLength (void) const;
+		int GetMemoryUsage (void) const;
 		char *GetPointer (void) const;
 		char *GetWritePointer (int iLength);
 		inline bool IsBlank (void) const { return (GetLength() == 0); }
@@ -1338,6 +1339,7 @@ CString strFormatBytes (DWORD dwBytes);
 #define FORMAT_THOUSAND_SEPARATOR				0x00000002
 #define FORMAT_UNSIGNED							0x00000004
 CString strFormatInteger (int iValue, int iMinFieldWidth = -1, DWORD dwFlags = 0);
+CString strFormatInteger (INT64 iValue, int iMinFieldWidth = -1, DWORD dwFlags = 0);
 
 CString strFormatMicroseconds (DWORD dwMicroseconds);
 CString strFormatMilliseconds (DWORD dwMilliseconds);

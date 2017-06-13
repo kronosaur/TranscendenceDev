@@ -86,6 +86,7 @@ class CXMLElement
 		inline CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
 		CXMLElement *GetContentElementByTag (const CString &sTag) const;
 		inline const CString &GetContentText (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
+		int GetMemoryUsage (void) const;
 		inline CXMLElement *GetParentElement (void) const { return m_pParent; }
 		inline const CString &GetTag (void) const { return m_sTag; }
 		void MergeFrom (CXMLElement *pElement);
