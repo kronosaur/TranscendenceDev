@@ -2159,13 +2159,6 @@ class CListWrapper : public IListData
 //	3.	Call StartGame(true) to start the game running.
 //		[This may be called	synchronously.]
 
-enum EInitFlags
-	{
-	flagNoResources			= 0x00000001,
-	flagNoVersionCheck		= 0x00000002,
-	flagNewGame				= 0x00000004,
-	};
-
 enum EStorageScopes
 	{
 	storeUnknown				= -1,
@@ -2248,6 +2241,7 @@ class CUniverse
 					bNoCollectionCheck(false),
 					bForceCompatibilityLibrary(false),
 					bRecoverAdventureError(false),
+					bKeepXML(false),
 					pAdventure(NULL),
 					dwAdventure(0)
 				{ }
@@ -2271,6 +2265,7 @@ class CUniverse
 			bool bNoCollectionCheck;		//  If TRUE, don't check collection digests
 			bool bForceCompatibilityLibrary;//	If TRUE, force include of Compatibility Library
 			bool bRecoverAdventureError;	//	If TRUE, we try to recover if given adventure not found
+			bool bKeepXML;					//	If TRUE, we keep XML structures after load
 
 			//	Adventure to bind to (choose one, in order)
 

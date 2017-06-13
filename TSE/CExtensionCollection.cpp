@@ -1275,6 +1275,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 		return NOERROR;
 
 	m_bLoadedInDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	m_bKeepXML = ((dwFlags & FLAG_KEEP_XML) == FLAG_KEEP_XML);
 
 	//	Load base file
 

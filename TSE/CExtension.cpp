@@ -898,6 +898,23 @@ CString CExtension::GetEntityName (DWORD dwUNID) const
 	return *pName;
 	}
 
+DWORDLONG CExtension::GetXMLMemoryUsage (void) const
+
+//	GetXMLMemoryUsage
+//
+//	Returns the amount of memory used up by XML structures
+
+	{
+	int i;
+
+	DWORDLONG dwTotal = (m_pRootXML ? (DWORDLONG)m_pRootXML->GetMemoryUsage() : 0);
+
+	for (i = 0; i < m_ModuleXML.GetCount(); i++)
+		dwTotal += (DWORDLONG)m_ModuleXML[i]->GetMemoryUsage();
+
+	return dwTotal;
+	}
+
 ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pResolver, const SLoadOptions &Options, CString *retsError)
 
 //	Load

@@ -1170,6 +1170,34 @@ CString CDesignCollection::GetStartingNodeID (void)
 	return NULL_STR;
 	}
 
+void CDesignCollection::GetStats (SStats &Result) const
+
+//	GetStats
+//
+//	Returns stats for the currently bound collection.
+
+	{
+	int i;
+
+	Result.Extensions = m_BoundExtensions;
+	Result.iAllTypes = m_AllTypes.GetCount();
+	Result.iDynamicTypes = m_DynamicTypes.GetCount();
+
+	Result.iItemTypes = m_ByType[designItemType].GetCount();
+	Result.iShipClasses = m_ByType[designShipClass].GetCount();
+	Result.iStationTypes = m_ByType[designStationType].GetCount();
+
+	//	Add up all the XML memory usage
+
+	Result.dwTotalXMLMemory = 0;
+	for (i = 0; i < m_BoundExtensions.GetCount(); i++)
+		{
+		Result.dwTotalXMLMemory += m_BoundExtensions[i]->GetXMLMemoryUsage();
+		}
+
+	Result.dwTotalXMLMemory += m_pAdventureExtension->GetXMLMemoryUsage();
+	}
+
 bool CDesignCollection::IsAdventureExtensionBound (DWORD dwUNID)
 
 //	IsAdventureExtensionBound
