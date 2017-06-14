@@ -77,6 +77,7 @@
 
 #define SPECIAL_EVENT							CONSTLIT("event:")
 #define SPECIAL_EXTENSION						CONSTLIT("extension:")
+#define SPECIAL_INHERIT							CONSTLIT("inherit:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
@@ -1610,11 +1611,8 @@ TSortMap<DWORD, DWORD> CDesignType::GetXMLMergeFlags (void) const
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(STATIC_DATA_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(DOCK_SCREENS_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(LANGUAGE_TAG), CXMLElement::MERGE_OVERRIDE);
-
-	//	For display attributes, we merge the children
-
-	MergeFlags.SetAt(CXMLElement::GetKeywordID(ATTRIBUTE_DESC_TAG), CXMLElement::MERGE_APPEND_CHILDREN);
-	MergeFlags.SetAt(CXMLElement::GetKeywordID(DISPLAY_ATTRIBUTES_TAG), CXMLElement::MERGE_APPEND_CHILDREN);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(ATTRIBUTE_DESC_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(DISPLAY_ATTRIBUTES_TAG), CXMLElement::MERGE_OVERRIDE);
 
 	//	Let our sub-class add their own flags.
 
@@ -1700,6 +1698,24 @@ CString CDesignType::GetPropertyString (const CString &sProperty)
 	CString sResult = pItem->GetStringValue();
 	pItem->Discard(&CC);
 	return sResult;
+	}
+
+bool CDesignType::InheritsFrom (DWORD dwUNID) const
+
+//	InheritsFrom
+//
+//	Returns TRUE if we inherit from the given UNID
+
+	{
+	if (m_pInheritFrom == NULL)
+		return false;
+
+	if (m_pInheritFrom->GetUNID() == dwUNID)
+		return true;
+
+	//	Recurse
+
+	return m_pInheritFrom->InheritsFrom(dwUNID);
 	}
 
 bool CDesignType::IsValidLoadXML (const CString &sTag)
@@ -1878,6 +1894,11 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		{
 		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_EXTENSION.GetLength()), 0);
 		return (m_pExtension && (m_pExtension->GetUNID() == dwUNID));
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_INHERIT))
+		{
+		DWORD dwUNID = strToInt(strSubString(sAttrib, SPECIAL_INHERIT.GetLength()), 0);
+		return InheritsFrom(dwUNID);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_PROPERTY))
 		{

@@ -279,6 +279,7 @@ class CDesignType
 		inline bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
         inline void IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_GlobalData.IncData(sAttrib, pValue, retpNewValue); }
+		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
 		inline bool IsClone (void) const { return m_bIsClone; }
 		inline bool IsModification (void) const { return m_bIsModification; }
