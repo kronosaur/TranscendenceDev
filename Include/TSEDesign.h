@@ -589,6 +589,7 @@ class CGenericType : public CDesignType
 
 	protected:
 
+		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual void OnUnbindDesign (void) override;
 
