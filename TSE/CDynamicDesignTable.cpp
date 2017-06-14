@@ -93,6 +93,36 @@ ALERROR CDynamicDesignTable::CreateType (SEntry *pEntry, CXMLElement *pDesc, CDe
 	return NOERROR;
 	}
 
+ALERROR CDynamicDesignTable::DefineType (CExtension *pExtension, DWORD dwUNID, CXMLElement *pSource, CDesignType **retpType, CString *retsError)
+
+//	DefineType
+//
+//	Defines a new dynamic type. We take ownership of pSource.
+
+	{
+	ALERROR error;
+
+	SEntry *pEntry = m_Table.Insert(dwUNID);
+	pEntry->dwUNID = dwUNID;
+	pEntry->pExtension = pExtension;
+	pEntry->pSource = pSource;
+
+	//	Create the type
+
+	if (error = CreateType(pEntry, pEntry->pSource, &pEntry->pType, retsError))
+		{
+		m_Table.DeleteAt(dwUNID);
+		return error;
+		}
+
+	//	Done
+
+	if (retpType)
+		*retpType = pEntry->pType;
+
+	return NOERROR;
+	}
+
 ALERROR CDynamicDesignTable::DefineType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, CDesignType **retpType, CString *retsError)
 
 //	DefineType
@@ -164,6 +194,20 @@ void CDynamicDesignTable::Delete (DWORD dwUNID)
 	int iIndex;
 	if (m_Table.FindPos(dwUNID, &iIndex))
 		m_Table.Delete(iIndex);
+	}
+
+CDesignType *CDynamicDesignTable::FindType (DWORD dwUNID)
+
+//	FindType
+//
+//	Finds the type by UNID
+
+	{
+	SEntry *pEntry = m_Table.GetAt(dwUNID);
+	if (pEntry == NULL)
+		return NULL;
+
+	return pEntry->pType;
 	}
 
 void CDynamicDesignTable::ReadFromStream (SUniverseLoadCtx &Ctx)
@@ -243,6 +287,14 @@ void CDynamicDesignTable::WriteToStream (IWriteStream *pStream)
 		dwSave = (pEntry->pExtension ? pEntry->pExtension->GetRelease() : 0);
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-		pEntry->sSource.WriteToStream(pStream);
+		if (!pEntry->sSource.IsBlank())
+			pEntry->sSource.WriteToStream(pStream);
+		else if (pEntry->pSource)
+			{
+			CString sSource = pEntry->pSource->ConvertToString();
+			sSource.WriteToStream(pStream);
+			}
+		else
+			NULL_STR.WriteToStream(pStream);
 		}
 	}

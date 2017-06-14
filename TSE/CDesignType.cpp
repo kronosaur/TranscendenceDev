@@ -1587,6 +1587,42 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         }
     }
 
+TSortMap<DWORD, DWORD> CDesignType::GetXMLMergeFlags (void) const
+
+//	GetXMLMergeFlags
+//
+//	Returns merge flags to determine how to merge two XML elements of the given
+//	type.
+
+	{
+	TSortMap<DWORD, DWORD> MergeFlags;
+
+	//	The following attributes are never inherited.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.virtual")), CXMLElement::MERGE_OVERRIDE);
+
+	//	These elements are never merged because we can handle the inheritance
+	//	hierarchy.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(EVENTS_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(STATIC_DATA_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(DOCK_SCREENS_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(LANGUAGE_TAG), CXMLElement::MERGE_OVERRIDE);
+
+	//	For display attributes, we merge the children
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(ATTRIBUTE_DESC_TAG), CXMLElement::MERGE_APPEND_CHILDREN);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(DISPLAY_ATTRIBUTES_TAG), CXMLElement::MERGE_APPEND_CHILDREN);
+
+	//	Let our sub-class add their own flags.
+
+	OnAccumulateXMLMergeFlags(MergeFlags);
+
+	//	Done
+
+	return MergeFlags;
+	}
+
 CString CDesignType::GetNounPhrase (DWORD dwFlags) const
 
 //  GetNounPhrase
@@ -2212,25 +2248,6 @@ ALERROR CDesignType::PrepareBindDesign (SDesignLoadCtx &Ctx)
 //	Do stuff that needs to happen before actual bind
 
 	{
-	//	Resolve inheritance
-
-	if (m_dwInheritFrom)
-		{
-		m_pInheritFrom = g_pUniverse->FindDesignType(m_dwInheritFrom);
-		if (m_pInheritFrom == NULL)
-			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown inherit design type: %08x"), m_dwInheritFrom));
-
-		if (m_pInheritFrom->GetType() != GetType() && m_pInheritFrom->GetType() != designGenericType)
-			return ComposeLoadError(Ctx, CONSTLIT("Cannot inherit from a different type."));
-
-		//	Make sure we are not in an inheritance loop
-
-		if (InSelfReference(this))
-			return ComposeLoadError(Ctx, CONSTLIT("Cannot inherit from self"));
-		}
-
-	//	Done
-
 	return OnPrepareBindDesign(Ctx);
 	}
 

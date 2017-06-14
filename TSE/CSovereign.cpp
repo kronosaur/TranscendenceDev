@@ -576,6 +576,18 @@ void CSovereign::MessageFromObj (CSpaceObject *pSender, const CString &sText)
 		}
 	}
 
+void CSovereign::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
+
+//	OnAccumulateXMLMergeFlags
+//
+//	Returns flags for merging XML.
+
+	{
+	//	We know how to handle these tags through the inheritance hierarchy.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(RELATIONSHIPS_TAG), CXMLElement::MERGE_OVERRIDE);
+	}
+
 void CSovereign::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	OnAddTypesUsed

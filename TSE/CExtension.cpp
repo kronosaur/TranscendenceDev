@@ -308,7 +308,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 
 //	CreateBaseFile
 //
-//	Loads a new extension from the base file.
+//	Loads a new extension from the base file. We take ownership of pDesc and pEntities.
 
 	{
 	ALERROR error;
@@ -324,6 +324,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 	pExtension->m_iLoadState = loadEntities;
 	pExtension->m_iFolderType = folderBase;
 	pExtension->m_pEntities = pEntities;
+	pExtension->m_pRootXML = pDesc;
 	pExtension->m_ModifiedTime = fileGetModifiedTime(Ctx.sResDb);
 	pExtension->m_bRegistered = true;
 	pExtension->m_bPrivate = true;
@@ -423,7 +424,7 @@ ALERROR CExtension::CreateExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, EF
 
 //	CreateExtension
 //
-//	Loads the given extension or adventure. We take ownership of pEntities.
+//	Loads the given extension or adventure. We take ownership of pDesc and pEntities.
 
 	{
 	ALERROR error;
@@ -472,6 +473,7 @@ ALERROR CExtension::CreateExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, EF
 
 	//	Done
 
+	pExtension->m_pRootXML = pDesc;
 	pExtension->m_iLoadState = (Ctx.bLoadAdventureDesc ? loadAdventureDesc : loadComplete);
 	*retpExtension = pExtension;
 

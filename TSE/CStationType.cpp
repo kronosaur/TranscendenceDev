@@ -1023,6 +1023,18 @@ void CStationType::MarkImages (const CCompositeImageSelector &Selector)
 	//	delay slightly.]
 	}
 
+void CStationType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
+
+//	OnAccumulateXMLMergeFlags
+//
+//	Add flags to merge XML
+
+	{
+	//	We know how to handle these tags through the inheritance hierarchy.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(COMMUNICATIONS_TAG), CXMLElement::MERGE_OVERRIDE);
+	}
+
 void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	OnAddTypesUsed

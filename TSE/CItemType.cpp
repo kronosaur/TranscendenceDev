@@ -1280,6 +1280,18 @@ bool CItemType::IsMissile (void) const
 	return HasLiteralAttribute(STR_MISSILE);
 	}
 
+void CItemType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
+
+//	OnAccumulateXMLMergeFlags
+//
+//	Set merge flags for XML inheritance.
+
+	{
+	//	We can handle inherited invoke.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(COCKPIT_USE_TAG), CXMLElement::MERGE_OVERRIDE);
+	}
+
 void CItemType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	OnAddTypesUsed

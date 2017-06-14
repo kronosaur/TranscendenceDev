@@ -1428,10 +1428,7 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 		{
 		CExtension *pExtension;
 		if (error = LoadEmbeddedExtension(Ctx, EmbeddedExtensions[i], &pExtension))
-			{
-			delete pGameFile;
 			return CExtension::ComposeLoadError(Ctx, retsError);
-			}
 
 		//	Verified
 
@@ -1445,7 +1442,6 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 
 	//	Done
 
-	delete pGameFile;
 	return NOERROR;
 	}
 
@@ -1515,6 +1511,14 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 		pDesc = pRoot;
 		}
 
+	//	Otherwise, make a copy of pDesc because the new extension will own it.
+
+	else
+		{
+		pRoot = pDesc->OrphanCopy();
+		pDesc = pRoot;
+		}
+
 	//	Create the extension
 
 	SDesignLoadCtx ExtCtx;
@@ -1552,9 +1556,6 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 
 	if (pOldEntities)
 		Ctx.pResDb->SetEntities(pOldEntities, bOldEntitiesFree);
-
-	if (pRoot)
-		delete pRoot;
 
 	*retpExtension = pExtension;
 

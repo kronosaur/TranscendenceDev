@@ -213,7 +213,7 @@ class CDesignType
 		inline void PrepareReinit (void) { OnPrepareReinit(); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (void);
-		inline void UnbindDesign (void) { OnUnbindDesign(); }
+		inline void UnbindDesign (void) { m_pInheritFrom = NULL; OnUnbindDesign(); }
 		void WriteToStream (IWriteStream *pStream);
 
 		inline void AddExternals (TArray<CString> *retExternals) { OnAddExternals(retExternals); }
@@ -261,6 +261,7 @@ class CDesignType
 		CExtension *GetExtension (void) const { return m_pExtension; }
 		inline const CString &GetGlobalData (const CString &sAttrib) { return m_GlobalData.GetData(sAttrib); }
 		inline CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
+		inline DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
 		inline CXMLElement *GetLocalScreens (void) const { return m_pLocalScreens; }
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
@@ -272,6 +273,7 @@ class CDesignType
 		CString GetTypeClassName (void) const;
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline CXMLElement *GetXMLElement (void) const { return m_pXML; }
+		TSortMap<DWORD, DWORD> GetXMLMergeFlags (void) const;
 		bool HasAttribute (const CString &sAttrib) const;
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty() || (m_pInheritFrom && m_pInheritFrom->HasEvents()); }
 		inline bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
@@ -282,6 +284,7 @@ class CDesignType
 		inline bool IsModification (void) const { return m_bIsModification; }
 		inline void MarkImages (void) { OnMarkImages(); }
 		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { m_GlobalData.SetData(sAttrib, sData); }
+		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
 		inline void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		inline void Sweep (void) { OnSweep(); }
@@ -311,6 +314,7 @@ class CDesignType
 		void ReportEventError (const CString &sEvent, ICCItem *pError);
 
 		//	CDesignType overrides
+		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const { }
 		virtual void OnAddExternals (TArray<CString> *retExternals) { }
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
@@ -993,8 +997,10 @@ class CDynamicDesignTable
 		~CDynamicDesignTable (void) { CleanUp(); }
 
 		ALERROR DefineType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, CDesignType **retpType = NULL, CString *retsError = NULL);
+		ALERROR DefineType (CExtension *pExtension, DWORD dwUNID, CXMLElement *pSource, CDesignType **retpType = NULL, CString *retsError = NULL);
 		void Delete (DWORD dwUNID);
 		inline void DeleteAll (void) { CleanUp(); }
+		CDesignType *FindType (DWORD dwUNID);
 		inline int GetCount (void) const { return m_Table.GetCount(); }
 		inline CDesignType *GetType (int iIndex) const { return m_Table[iIndex].pType; }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
@@ -1168,7 +1174,9 @@ class CDesignCollection
 	private:
 		void CacheGlobalEvents (CDesignType *pType);
 		ALERROR CreateTemplateTypes (SDesignLoadCtx &Ctx);
+		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType);
 		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx);
+		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx);
 
 		//	Loaded types. These are initialized at load-time and never change.
 
@@ -1193,6 +1201,7 @@ class CDesignCollection
 		//	Dynamic design types
 
 		CDynamicDesignTable m_DynamicTypes;
+		CDynamicDesignTable m_HierarchyTypes;
 		TSortMap<CString, CDesignType *> m_DynamicUNIDs;
 
 		//	State

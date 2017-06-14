@@ -120,19 +120,19 @@ ALERROR CDesignCollection::AddDynamicType (CExtension *pExtension, DWORD dwUNID,
 			}
 		}
 
-	//	Since we've already bound, we need to simulate that here (although we
-	//	[obviously] don't allow existing types to bind to dynamic types).
-	//
-	//	We start by adding the type to the AllTypes list
-
-	m_AllTypes.AddOrReplaceEntry(pType);
-
 	//	If this is new game time, then it means that we are inside of BindDesign. In
 	//	that case, we don't do anything more (since BindDesign will take care of
 	//	it).
 
 	if (!bNewGame)
 		{
+		//	Since we've already bound, we need to simulate that here (although we
+		//	[obviously] don't allow existing types to bind to dynamic types).
+		//
+		//	We start by adding the type to the AllTypes list
+
+		m_AllTypes.AddOrReplaceEntry(pType);
+
 		//	Next we add it to the specific type tables
 
 		m_ByType[pType->GetType()].AddEntry(pType);
@@ -316,6 +316,17 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 	m_AllTypes.Merge(m_DynamicTypes, &m_OverrideTypes);
 
+	//	Resolve inheritance and overrides types.
+
+	if (error = ResolveTypeHierarchy(Ctx))
+		{
+		m_bInBindDesign = false;
+		*retsError = Ctx.sError;
+		return error;
+		}
+
+	m_AllTypes.Merge(m_HierarchyTypes, &m_OverrideTypes);
+
 	//	Now resolve all overrides and inheritance
 
 	if (error = ResolveOverrides(Ctx))
@@ -489,6 +500,8 @@ void CDesignCollection::CleanUp (void)
 
 	{
 	m_CreatedTypes.DeleteAll(true);
+	m_DynamicTypes.DeleteAll();
+	m_HierarchyTypes.DeleteAll();
 
 	//	Some classes need to clean up global data
 	//	(But we need to do this before we destroy the types)
@@ -1330,6 +1343,92 @@ void CDesignCollection::Reinit (void)
 	DEBUG_CATCH
 	}
 
+ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType)
+
+//	ResolveInheritingType
+//
+//	Resolves a type that inherits from another type. We merge XML from the base
+//	if necessary and set up the m_pInheritFrom pointer.
+
+	{
+	ALERROR error;
+
+	DWORD dwAncestorUNID = pType->GetInheritFromUNID();
+
+	//	Start by setting the inherit type to ourselves. This is a marker to
+	//	indicate that we're in the middle of resolving (so we don't recurse
+	//	infinitely).
+
+	pType->SetInheritFrom(pType);
+
+	//	Look for the type that we inherit from. We look first in the hierarchical 
+	//	types that we've just created (since they haven't been merged in m_AllTypes
+	//	yet).
+
+	CDesignType *pAncestor = m_HierarchyTypes.FindType(dwAncestorUNID);
+
+	//	If we can't find it, then look for it in all types
+
+	if (pAncestor == NULL)
+		{
+		pAncestor = m_AllTypes.FindByUNID(dwAncestorUNID);
+		if (pAncestor == NULL)
+			return pType->ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown inherit type: %0x8x"), dwAncestorUNID));
+		}
+
+	//	If our ancestor inherits from themselves, then it means that we've found
+	//	an inheritance cycle.
+
+	if (pAncestor->GetInheritFrom() == pAncestor)
+		return pType->ComposeLoadError(Ctx, CONSTLIT("Cannot inherit from self."));
+
+	//	If our ancestor also inherits from someone and we haven't yet resolved 
+	//	it, then we need recurse.
+
+	if (pAncestor->GetInheritFromUNID() && pAncestor->GetInheritFrom() == NULL)
+		{
+		if (error = ResolveInheritingType(Ctx, pAncestor))
+			return error;
+		}
+
+	//	If our ancestor is a generic type, then we don't need to do anything 
+	//	else. We just set up the pointer and we're done.
+
+	if (pAncestor->GetType() == designGenericType)
+		{
+		pType->SetInheritFrom(pAncestor);
+		return NOERROR;
+		}
+
+	//	If the ancestor is a differen type, then this is an error.
+
+	if (pAncestor->GetType() != pType->GetType())
+		return pType->ComposeLoadError(Ctx, CONSTLIT("Cannot inherit from a different type."));
+
+	//	Generate a merged XML so that we inherit appropriate XML from our
+	//	ancestor.
+
+	CXMLElement *pNewXML = new CXMLElement;
+	pNewXML->InitFromMerge(*pAncestor->GetXMLElement(), *pType->GetXMLElement(), pType->GetXMLMergeFlags());
+
+	//	Define the type (m_HierarchyTypes takes ownership of pNewXML).
+
+	CDesignType *pNewType;
+	if (error = m_HierarchyTypes.DefineType(pType->GetExtension(), pType->GetUNID(), pNewXML, &pNewType, &Ctx.sError))
+		{
+		delete pNewXML;
+		return pType->ComposeLoadError(Ctx, Ctx.sError);
+		}
+
+	//	We set inheritence on the new type
+
+	pNewType->SetInheritFrom(pAncestor);
+
+	//	Done
+
+	return NOERROR;
+	}
+
 ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx)
 
 //	ResolveOverrides
@@ -1373,6 +1472,42 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx)
 		//	Replace the original
 
 		m_AllTypes.AddOrReplaceEntry(pType);
+		}
+
+	//	Done
+
+	return NOERROR;
+	}
+
+ALERROR CDesignCollection::ResolveTypeHierarchy (SDesignLoadCtx &Ctx)
+
+//	ResolveTypeHierarchy
+//
+//	Creates any new types due to inheritance or override.
+
+	{
+	ALERROR error;
+	int i;
+
+	//	Start fresh
+
+	m_HierarchyTypes.DeleteAll();
+
+	//	Loop over all types and recursively resolve them.
+
+	for (i = 0; i < m_AllTypes.GetCount(); i++)
+		{
+		CDesignType *pType = m_AllTypes.GetEntry(i);
+
+		//	If we inherit from something, then resolve it.
+
+		DWORD dwInheritFrom;
+		if (dwInheritFrom = pType->GetInheritFromUNID()
+				&& pType->GetInheritFrom() == NULL)
+			{
+			if (error = ResolveInheritingType(Ctx, pType))
+				return error;
+			}
 		}
 
 	//	Done

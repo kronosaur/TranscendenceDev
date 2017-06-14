@@ -3258,6 +3258,20 @@ void CShipClass::MarkImages (bool bMarkDevices)
 	DEBUG_CATCH
 	}
 
+void CShipClass::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
+
+//	OnAccumulateXMLMergeFlags
+//
+//	Returns flags to determine how we merge from inherited types.
+
+	{
+	//	We know how to handle these tags through the inheritance hierarchy.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(COMMUNICATIONS_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(PLAYER_SETTINGS_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(EQUIPMENT_TAG), CXMLElement::MERGE_OVERRIDE);
+	}
+
 void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	OnAddTypesUsed
