@@ -35,6 +35,13 @@ class IXMLParserController
 class CXMLElement
 	{
 	public:
+		enum EMergeFlags
+			{
+			MERGE_APPEND =					0x00000001,	//	Right.x added to Left
+			MERGE_APPEND_CHILDREN =			0x00000002,	//	Children of Right.x appended to Left.x
+			MERGE_OVERRIDE =				0x00000004,	//	Set Left.x to Right.x (or delete if not in Right).
+			};
+
 		CXMLElement (void);
 		CXMLElement (const CXMLElement &Obj);
 		CXMLElement (const CString &sTag, CXMLElement *pParent);
@@ -65,6 +72,7 @@ class CXMLElement
 		bool AttributeExists (const CString &sName);
 		CString ConvertToString (void);
 		ALERROR DeleteSubElement (int iIndex);
+		ALERROR DeleteSubElementByTag (DWORD dwID);
 		bool FindAttribute (const CString &sName, CString *retsValue = NULL) const;
 		bool FindAttributeBool (const CString &sName, bool *retbValue = NULL) const;
 		bool FindAttributeDouble (const CString &sName, double *retrValue = NULL) const;
@@ -85,16 +93,22 @@ class CXMLElement
 		inline int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
 		inline CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
 		CXMLElement *GetContentElementByTag (const CString &sTag) const;
+		CXMLElement *GetContentElementByTag (DWORD dwID) const;
 		inline const CString &GetContentText (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
 		int GetMemoryUsage (void) const;
 		inline CXMLElement *GetParentElement (void) const { return m_pParent; }
 		inline const CString &GetTag (void) const { return m_Keywords.GetIdentifier(m_dwTag); }
+		void InitFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags = TSortMap<DWORD, DWORD>());
+		void Merge (const CXMLElement &Src, const TSortMap<DWORD, DWORD> &MergeFlags = TSortMap<DWORD, DWORD>());
+		void MergeAttributes (const CXMLElement &Src);
 		void MergeFrom (CXMLElement *pElement);
 		CXMLElement *OrphanCopy (void);
 		ALERROR SetAttribute (const CString &sName, const CString &sValue);
+		ALERROR SetAttribute (DWORD dwID, const CString &sValue);
 		ALERROR SetContentText (const CString &sContent, int iIndex = -1);
 		ALERROR WriteToStream (IWriteStream *pStream);
 
+		static DWORD GetKeywordID (const CString &sValue) { return m_Keywords.Atomize(sValue); }
 		static int GetKeywordCount (void) { return m_Keywords.GetCount(); }
 		static int GetKeywordMemoryUsage (void) { return m_Keywords.GetMemoryUsage(); }
 		static bool IsBoolTrueValue (const CString &sValue) { return (strEquals(sValue, CONSTLIT("true")) || strEquals(sValue, CONSTLIT("1"))); }
@@ -102,6 +116,7 @@ class CXMLElement
 
 	private:
 		void CleanUp (void);
+		void SetAttributesFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags);
 
 		DWORD m_dwTag;							//	Tag atom
 		CXMLElement *m_pParent;					//	Parent of this element

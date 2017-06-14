@@ -6,6 +6,10 @@
 #include "Alchemy.h"
 #include "XMLUtil.h"
 
+#ifdef DEBUG
+#include <stdio.h>
+#endif
+
 CAtomizer CXMLElement::m_Keywords;
 
 CXMLElement::CXMLElement (void) :
@@ -196,6 +200,28 @@ ALERROR CXMLElement::DeleteSubElement (int iIndex)
 
 	m_ContentText[iIndex].Append(m_ContentText[iIndex + 1]);
 	m_ContentText.Delete(iIndex + 1);
+
+	return NOERROR;
+	}
+
+ALERROR CXMLElement::DeleteSubElementByTag (DWORD dwID)
+
+//	DeleteSubElementByTag
+//
+//	Deletes all sub-elements with the given tag.
+
+	{
+	int i;
+
+	for (i = 0; i < GetContentElementCount(); i++)
+		{
+		CXMLElement *pSub = GetContentElement(i);
+		if (pSub->m_dwTag == dwID)
+			{
+			DeleteSubElement(i);
+			i--;
+			}
+		}
 
 	return NOERROR;
 	}
@@ -492,11 +518,21 @@ CXMLElement *CXMLElement::GetContentElementByTag (const CString &sTag) const
 //	Returns a sub element of the given tag
 
 	{
+	return GetContentElementByTag(m_Keywords.Atomize(sTag));
+	}
+
+CXMLElement *CXMLElement::GetContentElementByTag (DWORD dwID) const
+
+//	GetContentElementByTag
+//
+//	Returns a sub element of the given tag
+
+	{
 	for (int i = 0; i < GetContentElementCount(); i++)
 		{
 		CXMLElement *pElement = GetContentElement(i);
 
-		if (strCompareAbsolute(sTag, pElement->GetTag()) == 0)
+		if (pElement->m_dwTag == dwID)
 			return pElement;
 		}
 
@@ -526,6 +562,256 @@ int CXMLElement::GetMemoryUsage (void) const
 		iTotal += m_ContentText[i].GetMemoryUsage();
 
 	return iTotal;
+	}
+
+void CXMLElement::InitFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags)
+
+//	InitFromMerge
+//
+//	Merges B into A and initializes this element from the result.
+//
+//	1.	Root attributes are merged.
+//	2.	For each child C in B, we look up C's tag in MergeFlags to figure
+//		out what to do:
+//
+//		MERGE_APPEND: We append C, regardless of existing elements.
+//
+//		MERGE_APPEND_CHILDREN: We look for the first element A with C's tag.
+//			If it exists, we append C's children to A's. Otherwise, we append
+//			C.
+//
+//		MERGE_OVERRIDE: We replace any existing elements with C's tag with
+//			C. If C does not exist in Src, we remove it.
+//
+//		(Default): We replace any existing elements with C's tag with C.
+
+	{
+	int i, j;
+
+	CleanUp();
+
+	//	Merge root attributes
+
+	m_dwTag = B.m_dwTag;
+	SetAttributesFromMerge(A, B, MergeFlags);
+
+	//	We keep a running list of tags in A that we need to inherit into the 
+	//	merged result.
+
+	TSortMap<DWORD, bool> InheritFromA;
+	for (i = 0; i < A.GetContentElementCount(); i++)
+		{
+		CXMLElement *pA = A.GetContentElement(i);
+
+		bool bNew;
+		bool *pInherit = InheritFromA.SetAt(pA->m_dwTag, &bNew);
+
+		//	If we haven't seen this type of element before, we need to figure
+		//	out what to do.
+
+		if (bNew)
+			{
+			DWORD dwMerge;
+			if (!MergeFlags.Find(pA->m_dwTag, &dwMerge))
+				dwMerge = 0;
+
+			//	If B overrides A, then we never inherit
+
+			if (dwMerge & MERGE_OVERRIDE)
+				*pInherit = false;
+
+			//	Otherwise, we provisionally decide to inherit.
+
+			else
+				*pInherit = true;
+			}
+		}
+
+	//	Now loop over all of B's elements and figure out what to do.
+
+	for (i = 0; i < B.GetContentElementCount(); i++)
+		{
+		CXMLElement *pB = B.GetContentElement(i);
+
+		//	Get the merge flags
+
+		DWORD dwMerge;
+		if (!MergeFlags.Find(pB->m_dwTag, &dwMerge))
+			dwMerge = 0;
+
+		//	If we're appending children, then we need to find A's element and
+		//	append.
+
+		if (dwMerge & MERGE_APPEND_CHILDREN)
+			{
+			CXMLElement *pA = A.GetContentElementByTag(pB->m_dwTag);
+			if (pA)
+				{
+				//	NOTE: This only works if the element is a singleton.
+
+				CXMLElement *pResult = pA->OrphanCopy();
+				for (j = 0; j < pB->GetContentElementCount(); j++)
+					{
+					CXMLElement *pBChild = pB->GetContentElement(j);
+					pResult->AppendSubElement(pBChild->OrphanCopy());
+					}
+
+				AppendSubElement(pResult);
+
+				//	No need to inherit from A
+
+				InheritFromA.SetAt(pA->m_dwTag, false);
+
+#ifdef DEBUG
+				printf("<%s unid='%s'>: Merging children of <%s>\n", (LPSTR)B.GetTag(), (LPSTR)B.GetAttribute(CONSTLIT("unid")), (LPSTR)pA->GetTag());
+#endif
+				}
+			else
+				AppendSubElement(pB->OrphanCopy());
+			}
+
+		//	If we're appending, then we take B and later inherit from A.
+
+		else if (dwMerge & MERGE_APPEND)
+			AppendSubElement(pB->OrphanCopy());
+
+		//	Otherwise, we take B but we don't inherit from A.
+
+		else
+			{
+			AppendSubElement(pB->OrphanCopy());
+			InheritFromA.SetAt(pB->m_dwTag, false);
+			}
+		}
+
+	//	Now loop over A's elements one last time and inherit what we need.
+
+	for (i = 0; i < A.GetContentElementCount(); i++)
+		{
+		CXMLElement *pA = A.GetContentElement(i);
+
+		bool bInherit;
+		if (!InheritFromA.Find(pA->m_dwTag, &bInherit) || !bInherit)
+			continue;
+
+		//	Inherit
+
+		AppendSubElement(pA->OrphanCopy());
+
+#ifdef DEBUG
+		printf("<%s unid='%s'>: Inheriting <%s>\n", (LPSTR)B.GetTag(), (LPSTR)B.GetAttribute(CONSTLIT("unid")), (LPSTR)pA->GetTag());
+#endif
+		}
+	}
+
+void CXMLElement::Merge (const CXMLElement &Src, const TSortMap<DWORD, DWORD> &MergeFlags)
+
+//	Merge
+//
+//	Merges Src into our hierarchy. MergeFlags specify how we merge.
+//
+//	1.	Root attributes are always merged.
+//	2.	For each child C in Src, we look up C's tag in MergeFlags to figure
+//		out what to do:
+//
+//		MERGE_APPEND: We append C, regardless of existing elements.
+//
+//		MERGE_APPEND_CHILDREN: We look for the first element A with C's tag.
+//			If it exists, we append C's children to A's. Otherwise, we append
+//			C.
+//
+//		MERGE_OVERRIDE: We replace any existing elements with C's tag with
+//			C. If C does not exist in Src, we remove it.
+//
+//		(Default): We replace any existing elements with C's tag with C.
+
+	{
+	int i, j;
+
+	TSortMap<DWORD, bool> Replaced;
+
+	//	Merge the attributes from Src.
+
+	m_dwTag = Src.m_dwTag;
+	MergeAttributes(Src);
+
+	//	Loop over our merge flags. For MERGE_OVERRIDE, we delete elements that
+	//	are not in Src.
+
+	for (i = 0; i < MergeFlags.GetCount(); i++)
+		{
+		DWORD dwTag = MergeFlags.GetKey(i);
+		DWORD dwMerge = MergeFlags[i];
+
+		if ((dwMerge & MERGE_OVERRIDE)
+				&& !Replaced.Find(dwTag))
+			{
+			DeleteSubElementByTag(dwTag);
+			Replaced.Insert(dwTag, true);
+			}
+		}
+
+	//	Loop over all child elements.
+
+	for (i = 0; i < Src.GetContentElementCount(); i++)
+		{
+		CXMLElement *pSrcChild = Src.GetContentElement(i);
+
+		//	Get the appropriate flags
+
+		DWORD dwMerge;
+		if (!MergeFlags.Find(pSrcChild->m_dwTag, &dwMerge))
+			dwMerge = 0;
+
+		//	Handle each case
+
+		if (dwMerge & MERGE_APPEND)
+			AppendSubElement(pSrcChild->OrphanCopy());
+
+		else if (dwMerge & MERGE_APPEND_CHILDREN)
+			{
+			CXMLElement *pTarget = GetContentElementByTag(pSrcChild->m_dwTag);
+			if (pTarget)
+				{
+				for (j = 0; j < pSrcChild->GetContentElementCount(); j++)
+					pTarget->AppendSubElement(pSrcChild->GetContentElement(j)->OrphanCopy());
+				}
+			else
+				AppendSubElement(pSrcChild->OrphanCopy());
+			}
+
+		//	MERGE_OVERRIDE and no flag (MERGE_REPLACE) handled here.
+
+		else
+			{
+			//	Remove all existing with this tag.
+
+			if (!Replaced.Find(pSrcChild->m_dwTag))
+				{
+				DeleteSubElementByTag(pSrcChild->m_dwTag);
+				Replaced.Insert(pSrcChild->m_dwTag, true);
+				}
+
+			//	Add
+
+			AppendSubElement(pSrcChild->OrphanCopy());
+			}
+		}
+	}
+
+void CXMLElement::MergeAttributes (const CXMLElement &Src)
+
+//	MergeAttributes
+//
+//	Take all attributes from Src, replacing as appropriate.
+
+	{
+	int i;
+
+	//	Copy all attributes (replacing in case of duplication)
+
+	for (i = 0; i < Src.GetAttributeCount(); i++)
+		SetAttribute(Src.m_Attributes.GetKey(i), Src.GetAttribute(i));
 	}
 
 void CXMLElement::MergeFrom (CXMLElement *pElement)
@@ -599,6 +885,96 @@ ALERROR CXMLElement::SetAttribute (const CString &sName, const CString &sValue)
 	{
 	m_Attributes.SetAt(m_Keywords.Atomize(sName), sValue);
 	return NOERROR;
+	}
+
+ALERROR CXMLElement::SetAttribute (DWORD dwID, const CString &sValue)
+
+//	SetAttribute
+//
+//	Sets an attribute by atom
+
+	{
+	m_Attributes.SetAt(dwID, sValue);
+	return NOERROR;
+	}
+
+void CXMLElement::SetAttributesFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags)
+
+//	SetAttributesFromMerge
+//
+//	Merges attributes from A and B and applies them to this element.
+
+	{
+	int iAPos = 0;
+	int iBPos = 0;
+
+	//	Attributes are sorted, so we can proceed in order
+
+	while (iAPos < A.m_Attributes.GetCount() || iBPos < B.m_Attributes.GetCount())
+		{
+		DWORD dwA = (iAPos < A.m_Attributes.GetCount() ? A.m_Attributes.GetKey(iAPos) : 0);
+		DWORD dwB = (iBPos < B.m_Attributes.GetCount() ? B.m_Attributes.GetKey(iBPos) : 0);
+
+		//	If we're at the same attribute, check the flags to see what we need
+		//	to do.
+
+		if (dwA == dwB)
+			{
+			//	We always take B's in this case.
+
+			SetAttribute(dwB, B.m_Attributes[iBPos]);
+
+			//	Advance both pointers
+
+			iAPos++;
+			iBPos++;
+			}
+
+		//	If A is 0 then we've hit the end of A's attributes.
+
+		else if (dwA == 0)
+			{
+			SetAttribute(dwB, B.m_Attributes[iBPos]);
+			iBPos++;
+			}
+
+		//	If A > B (and B is valid) then B has an attribute that A does not 
+		//	have.
+
+		else if (dwA > dwB && dwB != 0)
+			{
+			SetAttribute(dwB, B.m_Attributes[iBPos]);
+			iBPos++;
+			}
+
+		//	Otherwise, A has an attribute that B doesn't, so we need to check
+		//	to see if we should take it.
+
+		else
+			{
+			//	Get the merge flags. Attributes are in a different namespace, just in 
+			//	case.
+
+			DWORD dwAttribID = m_Keywords.Atomize(strPatternSubst(CONSTLIT("attrib.%s"), A.GetAttributeName(iAPos)));
+
+			DWORD dwMerge;
+			if (!MergeFlags.Find(dwAttribID, &dwMerge))
+				dwMerge = 0;
+
+			//	If we're not overriding, then we take A's
+
+			if (!(dwMerge & MERGE_OVERRIDE))
+				{
+				SetAttribute(dwA, A.m_Attributes[iAPos]);
+
+#ifdef DEBUG
+				printf("<%s unid='%s'>: Inherit attribute %s.\n", (LPSTR)B.GetTag(), (LPSTR)B.GetAttribute(CONSTLIT("unid")), (LPSTR)A.GetAttributeName(iAPos));
+#endif
+				}
+
+			iAPos++;
+			}
+		}
 	}
 
 ALERROR CXMLElement::SetContentText (const CString &sContent, int iIndex)
