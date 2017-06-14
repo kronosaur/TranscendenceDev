@@ -1599,6 +1599,8 @@ TSortMap<DWORD, DWORD> CDesignType::GetXMLMergeFlags (void) const
 
 	//	The following attributes are never inherited.
 
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.inherit")), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.unid")), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(CONSTLIT("attrib.virtual")), CXMLElement::MERGE_OVERRIDE);
 
 	//	These elements are never merged because we can handle the inheritance
