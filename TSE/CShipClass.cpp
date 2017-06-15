@@ -58,6 +58,7 @@
 #define HEIGHT_ATTRIB							CONSTLIT("height")
 #define HP_X_ATTRIB								CONSTLIT("hpX")
 #define HP_Y_ATTRIB								CONSTLIT("hpY")
+#define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
 #define INERTIALESS_DRIVE_ATTRIB				CONSTLIT("inertialessDrive")
 #define LEAVES_WRECK_ATTRIB						CONSTLIT("leavesWreck")
 #define LEVEL_ATTRIB							CONSTLIT("level")
@@ -2480,13 +2481,9 @@ CEconomyType *CShipClass::GetEconomyType (void) const
 
 	//	Otherwise, see if we have a hull price from the player settings
 
-	const CPlayerSettings *pPlayer = GetPlayerSettings();
-	if (pPlayer)
-		{
-		CEconomyType *pCurrency = pPlayer->GetHullValue().GetCurrencyType();
-		if (pCurrency)
-			return pCurrency;
-		}
+	CEconomyType *pCurrency = GetHullValue().GetCurrencyType();
+	if (pCurrency)
+		return pCurrency;
 
 	//	Otherwise, default to credits
 
@@ -3304,6 +3301,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_WreckImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 	retTypesUsed->SetAt(m_ExhaustImage.GetBitmapUNID(), true);
+	retTypesUsed->SetAt(m_HullValue.GetCurrencyType()->GetUNID(), true);
 	}
 
 ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
@@ -3373,6 +3371,9 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
         goto Fail;
 
 	if (error = m_pExplosionType.Bind(Ctx))
+		goto Fail;
+
+	if (error = m_HullValue.Bind(Ctx))
 		goto Fail;
 
 	//	More
@@ -3536,6 +3537,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_fShipCompartment = pClass->m_fShipCompartment;
 	m_iMass = pClass->m_iMass;
 	m_iSize = pClass->m_iSize;
+	m_HullValue = pClass->m_HullValue;
 	m_CargoDesc = pClass->m_CargoDesc;
 	m_RotationDesc = pClass->m_RotationDesc;
 	m_rThrustRatio = pClass->m_rThrustRatio;
@@ -3650,6 +3652,9 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (error = m_pDefaultSovereign.LoadUNID(Ctx, pDesc->GetAttribute(DEFAULT_SOVEREIGN_ATTRIB)))
 		return error;
+
+	if (error = m_HullValue.InitFromXML(Ctx, pDesc->GetAttribute(HULL_VALUE_ATTRIB)))
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Score and level
 

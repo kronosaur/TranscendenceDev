@@ -136,9 +136,6 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 	if (error = m_StartingCredits.Bind(Ctx))
 		return error;
 
-	if (error = m_HullValue.Bind(Ctx))
-		return error;
-
     //  If we own our visuals, bind them
 
     if (m_fOwnDockScreenDesc)
@@ -235,7 +232,6 @@ void CPlayerSettings::Copy (const CPlayerSettings &Src)
 	m_pShipScreen = Src.m_pShipScreen;			//	Ship screen
 	m_pDockServicesScreen = Src.m_pDockServicesScreen;
 	m_pShipConfigScreen = Src.m_pShipConfigScreen;
-	m_HullValue = Src.m_HullValue;
 
 	//	HUDs
 
@@ -376,9 +372,6 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 	m_sStartPos = pDesc->GetAttribute(STARTING_POS_ATTRIB);
 	if (m_sStartPos.IsBlank())
 		m_sStartPos = CONSTLIT("Start");
-
-	if (error = m_HullValue.InitFromXML(Ctx, pDesc->GetAttribute(HULL_VALUE_ATTRIB)))
-		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Load the ship screen
 

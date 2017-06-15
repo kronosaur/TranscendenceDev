@@ -99,6 +99,7 @@ class CShipClass : public CDesignType
 		int GetHullSectionAtAngle (int iAngle);
 		inline int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
 		CString GetHullSectionName (int iIndex) const;
+		inline const CCurrencyAndValue &GetHullValue (void) const { return m_HullValue; }
 		inline const CObjectImageArray &GetImage (void) const { return m_Image.GetSimpleImage(); }
         inline const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
 		inline const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
@@ -276,6 +277,7 @@ class CShipClass : public CDesignType
 
 		int m_iMass;							//	Empty mass (tons)
 		int m_iSize;							//	Length in meters
+		CCurrencyAndValue m_HullValue;			//	Value of hull alone (excluding any devices/armor)
 		CRotationDesc m_RotationDesc;	        //	Rotation and maneuverability
 		double m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
 		CDriveDesc m_DriveDesc;					//	Drive descriptor

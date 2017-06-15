@@ -63,7 +63,6 @@ class CPlayerSettings
 		inline const CDockScreenTypeRef &GetDockServicesScreen (void) const { return m_pDockServicesScreen; }
         inline const CDockScreenVisuals &GetDockScreenVisuals (void) const { return (m_pDockScreenDesc ? *m_pDockScreenDesc : CDockScreenVisuals::GetDefault()); }
 		inline CXMLElement *GetHUDDesc (EHUDTypes iType) const { ASSERT(iType >= 0 && iType < hudCount); return m_HUDDesc[iType].pDesc; }
-		inline const CCurrencyAndValue &GetHullValue (void) const { return m_HullValue; }
 		inline DWORD GetLargeImage (void) const { return m_dwLargeImage; }
 		inline const CDockScreenTypeRef &GetShipConfigScreen (void) const { return m_pShipConfigScreen; }
 		inline const CDockScreenTypeRef &GetShipScreen (void) const { return m_pShipScreen; }
@@ -113,7 +112,6 @@ class CPlayerSettings
 		CDockScreenTypeRef m_pShipScreen;			//	Ship screen
 		CDockScreenTypeRef m_pDockServicesScreen;	//	Screen used for ship upgrades (may be NULL)
 		CDockScreenTypeRef m_pShipConfigScreen;		//	Screen used to show ship configuration (may be NULL)
-		CCurrencyAndValue m_HullValue;				//	Value of hull alone (excluding any devices/armor)
 
 		//	UI Elements
         CDockScreenVisuals *m_pDockScreenDesc;

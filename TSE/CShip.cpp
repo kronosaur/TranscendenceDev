@@ -3375,8 +3375,7 @@ CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
 	{
 	//	Get the hull value
 
-	const CPlayerSettings *pPlayer = m_pClass->GetPlayerSettings();
-	CCurrencyAndValue Value = (pPlayer ? pPlayer->GetHullValue() : CCurrencyAndValue(0, GetDefaultEconomy()));
+	CCurrencyAndValue Value = m_pClass->GetHullValue();
 
 	//	Add up the value of all installed items
 
