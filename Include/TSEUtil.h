@@ -163,9 +163,9 @@ inline void DebugStopTimer (char *szTiming) { }
 #define UPGRADE_ENTRY_UNID								CONSTLIT("Engine:Transcendence.next")
 #endif
 
-const DWORD API_VERSION =								36;		//	See: LoadExtensionVersion in Utilities.cpp
+const DWORD API_VERSION =								37;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
-const DWORD UNIVERSE_SAVE_VERSION =						29;
+const DWORD UNIVERSE_SAVE_VERSION =						30;
 const DWORD SYSTEM_SAVE_VERSION =						149;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx

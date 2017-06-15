@@ -49,6 +49,7 @@
 #define EXTENDS_ATTRIB							CONSTLIT("extends")
 #define INHERIT_ATTRIB							CONSTLIT("inherit")
 #define MODIFIERS_ATTRIB						CONSTLIT("modifiers")
+#define OBSOLETE_ATTRIB							CONSTLIT("obsolete")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 
 #define GET_CREATE_POS_EVENT					CONSTLIT("GetCreatePos")
@@ -177,6 +178,7 @@ CString ParseAchievementValue (ICCItem *pItem);
 CDesignType::CDesignType (void) : 
 		m_dwUNID(0), 
 		m_pExtension(NULL),
+		m_dwObsoleteVersion(0),
 		m_pXML(NULL),
 		m_pLocalScreens(NULL), 
 		m_dwInheritFrom(0), 
@@ -224,6 +226,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 
 	if (m_pInheritFrom)
 		{
+		ASSERT(m_pInheritFrom->GetUNID() != GetUNID());
 		for (i = 0; i < evtCount; i++)
 			{
 			if (m_EventsCache[i].pCode == NULL)
@@ -2023,6 +2026,10 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 		}
 
 	m_pInheritFrom = NULL;
+
+	//	Obsolete
+
+	m_dwObsoleteVersion = pDesc->GetAttributeIntegerBounded(OBSOLETE_ATTRIB, 0, -1, 0);
 
 	//	Load attributes
 

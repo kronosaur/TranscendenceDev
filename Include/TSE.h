@@ -2241,6 +2241,7 @@ class CUniverse
 					bNoCollectionCheck(false),
 					bForceCompatibilityLibrary(false),
 					bRecoverAdventureError(false),
+					bLoadObsoleteTypes(false),
 					pAdventure(NULL),
 					dwAdventure(0)
 				{ }
@@ -2251,6 +2252,7 @@ class CUniverse
 			CString sSourceFilespec;		//	Filespec of main source XML file (for debugging).
 			CString sCollectionFolder;		//	If non-blank, use this as Collection folder (and remember it)
 			TArray<CString> ExtensionFolders;	//	Add these as extension folders.
+			TSortMap<DWORD, bool> TypesUsed;//	List of types used (bind these, even if obsolete).
 
 			//	Options
 
@@ -2264,6 +2266,7 @@ class CUniverse
 			bool bNoCollectionCheck;		//  If TRUE, don't check collection digests
 			bool bForceCompatibilityLibrary;//	If TRUE, force include of Compatibility Library
 			bool bRecoverAdventureError;	//	If TRUE, we try to recover if given adventure not found
+			bool bLoadObsoleteTypes;		//	If TRUE, we still load obsolete types
 
 			//	Adventure to bind to (choose one, in order)
 

@@ -121,7 +121,7 @@ ALERROR CDesignTable::Merge (const CDynamicDesignTable &Source, CDesignList *ioO
 	DEBUG_CATCH
 	}
 
-ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride, const TArray<DWORD> *pExtensionsIncluded)
+ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride, const TArray<DWORD> *pExtensionsIncluded, const TSortMap<DWORD, bool> *pTypesUsed, DWORD dwAPIVersion)
 
 //	Merge
 //
@@ -148,7 +148,19 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride
 		//	Exclude this type if it the required extensions are not included.
 
 		if (pExtensionsIncluded && !pNewType->IsIncluded(*pExtensionsIncluded))
+			{
+			iSrcPos++;
 			continue;
+			}
+
+		//	Exclude this type if it is obsolete and it is not in the list of 
+		//	types that we need.
+
+		if (pTypesUsed && pNewType->IsObsoleteAt(dwAPIVersion) && !pTypesUsed->Find(pNewType->GetUNID()))
+			{
+			iSrcPos++;
+			continue;
+			}
 
 		//	If we're at the end of the destination then just insert
 

@@ -1349,12 +1349,21 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 		SetCurrentAdventureDesc(Ctx.pAdventure->GetAdventureDesc());
 
+		//	Figure out the minimum API version for all extensions being used.
+
+		DWORD dwAPIVersion = API_VERSION;
+		for (i = 0; i < BindOrder.GetCount(); i++)
+			{
+			if (BindOrder[i]->GetAPIVersion() < dwAPIVersion)
+				dwAPIVersion = BindOrder[i]->GetAPIVersion();
+			}
+
 		//	Bind
 		//
 		//	We don't need to log image load
 
 		SetLogImageLoad(false);
-		error = m_Design.BindDesign(BindOrder, !Ctx.bInLoadGame, Ctx.bNoResources, retsError);
+		error = m_Design.BindDesign(BindOrder, Ctx.TypesUsed, dwAPIVersion, !Ctx.bInLoadGame, Ctx.bNoResources, Ctx.bLoadObsoleteTypes, retsError);
 		SetLogImageLoad(true);
 
 		if (error)
@@ -1735,6 +1744,9 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 //
 //	CDynamicDesignTable
 //
+//	DWORD		No of types used
+//	DWORD		type: UNID
+//
 //	DWORD		ID of POV system (0xffffffff if none)
 //	DWORD		index of POV (0xffffffff if none)
 //	CTimeSpan	time that we've spent playing the game
@@ -1954,6 +1966,24 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	if (Ctx.dwVersion >= 12)
 		m_Design.ReadDynamicTypes(Ctx);
+
+	//	Now read a list of all types used by this save file. We need this so 
+	//	that we can bind obsolete types.
+
+	if (Ctx.dwVersion >= 30)
+		{
+		DWORD dwCount;
+		pStream->Read(dwCount);
+		InitCtx.TypesUsed.GrowToFit(dwCount);
+		for (i = 0; i < (int)dwCount; i++)
+			{
+			DWORD dwUNID;
+			pStream->Read(dwUNID);
+			InitCtx.TypesUsed.SetAt(dwUNID, true);
+			}
+		}
+	else
+		InitCtx.bLoadObsoleteTypes = true;
 
 	//	Select the proper adventure and extensions and bind design.
 
@@ -2396,6 +2426,9 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 //
 //	CDynamicDesignTable
 //
+//	DWORD		No of types used
+//	DWORD		type: UNID
+//
 //	DWORD		ID of POV system (0xffffffff if none)
 //	DWORD		index of POV (0xffffffff if none)
 //	DWORD		milliseconds that we've spent playing the game
@@ -2423,22 +2456,22 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	//	Write out version
 
 	dwSave = UNIVERSE_VERSION_MARKER;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	dwSave = UNIVERSE_SAVE_VERSION;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	dwSave = SYSTEM_SAVE_VERSION;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Write basic data
 
-	pStream->Write((char *)&m_iTick, sizeof(DWORD));
+	pStream->Write(m_iTick);
 
 	dwSave = 0;
 	dwSave |= (m_bRegistered ? 0x00000001 : 0);
 	dwSave |= (m_Design.FindExtension(DEFAULT_COMPATIBILITY_LIBRARY_UNID) ? 0x00000002 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
-	pStream->Write((char *)&m_dwNextID, sizeof(DWORD));
+	pStream->Write(m_dwNextID);
 	m_Time.WriteToStream(pStream);
 
 	//	Extensions
@@ -2449,7 +2482,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	TArray<CExtension *> ExtensionList;
 	m_Design.GetEnabledExtensions(&ExtensionList);
 	dwSave = ExtensionList.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	for (i = 0; i < ExtensionList.GetCount(); i++)
 		{
@@ -2472,12 +2505,19 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	m_Design.WriteDynamicTypes(pStream);
 
+	//	Types used.
+
+	DWORD dwCount = m_Design.GetCount();
+	pStream->Write(dwCount);
+	for (i = 0; i < (int)dwCount; i++)
+		pStream->Write(m_Design.GetEntry(i)->GetUNID());
+
 	//	Write the ID of POV system
 
 	dwSave = 0xffffffff;
 	if (m_pPOV && m_pPOV->GetSystem())
 		dwSave = m_pPOV->GetSystem()->GetID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Write the ID of the POV
 
@@ -2499,7 +2539,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	//	and then write out the only player).
 
 	dwSave = 1;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	m_pPlayer->WriteToStream(pStream);
 
 	//	Save out the global mission data
@@ -2516,8 +2556,8 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	//	Save out topology node data
 
-	DWORD dwCount = GetTopologyNodeCount();
-	pStream->Write((char *)&dwCount, sizeof(DWORD));
+	dwCount = GetTopologyNodeCount();
+	pStream->Write(dwCount);
 	for (i = 0; i < (int)dwCount; i++)
 		{
 		CTopologyNode *pNode = GetTopologyNode(i);
@@ -2527,13 +2567,13 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	//	Save out type data
 
 	dwCount = m_Design.GetCount();
-	pStream->Write((char *)&dwCount, sizeof(DWORD));
+	pStream->Write(dwCount);
 	for (i = 0; i < (int)dwCount; i++)
 		{
 		CDesignType *pType = m_Design.GetEntry(i);
 
 		dwSave = pType->GetUNID();
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		pType->WriteToStream(pStream);
 		}

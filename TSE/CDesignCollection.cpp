@@ -183,7 +183,7 @@ ALERROR CDesignCollection::AddDynamicType (CExtension *pExtension, DWORD dwUNID,
 	return NOERROR;
 	}
 
-ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bool bNewGame, bool bNoResources, CString *retsError)
+ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, bool bLoadObsoleteTypes, CString *retsError)
 
 //	BindDesign
 //
@@ -264,7 +264,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, bo
 
 		//	Add the types
 
-		m_AllTypes.Merge(Types, &m_OverrideTypes, &ExtensionsIncluded);
+		m_AllTypes.Merge(Types, &m_OverrideTypes, &ExtensionsIncluded, (bLoadObsoleteTypes ? NULL : &TypesUsed), dwAPIVersion);
 
 		//	If this is the adventure, then remember it
 
@@ -1423,6 +1423,12 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	//	We set inheritence on the new type
 
 	pNewType->SetInheritFrom(pAncestor);
+
+	//	The original type will get replaced, but we need to reset the inherit
+	//	pointer. [Since it will be removed from m_AllTypes, it will never get
+	//	unbound, so we need to leave it in a pristine state.]
+
+	pType->SetInheritFrom(NULL);
 
 	//	Done
 

@@ -283,6 +283,7 @@ class CDesignType
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
 		inline bool IsClone (void) const { return m_bIsClone; }
 		inline bool IsModification (void) const { return m_bIsModification; }
+		inline bool IsObsoleteAt (DWORD dwAPIVersion) const { return (m_dwObsoleteVersion > 0 && dwAPIVersion >= m_dwObsoleteVersion); }
 		inline void MarkImages (void) { OnMarkImages(); }
 		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { m_GlobalData.SetData(sAttrib, sData); }
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
@@ -350,7 +351,8 @@ class CDesignType
 
 		DWORD m_dwUNID;
 		CExtension *m_pExtension;				//	Extension
-		DWORD m_dwVersion;						//	Extension version
+		DWORD m_dwVersion;						//	Extension API version
+		DWORD m_dwObsoleteVersion;				//	API version on which this type is obsolete (0 = not obsolete)
 		TArray<DWORD> m_Extends;				//	Exclude this type from bind unless one of these extensions is present
 		CXMLElement *m_pXML;					//	Optional XML for this type
 
@@ -699,7 +701,7 @@ class CDesignTable
 		CDesignType *FindByUNID (DWORD dwUNID) const;
 		inline int GetCount (void) const { return m_Table.GetCount(); }
 		inline CDesignType *GetEntry (int iIndex) const { return m_Table.GetValue(iIndex); }
-		ALERROR Merge (const CDesignTable &Source, CDesignList *ioOverride = NULL, const TArray<DWORD> *pExtensionsIncluded = NULL);
+		ALERROR Merge (const CDesignTable &Source, CDesignList *ioOverride, const TArray<DWORD> *pExtensionsIncluded, const TSortMap<DWORD, bool> *pTypesUsed, DWORD dwAPIVersion);
 		ALERROR Merge (const CDynamicDesignTable &Source, CDesignList *ioOverride = NULL);
 
 	private:
@@ -1124,7 +1126,7 @@ class CDesignCollection
 		~CDesignCollection (void);
 
 		ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError);
-		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, bool bNewGame, bool bNoResources, CString *retsError);
+		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, bool bLoadObsoleteTypes, CString *retsError);
 		void CleanUp (void);
 		void ClearImageMarks (void);
 		inline CEconomyType *FindEconomyType (const CString &sID) { CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
