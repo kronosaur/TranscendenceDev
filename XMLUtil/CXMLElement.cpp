@@ -6,10 +6,6 @@
 #include "Alchemy.h"
 #include "XMLUtil.h"
 
-#ifdef DEBUG
-#include <stdio.h>
-#endif
-
 CAtomizer CXMLElement::m_Keywords;
 
 CXMLElement::CXMLElement (void) :
@@ -661,10 +657,6 @@ void CXMLElement::InitFromMerge (const CXMLElement &A, const CXMLElement &B, con
 				//	No need to inherit from A
 
 				InheritFromA.SetAt(pA->m_dwTag, false);
-
-#ifdef DEBUG
-				printf("<%s unid='%s'>: Merging children of <%s>\n", (LPSTR)B.GetTag(), (LPSTR)B.GetAttribute(CONSTLIT("unid")), (LPSTR)pA->GetTag());
-#endif
 				}
 			else
 				AppendSubElement(pB->OrphanCopy());
@@ -697,10 +689,6 @@ void CXMLElement::InitFromMerge (const CXMLElement &A, const CXMLElement &B, con
 		//	Inherit
 
 		AppendSubElement(pA->OrphanCopy());
-
-#ifdef DEBUG
-		printf("<%s unid='%s'>: Inheriting <%s>\n", (LPSTR)B.GetTag(), (LPSTR)B.GetAttribute(CONSTLIT("unid")), (LPSTR)pA->GetTag());
-#endif
 		}
 	}
 
@@ -964,13 +952,7 @@ void CXMLElement::SetAttributesFromMerge (const CXMLElement &A, const CXMLElemen
 			//	If we're not overriding, then we take A's
 
 			if (!(dwMerge & MERGE_OVERRIDE))
-				{
 				SetAttribute(dwA, A.m_Attributes[iAPos]);
-
-#ifdef DEBUG
-				printf("<%s unid='%s'>: Inherit attribute %s.\n", (LPSTR)B.GetTag(), (LPSTR)B.GetAttribute(CONSTLIT("unid")), (LPSTR)A.GetAttributeName(iAPos));
-#endif
-				}
 
 			iAPos++;
 			}
