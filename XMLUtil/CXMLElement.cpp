@@ -560,11 +560,11 @@ int CXMLElement::GetMemoryUsage (void) const
 	return iTotal;
 	}
 
-void CXMLElement::InitFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags)
+void CXMLElement::InitFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags, bool *retbMerged)
 
 //	InitFromMerge
 //
-//	Merges B into A and initializes this element from the result.
+//	Merges A into B and initializes this element from the result.
 //
 //	1.	Root attributes are merged.
 //	2.	For each child C in B, we look up C's tag in MergeFlags to figure
@@ -586,10 +586,14 @@ void CXMLElement::InitFromMerge (const CXMLElement &A, const CXMLElement &B, con
 
 	CleanUp();
 
+	//	Keep track of whether we merged any part of A into B.
+
+	bool bMerged;
+
 	//	Merge root attributes
 
 	m_dwTag = B.m_dwTag;
-	SetAttributesFromMerge(A, B, MergeFlags);
+	SetAttributesFromMerge(A, B, MergeFlags, &bMerged);
 
 	//	We keep a running list of tags in A that we need to inherit into the 
 	//	merged result.
@@ -653,6 +657,7 @@ void CXMLElement::InitFromMerge (const CXMLElement &A, const CXMLElement &B, con
 					}
 
 				AppendSubElement(pResult);
+				bMerged = true;
 
 				//	No need to inherit from A
 
@@ -689,7 +694,11 @@ void CXMLElement::InitFromMerge (const CXMLElement &A, const CXMLElement &B, con
 		//	Inherit
 
 		AppendSubElement(pA->OrphanCopy());
+		bMerged = true;
 		}
+
+	if (retbMerged)
+		*retbMerged = bMerged;
 	}
 
 void CXMLElement::Merge (const CXMLElement &Src, const TSortMap<DWORD, DWORD> &MergeFlags)
@@ -886,15 +895,17 @@ ALERROR CXMLElement::SetAttribute (DWORD dwID, const CString &sValue)
 	return NOERROR;
 	}
 
-void CXMLElement::SetAttributesFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags)
+void CXMLElement::SetAttributesFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags, bool *retbMerged)
 
 //	SetAttributesFromMerge
 //
 //	Merges attributes from A and B and applies them to this element.
+//	retbMerged is set to TRUE if the result is different from just taking B.
 
 	{
 	int iAPos = 0;
 	int iBPos = 0;
+	bool bMerged = false;
 
 	//	Attributes are sorted, so we can proceed in order
 
@@ -952,11 +963,17 @@ void CXMLElement::SetAttributesFromMerge (const CXMLElement &A, const CXMLElemen
 			//	If we're not overriding, then we take A's
 
 			if (!(dwMerge & MERGE_OVERRIDE))
+				{
 				SetAttribute(dwA, A.m_Attributes[iAPos]);
+				bMerged = true;
+				}
 
 			iAPos++;
 			}
 		}
+
+	if (retbMerged)
+		*retbMerged = bMerged;
 	}
 
 ALERROR CXMLElement::SetContentText (const CString &sContent, int iIndex)

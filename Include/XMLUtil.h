@@ -98,7 +98,7 @@ class CXMLElement
 		int GetMemoryUsage (void) const;
 		inline CXMLElement *GetParentElement (void) const { return m_pParent; }
 		inline const CString &GetTag (void) const { return m_Keywords.GetIdentifier(m_dwTag); }
-		void InitFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags = TSortMap<DWORD, DWORD>());
+		void InitFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags = TSortMap<DWORD, DWORD>(), bool *retbMerged = NULL);
 		void Merge (const CXMLElement &Src, const TSortMap<DWORD, DWORD> &MergeFlags = TSortMap<DWORD, DWORD>());
 		void MergeAttributes (const CXMLElement &Src);
 		void MergeFrom (CXMLElement *pElement);
@@ -116,7 +116,7 @@ class CXMLElement
 
 	private:
 		void CleanUp (void);
-		void SetAttributesFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags);
+		void SetAttributesFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags, bool *retbMerged);
 
 		DWORD m_dwTag;							//	Tag atom
 		CXMLElement *m_pParent;					//	Parent of this element
