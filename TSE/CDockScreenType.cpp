@@ -68,6 +68,18 @@ CString CDockScreenType::GetStringUNID (CDesignType *pRoot, const CString &sScre
 		return strPatternSubst("0x%08x/%s", pRoot->GetUNID(), sScreen);
 	}
 
+void CDockScreenType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
+
+//	OnAccumulateXMLMergeFlags
+//
+//	Returns flags to determine how we merge from inherited types.
+
+	{
+	//	We know how to handle these tags through the inheritance hierarchy.
+
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(PANES_TAG), CXMLElement::MERGE_OVERRIDE);
+	}
+
 ALERROR CDockScreenType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	OnCreateFromXML

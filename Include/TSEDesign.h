@@ -282,11 +282,13 @@ class CDesignType
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
 		inline bool IsClone (void) const { return m_bIsClone; }
+		inline bool IsMerged (void) const { return m_bIsMerged; }
 		inline bool IsModification (void) const { return m_bIsModification; }
 		inline bool IsObsoleteAt (DWORD dwAPIVersion) const { return (m_dwObsoleteVersion > 0 && dwAPIVersion >= m_dwObsoleteVersion); }
 		inline void MarkImages (void) { OnMarkImages(); }
 		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { m_GlobalData.SetData(sAttrib, sData); }
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
+		inline void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
 		inline void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		inline void Sweep (void) { OnSweep(); }
@@ -370,6 +372,7 @@ class CDesignType
 
 		bool m_bIsModification;					//	TRUE if this modifies the type it overrides
 		bool m_bIsClone;						//	TRUE if we cloned this from another type
+		bool m_bIsMerged;						//	TRUE if we created this type by merging (inheritance)
 
 		SEventHandlerDesc m_EventsCache[evtCount];	//	Cached events
 	};
@@ -1007,6 +1010,7 @@ class CDynamicDesignTable
 		CDesignType *FindType (DWORD dwUNID);
 		inline int GetCount (void) const { return m_Table.GetCount(); }
 		inline CDesignType *GetType (int iIndex) const { return m_Table[iIndex].pType; }
+		int GetXMLMemoryUsage (void) const;
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -1115,6 +1119,7 @@ class CDesignCollection
 
 			int iAllTypes;					//	Number of bound types (including dynamic)
 			int iDynamicTypes;				//	Count of dynamtic types
+			int iMergedTypes;				//	Count of merged types
 			int iItemTypes;					//	Count of item types
 			int iShipClasses;				//	Count of ship classes
 			int iStationTypes;				//	Count of station types

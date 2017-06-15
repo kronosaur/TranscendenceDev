@@ -22,6 +22,7 @@ class CDockScreenType : public CDesignType
 
 	protected:
 		//	CDesignType overrides
+		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override { return NOERROR; }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 

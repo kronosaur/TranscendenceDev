@@ -91,6 +91,7 @@
 #define PROPERTY_CLASS							CONSTLIT("class")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
+#define PROPERTY_MERGED							CONSTLIT("merged")
 
 #define FIELD_ENTITY							CONSTLIT("entity")
 #define FIELD_EXTENSION_UNID					CONSTLIT("extensionUNID")
@@ -184,7 +185,8 @@ CDesignType::CDesignType (void) :
 		m_dwInheritFrom(0), 
 		m_pInheritFrom(NULL),
 		m_bIsModification(false),
-		m_bIsClone(false)
+		m_bIsClone(false),
+		m_bIsMerged(false)
 	{
 	utlMemSet(m_EventsCache, sizeof(m_EventsCache), 0);
 	}
@@ -577,6 +579,9 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
     else if (strEquals(sProperty, PROPERTY_MAP_DESCRIPTION))
         return CC.CreateString(GetMapDescription(SMapDescriptionCtx()));
+
+    else if (strEquals(sProperty, PROPERTY_MERGED))
+        return CC.CreateBool(m_bIsMerged);
 
 	//	Otherwise, we see if there is a data field
 

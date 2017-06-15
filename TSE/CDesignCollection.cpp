@@ -1195,6 +1195,7 @@ void CDesignCollection::GetStats (SStats &Result) const
 	Result.Extensions = m_BoundExtensions;
 	Result.iAllTypes = m_AllTypes.GetCount();
 	Result.iDynamicTypes = m_DynamicTypes.GetCount();
+	Result.iMergedTypes = m_HierarchyTypes.GetCount();
 
 	Result.iItemTypes = m_ByType[designItemType].GetCount();
 	Result.iShipClasses = m_ByType[designShipClass].GetCount();
@@ -1209,6 +1210,8 @@ void CDesignCollection::GetStats (SStats &Result) const
 		}
 
 	Result.dwTotalXMLMemory += m_pAdventureExtension->GetXMLMemoryUsage();
+	Result.dwTotalXMLMemory += m_DynamicTypes.GetXMLMemoryUsage();
+	Result.dwTotalXMLMemory += m_HierarchyTypes.GetXMLMemoryUsage();
 	}
 
 bool CDesignCollection::IsAdventureExtensionBound (DWORD dwUNID)
@@ -1409,7 +1412,18 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	//	ancestor.
 
 	CXMLElement *pNewXML = new CXMLElement;
-	pNewXML->InitFromMerge(*pAncestor->GetXMLElement(), *pType->GetXMLElement(), pType->GetXMLMergeFlags());
+	bool bMerged;
+	pNewXML->InitFromMerge(*pAncestor->GetXMLElement(), *pType->GetXMLElement(), pType->GetXMLMergeFlags(), &bMerged);
+
+	//	If we did not merge anything from our ancestor then no need to create
+	//	a new type.
+
+	if (!bMerged)
+		{
+		delete pNewXML;
+		pType->SetInheritFrom(pAncestor);
+		return NOERROR;
+		}
 
 	//	Define the type (m_HierarchyTypes takes ownership of pNewXML).
 
@@ -1422,6 +1436,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 
 	//	We set inheritence on the new type
 
+	pNewType->SetMerged();
 	pNewType->SetInheritFrom(pAncestor);
 
 	//	The original type will get replaced, but we need to reset the inherit

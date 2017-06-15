@@ -210,6 +210,25 @@ CDesignType *CDynamicDesignTable::FindType (DWORD dwUNID)
 	return pEntry->pType;
 	}
 
+int CDynamicDesignTable::GetXMLMemoryUsage (void) const
+
+//	GetXMLMemoryUsage
+//
+//	Returns the amount of memory used by our XML source.
+
+	{
+	int i;
+
+	int iTotal = 0;
+	for (i = 0; i < m_Table.GetCount(); i++)
+		{
+		const SEntry *pEntry = &m_Table[i];
+		iTotal += pEntry->pSource->GetMemoryUsage();
+		}
+
+	return iTotal;
+	}
+
 void CDynamicDesignTable::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 //	ReadFromStream
