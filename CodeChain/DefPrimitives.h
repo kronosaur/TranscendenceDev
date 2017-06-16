@@ -207,7 +207,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s*",	0,	},
 
 		{	"map",				fnMap,			0,
-			"(map list ['excludeNil|'original|'reduceMax|'reduceMin] var exp) -> list",
+			"(map list ['excludeNil|'original|'reduceMax|'reduceMin|'reduceAverage|'reduceSum] var exp) -> list",
 			"l*qu",	0,	},
 
 		{	"match",			fnMatch,			0,
@@ -353,11 +353,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"subtract",			fnMathOld,			FN_MATH_SUBTRACT,
-			"(subtract x y) -> z",
+			"(subtract x1 x2 ... xn) -> z",
 			NULL,	0,	},
 
 		{	"-",				fnMathList,			FN_MATH_SUBTRACT,
-			"(- x y) -> z\n (- x) -> -x",
+			"(- x1 x2 ... xn) -> z\n (- x) -> -x",
 			"v*",	0,	},
 
 		{	"switch",			fnSwitch,		0,
