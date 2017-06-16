@@ -108,6 +108,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_INSTALL_DEVICE_MAX_LEVEL		CONSTLIT("installDeviceMaxLevel")
 #define PROPERTY_INSTALL_DEVICE_PRICE			CONSTLIT("installDevicePrice")
 #define PROPERTY_INSTALL_DEVICE_STATUS			CONSTLIT("installDeviceStatus")
+#define PROPERTY_INSTALL_DEVICE_UPGRADE_ONLY	CONSTLIT("installDeviceUpgradeOnly")
 #define PROPERTY_INSTALL_ITEM_STATUS			CONSTLIT("installItemStatus")
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL							CONSTLIT("level")
@@ -4295,6 +4296,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		int iMaxLevel = GetTradeMaxLevel(serviceInstallDevice);
 		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
 		}
+
+	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_UPGRADE_ONLY))
+		return CC.CreateBool(HasTradeUpgradeOnly(serviceInstallDevice));
 
 	else if (strEquals(sName, PROPERTY_KNOWN))
 		return CC.CreateBool(IsKnown());

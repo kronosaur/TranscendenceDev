@@ -1152,6 +1152,37 @@ bool CTradingDesc::HasService (ETradeServiceTypes iService) const
 	return false;
 	}
 
+bool CTradingDesc::HasServiceUpgradeOnly (ETradeServiceTypes iService) const
+
+//	HasServiceUpgradeOnly
+//
+//	Returns TRUE if we have the service, but for upgrade only.
+
+	{
+	int i;
+
+	bool bHasUpgrade = false;
+	bool bHasNonUpgrade = false;
+
+	//	Loop over the commodity list and find the first entry that matches
+
+	for (i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i].iService == iService)
+			{
+			CString sPrefix;
+			int iPriceAdj = m_List[i].PriceAdj.EvalAsInteger(NULL, &sPrefix);
+			if (strEquals(sPrefix, UNAVAILABLE_PREFIX))
+				continue;
+
+			if (m_List[i].dwFlags & FLAG_UPGRADE_INSTALL_ONLY)
+				bHasUpgrade = true;
+			else
+				bHasNonUpgrade = true;
+			}
+	
+	return (bHasUpgrade && !bHasNonUpgrade);
+	}
+
 bool CTradingDesc::HasServiceDescription (ETradeServiceTypes iService) const
 
 //	HasServiceDescription

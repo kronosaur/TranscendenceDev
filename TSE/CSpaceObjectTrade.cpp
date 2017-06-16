@@ -603,6 +603,31 @@ bool CSpaceObject::HasTradeService (ETradeServiceTypes iService)
 	return false;
 	}
 
+bool CSpaceObject::HasTradeUpgradeOnly (ETradeServiceTypes iService)
+
+//	HasTradeUpgradeOnly
+//
+//	Returns TRUE if we provide the service for upgrade only.
+
+	{
+	//	See if we have an override
+
+	CTradingDesc *pTradeOverride = GetTradeDescOverride();
+	if (pTradeOverride && pTradeOverride->HasServiceUpgradeOnly(iService))
+		return true;
+
+	//	Ask base type
+
+	CDesignType *pType = GetType();
+	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
+	if (pTrade && pTrade->HasServiceUpgradeOnly(iService))
+		return true;
+
+	//	No service
+
+	return false;
+	}
+
 void CSpaceObject::SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency)
 
 //	SetTradeDesc
