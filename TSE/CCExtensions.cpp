@@ -2188,8 +2188,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property\n\n"
 			
 			"   'acceptedOn        Tick on which player accepted mission (or Nil)\n"
+			"   'canBeDeclined     Mission can be declined by player\n"
 			"   'canBeDeleted      Mission can be deleted by player\n"
 			"   'debrieferID       ID of the object that will debrief the player\n"
+			"   'forceUndockAfterDebrief  Force undock after showing debrief screen\n"
 			"   'id                Mission object ID\n"
 			"   'isActive          Is an active player mission\n"
 			"   'isCompleted       Is a completed mission (player or non-player)\n"
@@ -2198,6 +2200,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'isFailure         Mission has failed\n"
 			"   'isIntroShown      Player has been shown intro text\n"
 			"   'isOpen            Mission is available to player\n"
+			"   'isRecorded        Mission has been completed and debriefed\n"
 			"   'isSuccess         Mission has succeeded\n"
 			"   'isUnavailable     Mission is unavailable to player\n"
 			"   'name              The name of the mission\n"
