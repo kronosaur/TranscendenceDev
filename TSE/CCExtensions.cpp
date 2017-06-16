@@ -1711,6 +1711,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'immutable\n"
 			"   'installArmorMaxLevel\n"
 			"   'installDeviceMaxLevel\n"
+			"   'installDeviceUpgradeOnly\n"
 			"   'maxHP\n"
 			"   'maxStructuralHP\n"
 			"   'openDockingPortCount\n"
