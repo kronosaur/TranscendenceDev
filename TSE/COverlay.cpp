@@ -286,6 +286,7 @@ void COverlay::CreateFromType (COverlayType *pType,
 	if (pCreator)
 		{
 		CCreatePainterCtx CreateCtx;
+		CreateCtx.SetAPIVersion(pType->GetAPIVersion());
 		CreateCtx.SetLifetime(pField->m_iLifeLeft);
 
 		pField->m_pPainter = pCreator->CreatePainter(CreateCtx);

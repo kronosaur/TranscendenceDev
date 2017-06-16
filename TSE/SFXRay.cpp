@@ -151,6 +151,7 @@ const Metric WAVY_WAVELENGTH_FACTOR =	1.0;
 const Metric WHIPTAIL_AMPLITUDE =		0.45;
 const Metric WHIPTAIL_WAVELENGTH_FACTOR =		1.0;
 const Metric WHIPTAIL_DECAY =			0.13;
+const int MAX_TAPERED_FADE_TAIL =		300;
 
 const Metric MIN_GLOW_LEVEL =			0.6;
 const Metric GLOW_FACTOR =				(0.4 / 100.0);
@@ -927,7 +928,8 @@ ILinePainter *CRayEffectPainter::CreateRenderer (int iWidth, int iLength, int iI
 
 			//	After the 1/3 point start fading out (linearly)
 
-			int iFadePoint = iLengthCount / TAPER_FRACTION;
+			int iMinFadePoint = iLengthCount - MAX_TAPERED_FADE_TAIL;
+			int iFadePoint = Max(iMinFadePoint, iLengthCount / TAPER_FRACTION);
 			Metric rTaperInc = (iLengthCount > 0 ? (1.0 / (iLengthCount - iFadePoint)) : 0.0);
 
 			//	From center to peak we have solid opacity plus taper

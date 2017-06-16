@@ -6,6 +6,7 @@
 
 #define PARTICLE_EFFECT_TAG						CONSTLIT("ParticleEffect")
 
+#define JITTER_LENGTH_ATTRIB					CONSTLIT("jitterLength")
 #define LENGTH_ATTRIB							CONSTLIT("length")
 #define LIFETIME_ATTRIB							CONSTLIT("lifetime")
 #define PARTICLE_COUNT_ATTRIB					CONSTLIT("particleCount")
@@ -49,8 +50,8 @@ class CParticleCometEffectPainter : public IEffectPainter
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
 		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 		static const TArray<CVector> &GetSplinePoints (void) { InitSplinePoints(); return m_Points; }
@@ -94,16 +95,17 @@ class CParticleCometEffectPainter : public IEffectPainter
 		int m_iLifetime;
 		int m_iParticleCount;
 		int m_iWidth;
-		int m_iLength;
+		int m_iLength;						//	Length of each particle path
 		int m_iParticleSpeed;				//	Desired speed of particles
 		DiceRange m_SpreadAngle;			//	Angle at which particles spread
+		DiceRange m_JitterLength;			//	Jitter length by this percent range
 		CG32bitPixel m_rgbPrimaryColor;
 		CG32bitPixel m_rgbSecondaryColor;
 		IEffectPainter *m_pParticlePainter;
 
 		//	Temporary variables based on shape/style/etc.
 
-		bool m_bInitialized;				//	TRUE if values are valid
+		int m_iInitializedLength;			//	Temporaries computed for this length (-1 if uninitialized)
 		TArray<SParticle> m_Particles;
 		Metric m_rTickAdj;					//	Speed adjustment
 
@@ -159,6 +161,7 @@ IEffectPainter *CParticleCometEffectCreator::OnCreatePainter (CCreatePainterCtx 
 
 	//	Initialize the painter parameters
 
+	pPainter->SetParam(Ctx, JITTER_LENGTH_ATTRIB, m_JitterLength);
 	pPainter->SetParam(Ctx, LENGTH_ATTRIB, m_Length);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
 	pPainter->SetParam(Ctx, PARTICLE_COUNT_ATTRIB, m_ParticleCount);
@@ -219,6 +222,9 @@ ALERROR CParticleCometEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx,
 	{
 	ALERROR error;
 
+	if (error = m_JitterLength.InitIntegerFromXML(Ctx, pDesc->GetAttribute(JITTER_LENGTH_ATTRIB)))
+		return error;
+
 	if (error = m_Length.InitIntegerFromXML(Ctx, pDesc->GetAttribute(LENGTH_ATTRIB)))
 		return error;
 
@@ -274,7 +280,8 @@ CParticleCometEffectPainter::CParticleCometEffectPainter (CCreatePainterCtx &Ctx
 		m_iLength(100),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
 		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
-		m_bInitialized(false)
+		m_JitterLength(1, 71, 79),
+		m_iInitializedLength(-1)
 
 //	CParticleCometEffectPainter constructor
 
@@ -311,7 +318,7 @@ bool CParticleCometEffectPainter::CalcIntermediates (void)
 	if (m_iParticleCount <= 0)
 		return false;
 
-	if (!m_bInitialized)
+	if (m_iInitializedLength != m_iLength)
 		{
 		//	Compute how fast each particle moves along the point array.
 
@@ -344,19 +351,27 @@ bool CParticleCometEffectPainter::CalcIntermediates (void)
 			{
 			m_Particles[i].iPos = mathRandom(0, m_Points.GetCount() - 1);
 
+			//	Compute length
+
+			Metric rLength = m_iLength;
+			if (!m_JitterLength.IsConstant())
+				rLength = rLength * m_JitterLength.Roll() / 100.0;
+
+			//	Scale
+
 			switch (m_iStyle)
 				{
 				case styleJet:
 					m_Particles[i].vScale = CVector(
 							mathRandomGaussian() * m_iWidth,
-							m_iLength * mathRandom(80, 150) / 100.0
+							rLength
 							);
 					break;
 
 				default:
 					m_Particles[i].vScale = CVector(
 							PolarToVector(mathRandom(0, 179), (Metric)iAdjWidth).GetX(),
-							m_iLength * mathRandom(80, 150) / 100.0
+							rLength
 							);
 					break;
 				}
@@ -369,7 +384,7 @@ bool CParticleCometEffectPainter::CalcIntermediates (void)
 				m_Particles[i].iRotationAdj = m_SpreadAngle.Roll() - iHalfAngle;
 			}
 
-		m_bInitialized = true;
+		m_iInitializedLength = m_iLength;
 		}
 
 	return true;
@@ -382,7 +397,10 @@ void CParticleCometEffectPainter::GetParam (const CString &sParam, CEffectParamD
 //	Returns the given parameter
 
 	{
-	if (strEquals(sParam, LENGTH_ATTRIB))
+	if (strEquals(sParam, JITTER_LENGTH_ATTRIB))
+		retValue->InitDiceRange(m_JitterLength);
+
+	else if (strEquals(sParam, LENGTH_ATTRIB))
 		retValue->InitInteger(m_iLength);
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
@@ -421,16 +439,17 @@ bool CParticleCometEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(9);
-	retList->GetAt(0) = LENGTH_ATTRIB;
-	retList->GetAt(1) = LIFETIME_ATTRIB;
-	retList->GetAt(2) = PARTICLE_COUNT_ATTRIB;
-	retList->GetAt(3) = PARTICLE_SPEED_ATTRIB;
-	retList->GetAt(4) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(5) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(6) = SPREAD_ANGLE_ATTRIB;
-	retList->GetAt(7) = STYLE_ATTRIB;
-	retList->GetAt(8) = WIDTH_ATTRIB;
+	retList->InsertEmpty(10);
+	retList->GetAt(0) = JITTER_LENGTH_ATTRIB;
+	retList->GetAt(1) = LENGTH_ATTRIB;
+	retList->GetAt(2) = LIFETIME_ATTRIB;
+	retList->GetAt(3) = PARTICLE_COUNT_ATTRIB;
+	retList->GetAt(4) = PARTICLE_SPEED_ATTRIB;
+	retList->GetAt(5) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(6) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(7) = SPREAD_ANGLE_ATTRIB;
+	retList->GetAt(8) = STYLE_ATTRIB;
+	retList->GetAt(9) = WIDTH_ATTRIB;
 
 	return true;
 	}
@@ -754,8 +773,6 @@ void CParticleCometEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int
 //	Composite the effect
 
 	{
-	if (!CalcIntermediates())
-		return;
 	}
 
 void CParticleCometEffectPainter::PaintFireAndSmoke (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, const CFireAndSmokePainter &Painter)
@@ -941,8 +958,19 @@ void CParticleCometEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CStr
 //	Sets the given parameter
 
 	{
-	if (strEquals(sParam, LENGTH_ATTRIB))
-		m_iLength = Value.EvalIntegerBounded(1, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
+	if (strEquals(sParam, JITTER_LENGTH_ATTRIB))
+		{
+		//	For API 37 onward we have to explicitly define this. Previously,
+		//	we used a hard-coded jitter, so we default to that.
+
+		if (Ctx.GetAPIVersion() < 37)
+			m_JitterLength = Value.EvalDiceRange(1, 71, 79);
+		else
+			m_JitterLength = Value.EvalDiceRange(0);
+		}
+
+	else if (strEquals(sParam, LENGTH_ATTRIB))
+		m_iLength = Value.EvalIntegerBounded(0, -1, (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL));
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
 		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);

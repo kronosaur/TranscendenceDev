@@ -108,7 +108,8 @@ class CEffectParamDesc
 		CGDraw::EBlendModes EvalBlendMode (CGDraw::EBlendModes iDefault = CGDraw::blendNormal) const;
 		bool EvalBool (void) const;
 		CG32bitPixel EvalColor (CG32bitPixel rgbDefault = CG32bitPixel::Null()) const;
-		DiceRange EvalDiceRange (int iDefault = -1) const;
+		DiceRange EvalDiceRange (int iDefaultCount, int iDefaultSides, int iDefaultBonus) const;
+		inline DiceRange EvalDiceRange (int iDefault = -1) const { return EvalDiceRange(0, 0, iDefault); }
 		int EvalIdentifier (LPSTR *pIDMap, int iMax, int iDefault = 0) const;
 		const CObjectImageArray &EvalImage (void) const;
 		int EvalInteger (void) const;
@@ -190,13 +191,15 @@ class CCreatePainterCtx
 				m_bRaw(false),
 				m_pData(NULL),
 				m_pDefaultParams(NULL),
-				m_dwLoadVersion(SYSTEM_SAVE_VERSION)
+				m_dwLoadVersion(SYSTEM_SAVE_VERSION),
+				m_dwAPIVersion(API_VERSION)
 			{ }
 
 		~CCreatePainterCtx (void);
 
 		void AddDataInteger (const CString &sField, int iValue);
 		inline bool FindDefaultParam (const CString &sParam, CEffectParamDesc *retValue) const { return (m_pDefaultParams ? m_pDefaultParams->FindParam(sParam, retValue) : false); }
+		inline DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
 		inline SDamageCtx *GetDamageCtx (void) const { return m_pDamageCtx; }
 		ICCItem *GetData (void);
 		inline const CEffectParamDesc *GetDefaultParam (const CString &sParam) const { return (m_pDefaultParams ? m_pDefaultParams->GetParam(sParam) : NULL); }
@@ -204,6 +207,7 @@ class CCreatePainterCtx
 		inline DWORD GetLoadVersion (void) const { return m_dwLoadVersion; }
 		inline bool IsRawPainter (void) const { return m_bRaw; }
 		inline bool IsTracking (void) const { return m_bTracking; }
+		inline void SetAPIVersion (DWORD dwVersion) { m_dwAPIVersion = dwVersion; }
 		inline void SetDamageCtx (SDamageCtx &Ctx) { m_pDamageCtx = &Ctx; }
 		void SetDefaultParam (const CString &sParam, const CEffectParamDesc &Value);
 		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
@@ -211,7 +215,7 @@ class CCreatePainterCtx
 		inline void SetRawPainter (bool bValue = true) { m_bRaw = bValue; }
 		inline void SetTrackingObject (bool bValue = true) { m_bTracking = bValue; }
 		inline void SetUseObjectCenter (bool bValue = true) { m_bUseObjectCenter = bValue; }
-		inline void SetWeaponFireDesc (CWeaponFireDesc *pDesc) { m_pWeaponFireDesc = pDesc; }
+		void SetWeaponFireDesc (CWeaponFireDesc *pDesc);
 		inline bool UseObjectCenter (void) const { return m_bUseObjectCenter; }
 
 	private:
@@ -230,6 +234,7 @@ class CCreatePainterCtx
 		TArray<SDataEntry> m_Data;				//	Data to add
 		CEffectParamSet *m_pDefaultParams;		//	Default parameters (owned by us)
 		DWORD m_dwLoadVersion;					//	Optional system version at load time
+		DWORD m_dwAPIVersion;					//	API version of creator
 
 		bool m_bUseObjectCenter;				//	If TRUE, particle clouds always use the object as center
 		bool m_bTracking;						//	If TRUE, object sets velocity
@@ -268,6 +273,7 @@ class IEffectPainter
 			}
 
 		void SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue);
+		void SetParamInteger (const CString &sParam, int iValue);
 		inline void SetSingleton (bool bSingleton = true) { m_bSingleton = bSingleton; }
 		static ALERROR ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass);
 		void WriteToStream (IWriteStream *pStream);

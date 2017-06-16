@@ -516,7 +516,7 @@ void CContinuousBeam::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	Ctx.iDestiny = GetDestiny();
 	Ctx.iMaxLength = -1;
 
-	//	Keep painting segments live segments
+	//	Keep painting live segments
 
 	bool bFoundHead = false;
 	CVector vHead;

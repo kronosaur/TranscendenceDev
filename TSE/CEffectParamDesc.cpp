@@ -160,7 +160,7 @@ CG32bitPixel CEffectParamDesc::EvalColor (CG32bitPixel rgbDefault) const
 		}
 	}
 
-DiceRange CEffectParamDesc::EvalDiceRange (int iDefault) const
+DiceRange CEffectParamDesc::EvalDiceRange (int iDefaultCount, int iDefaultSides, int iDefaultBonus) const
 
 //	EvalDiceRange
 //
@@ -170,7 +170,7 @@ DiceRange CEffectParamDesc::EvalDiceRange (int iDefault) const
 	switch (m_iType)
 		{
 		case typeNull:
-			return DiceRange(0, 0, iDefault);
+			return DiceRange(iDefaultCount, iDefaultSides, iDefaultBonus);
 
 		case typeIntegerConstant:
 			return DiceRange(0, 0, (int)m_dwData);
@@ -188,7 +188,7 @@ DiceRange CEffectParamDesc::EvalDiceRange (int iDefault) const
 			}
 
 		default:
-			return DiceRange(0, 0, iDefault);
+			return DiceRange(iDefaultCount, iDefaultSides, iDefaultBonus);
 		}
 	}
 

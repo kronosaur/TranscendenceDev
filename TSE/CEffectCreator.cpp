@@ -24,6 +24,7 @@
 #define STARBURST_TAG							CONSTLIT("Starburst")
 
 #define INSTANCE_ATTRIB							CONSTLIT("instance")
+#define LENGTH_ATTRIB							CONSTLIT("length")
 #define SOUND_ATTRIB							CONSTLIT("sound")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 
@@ -992,7 +993,10 @@ void IEffectPainter::PaintLine (CG32bitImage &Dest, const CVector &vHead, const 
 //	Paints a line. Used for continuous beams.
 
 	{
-	//	By default we just paint the head.
+	//	By default we just set the length and paint.
+
+	int iLength = (int)mathRound((vHead - vTail).Length() / g_KlicksPerPixel);
+	SetParamInteger(LENGTH_ATTRIB, iLength);
 
 	int x, y;
 	Ctx.XFormRel.Transform(vHead, &x, &y);
@@ -1074,6 +1078,18 @@ void IEffectPainter::SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sP
 
 		SetParam(Ctx, sParam, Value);
 		}
+	}
+
+void IEffectPainter::SetParamInteger (const CString &sParam, int iValue)
+
+//	SetParamInteger
+//
+//	Sets an integer parameter
+
+	{
+	CEffectParamDesc Value;
+	Value.InitInteger(iValue);
+	SetParam(CCreatePainterCtx(), sParam, Value);
 	}
 
 ALERROR IEffectPainter::ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass)

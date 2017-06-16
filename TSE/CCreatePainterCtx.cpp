@@ -130,6 +130,22 @@ void CCreatePainterCtx::SetDefaultParam (const CString &sParam, const CEffectPar
 	m_pDefaultParams->AddParam(sParam, Value);
 	}
 
+void CCreatePainterCtx::SetWeaponFireDesc (CWeaponFireDesc *pDesc)
+
+//	SetWeaponFireDesc
+//
+//	Associates a weapon fire descriptor.
+
+	{
+	m_pWeaponFireDesc = pDesc;
+
+	//	While we're at it, set the API version.
+
+	CItemType *pType;
+	if (m_pWeaponFireDesc && (pType = m_pWeaponFireDesc->GetWeaponType()))
+		m_dwAPIVersion = pType->GetAPIVersion();
+	}
+
 void CCreatePainterCtx::SetWeaponFireDescData (CCodeChain &CC, CCSymbolTable *pTable, CWeaponFireDesc *pDesc)
 
 //	SetWeaponFireDescData

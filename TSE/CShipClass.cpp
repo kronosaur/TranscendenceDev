@@ -3087,6 +3087,7 @@ void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 					if (IsPlayerShip())
 						{
 						CCreatePainterCtx CreateCtx;
+						CreateCtx.SetAPIVersion(GetAPIVersion());
 						CreateCtx.AddDataInteger(FIELD_THRUSTER_POWER, iThrusterPower);
 						CreateCtx.SetUseObjectCenter();
 						Painters[i] = Effects.CreatePainter(CreateCtx, i);
@@ -3099,6 +3100,7 @@ void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 				case CObjectEffectDesc::effectThrustMain:
 					{
 					CCreatePainterCtx CreateCtx;
+					CreateCtx.SetAPIVersion(GetAPIVersion());
 					CreateCtx.AddDataInteger(FIELD_MAX_SPEED, iMaxSpeed);
 					CreateCtx.AddDataInteger(FIELD_THRUSTER_POWER, iMainPower);
 					CreateCtx.SetUseObjectCenter();

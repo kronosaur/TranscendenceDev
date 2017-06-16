@@ -656,6 +656,7 @@ class CParticleCometEffectCreator : public CEffectCreator
 		CEffectParamDesc m_Width;
 		CEffectParamDesc m_SpreadAngle;		//	Full angle of spread
 		CEffectParamDesc m_ParticleSpeed;	//	Speed of particles along path
+		CEffectParamDesc m_JitterLength;
 
 		CEffectCreator *m_pParticleEffect;	//	Effect to use to paint particles (may be NULL)
 
