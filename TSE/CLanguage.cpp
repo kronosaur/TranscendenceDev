@@ -26,7 +26,7 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 
 	bool bPluralize = (dwComposeFlags & nounPlural)
 			|| (iCount > 1 
-				&& ((dwComposeFlags & nounCount) || (dwComposeFlags & nounCountOnly) || (dwComposeFlags & nounDemonstrative))
+				&& ((dwComposeFlags & nounCount) || (dwComposeFlags & nounCountOnly) || (dwComposeFlags & nounDemonstrative) || (dwComposeFlags & nounCountAlways))
 				&& !(dwComposeFlags & nounArticle));
 
 	//	Get the proper noun form
