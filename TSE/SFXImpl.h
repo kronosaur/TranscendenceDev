@@ -625,11 +625,11 @@ class CParticleCloudEffectCreator : public CEffectCreator
 		CEffectCreator *m_pParticleEffect;				//	Effect to use to paint particles
 	};
 
-class CParticleCometEffectCreator : public CEffectCreator
+class CParticlePatternEffectCreator : public CEffectCreator
 	{
 	public:
-		CParticleCometEffectCreator (void);
-		virtual ~CParticleCometEffectCreator (void);
+		CParticlePatternEffectCreator (void);
+		virtual ~CParticlePatternEffectCreator (void);
 
 		inline CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
 

@@ -309,7 +309,7 @@
 //		m_Rotation in CShip
 //
 //	98: 1.3
-//		m_bUseObjectCenter in CParticleCloudPainter
+//		m_bUseObjectCenter in CParticlePatternPainter
 //
 //	99: 1.3
 //		CEffectParamDesc saving

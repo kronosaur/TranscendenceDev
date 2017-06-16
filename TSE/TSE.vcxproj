@@ -655,7 +655,7 @@
     <ClCompile Include="SFXLightningShockwave.cpp" />
     <ClCompile Include="SFXMoltenBolt.cpp" />
     <ClCompile Include="SFXParticleCloud.cpp" />
-    <ClCompile Include="SFXParticleComet.cpp" />
+    <ClCompile Include="SFXParticlePattern.cpp" />
     <ClCompile Include="SFXParticleExplosion.cpp" />
     <ClCompile Include="SFXPlasmaSphere.cpp" />
     <ClCompile Include="SFXPolyflash.cpp">

@@ -490,7 +490,7 @@ void CParticleArray::EmitComet (const CParticleSystemDesc &Desc, int iCount, con
 //	minimum speed.
 
 	{
-	const TArray<CVector> &SplinePoints = CParticleCometEffectCreator::GetSplinePoints();
+	const TArray<CVector> &SplinePoints = CParticlePatternEffectCreator::GetSplinePoints();
 	const int SPLINE_CHOOSE_POINTS = 1000;
 
 	int i;

@@ -1,6 +1,7 @@
-//	SFXParticleComet.cpp
+//	SFXParticlePattern.cpp
 //
 //	Particle Comet SFX
+//	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -32,11 +33,11 @@ static LPSTR STYLE_TABLE[] =
 		NULL,
 	};
 
-class CParticleCometEffectPainter : public IEffectPainter
+class CParticlePatternEffectPainter : public IEffectPainter
 	{
 	public:
-		CParticleCometEffectPainter (CCreatePainterCtx &Ctx, CParticleCometEffectCreator *pCreator);
-		~CParticleCometEffectPainter (void);
+		CParticlePatternEffectPainter (CCreatePainterCtx &Ctx, CParticlePatternEffectCreator *pCreator);
+		~CParticlePatternEffectPainter (void);
 
 		//	IEffectPainter virtuals
 
@@ -112,37 +113,37 @@ class CParticleCometEffectPainter : public IEffectPainter
 		static TArray<CVector> m_Points;
 	};
 
-//	CParticleCometEffectCreator object
+//	CParticlePatternEffectCreator object
 
-CParticleCometEffectCreator::CParticleCometEffectCreator (void) : 
+CParticlePatternEffectCreator::CParticlePatternEffectCreator (void) : 
 		m_pParticleEffect(NULL),
 		m_pSingleton(NULL)
 
-//	CParticleCometEffectCreator constructor
+//	CParticlePatternEffectCreator constructor
 
 	{
 	}
 
-CParticleCometEffectCreator::~CParticleCometEffectCreator (void)
+CParticlePatternEffectCreator::~CParticlePatternEffectCreator (void)
 
-//	CParticleCometEffectCreator destructor
+//	CParticlePatternEffectCreator destructor
 
 	{
 	if (m_pSingleton)
 		delete m_pSingleton;
 	}
 
-const TArray<CVector> &CParticleCometEffectCreator::GetSplinePoints (void)
+const TArray<CVector> &CParticlePatternEffectCreator::GetSplinePoints (void)
 
 //	GetSplinePoints
 //
 //	Returns the points
 
 	{
-	return CParticleCometEffectPainter::GetSplinePoints();
+	return CParticlePatternEffectPainter::GetSplinePoints();
 	}
 
-IEffectPainter *CParticleCometEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
+IEffectPainter *CParticlePatternEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 //	CreatePainter
 //
@@ -157,7 +158,7 @@ IEffectPainter *CParticleCometEffectCreator::OnCreatePainter (CCreatePainterCtx 
 	//	Otherwise we need to create a painter with the actual
 	//	parameters.
 
-	IEffectPainter *pPainter = new CParticleCometEffectPainter(Ctx, this);
+	IEffectPainter *pPainter = new CParticlePatternEffectPainter(Ctx, this);
 
 	//	Initialize the painter parameters
 
@@ -187,7 +188,7 @@ IEffectPainter *CParticleCometEffectCreator::OnCreatePainter (CCreatePainterCtx 
 	return pPainter;
 	}
 
-ALERROR CParticleCometEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
+ALERROR CParticlePatternEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 //	OnEffectBindDesign
 //
@@ -213,7 +214,7 @@ ALERROR CParticleCometEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-ALERROR CParticleCometEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
+ALERROR CParticlePatternEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
 
 //	OnEffectCreateFromXML
 //
@@ -266,11 +267,11 @@ ALERROR CParticleCometEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx,
 	return NOERROR;
 	}
 
-//	CParticleCometEffectPainter ------------------------------------------------
+//	CParticlePatternEffectPainter ------------------------------------------------
 
-TArray<CVector> CParticleCometEffectPainter::m_Points;
+TArray<CVector> CParticlePatternEffectPainter::m_Points;
 
-CParticleCometEffectPainter::CParticleCometEffectPainter (CCreatePainterCtx &Ctx, CParticleCometEffectCreator *pCreator) :
+CParticlePatternEffectPainter::CParticlePatternEffectPainter (CCreatePainterCtx &Ctx, CParticlePatternEffectCreator *pCreator) :
 		m_pCreator(pCreator),
 		m_iStyle(styleComet),
 		m_iLifetime(0),
@@ -283,7 +284,7 @@ CParticleCometEffectPainter::CParticleCometEffectPainter (CCreatePainterCtx &Ctx
 		m_JitterLength(1, 71, 79),
 		m_iInitializedLength(-1)
 
-//	CParticleCometEffectPainter constructor
+//	CParticlePatternEffectPainter constructor
 
 	{
 	InitSplinePoints();
@@ -297,16 +298,16 @@ CParticleCometEffectPainter::CParticleCometEffectPainter (CCreatePainterCtx &Ctx
 		m_pParticlePainter = NULL;
 	}
 
-CParticleCometEffectPainter::~CParticleCometEffectPainter (void)
+CParticlePatternEffectPainter::~CParticlePatternEffectPainter (void)
 
-//	CParticleCometEffectPainter destructor
+//	CParticlePatternEffectPainter destructor
 
 	{
 	if (m_pParticlePainter)
 		m_pParticlePainter->Delete();
 	}
 
-bool CParticleCometEffectPainter::CalcIntermediates (void)
+bool CParticlePatternEffectPainter::CalcIntermediates (void)
 
 //	CalcIntermediates
 //
@@ -390,7 +391,7 @@ bool CParticleCometEffectPainter::CalcIntermediates (void)
 	return true;
 	}
 
-void CParticleCometEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+void CParticlePatternEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
 
 //	GetParam
 //
@@ -431,7 +432,7 @@ void CParticleCometEffectPainter::GetParam (const CString &sParam, CEffectParamD
 		retValue->InitNull();
 	}
 
-bool CParticleCometEffectPainter::GetParamList (TArray<CString> *retList) const
+bool CParticlePatternEffectPainter::GetParamList (TArray<CString> *retList) const
 
 //	GetParamList
 //
@@ -454,7 +455,7 @@ bool CParticleCometEffectPainter::GetParamList (TArray<CString> *retList) const
 	return true;
 	}
 
-bool CParticleCometEffectPainter::GetPaintInfo (int iParticle, int xPos, int yPos, SViewportPaintCtx &Ctx, int *retxPos, int *retyPos, int *retiAge)
+bool CParticlePatternEffectPainter::GetPaintInfo (int iParticle, int xPos, int yPos, SViewportPaintCtx &Ctx, int *retxPos, int *retyPos, int *retiAge)
 
 //	GetPaintInfo
 //
@@ -491,7 +492,7 @@ bool CParticleCometEffectPainter::GetPaintInfo (int iParticle, int xPos, int yPo
 	return true;
 	}
 
-void CParticleCometEffectPainter::GetRect (RECT *retRect) const
+void CParticlePatternEffectPainter::GetRect (RECT *retRect) const
 
 //	GetRect
 //
@@ -506,7 +507,7 @@ void CParticleCometEffectPainter::GetRect (RECT *retRect) const
 	retRect->bottom = iSize;
 	}
 
-void CParticleCometEffectPainter::InitSplinePoints (void)
+void CParticlePatternEffectPainter::InitSplinePoints (void)
 
 //	InitSplinePoints
 //
@@ -565,7 +566,7 @@ void CParticleCometEffectPainter::InitSplinePoints (void)
 		}
 	}
 
-void CParticleCometEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
+void CParticlePatternEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged)
 
 //	OnMove
 //
@@ -581,7 +582,7 @@ void CParticleCometEffectPainter::OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsC
 		*retbBoundsChanged = false; 
 	}
 
-void CParticleCometEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
+void CParticlePatternEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 
 //	OnUpdate
 //
@@ -594,7 +595,7 @@ void CParticleCometEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)
 		m_pParticlePainter->OnUpdate(Ctx);
 	}
 
-void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CParticlePatternEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
 //
@@ -679,7 +680,7 @@ void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SView
 		}
 	}
 
-void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+void CParticlePatternEffectPainter::Paint (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
 
 //	Paint
 //
@@ -722,7 +723,7 @@ void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int xPos, int yPos,
 		}
 	}
 
-void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, IEffectPainter *pPainter)
+void CParticlePatternEffectPainter::Paint (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, IEffectPainter *pPainter)
 
 //	Paint
 //
@@ -766,7 +767,7 @@ void CParticleCometEffectPainter::Paint (CG32bitImage &Dest, int xPos, int yPos,
 	Ctx.iMaxLength = iSavedMaxLength;
 	}
 
-void CParticleCometEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
+void CParticlePatternEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	PaintComposite
 //
@@ -775,7 +776,7 @@ void CParticleCometEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int
 	{
 	}
 
-void CParticleCometEffectPainter::PaintFireAndSmoke (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, const CFireAndSmokePainter &Painter)
+void CParticlePatternEffectPainter::PaintFireAndSmoke (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, const CFireAndSmokePainter &Painter)
 
 //	PaintFireAndSmoke
 //
@@ -801,7 +802,7 @@ void CParticleCometEffectPainter::PaintFireAndSmoke (CG32bitImage &Dest, int xPo
 		}
 	}
 
-void CParticleCometEffectPainter::PaintGaseous (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+void CParticlePatternEffectPainter::PaintGaseous (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
 
 //	PaintGaseous
 //
@@ -828,7 +829,7 @@ void CParticleCometEffectPainter::PaintGaseous (CG32bitImage &Dest, int xPos, in
 		}
 	}
 
-void CParticleCometEffectPainter::PaintGlitter (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+void CParticlePatternEffectPainter::PaintGlitter (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
 
 //	PaintGlitter
 //
@@ -855,7 +856,7 @@ void CParticleCometEffectPainter::PaintGlitter (CG32bitImage &Dest, int xPos, in
 		}
 	}
 
-void CParticleCometEffectPainter::PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+void CParticlePatternEffectPainter::PaintImage (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
 
 //	PaintImage
 //
@@ -898,7 +899,7 @@ void CParticleCometEffectPainter::PaintImage (CG32bitImage &Dest, int xPos, int 
 		}
 	}
 
-void CParticleCometEffectPainter::PaintLine (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
+void CParticlePatternEffectPainter::PaintLine (CG32bitImage &Dest, int xPos, int yPos, SViewportPaintCtx &Ctx, SParticlePaintDesc &Desc)
 
 //	PaintLine
 //
@@ -937,7 +938,7 @@ void CParticleCometEffectPainter::PaintLine (CG32bitImage &Dest, int xPos, int y
 		}
 	}
 
-bool CParticleCometEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const
+bool CParticlePatternEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const
 
 //	PointInImage
 //
@@ -951,7 +952,7 @@ bool CParticleCometEffectPainter::PointInImage (int x, int y, int iTick, int iVa
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void CParticleCometEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+void CParticlePatternEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //

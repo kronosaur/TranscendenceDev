@@ -370,9 +370,6 @@
     <ClCompile Include="SFXParticleCloud.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
-    <ClCompile Include="SFXParticleComet.cpp">
-      <Filter>Source Files\SFX</Filter>
-    </ClCompile>
     <ClCompile Include="SFXParticleExplosion.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
@@ -1113,6 +1110,9 @@
     </ClCompile>
     <ClCompile Include="CShipChallengeDesc.cpp">
       <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXParticlePattern.cpp">
+      <Filter>Source Files\SFX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
