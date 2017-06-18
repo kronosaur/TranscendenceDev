@@ -18,6 +18,38 @@ ICCItem::ICCItem (IObjectClass *pClass) : CObject(pClass)
 	ResetItem();
 	}
 
+void ICCItem::AppendAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
+
+//	AppendAt
+//
+//	Set key-value pair.
+
+	{
+	ICCItem *pExisting = GetElement(sKey);
+
+	//	If an entry does not exist, just add it.
+
+	if (pExisting == NULL)
+		SetAt(CC, sKey, pValue);
+
+	//	If this is a list, append to it.
+
+	else if (pExisting->GetValueType() == List)
+		pExisting->Append(CC, pValue);
+
+	//	Otherwise, convert into a list
+
+	else
+		{
+		ICCItem *pList = CC.CreateLinkedList();
+		pList->Append(CC, pExisting);
+		pList->Append(CC, pValue);
+
+		SetAt(CC, sKey, pList);
+		pList->Discard(&CC);
+		}
+	}
+
 void ICCItem::AppendInteger (CCodeChain &CC, int iValue)
 
 //	AppendInteger
@@ -103,7 +135,7 @@ bool ICCItem::GetBooleanAt (const CString &sKey)
 		return false;
 	else if (IsIdentifier())
 		return strEquals(sKey, GetStringValue());
-	else if (IsList())
+	else if (GetValueType() == List)
 		{
 		int i;
 		for (i = 0; i < GetCount(); i++)

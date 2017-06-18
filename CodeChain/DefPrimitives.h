@@ -338,10 +338,18 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(strFind string target) -> pos of target in string (0-based)",
 			"ss",	0,	},
 
-		{	"struct",			fnStruct,		0,
+		{	"struct",			fnStruct,		FN_STRUCT,
 			"(struct key1 value1 key2 value2 ...) -> struct\n"
             "(struct (key1 value1) (key2 value2) ..) -> struct\n"
             "(struct { key1:value1 key2:value2 ... } ...) -> struct",
+			"*",	0,	},
+
+		{	"structAppend",		fnStruct,		FN_STRUCT_APPEND,
+			"(struct key1 value1 key2 value2 ...) -> struct\n"
+            "(struct (key1 value1) (key2 value2) ..) -> struct\n"
+            "(struct { key1:value1 key2:value2 ... } ...) -> struct\n\n"
+			
+			"Same as struct except values of the same key are appended into a list.",
 			"*",	0,	},
 
 		{	"subset",			fnSubset,		0,

@@ -94,6 +94,8 @@
 #define FN_JOIN                         90
 #define FN_LIST							91
 #define FN_MAKE							92
+#define FN_STRUCT						93
+#define FN_STRUCT_APPEND				94
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

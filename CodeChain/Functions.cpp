@@ -2560,7 +2560,9 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	bool bReduceMax = false;
 	bool bReduceAverage = false;
 	bool bReduceSum = false;
+	bool bReduceUnique = false;
 	bool bOriginal = false;
+	bool bMapToStruct = (pSource->GetValueType() == ICCItem::SymbolTable);
 
 	int iOptionalArg = 1;
 	if (pArgs->GetCount() > 3)
@@ -2582,6 +2584,8 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				bReduceAverage = true;
 			else if (strEquals(sValue, CONSTLIT("reduceSum")))
 				bReduceSum = true;
+			else if (strEquals(sValue, CONSTLIT("reduceUnique")))
+				bReduceUnique = true;
 			}
 		}
 
@@ -2592,11 +2596,13 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Create a destination list
 
-	ICCItem *pResult = pCC->CreateLinkedList();
+	ICCItem *pResult;
+	if (bMapToStruct || bReduceUnique)
+		pResult = pCC->CreateSymbolTable();
+	else
+		pResult = pCC->CreateLinkedList();
 	if (pResult->IsError())
 		return pResult;
-
-	CCLinkedList *pList = (CCLinkedList *)pResult;
 
 	//	Setup the locals. We start by creating a local symbol table
 
@@ -2687,15 +2693,40 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			iAccumulate += pMapped->GetIntegerValue();
 			iCount++;
 			}
+		else if (bReduceUnique)
+			{
+			//	We expect the mapped result to always be the key. We store either 
+			//	the key or the original value here.
+
+			if (bOriginal)
+				{
+				if (bMapToStruct)
+					pResult->AddEntry(pCC, pMapped, pItem->GetElement(1));
+				else
+					pResult->AddEntry(pCC, pMapped, pItem);
+				}
+			else
+				pResult->AddEntry(pCC, pMapped, pMapped);
+			}
 
 		//	Add the mapped value to the result
 
 		else
 			{
-			if (bOriginal)
-				pList->Append(*pCC, pItem);
+			if (bMapToStruct)
+				{
+				if (bOriginal)
+					pResult->AddEntry(pCC, pItem->GetElement(0), pItem->GetElement(1));
+				else
+					pResult->AddEntry(pCC, pMapped->GetElement(0), pMapped->GetElement(1));
+				}
 			else
-				pList->Append(*pCC, pMapped);
+				{
+				if (bOriginal)
+					pResult->Append(*pCC, pItem);
+				else
+					pResult->Append(*pCC, pMapped);
+				}
 			}
 
 		//	Next
@@ -2734,6 +2765,25 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateNil();
 
 		return pCC->CreateInteger(iAccumulate / iCount);
+		}
+	else if (bReduceUnique)
+		{
+		if (pResult->GetCount() == 0)
+			{
+			pResult->Discard(pCC);
+			return pCC->CreateNil();
+			}
+		else if (bMapToStruct)
+			return pResult;
+		else
+			{
+			ICCItem *pListResult = pCC->CreateLinkedList();
+			for (i = 0; i < pResult->GetCount(); i++)
+				pListResult->Append(*pCC, pResult->GetElement(i));
+
+			pResult->Discard(pCC);
+			return pListResult;
+			}
 		}
 	else
 		{
@@ -3882,6 +3932,8 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	CCodeChain *pCC = pCtx->pCC;
     ICCItem *pResult = pCC->CreateSymbolTable();
 
+	bool bAppend = (dwData == FN_STRUCT_APPEND);
+
     //  Loop over all arguments and add to the result.
 
     int iArg = 0;
@@ -3903,7 +3955,11 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 {
                 CString sKey = pArg->GetKey(i);
                 ICCItem *pValue = pArg->GetElement(i);
-                pResult->SetAt(*pCC, sKey, pValue);
+
+				if (bAppend)
+					pResult->AppendAt(*pCC, sKey, pValue);
+				else
+					pResult->SetAt(*pCC, sKey, pValue);
                 }
 
             iArg++;
@@ -3922,7 +3978,10 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 break;
                 }
 
-            pResult->SetAt(*pCC, sKey, pArg->GetElement(1));
+			if (bAppend)
+				pResult->AppendAt(*pCC, sKey, pArg->GetElement(1));
+			else
+				pResult->SetAt(*pCC, sKey, pArg->GetElement(1));
             iArg++;
             }
 
@@ -3947,7 +4006,10 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 break;
                 }
 
-            pResult->SetAt(*pCC, sKey, pArgs->GetElement(iArg));
+			if (bAppend)
+				pResult->AppendAt(*pCC, sKey, pArgs->GetElement(iArg));
+			else
+				pResult->SetAt(*pCC, sKey, pArgs->GetElement(iArg));
             iArg++;
             }
 
