@@ -1123,6 +1123,14 @@ class CDesignCollection
 			int iItemTypes;					//	Count of item types
 			int iShipClasses;				//	Count of ship classes
 			int iStationTypes;				//	Count of station types
+			int iResourceTypes;				//	Count of images, sounds, music
+			int iDockScreens;				//	Count of dock screen types
+			int iMissionTypes;				//	Count of mission types
+			int iSovereigns;				//	Count of sovereigns
+			int iOverlayTypes;				//	Count of overlays
+			int iSystemTypes;				//	Count of system types
+			int iEffectTypes;				//	Count of effects
+			int iSupportTypes;				//	Count of tables, generic types, etc.
 
 			DWORDLONG dwTotalXMLMemory;		//	Total memory used for XML structures (excluding dynamic)
 			};

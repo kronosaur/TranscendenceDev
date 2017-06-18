@@ -1200,6 +1200,15 @@ void CDesignCollection::GetStats (SStats &Result) const
 	Result.iItemTypes = m_ByType[designItemType].GetCount();
 	Result.iShipClasses = m_ByType[designShipClass].GetCount();
 	Result.iStationTypes = m_ByType[designStationType].GetCount();
+	Result.iResourceTypes = m_ByType[designImage].GetCount() + m_ByType[designSound].GetCount() + m_ByType[designImageComposite].GetCount() + m_ByType[designMusic].GetCount();
+	Result.iDockScreens = m_ByType[designDockScreen].GetCount();
+	Result.iMissionTypes = m_ByType[designMissionType].GetCount();
+	Result.iSovereigns = m_ByType[designSovereign].GetCount();
+	Result.iOverlayTypes = m_ByType[designOverlayType].GetCount();
+	Result.iSystemTypes = m_ByType[designSystemType].GetCount();
+	Result.iEffectTypes = m_ByType[designEffectType].GetCount();
+	Result.iSupportTypes = m_ByType[designItemTable].GetCount() + m_ByType[designShipTable].GetCount() + m_ByType[designSystemTable].GetCount() + m_ByType[designGenericType].GetCount()
+			+ m_ByType[designEconomyType].GetCount() + m_ByType[designPower].GetCount() + m_ByType[designSpaceEnvironmentType].GetCount() + m_ByType[designSystemMap].GetCount();
 
 	//	Add up all the XML memory usage
 
