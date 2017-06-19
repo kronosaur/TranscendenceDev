@@ -95,6 +95,7 @@
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 #define PROPERTY_MERGED							CONSTLIT("merged")
+#define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
 
 #define FIELD_ENTITY							CONSTLIT("entity")
 #define FIELD_EXTENSION_UNID					CONSTLIT("extensionUNID")
@@ -585,6 +586,15 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
     else if (strEquals(sProperty, PROPERTY_MERGED))
         return CC.CreateBool(m_bIsMerged);
+
+    else if (strEquals(sProperty, PROPERTY_NAME_PATTERN))
+		{
+		ICCItem *pResult = CC.CreateSymbolTable();
+		DWORD dwFlags;
+		pResult->SetStringAt(CC, CONSTLIT("pattern"), GetNamePattern(0, &dwFlags));
+		pResult->SetIntegerAt(CC, CONSTLIT("flags"), dwFlags);
+		return pResult;
+		}
 
 	//	Otherwise, we see if there is a data field
 
