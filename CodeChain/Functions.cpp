@@ -5049,7 +5049,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				}
 
 			case ICCItem::String:
-				return strCompare(pFirst->GetStringValue(), pSecond->GetStringValue());
+				return strCompareAbsolute(pFirst->GetStringValue(), pSecond->GetStringValue());
 
 			case ICCItem::List:
 				{
@@ -5084,7 +5084,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 
 					for (i = 0; i < pFirst->GetCount(); i++)
 						{
-						int iCompare = strCompare(pFirst->GetKey(i), pSecond->GetKey(i));
+						int iCompare = strCompareAbsolute(pFirst->GetKey(i), pSecond->GetKey(i));
 						if (iCompare != 0)
 							return iCompare;
 

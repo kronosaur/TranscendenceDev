@@ -1331,7 +1331,7 @@ int strFind (const CString &sString, const CString &sStringToFind)
 		{
 		CString sTest(pString + i, iTargetLen, TRUE);
 
-		if (strCompare(sTest, sStringToFind) == 0)
+		if (strCompareAbsolute(sTest, sStringToFind) == 0)
 			return i;
 		}
 

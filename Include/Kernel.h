@@ -1535,7 +1535,7 @@ inline char uiGetCharFromKeyCode (int iVirtKey) { DWORD dwChar = ::MapVirtualKey
 
 inline int KeyCompare (const CString &sKey1, const CString &sKey2)
 	{
-	return strCompare(sKey1, sKey2);
+	return strCompareAbsolute(sKey1, sKey2);
 	}
 
 inline int KeyCompare (const CTimeDate &Key1, const CTimeDate &Key2)
