@@ -161,8 +161,12 @@
 #define MAX_ATTACK_DISTANCE						(g_KlicksPerPixel * 512)
 
 #define SPECIAL_IS_ENEMY_OF						CONSTLIT("isEnemyOf:")
+#define SPECIAL_IS_SHIP_ENCOUNTER				CONSTLIT("isShipEncounter:")
+#define SPECIAL_IS_STATION_ENCOUNTER			CONSTLIT("isStationEncounter:")
 #define SPECIAL_SCALE							CONSTLIT("scale:")
 #define SPECIAL_SIZE_CLASS						CONSTLIT("sizeClass:")
+
+#define SPECIAL_VALUE_TRUE						CONSTLIT("true")
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 
@@ -1769,6 +1773,16 @@ bool CStationType::OnHasSpecialAttribute (const CString &sAttrib) const
 		{
 		CString sValue = strSubString(sAttrib, SPECIAL_SCALE.GetLength());
 		return (ParseScale(sValue) == GetScale());
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_IS_SHIP_ENCOUNTER))
+		{
+		CString sValue = strSubString(sAttrib, SPECIAL_IS_SHIP_ENCOUNTER.GetLength());
+		return (IsShipEncounter() == strEquals(sValue, SPECIAL_VALUE_TRUE));
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_IS_STATION_ENCOUNTER))
+		{
+		CString sValue = strSubString(sAttrib, SPECIAL_IS_STATION_ENCOUNTER.GetLength());
+		return (IsStationEncounter() == strEquals(sValue, SPECIAL_VALUE_TRUE));
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SIZE_CLASS))
 		{

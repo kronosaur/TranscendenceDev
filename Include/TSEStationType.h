@@ -254,9 +254,9 @@ class CStationType : public CDesignType
 		inline bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
 		inline bool IsSign (void) { return (m_fSign ? true : false); }
 		bool IsSizeClass (ESizeClass iClass) const;
-		inline bool IsShipEncounter (void) { return (m_fShipEncounter ? true : false); }
+		inline bool IsShipEncounter (void) const { return (m_fShipEncounter ? true : false); }
 		inline bool IsStatic (void) { return (m_fStatic ? true : false); }
-		inline bool IsStationEncounter (void) { return (m_fStationEncounter ? true : false); }
+		inline bool IsStationEncounter (void) const { return (m_fStationEncounter ? true : false); }
 		inline bool IsTimeStopImmune (void) { return (m_fTimeStopImmune ? true : false); }
 		inline bool IsUniqueInSystem (void) const { return GetEncounterDesc().IsUniqueInSystem(); }
 		inline bool IsWall (void) { return (m_fWall ? true : false); }
