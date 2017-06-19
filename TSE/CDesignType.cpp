@@ -2409,7 +2409,7 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError)
 	if (pPlayer)
 		pPlayer->SendMessage(NULL, sError);
 
-	kernelDebugLogString(sError);
+	g_pUniverse->LogOutput(sError);
 	}
 
 bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const

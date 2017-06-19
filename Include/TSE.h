@@ -2220,6 +2220,7 @@ class CUniverse
 				virtual void DebugOutput (const CString &sLine) { }
 				virtual void GameOutput (const CString &sLine) { }
 				virtual const CG16bitFont *GetFont (const CString &sFont) { return NULL; }
+				virtual void LogOutput (const CString &sLine) const { ::kernelDebugLogString(sLine); }
 			};
 
 		class INotifications
@@ -2374,6 +2375,7 @@ class CUniverse
 		inline void NotifyOnObjSelected (CSpaceObject *pObj) { pObj->FireOnSelected(); }
 		inline ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
 		inline bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
+		inline void LogOutput (const CString &sLine) const { m_pHost->LogOutput(sLine); }
 		void PlaySound (CSpaceObject *pSource, int iChannel);
 		void PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSystemEventList &SavedEvents);
 		void RefreshCurrentMission (void);

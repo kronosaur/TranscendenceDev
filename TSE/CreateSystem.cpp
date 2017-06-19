@@ -603,7 +603,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 		if (g_pUniverse->InDebugMode())
 			{
 			PushDebugStack(pCtx, strPatternSubst(CONSTLIT("FillLocations locationCriteria=%s"), pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB)));
-			kernelDebugLogPattern("Warning: No locations found.");
+			g_pUniverse->LogOutput(CONSTLIT("Warning: No locations found."));
 			DumpDebugStack(pCtx);
 			PopDebugStack(pCtx);
 			}
@@ -749,7 +749,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 
 				if (--iTries == 0 && g_pUniverse->InDebugMode())
 					{
-					kernelDebugLogPattern("Warning: Ran out of tries in FillLocations");
+					g_pUniverse->LogOutput(CONSTLIT("Warning: Ran out of tries in FillLocations"));
 					DumpDebugStack(pCtx);
 					}
 
@@ -1064,7 +1064,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 		{
 		if (g_pUniverse->InDebugMode())
 			{
-			kernelDebugLogPattern("Warning: No locations found for RandomLocation");
+			g_pUniverse->LogOutput(CONSTLIT("Warning: No locations found for RandomLocation"));
 			DumpDebugStack(pCtx);
 			}
 
@@ -1098,7 +1098,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 			{
 			if (g_pUniverse->InDebugMode())
 				{
-				kernelDebugLogPattern("Warning: Ran out of locations in RandomLocation directive");
+				g_pUniverse->LogOutput(CONSTLIT("Warning: Ran out of locations in RandomLocation directive"));
 				DumpDebugStack(pCtx);
 				}
 
@@ -2029,14 +2029,14 @@ ALERROR CreateShipsForStation (CSpaceObject *pStation, CXMLElement *pShips)
 	if (error = IShipGenerator::CreateFromXMLAsGroup(Ctx, pShips, &pGenerator))
 		{
 		ASSERT(false);
-		kernelDebugLogPattern("Unable to load ship generator: %s", Ctx.sError);
+		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Unable to load ship generator: %s"), Ctx.sError));
 		return error;
 		}
 
 	if (error = pGenerator->OnDesignLoadComplete(Ctx))
 		{
 		ASSERT(false);
-		kernelDebugLogPattern("Unable to load ship generator: %s", Ctx.sError);
+		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Unable to load ship generator: %s"), Ctx.sError));
 		return error;
 		}
 
@@ -2866,7 +2866,7 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 
 			sOutput = strPatternSubst(CONSTLIT("%s\n\tActive variants: %s"), sOutput, sActive);
 
-			kernelDebugLogString(sOutput);
+			g_pUniverse->LogOutput(sOutput);
 			DumpDebugStack(pCtx);
 			}
 
@@ -2925,7 +2925,7 @@ void DumpDebugStack (SSystemCreateCtx *pCtx)
 				sStack = strPatternSubst(CONSTLIT("%s\n\t%2d: %s"), sStack, i+1, pCtx->DebugStack[i]);
 			}
 
-		kernelDebugLogString(sStack);
+		g_pUniverse->LogOutput(sStack);
 		}
 	}
 
@@ -3189,7 +3189,7 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPla
 		}
 
 	if (!bFound && g_pUniverse->InDebugMode())
-		::kernelDebugLogPattern("Unable to find appropriate location for %s.", (pStationToPlace ? pStationToPlace->GetNounPhrase() : CONSTLIT("object")));
+		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Unable to find appropriate location for %s."), (pStationToPlace ? pStationToPlace->GetNounPhrase() : CONSTLIT("object"))));
 
 	//	Done
 
@@ -3721,7 +3721,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 		{
 		if (retsError)
 			*retsError = Ctx.sError;
-		kernelDebugLogPattern("Unable to create system: %s", Ctx.sError);
+		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Unable to create system: %s"), Ctx.sError));
 		DumpDebugStack(&Ctx);
 		return error;
 		}
@@ -3729,7 +3729,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 	//	Invoke OnCreate event
 
 	if (error = pType->FireOnCreate(Ctx, &Ctx.sError))
-		kernelDebugLogPattern("%s", Ctx.sError);
+		g_pUniverse->LogOutput(Ctx.sError);
 
 	//	Now invoke OnGlobalSystemCreated
 
@@ -3843,7 +3843,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 	//	Fire any deferred OnCreate events
 
 	if (error = Ctx.Events.FireDeferredEvent(ON_CREATE_EVENT, &Ctx.sError))
-		kernelDebugLogPattern("Deferred OnCreate: %s", Ctx.sError);
+		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Deferred OnCreate: %s"), Ctx.sError));
 
 	//	Make sure this system has all the stargates that it needs
 
@@ -3851,7 +3851,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 		if (pSystem->GetNamedObject(pTopology->GetStargate(i)) == NULL)
 			{
 			//	Log, but for backwards compatibility with <1.1 extensions continue running.
-			kernelDebugLogPattern("Warning: Unable to find required stargate: %s", pTopology->GetStargate(i));
+			g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Warning: Unable to find required stargate: %s"), pTopology->GetStargate(i)));
 			DumpDebugStack(&Ctx);
 			}
 
@@ -4026,7 +4026,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		if (pDesc == NULL)
 			{
 			ASSERT(false);
-			kernelDebugLogPattern("No <EncounterGroup> for <EncounterType>: %s", pType->GetNounPhrase());
+			g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("No <EncounterGroup> for <EncounterType>: %s"), pType->GetNounPhrase()));
 			DumpDebugStack(pCtx);
 			if (retpStation)
 				*retpStation = NULL;
@@ -4035,7 +4035,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 
 		if (CreateCtx.pOrbit == NULL)
 			{
-			kernelDebugLogPattern("No orbit defined for <EncounterType>: %s", pType->GetNounPhrase());
+			g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("No orbit defined for <EncounterType>: %s"), pType->GetNounPhrase()));
 			DumpDebugStack(pCtx);
 			if (retpStation)
 				*retpStation = NULL;
@@ -4058,7 +4058,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		if (pShipRegistry == NULL)
 			{
 			ASSERT(false);
-			kernelDebugLogPattern("No ship for ship encounter: %s", pType->GetNounPhrase());
+			g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("No ship for ship encounter: %s"), pType->GetNounPhrase()));
 			DumpDebugStack(pCtx);
 			if (retpStation)
 				*retpStation = NULL;
