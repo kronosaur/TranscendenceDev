@@ -57,6 +57,7 @@
 #define GET_GLOBAL_DOCK_SCREEN_EVENT			CONSTLIT("GetGlobalDockScreen")
 #define GET_GLOBAL_PLAYER_PRICE_ADJ_EVENT		CONSTLIT("GetGlobalPlayerPriceAdj")
 #define GET_GLOBAL_RESURRECT_POTENTIAL_EVENT	CONSTLIT("GetGlobalResurrectPotential")
+#define ON_GLOBAL_END_DIAGNOSTICS_EVENT			CONSTLIT("OnGlobalEndDiagnostics")
 #define ON_GLOBAL_MARK_IMAGES_EVENT				CONSTLIT("OnGlobalMarkImages")
 #define ON_GLOBAL_OBJ_DESTROYED_EVENT			CONSTLIT("OnGlobalObjDestroyed")
 #define ON_GLOBAL_DOCK_PANE_INIT_EVENT			CONSTLIT("OnGlobalPaneInit")
@@ -67,6 +68,8 @@
 #define ON_GLOBAL_PLAYER_SOLD_ITEM_EVENT		CONSTLIT("OnGlobalPlayerSoldItem")
 #define ON_GLOBAL_RESURRECT_EVENT				CONSTLIT("OnGlobalResurrect")
 #define ON_GLOBAL_TOPOLOGY_CREATED_EVENT		CONSTLIT("OnGlobalTopologyCreated")
+#define ON_GLOBAL_START_DIAGNOSTICS_EVENT		CONSTLIT("OnGlobalStartDiagnostics")
+#define ON_GLOBAL_SYSTEM_DIAGNOSTICS_EVENT		CONSTLIT("OnGlobalSystemDiagnostics")
 #define ON_GLOBAL_SYSTEM_CREATED_EVENT			CONSTLIT("OnGlobalSystemCreated")
 #define ON_GLOBAL_SYSTEM_STARTED_EVENT			CONSTLIT("OnGlobalSystemStarted")
 #define ON_GLOBAL_SYSTEM_STOPPED_EVENT			CONSTLIT("OnGlobalSystemStopped")
@@ -1122,6 +1125,24 @@ void CDesignType::FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CS
 	Ctx.Discard(pResult);
 	}
 
+void CDesignType::FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event)
+
+//	FireOnGlobalEndDiagnostics
+//
+//	Fires OnGlobalEndDiagnostics
+
+	{
+	CCodeChainCtx CCCtx;
+
+	//	Run code
+
+	ICCItem *pResult = CCCtx.Run(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_END_DIAGNOSTICS_EVENT, pResult);
+
+	CCCtx.Discard(pResult);
+	}
+
 void CDesignType::FireOnGlobalMarkImages (const SEventHandlerDesc &Event)
 
 //	FireOnGlobalMarkImages
@@ -1264,6 +1285,42 @@ ALERROR CDesignType::FireOnGlobalResurrect (CString *retsError)
 		}
 
 	return NOERROR;
+	}
+
+void CDesignType::FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event)
+
+//	FireOnGlobalStartDiagnostics
+//
+//	Fires OnGlobalStartDiagnostics
+
+	{
+	CCodeChainCtx CCCtx;
+
+	//	Run code
+
+	ICCItem *pResult = CCCtx.Run(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_START_DIAGNOSTICS_EVENT, pResult);
+
+	CCCtx.Discard(pResult);
+	}
+
+void CDesignType::FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event)
+
+//	FireOnGlobalSystemDiagnostics
+//
+//	Fires OnGlobalSystemDiagnostics
+
+	{
+	CCodeChainCtx CCCtx;
+
+	//	Run code
+
+	ICCItem *pResult = CCCtx.Run(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_SYSTEM_DIAGNOSTICS_EVENT, pResult);
+
+	CCCtx.Discard(pResult);
 	}
 
 ALERROR CDesignType::FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, CString *retsError)

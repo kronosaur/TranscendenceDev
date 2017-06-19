@@ -232,6 +232,7 @@ class CDesignType
 		int FireGetGlobalResurrectPotential (void);
 		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem **retpResult);
 		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sPane, CString *retsError);
+		void FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event);
 		void FireOnGlobalMarkImages (const SEventHandlerDesc &Event);
 		void FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDestroyCtx &Ctx);
 		void FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
@@ -240,6 +241,8 @@ class CDesignType
 		ALERROR FireOnGlobalPlayerLeftSystem (CString *retsError = NULL);
 		void FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		ALERROR FireOnGlobalResurrect (CString *retsError = NULL);
+		void FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event);
+		void FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event);
 		ALERROR FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, CString *retsError = NULL);
 		void FireOnGlobalSystemStarted (const SEventHandlerDesc &Event, DWORD dwElapsedTime);
 		void FireOnGlobalSystemStopped (const SEventHandlerDesc &Event);
@@ -1088,22 +1091,28 @@ class CDesignCollection
 	public:
 		enum ECachedHandlers
 			{
-			evtGetGlobalAchievements	= 0,
-			evtGetGlobalDockScreen		= 1,
-			evtGetGlobalPlayerPriceAdj	= 2,
-			evtOnGlobalDockPaneInit		= 3,
-			evtOnGlobalMarkImages		= 4,
-			evtOnGlobalObjDestroyed		= 5,
-			evtOnGlobalPlayerBoughtItem	= 6,
-			evtOnGlobalPlayerSoldItem	= 7,
-			evtOnGlobalSystemStarted	= 8,
-			evtOnGlobalSystemStopped	= 9,
-			evtOnGlobalUniverseCreated	= 10,
-			evtOnGlobalUniverseLoad		= 11,
-			evtOnGlobalUniverseSave		= 12,
-			evtOnGlobalUpdate			= 13,
+			evtGetGlobalAchievements		= 0,
+			evtGetGlobalDockScreen			= 1,
+			evtGetGlobalPlayerPriceAdj		= 2,
+			evtOnGlobalDockPaneInit			= 3,
+			evtOnGlobalEndDiagnostics		= 4,
 
-			evtCount					= 14
+			evtOnGlobalMarkImages			= 5,
+			evtOnGlobalObjDestroyed			= 6,
+			evtOnGlobalPlayerBoughtItem		= 7,
+			evtOnGlobalPlayerSoldItem		= 8,
+			evtOnGlobalStartDiagnostics		= 9,
+
+			evtOnGlobalSystemDiagnostics	= 10,
+			evtOnGlobalSystemStarted		= 11,
+			evtOnGlobalSystemStopped		= 12,
+			evtOnGlobalUniverseCreated		= 13,
+			evtOnGlobalUniverseLoad			= 14,
+
+			evtOnGlobalUniverseSave			= 15,
+			evtOnGlobalUpdate				= 16,
+
+			evtCount						= 17
 			};
 
 		enum EFlags
@@ -1149,6 +1158,7 @@ class CDesignCollection
 		void FireGetGlobalAchievements (CGameStats &Stats);
 		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CString *retsScreen, ICCItem **retpData, int *retiPriority = NULL);
 		bool FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
+		void FireOnGlobalEndDiagnostics (void);
 		void FireOnGlobalMarkImages (void);
 		void FireOnGlobalObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane);
@@ -1157,7 +1167,9 @@ class CDesignCollection
 		void FireOnGlobalPlayerEnteredSystem (void);
 		void FireOnGlobalPlayerLeftSystem (void);
 		void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
+		void FireOnGlobalStartDiagnostics (void);
 		void FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx);
+		void FireOnGlobalSystemDiagnostics (void);
 		void FireOnGlobalSystemStarted (DWORD dwElapsedTime);
 		void FireOnGlobalSystemStopped (void);
 		ALERROR FireOnGlobalTypesInit (SDesignLoadCtx &Ctx);

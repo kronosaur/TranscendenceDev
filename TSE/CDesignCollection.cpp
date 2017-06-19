@@ -22,16 +22,20 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 		"GetGlobalDockScreen",
 		"GetGlobalPlayerPriceAdj",
 		"OnGlobalPaneInit",
-		"OnGlobalMarkImages",
+		"OnGlobalEndDiagnostics",
 
+		"OnGlobalMarkImages",
 		"OnGlobalObjDestroyed",
 		"OnGlobalPlayerBoughtItem",
 		"OnGlobalPlayerSoldItem",
+		"OnGlobalStartDiagnostics",
+
+		"OnGlobalSystemDiagnostics",
 		"OnGlobalSystemStarted",
 		"OnGlobalSystemStopped",
-
 		"OnGlobalUniverseCreated",
 		"OnGlobalUniverseLoad",
+
 		"OnGlobalUniverseSave",
 		"OnGlobalUpdate",
 	};
@@ -762,6 +766,26 @@ bool CDesignCollection::FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCt
 	return (iPriceAdj != 100);
 	}
 
+void CDesignCollection::FireOnGlobalEndDiagnostics (void)
+
+//	FireOnGlobalEndDiagnostics
+//
+//	Done running diagnostics. Output results.
+
+	{
+	int i;
+
+	//	Fire all events
+
+	for (i = 0; i < m_EventsCache[evtOnGlobalEndDiagnostics]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalEndDiagnostics]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalEndDiagnostics(Event);
+		}
+	}
+
 void CDesignCollection::FireOnGlobalMarkImages (void)
 
 //	FireOnGlobalMarkImages
@@ -924,6 +948,46 @@ void CDesignCollection::FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, con
 		CDesignType *pType = m_EventsCache[evtOnGlobalPlayerSoldItem]->GetEntry(i, &Event);
 
 		pType->FireOnGlobalPlayerSoldItem(Event, pBuyerObj, Item, Price);
+		}
+	}
+
+void CDesignCollection::FireOnGlobalStartDiagnostics (void)
+
+//	FireOnGlobalStartDiagnostics
+//
+//	Called after all systems created.
+
+	{
+	int i;
+
+	//	Fire all events
+
+	for (i = 0; i < m_EventsCache[evtOnGlobalStartDiagnostics]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalStartDiagnostics]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalStartDiagnostics(Event);
+		}
+	}
+
+void CDesignCollection::FireOnGlobalSystemDiagnostics (void)
+
+//	FireOnGlobalSystemDiagnostics
+//
+//	Called for each system.
+
+	{
+	int i;
+
+	//	Fire all events
+
+	for (i = 0; i < m_EventsCache[evtOnGlobalSystemDiagnostics]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalSystemDiagnostics]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalSystemDiagnostics(Event);
 		}
 	}
 
