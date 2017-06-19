@@ -91,7 +91,7 @@ bool CCommunicationsHandler::FindMergePos (const SMessage &Msg, int *retiPos)
 	if (retiPos)
 		{
 		i = 0;
-		while (i < GetCount() && strCompare(Msg.sShortcut, m_Messages[i].sShortcut) != 1)
+		while (i < GetCount() && strCompareAbsolute(Msg.sShortcut, m_Messages[i].sShortcut) != 1)
 			i++;
 
 		*retiPos = i;

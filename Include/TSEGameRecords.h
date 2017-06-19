@@ -121,8 +121,8 @@ class CGameStats
 		struct SStat
 			{
 			//	Needed for TArray's sort method
-			bool operator > (const SStat &Right) const { return (strCompare(sSortKey, Right.sSortKey) == 1); }
-			bool operator < (const SStat &Right) const { return (strCompare(sSortKey, Right.sSortKey) == -1); }
+			bool operator > (const SStat &Right) const { return (strCompareAbsolute(sSortKey, Right.sSortKey) == 1); }
+			bool operator < (const SStat &Right) const { return (strCompareAbsolute(sSortKey, Right.sSortKey) == -1); }
 
 			CString sSortKey;
 			CString sStatName;
