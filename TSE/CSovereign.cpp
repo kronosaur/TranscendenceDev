@@ -30,6 +30,8 @@
 #define DISP_NEUTRAL							CONSTLIT("neutral")
 #define DISP_ENEMY								CONSTLIT("enemy")
 
+#define EVENT_ON_UPDATE							CONSTLIT("OnUpdate")
+
 #define FIELD_NAME								CONSTLIT("name")
 
 #define PROPERTY_NAME							CONSTLIT("name")
@@ -1007,4 +1009,36 @@ bool CSovereign::SetPropertyString (const CString &sProperty, const CString &sVa
 		return pController->SetPropertyString(sProperty, sValue);
 	else
 		return false;
+	}
+
+void CSovereign::Update (int iTick, CSystem *pSystem)
+
+//	Update
+//
+//	Updates the sovereign
+
+	{
+	//	Time to call OnUpdate?
+
+	SEventHandlerDesc Event;
+	if (FindEventHandler(evtOnUpdate, &Event)
+			&& (((DWORD)iTick + GetUNID()) % OBJECT_ON_UPDATE_CYCLE) == 0)
+		{
+		CCodeChainCtx Ctx;
+
+		//	Setup 
+
+		Ctx.SaveAndDefineSovereignVar(this);
+
+		//	Execute
+
+		ICCItem *pResult = Ctx.Run(Event);
+
+		//	Done
+
+		if (pResult->IsError())
+			ReportEventError(EVENT_ON_UPDATE, pResult);
+
+		Ctx.Discard(pResult);
+		}
 	}

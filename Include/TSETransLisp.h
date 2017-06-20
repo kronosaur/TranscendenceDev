@@ -63,6 +63,7 @@ class CCodeChainCtx
 		void SaveAndDefineItemVar (CItemCtx &ItemCtx);
 		void SaveAndDefineOverlayID (DWORD dwID);
 		void SaveAndDefineSourceVar (CSpaceObject *pSource);
+		void SaveAndDefineSovereignVar (CSovereign *pSource);
 		void SaveItemVar (void);
 		void SaveSourceVar (void);
 		inline void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }

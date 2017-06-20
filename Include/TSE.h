@@ -2515,6 +2515,7 @@ class CUniverse
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
 		void UpdateMissions (int iTick, CSystem *pSystem);
+		void UpdateSovereigns (int iTick, CSystem *pSystem);
 
 		//	Design data
 

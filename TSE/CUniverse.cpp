@@ -2849,6 +2849,10 @@ void CUniverse::Update (SSystemUpdateCtx &Ctx)
 
 	UpdateMissions(m_iTick, m_pCurrentSystem);
 
+	//	Update sovereigns
+
+	UpdateSovereigns(m_iTick, m_pCurrentSystem);
+
 	//	Update types
 
 	m_Design.FireOnGlobalUpdate(m_iTick);
@@ -2919,6 +2923,22 @@ void CUniverse::UpdateMissions (int iTick, CSystem *pSystem)
 			if (!pMission->IsDestroyed() && pMission->IsOpen())
 				pMission->UpdateExpiration(iTick);
 			}
+		}
+	}
+
+void CUniverse::UpdateSovereigns (int iTick, CSystem *pSystem)
+
+//	UpdateSovereigns
+//
+//	Update each sovereign
+
+	{
+	int i;
+
+	for (i = 0; i < GetSovereignCount(); i++)
+		{
+		CSovereign *pSovereign = GetSovereign(i);
+		pSovereign->Update(iTick, pSystem);
 		}
 	}
 

@@ -583,6 +583,19 @@ void CCodeChainCtx::SaveAndDefineSourceVar (CSpaceObject *pSource)
 	DefineGlobalSpaceObject(m_CC, STR_G_SOURCE, pSource);
 	}
 
+void CCodeChainCtx::SaveAndDefineSovereignVar (CSovereign *pSource)
+
+//	SaveAndDefineSovereignVar
+//
+//	Saves and sets gSource
+
+	{
+	if (m_pOldSource == NULL)
+		m_pOldSource = m_CC.LookupGlobal(STR_G_SOURCE, this);
+
+	DefineInteger(STR_G_SOURCE, pSource->GetUNID());
+	}
+
 void CCodeChainCtx::SaveItemVar (void)
 
 //	SaveItemVar

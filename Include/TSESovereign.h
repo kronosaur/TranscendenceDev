@@ -87,6 +87,7 @@ class CSovereign : public CDesignType
 		bool SetPropertyInteger (const CString &sProperty, int iValue);
 		bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList);
 		bool SetPropertyString (const CString &sProperty, const CString &sValue);
+		void Update (int iTick, CSystem *pSystem);
 
 		//	CDesignType overrides
 		static CSovereign *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSovereign) ? (CSovereign *)pType : NULL); }
