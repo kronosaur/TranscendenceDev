@@ -2854,6 +2854,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   t                  StationType\n"
 			"   u                  Sound\n"
 			"   v                  Sovereign\n"
+			"   x                  Type (generic)\n"
 			"   y                  SystemType\n"
 			"   z                  SystemMap\n"
 			"   $                  EconomyType\n"
