@@ -2562,7 +2562,8 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	bool bReduceSum = false;
 	bool bReduceUnique = false;
 	bool bOriginal = false;
-	bool bMapToStruct = (pSource->GetValueType() == ICCItem::SymbolTable);
+	bool bIsStruct = (pSource->GetValueType() == ICCItem::SymbolTable);
+	bool bMapToStruct = false;
 
 	int iOptionalArg = 1;
 	if (pArgs->GetCount() > 3)
@@ -2700,7 +2701,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (bOriginal)
 				{
-				if (bMapToStruct)
+				if (bIsStruct)
 					pResult->AddEntry(pCC, pMapped, pItem->GetElement(1));
 				else
 					pResult->AddEntry(pCC, pMapped, pItem);
