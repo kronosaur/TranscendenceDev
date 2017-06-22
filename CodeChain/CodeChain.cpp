@@ -1013,7 +1013,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 
 			case 'f':
 				{
-				if (!pResult->IsFunction())
+				if (!pResult->IsNil() && !pResult->IsFunction())
 					{
 					pError = CreateError(LITERAL("Function expected"), pResult);
 					pResult->Discard(this);
@@ -1033,7 +1033,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 			case 'i':
 			case 'n':
 				{
-				if (!pResult->IsDouble() && !pResult->IsInteger())
+				if (!pResult->IsNil() && !pResult->IsDouble() && !pResult->IsInteger())
 					{
 					pError = CreateError(LITERAL("Numeral expected"), pResult);
 					pResult->Discard(this);
@@ -1047,7 +1047,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 
 			case 'd':
 				{
-				if (!pResult->IsDouble())
+				if (!pResult->IsNil() && !pResult->IsDouble())
 					{
 					pError = CreateError(LITERAL("Double expected"), pResult);
 					pResult->Discard(this);
@@ -1102,6 +1102,17 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 			//	We expect an identifier
 
 			case 's':
+				{
+				if (!pResult->IsNil() && !pResult->IsIdentifier())
+					{
+					pError = CreateError(LITERAL("Identifier expected"), pResult);
+					pResult->Discard(this);
+					pEvalList->Discard(this);
+					return pError;
+					}
+				break;
+				}
+
 			case 'q':
 				{
 				if (!pResult->IsIdentifier())
@@ -1132,7 +1143,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 
 			case 'y':
 				{
-				if (!pResult->IsSymbolTable())
+				if (!pResult->IsNil() && !pResult->IsSymbolTable())
 					{
 					pError = CreateError(LITERAL("Symbol table expected"), pResult);
 					pResult->Discard(this);
