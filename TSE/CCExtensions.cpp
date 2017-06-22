@@ -12853,6 +12853,13 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 
+	//	Ignore nil. (We fail silently because sometimes our input comes from a
+	//	different function, which might have failed. Thus this is a runtime
+	//	situation, not a programmer error.)
+
+	if (pArgs->GetElement(0)->IsNil())
+		return pCC->CreateNil();
+
 	//	First arg is topology node
 
 	CTopologyNode *pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
