@@ -11061,7 +11061,13 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 	CSovereign *pSovereign = g_pUniverse->FindSovereign(dwSovereignID);
 	if (pSovereign == NULL)
-		return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pArgs->GetElement(2));
+		{
+		//	Error only if we specified a non-nil sovereign and if we're not
+		//	creating a ship table (ship tables can specify a sovereign themselves).
+
+		if (pType->GetType() != designShipTable || dwSovereignID != 0)
+			return pCC->CreateError(CONSTLIT("Unknown sovereign ID"), pArgs->GetElement(2));
+		}
 
 	//	Options
 
