@@ -5738,7 +5738,8 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 
 	if (Crit.bNearestOnly)
 		{
-		if (rObjDist2 < Ctx.rBestDist2)
+		if (rObjDist2 < Ctx.rBestDist2
+				&& (!IsIntangible() || IsVirtual()))
 			{
 			Ctx.pBestObj = this;
 			Ctx.rBestDist2 = rObjDist2;
@@ -5746,7 +5747,8 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 		}
 	else if (Crit.bFarthestOnly)
 		{
-		if (rObjDist2 > Ctx.rBestDist2)
+		if (rObjDist2 > Ctx.rBestDist2
+				&& (!IsIntangible() || IsVirtual()))
 			{
 			Ctx.pBestObj = this;
 			Ctx.rBestDist2 = rObjDist2;
