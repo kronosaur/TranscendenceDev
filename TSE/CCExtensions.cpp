@@ -2522,7 +2522,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   Z           Exclude the player\n"
 			"   +xyz;       Exclude objects without the given attribute\n"
 			"   -xyz;       Exclude objects with the given attribute\n"
-			"   =n          Only objects of level n. You can also use >, <, >=, and <=.\n\n",
+			"   =n          Only objects of level n. You can also use >, <, >=, and <=.\n\n"
 			
 			"   +/-data:xyz;        Include only/exclude objects with data 'xyz'\n"
 			"   +/-isPlanet:true;   Include only/exclude planets\n"
@@ -2531,7 +2531,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"Order doesn't matter as long as multi-character items end with semicolons.\n"
 			"If the source is nil, the center of the system is used for position,\n"
-			"and other criteria related to the source are ignored.\n\n"
+			"and other criteria related to the source are ignored.\n\n",
 
 			"is",	0,	},
 
