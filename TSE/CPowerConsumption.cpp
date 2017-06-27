@@ -47,8 +47,8 @@ void CPowerConsumption::ReadFromStream (SLoadCtx &Ctx)
 
 	DWORD dwFlags;
 	Ctx.pStream->Read(dwFlags);
-	m_fOutOfFuel = ((dwLoad &	0x00000001) ? true : false);
-	m_fOutOfPower = ((dwLoad &	0x00000002) ? true : false);
+	m_fOutOfFuel = ((dwFlags &	0x00000001) ? true : false);
+	m_fOutOfPower = ((dwFlags &	0x00000002) ? true : false);
 	}
 
 void CPowerConsumption::Refuel (Metric rFuel, Metric rMaxFuel)
@@ -145,8 +145,8 @@ void CPowerConsumption::WriteToStream (CSpaceObject *pObj, IWriteStream &Stream)
 	Stream.Write(dwSave);
 
 	DWORD dwFlags = 0;
-	dwFlags |= (m_fOutOfFuel ? 0x00000001 : 0);
-	dwFlags |= (m_fOutOfPower ? 0x00000001 : 0);
+	dwFlags |= (m_fOutOfFuel ?	0x00000001 : 0);
+	dwFlags |= (m_fOutOfPower ? 0x00000002 : 0);
 	Stream.Write(dwFlags);
 	}
 
