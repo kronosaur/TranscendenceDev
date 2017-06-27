@@ -70,6 +70,21 @@ void CPowerConsumption::Refuel (Metric rFuel, Metric rMaxFuel)
 	m_rFuelLeft = Min(rMaxFuel, m_rFuelLeft + rFuel);
 	}
 
+void CPowerConsumption::SetFuelLeft (Metric rFuel)
+
+//	SetFuelLeft
+//
+//	Sets the amount of fuel left.
+
+	{
+	m_rFuelLeft = rFuel;
+
+	//	Clear out of fuel if necessary
+
+	if (m_fOutOfFuel && rFuel > 0.0)
+		m_fOutOfFuel = false;
+	}
+
 void CPowerConsumption::SetMaxFuel (Metric rMaxFuel)
 
 //	SetMaxFuel

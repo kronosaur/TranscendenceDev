@@ -572,7 +572,7 @@ class CPowerConsumption
 		inline bool IsOutOfPower (void) const { return m_fOutOfPower; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Refuel (Metric rFuel, Metric rMaxFuel);
-		inline void SetFuelLeft (Metric rFuel) { m_rFuelLeft = rFuel; }
+		void SetFuelLeft (Metric rFuel);
 		inline void SetGraceTimer (int iTime) { m_iReactorGraceTimer = iTime; }
 		void SetMaxFuel (Metric rMaxFuel);
 		inline void SetOutOfFuel (bool bValue = true) { m_fOutOfFuel = bValue; }
