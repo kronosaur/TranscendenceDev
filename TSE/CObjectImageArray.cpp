@@ -5,11 +5,13 @@
 #include "PreComp.h"
 
 #define ANIMATION_COLUMNS_ATTRIB		CONSTLIT("animationColumns")
-#define FLASH_TICKS_ATTRIB				CONSTLIT("flashTicks")
-#define ROTATE_OFFSET_ATTRIB			CONSTLIT("rotationOffset")
 #define BLENDING_ATTRIB					CONSTLIT("blend")
+#define FLASH_TICKS_ATTRIB				CONSTLIT("flashTicks")
+#define IMAGE_WIDTH_ATTRIB				CONSTLIT("imageWidth")
+#define IMAGE_HEIGHT_ATTRIB				CONSTLIT("imageHeight")
 #define ROTATION_COLUMNS_ATTRIB			CONSTLIT("rotationColumns")
 #define ROTATION_COUNT_ATTRIB			CONSTLIT("rotationCount")
+#define ROTATE_OFFSET_ATTRIB			CONSTLIT("rotationOffset")
 #define VIEWPORT_RATIO_ATTRIB			CONSTLIT("viewportRatio")
 #define VIEWPORT_SIZE_ATTRIB			CONSTLIT("viewportSize")
 #define X_OFFSET_ATTRIB					CONSTLIT("xOffset")
@@ -42,8 +44,6 @@ static int g_Filter[FILTER_SIZE][FILTER_SIZE] =
 static char g_ImageIDAttrib[] = "imageID";
 static char g_ImageXAttrib[] = "imageX";
 static char g_ImageYAttrib[] = "imageY";
-static char g_ImageWidthAttrib[] = "imageWidth";
-static char g_ImageHeightAttrib[] = "imageHeight";
 static char g_ImageFrameCountAttrib[] = "imageFrameCount";
 static char g_ImageTicksPerFrameAttrib[] = "imageTicksPerFrame";
 
@@ -432,6 +432,7 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 	m_pGlowImages = NULL;
 	m_pScaledImages = NULL;
 	m_cxScaledImage = -1;
+	m_bDefaultSize = Source.m_bDefaultSize;
 
 	m_iRotationOffset = Source.m_iRotationOffset;
 	if (Source.m_pRotationOffset)
@@ -869,6 +870,7 @@ ALERROR CObjectImageArray::Init (CG32bitImage *pBitmap, const RECT &rcImage, int
 	m_pRotationOffset = NULL;
 	m_iBlending = blendNormal;
 	m_iViewportSize = RectWidth(rcImage);
+	m_bDefaultSize = false;
 
     if (xOffset != 0 || yOffset != 0)
         ComputeRotationOffsets(xOffset, -yOffset);
@@ -931,6 +933,7 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, int iFrameCount, int iTicks
 	m_pRotationOffset = NULL;
 	m_iBlending = blendNormal;
 	m_iViewportSize = RectWidth(m_rcImage);
+	m_bDefaultSize = false;
 
 	return NOERROR;
     }
@@ -961,6 +964,7 @@ ALERROR CObjectImageArray::Init (CObjectImage *pImage, const RECT &rcImage, int 
 	m_pRotationOffset = NULL;
 	m_iBlending = blendNormal;
 	m_iViewportSize = RectWidth(rcImage);
+	m_bDefaultSize = false;
 
 	return NOERROR;
 	}
@@ -989,6 +993,7 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iF
 	m_pRotationOffset = NULL;
 	m_iBlending = blendNormal;
 	m_iViewportSize = RectWidth(rcImage);
+	m_bDefaultSize = false;
 
 	return NOERROR;
 	}
@@ -1042,6 +1047,7 @@ ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int
 	m_pRotationOffset = NULL;
 	m_iBlending = blendNormal;
 	m_iViewportSize = RectWidth(m_rcImage);
+	m_bDefaultSize = false;
 
 	return NOERROR;
 	}
@@ -1069,8 +1075,26 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 
 	m_rcImage.left = pDesc->GetAttributeInteger(CONSTLIT(g_ImageXAttrib));
 	m_rcImage.top = pDesc->GetAttributeInteger(CONSTLIT(g_ImageYAttrib));
-	m_rcImage.right = m_rcImage.left + pDesc->GetAttributeInteger(CONSTLIT(g_ImageWidthAttrib));
-	m_rcImage.bottom = m_rcImage.top + pDesc->GetAttributeInteger(CONSTLIT(g_ImageHeightAttrib));
+
+	//	If we have a width and height, then initialize it.
+
+	int cxWidth;
+	if (pDesc->FindAttributeInteger(IMAGE_WIDTH_ATTRIB, &cxWidth))
+		{
+		m_rcImage.right = m_rcImage.left + cxWidth;
+		m_rcImage.bottom = m_rcImage.top + pDesc->GetAttributeInteger(IMAGE_HEIGHT_ATTRIB);
+		m_bDefaultSize = false;
+		}
+
+	//	Otherwise, get the size from the image
+
+	else
+		{
+		m_rcImage.right = m_rcImage.left;
+		m_rcImage.bottom = m_rcImage.top;
+		m_bDefaultSize = true;
+		}
+
 	m_iFrameCount = pDesc->GetAttributeInteger(CONSTLIT(g_ImageFrameCountAttrib));
 	m_iRotationCount = pDesc->GetAttributeInteger(ROTATION_COUNT_ATTRIB);
 	if (m_iRotationCount <= 0)
@@ -1195,7 +1219,7 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
         //  If we don't have a RECT, initialize it now that we have the image
 
-        if (m_rcImage.right == 0 && m_rcImage.bottom == 0)
+        if (m_bDefaultSize)
             {
             CG32bitImage *pImage = m_pImage->GetImage(CONSTLIT("Resolve image size"));
             if (pImage)
@@ -1797,6 +1821,8 @@ void CObjectImageArray::ReadFromStream (SLoadCtx &Ctx)
 		m_pRotationOffset = new OffsetStruct [dwLoad];
 		Ctx.pStream->Read((char *)m_pRotationOffset, dwLoad * sizeof(OffsetStruct));
 		}
+
+	m_bDefaultSize = false;
 	}
 
 void CObjectImageArray::SetRotationCount (int iRotationCount)
@@ -1866,6 +1892,7 @@ void CObjectImageArray::TakeHandoff (CObjectImageArray &Source)
 	m_iBlending = Source.m_iBlending;
 	m_iViewportSize = Source.m_iViewportSize;
 	m_iRotationOffset = Source.m_iRotationOffset;
+	m_bDefaultSize = Source.m_bDefaultSize;
 	}
 
 void CObjectImageArray::WriteToStream (IWriteStream *pStream) const
