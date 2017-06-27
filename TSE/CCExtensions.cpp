@@ -2485,8 +2485,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   s           Include ships\n"
 			"   t           Include stations (including planets)\n"
 			"   T           Include structure-scale stations\n"
-			"   t:xyz;      Same as "t +xyz;"\n"
-			"   T:xyz;      Same as "T +xyz;"\n"
+			"   t:xyz;      Same as \"t +xyz;\"\n"
+			"   T:xyz;      Same as \"T +xyz;\"\n"
 			"   z           Include the player\n\n"
 			
 			"and may contain any number of the following options:\n\n"
