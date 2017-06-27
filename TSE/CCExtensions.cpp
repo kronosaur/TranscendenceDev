@@ -34,6 +34,7 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_NUMBER                   3
 #define FN_POWER					4
 #define FN_VERB						5
+#define FN_COMPOSE					6
 
 ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -904,6 +905,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	Miscellaneous functions
 		//	-----------------------
+
+		{	"fmtCompose",					fnFormat,		FN_COMPOSE,
+			"(fmtCompose text [data]) -> string",
+			"s*",	0, },
 
 		{	"fmtCurrency",					fnFormat,		FN_CURRENCY,
 			"(fmtCurrency currency [amount]) -> string",
@@ -4032,6 +4037,13 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_COMPOSE:
+			{
+			CString sText = pArgs->GetElement(0)->GetStringValue();
+			ICCItem *pData = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : NULL);
+			return pCC->CreateString(::ComposePlayerNameString(sText, g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome(), pData));
+			}
+
 		case FN_CURRENCY:
 			{
 			CEconomyType *pEcon = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(0));
