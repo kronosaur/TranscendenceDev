@@ -699,7 +699,7 @@ LONG CHumanInterface::WMMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 		{
 		int xLocal, yLocal;
 
-		m_ScreenMgr.ClientToLocal(x, y, &xLocal, &yLocal);
+		m_ScreenMgr.GlobalToLocal(x, y, &xLocal, &yLocal);
 		m_pCurSession->HIMouseWheel(iDelta, xLocal, yLocal, dwFlags);
 		}
 
