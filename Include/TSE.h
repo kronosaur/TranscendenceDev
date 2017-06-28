@@ -1005,7 +1005,8 @@ class CSpaceObject : public CObject
 		inline bool DebugIsValid (void) { return (DWORD)m_pSystem != 0xdddddddd; }
 		static CString DebugLoadError (SLoadCtx &Ctx);
 		void EnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend = false);
-		int FindCommsMessage (const CString &sName);
+		int FindCommsMessage (const CString &sID);
+		int FindCommsMessageByName (const CString &sName);
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
 		bool FindEventHandler (const CString &sEntryPoint, SEventHandlerDesc *retEvent = NULL);
 		bool FindEventHandler (CDesignType::ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL);

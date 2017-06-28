@@ -120,6 +120,20 @@ bool CCommunicationsHandler::FindMessage (const CString &sID, const SMessage **r
 	return false;
 	}
 
+int CCommunicationsHandler::FindMessageByID (const CString &sID) const
+
+//	FindMessageByID
+//
+//	Finds the message by ID
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		if (strEquals(m_Messages[i].sID, sID))
+			return i;
+
+	return -1;
+	}
+
 int CCommunicationsHandler::FindMessageByName (const CString &sMessage) const
 
 //	FindMessageByName

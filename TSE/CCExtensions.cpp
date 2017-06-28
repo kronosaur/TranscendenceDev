@@ -380,7 +380,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 ICCItem *fnSystemGetObjectByName (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSystemVectorOffset (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
-ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnObjGateTo (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnProgramDamage (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -1372,7 +1372,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'QueryAttackStatus\n"
 			"   'Wait",
 
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			"iiv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objCredit",					fnObjSet,		FN_OBJ_CREDIT,	
 			"(objCredit obj [currency] amount) -> new balance",
@@ -5037,7 +5037,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	return pResult;
 	}
 
-ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnObjComms
 //
@@ -5045,31 +5045,38 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
-	ICCItem *pArgs;
-
-	pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iiv*"));
-	if (pArgs->IsError())
-		return pArgs;
 
 	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pObj == NULL)
-		{
-		pArgs->Discard(pCC);
 		return pCC->CreateNil();
-		}
 
 	CSpaceObject *pSender = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 	if (pSender == NULL)
-		{
-		pArgs->Discard(pCC);
 		return pCC->CreateNil();
-		}
 
 	int iMessage;
 	if (pArgs->GetElement(2)->IsInteger())
 		iMessage = pArgs->GetElement(2)->GetIntegerValue();
 	else
 		iMessage = GetMessageFromID(pArgs->GetElement(2)->GetStringValue());
+
+	//	If this is not a built-in comms message, then see if it as the ID of a 
+	//	comms message.
+
+	if (iMessage == msgNone)
+		{
+		int iIndex = pObj->FindCommsMessage(pArgs->GetElement(2)->GetStringValue());
+		if (iIndex == -1)
+			return pCC->CreateNil();
+
+		if (!pObj->IsCommsMessageValidFrom(pSender, iIndex))
+			return pCC->CreateNil();
+
+		//	Invoke the message
+
+		pObj->CommsMessageFrom(pSender, iIndex);
+		return pCC->CreateTrue();
+		}
 
 	//	Optional args
 
@@ -5080,8 +5087,6 @@ ICCItem *fnObjComms (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	DWORD dwParam2 = 0;
 	if (pArgs->GetCount() > 4)
 		dwParam2 = (DWORD)pArgs->GetElement(4)->GetIntegerValue();
-
-	pArgs->Discard(pCC);
 
 	//	Done
 

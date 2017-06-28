@@ -72,6 +72,7 @@ class CCommunicationsHandler
 
 		void DeleteAll (void);
 		bool FindMessage (const CString &sID, const SMessage **retpMessage = NULL) const;
+		int FindMessageByID (const CString &sID) const;
 		int FindMessageByName (const CString &sMessage) const;
 		void FireInvoke (const CString &sID, CSpaceObject *pObj, CSovereign *pSender, ICCItem *pData);
 		inline int GetCount (void) const { return m_Messages.GetCount(); }

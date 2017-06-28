@@ -1644,9 +1644,23 @@ void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntr
 	GateHook(pDestNode, sDestEntryPoint, pStargate, bAscend);
 	}
 
-int CSpaceObject::FindCommsMessage (const CString &sName)
+int CSpaceObject::FindCommsMessage (const CString &sID)
 
 //	FindCommsMessage
+//
+//	Returns the index of the given comms message (or -1 if not found)
+
+	{
+	CCommunicationsHandler *pHandler = GetCommsHandler();
+	if (pHandler == NULL)
+		return -1;
+
+	return pHandler->FindMessageByID(sID);
+	}
+
+int CSpaceObject::FindCommsMessageByName (const CString &sName)
+
+//	FindCommsMessageByName
 //
 //	Returns the index of the given comms message (or -1 if not found)
 
