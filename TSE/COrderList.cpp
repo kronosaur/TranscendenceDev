@@ -216,7 +216,7 @@ void COrderList::OnObjDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged)
 		*retbCurrentChanged = bCurrentChanged;
 	}
 
-void COrderList::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, bool *retbCurrentChanged)
+void COrderList::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options, bool *retbCurrentChanged)
 
 //	OnPlayerChangedShips
 //
@@ -232,12 +232,39 @@ void COrderList::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNe
 		IShipController::OrderTypes iOrder = GetOrder(i);
 		DWORD dwFlags = ::GetOrderFlags(iOrder);
 
-		if (pEntry->pTarget == pOldShip
-				&& (dwFlags & ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP))
+		//	If the old ship is waiting, then we keep autons with the old ships
+		//	but cancel attacks.
+
+		if (Options.bOldShipWaits)
 			{
-			pEntry->pTarget = pNewShip;
-			if (i == 0)
-				bCurrentChanged = true;
+			if (pEntry->pTarget == pOldShip
+					&& (dwFlags & ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS))
+				{
+				//	Remember if this is the current order (because our caller may
+				//	want to know).
+
+				if (i == 0)
+					bCurrentChanged = true;
+
+				//	Remove the order
+
+				CleanUp(pEntry);
+				m_List.Delete(i);
+				i--;
+				}
+			}
+
+		//	Otherwise, change target if necessary
+
+		else
+			{
+			if (pEntry->pTarget == pOldShip
+					&& (dwFlags & ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP))
+				{
+				pEntry->pTarget = pNewShip;
+				if (i == 0)
+					bCurrentChanged = true;
+				}
 			}
 		}
 

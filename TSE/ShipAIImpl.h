@@ -277,7 +277,7 @@ class COrderList
 		void Insert (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false);
 		void OnNewSystem (CSystem *pNewSystem, bool *retbCurrentChanged);
 		void OnObjDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged);
-		void OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, bool *retbCurrentChanged);
+		void OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNewShip, SPlayerChangedShipsCtx &Options, bool *retbCurrentChanged);
 		void OnStationDestroyed (CSpaceObject *pObj, bool *retbCurrentChanged);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetCurrentOrderData (const IShipController::SData &Data);

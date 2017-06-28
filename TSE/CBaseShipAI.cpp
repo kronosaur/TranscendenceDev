@@ -1207,7 +1207,7 @@ void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedSh
 	if (!Options.bNoOrderTransfer)
 		{
 		bool bChanged;
-		m_Orders.OnPlayerChangedShips(pOldShip, pPlayerShip, &bChanged);
+		m_Orders.OnPlayerChangedShips(pOldShip, pPlayerShip, Options, &bChanged);
 		if (bChanged)
 			FireOnOrderChanged();
 		}

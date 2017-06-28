@@ -35,9 +35,11 @@ struct SCrewMetrics
 struct SPlayerChangedShipsCtx
 	{
 	SPlayerChangedShipsCtx (void) :
+			bOldShipWaits(false),
 			bNoOrderTransfer(false)
 		{ }
 
+	bool bOldShipWaits;				//	If TRUE, old ship waits and orders are set appropriately
 	bool bNoOrderTransfer;			//	If TRUE, do not change orders to point to new ship
 	};
 
@@ -140,6 +142,7 @@ enum EOrderFlags
 	ORDER_FLAG_DELETE_ON_STATION_DESTROYED =	0x00000001,	//	Delete the order when target is station destroyed
 	ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP =		0x00000002,	//	Update target if player changes ship
 	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED =	0x00000004,	//	Notify controller when any station destroyed
+	ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS =		0x00000008,	//	Delete if player switched ships and old ship is waiting
 	};
 
 class IShipController
