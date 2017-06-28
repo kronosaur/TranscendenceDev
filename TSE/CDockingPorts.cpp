@@ -852,13 +852,15 @@ bool CDockingPorts::RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int i
 	//	If the requester is not the player and there is only one port left, then
 	//	fail (we always reserve one port for the player).
 	//
-	//	[We also make an exception for any ship that the player is escorting.]
+	//	[We also make an exception for any ship that the player is escorting,
+	//	or for any of the player's wingmen.]
 
 	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (iEmptyPortsLeft < 2
 			&& pPlayer
 			&& pObj != pPlayer
-			&& pObj != pPlayer->GetDestination())
+			&& !pObj->IsPlayerEscortTarget()
+			&& !pObj->IsPlayerWingman())
 		{
 		pObj->SendMessage(pOwner, CONSTLIT("No docking ports available"));
 		return false;

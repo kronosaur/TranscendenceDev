@@ -1556,6 +1556,7 @@ class CSpaceObject : public CObject
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
+		virtual bool IsPlayerWingman (void) const { return false; }
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }

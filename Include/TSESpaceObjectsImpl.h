@@ -1180,6 +1180,7 @@ class CShip : public CSpaceObject
 		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
 		virtual bool IsParalyzed (void) override { return m_fParalyzedByOverlay || m_iParalysisTimer != 0; }
 		virtual bool IsPlayer (void) const override;
+		virtual bool IsPlayerWingman (void) const override { return m_pController->IsPlayerWingman(); }
 		virtual bool IsRadioactive (void) override { return (m_fRadioactive ? true : false); }
 		virtual bool IsShownInGalacticMap (void) const override { return m_pClass->HasDockingPorts(); }
 		virtual bool IsSuspended (void) const override { return m_fManualSuspended; }
