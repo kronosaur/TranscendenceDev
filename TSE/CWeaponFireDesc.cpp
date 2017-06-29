@@ -32,6 +32,7 @@
 #define FIRE_EFFECT_ATTRIB						CONSTLIT("fireEffect")
 #define FRAGMENT_COUNT_ATTRIB					CONSTLIT("fragmentCount")
 #define FRAGMENT_INTERVAL_ATTRIB				CONSTLIT("fragmentInterval")
+#define FRAGMENT_RADIUS_ATTRIB					CONSTLIT("fragmentRadius")
 #define FRAGMENT_TARGET_ATTRIB					CONSTLIT("fragmentTarget")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
@@ -96,6 +97,8 @@
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
+
+const Metric DEFAULT_FRAG_THRESHOLD =			4.0;	//	4 light-seconds (~95 pixels)
 
 CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
 
@@ -1587,6 +1590,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_pFirstFragment = NULL;
 	m_fProximityBlast = false;
 	m_iProximityFailsafe = 0;
+	m_rFragThreshold = LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
 	m_FragInterval.SetConstant(0);
 
 	//	Effects
@@ -2072,6 +2076,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_fProximityBlast = (iFragCount != 0);
 	m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
+	m_rFragThreshold = LIGHT_SECOND * pDesc->GetAttributeDoubleBounded(FRAGMENT_RADIUS_ATTRIB, 0.0, -1.0, DEFAULT_FRAG_THRESHOLD);
 
 	//	If we've got a fragment interval set, then it means we periodically 
 	//	fragment (instead of fragmenting on proximity).

@@ -523,6 +523,7 @@ class CMissile : public CSpaceObject
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual bool HasAttribute (const CString &sAttribute) const override;
+		virtual bool IsAngryAt (CSpaceObject *pObj) override;
 		virtual bool IsInactive (void) const override { return (m_fDestroyOnAnimationDone ? true : false); }
 		virtual bool IsIntangible (void) const { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;

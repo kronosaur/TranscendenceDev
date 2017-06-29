@@ -419,6 +419,7 @@ class CWeaponFireDesc
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
 		inline FireTypes GetFireType (void) const { return m_iFireType; }
 		inline SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
+		inline Metric GetFragmentationThreshold (void) const { return m_rFragThreshold; }
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
         inline const CObjectImageArray &GetImage (void) const { return GetOldEffects().Image; }
 		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
@@ -544,6 +545,7 @@ class CWeaponFireDesc
 		SFragmentDesc *m_pFirstFragment;	//	Pointer to first fragment desc (or NULL)
 		int m_iProximityFailsafe;			//	Min ticks before proximity is active
 		DiceRange m_FragInterval;			//	If not empty, we keep fragmenting
+		Metric m_rFragThreshold;			//	Max fragmentation distance
 
 		//	Events
 		CEventHandler m_Events;				//	Events

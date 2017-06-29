@@ -572,6 +572,35 @@ bool CMissile::HasAttribute (const CString &sAttribute) const
 	return pType->HasLiteralAttribute(sAttribute);
 	}
 
+bool CMissile::IsAngryAt (CSpaceObject *pObj)
+
+//	IsAngryAt
+//
+//	Returns TRUE if we should detonate at the given object.
+
+	{
+	//	If this is the enemy or if this is our target, then we're done.
+
+	if (pObj == m_pTarget || IsEnemy(pObj))
+		return true;
+
+	//	Get the source. If the missile source is NOT the player, then we treat 
+	//	non-enemies like friends.
+
+	CSpaceObject *pSource = m_Source.GetObj();
+	if (pSource == NULL || !pSource->IsPlayer() || pSource == pObj)
+		return false;
+
+	//	If this object is angry at the player, then we are angry at it.
+
+	if (pObj->IsAngryAt(pSource))
+		return true;
+
+	//	Otherwise, we're known friends. Do not detonate.
+
+	return false;
+	}
+
 EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 //	Damage
@@ -714,7 +743,7 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 	Metric rThreshold;
 	if (m_pDesc->ProximityBlast() && m_iTick >= m_pDesc->GetProximityFailsafe())
-		rThreshold = 128 * g_KlicksPerPixel;
+		rThreshold = m_pDesc->GetFragmentationThreshold();
 	else
 		rThreshold = 0.0;
 
