@@ -339,10 +339,17 @@ void CCLambda::SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols)
 	if (m_pLocalSymbols)
 		m_pLocalSymbols->Discard(pCC);
 
+#ifdef TRUE_CLOSURES
+	//	For closures to work, we need a reference to our parent's local symbols
+	//	so we can manipulate them.
+
+	m_pLocalSymbols = pSymbols->Reference();
+#else
 	//	We clone the symbol table because the values might change
 	//	later and we want the values at this point in time.
 
 	m_pLocalSymbols = pSymbols->Clone(pCC);
+#endif
 	}
 
 ICCItem *CCLambda::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
