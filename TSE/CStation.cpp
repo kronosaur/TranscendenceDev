@@ -4407,8 +4407,20 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 
 		else
 			{
-			sName = strPatternSubst(CONSTLIT("%s wreck"), pWreckClass->GetNamePattern());
-			dwFlags = 0;
+			DWORD dwShipFlags;
+			CString sShipName = pWreckClass->GetNamePattern(0, &dwShipFlags);
+
+			if (dwShipFlags & nounDefiniteArticle)
+				{
+				sName = strPatternSubst(CONSTLIT("wreck of %s"),
+						CLanguage::ComposeNounPhrase(sShipName, 1, CString(), dwShipFlags, nounArticle));
+				dwFlags = nounDefiniteArticle;
+				}
+			else
+				{
+				sName = strPatternSubst(CONSTLIT("%s wreck"), sShipName);
+				dwFlags = 0;
+				}
 			}
 
 		SetName(sName, dwFlags);
