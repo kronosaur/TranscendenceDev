@@ -725,21 +725,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"itmGetName",					fnItemGet,		FN_ITEM_NAME,
-			"(itmGetName item|type flags) -> name of item\n\n"
+			"(itmGetName item|type [flags]) -> name of item\n\n"
 
 			"flags\n\n"
 
-			"   0x001 capitalize\n"
-			"   0x002 pluralize\n"
-			"   0x004 prefix with 'the' or 'a'\n"
-			"   0x008 prefix with count (or 'a')\n"
-			"   0x010 prefix with count\n"
-			"   0x020 no modifiers\n"
-			"   0x040 prefix with 'the' or 'this' or 'these'\n"
-			"   0x080 short form of name\n"
-			"   0x100 actual name",
+			"   0x001 capitalize    capitalize first letter\n"
+			"   0x002 plural        pluralize name\n"
+			"   0x004 article       prefix with 'the' or 'a'\n"
+			"   0x008 count         prefix with count or singular article\n"
+			"   0x010 countOnly     prefix with count or nothing\n"
+			"   0x020 noModifiers   no modifiers ('damaged' etc)\n"
+			"   0x040 demonstrative prefix with 'the' or 'this' or 'these'\n"
+			"   0x080 short         use short name\n"
+			"   0x100 actual        actual name (not unidentified name)",
 
-			"vv",	0,	},
+			"v*",	0,	},
 
 		{	"itmGetPrice",					fnItemGet,		FN_ITEM_PRICE,
 			"(itmGetPrice item|type [currency]) -> price of a single item",
@@ -4523,7 +4523,11 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_NAME:
 			{
-			DWORD dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1));
+			DWORD dwFlags;
+			if (pArgs->GetCount() > 1)
+				dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1));
+			else
+				dwFlags = 0;
 
 			//	If we're inside the GetName event, then don't recurse
 
