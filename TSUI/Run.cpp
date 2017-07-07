@@ -672,6 +672,12 @@ LONG CHumanInterface::WMMouseMove (int x, int y, DWORD dwFlags)
 //	Handle WM_MOUSEMOVE message
 
 	{
+	//	Did the mouse move since last message?
+
+	m_bMouseMoved = (x != m_xLastMousePos || y != m_yLastMousePos);
+
+	//	Call the session
+
 	if (m_pCurSession)
 		{
 		int xLocal, yLocal;

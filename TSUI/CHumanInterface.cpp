@@ -22,6 +22,7 @@ CHumanInterface::CHumanInterface (void) :
         m_bMButtonDown(false),
         m_bRButtonDown(false),
 		m_chKeyDown('\0'),
+		m_bMouseMoved(true),
         m_xLastMousePos(-1),
         m_yLastMousePos(-1),
 		m_iShutdownCode(HIShutdownUnknown)

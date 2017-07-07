@@ -723,7 +723,7 @@ class CHumanInterface
 		IHISession *GetTopSession (bool bNonTransparentOnly = true);
 		inline CCriticalSection &GetUISem (void) { return m_cs; }
 		inline const CVisualPalette &GetVisuals (void) { return m_Visuals; }
-        inline bool HasMouseMoved (int x, int y) const { return ((x != m_xLastMousePos) || (y != m_yLastMousePos)); }
+        inline bool HasMouseMoved (int x, int y) const { return m_bMouseMoved; }
 		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return m_pController->HICommand(sCmd, pData); }
 		void HIPostCommand (const CString &sCmd, void *pData = NULL);
 		inline ALERROR HISessionCommand (const CString &sCmd, void *pData = NULL) { return (m_pCurSession ? m_pCurSession->HICommand(sCmd, pData) : NOERROR); }
@@ -830,6 +830,7 @@ class CHumanInterface
 		bool m_bMButtonDown;
         bool m_bRButtonDown;
 		char m_chKeyDown;
+		bool m_bMouseMoved;					//	Mouse moved from previous OnMouseMove
         int m_xLastMousePos;
         int m_yLastMousePos;
 
