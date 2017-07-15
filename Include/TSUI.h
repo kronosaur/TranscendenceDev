@@ -512,7 +512,7 @@ class CVisualPalette : public IFontTable
 		//	Draw functions
 
 		void DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, DamageTypes iDamageType) const;
-		void DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, DWORD dwFlags, RECT *retrcCenter = NULL) const;
+		void DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, CG32bitPixel rgbCenter, DWORD dwFlags, RECT *retrcCenter = NULL) const;
 
 		//	Reanimator objects
 

@@ -191,7 +191,7 @@ void CVisualPalette::DrawDamageTypeIcon (CG32bitImage &Screen, int x, int y, Dam
 			y);
 	}
 
-void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, DWORD dwFlags, RECT *retrcCenter) const
+void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitImage &Background, CG32bitPixel rgbCenter, DWORD dwFlags, RECT *retrcCenter) const
 
 //	DrawSessionBackground
 //
@@ -226,8 +226,8 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 		//	Paint everything except the background image
 
 		Screen.Fill(0, 0, cxScreen, rcBackgroundDest.top, rgbBackgroundColor);
-		Screen.Fill(0, rcBackgroundDest.top, rcBackgroundDest.left, cyBackground, rgbBackgroundColor);
-		Screen.Fill(rcBackgroundDest.right, rcBackgroundDest.top, cxScreen - rcBackgroundDest.right, cyBackground, rgbBackgroundColor);
+		Screen.Fill(0, rcBackgroundDest.top, rcBackgroundDest.left, cyBackground, rgbCenter);
+		Screen.Fill(rcBackgroundDest.right, rcBackgroundDest.top, cxScreen - rcBackgroundDest.right, cyBackground, rgbCenter);
 		Screen.Fill(0, rcBackgroundDest.bottom, cxScreen, cyScreen - rcBackgroundDest.bottom, rgbBackgroundColor);
 
 		//	Now paint the background image
@@ -242,15 +242,13 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 		}
 	else
 		{
-		if (dwFlags & OPTION_SESSION_DLG_BACKGROUND)
-			{
-			Screen.Fill(rcFull.left, 0, RectWidth(rcFull), rcFull.top, rgbBackgroundColor);
-			Screen.Fill(rcFull.left, rcFull.bottom, RectWidth(rcFull), cyScreen - rcFull.bottom, rgbBackgroundColor);
+		Screen.Fill(rcFull.left, 0, RectWidth(rcFull), rcFull.top, rgbBackgroundColor);
+		Screen.Fill(rcFull.left, rcFull.bottom, RectWidth(rcFull), cyScreen - rcFull.bottom, rgbBackgroundColor);
 
+		if (dwFlags & OPTION_SESSION_DLG_BACKGROUND)
 			Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), GetColor(colorAreaDialog));
-			}
 		else
-			Screen.Set(rgbBackgroundColor);
+			Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), rgbCenter);
 		}
 
 	//	Paint the frame
