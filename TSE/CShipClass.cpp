@@ -1656,6 +1656,81 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 	DEBUG_CATCH
 	}
 
+void CShipClass::CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metric rScale)
+
+//	CreateImage
+//
+//	Creates a scaled image of the given size, including all attached objects.
+
+	{
+	int i;
+
+	if (!GetImage().IsLoaded())
+		return;
+
+	//	Start by computing the total size of a normal image (and its origin).
+
+	CVector vOrigin;
+	int cxOriginalSize = m_Interior.CalcImageSize(this, &vOrigin);
+	if (cxOriginalSize == 0)
+		return;
+
+	//	Compute the destination size
+
+	int cxWidth = (int)mathRound(rScale * cxOriginalSize);
+	int cyHeight = cxWidth;
+
+	//	Create the destination
+
+	Dest.Create(cxWidth, cyHeight, CG32bitImage::alpha8, CG32bitPixel::Null());
+	int xCenter = cxWidth / 2;
+	int yCenter = cyHeight / 2;
+
+	//	Scale and rotate the origin
+
+	vOrigin = rScale * (vOrigin.Rotate(iRotation));
+	int xOrigin = xCenter + (int)mathRound(vOrigin.GetX());
+	int yOrigin = yCenter -(int)mathRound(vOrigin.GetY());
+
+	//	Get the positions of all attached components
+
+	TArray<CVector> Pos;
+	m_Interior.CalcCompartmentPositions(GetImage().GetImageViewportSize(), Pos);
+
+	//	Scale and rotate accordingly
+
+	for (i = 0; i < Pos.GetCount(); i++)
+		Pos[i] = rScale * Pos[i].Rotate(iRotation);
+
+	//	Blt each compartment (in paint order)
+
+	for (i = 0; i < m_Interior.GetPaintOrder().GetCount(); i++)
+		{
+		int iIndex = m_Interior.GetPaintOrder().GetAt(i);
+
+		CShipClass *pClass = m_Interior.GetCompartment(iIndex).Class;
+		if (pClass == NULL)
+			continue;
+
+		//	Paint the class on our image
+
+		CVector vPos = vOrigin + Pos[iIndex];
+		int xPos = xCenter + (int)mathRound(vPos.GetX());
+		int yPos = yCenter -(int)mathRound(vPos.GetY());
+
+		int cxScaledSize = (int)mathRound(rScale * pClass->GetImage().GetImageWidth());
+		int iDirection = pClass->GetRotationDesc().GetFrameIndex(iRotation);
+
+		pClass->GetImage().PaintScaledImage(Dest, xPos, yPos, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
+		}
+
+	//	Blt the main image on top
+
+	int cxScaledSize = (int)mathRound(rScale * GetImage().GetImageWidth());
+	int iDirection = GetRotationDesc().GetFrameIndex(iRotation);
+	GetImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
+	}
+
 void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation, int cxWidth, int cyHeight)
 
 //	CreateScaledImage
