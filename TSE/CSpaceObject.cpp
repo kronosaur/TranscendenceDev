@@ -81,12 +81,15 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_TRANSLATE_MESSAGE_EVENT				CONSTLIT("OnTranslateMessage")
 #define ON_UPDATE_EVENT							CONSTLIT("OnUpdate")
 
+#define FIELD_ARMOR_INTEGRITY					CONSTLIT("armorIntegrity")
 #define FIELD_DESC_ID							CONSTLIT("descID")
 #define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
 #define FIELD_CAN_REMOVE						CONSTLIT("canRemove")
+#define FIELD_HULL_INTEGRITY					CONSTLIT("hullIntegrity")
 #define FIELD_OBJ_ID							CONSTLIT("objID")
 #define FIELD_POS								CONSTLIT("pos")
 #define FIELD_PRICE								CONSTLIT("price")
+#define FIELD_SHIELD_LEVEL						CONSTLIT("shieldLevel")
 #define FIELD_STATUS							CONSTLIT("status")
 #define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
@@ -97,6 +100,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_COMMS_KEY						CONSTLIT("commsKey")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
+#define PROPERTY_DAMAGE_DESC					CONSTLIT("damageDesc")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DESTINY						CONSTLIT("destiny")
 #define PROPERTY_DOCKING_PORTS					CONSTLIT("dockingPorts")
@@ -4250,6 +4254,24 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
 		return CC.CreateInteger(GetCyberDefenseLevel());
+
+	else if (strEquals(sName, PROPERTY_DAMAGE_DESC))
+		{
+		ICCItem *pResult = CC.CreateSymbolTable();
+		CSpaceObject::SVisibleDamage Damage;
+		GetVisibleDamageDesc(Damage);
+
+		if (Damage.iShieldLevel != -1)
+			pResult->SetIntegerAt(CC, FIELD_SHIELD_LEVEL, Damage.iShieldLevel);
+
+		if (Damage.iArmorLevel != -1)
+			pResult->SetIntegerAt(CC, FIELD_ARMOR_INTEGRITY, Damage.iArmorLevel);
+
+		if (Damage.iHullLevel != -1)
+			pResult->SetIntegerAt(CC, FIELD_HULL_INTEGRITY, Damage.iHullLevel);
+
+		return pResult;
+		}
 
 	else if (strEquals(sName, PROPERTY_DESTINY))
 		return CC.CreateInteger(GetDestiny());

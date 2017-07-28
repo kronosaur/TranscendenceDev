@@ -1701,6 +1701,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'cargoSpace -> in tons\n"
 			"   'character\n"
 			"   'characterClass\n"
+			"   'damageDesc -> { shieldLevel:n armorIntegrity:n HullIntegrity:n }\n"
 			"   'deviceDamageImmune\n"
 			"   'deviceDisruptImmune\n"
 			"   'disintegrationImmune\n"
