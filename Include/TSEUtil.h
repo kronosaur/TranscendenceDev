@@ -1486,10 +1486,10 @@ class IListData
 		virtual CItemListManipulator &GetItemListManipulator (void) { return g_DummyItemListManipulator; }
 		virtual CSpaceObject *GetSource (void) { return NULL; }
 		virtual CString GetTitleAtCursor (void) { return NULL_STR; }
-		virtual bool IsCursorValid (void) { return false; }
+		virtual bool IsCursorValid (void) const { return false; }
 		virtual bool MoveCursorBack (void) { return false; }
 		virtual bool MoveCursorForward (void) { return false; }
-		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y) { }
+		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, Metric rScale) { }
 		virtual void ResetCursor (void) { }
 		virtual void SetCursor (int iCursor) { }
 		virtual void SetFilter (const CItemCriteria &Filter) { }

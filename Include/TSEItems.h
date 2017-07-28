@@ -446,7 +446,7 @@ class CItemListManipulator
 		void SetFilter (const CItemCriteria &Filter);
 		bool Refresh (const CItem &Item);
 
-		inline bool IsCursorValid (void) { return (m_iCursor != -1 && m_iCursor < m_ItemList.GetCount()); }
+		inline bool IsCursorValid (void) const { return (m_iCursor != -1 && m_iCursor < m_ItemList.GetCount()); }
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
 		void ResetCursor (void);

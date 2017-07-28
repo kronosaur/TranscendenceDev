@@ -2088,19 +2088,19 @@ class CItemListWrapper : public IListData
 		CItemListWrapper (CSpaceObject *pSource);
 		CItemListWrapper (CItemList &ItemList);
 
-		virtual void DeleteAtCursor (int iCount) { m_ItemList.DeleteAtCursor(iCount); if (m_pSource) m_pSource->InvalidateItemListAddRemove(); }
-		virtual int GetCount (void) { return m_ItemList.GetCount(); }
-		virtual int GetCursor (void) { return m_ItemList.GetCursor(); }
-		virtual const CItem &GetItemAtCursor (void) { return m_ItemList.GetItemAtCursor(); }
-		virtual CItemListManipulator &GetItemListManipulator (void) { return m_ItemList; }
-		virtual CSpaceObject *GetSource (void) { return m_pSource; }
-		virtual bool IsCursorValid (void) { return m_ItemList.IsCursorValid(); }
-		virtual bool MoveCursorBack (void) { return m_ItemList.MoveCursorBack(); }
-		virtual bool MoveCursorForward (void) { return m_ItemList.MoveCursorForward(); }
-		virtual void ResetCursor (void) { m_ItemList.Refresh(CItem()); }
-		virtual void SetCursor (int iCursor) { m_ItemList.SetCursor(iCursor); }
-		virtual void SetFilter (const CItemCriteria &Filter) { m_ItemList.SetFilter(Filter); }
-		virtual void SyncCursor (void) { m_ItemList.SyncCursor(); }
+		virtual void DeleteAtCursor (int iCount) override { m_ItemList.DeleteAtCursor(iCount); if (m_pSource) m_pSource->InvalidateItemListAddRemove(); }
+		virtual int GetCount (void) override { return m_ItemList.GetCount(); }
+		virtual int GetCursor (void) override { return m_ItemList.GetCursor(); }
+		virtual const CItem &GetItemAtCursor (void) override { return m_ItemList.GetItemAtCursor(); }
+		virtual CItemListManipulator &GetItemListManipulator (void) override { return m_ItemList; }
+		virtual CSpaceObject *GetSource (void) override { return m_pSource; }
+		virtual bool IsCursorValid (void) const override { return m_ItemList.IsCursorValid(); }
+		virtual bool MoveCursorBack (void) override { return m_ItemList.MoveCursorBack(); }
+		virtual bool MoveCursorForward (void) override { return m_ItemList.MoveCursorForward(); }
+		virtual void ResetCursor (void) override { m_ItemList.Refresh(CItem()); }
+		virtual void SetCursor (int iCursor) override { m_ItemList.SetCursor(iCursor); }
+		virtual void SetFilter (const CItemCriteria &Filter) override { m_ItemList.SetFilter(Filter); }
+		virtual void SyncCursor (void) override { m_ItemList.SyncCursor(); }
 
 	private:
 		CSpaceObject *m_pSource;
@@ -2113,20 +2113,22 @@ class CListWrapper : public IListData
 		CListWrapper (CCodeChain *pCC, ICCItem *pList);
 		virtual ~CListWrapper (void) { m_pList->Discard(m_pCC); }
 
-		virtual int GetCount (void) { return m_pList->GetCount(); }
-		virtual int GetCursor (void) { return m_iCursor; }
-		virtual CString GetDescAtCursor (void);
-		virtual ICCItem *GetEntryAtCursor (CCodeChain &CC);
-		virtual CString GetTitleAtCursor (void);
-		virtual bool IsCursorValid (void) { return (m_iCursor != -1); }
-		virtual bool MoveCursorBack (void);
-		virtual bool MoveCursorForward (void);
-		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y);
-		virtual void ResetCursor (void) { m_iCursor = -1; }
-		virtual void SetCursor (int iCursor) { m_iCursor = Min(Max(-1, iCursor), GetCount() - 1); }
-		virtual void SyncCursor (void);
+		virtual int GetCount (void) override { return m_pList->GetCount(); }
+		virtual int GetCursor (void) override { return m_iCursor; }
+		virtual CString GetDescAtCursor (void) override;
+		virtual ICCItem *GetEntryAtCursor (CCodeChain &CC) override;
+		virtual CString GetTitleAtCursor (void) override;
+		virtual bool IsCursorValid (void) const override { return (m_iCursor != -1); }
+		virtual bool MoveCursorBack (void) override;
+		virtual bool MoveCursorForward (void) override;
+		virtual void PaintImageAtCursor (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, Metric rScale) override;
+		virtual void ResetCursor (void) override { m_iCursor = -1; }
+		virtual void SetCursor (int iCursor) override { m_iCursor = Min(Max(-1, iCursor), GetCount() - 1); }
+		virtual void SyncCursor (void) override;
 
 	private:
+		DWORD GetImageDescAtCursor (RECT *retrcImage, Metric *retrScale) const;
+
 		CCodeChain *m_pCC;
 		ICCItem *m_pList;
 
