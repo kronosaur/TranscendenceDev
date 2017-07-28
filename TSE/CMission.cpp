@@ -262,6 +262,15 @@ ALERROR CMission::Create (CMissionType *pType,
 		return ERR_NOTFOUND;
 		}
 
+	//	Get the mission title and description (we remember these because we may
+	//	need to access them outside of the system).
+
+	if (!pMission->Translate(CONSTLIT("Name"), NULL, &pMission->m_sTitle))
+		pMission->m_sTitle = pType->GetName();
+
+	if (!pMission->Translate(CONSTLIT("Summary"), NULL, &pMission->m_sInstructions))
+		pMission->m_sInstructions = NULL_STR;
+
 	//	If we haven't subscribed to the owner, do it now
 
 	if (pOwner && !pOwner->FindEventSubscriber(pMission))
