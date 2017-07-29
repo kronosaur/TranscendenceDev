@@ -300,14 +300,7 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 			bool bAvoid = (rTargetDist2 > THREAT_SENSOR_RANGE2) || ((iTick + pShip->GetDestiny()) % 91) > 55;
 			
-			if (!bAvoid)
-				{
-				//	Attack target
-
-				Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget], true);
-				Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-				}
-			else
+			if (bAvoid)
 				{
 				//	Orbit around the enemy station
 
@@ -320,12 +313,12 @@ void CAttackOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 					Ctx.ImplementSpiralIn(pShip, vDest);
 				else if (rDestDist2 < (rMinDist * rMinDist))
 					Ctx.ImplementSpiralOut(pShip, vDest);
-				else
-					{
-					Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget], true);
-					Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
-					}
 				}
+
+			//	Attack target, if we can
+
+			Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget], true);
+			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
 
 			//	Check to see if we should do something else
 
