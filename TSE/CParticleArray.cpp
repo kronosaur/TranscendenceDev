@@ -1465,7 +1465,7 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 	else if (Ctx.dwVersion >= 119)
 		{
 		SParticle119 *pOldArray = new SParticle119[m_iCount];
-		Ctx.pStream->Read((char *)pOldArray, sizeof(SParticle) * m_iCount);
+		Ctx.pStream->Read((char *)pOldArray, sizeof(SParticle119) * m_iCount);
 
 		for (i = 0; i < m_iCount; i++)
 			{
@@ -1486,7 +1486,7 @@ void CParticleArray::ReadFromStream (SLoadCtx &Ctx)
 	else if (Ctx.dwObjClassID >= 64)
 		{
 		SParticle64 *pOldArray = new SParticle64[m_iCount];
-		Ctx.pStream->Read((char *)pOldArray, sizeof(SParticle) * m_iCount);
+		Ctx.pStream->Read((char *)pOldArray, sizeof(SParticle64) * m_iCount);
 
 		for (i = 0; i < m_iCount; i++)
 			{
