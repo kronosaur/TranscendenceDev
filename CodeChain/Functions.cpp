@@ -3897,7 +3897,12 @@ ICCItem *fnStrCapitalize (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	if (pArgs->IsError())
 		return pArgs;
 
-	CString sString = pArgs->GetElement(0)->GetStringValue();
+	ICCItem *pText = pArgs->GetElement(0);
+
+	CString sString;
+	if (!pText->IsNil())
+		sString = pText->GetStringValue();
+
 	pArgs->Discard(pCC);
 
 	//	Done
