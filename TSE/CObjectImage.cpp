@@ -81,7 +81,7 @@ CG32bitImage *CObjectImage::CreateCopy (CString *retsError)
 
 	//	Otherwise, we load a copy
 
-	CG32bitImage *pResult = GetImage(NULL_STR, retsError);
+	CG32bitImage *pResult = GetRawImage(NULL_STR, retsError);
 	m_pBitmap = NULL;	//	Clear out because we don't keep a copy
 
 	return pResult;
@@ -133,7 +133,7 @@ bool CObjectImage::FindDataField (const CString &sField, CString *retsValue) con
 	{
 	if (strEquals(sField, FIELD_IMAGE_DESC))
 		{
-		CG32bitImage *pImage = GetImage(CONSTLIT("data field"));
+		CG32bitImage *pImage = GetRawImage(CONSTLIT("data field"));
 		if (pImage == NULL)
 			{
 			*retsValue = NULL_STR;
@@ -176,9 +176,9 @@ CG32bitImage *CObjectImage::GetHitMask (void)
 	return m_pHitMask;
 	}
 
-CG32bitImage *CObjectImage::GetImage (const CString &sLoadReason, CString *retsError) const
+CG32bitImage *CObjectImage::GetRawImage (const CString &sLoadReason, CString *retsError) const
 
-//	GetImage
+//	GetRawImage
 //
 //	Returns the image
 
@@ -263,7 +263,7 @@ CG32bitImage *CObjectImage::GetShadowMask (void)
 
 CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError) const
 
-//	GetImage
+//	GetRawImage
 //
 //	Returns the image, loading it if necessary
 
@@ -412,7 +412,7 @@ ALERROR CObjectImage::Lock (SDesignLoadCtx &Ctx)
 	//	assume that Ctx has the proper resource database. Thus
 	//	we have to open it ourselves.
 
-	CG32bitImage *pImage = GetImage(NULL_STR, &Ctx.sError);
+	CG32bitImage *pImage = GetRawImage(NULL_STR, &Ctx.sError);
 	if (pImage == NULL)
 		return ERR_FAIL;
 

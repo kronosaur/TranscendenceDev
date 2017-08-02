@@ -1203,7 +1203,7 @@ CG32bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags)
 	else
 		{
 		CString sError;
-		CG32bitImage *pRawImage = pImage->GetImage(strFromInt(dwUNID), &sError);
+		CG32bitImage *pRawImage = pImage->GetRawImage(strFromInt(dwUNID), &sError);
 
 		if (pRawImage == NULL)
 			kernelDebugLogString(sError);

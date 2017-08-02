@@ -114,8 +114,8 @@ void CLightningShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewp
 //	Paint
 
 	{
-	CG32bitImage &Image = m_pCreator->GetImage().GetImage();
-	RECT rcImage = m_pCreator->GetImage().GetImageRect();
+	CG32bitImage &Image = m_pCreator->GetRawImage().GetRawImage();
+	RECT rcImage = m_pCreator->GetRawImage().GetImageRect();
 
 	CGDraw::CircleImage(Dest, x, y, m_iRadius, 255, Image, rcImage.left, rcImage.top, RectWidth(rcImage), RectHeight(rcImage));
 	}

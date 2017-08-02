@@ -1961,7 +1961,7 @@ void CShipClass::CreateWreckImage (void)
 
 		//	Get the image
 
-		g_pDamageBitmap = pDamageImage->GetImage(strFromInt(GetUNID()));
+		g_pDamageBitmap = pDamageImage->GetRawImage(strFromInt(GetUNID()));
 		if (g_pDamageBitmap == NULL)
 			return;
 		}
@@ -2748,7 +2748,7 @@ const CObjectImageArray &CShipClass::GetHeroImage (void)
             && (pPlayerSettings = GetPlayerSettings())
             && (dwImageUNID = pPlayerSettings->GetLargeImage())
             && (pLargeImageObj = g_pUniverse->FindLibraryImage(dwImageUNID))
-			&& (pLargeImage = pLargeImageObj->GetImage(strPatternSubst(CONSTLIT("%08x hero image"), GetUNID())))
+			&& (pLargeImage = pLargeImageObj->GetRawImage(strPatternSubst(CONSTLIT("%08x hero image"), GetUNID())))
             && !pLargeImage->IsEmpty())
         {
         //  If necessary, we scale it down to fit the dock screen.

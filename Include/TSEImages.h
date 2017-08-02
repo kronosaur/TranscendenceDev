@@ -73,7 +73,7 @@ class CObjectImage : public CDesignType
 		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
         inline int GetHeight (void) const { return (m_pBitmap ? m_pBitmap->GetHeight() : 0); }
 		CG32bitImage *GetHitMask (void);
-		CG32bitImage *GetImage (const CString &sLoadReason, CString *retsError = NULL) const;
+		CG32bitImage *GetRawImage (const CString &sLoadReason, CString *retsError = NULL) const;
 		inline CString GetImageFilename (void) { return m_sBitmap; }
 		CG32bitImage *GetShadowMask (void);
         inline int GetWidth (void) const { return (m_pBitmap ? m_pBitmap->GetWidth() : 0); }
@@ -81,7 +81,7 @@ class CObjectImage : public CDesignType
 
         inline bool IsMarked (void) const { return m_bMarked; }
         ALERROR Lock (SDesignLoadCtx &Ctx);
-		inline void Mark (void) { GetImage(NULL_STR); m_bMarked = true; }
+		inline void Mark (void) { GetRawImage(NULL_STR); m_bMarked = true; }
 
 		//	CDesignType overrides
 		static CObjectImage *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designImage) ? (CObjectImage *)pType : NULL); }
@@ -147,7 +147,7 @@ class CObjectImageArray
 		inline DWORD GetBitmapUNID (void) const { return m_dwBitmapUNID; }
 		CString GetFilename (void) const;
 		inline int GetFrameCount (void) const { return m_iFrameCount; }
-		inline CG32bitImage &GetImage (const CString &sLoadReason) const { CG32bitImage *pBmp = (m_pImage ? m_pImage->GetImage(sLoadReason) : NULL); return (pBmp ? *pBmp : m_NullImage); }
+		inline CG32bitImage &GetImage (const CString &sLoadReason) const { CG32bitImage *pBmp = (m_pImage ? m_pImage->GetRawImage(sLoadReason) : NULL); return (pBmp ? *pBmp : m_NullImage); }
 		inline int GetImageHeight (void) const { return RectHeight(m_rcImage); }
 		inline const RECT &GetImageRect (void) const { return m_rcImage; }
 		RECT GetImageRect (int iTick, int iRotation, int *retxCenter = NULL, int *retyCenter = NULL) const;

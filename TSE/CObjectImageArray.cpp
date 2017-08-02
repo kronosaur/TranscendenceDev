@@ -108,7 +108,7 @@ bool CObjectImageArray::CalcVolumetricShadowLine (SLightingCtx &Ctx, int iTick, 
 	//	If we don't then use the normal image
 
 	if (pSource == NULL)
-		pSource = m_pImage->GetImage(NULL_STR);
+		pSource = m_pImage->GetRawImage(NULL_STR);
 
 	//	If we still can't find an image, then no shadow
 
@@ -417,7 +417,7 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 		if (Source.m_pImage->FreesBitmap())
 			m_pImage = new CObjectImage(Source.m_pImage->CreateCopy(), true);
 		else
-			m_pImage = new CObjectImage(Source.m_pImage->GetImage(NULL_STR));
+			m_pImage = new CObjectImage(Source.m_pImage->GetRawImage(NULL_STR));
 		}
 
 	m_rcImage = Source.m_rcImage;
@@ -454,7 +454,7 @@ void CObjectImageArray::CopyImage (CG32bitImage &Dest, int x, int y, int iFrame,
 	{
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -490,7 +490,7 @@ void CObjectImageArray::GenerateGlowImage (int iRotation) const
 	if (m_pImage == NULL)
 		return;
 
-	CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 	if (pSource == NULL)
 		return;
 
@@ -609,7 +609,7 @@ void CObjectImageArray::GenerateScaledImages (int iRotation, int cxWidth, int cy
 	int cxSrcWidth = RectWidth(m_rcImage);
 	int cySrcHeight = RectHeight(m_rcImage);
 
-	CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 	if (pSource == NULL || cxSrcWidth == 0 || cySrcHeight == 0)
 		return;
 
@@ -652,7 +652,7 @@ CG32bitImage *CObjectImageArray::GetHitMask (void) const
 	{
 	CG32bitImage *pSource = m_pImage->GetHitMask();
 	if (pSource == NULL)
-		pSource = m_pImage->GetImage(CONSTLIT("PointInImage"));
+		pSource = m_pImage->GetRawImage(CONSTLIT("PointInImage"));
 
 	return pSource;
 	}
@@ -899,7 +899,7 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, int iFrameCount, int iTicks
 
         //  We assume the RECT is the entire bitmap
 
-        CG32bitImage *pImage = (m_pImage ? m_pImage->GetImage(CONSTLIT("CObjectImageArray::Init")) : NULL);
+        CG32bitImage *pImage = (m_pImage ? m_pImage->GetRawImage(CONSTLIT("CObjectImageArray::Init")) : NULL);
         m_rcImage.left = 0;
         m_rcImage.top = 0;
         if (pImage)
@@ -1221,7 +1221,7 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
         if (m_bDefaultSize)
             {
-            CG32bitImage *pImage = m_pImage->GetImage(CONSTLIT("Resolve image size"));
+            CG32bitImage *pImage = m_pImage->GetRawImage(CONSTLIT("Resolve image size"));
             if (pImage)
                 {
                 m_rcImage.right = pImage->GetWidth();
@@ -1246,7 +1246,7 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 	{
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -1308,7 +1308,7 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 	{
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -1344,7 +1344,7 @@ void CObjectImageArray::PaintImageGrayed (CG32bitImage &Dest, int x, int y, int 
 	{
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -1381,7 +1381,7 @@ void CObjectImageArray::PaintImageUL (CG32bitImage &Dest, int x, int y, int iTic
 	{
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
@@ -1476,7 +1476,7 @@ void CObjectImageArray::PaintRotatedImage (CG32bitImage &Dest,
 	if (m_pImage == NULL)
 		return;
 
-	CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+	CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 	if (pSource == NULL)
 		return;
 
@@ -1623,7 +1623,7 @@ void CObjectImageArray::PaintSilhoutte (CG32bitImage &Dest,
 	{
 	if (m_pImage)
 		{
-		CG32bitImage *pSource = m_pImage->GetImage(NULL_STR);
+		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
 		if (pSource == NULL)
 			return;
 
