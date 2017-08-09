@@ -1961,6 +1961,10 @@ void CStationType::PaintDevicePositions (CG32bitImage &Dest, int x, int y)
 	{
 	int i;
 
+	const int ARC_RADIUS = 30;
+	CG32bitPixel rgbLine = CG32bitPixel(255, 255, 0);
+	CG32bitPixel rgbArc = CG32bitPixel(rgbLine, 128);
+
 	SSelectorInitCtx InitCtx;
 	CCompositeImageSelector Selector;
 	m_Image.InitSelector(InitCtx, &Selector);
@@ -1978,7 +1982,24 @@ void CStationType::PaintDevicePositions (CG32bitImage &Dest, int x, int y)
 		else
 			C3DConversion::CalcCoordCompatible(Device.GetPosAngle(), Device.GetPosRadius(), &xPos, &yPos);
 
-		Dest.DrawDot(x + xPos, y + yPos, CG32bitPixel(255, 255, 0), markerMediumCross);
+		int xCenter = x + xPos;
+		int yCenter = y + yPos;
+
+		Dest.DrawDot(xCenter, yCenter, rgbLine, markerMediumCross);
+
+		//	Draw fire arc
+
+		if (!Device.IsOmniDirectional())
+			{
+			int iMinFireArc = Device.GetMinFireArc();
+			int iMaxFireArc = Device.GetMaxFireArc();
+
+			CGDraw::Arc(Dest, CVector(xCenter, yCenter), ARC_RADIUS, mathDegreesToRadians(iMinFireArc), mathDegreesToRadians(iMaxFireArc), ARC_RADIUS / 2, rgbArc);
+
+			int iFireAngle = AngleMiddle(iMinFireArc, iMaxFireArc);
+			CVector vDir = PolarToVector(iFireAngle, ARC_RADIUS);
+			CGDraw::Line(Dest, xCenter, yCenter, xCenter + (int)vDir.GetX(), yCenter - (int)vDir.GetY(), 1, rgbLine);
+			}
 		}
 	}
 
