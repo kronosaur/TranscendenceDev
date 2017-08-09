@@ -23,6 +23,8 @@
 #define ENHANCED_ATTRIB							CONSTLIT("enhanced")
 #define ENHANCEMENT_ATTRIB						CONSTLIT("enhancement")
 #define EXTERNAL_ATTRIB							CONSTLIT("external")
+#define FIRE_ANGLE_ATTRIB						CONSTLIT("fireAngle")
+#define FIRE_ARC_ATTRIB							CONSTLIT("fireArc")
 #define HP_BONUS_ATTRIB							CONSTLIT("hpBonus")
 #define ITEM_ATTRIB								CONSTLIT("item")
 #define LEVEL_ATTRIB							CONSTLIT("level")
@@ -223,8 +225,33 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 
 	retDesc->bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
 	retDesc->bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
-	retDesc->iMinFireArc = AngleMod(pDesc->GetAttributeInteger(MIN_FIRE_ARC_ATTRIB));
-	retDesc->iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
+
+	//	If we have a fireArc attribute, then we're defining the arc in terms of center angle
+	//	and arc.
+
+	int iArcAngle;
+	if (pDesc->FindAttributeInteger(FIRE_ARC_ATTRIB, &iArcAngle))
+		{
+		//	Fire out the center angle
+
+		int iCenterAngle;
+		if (!pDesc->FindAttributeInteger(FIRE_ANGLE_ATTRIB, &iCenterAngle))
+			iCenterAngle = retDesc->iPosAngle;
+
+		//	Calculate min and max fire arc
+
+		int iHalfArc = Max(iArcAngle / 2, 0);
+		retDesc->iMinFireArc = AngleMod(iCenterAngle - iHalfArc);
+		retDesc->iMaxFireArc = AngleMod(iCenterAngle + iHalfArc);
+		}
+
+	//	Otherwise, we support min/max fire arc
+
+	else
+		{
+		retDesc->iMinFireArc = AngleMod(pDesc->GetAttributeInteger(MIN_FIRE_ARC_ATTRIB));
+		retDesc->iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
+		}
 
 	if (error = CDeviceClass::ParseLinkedFireOptions(Ctx, pDesc->GetAttribute(LINKED_FIRE_ATTRIB), &retDesc->dwLinkedFireOptions))
 		return error;
