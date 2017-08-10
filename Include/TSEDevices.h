@@ -502,6 +502,8 @@ class CInstalledDevice
 		inline bool IsEnhanced (void) const { return (m_pItem ? m_pItem->IsEnhanced() : false); }
 		inline bool IsWeaponAligned (CSpaceObject *pShip, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) { return m_pClass->IsWeaponAligned(pShip, this, pTarget, retiAimAngle, retiFireAngle); }
 
+		static void PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &Dest, int x, int y, int iScale, int iRotation);
+
 	private:
 		CItem *m_pItem;							//	Item installed in this slot
 		CDeviceClassRef m_pClass;				//	The device class that is installed here

@@ -483,6 +483,51 @@ ALERROR CInstalledDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
+void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &Dest, int x, int y, int iScale, int iRotation)
+
+//	PaintDevicePos
+//
+//	Paints the position of the device.
+
+	{
+	const int ARC_RADIUS = 30;
+	CG32bitPixel RGB_LINE = CG32bitPixel(255, 255, 0);
+	CG32bitPixel RGB_ARC = CG32bitPixel(RGB_LINE, 128);
+
+	//	Compute the position of the device, accounting for rotation.
+
+	int xPos;
+	int yPos;
+	if (Device.b3DPosition)
+		C3DConversion::CalcCoord(iScale, iRotation + Device.iPosAngle, Device.iPosRadius, Device.iPosZ, &xPos, &yPos);
+	else
+		C3DConversion::CalcCoordCompatible(iRotation + Device.iPosAngle, Device.iPosRadius, &xPos, &yPos);
+
+	//	Offset from where we want the center of the source to paint.
+
+	xPos += x;
+	yPos += y;
+
+	//	Draw the center
+
+	Dest.DrawDot(xPos, yPos, RGB_LINE, markerMediumCross);
+
+	//	Draw fire arc
+
+	if (!Device.bOmnidirectional)
+		{
+		int iMinFireArc = AngleMod(iRotation + Device.iMinFireArc);
+		int iMaxFireArc = AngleMod(iRotation + Device.iMaxFireArc);
+
+		if (iMinFireArc != iMaxFireArc)
+			CGDraw::Arc(Dest, CVector(xPos, yPos), ARC_RADIUS, mathDegreesToRadians(iMinFireArc), mathDegreesToRadians(iMaxFireArc), ARC_RADIUS / 2, RGB_ARC);
+
+		int iFireAngle = AngleMiddle(iMinFireArc, iMaxFireArc);
+		CVector vDir = PolarToVector(iFireAngle, ARC_RADIUS);
+		CGDraw::Line(Dest, xPos, yPos, xPos + (int)vDir.GetX(), yPos - (int)vDir.GetY(), 1, RGB_LINE);
+		}
+	}
+
 void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 
 //	ReadFromStream

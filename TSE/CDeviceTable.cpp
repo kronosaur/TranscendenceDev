@@ -480,7 +480,22 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Load fire arc attributes
 
-	if (pDesc->FindAttributeInteger(MIN_FIRE_ARC_ATTRIB, &m_iMinFireArc))
+	int iFireArc;
+	if (pDesc->FindAttributeInteger(FIRE_ARC_ATTRIB, &iFireArc))
+		{
+		m_bOmnidirectional = false;
+
+		int iFireAngle;
+		if (!pDesc->FindAttributeInteger(FIRE_ANGLE_ATTRIB, &iFireAngle))
+			iFireAngle = m_iPosAngle;
+
+		int iHalfArc = Max(0, iFireArc / 2);
+		m_iMinFireArc = AngleMod(iFireAngle - iHalfArc);
+		m_iMaxFireArc = AngleMod(iFireAngle + iHalfArc);
+
+		m_bDefaultFireArc = false;
+		}
+	else if (pDesc->FindAttributeInteger(MIN_FIRE_ARC_ATTRIB, &m_iMinFireArc))
 		{
 		m_bOmnidirectional = false;
 		m_iMinFireArc = AngleMod(m_iMinFireArc);
