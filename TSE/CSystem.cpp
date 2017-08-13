@@ -1084,9 +1084,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	//	Figure out the extended boundaries. This is used for enhanced display.
 
-	const Metric ENHANCED_DISPLAY_RANGE = 4.0;
-	Ctx.vEnhancedDiagonal = CVector(g_KlicksPerPixel * ENHANCED_DISPLAY_RANGE * (Metric)RectWidth(rcView) / 2.0,
-			g_KlicksPerPixel * ENHANCED_DISPLAY_RANGE * (Metric)RectHeight(rcView) / 2.0);
+	Ctx.vEnhancedDiagonal = CVector(g_LRSRange, g_LRSRange);
 	Ctx.vEnhancedUR = Ctx.vCenterPos + Ctx.vEnhancedDiagonal;
 	Ctx.vEnhancedLL = Ctx.vCenterPos - Ctx.vEnhancedDiagonal;
 
@@ -3509,6 +3507,10 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	rcBounds.right = rcView.right - Ctx.xCenter - (ENHANCED_SRS_BLOCK_SIZE / 2);
 	rcBounds.bottom = rcView.bottom - Ctx.yCenter - (ENHANCED_SRS_BLOCK_SIZE / 2);
 
+	//	Calculate whether we can see the objects or not
+
+	CPerceptionCalc Perception(Ctx.iPerception);
+
 	//	Generate lists of all objects to paint by layer
 
 	for (iLayer = layerSpace; iLayer < layerCount; iLayer++)
@@ -3570,6 +3572,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 						|| (Ctx.fEnhancedDisplay
 							&& (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 							&& pObj->PosInBox(Ctx.vEnhancedUR, Ctx.vEnhancedLL)
+							&& Perception.IsVisibleInLRS(Ctx.pCenter, pObj)
 							&& !pObj->IsHidden());
 
 				if (bMarker

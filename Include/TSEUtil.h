@@ -743,13 +743,16 @@ class CPerceptionCalc
 			RANGE_ARRAY_SIZE = 16,
 			};
 
-		CPerceptionCalc (int iPerception);
+		CPerceptionCalc (int iPerception = -1);
 
 		bool CanBeTargeted (CSpaceObject *pTarget, Metric rTargetDist2) const;
 		bool CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTargetDist) const;
 		Metric GetMaxDist (CSpaceObject *pTarget) const;
 		Metric GetMaxDist2 (CSpaceObject *pTarget) const;
+		inline int GetPerception (void) const { return m_iPerception; }
 		inline int GetRangeIndex (int iStealth) const { return GetRangeIndex(iStealth, m_iPerception); }
+		bool IsVisibleInLRS (CSpaceObject *pSource, CSpaceObject *pTarget) const;
+		inline void SetPerception (int iPerception) { m_iPerception = iPerception; }
 
 		inline static Metric GetRange (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
 		inline static Metric GetRange2 (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }

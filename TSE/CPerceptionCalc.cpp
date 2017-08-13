@@ -34,7 +34,7 @@ Metric CPerceptionCalc::m_rRange[RANGE_ARRAY_SIZE] =
 
 Metric CPerceptionCalc::m_rRange2[RANGE_ARRAY_SIZE];
 
-CPerceptionCalc::CPerceptionCalc (int iPerception = -1) :
+CPerceptionCalc::CPerceptionCalc (int iPerception) :
 		m_iPerception(iPerception)
 
 //	CPerceptionCalc constructor
@@ -136,4 +136,15 @@ bool CPerceptionCalc::IsVisibleDueToAttack (CSpaceObject *pTarget) const
 	
 	{
 	return ((DWORD)pTarget->GetLastFireTime() >= m_dwLastAttackThreshold);
+	}
+
+bool CPerceptionCalc::IsVisibleInLRS (CSpaceObject *pSource, CSpaceObject *pTarget) const
+
+//	IsVisibleInLRS
+//
+//	Returns TRUE if pTarget is visible in LRS to pSource.
+
+	{
+	Metric rDist2 = pSource->GetDistance2(pTarget);
+	return (rDist2 <= GetMaxDist2(pTarget) && rDist2 <= (g_LRSRange * g_LRSRange));
 	}
