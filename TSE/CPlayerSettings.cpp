@@ -49,6 +49,7 @@
 #define STARTING_POS_ATTRIB						CONSTLIT("startingPos")
 #define STARTING_SYSTEM_ATTRIB					CONSTLIT("startingSystem")
 #define STYLE_ATTRIB							CONSTLIT("style")
+#define UI_ATTRIB								CONSTLIT("ui")
 #define WIDTH_ATTRIB							CONSTLIT("width")
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
@@ -73,12 +74,18 @@
 #define ERR_MUST_HAVE_SHIP_IMAGE				CONSTLIT("<ShipImage> in <ArmorDisplay> required if using shield level effect")
 #define ERR_WEAPON_DISPLAY_NEEDED				CONSTLIT("missing or invalid <WeaponDisplay> element")
 
+static TStaticStringTable<TStaticStringEntry<EUITypes>, 2> UI_TYPE_TABLE = {
+	"command",				uiCommand,
+	"pilot",				uiPilot,
+	};
+
 ALERROR InitRectFromElement (CXMLElement *pItem, RECT *retRect);
 
 CPlayerSettings::CPlayerSettings (void) :
 		m_dwLargeImage(0),
 		m_iSortOrder(10000),
 		m_dwStartMap(0),
+		m_iDefaultUI(uiPilot),
 		m_pDockScreenDesc(NULL),
 		m_fInitialClass(false),
 		m_fDebug(false),
@@ -235,6 +242,8 @@ void CPlayerSettings::Copy (const CPlayerSettings &Src)
 
 	//	HUDs
 
+	m_iDefaultUI = Src.m_iDefaultUI;
+
 	for (i = 0; i < hudCount; i++)
 		{
         if (Src.m_HUDDesc[i].bOwned)
@@ -355,6 +364,20 @@ ALERROR CPlayerSettings::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 		}
 
 	m_iSortOrder = pDesc->GetAttributeIntegerBounded(SORT_ORDER_ATTRIB, 0, -1, 100);
+
+	//	Default UI Type
+
+	CString sDefaultUI = pDesc->GetAttribute(UI_ATTRIB);
+	if (sDefaultUI.IsBlank())
+		m_iDefaultUI = uiPilot;
+	else
+		{
+		const TStaticStringEntry<EUITypes> *pEntry = UI_TYPE_TABLE.GetAt(sDefaultUI);
+		if (pEntry == NULL)
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown UI type: %s."), sDefaultUI));
+
+		m_iDefaultUI = pEntry->Value;
+		}
 
 	//	Load some miscellaneous data
 

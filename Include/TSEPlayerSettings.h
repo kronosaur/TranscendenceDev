@@ -5,9 +5,17 @@
 
 #pragma once
 
+enum EUITypes
+	{
+	uiNone =						-1,
+
+	uiPilot =						0,	//	Traditional maneuver/fire UI
+	uiCommand =						1,	//	RTS-style select/order UI
+	};
+
 enum EHUDTypes
 	{
-	hudNone =						-1,		//	Invalid HUD
+	hudNone =						-1,	//	Invalid HUD
 
 	hudArmor =						0,
 	hudShields =					1,
@@ -59,6 +67,7 @@ class CPlayerSettings
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx, CShipClass *pClass);
 		CEffectCreator *FindEffectCreator (const CString &sUNID) const;
+		inline EUITypes GetDefaultUI (void) const { return m_iDefaultUI; }
 		inline const CString &GetDesc (void) const { return m_sDesc; }
 		inline const CDockScreenTypeRef &GetDockServicesScreen (void) const { return m_pDockServicesScreen; }
         inline const CDockScreenVisuals &GetDockScreenVisuals (void) const { return (m_pDockScreenDesc ? *m_pDockScreenDesc : CDockScreenVisuals::GetDefault()); }
@@ -114,6 +123,7 @@ class CPlayerSettings
 		CDockScreenTypeRef m_pShipConfigScreen;		//	Screen used to show ship configuration (may be NULL)
 
 		//	UI Elements
+		EUITypes m_iDefaultUI;						//	Default UI for this ship class
         CDockScreenVisuals *m_pDockScreenDesc;
 		SHUDDesc m_HUDDesc[hudCount];
 
