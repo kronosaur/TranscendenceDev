@@ -460,6 +460,9 @@
 //	149: 1.8 Alpha 2
 //		pAttached in CShipInterior::SCompartmentEntry
 //
+//	150: 1.8 Alpha 3
+//		m_pManeuverController in CPlayerShipController
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

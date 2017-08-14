@@ -351,3 +351,8 @@ class IShipController
 		virtual void OnWreckCreated (CSpaceObject *pWreck) { }
 	};
 
+class CShipAIHelper
+	{
+	public:
+		static bool CalcFormationParams (CShip *pShip, const CVector &vDestPos, const CVector &vDestVel, CVector *retvRecommendedVel, Metric *retrDeltaPos2 = NULL, Metric *retrDeltaVel2 = NULL);
+	};

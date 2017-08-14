@@ -330,50 +330,9 @@ bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip,
 //	ship speed.
 
 	{
-	CVector vDelta = vDestPos - pShip->GetPos();
-
-	//	Compute the velocity that we want to get to the destination position
-	//	as fast as possible.
-
-	Metric rDist;
-	CVector vTravel = vDelta.Normal(&rDist) * pShip->GetMaxSpeed();
-
-	//	Ease from the travel velocity to the final velocity as we get closer
-	//	to the position.
-
-	CVector vDeltaV;
-	if (rDist < MAX_DISTANCE)
-		{
-		Metric rEase = rDist / MAX_DISTANCE;
-		CVector vVel = (rEase * vTravel) + ((1.0 - rEase) * vDestVel);
-		vDeltaV = vVel - pShip->GetVel();
-		}
-
-	//	Otherwise, proceed at travel speed
-
-	else
-		vDeltaV = vTravel - pShip->GetVel();
-
-	Metric rDiff2 = vDeltaV.Length2();
-
-	//	Return our calculations
-
-	if (retvRecommendedVel)
-		*retvRecommendedVel = vDeltaV;
-
-	if (retrDeltaPos2)
-		*retrDeltaPos2 = vDelta.Length2();
-
-	if (retrDeltaVel2)
-		*retrDeltaVel2 = rDiff2;
-
-	//	If we're close enough to the velocity, cheat a little by
-	//	accelerating without using the main engine
-
-	Metric rCloseV = CLOSE_DELTA_V_RATIO * pShip->GetMaxSpeed();
-	Metric rCloseV2 = (rCloseV * rCloseV);
-
 #ifdef DEBUG_FORMATION
+	bool bResult = CShipAIHelper::CalcFormationParams(pShip, vDestPos, vDestVel, retvRecommendedVel, retrDeltaPos2, retrDeltaVel2);
+
 	if (g_pUniverse->GetPlayerShip() 
 			&& g_pUniverse->GetPlayerShip()->GetTarget(CItemCtx(), true) == pShip
 			&& m_pUpdateCtx->pAnnotations)
@@ -383,9 +342,11 @@ bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip,
 		m_pUpdateCtx->pAnnotations->iFormationAngle = iDestAngle;
 		m_pUpdateCtx->pAnnotations->vFormationCurPos = pShip->GetPos();
 		}
-#endif
 
-	return (rDiff2 < rCloseV2);
+	return bResult;
+#else
+	return CShipAIHelper::CalcFormationParams(pShip, vDestPos, vDestVel, retvRecommendedVel, retrDeltaPos2, retrDeltaVel2);
+#endif
 	}
 
 CVector CAIBehaviorCtx::CalcManeuverCloseOnTarget (CShip *pShip,

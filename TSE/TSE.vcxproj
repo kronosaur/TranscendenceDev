@@ -436,6 +436,7 @@
     <ClCompile Include="CSendMessageOrder.cpp" />
     <ClCompile Include="CSentryOrder.cpp" />
     <ClCompile Include="CSFXOptions.cpp" />
+    <ClCompile Include="CShipAIHelper.cpp" />
     <ClCompile Include="CShipArmorDesc.cpp" />
     <ClCompile Include="CShipArmorSegmentDesc.cpp" />
     <ClCompile Include="CShipChallengeDesc.cpp" />
