@@ -446,8 +446,10 @@ class CDriveDesc
 		inline int GetMaxSpeedLimit (void) const { return m_iMaxSpeedLimit; }
         inline int GetPowerUse (void) const { return m_iPowerUse; }
         inline int GetThrust (void) const { return m_iThrust; }
+        inline int GetThrustProperty (void) const { return 2 * m_iThrust; }
         inline DWORD GetUNID (void) const { return m_dwUNID; }
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass = false);
+		void InitThrustFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
         void Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metric rInterpolate = 0.5);
         inline bool IsInertialess (void) const { return (m_fInertialess ? true : false); }
         inline void SetInertialess (bool bValue = true) { m_fInertialess = bValue; }

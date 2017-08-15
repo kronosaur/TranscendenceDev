@@ -3807,7 +3807,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_DriveDesc.SetThrust(0);
 	else
 		{
-		m_DriveDesc.SetThrust(pDesc->GetAttributeInteger(THRUST_ATTRIB));
+		m_DriveDesc.InitThrustFromXML(Ctx, pDesc->GetAttribute(THRUST_ATTRIB));
 		m_rThrustRatio = 0.0;
 		}
 

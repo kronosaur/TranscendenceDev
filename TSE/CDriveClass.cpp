@@ -263,7 +263,7 @@ ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
 		return CC.CreateInteger((int)((100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 
 	else if (strEquals(sProperty, PROPERTY_THRUST))
-		return CC.CreateInteger(pDesc->DriveDesc.GetThrust());
+		return CC.CreateInteger(pDesc->DriveDesc.GetThrustProperty());
 	
 	else if (strEquals(sProperty, PROPERTY_POWER)
 			|| strEquals(sProperty, PROPERTY_DRIVE_POWER))
@@ -302,7 +302,7 @@ ICCItem *CDriveClass::GetDriveProperty (const CDriveDesc &Desc, const CString &s
 		return CC.CreateInteger((int)((100.0 * Desc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 
 	else if (strEquals(sProperty, PROPERTY_THRUST))
-		return CC.CreateInteger(Desc.GetThrust());
+		return CC.CreateInteger(Desc.GetThrustProperty());
 	
 	else if (strEquals(sProperty, PROPERTY_POWER)
 			|| strEquals(sProperty, PROPERTY_DRIVE_POWER))

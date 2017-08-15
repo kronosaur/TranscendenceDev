@@ -160,6 +160,22 @@ Metric CDriveDesc::CalcThrustRatio (int iThrust, Metric rMassInTons)
 	return 2.0 * ((Metric)iThrust / rMassInTons);
 	}
 
+void CDriveDesc::InitThrustFromXML (SDesignLoadCtx &Ctx, const CString &sValue)
+
+//	InitThrustFromXML
+//
+//	Initializes thrust value from an XML attribute.
+
+	{
+	m_iThrust = strToInt(sValue, 0);
+
+	//	In API 38 and above, 1 unit of thrust if 0.5 giganewtons, but we 
+	//	compute thrust in giganewtons, so we need to divide by 2.
+
+	if (Ctx.GetAPIVersion() >= 38)
+		m_iThrust = mathRound(0.5 * m_iThrust);
+	}
+
 ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass)
 
 //  InitFromXML
@@ -184,6 +200,12 @@ ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD 
     //  Thrust
 
 	m_iThrust = pDesc->GetAttributeInteger(THRUST_ATTRIB);
+
+	//	In API 38 and above, 1 unit of thrust if 0.5 giganewtons, but we 
+	//	compute thrust in giganewtons, so we need to divide by 2.
+
+	if (Ctx.GetAPIVersion() >= 38)
+		m_iThrust = mathRound(0.5 * m_iThrust);
 
     //  Power use. Previous versions called it "powerUsed", so we check both
     //  attributes.

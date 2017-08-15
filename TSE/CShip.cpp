@@ -3235,7 +3235,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger((int)((100.0 * GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 
 	else if (strEquals(sName, PROPERTY_THRUST))
-		return CC.CreateInteger((int)GetThrust());
+		return CC.CreateInteger((int)GetThrustProperty());
 
 	else if (strEquals(sName, PROPERTY_THRUST_TO_WEIGHT))
 		{
