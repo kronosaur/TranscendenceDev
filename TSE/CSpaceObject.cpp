@@ -4258,7 +4258,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_DAMAGE_DESC))
 		{
 		ICCItem *pResult = CC.CreateSymbolTable();
-		CSpaceObject::SVisibleDamage Damage;
+		SVisibleDamage Damage;
 		GetVisibleDamageDesc(Damage);
 
 		if (Damage.iShieldLevel != -1)

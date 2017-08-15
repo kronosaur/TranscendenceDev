@@ -398,7 +398,7 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 		if (pTarget->IsIdentified())
 			{
-			CSpaceObject::SVisibleDamage Damage;
+			SVisibleDamage Damage;
 			pTarget->GetVisibleDamageDesc(Damage);
 
 			if (Damage.iShieldLevel != -1)

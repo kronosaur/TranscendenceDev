@@ -1430,10 +1430,9 @@ class CStation : public CSpaceObject
 
 		inline void ClearFireReconEvent (void) { m_fFireReconEvent = false; }
 		inline void ClearReconned (void) { m_fReconned = false; }
+		inline const CStationHull &GetHull (void) const { return m_Hull; }
 		int GetImageVariant (void);
 		inline int GetImageVariantCount (void) { return m_pType->GetImageVariants(); }
-		inline int GetMaxStructuralHitPoints (void) { return m_iMaxStructuralHP; }
-		inline int GetStructuralHitPoints (void) { return m_iStructuralHP; }
 		inline int GetSubordinateCount (void) { return m_Subordinates.GetCount(); }
 		inline CSpaceObject *GetSubordinate (int iIndex) { return m_Subordinates.GetObj(iIndex); }
 		bool IsNameSet (void) const;
@@ -1446,7 +1445,6 @@ class CStation : public CSpaceObject
 		inline void SetInactive (void) { m_fActive = false; }
 		void SetMapOrbit (const COrbit &oOrbit);
 		inline void SetMass (Metric rMass) { m_rMass = rMass; }
-		inline void SetMaxStructuralHitPoints (int iHP) { m_iMaxStructuralHP = iHP; }
 		inline void SetNoConstruction (void) { m_fNoConstruction = true; }
 		inline void SetNoMapLabel (void) { m_fNoMapLabel = true; }
 		inline void SetNoReinforcements (void) { m_fNoReinforcements = true; }
@@ -1455,7 +1453,7 @@ class CStation : public CSpaceObject
 		inline void SetRotation (int iAngle) { if (m_pRotation) m_pRotation->SetRotationAngle(m_pType->GetRotationDesc(), iAngle); }
 		inline void SetShowMapLabel (bool bShow = true) { m_fNoMapLabel = !bShow; }
 		void SetStargate (const CString &sDestNode, const CString &sDestEntryPoint);
-		inline void SetStructuralHitPoints (int iHP) { m_iStructuralHP = iHP; }
+		inline void SetStructuralHitPoints (int iHP) { m_Hull.SetStructuralHP(iHP); }
 		void SetWreckImage (CShipClass *pWreckClass);
 		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
 
@@ -1467,7 +1465,7 @@ class CStation : public CSpaceObject
 		virtual CStation *AsStation (void) override { return this; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) override;
 		virtual bool CanAttack (void) const override;
-		virtual bool CanBeDestroyed (void) override { return (m_iStructuralHP > 0); }
+		virtual bool CanBeDestroyed (void) override { return m_Hull.CanBeDestroyed(); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
 		virtual bool ClassCanAttack (void) override;
@@ -1502,7 +1500,7 @@ class CStation : public CSpaceObject
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override;
 		virtual Metric GetParallaxDist (void) override { return m_rParallaxDist; }
-		virtual EDamageResults GetPassthroughDefault (void) override;
+		virtual EDamageResults GetPassthroughDefault (void) override { return m_Hull.GetPassthroughDefault(); }
 		virtual int GetPlanetarySize (void) const override { return (GetScale() == scaleWorld ? m_pType->GetSize() : 0); }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const override;
@@ -1517,14 +1515,14 @@ class CStation : public CSpaceObject
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
-		virtual int GetVisibleDamage (void) override;
-		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override;
+		virtual int GetVisibleDamage (void) override { return m_Hull.GetVisibleDamage(); }
+		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override { return m_Hull.GetVisibleDamageDesc(Damage); }
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool HasMapLabel (void) override;
 		virtual bool HasVolumetricShadow (void) const override { return (GetScale() == scaleWorld && !IsOutOfPlaneObj()); }
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
-		virtual bool IsAbandoned (void) const override { return (m_iHitPoints == 0 && !IsImmutable()); }
+		virtual bool IsAbandoned (void) const override { return m_Hull.IsAbandoned(); }
 		virtual bool IsActiveStargate (void) const override { return !m_sStargateDestNode.IsBlank() && m_fActive; }
 		virtual bool IsAnchored (void) const override { return (!m_pType->IsMobile() || IsManuallyAnchored()); }
 		virtual bool IsAngry (void) override { return (!IsAbandoned() && (m_iAngryCounter > 0)); }
@@ -1532,11 +1530,11 @@ class CStation : public CSpaceObject
 		virtual bool IsDisarmed (void) override { return m_fDisarmedByOverlay; }
 		virtual bool IsExplored (void) override { return m_fExplored; }
 		virtual bool IsIdentified (void) override { return m_fKnown; }
-		virtual bool IsImmutable (void) const override { return m_fImmutable; }
+		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
 		virtual bool IsInactive (void) const override { return !CanAttack(); }
 		virtual bool IsIntangible (void) const { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
-		virtual bool IsMultiHull (void) override { return m_pType->IsMultiHull(); }
+		virtual bool IsMultiHull (void) override { return m_Hull.IsMultiHull(); }
 		virtual bool IsParalyzed (void) override { return m_fParalyzedByOverlay; }
 		virtual bool IsRadioactive (void) override { return (m_fRadioactive ? true : false); }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
@@ -1574,7 +1572,7 @@ class CStation : public CSpaceObject
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
         virtual bool ShowMapOrbit (void) const override { return (m_fShowMapOrbit ? true : false); }
-        virtual bool ShowStationDamage (void) const override { return (IsAbandoned() && m_iMaxHitPoints > 0); }
+        virtual bool ShowStationDamage (void) const override { return m_Hull.IsWrecked(); }
 		virtual bool SupportsGating (void) override { return IsActiveStargate(); }
 		virtual void Undock (CSpaceObject *pObj) override;
 
@@ -1651,12 +1649,7 @@ class CStation : public CSpaceObject
 		CString m_sStargateDestNode;			//	Destination node
 		CString m_sStargateDestEntryPoint;		//	Destination entry point
 
-		CArmorClass *m_pArmorClass;				//	Armor class
-		int m_iHitPoints;						//	Total hit points (0 = station abandoned)
-		int m_iMaxHitPoints;					//	Max hit points (0 = station cannot be abandoned)
-		int m_iStructuralHP;					//	Structural hp (0 = station cannot be destroyed)
-		int m_iMaxStructuralHP;					//	Max structural hp
-
+		CStationHull m_Hull;					//	Hull and armor
 		CInstalledDevice *m_pDevices;			//	Array of devices
 		COverlayList m_Overlays;				//	List of overlays
 		CDockingPorts m_DockingPorts;			//	Docking ports
@@ -1682,7 +1675,6 @@ class CStation : public CSpaceObject
 		DWORD m_fReconned:1;					//	TRUE if reconned by player
 		DWORD m_fFireReconEvent:1;				//	If TRUE, fire OnReconned
 
-		DWORD m_fImmutable:1;					//	If TRUE, station is immutable
 		DWORD m_fExplored:1;					//	If TRUE, player has docked at least once
 		DWORD m_fDisarmedByOverlay:1;			//	If TRUE, an overlay has disarmed us
 		DWORD m_fParalyzedByOverlay:1;			//	If TRUE, an overlay has paralyzed us
@@ -1690,10 +1682,11 @@ class CStation : public CSpaceObject
 		DWORD m_fNoConstruction:1;				//	Do not build new ships
 		DWORD m_fBlocksShips:1;					//	TRUE if we block ships
 		DWORD m_fPaintOverhang:1;				//	If TRUE, paint above player ship
-
 		DWORD m_fShowMapOrbit:1;				//	If TRUE, show orbit in map
+
 		DWORD m_fDestroyIfEmpty:1;				//	If TRUE, we destroy the station as soon as it is empty
 		DWORD m_fIsSegment:1;                   //  If TRUE, we are a segment of some other object (m_pBase)
+		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

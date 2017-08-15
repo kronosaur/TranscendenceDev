@@ -51,6 +51,30 @@ struct STargetingCtx
 	bool bRecalcTargets;
 	};
 
+//	Armor ----------------------------------------------------------------------
+
+class CArmorSystem
+    {
+    public:
+        CArmorSystem (void) :
+                m_iHealerLeft(0)
+            { }
+
+		int CalcTotalHitPoints (CSpaceObject *pSource, int *retiMaxHP = NULL) const;
+        inline int GetHealerLeft (void) const { return m_iHealerLeft; }
+		inline CInstalledArmor &GetSegment (int iSeg) { return m_Segments[iSeg]; }
+		inline int GetSegmentCount (void) const { return m_Segments.GetCount(); }
+        inline int IncHealerLeft (int iInc) { SetHealerLeft(m_iHealerLeft + iInc); return m_iHealerLeft; }
+        void Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool bInCreate = false);
+        void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
+        inline void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }
+        void WriteToStream (IWriteStream *pStream);
+
+    private:
+        TArray<CInstalledArmor> m_Segments;         //  Armor segments
+        int m_iHealerLeft;                          //  HP of healing left (for bioships)
+    };
+
 //	Ship Structure and Compartments --------------------------------------------
 
 enum ECompartmentTypes
@@ -590,25 +614,6 @@ class CPowerConsumption
 
 		DWORD m_fOutOfFuel:1;				//	TRUE if ship is out of fuel
 		DWORD m_fOutOfPower:1;				//	TRUE if reactor generating no power
-	};
-
-//  Devices --------------------------------------------------------------------
-
-enum DeviceNames
-	{
-	devNone = -1,
-
-	devFirstName = 0,
-
-	devPrimaryWeapon = 0,
-	devMissileWeapon = 1,
-
-	devShields = 8,
-	devDrive = 9,
-	devCargo = 10,
-	devReactor = 11,
-
-	devNamesCount = 12
 	};
 
 //  CShipPerformanceDesc ------------------------------------------------------

@@ -356,54 +356,7 @@ int CStationType::CalcHitsToDestroy (int iLevel) const
 //	hit by a standard weapon of the given level.
 
 	{
-	//	If station cannot be destroyed, then 0
-
-	if (IsImmutable()
-			|| (m_iMaxHitPoints == 0 && m_iMaxStructuralHP == 0))
-		return 0;
-
-	//	Compute the weapon that we want to use.
-
-	int iDamageAdj = (m_pArmor ? m_pArmor->GetArmorClass()->GetDamageAdjForWeaponLevel(iLevel) : 100);
-	Metric rWeaponDamage = (Metric)CWeaponClass::GetStdDamage(iLevel);
-
-	//	If the station is multi-hulled, then assume WMD4 and adjust weapon damage.
-
-	if (IsMultiHull())
-		{
-		int iWMD = 34;
-		rWeaponDamage = Max(1.0, (iWMD * rWeaponDamage / 100.0));
-		}
-
-	//	If we have hit points, then use that. Otherwise, we use structural 
-	//	points.
-
-	int iTotalHP;
-	if (m_iMaxHitPoints > 0)
-		{
-		iTotalHP = m_iMaxHitPoints;
-
-		//	Adjust weapon damage for station repairs. The standard fire rate is
-		//	once per 8 ticks, and the repair rate is per 30 ticks.
-
-		if (!m_Regen.IsEmpty())
-			rWeaponDamage = Max(0.0, rWeaponDamage - (8.0 * m_Regen.GetHPPer180(STATION_REPAIR_FREQUENCY) / 180.0));
-		}
-	else
-		iTotalHP = m_iMaxStructuralHP;
-
-	//	Adjust weapon damage for armor
-
-	rWeaponDamage = iDamageAdj * rWeaponDamage / 100.0;
-
-	//	If weapon does no damage then we can never destroy the station
-
-	if (rWeaponDamage <= 0.0)
-		return 0;
-
-	//	Otherwise, divide to figure out the number of hits to destroy.
-
-	Metric rTotalHits = Max(1.0, (Metric)iTotalHP / rWeaponDamage);
+	Metric rTotalHits = m_HullDesc.CalcHitsToDestroy(iLevel);
 
 	//	Add hits to destroy satellites
 
@@ -703,7 +656,9 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 //	Returns meta-data
 
 	{
-    if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
+	if (m_HullDesc.FindDataField(sField, retsValue))
+		return true;
+    else if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
         *retsValue = m_pAbandonedDockScreen.GetStringUNID(const_cast<CStationType *>(this));
     else if (strEquals(sField, FIELD_BALANCE))
         *retsValue = strFromInt((int)(CalcBalance(GetLevel()) * 100.0));
@@ -730,22 +685,6 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
         *retsValue = GetLocationCriteria();
     else if (strEquals(sField, FIELD_NAME))
         *retsValue = GetNounPhrase();
-	else if (strEquals(sField, FIELD_ARMOR_CLASS))
-		{
-		if (m_pArmor)
-			*retsValue = m_pArmor->GetArmorClass()->GetShortName();
-		else
-			*retsValue = CONSTLIT("none");
-		}
-	else if (strEquals(sField, FIELD_ARMOR_LEVEL))
-		{
-		if (m_pArmor)
-			*retsValue = strFromInt(m_pArmor->GetLevel());
-		else
-			*retsValue = NULL_STR;
-		}
-	else if (strEquals(sField, FIELD_HP))
-		*retsValue = strFromInt(m_iHitPoints);
 	else if (strEquals(sField, FIELD_FIRE_RATE_ADJ))
 		*retsValue = strFromInt(10000 / m_iFireRateAdj);
 	else if (strEquals(sField, FIELD_HITS_TO_DESTROY))
@@ -775,8 +714,6 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 		}
 	else if (strEquals(sField, FIELD_MAX_LIGHT_RADIUS))
 		*retsValue = strFromInt(m_iMaxLightDistance);
-	else if (strEquals(sField, FIELD_REGEN))
-		*retsValue = strFromInt((int)(m_Regen.GetHPPer180(STATION_REPAIR_FREQUENCY) + 0.5));
 	else if (strEquals(sField, FIELD_SATELLITE_STRENGTH))
 		*retsValue = strFromInt((m_pSatellitesDesc ? (int)(100.0 * CalcSatelliteStrength(m_pSatellitesDesc, GetLevel())) : 0));
 	else if (strEquals(sField, FIELD_SIZE))
@@ -885,7 +822,7 @@ int CStationType::GetLevel (int *retiMinLevel, int *retiMaxLevel) const
 		{
 		//	Take the highest level of armor or devices
 
-		iLevel = (m_pArmor ? m_pArmor->GetLevel() : 1);
+		iLevel = m_HullDesc.GetArmorLevel();
 		for (i = 0; i < m_iDevicesCount; i++)
 			{
 			if (!m_Devices[i].IsEmpty())
@@ -1049,7 +986,8 @@ void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	int i;
 
 	retTypesUsed->SetAt(m_pSovereign.GetUNID(), true);
-	retTypesUsed->SetAt(m_pArmor.GetUNID(), true);
+
+	m_HullDesc.AddTypesUsed(retTypesUsed);
 
 	for (i = 0; i < m_iDevicesCount; i++)
 		{
@@ -1128,7 +1066,7 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Armor
 
-	if (error = m_pArmor.Bind(Ctx, itemcatArmor))
+	if (error = m_HullDesc.Bind(Ctx))
 		goto Fail;
 
 	//	Resolve screen
@@ -1210,14 +1148,14 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (IsVirtual())
 		{
-		m_fImmutable = true;
+		m_HullDesc.SetImmutable();
 		m_fNoMapIcon = true;
 		}
 
 	//	Figure out if this is static
 
-	m_fStatic = (m_iMaxHitPoints == 0)
-			&& (m_iStructuralHP == 0)
+	m_fStatic = (m_HullDesc.GetMaxHitPoints() == 0)
+			&& (m_HullDesc.GetMaxStructuralHP() == 0)
 			&& (m_iDevicesCount == 0)
 			&& (GetAbandonedScreen() == NULL)
 			&& (GetFirstDockScreen() == NULL)
@@ -1235,16 +1173,16 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 			&& !m_fShipEncounter
 			&& !m_fStationEncounter;
 
-	//	Any object has not HP and is a star or a world is immutable
+	//	Any object has no HP and is a star or a world is immutable
 	//	by default.
 
-	if (!m_fImmutable
+	if (!m_HullDesc.IsImmutable()
 			&& (m_iScale == scaleStar || m_iScale == scaleWorld)
-			&& m_iMaxHitPoints == 0
-			&& m_iStructuralHP == 0
+			&& m_HullDesc.GetMaxHitPoints() == 0
+			&& m_HullDesc.GetMaxStructuralHP() == 0
 			&& m_iEjectaAdj == 0
 			&& !FindEventHandler(EVENT_ON_MINING))
-		m_fImmutable = true;
+		m_HullDesc.SetImmutable();
 
 	return NOERROR;
 
@@ -1288,11 +1226,9 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoMapIcon = pDesc->GetAttributeBool(NO_MAP_ICON_ATTRIB);
     m_fNoMapLabel = pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB);
     m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
-	m_fMultiHull = pDesc->GetAttributeBool(MULTI_HULL_ATTRIB);
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
 	m_fCanAttack = pDesc->GetAttributeBool(CAN_ATTACK_ATTRIB);
 	m_fReverseArticle = pDesc->GetAttributeBool(REVERSE_ARTICLE_ATTRIB);
-	m_fImmutable = pDesc->GetAttributeBool(IMMUTABLE_ATTRIB);
 	m_fNoBlacklist = pDesc->GetAttributeBool(NO_BLACKLIST_ATTRIB);
 	m_iAlertWhenAttacked = pDesc->GetAttributeInteger(ALERT_WHEN_ATTACKED_ATTRIB);
 	m_iAlertWhenDestroyed = pDesc->GetAttributeInteger(ALERT_WHEN_DESTROYED_ATTRIB);
@@ -1346,20 +1282,10 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_fShipEncounter = pDesc->GetAttributeBool(SHIP_ENCOUNTER_ATTRIB);
 		}
 
-	//	Repair rate
+	//	Ship repair rate
 
 	CString sRegen;
 	int iRepairRate;
-	if (pDesc->FindAttribute(REGEN_ATTRIB, &sRegen))
-		{
-		if (error = m_Regen.InitFromRegenString(Ctx, sRegen, STATION_REPAIR_FREQUENCY))
-			return error;
-		}
-	else if (pDesc->FindAttributeInteger(REPAIR_RATE_ATTRIB, &iRepairRate) && iRepairRate > 0)
-		m_Regen.InitFromRegen(6.0 * iRepairRate, STATION_REPAIR_FREQUENCY);
-
-	//	Ship repair rate
-
 	if (pDesc->FindAttribute(SHIP_REGEN_ATTRIB, &sRegen))
 		{
 		if (error = m_ShipRegen.InitFromRegenString(Ctx, sRegen, STATION_REPAIR_FREQUENCY))
@@ -1390,46 +1316,10 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_rParallaxDist = pDesc->GetAttributeIntegerBounded(BACKGROUND_PLANE_ATTRIB, 0, -1, 100) / 100.0;
 	m_fOutOfPlane = (m_rParallaxDist != 1.0);
 
-	//	Get hit points and max hit points
+	//	Get hull desc
 
-	if (error = m_pArmor.LoadUNID(Ctx, pDesc->GetAttribute(ARMOR_ID_ATTRIB)))
+	if (error = m_HullDesc.InitFromStationXML(Ctx, pDesc))
 		return error;
-
-	m_iHitPoints = pDesc->GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0, -1, -1);
-	m_iMaxHitPoints = pDesc->GetAttributeIntegerBounded(MAX_HIT_POINTS_ATTRIB, 0, -1, -1);
-
-	if (m_iHitPoints == -1 && m_iMaxHitPoints == -1)
-		{
-		m_iHitPoints = 0;
-		m_iMaxHitPoints = 0;
-		}
-	else if (m_iHitPoints == -1)
-		m_iHitPoints = m_iMaxHitPoints;
-	else if (m_iMaxHitPoints == -1)
-		m_iMaxHitPoints = m_iHitPoints;
-
-	//	Structural hit points
-
-	if (m_fImmutable)
-		{
-		m_iStructuralHP = 0;
-		m_iMaxStructuralHP = 0;
-		}
-	else
-		{
-		m_iStructuralHP = pDesc->GetAttributeIntegerBounded(STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, -1);
-		m_iMaxStructuralHP = pDesc->GetAttributeIntegerBounded(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, -1);
-
-		if (m_iStructuralHP == -1 && m_iMaxStructuralHP == -1)
-			{
-			m_iStructuralHP = 0;
-			m_iMaxStructuralHP = 0;
-			}
-		else if (m_iStructuralHP == -1)
-			m_iStructuralHP = m_iMaxStructuralHP;
-		else if (m_iMaxStructuralHP == -1)
-			m_iMaxStructuralHP = m_iStructuralHP;
-		}
 
 	//	Mass & Size
 	

@@ -207,7 +207,7 @@ void CWeaponHUDCircular::PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObj
 
 	if (pTarget->IsIdentified())
 		{
-		CSpaceObject::SVisibleDamage Damage;
+		SVisibleDamage Damage;
 		pTarget->GetVisibleDamageDesc(Damage);
 
 		int iOffset = 0;

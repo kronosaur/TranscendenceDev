@@ -9918,7 +9918,7 @@ ICCItem *fnStationGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	switch (dwData)
 		{
 		case FN_STATION_MAX_STRUCTURAL_HP:
-			return pCC->CreateInteger(pStation->GetMaxStructuralHitPoints());
+			return pCC->CreateInteger(pStation->GetHull().GetMaxStructuralHP());
 
 		default:
 			ASSERT(FALSE);
@@ -10055,7 +10055,7 @@ ICCItem *fnStationGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 
 		case FN_STATION_STRUCTURAL_HP:
 			{
-			pResult = pCC->CreateInteger(pStation->GetStructuralHitPoints());
+			pResult = pCC->CreateInteger(pStation->GetHull().GetStructuralHP());
 			break;
 			}
 

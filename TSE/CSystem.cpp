@@ -463,6 +463,9 @@
 //	150: 1.8 Alpha 3
 //		m_pManeuverController in CPlayerShipController
 //
+//	151: 1.8 Alpha 3
+//		m_Hull in CStation
+//
 //	See: TSEUtil.h for definition of SYSTEM_SAVE_VERSION
 
 #include "PreComp.h"

@@ -81,8 +81,6 @@ const CG32bitPixel RGB_ORBIT_LINE =		CG32bitPixel(115, 149, 229);
 const CG32bitPixel RGB_MAP_LABEL =		CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =		CG32bitPixel(165, 140, 83);
 
-const int REGEN_PER_DAY_FACTOR =		10;
-
 static CObjectClass<CStation>g_Class(OBJID_CSTATION);
 
 static char g_ImageTag[] = "Image";
@@ -111,7 +109,6 @@ CStation::CStation (void) : CSpaceObject(&g_Class),
 		m_pType(NULL),
 		m_pRotation(NULL),
 		m_pMapOrbit(NULL),
-		m_pArmorClass(NULL),
 		m_pTarget(NULL),
 		m_pBase(NULL),
 		m_pDevices(NULL),
@@ -758,15 +755,11 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	if (pStation->m_Scale != scaleStar && pStation->m_Scale != scaleWorld)
 		pStation->SetIsBarrier();
 
+	pStation->m_fBlocksShips = pType->IsWall();
+
 	//	Load hit points and armor information
 
-	pStation->m_fImmutable = pType->IsImmutable();
-	pStation->m_iHitPoints = pType->GetInitialHitPoints();
-	pStation->m_iMaxHitPoints = pType->GetMaxHitPoints();
-	pStation->m_pArmorClass = pType->GetArmorClass();
-	pStation->m_iMaxStructuralHP = pType->GetMaxStructuralHitPoints();
-	pStation->m_iStructuralHP = pType->GetStructuralHitPoints();
-	pStation->m_fBlocksShips = pType->IsWall();
+	pStation->m_Hull.Init(pType->GetHullDesc());
 
 	//	Pick an appropriate image. This call will set the shipwreck image, if
 	//	necessary or the variant (if appropriate).
@@ -1297,10 +1290,8 @@ int CStation::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice 
 	CInstalledDevice *pShields = GetNamedDevice(devShields);
 	if (pShields && GetShieldLevel() > 0)
 		return pShields->GetDamageEffectiveness(pAttacker, pWeapon);
-	else if (m_pArmorClass)
-		return m_pArmorClass->GetDamageEffectiveness(pAttacker, pWeapon);
 	else
-		return 100;
+		return m_pType->GetHullDesc().CalcDamageEffectiveness(pAttacker, pWeapon);
 	}
 
 CDesignType *CStation::GetDefaultDockScreen (CString *retsName)
@@ -1472,6 +1463,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	{
 	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
+	ICCItem *pResult;
 
 	if (strEquals(sName, PROPERTY_ABANDONED))
 		return CC.CreateBool(IsAbandoned());
@@ -1496,18 +1488,6 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
 		return CC.CreateBool(!CanBlacklist());
-
-	else if (strEquals(sName, PROPERTY_HP))
-		return CC.CreateInteger(m_iHitPoints);
-
-	else if (strEquals(sName, PROPERTY_IMMUTABLE))
-		return CC.CreateBool(IsImmutable());
-
-	else if (strEquals(sName, PROPERTY_MAX_HP))
-		return CC.CreateInteger(m_iMaxHitPoints);
-
-	else if (strEquals(sName, PROPERTY_MAX_STRUCTURAL_HP))
-		return CC.CreateInteger(m_iMaxStructuralHP);
 
 	else if (strEquals(sName, PROPERTY_OPEN_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(GetOpenDockingPortCount());
@@ -1548,9 +1528,6 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateString(sGateID);
 		}
 
-	else if (strEquals(sName, PROPERTY_STRUCTURAL_HP))
-		return CC.CreateInteger(m_iStructuralHP);
-
 	else if (strEquals(sName, PROPERTY_SUBORDINATES))
 		{
 		if (GetSubordinateCount() == 0)
@@ -1569,6 +1546,9 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SUPERIOR))
 		return CreateObjPointer(CC, GetBase());
+
+	else if (pResult = m_Hull.FindProperty(sName))
+		return pResult;
 
 	else
 		return CSpaceObject::GetProperty(Ctx, sName);
@@ -1634,63 +1614,6 @@ CSpaceObject *CStation::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
 		return pPlayer;
 
 	return NULL;
-	}
-
-int CStation::GetVisibleDamage (void)
-
-//	GetVisibleDamage
-//
-//	Returns the amount of damage (%) that the object has taken
-
-	{
-	int iMaxHP;
-	int iHP;
-
-	if (IsAbandoned() && m_iStructuralHP > 0)
-		{
-		iMaxHP = m_iMaxStructuralHP;
-		iHP = m_iStructuralHP;
-		}
-	else
-		{
-		iMaxHP = m_iMaxHitPoints;
-		iHP = m_iHitPoints;
-		}
-
-	if (iMaxHP > 0)
-		return 100 - (iHP * 100 / iMaxHP);
-	else
-		return 0;
-	}
-
-void CStation::GetVisibleDamageDesc (SVisibleDamage &Damage)
-
-//	GetVisibleDamageDesc
-//
-//	Returns the amount of damage (%) that the object has taken
-
-	{
-	int iMaxHP;
-	int iHP;
-
-	Damage.iShieldLevel = -1;
-
-	if (IsAbandoned() && m_iStructuralHP > 0)
-		{
-		iMaxHP = m_iMaxStructuralHP;
-		iHP = m_iStructuralHP;
-
-		Damage.iArmorLevel = -1;
-		Damage.iHullLevel = (iMaxHP > 0 ? (iHP * 100 / iMaxHP) : -1);
-		}
-	else
-		{
-		iMaxHP = m_iMaxHitPoints;
-		iHP = m_iHitPoints;
-
-		Damage.iArmorLevel = (iMaxHP > 0 ? (iHP * 100 / iMaxHP) : -1);
-		Damage.iHullLevel = -1;
-		}
 	}
 
 CDesignType *CStation::GetWreckType (void) const
@@ -1823,26 +1746,6 @@ bool CStation::IsShownInGalacticMap (void) const
 
     return true;
     }
-
-EDamageResults CStation::GetPassthroughDefault (void)
-
-//	GetPassthroughDefault
-//
-//	Returns the default damage result when hit by passthrough
-
-	{
-	if (IsImmutable())
-		return damageNoDamageNoPassthrough;
-	else if (IsAbandoned())
-		{
-		if (m_iStructuralHP > 0)
-			return damageStructuralHit;
-		else
-			return damageNoDamageNoPassthrough;
-		}
-	else
-		return damageArmorHit;
-	}
 
 EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
@@ -2024,7 +1927,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			{
 			//	See if this hit destroyed us
 
-			if (m_iStructuralHP > 0 && m_iStructuralHP <= Ctx.iDamage)
+			if (m_Hull.GetStructuralHP() > 0 && m_Hull.GetStructuralHP() <= Ctx.iDamage)
 				{
 				//	Destroy
 
@@ -2042,9 +1945,9 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 				//	If we can be destroyed, subtract from hp
 
-				if (m_iStructuralHP)
+				if (m_Hull.GetStructuralHP() > 0)
 					{
-					m_iStructuralHP -= Ctx.iDamage;
+					m_Hull.IncStructuralHP(-Ctx.iDamage);
 					iResult = damageStructuralHit;
 					}
 				}
@@ -2083,16 +1986,20 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	Armor effects
 
 	bool bCustomDamage = false;
-	if (m_pArmorClass)
+	CArmorClass *pArmorClass = m_pType->GetHullDesc().GetArmorClass();
+	if (pArmorClass)
 		{
 		//	Create an item context
 
-		CItem ArmorItem(m_pArmorClass->GetItemType(), 1);
+		CItem ArmorItem(pArmorClass->GetItemType(), 1);
+		if (ArmorItem.GetType()->IsScalable())
+			ArmorItem.SetLevel(m_Hull.GetArmorLevel());
+
 		CItemCtx ItemCtx(&ArmorItem, this);
 
 		//	Compute the effects based on damage and our armor
 
-		m_pArmorClass->CalcDamageEffects(ItemCtx, Ctx);
+		pArmorClass->CalcDamageEffects(ItemCtx, Ctx);
 
 		//	Give custom weapons a chance
 
@@ -2102,7 +2009,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 		//	Compute the damage for the armor
 
-		m_pArmorClass->CalcAdjustedDamage(ItemCtx, Ctx);
+		pArmorClass->CalcAdjustedDamage(ItemCtx, Ctx);
 
 		//	If this armor section reflects this kind of damage then
 		//	send the damage on
@@ -2121,7 +2028,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	If we're a multi-hull object then we adjust for mass destruction
 	//	effects (non-mass destruction weapons don't hurt us very much)
 
-    if (Ctx.iDamage > 0 && m_pType->IsMultiHull())
+    if (Ctx.iDamage > 0 && m_Hull.IsMultiHull())
         Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
 	//	Hit effect
@@ -2147,9 +2054,9 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	If we've still got armor left, then we take damage but otherwise
 	//	we're OK.
 
-	if (Ctx.iDamage < m_iHitPoints)
+	if (Ctx.iDamage < m_Hull.GetHitPoints())
 		{
-		m_iHitPoints -= Ctx.iDamage;
+		m_Hull.IncHitPoints(-Ctx.iDamage);
 		return damageArmorHit;
 		}
 
@@ -2157,7 +2064,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	else
 		{
-		m_iHitPoints = 0;
+		m_Hull.SetHitPoints(0);
 
 		SDestroyCtx DestroyCtx;
 		DestroyCtx.pObj = this;
@@ -3237,18 +3144,49 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Armor class
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	if (dwLoad != 0xffffffff)
-		m_pArmorClass = g_pUniverse->FindArmor(dwLoad);
-
-	Ctx.pStream->Read((char *)&m_iHitPoints, sizeof(DWORD));
-	if (Ctx.dwVersion >= 77)
-		Ctx.pStream->Read((char *)&m_iMaxHitPoints, sizeof(DWORD));
+	if (Ctx.dwVersion >= 151)
+		m_Hull.ReadFromStream(Ctx);
 	else
-		m_iMaxHitPoints = m_pType->GetMaxHitPoints();
-	Ctx.pStream->Read((char *)&m_iStructuralHP, sizeof(DWORD));
-	if (Ctx.dwVersion >= 31)
-		Ctx.pStream->Read((char *)&m_iMaxStructuralHP, sizeof(DWORD));
+		{
+		//	Armor class no longer loaded
+
+		Ctx.pStream->Read(dwLoad);
+
+		//	Hit points
+
+		int iValue;
+		Ctx.pStream->Read(iValue);
+		m_Hull.SetHitPoints(iValue);
+
+		//	Max hit points
+
+		if (Ctx.dwVersion >= 77)
+			{
+			Ctx.pStream->Read(iValue);
+			m_Hull.SetMaxHitPoints(iValue);
+			}
+		else
+			m_Hull.SetMaxHitPoints(m_pType->GetHullDesc().GetMaxHitPoints());
+
+		//	Structural HP
+
+		Ctx.pStream->Read(iValue);
+		m_Hull.SetStructuralHP(iValue);
+
+		//	Max structural
+
+		if (Ctx.dwVersion >= 31)
+			{
+			Ctx.pStream->Read(iValue);
+			m_Hull.SetMaxStructuralHP(iValue);
+			}
+		else
+			m_Hull.SetMaxStructuralHP(m_pType->GetHullDesc().GetMaxStructuralHP());
+
+		//	Armor level
+
+		m_Hull.SetArmorLevel(0);
+		}
 
 	//	Devices
 
@@ -3403,7 +3341,13 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fReconned =			((dwLoad & 0x00000080) ? true : false);
 	m_fFireReconEvent =		((dwLoad & 0x00000100) ? true : false);
 	bool fNoArticle =		((dwLoad & 0x00000200) ? true : false);
-	m_fImmutable =			((dwLoad & 0x00000400) ? true : false);
+
+	bool bImmutable;
+	if (Ctx.dwVersion < 151)
+		bImmutable =		((dwLoad & 0x00000400) ? true : false);
+	else
+		bImmutable = false;
+
 	m_fExplored =			((dwLoad & 0x00000800) ? true : false);
 	m_fDisarmedByOverlay =	((dwLoad & 0x00001000) ? true : false);
 	m_fParalyzedByOverlay =	((dwLoad & 0x00002000) ? true : false);
@@ -3426,7 +3370,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	//	Previous versions did not store m_fImmutable
 
 	if (Ctx.dwVersion < 77)
-		m_fImmutable = m_pType->IsImmutable();
+		bImmutable = m_pType->GetHullDesc().IsImmutable();
 
 	//	Previous versions did not store m_fBlocksShips
 
@@ -3438,9 +3382,17 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	else if (Ctx.dwVersion == 94)
 		{
-		if (m_fImmutable
+		if (bImmutable
 				&& m_pType->GetEjectaAdj() != 0)
-			m_fImmutable = m_pType->IsImmutable();
+			bImmutable = m_pType->GetHullDesc().IsImmutable();
+		}
+
+	//	Previous versions stored m_fImmutable here (instead of in m_Hull)
+
+	if (Ctx.dwVersion < 151)
+		{
+		m_Hull.SetImmutable(bImmutable);
+		m_Hull.SetMultiHull(m_pType->GetHullDesc().IsMultiHull());
 		}
 
 	//	Rotation
@@ -3716,20 +3668,7 @@ void CStation::OnUpdateExtended (const CTimeSpan &ExtraTime)
 //	Update after an extended period of time
 
 	{
-	Metric rRepairPer180;
-
-	if (!IsAbandoned()
-			&& m_iMaxHitPoints > 0
-			&& m_iHitPoints < m_iMaxHitPoints
-			&& (rRepairPer180 = m_pType->GetRegenDesc().GetHPPer180(STATION_REPAIR_FREQUENCY)) > 0)
-		{
-		//	For each day elapsed, we repair based on the regen rate. This is
-		//	much less than if we let the regen run for a day because we're 
-		//	simulating real repairs (which take time) vs. ad hoc repairs which
-		//	can be done quickly.
-
-		m_iHitPoints = Min(m_iMaxHitPoints, m_iHitPoints + mathRound(rRepairPer180 * REGEN_PER_DAY_FACTOR));
-		}
+	m_Hull.UpdateExtended(m_pType->GetHullDesc(), ExtraTime);
 	}
 
 void CStation::OnWriteToStream (IWriteStream *pStream)
@@ -3828,16 +3767,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	m_sStargateDestNode.WriteToStream(pStream);
 	m_sStargateDestEntryPoint.WriteToStream(pStream);
 
-	if (m_pArmorClass)
-		dwSave = m_pArmorClass->GetUNID();
-	else
-		dwSave = 0xffffffff;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
-
-	pStream->Write((char *)&m_iHitPoints, sizeof(DWORD));
-	pStream->Write((char *)&m_iMaxHitPoints, sizeof(DWORD));
-	pStream->Write((char *)&m_iStructuralHP, sizeof(DWORD));
-	pStream->Write((char *)&m_iMaxStructuralHP, sizeof(DWORD));
+	m_Hull.WriteToStream(*pStream, this);
 
 	dwSave = (m_pDevices ? maxDevices : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
@@ -3901,7 +3831,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fReconned ?			0x00000080 : 0);
 	dwSave |= (m_fFireReconEvent ?		0x00000100 : 0);
 	//	0x00000200 retired
-	dwSave |= (m_fImmutable ?			0x00000400 : 0);
+	//	0x00000400 retired at 151
 	dwSave |= (m_fExplored ?			0x00000800 : 0);
 	dwSave |= (m_fDisarmedByOverlay ?	0x00001000 : 0);
 	dwSave |= (m_fParalyzedByOverlay ?	0x00002000 : 0);
@@ -4434,8 +4364,8 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 	//	Set hit points for the structure
 
 	int iHP = pWreckClass->GetMaxStructuralHitPoints();
-	SetStructuralHitPoints(iHP);
-	SetMaxStructuralHitPoints(iHP);
+	m_Hull.SetStructuralHP(iHP);
+	m_Hull.SetMaxStructuralHP(iHP);
 
 	//	Set the wreck UNID
 
@@ -4450,6 +4380,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
+	CString sError;
 
 	if (strEquals(sName, PROPERTY_ACTIVE))
 		{
@@ -4477,21 +4408,6 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
 		{
 		m_fNoBlacklist = !pValue->IsNil();
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_HP))
-		{
-		//	Nil means that we don't want to make a change
-
-		if (pValue->IsNil())
-			return true;
-
-		m_iHitPoints = Min(Max(0, pValue->GetIntegerValue()), m_iMaxHitPoints);
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_IMMUTABLE))
-		{
-		m_fImmutable = !pValue->IsNil();
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
@@ -4530,28 +4446,6 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 			CalcBounds();
 			}
 
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_MAX_HP))
-		{
-		//	Nil means that we don't want to make a change
-
-		if (pValue->IsNil())
-			return true;
-
-		m_iMaxHitPoints = Max(0, pValue->GetIntegerValue());
-		m_iHitPoints = Min(m_iHitPoints, m_iMaxHitPoints);
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_MAX_STRUCTURAL_HP))
-		{
-		//	Nil means that we don't want to make a change
-
-		if (pValue->IsNil())
-			return true;
-
-		m_iMaxStructuralHP = Max(0, pValue->GetIntegerValue());
-		m_iStructuralHP = Min(m_iStructuralHP, m_iMaxStructuralHP);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ORBIT))
@@ -4634,14 +4528,14 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		m_fNoMapLabel = pValue->IsNil();
 		return true;
 		}
-	else if (strEquals(sName, PROPERTY_STRUCTURAL_HP))
+	else if (m_Hull.SetPropertyIfFound(sName, pValue, &sError))
 		{
-		//	Nil means that we don't want to make a change
+		if (!sError.IsBlank())
+			{
+			if (retsError) *retsError = sError;
+			return false;
+			}
 
-		if (pValue->IsNil())
-			return true;
-
-		m_iStructuralHP = Min(Max(0, pValue->GetIntegerValue()), m_iMaxStructuralHP);
 		return true;
 		}
 	else
@@ -4805,11 +4699,8 @@ void CStation::UpdateReinforcements (int iTick)
 		{
 		//	Repair damage to station
 
-		if (!m_pType->GetRegenDesc().IsEmpty())
+		if (m_Hull.UpdateRepairDamage(m_pType->GetHullDesc(), iTick))
 			{
-			if (m_iHitPoints < m_iMaxHitPoints)
-				m_iHitPoints = Min(m_iMaxHitPoints, m_iHitPoints + m_pType->GetRegenDesc().GetRegen(iTick, STATION_REPAIR_FREQUENCY));
-
 			//	Remove any harmful overlays
 
 			if (mathRandom(1, 100) <= 20)

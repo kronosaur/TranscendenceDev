@@ -5,6 +5,100 @@
 
 #pragma once
 
+//	Armor/Hull System ----------------------------------------------------------
+
+class CStationHullDesc
+	{
+	public:
+		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
+		ALERROR Bind (SDesignLoadCtx &Ctx);
+		int CalcDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
+		Metric CalcHitsToDestroy (int iLevel) const;
+		inline bool CanBeWrecked (void) const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
+		bool FindDataField (const CString &sField, CString *retsValue) const;
+		inline CArmorClass *GetArmorClass (void) const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
+		int GetArmorLevel (void) const;
+		inline int GetHitPoints (void) const { return m_iHitPoints; }
+		inline int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
+		inline int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
+		inline const CRegenDesc &GetRegenDesc (void) const { return m_Regen; }
+		inline int GetStructuralHP (void) const { return m_iStructuralHP; }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bMultiHullDefault = true);
+		ALERROR InitFromStationXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		inline bool IsImmutable (void) const { return m_bImmutable; }
+		inline bool IsMultiHull (void) const { return m_bMultiHull; }
+		inline void SetImmutable (bool bValue = true) { m_bImmutable = bValue; }
+		
+	private:
+		CItemTypeRef m_pArmor;				//	Armor class
+		int m_iArmorLevel;					//	Armor level (for scalable items)
+		int m_iHitPoints;					//	Hit points at creation time
+		int m_iMaxHitPoints;				//	Max hit points
+		CRegenDesc m_Regen;					//	Repair rate
+
+		int m_iStructuralHP;				//	Initial structural hit points
+		int m_iMaxStructuralHP;				//	Max structural hp (0 = station is permanent)
+		
+		bool m_bMultiHull;					//	Must have WMD to damage
+		bool m_bImmutable;					//	Cannot be damaged
+	};
+
+class CStationHull
+	{
+	public:
+		CStationHull (void);
+
+		inline bool CanBeDestroyed (void) const { return (m_iStructuralHP > 0); }
+		ICCItem *FindProperty (const CString &sProperty) const;
+		inline int GetArmorLevel (void) const { return m_iArmorLevel; }
+		inline int GetHitPoints (void) const { return m_iHitPoints; }
+		inline int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
+		inline int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
+		EDamageResults GetPassthroughDefault (void) const;
+		inline int GetStructuralHP (void) const { return m_iStructuralHP; }
+		int GetVisibleDamage (void) const;
+		void GetVisibleDamageDesc (SVisibleDamage &Damage) const;
+		inline int IncHitPoints (int iInc) { m_iHitPoints = Max(0, m_iHitPoints + iInc); return m_iHitPoints; }
+		inline int IncStructuralHP (int iInc) { m_iStructuralHP = Max(0, m_iStructuralHP + iInc); return m_iStructuralHP; }
+		void Init (const CStationHullDesc &Desc);
+		inline bool IsAbandoned (void) const { return (m_iHitPoints == 0 && !m_fImmutable); }
+		inline bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
+		inline bool IsMultiHull (void) const { return (m_fMultiHull ? true : false); }
+		inline bool IsWrecked (void) const { return (IsAbandoned() && m_iMaxHitPoints > 0); }
+		void ReadFromStream (SLoadCtx &Ctx);
+		inline void SetArmorLevel (int iValue) { m_iArmorLevel = iValue; }
+		inline void SetHitPoints (int iValue) { m_iHitPoints = Max(0, iValue); }
+		inline void SetImmutable (bool bValue = true) { m_fImmutable = bValue; }
+		inline void SetMaxHitPoints (int iValue) { m_iMaxHitPoints = Max(0, iValue); }
+		inline void SetMaxStructuralHP (int iValue) { m_iMaxStructuralHP = Max(0, iValue); }
+		inline void SetMultiHull (bool bValue = true) { m_fMultiHull = bValue; }
+		bool SetPropertyIfFound (const CString &sProperty, ICCItem *pValue, CString *retsError);
+		inline void SetStructuralHP (int iValue) { m_iStructuralHP = Max(0, iValue); }
+		void UpdateExtended (const CStationHullDesc &Desc, const CTimeSpan &ExtraTime);
+		bool UpdateRepairDamage (const CStationHullDesc &Desc, int iTick);
+		void WriteToStream (IWriteStream &Stream, CStation *pStation);
+
+	private:
+		int m_iArmorLevel;					//	Armor level (for scalable items)
+		int m_iHitPoints;					//	Total hit points (0 = station abandoned)
+		int m_iMaxHitPoints;				//	Max hit points (0 = station cannot be abandoned)
+		int m_iStructuralHP;				//	Structural hp (0 = station cannot be destroyed)
+		int m_iMaxStructuralHP;				//	Max structural hp
+		
+		DWORD m_fMultiHull:1;				//	Must have WMD to damage
+		DWORD m_fImmutable:1;				//	Cannot be damaged
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:24;
+	};
+
+//	Encounter Info -------------------------------------------------------------
+
 class CStationEncounterDesc
 	{
 	public:
@@ -177,7 +271,6 @@ class CStationType : public CDesignType
 		inline bool CanHitFriends (void) { return (m_fNoFriendlyFire ? false : true); }
 		inline CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		inline CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
-		inline CArmorClass *GetArmorClass (void) { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
 		inline CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
 		inline IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
 		CSovereign *GetControllingSovereign (void);
@@ -207,24 +300,21 @@ class CStationType : public CDesignType
 		inline CEffectCreator *GetGateEffect (void) { return m_pGateEffect; }
 		inline Metric GetGravityRadius (void) const { return m_rGravityRadius; }
 		inline const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(Selector, Modifiers, retiRotation); }
+		inline const CStationHullDesc &GetHullDesc (void) const { return m_HullDesc; }
 		inline const CCompositeImageDesc &GetImage (void) { return m_Image; }
 		inline const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_Image.GetImage(Selector, Modifiers, retiRotation); }
 		inline int GetImageVariants (void) { return m_Image.GetVariantCount(); }
-		inline int GetInitialHitPoints (void) { return m_iHitPoints; }
 		inline IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
 		Metric GetLevelStrength (int iLevel);
 		inline const CString &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
 		inline Metric GetMass (void) { return m_rMass; }
 		inline Metric GetMaxEffectiveRange (void) { return m_rMaxAttackDistance; }
-		inline int GetMaxHitPoints (void) { return m_iMaxHitPoints; }
 		inline int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
 		inline int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
-		inline int GetMaxStructuralHitPoints (void) { return m_iMaxStructuralHP; }
 		inline const CNameDesc &GetNameDesc (void) const { return m_Name; }
 		inline int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
 		inline Metric GetParallaxDist (void) const { return m_rParallaxDist; }
 		inline IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
-		inline const CRegenDesc &GetRegenDesc (void) { return m_Regen; }
 		IShipGenerator *GetReinforcementsTable (void);
 		const CIntegralRotationDesc &GetRotationDesc (void);
 		inline CXMLElement *GetSatellitesDesc (void) { return m_pSatellitesDesc; }
@@ -235,11 +325,10 @@ class CStationType : public CDesignType
 		inline CSovereign *GetSovereign (void) const { return m_pSovereign; }
 		inline CG32bitPixel GetSpaceColor (void) { return m_rgbSpaceColor; }
 		inline int GetStealth (void) const { return m_iStealth; }
-		inline int GetStructuralHitPoints (void) { return m_iStructuralHP; }
 		inline int GetTempChance (void) const { return m_iChance; }
 		inline bool HasAnimations (void) const { return (m_pAnimations != NULL); }
 		inline bool HasGravity (void) const { return (m_rGravityRadius > 0.0); }
-		inline bool HasWreckImage (void) const { return (!IsImmutable() && m_iMaxHitPoints > 0); }
+		inline bool HasWreckImage (void) const { return m_HullDesc.CanBeWrecked(); }
 		inline void IncEncounterMinimum (CTopologyNode *pNode, int iInc = 1) { m_EncounterRecord.IncMinimumForNode(pNode, GetEncounterDesc(), iInc); }
 		inline bool IsActive (void) { return (m_fInactive ? false : true); }
 		inline bool IsOutOfPlaneObject (void) { return (m_fOutOfPlane ? true : false); }
@@ -247,8 +336,6 @@ class CStationType : public CDesignType
 		inline bool IsBlacklistEnabled (void) { return (m_fNoBlacklist ? false : true); }
 		inline bool IsDestroyWhenEmpty (void) { return (m_fDestroyWhenEmpty ? true : false); }
 		inline bool IsEnemyDockingAllowed (void) { return (m_fAllowEnemyDocking ? true : false); }
-		inline bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
-		inline bool IsMultiHull (void) const { return (m_fMultiHull ? true : false); }
 		inline bool IsMobile (void) const { return (m_fMobile ? true : false); }
 		inline bool IsPaintLayerOverhang (void) const { return (m_fPaintOverhang ? true : false); }
 		inline bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
@@ -340,15 +427,9 @@ class CStationType : public CDesignType
 														//		Otherwise, in meters
 		int m_iFireRateAdj;								//	Fire rate adjustment
 
-		//	Armor & HP
-		CItemTypeRef m_pArmor;							//	Armor class
-		int m_iHitPoints;								//	Hit points at creation time
-		int m_iMaxHitPoints;							//	Max hit points
-		CRegenDesc m_Regen;								//	Repair rate
+		//	Armor & Hull
+		CStationHullDesc m_HullDesc;					//	Hull descriptor
 		int m_iStealth;									//	Stealth
-
-		int m_iStructuralHP;							//	Initial structural hit points
-		int m_iMaxStructuralHP;							//	Max structural hp (0 = station is permanent)
 
 		//	Devices
 		int m_iDevicesCount;							//	Number of devices in array
@@ -370,24 +451,24 @@ class CStationType : public CDesignType
 		DWORD m_fRadioactive:1;							//	Station is radioactive
 		DWORD m_fCanAttack:1;							//	Station is active (i.e., will react if attacked)
 		DWORD m_fShipEncounter:1;						//	This is a ship encounter
-		DWORD m_fImmutable:1;							//	Station can not take damage or become radioactive, etc.
 		DWORD m_fNoMapIcon:1;							//	Do not show on map
-		DWORD m_fMultiHull:1;							//	Only harmed by WMD damage
 		DWORD m_fTimeStopImmune:1;						//	TRUE if station is immune to time-stop
 		DWORD m_fNoBlacklist:1;							//	Does not blacklist player if attacked
-
 		DWORD m_fReverseArticle:1;						//	Use "a" instead of "an" and vice versa
 		DWORD m_fStatic:1;								//	Use CStatic instead of CStation
+
 		DWORD m_fOutOfPlane:1;							//	Background or foreground object
 		DWORD m_fNoFriendlyTarget:1;					//	Station cannot be hit by friends
 		DWORD m_fVirtual:1;								//	Virtual stations do not show up
 		DWORD m_fPaintOverhang:1;						//	If TRUE, paint in overhang layer
 		DWORD m_fCommsHandlerInit:1;					//	TRUE if comms handler has been initialized
 		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
-
 		DWORD m_fNoMapLabel:1;							//	If TRUE, do not show a label on system map
 		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
+
 		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

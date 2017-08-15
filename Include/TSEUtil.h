@@ -166,7 +166,7 @@ inline void DebugStopTimer (char *szTiming) { }
 const DWORD API_VERSION =								37;		//	See: LoadExtensionVersion in Utilities.cpp
 																//	See: ExtensionVersionToInteger in Utilities.cpp
 const DWORD UNIVERSE_SAVE_VERSION =						30;
-const DWORD SYSTEM_SAVE_VERSION =						150;	//	See: CSystem.cpp
+const DWORD SYSTEM_SAVE_VERSION =						151;	//	See: CSystem.cpp
 
 struct SUniverseLoadCtx
 	{
@@ -735,6 +735,19 @@ class CDamageAdjDesc
 		const CDamageAdjDesc *m_pDefault;		//	Default table
 	};
 
+struct SVisibleDamage
+	{
+	SVisibleDamage (void) :
+			iShieldLevel(-1),
+			iArmorLevel(-1),
+			iHullLevel(-1)
+		{ }
+
+	int iShieldLevel;				//	0-100: shield level; -1 = no shields
+	int iArmorLevel;				//	0-100: armor integrity; -1 = no armor
+	int iHullLevel;					//	0-100: hull integrity; -1 = no interior compartments
+	};
+
 class CPerceptionCalc
 	{
 	public:
@@ -1182,7 +1195,7 @@ template <class TYPE> class TSEListNode
 		TSEListNode<TYPE> *m_pNext;
 	};
 
-//	Regen class
+//	Regen class ----------------------------------------------------------------
 
 class CRegenDesc
 	{

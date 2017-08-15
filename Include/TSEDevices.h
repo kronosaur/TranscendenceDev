@@ -5,6 +5,25 @@
 
 #pragma once
 
+struct SShipPerformanceCtx;
+
+enum DeviceNames
+	{
+	devNone = -1,
+
+	devFirstName = 0,
+
+	devPrimaryWeapon = 0,
+	devMissileWeapon = 1,
+
+	devShields = 8,
+	devDrive = 9,
+	devCargo = 10,
+	devReactor = 11,
+
+	devNamesCount = 12
+	};
+
 class CFailureDesc
 	{
 	public:
