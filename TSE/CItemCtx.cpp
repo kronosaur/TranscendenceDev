@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+TSharedPtr<CItemEnhancementStack> CItemCtx::m_pNullEnhancements(new CItemEnhancementStack);
+
 CItemCtx::CItemCtx (CItemType *pItemType) :
         m_Item(pItemType, 1),
         m_pItem(&m_Item),
@@ -173,6 +175,22 @@ CDeviceClass *CItemCtx::GetDeviceClass(void)
 	return NULL;
 	}
 
+bool CItemCtx::GetEnhancementDisplayAttributes (TArray<SDisplayAttribute> *retList)
+
+//	GetEnhancementDisplayAttributes
+//
+//	Returns a list of display attributes that are currently enhancing the item.
+//	Returns FALSE if there are none.
+
+	{
+	const CItemEnhancementStack *pEnhancements = GetEnhancementStack();
+	if (pEnhancements == NULL || pEnhancements->IsEmpty())
+		return false;
+
+	pEnhancements->AccumulateAttributes(*this, retList);
+	return (retList->GetCount() > 0);
+	}
+
 TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 
 //	GetEnhancementStack
@@ -180,11 +198,17 @@ TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 //	Returns the enhancement stack for the given item. May return NULL.
 
 	{
+	//	If we have installed armor, then get the enhancement stack from it.
+
+	CInstalledArmor *pArmor = GetArmor();
+	if (pArmor)
+		return pArmor->GetEnhancementStack();
+
 	//	If we have an installed device, then get the enhancement stack from it.
 
 	CInstalledDevice *pDevice = GetDevice();
 	if (pDevice)
-		return pDevice->GetEnhancements();
+		return pDevice->GetEnhancementStack();
 
 	//	Otherwise, see if we've got a cached enhancement stack
 
@@ -193,8 +217,12 @@ TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 
 	//	Otherwise, we need to create one from mods
 
+	const CItemEnhancement &Mods = GetMods();
+	if (Mods.IsEmpty())
+		return NULL;
+
 	m_pEnhancements.Set(new CItemEnhancementStack);
-	m_pEnhancements->Insert(GetMods());
+	m_pEnhancements->Insert(Mods);
 	return m_pEnhancements;
 	}
 
@@ -250,14 +278,7 @@ const CItem *CItemCtx::GetItemPointer(void)
 	//	If we have a source and armor, find the item
 
 	if (m_pArmor && m_pSource)
-		{
-		CItemListManipulator ItemList(m_pSource->GetItemList());
-		m_pSource->SetCursorAtArmor(ItemList, m_pArmor);
-		if (!ItemList.IsCursorValid())
-			return NULL;
-
-		return &ItemList.GetItemAtCursor();
-		}
+		return m_pArmor->GetItem();
 
 	//	Couldn't get it
 
@@ -275,16 +296,6 @@ const CItemEnhancement &CItemCtx::GetMods(void)
 
 	if (m_pItem)
 		return m_pItem->GetMods();
-
-	//	If we've got a device structure, then get mods from that
-
-	if (m_pDevice)
-		return m_pDevice->GetMods();
-
-	//	If we've got an armor structure, then that also has mods
-
-	if (m_pArmor)
-		return m_pArmor->GetMods();
 
 	//	Else, we have to get an item
 

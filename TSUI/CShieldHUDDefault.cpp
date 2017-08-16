@@ -238,7 +238,7 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 
 		//	Paint the modifiers
 
-		if (pShield->GetEnhancements())
+		if (pShield->GetEnhancementStack())
 			{
 			pShip->SetCursorAtNamedDevice(ItemList, devShields);
 			CString sMods = pShield->GetEnhancedDesc(pShip, &ItemList.GetItemAtCursor());

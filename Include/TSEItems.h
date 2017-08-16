@@ -189,6 +189,7 @@ class CItemEnhancementStack
 
 		void AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
 		inline CItemEnhancementStack *AddRef (void) { m_dwRefCount++; return this; }
+		int ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const;
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
 		int CalcActivateDelay (CItemCtx &DeviceCtx) const;
 		void Delete (void);
@@ -501,7 +502,9 @@ class CItemCtx
 		CInstalledDevice *GetDevice (void);
 		int GetDeviceCharges (void);
 		CDeviceClass *GetDeviceClass (void);
+		bool GetEnhancementDisplayAttributes (TArray<SDisplayAttribute> *retList);
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void);
+		const CItemEnhancementStack &GetEnhancements (void) { const CItemEnhancementStack *pStack = GetEnhancementStack(); if (pStack) return *pStack; else return *m_pNullEnhancements; }
 		const CItem &GetItem (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
@@ -529,6 +532,8 @@ class CItemCtx
 												//	missile or the weapon.
 
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Only used if we need to cons one up
+
+		static TSharedPtr<CItemEnhancementStack> m_pNullEnhancements;
 	};
 
 //	IItemGenerator -------------------------------------------------------------

@@ -88,6 +88,32 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 		retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+%d%%"), iBonus), true));
 	}
 
+int CItemEnhancementStack::ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const
+
+//	ApplyDamageAdj
+//
+//	Adds the stack's damage adj to the given one.
+
+	{
+	int i;
+
+	Metric rValue = (Metric)iDamageAdj;
+
+	//	Apply enhancements (including on the item itself)
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iAdj = m_Stack[i].GetDamageAdj(Damage);
+		if (iAdj != 100)
+			rValue = iAdj * rValue / 100.0;
+		}
+
+	if (rValue > CDamageAdjDesc::MAX_DAMAGE_ADJ)
+		return CDamageAdjDesc::MAX_DAMAGE_ADJ;
+
+	return (int)(rValue + 0.5);
+	}
+
 void CItemEnhancementStack::ApplySpecialDamage (DamageDesc *pDamage) const
 
 //	ApplySpecialDamage
@@ -264,7 +290,9 @@ int CItemEnhancementStack::GetDamageAdj (const DamageDesc &Damage) const
 
 //	GetDamageAdj
 //
-//	Compute the damage adjustment
+//	Compute the damage adjustment.
+//
+//	NOTE: We are guaranteed to return values from 0 to MAX_DAMAGE_ADJ (100,000)
 
 	{
 	int i;
@@ -279,6 +307,9 @@ int CItemEnhancementStack::GetDamageAdj (const DamageDesc &Damage) const
 		if (iAdj != 100)
 			rValue = iAdj * rValue / 100.0;
 		}
+
+	if (rValue > CDamageAdjDesc::MAX_DAMAGE_ADJ)
+		return CDamageAdjDesc::MAX_DAMAGE_ADJ;
 
 	return (int)(rValue + 0.5);
 	}

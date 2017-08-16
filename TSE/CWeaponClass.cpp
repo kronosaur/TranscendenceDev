@@ -2084,7 +2084,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 			else
 				{
 				pSource->GetSystem()->CreateWeaponFire(pShot,
-						pDevice->GetEnhancements(),
+						pDevice->GetEnhancementStack(),
 						Source,
 						ShotPos[i],
 						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
@@ -2739,7 +2739,6 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 	DamageTypes iDamageType;
 	CString sReference;
-	CItemEnhancement Mods = Item.GetMods();
 
 	//	Fire rate
 

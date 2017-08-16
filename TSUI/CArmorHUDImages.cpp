@@ -320,6 +320,7 @@ void CArmorHUDImages::Realize (SHUDPaintCtx &Ctx)
 			continue;
 
 		CInstalledArmor *pArmor = pShip->GetArmorSection(i);
+		CItemCtx ItemCtx(pShip, pArmor);
 
 		//	Paint the HPs
 
@@ -381,27 +382,24 @@ void CArmorHUDImages::Realize (SHUDPaintCtx &Ctx)
 
 		//	Paint the modifiers
 
-		if (pArmor->GetMods().IsNotEmpty())
+		TArray<SDisplayAttribute> Attribs;
+		if (ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
 			{
-			pShip->SetCursorAtArmor(ItemList, i);
-			CString sMods = ItemList.GetItemAtCursor().GetEnhancedDesc(pShip);
-			if (!sMods.IsBlank())
-				{
-				bool bDisadvantage = (*(sMods.GetASCIIZPointer()) == '-');
+			const CString &sMods = Attribs[0].sText;
+			bool bDisadvantage = (Attribs[0].iType == attribWeakness);
 
-				int cx = SmallFont.MeasureText(sMods);
-				m_Buffer.Fill(ARMOR_ENHANCE_X - cx - 4,
-						pImage->yName + MediumFont.GetHeight() - HP_DISPLAY_HEIGHT,
-						cx + 8,
-						HP_DISPLAY_HEIGHT,
-						(bDisadvantage ? VI.GetColor(colorAreaDisadvantage) : VI.GetColor(colorAreaAdvantage)));
+			int cx = SmallFont.MeasureText(sMods);
+			m_Buffer.Fill(ARMOR_ENHANCE_X - cx - 4,
+					pImage->yName + MediumFont.GetHeight() - HP_DISPLAY_HEIGHT,
+					cx + 8,
+					HP_DISPLAY_HEIGHT,
+					(bDisadvantage ? VI.GetColor(colorAreaDisadvantage) : VI.GetColor(colorAreaAdvantage)));
 
-				SmallFont.DrawText(m_Buffer,
-						ARMOR_ENHANCE_X - cx,
-						pImage->yName + 3,
-						(bDisadvantage ? VI.GetColor(colorTextDisadvantage) : VI.GetColor(colorTextAdvantage)),
-						sMods);
-				}
+			SmallFont.DrawText(m_Buffer,
+					ARMOR_ENHANCE_X - cx,
+					pImage->yName + 3,
+					(bDisadvantage ? VI.GetColor(colorTextDisadvantage) : VI.GetColor(colorTextAdvantage)),
+					sMods);
 			}
 		}
 	}

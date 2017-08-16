@@ -520,7 +520,7 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
-	const CItemEnhancement &Mods = (pArmor ? pArmor->GetMods() : CItemEnhancement::Null());
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
 	//	Increment total armor mass
 
@@ -565,7 +565,7 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 
 	//	Shield interference
 
-	if (m_fShieldInterference || Mods.IsShieldInterfering())
+	if (m_fShieldInterference || Enhancements.IsShieldInterfering())
 		{
 		Ctx.bShieldInterference = true;
 		bModified = true;
@@ -640,7 +640,7 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	//	Adjust for damage type
 
-	int iDamageAdj = GetDamageAdj(ItemCtx, (pArmor ? pArmor->GetMods() : CItemEnhancement()), Ctx.Damage);
+	int iDamageAdj = GetDamageAdj(ItemCtx, Ctx.Damage);
 	Ctx.iArmorDamage = mathAdjust(Ctx.iArmorDamage, iDamageAdj);
 	}
 
@@ -1663,7 +1663,7 @@ void CArmorClass::GenerateScaledStats (void)
         }
     }
 
-int CArmorClass::GetDamageAdj (CItemCtx &ItemCtx, CItemEnhancement Mods, const DamageDesc &Damage) const
+int CArmorClass::GetDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const
 
 //	GetDamageAdj
 //
@@ -1674,16 +1674,11 @@ int CArmorClass::GetDamageAdj (CItemCtx &ItemCtx, CItemEnhancement Mods, const D
 	if (iDamageAdj >= CDamageAdjDesc::MAX_DAMAGE_ADJ)
 		return CDamageAdjDesc::MAX_DAMAGE_ADJ;
 
-	if (Mods.IsNotEmpty())
-		{
-		int iEnhanceAdj = Mods.GetDamageAdj(Damage);
-		if (iEnhanceAdj >= CDamageAdjDesc::MAX_DAMAGE_ADJ)
-			return CDamageAdjDesc::MAX_DAMAGE_ADJ;
-
-		return iDamageAdj * iEnhanceAdj / 100;
-		}
-	else
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	if (Enhancements.IsEmpty())
 		return iDamageAdj;
+
+	return Enhancements.ApplyDamageAdj(Damage, iDamageAdj);
 	}
 
 int CArmorClass::GetDamageAdjForWeaponLevel (int iLevel)
@@ -1856,9 +1851,9 @@ int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 
 	//	Add mods
 
-	const CItemEnhancement &Mods = ItemCtx.GetMods();
-	if (Mods.IsNotEmpty())
-		iHP = iHP * Mods.GetHPAdj() / 100;
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	if (!Enhancements.IsEmpty())
+		iHP = iHP + ((iHP * Enhancements.GetBonus()) / 100);
 
 	//	Add complete bonus
 
@@ -1913,7 +1908,7 @@ bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInst
 	for (i = 0; i < damageCount; i++)
 		{
 		DamageDesc Damage((DamageTypes)i, DiceRange(0, 0, 0));
-		int iAdj = GetDamageAdj(ItemCtx, ItemCtx.GetMods(), Damage);
+		int iAdj = GetDamageAdj(ItemCtx, Damage);
 
 		if (retArray)
 			retArray[i] = CalcHPDamageAdj(iHP, iAdj);
@@ -2082,6 +2077,91 @@ const CArmorClass::SStdStats &CArmorClass::GetStdStats (int iLevel)
     return STD_STATS[iLevel - 1];
     }
 
+bool CArmorClass::IsBlindingDamageImmune (CItemCtx &ItemCtx)
+
+//	IsBlindingDamageImmune
+//
+//	Returns TRUE if we're immune to blinding.
+
+	{
+	const SScalableStats &Stats = GetScaledStats(ItemCtx);
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+
+	return (Stats.iBlindingDamageAdj == 0 || Enhancements.IsBlindingImmune()); 
+	}
+
+bool CArmorClass::IsDeviceDamageImmune (CItemCtx &ItemCtx)
+
+//	IsDeviceDamageImmune
+//
+//	Returns TRUE if we're immune to device damage
+
+	{
+	const SScalableStats &Stats = GetScaledStats(ItemCtx);
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+
+	return (Stats.iDeviceDamageAdj == 0 || Enhancements.IsDeviceDamageImmune()); 
+	}
+
+bool CArmorClass::IsDisintegrationImmune (CItemCtx &ItemCtx)
+
+//	IsDisintegrationImmune
+//
+//	Returns TRUE if we're immune to disintegration.
+
+	{
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	return (m_fDisintegrationImmune || Enhancements.IsDisintegrationImmune());
+	}
+
+bool CArmorClass::IsEMPDamageImmune (CItemCtx &ItemCtx)
+
+//	IsEMPDamageImmune
+//
+//	Returns TRUE if we are immune to EMP damage.
+
+	{
+	const SScalableStats &Stats = GetScaledStats(ItemCtx); 
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+
+	return (Stats.iEMPDamageAdj == 0 || Enhancements.IsEMPImmune()); 
+	}
+
+bool CArmorClass::IsRadiationImmune (CItemCtx &ItemCtx)
+
+//	IsRadiationImmune
+//
+//	Returns TRUE if we are immune to radiation.
+
+	{
+	const SScalableStats &Stats = GetScaledStats(ItemCtx);
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+
+	return (Stats.fRadiationImmune || Enhancements.IsRadiationImmune());
+	}
+
+bool CArmorClass::IsShatterImmune (CItemCtx &ItemCtx)
+
+//	IsShatterImmune
+//
+//	Returns TRUE if we are immune to shatter.
+
+	{
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	return (m_fShatterImmune || Enhancements.IsShatterImmune());
+	}
+
+bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx)
+
+//	IsShieldInterfering
+//
+//	Returns TRUE if we interfere with shields.
+
+	{
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	return (m_fShieldInterference || Enhancements.IsShieldInterfering());
+	}
+
 bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
 
 //	IsReflective
@@ -2089,7 +2169,7 @@ bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
 //	Returns TRUE if the armor reflects this damage
 
 	{
-	const CItemEnhancement &Mods = ItemCtx.GetMods();
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
 	int iReflectChance = 0;
 
@@ -2101,7 +2181,7 @@ bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
 	//	Mods
 
 	int iModReflect;
-	if (Mods.IsNotEmpty() && Mods.IsReflective(Damage, &iModReflect))
+	if (!Enhancements.IsEmpty() && Enhancements.ReflectsDamage(Damage.GetDamageType(), &iModReflect))
 		iReflectChance = Max(iReflectChance, iModReflect);
 
 	//	Done
@@ -2173,6 +2253,7 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	bool bModified = false;
 	CItemCtx ItemCtx(pObj, pArmor);
     const SScalableStats &Stats = GetScaledStats(ItemCtx);
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
 	//	Default to not consuming power. Below we set the flag is we do any kind 
 	//	of regeneration work.
@@ -2181,8 +2262,8 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 
 	//	Compute total regeneration by adding mods to intrinsic
 
-	if (pArmor->GetMods().IsRegenerating()	
-			|| pArmor->GetMods().IsPhotoRegenerating()
+	if (Enhancements.IsRegenerating()	
+			|| Enhancements.IsPhotoRegenerating()
 			|| !Stats.Regen.IsEmpty())
 		{
 		if (UpdateRegen(ItemCtx, Stats, iTick))
@@ -2192,7 +2273,7 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	//	See if we're decaying
 
 	if (pArmor->GetHitPoints() > 0
-			&& (pArmor->GetMods().IsDecaying() || !Stats.Decay.IsEmpty()))
+			&& (Enhancements.IsDecaying() || !Stats.Decay.IsEmpty()))
 		{
 		if (UpdateDecay(ItemCtx, Stats, iTick))
 			bModified = true;
@@ -2201,7 +2282,7 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	//	If this is solar armor then recharge the object. This is the old-style
 	//	solar armor which creates fuel instead of generating power.
 
-	if ((pArmor->GetMods().IsPhotoRecharge() || m_fPhotoRecharge)
+	if ((Enhancements.IsPhotoRecharging() || m_fPhotoRecharge)
 			&& m_iPowerGen == 0)
 		{
 		int iIntensity = pObj->GetSystem()->CalculateLightIntensity(pObj->GetPos());
@@ -2239,6 +2320,7 @@ bool CArmorClass::UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, i
 	{
 	CSpaceObject *pObj = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
 	//	If we require charges, then we're limited to the charges we have
 
@@ -2255,7 +2337,7 @@ bool CArmorClass::UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, i
 
 	const CRegenDesc *pDecay;
 	CRegenDesc DecayWithMod;
-	if (pArmor->GetMods().IsDecaying())
+	if (Enhancements.IsDecaying())
 		{
 		DecayWithMod.Init(4);
 		DecayWithMod.Add(Stats.Decay);
@@ -2422,6 +2504,7 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const SScalableStats &Stats, i
 	{
 	CSpaceObject *pObj = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
 	int iHPNeeded = GetMaxHP(ItemCtx) - pArmor->GetHitPoints();
 	if (iHPNeeded <= 0)
@@ -2454,7 +2537,7 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const SScalableStats &Stats, i
 
 	const CRegenDesc *pRegen;
 	CRegenDesc RegenWithMod;
-	if (pArmor->GetMods().IsRegenerating() || pArmor->GetMods().IsPhotoRegenerating())
+	if (Enhancements.IsRegenerating() || Enhancements.IsPhotoRegenerating())
 		{
 		//	Standard regeneration is 1% of armor HP per 180 ticks
 
@@ -2474,7 +2557,7 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const SScalableStats &Stats, i
 	//	If this is photo-repair armor then adjust the cycle
 	//	based on how far away we are from the sun.
 
-	if (m_fPhotoRepair || pArmor->GetMods().IsPhotoRegenerating())
+	if (m_fPhotoRepair || Enhancements.IsPhotoRegenerating())
 		{
 		int iIntensity = pObj->GetSystem()->CalculateLightIntensity(pObj->GetPos());
 		if (mathRandom(1, 100) > iIntensity)

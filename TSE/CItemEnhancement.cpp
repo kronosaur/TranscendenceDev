@@ -765,7 +765,7 @@ CString CItemEnhancement::GetEnhancedDesc (const CItem &Item, CSpaceObject *pIns
 //	the device structure. In the future we need a better mechanism)
 
 	{
-	CItemEnhancementStack *pAllEnhancements = (pDevice ? pDevice->GetEnhancements() : NULL);
+	const CItemEnhancementStack *pAllEnhancements = (pDevice ? pDevice->GetEnhancementStack() : NULL);
 
 	switch (GetType())
 		{

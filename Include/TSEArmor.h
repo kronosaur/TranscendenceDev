@@ -106,15 +106,15 @@ class CArmorClass
 		CString GetShortName (void);
 		inline int GetStealth (void) const { return m_iStealth; }
 		inline DWORD GetUNID (void);
-		inline bool IsBlindingDamageImmune (CItemCtx &ItemCtx);
-		inline bool IsDeviceDamageImmune (CItemCtx &ItemCtx);
-		inline bool IsDisintegrationImmune (CItemCtx &ItemCtx);
-		inline bool IsEMPDamageImmune (CItemCtx &ItemCtx);
-		inline bool IsRadiationImmune (CItemCtx &ItemCtx);
+		bool IsBlindingDamageImmune (CItemCtx &ItemCtx);
+		bool IsDeviceDamageImmune (CItemCtx &ItemCtx);
+		bool IsDisintegrationImmune (CItemCtx &ItemCtx);
+		bool IsEMPDamageImmune (CItemCtx &ItemCtx);
+		bool IsRadiationImmune (CItemCtx &ItemCtx);
 		bool IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage);
         inline bool IsScalable (void) const { return (m_pScalable != NULL); }
-		inline bool IsShatterImmune (CItemCtx &ItemCtx);
-		inline bool IsShieldInterfering (CItemCtx &ItemCtx);
+		bool IsShatterImmune (CItemCtx &ItemCtx);
+		bool IsShieldInterfering (CItemCtx &ItemCtx);
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 		void Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick, bool *retbModified);
 
@@ -158,7 +158,7 @@ class CArmorClass
 		Metric CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
 		Metric CalcBalanceSpecial (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
 		void GenerateScaledStats (void);
-		int GetDamageAdj (CItemCtx &ItemCtx, CItemEnhancement Mods, const DamageDesc &Damage) const;
+		int GetDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
         const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
 		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
@@ -266,11 +266,12 @@ class CInstalledArmor
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		inline CArmorClass *GetClass (void) const { return m_pArmorClass; }
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
+		inline TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
 		int GetHitPointsPercent (CSpaceObject *pSource);
+		inline CItem *GetItem (void) const { return m_pItem; }
         inline int GetLevel (void) const;
 		inline int GetMaxHP (CSpaceObject *pSource);
-		inline const CItemEnhancement &GetMods (void) { return m_pItem->GetMods(); }
 		inline int GetSect (void) const { return m_iSect; }
 		int IncCharges (CSpaceObject *pSource, int iChange);
 		inline int IncHitPoints (int iChange) { m_iHitPoints = Max(0, m_iHitPoints + iChange); return m_iHitPoints; }
@@ -279,6 +280,7 @@ class CInstalledArmor
 		inline bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
 		inline void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }
+		void SetEnhancements (const TSharedPtr<CItemEnhancementStack> &pStack);
 		inline void SetPrime (CSpaceObject *pSource, bool bPrime = true) { m_fPrimeSegment = bPrime; }
 		inline void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
 		inline void SetSect (int iSect) { m_iSect = iSect; }

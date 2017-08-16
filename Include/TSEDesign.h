@@ -1292,14 +1292,6 @@ inline int CArmorClass::GetInstallCost (CItemCtx &Ctx) const { const SScalableSt
 inline CString CArmorClass::GetName (void) { return m_pItemType->GetNounPhrase(); }
 inline int CArmorClass::GetRepairCost (CItemCtx &Ctx) const { const SScalableStats &Stats = GetScaledStats(Ctx); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.RepairCost); }
 inline DWORD CArmorClass::GetUNID (void) { return m_pItemType->GetUNID(); }
-inline bool CArmorClass::IsBlindingDamageImmune (CItemCtx &ItemCtx) { const SScalableStats &Stats = GetScaledStats(ItemCtx); return (Stats.iBlindingDamageAdj == 0 || ItemCtx.GetMods().IsBlindingImmune()); }
-inline bool CArmorClass::IsDeviceDamageImmune (CItemCtx &ItemCtx) { const SScalableStats &Stats = GetScaledStats(ItemCtx); return (Stats.iDeviceDamageAdj == 0 || ItemCtx.GetMods().IsDeviceDamageImmune()); }
-inline bool CArmorClass::IsDisintegrationImmune (CItemCtx &ItemCtx) { return (m_fDisintegrationImmune || ItemCtx.GetMods().IsDisintegrationImmune()); }
-inline bool CArmorClass::IsEMPDamageImmune (CItemCtx &ItemCtx) { const SScalableStats &Stats = GetScaledStats(ItemCtx); return (Stats.iEMPDamageAdj == 0 || ItemCtx.GetMods().IsEMPImmune()); }
-inline bool CArmorClass::IsRadiationImmune (CItemCtx &ItemCtx) { const SScalableStats &Stats = GetScaledStats(ItemCtx); return (Stats.fRadiationImmune || ItemCtx.GetMods().IsRadiationImmune()); }
-inline bool CArmorClass::IsShatterImmune (CItemCtx &ItemCtx) { return (m_fShatterImmune || (ItemCtx.GetMods().IsShatterImmune())); }
-inline bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx) { return (m_fShieldInterference || ItemCtx.GetMods().IsShieldInterfering()); }
-
 inline int CDeviceClass::GetLevel (void) const { return m_pItemType->GetLevel(); }
 inline CString CDeviceClass::GetName (void) { return m_pItemType->GetNounPhrase(); }
 inline DWORD CDeviceClass::GetUNID (void) { return m_pItemType->GetUNID(); }

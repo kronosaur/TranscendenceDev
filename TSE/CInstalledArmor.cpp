@@ -202,6 +202,19 @@ void CInstalledArmor::SetComplete (CSpaceObject *pSource, bool bComplete)
 		}
 	}
 
+void CInstalledArmor::SetEnhancements (const TSharedPtr<CItemEnhancementStack> &pStack)
+
+//	SetEnhancements
+//
+//	Sets the enhancement stack for the armor
+
+	{
+	if (pStack && !pStack->IsEmpty())
+		m_pEnhancements = pStack;
+	else
+		m_pEnhancements.Delete();
+	}
+
 void CInstalledArmor::WriteToStream (IWriteStream *pStream)
 
 //	WriteToStream

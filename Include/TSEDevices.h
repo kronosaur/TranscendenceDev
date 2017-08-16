@@ -390,7 +390,7 @@ class CInstalledDevice
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		inline DWORD GetData (void) const { return m_dwData; }
 		inline int GetDeviceSlot (void) const { return m_iDeviceSlot; }
-		inline TSharedPtr<CItemEnhancementStack> GetEnhancements (void) const { return m_pEnhancements; }
+		inline TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
 		inline int GetFireArc (void) const { return (IsOmniDirectional() ? 360 : AngleRange(m_iMinFireArc, m_iMaxFireArc)); }
 		inline int GetFireAngle (void) const { return m_iFireAngle; }
 		int GetHitPointsPercent (CSpaceObject *pSource);
@@ -515,7 +515,6 @@ class CInstalledDevice
 		inline DWORD GetDisruptedDuration (void) const { return (m_pItem ? m_pItem->GetDisruptedDuration() : 0); }
 		inline bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const { return (m_pItem ? m_pItem->GetDisruptedStatus(retdwTimeLeft, retbRepairedEvent) : false); }
 		CString GetEnhancedDesc (CSpaceObject *pSource, const CItem *pItem = NULL);
-		inline const CItemEnhancement &GetMods (void) const { return (m_pItem ? m_pItem->GetMods() : CItem::GetNullMod()); }
 		inline bool IsDamaged (void) const { return (m_pItem ? m_pItem->IsDamaged() : false); }
 		inline bool IsDisrupted (void) const { return (m_pItem ? m_pItem->IsDisrupted() : false); }
 		inline bool IsEnhanced (void) const { return (m_pItem ? m_pItem->IsEnhanced() : false); }
@@ -524,6 +523,8 @@ class CInstalledDevice
 		static void PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &Dest, int x, int y, int iScale, int iRotation);
 
 	private:
+		inline const CItemEnhancement &GetMods (void) const { return (m_pItem ? m_pItem->GetMods() : CItem::GetNullMod()); }
+
 		CItem *m_pItem;							//	Item installed in this slot
 		CDeviceClassRef m_pClass;				//	The device class that is installed here
 		COverlay *m_pOverlay;					//	Overlay (if associated)

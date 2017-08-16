@@ -318,6 +318,7 @@ void CShip::CalcArmorBonus (void)
 		for (j = 0; j < SegmentsByType[i].GetCount(); j++)
 			{
 			CInstalledArmor *pArmor = GetArmorSection(SegmentsByType[i][j]);
+            CItemCtx ItemCtx(this, pArmor);
 
 			//	Set armor complete
 
@@ -328,6 +329,21 @@ void CShip::CalcArmorBonus (void)
 			//	helps us.
 
 			pArmor->SetPrime(this, (j == 0));
+
+			//	Keep an enhancement stack for this armor
+
+			TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
+			TArray<CString> EnhancementIDs;
+
+			//	Add any enhancements on the item itself
+
+			const CItemEnhancement &Mods = ItemCtx.GetMods();
+			if (!Mods.IsEmpty())
+				pEnhancements->Insert(Mods);
+
+			//	Set the enhancement stack
+
+			pArmor->SetEnhancements(pEnhancements);
 
 			//	Compute stealth
 
@@ -422,8 +438,9 @@ void CShip::CalcDeviceBonus (void)
 
 			//	Add any enhancements on the item itself
 
-			if (!m_Devices[i].GetMods().IsEmpty())
-				pEnhancements->Insert(m_Devices[i].GetMods());
+			const CItemEnhancement &Mods = ItemCtx.GetMods();
+			if (!Mods.IsEmpty())
+				pEnhancements->Insert(Mods);
 
 			//	Add any slot bonus
 
