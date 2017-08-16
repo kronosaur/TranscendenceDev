@@ -710,6 +710,7 @@
     <ClInclude Include="..\Include\TMap.h" />
     <ClInclude Include="..\Include\TMath.h" />
     <ClInclude Include="..\Include\TQueue.h" />
+    <ClInclude Include="..\Include\TSmartPtr.h" />
     <ClInclude Include="..\Include\TStack.h" />
     <ClInclude Include="..\Include\Zip.h" />
     <ClInclude Include="quickhull\ConvexHull.hpp" />

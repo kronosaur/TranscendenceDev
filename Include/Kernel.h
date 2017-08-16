@@ -1,9 +1,11 @@
 //	Kernel.h
 //
 //	Kernel definitions.
+//	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_KERNEL
-#define INCL_KERNEL
+#pragma once
+
+#include <cstddef>
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
@@ -11,7 +13,6 @@
 
 #define _CRT_RAND_S
 #define NOMINMAX
-#include <stdlib.h>
 #include <windows.h>
 
 //	Debugging defines
@@ -178,6 +179,7 @@ class IWriteStream;
 
 //	Templates
 
+#include "TSmartPtr.h"
 #include "TArray.h"
 #include "TLinkedList.h"
 #include "TMap.h"
@@ -1563,4 +1565,3 @@ template<class KEY> int KeyCompare (const KEY &Key1, const KEY &Key2)
  
 #define NoEmptyFile()   namespace { char NoEmptyFileDummy##__LINE__; } 
 
-#endif
