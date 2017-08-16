@@ -19,10 +19,6 @@
 
 //#define LEVEL_ROMAN_NUMERALS
 
-//	Uncomment out the following define when building a stable release
-
-//#define TRANSCENDENCE_STABLE_RELEASE
-
 //	Define some debugging symbols
 
 #ifdef DEBUG
@@ -157,6 +153,7 @@ extern CUniverse *g_pUniverse;
 
 //	Include other TSE files
 
+#include "TSEVersions.h"
 #include "TSEGeometry.h"
 #include "TSETypes.h"
 #include "TSELanguage.h"

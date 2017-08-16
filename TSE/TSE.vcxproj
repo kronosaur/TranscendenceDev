@@ -282,6 +282,7 @@
     <ClInclude Include="..\Include\TSETopology.h" />
     <ClInclude Include="..\Include\TSETrade.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
+    <ClInclude Include="..\Include\TSEVersions.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="LanguageDefs.h" />
