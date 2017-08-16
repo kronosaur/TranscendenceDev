@@ -494,6 +494,25 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 	CG32bitPixel RGB_LINE = CG32bitPixel(255, 255, 0);
 	CG32bitPixel RGB_ARC = CG32bitPixel(RGB_LINE, 128);
 
+	CDeviceClass *pDeviceClass = Device.Item.GetType()->GetDeviceClass();
+	if (pDeviceClass == NULL)
+		return;
+
+	//	If this is a weapon, then we can take some settings from the weapon.
+
+	bool bWeaponIsOmnidirectional = false;
+	int iWeaponMinFireArc = -1;
+	int iWeaponMaxFireArc = -1;
+	CWeaponClass *pWeapon = pDeviceClass->AsWeaponClass();
+	if (pWeapon)
+		{
+		if (pWeapon->CanRotate(CItemCtx(), &iWeaponMinFireArc, &iWeaponMaxFireArc))
+			{
+			if (iWeaponMinFireArc == iWeaponMaxFireArc)
+				bWeaponIsOmnidirectional = true;
+			}
+		}
+
 	//	Compute the position of the device, accounting for rotation.
 
 	int xPos;
@@ -514,10 +533,21 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 
 	//	Draw fire arc
 
-	if (!Device.bOmnidirectional)
+	if (!Device.bOmnidirectional && !bWeaponIsOmnidirectional)
 		{
-		int iMinFireArc = AngleMod(iRotation + Device.iMinFireArc);
-		int iMaxFireArc = AngleMod(iRotation + Device.iMaxFireArc);
+		int iMinFireArc;
+		int iMaxFireArc;
+
+		if (iWeaponMinFireArc != -1)
+			{
+			iMinFireArc = AngleMod(iRotation + iWeaponMinFireArc);
+			iMaxFireArc = AngleMod(iRotation + iWeaponMaxFireArc);
+			}
+		else
+			{
+			iMinFireArc = AngleMod(iRotation + Device.iMinFireArc);
+			iMaxFireArc = AngleMod(iRotation + Device.iMaxFireArc);
+			}
 
 		if (iMinFireArc != iMaxFireArc)
 			CGDraw::Arc(Dest, CVector(xPos, yPos), ARC_RADIUS, mathDegreesToRadians(iMinFireArc), mathDegreesToRadians(iMaxFireArc), ARC_RADIUS / 2, RGB_ARC);
