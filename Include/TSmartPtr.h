@@ -11,7 +11,7 @@ template <class OBJ> class TSharedPtr
 		constexpr TSharedPtr (void) : m_pPtr(NULL) { }
 		constexpr TSharedPtr (std::nullptr_t) : m_pPtr(NULL) { }
 
-		explicit TSharedPtr (OBJ *pPtr) : m_pPtr(pPtr)
+		explicit TSharedPtr (OBJ *pPtr) : m_pPtr(pPtr) { }
 
 		TSharedPtr (const TSharedPtr<OBJ> &Src)
 			{
@@ -19,6 +19,11 @@ template <class OBJ> class TSharedPtr
 				m_pPtr = Src.m_pPtr->AddRef();
 			else
 				m_pPtr = NULL;
+			}
+
+		TSharedPtr (TSharedPtr<OBJ> &&Src) : m_pPtr(Src.m_pPtr)
+			{
+			Src.m_pPtr = NULL;
 			}
 
 		~TSharedPtr (void)
@@ -44,6 +49,21 @@ template <class OBJ> class TSharedPtr
 		OBJ * operator->() const { return m_pPtr; }
 
 		explicit operator bool() const { return (m_pPtr != NULL); }
+
+		void Delete (void) { Set(NULL);	}
+
+		void Set (OBJ *pPtr)
+			{
+			if (m_pPtr)
+				m_pPtr->Delete();
+
+			m_pPtr = pPtr;
+			}
+
+		void Set (const TSharedPtr<OBJ> &Src)
+			{
+			*this = Src;
+			}
 
 	private:
 		OBJ *m_pPtr;
