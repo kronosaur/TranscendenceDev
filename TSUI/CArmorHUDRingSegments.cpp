@@ -229,7 +229,7 @@ void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int
 	CString sName = pShields->GetClass()->GetName();
 	CString sMods;
 
-	if (pShields->GetEnhancements() != NULL)
+	if (pShields->GetEnhancements())
 		{
 		CItemListManipulator ItemList(pShip->GetItemList());
 		pShip->SetCursorAtNamedDevice(ItemList, devShields);

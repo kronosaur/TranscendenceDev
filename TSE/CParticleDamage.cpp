@@ -9,7 +9,6 @@
 static CObjectClass<CParticleDamage>g_Class(OBJID_CPARTICLEDAMAGE, NULL);
 
 CParticleDamage::CParticleDamage (void) : CSpaceObject(&g_Class),
-		m_pEnhancements(NULL),
 		m_pEffectPainter(NULL),
 		m_pParticlePainter(NULL)
 
@@ -28,14 +27,11 @@ CParticleDamage::~CParticleDamage (void)
 
 	if (m_pParticlePainter)
 		m_pParticlePainter->Delete();
-
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
 	}
 
 ALERROR CParticleDamage::Create (CSystem *pSystem,
 								 CWeaponFireDesc *pDesc,
-								 CItemEnhancementStack *pEnhancements,
+								 TSharedPtr<CItemEnhancementStack> pEnhancements,
 								 const CDamageSource &Source,
 								 const CVector &vPos,
 								 const CVector &vVel,
@@ -79,7 +75,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 	pParticles->m_pDesc = pDesc;
 	pParticles->m_pTarget = pTarget;
-	pParticles->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
+	pParticles->m_pEnhancements = pEnhancements;
 	pParticles->m_iEmitTime = Max(1, pSystemDesc->GetEmitLifetime().Roll());
 	pParticles->m_iLifeLeft = pDesc->GetMaxLifetime() + pParticles->m_iEmitTime;
 	pParticles->m_iTick = 0;
@@ -388,7 +384,7 @@ void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&iBonus, sizeof(DWORD));
 		if (iBonus != 0)
 			{
-			m_pEnhancements = new CItemEnhancementStack;
+			m_pEnhancements.Set(new CItemEnhancementStack);
 			m_pEnhancements->InsertHPBonus(iBonus);
 			}
 		}
@@ -463,7 +459,7 @@ void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
 	//	Enhancements
 
 	if (Ctx.dwVersion >= 92)
-		CItemEnhancementStack::ReadFromStream(Ctx, &m_pEnhancements);
+		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 
 	//	Flags
 

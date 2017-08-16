@@ -220,7 +220,7 @@ class CItemEnhancementStack
 		bool ReflectsDamage (DamageTypes iDamage, int *retiChance = NULL) const;
 		bool RepairOnDamage (DamageTypes iDamage) const;
 
-		static void ReadFromStream (SLoadCtx &Ctx, CItemEnhancementStack **retpStack);
+		static TSharedPtr<CItemEnhancementStack> ReadFromStream (SLoadCtx &Ctx);
 		static void WriteToStream (CItemEnhancementStack *pStack, IWriteStream *pStream);
 
 	private:
@@ -487,13 +487,12 @@ class CItemCtx
 	{
 	public:
         CItemCtx (CItemType *pItemType);
-		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1), m_pEnhancements(NULL) { }
-		~CItemCtx (void);
+		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1) { }
 
 		void ClearItemCache (void);
 		ICCItem *CreateItemVariable (CCodeChain &CC);
@@ -502,7 +501,7 @@ class CItemCtx
 		CInstalledDevice *GetDevice (void);
 		int GetDeviceCharges (void);
 		CDeviceClass *GetDeviceClass (void);
-		const CItemEnhancementStack *GetEnhancementStack (void);
+		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void);
 		const CItem &GetItem (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
@@ -529,7 +528,7 @@ class CItemCtx
 		int m_iVariant;							//	NOTE: In this case, m_pItem may be either a
 												//	missile or the weapon.
 
-		CItemEnhancementStack *m_pEnhancements;	//	Only used if we need to cons one up
+		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Only used if we need to cons one up
 	};
 
 //	IItemGenerator -------------------------------------------------------------

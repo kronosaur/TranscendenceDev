@@ -7,7 +7,6 @@
 static CObjectClass<CRadiusDamage>g_Class(OBJID_CRADIUSDAMAGE, NULL);
 
 CRadiusDamage::CRadiusDamage (void) : CSpaceObject(&g_Class),
-		m_pEnhancements(NULL),
 		m_pPainter(NULL)
 
 //	CRadiusDamage constructor
@@ -22,14 +21,11 @@ CRadiusDamage::~CRadiusDamage (void)
 	{
 	if (m_pPainter)
 		m_pPainter->Delete();
-
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
 	}
 
 ALERROR CRadiusDamage::Create (CSystem *pSystem,
 							   CWeaponFireDesc *pDesc,
-							   CItemEnhancementStack *pEnhancements,
+							   TSharedPtr<CItemEnhancementStack> pEnhancements,
 							   const CDamageSource &Source,
 							   const CVector &vPos,
 							   const CVector &vVel,
@@ -60,7 +56,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 
 	pArea->m_iLifeLeft = Max(1, pDesc->GetLifetime());
 	pArea->m_pDesc = pDesc;
-	pArea->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
+	pArea->m_pEnhancements = pEnhancements;
 	pArea->m_Source = Source;
 	pArea->m_pTarget = pTarget;
 	pArea->m_iTick = 0;
@@ -217,7 +213,7 @@ CString CRadiusDamage::DebugCrashInfo (void)
 		}
 	catch (...)
 		{
-		sResult.Append(strPatternSubst(CONSTLIT("m_pEnhancements: %x [invalid]\r\n"), (DWORD)m_pEnhancements));
+		sResult.Append(strPatternSubst(CONSTLIT("m_pEnhancements: %x [invalid]\r\n"), (DWORD)(CItemEnhancementStack *)m_pEnhancements));
 		}
 
 	//	m_pPainter
@@ -344,7 +340,7 @@ void CRadiusDamage::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&iBonus, sizeof(DWORD));
 		if (iBonus != 0)
 			{
-			m_pEnhancements = new CItemEnhancementStack;
+			m_pEnhancements.Set(new CItemEnhancementStack);
 			m_pEnhancements->InsertHPBonus(iBonus);
 			}
 		}
@@ -371,7 +367,7 @@ void CRadiusDamage::OnReadFromStream (SLoadCtx &Ctx)
 	//	Enhancements
 
 	if (Ctx.dwVersion >= 92)
-		CItemEnhancementStack::ReadFromStream(Ctx, &m_pEnhancements);
+		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 	}
 
 void CRadiusDamage::OnSystemLoaded (void)

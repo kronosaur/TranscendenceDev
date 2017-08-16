@@ -1645,7 +1645,7 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 	}
 
 ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
-								   CItemEnhancementStack *pEnhancements,
+								   TSharedPtr<CItemEnhancementStack> pEnhancements,
 								   const CDamageSource &Source,
 								   const CVector &vPos,
 								   const CVector &vVel,
@@ -1782,7 +1782,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 	}
 
 ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
-									    CItemEnhancementStack *pEnhancements,
+									    TSharedPtr<CItemEnhancementStack> pEnhancements,
 									    const CDamageSource &Source,
 									    CSpaceObject *pTarget,
 									    const CVector &vPos,

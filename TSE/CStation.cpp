@@ -478,10 +478,10 @@ void CStation::CreateDestructionEffect (void)
 
 	if (Explosion.pDesc)
 		{
-		CItemEnhancementStack *pEnhancements = NULL;
+		TSharedPtr<CItemEnhancementStack> pEnhancements;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements = new CItemEnhancementStack;
+			pEnhancements.Set(new CItemEnhancementStack);
 			pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
@@ -495,9 +495,6 @@ void CStation::CreateDestructionEffect (void)
 				NULL,
 				CSystem::CWF_EXPLOSION,
 				NULL);
-
-		if (pEnhancements)
-			pEnhancements->Delete();
 		}
 
 	//	Some air leaks
@@ -1094,10 +1091,10 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 	if (Explosion.pDesc)
 		{
-		CItemEnhancementStack *pEnhancements = NULL;
+		TSharedPtr<CItemEnhancementStack> pEnhancements;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements = new CItemEnhancementStack;
+			pEnhancements.Set(new CItemEnhancementStack);
 			pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
@@ -1111,9 +1108,6 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 				NULL,
 				CSystem::CWF_EXPLOSION,
 				NULL);
-
-		if (pEnhancements)
-			pEnhancements->Delete();
 		}
 	else
 		{

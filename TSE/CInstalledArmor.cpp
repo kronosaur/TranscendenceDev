@@ -1,6 +1,7 @@
 //	CInstalledArmor.cpp
 //
 //	CInstalledArmor class
+//	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -132,6 +133,7 @@ void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx
 //	DWORD		hit points
 //	DWORD		mods
 //	DWORD		flags
+//	CEnhancementStack	m_pEnhancements
 
 	{
 	DWORD dwLoad;
@@ -160,9 +162,15 @@ void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx
 		}
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_fComplete =		((dwLoad & 0x00000001) ? true : false);
-	m_fPrimeSegment =	((dwLoad & 0x00000002) ? true : false);
-	m_fConsumePower =	((dwLoad & 0x00000004) ? true : false);
+	m_fComplete =			((dwLoad & 0x00000001) ? true : false);
+	m_fPrimeSegment =		((dwLoad & 0x00000002) ? true : false);
+	m_fConsumePower =		((dwLoad & 0x00000004) ? true : false);
+	bool bHasEnhancements =	((dwLoad & 0x00000008) ? true : false);
+
+	//	Enhancements stack
+
+	if (bHasEnhancements)
+		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 
 	//	Fix up the item pointer
 
@@ -202,6 +210,7 @@ void CInstalledArmor::WriteToStream (IWriteStream *pStream)
 //	DWORD		m_iSect
 //	DWORD		hit points
 //	DWORD		flags
+//	CEnhancementStack	m_pEnhancements
 
 	{
 	DWORD dwSave = m_pArmorClass->GetUNID();
@@ -216,5 +225,9 @@ void CInstalledArmor::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fComplete ?		0x00000001 : 0);
 	dwSave |= (m_fPrimeSegment ?	0x00000002 : 0);
 	dwSave |= (m_fConsumePower ?	0x00000004 : 0);
+	dwSave |= (m_pEnhancements ?	0x00000008 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+	if (m_pEnhancements)
+		CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 	}

@@ -554,3 +554,5 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					152;
 //	151: 1.8 Alpha 3
 //		m_Hull in CStation
 //
+//	152: 1.8 Alpha 3
+//		Added m_pEnhancements to CInstalledArmor

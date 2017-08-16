@@ -13,7 +13,6 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_pItem(NULL),
 		m_pOverlay(NULL),
 		m_dwTargetID(0),
-		m_pEnhancements(NULL),
 		m_iDeviceSlot(-1),
 		m_iPosAngle(0),
 		m_iPosRadius(0),
@@ -46,8 +45,6 @@ CInstalledDevice::~CInstalledDevice (void)
 //	CInstalledDevice destructor
 
 	{
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
 	}
 
 CInstalledDevice &CInstalledDevice::operator= (const CInstalledDevice &Obj)
@@ -55,15 +52,12 @@ CInstalledDevice &CInstalledDevice::operator= (const CInstalledDevice &Obj)
 //	CInstalledDevice operator =
 
 	{
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
-
 	m_pItem = Obj.m_pItem;
 	m_pClass = Obj.m_pClass;
 	m_pOverlay = Obj.m_pOverlay;
 	m_dwTargetID = Obj.m_dwTargetID;
 	m_LastShotIDs = Obj.m_LastShotIDs;
-	m_pEnhancements = (Obj.m_pEnhancements ? Obj.m_pEnhancements->AddRef() : NULL);
+	m_pEnhancements = Obj.m_pEnhancements;
 
 	m_dwData = Obj.m_dwData;
 
@@ -637,7 +631,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 		int iBonus = (int)LOWORD(dwLoad);
 		if (iBonus != 0)
 			{
-			m_pEnhancements = new CItemEnhancementStack;
+			m_pEnhancements.Set(new CItemEnhancementStack);
 			m_pEnhancements->InsertHPBonus(iBonus);
 			}
 		m_iSlotPosIndex = -1;
@@ -735,7 +729,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	//	Enhancement stack
 
 	if (Ctx.dwVersion >= 92)
-		CItemEnhancementStack::ReadFromStream(Ctx, &m_pEnhancements);
+		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 	}
 
 int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
@@ -804,23 +798,17 @@ bool CInstalledDevice::SetEnabled (CSpaceObject *pSource, bool bEnabled)
 	DEBUG_CATCH
 	}
 
-void CInstalledDevice::SetEnhancements (CItemEnhancementStack *pStack)
+void CInstalledDevice::SetEnhancements (const TSharedPtr<CItemEnhancementStack> &pStack)
 
 //	SetEnhancements
 //
 //	Sets the enhancements stack. NOTE: We take ownership of the stack.
 
 	{
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
-
-	if (pStack && pStack->IsEmpty())
-		{
-		pStack->Delete();
-		pStack = NULL;
-		}
-
-	m_pEnhancements = pStack;
+	if (pStack && !pStack->IsEmpty())
+		m_pEnhancements = pStack;
+	else
+		m_pEnhancements.Delete();
 	}
 
 void CInstalledDevice::SetLastShot (CSpaceObject *pObj, int iIndex)

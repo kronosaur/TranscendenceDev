@@ -1565,10 +1565,10 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 
 	if (Explosion.pDesc)
 		{
-		CItemEnhancementStack *pEnhancements = NULL;
+		TSharedPtr<CItemEnhancementStack> pEnhancements;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements = new CItemEnhancementStack;
+			pEnhancements.Set(new CItemEnhancementStack);
 			pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
@@ -1582,9 +1582,6 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 				NULL,
 				CSystem::CWF_EXPLOSION,
 				NULL);
-
-		if (pEnhancements)
-			pEnhancements->Delete();
 		}
 
 	//	Otherwise, if no defined explosion, we create a default one

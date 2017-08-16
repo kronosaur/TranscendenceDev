@@ -417,7 +417,7 @@ void CShip::CalcDeviceBonus (void)
 
 			//	Keep an enhancement stack for this device
 
-			CItemEnhancementStack *pEnhancements = new CItemEnhancementStack;
+			TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
 			TArray<CString> EnhancementIDs;
 
 			//	Add any enhancements on the item itself

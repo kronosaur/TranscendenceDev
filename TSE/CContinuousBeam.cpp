@@ -8,7 +8,6 @@
 static CObjectClass<CContinuousBeam>g_Class(OBJID_CCONTINUOUSBEAM, NULL);
 
 CContinuousBeam::CContinuousBeam (void) : CSpaceObject(&g_Class),
-		m_pEnhancements(NULL),
 		m_pPainter(NULL)
 
 //	CContinuousBeam constructor
@@ -23,9 +22,6 @@ CContinuousBeam::~CContinuousBeam (void)
 	{
 	if (m_pPainter)
 		m_pPainter->Delete();
-
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
 	}
 
 void CContinuousBeam::AddContinuousBeam (const CVector &vPos, const CVector &vVel, int iDirection)
@@ -118,7 +114,7 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 
 ALERROR CContinuousBeam::Create (CSystem *pSystem,
 								 CWeaponFireDesc *pDesc,
-								 CItemEnhancementStack *pEnhancements,
+								 TSharedPtr<CItemEnhancementStack> pEnhancements,
 								 const CDamageSource &Source,
 								 const CVector &vPos,
 								 const CVector &vVel,
@@ -155,7 +151,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 
 	pBeam->m_pDesc = pDesc;
 	pBeam->m_pTarget = pTarget;
-	pBeam->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
+	pBeam->m_pEnhancements = pEnhancements;
 	pBeam->m_iLifetime = pDesc->GetLifetime();
 	pBeam->m_iTick = 0;
 	pBeam->m_iLastDirection = iDirection;
@@ -635,7 +631,7 @@ void CContinuousBeam::OnReadFromStream (SLoadCtx &Ctx)
 	//	Enhancements
 
 	if (Ctx.dwVersion >= 92)
-		CItemEnhancementStack::ReadFromStream(Ctx, &m_pEnhancements);
+		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 
 	//	Flags
 

@@ -390,7 +390,7 @@ class CInstalledDevice
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		inline DWORD GetData (void) const { return m_dwData; }
 		inline int GetDeviceSlot (void) const { return m_iDeviceSlot; }
-		inline CItemEnhancementStack *GetEnhancements (void) const { return m_pEnhancements; }
+		inline TSharedPtr<CItemEnhancementStack> GetEnhancements (void) const { return m_pEnhancements; }
 		inline int GetFireArc (void) const { return (IsOmniDirectional() ? 360 : AngleRange(m_iMinFireArc, m_iMaxFireArc)); }
 		inline int GetFireAngle (void) const { return m_iFireAngle; }
 		int GetHitPointsPercent (CSpaceObject *pSource);
@@ -428,7 +428,7 @@ class CInstalledDevice
 		inline void SetDeviceSlot (int iDev) { m_iDeviceSlot = iDev; }
 		inline void SetDuplicate (bool bDuplicate = true) { m_fDuplicate = bDuplicate; }
 		bool SetEnabled (CSpaceObject *pSource, bool bEnabled);
-		void SetEnhancements (CItemEnhancementStack *pStack);
+		void SetEnhancements (const TSharedPtr<CItemEnhancementStack> &pStack);
 		inline void SetExternal (bool bValue) { m_fExternal = bValue; }
 		inline void SetFireAngle (int iAngle) { m_iFireAngle = iAngle; }
 		inline void SetFireArc (int iMinFireArc, int iMaxFireArc) { m_iMinFireArc = iMinFireArc; m_iMaxFireArc = iMaxFireArc; }
@@ -528,7 +528,7 @@ class CInstalledDevice
 		CDeviceClassRef m_pClass;				//	The device class that is installed here
 		COverlay *m_pOverlay;					//	Overlay (if associated)
 		DWORD m_dwTargetID;						//	ObjID of target (for tracking secondary weapons)
-		CItemEnhancementStack *m_pEnhancements;	//	List of enhancements (may be NULL)
+		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)
 		TArray<DWORD> m_LastShotIDs;			//	ObjID of last shots (only for continuous beams)
 
 		DWORD m_dwData;							//	Data specific to device class

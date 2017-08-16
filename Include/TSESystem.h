@@ -721,7 +721,7 @@ class CSystem
 							   SObjCreateCtx &CreateCtx,
 							   CSpaceObject **retpStation = NULL);
 		ALERROR CreateWeaponFire (CWeaponFireDesc *pDesc,
-								  CItemEnhancementStack *pEnhancements,
+								  TSharedPtr<CItemEnhancementStack> pEnhancements,
 								  const CDamageSource &Source,
 								  const CVector &vPos,
 								  const CVector &vVel,
@@ -731,7 +731,7 @@ class CSystem
 								  DWORD dwFlags,
 								  CSpaceObject **retpShot);
 		ALERROR CreateWeaponFragments (CWeaponFireDesc *pDesc,
-									   CItemEnhancementStack *pEnhancements,
+									   TSharedPtr<CItemEnhancementStack> pEnhancements,
 									   const CDamageSource &Source,
 									   CSpaceObject *pTarget,
 									   const CVector &vPos,

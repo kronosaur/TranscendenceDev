@@ -10,7 +10,7 @@ class CAreaDamage : public CSpaceObject
 	public:
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
-				CItemEnhancementStack *pEnhancements,
+				TSharedPtr<CItemEnhancementStack> pEnhancements,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -48,7 +48,7 @@ class CAreaDamage : public CSpaceObject
 		CAreaDamage (void);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
-		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
+		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Stack of enhancements
 		IEffectPainter *m_pPainter;				//	Effect painter
 		int m_iInitialDelay;					//	Delay before start
 		int m_iTick;							//	Counter
@@ -152,7 +152,7 @@ class CContinuousBeam : public CSpaceObject
 	public:
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
-				CItemEnhancementStack *pEnhancements,
+				TSharedPtr<CItemEnhancementStack> pEnhancements,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -232,7 +232,7 @@ class CContinuousBeam : public CSpaceObject
 		inline const CVector &GetOrigin (void) const { return NullVector; }
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
-		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
+		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Stack of enhancements
 		CSpaceObject *m_pTarget;				//	Target
 		int m_iTick;							//	Counter
 		int m_iLifetime;						//	Lifetime of any one segment
@@ -489,7 +489,7 @@ class CMissile : public CSpaceObject
 	public:
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
-				CItemEnhancementStack *pEnhancements,
+				TSharedPtr<CItemEnhancementStack> pEnhancements,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -558,7 +558,7 @@ class CMissile : public CSpaceObject
 		bool SetMissileFade (void);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
-		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
+		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Stack of enhancements
 		int m_iLifeLeft;						//	Ticks left
 		int m_iHitPoints;						//	HP left
 		IEffectPainter *m_pPainter;				//	Effect painter
@@ -591,7 +591,7 @@ class CParticleDamage : public CSpaceObject
 	public:
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
-				CItemEnhancementStack *pEnhancements,
+				TSharedPtr<CItemEnhancementStack> pEnhancements,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -643,7 +643,7 @@ class CParticleDamage : public CSpaceObject
 		bool SetMissileFade (void);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
-		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
+		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Stack of enhancements
 		CSpaceObject *m_pTarget;				//	Target
 		int m_iTick;							//	Counter
 		int m_iLifeLeft;						//	Ticks left
@@ -878,7 +878,7 @@ class CRadiusDamage : public CSpaceObject
 	public:
 		static ALERROR Create (CSystem *pSystem,
 				CWeaponFireDesc *pDesc,
-				CItemEnhancementStack *pEnhancements,
+				TSharedPtr<CItemEnhancementStack> pEnhancements,
 				const CDamageSource &Source,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -919,7 +919,7 @@ class CRadiusDamage : public CSpaceObject
 		void DamageAll (SUpdateCtx &Ctx);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
-		CItemEnhancementStack *m_pEnhancements;	//	Stack of enhancements
+		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Stack of enhancements
 		IEffectPainter *m_pPainter;				//	Effect painter
 		int m_iTick;							//	Counter
 		int m_iLifeLeft;						//	Ticks left

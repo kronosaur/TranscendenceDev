@@ -582,7 +582,7 @@ bool CItemEnhancementStack::IsShieldInterfering (void) const
 	return false;
 	}
 
-void CItemEnhancementStack::ReadFromStream (SLoadCtx &Ctx, CItemEnhancementStack **retpStack)
+TSharedPtr<CItemEnhancementStack> CItemEnhancementStack::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
 //
@@ -594,18 +594,15 @@ void CItemEnhancementStack::ReadFromStream (SLoadCtx &Ctx, CItemEnhancementStack
 	DWORD dwLoad;
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	if (dwLoad == 0)
-		{
-		*retpStack = NULL;
-		return;
-		}
+		return NULL;
 
-	CItemEnhancementStack *pStack = new CItemEnhancementStack;
+	TSharedPtr<CItemEnhancementStack> pStack(new CItemEnhancementStack);
 	pStack->m_Stack.InsertEmpty(dwLoad);
 
 	for (i = 0; i < pStack->m_Stack.GetCount(); i++)
 		pStack->m_Stack[i].ReadFromStream(Ctx);
 
-	*retpStack = pStack;
+	return pStack;
 	}
 
 bool CItemEnhancementStack::ReflectsDamage (DamageTypes iDamage, int *retiChance) const

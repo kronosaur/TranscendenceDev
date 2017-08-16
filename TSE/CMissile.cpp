@@ -20,7 +20,6 @@ static CObjectClass<CMissile>g_Class(OBJID_CMISSILE, NULL);
 
 CMissile::CMissile (void) : CSpaceObject(&g_Class),
 		m_pExhaust(NULL),
-		m_pEnhancements(NULL),
 		m_pPainter(NULL),
 		m_pVaporTrailRegions(NULL),
 		m_iSavedRotationsCount(0),
@@ -49,9 +48,6 @@ CMissile::~CMissile (void)
 
 	if (m_pSavedRotations)
 		delete [] m_pSavedRotations;
-
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
 	}
 
 int CMissile::ComputeVaporTrail (void)
@@ -208,7 +204,7 @@ int CMissile::ComputeVaporTrail (void)
 
 ALERROR CMissile::Create (CSystem *pSystem,
 						  CWeaponFireDesc *pDesc,
-						  CItemEnhancementStack *pEnhancements,
+						  TSharedPtr<CItemEnhancementStack> pEnhancements,
 						  const CDamageSource &Source,
 						  const CVector &vPos,
 						  const CVector &vVel,
@@ -254,7 +250,7 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	pMissile->SetObjectDestructionHook();
 
 	pMissile->m_pDesc = pDesc;
-	pMissile->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
+	pMissile->m_pEnhancements = pEnhancements;
 	pMissile->m_iHitPoints = pDesc->GetHitPoints();
 	pMissile->m_iLifeLeft = pDesc->GetLifetime();
 	pMissile->m_iTick = 0;
@@ -460,7 +456,7 @@ CString CMissile::DebugCrashInfo (void)
 		}
 	catch (...)
 		{
-		sResult.Append(strPatternSubst(CONSTLIT("m_pEnhancements: %x [invalid]\r\n"), (DWORD)m_pEnhancements));
+		sResult.Append(strPatternSubst(CONSTLIT("m_pEnhancements: %x [invalid]\r\n"), (DWORD)(CItemEnhancementStack *)m_pEnhancements));
 		}
 
 	//	m_pPainter
@@ -951,7 +947,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&iBonus, sizeof(DWORD));
 		if (iBonus != 0)
 			{
-			m_pEnhancements = new CItemEnhancementStack;
+			m_pEnhancements.Set(new CItemEnhancementStack);
 			m_pEnhancements->InsertHPBonus(iBonus);
 			}
 		}
@@ -1033,7 +1029,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 	//	Enhancements
 
 	if (Ctx.dwVersion >= 92)
-		CItemEnhancementStack::ReadFromStream(Ctx, &m_pEnhancements);
+		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 	}
 
 void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)

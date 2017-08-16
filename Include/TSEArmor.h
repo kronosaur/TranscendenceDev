@@ -289,6 +289,7 @@ class CInstalledArmor
 		CItem *m_pItem;								//	Item
 		CArmorClass *m_pArmorClass;					//	Armor class used
 		int m_iHitPoints;							//	Hit points left
+		TSharedPtr<CItemEnhancementStack> m_pEnhancements;		//	List of enhancements (may be NULL)
 
 		int m_iSect:16;								//	Armor section
 		int m_iSpare:16;

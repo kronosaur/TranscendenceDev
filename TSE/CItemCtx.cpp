@@ -12,23 +12,13 @@ CItemCtx::CItemCtx (CItemType *pItemType) :
         m_pArmor(NULL),
         m_pDevice(NULL),
         m_pWeapon(NULL),
-        m_iVariant(-1),
-        m_pEnhancements(NULL)
+        m_iVariant(-1)
 
 //  CItemCtx constructor
 
     {
     }
         
-CItemCtx::~CItemCtx (void)
-
-//	CItemCtx destructor
-
-	{
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
-	}
-
 void CItemCtx::ClearItemCache (void)
 
 //	ClearItemCache
@@ -183,7 +173,7 @@ CDeviceClass *CItemCtx::GetDeviceClass(void)
 	return NULL;
 	}
 
-const CItemEnhancementStack *CItemCtx::GetEnhancementStack (void)
+TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 
 //	GetEnhancementStack
 //
@@ -203,7 +193,7 @@ const CItemEnhancementStack *CItemCtx::GetEnhancementStack (void)
 
 	//	Otherwise, we need to create one from mods
 
-	m_pEnhancements = new CItemEnhancementStack;
+	m_pEnhancements.Set(new CItemEnhancementStack);
 	m_pEnhancements->Insert(GetMods());
 	return m_pEnhancements;
 	}

@@ -10877,10 +10877,10 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	If we have a bonus, we need an enhancement stack
 
-			CItemEnhancementStack *pEnhancements = NULL;
+			TSharedPtr<CItemEnhancementStack> pEnhancements;
 			if (iBonus != 0)
 				{
-				pEnhancements = new CItemEnhancementStack;
+				pEnhancements.Set(new CItemEnhancementStack);
 				pEnhancements->InsertHPBonus(iBonus);
 				}
 
@@ -10897,15 +10897,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					pTarget,
 					(bDetonateNow ? CSystem::CWF_EXPLOSION : CSystem::CWF_WEAPON_FIRE),
 					&pObj))
-				{
-				if (pEnhancements)
-					pEnhancements->Delete();
-
 				return pCC->CreateNil();
-				}
-
-			if (pEnhancements)
-				pEnhancements->Delete();
 
 			//	Detonate the shot
 

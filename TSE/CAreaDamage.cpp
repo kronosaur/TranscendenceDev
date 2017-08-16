@@ -9,7 +9,6 @@
 static CObjectClass<CAreaDamage>g_Class(OBJID_CAREADAMAGE, NULL);
 
 CAreaDamage::CAreaDamage (void) : CSpaceObject(&g_Class),
-		m_pEnhancements(NULL),
 		m_pPainter(NULL)
 
 //	CAreaDamage constructor
@@ -24,14 +23,11 @@ CAreaDamage::~CAreaDamage (void)
 	{
 	if (m_pPainter)
 		m_pPainter->Delete();
-
-	if (m_pEnhancements)
-		m_pEnhancements->Delete();
 	}
 
 ALERROR CAreaDamage::Create (CSystem *pSystem,
 							 CWeaponFireDesc *pDesc,
-							 CItemEnhancementStack *pEnhancements,
+							 TSharedPtr<CItemEnhancementStack> pEnhancements,
 							 const CDamageSource &Source,
 							 const CVector &vPos,
 							 const CVector &vVel,
@@ -60,7 +56,7 @@ ALERROR CAreaDamage::Create (CSystem *pSystem,
 	pArea->SetObjectDestructionHook();
 
 	pArea->m_pDesc = pDesc;
-	pArea->m_pEnhancements = (pEnhancements ? pEnhancements->AddRef() : NULL);
+	pArea->m_pEnhancements = pEnhancements;
 	pArea->m_iLifeLeft = pDesc->GetLifetime();
 	pArea->m_Source = Source;
 	pArea->m_iInitialDelay = pDesc->GetInitialDelay();
@@ -202,7 +198,7 @@ void CAreaDamage::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&iBonus, sizeof(DWORD));
 		if (iBonus != 0)
 			{
-			m_pEnhancements = new CItemEnhancementStack;
+			m_pEnhancements.Set(new CItemEnhancementStack);
 			m_pEnhancements->InsertHPBonus(iBonus);
 			}
 		}
@@ -239,7 +235,7 @@ void CAreaDamage::OnReadFromStream (SLoadCtx &Ctx)
 	//	Enhancements
 
 	if (Ctx.dwVersion >= 92)
-		CItemEnhancementStack::ReadFromStream(Ctx, &m_pEnhancements);
+		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
 	}
 
 void CAreaDamage::OnSystemLoaded (void)
