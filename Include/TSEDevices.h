@@ -62,6 +62,26 @@ class CFailureDesc
 		TProbabilityTable<EFailureTypes> m_FailTable;
 	};
 
+class CEnhancementDesc
+	{
+	public:
+		bool Accumulate (const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
+
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+
+	private:
+		struct SEnhancerDesc
+			{
+			CString sType;						//	Type of enhancement
+			CItemCriteria Criteria;				//	Items that we enhance
+			CItemEnhancement Enhancement;		//	Enhancement confered
+			};
+
+		ALERROR InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SEnhancerDesc &Enhance);
+
+		TArray<SEnhancerDesc> m_Enhancements;	//	Enhancements confered on other items
+	};
+
 class CDeviceClass
 	{
 	public:
@@ -252,13 +272,6 @@ class CDeviceClass
 		virtual void OnMarkImages (void) { }
 
 	private:
-		struct SEnhancerDesc
-			{
-			CString sType;						//	Type of enhancement
-			CItemCriteria Criteria;				//	Items that we enhance
-			CItemEnhancement Enhancement;		//	Enhancement confered
-			};
-
 		CItemType *m_pItemType;					//	Item for device
 		int m_iSlots;							//	Number of device slots required
 		ItemCategories m_iSlotCategory;			//	Count as this category (for device slot purposes)
@@ -266,7 +279,7 @@ class CDeviceClass
 		COverlayTypeRef m_pOverlayType;			//	Associated overlay (may be NULL)
 
 		int m_iMaxHPBonus;						//	Max HP bonus for this device
-		TArray<SEnhancerDesc> m_Enhancements;	//	Enhancements confered on other items
+		CEnhancementDesc m_Enhancements;		//	Enhancements confered on other items
 
 		SEventHandlerDesc m_CachedEvents[evtCount];	//	Cached events
 

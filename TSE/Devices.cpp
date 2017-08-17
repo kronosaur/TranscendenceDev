@@ -127,7 +127,6 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pT
 //	We return TRUE if we enhanced the target.
 
 	{
-	int i;
 	bool bEnhanced = false;
 
 	CInstalledDevice *pDevice = Device.GetDevice();
@@ -138,31 +137,7 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pT
 	if (pDevice == NULL 
 			|| (pDevice->IsEnabled() && !pDevice->IsDamaged()))
 		{
-		for (i = 0; i < m_Enhancements.GetCount(); i++)
-			{
-			//	If this type of enhancement has already been applied, skip it
-
-			if (!m_Enhancements[i].sType.IsBlank()
-					&& EnhancementIDs.Find(m_Enhancements[i].sType))
-				continue;
-
-			//	If we don't match the criteria, skip it.
-
-			if (pSource 
-					&& pTarget
-					&& !pTarget->GetItem()->MatchesCriteria(m_Enhancements[i].Criteria))
-				continue;
-
-			//	Add the enhancement
-
-			pEnhancements->Insert(m_Enhancements[i].Enhancement);
-			bEnhanced = true;
-
-			//	Remember that we added this enhancement class
-
-			if (!m_Enhancements[i].sType.IsBlank())
-				EnhancementIDs.Insert(m_Enhancements[i].sType);
-			}
+		bEnhanced = m_Enhancements.Accumulate(*pTarget->GetItem(), EnhancementIDs, pEnhancements);
 		}
 
 	//	Let sub-classes add their own
@@ -182,7 +157,6 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *p
 //	If this device can enhance pTarget, then we add to the list of enhancements.
 
 	{
-	int i;
 	bool bEnhanced = false;
 
 	CInstalledDevice *pDevice = Device.GetDevice();
@@ -193,31 +167,7 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *p
 	if (pDevice == NULL 
 			|| (pDevice->IsEnabled() && !pDevice->IsDamaged()))
 		{
-		for (i = 0; i < m_Enhancements.GetCount(); i++)
-			{
-			//	If this type of enhancement has already been applied, skip it
-
-			if (!m_Enhancements[i].sType.IsBlank()
-					&& EnhancementIDs.Find(m_Enhancements[i].sType))
-				continue;
-
-			//	If we don't match the criteria, skip it.
-
-			if (pSource 
-					&& pTarget
-					&& !pSource->GetItemForDevice(pTarget).MatchesCriteria(m_Enhancements[i].Criteria))
-				continue;
-
-			//	Add the enhancement
-
-			pEnhancements->Insert(m_Enhancements[i].Enhancement);
-			bEnhanced = true;
-
-			//	Remember that we added this enhancement class
-
-			if (!m_Enhancements[i].sType.IsBlank())
-				EnhancementIDs.Insert(m_Enhancements[i].sType);
-			}
+		bEnhanced = m_Enhancements.Accumulate(*pTarget->GetItem(), EnhancementIDs, pEnhancements);
 		}
 
 	//	Let sub-classes add their own
@@ -373,7 +323,6 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 //	Initializes the device class base
 
 	{
-	int i;
 	ALERROR error;
 
 	m_pItemType = pType;
@@ -439,27 +388,8 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
 	if (pEnhanceList)
 		{
-		m_Enhancements.InsertEmpty(pEnhanceList->GetContentElementCount());
-
-		for (i = 0; i < pEnhanceList->GetContentElementCount(); i++)
-			{
-			CXMLElement *pEnhancement = pEnhanceList->GetContentElement(i);
-
-			m_Enhancements[i].sType = pEnhancement->GetAttribute(TYPE_ATTRIB);
-
-			//	Load the item criteria
-
-			CString sCriteria;
-			if (!pEnhancement->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
-				sCriteria = CONSTLIT("*");
-
-			CItem::ParseCriteria(sCriteria, &m_Enhancements[i].Criteria);
-
-			//	Parse the enhancement itself
-
-			if (error = m_Enhancements[i].Enhancement.InitFromDesc(Ctx, pEnhancement->GetAttribute(ENHANCEMENT_ATTRIB)))
-				return error;
-			}
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+			return error;
 		}
 
 	return NOERROR;

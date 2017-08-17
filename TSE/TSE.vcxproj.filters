@@ -1126,6 +1126,9 @@
     <ClCompile Include="CStationHull.cpp">
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
+    <ClCompile Include="CEnhancementDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">
