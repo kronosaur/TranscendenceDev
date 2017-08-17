@@ -90,10 +90,7 @@ void CDamageAdjDesc::Compute (const CDamageAdjDesc *pDefault)
 					int iValue = (int)(short)m_Desc[i].dwAdjValue;
 
 					int iInc = iValue + (10000 / pDefault->GetAdj((DamageTypes)i)) - 100;
-					if (iInc > -100)
-						m_iDamageAdj[i] = 10000 / (100 + iInc);
-					else
-						m_iDamageAdj[i] = MAX_DAMAGE_ADJ;
+					m_iDamageAdj[i] = GetDamageAdjFromHPBonus(iInc);
 					}
 				else
 					m_iDamageAdj[i] = 100;
@@ -142,6 +139,22 @@ int CDamageAdjDesc::GetBonusFromAdj (int iDamageAdj, int iDefault) const
 		iBonus = 50;
 
 	return iBonus;
+	}
+
+int CDamageAdjDesc::GetDamageAdjFromHPBonus (int iBonus)
+
+//	GetDamageAdjFromHPBonus
+//
+//	Converts a bonus to a damage adjustment. +50% bonus = 67 damage adj; -50% =
+//	200 damage adj.
+
+	{
+	if (iBonus <= -100)
+		return MAX_DAMAGE_ADJ;
+	else if (iBonus > 20000)
+		return 0;
+	else
+		return 10000 / (100 + iBonus);
 	}
 
 Metric CDamageAdjDesc::GetDamageTypeFraction (int iLevel, DamageTypes iDamageType)

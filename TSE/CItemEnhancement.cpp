@@ -1217,6 +1217,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	{number}					Interpret as a mod code
 //	+armor:{n}					Add	armor special damage, where n is an item level
 //	+hpBonus:{n}				Add hp bonus.
+//	+hpBonus:{s}:{n}			DamageAdj for type s set to hpBonus n
 //	+immunity:{s}				Immunity to special damage s.
 //	+reflect:{s}				Reflects damage type s.
 //	+regen						Regenerate
@@ -1300,26 +1301,65 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 
 	if (strEquals(sID, CONSTLIT("hpBonus")))
 		{
-		if (bDisadvantage && iValue > 0)
-			iValue = -iValue;
+		//	If we have a string for a first value, then this is a damage 
+		//	adjustment.
 
-		if (iValue < -100)
+		if (!sValue.IsBlank())
 			{
-			if (retsError)
-				*retsError = CONSTLIT("hpBonus penalty cannot exceed 100%.");
-			return ERR_FAIL;
+			DamageTypes iDamageType = LoadDamageTypeFromXML(sValue);
+			if (iDamageType == damageError)
+				{
+				if (retsError)
+					*retsError = strPatternSubst(CONSTLIT("Invalid damage type: %s"), sValue);
+				return ERR_FAIL;
+				}
+
+			if (bDisadvantage && iValue2 > 0)
+				iValue2 = -iValue2;
+
+			//	Convert the bonus value to a damage adjustment.
+
+			if (iValue2 < -100)
+				{
+				if (retsError)
+					*retsError = CONSTLIT("hpBonus penalty cannot exceed 100%.");
+				return ERR_FAIL;
+				}
+			else if (iValue2 > 1000)
+				{
+				if (retsError)
+					*retsError = CONSTLIT("hpBonus cannot exceed 1000%.");
+				return ERR_FAIL;
+				}
+			else
+				SetModResistDamage(iDamageType, CDamageAdjDesc::GetDamageAdjFromHPBonus(iValue2));
 			}
-		else if (iValue < 0)
-			SetModCode(EncodeAX(etHPBonus | etDisadvantage, 0, -iValue));
-		else if (iValue == 0)
-			SetModCode(Encode12(etStrengthen));
-		else if (iValue <= 1000)
-			SetModCode(EncodeAX(etHPBonus, 0, iValue));
+
+		//	Otherwise, we have a single number, which means a total HP bonus
+
 		else
 			{
-			if (retsError)
-				*retsError = CONSTLIT("hpBonus cannot exceed 1000%.");
-			return ERR_FAIL;
+			if (bDisadvantage && iValue > 0)
+				iValue = -iValue;
+
+			if (iValue < -100)
+				{
+				if (retsError)
+					*retsError = CONSTLIT("hpBonus penalty cannot exceed 100%.");
+				return ERR_FAIL;
+				}
+			else if (iValue < 0)
+				SetModCode(EncodeAX(etHPBonus | etDisadvantage, 0, -iValue));
+			else if (iValue == 0)
+				SetModCode(Encode12(etStrengthen));
+			else if (iValue <= 1000)
+				SetModCode(EncodeAX(etHPBonus, 0, iValue));
+			else
+				{
+				if (retsError)
+					*retsError = CONSTLIT("hpBonus cannot exceed 1000%.");
+				return ERR_FAIL;
+				}
 			}
 		}
 
@@ -1334,15 +1374,15 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			SpecialDamageTypes iSpecial = DamageDesc::ConvertToSpecialDamageTypes(sValue);
 			switch (iSpecial)
 				{
-				case specialRadiation:
 				case specialBlinding:
-				case specialEMP:
 				case specialDeviceDamage:
-				case specialDisintegration:
-				case specialMomentum:
-				case specialShieldDisrupt:
 				case specialDeviceDisrupt:
+				case specialDisintegration:
+				case specialEMP:
+				case specialMomentum:
+				case specialRadiation:
 				case specialShatter:
+				case specialShieldDisrupt:
 					{
 					if (bDisadvantage)
 						{
@@ -1385,6 +1425,13 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 	else if (strEquals(sID, CONSTLIT("regen")))
 		{
 		m_dwMods = Encode12(etRegenerate | (bDisadvantage ? etDisadvantage : 0));
+		}
+
+	//	Decay
+
+	else if (strEquals(sID, CONSTLIT("decay")))
+		{
+		m_dwMods = Encode12(etRegenerate | etDisadvantage);
 		}
 
 	//	Resist damage
