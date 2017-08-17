@@ -119,6 +119,62 @@ void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, T
 	OnAccumulateAttributes(ItemCtx, Ammo, retList);
 	}
 
+bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
+
+//	AccumulateEnhancements
+//
+//	If this device can enhance the given armor, then we add to the list of enhancements.
+//	We return TRUE if we enhanced the target.
+
+	{
+	int i;
+	bool bEnhanced = false;
+
+	CInstalledDevice *pDevice = Device.GetDevice();
+	CSpaceObject *pSource = Device.GetSource();
+
+	//	See if we can enhance the target device
+
+	if (pDevice == NULL 
+			|| (pDevice->IsEnabled() && !pDevice->IsDamaged()))
+		{
+		for (i = 0; i < m_Enhancements.GetCount(); i++)
+			{
+			//	If this type of enhancement has already been applied, skip it
+
+			if (!m_Enhancements[i].sType.IsBlank()
+					&& EnhancementIDs.Find(m_Enhancements[i].sType))
+				continue;
+
+			//	If we don't match the criteria, skip it.
+
+			if (pSource 
+					&& pTarget
+					&& !pTarget->GetItem()->MatchesCriteria(m_Enhancements[i].Criteria))
+				continue;
+
+			//	Add the enhancement
+
+			pEnhancements->Insert(m_Enhancements[i].Enhancement);
+			bEnhanced = true;
+
+			//	Remember that we added this enhancement class
+
+			if (!m_Enhancements[i].sType.IsBlank())
+				EnhancementIDs.Insert(m_Enhancements[i].sType);
+			}
+		}
+
+	//	Let sub-classes add their own
+
+	if (OnAccumulateEnhancements(Device, pTarget, EnhancementIDs, pEnhancements))
+		bEnhanced = true;
+
+	//	Done
+
+	return bEnhanced;
+	}
+
 bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
 
 //	AccumulateEnhancements

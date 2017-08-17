@@ -202,17 +202,51 @@ void CInstalledArmor::SetComplete (CSpaceObject *pSource, bool bComplete)
 		}
 	}
 
-void CInstalledArmor::SetEnhancements (const TSharedPtr<CItemEnhancementStack> &pStack)
+void CInstalledArmor::SetEnhancements (CSpaceObject *pSource, const TSharedPtr<CItemEnhancementStack> &pStack)
 
 //	SetEnhancements
 //
 //	Sets the enhancement stack for the armor
 
 	{
+	//	Figure out our current max HP, because we might need to change current
+	//	hit points.
+
+	int iOldMaxHP = GetMaxHP(pSource);
+
+	//	Reset the stack.
+
 	if (pStack && !pStack->IsEmpty())
 		m_pEnhancements = pStack;
 	else
 		m_pEnhancements.Delete();
+
+	//	Now compute our new maximum and see if we need to adjust current hit 
+	//	points.
+
+	int iNewMaxHP = GetMaxHP(pSource);
+	if (iOldMaxHP != iNewMaxHP)
+		{
+		//	If new hit points are 0, then we have no choice but to reduce
+		//	current hit points.
+
+		if (iNewMaxHP == 0)
+			m_iHitPoints = 0;
+
+		//	If old hit points are 0, then we set hit points to the new max.
+
+		else if (iOldMaxHP == 0)
+			m_iHitPoints = iNewMaxHP;
+
+		//	Otherwise, we try to keep the proportion of damage constant.
+
+		else
+			{
+			Metric rDamage = (iOldMaxHP - m_iHitPoints) / (Metric)iOldMaxHP;
+			int iDamage = Min(mathRound(rDamage * iNewMaxHP), iNewMaxHP);
+			m_iHitPoints = iNewMaxHP - iDamage;
+			}
+		}
 	}
 
 void CInstalledArmor::WriteToStream (IWriteStream *pStream)

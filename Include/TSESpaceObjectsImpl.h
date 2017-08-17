@@ -1269,6 +1269,7 @@ class CShip : public CSpaceObject
 	private:
 		CShip (void);
 
+		void AccumulateDeviceEnhancementsToArmor (CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void CalcArmorBonus (void);
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;

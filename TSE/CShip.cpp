@@ -207,6 +207,30 @@ bool CShip::AbsorbWeaponFire (CInstalledDevice *pWeapon)
 	return false;
 	}
 
+void CShip::AccumulateDeviceEnhancementsToArmor (CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
+
+//	AccumulateDeviceEnhancementsToArmor
+//
+//	Adds enhancements to the given armor segment.
+
+	{
+	int i;
+
+	for (i = 0; i < GetDeviceCount(); i++)
+		if (!m_Devices[i].IsEmpty())
+			{
+			//	See if this device enhances us
+
+			if (m_Devices[i].AccumulateEnhancements(this, pArmor, EnhancementIDs, pEnhancements))
+				{
+				//	If the device affected something, then we now know what it is
+
+				if (IsPlayer())
+					m_Devices[i].GetClass()->GetItemType()->SetKnown();
+				}
+			}
+	}
+
 void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifeLeft, DWORD *retdwID)
 
 //	AddOverlay
@@ -341,9 +365,13 @@ void CShip::CalcArmorBonus (void)
 			if (!Mods.IsEmpty())
 				pEnhancements->Insert(Mods);
 
+			//	Now see if any devices enhance this segment
+
+			AccumulateDeviceEnhancementsToArmor(pArmor, EnhancementIDs, pEnhancements);
+
 			//	Set the enhancement stack
 
-			pArmor->SetEnhancements(pEnhancements);
+			pArmor->SetEnhancements(this, pEnhancements);
 
 			//	Compute stealth
 
@@ -1971,6 +1999,7 @@ void CShip::EnableDevice (int iDev, bool bEnable, bool bSilent)
 
 	//	Recalc bonuses, etc.
 
+	CalcArmorBonus();
 	CalcDeviceBonus();
     CalcPerformance();
 
@@ -3846,7 +3875,6 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 			m_NamedDevices[devShields] = iDeviceSlot;
 			//	If we just installed a shield generator, start a 0 energy
 			pDevice->Reset(this);
-			m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 			break;
 
 		case itemcatDrive:
@@ -3864,10 +3892,12 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	//	Recalc bonuses
 
+	CalcArmorBonus();
 	CalcDeviceBonus();
     CalcPerformance();
 
     m_pController->OnStatsChanged();
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	InvalidateItemListState();
 	}
 
@@ -5744,6 +5774,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     bool bOverlaysChanged = false;
     bool bWeaponStatusChanged = false;
     bool bArmorStatusChanged = false;
+	bool bCalcArmorBonus = false;
     bool bCalcDeviceBonus = false;
     bool bCargoChanged = false;
     bool bCalcPerformance = false;
@@ -5985,10 +6016,14 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	If the device was repaired, then we need to recalc performance, etc.
 
 		if (DeviceCtx.bRepaired)
+			{
+			bCalcArmorBonus = true;
 			bCalcDeviceBonus = true;
+			}
 
 		if (DeviceCtx.bSetDisabled && m_Devices[i].SetEnabled(this, false))
 			{
+			bCalcArmorBonus = true;
 			bCalcDeviceBonus = true;
 			bCalcPerformance = true;
 
@@ -6051,6 +6086,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
             bOverlaysChanged = true;
             bWeaponStatusChanged = true;
             bArmorStatusChanged = true;
+			bCalcArmorBonus = true;
             bCalcDeviceBonus = true;
             bBoundsChanged = true;
             }
@@ -6116,6 +6152,9 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     if (bOverlaysChanged)
         CalcOverlayImpact();
 
+	if (bCalcArmorBonus)
+		CalcArmorBonus();
+
     if (bCalcDeviceBonus)
         CalcDeviceBonus();
 
@@ -6131,7 +6170,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	if (bWeaponStatusChanged)
 		m_pController->OnWeaponStatusChanged();
 
-	if (bArmorStatusChanged)
+	if (bCalcArmorBonus || bArmorStatusChanged)
 		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	
 	if (bCargoChanged)
@@ -6799,10 +6838,12 @@ void CShip::RechargeItem (CItemListManipulator &ItemList, int iCharges)
 		{
         if (Item.IsDevice())
             {
+			CalcArmorBonus();
             CalcDeviceBonus();
 
             m_pController->OnStatsChanged();
             m_pController->OnWeaponStatusChanged();
+			m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
             }
 		}
 	}
@@ -6930,11 +6971,13 @@ ALERROR CShip::RemoveItemAsDevice (CItemListManipulator &ItemList)
 
 	//	Recalc bonuses
 
+	CalcArmorBonus();
 	CalcDeviceBonus();
     CalcPerformance();
 
 	InvalidateItemListState();
     m_pController->OnStatsChanged();
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 
 	return NOERROR;
 	}

@@ -280,7 +280,7 @@ class CInstalledArmor
 		inline bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
 		inline void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }
-		void SetEnhancements (const TSharedPtr<CItemEnhancementStack> &pStack);
+		void SetEnhancements (CSpaceObject *pSource, const TSharedPtr<CItemEnhancementStack> &pStack);
 		inline void SetPrime (CSpaceObject *pSource, bool bPrime = true) { m_fPrimeSegment = bPrime; }
 		inline void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
 		inline void SetSect (int iSect) { m_iSect = iSect; }

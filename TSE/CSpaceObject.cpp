@@ -1551,11 +1551,9 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 
 	//	Handle some special cases
 
-	CInstalledArmor *pArmor;
-	int iOldMaxHP;
 	if (pType->IsArmor())
 		{
-		pArmor = FindArmor(ItemList.GetItemAtCursor());
+		CInstalledArmor *pArmor = FindArmor(ItemList.GetItemAtCursor());
 		CArmorClass *pArmorClass = pType->GetArmorClass();
 
 		//	If we're trying to make armor immune to radiation and it is already immune
@@ -1565,29 +1563,11 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 				&& Enhancement.IsRadiationImmune()
 				&& pArmorClass->IsRadiationImmune(CItemCtx(this, pArmor)))
 			return eisAlreadyEnhanced;
-
-		//	Remember the old max hp value
-
-		iOldMaxHP = pArmor->GetMaxHP(this);
 		}
-	else
-		pArmor = NULL;
 
 	//	Enhance
 
 	DWORD dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
-
-	//	Handle some special cases. If we have an installed armor segment and its
-	//	max hit points changed, then change the hit points of the armor.
-
-	if (pArmor)
-		{
-		int iNewMaxHP = pArmor->GetMaxHP(this);
-
-		if (iNewMaxHP > iOldMaxHP)
-			pArmor->IncHitPoints(iNewMaxHP - iOldMaxHP);
-		pArmor->SetHitPoints(Min(pArmor->GetHitPoints(), iNewMaxHP));
-		}
 
 	//	Deal with installed items
 
