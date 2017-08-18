@@ -164,7 +164,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	Reference
 
-	CString sReference = pType->GetReference(Ctx);
+	CString sReference = Item.GetReference(Ctx);
 
 	//	If this is a weapon, then add room for the weapon damage
 
@@ -1054,7 +1054,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	CString sStat;
 
 	int iLevel = pItemType->GetApparentLevel(Ctx);
-	CString sReference = pItemType->GetReference(Ctx);
+	CString sReference = Item.GetReference(Ctx);
 	DamageTypes iDamageType;
 	CString sDamageRef;
 	int iDamageAdj[damageCount];

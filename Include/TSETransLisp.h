@@ -21,6 +21,7 @@ enum ECodeChainEvents
 	eventGetDescription =				9,
 	eventInitDockScreenList =			10,		//	Code inside <ListOptions> to (e.g.) set list filter
 	eventOverlayEvent =					11,
+	eventGetReferenceText =				12,		//	Item reference text
 	};
 
 class CCodeChainCtx

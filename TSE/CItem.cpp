@@ -34,6 +34,7 @@
 #define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
+#define PROPERTY_REFERENCE						CONSTLIT("reference")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
@@ -1107,6 +1108,14 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
     else if (strEquals(sProperty, PROPERTY_LEVEL))
         return CC.CreateInteger(GetType()->GetLevel(Ctx));
 
+	else if (strEquals(sProperty, PROPERTY_REFERENCE))
+		{
+		if (CCCtx.InEvent(eventGetReferenceText))
+			return CC.CreateString(GetType()->GetReference(Ctx));
+		else
+			return CC.CreateString(GetReference(Ctx));
+		}
+
 	else if (strEquals(sProperty, PROPERTY_USED))
 		return CC.CreateBool(IsUsed());
 
@@ -1157,75 +1166,6 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	else
 		return CC.CreateNil();
-
-#if 0
-	if (strEquals(sName, PROPERTY_CATEGORY))
-		return CC.CreateString(GetItemCategoryID(m_pItemType->GetCategory()));
-
-	else if (strEquals(sName, PROPERTY_COMPONENTS))
-		{
-		const CItemList &Components = m_pItemType->GetComponents();
-		if (Components.GetCount() == 0)
-			return CC.CreateNil();
-
-		ICCItem *pList = CC.CreateLinkedList();
-		for (i = 0; i < Components.GetCount(); i++)
-			{
-			ICCItem *pEntry = CreateListFromItem(CC, Components.GetItem(i));
-			pList->Append(CC, pEntry);
-			pEntry->Discard(&CC);
-			}
-
-		return pList;
-		}
-
-	else if (strEquals(sName, PROPERTY_CURRENCY))
-		return CC.CreateInteger(GetType()->GetCurrencyType()->GetUNID());
-
-    else if (strEquals(sName, PROPERTY_LEVEL))
-        return CC.CreateInteger(GetType()->GetLevel(CItemCtx(*this)));
-
-	else if (strEquals(sName, PROPERTY_MASS_BONUS_PER_CHARGE))
-		return CC.CreateInteger(GetType()->GetMassBonusPerCharge());
-
-	else if (strEquals(sName, PROPERTY_MAX_CHARGES))
-		return CC.CreateInteger(GetType()->GetMaxCharges());
-
-    else if (strEquals(sName, PROPERTY_MAX_LEVEL))
-        return CC.CreateInteger(GetType()->GetMaxLevel());
-
-    else if (strEquals(sName, PROPERTY_MIN_LEVEL))
-        return CC.CreateInteger(GetType()->GetLevel());
-
-	else if (strEquals(sName, PROPERTY_VALUE_BONUS_PER_CHARGE))
-		return CC.CreateInteger(m_pItemType->GetValueBonusPerCharge());
-
-	else
-		{
-		CDeviceClass *pDevice;
-		CArmorClass *pArmor;
-
-		//	If this is a device, then pass it on
-
-		if (pDevice = GetType()->GetDeviceClass())
-			return pDevice->GetItemProperty(Ctx, sName);
-
-		//	If this is armor, then pass it on
-
-		else if (pArmor = GetType()->GetArmorClass())
-			return pArmor->GetItemProperty(Ctx, sName);
-
-		//	If this is a missile, then pass it to the weapon.
-
-        else if (GetType()->IsMissile() && Ctx.ResolveVariant())
-			return Ctx.GetVariantDevice()->GetItemProperty(Ctx, sName);
-
-		//	Otherwise, from the type
-
-		else
-			return CreateResultFromDataField(CC, GetType()->GetDataField(sName));
-		}
-#endif
 	}
 
 Metric CItem::GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
@@ -1295,9 +1235,39 @@ CString CItem::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) co
 	if (m_pItemType == NULL)
 		return NULL_STR;
 
-	//	Done
+	//	If we have code, call it to generate some reference text
 
-	return m_pItemType->GetReference(Ctx, Ammo, dwFlags);
+	CString sReference;
+	SEventHandlerDesc Event;
+	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetReferenceText, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SetEvent(eventGetReferenceText);
+		Ctx.SetItemType(GetType());
+		Ctx.SaveAndDefineSourceVar(NULL);
+		Ctx.SaveAndDefineItemVar(*this);
+
+		ICCItem *pResult = Ctx.Run(Event);
+		sReference = pResult->GetStringValue();
+		Ctx.Discard(pResult);
+		}
+
+	//	If we got some custom reference, we combine it with the built-in reference.
+
+	if (!sReference.IsBlank())
+		{
+		CString sAdditionalRef = m_pItemType->GetReference(Ctx, Ammo, dwFlags);
+		if (!sAdditionalRef.IsBlank())
+			return strPatternSubst(CONSTLIT("%s\n%s"), sReference, sAdditionalRef);
+		else
+			return sReference;
+		}
+
+	//	Otherwise, just the built-in reference
+
+	else
+		return m_pItemType->GetReference(Ctx, Ammo, dwFlags);
 	}
 
 bool CItem::GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const

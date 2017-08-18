@@ -94,7 +94,6 @@
 #define FIELD_LEVEL								CONSTLIT("level")
 #define FIELD_MASS								CONSTLIT("mass")
 #define FIELD_NAME								CONSTLIT("name")
-#define FIELD_REFERENCE							CONSTLIT("reference")
 #define FIELD_SHORT_NAME						CONSTLIT("shortName")
 #define FIELD_SLOT_CATEGORY						CONSTLIT("slotCategory")
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
@@ -138,6 +137,7 @@ static char *CACHED_EVENTS[CItemType::evtCount] =
 		"GetDescription",
 		"GetDisplayAttributes",
 		"GetName",
+		"GetReferenceText",
 		"GetTradePrice",
 		"OnInstall",
 		"OnEnable",
@@ -357,8 +357,6 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 		else
 			*retsValue = sName;
 		}
-	else if (strEquals(sField, FIELD_REFERENCE))
-		*retsValue = GetReference(CItemCtx());
 
 	else if (strEquals(sField, FIELD_COST))
 		*retsValue = strFromInt(GetValue(CItemCtx()));

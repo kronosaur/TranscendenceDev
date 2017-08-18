@@ -334,6 +334,11 @@ CString CLanguageDataBlock::ParseTextBlock (const CString &sText) const
 	char *pPos = sText.GetASCIIZPointer();
 	char *pPosEnd = pPos + sText.GetLength();
 
+	//	Trim out all whitespace at the end of the block.
+
+	while (pPosEnd > pPos && strIsWhitespace(pPosEnd - 1))
+		pPosEnd--;
+
 	//	We assume the output is no larger than the input, since we only remove
 	//	characters.
 
