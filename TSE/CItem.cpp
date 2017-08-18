@@ -39,6 +39,8 @@
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
+#define LANGID_CORE_REFERENCE					CONSTLIT("core.reference")
+
 CItemEnhancement CItem::m_NullMod;
 CItem CItem::m_NullItem;
 
@@ -1235,22 +1237,35 @@ CString CItem::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) co
 	if (m_pItemType == NULL)
 		return NULL_STR;
 
-	//	If we have code, call it to generate some reference text
+	//	No reference if unknown
+
+	if (!m_pItemType->IsKnown() && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
+		return NULL_STR;
+
+	//	If we've got a standard language item, then use that.
 
 	CString sReference;
-	SEventHandlerDesc Event;
-	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetReferenceText, &Event))
+	if (m_pItemType->TranslateText(*this, LANGID_CORE_REFERENCE, NULL, &sReference))
+		{ }
+
+	//	Otherwise, if we have code, call it to generate some reference text
+
+	else
 		{
-		CCodeChainCtx Ctx;
+		SEventHandlerDesc Event;
+		if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetReferenceText, &Event))
+			{
+			CCodeChainCtx Ctx;
 
-		Ctx.SetEvent(eventGetReferenceText);
-		Ctx.SetItemType(GetType());
-		Ctx.SaveAndDefineSourceVar(NULL);
-		Ctx.SaveAndDefineItemVar(*this);
+			Ctx.SetEvent(eventGetReferenceText);
+			Ctx.SetItemType(GetType());
+			Ctx.SaveAndDefineSourceVar(NULL);
+			Ctx.SaveAndDefineItemVar(*this);
 
-		ICCItem *pResult = Ctx.Run(Event);
-		sReference = pResult->GetStringValue();
-		Ctx.Discard(pResult);
+			ICCItem *pResult = Ctx.Run(Event);
+			sReference = pResult->GetStringValue();
+			Ctx.Discard(pResult);
+			}
 		}
 
 	//	If we got some custom reference, we combine it with the built-in reference.

@@ -113,6 +113,106 @@ ICCItem *CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, con
 		return pValue->Reference();
 	}
 
+CLanguageDataBlock::ETranslateResult CLanguageDataBlock::ComposeResult (ICCItem *pResult, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult) const
+
+//	ComposeResult
+//
+//	Compose a translation result.
+
+	{
+	int i;
+
+	//	Nil
+
+	if (pResult->IsNil())
+		return resultNotFound;
+
+	//	String
+
+	else if (pResult->GetValueType() == ICCItem::String)
+		{
+		if (retsText)
+			{
+			*retsText = ::ComposePlayerNameString(pResult->GetStringValue(), g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome(), pData);
+			return resultString;
+			}
+		else
+			return resultFound;
+		}
+
+	//	Array of strings
+
+	else if (pResult->GetValueType() == ICCItem::List && pResult->GetCount() > 0 && pResult->GetElement(0)->GetValueType() == ICCItem::String)
+		{
+		if (retText)
+			{
+			CString sPlayerName = g_pUniverse->GetPlayerName();
+			GenomeTypes iPlayerGenome = g_pUniverse->GetPlayerGenome();
+
+			retText->DeleteAll();
+
+			retText->InsertEmpty(pResult->GetCount());
+			for (i = 0; i < pResult->GetCount(); i++)
+				retText->GetAt(i) = ::ComposePlayerNameString(pResult->GetElement(i)->GetStringValue(), sPlayerName, iPlayerGenome, pData);
+
+			return resultArray;
+			}
+		else
+			return resultFound;
+		}
+
+	//	Otherwise we return the naked value
+
+	else
+		{
+		if (retpResult)
+			{
+			*retpResult = pResult->Reference();
+			return resultCCItem;
+			}
+		else
+			return resultFound;
+		}
+	}
+
+bool CLanguageDataBlock::ComposeTextResult (ETranslateResult iResult, const TArray<CString> &List, CString *retsText) const
+
+//	ComposeTextResult
+//
+//	Composes a result.
+
+	{
+	switch (iResult)
+		{
+		case resultNotFound:
+			return false;
+
+		case resultFound:
+			//	This only happens if the caller passed in NULL for retsText.
+			//	It means that we don't need the result.
+			return true;
+
+		case resultArray:
+			{
+			if (List.GetCount() > 0)
+				{
+				if (retsText)
+					*retsText = List[0];
+				return true;
+				}
+			else
+				return false;
+			}
+
+		case resultString:
+			return true;
+
+		default:
+			ASSERT(false);
+			return false;
+		}
+	}
+
 void CLanguageDataBlock::DeleteAll (void)
 
 //	DeleteAll
@@ -494,8 +594,6 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (CSpaceObject
 //	Translates an entry to either a string or an array of strings.
 
 	{
-	int i;
-
 	//	If we can't find this ID then we can't translate
 
 	SEntry *pEntry = m_Data.GetAt(sID);
@@ -529,62 +627,55 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (CSpaceObject
 	Ctx.SaveAndDefineDataVar(pData);
 	
 	ICCItem *pResult = Ctx.Run(pEntry->pCode);	//	LATER:Event
-	ETranslateResult iResult;
+	ETranslateResult iResult = ComposeResult(pResult, pData, retText, retsText, retpResult);
+	Ctx.Discard(pResult);
 
-	//	Nil
+	return iResult;
+	}
 
-	if (pResult->IsNil())
-		iResult = resultNotFound;
+CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (const CItem &Item, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult) const
 
-	//	String
+//	Translate
+//
+//	Translates an entry to either a string or an array of strings.
 
-	else if (pResult->GetValueType() == ICCItem::String)
+	{
+	//	If we can't find this ID then we can't translate
+
+	SEntry *pEntry = m_Data.GetAt(sID);
+	if (pEntry == NULL)
+		return resultNotFound;
+
+	//	If we don't want the text back then all we need to do is return that we
+	//	have the text.
+
+	if (retText == NULL && retsText == NULL)
+		return resultFound;
+
+	//	If we don't need to run code then we just return the string.
+
+	if (pEntry->pCode == NULL)
 		{
 		if (retsText)
 			{
-			*retsText = ::ComposePlayerNameString(pResult->GetStringValue(), g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome(), pData);
-			iResult = resultString;
+			*retsText = ::ComposePlayerNameString(pEntry->sText, g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome(), pData);
+			return resultString;
 			}
 		else
-			iResult = resultFound;
+			return resultFound;
 		}
 
-	//	Array of strings
+	//	Otherwise we have to run some code
 
-	else if (pResult->GetValueType() == ICCItem::List && pResult->GetCount() > 0 && pResult->GetElement(0)->GetValueType() == ICCItem::String)
-		{
-		if (retText)
-			{
-			CString sPlayerName = g_pUniverse->GetPlayerName();
-			GenomeTypes iPlayerGenome = g_pUniverse->GetPlayerGenome();
-
-			retText->DeleteAll();
-
-			retText->InsertEmpty(pResult->GetCount());
-			for (i = 0; i < pResult->GetCount(); i++)
-				retText->GetAt(i) = ::ComposePlayerNameString(pResult->GetElement(i)->GetStringValue(), sPlayerName, iPlayerGenome, pData);
-
-			iResult = resultArray;
-			}
-		else
-			iResult = resultFound;
-		}
-
-	//	Otherwise we return the naked value
-
-	else
-		{
-		if (retpResult)
-			{
-			*retpResult = pResult->Reference();
-			iResult = resultCCItem;
-			}
-		else
-			iResult = resultFound;
-		}
-
-	//	Done
-
+	CCodeChainCtx Ctx;
+	Ctx.SaveAndDefineSourceVar(NULL);
+	Ctx.SaveAndDefineItemVar(Item);
+	Ctx.SetItemType(Item.GetType());
+	Ctx.DefineString(CONSTLIT("aTextID"), sID);
+	Ctx.SaveAndDefineDataVar(pData);
+	
+	ICCItem *pResult = Ctx.Run(pEntry->pCode);	//	LATER:Event
+	ETranslateResult iResult = ComposeResult(pResult, pData, retText, retsText, retpResult);
 	Ctx.Discard(pResult);
 
 	return iResult;
@@ -698,33 +789,20 @@ bool CLanguageDataBlock::Translate (CSpaceObject *pObj, const CString &sID, ICCI
 
 	ETranslateResult iResult = Translate(pObj, sID, pData, &List, retsText);
 
-	switch (iResult)
-		{
-		case resultNotFound:
-			return false;
-
-		case resultFound:
-			//	This only happens if the caller passed in NULL for retsText.
-			//	It means that we don't need the result.
-			return true;
-
-		case resultArray:
-			{
-			if (List.GetCount() > 0)
-				{
-				if (retsText)
-					*retsText = List[0];
-				return true;
-				}
-			else
-				return false;
-			}
-
-		case resultString:
-			return true;
-
-		default:
-			ASSERT(false);
-			return false;
-		}
+	return ComposeTextResult(iResult, List, retsText);
 	}
+
+bool CLanguageDataBlock::Translate (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const
+
+//	Translate
+//
+//	Translates to text. If not found, returns FALSE.
+
+	{
+	TArray<CString> List;
+
+	ETranslateResult iResult = Translate(Item, sID, pData, &List, retsText);
+
+	return ComposeTextResult(iResult, List, retsText);
+	}
+

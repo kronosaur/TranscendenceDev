@@ -298,6 +298,7 @@ class CDesignType
 		inline void TopologyInitialized (void) { OnTopologyInitialized(); }
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const;
 		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
+		inline bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const { return m_Language.Translate(Item, sID, pData, retsText); }
 
 		static CString GetTypeChar (DesignTypes iType);
 

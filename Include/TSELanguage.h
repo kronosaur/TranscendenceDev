@@ -85,6 +85,7 @@ class CLanguageDataBlock
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const;
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText) const;
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
+		bool Translate (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 
 	private:
 		enum ETranslateResult
@@ -104,9 +105,12 @@ class CLanguageDataBlock
 			};
 
 		ICCItem *ComposeCCItem (CCodeChain &CC, ICCItem *pValue, const CString &sPlayerName, GenomeTypes iPlayerGenome, ICCItem *pData) const;
+		ETranslateResult ComposeResult (ICCItem *pResult, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult = NULL) const;
+		bool ComposeTextResult (ETranslateResult iResult, const TArray<CString> &List, CString *retsText) const;
 		bool IsCode (const CString &sText) const;
 		CString ParseTextBlock (const CString &sText) const;
 		ETranslateResult Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult = NULL) const;
+		ETranslateResult Translate (const CItem &Item, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItem **retpResult = NULL) const;
 
 		TSortMap<CString, SEntry> m_Data;
 	};
