@@ -107,3 +107,40 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 	return NOERROR;
 	}
 
+void CEnhancementDesc::SetCriteria (int iEntry, const CItemCriteria &Criteria)
+
+//	SetCriteria
+//
+//	Sets the criteria for the given entry in the list of enhancements.
+//	If iEntry is -1 then we set all entries.
+
+	{
+	int i;
+
+	if (iEntry == -1)
+		{
+		for (i = 0; i < m_Enhancements.GetCount(); i++)
+			m_Enhancements[i].Criteria = Criteria;
+		}
+	else if (iEntry >= 0 && iEntry < m_Enhancements.GetCount())
+		m_Enhancements[iEntry].Criteria = Criteria;
+	}
+
+void CEnhancementDesc::SetType (int iEntry, const CString &sType)
+
+//	SetType
+//
+//	Sets the type for the given entry in the list of enhancements.
+//	If iEntry is -1 we set all entries.
+
+	{
+	int i;
+
+	if (iEntry == -1)
+		{
+		for (i = 0; i < m_Enhancements.GetCount(); i++)
+			m_Enhancements[i].sType = sType;
+		}
+	else if (iEntry >= 0 && iEntry < m_Enhancements.GetCount())
+		m_Enhancements[iEntry].sType = sType;
+	}

@@ -178,14 +178,29 @@ class CEnhancerClass : public CDeviceClass
 
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
-		virtual bool GetDeviceEnhancementDesc (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) override;
-		virtual int GetPowerRating (CItemCtx &Ctx) const override { return m_iPowerUse; }
+		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 
 	protected:
+		virtual bool OnAccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) override;
 		virtual bool OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) override;
 
 	private:
-		CEnhancerClass (void);
+		struct SScalableStats
+			{
+			int iLevel;
+			CEnhancementDesc Enhancements;	//	List of enhancements applied
+			int iPowerUse;					//	Power use at this level
+			};
+
+		bool AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+		const SScalableStats *GetStats (CItemCtx &Ctx) const;
+		ALERROR InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const CString &sRootType, const CString &sRootCriteria, int iRootPowerUse);
+		ALERROR InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const CString &sRootType, const CString &sRootCriteria, int iRootPowerUse);
+
+		int m_iLevels;						//	Total number of levels (0 = old-style)
+		TUniquePtr<SScalableStats[]> m_pDesc;
+
+		//	Old-style enhancements
 
 		CString m_sEnhancementType;			//	Type of enhancement
 		CItemCriteria m_Criteria;			//	Only enhances items that match criteria
@@ -196,8 +211,8 @@ class CEnhancerClass : public CDeviceClass
 		int m_iMinActivateDelay;			//	Minimum rate (0 = no min)
 		int m_iMaxActivateDelay;			//	Maximum rate (0 = no max)
 
-		bool m_bUseArray;						//	If TRUE, use this array
-		int m_iDamageAdjArray[damageCount];		//	Adjustment to weapons damage
+		bool m_bUseArray;					//	If TRUE, use this array
+		int m_iDamageAdjArray[damageCount];	//	Adjustment to weapons damage
 
 		int m_iPowerUse;
 	};

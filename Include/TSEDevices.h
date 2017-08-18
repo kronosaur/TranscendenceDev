@@ -66,8 +66,10 @@ class CEnhancementDesc
 	{
 	public:
 		bool Accumulate (const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
-
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		inline int GetCount (void) const { return m_Enhancements.GetCount(); }
+		void SetCriteria (int iEntry, const CItemCriteria &Criteria);
+		void SetType (int iEntry, const CString &sType);
 
 	private:
 		struct SEnhancerDesc
@@ -209,7 +211,6 @@ class CDeviceClass
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
 		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const { return 0; }
-		virtual bool GetDeviceEnhancementDesc (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return false; }
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) { return 0.0; }
@@ -490,7 +491,6 @@ class CInstalledDevice
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return m_pClass->GetDamageEffectiveness(pAttacker, pWeapon); }
 		inline int GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) { return m_pClass->GetDamageType(Ctx, Ammo); }
 		inline int GetDefaultFireAngle (CSpaceObject *pSource) { return m_pClass->GetDefaultFireAngle(this, pSource); }
-		bool GetDeviceEnhancementDesc (CSpaceObject *pSource, CInstalledDevice *pWeapon, SDeviceEnhancementDesc *retDesc) { return m_pClass->GetDeviceEnhancementDesc(this, pSource, pWeapon, retDesc); }
 		CSpaceObject *GetLastShot (CSpaceObject *pSource, int iIndex) const;
 		inline Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		inline Metric GetMaxRange (CItemCtx &ItemCtx) { return m_pClass->GetMaxRange(ItemCtx); }
