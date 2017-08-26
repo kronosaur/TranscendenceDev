@@ -2862,12 +2862,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   q                  SystemTable\n"
 			"   s                  ShipClass\n"
 			"   t                  StationType\n"
+			"   T                  StationType (structure-scale)\n"
 			"   u                  Sound\n"
 			"   v                  Sovereign\n"
 			"   x                  Type (generic)\n"
 			"   y                  SystemType\n"
 			"   z                  SystemMap\n"
 			"   $                  EconomyType\n"
+			"\n"
+			"   V                  Include virtual types\n"
 			"   +/-{attrib}        Require/exclude types with given attribute\n"
 			"   =n;                Level comparisons (also supports < etc.)",
 
@@ -3074,6 +3077,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   s                  ShipClass\n"
 			"   t                  StationType\n"
+			"   T                  StationType (structure-scale)\n"
+			"   V                  Include virtual objects\n"
 			"   +/-{attrib}        Require/exclude types with given attribute\n\n"
 			"   +/-unid:{unid}     Require/exclude types of given unid\n"
 			"   =n;                Level comparisons (also supports < etc.)\n"
