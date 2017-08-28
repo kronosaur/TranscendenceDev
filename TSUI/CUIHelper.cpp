@@ -187,7 +187,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	Measure the description
 
-	CString sDesc = Item.GetDesc();
+	CString sDesc = Item.GetDesc(Ctx);
 	iLines = Medium.BreakText(sDesc, RectWidth(rcDrawRect), NULL, 0);
 	cyHeight += iLines * Medium.GetHeight();
 
@@ -1175,7 +1175,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 	//	Description
 
-	CString sDesc = Item.GetDesc();
+	CString sDesc = Item.GetDesc(Ctx);
 	Medium.DrawText(Dest,
 			rcDrawRect,
 			(bSelected ? rgbColorDescSel : rgbColorDesc),

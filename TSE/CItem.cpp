@@ -731,7 +731,7 @@ void CItem::FireOnUninstall (CSpaceObject *pSource) const
 		}
 	}
 
-CString CItem::GetDesc (void) const
+CString CItem::GetDesc (CItemCtx &ItemCtx) const
 
 //	GetDesc
 //
@@ -747,7 +747,7 @@ CString CItem::GetDesc (void) const
 
 		Ctx.SetEvent(eventGetDescription);
 		Ctx.SetItemType(GetType());
-		Ctx.SaveAndDefineSourceVar(NULL);
+		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(*this);
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -1098,7 +1098,7 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 		if (CCCtx.InEvent(eventGetDescription))
 			return CC.CreateString(GetType()->GetDesc());
 		else
-			return CC.CreateString(GetDesc());
+			return CC.CreateString(GetDesc(Ctx));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DISRUPTED))
@@ -1226,7 +1226,7 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 	return sValue;
 	}
 
-CString CItem::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) const
+CString CItem::GetReference (CItemCtx &ItemCtx, const CItem &Ammo, DWORD dwFlags) const
 
 //	GetReference
 //
@@ -1259,7 +1259,7 @@ CString CItem::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) co
 
 			Ctx.SetEvent(eventGetReferenceText);
 			Ctx.SetItemType(GetType());
-			Ctx.SaveAndDefineSourceVar(NULL);
+			Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 			Ctx.SaveAndDefineItemVar(*this);
 
 			ICCItem *pResult = Ctx.Run(Event);
@@ -1272,7 +1272,7 @@ CString CItem::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) co
 
 	if (!sReference.IsBlank())
 		{
-		CString sAdditionalRef = m_pItemType->GetReference(Ctx, Ammo, dwFlags);
+		CString sAdditionalRef = m_pItemType->GetReference(ItemCtx, Ammo, dwFlags);
 		if (!sAdditionalRef.IsBlank())
 			return strPatternSubst(CONSTLIT("%s\n%s"), sReference, sAdditionalRef);
 		else
@@ -1282,7 +1282,7 @@ CString CItem::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) co
 	//	Otherwise, just the built-in reference
 
 	else
-		return m_pItemType->GetReference(Ctx, Ammo, dwFlags);
+		return m_pItemType->GetReference(ItemCtx, Ammo, dwFlags);
 	}
 
 bool CItem::GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const

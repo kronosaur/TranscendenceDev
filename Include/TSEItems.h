@@ -299,7 +299,7 @@ class CItem
 		inline int GetCount (void) const { return (int)m_dwCount; }
 		inline CEconomyType *GetCurrencyType (void) const;
 		inline CString GetData (const CString &sAttrib) const { return (m_pExtra ? m_pExtra->m_Data.GetData(sAttrib) : NULL_STR); }
-		CString GetDesc (void) const;
+		CString GetDesc (CItemCtx &ItemCtx) const;
 		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL) const;
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
@@ -315,7 +315,7 @@ class CItem
 		inline const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
 		static const CItem &GetNullItem (void) { return m_NullItem; }
 		static const CItemEnhancement &GetNullMod (void) { return m_NullMod; }
-		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
+		CString GetReference (CItemCtx &ItemCtx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
 		bool GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const;
 		bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags, DamageTypes *retiDamage, CString *retsReference) const;
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeedBonus) const;
