@@ -88,16 +88,16 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, int iNumber)
 	{
 	switch (iFormat)
 		{
-		case numberPower:
-			return ComposeNumber(iFormat, (Metric)iNumber);
+		case numberInteger:
+			return strFormatInteger(iNumber, -1, FORMAT_THOUSAND_SEPARATOR);
 
 		case numberSpeed:
 			return strPatternSubst(CONSTLIT(".%02dc"), iNumber);
 
-		//	Defaults to integer
+		//	Defaults to double
 
 		default:
-			return strFormatInteger(iNumber, -1, FORMAT_THOUSAND_SEPARATOR);
+			return ComposeNumber(iFormat, (Metric)iNumber);
 		}
 	}
 
@@ -121,6 +121,22 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 				return strPatternSubst(CONSTLIT("%s GW"), strFromDouble(rNumber / 1000000.0, 1));
 			else
 				return strPatternSubst(CONSTLIT("%d GW"), mathRound(rNumber / 1000000.0));
+			break;
+
+		case numberRegenRate:
+			if (rNumber <= 0.0)
+				return CONSTLIT("none");
+			else
+				{
+				int iRate10 = mathRound(g_TicksPerSecond * rNumber / 18.0);
+
+				if (iRate10 == 0)
+					return CONSTLIT("<0.1 hp/sec");
+				else if ((iRate10 % 10) == 0)
+					return strPatternSubst(CONSTLIT("%d hp/sec"), iRate10 / 10);
+				else
+					return strPatternSubst(CONSTLIT("%d.%d hp/sec"), iRate10 / 10, iRate10 % 10);
+				}
 			break;
 
 		case numberSpeed:

@@ -28,9 +28,10 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 18> NOUN_FLAG_TABLE = {
 	"tokenize",				nounTokenize,
 	};
 
-static TStaticStringTable<TStaticStringEntry<CLanguage::ENumberFormatTypes>, 3> NUMBER_FORMAT_TABLE = {
+static TStaticStringTable<TStaticStringEntry<CLanguage::ENumberFormatTypes>, 4> NUMBER_FORMAT_TABLE = {
 	"integer",				CLanguage::numberInteger,
 	"power",				CLanguage::numberPower,
+	"regenRate",			CLanguage::numberRegenRate,
 	"speed",				CLanguage::numberSpeed,
 	};
 
