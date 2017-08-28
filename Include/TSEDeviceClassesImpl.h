@@ -192,10 +192,20 @@ class CEnhancerClass : public CDeviceClass
 			int iPowerUse;					//	Power use at this level
 			};
 
+		struct SInheritedStats
+			{
+			CString sType;
+			CString sCriteria;
+			CItemCriteria Criteria;
+			int iPowerUse;
+			int iLevelCheck;
+			};
+
 		bool AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+		void ApplyInherited (SScalableStats &Stats, const SInheritedStats &RootStats);
 		const SScalableStats *GetStats (CItemCtx &Ctx) const;
-		ALERROR InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const CString &sRootType, const CString &sRootCriteria, int iRootPowerUse);
-		ALERROR InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const CString &sRootType, const CString &sRootCriteria, int iRootPowerUse);
+		ALERROR InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const SInheritedStats &RootStats);
+		ALERROR InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const SInheritedStats &RootStats);
 
 		int m_iLevels;						//	Total number of levels (0 = old-style)
 		TUniquePtr<SScalableStats[]> m_pDesc;

@@ -13,6 +13,7 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define HP_BONUS_ATTRIB							CONSTLIT("hpBonus")
 #define LEVEL_ATTRIB							CONSTLIT("level")
+#define LEVEL_CHECK_ATTRIB						CONSTLIT("levelCheck")
 #define MIN_ACTIVATE_DELAY_ATTRIB				CONSTLIT("minActivateDelay")
 #define MAX_ACTIVATE_DELAY_ATTRIB				CONSTLIT("maxActivateDelay")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
@@ -90,6 +91,26 @@ bool CEnhancerClass::AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTa
 	return bEnhanced;
 	}
 
+void CEnhancerClass::ApplyInherited (SScalableStats &Stats, const SInheritedStats &RootStats)
+
+//	ApplyInherited
+//
+//	Sets inherited stats.
+
+	{
+	if (!RootStats.sType.IsBlank())
+		Stats.Enhancements.SetType(-1, RootStats.sType);
+
+	if (!RootStats.sCriteria.IsBlank())
+		Stats.Enhancements.SetCriteria(-1, RootStats.Criteria);
+
+	if (RootStats.iPowerUse != -1)
+		Stats.iPowerUse = RootStats.iPowerUse;
+
+	if (RootStats.iLevelCheck != -1)
+		Stats.Enhancements.SetLevelCheck(-1, RootStats.iLevelCheck == 1);
+	}
+
 int CEnhancerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
 
 //	CalcPowerUsed
@@ -126,12 +147,18 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 
 	//	Some elements can optionally come from the root.
 
-	CString sRootType = pDesc->GetAttribute(TYPE_ATTRIB);
-	if (sRootType.IsBlank())
-		sRootType = pDesc->GetAttribute(ENHANCEMENT_TYPE_ATTRIB);
+	SInheritedStats RootStats;
 
-	CString sRootCriteria = pDesc->GetAttribute(CRITERIA_ATTRIB);
-	int iRootPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
+	RootStats.sType = pDesc->GetAttribute(TYPE_ATTRIB);
+	if (RootStats.sType.IsBlank())
+		RootStats.sType = pDesc->GetAttribute(ENHANCEMENT_TYPE_ATTRIB);
+
+	RootStats.sCriteria = pDesc->GetAttribute(CRITERIA_ATTRIB);
+	if (!RootStats.sCriteria.IsBlank())
+		CItem::ParseCriteria(RootStats.sCriteria, &RootStats.Criteria);
+
+	RootStats.iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
+	RootStats.iLevelCheck = pDesc->GetAttributeTriState(LEVEL_CHECK_ATTRIB);
 
 	//	If we've got a single <Enhance> element, then we take all data from that.
 
@@ -139,7 +166,7 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	CXMLElement *pEnhance;
 	if (pEnhance = pDesc->GetContentElementByTag(ENHANCE_TAG))
 		{
-		if (error = pDevice->InitFromEnhanceXML(Ctx, pEnhance, pType, sRootType, sRootCriteria, iRootPowerUse))
+		if (error = pDevice->InitFromEnhanceXML(Ctx, pEnhance, pType, RootStats))
 			return error;
 		}
 
@@ -147,7 +174,7 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 
 	else if (pScaling = pDesc->GetContentElementByTag(SCALING_TAG))
 		{
-		if (error = pDevice->InitFromScalingXML(Ctx, pScaling, pType, sRootType, sRootCriteria, iRootPowerUse))
+		if (error = pDevice->InitFromScalingXML(Ctx, pScaling, pType, RootStats))
 			return error;
 		}
 
@@ -168,8 +195,8 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 			pDevice->m_bUseArray = false;
 			}
 
-		pDevice->m_iPowerUse = iRootPowerUse;
-		pDevice->m_sEnhancementType = sRootType;
+		pDevice->m_iPowerUse = RootStats.iPowerUse;
+		pDevice->m_sEnhancementType = RootStats.sType;
 		pDevice->m_iActivateAdj = pDesc->GetAttributeIntegerBounded(ACTIVATE_ADJ_ATTRIB, 1, -1, 100);
 		pDevice->m_iMinActivateDelay = pDesc->GetAttributeIntegerBounded(MIN_ACTIVATE_DELAY_ATTRIB, 0, -1, 0);
 		pDevice->m_iMaxActivateDelay = pDesc->GetAttributeIntegerBounded(MAX_ACTIVATE_DELAY_ATTRIB, 0, -1, 0);
@@ -229,7 +256,7 @@ const CEnhancerClass::SScalableStats *CEnhancerClass::GetStats (CItemCtx &Ctx) c
 		}
 	}
 
-ALERROR CEnhancerClass::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const CString &sRootType, const CString &sRootCriteria, int iRootPowerUse)
+ALERROR CEnhancerClass::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const SInheritedStats &RootStats)
 
 //	InitFromEnhanceXML
 //
@@ -253,23 +280,12 @@ ALERROR CEnhancerClass::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	//	If necessary, we inherit some values from the root element
 
-	if (!sRootType.IsBlank())
-		m_pDesc[0].Enhancements.SetType(-1, sRootType);
-
-	if (!sRootCriteria.IsBlank())
-		{
-		CItemCriteria RootCriteria;
-		CItem::ParseCriteria(sRootCriteria, &RootCriteria);
-		m_pDesc[0].Enhancements.SetCriteria(-1, RootCriteria);
-		}
-
-	if (iRootPowerUse != -1)
-		m_pDesc[0].iPowerUse = iRootPowerUse;
+	ApplyInherited(m_pDesc[0], RootStats);
 
 	return NOERROR;
 	}
 
-ALERROR CEnhancerClass::InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const CString &sRootType, const CString &sRootCriteria, int iRootPowerUse)
+ALERROR CEnhancerClass::InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const SInheritedStats &RootStats)
 
 //	InitFromScalingXML
 //
@@ -290,12 +306,6 @@ ALERROR CEnhancerClass::InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 	m_pDesc.Set(new SScalableStats[m_iLevels]);
 	for (i = 0; i < m_iLevels; i++)
 		m_pDesc[i].iLevel = -1;
-
-	//	Parse root criteria so we don't have to parse it for each entry.
-
-	CItemCriteria RootCriteria;
-	if (!sRootCriteria.IsBlank())
-		CItem::ParseCriteria(sRootCriteria, &RootCriteria);
 
 	//	Now loop over all entries and initialize the appropriate level.
 
@@ -323,14 +333,7 @@ ALERROR CEnhancerClass::InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 		//	If necessary, we inherit some values from the root element
 
-		if (!sRootType.IsBlank())
-			m_pDesc[iIndex].Enhancements.SetType(-1, sRootType);
-
-		if (!sRootCriteria.IsBlank())
-			m_pDesc[iIndex].Enhancements.SetCriteria(-1, RootCriteria);
-
-		if (iRootPowerUse != -1)
-			m_pDesc[iIndex].iPowerUse = iRootPowerUse;
+		ApplyInherited(m_pDesc[iIndex], RootStats);
 
 		//	Keep track of the first entry (by level)
 
@@ -369,7 +372,7 @@ bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledArmor
 
 	//	New style
 
-	return pStats->Enhancements.Accumulate(*pTarget->GetItem(), EnhancementIDs, pEnhancements);
+	return pStats->Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
 	}
 
 bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
@@ -385,5 +388,5 @@ bool CEnhancerClass::OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevic
 
 	//	New style
 
-	return pStats->Enhancements.Accumulate(*pTarget->GetItem(), EnhancementIDs, pEnhancements);
+	return pStats->Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
 	}

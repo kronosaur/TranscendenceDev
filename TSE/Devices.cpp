@@ -137,7 +137,7 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pT
 	if (pDevice == NULL 
 			|| (pDevice->IsEnabled() && !pDevice->IsDamaged()))
 		{
-		bEnhanced = m_Enhancements.Accumulate(*pTarget->GetItem(), EnhancementIDs, pEnhancements);
+		bEnhanced = m_Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
 		}
 
 	//	Let sub-classes add their own
@@ -167,7 +167,7 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *p
 	if (pDevice == NULL 
 			|| (pDevice->IsEnabled() && !pDevice->IsDamaged()))
 		{
-		bEnhanced = m_Enhancements.Accumulate(*pTarget->GetItem(), EnhancementIDs, pEnhancements);
+		bEnhanced = m_Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
 		}
 
 	//	Let sub-classes add their own

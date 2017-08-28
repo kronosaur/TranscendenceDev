@@ -65,10 +65,11 @@ class CFailureDesc
 class CEnhancementDesc
 	{
 	public:
-		bool Accumulate (const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
+		bool Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline int GetCount (void) const { return m_Enhancements.GetCount(); }
 		void SetCriteria (int iEntry, const CItemCriteria &Criteria);
+		void SetLevelCheck (int iEntry, bool bValue = true);
 		void SetType (int iEntry, const CString &sType);
 
 	private:
@@ -77,6 +78,8 @@ class CEnhancementDesc
 			CString sType;						//	Type of enhancement
 			CItemCriteria Criteria;				//	Items that we enhance
 			CItemEnhancement Enhancement;		//	Enhancement confered
+
+			DWORD fLevelCheck:1;				//	Only enhance if target item level is <= ours.
 			};
 
 		ALERROR InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SEnhancerDesc &Enhance);

@@ -9,9 +9,10 @@
 
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define ENHANCEMENT_ATTRIB						CONSTLIT("enhancement")
+#define LEVEL_CHECK_ATTRIB						CONSTLIT("levelCheck")
 #define TYPE_ATTRIB								CONSTLIT("type")
 
-bool CEnhancementDesc::Accumulate (const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
+bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
 
 //	Accumulate
 //
@@ -32,6 +33,13 @@ bool CEnhancementDesc::Accumulate (const CItem &Target, TArray<CString> &Enhance
 		//	If we don't match the criteria, skip it.
 
 		if (!Target.MatchesCriteria(m_Enhancements[i].Criteria))
+			continue;
+
+		//	If we're checking level, then make sure our level is at least as 
+		//	high as the target.
+
+		if (m_Enhancements[i].fLevelCheck
+				&& Ctx.GetItem().GetLevel() < Target.GetLevel())
 			continue;
 
 		//	Add the enhancement
@@ -99,6 +107,10 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	CItem::ParseCriteria(sCriteria, &Enhance.Criteria);
 
+	//	Flags
+
+	Enhance.fLevelCheck = pDesc->GetAttributeBool(LEVEL_CHECK_ATTRIB);
+
 	//	Parse the enhancement itself
 
 	if (error = Enhance.Enhancement.InitFromDesc(Ctx, pDesc->GetAttribute(ENHANCEMENT_ATTRIB)))
@@ -124,6 +136,25 @@ void CEnhancementDesc::SetCriteria (int iEntry, const CItemCriteria &Criteria)
 		}
 	else if (iEntry >= 0 && iEntry < m_Enhancements.GetCount())
 		m_Enhancements[iEntry].Criteria = Criteria;
+	}
+
+void CEnhancementDesc::SetLevelCheck (int iEntry, bool bValue)
+
+//	SetLevelCheck
+//
+//	Sets the flag for the given entry in the list of enhancements.
+//	If iEntry is -1 then we set all entries.
+
+	{
+	int i;
+
+	if (iEntry == -1)
+		{
+		for (i = 0; i < m_Enhancements.GetCount(); i++)
+			m_Enhancements[i].fLevelCheck = bValue;
+		}
+	else if (iEntry >= 0 && iEntry < m_Enhancements.GetCount())
+		m_Enhancements[iEntry].fLevelCheck = bValue;
 	}
 
 void CEnhancementDesc::SetType (int iEntry, const CString &sType)
