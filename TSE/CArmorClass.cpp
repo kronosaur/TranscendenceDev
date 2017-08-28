@@ -87,8 +87,6 @@ const int RADIATION_IMMUNE_LEVEL =				7;
 const int EMP_IMMUNE_LEVEL =					9;
 const int DEVICE_DAMAGE_IMMUNE_LEVEL =			11;
 
-const int TICKS_PER_UPDATE =					10;
-
 const Metric PHOTO_REPAIR_ADJ =					0.6;
 const Metric RADIATION_IMMUNE_BALANCE_BONUS =	25.0;
 const Metric RADIATION_VULNERABLE_BALANCE_BONUS =	-25.0;
@@ -2238,7 +2236,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick, bool *retbModified)
+void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified)
 
 //	Update
 //
@@ -2247,26 +2245,25 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	{
     DEBUG_TRY
 
-    ASSERT(pArmor);
-    ASSERT(pObj);
-
-	bool bModified = false;
-	CItemCtx ItemCtx(pObj, pArmor);
     const SScalableStats &Stats = GetScaledStats(ItemCtx);
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
-	//	Default to not consuming power. Below we set the flag is we do any kind 
+	bool bModified = false;
+
+	//	Default to not consume power. Below we set the flag if we do any kind 
 	//	of regeneration work.
 
 	pArmor->SetConsumePower(false);
 
-	//	Compute total regeneration by adding mods to intrinsic
+	//	Compute total regeneration by adding mods to intrinsic. If we regenerate,
+	//	then regenerate.
 
-	if (Enhancements.IsRegenerating()	
-			|| Enhancements.IsPhotoRegenerating()
-			|| !Stats.Regen.IsEmpty())
+	CRegenDesc Regen;
+	if (Enhancements.CalcRegen(ItemCtx, UpdateCtx, Stats.Regen, m_fPhotoRepair, TICKS_PER_UPDATE, Regen))
 		{
-		if (UpdateRegen(ItemCtx, Stats, iTick))
+		if (UpdateRegen(ItemCtx, Regen, iTick))
 			bModified = true;
 		}
 
@@ -2285,14 +2282,14 @@ void CArmorClass::Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick
 	if ((Enhancements.IsPhotoRecharging() || m_fPhotoRecharge)
 			&& m_iPowerGen == 0)
 		{
-		int iIntensity = pObj->GetSystem()->CalculateLightIntensity(pObj->GetPos());
-
+		int iIntensity = UpdateCtx.GetLightIntensity(pSource);
+		
 		//	Intensity varies from 0 to 100 so this will recharge up to
 		//	100 units of fuel every 10 ticks or 10 units per tick. At 1.5MW per fuel
 		//	unit, this means that a single armor plate can support up to 15MW when
 		//	right next to the sun.
 
-		pObj->Refuel((Metric)iIntensity);
+		pSource->Refuel((Metric)iIntensity);
 		}
 
 	//	See if we distribute HPs to other segments of our type
@@ -2495,7 +2492,7 @@ bool CArmorClass::UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Sta
 	return true;
 	}
 
-bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)
+bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const CRegenDesc &Regen, int iTick)
 
 //	UpdateRegen
 //
@@ -2533,36 +2530,11 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const SScalableStats &Stats, i
 	if (iHPNeeded <= 0)
 		return false;
 
-	//	Combine all regeneration
-
-	const CRegenDesc *pRegen;
-	CRegenDesc RegenWithMod;
-	if (Enhancements.IsRegenerating() || Enhancements.IsPhotoRegenerating())
-		{
-		//	Standard regeneration is 1% of armor HP per 180 ticks
-
-		RegenWithMod.InitFromRegen(0.01 * GetStdHP(ItemCtx.GetItem().GetLevel()), TICKS_PER_UPDATE);
-		RegenWithMod.Add(Stats.Regen);
-		pRegen = &RegenWithMod;
-		}
-	else
-		pRegen = &Stats.Regen;
-
 	//	Compute the HP that we regenerate this cycle
 
-	int iHP = Min(iHPNeeded, pRegen->GetRegen(iTick, TICKS_PER_UPDATE));
+	int iHP = Min(iHPNeeded, Regen.GetRegen(iTick, TICKS_PER_UPDATE));
 	if (iHP <= 0)
 		return false;
-
-	//	If this is photo-repair armor then adjust the cycle
-	//	based on how far away we are from the sun.
-
-	if (m_fPhotoRepair || Enhancements.IsPhotoRegenerating())
-		{
-		int iIntensity = pObj->GetSystem()->CalculateLightIntensity(pObj->GetPos());
-		if (mathRandom(1, 100) > iIntensity)
-			return false;
-		}
 
 	//	Repair
 	//

@@ -84,6 +84,7 @@ class CItemEnhancement
 		CItemEnhancement (DWORD dwMods) : m_dwID(OBJID_NULL), m_dwMods(dwMods), m_pEnhancer(NULL), m_iExpireTime(-1) { }
 
 		void AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
+		bool AccumulateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTicksPerUpdate, CRegenDesc &Regen) const;
 		inline DWORD AsDWORD (void) const { return m_dwMods; }
 		EnhanceItemStatus Combine (const CItem &Item, CItemEnhancement Enhancement);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
@@ -192,6 +193,7 @@ class CItemEnhancementStack
 		int ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const;
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
 		int CalcActivateDelay (CItemCtx &DeviceCtx) const;
+		bool CalcRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &IntrinsicRegen, bool bIntrinsicPhotoRegen, int iTicksPerUpdate, CRegenDesc &Result) const;
 		void Delete (void);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
 		int GetActivateDelayAdj (void) const;

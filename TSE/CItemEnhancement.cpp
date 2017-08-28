@@ -167,6 +167,70 @@ void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttri
 		}
 	}
 
+bool CItemEnhancement::AccumulateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTickPerUpdate, CRegenDesc &Regen) const
+
+//	AccumulateRegen
+//
+//	Adds to the regen, if we regenerate. Returns TRUE if we modified the regen
+//	result.
+
+	{
+	switch (GetType())
+		{
+		case etPhotoRegenerate:
+			{
+			//	Skip disadvantages (decay)
+
+			if (IsDisadvantage())
+				return false;
+
+			//	Skip in proportion to light-intensity.
+
+			if (mathRandom(1, 100) > UpdateCtx.GetLightIntensity(ItemCtx.GetSource()))
+				return false;
+
+			//	Standard regeneration is 1% of standard armor HP per 180 ticks
+
+			CRegenDesc NewRegen;
+			NewRegen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ItemCtx.GetItem().GetLevel()), iTickPerUpdate);
+			Regen.Add(NewRegen);
+			return true;
+			}
+
+		case etRegenerate:
+			{
+			//	Skip disadvantages (decay)
+
+			if (IsDisadvantage())
+				return false;
+
+			//	Get the regen rate.
+
+			int iRegen = GetDataX();
+			CRegenDesc NewRegen;
+
+			//	If regen rate is 0, then we use standard regeneration, which is
+			//	1% of standard armor HP per 180 ticks.
+
+			if (iRegen == 0)
+				NewRegen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ItemCtx.GetItem().GetLevel()), iTickPerUpdate);
+
+			//	Otherwise it is specified
+
+			else
+				NewRegen.InitFromRegen(iRegen, iTickPerUpdate);
+
+			//	Add it.
+
+			Regen.Add(NewRegen);
+			return true;
+			}
+
+		default:
+			return false;
+		}
+	}
+
 int CItemEnhancement::DamageAdj2Level (int iDamageAdj)
 
 //	DamageAdj2Level
@@ -1221,6 +1285,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+immunity:{s}				Immunity to special damage s.
 //	+reflect:{s}				Reflects damage type s.
 //	+regen						Regenerate
+//	+regen:{n}					Regenerate
 //	+resist:{s}:{n}				DamageAdj for type s set to n
 //	+resistDamageClass:{s}:{n}	DamageAdj for type s (and its next-tier mate) set to n
 //	+resistDamageTier:{s}:{n}	DamageAdj for type s (and its tier mate) set to n
@@ -1424,7 +1489,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 
 	else if (strEquals(sID, CONSTLIT("regen")))
 		{
-		m_dwMods = Encode12(etRegenerate | (bDisadvantage ? etDisadvantage : 0));
+		m_dwMods = EncodeAX(etRegenerate | (bDisadvantage ? etDisadvantage : 0), 0, iValue);
 		}
 
 	//	Decay

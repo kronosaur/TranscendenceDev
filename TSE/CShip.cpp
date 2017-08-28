@@ -9,7 +9,6 @@ static CObjectClass<CShip>g_Class(OBJID_CSHIP, NULL);
 
 #define FUEL_CHECK_CYCLE						4
 #define LIFESUPPORT_FUEL_USE_PER_CYCLE			1
-#define ARMOR_UPDATE_CYCLE						10
 #define GATE_ANIMATION_LENGTH					30
 #define PARALYSIS_ARC_COUNT						5
 
@@ -5979,17 +5978,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
     //	Update armor
 
-    if ((iTick % ARMOR_UPDATE_CYCLE) == 0)
-        {
-        for (i = 0; i < GetArmorSectionCount(); i++)
-            {
-            bool bModified;
-            CInstalledArmor *pArmor = GetArmorSection(i);
-            pArmor->GetClass()->Update(pArmor, this, iTick, &bModified);
-            if (bModified)
-                bArmorStatusChanged = true;
-            }
-        }
+	if (m_Armor.Update(Ctx, this, iTick))
+		bArmorStatusChanged = true;
 
     //	Update each device
 

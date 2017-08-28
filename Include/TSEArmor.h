@@ -16,6 +16,8 @@ struct SShipPerformanceCtx;
 class CArmorClass
 	{
 	public:
+		static constexpr int TICKS_PER_UPDATE = 10;
+
 		enum ECachedHandlers
 			{
 			evtGetMaxHP					= 0,
@@ -116,7 +118,7 @@ class CArmorClass
 		bool IsShatterImmune (CItemCtx &ItemCtx);
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
-		void Update (CInstalledArmor *pArmor, CSpaceObject *pObj, int iTick, bool *retbModified);
+		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
 
 		static int GetStdCost (int iLevel);
 		static int GetStdDamageAdj (int iLevel, DamageTypes iDamage);
@@ -164,7 +166,7 @@ class CArmorClass
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 		bool UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
-		bool UpdateRegen (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
+		bool UpdateRegen (CItemCtx &ItemCtx, const CRegenDesc &Regen, int iTick);
 
         SScalableStats m_Stats;                 //  Base stats capable of being scaled
 

@@ -202,6 +202,52 @@ void CItemEnhancementStack::CalcCache (void) const
 	m_bCacheValid = true;
 	}
 
+bool CItemEnhancementStack::CalcRegen (CItemCtx &ItemCtx, 
+									   SUpdateCtx &UpdateCtx, 
+									   const CRegenDesc &IntrinsicRegen, 
+									   bool bIntrinsicPhotoRegen, 
+									   int iTicksPerUpdate, 
+									   CRegenDesc &Result) const
+
+//	CalcRegen
+//
+//	Calculates combined regen of intrisic plus enhancements. Returns FALSE if
+//	there is no regen.
+
+	{
+	int i;
+
+	ASSERT(Result.IsEmpty());
+
+	//	Check intrinsic regen first.
+
+	if (!IntrinsicRegen.IsEmpty())
+		{
+		//	If this is photo-regeneration, then we only regenerate in proportion 
+		//	to light intensity.
+
+		if (bIntrinsicPhotoRegen)
+			{
+			if (mathRandom(1, 100) <= UpdateCtx.GetLightIntensity(ItemCtx.GetSource()))
+				Result = IntrinsicRegen;
+			}
+
+		//	Otherwise, we always regenerate
+
+		else
+			Result = IntrinsicRegen;
+		}
+
+	//	Now add any enhancements on top
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		m_Stack[i].AccumulateRegen(ItemCtx, UpdateCtx, iTicksPerUpdate, Result);
+
+	//	Done
+
+	return !Result.IsEmpty();
+	}
+
 void CItemEnhancementStack::Delete (void)
 
 //	Delete

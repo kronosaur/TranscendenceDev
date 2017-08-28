@@ -68,6 +68,7 @@ class CArmorSystem
         void Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool bInCreate = false);
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
         inline void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }
+		bool Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick);
         void WriteToStream (IWriteStream *pStream);
 
     private:

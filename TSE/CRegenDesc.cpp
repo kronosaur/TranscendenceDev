@@ -58,7 +58,7 @@ CString CRegenDesc::GetReferenceRate (const CString &sUnits, int iTicksPerCycle)
 
 //	GetReferenceRate
 //
-//	Returns a rate in the following forms:
+//	Returns a rate in hit points per real second:
 //
 //	<0.1 hp/sec
 //	1.0 hp/sec

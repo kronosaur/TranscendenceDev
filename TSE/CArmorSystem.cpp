@@ -96,6 +96,39 @@ void CArmorSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
         m_iHealerLeft = 0;
     }
 
+bool CArmorSystem::Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick)
+
+//	Update
+//
+//	Must be called once per tick to update the armor system. We return TRUE if 
+//	the update modified the properties of the armor (e.g., hit points).
+
+	{
+	int i;
+
+	//	We only update armor once every 10 ticks.
+
+    if ((iTick % CArmorClass::TICKS_PER_UPDATE) != 0)
+		return false;
+
+	//	Update all segments.
+
+	bool bSystemModified = false;
+    for (i = 0; i < GetSegmentCount(); i++)
+        {
+        CInstalledArmor *pArmor = &GetSegment(i);
+
+		bool bArmorModified;
+        pArmor->GetClass()->Update(CItemCtx(pSource, pArmor), Ctx, iTick, &bArmorModified);
+        if (bArmorModified)
+            bSystemModified = true;
+        }
+
+	//	Done
+
+	return bSystemModified;
+	}
+
 void CArmorSystem::WriteToStream (IWriteStream *pStream)
 
 //  WriteToStream
