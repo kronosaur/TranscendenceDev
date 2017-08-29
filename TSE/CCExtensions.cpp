@@ -226,6 +226,7 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_CALC_BEST_TARGET		123
 #define FN_OBJ_ADD_CONNECTION		124
 #define FN_OBJ_GET_DETECT_RANGE		125
+#define FN_OBJ_MESSAGE_TRANSLATE	126
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1937,7 +1938,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objSendMessage",				fnObjSendMessage,		FN_OBJ_MESSAGE,
 			"(objSendMessage obj sender text) -> True/Nil",
-			"iv*",	PPFLAG_SIDEEFFECTS,	},
+			"ivs",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSendMessageTranslate",		fnObjSendMessage,		FN_OBJ_MESSAGE_TRANSLATE,
+			"(objSendMessageTranslate obj sender textID [data]) -> True/Nil",
+			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSetData",					fnObjData,		FN_OBJ_SETDATA,
 			"(objSetData obj attrib data) -> True/Nil",
@@ -6784,6 +6789,49 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (sMessage.IsBlank())
 				return pCC->CreateNil();
+
+			//	If target is nil, then send to player
+
+			if (pObj == NULL)
+				{
+				IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+				if (pPlayer)
+					pPlayer->OnMessageFromObj(pSender, sMessage);
+				}
+
+			//	Otherwise, send to object (which might send it to the player or
+			//	whatever).
+
+			else
+				pObj->SendMessage(pSender, sMessage);
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_MESSAGE_TRANSLATE:
+			{
+			//	Second param is the sender; third is message ID
+
+			CSpaceObject *pSender = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			CString sMessageID = pArgs->GetElement(2)->GetStringValue();
+
+			//	If no message, nothing to do
+
+			if (sMessageID.IsBlank())
+				return pCC->CreateNil();
+
+			//	See if we have a data element
+
+			ICCItem *pData = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
+
+			//	Translate
+
+			ICCItem *pResult;
+			if (!pObj->Translate(sMessageID, pData, &pResult) || pResult->IsNil())
+				return pCC->CreateNil();
+
+			CString sMessage = pResult->GetStringValue();
+			pResult->Discard(pCC);
 
 			//	If target is nil, then send to player
 
