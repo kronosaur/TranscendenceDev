@@ -6824,10 +6824,17 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			ICCItem *pData = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
 
+			//	By default we translate from the sender's table, but if no sender, 
+			//	then we use the recipient.
+
+			CSpaceObject *pTranslator = (pSender ? pSender : pObj);
+			if (pTranslator == NULL)
+				return pCC->CreateNil();
+
 			//	Translate
 
 			ICCItem *pResult;
-			if (!pObj->Translate(sMessageID, pData, &pResult) || pResult->IsNil())
+			if (!pTranslator->Translate(sMessageID, pData, &pResult) || pResult->IsNil())
 				return pCC->CreateNil();
 
 			CString sMessage = pResult->GetStringValue();
