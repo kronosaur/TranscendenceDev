@@ -7467,6 +7467,84 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			m_sHighlightText = NULL_STR;
 		}
 
+	//	Update effects
+
+	if (m_pFirstEffect)
+		UpdateEffects();
+
+	//	Update items
+
+	if (IsDestinyTime(ITEM_ON_UPDATE_CYCLE, ITEM_ON_UPDATE_OFFSET))
+		{
+		FireOnItemUpdate();
+
+		//	We could have gotten destroyed here.
+
+		if (IsDestroyed())
+			{
+			ClearInUpdateCode();
+			return;
+			}
+		}
+
+	//	Update object
+
+	CDesignType *pType;
+	if (FindEventHandler(CDesignType::evtOnUpdate)
+			&& IsDestinyTime(OBJECT_ON_UPDATE_CYCLE, OBJECT_ON_UPDATE_OFFSET)
+			&& (pType = GetType())
+			&& pType->GetAPIVersion() >= 31)
+		{
+		FireOnUpdate();
+
+		//	We could have gotten destroyed here, so we check and leave if 
+		//	necessary.
+
+		if (IsDestroyed())
+			{
+			ClearInUpdateCode();
+			return;
+			}
+		}
+
+	//	See if this is the nearest player target
+
+	if (Ctx.pPlayer
+			&& !Ctx.pPlayer->IsDestroyed()
+			&& this != Ctx.pPlayer)
+		UpdatePlayerTarget(Ctx);
+
+	//	See if we have a dock screen. We only check every 20 ticks or so, so this
+	//	information might be stale. Use this for the docking ports animation, but
+	//	not for actually determining if we can dock.
+	//
+	//	NOTE: <GetDockScreen> and <GetGlobalDockScreen> must not have side-
+	//	effects, so we assume we cannot be destroyed after the call.
+
+	if (IsDestinyTime(21, 8)
+			&& GetDockingPortCount() > 0)
+		{
+		m_fHasDockScreenMaybe = (GetDefaultDockScreen() != NULL 
+				|| FireGetDockScreen() 
+				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL));
+		}
+
+	//	Update the specific object subclass.
+
+	OnUpdate(Ctx, g_SecondsPerUpdate);
+
+	//	Done
+
+	ClearInUpdateCode();
+	}
+
+void CSpaceObject::UpdateEffects (void)
+
+//	UpdateEffects
+//
+//	Updates old-style effects
+
+	{
 	SEffectMoveCtx MoveCtx;
 	MoveCtx.pObj = this;
 
@@ -7505,136 +7583,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 
 		pEffect = pNext;
 		}
-
-	//	Update items
-
-	if (IsDestinyTime(ITEM_ON_UPDATE_CYCLE, ITEM_ON_UPDATE_OFFSET))
-		FireOnItemUpdate();
-
-	//	Update object
-	//
-	//	NOTE: We could have been destroyed inside <OnUpdate> so we need to check
-	//	in all subsequent code.
-
-	CDesignType *pType;
-	if (FindEventHandler(CDesignType::evtOnUpdate)
-			&& IsDestinyTime(OBJECT_ON_UPDATE_CYCLE, OBJECT_ON_UPDATE_OFFSET)
-			&& (pType = GetType())
-			&& pType->GetAPIVersion() >= 31)
-		FireOnUpdate();
-
-	//	See if this is the nearest player target
-
-	if (!IsDestroyed()
-			&& Ctx.pPlayer
-			&& !Ctx.pPlayer->IsDestroyed()
-			&& this != Ctx.pPlayer)
-		{
-		bool bIsAngryAtPlayer = IsAngryAt(Ctx.pPlayer);
-		CVector vDist = GetPos() - Ctx.pPlayer->GetPos();
-
-		//	If this is the player's current target, then see if we can actually
-		//	hit it with any of our weapons.
-
-		if (Ctx.pPlayerTarget == this)
-			{
-			Metric rDist;
-			int iAngle = VectorToPolar(vDist, &rDist);
-
-			//	If we're out of range of both the primary and the launcher, then 
-			//	we remember that fact.
-
-			if (rDist > Ctx.pPlayer->GetMaxWeaponRange())
-				Ctx.bPlayerTargetOutOfRange = true;
-
-			//	If we have a fire arc and we're outside the arc, then we're not in
-			//	range either.
-
-			else if (Ctx.iMinFireArc != Ctx.iMaxFireArc
-					&& !AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc))
-				Ctx.bPlayerTargetOutOfRange = true;
-
-			//	If we're outside detection range, then we can't keep the target
-
-			else if (rDist > GetDetectionRange(Ctx.iPlayerPerception))
-				Ctx.bPlayerTargetOutOfRange = true;
-
-			//	Otherwise, if this object is angry at the player, then it is a
-			//	valid auto-target
-
-			else if (bIsAngryAtPlayer && CanAttack())
-				{
-				Metric rDist2 = rDist * rDist;
-				if (rDist2 < Ctx.rTargetDist2)
-					{
-					Ctx.pTargetObj = this;
-					Ctx.rTargetDist2 = rDist2;
-					}
-				}
-			}
-
-		//	If the object cannot attack, then it is never an auto-target.
-
-		else if (!CanAttack())
-			{ }
-
-		//	If this object is not angry at us, then it can never be an auto-
-		//	target.
-
-		else if (!bIsAngryAtPlayer)
-			{ }
-
-		//	If the player's weapons has an arc of fire, then limit ourselves to
-		//	targets in the arc.
-
-		else if (Ctx.iMinFireArc != Ctx.iMaxFireArc)
-			{
-			Metric rDist;
-			int iAngle = VectorToPolar(vDist, &rDist);
-			Metric rDist2 = rDist * rDist;
-
-			if (rDist2 < Ctx.rTargetDist2
-					&& AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc)
-					&& rDist <= GetDetectionRange(Ctx.iPlayerPerception))
-				{
-				Ctx.pTargetObj = this;
-				Ctx.rTargetDist2 = rDist2;
-				}
-			}
-
-		//	Otherwise, just find the nearest target
-
-		else
-			{
-			Metric rDist2 = vDist.Length2();
-			if (rDist2 < Ctx.rTargetDist2
-					&& rDist2 <= GetDetectionRange2(Ctx.iPlayerPerception))
-				{
-				Ctx.pTargetObj = this;
-				Ctx.rTargetDist2 = rDist2;
-				}
-			}
-		}
-
-	//	See if we have a dock screen. We only check every 20 ticks or so, so this
-	//	information might be stale. Use this for the docking ports animation, but
-	//	not for actually determining if we can dock.
-
-	if (IsDestinyTime(21, 8)
-			&& GetDockingPortCount() > 0
-			&& !IsDestroyed())
-		{
-		m_fHasDockScreenMaybe = (GetDefaultDockScreen() != NULL 
-				|| FireGetDockScreen() 
-				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL));
-		}
-
-	//	Update the specific object (but only if we didn't get destroyed).
-
-	if (!IsDestroyed())
-		OnUpdate(Ctx, g_SecondsPerUpdate);
-
-	ClearInUpdateCode();
 	}
 
 void CSpaceObject::UpdateExtended (const CTimeSpan &ExtraTime)
@@ -7649,6 +7597,99 @@ void CSpaceObject::UpdateExtended (const CTimeSpan &ExtraTime)
 	//	Let subclasses update
 
 	OnUpdateExtended(ExtraTime);
+	}
+
+void CSpaceObject::UpdatePlayerTarget (SUpdateCtx &Ctx)
+
+//	UpdatePlayerTarget
+//
+//	Called during update to see if this could be the player's best target.
+
+	{
+	bool bIsAngryAtPlayer = IsAngryAt(Ctx.pPlayer);
+	CVector vDist = GetPos() - Ctx.pPlayer->GetPos();
+
+	//	If this is the player's current target, then see if we can actually
+	//	hit it with any of our weapons.
+
+	if (Ctx.pPlayerTarget == this)
+		{
+		Metric rDist;
+		int iAngle = VectorToPolar(vDist, &rDist);
+
+		//	If we're out of range of both the primary and the launcher, then 
+		//	we remember that fact.
+
+		if (rDist > Ctx.pPlayer->GetMaxWeaponRange())
+			Ctx.bPlayerTargetOutOfRange = true;
+
+		//	If we have a fire arc and we're outside the arc, then we're not in
+		//	range either.
+
+		else if (Ctx.iMinFireArc != Ctx.iMaxFireArc
+				&& !AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc))
+			Ctx.bPlayerTargetOutOfRange = true;
+
+		//	If we're outside detection range, then we can't keep the target
+
+		else if (rDist > GetDetectionRange(Ctx.iPlayerPerception))
+			Ctx.bPlayerTargetOutOfRange = true;
+
+		//	Otherwise, if this object is angry at the player, then it is a
+		//	valid auto-target
+
+		else if (bIsAngryAtPlayer && CanAttack())
+			{
+			Metric rDist2 = rDist * rDist;
+			if (rDist2 < Ctx.rTargetDist2)
+				{
+				Ctx.pTargetObj = this;
+				Ctx.rTargetDist2 = rDist2;
+				}
+			}
+		}
+
+	//	If the object cannot attack, then it is never an auto-target.
+
+	else if (!CanAttack())
+		{ }
+
+	//	If this object is not angry at us, then it can never be an auto-
+	//	target.
+
+	else if (!bIsAngryAtPlayer)
+		{ }
+
+	//	If the player's weapons has an arc of fire, then limit ourselves to
+	//	targets in the arc.
+
+	else if (Ctx.iMinFireArc != Ctx.iMaxFireArc)
+		{
+		Metric rDist;
+		int iAngle = VectorToPolar(vDist, &rDist);
+		Metric rDist2 = rDist * rDist;
+
+		if (rDist2 < Ctx.rTargetDist2
+				&& AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc)
+				&& rDist <= GetDetectionRange(Ctx.iPlayerPerception))
+			{
+			Ctx.pTargetObj = this;
+			Ctx.rTargetDist2 = rDist2;
+			}
+		}
+
+	//	Otherwise, just find the nearest target
+
+	else
+		{
+		Metric rDist2 = vDist.Length2();
+		if (rDist2 < Ctx.rTargetDist2
+				&& rDist2 <= GetDetectionRange2(Ctx.iPlayerPerception))
+			{
+			Ctx.pTargetObj = this;
+			Ctx.rTargetDist2 = rDist2;
+			}
+		}
 	}
 
 void CSpaceObject::UseItem (CItem &Item, CString *retsError)

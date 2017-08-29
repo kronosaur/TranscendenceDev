@@ -1663,6 +1663,8 @@ class CSpaceObject : public CObject
 		CSpaceObject (void);
 
 		inline void InitItemEvents (void) { m_ItemEvents.Init(this); m_fItemEventsValid = true; }
+		void UpdateEffects (void);
+		void UpdatePlayerTarget (SUpdateCtx &Ctx);
 
 		CSystem *m_pSystem;						//	Current system
 		int m_iIndex;							//	Index in system
