@@ -65,7 +65,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 		//	If we have components, then some components drop, in proportion to 
 		//	damage chance. NOTE: This works even if the item is virtual.
 
-		else if (Item.HasComponents() && mathRandom(1, 100) <= 50)
+		else if (Item.HasComponents() && (Item.IsVirtual() || mathRandom(1, 100) <= 50))
 			{
 			bool bAdded = false;
 
@@ -82,7 +82,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 			return bAdded;
 			}
 
-		//	If the item is virual, then nothing drops
+		//	If the item is virtual, then nothing drops
 
 		else if (Item.IsVirtual())
 			return false;
@@ -115,7 +115,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 
 		//	If we have components, we usually drop the components.
 
-		if (Item.HasComponents() && mathRandom(1, 100) <= 50)
+		if (Item.HasComponents() && (Item.IsVirtual() || mathRandom(1, 100) <= 50))
 			{
 			//	If we're not virtual and not damaged, then we drop intact.
 
