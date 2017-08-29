@@ -7512,6 +7512,9 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 		FireOnItemUpdate();
 
 	//	Update object
+	//
+	//	NOTE: We could have been destroyed inside <OnUpdate> so we need to check
+	//	in all subsequent code.
 
 	CDesignType *pType;
 	if (FindEventHandler(CDesignType::evtOnUpdate)
@@ -7618,16 +7621,18 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	//	not for actually determining if we can dock.
 
 	if (IsDestinyTime(21, 8)
-			&& GetDockingPortCount() > 0)
+			&& GetDockingPortCount() > 0
+			&& !IsDestroyed())
 		{
 		m_fHasDockScreenMaybe = (GetDefaultDockScreen() != NULL 
 				|| FireGetDockScreen() 
 				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL));
 		}
 
-	//	Update the specific object
+	//	Update the specific object (but only if we didn't get destroyed).
 
-	OnUpdate(Ctx, g_SecondsPerUpdate);
+	if (!IsDestroyed())
+		OnUpdate(Ctx, g_SecondsPerUpdate);
 
 	ClearInUpdateCode();
 	}
