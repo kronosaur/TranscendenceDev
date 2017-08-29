@@ -973,7 +973,6 @@ class CShip : public CSpaceObject
 		void InstallItemAsArmor (CItemListManipulator &ItemList, int iSect);
 		bool IsArmorDamaged (int iSect);
 		bool IsArmorRepairable (int iSect);
-		void RepairAllArmor (void);
 		void RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired = NULL);
 		void SetCursorAtArmor (CItemListManipulator &ItemList, int iSect);
 		void UninstallArmor (CItemListManipulator &ItemList);
@@ -1288,12 +1287,14 @@ class CShip : public CSpaceObject
 		void FinishCreation (SShipGeneratorCtx *pCtx = NULL, SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetCargoMass (void);
 		Metric GetItemMass (void) const;
+		int GetTotalArmorHP (int *retiMaxHP = NULL) const;
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapViewportCtx &Ctx);
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
 		void ReactorOverload (int iPowerDrain);
         ALERROR ReportCreateError (const CString &sError) const;
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
+		void SetTotalArmorHP (int iNewHP);
 		inline bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
 		void UpdateDestroyInGate (void);
 		bool UpdateFuel (SUpdateCtx &Ctx, int iTick);

@@ -67,7 +67,10 @@ class CArmorSystem
         inline int IncHealerLeft (int iInc) { SetHealerLeft(m_iHealerLeft + iInc); return m_iHealerLeft; }
         void Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool bInCreate = false);
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
+		bool RepairAll (CSpaceObject *pSource);
+		bool RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepair, int *retiHPRepaired = NULL);
         inline void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }
+		void SetTotalHitPoints (CSpaceObject *pSource, int iNewHP);
 		bool Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick);
         void WriteToStream (IWriteStream *pStream);
 

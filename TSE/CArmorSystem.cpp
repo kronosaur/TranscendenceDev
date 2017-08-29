@@ -96,6 +96,185 @@ void CArmorSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
         m_iHealerLeft = 0;
     }
 
+bool CArmorSystem::RepairAll (CSpaceObject *pSource)
+
+//	RepairAll
+//
+//	Makes sure all armor segments are at full hit points. Returns TRUE if we
+//	repaired anything.
+
+	{
+	int i;
+
+	bool bRepaired = false;
+	for (i = 0; i < m_Segments.GetCount(); i++)
+		{
+		CInstalledArmor &Armor = GetSegment(i);
+		int iHP = Armor.GetHitPoints();
+		int iMaxHP = Armor.GetMaxHP(pSource);
+
+		if (iHP < iMaxHP)
+			{
+			Armor.SetHitPoints(iMaxHP);
+			bRepaired = true;
+			}
+		}
+
+	return true;
+	}
+
+bool CArmorSystem::RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepair, int *retiHPRepaired)
+
+//	RepairSegment
+//
+//	Repairs the given number of hit points on the segment. Returns TRUE if we
+//	repaired anything.
+//
+//	NOTE: If iHPToRepair is negative, we repair all hit points.
+
+	{
+	if (iSeg < 0 || iSeg >= m_Segments.GetCount())
+		{
+		if (retiHPRepaired) *retiHPRepaired = 0;
+		return false;
+		}
+
+	CInstalledArmor &Armor = GetSegment(iSeg);
+	int iHP = Armor.GetHitPoints();
+	int iMaxHP = Armor.GetMaxHP(pSource);
+
+	//	Compute the new HP for the segment. If iHPToRepair is negative, then we
+	//	repair all damage.
+
+	int iNewHP;
+	if (iHPToRepair < 0)
+		iNewHP = iMaxHP;
+	else
+		iNewHP = Min(iHP + iHPToRepair, iMaxHP);
+
+	//	Return how many HP we repaired
+
+	if (retiHPRepaired)
+		*retiHPRepaired = iNewHP - iHP;
+
+	//	If nothing to do, nothing to do.
+
+	if (iNewHP == iHP)
+		return false;
+
+	Armor.SetHitPoints(iNewHP);
+	return true;
+	}
+
+void CArmorSystem::SetTotalHitPoints (CSpaceObject *pSource, int iNewHP)
+
+//	SetTotalHitPoints
+//
+//	Sets the hit points for the total system, distributing as appropriate.
+
+	{
+	int i;
+
+	//	First figure out some totals
+
+	int iTotalMaxHP = 0;
+	int iTotalHP = CalcTotalHitPoints(pSource, &iTotalMaxHP);
+
+	//	Compute the delta
+
+	iNewHP = Max(0, Min(iNewHP, iTotalMaxHP));
+	int iDeltaHP = iNewHP - iTotalHP;
+	if (iDeltaHP == 0)
+		return;
+
+	//	Slightly different algorithms for healing vs. destroying.
+
+	if (iDeltaHP > 0)
+		{
+		int iHPLeft = iDeltaHP;
+		int iTotalHPNeeded = iTotalMaxHP - iTotalHP;
+
+		for (i = 0; i < m_Segments.GetCount(); i++)
+			{
+			CInstalledArmor &Armor = GetSegment(i);
+			int iHP = Armor.GetHitPoints();
+			int iMaxHP = Armor.GetMaxHP(pSource);
+
+			//	To each according to their need
+			//
+			//	NOTE: iTotalHPNeeded cannot be 0 because that would imply that iTotalHP
+			//	equals iTotalMaxHP. But if that were the case, iDeletaHP would be 0, so
+			//	we wouldn't be in this code path.
+
+			int iHPNeeded = iMaxHP - iHP;
+			int iHPToHeal = Min(iHPLeft, iDeltaHP * iHPNeeded / iTotalHPNeeded);
+
+			//	Heal
+
+			Armor.SetHitPoints(iHP + iHPToHeal);
+
+			//	Keep track of how much we've used up.
+
+			iHPLeft -= iHPToHeal;
+			}
+
+		//	If we've got extra hit points, then distribute around.
+
+		for (i = 0; i < m_Segments.GetCount() && iHPLeft > 0; i++)
+			{
+			CInstalledArmor &Armor = GetSegment(i);
+			int iHP = Armor.GetHitPoints();
+			int iMaxHP = Armor.GetMaxHP(pSource);
+
+			if (iHP < iMaxHP)
+				{
+				Armor.SetHitPoints(iHP + 1);
+				iHPLeft--;
+				}
+			}
+		}
+	else
+		{
+		int iDamageLeft = -iDeltaHP;
+		
+		for (i = 0; i < m_Segments.GetCount(); i++)
+			{
+			CInstalledArmor &Armor = GetSegment(i);
+			int iHP = Armor.GetHitPoints();
+			int iMaxHP = Armor.GetMaxHP(pSource);
+
+			//	Damage in proportion to HP left.
+			//
+			//	NOTE: iTotalHP cannot be 0 because that would imply that iDeltaHP is
+			//	non-negative, in which case we would not be on this code path.
+
+			int iHPToDamage = Min(iDamageLeft, -iDeltaHP * iHP / iTotalHP);
+
+			//	Damage
+
+			Armor.SetHitPoints(iHP - iHPToDamage);
+
+			//	Keep track of how much damage we've used up
+
+			iDamageLeft -= iHPToDamage;
+			}
+
+		//	If we've got extra damage, then distribute
+
+		for (i = 0; i < m_Segments.GetCount() && iDamageLeft > 0; i++)
+			{
+			CInstalledArmor &Armor = GetSegment(i);
+			int iHP = Armor.GetHitPoints();
+
+			if (iHP > 0)
+				{
+				Armor.SetHitPoints(iHP - 1);
+				iDamageLeft--;
+				}
+			}
+		}
+	}
+
 bool CArmorSystem::Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick)
 
 //	Update

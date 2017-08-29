@@ -3128,16 +3128,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
         return CC.CreateDouble(GetFuelLeft());
 
 	else if (strEquals(sName, PROPERTY_HP))
-		{
-		TArray<CShip::SAttachedSectionInfo> SectionInfo;
-		GetAttachedSectionInfo(SectionInfo);
-
-		int iHP = 0;
-		for (i = 0; i < SectionInfo.GetCount(); i++)
-			iHP += SectionInfo[i].iHP;
-
-		return CC.CreateInteger(iHP);
-		}
+		return CC.CreateInteger(GetTotalArmorHP());
 
 	else if (strEquals(sName, PROPERTY_INTERIOR_HP))
 		{
@@ -3154,13 +3145,8 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		{
-		TArray<CShip::SAttachedSectionInfo> SectionInfo;
-		GetAttachedSectionInfo(SectionInfo);
-
-		int iMaxHP = 0;
-		for (i = 0; i < SectionInfo.GetCount(); i++)
-			iMaxHP += SectionInfo[i].iMaxHP;
-
+		int iMaxHP;
+		GetTotalArmorHP(&iMaxHP);
 		return CC.CreateInteger(iMaxHP);
 		}
 
@@ -3408,6 +3394,33 @@ CSpaceObject *CShip::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
 
 	{
 	return m_pController->GetTarget(ItemCtx, bNoAutoTarget);
+	}
+
+int CShip::GetTotalArmorHP (int *retiMaxHP) const
+
+//	GetTotalArmorHP
+//
+//	Returns the total amount of armor HP across all sections and segments.
+//	(Does NOT include interior compartments.)
+
+	{
+	int i;
+	int iHP = 0;
+	int iMaxHP = 0;
+
+	TArray<CShip::SAttachedSectionInfo> SectionInfo;
+	GetAttachedSectionInfo(SectionInfo);
+
+	for (i = 0; i < SectionInfo.GetCount(); i++)
+		{
+		iHP += SectionInfo[i].iHP;
+		iMaxHP += SectionInfo[i].iMaxHP;
+		}
+
+	if (retiMaxHP)
+		*retiMaxHP = iMaxHP;
+
+	return iHP;
 	}
 
 CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
@@ -6996,21 +7009,6 @@ void CShip::RemoveOverlay (DWORD dwID)
 	//	is not actually removed until Update (at which point we recalc).
 	}
 
-void CShip::RepairAllArmor (void)
-
-//	RepairAllArmor
-//
-//	Repair all the ship's armor
-
-	{
-	for (int i = 0; i < GetArmorSectionCount(); i++)
-		{
-		CInstalledArmor *pSection = GetArmorSection(i);
-		pSection->SetHitPoints(pSection->GetMaxHP(this));
-		m_pController->OnShipStatus(IShipController::statusArmorRepaired, i);
-		}
-	}
-
 void CShip::RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired)
 
 //	RepairArmor
@@ -7018,20 +7016,8 @@ void CShip::RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired)
 //	Repairs the armor
 
 	{
-	CInstalledArmor *pSection = GetArmorSection(iSect);
-	int iDamage = pSection->GetMaxHP(this) - pSection->GetHitPoints();
-
-	if (iHitPoints == -1)
-		iHitPoints = iDamage;
-	else
-		iHitPoints = min(iDamage, iHitPoints);
-
-	pSection->IncHitPoints(iHitPoints);
-
-	m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
-
-	if (retiHPRepaired)
-		*retiHPRepaired = iHitPoints;
+	if (m_Armor.RepairSegment(this, iSect, iHitPoints, retiHPRepaired))
+		m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 	}
 
 void CShip::RepairDamage (int iHitPoints)
@@ -7041,25 +7027,15 @@ void CShip::RepairDamage (int iHitPoints)
 //	Repairs the given number of hit points of damage
 
 	{
-	bool bRepaired = false;
-	int iSect = 0;
-	while (iHitPoints > 0 && iSect < GetArmorSectionCount())
-		{
-		CInstalledArmor *pSect = GetArmorSection(iSect);
-		int iDamage = pSect->GetMaxHP(this) - pSect->GetHitPoints();
-		if (iDamage > 0)
-			{
-			int iRepair = min(iDamage, iHitPoints);
-			pSect->IncHitPoints(iRepair);
-			iHitPoints -= iRepair;
-			bRepaired = true;
-			}
+	int iTotalMaxHP;
+	int iTotalHP = m_Armor.CalcTotalHitPoints(this, &iTotalMaxHP);
 
-		iSect++;
-		}
+	int iNewHP = Max(0, Min(iTotalHP + iHitPoints, iTotalMaxHP));
+	if (iNewHP == iTotalHP)
+		return;
 
-	if (bRepaired)
-		m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
+	m_Armor.SetTotalHitPoints(this, iNewHP);
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	}
 
 ALERROR CShip::ReportCreateError (const CString &sError) const
@@ -7676,6 +7652,12 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
         return true;
         }
 
+	else if (strEquals(sName, PROPERTY_HP))
+		{
+		SetTotalArmorHP(pValue->GetIntegerValue());
+		return true;
+		}
+
 	else if (strEquals(sName, PROPERTY_INTERIOR_HP))
 		{
 		m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), pValue->GetIntegerValue());
@@ -7795,6 +7777,115 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
 	else
 		return CSpaceObject::SetProperty(sName, pValue, retsError);
+	}
+
+void CShip::SetTotalArmorHP (int iNewHP)
+
+//	SetTotalArmorHP
+//
+//	Sets the total armor HP across all sections and segments to the given value.
+
+	{
+	int i;
+
+	//	Get current stats
+
+	int iTotalHP = 0;
+	int iTotalMaxHP = 0;
+
+	TArray<CShip::SAttachedSectionInfo> SectionInfo;
+	GetAttachedSectionInfo(SectionInfo);
+
+	for (i = 0; i < SectionInfo.GetCount(); i++)
+		{
+		iTotalHP += SectionInfo[i].iHP;
+		iTotalMaxHP += SectionInfo[i].iMaxHP;
+		}
+
+	//	Compute the delta
+
+	iNewHP = Max(0, Min(iNewHP, iTotalMaxHP));
+	int iDeltaHP = iNewHP - iTotalHP;
+	if (iDeltaHP == 0)
+		return;
+
+	//	Slightly different algorithms for healing vs. destroying.
+
+	if (iDeltaHP > 0)
+		{
+		int iHPLeft = iDeltaHP;
+		int iTotalHPNeeded = iTotalMaxHP - iTotalHP;
+
+		for (i = 0; i < SectionInfo.GetCount(); i++)
+			{
+			//	To each according to their need
+			//
+			//	NOTE: iTotalHPNeeded cannot be 0 because that would imply that iTotalHP
+			//	equals iTotalMaxHP. But if that were the case, iDeletaHP would be 0, so
+			//	we wouldn't be in this code path.
+
+			int iHPNeeded = SectionInfo[i].iMaxHP - SectionInfo[i].iHP;
+			int iHPToHeal = Min(iHPLeft, iDeltaHP * iHPNeeded / iTotalHPNeeded);
+
+			//	Heal
+
+			SectionInfo[i].pObj->m_Armor.SetTotalHitPoints(this, SectionInfo[i].iHP + iHPToHeal);
+			SectionInfo[i].iHP += iHPToHeal;
+
+			//	Keep track of how much we've used up.
+
+			iHPLeft -= iHPToHeal;
+			}
+
+		//	If we've got extra hit points, then distribute around.
+
+		for (i = 0; i < SectionInfo.GetCount() && iHPLeft > 0; i++)
+			{
+			if (SectionInfo[i].iHP < SectionInfo[i].iMaxHP)
+				{
+				SectionInfo[i].pObj->m_Armor.SetTotalHitPoints(this, SectionInfo[i].iHP + 1);
+				iHPLeft--;
+				}
+			}
+		}
+	else
+		{
+		int iDamageLeft = -iDeltaHP;
+		
+		for (i = 0; i < SectionInfo.GetCount(); i++)
+			{
+			//	Damage in proportion to HP left.
+			//
+			//	NOTE: iTotalHP cannot be 0 because that would imply that iDeltaHP is
+			//	non-negative, in which case we would not be on this code path.
+
+			int iHPToDamage = Min(iDamageLeft, -iDeltaHP * SectionInfo[i].iHP / iTotalHP);
+
+			//	Damage
+
+			SectionInfo[i].pObj->m_Armor.SetTotalHitPoints(this, SectionInfo[i].iHP - iHPToDamage);
+			SectionInfo[i].iHP -= iHPToDamage;
+
+			//	Keep track of how much damage we've used up
+
+			iDamageLeft -= iHPToDamage;
+			}
+
+		//	If we've got extra damage, then distribute
+
+		for (i = 0; i < SectionInfo.GetCount() && iDamageLeft > 0; i++)
+			{
+			if (SectionInfo[i].iHP > 0)
+				{
+				SectionInfo[i].pObj->m_Armor.SetTotalHitPoints(this, SectionInfo[i].iHP - 1);
+				iDamageLeft--;
+				}
+			}
+		}
+
+	//	Notify controller
+
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	}
 
 void CShip::SetWeaponTriggered (DeviceNames iDev, bool bTriggered)
