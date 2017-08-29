@@ -7,6 +7,7 @@
 
 class CInstalledArmor;
 class CInstalledDevice;
+class CItemList;
 
 //	Item Types
 
@@ -298,6 +299,7 @@ class CItem
 		void FireOnUninstall (CSpaceObject *pSource) const;
 		inline int GetCharges (void) const { return (m_pExtra ? (int)m_pExtra->m_dwCharges : 0); }
 		inline int GetCount (void) const { return (int)m_dwCount; }
+		const CItemList &GetComponents (void) const;
 		inline CEconomyType *GetCurrencyType (void) const;
 		inline CString GetData (const CString &sAttrib) const { return (m_pExtra ? m_pExtra->m_Data.GetData(sAttrib) : NULL_STR); }
 		CString GetDesc (CItemCtx &ItemCtx) const;
@@ -326,6 +328,7 @@ class CItem
 		inline CItemType *GetType (void) const { return m_pItemType; }
         int GetVariantHigh (void) const { return (m_pExtra ? (int)HIWORD(m_pExtra->m_dwVariant) : 0); }
         int GetVariantLow (void) const { return (m_pExtra ? (int)LOWORD(m_pExtra->m_dwVariant) : 0); }
+		bool HasComponents (void) const;
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		inline bool IsDamaged (void) const { return (m_dwFlags & flagDamaged ? true : false); }
@@ -335,6 +338,7 @@ class CItem
 		inline bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
 		inline bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
 		inline bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
+		bool IsVirtual (void) const;
 		inline void MarkForDelete (void) { m_dwCount = 0xffff; }
 		bool RemoveEnhancement (DWORD dwID);
 		inline void SetCharges (int iCharges) { Extra(); m_pExtra->m_dwCharges = iCharges; }
@@ -440,6 +444,7 @@ class CItemListManipulator
 		CItemListManipulator (CItemList &ItemList);
 		~CItemListManipulator (void);
 
+		bool AddDamagedComponents (const CItem &Item, int iDamageChance);
 		void AddItem (const CItem &Item);
 		void AddItems (const CItemList &ItemList);
 

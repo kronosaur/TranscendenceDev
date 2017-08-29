@@ -1841,12 +1841,6 @@ bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 	while (Source.MoveCursorForward())
 		{
 		CItem WreckItem = Source.GetItemAtCursor();
-		CItemType *pType = WreckItem.GetType();
-
-		//	Skip virtual items
-
-		if (pType->IsVirtual())
-			continue;
 
 		//	Installed items may or may not be damaged.
 
@@ -1855,19 +1849,23 @@ bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 			//	Make sure that the armor item reflects the current
 			//	state of the ship's armor.
 
-			if (pType->GetCategory() == itemcatArmor)
+			if (WreckItem.IsArmor())
 				{
 				//	Most armor is destroyed
 
 				if (mathRandom(1, 100) <= iDestroyArmorChance)
 					continue;
 
-				WreckItem.ClearDamaged();
+				//	Compute the % damage of the armor.
 
-				if (!pShip->IsArmorRepairable(WreckItem.GetInstalled()))
-					continue;
-				else if (pShip->IsArmorDamaged(WreckItem.GetInstalled()))
-					WreckItem.SetDamaged();
+				CInstalledArmor *pArmor = pShip->GetArmorSection(WreckItem.GetInstalled());
+				int iArmorHP = pArmor->GetHitPoints();
+				int iArmorMaxHP = pArmor->GetMaxHP(pShip);
+				int iArmorIntegrity = (iArmorMaxHP > 0 ? 100 * iArmorHP / iArmorMaxHP : 0);
+
+				//	Add this item to the wreck
+
+				Dest.AddDamagedComponents(WreckItem, 100 - iArmorIntegrity);
 				}
 
 			//	Other installed devices have a chance of being
@@ -1875,38 +1873,27 @@ bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 
 			else
 				{
-				int iRoll = mathRandom(1, 100);
-
 				//	Sometimes the device is destroyed
 
-				if (iRoll <= iDestroyDeviceChance)
+				if (mathRandom(1, 100) <= iDestroyDeviceChance)
 					continue;
 
-				//	80% of the remaining time, the device is damaged
+				//	The rest of the time, we drop the device with an 80% chance
+				//	of being damaged.
 
-				else if (mathRandom(1, 100) <= 80)
-					{
-					if (WreckItem.IsDamaged())
-						continue;
-					else if (CItemEnhancement(WreckItem.GetMods()).IsEnhancement())
-						{
-						CItemEnhancement Mods(WreckItem.GetMods());
-						Mods.Combine(WreckItem, etLoseEnhancement);
-						WreckItem.AddEnhancement(Mods);
-						}
-					else if (WreckItem.IsEnhanced())
-						WreckItem.ClearEnhanced();
-					else
-						WreckItem.SetDamaged();
-					}
+				Dest.AddDamagedComponents(WreckItem, 80);
 				}
-
-			WreckItem.SetInstalled(-1);
 			}
 
-		//	Add to wreck
+		//	Non-installed virtual items are always lost
 
-		Dest.AddItem(WreckItem);
+		else if (WreckItem.IsVirtual())
+			continue;
+
+		//	Otherwise, if this is just cargo, add to wreck
+
+		else
+			Dest.AddItem(WreckItem);
 		}
 
 	//	The wreck is radioactive if the ship is radioactive (or if this

@@ -767,6 +767,16 @@ void CItem::FireOnUninstall (CSpaceObject *pSource) const
 		}
 	}
 
+const CItemList &CItem::GetComponents (void) const
+
+//	GetComponents
+//
+//	Returns the list of components which make up this item.
+
+	{
+	return m_pItemType->GetComponents();
+	}
+
 CString CItem::GetDesc (CItemCtx &ItemCtx) const
 
 //	GetDesc
@@ -1497,6 +1507,16 @@ int CItem::GetValue (bool bActual) const
 	return iValue;
 	}
 
+bool CItem::HasComponents (void) const
+
+//	HasComponents
+//
+//	Returns TRUE if we have components.
+
+	{
+	return (m_pItemType->GetComponents().GetCount() > 0);
+	}
+
 bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 
 //	HasSpecialAttribute
@@ -1607,6 +1627,16 @@ bool CItem::IsUsed (void) const
 	//	Not used
 
 	return false;
+	}
+
+bool CItem::IsVirtual (void) const
+
+//	IsVirtual
+//
+//	Returns TRUE if item is virtual
+
+	{
+	return m_pItemType->IsVirtual();
 	}
 
 bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const

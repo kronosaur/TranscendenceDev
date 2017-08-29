@@ -33,6 +33,177 @@ CItemListManipulator::~CItemListManipulator (void)
 	{
 	}
 
+bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageChance)
+
+//	AddDamagedComponents
+//
+//	When a ship/station is destroyed, installed items get added to the wreck in
+//	various states of damage. This function will add the appropriate remains 
+//	to the wreck, based on the damage chance and the composition of the item.
+//
+//	Returns TRUE if any item got added.
+
+	{
+	int i;
+
+	//	We handle armor and devices differently.
+
+	if (Item.IsArmor())
+		{
+		//	If not (very) damaged and not virtual, then this item drops intact.
+
+		if (iDamageChance <= 5 && !Item.IsVirtual())
+			{
+			CItem ItemToDrop(Item);
+			ItemToDrop.ClearDamaged();
+			ItemToDrop.SetInstalled(-1);
+
+			AddItem(ItemToDrop);
+			return true;
+			}
+
+		//	If we have components, then some components drop, in proportion to 
+		//	damage chance. NOTE: This works even if the item is virtual.
+
+		else if (Item.HasComponents() && mathRandom(1, 100) <= 50)
+			{
+			bool bAdded = false;
+
+			const CItemList &Components = Item.GetComponents();
+			for (i = 0; i < Components.GetCount(); i++)
+				{
+				if (mathRandom(1, 100) <= iDamageChance)
+					continue;
+
+				AddItem(Components.GetItem(i));
+				bAdded = true;
+				}
+
+			return bAdded;
+			}
+
+		//	If the item is virual, then nothing drops
+
+		else if (Item.IsVirtual())
+			return false;
+
+		//	If the armor is too damaged, then nothing drops
+
+		else if (iDamageChance >= 75)
+			return false;
+
+		//	Otherwise, we drop damaged armor
+
+		else
+			{
+			CItem ItemToDrop(Item);
+			ItemToDrop.SetDamaged();
+			ItemToDrop.SetInstalled(-1);
+
+			AddItem(ItemToDrop);
+			return true;
+			}
+		}
+
+	//	Handle devices
+
+	else if (Item.IsDevice())
+		{
+		//	Roll to see if device is damaged
+
+		bool bDropDamaged = (mathRandom(1, 100) <= iDamageChance);
+
+		//	If we have components, we usually drop the components.
+
+		if (Item.HasComponents() && mathRandom(1, 100) <= 50)
+			{
+			//	If we're not virtual and not damaged, then we drop intact.
+
+			if (!Item.IsVirtual() && !Item.IsDamaged() && !bDropDamaged)
+				{
+				CItem ItemToDrop(Item);
+				ItemToDrop.SetInstalled(-1);
+
+				AddItem(ItemToDrop);
+				return true;
+				}
+
+			//	Otherwise, we drop components
+
+			else
+				{
+				bool bAdded = false;
+
+				//	Compute the chance that a component will drop.
+
+				int iChance = (bDropDamaged ? 50 : 100);
+				if (Item.IsDamaged())
+					iChance /= 2;
+
+				const CItemList &Components = Item.GetComponents();
+				for (i = 0; i < Components.GetCount(); i++)
+					{
+					if (mathRandom(1, 100) > iChance)
+						continue;
+
+					AddItem(Components.GetItem(i));
+					bAdded = true;
+					}
+
+				return bAdded;
+				}
+			}
+
+		//	Virtual devices never drop
+
+		else if (Item.IsVirtual())
+			return false;
+
+		//	If we're not damaged more, then we drop intact
+
+		else if (!bDropDamaged)
+			{
+			CItem ItemToDrop(Item);
+			ItemToDrop.SetInstalled(-1);
+
+			AddItem(ItemToDrop);
+			return true;
+			}
+
+		//	If we're already damaged, then we never drop
+
+		else if (Item.IsDamaged())
+			return false;
+
+		//	We drop a damaged device
+
+		else
+			{
+			CItem ItemToDrop(Item);
+			ItemToDrop.SetInstalled(-1);
+
+			if (Item.GetMods().IsEnhancement())
+				{
+				CItemEnhancement Mods(Item.GetMods());
+				Mods.Combine(Item, etLoseEnhancement);
+				ItemToDrop.AddEnhancement(Mods);
+				}
+			else if (ItemToDrop.IsEnhanced())
+				ItemToDrop.ClearEnhanced();
+			else
+				ItemToDrop.SetDamaged();
+
+			AddItem(ItemToDrop);
+			return true;
+			}
+		}
+
+	//	Nothing
+
+	else
+		return false;
+	}
+
 void CItemListManipulator::AddItem (const CItem &Item)
 
 //	AddItem
