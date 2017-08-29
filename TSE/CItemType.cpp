@@ -139,6 +139,7 @@ static char *CACHED_EVENTS[CItemType::evtCount] =
 		"GetName",
 		"GetReferenceText",
 		"GetTradePrice",
+		"OnDestroyCheck",
 		"OnInstall",
 		"OnEnable",
 		"OnRefuel",

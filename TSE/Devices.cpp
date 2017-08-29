@@ -683,6 +683,21 @@ CString CDeviceClass::GetReferencePower (CItemCtx &Ctx)
 		return strPatternSubst(CONSTLIT("%d.%d %s"), iMW, iMWDecimal, sUnit);
 	}
 
+bool CDeviceClass::OnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker)
+
+//	OnDestroyCheck
+//
+//	Returns FALSE if the device can prevent the source from getting destroyed.
+
+	{
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	if (pDevice == NULL || !pDevice->IsEnabled())
+		return true;
+
+	return ItemCtx.GetItem().FireOnDestroyCheck(ItemCtx, iCause, Attacker);
+	}
+
 Metric CDeviceClass::OnGetScaledCostAdj (CItemCtx &Ctx) const
 
 //  OnGetScaledCostAdj

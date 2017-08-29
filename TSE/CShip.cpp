@@ -4583,6 +4583,17 @@ bool CShip::OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attack
 //	Returns TRUE if the ship is destroyed; FALSE otherwise
 
 	{
+	int i;
+
+	//	Check to see if any devices can prevent the destruction
+
+	for (i = 0; i < GetDeviceCount(); i++)
+		if (!m_Devices[i].IsEmpty())
+			{
+			if (!m_Devices[i].OnDestroyCheck(this, iCause, Attacker))
+				return false;
+			}
+
 	//	Check to see if the controller can prevent the destruction
 	//	(For the player, this will invoke Domina powers, if possible)
 

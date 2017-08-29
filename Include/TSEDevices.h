@@ -186,6 +186,7 @@ class CDeviceClass
 		inline int GetSlotsRequired (void) const { return m_iSlots; }
 		inline DWORD GetUNID (void);
 		inline void MarkImages (void) { DEBUG_TRY OnMarkImages(); DEBUG_CATCH }
+		bool OnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker);
 
 		virtual bool AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx) { Ctx.iAbsorb = 0; return false; }
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) { return false; }
@@ -519,6 +520,7 @@ class CInstalledDevice
 		inline bool IsSecondaryWeapon (void) const;
 		bool IsSelectable (CItemCtx &Ctx) const;
 		inline bool IsVariantSelected (CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsVariantSelected(pSource, this) : true); }
+		inline bool OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, const CDamageSource &Attacker) { return m_pClass->OnDestroyCheck(CItemCtx(pSource, this), iCause, Attacker); }
 		inline void Recharge (CShip *pShip, int iStatus) { m_pClass->Recharge(this, pShip, iStatus); }
 		inline void Reset (CSpaceObject *pShip) { m_pClass->Reset(this, pShip); }
 		inline void SelectFirstVariant (CSpaceObject *pSource) { m_pClass->SelectFirstVariant(pSource, this); }

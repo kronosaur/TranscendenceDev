@@ -564,6 +564,42 @@ void CItem::FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEn
 		}
 	}
 
+bool CItem::FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker) const
+
+//	FireOnDestroyCheck
+//
+//	See if this item can prevent the source from being destroyed. Returns FALSE
+//	if we avoid destruction.
+
+	{
+	CCodeChainCtx Ctx;
+
+	//	If we have code, call it.
+
+	SEventHandlerDesc Event;
+	if (m_pItemType->FindEventHandlerItemType(CItemType::evtOnDestroyCheck, &Event)
+			&& !Ctx.InEvent(eventOnDestroyCheck))
+		{
+		Ctx.SetEvent(eventOnDestroyCheck);
+		Ctx.SetItemType(GetType());
+		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
+		Ctx.SaveAndDefineItemVar(*this);
+		Ctx.DefineSpaceObject(CONSTLIT("aDestroyer"), Attacker.GetObj());
+		Ctx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Attacker.GetOrderGiver());
+		Ctx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(iCause));
+
+		ICCItem *pResult = Ctx.Run(Event);
+		bool bResult = (pResult->IsNil() ? false : true);
+		Ctx.Discard(pResult);
+
+		return bResult;
+		}
+
+	//	Otherwise, destruction succeeds
+
+	return true;
+	}
+
 void CItem::FireOnDisabled (CSpaceObject *pSource) const
 
 //	FireOnDisabled
