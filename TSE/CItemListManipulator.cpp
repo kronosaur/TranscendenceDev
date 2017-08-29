@@ -72,7 +72,8 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 			const CItemList &Components = Item.GetComponents();
 			for (i = 0; i < Components.GetCount(); i++)
 				{
-				if (mathRandom(1, 100) <= iDamageChance)
+				if (mathRandom(1, 100) <= iDamageChance
+						|| Components.GetItem(i).IsVirtual())
 					continue;
 
 				AddItem(Components.GetItem(i));
@@ -143,7 +144,8 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 				const CItemList &Components = Item.GetComponents();
 				for (i = 0; i < Components.GetCount(); i++)
 					{
-					if (mathRandom(1, 100) > iChance)
+					if (mathRandom(1, 100) > iChance
+							|| Components.GetItem(i).IsVirtual())
 						continue;
 
 					AddItem(Components.GetItem(i));
