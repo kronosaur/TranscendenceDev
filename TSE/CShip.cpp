@@ -7020,22 +7020,49 @@ void CShip::RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired)
 		m_pController->OnShipStatus(IShipController::statusArmorRepaired, iSect);
 	}
 
-void CShip::RepairDamage (int iHitPoints)
+void CShip::RepairDamage (int iHPToRepair)
 
 //	RepairDamage
 //
-//	Repairs the given number of hit points of damage
+//	Repairs the given number of hit points of damage for both internal and armor
+//	across all segments and sections.
 
 	{
-	int iTotalMaxHP;
-	int iTotalHP = m_Armor.CalcTotalHitPoints(this, &iTotalMaxHP);
+	int iHP;
+	int iMaxHP;
 
-	int iNewHP = Max(0, Min(iTotalHP + iHitPoints, iTotalMaxHP));
-	if (iNewHP == iTotalHP)
-		return;
+	//	If we've got internal damage, repair that first.
 
-	m_Armor.SetTotalHitPoints(this, iNewHP);
-	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
+	m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
+	if (iHP < iMaxHP)
+		{
+		//	Negative HP means we repair all
+
+		if (iHPToRepair < 0)
+			m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), iMaxHP);
+		else
+			m_Interior.SetHitPoints(this, m_pClass->GetInteriorDesc(), Min(iHP + iHPToRepair, iMaxHP));
+		}
+
+	//	Otherwise, repair armor damage
+
+	else
+		{
+		iHP = GetTotalArmorHP(&iMaxHP);
+		if (iHP < iMaxHP)
+			{
+			//	Negative HP means we repair all
+
+			if (iHPToRepair < 0)
+				SetTotalArmorHP(iMaxHP);
+			else
+				SetTotalArmorHP(Min(iHP + iHPToRepair, iMaxHP));
+
+			//	Notify UI (if necessary)
+
+			m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
+			}
+		}
 	}
 
 ALERROR CShip::ReportCreateError (const CString &sError) const
