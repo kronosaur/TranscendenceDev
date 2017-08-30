@@ -568,6 +568,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
 	CString sValue;
+	ICCItem *pResult;
 
 	if (strEquals(sProperty, PROPERTY_API_VERSION))
 		return CC.CreateInteger(GetAPIVersion());
@@ -579,7 +580,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		if (Attribs.GetCount() == 0)
 			return CC.CreateNil();
 
-		ICCItem *pResult = CC.CreateLinkedList();
+		pResult = CC.CreateLinkedList();
 		for (i = 0; i < Attribs.GetCount(); i++)
 			pResult->AppendString(CC, Attribs[i]);
 
@@ -605,7 +606,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
     else if (strEquals(sProperty, PROPERTY_NAME_PATTERN))
 		{
-		ICCItem *pResult = CC.CreateSymbolTable();
+		pResult = CC.CreateSymbolTable();
 		DWORD dwFlags;
 		pResult->SetStringAt(CC, CONSTLIT("pattern"), GetNamePattern(0, &dwFlags));
 		pResult->SetIntegerAt(CC, CONSTLIT("flags"), dwFlags);
@@ -616,6 +617,11 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (FindDataField(sProperty, &sValue))
 		return CreateResultFromDataField(CC, sValue);
+
+	//	Lastly, see if there is static data
+
+	else if (pResult = m_StaticData.FindDataAsItem(sProperty))
+		return pResult;
 
 	//	Not found
 

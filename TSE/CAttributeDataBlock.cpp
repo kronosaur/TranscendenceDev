@@ -163,6 +163,22 @@ bool CAttributeDataBlock::FindData (const CString &sAttrib, const CString **retp
     return !pEntry->sData.IsBlank();
 	}
 
+ICCItem *CAttributeDataBlock::FindDataAsItem (const CString &sAttrib) const
+
+//	FindDataAsItem
+//
+//	Returns a CodeChain item (which must be freed by the caller). Returns NULL
+//	if the data is not found.
+
+	{
+    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+    if (pEntry == NULL)
+        return NULL;
+
+	CCodeChain &CC = g_pUniverse->GetCC();
+	return CC.Link(pEntry->sData);
+	}
+
 bool CAttributeDataBlock::FindObjRefData (CSpaceObject *pObj, CString *retsAttrib) const
 
 //	FindObjRefData
@@ -197,6 +213,23 @@ const CString &CAttributeDataBlock::GetData (const CString &sAttrib) const
         return NULL_STR;
 
     return pEntry->sData;
+	}
+
+ICCItem *CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
+
+//	GetDataAsItem
+//
+//	Returns a CodeChain item (which must be freed by the caller). If the data is
+//	not found, we return Nil.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+    if (pEntry == NULL)
+        return CC.CreateNil();
+
+	return CC.Link(pEntry->sData);
 	}
 
 CSpaceObject *CAttributeDataBlock::GetObjRefData (const CString &sAttrib) const
