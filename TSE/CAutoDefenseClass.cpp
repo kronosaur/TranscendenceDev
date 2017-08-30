@@ -16,6 +16,8 @@
 
 #define PROPERTY_FIRE_DELAY						CONSTLIT("fireDelay")
 #define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
+#define PROPERTY_ENABLED						CONSTLIT("enabled")
+#define PROPERTY_EXTERNAL						CONSTLIT("external")
 
 const int DEFAULT_INTERCEPT_RANGE =				10;
 
@@ -76,6 +78,7 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 	CDeviceClass *pWeapon;
+	CInstalledDevice *pDevice = Ctx.GetDevice();
 
 	//	Get the property
 
@@ -90,6 +93,12 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 
 		return CC.CreateInteger((int)(1000.0 / rDelay));
 		}
+
+	else if (strEquals(sProperty, PROPERTY_ENABLED))
+		return (pDevice ? CC.CreateBool(pDevice->IsEnabled()) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_EXTERNAL))
+		return CC.CreateBool(pDevice ? pDevice->IsExternal() : IsExternal());
 
 	//	Otherwise, just get the property from the weapon we're using
 
