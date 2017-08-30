@@ -45,9 +45,41 @@
 
 #define STR_G_ITEM								CONSTLIT("gItem")
 
+class CRecursingCheck
+	{
+	public:
+		CRecursingCheck (bool &bRecurse) :
+				m_bRecurse(bRecurse),
+				m_bWorking(false)
+			{ }
+
+		~CRecursingCheck ()
+			{
+			if (m_bWorking)
+				m_bRecurse = false;
+			}
+
+		bool IsRecursing (void)
+			{
+			if (m_bRecurse)
+				return true;
+
+			m_bWorking = true;
+			m_bRecurse = true;
+			return false;
+			}
+
+	private:
+		bool &m_bRecurse;
+		bool m_bWorking;
+	};
+
 class CGroupOfGenerators : public IItemGenerator
 	{
 	public:
+		CGroupOfGenerators (void) : m_bRecursing(false)
+			{ }
+
 		virtual ~CGroupOfGenerators (void);
 		virtual void AddItems (SItemAddCtx &Ctx);
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
@@ -72,11 +104,16 @@ class CGroupOfGenerators : public IItemGenerator
 		TArray<SEntry> m_Table;
 		TArray<CCurrencyAndValue> m_AverageValue;
 		TArray<Metric> m_CountAdj;
+
+		mutable bool m_bRecursing;
 	};
 
 class CLevelTableOfItemGenerators : public IItemGenerator
 	{
 	public:
+		CLevelTableOfItemGenerators (void) : m_bRecursing(false)
+			{ }
+
 		virtual ~CLevelTableOfItemGenerators (void);
 		virtual void AddItems (SItemAddCtx &Ctx);
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
@@ -98,11 +135,16 @@ class CLevelTableOfItemGenerators : public IItemGenerator
 		TArray<SEntry> m_Table;
 		int m_iTotalChance;
 		int m_iComputedLevel;
+
+		mutable bool m_bRecursing;
 	};
 
 class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
 	{
 	public:
+		CLocationCriteriaTableOfItemGenerators (void) : m_bRecursing(false)
+			{ }
+
 		virtual ~CLocationCriteriaTableOfItemGenerators (void);
 		virtual void AddItems (SItemAddCtx &Ctx);
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
@@ -125,6 +167,8 @@ class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
 		int m_iTotalChance;
 		CSystem *m_pComputedSystem;
 		CString m_sComputedAttribs;
+
+		mutable bool m_bRecursing;
 	};
 
 class CLookup : public IItemGenerator
@@ -208,6 +252,9 @@ class CSingleItem : public IItemGenerator
 class CTableOfGenerators : public IItemGenerator
 	{
 	public:
+		CTableOfGenerators (void) : m_bRecursing(false)
+			{ }
+
 		virtual ~CTableOfGenerators (void);
 		virtual void AddItems (SItemAddCtx &Ctx);
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
@@ -227,6 +274,8 @@ class CTableOfGenerators : public IItemGenerator
 
 		TArray<SEntry> m_Table;
 		int m_iTotalChance;
+
+		mutable bool m_bRecursing;
 	};
 
 //	IItemGenerator -------------------------------------------------------------
@@ -534,6 +583,12 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (int iLevel)
 		}
 	else
 		{
+		//	Make sure we don't recurse
+
+		CRecursingCheck Check(m_bRecursing);
+		if (Check.IsRecursing())
+			return 0;
+
 		//	Average value is proportional to chances.
 
 		Metric rTotal = 0.0;
@@ -853,6 +908,12 @@ CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (int iLevel)
 	{
 	int i;
 
+	//	Make sure we don't recurse
+
+	CRecursingCheck Check(m_bRecursing);
+	if (Check.IsRecursing())
+		return 0;
+
 	//	Compute the table for this level.
 
 	Metric rTotal = 0.0;
@@ -1009,6 +1070,12 @@ CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (int iLeve
 
 	{
 	int i;
+
+	//	Make sure we don't recurse
+
+	CRecursingCheck Check(m_bRecursing);
+	if (Check.IsRecursing())
+		return 0;
 
 	//	Equal probability for each entry
 
@@ -1213,6 +1280,12 @@ CurrencyValue CTableOfGenerators::GetAverageValue (int iLevel)
 	int i;
 
 	if (m_iTotalChance == 0)
+		return 0;
+
+	//	Make sure we don't recurse
+
+	CRecursingCheck Check(m_bRecursing);
+	if (Check.IsRecursing())
 		return 0;
 
 	//	Average value is proportional to chances.
