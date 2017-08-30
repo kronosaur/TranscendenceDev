@@ -90,6 +90,7 @@ class CXMLElement
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const;
 		double GetAttributeFloat (const CString &sName) const;
 		inline const CString &GetAttributeName (int iIndex) const { return m_Keywords.GetIdentifier(m_Attributes.GetKey(iIndex)); }
+		int GetAttributeTriState (const CString &sName) const;
 		inline int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
 		inline CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
 		CXMLElement *GetContentElementByTag (const CString &sTag) const;

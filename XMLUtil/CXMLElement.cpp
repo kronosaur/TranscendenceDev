@@ -507,6 +507,22 @@ bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, 
     return (iLow != iHigh);
     }
 
+int CXMLElement::GetAttributeTriState (const CString &sName) const
+
+//	GetAttributeTriState
+//
+//	-1: Attribute is not found
+//	0: Attribute is found, but is FALSE.
+//	1: Attribute is found and is TRUE.
+
+	{
+	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	if (pValue == NULL)
+		return -1;
+
+	return (IsBoolTrueValue(*pValue) ? 1 : 0);
+	}
+
 CXMLElement *CXMLElement::GetContentElementByTag (const CString &sTag) const
 
 //	GetContentElementByTag
