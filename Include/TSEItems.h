@@ -446,7 +446,7 @@ class CItemListManipulator
 
 		bool AddDamagedComponents (const CItem &Item, int iDamageChance);
 		void AddItem (const CItem &Item);
-		void AddItems (const CItemList &ItemList);
+		bool AddItems (const CItemList &ItemList, int iChance = 100);
 
 		inline int GetCount (void) { return m_ViewMap.GetCount(); }
 		inline int GetCursor (void) { return m_iCursor; }

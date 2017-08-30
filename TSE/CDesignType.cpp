@@ -91,6 +91,7 @@
 #define LANGID_CORE_MAP_DESC_MAIN				CONSTLIT("core.mapDescMain")
 
 #define PROPERTY_API_VERSION					CONSTLIT("apiVersion")
+#define PROPERTY_ATTRIBUTES						CONSTLIT("attributes")
 #define PROPERTY_CLASS							CONSTLIT("class")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
@@ -564,11 +565,26 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 //	If we don't have the property, we return NULL.
 
 	{
+	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
 	CString sValue;
 
 	if (strEquals(sProperty, PROPERTY_API_VERSION))
 		return CC.CreateInteger(GetAPIVersion());
+
+	else if (strEquals(sProperty, PROPERTY_ATTRIBUTES))
+		{
+		TArray<CString> Attribs;
+		ParseAttributes(GetAttributes(), &Attribs);
+		if (Attribs.GetCount() == 0)
+			return CC.CreateNil();
+
+		ICCItem *pResult = CC.CreateLinkedList();
+		for (i = 0; i < Attribs.GetCount(); i++)
+			pResult->AppendString(CC, Attribs[i]);
+
+		return pResult;
+		}
 
 	else if (strEquals(sProperty, PROPERTY_CLASS))
 		return CC.CreateString(GetTypeClassName());

@@ -254,7 +254,7 @@ class CDesignType
 		void FireOnGlobalUpdate (const SEventHandlerDesc &Event);
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
 		inline DWORD GetAPIVersion (void) const { return m_dwVersion; }
-		inline const CString &GetAttributes (void) { return m_sAttributes; }
+		inline const CString &GetAttributes (void) const { return m_sAttributes; }
 		inline CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return m_DisplayAttribs; }

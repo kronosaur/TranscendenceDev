@@ -44,8 +44,6 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 //	Returns TRUE if any item got added.
 
 	{
-	int i;
-
 	//	We handle armor and devices differently.
 
 	if (Item.IsArmor())
@@ -67,20 +65,10 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 
 		else if (Item.HasComponents() && (Item.IsVirtual() || mathRandom(1, 100) <= 50))
 			{
-			bool bAdded = false;
+			//	Max 80% chance of any one component surviving; lower if the armor
+			//	is damaged.
 
-			const CItemList &Components = Item.GetComponents();
-			for (i = 0; i < Components.GetCount(); i++)
-				{
-				if (mathRandom(1, 100) <= iDamageChance
-						|| Components.GetItem(i).IsVirtual())
-					continue;
-
-				AddItem(Components.GetItem(i));
-				bAdded = true;
-				}
-
-			return bAdded;
+			return AddItems(Item.GetComponents(), Min(80, 100 - iDamageChance));
 			}
 
 		//	If the item is virtual, then nothing drops
@@ -133,26 +121,15 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 
 			else
 				{
-				bool bAdded = false;
-
 				//	Compute the chance that a component will drop.
 
-				int iChance = (bDropDamaged ? 50 : 100);
+				int iChance = (bDropDamaged ? 50 : 80);
 				if (Item.IsDamaged())
 					iChance /= 2;
 
-				const CItemList &Components = Item.GetComponents();
-				for (i = 0; i < Components.GetCount(); i++)
-					{
-					if (mathRandom(1, 100) > iChance
-							|| Components.GetItem(i).IsVirtual())
-						continue;
+				//	Add components
 
-					AddItem(Components.GetItem(i));
-					bAdded = true;
-					}
-
-				return bAdded;
+				return AddItems(Item.GetComponents(), iChance);
 				}
 			}
 
@@ -250,15 +227,50 @@ DWORD CItemListManipulator::AddItemEnhancementAtCursor (const CItemEnhancement &
 	return GetItemAtCursor().GetMods().GetID();
 	}
 
-void CItemListManipulator::AddItems (const CItemList &ItemList)
+bool CItemListManipulator::AddItems (const CItemList &ItemList, int iChance)
 
 //	AddItems
 //
-//	Adds all the items in the list
+//	Adds all the items in the list. Returns TRUE if we added any items.
 
 	{
-	for (int i = 0; i < ItemList.GetCount(); i++)
-		AddItem(ItemList.GetItem(i));
+	int i;
+	bool bAdded = false;
+
+	if (iChance == 100)
+		{
+		for (i = 0; i < ItemList.GetCount(); i++)
+			{
+			AddItem(ItemList.GetItem(i));
+			bAdded = true;
+			}
+		}
+	else
+		{
+		Metric rChance = (Metric)iChance / 100.0;
+
+		for (i = 0; i < ItemList.GetCount(); i++)
+			{
+			CItem NewItem = ItemList.GetItem(i);
+
+			//	Skip virtual
+
+			if (NewItem.IsVirtual())
+				continue;
+
+			//	Add with probability
+
+			int iCount = mathRoundStochastic(rChance * NewItem.GetCount());
+			if (iCount > 0)
+				{
+				NewItem.SetCount(iCount);
+				AddItem(NewItem);
+				bAdded = true;
+				}
+			}
+		}
+
+	return bAdded;
 	}
 
 void CItemListManipulator::ClearDisruptedAtCursor (int iCount)
