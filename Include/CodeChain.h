@@ -875,7 +875,7 @@ class CCodeChain
 		inline ICCItem *GetNil (void) { return m_pNil; }
 		inline ICCItem *GetTrue (void) { return m_pTrue; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
-		ICCItem *Link (const CString &sString, int iOffset, int *retiLinked = NULL, int *ioiCurLine = NULL);
+		ICCItem *Link (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
 		ICCItem *LoadApp (HMODULE hModule, char *pszRes);
 		ICCItem *LoadInitFile (const CString &sFilename);
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
