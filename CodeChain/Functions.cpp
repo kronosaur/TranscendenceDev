@@ -3027,13 +3027,70 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pCtx->pCC;
+	double angleToRads = 1.0;
+
+	//	Check if we need to use degrees for angles
+
+	switch (dwData)
+		{
+		case FN_MATH_ARCCOS:
+		case FN_MATH_ARCSIN:
+		case FN_MATH_COS:
+		case FN_MATH_SIN:
+		case FN_MATH_TAN:
+			if (pArgs->GetCount() >= 2)
+				{
+				CString sOption = pArgs->GetElement(1)->GetStringValue();
+
+				if (strEquals(sOption, CONSTLIT("degrees")))
+					angleToRads = 3.14159265358979323846 / 180;
+				}
+		}
 
 	//	Compute
 
 	switch (dwData)
 		{
+		case FN_MATH_ARCCOS:
+			return pCC->CreateDouble(acos(pArgs->GetElement(0)->GetDoubleValue()) / angleToRads);
+
+		case FN_MATH_ARCSIN:
+			return pCC->CreateDouble(asin(pArgs->GetElement(0)->GetDoubleValue()) / angleToRads);
+
+		case FN_MATH_ARCTAN:
+			{
+			double rResult;
+			double rNum = pArgs->GetElement(0)->GetDoubleValue();
+
+			//	Get optional denominator
+
+			int iOptionalArg = 1;
+			if (pArgs->GetCount() > iOptionalArg && !pArgs->GetElement(iOptionalArg)->IsIdentifier())
+				{
+				double rDen = pArgs->GetElement(iOptionalArg++)->GetDoubleValue();
+				rResult = atan2(rNum, rDen);
+				}
+			else
+				{
+				rResult = atan(rNum);
+				}
+
+			//	Get optional units
+
+			if (pArgs->GetCount() > iOptionalArg && pArgs->GetElement(iOptionalArg)->IsIdentifier())
+				{
+				if (strEquals(pArgs->GetElement(iOptionalArg)->GetStringValue(), CONSTLIT("degrees")))
+					rResult = rResult * 180 / 3.14159265358979323846;
+				}
+
+			return pCC->CreateDouble(rResult);
+			}
+
 		case FN_MATH_CEIL:
 			return pCC->CreateDouble(ceil(pArgs->GetElement(0)->GetDoubleValue()));
+
+		case FN_MATH_COS:
+			return pCC->CreateDouble(cos(pArgs->GetElement(0)->GetDoubleValue() * angleToRads));
 
 		case FN_MATH_DIVIDE:
 			{
@@ -3046,8 +3103,22 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateDouble(rNum / rDen);
 			}
 
+		case FN_MATH_EXP:
+			return pCC->CreateDouble(exp(pArgs->GetElement(0)->GetDoubleValue()));
+
 		case FN_MATH_FLOOR:
 			return pCC->CreateDouble(floor(pArgs->GetElement(0)->GetDoubleValue()));
+
+		case FN_MATH_LOG:
+			{
+			if (pArgs->GetCount() >= 2)
+				{
+				double logBase = log(pArgs->GetElement(1)->GetDoubleValue());
+				return pCC->CreateDouble(log(pArgs->GetElement(0)->GetDoubleValue()) / logBase);
+				}
+			else
+				return pCC->CreateDouble(log(pArgs->GetElement(0)->GetDoubleValue()));
+			}
 
 		case FN_MATH_MODULUS_NUMERALS:
 			{
@@ -3135,6 +3206,9 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateDouble(round(pArgs->GetElement(0)->GetDoubleValue()));
 			}
 
+		case FN_MATH_SIN:
+			return pCC->CreateDouble(sin(pArgs->GetElement(0)->GetDoubleValue() * angleToRads));
+
 		case FN_MATH_SQRT_NUMERALS:
 			{
 			double rX = pArgs->GetElement(0)->GetDoubleValue();
@@ -3143,6 +3217,9 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			return pCC->CreateDouble(sqrt(rX));
 			}
+
+		case FN_MATH_TAN:
+			return pCC->CreateDouble(tan(pArgs->GetElement(0)->GetDoubleValue() * angleToRads));
 
 		default:
 			ASSERT(false);

@@ -96,6 +96,14 @@
 #define FN_MAKE							92
 #define FN_STRUCT						93
 #define FN_STRUCT_APPEND				94
+#define FN_MATH_ARCCOS					95
+#define FN_MATH_ARCSIN					96
+#define FN_MATH_ARCTAN					97
+#define FN_MATH_COS						98
+#define FN_MATH_SIN						99
+#define FN_MATH_TAN						100
+#define FN_MATH_EXP						101
+#define FN_MATH_LOG						102
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

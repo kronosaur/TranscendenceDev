@@ -47,6 +47,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(abs x) -> z",
 			"n",	0,	},
 
+		{	"acos",				fnMathNumerals,	FN_MATH_ARCCOS,
+			"(acos x ['degrees]) -> z",
+			"n*",	0,	},
+
 		{	"and",				fnLogical,		FN_LOGICAL_AND,
 			"(and exp1 exp2 ... expn) -> True/Nil\n\n"
 
@@ -61,6 +65,14 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(apply exp arg1 arg2 ... argn list) -> Result",
 			NULL,	0,	},
 
+		{	"asin",				fnMathNumerals,	FN_MATH_ARCSIN,
+			"(asin x ['degrees]) -> z",
+			"n*",	0,	},
+
+		{	"atan",				fnMathNumerals,	FN_MATH_ARCTAN,
+			"(atan y [x] ['degrees]) -> z",
+			"n*",	0,	},
+	
 		{	"atmAddEntry",		fnAtmTable,		FN_ATMTABLE_ADDENTRY,	"",		NULL,	PPFLAG_SIDEEFFECTS,	},
 		{	"atmDeleteEntry",	fnAtmTable,		FN_ATMTABLE_DELETEENTRY,"",		NULL,	PPFLAG_SIDEEFFECTS,	},
 		{	"atmList",			fnAtmTable,		FN_ATMTABLE_LIST,		"",		NULL,	0,	},
@@ -81,6 +93,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"convertTo",		fnItem,			FN_ITEM_CONVERT_TO,
 			"(convertTo type value) -> result",
 			"sv",	0,	},
+
+		{	"cos",				fnMathNumerals,	FN_MATH_COS,
+			"(cos x ['degrees]) -> z",
+			"n*",	0,	},
 
 		{	"count",			fnCount,		0,
 			"(count list) -> number of items",
@@ -125,6 +141,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"filter",			fnFilter,		0,
 			"(filter list var boolean-exp) -> filtered list",
 			"lqu",	0,	},
+
+		{	"exp",				fnMathNumerals,	FN_MATH_EXP,
+			"(exp x) -> z",
+			"n",	0,	},
 
 		{	"find",				fnFind,			FN_FIND,
 			"(find source target ['ascending|'descending] [keyIndex]) -> position of target in source (0-based)",
@@ -171,6 +191,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"lambda",			fnLambda,		0,
 			"(lambda args-list exp) -> lambda function",
 			NULL,	0,	},
+
+		{	"log",				fnMathNumerals,	FN_MATH_LOG,
+			"(log x [base]) -> z",
+			"n*",	0,	},
 
 		{	"lookup",			fnFind,			FN_LOOKUP,
 			"(lookup source target ['ascending|'descending] [keyIndex]) -> found entry",
@@ -314,6 +338,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(shuffle list) -> shuffled list",
 			"l",	0,	},
 
+		{	"sin",				fnMathNumerals,	FN_MATH_SIN,
+			"(sin x ['degrees]) -> z",
+			"n*",	0,	},
+
 		{	"sort",				fnSort,			FN_SORT,
 			"(sort list ['ascending|'descending] [keyIndex]) -> sorted list",
 			"v*",	0,	},
@@ -379,6 +407,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"sysGlobals",		fnSysInfo,		FN_SYSINFO_GLOBALS,		"(sysGlobals) -> list of global symbols",		NULL,	0,	},
 		{	"sysPoolUsage",		fnSysInfo,		FN_SYSINFO_POOLUSAGE,	"(sysPoolUsage) -> list of resource usage",		NULL,	0,	},
 		{	"sysTicks",			fnSysInfo,		FN_SYSINFO_TICKS,		"(sysTicks) -> int",		NULL,	0,	},
+
+		{	"tan",				fnMathNumerals,	FN_MATH_TAN,
+			"(tan x ['degrees]) -> z",
+			"n*",	0,	},
 
 		{	"typeof",			fnItem,			FN_ITEM_TYPE,
 			"(typeof item) -> type\n\n"
