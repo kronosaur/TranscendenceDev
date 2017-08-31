@@ -1564,18 +1564,10 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
 
+		CCCtx.DefineDamageCtx(Ctx, Ctx.iArmorDamage);
 		CCCtx.DefineInteger(CONSTLIT("aArmorHP"), (pArmor ? pArmor->GetHitPoints() : 0));
-		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
-		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
 		CCCtx.DefineDamageEffects(CONSTLIT("aDamageEffects"), Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aFullDamageHP"), Ctx.iDamage);
-		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iArmorDamage);
-		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
-		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
 
 		ICCItem *pResult = CCCtx.Run(Event);
 

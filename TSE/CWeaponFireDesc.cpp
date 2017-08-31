@@ -877,14 +877,7 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 		CCodeChainCtx CCCtx;
 
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
-		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
-		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
-		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
-		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
-		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+		CCCtx.DefineDamageCtx(Ctx);
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())
@@ -927,15 +920,7 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx)
 		CCodeChainCtx CCCtx;
 
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
-		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
-		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
-		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
-		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
-		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
-		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+		CCCtx.DefineDamageCtx(Ctx);
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())
@@ -978,16 +963,8 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 		CCodeChainCtx CCCtx;
 
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
-		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
+		CCCtx.DefineDamageCtx(Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aOverlayID"), pOverlay->GetID());
-		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
-		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
-		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
-		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
-		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())
@@ -1035,17 +1012,9 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 			pShip->SetCursorAtDevice(ItemList, iDevice);
 
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
-		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
+		CCCtx.DefineDamageCtx(Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aDevice"), iDevice);
 		CCCtx.DefineItem(CONSTLIT("aDeviceItem"), ItemList.GetItemAtCursor());
-		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
-		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
-		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
-		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
-		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
 
 		CCCtx.DefineInteger(CONSTLIT("aShieldHP"), Ctx.iHPLeft);
 		CCCtx.DefineInteger(CONSTLIT("aShieldDamageHP"), Ctx.iShieldDamage);

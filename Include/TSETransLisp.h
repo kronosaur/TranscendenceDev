@@ -33,6 +33,7 @@ class CCodeChainCtx
 
 		inline ICCItem *CreateNil (void) { return m_CC.CreateNil(); }
 		inline void DefineBool (const CString &sVar, bool bValue) { m_CC.DefineGlobal(sVar, (bValue ? m_CC.CreateTrue() : m_CC.CreateNil())); }
+		void DefineDamageCtx (const SDamageCtx &Ctx, int iDamage = -1);
 		void DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx);
 		inline void DefineInteger (const CString &sVar, int iValue) { m_CC.DefineGlobalInteger(sVar, iValue); }
 		void DefineItem (const CItem &Item);

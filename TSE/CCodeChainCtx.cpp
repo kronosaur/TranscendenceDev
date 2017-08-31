@@ -216,6 +216,24 @@ CVector CCodeChainCtx::AsVector (ICCItem *pItem)
 	return CreateVectorFromList(m_CC, pItem);
 	}
 
+void CCodeChainCtx::DefineDamageCtx (const SDamageCtx &Ctx, int iDamage)
+
+//	DefineDamageCtx
+//
+//	Sets the standard variables that represent damage ctx.
+
+	{
+	DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
+	DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
+	DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
+	DefineInteger(CONSTLIT("aDamageHP"), (iDamage == -1 ? Ctx.iDamage : iDamage));
+	DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
+	DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
+	DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
+	DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+	DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+	}
+
 void CCodeChainCtx::DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx)
 
 //	DefineDamageEffects

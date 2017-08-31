@@ -896,7 +896,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'damaged [True|Nil]\n"
 			"   'disrupted [True|Nil|ticks]\n"
 			"   'incCharges charges\n"
-			"   'installed [True|Nil]",
+			"   'installed [True|Nil]"
+			"   'level level",
 
 			"vs*",	0,	},
 

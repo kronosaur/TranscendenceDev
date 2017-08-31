@@ -905,16 +905,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		CCodeChainCtx CCCtx;
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
-
-		CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), Ctx.iSectHit);
-		CCCtx.DefineSpaceObject(CONSTLIT("aCause"), Ctx.pCause);
-		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
-		CCCtx.DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
-		CCCtx.DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
-		CCCtx.DefineInteger(CONSTLIT("aDamageHP"), Ctx.iDamage);
-		CCCtx.DefineString(CONSTLIT("aDamageType"), GetDamageShortName(Ctx.Damage.GetDamageType()));
-		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
+		CCCtx.DefineDamageCtx(Ctx);
 
 		CCCtx.DefineInteger(CONSTLIT("aShieldHP"), Ctx.iHPLeft);
 		CCCtx.DefineInteger(CONSTLIT("aShieldDamageHP"), Ctx.iShieldDamage);
