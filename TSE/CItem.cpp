@@ -19,7 +19,6 @@
 #define ON_REMOVED_AS_ENHANCEMENT_EVENT			CONSTLIT("OnRemovedAsEnhancement")
 #define ON_UNINSTALL_EVENT						CONSTLIT("OnUninstall")
 
-#define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_CHARGES						CONSTLIT("charges")
 #define PROPERTY_COMPONENTS						CONSTLIT("components")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
