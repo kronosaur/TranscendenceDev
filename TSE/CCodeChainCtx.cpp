@@ -231,6 +231,7 @@ void CCodeChainCtx::DefineDamageCtx (const SDamageCtx &Ctx, int iDamage)
 	DefineInteger(CONSTLIT("aHitDir"), Ctx.iDirection);
 	DefineVector(CONSTLIT("aHitPos"), Ctx.vHitPos);
 	DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+	DefineInteger(CONSTLIT("aWeaponLevel"), Ctx.pDesc->GetLevel());
 	DefineItemType(CONSTLIT("aWeaponType"), Ctx.pDesc->GetWeaponType());
 	}
 
