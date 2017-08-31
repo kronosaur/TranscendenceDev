@@ -1125,7 +1125,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		else if (iCategory == itemcatReactor
 				&& m_pClass->GetMaxReactorPower() > 0
-				&& pDevice->GetPowerRating(ItemCtx) > m_pClass->GetMaxReactorPower())
+				&& pDevice->GetPowerOutput(ItemCtx) > m_pClass->GetMaxReactorPower())
 			iResult = insReactorIncompatible;
 
 		//	See if we have enough device slots to install or if we have to
