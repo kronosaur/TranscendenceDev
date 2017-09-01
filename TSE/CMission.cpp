@@ -32,6 +32,7 @@ static CObjectClass<CMission>g_MissionClass(OBJID_CMISSION, NULL);
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_NODE_ID						CONSTLIT("nodeID")
 #define PROPERTY_OWNER_ID						CONSTLIT("ownerID")
+#define PROPERTY_PRIORITY						CONSTLIT("priority")
 #define PROPERTY_SUMMARY						CONSTLIT("summary")
 #define PROPERTY_UNID							CONSTLIT("unid")
 
@@ -538,6 +539,9 @@ ICCItem *CMission::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			return CC.CreateInteger(m_pOwner.GetID());
 		}
 
+	else if (strEquals(sName, PROPERTY_PRIORITY))
+		return CC.CreateInteger(m_pType->GetPriority());
+
 	else if (strEquals(sName, PROPERTY_SUMMARY))
 		return CC.CreateString(m_sInstructions);
 
@@ -1043,6 +1047,10 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 
 			case 'D':
 				retCriteria->bOnlySourceDebriefer = true;
+				break;
+
+			case 'P':
+				retCriteria->bPriorityOnly = true;
 				break;
 
 			case 'S':
