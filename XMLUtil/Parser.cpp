@@ -57,6 +57,9 @@ struct ParserCtx
 
 		void DefineEntity (const CString &sName, const CString &sValue);
 		CString LookupEntity (const CString &sName, bool *retbFound = NULL);
+		inline bool OptionNoTagCharCheck (void) const { return m_bNoTagCharCheck; }
+		inline void SetOptionNoTagCharCheck (bool bValue = true) { m_bNoTagCharCheck = bValue; }
+		inline void SetOptionRootElementOnly (bool bValue = true) { m_bParseRootElement = bValue; }
 
 	public:
 		IXMLParserController *m_pController;
@@ -77,6 +80,9 @@ struct ParserCtx
 		bool m_bParseRootTag;
 		CString m_sRootTag;
 
+		bool m_bNoTagCharCheck;
+
+
 		TokenTypes iAttribQuote;
 
 		CString sError;
@@ -84,32 +90,32 @@ struct ParserCtx
 
 ParserCtx::ParserCtx (IReadBlock *pStream, IXMLParserController *pController) : 
 		EntityTable(TRUE, FALSE),
-		m_pController(pController)
+		m_pController(pController),
+		m_pParentCtx(NULL),
+		m_bParseRootElement(false),
+		m_bParseRootTag(false),
+		m_bNoTagCharCheck(false)
 	{
 	pPos = pStream->GetPointer(0, pStream->GetLength());
 	pEndPos = pPos + pStream->GetLength();
 	pElement = NULL;
 	iToken = tkEOF;
 	iLine = 1;
-	m_bParseRootElement = false;
-	m_bParseRootTag = false;
-
-	m_pParentCtx = NULL;
 	}
 
 ParserCtx::ParserCtx (ParserCtx *pParentCtx, const CString &sString) : 
 		EntityTable(TRUE, FALSE),
-		m_pController(pParentCtx->m_pController)
+		m_pController(pParentCtx->m_pController),
+		m_pParentCtx(pParentCtx),
+		m_bParseRootElement(false),
+		m_bParseRootTag(false),
+		m_bNoTagCharCheck(false)
 	{
 	pPos = sString.GetPointer();
 	pEndPos = pPos + sString.GetLength();
 	pElement = NULL;
 	iToken = tkEOF;
 	iLine = 1;
-	m_bParseRootElement = false;
-	m_bParseRootTag = false;
-
-	m_pParentCtx = pParentCtx;
 	}
 
 void ParserCtx::DefineEntity (const CString &sName, const CString &sValue)
@@ -148,12 +154,89 @@ ALERROR ParsePrologue (ParserCtx *pCtx);
 TokenTypes ParseToken (ParserCtx *pCtx, StateTypes iInitialState = StartState);
 CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound);
 
+ALERROR CXMLElement::ParseXML (IReadBlock &Stream, const SParseOptions &Options, CXMLElement **retpElement, CString *retsError)
+
+//	ParseXML
+//
+//	Parses the block and returns an allocated XML element.
+
+	{
+	ALERROR error;
+
+	//	Open the stream
+
+	if (error = Stream.Open())
+		{
+		if (retsError) *retsError = CONSTLIT("unable to open XML stream");
+		return error;
+		}
+
+	//	Initialize context
+
+	ParserCtx Ctx(&Stream, Options.pController);
+	Ctx.SetOptionNoTagCharCheck(Options.bNoTagCharCheck);
+	Ctx.SetOptionRootElementOnly(Options.bRootElementOnly);
+
+	//	If no prologue, then we expect an element.
+
+	if (Options.bNoPrologue)
+		{
+		if (ParseToken(&Ctx) != tkTagOpen)
+			{
+			Stream.Close();
+			if (retsError) *retsError = strPatternSubst(LITERAL("Line(%d): Element expected"), Ctx.iLine);
+			return ERR_FAIL;
+			}
+		}
+
+	//	Parse the prologue
+
+	else
+		{
+		if (error = ParsePrologue(&Ctx))
+			{
+			Stream.Close();
+			if (retsError) *retsError = strPatternSubst(LITERAL("Line(%d): %s"), Ctx.iLine, Ctx.sError);
+			return error;
+			}
+
+		//	Next token must be an element open tag
+
+		if (Ctx.iToken != tkTagOpen)
+			{
+			Stream.Close();
+			if (retsError) *retsError = strPatternSubst(LITERAL("Line(%d): root element expected"), Ctx.iLine);
+			return ERR_FAIL;
+			}
+		}
+
+	//	Parse the root element
+
+	if (error = ParseElement(&Ctx, retpElement))
+		{
+		Stream.Close();
+		if (retsError) *retsError = strPatternSubst(LITERAL("Line(%d): %s"), Ctx.iLine, Ctx.sError);
+		return error;
+		}
+
+	//	Done
+
+	Stream.Close();
+	if (Options.pEntityTable)
+		Options.pEntityTable->AddTable(Ctx.EntityTable);
+
+	return NOERROR;
+	}
+
 ALERROR CXMLElement::ParseXML (IReadBlock *pStream, 
 							   CXMLElement **retpElement, 
 							   CString *retsError,
 							   CExternalEntityTable *retEntityTable)
 	{
-	return ParseXML(pStream, NULL, retpElement, retsError, retEntityTable);
+	SParseOptions Options;
+	Options.pEntityTable = retEntityTable;
+
+	return ParseXML(*pStream, Options, retpElement, retsError);
 	}
 
 ALERROR CXMLElement::ParseXML (IReadBlock *pStream, 
@@ -167,52 +250,11 @@ ALERROR CXMLElement::ParseXML (IReadBlock *pStream,
 //	Parses the block and returns an XML element
 
 	{
-	ALERROR error;
+	SParseOptions Options;
+	Options.pController = pController;
+	Options.pEntityTable = retEntityTable;
 
-	//	Open the stream
-
-	if (error = pStream->Open())
-		{
-		*retsError = CONSTLIT("unable to open XML stream");
-		return error;
-		}
-
-	//	Initialize context
-
-	ParserCtx Ctx(pStream, pController);
-
-	//	Parse the prologue
-
-	if (error = ParsePrologue(&Ctx))
-		goto Fail;
-
-	//	Next token must be an element open tag
-
-	if (Ctx.iToken != tkTagOpen)
-		{
-		error = ERR_FAIL;
-		Ctx.sError = LITERAL("root element expected");
-		goto Fail;
-		}
-
-	//	Parse the root element
-
-	if (error = ParseElement(&Ctx, retpElement))
-		goto Fail;
-
-	//	Done
-
-	pStream->Close();
-	if (retEntityTable)
-		retEntityTable->AddTable(Ctx.EntityTable);
-
-	return NOERROR;
-
-Fail:
-
-	pStream->Close();
-	*retsError = strPatternSubst(LITERAL("Line(%d): %s"), Ctx.iLine, Ctx.sError);
-	return error;
+	return ParseXML(*pStream, Options, retpElement, retsError);
 	}
 
 ALERROR CXMLElement::ParseSingleElement (IReadBlock *pStream, 
@@ -220,50 +262,16 @@ ALERROR CXMLElement::ParseSingleElement (IReadBlock *pStream,
 										 CXMLElement **retpElement, 
 										 CString *retsError)
 
-//	ParseElement
+//	ParseSingleElement
 //
-//	Parses a single element
+//	Parses a single element (without a prologue)
 
 	{
-	ALERROR error;
+	SParseOptions Options;
+	Options.pController = pController;
+	Options.bNoPrologue = true;
 
-	//	Open the stream
-
-	if (error = pStream->Open())
-		{
-		*retsError = CONSTLIT("unable to open XML stream");
-		return error;
-		}
-
-	//	Initialize context
-
-	ParserCtx Ctx(pStream, pController);
-
-	//	Get the first token
-
-	if (ParseToken(&Ctx) != tkTagOpen)
-		{
-		error = ERR_FAIL;
-		Ctx.sError = LITERAL("Element expected");
-		goto Fail;
-		}
-
-	//	Parse the root element
-
-	if (error = ParseElement(&Ctx, retpElement))
-		goto Fail;
-
-	//	Done
-
-	pStream->Close();
-
-	return NOERROR;
-
-Fail:
-
-	pStream->Close();
-	*retsError = strPatternSubst(LITERAL("Line(%d): %s"), Ctx.iLine, Ctx.sError);
-	return error;
+	return ParseXML(*pStream, Options, retpElement, retsError);
 	}
 
 ALERROR ParseDTD (ParserCtx *pCtx)
@@ -301,6 +309,15 @@ ALERROR ParseElement (ParserCtx *pCtx, CXMLElement **retpElement)
 	if (ParseToken(pCtx) != tkText)
 		{
 		pCtx->sError = LITERAL("element tag expected");
+		return ERR_FAIL;
+		}
+
+	//	Make sure the tag is valid
+
+	if (!pCtx->OptionNoTagCharCheck()
+			&& !CXMLElement::IsValidElementTag(pCtx->sToken))
+		{
+		pCtx->sError = strPatternSubst(CONSTLIT("Invalid element tag: %s."), pCtx->sToken);
 		return ERR_FAIL;
 		}
 
@@ -1436,53 +1453,11 @@ ALERROR CXMLElement::ParseRootElement (IReadBlock *pStream, CXMLElement **retpRo
 //	of the root element).
 
 	{
-	ALERROR error;
+	SParseOptions Options;
+	Options.pEntityTable = retEntityTable;
+	Options.bRootElementOnly = true;
 
-	//	Open the stream
-
-	if (error = pStream->Open())
-		{
-		*retsError = CONSTLIT("unable to open XML stream");
-		return error;
-		}
-
-	//	Initialize context
-
-	ParserCtx Ctx(pStream, NULL);
-
-	//	Parse the prologue
-
-	if (error = ParsePrologue(&Ctx))
-		goto Fail;
-
-	//	Next token must be an element open tag
-
-	if (Ctx.iToken != tkTagOpen)
-		{
-		error = ERR_FAIL;
-		Ctx.sError = LITERAL("root element expected");
-		goto Fail;
-		}
-
-	//	Parse the root element
-
-	Ctx.m_bParseRootElement = true;
-	if (error = ParseElement(&Ctx, retpRoot))
-		goto Fail;
-
-	//	Done
-
-	pStream->Close();
-	if (retEntityTable)
-		retEntityTable->AddTable(Ctx.EntityTable);
-
-	return NOERROR;
-
-Fail:
-
-	pStream->Close();
-	*retsError = strPatternSubst(LITERAL("Line(%d): %s"), Ctx.iLine, Ctx.sError);
-	return error;
+	return ParseXML(*pStream, Options, retpRoot, retsError);
 	}
 
 ALERROR CXMLElement::ParseRootTag (IReadBlock *pStream, CString *retsTag)
@@ -1546,4 +1521,41 @@ ALERROR CXMLElement::ParseRootTag (IReadBlock *pStream, CString *retsTag)
 	pStream->Close();
 
 	return NOERROR;
+	}
+
+bool CXMLElement::IsValidElementTag (const CString &sValue)
+
+//	IsValidElementTag
+//
+//	Returns TRUE if this is a valid element tag (according to WC3).
+
+	{
+	char *pPos = sValue.GetASCIIZPointer();
+	char *pPosEnd = pPos + sValue.GetLength();
+
+	//	Must be non-empty
+
+	if (pPos == pPosEnd)
+		return false;
+
+	//	Must start with a letter or underscore or colon.
+
+	if (*pPos != '_' && *pPos != ':' && !strIsAlpha(pPos))
+		return false;
+
+	pPos++;
+
+	//	We only support ASCII right now.
+
+	while (pPos < pPosEnd)
+		{
+		if (*pPos != '.' && *pPos != '-' && *pPos != '_' && *pPos != ':' && !strIsAlphaNumeric(pPos))
+			return false;
+
+		pPos++;
+		}
+
+	//	Success!
+
+	return true;
 	}

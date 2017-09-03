@@ -42,6 +42,24 @@ class CXMLElement
 			MERGE_OVERRIDE =				0x00000004,	//	Set Left.x to Right.x (or delete if not in Right).
 			};
 
+		struct SParseOptions
+			{
+			SParseOptions (void) :
+					pController(NULL),
+					pEntityTable(NULL),
+					bNoTagCharCheck(false),
+					bNoPrologue(false),
+					bRootElementOnly(false)
+				{ }
+
+			IXMLParserController *pController;	//	To handle ENTITIES, etc. May be NULL.
+			CExternalEntityTable *pEntityTable;	//	Entity table to use. May be NULL.
+
+			bool bNoTagCharCheck;				//	Don't check to see if element tags have invalid characters
+			bool bNoPrologue;					//	Assume no prologue
+			bool bRootElementOnly;				//	Parse root element, but no sub-elements
+			};
+
 		CXMLElement (void);
 		CXMLElement (const CXMLElement &Obj);
 		CXMLElement (const CString &sTag, CXMLElement *pParent);
@@ -49,6 +67,7 @@ class CXMLElement
 
 		CXMLElement &operator= (const CXMLElement &Obj);
 
+		static ALERROR ParseXML (IReadBlock &Stream, const SParseOptions &Options, CXMLElement **retpElement, CString *retsError = NULL);
 		static ALERROR ParseXML (IReadBlock *pStream, 
 								 CXMLElement **retpElement, 
 								 CString *retsError,
@@ -113,6 +132,7 @@ class CXMLElement
 		static int GetKeywordCount (void) { return m_Keywords.GetCount(); }
 		static int GetKeywordMemoryUsage (void) { return m_Keywords.GetMemoryUsage(); }
 		static bool IsBoolTrueValue (const CString &sValue) { return (strEquals(sValue, CONSTLIT("true")) || strEquals(sValue, CONSTLIT("1"))); }
+		static bool IsValidElementTag (const CString &sValue);
 		static CString MakeAttribute (const CString &sText) { return strToXMLText(sText); }
 
 	private:
