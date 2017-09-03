@@ -261,26 +261,47 @@ CurrencyValue CCurrencyAndValue::GetCreditValue (void) const
 	return CEconomyType::ExchangeToCredits(*this);
 	}
 
-ALERROR CCurrencyAndValue::InitFromXML (SDesignLoadCtx &Ctx, const CString &sDesc)
+ALERROR CCurrencyAndValue::InitFromXMLAndDefault (SDesignLoadCtx &Ctx, const CString &sDesc, const CCurrencyAndValue &Default)
 
-//	InitFromXML
+//	InitFromXMLAndDefault
 //
 //	Initialies from a string
 
 	{
-	//	If blank, default to 0 credits
+	//	If blank, use the default
 
 	if (sDesc.IsBlank())
 		{
-		//	If m_pCurrency is blank we default to credits (at Bind time)
-		m_pCurrency.LoadUNID(NULL_STR);
-		m_iValue = 0;
+		*this = Default;
+		return NOERROR;
+		}
+
+	//	See if we start with '+' or '-', which means we are adjusting (in % terms) 
+	//	from the default.
+
+	char *pPos = sDesc.GetASCIIZPointer();
+	if ((*pPos == '+' || *pPos == '-') && !Default.IsEmpty())
+		{
+		bool bFailed;
+		int iBonus = strToInt(sDesc, 0, &bFailed);
+		if (bFailed || iBonus < -100)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid currency adjustment: %s"), sDesc);
+			return ERR_FAIL;
+			}
+
+		//	Start with default and adjust
+
+		*this = Default;
+		Adjust(100 + iBonus);
+
+		//	Done
+
 		return NOERROR;
 		}
 
 	//	Look for a colon separator
 
-	char *pPos = sDesc.GetASCIIZPointer();
 	char *pStart = pPos;
 	while (*pPos != '\0' && *pPos != ':')
 		pPos++;

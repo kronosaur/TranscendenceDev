@@ -17,7 +17,8 @@ class CCurrencyAndValue
 		inline CEconomyType *GetCurrencyType (void) const { return m_pCurrency; }
 		inline CurrencyValue GetValue (void) const { return m_iValue; }
 		inline void Init (CurrencyValue iValue, const CString &sUNID = NULL_STR) { m_iValue = iValue; m_pCurrency.LoadUNID(sUNID); }
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sDesc);
+		inline ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sDesc) { return InitFromXMLAndDefault(Ctx, sDesc, CCurrencyAndValue()); }
+		ALERROR InitFromXMLAndDefault (SDesignLoadCtx &Ctx, const CString &sDesc, const CCurrencyAndValue &Default);
 		inline bool IsEmpty (void) const { return (m_pCurrency.IsEmpty() && m_iValue == 0); }
 		inline void SetCurrencyType (CEconomyType *pType) { m_pCurrency.Set(pType); }
 		inline void SetValue (CurrencyValue iValue) { m_iValue = iValue; }

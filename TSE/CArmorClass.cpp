@@ -1283,11 +1283,8 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	//	If no cost specified, we take the default (which is in credits).
 	//	Either result is adjusted.
 
-	if (error = pArmor->m_Stats.InstallCost.InitFromXML(Ctx, pDesc->GetAttribute(INSTALL_COST_ATTRIB)))
+	if (error = pArmor->m_Stats.InstallCost.InitFromXMLAndDefault(Ctx, pDesc->GetAttribute(INSTALL_COST_ATTRIB), CCurrencyAndValue(STD_STATS[iLevel - 1].iInstallCost)))
 		return error;
-
-	if (pArmor->m_Stats.InstallCost.IsEmpty())
-		pArmor->m_Stats.InstallCost.Init(STD_STATS[iLevel - 1].iInstallCost);
 
 	int iInstallCostAdj = pDesc->GetAttributeIntegerBounded(INSTALL_COST_ADJ_ATTRIB, 0, -1, 100);
 	if (iInstallCostAdj != 100)
@@ -1299,11 +1296,8 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	//	Repair cost is based on repair tech
 
-	if (error = pArmor->m_Stats.RepairCost.InitFromXML(Ctx, pDesc->GetAttribute(REPAIR_COST_ATTRIB)))
+	if (error = pArmor->m_Stats.RepairCost.InitFromXMLAndDefault(Ctx, pDesc->GetAttribute(REPAIR_COST_ATTRIB), CCurrencyAndValue(STD_STATS[pArmor->m_iRepairTech - 1].iRepairCost)))
 		return error;
-
-	if (pArmor->m_Stats.RepairCost.IsEmpty())
-		pArmor->m_Stats.RepairCost.Init(STD_STATS[pArmor->m_iRepairTech - 1].iRepairCost);
 
 	int iRepairCostAdj = pDesc->GetAttributeIntegerBounded(REPAIR_COST_ADJ_ATTRIB, 0, -1, 100);
 	if (iRepairCostAdj != 100)
