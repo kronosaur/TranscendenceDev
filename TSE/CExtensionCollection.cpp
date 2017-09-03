@@ -882,6 +882,7 @@ ALERROR CExtensionCollection::ComputeFilesToLoad (const CString &sFilespec, CExt
 		//	Open the file
 
 		CResourceDb ExtDb(sFilepath, true);
+		ExtDb.SetDebugMode(g_pUniverse->InDebugMode());
 		if (error = ExtDb.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 			{
 			//	If this is a TDB then ignore the error--we assume that we will try to 
@@ -1348,6 +1349,7 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	//	Open up the file
 
 	CResourceDb Resources(sFilespec);
+	Resources.SetDebugMode(g_pUniverse->InDebugMode());
 	if (error = Resources.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 		return error;
 

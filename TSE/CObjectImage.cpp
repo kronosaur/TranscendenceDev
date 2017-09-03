@@ -199,6 +199,7 @@ CG32bitImage *CObjectImage::GetRawImage (const CString &sLoadReason, CString *re
 		//	Open the database
 
 		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
+		ResDb.SetDebugMode(g_pUniverse->InDebugMode());
 		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, retsError) != NOERROR)
 			{
 			::kernelDebugLogPattern("Unable to open resource db: %s", m_sResourceDb);
@@ -354,6 +355,7 @@ bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
 		//	Open the database
 
 		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
+		ResDb.SetDebugMode(g_pUniverse->InDebugMode());
 		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
 			{
 			::kernelDebugLogPattern("Unable to load %s: %s", sFilespec, sError);

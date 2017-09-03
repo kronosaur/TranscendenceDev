@@ -53,6 +53,7 @@ void CSoundResource::LoadResource (void) const
 	//	Open the database
 
 	CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
+	ResDb.SetDebugMode(g_pUniverse->InDebugMode());
 	if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
 		{
 		::kernelDebugLogPattern("Unable to open resource db: %s", m_sResourceDb);

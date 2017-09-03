@@ -629,6 +629,7 @@ ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes 
 	//	Open up the file
 
 	CResourceDb Resources(sFilespec, true);
+	Resources.SetDebugMode(g_pUniverse->InDebugMode());
 	if (error = Resources.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 		return error;
 
@@ -946,6 +947,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	Open the file
 
 			CResourceDb ExtDb(m_sFilespec, true);
+			ExtDb.SetDebugMode(g_pUniverse->InDebugMode());
 			if (error = ExtDb.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 				return ERR_FAIL;
 

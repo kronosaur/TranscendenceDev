@@ -192,6 +192,7 @@ class CResourceDb
 		ALERROR LoadSound (CSoundMgr &SoundMgr, const CString &sFolder, const CString &sFilename, int *retiChannel);
 		ALERROR Open (DWORD dwFlags, CString *retsError);
 		CString ResolveFilespec (const CString &sFolder, const CString &sFilename) const;
+		inline bool SetDebugMode (bool bValue) { m_bDebugMode = bValue; }
 		void SetEntities (IXMLParserController *pEntities, bool bFree = false);
 
 		CString GetResourceFilespec (int iIndex);
@@ -220,6 +221,7 @@ class CResourceDb
 		int m_iVersion;
 		bool m_bGameFileInDb;
 		bool m_bResourcesInDb;
+		bool m_bDebugMode;
 
 		//	If we're just using the file system
 		CString m_sFilespec;

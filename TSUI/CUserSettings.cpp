@@ -102,7 +102,8 @@ ALERROR CUserSettings::Load (CHumanInterface &HI, const CString &sFilespec, SOpt
 	CFileReadBlock DataFile(sSettingsFilespec);
 	CXMLElement *pData;
 	CString sError;
-	if (error = CXMLElement::ParseXML(&DataFile, &pData, retsError))
+
+	if (error = CXMLElement::ParseXML(DataFile, CXMLElement::SParseOptions(), &pData, retsError))
 		{
 		//	ERR_NOTFOUND means that we couldn't find the Settings.xml
 		//	file. In that case, initialize from defaults

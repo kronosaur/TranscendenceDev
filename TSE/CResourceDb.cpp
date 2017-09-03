@@ -24,6 +24,7 @@
 CResourceDb::CResourceDb (const CString &sFilespec, bool bExtension) : 
 		m_sFilespec(sFilespec),
 		m_iVersion(TDB_VERSION),
+		m_bDebugMode(false),
 		m_pEntities(NULL),
 		m_bFreeEntities(false)
 
@@ -282,6 +283,11 @@ ALERROR CResourceDb::LoadEmbeddedGameFile (const CString &sFilename, CXMLElement
 	{
 	ALERROR error;
 
+	CXMLElement::SParseOptions Options;
+	Options.pController = pResolver;
+	Options.pEntityTable = ioEntityTable;
+	Options.bNoTagCharCheck = !m_bDebugMode;
+
 	if (m_bGameFileInDb && m_pDb)
 		{
 		//	Look up the file in the map
@@ -297,7 +303,8 @@ ALERROR CResourceDb::LoadEmbeddedGameFile (const CString &sFilename, CXMLElement
 
 		CBufferReadBlock GameFile(sGameFile);
 		CString sError;
-		TRY(CXMLElement::ParseXML(&GameFile, pResolver, retpData, &sError, ioEntityTable));
+
+		TRY(CXMLElement::ParseXML(GameFile, Options, retpData, &sError));
 		if (error)
 			{
 			*retsError = strPatternSubst(CONSTLIT("%s: %s"), sFilename, sError);
@@ -310,7 +317,8 @@ ALERROR CResourceDb::LoadEmbeddedGameFile (const CString &sFilename, CXMLElement
 
 		CFileReadBlock DataFile(pathAddComponent(m_sRoot, sFilename));
 		CString sError;
-		if (error = CXMLElement::ParseXML(&DataFile, pResolver, retpData, &sError, ioEntityTable))
+
+		if (error = CXMLElement::ParseXML(DataFile, Options, retpData, &sError))
 			{
 			if (error == ERR_NOTFOUND)
 				*retsError = strPatternSubst(CONSTLIT("Unable to open file: %s"), DataFile.GetFilename());
@@ -436,6 +444,15 @@ ALERROR CResourceDb::LoadGameFile (CXMLElement **retpData, IXMLParserController 
 	{
 	ALERROR error;
 
+	CXMLElement::SParseOptions Options;
+	Options.pController = pEntities;
+	Options.pEntityTable = ioEntityTable;
+
+	//	In non-debug we are lenient and don't check to see if element tags use valid
+	//	characters. We do this for compatibility.
+
+	Options.bNoTagCharCheck = !m_bDebugMode;
+
 	if (m_bGameFileInDb && m_pDb)
 		{
 		CString sGameFile;
@@ -450,7 +467,7 @@ ALERROR CResourceDb::LoadGameFile (CXMLElement **retpData, IXMLParserController 
 		CBufferReadBlock GameFile(sGameFile);
 		CString sError;
 
-		if (error = CXMLElement::ParseXML(&GameFile, pEntities, retpData, &sError, ioEntityTable))
+		if (error = CXMLElement::ParseXML(GameFile, Options, retpData, &sError))
 			{
 			if (retsError)
 				{
@@ -470,7 +487,7 @@ ALERROR CResourceDb::LoadGameFile (CXMLElement **retpData, IXMLParserController 
 		CFileReadBlock DataFile(pathAddComponent(m_sRoot, m_sGameFile));
 		CString sError;
 
-		if (error = CXMLElement::ParseXML(&DataFile, pEntities, retpData, &sError, ioEntityTable))
+		if (error = CXMLElement::ParseXML(DataFile, Options, retpData, &sError))
 			{
 			if (retsError)
 				{
@@ -603,6 +620,10 @@ ALERROR CResourceDb::LoadModule (const CString &sFolder, const CString &sFilenam
 	{
 	ALERROR error;
 
+	CXMLElement::SParseOptions Options;
+	Options.pController = m_pEntities;
+	Options.bNoTagCharCheck = !m_bDebugMode;
+
 	if (m_bGameFileInDb && m_pDb)
 		{
 		CString sFilespec;
@@ -624,7 +645,8 @@ ALERROR CResourceDb::LoadModule (const CString &sFolder, const CString &sFilenam
 
 		CBufferReadBlock GameFile(sGameFile);
 		CString sError;
-		TRY(CXMLElement::ParseXML(&GameFile, m_pEntities, retpData, &sError));
+
+		TRY(CXMLElement::ParseXML(GameFile, Options, retpData, &sError));
 		if (error)
 			{
 			*retsError = strPatternSubst(CONSTLIT("%s: %s"), m_sGameFile, sError);
@@ -637,7 +659,8 @@ ALERROR CResourceDb::LoadModule (const CString &sFolder, const CString &sFilenam
 
 		CFileReadBlock DataFile(pathAddComponent(m_sRoot, pathAddComponent(sFolder, sFilename)));
 		CString sError;
-		if (error = CXMLElement::ParseXML(&DataFile, m_pEntities, retpData, &sError))
+
+		if (error = CXMLElement::ParseXML(DataFile, Options, retpData, &sError))
 			{
 			if (error == ERR_NOTFOUND)
 				*retsError = strPatternSubst(CONSTLIT("Unable to open file: %s"), DataFile.GetFilename());

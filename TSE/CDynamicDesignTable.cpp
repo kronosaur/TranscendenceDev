@@ -38,8 +38,12 @@ ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CString *retsError)
 
 	//	Parse
 
+	CXMLElement::SParseOptions Options;
+	Options.pController = &Resolver;
+	Options.bNoTagCharCheck = !g_pUniverse->InDebugMode();
+
 	CXMLElement *pDesc;
-	if (error = CXMLElement::ParseXML(&Source, &Resolver, &pDesc, retsError))
+	if (error = CXMLElement::ParseXML(Source, Options, &pDesc, retsError))
 		return error;
 
 	//	Create the type
