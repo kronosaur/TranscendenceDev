@@ -8,10 +8,12 @@
 class CMultiverseFileRef
 	{
 	public:
+		inline DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
 		inline const CIntegerIP &GetDigest (void) const { return m_Digest; }
 		inline const CString &GetFilePath (void) const { return m_sFilePath; }
 		inline const CString &GetFilespec (void) const { return m_sFilespec; }
 		inline const CString &GetOriginalFilename (void) const { return m_sOriginalFilename; }
+		inline const CString &GetVersion (void) const { return m_sVersion; }
 		ALERROR InitFromJSON (const CJSONValue &Desc, CString *retsResult);
 		inline bool IsEmpty (void) const { return m_sFilePath.IsBlank(); }
 		inline void SetFilespec (const CString &sFilespec) { m_sFilespec = sFilespec; }
@@ -22,6 +24,9 @@ class CMultiverseFileRef
 		CTimeDate m_ModifiedTime;
 		DWORD m_dwSize;
 		CIntegerIP m_Digest;				//	File data digest (according to server)
+
+		CString m_sVersion;					//	User-readable version (for TDBs)
+		DWORD m_dwAPIVersion;				//	API version (for TDBs)
 
 		CString m_sFilespec;				//	Filespec on local disk
 	};

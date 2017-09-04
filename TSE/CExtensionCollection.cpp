@@ -1874,6 +1874,13 @@ void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection 
 
 			else if (pEntry->GetTDBFileRef().GetDigest() == pExtension->GetDigest())
 				pExtension->SetVerified();
+
+			//	If this is an unregistered version, then check to see if the version
+			//	number is the same. If not, the we re-download.
+
+			else if (!pExtension->IsRegistered()
+					&& strEquals(pEntry->GetTDBFileRef().GetVersion(), pExtension->GetVersion()))
+				{ }
 			
 			//	Otherwise we assume that we have an old version and ask to download
 			//	the file again.
@@ -1942,7 +1949,8 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 			if (pExtension->IsDisabled())
 				pEntry->SetStatus(CMultiverseCatalogEntry::statusError, pExtension->GetDisabledReason());
 			else if (pExtension->IsRegistrationVerified()
-                    || pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+                    || pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC
+					|| !pExtension->IsRegistered())
 				pEntry->SetStatus(CMultiverseCatalogEntry::statusLoaded);
 			else
 				pEntry->SetStatus(CMultiverseCatalogEntry::statusCorrupt);

@@ -5,9 +5,11 @@
 
 #include "PreComp.h"
 
+#define FIELD_API_VERSION						CONSTLIT("apiVersion")
 #define FIELD_DIGEST							CONSTLIT("digest")
 #define FIELD_FILE_PATH							CONSTLIT("filePath")
 #define FIELD_ORIGINAL_FILENAME					CONSTLIT("originalFilename")
+#define FIELD_TDB_VERSION						CONSTLIT("tdbVersion")
 #define FIELD_UPLOADED_ON						CONSTLIT("uploadedOn")
 
 #define ERR_INVALID_DIGEST						CONSTLIT("Unable to read file digest.")
@@ -34,6 +36,11 @@ ALERROR CMultiverseFileRef::InitFromJSON (const CJSONValue &Desc, CString *retsR
 			return ERR_FAIL;
 			}
 		}
+
+	//	Versions (optional)
+
+	m_sVersion = Desc.GetElement(FIELD_TDB_VERSION).AsString();
+	m_dwAPIVersion = (DWORD)Desc.GetElement(FIELD_API_VERSION).AsInt32();
 
 	//	Initialize
 
