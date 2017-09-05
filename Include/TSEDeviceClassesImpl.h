@@ -39,12 +39,20 @@ class CAutoDefenseClass : public CDeviceClass
 
 		inline CDeviceClass *GetWeapon (void) const { return m_pWeapon; }
 
+
 		TargetingSystemTypes m_iTargeting;
 		CSpaceObject::Criteria m_TargetCriteria;
 		Metric m_rInterceptRange;
 
 		int m_iRechargeTicks;
 		CDeviceClassRef m_pWeapon;
+
+		bool m_bOmnidirectional;				//	Omnidirectional
+		int m_iMinFireArc;						//	Min angle of fire arc (degrees)
+		int m_iMaxFireArc;						//	Max angle of fire arc (degrees)
+		bool IsOmniDirectional(CInstalledDevice *pDevice);
+		bool IsDirectional(CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc);
+
 	};
 
 class CCargoSpaceClass : public CDeviceClass
