@@ -474,7 +474,7 @@ class CShieldClass : public CDeviceClass
 		int m_iExtraRegenPerCharge;				//	Extra regen/180 ticks per point of charge
 
 		DWORD m_fHasNonRegenHPBonus:1;			//	If TRUE, charges are non-regenerating HP
-		DWORD m_fSpare2:1;
+		DWORD m_fRegenByShieldLevel:1;			//	If TRUE, regen decreases with low shield level
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;

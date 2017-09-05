@@ -24,6 +24,7 @@
 #define REGEN_HP_ATTRIB							CONSTLIT("regenHP")
 #define REGEN_ADJ_PER_CHARGE_ATTRIB				CONSTLIT("regenHPBonusPerCharge")
 #define REGEN_TIME_ATTRIB						CONSTLIT("regenTime")
+#define VARIABLE_REGEN_ATTRIB					CONSTLIT("variableRegen")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
 
 #define GET_MAX_HP_EVENT						CONSTLIT("GetMaxHP")
@@ -45,6 +46,7 @@
 #define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 
+#define STR_BY_SHIELD_INTEGRITY					CONSTLIT("byShieldIntegrity")
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 #define MAX_REFLECTION_CHANCE					95
@@ -694,6 +696,22 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 			pShield->m_iDepletionTicks = Max(1, iDepletion * iRegenTime);
 		else
 			pShield->m_iDepletionTicks = STD_DEPLETION_DELAY;
+		}
+
+	//	Variable regen
+
+	pShield->m_fRegenByShieldLevel = false;
+
+	CString sAttrib;
+	if (pDesc->FindAttribute(VARIABLE_REGEN_ATTRIB, &sAttrib))
+		{
+		if (strEquals(sAttrib, STR_BY_SHIELD_INTEGRITY))
+			pShield->m_fRegenByShieldLevel = true;
+		else
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid variable regen: %s"), sAttrib);
+			return ERR_FAIL;
+			}
 		}
 
 	//	Load damage adjustment
@@ -1719,6 +1737,19 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 					iRegenHP += iExtra30;
 					if (mathRandom(1, 6) <= iExtraRemainder)
 						iRegenHP += 1;
+					}
+
+				//	If we're adjusting regeneration by shield level, then 
+				//	adjust now.
+
+				if (m_fRegenByShieldLevel && iRegenHP > 0)
+					{
+					constexpr Metric rMinRegen = 0.1;
+					constexpr Metric rMaxRegen = 2.0;
+					constexpr Metric rRange = rMaxRegen - rMinRegen;
+
+					Metric rRegen = rMinRegen + (rRange * (iHPLeft / (Metric)iMaxHP));
+					iRegenHP = mathRoundStochastic(rRegen * iRegenHP);
 					}
 
 				//	If we have non-regenerating HP and we're below that level,
