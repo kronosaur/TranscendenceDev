@@ -30,6 +30,7 @@
 #define EXPANSION_SPEED_ATTRIB					CONSTLIT("expansionSpeed")
 #define FAILSAFE_ATTRIB							CONSTLIT("failsafe")
 #define FIRE_EFFECT_ATTRIB						CONSTLIT("fireEffect")
+#define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
 #define FRAGMENT_COUNT_ATTRIB					CONSTLIT("fragmentCount")
 #define FRAGMENT_INTERVAL_ATTRIB				CONSTLIT("fragmentInterval")
 #define FRAGMENT_RADIUS_ATTRIB					CONSTLIT("fragmentRadius")
@@ -1588,7 +1589,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 		}
 	}
 
-ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile)
+ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pMissile, const SInitOptions &Options)
 
 //  InitFromMissileXML
 //
@@ -1597,7 +1598,9 @@ ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *p
     {
     ALERROR error;
 
-    if (error = InitFromXML(Ctx, pDesc, sUNID, pMissile->GetLevel()))
+	ASSERT(Options.iLevel == pMissile->GetLevel());
+
+    if (error = InitFromXML(Ctx, pDesc, Options))
         return error;
 
     m_pAmmoType = pMissile;
@@ -1605,7 +1608,7 @@ ALERROR CWeaponFireDesc::InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *p
     return NOERROR;
     }
 
-ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, int iLevel, bool bDamageOnly)
+ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options)
 
 //	InitFromXML
 //
@@ -1616,7 +1619,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	int i;
 
 	m_pExtension = Ctx.pExtension;
-    m_iLevel = iLevel;
+    m_iLevel = Options.iLevel;
 	m_fVariableInitialSpeed = false;
 	m_fFragment = false;
 
@@ -1635,7 +1638,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		m_iFireType = ftParticles;
 	else if (strEquals(sValue, FIRE_TYPE_RADIUS))
 		m_iFireType = ftRadius;
-	else if (bDamageOnly)
+	else if (Options.bDamageOnly)
 		m_iFireType = ftMissile;
 	else
 		{
@@ -1645,13 +1648,21 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load basic attributes
 
-	m_sUNID = sUNID;
+	m_sUNID = Options.sUNID;
 	m_Lifetime.LoadFromXML(pDesc->GetAttribute(LIFETIME_ATTRIB));
 	int iMaxLifetime = m_Lifetime.GetMaxValue();
 	m_fCanDamageSource = pDesc->GetAttributeBool(CAN_HIT_SOURCE_ATTRIB);
 	m_fAutoTarget = pDesc->GetAttributeBool(AUTO_TARGET_ATTRIB);
 	m_fTargetRequired = pDesc->GetAttributeBool(TARGET_REQUIRED_ATTRIB);
 	m_InitialDelay.LoadFromXML(pDesc->GetAttribute(INITIAL_DELAY_ATTRIB));
+
+	//	Fire rate
+
+	int iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, -1);
+	if (iFireRateSecs == -1)
+		m_iFireRate = -1;
+	else
+		m_iFireRate = (int)((iFireRateSecs / STD_SECONDS_PER_UPDATE) + 0.5);
 
 	//	Hit criteria
 
@@ -1720,7 +1731,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
     Ctx.bLoopImages = true;
 
     error = m_pEffect.LoadEffect(Ctx,
-        strPatternSubst("%s:e", sUNID),
+        strPatternSubst("%s:e", m_sUNID),
         pDesc->GetContentElementByTag(EFFECT_TAG),
         pDesc->GetAttribute(EFFECT_ATTRIB));
 
@@ -1752,7 +1763,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 			if (m_iFireType == ftBeam && m_pEffect.IsEmpty())
 				{
-				if (error = m_pEffect.CreateBeamEffect(Ctx, pDesc, strPatternSubst("%s:e", sUNID)))
+				if (error = m_pEffect.CreateBeamEffect(Ctx, pDesc, strPatternSubst("%s:e", m_sUNID)))
 					return error;
 				}
 
@@ -1870,7 +1881,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			CXMLElement *pParticleSystem = pDesc->GetContentElementByTag(PARTICLE_SYSTEM_TAG);
 			if (pParticleSystem)
 				{
-				if (error = m_pParticleDesc->InitFromXML(Ctx, pParticleSystem, sUNID))
+				if (error = m_pParticleDesc->InitFromXML(Ctx, pParticleSystem, m_sUNID))
 					return error;
 
 				//	We take certain values from the particle system.
@@ -2018,9 +2029,12 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		//	Load fragment data
 
+		SInitOptions FragOptions;
+		FragOptions.sUNID = strPatternSubst("%s/f%d", m_sUNID, iFragCount++);
+		FragOptions.iLevel = m_iLevel;
+
 		pNewDesc->pDesc = new CWeaponFireDesc;
-		CString sFragUNID = strPatternSubst("%s/f%d", sUNID, iFragCount++);
-		if (error = pNewDesc->pDesc->InitFromXML(Ctx, pFragDesc, sFragUNID, iLevel))
+		if (error = pNewDesc->pDesc->InitFromXML(Ctx, pFragDesc, FragOptions))
 			return error;
 
 		pNewDesc->pDesc->m_fFragment = true;
@@ -2070,13 +2084,13 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	//	Effects
 
 	if (error = m_pHitEffect.LoadEffect(Ctx,
-			strPatternSubst("%s:h", sUNID),
+			strPatternSubst("%s:h", m_sUNID),
 			pDesc->GetContentElementByTag(HIT_EFFECT_TAG),
 			pDesc->GetAttribute(HIT_EFFECT_ATTRIB)))
 		return error;
 
 	if (error = m_pFireEffect.LoadEffect(Ctx,
-			strPatternSubst("%s:f", sUNID),
+			strPatternSubst("%s:f", m_sUNID),
 			pDesc->GetContentElementByTag(FIRE_EFFECT_TAG),
 			pDesc->GetAttribute(FIRE_EFFECT_ATTRIB)))
 		return error;

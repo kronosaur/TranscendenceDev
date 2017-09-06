@@ -208,7 +208,7 @@ class CDeviceClass
         virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) { return CDeviceClass::FindItemProperty(Ctx, sProperty); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName);
-		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
+		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const { return 0; }
 		virtual int GetAmmoVariant (const CItemType *pItem) const { return -1; }
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) { return 0; }
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return NULL; }
@@ -488,7 +488,7 @@ class CInstalledDevice
 		inline bool CanHitFriends (void) { return m_pClass->CanHitFriends(); }
 		inline bool CanRotate (CItemCtx &Ctx) const { return m_pClass->CanRotate(Ctx); }
 		inline void Deplete (CSpaceObject *pSource) { m_pClass->Deplete(this, pSource); }
-		int GetActivateDelay (CSpaceObject *pSource);
+		int GetActivateDelay (CSpaceObject *pSource) const;
 		inline ItemCategories GetCategory (void) const { return m_pClass->GetCategory(); }
 		inline int GetCounter (CSpaceObject *pSource, CDeviceClass::CounterTypes *retiCounter = NULL, int *retiLevel = NULL) { return m_pClass->GetCounter(this, pSource, retiCounter, retiLevel); }
 		inline const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return m_pClass->GetDamageDesc(Ctx); }

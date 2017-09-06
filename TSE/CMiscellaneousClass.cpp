@@ -75,7 +75,7 @@ ALERROR CMiscellaneousClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 	return NOERROR;
 	}
 
-int CMiscellaneousClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CMiscellaneousClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const
 
 //	GetActivateDelay
 //
@@ -92,7 +92,7 @@ int CMiscellaneousClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObje
 	return (m_iPowerToActivate / iPowerPerCycle);
 	}
 
-int CMiscellaneousClass::GetCapacitorPowerUse (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CMiscellaneousClass::GetCapacitorPowerUse (CInstalledDevice *pDevice, CSpaceObject *pSource) const
 
 //	GetCapacitorPowerUse
 //

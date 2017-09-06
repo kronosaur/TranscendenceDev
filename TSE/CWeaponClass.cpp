@@ -330,7 +330,7 @@ int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx) const
 	if (pEnhancements)
 		return pEnhancements->CalcActivateDelay(ItemCtx);
 
-	return m_iFireRate;
+	return GetActivateDelay(ItemCtx.GetDevice(), ItemCtx.GetSource());
 	}
 
 int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
@@ -363,7 +363,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
     retBalance.rDamageHP = CalcDamage(pShot);
     retBalance.rDamageMult = CalcConfigurationMultiplier(pShot, false);
     Metric rDamagePerShot = retBalance.rDamageMult * retBalance.rDamageHP;
-    Metric rFireDelay = (m_iFireRate > 0 ? m_iFireRate : 1.0);
+    Metric rFireDelay = (Metric)Max(GetFireDelay(pShot), 1);
     retBalance.rDamage180 = rDamagePerShot * 180.0 / rFireDelay;
 
     //  Compute the number of balance points (BP) of the damage. +100 = double
@@ -983,7 +983,7 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 				{
 				//	Compute the number of ticks until we discharge the capacitor
 
-				Metric rFireTime = (MAX_COUNTER / (Metric)-m_iCounterActivate) * m_iFireRate;
+				Metric rFireTime = (MAX_COUNTER / (Metric)-m_iCounterActivate) * GetFireDelay(pShot);
 
 				//	Compute the number of ticks to recharge
 
@@ -1003,7 +1003,7 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
                 {
                 //  Compute the number of ticks until we reach max temp
 
-                Metric rFireTime = (MAX_COUNTER / (Metric)m_iCounterActivate) * m_iFireRate;
+                Metric rFireTime = (MAX_COUNTER / (Metric)m_iCounterActivate) * GetFireDelay(pShot);
 
                 //  Compute the number of ticks to cool down
 
@@ -1459,8 +1459,8 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 
 	//	Basics
 
-	pWeapon->m_iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, 16);
-	pWeapon->m_iFireRate = (int)((pWeapon->m_iFireRateSecs / STD_SECONDS_PER_UPDATE) + 0.5);
+	int iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, 16);
+	pWeapon->m_iFireRate = (int)((iFireRateSecs / STD_SECONDS_PER_UPDATE) + 0.5);
 	pWeapon->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
 	pWeapon->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pWeapon->m_iPowerUse / 10);
 	pWeapon->m_iRecoil = pDesc->GetAttributeInteger(RECOIL_ATTRIB);
@@ -1663,11 +1663,12 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_DAMAGE_TYPE))
 		*retsValue = strFromInt(pShot->GetDamageType());
 	else if (strEquals(sField, FIELD_FIRE_DELAY))
-		*retsValue = strFromInt(m_iFireRate);
+		*retsValue = strFromInt(GetFireDelay(pShot));
 	else if (strEquals(sField, FIELD_FIRE_RATE))
 		{
-		if (m_iFireRate)
-			*retsValue = strFromInt(1000 / m_iFireRate);
+		int iFireRate = GetFireDelay(pShot);
+		if (iFireRate)
+			*retsValue = strFromInt(1000 / iFireRate);
 		else
 			return false;
 		}
@@ -1676,12 +1677,13 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_DAMAGE_180))
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(pShot);
-		*retsValue = (m_iFireRate > 0 ? strFromInt((int)((rDamagePerShot * 180.0 / m_iFireRate) + 0.5)) : strFromInt((int)(rDamagePerShot + 0.5)));
+		int iFireRate = GetFireDelay(pShot);
+		*retsValue = (iFireRate > 0 ? strFromInt((int)((rDamagePerShot * 180.0 / iFireRate) + 0.5)) : strFromInt((int)(rDamagePerShot + 0.5)));
 		}
 	else if (strEquals(sField, FIELD_POWER))
 		*retsValue = strFromInt(m_iPowerUse * 100);
 	else if (strEquals(sField, FIELD_POWER_PER_SHOT))
-		*retsValue = strFromInt((int)(((m_iFireRate * m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000) / 600.0) + 0.5));
+		*retsValue = strFromInt((int)(((GetFireDelay(pShot) * m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000) / 600.0) + 0.5));
     else if (strEquals(sField, FIELD_BALANCE))
         {
         CItem Item(GetItemType(), 1);
@@ -2142,7 +2144,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	return true;
 	}
 
-int CWeaponClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CWeaponClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const
 
 //	GetActivateDelay
 //
@@ -2150,7 +2152,7 @@ int CWeaponClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSo
 //	NOTE: We do not adjust for enhancements.
 
 	{
-	return m_iFireRate;
+	return GetFireDelay(GetWeaponFireDesc(CItemCtx(pSource, pDevice)));
 	}
 
 CItemType *CWeaponClass::GetAmmoItem (int iIndex) const
@@ -2186,6 +2188,24 @@ int CWeaponClass::GetAmmoItemCount (void) const
     else
         return 1;
     }
+
+int CWeaponClass::GetFireDelay (CWeaponFireDesc *pShot) const
+
+//	GetFireDelay
+//
+//	Returns number of ticks to wait before we can shoot again.
+
+	{
+	//	See if the shot overrides fire rate
+
+	int iShotFireRate;
+	if (pShot && (iShotFireRate = pShot->GetFireDelay()) != -1)
+		return iShotFireRate;
+
+	//	Otherwise, based on weapon
+
+	return m_iFireRate;
+	}
 
 bool CWeaponClass::HasAmmoLeft (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const
 
@@ -3431,8 +3451,11 @@ ALERROR CWeaponClass::InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 
 				//	Initialize
 
-				CString sUNID = strPatternSubst(CONSTLIT("%d/%d"), GetUNID(), i);
-				if (error = m_ShotData[i].pDesc->InitFromXML(Ctx, pItem, sUNID, iLevel))
+				CWeaponFireDesc::SInitOptions Options;
+				Options.sUNID = strPatternSubst(CONSTLIT("%d/%d"), GetUNID(), i);
+				Options.iLevel = iLevel;
+
+				if (error = m_ShotData[i].pDesc->InitFromXML(Ctx, pItem, Options))
 					return error;
 				}
 
@@ -3476,14 +3499,17 @@ ALERROR CWeaponClass::InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 
 		//	Add a single entry
 
+		CWeaponFireDesc::SInitOptions Options;
+		Options.sUNID = strPatternSubst(CONSTLIT("%d/0"), GetUNID());
+		Options.iLevel = GetLevel();
+
 		m_ShotData.InsertEmpty(1);
 		m_ShotData[0].bOwned = true;
 		m_ShotData[0].pDesc = new CWeaponFireDesc;
 
 		//	Load the definition from the root element
 
-		CString sUNID = strPatternSubst(CONSTLIT("%d/0"), GetUNID());
-		if (error = m_ShotData[0].pDesc->InitFromXML(Ctx, pDesc, sUNID, GetLevel()))
+		if (error = m_ShotData[0].pDesc->InitFromXML(Ctx, pDesc, Options))
 			return error;
 
         //  Initialize scaled stats, if necessary
@@ -3743,9 +3769,10 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 		default:
 			{
-			if (m_iFireRate > 10)
+			int iFireRate = GetFireDelay(pShot);
+			if (iFireRate > 10)
 				iAimTolerance = 2;
-			else if (m_iFireRate > 4)
+			else if (iFireRate > 4)
 				iAimTolerance = 4;
 			else
 				iAimTolerance = 6;

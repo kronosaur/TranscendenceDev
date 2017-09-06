@@ -736,12 +736,13 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	CXMLElement *pDamageDesc = pDesc->GetContentElementByTag(DAMAGE_TAG);
 	if (pDamageDesc)
 		{
+		CWeaponFireDesc::SInitOptions Options;
+		Options.sUNID = strPatternSubst(CONSTLIT("%d/d"), GetUNID());
+		Options.iLevel = 13;	//  LATER: Need to allow caller to set level.
+		Options.bDamageOnly = true;
+
 		m_pDamage = new CWeaponFireDesc;
-
-        //  LATER: Need to allow caller to set level.
-
-		CString sUNID = strPatternSubst(CONSTLIT("%d/d"), GetUNID());
-		if (error = m_pDamage->InitFromXML(Ctx, pDamageDesc, sUNID, 13, true))
+		if (error = m_pDamage->InitFromXML(Ctx, pDamageDesc, Options))
 			return error;
 		}
 	

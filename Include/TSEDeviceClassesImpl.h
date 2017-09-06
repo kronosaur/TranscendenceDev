@@ -14,7 +14,7 @@ class CAutoDefenseClass : public CDeviceClass
 
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty) override;
-		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
@@ -84,7 +84,7 @@ class CCyberDeckClass : public CDeviceClass
 							   bool *retbSourceDestroyed,
 							   bool *retbConsumedItems = NULL) override;
 		virtual bool CanHitFriends (void) override { return false; }
-		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override { return 30; }
+		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const override { return 30; }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatWeapon; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override { return damageGeneric; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
@@ -235,7 +235,7 @@ class CMiscellaneousClass : public CDeviceClass
 		//	CDeviceClass virtuals
 
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
-		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) override;
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
@@ -246,7 +246,7 @@ class CMiscellaneousClass : public CDeviceClass
 	private:
 		CMiscellaneousClass (void);
 
-		int GetCapacitorPowerUse (CInstalledDevice *pDevice, CSpaceObject *pSource);
+		int GetCapacitorPowerUse (CInstalledDevice *pDevice, CSpaceObject *pSource) const;
 
 		int m_iPowerRating;					//	If >0, power rating for device
 											//		This value is required if
@@ -630,7 +630,7 @@ class CWeaponClass : public CDeviceClass
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const override;
         virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) override;
-		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const override;
 		virtual int GetAmmoVariant (const CItemType *pItem) const override;
 		virtual ItemCategories GetImplCategory (void) const override;
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) override;
@@ -750,6 +750,7 @@ class CWeaponClass : public CDeviceClass
 						 int iRepeatingCount,
 						 bool *retbSourceDestroyed,
 						 bool *retbConsumedItems);
+		int GetFireDelay (CWeaponFireDesc *pShot) const;
 		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;
 		bool HasAmmoLeft (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const;
@@ -773,7 +774,6 @@ class CWeaponClass : public CDeviceClass
 		void SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const;
 
 		int m_iFireRate;						//	Ticks between shots
-		int m_iFireRateSecs;					//	Game seconds between shots
 		int m_iPowerUse;						//	Power use to recharge capacitors (1/10 megawatt)
 		int m_iIdlePowerUse;					//	Power use when capacitors fully charged
 		int m_iRecoil;							//	0-7 (as per momentum damage)

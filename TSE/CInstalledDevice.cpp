@@ -152,7 +152,7 @@ void CInstalledDevice::FinishInstall (CSpaceObject *pSource)
 	DEBUG_CATCH
 	}
 
-int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource)
+int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
 
 //	GetActivateDelay
 //

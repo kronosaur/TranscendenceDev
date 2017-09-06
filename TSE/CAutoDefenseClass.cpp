@@ -26,7 +26,7 @@ CAutoDefenseClass::CAutoDefenseClass (void)
 	{
 	}
 
-int CAutoDefenseClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource)
+int CAutoDefenseClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const
 
 //	GetActivateDelay
 //

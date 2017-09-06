@@ -353,6 +353,21 @@ class CWeaponFireDesc
 		    Metric rExhaustDrag;			//	Coefficient of drag for exhaust particles
             };
 
+		struct SInitOptions
+			{
+			SInitOptions (void) :
+					iLevel(1),
+					bDamageOnly(false)
+				{ }
+
+			CString sUNID;					//	UNID of weapon fire desc
+			int iLevel;						//	Level (for scalable weapons)
+
+			//	Options
+
+			bool bDamageOnly;				//	Defines damage (not entire projectile desc)
+			};
+
         struct SVaporTrailDesc
             {
             SVaporTrailDesc (void) :
@@ -417,6 +432,7 @@ class CWeaponFireDesc
         inline const SExhaustDesc &GetExhaust (void) const { return GetOldEffects().Exhaust; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
+		inline int GetFireDelay (void) const { return m_iFireRate; }
 		inline FireTypes GetFireType (void) const { return m_iFireType; }
 		inline SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		inline Metric GetFragmentationThreshold (void) const { return m_rFragThreshold; }
@@ -450,8 +466,8 @@ class CWeaponFireDesc
 		bool HasFragmentInterval (int *retiInterval = NULL) const;
 		inline bool HasOnFragmentEvent (void) const { return m_CachedEvents[evtOnFragment].pCode != NULL; }
 		void InitFromDamage (const DamageDesc &Damage);
-		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, CItemType *pMissile);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, int iLevel, bool bDamageOnly = false);
+		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pMissile, const SInitOptions &Options);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options);
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem);
 		inline bool IsCurvedBeam (void) const { return false; }
         inline bool IsDirectionalImage (void) const { return m_fDirectional; }
@@ -502,6 +518,7 @@ class CWeaponFireDesc
 		FireTypes m_iFireType;				//	beam or missile
 		DamageDesc m_Damage;				//	Damage per shot
 		int m_iContinuous;					//	repeat for this number of frames
+		int m_iFireRate;					//	Ticks between shots (-1 = default to weapon fire rate)
 
 		Metric m_rMissileSpeed;				//	Speed of missile
 		DiceRange m_MissileSpeed;			//	Speed of missile (if random)

@@ -1593,8 +1593,12 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		else if (strEquals(pSubDesc->GetTag(), MISSILE_TAG))
 			{
+			CWeaponFireDesc::SInitOptions Options;
+			Options.sUNID = strPatternSubst(CONSTLIT("%d"), GetUNID());
+			Options.iLevel = GetLevel();
+
 			m_pMissile = new CWeaponFireDesc;
-			if (error = m_pMissile->InitFromMissileXML(Ctx, pSubDesc, strPatternSubst(CONSTLIT("%d"), GetUNID()), this))
+			if (error = m_pMissile->InitFromMissileXML(Ctx, pSubDesc, this, Options))
 				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unable to load %s: %s"), pSubDesc->GetTag(), Ctx.sError));
 			}
 
