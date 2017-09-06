@@ -7,6 +7,7 @@
 #define HIT_EFFECT_TAG							CONSTLIT("HitEffect")
 
 #define ABSORB_ADJ_ATTRIB						CONSTLIT("absorbAdj")
+#define AIMED_REFLECTION_ATTRIB					CONSTLIT("aimedReflection")
 #define ARMOR_SHIELD_ATTRIB						CONSTLIT("armorShield")
 #define DAMAGE_ADJ_ATTRIB						CONSTLIT("damageAdj")
 #define DAMAGE_ADJ_LEVEL_ATTRIB					CONSTLIT("damageAdjLevel")
@@ -50,6 +51,7 @@
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
 #define MAX_REFLECTION_CHANCE					95
+const Metric MAX_REFLECTION_TARGET =			50.0 * LIGHT_SECOND;
 const Metric STD_FIRE_DELAY_TICKS =				8.0;
 const Metric STD_DEFENSE_RATIO =				1.25;
 const int STD_DEPLETION_DELAY =					360;
@@ -307,7 +309,28 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	//	If we reflect, then create the reflection
 
 	if (Ctx.bReflect)
-		Ctx.pCause->CreateReflection(Ctx.vHitPos, (Ctx.iDirection + 120 + mathRandom(0, 120)) % 360);
+		{
+		int iDirection;
+
+		//	If we aim the reflection, then figure out what to aim at.
+
+		CSpaceObject *pTarget;
+		if (m_fAimReflection
+				&& (pTarget = pShip->GetNearestEnemy(MAX_REFLECTION_TARGET))
+				&& (iDirection = pShip->CalcFireSolution(pTarget, Ctx.pCause->GetMaxSpeed())) != -1)
+			{
+			//	iDirection is set
+			}
+
+		//	Otherwise, we reflect randomly
+
+		else
+			{
+			iDirection = AngleMod(Ctx.iDirection + mathRandom(120, 240));
+			}
+
+		Ctx.pCause->CreateReflection(Ctx.vHitPos, iDirection);
+		}
 
 	//	Create shield effect
 
@@ -753,6 +776,8 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		Ctx.sError = CONSTLIT("Unable to load reflective attribute");
 		return error;
 		}
+
+	pShield->m_fAimReflection = pDesc->GetAttributeBool(AIMED_REFLECTION_ATTRIB);
 
 	//	Effects
 

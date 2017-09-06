@@ -475,7 +475,7 @@ class CShieldClass : public CDeviceClass
 
 		DWORD m_fHasNonRegenHPBonus:1;			//	If TRUE, charges are non-regenerating HP
 		DWORD m_fRegenByShieldLevel:1;			//	If TRUE, regen decreases with low shield level
-		DWORD m_fSpare3:1;
+		DWORD m_fAimReflection:1;				//	If TRUE, reflected shots are aimed at nearest enemy
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

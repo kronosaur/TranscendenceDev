@@ -645,6 +645,27 @@ void CSpaceObject::CalcOverlayPos (COverlayType *pOverlayType, const CVector &vP
 		*retiPosRadius = (int)(rRadius / g_KlicksPerPixel);
 	}
 
+int CSpaceObject::CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const
+
+//	CalcFireSolution
+//
+//	Returns the angle to aim at to hit the given target. Or -1 if the target cannot be
+//	intercepted.
+
+	{
+	CVector vPos = pTarget->GetPos() - GetPos();
+	CVector vVel = pTarget->GetVel() - GetVel();
+
+	Metric rTimeToIntercept = CalcInterceptTime(vPos, vVel, rMissileSpeed);
+	if (rTimeToIntercept < 0.0)
+		return -1;
+
+	//	Compute the intercept point and then the direction
+
+	CVector vInterceptPoint = vPos + vVel * rTimeToIntercept;
+	return VectorToPolar(vInterceptPoint);
+	}
+
 CSpaceObject *CSpaceObject::CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
 
 //	CalcTargetToAttack

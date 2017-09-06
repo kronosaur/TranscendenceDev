@@ -966,6 +966,7 @@ class CSpaceObject : public CObject
 		void AddEventSubscriber (CSpaceObject *pObj);
 		inline bool Blocks (CSpaceObject *pObj) { return (m_fIsBarrier && CanBlock(pObj)); }
 		inline bool BlocksShips (void) { return (m_fIsBarrier && CanBlockShips()); }
+		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
 		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		inline bool CanBeHit (void) { return (!m_fCannotBeHit && !m_fOutOfPlaneObj); }
 		inline bool CanBeHitByFriends (void) { return !m_fNoFriendlyTarget; }
