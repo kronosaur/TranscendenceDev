@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+#define ORIGIN_X_ATTRIB							CONSTLIT("originX")
+#define ORIGIN_Y_ATTRIB							CONSTLIT("originY")
 #define POS_ANGLE_ATTRIB						CONSTLIT("posAngle")
 #define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
 #define POS_Z_ATTRIB							CONSTLIT("posZ")
@@ -119,6 +121,21 @@ bool C3DObjectPos::InitFromXML (CXMLElement *pDesc, DWORD dwFlags)
 		m_iPosRadius = iRadius;
 
 		m_iPosZ = pDesc->GetAttributeInteger(Z_ATTRIB);
+		}
+
+	//	If we have an origin, then adjust the position.
+
+	int xOrigin, yOrigin;
+	if (pDesc->FindAttributeInteger(ORIGIN_X_ATTRIB, &xOrigin))
+		{
+		yOrigin = pDesc->GetAttributeInteger(ORIGIN_Y_ATTRIB);
+		CVector vOffset(xOrigin, yOrigin);
+		CVector vPos = PolarToVector(m_iPosAngle, m_iPosRadius);
+		CVector vResult = vPos + vOffset;
+
+		Metric rRadius;
+		m_iPosAngle = VectorToPolar(vResult, &rRadius);
+		m_iPosRadius = mathRound(rRadius);
 		}
 
 	return true;
