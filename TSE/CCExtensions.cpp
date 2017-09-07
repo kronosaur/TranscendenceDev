@@ -26,6 +26,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_PRINT					3
 #define FN_PRINT_TO					4
 #define FN_API_VERSION				5
+#define FN_DEBUG_IS_ACTIVE			6
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -610,6 +611,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"dbgLog",						fnDebug,		FN_DEBUG_LOG,
 			"(dbgLog [string]*) -> True if in debug mode, else Nil",
 			"*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"dbgIsActive",				fnDebug,		FN_DEBUG_IS_ACTIVE,
+			"(dbgIsActive) -> True if in debug mode, else Nil",
+			NULL,	0, },
 
 		{	"dbgOutput",					fnDebug,		FN_DEBUG_OUTPUT,
 			"(dbgOutput [string]*) -> True if in debug mode, else Nil",
@@ -3640,7 +3645,8 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_API_VERSION:
 			return pCC->CreateInteger(pCtx->GetAPIVersion());
-
+		case FN_DEBUG_IS_ACTIVE:
+			return g_pUniverse->InDebugMode() ? pCC->CreateTrue() : pCC->CreateNil();
 		case FN_DEBUG_OUTPUT:
 		case FN_DEBUG_LOG:
 		case FN_PRINT:
