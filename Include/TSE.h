@@ -192,7 +192,7 @@ class CResourceDb
 		ALERROR LoadSound (CSoundMgr &SoundMgr, const CString &sFolder, const CString &sFilename, int *retiChannel);
 		ALERROR Open (DWORD dwFlags, CString *retsError);
 		CString ResolveFilespec (const CString &sFolder, const CString &sFilename) const;
-		inline bool SetDebugMode (bool bValue) { m_bDebugMode = bValue; }
+		inline void SetDebugMode (bool bValue) { m_bDebugMode = bValue; }
 		void SetEntities (IXMLParserController *pEntities, bool bFree = false);
 
 		CString GetResourceFilespec (int iIndex);
