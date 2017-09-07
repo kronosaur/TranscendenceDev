@@ -91,6 +91,7 @@
 #define ON_DAMAGE_SHIELDS_EVENT					CONSTLIT("OnDamageShields")
 #define ON_DAMAGE_ARMOR_EVENT					CONSTLIT("OnDamageArmor")
 #define ON_DAMAGE_ABANDONED_EVENT				CONSTLIT("OnDamageAbandoned")
+#define ON_DESTROY_OBJ_EVENT					CONSTLIT("OnDestroyObj")
 #define ON_DESTROY_SHOT_EVENT					CONSTLIT("OnDestroyShot")
 #define ON_FRAGMENT_EVENT						CONSTLIT("OnFragment")
 
@@ -110,6 +111,7 @@ static char *CACHED_EVENTS[CWeaponFireDesc::evtCount] =
 		"OnDamageArmor",
 		"OnDamageOverlay",
 		"OnDamageShields",
+		"OnDestroyObj",
 		"OnDestroyShot",
 		"OnFragment",
 	};
@@ -1121,6 +1123,38 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 		}
 	else
 		return false;
+	}
+
+void CWeaponFireDesc::FireOnDestroyObj (const SDestroyCtx &Ctx)
+
+//	FireOnDestroyObj
+//
+//	The weapon destroyed an object.
+
+	{
+	SEventHandlerDesc Event;
+	if (FindEventHandler(evtOnDestroyObj, &Event))
+		{
+		//	Setup arguments
+
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(Ctx.Attacker.GetObj());
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
+
+		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
+		CCCtx.DefineInteger(CONSTLIT("aWeaponLevel"), GetLevel());
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			Ctx.pObj->ReportEventError(ON_DESTROY_OBJ_EVENT, pResult);
+
+		CCCtx.Discard(pResult);
+		}
 	}
 
 void CWeaponFireDesc::FireOnDestroyShot (CSpaceObject *pShot)

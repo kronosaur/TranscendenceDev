@@ -1406,7 +1406,7 @@ CString CSpaceObject::DebugLoadError (SLoadCtx &Ctx)
 	return sLine;
 	}
 
-void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attacker, CSpaceObject **retpWreck)
+void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc, CSpaceObject **retpWreck)
 
 //	Destroy
 //
@@ -1445,6 +1445,11 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 	//	(so that we can detect any attempts at recursion).
 
 	m_fDestroyed = true;
+
+	//	If we were destroyed by a weapon, let the weapon know that it succeeded.
+
+	if (pWeaponDesc)
+		pWeaponDesc->FireOnDestroyObj(Ctx);
 
 	//	Remove from the object from the universal list (NOTE: We must do this
 	//	before we clear out m_pSystem.)

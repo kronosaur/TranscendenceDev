@@ -4526,7 +4526,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			if (!OnDestroyCheck(Ctx.Damage.GetCause(), Ctx.Attacker))
 				return damageArmorHit;
 
-			Destroy(Ctx.Damage.GetCause(), Ctx.Attacker);
+			Destroy(Ctx);
 			}
 
 		return iResult;
@@ -4573,7 +4573,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			if (!OnDestroyCheck(Ctx.Damage.GetCause(), Ctx.Attacker))
 				return damageArmorHit;
 
-			Destroy(Ctx.Damage.GetCause(), Ctx.Attacker);
+			Destroy(Ctx);
 			return damageDestroyed;
 			}
 

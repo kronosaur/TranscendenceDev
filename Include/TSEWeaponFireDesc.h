@@ -324,10 +324,11 @@ class CWeaponFireDesc
 			evtOnDamageArmor			= 2,
 			evtOnDamageOverlay			= 3,
 			evtOnDamageShields			= 4,
-			evtOnDestroyShot			= 5,
-			evtOnFragment				= 6,
+			evtOnDestroyObj				= 5,
+			evtOnDestroyShot			= 6,
+			evtOnFragment				= 7,
 
-			evtCount					= 7,
+			evtCount					= 8,
 			};
 
 		struct SFragmentDesc
@@ -412,6 +413,7 @@ class CWeaponFireDesc
 		bool FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay);
 		bool FireOnDamageShields (SDamageCtx &Ctx, int iDevice);
 		bool FireOnFragment (const CDamageSource &Source, CSpaceObject *pShot, const CVector &vHitPos, CSpaceObject *pNearestObj, CSpaceObject *pTarget);
+		void FireOnDestroyObj (const SDestroyCtx &Ctx);
 		void FireOnDestroyShot (CSpaceObject *pShot);
 		inline CItemType *GetAmmoType (void) const { return m_pAmmoType; }
         inline DWORD GetAmmoTypeUNID (void) const { return m_pAmmoType.GetUNID(); }

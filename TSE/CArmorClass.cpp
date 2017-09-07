@@ -239,7 +239,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		if (!pSource->OnDestroyCheck(killedByDisintegration, Ctx.Attacker))
 			return damageNoDamage;
 
-		pSource->Destroy(killedByDisintegration, Ctx.Attacker);
+		pSource->Destroy(killedByDisintegration, Ctx);
 		return damageDestroyed;
 		}
 
@@ -250,7 +250,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		if (!pSource->OnDestroyCheck(killedByShatter, Ctx.Attacker))
 			return damageNoDamage;
 
-		pSource->Destroy(killedByShatter, Ctx.Attacker);
+		pSource->Destroy(killedByShatter, Ctx);
 		return damageDestroyed;
 		}
 

@@ -669,7 +669,7 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 		return damagePassthrough;
 	else
 		{
-		Destroy(killedByDamage, Ctx.Attacker);
+		Destroy(killedByDamage, Ctx);
 		return damagePassthroughDestroyed;
 		}
 

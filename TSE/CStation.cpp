@@ -1925,7 +1925,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 				{
 				//	Destroy
 
-				Destroy(Ctx.Damage.GetCause(), Ctx.Attacker);
+				Destroy(Ctx);
 				iResult = damageDestroyed;
 				}
 
