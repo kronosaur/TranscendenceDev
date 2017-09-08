@@ -25,7 +25,7 @@
 #define REGEN_HP_ATTRIB							CONSTLIT("regenHP")
 #define REGEN_ADJ_PER_CHARGE_ATTRIB				CONSTLIT("regenHPBonusPerCharge")
 #define REGEN_TIME_ATTRIB						CONSTLIT("regenTime")
-#define VARIABLE_REGEN_ATTRIB					CONSTLIT("variableRegen")
+#define REGEN_TYPE_ATTRIB						CONSTLIT("regenType")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
 
 #define GET_MAX_HP_EVENT						CONSTLIT("GetMaxHP")
@@ -726,7 +726,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pShield->m_fRegenByShieldLevel = false;
 
 	CString sAttrib;
-	if (pDesc->FindAttribute(VARIABLE_REGEN_ATTRIB, &sAttrib))
+	if (pDesc->FindAttribute(REGEN_TYPE_ATTRIB, &sAttrib))
 		{
 		if (strEquals(sAttrib, STR_BY_SHIELD_INTEGRITY))
 			pShield->m_fRegenByShieldLevel = true;
