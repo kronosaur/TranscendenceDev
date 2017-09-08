@@ -1198,7 +1198,7 @@ template <class TYPE> class TSEListNode
 class CRegenDesc
 	{
 	public:
-		CRegenDesc (void) : m_bEmpty(true), m_iHPPerCycle(0), m_iHPPerEraRemainder(0) { }
+		CRegenDesc (void) : m_bEmpty(true), m_iHPPerCycle(0), m_iHPPerEraRemainder(0), m_iCyclesPerBurst(1) { }
 		CRegenDesc (int iHPPerEra);
 
 		void Add (const CRegenDesc &Desc);

@@ -25,6 +25,12 @@ void CRegenDesc::Add (const CRegenDesc &Desc)
 //	Adds the given regen desc
 
 	{
+	if (IsEmpty())
+		{
+		*this = Desc;
+		return;
+		}
+
 	m_iHPPerCycle += Desc.m_iHPPerCycle;
 
 	int iRemainder = m_iHPPerEraRemainder + Desc.m_iHPPerEraRemainder;
