@@ -1138,7 +1138,20 @@ int CShieldClass::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDev
 	return iScore;
 	}
 
-int CShieldClass::GetHPLeft (CItemCtx &Ctx)
+int CShieldClass::GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP) const
+
+//	GetHitPoints
+//
+//	Returns the number of HP left.
+
+	{
+	if (retiMaxHP)
+		*retiMaxHP = GetMaxHP(ItemCtx);
+
+	return GetHPLeft(ItemCtx);
+	}
+
+int CShieldClass::GetHPLeft (CItemCtx &Ctx) const
 
 //	GetHPLeft
 //
@@ -1190,7 +1203,7 @@ ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
-int CShieldClass::GetMaxHP (CItemCtx &Ctx)
+int CShieldClass::GetMaxHP (CItemCtx &Ctx) const
 
 //	GetMaxHP
 //
@@ -1624,6 +1637,21 @@ void CShieldClass::SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 		pDevice->SetCharges(pSource, iHP);
 		
 	pDevice->SetData((DWORD)iHP);
+	}
+
+void CShieldClass::SetHitPoints (CItemCtx &ItemCtx, int iHP)
+
+//	SetHitPoints
+//
+//	Sets hit points left.
+
+	{
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	if (pSource == NULL || pDevice == NULL)
+		return;
+
+	SetHPLeft(pDevice, pSource, Min(GetMaxHP(ItemCtx), iHP), true);
 	}
 
 bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)

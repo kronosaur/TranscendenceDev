@@ -50,6 +50,7 @@ enum ItemEnhancementTypes
 												//		B = damage level
 	etHPBonus =							0x1500,	//	+hp%, like etStrengthen
 												//		X = %increase
+	etHealerRegenerate =				0x1600,	//	Same as etRegenerate, but uses healer
 
 	etData1Mask =						0x000f,	//	4-bits of data (generally for damage adj)
 	etData2Mask =						0x00f0,	//	4-bits of data (generally for damage type)
@@ -78,6 +79,17 @@ enum EnhanceItemStatus
 	eisBetter,									//	Enhancement made better
 	};
 
+enum ERegenTypes
+	{
+	regenNone						= 0,
+
+	regenStandard					= 1,	//	Standard regeneration
+	regenSolar						= 2,	//	Regenerate when near a star
+	regenFromShields				= 3,	//	Regenerate by draining shields
+	regenFromHealer					= 4,	//	Consume healer to regenerate
+	regenFromCharges				= 5,	//	Consume charges to regenerate
+	};
+
 class CItemEnhancement
 	{
 	public:
@@ -85,7 +97,6 @@ class CItemEnhancement
 		CItemEnhancement (DWORD dwMods) : m_dwID(OBJID_NULL), m_dwMods(dwMods), m_pEnhancer(NULL), m_iExpireTime(-1) { }
 
 		void AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
-		bool AccumulateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTicksPerUpdate, CRegenDesc &Regen) const;
 		inline DWORD AsDWORD (void) const { return m_dwMods; }
 		EnhanceItemStatus Combine (const CItem &Item, CItemEnhancement Enhancement);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
@@ -130,7 +141,6 @@ class CItemEnhancement
 		inline bool IsPhotoRecharge (void) const { return ((GetType() == etPhotoRecharge) && !IsDisadvantage()); }
 		inline bool IsPhotoRegenerating (void) const { return ((GetType() == etPhotoRegenerate) && !IsDisadvantage()); }
 		inline bool IsRadiationImmune (void) const { return ((GetType() == etSpecialDamage) && GetLevel2() == 0 && !IsDisadvantage()); }
-		inline bool IsRegenerating (void) const { return ((GetType() == etRegenerate) && !IsDisadvantage()); }
 		inline bool IsReflective (void) const { return ((GetType() == etReflect) && !IsDisadvantage()); }
 		bool IsReflective (const DamageDesc &Damage, int *retiReflectChance = NULL) const;
 		inline bool IsRepairOnDamage (void) const { return ((GetType() == etRepairOnHit) && !IsDisadvantage()); }
@@ -153,6 +163,7 @@ class CItemEnhancement
 		inline void SetModResistMatter (int iAdj) { m_dwMods = Encode12(etResistMatter | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj)); }
 		void SetModSpecialDamage (SpecialDamageTypes iSpecial, int iLevel = 0);
 		void SetModSpeed (int iAdj, int iMinDelay = 0, int iMaxDelay = 0);
+		bool UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateCtx, int iTick) const;
 		void WriteToStream (IWriteStream *pStream) const;
 
 		static const CItemEnhancement &Null (void) { return m_Null; }
@@ -194,7 +205,6 @@ class CItemEnhancementStack
 		int ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const;
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
 		int CalcActivateDelay (CItemCtx &DeviceCtx) const;
-		bool CalcRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &IntrinsicRegen, bool bIntrinsicPhotoRegen, int iTicksPerUpdate, CRegenDesc &Result) const;
 		void Delete (void);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
 		int GetActivateDelayAdj (void) const;
@@ -218,11 +228,11 @@ class CItemEnhancementStack
 		bool IsPhotoRegenerating (void) const;
 		bool IsPhotoRecharging (void) const;
 		bool IsRadiationImmune (void) const;
-		bool IsRegenerating (void) const;
 		bool IsShatterImmune (void) const;
 		bool IsShieldInterfering (void) const;
 		bool ReflectsDamage (DamageTypes iDamage, int *retiChance = NULL) const;
 		bool RepairOnDamage (DamageTypes iDamage) const;
+		bool UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateCtx, int iTick) const;
 
 		static TSharedPtr<CItemEnhancementStack> ReadFromStream (SLoadCtx &Ctx);
 		static void WriteToStream (CItemEnhancementStack *pStack, IWriteStream *pStream);

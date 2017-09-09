@@ -51,6 +51,7 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 		switch (m_Stack[i].GetType())
 			{
 			case etRegenerate:
+			case etHealerRegenerate:
 			case etReflect:
 			case etRepairOnHit:
 			case etSpecialDamage:
@@ -200,52 +201,6 @@ void CItemEnhancementStack::CalcCache (void) const
 	//	Done
 
 	m_bCacheValid = true;
-	}
-
-bool CItemEnhancementStack::CalcRegen (CItemCtx &ItemCtx, 
-									   SUpdateCtx &UpdateCtx, 
-									   const CRegenDesc &IntrinsicRegen, 
-									   bool bIntrinsicPhotoRegen, 
-									   int iTicksPerUpdate, 
-									   CRegenDesc &Result) const
-
-//	CalcRegen
-//
-//	Calculates combined regen of intrisic plus enhancements. Returns FALSE if
-//	there is no regen.
-
-	{
-	int i;
-
-	ASSERT(Result.IsEmpty());
-
-	//	Check intrinsic regen first.
-
-	if (!IntrinsicRegen.IsEmpty())
-		{
-		//	If this is photo-regeneration, then we only regenerate in proportion 
-		//	to light intensity.
-
-		if (bIntrinsicPhotoRegen)
-			{
-			if (mathRandom(1, 100) <= UpdateCtx.GetLightIntensity(ItemCtx.GetSource()))
-				Result = IntrinsicRegen;
-			}
-
-		//	Otherwise, we always regenerate
-
-		else
-			Result = IntrinsicRegen;
-		}
-
-	//	Now add any enhancements on top
-
-	for (i = 0; i < m_Stack.GetCount(); i++)
-		m_Stack[i].AccumulateRegen(ItemCtx, UpdateCtx, iTicksPerUpdate, Result);
-
-	//	Done
-
-	return !Result.IsEmpty();
 	}
 
 void CItemEnhancementStack::Delete (void)
@@ -611,22 +566,6 @@ bool CItemEnhancementStack::IsRadiationImmune (void) const
 	return false;
 	}
 
-bool CItemEnhancementStack::IsRegenerating (void) const
-
-//	IsRegenerating
-//
-//	Returns true if we're regenerating
-
-	{
-	int i;
-
-	for (i = 0; i < m_Stack.GetCount(); i++)
-		if (m_Stack[i].IsRegenerating())
-			return true;
-
-	return false;
-	}
-
 bool CItemEnhancementStack::IsShatterImmune (void) const
 
 //	IsShatterImmune
@@ -723,6 +662,26 @@ bool CItemEnhancementStack::RepairOnDamage (DamageTypes iDamage) const
 			return true;
 
 	return false;
+	}
+
+bool CItemEnhancementStack::UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateCtx, int iTick) const
+
+//	UpdateArmorRegen
+//
+//	Regenerates the armor if we have regen enhancements. Returns TRUE if we 
+//	regenerated anything.
+
+	{
+	int i;
+	bool bRegenerated = false;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		if (m_Stack[i].UpdateArmorRegen(ArmorCtx, UpdateCtx, iTick))
+			bRegenerated = true;
+		}
+
+	return bRegenerated;
 	}
 
 void CItemEnhancementStack::WriteToStream (CItemEnhancementStack *pStack, IWriteStream *pStream)

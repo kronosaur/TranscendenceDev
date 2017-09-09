@@ -31,6 +31,7 @@ void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttri
 			break;
 
 		case etRegenerate:
+		case etHealerRegenerate:
 			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-decay") : CONSTLIT("+regen")), true));
 			break;
 
@@ -167,70 +168,6 @@ void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttri
 		}
 	}
 
-bool CItemEnhancement::AccumulateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTickPerUpdate, CRegenDesc &Regen) const
-
-//	AccumulateRegen
-//
-//	Adds to the regen, if we regenerate. Returns TRUE if we modified the regen
-//	result.
-
-	{
-	switch (GetType())
-		{
-		case etPhotoRegenerate:
-			{
-			//	Skip disadvantages (decay)
-
-			if (IsDisadvantage())
-				return false;
-
-			//	Skip in proportion to light-intensity.
-
-			if (mathRandom(1, 100) > UpdateCtx.GetLightIntensity(ItemCtx.GetSource()))
-				return false;
-
-			//	Standard regeneration is 1% of standard armor HP per 180 ticks
-
-			CRegenDesc NewRegen;
-			NewRegen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ItemCtx.GetItem().GetLevel()), iTickPerUpdate);
-			Regen.Add(NewRegen);
-			return true;
-			}
-
-		case etRegenerate:
-			{
-			//	Skip disadvantages (decay)
-
-			if (IsDisadvantage())
-				return false;
-
-			//	Get the regen rate.
-
-			int iRegen = GetDataX();
-			CRegenDesc NewRegen;
-
-			//	If regen rate is 0, then we use standard regeneration, which is
-			//	1% of standard armor HP per 180 ticks.
-
-			if (iRegen == 0)
-				NewRegen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ItemCtx.GetItem().GetLevel()), iTickPerUpdate);
-
-			//	Otherwise it is specified
-
-			else
-				NewRegen.InitFromRegen(iRegen, iTickPerUpdate);
-
-			//	Add it.
-
-			Regen.Add(NewRegen);
-			return true;
-			}
-
-		default:
-			return false;
-		}
-	}
-
 int CItemEnhancement::DamageAdj2Level (int iDamageAdj)
 
 //	DamageAdj2Level
@@ -320,7 +257,8 @@ bool CItemEnhancement::CanBeCombinedWith (const CItemEnhancement &NewEnhancement
 
 	//	Regeneration can cure any disadvantage
 
-	else if (NewEnhancement.GetType() == etRegenerate && !NewEnhancement.IsDisadvantage() && IsDisadvantage())
+	else if ((NewEnhancement.GetType() == etRegenerate || NewEnhancement.GetType() == etHealerRegenerate)
+			&& !NewEnhancement.IsDisadvantage() && IsDisadvantage())
 		return true;
 
 	//	Otherwise, it depends on the enhancement type
@@ -475,6 +413,7 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 		//	then take it (otherwise, no effect)
 
 		case etRegenerate:
+		case etHealerRegenerate:
 		case etResist:
 		case etResistEnergy:
 		case etResistMatter:
@@ -563,6 +502,7 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 		//	Regeneration enhancement always repairs a disadvantage
 
 		case etRegenerate:
+		case etHealerRegenerate:
 			{
 			*this = CItemEnhancement();
 			return eisRepaired;
@@ -619,6 +559,7 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 		//	continue; otherwise, no effect.
 
 		case etRegenerate:
+		case etHealerRegenerate:
 		case etResist:
 		case etResistEnergy:
 		case etResistMatter:
@@ -870,6 +811,7 @@ CString CItemEnhancement::GetEnhancedDesc (const CItem &Item, CSpaceObject *pIns
 			}
 
 		case etRegenerate:
+		case etHealerRegenerate:
 			return (IsDisadvantage() ? CONSTLIT("-decay") : CONSTLIT("+regen"));
 
 		case etReflect:
@@ -1199,6 +1141,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 				return -50;
 
 			case etRegenerate:
+			case etHealerRegenerate:
 			case etReflect:
 			case etSpecialDamage:
 			case etImmunityIonEffects:
@@ -1241,6 +1184,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 				return 30;
 
 			case etRegenerate:
+			case etHealerRegenerate:
 			case etReflect:
 			case etSpecialDamage:
 			case etImmunityIonEffects:
@@ -1490,6 +1434,10 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 	else if (strEquals(sID, CONSTLIT("regen")))
 		{
 		m_dwMods = EncodeAX(etRegenerate | (bDisadvantage ? etDisadvantage : 0), 0, iValue);
+		}
+	else if (strEquals(sID, CONSTLIT("healerRegen")))
+		{
+		m_dwMods = EncodeAX(etHealerRegenerate | (bDisadvantage ? etDisadvantage : 0), 0, iValue);
 		}
 
 	//	Decay
@@ -1791,6 +1739,75 @@ void CItemEnhancement::SetModSpeed (int iAdj, int iMinDelay, int iMaxDelay)
 		m_dwMods = EncodeABC(etSpeed, iAdj, iMinDelay, iMaxDelay);
 	else
 		m_dwMods = EncodeABC(etSpeed | etDisadvantage, (iAdj - 100) / 5, iMinDelay, iMaxDelay);
+	}
+
+bool CItemEnhancement::UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateCtx, int iTick) const
+
+//	UpdateArmorRegen
+//
+//	Updates regeneration for the given armor segment. Returns TRUE if any hit 
+//	points were regenerated.
+
+	{
+	ERegenTypes iRegenType;
+	CRegenDesc Regen;
+
+	//	Figure out how much we regenerate
+
+	switch (GetType())
+		{
+		case etPhotoRegenerate:
+			{
+			//	Skip disadvantages (decay)
+
+			if (IsDisadvantage())
+				return false;
+
+			//	Standard regeneration is 1% of standard armor HP per 180 ticks
+
+			iRegenType = regenSolar;
+			Regen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ArmorCtx.GetItem().GetLevel()), CArmorClass::TICKS_PER_UPDATE);
+			break;
+			}
+
+		case etRegenerate:
+		case etHealerRegenerate:
+			{
+			//	Skip disadvantages (decay)
+
+			if (IsDisadvantage())
+				return false;
+
+			if (GetType() == etHealerRegenerate)
+				iRegenType = regenFromHealer;
+			else
+				iRegenType = regenStandard;
+
+			//	Get the regen rate.
+
+			int iRegen = GetDataX();
+
+			//	If regen rate is 0, then we use standard regeneration, which is
+			//	1% of standard armor HP per 180 ticks.
+
+			if (iRegen == 0)
+				Regen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ArmorCtx.GetItem().GetLevel()), CArmorClass::TICKS_PER_UPDATE);
+
+			//	Otherwise it is specified
+
+			else
+				Regen.InitFromRegen(iRegen, CArmorClass::TICKS_PER_UPDATE);
+
+			break;
+			}
+
+		default:
+			return false;
+		}
+
+	//	Regenerate
+
+	return ArmorCtx.GetArmorClass()->UpdateRegen(ArmorCtx, UpdateCtx, Regen, iRegenType, iTick);
 	}
 
 void CItemEnhancement::WriteToStream (IWriteStream *pStream) const

@@ -33,6 +33,7 @@
 #define RADIATION_IMMUNE_ATTRIB					CONSTLIT("radiationImmune")
 #define REFLECT_ATTRIB							CONSTLIT("reflect")
 #define REGEN_ATTRIB							CONSTLIT("regen")
+#define REGEN_TYPE_ATTRIB						CONSTLIT("regenType")
 #define REPAIR_COST_ATTRIB						CONSTLIT("repairCost")
 #define REPAIR_COST_ADJ_ATTRIB					CONSTLIT("repairCostAdj")
 #define REPAIR_RATE_ATTRIB						CONSTLIT("repairRate")
@@ -81,6 +82,8 @@ static char g_ItemIDAttrib[] = "itemID";
 #define MAX_REFLECTION_CHANCE		95
 
 #define MAX_REFLECTION_CHANCE		95
+
+constexpr int ARMOR_HP_PER_SHIELD_HP =			4;
 
 const int BLIND_IMMUNE_LEVEL =					6;
 const int RADIATION_IMMUNE_LEVEL =				7;
@@ -161,6 +164,14 @@ static char *CACHED_EVENTS[CArmorClass::evtCount] =
 	{
 		"GetMaxHP",
 		"OnArmorDamage",
+	};
+
+static TStaticStringTable<TStaticStringEntry<ERegenTypes>, 5> REGEN_TYPE_TABLE = {
+	"charges",				regenFromCharges,
+	"healer",				regenFromHealer,
+	"photorepair",			regenSolar,
+	"shields",				regenFromShields,
+	"standard",				regenStandard,
 	};
 
 CArmorClass::CArmorClass (void) :
@@ -432,20 +443,21 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 	if (m_fShieldInterference)
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("no shields")));
 
-	//	Photo repair
+	//	Regen
 
-	if (m_fPhotoRepair)
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("photo-regen")));
+	switch (Stats.iRegenType)
+		{
+		case regenNone:
+			break;
 
-	//	Solar power
+		case regenSolar:
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("photo-regen")));
+			break;
 
-	if (m_fPhotoRecharge)
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("solar")));
-
-	//	Regeneration
-
-	if (!Stats.Regen.IsEmpty() && !m_fPhotoRepair)
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("regen")));
+		default:
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("regen")));
+			break;
+		}
 
 	//	Decay
 
@@ -456,6 +468,11 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	if (!Stats.Distribute.IsEmpty())
 		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("distributing")));
+
+	//	Solar power
+
+	if (m_fPhotoRecharge)
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("solar")));
 
 	//	Per damage-type bonuses
 
@@ -986,7 +1003,7 @@ Metric CArmorClass::CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &S
 		//	Adjust regen based on type. For example, photo-repair is not quite as
 		//	good as unconditional repair.
 
-		if (m_fPhotoRepair)
+		if (Stats.iRegenType == regenSolar)
 			rRegenHP *= PHOTO_REPAIR_ADJ;
 
 		//	Compare this value against the average weapon damage.
@@ -1268,10 +1285,38 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(CONSTLIT(g_HitPointsAttrib), 0);
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 
-	//	Regen & Decay
+	//	Regen
 
 	if (error = pArmor->m_Stats.Regen.InitFromXML(Ctx, pDesc, REGEN_ATTRIB, REPAIR_RATE_ATTRIB, NULL_STR, TICKS_PER_UPDATE))
 		return error;
+
+	CString sRegenType;
+	if (pArmor->m_Stats.Regen.IsEmpty())
+		pArmor->m_Stats.iRegenType = regenNone;
+	else if (!pDesc->FindAttribute(REGEN_TYPE_ATTRIB, &sRegenType))
+		{
+		if (pDesc->GetAttributeBool(PHOTO_REPAIR_ATTRIB))
+			pArmor->m_Stats.iRegenType = regenSolar;
+		else if (pDesc->GetAttributeBool(CHARGE_REGEN_ATTRIB))
+			pArmor->m_Stats.iRegenType = regenFromCharges;
+		else if (pDesc->GetAttributeBool(HEALER_REGEN_ATTRIB))
+			pArmor->m_Stats.iRegenType = regenFromHealer;
+		else
+			pArmor->m_Stats.iRegenType = regenStandard;
+		}
+	else
+		{
+		const TStaticStringEntry<ERegenTypes> *pEntry = REGEN_TYPE_TABLE.GetAt(sRegenType);
+		if (pEntry == NULL)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unknown regenType: %s"), sRegenType);
+			return ERR_FAIL;
+			}
+
+		pArmor->m_Stats.iRegenType = pEntry->Value;
+		}
+
+	//	Decay
 
 	if (error = pArmor->m_Stats.Decay.InitFromXML(Ctx, pDesc, DECAY_ATTRIB, DECAY_RATE_ATTRIB, NULL_STR, TICKS_PER_UPDATE))
 		return error;
@@ -1355,11 +1400,8 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	pArmor->m_fDisintegrationImmune = pDesc->GetAttributeBool(DISINTEGRATION_IMMUNE_ATTRIB);
 
-	pArmor->m_fPhotoRepair = pDesc->GetAttributeBool(PHOTO_REPAIR_ATTRIB);
 	pArmor->m_fShieldInterference = pDesc->GetAttributeBool(SHIELD_INTERFERENCE_ATTRIB);
-	pArmor->m_fChargeRepair = pDesc->GetAttributeBool(CHARGE_REGEN_ATTRIB);
 	pArmor->m_fChargeDecay = pDesc->GetAttributeBool(CHARGE_DECAY_ATTRIB);
-    pArmor->m_fHealerRepair = pDesc->GetAttributeBool(HEALER_REGEN_ATTRIB);
 
 	//	Solar power
 
@@ -1631,6 +1673,7 @@ void CArmorClass::GenerateScaledStats (void)
 
         //  Regen and decay
 
+		Stats.iRegenType = m_Stats.iRegenType;
         if (!m_Stats.Regen.IsEmpty())
             Stats.Regen.InitFromRegen(rHPAdj * m_Stats.Regen.GetHPPer180(TICKS_PER_UPDATE), TICKS_PER_UPDATE);
 
@@ -2243,15 +2286,18 @@ void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, b
 
 	pArmor->SetConsumePower(false);
 
-	//	Compute total regeneration by adding mods to intrinsic. If we regenerate,
-	//	then regenerate.
+	//	Intrinsic regeneration
 
-	CRegenDesc Regen;
-	if (Enhancements.CalcRegen(ItemCtx, UpdateCtx, Stats.Regen, m_fPhotoRepair, TICKS_PER_UPDATE, Regen))
+	if (Stats.iRegenType != regenNone)
 		{
-		if (UpdateRegen(ItemCtx, Regen, iTick))
+		if (UpdateRegen(ItemCtx, UpdateCtx, Stats.Regen, Stats.iRegenType, iTick))
 			bModified = true;
 		}
+
+	//	Regeneration from enhancements
+
+	if (Enhancements.UpdateArmorRegen(ItemCtx, UpdateCtx, iTick))
+		bModified = true;
 
 	//	See if we're decaying
 
@@ -2478,7 +2524,7 @@ bool CArmorClass::UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Sta
 	return true;
 	}
 
-bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const CRegenDesc &Regen, int iTick)
+bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick)
 
 //	UpdateRegen
 //
@@ -2487,32 +2533,10 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const CRegenDesc &Regen, int i
 	{
 	CSpaceObject *pObj = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
-	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+
+	//	If fully repaired, then nothing to do.
 
 	int iHPNeeded = GetMaxHP(ItemCtx) - pArmor->GetHitPoints();
-	if (iHPNeeded <= 0)
-		return false;
-
-	//	Sometimes we need access to the armor system that track healer
-	//	points. In the case of ships with multiple sections, we need the
-	//	root object.
-
-	CArmorSystem *pHealerSystem = NULL;
-	if (m_fHealerRepair)
-		{
-		CSpaceObject *pRoot = pObj->GetAttachedRoot();
-		pHealerSystem = (pRoot ? pRoot->GetArmorSystem() : pObj->GetArmorSystem());
-		}
-
-	//	If we require charges, then we're limited to the charges we have
-
-    if (m_fChargeRepair)
-        iHPNeeded = Min(iHPNeeded, pArmor->GetCharges(pObj));
-    else if (m_fHealerRepair && pHealerSystem)
-        iHPNeeded = Min(iHPNeeded, pHealerSystem->GetHealerLeft());
-
-	//	Regen
-
 	if (iHPNeeded <= 0)
 		return false;
 
@@ -2522,14 +2546,61 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, const CRegenDesc &Regen, int i
 	if (iHP <= 0)
 		return false;
 
-	//	Repair
-	//
-	//	If we require charges to regen, then consume charges
+	//	If we require some resource then consume the resource and make adjust
+	//	the values so we don't exceed the resource.
 
-    if (m_fChargeRepair)
-        pArmor->IncCharges(pObj, -iHP);
-    else if (m_fHealerRepair && pHealerSystem)
-        pHealerSystem->IncHealerLeft(-iHP);
+	switch (iRegenType)
+		{
+		case regenFromCharges:
+			iHP = Min(iHP, pArmor->GetCharges(pObj));
+			pArmor->IncCharges(pObj, -iHP);
+			break;
+
+		case regenFromHealer:
+			{
+			CSpaceObject *pRoot = pObj->GetAttachedRoot();
+			CArmorSystem *pHealerSystem = (pRoot ? pRoot->GetArmorSystem() : pObj->GetArmorSystem());
+			if (pHealerSystem)
+				{
+				iHP = Min(iHP, pHealerSystem->GetHealerLeft());
+		        pHealerSystem->IncHealerLeft(-iHP);
+				}
+			break;
+			}
+
+		case regenFromShields:
+			{
+			CInstalledDevice *pShields = pObj->GetNamedDevice(devShields);
+			if (pShields == NULL)
+				return false;
+
+			CItemCtx ShieldItem(pObj, pShields);
+			int iShieldHP = pShields->GetHitPoints(ShieldItem);
+
+			//	Each armor HP generally takes more than one shield HP to repair.
+
+			int iHPFromShield = iShieldHP / ARMOR_HP_PER_SHIELD_HP;
+			iHP = Min(iHP, iHPFromShield);
+
+			//	NOTE: We don't deplete the shield because it would take forever 
+			//	otherwise.
+
+			pShields->SetHitPoints(ShieldItem, iShieldHP - (iHP * ARMOR_HP_PER_SHIELD_HP));
+			break;
+			}
+
+		case regenSolar:
+			if (mathRandom(1, 100) > UpdateCtx.GetLightIntensity(ItemCtx.GetSource()))
+				return false;
+			break;
+		}
+
+	//	If not enought resources, then we're done.
+
+	if (iHP <= 0)
+		return false;
+
+	//	Repair
 
 	pArmor->IncHitPoints(iHP);
 	pArmor->SetConsumePower(true);

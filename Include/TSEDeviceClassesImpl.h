@@ -408,8 +408,9 @@ class CShieldClass : public CDeviceClass
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
-		virtual ItemCategories GetImplCategory (void) const override { return itemcatShields; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
+		virtual int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const override;
+		virtual ItemCategories GetImplCategory (void) const override { return itemcatShields; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const override;
 		virtual void GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) override;
@@ -419,6 +420,7 @@ class CShieldClass : public CDeviceClass
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus) override;
 		virtual bool RequiresItems (void) const override;
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual void SetHitPoints (CItemCtx &ItemCtx, int iHP) override;
 		virtual bool SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
@@ -447,8 +449,8 @@ class CShieldClass : public CDeviceClass
 		void FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		void FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		int GetDamageAdj (const DamageDesc &Damage, const CItemEnhancementStack *pEnhancements) const;
-		int GetHPLeft (CItemCtx &Ctx);
-		int GetMaxHP (CItemCtx &Ctx);
+		int GetHPLeft (CItemCtx &Ctx) const;
+		int GetMaxHP (CItemCtx &Ctx) const;
 		bool UpdateDepleted (CInstalledDevice *pDevice);
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);

@@ -119,6 +119,7 @@ class CArmorClass
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
+		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
 
 		static int GetStdCost (int iLevel);
 		static int GetStdDamageAdj (int iLevel, DamageTypes iDamage);
@@ -138,7 +139,9 @@ class CArmorClass
             int iEMPDamageAdj;
             int iDeviceDamageAdj;
 
+			ERegenTypes iRegenType;
             CRegenDesc Regen;
+
             CRegenDesc Decay;
             CRegenDesc Distribute;
             
@@ -166,7 +169,6 @@ class CArmorClass
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 		bool UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
-		bool UpdateRegen (CItemCtx &ItemCtx, const CRegenDesc &Regen, int iTick);
 
         SScalableStats m_Stats;                 //  Base stats capable of being scaled
 
@@ -185,14 +187,14 @@ class CArmorClass
 		int m_iDamageAdjLevel;					//	Level to use for intrinsic damage adj
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 
-		DWORD m_fPhotoRepair:1;					//	TRUE if repairs when near a star
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
 		DWORD m_fDisintegrationImmune:1;		//	TRUE if immune to disintegration
 		DWORD m_fShatterImmune:1;				//	TRUE if immune to shatter
-		DWORD m_fChargeRepair:1;				//	If TRUE, we regenerage while we have charges left
 		DWORD m_fChargeDecay:1;					//	If TRUE, we decay while we have charges left
-        DWORD m_fHealerRepair:1;                //  If TRUE, we regenerate while the objects has healer points left
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:24;
 
