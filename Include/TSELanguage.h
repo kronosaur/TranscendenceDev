@@ -40,6 +40,7 @@ enum NounPhraseFlags
 	nounDemonym				= 0x00008000,	//	Demonym (name for a citizen of a sovereign)
 	nounAdjective			= 0x00010000,	//	Sovereign name as adjective
 	nounTokenize			= 0x00020000,	//	Replace whitespace with underscores
+	nounNoDeterminer		= 0x00040000,	//	No count or article, but pluralize if count > 1
 	};
 
 class CLanguage

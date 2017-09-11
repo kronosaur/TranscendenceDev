@@ -747,7 +747,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x0200 noEvent         do not fire GetName event\n"
 			"   0x0400 titleCapitalize capitalize as a title\n"
 			"   0x0800 installedState  prefix with 'installed' if necessary\n"
-			"   0x1000 countAlways     always prefix with count",
+			"   0x1000 countAlways     always prefix with count"
+			"  0x40000 noDeterminer    no prefix, but pluralize if necessary\n",
 
 			"v*",	0,	},
 
