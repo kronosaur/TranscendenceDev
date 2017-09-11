@@ -2195,6 +2195,92 @@ bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem 
 		return false;
 	}
 
+void CSpaceObject::FireItemOnAIUpdate (void)
+
+//	FireItemOnAIUpdate
+//
+//	Fires OnAIUpdate event for all items
+
+	{
+	if (!m_fItemEventsValid)
+		InitItemEvents();
+
+	m_ItemEvents.FireEvent(this, eventOnAIUpdate);
+	}
+
+void CSpaceObject::FireItemOnDocked (CSpaceObject *pDockedAt)
+
+//	FireItemOnDocked
+//
+//	Fires OnDocked event for all items
+
+	{
+	DEBUG_TRY
+
+	int i;
+
+	//	Make a list of all items that have an OnObjDestroyed event.
+
+	TArray<CItem> Items;
+	CItemListManipulator Search(GetItemList());
+	while (Search.MoveCursorForward())
+		{
+		const CItem &Item = Search.GetItemAtCursor();
+		if (Item.GetType()->FindEventHandlerItemType(CItemType::evtOnDocked))
+			Items.Insert(Item);
+		}
+
+	//	Now call the event
+
+	for (i = 0; i < Items.GetCount(); i++)
+		Items[i].FireOnDocked(this, pDockedAt);
+
+	DEBUG_CATCH
+	}
+
+void CSpaceObject::FireItemOnObjDestroyed (const SDestroyCtx &Ctx)
+
+//	FireItemOnObjDestroyed
+//
+//	Fires OnObjDestroyed event for all items
+
+	{
+	DEBUG_TRY
+
+	int i;
+
+	//	Make a list of all items that have an OnObjDestroyed event.
+
+	TArray<CItem> Items;
+	CItemListManipulator Search(GetItemList());
+	while (Search.MoveCursorForward())
+		{
+		const CItem &Item = Search.GetItemAtCursor();
+		if (Item.GetType()->FindEventHandler(CDesignType::evtOnObjDestroyed))
+			Items.Insert(Item);
+		}
+
+	//	Now call the event
+
+	for (i = 0; i < Items.GetCount(); i++)
+		Items[i].FireOnObjDestroyed(this, Ctx);
+
+	DEBUG_CATCH
+	}
+
+void CSpaceObject::FireItemOnUpdate (void)
+
+//	FireItemOnUpdate
+//
+//	Fires OnUpdate event for all items
+
+	{
+	if (!m_fItemEventsValid)
+		InitItemEvents();
+
+	m_ItemEvents.FireUpdateEvents(this);
+	}
+
 void CSpaceObject::FireOnAttacked (const SDamageCtx &Ctx)
 
 //	FireOnAttacked
@@ -2497,62 +2583,6 @@ void CSpaceObject::FireOnEnteredSystem (CSpaceObject *pGate)
 			ReportEventError(ON_ENTERED_SYSTEM_EVENT, pResult);
 		Ctx.Discard(pResult);
 		}
-	}
-
-void CSpaceObject::FireOnItemAIUpdate (void)
-
-//	FireOnItemAIUpdate
-//
-//	Fires OnAIUpdate event for all items
-
-	{
-	if (!m_fItemEventsValid)
-		InitItemEvents();
-
-	m_ItemEvents.FireEvent(this, eventOnAIUpdate);
-	}
-
-void CSpaceObject::FireOnItemObjDestroyed (const SDestroyCtx &Ctx)
-
-//	FireOnItemObjDestroyed
-//
-//	Fires OnObjDestroyed event for all items
-
-	{
-	DEBUG_TRY
-
-	int i;
-
-	//	Make a list of all items that have an OnObjDestroyed event.
-
-	TArray<CItem> Items;
-	CItemListManipulator Search(GetItemList());
-	while (Search.MoveCursorForward())
-		{
-		const CItem &Item = Search.GetItemAtCursor();
-		if (Item.GetType()->FindEventHandler(CDesignType::evtOnObjDestroyed))
-			Items.Insert(Item);
-		}
-
-	//	Now call the event
-
-	for (i = 0; i < Items.GetCount(); i++)
-		Items[i].FireOnObjDestroyed(this, Ctx);
-
-	DEBUG_CATCH
-	}
-
-void CSpaceObject::FireOnItemUpdate (void)
-
-//	FireOnItemUpdate
-//
-//	Fires OnUpdate event for all items
-
-	{
-	if (!m_fItemEventsValid)
-		InitItemEvents();
-
-	m_ItemEvents.FireUpdateEvents(this);
 	}
 
 void CSpaceObject::FireOnLoad (SLoadCtx &Ctx)
@@ -7470,7 +7500,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 
 	if (IsDestinyTime(ITEM_ON_UPDATE_CYCLE, ITEM_ON_UPDATE_OFFSET))
 		{
-		FireOnItemUpdate();
+		FireItemOnUpdate();
 
 		//	We could have gotten destroyed here.
 

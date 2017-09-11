@@ -1010,6 +1010,10 @@ class CSpaceObject : public CObject
 		bool FireGetDockScreen (CString *retsScreen = NULL, int *retiPriority = NULL, ICCItem **retpData = NULL);
 		void FireGetExplosionType (SExplosionType *retExplosion);
 		bool FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
+		void FireItemOnAIUpdate (void);
+		void FireItemOnDocked (CSpaceObject *pDockedAt);
+		void FireItemOnObjDestroyed (const SDestroyCtx &Ctx);
+		void FireItemOnUpdate (void);
 		void FireOnAttacked (const SDamageCtx &Ctx);
 		void FireOnAttackedByPlayer (void);
 		void FireOnCreate (void);
@@ -1021,9 +1025,6 @@ class CSpaceObject : public CObject
 		bool FireOnDockObjAdj (CSpaceObject **retpObj);
 		void FireOnEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGate);
 		void FireOnEnteredSystem (CSpaceObject *pGate);
-		void FireOnItemAIUpdate (void);
-		void FireOnItemObjDestroyed (const SDestroyCtx &Ctx);
-		void FireOnItemUpdate (void);
 		void FireOnLoad (SLoadCtx &Ctx);
 		void FireOnMining (const SDamageCtx &Ctx);
 		void FireOnMissionAccepted (CMission *pMission);

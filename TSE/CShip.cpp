@@ -4694,7 +4694,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 	//	destroy item on their OnDestroy).
 
 	m_Overlays.FireOnObjDestroyed(this, Ctx);
-	FireOnItemObjDestroyed(Ctx);
+	FireItemOnObjDestroyed(Ctx);
 	FireOnDestroy(Ctx);
 
 	//	Script might have destroyed the wreck
@@ -4797,6 +4797,10 @@ void CShip::OnDocked (CSpaceObject *pObj)
 
 	if (pObj->IsRadioactive() && !IsRadiationImmune())
 		MakeRadioactive();
+
+	//	Tell our items that we docked with something
+
+	FireItemOnDocked(pObj);
 
 	//	Tell our controller
 

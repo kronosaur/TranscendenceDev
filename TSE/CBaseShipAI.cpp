@@ -1764,7 +1764,7 @@ void CBaseShipAI::UseItemsBehavior (void)
 	DEBUG_TRY
 
 	if (m_pShip->IsDestinyTime(ITEM_ON_AI_UPDATE_CYCLE, ITEM_ON_AI_UPDATE_OFFSET))
-		m_pShip->FireOnItemAIUpdate();
+		m_pShip->FireItemOnAIUpdate();
 
 	if (m_AICtx.HasSuperconductingShields()
 			&& m_pShip->IsDestinyTime(61)

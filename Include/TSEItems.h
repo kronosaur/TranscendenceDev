@@ -301,6 +301,7 @@ class CItem
 		void FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced, EnhanceItemStatus iStatus) const;
 		bool FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker) const;
 		void FireOnDisabled (CSpaceObject *pSource) const;
+		void FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const;
 		void FireOnEnabled (CSpaceObject *pSource) const;
 		void FireOnInstall (CSpaceObject *pSource) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;

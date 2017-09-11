@@ -26,11 +26,12 @@ class CItemType : public CDesignType
 			evtGetReferenceText			= 3,
 			evtGetTradePrice			= 4,
 			evtOnDestroyCheck			= 5,
-			evtOnInstall				= 6,
+			evtOnDocked					= 6,
 			evtOnEnabled				= 7,
-			evtOnRefuel					= 8,
+			evtOnInstall				= 8,
+			evtOnRefuel					= 9,
 
-			evtCount					= 9,
+			evtCount					= 10,
 			};
 
 		struct SUseDesc

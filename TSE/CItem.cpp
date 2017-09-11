@@ -621,6 +621,30 @@ void CItem::FireOnDisabled (CSpaceObject *pSource) const
 		}
 	}
 
+void CItem::FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const
+
+//	FireOnDocked
+//
+//	OnDocked event
+
+	{
+	SEventHandlerDesc Event;
+	if (m_pItemType->FindEventHandlerItemType(CItemType::evtOnDocked, &Event))
+		{
+		CCodeChainCtx Ctx;
+
+		Ctx.SaveAndDefineSourceVar(pSource);
+		Ctx.SaveAndDefineItemVar(*this);
+		Ctx.DefineSpaceObject(CONSTLIT("aObjDocked"), pSource);
+		Ctx.DefineSpaceObject(CONSTLIT("aDockTarget"), pDockedAt);
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnDocked"), m_pItemType->GetUNID()), pResult);
+		Ctx.Discard(pResult);
+		}
+	}
+
 void CItem::FireOnEnabled (CSpaceObject *pSource) const
 
 //	FireOnEnabled

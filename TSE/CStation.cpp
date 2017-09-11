@@ -2069,7 +2069,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		//	Run OnDestroy script
 
 		m_Overlays.FireOnObjDestroyed(this, DestroyCtx);
-		FireOnItemObjDestroyed(DestroyCtx);
+		FireItemOnObjDestroyed(DestroyCtx);
 		FireOnDestroy(DestroyCtx);
 
 		//	Station is destroyed. Take all the installed devices and turn
@@ -2172,7 +2172,7 @@ void CStation::OnDestroyed (SDestroyCtx &Ctx)
 	//	Run OnDestroy script
 
 	m_Overlays.FireOnObjDestroyed(this, Ctx);
-	FireOnItemObjDestroyed(Ctx);
+	FireItemOnObjDestroyed(Ctx);
 	FireOnDestroy(Ctx);
 
 	//	Release docking port objects
