@@ -1741,6 +1741,7 @@ void CStandardShipAI::OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCt
 				{
 				case stateEscorting:
 				case stateReturningFromThreat:
+				case stateReturningViaNavPath:
 				case stateWaitingForThreat:
 					{
 					SetState(stateAttackingThreat);
@@ -1888,6 +1889,7 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 				case stateAttackingThreat:
 				case stateAttackingPrincipalThreat:
 				case stateReturningToEscort:
+				case stateReturningViaNavPath:
 					SetState(stateAttackingTarget);
 					m_pTarget = pParam1;
 					ASSERT(m_pTarget->DebugIsValid() && m_pTarget->NotifyOthersWhenDestroyed());
@@ -1931,6 +1933,7 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 					return resAck;
 
 				case stateReturningFromThreat:
+				case stateReturningViaNavPath:
 				case stateWaitingForThreat:
 				case stateAttackingThreat:
 					SetState(stateAttackingPrincipalThreat);
@@ -1989,6 +1992,7 @@ DWORD CStandardShipAI::OnCommunicateNotify (CSpaceObject *pSender, MessageTypes 
 				{
 				case stateEscorting:
 				case stateReturningFromThreat:
+				case stateReturningViaNavPath:
 				case stateWaitingForThreat:
 				case stateOnPatrolOrbit:
 				case stateReturningToEscort:
