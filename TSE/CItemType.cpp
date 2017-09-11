@@ -12,6 +12,7 @@
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
 #define DRIVE_CLASS_TAG							CONSTLIT("DriveDevice")
 #define ENHANCER_CLASS_TAG						CONSTLIT("EnhancerDevice")
+#define ENHANCER_ITEM_TAG						CONSTLIT("EnhancerItem")
 #define EVENTS_TAG								CONSTLIT("Events")
 #define GLOBAL_DATA_TAG							CONSTLIT("GlobalData")
 #define IMAGE_TAG								CONSTLIT("Image")
@@ -1600,6 +1601,17 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			m_pMissile = new CWeaponFireDesc;
 			if (error = m_pMissile->InitFromMissileXML(Ctx, pSubDesc, this, Options))
 				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unable to load %s: %s"), pSubDesc->GetTag(), Ctx.sError));
+			}
+
+		//	Enhancer
+
+		else if (strEquals(pSubDesc->GetTag(), ENHANCER_ITEM_TAG))
+			{
+			CItemEnhancement Enhancement;
+			if (error = Enhancement.InitFromDesc(Ctx, pSubDesc->GetAttribute(ENHANCEMENT_ATTRIB)))
+				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unable to load %s: %s"), pSubDesc->GetTag(), Ctx.sError));
+
+			m_dwModCode = Enhancement.GetModCode();
 			}
 
 		//	Other elements
