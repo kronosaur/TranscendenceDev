@@ -19,6 +19,7 @@ static CObjectClass<CMission>g_MissionClass(OBJID_CMISSION, NULL);
 #define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
 #define PROPERTY_DEBRIEFER_ID					CONSTLIT("debrieferID")
 #define PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF		CONSTLIT("forceUndockAfterDebrief")
+#define PROPERTY_HAS_DEBRIEF					CONSTLIT("hasDebrief")
 #define PROPERTY_IS_ACTIVE						CONSTLIT("isActive")
 #define PROPERTY_IS_COMPLETED					CONSTLIT("isCompleted")
 #define PROPERTY_IS_DEBRIEFED					CONSTLIT("isDebriefed")
@@ -493,6 +494,9 @@ ICCItem *CMission::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF))
 		return CC.CreateBool(m_pType->ForceUndockAfterDebrief());
+
+	else if (strEquals(sName, PROPERTY_HAS_DEBRIEF))
+		return CC.CreateBool(m_pType->HasDebrief());
 
 	else if (strEquals(sName, PROPERTY_IS_ACTIVE))
 		return CC.CreateBool(IsActive());
