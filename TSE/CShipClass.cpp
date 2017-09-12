@@ -4186,7 +4186,7 @@ bool CShipClass::OnHasSpecialAttribute (const CString &sAttrib) const
 		//	player ships. Otherwise, every ship is a player ship.
 
 		const CPlayerSettings *pPlayer = GetPlayerSettings();
-		bool bIsPlayerClass = (pPlayer && !pPlayer->IsDefault());
+		bool bIsPlayerClass = (pPlayer && m_fOwnPlayerSettings);
 
 		return (strEquals(sValue, SPECIAL_VALUE_TRUE) == bIsPlayerClass);
 		}
