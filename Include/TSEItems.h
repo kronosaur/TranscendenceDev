@@ -478,6 +478,7 @@ class CItemListManipulator
 		void DeleteMarkedItems (void);
 		const CItem &GetItemAtCursor (void);
 		CItem *GetItemPointerAtCursor (void);
+		bool IsItemPointerValid (const CItem *pItem) const;
 		void MarkDeleteAtCursor (int iCount);
 		void RemoveItemEnhancementAtCursor (DWORD dwID, int iCount = 1);
 		void SetChargesAtCursor (int iCharges, int iCount = 1);

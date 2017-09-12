@@ -396,6 +396,22 @@ CItem *CItemListManipulator::GetItemPointerAtCursor (void)
 	return &m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	}
 
+bool CItemListManipulator::IsItemPointerValid (const CItem *pItem) const
+
+//	IsItemPointerValid
+//
+//	Returns TRUE if the given item is part of this list.
+
+	{
+	int i;
+
+	for (i = 0; i < m_ItemList.GetCount(); i++)
+		if (&m_ItemList.GetItem(i) == pItem)
+			return true;
+
+	return false;
+	}
+
 void CItemListManipulator::MarkDeleteAtCursor (int iCount)
 
 //	MarkDeleteAtCursor

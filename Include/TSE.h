@@ -480,6 +480,8 @@ class CItemEventDispatcher
 		~CItemEventDispatcher (void);
 
 		inline void FireEvent (CSpaceObject *pSource, ECodeChainEvents iEvent)	{ if (m_pFirstEntry) FireEventFull(pSource, iEvent); }
+		void FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const;
+		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		inline void FireUpdateEvents (CSpaceObject *pSource) { if (m_pFirstEntry) FireUpdateEventsFull(pSource); }
 		void Init (CSpaceObject *pSource);
 
@@ -487,7 +489,7 @@ class CItemEventDispatcher
 		struct SEntry
 			{
 			EItemEventDispatchTypes iType;				//	Type of entry
-			CItem theItem;								//	Item
+			CItem *pItem;								//	Pointer to item
 
 			ECodeChainEvents iEvent;					//	Event (if dispatchFireEvent)
 			SEventHandlerDesc Event;					//	Code (if dispatchFireEvent)
@@ -497,10 +499,11 @@ class CItemEventDispatcher
 			SEntry *pNext;
 			};
 
-		void AddEntry (const CString &sEvent, EItemEventDispatchTypes iType, const SEventHandlerDesc &Event, const CItem &Item, DWORD dwEnhancementID);
+		void AddEntry (const CString &sEvent, EItemEventDispatchTypes iType, const SEventHandlerDesc &Event, CItem *pItem, DWORD dwEnhancementID);
 		SEntry *AddEntry (void);
 		void FireEventFull (CSpaceObject *pSource, ECodeChainEvents iEvent);
 		void FireUpdateEventsFull (CSpaceObject *pSource);
+		void Refresh (CSpaceObject *pSource, SEntry *pFirst);
 		void RemoveAll (void);
 
 		SEntry *m_pFirstEntry;
@@ -949,6 +952,7 @@ class CSpaceObject : public CObject
 		inline void InvalidateItemListAddRemove (void) { m_fItemEventsValid = false; }
 		inline void InvalidateItemListState (void) { m_fItemEventsValid = false; }
 		void ItemsModified (void);
+		inline bool IsItemEventListValid (void) const { return (m_fItemEventsValid ? true : false); }
 
 		//	Joints
 		//

@@ -2215,27 +2215,13 @@ void CSpaceObject::FireItemOnDocked (CSpaceObject *pDockedAt)
 //	Fires OnDocked event for all items
 
 	{
-	DEBUG_TRY
+	//	We need to initialize, even if we don't use the event list because we
+	//	rely on the flag to tell us if items changed out from under us.
 
-	int i;
+	if (!m_fItemEventsValid)
+		InitItemEvents();
 
-	//	Make a list of all items that have an OnObjDestroyed event.
-
-	TArray<CItem> Items;
-	CItemListManipulator Search(GetItemList());
-	while (Search.MoveCursorForward())
-		{
-		const CItem &Item = Search.GetItemAtCursor();
-		if (Item.GetType()->FindEventHandlerItemType(CItemType::evtOnDocked))
-			Items.Insert(Item);
-		}
-
-	//	Now call the event
-
-	for (i = 0; i < Items.GetCount(); i++)
-		Items[i].FireOnDocked(this, pDockedAt);
-
-	DEBUG_CATCH
+	m_ItemEvents.FireOnDocked(this, pDockedAt);
 	}
 
 void CSpaceObject::FireItemOnObjDestroyed (const SDestroyCtx &Ctx)
@@ -2245,27 +2231,13 @@ void CSpaceObject::FireItemOnObjDestroyed (const SDestroyCtx &Ctx)
 //	Fires OnObjDestroyed event for all items
 
 	{
-	DEBUG_TRY
+	//	We need to initialize, even if we don't use the event list because we
+	//	rely on the flag to tell us if items changed out from under us.
 
-	int i;
+	if (!m_fItemEventsValid)
+		InitItemEvents();
 
-	//	Make a list of all items that have an OnObjDestroyed event.
-
-	TArray<CItem> Items;
-	CItemListManipulator Search(GetItemList());
-	while (Search.MoveCursorForward())
-		{
-		const CItem &Item = Search.GetItemAtCursor();
-		if (Item.GetType()->FindEventHandler(CDesignType::evtOnObjDestroyed))
-			Items.Insert(Item);
-		}
-
-	//	Now call the event
-
-	for (i = 0; i < Items.GetCount(); i++)
-		Items[i].FireOnObjDestroyed(this, Ctx);
-
-	DEBUG_CATCH
+	m_ItemEvents.FireOnObjDestroyed(this, Ctx);
 	}
 
 void CSpaceObject::FireItemOnUpdate (void)
