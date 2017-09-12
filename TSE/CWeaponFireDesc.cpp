@@ -1660,7 +1660,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	//	Fire type
 
 	CString sValue = pDesc->GetAttribute(FIRE_TYPE_ATTRIB);
-	if (strEquals(sValue, FIRE_TYPE_MISSILE))
+	if (strEquals(sValue, FIRE_TYPE_MISSILE) || sValue.IsBlank())
 		m_iFireType = ftMissile;
 	else if (strEquals(sValue, FIRE_TYPE_BEAM))
 		m_iFireType = ftBeam;
