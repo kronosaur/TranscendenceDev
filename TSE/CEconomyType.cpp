@@ -261,6 +261,16 @@ CurrencyValue CCurrencyAndValue::GetCreditValue (void) const
 	return CEconomyType::ExchangeToCredits(*this);
 	}
 
+CString CCurrencyAndValue::GetSID (void) const
+
+//	GetSID
+//
+//	Returns the string ID for the currency type.
+
+	{
+	return (m_pCurrency ? m_pCurrency->GetSID() : NULL_STR);
+	}
+
 ALERROR CCurrencyAndValue::InitFromXMLAndDefault (SDesignLoadCtx &Ctx, const CString &sDesc, const CCurrencyAndValue &Default)
 
 //	InitFromXMLAndDefault

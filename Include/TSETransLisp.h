@@ -23,6 +23,7 @@ enum ECodeChainEvents
 	eventOverlayEvent =					11,
 	eventGetReferenceText =				12,		//	Item reference text
 	eventOnDestroyCheck =				13,
+	eventGetHullPrice =					14,
 	};
 
 class CCodeChainCtx

@@ -59,7 +59,7 @@ void CBeam::CreateReflection (const CVector &vPos, int iDirection)
 	{
 	}
 
-CString CBeam::GetName (DWORD *retdwFlags)
+CString CBeam::GetName (DWORD *retdwFlags) const
 
 //	GetName
 //

@@ -506,7 +506,7 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	return (m_pDesc->GetFireType() == ftBeam ? catBeam : catMissile);
 	}
 
-CString CMissile::GetName (DWORD *retdwFlags)
+CString CMissile::GetName (DWORD *retdwFlags) const
 
 //	GetName
 //

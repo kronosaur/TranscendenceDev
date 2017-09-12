@@ -1001,8 +1001,8 @@ class CSpaceObject : public CObject
 		int FindCommsMessage (const CString &sID);
 		int FindCommsMessageByName (const CString &sName);
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
-		bool FindEventHandler (const CString &sEntryPoint, SEventHandlerDesc *retEvent = NULL);
-		bool FindEventHandler (CDesignType::ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL);
+		bool FindEventHandler (const CString &sEntryPoint, SEventHandlerDesc *retEvent = NULL) const;
+		bool FindEventHandler (CDesignType::ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const;
 		inline bool FindEventSubscriber (CSpaceObject *pObj) { return m_SubscribedObjs.FindObj(pObj); }
 		bool FireCanDockAsPlayer (CSpaceObject *pDockTarget, CString *retsError);
 		bool FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult);
@@ -1202,7 +1202,7 @@ class CSpaceObject : public CObject
 		void Reconned (void);
 		void RemoveAllEventSubscriptions (CSystem *pSystem, TArray<DWORD> *retRemoved = NULL);
 		inline void RemoveEventSubscriber (CSpaceObject *pObj) { m_SubscribedObjs.Remove(pObj); }
-		void ReportEventError (const CString &sEvent, ICCItem *pError);
+		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
 		inline void RestartTime (void) { m_fTimeStop = false; }
 		inline void SetAutoClearDestination (void) { m_fAutoClearDestination = true; }
 		inline void SetAutoClearDestinationOnDestroy (void) { m_fAutoClearDestinationOnDestroy = true; }
@@ -1400,7 +1400,7 @@ class CSpaceObject : public CObject
 		virtual Metric GetInvMass (void) const { return 0.0; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) const { return 0.0; }
-		virtual CString GetName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return LITERAL("unknown object"); }
+		virtual CString GetName (DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return LITERAL("unknown object"); }
 		virtual CString GetObjClassName (void) { return CONSTLIT("unknown"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerStations; }
 		virtual Metric GetParallaxDist (void) { return 0.0; }

@@ -120,7 +120,7 @@ int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, CSpaceObject
 
 //	CalcPriceForService
 //
-//	Compute a price for a service (used by objects without a Trade descriptor
+//	Compute a price for a service (used by objects without a Trade descriptor).
 
 	{
 	SServiceDesc Default;

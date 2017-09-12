@@ -91,7 +91,7 @@ ALERROR CAreaDamage::Create (CSystem *pSystem,
 	return NOERROR;
 	}
 
-CString CAreaDamage::GetName (DWORD *retdwFlags)
+CString CAreaDamage::GetName (DWORD *retdwFlags) const
 
 //	GetName
 //

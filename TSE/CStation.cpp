@@ -1402,7 +1402,7 @@ Metric CStation::GetMaxWeaponRange (void) const
 	return rRange;
 	}
 
-CString CStation::GetName (DWORD *retdwFlags)
+CString CStation::GetName (DWORD *retdwFlags) const
 
 //	GetName
 //

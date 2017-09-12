@@ -77,26 +77,26 @@ class CMission : public CSpaceObject
 
 		//	CSpaceObject virtuals
 
-		virtual CMission *AsMission (void) { return this; }
-		virtual CString GetName (DWORD *retdwFlags = NULL) { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
-		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
-		virtual CDesignType *GetType (void) const { return m_pType; }
-		virtual bool HasAttribute (const CString &sAttribute) const { return m_pType->HasLiteralAttribute(sAttribute); }
-		virtual bool HasSpecialAttribute (const CString &sAttrib) const;
-		virtual bool IsMission (void) { return true; }
-		virtual bool IsNonSystemObj (void) { return true; }
-		virtual void OnNewSystem (CSystem *pSystem);
-		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
+		virtual CMission *AsMission (void) override { return this; }
+		virtual CString GetName (DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
+		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
+		virtual CDesignType *GetType (void) const override { return m_pType; }
+		virtual bool HasAttribute (const CString &sAttribute) const override { return m_pType->HasLiteralAttribute(sAttribute); }
+		virtual bool HasSpecialAttribute (const CString &sAttrib) const override;
+		virtual bool IsMission (void) override { return true; }
+		virtual bool IsNonSystemObj (void) override { return true; }
+		virtual void OnNewSystem (CSystem *pSystem) override;
+		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
 
 	protected:
 		//	CSpaceObject virtuals
 
-		virtual CString GetObjClassName (void) { return CONSTLIT("CMission"); }
-		virtual void OnDestroyed (SDestroyCtx &Ctx);
-		virtual void OnObjDestroyedNotify (SDestroyCtx &Ctx);
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual CString GetObjClassName (void) override { return CONSTLIT("CMission"); }
+		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
+		virtual void OnObjDestroyedNotify (SDestroyCtx &Ctx) override;
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		enum ECompletedReasons

@@ -15,6 +15,7 @@ class CCurrencyAndValue
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		CurrencyValue GetCreditValue (void) const;
 		inline CEconomyType *GetCurrencyType (void) const { return m_pCurrency; }
+		CString GetSID (void) const;
 		inline CurrencyValue GetValue (void) const { return m_iValue; }
 		inline void Init (CurrencyValue iValue, const CString &sUNID = NULL_STR) { m_iValue = iValue; m_pCurrency.LoadUNID(sUNID); }
 		inline ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sDesc) { return InitFromXMLAndDefault(Ctx, sDesc, CCurrencyAndValue()); }

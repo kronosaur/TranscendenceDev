@@ -1702,7 +1702,7 @@ bool CSpaceObject::FindDevice (const CItem &Item, CInstalledDevice **retpDevice,
 	return true;
 	}
 
-bool CSpaceObject::FindEventHandler (const CString &sEntryPoint, SEventHandlerDesc *retEvent)
+bool CSpaceObject::FindEventHandler (const CString &sEntryPoint, SEventHandlerDesc *retEvent) const
 
 //	FindEventHandler
 //
@@ -1725,7 +1725,7 @@ bool CSpaceObject::FindEventHandler (const CString &sEntryPoint, SEventHandlerDe
 	return false;
 	}
 
-bool CSpaceObject::FindEventHandler (CDesignType::ECachedHandlers iEvent, SEventHandlerDesc *retEvent)
+bool CSpaceObject::FindEventHandler (CDesignType::ECachedHandlers iEvent, SEventHandlerDesc *retEvent) const
 
 //	FindEventHandler
 //
@@ -6923,7 +6923,7 @@ void CSpaceObject::RepairItem (CItemListManipulator &ItemList)
 		}
 	}
 
-void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError)
+void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError) const
 
 //	ReportEventError
 //
@@ -6933,7 +6933,7 @@ void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError)
 	CString sError = strPatternSubst(CONSTLIT("%s [%s]: %s"), sEvent, GetName(), pError->GetStringValue());
 	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer)
-		pPlayer->SendMessage(this, sError);
+		pPlayer->SendMessage(const_cast<CSpaceObject *>(this), sError);
 
 	kernelDebugLogString(sError);
 	}

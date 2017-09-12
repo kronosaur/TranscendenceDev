@@ -66,6 +66,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_FUEL_LEFT_EXACT				CONSTLIT("fuelLeftExact")
 #define PROPERTY_HEALER_LEFT        			CONSTLIT("healerLeft")
 #define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_HULL_PRICE						CONSTLIT("hullPrice")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
 #define PROPERTY_MAX_FUEL						CONSTLIT("maxFuel")
 #define PROPERTY_MAX_FUEL_EXACT					CONSTLIT("maxFuelExact")
@@ -77,6 +78,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
+#define PROPERTY_PRICE							CONSTLIT("price")
 #define PROPERTY_RADIOACTIVE					CONSTLIT("radioactive")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_ROTATION						CONSTLIT("rotation")
@@ -2744,6 +2746,52 @@ CSpaceObject *CShip::GetEscortPrincipal (void) const
 	return m_pController->GetEscortPrincipal();
 	}
 
+CCurrencyAndValue CShip::GetHullValue (void) const
+
+//	GetHullValue
+//
+//	Returns the value of just the hull.
+
+	{
+	CCodeChainCtx Ctx;
+	SEventHandlerDesc Event;
+
+	//	If we're already inside the <GetHullValue> event, of if we don't have 
+	//	such an event, then just return the raw value.
+
+	if (!FindEventHandler(CONSTLIT("GetHullValue"), &Event)
+			|| Ctx.InEvent(eventGetHullPrice))
+		return m_pClass->GetHullValue();
+
+	//	We pass the raw value in
+
+	CCurrencyAndValue HullValue = m_pClass->GetHullValue();
+
+	//	Otherwise, if we run the event to get the value
+
+	Ctx.SaveAndDefineSourceVar(const_cast<CShip *>(this));
+	Ctx.SetEvent(eventGetHullPrice);
+	Ctx.DefineString(CONSTLIT("aCurrency"), HullValue.GetSID());
+	Ctx.DefineInteger(CONSTLIT("aPrice"), (int)HullValue.GetValue());
+
+	//	Run
+
+	ICCItem *pResult = Ctx.Run(Event);
+
+	//	Interpret results
+
+	if (pResult->IsError())
+		ReportEventError(CONSTLIT("GetHullValue"), pResult);
+
+	else if (pResult->IsNumber())
+		HullValue.SetValue(pResult->GetIntegerValue());
+
+	//	Done
+
+	Ctx.Discard(pResult);
+	return HullValue;
+	}
+
 CString CShip::GetInstallationPhrase (const CItem &Item) const
 
 //	GetInstallationPhrase
@@ -2942,7 +2990,7 @@ int CShip::GetMissileCount (void)
 		return 0;
 	}
 
-CString CShip::GetName (DWORD *retdwFlags)
+CString CShip::GetName (DWORD *retdwFlags) const
 
 //	GetName
 //
@@ -3130,6 +3178,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_HP))
 		return CC.CreateInteger(GetTotalArmorHP());
 
+	else if (strEquals(sName, PROPERTY_HULL_PRICE))
+		return CC.CreateInteger((int)GetHullValue().GetValue());
+
 	else if (strEquals(sName, PROPERTY_INTERIOR_HP))
 		{
 		int iHP;
@@ -3178,6 +3229,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
     else if (strEquals(sName, PROPERTY_POWER_USE))
         return CC.CreateDouble(GetPowerConsumption() * 100.0);
+
+	else if (strEquals(sName, PROPERTY_PRICE))
+		return CC.CreateInteger((int)GetTradePrice(NULL).GetValue());
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
 		{
@@ -3433,7 +3487,7 @@ CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
 	{
 	//	Get the hull value
 
-	CCurrencyAndValue Value = m_pClass->GetHullValue();
+	CCurrencyAndValue Value = GetHullValue();
 
 	//	Add up the value of all installed items
 
