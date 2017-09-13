@@ -2832,9 +2832,7 @@ CString CShipClass::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) co
 
 		return GetShortName();
 		}
-	else if ((dwNounFormFlags & nounGeneric)
-			|| m_sShipNames.IsBlank() 
-			|| ::IsConstantName(m_sShipNames))
+	else if ((dwNounFormFlags & nounGeneric) || m_sShipNames.IsBlank())
 		return GetGenericName(retdwFlags);
 	else
 		return GenerateShipName(retdwFlags);
