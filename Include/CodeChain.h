@@ -183,6 +183,7 @@ class ICCItem : public CObject
 
 		bool IsLambdaExpression (void);
 		bool IsLambdaSymbol (void);
+		inline bool IsNumber (void) { return (IsInteger() || IsDouble()); }
 		inline bool IsReadOnly (void) { return m_bReadOnly; }
 		inline void SetReadOnly (bool bReadOnly = true) { m_bReadOnly = bReadOnly; }
 		void ResetItem (void);
