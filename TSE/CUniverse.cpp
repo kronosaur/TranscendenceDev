@@ -913,6 +913,19 @@ CTopologyNode *CUniverse::GetFirstTopologyNode (void)
 		sNodeID = pAdventure->GetStartingNodeID();
 
 	if (sNodeID.IsBlank())
+		{
+		TSortMap<CString, CShipClass *> StartingShips;
+		if (pAdventure->GetStartingShipClasses(&StartingShips, &sError) != NOERROR)
+			return NULL;
+
+		if (StartingShips.GetCount() > 0)
+			{
+			CShipClass *pClass = StartingShips[0];
+			sNodeID = pClass->GetPlayerSettings()->GetStartingNode();
+			}
+		}
+
+	if (sNodeID.IsBlank())
 		sNodeID = m_Design.GetStartingNodeID();
 
 	return FindTopologyNode(sNodeID);
