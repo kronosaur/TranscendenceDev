@@ -27,7 +27,8 @@ class CMission : public CSpaceObject
 					bIncludeActive(false),
 					bIncludeRecorded(false),
 					bOnlySourceOwner(false),
-					bOnlySourceDebriefer(false)
+					bOnlySourceDebriefer(false),
+					bPriorityOnly(false)
 				{ }
 
 			bool bIncludeOpen;					//	Include open missions
@@ -37,6 +38,7 @@ class CMission : public CSpaceObject
 
 			bool bOnlySourceOwner;				//	Source must be owner
 			bool bOnlySourceDebriefer;			//	Source must be debriefer
+			bool bPriorityOnly;					//	Return highest priority mission
 
 			TArray<CString> AttribsRequired;	//	Required attributes
 			TArray<CString> AttribsNotAllowed;	//	Exclude objects with these attributes
@@ -51,6 +53,7 @@ class CMission : public CSpaceObject
 							   CString *retsError);
 		void FireCustomEvent (const CString &sEvent, ICCItem *pData);
 		inline DWORD GetAcceptedOn (void) const { return m_dwAcceptedOn; }
+		inline int GetPriority (void) const { return m_pType->GetPriority(); }
 		inline bool IsActive (void) const { return (m_iStatus == statusAccepted || (!m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure))); }
 		inline bool IsClosed (void) const { return (!IsActive() && IsCompleted()); }
 		inline bool IsCompleted (void) const { return (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure || m_iStatus == statusSuccess || m_iStatus == statusFailure); }

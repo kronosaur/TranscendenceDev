@@ -2225,6 +2225,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   o                  Include open missions\n"
 			"   r                  Include already debriefed (recorded) missions\n"
 			"   u                  Include non-player missions\n"
+			"   D                  Only missions debriefed by source\n"
+			"   P                  Return only the mission with highest priority\n"
 			"   S                  Only missions owned by source\n"
 			"   +/-{attrib}        Require/exclude missions with given attribute\n"
 			"   +/-ownerID:{id}    Require/exclude missions with given owner\n"
@@ -2268,6 +2270,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'name              The name of the mission\n"
 			"   'nodeID            ID of the mission's owner system\n"
 			"   'ownerID           ID of the mission's owner object\n"
+			"   'priority          Mission priority\n"
 			"   'summary           A summary description of the mission\n"
 			"   'unid              Mission type UNID",
 
@@ -8204,19 +8207,37 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (List.GetCount() == 0)
 				return pCC->CreateNil();
 
-			//	Create a list to return
+			if (Criteria.bPriorityOnly)
+				{
+				//	Return a single mission
 
-			ICCItem *pResult = pCC->CreateLinkedList();
-			if (pResult->IsError())
+				int bestPriority = -1;
+				j = 0;
+				for (i = 0; i < List.GetCount(); i++)
+					if (List[i]->GetPriority() > bestPriority)
+						{
+						j = i;
+						bestPriority = List[i]->GetPriority();
+						}
+				
+				return pCC->CreateInteger((int)List[j]);
+				}
+			else
+				{
+				//	Create a list to return
+
+				ICCItem *pResult = pCC->CreateLinkedList();
+				if (pResult->IsError())
+					return pResult;
+
+				CCLinkedList *pList = (CCLinkedList *)pResult;
+				for (i = 0; i < List.GetCount(); i++)
+					pList->AppendInteger(*pCC, (int)List[i]);
+
+				//	Done
+
 				return pResult;
-
-			CCLinkedList *pList = (CCLinkedList *)pResult;
-			for (i = 0; i < List.GetCount(); i++)
-				pList->AppendInteger(*pCC, (int)List[i]);
-
-			//	Done
-
-			return pResult;
+				}
 			}
 
 		default:
