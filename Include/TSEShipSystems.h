@@ -121,6 +121,8 @@ struct SCompartmentDesc
 class CShipInteriorDesc
 	{
 	public:
+		CShipInteriorDesc (void);
+
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		void CalcCompartmentPositions (int iScale, TArray<CVector> &Result) const;
 		int CalcImageSize (CShipClass *pClass, CVector *retvOrigin = NULL) const;

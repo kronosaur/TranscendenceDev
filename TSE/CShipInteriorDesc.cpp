@@ -29,6 +29,15 @@ static TStaticStringTable<TStaticStringEntry<ECompartmentTypes>, 3> COMPARTMENT_
 	"mainDrive",			deckMainDrive,
 	};
 
+CShipInteriorDesc::CShipInteriorDesc (void) :
+		m_fHasAttached(false),
+		m_fIsMultiHull(false)
+
+//	CShipInteriorDesc constructor
+
+	{
+	}
+
 ALERROR CShipInteriorDesc::BindDesign (SDesignLoadCtx &Ctx)
 
 //	BindDesign
