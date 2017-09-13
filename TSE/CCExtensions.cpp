@@ -1267,7 +1267,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"connectType:\n\n"
 
 			"   'hinge\n"
-			"   'rod\n\n"
+			"   'rod\n"
+			"   'spine\n\n"
 			
 			"options:\n\n"
 			
