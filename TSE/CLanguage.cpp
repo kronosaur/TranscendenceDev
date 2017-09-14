@@ -35,8 +35,13 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 
 	//	Get the proper noun form
 
-	CString sDefaultArticle;
-	CString sNounForm = ParseNounForm(sNoun, sModifier, dwNounFlags, bPluralize, (dwComposeFlags & nounShort) != 0, &sDefaultArticle);
+	SNounDesc NounDesc;
+	CString sNounForm = ParseNounForm(sNoun, sModifier, dwNounFlags, bPluralize, (dwComposeFlags & nounShort) != 0, &NounDesc);
+
+	//	If we need to strip quotes, do it now
+
+	if ((dwComposeFlags & nounNoQuotes) && NounDesc.bHasQuotes)
+		sNounForm = strProcess(sNounForm, STRPROC_NO_DOUBLE_QUOTES);
 
 	//	Get the appropriate article
 
@@ -46,12 +51,12 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 	else if ((dwComposeFlags & nounArticle)
 			|| ((dwComposeFlags & nounCount) && iCount == 1))
 		{
-		sArticle = sDefaultArticle;
+		sArticle = NounDesc.sArticle;
 		}
 	else if (dwComposeFlags & nounDemonstrative)
 		{
-		if (sDefaultArticle.IsBlank() || *sDefaultArticle.GetPointer() == 't')
-			sArticle = sDefaultArticle;
+		if (NounDesc.sArticle.IsBlank() || *NounDesc.sArticle.GetPointer() == 't')
+			sArticle = NounDesc.sArticle;
 		else
 			{
 			if (iCount > 1)
@@ -248,7 +253,7 @@ DWORD CLanguage::ParseNounFlags (const CString &sValue)
 	return dwFlags;
 	}
 
-CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, CString *retsArticle)
+CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, SNounDesc *retDesc)
 
 //	ParseNounForm
 //
@@ -305,7 +310,7 @@ CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier
 	//	See if we know enough to compute the article now
 
 	bool bNeedArticle = true;
-	if (retsArticle)
+	if (retDesc)
 		{
 		//	If we have a modifier, then we always use that to calculate the article.
 		//	(And we assume it follows regular rules.)
@@ -324,11 +329,11 @@ CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier
 				case 'o':
 				case 'U':
 				case 'u':
-					*retsArticle = CONSTLIT("an ");
+					retDesc->sArticle = CONSTLIT("an ");
 					break;
 
 				default:
-					*retsArticle = CONSTLIT("a ");
+					retDesc->sArticle = CONSTLIT("a ");
 					break;
 				}
 
@@ -339,8 +344,7 @@ CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier
 
 		else if (pArticleStart)
 			{
-			if (retsArticle)
-				*retsArticle = CString(pArticleStart, (int)(pArticleEnd - pArticleStart));
+			retDesc->sArticle = CString(pArticleStart, (int)(pArticleEnd - pArticleStart));
 
 			bNeedArticle = false;
 			}
@@ -357,6 +361,7 @@ CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier
 	bool bSkipWhitespace = true;
 	bool bStartOfWord = true;
     bool bHasLongForm = false;
+	bool bHasQuotes = false;
 	int iWord = 1;
 
 	while (*pPos != '\0')
@@ -481,7 +486,16 @@ CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier
 
 			if ((!bInLongNameSect || !bShortName)
 					&& (!bInPluralSect || bPluralize))
+				{
+				//	See if the noun has embedded quotes
+
+				if (*pPos == '\"')
+					bHasQuotes = true;
+
+				//	Add to the result
+
 				*pDest++ = *pPos;
+				}
 			}
 
 		pPos++;
@@ -506,46 +520,55 @@ CString CLanguage::ParseNounForm (const CString &sNoun, const CString &sModifier
 	*pDest++ = '\0';
 	sDest.Truncate(pDest - sDest.GetASCIIZPointer() - 1);
 
-	//	If we still need an article, compute it now
+	//	Return noun descriptor, if necessary
 
-	if (bNeedArticle && retsArticle)
+	if (retDesc)
 		{
-		if (dwNounFlags & nounNoArticle)
-			*retsArticle = NULL_STR;
-		else if (dwNounFlags & nounDefiniteArticle)
-			*retsArticle = CONSTLIT("the ");
-		else
-			{
-			switch (*sDest.GetASCIIZPointer())
-				{
-				case 'A':
-				case 'a':
-				case 'E':
-				case 'e':
-				case 'I':
-				case 'i':
-				case 'O':
-				case 'o':
-				case 'U':
-				case 'u':
-					{
-					if (dwNounFlags & nounVowelArticle)
-						*retsArticle = CONSTLIT("a ");
-					else
-						*retsArticle = CONSTLIT("an ");
-					break;
-					}
+		//	If we still need an article, compute it now
 
-				default:
+		if (bNeedArticle)
+			{
+			if (dwNounFlags & nounNoArticle)
+				retDesc->sArticle = NULL_STR;
+			else if (dwNounFlags & nounDefiniteArticle)
+				retDesc->sArticle = CONSTLIT("the ");
+			else
+				{
+				switch (*sDest.GetASCIIZPointer())
 					{
-					if (dwNounFlags & nounVowelArticle)
-						*retsArticle = CONSTLIT("an ");
-					else
-						*retsArticle = CONSTLIT("a ");
-					break;
+					case 'A':
+					case 'a':
+					case 'E':
+					case 'e':
+					case 'I':
+					case 'i':
+					case 'O':
+					case 'o':
+					case 'U':
+					case 'u':
+						{
+						if (dwNounFlags & nounVowelArticle)
+							retDesc->sArticle = CONSTLIT("a ");
+						else
+							retDesc->sArticle = CONSTLIT("an ");
+						break;
+						}
+
+					default:
+						{
+						if (dwNounFlags & nounVowelArticle)
+							retDesc->sArticle = CONSTLIT("an ");
+						else
+							retDesc->sArticle = CONSTLIT("a ");
+						break;
+						}
 					}
 				}
 			}
+
+		//	Other flags
+
+		retDesc->bHasQuotes = bHasQuotes;
 		}
 
 	return sDest;

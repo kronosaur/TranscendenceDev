@@ -41,6 +41,7 @@ enum NounPhraseFlags
 	nounAdjective			= 0x00010000,	//	Sovereign name as adjective
 	nounTokenize			= 0x00020000,	//	Replace whitespace with underscores
 	nounNoDeterminer		= 0x00040000,	//	No count or article, but pluralize if count > 1
+	nounNoQuotes			= 0x00080000,	//	Convert double-quotes to single-quotes (for use inside quoted text)
 	};
 
 class CLanguage
@@ -62,6 +63,16 @@ class CLanguage
 			verbPluralize =					0x00000001,	//	Use the plural form of the verb
 			};
 
+		struct SNounDesc
+			{
+			SNounDesc (void) :
+					bHasQuotes(false)
+				{ }
+
+			CString sArticle;				//	Article to use for noun
+			bool bHasQuotes;				//	Noun has embedded quotes
+			};
+
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
 		static CString ComposeNumber (ENumberFormatTypes iFormat, int iNumber);
 		static CString ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber);
@@ -69,7 +80,7 @@ class CLanguage
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static DWORD LoadNameFlags (CXMLElement *pDesc);
 		static DWORD ParseNounFlags (const CString &sValue);
-		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, CString *retsArticle = NULL);
+		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, SNounDesc *retDesc = NULL);
 		static ENumberFormatTypes ParseNumberFormat (const CString &sValue);
 	};
 
