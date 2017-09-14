@@ -68,7 +68,7 @@ class CSovereign : public CDesignType
 		~CSovereign (void);
 
 		void DeleteRelationships (void);
-		inline void FlushEnemyObjectCache (void) { m_pEnemyObjectsSystem = NULL; }
+		inline void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
 		IPlayerController *GetController (void);
 		Disposition GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent = true);
 		inline const CSpaceObjectList &GetEnemyObjectList (CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
