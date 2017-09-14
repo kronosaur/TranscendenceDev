@@ -181,7 +181,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	return NOERROR;
 	}
 
-CString CParticleDamage::GetName (DWORD *retdwFlags) const
+CString CParticleDamage::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 
 //	GetName
 //

@@ -22,7 +22,7 @@ class CAreaDamage : public CSpaceObject
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetAveExpansionSpeed(); }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CAreaDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
@@ -73,7 +73,7 @@ class CBeam : public CSpaceObject
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual int GetInteraction (void) const override { return 0; }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerStations; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
@@ -171,7 +171,7 @@ class CContinuousBeam : public CSpaceObject
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual int GetInteraction (void) const override { return m_pDesc->GetInteraction(); }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CContinuousBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual int GetRotation (void) const override { return m_iLastDirection; }
@@ -450,7 +450,7 @@ class CMarker : public CSpaceObject
 
 		virtual Categories GetCategory (void) const override { return catMarker; }
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual bool IsAnchored (void) const override { return true; }
@@ -515,7 +515,7 @@ class CMissile : public CSpaceObject
 		virtual int GetInteraction (void) const override { return m_pDesc->GetInteraction(); }
 		virtual int GetLevel (void) const override { return m_pDesc->GetLevel(); }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMissile"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
@@ -610,7 +610,7 @@ class CParticleDamage : public CSpaceObject
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
@@ -785,7 +785,7 @@ class CParticleEffect : public CSpaceObject
 
 		virtual bool CanBeHitBy (const DamageDesc &Damage) override;
 		virtual bool CanMove (void) const { return true; }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerSpace; }
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
@@ -896,7 +896,7 @@ class CRadiusDamage : public CSpaceObject
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CRadiusDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
@@ -1148,7 +1148,7 @@ class CShip : public CSpaceObject
 		virtual int GetLevel (void) const override { return m_pClass->GetLevel(); }
 		virtual Metric GetMass (void) const override;
 		virtual int GetMaxPower (void) const override;
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
@@ -1504,7 +1504,7 @@ class CStation : public CSpaceObject
 		virtual Metric GetMass (void) const override { return m_rMass; }
 		virtual int GetMaxLightDistance (void) override { return m_pType->GetMaxLightDistance(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStation"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override;

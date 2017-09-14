@@ -1369,9 +1369,9 @@ CString CSpaceObject::DebugDescribe (CSpaceObject *pObj)
 		if (pObj == NULL)
 			return CONSTLIT("none");
 		else if (pObj->IsDestroyed())
-			return strPatternSubst(CONSTLIT("%x %s (%s) [destroyed]"), (DWORD)pObj, pObj->GetName(), pObj->GetObjClassName());
+			return strPatternSubst(CONSTLIT("%x %s (%s) [destroyed]"), (DWORD)pObj, pObj->GetNounPhrase(), pObj->GetObjClassName());
 		else
-			return strPatternSubst(CONSTLIT("%x %s (%s)"), (DWORD)pObj, pObj->GetName(), pObj->GetObjClassName());
+			return strPatternSubst(CONSTLIT("%x %s (%s)"), (DWORD)pObj, pObj->GetNounPhrase(), pObj->GetObjClassName());
 		}
 	catch (...)
 		{
@@ -4121,7 +4121,7 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iM
 	return pBestObj;
 	}
 
-CString CSpaceObject::GetNounPhrase (DWORD dwFlags)
+CString CSpaceObject::GetNounPhrase (DWORD dwFlags) const
 
 //	GetNounPhrase
 //
@@ -4132,7 +4132,7 @@ CString CSpaceObject::GetNounPhrase (DWORD dwFlags)
 	//	Get the name and modifiers from the actual object
 
 	DWORD dwNounFlags;
-	CString sName = GetName(&dwNounFlags);
+	CString sName = GetNamePattern(dwFlags, &dwNounFlags);
 
 	return CLanguage::ComposeNounPhrase(sName, 1, CString(), dwNounFlags, dwFlags);
 	}
@@ -6930,7 +6930,7 @@ void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError) con
 //	Report an error during an event
 
 	{
-	CString sError = strPatternSubst(CONSTLIT("%s [%s]: %s"), sEvent, GetName(), pError->GetStringValue());
+	CString sError = strPatternSubst(CONSTLIT("%s [%s]: %s"), sEvent, GetNounPhrase(), pError->GetStringValue());
 	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 	if (pPlayer)
 		pPlayer->SendMessage(const_cast<CSpaceObject *>(this), sError);

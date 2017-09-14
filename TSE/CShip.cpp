@@ -2990,15 +2990,15 @@ int CShip::GetMissileCount (void)
 		return 0;
 	}
 
-CString CShip::GetName (DWORD *retdwFlags) const
+CString CShip::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 
 //	GetName
 //
 //	Returns the name of the ship
 
 	{
-	if (m_sName.IsBlank())
-		return m_pClass->GetNamePattern(0, retdwFlags);
+	if (m_sName.IsBlank() || (dwNounPhraseFlags & nounGeneric))
+		return m_pClass->GetNamePattern(dwNounPhraseFlags, retdwFlags);
 	else
 		{
 		if (retdwFlags)

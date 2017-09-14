@@ -249,7 +249,7 @@ EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHi
 	return pHit->Damage(DamageCtx);
 	}
 
-CString CContinuousBeam::GetName (DWORD *retdwFlags) const
+CString CContinuousBeam::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 
 //	GetName
 //

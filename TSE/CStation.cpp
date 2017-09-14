@@ -1402,15 +1402,15 @@ Metric CStation::GetMaxWeaponRange (void) const
 	return rRange;
 	}
 
-CString CStation::GetName (DWORD *retdwFlags) const
+CString CStation::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 
 //	GetName
 //
 //	Returns the name of the station
 
 	{
-	if (m_sName.IsBlank())
-		return m_pType->GetNamePattern(0, retdwFlags);
+	if (m_sName.IsBlank() || (dwNounPhraseFlags & nounGeneric))
+		return m_pType->GetNamePattern(dwNounPhraseFlags, retdwFlags);
 
 	if (retdwFlags)
 		*retdwFlags = m_dwNameFlags;
@@ -2729,7 +2729,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		rcRect.right = x + 40;
 		rcRect.bottom = y + 20;
 
-		g_pUniverse->GetNamedFont(CUniverse::fontSign).DrawText(Dest, rcRect, RGB_SIGN_COLOR, GetName(), -2);
+		g_pUniverse->GetNamedFont(CUniverse::fontSign).DrawText(Dest, rcRect, RGB_SIGN_COLOR, GetNounPhrase(), -2);
 		}
 
 	//	Paint overlays
@@ -4314,7 +4314,7 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 		if (pShip && pWreckClass->HasShipName())
 			{
 			DWORD dwNounFlags;
-			sName = pShip->GetName(&dwNounFlags);
+			sName = pShip->GetNamePattern(0, &dwNounFlags);
 
 			if (dwNounFlags & nounPersonalName)
 				sName = strPatternSubst(CONSTLIT("wreck of %s's %s"),

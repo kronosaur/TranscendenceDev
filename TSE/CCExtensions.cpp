@@ -7263,7 +7263,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pData = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
 			pObj->FireCustomEvent(pArgs->GetElement(1)->GetStringValue(), eventObjFireEvent, pData, &pResult);
             if (pResult->IsError() && g_pUniverse->InDebugMode())
-                ::kernelDebugLogPattern("[%s %s]: %s", pObj->GetName(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
+                ::kernelDebugLogPattern("[%s %s]: %s", pObj->GetNounPhrase(), pArgs->GetElement(1)->GetStringValue(), pResult->GetStringValue());
 			return pResult;
 			}
 
@@ -7293,7 +7293,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pObj->UseItem(Item, &sError);
 			if (sError.IsBlank())
 				{
-				::kernelDebugLogPattern("[%s %s Invoke]: %s", pObj->GetName(), pType->GetNounPhrase(), sError);
+				::kernelDebugLogPattern("[%s %s Invoke]: %s", pObj->GetNounPhrase(), pType->GetNounPhrase(), sError);
 				return pCC->CreateNil();
 				}
 

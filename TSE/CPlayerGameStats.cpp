@@ -1329,7 +1329,7 @@ void CPlayerGameStats::OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD 
 	//	Get the object's name
 
 	DWORD dwNameFlags;
-	CString sName = pObj->GetName(&dwNameFlags);
+	CString sName = pObj->GetNamePattern(0, &dwNameFlags);
 	
 	//	If the object name is the same as the type name then we don't bother
 	//	storing it in the event (to save memory)

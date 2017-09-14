@@ -161,7 +161,7 @@ void CDockingPorts::DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj)
 		}
 	else
 		{
-		kernelDebugLogPattern("Warning: Unable to find docking port at %s", pOwner->GetName());
+		kernelDebugLogPattern("Warning: Unable to find docking port at %s", pOwner->GetNounPhrase());
 		}
 	}
 

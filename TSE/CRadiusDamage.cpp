@@ -233,7 +233,7 @@ CString CRadiusDamage::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CString CRadiusDamage::GetName (DWORD *retdwFlags) const
+CString CRadiusDamage::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 
 //	GetName
 //

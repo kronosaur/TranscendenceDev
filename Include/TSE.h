@@ -1094,7 +1094,7 @@ class CSpaceObject : public CObject
 
 		CSpaceObject *GetNearestVisibleEnemy (Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CSpaceObject *GetNearestVisibleEnemyInArc (int iMinFireArc, int iMaxFireArc, Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
-		CString GetNounPhrase (DWORD dwFlags = 0);
+		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline CSpaceObject *GetObjRefData (const CString &sAttrib) { return m_Data.GetObjRefData(sAttrib); }
 		CSpaceObject *GetOrderGiver (DestructionTypes iCause = killedNone);
 		inline CDesignType *GetOverride (void) { return m_pOverride; }
@@ -1400,7 +1400,7 @@ class CSpaceObject : public CObject
 		virtual Metric GetInvMass (void) const { return 0.0; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
 		virtual Metric GetMass (void) const { return 0.0; }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return LITERAL("unknown object"); }
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return LITERAL("unknown object"); }
 		virtual CString GetObjClassName (void) { return CONSTLIT("unknown"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerStations; }
 		virtual Metric GetParallaxDist (void) { return 0.0; }

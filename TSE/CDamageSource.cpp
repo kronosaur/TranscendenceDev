@@ -336,7 +336,7 @@ void CDamageSource::OnObjDestroyed (CSpaceObject *pObjDestroyed)
 	{
 	if (pObjDestroyed == m_pSource && !IsObjID())
 		{
-		m_sSourceName = m_pSource->GetName(&m_dwSourceNameFlags);
+		m_sSourceName = m_pSource->GetNamePattern(0, &m_dwSourceNameFlags);
 		m_pSource = (CSpaceObject *)m_pSource->GetID();
 		m_dwFlags |= FLAG_OBJ_ID;
 		}
@@ -435,7 +435,7 @@ void CDamageSource::SetObj (CSpaceObject *pSource)
 
 	if (pSource && pSource->IsDestroyed())
 		{
-		m_sSourceName = pSource->GetName(&m_dwSourceNameFlags);
+		m_sSourceName = pSource->GetNamePattern(0, &m_dwSourceNameFlags);
 		m_pSource = (CSpaceObject *)pSource->GetID();
 		m_dwFlags |= FLAG_OBJ_ID;
 		}

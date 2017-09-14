@@ -81,7 +81,7 @@ class CMission : public CSpaceObject
 		//	CSpaceObject virtuals
 
 		virtual CMission *AsMission (void) override { return this; }
-		virtual CString GetName (DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
+		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual bool HasAttribute (const CString &sAttribute) const override { return m_pType->HasLiteralAttribute(sAttribute); }

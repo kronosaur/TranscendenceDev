@@ -851,7 +851,7 @@ void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceOb
 
 	DWORD dwNameFlags;
 	DWORD dwDummyFlags;
-	CString sName = pObj->GetName(&dwNameFlags);
+	CString sName = pObj->GetNamePattern(0, &dwNameFlags);
 	if (!pType->GetTypeImage().IsConstant()
             || bHasCustomNotes
             || !strEquals(sName, pType->GetNamePattern(0, &dwDummyFlags)))

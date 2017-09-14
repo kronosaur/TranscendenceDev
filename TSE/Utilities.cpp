@@ -3030,7 +3030,7 @@ void ReportCrashObj (CString *retsMessage, CSpaceObject *pCrashObj)
 		{
 		try
 			{
-			sName = pCrashObj->GetName();
+			sName = pCrashObj->GetNounPhrase();
 			sType = pCrashObj->GetObjClassName();
 			bDestroyed = pCrashObj->IsDestroyed();
 			}
