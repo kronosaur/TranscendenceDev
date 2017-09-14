@@ -449,7 +449,7 @@ void CStation::ClearBlacklist (CSpaceObject *pObj)
 		{
 		//	Remove object from target
 
-		m_Targets.Remove(pObj);
+		m_Targets.Delete(pObj);
 
 		//	Send all our subordinates to cancel attack
 
@@ -1014,7 +1014,7 @@ void CStation::CreateRandomDockedShips (IShipGenerator *pShipGenerator, const CS
 		{
 		//	These accumulate, so we need to clear it each time.
 
-		Ctx.Result.RemoveAll();
+		Ctx.Result.DeleteAll();
 
 		//	Create the ships.
 
@@ -2299,7 +2299,7 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 	//	Remove the object from any lists that it may be on
 
-	m_Targets.Remove(Ctx.pObj);
+	m_Targets.Delete(Ctx.pObj);
 
 	if (Ctx.pObj == m_pTarget)
 		m_pTarget = NULL;
@@ -2312,7 +2312,7 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	Remove from the subordinate list. No need to take action because the 
 	//	ship/turret will communicate if we need to avenge.
 
-	m_Subordinates.Remove(Ctx.pObj);
+	m_Subordinates.Delete(Ctx.pObj);
 	}
 
 bool CStation::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -3418,7 +3418,7 @@ void CStation::OnStationDestroyed (const SDestroyCtx &Ctx)
 	{
 	//	Remove the object from any lists that it may be on
 
-	m_Targets.Remove(Ctx.pObj);
+	m_Targets.Delete(Ctx.pObj);
 
 	if (Ctx.pObj == m_pTarget)
 		m_pTarget = NULL;
@@ -4078,7 +4078,7 @@ bool CStation::RemoveSubordinate (CSpaceObject *pSubordinate)
 //	If the object is a subordinate, it removes it (and returns TRUE)
 
 	{
-	return m_Subordinates.Remove(pSubordinate);
+	return m_Subordinates.Delete(pSubordinate);
 	}
 
 bool CStation::RequestDock (CSpaceObject *pObj, int iPort)

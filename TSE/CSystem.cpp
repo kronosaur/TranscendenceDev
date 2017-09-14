@@ -845,7 +845,7 @@ void CSystem::ComputeRandomEncounters (void)
 	if (m_fEncounterTableValid)
 		return;
 
-	m_EncounterObjs.RemoveAll();
+	m_EncounterObjs.DeleteAll();
 	if (!m_fNoRandomEncounters)
 		{
 		for (i = 0; i < GetObjectCount(); i++)
@@ -1434,7 +1434,7 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 
 	if (retpShipList)
 		{
-		retpShipList->RemoveAll();
+		retpShipList->DeleteAll();
 		retpShipList->Add(pShip);
 		}
 
@@ -2227,7 +2227,7 @@ void CSystem::FlushDeletedObjects (void)
 		delete pObj;
 		}
 
-	m_DeletedObjects.RemoveAll();
+	m_DeletedObjects.DeleteAll();
 	}
 
 void CSystem::FlushEnemyObjectCache (void)
@@ -3054,11 +3054,11 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Generate lists of all objects to paint by layer
 
 	for (iLayer = layerSpace; iLayer < layerCount; iLayer++)
-		m_LayerObjs[iLayer].RemoveAll();
+		m_LayerObjs[iLayer].DeleteAll();
 
-	m_BackgroundObjs.RemoveAll();
-	m_ForegroundObjs.RemoveAll();
-	m_EnhancedDisplayObjs.RemoveAll();
+	m_BackgroundObjs.DeleteAll();
+	m_ForegroundObjs.DeleteAll();
+	m_EnhancedDisplayObjs.DeleteAll();
 
 	for (i = 0; i < GetObjectCount(); i++)
 		{

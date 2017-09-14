@@ -5926,7 +5926,7 @@ void CSpaceObject::NotifyOnNewSystem (CSystem *pNewSystem)
 	for (i = 0; i < m_SubscribedObjs.GetCount(); i++)
 		if (m_SubscribedObjs.GetObj(i)->GetSystem() != pNewSystem)
 			{
-			m_SubscribedObjs.Remove(i);
+			m_SubscribedObjs.Delete(i);
 			i--;
 			}
 
@@ -5975,7 +5975,7 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	//	Remove the object if it had a subscription to us
 
-	m_SubscribedObjs.Remove(Ctx.pObj);
+	m_SubscribedObjs.Delete(Ctx.pObj);
 	}
 
 void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -6816,7 +6816,7 @@ void CSpaceObject::Remove (DestructionTypes iCause, const CDamageSource &Attacke
 		//
 		//	NOTE: We leave mission objects intact
 
-		m_SubscribedObjs.RemoveSystemObjs();
+		m_SubscribedObjs.DeleteSystemObjs();
 
 		//	Done
 
@@ -6842,7 +6842,7 @@ void CSpaceObject::RemoveAllEventSubscriptions (CSystem *pSystem, TArray<DWORD> 
 		CSpaceObject *pObj = pSystem->GetObject(i);
 		if (pObj && pObj != this)
 			{
-			if (pObj->m_SubscribedObjs.Remove(this))
+			if (pObj->m_SubscribedObjs.Delete(this))
 				{
 				if (retRemoved)
 					retRemoved->Insert(pObj->GetID());

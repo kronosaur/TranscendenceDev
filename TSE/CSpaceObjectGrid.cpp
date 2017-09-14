@@ -43,9 +43,9 @@ void CSpaceObjectGrid::DeleteAll (void)
 	{
 	int iTotal = m_iGridSize * m_iGridSize;
 	for (int i = 0; i < iTotal; i++)
-		m_pGrid[i].RemoveAll();
+		m_pGrid[i].DeleteAll();
 
-	m_Outer.RemoveAll();
+	m_Outer.DeleteAll();
 	}
 
 bool CSpaceObjectGrid::GetGridCoord (const CVector &vPos, int *retx, int *rety)

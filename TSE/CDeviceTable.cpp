@@ -1071,12 +1071,3 @@ CDeviceClass *CDeviceDescList::GetNamedDevice (DeviceNames iDev) const
 	return NULL;
 	}
 
-void CDeviceDescList::RemoveAll (void)
-
-//	RemoveAll
-//
-//	Removes all devices
-
-	{
-	m_List.DeleteAll();
-	}

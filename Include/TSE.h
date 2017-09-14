@@ -1201,7 +1201,7 @@ class CSpaceObject : public CObject
 					&& (vLL.GetY() < m_vPos.GetY()); }
 		void Reconned (void);
 		void RemoveAllEventSubscriptions (CSystem *pSystem, TArray<DWORD> *retRemoved = NULL);
-		inline void RemoveEventSubscriber (CSpaceObject *pObj) { m_SubscribedObjs.Remove(pObj); }
+		inline void RemoveEventSubscriber (CSpaceObject *pObj) { m_SubscribedObjs.Delete(pObj); }
 		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
 		inline void RestartTime (void) { m_fTimeStop = false; }
 		inline void SetAutoClearDestination (void) { m_fAutoClearDestination = true; }

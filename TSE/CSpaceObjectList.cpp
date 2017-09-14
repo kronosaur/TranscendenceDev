@@ -34,6 +34,43 @@ void CSpaceObjectList::Add (CSpaceObject *pObj, int *retiIndex)
 	FastAdd(pObj, retiIndex);
 	}
 
+bool CSpaceObjectList::Delete (CSpaceObject *pObj)
+
+//	Delete
+//
+//	Remove the object. Returns TRUE if we removed the object.
+
+	{
+	int iIndex;
+	if (FindObj(pObj, &iIndex))
+		{
+		Delete(iIndex);
+		return true;
+		}
+
+	return false;
+	}
+
+void CSpaceObjectList::DeleteSystemObjs (void)
+
+//	DeleteSystemObjs
+//
+//	Remove objects that are part of the current system.
+
+	{
+	int i;
+
+	for (i = 0; i < m_List.GetCount(); i++)
+		{
+		CSpaceObject *pObj = m_List[i];
+		if (!pObj->IsNonSystemObj())
+			{
+			Delete(i);
+			i--;
+			}
+		}
+	}
+
 void CSpaceObjectList::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 
 //	NotifyOnObjDestroyed
@@ -208,43 +245,6 @@ void CSpaceObjectList::ReadFromStream (SLoadCtx &Ctx, bool bIgnoreMissing)
 		{
 		for (i = 0; i < (int)dwCount; i++)
 			CSystem::ReadObjRefFromStream(Ctx, this, &ResolveObjProc);
-		}
-	}
-
-bool CSpaceObjectList::Remove (CSpaceObject *pObj)
-
-//	Remove
-//
-//	Remove the object. Returns TRUE if we removed the object.
-
-	{
-	int iIndex;
-	if (FindObj(pObj, &iIndex))
-		{
-		Remove(iIndex);
-		return true;
-		}
-
-	return false;
-	}
-
-void CSpaceObjectList::RemoveSystemObjs (void)
-
-//	RemoveSystemObjs
-//
-//	Remove objects that are part of the current system.
-
-	{
-	int i;
-
-	for (i = 0; i < m_List.GetCount(); i++)
-		{
-		CSpaceObject *pObj = m_List[i];
-		if (!pObj->IsNonSystemObj())
-			{
-			Remove(i);
-			i--;
-			}
 		}
 	}
 

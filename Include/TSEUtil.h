@@ -838,6 +838,10 @@ class CSpaceObjectList
 
 		void Add (CSpaceObject *pObj, int *retiIndex = NULL);
 		inline void CleanUp (void) { m_List.DeleteAll(); }
+		inline void Delete (int iIndex) { m_List.Delete(iIndex); }
+		bool Delete (CSpaceObject *pObj);
+		void DeleteSystemObjs (void);
+		inline void DeleteAll (void) { m_List.DeleteAll(); }
 		inline void FastAdd (CSpaceObject *pObj, int *retiIndex = NULL) { if (retiIndex) *retiIndex = m_List.GetCount(); m_List.Insert(pObj); }
 		inline bool FindObj (CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(pObj, retiIndex); }
 		inline int GetCount (void) const { return m_List.GetCount(); }
@@ -851,10 +855,6 @@ class CSpaceObjectList
 		void NotifyOnObjReconned (CSpaceObject *pReconnedObj);
 		void NotifyOnPlayerBlacklisted (CSpaceObject *pBlacklistingObj);
 		void ReadFromStream (SLoadCtx &Ctx, bool bIgnoreMissing = false);
-		inline void Remove (int iIndex) { m_List.Delete(iIndex); }
-		bool Remove (CSpaceObject *pObj);
-		inline void RemoveAll (void) { m_List.DeleteAll(); }
-		void RemoveSystemObjs (void);
 		void SetAllocSize (int iNewCount);
 		inline void SetObj (int iIndex, CSpaceObject *pObj) { m_List[iIndex] = pObj; }
 		void Subtract (const CSpaceObjectList &List);

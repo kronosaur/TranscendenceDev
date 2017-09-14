@@ -2399,7 +2399,7 @@ void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices)
 	{
 	DEBUG_TRY
 
-	Devices.RemoveAll();
+	Devices.DeleteAll();
 
 	if (m_pDevices)
 		{

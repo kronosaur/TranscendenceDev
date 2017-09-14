@@ -339,12 +339,12 @@ class CDeviceDescList
 		~CDeviceDescList (void);
 
 		void AddDeviceDesc (const SDeviceDesc &Desc);
+		inline void DeleteAll (void) { m_List.DeleteAll(); }
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline CDeviceClass *GetDeviceClass (int iIndex) const;
 		inline const SDeviceDesc &GetDeviceDesc (int iIndex) const { return m_List[iIndex]; }
 		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev) const;
 		CDeviceClass *GetNamedDevice (DeviceNames iDev) const;
-		void RemoveAll (void);
 
 	private:
 		TArray<SDeviceDesc> m_List;
