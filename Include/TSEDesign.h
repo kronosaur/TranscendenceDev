@@ -298,7 +298,7 @@ class CDesignType
 		inline void TopologyInitialized (void) { OnTopologyInitialized(); }
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const;
 		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
-		inline bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const { return m_Language.Translate(Item, sID, pData, retsText); }
+		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 
 		static CString GetTypeChar (DesignTypes iType);
 
@@ -352,7 +352,6 @@ class CDesignType
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
 		bool MatchesExtensions (const TArray<DWORD> &ExtensionsIncluded) const;
-		void MergeLanguageTo (CLanguageDataBlock &Dest);
 		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const;
 
 		DWORD m_dwUNID;

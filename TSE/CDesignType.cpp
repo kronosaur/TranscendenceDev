@@ -243,10 +243,6 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 					m_EventsCache[i] = *pInherit;
 				}
 			}
-
-		//	Update the language block with data from our ancestors
-
-		m_pInheritFrom->MergeLanguageTo(m_Language);
 		}
 
 	//	Type-specific
@@ -2314,27 +2310,6 @@ bool CDesignType::MatchesExtensions (const TArray<DWORD> &ExtensionsIncluded) co
 	return true;
 	}
 
-void CDesignType::MergeLanguageTo (CLanguageDataBlock &Dest)
-
-//	MergeLanguageTo
-//
-//	Merges our language block into the destination such that we add new messages
-//	to the destination (i.e., we never overwrite existing messages in the
-//	destination.
-
-	{
-	DEBUG_TRY
-
-	Dest.MergeFrom(m_Language);
-
-	//	If we inherit from another type, add that data too
-
-	if (m_pInheritFrom)
-		m_pInheritFrom->MergeLanguageTo(Dest);
-
-	DEBUG_CATCH
-	}
-
 void CDesignType::MergeType (CDesignType *pSource)
 
 //	MergeType
@@ -2446,9 +2421,17 @@ bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pD
 	if (m_Language.Translate(pObj, sID, pData, retpResult))
 		return true;
 
+	if (m_pInheritFrom && m_pInheritFrom->Translate(pObj, sID, pData, retpResult))
+		return true;
+
 	//	Backwards compatible translate
 
-	return TranslateVersion2(pObj, sID, retpResult);
+	if (GetVersion() <= 2 && TranslateVersion2(pObj, sID, retpResult))
+		return true;
+
+	//	Not found
+
+	return false;
 	}
 
 bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
@@ -2461,19 +2444,45 @@ bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem
 	if (m_Language.Translate(pObj, sID, pData, retsText))
 		return true;
 
+	if (m_pInheritFrom && m_pInheritFrom->TranslateText(pObj, sID, pData, retsText))
+		return true;
+
 	//	Backwards compatible translate
 
-	ICCItem *pItem;
-	if (!TranslateVersion2(pObj, sID, &pItem))
-		return false;
+	if (GetVersion() <= 2)
+		{
+		ICCItem *pItem;
+		if (!TranslateVersion2(pObj, sID, &pItem))
+			return false;
 
-	if (retsText)
-		*retsText = pItem->GetStringValue();
+		if (retsText)
+			*retsText = pItem->GetStringValue();
 
-	pItem->Discard(&g_pUniverse->GetCC());
-	return true;
+		pItem->Discard(&g_pUniverse->GetCC());
+		return true;
+		}
+
+	//	Not found
+
+	return false;
 	}
 	
+bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const
+
+//	Translate
+//
+//	Translate from a <Language> block on an item to text.
+
+	{
+	if (m_Language.Translate(Item, sID, pData, retsText))
+		return true;
+
+	if (m_pInheritFrom && m_pInheritFrom->TranslateText(Item, sID, pData, retsText))
+		return true;
+
+	return false;
+	}
+
 bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const
 
 //	TranslateVersion2
