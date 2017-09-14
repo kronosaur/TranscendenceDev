@@ -5195,15 +5195,17 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 			{
 			switch (pSecond->GetValueType())
 				{
+				case ICCItem::Boolean:
+					return (pSecond->IsNil() ? 0 : -1);
+
 				case ICCItem::Integer:
 				case ICCItem::Double:
+				case ICCItem::String:
 					//	Nil is always less than everything
 					return -1;
 
-				case ICCItem::String:
-					return (pSecond->GetStringValue().IsBlank() ? 0 : -1);
-
 				case ICCItem::List:
+				case ICCItem::SymbolTable:
 					return (pSecond->GetCount() == 0 ? 0 : -1);
 
 				default:
@@ -5304,6 +5306,9 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 			{
 			switch (pSecond->GetValueType())
 				{
+				case ICCItem::Boolean:
+					return (pSecond->IsNil() ? 0 : -1);
+
 				case ICCItem::Integer:
 					{
 					if (0 == pSecond->GetIntegerValue())
@@ -5328,6 +5333,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 					return -1;
 
 				case ICCItem::List:
+				case ICCItem::SymbolTable:
 					return (pSecond->GetCount() == 0 ? 0 : -1);
 
 				default:

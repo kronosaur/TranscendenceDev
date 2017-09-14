@@ -849,6 +849,7 @@ class CCodeChain
 		ICCItem *CreateSymbolTable (void);
 		ICCItem *CreateSystemError (ALERROR error);
 		inline ICCItem *CreateTrue (void) { return m_pTrue->Reference(); }
+		ICCItem *CreateVariant (const CString &sValue);
 		ICCItem *CreateVectorOld (int iSize);
 		ICCItem *CreateFilledVector(double dScalar, TArray<int> vShape);
 		ICCItem *CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *pContentList);

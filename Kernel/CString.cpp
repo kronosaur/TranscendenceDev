@@ -1998,6 +1998,59 @@ CString strLoadFromRes (HINSTANCE hInst, int iResID)
 	return sString;
 	}
 
+double strParseDouble (char *pStart, double rNullResult, char **retpEnd, bool *retbNullValue)
+
+//  strParseDouble
+//
+//  Parses a double precision value.
+
+    {
+    char *pPos = pStart;
+
+    //  Skip any leading whitespace
+
+    while (strIsWhitespace(pPos))
+        pPos++;
+
+    //  We copy what we've got to a buffer, because we're going to use atof.
+
+    const int MAX_SIZE = 64;
+    char *pSrc = pPos;
+    char szBuffer[MAX_SIZE];
+    char *pDest = szBuffer;
+    char *pDestEnd = szBuffer + MAX_SIZE;
+
+    while (pDest < pDestEnd
+            && ((*pSrc >= '0' && *pSrc <= '9')
+                || *pSrc == '+'
+                || *pSrc == '-'
+                || *pSrc == '.'
+                || *pSrc == 'e'
+                || *pSrc == 'E'))
+        *pDest++ = *pSrc++;
+
+    if (retpEnd) *retpEnd = pSrc;
+
+    //  If we hit the end of the buffer, or we didn't find any valid characters,
+    //  then we fail.
+
+    if (pDest == pDestEnd
+            || pDest == szBuffer)
+        {
+        if (retbNullValue) *retbNullValue = true;
+        return rNullResult;
+        }
+
+    //  Null-terminate our buffer
+
+    *pDest++ = '\0';
+
+    //  Success 
+
+    if (retbNullValue) *retbNullValue = false;
+    return atof(szBuffer);
+    }
+
 int strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **retpEnd, bool *retbNullValue)
 
 //	strParseInt

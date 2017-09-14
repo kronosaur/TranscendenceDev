@@ -1380,6 +1380,7 @@ inline char strLowerCaseAbsolute (char chChar) { return g_LowerCaseAbsoluteTable
 bool strNeedsEscapeCodes (const CString &sString);
 
 #define PARSE_THOUSAND_SEPARATOR				0x00000001
+double strParseDouble (char *pStart, double rNullResult, char **retpEnd, bool *retbNullValue);
 int strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **retpEnd = NULL, bool *retbNullValue = NULL);
 inline int strParseInt (char *pStart, int iNullResult, char **retpEnd = NULL, bool *retbNullValue = NULL) { return strParseInt(pStart, iNullResult, 0, retpEnd, retbNullValue); }
 int strParseIntOfBase (char *pStart, int iBase, int iNullResult, char **retpEnd = NULL, bool *retbNullValue = NULL);

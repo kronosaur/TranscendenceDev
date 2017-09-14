@@ -526,6 +526,50 @@ ICCItem *CCodeChain::CreateSystemError (ALERROR error)
 	return pError;
 	}
 
+ICCItem *CCodeChain::CreateVariant (const CString &sValue)
+
+//	CreateVariant
+//
+//	Parses sValue and returns either an integer, double, or string.
+
+	{
+	char *pPos = sValue.GetASCIIZPointer();
+	char *pPosEnd = pPos + sValue.GetLength();
+
+	//	Skip any leading whitespace
+
+	while (strIsWhitespace(pPos))
+		pPos++;
+
+	//	If we start with what could be a number, then we try to parse.
+
+	if (strIsDigit(pPos) || *pPos == '+' || *pPos == '-' || *pPos == '.')
+		{
+		//	See if this is an integer
+
+		bool bFailed;
+		char *pNumberEnd;
+		int iValue = strParseInt(pPos, 0, &pNumberEnd, &bFailed);
+		if (!bFailed && pNumberEnd == pPosEnd)
+			return CreateInteger(iValue);
+
+		//	Otherwise, see if this is a double
+
+		double rValue = strParseDouble(pPos, 0.0, &pNumberEnd, &bFailed);
+		if (!bFailed && pNumberEnd == pPosEnd)
+			return CreateDouble(rValue);
+
+		//	Otherwise, this is a string.
+
+		return CreateString(sValue);
+		}
+
+	//	Otherwise, this is a plain string.
+
+	else
+		return CreateString(sValue);
+	}
+
 ICCItem *CCodeChain::CreateVectorOld (int iSize)
 
 //	CreateVectorOld
@@ -1033,7 +1077,43 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 			case 'i':
 			case 'n':
 				{
-				if (!pResult->IsNil() && !pResult->IsDouble() && !pResult->IsInteger())
+				if (pResult->IsIdentifier())
+					{
+					//	If a string was passed in and we expect a number, then 
+					//	convert it!
+
+					if (*pValidation == 'i')
+						{
+						bool bFailed;
+						int iValue = strToInt(pResult->GetStringValue(), 0, &bFailed);
+						if (bFailed)
+							{
+							pError = CreateError(LITERAL("Numeral expected"), pResult);
+							pResult->Discard(this);
+							pEvalList->Discard(this);
+							return pError;
+							}
+
+						pResult->Discard(this);
+						pResult = CreateInteger(iValue);
+						}
+					else
+						{
+						bool bFailed;
+						double rValue = strToDouble(pResult->GetStringValue(), 0.0, &bFailed);
+						if (bFailed)
+							{
+							pError = CreateError(LITERAL("Numeral expected"), pResult);
+							pResult->Discard(this);
+							pEvalList->Discard(this);
+							return pError;
+							}
+
+						pResult->Discard(this);
+						pResult = CreateDouble(rValue);
+						}
+					}
+				else if (!pResult->IsNil() && !pResult->IsNumber())
 					{
 					pError = CreateError(LITERAL("Numeral expected"), pResult);
 					pResult->Discard(this);
@@ -1047,7 +1127,22 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 
 			case 'd':
 				{
-				if (!pResult->IsNil() && !pResult->IsDouble())
+				if (pResult->IsIdentifier())
+					{
+					bool bFailed;
+					double rValue = strToDouble(pResult->GetStringValue(), 0.0, &bFailed);
+					if (bFailed)
+						{
+						pError = CreateError(LITERAL("Numeral expected"), pResult);
+						pResult->Discard(this);
+						pEvalList->Discard(this);
+						return pError;
+						}
+
+					pResult->Discard(this);
+					pResult = CreateDouble(rValue);
+					}
+				else if (!pResult->IsNil() && !pResult->IsDouble())
 					{
 					pError = CreateError(LITERAL("Double expected"), pResult);
 					pResult->Discard(this);
