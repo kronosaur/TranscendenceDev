@@ -13447,7 +13447,9 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (!pXML->FindAttribute(pArgs->GetElement(1)->GetStringValue(), &sValue))
 				return pCC->CreateNil();
 
-			return pCC->CreateString(sValue);
+			//	We return either a number or a string, as appropriate.
+
+			return pCC->CreateVariant(sValue);
 			}
 
 		case FN_XML_GET_ATTRIB_LIST:
