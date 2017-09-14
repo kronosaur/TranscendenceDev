@@ -45,6 +45,7 @@ class CArrayBase
 		~CArrayBase (void);
 
 		void AllocBlock (HANDLE hHeap, int iGranularity);
+		void CleanUpBlock (void);
 		void CopyOptions (const CArrayBase &Src);
 		void DeleteBytes (int iOffset, int iLength);
 		inline char *GetBytes (void) const { return (m_pBlock ? (char *)(&m_pBlock[1]) : NULL); }
@@ -81,7 +82,7 @@ template <class VALUE> class TRawArray : public CArrayBase
 			for (int i = 0; i < GetCount(); i++, pElement++)
 				pElement->VALUE::~VALUE();
 
-			DeleteBytes(0, GetSize());
+			CleanUpBlock();
 			}
 
 		inline VALUE &GetAt (int iIndex) const
@@ -184,7 +185,7 @@ template <class VALUE> class TArray : public CArrayBase
 			for (int i = 0; i < GetCount(); i++, pElement++)
 				pElement->VALUE::~VALUE();
 
-			DeleteBytes(0, GetSize());
+			CleanUpBlock();
 			}
 
 		void DeleteValue (const VALUE &ToDelete)

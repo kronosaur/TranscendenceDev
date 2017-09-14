@@ -36,14 +36,7 @@ CArrayBase::~CArrayBase (void)
 //	CArrayBase destructor
 
 	{
-	if (m_pBlock)
-		{
-#ifdef DEBUG_ARRAY_STATS
-		g_dwArraysCreated--;
-		g_dwTotalBytesAllocated -= (m_pBlock->m_iAllocSize - sizeof(SHeader));
-#endif
-		::HeapFree(m_pBlock->m_hHeap, 0, m_pBlock);
-		}
+	CleanUpBlock();
 	}
 
 void CArrayBase::AllocBlock (HANDLE hHeap, int iGranularity)
@@ -64,6 +57,24 @@ void CArrayBase::AllocBlock (HANDLE hHeap, int iGranularity)
 	m_pBlock->m_iAllocSize = sizeof(SHeader);
 	m_pBlock->m_iGranularity = iGranularity;
 	m_pBlock->m_iSize = 0;
+	}
+
+void CArrayBase::CleanUpBlock (void)
+
+//	CleanUpBlock
+//
+//	Frees the block
+
+	{
+	if (m_pBlock)
+		{
+#ifdef DEBUG_ARRAY_STATS
+		g_dwArraysCreated--;
+		g_dwTotalBytesAllocated -= (m_pBlock->m_iAllocSize - sizeof(SHeader));
+#endif
+		::HeapFree(m_pBlock->m_hHeap, 0, m_pBlock);
+		m_pBlock = NULL;
+		}
 	}
 
 void CArrayBase::CopyOptions (const CArrayBase &Src)
