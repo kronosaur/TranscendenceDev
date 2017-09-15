@@ -4308,6 +4308,8 @@ void CShipClass::OnSweep (void)
 //  Free images that we're no longer using
 
     {
+	DEBUG_TRY
+
     //  Clean up wreck image
 
     if (!m_WreckImage.IsMarked())
@@ -4321,6 +4323,8 @@ void CShipClass::OnSweep (void)
     if (m_HeroImage.GetBitmapUNID() == 0
             && !m_HeroImage.IsMarked())
         m_HeroImage.CleanUp();
+
+	DEBUG_CATCH
     }
 
 void CShipClass::OnUnbindDesign (void)

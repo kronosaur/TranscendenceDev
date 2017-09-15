@@ -712,11 +712,15 @@ void CSpaceEnvironmentType::OnSweep (void)
 //	Delete images
 
 	{
+	DEBUG_TRY
+
 	if (!m_bMarked)
 		{
 		m_TileSet.DeleteAll();
 		m_iTileSize = 0;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSpaceEnvironmentType::Paint (CG32bitImage &Dest, int x, int y, int xTile, int yTile, DWORD dwEdgeMask)

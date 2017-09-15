@@ -536,6 +536,8 @@ void CObjectImage::OnSweep (void)
 //	Garbage collect the image, if it is not marked (i.e., in use)
 
 	{
+	DEBUG_TRY
+
 	if (!m_bLocked && !m_bMarked)
 		{
 		if (m_pBitmap)
@@ -556,6 +558,8 @@ void CObjectImage::OnSweep (void)
 			m_pShadowMask = NULL;
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CObjectImage::OnUnbindDesign (void)

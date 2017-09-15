@@ -105,8 +105,12 @@ void CSoundResource::OnSweep (void)
 //	Unload unmarked resources
 
 	{
+	DEBUG_TRY
+
 	if (!m_bMarked)
 		UnloadResource();
+
+	DEBUG_CATCH
 	}
 
 void CSoundResource::OnUnbindDesign (void)
