@@ -72,8 +72,13 @@ class CVector
 		inline CVector Normal (void) const 
 			{
 			Metric rLength = Length();
+
+			//	NOTE: We use to return a null vector, but some pieces of code
+			//	expect a us to always be unit length. [LATER: Of course, this
+			//	function should be called Unit instead of Normal.]
+
 			if (rLength == 0.0)
-				return CVector();
+				return CVector(1.0, 0.0);
 			else
 				return CVector(x / rLength, y / rLength);
 			}
@@ -81,7 +86,7 @@ class CVector
 			{
 			*retrLength = Length();
 			if (*retrLength == 0.0)
-				return CVector();
+				return CVector(1.0, 0.0);
 			else
 				return CVector(x / *retrLength, y / *retrLength);
 			}
