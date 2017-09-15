@@ -49,6 +49,38 @@ enum StateTypes
 
 #define STR_DOCTYPE								CONSTLIT("DOCTYPE")
 
+static TStaticStringTable<TStaticStringEntry<SConstString>, 27> STD_ENTITY_TABLE = {
+	"Aacute",		CONSTDEFS("Á"),
+	"Eacute",		CONSTDEFS("É"),
+	"Iacute",		CONSTDEFS("Í"),
+	"Ntilde",		CONSTDEFS("Ñ"),
+	"Oacute",		CONSTDEFS("Ó"),
+	"Uacute",		CONSTDEFS("Ú"),
+	"Uuml",			CONSTDEFS("Ü"),
+	"aacute",		CONSTDEFS("á"),
+	"amp",			CONSTDEFS("&"),
+	"apos",			CONSTDEFS("\'"),
+
+	"bull",			CONSTDEFS("•"),
+	"copy",			CONSTDEFS("©"),
+	"deg",			CONSTDEFS("°"),
+	"eacute",		CONSTDEFS("é"),
+	"gt",			CONSTDEFS(">"),
+	"iacute",		CONSTDEFS("í"),
+	"lt",			CONSTDEFS("<"),
+	"mdash",		CONSTDEFS("—"),
+	"ntilde",		CONSTDEFS("ñ"),
+	"oacute",		CONSTDEFS("ó"),
+
+	"plusmn",		CONSTDEFS("±"),
+	"quot",			CONSTDEFS("\""),
+	"reg",			CONSTDEFS("®"),
+	"times",		CONSTDEFS("×"),
+	"trade",		CONSTDEFS("™"),
+	"uacute",		CONSTDEFS("ú"),
+	"uuml",			CONSTDEFS("ü"),
+	};
+
 struct ParserCtx
 	{
 	public:
@@ -1329,35 +1361,7 @@ CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound)
 	{
 	*retbFound = true;
 	CString sResult;
-
-	//	Check to see if the name is one of the standard entities
-
-	if (strEquals(sName, CONSTLIT("amp")))
-		return CONSTLIT("&");
-	else if (strEquals(sName, CONSTLIT("lt")))
-		return CONSTLIT("<");
-	else if (strEquals(sName, CONSTLIT("gt")))
-		return CONSTLIT(">");
-	else if (strEquals(sName, CONSTLIT("quot")))
-		return CONSTLIT("\"");
-	else if (strEquals(sName, CONSTLIT("apos")))
-		return CONSTLIT("'");
-	else if (strEquals(sName, CONSTLIT("bull")))
-		return CONSTLIT("•");
-	else if (strEquals(sName, CONSTLIT("copy")))
-		return CONSTLIT("©");
-	else if (strEquals(sName, CONSTLIT("deg")))
-		return CONSTLIT("°");
-	else if (strEquals(sName, CONSTLIT("mdash")))
-		return CONSTLIT("—");
-	else if (strEquals(sName, CONSTLIT("plusmn")))
-		return CONSTLIT("±");
-	else if (strEquals(sName, CONSTLIT("reg")))
-		return CONSTLIT("®");
-	else if (strEquals(sName, CONSTLIT("times")))
-		return CONSTLIT("×");
-	else if (strEquals(sName, CONSTLIT("trade")))
-		return CONSTLIT("™");
+	const TStaticStringEntry<SConstString> *pEntry;
 
 	//	If the entity is a hex number, then this is a character
 
@@ -1377,6 +1381,11 @@ CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound)
 			return CString(&chChar, 1);
 			}
 		}
+
+	//	Else, see if it is a standard entity
+
+	else if (pEntry = STD_ENTITY_TABLE.GetAtCase(sName))
+		return CONSTUSE(pEntry->Value);
 
 	//	Otherwise, it is a general attribute
 
