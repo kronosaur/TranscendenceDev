@@ -2312,6 +2312,45 @@ void strParseWhitespace (char *pPos, char **retpPos)
 		*retpPos = pPos;
 	}
 
+CString strProcess (const CString &sValue, DWORD dwFlags)
+
+//	strProcess
+//
+//	Filters the string in various ways based on flags.
+
+	{
+	char *pSrc = sValue.GetASCIIZPointer();
+	char *pSrcEnd = pSrc + sValue.GetLength();
+
+	CString sResult;
+	char *pDest = sResult.GetWritePointer(sValue.GetLength() * 2);
+	char *pDestStart = pDest;
+	char *pDestEnd = pDest + sResult.GetLength();
+
+	while (pSrc < pSrcEnd && pDest < pDestEnd)
+		{
+		switch (*pSrc)
+			{
+			case '\"':
+				if (dwFlags & STRPROC_NO_DOUBLE_QUOTES)
+					*pDest++ = '\'';
+				else
+					*pDest++ = *pSrc;
+				pSrc++;
+				break;
+
+			default:
+				*pDest++ = *pSrc++;
+				break;
+			}
+		}
+
+	//	Done
+
+	sResult.Truncate((int)(pDest - pDestStart));
+	return sResult;
+	}
+
 CString strRepeat (const CString &sString, int iCount)
 	{
 	ASSERT(iCount >= 0);

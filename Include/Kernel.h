@@ -1388,6 +1388,10 @@ int strParseIntOfBase (char *pStart, int iBase, int iNullResult, char **retpEnd 
 void strParseWhitespace (char *pPos, char **retpPos);
 CString strPattern (const CString &sPattern, LPVOID *pArgs);
 CString strPatternSubst (CString sLine, ...);
+
+constexpr DWORD STRPROC_NO_DOUBLE_QUOTES =			0x00000001;
+CString strProcess (const CString &sValue, DWORD dwFlags);
+
 CString strRepeat (const CString &sString, int iCount);
 CString strRomanNumeral (int i);
 bool strStartsWith (const CString &sString, const CString &sStringToFind);
