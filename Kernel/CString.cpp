@@ -1969,6 +1969,112 @@ bool strIsInt (const CString &sValue, DWORD dwFlags, int *retiValue)
 	return (!bError && (int)(pPosEnd - pPos) == sValue.GetLength());
 	}
 
+CString strJoin (const TArray<CString> &List, const CString &sConjunction)
+
+//	strJoin
+//
+//	Joins the strings with the given conjunction. If the conjunction is
+//	"oxfordComma", then we add a "and" between the last two.
+
+	{
+	int i;
+
+	//	Must be at least one element
+
+	if (List.GetCount() == 0)
+		return NULL_STR;
+
+	//	Oxford Comma rule
+
+	else if (strEquals(sConjunction, CONSTLIT("oxfordComma")))
+		{
+		CString COMMA(", ");
+		CString AND(" and ");
+		CString COMMA_AND(", and ");
+
+		//	Compute the size of the string
+
+		int iNewSize = List[0].GetLength();
+		for (i = 1; i < List.GetCount(); i++)
+			{
+			if (i == List.GetCount() - 1)
+				{
+				if (List.GetCount() >= 3)
+					iNewSize += COMMA_AND.GetLength() + List[i].GetLength();
+				else
+					iNewSize += AND.GetLength() + List[i].GetLength();
+				}
+			else
+				iNewSize += COMMA.GetLength() + List[i].GetLength();
+			}
+
+		//	Create result
+
+		CString sResult;
+		char *pDest = sResult.GetWritePointer(iNewSize);
+		for (i = 0; i < List.GetCount(); i++)
+			{
+			if (i > 0)
+				{
+				if (i == List.GetCount() - 1)
+					{
+					if (List.GetCount() >= 3)
+						{
+						utlMemCopy(COMMA_AND.GetASCIIZPointer(), pDest, COMMA_AND.GetLength());
+						pDest += COMMA_AND.GetLength();
+						}
+					else
+						{
+						utlMemCopy(AND.GetASCIIZPointer(), pDest, AND.GetLength());
+						pDest += AND.GetLength();
+						}
+					}
+				else
+					{
+					utlMemCopy(COMMA.GetASCIIZPointer(), pDest, COMMA.GetLength());
+					pDest += COMMA.GetLength();
+					}
+				}
+
+			utlMemCopy(List[i].GetASCIIZPointer(), pDest, List[i].GetLength());
+			pDest += List[i].GetLength();
+			}
+
+		return sResult;
+		}
+
+	//	Normal
+
+	else
+		{
+		//	Compute the size of the string
+
+		int iNewSize = List[0].GetLength();
+		for (i = 1; i < List.GetCount(); i++)
+			{
+			iNewSize += sConjunction.GetLength() + List[i].GetLength();
+			}
+
+		//	Create result
+
+		CString sResult;
+		char *pDest = sResult.GetWritePointer(iNewSize);
+		for (i = 0; i < List.GetCount(); i++)
+			{
+			if (i > 0)
+				{
+				utlMemCopy(sConjunction.GetASCIIZPointer(), pDest, sConjunction.GetLength());
+				pDest += sConjunction.GetLength();
+				}
+
+			utlMemCopy(List[i].GetASCIIZPointer(), pDest, List[i].GetLength());
+			pDest += List[i].GetLength();
+			}
+
+		return sResult;
+		}
+	}
+
 bool strNeedsEscapeCodes (const CString &sString)
 	{
 	char *pPos = sString.GetPointer();

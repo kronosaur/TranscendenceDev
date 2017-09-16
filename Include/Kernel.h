@@ -1375,6 +1375,7 @@ bool strIsASCIISymbol (char *pPos);
 inline bool strIsDigit (char *pPos) { return (*pPos >= '0' && *pPos <= '9'); }
 bool strIsInt (const CString &sValue, DWORD dwFlags = 0, int *retiValue = NULL);
 inline bool strIsWhitespace (char *pPos) { return *pPos == ' ' || *pPos == '\t' || *pPos == '\n' || *pPos == '\r'; }
+CString strJoin (const TArray<CString> &List, const CString &sConjunction);
 CString strLoadFromRes (HINSTANCE hInst, int iResID);
 inline char strLowerCaseAbsolute (char chChar) { return g_LowerCaseAbsoluteTable[(BYTE)chChar]; }
 bool strNeedsEscapeCodes (const CString &sString);
