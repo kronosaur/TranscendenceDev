@@ -49,6 +49,7 @@
 
 #define STR_BY_SHIELD_INTEGRITY					CONSTLIT("byShieldIntegrity")
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
+#define STR_STANDARD							CONSTLIT("standard")
 
 #define MAX_REFLECTION_CHANCE					95
 const Metric MAX_REFLECTION_TARGET =			50.0 * LIGHT_SECOND;
@@ -728,7 +729,9 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	CString sAttrib;
 	if (pDesc->FindAttribute(REGEN_TYPE_ATTRIB, &sAttrib))
 		{
-		if (strEquals(sAttrib, STR_BY_SHIELD_INTEGRITY))
+		if (strEquals(sAttrib, STR_STANDARD))
+			{ }
+		else if (strEquals(sAttrib, STR_BY_SHIELD_INTEGRITY))
 			pShield->m_fRegenByShieldLevel = true;
 		else
 			{
