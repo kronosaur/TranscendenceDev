@@ -46,7 +46,7 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 	//	Get the appropriate article
 
 	CString sArticle;
-	if (dwComposeFlags & nounNoArticle)
+	if (dwComposeFlags & nounNoDeterminer)
 		{ }
 	else if ((dwComposeFlags & nounArticle)
 			|| ((dwComposeFlags & nounCount) && iCount == 1))

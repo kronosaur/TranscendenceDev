@@ -287,6 +287,7 @@ class CItem
 
 		DWORD AddEnhancement (const CItemEnhancement &Enhancement);
 		CString CalcSortKey (void) const;
+		bool CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey = NULL) const;
 		inline void ClearDamaged (void) { m_dwFlags &= ~flagDamaged; }
 		inline void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		inline void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
@@ -342,6 +343,7 @@ class CItem
 		bool HasComponents (void) const;
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
+		bool HasUseItemScreen (void) const;
 		inline bool IsDamaged (void) const { return (m_dwFlags & flagDamaged ? true : false); }
 		inline bool IsDisrupted (void) const;
 		inline bool IsDisrupted (DWORD dwNow) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= dwNow) : false); }

@@ -19,12 +19,14 @@
 #define ON_REMOVED_AS_ENHANCEMENT_EVENT			CONSTLIT("OnRemovedAsEnhancement")
 #define ON_UNINSTALL_EVENT						CONSTLIT("OnUninstall")
 
+#define PROPERTY_CAN_BE_USED					CONSTLIT("canBeUsed")
 #define PROPERTY_CHARGES						CONSTLIT("charges")
 #define PROPERTY_COMPONENTS						CONSTLIT("components")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
+#define PROPERTY_HAS_USE_SCREEN					CONSTLIT("hasUseScreen")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
 #define PROPERTY_KNOWN							CONSTLIT("known")
@@ -286,6 +288,65 @@ CString CItem::CalcSortKey (void) const
 		sCharges = strPatternSubst(CONSTLIT("-%08d"), GetCharges());
 
 	return strPatternSubst(CONSTLIT("%s%s%s%s%d"), sInstalled, sCat, sName, sCharges, ((DWORD)(int)this) % 0x10000);
+	}
+
+bool CItem::CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey) const
+
+//	CanBeUsed
+//
+//	Return TRUE if the item can be used, and optionally returns the key to 
+//	invoke to use it.
+
+	{
+	if (m_pItemType == NULL)
+		return false;
+
+	//	Get the use descriptor and see if we can use this item.
+
+	CItemType::SUseDesc UseDesc;
+	if (!m_pItemType->GetUseDesc(&UseDesc))
+		return false;
+
+	if (UseDesc.bOnlyIfInstalled && !IsInstalled())
+		return false;
+
+	if (UseDesc.bOnlyIfUninstalled && IsInstalled())
+		return false;
+
+	if (UseDesc.bOnlyIfEnabled)
+		{
+		CInstalledDevice *pDevice = ItemCtx.GetDevice();
+		if (pDevice == NULL || !pDevice->IsEnabled())
+			return false;
+		}
+
+	//	Some options only trigger if item is installed. This allows 
+	//	items that can be used BOTH when uninstalled and when complete.
+	//	That is, bOnlyIfInstalled and bOnlyIfCompleteArmor are
+	//	orthogonal.
+
+	if (IsInstalled())
+		{
+		if (UseDesc.bOnlyIfCompleteArmor)
+			{
+			CInstalledArmor *pArmor = ItemCtx.GetArmor();
+			if (pArmor == NULL || !pArmor->IsComplete() || !pArmor->IsPrime())
+				return false;
+			}
+		else if (UseDesc.bAsArmorSet)
+			{
+			CInstalledArmor *pArmor = ItemCtx.GetArmor();
+			if (pArmor == NULL || !pArmor->IsPrime())
+				return false;
+			}
+		}
+
+	//	Return the use key, if required
+
+	if (retsUseKey)
+		*retsUseKey = UseDesc.sUseKey;
+
+	return true;
 	}
 
 CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName)
@@ -1156,7 +1217,10 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	//	First we handle all properties that are specific to the item instance.
 
-	if (strEquals(sProperty, PROPERTY_CHARGES))
+	if (strEquals(sProperty, PROPERTY_CAN_BE_USED))
+		return CC.CreateBool(CanBeUsed(Ctx));
+
+	else if (strEquals(sProperty, PROPERTY_CHARGES))
 		return CC.CreateInteger(GetCharges());
 
 	else if (strEquals(sProperty, PROPERTY_DAMAGED))
@@ -1172,6 +1236,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	else if (strEquals(sProperty, PROPERTY_DISRUPTED))
 		return CC.CreateBool(IsDisrupted());
+
+	else if (strEquals(sProperty, PROPERTY_HAS_USE_SCREEN))
+		return CC.CreateBool(HasUseItemScreen());
 
 	else if (strEquals(sProperty, PROPERTY_INSTALLED))
 		return CC.CreateBool(IsInstalled());
@@ -1548,6 +1615,20 @@ bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 
 	{
 	return m_pItemType->HasSpecialAttribute(sAttrib);
+	}
+
+bool CItem::HasUseItemScreen (void) const
+
+//	HasUseItemScreen
+//
+//	Returns TRUE if this item brings up a screen when used.
+
+	{
+	CItemType::SUseDesc Desc;
+	if (m_pItemType == NULL)
+		return false;
+
+	return (m_pItemType->GetUseDesc(&Desc) && !Desc.bUsableInCockpit && Desc.pScreenRoot != NULL);
 	}
 
 bool CItem::IsDisruptionEqual (DWORD dwD1, DWORD dwD2)

@@ -775,6 +775,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'disintegrationImmune\n"
 			"   'disrupted\n"
 			"   'EMPImmune\n"
+			"   'hasUseScreen\n"
 			"   'hp\n"
 			"   'installed\n"
 			"   'known\n"
@@ -1555,6 +1556,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property\n\n"
 
+			"   'canBeUsed\n"
 			"   'enabled\n"
 			"   'fireArc\n"
 			"   'hp\n"
