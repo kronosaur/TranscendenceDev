@@ -392,5 +392,14 @@
     <ClCompile Include="DrawFill.cpp">
       <Filter>Source Files\32bit</Filter>
     </ClCompile>
+    <ClCompile Include="FilterThreshold.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterBlur.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="CGRealChannel.cpp">
+      <Filter>Source Files\Real</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

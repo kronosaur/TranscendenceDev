@@ -40,6 +40,38 @@ CG8bitImage &CG8bitImage::operator= (const CG8bitImage &Src)
 	return *this;
 	}
 
+void CG8bitImage::Blt (int xSrc, int ySrc, int cxWidth, int cyHeight, const CGRealChannel &Src, int xDest, int yDest)
+
+//	Blt
+//
+//	Blt from a real-pixel channel.
+
+	{
+	//	Make sure we're in bounds
+
+	if (!AdjustCoords(&xSrc, &ySrc, Src.GetWidth(), Src.GetHeight(), 
+			&xDest, &yDest,
+			&cxWidth, &cyHeight))
+		return;
+
+	Metric *pSrcRow = Src.GetPixelPos(xSrc, ySrc);
+	Metric *pSrcRowEnd = Src.GetPixelPos(xSrc, ySrc + cyHeight);
+	BYTE *pDestRow = GetPixelPos(xDest, yDest);
+
+	while (pSrcRow < pSrcRowEnd)
+		{
+		Metric *pSrcPos = pSrcRow;
+		Metric *pSrcPosEnd = pSrcRow + cxWidth;
+		BYTE *pDestPos = pDestRow;
+
+		while (pSrcPos < pSrcPosEnd)
+			*pDestPos++ = CGRealRGB::To8bit(*pSrcPos++);
+
+		pSrcRow = Src.NextRow(pSrcRow);
+		pDestRow = NextRow(pDestRow);
+		}
+	}
+
 void CG8bitImage::CleanUp (void)
 
 //	CleanUp

@@ -30,6 +30,7 @@ class CG8bitImage : public CGImagePlane
 
 		//	Basic Drawing Interface
 
+		void Blt (int xSrc, int ySrc, int cxWidth, int cyHeight, const CGRealChannel &Src, int xDest, int yDest);
 		void Fill (int x, int y, int cxWidth, int cyHeight, BYTE Value);
 		inline void FillColumn (int x, int y, int cyHeight, BYTE Value) { Fill(x, y, 1, cyHeight, Value); }
 		inline void FillLine (int x, int y, int cxWidth, BYTE Value) { Fill(x, y, cxWidth, 1, Value); }

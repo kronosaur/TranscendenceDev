@@ -234,6 +234,18 @@ CG32bitPixel CG32bitPixel::Fade (CG32bitPixel rgbColor, BYTE byAlpha)
     return CG32bitPixel(pAlpha[rgbColor.GetRed()], pAlpha[rgbColor.GetGreen()], pAlpha[rgbColor.GetBlue()], pAlpha[rgbColor.GetAlpha()]);
     }
 
+BYTE CG32bitPixel::Grayscale (void) const
+
+//	Grayscale
+//
+//	Returns a grayscale value
+
+	{
+	BYTE byMax = Max(Max(GetRed(), GetGreen()), GetBlue());
+	BYTE byMin = Min(Min(GetRed(), GetGreen()), GetBlue());
+	return (BYTE)(((DWORD)byMax + (DWORD)byMin) / 2);
+	}
+
 bool CG32bitPixel::Init (void)
 
 //	Init
@@ -312,6 +324,23 @@ CG32bitPixel CG32bitPixel::Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 	BYTE redResult = CG32bitPixel::ScreenTable(rgbDest.GetRed())[rgbSrc.GetRed()];
 	BYTE greenResult = CG32bitPixel::ScreenTable(rgbDest.GetGreen())[rgbSrc.GetGreen()];
 	BYTE blueResult = CG32bitPixel::ScreenTable(rgbDest.GetBlue())[rgbSrc.GetBlue()];
+
+	return CG32bitPixel(redResult, greenResult, blueResult);
+	}
+
+CG32bitPixel CG32bitPixel::Screen (CG32bitPixel rgbDest, BYTE byValue)
+
+//	Screen
+//
+//	Blends using screen mode.
+//
+//	NOTE: We assume that rgbDest and rgbSrc have no alpha. If necessary, 
+//	pre-multiply source and/or dest and combine the alpha separately.
+
+	{
+	BYTE redResult = CG32bitPixel::ScreenTable(rgbDest.GetRed())[byValue];
+	BYTE greenResult = CG32bitPixel::ScreenTable(rgbDest.GetGreen())[byValue];
+	BYTE blueResult = CG32bitPixel::ScreenTable(rgbDest.GetBlue())[byValue];
 
 	return CG32bitPixel(redResult, greenResult, blueResult);
 	}

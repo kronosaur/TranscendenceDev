@@ -8,6 +8,7 @@
 class CG8bitImage;
 class CG16bitFont;
 class CG16bitImage;
+class CGRealChannel;
 class CGRealRGB;
 class CG16bitBinaryRegion;
 class CGRegion;
@@ -43,6 +44,7 @@ class CG32bitPixel
 		inline BYTE GetGreen (void) const { return (BYTE)((m_dwPixel & 0x0000ff00) >> 8); }
 		inline BYTE GetMax (void) const { return Max(Max(GetRed(), GetGreen()), GetBlue()); }
 		inline BYTE GetRed (void) const { return (BYTE)((m_dwPixel & 0x00ff0000) >> 16); }
+		BYTE Grayscale (void) const;
 		inline bool IsNull (void) const { return (m_dwPixel == 0); }
 		inline void SetAlpha (BYTE byValue) { m_dwPixel = (m_dwPixel & 0x00ffffff) | ((DWORD)byValue << 24); }
 		inline void SetBlue (BYTE byValue) { m_dwPixel = (m_dwPixel & 0xffffff00) | (DWORD)byValue; }
@@ -74,6 +76,7 @@ class CG32bitPixel
 		static CG32bitPixel Darken (CG32bitPixel rgbSource, BYTE byOpacity);
 		static CG32bitPixel Fade (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, int iPercent);
 		static CG32bitPixel Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);
+		static CG32bitPixel Screen (CG32bitPixel rgbDest, BYTE byValue);
 
         //  Works on transparent pixels
 
@@ -352,6 +355,19 @@ class CGDraw
 		static void LineBresenhamTrans (CG32bitImage &Dest, int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor);
 
 		static void QuadCurve (CG32bitImage &Dest, const CVector &vP1, const CVector &vP2, const CVector &vC1, int iLineWidth, CG32bitPixel rgbColor);
+	};
+
+class CGFilter
+	{
+	public:
+
+		static void Blur (CG8bitImage &Src, const RECT &rcSrc, Metric rRadius, CG8bitImage &Dest, int xDest = 0, int yDest = 0);
+
+		static void Threshold (CG32bitImage &Src, const RECT &rcSrc, BYTE byThreshold, CG8bitImage &Dest, int xDest = 0, int yDest = 0);
+		static void Threshold (CG32bitImage &Src, const RECT &rcSrc, BYTE byThreshold, CG32bitImage &Dest, int xDest = 0, int yDest = 0);
+
+	private:
+		static void CreateBlur (CGRealChannel &Src, Metric rRadius, CGRealChannel &Dest);
 	};
 
 //	Blending Classes -----------------------------------------------------------

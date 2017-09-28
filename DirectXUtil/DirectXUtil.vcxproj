@@ -428,6 +428,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CGPath.cpp" />
+    <ClCompile Include="CGRealChannel.cpp" />
     <ClCompile Include="CGRealHSB.cpp" />
     <ClCompile Include="CGRealRGB.cpp" />
     <ClCompile Include="CGRegion.cpp" />
@@ -492,6 +493,8 @@
     <ClCompile Include="DrawRegion.cpp" />
     <ClCompile Include="DrawText.cpp" />
     <ClCompile Include="Files.cpp" />
+    <ClCompile Include="FilterBlur.cpp" />
+    <ClCompile Include="FilterThreshold.cpp" />
     <ClCompile Include="IPropertyAnimator.cpp" />
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="Polygon.cpp" />
