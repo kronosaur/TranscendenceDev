@@ -49,7 +49,7 @@ void CBeam::ComputeOffsets (void)
 	m_yToOffset = 0;
 	}
 
-void CBeam::CreateReflection (const CVector &vPos, int iDirection)
+void CBeam::CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection)
 
 //	CreateReflection
 //

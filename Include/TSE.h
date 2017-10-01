@@ -1538,7 +1538,7 @@ class CSpaceObject : public CObject
 		//	...for beams, missiles, etc.
 
 		virtual void AddContinuousBeam (const CVector &vPos, const CVector &vVel, int iDirection) { }
-		virtual void CreateReflection (const CVector &vPos, int iDirection) { }
+		virtual void CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection = NULL) { }
 		virtual void DetonateNow (CSpaceObject *pHit) { }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) { return GetNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const { return CDamageSource::Null(); }
