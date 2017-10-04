@@ -101,6 +101,7 @@ ICCItem *fnItemTypeSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
+ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_OBJ_NAME					1
 #define FN_OBJ_IS_SHIP				2
@@ -228,6 +229,7 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_ADD_CONNECTION		124
 #define FN_OBJ_GET_DETECT_RANGE		125
 #define FN_OBJ_MESSAGE_TRANSLATE	126
+#define FN_OBJ_FIRE_WEAPON			127
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1444,6 +1446,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objFireOverlayEvent",			fnObjSet,		FN_OBJ_FIRE_OVERLAY_EVENT,
 			"(objFireOverlayEvent obj overlayID event [data]) -> result of event",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objFireWeapon",			fnObjSet,		FN_OBJ_FIRE_WEAPON,
+			"(objFireWeapon obj weapon target [fireDelay] [checkFireDelay]) -> True/Nil",
+			"ivi*",	PPFLAG_SIDEEFFECTS, },
 
 		{	"objFixParalysis",				fnObjSet,		FN_OBJ_FIX_PARALYSIS,
 			"(objFixParalysis obj) -> True/Nil",
@@ -7300,6 +7306,71 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 
 			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_FIRE_WEAPON:
+			{
+			CInstalledDevice *pDevice = GetDeviceFromItem(*pCC, pObj, pArgs->GetElement(1));
+			if (pDevice == NULL)
+				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
+
+			CSpaceObject *pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(2));
+
+			if (pTarget) pTarget->SetDestructionNotify();
+			pDevice->SetFireAngle(-1);
+			pDevice->SetTarget(pTarget);
+
+			bool bSourceDestroyed = false;
+			bool bConsumedItems = false;
+			bool bSuccess = false;
+
+			bool ReadyToFire;
+
+			if (pArgs->GetCount() >= 5 && !(pArgs->GetElement(4)->IsNil()))
+				ReadyToFire = pDevice->IsReady();
+			else
+				ReadyToFire = true;
+
+			// Save the variables changed in OnFireWeapon first.
+			if (ReadyToFire)
+				{
+				ICCItem *p_OldFireAngle = pCC->LookupGlobal(CONSTLIT("aFireAngle"), pCtx);
+				CVector vOldFirePos;
+				GetPosOrObject(pEvalCtx, pCC->LookupGlobal(CONSTLIT("aFirePos"), pCtx), &vOldFirePos);
+				ICCItem *p_OldFireRepeat = pCC->LookupGlobal(CONSTLIT("aFireRepeat"), pCtx);
+				ICCItem *p_OldTargetObj = pCC->LookupGlobal(CONSTLIT("aTargetObj"), pCtx);
+				ICCItem *p_OldWeaponBonus = pCC->LookupGlobal(CONSTLIT("aWeaponBonus"), pCtx);
+				ICCItem *p_OldWeaponType = pCC->LookupGlobal(CONSTLIT("aWeaponType"), pCtx);
+
+				bSuccess = pDevice->Activate(pObj, pTarget, &bSourceDestroyed, &bConsumedItems);
+
+				pCtx->DefineInteger(CONSTLIT("aFireAngle"), p_OldFireAngle->GetIntegerValue());
+				pCtx->DefineVector(CONSTLIT("aFirePos"), vOldFirePos);
+				pCtx->DefineInteger(CONSTLIT("aFireRepeat"), p_OldFireRepeat->GetIntegerValue());
+				pCtx->DefineSpaceObject(CONSTLIT("aTargetObj"), CreateObjFromItem(*pCC, p_OldTargetObj));
+				pCtx->DefineInteger(CONSTLIT("aWeaponBonus"), p_OldWeaponBonus->GetIntegerValue());
+				pCtx->DefineItemType(CONSTLIT("aWeaponType"), GetItemFromArg(*pCC, p_OldWeaponType).GetType());
+				}
+
+			if (bSourceDestroyed)
+				return pCC->CreateTrue();
+
+			if (bSuccess)
+				{
+				DEBUG_TRY
+					//enhancements
+					int iFireDelay;
+					if (pArgs->GetCount() >= 4 && !(pArgs->GetElement(3)->IsNil()))
+						iFireDelay = pArgs->GetElement(3)->GetIntegerValue();
+					else
+						iFireDelay = pDevice->GetClass()->GetActivateDelay(pDevice, pObj);
+
+					pDevice->SetTimeUntilReady(iFireDelay);
+				DEBUG_CATCH
+					return pCC->CreateTrue();
+				}
+			else return pCC->CreateNil();
+
 			}
 
 		case FN_OBJ_FIRE_OVERLAY_EVENT:
