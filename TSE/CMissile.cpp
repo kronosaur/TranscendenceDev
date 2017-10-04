@@ -385,7 +385,7 @@ void CMissile::CreateFragments (const CVector &vPos)
 	DEBUG_CATCH
 	}
 
-void CMissile::CreateReflection (const CVector &vPos, int iDirection)
+void CMissile::CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection)
 
 //	CreateReflection
 //
@@ -406,6 +406,10 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection)
 			&pReflection);
 
 	pReflection->m_fReflection = true;
+	if (retpReflection)
+		{
+		*retpReflection = pReflection;
+		}
 	}
 
 CString CMissile::DebugCrashInfo (void)

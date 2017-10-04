@@ -230,6 +230,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_GET_DETECT_RANGE		125
 #define FN_OBJ_MESSAGE_TRANSLATE	126
 #define FN_OBJ_FIRE_WEAPON			127
+#define FN_OBJ_CREATE_REFLECTION	128
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1392,6 +1393,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'Wait",
 
 			"iiv*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objCreateReflection",			fnObjSet,	FN_OBJ_CREATE_REFLECTION,
+			"(objCreateReflection missile [pos] [angle]) -> reflection",
+			"i**", PPFLAG_SIDEEFFECTS, },
 
 		{	"objCredit",					fnObjSet,		FN_OBJ_CREDIT,	
 			"(objCredit obj [currency] amount) -> new balance",
@@ -7103,6 +7108,33 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_CREATE_REFLECTION:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			CMissile *pMissile = pObj->AsMissile();
+			if (pMissile == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid missile"));
+			
+			CVector vPos;
+			if (pArgs->GetCount() >= 2 && GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+			else
+				vPos = pMissile->GetPos();
+
+			int iDirection;
+			if (pArgs->GetCount() == 3)
+				iDirection = pArgs->GetElement(2)->GetIntegerValue();
+			else
+				iDirection = pMissile->GetRotation();
+
+			CMissile *pReflection;
+
+			pMissile->CreateReflection(vPos, iDirection, &pReflection);
+			return pCC->CreateInteger((int) pReflection);
+			}
 		case FN_OBJ_CREDIT:
 			{
 			DWORD dwEconomyUNID;

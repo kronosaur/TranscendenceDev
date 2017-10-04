@@ -67,7 +67,7 @@ class CBeam : public CSpaceObject
 
 		//	CSpaceObject virtuals
 
-		virtual void CreateReflection (const CVector &vPos, int iDirection) override;
+		virtual void CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection = NULL) override;
 		virtual Categories GetCategory (void) const override { return catBeam; }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
@@ -505,7 +505,7 @@ class CMissile : public CSpaceObject
 
 		virtual CMissile *AsMissile (void) override { return this; }
 		virtual bool CanThrust (void) const { return (m_pDesc->GetManeuverRate() > 0); }
-		virtual void CreateReflection (const CVector &vPos, int iDirection) override;
+		virtual void CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection = NULL) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DetonateNow (CSpaceObject *pHit) override;
         virtual CSpaceObject *GetBase (void) const override { return m_Source.GetObj(); }
