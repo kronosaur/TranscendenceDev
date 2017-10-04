@@ -11,6 +11,9 @@
 #define TARGET_ATTRIB							CONSTLIT("target")
 #define TARGET_CRITERIA_ATTRIB					CONSTLIT("targetCriteria")
 #define WEAPON_ATTRIB							CONSTLIT("weapon")
+#define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
+#define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
+#define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 
 #define MISSILES_TARGET							CONSTLIT("missiles")
 
@@ -18,6 +21,9 @@
 #define PROPERTY_FIRE_RATE						CONSTLIT("fireRate")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
+#define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
+#define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
+
 
 const int DEFAULT_INTERCEPT_RANGE =				10;
 
@@ -100,6 +106,49 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 	else if (strEquals(sProperty, PROPERTY_EXTERNAL))
 		return CC.CreateBool(pDevice ? pDevice->IsExternal() : IsExternal());
 
+	else if (strEquals(sProperty, PROPERTY_OMNIDIRECTIONAL))
+		return CC.CreateBool(IsOmniDirectional(pDevice));
+
+	else if (strEquals(sProperty, PROPERTY_FIRE_ARC))
+		{
+		int iMinFireArc;
+		int iMaxFireArc;
+
+		//	Omnidirectional
+
+		if (IsOmniDirectional(pDevice))
+			return CC.CreateString(PROPERTY_OMNIDIRECTIONAL);
+
+		//	Fire arc
+
+		else if (IsDirectional(pDevice, &iMinFireArc, &iMaxFireArc))
+			{
+			//	Create a list
+
+			ICCItem *pResult = CC.CreateLinkedList();
+			if (pResult->IsError())
+				return pResult;
+
+			CCLinkedList *pList = (CCLinkedList *)pResult;
+
+			pList->AppendInteger(CC, iMinFireArc);
+			pList->AppendInteger(CC, iMaxFireArc);
+
+			return pResult;
+			}
+
+		//	Otherwise, see if we are pointing in a particular direction
+
+		else
+			{
+			int iFacingAngle = AngleMod((pDevice ? pDevice->GetRotation() : 0) + AngleMiddle(m_iMinFireArc, m_iMaxFireArc));
+			if (iFacingAngle == 0)
+				return CC.CreateNil();
+			else
+				return CC.CreateInteger(iFacingAngle);
+			}
+		}
+
 	//	Otherwise, just get the property from the weapon we're using
 
 	else if (pWeapon = GetWeapon())
@@ -169,6 +218,92 @@ CString CAutoDefenseClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWO
 		return NULL_STR;
 	}
 
+bool CAutoDefenseClass::IsDirectional(CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc)
+
+//	IsDirectional
+//
+//	Returns TRUE if the autodefensedevice can turn but is not omni
+//  Copied from CWeaponClass.cpp
+
+	{
+	//	If the weapon is omnidirectional then we don't need directional
+	//	calculations.
+
+	if (m_bOmnidirectional || (pDevice && pDevice->IsOmniDirectional()))
+		return false;
+
+	//	If we have a device, combine the fire arcs of device slot and 
+	//  autodefensedevice
+
+	if (pDevice)
+		{
+		//	If the device is directional then we always take the fire arc from
+		//	the device slot.
+
+		if (pDevice->IsDirectional())
+			{
+			if (retiMinFireArc)
+				*retiMinFireArc = pDevice->GetMinFireArc();
+			if (retiMaxFireArc)
+				*retiMaxFireArc = pDevice->GetMaxFireArc();
+
+			return true;
+			}
+
+		//	Otherwise, see if the autodefensedevice is directional.
+
+		else if (m_iMinFireArc != m_iMaxFireArc)
+			{
+			//	If the device points in a specific direction then we offset the
+			//	autodefensedevice's fire arc.
+
+			int iDeviceSlotOffset = pDevice->GetMinFireArc();
+
+			if (retiMinFireArc)
+				*retiMinFireArc = (m_iMinFireArc + iDeviceSlotOffset) % 360;
+			if (retiMaxFireArc)
+				*retiMaxFireArc = (m_iMaxFireArc + iDeviceSlotOffset) % 360;
+
+			return true;
+			}
+
+		//	Otherwise, we are not directional
+
+		else
+			return false;
+		}
+	else
+		{
+		//	Otherwise, just check the autodefensedevice
+
+		if (retiMinFireArc)
+			*retiMinFireArc = m_iMinFireArc;
+		if (retiMaxFireArc)
+			*retiMaxFireArc = m_iMaxFireArc;
+
+		return (m_iMinFireArc != m_iMaxFireArc);
+		}
+	}
+
+bool CAutoDefenseClass::IsOmniDirectional(CInstalledDevice *pDevice)
+
+//	IsOmniDirectional
+//
+//	Returns TRUE if the autodefensedevice is omnidirectional (not limited)
+//  Copied from CWeaponClass.cpp
+
+	{
+	//	The device slot improves the autodefensedevice. If the device slot is
+	//  directional, then the autodefensedevice is directional. If the device
+	//  slot is omni directional, then the autodefensedevice is
+	//  omnidirectional.
+
+	if (pDevice && pDevice->IsOmniDirectional())
+		return true;
+
+	return m_bOmnidirectional;
+	}
+
 void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
 
 //	Update
@@ -191,12 +326,34 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 	if (pDevice->IsReady() && pDevice->IsEnabled())
 		{
 		int i;
+		bool isOmniDirectional = false;
+		int iMinFireArc, iMaxFireArc;
 
 		//	Look for a target 
 
 		CSpaceObject *pBestTarget = NULL;
 		CSystem *pSystem = pSource->GetSystem();
 		CVector vSourcePos = pDevice->GetPos(pSource);
+
+		//  Find out whether our autoDefenseDevice is omnidirectional,
+		//  directional or has a fixed angle
+
+		if (IsOmniDirectional(pDevice))
+			isOmniDirectional = true;
+
+		//  If not omnidirectional, check directional. If not, then
+		//  our device points in one direction
+
+		else if (!IsDirectional(pDevice, &iMinFireArc, &iMaxFireArc)) {
+			iMinFireArc = AngleMod((pDevice ? pDevice->GetRotation() : 0)
+				+ AngleMiddle(m_iMinFireArc, m_iMaxFireArc));
+			iMaxFireArc = iMinFireArc;
+		}
+
+		//  Calculate min/max fire arcs given the object's rotation
+
+		iMinFireArc = (pSource->GetRotation() + iMinFireArc) % 360;
+		iMaxFireArc = (pSource->GetRotation() + iMaxFireArc) % 360;
 
 		//	Use the appropriate targeting method
 
@@ -216,7 +373,9 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 							&& pObj->GetCategory() == CSpaceObject::catMissile
 							&& !pObj->GetDamageSource().IsEqual(pSource)
 							&& !pObj->IsIntangible()
-							&& pSource->IsEnemy(pObj->GetDamageSource()))
+							&& pSource->IsEnemy(pObj->GetDamageSource())
+							&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
+								isOmniDirectional))
 						{
 						CVector vRange = pObj->GetPos() - vSourcePos;
 						Metric rDistance2 = vRange.Dot(vRange);
@@ -255,13 +414,14 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 					{
 					CSpaceObject *pObj = pSystem->GetObject(i);
 					Metric rDistance2;
-
 					if (pObj
 							&& (m_TargetCriteria.dwCategories & pObj->GetCategory())
 							&& ((rDistance2 = (pObj->GetPos() - vSourcePos).Length2()) < rBestDist2)
 							&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
 							&& !pObj->IsIntangible()
-							&& pObj != pSource)
+							&& pObj != pSource
+							&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
+								isOmniDirectional))
 						{
 						pBestTarget = pObj;
 						rBestDist2 = rDistance2;
@@ -323,6 +483,14 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		iFireRate = pDesc->GetAttributeInteger(RECHARGE_TIME_ATTRIB);
 	if (iFireRate == 0)
 		iFireRate = 15;
+
+	pDevice->m_iMinFireArc = AngleMod(pDesc->GetAttributeInteger(MIN_FIRE_ARC_ATTRIB));
+	pDevice->m_iMaxFireArc = AngleMod(pDesc->GetAttributeInteger(MAX_FIRE_ARC_ATTRIB));
+
+	//  Set omnidirectional if either the "omnidirectional" attribute is True, OR
+	//  if minfirearc = maxfirearc = 0.
+	pDevice->m_bOmnidirectional = (pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB) ||
+		((pDevice->m_iMaxFireArc == pDevice->m_iMinFireArc) && pDevice->m_iMaxFireArc == 0));
 
 	pDevice->m_iRechargeTicks = (int)((iFireRate / STD_SECONDS_PER_UPDATE) + 0.5);
 	if (error = pDevice->m_pWeapon.LoadUNID(Ctx, pDesc->GetAttribute(WEAPON_ATTRIB)))
