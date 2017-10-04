@@ -532,6 +532,7 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_VECTOR_SPEED					7
 #define FN_VECTOR_POLAR_VELOCITY		8
 #define FN_VECTOR_PIXEL_OFFSET			9
+#define FN_VECTOR_DISTANCE_EXACT		10
 
 ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2795,7 +2796,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v*",	0,	},
 
 		{	"sysVectorDistance",			fnSystemVectorMath,		FN_VECTOR_DISTANCE,
-			"(sysVectorDistance vector [vector]) -> distance in light-seconds",
+			"(sysVectorDistance vector [vector]) -> distance in light-seconds (int32)",
+			"v*",	0,	},
+
+		{	"sysVectorDistanceExact",		fnSystemVectorMath,		FN_VECTOR_DISTANCE_EXACT,
+			"(sysVectorDistanceExact vector [vector]) -> distance in light-seconds or speed as a fraction of c (real)",
 			"v*",	0,	},
 
 		{	"sysVectorDivide",				fnSystemVectorMath,		FN_VECTOR_DIVIDE,
@@ -12980,6 +12985,23 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 			CVector vDist = vPos1 - vPos2;
 			return pCC->CreateInteger((int)((vDist.Length() / LIGHT_SECOND) + 0.5));
+			}
+
+		case FN_VECTOR_DISTANCE_EXACT:
+			{
+			CVector vPos1;
+			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vPos1) != NOERROR)
+				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
+
+			CVector vPos2;
+			if (pArgs->GetCount() > 1)
+				{
+				if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2) != NOERROR)
+					return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+				}
+
+			CVector vDist = vPos1 - vPos2;
+			return pCC->CreateDouble(vDist.Length() / LIGHT_SECOND);
 			}
 
 		case FN_VECTOR_POLAR_VELOCITY:
