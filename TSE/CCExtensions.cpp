@@ -8422,6 +8422,14 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pSystem == NULL)
 				return StdErrorNoSystem(*pCC);
 
+			//	Not valid for closed missions because we would never know when 
+			//	to delete the event.
+
+			if (pMission->IsClosed())
+				return pCC->CreateError(CONSTLIT("Mission already closed"), pArgs->GetElement(0));
+
+			//	Create the event
+
 			CSystemEvent *pEvent;
 			if (dwData == FN_MISSION_ADD_TIMER)
 				pEvent = new CTimedMissionEvent(
