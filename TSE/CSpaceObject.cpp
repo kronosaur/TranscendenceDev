@@ -4461,11 +4461,14 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 
 	{
 	CSovereign *pPlayer = g_pUniverse->GetPlayerSovereign();
+	CSpaceObject *pPlayerShip;
+
 	if (GetSovereign() == pPlayer)
 		return CG32bitPixel(255, 255, 255);
 	else if (IsWreck())
 		return CG32bitPixel(0, 192, 0);
-	else if (GetSovereign()->IsEnemy(pPlayer))
+	else if ((pPlayerShip = g_pUniverse->GetPlayerShip()) 
+			&& IsAngryAt(pPlayerShip))
 		return CG32bitPixel(255, 80, 80);
 	else if (GetCategory() == CSpaceObject::catShip)
 		return CG32bitPixel(80, 255, 80);
