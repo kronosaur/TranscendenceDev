@@ -2365,6 +2365,7 @@ class CUniverse
 		inline CCriticalSection &GetSem (void) { return m_cs; }
 		inline CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const;
+		inline bool GetSound (void) { return !m_bNoSound; }
 		inline CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
 		inline bool InDebugMode (void) { return m_bDebugMode; }
 		inline void InitEntityResolver (CExtension *pExtension, CEntityResolverList *retResolver) { m_Extensions.InitEntityResolver(pExtension, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retResolver); }

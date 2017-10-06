@@ -813,7 +813,7 @@ void CDesignCollection::FireOnGlobalIntroCommand(const CString &sCommand)
 
 void CDesignCollection::FireOnGlobalIntroStarted(void)
 
-//	FireOnGlobalIntroCommand
+//	FireOnGlobalIntroStarted
 //
 //	Notify all types that the intro screen has started
 

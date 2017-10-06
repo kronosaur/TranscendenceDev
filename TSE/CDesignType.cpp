@@ -1128,7 +1128,7 @@ void CDesignType::FireOnGlobalIntroCommand(const SEventHandlerDesc &Event, const
 
 void CDesignType::FireOnGlobalIntroStarted (const SEventHandlerDesc &Event)
 
-//	FireOnGlobalUniverseSave
+//	FireOnGlobalIntroStarted
 //
 //	Fire event
 
