@@ -1284,7 +1284,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"isi*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objAddItem",					fnObjSet,		FN_OBJ_ADD_ITEM,
-			"(objAddItem obj item|type [count]) -> True/Nil",
+			"(objAddItem obj item|type [count]) -> item",
 			"iv*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objAddItemEnhancement",		fnObjSet,		FN_OBJ_ADD_ITEM_ENHANCEMENT,
@@ -7006,7 +7006,9 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pObj->ItemsModified();
 			pObj->InvalidateItemListAddRemove();
 
-			return pCC->CreateTrue();
+			//	Return the item.
+
+			return CreateListFromItem(*pCC, Item);
 			}
 
 		case FN_OBJ_ADD_ITEM_ENHANCEMENT:
