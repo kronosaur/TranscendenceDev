@@ -233,6 +233,8 @@ class CDesignType
 		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem **retpResult);
 		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sPane, CString *retsError);
 		void FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event);
+		void FireOnGlobalIntroCommand (const SEventHandlerDesc &Event, const CString &sCommand);
+		void FireOnGlobalIntroStarted (const SEventHandlerDesc &Event);
 		void FireOnGlobalMarkImages (const SEventHandlerDesc &Event);
 		void FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDestroyCtx &Ctx);
 		void FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
@@ -1097,22 +1099,28 @@ class CDesignCollection
 			evtOnGlobalDockPaneInit			= 3,
 			evtOnGlobalEndDiagnostics		= 4,
 
-			evtOnGlobalMarkImages			= 5,
-			evtOnGlobalObjDestroyed			= 6,
-			evtOnGlobalPlayerBoughtItem		= 7,
-			evtOnGlobalPlayerSoldItem		= 8,
-			evtOnGlobalStartDiagnostics		= 9,
+			evtOnGlobalIntroCommand			= 5,
+			evtOnGlobalIntroStarted			= 6,
 
-			evtOnGlobalSystemDiagnostics	= 10,
-			evtOnGlobalSystemStarted		= 11,
-			evtOnGlobalSystemStopped		= 12,
-			evtOnGlobalUniverseCreated		= 13,
-			evtOnGlobalUniverseLoad			= 14,
+			evtOnGlobalMarkImages			= 7,
+			
+			evtOnGlobalObjDestroyed			= 8,
 
-			evtOnGlobalUniverseSave			= 15,
-			evtOnGlobalUpdate				= 16,
+			evtOnGlobalPlayerBoughtItem		= 9,
+			evtOnGlobalPlayerSoldItem		= 10,
+			evtOnGlobalStartDiagnostics		= 11,
 
-			evtCount						= 17
+			evtOnGlobalSystemDiagnostics	= 12,
+			evtOnGlobalSystemStarted		= 13,
+			evtOnGlobalSystemStopped		= 14,
+
+			evtOnGlobalUniverseCreated		= 15,
+			evtOnGlobalUniverseLoad			= 16,
+			evtOnGlobalUniverseSave			= 17,
+			
+			evtOnGlobalUpdate				= 18,
+
+			evtCount						= 19
 			};
 
 		enum EFlags
@@ -1159,6 +1167,8 @@ class CDesignCollection
 		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CString *retsScreen, ICCItem **retpData, int *retiPriority = NULL);
 		bool FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		void FireOnGlobalEndDiagnostics (void);
+		void FireOnGlobalIntroCommand (const CString &sCommand);
+		void FireOnGlobalIntroStarted (void);
 		void FireOnGlobalMarkImages (void);
 		void FireOnGlobalObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane);

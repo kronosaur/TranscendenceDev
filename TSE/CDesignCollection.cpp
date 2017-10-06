@@ -24,8 +24,13 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 		"OnGlobalPaneInit",
 		"OnGlobalEndDiagnostics",
 
+		"OnGlobalIntroCommand",
+		"OnGlobalIntroStarted",
+
 		"OnGlobalMarkImages",
+		
 		"OnGlobalObjDestroyed",
+
 		"OnGlobalPlayerBoughtItem",
 		"OnGlobalPlayerSoldItem",
 		"OnGlobalStartDiagnostics",
@@ -33,10 +38,11 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 		"OnGlobalSystemDiagnostics",
 		"OnGlobalSystemStarted",
 		"OnGlobalSystemStopped",
+
 		"OnGlobalUniverseCreated",
 		"OnGlobalUniverseLoad",
-
 		"OnGlobalUniverseSave",
+
 		"OnGlobalUpdate",
 	};
 
@@ -783,6 +789,44 @@ void CDesignCollection::FireOnGlobalEndDiagnostics (void)
 		CDesignType *pType = m_EventsCache[evtOnGlobalEndDiagnostics]->GetEntry(i, &Event);
 
 		pType->FireOnGlobalEndDiagnostics(Event);
+		}
+	}
+
+void CDesignCollection::FireOnGlobalIntroCommand(const CString &sCommand)
+
+//	FireOnGlobalIntroCommand
+//
+//	Notify all types that the user has sent a command to the intro screen
+
+	{
+	int i;
+
+	CString sError;
+	for (i = 0; i < m_EventsCache[evtOnGlobalIntroStarted]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalIntroCommand]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalIntroCommand(Event, sCommand);
+		}
+	}
+
+void CDesignCollection::FireOnGlobalIntroStarted(void)
+
+//	FireOnGlobalIntroCommand
+//
+//	Notify all types that the intro screen has started
+
+	{
+	int i;
+
+	CString sError;
+	for (i = 0; i < m_EventsCache[evtOnGlobalIntroStarted]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalIntroStarted]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalIntroStarted(Event);
 		}
 	}
 
