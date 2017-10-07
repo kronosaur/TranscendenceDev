@@ -3409,7 +3409,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Weapon targets
 
-	if (m_fArmed)
+	if (m_fArmed && Ctx.dwVersion >= 153)
 		{
 		int iCount;
 		Ctx.pStream->Read(iCount);
@@ -4671,6 +4671,8 @@ void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 			for (j = 0; j < m_WeaponTargets.GetCount(); j++)
 				{
 				CSpaceObject *pTarget = m_WeaponTargets[j];
+				if (pTarget == NULL)
+					continue;
 
 				int iFireAngle;
 				if (pWeapon->IsWeaponAligned(this, pTarget, NULL, &iFireAngle)
