@@ -4674,6 +4674,8 @@ void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 				if (pTarget == NULL)
 					continue;
 
+				//	See if we can hit this target. If so, then we fire.
+
 				int iFireAngle;
 				if (pWeapon->IsWeaponAligned(this, pTarget, NULL, &iFireAngle)
 						&& IsLineOfFireClear(pWeapon, pTarget, iFireAngle, rAttackRange))
@@ -4859,5 +4861,5 @@ void CStation::UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange)
 	//	sorted order, with the nearest enemies first.
 
 	int MAX_ENEMIES = 10;
-	GetNearestVisibleEnemies(MAX_ENEMIES, rAttackRange, &m_WeaponTargets);
+	GetNearestVisibleEnemies(MAX_ENEMIES, rAttackRange, &m_WeaponTargets, NULL, FLAG_INCLUDE_NON_AGGRESSORS);
 	}
