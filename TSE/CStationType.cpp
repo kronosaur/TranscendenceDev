@@ -1091,7 +1091,8 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 		if (m_Devices[i].GetCategory() == itemcatWeapon
 				|| m_Devices[i].GetCategory() == itemcatLauncher)
 			{
-			Metric rRange = m_Devices[i].GetMaxEffectiveRange(NULL);
+			CItem Item(m_Devices[i].GetClass()->GetItemType(), 1);
+			Metric rRange = m_Devices[i].GetMaxRange(CItemCtx(Item));
 			if (rRange > rBestRange)
 				rBestRange = rRange;
 			}
