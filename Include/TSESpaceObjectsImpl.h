@@ -1639,6 +1639,7 @@ class CStation : public CSpaceObject
 		void SetAngry (void);
 		void UpdateAttacking (SUpdateCtx &Ctx, int iTick);
 		void UpdateReinforcements (int iTick);
+		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);
 
 		CStationType *m_pType;					//	Station type
 		CString m_sName;						//	Station name
@@ -1663,10 +1664,10 @@ class CStation : public CSpaceObject
 		COverlayList m_Overlays;				//	List of overlays
 		CDockingPorts m_DockingPorts;			//	Docking ports
 
-		CSpaceObject *m_pTarget;				//	Target to hit (by our weapons)
 		CSpaceObject *m_pBase;					//	If we're a subordinate, this points to our base
 		CSpaceObjectList m_Subordinates;		//	List of subordinates
 		CSpaceObjectList m_Targets;				//	Targets to destroy (by our ships)
+		TArray<CSpaceObject *> m_WeaponTargets;	//	Targets to destroy (by our weapons)
 
 		CAttackDetector m_Blacklist;			//	Player blacklisted
 		int m_iAngryCounter;					//	Attack cycles until station is not angry

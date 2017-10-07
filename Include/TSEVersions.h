@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							38;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					30;
-constexpr DWORD SYSTEM_SAVE_VERSION =					152;
+constexpr DWORD SYSTEM_SAVE_VERSION =					153;
 
 //	Uncomment out the following define when building a stable release
 
@@ -556,3 +556,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					152;
 //
 //	152: 1.8 Alpha 3
 //		Added m_pEnhancements to CInstalledArmor
+//
+//	153: 1.8 Alpha 4
+//		Added m_WeaponTargets
