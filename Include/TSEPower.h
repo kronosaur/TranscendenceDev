@@ -16,9 +16,11 @@ class CPower : public CDesignType
 		inline const CString &GetInvokeKey (void) { return m_sInvokeKey; }
 		inline const CString &GetName (void) { return m_sName; }
 		inline ICCItem *GetOnInvokedByPlayer (void) { return m_pOnInvokedByPlayer; }
+		inline ICCItem *GetOnInvokedByNonPlayer (void) { return m_pOnInvokedByNonPlayer; }
 		inline ICCItem *GetOnShow (void) { return m_pOnShow; }
 		void Invoke (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
 		void InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
+		void InvokeByNonPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
 		bool OnShow (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError = NULL);
 		bool OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, const CDamageSource &Attacker);
 
@@ -36,9 +38,10 @@ class CPower : public CDesignType
 		int m_iInvokeCost;
 		CString m_sInvokeKey;
 
-		ICCItem *m_pCode;
-		ICCItem *m_pOnShow;
-		ICCItem *m_pOnInvokedByPlayer;
-		ICCItem *m_pOnDestroyCheck;
+		ICCItem *m_pCode;					//	Invoke event
+		ICCItem *m_pOnShow;					//	OnShow event checks if the power should show up in the Invoke menu
+		ICCItem *m_pOnInvokedByPlayer;		//	OnInvokedByPlayer event checks if a player should be allowed to invoke
+		ICCItem *m_pOnInvokedByNonPlayer;	//	OnInvokedByNonPlayer event checks if a non-player should be allowed to invoke
+		ICCItem *m_pOnDestroyCheck;			//	OnDestroyCheck event fires before the player is about to be destroyed
 	};
 

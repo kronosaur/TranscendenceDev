@@ -7,6 +7,7 @@
 #define INVOKE_TAG								CONSTLIT("Invoke")
 #define ON_SHOW_TAG								CONSTLIT("OnShow")
 #define ON_INVOKED_BY_PLAYER_TAG				CONSTLIT("OnInvokedByPlayer")
+#define ON_INVOKED_BY_NON_PLAYER_TAG			CONSTLIT("OnInvokedByNonPlayer")
 #define ON_DESTROY_CHECK_TAG					CONSTLIT("OnDestroyCheck")
 
 #define UNID_ATTRIB								CONSTLIT("UNID")
@@ -21,7 +22,8 @@ CPower::CPower (void) :
 		m_pCode(NULL),
 		m_pOnShow(NULL),
 		m_pOnDestroyCheck(NULL),
-		m_pOnInvokedByPlayer(NULL)
+		m_pOnInvokedByPlayer(NULL),
+		m_pOnInvokedByNonPlayer(NULL)
 
 //	CPower constructor
 
@@ -43,6 +45,9 @@ CPower::~CPower (void)
 
 	if (m_pOnInvokedByPlayer)
 		m_pOnInvokedByPlayer->Discard(&CC);
+
+	if (m_pOnInvokedByNonPlayer)
+		m_pOnInvokedByNonPlayer->Discard(&CC);
 
 	if (m_pOnDestroyCheck)
 		m_pOnDestroyCheck->Discard(&CC);
@@ -77,7 +82,7 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 
 //	Invoke
 //
-//	Invoke the power
+//	Invoke the power for a player
 
 	{
 	CCodeChainCtx Ctx;
@@ -89,7 +94,7 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
 
-	//	First handle the player portion
+	//	First handle the OnInvokedByPlayer check. If it is not defined, then skip it.
 
 	ICCItem *pResult;
 	ICCItem *pCode = GetOnInvokedByPlayer();
@@ -107,6 +112,67 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 			}
 
 		//	If OnInvokedByPlayer returns Nil, then we do not invoke
+
+		else if (pResult->IsNil())
+			bCancelInvocation = true;
+
+		//	Continue?
+
+		Ctx.Discard(pResult);
+		if (bCancelInvocation)
+			return;
+		}
+
+	//	Invoke
+
+	pCode = GetCode();
+	if (pCode)
+		{
+		pResult = Ctx.Run(pCode);
+		if (pResult->IsError())
+			{
+			if (retsError)
+				*retsError = pResult->GetStringValue();
+			}
+
+		Ctx.Discard(pResult);
+		}
+	}
+
+void CPower::InvokeByNonPlayer(CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError)
+
+//	Invoke
+//
+//	Invoke the power for a non-player
+
+	{
+	CCodeChainCtx Ctx;
+
+	if (retsError)
+		*retsError = NULL_STR;
+
+	Ctx.SetExtension(GetExtension());
+	Ctx.SaveAndDefineSourceVar(pSource);
+	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
+
+	//	First handle the OnInvokedByNonPlayer check. If it is not defined, then skip it.
+
+	ICCItem *pResult;
+	ICCItem *pCode = GetOnInvokedByNonPlayer();
+	if (pCode)
+		{
+		pResult = Ctx.Run(pCode);
+
+		bool bCancelInvocation = false;
+		if (pResult->IsError())
+			{
+			if (retsError)
+				*retsError = pResult->GetStringValue();
+
+			bCancelInvocation = true;
+			}
+
+		//	If OnInvokedByNonPlayer returns Nil, then we do not invoke
 
 		else if (pResult->IsNil())
 			bCancelInvocation = true;
@@ -155,6 +221,7 @@ ALERROR CPower::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_pCode = NULL;
 	m_pOnShow = NULL;
 	m_pOnInvokedByPlayer = NULL;
+	m_pOnInvokedByNonPlayer = NULL;
 	m_pOnDestroyCheck = NULL;
 	for (i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
@@ -173,6 +240,11 @@ ALERROR CPower::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		else if (strEquals(pBlock->GetTag(), ON_INVOKED_BY_PLAYER_TAG))
 			{
 			if (error = LoadCodeBlock(pBlock->GetContentText(0), &m_pOnInvokedByPlayer, &Ctx.sError))
+				return error;
+			}
+		else if (strEquals(pBlock->GetTag(), ON_INVOKED_BY_NON_PLAYER_TAG))
+			{
+			if (error = LoadCodeBlock(pBlock->GetContentText(0), &m_pOnInvokedByNonPlayer, &Ctx.sError))
 				return error;
 			}
 		else if (strEquals(pBlock->GetTag(), ON_DESTROY_CHECK_TAG))
