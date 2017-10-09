@@ -231,6 +231,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_MESSAGE_TRANSLATE	126
 #define FN_OBJ_FIRE_WEAPON			127
 #define FN_OBJ_CREATE_REFLECTION	128
+#define FN_OBJ_FIRE_POWER_INVOKE	129
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1453,7 +1454,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objFireOverlayEvent obj overlayID event [data]) -> result of event",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objFireWeapon",			fnObjSet,		FN_OBJ_FIRE_WEAPON,
+		{	"objFirePowerInvoke",			fnObjSet,		FN_OBJ_FIRE_POWER_INVOKE,
+			"(objFirePowerInvoke obj power [target]) -> result of event",
+			"ii*",	PPFLAG_SIDEEFFECTS, },
+
+		{	"objFireWeapon",				fnObjSet,		FN_OBJ_FIRE_WEAPON,
 			"(objFireWeapon obj weapon target [fireDelay] [checkFireDelay]) -> True/Nil",
 			"ivi*",	PPFLAG_SIDEEFFECTS, },
 
@@ -7347,6 +7352,37 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_FIRE_OVERLAY_EVENT:
+			{
+			ICCItem *pResult;
+			DWORD dwOverlayID = pArgs->GetElement(1)->GetIntegerValue();
+			ICCItem *pData = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
+			pObj->FireCustomOverlayEvent(pArgs->GetElement(2)->GetStringValue(), dwOverlayID, pData, &pResult);
+			return pResult;
+			}
+		case FN_OBJ_FIRE_POWER_INVOKE:
+		{
+			DWORD dwPowerUNID = pArgs->GetElement(1)->GetIntegerValue();
+			CPower *pPower = g_pUniverse->FindPower(dwPowerUNID);
+
+			//If we don't specify a target, get the object's target
+			CSpaceObject *pTarget;
+			if (pArgs->GetCount() == 3)
+				pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(2));
+			else
+				pTarget = pObj->GetTarget(CItemCtx(), true);
+
+			CString sError;
+
+			pPower->Invoke(pObj, pTarget, &sError);
+			if (sError.IsBlank())
+				{
+				::kernelDebugLogPattern("[%s %s Invoke]: %s", pObj->GetNounPhrase(), pPower->GetNounPhrase(), sError);
+				return pCC->CreateNil();
+				}
+			return pCC->CreateTrue();
+			}
+
 		case FN_OBJ_FIRE_WEAPON:
 			{
 			CInstalledDevice *pDevice = GetDeviceFromItem(*pCC, pObj, pArgs->GetElement(1));
@@ -7399,26 +7435,17 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				DEBUG_TRY
 					//enhancements
 					int iFireDelay;
-					if (pArgs->GetCount() >= 4 && !(pArgs->GetElement(3)->IsNil()))
-						iFireDelay = pArgs->GetElement(3)->GetIntegerValue();
-					else
-						iFireDelay = pDevice->GetClass()->GetActivateDelay(pDevice, pObj);
+				if (pArgs->GetCount() >= 4 && !(pArgs->GetElement(3)->IsNil()))
+					iFireDelay = pArgs->GetElement(3)->GetIntegerValue();
+				else
+					iFireDelay = pDevice->GetClass()->GetActivateDelay(pDevice, pObj);
 
-					pDevice->SetTimeUntilReady(iFireDelay);
+				pDevice->SetTimeUntilReady(iFireDelay);
 				DEBUG_CATCH
 					return pCC->CreateTrue();
 				}
 			else return pCC->CreateNil();
 
-			}
-
-		case FN_OBJ_FIRE_OVERLAY_EVENT:
-			{
-			ICCItem *pResult;
-			DWORD dwOverlayID = pArgs->GetElement(1)->GetIntegerValue();
-			ICCItem *pData = (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL);
-			pObj->FireCustomOverlayEvent(pArgs->GetElement(2)->GetStringValue(), dwOverlayID, pData, &pResult);
-			return pResult;
 			}
 
 		case FN_OBJ_FIX_PARALYSIS:
