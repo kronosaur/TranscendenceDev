@@ -1133,12 +1133,12 @@ ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					iPos = iTry;
 					break;
 					}
-				else if (iCompare < 0)
+				else if (iCompare > 0)
 					{
 					iMin = iTry + 1;
 					iTry = iMin + (iMax - iMin) / 2;
 					}
-				else if (iCompare > 0)
+				else if (iCompare < 0)
 					{
 					iMax = iTry;
 					iTry = iMin + (iMax - iMin) / 2;
@@ -1160,12 +1160,12 @@ ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					iPos = iTry;
 					break;
 					}
-				else if (iCompare < 0)
+				else if (iCompare > 0)
 					{
 					iMin = iTry + 1;
 					iTry = iMin + (iMax - iMin) / 2;
 					}
-				else if (iCompare > 0)
+				else if (iCompare < 0)
 					{
 					iMax = iTry;
 					iTry = iMin + (iMax - iMin) / 2;
