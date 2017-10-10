@@ -5,72 +5,73 @@
 static PRIMITIVEPROCDEF g_DefPrimitives[] =
 	{
 		{	"<",				fnEqualityNumerals,		FN_EQUALITY_LESSER,
-			"(< x1 x2 ... xn) -> True if x1 < x2 < ... < xn",
+			"(< [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn",
 			NULL,	0,	},
 
-		{	"ls",				fnEquality,		FN_EQUALITY_LESSER,		
-			"(ls a b) -> True if a < b",
+		{	"ls",				fnEquality,		FN_EQUALITY_LESSER,
+			"(ls [x1 x2 ... xn]) -> True if x1 < x2 < ... < xn",
 			NULL,	0,	},
 
 		{	"<=",				fnEqualityNumerals,		FN_EQUALITY_LESSER_EQ,
-			"(<= x1 x2 ... xn) -> True if x1 <= x2 <= ... <= xn",
+			"(<= [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn",
 			NULL,	0,	},
 
 		{	"leq",				fnEquality,		FN_EQUALITY_LESSER_EQ,
-			"(leq a b) -> True if a <= b",
+			"(leq [x1 x2 ... xn]) -> True if x1 <= x2 <= ... <= xn",
 			NULL,	0,	},
 
 		{	">",				fnEqualityNumerals,		FN_EQUALITY_GREATER,
-			"(> x1 x2 ... xn) -> True if x1 > x2 > ... > xn",
+			"(> [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn",
 			NULL,	0,	},
 
 		{	"gr",				fnEquality,		FN_EQUALITY_GREATER,
-			"(gr a b) -> True if a > b",
+			"(gr [x1 x2 ... xn]) -> True if x1 > x2 > ... > xn",
 			NULL,	0,	},
 
 		{	">=",				fnEqualityNumerals,		FN_EQUALITY_GREATER_EQ,
-			"(>= x1 x2 ... xn) -> True if x1 >= x2 >= ... >= xn",
+			"(>= [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn",
 			NULL,	0,	},
 
 		{	"geq",				fnEquality,		FN_EQUALITY_GREATER_EQ,
-			"(geq a b) -> True if a >= b",		NULL,	0,	},
+			"(geq [x1 x2 ... xn]) -> True if x1 >= x2 >= ... >= xn",
+			NULL,	0,	},
 
 		{	"add",				fnMathListOld,		FN_MATH_ADD,
-			"(add x1 x2 ... xn) -> z",
+			"(add x1 [x2 ... xn]) -> sum (after converting arguments to int32)",
 			"v*",	0,	},
 
 		{	"+",				fnMathList,		FN_MATH_ADD,
-			"(+ x1 x2 ... xn) -> z",
+			"(+ x1 [x2 ... xn]) -> sum (int32 or real)",
 			"v*",	0,	},
 
 		{	"abs",				fnMath,			FN_MATH_ABSOLUTE,
-			"(abs x) -> z",
+			"(abs x) -> absolute value (int32 or real)",
 			"n",	0,	},
 
 		{	"acos",				fnMathNumerals,	FN_MATH_ARCCOS,
-			"(acos x ['degrees]) -> z",
+			"(acos x ['degrees]) -> inverse cosine (real)",
 			"n*",	0,	},
 
 		{	"and",				fnLogical,		FN_LOGICAL_AND,
-			"(and exp1 exp2 ... expn) -> True/Nil\n\n"
+			"(and [exp1 exp2 ... expn]) -> True/Nil\n\n"
 
 			"Returns Nil if any argument is Nil, otherwise returns last argument",
 			NULL,	0,	},
 
 		{	"append",			fnAppend,		0,
-			"(append a b [...]) -> lists are concatenated",
+			"(append [list1 list2 ...]) -> concatenated list",
 			"*",	0,	},
 
 		{	"apply",			fnApply,		0,
-			"(apply exp arg1 arg2 ... argn list) -> Result",
+			"(apply function [arg1 arg2 ... argn] argList) -> Result of function with arguments arg1... followed by contents of argList",
 			NULL,	0,	},
 
 		{	"asin",				fnMathNumerals,	FN_MATH_ARCSIN,
-			"(asin x ['degrees]) -> z",
+			"(asin x ['degrees]) -> inverse sine (real)",
 			"n*",	0,	},
 
 		{	"atan",				fnMathNumerals,	FN_MATH_ARCTAN,
-			"(atan y [x] ['degrees]) -> z",
+			"(atan y [x] ['degrees]) -> inverse tangent (real)",
 			"n*",	0,	},
 	
 		{	"atmAddEntry",		fnAtmTable,		FN_ATMTABLE_ADDENTRY,	"",		NULL,	PPFLAG_SIDEEFFECTS,	},
@@ -80,49 +81,59 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"atmAtomTable",		fnAtmCreate,	0,						"",		NULL,	0,	},
 
 		{	"block",			fnBlock,		FN_BLOCK_BLOCK,
-			"(block localsList exp1 exp2 ... expn) -> value of expn",
+			"(block [localsList exp1 exp2 ... expn]) -> value of expn\n\n"
+			
+			"Evaluates a series of expressions and returns the value of the last one.\n"
+			"LocalsList is a list of local variables and/or lists consisting of a local variable and the initial value to assign it."
+			"If an expression evaluates to an error, returns that error and doesn't evaluate the rest.",
 			NULL,	0,	},
 
 		{	"cat",				fnCat,			0,
-			"(cat s1 s2 ... sn) -> string",		NULL,	0,	},
+			"(cat [string1 string2 ... stringn]) -> concatenated string",		NULL,	0,	},
 
 		{	"ceil",				fnMathNumerals,		FN_MATH_CEIL,
-			"(ceil x) -> y",
+			"(ceil x) -> x rounded up, i.e. towards positive infinity (real)",
 			"n",	0,	},
 
 		{	"convertTo",		fnItem,			FN_ITEM_CONVERT_TO,
-			"(convertTo type value) -> result",
+			"(convertTo dataType value) -> result\n\n"
+			
+			"dataType: 'error|'int32|'list|'nil|'real|'string|'true",
 			"sv",	0,	},
 
 		{	"cos",				fnMathNumerals,	FN_MATH_COS,
-			"(cos x ['degrees]) -> z",
+			"(cos x ['degrees]) -> cosine (real)",
 			"n*",	0,	},
 
 		{	"count",			fnCount,		0,
-			"(count list) -> number of items",
+			"(count list|string|struct) -> number of items or characters",
 			NULL,	0,	},
 
 		{	"divide",			fnMathOld,			FN_MATH_DIVIDE,
-			"(divide x y) -> z",		NULL,	0,	},
+			"(divide x y) -> x / y after converting arguments to int32, rounded toward 0",		NULL,	0,	},
 
 		{	"/",				fnMathNumerals,			FN_MATH_DIVIDE,
-			"(/ x y) -> z",		
+			"(/ x y) -> x / y (real)",		
 			"nn",	0,	},
 
 		{	"enum",				fnEnum,			0,
 			"(enum list itemVar exp) -> value\n\n"
 
-			"Iterate itemVar over list evaluating exp",
+			"Iterate itemVar over list evaluating exp. Returns the last value of exp.",
 			NULL,	0,	},
 
 		{	"enumwhile",		fnEnum,			FN_ENUM_WHILE,
 			"(enumwhile list condition itemVar exp) -> value\n\n"
 
-			"Iterate itemVar over list evaluating exp while condition is True",
+			"Iterate itemVar over list evaluating exp while condition is True. Returns the last value of exp.",
 			NULL,	0,	},
 
 		{	"errblock",			fnBlock,		FN_BLOCK_ERRBLOCK,
-			"(errblock localsList exp1 exp2 ... expn expErr) -> value of expn or expErr if error occurs",
+			"(errblock localsList [exp1 exp2 ... expn] expErr) -> value of expn or expErr if error occurs\n\n"
+			
+			"Like block, except it evaluates and returns the last expression only if one of the other expressions evaluates to an error.\n"
+			"LocalsList must contain at least one variable. If the first variable is not assigned within localsList, it will be set\n"
+			"to the error while evaluating expErr.",
 			NULL,	0,	},
 
 		{	"error",			fnSpecial,		FN_ERROR,
@@ -130,40 +141,56 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"s",	0,	},
 
 		{	"eq",				fnEquality,		FN_EQUALITY_EQ,
-			"(eq x1 x2 ... xn) -> True if all arguments are equal",
+			"(eq [x1 x2 ... xn]) -> True if all arguments are equal",
 			NULL,	0,	},
 
 		{	"=",				fnEqualityNumerals, FN_EQUALITY_EQ,
-			"(= x1 x2 ... xn) -> True if all arguments are equal",
+			"(= [x1 x2 ... xn]) -> True if all arguments are equal",
 			NULL, 0, },
 
-		{	"eval",				fnEval,			0,						"",		NULL,	0,	},
+		{	"eval",				fnEval,			0,
+			"(eval exp) -> result\n\n"
+			
+			"Evaluates the expression. If it's a string, result is the value of the corresponding symbol.\n"
+			"If it's a quoted expression, the expression is evaluated.\n"
+			"If it's a list, each item is evaluated, then it's evaluated as a function call.",
+			NULL,	0,	},
+		
 		{	"filter",			fnFilter,		0,
-			"(filter list var boolean-exp) -> filtered list",
+			"(filter list var boolean-exp) -> filtered list\n\n"
+			
+			"Iterates var over list, evaluating boolean-exp. Returns a list containing the items for which boolean-exp is non-Nil.",
 			"lqu",	0,	},
 
 		{	"exp",				fnMathNumerals,	FN_MATH_EXP,
-			"(exp x) -> z",
+			"(exp x) -> e^x (real)",
 			"n",	0,	},
 
 		{	"find",				fnFind,			FN_FIND,
-			"(find source target ['ascending|'descending] [keyIndex]) -> position of target in source (0-based)",
+			"(find string target) -> position of target in string (0-based)\n"
+			"(find source-list target ['ascending|'descending] [keyIndex]) -> position of target in source-list (0-based)\n\n"
+			
+			"The 'ascending or 'descending argument makes the function more efficient if the list is long and sorted in the specified direction.\n"
+			"Specifying an integer keyIndex causes it to compare that item of each list within source-list with the target instead.\n",
 			"vv*",	0,	},
 
 		{	"floor",			fnMathNumerals,		FN_MATH_FLOOR,
-			"(floor x) -> y",
+			"(floor x) -> x rounded down, i.e. towards negative infinity (real)",
 			"n",	0,	},
 
-		{	"fncHelp",			fnItemInfo,		FN_ITEMINFO_HELP,		"",		NULL,	0,	},
+		{	"fncHelp",			fnItemInfo,		FN_ITEMINFO_HELP,
+			"(fncHelp symbol) -> help on function symbol (works on deprecated functions)",
+			NULL,	0,	},
 
 		{	"for",				fnForLoop,		0,
 			"(for var from to exp) -> value of last expression",
 			NULL,	0,	},
 
 		{	"help",				fnHelp,			0,
-			"(help) -> all functions\n"
-			"(help partial-name) -> all functions starting with name\n"
-			"(help function-name) -> help on function",
+			"(help) -> this help\n"
+			"(help '*) -> all functions\n"
+			"(help 'partial-string) -> all functions starting with partial-string\n"
+			"(help 'function-name) -> help on function-name\n",
 			"*",	0,	},
 
 		{	"if",				fnIf,			0,						"(if condition exp1 [exp2]) -> exp1 if condition True, otherwise exp2",		NULL,	0,	},
@@ -176,7 +203,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"isprimitive",		fnItemInfo,		FN_ITEMINFO_ISPRIMITIVE,"(isprimitive exp) -> True if exp is a primitive",	NULL,	0,	},
 
 		{	"@",				fnItem,			FN_ITEM,
-			"(@ list index) -> item index from list",
+			"(@ list index) -> item index from list (0-based)\n"
+			"(@ struct key) -> value corresponding to key from struct",
 			"v*",	0,	},
 
 		{	"item",				fnItem,			FN_ITEM,
@@ -367,15 +395,18 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"ss",	0,	},
 
 		{	"struct",			fnStruct,		FN_STRUCT,
-			"(struct key1 value1 key2 value2 ...) -> struct\n"
-            "(struct (key1 value1) (key2 value2) ..) -> struct\n"
-            "(struct { key1:value1 key2:value2 ... } ...) -> struct",
+			"(struct key1 value1 [ key2 value2 ...]) -> struct\n"
+            "(struct (key1 value1) [ (key2 value2) ...]) -> struct\n"
+            "(struct struct1 [struct2 ...]) -> struct\n"
+            "{ key1:value1 [key2:value2 ...] } -> struct",
+			
+			"Creates a data structure. Keys must be strings, but this is assumed when using {} syntax. Use (@ struct key) to access data.",
 			"*",	0,	},
 
 		{	"structAppend",		fnStruct,		FN_STRUCT_APPEND,
-			"(struct key1 value1 key2 value2 ...) -> struct\n"
-            "(struct (key1 value1) (key2 value2) ..) -> struct\n"
-            "(struct { key1:value1 key2:value2 ... } ...) -> struct\n\n"
+			"(structAppend key1 value1 [ key2 value2 ...]) -> struct\n"
+            "(structAppend (key1 value1) [ (key2 value2) ...]) -> struct\n"
+            "(structAppend struct1 [struct2 ...]) -> struct",
 			
 			"Same as struct except values of the same key are appended into a list.",
 			"*",	0,	},
@@ -397,9 +428,9 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"v*",	0,	},
 
 		{	"switch",			fnSwitch,		0,
-			"(switch [cond1 exp1] ... [condn expn] defaultexp) -> value\n\n"
+			"(switch [cond1 exp1 ... condn expn] [defaultexp]) -> value\n\n"
 
-			"Evaluates conditions until one returns non-Nil, then evaluates the corresponding expression",
+			"Evaluates conditions until one returns non-Nil, then evaluates and returns the corresponding expression.",
 			NULL,	0,	},
 
 		//{	"symDeleteEntry",	fnSymTable,		FN_SYMTABLE_DELETEENTRY,"",		NULL,	PPFLAG_SIDEEFFECTS,	},
@@ -412,21 +443,21 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(tan x ['degrees]) -> z",
 			"n*",	0,	},
 
-		{	"typeof",			fnItem,			FN_ITEM_TYPE,
-			"(typeof item) -> type\n\n"
+		{	"typeOf",			fnItem,			FN_ITEM_TYPE,
+			"(typeOf item) -> type\n\n"
 
-			"type\n\n"
+			"type:\n\n"
 
-			"   error\n"
-			"   function\n"
-			"   int32\n"
-			"   list\n"
-			"   nil\n"
-			"   primitive\n"
-			"   real\n"
-			"   string\n"
-			"   struct\n"
-			"   true",
+			"   'error\n"
+			"   'function\n"
+			"   'int32\n"
+			"   'list\n"
+			"   'nil\n"
+			"   'primitive\n"
+			"   'real\n"
+			"   'string\n"
+			"   'struct\n"
+			"   'true",
 
 			"v",	0,	},
 
