@@ -58,6 +58,8 @@
 #define GET_GLOBAL_PLAYER_PRICE_ADJ_EVENT		CONSTLIT("GetGlobalPlayerPriceAdj")
 #define GET_GLOBAL_RESURRECT_POTENTIAL_EVENT	CONSTLIT("GetGlobalResurrectPotential")
 #define ON_GLOBAL_END_DIAGNOSTICS_EVENT			CONSTLIT("OnGlobalEndDiagnostics")
+#define ON_GLOBAL_INTRO_COMMAND_EVENT			CONSTLIT("OnGlobalIntroCommand")
+#define ON_GLOBAL_INTRO_STARTED_EVENT			CONSTLIT("OnGlobalIntroStarted")
 #define ON_GLOBAL_MARK_IMAGES_EVENT				CONSTLIT("OnGlobalMarkImages")
 #define ON_GLOBAL_OBJ_DESTROYED_EVENT			CONSTLIT("OnGlobalObjDestroyed")
 #define ON_GLOBAL_DOCK_PANE_INIT_EVENT			CONSTLIT("OnGlobalPaneInit")
@@ -1102,6 +1104,47 @@ ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, v
 	Ctx.Discard(pResult);
 	return NOERROR;
 	}
+
+void CDesignType::FireOnGlobalIntroCommand(const SEventHandlerDesc &Event, const CString &sCommand)
+
+//	FireOnGlobalIntroCommand
+//
+//	Fire event
+
+{
+	CCodeChainCtx Ctx;
+	Ctx.DefineString(CONSTLIT("aCommand"), sCommand);
+
+	//	Run code
+
+	ICCItem *pResult = Ctx.Run(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_INTRO_COMMAND_EVENT, pResult);
+
+	//	Done
+
+	Ctx.Discard(pResult);
+}
+
+void CDesignType::FireOnGlobalIntroStarted (const SEventHandlerDesc &Event)
+
+//	FireOnGlobalIntroStarted
+//
+//	Fire event
+
+{
+	CCodeChainCtx Ctx;
+
+	//	Run code
+
+	ICCItem *pResult = Ctx.Run(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_GLOBAL_INTRO_STARTED_EVENT, pResult);
+
+	//	Done
+
+	Ctx.Discard(pResult);
+}
 
 void CDesignType::FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price)
 

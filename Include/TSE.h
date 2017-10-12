@@ -2323,6 +2323,8 @@ class CUniverse
 		void DestroySystem (CSystem *pSystem);
 		inline CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }
 		CSpaceObject *FindObject (DWORD dwID);
+		inline void FireOnGlobalIntroCommand (const CString &sCommand) { m_Design.FireOnGlobalIntroCommand(sCommand); }
+		inline void FireOnGlobalIntroStarted (void) { m_Design.FireOnGlobalIntroStarted(); }
 		inline void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane) { m_Design.FireOnGlobalPaneInit(pScreen, pRoot, sScreen, sPane); }
 		inline void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price); }
 		inline void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip) { m_Design.FireOnGlobalPlayerChangedShips(pOldShip); }
@@ -2363,6 +2365,7 @@ class CUniverse
 		inline CCriticalSection &GetSem (void) { return m_cs; }
 		inline CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const;
+		inline bool GetSound (void) { return !m_bNoSound; }
 		inline CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
 		inline bool InDebugMode (void) { return m_bDebugMode; }
 		inline void InitEntityResolver (CExtension *pExtension, CEntityResolverList *retResolver) { m_Extensions.InitEntityResolver(pExtension, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retResolver); }
