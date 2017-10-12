@@ -510,6 +510,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_UNIVERSE_FIND_OBJ			6
 #define FN_UNIVERSE_GET_ELAPSED_GAME_TIME	7
 #define FN_UNIVERSE_SET_OBJECT_KNOWN	8
+#define FN_UNIVERSE_LOOKUP				9
 
 ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -3172,6 +3173,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"unvUNID",						fnUniverseGet,	FN_UNIVERSE_UNID,
 			"(unvUNID string) -> (unid 'itemtype name) or (unid 'shipclass name)",
 			"s",	0,	},
+
+		{	"unvLookup",						fnUniverseGet,	FN_UNIVERSE_LOOKUP,
+			"(unvLookup entity) -> unid\n"
+			"(unvLookup unid) -> entity",
+			"v",	0,	},
 
 		//	XML functions
 		//	-------------
@@ -13259,6 +13265,33 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Result
 
 			return pCC->Link(sData, 0, NULL);
+			}
+
+		case FN_UNIVERSE_LOOKUP:
+			{
+			//	If we have a UNID, then find the matching entity
+			//	Otherwise, we have an entity so we find the matching UNID
+			CString sName;
+			DWORD dwUNID;
+			if (pArgs->GetElement(0)->IsInteger())
+				{
+				dwUNID = pArgs->GetElement(0)->GetIntegerValue();
+				sName = g_pUniverse->GetExtensionCollection().GetEntityName(dwUNID);
+				if (!sName.IsBlank())
+					return pCC->CreateString(sName);
+				else
+					return pCC->CreateNil();
+				}
+			else
+				{
+				sName = pArgs->GetElement(0)->GetStringValue();
+				dwUNID = g_pUniverse->GetExtensionCollection().GetEntityValue(sName);
+				if (dwUNID)
+					return pCC->CreateInteger(dwUNID);
+				else
+					return pCC->CreateNil();
+				}
+
 			}
 
 		case FN_UNIVERSE_REAL_DATE:

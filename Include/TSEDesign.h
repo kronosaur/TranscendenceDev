@@ -793,6 +793,7 @@ class CExtension
 		inline const CIntegerIP &GetDigest (void) const { return m_Digest; }
 		inline CExternalEntityTable *GetEntities (void) { return m_pEntities; }
 		CString GetEntityName (DWORD dwUNID) const;
+		DWORD GetEntityValue (const CString &sName) const;
 		inline const TArray<CString> &GetExternalResources (void) const { return m_Externals; }
 		inline const CString &GetFilespec (void) const { return m_sFilespec; }
 		inline EFolderTypes GetFolderType (void) const { return m_iFolderType; }
@@ -842,6 +843,7 @@ class CExtension
 		static ALERROR CreateExtensionFromRoot (const CString &sFilespec, CXMLElement *pDesc, EFolderTypes iFolder, CExternalEntityTable *pEntities, DWORD dwInheritAPIVersion, CExtension **retpExtension, CString *retsError);
 
 		void AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD, CString> *retMap) const;
+		void AddEntityValues (CExternalEntityTable *pEntities, TSortMap<CString, DWORD> *retMap) const;
 		void AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID = 0, DWORD dwRelease = 0);
 		void AddDefaultLibraryReferences (SDesignLoadCtx &Ctx);
 		void CleanUpXML (void);
@@ -893,6 +895,7 @@ class CExtension
 
 		CAdventureDesc *m_pAdventureDesc;	//	If extAdventure, this is the descriptor
 
+		mutable TSortMap<CString, DWORD> m_EntityName2UNID;
 		mutable TSortMap<DWORD, CString> m_UNID2EntityName;
 
 		bool m_bMarked;						//	Used by CExtensionCollection for various things
@@ -954,6 +957,8 @@ class CExtensionCollection
 		bool FindExtension (DWORD dwUNID, DWORD dwRelease, CExtension::EFolderTypes iFolder, CExtension **retpExtension = NULL);
 		void FreeDeleted (void);
 		CExtension *GetBase (void) const { return m_pBase; }
+		CString GetEntityName (DWORD dwUNID);
+		DWORD GetEntityValue (const CString &sName);
 		CString GetExternalResourceFilespec (CExtension *pExtension, const CString &sFilename) const;
 		EGameTypes GetGame (void) const { return m_iGame; }
 		bool GetRequiredResources (TArray<CString> *retFilespecs);

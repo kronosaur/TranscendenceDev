@@ -139,6 +139,27 @@ void CExtension::AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD
 		}
 	}
 
+void CExtension::AddEntityValues (CExternalEntityTable *pEntities, TSortMap<CString, DWORD> *retMap) const
+
+//	AddEntityValues
+//
+//	Adds entity values to the given map
+
+	{
+	int i;
+
+	for (i = 0; i < pEntities->GetCount(); i++)
+		{
+		CString sEntity, sValue;
+		pEntities->GetEntity(i, &sEntity, &sValue);
+
+		//	Add to the list
+
+		DWORD dwUNID = strToInt(sValue, 0);
+		retMap->SetAt(sEntity, dwUNID);
+		}
+	}
+
 void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD dwRelease)
 
 //	AddLibraryReference
@@ -900,6 +921,32 @@ CString CExtension::GetEntityName (DWORD dwUNID) const
 
 	return *pName;
 	}
+
+DWORD CExtension::GetEntityValue (const CString &sName) const
+
+//	GetEntityValue
+//
+//	Returns the UNID of the given entity name (or NULL_STR if we don't have it).
+
+{
+	//	Must have entities
+
+	if (m_pEntities == NULL)
+		return NULL;
+
+	//	If we don't yet have it, create a lookup
+
+	if (m_EntityName2UNID.GetCount() == 0)
+		AddEntityValues(m_pEntities, &m_EntityName2UNID);
+
+	//	Return it
+
+	DWORD *pUNID = m_EntityName2UNID.GetAt(sName);
+	if (pUNID == NULL)
+		return NULL;
+
+	return *pUNID;
+}
 
 DWORDLONG CExtension::GetXMLMemoryUsage (void) const
 

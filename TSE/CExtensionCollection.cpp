@@ -1128,6 +1128,48 @@ void CExtensionCollection::FreeDeleted (void)
 	DEBUG_CATCH
 	}
 
+CString CExtensionCollection::GetEntityName (DWORD dwUNID)
+
+//	GetEntityName
+//
+//	Look up the name of an entity by its value
+
+	{
+	CString sName;
+
+	//	Look through all of our extensions
+
+	for (int i = 0; i < m_Extensions.GetCount(); i++)
+		{
+		sName = m_Extensions[i]->GetEntityName(dwUNID);
+		
+		if (!sName.IsBlank())
+			return sName;
+		}
+	return NULL_STR;
+	}
+
+DWORD CExtensionCollection::GetEntityValue (const CString &sName)
+
+//	GetEntityValue
+//
+//	Look up the value of an entity by its name
+
+	{
+	DWORD dwUNID;
+
+	//	Look through all of our extensions
+
+	for (int i = 0; i < m_Extensions.GetCount(); i++)
+		{
+		dwUNID = m_Extensions[i]->GetEntityValue(sName);
+		
+		if (dwUNID)
+			return dwUNID;
+		}
+	return NULL;
+	}
+
 CString CExtensionCollection::GetExternalResourceFilespec (CExtension *pExtension, const CString &sFilename) const
 
 //	GetExternalResourceFilespec
