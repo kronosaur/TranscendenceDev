@@ -1261,7 +1261,7 @@ int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstall
 
 	if (pArmor->GetCustomPowerResults() > 0)
 		{
-		iTotalPower += pArmor->GetCustomPowerResults();
+		iTotalPower = pArmor->GetCustomPowerResults();
 		}
 
 	//	Done

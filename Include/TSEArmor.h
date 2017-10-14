@@ -299,7 +299,7 @@ class CInstalledArmor
 	private:
 		CItem *m_pItem;								//	Item
 		CArmorClass *m_pArmorClass;					//	Armor class used
-		int m_iCustomPowerResults;					//	Power generated/consumed, determined by OnArmorConsumePower
+		int m_iCustomPowerResults = 0;				//	Power generated/consumed, determined by OnArmorConsumePower
 		int m_iHitPoints;							//	Hit points left
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;		//	List of enhancements (may be NULL)
 
