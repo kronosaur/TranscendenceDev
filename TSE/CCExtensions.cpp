@@ -7174,8 +7174,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Reset or set it
 
-			if (pArgs->GetCount() > 3)
-				pObj->SetFireDelay(pDevice, Min(0, pArgs->GetElement(2)->GetIntegerValue()));
+			if (pArgs->GetCount() > 2)
+				pObj->SetFireDelay(pDevice, Max(0, pArgs->GetElement(2)->GetIntegerValue()));
 			else
 				pObj->SetFireDelay(pDevice);
 
