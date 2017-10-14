@@ -2417,8 +2417,7 @@ bool CArmorClass::UpdateCustom (CItemCtx &ItemCtx, const SScalableStats &Stats, 
 		}
 
 	//	We've modified the armor
-	//
-	//	LATER: Add new class property to allow users to specify how much power to consume/generate.
+
 	if (iResult)
 		pArmor->SetConsumePower(true);
 	return iResult;
