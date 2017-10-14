@@ -43,9 +43,11 @@
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
 #define UNID_ATTRIB								CONSTLIT("unid")
 #define HEALER_REGEN_ATTRIB 					CONSTLIT("useHealerToRegen")
+#define CUSTOM_POWER_ATTRIB						CONSTLIT("useOnArmorConsumePower")
 
 #define GET_MAX_HP_EVENT						CONSTLIT("GetMaxHP")
 #define ON_ARMOR_DAMAGE_EVENT					CONSTLIT("OnArmorDamage")
+#define ON_ARMOR_CONSUME_POWER_EVENT			CONSTLIT("OnArmorConsumePower")
 
 #define FIELD_ADJUSTED_HP						CONSTLIT("adjustedHP")
 #define FIELD_BALANCE							CONSTLIT("balance")
@@ -164,6 +166,7 @@ static char *CACHED_EVENTS[CArmorClass::evtCount] =
 	{
 		"GetMaxHP",
 		"OnArmorDamage",
+		"OnArmorConsumePower",
 	};
 
 static TStaticStringTable<TStaticStringEntry<ERegenTypes>, 5> REGEN_TYPE_TABLE = {
@@ -1256,6 +1259,11 @@ int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstall
 			iTotalPower -= m_iPowerGen;
 		}
 
+	if (pArmor->GetCustomPowerResults() > 0)
+		{
+		iTotalPower += pArmor->GetCustomPowerResults();
+		}
+
 	//	Done
 
 	return iTotalPower;
@@ -1429,6 +1437,18 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 		pArmor->m_iStealth = CSpaceObject::stealthNormal;
 
 	pArmor->m_iMaxHPBonus = pDesc->GetAttributeIntegerBounded(MAX_HP_BONUS_ATTRIB, 0, -1, 150);
+
+	//  Custom power-using properties
+
+	sAttrib = pDesc->GetAttribute(CUSTOM_POWER_ATTRIB);
+	if (CXMLElement::IsBoolTrueValue(sAttrib))
+		{
+		pArmor->m_fCustomConsumePower = true;
+		}
+	else
+		{
+		pArmor->m_fCustomConsumePower = false;
+		}
 
 	//	Power use
 
@@ -2333,12 +2353,76 @@ void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, b
 			bModified = true;
 		}
 
+	//  See if we have some custom behavior designated in OnArmorConsumePower
+
+	if (m_fCustomConsumePower)
+		{
+		if (UpdateCustom(ItemCtx, Stats, iTick))
+			bModified = true;
+		}
+
 	//	Done
 
 	*retbModified = bModified;
 
 	DEBUG_CATCH
 	}
+
+bool CArmorClass::UpdateCustom (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)
+
+//	UpdateCustom
+//
+//	Fire the armor item's <OnArmorConsumePower> event. If that event returns True, then
+//  we also return True and consume power. Else, return False.
+
+{
+	CSpaceObject *pObj = ItemCtx.GetSource();
+	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+
+	//	Only works on ships (with segments).
+	//	LATER: Introduce the concept of segments to stations.
+
+	CShip *pShip = pObj->AsShip();
+	if (pShip == NULL)
+		return false;
+
+	SEventHandlerDesc Event;
+	bool iResult = false;
+	if (FindEventHandlerArmorClass(evtOnArmorConsumePower, &Event))
+		{
+		CCodeChainCtx Ctx;
+		const CItemEnhancementStack *pEnhancement = ItemCtx.GetEnhancementStack();
+
+		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
+		Ctx.SaveAndDefineItemVar(ItemCtx);
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			ItemCtx.GetSource()->ReportEventError(ON_ARMOR_CONSUME_POWER_EVENT, pResult);
+
+		if (pResult->IsNil())
+			{
+			pArmor->SetCustomPowerResults(0);
+			iResult = false;
+			}
+		else if (pResult->IsInteger())
+			{
+			pArmor->SetCustomPowerResults(pResult->GetIntegerValue());
+			iResult = false;
+			}
+		else
+			{
+			pArmor->SetCustomPowerResults(0);
+			iResult = true;
+			}
+		}
+
+	//	We've modified the armor
+	//
+	//	LATER: Add new class property to allow users to specify how much power to consume/generate.
+	if (iResult)
+		pArmor->SetConsumePower(true);
+	return iResult;
+}
 
 bool CArmorClass::UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)
 
