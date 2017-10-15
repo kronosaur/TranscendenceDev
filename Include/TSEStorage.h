@@ -20,6 +20,7 @@ class CGameFile
 		~CGameFile (void);
 
 		ALERROR ClearRegistered (void);
+		ALERROR ClearGameResurrect(void);
 		void Close (void);
 		ALERROR Create (const CString &sFilename, const CString &sUsername);
 		static CString GenerateFilename (const CString &sName);
