@@ -1126,19 +1126,19 @@ ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					break;
 
 				ICCItem *pTry = pSource->GetElement(iTry)->GetElement(iListKey);
-				int iCompare = iSorted * HelperCompareItems((pTry ? pTry : pCC->CreateNil()), pTarget);
+				int iCompare = iSorted * HelperCompareItems(pTarget, (pTry ? pTry : pCC->CreateNil()));
 				if (iCompare == 0)
 					{
 					//	Found
 					iPos = iTry;
 					break;
 					}
-				else if (iCompare > 0)
+				else if (iCompare < 0)
 					{
 					iMin = iTry + 1;
 					iTry = iMin + (iMax - iMin) / 2;
 					}
-				else if (iCompare < 0)
+				else if (iCompare > 0)
 					{
 					iMax = iTry;
 					iTry = iMin + (iMax - iMin) / 2;
@@ -1153,19 +1153,19 @@ ICCItem *fnFind (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					//	Not found
 					break;
 
-				int iCompare = iSorted * HelperCompareItems(pSource->GetElement(iTry), pTarget);
+				int iCompare = iSorted * HelperCompareItems(pTarget, pSource->GetElement(iTry));
 				if (iCompare == 0)
 					{
 					//	Found
 					iPos = iTry;
 					break;
 					}
-				else if (iCompare > 0)
+				else if (iCompare < 0)
 					{
 					iMin = iTry + 1;
 					iTry = iMin + (iMax - iMin) / 2;
 					}
-				else if (iCompare < 0)
+				else if (iCompare > 0)
 					{
 					iMax = iTry;
 					iTry = iMin + (iMax - iMin) / 2;
