@@ -1162,8 +1162,7 @@ DWORD CExtensionCollection::GetEntityValue (const CString &sName)
 
 	for (int i = 0; i < m_Extensions.GetCount(); i++)
 		{
-		dwUNID = m_Extensions[i]->GetEntityValue(sName);
-		
+		dwUNID = strToInt(m_Extensions[i]->GetEntities()->ResolveExternalEntity(sName), 0);
 		if (dwUNID)
 			return dwUNID;
 		}
