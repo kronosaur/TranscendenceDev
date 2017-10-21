@@ -1616,15 +1616,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"flags\n\n"
 
-			"   0x001 capitalize    capitalize first letter\n"
-			"   0x002 plural        pluralize name\n"
-			"   0x004 article       prefix with 'the' or 'a'\n"
-			"   0x008 count         prefix with count or singular article\n"
-			"   0x010 countOnly     prefix with count or nothing\n"
-			"   0x020 noModifiers   no modifiers ('damaged' etc)\n"
-			"   0x040 demonstrative prefix with 'the' or 'this' or 'these'\n"
-			"   0x080 short         use short name\n"
-			"   0x100 actual        actual name (not unidentified name)",
+			"   0x001 'capitalize    capitalize first letter\n"
+			"   0x002 'plural        pluralize name\n"
+			"   0x004 'article       prefix with 'the' or 'a'\n"
+			"   0x008 'count         prefix with count or singular article\n"
+			"   0x010 'countOnly     prefix with count or nothing\n"
+			"   0x020 'noModifiers   no modifiers ('damaged' etc)\n"
+			"   0x040 'demonstrative prefix with 'the' or 'this' or 'these'\n"
+			"   0x080 'short         use short name\n"
+			"   0x100 'actual        actual name (not unidentified name)",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
