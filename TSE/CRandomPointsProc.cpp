@@ -301,7 +301,8 @@ ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 		}
 	else
 		{
-		//	If we have no area defined, use the entire map
+		//	If we have no area defined, use the entire map. NOTE: We want the size 
+		//	of the image in galactic coordinates, not necessarily pixels.
 
 		int cxWidth, cyHeight;
 		pMap->GetBackgroundImageSize(&cxWidth, &cyHeight);

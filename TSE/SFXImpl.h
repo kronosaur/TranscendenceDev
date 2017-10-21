@@ -1005,6 +1005,12 @@ class CStarburstEffectCreator : public CEffectCreator,
 class CTextEffectCreator : public CEffectCreator
 	{
 	public:
+		CTextEffectCreator (void) : m_pFont(NULL),
+				m_byOpacity(0xff),
+				m_dwAlignment(CG16bitFont::AlignCenter),
+				m_iLifetime(-1)
+			{ }
+
 		static CString GetClassTag (void) { return CONSTLIT("Text"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
 

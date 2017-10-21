@@ -46,10 +46,11 @@ class CSystemMap : public CDesignType
 		CSystemMap (void) : m_bAdded(false), m_bDebugShowAttributes(false) { }
 		virtual ~CSystemMap (void);
 
-		void AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL);
+		bool AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL) { return AddAnnotation(NULL_STR, pEffect, x, y, iRotation, retdwID); }
+		bool AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL);
 		ALERROR AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
 		bool DebugShowAttributes (void) const { return m_bDebugShowAttributes; }
-		CG32bitImage *CreateBackgroundImage (void);
+		CG32bitImage *CreateBackgroundImage (Metric *retrImageScale);
 		void GetBackgroundImageSize (int *retcx, int *retcy);
 		inline CSystemMap *GetDisplayMap (void) { return (m_pPrimaryMap != NULL ? m_pPrimaryMap : this); }
         inline Metric GetLightYearsPerPixel (void) const { return m_rLightYearsPerPixel; }
@@ -78,26 +79,42 @@ class CSystemMap : public CDesignType
 		struct SMapAnnotation
 			{
 			DWORD dwID;
+			CString sNodeID;					//	Optionally associated with a nodeID
 
 			IEffectPainter *pPainter;
 			int xOffset;
 			int yOffset;
 			int iTick;
 			int iRotation;
+
+			DWORD fHideIfNodeUnknown:1;			//	If TRUE, do not paint unless node is known
+			DWORD fSpare2:1;
+			DWORD fSpare3:1;
+			DWORD fSpare4:1;
+			DWORD fSpare5:1;
+			DWORD fSpare6:1;
+			DWORD fSpare7:1;
+			DWORD fSpare8:1;
+
+			DWORD dwSpare:24;
 			};
 
 		ALERROR ExecuteCreator (STopologyCreateCtx &Ctx, CTopology &Topology, CXMLElement *pCreator);
 
 		CString m_sName;						//	Name of the map (for the player)
-		DWORD m_dwBackgroundImage;				//	Background image to use
 		int m_iInitialScale;					//	Initial map display scale (100 = 100%)
 		int m_iMaxScale;						//	Max zoom
 		int m_iMinScale;						//	Min zoom
         Metric m_rLightYearsPerPixel;           //  Number of light years per pixel
-        CG32bitPixel m_rgbStargateLines;        //  Color of stargate line
 
 		CSystemMapRef m_pPrimaryMap;			//	If not NULL, place nodes on given map
 		TArray<CSystemMapRef> m_Uses;			//	List of maps that we rely on.
+
+		//	Map image
+		DWORD m_dwBackgroundImage;				//	Background image to use
+		Metric m_rBackgroundImageScale;			//	Pixels per galactic unit
+        CG32bitPixel m_rgbStargateLines;        //  Color of stargate line
+		CEffectCreatorRef m_pBackgroundEffect;	//	Background annotations to paint on galactic map
 
 		//	Topology generation
 		CTopologyDescTable m_FixedTopology;

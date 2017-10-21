@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 #define DEFINE_ZONE_TAG						CONSTLIT("DefineZone")
+#define MAP_EFFECT_TAG						CONSTLIT("MapEffect")
 #define NODE_TAG							CONSTLIT("Node")
 #define RANDOM_TOPOLOGY_TAG					CONSTLIT("RandomTopology")
 #define ROOT_NODE_TAG						CONSTLIT("RootNode")
@@ -17,6 +18,7 @@
 #define USES_TAG							CONSTLIT("Uses")
 
 #define BACKGROUND_IMAGE_ATTRIB				CONSTLIT("backgroundImage")
+#define BACKGROUND_IMAGE_SCALE_ATTRIB		CONSTLIT("backgroundImageScale")
 #define DEBUG_SHOW_ATTRIBUTES_ATTRIB		CONSTLIT("debugShowAttributes")
 #define PRIMARY_MAP_ATTRIB					CONSTLIT("displayOn")
 #define GRADIENT_RANGE_ATTRIB				CONSTLIT("gradientRange")
@@ -57,25 +59,43 @@ CSystemMap::~CSystemMap (void)
 		m_Annotations[i].pPainter->Delete();
 	}
 
-void CSystemMap::AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID)
+bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID)
 
 //	AddAnnotation
 //
-//	Adds an annotation to the map. We take ownership of the painter
+//	Adds an annotation to the map. We take ownership of the painter. If adding 
+//	fails, we return FALSE.
 
 	{
+	//	Create a new painter for the effect. If that fails, then there's nothing
+	//	we can do.
+
+	IEffectPainter *pPainter = pEffect->CreatePainter(CCreatePainterCtx());
+	if (pPainter == NULL)
+		return false;
+
+	//	Create the annotation.
+
 	SMapAnnotation *pAnnotation = m_Annotations.Insert();
 	pAnnotation->dwID = g_pUniverse->CreateGlobalID();
-	pAnnotation->pPainter = pEffect->CreatePainter(CCreatePainterCtx());
+	pAnnotation->sNodeID = sNodeID;
+	pAnnotation->pPainter = pPainter;
 	pAnnotation->xOffset = x;
 	pAnnotation->yOffset = y;
 	pAnnotation->iTick = 0;
 	pAnnotation->iRotation = iRotation;
 
+	//	If we have a node ID then we only show this annotation when the node
+	//	is known to the player.
+
+	pAnnotation->fHideIfNodeUnknown = !sNodeID.IsBlank();
+
 	//	Done
 
 	if (retdwID)
 		*retdwID = pAnnotation->dwID;
+
+	return true;
 	}
 
 ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError)
@@ -105,6 +125,11 @@ ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopo
 		if (error = m_Uses[i]->AddFixedTopology(Topology, NodesAdded, retsError))
 			return error;
 		}
+
+	//	Add background annotations
+
+	if (!m_pBackgroundEffect.IsEmpty())
+		AddAnnotation(m_pBackgroundEffect, 0, 0, 0);
 
 	//	Iterate over all creators and execute them
 
@@ -139,7 +164,7 @@ ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopo
 	return NOERROR;
 	}
 
-CG32bitImage *CSystemMap::CreateBackgroundImage (void)
+CG32bitImage *CSystemMap::CreateBackgroundImage (Metric *retrImageScale)
 
 //	CreateBackgroundImage
 //
@@ -165,12 +190,39 @@ CG32bitImage *CSystemMap::CreateBackgroundImage (void)
 		for (i = 0; i < m_Annotations.GetCount(); i++)
 			{
 			SMapAnnotation *pAnnotation = &m_Annotations[i];
+
+			//	For annotations associated with a node, see if the player knows about
+			//	the node first.
+
+			if (!pAnnotation->sNodeID.IsBlank()
+					&& pAnnotation->fHideIfNodeUnknown)
+				{
+				CTopologyNode *pNode = g_pUniverse->FindTopologyNode(pAnnotation->sNodeID);
+				if (pNode == NULL
+						|| !pNode->IsKnown())
+					continue;
+				}
+
+			//	Adjust coordinates based on background image scale (sometimes, a background image
+			//	is higher resolution than 1 pixel per map unit to deal with zooming).
+
+			int xPos = xCenter + (int)(pAnnotation->xOffset * m_rBackgroundImageScale);
+			int yPos = yCenter - (int)(pAnnotation->yOffset * m_rBackgroundImageScale);
+
+			//	Paint the effect
+
 			Ctx.iTick = pAnnotation->iTick;
 			Ctx.iRotation = pAnnotation->iRotation;
+			Ctx.rOffsetScale = m_rBackgroundImageScale;
 
-			pAnnotation->pPainter->Paint(*pImage, xCenter + pAnnotation->xOffset, yCenter - pAnnotation->yOffset, Ctx);
+			pAnnotation->pPainter->Paint(*pImage, xPos, yPos, Ctx);
 			}
 		}
+
+	//	Return the scale
+
+	if (retrImageScale)
+		*retrImageScale = m_rBackgroundImageScale;
 
 #ifdef DEBUG
 #if 0
@@ -238,14 +290,14 @@ void CSystemMap::GetBackgroundImageSize (int *retcx, int *retcy)
 
 //	GetBackgroundImageSize
 //
-//	Returns the size of the background image
+//	Returns the size of the background image (in galactic coordinates).
 
 	{
 	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmap(m_dwBackgroundImage);
 	if (pImage)
 		{
-		*retcx = pImage->GetWidth();
-		*retcy = pImage->GetHeight();
+		*retcx = (int)(pImage->GetWidth() / m_rBackgroundImageScale);
+		*retcy = (int)(pImage->GetHeight() / m_rBackgroundImageScale);
 		}
 	else
 		{
@@ -278,6 +330,9 @@ ALERROR CSystemMap::OnBindDesign (SDesignLoadCtx &Ctx)
 		if (error = m_Processors[i]->BindDesign(Ctx))
 			return error;
 
+	if (error = m_pBackgroundEffect.Bind(Ctx))
+		return error;
+
 	return NOERROR;
 	}
 
@@ -289,12 +344,18 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	ALERROR error;
 	int i;
 
+	//	Generate an UNID
+
+	CString sUNID = strPatternSubst(CONSTLIT("%d"), GetUNID());
+
 	//	Load some basic info
 
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
 	m_dwBackgroundImage = pDesc->GetAttributeInteger(BACKGROUND_IMAGE_ATTRIB);
 	if (error = m_pPrimaryMap.LoadUNID(Ctx, pDesc->GetAttribute(PRIMARY_MAP_ATTRIB)))
 		return error;
+
+	m_rBackgroundImageScale = pDesc->GetAttributeIntegerBounded(BACKGROUND_IMAGE_SCALE_ATTRIB, 10, 10000, 100) / 100.0;
 
 	m_bStartingMap = pDesc->GetAttributeBool(STARTING_MAP_ATTRIB);
 
@@ -314,10 +375,6 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
     m_rgbStargateLines = ::LoadRGBColor(pDesc->GetAttribute(STARGATE_LINE_COLOR_ATTRIB), RGB_STARGATE_LINE_DEFAULT);
 
-	//	Generate an UNID
-
-	CString sUNID = strPatternSubst(CONSTLIT("%d"), GetUNID());
-
 	//	Keep track of root nodes
 
 	TArray<CString> RootNodes;
@@ -328,7 +385,18 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		CXMLElement *pItem = pDesc->GetContentElement(i);
 
-		if (strEquals(pItem->GetTag(), TOPOLOGY_CREATOR_TAG)
+		if (strEquals(pItem->GetTag(), MAP_EFFECT_TAG))
+			{
+			if (m_pBackgroundEffect.IsEmpty())
+				{
+				if (error = m_pBackgroundEffect.LoadEffect(Ctx,
+						strPatternSubst(CONSTLIT("%s:b"), sUNID),
+						pItem,
+						NULL_STR))
+					return error;
+				}
+			}
+		else if (strEquals(pItem->GetTag(), TOPOLOGY_CREATOR_TAG)
 				|| strEquals(pItem->GetTag(), ROOT_NODE_TAG))
 			{
 			m_Creators.Insert(pItem);
@@ -395,6 +463,7 @@ CEffectCreator *CSystemMap::OnFindEffectCreator (const CString &sUNID)
 //	Find the effect. We start after the map UNID.
 //
 //	{unid}/{nodeID}
+//	{unid}:b
 //	{unid}:p{processorIndex}
 //		  ^
 
@@ -417,9 +486,16 @@ CEffectCreator *CSystemMap::OnFindEffectCreator (const CString &sUNID)
 		{
 		pPos++;
 
+		//	'b' is background effect
+
+		if (*pPos == 'b')
+			{
+			return m_pBackgroundEffect;
+			}
+
 		//	'p' is a processor
 
-		if (*pPos == 'p')
+		else if (*pPos == 'p')
 			{
 			pPos++;
 
@@ -454,6 +530,8 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 //
 //	DWORD		No. of annotations
 //	DWORD		annotation: dwID
+//	CString		sNodeID
+//	DWORD		flags
 //	IEffectPainter	annotation: pPainter
 //	DWORD		annotation: xOffset
 //	DWORD		annotation: yOffset
@@ -467,12 +545,26 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 	if (Ctx.dwVersion < 9)
 		return;
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_Annotations.InsertEmpty(dwLoad);
 
 	for (i = 0; i < m_Annotations.GetCount(); i++)
 		{
-		Ctx.pStream->Read((char *)&m_Annotations[i].dwID, sizeof(DWORD));
+		Ctx.pStream->Read(m_Annotations[i].dwID);
+
+		//	Node ID and flags
+
+		if (Ctx.dwSystemVersion >= 154)
+			{
+			Ctx.pStream->Read(m_Annotations[i].sNodeID);
+
+			DWORD dwFlags;
+			Ctx.pStream->Read(dwFlags);
+			m_Annotations[i].fHideIfNodeUnknown = ((dwFlags & 0x00000001) ? true : false);
+
+			}
+		else
+			m_Annotations[i].fHideIfNodeUnknown = false;
 
 		//	To load the painter we need to cons up an SLoadCtx. Fortunately.
 		//	we have the system version saved in the universe load ctx.
@@ -481,11 +573,21 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 		//	Load remaining fields
 
-		Ctx.pStream->Read((char *)&m_Annotations[i].xOffset, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_Annotations[i].yOffset, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_Annotations[i].iTick, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_Annotations[i].iRotation, sizeof(DWORD));
+		Ctx.pStream->Read(m_Annotations[i].xOffset);
+		Ctx.pStream->Read(m_Annotations[i].yOffset);
+		Ctx.pStream->Read(m_Annotations[i].iTick);
+		Ctx.pStream->Read(m_Annotations[i].iRotation);
 		}
+
+	//	Delete any anotations with a NULL painter. This can happen (unfortunately) when 
+	//	we change the definition.
+
+	for (i = 0; i < m_Annotations.GetCount(); i++)
+		if (m_Annotations[i].pPainter == NULL)
+			{
+			m_Annotations.Delete(i);
+			i--;
+			}
 	}
 
 void CSystemMap::OnReinit (void)
@@ -507,6 +609,8 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 //
 //	DWORD		No. of annotations
 //	DWORD		annotation: dwID
+//	CString		sNodeID
+//	DWORD		flags
 //	IEffectPainter	annotation: pPainter
 //	DWORD		annotation: xOffset
 //	DWORD		annotation: yOffset
@@ -522,12 +626,18 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 
 	for (i = 0; i < m_Annotations.GetCount(); i++)
 		{
-		pStream->Write((char *)&m_Annotations[i].dwID, sizeof(DWORD));
+		pStream->Write(m_Annotations[i].dwID);
+		pStream->Write(m_Annotations[i].sNodeID);
+
+		DWORD dwFlags = 0;
+		dwFlags |= (m_Annotations[i].fHideIfNodeUnknown ? 0x00000001 : 0);
+		pStream->Write(dwFlags);
+
 		CEffectCreator::WritePainterToStream(pStream, m_Annotations[i].pPainter);
-		pStream->Write((char *)&m_Annotations[i].xOffset, sizeof(DWORD));
-		pStream->Write((char *)&m_Annotations[i].yOffset, sizeof(DWORD));
-		pStream->Write((char *)&m_Annotations[i].iTick, sizeof(DWORD));
-		pStream->Write((char *)&m_Annotations[i].iRotation, sizeof(DWORD));
+		pStream->Write(m_Annotations[i].xOffset);
+		pStream->Write(m_Annotations[i].yOffset);
+		pStream->Write(m_Annotations[i].iTick);
+		pStream->Write(m_Annotations[i].iRotation);
 		}
 	}
 

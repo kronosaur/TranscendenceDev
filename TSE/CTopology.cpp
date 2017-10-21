@@ -783,7 +783,7 @@ ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx,
 				pBestNode->GetDisplayPos(&xMap, &yMap);
 				int iRotation = (Ctx.bInFragment ? Ctx.iRotation : 0);
 
-				Ctx.pMap->AddAnnotation(pEffect, xMap, yMap, iRotation);
+				Ctx.pMap->AddAnnotation(pBestNode->GetID(), pEffect, xMap, yMap, iRotation);
 				}
 
 			//	Mark it, so we don't process it later
@@ -1264,7 +1264,7 @@ ALERROR CTopology::AddTopologyNode (STopologyCreateCtx &Ctx,
 	//	Add effect associated with node
 
 	if (pDestMap && pEffect)
-		pDestMap->AddAnnotation(pEffect, xPos, yPos, iRotation);
+		pDestMap->AddAnnotation(sID, pEffect, xPos, yPos, iRotation);
 
 	//	Done
 

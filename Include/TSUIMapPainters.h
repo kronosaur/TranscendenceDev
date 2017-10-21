@@ -39,6 +39,8 @@ class CGalacticMapPainter
 	private:
 		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
         void DrawSelection (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const;
+		inline int GetImageGalacticHeight (void) const { return (m_pImage ? (int)(m_pImage->GetHeight() / m_rImageScale) : 0); }
+		inline int GetImageGalacticWidth (void) const { return (m_pImage ? (int)(m_pImage->GetWidth() / m_rImageScale) : 0); }
 		void Init (void);
 		inline SPoint Xform (const SPoint &pt) const { return SPoint(m_xViewCenter + m_iScale * (pt.x - m_xCenter) / 100, m_yViewCenter + m_iScale * (m_yCenter - pt.y) / 100); }
 
@@ -49,8 +51,9 @@ class CGalacticMapPainter
 		int m_cxMap;
 		int m_cyMap;
 
-		CG32bitImage *m_pImage;
+		CG32bitImage *m_pImage;				//	Background image (with annotations)
 		bool m_bFreeImage;
+		Metric m_rImageScale;				//	Image pixels per galactic coordinate
 
 		//	Painting options
 

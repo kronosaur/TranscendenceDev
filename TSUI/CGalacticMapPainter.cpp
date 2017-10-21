@@ -31,6 +31,7 @@ CGalacticMapPainter::CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *
 		m_cxMap(-1),
 		m_cyMap(-1),
 		m_bFreeImage(false),
+		m_rImageScale(1.0),
 		m_pImage(NULL),
         m_pSelected(NULL),
         m_iSelectAngle(0),
@@ -239,7 +240,7 @@ void CGalacticMapPainter::Init (void)
 		{
 		//	Allocate a new image and initialize it with the background
 
-		m_pImage = m_pMap->CreateBackgroundImage();
+		m_pImage = m_pMap->CreateBackgroundImage(&m_rImageScale);
 		m_bFreeImage = (m_pImage != NULL);
 
 		//	Compute the size of the map based on whatever is greater, then background
@@ -272,8 +273,8 @@ void CGalacticMapPainter::Init (void)
 
 		int cxExtent = 2 * Max(xMax, -xMin) + MIN_NODE_MARGIN;
 		int cyExtent = 2 * Max(yMax, -yMin) + MIN_NODE_MARGIN;
-		m_cxMap = Max(cxExtent, (m_pImage ? m_pImage->GetWidth() : 0));
-		m_cyMap = Max(cyExtent, (m_pImage ? m_pImage->GetHeight() : 0));
+		m_cxMap = Max(cxExtent, GetImageGalacticWidth());
+		m_cyMap = Max(cyExtent, GetImageGalacticHeight());
 		}
 	}
 
@@ -315,13 +316,13 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
 		//	Compute the dimensions of the map to paint
 
-		int cxMap = (100 * RectWidth(m_rcView) / m_iScale);
-		int cyMap = (100 * RectHeight(m_rcView) / m_iScale);
+		int cxMap = (int)((100 * RectWidth(m_rcView) / m_iScale) * m_rImageScale);
+		int cyMap = (int)((100 * RectHeight(m_rcView) / m_iScale) * m_rImageScale);
 
 		//	Compute the given center in map image coordinates
 
-		int xMapCenter = (cxWidth / 2) + m_xCenter;
-		int yMapCenter = (cyHeight / 2) - m_yCenter;
+		int xMapCenter = (cxWidth / 2) + (int)(m_xCenter * m_rImageScale);
+		int yMapCenter = (cyHeight / 2) - (int)(m_yCenter * m_rImageScale);
 
 		//	Compute the upper-left corner of the map
 
@@ -331,20 +332,26 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 		//	Fill the borders, in case we the image won't fit
 
 		if (xMap < 0)
-			Dest.Fill(m_rcView.left, m_rcView.top, -(xMap * m_iScale) / 100, RectHeight(m_rcView), 0);
+			{
+			int cx = -(int)(xMap * m_iScale / m_rImageScale) / 100;
+			Dest.Fill(m_rcView.left, m_rcView.top, cx, RectHeight(m_rcView), 0);
+			}
 
 		if (yMap < 0)
-			Dest.Fill(m_rcView.left, m_rcView.top, RectWidth(m_rcView), (-yMap * m_iScale) / 100, 0);
+			{
+			int cy = -(int)(yMap * m_iScale / m_rImageScale) / 100;
+			Dest.Fill(m_rcView.left, m_rcView.top, RectWidth(m_rcView), cy, 0);
+			}
 
 		if (xMap + cxMap > cxWidth)
 			{
-			int cx = m_iScale * ((xMap + cxMap) - cxWidth) / 100;
+			int cx = (int)((m_iScale * ((xMap + cxMap) - cxWidth)) / m_rImageScale) / 100;
 			Dest.Fill(m_rcView.right - cx, m_rcView.top, cx, RectHeight(m_rcView), 0);
 			}
 
 		if (yMap + cyMap > cyHeight)
 			{
-			int cy = m_iScale * ((yMap + cyMap) - cyHeight) / 100;
+			int cy = (int)((m_iScale * ((yMap + cyMap) - cyHeight)) / m_rImageScale) / 100;
 			Dest.Fill(m_rcView.left, m_rcView.bottom - cy, RectWidth(m_rcView), cy, 0);
 			}
 
