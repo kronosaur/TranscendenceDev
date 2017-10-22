@@ -956,6 +956,8 @@ class CExtensionCollection
 		bool FindExtension (DWORD dwUNID, DWORD dwRelease, CExtension::EFolderTypes iFolder, CExtension **retpExtension = NULL);
 		void FreeDeleted (void);
 		CExtension *GetBase (void) const { return m_pBase; }
+		CString GetEntityName (DWORD dwUNID);
+		DWORD GetEntityValue (const CString &sName);
 		CString GetExternalResourceFilespec (CExtension *pExtension, const CString &sFilename) const;
 		EGameTypes GetGame (void) const { return m_iGame; }
 		bool GetRequiredResources (TArray<CString> *retFilespecs);
