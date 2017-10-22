@@ -464,6 +464,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_LIGHT_INTENSITY			33
 #define FN_SYS_INC_DATA					34
 #define FN_SYS_HIT_TEST					35
+#define FN_SYS_GET_POV					36
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2636,6 +2637,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'pos               Node position on map (x y)",
 
 			"*s",	0,	},
+
+		{	"sysGetPOV",					fnSystemGet,	FN_SYS_GET_POV,
+			"(sysGetPOV) -> obj",
+			NULL,	0,  },
 
 		{	"sysGetRandomLocation",	fnSystemGet,	FN_SYS_RANDOM_LOCATION,
 			"(sysGetRandomLocation criteria [options]) -> location or Nil\n\n"
@@ -11922,7 +11927,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			return pNode->GetProperty(sProperty);
 			}
+		case FN_SYS_GET_POV:
+			{
+			//	Get the POV
 
+			CSpaceObject *pObj = g_pUniverse->GetPOV();
+			return ::CreateObjPointer(*pCC, pObj);
+			}
 		case FN_SYS_GET_STD_COMBAT_STRENGTH:
 			{
 			int iLevel = pArgs->GetElement(0)->GetIntegerValue();
