@@ -21,6 +21,7 @@
 #define END_GAME_REASON_ATTRIB					CONSTLIT("endGameReason")
 #define EPITAPH_ATTRIB							CONSTLIT("epitaph")
 #define ID_ATTRIB								CONSTLIT("ID")
+#define INITIAL_STATE_ATTRIB					CONSTLIT("initialState")
 #define LABEL_EFFECT_ATTRIB						CONSTLIT("labelEffect")
 #define MAP_EFFECT_ATTRIB						CONSTLIT("mapEffect")
 #define POS_ATTRIB								CONSTLIT("pos")
@@ -28,9 +29,17 @@
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
 
+static TStaticStringTable<TStaticStringEntry<CTopologyDesc::EInitialStates>, 4> INITIAL_STATE_TABLE = {
+	"explored",				CTopologyDesc::stateExplored,
+	"known",				CTopologyDesc::stateKnown,
+	"positionKnown",		CTopologyDesc::statePositionKnown,
+	"unknown",				CTopologyDesc::stateUnknown,
+	};
+
 CTopologyDesc::CTopologyDesc (void) :
 		m_pDesc(NULL),
-		m_pDescList(NULL)
+		m_pDescList(NULL),
+		m_iInitialState(stateUnknown)
 
 //	CTopologyDesc constructor
 
@@ -269,6 +278,23 @@ ALERROR CTopologyDesc::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pXMLDesc, 
 	m_dwFlags = 0;
 	if (pXMLDesc->GetAttributeBool(ROOT_NODE_ATTRIB))
 		m_dwFlags |= FLAG_IS_ROOT_NODE;
+
+	//	Initial state (known or not)
+
+	CString sState;
+	if (pXMLDesc->FindAttribute(INITIAL_STATE_ATTRIB, &sState))
+		{
+		const TStaticStringEntry<EInitialStates> *pEntry = INITIAL_STATE_TABLE.GetAt(sState);
+		if (pEntry == NULL)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Topology %s: Unknown initial state: %s."), sParentUNID, sState);
+			return ERR_FAIL;
+			}
+
+		m_iInitialState = pEntry->Value;
+		}
+	else
+		m_iInitialState = stateUnknown;
 
 	//	Load type-specific info
 

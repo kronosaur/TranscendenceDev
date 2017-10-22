@@ -154,6 +154,89 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 		}
 	}
 
+void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y) const
+
+//	DrawNodeConnections
+//
+//	Draws gate connections from this node to all other known systems.
+
+	{
+	int i, j;
+
+	//	Compute some visual attributes.
+
+	CG32bitPixel rgbStargateColor = (m_pMap ? m_pMap->GetStargateLineColor() : RGB_STARGATE);
+    int iStargateLine = Max(1, mathRound(STARGATE_LINE_WIDTH * (Metric)m_iScale / 100.0));
+
+	//	Paint each gate line
+
+	for (i = 0; i < pNode->GetStargateCount(); i++)
+		{
+		CTopologyNode::SStargateRouteDesc RouteDesc;
+		pNode->GetStargateRouteDesc(i, &RouteDesc);
+
+		if (RouteDesc.pToNode 
+				&& !RouteDesc.pToNode->IsMarked()
+				&& RouteDesc.pToNode->IsKnown())
+			{
+			SPoint End;
+			RouteDesc.pToNode->GetDisplayPos(&End.x, &End.y);
+			End = Xform(End);
+
+			//	If this is a curved path, the draw it
+
+			if (RouteDesc.MidPoints.GetCount() > 0)
+				{
+				int iCurMid = 0;
+				while (iCurMid <= RouteDesc.MidPoints.GetCount())
+					{
+					//	If we're at the end and we don't have enough points 
+					//	for a curve, then just draw a line.
+					//
+					//	LATER: We try to do a curved line.
+
+					if (iCurMid == RouteDesc.MidPoints.GetCount())
+						{
+						SPoint ptFrom = Xform(RouteDesc.MidPoints[iCurMid - 1]);
+
+						Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, iStargateLine, rgbStargateColor);
+						}
+
+					//	Otherwise, we draw a curve
+
+					else
+						{
+						SPoint ptStart = {x, y};
+						SPoint ptMid = Xform(RouteDesc.MidPoints[iCurMid]);
+						SPoint ptFrom = (iCurMid > 0 ? Xform(RouteDesc.MidPoints[iCurMid - 1]) : ptStart);
+						SPoint ptTo = (iCurMid + 1 < RouteDesc.MidPoints.GetCount() ? Xform(RouteDesc.MidPoints[iCurMid + 1]) : End);
+
+						CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, iStargateLine, rgbStargateColor);
+						}
+
+					iCurMid += 2;
+					}
+
+				//	If in debug mode, paint all the intermediate nodes
+
+				if (g_pUniverse->InDebugMode())
+					{
+					for (j = 0; j < RouteDesc.MidPoints.GetCount(); j++)
+						{
+						SPoint ptPos = Xform(RouteDesc.MidPoints[j]);
+						Dest.DrawDot(ptPos.x, ptPos.y, CG32bitPixel(255, 128, 0), markerMediumCross);
+						}
+					}
+				}
+
+			//	Otherwise, straight line
+
+			else
+				Dest.DrawLine(x, y, End.x, End.y, iStargateLine, rgbStargateColor);
+			}
+		}
+	}
+
 void CGalacticMapPainter::DrawSelection (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const
 
 //  DrawSelection
@@ -175,6 +258,58 @@ void CGalacticMapPainter::DrawSelection (CG32bitImage &Dest, int x, int y, CG32b
 
     m_iSelectAngle = AngleMod(m_iSelectAngle + 1);
     }
+
+void CGalacticMapPainter::DrawUnknownNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const
+
+//	DrawUnknownNode
+//
+//	Draws a topology node
+
+	{
+    const CG16bitFont &NameFont = m_VI.GetFont(fontMedium);
+
+    //  Draw selection, if necessary
+
+    if (pNode == m_pSelected)
+        DrawSelection(Dest, x, y, m_VI.GetColor(colorAreaDialogHighlight));
+
+	//	Draw a star
+
+	int RADIUS = 24;
+	int INTENSITY = 25;
+	CG32bitPixel RGB_PRIMARY = CG32bitPixel(255, 255, 255);
+	CG32bitPixel RGB_SECONDARY = CG32bitPixel(255, 255, 255);
+	BYTE OPACITY = 255;
+
+	//	Radius changes based on scale
+
+	int iRadius = mathRound(rScale * RADIUS);
+
+	//	Create a color table
+
+	TArray<CG32bitPixel> ColorTable;
+	CPaintHelper::CalcSmoothColorTable(iRadius, INTENSITY, RGB_PRIMARY, RGB_SECONDARY, OPACITY, &ColorTable);
+
+	//	Paint
+
+	CGDraw::Circle(Dest, x, y, iRadius, ColorTable, CGDraw::blendScreen);
+
+    //  Draw the name label
+
+	CString sLabel = CONSTLIT("Unknown");
+    int cxName = NameFont.MeasureText(sLabel);
+    int cxNameBack = cxName + 2 * NAME_PADDING_X;
+    int xNameBack = x - (cxNameBack / 2);
+    int yName = y + NODE_RADIUS + NAME_SPACING_Y;
+
+    //CGDraw::RoundedRect(Dest, xNameBack, yName, cxNameBack, NameFont.GetHeight(), CORNER_RADIUS, RGB_SYSTEM_NAME_BACK);
+
+	NameFont.DrawText(Dest,
+			xNameBack + NAME_PADDING_X, yName,
+			RGB_SYSTEM_NAME,
+			sLabel,
+			0);
+	}
 
 void CGalacticMapPainter::GalacticToView (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
 
@@ -208,7 +343,7 @@ bool CGalacticMapPainter::HitTest (int x, int y, SSelectResult &Result) const
         {
         CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
         int xNode, yNode;
-        if (!pNode->IsKnown()
+        if (!pNode->IsPositionKnown()
                 || pNode->IsEndGame()
                 || pNode->GetDisplayPos(&xNode, &yNode) != m_pMap)
             continue;
@@ -257,7 +392,7 @@ void CGalacticMapPainter::Init (void)
 			
 			int xPos, yPos;
 			if (pNode->GetDisplayPos(&xPos, &yPos) == m_pMap 
-					&& pNode->IsKnown() 
+					&& pNode->IsPositionKnown() 
 					&& !pNode->IsEndGame())
 				{
 				if (xPos < xMin)
@@ -290,7 +425,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 //	iScale 400 = x4
 
 	{
-	int i, j, k;
+	int i;
 
 	ASSERT(m_iScale > 0);
 
@@ -368,7 +503,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 			
 			int xPos, yPos;
 			pNode->SetMarked(pNode->GetDisplayPos(&xPos, &yPos) != m_pMap 
-					|| !pNode->IsKnown() 
+					|| !pNode->IsPositionKnown() 
 					|| pNode->IsEndGame());
 			}
 
@@ -377,84 +512,29 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 		for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
 			{
 			CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
-			if (!pNode->IsMarked())
+			if (pNode->IsMarked())
+				continue;
+
+			SPoint Start;
+			pNode->GetDisplayPos(&Start.x, &Start.y);
+			Start = Xform(Start);
+
+			//	Draw gate connections
+
+			if (pNode->IsKnown())
+				DrawNodeConnections(Dest, pNode, Start.x, Start.y);
+
+			//	Draw star system
+
+			if (Start.x >= m_rcView.left && Start.x < m_rcView.right && Start.y >= m_rcView.top && Start.y < m_rcView.bottom)
 				{
-				SPoint Start;
-				pNode->GetDisplayPos(&Start.x, &Start.y);
-				Start = Xform(Start);
-
-				//	Draw gate connections
-
-				for (j = 0; j < pNode->GetStargateCount(); j++)
-					{
-					CTopologyNode::SStargateRouteDesc RouteDesc;
-					pNode->GetStargateRouteDesc(j, &RouteDesc);
-
-					if (RouteDesc.pToNode && !RouteDesc.pToNode->IsMarked())
-						{
-						SPoint End;
-						RouteDesc.pToNode->GetDisplayPos(&End.x, &End.y);
-						End = Xform(End);
-
-						//	If this is a curved path, the draw it
-
-						if (RouteDesc.MidPoints.GetCount() > 0)
-							{
-							int iCurMid = 0;
-							while (iCurMid <= RouteDesc.MidPoints.GetCount())
-								{
-								//	If we're at the end and we don't have enough points 
-								//	for a curve, then just draw a line.
-								//
-								//	LATER: We try to do a curved line.
-
-								if (iCurMid == RouteDesc.MidPoints.GetCount())
-									{
-									SPoint ptFrom = Xform(RouteDesc.MidPoints[iCurMid - 1]);
-
-									Dest.DrawLine(ptFrom.x, ptFrom.y, End.x, End.y, iStargateLine, rgbStargateColor);
-									}
-
-								//	Otherwise, we draw a curve
-
-								else
-									{
-									SPoint ptMid = Xform(RouteDesc.MidPoints[iCurMid]);
-									SPoint ptFrom = (iCurMid > 0 ? Xform(RouteDesc.MidPoints[iCurMid - 1]) : Start);
-									SPoint ptTo = (iCurMid + 1 < RouteDesc.MidPoints.GetCount() ? Xform(RouteDesc.MidPoints[iCurMid + 1]) : End);
-
-									CGDraw::QuadCurve(Dest, ptFrom.x, ptFrom.y, ptTo.x, ptTo.y, ptMid.x, ptMid.y, iStargateLine, rgbStargateColor);
-									}
-
-								iCurMid += 2;
-								}
-
-							//	If in debug mode, paint all the intermediate nodes
-
-							if (g_pUniverse->InDebugMode())
-								{
-								for (k = 0; k < RouteDesc.MidPoints.GetCount(); k++)
-									{
-									SPoint ptPos = Xform(RouteDesc.MidPoints[k]);
-									Dest.DrawDot(ptPos.x, ptPos.y, CG32bitPixel(255, 128, 0), markerMediumCross);
-									}
-								}
-							}
-
-						//	Otherwise, straight line
-
-						else
-							Dest.DrawLine(Start.x, Start.y, End.x, End.y, iStargateLine, rgbStargateColor);
-						}
-					}
-
-				//	Draw star system
-
-				if (Start.x >= m_rcView.left && Start.x < m_rcView.right && Start.y >= m_rcView.top && Start.y < m_rcView.bottom)
+				if (pNode->IsKnown())
 					DrawNode(Dest, pNode, Start.x, Start.y, rScale, rgbNodeColor);
-
-				pNode->SetMarked();
+				else
+					DrawUnknownNode(Dest, pNode, Start.x, Start.y, rScale, rgbNodeColor);
 				}
+
+			pNode->SetMarked();
 			}
 		}
 	else

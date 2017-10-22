@@ -378,6 +378,28 @@ class CHitCtx
 class CTopology
 	{
 	public:
+		struct SNodeCreateCtx
+			{
+			SNodeCreateCtx (void) :
+					xPos(0),
+					yPos(0),
+					pSystemDesc(NULL),
+					pEffect(NULL),
+					iInitialState(CTopologyDesc::stateUnknown),
+					bNoMap(false)
+				{ }
+
+			int xPos;						//	Position on destination map
+			int yPos;
+
+			CString sAttribs;				//	Attributes for new node
+			CXMLElement *pSystemDesc;		//	System definition (we sometimes pull properties from here).
+			CEffectCreator *pEffect;		//	Annotations on system map for this node
+
+			CTopologyDesc::EInitialStates iInitialState;	//	Is the new node know or unknown
+			bool bNoMap;					//	No destination map
+			};
+
 		CTopology (void);
 		~CTopology (void);
 
@@ -413,17 +435,8 @@ class CTopology
 		ALERROR AddRandomRegion (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CXMLElement *pRegionDef, CTopologyNode *&pExitNode, CIntGraph &Graph, TArray<CTopologyNode *> &Nodes);
 
 		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
-		ALERROR AddTopologyNode (STopologyCreateCtx &Ctx,
-								 CSystemMap *pMap,
-								 const CString &sID,
-								 bool bNoMap,
-								 int x,
-								 int y,
-								 const CString &sAttribs,
-								 CXMLElement *pSystemDesc,
-								 CEffectCreator *pEffect,
-								 CTopologyNode **retpNode = NULL);
 		ALERROR AddTopologyNode (const CString &sID, CTopologyNode *pNode);
+		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
 		CString ExpandNodeID (STopologyCreateCtx &Ctx, const CString &sID);
 		ALERROR FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType = NULL);
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);

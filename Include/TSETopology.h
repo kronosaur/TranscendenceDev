@@ -103,6 +103,7 @@ class CTopologyNode
 		inline bool IsEndGame (void) const { return (m_SystemUNID == END_GAME_SYSTEM_UNID); }
 		inline bool IsKnown (void) const { return m_bKnown; }
 		inline bool IsMarked (void) const { return m_bMarked; }
+		inline bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
 		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit);
 		inline void SetCalcDistance (int iDist) { m_iCalcDistance = iDist; }
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
@@ -113,6 +114,7 @@ class CTopologyNode
 		inline void SetMarked (bool bValue = true) { m_bMarked = bValue; }
 		inline void SetName (const CString &sName) { m_sName = sName; }
 		inline void SetPos (int xPos, int yPos) { m_xPos = xPos; m_yPos = yPos; }
+		inline void SetPositionKnown (bool bKnown = true) { m_bPosKnown = bKnown; }
 		bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 		void SetStargateDest (const CString &sName, const CString &sDestNode, const CString &sEntryPoint);
 		inline void SetSystem (CSystem *pSystem) { m_pSystem = pSystem; }
@@ -185,6 +187,8 @@ class CTopologyNode
 		DWORD m_dwID;							//	ID of system instance
 
 		bool m_bKnown;							//	TRUE if node is visible on galactic map
+		bool m_bPosKnown;						//	TRUE if node is visible, but type/name is unknown
+
 		bool m_bMarked;							//	Temp variable used during painting
 		int m_iCalcDistance;					//	Temp variable used during distance calc
 	};
@@ -226,6 +230,14 @@ enum ENodeDescTypes
 class CTopologyDesc
 	{
 	public:
+		enum EInitialStates
+			{
+			stateUnknown,						//	Node is unknown to player at the beginning
+			statePositionKnown,					//	Node position is known, but not type or name
+			stateKnown,							//	Node type and name is known
+			stateExplored,						//	Node is known and all stations known
+			};
+
 		CTopologyDesc (void);
 		~CTopologyDesc (void);
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
@@ -236,6 +248,7 @@ class CTopologyDesc
 		inline CSystemMap *GetMap (void) const { return m_pMap; }
 		inline CEffectCreator *GetMapEffect (void) const { return m_pMapEffect; }
 		inline const CString &GetID (void) const { return m_sID; }
+		inline EInitialStates GetInitialState (void) const { return m_iInitialState; }
 		bool GetPos (int *retx, int *rety);
 		CXMLElement *GetSystem (void);
 		inline CTopologyDesc *GetTopologyDesc (int iIndex);
@@ -258,6 +271,7 @@ class CTopologyDesc
 		CString m_sID;							//	ID of node
 		ENodeDescTypes m_iType;					//	Type of node
 		CXMLElement *m_pDesc;					//	XML for node definition
+		EInitialStates m_iInitialState;			//	Initial state of node (known to player or not)
 		DWORD m_dwFlags;
 
 		CEffectCreatorRef m_pLabelEffect;		//	Effect to paint on label layer

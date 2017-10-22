@@ -10,6 +10,47 @@ const int ARROW_WIDTH =							6;
 const int STATUS_BAR_WIDTH =					100;
 const int STATUS_BAR_HEIGHT =					15;
 
+void CPaintHelper::CalcSmoothColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable)
+
+//	CalcSmoothColorTable
+//
+//	Computes a color table.
+
+	{
+	int i;
+
+	int iFringeMaxRadius = iRadius * iIntensity / 120;
+	int iFringeWidth = iFringeMaxRadius / 8;
+	int iBlownRadius = iFringeMaxRadius - iFringeWidth;
+	int iFadeWidth = iRadius - iFringeMaxRadius;
+
+	if (retColorTable->GetCount() < iRadius)
+		retColorTable->InsertEmpty(iRadius - retColorTable->GetCount());
+
+	//	Initialize table
+
+	for (i = 0; i < iRadius; i++)
+		{
+		if (i < iBlownRadius)
+			(*retColorTable)[i] = CG32bitPixel(255, 255, 255, byOpacity);
+
+		else if (i < iFringeMaxRadius && iFringeWidth > 0)
+			{
+			int iStep = (i - iBlownRadius);
+			DWORD dwOpacity = iStep * byOpacity / iFringeWidth;
+			(*retColorTable)[i] = CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), rgbPrimary, (BYTE)dwOpacity);
+			}
+		else if (iFadeWidth > 0)
+			{
+			int iStep = (i - iFringeMaxRadius);
+			Metric rOpacity = 1.0 - ((Metric)iStep / iFadeWidth);
+			rOpacity = (rOpacity * rOpacity) * byOpacity;
+			(*retColorTable)[i] = CG32bitPixel(rgbSecondary, (BYTE)(DWORD)rOpacity);
+			}
+		else
+			(*retColorTable)[i] = CG32bitPixel::Null();
+		}
+	}
 
 void CPaintHelper::PaintArrow (CG32bitImage &Dest, int x, int y, int iDirection, CG32bitPixel rgbColor)
 

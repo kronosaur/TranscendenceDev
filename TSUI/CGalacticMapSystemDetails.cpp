@@ -70,8 +70,10 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (CTopologyNode *pNode, IAnimat
 
     //  Create a background for the whole pane
 
+	IAnimatron *pFrame;
+    m_VI.CreateFrame(pRoot, NULL_STR, 0, 0, RectWidth(m_rcPane), RectHeight(m_rcPane), CVisualPalette::OPTION_FRAME_TRANS, &pFrame);
+
 	IAnimatron *pHeaderBack;
-    m_VI.CreateFrame(pRoot, NULL_STR, 0, 0, RectWidth(m_rcPane), RectHeight(m_rcPane), CVisualPalette::OPTION_FRAME_TRANS);
     m_VI.CreateFrameHeader(pRoot, NULL_STR, 0, 0, 0, 0, 0, &pHeaderBack);
 
     //  Add system information
@@ -83,31 +85,43 @@ bool CGalacticMapSystemDetails::CreateDetailsPane (CTopologyNode *pNode, IAnimat
 
 	pHeaderBack->SetPropertyVector(PROP_SCALE, CVector(RectWidth(m_rcPane) - 2, cyHeader - 1));
 
+	//	Compute the size of the list area
+
+	RECT rcList;
+	rcList.top = cyHeader;
+	rcList.bottom = rcList.top + RectHeight(m_rcPane) - cyHeader;
+	rcList.left = LIST_PADDING_X;
+	rcList.right = RectWidth(m_rcPane) - LIST_PADDING_X;
+
     //  Create a listbox which will hold all stations in the system.
 
-    RECT rcList;
-    rcList.top = cyHeader;
-    rcList.bottom = rcList.top + RectHeight(m_rcPane) - cyHeader;
-    rcList.left = LIST_PADDING_X;
-    rcList.right = RectWidth(m_rcPane) - LIST_PADDING_X;
+	if (Objs.GetCount() > 0 && pNode->IsKnown())
+		{
+		CAniListBox *pList;
+		m_VI.CreateListBox(pRoot, ID_STATION_LIST, rcList.left, rcList.top, RectWidth(rcList), RectHeight(rcList), 0, &pList);
 
-    CAniListBox *pList;
-    m_VI.CreateListBox(pRoot, ID_STATION_LIST, rcList.left, rcList.top, RectWidth(rcList), RectHeight(rcList), 0, &pList);
+		//  Add all the stations in the node
 
-    //  Add all the stations in the node
+		int y = MAJOR_PADDING_TOP;
+		for (i = 0; i < Objs.GetCount(); i++)
+			{
+			//	Generate a record for the object
 
-    int y = MAJOR_PADDING_TOP;
-    for (i = 0; i < Objs.GetCount(); i++)
-        {
-		//	Generate a record for the object
+			IAnimatron *pEntry;
+			int cyHeight;
+			CreateObjEntry(Objs[i], y, RectWidth(rcList), &pEntry, &cyHeight);
 
-		IAnimatron *pEntry;
-		int cyHeight;
-		CreateObjEntry(Objs[i], y, RectWidth(rcList), &pEntry, &cyHeight);
+			pList->AddEntry(strFromInt(Objs[i].ObjData.dwObjID), pEntry);
+			y += cyHeight + INTER_LINE_SPACING;
+			}
+		}
 
-		pList->AddEntry(strFromInt(Objs[i].ObjData.dwObjID), pEntry);
-		y += cyHeight + INTER_LINE_SPACING;
-        }
+	//	If no objects, then shrink the pane 
+
+	else
+		{
+		pFrame->SetPropertyVector(PROP_SCALE, CVector(RectWidth(m_rcPane), cyHeader + 1));
+		}
 
     //  Done
 
@@ -291,6 +305,15 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
     int y = HEADER_PADDING_Y;
     int cxWidth = RectWidth(m_rcPane) - (2 * HEADER_PADDING_X);
 
+	//	Title is either the system name or "Unknown" if we don't know about this
+	//	system.
+
+	CString sTitle;
+	if (pTopology->IsKnown())
+		sTitle = pTopology->GetSystemName();
+	else
+		sTitle = CONSTLIT("Unknown");
+
     //  System name
 
     int cyText;
@@ -300,7 +323,7 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
             y,
             cxWidth,
             1000,
-            pTopology->GetSystemName(),
+            sTitle,
             m_VI.GetColor(colorTextHighlight),
             TitleFont,
             NULL,

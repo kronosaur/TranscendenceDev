@@ -49,7 +49,8 @@ CTopologyNode::CTopologyNode (const CString &sID, DWORD SystemUNID, CSystemMap *
 		m_pMap(pMap),
 		m_pSystem(NULL),
 		m_dwID(0xffffffff),
-		m_bKnown(false)
+		m_bKnown(false),
+		m_bPosKnown(false)
 
 //	CTopology constructor
 
@@ -347,7 +348,8 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 	else
 		dwLoad = 0;
 
-	pNode->m_bKnown = (dwLoad & 0x00000001 ? true : false);
+	pNode->m_bKnown =		(dwLoad & 0x00000001 ? true : false);
+	pNode->m_bPosKnown =	(dwLoad & 0x00000002 ? true : false);
 	pNode->m_bMarked = false;
 
 	//	More
@@ -1293,7 +1295,8 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 	//	Flags
 
 	dwSave = 0;
-	dwSave |= (m_bKnown ? 0x00000001 : 0);
+	dwSave |= (m_bKnown ?		0x00000001 : 0);
+	dwSave |= (m_bPosKnown ?	0x00000002 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write end game data

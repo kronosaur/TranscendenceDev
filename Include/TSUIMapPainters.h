@@ -38,7 +38,9 @@ class CGalacticMapPainter
 
 	private:
 		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
+		void DrawNodeConnections (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y) const;
         void DrawSelection (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const;
+		void DrawUnknownNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
 		inline int GetImageGalacticHeight (void) const { return (m_pImage ? (int)(m_pImage->GetHeight() / m_rImageScale) : 0); }
 		inline int GetImageGalacticWidth (void) const { return (m_pImage ? (int)(m_pImage->GetWidth() / m_rImageScale) : 0); }
 		void Init (void);

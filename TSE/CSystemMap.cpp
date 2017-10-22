@@ -426,6 +426,11 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			if (error = pRef->LoadUNID(Ctx, pItem->GetAttribute(UNID_ATTRIB)))
 				return error;
 			}
+		else if (IsValidLoadXML(pItem->GetTag()))
+			{
+			//	This is an element used by all design types; this is already handled by
+			//	CDesignType, so we skip it here.
+			}
 		else
 			{
 			//	If it's none of the above, see if it is a node descriptor

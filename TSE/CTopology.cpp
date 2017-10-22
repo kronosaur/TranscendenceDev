@@ -255,16 +255,17 @@ ALERROR CTopology::AddNode (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopo
 
 	//	Create a topology node and add it to the universe list
 
+	SNodeCreateCtx CreateCtx;
+	CreateCtx.xPos = xPos;
+	CreateCtx.yPos = yPos;
+	CreateCtx.sAttribs = pNode->GetAttributes();
+	CreateCtx.pSystemDesc = pNode->GetSystem();
+	CreateCtx.pEffect = pNode->GetMapEffect();
+	CreateCtx.iInitialState = pNode->GetInitialState();
+	CreateCtx.bNoMap = !bHasPos;
+
 	CTopologyNode *pNewNode;
-	if (error = AddTopologyNode(Ctx, 
-			pNode->GetMap(),
-			ExpandNodeID(Ctx, sID), 
-			!bHasPos,
-			xPos, yPos, 
-			pNode->GetAttributes(), 
-			pNode->GetSystem(), 
-			pNode->GetMapEffect(), 
-			&pNewNode))
+	if (error = CreateTopologyNode(Ctx, ExpandNodeID(Ctx, sID), CreateCtx, &pNewNode))
 		return error;
 
 	//	Loop over remaining elements to see if we have stargate elements
@@ -693,16 +694,13 @@ ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx,
 		//	fragment or not. Also, we don't need to set sFragmentPrefix because this
 		//	call does not need it (since we're creating everything manually).
 
+		SNodeCreateCtx CreateCtx;
+		CreateCtx.xPos = x;
+		CreateCtx.yPos = y;
+		CreateCtx.iInitialState = pDesc->GetInitialState();
+
 		CTopologyNode *pNode;
-		if (error = AddTopologyNode(Ctx, 
-				pDesc->GetMap(),
-				sNodeID, 
-				false,
-				x, y, 
-				NULL_STR, 
-				NULL, 
-				NULL, 
-				&pNode))
+		if (error = CreateTopologyNode(Ctx, sNodeID, CreateCtx, &pNode))
 			return error;
 
 		//	Keep track of the node globally
@@ -1148,7 +1146,7 @@ ALERROR CTopology::AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNod
 		return NOERROR;
 		}
 
-	//	If this is a NodeGrou, then redirect
+	//	If this is a NodeGroup, then redirect
 
 	else if (pNode->GetType() == ndNodeGroup)
 		return AddNodeGroup(Ctx, pNode, retpNewNode);
@@ -1212,25 +1210,17 @@ ALERROR CTopology::AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNod
 	return GetOrAddTopologyNode(Ctx, sNodeID, NULL, NULL, retpNewNode);
 	}
 
-ALERROR CTopology::AddTopologyNode (STopologyCreateCtx &Ctx,
-									CSystemMap *pMap,
-									const CString &sID,
-									bool bNoMap,
-									int x,
-									int y,
-									const CString &sAttribs,
-									CXMLElement *pSystemDesc,
-									CEffectCreator *pEffect,
-									CTopologyNode **retpNode)
+ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode)
 
-//	AddTopologyNode
+//	CreateTopologyNode
 //
-//	Adds a single topology node
+//	Creates and adds a single topology node. We retain ownership of the node, but
+//	optionally return a pointer to it.
 
 	{
 	ALERROR error;
 
-	CSystemMap *pDestMap = (bNoMap ? NULL : Ctx.pMap);
+	CSystemMap *pDestMap = (NodeCtx.bNoMap ? NULL : Ctx.pMap);
 
 	//	Create a topology node and add it to the universe list
 
@@ -1244,27 +1234,42 @@ ALERROR CTopology::AddTopologyNode (STopologyCreateCtx &Ctx,
 	int xPos;
 	int yPos;
 	int iRotation;
-	GetAbsoluteDisplayPos(Ctx, x, y, &xPos, &yPos, &iRotation);
+	GetAbsoluteDisplayPos(Ctx, NodeCtx.xPos, NodeCtx.yPos, &xPos, &yPos, &iRotation);
 	pNewNode->SetPos(xPos, yPos);
 
 	//	Add attributes for the node
 
-	pNewNode->AddAttributes(sAttribs);
+	pNewNode->AddAttributes(NodeCtx.sAttribs);
 	if (Ctx.bInFragment && !Ctx.sFragmentAttributes.IsBlank())
 		pNewNode->AddAttributes(Ctx.sFragmentAttributes);
 
 	//	Get the system tag and apply settings
 
-	if (pSystemDesc)
+	if (NodeCtx.pSystemDesc)
 		{
-		if (error = pNewNode->InitFromSystemXML(pSystemDesc, &Ctx.sError))
+		if (error = pNewNode->InitFromSystemXML(NodeCtx.pSystemDesc, &Ctx.sError))
 			return error;
 		}
 
 	//	Add effect associated with node
 
-	if (pDestMap && pEffect)
-		pDestMap->AddAnnotation(sID, pEffect, xPos, yPos, iRotation);
+	if (pDestMap && NodeCtx.pEffect)
+		pDestMap->AddAnnotation(sID, NodeCtx.pEffect, xPos, yPos, iRotation);
+
+	//	Set the initial player state
+
+	switch (NodeCtx.iInitialState)
+		{
+		case CTopologyDesc::statePositionKnown:
+			pNewNode->SetPositionKnown();
+			break;
+
+		case CTopologyDesc::stateKnown:
+			//	NOTE: This implies that the position is known, so no need to set
+			//	it separately.
+			pNewNode->SetKnown();
+			break;
+		}
 
 	//	Done
 
