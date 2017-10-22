@@ -741,21 +741,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"flags\n\n"
 
-			"   0x0001 capitalize      capitalize first letter\n"
-			"   0x0002 plural          pluralize name\n"
-			"   0x0004 article         prefix with 'the' or 'a'\n"
-			"   0x0008 count           prefix with count or singular article\n"
-			"   0x0010 countOnly       prefix with count or nothing\n"
-			"   0x0020 noModifiers     no modifiers ('damaged' etc)\n"
-			"   0x0040 demonstrative   prefix with 'the' or 'this' or 'these'\n"
-			"   0x0080 short           use short name\n"
-			"   0x0100 actual          actual name (not unidentified name)\n"
-			"   0x0200 noEvent         do not fire GetName event\n"
-			"   0x0400 titleCapitalize capitalize as a title\n"
-			"   0x0800 installedState  prefix with 'installed' if necessary\n"
-			"   0x1000 countAlways     always prefix with count\n"
-			"  0x40000 noDeterminer    no prefix, but pluralize if necessary\n"
-			"  0x80000 noQuotes        replace double-quotes with single-quotes",
+			"   0x0001 'capitalize      capitalize first letter\n"
+			"   0x0002 'plural          pluralize name\n"
+			"   0x0004 'article         prefix with 'the' or 'a'\n"
+			"   0x0008 'count           prefix with count or singular article\n"
+			"   0x0010 'countOnly       prefix with count or nothing\n"
+			"   0x0020 'noModifiers     no modifiers ('damaged' etc)\n"
+			"   0x0040 'demonstrative   prefix with 'the' or 'this' or 'these'\n"
+			"   0x0080 'short           use short name\n"
+			"   0x0100 'actual          actual name (not unidentified name)\n"
+			"   0x0200 'noEvent         do not fire GetName event\n"
+			"   0x0400 'titleCapitalize capitalize as a title\n"
+			"   0x0800 'installedState  prefix with 'installed' if necessary\n"
+			"   0x1000 'countAlways     always prefix with count\n"
+			"  0x40000 'noDeterminer    no prefix, but pluralize if necessary\n"
+			"  0x80000 'noQuotes        replace double-quotes with single-quotes",
 
 			"v*",	0,	},
 
@@ -1617,15 +1617,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"flags\n\n"
 
-			"   0x001 capitalize    capitalize first letter\n"
-			"   0x002 plural        pluralize name\n"
-			"   0x004 article       prefix with 'the' or 'a'\n"
-			"   0x008 count         prefix with count or singular article\n"
-			"   0x010 countOnly     prefix with count or nothing\n"
-			"   0x020 noModifiers   no modifiers ('damaged' etc)\n"
-			"   0x040 demonstrative prefix with 'the' or 'this' or 'these'\n"
-			"   0x080 short         use short name\n"
-			"   0x100 actual        actual name (not unidentified name)",
+			"   0x001 'capitalize    capitalize first letter\n"
+			"   0x002 'plural        pluralize name\n"
+			"   0x004 'article       prefix with 'the' or 'a'\n"
+			"   0x008 'count         prefix with count or singular article\n"
+			"   0x010 'countOnly     prefix with count or nothing\n"
+			"   0x020 'noModifiers   no modifiers ('damaged' etc)\n"
+			"   0x040 'demonstrative prefix with 'the' or 'this' or 'these'\n"
+			"   0x080 'short         use short name\n"
+			"   0x100 'actual        actual name (not unidentified name)",
 
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
