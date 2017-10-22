@@ -398,7 +398,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(struct key1 value1 [ key2 value2 ...]) -> struct\n"
             "(struct (key1 value1) [ (key2 value2) ...]) -> struct\n"
             "(struct struct1 [struct2 ...]) -> struct\n"
-            "{ key1:value1 [key2:value2 ...] } -> struct",
+            "{ key1:value1 [key2:value2 ...] } -> struct\n\n"
 			
 			"Creates a data structure. Keys must be strings, but this is assumed when using {} syntax. Use (@ struct key) to access data.",
 			"*",	0,	},
@@ -406,7 +406,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"structAppend",		fnStruct,		FN_STRUCT_APPEND,
 			"(structAppend key1 value1 [ key2 value2 ...]) -> struct\n"
             "(structAppend (key1 value1) [ (key2 value2) ...]) -> struct\n"
-            "(structAppend struct1 [struct2 ...]) -> struct",
+            "(structAppend struct1 [struct2 ...]) -> struct\n\n"
 			
 			"Same as struct except values of the same key are appended into a list.",
 			"*",	0,	},
