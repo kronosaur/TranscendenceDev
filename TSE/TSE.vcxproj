@@ -281,6 +281,7 @@
     <ClInclude Include="..\Include\TSESystemType.h" />
     <ClInclude Include="..\Include\TSETopology.h" />
     <ClInclude Include="..\Include\TSETrade.h" />
+    <ClInclude Include="..\Include\TSEUniverse.h" />
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="..\Include\TSEVersions.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
@@ -375,6 +376,7 @@
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
+    <ClCompile Include="CItemPriceTracker.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
     <ClCompile Include="CNameDesc.cpp" />

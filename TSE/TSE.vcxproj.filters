@@ -269,6 +269,9 @@
     <ClInclude Include="..\Include\TSEVersions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEUniverse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1127,6 +1130,9 @@
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
     <ClCompile Include="CEnhancementDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemPriceTracker.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
   </ItemGroup>
