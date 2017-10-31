@@ -168,7 +168,7 @@ class CArmorClass
         const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
 		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
-		bool UpdateCustom (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
+		int UpdateCustom(CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event);
 		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 		bool UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 
@@ -272,7 +272,6 @@ class CInstalledArmor
 		void FinishInstall (CSpaceObject *pSource);
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		inline CArmorClass *GetClass (void) const { return m_pArmorClass; }
-		inline int GetCustomPowerResults (void) const { return m_iCustomPowerResults; }
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
@@ -288,7 +287,6 @@ class CInstalledArmor
 		inline bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
 		inline void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }
-		inline void SetCustomPowerResults (int iValue) { m_iCustomPowerResults = iValue; }
 		void SetEnhancements (CSpaceObject *pSource, const TSharedPtr<CItemEnhancementStack> &pStack);
 		inline void SetPrime (CSpaceObject *pSource, bool bPrime = true) { m_fPrimeSegment = bPrime; }
 		inline void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
@@ -299,7 +297,6 @@ class CInstalledArmor
 	private:
 		CItem *m_pItem;								//	Item
 		CArmorClass *m_pArmorClass;					//	Armor class used
-		int m_iCustomPowerResults = 0;				//	Power generated/consumed, determined by OnArmorConsumePower
 		int m_iHitPoints;							//	Hit points left
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;		//	List of enhancements (may be NULL)
 

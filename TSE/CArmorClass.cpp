@@ -1259,10 +1259,17 @@ int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstall
 			iTotalPower -= m_iPowerGen;
 		}
 
-	if (pArmor->GetCustomPowerResults() > 0)
+	//  See if we have some custom behavior designated in OnArmorConsumePower
+
+	SEventHandlerDesc Event;
+	if (FindEventHandlerArmorClass(evtOnArmorConsumePower, &Event))
+	{
+		int iCustomPowerUse = UpdateCustom(pArmor, pSource, Event);
+		if (iCustomPowerUse > 0)
 		{
-		iTotalPower = pArmor->GetCustomPowerResults();
+			iTotalPower += iCustomPowerUse;
 		}
+	}
 
 	//	Done
 
@@ -2353,14 +2360,6 @@ void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, b
 			bModified = true;
 		}
 
-	//  See if we have some custom behavior designated in OnArmorConsumePower
-
-	if (m_fCustomConsumePower)
-		{
-		if (UpdateCustom(ItemCtx, Stats, iTick))
-			bModified = true;
-		}
-
 	//	Done
 
 	*retbModified = bModified;
@@ -2368,7 +2367,7 @@ void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, b
 	DEBUG_CATCH
 	}
 
-bool CArmorClass::UpdateCustom (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)
+int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event)
 
 //	UpdateCustom
 //
@@ -2376,50 +2375,39 @@ bool CArmorClass::UpdateCustom (CItemCtx &ItemCtx, const SScalableStats &Stats, 
 //  we also return True and consume power. Else, return False.
 
 {
-	CSpaceObject *pObj = ItemCtx.GetSource();
-	CInstalledArmor *pArmor = ItemCtx.GetArmor();
-
 	//	Only works on ships (with segments).
 	//	LATER: Introduce the concept of segments to stations.
+	CItem *pItem = pArmor->GetItem();
 
-	CShip *pShip = pObj->AsShip();
+	CShip *pShip = pSource->AsShip();
 	if (pShip == NULL)
 		return false;
 
-	SEventHandlerDesc Event;
-	bool iResult = false;
-	if (FindEventHandlerArmorClass(evtOnArmorConsumePower, &Event))
+	int iResult = 0;
+	CCodeChainCtx Ctx;
+	const CItemEnhancementStack *pEnhancement = pArmor->GetEnhancementStack();
+
+	Ctx.SaveAndDefineSourceVar(pSource);
+	Ctx.SaveAndDefineItemVar(*pItem);
+	ICCItem *pResult = Ctx.Run(Event);
+	if (pResult->IsError())
+	pSource->ReportEventError(ON_ARMOR_CONSUME_POWER_EVENT, pResult);
+
+	if (pResult->IsNil())
 		{
-		CCodeChainCtx Ctx;
-		const CItemEnhancementStack *pEnhancement = ItemCtx.GetEnhancementStack();
-
-		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
-		Ctx.SaveAndDefineItemVar(ItemCtx);
-		ICCItem *pResult = Ctx.Run(Event);
-		if (pResult->IsError())
-			ItemCtx.GetSource()->ReportEventError(ON_ARMOR_CONSUME_POWER_EVENT, pResult);
-
-		if (pResult->IsNil())
-			{
-			pArmor->SetCustomPowerResults(0);
-			iResult = false;
-			}
-		else if (pResult->IsInteger())
-			{
-			pArmor->SetCustomPowerResults(pResult->GetIntegerValue());
-			iResult = false;
-			}
-		else
-			{
-			pArmor->SetCustomPowerResults(0);
-			iResult = true;
-			}
+		iResult = 0;
+		}
+	else if (pResult->IsInteger())
+		{
+		iResult = pResult->GetIntegerValue();
+		}
+	else
+		{
+		iResult = 0;
 		}
 
 	//	We've modified the armor
 
-	if (iResult)
-		pArmor->SetConsumePower(true);
 	return iResult;
 }
 
