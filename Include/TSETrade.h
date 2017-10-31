@@ -63,6 +63,26 @@ class CTradingDesc
 			PRICE_UPGRADE_INSTALL_ONLY =	0x00000001,	//	Install available only if you buy item
 			};
 
+		struct SServiceInfo
+			{
+			SServiceInfo (void) :
+					iService(serviceNone),
+					pItemType(NULL),
+					iPriceAdj(-1),
+					bInventoryAdj(false)
+				{ }
+
+			ETradeServiceTypes iService;		//	Type of service
+
+			CItemType *pItemType;				//	Item type
+			CString sItemCriteria;				//	If ItemType is NULL, this is the criteria
+			CString sTypeCriteria;				//	Type criteria (for selling ships, etc.).
+
+			int iPriceAdj;
+
+			bool bInventoryAdj;					//	TRUE if we restock inventory for this service
+			};
+
 		CTradingDesc (void);
 		~CTradingDesc (void);
 
@@ -83,6 +103,8 @@ class CTradingDesc
 		int GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescriptionOnly = false) const;
 		bool GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
 		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
+		inline int GetServiceCount (void) const { return m_List.GetCount(); }
+		void GetServiceInfo (int iIndex, SServiceInfo &Result) const;
 		bool HasService (ETradeServiceTypes iService) const;
 		bool HasServiceUpgradeOnly (ETradeServiceTypes iService) const;
         inline bool HasServices (void) const { return (m_List.GetCount() > 0); }
@@ -146,7 +168,7 @@ class CTradingDesc
 			DWORD dwFlags;						//	Flags
 			};
 
-        struct SServiceInfo
+        struct SServiceTypeInfo
             {
             bool bAvailable;                    //  Service available
             int iMaxLevel;                      //  Max level for this service
@@ -159,7 +181,7 @@ class CTradingDesc
 		int ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags);
 		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc);
 		bool FindService (ETradeServiceTypes iService, CSpaceObject *pShip, const SServiceDesc **retpDesc);
-        bool GetServiceInfo (ETradeServiceTypes iService, SServiceInfo &Info) const;
+        bool GetServiceTypeInfo (ETradeServiceTypes iService, SServiceTypeInfo &Info) const;
 		bool HasServiceDescription (ETradeServiceTypes iService) const;
 		bool Matches (const CItem &Item, const SServiceDesc &Commodity) const;
 		bool Matches (CDesignType *pType, const SServiceDesc &Commodity) const;

@@ -155,11 +155,11 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
 
     //  Buying and selling ships
 
-    SServiceInfo BuyShips;
-    GetServiceInfo(serviceBuyShip, BuyShips);
+    SServiceTypeInfo BuyShips;
+    GetServiceTypeInfo(serviceBuyShip, BuyShips);
 
-    SServiceInfo SellShips;
-    GetServiceInfo(serviceSellShip, SellShips);
+    SServiceTypeInfo SellShips;
+    GetServiceTypeInfo(serviceSellShip, SellShips);
 
     CString sBuySellShips;
     if (BuyShips.bAvailable && SellShips.bAvailable)
@@ -171,8 +171,8 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
 
     //  Refuels
 
-    SServiceInfo Refuel;
-    if (GetServiceInfo(serviceRefuel, Refuel))
+    SServiceTypeInfo Refuel;
+    if (GetServiceTypeInfo(serviceRefuel, Refuel))
         {
         CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), Refuel.iMaxLevel);
 
@@ -184,11 +184,11 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
 
     //  Repair armor
 
-    SServiceInfo RepairArmor;
-    GetServiceInfo(serviceRepairArmor, RepairArmor);
+    SServiceTypeInfo RepairArmor;
+    GetServiceTypeInfo(serviceRepairArmor, RepairArmor);
 
-    SServiceInfo InstallArmor;
-    GetServiceInfo(serviceReplaceArmor, InstallArmor);
+    SServiceTypeInfo InstallArmor;
+    GetServiceTypeInfo(serviceReplaceArmor, InstallArmor);
 
     if (RepairArmor.iMaxLevel != -1 || InstallArmor.iMaxLevel != -1)
         {
@@ -212,8 +212,8 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
 
     //  Install devices
 
-    SServiceInfo InstallDevice;
-    GetServiceInfo(serviceInstallDevice, InstallDevice);
+    SServiceTypeInfo InstallDevice;
+    GetServiceTypeInfo(serviceInstallDevice, InstallDevice);
 
     if (InstallDevice.iMaxLevel != -1)
         {
@@ -226,11 +226,11 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
             sDesc = sText;
         }
 
-    SServiceInfo Buys;
-    GetServiceInfo(serviceBuy, Buys);
+    SServiceTypeInfo Buys;
+    GetServiceTypeInfo(serviceBuy, Buys);
 
-    SServiceInfo Sells;
-    GetServiceInfo(serviceSell, Sells);
+    SServiceTypeInfo Sells;
+    GetServiceTypeInfo(serviceSell, Sells);
 
     if (Buys.bAvailable || Sells.bAvailable)
         {
@@ -1073,9 +1073,27 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 	return false;
 	}
 
-bool CTradingDesc::GetServiceInfo (ETradeServiceTypes iService, SServiceInfo &Info) const
+void CTradingDesc::GetServiceInfo (int iIndex, SServiceInfo &Result) const
 
-//  GetServiceInfo
+//	GetServiceInfo
+//
+//	Returns information about the given service.
+
+	{
+	const SServiceDesc &Service = m_List[iIndex];
+
+	Result.iService = Service.iService;
+	Result.pItemType = Service.pItemType;
+	Result.sItemCriteria = CItem::GenerateCriteria(Service.ItemCriteria);
+	Result.sTypeCriteria = Service.TypeCriteria.AsString();
+	Result.iPriceAdj = Service.PriceAdj.EvalAsInteger(NULL);
+
+	Result.bInventoryAdj = ((Service.dwFlags & FLAG_INVENTORY_ADJ) ? true : false);
+	}
+
+bool CTradingDesc::GetServiceTypeInfo (ETradeServiceTypes iService, SServiceTypeInfo &Info) const
+
+//  GetServiceTypeInfo
 //
 //  Returns information about the given service suitable for creating a human-
 //  readable description.
