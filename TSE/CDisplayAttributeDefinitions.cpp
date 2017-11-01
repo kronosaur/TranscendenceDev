@@ -19,6 +19,7 @@
 #define TYPE_NEUTRAL							CONSTLIT("neutral")
 
 const int DEFAULT_LOCATION_FREQUENCY =			20;
+const CDisplayAttributeDefinitions CDisplayAttributeDefinitions::Null;
 
 void CDisplayAttributeDefinitions::AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList) const
 

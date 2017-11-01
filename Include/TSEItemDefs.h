@@ -147,6 +147,8 @@ class CDisplayAttributeDefinitions
 
 		static bool InitFromCCItem (ICCItem *pEntry, SDisplayAttribute &Result);
 
+		static const CDisplayAttributeDefinitions Null;
+
 	private:
 		struct SItemEntry
 			{

@@ -493,6 +493,8 @@ class CAttributeDataBlock
 		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj);
 		void WriteToStream (IWriteStream *pStream, CSystem *pSystem = NULL);
 
+		static const CAttributeDataBlock Null;
+
 	private:
         struct SDataEntry
             {

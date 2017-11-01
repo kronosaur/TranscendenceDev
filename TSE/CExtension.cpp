@@ -100,6 +100,38 @@ CExtension::~CExtension (void)
 	CleanUp();
 	}
 
+void CExtension::AccumulateStats (SStats &Stats) const
+
+//	AccumulateStats
+//
+//	Accumulate memory and other stats for this extension.
+
+	{
+	int i;
+
+	//	Add up memory used by our design type structures
+
+	for (i = 0; i < m_DesignTypes.GetCount(); i++)
+		{
+		CDesignType *pType = m_DesignTypes.GetEntry(i);
+
+		//	Includes memory allocated by our member variables (but not
+		//	any memory used by derived classes).
+
+		Stats.dwBaseTypeMemory += sizeof(CDesignType) + pType->GetAllocMemoryUsage();
+
+		//	LATER: Accumulate memory used by the derived class into
+		//	Stats.dwTotalTypeMemory.
+		}
+
+	//	Add up XML memory usage
+
+	Stats.dwTotalXMLMemory += (m_pRootXML ? (DWORDLONG)m_pRootXML->GetMemoryUsage() : 0);
+
+	for (i = 0; i < m_ModuleXML.GetCount(); i++)
+		Stats.dwTotalXMLMemory += (DWORDLONG)m_ModuleXML[i]->GetMemoryUsage();
+	}
+
 void CExtension::AddDefaultLibraryReferences (SDesignLoadCtx &Ctx)
 
 //	AddDefaultLibraryReferences

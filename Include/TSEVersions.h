@@ -6,7 +6,7 @@
 #pragma once
 
 constexpr DWORD API_VERSION =							38;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					30;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					31;
 constexpr DWORD SYSTEM_SAVE_VERSION =					154;
 
 //	Uncomment out the following define when building a stable release
@@ -89,6 +89,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					154;
 //
 //	27: 1.7 Alpha 1
 //		Additional parameters for a stargate in CTopologyNode
+//
+//	31: 1.8 Alpha 4
+//		CDesignType has an extra flags word
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
 //

@@ -206,7 +206,7 @@ class CDesignType
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError);
 		inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
-		inline bool IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const { if (m_Extends.GetCount() == 0) return true; else return MatchesExtensions(ExtensionsIncluded); }
+		inline bool IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const { if (m_pExtra && m_pExtra->Extends.GetCount() == 0) return true; else return MatchesExtensions(ExtensionsIncluded); }
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
 		void MergeType (CDesignType *pSource);
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
@@ -222,7 +222,7 @@ class CDesignType
 		inline void ClearMark (void) { OnClearMark(); }
 		inline CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		bool FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const;
-		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_EventsCache[iEvent]; return (m_EventsCache[iEvent].pCode != NULL); }
+		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (!m_pExtra) return false; if (retEvent) *retEvent = m_pExtra->EventsCache[iEvent]; return (m_pExtra->EventsCache[iEvent].pCode != NULL); }
 		bool FindStaticData (const CString &sAttrib, const CString **retpData) const;
 		void FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent = eventNone, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		bool FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, CSpaceObject **retpGate, CVector *retvPos);
@@ -255,19 +255,20 @@ class CDesignType
 		ALERROR FireOnGlobalUniverseSave (const SEventHandlerDesc &Event);
 		void FireOnGlobalUpdate (const SEventHandlerDesc &Event);
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
+		DWORDLONG GetAllocMemoryUsage (void) const;
 		inline DWORD GetAPIVersion (void) const { return m_dwVersion; }
 		inline const CString &GetAttributes (void) const { return m_sAttributes; }
 		inline CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
-		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return m_DisplayAttribs; }
+		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return (m_pExtra ? m_pExtra->DisplayAttribs : CDisplayAttributeDefinitions::Null); }
 		CString GetEntityName (void) const;
 		ICCItem *GetEventHandler (const CString &sEvent) const;
 		void GetEventHandlers (const CEventHandler **retHandlers, TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers);
 		CExtension *GetExtension (void) const { return m_pExtension; }
-		inline const CString &GetGlobalData (const CString &sAttrib) { return m_GlobalData.GetData(sAttrib); }
+		inline const CString &GetGlobalData (const CString &sAttrib) { return (m_pExtra ? m_pExtra->GlobalData.GetData(sAttrib) : NULL_STR); }
 		inline CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		inline DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
-		inline CXMLElement *GetLocalScreens (void) const { return m_pLocalScreens; }
+		inline CXMLElement *GetLocalScreens (void) const { return (m_pExtra ? m_pExtra->pLocalScreens : NULL); }
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
@@ -283,7 +284,7 @@ class CDesignType
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty() || (m_pInheritFrom && m_pInheritFrom->HasEvents()); }
 		inline bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
-        inline void IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_GlobalData.IncData(sAttrib, pValue, retpNewValue); }
+        inline void IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { if (m_pExtra) m_pExtra->GlobalData.IncData(sAttrib, pValue, retpNewValue); }
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
 		inline bool IsClone (void) const { return m_bIsClone; }
@@ -291,7 +292,7 @@ class CDesignType
 		inline bool IsModification (void) const { return m_bIsModification; }
 		inline bool IsObsoleteAt (DWORD dwAPIVersion) const { return (m_dwObsoleteVersion > 0 && dwAPIVersion >= m_dwObsoleteVersion); }
 		inline void MarkImages (void) { OnMarkImages(); }
-		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { m_GlobalData.SetData(sAttrib, sData); }
+		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { if (m_pExtra) m_pExtra->GlobalData.SetData(sAttrib, sData); }
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		inline void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
@@ -349,37 +350,46 @@ class CDesignType
 		virtual void OnWriteToStream (IWriteStream *pStream) { }
 
 	private:
+		struct SExtra
+			{
+			TArray<DWORD> Extends;						//	Exclude this type from bind unless one of these extensions is present
+			CAttributeDataBlock StaticData;				//	Static data
+			CAttributeDataBlock GlobalData;				//	Global (variable) data
+			CAttributeDataBlock InitGlobalData;			//	Initial global data
+			CLanguageDataBlock Language;				//	Language data
+			CXMLElement *pLocalScreens = NULL;			//	Local dock screen
+			CDisplayAttributeDefinitions DisplayAttribs;	//	Display attribute definitions
+
+			SEventHandlerDesc EventsCache[evtCount];	//	Cached events
+			};
+
 		void AddUniqueHandlers (TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers);
-		inline SEventHandlerDesc *GetInheritedCachedEvent (ECachedHandlers iEvent) { return (m_EventsCache[iEvent].pCode ? &m_EventsCache[iEvent] : (m_pInheritFrom ? m_pInheritFrom->GetInheritedCachedEvent(iEvent) : NULL)); }
+		SEventHandlerDesc *GetInheritedCachedEvent (ECachedHandlers iEvent) const;
+		inline bool HasCachedEvent (ECachedHandlers iEvent) const { return (m_pExtra && m_pExtra->EventsCache[iEvent].pCode != NULL); }
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
 		bool MatchesExtensions (const TArray<DWORD> &ExtensionsIncluded) const;
 		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const;
+		SExtra *SetExtra (void) { if (!m_pExtra) m_pExtra.Set(new SExtra); return m_pExtra; }
 
 		DWORD m_dwUNID;
 		CExtension *m_pExtension;				//	Extension
 		DWORD m_dwVersion;						//	Extension API version
 		DWORD m_dwObsoleteVersion;				//	API version on which this type is obsolete (0 = not obsolete)
-		TArray<DWORD> m_Extends;				//	Exclude this type from bind unless one of these extensions is present
 		CXMLElement *m_pXML;					//	Optional XML for this type
 
 		DWORD m_dwInheritFrom;					//	Inherit from this type
 		CDesignType *m_pInheritFrom;			//	Inherit from this type
 
 		CString m_sAttributes;					//	Type attributes
-		CAttributeDataBlock m_StaticData;		//	Static data
-		CAttributeDataBlock m_GlobalData;		//	Global (variable) data
-		CAttributeDataBlock m_InitGlobalData;	//	Initial global data
-		CLanguageDataBlock m_Language;			//	Language data
 		CEventHandler m_Events;					//	Event handlers
-		CXMLElement *m_pLocalScreens;			//	Local dock screen
-		CDisplayAttributeDefinitions m_DisplayAttribs;	//	Display attribute definitions
+
+		TUniquePtr<SExtra> m_pExtra;			//	Extra type stuff (not all types need this, so we only
+												//		allocate when necessary).
 
 		bool m_bIsModification;					//	TRUE if this modifies the type it overrides
 		bool m_bIsClone;						//	TRUE if we cloned this from another type
 		bool m_bIsMerged;						//	TRUE if we created this type by merging (inheritance)
-
-		SEventHandlerDesc m_EventsCache[evtCount];	//	Cached events
 	};
 
 template <class CLASS> class CDesignTypeRef
@@ -773,6 +783,13 @@ class CExtension
 			bool bNoDigestCheck;
 			};
 
+		struct SStats
+			{
+			DWORDLONG dwTotalTypeMemory = 0;	//	Total memory used for all bound design types
+			DWORDLONG dwBaseTypeMemory = 0;		//	Total memory used for base class of bound design types (CDesignType only)
+			DWORDLONG dwTotalXMLMemory = 0;		//	Total memory used for XML structures
+			};
+
 		CExtension (void);
 		~CExtension (void);
 
@@ -780,6 +797,7 @@ class CExtension
 		static ALERROR CreateExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, EFolderTypes iFolder, CExternalEntityTable *pEntities, CExtension **retpExtension);
 		static ALERROR CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, CExtension **retpExtension, CString *retsError);
 
+		void AccumulateStats (SStats &Stats) const;
 		bool CanExtend (CExtension *pAdventure) const;
 		void CleanUp (void);
 		void CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const;
@@ -1136,22 +1154,24 @@ class CDesignCollection
 			{
 			TArray<CExtension *> Extensions;
 
-			int iAllTypes;					//	Number of bound types (including dynamic)
-			int iDynamicTypes;				//	Count of dynamtic types
-			int iMergedTypes;				//	Count of merged types
-			int iItemTypes;					//	Count of item types
-			int iShipClasses;				//	Count of ship classes
-			int iStationTypes;				//	Count of station types
-			int iResourceTypes;				//	Count of images, sounds, music
-			int iDockScreens;				//	Count of dock screen types
-			int iMissionTypes;				//	Count of mission types
-			int iSovereigns;				//	Count of sovereigns
-			int iOverlayTypes;				//	Count of overlays
-			int iSystemTypes;				//	Count of system types
-			int iEffectTypes;				//	Count of effects
-			int iSupportTypes;				//	Count of tables, generic types, etc.
+			int iAllTypes = 0;					//	Number of bound types (including dynamic)
+			int iDynamicTypes = 0;				//	Count of dynamtic types
+			int iMergedTypes = 0;				//	Count of merged types
+			int iItemTypes = 0;					//	Count of item types
+			int iShipClasses = 0;				//	Count of ship classes
+			int iStationTypes = 0;				//	Count of station types
+			int iResourceTypes = 0;				//	Count of images, sounds, music
+			int iDockScreens = 0;				//	Count of dock screen types
+			int iMissionTypes = 0;				//	Count of mission types
+			int iSovereigns = 0;				//	Count of sovereigns
+			int iOverlayTypes = 0;				//	Count of overlays
+			int iSystemTypes = 0;				//	Count of system types
+			int iEffectTypes = 0;				//	Count of effects
+			int iSupportTypes = 0;				//	Count of tables, generic types, etc.
 
-			DWORDLONG dwTotalXMLMemory;		//	Total memory used for XML structures (excluding dynamic)
+			DWORDLONG dwTotalTypeMemory = 0;	//	Total memory used for all bound design types
+			DWORDLONG dwBaseTypeMemory = 0;		//	Total memory used for base class of bound design types (CDesignType only)
+			DWORDLONG dwTotalXMLMemory = 0;		//	Total memory used for XML structures (excluding dynamic)
 			};
 
 		CDesignCollection (void);

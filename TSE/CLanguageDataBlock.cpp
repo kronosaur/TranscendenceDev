@@ -11,37 +11,6 @@
 #define ID_ATTRIB								CONSTLIT("id")
 #define TEXT_ATTRIB								CONSTLIT("text")
 
-CLanguageDataBlock::~CLanguageDataBlock (void)
-
-//	CLanguageDataBlock destructor
-
-	{
-	DeleteAll();
-	}
-
-CLanguageDataBlock &CLanguageDataBlock::operator= (const CLanguageDataBlock &Src)
-
-//	CLanguageDataBlock equals operator
-
-	{
-	int i;
-
-	//	Copy the data
-
-	DeleteAll();
-	m_Data = Src.m_Data;
-
-	//	Add a reference to every item
-
-	for (i = 0; i < m_Data.GetCount(); i++)
-		{
-		if (m_Data[i].pCode)
-			m_Data[i].pCode = m_Data[i].pCode->Reference();
-		}
-
-	return *this;
-	}
-
 void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 
 //	AddEntry
@@ -210,6 +179,26 @@ bool CLanguageDataBlock::ComposeTextResult (ETranslateResult iResult, const TArr
 		default:
 			ASSERT(false);
 			return false;
+		}
+	}
+
+void CLanguageDataBlock::Copy (const CLanguageDataBlock &Src)
+
+//	Copy
+//
+//	Copy from Src; assumes we are uninitialized.
+
+	{
+	int i;
+
+	m_Data = Src.m_Data;
+
+	//	Add a reference to every item
+
+	for (i = 0; i < m_Data.GetCount(); i++)
+		{
+		if (m_Data[i].pCode)
+			m_Data[i].pCode = m_Data[i].pCode->Reference();
 		}
 	}
 

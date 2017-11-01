@@ -188,14 +188,12 @@ CDesignType::CDesignType (void) :
 		m_pExtension(NULL),
 		m_dwObsoleteVersion(0),
 		m_pXML(NULL),
-		m_pLocalScreens(NULL), 
 		m_dwInheritFrom(0), 
 		m_pInheritFrom(NULL),
 		m_bIsModification(false),
 		m_bIsClone(false),
 		m_bIsMerged(false)
 	{
-	utlMemSet(m_EventsCache, sizeof(m_EventsCache), 0);
 	}
 
 CDesignType::~CDesignType (void)
@@ -238,11 +236,11 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		ASSERT(m_pInheritFrom->GetUNID() != GetUNID());
 		for (i = 0; i < evtCount; i++)
 			{
-			if (m_EventsCache[i].pCode == NULL)
+			if (!HasCachedEvent((ECachedHandlers)i))
 				{
 				SEventHandlerDesc *pInherit = m_pInheritFrom->GetInheritedCachedEvent((ECachedHandlers)i);
 				if (pInherit)
-					m_EventsCache[i] = *pInherit;
+					SetExtra()->EventsCache[i] = *pInherit;
 				}
 			}
 		}
@@ -405,13 +403,10 @@ void CDesignType::CreateClone (CDesignType **retpType)
 	pClone->m_dwInheritFrom = m_dwInheritFrom;
 	pClone->m_pInheritFrom = m_pInheritFrom;
 	pClone->m_sAttributes = m_sAttributes;
-	pClone->m_StaticData = m_StaticData;
-	pClone->m_GlobalData = m_GlobalData;
-	pClone->m_InitGlobalData = m_InitGlobalData;
-	pClone->m_Language = m_Language;
 	pClone->m_Events = m_Events;
-	pClone->m_pLocalScreens = m_pLocalScreens;
-	pClone->m_DisplayAttribs = m_DisplayAttribs;
+
+	if (m_pExtra)
+		pClone->m_pExtra = m_pExtra;
 
 	//	Let our subclass initialize
 
@@ -618,7 +613,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	//	Lastly, see if there is static data
 
-	else if (pResult = m_StaticData.FindDataAsItem(sProperty))
+	else if (m_pExtra && (pResult = m_pExtra->StaticData.FindDataAsItem(sProperty)))
 		return pResult;
 
 	//	Not found
@@ -750,7 +745,7 @@ bool CDesignType::FindStaticData (const CString &sAttrib, const CString **retpDa
 //	Returns static data
 
 	{
-	if (m_StaticData.FindData(sAttrib, retpData))
+	if (m_pExtra && m_pExtra->StaticData.FindData(sAttrib, retpData))
 		return true;
 
 	if (m_pInheritFrom)
@@ -1619,6 +1614,25 @@ void CDesignType::FireOnRandomEncounter (CSpaceObject *pObj)
 		}
 	}
 
+DWORDLONG CDesignType::GetAllocMemoryUsage (void) const
+
+//	GetAllocMemoryUsage
+//
+//	Returns the total memory allocated by CDesignType, not counting any memory
+//	allocated by derived classes, and not counting memory for CDesignType class
+//	itself.
+
+	{
+	DWORDLONG dwTotal = 0;
+
+	if (m_pExtra)
+		dwTotal += sizeof(SExtra);
+
+	//	LATER: Include allocated memory from member variables.
+
+	return dwTotal;
+	}
+
 CString CDesignType::GetEntityName (void) const
 
 //	GetEntityName
@@ -1646,6 +1660,21 @@ ICCItem *CDesignType::GetEventHandler (const CString &sEvent) const
 	SEventHandlerDesc Event;
 	if (FindEventHandler(sEvent, &Event))
 		return Event.pCode;
+	else
+		return NULL;
+	}
+
+SEventHandlerDesc *CDesignType::GetInheritedCachedEvent (ECachedHandlers iEvent) const
+
+//	GetInheritedCachedEvent
+//
+//	Returns the event handler, inheriting from parents, if necessary.
+
+	{
+	if (m_pExtra && m_pExtra->EventsCache[iEvent].pCode)
+		return &m_pExtra->EventsCache[iEvent];
+	else if (m_pInheritFrom)
+		return m_pInheritFrom->GetInheritedCachedEvent(iEvent);
 	else
 		return NULL;
 	}
@@ -1962,7 +1991,7 @@ const CString &CDesignType::GetStaticData (const CString &sAttrib) const
 	
 	{
 	const CString *pData;
-	if (m_StaticData.FindData(sAttrib, &pData))
+	if (m_pExtra && m_pExtra->StaticData.FindData(sAttrib, &pData))
 		return *pData;
 
 	if (m_pInheritFrom)
@@ -2078,8 +2107,8 @@ void CDesignType::InitCachedEvents (void)
 			{
 			if (strEquals(sEvent, CString(CACHED_EVENTS[j], -1, true)))
 				{
-				m_EventsCache[j].pExtension = m_pExtension;
-				m_EventsCache[j].pCode = pCode;
+				SetExtra()->EventsCache[j].pExtension = m_pExtension;
+				SetExtra()->EventsCache[j].pCode = pCode;
 				break;
 				}
 			}
@@ -2140,7 +2169,7 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 
 	CString sExtends = pDesc->GetAttribute(EXTENDS_ATTRIB);
 	if (!sExtends.IsBlank())
-		ParseUNIDList(sExtends, 0, &m_Extends);
+		ParseUNIDList(sExtends, 0, &SetExtra()->Extends);
 
 	//	Remember XML; CExtension will always keep a copy of the XML (to which
 	//	we're pointing) and we will get called appropriately if we need to 
@@ -2169,10 +2198,6 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 	if (!pDesc->FindAttribute(ATTRIBUTES_ATTRIB, &m_sAttributes))
 		m_sAttributes = pDesc->GetAttribute(MODIFIERS_ATTRIB);
 
-	//	Initialize
-
-	m_pLocalScreens = NULL;
-
 	//	Load various elements
 
 	for (i = 0; i < pDesc->GetContentElementCount(); i++)
@@ -2190,25 +2215,25 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 			InitCachedEvents();
 			}
 		else if (strEquals(pItem->GetTag(), STATIC_DATA_TAG))
-			m_StaticData.SetFromXML(pItem);
+			SetExtra()->StaticData.SetFromXML(pItem);
 		else if (strEquals(pItem->GetTag(), GLOBAL_DATA_TAG)
 				|| ((GetType() == designSovereign || GetType() == designGenericType)
 						&& strEquals(pItem->GetTag(), INITIAL_DATA_TAG)))
 			{
-			m_InitGlobalData.SetFromXML(pItem);
-			m_GlobalData = m_InitGlobalData;
+			SetExtra()->InitGlobalData.SetFromXML(pItem);
+			SetExtra()->GlobalData = m_pExtra->InitGlobalData;
 			}
 		else if (strEquals(pItem->GetTag(), DOCK_SCREENS_TAG))
-			m_pLocalScreens = pItem;
+			SetExtra()->pLocalScreens = pItem;
 		else if (strEquals(pItem->GetTag(), LANGUAGE_TAG))
 			{
-			if (error = m_Language.InitFromXML(Ctx, pItem))
+			if (error = SetExtra()->Language.InitFromXML(Ctx, pItem))
 				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (strEquals(pItem->GetTag(), DISPLAY_ATTRIBUTES_TAG)
 				|| strEquals(pItem->GetTag(), ATTRIBUTE_DESC_TAG))
 			{
-			if (error = m_DisplayAttribs.InitFromXML(Ctx, pItem))
+			if (error = SetExtra()->DisplayAttribs.InitFromXML(Ctx, pItem))
 				{
 				Ctx.pType = NULL;
 				return ComposeLoadError(Ctx, Ctx.sError);
@@ -2329,12 +2354,12 @@ bool CDesignType::MatchesExtensions (const TArray<DWORD> &ExtensionsIncluded) co
 
 	//	If we extend one of the given extensions, then we're OK.
 
-	if (m_Extends.GetCount() > 0)
+	if (m_pExtra && m_pExtra->Extends.GetCount() > 0)
 		{
 		bool bFound = false;
-		for (i = 0; i < m_Extends.GetCount(); i++)
+		for (i = 0; i < m_pExtra->Extends.GetCount(); i++)
 			{
-			if (ExtensionsIncluded.Find(m_Extends[i]))
+			if (ExtensionsIncluded.Find(m_pExtra->Extends[i]))
 				{
 				bFound = true;
 				break;
@@ -2371,10 +2396,18 @@ void CDesignType::MergeType (CDesignType *pSource)
 
 	//	Merge our variables
 
-	m_StaticData.MergeFrom(pSource->m_StaticData);
-	m_InitGlobalData.MergeFrom(pSource->m_InitGlobalData);
-	m_Language.MergeFrom(pSource->m_Language);
 	m_Events.MergeFrom(pSource->m_Events);
+
+	//	Merge extra data
+
+	if (pSource->m_pExtra)
+		{
+		SetExtra();
+
+		m_pExtra->StaticData.MergeFrom(pSource->m_pExtra->StaticData);
+		m_pExtra->InitGlobalData.MergeFrom(pSource->m_pExtra->InitGlobalData);
+		m_pExtra->Language.MergeFrom(pSource->m_pExtra->Language);
+		}
 
 	//	LATER: Merge local screens
 
@@ -2400,10 +2433,22 @@ void CDesignType::ReadFromStream (SUniverseLoadCtx &Ctx)
 //	Reads the variant portions of the design type
 	
 	{
+	//	Read flags
+
+	DWORD dwFlags;
+	if (Ctx.dwVersion >= 31)
+		Ctx.pStream->Read(dwFlags);
+	else if (Ctx.dwVersion >= 3)
+		dwFlags = 0x00000001;
+	else
+		dwFlags = 0;
+
+	bool bHasGlobalData = ((dwFlags & 0x00000001) ? true : false);
+
 	//	Read global data
 
-	if (Ctx.dwVersion >= 3)
-		m_GlobalData.ReadFromStream(Ctx.pStream);
+	if (bHasGlobalData)
+		SetExtra()->GlobalData.ReadFromStream(Ctx.pStream);
 
 	//	Allow sub-classes to load
 
@@ -2418,7 +2463,7 @@ void CDesignType::ReadGlobalData (SUniverseLoadCtx &Ctx)
 
 	{
 	if (Ctx.dwVersion < 3)
-		m_GlobalData.ReadFromStream(Ctx.pStream);
+		SetExtra()->GlobalData.ReadFromStream(Ctx.pStream);
 	}
 
 void CDesignType::Reinit (void)
@@ -2430,7 +2475,8 @@ void CDesignType::Reinit (void)
 	{
 	//	Reinit global data
 
-	m_GlobalData = m_InitGlobalData;
+	if (m_pExtra)
+		m_pExtra->GlobalData = m_pExtra->InitGlobalData;
 
 	//	Allow sub-classes to reinit
 
@@ -2461,7 +2507,7 @@ bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pD
 //	NOTE: Caller is responsible for discarding the result (if we return TRUE).
 	
 	{
-	if (m_Language.Translate(pObj, sID, pData, retpResult))
+	if (m_pExtra && m_pExtra->Language.Translate(pObj, sID, pData, retpResult))
 		return true;
 
 	if (m_pInheritFrom && m_pInheritFrom->Translate(pObj, sID, pData, retpResult))
@@ -2484,7 +2530,7 @@ bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem
 //	Translate from a <Language> block to text.
 
 	{
-	if (m_Language.Translate(pObj, sID, pData, retsText))
+	if (m_pExtra && m_pExtra->Language.Translate(pObj, sID, pData, retsText))
 		return true;
 
 	if (m_pInheritFrom && m_pInheritFrom->TranslateText(pObj, sID, pData, retsText))
@@ -2517,7 +2563,7 @@ bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem 
 //	Translate from a <Language> block on an item to text.
 
 	{
-	if (m_Language.Translate(Item, sID, pData, retsText))
+	if (m_pExtra && m_pExtra->Language.Translate(Item, sID, pData, retsText))
 		return true;
 
 	if (m_pInheritFrom && m_pInheritFrom->TranslateText(Item, sID, pData, retsText))
@@ -2569,9 +2615,17 @@ void CDesignType::WriteToStream (IWriteStream *pStream)
 //	Writes the variant portions of the design type
 
 	{
+	//	Figure out some flags
+
+	DWORD dwFlags = 0;
+	dwFlags |= (m_pExtra ? 0x00000001 : 0);
+
+	pStream->Write(dwFlags);
+
 	//	Write out global data
 
-	m_GlobalData.WriteToStream(pStream, NULL);
+	if (m_pExtra)
+		m_pExtra->GlobalData.WriteToStream(pStream, NULL);
 
 	//	Allow sub-classes to write
 

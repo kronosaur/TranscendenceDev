@@ -1318,12 +1318,16 @@ void CDesignCollection::GetStats (SStats &Result) const
 	Result.iSupportTypes = m_ByType[designItemTable].GetCount() + m_ByType[designShipTable].GetCount() + m_ByType[designSystemTable].GetCount() + m_ByType[designGenericType].GetCount()
 			+ m_ByType[designEconomyType].GetCount() + m_ByType[designPower].GetCount() + m_ByType[designSpaceEnvironmentType].GetCount() + m_ByType[designSystemMap].GetCount();
 
-	//	Add up all the XML memory usage
+	//	Add up all the type memory usage
 
-	Result.dwTotalXMLMemory = 0;
 	for (i = 0; i < m_BoundExtensions.GetCount(); i++)
 		{
-		Result.dwTotalXMLMemory += m_BoundExtensions[i]->GetXMLMemoryUsage();
+		CExtension::SStats ExtStats;
+		m_BoundExtensions[i]->AccumulateStats(ExtStats);
+
+		Result.dwBaseTypeMemory += ExtStats.dwBaseTypeMemory;
+		Result.dwTotalTypeMemory += ExtStats.dwTotalTypeMemory;
+		Result.dwTotalXMLMemory += ExtStats.dwTotalXMLMemory;
 		}
 
 	Result.dwTotalXMLMemory += m_pAdventureExtension->GetXMLMemoryUsage();

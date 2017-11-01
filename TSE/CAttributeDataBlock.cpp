@@ -7,6 +7,8 @@
 #define DATA_ATTRIB								CONSTLIT("data")
 #define ID_ATTRIB								CONSTLIT("id")
 
+const CAttributeDataBlock CAttributeDataBlock::Null;
+
 CAttributeDataBlock::CAttributeDataBlock (void) :
 		m_pObjRefData(NULL)
 
