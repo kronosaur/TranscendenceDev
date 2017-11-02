@@ -1792,6 +1792,17 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 		return bMatches;
 		}
 
+	//	If we've got a lookup, then recurse
+
+	else if (!Criteria.sLookup.IsBlank())
+		{
+		const CItemCriteria *pCriteria = g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(Criteria.sLookup);
+		if (pCriteria == NULL)
+			return false;
+
+		return MatchesCriteria(*pCriteria);
+		}
+
 	//	If we're looking for anything, then continue
 
 	if (Criteria.dwItemCategories == 0xFFFFFFFF)
@@ -2052,6 +2063,7 @@ void CItem::InitCriteriaAll (CItemCriteria *retCriteria)
 	retCriteria->iGreaterThanMass = -1;
 	retCriteria->iLessThanMass = -1;
 
+	retCriteria->sLookup = NULL_STR;
 	retCriteria->pFilter = NULL;
 	}
 
@@ -2094,9 +2106,12 @@ CString CItem::GenerateCriteria (const CItemCriteria &Criteria)
 	CMemoryWriteStream Output(64 * 1024);
 	CString sTerm;
 
+	if (!Criteria.sLookup.IsBlank())
+		return strPatternSubst(CONSTLIT("{%s}"), Criteria.sLookup);
+	
 	if (Output.Create() != NOERROR)
 		return NULL_STR;
-	
+
 	if (Criteria.dwItemCategories == 0xFFFFFFFF)
 		Output.Write("*", 1);
 	else
@@ -2252,6 +2267,7 @@ void CItem::ParseCriteria (const CString &sCriteria, CItemCriteria *retCriteria)
 	retCriteria->iGreaterThanMass = -1;
 	retCriteria->iLessThanMass = -1;
 
+	retCriteria->sLookup = NULL_STR;
 	retCriteria->pFilter = NULL;
 
 	bool bExclude = false;
@@ -2260,6 +2276,26 @@ void CItem::ParseCriteria (const CString &sCriteria, CItemCriteria *retCriteria)
 	//	Parse string
 
 	char *pPos = sCriteria.GetASCIIZPointer();
+
+	//	If we start with a brace, then this is a lookup.
+
+	if (*pPos == '{')
+		{
+		pPos++;
+
+		char *pStart = pPos;
+		while (*pPos != '\0' && *pPos != '}' )
+			pPos++;
+
+		retCriteria->sLookup = CString(pStart, (int)(pPos - pStart));
+
+		//	No other directives are allowed
+
+		return;
+		}
+
+	//	Otherwise, parse a criteria.
+
 	while (*pPos != '\0')
 		{
 		switch (*pPos)
@@ -3102,6 +3138,7 @@ CItemCriteria::CItemCriteria (const CItemCriteria &Copy)
 	iGreaterThanMass = Copy.iGreaterThanMass;
 	iLessThanMass = Copy.iLessThanMass;
 
+	sLookup = Copy.sLookup;
 	pFilter = Copy.pFilter;
 	if (pFilter)
 		pFilter->Reference();
@@ -3145,6 +3182,7 @@ CItemCriteria &CItemCriteria::operator= (const CItemCriteria &Copy)
 	iGreaterThanMass = Copy.iGreaterThanMass;
 	iLessThanMass = Copy.iLessThanMass;
 
+	sLookup = Copy.sLookup;
 	pFilter = Copy.pFilter;
 	if (pFilter)
 		pFilter->Reference();
@@ -3168,7 +3206,15 @@ bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const
 //	criteria are missing, we return -1.
 
 	{
-	if (iEqualToLevel != -1)
+	if (!sLookup.IsBlank())
+		{
+		const CItemCriteria *pCriteria = g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(sLookup);
+		if (pCriteria == NULL)
+			return false;
+
+		return pCriteria->GetExplicitLevelMatched(retiMin, retiMax);
+		}
+	else if (iEqualToLevel != -1)
 		{
 		*retiMin = iEqualToLevel;
 		*retiMax = iEqualToLevel;
@@ -3207,6 +3253,15 @@ int CItemCriteria::GetMaxLevelMatched (void) const
 	{
 	int i;
 
+	if (!sLookup.IsBlank())
+		{
+		const CItemCriteria *pCriteria = g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(sLookup);
+		if (pCriteria == NULL)
+			return -1;
+
+		return pCriteria->GetMaxLevelMatched();
+		}
+
 	if (iEqualToLevel != -1)
 		return iEqualToLevel;
 
@@ -3226,4 +3281,35 @@ int CItemCriteria::GetMaxLevelMatched (void) const
 		}
 
 	return iMaxLevel;
+	}
+
+CString CItemCriteria::GetName (void) const
+
+//	GetName
+//
+//	Returns the name of this criteria. We return NULL_STR if we cannot find the name.
+
+	{
+	//	If this is a lookup, we get the name from that.
+
+	if (!sLookup.IsBlank())
+		{
+		CString sName;
+		if (!g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaNameByID(sLookup, &sName))
+			return NULL_STR;
+
+		return sName;
+		}
+
+	//	Otherwise, we see if this is a shared criteria with a name.
+
+	else
+		{
+		CString sName;
+		CString sCriteria = CItem::GenerateCriteria(*this);
+		if (!g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaName(sCriteria, &sName))
+			return NULL_STR;
+
+		return sName;
+		}
 	}

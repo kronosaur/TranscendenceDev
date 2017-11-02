@@ -17,6 +17,7 @@
 #define CURRENCY_ATTRIB							CONSTLIT("currency")
 #define CREDIT_CONVERSION_ATTRIB				CONSTLIT("creditConversion")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define IMPACT_ATTRIB							CONSTLIT("impact")
 #define INVENTORY_ADJ_ATTRIB					CONSTLIT("inventoryAdj")
 #define ITEM_ATTRIB								CONSTLIT("item")
 #define LEVEL_FREQUENCY_ATTRIB					CONSTLIT("levelFrequency")
@@ -60,6 +61,8 @@ static SServiceData SERVICE_DATA[serviceCount] =
 		{	"customPrice",				"X",	"Custom"		},	//	serviceCustom
 		{	"priceOfShipOffered",		"Bs",	"BuyShip"		},	//	serviceBuyShip
 		{	"priceOfShipForSale",		"Ss",	"SellShip"		},	//	serviceSellShip
+		{	"consumeTrade",				"Tc",	"ConsumeTrade"	},	//	serviceConsume
+		{	"produceTrade",				"Tp",	"ProduceTrade"	},	//	serviceProduce
 	};
 
 CTradingDesc::CTradingDesc (void) : 
@@ -572,8 +575,16 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CT
 
 			//	Other
 
-			if (error = pCommodity->PriceAdj.InitFromString(Ctx, pLine->GetAttribute(PRICE_ADJ_ATTRIB)))
-				return error;
+			if (pCommodity->iService == serviceConsume || pCommodity->iService == serviceProduce)
+				{
+				if (error = pCommodity->PriceAdj.InitFromString(Ctx, pLine->GetAttribute(IMPACT_ATTRIB)))
+					return error;
+				}
+			else
+				{
+				if (error = pCommodity->PriceAdj.InitFromString(Ctx, pLine->GetAttribute(PRICE_ADJ_ATTRIB)))
+					return error;
+				}
 
 			//	Message ID
 

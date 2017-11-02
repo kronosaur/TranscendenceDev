@@ -39,6 +39,7 @@ struct CItemCriteria
 
 	bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
 	int GetMaxLevelMatched (void) const;
+	CString GetName (void) const;
     inline bool MatchesItemCategory (ItemCategories iCategory) { return ((dwItemCategories & iCategory) && !(dwExcludeCategories & iCategory)); }
 
 	DWORD dwItemCategories;			//	Set of ItemCategories to match on
@@ -70,6 +71,7 @@ struct CItemCriteria
 	int iGreaterThanMass;			//	If not -1, only items greater than this mass (in kg)
 	int iLessThanMass;				//	If not -1, only items less than this mass (in kg)
 
+	CString sLookup;				//	Look up a shared criteria
 	ICCItem *pFilter;				//	Filter returns Nil for excluded items
 	};
 
@@ -141,6 +143,9 @@ class CDisplayAttributeDefinitions
 		void AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList) const;
 		void Append (const CDisplayAttributeDefinitions &Attribs);
 		inline void DeleteAll (void) { m_Attribs.DeleteAll(); m_ItemAttribs.DeleteAll(); }
+		const CItemCriteria *FindCriteriaByID (const CString &sID) const;
+		bool FindCriteriaName (const CString &sCriteria, CString *retsName = NULL) const;
+		bool FindCriteriaNameByID (const CString &sID, CString *retsName = NULL) const;
 		int GetLocationAttribFrequency (const CString &sAttrib) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return ((m_Attribs.GetCount() == 0) && (m_ItemAttribs.GetCount() == 0)); }
@@ -152,9 +157,11 @@ class CDisplayAttributeDefinitions
 	private:
 		struct SItemEntry
 			{
+			CString sID;					//	Optional ID
 			CItemCriteria Criteria;
 			EDisplayAttributeTypes iType;
-			CString sText;
+			CString sText;					//	Text to display on item
+			CString sCriteriaName;			//	Name for the criteria
 			};
 
 		struct SAttribDesc
@@ -166,6 +173,9 @@ class CDisplayAttributeDefinitions
 
 			int iFrequency;			//	% of locations with this attribute. (1-99)
 			};
+
+		const SItemEntry *FindByCriteria (const CString &sCriteria) const;
+		const SItemEntry *FindByID (const CString &sID) const;
 
 		TSortMap<CString, SAttribDesc> m_Attribs;
 		TArray<SItemEntry> m_ItemAttribs;

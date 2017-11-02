@@ -623,6 +623,7 @@ class CGenericType : public CDesignType
 //	Defines CTopologyNode::SCriteria, which is needed by station encounter
 //	definitions.
 
+#include "TSETrade.h"
 #include "TSETopology.h"
 
 //	Ship Systems ---------------------------------------------------------------
@@ -650,7 +651,6 @@ class CGenericType : public CDesignType
 //	Station Definitions --------------------------------------------------------
 
 #include "TSEDockScreenType.h"
-#include "TSETrade.h"
 #include "TSEStationType.h"
 
 //	Other Types ----------------------------------------------------------------

@@ -72,6 +72,9 @@
     <Filter Include="Source Files\Language">
       <UniqueIdentifier>{f2da3398-611e-4ffd-8ba3-992dfed6f45a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Trading">
+      <UniqueIdentifier>{e6057710-b4bc-4ff2-bdb5-ded4d11dd4ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -1033,9 +1036,6 @@
     <ClCompile Include="CDockingPorts.cpp">
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
-    <ClCompile Include="CTradingDesc.cpp">
-      <Filter>Source Files\Stations</Filter>
-    </ClCompile>
     <ClCompile Include="CCommunicationsHandler.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
@@ -1134,6 +1134,12 @@
     </ClCompile>
     <ClCompile Include="CItemPriceTracker.cpp">
       <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CTradingDesc.cpp">
+      <Filter>Source Files\Trading</Filter>
+    </ClCompile>
+    <ClCompile Include="CTradingEconomy.cpp">
+      <Filter>Source Files\Trading</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

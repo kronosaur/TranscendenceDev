@@ -23,9 +23,10 @@ enum ETradeServiceTypes
 	serviceCustom =						12,
 	serviceBuyShip =					13,	//	Object buys ship from the player
 	serviceSellShip =					14,	//	Object sells ship to the player
+	serviceConsume =					15,	//	Object consumes items (and thus makes them more expensive)
+	serviceProduce =					16,	//	Object produces items (and thus makes them cheaper)
 
-
-	serviceCount =						15,
+	serviceCount =						17,
 	};
 
 struct STradeServiceCtx
@@ -86,6 +87,7 @@ class CTradingDesc
 		CTradingDesc (void);
 		~CTradingDesc (void);
 
+		bool AccumulateTradeImpact (TSortMap<DWORD, int> &PriceImpact) const;
 		inline void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
 			{ AddOrder(pType, sCriteria, iPriceAdj, FLAG_BUYS); }
 		inline void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
@@ -197,3 +199,28 @@ class CTradingDesc
 		TArray<SServiceDesc> m_List;
 	};
 
+class CTradingEconomy
+	{
+	public:
+		CString GetDescription (void) const;
+		bool FindBuyPriceAdj (CItemType *pItem, int *retiAdj = NULL) const;
+		bool FindSellPriceAdj (CItemType *pItem, int *retiAdj = NULL) const;
+		void ReadFromStream (SUniverseLoadCtx &Ctx);
+		void Refresh (CSystem *pSystem);
+		void WriteToStream (IWriteStream *pStream) const;
+
+	private:
+		struct SCriteriaEntry
+			{
+			CItemCriteria Criteria;
+			int iImpact = 0;
+			};
+
+		CString CalcImpactDesc (int iImpact) const;
+		CString CalcImpactSortKey (int iImpact, const CString &sName) const;
+		int GetPriceImpact (CItemType *pItem) const;
+		void RefreshFromTradeDesc (CSystem *pSystem, CTradingDesc *pTrade);
+
+		TSortMap<CString, SCriteriaEntry> m_CriteriaImpact;
+		TSortMap<CItemType *, int> m_ItemTypeImpact;
+	};

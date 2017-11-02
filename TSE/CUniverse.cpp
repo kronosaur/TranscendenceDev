@@ -461,6 +461,10 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 	pTopology->SetSystem(pSystem);
 	pTopology->SetSystemID(pSystem->GetID());
 
+	//	Initialize trading economy based on stations in system
+
+	pTopology->GetTradingEconomy().Refresh(pSystem);
+
 	//	Done
 
 	if (retpSystem)

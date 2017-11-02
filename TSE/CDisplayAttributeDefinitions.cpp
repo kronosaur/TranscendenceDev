@@ -10,6 +10,8 @@
 
 #define ATTRIBUTE_ATTRIB						CONSTLIT("attribute")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define CRITERIA_LABEL_ATTRIB					CONSTLIT("criteriaLabel")
+#define ID_ATTRIB								CONSTLIT("id")
 #define PERCENT_LOCATIONS_ATTRIB				CONSTLIT("percentLocations")
 #define LABEL_ATTRIB							CONSTLIT("label")
 #define LABEL_TYPE_ATTRIB						CONSTLIT("labelType")
@@ -60,6 +62,91 @@ void CDisplayAttributeDefinitions::Append (const CDisplayAttributeDefinitions &A
 	//	Append attribute definitions
 
 	m_Attribs.Merge(Attribs.m_Attribs);
+	}
+
+const CDisplayAttributeDefinitions::SItemEntry *CDisplayAttributeDefinitions::FindByCriteria (const CString &sCriteria) const
+
+//	FindByCriteria
+//
+//	Returns a pointer to the entry that matches the given criteria (or NULL if
+//	we cannot find a matching one).
+
+	{
+	int i;
+
+	for (i = 0; i < m_ItemAttribs.GetCount(); i++)
+		{
+		if (strEquals(sCriteria, CItem::GenerateCriteria(m_ItemAttribs[i].Criteria)))
+			return &m_ItemAttribs[i];
+		}
+
+	return NULL;
+	}
+
+const CDisplayAttributeDefinitions::SItemEntry *CDisplayAttributeDefinitions::FindByID (const CString &sID) const
+
+//	FindByID
+//
+//	Returns a pointer to the entry of the given ID (or NULL if not found).
+
+	{
+	int i;
+
+	for (i = 0; i < m_ItemAttribs.GetCount(); i++)
+		{
+		if (strEquals(sID, m_ItemAttribs[i].sID))
+			return &m_ItemAttribs[i];
+		}
+
+	return NULL;
+	}
+
+const CItemCriteria *CDisplayAttributeDefinitions::FindCriteriaByID (const CString &sID) const
+
+//	FindCriteriaByID
+//
+//	Finds the criteria for the given ID (NULL if not found).
+
+	{
+	const SItemEntry *pEntry = FindByID(sID);
+	if (pEntry == NULL)
+		return NULL;
+
+	return &pEntry->Criteria;
+	}
+
+bool CDisplayAttributeDefinitions::FindCriteriaName (const CString &sCriteria, CString *retsName) const
+
+//	FindCriteriaName
+//
+//	Looks for the given criteria and returns its name, if found.
+
+	{
+	const SItemEntry *pEntry = FindByCriteria(sCriteria);
+	if (pEntry == NULL || pEntry->sCriteriaName.IsBlank())
+		return false;
+
+	if (retsName)
+		*retsName = pEntry->sCriteriaName;
+
+	return true;
+	}
+
+bool CDisplayAttributeDefinitions::FindCriteriaNameByID (const CString &sID, CString *retsName) const
+
+//	FindCriteriaNameByID
+//
+//	Looks for the given criteria and returns its name, if found.
+
+	{
+	const SItemEntry *pEntry = FindByID(sID);
+	if (pEntry == NULL || pEntry->sCriteriaName.IsBlank())
+		return false;
+
+	if (retsName)
+		*retsName = pEntry->sCriteriaName;
+
+	return true;
 	}
 
 int CDisplayAttributeDefinitions::GetLocationAttribFrequency (const CString &sAttrib) const
@@ -140,7 +227,9 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 		if (strEquals(pDef->GetTag(), ITEM_ATTRIBUTE_TAG))
 			{
 			SItemEntry *pEntry = m_ItemAttribs.Insert();
+			pEntry->sID = pDef->GetAttribute(ID_ATTRIB);
 			pEntry->sText = pDef->GetAttribute(LABEL_ATTRIB);
+			pEntry->sCriteriaName = pDef->GetAttribute(CRITERIA_LABEL_ATTRIB);
 
 			//	Criteria
 

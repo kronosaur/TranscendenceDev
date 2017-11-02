@@ -93,6 +93,7 @@ class CTopologyNode
 		inline DWORD GetSystemID (void) { return m_dwID; }
 		inline const CString &GetSystemName (void) { return m_sName; }
 		inline DWORD GetSystemTypeUNID (void) { return m_SystemUNID; }
+		inline CTradingEconomy &GetTradingEconomy (void) { return m_Trading; }
 		inline bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
@@ -181,6 +182,7 @@ class CTopologyNode
 		CString m_sEpitaph;						//	Epitaph if this is endgame node
 		CString m_sEndGameReason;				//	End game reason if this is endgame node
 
+		CTradingEconomy m_Trading;				//	System trading adjustments
 		CAttributeDataBlock m_Data;				//	Opaque data
 
 		CSystem *m_pSystem;						//	NULL if not yet created
