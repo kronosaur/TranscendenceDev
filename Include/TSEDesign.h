@@ -284,7 +284,7 @@ class CDesignType
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty() || (m_pInheritFrom && m_pInheritFrom->HasEvents()); }
 		inline bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
-        inline void IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { if (m_pExtra) m_pExtra->GlobalData.IncData(sAttrib, pValue, retpNewValue); }
+        inline void IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { SetExtra()->GlobalData.IncData(sAttrib, pValue, retpNewValue); }
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
 		inline bool IsClone (void) const { return m_bIsClone; }
@@ -292,7 +292,7 @@ class CDesignType
 		inline bool IsModification (void) const { return m_bIsModification; }
 		inline bool IsObsoleteAt (DWORD dwAPIVersion) const { return (m_dwObsoleteVersion > 0 && dwAPIVersion >= m_dwObsoleteVersion); }
 		inline void MarkImages (void) { OnMarkImages(); }
-		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { if (m_pExtra) m_pExtra->GlobalData.SetData(sAttrib, sData); }
+		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { SetExtra()->GlobalData.SetData(sAttrib, sData); }
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		inline void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
