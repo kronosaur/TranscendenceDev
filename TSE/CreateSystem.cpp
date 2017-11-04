@@ -50,6 +50,7 @@
 #define SYSTEM_GROUP_TAG				CONSTLIT("SystemGroup")
 #define TABLE_TAG						CONSTLIT("Table")
 #define TABLES_TAG						CONSTLIT("Tables")
+#define TRADE_TAG						CONSTLIT("Trade")
 #define TROJAN_TAG						CONSTLIT("Trojan")
 #define VARIANT_TAG						CONSTLIT("Variant")
 #define VARIANTS_TAG					CONSTLIT("Variants")
@@ -3570,6 +3571,28 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 			pCtx->sError = CONSTLIT("Unable to create ships for station");
 			return error;
 			}
+		}
+
+	//	If we have a <Trade> element, then add it to the object.
+
+	CXMLElement *pTrade = pDesc->GetContentElementByTag(TRADE_TAG);
+	if (pTrade)
+		{
+		SDesignLoadCtx LoadCtx;
+		CTradingDesc *pNewTrade;
+		if (error = CTradingDesc::CreateFromXML(LoadCtx, pTrade, &pNewTrade))
+			{
+			pCtx->sError = strPatternSubst(CONSTLIT("Unable to load <Trade> element: %s"), LoadCtx.sError);
+			return error;
+			}
+
+		//	Add to station
+
+		pStation->AddTradeDesc(*pNewTrade);
+
+		//	Done
+
+		delete pNewTrade;
 		}
 
 	//	If we have an OnCreate block then add it to the set of deferred code

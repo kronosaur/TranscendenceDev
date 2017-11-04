@@ -62,7 +62,9 @@ static SServiceData SERVICE_DATA[serviceCount] =
 		{	"priceOfShipOffered",		"Bs",	"BuyShip"		},	//	serviceBuyShip
 		{	"priceOfShipForSale",		"Ss",	"SellShip"		},	//	serviceSellShip
 		{	"consumeTrade",				"Tc",	"ConsumeTrade"	},	//	serviceConsume
+
 		{	"produceTrade",				"Tp",	"ProduceTrade"	},	//	serviceProduce
+		{	"balanceTrade",				"Tb",	"BalanceTrade"	},	//	serviceTrade
 	};
 
 CTradingDesc::CTradingDesc (void) : 
@@ -79,6 +81,65 @@ CTradingDesc::~CTradingDesc (void)
 //	CTradingDesc destructor
 
 	{
+	}
+
+void CTradingDesc::AddOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj)
+
+//	AddOrder
+//
+//	Adds a new trade line
+
+	{
+	if (iService == serviceNone)
+		return;
+
+	//	We always add at the beginning (because new orders take precedence)
+
+	SServiceDesc Commodity;
+	Commodity.iService = iService;
+	Commodity.pItemType = pItemType;
+	if (pItemType == NULL)
+		CItem::ParseCriteria(sCriteria, &Commodity.ItemCriteria);
+	Commodity.PriceAdj.SetInteger(iPriceAdj);
+	Commodity.dwFlags = 0;
+	Commodity.sID = ComputeID(iService, Commodity.pItemType.GetUNID(), sCriteria, Commodity.dwFlags);
+
+	//	If we find a previous order for the same criteria, then delete it
+
+	int iDuplicate;
+	if (FindServiceToOverride(Commodity, &iDuplicate))
+		m_List.Delete(iDuplicate);
+
+	//	Add it at the beginning of the list.
+
+	m_List.Insert(Commodity, 0);
+	}
+
+void CTradingDesc::AddOrders (const CTradingDesc &Trade)
+
+//	AddOrders
+//
+//	Adds the given orders to our block.
+
+	{
+	int i;
+
+	//	First delete any existing orders that we overwrite.
+
+	for (i = 0; i < Trade.m_List.GetCount(); i++)
+		{
+		int iDuplicate;
+
+		if (FindServiceToOverride(Trade.m_List[i], &iDuplicate))
+			m_List.Delete(iDuplicate);
+		}
+
+	//	Now add this block at the beginning
+
+	m_List.InsertEmpty(Trade.m_List.GetCount(), 0);
+
+	for (i = 0; i < Trade.m_List.GetCount(); i++)
+		m_List[i] = Trade.m_List[i];
 	}
 
 void CTradingDesc::AddOrder (CItemType *pItemType, const CString &sCriteria, int iPriceAdj, DWORD dwFlags)
@@ -117,6 +178,31 @@ void CTradingDesc::AddOrder (CItemType *pItemType, const CString &sCriteria, int
 			m_List.Delete(i);
 			break;
 			}
+	}
+
+int CTradingDesc::AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice)
+
+//	AdjustForSystemPrice
+//
+//	Returns a price adjusted by the system trading table.
+
+	{
+	if (Ctx.pProvider == NULL)
+		return iPrice;
+
+	CSystem *pSystem = Ctx.pProvider->GetSystem();
+	if (pSystem == NULL)
+		return iPrice;
+
+	CTopologyNode *pNode = pSystem->GetTopology();
+	if (pNode == NULL)
+		return iPrice;
+
+	int iAdj;
+	if (!pNode->GetTradingEconomy().FindPriceAdj(Ctx.pItem->GetType(), &iAdj))
+		return iPrice;
+
+	return iPrice * iAdj / 100;
 	}
 
 int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags)
@@ -417,6 +503,19 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 
 			iBasePrice = Ctx.iCount * Ctx.pItem->GetTradePrice(Ctx.pProvider, bActual);
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
+
+			//	Adjust for system trade prices
+
+			iBasePrice = AdjustForSystemPrice(Ctx, iBasePrice);
+			break;
+			}
+
+		case serviceRefuel:
+		case serviceSell:
+			{
+			iBasePrice = Ctx.iCount * Ctx.pItem->GetTradePrice(Ctx.pProvider, bActual);
+			pBaseEconomy = Ctx.pItem->GetCurrencyType();
+			iBasePrice = AdjustForSystemPrice(Ctx, iBasePrice);
 			break;
 			}
 
@@ -575,7 +674,9 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CT
 
 			//	Other
 
-			if (pCommodity->iService == serviceConsume || pCommodity->iService == serviceProduce)
+			if (pCommodity->iService == serviceConsume 
+					|| pCommodity->iService == serviceProduce
+					|| pCommodity->iService == serviceTrade)
 				{
 				if (error = pCommodity->PriceAdj.InitFromString(Ctx, pLine->GetAttribute(IMPACT_ATTRIB)))
 					return error;
@@ -721,6 +822,27 @@ int CTradingDesc::Charge (CSpaceObject *pObj, int iCharge)
 		return 0;
 	}
 
+bool CTradingDesc::FindByID (const CString &sID, int *retiIndex) const
+
+//	FindByID
+//
+//	Finds an entry by ID
+
+	{
+	int i;
+
+	for (i = 0; i < m_List.GetCount(); i++)
+		if (strEquals(sID, m_List[i].sID))
+			{
+			if (retiIndex)
+				*retiIndex = i;
+
+			return true;
+			}
+
+	return false;
+	}
+
 bool CTradingDesc::FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc)
 
 //	FindService
@@ -767,6 +889,81 @@ bool CTradingDesc::FindService (ETradeServiceTypes iService, CSpaceObject *pShip
 			}
 	
 	return false;
+	}
+
+bool CTradingDesc::FindServiceToOverride (const SServiceDesc &NewService, int *retiIndex) const
+
+//	FindServiceToOverride
+//
+//	Finds a service in the current list that would be overridden by the given
+//	new service.
+
+	{
+	int i;
+
+	for (i = 0; i < m_List.GetCount(); i++)
+		{
+		const SServiceDesc &Service = m_List[i];
+
+		switch (NewService.iService)
+			{
+			case serviceConsume:
+			case serviceProduce:
+			case serviceTrade:
+				{
+				if ((Service.iService == serviceConsume
+							|| Service.iService == serviceProduce
+							|| Service.iService == serviceTrade)
+						&& HasSameCriteria(Service, NewService))
+					{
+					if (retiIndex)
+						*retiIndex = i;
+
+					return true;
+					}
+
+				break;
+				}
+
+			default:
+				{
+				if (Service.iService == NewService.iService
+						&& HasSameCriteria(Service, NewService))
+					{
+					if (retiIndex)
+						*retiIndex = i;
+
+					return true;
+					}
+				break;
+				}
+			}
+		}
+
+	return false;
+	}
+
+bool CTradingDesc::HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &S2)
+
+//	HasSameCriteria
+//
+//	Returns TRUE if the two services have the same criteria.
+
+	{
+	switch (S1.iService)
+		{
+		case serviceBuyShip:
+		case serviceSellShip:
+			return S1.TypeCriteria.IsEqual(S2.TypeCriteria);
+
+		default:
+			{
+			if (S1.pItemType)
+				return (S1.pItemType == S2.pItemType);
+			else
+				return strEquals(CItem::GenerateCriteria(S1.ItemCriteria), CItem::GenerateCriteria(S2.ItemCriteria));
+			}
+		}
 	}
 
 bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
@@ -1322,6 +1519,22 @@ void CTradingDesc::OnUpdate (CSpaceObject *pObj)
 	DEBUG_CATCH
 	}
 
+ETradeServiceTypes CTradingDesc::ParseService (const CString &sService)
+
+//	ParseService
+//
+//	Returns the service type
+
+	{
+	int i;
+
+	for (i = 0; i < serviceCount; i++)
+		if (strEquals(sService, CString(SERVICE_DATA[i].pszName)))
+			return (ETradeServiceTypes)i;
+
+	return serviceNone;
+	}
+
 void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
@@ -1727,13 +1940,3 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 		}
 	}
 
-//  CTradingDesc::SServiceDesc -------------------------------------------------
-
-CTradingDesc::SServiceDesc::~SServiceDesc (void)
-
-//  SServiceDesc destructor
-
-    {
-    if (pPriceAdjCode)
-        pPriceAdjCode->Discard(&g_pUniverse->GetCC());
-    }

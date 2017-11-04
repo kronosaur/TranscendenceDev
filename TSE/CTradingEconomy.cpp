@@ -5,38 +5,77 @@
 
 #include "PreComp.h"
 
-CString CTradingEconomy::CalcImpactDesc (int iImpact) const
+const int MIN_IMPACT =				-33;
+const int MAX_IMPACT =				50;
+
+const int MIN_PRICE_ADJ =			50;
+
+CTradingEconomy::EImpactCategories CTradingEconomy::CalcImpactCategory (int iImpact) const
 
 //	CalcImpactDesc
 //
 //	Returns a description of the impact.
 
 	{
-	CString sDesc;
-
 	if (iImpact < -50)
-		sDesc = CONSTLIT("massive glut of");
+		return impactMassiveGlut;
 	else if (iImpact < -30)
-		sDesc = CONSTLIT("major glut of");
+		return impactMajorGlut;
 	else if (iImpact < -15)
-		sDesc = CONSTLIT("glut of");
+		return impactGlut;
 	else if (iImpact < 0)
-		sDesc = CONSTLIT("exports");
+		return impactExports;
 	else if (iImpact == 0)
-		sDesc = CONSTLIT("balanced use of");
+		return impactBalanced;
 	else if (iImpact <= 10)
-		sDesc = CONSTLIT("imports");
+		return impactImports;
 	else if (iImpact <= 25)
-		sDesc = CONSTLIT("shortage of");
+		return impactShortage;
 	else if (iImpact <= 50)
-		sDesc = CONSTLIT("major shortage of");
+		return impactMajorShortage;
 	else
-		sDesc = CONSTLIT("desperate shortage of");
+		return impactDesperateShortage;
+	}
 
-	if (g_pUniverse->InDebugMode())
-		return strPatternSubst(CONSTLIT("%s (%d)"), sDesc, iImpact);
-	else
-		return sDesc;
+CString CTradingEconomy::CalcImpactDesc (EImpactCategories iImpact) const
+
+//	CalcImpactDesc
+//
+//	Returns a description of the impact.
+
+	{
+	switch (iImpact)
+		{
+		case impactMassiveGlut:
+			return CONSTLIT("massive glut of");
+
+		case impactMajorGlut:
+			return CONSTLIT("major glut of");
+
+		case impactGlut:
+			return CONSTLIT("glut of");
+
+		case impactExports:
+			return CONSTLIT("exports");
+
+		case impactBalanced:
+			return CONSTLIT("balanced use of");
+
+		case impactImports:
+			return CONSTLIT("imports");
+
+		case impactShortage:
+			return CONSTLIT("shortage of");
+
+		case impactMajorShortage:
+			return CONSTLIT("major shortage of");
+
+		case impactDesperateShortage:
+			return CONSTLIT("desperate shortage of");
+
+		default:
+			return NULL_STR;
+		}
 	}
 
 CString CTradingEconomy::CalcImpactSortKey (int iImpact, const CString &sName) const
@@ -59,10 +98,9 @@ CString CTradingEconomy::GetDescription (void) const
 	{
 	int i;
 
-	//	Generate separate descriptions for each price adjustment and sort by
-	//	type and size of adjustment.
+	//	Categorize each impact, so we end up with a list of lists.
 
-	TSortMap<CString, CString> List(DescendingSort);
+	TSortMap<int, TArray<CString>> List;
 
 	//	Start by adding individual item prices. Note that these already include any 
 	//	impact from item criteria.
@@ -70,13 +108,11 @@ CString CTradingEconomy::GetDescription (void) const
 	for (i = 0; i < m_ItemTypeImpact.GetCount(); i++)
 		{
 		int iImpact = m_ItemTypeImpact[i];
-		if (iImpact == 0)
+		if (Absolute(iImpact) < 5)
 			continue;
 
-		CString sName = m_ItemTypeImpact.GetKey(i)->GetNounPhrase(nounShort);
-		CString sDesc = strPatternSubst(CONSTLIT("%s %s"), CalcImpactDesc(iImpact), sName);
-
-		List.SetAt(CalcImpactSortKey(iImpact, sName), sDesc);
+		TArray<CString> *pCategory = List.SetAt(CalcImpactCategory(iImpact));
+		pCategory->Insert(m_ItemTypeImpact.GetKey(i)->GetNounPhrase(nounShort));
 		}
 
 	//	Now add item criteria
@@ -84,16 +120,18 @@ CString CTradingEconomy::GetDescription (void) const
 	for (i = 0; i < m_CriteriaImpact.GetCount(); i++)
 		{
 		const SCriteriaEntry &Entry = m_CriteriaImpact[i];
-		if (Entry.iImpact == 0)
+		if (Absolute(Entry.iImpact) < 5)
 			continue;
 
 		CString sName = Entry.Criteria.GetName();
 		if (sName.IsBlank())
 			continue;
 
-		CString sDesc = strPatternSubst(CONSTLIT("%s %s"), CalcImpactDesc(Entry.iImpact), sName);
+		if (g_pUniverse->InDebugMode())
+			sName = strPatternSubst(CONSTLIT("%s (%d)"), sName, Entry.iImpact);
 
-		List.SetAt(CalcImpactSortKey(Entry.iImpact, sName), sDesc);
+		TArray<CString> *pCategory = List.SetAt(CalcImpactCategory(Entry.iImpact));
+		pCategory->Insert(sName);
 		}
 
 	//	Short-circuit
@@ -103,38 +141,51 @@ CString CTradingEconomy::GetDescription (void) const
 
 	//	Concatenate them all together
 
-	CString sResult = strCapitalize(List[0]);
-	for (i = 1; i < List.GetCount(); i++)
+	CString sResult;
+	for (i = 0; i < List.GetCount(); i++)
 		{
-		sResult.Append(CONSTLIT(", "));
-		sResult.Append(List[i]);
+		TArray<CString> &Category = List[i];
+		Category.Sort();
+
+		if (i > 0)
+			sResult.Append(CONSTLIT("; "));
+
+		sResult.Append(strPatternSubst(CONSTLIT("%s %s"), CalcImpactDesc((EImpactCategories)List.GetKey(i)), strJoin(Category, CONSTLIT("oxfordComma"))));
 		}
 
 	//	Done
 
-	return sResult;
+	return strCapitalize(sResult);
 	}
 
-bool CTradingEconomy::FindBuyPriceAdj (CItemType *pItem, int *retiAdj) const
+bool CTradingEconomy::FindPriceAdj (CItemType *pItem, int *retiAdj) const
 
-//	FindBuyPriceAdj
+//	FindPriceAdj
 //
 //	Returns the price adjustment for the given item when a station is BUYING the
 //	item from the player. Returns FALSE if there is no adjustment (normal price).
 
 	{
-	return false;
-	}
+	//	Find the impact for this item.
 
-bool CTradingEconomy::FindSellPriceAdj (CItemType *pItem, int *retiAdj) const
+	int iImpact = GetPriceImpact(pItem);
+	if (iImpact == 0)
+		return false;
 
-//	FindSellPriceAdj
-//
-//	Returns the price adjustment for the given item when a station is SELLING the
-//	item to the player. Returns FALSE if there is no adjustment (normal price).
+	//	If we don't need to compute the actual adjustment, then we're done.
 
-	{
-	return false;
+	if (retiAdj == NULL)
+		return true;
+
+	//	For positive impact, the price goes up. For negative ones, it goes
+	//	down.
+
+	if (iImpact > 0)
+		*retiAdj = 100 + iImpact;
+	else
+		*retiAdj = Max(MIN_PRICE_ADJ, 100 + iImpact);
+
+	return true;
 	}
 
 int CTradingEconomy::GetPriceImpact (CItemType *pItem) const
@@ -144,18 +195,85 @@ int CTradingEconomy::GetPriceImpact (CItemType *pItem) const
 //	Returns the price impact of the given item. Positive numbers mean the price 
 //	increases (due to demand); negative numbers mean the price decreases due
 //	to supply. 0 means no change in price.
+//
+//	NOTE: If multiple criteria apply to this item, we take the largest impact.
 
 	{
-	return 0;
+	int i;
+	CItem Item(pItem, 1);
+
+	int iBestImpact = 0;
+	for (i = 0; i < m_CriteriaImpact.GetCount(); i++)
+		{
+		if (Item.MatchesCriteria(m_CriteriaImpact[i].Criteria))
+			{
+			if (Absolute(m_CriteriaImpact[i].iImpact) > Absolute(iBestImpact))
+				iBestImpact = m_CriteriaImpact[i].iImpact;
+			}
+		}
+
+	return iBestImpact;
 	}
 
 void CTradingEconomy::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 //	ReadFromStream
 //
-//	
+//	DWORD			Count of m_CriteriaImpact
+//	CString				Criteria
+//	DWORD				iImpact
+//
+//	DWORD			Count of m_ItemTypeImpact
+//	DWORD				UNID
+//	DWORD				iImpact
+//
+//	DWORD			COunt of m_TradeImpact
+//	CString				Criteria
+//	DWORD				iImpact
 
 	{
+	int i;
+	DWORD dwLoad;
+
+	Ctx.pStream->Read(dwLoad);
+	for (i = 0; i < (int)dwLoad; i++)
+		{
+		CString sCriteria;
+		Ctx.pStream->Read(sCriteria);
+
+		SCriteriaEntry *pEntry = m_CriteriaImpact.SetAt(sCriteria);
+		CItem::ParseCriteria(sCriteria, &pEntry->Criteria);
+
+		Ctx.pStream->Read(pEntry->iImpact);
+		}
+
+	Ctx.pStream->Read(dwLoad);
+	for (i = 0; i < (int)dwLoad; i++)
+		{
+		DWORD dwUNID;
+		Ctx.pStream->Read(dwUNID);
+		CItemType *pType = g_pUniverse->FindItemType(dwUNID);
+
+		int iImpact;
+		Ctx.pStream->Read(iImpact);
+
+		if (pType == NULL)
+			continue;
+
+		m_ItemTypeImpact.SetAt(pType, iImpact);
+		}
+
+	Ctx.pStream->Read(dwLoad);
+	for (i = 0; i < (int)dwLoad; i++)
+		{
+		CString sCriteria;
+		Ctx.pStream->Read(sCriteria);
+
+		SCriteriaEntry *pEntry = m_TradeImpact.SetAt(sCriteria);
+		CItem::ParseCriteria(sCriteria, &pEntry->Criteria);
+
+		Ctx.pStream->Read(pEntry->iImpact);
+		}
 	}
 
 void CTradingEconomy::Refresh (CSystem *pSystem)
@@ -172,6 +290,7 @@ void CTradingEconomy::Refresh (CSystem *pSystem)
 
 	m_CriteriaImpact.DeleteAll();
 	m_ItemTypeImpact.DeleteAll();
+	m_TradeImpact.DeleteAll();
 
     //  Loop over all objects and refresh them
 
@@ -187,13 +306,55 @@ void CTradingEconomy::Refresh (CSystem *pSystem)
 			continue;
 
 		CTradingDesc *pTrade = pType->GetTradingDesc();
-		if (pTrade)
+		CTradingDesc *pOverride = pObj->GetTradeDescOverride();
+
+		//	If we have two trade blocks, then we need to combine them.
+
+		if (pTrade && pOverride)
+			{
+			CTradingDesc Combined = *pTrade;
+			Combined.AddOrders(*pOverride);
+			RefreshFromTradeDesc(pSystem, &Combined);
+			}
+
+		//	Otherwise, we incorpate one.
+
+		else if (pTrade)
 			RefreshFromTradeDesc(pSystem, pTrade);
 
-		pTrade = pObj->GetTradeDescOverride();
-		if (pTrade)
-			RefreshFromTradeDesc(pSystem, pTrade);
+		else if (pOverride)
+			RefreshFromTradeDesc(pSystem, pOverride);
 		}
+
+	//	For each trade impact, adjust the impact for that criteria. Trade
+	//	impact serves to reduce consumption/production imbalance.
+
+	for (i = 0; i < m_TradeImpact.GetCount(); i++)
+		{
+		//	Look up the impact for the given criteria.
+
+		SCriteriaEntry *pEntry = m_CriteriaImpact.GetAt(m_TradeImpact.GetKey(i));
+		if (pEntry == NULL)
+			continue;
+
+		//	We balance prices based on trade
+
+		if (pEntry->iImpact > 0)
+			pEntry->iImpact -= Min(pEntry->iImpact, m_TradeImpact[i].iImpact);
+		else if (pEntry->iImpact < 0)
+			pEntry->iImpact += Min(-pEntry->iImpact, m_TradeImpact[i].iImpact);
+		}
+
+	//	Now make sure prices are not completely out of whack.
+
+	for (i = 0; i < m_CriteriaImpact.GetCount(); i++)
+		{
+		m_CriteriaImpact[i].iImpact = Max(MIN_IMPACT, Min(m_CriteriaImpact[i].iImpact, MAX_IMPACT));
+		}
+
+	//	LATER: For now we don't support individual item type trade impact. To
+	//	support it we would need to carry over the criteria impact to the
+	//	individual item impact table (adjusting for balance, etc.).
 	}
 
 void CTradingEconomy::RefreshFromTradeDesc (CSystem *pSystem, CTradingDesc *pTrade)
@@ -210,12 +371,15 @@ void CTradingEconomy::RefreshFromTradeDesc (CSystem *pSystem, CTradingDesc *pTra
 		CTradingDesc::SServiceInfo Service;
 		pTrade->GetServiceInfo(i, Service);
 
+		TSortMap<CString, SCriteriaEntry> *pDestTable = NULL;
 		int iImpact = 0;
+
 		if (Service.iService == serviceConsume)
 			{
 			//	If we're consuming, price is increased in this sytem due
 			//	to demand.
 
+			pDestTable = &m_CriteriaImpact;
 			iImpact = Service.iPriceAdj;
 			}
 		else if (Service.iService == serviceProduce)
@@ -223,7 +387,20 @@ void CTradingEconomy::RefreshFromTradeDesc (CSystem *pSystem, CTradingDesc *pTra
 			//	If we're producing, price is reduced in this system due to 
 			//	supply.
 
+			pDestTable = &m_CriteriaImpact;
 			iImpact = -Service.iPriceAdj;
+			}
+		else if (Service.iService == serviceTrade)
+			{
+			//	Trading impact goes on a different able.
+
+			pDestTable = &m_TradeImpact;
+			iImpact = Service.iPriceAdj;
+
+			//	NOTE: Trade impact on a single item is not yet supported
+
+			if (Service.pItemType)
+				continue;
 			}
 		else
 			continue;
@@ -246,7 +423,7 @@ void CTradingEconomy::RefreshFromTradeDesc (CSystem *pSystem, CTradingDesc *pTra
 		else if (!Service.sItemCriteria.IsBlank())
 			{
 			bool bNew;
-			SCriteriaEntry *pEntry = m_CriteriaImpact.SetAt(Service.sItemCriteria, &bNew);
+			SCriteriaEntry *pEntry = pDestTable->SetAt(Service.sItemCriteria, &bNew);
 			if (bNew)
 				CItem::ParseCriteria(Service.sItemCriteria, &pEntry->Criteria);
 
@@ -259,7 +436,39 @@ void CTradingEconomy::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //
+//	DWORD			Count of m_CriteriaImpact
+//	CString				Criteria
+//	DWORD				iImpact
 //
+//	DWORD			Count of m_ItemTypeImpact
+//	DWORD				UNID
+//	DWORD				iImpact
+//
+//	DWORD			COunt of m_TradeImpact
+//	CString				Criteria
+//	DWORD				iImpact
 
 	{
+	int i;
+
+	pStream->Write(m_CriteriaImpact.GetCount());
+	for (i = 0; i < m_CriteriaImpact.GetCount(); i++)
+		{
+		pStream->Write(m_CriteriaImpact.GetKey(i));
+		pStream->Write(m_CriteriaImpact[i].iImpact);
+		}
+
+	pStream->Write(m_ItemTypeImpact.GetCount());
+	for (i = 0; i < m_ItemTypeImpact.GetCount(); i++)
+		{
+		pStream->Write(m_ItemTypeImpact.GetKey(i)->GetUNID());
+		pStream->Write(m_ItemTypeImpact[i]);
+		}
+
+	pStream->Write(m_TradeImpact.GetCount());
+	for (i = 0; i < m_TradeImpact.GetCount(); i++)
+		{
+		pStream->Write(m_TradeImpact.GetKey(i));
+		pStream->Write(m_TradeImpact[i].iImpact);
+		}
 	}

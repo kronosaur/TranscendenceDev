@@ -330,6 +330,10 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
             &cyText);
     y += cyText;
 
+	//	Compuse import/export data
+
+	CString sDetails = pTopology->GetTradingEconomy().GetDescription();
+
     //  Compose a string indicating when we visited.
 
     CString sVisit;
@@ -344,8 +348,17 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
         sVisit = strPatternSubst(CONSTLIT("Last visited %s ago."), Span.Format(NULL_STR));
         }
 
+	if (!sDetails.IsBlank())
+		sDetails = strPatternSubst(CONSTLIT("%s\n%s"), sDetails, sVisit);
+	else
+		sDetails = sVisit;
+
+	//	Add debug information, if necessary
+
 	if (g_pUniverse->InDebugMode())
-		sVisit.Append(strPatternSubst(CONSTLIT("\n%s: %s"), pTopology->GetID(), pTopology->GetAttributes()));
+		sDetails = strPatternSubst(CONSTLIT("%s\n%s: %s"), sDetails, pTopology->GetID(), pTopology->GetAttributes());
+
+	//	Add the details text
 
     m_VI.CreateTextArea(pContainer, 
             NULL_STR,
@@ -353,7 +366,7 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
             y,
             cxWidth,
             1000,
-            sVisit,
+            sDetails,
             m_VI.GetColor(colorTextNormal),
             DescFont,
             NULL,

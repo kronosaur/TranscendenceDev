@@ -31,6 +31,28 @@ void CSpaceObject::AddSellOrder (CItemType *pType, const CString &sCriteria, int
 	pTrade->AddSellOrder(pType, sCriteria, iPriceAdj);
 	}
 
+void CSpaceObject::AddTradeDesc (const CTradingDesc &Trade)
+
+//	AddTrade
+//
+//	Adds trading entries
+
+	{
+	CTradingDesc *pTrade = AllocTradeDescOverride();
+	pTrade->AddOrders(Trade);
+	}
+
+void CSpaceObject::AddTradeOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj)
+
+//	AddTradeOrder
+//
+//	Adds a trade order to the override
+
+	{
+	CTradingDesc *pTrade = AllocTradeDescOverride();
+	pTrade->AddOrder(iService, sCriteria, pItemType, iPriceAdj);
+	}
+
 CurrencyValue CSpaceObject::ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue)
 
 //	ChargeMoney

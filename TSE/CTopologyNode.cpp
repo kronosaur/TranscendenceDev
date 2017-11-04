@@ -265,6 +265,8 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 //
 //	CString		m_sEpitaph
 //	CString		m_sEndGameReason
+//
+//	CTradingEconomy m_Trading
 
 	{
 	int i;
@@ -369,6 +371,9 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 			pNode->m_sEndGameReason = CONSTLIT("leftHumanSpace");
 			}
 		}
+
+	if (Ctx.dwVersion >= 32)
+		pNode->m_Trading.ReadFromStream(Ctx);
 
 	//	Done
 
@@ -1243,6 +1248,8 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 //
 //	CString		m_sEpitaph
 //	CString		m_sEndGameReason
+//
+//	CTradingEconomy m_Trading
 
 	{
 	int i;
@@ -1303,4 +1310,8 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 
 	m_sEpitaph.WriteToStream(pStream);
 	m_sEndGameReason.WriteToStream(pStream);
+
+	//	Write trading data
+
+	m_Trading.WriteToStream(pStream);
 	}

@@ -5,6 +5,44 @@
 
 #pragma once
 
+//	SmartPtr
+
+class ICCItemPtr
+	{
+	public:
+		constexpr ICCItemPtr (void) : m_pPtr(NULL) { }
+		constexpr ICCItemPtr (std::nullptr_t) : m_pPtr(NULL) { }
+
+		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
+
+		ICCItemPtr (const ICCItemPtr &Src);
+
+		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)
+			{
+			Src.m_pPtr = NULL;
+			}
+
+		~ICCItemPtr (void);
+
+		ICCItemPtr &operator= (const ICCItemPtr &Src);
+		operator ICCItem *() const { return m_pPtr; }
+		ICCItem * operator->() const { return m_pPtr; }
+
+		explicit operator bool() const { return (m_pPtr != NULL); }
+
+		void Delete (void) { Set(NULL); }
+
+		void Set (ICCItem *pPtr);
+
+		void Set (const ICCItemPtr &Src)
+			{
+			*this = Src;
+			}
+
+	private:
+		ICCItem *m_pPtr;
+	};
+
 //	CodeChain context
 
 enum ECodeChainEvents

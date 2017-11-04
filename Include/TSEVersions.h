@@ -6,7 +6,7 @@
 #pragma once
 
 constexpr DWORD API_VERSION =							38;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					31;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					32;
 constexpr DWORD SYSTEM_SAVE_VERSION =					154;
 
 //	Uncomment out the following define when building a stable release
@@ -92,6 +92,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					154;
 //
 //	31: 1.8 Alpha 4
 //		CDesignType has an extra flags word
+//
+//	32: 1.8 Alpha 4
+//		Added m_Trading to CTopologyNode
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
 //

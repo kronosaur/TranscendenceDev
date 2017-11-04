@@ -25,8 +25,9 @@ enum ETradeServiceTypes
 	serviceSellShip =					14,	//	Object sells ship to the player
 	serviceConsume =					15,	//	Object consumes items (and thus makes them more expensive)
 	serviceProduce =					16,	//	Object produces items (and thus makes them cheaper)
+	serviceTrade =						17,	//	Object balance trade (consumption/production)
 
-	serviceCount =						17,
+	serviceCount =						18,
 	};
 
 struct STradeServiceCtx
@@ -87,11 +88,14 @@ class CTradingDesc
 		CTradingDesc (void);
 		~CTradingDesc (void);
 
-		bool AccumulateTradeImpact (TSortMap<DWORD, int> &PriceImpact) const;
+		void AddOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
+		void AddOrders (const CTradingDesc &Trade);
+
 		inline void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
 			{ AddOrder(pType, sCriteria, iPriceAdj, FLAG_BUYS); }
 		inline void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj)
 			{ AddOrder(pType, sCriteria, iPriceAdj, FLAG_SELLS); }
+
 		bool Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
 		bool BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		int Charge (CSpaceObject *pObj, int iCharge);
@@ -126,6 +130,7 @@ class CTradingDesc
 
 		static int CalcPriceForService (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags);
 		static CString ServiceToString (ETradeServiceTypes iService);
+		static ETradeServiceTypes ParseService (const CString &sService);
 
 	private:
 		enum InternalFlags
@@ -147,16 +152,10 @@ class CTradingDesc
 
 		struct SServiceDesc
 			{
-            SServiceDesc (void) :
-                    pPriceAdjCode(NULL)
-                { }
-
-            ~SServiceDesc (void);
-
-			ETradeServiceTypes iService;		//	Type of service
+			ETradeServiceTypes iService = serviceNone;		//	Type of service
 			CString sID;						//	ID of order
 
-			CItemTypeRef pItemType;				//	Item type
+			CItemTypeRef pItemType = NULL;		//	Item type
 			CItemCriteria ItemCriteria;			//	If ItemType is NULL, this is the criteria
 			CFormulaText InventoryAdj;			//	% of item count found at any one time
 			CString sLevelFrequency;			//	Level frequency for inventory adj
@@ -164,10 +163,10 @@ class CTradingDesc
 			CDesignTypeCriteria TypeCriteria;	//	Type criteria (for selling ships, etc.).
 
 			CFormulaText PriceAdj;				//	Price adjustment
-            ICCItem *pPriceAdjCode;             //  Code to adjust price
+            ICCItemPtr pPriceAdjCode;			//  Code to adjust price
 
 			CString sMessageID;					//	ID of language element to return if we match.
-			DWORD dwFlags;						//	Flags
+			DWORD dwFlags = 0;					//	Flags
 			};
 
         struct SServiceTypeInfo
@@ -181,8 +180,10 @@ class CTradingDesc
 		CString ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags);
 		int ComputeMaxCurrency (CSpaceObject *pObj);
 		int ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags);
+		bool FindByID (const CString &sID, int *retiIndex = NULL) const;
 		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc);
 		bool FindService (ETradeServiceTypes iService, CSpaceObject *pShip, const SServiceDesc **retpDesc);
+		bool FindServiceToOverride (const SServiceDesc &NewService, int *retiIndex = NULL) const;
         bool GetServiceTypeInfo (ETradeServiceTypes iService, SServiceTypeInfo &Info) const;
 		bool HasServiceDescription (ETradeServiceTypes iService) const;
 		bool Matches (const CItem &Item, const SServiceDesc &Commodity) const;
@@ -190,7 +191,9 @@ class CTradingDesc
 		void ReadServiceFromFlags (DWORD dwFlags, ETradeServiceTypes *retiService, DWORD *retdwFlags);
 		bool SetInventoryCount (CSpaceObject *pObj, SServiceDesc &Desc, CItemType *pItemType);
 
+		static int AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice);
 		static int ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commodity, DWORD dwFlags);
+		static bool HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &S2);
 
 		CEconomyTypeRef m_pCurrency;
 		int m_iMaxCurrency;
@@ -203,24 +206,42 @@ class CTradingEconomy
 	{
 	public:
 		CString GetDescription (void) const;
-		bool FindBuyPriceAdj (CItemType *pItem, int *retiAdj = NULL) const;
-		bool FindSellPriceAdj (CItemType *pItem, int *retiAdj = NULL) const;
+		bool FindPriceAdj (CItemType *pItem, int *retiAdj = NULL) const;
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Refresh (CSystem *pSystem);
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
+		enum EImpactCategories
+			{
+			impactNone =					-1,
+
+			impactDesperateShortage =		0,
+			impactMajorShortage =			1,
+			impactShortage =				2,
+			impactImports =					3,
+
+			impactMassiveGlut =				4,
+			impactMajorGlut =				5,
+			impactGlut =					6,
+			impactExports =					7,
+
+			impactBalanced =				8,
+			};
+
 		struct SCriteriaEntry
 			{
 			CItemCriteria Criteria;
 			int iImpact = 0;
 			};
 
-		CString CalcImpactDesc (int iImpact) const;
+		EImpactCategories CalcImpactCategory (int iImpact) const;
+		CString CalcImpactDesc (EImpactCategories iImpact) const;
 		CString CalcImpactSortKey (int iImpact, const CString &sName) const;
 		int GetPriceImpact (CItemType *pItem) const;
 		void RefreshFromTradeDesc (CSystem *pSystem, CTradingDesc *pTrade);
 
 		TSortMap<CString, SCriteriaEntry> m_CriteriaImpact;
 		TSortMap<CItemType *, int> m_ItemTypeImpact;
+		TSortMap<CString, SCriteriaEntry> m_TradeImpact;
 	};

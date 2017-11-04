@@ -138,6 +138,7 @@ class CDesignTypeCriteria
         inline void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
 		inline bool IncludesVirtual (void) const { return m_bIncludeVirtual; }
         inline bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
+		inline bool IsEqual (const CDesignTypeCriteria &Src) const { return strEquals(Src.AsString(), AsString()); }
 		inline bool MatchesDesignType (DesignTypes iType) const
 			{ return ((m_dwTypeSet & (1 << iType)) ? true : false); }
 		bool MatchesLevel (int iMinLevel, int iMaxLevel) const;

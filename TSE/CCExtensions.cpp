@@ -232,6 +232,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_FIRE_WEAPON			127
 #define FN_OBJ_CREATE_REFLECTION	128
 #define FN_OBJ_FIRE_POWER_INVOKE	129
+#define FN_OBJ_ADD_TRADE_ORDER		130
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1310,6 +1311,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objAddSubordinate",			fnObjSetOld,		FN_OBJ_ADD_SUBORDINATE,
 			"(objAddSubordinate obj subordinate) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objAddTradeOrder",					fnObjSet,		FN_OBJ_ADD_TRADE_ORDER,
+			"(objAddTradeOrder obj service criteria priceAdj) -> True/Nil",
+			"isvi",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objCalcBestTarget",				fnObjGet,		FN_OBJ_CALC_BEST_TARGET,
 			"(objCalcBestTarget obj [objList]) -> targetObj (or Nil)",
@@ -7104,6 +7109,42 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 			else
 				return pCC->CreateInteger(dwID);
+			}
+
+		case FN_OBJ_ADD_TRADE_ORDER:
+			{
+			//	Get the service
+
+			ETradeServiceTypes iService = CTradingDesc::ParseService(pArgs->GetElement(1)->GetStringValue());
+			if (iService == serviceNone)
+				return pCC->CreateError(CONSTLIT("Unknown service type"), pArgs->GetElement(1));
+
+			//	Accept either an item type or a criteria
+
+			CItemType *pType = NULL;
+			CString sCriteria;
+			if (pArgs->GetElement(2)->IsIdentifier())
+				{
+				sCriteria = pArgs->GetElement(2)->GetStringValue();
+				if (sCriteria.IsBlank())
+					return pCC->CreateError(CONSTLIT("Invalid criteria"), pArgs->GetElement(2));
+				}
+			else
+				{
+				pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(2));
+				if (pType == NULL)
+					return pCC->CreateNil();
+				}
+
+			//	Price adjustment
+
+			int iPriceAdj = pArgs->GetElement(3)->GetIntegerValue();
+
+			//	Add the order
+
+			pObj->AddTradeOrder(iService, sCriteria, pType, iPriceAdj);
+
+			return pCC->CreateTrue();
 			}
 
 		case FN_OBJ_CHARGE:

@@ -1141,6 +1141,9 @@
     <ClCompile Include="CTradingEconomy.cpp">
       <Filter>Source Files\Trading</Filter>
     </ClCompile>
+    <ClCompile Include="ICCItemPtr.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

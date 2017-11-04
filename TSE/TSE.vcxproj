@@ -518,6 +518,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="ICCItemPtr.cpp" />
     <ClCompile Include="IListData.cpp" />
     <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="SFXLightningStorm.cpp" />
