@@ -1881,6 +1881,10 @@ class CObjectTracker
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		enum EAccumulateFlags
+			{
+			FLAG_ACCUMULATE_NOTES =		0x00000001,	//	Initializes sNotes in SObjEntry (which can be expensive)
+			};
 		
 		enum EDelayedCommandTypes
 			{
@@ -1996,8 +2000,8 @@ class CObjectTracker
 			TArray<SDelayedCommand> Commands;
             };
 
-		bool AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
-        void AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, TArray<SObjEntry> &Results) const;
+		bool AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, DWORD dwFlags, TArray<SObjEntry> *retResult) const;
+        void AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, DWORD dwFlags, TArray<SObjEntry> &Results) const;
         bool Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
         bool Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
 		SObjList *GetList (CSpaceObject *pObj) const;

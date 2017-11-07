@@ -17,7 +17,7 @@ CObjectTracker::~CObjectTracker (void)
 	DeleteAll();
 	}
 
-bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult)
+bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, DWORD dwFlags, TArray<SObjEntry> *retResult) const
 
 //	AccumulateEntries
 //
@@ -45,7 +45,7 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesign
 
         retResult->GrowToFit(pList->Objects.GetCount());
 		for (j = 0; j < pList->Objects.GetCount(); j++)
-            AccumulateEntry(*pList, pList->Objects.GetKey(j), pList->Objects[j], *retResult);
+            AccumulateEntry(*pList, pList->Objects.GetKey(j), pList->Objects[j], dwFlags, *retResult);
 		}
 
 	//	Done
@@ -53,7 +53,7 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesign
 	return (retResult && retResult->GetCount() > 0);
 	}
 
-void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, TArray<SObjEntry> &Results) const
+void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, DWORD dwFlags, TArray<SObjEntry> &Results) const
 
 //  AccumulateEntry
 //
@@ -80,9 +80,15 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
 	else
 		pEntry->sName = ObjList.pType->GetNamePattern(0, &pEntry->dwNameFlags);
 
+	//	If we don't need notes, then don't initialize them (this can save
+	//	execution time).
+
+	if (!(dwFlags & FLAG_ACCUMULATE_NOTES))
+		;
+
     //  If we've got custom notes stored with the object, then use those.
 
-    if (!pEntry->sNotes.IsBlank())
+    else if (!pEntry->sNotes.IsBlank())
         ;
 
     //  Otherwise, we let the type compose it
@@ -144,7 +150,7 @@ bool CObjectTracker::Find (const CString &sNodeID, const CDesignTypeCriteria &Cr
 	//	If no node ID, then we look through all nodes
 
 	if (sNodeID.IsBlank())
-		return AccumulateEntries(m_AllLists, Criteria, retResult);
+		return AccumulateEntries(m_AllLists, Criteria, 0, retResult);
 
 	//	Otherwise, check the specific node
 
@@ -158,7 +164,7 @@ bool CObjectTracker::Find (const CString &sNodeID, const CDesignTypeCriteria &Cr
 
 		//	Accumulate entries for this table
 
-		return AccumulateEntries(pNodeData->ObjLists, Criteria, retResult);
+		return AccumulateEntries(pNodeData->ObjLists, Criteria, 0, retResult);
 		}
 	}
 
@@ -259,7 +265,7 @@ void CObjectTracker::GetGalacticMapObjects (const CTopologyNode *pNode, TArray<S
 
             //  Add the object to the result
 
-            AccumulateEntry(*pList, pList->Objects.GetKey(j), ObjData, Results);
+            AccumulateEntry(*pList, pList->Objects.GetKey(j), ObjData, FLAG_ACCUMULATE_NOTES, Results);
             }
         }
     }
@@ -448,7 +454,7 @@ void CObjectTracker::GetTradingObjects (const CTopologyNode *pNode, TArray<SObjE
 
             //  Add the object to the result
 
-            AccumulateEntry(*pList, pList->Objects.GetKey(j), ObjData, Results);
+            AccumulateEntry(*pList, pList->Objects.GetKey(j), ObjData, 0, Results);
             }
         }
     }
