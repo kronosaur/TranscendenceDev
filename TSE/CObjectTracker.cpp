@@ -218,7 +218,7 @@ bool CObjectTracker::Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics 
     return true;
     }
 
-void CObjectTracker::GetGalacticMapObjects (CTopologyNode *pNode, TArray<SObjEntry> &Results) const
+void CObjectTracker::GetGalacticMapObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const
 
 //  GetGalacticMapObjects
 //
@@ -317,7 +317,7 @@ CObjectTracker::SObjList *CObjectTracker::GetList (CTopologyNode *pNode, CDesign
 	return NULL;
 	}
 
-void CObjectTracker::GetSystemBackgroundObjects (CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const
+void CObjectTracker::GetSystemBackgroundObjects (const CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const
 
 //  GetSystemObjects
 //
@@ -353,7 +353,7 @@ void CObjectTracker::GetSystemBackgroundObjects (CTopologyNode *pNode, TSortMap<
         }
     }
 
-void CObjectTracker::GetSystemStarObjects (CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const
+void CObjectTracker::GetSystemStarObjects (const CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const
 
 //  GetSystemStarObjects
 //
@@ -388,7 +388,7 @@ void CObjectTracker::GetSystemStarObjects (CTopologyNode *pNode, TArray<SBackgro
         }
     }
 
-const TArray<COrbit> &CObjectTracker::GetSystemOrbits (CTopologyNode *pNode) const
+const TArray<COrbit> &CObjectTracker::GetSystemOrbits (const CTopologyNode *pNode) const
 
 //  GetSystemOrbits
 //
@@ -399,6 +399,58 @@ const TArray<COrbit> &CObjectTracker::GetSystemOrbits (CTopologyNode *pNode) con
     ASSERT(pNodeData);
 
     return pNodeData->Orbits;
+    }
+
+void CObjectTracker::GetTradingObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const
+
+//  GetTradingObjects
+//
+//  Returns the list of objects in this node that have a trade descriptor and 
+//	that are friendly to the player.
+
+    {
+    int i, j;
+
+    //  Initialize
+
+    Results.DeleteAll();
+
+	//	Look in the index of nodes
+
+	SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    if (pNodeData == NULL)
+        return;
+
+    //  Loop over all objects
+
+    for (i = 0; i < pNodeData->ObjLists.GetCount(); i++)
+        {
+        const SObjList *pList = pNodeData->ObjLists.GetAt(i);
+        if (pList == NULL)
+            continue;
+
+		//	Skip objects that don't have a trade descriptor in their design
+		//	type.
+
+		if (pList->pType->GetTradingDesc() == NULL)
+			continue;
+
+        //  Add all objects
+
+        for (j = 0; j < pList->Objects.GetCount(); j++)
+            {
+            const SObjBasics &ObjData = pList->Objects[j];
+
+            //  We only care about friendly objects.
+
+            if (ObjData.fEnemy)
+				continue;
+
+            //  Add the object to the result
+
+            AccumulateEntry(*pList, pList->Objects.GetKey(j), ObjData, Results);
+            }
+        }
     }
 
 void CObjectTracker::Insert (CSpaceObject *pObj)

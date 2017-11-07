@@ -94,6 +94,7 @@ class CTopologyNode
 		inline const CString &GetSystemName (void) { return m_sName; }
 		inline DWORD GetSystemTypeUNID (void) { return m_SystemUNID; }
 		inline CTradingEconomy &GetTradingEconomy (void) { return m_Trading; }
+		inline const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
 		inline bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
@@ -205,12 +206,12 @@ class CTopologyNodeList
 		inline void DeleteAll (void) { m_List.DeleteAll(); }
 		ALERROR Filter (CTopologyNode::SCriteriaCtx &Ctx, CXMLElement *pCriteria, CTopologyNodeList *retList, CString *retsError);
 		ALERROR Filter (CTopologyNode::SCriteriaCtx &Ctx, CTopologyNode::SCriteria &Crit, CTopologyNodeList *ioList);
-		bool FindNode (CTopologyNode *pNode, int *retiIndex = NULL);
-		bool FindNode (const CString &sID, int *retiIndex = NULL);
+		bool FindNode (CTopologyNode *pNode, int *retiIndex = NULL) const;
+		bool FindNode (const CString &sID, int *retiIndex = NULL) const;
 		inline CTopologyNode *GetAt (int iIndex) const { return m_List.GetAt(iIndex); }
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline void Insert (CTopologyNode *pNode) { m_List.Insert(pNode); }
-		bool IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const TArray<CString> &AttribsRequired, const TArray<CString> &AttribsNotAllowed, CTopologyNodeList &Checked);
+		bool IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const TArray<CString> &AttribsRequired, const TArray<CString> &AttribsNotAllowed, CTopologyNodeList &Checked) const;
 		void RestoreMarks (TArray<bool> &Saved);
 		void SaveAndSetMarks (bool bMark, TArray<bool> *retSaved);
 		inline void Shuffle (void) { m_List.Shuffle(); }

@@ -36,6 +36,7 @@ struct STradeServiceCtx
 			iService(serviceNone),
 			pProvider(NULL),
 			pCurrency(NULL),
+			pNode(NULL),
 			iCount(0),
 			pItem(NULL),
 			pObj(NULL)
@@ -44,6 +45,7 @@ struct STradeServiceCtx
 	ETradeServiceTypes iService;	//	Service
 	CSpaceObject *pProvider;		//	Object providing the service
 	CEconomyType *pCurrency;		//	Currency to use
+	const CTopologyNode *pNode;		//	Optional node (in case we have no provider)
 
 	int iCount;						//	Number of items
 	const CItem *pItem;				//	For item-based services
@@ -97,6 +99,7 @@ class CTradingDesc
 			{ AddOrder(pType, sCriteria, iPriceAdj, FLAG_SELLS); }
 
 		bool Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
+		bool Buys (STradeServiceCtx &Ctx, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
 		bool BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		int Charge (CSpaceObject *pObj, int iCharge);
         bool ComposeDescription (CString *retsDesc) const;
@@ -244,4 +247,20 @@ class CTradingEconomy
 		TSortMap<CString, SCriteriaEntry> m_CriteriaImpact;
 		TSortMap<CItemType *, int> m_ItemTypeImpact;
 		TSortMap<CString, SCriteriaEntry> m_TradeImpact;
+	};
+
+class CTradingComputer
+	{
+	public:
+		enum EFlags
+			{
+			//	GetItemPriceList
+
+			FLAG_KNOWN_ONLY =				0x00000001,
+			};
+
+		static int GetItemEstimatedPrice (const CTopologyNode *pNode, CItemType *pItemType);
+		static void GetItemEstimatedPriceList (const CUniverse &Universe, CItemType *pItemType, DWORD dwFlags, TSortMap<int, TArray<const CTopologyNode *>> &NodesAtPrice);
+
+		static int GetItemBuyPrice (const CUniverse &Universe, const CTopologyNode *pNode, const CItem &Item, DWORD *retdwObjID = NULL);
 	};

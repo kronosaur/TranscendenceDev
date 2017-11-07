@@ -271,6 +271,7 @@
     <ClInclude Include="..\Include\TSEShipAI.h" />
     <ClInclude Include="..\Include\TSEShipClass.h" />
     <ClInclude Include="..\Include\TSEShipCreator.h" />
+    <ClInclude Include="..\Include\TSEShipEquipment.h" />
     <ClInclude Include="..\Include\TSEShipSystems.h" />
     <ClInclude Include="..\Include\TSESounds.h" />
     <ClInclude Include="..\Include\TSESovereign.h" />
@@ -309,6 +310,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C3DObjectPos.cpp" />
+    <ClCompile Include="CAbilitySet.cpp" />
     <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAISettings.cpp" />
@@ -463,6 +465,7 @@
     <ClCompile Include="CSystemSpacePainter.cpp" />
     <ClCompile Include="CSystemEventList.cpp" />
     <ClCompile Include="CTimedMissionEvent.cpp" />
+    <ClCompile Include="CTradingComputer.cpp" />
     <ClCompile Include="CTradingDesc.cpp" />
     <ClCompile Include="CTradingEconomy.cpp" />
     <ClCompile Include="CUniverse.cpp">

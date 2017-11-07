@@ -2470,6 +2470,9 @@ AbilityStatus CShip::GetAbility (Abilities iAbility)
 		case ablTargetingSystem:
 			return (HasTargetingComputer() ? ablInstalled : ablUninstalled);
 
+		case ablTradingComputer:
+			return (m_Perf.GetAbilities().IsSet(ablTradingComputer) ? ablInstalled : ablUninstalled);
+
 		default:
 			return ablUninstalled;
 		}

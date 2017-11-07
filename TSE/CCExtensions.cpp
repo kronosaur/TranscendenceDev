@@ -466,6 +466,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_INC_DATA					34
 #define FN_SYS_HIT_TEST					35
 #define FN_SYS_GET_POV					36
+#define FN_SYS_ITEM_BUY_PRICE			37
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -1549,7 +1550,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'SRS\n"
 			"   'SRSEnhancer\n"
 			"   'SystemMap\n"
-			"   'TargetingComputer\n\n"
+			"   'TargetingComputer\n"
+			"   'TradingComputer\n\n"
 			
 			"status\n\n"
 			
@@ -2603,6 +2605,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetEnvironment",			fnSystemGet,	FN_SYS_ENVIRONMENT,
 			"(sysGetEnvironment pos) -> environmentUNID",
 			"v",	0,	},
+
+		{	"sysGetItemBuyPrice",			fnSystemGet,	FN_SYS_ITEM_BUY_PRICE,
+			"(sysGetItemBuyPrice [nodeID] item) -> price (or Nil)",
+			"*v",	0,	},
 
 		{	"sysGetLevel",					fnSystemGet,	FN_SYS_LEVEL,
 			"(sysGetLevel [nodeID]) -> level",
@@ -12078,6 +12084,47 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Hit test
 
 			return ::CreateObjPointer(*pCC, pSystem->HitTest(pSource, vPos, bExcludeWorlds));
+			}
+
+		case FN_SYS_ITEM_BUY_PRICE:
+			{
+			CTopologyNode *pNode;
+			int iArg = 0;
+
+			//	If we have more than 1 args, then the first arg is
+			//	the node ID.
+
+			CSystem *pSystem = NULL;
+			if (pArgs->GetCount() <= 1)
+				{
+				pSystem = g_pUniverse->GetCurrentSystem();
+				if (pSystem == NULL)
+					return StdErrorNoSystem(*pCC);
+
+				pNode = pSystem->GetTopology();
+				}
+			else
+				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+
+			if (pNode == NULL)
+				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+
+			//	Get the item type
+
+			CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(iArg++));
+			CItemType *pType = Item.GetType();
+			if (pType == NULL)
+				return pCC->CreateNil();
+
+			//	Get the item price (in item's default currency)
+
+			int iPrice = CTradingComputer::GetItemBuyPrice(*g_pUniverse, pNode, Item);
+			if (iPrice == 0)
+				return pCC->CreateNil();
+
+			//	Done
+
+			return pCC->CreateInteger(iPrice);
 			}
 
 		case FN_SYS_RANDOM_LOCATION:

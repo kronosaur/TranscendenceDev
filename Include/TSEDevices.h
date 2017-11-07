@@ -287,6 +287,7 @@ class CDeviceClass
 
 		int m_iMaxHPBonus;						//	Max HP bonus for this device
 		CEnhancementDesc m_Enhancements;		//	Enhancements confered on other items
+		CAbilitySet m_Equipment;				//	Equipment installed by this device
 
 		SEventHandlerDesc m_CachedEvents[evtCount];	//	Cached events
 

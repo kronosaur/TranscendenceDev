@@ -408,11 +408,11 @@ class CTopology
 		ALERROR AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopologyNode **retpNewNode = NULL);
 		ALERROR AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyNode **retpNewNode = NULL);
 		void DeleteAll (void);
-		CTopologyNode *FindTopologyNode (const CString &sID);
-		int GetDistance (const CString &sSourceID, const CString &sDestID);
+		CTopologyNode *FindTopologyNode (const CString &sID) const;
+		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
 		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
-		inline CTopologyNode *GetTopologyNode (int iIndex) { return m_Topology.GetAt(iIndex); }
-		inline int GetTopologyNodeCount (void) { return m_Topology.GetCount(); }
+		inline CTopologyNode *GetTopologyNode (int iIndex) const { return m_Topology.GetAt(iIndex); }
+		inline int GetTopologyNodeCount (void) const { return m_Topology.GetCount(); }
 		ALERROR InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx = NULL, CTopologyNode **iopExit = NULL); 
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 
@@ -441,7 +441,7 @@ class CTopology
 		ALERROR FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType = NULL);
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
 		void GetAbsoluteDisplayPos (STopologyCreateCtx &Ctx, int x, int y, int *retx, int *rety, int *retiRotation);
-		int GetDistance (CTopologyNode *pSource, const CString &sDestID, int iBestDist = -1);
+		int GetDistance (CTopologyNode *pSource, const CString &sDestID, int iBestDist = -1) const;
 		void GetFragmentDisplayPos (STopologyCreateCtx &Ctx, CTopologyNode *pNode, int *retx, int *rety);
 		ALERROR GetOrAddTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, CTopologyNode *pPrevNode, CXMLElement *pGateDesc, CTopologyNode **retpNode);
 
@@ -1866,10 +1866,11 @@ class CObjectTracker
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		bool Find (const CString &sNodeID, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
-        void GetGalacticMapObjects (CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
-        void GetSystemBackgroundObjects (CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const;
-        void GetSystemStarObjects (CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const;
-        const TArray<COrbit> &GetSystemOrbits (CTopologyNode *pNode) const;
+        void GetGalacticMapObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
+        void GetSystemBackgroundObjects (const CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const;
+        void GetSystemStarObjects (const CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const;
+        const TArray<COrbit> &GetSystemOrbits (const CTopologyNode *pNode) const;
+		void GetTradingObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
 		void Insert (CSpaceObject *pObj);
 		inline bool IsTracked (CSpaceObject *pObj) { CSpaceObject::Categories iCategory = pObj->GetCategory(); return (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip); }
 		inline void InsertIfTracked (CSpaceObject *pObj) { if (IsTracked(pObj)) Insert(pObj); }

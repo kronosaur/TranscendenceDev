@@ -62,7 +62,7 @@ ALERROR CTopologyNodeList::Filter (CTopologyNode::SCriteriaCtx &Ctx, CTopologyNo
 	return NOERROR;
 	}
 
-bool CTopologyNodeList::FindNode (CTopologyNode *pNode, int *retiIndex)
+bool CTopologyNodeList::FindNode (CTopologyNode *pNode, int *retiIndex) const
 
 //	FindNode
 //
@@ -82,7 +82,7 @@ bool CTopologyNodeList::FindNode (CTopologyNode *pNode, int *retiIndex)
 	return false;
 	}
 
-bool CTopologyNodeList::FindNode (const CString &sID, int *retiIndex)
+bool CTopologyNodeList::FindNode (const CString &sID, int *retiIndex) const
 
 //	FindNode
 //
@@ -102,7 +102,7 @@ bool CTopologyNodeList::FindNode (const CString &sID, int *retiIndex)
 	return false;
 	}
 
-bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const TArray<CString> &AttribsRequired, const TArray<CString> &AttribsNotAllowed, CTopologyNodeList &Checked)
+bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const TArray<CString> &AttribsRequired, const TArray<CString> &AttribsNotAllowed, CTopologyNodeList &Checked) const
 
 //	IsNodeInRangeOf
 //

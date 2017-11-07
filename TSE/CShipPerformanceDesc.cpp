@@ -24,6 +24,10 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 	if (Ctx.rArmorSpeedBonus > 0.0)
 		Ctx.rMaxSpeedLimit = Min(Ctx.rMaxSpeedLimit + Ctx.rArmorSpeedBonus, LIGHT_SPEED);
 
+	//	Equipment installed
+
+	m_Abilities = Ctx.Abilities;
+
     //  Initialize our maneuvering performance
 
     m_RotationDesc.InitFromDesc(Ctx.RotationDesc);

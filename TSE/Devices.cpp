@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 #define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
+#define EQUIPMENT_TAG							CONSTLIT("Equipment")
 
 #define CATEGORY_ATTRIB							CONSTLIT("category")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
@@ -189,6 +190,10 @@ bool CDeviceClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx
 
     {
     bool bModified = false;
+
+	//	If we install equipment, then add it.
+
+	Ctx.Abilities.Set(m_Equipment);
 
     //  Let sub-classes handle it
 
@@ -389,6 +394,15 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	if (pEnhanceList)
 		{
 		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+			return error;
+		}
+
+	//	Does this device provide some equipment when installed?
+
+	CXMLElement *pEquipmentList = pDesc->GetContentElementByTag(EQUIPMENT_TAG);
+	if (pEquipmentList)
+		{
+		if (error = m_Equipment.InitFromXML(Ctx, pEquipmentList))
 			return error;
 		}
 

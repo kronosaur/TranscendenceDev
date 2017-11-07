@@ -1,6 +1,7 @@
 //	CTradingDesc.cpp
 //
 //	CTradingDesc class
+//	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -187,16 +188,20 @@ int CTradingDesc::AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice)
 //	Returns a price adjusted by the system trading table.
 
 	{
-	if (Ctx.pProvider == NULL)
-		return iPrice;
-
-	CSystem *pSystem = Ctx.pProvider->GetSystem();
-	if (pSystem == NULL)
-		return iPrice;
-
-	CTopologyNode *pNode = pSystem->GetTopology();
+	const CTopologyNode *pNode = Ctx.pNode;
 	if (pNode == NULL)
-		return iPrice;
+		{
+		if (Ctx.pProvider == NULL)
+			return iPrice;
+
+		CSystem *pSystem = Ctx.pProvider->GetSystem();
+		if (pSystem == NULL)
+			return iPrice;
+
+		pNode = pSystem->GetTopology();
+		if (pNode == NULL)
+			return iPrice;
+		}
 
 	int iAdj;
 	if (!pNode->GetTradingEconomy().FindPriceAdj(Ctx.pItem->GetType(), &iAdj))
@@ -719,7 +724,7 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CT
 	return NOERROR;
 	}
 
-bool CTradingDesc::Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, int *retiMaxCount)
+bool CTradingDesc::Buys (STradeServiceCtx &Ctx, const CItem &Item, DWORD dwFlags, int *retiPrice, int *retiMaxCount)
 
 //	Buys
 //
@@ -731,12 +736,6 @@ bool CTradingDesc::Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, i
 
 	{
 	int i;
-
-	STradeServiceCtx Ctx;
-	Ctx.pProvider = pObj;
-	Ctx.pCurrency = m_pCurrency;
-	Ctx.pItem = &Item;
-	Ctx.iCount = 1;
 
 	//	Loop over the commodity list and find the first entry that matches
 
@@ -763,7 +762,7 @@ bool CTradingDesc::Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, i
 			//	Compute the maximum number of this item that we are willing
 			//	to buy. First we figure out how much money the station has left
 
-			int iBalance = (int)pObj->GetBalance(m_pCurrency->GetUNID());
+			int iBalance = (Ctx.pProvider ? (int)Ctx.pProvider->GetBalance(m_pCurrency->GetUNID()) : 0);
 			int iMaxCount = (iPrice > 0 ? (iBalance / iPrice) : 0);
 
 			//	Done
@@ -778,6 +777,26 @@ bool CTradingDesc::Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, i
 			}
 
 	return false;
+	}
+
+bool CTradingDesc::Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, int *retiMaxCount)
+
+//	Buys
+//
+//	Returns TRUE if the given object buys items of the given type.
+//	Optionally returns a price and a max number.
+//
+//	Note that we always return a price for items we are willing to buy, even if we
+//	don't currently have enough to buy it.
+
+	{
+	STradeServiceCtx Ctx;
+	Ctx.pProvider = pObj;
+	Ctx.pCurrency = m_pCurrency;
+	Ctx.pItem = &Item;
+	Ctx.iCount = 1;
+
+	return Buys(Ctx, Item, dwFlags, retiPrice, retiMaxCount);
 	}
 
 bool CTradingDesc::BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice)

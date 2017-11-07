@@ -365,52 +365,6 @@ class CIntegralRotation
 		EManeuverTypes m_iLastManeuver;		//	Maneuver on last update
 	};
 
-//	Equipment (Abilities) ------------------------------------------------------
-//
-//	See AbilityTable in ConstantsUtilities.cpp
-
-enum Abilities
-	{
-	ablUnknown =				-1,
-
-	ablShortRangeScanner =		0,		//	Main viewscreen
-	ablLongRangeScanner =		1,		//	LRS
-	ablSystemMap =				2,		//	System map display
-	ablAutopilot =				3,		//	Autopilot
-	ablExtendedScanner =		4,		//	Extended marks on viewscreen
-	ablTargetingSystem =		5,		//	Targeting computer
-	ablGalacticMap =			6,		//	Galactic map display
-	ablFriendlyFireLock =		7,
-
-	ablCount =					8,
-	};
-
-enum AbilityModifications
-	{
-	ablModificationUnknown =	-1,
-
-	ablInstall =				0,		//	Install the ability
-	ablRemove =					1,		//	Remove the ability (if installed)
-	ablDamage =					2,		//	Damage the ability (if installed)
-	ablRepair =					3,		//	Repair the ability (if damaged)
-	};
-
-enum AbilityModificationOptions
-	{
-	ablOptionUnknown =			0x00000000,
-
-	ablOptionNoMessage =		0x00000001,	//	Do not show a message to player
-	};
-
-enum AbilityStatus
-	{
-	ablStatusUnknown =			-1,
-
-	ablUninstalled =			0,		//	>0 means that is installed (though it could be damaged)
-	ablInstalled =				1,
-	ablDamaged =				2,
-	};
-
 //  Cargo ----------------------------------------------------------------------
 
 class CCargoDesc
@@ -647,6 +601,8 @@ struct SShipPerformanceCtx
     Metric rSingleArmorFraction;            //  Fraction of all armor segments represented by 1 segment (= 1/segment-count)
 	int iArmorMass;							//	Total mass of all armor segments (kg)
 
+	CAbilitySet Abilities;					//	Equipment installed
+
     CRotationDesc RotationDesc;             //  Double precision rotation descriptor
 
 	CReactorDesc ReactorDesc;				//	Reactor descriptor
@@ -672,6 +628,7 @@ class CShipPerformanceDesc
 				m_fShieldInterference(false)
 			{ }
 
+		inline const CAbilitySet &GetAbilities (void) const { return m_Abilities; }
         inline const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
         inline const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
         inline const CReactorDesc &GetReactorDesc (void) const { return m_ReactorDesc; }
@@ -682,6 +639,7 @@ class CShipPerformanceDesc
 
         //  Read-Write versions of accessors
 
+		inline CAbilitySet &GetAbilities (void) { return m_Abilities; }
         inline CCargoDesc &GetCargoDesc (void) { return m_CargoDesc; }
         inline CDriveDesc &GetDriveDesc (void) { return m_DriveDesc; }
         inline CReactorDesc &GetReactorDesc (void) { return m_ReactorDesc; }
@@ -694,6 +652,7 @@ class CShipPerformanceDesc
 		CReactorDesc m_ReactorDesc;
         CDriveDesc m_DriveDesc;
         CCargoDesc m_CargoDesc;
+		CAbilitySet m_Abilities;
 
 		DWORD m_fInitialized:1;				//	TRUE if Init called
 		DWORD m_fShieldInterference:1;		//	TRUE if energy shields are suppressed (e.g., by meteorsteel)

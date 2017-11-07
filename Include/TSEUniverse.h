@@ -288,6 +288,7 @@ class CUniverse
 		inline const CG16bitFont *GetFont (const CString &sFont) { return m_pHost->GetFont(sFont); }
 		inline CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
         inline CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
+        inline const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
 		inline IHost *GetHost (void) const { return m_pHost; }
 		inline CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		inline int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
@@ -406,8 +407,9 @@ class CUniverse
 		inline CStationType *GetStationType (int iIndex) { return (CStationType *)m_Design.GetEntry(designStationType, iIndex); }
 		inline int GetStationTypeCount (void) { return m_Design.GetCount(designStationType); }
 		inline CTopology &GetTopology (void) { return m_Topology; }
+		inline const CTopology &GetTopology (void) const { return m_Topology; }
 		inline CTopologyNode *GetTopologyNode (int iIndex) { return m_Topology.GetTopologyNode(iIndex); }
-		inline int GetTopologyNodeCount (void) { return m_Topology.GetTopologyNodeCount(); }
+		inline int GetTopologyNodeCount (void) const { return m_Topology.GetTopologyNodeCount(); }
 
 		void PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		void PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);

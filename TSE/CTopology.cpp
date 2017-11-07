@@ -1379,7 +1379,7 @@ ALERROR CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNo
 		}
 	}
 
-CTopologyNode *CTopology::FindTopologyNode (const CString &sID)
+CTopologyNode *CTopology::FindTopologyNode (const CString &sID) const
 
 //	FindTopologyNode
 //
@@ -1436,7 +1436,7 @@ void CTopology::GetAbsoluteDisplayPos (STopologyCreateCtx &Ctx, int x, int y, in
 		}
 	}
 
-int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID)
+int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID) const
 
 //	GetDistance
 //
@@ -1491,7 +1491,7 @@ int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID)
 	return (iBestDist != INFINITE_DISTANCE ? iBestDist : -1);
 	}
 
-int CTopology::GetDistance (CTopologyNode *pSource, const CString &sDestID, int iBestDist)
+int CTopology::GetDistance (CTopologyNode *pSource, const CString &sDestID, int iBestDist) const
 
 //	GetDistance
 //
