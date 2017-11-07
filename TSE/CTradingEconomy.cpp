@@ -47,13 +47,13 @@ CString CTradingEconomy::CalcImpactDesc (EImpactCategories iImpact) const
 	switch (iImpact)
 		{
 		case impactMassiveGlut:
-			return CONSTLIT("massive glut of");
+			return CONSTLIT("massive surplus of");
 
 		case impactMajorGlut:
-			return CONSTLIT("major glut of");
+			return CONSTLIT("major surplus of");
 
 		case impactGlut:
-			return CONSTLIT("glut of");
+			return CONSTLIT("surplus of");
 
 		case impactExports:
 			return CONSTLIT("exports");
