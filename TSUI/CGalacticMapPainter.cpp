@@ -266,8 +266,6 @@ void CGalacticMapPainter::DrawUnknownNode (CG32bitImage &Dest, CTopologyNode *pN
 //	Draws a topology node
 
 	{
-    const CG16bitFont &NameFont = m_VI.GetFont(fontMedium);
-
     //  Draw selection, if necessary
 
     if (pNode == m_pSelected)
@@ -293,22 +291,6 @@ void CGalacticMapPainter::DrawUnknownNode (CG32bitImage &Dest, CTopologyNode *pN
 	//	Paint
 
 	CGDraw::Circle(Dest, x, y, iRadius, ColorTable, CGDraw::blendScreen);
-
-    //  Draw the name label
-
-	CString sLabel = CONSTLIT("Unknown");
-    int cxName = NameFont.MeasureText(sLabel);
-    int cxNameBack = cxName + 2 * NAME_PADDING_X;
-    int xNameBack = x - (cxNameBack / 2);
-    int yName = y + NODE_RADIUS + NAME_SPACING_Y;
-
-    //CGDraw::RoundedRect(Dest, xNameBack, yName, cxNameBack, NameFont.GetHeight(), CORNER_RADIUS, RGB_SYSTEM_NAME_BACK);
-
-	NameFont.DrawText(Dest,
-			xNameBack + NAME_PADDING_X, yName,
-			RGB_SYSTEM_NAME,
-			sLabel,
-			0);
 	}
 
 void CGalacticMapPainter::GalacticToView (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const
