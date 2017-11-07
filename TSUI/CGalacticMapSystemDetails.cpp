@@ -332,7 +332,9 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
 
 	//	Compuse import/export data
 
-	CString sDetails = pTopology->GetTradingEconomy().GetDescription();
+	CString sDetails;
+	if (pTopology->IsKnown())
+		sDetails = pTopology->GetTradingEconomy().GetDescription();
 
     //  Compose a string indicating when we visited.
 
