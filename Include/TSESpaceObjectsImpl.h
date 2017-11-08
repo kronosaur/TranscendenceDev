@@ -1025,7 +1025,7 @@ class CShip : public CSpaceObject
 		bool IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL, int *retiFacingAngle = NULL);
 
 		//	Settings
-		inline bool HasAutopilot (void) { return m_fHasAutopilot; }
+		inline bool HasAutopilot (void) { return (GetAbility(ablAutopilot) == ablInstalled); }
 
 		void ClearBlindness (bool bNoMessage = false);
 
@@ -1043,11 +1043,11 @@ class CShip : public CSpaceObject
 		inline bool IsInGate (void) const { return m_iExitGateTimer > 0; }
 		void SetInGate (CSpaceObject *pGate, int iTickCount);
 
-		inline bool CanTargetFriendlies (void) const { return !m_fFriendlyFireLock; }
-		inline bool HasTargetingComputer (void) const { return m_fHasTargetingComputer; }
+		inline bool CanTargetFriendlies (void) const { return (GetAbility(ablFriendlyFireLock) != ablInstalled); }
+		inline bool HasTargetingComputer (void) const { return (GetAbility(ablTargetingSystem) == ablInstalled); }
 
 		inline void ClearSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablRemove, -1, 0); }
-		inline bool IsSRSEnhanced (void) { return (m_fSRSEnhanced ? true : false); }
+		inline bool IsSRSEnhanced (void) { return (GetAbility(ablExtendedScanner) == ablInstalled); }
 		inline void SetSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablInstall, -1, 0); }
 
 		//	Reactor methods
@@ -1115,7 +1115,7 @@ class CShip : public CSpaceObject
 		virtual CInstalledDevice *FindDevice (const CItem &Item) override;
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) override { return m_pClass->FindDeviceSlotDesc(Item, retDesc); }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;
-		virtual AbilityStatus GetAbility (Abilities iAbility) override;
+		virtual AbilityStatus GetAbility (Abilities iAbility) const override;
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
 		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
@@ -1177,7 +1177,7 @@ class CShip : public CSpaceObject
 		virtual bool IsAnchored (void) const override { return (GetDockedObj() != NULL) || IsManuallyAnchored(); }
 		virtual bool IsAngryAt (CSpaceObject *pObj) override;
 		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
-		virtual bool IsBlind (void) override { return m_iBlindnessTimer != 0; }
+		virtual bool IsBlind (void) const override { return m_iBlindnessTimer != 0; }
 		virtual bool IsDisarmed (void) override { return m_fDisarmedByOverlay || m_iDisarmedTimer != 0; }
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsIdentified (void) override { return m_fIdentified; }
@@ -1321,6 +1321,7 @@ class CShip : public CSpaceObject
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
+		CAbilitySet m_Abilities;				//	Installed abilities
 		COverlayList m_Overlays;		        //	List of energy fields
 		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
 		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
@@ -1357,40 +1358,33 @@ class CShip : public CSpaceObject
         CShipPerformanceDesc m_Perf;            //  Computed performance parameters (not saved)
 
 		DWORD m_fRadioactive:1;					//	TRUE if radioactive
-		DWORD m_fHasAutopilot:1;				//	TRUE if ship has autopilot
 		DWORD m_fDestroyInGate:1;				//	TRUE if ship has entered a gate
 		DWORD m_fHalfSpeed:1;					//	TRUE if ship is at half speed
-		DWORD m_fHasTargetingComputer:1;		//	TRUE if ship has targeting computer
-		DWORD m_fSRSEnhanced:1;					//	TRUE if ship's SRS is enhanced
 		DWORD m_fDeviceDisrupted:1;				//	TRUE if at least one device is disrupted
 		DWORD m_fKnown:1;						//	TRUE if we know about this ship
-
 		DWORD m_fHiddenByNebula:1;				//	TRUE if ship is hidden by nebula
 		DWORD m_fTrackMass:1;					//	TRUE if ship keeps track of mass to compute performance
 		DWORD m_fIdentified:1;					//	TRUE if player can see ship class, etc.
+
 		DWORD m_fManualSuspended:1;				//	TRUE if ship is suspended
-		DWORD m_fGalacticMap:1;					//	TRUE if ship has galactic map installed
 		mutable DWORD m_fRecalcItemMass:1;		//	TRUE if we need to recalculate m_rImageMass
 		DWORD m_fDockingDisabled:1;				//	TRUE if docking is disabled
 		DWORD m_fControllerDisabled:1;			//	TRUE if we want to disable controller
-
 		DWORD m_fRecalcRotationAccel:1;			//	TRUE if we need to recalc rotation acceleration
 		DWORD m_fParalyzedByOverlay:1;			//	TRUE if one or more overlays paralyze the ship.
 		DWORD m_fDisarmedByOverlay:1;			//	TRUE if one or more overlays disarmed the ship.
 		DWORD m_fSpinningByOverlay:1;			//	TRUE if we should spin wildly
+
 		DWORD m_fDragByOverlay:1;				//	TRUE if overlay imposes drag
 		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
-		DWORD m_fFriendlyFireLock:1;			//	TRUE if we cannot target friendly ships
 		DWORD m_fEmergencySpeed:1;				//	TRUE if we're operating at 1.5x max speed
-
 		DWORD m_fQuarterSpeed:1;				//	TRUE if we're operating at 0.25x max speed
 		DWORD m_fLRSDisabledByNebula:1;			//	TRUE if LRS is disabled due to environment
 		DWORD m_fShipCompartment:1;				//	TRUE if we're part of another ship (m_pDocked is the root ship)
 		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
-		DWORD m_fSpare5:1;
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:8;
 
 	friend CObjectClass<CShip>;
 	};

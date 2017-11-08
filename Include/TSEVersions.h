@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							38;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					32;
-constexpr DWORD SYSTEM_SAVE_VERSION =					154;
+constexpr DWORD SYSTEM_SAVE_VERSION =					155;
 
 //	Uncomment out the following define when building a stable release
 
@@ -568,3 +568,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					154;
 //
 //	154: 1.8 Alpha 4
 //		Added sNodeID and flags to CSystemMap::SMapAnnotation
+//
+//	155: 1.8 Alpha 4
+//		Added m_Abilities to CShip

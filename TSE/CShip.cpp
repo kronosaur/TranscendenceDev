@@ -1421,17 +1421,13 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	pShip->m_fTrackMass = false;
 	pShip->m_fRadioactive = false;
-	pShip->m_fHasAutopilot = false;
 	pShip->m_fDestroyInGate = false;
 	pShip->m_fHalfSpeed = false;
-	pShip->m_fHasTargetingComputer = false;
-	pShip->m_fSRSEnhanced = false;
 	pShip->m_fDeviceDisrupted = false;
 	pShip->m_fKnown = false;
 	pShip->m_fHiddenByNebula = false;
 	pShip->m_fIdentified = false;
 	pShip->m_fManualSuspended = false;
-	pShip->m_fGalacticMap = false;
 	pShip->m_fRecalcItemMass = true;
 	pShip->m_fRecalcRotationAccel = false;
 	pShip->m_fDockingDisabled = false;
@@ -1441,7 +1437,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fSpinningByOverlay = false;
 	pShip->m_fDragByOverlay = false;
 	pShip->m_fAlwaysLeaveWreck = false;
-	pShip->m_fFriendlyFireLock = false;
 	pShip->m_fEmergencySpeed = false;
 	pShip->m_fQuarterSpeed = false;
 	pShip->m_fLRSDisabledByNebula = false;
@@ -2467,44 +2462,38 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 	m_pController->OnEnterGate(pDestNode, sDestEntryPoint, pStargate, bAscend);
 	}
 
-AbilityStatus CShip::GetAbility (Abilities iAbility)
+AbilityStatus CShip::GetAbility (Abilities iAbility) const
 
 //	GetAbility
 //
 //	Returns the status of the given ability
 
 	{
+	//	Some abilities can be damaged, so we check those first
+
 	switch (iAbility)
 		{
-		case ablAutopilot:
-			return (HasAutopilot() ? ablInstalled : ablUninstalled);
+		case ablShortRangeScanner:
+			if (IsBlind())
+				return ablDamaged;
+			break;
+		}
 
-		case ablExtendedScanner:
-			return (IsSRSEnhanced() ? ablInstalled : ablUninstalled);
+	//	Check install state
 
-		case ablFriendlyFireLock:
-			return (CanTargetFriendlies() ? ablUninstalled : ablInstalled);
-
-		case ablGalacticMap:
-			return (m_fGalacticMap ? ablInstalled : ablUninstalled);
+	switch (iAbility)
+		{
+		//	Some abilities are always installed (for now)
 
 		case ablLongRangeScanner:
-			return ablInstalled;
-
 		case ablShortRangeScanner:
-			return (IsBlind() ? ablDamaged : ablInstalled);
-
 		case ablSystemMap:
 			return ablInstalled;
 
-		case ablTargetingSystem:
-			return (HasTargetingComputer() ? ablInstalled : ablUninstalled);
-
-		case ablTradingComputer:
-			return (m_Perf.GetAbilities().IsSet(ablTradingComputer) ? ablInstalled : ablUninstalled);
+		//	For others, we check our sets
 
 		default:
-			return ablUninstalled;
+			return ((m_Abilities.IsSet(iAbility) || m_Perf.GetAbilities().IsSet(iAbility)) ? ablInstalled : ablUninstalled);
 		}
 	}
 
@@ -5379,6 +5368,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	CArmorSystem m_Armor
 //
+//	CAbilitySet	m_Ability
 //	DWORD		m_iStealth
 //
 //	CPowerConsumption	m_pPowerUse (if tracking fuel)
@@ -5525,13 +5515,13 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	bool bBit01 =				((dwLoad & 0x00000001) ? true : false);
 	m_fRadioactive =			((dwLoad & 0x00000002) ? true : false);
-	m_fHasAutopilot =			((dwLoad & 0x00000004) ? true : false);
+	//	0x00000004 Unused as of version 155
 	m_fDestroyInGate =			((dwLoad & 0x00000008) ? true : false);
 	m_fHalfSpeed =				((dwLoad & 0x00000010) ? true : false);
-	m_fHasTargetingComputer =	((dwLoad & 0x00000020) ? true : false);
+	//	0x00000020 Unused as of version 155
 	bool bTrackFuel =			((dwLoad & 0x00000040) ? true : false);
 	bool bHasMoney =			((dwLoad & 0x00000080) ? true : false) && (Ctx.dwVersion >= 145);
-	m_fSRSEnhanced =			((dwLoad & 0x00000100) ? true : false);
+	//	0x00000100 Unused as of version 155
 	m_fRecalcItemMass =			((dwLoad & 0x00000200) ? true : false);
 	m_fKnown =					((dwLoad & 0x00000400) ? true : false);
 	m_fHiddenByNebula =			((dwLoad & 0x00000800) ? true : false);
@@ -5542,7 +5532,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		m_fIdentified = true;
 	m_fManualSuspended =		((dwLoad & 0x00004000) ? true : false);
 	bool bIrradiatedBy =		((dwLoad & 0x00008000) ? true : false);
-	m_fGalacticMap =			((dwLoad & 0x00010000) ? true : false);
+	//	0x00010000 Unused as of version 155
 	m_fDockingDisabled =		((dwLoad & 0x00020000) ? true : false);
 	m_fControllerDisabled =		((dwLoad & 0x00040000) ? true : false);
 	m_fParalyzedByOverlay =		((dwLoad & 0x00080000) ? true : false);
@@ -5557,10 +5547,21 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		}
 	else
 		m_fShipCompartment =	((dwLoad & 0x01000000) ? true : false);
-	m_fFriendlyFireLock =		((dwLoad & 0x02000000) ? true : false);
+	//	0x02000000 Unused as of version 155
 	m_fEmergencySpeed =			((dwLoad & 0x04000000) ? true : false);
 	m_fQuarterSpeed =			((dwLoad & 0x08000000) ? true : false);
 	m_fHasShipCompartments =	((dwLoad & 0x10000000) ? true : false);
+
+	//	Prior to version 155, we saved abilities separately
+
+	if (Ctx.dwVersion < 155)
+		{
+		if (dwLoad & 0x00000004) m_Abilities.Set(ablAutopilot);
+		if (dwLoad & 0x00000020) m_Abilities.Set(ablTargetingSystem);
+		if (dwLoad & 0x00000100) m_Abilities.Set(ablExtendedScanner);
+		if (dwLoad & 0x00010000) m_Abilities.Set(ablGalacticMap);
+		if (dwLoad & 0x02000000) m_Abilities.Set(ablFriendlyFireLock);
+		}
 
 	//	Bit 1 means different things depending on the version
 
@@ -5584,6 +5585,14 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Load armor
 
     m_Armor.ReadFromStream(Ctx, this);
+
+	//	Abilities
+
+	if (Ctx.dwVersion >= 155)
+		m_Abilities.ReadFromStream(Ctx);
+	else
+		{
+		}
 
 	//	Stealth
 
@@ -6318,6 +6327,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //
 //  CArmorSystem m_Armor
 //
+//	CAbilitySet	m_Ability
 //	DWORD		m_iStealth
 //
 //	CPowerConsumption	m_pPowerUse (if tracking fuel)
@@ -6384,13 +6394,13 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	dwSave |= (m_fLRSDisabledByNebula ? 0x00000001 : 0);
 	dwSave |= (m_fRadioactive ?			0x00000002 : 0);
-	dwSave |= (m_fHasAutopilot ?		0x00000004 : 0);
+	//	0x00000004
 	dwSave |= (m_fDestroyInGate ?		0x00000008 : 0);
 	dwSave |= (m_fHalfSpeed ?			0x00000010 : 0);
-	dwSave |= (m_fHasTargetingComputer ? 0x00000020 : 0);
+	//	0x00000020
 	dwSave |= (m_pPowerUse ?			0x00000040 : 0);
 	dwSave |= (m_pMoney ?				0x00000080 : 0);
-	dwSave |= (m_fSRSEnhanced ?			0x00000100 : 0);
+	//	0x00000100
 	dwSave |= (m_fRecalcItemMass ?		0x00000200 : 0);
 	dwSave |= (m_fKnown ?				0x00000400 : 0);
 	dwSave |= (m_fHiddenByNebula ?		0x00000800 : 0);
@@ -6398,7 +6408,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fIdentified ?			0x00002000 : 0);
 	dwSave |= (m_fManualSuspended ?		0x00004000 : 0);
 	dwSave |= (m_pIrradiatedBy ?		0x00008000 : 0);
-	dwSave |= (m_fGalacticMap ?			0x00010000 : 0);
+	//	0x00010000
 	dwSave |= (m_fDockingDisabled ?		0x00020000 : 0);
 	dwSave |= (m_fControllerDisabled ?	0x00040000 : 0);
 	dwSave |= (m_fParalyzedByOverlay ?	0x00080000 : 0);
@@ -6407,7 +6417,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
 	dwSave |= (m_fShipCompartment ?		0x01000000 : 0);
-	dwSave |= (m_fFriendlyFireLock ?	0x02000000 : 0);
+	//	0x02000000
 	dwSave |= (m_fEmergencySpeed ?		0x04000000 : 0);
 	dwSave |= (m_fQuarterSpeed ?		0x08000000 : 0);
 	dwSave |= (m_fHasShipCompartments ?	0x10000000 : 0);
@@ -6416,6 +6426,10 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	//	Armor
 
     m_Armor.WriteToStream(pStream);
+
+	//	Abilities
+
+	m_Abilities.WriteToStream(pStream);
 
 	//	Stealth
 
@@ -7265,164 +7279,101 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 //	Changes the given ability. Returns TRUE if the ability's status changed.
 
 	{
-	switch (iAbility)
+	//	Install works for all abilities
+
+	if (iModification == ablInstall)
 		{
-		case ablAutopilot:
-			{
-			if (iModification == ablInstall)
-				{
-				bool bChanged = !m_fHasAutopilot;
-				m_fHasAutopilot = true;
-				return bChanged;
-				}
-			else if (iModification == ablRemove)
-				{
-				bool bChanged = m_fHasAutopilot;
-				m_fHasAutopilot = false;
-				return bChanged;
-				}
-			else
-				return false;
-			}
+		//	NOTE: We only consider built-in ship abilities. It doesn't count if
+		//	a device confers an ability (for purposes of saying whether we
+		//	installed or not).
 
-		case ablExtendedScanner:
-			{
-			if (iModification == ablInstall)
-				{
-				bool bChanged = !m_fSRSEnhanced;
-				m_fSRSEnhanced = true;
-				return bChanged;
-				}
-			else if (iModification == ablRemove)
-				{
-				bool bChanged = m_fSRSEnhanced;
-				m_fSRSEnhanced = false;
-				return bChanged;
-				}
-			else
-				return false;
-			}
+		bool bChanged = !m_Abilities.IsSet(iAbility);
+		m_Abilities.Set(iAbility);
+		return bChanged;
+		}
 
-		case ablFriendlyFireLock:
-			{
-			if (iModification == ablInstall)
-				{
-				bool bChanged = !m_fFriendlyFireLock;
-				m_fFriendlyFireLock = true;
-				return bChanged;
-				}
-			else if (iModification == ablRemove)
-				{
-				bool bChanged = m_fFriendlyFireLock;
-				m_fFriendlyFireLock = false;
-				return bChanged;
-				}
-			else
-				return false;
-			}
+	//	Remove works for all abilities
 
-		case ablGalacticMap:
-			{
-			if (iModification == ablInstall)
-				{
-				bool bChanged = !m_fGalacticMap;
-				m_fGalacticMap = true;
-				return bChanged;
-				}
-			else if (iModification == ablRemove)
-				{
-				bool bChanged = m_fGalacticMap;
-				m_fGalacticMap = false;
-				return bChanged;
-				}
-			else
-				return false;
-			}
+	else if (iModification == ablRemove)
+		{
+		bool bChanged = m_Abilities.IsSet(iAbility);
+		m_Abilities.Clear(iAbility);
+		return bChanged;
+		}
 
-		case ablLongRangeScanner:
+	//	Otherwise, the implementation is slightly different.
+
+	else
+		{
+		switch (iAbility)
 			{
-			if (iModification == ablDamage)
+			case ablLongRangeScanner:
 				{
-				bool bChanged = (m_iLRSBlindnessTimer == 0);
-				if (m_iLRSBlindnessTimer != -1)
+				if (iModification == ablDamage)
 					{
-					if (iDuration == -1)
-						m_iLRSBlindnessTimer = -1;
-					else
-						m_iLRSBlindnessTimer += iDuration;
+					bool bChanged = (m_iLRSBlindnessTimer == 0);
+					if (m_iLRSBlindnessTimer != -1)
+						{
+						if (iDuration == -1)
+							m_iLRSBlindnessTimer = -1;
+						else
+							m_iLRSBlindnessTimer += iDuration;
+						}
+
+					if (bChanged)
+						m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
+
+					return bChanged;
 					}
-
-				if (bChanged)
-					m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
-
-				return bChanged;
-				}
-			else if (iModification == ablRepair)
-				{
-				bool bChanged = (m_iLRSBlindnessTimer != 0);
-				m_iLRSBlindnessTimer = 0;
-
-				if (bChanged)
-					m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
-				
-				return bChanged;
-				}
-			else
-				return false;
-			}
-
-		case ablShortRangeScanner:
-			{
-			if (iModification == ablDamage)
-				{
-				bool bChanged = (m_iBlindnessTimer == 0);
-				if (m_iBlindnessTimer != -1)
+				else if (iModification == ablRepair)
 					{
-					if (iDuration == -1)
-						m_iBlindnessTimer = -1;
-					else
-						m_iBlindnessTimer += iDuration;
+					bool bChanged = (m_iLRSBlindnessTimer != 0);
+					m_iLRSBlindnessTimer = 0;
+
+					if (bChanged)
+						m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
+				
+					return bChanged;
 					}
-
-				if (bChanged)
-					m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
-				
-				return bChanged;
+				else
+					return false;
 				}
-			else if (iModification == ablRepair)
+
+			case ablShortRangeScanner:
 				{
-				bool bChanged = (m_iBlindnessTimer != 0);
-				m_iBlindnessTimer = 0;
+				if (iModification == ablDamage)
+					{
+					bool bChanged = (m_iBlindnessTimer == 0);
+					if (m_iBlindnessTimer != -1)
+						{
+						if (iDuration == -1)
+							m_iBlindnessTimer = -1;
+						else
+							m_iBlindnessTimer += iDuration;
+						}
 
-				if (bChanged)
-					m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
+					if (bChanged)
+						m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
 				
-				return bChanged;
+					return bChanged;
+					}
+				else if (iModification == ablRepair)
+					{
+					bool bChanged = (m_iBlindnessTimer != 0);
+					m_iBlindnessTimer = 0;
+
+					if (bChanged)
+						m_pController->OnAbilityChanged(iAbility, iModification, ((dwOptions & ablOptionNoMessage) ? true : false));
+				
+					return bChanged;
+					}
+				else
+					return false;
 				}
-			else
+
+			default:
 				return false;
 			}
-
-		case ablTargetingSystem:
-			{
-			if (iModification == ablInstall)
-				{
-				bool bChanged = !m_fHasTargetingComputer;
-				m_fHasTargetingComputer = true;
-				return bChanged;
-				}
-			else if (iModification == ablRemove)
-				{
-				bool bChanged = m_fHasTargetingComputer;
-				m_fHasTargetingComputer = false;
-				return bChanged;
-				}
-			else
-				return false;
-			}
-
-		default:
-			return false;
 		}
 	}
 

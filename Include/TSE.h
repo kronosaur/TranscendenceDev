@@ -1404,7 +1404,7 @@ class CSpaceObject : public CObject
 		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) { }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
-		virtual AbilityStatus GetAbility (Abilities iAbility) { return ablUninstalled; }
+		virtual AbilityStatus GetAbility (Abilities iAbility) const { return ablUninstalled; }
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
 		virtual const CString &GetGlobalData (const CString &sAttribute) { return NULL_STR; }
@@ -1504,7 +1504,7 @@ class CSpaceObject : public CObject
 		virtual bool HasMapLabel (void) { return false; }
 		virtual bool IsAngry (void) { return false; }
 		virtual bool IsAngryAt (CSpaceObject *pObj) { return IsEnemy(pObj); }
-		virtual bool IsBlind (void) { return false; }
+		virtual bool IsBlind (void) const { return false; }
 		virtual bool IsDisarmed (void) { return false; }
 		virtual bool IsIdentified (void) { return true; }
 		virtual bool IsMultiHull (void) { return false; }
