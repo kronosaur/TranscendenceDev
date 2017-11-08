@@ -875,12 +875,13 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 	while (!bDone)
 		{
 		CString sVar;
-		CString sValue;
 		char *pSeg;
 		char *pSegEnd;
 
 		if (bVar)
 			{
+			ICCItem *pValue;
+
 			int iArg;
 			ASSERT(*pPos == '%');
 
@@ -912,8 +913,8 @@ CString ComposePlayerNameString (const CString &sString, const CString &sPlayerN
 
 			//	Check to see if this is a variable referencing gData.
 
-			else if (bHasData && !(sValue = pArgs->GetStringAt(sVar)).IsBlank())
-				sVar = sValue;
+			else if (bHasData && (pValue = pArgs->GetElement(sVar)) && !pValue->IsNil())
+				sVar = pValue->GetStringValue();
 
 			//	Otherwise we look for standard variables
 
