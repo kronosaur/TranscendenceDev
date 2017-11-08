@@ -170,6 +170,8 @@
 
 #define ON_CREATE_EVENT							CONSTLIT("OnCreate")
 
+const Metric TREASURE_BALACE_POWER =			0.7;
+
 struct SSizeData
 	{
 	int iMinSize;
@@ -319,7 +321,7 @@ Metric CStationType::CalcBalance (int iLevel) const
 		return 0.0;
 
 	Metric rBalance = (CalcDefenderStrength(iLevel) + CalcWeaponStrength(iLevel)) / 3.5;
-	rBalance *= sqrt((Metric)CalcHitsToDestroy(iLevel) / 50.0);
+	rBalance *= Min(2.0, sqrt((Metric)CalcHitsToDestroy(iLevel) / 50.0));
 	return rBalance;
 	}
 
@@ -721,7 +723,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 	else if (strEquals(sField, FIELD_TREASURE_BALANCE))
 		{
 		int iLevel = GetLevel();
-		Metric rExpected = CalcBalance(iLevel) * (Metric)STD_STATION_DATA[iLevel].dwTreasureValue;
+		Metric rExpected = pow(CalcBalance(iLevel), TREASURE_BALACE_POWER) * (Metric)STD_STATION_DATA[iLevel].dwTreasureValue;
 		Metric rTreasure = CalcTreasureValue(iLevel);
 		*retsValue = strFromInt((int)(100.0 * (rExpected > 0.0 ? rTreasure / rExpected : 0.0)));
 		}
