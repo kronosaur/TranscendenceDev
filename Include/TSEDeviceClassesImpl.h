@@ -65,6 +65,7 @@ class CCargoSpaceClass : public CDeviceClass
 		virtual bool CanBeDamaged (void) override { return false; }
 		virtual bool CanBeDisabled (CItemCtx &Ctx) override { return false; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
+		virtual const CCargoDesc *GetCargoDesc (CItemCtx &Ctx) const override { return GetDesc(Ctx); }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatCargoHold; }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 

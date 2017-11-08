@@ -36,66 +36,9 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_fLinkedFireAlways(false),
 		m_fLinkedFireTarget(false),
 		m_fLinkedFireEnemy(false),
-		m_fDuplicate(false)
+		m_fDuplicate(false),
+		m_fCannotBeEmpty(false)
 	{
-	}
-
-CInstalledDevice::~CInstalledDevice (void)
-
-//	CInstalledDevice destructor
-
-	{
-	}
-
-CInstalledDevice &CInstalledDevice::operator= (const CInstalledDevice &Obj)
-
-//	CInstalledDevice operator =
-
-	{
-	m_pItem = Obj.m_pItem;
-	m_pClass = Obj.m_pClass;
-	m_pOverlay = Obj.m_pOverlay;
-	m_dwTargetID = Obj.m_dwTargetID;
-	m_LastShotIDs = Obj.m_LastShotIDs;
-	m_pEnhancements = Obj.m_pEnhancements;
-
-	m_dwData = Obj.m_dwData;
-
-	m_iDeviceSlot = Obj.m_iDeviceSlot;
-
-	m_iPosAngle = Obj.m_iPosAngle;
-	m_iPosRadius = Obj.m_iPosRadius;
-	m_iPosZ = Obj.m_iPosZ;
-	m_iMinFireArc = Obj.m_iMinFireArc;
-	m_iMaxFireArc = Obj.m_iMaxFireArc;
-
-	m_iTimeUntilReady = Obj.m_iTimeUntilReady;
-	m_iFireAngle = Obj.m_iFireAngle;
-
-	m_iTemperature = Obj.m_iTemperature;
-	m_iActivateDelay = Obj.m_iActivateDelay;
-	m_iSlotBonus = Obj.m_iSlotBonus;
-	m_iSlotPosIndex = Obj.m_iSlotPosIndex;
-	
-	m_fOmniDirectional = Obj.m_fOmniDirectional;
-	m_fOverdrive = Obj.m_fOverdrive;
-	m_fOptimized = Obj.m_fOptimized;
-	m_fSecondaryWeapon = Obj.m_fSecondaryWeapon;
-	m_fEnabled = Obj.m_fEnabled;
-	m_fExternal = Obj.m_fExternal;
-	m_fWaiting = Obj.m_fWaiting;
-	m_fTriggered = Obj.m_fTriggered;
-
-	m_fRegenerating = Obj.m_fRegenerating;
-	m_fLastActivateSuccessful = Obj.m_fLastActivateSuccessful;
-	m_f3DPosition = Obj.m_f3DPosition;
-	m_fLinkedFireAlways = Obj.m_fLinkedFireAlways;
-	m_fLinkedFireTarget = Obj.m_fLinkedFireTarget;
-	m_fLinkedFireEnemy = Obj.m_fLinkedFireEnemy;
-
-	m_fDuplicate = Obj.m_fDuplicate;
-
-	return *this;
 	}
 
 int CInstalledDevice::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource)
@@ -315,6 +258,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 	m_f3DPosition = Desc.b3DPosition;
 	m_iPosZ = Desc.iPosZ;
 	m_fExternal = Desc.bExternal;
+	m_fCannotBeEmpty = Desc.bCannotBeEmpty;
 
 	SetLinkedFireOptions(Desc.dwLinkedFireOptions);
 
@@ -413,6 +357,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 		m_iPosRadius = Desc.iPosRadius;
 		m_iPosZ = Desc.iPosZ;
 		m_f3DPosition = Desc.b3DPosition;
+		m_fCannotBeEmpty = Desc.bCannotBeEmpty;
 
 		m_fExternal = (Desc.bExternal || m_pClass->IsExternal());
 
@@ -693,6 +638,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	m_fLinkedFireEnemy =	((dwLoad & 0x00004000) ? true : false);
 	m_fExternal =			((dwLoad & 0x00008000) ? true : false);
 	m_fDuplicate =			((dwLoad & 0x00010000) ? true : false);
+	m_fCannotBeEmpty =		((dwLoad & 0x00020000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -1029,6 +975,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fLinkedFireEnemy ?		0x00004000 : 0);
 	dwSave |= (m_fExternal ?			0x00008000 : 0);
 	dwSave |= (m_fDuplicate ?			0x00010000 : 0);
+	dwSave |= (m_fCannotBeEmpty ?		0x00020000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);

@@ -1167,15 +1167,40 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 				CItemListManipulator ItemList(GetItemList());
 				SetCursorAtDevice(ItemList, iSlot);
 				ItemToReplace = ItemList.GetItemAtCursor();
+				RemoveDeviceStatus iRemoveStatus = (ItemList.IsCursorValid() ? CanRemoveDevice(ItemToReplace, &sResult) : remNotInstalled);
 
 				//	See if the item can be removed. If not, then error
 
 				if (bCanInstall 
-						&& (!ItemList.IsCursorValid()
-							|| CanRemoveDevice(ItemToReplace, &sResult) != remOK))
+						&& iRemoveStatus != remOK 
+						&& iRemoveStatus != remReplaceOnly)
 					{
 					bCanInstall = false;
 					iResult = insCannotInstall;
+					}
+
+				//	If we're replacing a cargo hold expansion, make sure we still 
+				//	have enough room in the new expansion.
+
+				if (bCanInstall
+						&& iCategory == itemcatCargoHold)
+					{
+					const CCargoDesc *pOldCargo = ItemToReplace.GetType()->GetDeviceClass()->GetCargoDesc(CItemCtx(ItemToReplace));
+					const CCargoDesc *pNewCargo = Item.GetType()->GetDeviceClass()->GetCargoDesc(ItemCtx);
+					if (pOldCargo 
+							&& pNewCargo 
+							&& pNewCargo->GetCargoSpace() < pOldCargo->GetCargoSpace())
+						{
+						OnComponentChanged(comCargo);
+						Metric rRequiredCargoSpace = GetCargoMass() + Item.GetMass();
+						Metric rNewCargoSpace = (Metric)m_pClass->GetHullCargoSpace() + pNewCargo->GetCargoSpace();
+
+						if (rRequiredCargoSpace > rNewCargoSpace)
+							{
+							bCanInstall = false;
+							iResult = insTooMuchCargo;
+							}
+						}
 					}
 				}
 			}
@@ -1213,7 +1238,7 @@ CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *re
 	if (!Item.IsInstalled() || !Item.GetType()->IsDevice())
 		return remNotInstalled;
 
-	CDeviceClass *pDevice = Item.GetType()->GetDeviceClass();
+	CInstalledDevice *pDevice = FindDevice(Item);
 	if (pDevice == NULL)
 		return remNotInstalled;
 
@@ -1226,6 +1251,11 @@ CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *re
 
 	else if (!FireCanRemoveItem(Item, -1, retsResult))
 		return remCannotRemove;
+
+	//	Replace only
+
+	else if (!pDevice->CanBeEmpty())
+		return remReplaceOnly;
 
 	//	Check for special device cases
 
@@ -1242,7 +1272,7 @@ CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *re
 
 			if (rCargoSpace > (Metric)m_pClass->GetHullCargoSpace())
 				{
-				*retsResult = CONSTLIT("Your ship has too much cargo to be able to replace the cargo hold.");
+				*retsResult = CONSTLIT("Your ship has too much cargo to be able to remove the cargo hold.");
 				return remTooMuchCargo;
 				}
 

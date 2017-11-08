@@ -191,6 +191,7 @@ SInstallItemResultsData INSTALL_ITEM_RESULTS_TABLE[] =
 		{	"reactorOverload",			-1,		-1	},
 		{	"reactorTooWeak",			-1,		7	},
 		{	"notCompatible",			-1,		-1	},
+		{	"tooMuchCargo",				-1,		-1	},
 
 		{	"replacementRequired",		-1,		8	},
 		{	"replacementRequired",		-1,		5	},

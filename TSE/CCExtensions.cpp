@@ -984,6 +984,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0        OK\n"
 			"   1        Too much cargo to remove cargo hold\n"
 			"   2        Device not installed\n"
+			"   3        Replace only\n"
 			"   string   custom fail reason",
 			"iv",	0,	},
 
@@ -1345,7 +1346,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'reactorIncompatible\n"
 			"   'reactorOverloaded\n"
 			"   'reactorTooWeak\n"
-			"   'replacementRequired",
+			"   'replacementRequired\n"
+			"   'tooMuchCargo",
 
 			"iv*",	0,	},
 

@@ -55,17 +55,19 @@ enum AbilityStatus
 class CAbilitySet
 	{
 	public:
-		inline void Clear (Abilities iAbility) { m_dwSet &= ~(1 >> iAbility); }
+		inline void Clear (Abilities iAbility) { m_dwSet &= ~GetFlag(iAbility); }
 		inline void ClearAll (void) { m_dwSet = 0; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return (m_dwSet == 0); }
-		inline bool IsSet (Abilities iAbility) const { return ((m_dwSet & (1 >> iAbility)) ? true : false); }
+		inline bool IsSet (Abilities iAbility) const { return ((m_dwSet & GetFlag(iAbility)) ? true : false); }
 		inline void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
-		inline void Set (Abilities iAbility) { m_dwSet |= (1 >> iAbility); }
+		inline void Set (Abilities iAbility) { m_dwSet |= GetFlag(iAbility); }
 		void Set (const CAbilitySet &Abilities);
 		inline void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
 
 	private:
+		inline DWORD GetFlag (Abilities iAbility) const { return (1 << iAbility); }
+
 		DWORD m_dwSet = 0;
 	};
 

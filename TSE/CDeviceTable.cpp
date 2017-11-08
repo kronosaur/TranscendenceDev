@@ -14,6 +14,7 @@
 #define NULL_TAG								CONSTLIT("Null")
 #define TABLE_TAG								CONSTLIT("Table")
 
+#define CANNOT_BE_EMPTY_ATTRIB					CONSTLIT("cannotBeEmpty")
 #define CATEGORIES_ATTRIB						CONSTLIT("categories")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
 #define COUNT_ATTRIB							CONSTLIT("count")
@@ -70,6 +71,7 @@ class CSingleDevice : public IDeviceGenerator
 		bool m_b3DPosition;
 		bool m_bDefaultPos;
 		bool m_bExternal;
+		bool m_bCannotBeEmpty;
 
 		bool m_bOmnidirectional;
 		int m_iMinFireArc;
@@ -224,6 +226,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		retDesc->iPosZ = 0;
 
 	retDesc->bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
+	retDesc->bCannotBeEmpty = pDesc->GetAttributeBool(CANNOT_BE_EMPTY_ATTRIB);
 	retDesc->bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
 
 	//	If we have a fireArc attribute, then we're defining the arc in terms of center angle
@@ -342,6 +345,13 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.bExternal = SlotDesc.bExternal;
 		else
 			Desc.bExternal = m_bExternal;
+
+		//	Cannot be empty
+
+		if (bUseSlotDesc)
+			Desc.bCannotBeEmpty = SlotDesc.bCannotBeEmpty;
+		else
+			Desc.bCannotBeEmpty = m_bCannotBeEmpty;
 
 		//	Set the device fire arc appropriately.
 
@@ -517,6 +527,7 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 
 	m_bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
+	m_bCannotBeEmpty = pDesc->GetAttributeBool(CANNOT_BE_EMPTY_ATTRIB);
 
 	//	Linked fire options
 

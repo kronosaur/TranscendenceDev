@@ -943,7 +943,8 @@ class CShip : public CSpaceObject
 			remOK					= 0,	//	Can remove this device
 			remTooMuchCargo			= 1,	//	Can't remove cargo expansion (because too much cargo)
 			remNotInstalled			= 2,	//	Device is not installed
-			remCannotRemove			= 3,	//	Custom reason
+			remReplaceOnly			= 3,	//	Device can be replaced but not removed
+			remCannotRemove			= 4,	//	Custom reason
 			};
 
 		struct SAttachedSectionInfo

@@ -5,6 +5,7 @@
 
 #pragma once
 
+class CCargoDesc;
 struct SShipPerformanceCtx;
 
 enum DeviceNames
@@ -211,6 +212,7 @@ class CDeviceClass
 		virtual int GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const { return 0; }
 		virtual int GetAmmoVariant (const CItemType *pItem) const { return -1; }
 		virtual int GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType = NULL, int *retiLevel = NULL) { return 0; }
+		virtual const CCargoDesc *GetCargoDesc (CItemCtx &Ctx) const { return NULL; }
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) { return NULL; }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
@@ -299,36 +301,23 @@ class CDeviceClass
 
 struct SDeviceDesc
 	{
-	SDeviceDesc (void) :
-			iPosAngle(0),
-			iPosRadius(0),
-			iPosZ(0),
-			b3DPosition(false),
-			bExternal(false),
-			bOmnidirectional(false),
-			iMinFireArc(0),
-			iMaxFireArc(0),
-			bSecondary(false),
-			dwLinkedFireOptions(0),
-			iSlotBonus(0)
-		{ }
-
 	CItem Item;
 
-	int iPosAngle;
-	int iPosRadius;
-	int iPosZ;
-	bool b3DPosition;
-	bool bExternal;
+	int iPosAngle = 0;
+	int iPosRadius = 0;
+	int iPosZ = 0;
+	bool b3DPosition = false;
+	bool bExternal = false;
+	bool bCannotBeEmpty = false;
 
-	bool bOmnidirectional;
-	int iMinFireArc;
-	int iMaxFireArc;
-	bool bSecondary;
+	bool bOmnidirectional = false;
+	int iMinFireArc = 0;
+	int iMaxFireArc = 0;
+	bool bSecondary = false;
 
-	DWORD dwLinkedFireOptions;
+	DWORD dwLinkedFireOptions = 0;
 
-	int iSlotBonus;
+	int iSlotBonus = 0;
 
 	CItemList ExtraItems;
 	};
@@ -388,9 +377,6 @@ class CInstalledDevice
 	{
 	public:
 		CInstalledDevice (void);
-		~CInstalledDevice (void);
-
-		CInstalledDevice &operator= (const CInstalledDevice &Obj);
 
 		//	Create/Install/uninstall/Save/Load methods
 
@@ -410,6 +396,7 @@ class CInstalledDevice
 		//	of the device class. For example, IsOmniDirectional does not check the
 		//	properties of the device class
 
+		inline bool CanBeEmpty (void) const { return !m_fCannotBeEmpty; }
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		inline DWORD GetData (void) const { return m_dwData; }
 		inline int GetDeviceSlot (void) const { return m_iDeviceSlot; }
@@ -592,7 +579,7 @@ class CInstalledDevice
 		DWORD m_fLinkedFireTarget:1;			//	If TRUE, lkfTarget
 		DWORD m_fLinkedFireEnemy:1;				//	If TRUE, lkfEnemy
 		DWORD m_fDuplicate:1;					//	If TRUE, we have multiple version of the same item type installed
-		DWORD m_fSpare8:1;
+		DWORD m_fCannotBeEmpty:1;				//	If TRUE, slot must always have a device
 
 		DWORD m_dwSpare:16;						//	Spare flags
 	};
