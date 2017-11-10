@@ -15,12 +15,14 @@ class ITopologyProcessor
 		inline ALERROR BindDesign (SDesignLoadCtx &Ctx) { return OnBindDesign(Ctx); }
 		inline CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
+		inline void Paint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { OnPaint(Dest, xCenter, yCenter, rScale); }
 		inline ALERROR Process (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) { return OnProcess(pMap, Topology, NodeList, retsError); }
 
 	protected:
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) { return NOERROR; }
+		virtual void OnPaint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { }
 		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) { return NOERROR; }
 
 		CTopologyNodeList *FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered);
@@ -48,6 +50,7 @@ class CSystemMap : public CDesignType
 
 		bool AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL) { return AddAnnotation(NULL_STR, pEffect, x, y, iRotation, retdwID); }
 		bool AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL);
+		inline bool AddAreaHighlight (const CComplexArea &Area) { m_AreaHighlights.Insert(Area); return true; }
 		ALERROR AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
 		bool DebugShowAttributes (void) const { return m_bDebugShowAttributes; }
 		CG32bitImage *CreateBackgroundImage (Metric *retrImageScale);
@@ -78,6 +81,16 @@ class CSystemMap : public CDesignType
 	private:
 		struct SMapAnnotation
 			{
+			SMapAnnotation (void) :
+					pPainter(NULL)
+				{ }
+
+			~SMapAnnotation (void)
+				{
+				if (pPainter)
+					pPainter->Delete();
+				}
+
 			DWORD dwID;
 			CString sNodeID;					//	Optionally associated with a nodeID
 
@@ -124,6 +137,7 @@ class CSystemMap : public CDesignType
 
 		//	Annotations
 		TArray<SMapAnnotation> m_Annotations;
+		TArray<CComplexArea> m_AreaHighlights;
 
 		//	Temporaries
 		bool m_bAdded;							//	TRUE if map was added to topology

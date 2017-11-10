@@ -1333,7 +1333,10 @@ class CComplexArea
 		bool InArea (int x, int y);
 		inline void IncludeCircle (int x, int y, int iRadius) { AddCircle(m_IncludedCircles, x, y, iRadius); }
 		inline void IncludeRect (int x, int y, int cxWidth, int cyHeight, int iRotation = 0) { AddRect(m_IncludedRects, x, y, cxWidth, cyHeight, iRotation); }
+		void Paint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale = 1.0) const;
 		bool RandomPointInArea (int *retx, int *rety);
+		void ReadFromStream (IReadStream &Stream);
+		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
 		struct SCircle
@@ -1357,6 +1360,15 @@ class CComplexArea
 		void AddToBounds (int xLeft, int yTop, int xRight, int yBottom);
 		bool InCircle (SCircle &Circle, int x, int y);
 		bool InRect (SRect &Rect, int x, int y);
+		void PaintCircle (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale, const SCircle &Circle, CG32bitPixel rgbColor) const;
+		void PaintRect (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale, const SRect &Rect, CG32bitPixel rgbColor) const;
+		void ReadCircleArray (IReadStream &Stream, TArray<SCircle> &Result);
+		void ReadRectArray (IReadStream &Stream, TArray<SRect> &Result);
+		void WriteCircleArray (IWriteStream &Stream, const TArray<SCircle> &Array) const;
+		void WriteRectArray (IWriteStream &Stream, const TArray<SRect> &Array) const;
+
+		inline static int XToImageCoords (int xCenter, int x, Metric rScale) { return xCenter + (int)(x * rScale); }
+		inline static int YToImageCoords (int yCenter, int y, Metric rScale) { return yCenter - (int)(y * rScale); }
 
 		TArray<SCircle> m_ExcludedCircles;
 		TArray<SRect> m_ExcludedRects;

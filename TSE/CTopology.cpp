@@ -21,6 +21,7 @@
 #define ATTRIBUTES_ATTRIB						CONSTLIT("attributes")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
 #define COUNT_ATTRIB							CONSTLIT("count")
+#define DEBUG_ATTRIB							CONSTLIT("debug")
 #define DEBUG_ONLY_ATTRIB						CONSTLIT("debugOnly")
 #define DEST_FRAGMENT_ATTRIBUTES_ATTRIB			CONSTLIT("destFragmentAttributes")
 #define DEST_FRAGMENT_EXIT_ATTRIB				CONSTLIT("destFragmentExit")
@@ -662,6 +663,15 @@ ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx,
 		{
 		Ctx.sError = strPatternSubst(CONSTLIT("%s: %s"), pDesc->GetID(), Ctx.sError);
 		return error;
+		}
+
+	//	If we're debugging, then add the valid area as a highlight (so we can see it
+	//	on the map)
+
+	if (g_pUniverse->InDebugMode()
+			&& pAreaDef->GetAttributeBool(DEBUG_ATTRIB))
+		{
+		Ctx.pMap->AddAreaHighlight(ValidArea);
 		}
 
 	//	Initialize an array of random positions within the valid area

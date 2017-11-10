@@ -54,9 +54,6 @@ CSystemMap::~CSystemMap (void)
 
 	for (i = 0; i < m_Processors.GetCount(); i++)
 		delete m_Processors[i];
-
-	for (i = 0; i < m_Annotations.GetCount(); i++)
-		m_Annotations[i].pPainter->Delete();
 	}
 
 bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID)
@@ -218,6 +215,16 @@ CG32bitImage *CSystemMap::CreateBackgroundImage (Metric *retrImageScale)
 			pAnnotation->pPainter->Paint(*pImage, xPos, yPos, Ctx);
 			}
 		}
+
+	//	Let the topology processors paint stuff on top (usually debug information)
+
+	for (i = 0; i < m_Processors.GetCount(); i++)
+		m_Processors[i]->Paint(*pImage, xCenter, yCenter, m_rBackgroundImageScale);
+
+	//	Paint any area highlights (again, usually for debugging).
+
+	for (i = 0; i < m_AreaHighlights.GetCount(); i++)
+		m_AreaHighlights[i].Paint(*pImage, xCenter, yCenter, m_rBackgroundImageScale);
 
 	//	Return the scale
 
@@ -542,6 +549,9 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 //	DWORD		annotation: yOffset
 //	DWORD		annotation: iTick
 //	DWORD		annotation: iRotation
+//
+//	DWORD		No. of area highlights
+//	CComplexArea
 
 	{
 	int i;
@@ -584,6 +594,17 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 		Ctx.pStream->Read(m_Annotations[i].iRotation);
 		}
 
+	//	Read area highlights
+
+	if (Ctx.dwVersion >= 33)
+		{
+		Ctx.pStream->Read(dwLoad);
+		m_AreaHighlights.InsertEmpty(dwLoad);
+
+		for (i = 0; i < m_AreaHighlights.GetCount(); i++)
+			m_AreaHighlights[i].ReadFromStream(*Ctx.pStream);
+		}
+
 	//	Delete any anotations with a NULL painter. This can happen (unfortunately) when 
 	//	we change the definition.
 
@@ -604,6 +625,7 @@ void CSystemMap::OnReinit (void)
 	{
 	m_bAdded = false;
 	m_Annotations.DeleteAll();
+	m_AreaHighlights.DeleteAll();
 	}
 
 void CSystemMap::OnWriteToStream (IWriteStream *pStream)
@@ -621,13 +643,16 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		annotation: yOffset
 //	DWORD		annotation: iTick
 //	DWORD		annotation: iRotation
+//
+//	DWORD		No. of area highlights
+//	CComplexArea
 
 	{
 	int i;
 	DWORD dwSave;
 
 	dwSave = m_Annotations.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	for (i = 0; i < m_Annotations.GetCount(); i++)
 		{
@@ -644,6 +669,12 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 		pStream->Write(m_Annotations[i].iTick);
 		pStream->Write(m_Annotations[i].iRotation);
 		}
+
+	dwSave = m_AreaHighlights.GetCount();
+	pStream->Write(dwSave);
+
+	for (i = 0; i < m_AreaHighlights.GetCount(); i++)
+		m_AreaHighlights[i].WriteToStream(*pStream);
 	}
 
 ALERROR CSystemMap::ProcessTopology (CTopology &Topology, CSystemMap *pTargetMap, CTopologyNodeList &NodesAdded, CString *retsError)

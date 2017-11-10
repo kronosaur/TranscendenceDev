@@ -9,6 +9,9 @@
 
 const int MAX_TRIES = 100;
 
+const CG32bitPixel RGB_INCLUDED =				CG32bitPixel(0, 255, 255);
+const CG32bitPixel RGB_EXCLUDED =				CG32bitPixel(255, 255, 0);
+
 CComplexArea::CComplexArea (void)
 
 //	CComplexArea constructor
@@ -372,6 +375,72 @@ bool CComplexArea::InRect (SRect &Rect, int x, int y)
 		return (x >= 0 && x < Rect.cxWidth && y >= 0 && y < Rect.cyHeight);
 	}
 
+void CComplexArea::Paint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const
+
+//	Paint
+//
+//	Paint the area
+
+	{
+	int i;
+
+	for (i = 0; i < m_IncludedCircles.GetCount(); i++)
+		PaintCircle(Dest, xCenter, yCenter, rScale, m_IncludedCircles[i], RGB_INCLUDED);
+
+	for (i = 0; i < m_IncludedRects.GetCount(); i++)
+		PaintRect(Dest, xCenter, yCenter, rScale, m_IncludedRects[i], RGB_INCLUDED);
+
+	for (i = 0; i < m_ExcludedCircles.GetCount(); i++)
+		PaintCircle(Dest, xCenter, yCenter, rScale, m_ExcludedCircles[i], RGB_EXCLUDED);
+
+	for (i = 0; i < m_ExcludedRects.GetCount(); i++)
+		PaintRect(Dest, xCenter, yCenter, rScale, m_ExcludedRects[i], RGB_EXCLUDED);
+	}
+
+void CComplexArea::PaintCircle (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale, const SCircle &Circle, CG32bitPixel rgbColor) const
+
+//	PaintCircle
+//
+//	Paints a circle
+
+	{
+	int xPos = XToImageCoords(xCenter, Circle.x, rScale);
+	int yPos = YToImageCoords(yCenter, Circle.y, rScale);
+	int iRadius = mathRound(sqrt((Metric)Circle.iRadius2) * rScale);
+
+	CGDraw::Arc(Dest, xPos, yPos, iRadius, 0, 0, 1, rgbColor);
+	}
+
+void CComplexArea::PaintRect (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale, const SRect &Rect, CG32bitPixel rgbColor) const
+
+//	PaintRect
+//
+//	Paints a rect
+
+	{
+	CVector vWidth(rScale * Rect.cxWidth, 0.0);
+	vWidth = vWidth.Rotate(Rect.iRotation);
+	vWidth.SetY(-vWidth.GetY());
+
+	CVector vHeight(0.0, rScale * Rect.cyHeight);
+	vHeight = vHeight.Rotate(Rect.iRotation);
+	vHeight.SetY(-vHeight.GetY());
+
+	CVector vPos(XToImageCoords(xCenter, Rect.x, rScale), YToImageCoords(yCenter, Rect.y, rScale));
+	CVector vUL = vPos;
+	CVector vUR = vPos + vWidth;
+	CVector vLL = vPos + vHeight;
+	CVector vLR = vPos + vWidth + vHeight;
+
+	int x = mathRound(vPos.GetX());
+	int y = mathRound(vPos.GetY());
+
+	CGDraw::Line(Dest, (int)vUL.GetX(), (int)vUL.GetY(), (int)vUR.GetX(), (int)vUR.GetY(), 1, rgbColor);
+	CGDraw::Line(Dest, (int)vUR.GetX(), (int)vUR.GetY(), (int)vLR.GetX(), (int)vLR.GetY(), 1, rgbColor);
+	CGDraw::Line(Dest, (int)vLR.GetX(), (int)vLR.GetY(), (int)vLL.GetX(), (int)vLL.GetY(), 1, rgbColor);
+	CGDraw::Line(Dest, (int)vLL.GetX(), (int)vLL.GetY(), (int)vUL.GetX(), (int)vUL.GetY(), 1, rgbColor);
+	}
+
 bool CComplexArea::RandomPointInArea (int *retx, int *rety)
 
 //	RandomPointInArea
@@ -392,4 +461,125 @@ bool CComplexArea::RandomPointInArea (int *retx, int *rety)
 		}
 
 	return false;
+	}
+
+void CComplexArea::ReadCircleArray (IReadStream &Stream, TArray<SCircle> &Result)
+
+//	ReadCircleArray
+//
+//	DWORD			No. of included circles
+//	SCircle
+
+	{
+	int i;
+
+	DWORD dwCount;
+	Stream.Read(dwCount);
+
+	Result.InsertEmpty(dwCount);
+	for (i = 0; i < Result.GetCount(); i++)
+		Stream.Read((char *)&Result[i], sizeof(SCircle));
+	}
+
+void CComplexArea::ReadRectArray (IReadStream &Stream, TArray<SRect> &Result)
+
+//	ReadRectArray
+//
+//	DWORD			No. of included rects
+//	SRect
+
+	{
+	int i;
+
+	DWORD dwCount;
+	Stream.Read(dwCount);
+
+	Result.InsertEmpty(dwCount);
+	for (i = 0; i < Result.GetCount(); i++)
+		Stream.Read((char *)&Result[i], sizeof(SRect));
+	}
+
+void CComplexArea::ReadFromStream (IReadStream &Stream)
+
+//	ReadFromStream
+//
+//	Reads the complex area
+//
+//	DWORD			Flags
+//	RECT			m_rcBounds
+//
+//	DWORD			No. of included rects
+//	SRect
+//
+//	DWORD			No. of included circles
+//	SCircle
+//
+//	DWORD			No. of excluded rects
+//	SRect
+//
+//	DWORD			No. of excluded circles
+//	SCircle
+
+	{
+	DWORD dwFlags;
+	Stream.Read(dwFlags);
+
+	Stream.Read((char *)&m_rcBounds, sizeof(RECT));
+
+	ReadRectArray(Stream, m_IncludedRects);
+	ReadCircleArray(Stream, m_IncludedCircles);
+	ReadRectArray(Stream, m_ExcludedRects);
+	ReadCircleArray(Stream, m_ExcludedCircles);
+	}
+
+void CComplexArea::WriteCircleArray (IWriteStream &Stream, const TArray<SCircle> &Array) const
+
+//	WriteCircleArray
+//
+//	DWORD			No. of included circles
+//	SCircle
+
+	{
+	int i;
+
+	DWORD dwCount = Array.GetCount();;
+	Stream.Write(dwCount);
+
+	for (i = 0; i < Array.GetCount(); i++)
+		Stream.Write((char *)&Array[i], sizeof(SCircle));
+	}
+
+void CComplexArea::WriteRectArray (IWriteStream &Stream, const TArray<SRect> &Array) const
+
+//	WriteRectArray
+//
+//	DWORD			No. of included rects
+//	SRect
+
+	{
+	int i;
+
+	DWORD dwCount = Array.GetCount();;
+	Stream.Write(dwCount);
+
+	for (i = 0; i < Array.GetCount(); i++)
+		Stream.Write((char *)&Array[i], sizeof(SRect));
+	}
+
+void CComplexArea::WriteToStream (IWriteStream &Stream) const
+
+//	ReadFromStream
+//
+//	Write the complex area
+
+	{
+	DWORD dwFlags = 1;
+	Stream.Write(dwFlags);
+
+	Stream.Write((char *)&m_rcBounds, sizeof(RECT));
+
+	WriteRectArray(Stream, m_IncludedRects);
+	WriteCircleArray(Stream, m_IncludedCircles);
+	WriteRectArray(Stream, m_ExcludedRects);
+	WriteCircleArray(Stream, m_ExcludedCircles);
 	}

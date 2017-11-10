@@ -6,7 +6,7 @@
 #pragma once
 
 constexpr DWORD API_VERSION =							39;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					32;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					33;
 constexpr DWORD SYSTEM_SAVE_VERSION =					155;
 
 //	Uncomment out the following define when building a stable release
@@ -95,6 +95,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					155;
 //
 //	32: 1.8 Alpha 4
 //		Added m_Trading to CTopologyNode
+//
+//	33: 1.8 Alpha 4
+//		Added m_AreaHighlights to CSystemMap
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
 //
