@@ -65,6 +65,7 @@ class CTopologyNode
 
 		CTopologyNode (const CString &sID, DWORD SystemUNID, CSystemMap *pMap);
 		~CTopologyNode (void);
+
 		static void CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **retpNode);
 
 		void AddAttributes (const CString &sAttribs);
@@ -76,6 +77,7 @@ class CTopologyNode
 		CString FindStargateName (const CString &sDestNode, const CString &sEntryPoint);
 		inline const CString &GetAttributes (void) const { return m_sAttributes; }
 		inline int GetCalcDistance (void) const { return m_iCalcDistance; }
+		inline const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
 		inline const CString &GetData (const CString &sAttrib) const { return m_Data.GetData(sAttrib); }
 		inline CSystemMap *GetDisplayPos (int *retxPos = NULL, int *retyPos = NULL);
 		inline const CString &GetEndGameReason (void) { return m_sEndGameReason; }
@@ -83,7 +85,7 @@ class CTopologyNode
 		inline const CString &GetID (void) const { return m_sID; }
 		CTopologyNode *GetGateDest (const CString &sName, CString *retsEntryPoint = NULL);
         DWORD GetLastVisitedTime (void) const;
-		inline int GetLevel (void) { return m_iLevel; }
+		inline int GetLevel (void) const { return m_iLevel; }
 		ICCItem *GetProperty (const CString &sName);
 		inline int GetStargateCount (void) { return m_NamedGates.GetCount(); }
 		CString GetStargate (int iIndex);
@@ -108,6 +110,7 @@ class CTopologyNode
 		inline bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
 		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit);
 		inline void SetCalcDistance (int iDist) { m_iCalcDistance = iDist; }
+		inline void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
 		inline void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
 		inline void SetEpitaph (const CString &sEpitaph) { m_sEpitaph = sEpitaph; }
@@ -167,6 +170,7 @@ class CTopologyNode
 		CString GenerateStargateName (void);
 
 		CString m_sID;							//	ID of node
+		CString m_sCreatorID;					//	ID of topology desc, if created by a fragment, etc.
 
 		DWORD m_SystemUNID;						//	UNID of system type
 		CString m_sName;						//	Name of system
@@ -247,11 +251,11 @@ class CTopologyDesc
 		CEffectCreator *FindEffectCreator (const CString &sUNID);
 		CString GetAttributes (void);
 		inline CXMLElement *GetDesc (void) const { return m_pDesc; }
+		inline const CString &GetID (void) const { return m_sID; }
+		inline EInitialStates GetInitialState (void) const { return m_iInitialState; }
 		inline CEffectCreator *GetLabelEffect (void) const { return m_pLabelEffect; }
 		inline CSystemMap *GetMap (void) const { return m_pMap; }
 		inline CEffectCreator *GetMapEffect (void) const { return m_pMapEffect; }
-		inline const CString &GetID (void) const { return m_sID; }
-		inline EInitialStates GetInitialState (void) const { return m_iInitialState; }
 		bool GetPos (int *retx, int *rety);
 		CXMLElement *GetSystem (void);
 		inline CTopologyDesc *GetTopologyDesc (int iIndex);
@@ -323,26 +327,17 @@ inline int CTopologyDesc::GetTopologyDescCount (void) { return (m_pDescList ? m_
 
 struct STopologyCreateCtx
 	{
-	STopologyCreateCtx (void) :
-			pMap(NULL),
-			pFragmentTable(NULL),
-			pNodesAdded(NULL),
-			bInFragment(false),
-			xOffset(0),
-			yOffset(0),
-			iRotation(0)
-		{ }
-
-	CSystemMap *pMap;								//	Map that we're currently processing
+	CSystemMap *pMap = NULL;						//	Map that we're currently processing
 	TArray<CTopologyDescTable *> Tables;			//	List of tables to look up
-	CTopologyDescTable *pFragmentTable;
-	CTopologyNodeList *pNodesAdded;					//	Output of nodes added
+	CTopologyDescTable *pFragmentTable = NULL;
+	CTopologyNodeList *pNodesAdded = NULL;			//	Output of nodes added
 
-	bool bInFragment;
+	CTopologyNode *pPrevNode = NULL;
+	bool bInFragment = false;						//	Fragments use local coordinates
 	CString sFragmentPrefix;
-	int xOffset;
-	int yOffset;
-	int iRotation;
+	int xOffset = 0;
+	int yOffset = 0;
+	int iRotation = 0;
 	CString sFragmentExitID;
 	CString sFragmentExitGate;
 	CString sFragmentAttributes;

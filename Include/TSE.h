@@ -408,6 +408,7 @@ class CTopology
 		ALERROR AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopologyNode **retpNewNode = NULL);
 		ALERROR AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyNode **retpNewNode = NULL);
 		void DeleteAll (void);
+		bool FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode = NULL) const;
 		CTopologyNode *FindTopologyNode (const CString &sID) const;
 		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
 		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
@@ -443,6 +444,7 @@ class CTopology
 		void GetAbsoluteDisplayPos (STopologyCreateCtx &Ctx, int x, int y, int *retx, int *rety, int *retiRotation);
 		int GetDistance (CTopologyNode *pSource, const CString &sDestID, int iBestDist = -1) const;
 		void GetFragmentDisplayPos (STopologyCreateCtx &Ctx, CTopologyNode *pNode, int *retx, int *rety);
+		void GetFragmentEntranceDisplayPos (STopologyCreateCtx &Ctx, int *retx, int *rety) const;
 		ALERROR GetOrAddTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, CTopologyNode *pPrevNode, CXMLElement *pGateDesc, CTopologyNode **retpNode);
 
 		CTopologyNodeList m_Topology;

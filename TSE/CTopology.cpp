@@ -450,6 +450,15 @@ ALERROR CTopology::AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTo
 	ALERROR error;
 	int i, j;
 
+	//	If we're not in a fragment, see if we've already added some nodes for 
+	//	this descriptor. If so, then we return the nearest existing node to the
+	//	previous node.
+
+	if (!Ctx.bInFragment 
+			&& Ctx.pPrevNode
+			&& FindNearestNodeCreatedBy(pDesc->GetID(), Ctx.pPrevNode, retpNewNode))
+		return NOERROR;
+
 	//	Initialize
 
 	CXMLElement *pXML = pDesc->GetDesc();
@@ -481,8 +490,11 @@ ALERROR CTopology::AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTo
 
 	//	Get the node that is closest to the entrance node
 
+	int xEntrance, yEntrance;
+	GetFragmentEntranceDisplayPos(Ctx, &xEntrance, &yEntrance);
+
 	DWORD dwFirstNode;
-	Graph.FindNearestNode(0, 0, &dwFirstNode);
+	Graph.FindNearestNode(xEntrance, yEntrance, &dwFirstNode);
 
 	//	Generate random connections between the nodes
 
@@ -561,6 +573,9 @@ ALERROR CTopology::AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTo
 	if (retpNewNode)
 		*retpNewNode = Nodes[Graph.GetNodeIndex(dwFirstNode)];
 
+	//	Remember the nodes created in the descriptor (we need this in case we
+	//	refer to this descriptor again).
+
 	return NOERROR;
 	}
 
@@ -575,8 +590,7 @@ ALERROR CTopology::AddRandomParsePosition (STopologyCreateCtx *pCtx, const CStri
 
 	if (pCtx && strEquals(sValue, FRAGMENT_ENTRANCE_DEST))
 		{
-		*retx = 0;
-		*rety = 0;
+		GetFragmentEntranceDisplayPos(*pCtx, retx, rety);
 		}
 	else if (pCtx && strEquals(sValue, FRAGMENT_EXIT_DEST))
 		{
@@ -712,6 +726,10 @@ ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx,
 		CTopologyNode *pNode;
 		if (error = CreateTopologyNode(Ctx, sNodeID, CreateCtx, &pNode))
 			return error;
+
+		//	Mark this node as created by the given descriptor
+
+		pNode->SetCreatorID(pDesc->GetID());
 
 		//	Keep track of the node globally
 
@@ -1389,6 +1407,57 @@ ALERROR CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNo
 		}
 	}
 
+bool CTopology::FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode) const
+
+//	FindNearestNodeCreatedBy
+//
+//	Finds the nearest node created by sID to pNode. Returns FALSE if we could not
+//	find such a node.
+
+	{
+	int i;
+
+	int xTarget, yTarget;
+	CSystemMap *pTargetMap = pNode->GetDisplayPos(&xTarget, &yTarget);
+
+	CTopologyNode *pBestNode = NULL;
+	Metric rBestDist2 = 0.0;
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		{
+		CTopologyNode *pTestNode = GetTopologyNode(i);
+		int xNode, yNode;
+		CSystemMap *pMap = pTestNode->GetDisplayPos(&xNode, &yNode);
+
+		if (pMap == pTargetMap
+				&& strEquals(pTestNode->GetCreatorID(), sID))
+			{
+			//	If we don't care about the specific node, we're done.
+
+			if (retpNewNode == NULL)
+				return true;
+
+			//	Otherwise, see if this node is closer than the previous one.
+
+			int xDist = (xNode - xTarget);
+			int yDist = (yNode - yTarget);
+			Metric rDist2 = (xDist * xDist) + (yDist * yDist);
+			if (pBestNode == NULL || rDist2 < rBestDist2)
+				{
+				pBestNode = pTestNode;
+				rBestDist2 = rDist2;
+				}
+			}
+		}
+
+	//	Done
+
+	if (pBestNode == NULL)
+		return false;
+
+	*retpNewNode = pBestNode;
+	return true;
+	}
+
 CTopologyNode *CTopology::FindTopologyNode (const CString &sID) const
 
 //	FindTopologyNode
@@ -1628,6 +1697,7 @@ ALERROR CTopology::GetOrAddTopologyNode (STopologyCreateCtx &Ctx,
 	//	Add the descriptor
 
 	STopologyCreateCtx NewCtx = Ctx;
+	NewCtx.pPrevNode = pPrevNode;
 
 	//	Set bInFragment to TRUE if we are adding a node that is in a fragment (either because we're
 	//	starting a new fragment or because we are getting the next node in a fragment).
@@ -1709,6 +1779,39 @@ void CTopology::GetFragmentDisplayPos (STopologyCreateCtx &Ctx, CTopologyNode *p
 	*rety = y;
 	}
 
+void CTopology::GetFragmentEntranceDisplayPos (STopologyCreateCtx &Ctx, int *retx, int *rety) const
+
+//	GetFragmentEntranceDisplayPos
+//
+//	Returns the position of the entrance to the fragment in the appropriate
+//	coordinate.
+
+	{
+	//	For a true fragment, which uses coordinates local to the fragment, the
+	//	entrance is always at 0,0.
+
+	if (Ctx.bInFragment)
+		{
+		*retx = 0;
+		*rety = 0;
+		}
+
+	//	Otherwise, we use the previous node coordinates
+
+	else if (Ctx.pPrevNode)
+		{
+		Ctx.pPrevNode->GetDisplayPos(retx, rety);
+		}
+
+	//	Otherwise, we don't know what to do, so we set to 0,0.
+
+	else
+		{
+		*retx = 0;
+		*rety = 0;
+		}
+	}
+
 ALERROR CTopology::InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx, CTopologyNode **iopExit)
 
 //	InitComplexArea
@@ -1732,6 +1835,8 @@ ALERROR CTopology::InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComp
 		return error;
 		}
 
+	bool bUsesFragmentEntrance = false;
+
 	for (i = 0; i < AreaDef.GetCount(); i++)
 		{
 		CXMLElement *pElement = AreaDef.GetResult(i);
@@ -1747,6 +1852,14 @@ ALERROR CTopology::InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComp
 				return error;
 
 			int iRadius = pElement->GetAttributeIntegerBounded(RADIUS_ATTRIB, 1, -1, iMinRadius);
+
+			//	If we refer to [FragmentEntrance] then we should exclude the area
+			//	around it, even if not in a real fragment.
+
+			if (pCtx
+					&& !bUsesFragmentEntrance
+					&& strEquals(pElement->GetAttribute(FROM_ATTRIB), FRAGMENT_ENTRANCE_DEST))
+				bUsesFragmentEntrance = true;
 
 			//	Add two circles around the end points
 
@@ -1770,13 +1883,29 @@ ALERROR CTopology::InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComp
 			}
 		}
 
-	//	If we're part of a fragment, then exclude the region around the entrance and exit nodes
+	//	Exclude some areas around the entrance/exit
 
-	if (pCtx && pCtx->bInFragment)
+
+	if (pCtx)
 		{
-		retArea->ExcludeCircle(0, 0, iMinRadius);
+		//	If we're part of a fragment, then exclude the region around the entrance and exit nodes
 
-		if (*iopExit)
+		if (pCtx->bInFragment)
+			retArea->ExcludeCircle(0, 0, iMinRadius);
+
+		//	If we've referred to the fragment entrance, then exclude it, even if
+		//	we're not a true fragment.
+
+		else if (bUsesFragmentEntrance && pCtx->pPrevNode)
+			{
+			int xEntrance, yEntrance;
+			pCtx->pPrevNode->GetDisplayPos(&xEntrance, &yEntrance);
+			retArea->ExcludeCircle(xEntrance, yEntrance, iMinRadius);
+			}
+
+		//	Exclude the exit
+
+		if (pCtx->bInFragment && *iopExit)
 			{
 			int xExit, yExit;
 			GetFragmentDisplayPos(*pCtx, *iopExit, &xExit, &yExit);

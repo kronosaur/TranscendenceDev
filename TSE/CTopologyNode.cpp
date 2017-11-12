@@ -39,6 +39,7 @@
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_POS							CONSTLIT("pos")
 
+#define SPECIAL_LEVEL							CONSTLIT("level:")
 #define SPECIAL_NODE_ID							CONSTLIT("nodeID:")
 #define SPECIAL_SYSTEM_TYPE						CONSTLIT("systemType:")
 
@@ -46,6 +47,7 @@
 
 CTopologyNode::CTopologyNode (const CString &sID, DWORD SystemUNID, CSystemMap *pMap) : m_sID(sID),
 		m_SystemUNID(SystemUNID),
+		m_iLevel(0),
 		m_pMap(pMap),
 		m_pSystem(NULL),
 		m_dwID(0xffffffff),
@@ -240,6 +242,7 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 //	Creates a node from a stream
 //
 //	CString		m_sID
+//	CString		m_sCreatorID
 //	DWORD		m_SystemUNID
 //	DWORD		m_pMap (UNID)
 //	DWORD		m_xPos
@@ -276,6 +279,10 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 	CString sID;
 	sID.ReadFromStream(Ctx.pStream);
 
+	CString sCreatorID;
+	if (Ctx.dwVersion >= 34)
+		sCreatorID.ReadFromStream(Ctx.pStream);
+
 	DWORD dwSystemUNID;
 	Ctx.pStream->Read((char *)&dwSystemUNID, sizeof(DWORD));
 
@@ -290,6 +297,7 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 		pMap = NULL;
 
 	pNode = new CTopologyNode(sID, dwSystemUNID, pMap);
+	pNode->m_sCreatorID = sCreatorID;
 
 	if (Ctx.dwVersion >= 6)
 		{
@@ -633,7 +641,12 @@ bool CTopologyNode::HasSpecialAttribute (const CString &sAttrib) const
 //	Returns TRUE if we have the special attribute
 
 	{
-	if (strStartsWith(sAttrib, SPECIAL_NODE_ID))
+	if (strStartsWith(sAttrib, SPECIAL_LEVEL))
+		{
+		int iLevel = strToInt(strSubString(sAttrib, SPECIAL_LEVEL.GetLength()), -1);
+		return (iLevel == GetLevel());
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_NODE_ID))
 		{
 		CString sNodeID = strSubString(sAttrib, SPECIAL_NODE_ID.GetLength());
 		return strEquals(sNodeID, GetID());
@@ -1226,6 +1239,7 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 //	Writes out the variable portions of the node
 //
 //	CString		m_sID
+//	CString		m_sCreatorID
 //	DWORD		m_SystemUNID
 //	DWORD		m_pMap (UNID)
 //	DWORD		m_xPos
@@ -1256,6 +1270,7 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	m_sID.WriteToStream(pStream);
+	m_sCreatorID.WriteToStream(pStream);
 	pStream->Write((char *)&m_SystemUNID, sizeof(DWORD));
 
 	dwSave = (m_pMap ? m_pMap->GetUNID() : 0);
