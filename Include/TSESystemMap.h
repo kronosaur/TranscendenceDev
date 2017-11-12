@@ -58,7 +58,7 @@ class CSystemMap : public CDesignType
 		inline CSystemMap *GetDisplayMap (void) { return (m_pPrimaryMap != NULL ? m_pPrimaryMap : this); }
         inline Metric GetLightYearsPerPixel (void) const { return m_rLightYearsPerPixel; }
 		inline const CString &GetName (void) const { return m_sName; }
-		inline void GetScale (int *retiInitial, int *retiMin, int *retiMax) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
+		inline void GetScale (int *retiInitial, int *retiMin = NULL, int *retiMax = NULL) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
         inline CG32bitPixel GetStargateLineColor (void) const { return m_rgbStargateLines; }
 		inline const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
 		inline bool IsPrimaryMap (void) const { return (m_pPrimaryMap == NULL); }

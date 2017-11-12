@@ -75,6 +75,9 @@
     <Filter Include="Source Files\Trading">
       <UniqueIdentifier>{e6057710-b4bc-4ff2-bdb5-ded4d11dd4ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Painting">
+      <UniqueIdentifier>{6ce5c7e7-4073-4204-a558-60c3b5b70fdf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -276,6 +279,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\TSEShipEquipment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEMapPainters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1152,6 +1158,12 @@
     </ClCompile>
     <ClCompile Include="CTradingComputer.cpp">
       <Filter>Source Files\Trading</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemMapThumbnails.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CGalacticMapPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

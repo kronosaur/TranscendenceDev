@@ -69,8 +69,7 @@ ALERROR CTextEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElem
 	{
 	m_sDefaultText = strCEscapeCodes(pDesc->GetAttribute(TEXT_ATTRIB));
 
-	m_pFont = g_pUniverse->GetFont(pDesc->GetAttribute(FONT_ATTRIB));
-	if (m_pFont == NULL)
+	if (!g_pUniverse->FindFont(pDesc->GetAttribute(FONT_ATTRIB), &m_pFont))
 		{
 		Ctx.sError = strPatternSubst(CONSTLIT("Unknown font: %s"), pDesc->GetAttribute(FONT_ATTRIB));
 		return ERR_FAIL;

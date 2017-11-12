@@ -3,7 +3,7 @@
 //	CGalacticMapPainter class
 //	Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "stdafx.h"
+#include "PreComp.h"
 
 const int NODE_RADIUS =						6;
 const int HIT_TEST_RADIUS =                 8;
@@ -25,7 +25,13 @@ const CG32bitPixel RGB_SYSTEM_NAME =		CG32bitPixel(128, 191, 255);    //  H:210 
 //const CG32bitPixel RGB_SYSTEM_NAME =        CG32bitPixel(115, 121, 128);    //  H:210 S:10 B:50
 const CG32bitPixel RGB_SYSTEM_NAME_BACK =   CG32bitPixel(23, 24, 26, 96);  //  H:210 S:10 B:20
 
-CGalacticMapPainter::CGalacticMapPainter (const CVisualPalette &VI, CSystemMap *pMap, CSystemMapThumbnails &SystemMapThumbnails) : m_VI(VI),
+#define FONT_MEDIUM							CONSTLIT("Medium")
+#define COLOR_SELECTION						CONSTLIT("AreaDialogHighlight")
+
+CGalacticMapPainter::CGalacticMapPainter (const CUniverse &Universe, CSystemMap *pMap, CSystemMapThumbnails &SystemMapThumbnails) : 
+		m_Universe(Universe),
+		m_MediumFont(m_Universe.GetFont(FONT_MEDIUM)),
+		m_rgbSelection(m_Universe.GetColor(COLOR_SELECTION)),
 		m_pMap(pMap),
         m_SystemMapThumbnails(SystemMapThumbnails),
 		m_cxMap(-1),
@@ -102,12 +108,10 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 //	Draws a topology node
 
 	{
-    const CG16bitFont &NameFont = m_VI.GetFont(fontMedium);
-
     //  Draw selection, if necessary
 
     if (pNode == m_pSelected)
-        DrawSelection(Dest, x, y, m_VI.GetColor(colorAreaDialogHighlight));
+        DrawSelection(Dest, x, y, m_rgbSelection);
 
     //  Draw the node (either as a full system thumbnail or just the stars)
 
@@ -121,14 +125,14 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 
     //  Draw the name label
 
-    int cxName = NameFont.MeasureText(pNode->GetSystemName());
+    int cxName = m_MediumFont.MeasureText(pNode->GetSystemName());
     int cxNameBack = cxName + 2 * NAME_PADDING_X;
     int xNameBack = x - (cxNameBack / 2);
     int yName = y + NODE_RADIUS + NAME_SPACING_Y;
 
-    CGDraw::RoundedRect(Dest, xNameBack, yName, cxNameBack, NameFont.GetHeight(), CORNER_RADIUS, RGB_SYSTEM_NAME_BACK);
+    CGDraw::RoundedRect(Dest, xNameBack, yName, cxNameBack, m_MediumFont.GetHeight(), CORNER_RADIUS, RGB_SYSTEM_NAME_BACK);
 
-	NameFont.DrawText(Dest,
+	m_MediumFont.DrawText(Dest,
 			xNameBack + NAME_PADDING_X, yName,
 			RGB_SYSTEM_NAME,
 			pNode->GetSystemName(),
@@ -145,9 +149,9 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 			sLine = strSubString(sLine, iPos, 7);
 #endif
 
-		m_VI.GetFont(fontMedium).DrawText(Dest,
+		m_MediumFont.DrawText(Dest,
 				x,
-				y + NODE_RADIUS + 2 + m_VI.GetFont(fontMediumBold).GetHeight(),
+				y + NODE_RADIUS + 2 + m_MediumFont.GetHeight(),
 				CG32bitPixel(128, 128, 128),
 				sLine,
 				CG16bitFont::AlignCenter);
@@ -269,7 +273,7 @@ void CGalacticMapPainter::DrawUnknownNode (CG32bitImage &Dest, CTopologyNode *pN
     //  Draw selection, if necessary
 
     if (pNode == m_pSelected)
-        DrawSelection(Dest, x, y, m_VI.GetColor(colorAreaDialogHighlight));
+        DrawSelection(Dest, x, y, m_rgbSelection);
 
 	//	Draw a star
 

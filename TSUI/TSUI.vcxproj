@@ -160,7 +160,6 @@
     <ClCompile Include="CArmorHUDRingSegments.cpp" />
     <ClCompile Include="CBackgroundProcessor.cpp" />
     <ClCompile Include="CExtensionListMap.cpp" />
-    <ClCompile Include="CGalacticMapPainter.cpp" />
     <ClCompile Include="CGalacticMapSystemDetails.cpp" />
     <ClCompile Include="CHoverDescriptionPainter.cpp" />
     <ClCompile Include="CHumanInterface.cpp">
@@ -180,7 +179,6 @@
     <ClCompile Include="CShieldHUDDefault.cpp" />
     <ClCompile Include="CSoundtrackManager.cpp" />
     <ClCompile Include="CStargateEffectPainter.cpp" />
-    <ClCompile Include="CSystemMapThumbnails.cpp" />
     <ClCompile Include="CTimerRegistry.cpp" />
     <ClCompile Include="CUserSettings.cpp" />
     <ClCompile Include="CVisualPalette.cpp" />

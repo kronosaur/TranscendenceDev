@@ -153,8 +153,10 @@ class CUniverse
 				virtual IPlayerController *CreatePlayerController (void) { return NULL; }
 				virtual IShipController *CreateShipController (const CString &sController) { return NULL; }
 				virtual void DebugOutput (const CString &sLine) { }
+				virtual bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return false; }
 				virtual void GameOutput (const CString &sLine) { }
-				virtual const CG16bitFont *GetFont (const CString &sFont) { return NULL; }
+				virtual CG32bitPixel GetColor (const CString &sColor) const { return CG32bitPixel(255, 255, 255); }
+				virtual const CG16bitFont &GetFont (const CString &sFont) const { const CG16bitFont *pFont; if (!FindFont(sFont, &pFont)) return CG16bitFont::GetDefault(); return *pFont; }
 				virtual void LogOutput (const CString &sLine) const { ::kernelDebugLogString(sLine); }
 			};
 
@@ -256,6 +258,7 @@ class CUniverse
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		void DestroySystem (CSystem *pSystem);
+		inline bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return m_pHost->FindFont(sFont, retpFont); }
 		inline CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }
 		CSpaceObject *FindObject (DWORD dwID);
 		inline void FireOnGlobalIntroCommand (const CString &sCommand) { m_Design.FireOnGlobalIntroCommand(sCommand); }
@@ -275,6 +278,7 @@ class CUniverse
 		inline void GetAllAdventures (TArray<CExtension *> *retList) { CString sError; m_Extensions.ComputeAvailableAdventures((m_bDebugMode ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retList, &sError); }
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const;
 		inline CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
+		inline CG32bitPixel GetColor (const CString &sColor) const { return m_pHost->GetColor(sColor); }
 		inline CAdventureDesc *GetCurrentAdventureDesc (void) { return m_pAdventure; }
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);
@@ -285,7 +289,7 @@ class CUniverse
 		inline CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
 		CTopologyNode *GetFirstTopologyNode (void);
-		inline const CG16bitFont *GetFont (const CString &sFont) { return m_pHost->GetFont(sFont); }
+		inline const CG16bitFont &GetFont (const CString &sFont) const { return m_pHost->GetFont(sFont); }
 		inline CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
         inline CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
         inline const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }

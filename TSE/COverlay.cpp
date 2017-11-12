@@ -805,14 +805,14 @@ void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaint
 
 			if (!m_sMessage.IsBlank())
 				{
-				const CG16bitFont *pTextFont = g_pUniverse->GetFont(CONSTLIT("SubTitle"));
+				const CG16bitFont &TextFont = g_pUniverse->GetFont(CONSTLIT("SubTitle"));
 				CG32bitPixel rgbTextColor = CG32bitPixel::Blend(rgbColor, CG32bitPixel(255, 255, 255), (BYTE)128);
 
-				int yText = y + (m_iCounter / 2) - pTextFont->GetHeight();
-				if (yText + pTextFont->GetHeight() > Ctx.rcView.bottom)
+				int yText = y + (m_iCounter / 2) - TextFont.GetHeight();
+				if (yText + TextFont.GetHeight() > Ctx.rcView.bottom)
 					yText = y - (m_iCounter / 2);
 
-				Dest.DrawText(x, yText, *pTextFont, rgbTextColor, m_sMessage, CG16bitFont::AlignCenter);
+				Dest.DrawText(x, yText, TextFont, rgbTextColor, m_sMessage, CG16bitFont::AlignCenter);
 				}
 
 			break;

@@ -259,6 +259,7 @@
     <ClInclude Include="..\Include\TSEItems.h" />
     <ClInclude Include="..\Include\TSEItemType.h" />
     <ClInclude Include="..\Include\TSELanguage.h" />
+    <ClInclude Include="..\Include\TSEMapPainters.h" />
     <ClInclude Include="..\Include\TSEMissionType.h" />
     <ClInclude Include="..\Include\TSEObjectJoints.h" />
     <ClInclude Include="..\Include\TSEOverlayType.h" />
@@ -375,6 +376,7 @@
     <ClCompile Include="CFailureDesc.cpp" />
     <ClCompile Include="CFireAndSmokePainter.cpp" />
     <ClCompile Include="CFractalTextureLibrary.cpp" />
+    <ClCompile Include="CGalacticMapPainter.cpp" />
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
@@ -462,6 +464,7 @@
     <ClCompile Include="CStationHull.cpp" />
     <ClCompile Include="CStationHullDesc.cpp" />
     <ClCompile Include="CStationTableCache.cpp" />
+    <ClCompile Include="CSystemMapThumbnails.cpp" />
     <ClCompile Include="CSystemSpacePainter.cpp" />
     <ClCompile Include="CSystemEventList.cpp" />
     <ClCompile Include="CTimedMissionEvent.cpp" />

@@ -504,6 +504,7 @@ class CVisualPalette : public IFontTable
 		//	Low-level palette elements
 
 		inline CG32bitPixel GetColor (int iIndex) const { return m_Color[iIndex]; }
+		CG32bitPixel GetColor (const CString &sName, bool *retFound = NULL) const;
 		inline const CG16bitFont &GetFont (int iIndex) const { return m_Font[iIndex]; }
 		const CG16bitFont &GetFont (const CString &sName, bool *retFound = NULL) const;
 		inline const CG32bitImage &GetImage (int iIndex) const { return m_Image[iIndex]; }

@@ -138,9 +138,6 @@
     <ClCompile Include="CStargateEffectPainter.cpp">
       <Filter>Source Files\Painters</Filter>
     </ClCompile>
-    <ClCompile Include="CGalacticMapPainter.cpp">
-      <Filter>Source Files\Map Painters</Filter>
-    </ClCompile>
     <ClCompile Include="CMapLegendPainter.cpp">
       <Filter>Source Files\Map Painters</Filter>
     </ClCompile>
@@ -148,9 +145,6 @@
       <Filter>Source Files\Map Painters</Filter>
     </ClCompile>
     <ClCompile Include="CGalacticMapSystemDetails.cpp">
-      <Filter>Source Files\Map Painters</Filter>
-    </ClCompile>
-    <ClCompile Include="CSystemMapThumbnails.cpp">
       <Filter>Source Files\Map Painters</Filter>
     </ClCompile>
     <ClCompile Include="CHoverDescriptionPainter.cpp">

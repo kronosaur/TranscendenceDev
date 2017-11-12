@@ -17,58 +17,59 @@ const int WIDESCREEN_HEIGHT_MAX =			512;
 
 struct SColorInitTable
 	{
-	char *pszName;									//	Name of color
+	int iLen;										//	Length of color name
+	char *pszString;								//	Name of color
 	CG32bitPixel rgbColor;							//	16-bit color value
 	};
 
 static SColorInitTable COLOR_TABLE[] =
 	{
-		{	"Unknown",				0 },
+		{	CONSTDEF("Unknown"),				0 },
 
-		{	"AreaDeep",					CG32bitPixel(0, 2, 10) },
-		{	"AreaDialog",				CG32bitPixel(28, 33, 39) },
-		{	"AreaDialogHighlight",		CG32bitPixel(237, 137, 36) },       //  H:30 S:85 B:93
-		{	"AreaDialogInput",			CG32bitPixel(28, 33, 39) },
-		{	"AreaDialogInputFocus",		CG32bitPixel(42, 49, 57) },
+		{	CONSTDEF("AreaDeep"),				CG32bitPixel(0, 2, 10) },
+		{	CONSTDEF("AreaDialog"),				CG32bitPixel(28, 33, 39) },
+		{	CONSTDEF("AreaDialogHighlight"),	CG32bitPixel(237, 137, 36) },       //  H:30 S:85 B:93
+		{	CONSTDEF("AreaDialogInput"),		CG32bitPixel(28, 33, 39) },
+		{	CONSTDEF("AreaDialogInputFocus"),	CG32bitPixel(42, 49, 57) },
 		
-		{	"AreaDialogTitle",			CG32bitPixel(32, 48, 64) },         //  H:210 S:50 B:25
-		{	"AreaInfoMsg",				CG32bitPixel(28, 33, 39) },
-		{	"AreaWarningMsg",			CG32bitPixel(229, 229, 92) },		//	H:60 S:60 B:90
-		{	"LineDialogFrame",			CG32bitPixel(163,191,219) },
-		{	"LineFrame",				CG32bitPixel(80,80,80) },
+		{	CONSTDEF("AreaDialogTitle"),		CG32bitPixel(32, 48, 64) },         //  H:210 S:50 B:25
+		{	CONSTDEF("AreaInfoMsg"),			CG32bitPixel(28, 33, 39) },
+		{	CONSTDEF("AreaWarningMsg"),			CG32bitPixel(229, 229, 92) },		//	H:60 S:60 B:90
+		{	CONSTDEF("LineDialogFrame"),		CG32bitPixel(163,191,219) },
+		{	CONSTDEF("LineFrame"),				CG32bitPixel(80,80,80) },
 
-		{	"TextHighlight",			CG32bitPixel(217, 236, 255) },      //  H:210 S:15 B:100
-		{	"TextNormal",				CG32bitPixel(191, 196, 201) },      //  H:210 S:5  B:79
-		{	"TextFade",					CG32bitPixel(120, 129, 140) },
-		{	"TextAltHighlight",			CG32bitPixel(255, 239, 215) },
-		{	"TextAltNormal",			CG32bitPixel(204, 200, 194) },
+		{	CONSTDEF("TextHighlight"),			CG32bitPixel(217, 236, 255) },      //  H:210 S:15 B:100
+		{	CONSTDEF("TextNormal"),				CG32bitPixel(191, 196, 201) },      //  H:210 S:5  B:79
+		{	CONSTDEF("TextFade"),				CG32bitPixel(120, 129, 140) },
+		{	CONSTDEF("TextAltHighlight"),		CG32bitPixel(255, 239, 215) },
+		{	CONSTDEF("TextAltNormal"),			CG32bitPixel(204, 200, 194) },
 
-		{	"TextAltFade",				CG32bitPixel(140, 131, 118) },
-		{	"TextWarningMsg",			CG32bitPixel(38,  45,  51) },	    //	H:210 S:25  B:20
-		{	"TextDialogInput",			CG32bitPixel(217, 236, 255) },      //  H:210 S:15  B:100
-		{	"TextDialogLabel",			CG32bitPixel(115, 134, 153) },
-		{	"TextDialogLink",			CG32bitPixel(217, 236, 255) },
+		{	CONSTDEF("TextAltFade"),			CG32bitPixel(140, 131, 118) },
+		{	CONSTDEF("TextWarningMsg"),			CG32bitPixel(38,  45,  51) },	    //	H:210 S:25  B:20
+		{	CONSTDEF("TextDialogInput"),		CG32bitPixel(217, 236, 255) },      //  H:210 S:15  B:100
+		{	CONSTDEF("TextDialogLabel"),		CG32bitPixel(115, 134, 153) },
+		{	CONSTDEF("TextDialogLink"),			CG32bitPixel(217, 236, 255) },
 
-		{	"TextDialogTitle",			CG32bitPixel(115, 134, 153) },
-		{	"TextDialogWarning",		CG32bitPixel(255, 127, 0) },        //  H:30  S:100 B:100
-		{	"AreaDockTitle",			CG32bitPixel(0x37, 0x3f, 0x47) },	//	H:210 S:23 B:28
-		{	"TextDockAction",			CG32bitPixel(217, 236, 255) },
-		{	"TextDockActionHotKey",		CG32bitPixel(217, 236, 255) },
+		{	CONSTDEF("TextDialogTitle"),		CG32bitPixel(115, 134, 153) },
+		{	CONSTDEF("TextDialogWarning"),		CG32bitPixel(255, 127, 0) },        //  H:30  S:100 B:100
+		{	CONSTDEF("AreaDockTitle"),			CG32bitPixel(0x37, 0x3f, 0x47) },	//	H:210 S:23 B:28
+		{	CONSTDEF("TextDockAction"),			CG32bitPixel(217, 236, 255) },
+		{	CONSTDEF("TextDockActionHotKey"),	CG32bitPixel(217, 236, 255) },
 
-		{	"TextDockText",				CG32bitPixel(0xAF, 0xB7, 0xBF) },	//	H:210 S:8   B:75
-		{	"TextDockTitle",			CG32bitPixel(0xE7, 0xF3, 0xFF) },	//	H:210 S:9   B:100
-		{	"TextDockTextWarning",		CG32bitPixel(0xFF, 0x33, 0x33) },	//	H:0   S:80  B:100
-		{	"AreaAdvantage",			CG32bitPixel(0x00, 0x53, 0xA6) },
-		{	"AreaDisadvantage",			CG32bitPixel(0xA6, 0x21, 0x21) },
+		{	CONSTDEF("TextDockText"),			CG32bitPixel(0xAF, 0xB7, 0xBF) },	//	H:210 S:8   B:75
+		{	CONSTDEF("TextDockTitle"),			CG32bitPixel(0xE7, 0xF3, 0xFF) },	//	H:210 S:9   B:100
+		{	CONSTDEF("TextDockTextWarning"),	CG32bitPixel(0xFF, 0x33, 0x33) },	//	H:0   S:80  B:100
+		{	CONSTDEF("AreaAdvantage"),			CG32bitPixel(0x00, 0x53, 0xA6) },
+		{	CONSTDEF("AreaDisadvantage"),		CG32bitPixel(0xA6, 0x21, 0x21) },
 
-		{	"AreaShields",				CG32bitPixel(0x45, 0x73, 0x17) },
-		{	"TextAdvantage",			CG32bitPixel(0xCC, 0xE5, 0xFF) },
-		{	"TextDisadvantage",			CG32bitPixel(0xFF, 0xCC, 0xCC) },
-		{	"TextShields",				CG32bitPixel(0xE5, 0xFF, 0xCC) },
-		{	"TextAccelerator",			CG32bitPixel(0xFF, 0xFF, 0x00) },	//	H:60  S:100 B:100
+		{	CONSTDEF("AreaShields"),			CG32bitPixel(0x45, 0x73, 0x17) },
+		{	CONSTDEF("TextAdvantage"),			CG32bitPixel(0xCC, 0xE5, 0xFF) },
+		{	CONSTDEF("TextDisadvantage"),		CG32bitPixel(0xFF, 0xCC, 0xCC) },
+		{	CONSTDEF("TextShields"),			CG32bitPixel(0xE5, 0xFF, 0xCC) },
+		{	CONSTDEF("TextAccelerator"),		CG32bitPixel(0xFF, 0xFF, 0x00) },	//	H:60  S:100 B:100
 
-		{	"AreaAccelerator",			CG32bitPixel(0xCB, 0xCB, 0x00) },	//	H:60  S:100 B:80
-		{	"TextQuoteColor",			CG32bitPixel(0xB2, 0xD9, 0xFF) },	//	H:210 S:30  B:100
+		{	CONSTDEF("AreaAccelerator"),		CG32bitPixel(0xCB, 0xCB, 0x00) },	//	H:60  S:100 B:80
+		{	CONSTDEF("TextQuoteColor"),			CG32bitPixel(0xB2, 0xD9, 0xFF) },	//	H:210 S:30  B:100
 	};
 
 struct SFontInitTable
@@ -261,6 +262,34 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 
 	if (retrcCenter)
 		*retrcCenter = rcCenter;
+	}
+
+CG32bitPixel CVisualPalette::GetColor (const CString &sName, bool *retFound) const
+
+//	GetColor
+//
+//	Returns the color by name
+
+	{
+	int i;
+
+	for (i = 0; i < colorCount; i++)
+		{
+		if (strEquals(sName, CONSTUSE(COLOR_TABLE[i])))
+			{
+			if (retFound)
+				*retFound = true;
+
+			return m_Color[i];
+			}
+		}
+
+	//	Not found
+
+	if (retFound)
+		*retFound = false;
+
+	return CG32bitPixel(128, 128, 128);
 	}
 
 const CG16bitFont &CVisualPalette::GetFont (const CString &sName, bool *retFound) const

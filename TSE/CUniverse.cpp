@@ -1402,30 +1402,31 @@ ALERROR CUniverse::InitFonts (void)
 
 	for (i = 0; i < fontCount; i++)
 		{
-		m_FontTable[i] = m_pHost->GetFont(CString(FONT_TABLE[i]));
-
-		//	If we could not find the font then we need to create a default version
-
-		if (m_FontTable[i] == NULL)
+		if (!m_pHost->FindFont(CString(FONT_TABLE[i]), &m_FontTable[i]))
 			{
-			HFONT hFont = ::CreateFont(-13,
-					0,
-					0,
-					0,
-					FW_NORMAL,
-					false,
-					false,
-					false,
-					ANSI_CHARSET,
-					OUT_TT_ONLY_PRECIS,
-					CLIP_DEFAULT_PRECIS,
-					ANTIALIASED_QUALITY,
-					FF_SWISS,
-					"Tahoma");
+			//	If we could not find the font then we need to create a default version
 
-			m_DefaultFonts[i].CreateFromFont(hFont);
-			m_FontTable[i] = &m_DefaultFonts[i];
-			::DeleteObject(hFont);
+			if (m_FontTable[i] == NULL)
+				{
+				HFONT hFont = ::CreateFont(-13,
+						0,
+						0,
+						0,
+						FW_NORMAL,
+						false,
+						false,
+						false,
+						ANSI_CHARSET,
+						OUT_TT_ONLY_PRECIS,
+						CLIP_DEFAULT_PRECIS,
+						ANTIALIASED_QUALITY,
+						FF_SWISS,
+						"Tahoma");
+
+				m_DefaultFonts[i].CreateFromFont(hFont);
+				m_FontTable[i] = &m_DefaultFonts[i];
+				::DeleteObject(hFont);
+				}
 			}
 		}
 

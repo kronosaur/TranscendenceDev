@@ -2127,6 +2127,7 @@ class CListWrapper : public IListData
 #include "TSEPlayer.h"
 #include "TSEArtifactAwakening.h"
 #include "TSEEventsImpl.h"
+#include "TSEMapPainters.h"
 
 #include "TSEUniverse.h"
 

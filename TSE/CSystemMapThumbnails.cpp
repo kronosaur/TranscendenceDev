@@ -3,7 +3,7 @@
 //	CSystemMapThumbnails class
 //	Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "stdafx.h"
+#include "PreComp.h"
 
 //  We want a 600 pixel image to be 1/10th the size of the thumbnail.
 
