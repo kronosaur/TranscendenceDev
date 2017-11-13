@@ -81,24 +81,17 @@ ALERROR CFillNodesProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	ALERROR error;
 	int i;
 
-	//	Initialize criteria
-
-	CTopologyNode::ParseCriteria(NULL, &m_Criteria);
-
 	//	Loop over all elements
 
 	for (i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pItem = pDesc->GetContentElement(i);
 
-		//	If we have a criteria, parse it and remember it
-		//	(Note: If multiple criteria are found, we take the latest one).
+		//	See if this is an element handled by our base class
 
-		if (strEquals(pItem->GetTag(), CRITERIA_TAG))
+		if ((error = InitBaseItemXML(Ctx, pItem)) != ERR_NOTFOUND)
 			{
-			//	Parse the filter
-
-			if (error = CTopologyNode::ParseCriteria(pItem, &m_Criteria, &Ctx.sError))
+			if (error != NOERROR)
 				return error;
 			}
 

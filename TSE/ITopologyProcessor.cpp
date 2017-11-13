@@ -6,6 +6,7 @@
 
 #define ATTRIBUTES_TAG						CONSTLIT("Attributes")
 #define CONQUER_NODES_TAG					CONSTLIT("ConquerNodes")
+#define CRITERIA_TAG						CONSTLIT("Criteria")
 #define DISTRIBUTE_NODES_TAG				CONSTLIT("DistributeNodes")
 #define FILL_NODES_TAG						CONSTLIT("FillNodes")
 #define GROUP_TAG							CONSTLIT("Group")
@@ -14,6 +15,8 @@
 #define RANDOM_POINTS_TAG					CONSTLIT("RandomPoints")
 #define SYSTEM_TAG							CONSTLIT("System")
 #define TABLE_TAG							CONSTLIT("Table")
+
+#define CRITERIA_ATTRIB						CONSTLIT("criteria")
 
 ALERROR ITopologyProcessor::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, ITopologyProcessor **retpProc)
 
@@ -102,6 +105,38 @@ CTopologyNodeList *ITopologyProcessor::FilterNodes (CTopology &Topology, CTopolo
 	return pNodeList;
 	}
 
+ALERROR ITopologyProcessor::InitBaseItemXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+//	InitBaseItemXML
+//
+//	Processes a child XML element. We return one of the following:
+//
+//	NOERROR: Recognized as a base item; continue with next child element.
+//	ERR_NOTFOUND: Not a base item; process it.
+//	Other error: Error (Ctx.sError is initialized).
+
+	{
+	//	If we have a criteria, parse it and remember it
+	//	(Note: If multiple criteria are found, we take the latest one).
+
+	if (strEquals(pDesc->GetTag(), CRITERIA_TAG))
+		{
+		//	Parse the filter
+
+		if (CTopologyNode::ParseCriteria(pDesc, &m_Criteria, &Ctx.sError) != NOERROR)
+			return ERR_FAIL;
+		}
+
+	//	Our caller should process this item.
+
+	else
+		return ERR_NOTFOUND;
+
+	//	We processed this item.
+
+	return NOERROR;
+	}
+
 ALERROR ITopologyProcessor::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
 
 //	InitFromXML
@@ -109,6 +144,20 @@ ALERROR ITopologyProcessor::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 //	Initialize form XML element
 
 	{
+	//	Initialize criteria
+
+	CTopologyNode::ParseCriteria(NULL, &m_Criteria);
+
+	CString sCriteria;
+	if (pDesc->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
+		{
+		if (CTopologyNode::ParseAttributeCriteria(sCriteria, &m_Criteria.AttribCriteria) != NOERROR)
+			{
+			Ctx.sError = CONSTLIT("Invalid criteria syntax.");
+			return ERR_FAIL;
+			}
+		}
+
 	//	Let subclass handle the rest.
 
 	return OnInitFromXML(Ctx, pDesc, sUNID);

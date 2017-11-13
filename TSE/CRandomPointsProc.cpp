@@ -174,7 +174,6 @@ ALERROR CRandomPointsProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	m_pAreaDef = NULL;
 	m_iRotationType = rotationNone;
 	m_iTotalChance = 0;
-	CTopologyNode::ParseCriteria(NULL, &m_Criteria);
 
 	//	Loop over content elements
 
@@ -182,7 +181,17 @@ ALERROR CRandomPointsProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		{
 		CXMLElement *pItem = pDesc->GetContentElement(i);
 
-		if (strEquals(pItem->GetTag(), POINT_TAG))
+		//	See if this is an element handled by our base class
+
+		if ((error = InitBaseItemXML(Ctx, pItem)) != ERR_NOTFOUND)
+			{
+			if (error != NOERROR)
+				return error;
+			}
+
+		//	Otherwise, it should be an element we recognize
+
+		else if (strEquals(pItem->GetTag(), POINT_TAG))
 			{
 			CString sNewUNID = strPatternSubst(CONSTLIT("%s/%d"), sUNID, m_PointProcs.GetCount());
 			SPointProc *pPointProc = m_PointProcs.Insert();
@@ -256,11 +265,6 @@ ALERROR CRandomPointsProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 				Ctx.sError = CONSTLIT("Invalid <Rotation> specifier");
 				return ERR_FAIL;
 				}
-			}
-		else if (strEquals(pItem->GetTag(), CRITERIA_TAG))
-			{
-			if (error = CTopologyNode::ParseCriteria(pItem, &m_Criteria, &Ctx.sError))
-				return error;
 			}
 		else
 			{

@@ -71,7 +71,6 @@ class CConquerNodesProc : public ITopologyProcessor
 		inline TArray<SNodeWeight> &GetSeedWeightTable (SConqueror *pConqueror) { return (pConqueror->Seed.GetCount() > 0 ? pConqueror->Seed : pConqueror->Expand); }
 		ALERROR LoadNodeWeightTable (SDesignLoadCtx &Ctx, CXMLElement *pDesc, TArray<SNodeWeight> *retTable);
 
-		CTopologyNode::SCriteria m_Criteria;
 		TArray<SConqueror> m_Conquerors;
 	};
 
@@ -90,7 +89,6 @@ class CDistributeNodesProc : public ITopologyProcessor
 			CXMLElement *pDesc;
 			};
 
-		CTopologyNode::SCriteria m_Criteria;
 		DiceRange m_DistCount;
 		TArray<SSystemEntry> m_Systems;
 	};
@@ -107,7 +105,6 @@ class CFillNodesProc : public ITopologyProcessor
 		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
-		CTopologyNode::SCriteria m_Criteria;
 		TArray<ITopologyProcessor *> m_Procs;
 	};
 
@@ -123,7 +120,6 @@ class CGroupTopologyProc : public ITopologyProcessor
 		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
-		CTopologyNode::SCriteria m_Criteria;
 		TArray<ITopologyProcessor *> m_Procs;
 	};
 
@@ -149,7 +145,6 @@ class CLocateNodesProc : public ITopologyProcessor
 
 		ALERROR ParseRange (SDesignLoadCtx &Ctx, const CString &sRange, Metric *retrMin, Metric *retrMax);
 
-		CTopologyNode::SCriteria m_Criteria;
 		I2DFunction *m_pMapFunction;
 		TArray<SLocation> m_Locations;
 	};
@@ -185,7 +180,6 @@ class CPartitionNodesProc : public ITopologyProcessor
 		int CreatePartitionRandomWalk (int iCount, CTopologyNode *pStart, CTopologyNodeList *retList);
 		bool IsAvailable (SPartition &Partition);
 
-		CTopologyNode::SCriteria m_Criteria;
 		TArray<SPartition> m_Partitions;
 		EPartitionOrders m_iOrder;
 	};
@@ -233,7 +227,6 @@ class CRandomPointsProc : public ITopologyProcessor
 		int m_xRotation;
 		int m_yRotation;
 
-		CTopologyNode::SCriteria m_Criteria;
 		TArray<SPointProc> m_PointProcs;
 		int m_iTotalChance;
 	};
@@ -256,7 +249,6 @@ class CTableTopologyProc : public ITopologyProcessor
 			int iChance;
 			};
 
-		CTopologyNode::SCriteria m_Criteria;
 		TArray<SEntry> m_Procs;
 		int m_iTotalChance;
 	};

@@ -26,8 +26,11 @@ class ITopologyProcessor
 		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) { return NOERROR; }
 
 		CTopologyNodeList *FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered);
+		ALERROR InitBaseItemXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void RestoreMarks (CTopology &Topology, TArray<bool> &Saved);
 		void SaveAndMarkNodes (CTopology &Topology, CTopologyNodeList &NodeList, TArray<bool> *retSaved);
+
+		CTopologyNode::SCriteria m_Criteria;
 	};
 
 class CSystemMap : public CDesignType

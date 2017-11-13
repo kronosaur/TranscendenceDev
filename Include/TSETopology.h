@@ -24,26 +24,22 @@ class CTopologyNode
 			SAttributeCriteria AttribCriteria;
 			CString sNodeID;
 
-			int iMinDist;
-			int iMaxDist;
+			int iMinDist = 0;
+			int iMaxDist = -1;
 			};
 
 		struct SCriteriaCtx
 			{
-			SCriteriaCtx (void) :
-					pTopology(NULL)
-				{ }
-
-			CTopology *pTopology;
+			CTopology *pTopology = NULL;
 			};
 
 		struct SCriteria
 			{
-			int iChance;								//	Probability 0-100 of matching criteria
-			int iMinStargates;							//	Match if >= this many stargates
-			int iMaxStargates;							//	Match if <= this many stargates
-			int iMinInterNodeDist;						//	Used by <DistributeNodes> (maybe move there)
-			int iMaxInterNodeDist;
+			int iChance = 100;							//	Probability 0-100 of matching criteria
+			int iMinStargates = 0;						//	Match if >= this many stargates
+			int iMaxStargates = -1;						//	Match if <= this many stargates
+			int iMinInterNodeDist = 0;					//	Used by <DistributeNodes> (maybe move there)
+			int iMaxInterNodeDist = -1;
 			SAttributeCriteria AttribCriteria;
 			TArray<SDistanceTo> DistanceTo;				//	Matches if node is within the proper distance of another node or nodes
 			};
