@@ -827,26 +827,21 @@ bool CTopologyNode::IsCriteriaAll (const SCriteria &Crit)
 			&& Crit.iMinInterNodeDist == 0
 			&& Crit.iMaxStargates == -1
 			&& Crit.iMinStargates == 0
-			&& Crit.AttribsNotAllowed.GetCount() == 0
-			&& Crit.AttribsRequired.GetCount() == 0
+			&& Crit.AttribCriteria.AttribsNotAllowed.GetCount() == 0
+			&& Crit.AttribCriteria.AttribsRequired.GetCount() == 0
 			&& Crit.DistanceTo.GetCount() == 0
-			&& Crit.SpecialRequired.GetCount() == 0
-			&& Crit.SpecialNotAllowed.GetCount() == 0);
+			&& Crit.AttribCriteria.SpecialRequired.GetCount() == 0
+			&& Crit.AttribCriteria.SpecialNotAllowed.GetCount() == 0);
 	}
 
-bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
+bool CTopologyNode::MatchesAttributeCriteria (const SAttributeCriteria &Crit) const
 
-//	MatchesCriteria
+//	MatchesAttributeCriteria
 //
 //	Returns TRUE if this node matches the given criteria
 
 	{
 	int i;
-
-	//	Chance
-
-	if (Crit.iChance < 100 && mathRandom(1, 100) > Crit.iChance)
-		return false;
 
 	//	Check required attributes
 
@@ -872,6 +867,28 @@ bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
 		if (HasSpecialAttribute(Crit.SpecialNotAllowed[i]))
 			return false;
 
+	return true;
+	}
+
+bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
+
+//	MatchesCriteria
+//
+//	Returns TRUE if this node matches the given criteria
+
+	{
+	int i;
+
+	//	Chance
+
+	if (Crit.iChance < 100 && mathRandom(1, 100) > Crit.iChance)
+		return false;
+
+	//	Check attributes
+
+	if (!MatchesAttributeCriteria(Crit.AttribCriteria))
+		return false;
+
 	//	Stargates
 
 	if (m_NamedGates.GetCount() < Crit.iMinStargates)
@@ -895,8 +912,7 @@ bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
 				if (!Ctx.pTopology->GetTopologyNodeList().IsNodeInRangeOf(this,
 						Crit.DistanceTo[i].iMinDist,
 						Crit.DistanceTo[i].iMaxDist,
-						Crit.DistanceTo[i].AttribsRequired,
-						Crit.DistanceTo[i].AttribsNotAllowed,
+						Crit.DistanceTo[i].AttribCriteria,
 						Checked))
 					return false;
 				}
@@ -921,98 +937,9 @@ bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
 	return true;
 	}
 
-ALERROR CTopologyNode::ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError)
+ALERROR CTopologyNode::ParseAttributeCriteria (const CString &sCriteria, SAttributeCriteria *retCrit)
 
-//	ParseCriteria
-//
-//	Parses a string criteria
-
-	{
-	retCrit->iChance = 100;
-	retCrit->iMaxInterNodeDist = -1;
-	retCrit->iMinInterNodeDist = 0;
-	retCrit->iMaxStargates = -1;
-	retCrit->iMinStargates = 0;
-
-	return ParseCriteriaInt(sCriteria, retCrit);
-	}
-
-ALERROR CTopologyNode::ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError)
-
-//	ParseCriteria
-//
-//	Parses an XML element into a criteria desc
-
-	{
-	int i;
-
-	retCrit->iChance = 100;
-	retCrit->iMaxInterNodeDist = -1;
-	retCrit->iMinInterNodeDist = 0;
-	retCrit->iMaxStargates = -1;
-	retCrit->iMinStargates = 0;
-
-	if (pCrit)
-		{
-		for (i = 0; i < pCrit->GetContentElementCount(); i++)
-			{
-			CXMLElement *pItem = pCrit->GetContentElement(i);
-
-			if (strEquals(pItem->GetTag(), ATTRIBUTES_TAG))
-				{
-				CString sCriteria = pItem->GetAttribute(CRITERIA_ATTRIB);
-				ParseCriteriaInt(sCriteria, retCrit);
-				}
-			else if (strEquals(pItem->GetTag(), CHANCE_TAG))
-				{
-				retCrit->iChance = pItem->GetAttributeIntegerBounded(CHANCE_ATTRIB, 0, 100, 100);
-				}
-			else if (strEquals(pItem->GetTag(), DISTANCE_BETWEEN_NODES_TAG))
-				{
-				retCrit->iMinInterNodeDist = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
-				retCrit->iMaxInterNodeDist = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
-				}
-			else if (strEquals(pItem->GetTag(), DISTANCE_TO_TAG))
-				{
-				SDistanceTo *pDistTo = retCrit->DistanceTo.Insert();
-				pDistTo->iMinDist = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
-				pDistTo->iMaxDist = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
-
-				CString sCriteria;
-				if (pItem->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
-					{
-					SCriteria Criteria;
-					if (ParseCriteriaInt(sCriteria, &Criteria) != NOERROR)
-						{
-						*retsError = strPatternSubst(CONSTLIT("Unable to parse criteria: %s"), sCriteria);
-						return ERR_FAIL;
-						}
-
-					pDistTo->AttribsRequired = Criteria.AttribsRequired;
-					pDistTo->AttribsNotAllowed = Criteria.AttribsNotAllowed;
-					}
-				else
-					pDistTo->sNodeID = pItem->GetAttribute(NODE_ID_ATTRIB);
-				}
-			else if (strEquals(pItem->GetTag(), STARGATE_COUNT_TAG))
-				{
-				retCrit->iMinStargates = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
-				retCrit->iMaxStargates = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
-				}
-			else
-				{
-				*retsError = strPatternSubst(CONSTLIT("Unknown criteria element: %s"), pItem->GetTag());
-				return ERR_FAIL;
-				}
-			}
-		}
-
-	return NOERROR;
-	}
-
-ALERROR CTopologyNode::ParseCriteriaInt (const CString &sCriteria, SCriteria *retCrit)
-
-//	ParseCriteriaInt
+//	ParseAttributeCriteria
 //
 //	Parses a string criteria
 
@@ -1048,6 +975,91 @@ ALERROR CTopologyNode::ParseCriteriaInt (const CString &sCriteria, SCriteria *re
 			}
 
 		pPos++;
+		}
+
+	return NOERROR;
+	}
+
+ALERROR CTopologyNode::ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError)
+
+//	ParseCriteria
+//
+//	Parses a string criteria
+
+	{
+	retCrit->iChance = 100;
+	retCrit->iMaxInterNodeDist = -1;
+	retCrit->iMinInterNodeDist = 0;
+	retCrit->iMaxStargates = -1;
+	retCrit->iMinStargates = 0;
+
+	return ParseAttributeCriteria(sCriteria, &retCrit->AttribCriteria);
+	}
+
+ALERROR CTopologyNode::ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError)
+
+//	ParseCriteria
+//
+//	Parses an XML element into a criteria desc
+
+	{
+	int i;
+
+	retCrit->iChance = 100;
+	retCrit->iMaxInterNodeDist = -1;
+	retCrit->iMinInterNodeDist = 0;
+	retCrit->iMaxStargates = -1;
+	retCrit->iMinStargates = 0;
+
+	if (pCrit)
+		{
+		for (i = 0; i < pCrit->GetContentElementCount(); i++)
+			{
+			CXMLElement *pItem = pCrit->GetContentElement(i);
+
+			if (strEquals(pItem->GetTag(), ATTRIBUTES_TAG))
+				{
+				CString sCriteria = pItem->GetAttribute(CRITERIA_ATTRIB);
+				ParseAttributeCriteria(sCriteria, &retCrit->AttribCriteria);
+				}
+			else if (strEquals(pItem->GetTag(), CHANCE_TAG))
+				{
+				retCrit->iChance = pItem->GetAttributeIntegerBounded(CHANCE_ATTRIB, 0, 100, 100);
+				}
+			else if (strEquals(pItem->GetTag(), DISTANCE_BETWEEN_NODES_TAG))
+				{
+				retCrit->iMinInterNodeDist = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
+				retCrit->iMaxInterNodeDist = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
+				}
+			else if (strEquals(pItem->GetTag(), DISTANCE_TO_TAG))
+				{
+				SDistanceTo *pDistTo = retCrit->DistanceTo.Insert();
+				pDistTo->iMinDist = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
+				pDistTo->iMaxDist = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
+
+				CString sCriteria;
+				if (pItem->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
+					{
+					if (ParseAttributeCriteria(sCriteria, &pDistTo->AttribCriteria) != NOERROR)
+						{
+						*retsError = strPatternSubst(CONSTLIT("Unable to parse criteria: %s"), sCriteria);
+						return ERR_FAIL;
+						}
+					}
+				else
+					pDistTo->sNodeID = pItem->GetAttribute(NODE_ID_ATTRIB);
+				}
+			else if (strEquals(pItem->GetTag(), STARGATE_COUNT_TAG))
+				{
+				retCrit->iMinStargates = pItem->GetAttributeIntegerBounded(MIN_ATTRIB, 0, -1, 0);
+				retCrit->iMaxStargates = pItem->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, -1);
+				}
+			else
+				{
+				*retsError = strPatternSubst(CONSTLIT("Unknown criteria element: %s"), pItem->GetTag());
+				return ERR_FAIL;
+				}
+			}
 		}
 
 	return NOERROR;

@@ -102,7 +102,7 @@ bool CTopologyNodeList::FindNode (const CString &sID, int *retiIndex) const
 	return false;
 	}
 
-bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const TArray<CString> &AttribsRequired, const TArray<CString> &AttribsNotAllowed, CTopologyNodeList &Checked) const
+bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const
 
 //	IsNodeInRangeOf
 //
@@ -120,33 +120,10 @@ bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMa
 
 	if (iMin <= 0)
 		{
-		const CString &sAttribs = pNode->GetAttributes();
+		//	If we match the criteria, then we're OK (since we've satified the distance 
+		//	criteria).
 
-		//	Check required attributes
-
-		bool bMatches = true;
-		for (i = 0; i < AttribsRequired.GetCount(); i++)
-			if (!::HasModifier(sAttribs, AttribsRequired[i]))
-				{
-				bMatches = false;
-				break;
-				}
-
-		//	Check disallowed attributes
-
-		if (bMatches)
-			{
-			for (i = 0; i < AttribsNotAllowed.GetCount(); i++)
-				if (::HasModifier(sAttribs, AttribsNotAllowed[i]))
-					{
-					bMatches = false;
-					break;
-					}
-			}
-
-		//	If we match, then we're OK
-
-		if (bMatches)
+		if (pNode->MatchesAttributeCriteria(AttribCriteria))
 			return true;
 		}
 
@@ -165,7 +142,7 @@ bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMa
 
 			//	If this node is in range, then we're done
 
-			if (IsNodeInRangeOf(pDest, iMin - 1, iMax - 1, AttribsRequired, AttribsNotAllowed, Checked))
+			if (IsNodeInRangeOf(pDest, iMin - 1, iMax - 1, AttribCriteria, Checked))
 				return true;
 			}
 		}

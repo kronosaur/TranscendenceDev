@@ -11,11 +11,17 @@ const DWORD END_GAME_SYSTEM_UNID =				0x00ffffff;
 class CTopologyNode
 	{
 	public:
+		struct SAttributeCriteria
+			{
+			TArray<CString> AttribsRequired;			//	Does not match if any of these attribs are missing
+			TArray<CString> AttribsNotAllowed;			//	Does not match if any of these attribs are present
+			TArray<CString> SpecialRequired;			//	Special attributes
+			TArray<CString> SpecialNotAllowed;			//	Special attributes
+			};
+
 		struct SDistanceTo
 			{
-			TArray<CString> AttribsRequired;
-			TArray<CString> AttribsNotAllowed;
-
+			SAttributeCriteria AttribCriteria;
 			CString sNodeID;
 
 			int iMinDist;
@@ -38,11 +44,8 @@ class CTopologyNode
 			int iMaxStargates;							//	Match if <= this many stargates
 			int iMinInterNodeDist;						//	Used by <DistributeNodes> (maybe move there)
 			int iMaxInterNodeDist;
-			TArray<CString> AttribsRequired;			//	Does not match if any of these attribs are missing
-			TArray<CString> AttribsNotAllowed;			//	Does not match if any of these attribs are present
+			SAttributeCriteria AttribCriteria;
 			TArray<SDistanceTo> DistanceTo;				//	Matches if node is within the proper distance of another node or nodes
-			TArray<CString> SpecialRequired;			//	Special attributes
-			TArray<CString> SpecialNotAllowed;			//	Special attributes
 			};
 
 		struct SStargateRouteDesc
@@ -108,6 +111,7 @@ class CTopologyNode
 		inline bool IsKnown (void) const { return m_bKnown; }
 		inline bool IsMarked (void) const { return m_bMarked; }
 		inline bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
+		bool MatchesAttributeCriteria (const SAttributeCriteria &Crit) const;
 		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit);
 		inline void SetCalcDistance (int iDist) { m_iCalcDistance = iDist; }
 		inline void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
@@ -131,9 +135,9 @@ class CTopologyNode
 		bool HasVariantLabel (const CString &sVariant);
 
 		static ALERROR CreateStargateRoute (const SStargateRouteDesc &Desc);
+		static ALERROR ParseAttributeCriteria (const CString &sCriteria, SAttributeCriteria *retCrit);
 		static ALERROR ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError = NULL);
 		static ALERROR ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError = NULL);
-		static ALERROR ParseCriteriaInt (const CString &sCriteria, SCriteria *retCrit);
 		static ALERROR ParsePointList (const CString &sValue, TArray<SPoint> *retPoints);
 		static ALERROR ParsePosition (const CString &sValue, int *retx, int *rety);
 		static ALERROR ParseStargateString (const CString &sStargate, CString *retsNodeID, CString *retsGateName);
@@ -215,7 +219,7 @@ class CTopologyNodeList
 		inline CTopologyNode *GetAt (int iIndex) const { return m_List.GetAt(iIndex); }
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline void Insert (CTopologyNode *pNode) { m_List.Insert(pNode); }
-		bool IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const TArray<CString> &AttribsRequired, const TArray<CString> &AttribsNotAllowed, CTopologyNodeList &Checked) const;
+		bool IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
 		void RestoreMarks (TArray<bool> &Saved);
 		void SaveAndSetMarks (bool bMark, TArray<bool> *retSaved);
 		inline void Shuffle (void) { m_List.Shuffle(); }
