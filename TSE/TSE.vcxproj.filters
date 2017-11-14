@@ -1165,6 +1165,9 @@
     <ClCompile Include="CGalacticMapPainter.cpp">
       <Filter>Source Files\Painting</Filter>
     </ClCompile>
+    <ClCompile Include="IElementGenerator.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

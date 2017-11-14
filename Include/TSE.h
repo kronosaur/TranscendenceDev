@@ -437,6 +437,7 @@ class CTopology
 
 		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
 		ALERROR AddTopologyNode (const CString &sID, CTopologyNode *pNode);
+		ALERROR ApplyNodeTemplate (STopologyCreateCtx &Ctx, const TArray<CTopologyNode *> &Nodes, CXMLElement *pNodeTemplate, bool bUnmarkedOnly = false);
 		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
 		CString ExpandNodeID (STopologyCreateCtx &Ctx, const CString &sID);
 		ALERROR FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType = NULL);

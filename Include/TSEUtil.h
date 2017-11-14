@@ -12,6 +12,7 @@ class CItemEnhancementStack;
 class CExtension;
 class CLocationDef;
 class COrbit;
+class CTopology;
 struct CItemCriteria;
 struct SDesignLoadCtx;
 struct SDamageCtx;
@@ -830,6 +831,42 @@ class CRandomEntryGenerator
 		CXMLElement *m_pElement;
 		int m_iPercent;					//	Either chance or probability
 		DiceRange m_Count;				//	Count
+	};
+
+class IElementGenerator
+	{
+	public:
+		struct SCtx
+			{
+			const CTopology *pTopology = NULL;
+			};
+
+		struct SResult
+			{
+			int iCount = 0;
+			CXMLElement *pElement = NULL;
+			};
+
+		virtual ~IElementGenerator (void) { }
+
+		virtual void Generate (SCtx &Ctx, TArray<SResult> &retResults) const = 0;
+		void Generate (SCtx &Ctx, TArray<CXMLElement *> &retResults) const;
+
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, TUniquePtr<IElementGenerator> &retGenerator);
+		static ALERROR CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, CXMLElement *pDesc, TUniquePtr<IElementGenerator> &retGenerator);
+		static ALERROR CreateFromXMLAsTable (SDesignLoadCtx &Ctx, CXMLElement *pDesc, TUniquePtr<IElementGenerator> &retGenerator);
+		static bool Generate (SCtx &Ctx, CXMLElement *pDesc, TArray<SResult> &retResult, CString *retsError = NULL);
+		static bool Generate (SCtx &Ctx, CXMLElement *pDesc, TArray<CXMLElement *> &retResult, CString *retsError = NULL);
+		static bool GenerateAsGroup (SCtx &Ctx, CXMLElement *pDesc, TArray<SResult> &retResult, CString *retsError = NULL);
+		static bool GenerateAsGroup (SCtx &Ctx, CXMLElement *pDesc, TArray<CXMLElement *> &retResult, CString *retsError = NULL);
+		static bool GenerateAsTable (SCtx &Ctx, CXMLElement *pDesc, TArray<SResult> &retResult, CString *retsError = NULL);
+		static bool GenerateAsTable (SCtx &Ctx, CXMLElement *pDesc, TArray<CXMLElement *> &retResult, CString *retsError = NULL);
+
+	protected:
+		DiceRange m_Count;
+
+	private:
+		ALERROR InitFromXMLInternal (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 	};
 
 class CSpaceObjectList

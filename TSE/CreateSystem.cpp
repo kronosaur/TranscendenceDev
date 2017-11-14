@@ -2365,19 +2365,16 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		}
 	else if (strEquals(sTag, TABLE_TAG))
 		{
-		CRandomEntryResults Results;
-
 		PushDebugStack(pCtx, TABLE_TAG);
 
-		if (error = CRandomEntryGenerator::Generate(pObj, Results))
-			{
-			pCtx->sError = CONSTLIT("<Table> error");
-			return error;
-			}
+		IElementGenerator::SCtx GenCtx;
+		TArray<CXMLElement *> Results;
+		if (!IElementGenerator::GenerateAsTable(GenCtx, pObj, Results, &pCtx->sError))
+			return ERR_FAIL;
 
 		for (int i = 0; i < Results.GetCount(); i++)
 			{
-			CXMLElement *pResult = Results.GetResult(i);
+			CXMLElement *pResult = Results[i];
 
 			if (error = CreateSystemObject(pCtx, pResult, OrbitDesc, true))
 				return error;

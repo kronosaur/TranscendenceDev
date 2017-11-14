@@ -194,16 +194,20 @@ ALERROR CTopology::AddNetwork (STopologyCreateCtx &Ctx, CTopologyDesc *pNetwork,
 
 	//	Always treat it as a group
 
-	CRandomEntryResults StarGates;
-	if (error = CRandomEntryGenerator::GenerateAsGroup(pStargateList, StarGates))
+	IElementGenerator::SCtx GenCtx;
+	GenCtx.pTopology = this;
+
+	TArray<CXMLElement *> Stargates;
+	CString sError;
+	if (!IElementGenerator::GenerateAsGroup(GenCtx, pStargateList, Stargates, &sError))
 		{
-		Ctx.sError = strPatternSubst(CONSTLIT("Topology %s: Unable to generate random stargate table"), pNetworkXML->GetAttribute(ID_ATTRIB));
-		return error;
+		Ctx.sError = strPatternSubst(CONSTLIT("Topology %s: Unable to generate random stargate table: %s"), pNetworkXML->GetAttribute(ID_ATTRIB), sError);
+		return ERR_FAIL;
 		}
 
-	for (i = 0; i < StarGates.GetCount(); i++)
+	for (i = 0; i < Stargates.GetCount(); i++)
 		{
-		CXMLElement *pGate = StarGates.GetResult(i);
+		CXMLElement *pGate = Stargates[i];
 
 		//	If this is a directive to set the return node, then process it
 
@@ -795,7 +799,7 @@ ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx,
 			CXMLElement *pSystemXML = pSetNode->GetSystem();
 			if (pSystemXML)
 				{
-				if (error = pBestNode->InitFromSystemXML(pSystemXML, &Ctx.sError))
+				if (error = pBestNode->InitFromSystemXML(*this, pSystemXML, &Ctx.sError))
 					return error;
 				}
 
@@ -828,23 +832,8 @@ ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx,
 	CXMLElement *pNodeTemplate = pRegionDef->GetContentElementByTag(NODE_TEMPLATE_TAG);
 	if (pNodeTemplate)
 		{
-		CString sNodeAttribs = pNodeTemplate->GetAttribute(ATTRIBUTES_ATTRIB);
-		CXMLElement *pSystemXML = pNodeTemplate->GetContentElementByTag(SYSTEM_TAG);
-
-		for (i = 0; i < Nodes.GetCount(); i++)
-			{
-			CTopologyNode *pNode = Nodes[i];
-			if (!pNode->IsMarked())
-				{
-				pNode->AddAttributes(sNodeAttribs);
-
-				if (pSystemXML)
-					{
-					if (error = pNode->InitFromSystemXML(pSystemXML, &Ctx.sError))
-						return error;
-					}
-				}
-			}
+		if (error = ApplyNodeTemplate(Ctx, Nodes, pNodeTemplate, true))
+			return error;
 		}
 
 	//	Add the region graph to the overall graph
@@ -869,27 +858,32 @@ ALERROR CTopology::AddStargateFromXML (STopologyCreateCtx &Ctx, CXMLElement *pDe
 
 	if (pDesc->GetContentElementCount() > 0)
 		{
-		CRandomEntryResults StarGates;
+		IElementGenerator::SCtx GenCtx;
+		GenCtx.pTopology = this;
+
+		TArray<CXMLElement *> Stargates;
+		CString sError;
+
 		if (strEquals(pDesc->GetTag(), STARGATE_TABLE_TAG))
 			{
-			if (error = CRandomEntryGenerator::GenerateAsTable(pDesc, StarGates))
+			if (!IElementGenerator::GenerateAsTable(GenCtx, pDesc, Stargates, &sError))
 				{
-				Ctx.sError = CONSTLIT("Unable to generate random stargate table");
-				return error;
+				Ctx.sError = strPatternSubst(CONSTLIT("Unable to generate random stargate table: %s"), sError);
+				return ERR_FAIL;
 				}
 			}
 		else
 			{
-			if (error = CRandomEntryGenerator::GenerateAsGroup(pDesc, StarGates))
+			if (!IElementGenerator::GenerateAsGroup(GenCtx, pDesc, Stargates, &sError))
 				{
-				Ctx.sError = CONSTLIT("Unable to generate random stargate table");
-				return error;
+				Ctx.sError = strPatternSubst(CONSTLIT("Unable to generate random stargate table: %s"), sError);
+				return ERR_FAIL;
 				}
 			}
 
-		for (i = 0; i < StarGates.GetCount(); i++)
+		for (i = 0; i < Stargates.GetCount(); i++)
 			{
-			CXMLElement *pGate = StarGates.GetResult(i);
+			CXMLElement *pGate = Stargates[i];
 
 			//	This will add the stargate and recurse into AddTopologyDesc
 			//	(if necessary).
@@ -1238,6 +1232,83 @@ ALERROR CTopology::AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNod
 	return GetOrAddTopologyNode(Ctx, sNodeID, NULL, NULL, retpNewNode);
 	}
 
+ALERROR CTopology::ApplyNodeTemplate (STopologyCreateCtx &Ctx, const TArray<CTopologyNode *> &Nodes, CXMLElement *pNodeTemplate, bool bUnmarkedOnly)
+
+//	ApplyNodeTemplate
+//
+//	Applies the settings in the node template to the given list of nodes.
+
+	{
+	ALERROR error;
+	int i, j;
+
+	CString sNodeAttribs = pNodeTemplate->GetAttribute(ATTRIBUTES_ATTRIB);
+
+	//	If we have a <System> element, we use it to initialize data
+
+	CXMLElement *pSystemXML = pNodeTemplate->GetContentElementByTag(SYSTEM_TAG);
+
+	//	If the <System> element has a child, then we assume it is a generator
+
+	TUniquePtr<IElementGenerator> pGenerator;
+	if (pSystemXML && pSystemXML->GetContentElementCount() > 0)
+		{
+		SDesignLoadCtx LoadCtx;
+
+		if (error = IElementGenerator::CreateFromXMLAsGroup(LoadCtx, pSystemXML, pGenerator))
+			{
+			Ctx.sError = LoadCtx.sError;
+			return error;
+			}
+		}
+
+	//	Loop over all nodes and apply
+
+	for (i = 0; i < Nodes.GetCount(); i++)
+		{
+		CTopologyNode *pNode = Nodes[i];
+
+		//	Skip marked nodes, if necessary
+
+		if (bUnmarkedOnly && pNode->IsMarked())
+			continue;
+
+		//	Apply attributes
+
+		pNode->AddAttributes(sNodeAttribs);
+
+		//	Apply root system (but ignore any sub-elements of pSystemXML, because we
+		//	will apply the separately with the generator).
+
+		if (pSystemXML)
+			{
+			if (error = pNode->InitFromSystemXML(*this, pSystemXML, &Ctx.sError, true))
+				return error;
+			}
+
+		//	Apply the generator
+
+		if (pGenerator)
+			{
+			IElementGenerator::SCtx GenCtx;
+			GenCtx.pTopology = this;
+
+			TArray<IElementGenerator::SResult> Result;
+			pGenerator->Generate(GenCtx, Result);
+
+			for (j = 0; j < Result.GetCount(); j++)
+				{
+				if (error = pNode->InitFromSystemXML(*this, Result[j].pElement, &Ctx.sError))
+					return error;
+				}
+			}
+		}
+
+	//	Done
+
+	return NOERROR;
+	}
+
 ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode)
 
 //	CreateTopologyNode
@@ -1275,7 +1346,7 @@ ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &s
 
 	if (NodeCtx.pSystemDesc)
 		{
-		if (error = pNewNode->InitFromSystemXML(NodeCtx.pSystemDesc, &Ctx.sError))
+		if (error = pNewNode->InitFromSystemXML(*this, NodeCtx.pSystemDesc, &Ctx.sError))
 			return error;
 		}
 
@@ -1827,19 +1898,24 @@ ALERROR CTopology::InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComp
 	//	We allow embeded <Table> and <Group> elements.
 	//	Generate the results.
 
-	CRandomEntryResults AreaDef;
-	if (error = CRandomEntryGenerator::GenerateAsGroup(pAreaDef, AreaDef))
+	IElementGenerator::SCtx GenCtx;
+	GenCtx.pTopology = this;
+
+	TArray<CXMLElement *> AreaDef;
+	CString sError;
+
+	if (!IElementGenerator::GenerateAsGroup(GenCtx, pAreaDef, AreaDef, &sError))
 		{
 		if (pCtx)
-			pCtx->sError = CONSTLIT("Unable to generate <Area> definitions table");
-		return error;
+			pCtx->sError = strPatternSubst(CONSTLIT("Unable to generate <Area> definitions table: %s"), sError);
+		return ERR_FAIL;
 		}
 
 	bool bUsesFragmentEntrance = false;
 
 	for (i = 0; i < AreaDef.GetCount(); i++)
 		{
-		CXMLElement *pElement = AreaDef.GetResult(i);
+		CXMLElement *pElement = AreaDef[i];
 
 		if (strEquals(pElement->GetTag(), LINE_TAG))
 			{

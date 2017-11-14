@@ -39,7 +39,7 @@ ALERROR CApplySystemProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 
 	for (i = 0; i < NodeList.GetCount(); i++)
 		{
-		if (error = NodeList.GetAt(i)->InitFromAdditionalXML(m_pSystemDesc, retsError))
+		if (error = NodeList.GetAt(i)->InitFromAdditionalXML(Topology, m_pSystemDesc, retsError))
 			return error;
 		}
 

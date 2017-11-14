@@ -676,7 +676,7 @@ bool CTopologyNode::HasVariantLabel (const CString &sVariant)
 	return false;
 	}
 
-ALERROR CTopologyNode::InitFromAdditionalXML (CXMLElement *pDesc, CString *retsError)
+ALERROR CTopologyNode::InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError)
 
 //	InitFromAdditionalXML
 //
@@ -687,7 +687,7 @@ ALERROR CTopologyNode::InitFromAdditionalXML (CXMLElement *pDesc, CString *retsE
 
 	if (strEquals(pDesc->GetTag(), SYSTEM_TAG))
 		{
-		if (error = InitFromSystemXML(pDesc, retsError))
+		if (error = InitFromSystemXML(Topology, pDesc, retsError))
 			return error;
 		}
 	else if (strEquals(pDesc->GetTag(), ATTRIBUTES_TAG))
@@ -711,7 +711,7 @@ ALERROR CTopologyNode::InitFromAttributesXML (CXMLElement *pAttributes, CString 
 	return NOERROR;
 	}
 
-ALERROR CTopologyNode::InitFromSystemXML (CXMLElement *pSystem, CString *retsError)
+ALERROR CTopologyNode::InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError, bool bIgnoreChildren)
 
 //	InitFromSystemXML
 //
@@ -719,9 +719,7 @@ ALERROR CTopologyNode::InitFromSystemXML (CXMLElement *pSystem, CString *retsErr
 //	NOTE: We assume the universe is fully bound at this point.
 
 	{
-	ALERROR error;
-	CString sSystemUNID = pSystem->GetAttribute(UNID_ATTRIB);
-	DWORD dwUNID = strToInt(sSystemUNID, 0, NULL);
+	DWORD dwUNID = pSystem->GetAttributeInteger(UNID_ATTRIB);
 
 	//	If the system node contains a table of different system types, then
 	//	remember the root node because some of the system information (such as the
@@ -732,7 +730,9 @@ ALERROR CTopologyNode::InitFromSystemXML (CXMLElement *pSystem, CString *retsErr
 	//	If there is no UNID attribute then it means that the system
 	//	is randomly determined based on a table
 
-	if (dwUNID == 0 && pSystem->GetContentElementCount() == 1)
+	if (!bIgnoreChildren
+			&& dwUNID == 0 
+			&& pSystem->GetContentElementCount() == 1)
 		{
 		CXMLElement *pTableElement = pSystem->GetContentElement(0);
 		if (pTableElement == NULL)
@@ -741,10 +741,15 @@ ALERROR CTopologyNode::InitFromSystemXML (CXMLElement *pSystem, CString *retsErr
 			return ERR_FAIL;
 			}
 
-		CRandomEntryResults System;
-		if (error = CRandomEntryGenerator::Generate(pTableElement, System))
+		IElementGenerator::SCtx GenCtx;
+		GenCtx.pTopology = &Topology;
+
+		TArray<CXMLElement *> System;
+		CString sError;
+
+		if (!IElementGenerator::Generate(GenCtx, pTableElement, System, &sError))
 			{
-			*retsError = strPatternSubst(CONSTLIT("Topology %s: Unable to generate random system UNID"), m_sID);
+			*retsError = strPatternSubst(CONSTLIT("Topology %s: Unable to generate random system UNID: %s"), m_sID, sError);
 			return ERR_FAIL;
 			}
 
@@ -755,7 +760,7 @@ ALERROR CTopologyNode::InitFromSystemXML (CXMLElement *pSystem, CString *retsErr
 			}
 
 		pSystemParent = pSystem;
-		pSystem = System.GetResult(0);
+		pSystem = System[0];
 		dwUNID = pSystem->GetAttributeInteger(UNID_ATTRIB);
 		}
 
@@ -763,10 +768,6 @@ ALERROR CTopologyNode::InitFromSystemXML (CXMLElement *pSystem, CString *retsErr
 
 	if (dwUNID != 0)
 		m_SystemUNID = dwUNID;
-
-	//	Get the system type
-
-	CSystemType *pSystemType = g_pUniverse->FindSystemType(m_SystemUNID);
 
 	//	Set the name of the system
 
@@ -809,6 +810,9 @@ ALERROR CTopologyNode::InitFromSystemXML (CXMLElement *pSystem, CString *retsErr
 	if (pSystemParent && pSystemParent->FindAttribute(ATTRIBUTES_ATTRIB, &sAttribs))
 		AddAttributes(sAttribs);
 
+	//	Get the system type and add attributes
+
+	CSystemType *pSystemType = g_pUniverse->FindSystemType(m_SystemUNID);
 	if (pSystemType && !pSystemType->GetAttributes().IsBlank())
 		AddAttributes(pSystemType->GetAttributes());
 

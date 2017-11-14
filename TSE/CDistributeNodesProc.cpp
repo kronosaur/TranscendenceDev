@@ -105,7 +105,7 @@ ALERROR CDistributeNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, 
 
 		for (i = 0; i < iDistCount; i++)
 			{
-			if (error = pNodeList->GetAt(i)->InitFromAdditionalXML(m_Systems[i % iSystemCount].pDesc, retsError))
+			if (error = pNodeList->GetAt(i)->InitFromAdditionalXML(Topology, m_Systems[i % iSystemCount].pDesc, retsError))
 				return error;
 
 			//	Remove this node from NodeList so that it is not re-used by our callers
@@ -186,7 +186,7 @@ ALERROR CDistributeNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, 
 
 		for (i = 0; i < iDistCount; i++)
 			{
-			if (error = pNodeList->GetAt(Best[i])->InitFromSystemXML(m_Systems[i % iSystemCount].pDesc, retsError))
+			if (error = pNodeList->GetAt(Best[i])->InitFromSystemXML(Topology, m_Systems[i % iSystemCount].pDesc, retsError))
 				return error;
 
 			//	Remove this node from NodeList so that it is not re-used by our callers

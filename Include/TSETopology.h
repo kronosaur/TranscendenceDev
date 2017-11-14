@@ -99,9 +99,9 @@ class CTopologyNode
 		inline bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
-		ALERROR InitFromAdditionalXML (CXMLElement *pDesc, CString *retsError);
+		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
 		ALERROR InitFromAttributesXML (CXMLElement *pAttributes, CString *retsError);
-		ALERROR InitFromSystemXML (CXMLElement *pSystem, CString *retsError);
+		ALERROR InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError, bool bIgnoreChildren = false);
 		static bool IsCriteriaAll (const SCriteria &Crit);
 		inline bool IsEndGame (void) const { return (m_SystemUNID == END_GAME_SYSTEM_UNID); }
 		inline bool IsKnown (void) const { return m_bKnown; }
