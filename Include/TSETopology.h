@@ -78,17 +78,19 @@ class CTopologyNode
 		inline int GetCalcDistance (void) const { return m_iCalcDistance; }
 		inline const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
 		inline const CString &GetData (const CString &sAttrib) const { return m_Data.GetData(sAttrib); }
-		inline CSystemMap *GetDisplayPos (int *retxPos = NULL, int *retyPos = NULL);
+		inline CSystemMap *GetDisplayPos (int *retxPos = NULL, int *retyPos = NULL) const;
 		inline const CString &GetEndGameReason (void) { return m_sEndGameReason; }
 		inline const CString &GetEpitaph (void) { return m_sEpitaph; }
 		inline const CString &GetID (void) const { return m_sID; }
 		CTopologyNode *GetGateDest (const CString &sName, CString *retsEntryPoint = NULL);
         DWORD GetLastVisitedTime (void) const;
 		inline int GetLevel (void) const { return m_iLevel; }
+		Metric GetLinearDistanceTo (const CTopologyNode *pNode) const;
+		Metric GetLinearDistanceTo2 (const CTopologyNode *pNode) const;
 		ICCItem *GetProperty (const CString &sName);
-		inline int GetStargateCount (void) { return m_NamedGates.GetCount(); }
+		inline int GetStargateCount (void) const { return m_NamedGates.GetCount(); }
 		CString GetStargate (int iIndex);
-		CTopologyNode *GetStargateDest (int iIndex, CString *retsEntryPoint = NULL);
+		CTopologyNode *GetStargateDest (int iIndex, CString *retsEntryPoint = NULL) const;
 		void GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc);
 		inline CSystem *GetSystem (void) { return m_pSystem; }
 		inline DWORD GetSystemID (void) { return m_dwID; }
@@ -109,14 +111,14 @@ class CTopologyNode
 		inline bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
 		bool MatchesAttributeCriteria (const SAttributeCriteria &Crit) const;
 		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit);
-		inline void SetCalcDistance (int iDist) { m_iCalcDistance = iDist; }
+		inline void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
 		inline void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
 		inline void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
 		inline void SetEpitaph (const CString &sEpitaph) { m_sEpitaph = sEpitaph; }
 		inline void SetKnown (bool bKnown = true) { m_bKnown = bKnown; }
 		inline void SetLevel (int iLevel) { m_iLevel = iLevel; }
-		inline void SetMarked (bool bValue = true) { m_bMarked = bValue; }
+		inline void SetMarked (bool bValue = true) const { m_bMarked = bValue; }
 		inline void SetName (const CString &sName) { m_sName = sName; }
 		inline void SetPos (int xPos, int yPos) { m_xPos = xPos; m_yPos = yPos; }
 		inline void SetPositionKnown (bool bKnown = true) { m_bPosKnown = bKnown; }
@@ -196,8 +198,8 @@ class CTopologyNode
 		bool m_bKnown;							//	TRUE if node is visible on galactic map
 		bool m_bPosKnown;						//	TRUE if node is visible, but type/name is unknown
 
-		bool m_bMarked;							//	Temp variable used during painting
-		int m_iCalcDistance;					//	Temp variable used during distance calc
+		mutable bool m_bMarked;					//	Temp variable used during painting
+		mutable int m_iCalcDistance;			//	Temp variable used during distance calc
 	};
 
 class CTopologyNodeList

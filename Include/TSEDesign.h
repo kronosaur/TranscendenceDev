@@ -1337,4 +1337,4 @@ inline bool DamageDesc::IsMatterDamage (void) const { return ::IsMatterDamage(m_
 
 inline void IEffectPainter::PlaySound (CSpaceObject *pSource) { if (!m_bNoSound) GetCreator()->PlaySound(pSource); }
 
-inline CSystemMap *CTopologyNode::GetDisplayPos (int *retxPos, int *retyPos) { if (retxPos) *retxPos = m_xPos; if (retyPos) *retyPos = m_yPos; return (m_pMap ? m_pMap->GetDisplayMap() : NULL); }
+inline CSystemMap *CTopologyNode::GetDisplayPos (int *retxPos, int *retyPos) const { if (retxPos) *retxPos = m_xPos; if (retyPos) *retyPos = m_yPos; return (m_pMap ? m_pMap->GetDisplayMap() : NULL); }

@@ -6,12 +6,15 @@
 #include "PreComp.h"
 
 #define GROUP_TAG					CONSTLIT("Group")
+#define NODE_DISTANCE_TABLE_TAG		CONSTLIT("NodeDistanceTable")
 #define NULL_TAG					CONSTLIT("Null")
 #define TABLE_TAG					CONSTLIT("Table")
 #define RANDOM_ITEM_TAG				CONSTLIT("RandomItem")
 
 #define CHANCE_ATTRIB				CONSTLIT("chance")
 #define COUNT_ATTRIB				CONSTLIT("count")
+#define DISTANCE_ATTRIB				CONSTLIT("distance")
+#define DISTANCE_TO_ATTRIB			CONSTLIT("distanceTo")
 
 class CElementGroup : public IElementGenerator
 	{
@@ -22,6 +25,30 @@ class CElementGroup : public IElementGenerator
 
 	private:
 		TArray<TUniquePtr<IElementGenerator>> m_Group;
+	};
+
+class CElementNodeDistanceTable : public IElementGenerator
+	{
+	public:
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, TUniquePtr<IElementGenerator> &retGenerator);
+
+		virtual void Generate (SCtx &Ctx, TArray<SResult> &retResults) const override;
+
+	private:
+		struct SEntry
+			{
+			CLargeSet DistanceMatch;
+			TUniquePtr<IElementGenerator> Item;
+			};
+
+		int GetDistanceToOrigin (const CTopology &Topology, const CTopologyNode *pNode) const;
+		void InitOriginList (SCtx &Ctx) const;
+
+		CTopologyNode::SAttributeCriteria m_OriginCriteria;
+		TArray<SEntry> m_Table;
+		TUniquePtr<IElementGenerator> m_DefaultItem;
+
+		mutable TArray<CTopologyNode *> m_OriginList;
 	};
 
 class CElementNull : public IElementGenerator
@@ -97,6 +124,8 @@ ALERROR IElementGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		error = CElementGroup::CreateFromXML(Ctx, pDesc, retGenerator);
 	else if (strEquals(sTag, TABLE_TAG))
 		error = CElementTable::CreateFromXML(Ctx, pDesc, retGenerator);
+	else if (strEquals(sTag, NODE_DISTANCE_TABLE_TAG))
+		error = CElementNodeDistanceTable::CreateFromXML(Ctx, pDesc, retGenerator);
 	else if (strEquals(sTag, NULL_TAG))
 		error = CElementNull::CreateFromXML(Ctx, pDesc, retGenerator);
 	else
@@ -372,6 +401,189 @@ void CElementGroup::Generate (SCtx &Ctx, TArray<SResult> &retResults) const
 		for (j = 0; j < m_Group.GetCount(); j++)
 			m_Group[j]->Generate(Ctx, retResults);
 		}
+	}
+
+//	CElementNodeDistanceTable --------------------------------------------------
+
+ALERROR CElementNodeDistanceTable::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, TUniquePtr<IElementGenerator> &retGenerator)
+
+//	CreateFromXML
+//
+//	Creates a node distance table generator
+
+	{
+	int i;
+	ALERROR error;
+	const DWORD MAX_DISTANCE_VALUE = 100;
+
+	CElementNodeDistanceTable *pGenerator = new CElementNodeDistanceTable;
+
+	//	Parse the node criteria
+
+	if (error = CTopologyNode::ParseAttributeCriteria(pDesc->GetAttribute(DISTANCE_TO_ATTRIB), &pGenerator->m_OriginCriteria))
+		{
+		delete pGenerator;
+		return error;
+		}
+
+	//	Now loop over all entries
+
+	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+		{
+		CXMLElement *pEntryXML = pDesc->GetContentElement(i);
+
+		//	Load the generator for this entry.
+
+		TUniquePtr<IElementGenerator> pNewEntry;
+		if (error = IElementGenerator::CreateFromXML(Ctx, pEntryXML, pNewEntry))
+			{
+			delete pGenerator;
+			return error;
+			}
+		
+		//	If we have a distance attribute, then use that as a distance match
+
+		CString sValue;
+		if (pEntryXML->FindAttribute(DISTANCE_ATTRIB, &sValue))
+			{
+			//	Add a new entry to the table
+
+			SEntry *pTableEntry = pGenerator->m_Table.Insert();
+			if (!pTableEntry->DistanceMatch.InitFromString(sValue, MAX_DISTANCE_VALUE, &Ctx.sError))
+				{
+				delete pGenerator;
+				return ERR_FAIL;
+				}
+
+			pTableEntry->Item.TakeHandoff(pNewEntry);
+			}
+
+		//	If this entry has no distance attribute, then it is the default entry
+
+		else
+			{
+			pGenerator->m_DefaultItem.TakeHandoff(pNewEntry);
+			}
+		}
+
+	//	Done
+
+	retGenerator.Set(pGenerator);
+	return NOERROR;
+	}
+
+int CElementNodeDistanceTable::GetDistanceToOrigin (const CTopology &Topology, const CTopologyNode *pNode) const
+
+//	GetDistanceToOrigin
+//
+//	Returns the closes distance between the given node and one of the nodes in
+//	the origin list.
+
+	{
+	int i;
+
+	int iBestDist = -1;
+	for (i = 0; i < m_OriginList.GetCount(); i++)
+		{
+		int iDist = Topology.GetDistance(pNode, m_OriginList[i]);
+		if (iDist == -1)
+			continue;
+
+		if (iBestDist == -1 || iDist < iBestDist)
+			{
+			iBestDist = iDist;
+			}
+		}
+
+	return iBestDist;
+	}
+
+void CElementNodeDistanceTable::InitOriginList (SCtx &Ctx) const
+
+//	InitOriginList
+//
+//	Initializes the list of origins
+
+	{
+	int i;
+
+	if (Ctx.pTopology == NULL)
+		return;
+
+	for (i = 0; i < Ctx.pTopology->GetTopologyNodeCount(); i++)
+		{
+		CTopologyNode *pNode = Ctx.pTopology->GetTopologyNode(i);
+		if (pNode->IsEndGame())
+			continue;
+
+		if (pNode->MatchesAttributeCriteria(m_OriginCriteria))
+			m_OriginList.Insert(pNode);
+		}
+	}
+
+void CElementNodeDistanceTable::Generate (SCtx &Ctx, TArray<SResult> &retResults) const
+
+//	Generate
+//
+//	Generates the entries
+
+	{
+	int i;
+
+	//	Must have a topology and a node in the context
+
+	if (Ctx.pTopology == NULL || Ctx.pNode == NULL)
+		return;
+
+	//	If we have not yet got our list of origin nodes, then do it now.
+
+	if (m_OriginList.GetCount() == 0)
+		InitOriginList(Ctx);
+
+	//	If the origin list is empty, then we default
+
+	if (m_OriginList.GetCount() == 0)
+		{
+		if (m_DefaultItem)
+			m_DefaultItem->Generate(Ctx, retResults);
+		return;
+		}
+
+	//	Get the distance of this node to the origin node. If we can't get there
+	//	from here, then we default.
+
+	int iDistance = GetDistanceToOrigin(*Ctx.pTopology, Ctx.pNode);
+	if (iDistance == -1)
+		{
+		if (m_DefaultItem)
+			m_DefaultItem->Generate(Ctx, retResults);
+		return;
+		}
+
+	//	Loop over all entries and make a list of the ones that match
+
+	TArray<const SEntry *> Matches;
+	for (i = 0; i < m_Table.GetCount(); i++)
+		{
+		const SEntry &Entry = m_Table[i];
+
+		if (Entry.DistanceMatch.IsSet((DWORD)iDistance))
+			Matches.Insert(&Entry);
+		}
+
+	//	If we have no matches, then use the default.
+
+	if (Matches.GetCount() == 0)
+		{
+		if (m_DefaultItem)
+			m_DefaultItem->Generate(Ctx, retResults);
+		return;
+		}
+
+	//	Pick a random entry and generate that.
+
+	int iIndex = mathRandom(0, Matches.GetCount() - 1);
+	Matches[iIndex]->Item->Generate(Ctx, retResults);
 	}
 
 //	CElementNull ---------------------------------------------------------------

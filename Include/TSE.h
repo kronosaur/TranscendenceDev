@@ -410,6 +410,7 @@ class CTopology
 		void DeleteAll (void);
 		bool FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode = NULL) const;
 		CTopologyNode *FindTopologyNode (const CString &sID) const;
+		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pDest) const;
 		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
 		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		inline CTopologyNode *GetTopologyNode (int iIndex) const { return m_Topology.GetAt(iIndex); }
@@ -434,16 +435,17 @@ class CTopology
 		ALERROR AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTopologyNode **retpNewNode);
 		ALERROR AddRandomParsePosition (STopologyCreateCtx *pCtx, const CString &sValue, CTopologyNode **iopExit, int *retx, int *rety);
 		ALERROR AddRandomRegion (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CXMLElement *pRegionDef, CTopologyNode *&pExitNode, CIntGraph &Graph, TArray<CTopologyNode *> &Nodes);
+		ALERROR ApplyNodeTemplate (STopologyCreateCtx &Ctx, const TArray<CTopologyNode *> &Nodes, CXMLElement *pNodeTemplate, bool bUnmarkedOnly = false);
+		ALERROR ApplyRandomNodeParams (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, const TArray<CTopologyNode *> &Nodes);
 
 		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
 		ALERROR AddTopologyNode (const CString &sID, CTopologyNode *pNode);
-		ALERROR ApplyNodeTemplate (STopologyCreateCtx &Ctx, const TArray<CTopologyNode *> &Nodes, CXMLElement *pNodeTemplate, bool bUnmarkedOnly = false);
 		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
 		CString ExpandNodeID (STopologyCreateCtx &Ctx, const CString &sID);
 		ALERROR FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType = NULL);
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
 		void GetAbsoluteDisplayPos (STopologyCreateCtx &Ctx, int x, int y, int *retx, int *rety, int *retiRotation);
-		int GetDistance (CTopologyNode *pSource, const CString &sDestID, int iBestDist = -1) const;
+		int GetDistance (const CTopologyNode *pSource, int iBestDist = -1) const;
 		void GetFragmentDisplayPos (STopologyCreateCtx &Ctx, CTopologyNode *pNode, int *retx, int *rety);
 		void GetFragmentEntranceDisplayPos (STopologyCreateCtx &Ctx, int *retx, int *rety) const;
 		ALERROR GetOrAddTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, CTopologyNode *pPrevNode, CXMLElement *pGateDesc, CTopologyNode **retpNode);

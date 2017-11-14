@@ -559,6 +559,13 @@ ALERROR CTopology::AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTo
 			::kernelDebugLogPattern("Error creating a stargate in <Random> generation.");
 		}
 
+	//	Apply node parameters either from the set nodes or from the template.
+	//	We need to do this AFTER we create the stargates because the property of
+	//	the nodes sometimes depends on their connections.
+
+	if (error = ApplyRandomNodeParams(Ctx, pDesc, Nodes))
+		return error;
+
 	//	See if we have an effect (and if so, add it)
 
 	CEffectCreator *pEffect = pDesc->GetMapEffect();
@@ -646,7 +653,7 @@ ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx,
 
 	{
 	ALERROR error;
-	int i, j;
+	int i;
 
 	//	Figure out how many nodes to create
 
@@ -738,102 +745,6 @@ ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx,
 		//	Keep track of the node globally
 
 		Nodes.Insert(pNode);
-
-		//	Unmark the node to indicate that we need to set its system and attributes
-
-		pNode->SetMarked(false);
-		}
-
-	//	Loop over all set nodes and initialize them appropriately
-
-	for (i = 0; i < pDesc->GetTopologyDescCount(); i++)
-		{
-		CTopologyDesc *pSetNode = pDesc->GetTopologyDesc(i);
-
-		if (pSetNode->GetType() != ndNode)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("%s: Set nodes must be <Node> type."), pDesc->GetID());
-			return ERR_FAIL;
-			}
-
-		//	Figure out the position of the set node (which are in fragment-relative coordinates)
-
-		int x, y;
-		pSetNode->GetPos(&x, &y);
-
-		//	Now look for the nearest unmarked node to those coordinates
-
-		int iBestDist2;
-		CTopologyNode *pBestNode = NULL;
-		for (j = 0; j < Nodes.GetCount(); j++)
-			{
-			CTopologyNode *pNode = Nodes[i];
-
-			if (!pNode->IsMarked())
-				{
-				int xNode, yNode;
-				GetFragmentDisplayPos(Ctx, pNode, &xNode, &yNode);
-
-				int xDiff = (xNode - x);
-				int yDiff = (yNode - y);
-				int iDist2 = (xDiff * xDiff) + (yDiff * yDiff);
-
-				if (pBestNode == NULL || iDist2 < iBestDist2)
-					{
-					pBestNode = pNode;
-					iBestDist2 = iDist2;
-					}
-				}
-			}
-
-		//	If we found it, apply attributes, system, and effect
-
-		if (pBestNode)
-			{
-			//	Attributes
-
-			pBestNode->AddAttributes(pSetNode->GetAttributes());
-			
-			//	System
-
-			CXMLElement *pSystemXML = pSetNode->GetSystem();
-			if (pSystemXML)
-				{
-				if (error = pBestNode->InitFromSystemXML(*this, pSystemXML, &Ctx.sError))
-					return error;
-				}
-
-			//	Effect
-
-			CEffectCreator *pEffect = pSetNode->GetMapEffect();
-			if (pEffect)
-				{
-				int xMap, yMap;
-
-				pBestNode->GetDisplayPos(&xMap, &yMap);
-				int iRotation = (Ctx.bInFragment ? Ctx.iRotation : 0);
-
-				Ctx.pMap->AddAnnotation(pBestNode->GetID(), pEffect, xMap, yMap, iRotation);
-				}
-
-			//	Mark it, so we don't process it later
-
-			pBestNode->SetMarked();
-			}
-
-		//	If we found no best node, then we exit, since we have run out of nodes
-
-		else
-			break;
-		}
-
-	//	Now loop over all unmarked nodes and take attributes from the node template
-
-	CXMLElement *pNodeTemplate = pRegionDef->GetContentElementByTag(NODE_TEMPLATE_TAG);
-	if (pNodeTemplate)
-		{
-		if (error = ApplyNodeTemplate(Ctx, Nodes, pNodeTemplate, true))
-			return error;
 		}
 
 	//	Add the region graph to the overall graph
@@ -1292,6 +1203,7 @@ ALERROR CTopology::ApplyNodeTemplate (STopologyCreateCtx &Ctx, const TArray<CTop
 			{
 			IElementGenerator::SCtx GenCtx;
 			GenCtx.pTopology = this;
+			GenCtx.pNode = pNode;
 
 			TArray<IElementGenerator::SResult> Result;
 			pGenerator->Generate(GenCtx, Result);
@@ -1305,6 +1217,118 @@ ALERROR CTopology::ApplyNodeTemplate (STopologyCreateCtx &Ctx, const TArray<CTop
 		}
 
 	//	Done
+
+	return NOERROR;
+	}
+
+ALERROR CTopology::ApplyRandomNodeParams (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, const TArray<CTopologyNode *> &Nodes)
+
+//	ApplyRandomNodeParams
+//
+//	Applies parameters to random nodes
+
+	{
+	ALERROR error;
+	int i, j;
+
+	//	Start by marking all nodes and unmarked (we do this so we can tell which 
+	//	nodes we've initialized).
+
+	for (i = 0; i < Nodes.GetCount(); i++)
+		Nodes[i]->SetMarked(false);
+
+	//	Loop over all set nodes and initialize them appropriately
+
+	for (i = 0; i < pDesc->GetTopologyDescCount(); i++)
+		{
+		CTopologyDesc *pSetNode = pDesc->GetTopologyDesc(i);
+
+		if (pSetNode->GetType() != ndNode)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("%s: Set nodes must be <Node> type."), pDesc->GetID());
+			return ERR_FAIL;
+			}
+
+		//	Figure out the position of the set node (which are in fragment-relative coordinates)
+
+		int x, y;
+		pSetNode->GetPos(&x, &y);
+
+		//	Now look for the nearest unmarked node to those coordinates
+
+		int iBestDist2;
+		CTopologyNode *pBestNode = NULL;
+		for (j = 0; j < Nodes.GetCount(); j++)
+			{
+			CTopologyNode *pNode = Nodes[i];
+
+			if (!pNode->IsMarked())
+				{
+				int xNode, yNode;
+				GetFragmentDisplayPos(Ctx, pNode, &xNode, &yNode);
+
+				int xDiff = (xNode - x);
+				int yDiff = (yNode - y);
+				int iDist2 = (xDiff * xDiff) + (yDiff * yDiff);
+
+				if (pBestNode == NULL || iDist2 < iBestDist2)
+					{
+					pBestNode = pNode;
+					iBestDist2 = iDist2;
+					}
+				}
+			}
+
+		//	If we found it, apply attributes, system, and effect
+
+		if (pBestNode)
+			{
+			//	Attributes
+
+			pBestNode->AddAttributes(pSetNode->GetAttributes());
+			
+			//	System
+
+			CXMLElement *pSystemXML = pSetNode->GetSystem();
+			if (pSystemXML)
+				{
+				if (error = pBestNode->InitFromSystemXML(*this, pSystemXML, &Ctx.sError))
+					return error;
+				}
+
+			//	Effect
+
+			CEffectCreator *pEffect = pSetNode->GetMapEffect();
+			if (pEffect)
+				{
+				int xMap, yMap;
+
+				pBestNode->GetDisplayPos(&xMap, &yMap);
+				int iRotation = (Ctx.bInFragment ? Ctx.iRotation : 0);
+
+				Ctx.pMap->AddAnnotation(pBestNode->GetID(), pEffect, xMap, yMap, iRotation);
+				}
+
+			//	Mark it, so we don't process it later
+
+			pBestNode->SetMarked();
+			}
+
+		//	If we found no best node, then we exit, since we have run out of nodes
+
+		else
+			break;
+		}
+
+	//	Now loop over all unmarked nodes and take attributes from the node template
+
+	CXMLElement *pXML = pDesc->GetDesc();
+	CXMLElement *pNodeTemplate = pXML->GetContentElementByTag(NODE_TEMPLATE_TAG);
+	if (pNodeTemplate)
+		{
+		if (error = ApplyNodeTemplate(Ctx, Nodes, pNodeTemplate, true))
+			return error;
+		}
 
 	return NOERROR;
 	}
@@ -1488,19 +1512,14 @@ bool CTopology::FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNo
 	{
 	int i;
 
-	int xTarget, yTarget;
-	CSystemMap *pTargetMap = pNode->GetDisplayPos(&xTarget, &yTarget);
-
 	CTopologyNode *pBestNode = NULL;
 	Metric rBestDist2 = 0.0;
 	for (i = 0; i < GetTopologyNodeCount(); i++)
 		{
 		CTopologyNode *pTestNode = GetTopologyNode(i);
-		int xNode, yNode;
-		CSystemMap *pMap = pTestNode->GetDisplayPos(&xNode, &yNode);
 
-		if (pMap == pTargetMap
-				&& strEquals(pTestNode->GetCreatorID(), sID))
+		if (strEquals(pTestNode->GetCreatorID(), sID)
+				&& pNode->GetDisplayPos() == pTestNode->GetDisplayPos())
 			{
 			//	If we don't care about the specific node, we're done.
 
@@ -1509,9 +1528,7 @@ bool CTopology::FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNo
 
 			//	Otherwise, see if this node is closer than the previous one.
 
-			int xDist = (xNode - xTarget);
-			int yDist = (yNode - yTarget);
-			Metric rDist2 = (xDist * xDist) + (yDist * yDist);
+			Metric rDist2 = pNode->GetLinearDistanceTo2(pTestNode);
 			if (pBestNode == NULL || rDist2 < rBestDist2)
 				{
 				pBestNode = pTestNode;
@@ -1586,7 +1603,7 @@ void CTopology::GetAbsoluteDisplayPos (STopologyCreateCtx &Ctx, int x, int y, in
 		}
 	}
 
-int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID) const
+int CTopology::GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pDest) const
 
 //	GetDistance
 //
@@ -1604,14 +1621,40 @@ int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID) co
 	//
 	//	We also initialize the calculated distance to UNKNOWN_DISTANCE
 
-	bool *pOldMarks = new bool [GetTopologyNodeCount()];
+	CLargeSet OldMarks;
 	for (i = 0; i < GetTopologyNodeCount(); i++)
 		{
-		pOldMarks[i] = GetTopologyNode(i)->IsMarked();
+		if (GetTopologyNode(i)->IsMarked())
+			OldMarks.Set(i);
+
 		GetTopologyNode(i)->SetMarked(false);
 		GetTopologyNode(i)->SetCalcDistance(UNKNOWN_DISTANCE);
 		}
 
+	pDest->SetCalcDistance(0);
+
+	//	Loop over all gates and recurse
+
+	int iBestDist = GetDistance(pSrc, INFINITE_DISTANCE);
+
+	//	Restore
+
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		GetTopologyNode(i)->SetMarked(OldMarks.IsSet(i));
+
+	//	Done
+
+	return (iBestDist != INFINITE_DISTANCE ? iBestDist : -1);
+	}
+
+int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID) const
+
+//	GetDistance
+//
+//	Returns the shortest distance between the two nodes. If there is no path between
+//	the two nodes, we return -1.
+
+	{
 	//	Find the source node in the list
 
 	CTopologyNode *pSource = FindTopologyNode(sSourceID);
@@ -1624,24 +1667,10 @@ int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID) co
 	if (pDest == NULL)
 		return -1;
 
-	pDest->SetCalcDistance(0);
-
-	//	Loop over all gates and recurse
-
-	int iBestDist = GetDistance(pSource, sDestID, INFINITE_DISTANCE);
-
-	//	Restore
-
-	for (i = 0; i < GetTopologyNodeCount(); i++)
-		GetTopologyNode(i)->SetMarked(pOldMarks[i]);
-	delete pOldMarks;
-
-	//	Done
-
-	return (iBestDist != INFINITE_DISTANCE ? iBestDist : -1);
+	return GetDistance(pSource, pDest);
 	}
 
-int CTopology::GetDistance (CTopologyNode *pSource, const CString &sDestID, int iBestDist) const
+int CTopology::GetDistance (const CTopologyNode *pSource, int iBestDist) const
 
 //	GetDistance
 //
@@ -1687,7 +1716,7 @@ int CTopology::GetDistance (CTopologyNode *pSource, const CString &sDestID, int 
 
 		if (!pDest->IsMarked())
 			{
-			int iDist = GetDistance(pDest, sDestID, iNewBestDist - 1);
+			int iDist = GetDistance(pDest, iNewBestDist - 1);
 			if (iDist < iNewBestDist)
 				{
 				iNewBestDist = iDist;

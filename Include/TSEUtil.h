@@ -13,6 +13,7 @@ class CExtension;
 class CLocationDef;
 class COrbit;
 class CTopology;
+class CTopologyNode;
 struct CItemCriteria;
 struct SDesignLoadCtx;
 struct SDamageCtx;
@@ -812,6 +813,7 @@ class IElementGenerator
 		struct SCtx
 			{
 			const CTopology *pTopology = NULL;
+			const CTopologyNode *pNode = NULL;
 			};
 
 		struct SResult

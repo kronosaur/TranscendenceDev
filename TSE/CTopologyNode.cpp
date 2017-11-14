@@ -550,6 +550,40 @@ DWORD CTopologyNode::GetLastVisitedTime (void) const
     return (pStats ? pStats->GetSystemLastVisitedTime(GetID()) : 0xffffffff);
     }
 
+Metric CTopologyNode::GetLinearDistanceTo (const CTopologyNode *pNode) const
+
+//	GetLinearDistanceTo
+//
+//	Returns the distance to the given node (or -1 if the node is in a different map).
+
+	{
+	Metric rDist2 = GetLinearDistanceTo2(pNode);
+	if (rDist2 < 0.0)
+		return -1.0;
+
+	return sqrt(rDist2);
+	}
+
+Metric CTopologyNode::GetLinearDistanceTo2 (const CTopologyNode *pNode) const
+
+//	GetLinearDistanceTo2
+//
+//	Returns the distance to the given node (or -1 if the node is in a different map).
+
+	{
+	int xSrc, ySrc;
+	CSystemMap *pSrcMap = GetDisplayPos(&xSrc, &ySrc);
+
+	int xDest, yDest;
+	CSystemMap *pDestMap = pNode->GetDisplayPos(&xDest, &yDest);
+	if (pSrcMap != pDestMap)
+		return -1.0;
+
+	Metric xDiff = (xSrc - xDest);
+	Metric yDiff = (ySrc - yDest);
+	return ((xDiff * xDiff) + (yDiff * yDiff));
+	}
+
 ICCItem *CTopologyNode::GetProperty (const CString &sName)
 
 //	GetProperty
@@ -597,7 +631,7 @@ CString CTopologyNode::GetStargate (int iIndex)
 	return m_NamedGates.GetKey(iIndex);
 	}
 
-CTopologyNode *CTopologyNode::GetStargateDest (int iIndex, CString *retsEntryPoint)
+CTopologyNode *CTopologyNode::GetStargateDest (int iIndex, CString *retsEntryPoint) const
 
 //	GetStargateDest
 //
@@ -743,6 +777,7 @@ ALERROR CTopologyNode::InitFromSystemXML (CTopology &Topology, CXMLElement *pSys
 
 		IElementGenerator::SCtx GenCtx;
 		GenCtx.pTopology = &Topology;
+		GenCtx.pNode = this;
 
 		TArray<CXMLElement *> System;
 		CString sError;
