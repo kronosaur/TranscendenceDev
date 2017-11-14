@@ -1304,7 +1304,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Load names
 
-	if (error = m_Name.InitFromXML(Ctx, pDesc))
+	if (error = m_Name.InitFromXMLRoot(Ctx, pDesc))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Placement

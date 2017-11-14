@@ -23,9 +23,40 @@ ALERROR CNameDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitFromXML
 //
-//	Initializes the name descriptor
+//	Initializes the name descriptor.
 
 	{
+	m_dwNameFlags = CLanguage::LoadNameFlags(pDesc);
+
+	//	Parse the list into separate names.
+
+	CString sNameList = pDesc->GetContentText(0);
+	strDelimitEx(sNameList, ';', DELIMIT_TRIM_WHITESPACE, 0, &m_Names);
+
+	//	If we don't have a constant name, use the first name in the list as
+	//	constant/generic name.
+
+	if (m_sConstantName.IsBlank() && m_Names.GetCount() > 0)
+		{
+		m_sConstantName = m_Names[0];
+		m_dwConstantNameFlags = m_dwNameFlags;
+		}
+
+	//	Randomize order.
+
+	Reinit();
+	return NOERROR;
+	}
+
+ALERROR CNameDesc::InitFromXMLRoot (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+//	InitFromXMLRoot
+//
+//	Initializes the name descriptor from a parent element of <Names>.
+
+	{
+	ALERROR error;
+
 	//	Get the constant name
 
 	m_sConstantName = pDesc->GetAttribute(FIELD_NAME);
@@ -36,26 +67,10 @@ ALERROR CNameDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pNames = pDesc->GetContentElementByTag(TAG_NAMES);
 	if (pNames)
 		{
-		m_dwNameFlags = CLanguage::LoadNameFlags(pNames);
-
-		//	Parse the list into separate names.
-
-		CString sNameList = pNames->GetContentText(0);
-		strDelimitEx(sNameList, ';', DELIMIT_TRIM_WHITESPACE, 0, &m_Names);
-
-		//	If we don't have a constant name, use the first name in the list as
-		//	constant/generic name.
-
-		if (m_sConstantName.IsBlank() && m_Names.GetCount() > 0)
-			{
-			m_sConstantName = m_Names[0];
-			m_dwConstantNameFlags = m_dwNameFlags;
-			}
+		if (error = InitFromXML(Ctx, pNames))
+			return error;
 		}
 
-	//	Randomize order.
-
-	Reinit();
 	return NOERROR;
 	}
 

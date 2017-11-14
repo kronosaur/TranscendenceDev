@@ -139,6 +139,7 @@ class CNameDesc
 		CNameDesc (void);
 
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromXMLRoot (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 //		CString GenerateName (CSystem *pSystem, DWORD *retdwNameFlags) const;
 		CString GenerateName (TSortMap<CString, CString> *pParams, DWORD *retdwNameFlags) const;
 		inline const CString &GetConstantName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwConstantNameFlags; return m_sConstantName; }

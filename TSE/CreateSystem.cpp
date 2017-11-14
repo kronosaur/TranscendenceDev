@@ -3500,7 +3500,7 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 	//	Set the name of the station, if specified by the system
 
 	CNameDesc Name;
-	if (error = Name.InitFromXML(SDesignLoadCtx(), pDesc))
+	if (error = Name.InitFromXMLRoot(SDesignLoadCtx(), pDesc))
 		return error;
 
 	if (!Name.IsEmpty())
