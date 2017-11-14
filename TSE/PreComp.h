@@ -20,4 +20,5 @@
 
 //	Topology
 
+#include "TopologyDescImpl.h"
 #include "TopologyProcessorsImpl.h"

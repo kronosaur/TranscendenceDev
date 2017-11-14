@@ -119,128 +119,6 @@ ALERROR CTopology::AddFragment (STopologyCreateCtx &Ctx, CTopologyDesc *pFragmen
 	return NOERROR;
 	}
 
-ALERROR CTopology::AddNetwork (STopologyCreateCtx &Ctx, CTopologyDesc *pNetwork, CTopologyNode **retpNewNode)
-
-//	AddNetwork
-//
-//	Adds a node network
-
-	{
-	ALERROR error;
-	int i;
-
-	CXMLElement *pNetworkXML = pNetwork->GetDesc();
-
-	//	Initialize to NULL (in case we exit early with no nodes).
-
-	if (retpNewNode)
-		*retpNewNode = NULL;
-
-	//	Generate a unique prefix for the nodes in this network
-
-	CString sPrefix = pNetworkXML->GetAttribute(ID_ATTRIB);
-	if (!sPrefix.IsBlank() && pNetwork->GetTopologyDescCount() > 0)
-		{
-		CString sPartialID = pNetwork->GetTopologyDesc(0)->GetID();
-		CString sOriginalPrefix = sPrefix;
-		int iNumber = 2;
-		while (FindTopologyNode(strPatternSubst(CONSTLIT("%s%s"), sPrefix, sPartialID)))
-			{
-			sPrefix = strPatternSubst(CONSTLIT("%s%d"), sOriginalPrefix, iNumber++);
-			}
-		}
-
-	//	Prepare context
-
-	STopologyCreateCtx NewCtx;
-	NewCtx = Ctx;
-	//	Ideally, the fragment property would be set by the caller, but until
-	//	then we assume that all <Network> elements are fragments
-	NewCtx.bInFragment = true;
-	NewCtx.pFragmentTable = NULL;
-	NewCtx.sFragmentPrefix = sPrefix;
-
-	//	Add all the nodes in the network
-
-	for (i = 0; i < pNetwork->GetTopologyDescCount(); i++)
-		{
-		CTopologyDesc *pNodeDesc = pNetwork->GetTopologyDesc(i);
-
-		//	If this is a relative node, of if the node doesn't exist,
-		//	then we need to create it.
-
-		CTopologyNode *pNewNode;
-		if (!pNodeDesc->IsAbsoluteNode()
-				|| (pNewNode = FindTopologyNode(pNodeDesc->GetID())) == NULL)
-			{
-			if (error = AddTopologyDesc(NewCtx, pNodeDesc, &pNewNode))
-				{
-				Ctx.sError = NewCtx.sError;
-				return error;
-				}
-			}
-
-		//	We return the first node
-
-		if (i == 0 && retpNewNode)
-			*retpNewNode = pNewNode;
-		}
-
-	//	Now create the stargate connections
-
-	CXMLElement *pStargateList = pNetworkXML->GetContentElementByTag(STARGATES_TAG);
-	if (pStargateList == 0 || pStargateList->GetContentElementCount() == 0)
-		return NOERROR;
-
-	//	Always treat it as a group
-
-	IElementGenerator::SCtx GenCtx;
-	GenCtx.pTopology = this;
-
-	TArray<CXMLElement *> Stargates;
-	CString sError;
-	if (!IElementGenerator::GenerateAsGroup(GenCtx, pStargateList, Stargates, &sError))
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("Topology %s: Unable to generate random stargate table: %s"), pNetworkXML->GetAttribute(ID_ATTRIB), sError);
-		return ERR_FAIL;
-		}
-
-	for (i = 0; i < Stargates.GetCount(); i++)
-		{
-		CXMLElement *pGate = Stargates[i];
-
-		//	If this is a directive to set the return node, then process it
-
-		if (strEquals(pGate->GetTag(), ENTRANCE_NODE_TAG))
-			{
-			CString sNodeID = pGate->GetAttribute(NODE_ID_ATTRIB);
-			CTopologyNode *pEntranceNode = FindTopologyNode(ExpandNodeID(NewCtx, sNodeID));
-			if (pEntranceNode == NULL)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Topology %s: Unable to find entrance node: %s"), pNetworkXML->GetAttribute(ID_ATTRIB), sNodeID);
-				return ERR_FAIL;
-				}
-
-			if (retpNewNode)
-				*retpNewNode = pEntranceNode;
-			}
-
-		//	This will add the stargate and recurse into AddTopologyDesc
-		//	(if necessary).
-
-		else
-			{
-			if (error = AddStargate(NewCtx, NULL, false, pGate))
-				{
-				Ctx.sError = NewCtx.sError;
-				return error;
-				}
-			}
-		}
-
-	return NOERROR;
-	}
-
 ALERROR CTopology::AddNode (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopologyNode **retpNewNode)
 
 //	AddNode
@@ -270,7 +148,7 @@ ALERROR CTopology::AddNode (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopo
 	CreateCtx.bNoMap = !bHasPos;
 
 	CTopologyNode *pNewNode;
-	if (error = CreateTopologyNode(Ctx, ExpandNodeID(Ctx, sID), CreateCtx, &pNewNode))
+	if (error = CreateTopologyNode(Ctx, Ctx.ExpandNodeID(sID), CreateCtx, &pNewNode))
 		return error;
 
 	//	Loop over remaining elements to see if we have stargate elements
@@ -444,152 +322,6 @@ ALERROR CTopology::AddNodeTable (STopologyCreateCtx &Ctx, CTopologyDesc *pTable,
 	return NOERROR;
 	}
 
-ALERROR CTopology::AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTopologyNode **retpNewNode)
-
-//	AddRandom
-//
-//	Adds a random node network
-
-	{
-	ALERROR error;
-	int i, j;
-
-	//	If we're not in a fragment, see if we've already added some nodes for 
-	//	this descriptor. If so, then we return the nearest existing node to the
-	//	previous node.
-
-	if (!Ctx.bInFragment 
-			&& Ctx.pPrevNode
-			&& FindNearestNodeCreatedBy(pDesc->GetID(), Ctx.pPrevNode, retpNewNode))
-		return NOERROR;
-
-	//	Initialize
-
-	CXMLElement *pXML = pDesc->GetDesc();
-	if (retpNewNode)
-		*retpNewNode = NULL;
-
-	//	Create new nodes by region. We end up with the following:
-	//
-	//	Nodes: A single array of created topology nodes across all regions.
-	//	Graph: A single graph containing all nodes across all regions.
-	//	pExitNode: The topology node that we exit to (if we're a fragment and there is an exit)
-
-	TArray<CTopologyNode *> Nodes;
-	CIntGraph Graph;
-	CTopologyNode *pExitNode = NULL;
-
-	if (error = AddRandomRegion(Ctx, pDesc, pXML, pExitNode, Graph, Nodes))
-		return error;
-
-	//	Remember the list of nodes
-
-	int iNodeCount = Nodes.GetCount();
-	if (iNodeCount == 0)
-		{
-		if (retpNewNode)
-			*retpNewNode = NULL;
-		return NOERROR;
-		}
-
-	//	Get the node that is closest to the entrance node
-
-	int xEntrance, yEntrance;
-	GetFragmentEntranceDisplayPos(Ctx, &xEntrance, &yEntrance);
-
-	DWORD dwFirstNode;
-	Graph.FindNearestNode(xEntrance, yEntrance, &dwFirstNode);
-
-	//	Generate random connections between the nodes
-
-	Graph.GenerateRandomConnections(dwFirstNode, 1, 10);
-
-	//	Now connect the nodes based on the connections in the randomly
-	//	generated graph.
-
-	for (i = 0; i < iNodeCount; i++)
-		{
-		CTopologyNode *pFrom = Nodes[i];
-
-		TArray<int> To;
-		Graph.GetNodeForwardConnections(Graph.GetNodeID(i), &To);
-
-		for (j = 0; j < To.GetCount(); j++)
-			{
-			CTopologyNode *pTo = Nodes[Graph.GetNodeIndex(To[j])];
-#if 0
-			int iFromCount = pFrom->GetStargateCount();
-			int iToCount = pTo->GetStargateCount();
-#endif
-
-			//	Create both stargates with autogenerated names
-
-			CTopologyNode::SStargateRouteDesc RouteDesc;
-			RouteDesc.pFromNode = pFrom;
-			RouteDesc.pToNode = pTo;
-
-			if (error = CTopologyNode::CreateStargateRoute(RouteDesc))
-				::kernelDebugLogPattern("Error creating a stargate in <Random> generation.");
-			}
-		}
-
-	//	Connect to the exit node
-
-	if (pExitNode)
-		{
-		//	Get the position of the exit node
-
-		int xExit, yExit;
-		GetFragmentDisplayPos(Ctx, pExitNode, &xExit, &yExit);
-
-		//	Find the nearest node to the exit
-
-		DWORD dwLastNode;
-		Graph.FindNearestNode(xExit, yExit, &dwLastNode);
-
-		CTopologyNode *pLastNode = Nodes[Graph.GetNodeIndex(dwLastNode)];
-
-		//	Connect to the exit node (both directions, with autogenerated names)
-
-		CTopologyNode::SStargateRouteDesc RouteDesc;
-		RouteDesc.pFromNode = pLastNode;
-		RouteDesc.pToNode = pExitNode;
-
-		if (error = CTopologyNode::CreateStargateRoute(RouteDesc))
-			::kernelDebugLogPattern("Error creating a stargate in <Random> generation.");
-		}
-
-	//	Apply node parameters either from the set nodes or from the template.
-	//	We need to do this AFTER we create the stargates because the property of
-	//	the nodes sometimes depends on their connections.
-
-	if (error = ApplyRandomNodeParams(Ctx, pDesc, Nodes))
-		return error;
-
-	//	See if we have an effect (and if so, add it)
-
-	CEffectCreator *pEffect = pDesc->GetMapEffect();
-	if (pEffect)
-		{
-		int xPos;
-		int yPos;
-		int iRotation;
-		GetAbsoluteDisplayPos(Ctx, 0, 0, &xPos, &yPos, &iRotation);
-
-		Ctx.pMap->AddAnnotation(pEffect, xPos, yPos, iRotation);
-		}
-
-	//	Return the first node
-
-	if (retpNewNode)
-		*retpNewNode = Nodes[Graph.GetNodeIndex(dwFirstNode)];
-
-	//	Remember the nodes created in the descriptor (we need this in case we
-	//	refer to this descriptor again).
-
-	return NOERROR;
-	}
-
 ALERROR CTopology::AddRandomParsePosition (STopologyCreateCtx *pCtx, const CString &sValue, CTopologyNode **iopExit, int *retx, int *rety)
 
 //	AddRandomParsePosition
@@ -601,7 +333,7 @@ ALERROR CTopology::AddRandomParsePosition (STopologyCreateCtx *pCtx, const CStri
 
 	if (pCtx && strEquals(sValue, FRAGMENT_ENTRANCE_DEST))
 		{
-		GetFragmentEntranceDisplayPos(*pCtx, retx, rety);
+		pCtx->GetFragmentEntranceDisplayPos(retx, rety);
 		}
 	else if (pCtx && strEquals(sValue, FRAGMENT_EXIT_DEST))
 		{
@@ -623,7 +355,7 @@ ALERROR CTopology::AddRandomParsePosition (STopologyCreateCtx *pCtx, const CStri
 			//	Get the position
 
 			if (*iopExit)
-				GetFragmentDisplayPos(*pCtx, (*iopExit), retx, rety);
+				pCtx->GetFragmentDisplayPos((*iopExit), retx, rety);
 			else
 				{
 				*retx = 0;
@@ -636,120 +368,6 @@ ALERROR CTopology::AddRandomParsePosition (STopologyCreateCtx *pCtx, const CStri
 		if (error = CTopologyNode::ParsePosition(sValue, retx, rety))
 			return error;
 		}
-
-	return NOERROR;
-	}
-
-ALERROR CTopology::AddRandomRegion (STopologyCreateCtx &Ctx, 
-									CTopologyDesc *pDesc, 
-									CXMLElement *pRegionDef, 
-									CTopologyNode *&pExitNode, 
-									CIntGraph &Graph, 
-									TArray<CTopologyNode *> &Nodes)
-
-//	AddRandomRegion
-//
-//	Adds random nodes to a region in a <Random> definition
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Figure out how many nodes to create
-
-	DiceRange Count;
-	if (error = Count.LoadFromXML(pRegionDef->GetAttribute(COUNT_ATTRIB)))
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("%s: Invalid count attribute: %s"), pDesc->GetID(), pRegionDef->GetAttribute(COUNT_ATTRIB));
-		return error;
-		}
-
-	int iNodeCount = Count.Roll();
-	if (iNodeCount <= 0)
-		return NOERROR;
-
-	//	Get the minimum separation between nodes
-
-	int iMinNodeDist = pRegionDef->GetAttributeIntegerBounded(MIN_SEPARATION_ATTRIB, 1, -1, DEFAULT_MIN_SEPARATION);
-
-	//	Get the area definition
-
-	CXMLElement *pAreaDef = pRegionDef->GetContentElementByTag(AREA_TAG);
-	if (pAreaDef == NULL)
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("%s: Unable to find <Area> in <Random> element."), pDesc->GetID());
-		return ERR_FAIL;
-		}
-
-	//	Initialize the area
-
-	CComplexArea ValidArea;
-	if (error = InitComplexArea(pAreaDef, iMinNodeDist, &ValidArea, &Ctx, &pExitNode))
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("%s: %s"), pDesc->GetID(), Ctx.sError);
-		return error;
-		}
-
-	//	If we're debugging, then add the valid area as a highlight (so we can see it
-	//	on the map)
-
-	if (g_pUniverse->InDebugMode()
-			&& pAreaDef->GetAttributeBool(DEBUG_ATTRIB))
-		{
-		Ctx.pMap->AddAreaHighlight(ValidArea);
-		}
-
-	//	Initialize an array of random positions within the valid area
-
-	CIntGraph RegionGraph;
-	ValidArea.GeneratePointsInArea(iNodeCount, iMinNodeDist, &RegionGraph);
-	ASSERT(RegionGraph.GetNodeCount() == iNodeCount);
-
-	//	Generate a unique prefix for this fragment
-
-	CString sPrefix = GenerateUniquePrefix(pDesc->GetID(), CONSTLIT("+N0"));
-	int iStart = Nodes.GetCount();
-
-	//	Create the required number of nodes in the valid area
-
-	for (i = 0; i < iNodeCount; i++)
-		{
-		//	Generate a unique node ID
-
-		CString sNodeID = strPatternSubst(CONSTLIT("%s+N%d"), sPrefix, iStart + i);
-
-		//	Get the node position
-
-		int x, y;
-		RegionGraph.GetNodePos(RegionGraph.GetNodeID(i), &x, &y);
-
-		//	Add the node.
-		//
-		//	NOTE: We can use the same context because the caller sets whether this is 
-		//	fragment or not. Also, we don't need to set sFragmentPrefix because this
-		//	call does not need it (since we're creating everything manually).
-
-		SNodeCreateCtx CreateCtx;
-		CreateCtx.xPos = x;
-		CreateCtx.yPos = y;
-		CreateCtx.iInitialState = pDesc->GetInitialState();
-
-		CTopologyNode *pNode;
-		if (error = CreateTopologyNode(Ctx, sNodeID, CreateCtx, &pNode))
-			return error;
-
-		//	Mark this node as created by the given descriptor
-
-		pNode->SetCreatorID(pDesc->GetID());
-
-		//	Keep track of the node globally
-
-		Nodes.Insert(pNode);
-		}
-
-	//	Add the region graph to the overall graph
-
-	Graph.AddGraph(RegionGraph);
 
 	return NOERROR;
 	}
@@ -1057,7 +675,7 @@ ALERROR CTopology::AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNod
 	if (pNode->IsEndGameNode(&sEpitaph, &sReason))
 		{
 		CString sID = pNode->GetID();
-		CString sFullID = ExpandNodeID(Ctx, sID);
+		CString sFullID = Ctx.ExpandNodeID(sID);
 
 		//	Create a topology node and add it to the universe list
 
@@ -1097,12 +715,18 @@ ALERROR CTopology::AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNod
 	//	If this is a Network, then add it
 
 	else if (pNode->GetType() == ndNetwork)
-		return AddNetwork(Ctx, pNode, retpNewNode);
+		{
+		CNetworkTopologyCreator Creator(*pNode);
+		return Creator.Create(Ctx, *this, retpNewNode);
+		}
 
 	//	If this is a Random fragment, then add it
 
 	else if (pNode->GetType() == ndRandom)
-		return AddRandom(Ctx, pNode, retpNewNode);
+		{
+		CRandomTopologyCreator Creator(*pNode);
+		return Creator.Create(Ctx, *this, retpNewNode);
+		}
 
 	//	Otherwise, add a single node and any nodes that lead away from it
 
@@ -1143,196 +767,6 @@ ALERROR CTopology::AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNod
 	return GetOrAddTopologyNode(Ctx, sNodeID, NULL, NULL, retpNewNode);
 	}
 
-ALERROR CTopology::ApplyNodeTemplate (STopologyCreateCtx &Ctx, const TArray<CTopologyNode *> &Nodes, CXMLElement *pNodeTemplate, bool bUnmarkedOnly)
-
-//	ApplyNodeTemplate
-//
-//	Applies the settings in the node template to the given list of nodes.
-
-	{
-	ALERROR error;
-	int i, j;
-
-	CString sNodeAttribs = pNodeTemplate->GetAttribute(ATTRIBUTES_ATTRIB);
-
-	//	If we have a <System> element, we use it to initialize data
-
-	CXMLElement *pSystemXML = pNodeTemplate->GetContentElementByTag(SYSTEM_TAG);
-
-	//	If the <System> element has a child, then we assume it is a generator
-
-	TUniquePtr<IElementGenerator> pGenerator;
-	if (pSystemXML && pSystemXML->GetContentElementCount() > 0)
-		{
-		SDesignLoadCtx LoadCtx;
-
-		if (error = IElementGenerator::CreateFromXMLAsGroup(LoadCtx, pSystemXML, pGenerator))
-			{
-			Ctx.sError = LoadCtx.sError;
-			return error;
-			}
-		}
-
-	//	Loop over all nodes and apply
-
-	for (i = 0; i < Nodes.GetCount(); i++)
-		{
-		CTopologyNode *pNode = Nodes[i];
-
-		//	Skip marked nodes, if necessary
-
-		if (bUnmarkedOnly && pNode->IsMarked())
-			continue;
-
-		//	Apply attributes
-
-		pNode->AddAttributes(sNodeAttribs);
-
-		//	Apply root system (but ignore any sub-elements of pSystemXML, because we
-		//	will apply the separately with the generator).
-
-		if (pSystemXML)
-			{
-			if (error = pNode->InitFromSystemXML(*this, pSystemXML, &Ctx.sError, true))
-				return error;
-			}
-
-		//	Apply the generator
-
-		if (pGenerator)
-			{
-			IElementGenerator::SCtx GenCtx;
-			GenCtx.pTopology = this;
-			GenCtx.pNode = pNode;
-
-			TArray<IElementGenerator::SResult> Result;
-			pGenerator->Generate(GenCtx, Result);
-
-			for (j = 0; j < Result.GetCount(); j++)
-				{
-				if (error = pNode->InitFromSystemXML(*this, Result[j].pElement, &Ctx.sError))
-					return error;
-				}
-			}
-		}
-
-	//	Done
-
-	return NOERROR;
-	}
-
-ALERROR CTopology::ApplyRandomNodeParams (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, const TArray<CTopologyNode *> &Nodes)
-
-//	ApplyRandomNodeParams
-//
-//	Applies parameters to random nodes
-
-	{
-	ALERROR error;
-	int i, j;
-
-	//	Start by marking all nodes and unmarked (we do this so we can tell which 
-	//	nodes we've initialized).
-
-	for (i = 0; i < Nodes.GetCount(); i++)
-		Nodes[i]->SetMarked(false);
-
-	//	Loop over all set nodes and initialize them appropriately
-
-	for (i = 0; i < pDesc->GetTopologyDescCount(); i++)
-		{
-		CTopologyDesc *pSetNode = pDesc->GetTopologyDesc(i);
-
-		if (pSetNode->GetType() != ndNode)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("%s: Set nodes must be <Node> type."), pDesc->GetID());
-			return ERR_FAIL;
-			}
-
-		//	Figure out the position of the set node (which are in fragment-relative coordinates)
-
-		int x, y;
-		pSetNode->GetPos(&x, &y);
-
-		//	Now look for the nearest unmarked node to those coordinates
-
-		int iBestDist2;
-		CTopologyNode *pBestNode = NULL;
-		for (j = 0; j < Nodes.GetCount(); j++)
-			{
-			CTopologyNode *pNode = Nodes[i];
-
-			if (!pNode->IsMarked())
-				{
-				int xNode, yNode;
-				GetFragmentDisplayPos(Ctx, pNode, &xNode, &yNode);
-
-				int xDiff = (xNode - x);
-				int yDiff = (yNode - y);
-				int iDist2 = (xDiff * xDiff) + (yDiff * yDiff);
-
-				if (pBestNode == NULL || iDist2 < iBestDist2)
-					{
-					pBestNode = pNode;
-					iBestDist2 = iDist2;
-					}
-				}
-			}
-
-		//	If we found it, apply attributes, system, and effect
-
-		if (pBestNode)
-			{
-			//	Attributes
-
-			pBestNode->AddAttributes(pSetNode->GetAttributes());
-			
-			//	System
-
-			CXMLElement *pSystemXML = pSetNode->GetSystemDesc();
-			if (pSystemXML)
-				{
-				if (error = pBestNode->InitFromSystemXML(*this, pSystemXML, &Ctx.sError))
-					return error;
-				}
-
-			//	Effect
-
-			CEffectCreator *pEffect = pSetNode->GetMapEffect();
-			if (pEffect)
-				{
-				int xMap, yMap;
-
-				pBestNode->GetDisplayPos(&xMap, &yMap);
-				int iRotation = (Ctx.bInFragment ? Ctx.iRotation : 0);
-
-				Ctx.pMap->AddAnnotation(pBestNode->GetID(), pEffect, xMap, yMap, iRotation);
-				}
-
-			//	Mark it, so we don't process it later
-
-			pBestNode->SetMarked();
-			}
-
-		//	If we found no best node, then we exit, since we have run out of nodes
-
-		else
-			break;
-		}
-
-	//	Now loop over all unmarked nodes and take attributes from the node template
-
-	CXMLElement *pXML = pDesc->GetDesc();
-	CXMLElement *pNodeTemplate = pXML->GetContentElementByTag(NODE_TEMPLATE_TAG);
-	if (pNodeTemplate)
-		{
-		if (error = ApplyNodeTemplate(Ctx, Nodes, pNodeTemplate, true))
-			return error;
-		}
-
-	return NOERROR;
-	}
-
 ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode)
 
 //	CreateTopologyNode
@@ -1357,7 +791,7 @@ ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &s
 	int xPos;
 	int yPos;
 	int iRotation;
-	GetAbsoluteDisplayPos(Ctx, NodeCtx.xPos, NodeCtx.yPos, &xPos, &yPos, &iRotation);
+	Ctx.GetAbsoluteDisplayPos(NodeCtx.xPos, NodeCtx.yPos, &xPos, &yPos, &iRotation);
 	pNewNode->SetPos(xPos, yPos);
 
 	//	Add attributes for the node
@@ -1419,19 +853,6 @@ void CTopology::DeleteAll (void)
 
 	m_Topology.DeleteAll();
 	m_IDToNode.DeleteAll();
-	}
-
-CString CTopology::ExpandNodeID (STopologyCreateCtx &Ctx, const CString &sID)
-
-//	ExpandNodeID
-//
-//	Expands a Fragment-relative ID to a full ID
-
-	{
-	if (!Ctx.sFragmentPrefix.IsBlank() && *sID.GetASCIIZPointer() == '+')
-		return strPatternSubst(CONSTLIT("%s%s"), Ctx.sFragmentPrefix, sID);
-	else
-		return sID;
 	}
 
 CTopologyDesc *FindNodeInContext (STopologyCreateCtx &Ctx, const CString &sNodeID)
@@ -1573,34 +994,6 @@ CString CTopology::GenerateUniquePrefix (const CString &sPrefix, const CString &
 		sTestPrefix = strPatternSubst(CONSTLIT("%s%d"), sPrefix, iNumber++);
 
 	return sTestPrefix;
-	}
-
-void CTopology::GetAbsoluteDisplayPos (STopologyCreateCtx &Ctx, int x, int y, int *retx, int *rety, int *retiRotation)
-
-//	GetAbsoluteDisplayPos
-//
-//	Converts to absolute coordinates if we're in a fragment
-
-	{
-	if (Ctx.bInFragment)
-		{
-		*retiRotation = Ctx.iRotation;
-		if (*retiRotation != 0)
-			{
-			CVector vPos = CVector(x, y).Rotate(*retiRotation);
-			x = (int)(vPos.GetX() + 0.5);
-			y = (int)(vPos.GetY() + 0.5);
-			}
-
-		*retx = x + Ctx.xOffset;
-		*rety = y + Ctx.yOffset;
-		}
-	else
-		{
-		*retiRotation = 0;
-		*retx = x;
-		*rety = y;
-		}
 	}
 
 int CTopology::GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pDest) const
@@ -1774,7 +1167,7 @@ ALERROR CTopology::GetOrAddTopologyNode (STopologyCreateCtx &Ctx,
 	{
 	ALERROR error;
 
-	CString sFullID = ExpandNodeID(Ctx, sID);
+	CString sFullID = Ctx.ExpandNodeID(sID);
 
 	//	See if the node has already been created. If so, return it.
 
@@ -1846,70 +1239,6 @@ ALERROR CTopology::GetOrAddTopologyNode (STopologyCreateCtx &Ctx,
 		*retpNode = pNode;
 
 	return NOERROR;
-	}
-
-void CTopology::GetFragmentDisplayPos (STopologyCreateCtx &Ctx, CTopologyNode *pNode, int *retx, int *rety)
-
-//	GetFragmentDisplayPos
-//
-//	Returns the position of the given node in fragment coordinates
-
-	{
-	int x, y;
-	pNode->GetDisplayPos(&x, &y);
-
-	//	Convert to fragment coordinates
-
-	if (Ctx.bInFragment)
-		{
-		x -= Ctx.xOffset;
-		y -= Ctx.yOffset;
-
-		if (Ctx.iRotation != 0)
-			{
-			CVector vPos = CVector(x, y).Rotate(360 - Ctx.iRotation);
-			x = (int)(vPos.GetX() + 0.5);
-			y = (int)(vPos.GetY() + 0.5);
-			}
-		}
-
-	//	Done
-
-	*retx = x;
-	*rety = y;
-	}
-
-void CTopology::GetFragmentEntranceDisplayPos (STopologyCreateCtx &Ctx, int *retx, int *rety) const
-
-//	GetFragmentEntranceDisplayPos
-//
-//	Returns the position of the entrance to the fragment in the appropriate
-//	coordinate.
-
-	{
-	//	For a true fragment, which uses coordinates local to the fragment, the
-	//	entrance is always at 0,0.
-
-	if (Ctx.bInFragment)
-		{
-		*retx = 0;
-		*rety = 0;
-		}
-
-	//	Otherwise, we use the previous node coordinates
-
-	else if (Ctx.pPrevNode)
-		{
-		Ctx.pPrevNode->GetDisplayPos(retx, rety);
-		}
-
-	//	Otherwise, we don't know what to do, so we set to 0,0.
-
-	else
-		{
-		*retx = 0;
-		*rety = 0;
-		}
 	}
 
 ALERROR CTopology::InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx, CTopologyNode **iopExit)
@@ -2013,7 +1342,7 @@ ALERROR CTopology::InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComp
 		if (pCtx->bInFragment && *iopExit)
 			{
 			int xExit, yExit;
-			GetFragmentDisplayPos(*pCtx, *iopExit, &xExit, &yExit);
+			pCtx->GetFragmentDisplayPos(*iopExit, &xExit, &yExit);
 
 			retArea->ExcludeCircle(xExit, yExit, iMinRadius);
 			}

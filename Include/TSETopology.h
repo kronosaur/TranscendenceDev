@@ -260,8 +260,8 @@ class CTopologyDesc
 		inline CEffectCreator *GetMapEffect (void) const { return m_pMapEffect; }
 		bool GetPos (int *retx, int *rety);
 		CXMLElement *GetSystemDesc (void);
-		inline CTopologyDesc *GetTopologyDesc (int iIndex);
-		inline int GetTopologyDescCount (void);
+		inline CTopologyDesc *GetTopologyDesc (int iIndex) const;
+		inline int GetTopologyDescCount (void) const;
 		inline CTopologyDescTable *GetTopologyDescTable (void) { return m_pDescList; }
 		inline ENodeDescTypes GetType (void) const { return m_iType; }
 		inline bool IsAbsoluteNode (void) const { return (*m_sID.GetASCIIZPointer() != '+'); }
@@ -324,11 +324,16 @@ class CTopologyDescTable
 		CString m_sFirstNode;						//	Node where player starts (if not specified elsewhere)
 	};
 
-inline CTopologyDesc *CTopologyDesc::GetTopologyDesc (int iIndex) { return (m_pDescList ? m_pDescList->GetTopologyDesc(iIndex) : NULL); }
-inline int CTopologyDesc::GetTopologyDescCount (void) { return (m_pDescList ? m_pDescList->GetTopologyDescCount() : 0); }
+inline CTopologyDesc *CTopologyDesc::GetTopologyDesc (int iIndex) const { return (m_pDescList ? m_pDescList->GetTopologyDesc(iIndex) : NULL); }
+inline int CTopologyDesc::GetTopologyDescCount (void) const { return (m_pDescList ? m_pDescList->GetTopologyDescCount() : 0); }
 
 struct STopologyCreateCtx
 	{
+	CString ExpandNodeID (const CString &sID) const;
+	void GetAbsoluteDisplayPos (int x, int y, int *retx, int *rety, int *retiRotation) const;
+	void GetFragmentDisplayPos (CTopologyNode *pNode, int *retx, int *rety) const;
+	void GetFragmentEntranceDisplayPos (int *retx, int *rety) const;
+
 	CSystemMap *pMap = NULL;						//	Map that we're currently processing
 	TArray<CTopologyDescTable *> Tables;			//	List of tables to look up
 	CTopologyDescTable *pFragmentTable = NULL;
@@ -377,13 +382,16 @@ class CTopology
 		CTopology (void);
 		~CTopology (void);
 
+		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
 		ALERROR AddStargateFromXML (STopologyCreateCtx &Ctx, CXMLElement *pDesc, CTopologyNode *pNode = NULL, bool bRootNode = false);
 		ALERROR AddTopology (STopologyCreateCtx &Ctx);
 		ALERROR AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopologyNode **retpNewNode = NULL);
 		ALERROR AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyNode **retpNewNode = NULL);
+		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
 		void DeleteAll (void);
 		bool FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode = NULL) const;
 		CTopologyNode *FindTopologyNode (const CString &sID) const;
+		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
 		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pDest) const;
 		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
 		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
@@ -401,27 +409,15 @@ class CTopology
 			};
 
 		ALERROR AddFragment (STopologyCreateCtx &Ctx, CTopologyDesc *pFragment, CTopologyNode **retpNewNode);
-		ALERROR AddNetwork (STopologyCreateCtx &Ctx, CTopologyDesc *pNetwork, CTopologyNode **retpNewNode);
 		ALERROR AddNode (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopologyNode **retpNewNode);
 		ALERROR AddNodeGroup (STopologyCreateCtx &Ctx, CTopologyDesc *pTable, CTopologyNode **retpNewNode);
 		ALERROR AddNodeTable (STopologyCreateCtx &Ctx, CTopologyDesc *pTable, CTopologyNode **retpNewNode);
 
-		ALERROR AddRandom (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CTopologyNode **retpNewNode);
 		ALERROR AddRandomParsePosition (STopologyCreateCtx *pCtx, const CString &sValue, CTopologyNode **iopExit, int *retx, int *rety);
-		ALERROR AddRandomRegion (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, CXMLElement *pRegionDef, CTopologyNode *&pExitNode, CIntGraph &Graph, TArray<CTopologyNode *> &Nodes);
-		ALERROR ApplyNodeTemplate (STopologyCreateCtx &Ctx, const TArray<CTopologyNode *> &Nodes, CXMLElement *pNodeTemplate, bool bUnmarkedOnly = false);
-		ALERROR ApplyRandomNodeParams (STopologyCreateCtx &Ctx, CTopologyDesc *pDesc, const TArray<CTopologyNode *> &Nodes);
 
-		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
 		ALERROR AddTopologyNode (const CString &sID, CTopologyNode *pNode);
-		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
-		CString ExpandNodeID (STopologyCreateCtx &Ctx, const CString &sID);
 		ALERROR FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType = NULL);
-		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
-		void GetAbsoluteDisplayPos (STopologyCreateCtx &Ctx, int x, int y, int *retx, int *rety, int *retiRotation);
 		int GetDistance (const CTopologyNode *pSource, int iBestDist = -1) const;
-		void GetFragmentDisplayPos (STopologyCreateCtx &Ctx, CTopologyNode *pNode, int *retx, int *rety);
-		void GetFragmentEntranceDisplayPos (STopologyCreateCtx &Ctx, int *retx, int *rety) const;
 		ALERROR GetOrAddTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, CTopologyNode *pPrevNode, CXMLElement *pGateDesc, CTopologyNode **retpNode);
 
 		CTopologyNodeList m_Topology;
