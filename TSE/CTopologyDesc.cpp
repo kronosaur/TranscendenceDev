@@ -175,9 +175,9 @@ bool CTopologyDesc::GetPos (int *retx, int *rety)
 		}
 	}
 
-CXMLElement *CTopologyDesc::GetSystem (void)
+CXMLElement *CTopologyDesc::GetSystemDesc (void)
 
-//	GetSystem
+//	GetSystemDesc
 //
 //	Get the system definition (may be NULL)
 

@@ -259,7 +259,7 @@ class CTopologyDesc
 		inline CSystemMap *GetMap (void) const { return m_pMap; }
 		inline CEffectCreator *GetMapEffect (void) const { return m_pMapEffect; }
 		bool GetPos (int *retx, int *rety);
-		CXMLElement *GetSystem (void);
+		CXMLElement *GetSystemDesc (void);
 		inline CTopologyDesc *GetTopologyDesc (int iIndex);
 		inline int GetTopologyDescCount (void);
 		inline CTopologyDescTable *GetTopologyDescTable (void) { return m_pDescList; }

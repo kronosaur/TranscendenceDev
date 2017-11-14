@@ -264,7 +264,7 @@ ALERROR CTopology::AddNode (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopo
 	CreateCtx.xPos = xPos;
 	CreateCtx.yPos = yPos;
 	CreateCtx.sAttribs = pNode->GetAttributes();
-	CreateCtx.pSystemDesc = pNode->GetSystem();
+	CreateCtx.pSystemDesc = pNode->GetSystemDesc();
 	CreateCtx.pEffect = pNode->GetMapEffect();
 	CreateCtx.iInitialState = pNode->GetInitialState();
 	CreateCtx.bNoMap = !bHasPos;
@@ -1289,7 +1289,7 @@ ALERROR CTopology::ApplyRandomNodeParams (STopologyCreateCtx &Ctx, CTopologyDesc
 			
 			//	System
 
-			CXMLElement *pSystemXML = pSetNode->GetSystem();
+			CXMLElement *pSystemXML = pSetNode->GetSystemDesc();
 			if (pSystemXML)
 				{
 				if (error = pBestNode->InitFromSystemXML(*this, pSystemXML, &Ctx.sError))
