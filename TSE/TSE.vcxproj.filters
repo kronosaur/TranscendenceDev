@@ -499,9 +499,6 @@
     <ClCompile Include="ContantsUtilities.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="CRandomEntryGenerator.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CSpaceObjectGrid.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>

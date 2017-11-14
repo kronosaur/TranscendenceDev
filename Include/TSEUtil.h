@@ -806,33 +806,6 @@ class CRandomEntryResults
 		TArray<SResultEntry> m_Results;
 	};
 
-class CRandomEntryGenerator
-	{
-	public:
-		virtual ~CRandomEntryGenerator (void);
-
-		virtual void Generate (CRandomEntryResults &Results) = 0;
-		inline CXMLElement *GetElement (void) { return m_pElement; }
-		inline int GetPercent (void) { return m_iPercent; }
-		inline void SetPercent (int iPercent) { m_iPercent = iPercent; }
-
-		static ALERROR Generate (CXMLElement *pElement, CRandomEntryResults &Results);
-		static ALERROR GenerateAsGroup (CXMLElement *pElement, CRandomEntryResults &Results);
-		static ALERROR GenerateAsTable (CXMLElement *pElement, CRandomEntryResults &Results);
-		static ALERROR LoadFromXML (CXMLElement *pElement, CRandomEntryGenerator **retpGenerator);
-		static ALERROR LoadFromXMLAsGroup (CXMLElement *pElement, CRandomEntryGenerator **retpGenerator);
-
-	protected:
-		CRandomEntryGenerator (void);
-		CRandomEntryGenerator (CXMLElement *pElement);
-		inline int GetCount (void) { return m_Count.Roll(); }
-
-	private:
-		CXMLElement *m_pElement;
-		int m_iPercent;					//	Either chance or probability
-		DiceRange m_Count;				//	Count
-	};
-
 class IElementGenerator
 	{
 	public:
