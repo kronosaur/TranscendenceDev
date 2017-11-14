@@ -76,9 +76,6 @@
     <ClCompile Include="CINTDynamicArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CIntSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CLargeSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

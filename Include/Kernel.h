@@ -753,6 +753,7 @@ class CLargeSet
 
 		void Clear (DWORD dwValue);
 		void ClearAll (void);
+		bool InitFromString (const CString &sValue, DWORD dwMaxValue = 0, CString *retsError = NULL);
 		bool IsEmpty (void) const;
 		bool IsSet (DWORD dwValue) const;
 		void Set (DWORD dwValue);

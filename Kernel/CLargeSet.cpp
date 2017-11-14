@@ -47,6 +47,113 @@ void CLargeSet::ClearAll (void)
 	m_Set.DeleteAll();
 	}
 
+bool CLargeSet::InitFromString (const CString &sValue, DWORD dwMaxValue, CString *retsError)
+
+//	InitFromString
+//
+//	Initializes the set from a string with the following format:
+//
+//	"5"			->	5 is in the set
+//	"1-5"		->	The numbers 1-5 are in the set
+//	"4, 6-10"	->	The numbers 4 and 6-10 are in the set.
+//	"10+"		->	The numbers from 10 to dwMaxValue are in the set
+//
+//	NOTE: This datastructure is not sparse, and should only be used with small
+//	positive integers.
+
+	{
+	//	Set starts out empty
+
+	ClearAll();
+
+	//	Parse
+	
+	char *pPos = sValue.GetASCIIZPointer();
+	char *pPosEnd = pPos + sValue.GetLength();
+	while (pPos < pPosEnd)
+		{
+		//	Ignore whitespace
+
+		if (strIsWhitespace(pPos))
+			pPos++;
+
+		//	Minus signs and decimals are not valid in this context, so we
+		//	return an error to make the caller aware (rather than fail silently).
+
+		else if (*pPos == '-' || *pPos == '.')
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Only small positive integers are supported: %s"), sValue);
+			return false;
+			}
+
+		//	If this is a number, then parse it. We only support positive numbers.
+
+		else if (*pPos >= '0' && *pPos <= '9')
+			{
+			char *pEnd;
+			bool bFailed;
+			DWORD dwStartValue = (DWORD)strParseInt(pPos, 0, &pEnd, &bFailed);
+			if (bFailed)
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid number set format: %s"), sValue);
+				return false;
+				}
+
+			pPos = pEnd;
+			DWORD dwEndValue;
+
+			//	If we have a dash, then we're looking for a range.
+
+			if (*pPos == '-')
+				{
+				pPos++;
+				dwEndValue = (DWORD)strParseInt(pPos, 0, &pEnd, &bFailed);
+				if (bFailed)
+					{
+					if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid number set format: %s"), sValue);
+					return false;
+					}
+
+				pPos = pEnd;
+				}
+
+			//	If we have a +, then we're going to the max value.
+
+			else if (*pPos == '+')
+				{
+				pPos++;
+				if (dwMaxValue == 0)
+					{
+					if (retsError) *retsError = strPatternSubst(CONSTLIT("Cannot use + unless max value is defined: %s"), sValue);
+					return false;
+					}
+
+				dwEndValue = dwMaxValue;
+				}
+
+			//	Otherwise, we only have a single number
+
+			else
+				dwEndValue = dwStartValue;
+			
+			//	Now add the numbers to the set
+
+			DWORD i;
+			for (i = dwStartValue; i <= dwEndValue; i++)
+				Set(i);
+			}
+
+		//	Otherwise, continue parsing
+
+		else
+			pPos++;
+		}
+
+	//	Success
+
+	return true;
+	}
+
 bool CLargeSet::IsEmpty (void) const
 
 //	IsEmpty
