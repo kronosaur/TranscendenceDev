@@ -22,7 +22,9 @@ class CApplySystemProc : public ITopologyProcessor
 		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
-		CXMLElement *m_pSystemDesc;
+		CXMLElement *m_pSystemXML;
+		CTopologySystemDesc m_SystemDesc;
+		CString m_sAttributes;
 	};
 
 class CConquerNodesProc : public ITopologyProcessor

@@ -31,7 +31,7 @@ ALERROR CNameDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Parse the list into separate names.
 
 	CString sNameList = pDesc->GetContentText(0);
-	strDelimitEx(sNameList, ';', DELIMIT_TRIM_WHITESPACE, 0, &m_Names);
+	strDelimitEx(sNameList, ';', DELIMIT_COMMA | DELIMIT_TRIM_WHITESPACE, 0, &m_Names);
 
 	//	If we don't have a constant name, use the first name in the list as
 	//	constant/generic name.
