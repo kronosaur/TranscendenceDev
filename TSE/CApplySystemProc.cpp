@@ -28,8 +28,7 @@ ALERROR CApplySystemProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	//	Treat the content as a system definition
 
-	m_pSystemXML = pDesc;
-	const CString &sTag = m_pSystemXML->GetTag();
+	const CString &sTag = pDesc->GetTag();
 
 	//	Load it based on its tag
 

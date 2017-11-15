@@ -54,10 +54,15 @@ void CTopologySystemDesc::Apply (CTopology &Topology, CTopologyNode *pNode) cons
 //	Applies the attributes to the given node.
 
 	{
+	bool bAddSystemAttributes = false;
+
 	//	Apply the basic attributes
 
 	if (m_dwSystemUNID != 0)
+		{
 		pNode->SetSystemUNID(m_dwSystemUNID);
+		bAddSystemAttributes = true;
+		}
 
 	if (!m_sName.IsBlank())
 		pNode->SetName(m_sName);
@@ -91,7 +96,10 @@ void CTopologySystemDesc::Apply (CTopology &Topology, CTopologyNode *pNode) cons
 
 			DWORD dwUNID;
 			if (pSystemXML->FindAttributeInteger(UNID_ATTRIB, (int *)&dwUNID))
+				{
 				pNode->SetSystemUNID(dwUNID);
+				bAddSystemAttributes = true;
+				}
 
 			CString sValue;
 			if (pSystemXML->FindAttribute(NAME_ATTRIB, &sValue))
@@ -113,6 +121,20 @@ void CTopologySystemDesc::Apply (CTopology &Topology, CTopologyNode *pNode) cons
 
 	if (!m_Names.IsEmpty())
 		pNode->SetName(m_Names.GenerateName());
+
+	//	If necessary, add attributes from the system type.
+	//
+	//	LATER: Note that if the system type gets set multiple times, we will not 
+	//	clear out the attributes from the previous one. It might be better to set
+	//	these attributes later, after all topology processors are done.
+
+	if (bAddSystemAttributes 
+			&& pNode->GetSystemTypeUNID())
+		{
+		CSystemType *pSystemType = g_pUniverse->FindSystemType(pNode->GetSystemTypeUNID());
+		if (pSystemType && !pSystemType->GetAttributes().IsBlank())
+			pNode->AddAttributes(pSystemType->GetAttributes());
+		}
 	}
 
 ALERROR CTopologySystemDesc::InitFromXML (SDesignLoadCtx &LoadCtx, CXMLElement *pDesc)
@@ -186,7 +208,7 @@ ALERROR CTopologySystemDesc::InitFromXML (SDesignLoadCtx &LoadCtx, CXMLElement *
 			&& m_sAttributes.IsBlank() 
 			&& m_sVariantFromParent.IsBlank()
 			&& m_sVariantFromSub.IsBlank()
-			&& m_pGenerator
+			&& !m_pGenerator
 			&& m_Names.IsEmpty());
 
 	//	Success
