@@ -130,7 +130,7 @@ ALERROR CNetworkTopologyCreator::Create (STopologyCreateCtx &Ctx, CTopology &Top
 
 		else
 			{
-			if (error = Topology.AddStargate(NewCtx, NULL, false, pGate))
+			if (error = Topology.AddStargateFromXML(NewCtx, pGate))
 				{
 				Ctx.sError = NewCtx.sError;
 				return error;

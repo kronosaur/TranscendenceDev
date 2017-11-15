@@ -350,6 +350,7 @@
     <ClCompile Include="CCrewAI.cpp" />
     <ClCompile Include="CCrewPsyche.cpp" />
     <ClCompile Include="CCXMLWrapper.cpp" />
+    <ClCompile Include="CDelaunayStargateGenerator.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">
@@ -458,6 +459,7 @@
     <ClCompile Include="CShockwaveHitTest.cpp" />
     <ClCompile Include="CEnvironmentGrid.cpp" />
     <ClCompile Include="CMusicResource.cpp" />
+    <ClCompile Include="CSimplePathStargateGenerator.cpp" />
     <ClCompile Include="CSoundResource.cpp" />
     <ClCompile Include="CSpaceObjectAddressResolver.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
@@ -476,6 +478,7 @@
     <ClCompile Include="CTradingComputer.cpp" />
     <ClCompile Include="CTradingDesc.cpp" />
     <ClCompile Include="CTradingEconomy.cpp" />
+    <ClCompile Include="CTreePathStagateGenerator.cpp" />
     <ClCompile Include="CUniverse.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">Disabled</Optimization>

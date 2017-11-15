@@ -46,20 +46,27 @@ class CTopologyNode
 
 		struct SStargateRouteDesc
 			{
-			SStargateRouteDesc (void) :
-					pFromNode(NULL),
-					pToNode(NULL),
-					bOneWay(false)
-				{ }
+			Metric GetDistance (void) const
+				{
+				if (m_rDistance == 0.0
+						&& pFromNode
+						&& pToNode)
+					m_rDistance = pFromNode->GetLinearDistanceTo(pToNode);
 
-			CTopologyNode *pFromNode;
+				return m_rDistance;
+				}
+
+			CTopologyNode *pFromNode = NULL;
 			CString sFromName;
 
-			CTopologyNode *pToNode;
+			CTopologyNode *pToNode = NULL;
 			CString sToName;
 
 			TArray<SPoint> MidPoints;
-			bool bOneWay;
+			bool bOneWay = false;
+
+			private:
+				mutable Metric m_rDistance = 0.0;
 			};
 
 		CTopologyNode (const CString &sID, DWORD SystemUNID, CSystemMap *pMap);
@@ -68,12 +75,13 @@ class CTopologyNode
 		static void CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **retpNode);
 
 		void AddAttributes (const CString &sAttribs);
-		ALERROR AddStargate (const CString &sName, const CString &sDestNode, const CString &sDestEntryPoint, const SStargateRouteDesc &RouteDesc);
+		ALERROR AddStargate (const CString &sName, const CString &sDestNode, const CString &sDestEntryPoint, const TArray<SPoint> *pMidPoints = NULL);
 		ALERROR AddStargateAndReturn (const CString &sGateID, const CString &sDestNodeID, const CString &sDestGateID);
 		int CalcMatchStrength (const CAttributeCriteria &Criteria);
 		bool FindStargate (const CString &sName, CString *retsDestNode = NULL, CString *retsEntryPoint = NULL);
 		bool FindStargateTo (const CString &sDestNode, CString *retsName = NULL, CString *retsDestGateID = NULL);
 		CString FindStargateName (const CString &sDestNode, const CString &sEntryPoint);
+		CString GenerateStargateName (void) const;
 		inline const CString &GetAttributes (void) const { return m_sAttributes; }
 		inline int GetCalcDistance (void) const { return m_iCalcDistance; }
 		inline const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
@@ -132,7 +140,6 @@ class CTopologyNode
 		inline void AddVariantLabel (const CString &sVariant) { m_VariantLabels.Insert(sVariant); }
 		bool HasVariantLabel (const CString &sVariant);
 
-		static ALERROR CreateStargateRoute (const SStargateRouteDesc &Desc);
 		static ALERROR ParseAttributeCriteria (const CString &sCriteria, SAttributeCriteria *retCrit);
 		static ALERROR ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError = NULL);
 		static ALERROR ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError = NULL);
@@ -169,7 +176,6 @@ class CTopologyNode
 			CTopologyNode *pDestNode;			//	Cached for efficiency (may be NULL)
 			};
 
-		CString GenerateStargateName (void);
 
 		CString m_sID;							//	ID of node
 		CString m_sCreatorID;					//	ID of topology desc, if created by a fragment, etc.
@@ -383,8 +389,9 @@ class CTopology
 		CTopology (void);
 		~CTopology (void);
 
-		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
 		ALERROR AddStargateFromXML (STopologyCreateCtx &Ctx, CXMLElement *pDesc, CTopologyNode *pNode = NULL, bool bRootNode = false);
+		ALERROR AddStargateRoute (const CTopologyNode::SStargateRouteDesc &Desc);
+		ALERROR AddStargateRoutes (const TArray<CTopologyNode::SStargateRouteDesc> &Gates);
 		ALERROR AddTopology (STopologyCreateCtx &Ctx);
 		ALERROR AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopologyNode **retpNewNode = NULL);
 		ALERROR AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyNode **retpNewNode = NULL);
@@ -416,6 +423,7 @@ class CTopology
 
 		ALERROR AddRandomParsePosition (STopologyCreateCtx *pCtx, const CString &sValue, CTopologyNode **iopExit, int *retx, int *rety);
 
+		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
 		ALERROR AddTopologyNode (const CString &sID, CTopologyNode *pNode);
 		ALERROR FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType = NULL);
 		int GetDistance (const CTopologyNode *pSource, int iBestDist = -1) const;

@@ -1180,6 +1180,15 @@
     <ClCompile Include="CTopologySystemDesc.cpp">
       <Filter>Source Files\Topology</Filter>
     </ClCompile>
+    <ClCompile Include="CDelaunayStargateGenerator.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CSimplePathStargateGenerator.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTreePathStagateGenerator.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">
