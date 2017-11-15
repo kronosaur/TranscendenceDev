@@ -745,7 +745,7 @@ ALERROR CTopologyNode::InitFromAttributesXML (CXMLElement *pAttributes, CString 
 	return NOERROR;
 	}
 
-ALERROR CTopologyNode::InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError, bool bIgnoreChildren)
+ALERROR CTopologyNode::InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError)
 
 //	InitFromSystemXML
 //
@@ -753,103 +753,18 @@ ALERROR CTopologyNode::InitFromSystemXML (CTopology &Topology, CXMLElement *pSys
 //	NOTE: We assume the universe is fully bound at this point.
 
 	{
-	DWORD dwUNID = pSystem->GetAttributeInteger(UNID_ATTRIB);
+	ALERROR error;
 
-	//	If the system node contains a table of different system types, then
-	//	remember the root node because some of the system information (such as the
-	//	name) may be there.
-
-	CXMLElement *pSystemParent = NULL;
-
-	//	If there is no UNID attribute then it means that the system
-	//	is randomly determined based on a table
-
-	if (!bIgnoreChildren
-			&& dwUNID == 0 
-			&& pSystem->GetContentElementCount() == 1)
+	SDesignLoadCtx LoadCtx;
+	CTopologySystemDesc SystemDesc;
+	
+	if (error = SystemDesc.InitFromXML(LoadCtx, pSystem))
 		{
-		CXMLElement *pTableElement = pSystem->GetContentElement(0);
-		if (pTableElement == NULL)
-			{
-			ASSERT(false);
-			return ERR_FAIL;
-			}
-
-		IElementGenerator::SCtx GenCtx;
-		GenCtx.pTopology = &Topology;
-		GenCtx.pNode = this;
-
-		TArray<CXMLElement *> System;
-		CString sError;
-
-		if (!IElementGenerator::Generate(GenCtx, pTableElement, System, &sError))
-			{
-			*retsError = strPatternSubst(CONSTLIT("Topology %s: Unable to generate random system UNID: %s"), m_sID, sError);
-			return ERR_FAIL;
-			}
-
-		if (System.GetCount() != 1)
-			{
-			*retsError = strPatternSubst(CONSTLIT("Topology %s: Table generated no systems"), m_sID);
-			return ERR_FAIL;
-			}
-
-		pSystemParent = pSystem;
-		pSystem = System[0];
-		dwUNID = pSystem->GetAttributeInteger(UNID_ATTRIB);
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Topology %s: Unable to load <System> desc: %s"), m_sID, LoadCtx.sError);
+		return error;
 		}
 
-	//	Set the system UNID
-
-	if (dwUNID != 0)
-		m_SystemUNID = dwUNID;
-
-	//	Set the name of the system
-
-	CString sName;
-	if (!pSystem->FindAttribute(NAME_ATTRIB, &sName))
-		if (pSystemParent)
-			sName = pSystemParent->GetAttribute(NAME_ATTRIB);
-
-	if (!sName.IsBlank())
-		SetName(sName);
-
-	//	Set the level
-
-	int iLevel = 0;
-	if (!pSystem->FindAttributeInteger(LEVEL_ATTRIB, &iLevel))
-		if (pSystemParent)
-			iLevel = pSystemParent->GetAttributeInteger(LEVEL_ATTRIB);
-
-	if (iLevel > 0)
-		SetLevel(iLevel);
-
-	if (GetLevel() == 0)
-		SetLevel(1);
-
-	//	Add variants for the system
-
-	CString sVariant;
-	if (pSystem->FindAttribute(VARIANT_ATTRIB, &sVariant))
-		AddVariantLabel(sVariant);
-
-	if (pSystemParent && pSystemParent->FindAttribute(VARIANT_ATTRIB, &sVariant))
-		AddVariantLabel(sVariant);
-
-	//	Add attributes for the node/system
-
-	CString sAttribs;
-	if (pSystem->FindAttribute(ATTRIBUTES_ATTRIB, &sAttribs))
-		AddAttributes(sAttribs);
-
-	if (pSystemParent && pSystemParent->FindAttribute(ATTRIBUTES_ATTRIB, &sAttribs))
-		AddAttributes(sAttribs);
-
-	//	Get the system type and add attributes
-
-	CSystemType *pSystemType = g_pUniverse->FindSystemType(m_SystemUNID);
-	if (pSystemType && !pSystemType->GetAttributes().IsBlank())
-		AddAttributes(pSystemType->GetAttributes());
+	SystemDesc.Apply(Topology, this);
 
 	return NOERROR;
 	}

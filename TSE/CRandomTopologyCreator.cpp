@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define AREA_TAG								CONSTLIT("Area")
+#define NAMES_TAG								CONSTLIT("Names")
 #define NODE_TEMPLATE_TAG						CONSTLIT("NodeTemplate")
 #define SYSTEM_TAG								CONSTLIT("System")
 
@@ -146,22 +147,36 @@ ALERROR CRandomTopologyCreator::ApplyNodeTemplate (STopologyCreateCtx &Ctx, CTop
 
 	{
 	ALERROR error;
-	int i, j;
+	int i;
 
 	CString sNodeAttribs = pNodeTemplate->GetAttribute(ATTRIBUTES_ATTRIB);
 
 	//	If we have a <System> element, we use it to initialize data
 
+	CTopologySystemDesc SystemDesc;
 	CXMLElement *pSystemXML = pNodeTemplate->GetContentElementByTag(SYSTEM_TAG);
-
-	//	If the <System> element has a child, then we assume it is a generator
-
-	TUniquePtr<IElementGenerator> pGenerator;
-	if (pSystemXML && pSystemXML->GetContentElementCount() > 0)
+	if (pSystemXML)
 		{
 		SDesignLoadCtx LoadCtx;
 
-		if (error = IElementGenerator::CreateFromXMLAsGroup(LoadCtx, pSystemXML, pGenerator))
+		if (error = SystemDesc.InitFromXML(LoadCtx, pSystemXML))
+			{
+			Ctx.sError = LoadCtx.sError;
+			return error;
+			}
+		}
+
+	//	If we have a <Names> element, we use it to generate system names.
+	//	NOTE: The SystemDesc object could also have a <Names> element, but this
+	//	will override it.
+
+	CNameDesc Names;
+	CXMLElement *pNamesXML = pNodeTemplate->GetContentElementByTag(NAMES_TAG);
+	if (pNamesXML)
+		{
+		SDesignLoadCtx LoadCtx;
+
+		if (error = Names.InitFromXML(LoadCtx, pNamesXML))
 			{
 			Ctx.sError = LoadCtx.sError;
 			return error;
@@ -183,32 +198,15 @@ ALERROR CRandomTopologyCreator::ApplyNodeTemplate (STopologyCreateCtx &Ctx, CTop
 
 		pNode->AddAttributes(sNodeAttribs);
 
-		//	Apply root system (but ignore any sub-elements of pSystemXML, because we
-		//	will apply the separately with the generator).
+		//	Apply the system descriptor
 
-		if (pSystemXML)
-			{
-			if (error = pNode->InitFromSystemXML(Topology, pSystemXML, &Ctx.sError, true))
-				return error;
-			}
+		if (!SystemDesc.IsEmpty())
+			SystemDesc.Apply(Topology, pNode);
 
-		//	Apply the generator
+		//	Apply names, if we have some
 
-		if (pGenerator)
-			{
-			IElementGenerator::SCtx GenCtx;
-			GenCtx.pTopology = &Topology;
-			GenCtx.pNode = pNode;
-
-			TArray<IElementGenerator::SResult> Result;
-			pGenerator->Generate(GenCtx, Result);
-
-			for (j = 0; j < Result.GetCount(); j++)
-				{
-				if (error = pNode->InitFromSystemXML(Topology, Result[j].pElement, &Ctx.sError))
-					return error;
-				}
-			}
+		if (!Names.IsEmpty())
+			pNode->SetName(Names.GenerateName());
 		}
 
 	//	Done

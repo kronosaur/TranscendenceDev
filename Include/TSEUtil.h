@@ -822,6 +822,16 @@ class IElementGenerator
 			CXMLElement *pElement = NULL;
 			};
 
+		enum EGeneratorTypes
+			{
+			typeGroup,
+			typeNodeDistanceTable,
+			typeNull,
+			typeTable,
+
+			typeElement,
+			};
+
 		virtual ~IElementGenerator (void) { }
 
 		virtual void Generate (SCtx &Ctx, TArray<SResult> &retResults) const = 0;
@@ -836,8 +846,11 @@ class IElementGenerator
 		static bool GenerateAsGroup (SCtx &Ctx, CXMLElement *pDesc, TArray<CXMLElement *> &retResult, CString *retsError = NULL);
 		static bool GenerateAsTable (SCtx &Ctx, CXMLElement *pDesc, TArray<SResult> &retResult, CString *retsError = NULL);
 		static bool GenerateAsTable (SCtx &Ctx, CXMLElement *pDesc, TArray<CXMLElement *> &retResult, CString *retsError = NULL);
+		inline static bool IsGeneratorTag (const CString &sTag) { return (GetGeneratorType(sTag) != typeElement); }
 
 	protected:
+		static EGeneratorTypes GetGeneratorType (const CString &sTag);
+
 		DiceRange m_Count;
 
 	private:

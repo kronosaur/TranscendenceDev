@@ -103,7 +103,7 @@ class CTopologyNode
 		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
 		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
 		ALERROR InitFromAttributesXML (CXMLElement *pAttributes, CString *retsError);
-		ALERROR InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError, bool bIgnoreChildren = false);
+		ALERROR InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError);
 		static bool IsCriteriaAll (const SCriteria &Crit);
 		inline bool IsEndGame (void) const { return (m_SystemUNID == END_GAME_SYSTEM_UNID); }
 		inline bool IsKnown (void) const { return m_bKnown; }
@@ -258,8 +258,9 @@ class CTopologyDesc
 		inline CEffectCreator *GetLabelEffect (void) const { return m_pLabelEffect; }
 		inline CSystemMap *GetMap (void) const { return m_pMap; }
 		inline CEffectCreator *GetMapEffect (void) const { return m_pMapEffect; }
+		CXMLElement *GetNameDesc (void) const;
 		bool GetPos (int *retx, int *rety);
-		CXMLElement *GetSystemDesc (void);
+		CXMLElement *GetSystemDesc (void) const;
 		inline CTopologyDesc *GetTopologyDesc (int iIndex) const;
 		inline int GetTopologyDescCount (void) const;
 		inline CTopologyDescTable *GetTopologyDescTable (void) { return m_pDescList; }

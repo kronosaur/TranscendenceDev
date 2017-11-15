@@ -8,6 +8,7 @@
 #define LABEL_EFFECT_TAG						CONSTLIT("LabelEffect")
 #define MAP_EFFECT_TAG							CONSTLIT("MapEffect")
 #define NETWORK_TAG								CONSTLIT("Network")
+#define NAMES_TAG								CONSTLIT("Names")
 #define NODE_TAG								CONSTLIT("Node")
 #define NODE_GROUP_TAG							CONSTLIT("NodeGroup")
 #define NODES_TAG								CONSTLIT("Nodes")
@@ -144,6 +145,16 @@ CString CTopologyDesc::GetAttributes (void)
 	return m_pDesc->GetAttribute(ATTRIBUTES_ATTRIB);
 	}
 
+CXMLElement *CTopologyDesc::GetNameDesc (void) const
+
+//	GetNameDesc
+//
+//	Returns the name definition (may be NULL).
+
+	{
+	return m_pDesc->GetContentElementByTag(NAMES_TAG);
+	}
+
 bool CTopologyDesc::GetPos (int *retx, int *rety)
 
 //	GetPos
@@ -175,7 +186,7 @@ bool CTopologyDesc::GetPos (int *retx, int *rety)
 		}
 	}
 
-CXMLElement *CTopologyDesc::GetSystemDesc (void)
+CXMLElement *CTopologyDesc::GetSystemDesc (void) const
 
 //	GetSystemDesc
 //

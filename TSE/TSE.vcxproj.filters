@@ -1177,6 +1177,9 @@
     <ClCompile Include="CNetworkTopologyCreator.cpp">
       <Filter>Source Files\Topology</Filter>
     </ClCompile>
+    <ClCompile Include="CTopologySystemDesc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

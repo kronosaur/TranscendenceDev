@@ -30,3 +30,23 @@ class CRandomTopologyCreator
 
 		const CTopologyDesc &m_Desc;
 	};
+
+class CTopologySystemDesc
+	{
+	public:
+		void Apply (CTopology &Topology, CTopologyNode *pNode) const;
+		ALERROR InitFromXML (SDesignLoadCtx &LoadCtx, CXMLElement *pDesc);
+		inline bool IsEmpty (void) const { return m_bEmpty; }
+
+	private:
+		bool m_bEmpty = true;				//	If TRUE, no settings here.
+		DWORD m_dwSystemUNID = 0;			//	System UNID (0 = not set)
+		CString m_sName;					//	System name 
+		int m_iLevel = 0;					//	System level (0 = not set)
+		CString m_sAttributes;				//	System attributes
+		CString m_sVariantFromParent;		//	System variant (from parent)
+		CString m_sVariantFromSub;			//	System variant (from sub-element)
+
+		TUniquePtr<IElementGenerator> m_pGenerator;
+		CNameDesc m_Names;
+	};

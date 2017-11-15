@@ -119,17 +119,30 @@ ALERROR IElementGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	{
 	ALERROR error;
 
-	CString sTag = pDesc->GetTag();
-	if (strEquals(sTag, GROUP_TAG))
-		error = CElementGroup::CreateFromXML(Ctx, pDesc, retGenerator);
-	else if (strEquals(sTag, TABLE_TAG))
-		error = CElementTable::CreateFromXML(Ctx, pDesc, retGenerator);
-	else if (strEquals(sTag, NODE_DISTANCE_TABLE_TAG))
-		error = CElementNodeDistanceTable::CreateFromXML(Ctx, pDesc, retGenerator);
-	else if (strEquals(sTag, NULL_TAG))
-		error = CElementNull::CreateFromXML(Ctx, pDesc, retGenerator);
-	else
-		error = CElementSingle::CreateFromXML(Ctx, pDesc, retGenerator);
+	//	Create the generator of the proper class
+
+	switch (GetGeneratorType(pDesc->GetTag()))
+		{
+		case typeGroup:
+			error = CElementGroup::CreateFromXML(Ctx, pDesc, retGenerator);
+			break;
+
+		case typeNodeDistanceTable:
+			error = CElementNodeDistanceTable::CreateFromXML(Ctx, pDesc, retGenerator);
+			break;
+
+		case typeNull:
+			error = CElementNull::CreateFromXML(Ctx, pDesc, retGenerator);
+			break;
+
+		case typeTable:
+			error = CElementTable::CreateFromXML(Ctx, pDesc, retGenerator);
+			break;
+
+		default:
+			error = CElementSingle::CreateFromXML(Ctx, pDesc, retGenerator);
+			break;
+		}
 
 	//	If error, then we didn't create anything.
 
@@ -352,6 +365,25 @@ bool IElementGenerator::GenerateAsTable (SCtx &Ctx, CXMLElement *pDesc, TArray<C
 	//	Success
 
 	return true;
+	}
+
+IElementGenerator::EGeneratorTypes IElementGenerator::GetGeneratorType (const CString &sTag)
+
+//	GetGeneratorType
+//
+//	Converts from a tag to a type.
+
+	{
+	if (strEquals(sTag, GROUP_TAG))
+		return typeGroup;
+	else if (strEquals(sTag, TABLE_TAG))
+		return typeTable;
+	else if (strEquals(sTag, NODE_DISTANCE_TABLE_TAG))
+		return typeNodeDistanceTable;
+	else if (strEquals(sTag, NULL_TAG))
+		return typeNull;
+	else
+		return typeElement;
 	}
 
 //	CElementGroup --------------------------------------------------------------
