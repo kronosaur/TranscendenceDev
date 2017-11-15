@@ -55,6 +55,8 @@ class CVector
 		inline bool operator == (const CVector &vA) const { return (x == vA.x && y == vA.y); }
 
 		bool Clip (Metric rLength);
+		inline Metric Distance (const CVector &vA) const { return sqrt(Distance2(vA)); }
+		inline Metric Distance2 (const CVector &vA) const { Metric xDiff = (vA.x - x); Metric yDiff = (vA.y - y); return (xDiff * xDiff + yDiff * yDiff); }
 		inline Metric Dot (const CVector &vA) const { return x * vA.x + y * vA.y; }
 		void GenerateOrthogonals (const CVector &vNormal, Metric *retvPara, Metric *retvPerp) const;
 		inline const Metric &GetX (void) const { return x; }
@@ -99,6 +101,8 @@ class CVector
 		inline void SetX (Metric NewX) { x = NewX; }
 		inline void SetY (Metric NewY) { y = NewY; }
 		void WriteToStream (IWriteStream &Stream) const { Stream.Write((char *)this, sizeof(CVector)); }
+		inline const Metric &X (void) const { return x; }
+		inline const Metric &Y (void) const { return y; }
 
 		static CVector FromPolar (const CVector &vA) { return CVector(vA.y * cos(vA.x), vA.y * sin(vA.x)); }
 		static CVector FromPolar (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), rRadius * sin(rAngle)); }
@@ -123,6 +127,29 @@ inline CVector operator- (const CVector &op) { return CVector(-op.GetX(), -op.Ge
 inline CVector operator* (const CVector &op1, const Metric op2) { return CVector(op1.GetX() * op2, op1.GetY() * op2); }
 inline CVector operator* (const Metric op2, const CVector &op1) { return CVector(op1.GetX() * op2, op1.GetY() * op2); }
 inline CVector operator/ (const CVector &op1, const Metric op2) { return CVector(op1.GetX() / op2, op1.GetY() / op2); }
+
+//	Lines
+
+class CLine
+	{
+	public:
+		CLine (void)
+			{ }
+
+		CLine (const CVector &vFrom, const CVector &vTo) :
+				m_vFrom(vFrom),
+				m_vTo(vTo)
+			{ }
+
+		inline const CVector &From (void) const { return m_vFrom; }
+		inline const CVector &To (void) const { return m_vTo; }
+		inline void SetFrom (const CVector &vVector) { m_vFrom = vVector; }
+		inline void SetTo (const CVector &vVector) { m_vTo = vVector; }
+
+	private:
+		CVector m_vFrom;
+		CVector m_vTo;
+	};
 
 //	Geometry
 
@@ -200,6 +227,7 @@ class CIntGraph
 		void Connect (DWORD dwFromID, DWORD dwToID);
 		void DeleteAll (void);
 		bool FindNearestNode (int x, int y, DWORD *retdwID);
+		void GenerateDelaunayConnections (void);
 		void GenerateRandomConnections (DWORD dwStartNode, int iMinConnections, int iMaxConnections);
 		int GetNodeCount (void);
 		int GetNodeForwardConnections (DWORD dwID, TArray<int> *retConnections);
@@ -504,3 +532,5 @@ Metric VectorToPolarRadians (const CVector &vP, Metric *retrRadius = NULL);
 
 #include "EuclidMatrix.h"
 #include "Euclid3D.h"
+#include "EuclidVoronoi.h"
+

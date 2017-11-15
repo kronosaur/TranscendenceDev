@@ -370,6 +370,62 @@ void CIntGraph::GenerateRandomConnections (DWORD dwStartNode, int iMinConnection
 		}
 	}
 
+void CIntGraph::GenerateDelaunayConnections (void)
+
+//	GenerateDelaunayConnections
+//
+//	Generates connections along a Delaunay triangulation (the dual to a Voronoi graph).
+//	iConnectionChance is the chance that we'll create any given connection.
+
+	{
+	int i, j;
+
+	//	First do a Voronoi tessellation. We need an array of vectors.
+
+	TArray<CVector> Points;
+	Points.InsertEmpty(m_Nodes.GetCount());
+	for (i = 0; i < m_Nodes.GetCount(); i++)
+		Points[i] = CVector(m_Nodes[i].x, m_Nodes[i].y);
+
+	CVoronoiTessellation Voronoi;
+	Voronoi.Init(Points);
+
+	//	Keep track of which points we've already processed
+
+	CLargeSet Processed;
+
+	//	Now loop over all points (sites) and add each neighbor.
+
+	for (i = 0; i < m_Nodes.GetCount(); i++)
+		{
+		//	Add this node to the list of processed nodes, so we don't  process any
+		//	more connections to it.
+
+		Processed.Set(i);
+
+		//	Get the list of neighbor nodes
+
+		TArray<int> Neighbors;
+		Voronoi.GetSiteNeighbors(i, &Neighbors);
+
+		//	Add a connection to each neighbor.
+
+		for (j = 0; j < Neighbors.GetCount(); j++)
+			{
+			int iTargetNode = Neighbors[j];
+
+			//	If this neighbor has already been processed, then skip it.
+
+			if (Processed.IsSet(iTargetNode))
+				continue;
+
+			//	Add a connection
+
+			Connect((DWORD)i, (DWORD)iTargetNode);
+			}
+		}
+	}
+
 int CIntGraph::GetNodeCount (void)
 
 //	GetNodeCount

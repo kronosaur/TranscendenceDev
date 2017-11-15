@@ -1078,6 +1078,8 @@ ALERROR strDelimitEx (const CString &sString,
 	int iPartCount;
 
 	ASSERT(cDelim != '\0');
+	bool bDelimitComma = ((dwFlags & DELIMIT_COMMA) ? true : false);
+	bool bDelimitSemi = ((dwFlags & DELIMIT_SEMI_COLON) ? true : false);
 
 	//	Initialize string list
 
@@ -1098,7 +1100,9 @@ ALERROR strDelimitEx (const CString &sString,
 		//	If we've found a delimeter, then flush the string up to now
 		//	to the current part.
 
-		if (*pPos == cDelim)
+		if (*pPos == cDelim
+				|| (bDelimitComma && *pPos == ',')
+				|| (bDelimitSemi && *pPos == ';'))
 			{
 			CString sPart(pPartStart, iPartLength);
 			if (dwFlags & DELIMIT_TRIM_WHITESPACE)

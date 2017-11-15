@@ -546,6 +546,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CThreadPool.cpp" />
+    <ClCompile Include="CVoronoiTessellation.cpp" />
     <ClCompile Include="Kernel.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -672,6 +673,8 @@
     <ClCompile Include="CVector.cpp" />
     <ClCompile Include="Euclid.cpp" />
     <ClCompile Include="Shapes.cpp" />
+    <ClCompile Include="Voronoi.cpp" />
+    <ClCompile Include="VoronoiGenerator.cpp" />
     <ClCompile Include="XForm.cpp" />
     <ClCompile Include="CMarkovWordGenerator.cpp" />
     <ClCompile Include="CryptoRandom.cpp" />
@@ -683,6 +686,7 @@
     <ClInclude Include="..\Include\Crypto.h" />
     <ClInclude Include="..\Include\Euclid.h" />
     <ClInclude Include="..\Include\EuclidMatrix.h" />
+    <ClInclude Include="..\Include\EuclidVoronoi.h" />
     <ClInclude Include="..\Include\Internets.h" />
     <ClInclude Include="..\Include\Kernel.h" />
     <ClInclude Include="..\Include\KernelObjID.h" />
@@ -707,6 +711,7 @@
     <ClInclude Include="quickhull\Structs\Vector3.hpp" />
     <ClInclude Include="quickhull\Structs\VertexDataSource.hpp" />
     <ClInclude Include="quickhull\Types.hpp" />
+    <ClInclude Include="VoronoiGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\zlib-1.2.7\contrib\vstudio\vc10\zlibstat.vcxproj">

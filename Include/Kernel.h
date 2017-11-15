@@ -1336,6 +1336,8 @@ inline CString strUTF8ToANSI (const CString &sText) { return strConvert(sText, C
 
 #define DELIMIT_TRIM_WHITESPACE					0x00000001
 #define DELIMIT_ALLOW_BLANK_STRINGS				0x00000002
+#define DELIMIT_COMMA							0x00000004
+#define DELIMIT_SEMI_COLON						0x00000008
 ALERROR strDelimitEx (const CString &sString, char cDelim, DWORD dwFlags, int iMinParts, TArray<CString> *retList);
 
 inline ALERROR strDelimit (const CString &sString, char cDelim, int iMinParts, TArray<CString> *pStringList)
