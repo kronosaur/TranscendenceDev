@@ -230,7 +230,8 @@ class CIntGraph
 		void GenerateDelaunayConnections (void);
 		void GenerateRandomConnections (DWORD dwStartNode, int iMinConnections, int iMaxConnections);
 		int GetNodeCount (void);
-		int GetNodeForwardConnections (DWORD dwID, TArray<int> *retConnections);
+		int GetNodeConnections (DWORD dwID, TArray<DWORD> *retConnections) const;
+		int GetNodeForwardConnections (DWORD dwID, TArray<DWORD> *retConnections) const;
 		DWORD GetNodeID (int iIndex);
 		int GetNodeIndex (DWORD dwID);
 		void GetNodePos (DWORD dwID, int *retx, int *rety);
@@ -259,11 +260,12 @@ class CIntGraph
 		void CreateNodeIndex (void);
 		void FreeConnection (int iConnection);
 		void FreeNode (int iNode);
-		inline SConnection *GetConnection (int iConnection) { return &m_Connections[iConnection]; }
-		inline SConnection *GetForwardConnection (SNode *pNode) { return (pNode->iFirstForward >= 0 ? GetConnection(pNode->iFirstForward) : NULL); }
-		inline SConnection *GetNextConnection (SConnection *pConnection) { return (pConnection->iNext >= 0 ? GetConnection(pConnection->iNext) : NULL); }
+		inline SConnection *GetBackwardConnection (SNode *pNode) const { return (pNode->iFirstBackward >= 0 ? GetConnection(pNode->iFirstBackward) : NULL); }
+		inline SConnection *GetConnection (int iConnection) const { return &m_Connections[iConnection]; }
+		inline SConnection *GetForwardConnection (SNode *pNode) const { return (pNode->iFirstForward >= 0 ? GetConnection(pNode->iFirstForward) : NULL); }
+		inline SConnection *GetNextConnection (SConnection *pConnection) const { return (pConnection->iNext >= 0 ? GetConnection(pConnection->iNext) : NULL); }
 		inline int GetNextFreeNode (SNode *pNode) { return (pNode->iFirstBackward); }
-		inline SNode *GetNode (int iNode) { return &m_Nodes[iNode]; }
+		inline SNode *GetNode (int iNode) const { return &m_Nodes[iNode]; }
 		inline void MakeNodeFree (SNode *pNode, int iNextFree) { pNode->iFirstForward = -2; pNode->iFirstBackward = iNextFree; }
 		inline bool NodeIsFree (SNode *pNode) { return (pNode->iFirstForward == -2); }
 

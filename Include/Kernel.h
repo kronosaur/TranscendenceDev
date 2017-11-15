@@ -749,16 +749,24 @@ class CAtomTable : public CObject
 class CLargeSet
 	{
 	public:
+		enum EConstants
+			{
+			INVALID_VALUE = 0xFFFFFFFF,
+			};
+
 		CLargeSet (int iSize = -1);
 
 		void Clear (DWORD dwValue);
 		void ClearAll (void);
+		DWORD GetNextValue (DWORD dwStart = 0) const;
 		bool InitFromString (const CString &sValue, DWORD dwMaxValue = 0, CString *retsError = NULL);
 		bool IsEmpty (void) const;
 		bool IsSet (DWORD dwValue) const;
 		void Set (DWORD dwValue);
 
 	private:
+		static DWORD GetBitFromMask (DWORD dwMask);
+
 		TArray<DWORD> m_Set;
 	};
 

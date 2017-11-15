@@ -426,6 +426,33 @@ void CIntGraph::GenerateDelaunayConnections (void)
 		}
 	}
 
+int CIntGraph::GetNodeConnections (DWORD dwID, TArray<DWORD> *retConnections) const
+
+//	GetNodeConnections
+//
+//	Fill in a list of all connections from the given node.
+
+	{
+	ASSERT(dwID >= 0 && dwID < (DWORD)m_Nodes.GetCount());
+
+	SNode *pNode = GetNode(dwID);
+	SConnection *pConnection = GetForwardConnection(pNode);
+	while (pConnection)
+		{
+		retConnections->Insert(pConnection->iTo);
+		pConnection = GetNextConnection(pConnection);
+		}
+
+	pConnection = GetBackwardConnection(pNode);
+	while (pConnection)
+		{
+		retConnections->Insert(pConnection->iTo);
+		pConnection = GetNextConnection(pConnection);
+		}
+
+	return retConnections->GetCount();
+	}
+
 int CIntGraph::GetNodeCount (void)
 
 //	GetNodeCount
@@ -442,7 +469,7 @@ int CIntGraph::GetNodeCount (void)
 		}
 	}
 
-int CIntGraph::GetNodeForwardConnections (DWORD dwID, TArray<int> *retConnections)
+int CIntGraph::GetNodeForwardConnections (DWORD dwID, TArray<DWORD> *retConnections) const
 
 //	GetNodeForwardConnections
 //

@@ -47,6 +47,50 @@ void CLargeSet::ClearAll (void)
 	m_Set.DeleteAll();
 	}
 
+DWORD CLargeSet::GetBitFromMask (DWORD dwMask)
+
+//	GetBitFromMask
+//
+//	Converts from a mask to a bit.
+
+	{
+	DWORD dwBit = 0;
+	while (dwMask != 1)
+		{
+		dwBit++;
+		dwMask = dwMask >> 1;
+		}
+
+	return dwBit;
+	}
+
+DWORD CLargeSet::GetNextValue (DWORD dwStart) const
+
+//	GetNextValue
+//
+//	Returns the next numerical value in the set starting with dwStart (inclusive).
+//	If there are no more values, we return INVALID_VALUE.
+
+	{
+	DWORD dwPos = dwStart / BITS_PER_DWORD;
+	DWORD dwMask = 1 << (dwStart % BITS_PER_DWORD);
+
+	while (dwPos < (DWORD)m_Set.GetCount())
+		{
+		if (m_Set[dwPos] & dwMask)
+			return (dwPos * BITS_PER_DWORD) + GetBitFromMask(dwMask);
+
+		dwMask = dwMask << 1;
+		if (dwMask == 0)
+			{
+			dwPos++;
+			dwMask = 1;
+			}
+		}
+
+	return INVALID_VALUE;
+	}
+
 bool CLargeSet::InitFromString (const CString &sValue, DWORD dwMaxValue, CString *retsError)
 
 //	InitFromString
@@ -193,6 +237,9 @@ void CLargeSet::Set (DWORD dwValue)
 //	Add the value to the set
 
 	{
+	if (dwValue == INVALID_VALUE)
+		return;
+
 	DWORD dwPos = dwValue / BITS_PER_DWORD;
 	DWORD dwBit = dwValue % BITS_PER_DWORD;
 	
