@@ -311,8 +311,11 @@ ALERROR CTopology::AddNodeTable (STopologyCreateCtx &Ctx, CTopologyDesc *pTable,
 	//	Look for the node
 
 	CTopologyDesc *pDesc;
-	if (error = FindTopologyDesc(Ctx, sNodeID, &pDesc))
-		return error;
+	if (!FindTopologyDesc(Ctx, sNodeID, &pDesc))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("NodeID not found: %s"), sNodeID);
+		return ERR_FAIL;
+		}
 
 	//	Add it
 
@@ -349,7 +352,7 @@ ALERROR CTopology::AddRandomParsePosition (STopologyCreateCtx *pCtx, const CStri
 
 			//	Get the node
 
-			if (error = GetOrAddTopologyNode(*pCtx, pCtx->sFragmentExitID, NULL, NULL, iopExit))
+			if (error = GetOrAddTopologyNode(*pCtx, pCtx->sFragmentExitID, iopExit))
 				return error;
 
 			//	Get the position
@@ -547,10 +550,25 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 			return ERR_FAIL;
 			}
 
+		//	Initialize some conext, in case we need it when adding the node
+
+		STopologyCreateCtx AddCtx(Ctx);
+		AddCtx.pGateDesc = pGateDesc;
+		AddCtx.sOtherNodeID = sDest;
+		AddCtx.sOtherNodeEntryPoint = sDestEntryPoint;
+
 		//	Find the source node
 
-		if (error = GetOrAddTopologyNode(Ctx, sSource, NULL, pGateDesc, &pNode))
+		if (error = GetOrAddTopologyNode(AddCtx, sSource, &pNode))
 			return error;
+
+		//	Must return a node
+
+		if (pNode == NULL)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find topology node for: %s"), sSource);
+			return ERR_FAIL;
+			}
 		}
 	else
 		{
@@ -636,7 +654,14 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	//	NOTE: The node returned might not have the same ID as sDest (because we might
 	//	have hit a table that picks a random node).
 
-	if (error = GetOrAddTopologyNode(Ctx, sDest, pNode, pGateDesc, &pDest))
+	STopologyCreateCtx AddCtx(Ctx);
+	AddCtx.pPrevNode = pNode;
+
+	AddCtx.pGateDesc = pGateDesc;
+	AddCtx.sOtherNodeID = pNode->GetID();
+	AddCtx.sOtherNodeEntryPoint = sGateName;
+
+	if (error = GetOrAddTopologyNode(AddCtx, sDest, &pDest))
 		return error;
 
 	//	If we don't have a node, then ignore (this can happen if we point to a node descriptor
@@ -782,7 +807,21 @@ ALERROR CTopology::AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNod
 	else if (pNode->GetType() == ndRandom)
 		{
 		CRandomTopologyCreator Creator(*pNode);
-		return Creator.Create(Ctx, *this, retpNewNode);
+
+		//	If we're not in a fragment, see if we've already added some nodes for 
+		//	this descriptor. If so, then we return the nearest existing node to the
+		//	previous node.
+
+		CTopologyNode *pExistingNode;
+		if (!Ctx.bInFragment 
+				&& FindNearestNodeCreatedBy(pNode->GetID(), Ctx.pPrevNode, &pExistingNode))
+
+			return Creator.FindExistingNode(Ctx, *this, pExistingNode, retpNewNode);
+
+		//	Otherwise, we need to create the nodes in the descriptor
+
+		else
+			return Creator.Create(Ctx, *this, retpNewNode);
 		}
 
 	//	Otherwise, add a single node and any nodes that lead away from it
@@ -821,7 +860,7 @@ ALERROR CTopology::AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNod
 //	NOTE: In some cases this function can return NOERROR and a NULL node.
 
 	{
-	return GetOrAddTopologyNode(Ctx, sNodeID, NULL, NULL, retpNewNode);
+	return GetOrAddTopologyNode(Ctx, sNodeID, retpNewNode);
 	}
 
 ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode)
@@ -926,7 +965,25 @@ CTopologyDesc *FindNodeInContext (STopologyCreateCtx &Ctx, const CString &sNodeI
 	return NULL;
 	}
 
-ALERROR CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType)
+bool CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode) const
+
+//	FindTopologyDesc
+//
+//	Returns the given topology desc (if found).
+
+	{
+	//	NOTE: iDummy can't be an optional parameter because this is the only
+	//	difference between the signatures and because NodeTypes is a private
+	//	enum.
+	//
+	//	I'm sure there's a cleaner way to design this API, but for now this is
+	//	what we've got.
+
+	NodeTypes iDummy;
+	return FindTopologyDesc(Ctx, sNodeID, retpNode, &iDummy);
+	}
+
+bool CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType) const
 
 //	FindTopologyDesc
 //
@@ -946,7 +1003,7 @@ ALERROR CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNo
 		*retpNode = pDestNode;
 		if (retiNodeType)
 			*retiNodeType = typeFragment;
-		return NOERROR;
+		return true;
 		}
 
 	//	Otherwise, look for the destination node in our topology.
@@ -957,7 +1014,7 @@ ALERROR CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNo
 		*retpNode = pDestNode;
 		if (retiNodeType)
 			*retiNodeType = typeStandard;
-		return NOERROR;
+		return true;
 		}
 
 	//	Otherwise, see if we find the node in our fragment table.
@@ -968,16 +1025,13 @@ ALERROR CTopology::FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNo
 		*retpNode = pDestNode;
 		if (retiNodeType)
 			*retiNodeType = typeFragmentStart;
-		return NOERROR;
+		return true;
 		}
 
 	//	Otherwise, we can't find the destination
 
 	else
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("NodeID not found: %s"), sNodeID);
-		return ERR_FAIL;
-		}
+		return false;
 	}
 
 bool CTopology::FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode) const
@@ -997,12 +1051,21 @@ bool CTopology::FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNo
 		CTopologyNode *pTestNode = GetTopologyNode(i);
 
 		if (strEquals(pTestNode->GetCreatorID(), sID)
-				&& pNode->GetDisplayPos() == pTestNode->GetDisplayPos())
+				&& (pNode == NULL || (pNode->GetDisplayPos() == pTestNode->GetDisplayPos())))
 			{
 			//	If we don't care about the specific node, we're done.
 
 			if (retpNewNode == NULL)
 				return true;
+
+			//	If we didn't pass in a node, then we just return the first node we
+			//	find.
+
+			if (pNode == NULL)
+				{
+				*retpNewNode = pTestNode;
+				return true;
+				}
 
 			//	Otherwise, see if this node is closer than the previous one.
 
@@ -1207,8 +1270,6 @@ int CTopology::GetDistance (const CTopologyNode *pSource, int iBestDist) const
 
 ALERROR CTopology::GetOrAddTopologyNode (STopologyCreateCtx &Ctx, 
 										 const CString &sID, 
-										 CTopologyNode *pPrevNode, 
-										 CXMLElement *pGateDesc, 
 										 CTopologyNode **retpNode)
 
 //	GetOrAddTopologyNode
@@ -1241,37 +1302,39 @@ ALERROR CTopology::GetOrAddTopologyNode (STopologyCreateCtx &Ctx,
 
 	CTopologyDesc *pDestDesc;
 	NodeTypes iDestNodeType;
-	if (error = FindTopologyDesc(Ctx, sID, &pDestDesc, &iDestNodeType))
-		return error;
+	if (!FindTopologyDesc(Ctx, sID, &pDestDesc, &iDestNodeType))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("NodeID not found: %s"), sID);
+		return ERR_FAIL;
+		}
 
 	//	Add the descriptor
 
-	STopologyCreateCtx NewCtx = Ctx;
-	NewCtx.pPrevNode = pPrevNode;
+	STopologyCreateCtx NewCtx(Ctx);
 
 	//	Set bInFragment to TRUE if we are adding a node that is in a fragment (either because we're
 	//	starting a new fragment or because we are getting the next node in a fragment).
 
-	NewCtx.bInFragment = (pGateDesc && (iDestNodeType == typeFragment || iDestNodeType == typeFragmentStart));
+	NewCtx.bInFragment = (Ctx.pGateDesc && (iDestNodeType == typeFragment || iDestNodeType == typeFragmentStart));
 
 	//	If we're not continuing within a fragment, then initialize the fragment parameters.
 	//	(If we're continuing, then we just keep the existing fragment info).
 
-	if (pGateDesc && iDestNodeType != typeFragment)
+	if (Ctx.pGateDesc && Ctx.pPrevNode && iDestNodeType != typeFragment)
 		{
 		//	If the gate specifies a fragment rotation, then we assume that the destination is
 		//	a fragment. [Note: This means that we always have to have a destFragmentRotation attribute
 		//	to call a fragment.]
 
-		int iRotation = pGateDesc->GetAttributeIntegerBounded(DEST_FRAGMENT_ROTATION_ATTRIB, 0, 359, -1);
+		int iRotation = Ctx.pGateDesc->GetAttributeIntegerBounded(DEST_FRAGMENT_ROTATION_ATTRIB, 0, 359, -1);
 		if (iRotation != -1)
 			{
 			NewCtx.bInFragment = true;
 
 			NewCtx.iRotation = iRotation;
-			pPrevNode->GetDisplayPos(&NewCtx.xOffset, &NewCtx.yOffset);
-			NewCtx.sFragmentAttributes = pGateDesc->GetAttribute(DEST_FRAGMENT_ATTRIBUTES_ATTRIB);
-			CTopologyNode::ParseStargateString(pGateDesc->GetAttribute(DEST_FRAGMENT_EXIT_ATTRIB), &NewCtx.sFragmentExitID, &NewCtx.sFragmentExitGate);
+			NewCtx.pPrevNode->GetDisplayPos(&NewCtx.xOffset, &NewCtx.yOffset);
+			NewCtx.sFragmentAttributes = Ctx.pGateDesc->GetAttribute(DEST_FRAGMENT_ATTRIBUTES_ATTRIB);
+			CTopologyNode::ParseStargateString(Ctx.pGateDesc->GetAttribute(DEST_FRAGMENT_EXIT_ATTRIB), &NewCtx.sFragmentExitID, &NewCtx.sFragmentExitGate);
 			}
 		else
 			{

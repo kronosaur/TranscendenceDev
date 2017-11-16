@@ -31,6 +31,7 @@ class CRandomTopologyCreator
 		CRandomTopologyCreator (const CTopologyDesc &Desc);
 
 		ALERROR Create (STopologyCreateCtx &Ctx, CTopology &Topology, CTopologyNode **retpNode = NULL) const;
+		ALERROR FindExistingNode (STopologyCreateCtx &Ctx, CTopology &Topology, CTopologyNode *pExistingNode, CTopologyNode **retpNode) const;
 
 	private:
 		ALERROR AddRandomRegion (STopologyCreateCtx &Ctx, CTopology &Topology, CXMLElement *pRegionDef, CTopologyNode *&pExitNode, CIntGraph &Graph, TArray<CTopologyNode *> &Nodes) const;

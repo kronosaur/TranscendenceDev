@@ -346,10 +346,21 @@ ALERROR CRandomTopologyCreator::Create (STopologyCreateCtx &Ctx, CTopology &Topo
 	//	this descriptor. If so, then we return the nearest existing node to the
 	//	previous node.
 
+	CTopologyNode *pExistingNode;
 	if (!Ctx.bInFragment 
-			&& Ctx.pPrevNode
-			&& Topology.FindNearestNodeCreatedBy(m_Desc.GetID(), Ctx.pPrevNode, retpNode))
+			&& Topology.FindNearestNodeCreatedBy(m_Desc.GetID(), Ctx.pPrevNode, &pExistingNode))
+		{
+		//	If we have a previous node, then pExistingNode will be the node that
+		//	is closes to it, so we just return it.
+
+		if (Ctx.pPrevNode)
+			{
+			if (retpNode) *retpNode = pExistingNode;
+			return NOERROR;
+			}
+
 		return NOERROR;
+		}
 
 	//	Initialize
 
@@ -489,6 +500,90 @@ ALERROR CRandomTopologyCreator::Create (STopologyCreateCtx &Ctx, CTopology &Topo
 
 	//	Remember the nodes created in the descriptor (we need this in case we
 	//	refer to this descriptor again).
+
+	return NOERROR;
+	}
+
+ALERROR CRandomTopologyCreator::FindExistingNode (STopologyCreateCtx &Ctx, CTopology &Topology, CTopologyNode *pExistingNode, CTopologyNode **retpNode) const
+
+//	FindExistingNode
+//
+//	If this set of nodes has already been created and we've created a stargate to it,
+//	we return the most appropriate node to connect to.
+
+	{
+	//	pExistingNode must be a valid existing node created by this descriptor.
+	//	This must exist, otherwise we would be creating a new region instead of
+	//	trying to find a node in an existing region.
+
+	ASSERT(pExistingNode);
+
+	//	If we have a previous node, then pExistingNode will be the node that
+	//	is closes to it, so we just return it.
+
+	if (Ctx.pPrevNode)
+		{
+		if (retpNode) *retpNode = pExistingNode;
+		return NOERROR;
+		}
+
+	//	If we don't have a previous node, then try to figure out what we're linking
+	//	to. We use the destination (the other side of the gate) to figure out which 
+	//	node in our descriptor to return.
+	//
+	//	But if we have no other node, then we can't do anything.
+
+	if (Ctx.sOtherNodeID.IsBlank())
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Unable to find appropriate node in existing %s."), m_Desc.GetID());
+		return ERR_FAIL;
+		}
+
+	//	See if the destination is a real node.
+
+	CTopologyNode *pDestNode = Topology.FindTopologyNode(Ctx.sOtherNodeID);
+	if (pDestNode)
+		{
+		//	Now that we have a real node, we can find which existing node in our region
+		//	is closest to that node.
+
+		if (!Topology.FindNearestNodeCreatedBy(m_Desc.GetID(), pDestNode, retpNode))
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find nearest node in existing %s"), m_Desc.GetID());
+			return ERR_FAIL;
+			}
+
+		//	Success!
+
+		return NOERROR;
+		}
+
+	//	If the destination is not a node, then get the descriptor for it.
+
+	CTopologyDesc *pDestDesc;
+	if (!Topology.FindTopologyDesc(Ctx, Ctx.sOtherNodeID, &pDestDesc))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("NodeID not found: %s"), Ctx.sOtherNodeID);
+		return ERR_FAIL;
+		}
+
+	//	Find the nearest node to the existing node that we've found.
+
+	if (!Topology.FindNearestNodeCreatedBy(pDestDesc->GetID(), pExistingNode, &pDestNode))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Unable to find existing node in %s"), pDestDesc->GetID());
+		return ERR_FAIL;
+		}
+
+	//	Now that we have a valid node closest to us, we recompute the node in our 
+	//	region (since we now know what node to be close to).
+
+	if (!Topology.FindNearestNodeCreatedBy(m_Desc.GetID(), pDestNode, retpNode))
+		{
+		ASSERT(false);
+		Ctx.sError = strPatternSubst(CONSTLIT("Unable to find existing node in %s. This should never happen."), m_Desc.GetID());
+		return ERR_FAIL;
+		}
 
 	return NOERROR;
 	}

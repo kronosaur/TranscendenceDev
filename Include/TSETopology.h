@@ -356,6 +356,10 @@ struct STopologyCreateCtx
 	CString sFragmentExitGate;
 	CString sFragmentAttributes;
 
+	CXMLElement *pGateDesc = NULL;					//	Gate descriptor (when adding a node)
+	CString sOtherNodeID;
+	CString sOtherNodeEntryPoint;
+
 	CString sError;
 	};
 
@@ -398,6 +402,7 @@ class CTopology
 		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
 		void DeleteAll (void);
 		bool FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode = NULL) const;
+		bool FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode) const;
 		CTopologyNode *FindTopologyNode (const CString &sID) const;
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
 		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pDest) const;
@@ -425,9 +430,9 @@ class CTopology
 
 		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
 		ALERROR AddTopologyNode (const CString &sID, CTopologyNode *pNode);
-		ALERROR FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType = NULL);
+		bool FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType) const;
 		int GetDistance (const CTopologyNode *pSource, int iBestDist = -1) const;
-		ALERROR GetOrAddTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, CTopologyNode *pPrevNode, CXMLElement *pGateDesc, CTopologyNode **retpNode);
+		ALERROR GetOrAddTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, CTopologyNode **retpNode);
 
 		CTopologyNodeList m_Topology;
 		TSortMap<CString, int> m_IDToNode;
