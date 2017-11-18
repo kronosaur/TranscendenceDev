@@ -51,6 +51,29 @@ ALERROR CGameFile::ClearRegistered (void)
 	return NOERROR;
 	}
 
+ALERROR CGameFile::ClearGameResurrect (void)
+
+//	ClearGameResurrect
+//
+//	Clears the resurrect flag in the game. Used when quitting without saving
+
+	{
+	ALERROR error;
+
+	ASSERT(m_pFile);
+
+	//	Clear the flag
+
+	m_Header.dwFlags ^= GAME_FLAG_RESURRECT;
+
+	//	Save the header
+
+	if (error = SaveGameHeader(m_Header))
+		return error;
+
+	return NOERROR;
+	}
+
 void CGameFile::Close (void)
 
 //	Close
