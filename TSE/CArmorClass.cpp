@@ -43,11 +43,10 @@
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
 #define UNID_ATTRIB								CONSTLIT("unid")
 #define HEALER_REGEN_ATTRIB 					CONSTLIT("useHealerToRegen")
-#define CUSTOM_POWER_ATTRIB						CONSTLIT("useOnArmorConsumePower")
 
 #define GET_MAX_HP_EVENT						CONSTLIT("GetMaxHP")
-#define ON_ARMOR_DAMAGE_EVENT					CONSTLIT("OnArmorDamage")
 #define ON_ARMOR_CONSUME_POWER_EVENT			CONSTLIT("OnArmorConsumePower")
+#define ON_ARMOR_DAMAGE_EVENT					CONSTLIT("OnArmorDamage")
 
 #define FIELD_ADJUSTED_HP						CONSTLIT("adjustedHP")
 #define FIELD_BALANCE							CONSTLIT("balance")
@@ -165,8 +164,8 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 static char *CACHED_EVENTS[CArmorClass::evtCount] =
 	{
 		"GetMaxHP",
-		"OnArmorDamage",
 		"OnArmorConsumePower",
+		"OnArmorDamage",
 	};
 
 static TStaticStringTable<TStaticStringEntry<ERegenTypes>, 5> REGEN_TYPE_TABLE = {
@@ -1445,18 +1444,6 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	pArmor->m_iMaxHPBonus = pDesc->GetAttributeIntegerBounded(MAX_HP_BONUS_ATTRIB, 0, -1, 150);
 
-	//  Custom power-using properties
-
-	sAttrib = pDesc->GetAttribute(CUSTOM_POWER_ATTRIB);
-	if (CXMLElement::IsBoolTrueValue(sAttrib))
-		{
-		pArmor->m_fCustomConsumePower = true;
-		}
-	else
-		{
-		pArmor->m_fCustomConsumePower = false;
-		}
-
 	//	Power use
 
 	pArmor->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0);
@@ -2374,7 +2361,7 @@ int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, S
 //	Fire the armor item's <OnArmorConsumePower> event. If that event returns True, then
 //  we also return True and consume power. Else, return False.
 
-{
+	{
 	//	Only works on ships (with segments).
 	//	LATER: Introduce the concept of segments to stations.
 	CItem *pItem = pArmor->GetItem();
@@ -2391,7 +2378,7 @@ int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, S
 	Ctx.SaveAndDefineItemVar(*pItem);
 	ICCItem *pResult = Ctx.Run(Event);
 	if (pResult->IsError())
-	pSource->ReportEventError(ON_ARMOR_CONSUME_POWER_EVENT, pResult);
+		pSource->ReportEventError(ON_ARMOR_CONSUME_POWER_EVENT, pResult);
 
 	if (pResult->IsNil())
 		{
@@ -2409,7 +2396,7 @@ int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, S
 	//	We've modified the armor
 
 	return iResult;
-}
+	}
 
 bool CArmorClass::UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)
 

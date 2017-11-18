@@ -21,8 +21,8 @@ class CArmorClass
 		enum ECachedHandlers
 			{
 			evtGetMaxHP					= 0,
-			evtOnArmorDamage			= 1,
-			evtOnArmorConsumePower		= 2,
+			evtOnArmorConsumePower		= 1,
+			evtOnArmorDamage			= 2,
 
 			evtCount					= 3,
 			};
@@ -194,7 +194,7 @@ class CArmorClass
 		DWORD m_fDisintegrationImmune:1;		//	TRUE if immune to disintegration
 		DWORD m_fShatterImmune:1;				//	TRUE if immune to shatter
 		DWORD m_fChargeDecay:1;					//	If TRUE, we decay while we have charges left
-		DWORD m_fCustomConsumePower : 1;		//  If TRUE, we fire a custom event, and consume power if it returns True
+		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
