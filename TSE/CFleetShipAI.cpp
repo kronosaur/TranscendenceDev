@@ -653,7 +653,9 @@ DWORD CFleetShipAI::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage,
 				else if (m_State == stateKeepFormation)
 					dwRes |= resCanAttackInFormation;
 
-				if (m_State != stateWaiting)
+				if (m_State == stateWaiting)
+					dwRes |= resCanFormUp;
+				else
 					dwRes |= resCanWait;
 
 				return dwRes;
