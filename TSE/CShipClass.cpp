@@ -4441,7 +4441,31 @@ void CShipClass::Paint (CG32bitImage &Dest,
 #endif
 	}
 
-void CShipClass::PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation)
+void CShipClass::PaintDevicePositions (CG32bitImage &Dest, int x, int y, const CDeviceDescList &Devices, int iShipRotation) const
+
+//	PaintDevicePositions
+//
+//	Paint position and fire arc of devices.
+
+	{
+	int i;
+	int iScale = GetImage().GetImageViewportSize();
+
+	for (i = 0; i < Devices.GetCount(); i++)
+		{
+		const SDeviceDesc &Desc = Devices.GetDeviceDesc(i);
+
+		switch (Desc.Item.GetType()->GetCategory())
+			{
+			case itemcatWeapon:
+			case itemcatLauncher:
+				CInstalledDevice::PaintDevicePos(Desc, Dest, x, y, iScale, iShipRotation);
+				break;
+			}
+		}
+	}
+
+void CShipClass::PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation) const
 
 //	PaintDockPortPositions
 //
@@ -4450,6 +4474,17 @@ void CShipClass::PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int i
 	{
 	int iScale = GetImage().GetImageViewportSize();
 	m_DockingPorts.DebugPaint(Dest, x, y, iShipRotation, iScale);
+	}
+
+void CShipClass::PaintInteriorCompartments (CG32bitImage &Dest, int x, int y, int iShipRotation) const
+
+//	PaintInteriorCompartments
+//
+//	Paints outline of interior compartments
+
+	{
+	int iScale = GetImage().GetImageViewportSize();
+	m_Interior.DebugPaint(Dest, x, y, iShipRotation, iScale);
 	}
 
 void CShipClass::PaintMap (CMapViewportCtx &Ctx, 

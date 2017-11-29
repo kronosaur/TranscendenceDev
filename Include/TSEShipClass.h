@@ -151,7 +151,9 @@ class CShipClass : public CDesignType
 					bool bThrusting = false,
 					bool bRadioactive = false,
 					DWORD byInvisible = 0);
-		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation);
+		void PaintDevicePositions (CG32bitImage &Dest, int x, int y, const CDeviceDescList &Devices, int iShipRotation) const;
+		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
+		void PaintInteriorCompartments (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
 		void PaintMap (CMapViewportCtx &Ctx, 
 					CG32bitImage &Dest, 
 					int x, 

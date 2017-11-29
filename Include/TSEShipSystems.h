@@ -126,6 +126,7 @@ class CShipInteriorDesc
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		void CalcCompartmentPositions (int iScale, TArray<CVector> &Result) const;
 		int CalcImageSize (CShipClass *pClass, CVector *retvOrigin = NULL) const;
+		void DebugPaint (CG32bitImage &Dest, int x, int y, int iRotation, int iScale) const;
 		inline int GetCount (void) const { return m_Compartments.GetCount(); }
 		inline const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
 		int GetHitPoints (void) const;

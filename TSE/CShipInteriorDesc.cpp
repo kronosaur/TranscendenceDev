@@ -238,6 +238,57 @@ int CShipInteriorDesc::CalcPaintOrder (int iIndex, const TSortMap<CString, int> 
 	return PaintOrder[iAttachedTo] + 1;
 	}
 
+void CShipInteriorDesc::DebugPaint (CG32bitImage &Dest, int x, int y, int iRotation, int iScale) const
+
+//	DebugPaint
+//
+//	Paints the outline of the compartments.
+
+	{
+	int i;
+	CG32bitPixel rgbColor = CG32bitPixel(0, 255, 255);
+
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		{
+		const SCompartmentDesc &Desc = m_Compartments[i];
+
+		//	Skip attached compartments
+
+		if (Desc.fIsAttached)
+			continue;
+
+		//	Generate points for the rectangle.
+
+		CVector vUL(Desc.rcPos.left, -Desc.rcPos.top);
+		vUL = vUL.Rotate(iRotation);
+
+		CVector vUR(Desc.rcPos.right, -Desc.rcPos.top);
+		vUR = vUR.Rotate(iRotation);
+
+		CVector vLR(Desc.rcPos.right, -Desc.rcPos.bottom);
+		vLR = vLR.Rotate(iRotation);
+
+		CVector vLL(Desc.rcPos.left, -Desc.rcPos.bottom);
+		vLL = vLL.Rotate(iRotation);
+
+		int xUL = x + (int)vUL.GetX();
+		int yUL = y - (int)vUL.GetY();
+		int xUR = x + (int)vUR.GetX();
+		int yUR = y - (int)vUR.GetY();
+		int xLR = x + (int)vLR.GetX();
+		int yLR = y - (int)vLR.GetY();
+		int xLL = x + (int)vLL.GetX();
+		int yLL = y - (int)vLL.GetY();
+
+		//	Paint outline
+
+		CGDraw::Line(Dest, xUL, yUL, xUR, yUR, 1, rgbColor);
+		CGDraw::Line(Dest, xUR, yUR, xLR, yLR, 1, rgbColor);
+		CGDraw::Line(Dest, xLR, yLR, xLL, yLL, 1, rgbColor);
+		CGDraw::Line(Dest, xLL, yLL, xUL, yUL, 1, rgbColor);
+		}
+	}
+
 int CShipInteriorDesc::GetHitPoints (void) const
 
 //	GetHitPoints
