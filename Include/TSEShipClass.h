@@ -87,7 +87,7 @@ class CShipClass : public CDesignType
 		inline const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);
         const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
-		inline CObjectEffectDesc &GetEffectsDesc (void) { return m_Effects; }
+		inline const CObjectEffectDesc &GetEffectsDesc (void) const { return m_Effects; }
 		IShipGenerator *GetEscorts (void) { return m_pEscorts; }
 		CWeaponFireDesc *GetExplosionType (CShip *pShip) const;
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }

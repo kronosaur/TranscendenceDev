@@ -187,6 +187,7 @@
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
+#define PROPERTY_THRUSTER_POWER					CONSTLIT("thrusterPower")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
@@ -3095,7 +3096,7 @@ void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 
 	int i;
 
-	CObjectEffectDesc &Effects = GetEffectsDesc();
+	const CObjectEffectDesc &Effects = GetEffectsDesc();
 	if (Effects.GetEffectCount() > 0)
 		{
 		TArray<IEffectPainter *> Painters;
@@ -4153,6 +4154,13 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 		Metric rMass = CalcMass(m_AverageDevices);
 		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)) + 0.5);
 		return CC.CreateInteger(10 * iRatio);
+		}
+	else if (strEquals(sProperty, PROPERTY_THRUSTER_POWER))
+		{
+		const CObjectEffectDesc &Effects = GetEffectsDesc();
+		int iThrustersPerSide = Max(1, Effects.GetEffectCount(CObjectEffectDesc::effectThrustLeft));
+		int iThrusterPower = Max(1, mathRound((GetHullMass() / iThrustersPerSide) * m_RotationDesc.GetRotationAccelPerTick()));
+		return CC.CreateInteger(iThrusterPower);
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DRIVE_POWER)

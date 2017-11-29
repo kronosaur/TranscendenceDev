@@ -389,7 +389,7 @@ class CObjectEffectDesc
 			};
 
 		ALERROR Bind (SDesignLoadCtx &Ctx, const CObjectImageArray &Image);
-		inline IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx, int iIndex) { return m_Effects[iIndex].pEffect.CreatePainter(Ctx); }
+		inline IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx, int iIndex) const { return m_Effects[iIndex].pEffect.CreatePainter(Ctx); }
 		CEffectCreator *FindEffectCreator (const CString &sUNID) const;
 		inline int GetEffectCount (void) const { return m_Effects.GetCount(); }
 		int GetEffectCount (DWORD dwEffects) const;
