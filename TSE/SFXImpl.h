@@ -721,6 +721,7 @@ class CParticleSystemEffectCreator : public CEffectCreator
 		CEffectParamDesc m_EmitRate;		//	Particles to create per tick
 		CEffectParamDesc m_EmitSpeed;		//	Particle speed (% of lightspeed)
 		CEffectParamDesc m_EmitLifetime;	//	Emissions lasts for this many ticks
+		CEffectParamDesc m_EmitWidth;		//	Emission width
 		CEffectParamDesc m_ParticleLifetime;//	In ticks
 		CEffectParamDesc m_Radius;			//	Radius of system
 		CEffectParamDesc m_SpreadAngle;		//	Full angle of spread

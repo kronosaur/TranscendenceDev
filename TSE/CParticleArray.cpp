@@ -590,20 +590,29 @@ void CParticleArray::EmitExhaust (const CParticleSystemDesc &Desc, CSpaceObject 
 	CVector vAxis = ::PolarToVector(iDirection + 180, 1.0);
 	CVector vTangent = ::PolarToVector(iDirection + 90, 1.0);
 
+	//	Width of emission
+
+	Metric rHalfWidth = 0.5 * Desc.GetEmitWidth().Roll() * g_KlicksPerPixel;
+
 	//	Create particles
 
 	for (i = 0; i < iCount; i++)
 		{
 		Metric rSlide = mathRandom(0, 9999) / 10000.0;
+		Metric rTangentSlide = mathRandom(-9999, 9999) / 10000.0;
 
 		//	Compute a position randomly along the line between the current and
 		//	last emit positions.
 
 		CVector vPos = vSource + rSlide * vToOldPos;
 
+		//	If we have an emit width, adjust position
+
+		if (rHalfWidth > 0.0)
+			vPos = vPos + (vTangent * (rTangentSlide * rHalfWidth));
+
 		//	Generate a random velocity along the tangent
 
-		Metric rTangentSlide = mathRandom(-9999, 9999) / 10000.0;
 		Metric rAxisJitter = mathRandom(-50, 50) / 100.0;
 		CVector vVel = (vTangent * rTangentSlide * Desc.GetXformTime() * Desc.GetTangentSpeed().Roll() * LIGHT_SPEED / 100.0)
 				+ (vAxis * (Desc.GetEmitSpeed().Roll() + rAxisJitter) * LIGHT_SPEED / 100.0);
