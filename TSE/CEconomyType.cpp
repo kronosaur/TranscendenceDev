@@ -8,7 +8,10 @@
 #define CONVERSION_ATTRIB						CONSTLIT("conversion")
 #define ID_ATTRIB								CONSTLIT("id")
 
+#define FIELD_LEVEL								CONSTLIT("level")
 #define FIELD_NAME								CONSTLIT("name")
+#define FIELD_STANDARD							CONSTLIT("standard")
+#define FIELD_X									CONSTLIT("x")
 
 static CEconomyType *g_pDefaultEconomy = NULL;
 
@@ -271,11 +274,20 @@ CString CCurrencyAndValue::GetSID (void) const
 	return (m_pCurrency ? m_pCurrency->GetSID() : NULL_STR);
 	}
 
-ALERROR CCurrencyAndValue::InitFromXMLAndDefault (SDesignLoadCtx &Ctx, const CString &sDesc, const CCurrencyAndValue &Default)
+ALERROR CCurrencyAndValue::InitFromXMLAndDefault (SDesignLoadCtx &Ctx, const CString &sDesc, const CCurrencyAndValue &Default, int iDefaultLevel)
 
 //	InitFromXMLAndDefault
 //
-//	Initialies from a string
+//	Initialies from a string. We parse strings of the following forms:
+//
+//	+10						+10% above default value
+//	-10						-10% off default value
+//	123						123 credits
+//	rin:100					100 rin
+//	standard				Standard treasure value for iDefaultLevel
+//	standard:level=3		Standard treasure value for level 3
+//	standard:x=1.5			1.5 times standard treasure value for iDefaultLevel 
+//	standard:level=3:x=1.5	1.5 times standard treasure value for level 3
 
 	{
 	//	If blank, use the default
@@ -332,18 +344,112 @@ ALERROR CCurrencyAndValue::InitFromXMLAndDefault (SDesignLoadCtx &Ctx, const CSt
 	else
 		sValue = sDesc;
 
-	//	Load the currency type
+	//	If the value is "standard" then we take the standard treasure value
+	//	for the level.
 
-	m_pCurrency.LoadUNID(sCurrency);
-
-	//	Load the value
-
-	bool bFailed;
-	m_iValue = strToInt(sValue, 0, &bFailed);
-	if (bFailed)
+	if (strEquals(sValue, FIELD_STANDARD))
 		{
-		Ctx.sError = strPatternSubst(CONSTLIT("Invalid currency value: %s"), sValue);
-		return ERR_FAIL;
+		//	If we don't have a default level, then use default
+
+		if (iDefaultLevel == 0)
+			*this = Default;
+
+		//	Otherwise, initialize from standard
+
+		else
+			{
+			m_pCurrency.LoadUNID(NULL_STR);
+			m_iValue = CItemType::GetStdStats(iDefaultLevel).TreasureValue;
+			}
+		}
+
+	//	If the currency starts with "standard" then we're specifying a standard 
+	//	treasure value.
+
+	else if (strStartsWith(sCurrency, FIELD_STANDARD))
+		{
+		int iLevel = iDefaultLevel;
+		Metric rMultiplier = 1.0;
+
+		//	Parse various modifiers
+
+		char *pPos = sValue.GetASCIIZPointer();
+		while (*pPos != '\0')
+			{
+			//	Skip whitespace
+
+			while (strIsWhitespace(pPos))
+				pPos++;
+
+			//	Modifier
+
+			char *pStart = pPos;
+			while (*pPos != '=' && *pPos != '\0')
+				pPos++;
+
+			if (*pPos != '=')
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Invalid currency syntax: %s"), sDesc);
+				return ERR_FAIL;
+				}
+
+			CString sModifier(pStart, (int)(pPos - pStart));
+
+			//	Value
+
+			pPos++;
+			bool bError;
+			Metric rValue = strParseDouble(pPos, 0.0, &pPos, &bError);
+			if (bError)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Invalid currency syntax: %s"), sDesc);
+				return ERR_FAIL;
+				}
+
+			//	See which modifier we have
+
+			if (strEquals(sModifier, FIELD_LEVEL))
+				iLevel = (int)rValue;
+			else if (strEquals(sModifier, FIELD_X))
+				rMultiplier = rValue;
+			else
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Invalid currency syntax: %s"), sDesc);
+				return ERR_FAIL;
+				}
+
+			//	Skip until the next modifier
+
+			while (*pPos != '\0' && !strIsAlpha(pPos))
+				pPos++;
+			}
+
+		//	Initialize
+
+		m_pCurrency.LoadUNID(NULL_STR);
+		if (rMultiplier != 1.0)
+			m_iValue = (CurrencyValue)Max(0.0, rMultiplier * CItemType::GetStdStats(iLevel).TreasureValue);
+		else
+			m_iValue = CItemType::GetStdStats(iLevel).TreasureValue;
+		}
+
+	//	Otherwise, we have a currency and a value
+
+	else
+		{
+		//	Load the currency type
+
+		m_pCurrency.LoadUNID(sCurrency);
+
+		//	Load the value
+
+		bool bFailed;
+		m_iValue = strToInt(sValue, 0, &bFailed);
+		if (bFailed)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid currency value: %s"), sValue);
+			return ERR_FAIL;
+			}
 		}
 
 	//	Done

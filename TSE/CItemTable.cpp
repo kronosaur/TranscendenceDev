@@ -681,14 +681,14 @@ ALERROR CGroupOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 		m_AverageValue.InsertEmpty(MAX_ITEM_LEVEL + 1);
 		for (i = 0; i < Values.GetCount(); i++)
-			if (error = m_AverageValue[i + 1].InitFromXML(Ctx, Values[i]))
+			if (error = m_AverageValue[i + 1].InitFromXML(Ctx, Values[i], i + 1))
 				return error;
 		}
 	else if (pDesc->FindAttribute(VALUE_ATTRIB, &sAttrib))
 		{
 		m_AverageValue.InsertEmpty(MAX_ITEM_LEVEL + 1);
 		for (i = 1; i <= MAX_ITEM_LEVEL; i++)
-			if (error = m_AverageValue[i].InitFromXML(Ctx, sAttrib))
+			if (error = m_AverageValue[i].InitFromXML(Ctx, sAttrib, i))
 				return error;
 		}
 

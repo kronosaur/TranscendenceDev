@@ -64,6 +64,11 @@ class CItemType : public CDesignType
 			bool bAsArmorSet;
 			};
 
+		struct SStdStats
+			{
+			CurrencyValue TreasureValue;	//	Value of std treasure at system level (in credits)
+			};
+
 		CItemType (void);
 		virtual ~CItemType (void);
 
@@ -135,6 +140,7 @@ class CItemType : public CDesignType
 
 		static ItemCategories GetCategoryForNamedDevice (DeviceNames iDev);
 		static CString GetItemCategory (ItemCategories iCategory);
+        static const SStdStats &GetStdStats (int iLevel);
 		static bool ParseItemCategory (const CString &sCategory, ItemCategories *retCategory = NULL);
 
 	protected:
@@ -229,6 +235,8 @@ class CItemType : public CDesignType
 		DWORD m_dwSpare:16;
 
 		CString m_sData;						//	Category-specific data
+
+        static SStdStats m_Stats[MAX_ITEM_LEVEL];
 	};
 
 //	CItemTable ----------------------------------------------------------------

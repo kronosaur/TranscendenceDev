@@ -133,6 +133,40 @@ static char g_RandomDamagedAttrib[] = "randomDamaged";
 
 const int FLOTSAM_IMAGE_WIDTH =					32;
 
+CItemType::SStdStats CItemType::m_Stats[MAX_ITEM_LEVEL] = 
+    {
+        //  Treasure Value
+        {   750,  },
+        {   1000, },
+        {   1500, },
+        {   2000, },
+        {   4000, },
+
+        {   8000, },
+        {   16000, },
+        {   32000, },
+        {   64000, },
+        {   128000, },
+
+        {   256000, },
+        {   512000, },
+        {   1000000, },
+        {   1800000, },
+        {   3500000, },
+
+        {   6000000, },
+        {   1000000, },
+        {   1500000, },
+        {   2250000, },
+        {   3250000, },
+
+        {   5000000, },
+        {   7500000, },
+        {   12000000, },
+        {   18000000, },
+        {   24000000, },
+    };
+
 static char *CACHED_EVENTS[CItemType::evtCount] =
 	{
 		"GetDescription",
@@ -921,6 +955,17 @@ CString CItemType::GetSortName (void) const
 	else
 		return m_sSortName;
 	}
+
+const CItemType::SStdStats &CItemType::GetStdStats (int iLevel)
+
+//  GetStdStats
+//
+//  Returns standard stats for the level.
+
+    {
+    ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+    return m_Stats[iLevel - 1];
+    }
 
 CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)
 
