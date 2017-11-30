@@ -459,6 +459,18 @@ bool COrbEffectPainter::CalcIntermediates (void)
 						CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
 					}
 
+				//	For cloud and Fireblast we need a repeating animation
+
+				if (UsesTextures())
+					{
+					m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
+					int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
+
+					m_TextureFrame.InsertEmpty(iFrames);
+					for (i = 0; i < iFrames; i++)
+						m_TextureFrame[i] = i;
+					}
+
 				break;
 				}
 
