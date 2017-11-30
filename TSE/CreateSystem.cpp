@@ -445,7 +445,8 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 							 const CVector &vPos,
 							 bool bSeparateEnemies,
 							 bool bIncludeAll,
-							 CStationType **retpType)
+							 CStationType **retpType,
+							 TArray<CStationTableCache::SEntry> **retpTable = NULL)
 
 //	ChooseRandomStation
 //
@@ -509,6 +510,12 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 
 		Table.Insert(Entry.pType, Entry.iChance);
 		}
+
+	//	Returns the original table if desired for debugging purposes. Note, however, that
+	//	we only return it if we add it to the cache (otherwise, it will get freed).
+
+	if (retpTable)
+		*retpTable = (!bFreeTable ? pTable : NULL);
 
 	//	Short-circuit
 
@@ -613,10 +620,11 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 
 	//	Figure out how many stations to create
 
+	int iLocationCount = LocationTable.GetCount();
 	int iCount;
 	int iPercent;
 	if (pDesc->FindAttributeInteger(PERCENT_FULL_ATTRIB, &iPercent))
-		iCount = iPercent * LocationTable.GetCount() / 100;
+		iCount = iPercent * iLocationCount / 100;
 	else
 		iCount = GetDiceCountFromAttribute(pDesc->GetAttribute(COUNT_ATTRIB));
 
@@ -694,6 +702,17 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 			break;
 		}
 
+	//	See how many locations we actually filled. If we filled fewer locations
+	//	than expected, then report the actual number.
+
+	int iFilled = iLocationCount - LocationTable.GetCount();
+	if (iFilled < iCount 
+			&& g_pUniverse->InDebugMode()
+			&& iLocationCount > 0)
+		{
+		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: Only filled %d of %d locations (%d%%)"), pCtx->pTopologyNode->GetID(), iFilled, iLocationCount, iFilled * 100 / iLocationCount));
+		}
+
 	PopDebugStack(pCtx);
 	return NOERROR;
 	}
@@ -733,13 +752,15 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		//	Now look for the most appropriate station to place at the location
 
 		CStationType *pType;
+		TArray<CStationTableCache::SEntry> *pStationTable;
 		if (error = ChooseRandomStation(pCtx, 
 				sStationCriteria, 
 				pLoc->GetAttributes(),
 				pLoc->GetOrbit().GetObjectPos(),
 				bSeparateEnemies,
 				false,
-				&pType))
+				&pType,
+				&pStationTable))
 			{
 			//	If we couldn't find an appropriate location then try picking
 			//	a different location.
@@ -751,6 +772,41 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 				if (--iTries == 0 && g_pUniverse->InDebugMode())
 					{
 					g_pUniverse->LogOutput(CONSTLIT("Warning: Ran out of tries in FillLocations"));
+					g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Level: %d; Loc attribs: %s; Node attribs: %s"), 
+							pCtx->pTopologyNode->GetLevel(), 
+							pLoc->GetAttributes(), 
+							pCtx->pTopologyNode->GetAttributes()));
+
+					//	If we have a station table, then output it, so we can debug what happened.
+
+					if (pStationTable)
+						{
+						if (pStationTable->GetCount() == 0)
+							g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("NO ENTRIES IN STATION TABLE: %s"), sStationCriteria));
+
+						else
+							{
+							for (int i = 0; i < pStationTable->GetCount(); i++)
+								{
+								const CStationTableCache::SEntry &Entry = pStationTable->GetAt(i);
+
+								//	Write out the station and its encounter chance:
+
+								if (!Entry.pType->CanBeEncountered(pCtx->pSystem))
+									g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: ALREADY ENCOUNTERED"), Entry.pType->GetNounPhrase()));
+
+								//	If we want to separate enemies, then see if there are any
+								//	enemies of this station type at this location.
+
+								else if (bSeparateEnemies && !pCtx->pSystem->IsExclusionZoneClear(pLoc->GetOrbit().GetObjectPos(), Entry.pType))
+									g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: ENEMIES NEARBY"), Entry.pType->GetNounPhrase()));
+
+								else
+									g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: %d%% chance"), Entry.pType->GetNounPhrase(), Entry.iChance));
+								}
+							}
+						}
+
 					DumpDebugStack(pCtx);
 					}
 
