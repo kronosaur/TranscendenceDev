@@ -186,6 +186,7 @@ class CEnhancerClass : public CDeviceClass
 		//	CDeviceClass virtuals
 
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) override;
+		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const override;
 
@@ -212,6 +213,7 @@ class CEnhancerClass : public CDeviceClass
 
 		bool AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void ApplyInherited (SScalableStats &Stats, const SInheritedStats &RootStats);
+		ICCItem *FindEnhancementProperty (CItemCtx &Ctx, const CItemEnhancement &Enhancement, const CString &sName) const;
 		const SScalableStats *GetStats (CItemCtx &Ctx) const;
 		ALERROR InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const SInheritedStats &RootStats);
 		ALERROR InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, const SInheritedStats &RootStats);

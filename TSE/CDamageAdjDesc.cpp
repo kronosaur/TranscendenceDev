@@ -116,7 +116,7 @@ void CDamageAdjDesc::GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, in
 		*retiDefault = (m_pDefault ? m_pDefault->GetAdj(iDamageType) : 100);
 	}
 
-int CDamageAdjDesc::GetBonusFromAdj (int iDamageAdj, int iDefault) const
+int CDamageAdjDesc::GetBonusFromAdj (int iDamageAdj, int iDefault)
 
 //	GetBonusFromAdj
 //

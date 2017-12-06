@@ -51,6 +51,9 @@ enum ItemEnhancementTypes
 	etHPBonus =							0x1500,	//	+hp%, like etStrengthen
 												//		X = %increase
 	etHealerRegenerate =				0x1600,	//	Same as etRegenerate, but uses healer
+	etResistHPBonus =					0x1700,	//	resist damage
+												//		B = damage type
+												//		X = %bonus (if disadvantage, this is decrease)
 
 	etData1Mask =						0x000f,	//	4-bits of data (generally for damage adj)
 	etData2Mask =						0x00f0,	//	4-bits of data (generally for damage type)
@@ -101,8 +104,9 @@ class CItemEnhancement
 		EnhanceItemStatus Combine (const CItem &Item, CItemEnhancement Enhancement);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
 		int GetActivateRateAdj (int *retiMinDelay = NULL, int *retiMaxDelay = NULL) const;
+		int GetDamageAdj (void) const;
 		int GetDamageAdj (const DamageDesc &Damage) const;
-		inline DamageTypes GetDamageType (void) const { return (DamageTypes)(DWORD)((m_dwMods & etData2Mask) >> 4); }
+		DamageTypes GetDamageType (void) const;
 		inline int GetDataA (void) const { return (int)(DWORD)(m_dwMods & etDataAMask); }
 		inline int GetDataB (void) const { return (int)(DWORD)((m_dwMods & etDataBMask) >> 16); }
 		inline int GetDataC (void) const { return (int)(DWORD)((m_dwMods & etDataCMask) >> 24); }
@@ -120,6 +124,7 @@ class CItemEnhancement
 		int GetPowerAdj (void) const;
 		int GetReflectChance (DamageTypes iDamage) const;
 		int GetResistEnergyAdj (void) const { return (GetType() == etResistEnergy ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
+		int GetResistHPBonus (void) const;
 		int GetResistMatterAdj (void) const { return (GetType() == etResistMatter ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
 		SpecialDamageTypes GetSpecialDamage (int *retiLevel = NULL) const;
 		inline ItemEnhancementTypes GetType (void) const { return (ItemEnhancementTypes)(m_dwMods & etTypeMask); }
@@ -160,6 +165,7 @@ class CItemEnhancement
 		inline void SetModResistDamageClass (DamageTypes iDamageType, int iAdj) { m_dwMods = Encode12(etResistByDamage2 | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj), (int)iDamageType); }
 		inline void SetModResistDamageTier (DamageTypes iDamageType, int iAdj) { m_dwMods = Encode12(etResistByLevel | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj), (int)iDamageType); }
 		inline void SetModResistEnergy (int iAdj) { m_dwMods = Encode12(etResistEnergy | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj)); }
+		inline void SetModResistHPBonus (DamageTypes iDamageType, int iBonus) { m_dwMods = EncodeDX(etResistHPBonus | (iBonus < 0 ? etDisadvantage : 0), iDamageType, Absolute(iBonus)); }
 		inline void SetModResistMatter (int iAdj) { m_dwMods = Encode12(etResistMatter | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj)); }
 		void SetModSpecialDamage (SpecialDamageTypes iSpecial, int iLevel = 0);
 		void SetModSpeed (int iAdj, int iMinDelay = 0, int iMaxDelay = 0);
@@ -175,11 +181,13 @@ class CItemEnhancement
 		EnhanceItemStatus CombineAdvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement);
 		EnhanceItemStatus CombineDisadvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement);
 		EnhanceItemStatus CombineDisadvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement);
+		inline DamageTypes GetDamageTypeField (void) const { return (DamageTypes)(DWORD)((m_dwMods & etData2Mask) >> 4); }
 		inline bool IsIonEffectImmune (void) const { return ((GetType() == etImmunityIonEffects) && !IsDisadvantage()); }
 
 		static int DamageAdj2Level (int iDamageAdj);
 		static DWORD EncodeABC (DWORD dwTypeCode, int A = 0, int B = 0, int C = 0);
 		static DWORD EncodeAX (DWORD dwTypeCode, int A = 0, int X = 0);
+		static DWORD EncodeDX (DWORD dwTypeCode, DamageTypes iDamageType, int X = 0);
 		static DWORD Encode12 (DWORD dwTypeCode, int Data1 = 0, int Data2 = 0);
 		static int Level2Bonus (int iLevel, bool bDisadvantage = false);
 		static int Level2DamageAdj (int iLevel, bool bDisadvantage = false);

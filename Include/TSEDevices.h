@@ -69,6 +69,7 @@ class CEnhancementDesc
 		bool Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline int GetCount (void) const { return m_Enhancements.GetCount(); }
+		inline const CItemEnhancement &GetEnhancement (int iIndex) const { return m_Enhancements[iIndex].Enhancement; }
 		void SetCriteria (int iEntry, const CItemCriteria &Criteria);
 		void SetLevelCheck (int iEntry, bool bValue = true);
 		void SetType (int iEntry, const CString &sType);

@@ -28,6 +28,7 @@ void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttri
 		case etResistByLevel:
 		case etResistByDamage:
 		case etResistByDamage2:
+		case etResistHPBonus:
 			break;
 
 		case etRegenerate:
@@ -36,11 +37,11 @@ void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttri
 			break;
 
 		case etReflect:
-			retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s transparent") : CONSTLIT("+%s reflect")), ::GetDamageShortName(GetDamageType())), true));
+			retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s transparent") : CONSTLIT("+%s reflect")), ::GetDamageShortName(GetDamageTypeField())), true));
 			break;
 
 		case etRepairOnHit:
-			retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+%s regen"), ::GetDamageShortName(GetDamageType())), true));
+			retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+%s regen"), ::GetDamageShortName(GetDamageTypeField())), true));
 			break;
 
 		case etSpecialDamage:
@@ -428,6 +429,17 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 				return eisNoEffect;
 			}
 
+		case etResistHPBonus:
+			{
+			if (Enhancement.GetDataX() > GetDataX())
+				{
+				*this = Enhancement;
+				return eisBetter;
+				}
+			else
+				return eisNoEffect;
+			}
+
 		case etSpeed:
 		case etSpeedOld:
 			{
@@ -444,7 +456,7 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 		case etResistByDamage:
 		case etResistByDamage2:
 			{
-			if (Enhancement.GetDamageType() != GetDamageType())
+			if (Enhancement.GetDamageTypeField() != GetDamageTypeField())
 				{
 				*this = Enhancement;
 				return eisEnhancementReplaced;
@@ -518,6 +530,7 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 		case etResistByLevel:
 		case etResistByDamage:
 		case etResistByDamage2:
+		case etResistHPBonus:
 		case etReflect:
 		case etSpeed:
 		case etSpeedOld:
@@ -574,6 +587,17 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 				return eisNoEffect;
 			}
 
+		case etResistHPBonus:
+			{
+			if (Enhancement.GetDataX() > GetDataX())
+				{
+				*this = Enhancement;
+				return eisWorse;
+				}
+			else
+				return eisNoEffect;
+			}
+
 		case etHPBonus:
 		case etStrengthen:
 			{
@@ -603,7 +627,7 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 		case etResistByDamage:
 		case etResistByDamage2:
 			{
-			if (Enhancement.GetDamageType() == GetDamageType()
+			if (Enhancement.GetDamageTypeField() == GetDamageTypeField()
 					&& Enhancement.GetLevel() > GetLevel())
 				{
 				*this = Enhancement;
@@ -650,6 +674,22 @@ DWORD CItemEnhancement::EncodeAX (DWORD dwTypeCode, int A, int X)
 			| (dwDataX << 16);
 	}
 
+DWORD CItemEnhancement::EncodeDX (DWORD dwTypeCode, DamageTypes iDamageType, int X)
+
+//	EncodeDX
+//
+//	Encodes a mod with a damage type and X.
+
+	{
+	DWORD dwData1 = 0;
+	DWORD dwData2 = Max(0, Min((int)iDamageType, (int)0xF));
+	DWORD dwDataX = Max(0, Min(X, (int)etDataXMax));
+	return dwTypeCode
+			| dwData1
+			| (dwData2 << 4)
+			| (dwDataX << 16);
+	}
+
 DWORD CItemEnhancement::Encode12 (DWORD dwTypeCode, int Data1, int Data2)
 
 //	Encode12
@@ -675,11 +715,39 @@ int CItemEnhancement::GetAbsorbAdj (const DamageDesc &Damage) const
 		{
 		case etReflect:
 			{
-			if (IsDisadvantage() && Damage.GetDamageType() == GetDamageType())
+			if (IsDisadvantage() && Damage.GetDamageType() == GetDamageTypeField())
 				return Level2DamageAdj(GetLevel());
 			else
 				return 100;
 			}
+
+		default:
+			return 100;
+		}
+	}
+
+int CItemEnhancement::GetDamageAdj (void) const
+
+//	GetDamageAdj
+//
+//	Returns the damage adjustment confered by this mod
+
+	{
+	switch (GetType())
+		{
+		case etResist:
+		case etResistEnergy:
+		case etResistMatter:
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+			return Level2DamageAdj(GetLevel(), IsDisadvantage());
+
+		case etResistHPBonus:
+			if (IsDisadvantage())
+				return CDamageAdjDesc::GetDamageAdjFromHPBonus(-GetDataX());
+			else
+				return CDamageAdjDesc::GetDamageAdjFromHPBonus(GetDataX());
 
 		default:
 			return 100;
@@ -706,25 +774,25 @@ int CItemEnhancement::GetDamageAdj (const DamageDesc &Damage) const
 
 		case etResistByLevel:
 			{
-			if (Damage.GetDamageType() == GetDamageType()
-					|| Damage.GetDamageType() == GetDamageType() + 1)
+			if (Damage.GetDamageType() == GetDamageTypeField()
+					|| Damage.GetDamageType() == GetDamageTypeField() + 1)
 				return Level2DamageAdj(GetLevel(), IsDisadvantage());
 			else
 				return 100;
 			}
 
 		case etResistByDamage:
-			return (Damage.GetDamageType() == GetDamageType() ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100);
+			return (Damage.GetDamageType() == GetDamageTypeField() ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100);
 
 		case etResistByDamage2:
 			{
-			if (Damage.GetDamageType() == GetDamageType())
+			if (Damage.GetDamageType() == GetDamageTypeField())
 				//	0 = 100			100
 				//	1 = 90			111
 				//	2 = 80			125
 				//	3 = 70			143
 				return Level2DamageAdj(GetLevel(), IsDisadvantage());
-			else if (Damage.GetDamageType() == GetDamageType() + 2)
+			else if (Damage.GetDamageType() == GetDamageTypeField() + 2)
 				//	0 = 100			100
 				//	1 = 95			105
 				//	2 = 90			112
@@ -733,6 +801,14 @@ int CItemEnhancement::GetDamageAdj (const DamageDesc &Damage) const
 			else
 				return 100;
 			}
+
+		case etResistHPBonus:
+			if (Damage.GetDamageType() != GetDamageTypeField())
+				return 100;
+			else if (IsDisadvantage())
+				return CDamageAdjDesc::GetDamageAdjFromHPBonus(-GetDataX());
+			else
+				return CDamageAdjDesc::GetDamageAdjFromHPBonus(GetDataX());
 
 		default:
 			return 100;
@@ -816,10 +892,10 @@ CString CItemEnhancement::GetEnhancedDesc (const CItem &Item, CSpaceObject *pIns
 
 		case etReflect:
 			return strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s transparent") : CONSTLIT("+%s reflect")),
-					::GetDamageShortName(GetDamageType()));
+					::GetDamageShortName(GetDamageTypeField()));
 
 		case etRepairOnHit:
-			return strPatternSubst(CONSTLIT("+%s regen"), ::GetDamageShortName(GetDamageType()));
+			return strPatternSubst(CONSTLIT("+%s regen"), ::GetDamageShortName(GetDamageTypeField()));
 
 		case etResist:
 			return (IsDisadvantage() ? CONSTLIT("-vulnerable") : CONSTLIT("+resistant"));
@@ -833,21 +909,22 @@ CString CItemEnhancement::GetEnhancedDesc (const CItem &Item, CSpaceObject *pIns
 		case etResistByLevel:
 			{
 			if (IsDisadvantage())
-				return strPatternSubst(CONSTLIT("-%s -%s"), strCapitalizeWords(::GetDamageShortName(GetDamageType())), strCapitalizeWords(::GetDamageShortName((DamageTypes)(GetDamageType() + 1))));
+				return strPatternSubst(CONSTLIT("-%s -%s"), strCapitalizeWords(::GetDamageShortName(GetDamageTypeField())), strCapitalizeWords(::GetDamageShortName((DamageTypes)(GetDamageTypeField() + 1))));
 			else
-				return strPatternSubst(CONSTLIT("+%s +%s"), strCapitalizeWords(::GetDamageShortName(GetDamageType())), strCapitalizeWords(::GetDamageShortName((DamageTypes)(GetDamageType() + 1))));
+				return strPatternSubst(CONSTLIT("+%s +%s"), strCapitalizeWords(::GetDamageShortName(GetDamageTypeField())), strCapitalizeWords(::GetDamageShortName((DamageTypes)(GetDamageTypeField() + 1))));
 			}
 
 		case etResistByDamage:
-			return strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s") : CONSTLIT("+%s")), ::GetDamageShortName(GetDamageType()));
+		case etResistHPBonus:
+			return strPatternSubst((IsDisadvantage() ? CONSTLIT("-%s") : CONSTLIT("+%s")), ::GetDamageShortName(GetDamageTypeField()));
 
 		case etResistByDamage2:
 			{
 			if (IsDisadvantage())
-				return strPatternSubst(CONSTLIT("-%s -%s"), ::GetDamageShortName(GetDamageType()), ::GetDamageShortName((DamageTypes)(GetDamageType() + 2)));
+				return strPatternSubst(CONSTLIT("-%s -%s"), ::GetDamageShortName(GetDamageTypeField()), ::GetDamageShortName((DamageTypes)(GetDamageTypeField() + 2)));
 			else
 				{
-				switch (GetDamageType())
+				switch (GetDamageTypeField())
 					{
 					case damageLaser:
 						return CONSTLIT("+ablative");
@@ -857,8 +934,8 @@ CString CItemEnhancement::GetEnhancedDesc (const CItem &Item, CSpaceObject *pIns
 
 					default:
 						return strPatternSubst(CONSTLIT("+%s +%s"), 
-								::GetDamageShortName(GetDamageType()), 
-								::GetDamageShortName((DamageTypes)(GetDamageType() + 2)));
+								::GetDamageShortName(GetDamageTypeField()), 
+								::GetDamageShortName((DamageTypes)(GetDamageTypeField() + 2)));
 					}
 				}
 			}
@@ -946,6 +1023,28 @@ int CItemEnhancement::GetActivateRateAdj (int *retiMinDelay, int *retiMaxDelay) 
 		*retiMaxDelay = iMaxDelay;
 
 	return iAdj;
+	}
+
+DamageTypes CItemEnhancement::GetDamageType (void) const
+
+//	GetDamageType
+//
+//	Returns the encoded damage type, if valid.
+
+	{
+	switch (GetType())
+		{
+		case etReflect:
+		case etRepairOnHit:
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+		case etResistHPBonus:
+			return GetDamageTypeField();
+
+		default:
+			return damageError;
+		}
 	}
 
 int CItemEnhancement::GetEnhancedRate (int iRate) const
@@ -1061,11 +1160,36 @@ int CItemEnhancement::GetReflectChance (DamageTypes iDamage) const
 		{
 		case etReflect:
 			{
-			if (!IsDisadvantage() && iDamage == GetDamageType())
+			if (!IsDisadvantage() && iDamage == GetDamageTypeField())
 				return 50 + (GetLevel() * 5);
 			else
 				return 0;
 			}
+
+		default:
+			return 0;
+		}
+	}
+
+int CItemEnhancement::GetResistHPBonus (void) const
+
+//	GetResistHPBonus
+//
+//	Returns the damage adjustment confered by this mod
+
+	{
+	switch (GetType())
+		{
+		case etResist:
+		case etResistEnergy:
+		case etResistMatter:
+		case etResistByLevel:
+		case etResistByDamage:
+		case etResistByDamage2:
+			return CDamageAdjDesc::GetBonusFromAdj(Level2DamageAdj(GetLevel(), IsDisadvantage()));
+
+		case etResistHPBonus:
+			return (IsDisadvantage() ? -GetDataX() : GetDataX());
 
 		default:
 			return 0;
@@ -1134,6 +1258,9 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etResistEnergy:
 				return Max(-80, -20 * GetLevel());
 
+			case etResistHPBonus:
+				return Max(-80, -GetDataX());
+
 			case etPhotoRegenerate:
 			case etPhotoRecharge:
 			case etRepairOnHit:
@@ -1178,6 +1305,9 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etResistEnergy:
 				return 50 * GetLevel();
 
+			case etResistHPBonus:
+				return GetDataX();
+
 			case etPhotoRegenerate:
 			case etPhotoRecharge:
 			case etRepairOnHit:
@@ -1209,6 +1339,7 @@ bool CItemEnhancement::HasCustomDamageAdj (void) const
 		case etResistByLevel:
 		case etResistByDamage:
 		case etResistByDamage2:
+		case etResistHPBonus:
 			return true;
 
 		default:
@@ -1341,7 +1472,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 				return ERR_FAIL;
 				}
 			else
-				SetModResistDamage(iDamageType, CDamageAdjDesc::GetDamageAdjFromHPBonus(iValue2));
+				SetModResistHPBonus(iDamageType, iValue2);
 			}
 
 		//	Otherwise, we have a single number, which means a total HP bonus
@@ -1616,7 +1747,7 @@ bool CItemEnhancement::IsReflective (const DamageDesc &Damage, int *retiReflectC
 		{
 		case etReflect:
 			{
-			if (!IsDisadvantage() && Damage.GetDamageType() == GetDamageType())
+			if (!IsDisadvantage() && Damage.GetDamageType() == GetDamageTypeField())
 				{
 				if (retiReflectChance)
 					*retiReflectChance = 50 + (GetLevel() * 5);

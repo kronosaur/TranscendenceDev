@@ -19,6 +19,11 @@
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define TYPE_ATTRIB								CONSTLIT("type")
 
+#define PROPERTY_ENHANCEMENT_PREFIX				CONSTLIT("enhancement.")
+#define PROPERTY_ENHANCEMENT_DAMAGE_TYPE		CONSTLIT("enhancement.damageType")
+#define PROPERTY_ENHANCEMENT_HP_BONUS			CONSTLIT("enhancement.hpBonus")
+#define PROPERTY_ENHANCEMENT_TYPE				CONSTLIT("enhancement.type")
+
 bool CEnhancerClass::AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
 
 //	AccumulateOldStyle
@@ -215,6 +220,64 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	*retpDevice = pDevice;
 
 	return NOERROR;
+	}
+
+ICCItem *CEnhancerClass::FindEnhancementProperty (CItemCtx &Ctx, const CItemEnhancement &Enhancement, const CString &sName) const
+
+//	FindEnhancementProperty
+//
+//	Returns a property of the given enhancement. Return NULL if not found.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sName, PROPERTY_ENHANCEMENT_DAMAGE_TYPE))
+		{
+		DamageTypes iDamage = Enhancement.GetDamageType();
+		if (iDamage == damageError)
+			return CC.CreateNil();
+		else
+			return CC.CreateString(::GetDamageType(iDamage));
+		}
+
+	else if (strEquals(sName, PROPERTY_ENHANCEMENT_HP_BONUS))
+		return CC.CreateInteger(Enhancement.GetResistHPBonus());
+
+	else
+		return NULL;
+	}
+
+ICCItem *CEnhancerClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
+
+//	FindItemProperty
+//
+//	Returns a property.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	const SScalableStats *pStats = GetStats(Ctx);
+
+	//	We don't support this for old-style definitions.
+
+	if (pStats == NULL)
+		return CDeviceClass::FindItemProperty(Ctx, sName);
+
+	//	If this is a property of the enhancement, then get that.
+
+	if (strStartsWith(sName, PROPERTY_ENHANCEMENT_PREFIX))
+		{
+		if (pStats->Enhancements.GetCount() < 1)
+			return NULL;
+
+		//	For now we ignore more than one enhancement.
+
+		return FindEnhancementProperty(Ctx, pStats->Enhancements.GetEnhancement(0), sName);
+		}
+
+	//	Otherwise, just get the property from the base class
+
+	else
+		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
 int CEnhancerClass::GetPowerRating (CItemCtx &Ctx) const

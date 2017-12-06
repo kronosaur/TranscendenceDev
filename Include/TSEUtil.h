@@ -709,6 +709,7 @@ class CDamageAdjDesc
 		ALERROR InitFromArray (int *pTable);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsDefault = false);
 
+		static int GetBonusFromAdj (int iDamageAdj, int iDefault = 100);
 		static int GetDamageAdjFromHPBonus (int iBonus);
 		static Metric GetDamageTypeFraction (int iLevel, DamageTypes iDamageType);
 
@@ -727,7 +728,6 @@ class CDamageAdjDesc
 			};
 
 		void Compute (const CDamageAdjDesc *pDefault);
-		int GetBonusFromAdj (int iDamageAdj, int iDefault) const;
 		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
 		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
 
