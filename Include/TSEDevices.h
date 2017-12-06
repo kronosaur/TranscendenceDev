@@ -382,6 +382,7 @@ class CInstalledDevice
 
 		void FinishInstall (CSpaceObject *pSource);
 		inline CDeviceClass *GetClass (void) const { return m_pClass; }
+		inline DWORD GetUNID (void) const { return m_pClass.GetUNID(); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitFromDesc (const SDeviceDesc &Desc);
 		void Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate = false);

@@ -1349,7 +1349,13 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			for (i = 0; i < m_iDevicesCount; i++)
 				{
 				CXMLElement *pDeviceDesc = pDevices->GetContentElement(i);
-				m_Devices[i].InitFromXML(Ctx, pDeviceDesc);
+				if (error = m_Devices[i].InitFromXML(Ctx, pDeviceDesc))
+					return ComposeLoadError(Ctx, Ctx.sError);
+
+				//	Must have a device
+
+				if (m_Devices[i].GetUNID() == 0)
+					return ComposeLoadError(Ctx, CONSTLIT("No item specified in <Device> element."));
 				}
 			}
 		}

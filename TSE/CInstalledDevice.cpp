@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define DEVICE_ID_ATTRIB						CONSTLIT("deviceID")
+#define ITEM_ATTRIB								CONSTLIT("item")
 
 //	CInstalledDevice class
 
@@ -277,7 +278,11 @@ ALERROR CInstalledDevice::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	{
 	ALERROR error;
 
-	if (error = m_pClass.LoadUNID(Ctx, pDesc->GetAttribute(DEVICE_ID_ATTRIB)))
+	CString sUNID = pDesc->GetAttribute(DEVICE_ID_ATTRIB);
+	if (sUNID.IsBlank())
+		sUNID = pDesc->GetAttribute(ITEM_ATTRIB);
+
+	if (error = m_pClass.LoadUNID(Ctx, sUNID))
 		return error;
 
 	SDeviceDesc DeviceDesc;
