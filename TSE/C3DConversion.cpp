@@ -19,6 +19,8 @@ static Metric g_MinZg =							0.1;
 #define Y_ATTRIB								CONSTLIT("y")
 #define Z_ATTRIB								CONSTLIT("z")
 
+#define STR_ANGLES_PREFIX						CONSTLIT("angles:")
+
 void C3DConversion::CalcCoord (int iScale, int iAngle, int iRadius, int iZ, int *retx, int *rety)
 
 //	CalcCoord
@@ -386,10 +388,10 @@ void C3DConversion::InitComplete (int iDirectionCount, int iScale, int iFacing)
 		Init(iDirectionCount, iScale, m_iAngle, m_iRadius, m_iZ, iFacing);
 
 	if (!m_sBringToFront.IsBlank())
-		OverridePaintFirst(m_sBringToFront, false);
+		OverridePaintFirst(iDirectionCount, m_sBringToFront, false);
 
 	if (!m_sSendToBack.IsBlank())
-		OverridePaintFirst(m_sSendToBack, true);
+		OverridePaintFirst(iDirectionCount, m_sSendToBack, true);
 	}
 
 void C3DConversion::GetCoord (int iRotation, int *retx, int *rety) const
@@ -430,7 +432,7 @@ void C3DConversion::GetCoordFromDir (int iDirection, int *retx, int *rety) const
 	*rety = pEntry->y;
 	}
 
-ALERROR C3DConversion::OverridePaintFirst (const CString &sAttrib, bool bPaintFirstValue)
+ALERROR C3DConversion::OverridePaintFirst (int iDirectionCount, const CString &sAttrib, bool bPaintFirstValue)
 
 //	OverridePaintFirst
 //
@@ -444,6 +446,58 @@ ALERROR C3DConversion::OverridePaintFirst (const CString &sAttrib, bool bPaintFi
 		{
 		for (i = 0; i < m_Cache.GetCount(); i++)
 			m_Cache[i].bPaintFirst = bPaintFirstValue;
+		}
+	else if (strStartsWith(sAttrib, STR_ANGLES_PREFIX))
+		{
+		TArray<CString> List;
+		ParseStringList(strSubString(sAttrib, STR_ANGLES_PREFIX.GetLength()), 0, &List);
+
+		CIntegralRotationDesc FrameDesc;
+		FrameDesc.Init(iDirectionCount);
+
+		for (i = 0; i < List.GetCount(); i++)
+			{
+			const CString &sAngles = List[i];
+
+			//	Expect a range
+
+			int iFrom, iTo;
+			char *pPos = sAngles.GetASCIIZPointer();
+			bool bFail;
+			iFrom = AngleMod(strParseInt(pPos, 0, &pPos, &bFail));
+			if (bFail)
+				return ERR_FAIL;
+
+			if (*pPos == '-')
+				{
+				pPos++;
+				iTo = AngleMod(strParseInt(pPos, 0, &pPos, &bFail));
+				if (bFail)
+					return ERR_FAIL;
+				}
+			else
+				iTo = iFrom;
+
+			//	Loop over all rotation frames
+
+			for (int iFrame = 0; iFrame < iDirectionCount; iFrame++)
+				{
+				int iRotation = FrameDesc.GetRotationAngle(iFrame);
+
+				//	See if this rotation is inside the range
+
+				if (iFrom <= iTo)
+					{
+					if (iRotation >= iFrom && iRotation <= iTo)
+						m_Cache[iFrame].bPaintFirst = bPaintFirstValue;
+					}
+				else
+					{
+					if (iRotation <= iTo || iRotation >= iFrom)
+						m_Cache[iFrame].bPaintFirst = bPaintFirstValue;
+					}
+				}
+			}
 		}
 	else
 		{
