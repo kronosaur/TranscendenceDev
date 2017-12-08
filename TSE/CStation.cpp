@@ -802,6 +802,8 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 			{
 			CXMLElement *pDeviceDesc = pDevices->GetContentElement(i);
 			DWORD dwDeviceID = pDeviceDesc->GetAttributeInteger(DEVICE_ID_ATTRIB);
+			if (dwDeviceID == 0)
+				dwDeviceID = pDeviceDesc->GetAttributeInteger(ITEM_ATTRIB);
 			CDeviceClass *pClass = g_pUniverse->FindDeviceClass(dwDeviceID);
 			if (pClass == NULL)
 				{
