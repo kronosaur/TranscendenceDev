@@ -1584,6 +1584,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	m_iContinuous = 0;
 	m_iPassthrough = 0;
+	m_iFireRate = -1;
 
 	//	Load damage
 
@@ -2237,6 +2238,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     m_pAmmoType = Src.m_pAmmoType;
     m_iFireType = Src.m_iFireType;
     m_iContinuous = Src.m_iContinuous;
+	m_iFireRate = Src.m_iFireRate;
 
 	m_fRelativisticSpeed = Src.m_fRelativisticSpeed;
     m_rMissileSpeed = Src.m_rMissileSpeed;
