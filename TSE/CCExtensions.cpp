@@ -470,6 +470,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_HIT_TEST					35
 #define FN_SYS_GET_POV					36
 #define FN_SYS_ITEM_BUY_PRICE			37
+#define FN_SYS_KEY_PRESSED				38
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2742,6 +2743,24 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysIsKnown",					fnSystemGet,	FN_SYS_IS_KNOWN,
 			"(sysIsKnown [nodeID]) -> True/Nil",
 			"*",	0,	},
+
+		{   "sysIsKeyPressed",				fnSystemMisc,	FN_SYS_KEY_PRESSED,
+			"(sysIsKeyPressed key) -> True/Nil\n\n"
+
+			"Key is a string, all alphanumeric keys as well as the following are supported:\n\n"
+
+			"   'up\n"
+			"   'down\n"
+			"   'left\n"
+			"   'right\n"
+			"   'ctrl\n"
+			"   'space\n"
+			"   'shift\n"
+			"   'esc\n"
+			"   'lmb\n"
+			"   'rmb\n",
+
+			"s",	0, },
 
 		{	"sysMatches",					fnSystemGet,	FN_SYS_MATCHES,
 			"(sysMatches [nodeID] criteria) -> True/Nil",
@@ -13008,7 +13027,81 @@ ICCItem *fnSystemMisc (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateTrue();
 				}
 			}
+		case FN_SYS_KEY_PRESSED:
+			{
+				CString sKey = pArgs->GetElement(0)->GetStringValue();
+				char *pKeyString = sKey.GetASCIIZPointer();
+				
+				//  Check to see if it's a string of more than one character. If so, it's not an alphanumeric
+				//  key, and we should use a switch block.
+				if (sKey.GetLength() <= 1)
+					{
+						//  Alphanumeric case. Check letter/number keys. (We won't support non-alphanumeric
+						//  char keys, since GetAsyncKeyState doesn't work with them as easily)
+						char iKey = toupper(pKeyString[0]);
 
+						if (uiIsKeyDown(iKey) == true)
+							return pCC->CreateTrue();
+						else
+							return pCC->CreateNil();
+					}
+				else
+					{
+						//  Non-alphanumeric case. Use a switch statement.
+						char iKey = 0;
+						if (strEquals(sKey, "shift"))
+							{
+							iKey = VK_SHIFT;
+							}
+						else if (strEquals(sKey, "up"))
+							{
+							iKey = VK_UP;
+							}
+						else if (strEquals(sKey, "down"))
+							{
+							iKey = VK_DOWN;
+							}
+						else if (strEquals(sKey, "left"))
+							{
+							iKey = VK_LEFT;
+							}
+						else if (strEquals(sKey, "right"))
+							{
+							iKey = VK_RIGHT;
+							}
+						else if (strEquals(sKey, "up"))
+							{
+							iKey = VK_UP;
+							}
+						else if (strEquals(sKey, "space"))
+							{
+							iKey = VK_SPACE;
+							}
+						else if (strEquals(sKey, "esc"))
+							{
+							iKey = VK_ESCAPE;
+							}
+						else if (strEquals(sKey, "ctrl"))
+							{
+							iKey = VK_CONTROL;
+							}
+						else if (strEquals(sKey, "lmb"))
+							{
+							iKey = VK_LBUTTON;
+							}
+						else if (strEquals(sKey, "rmb"))
+							{
+							iKey = VK_RBUTTON;
+							}
+						else return pCC->CreateNil();
+						
+						if (uiIsKeyDown(iKey) == true)
+							return pCC->CreateTrue();
+						else
+							return pCC->CreateNil();
+				}
+
+			}
 		default:
 			ASSERT(false);
 			return pCC->CreateNil();
