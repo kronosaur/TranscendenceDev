@@ -1330,7 +1330,8 @@ void CDesignCollection::GetStats (SStats &Result) const
 		Result.dwTotalXMLMemory += ExtStats.dwTotalXMLMemory;
 		}
 
-	Result.dwTotalXMLMemory += m_pAdventureExtension->GetXMLMemoryUsage();
+	if (m_pAdventureExtension)
+		Result.dwTotalXMLMemory += m_pAdventureExtension->GetXMLMemoryUsage();
 	Result.dwTotalXMLMemory += m_DynamicTypes.GetXMLMemoryUsage();
 	Result.dwTotalXMLMemory += m_HierarchyTypes.GetXMLMemoryUsage();
 	}

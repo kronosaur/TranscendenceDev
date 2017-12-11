@@ -1199,6 +1199,15 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 					Ctx.dwAdventure = DEFAULT_ADVENTURE_EXTENSION_UNID;
 					}
 
+				//	For backwards compatibility, sometimes we do not have an adventure. This
+				//	can happen when we're using TransData on an old TDB.
+
+				else if (m_Extensions.GetBase()->GetAPIVersion() < 26
+						&& Ctx.dwAdventure == DEFAULT_ADVENTURE_EXTENSION_UNID)
+					{
+					//	Continue with NULL pAdventure
+					}
+
 				//	Otherwise, we fail
 
 				else
@@ -1286,7 +1295,8 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		//	we need the current adventure to get the shield and armor damage adj
 		//	tables.
 
-		SetCurrentAdventureDesc(Ctx.pAdventure->GetAdventureDesc());
+		if (Ctx.pAdventure)
+			SetCurrentAdventureDesc(Ctx.pAdventure->GetAdventureDesc());
 
 		//	Figure out the minimum API version for all extensions being used.
 

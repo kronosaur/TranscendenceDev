@@ -1209,7 +1209,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Initialize basic info
 
 	m_iLevel = pDesc->GetAttributeInteger(LEVEL_ATTRIB);
-	if (error = m_pSovereign.LoadUNID(Ctx, pDesc->GetAttribute(SOVEREIGN_ATTRIB), UNID_NEUTRAL_SOVEREIGN))
+	if (error = m_pSovereign.LoadUNID(Ctx, pDesc->GetAttribute(SOVEREIGN_ATTRIB), (GetAPIVersion() >= 26 ? UNID_NEUTRAL_SOVEREIGN : 0)))
 		return error;
 
 	if (error = m_pControllingSovereign.LoadUNID(Ctx, pDesc->GetAttribute(CONTROLLING_SOVEREIGN_ATTRIB)))

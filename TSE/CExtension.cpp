@@ -31,6 +31,7 @@
 #define SOUND_TAG								CONSTLIT("Sound")
 #define SOUNDS_TAG								CONSTLIT("Sounds")
 #define STAR_SYSTEM_TOPOLOGY_TAG				CONSTLIT("StarSystemTopology")
+#define STATION_TYPE_RESOURCES_TAG				CONSTLIT("StationTypeResources")
 #define SYSTEM_TOPOLOGY_TAG						CONSTLIT("SystemTopology")
 #define SYSTEM_TYPES_TAG						CONSTLIT("SystemTypes")
 #define TABLES_TAG								CONSTLIT("Tables")
@@ -246,6 +247,28 @@ bool CExtension::CanExtend (CExtension *pAdventure) const
 	return false;
 	}
 
+bool CExtension::CanHaveAdventureDesc (void) const
+
+//	CanHaveAdventureDesc
+//
+//	Returns TRUE if this extension type can have an adventure descriptor.
+
+	{
+	//	Adventure extensions can always have one.
+
+	if (m_iType == extAdventure)
+		return true;
+
+	//	For previous APIs, the extBase type can also have adventures.
+
+	if (GetAPIVersion() < 26 && m_iType == extBase)
+		return true;
+
+	//	Otherwise, invalid
+
+	return false;
+	}
+
 void CExtension::CleanUp (void)
 
 //	CleanUp
@@ -436,6 +459,7 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 		if (error)
 			{
 			pExtension->m_pEntities = NULL;	//	Let our parent clean up
+			pExtension->m_pRootXML = NULL;
 			delete pExtension;
 			return error;
 			}
@@ -1140,7 +1164,7 @@ ALERROR CExtension::LoadDesignElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		//	Must be an adventure extension
 
-		if (m_iType != extAdventure)
+		if (!CanHaveAdventureDesc())
 			{
 			Ctx.sError = CONSTLIT("Only adventures may have an AdventureDesc type.");
 			return ERR_FAIL;
@@ -1196,6 +1220,12 @@ ALERROR CExtension::LoadDesignElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	types.
 
 	else if (Ctx.bLoadAdventureDesc)
+		return NOERROR;
+
+	//	For previous APIs, some tags are obsolete
+
+	else if (GetAPIVersion() < 26 
+			&& strEquals(pDesc->GetTag(), STATION_TYPE_RESOURCES_TAG))
 		return NOERROR;
 	
 	//	Standard design element

@@ -135,7 +135,14 @@ ALERROR CPlayerSettings::Bind (SDesignLoadCtx &Ctx, CShipClass *pClass)
 		return error;
 
 	if (error = m_pDockServicesScreen.Bind(Ctx, (pClass ? pClass->GetLocalScreens() : NULL)))
-		return error;
+		{
+		//	In some cases we swallow this error (for backwards compatibility).
+
+		if (pClass && pClass->GetAPIVersion() < 26)
+			;
+		else
+			return error;
+		}
 
 	if (error = m_pShipConfigScreen.Bind(Ctx, (pClass ? pClass->GetLocalScreens() : NULL)))
 		return error;

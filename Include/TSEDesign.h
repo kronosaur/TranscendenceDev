@@ -801,6 +801,7 @@ class CExtension
 
 		void AccumulateStats (SStats &Stats) const;
 		bool CanExtend (CExtension *pAdventure) const;
+		bool CanHaveAdventureDesc (void) const;
 		void CleanUp (void);
 		void CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const;
 		ALERROR ExecuteGlobals (SDesignLoadCtx &Ctx);

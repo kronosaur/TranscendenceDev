@@ -627,14 +627,20 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 	ALERROR error;
 	int i;
 
-	ASSERT(pAdventure);
-	ASSERT(pAdventure->GetType() == extAdventure);
-
 	bool bDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
 
 	//	Initialize
 
 	retList->DeleteAll();
+
+	//	If no adventure, then we just bind the base. This can happen in case we're 
+	//	running TransData on an old Transcendence.tdb
+
+	if (pAdventure == NULL)
+		{
+		retList->Insert(m_pBase);
+		return NOERROR;
+		}
 
 	//	Clear marks; we will used marks to determine when we've already added
 	//	an extension to the list.
@@ -1741,6 +1747,13 @@ ALERROR CExtensionCollection::LoadFolderStubsOnly (const CString &sFilespec, CEx
 
 		if (error = CExtension::CreateExtensionStub(sExtensionFilespec, iFolder, &pExtension, retsError))
 			return error;
+
+		//	If this extension requires an API beyond our base file, then we disable it.
+		//	This can happen when we do TransData on older Transcendence.tdb.
+
+		if (!pExtension->IsDisabled()
+				&& pExtension->GetAPIVersion() > m_pBase->GetAPIVersion())
+			pExtension->SetDisabled(CONSTLIT("Requires a newer version of Transcendence.tdb"));
 
 		//	Add the extensions to our list. We lock because we expect this function
 		//	to be called without a lock; we don't want to lock while doing the

@@ -205,6 +205,9 @@ ALERROR CEconomyTypeRef::Bind (SDesignLoadCtx &Ctx)
 		m_pType = GetEconomyTypeFromString(m_sUNID);
 		if (m_pType == NULL)
 			{
+			if (Ctx.pType && Ctx.pType->GetAPIVersion() < 26)
+				return NOERROR;
+
 			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find economy type: %s"), m_sUNID);
 			return ERR_FAIL;
 			}

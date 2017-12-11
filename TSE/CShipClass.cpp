@@ -3381,7 +3381,11 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 		m_DefaultPlayerSettings.InitAsDefault();
 
 		if (error = m_DefaultPlayerSettings.Bind(Ctx, NULL))
-			goto Fail;
+			{
+			//	Log error, but continue
+
+			::kernelDebugLogString(CONSTLIT("Unable to bind default player ship settings."));
+			}
 
 		m_bDefaultPlayerSettingsBound = true;
 		}

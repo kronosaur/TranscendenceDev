@@ -481,7 +481,7 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			{
 			//	Only valid if we are inside an Adventure
 
-			if (Ctx.pExtension != NULL && Ctx.pExtension->GetType() != extAdventure)
+			if (Ctx.pExtension != NULL && !Ctx.pExtension->CanHaveAdventureDesc())
 				{
 				Ctx.sError = CONSTLIT("<AdventureDesc> element is only valid for Adventures");
 				return ERR_FAIL;
