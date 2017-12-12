@@ -891,6 +891,9 @@ class CShockwaveEffectCreator : public CEffectCreator
 		CEffectParamDesc m_Width;						//	Width of central ring
 		CEffectParamDesc m_Intensity;					//	Intensity (0-100)
 		CEffectParamDesc m_GlowWidth;					//	Glow width
+		CEffectParamDesc m_WaveCount;					//	Number of waves
+		CEffectParamDesc m_WaveInterval;				//	Ticks between waves
+		CEffectParamDesc m_WaveLifetime;				//	Lifetime of a single wave (ticks)
 		CEffectParamDesc m_BlendMode;					//	blendMode: Blend mode
 		CEffectParamDesc m_PrimaryColor;
 		CEffectParamDesc m_SecondaryColor;

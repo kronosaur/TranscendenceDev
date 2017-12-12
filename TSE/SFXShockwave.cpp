@@ -16,6 +16,9 @@
 #define SECONDARY_COLOR_ATTRIB					CONSTLIT("secondaryColor")
 #define SPEED_ATTRIB							CONSTLIT("speed")
 #define STYLE_ATTRIB							CONSTLIT("style")
+#define WAVE_COUNT_ATTRIB						CONSTLIT("waveCount")
+#define WAVE_INTERVAL_ATTRIB					CONSTLIT("waveInterval")
+#define WAVE_LIFETIME_ATTRIB					CONSTLIT("waveLifetime")
 #define WIDTH_ATTRIB							CONSTLIT("width")
 
 const int CLOUD_TEXTURE_SIZE =					512;
@@ -38,6 +41,7 @@ class CShockwavePainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
+		virtual int GetLifetime (void) override;
 		virtual Metric GetRadius (int iTick) const { return g_KlicksPerPixel * CalcRadius(iTick); }
 		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
 		virtual bool GetParamList (TArray<CString> *retList) const;
@@ -55,9 +59,12 @@ class CShockwavePainter : public IEffectPainter
 
 	private:
 		bool CalcIntermediates (void);
+		BYTE CalcOpacity (int iTick) const;
 		inline int CalcRadius (int iTick) const { return 1 + Max(0, (m_iRadiusInc * iTick)); }
 		bool CreateGlowGradient (int iSolidWidth, int iGlowWidth, CG32bitPixel rgbSolidColor, CG32bitPixel rgbGlowColor);
 		static CG8bitImage *GetCloudTexture (void);
+		inline int GetWaveLifetime (void) const { return (m_iWaveLifetime > 0 ? m_iWaveLifetime : m_iLifetime); }
+		void PaintRing (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity) const;
 
 		CShockwaveEffectCreator *m_pCreator;
 
@@ -69,6 +76,9 @@ class CShockwavePainter : public IEffectPainter
 		int m_iWidth;						//	Width of central ring
 		int m_iIntensity;					//	Brighter
 		int m_iGlowWidth;					//	Glow width
+		int m_iWaveCount;					//	Number of waves (if multiple)
+		int m_iWaveInterval;				//	Ticks between wave
+		int m_iWaveLifetime;				//	Lifetime of one wave (if multiple)
 		CGDraw::EBlendModes m_iBlendMode;
 		CG32bitPixel m_rgbPrimaryColor;		//	Primary color
 		CG32bitPixel m_rgbSecondaryColor;	//	Secondary color
@@ -149,6 +159,9 @@ IEffectPainter *CShockwaveEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx
 	pPainter->SetParam(Ctx, SECONDARY_COLOR_ATTRIB, m_SecondaryColor);
 	pPainter->SetParam(Ctx, SPEED_ATTRIB, m_Speed);
 	pPainter->SetParam(Ctx, STYLE_ATTRIB, m_Style);
+	pPainter->SetParam(Ctx, WAVE_COUNT_ATTRIB, m_WaveCount);
+	pPainter->SetParam(Ctx, WAVE_INTERVAL_ATTRIB, m_WaveInterval);
+	pPainter->SetParam(Ctx, WAVE_LIFETIME_ATTRIB, m_WaveLifetime);
 	pPainter->SetParam(Ctx, WIDTH_ATTRIB, m_Width);
 
 	//	Initialize via GetParameters, if necessary
@@ -205,6 +218,15 @@ ALERROR CShockwaveEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXM
 	if (error = m_Style.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(STYLE_ATTRIB), STYLE_TABLE))
 		return error;
 
+	if (error = m_WaveCount.InitIntegerFromXML(Ctx, pDesc->GetAttribute(WAVE_COUNT_ATTRIB)))
+		return error;
+
+	if (error = m_WaveInterval.InitIntegerFromXML(Ctx, pDesc->GetAttribute(WAVE_INTERVAL_ATTRIB)))
+		return error;
+
+	if (error = m_WaveLifetime.InitIntegerFromXML(Ctx, pDesc->GetAttribute(WAVE_LIFETIME_ATTRIB)))
+		return error;
+
 	if (error = m_Width.InitIntegerFromXML(Ctx, pDesc->GetAttribute(WIDTH_ATTRIB)))
 		return error;
 
@@ -250,6 +272,9 @@ CShockwavePainter::CShockwavePainter (CShockwaveEffectCreator *pCreator) : m_pCr
 		m_iWidth(10),
 		m_iIntensity(50),
 		m_iGlowWidth(5),
+		m_iWaveCount(1),
+		m_iWaveInterval(5),
+		m_iWaveLifetime(10),
 		m_iBlendMode(CGDraw::blendNormal),
 		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
 		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
@@ -277,7 +302,7 @@ bool CShockwavePainter::CalcIntermediates (void)
 		{
 		case styleCloud:
 			{
-			int cxWidth = Max(CLOUD_TEXTURE_SIZE, CalcRadius(m_iLifetime) * 6);
+			int cxWidth = Max(CLOUD_TEXTURE_SIZE, CalcRadius(GetWaveLifetime()) * 6);
 			int cyHeight = m_iWidth;
 			if (m_iWidth <= 0)
 				return false;
@@ -390,6 +415,25 @@ bool CShockwavePainter::CalcIntermediates (void)
 	return true;
 	}
 
+BYTE CShockwavePainter::CalcOpacity (int iTick) const
+
+//	CalcOpacity
+//
+//	Calculate the opacity of a ring at the given tick.
+
+	{
+	int iLifetime = GetWaveLifetime();
+	int iStartDecay = m_iFadeStart * iLifetime / 100;
+	int iDecayRange = iLifetime - iStartDecay;
+
+	if (iTick > iLifetime)
+		return 0;
+	else if (iTick > iStartDecay && iDecayRange > 0)
+		return 255 * (iDecayRange - (iTick - iStartDecay)) / iDecayRange;
+	else
+		return 255;
+	}
+
 bool CShockwavePainter::CreateGlowGradient (int iSolidWidth, int iGlowWidth, CG32bitPixel rgbSolidColor, CG32bitPixel rgbGlowColor)
 
 //	CreateGlowGradient
@@ -456,6 +500,21 @@ CG8bitImage *CShockwavePainter::GetCloudTexture (void)
 	return m_pCloudTexture;
 	}
 
+int CShockwavePainter::GetLifetime (void)
+
+//	GetLifetime
+//
+//	Returns the total lifetime.
+
+	{
+	if (m_iWaveCount > 1)
+		{
+		return (m_iWaveCount * m_iWaveInterval) + GetWaveLifetime();
+		}
+	else
+		return Max(m_iLifetime, m_iWaveLifetime);
+	}
+
 void CShockwavePainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
 
 //	GetParam
@@ -483,6 +542,12 @@ void CShockwavePainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 		retValue->InitInteger(m_iSpeed);
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		retValue->InitInteger(m_iStyle);
+	else if (strEquals(sParam, WAVE_COUNT_ATTRIB))
+		retValue->InitInteger(m_iWaveCount);
+	else if (strEquals(sParam, WAVE_INTERVAL_ATTRIB))
+		retValue->InitInteger(m_iWaveInterval);
+	else if (strEquals(sParam, WAVE_LIFETIME_ATTRIB))
+		retValue->InitInteger(m_iWaveLifetime);
 	else if (strEquals(sParam, WIDTH_ATTRIB))
 		retValue->InitInteger(m_iWidth);
 	}
@@ -495,7 +560,7 @@ bool CShockwavePainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(11);
+	retList->InsertEmpty(14);
 	retList->GetAt(0) = BLEND_MODE_ATTRIB;
 	retList->GetAt(1) = FADE_START_ATTRIB;
 	retList->GetAt(2) = GLOW_SIZE_ATTRIB;
@@ -506,7 +571,10 @@ bool CShockwavePainter::GetParamList (TArray<CString> *retList) const
 	retList->GetAt(7) = SECONDARY_COLOR_ATTRIB;
 	retList->GetAt(8) = SPEED_ATTRIB;
 	retList->GetAt(9) = STYLE_ATTRIB;
-	retList->GetAt(10) = WIDTH_ATTRIB;
+	retList->GetAt(10) = WAVE_COUNT_ATTRIB;
+	retList->GetAt(11) = WAVE_INTERVAL_ATTRIB;
+	retList->GetAt(12) = WAVE_LIFETIME_ATTRIB;
+	retList->GetAt(13) = WIDTH_ATTRIB;
 
 	return true;
 	}
@@ -518,7 +586,7 @@ void CShockwavePainter::GetRect (RECT *retRect) const
 //	Returns the RECT of the effect centered on 0,0
 
 	{
-	int iRadius = CalcRadius(m_iLifetime);
+	int iRadius = CalcRadius(GetWaveLifetime());
 
 	retRect->left = -iRadius;
 	retRect->top = -iRadius;
@@ -608,6 +676,12 @@ void CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 		}
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleImage);
+	else if (strEquals(sParam, WAVE_COUNT_ATTRIB))
+		m_iWaveCount = Value.EvalIntegerBounded(1, -1, 1);
+	else if (strEquals(sParam, WAVE_INTERVAL_ATTRIB))
+		m_iWaveInterval = Value.EvalIntegerBounded(0, -1, 5);
+	else if (strEquals(sParam, WAVE_LIFETIME_ATTRIB))
+		m_iWaveLifetime = Value.EvalIntegerBounded(0, -1, 0);
 	else if (strEquals(sParam, WIDTH_ATTRIB))
 		m_iWidth = Value.EvalIntegerBounded(0, -1, 1);
 	}
@@ -659,20 +733,52 @@ void CShockwavePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 //	Paint
 
 	{
+	int i;
+
 	if (!CalcIntermediates())
 		return;
 
-	int iRadius = CalcRadius(Ctx.iTick);
-	int iLifetime = m_iLifetime;
-	int iStartDecay = m_iFadeStart * iLifetime / 100;
-	int iDecayRange = iLifetime - iStartDecay;
+	//	If we have a single ring, then we just paint it.
 
-	DWORD byOpacity = 255;
-	if (Ctx.iTick > iLifetime)
-		byOpacity = 0;
-	else if (Ctx.iTick > iStartDecay && iDecayRange > 0)
-		byOpacity = byOpacity * (iDecayRange - (Ctx.iTick - iStartDecay)) / iDecayRange;
+	if (m_iWaveCount <= 1)
+		{
+		int iRadius = CalcRadius(Ctx.iTick);
+		BYTE byOpacity = CalcOpacity(Ctx.iTick);
 
+		//	Paint
+
+		PaintRing(Ctx, Dest, x, y, iRadius, byOpacity);
+		}
+
+	//	Otherwise, we paint multiple rings.
+
+	else
+		{
+		int iTick = Ctx.iTick;
+
+		for (i = 0; i < m_iWaveCount && iTick >= 0; i++)
+			{
+			int iRadius = CalcRadius(iTick);
+			BYTE byOpacity = CalcOpacity(iTick);
+
+			//	Paint
+
+			PaintRing(Ctx, Dest, x, y, iRadius, byOpacity);
+
+			//	Next ring is offset
+
+			iTick -= m_iWaveInterval;
+			}
+		}
+	}
+
+void CShockwavePainter::PaintRing (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, int iRadius, BYTE byOpacity) const
+
+//	PaintRing
+//
+//	Paints a single ring.
+
+	{
 	switch (m_iStyle)
 		{
 #if 0
