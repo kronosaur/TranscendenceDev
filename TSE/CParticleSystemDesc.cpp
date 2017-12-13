@@ -5,7 +5,7 @@
 
 #include "PreComp.h"
 
-#define PARTICLE_EFFECT_TAG						CONSTLIT("particleEffect")
+#define PARTICLE_EFFECT_TAG						CONSTLIT("ParticleEffect")
 
 #define EMIT_LIFETIME_ATTRIB					CONSTLIT("emitLifetime")
 #define EMIT_RATE_ATTRIB						CONSTLIT("emitRate")

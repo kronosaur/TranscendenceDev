@@ -69,8 +69,9 @@ class COrbEffectPainter : public IEffectPainter
 			styleSmoke =			5,
 			styleDiffraction =		6,
 			styleFirecloud =		7,
+			styleBlackHole =		8,
 
-			styleMax =				7,
+			styleMax =				8,
 			};
 
 		struct SFlareDesc
@@ -79,6 +80,7 @@ class COrbEffectPainter : public IEffectPainter
 			int iWidth;
 			};
 
+		void CalcBlackHoleColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const;
 		bool CalcIntermediates (void);
 		void CalcSecondaryColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
 		void CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
@@ -145,6 +147,7 @@ static LPSTR STYLE_TABLE[] =
 		"smoke",
 		"diffraction",
 		"firecloud",
+		"blackhole",
 
 		NULL,
 	};
@@ -309,6 +312,48 @@ COrbEffectPainter::~COrbEffectPainter (void)
 	//	Clean up temporaries
 
 	Invalidate();
+	}
+
+void COrbEffectPainter::CalcBlackHoleColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const
+
+//	CalcBlackHoleColorTable
+//
+//	Calculates color table for black hole style.
+
+	{
+	int i;
+
+	int iFringeMaxRadius = iRadius * iIntensity / 120;
+	int iFringeWidth = iFringeMaxRadius / 8;
+	int iBlownRadius = iFringeMaxRadius - iFringeWidth;
+	int iFadeWidth = iRadius - iFringeMaxRadius;
+
+	if (retColorTable->GetCount() < iRadius)
+		retColorTable->InsertEmpty(iRadius - retColorTable->GetCount());
+
+	//	Initialize table
+
+	for (i = 0; i < iRadius; i++)
+		{
+		if (i < iBlownRadius)
+			(*retColorTable)[i] = CG32bitPixel(0, 0, 0, byOpacity);
+
+		else if (i < iFringeMaxRadius && iFringeWidth > 0)
+			{
+			int iStep = (i - iBlownRadius);
+			DWORD dwOpacity = iStep * byOpacity / iFringeWidth;
+			(*retColorTable)[i] = CG32bitPixel::Blend(CG32bitPixel(255, 255, 255), rgbPrimary, (BYTE)dwOpacity);
+			}
+		else if (iFadeWidth > 0)
+			{
+			int iStep = (i - iFringeMaxRadius);
+			Metric rOpacity = 1.0 - ((Metric)iStep / iFadeWidth);
+			rOpacity = (rOpacity * rOpacity) * byOpacity;
+			(*retColorTable)[i] = CG32bitPixel(rgbSecondary, (BYTE)(DWORD)rOpacity);
+			}
+		else
+			(*retColorTable)[i] = CG32bitPixel::Null();
+		}
 	}
 
 bool COrbEffectPainter::CalcIntermediates (void)
@@ -726,6 +771,10 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 			CPaintHelper::CalcSmoothColorTable(iRadius, iIntensity, rgbPrimary, rgbSecondary, byOpacity, retColorTable);
 			break;
 
+		case styleBlackHole:
+			CalcBlackHoleColorTable(iRadius, iIntensity, rgbPrimary, rgbSecondary, byOpacity, retColorTable);
+			break;
+
 		//	For cloud we only use this color table for the opacity. The actual
 		//	color information is in the second table (the pixel table).
 
@@ -1031,6 +1080,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			break;
 			}
 
+		case styleBlackHole:
 		case styleFlare:
 		case styleSmooth:
 			{
@@ -1059,8 +1109,9 @@ void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewp
 
 	switch (m_iStyle)
 		{
-		case styleSmooth:
+		case styleBlackHole:
 		case styleFlare:
+		case styleSmooth:
 			{
 			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
 			CGComposite::Circle(Dest, x, y, Table.GetCount(), Table);
