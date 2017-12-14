@@ -1086,8 +1086,40 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		else
 			{
-			bCanInstall = true;
-			iResult = insOK;
+			//	See what armor we're replacing and see if it is OK being 
+			//	replaced.
+
+			CItemListManipulator ItemList(GetItemList());
+			if (SetCursorAtArmor(ItemList, iSlot))
+				{
+				ItemToReplace = ItemList.GetItemAtCursor();
+
+				//	Ask the item if it can be removed.
+
+				if (!ItemToReplace.FireCanBeUninstalled(this, &sResult))
+					iResult = insCannotInstall;
+
+				//	Check to see if we are allowed to remove the item
+
+				else if (!FireCanRemoveItem(ItemToReplace, iSlot, &sResult))
+					iResult = insCannotInstall;
+
+				//	Otherwise, OK.
+
+				else
+					{
+					bCanInstall = true;
+					iResult = insOK;
+					}
+				}
+
+			//	If no previous armor, continue
+
+			else
+				{
+				bCanInstall = true;
+				iResult = insOK;
+				}
 			}
 		}
 
@@ -3779,24 +3811,11 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	//	Find the item that is currently installed in this section
 	//	and mark it as being prepared for uninstall.
 
-	bool bFound = false;
-	ItemList.ResetCursor();
-	while (ItemList.MoveCursorForward())
+	if (!SetCursorAtArmor(ItemList, iSect))
 		{
-		const CItem &Item = ItemList.GetItemAtCursor();
-		if (Item.IsInstalled()
-				&& Item.GetType()->GetCategory() == itemcatArmor
-				&& Item.GetInstalled() == iSect)
-			{
-			ASSERT(Item.GetCount() == 1);
-			bFound = true;
-			break;
-			}
-		}
-
-	ASSERT(bFound);
-	if (!bFound)
+		ASSERT(false);
 		return;
+		}
 
 	//	Fire OnUninstall first
 
@@ -7430,7 +7449,7 @@ void CShip::SetController (IShipController *pController, bool bFreeOldController
 	m_pController->OnStatsChanged();
 	}
 
-void CShip::SetCursorAtArmor (CItemListManipulator &ItemList, int iSect)
+bool CShip::SetCursorAtArmor (CItemListManipulator &ItemList, int iSect) const
 
 //	SetCursorAtArmor
 //
@@ -7446,9 +7465,11 @@ void CShip::SetCursorAtArmor (CItemListManipulator &ItemList, int iSect)
 				&& Item.GetInstalled() == iSect)
 			{
 			ASSERT(Item.GetCount() == 1);
-			break;
+			return true;
 			}
 		}
+
+	return false;
 	}
 
 void CShip::SetCursorAtDevice (CItemListManipulator &ItemList, int iDev)

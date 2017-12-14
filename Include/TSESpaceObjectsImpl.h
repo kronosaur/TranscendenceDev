@@ -980,7 +980,7 @@ class CShip : public CSpaceObject
 		bool IsArmorDamaged (int iSect);
 		bool IsArmorRepairable (int iSect);
 		void RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired = NULL);
-		void SetCursorAtArmor (CItemListManipulator &ItemList, int iSect);
+		bool SetCursorAtArmor (CItemListManipulator &ItemList, int iSect) const;
 		void UninstallArmor (CItemListManipulator &ItemList);
 
 		//	Compartments
