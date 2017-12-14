@@ -95,6 +95,14 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 	m_pArmorClass = pType->GetArmorClass();
 	ASSERT(m_pArmorClass);
 
+	//	Clear the enhancement stack because it might include some item 
+	//	enhancements from the previous armor item.
+
+	if (m_pEnhancements)
+		m_pEnhancements = NULL;
+
+	//	Set
+
 	m_iSect = iSect;
 	m_fComplete = false;
 	m_fPrimeSegment = false;
