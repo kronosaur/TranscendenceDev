@@ -1073,13 +1073,12 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 	if (Image.IsLoaded())
 		{
-		CFractureEffect::Create(GetSystem(),
+		CFractureEffect::CreateExplosion(GetSystem(),
 				GetPos(),
 				GetVel(),
 				Image,
 				iTick,
 				iVariant,
-				CFractureEffect::styleExplosion,
 				NULL);
 		}
 

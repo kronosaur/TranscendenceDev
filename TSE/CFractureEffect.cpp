@@ -28,13 +28,12 @@ CFractureEffect::~CFractureEffect (void)
 		delete [] m_pParticles;
 	}
 
-ALERROR CFractureEffect::Create (CSystem *pSystem,
+ALERROR CFractureEffect::CreateExplosion (CSystem *pSystem,
 				const CVector &vPos,
 				const CVector &vVel,
 				const CObjectImageArray &Image,
 				int iImageTick,
 				int iImageRotation,
-				int iStyle,
 				CFractureEffect **retpEffect)
 
 //	Create
@@ -63,8 +62,74 @@ ALERROR CFractureEffect::Create (CSystem *pSystem,
 	pEffect->m_iTick = 0;
 	pEffect->m_iLifeTime = 300;
 
-	pEffect->m_iStyle = iStyle;
+	pEffect->m_iStyle = styleExplosion;
 	pEffect->m_iCellSize = 4;
+
+	pEffect->m_rSweepDirection = 0;
+
+	pEffect->InitParticleArray();
+
+	//	Set large bounds
+
+	pEffect->SetBounds(g_KlicksPerPixel * 1024.0);
+
+	//	Add to system
+
+	if (error = pEffect->AddToSystem(pSystem))
+		{
+		delete pEffect;
+		return error;
+		}
+
+	//	Done
+
+	if (retpEffect)
+		*retpEffect = pEffect;
+
+	return NOERROR;
+
+	DEBUG_CATCH
+	}
+
+ALERROR CFractureEffect::CreateLinearSweep (CSystem *pSystem,
+				const CVector &vPos,
+				const CVector &vVel,
+				const CObjectImageArray &Image,
+				int iImageTick,
+				int iImageRotation,
+				Metric rSweepDirection,
+				CFractureEffect **retpEffect)
+
+//	Create
+//
+//	Creates a new effects object
+
+	{
+	DEBUG_TRY
+
+	ALERROR error;
+	CFractureEffect *pEffect;
+
+	pEffect = new CFractureEffect;
+	if (pEffect == NULL)
+		return ERR_MEMORY;
+
+	pEffect->Place(vPos, vVel);
+	pEffect->SetObjectDestructionHook();
+
+	//	Cannot be hit; otherwise, explosion ejecta will hit the effect
+	pEffect->SetCannotBeHit();
+
+	pEffect->m_Image = Image;
+	pEffect->m_iImageTick = iImageTick;
+	pEffect->m_iImageRotation = iImageRotation;
+	pEffect->m_iTick = 0;
+	pEffect->m_iLifeTime = 300;
+
+	pEffect->m_iStyle = styleLinearSweep;
+	pEffect->m_iCellSize = 4;
+
+	pEffect->m_rSweepDirection = rSweepDirection;
 
 	pEffect->InitParticleArray();
 
@@ -111,6 +176,17 @@ void CFractureEffect::InitParticleArray (void)
 	int iAlloc = ALLOC_GRANULARITY;
 	m_pParticles = new SParticle [iAlloc];
 	m_iParticleCount = 0;
+	double angleToRads = 3.14159265358979323846 / 180;
+	Metric sweepSpeed = FIXED_POINT * 4;
+	CVector sweepVelocity = CVector::FromPolar(m_rSweepDirection, sweepSpeed);
+	
+	//	Place a line in a direction perpendicular to the sweep direction and then calculate the distance from all particles to that line
+	//	https://www.desmos.com/calculator/mnb66ksnfy
+	Metric sweepA = tan(m_rSweepDirection + 90);
+	Metric sweepB = -1;
+	Metric sweepC = 0;
+
+	int iSleepTicksAdjust = 0;		//	The minimum value of iSleepTicks of all the particles. Subtract this value from iSleepTicks in all particles
 
 	int y = rcSource.top;
 	while (y + m_iCellSize <= rcSource.bottom)
@@ -140,16 +216,34 @@ void CFractureEffect::InitParticleArray (void)
 				pNewParticle->x = (x - xCenter) * FIXED_POINT;
 				pNewParticle->y = (y - yCenter) * FIXED_POINT;
 
-				//	Velocity of each particle is away from the center
+				switch (m_iStyle)
+					{
+					case styleExplosion:
+						{
+						//	Velocity of each particle is away from the center
 
-				CVector vAway(pNewParticle->x, pNewParticle->y);
-				vAway = vAway.Normal() * (Metric)mathRandom(0, FIXED_POINT * 4);
-				pNewParticle->xV = (int)vAway.GetX();
-				pNewParticle->yV = (int)vAway.GetY();
+						CVector vAway(pNewParticle->x, pNewParticle->y);
+						vAway = vAway.Normal() * (Metric)mathRandom(0, FIXED_POINT * 4);
+						pNewParticle->xV = (int)vAway.GetX();
+						pNewParticle->yV = (int)vAway.GetY();
+						pNewParticle->iSleepTicks = 0;
+						break;
+						}
+					case styleLinearSweep:
+						{
+						CVector vAway = sweepVelocity + CVector::FromPolar(m_rSweepDirection + mathRandomDouble() * PI, mathRandomDouble() * FIXED_POINT * 2);
+						pNewParticle->xV = (int)vAway.GetX();
+						pNewParticle->yV = (int)vAway.GetY();
+						const double SLEEP_TICKS_SCALE = 0.001;
+						pNewParticle->iSleepTicks = (int)(SLEEP_TICKS_SCALE * -(((sweepA * pNewParticle->x) + (sweepB * pNewParticle->y) + sweepC) / sqrt(sweepA * sweepA + sweepB * sweepB)));
+						if(pNewParticle->iSleepTicks < iSleepTicksAdjust)
+							iSleepTicksAdjust = pNewParticle->iSleepTicks;
+						
+						break;
+						}
+					}
 
 				//	Other
-
-				pNewParticle->iTicks = 0;
 
 				pNewParticle->xSrc = x;
 				pNewParticle->ySrc = y;
@@ -161,6 +255,19 @@ void CFractureEffect::InitParticleArray (void)
 
 		y += m_iCellSize;
 		}
+	
+	if (m_iStyle == styleLinearSweep)
+		{
+		SParticle *pParticle = m_pParticles;
+		SParticle *pParticleEnd = pParticle + m_iParticleCount;
+		while (pParticle < pParticleEnd)
+			{
+			pParticle->iSleepTicks -= iSleepTicksAdjust;
+			pParticle++;
+			}
+		}
+
+	
 	}
 
 void CFractureEffect::OnMove (const CVector &vOldPos, Metric rSeconds)
@@ -305,6 +412,12 @@ void CFractureEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 						pParticle++;
 						continue;
 						}
+					else if (pParticle->iSleepTicks > 0)
+						{
+						pParticle->iSleepTicks--;
+						pParticle++;
+						continue;
+						}
 
 					int xDelta = xAttract - pParticle->x;
 					int yDelta = yAttract - pParticle->y;
@@ -356,6 +469,12 @@ void CFractureEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 						pParticle++;
 						continue;
 						}
+					else if (pParticle->iSleepTicks > 0)
+						{
+						pParticle->iSleepTicks--;
+						pParticle++;
+						continue;
+						}
 
 					int xDelta = xAttract - pParticle->x;
 					int yDelta = yAttract - pParticle->y;
@@ -404,6 +523,13 @@ void CFractureEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			{
 			while (pParticle < pParticleEnd)
 				{
+				if (pParticle->iSleepTicks > 0)
+					{
+					pParticle->iSleepTicks--;
+					pParticle++;
+					continue;
+					}
+
 				pParticle->x += pParticle->xV;
 				pParticle->y += pParticle->yV;
 

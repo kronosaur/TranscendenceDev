@@ -26,13 +26,12 @@ ALERROR CImageFractureEffectCreator::CreateEffect (CSystem *pSystem,
 
 	if (m_Image.IsLoaded())
 		{
-		if (error = CFractureEffect::Create(pSystem,
+		if (error = CFractureEffect::CreateExplosion(pSystem,
 				vPos,
 				vVel,
 				m_Image,
 				0,
 				0,
-				CFractureEffect::styleExplosion,
 				&pObj))
 			return error;
 
