@@ -66,31 +66,46 @@ void CWaitOrder::AttackEnemies (CShip *pShip, CAIBehaviorCtx &Ctx, bool bReady)
 			&& m_Objs[objTarget])
 		{
 		if (bReady)
-			Ctx.ImplementAttackNearestTarget(pShip, ATTACK_RANGE, &m_Objs[objTarget], NULL, true);
+			Ctx.ImplementAttackTarget(pShip, m_Objs[objTarget], true);
 
-		//	Check to see if target has hit back. If not, stop the attack
+		//	See if we need to stop the attack.
 
-		if (pShip->IsDestinyTime(20)
-				&& !Ctx.IsBeingAttacked(3 * ATTACK_TIME_THRESHOLD))
+		if (pShip->IsDestinyTime(20))
 			{
-			m_fIsDeterring = false;
-			m_Objs[objTarget] = NULL;
+			CPerceptionCalc Perception(pShip->GetPerception());
+			Metric rDist2 = pShip->GetDistance2(m_Objs[objTarget]);
+
+			//	If the target is out of range, or if we can no longer detect it, then
+			//	we stop attacking.
+
+			if (rDist2 > (4.0 * Ctx.GetMaxWeaponRange() * Ctx.GetMaxWeaponRange())
+					|| !Perception.CanBeTargeted(m_Objs[objTarget], rDist2))
+				{
+				m_fIsDeterring = false;
+				m_Objs[objTarget] = NULL;
+				}
+
+			//	If we're not aggressive and we haven't been attacked in a while, then
+			//	we stop.
+
+			if (!Ctx.IsAggressor()
+					&& !Ctx.IsBeingAttacked(3 * ATTACK_TIME_THRESHOLD))
+				{
+				m_fIsDeterring = false;
+				m_Objs[objTarget] = NULL;
+				}
 			}
 		}
 
-	//	Otherwise, we just attack any target
+	//	Otherwise, see if there are enemy ships that we need to attack
 
-	else
+	else if (m_fDeterEnemies
+			&& !Ctx.NoAttackOnThreat())
 		{
-		Ctx.ImplementAttackNearestTarget(pShip, ATTACK_RANGE, &m_Objs[objTarget]);
-
-		//	Check to see if there are enemy ships that we need to attack
-
-		if (m_fDeterEnemies
-				&& pShip->IsDestinyTime(30)
-				&& !Ctx.NoAttackOnThreat())
+		if (pShip->IsDestinyTime(30))
 			{
-			CSpaceObject *pTarget = pShip->GetVisibleEnemyInRange(pShip, PATROL_SENSOR_RANGE);
+			Metric rRange = (Ctx.IsAggressor() ? Ctx.GetMaxWeaponRange() : PATROL_SENSOR_RANGE);
+			CSpaceObject *pTarget = pShip->GetVisibleEnemyInRange(pShip, rRange);
 			if (pTarget)
 				{
 				m_fIsDeterring = true;
@@ -99,6 +114,11 @@ void CWaitOrder::AttackEnemies (CShip *pShip, CAIBehaviorCtx &Ctx, bool bReady)
 				}
 			}
 		}
+
+	//	Otherwise, we just attack any target that gets too close.
+
+	else
+		Ctx.ImplementAttackNearestTarget(pShip, ATTACK_RANGE, &m_Objs[objTarget]);
 	}
 
 bool CWaitOrder::IsLeaderInRange (CShip *pShip)
