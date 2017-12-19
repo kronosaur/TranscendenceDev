@@ -102,6 +102,21 @@ void CDamageAdjDesc::Compute (const CDamageAdjDesc *pDefault)
 		}
 	}
 
+int CDamageAdjDesc::GetAbsorbAdj (DamageTypes iDamageType) const
+
+//	GetAbsorbAdj
+//
+//	Returns an absolute adjustment, without consulting default values. If 
+//	adjustment is not defined, we return 0. This is specifically useful when 
+//	defining absorb values (which default to 0).
+
+	{
+	if (m_Desc[iDamageType].dwAdjType == adjAbsolute)
+		return (int)(short)(m_Desc[iDamageType].dwAdjValue);
+	else
+		return 0;
+	}
+
 void CDamageAdjDesc::GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const
 
 //	GetAdjAndDefault
@@ -292,6 +307,18 @@ ALERROR CDamageAdjDesc::InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &s
 	ALERROR error;
 	int i;
 
+	//	Short-circuit
+
+	if (sAttrib.IsBlank())
+		{
+		for (i = 0; i < damageCount; i++)
+			{
+			m_Desc[i].dwAdjType = (bNoDefault ? adjAbsolute : adjDefault);
+			m_Desc[i].dwAdjValue = (bNoDefault ? 100 : 0);
+			}
+		return NOERROR;
+		}
+
 	//	We expect a list of damageAdj percent values, either with a damageType
 	//	label or ordered by damageType.
 
@@ -308,16 +335,8 @@ ALERROR CDamageAdjDesc::InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &s
 		{
 		if (DamageAdj[i].IsBlank())
 			{
-			if (bNoDefault)
-				{
-				m_Desc[i].dwAdjType = adjAbsolute;
-				m_Desc[i].dwAdjValue = 100;
-				}
-			else
-				{
-				m_Desc[i].dwAdjType = adjDefault;
-				m_Desc[i].dwAdjValue = 0;
-				}
+			m_Desc[i].dwAdjType = (bNoDefault ? adjAbsolute : adjDefault);
+			m_Desc[i].dwAdjValue = (bNoDefault ? 100 : 0);
 			}
 		else
 			{
@@ -361,6 +380,18 @@ ALERROR CDamageAdjDesc::InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAt
 	{
 	ALERROR error;
 	int i;
+
+	//	Short-circuit null values
+
+	if (sAttrib.IsBlank())
+		{
+		for (i = 0; i < damageCount; i++)
+			{
+			m_Desc[i].dwAdjType = adjDefault;
+			m_Desc[i].dwAdjValue = 0;
+			}
+		return NOERROR;
+		}
 
 	//	We expect a list of percent adjustments
 
@@ -473,4 +504,20 @@ ALERROR CDamageAdjDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bo
 	//	Done
 
 	return NOERROR;
+	}
+
+bool CDamageAdjDesc::IsEmpty (void) const
+
+//	IsEmpty
+//
+//	Returns TRUE if all values are default.
+
+	{
+	int i;
+
+	for (i = 0; i < damageCount; i++)
+		if (m_Desc[i].dwAdjType != adjDefault)
+			return false;
+
+	return true;
 	}

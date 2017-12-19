@@ -701,13 +701,17 @@ class CDamageAdjDesc
 			{ }
 
 		ALERROR Bind (SDesignLoadCtx &Ctx, const CDamageAdjDesc *pDefault);
+		int GetAbsorbAdj (DamageTypes iDamageType) const;
 		inline int GetAdj (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? 100 : m_iDamageAdj[iDamageType]); }
 		void GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
 		int GetHPBonus (DamageTypes iDamageType) const;
 		ICCItem *GetDamageAdjProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
 		ICCItem *GetHPBonusProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
 		ALERROR InitFromArray (int *pTable);
+		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
+		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsDefault = false);
+		bool IsEmpty (void) const;
 
 		static int GetBonusFromAdj (int iDamageAdj, int iDefault = 100);
 		static int GetDamageAdjFromHPBonus (int iBonus);
@@ -728,8 +732,6 @@ class CDamageAdjDesc
 			};
 
 		void Compute (const CDamageAdjDesc *pDefault);
-		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
-		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
 
 		SAdjDesc m_Desc[damageCount];			//	Descriptor for computing adjustment
 		int m_iDamageAdj[damageCount];			//	Computed adjustment for type

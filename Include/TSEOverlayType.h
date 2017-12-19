@@ -53,9 +53,9 @@ class COverlayType : public CDesignType
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 
 	private:
-		int m_iAbsorbAdj[damageCount];			//	Damage absorbed by the field
+		CDamageAdjDesc m_AbsorbAdj;				//	Damage absorbed by the field
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
-		int m_iBonusAdj[damageCount];			//	Adjustment to weapons damage
+		CDamageAdjDesc m_BonusAdj;				//	Bonus to weapon damage (by damage type)
 		Metric m_rDrag;							//	Drag coefficient (1.0 = no drag)
 
 		CEffectCreator *m_pEffect;				//	Effect for field

@@ -126,13 +126,13 @@ int COverlayType::GetDamageAbsorbed (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 		int iMin = 100;
 		for (i = 0; i < damageCount; i++)
-			if (m_iAbsorbAdj[i] < iMin)
-				iMin = m_iAbsorbAdj[i];
+			if (m_AbsorbAdj.GetAbsorbAdj((DamageTypes)i) < iMin)
+				iMin = m_AbsorbAdj.GetAbsorbAdj((DamageTypes)i);
 
 		return (Ctx.iDamage * iMin) / 100;
 		}
 
-	return (Ctx.iDamage * m_iAbsorbAdj[Ctx.Damage.GetDamageType()]) / 100;
+	return (Ctx.iDamage * m_AbsorbAdj.GetAbsorbAdj(Ctx.Damage.GetDamageType())) / 100;
 	}
 
 int COverlayType::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -142,11 +142,11 @@ int COverlayType::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 //	Returns the bonus for this weapon
 
 	{
-	int iType = pDevice->GetDamageType(CItemCtx(pSource, pDevice));
+	DamageTypes iType = (DamageTypes)pDevice->GetDamageType(CItemCtx(pSource, pDevice));
 	if (iType == damageGeneric)
 		return 0;
 
-	return m_iBonusAdj[iType];
+	return m_BonusAdj.GetHPBonus(iType);
 	}
 
 void COverlayType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -199,7 +199,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				strPatternSubst(CONSTLIT("%d:e"), GetUNID()), 
 				&m_pEffect))
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("energy field %x: Unable to load effect"), GetUNID());
+			Ctx.sError = strPatternSubst(CONSTLIT("OverlayType %x: Unable to load effect"), GetUNID());
 			return error;
 			}
 		}
@@ -215,7 +215,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				strPatternSubst(CONSTLIT("%d:h"), GetUNID()), 
 				&m_pHitEffect))
 			{
-			Ctx.sError = strPatternSubst(CONSTLIT("energy field %x: Unable to load hit effect"), GetUNID());
+			Ctx.sError = strPatternSubst(CONSTLIT("OverlayType %x: Unable to load hit effect"), GetUNID());
 			return error;
 			}
 
@@ -238,12 +238,19 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Damage adjustment
 
-	int iAbsorbCount;
-	LoadDamageAdj(pDesc, ABSORB_ADJ_ATTRIB, m_iAbsorbAdj, &iAbsorbCount);
+	if (error = m_AbsorbAdj.InitFromDamageAdj(Ctx, pDesc->GetAttribute(ABSORB_ADJ_ATTRIB), false))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("OverlayType %x: %s"), GetUNID(), Ctx.sError);
+		return error;
+		}
 
 	//	Bonus adjustment
 
-	LoadDamageAdj(pDesc, BONUS_ADJ_ATTRIB, m_iBonusAdj);
+	if (error = m_BonusAdj.InitFromHPBonus(Ctx, pDesc->GetAttribute(BONUS_ADJ_ATTRIB)))
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("OverlayType %x: %s"), GetUNID(), Ctx.sError);
+		return error;
+		}
 
 	//	Load the weapon suppress
 
@@ -260,7 +267,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pDesc->FindAttributeBool(SHIELD_OVERLAY_ATTRIB, &bValue))
 		m_fShieldOverlay = bValue;
 	else
-		m_fShieldOverlay = (iAbsorbCount > 0);
+		m_fShieldOverlay = !m_AbsorbAdj.IsEmpty();
 
 	//	Counter
 
