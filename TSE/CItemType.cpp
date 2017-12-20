@@ -1671,7 +1671,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		//	Otherwise, error
 
 		else
-			kernelDebugLogPattern("Unknown sub-element for ItemType: %s", pSubDesc->GetTag());
+			kernelDebugLogPattern("%s (%x): Unknown sub-element for ItemType: %s", GetNounPhrase(), GetUNID(), pSubDesc->GetTag());
 		}
 
 	//	Done
