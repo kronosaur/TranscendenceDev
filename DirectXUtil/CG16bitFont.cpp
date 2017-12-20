@@ -222,7 +222,7 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 				//	If this character is a space or a hyphen, add it to the
 				//	end of the line
 
-				if (*pPos == ' ' || *pPos == '-')
+				if (*pPos == ' ' || *pPos == '-' || *pPos == '\x97')
 					{
 					iCharsInLine += iCharsInWord;
 					cxRemainingWidth -= cxWordWidth;

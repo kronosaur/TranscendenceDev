@@ -187,7 +187,7 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 			//	Find the next word
 
 			char *pStart = pPos;
-			while (pPos < pPosEnd && *pPos != ' ' && *pPos != '-')
+			while (pPos < pPosEnd && *pPos != ' ' && *pPos != '-' && *pPos != '\x97')
 				pPos++;
 
 			//	Measure the length of the word.
