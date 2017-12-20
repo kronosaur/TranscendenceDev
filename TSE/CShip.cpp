@@ -1090,7 +1090,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 			//	replaced.
 
 			CItemListManipulator ItemList(GetItemList());
-			if (SetCursorAtArmor(ItemList, iSlot))
+			if (iSlot != -1 && SetCursorAtArmor(ItemList, iSlot))
 				{
 				ItemToReplace = ItemList.GetItemAtCursor();
 
