@@ -21,6 +21,7 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
+#define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
 #define INSTALL_COST_ATTRIB						CONSTLIT("installCost")
 #define INSTALL_COST_ADJ_ATTRIB					CONSTLIT("installCostAdj")
@@ -1298,6 +1299,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_Stats.iLevel = iLevel;
 	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(CONSTLIT(g_HitPointsAttrib), 0);
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
+	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 
 	//	Regen
 
@@ -1895,6 +1897,11 @@ int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 	if (!Enhancements.IsEmpty())
 		iHP = iHP + ((iHP * Enhancements.GetBonus()) / 100);
+
+	//	Add HP from charges
+
+	if (m_iHPBonusPerCharge > 0)
+		iHP += m_iHPBonusPerCharge * ItemCtx.GetItemCharges();
 
 	//	Add complete bonus
 

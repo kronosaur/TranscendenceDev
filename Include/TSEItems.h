@@ -530,12 +530,12 @@ class CItemCtx
 		CInstalledArmor *GetArmor (void);
 		CArmorClass *GetArmorClass (void);
 		CInstalledDevice *GetDevice (void);
-		int GetDeviceCharges (void);
 		CDeviceClass *GetDeviceClass (void);
 		bool GetEnhancementDisplayAttributes (TArray<SDisplayAttribute> *retList);
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void);
 		const CItemEnhancementStack &GetEnhancements (void) { const CItemEnhancementStack *pStack = GetEnhancementStack(); if (pStack) return *pStack; else return *m_pNullEnhancements; }
 		const CItem &GetItem (void);
+		int GetItemCharges (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
 		CShipClass *GetSourceShipClass (void) const;

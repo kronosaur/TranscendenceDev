@@ -135,20 +135,6 @@ CInstalledDevice *CItemCtx::GetDevice(void)
 	return NULL;
 	}
 
-int CItemCtx::GetDeviceCharges (void)
-
-//	GetDeviceCharges
-//
-//	Returns the number of charges for the device (or 0).
-
-	{
-	const CItem &Item = GetItem();
-	if (Item.IsEmpty())
-		return 0;
-
-	return Item.GetCharges();
-	}
-
 CDeviceClass *CItemCtx::GetDeviceClass(void)
 
 //	GetDeviceClass
@@ -253,6 +239,20 @@ const CItem &CItemCtx::GetItem(void)
 	//	Done
 
 	return *m_pItem;
+	}
+
+int CItemCtx::GetItemCharges (void)
+
+//	GetDeviceCharges
+//
+//	Returns the number of charges for the device (or 0).
+
+	{
+	const CItem &Item = GetItem();
+	if (Item.IsEmpty())
+		return 0;
+
+	return Item.GetCharges();
 	}
 
 const CItem *CItemCtx::GetItemPointer(void)

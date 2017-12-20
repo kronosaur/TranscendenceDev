@@ -1221,9 +1221,9 @@ int CShieldClass::GetMaxHP (CItemCtx &Ctx) const
 	//	Adjust based on charges
 
 	if (m_iExtraHPPerCharge)
-		iMax = Max(0, iMax + m_iExtraHPPerCharge * Ctx.GetDeviceCharges());
+		iMax = Max(0, iMax + m_iExtraHPPerCharge * Ctx.GetItemCharges());
 	else if (m_fHasNonRegenHPBonus)
-		iMax = Max(0, iMax + Ctx.GetDeviceCharges());
+		iMax = Max(0, iMax + Ctx.GetItemCharges());
 
 	//	Adjust if shield is based on armor strength
 

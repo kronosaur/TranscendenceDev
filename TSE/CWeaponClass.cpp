@@ -3309,7 +3309,7 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
 		{
 		//	We assume that all charge values are represented in m_ShotData.
 
-        int iIndex = Min(Max(0, ItemCtx.GetDeviceCharges()), m_ShotData.GetCount() - 1);
+        int iIndex = Min(Max(0, ItemCtx.GetItemCharges()), m_ShotData.GetCount() - 1);
 		return m_ShotData[iIndex].pDesc;
 		}
 

@@ -176,6 +176,7 @@ class CArmorClass
 
 		int m_iRepairTech;						//	Tech required to repair
 		int m_iArmorCompleteBonus;				//	Extra HP if armor is complete
+		int m_iHPBonusPerCharge;				//	Extra HP for each charge
 		int m_iStealth;							//	Stealth level
 		int m_iPowerUse;						//	Power consumed (1/10th MWs)
 		int m_iIdlePowerUse;					//	Power consumed when not regenerating
