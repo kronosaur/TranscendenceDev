@@ -362,7 +362,7 @@ class CItem
 		bool IsVirtual (void) const;
 		inline void MarkForDelete (void) { m_dwCount = 0xffff; }
 		bool RemoveEnhancement (DWORD dwID);
-		inline void SetCharges (int iCharges) { Extra(); m_pExtra->m_dwCharges = iCharges; }
+		void SetCharges (int iCharges);
 		inline void SetCount (int iCount) { m_dwCount = (DWORD)iCount; }
 		inline void SetDamaged (void) { m_dwFlags |= flagDamaged; }
 		inline void SetDamaged (bool bDamaged) { ClearDamaged(); if (bDamaged) SetDamaged(); }

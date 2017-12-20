@@ -40,6 +40,7 @@
 #define KEY_ATTRIB								CONSTLIT("key")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MASS_BONUS_PER_CHARGE_ATTRIB			CONSTLIT("massBonusPerCharge")
+#define MAX_CHARGES_ATTRIB						CONSTLIT("maxCharges")
 #define NO_SALE_IF_USED_ATTRIB					CONSTLIT("noSaleIfUsed")
 #define NUMBER_APPEARING_ATTRIB					CONSTLIT("numberAppearing")
 #define PLURAL_NAME_ATTRIB						CONSTLIT("pluralName")
@@ -1484,6 +1485,8 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CString sInstData;
 	if (m_fInstanceData = pDesc->FindAttribute(INSTANCE_DATA_ATTRIB, &sInstData))
 		m_InitDataValue.LoadFromXML(sInstData);
+
+	m_iMaxCharges = pDesc->GetAttributeIntegerBounded(MAX_CHARGES_ATTRIB, 0, -1, -1);
 
 	m_iExtraMassPerCharge = pDesc->GetAttributeIntegerBounded(MASS_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 	m_iExtraValuePerCharge = pDesc->GetAttributeInteger(VALUE_BONUS_PER_CHARGE_ATTRIB);	//	May be negative

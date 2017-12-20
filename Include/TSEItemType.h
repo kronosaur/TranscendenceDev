@@ -86,6 +86,7 @@ class CItemType : public CDesignType
 		inline CArmorClass *GetArmorClass (void) const { return m_pArmor; }
 		ItemCategories GetCategory (void) const;
 		inline int GetCharges (void) const { return (m_fInstanceData ? m_InitDataValue.Roll() : 0); }
+		inline int GetChargesLimit (void) const { return m_iMaxCharges; }
 		inline const CItemList &GetComponents (void) const { return m_Components; }
         CCurrencyAndValue GetCurrencyAndValue (CItemCtx &Ctx, bool bActual = false) const;
 		inline CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
@@ -102,8 +103,9 @@ class CItemType : public CDesignType
 		inline Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
 		inline int GetMassBonusPerCharge (void) const { return m_iExtraMassPerCharge; }
 		int GetMassKg (CItemCtx &Ctx) const;
-		inline int GetMaxCharges (void) const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
+		inline int GetMaxCharges (void) const { return (m_iMaxCharges == -1 ? GetMaxInitialCharges() : m_iMaxCharges); }
 		int GetMaxHPBonus (void) const;
+		inline int GetMaxInitialCharges (void) const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
         inline int GetMaxLevel (void) const { return m_iMaxLevel; }
 		inline CWeaponFireDesc *GetMissileDesc (void) const { return m_pMissile;  }
 		inline DWORD GetModCode (void) const { return m_dwModCode; }
@@ -183,6 +185,7 @@ class CItemType : public CDesignType
 		CItemTypeRef m_pUnknownType;			//	Type to show if not known
 		TArray<CString> m_UnknownNames;			//	List of unknown names (if we are the unknown item placeholder)
 		DiceRange m_InitDataValue;				//	Initial data value
+		int m_iMaxCharges;						//	Do not allow charges above this level (-1 = no limit)
 
 		int m_iExtraMassPerCharge;				//	Extra mass per charge (in kilos)
 		int m_iExtraValuePerCharge;				//	Extra value per charge (may be negative)

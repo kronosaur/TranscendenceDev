@@ -1725,7 +1725,7 @@ bool CItem::IsUsed (void) const
 	{
 	//	For now, the only case that we handle is when charges have been used.
 
-	if (GetCharges() < m_pItemType->GetMaxCharges())
+	if (GetCharges() < m_pItemType->GetMaxInitialCharges())
 		return true;
 
 	//	Not used
@@ -2810,6 +2810,22 @@ bool CItem::RemoveEnhancement (DWORD dwID)
 	m_pExtra->m_Mods = CItemEnhancement();
 
 	return true;
+	}
+
+void CItem::SetCharges (int iCharges)
+
+//	SetCharges
+//
+//	Sets the current charges
+
+	{
+	Extra();
+
+	int iChargesLimit = m_pItemType->GetChargesLimit();
+	if (iChargesLimit != -1)
+		m_pExtra->m_dwCharges = Min(iCharges, iChargesLimit);
+	else
+		m_pExtra->m_dwCharges = iCharges;
 	}
 
 void CItem::SetDisrupted (DWORD dwDuration)
