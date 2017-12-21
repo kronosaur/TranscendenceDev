@@ -49,6 +49,8 @@ class CElementNodeDistanceTable : public IElementGenerator
 		TUniquePtr<IElementGenerator> m_DefaultItem;
 
 		mutable TArray<CTopologyNode *> m_OriginList;
+		mutable const CTopology *m_pTopology = NULL;
+		mutable DWORD m_dwTopologyVersion = 0;
 	};
 
 class CElementNull : public IElementGenerator
@@ -542,6 +544,16 @@ void CElementNodeDistanceTable::InitOriginList (SCtx &Ctx) const
 	if (Ctx.pTopology == NULL)
 		return;
 
+	//	See if we've already initialize the list.
+
+	if (m_OriginList.GetCount() > 0
+			&& m_pTopology == Ctx.pTopology
+			&& m_pTopology->GetVersion() == m_dwTopologyVersion)
+		return;
+
+	//	Initialize
+
+	m_OriginList.DeleteAll();
 	for (i = 0; i < Ctx.pTopology->GetTopologyNodeCount(); i++)
 		{
 		CTopologyNode *pNode = Ctx.pTopology->GetTopologyNode(i);
@@ -551,6 +563,11 @@ void CElementNodeDistanceTable::InitOriginList (SCtx &Ctx) const
 		if (pNode->MatchesAttributeCriteria(m_OriginCriteria))
 			m_OriginList.Insert(pNode);
 		}
+
+	//	Remember that we've initialized
+
+	m_pTopology = Ctx.pTopology;
+	m_dwTopologyVersion = Ctx.pTopology->GetVersion();
 	}
 
 void CElementNodeDistanceTable::Generate (SCtx &Ctx, TArray<SResult> &retResults) const
@@ -569,8 +586,7 @@ void CElementNodeDistanceTable::Generate (SCtx &Ctx, TArray<SResult> &retResults
 
 	//	If we have not yet got our list of origin nodes, then do it now.
 
-	if (m_OriginList.GetCount() == 0)
-		InitOriginList(Ctx);
+	InitOriginList(Ctx);
 
 	//	If the origin list is empty, then we default
 

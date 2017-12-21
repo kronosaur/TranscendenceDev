@@ -410,6 +410,7 @@ class CTopology
 		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		inline CTopologyNode *GetTopologyNode (int iIndex) const { return m_Topology.GetAt(iIndex); }
 		inline int GetTopologyNodeCount (void) const { return m_Topology.GetCount(); }
+		inline DWORD GetVersion (void) const { return m_dwVersion; }
 		ALERROR InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx = NULL, CTopologyNode **iopExit = NULL); 
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 
@@ -436,4 +437,5 @@ class CTopology
 
 		CTopologyNodeList m_Topology;
 		TSortMap<CString, int> m_IDToNode;
+		DWORD m_dwVersion = 1;
 	};

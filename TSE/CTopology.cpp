@@ -949,6 +949,12 @@ void CTopology::DeleteAll (void)
 
 	m_Topology.DeleteAll();
 	m_IDToNode.DeleteAll();
+
+	//	We increment our version so that others can detect that we've deleted
+	//	all our nodes and have re-initialized. There is no need to persist this
+	//	version.
+
+	m_dwVersion++;
 	}
 
 CTopologyDesc *FindNodeInContext (STopologyCreateCtx &Ctx, const CString &sNodeID)
