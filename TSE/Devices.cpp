@@ -9,6 +9,8 @@
 
 #define CATEGORY_ATTRIB							CONSTLIT("category")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define DEVICE_DAMAGE_IMMUNE_ATTRIB				CONSTLIT("deviceDamageImmune")
+#define DEVICE_DISRUPT_IMMUNE_ATTRIB			CONSTLIT("deviceDisruptImmune")
 #define DEVICE_SLOT_CATEGORY_ATTRIB				CONSTLIT("deviceSlotCategory")
 #define DEVICE_SLOTS_ATTRIB						CONSTLIT("deviceSlots")
 #define ENHANCEMENT_ATTRIB						CONSTLIT("enhancement")
@@ -30,7 +32,9 @@
 #define LINKED_FIRE_ENEMY						CONSTLIT("whenInFireArc")
 #define LINKED_FIRE_TARGET						CONSTLIT("targetInRange")
 
+#define PROPERTY_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged")
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
+#define PROPERTY_CAN_BE_DISRUPTED				CONSTLIT("canBeDisrupted")
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
@@ -341,6 +345,23 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	else
 		m_iSlots = 1;
 
+	//	Is this device immune to damage and disrupt?
+	//	Note: We assume that damageable and disruptable do not mean the same thing.
+	//	There could be a device that is immune to disrupt but vulnerable to other damaging effects.
+	//	There could also be a device that is disruptable but not damageable.
+
+	bool bDeviceDamageImmune;
+	if (pDesc->FindAttributeBool(DEVICE_DAMAGE_IMMUNE_ATTRIB, &bDeviceDamageImmune))
+		m_bDeviceDamageImmune = bDeviceDamageImmune;
+	else
+		m_bDeviceDamageImmune = false;
+
+	bool bDeviceDisruptImmune;
+	if (pDesc->FindAttributeBool(DEVICE_DISRUPT_IMMUNE_ATTRIB, &bDeviceDisruptImmune))
+		m_bDeviceDisruptImmune = bDeviceDisruptImmune;
+	else
+		m_bDeviceDisruptImmune = false;
+
 	//	Slot type
 
 	CString sSlotType;
@@ -446,9 +467,12 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	//	Get the property
 
-    if (strEquals(sName, PROPERTY_CAN_BE_DISABLED))
+	if (strEquals(sName, PROPERTY_CAN_BE_DAMAGED))
+		return (pDevice ? CC.CreateBool(pDevice->CanBeDamaged()) : CC.CreateBool(CanBeDamaged()));
+    else if (strEquals(sName, PROPERTY_CAN_BE_DISABLED))
         return (pDevice ? CC.CreateBool(pDevice->CanBeDisabled(Ctx)) : CC.CreateBool(CanBeDisabled(Ctx)));
-
+	else if (strEquals(sName, PROPERTY_CAN_BE_DISRUPTED))
+		return (pDevice ? CC.CreateBool(pDevice->CanBeDisrupted()) : CC.CreateBool(CanBeDisrupted()));
     else if (strEquals(sName, PROPERTY_CAPACITOR))
         {
         CSpaceObject *pSource = Ctx.GetSource();

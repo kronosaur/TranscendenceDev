@@ -118,6 +118,7 @@
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
 #define SPECIAL_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged:")
+#define SPECIAL_CAN_BE_DISRUPTED				CONSTLIT("canBeDisrupted:")
 #define SPECIAL_DAMAGE_TYPE						CONSTLIT("damageType:")
 #define SPECIAL_HAS_COMPONENTS					CONSTLIT("hasComponents:")
 #define SPECIAL_IS_LAUNCHER						CONSTLIT("isLauncher:")
@@ -1768,6 +1769,18 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		CDeviceClass *pDevice;
 		if (pDevice = GetDeviceClass())
 			return (pDevice->CanBeDamaged() == bValue);
+		else if (IsArmor())
+			return (true == bValue);
+		else
+			return (false == bValue);
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_CAN_BE_DISRUPTED))
+		{
+		bool bValue = strEquals(strSubString(sAttrib, SPECIAL_CAN_BE_DISRUPTED.GetLength(), -1), SPECIAL_TRUE);
+
+		CDeviceClass *pDevice;
+		if (pDevice = GetDeviceClass())
+			return (pDevice->CanBeDisrupted() == bValue);
 		else if (IsArmor())
 			return (true == bValue);
 		else
