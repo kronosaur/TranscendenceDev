@@ -219,6 +219,76 @@ DWORD CLanguage::LoadNameFlags (CXMLElement *pDesc)
 	return dwFlags;
 	}
 
+void CLanguage::ParseItemName (const CString &sName, CString *retsRoot, CString *retsModifiers)
+
+//	ParseItemName
+//
+//	Parses an item name like:
+//
+//	light reactive armor
+//
+//	And splits it into a root name and a modifier:
+//
+//	root = "reactive armor"
+//	modifier = "light"
+
+	{
+	char *pPos = sName.GetASCIIZPointer();
+	char *pPosStart = pPos;
+	char *pPosEnd = pPos + sName.GetLength();
+
+	char *pModifierEnd = NULL;
+	char *pStart = pPos;
+	while (pPos < pPosEnd)
+		{
+		//	If this is whitespace, then we've reached then end of a word.
+
+		if (strIsWhitespace(pPos))
+			{
+			CString sWord(pStart, (int)(pPos - pStart));
+
+			//	If this word is a known modifier, then we remember the fact that
+			//	we've got at least one modifier.
+
+			if (ITEM_MODIFIER_TABLE.GetAt(sWord))
+				{
+				pModifierEnd = pPos;
+
+				//	Skip until the beginning of the next word.
+
+				while (pPos < pPosEnd && strIsWhitespace(pPos))
+					pPos++;
+
+				//	Continue looping.
+
+				pStart = pPos;
+				}
+
+			//	Otherwise, we're done.
+
+			else
+				{
+				break;
+				}
+			}
+
+		//	Otherwise, next char
+
+		else
+			pPos++;
+		}
+
+	//	If we have a modifier, then add it.
+
+	if (pModifierEnd && retsModifiers)
+		*retsModifiers = CString(pPosStart, (int)(pModifierEnd - pPosStart));
+
+	//	The rest is the root
+
+	if (retsRoot)
+		*retsRoot = CString(pStart, (int)(pPosEnd - pStart));
+	}
+
 DWORD CLanguage::ParseNounFlags (const CString &sValue)
 
 //	ParseNounFlags

@@ -36,6 +36,7 @@
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
 #define PROPERTY_REFERENCE						CONSTLIT("reference")
+#define PROPERTY_ROOT_NAME						CONSTLIT("rootName")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
@@ -1252,6 +1253,19 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 			return CC.CreateString(GetType()->GetReference(Ctx));
 		else
 			return CC.CreateString(GetReference(Ctx));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_ROOT_NAME))
+		{
+		CString sRoot;
+		CString sModifier;
+
+		CLanguage::ParseItemName(GetNounPhrase(Ctx, nounShort | nounNoModifiers), &sRoot, &sModifier);
+
+		if (sModifier.IsBlank())
+			return CC.CreateString(sRoot);
+		else
+			return CC.CreateString(strPatternSubst(CONSTLIT("%s, %s"), sRoot, sModifier));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_USED))

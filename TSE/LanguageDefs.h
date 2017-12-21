@@ -78,3 +78,18 @@ static TStaticStringTable<SVerbData, 3> VERB_FORM_TABLE = {
 	"is",			"are",
 	"was",			"were",
 	};
+
+//	Item Name Parsing
+
+static TStaticStringTable<SSimpleStringEntry, 10> ITEM_MODIFIER_TABLE = {
+	"advanced",
+	"ancient",
+	"double",
+	"heavy",
+	"light",
+	"massive",
+	"medium",
+	"quad",
+	"super-heavy",
+	"ultra-light",
+	};

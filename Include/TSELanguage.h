@@ -79,6 +79,7 @@ class CLanguage
 		static CString ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber);
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static DWORD LoadNameFlags (CXMLElement *pDesc);
+		static void ParseItemName (const CString &sName, CString *retsRoot, CString *retsModifiers);
 		static DWORD ParseNounFlags (const CString &sValue);
 		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, SNounDesc *retDesc = NULL);
 		static ENumberFormatTypes ParseNumberFormat (const CString &sValue);
