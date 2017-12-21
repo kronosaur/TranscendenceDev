@@ -157,10 +157,8 @@ int CReactorClass::GetMaxPower (CItemCtx &ItemCtx, const CReactorDesc &Desc) con
 
 	//	Adjust for charges
 
-    CInstalledDevice *pDevice;
-	if (m_iExtraPowerPerCharge
-			&& (pDevice = ItemCtx.GetDevice()))
-		iMaxPower += m_iExtraPowerPerCharge * pDevice->GetCharges(ItemCtx.GetSource());
+	if (m_iExtraPowerPerCharge > 0)
+		iMaxPower += m_iExtraPowerPerCharge * ItemCtx.GetItemCharges();
 
 	//	Done
 
