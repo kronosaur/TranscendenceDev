@@ -565,7 +565,7 @@ class CPowerConsumption
 		inline void SetOutOfFuel (bool bValue = true) { m_fOutOfFuel = bValue; }
 		inline void SetOutOfPower (bool bValue = true) { m_fOutOfPower = bValue; }
 		bool UpdateGraceTimer (void);
-		void UpdatePowerUse (int iPowerDrained, int iPowerGenerated, Metric rEfficiency);
+		void UpdatePowerUse (int iPowerDrained, int iPowerGenerated, Metric rEfficiency, Metric *retrFuelConsumed = NULL);
 		void WriteToStream (CSpaceObject *pObj, IWriteStream &Stream) const;
 
 	private:

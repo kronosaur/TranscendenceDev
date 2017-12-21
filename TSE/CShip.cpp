@@ -8229,7 +8229,9 @@ bool CShip::UpdateFuel (SUpdateCtx &Ctx, int iTick)
 
         //	Update our power use for this tick
 
-		m_pPowerUse->UpdatePowerUse(iPowerUsed, iPowerGenerated, m_Perf.GetReactorDesc().GetEfficiency());
+		Metric rConsumed;
+		m_pPowerUse->UpdatePowerUse(iPowerUsed, iPowerGenerated, m_Perf.GetReactorDesc().GetEfficiency(), &rConsumed);
+        m_pController->OnFuelConsumed(rConsumed, CReactorDesc::fuelConsume);
 
         //	Make sure everything is running smoothly.
 

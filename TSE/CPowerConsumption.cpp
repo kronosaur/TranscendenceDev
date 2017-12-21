@@ -109,7 +109,7 @@ bool CPowerConsumption::UpdateGraceTimer (void)
 	return (m_iReactorGraceTimer <= 0);
 	}
 
-void CPowerConsumption::UpdatePowerUse (int iPowerDrained, int iPowerGenerated, Metric rEfficiency)
+void CPowerConsumption::UpdatePowerUse (int iPowerDrained, int iPowerGenerated, Metric rEfficiency, Metric *retrFuelConsumed)
 
 //	UpdatePowerUse
 //
@@ -123,7 +123,10 @@ void CPowerConsumption::UpdatePowerUse (int iPowerDrained, int iPowerGenerated, 
 	m_iPowerDrain = iPowerDrained;
 	m_iPowerGenerated = iPowerGenerated;
 
-	ConsumeFuel(GetPowerNeeded() / rEfficiency, CReactorDesc::fuelConsume);
+	Metric rFuelConsumed = ConsumeFuel(GetPowerNeeded() / rEfficiency, CReactorDesc::fuelConsume);
+
+	if (retrFuelConsumed)
+		*retrFuelConsumed = rFuelConsumed;
 	}
 
 void CPowerConsumption::WriteToStream (CSpaceObject *pObj, IWriteStream &Stream) const
