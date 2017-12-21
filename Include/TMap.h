@@ -801,6 +801,11 @@ template <class VALUE> struct TStaticStringEntry
 	VALUE Value;
 	};
 
+struct SSimpleStringEntry
+	{
+	const char *pszKey;
+	};
+
 //	Simple map classes
 
 template <class VALUE> class TStringMap : public TMap<CString, VALUE> { };
