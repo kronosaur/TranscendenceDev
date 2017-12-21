@@ -201,8 +201,9 @@ class CDeviceClass
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
 		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) { return -1; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
-		virtual bool CanBeDamaged (void) { return true; }
+		virtual bool CanBeDamaged (void) { return !m_bDeviceDamageImmune; }
 		virtual bool CanBeDisabled (CItemCtx &Ctx) { return (GetPowerRating(Ctx) != 0); }
+		virtual bool CanBeDisrupted(void) { return !m_bDeviceDisruptImmune; }
 		virtual bool CanHitFriends (void) { return true; }
 		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
@@ -285,6 +286,9 @@ class CDeviceClass
 		CItemType *m_pItemType;					//	Item for device
 		int m_iSlots;							//	Number of device slots required
 		ItemCategories m_iSlotCategory;			//	Count as this category (for device slot purposes)
+
+		bool m_bDeviceDamageImmune;				//	Prevents this device from being damaged by ion effects. Only applies to devices that can be damaged in the first place. Default: false
+		bool m_bDeviceDisruptImmune;			//	Prevents this device from being disrupted by ion effects. Only applies to devices that can be damaged in the first place. Default: false
 
 		COverlayTypeRef m_pOverlayType;			//	Associated overlay (may be NULL)
 
@@ -477,6 +481,7 @@ class CInstalledDevice
 		int CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource);
 		inline bool CanBeDamaged (void) { return m_pClass->CanBeDamaged(); }
 		inline bool CanBeDisabled (CItemCtx &Ctx) { return m_pClass->CanBeDisabled(Ctx); }
+		inline bool CanBeDisrupted (void) { return m_pClass->CanBeDisrupted(); }
 		inline bool CanHitFriends (void) { return m_pClass->CanHitFriends(); }
 		inline bool CanRotate (CItemCtx &Ctx) const { return m_pClass->CanRotate(Ctx); }
 		inline void Deplete (CSpaceObject *pSource) { m_pClass->Deplete(this, pSource); }

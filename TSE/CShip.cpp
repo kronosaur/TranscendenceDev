@@ -4940,7 +4940,7 @@ void CShip::OnHitByDeviceDisruptDamage (DWORD dwDuration)
 	//	We pick a random installed device
 
 	CItemCriteria Criteria;
-	CItem::ParseCriteria(CONSTLIT("dI +canBeDamaged:true;"), &Criteria);
+	CItem::ParseCriteria(CONSTLIT("dI +canBeDisrupted:true;"), &Criteria);
 
 	CItemListManipulator ItemList(GetItemList());
 	SetCursorAtRandomItem(ItemList, Criteria);
@@ -4958,10 +4958,11 @@ void CShip::OnHitByDeviceDisruptDamage (DWORD dwDuration)
 			NULL;
 
 		//	Otherwise, if the device is already disrupted, then there is
-		//	a chance that it will be damaged
+		//	a chance that it will be damaged (if possible)
 
 		else if (pDevice->IsDisrupted()
-				&& pDevice->GetDisruptedDuration() > MAX_DISRUPT_TIME_BEFORE_DAMAGE)
+				&& pDevice->GetDisruptedDuration() > MAX_DISRUPT_TIME_BEFORE_DAMAGE
+				&& pDevice->CanBeDamaged())
 			{
 			DamageItem(ItemList);
 			OnDeviceStatus(pDevice, CDeviceClass::failDamagedByDisruption);
