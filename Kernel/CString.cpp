@@ -280,6 +280,16 @@ bool CString::operator== (const CString &sValue) const
 	return strEquals(*this, sValue);
 	}
 
+bool CString::operator!= (const CString &sValue) const
+
+//	operator !=
+//
+//	NOTE: Case-insensitive compare
+
+	{
+	return !strEquals(*this, sValue);
+	}
+
 void CString::AddToFreeList (PSTORESTRUCT pStore, int iSize)
 
 //	AddToFreeList
@@ -1301,6 +1311,34 @@ bool strEquals (const CString &sString1, const CString &sString2)
 
 	for (i = 0; i < iLen; i++)
 		if (CharLower((LPTSTR)(BYTE)(pPos1[i])) != CharLower((LPTSTR)(BYTE)(pPos2[i])))
+			return false;
+
+	return true;
+	}
+
+bool strEqualsCase (const CString &sString1, const CString &sString2)
+
+//	strEqualsCase
+//
+//	Returns TRUE if the strings are exactly equal (case-sensitive).
+
+	{
+	//	If the strings aren't the same length then don't bother
+
+	int iLen = sString1.GetLength();
+	if (iLen != sString2.GetLength())
+		return false;
+
+	//	Setup
+
+	char *pPos1 = sString1.GetPointer();
+	char *pPos1End = pPos1 + iLen;
+	char *pPos2 = sString2.GetPointer();
+
+	//	Compare by character
+
+	for (; pPos1 < pPos1End; pPos1++, pPos2++)
+		if (*pPos1 != *pPos2)
 			return false;
 
 	return true;

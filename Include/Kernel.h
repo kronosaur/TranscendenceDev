@@ -550,6 +550,7 @@ class CString : public CObject
 		CString &operator= (const CString &pString);
 		inline operator LPSTR () const { return GetASCIIZPointer(); }
 		bool operator== (const CString &sValue) const;
+		bool operator!= (const CString &sValue) const;
 
 		ALERROR Append (const CString &sString);
 		void Capitalize (CapitalizeOptions iOption);
@@ -1362,6 +1363,7 @@ CString strEncodeUTF8Char (DWORD dwCodePoint);
 CString strEncodeW1252ToUTF8Char (char chChar);
 bool strEndsWith (const CString &sString, const CString &sStringToFind);
 bool strEquals (const CString &sString1, const CString &sString2);
+bool strEqualsCase (const CString &sString1, const CString &sString2);
 int strFind (const CString &sString, const CString &sStringToFind);
 
 CString strFormatBytes (DWORD dwBytes);
