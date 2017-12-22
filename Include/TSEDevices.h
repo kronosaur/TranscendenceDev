@@ -201,9 +201,9 @@ class CDeviceClass
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
 		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) { return -1; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
-		virtual bool CanBeDamaged (void) { return !m_bDeviceDamageImmune; }
+		virtual bool CanBeDamaged (void) { return !m_fDeviceDamageImmune; }
 		virtual bool CanBeDisabled (CItemCtx &Ctx) { return (GetPowerRating(Ctx) != 0); }
-		virtual bool CanBeDisrupted(void) { return !m_bDeviceDisruptImmune; }
+		virtual bool CanBeDisrupted(void) { return !m_fDeviceDisruptImmune; }
 		virtual bool CanHitFriends (void) { return true; }
 		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
@@ -287,9 +287,6 @@ class CDeviceClass
 		int m_iSlots;							//	Number of device slots required
 		ItemCategories m_iSlotCategory;			//	Count as this category (for device slot purposes)
 
-		bool m_bDeviceDamageImmune;				//	Prevents this device from being damaged by ion effects. Only applies to devices that can be damaged in the first place. Default: false
-		bool m_bDeviceDisruptImmune;			//	Prevents this device from being disrupted by ion effects. Only applies to devices that can be damaged in the first place. Default: false
-
 		COverlayTypeRef m_pOverlayType;			//	Associated overlay (may be NULL)
 
 		int m_iMaxHPBonus;						//	Max HP bonus for this device
@@ -299,7 +296,10 @@ class CDeviceClass
 		SEventHandlerDesc m_CachedEvents[evtCount];	//	Cached events
 
 		DWORD m_fExternal:1;					//	Device is external
-		DWORD m_dwSpare:31;
+		DWORD m_fDeviceDamageImmune:1;			//	Prevents this device from being damaged by ion effects. Only applies to devices that can be damaged in the first place. Default: false
+		DWORD m_fDeviceDisruptImmune:1;			//	Prevents this device from being disrupted by ion effects. Only applies to devices that can be damaged in the first place. Default: false
+
+		DWORD m_dwSpare:29;
 	};
 
 //	IDeviceGenerator -----------------------------------------------------------

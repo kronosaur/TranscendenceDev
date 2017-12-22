@@ -350,17 +350,8 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	//	There could be a device that is immune to disrupt but vulnerable to other damaging effects.
 	//	There could also be a device that is disruptable but not damageable.
 
-	bool bDeviceDamageImmune;
-	if (pDesc->FindAttributeBool(DEVICE_DAMAGE_IMMUNE_ATTRIB, &bDeviceDamageImmune))
-		m_bDeviceDamageImmune = bDeviceDamageImmune;
-	else
-		m_bDeviceDamageImmune = false;
-
-	bool bDeviceDisruptImmune;
-	if (pDesc->FindAttributeBool(DEVICE_DISRUPT_IMMUNE_ATTRIB, &bDeviceDisruptImmune))
-		m_bDeviceDisruptImmune = bDeviceDisruptImmune;
-	else
-		m_bDeviceDisruptImmune = false;
+	m_fDeviceDamageImmune = pDesc->GetAttributeBool(DEVICE_DAMAGE_IMMUNE_ATTRIB);
+	m_fDeviceDisruptImmune = pDesc->GetAttributeBool(DEVICE_DISRUPT_IMMUNE_ATTRIB);
 
 	//	Slot type
 
