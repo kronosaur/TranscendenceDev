@@ -1312,7 +1312,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		//	We don't need to log image load
 
 		SetLogImageLoad(false);
-		error = m_Design.BindDesign(BindOrder, Ctx.TypesUsed, dwAPIVersion, !Ctx.bInLoadGame, Ctx.bNoResources, Ctx.bLoadObsoleteTypes, retsError);
+		error = m_Design.BindDesign(BindOrder, Ctx.TypesUsed, dwAPIVersion, !Ctx.bInLoadGame, Ctx.bNoResources, retsError);
 		SetLogImageLoad(true);
 
 		if (error)
@@ -1932,8 +1932,6 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 			InitCtx.TypesUsed.SetAt(dwUNID, true);
 			}
 		}
-	else
-		InitCtx.bLoadObsoleteTypes = true;
 
 	//	Select the proper adventure and extensions and bind design.
 

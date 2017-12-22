@@ -207,7 +207,7 @@ class CDesignType
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError);
 		inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
-		inline bool IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const { if (m_pExtra && m_pExtra->Extends.GetCount() == 0) return true; else return MatchesExtensions(ExtensionsIncluded); }
+		bool IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const;
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
 		void MergeType (CDesignType *pSource);
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
@@ -292,6 +292,7 @@ class CDesignType
 		inline bool IsMerged (void) const { return m_bIsMerged; }
 		inline bool IsModification (void) const { return m_bIsModification; }
 		inline bool IsObsoleteAt (DWORD dwAPIVersion) const { return (m_dwObsoleteVersion > 0 && dwAPIVersion >= m_dwObsoleteVersion); }
+		inline bool IsOptional (void) const { return (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0 || m_dwObsoleteVersion > 0)); }
 		inline void MarkImages (void) { OnMarkImages(); }
 		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { SetExtra()->GlobalData.SetData(sAttrib, sData); }
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
@@ -350,10 +351,14 @@ class CDesignType
 		virtual void OnUnbindDesign (void) { }
 		virtual void OnWriteToStream (IWriteStream *pStream) { }
 
+		static bool HasAllUNIDs (const TArray<DWORD> &DesiredUNIDs, const TArray<DWORD> &AvailableUNIDs);
+		static bool HasAnyUNIDs (const TArray<DWORD> &DesiredUNIDs, const TArray<DWORD> &AvailableUNIDs);
+
 	private:
 		struct SExtra
 			{
-			TArray<DWORD> Extends;						//	Exclude this type from bind unless one of these extensions is present
+			TArray<DWORD> Extends;						//	Exclude this type from bind unless ALL of these extensions are present
+			TArray<DWORD> Excludes;						//	Exclude this type from bind if ANY of these extensions are present
 			CAttributeDataBlock StaticData;				//	Static data
 			CAttributeDataBlock GlobalData;				//	Global (variable) data
 			CAttributeDataBlock InitGlobalData;			//	Initial global data
@@ -369,7 +374,6 @@ class CDesignType
 		inline bool HasCachedEvent (ECachedHandlers iEvent) const { return (m_pExtra && m_pExtra->EventsCache[iEvent].pCode != NULL); }
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
-		bool MatchesExtensions (const TArray<DWORD> &ExtensionsIncluded) const;
 		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const;
 		SExtra *SetExtra (void) { if (!m_pExtra) m_pExtra.Set(new SExtra); return m_pExtra; }
 
@@ -721,7 +725,7 @@ class CDesignTable
 		CDesignType *FindByUNID (DWORD dwUNID) const;
 		inline int GetCount (void) const { return m_Table.GetCount(); }
 		inline CDesignType *GetEntry (int iIndex) const { return m_Table.GetValue(iIndex); }
-		ALERROR Merge (const CDesignTable &Source, CDesignList *ioOverride, const TArray<DWORD> *pExtensionsIncluded, const TSortMap<DWORD, bool> *pTypesUsed, DWORD dwAPIVersion);
+		ALERROR Merge (const CDesignTable &Source, CDesignList &Override, const TArray<DWORD> &ExtensionsIncluded, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion);
 		ALERROR Merge (const CDynamicDesignTable &Source, CDesignList *ioOverride = NULL);
 
 	private:
@@ -770,8 +774,9 @@ class CExtension
 
 		struct SLibraryDesc
 			{
-			DWORD dwUNID;					//	UNID of library that we use
-			DWORD dwRelease;				//	Release of library that we use
+			DWORD dwUNID = 0;				//	UNID of library that we use
+			DWORD dwRelease = 0;			//	Release of library that we use
+			bool bOptional = false;			//	Library is optional
 			};
 
 		struct SLoadOptions
@@ -865,7 +870,7 @@ class CExtension
 		static ALERROR CreateExtensionFromRoot (const CString &sFilespec, CXMLElement *pDesc, EFolderTypes iFolder, CExternalEntityTable *pEntities, DWORD dwInheritAPIVersion, CExtension **retpExtension, CString *retsError);
 
 		void AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD, CString> *retMap) const;
-		void AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID = 0, DWORD dwRelease = 0);
+		void AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID = 0, DWORD dwRelease = 0, bool bOptional = false);
 		void AddDefaultLibraryReferences (SDesignLoadCtx &Ctx);
 		void CleanUpXML (void);
 		ALERROR LoadDesignElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
@@ -1181,7 +1186,7 @@ class CDesignCollection
 		~CDesignCollection (void);
 
 		ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError);
-		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, bool bLoadObsoleteTypes, CString *retsError);
+		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, CString *retsError);
 		void CleanUp (void);
 		void ClearImageMarks (void);
 		inline CEconomyType *FindEconomyType (const CString &sID) { CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }

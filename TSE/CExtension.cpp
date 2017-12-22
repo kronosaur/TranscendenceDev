@@ -52,6 +52,7 @@
 #define FOLDER_ATTRIB							CONSTLIT("folder")
 #define HIDDEN_ATTRIB							CONSTLIT("hidden")
 #define NAME_ATTRIB								CONSTLIT("name")
+#define OPTIONAL_ATTRIB							CONSTLIT("optional")
 #define PRIVATE_ATTRIB							CONSTLIT("private")
 #define RELEASE_ATTRIB							CONSTLIT("release")
 #define UNID_ATTRIB								CONSTLIT("UNID")
@@ -172,7 +173,7 @@ void CExtension::AddEntityNames (CExternalEntityTable *pEntities, TSortMap<DWORD
 		}
 	}
 
-void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD dwRelease)
+void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD dwRelease, bool bOptional)
 
 //	AddLibraryReference
 //
@@ -189,6 +190,7 @@ void CExtension::AddLibraryReference (SDesignLoadCtx &Ctx, DWORD dwUNID, DWORD d
 		SLibraryDesc *pLibrary = m_Libraries.Insert();
 		pLibrary->dwUNID = dwUNID;
 		pLibrary->dwRelease = dwRelease;
+		pLibrary->bOptional = bOptional;
 		}
 	}
 
@@ -1374,7 +1376,7 @@ ALERROR CExtension::LoadLibraryElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (error = ::LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &dwUNID))
 		return error;
 
-	AddLibraryReference(Ctx, dwUNID, pDesc->GetAttributeInteger(RELEASE_ATTRIB));
+	AddLibraryReference(Ctx, dwUNID, pDesc->GetAttributeInteger(RELEASE_ATTRIB), pDesc->GetAttributeBool(OPTIONAL_ATTRIB));
 
 	return NOERROR;
 	}

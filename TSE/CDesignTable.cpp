@@ -121,7 +121,7 @@ ALERROR CDesignTable::Merge (const CDynamicDesignTable &Source, CDesignList *ioO
 	DEBUG_CATCH
 	}
 
-ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride, const TArray<DWORD> *pExtensionsIncluded, const TSortMap<DWORD, bool> *pTypesUsed, DWORD dwAPIVersion)
+ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, const TArray<DWORD> &ExtensionsIncluded, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion)
 
 //	Merge
 //
@@ -145,21 +145,41 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride
 		{
 		CDesignType *pNewType = Source.m_Table.GetValue(iSrcPos);
 
-		//	Exclude this type if it the required extensions are not included.
+		//	If this is an optional type then we need to figure out whether we're 
+		//	going to include it or not.
 
-		if (pExtensionsIncluded && !pNewType->IsIncluded(*pExtensionsIncluded))
+		if (pNewType->IsOptional())
 			{
-			iSrcPos++;
-			continue;
-			}
+			//	If we have a list of types used then that is the authoritative answer 
+			//	(because it comes from the saved file).
 
-		//	Exclude this type if it is obsolete and it is not in the list of 
-		//	types that we need.
+			if (TypesUsed.GetCount() > 0)
+				{
+				if (!TypesUsed.Find(pNewType->GetUNID()))
+					{
+					iSrcPos++;
+					continue;
+					}
+				}
 
-		if (pTypesUsed && pNewType->IsObsoleteAt(dwAPIVersion) && !pTypesUsed->Find(pNewType->GetUNID()))
-			{
-			iSrcPos++;
-			continue;
+			//	Otherwise, see if we exclude it because it is obsolete.
+
+			else if (pNewType->IsObsoleteAt(dwAPIVersion))
+				{
+				iSrcPos++;
+				continue;
+				}
+
+			//	Or see if it is excluded because we don't have the property set
+			//	of extensions.
+
+			else if (!pNewType->IsIncluded(ExtensionsIncluded))
+				{
+				iSrcPos++;
+				continue;
+				}
+
+			//	Otherwise, we do include it.
 			}
 
 		//	If we're at the end of the destination then just insert
@@ -192,8 +212,7 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList *ioOverride
 
 				if (pNewType->IsModification())
 					{
-					if (ioOverride)
-						ioOverride->AddEntry(pNewType);
+					Override.AddEntry(pNewType);
 					}
 
 				//	Otherwise we just replace the type

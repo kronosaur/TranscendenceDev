@@ -12,6 +12,7 @@
 #define TRANSCENDENCE_MODULE_TAG					CONSTLIT("TranscendenceModule")
 
 #define FILENAME_ATTRIB								CONSTLIT("filename")
+#define OPTIONAL_ATTRIB								CONSTLIT("optional")
 #define RELEASE_ATTRIB								CONSTLIT("release")
 #define UNID_ATTRIB									CONSTLIT("unid")
 
@@ -43,7 +44,6 @@ class CLibraryResolver : public IXMLParserController
 			{ }
 
 		void AddDefaults (CExtension *pExtension);
-		ALERROR AddLibrary (DWORD dwUNID, DWORD dwRelease, CString *retsError);
 		inline void AddLibrary (CExtension *pLibrary) { m_Tables.Insert(pLibrary->GetEntities()); }
 		inline void AddTable (IXMLParserController *pTable) { m_Tables.Insert(pTable); }
 		inline void ReportLibraryErrors (void) { m_bReportError = true; }
@@ -53,6 +53,8 @@ class CLibraryResolver : public IXMLParserController
 		virtual CString ResolveExternalEntity (const CString &sName, bool *retbFound = NULL);
 
 	private:
+		ALERROR AddLibrary (DWORD dwUNID, DWORD dwRelease, bool bOptional, CString *retsError);
+
 		CExtensionCollection &m_Extensions;
 
 		TArray<IXMLParserController *> m_Tables;
@@ -270,10 +272,17 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 		CExtension *pLibrary;
 		if (!FindBestExtension(LibraryDesc.dwUNID, LibraryDesc.dwRelease, dwFlags, &pLibrary))
 			{
-			//	If we can't find the library, disable the extension with the appropriate message,
+			//	If this is an optional library, then it is OK if we cannot find it.
+
+			if (LibraryDesc.bOptional)
+				;
+
+			//	Otherwise, disable the extension with the appropriate message,
 			//	but otherwise continue loading.
 
-			pExtension->SetDisabled(strPatternSubst(CONSTLIT("Cannot find library: %08x"), LibraryDesc.dwUNID));
+			else
+				pExtension->SetDisabled(strPatternSubst(CONSTLIT("Cannot find library: %08x"), LibraryDesc.dwUNID));
+
 			continue;
 			}
 
@@ -2047,7 +2056,7 @@ void CLibraryResolver::AddDefaults (CExtension *pExtension)
 	AddLibrary(pExtension);
 	}
 
-ALERROR CLibraryResolver::AddLibrary (DWORD dwUNID, DWORD dwRelease, CString *retsError)
+ALERROR CLibraryResolver::AddLibrary (DWORD dwUNID, DWORD dwRelease, bool bOptional, CString *retsError)
 
 //	AddLibrary
 //
@@ -2061,6 +2070,13 @@ ALERROR CLibraryResolver::AddLibrary (DWORD dwUNID, DWORD dwRelease, CString *re
 	CExtension *pLibrary;
 	if (!m_Extensions.FindBestExtension(dwUNID, dwRelease, (m_Extensions.LoadedInDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), &pLibrary))
 		{
+		//	If this is an optional library, then OK to skip it.
+
+		if (bOptional)
+			return NOERROR;
+
+		//	Otherwise, ERROR
+
 		*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
 		return ERR_FAIL;
 		}
@@ -2099,8 +2115,9 @@ ALERROR CLibraryResolver::OnOpenTag (CXMLElement *pElement, CString *retsError)
 		{
 		DWORD dwUNID = pElement->GetAttributeInteger(UNID_ATTRIB);
 		DWORD dwRelease = pElement->GetAttributeInteger(RELEASE_ATTRIB);
+		bool bOptional = pElement->GetAttributeBool(OPTIONAL_ATTRIB);
 
-		return AddLibrary(dwUNID, dwRelease, retsError);
+		return AddLibrary(dwUNID, dwRelease, bOptional, retsError);
 		}
 
 	return NOERROR;

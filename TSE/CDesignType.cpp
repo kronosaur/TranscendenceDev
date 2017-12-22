@@ -46,6 +46,7 @@
 
 #define ATTRIBUTES_ATTRIB						CONSTLIT("attributes")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
+#define EXCLUDES_ATTRIB							CONSTLIT("excludes")
 #define EXTENDS_ATTRIB							CONSTLIT("extends")
 #define INHERIT_ATTRIB							CONSTLIT("inherit")
 #define MODIFIERS_ATTRIB						CONSTLIT("modifiers")
@@ -1865,6 +1866,38 @@ CString CDesignType::GetPropertyString (const CString &sProperty)
 	return sResult;
 	}
 
+bool CDesignType::HasAllUNIDs (const TArray<DWORD> &DesiredUNIDs, const TArray<DWORD> &AvailableUNIDs)
+
+//	HasAllUNIDs
+//
+//	Returns TRUE if ALL of the UNIDs in DesiredUNIDs are in AvailableUNIDs.
+
+	{
+	int i;
+
+	for (i = 0; i < DesiredUNIDs.GetCount(); i++)
+		if (!AvailableUNIDs.Find(DesiredUNIDs[i]))
+			return false;
+
+	return true;
+	}
+
+bool CDesignType::HasAnyUNIDs (const TArray<DWORD> &DesiredUNIDs, const TArray<DWORD> &AvailableUNIDs)
+
+//	HasAnyUNIDs
+//
+//	Returns TRUE if ANY of the UNIDs in DesiredUNIDs are in AvailableUNIDs.
+
+	{
+	int i;
+
+	for (i = 0; i < DesiredUNIDs.GetCount(); i++)
+		if (AvailableUNIDs.Find(DesiredUNIDs[i]))
+			return true;
+
+	return false;
+	}
+
 bool CDesignType::InheritsFrom (DWORD dwUNID) const
 
 //	InheritsFrom
@@ -1881,6 +1914,38 @@ bool CDesignType::InheritsFrom (DWORD dwUNID) const
 	//	Recurse
 
 	return m_pInheritFrom->InheritsFrom(dwUNID);
+	}
+
+bool CDesignType::IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const
+
+//	IsIncluded
+//
+//	Returns TRUE if this type needs to be included (bound) in a game with the 
+//	given set of extensions/libraries.
+
+	{
+	//	If no extra block, then this is a standard type with no special
+	//	instructions.
+
+	if (!m_pExtra)
+		return true;
+
+	//	If this type has a list of required UNIDs, then make sure they exist.
+
+	if (m_pExtra->Extends.GetCount() > 0 
+			&& !HasAllUNIDs(m_pExtra->Extends, ExtensionsIncluded))
+		return false;
+
+	//	If this type has a list of excluded UNIDs, then make sure none of the
+	//	listed extensions are loaded.
+
+	if (m_pExtra->Excludes.GetCount() > 0
+			&& HasAnyUNIDs(m_pExtra->Excludes, ExtensionsIncluded))
+		return false;
+
+	//	If we get this far, then include the type.
+
+	return true;
 	}
 
 bool CDesignType::IsValidLoadXML (const CString &sTag)
@@ -2171,6 +2236,12 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 	if (!sExtends.IsBlank())
 		ParseUNIDList(sExtends, 0, &SetExtra()->Extends);
 
+	//	Excluded libraries
+
+	CString sExcludes = pDesc->GetAttribute(EXCLUDES_ATTRIB);
+	if (!sExcludes.IsBlank())
+		ParseUNIDList(sExcludes, 0, &SetExtra()->Excludes);
+
 	//	Remember XML; CExtension will always keep a copy of the XML (to which
 	//	we're pointing) and we will get called appropriately if we need to 
 	//	invalidate.
@@ -2339,41 +2410,6 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 			return false;
 
 	//	If we get this far, then we match
-
-	return true;
-	}
-
-bool CDesignType::MatchesExtensions (const TArray<DWORD> &ExtensionsIncluded) const
-
-//	MatchesExtensions
-//
-//	Returns TRUE if this type should be included given the included extensions.
-
-	{
-	int i;
-
-	//	If we extend one of the given extensions, then we're OK.
-
-	if (m_pExtra && m_pExtra->Extends.GetCount() > 0)
-		{
-		bool bFound = false;
-		for (i = 0; i < m_pExtra->Extends.GetCount(); i++)
-			{
-			if (ExtensionsIncluded.Find(m_pExtra->Extends[i]))
-				{
-				bFound = true;
-				break;
-				}
-			}
-
-		//	If none of the extensions that we require are included, then we 
-		//	don't match the criteria.
-
-		if (!bFound)
-			return false;
-		}
-
-	//	If we get this far, then we're OK.
 
 	return true;
 	}
