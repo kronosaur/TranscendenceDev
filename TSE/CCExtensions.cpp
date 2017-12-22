@@ -1981,7 +1981,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objSendMessage",				fnObjSendMessage,		FN_OBJ_MESSAGE,
 			"(objSendMessage obj sender text) -> True/Nil",
-			"ivs",	PPFLAG_SIDEEFFECTS,	},
+			"ivv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objSendMessageTranslate",		fnObjSendMessage,		FN_OBJ_MESSAGE_TRANSLATE,
 			"(objSendMessageTranslate obj sender textID [data]) -> True/Nil",
