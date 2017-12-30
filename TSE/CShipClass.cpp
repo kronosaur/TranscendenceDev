@@ -8,6 +8,7 @@
 #define ARMOR_TAG		        				CONSTLIT("Armor")
 #define ARMOR_DISPLAY_TAG						CONSTLIT("ArmorDisplay")
 #define COMMUNICATIONS_TAG						CONSTLIT("Communications")
+#define DEVICE_SLOTS_TAG						CONSTLIT("DeviceSlots")
 #define DEVICES_TAG								CONSTLIT("Devices")
 #define DOCK_SCREENS_TAG						CONSTLIT("DockScreens")
 #define DRIVE_IMAGES_TAG						CONSTLIT("DriveImages")
@@ -270,6 +271,7 @@ CPlayerSettings CShipClass::m_DefaultPlayerSettings;
 bool CShipClass::m_bDefaultPlayerSettingsBound = false;
 
 CShipClass::CShipClass (void) : 
+		m_pDeviceSlots(NULL),
 		m_pDevices(NULL),
 		m_pPlayerSettings(NULL),
 		m_pItems(NULL),
@@ -279,7 +281,8 @@ CShipClass::CShipClass (void) :
 		m_fInheritedItems(false),
 		m_fInheritedEscorts(false),
 		m_fInheritedTrade(false),
-        m_fOwnPlayerSettings(false)
+        m_fOwnPlayerSettings(false),
+        m_fInheritedDeviceSlots(false)
 
 //	CShipClass constructor
 
@@ -291,6 +294,9 @@ CShipClass::~CShipClass (void)
 //	CShip destructor
 
 	{
+	if (m_pDeviceSlots && !m_fInheritedDeviceSlots)
+		delete m_pDeviceSlots;
+
 	if (m_pDevices && !m_fInheritedDevices)
 		delete m_pDevices;
 
@@ -2272,6 +2278,50 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	return true;
 	}
 
+bool CShipClass::FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) const
+
+//	FindDeviceSlotDesc
+//
+//	Looks for a device slot descriptor
+
+	{
+	//	If we have a dedicated device slot object, then use that.
+
+	if (m_pDeviceSlots)
+		return m_pDeviceSlots->FindDefaultDesc(iDev, retDesc);
+
+	//	Otherwise, for backwards compatibility we check the device generator.
+
+	else if (m_pDevices)
+		return m_pDevices->FindDefaultDesc(iDev, retDesc);
+
+	//	Otherwise, not found
+
+	return false;
+	}
+
+bool CShipClass::FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) const
+
+//	FindDeviceSlotDesc
+//
+//	Looks for a device slot descriptor
+
+	{
+	//	If we have a dedicated device slot object, then use that.
+
+	if (m_pDeviceSlots)
+		return m_pDeviceSlots->FindDefaultDesc(Item, retDesc);
+
+	//	Otherwise, for backwards compatibility we check the device generator.
+
+	else if (m_pDevices)
+		return m_pDevices->FindDefaultDesc(Item, retDesc);
+
+	//	Otherwise, not found
+
+	return false;
+	}
+
 void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices)
 
 //	GenerateDevices
@@ -3173,6 +3223,9 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
     m_Armor.AddTypesUsed(retTypesUsed);
 
+	if (m_pDeviceSlots)
+		m_pDeviceSlots->AddTypesUsed(retTypesUsed);
+
 	if (m_pDevices)
 		m_pDevices->AddTypesUsed(retTypesUsed);
 
@@ -3317,6 +3370,10 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 		if (error = m_pItems->OnDesignLoadComplete(Ctx))
 			goto Fail;
 
+	if (m_pDeviceSlots)
+		if (error = m_pDeviceSlots->OnDesignLoadComplete(Ctx))
+			goto Fail;
+
 	if (m_pDevices)
 		if (error = m_pDevices->OnDesignLoadComplete(Ctx))
 			goto Fail;
@@ -3444,6 +3501,12 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_pWreckType = pClass->m_pWreckType;
 	m_Armor = pClass->m_Armor;
 	m_Interior = pClass->m_Interior;
+
+	if (pClass->m_pDeviceSlots)
+		{
+		m_pDeviceSlots = pClass->m_pDeviceSlots;
+		m_fInheritedDeviceSlots = true;
+		}
 
 	if (pClass->m_pDevices)
 		{
@@ -3623,6 +3686,13 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 
 	//	Load devices
+
+	CXMLElement *pDeviceSlots = pDesc->GetContentElementByTag(DEVICE_SLOTS_TAG);
+	if (pDeviceSlots)
+		{
+		if (error = IDeviceGenerator::CreateFromXML(Ctx, pDeviceSlots, &m_pDeviceSlots))
+			return ComposeLoadError(Ctx, Ctx.sError);
+		}
 
 	CXMLElement *pDevices = pDesc->GetContentElementByTag(DEVICES_TAG);
 	if (pDevices)

@@ -69,8 +69,8 @@ class CShipClass : public CDesignType
 		void CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metric rScale = 1.0);
 		void CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation, int cxWidth, int cyHeight);
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
-		inline bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(iDev, retDesc) : false); }
-		inline bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return (m_pDevices ? m_pDevices->FindDefaultDesc(Item, retDesc) : false); }
+		bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) const;
+		bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) const;
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
 		CString GenerateShipName (DWORD *retdwFlags) const;
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
@@ -282,6 +282,7 @@ class CShipClass : public CDesignType
 
         CShipArmorDesc m_Armor;                 //  Armor descriptor
 		CShipInteriorDesc m_Interior;			//	Interior structure
+		IDeviceGenerator *m_pDeviceSlots;		//	Device slots
 		IDeviceGenerator *m_pDevices;			//	Generator of devices
 		TArray<SEquipmentDesc> m_Equipment;		//	Initial equipment
 
@@ -357,7 +358,7 @@ class CShipClass : public CDesignType
 		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 
 		DWORD m_fShipCompartment:1;				//	TRUE if we represent an attached compartment/segment
-		DWORD m_fSpare2:1;
+		DWORD m_fInheritedDeviceSlots:1;		//	TRUE if m_pDeviceSlots is inherited from another class
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
