@@ -5,12 +5,16 @@
 
 #include "PreComp.h"
 
-#define INERTIALESS_DRIVE_ATTRIB	CONSTLIT("inertialessDrive")
-#define MAX_SPEED_ATTRIB			CONSTLIT("maxSpeed")
-#define MAX_SPEED_INC_ATTRIB		CONSTLIT("maxSpeedInc")
-#define POWER_USE_ATTRIB			CONSTLIT("powerUse")
-#define POWER_USED_ATTRIB			CONSTLIT("powerUsed")
-#define THRUST_ATTRIB				CONSTLIT("thrust")
+#define DRIVE_TAG								CONSTLIT("Drive")
+
+#define DRIVE_POWER_USE_ATTRIB					CONSTLIT("drivePowerUse")
+#define INERTIALESS_DRIVE_ATTRIB				CONSTLIT("inertialessDrive")
+#define MAX_SPEED_ATTRIB						CONSTLIT("maxSpeed")
+#define MAX_SPEED_INC_ATTRIB					CONSTLIT("maxSpeedInc")
+#define POWER_USE_ATTRIB						CONSTLIT("powerUse")
+#define POWER_USED_ATTRIB						CONSTLIT("powerUsed")
+#define THRUST_ATTRIB							CONSTLIT("thrust")
+#define THRUST_RATIO_ATTRIB						CONSTLIT("thrustRatio")
 
 CDriveDesc::CDriveDesc (void) :
         m_dwUNID(0),
@@ -24,7 +28,6 @@ CDriveDesc::CDriveDesc (void) :
 //  CDriveDesc constructor
 
     {
-
     }
 
 void CDriveDesc::Add (const CDriveDesc &Src)
@@ -176,7 +179,63 @@ void CDriveDesc::InitThrustFromXML (SDesignLoadCtx &Ctx, const CString &sValue)
 		m_iThrust = mathRound(0.5 * m_iThrust);
 	}
 
-ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass)
+ALERROR CDriveDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, Metric *retrThrustRatio, int *retiMaxSpeed)
+
+//	InitFromShipClassXML
+//
+//	Initialize from a ship class. We expect either a <Drive> element or 
+//	individual attributes at the root.
+
+	{
+	m_dwUNID = dwUNID;
+	int iMaxSpeed = 0;
+
+	CXMLElement *pDrive = pDesc->GetContentElementByTag(DRIVE_TAG);
+	if (pDrive)
+		{
+		iMaxSpeed = pDrive->GetAttributeIntegerBounded(MAX_SPEED_ATTRIB, 0, 100, 0);
+		m_rMaxSpeed = (Metric)iMaxSpeed * LIGHT_SPEED / 100.0;
+
+		//	We also accept a thrust ratio
+
+		if (pDrive->FindAttributeDouble(THRUST_RATIO_ATTRIB, retrThrustRatio))
+			m_iThrust = 0;
+		else
+			{
+			InitThrustFromXML(Ctx, pDrive->GetAttribute(THRUST_ATTRIB));
+			*retrThrustRatio = 0.0;
+			}
+
+		//	-1 means default. We will compute a proper default in Bind
+		m_iPowerUse = pDrive->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
+		m_fInertialess = pDrive->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
+		}
+	else
+		{
+		iMaxSpeed = pDesc->GetAttributeIntegerBounded(MAX_SPEED_ATTRIB, 0, 100, 0);
+		m_rMaxSpeed = (Metric)iMaxSpeed * LIGHT_SPEED / 100.0;
+
+		//	We also accept a thrust ratio
+
+		if (pDesc->FindAttributeDouble(THRUST_RATIO_ATTRIB, retrThrustRatio))
+			m_iThrust = 0;
+		else
+			{
+			InitThrustFromXML(Ctx, pDesc->GetAttribute(THRUST_ATTRIB));
+			*retrThrustRatio = 0.0;
+			}
+
+		//	-1 means default. We will compute a proper default in Bind
+		m_iPowerUse = pDesc->GetAttributeIntegerBounded(DRIVE_POWER_USE_ATTRIB, 0, -1, -1);
+		m_fInertialess = pDesc->GetAttributeBool(INERTIALESS_DRIVE_ATTRIB);
+		}
+
+	*retiMaxSpeed = iMaxSpeed;
+
+	return NOERROR;
+	}
+
+ALERROR CDriveDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID)
 
 //  InitFromXML
 //

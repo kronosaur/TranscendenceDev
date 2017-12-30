@@ -664,6 +664,7 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	{
 	int i;
+	const CHullDesc &Hull = m_pClass->GetHullDesc();
 
 	//	Pre-initialize
 
@@ -709,7 +710,7 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	//	If we have no limitation on slots, then we can continue.
 
-	if (m_pClass->GetMaxDevices() == -1
+	if (Hull.GetMaxDevices() == -1
 			&& iSuggestedSlot == -1)
 		return insOK;
 
@@ -731,14 +732,14 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 	//	See how many slots we would need to free in order to install this 
 	//	device.
 
-	int iAllSlotsNeeded = (iAll + iSlotsRequired) - m_pClass->GetMaxDevices();
+	int iAllSlotsNeeded = (iAll + iSlotsRequired) - Hull.GetMaxDevices();
 	int iWeaponSlotsNeeded = (bIsWeapon
-			&& (m_pClass->GetMaxWeapons() < m_pClass->GetMaxDevices())
-				? ((iWeapons + iSlotsRequired) - m_pClass->GetMaxWeapons())
+			&& (Hull.GetMaxWeapons() < Hull.GetMaxDevices())
+				? ((iWeapons + iSlotsRequired) - Hull.GetMaxWeapons())
 				: 0);
 	int iNonWeaponSlotsNeeded = (!bIsWeapon
-			&& (m_pClass->GetMaxNonWeapons() < m_pClass->GetMaxDevices())
-				? ((iNonWeapons + iSlotsRequired) - m_pClass->GetMaxNonWeapons())
+			&& (Hull.GetMaxNonWeapons() < Hull.GetMaxDevices())
+				? ((iNonWeapons + iSlotsRequired) - Hull.GetMaxNonWeapons())
 				: 0);
 
 	//	If we have enough space, then we're done
@@ -961,7 +962,7 @@ void CShip::CalcPerformance (void)
     //  ship mass.
 
     if (m_fTrackMass)
-        Ctx.RotationDesc.AdjForShipMass(m_pClass->GetHullMass(), GetItemMass());
+        Ctx.RotationDesc.AdjForShipMass(m_pClass->GetHullDesc().GetMass(), GetItemMass());
 
     //  Now apply the performance parameters to the descriptor
 
@@ -1055,16 +1056,17 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 	InstallItemResults iResult = insOK;
 	CString sResult;
 	CItem ItemToReplace;
+	const CHullDesc &Hull = m_pClass->GetHullDesc();
 
 	//	If this is an armor item, see if we can install it.
 
 	if (Item.IsArmor())
 		{
-		int iMaxArmor = m_pClass->GetMaxArmorMass();
+		int iMaxArmor = Hull.GetMaxArmorMass();
 
 		//	See if we are compatible
 
-		if (!Item.MatchesCriteria(m_pClass->GetArmorCriteria()))
+		if (!Item.MatchesCriteria(Hull.GetArmorCriteria()))
 			iResult = insNotCompatible;
 
 		//	Ask the object if we can install this item
@@ -1136,7 +1138,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	See if we're compatible
 
-		if (!Item.MatchesCriteria(m_pClass->GetDeviceCriteria()))
+		if (!Item.MatchesCriteria(Hull.GetDeviceCriteria()))
 			iResult = insNotCompatible;
 
 		//	Ask the object if we can install this item
@@ -1158,8 +1160,8 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 		//	If this is a reactor, then see if the ship class can support it
 
 		else if (iCategory == itemcatReactor
-				&& m_pClass->GetMaxReactorPower() > 0
-				&& pDevice->GetPowerOutput(ItemCtx) > m_pClass->GetMaxReactorPower())
+				&& Hull.GetMaxReactorPower() > 0
+				&& pDevice->GetPowerOutput(ItemCtx) > Hull.GetMaxReactorPower())
 			iResult = insReactorIncompatible;
 
 		//	See if we have enough device slots to install or if we have to
@@ -1503,7 +1505,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	CDeviceDescList Devices;
 	pClass->GenerateDevices(pSystem->GetLevel(), Devices);
 
-	pShip->m_iDeviceCount = Max(Devices.GetCount(), pClass->GetMaxDevices());
+	pShip->m_iDeviceCount = Max(Devices.GetCount(), pClass->GetHullDesc().GetMaxDevices());
 	pShip->m_Devices = new CInstalledDevice [pShip->m_iDeviceCount];
 
 	//	See if we need to call an OnInstall event. For the player
@@ -2815,11 +2817,11 @@ CCurrencyAndValue CShip::GetHullValue (void) const
 
 	if (!FindEventHandler(CONSTLIT("GetHullValue"), &Event)
 			|| Ctx.InEvent(eventGetHullPrice))
-		return m_pClass->GetHullValue();
+		return m_pClass->GetHullDesc().GetValue();
 
 	//	We pass the raw value in
 
-	CCurrencyAndValue HullValue = m_pClass->GetHullValue();
+	CCurrencyAndValue HullValue = m_pClass->GetHullDesc().GetValue();
 
 	//	Otherwise, if we run the event to get the value
 
@@ -2970,7 +2972,7 @@ Metric CShip::GetMass (void) const
 //	Returns the mass of the object in metric tons
 
 	{
-	return m_pClass->GetHullMass() + GetItemMass();
+	return m_pClass->GetHullDesc().GetMass() + GetItemMass();
 	}
 
 Metric CShip::GetMaxAcceleration (void)
@@ -3142,21 +3144,21 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		{
 		int iAll = CalcDeviceSlotsInUse();
 
-		return CC.CreateInteger(m_pClass->GetMaxDevices() - iAll);
+		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxDevices() - iAll);
 		}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_NON_WEAPON_SLOTS))
 		{
 		int iNonWeapon;
 		int iAll = CalcDeviceSlotsInUse(NULL, &iNonWeapon);
 
-		return CC.CreateInteger(Max(0, Min(m_pClass->GetMaxNonWeapons() - iNonWeapon, m_pClass->GetMaxDevices() - iAll)));
+		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxNonWeapons() - iNonWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_WEAPON_SLOTS))
 		{
 		int iWeapon;
 		int iAll = CalcDeviceSlotsInUse(&iWeapon);
 
-		return CC.CreateInteger(Max(0, Min(m_pClass->GetMaxWeapons() - iWeapon, m_pClass->GetMaxDevices() - iAll)));
+		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxWeapons() - iWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		{
@@ -5653,7 +5655,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		CDeviceDescList Devices;
 		m_pClass->GenerateDevices(1, Devices);
-		m_iDeviceCount = Max(Devices.GetCount(), m_pClass->GetMaxDevices());
+		m_iDeviceCount = Max(Devices.GetCount(), m_pClass->GetHullDesc().GetMaxDevices());
 		}
 
 	m_Devices = new CInstalledDevice [m_iDeviceCount];

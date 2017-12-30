@@ -4392,7 +4392,7 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 	//	Set the mass
 	//	NOTE: Mass cannot be 0 or else the bouncing routines might fail.
 
-	SetMass(Max(1.0, (Metric)pWreckClass->GetHullMass()));
+	SetMass(Max(1.0, (Metric)pWreckClass->GetHullDesc().GetMass()));
 
 	//	Set hit points for the structure
 

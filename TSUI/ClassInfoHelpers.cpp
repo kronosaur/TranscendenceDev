@@ -56,10 +56,10 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 	//	Compute the max armor limit
 
 	CString sMaxArmor;
-	if ((pClass->GetMaxArmorMass() % 1000) == 0)
-		sMaxArmor = strPatternSubst(CONSTLIT("%d"), pClass->GetMaxArmorMass() / 1000);
+	if ((pClass->GetHullDesc().GetMaxArmorMass() % 1000) == 0)
+		sMaxArmor = strPatternSubst(CONSTLIT("%d"), pClass->GetHullDesc().GetMaxArmorMass() / 1000);
 	else
-		sMaxArmor = strPatternSubst(CONSTLIT("%d.%d"), pClass->GetMaxArmorMass() / 1000, ((pClass->GetMaxArmorMass() % 1000) + 50) / 100);
+		sMaxArmor = strPatternSubst(CONSTLIT("%d.%d"), pClass->GetHullDesc().GetMaxArmorMass() / 1000, ((pClass->GetHullDesc().GetMaxArmorMass() % 1000) + 50) / 100);
 
 	//	Info
 
@@ -97,7 +97,7 @@ void CUIHelper::CreateClassInfoCargo (CShipClass *pClass, const CDeviceDescList 
 			(COLORREF)VI.GetColor(colorTextDialogInput),
 			(pCargoExpansion ? strPatternSubst(CONSTLIT("ton %s"), CTextBlock::Escape(pCargoExpansion->GetType()->GetNounPhrase(nounActual))) : CONSTLIT("ton cargo hold")),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			(CargoDesc.GetCargoSpace() < pClass->GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), pClass->GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
+			(CargoDesc.GetCargoSpace() < pClass->GetHullDesc().GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), pClass->GetHullDesc().GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
 	}
@@ -130,9 +130,9 @@ void CUIHelper::CreateClassInfoDeviceSlots (CShipClass *pClass, const CDeviceDes
 			iNonWeapons += iSlots;
 		}
 
-	int iAllLeft = Max(0, pClass->GetMaxDevices() - iAll);
-	int iWeaponsLeft = Max(0, Min(iAllLeft, pClass->GetMaxWeapons() - iWeapons));
-	int iNonWeaponsLeft = Max(0, Min(iAllLeft, pClass->GetMaxNonWeapons() - iNonWeapons));
+	int iAllLeft = Max(0, pClass->GetHullDesc().GetMaxDevices() - iAll);
+	int iWeaponsLeft = Max(0, Min(iAllLeft, pClass->GetHullDesc().GetMaxWeapons() - iWeapons));
+	int iNonWeaponsLeft = Max(0, Min(iAllLeft, pClass->GetHullDesc().GetMaxNonWeapons() - iNonWeapons));
 
 	//	Add the device slot statistic
 

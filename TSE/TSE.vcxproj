@@ -381,6 +381,7 @@
     <ClCompile Include="CGalacticMapPainter.cpp" />
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
+    <ClCompile Include="CHullDesc.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CItemPriceTracker.cpp" />
     <ClCompile Include="CLanguage.cpp" />
