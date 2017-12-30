@@ -445,6 +445,7 @@ class CHullDesc
 		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
+		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
 		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		inline int GetMass (void) const { return m_iMass; }
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
@@ -469,6 +470,7 @@ class CHullDesc
 		int m_iSize = 0;					//	Length of ship in meters
 		int m_iMass = 0;					//	Empty hull mass (tons)
 		CCurrencyAndValue m_Value;			//	Value of hull alone (excluding any devices/armor)
+		int m_iCargoSpace = 0;				//	Default cargo space (tons)
 
 		CItemCriteria m_ArmorCriteria;		//	Allowable armor
 		CItemCriteria m_DeviceCriteria;		//	Allowable devices

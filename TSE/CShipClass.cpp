@@ -3029,7 +3029,7 @@ void CShipClass::InitPerformance (SShipPerformanceCtx &Ctx) const
     Ctx.RotationDesc = m_RotationDesc;
 	Ctx.ReactorDesc = m_ReactorDesc;
     Ctx.DriveDesc = m_DriveDesc;
-    Ctx.CargoDesc = m_CargoDesc;
+    Ctx.CargoDesc = CCargoDesc(m_Hull.GetCargoSpace());
 
 	//	Track maximum speed after bonuses. We start with the class speed; 
 	//	devices and other items should increase this in their handling of
@@ -3431,7 +3431,6 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 
 	m_fShipCompartment = pClass->m_fShipCompartment;
 	m_Hull = pClass->m_Hull;
-	m_CargoDesc = pClass->m_CargoDesc;
 	m_RotationDesc = pClass->m_RotationDesc;
 	m_rThrustRatio = pClass->m_rThrustRatio;
 	m_DriveDesc = pClass->m_DriveDesc;
@@ -3564,11 +3563,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
         if (error = m_HeroImage.InitFromXML(Ctx, pImage))
             return ComposeLoadError(Ctx, Ctx.sError);
 
-	//	Initialize design
-
-    if (error = m_CargoDesc.InitFromXML(Ctx, pDesc))
-        return ComposeLoadError(Ctx, Ctx.sError);
-
 	//	Maneuvering
 
 	if (error = m_RotationDesc.InitFromXML(Ctx, pDesc))
@@ -3589,11 +3583,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (m_Hull.GetSize() == 0 && !m_Image.IsEmpty())
 		m_Hull.SetSize(CalcDefaultSize(GetImage()));
-
-	//	Make sure max cargo space is not lower than our defined cargo space.
-
-	if (m_CargoDesc.GetCargoSpace() > m_Hull.GetMaxCargoSpace())
-		m_Hull.SetMaxCargoSpace(m_CargoDesc.GetCargoSpace());
 
 	//	If we have no max armor limit, then we compute default values.
 

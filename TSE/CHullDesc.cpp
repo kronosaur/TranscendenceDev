@@ -8,6 +8,7 @@
 #define HULL_TAG								CONSTLIT("Hull")
 
 #define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
+#define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
 #define DEVICE_CRITERIA_ATTRIB					CONSTLIT("deviceCriteria")
 #define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
 #define MASS_ATTRIB								CONSTLIT("mass")
@@ -241,6 +242,7 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 
 	m_iMass = pHull->GetAttributeInteger(MASS_ATTRIB);
 	m_iSize = pHull->GetAttributeIntegerBounded(SIZE_ATTRIB, 1, -1, 0);
+    m_iCargoSpace = pHull->GetAttributeIntegerBounded(CARGO_SPACE_ATTRIB, 0, -1, 0);
 
 	//	Hull value
 
@@ -264,7 +266,7 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	else
 		CItem::InitCriteriaAll(&m_DeviceCriteria);
 
-	m_iMaxCargoSpace = pHull->GetAttributeInteger(MAX_CARGO_SPACE_ATTRIB);
+	m_iMaxCargoSpace = pHull->GetAttributeIntegerBounded(MAX_CARGO_SPACE_ATTRIB, m_iCargoSpace, -1, m_iCargoSpace);
 	m_iMaxReactorPower = pHull->GetAttributeInteger(MAX_REACTOR_POWER_ATTRIB);
 
 	//	Armor limits

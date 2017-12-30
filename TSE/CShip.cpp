@@ -1227,7 +1227,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 						{
 						OnComponentChanged(comCargo);
 						Metric rRequiredCargoSpace = GetCargoMass() + Item.GetMass();
-						Metric rNewCargoSpace = (Metric)m_pClass->GetHullCargoSpace() + pNewCargo->GetCargoSpace();
+						Metric rNewCargoSpace = (Metric)Hull.GetCargoSpace() + pNewCargo->GetCargoSpace();
 
 						if (rRequiredCargoSpace > rNewCargoSpace)
 							{
@@ -1304,7 +1304,7 @@ CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *re
 
 			//	If this is larger than the ship class max, then we cannot remove
 
-			if (rCargoSpace > (Metric)m_pClass->GetHullCargoSpace())
+			if (rCargoSpace > (Metric)m_pClass->GetHullDesc().GetCargoSpace())
 				{
 				*retsResult = CONSTLIT("Your ship has too much cargo to be able to remove the cargo hold.");
 				return remTooMuchCargo;

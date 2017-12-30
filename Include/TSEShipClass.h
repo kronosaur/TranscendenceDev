@@ -91,7 +91,6 @@ class CShipClass : public CDesignType
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
         const CObjectImageArray &GetHeroImage (void);
-		inline int GetHullCargoSpace (void) { return m_CargoDesc.GetCargoSpace(); }
 		inline const CHullDesc &GetHullDesc (void) const { return m_Hull; }
 		inline const CReactorDesc *GetHullReactorDesc (void) { return &m_ReactorDesc; }
 		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
@@ -271,7 +270,6 @@ class CShipClass : public CDesignType
 		double m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
 		CDriveDesc m_DriveDesc;					//	Drive descriptor
 		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
-        CCargoDesc m_CargoDesc;                 //  Cargo space descriptor
 		int m_iCyberDefenseLevel;				//	Cyber defense level
 
         //  Wrecks
