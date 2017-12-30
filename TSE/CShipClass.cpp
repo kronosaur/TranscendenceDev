@@ -187,6 +187,7 @@
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
+#define PROPERTY_THRUST_RATIO					CONSTLIT("thrustRatio")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 #define PROPERTY_THRUSTER_POWER					CONSTLIT("thrusterPower")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
@@ -3923,6 +3924,12 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 		Metric rMass = CalcMass(m_AverageDevices);
 		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)) + 0.5);
 		return CC.CreateInteger(10 * iRatio);
+		}
+	else if (strEquals(sProperty, PROPERTY_THRUST_RATIO))
+		{
+		Metric rMass = CalcMass(m_AverageDevices);
+		Metric rRatio = 2.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0);
+		return CC.CreateDouble(mathRound(rRatio * 10.0) / 10.0);
 		}
 	else if (strEquals(sProperty, PROPERTY_THRUSTER_POWER))
 		{
