@@ -1645,13 +1645,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 			}
 		}
 
-	//	Set override, just before creation.
-	//	
-	//	NOTE: We need to call SetOverride even if we have NULL for a handler 
-	//	because it also sets event flags (SetEventFlags).
-
-	pShip->SetOverride(pOverride);
-
 	//	Ship interior
 
 	pShip->m_Interior.Init(pClass->GetInteriorDesc());
@@ -1684,6 +1677,17 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	//	If necessary, create any attached objects
 
 	pShip->m_Interior.CreateAttached(pShip, pClass->GetInteriorDesc());
+
+	//	Set override, just before creation. Get the override from the class, if
+	//	necessary.
+
+	if (pOverride == NULL)
+		pOverride = pClass->GetDefaultEventHandler();
+
+	//	NOTE: We need to call SetOverride even if we have NULL for a handler 
+	//	because it also sets event flags (SetEventFlags).
+
+	pShip->SetOverride(pOverride);
 
 	//	Fire OnCreate
 

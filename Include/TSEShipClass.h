@@ -79,8 +79,9 @@ class CShipClass : public CDesignType
 		inline CGenericType *GetCharacter (void) { return m_Character; }
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
 		inline Metric GetCombatStrength (void) const { return m_rCombatStrength; }
-		inline int GetCyberDefenseLevel (void) { return m_iCyberDefenseLevel; }
-		inline DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
+		inline int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
+		inline DWORD GetDefaultBkgnd (void) const { return m_dwDefaultBkgnd; }
+		inline CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
 		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
 		inline const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);
@@ -304,6 +305,7 @@ class CShipClass : public CDesignType
 
 		//	Character
 
+		CGenericTypeRef m_EventHandler;			//	Event handler
 		CGenericTypeRef m_CharacterClass;		//	Character class
 		CGenericTypeRef m_Character;			//	Character for ship
 

@@ -55,6 +55,7 @@
 #define DOCK_SCREEN_ATTRIB						CONSTLIT("dockScreen")
 #define DRIVE_POWER_USE_ATTRIB					CONSTLIT("drivePowerUse")
 #define EQUIPMENT_ATTRIB						CONSTLIT("equipment")
+#define EVENT_HANDLER_ATTRIB					CONSTLIT("eventHandler")
 #define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define MAX_REACTOR_FUEL_ATTRIB					CONSTLIT("fuelCapacity")
 #define HEIGHT_ATTRIB							CONSTLIT("height")
@@ -3327,6 +3328,9 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	More
 
+	if (error = m_EventHandler.Bind(Ctx))
+		goto Fail;
+
 	if (error = m_Character.Bind(Ctx))
 		goto Fail;
 
@@ -3537,6 +3541,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 		m_fInheritedEscorts = true;
 		}
 
+	m_EventHandler = pClass->m_EventHandler;
 	m_CharacterClass = pClass->m_CharacterClass;
 	m_Character = pClass->m_Character;
 
@@ -3803,6 +3808,9 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_pEscorts = NULL;
 
 	//	Characters
+
+	if (error = m_EventHandler.LoadUNID(Ctx, pDesc->GetAttribute(EVENT_HANDLER_ATTRIB)))
+		return error;
 
 	if (error = m_Character.LoadUNID(Ctx, pDesc->GetAttribute(CHARACTER_ATTRIB)))
 		return error;
