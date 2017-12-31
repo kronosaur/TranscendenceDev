@@ -7,6 +7,7 @@
 #define DEVICE_TAG								CONSTLIT("Device")
 #define DEVICES_TAG								CONSTLIT("Devices")
 #define DEVICE_SLOT_TAG							CONSTLIT("DeviceSlot")
+#define DEVICE_SLOTS_TAG						CONSTLIT("DeviceSlots")
 #define GROUP_TAG								CONSTLIT("Group")
 #define ITEM_TAG								CONSTLIT("Item")
 #define ITEMS_TAG								CONSTLIT("Items")
@@ -187,7 +188,7 @@ ALERROR IDeviceGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		pGenerator = new CSingleDevice;
 	else if (strEquals(pDesc->GetTag(), TABLE_TAG))
 		pGenerator = new CTableOfDeviceGenerators;
-	else if (strEquals(pDesc->GetTag(), GROUP_TAG) || strEquals(pDesc->GetTag(), DEVICES_TAG))
+	else if (strEquals(pDesc->GetTag(), GROUP_TAG) || strEquals(pDesc->GetTag(), DEVICES_TAG) || strEquals(pDesc->GetTag(), DEVICE_SLOTS_TAG))
 		pGenerator = new CGroupOfDeviceGenerators;
 	else if (strEquals(pDesc->GetTag(), LEVEL_TABLE_TAG))
 		pGenerator = new CLevelTableOfDeviceGenerators;
