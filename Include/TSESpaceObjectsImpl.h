@@ -1123,6 +1123,7 @@ class CShip : public CSpaceObject
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual Metric GetCargoSpaceLeft (void) override;
 		virtual Categories GetCategory (void) const override { return catShip; }
+		virtual CDesignType *GetCharacter (void) const override { return m_pClass->GetCharacter(); }
 		virtual DWORD GetClassUNID (void) override { return m_pClass->GetUNID(); }
 		virtual int GetCombatPower (void) override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;

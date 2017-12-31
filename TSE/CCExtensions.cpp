@@ -233,6 +233,8 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_CREATE_REFLECTION	128
 #define FN_OBJ_FIRE_POWER_INVOKE	129
 #define FN_OBJ_ADD_TRADE_ORDER		130
+#define FN_OBJ_GET_CHARACTER_DATA	131
+#define FN_OBJ_SET_CHARACTER_DATA	132
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1507,6 +1509,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetCargoSpaceLeft obj) -> space left in kg",
 			NULL,	0,	},
 
+		{	"objGetCharacterData",			fnObjGet,		FN_OBJ_GET_CHARACTER_DATA,
+			"(objGetCharacterData obj attrib) -> data",
+			"is",	0,	},
+
 		{	"objGetCombatPower",			fnObjGetOld,		FN_OBJ_COMBAT_POWER,
 			"(objGetCombatPower obj) -> 0-100",
 			NULL,	0,	},
@@ -1986,6 +1992,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objSendMessageTranslate",		fnObjSendMessage,		FN_OBJ_MESSAGE_TRANSLATE,
 			"(objSendMessageTranslate obj sender textID [data]) -> True/Nil",
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSetCharacterData",			fnObjSet,		FN_OBJ_SET_CHARACTER_DATA,
+			"(objSetCharacterData obj attrib data) -> True/Nil",
+			"isv",	0,	},
 
 		{	"objSetData",					fnObjData,		FN_OBJ_SETDATA,
 			"(objSetData obj attrib data) -> True/Nil",
@@ -6044,6 +6054,18 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 			}
 
+		case FN_OBJ_GET_CHARACTER_DATA:
+			{
+			CDesignType *pCharacter = pObj->GetCharacter();
+			if (pCharacter == NULL)
+				pCharacter = pObj->GetType();
+			if (pCharacter == NULL)
+				return pCC->CreateNil();
+
+			CString sData = pCharacter->GetGlobalData(pArgs->GetElement(1)->GetStringValue());
+			return pCC->Link(sData, 0, NULL);
+			}
+
 		case FN_OBJ_GET_DETECT_RANGE:
 			{
 			CSpaceObject *pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(1));
@@ -7796,6 +7818,23 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (bShowHighlight)
 				pObj->SetShowHighlight();
 
+			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_SET_CHARACTER_DATA:
+			{
+			CDesignType *pCharacter = pObj->GetCharacter();
+			if (pCharacter == NULL)
+				pCharacter = pObj->GetType();
+			if (pCharacter == NULL)
+				return pCC->CreateNil();
+
+			CString sAttrib = pArgs->GetElement(1)->GetStringValue();
+			if (sAttrib.IsBlank())
+				return pCC->CreateNil();
+
+			CString sData = CreateDataFromItem(*pCC, pArgs->GetElement(2));
+			pCharacter->SetGlobalData(sAttrib, sData);
 			return pCC->CreateTrue();
 			}
 

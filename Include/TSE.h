@@ -819,6 +819,10 @@ class CSpaceObject : public CObject
 
 		void SetSovereign (CSovereign *pSovereign);
 
+		//	Characters
+
+		virtual CDesignType *GetCharacter (void) const { return NULL; }
+
 		//	Docking
 
 		virtual CSpaceObject *GetDockedObj (void) const { return NULL; }
