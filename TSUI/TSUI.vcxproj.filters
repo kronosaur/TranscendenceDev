@@ -153,6 +153,9 @@
     <ClCompile Include="CArmorHUDRectangular.cpp">
       <Filter>Source Files\HUD</Filter>
     </ClCompile>
+    <ClCompile Include="CArmorHUDShaped.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

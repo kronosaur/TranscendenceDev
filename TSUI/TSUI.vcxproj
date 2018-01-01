@@ -158,6 +158,7 @@
     <ClCompile Include="CArmorHUDImages.cpp" />
     <ClCompile Include="CArmorHUDRectangular.cpp" />
     <ClCompile Include="CArmorHUDRingSegments.cpp" />
+    <ClCompile Include="CArmorHUDShaped.cpp" />
     <ClCompile Include="CBackgroundProcessor.cpp" />
     <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapSystemDetails.cpp" />

@@ -64,6 +64,46 @@ class CArmorHUDImages : public IHUDPainter
 		TArray<STextPaint> m_Text;
 	};
 
+class CArmorHUDShaped : public IHUDPainter
+	{
+	public:
+		CArmorHUDShaped (void);
+
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
+		virtual void GetBounds (int *retWidth, int *retHeight) const;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual void Invalidate (void) { m_bInvalid = true;  }
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+
+	private:
+		void Realize (SHUDPaintCtx &Ctx);
+
+		//	Definitions
+
+		CG32bitPixel m_rgbArmor;			//	Color of armor segment
+		CG32bitPixel m_rgbArmorText;		//	Color of text
+		CG32bitPixel m_rgbArmorTextBack;	//	Armor text background color
+		CG32bitPixel m_rgbShields;			//	Color of shields
+		CG32bitPixel m_rgbShieldsText;		//	Shield text color
+		CG32bitPixel m_rgbShieldsTextBack;	//	Shield text background color
+
+		//	Metrics
+
+		int m_cxDisplay;					//	Total width of display
+		int m_cyDisplay;					//	Total height of display
+		int m_xCenter;						//	Center of ring
+		int m_yCenter;						//	Center of ring
+		int m_cxMaxValue;					//	Size of text showing max integrity value (100%)
+		int m_cyMaxValue;
+		
+		//	Runtime State
+
+		bool m_bInvalid;
+		CG32bitImage m_Buffer;
+	};
+
 class CReactorHUDDefault : public IHUDPainter
 	{
 	public:
