@@ -90,6 +90,7 @@
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
+#define PROPERTY_REPEATING						CONSTLIT("repeating")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
@@ -2462,7 +2463,11 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		CInstalledDevice *pDevice = Ctx.GetDevice();	//	May be NULL
 		return CC.CreateBool(IsOmniDirectional(pDevice));
 		}
-
+	else if (strEquals(sProperty, PROPERTY_REPEATING))
+		{ 
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+		return CC.CreateInteger(pShot->GetContinuous());
+		}
     else if (strEquals(sProperty, PROPERTY_STD_COST))
         {
         const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(pShot) - 1];
