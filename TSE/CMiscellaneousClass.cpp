@@ -205,7 +205,7 @@ bool CMiscellaneousClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *p
 	int iActivateDelay = GetActivateDelay(pDevice, pSource);
     int iTimeLeft = Max(0, Min((100 - iLevel) * iActivateDelay / 100, iActivateDelay));
 
-    pDevice->SetActivateDelay(iTimeLeft);
+    pDevice->SetTimeUntilReady(iTimeLeft);
 	pSource->OnComponentChanged(comDeviceCounter);
 
     return true;
