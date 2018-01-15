@@ -969,6 +969,17 @@ const CItemType::SStdStats &CItemType::GetStdStats (int iLevel)
     return m_Stats[iLevel - 1];
     }
 
+CCurrencyAndValue CItemType::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+
+//	GetTradePrice
+//
+//	Returns the trade price.
+
+	{
+	CItem Item(const_cast<CItemType *>(this), 1);
+	return CCurrencyAndValue(Item.GetTradePrice(pObj, bActual), GetCurrencyType());
+	}
+
 CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)
 
 //	GetUnknownName

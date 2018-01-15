@@ -137,6 +137,7 @@ class CItemType : public CDesignType
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return m_iLevel; }
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
+		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const override;
 		virtual DesignTypes GetType (void) const override { return designItemType; }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 

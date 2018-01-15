@@ -2734,6 +2734,52 @@ CString CShipClass::GetHullSectionName (int iIndex) const
     return m_Armor.GetSegmentName(iIndex);
 	}
 
+CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
+
+//	GetHullValue
+//
+//	Returns the value of just the hull.
+
+	{
+	CCodeChainCtx Ctx;
+	SEventHandlerDesc Event;
+
+	//	If we're already inside the <GetHullValue> event, of if we don't have 
+	//	such an event, then just return the raw value.
+
+	if (!FindEventHandler(CONSTLIT("GetHullValue"), &Event)
+			|| Ctx.InEvent(eventGetHullPrice))
+		return GetHullDesc().GetValue();
+
+	//	We pass the raw value in
+
+	CCurrencyAndValue HullValue = GetHullDesc().GetValue();
+
+	//	Otherwise, if we run the event to get the value
+
+	Ctx.SaveAndDefineSourceVar(pShip);
+	Ctx.SetEvent(eventGetHullPrice);
+	Ctx.DefineString(CONSTLIT("aCurrency"), HullValue.GetSID());
+	Ctx.DefineInteger(CONSTLIT("aPrice"), (int)HullValue.GetValue());
+
+	//	Run
+
+	ICCItem *pResult = Ctx.Run(Event);
+
+	//	Interpret results
+
+	if (pResult->IsError())
+		::kernelDebugLogPattern("GetHullValue: %s", pResult->GetStringValue());
+
+	else if (pResult->IsNumber())
+		HullValue.SetValue(pResult->GetIntegerValue());
+
+	//	Done
+
+	Ctx.Discard(pResult);
+	return HullValue;
+	}
+
 int CShipClass::GetMaxStructuralHitPoints (void) const
 
 //	GetMaxStructuralHitPoints
@@ -2928,6 +2974,39 @@ CString CShipClass::GetShortName (void) const
 		return strPatternSubst(LITERAL("%s %s"), GetManufacturerName(), GetShipTypeName());
 	else
 		return GetClassName();
+	}
+
+CCurrencyAndValue CShipClass::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+
+//	GetTradePrice
+//
+//	Returns the price computed by pObj for this ship class.
+
+	{
+	int i;
+
+	//	Get the hull value
+
+	CCurrencyAndValue Value = GetHullValue();
+
+	//	Add up the value of all installed items
+
+	for (i = 0; i < m_AverageDevices.GetCount(); i++)
+		{
+		const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
+
+		//	We use the raw (actual) value because not all stations sell all items.
+
+		Value.Add(CCurrencyAndValue(Desc.Item.GetTradePrice(pObj, true), Desc.Item.GetCurrencyType()));
+
+		//	Need to include install cost
+
+		Value.Add(CCurrencyAndValue(Desc.Item.GetType()->GetInstallCost(CItemCtx(Desc.Item)), Desc.Item.GetCurrencyType()));
+		}
+
+	//	Done
+
+	return Value;
 	}
 
 CStationType *CShipClass::GetWreckDesc (void)

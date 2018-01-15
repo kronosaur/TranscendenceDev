@@ -98,6 +98,7 @@ class CShipClass : public CDesignType
 		int GetHullSectionAtAngle (int iAngle);
 		inline int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
 		CString GetHullSectionName (int iIndex) const;
+		CCurrencyAndValue GetHullValue (CShip *pShip = NULL) const;
 		inline const CObjectImageArray &GetImage (void) const { return m_Image.GetSimpleImage(); }
         inline const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
 		inline const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
@@ -167,6 +168,7 @@ class CShipClass : public CDesignType
 		virtual CEconomyType *GetEconomyType (void) const;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iLevel; return m_iLevel; }
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
+		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const override;
 		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
 		virtual DesignTypes GetType (void) const override { return designShipClass; }
         virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }

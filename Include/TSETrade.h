@@ -32,24 +32,15 @@ enum ETradeServiceTypes
 
 struct STradeServiceCtx
 	{
-	STradeServiceCtx (void) :
-			iService(serviceNone),
-			pProvider(NULL),
-			pCurrency(NULL),
-			pNode(NULL),
-			iCount(0),
-			pItem(NULL),
-			pObj(NULL)
-		{ }
+	ETradeServiceTypes iService = serviceNone;		//	Service
+	CSpaceObject *pProvider = NULL;					//	Object providing the service
+	CEconomyType *pCurrency = NULL;					//	Currency to use
+	const CTopologyNode *pNode = NULL;				//	Optional node (in case we have no provider)
 
-	ETradeServiceTypes iService;	//	Service
-	CSpaceObject *pProvider;		//	Object providing the service
-	CEconomyType *pCurrency;		//	Currency to use
-	const CTopologyNode *pNode;		//	Optional node (in case we have no provider)
-
-	int iCount;						//	Number of items
-	const CItem *pItem;				//	For item-based services
-	CSpaceObject *pObj;				//	For obj-based services (e.g., serviceSellShip)
+	int iCount = 0;									//	Number of items
+	const CItem *pItem = NULL;						//	For item-based services
+	CDesignType *pType = NULL;						//	For type-based services (e.g., serviceSellShip)
+	CSpaceObject *pObj = NULL;						//	For obj-based services (e.g., serviceSellShip)
 	};
 
 class CTradingDesc
@@ -100,6 +91,7 @@ class CTradingDesc
 
 		bool Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
 		bool Buys (STradeServiceCtx &Ctx, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL, int *retiMaxCount = NULL);
+		bool BuysShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice = NULL);
 		bool BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		int Charge (CSpaceObject *pObj, int iCharge);
         bool ComposeDescription (CString *retsDesc) const;
@@ -118,6 +110,7 @@ class CTradingDesc
 		bool HasServiceUpgradeOnly (ETradeServiceTypes iService) const;
         inline bool HasServices (void) const { return (m_List.GetCount() > 0); }
 		bool Sells (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL);
+		bool SellsShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice = NULL);
 		bool SellsShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		void SetEconomyType (CEconomyType *pCurrency) { m_pCurrency.Set(pCurrency); }
 		void SetMaxCurrency (int iMaxCurrency) { m_iMaxCurrency = iMaxCurrency; }
@@ -185,7 +178,7 @@ class CTradingDesc
 		int ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags);
 		bool FindByID (const CString &sID, int *retiIndex = NULL) const;
 		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc);
-		bool FindService (ETradeServiceTypes iService, CSpaceObject *pShip, const SServiceDesc **retpDesc);
+		bool FindService (ETradeServiceTypes iService, CDesignType *pType, const SServiceDesc **retpDesc);
 		bool FindServiceToOverride (const SServiceDesc &NewService, int *retiIndex = NULL) const;
         bool GetServiceTypeInfo (ETradeServiceTypes iService, SServiceTypeInfo &Info) const;
 		bool HasServiceDescription (ETradeServiceTypes iService) const;

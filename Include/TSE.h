@@ -1287,7 +1287,9 @@ class CSpaceObject : public CObject
 		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL);
 		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
 		int GetSellPrice (const CItem &Item, DWORD dwFlags);
+		bool GetShipBuyPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
 		bool GetShipBuyPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
+		bool GetShipSellPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
 		bool GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
 		int GetTradeMaxLevel (ETradeServiceTypes iService);
 		bool HasTradeService (ETradeServiceTypes iService);

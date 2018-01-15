@@ -1192,6 +1192,9 @@
     <ClCompile Include="CHullDesc.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="CTLispConvert.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

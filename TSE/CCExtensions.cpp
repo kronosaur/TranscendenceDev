@@ -1846,11 +1846,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objGetShipBuyPrice",			fnObjGet,		FN_OBJ_GET_SHIP_BUY_PRICE,	
 			"(objGetShipBuyPrice obj shipObj) -> price (at which obj buys ship)",
-			"ii",		0,	},
+			"iv",		0,	},
 
 		{	"objGetShipSellPrice",			fnObjGet,		FN_OBJ_GET_SHIP_SELL_PRICE,	
 			"(objGetShipSellPrice obj shipObj) -> price (at which obj sells ship)",
-			"ii",		0,	},
+			"iv",		0,	},
 
 		{	"objGetShipwreckType",			fnObjGet,		FN_OBJ_SHIPWRECK_TYPE,
 			"(objGetShipwreckType obj) -> unid",
@@ -6382,32 +6382,82 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_SHIP_BUY_PRICE:
 			{
-			CSpaceObject *pShip = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			if (pShip == NULL)
-				return pCC->CreateError(CONSTLIT("Invalid ship"), pArgs->GetElement(1));
+			ICCItem *pArg;
+			switch (CTLispConvert::ArgType(pArgs->GetElement(1), CTLispConvert::typeSpaceObject, &pArg))
+				{
+				case CTLispConvert::typeShipClass:
+					{
+					CShipClass *pClass = g_pUniverse->FindShipClass(pArg->GetIntegerValue());
+					if (pClass == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship class"), pArg);
 
-			//	Get the value from the station that is selling
+					//	Get the value from the station that is selling
 
-			int iValue;
-			if (!pObj->GetShipBuyPrice(pShip, 0, &iValue) || iValue <= 0)
-				return pCC->CreateNil();
+					int iValue;
+					if (!pObj->GetShipBuyPrice(pClass, 0, &iValue) || iValue <= 0)
+						return pCC->CreateNil();
 
-			return pCC->CreateInteger(iValue);
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeSpaceObject:
+					{
+					CSpaceObject *pShip = CreateObjFromItem(*pCC, pArg);
+					if (pShip == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+
+					//	Get the value from the station that is selling
+
+					int iValue;
+					if (!pObj->GetShipBuyPrice(pShip, 0, &iValue) || iValue <= 0)
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				default:
+					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+				}
 			}
 
 		case FN_OBJ_GET_SHIP_SELL_PRICE:
 			{
-			CSpaceObject *pShip = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			if (pShip == NULL)
-				return pCC->CreateError(CONSTLIT("Invalid ship"), pArgs->GetElement(1));
+			ICCItem *pArg;
+			switch (CTLispConvert::ArgType(pArgs->GetElement(1), CTLispConvert::typeSpaceObject, &pArg))
+				{
+				case CTLispConvert::typeShipClass:
+					{
+					CShipClass *pClass = g_pUniverse->FindShipClass(pArg->GetIntegerValue());
+					if (pClass == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship class"), pArg);
 
-			//	Get the value from the station that is selling
+					//	Get the value from the station that is selling
 
-			int iValue;
-			if (!pObj->GetShipSellPrice(pShip, 0, &iValue) || iValue <= 0)
-				return pCC->CreateNil();
+					int iValue;
+					if (!pObj->GetShipSellPrice(pClass, 0, &iValue) || iValue <= 0)
+						return pCC->CreateNil();
 
-			return pCC->CreateInteger(iValue);
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeSpaceObject:
+					{
+					CSpaceObject *pShip = CreateObjFromItem(*pCC, pArg);
+					if (pShip == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+
+					//	Get the value from the station that is selling
+
+					int iValue;
+					if (!pObj->GetShipSellPrice(pShip, 0, &iValue) || iValue <= 0)
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				default:
+					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+				}
 			}
 
 		case FN_OBJ_GET_STARGATE_ID:

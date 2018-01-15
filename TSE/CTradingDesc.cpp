@@ -393,10 +393,21 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags)
 	if (Ctx.iService == serviceBuyShip
 			|| Ctx.iService == serviceSellShip)
 		{
-		ASSERT(Ctx.pObj);
-
-		if (!FindService(Ctx.iService, Ctx.pObj, &pDesc))
+		if (Ctx.pObj)
+			{
+			if (!FindService(Ctx.iService, Ctx.pObj->GetType(), &pDesc))
+				return -1;
+			}
+		else if (Ctx.pType)
+			{
+			if (!FindService(Ctx.iService, Ctx.pType, &pDesc))
+				return -1;
+			}
+		else
+			{
+			ASSERT(false);
 			return -1;
+			}
 		}
 
 	//	Otherwise, match by item
@@ -490,7 +501,17 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 		case serviceBuyShip:
 		case serviceSellShip:
 			{
-			CCurrencyAndValue Value = Ctx.pObj->GetTradePrice(Ctx.pProvider);
+			CCurrencyAndValue Value;
+			if (Ctx.pObj)
+				Value = Ctx.pObj->GetTradePrice(Ctx.pProvider);
+			else if (Ctx.pType)
+				Value = Ctx.pType->GetTradePrice(Ctx.pProvider);
+			else
+				{
+				ASSERT(false);
+				return -1;
+				}
+
 			iBasePrice = (int)Value.GetValue();
 			pBaseEconomy = Value.GetCurrencyType();
 			break;
@@ -799,6 +820,35 @@ bool CTradingDesc::Buys (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, i
 	return Buys(Ctx, Item, dwFlags, retiPrice, retiMaxCount);
 	}
 
+bool CTradingDesc::BuysShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice)
+
+//	BuysShip
+//
+//	Returns TRUE if the given object can buys the given ship. Optionally returns
+//	a price.
+
+	{
+	STradeServiceCtx Ctx;
+	Ctx.iService = serviceBuyShip;
+	Ctx.pProvider = pObj;
+	Ctx.pCurrency = m_pCurrency;
+	Ctx.pType = pClass;
+	Ctx.iCount = 1;
+
+	//	Compute price
+
+	int iPrice = ComputePrice(Ctx, dwFlags);
+	if (iPrice <= 0)
+		return false;
+
+	//	Done
+
+	if (retiPrice)
+		*retiPrice = iPrice;
+
+	return true;
+	}
+
 bool CTradingDesc::BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice)
 
 //	BuysShip
@@ -886,7 +936,7 @@ bool CTradingDesc::FindService (ETradeServiceTypes iService, const CItem &Item, 
 	return false;
 	}
 
-bool CTradingDesc::FindService (ETradeServiceTypes iService, CSpaceObject *pShip, const SServiceDesc **retpDesc)
+bool CTradingDesc::FindService (ETradeServiceTypes iService, CDesignType *pType, const SServiceDesc **retpDesc)
 
 //	FindService
 //
@@ -899,7 +949,7 @@ bool CTradingDesc::FindService (ETradeServiceTypes iService, CSpaceObject *pShip
 
 	for (i = 0; i < m_List.GetCount(); i++)
 		if (m_List[i].iService == iService 
-				&& Matches(pShip->GetType(), m_List[i]))
+				&& Matches(pType, m_List[i]))
 			{
 			if (retpDesc)
 				*retpDesc = &m_List[i];
@@ -1794,6 +1844,35 @@ bool CTradingDesc::Sells (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, 
 	Ctx.pProvider = pObj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
+	Ctx.iCount = 1;
+
+	//	Compute price
+
+	int iPrice = ComputePrice(Ctx, dwFlags);
+	if (iPrice <= 0)
+		return false;
+
+	//	Done
+
+	if (retiPrice)
+		*retiPrice = iPrice;
+
+	return true;
+	}
+
+bool CTradingDesc::SellsShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice)
+
+//	SellsShip
+//
+//	Returns TRUE if the given object can sell the given ship. Optionally returns
+//	a price.
+
+	{
+	STradeServiceCtx Ctx;
+	Ctx.iService = serviceSellShip;
+	Ctx.pProvider = pObj;
+	Ctx.pCurrency = m_pCurrency;
+	Ctx.pType = pClass;
 	Ctx.iCount = 1;
 
 	//	Compute price

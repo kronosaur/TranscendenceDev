@@ -1754,6 +1754,16 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         }
     }
 
+CCurrencyAndValue CDesignType::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+
+//	GetTradePrice
+//
+//	Default implementation.
+
+	{
+	return CCurrencyAndValue();
+	}
+
 TSortMap<DWORD, DWORD> CDesignType::GetXMLMergeFlags (void) const
 
 //	GetXMLMergeFlags

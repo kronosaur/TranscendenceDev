@@ -43,6 +43,24 @@ class ICCItemPtr
 		ICCItem *m_pPtr;
 	};
 
+//	CCodeChainConvert ----------------------------------------------------------
+//
+//	Helper class to convert from ICCItem to various types.
+
+class CTLispConvert
+	{
+	public:
+		enum ETypes 
+			{
+			typeNil,
+
+			typeShipClass,
+			typeSpaceObject,
+			};
+
+		static ETypes ArgType (ICCItem *pItem, ETypes iDefaultType, ICCItem **retpValue = NULL);
+	};
+
 //	CodeChain context
 
 enum ECodeChainEvents
