@@ -105,3 +105,41 @@ class CStargateEffectPainter
 		Metric m_rGlowVel;
 		Metric m_rGlowRadius;
 	};
+class CAutomataEffectPainter
+	{
+	public:
+		CAutomataEffectPainter (int width, int height);
+		int CountLiveNeighbors (int x, int y);
+		void InitGradientColorTable (void);
+		bool IsAlive(int x, int y);
+		void Paint (CG32bitImage &Dest, const RECT &rcRect);
+		void Update (void);
+		void UpdateCell (int x, int y);
+
+	private:
+		struct SCell
+			{
+			SCell(void) : iOpacity(0), bAlive(false) {}
+			SCell(bool alive) : iOpacity(0), bAlive(alive) {}
+			BYTE iOpacity;				//	A value from 0 to 255. Increases while the cell is alive and decreases while the cell is dead
+			bool bAlive;				//	Whether the cell is alive or dead
+			};
+
+		struct SPaintCtx
+			{
+			CG32bitImage *pDest;
+			Metric xCenter;
+			Metric yCenter;
+			Metric cxHalfWidth;
+			Metric cyHalfHeight;
+			};
+
+		int m_iTicks;						//	Number of ticks passed
+		int m_iInitialUpdates;				//	Number of ticks to update before first paint
+		int m_iOpacityInc;					//	The rate at which a cell changes its opacity
+		int m_iWidth;						//	Width of the grid
+		int m_iHeight;						//	Height of the grid
+
+		TArray<CG32bitPixel> m_GradientColorTable;
+		TArray< TArray<SCell> > m_Grid;
+	};
