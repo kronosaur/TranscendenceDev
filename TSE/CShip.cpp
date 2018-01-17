@@ -1495,6 +1495,15 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	if (error = pShip->CreateRandomItems(pClass->GetRandomItemTable(), pSystem))
 		return error;
 
+	//	Initialize the armor from the class
+
+    pShip->m_Armor.Install(pShip, pClass->GetArmorDesc(), true);
+
+	//	Remember if we need to call OnInstall for this item
+	//	(All armor needs this)
+
+	bInstallItemEvent = true;
+
 	//	Devices
 
 	for (i = 0; i < devNamesCount; i++)
@@ -1586,15 +1595,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 		delete pShip;
 		return error;
 		}
-
-	//	Initialize the armor from the class
-
-    pShip->m_Armor.Install(pShip, pClass->GetArmorDesc(), true);
-
-	//	Remember if we need to call OnInstall for this item
-	//	(All armor needs this)
-
-	bInstallItemEvent = true;
 
 	pShip->OnComponentChanged(comCargo);
 	pShip->CalcArmorBonus();
