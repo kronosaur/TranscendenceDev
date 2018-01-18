@@ -114,7 +114,6 @@ class CAutomataEffectPainter
 		bool IsAlive(int x, int y);
 		void Paint (CG32bitImage &Dest, const RECT &rcRect);
 		void Update (void);
-		void UpdateCell (int x, int y);
 
 	private:
 		struct SCell
@@ -123,6 +122,7 @@ class CAutomataEffectPainter
 			SCell(bool alive) : iOpacity(0), bAlive(alive) {}
 			BYTE iOpacity;				//	A value from 0 to 255. Increases while the cell is alive and decreases while the cell is dead
 			bool bAlive;				//	Whether the cell is alive or dead
+			bool bAliveNext;			//	Whether the cell will be alive or dead on the next tick. Used only during Update()
 			};
 
 		struct SPaintCtx

@@ -10,10 +10,10 @@ const CG32bitPixel RGB_GREEN =				CG32bitPixel(0x89, 0xd1, 0x92);
 
 CAutomataEffectPainter::CAutomataEffectPainter (int width, int height) : 
 		m_iTicks(0),
-		m_iInitialUpdates(10),
+		m_iInitialUpdates(2),
 		m_iWidth(width),
 		m_iHeight(height),
-		m_iOpacityInc(12)
+		m_iOpacityInc(51)
 //	CAutomataEffectPainter constructor
 
 	{
@@ -151,32 +151,60 @@ void CAutomataEffectPainter::Update (void)
 
 	{
 	m_iTicks++;
-	// We update every 12 ticks
-	if (m_iTicks % 12 > 0)
+
+	if (m_iTicks % 6 > 0)
 		return;
 	int y, x;
+
+	/*
+	//	This is a flawed implementation of Conway's Game of Life that fills the screen with a brain-like pattern
 	for (y = 0; y < m_iHeight; y++)
 		{
 		for (x = 0; x < m_iWidth; x++)
 			{
-			UpdateCell(x, y);
+			int iLiveNeighbors = CountLiveNeighbors(x, y);
+			SCell &cell = m_Grid.GetAt(y).GetAt(x);
+			if(IsAlive(x, y))
+				{
+				if (iLiveNeighbors < 2 || iLiveNeighbors > 3)
+					cell.bAlive = false;
+				}
+			else
+				{
+				if (iLiveNeighbors == 3)
+					cell.bAlive = true;
+				}
 			}
 		}
-	}
-void CAutomataEffectPainter::UpdateCell (int x, int y)
-//	UpdateCell
-//
-//	Updates the cell at the specified position
-	{
-	int iLiveNeighbors = CountLiveNeighbors(x, y);
-	if(IsAlive(x, y))
+	*/
+	//	This is a proper implementation of Conway's Game of Life
+	//	First pass updates bAliveNext for each cell (directly setting bAlive has side effects on the next generation)
+	for (y = 0; y < m_iHeight; y++)
 		{
-		if (iLiveNeighbors < 2 || iLiveNeighbors > 3)
-			m_Grid.GetAt(y).GetAt(x).bAlive = false;
+		for (x = 0; x < m_iWidth; x++)
+			{
+			int iLiveNeighbors = CountLiveNeighbors(x, y);
+			SCell &cell = m_Grid.GetAt(y).GetAt(x);
+			if(IsAlive(x, y))
+				{
+				if (iLiveNeighbors < 2 || iLiveNeighbors > 3)
+					cell.bAliveNext = false;
+				}
+			else
+				{
+				if (iLiveNeighbors == 3)
+					cell.bAliveNext = true;
+				}
+			}
 		}
-	else
+
+	//	Second pass updates bAlive from bAliveNext
+	for (y = 0; y < m_iHeight; y++)
 		{
-		if (iLiveNeighbors == 3)
-			m_Grid.GetAt(y).GetAt(x).bAlive = true;
+		for (x = 0; x < m_iWidth; x++)
+			{
+			SCell &cell = m_Grid.GetAt(y).GetAt(x);
+			cell.bAlive = cell.bAliveNext;
+			}
 		}
 	}
