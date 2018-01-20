@@ -159,7 +159,6 @@ class CTradingDesc
 			CDesignTypeCriteria TypeCriteria;	//	Type criteria (for selling ships, etc.).
 
 			CFormulaText PriceAdj;				//	Price adjustment
-            ICCItemPtr pPriceAdjCode;			//  Code to adjust price
 
 			CString sMessageID;					//	ID of language element to return if we match.
 			DWORD dwFlags = 0;					//	Flags

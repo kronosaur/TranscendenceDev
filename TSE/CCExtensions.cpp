@@ -591,12 +591,15 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_ROTATION					CONSTLIT("rotation")
 #define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex")
 #define FIELD_SOURCE_ONLY				CONSTLIT("sourceOnly")
+#define FIELD_TYPE						CONSTLIT("type")
 #define FIELD_WIDTH						CONSTLIT("width")
 #define FIELD_WIDTH_VARIATION			CONSTLIT("widthVariation")
 
 #define SHAPE_ARC						CONSTLIT("arc")
 #define SHAPE_ORBITAL					CONSTLIT("orbital")
 #define SHAPE_SQUARE					CONSTLIT("square")
+
+#define TYPE_SCHEMATIC					CONSTLIT("schematic")
 
 #define UNID_TYPE_ITEM_TYPE				CONSTLIT("itemtype")
 #define UNID_TYPE_SHIP_CLASS			CONSTLIT("shipclass")
@@ -1067,7 +1070,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"shpGetImageDesc",				fnShipClass,	FN_SHIP_GET_IMAGE_DESC,
-			"(shpGetImageDesc class [rotationAngle]) -> imageDesc",
+			"(shpGetImageDesc class [options|rotationAngle]) -> imageDesc",
 			"i*",	0,	},
 
 		{	"shpGetItemDeviceName",			fnShipSetOld,		FN_SHIP_ITEM_DEVICE_NAME,
@@ -8827,10 +8830,27 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_GET_IMAGE_DESC:
 			{
 			int iRotation = 0;
-			if (pArgs->GetCount() > 1)
-				iRotation = pClass->Angle2Direction(pArgs->GetElement(1)->GetIntegerValue());
+			bool bHeroImage = false;
 
-			pResult = CreateListFromImage(*pCC, pClass->GetImage(), iRotation);
+			if (pArgs->GetCount() > 1)
+				{
+				ICCItem *pOptions = pArgs->GetElement(1);
+				if (pOptions->IsSymbolTable())
+					{
+					iRotation = pOptions->GetIntegerAt(FIELD_ROTATION);
+					CString sType = pOptions->GetStringAt(FIELD_TYPE);
+					if (strEquals(sType, TYPE_SCHEMATIC))
+						bHeroImage = true;
+					}
+				else
+					iRotation = pClass->Angle2Direction(pOptions->GetIntegerValue());
+				}
+
+			if (bHeroImage)
+				pResult = CreateListFromImage(*pCC, pClass->GetHeroImage());
+			else
+				pResult = CreateListFromImage(*pCC, pClass->GetImage(), iRotation);
+
 			break;
 			}
 
@@ -11285,7 +11305,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			TSharedPtr<CItemEnhancementStack> pEnhancements;
 			if (iBonus != 0)
 				{
-				pEnhancements.Set(new CItemEnhancementStack);
+				pEnhancements.TakeHandoff(new CItemEnhancementStack);
 				pEnhancements->InsertHPBonus(iBonus);
 				}
 

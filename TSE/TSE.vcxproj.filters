@@ -523,9 +523,6 @@
     <ClCompile Include="I2DFunction.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="PaintUtilities.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="Utilities.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -877,9 +874,6 @@
     <ClCompile Include="CMapViewportCtx.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
-    <ClCompile Include="CPaintHelper.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="SFXOrb.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
@@ -1194,6 +1188,15 @@
     </ClCompile>
     <ClCompile Include="CTLispConvert.cpp">
       <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="PaintUtilities.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CPaintHelper.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CRTFText.cpp">
+      <Filter>Source Files\Painting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

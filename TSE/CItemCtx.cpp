@@ -207,7 +207,7 @@ TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 	if (Mods.IsEmpty())
 		return NULL;
 
-	m_pEnhancements.Set(new CItemEnhancementStack);
+	m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
 	m_pEnhancements->Insert(Mods);
 	return m_pEnhancements;
 	}

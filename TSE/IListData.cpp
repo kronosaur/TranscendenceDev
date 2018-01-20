@@ -10,9 +10,6 @@
 #define FIELD_ICON_SCALE					CONSTLIT("iconScale")
 #define FIELD_TITLE							CONSTLIT("title")
 
-const int ICON_WIDTH =						96;
-const int ICON_HEIGHT =						96;
-
 const CItem g_DummyItem;
 CItemList g_DummyItemList;
 CItemListManipulator g_DummyItemListManipulator(g_DummyItemList);
@@ -57,15 +54,6 @@ CItemListWrapper::CItemListWrapper (CItemList &ItemList) :
 const int TITLE_INDEX =			0;
 const int ICON_INDEX =			1;
 const int DESC_INDEX =			2;
-
-const int IMAGE_UNID_INDEX =	0;
-const int IMAGE_X_INDEX =		1;
-const int IMAGE_Y_INDEX =		2;
-const int IMAGE_ELEMENTS =		3;
-
-const int IMAGE_WIDTH_INDEX =	3;
-const int IMAGE_HEIGHT_INDEX =	4;
-const int IMAGE_DESC_ELEMENTS =	5;
 
 CListWrapper::CListWrapper (CCodeChain *pCC, ICCItem *pList) :
 		m_pCC(pCC),
@@ -158,26 +146,7 @@ DWORD CListWrapper::GetImageDescAtCursor (RECT *retrcImage, Metric *retrScale) c
 
 	//	Get the image descriptor
 
-	if (pIcon->GetCount() < IMAGE_ELEMENTS)
-		return 0;
-
-	retrcImage->left = pIcon->GetElement(IMAGE_X_INDEX)->GetIntegerValue();
-	retrcImage->top = pIcon->GetElement(IMAGE_Y_INDEX)->GetIntegerValue();
-
-	//	See if we have a width/height
-
-	if (pIcon->GetCount() < IMAGE_DESC_ELEMENTS)
-		{
-		retrcImage->right = retrcImage->left + ICON_WIDTH;
-		retrcImage->bottom = retrcImage->top + ICON_HEIGHT;
-		}
-	else
-		{
-		retrcImage->right = retrcImage->left + pIcon->GetElement(IMAGE_WIDTH_INDEX)->GetIntegerValue();
-		retrcImage->bottom = retrcImage->top + pIcon->GetElement(IMAGE_HEIGHT_INDEX)->GetIntegerValue();
-		}
-
-	return pIcon->GetElement(IMAGE_UNID_INDEX)->GetIntegerValue();
+	return CTLispConvert::AsImageDesc(pIcon, retrcImage);
 	}
 
 CString CListWrapper::GetTitleAtCursor (void)
@@ -258,43 +227,7 @@ void CListWrapper::PaintImageAtCursor (CG32bitImage &Dest, int x, int y, int cxW
 	if (pImage == NULL)
 		return;
 
-	int cxImage = RectWidth(rcImage);
-	int cyImage = RectHeight(rcImage);
-
-	//	If we have a specific scale, then use it.
-
-	if (rScale != 1.0)
-		{
-		Metric rX = x + (cxWidth / 2);
-		Metric rY = y + (cyHeight / 2);
-
-		CGDraw::BltTransformed(Dest, rX, rY, rScale, rScale, 0.0, *pImage, rcImage.left, rcImage.top, cxImage, cyImage);
-		}
-
-	//	If the image fits, paint it at the normal size.
-
-	else if (cxImage <= cxWidth && cyImage <= cyHeight)
-		{
-		Dest.Blt(rcImage.left,
-			rcImage.top,
-			cxImage,
-			cyImage,
-			255,
-			*pImage,
-			x + (cxWidth - cxImage) / 2,
-			y + (cyHeight - cyImage) / 2);
-		}
-
-	//	Otherwise we need to resize it.
-
-	else
-		{
-		Metric rScale = Min((Metric)cxWidth / (Metric)cxImage, (Metric)cyHeight / (Metric)cyImage);
-		Metric rX = x + (cxWidth / 2);
-		Metric rY = y + (cyHeight / 2);
-
-		CGDraw::BltTransformed(Dest, rX, rY, rScale, rScale, 0.0, *pImage, rcImage.left, rcImage.top, cxImage, cyImage);
-		}
+	CPaintHelper::PaintScaledImage(Dest, x, y, cxWidth, cyHeight, *pImage, rcImage, rScale);
 	}
 
 void CListWrapper::SyncCursor (void)

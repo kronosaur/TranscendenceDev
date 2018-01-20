@@ -75,8 +75,46 @@ class CPaintHelper
 
 		static void PaintArrow (CG32bitImage &Dest, int x, int y, int iDirection, CG32bitPixel rgbColor);
 		static void PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirection, const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor);
+		static void PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, const RECT &rcSrc, Metric rScale = 1.0);
 		static void PaintStatusBar (CG32bitImage &Dest, int x, int y, int iTick, CG32bitPixel rgbColor, const CString &sLabel, int iPos, int iMaxPos = 100, int *retcyHeight = NULL);
 		static void PaintTargetHighlight (CG32bitImage &Dest, int x, int y, int iTick, int iRadius, int iRingSpacing, int iDelay, CG32bitPixel rgbColor);
+	};
+
+class CRTFText
+	{
+	public:
+		struct SAutoRTFOptions
+			{
+			CG32bitPixel rgbQuoteText = CG32bitPixel(255, 255, 255);
+
+			bool bNoQuoteHighlight = false;
+			};
+
+		CRTFText (const CString &sText = NULL_STR, const IFontTable *pFontTable = NULL);
+
+		void Format (const RECT &rcRect) const;
+		void GetBounds (const RECT &rcRect, RECT *retrcRect) const;
+		void Paint (CG32bitImage &Dest, const RECT &rcRect) const;
+		inline void SetAlignment (AlignmentStyles iAlign) { m_iAlign = iAlign; InvalidateFormat(); }
+		inline void SetDefaultColor (CG32bitPixel rgbColor) { m_rgbDefaultColor = rgbColor; }
+		inline void SetDefaultFont (const CG16bitFont *pFont) { m_pDefaultFont = pFont; }
+		inline void SetFontTable (const IFontTable *pFontTable) { m_pFontTable = pFontTable; InvalidateFormat(); }
+		void SetText (const CString &sText, const SAutoRTFOptions &Options = SAutoRTFOptions());
+
+		static CString GenerateRTFText (const CString &sText, const SAutoRTFOptions &Options);
+
+	private:
+		inline void InvalidateFormat (void) { m_cxFormatted = -1; }
+
+		CString m_sRTF;
+
+		const IFontTable *m_pFontTable = NULL;
+		AlignmentStyles m_iAlign = alignLeft;
+		CG32bitPixel m_rgbDefaultColor = CG32bitPixel(255, 255, 255);
+		const CG16bitFont *m_pDefaultFont = NULL;
+
+		mutable CTextBlock m_RichText;					//	Formatted text
+		mutable int m_cxFormatted = -1;
 	};
 
 class CVolumetricShadowPainter

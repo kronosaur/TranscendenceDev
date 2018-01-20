@@ -446,6 +446,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CRTFText.cpp" />
     <ClCompile Include="CSendMessageOrder.cpp" />
     <ClCompile Include="CSentryOrder.cpp" />
     <ClCompile Include="CSFXOptions.cpp" />

@@ -1457,7 +1457,7 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 		TSharedPtr<CItemEnhancementStack> pEnhancements;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements.Set(new CItemEnhancementStack);
+			pEnhancements.TakeHandoff(new CItemEnhancementStack);
 			pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 

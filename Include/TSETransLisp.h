@@ -25,14 +25,16 @@ class ICCItemPtr
 		~ICCItemPtr (void);
 
 		ICCItemPtr &operator= (const ICCItemPtr &Src);
+		ICCItemPtr &operator= (ICCItem *pSrc);
 		operator ICCItem *() const { return m_pPtr; }
 		ICCItem * operator->() const { return m_pPtr; }
 
 		explicit operator bool() const { return (m_pPtr != NULL); }
 
-		void Delete (void) { Set(NULL); }
+		void Delete (void);
 
-		void Set (ICCItem *pPtr);
+		void TakeHandoff (ICCItem *pPtr);
+		void TakeHandoff (ICCItemPtr &Src);
 
 		void Set (const ICCItemPtr &Src)
 			{
@@ -59,6 +61,7 @@ class CTLispConvert
 			};
 
 		static ETypes ArgType (ICCItem *pItem, ETypes iDefaultType, ICCItem **retpValue = NULL);
+		static DWORD AsImageDesc (ICCItem *pItem, RECT *retrcRect);
 	};
 
 //	CodeChain context

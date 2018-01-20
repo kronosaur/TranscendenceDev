@@ -581,7 +581,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 		int iBonus = (int)LOWORD(dwLoad);
 		if (iBonus != 0)
 			{
-			m_pEnhancements.Set(new CItemEnhancementStack);
+			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
 			m_pEnhancements->InsertHPBonus(iBonus);
 			}
 		m_iSlotPosIndex = -1;
