@@ -1847,6 +1847,23 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	return NOERROR;
 	}
 
+bool CRandomEnhancementGenerator::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if the enhancement varies (randomly).
+
+	{
+	if (m_pCode)
+		return true;
+	else if (m_Mods.IsEmpty())
+		return false;
+	else if (m_iChance != 100 && m_iChance != 0)
+		return true;
+	else
+		return false;
+	}
+
 void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 
 //	EnhanceItem
@@ -1966,3 +1983,4 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 		Item.AddEnhancement(dwMods);
 		}
 	}
+

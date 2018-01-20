@@ -181,6 +181,7 @@
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
+#define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
 #define PROPERTY_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_MAX_SPEED_AT_MAX_ARMOR			CONSTLIT("maxSpeedAtMaxArmor")
@@ -4055,6 +4056,9 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 
 	else if (strEquals(sProperty, PROPERTY_HAS_TRADE_DESC))
 		return CC.CreateBool(m_pTrade != NULL);
+
+	else if (strEquals(sProperty, PROPERTY_HAS_VARIANTS))
+		return CC.CreateBool(m_pDevices && m_pDevices->IsVariant());
 
 	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_MASS))
 		return (m_Hull.GetMaxArmorMass() > 0 ? CC.CreateInteger(m_Hull.GetMaxArmorMass()) : CC.CreateNil());

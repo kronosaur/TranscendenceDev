@@ -46,6 +46,8 @@
 
 class CNullDevice : public IDeviceGenerator
 	{
+	public:
+		virtual bool IsVariant (void) const override { return false; }
 	};
 
 class CSingleDevice : public IDeviceGenerator
@@ -54,10 +56,11 @@ class CSingleDevice : public IDeviceGenerator
 		CSingleDevice (void) : m_pExtraItems(NULL) { }
 		~CSingleDevice (void);
 
-		virtual void AddDevices (SDeviceGenerateCtx &Ctx);
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual bool IsVariant (void) const override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		CItemTypeRef m_pItemType;
@@ -98,6 +101,7 @@ class CLevelTableOfDeviceGenerators : public IDeviceGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		virtual IDeviceGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
+		virtual bool IsVariant (void) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -123,6 +127,7 @@ class CTableOfDeviceGenerators : public IDeviceGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		virtual IDeviceGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
+		virtual bool IsVariant (void) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -146,6 +151,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		virtual IDeviceGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
+		virtual bool IsVariant (void) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -420,6 +426,21 @@ void CSingleDevice::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_pExtraItems->AddTypesUsed(retTypesUsed);
 	}
 
+bool CSingleDevice::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if we the devices we return can vary.
+
+	{
+	if (m_iDamaged != 0 && m_iDamaged != 100)
+		return true;
+	else if (m_Enhanced.IsVariant())
+		return true;
+	else
+		return false;
+	}
+
 ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	LoadFromXML
@@ -652,6 +673,21 @@ void CTableOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
 	}
 
+bool CTableOfDeviceGenerators::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if we can vary.
+
+	{
+	if (m_Table.GetCount() == 0)
+		return false;
+	else if (m_Table.GetCount() == 1)
+		return m_Table[0].pDevice->IsVariant();
+	else
+		return true;
+	}
+
 ALERROR CTableOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	LoadFromXML
@@ -780,6 +816,19 @@ void CLevelTableOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retType
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
+	}
+
+bool CLevelTableOfDeviceGenerators::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if we can vary.
+
+	{
+	if (m_Table.GetCount() == 0)
+		return false;
+	else
+		return true;
 	}
 
 ALERROR CLevelTableOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -954,6 +1003,26 @@ CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (con
 			return &m_SlotDesc[i];
 
 	return NULL;
+	}
+
+bool CGroupOfDeviceGenerators::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if we can vary.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		{
+		if (m_Table[i].iChance != 0 && m_Table[i].iChance != 100)
+			return true;
+		else if (m_Table[i].pDevice->IsVariant())
+			return true;
+		}
+
+	return false;
 	}
 
 ALERROR CGroupOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)

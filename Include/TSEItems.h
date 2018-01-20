@@ -269,6 +269,7 @@ class CRandomEnhancementGenerator
 		void EnhanceItem (CItem &Item) const;
 		inline int GetChance (void) const { return m_iChance; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		bool IsVariant (void) const;
 
 	private:
 		int m_iChance;
