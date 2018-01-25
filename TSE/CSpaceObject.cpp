@@ -65,6 +65,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_ORDER_CHANGED_EVENT					CONSTLIT("OnOrderChanged")
 #define ON_ORDERS_COMPLETED_EVENT				CONSTLIT("OnOrdersCompleted")
 #define ON_OVERRIDE_INIT_EVENT					CONSTLIT("OnEventHandlerInit")
+#define ON_OVERRIDE_TERM_EVENT					CONSTLIT("OnEventHandlerTerm")
 #define ON_MISSION_ACCEPTED_EVENT				CONSTLIT("OnMissionAccepted")
 #define ON_MISSION_COMPLETED_EVENT				CONSTLIT("OnMissionCompleted")
 #define ON_PLAYER_BLACKLISTED_EVENT				CONSTLIT("OnPlayerBlacklisted")
@@ -7292,6 +7293,26 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 //	Sets the override.
 	
 	{
+	//	Let the previous event handler terminate
+
+	if (m_pOverride)
+		{
+		SEventHandlerDesc Event;
+		if (FindEventHandler(ON_OVERRIDE_TERM_EVENT, &Event))
+			{
+			CCodeChainCtx Ctx;
+
+			Ctx.SaveAndDefineSourceVar(this);
+
+			ICCItem *pResult = Ctx.Run(Event);
+			if (pResult->IsError())
+				ReportEventError(ON_OVERRIDE_TERM_EVENT, pResult);
+			Ctx.Discard(pResult);
+			}
+		}
+
+	//	Set it.
+
 	m_pOverride = pOverride;
 	SetEventFlags();
 
