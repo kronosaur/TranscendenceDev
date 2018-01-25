@@ -1262,6 +1262,51 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 	return bCanInstall;
 	}
 
+CSpaceObject::RequestDockResults CShip::CanObjRequestDock (CSpaceObject *pObj) const
+
+//	CanObjRequestDock
+//
+//	Returns TRUE if pObj can request to dock with us. We return FALSE if we
+//	don't want to give the player the flashing docking port UI. But we return
+//	TRUE if we allow requests, but the request could be denied (e.g., because
+
+	{
+	//	There are various reasons why docking might be impossible with this 
+	//	ship, including no docking ports.
+
+	if (m_DockingPorts.GetPortCount() == 0
+			|| IsDestroyed())
+		return dockingNotSupported;
+
+	//	If the player wants to dock with us and we don't have any docking 
+	//	screens, then we do not support docking.
+
+	if (pObj && pObj->IsPlayer() && !HasDockScreen())
+		return dockingNotSupported;
+
+	//	Enemy ships can never dock with us.
+
+	if (pObj && IsAngryAt(pObj))
+		return dockingDenied;
+
+	//	In some cases, the docking system is temporarily disabled. For example, 
+	//	if we're docked with another object, no one can dock with us.
+
+	if (IsTimeStopped()
+			|| m_fDockingDisabled 
+			|| GetDockedObj() != NULL)
+		return dockingDisabled;
+
+	//	If we're moving, then no one can dock.
+
+	if (GetVel().Length2() > MAX_SPEED_FOR_DOCKING2)
+		return dockingDisabled;
+
+	//	Otherwise, docking is allowed
+
+	return dockingOK;
+	}
+
 CShip::RemoveDeviceStatus CShip::CanRemoveDevice (const CItem &Item, CString *retsResult)
 
 //	CanRemoveDevice
@@ -2765,35 +2810,14 @@ DeviceNames CShip::GetDeviceNameForCategory (ItemCategories iCategory)
 		}
 	}
 
-CDesignType *CShip::GetDefaultDockScreen (CString *retsName)
+CDesignType *CShip::GetDefaultDockScreen (CString *retsName) const
 
 //	GetDockScreen
 //
 //	Returns the screen on dock (NULL_STR if none)
 
 	{
-	//	If docking is disabled or we are docked with some station, then no one
-	//	can dock with us.
-
-	if (m_fDockingDisabled 
-			|| GetDockedObj() != NULL
-			|| IsDestroyed())
-		return NULL;
-
-	//	If no screen, then we're done
-
-	CDesignType *pScreen = m_pClass->GetFirstDockScreen(retsName);
-	if (pScreen == NULL)
-		return NULL;
-
-	//	If we're moving, then no one can dock.
-
-	if (GetVel().Length2() > MAX_SPEED_FOR_DOCKING2)
-		return NULL;
-
-	//	Done
-
-	return pScreen;
+	return m_pClass->GetFirstDockScreen(retsName);
 	}
 
 CSpaceObject *CShip::GetEscortPrincipal (void) const
@@ -3173,7 +3197,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return (!m_fShipCompartment && m_pDocked ? CC.CreateInteger(m_pDocked->GetID()) : CC.CreateNil());
 
 	else if (strEquals(sName, PROPERTY_DOCKING_ENABLED))
-		return CC.CreateBool(SupportsDocking(true));
+		return CC.CreateBool(CanObjRequestDock(GetPlayerShip()) == CSpaceObject::dockingOK);
 
     else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
         return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
@@ -3978,7 +4002,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	InvalidateItemListState();
 	}
 
-bool CShip::IsAngryAt (CSpaceObject *pObj)
+bool CShip::IsAngryAt (CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -7171,36 +7195,6 @@ ALERROR CShip::ReportCreateError (const CString &sError) const
     return ERR_FAIL;
     }
 
-bool CShip::RequestDock (CSpaceObject *pObj, int iPort)
-
-//	RequestDock
-//
-//	pObj requests docking services with the station. Returns TRUE
-//	if docking is engaged.
-
-	{
-	//	If time has stopped for this object, then we cannot allow docking
-
-	if (IsTimeStopped())
-		{
-		pObj->SendMessage(this, CONSTLIT("Unable to dock"));
-		return false;
-		}
-
-	//	If the object requesting docking services is an enemy,
-	//	then deny docking services.
-
-	if (IsEnemy(pObj))
-		{
-		pObj->SendMessage(this, pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, CONSTLIT("Docking request denied")));
-		return false;
-		}
-
-	//	Get the nearest free port
-
-	return m_DockingPorts.RequestDock(this, pObj, iPort);
-	}
-
 void CShip::RevertOrientationChange (void)
 
 //	RevertOrientationChange
@@ -7555,7 +7549,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			case IShipController::orderNone:
 				//	If a ship has no orders and it has a base, then dock with the base
 				if (Ctx.pBase 
-						&& Ctx.pBase->SupportsDocking()
+						&& Ctx.pBase->CanObjRequestDock(this)
 						&& GetController()->GetCurrentOrderEx() == IShipController::orderNone)
 					{
 					bDockWithBase = true;
@@ -7564,7 +7558,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 				break;
 
 			case IShipController::orderDock:
-				pOrderTarget = ((Ctx.pBase && Ctx.pBase->SupportsDocking()) ? Ctx.pBase : NULL);
+				pOrderTarget = ((Ctx.pBase && Ctx.pBase->CanObjRequestDock(this)) ? Ctx.pBase : NULL);
 				bDockWithBase = true;
 				break;
 

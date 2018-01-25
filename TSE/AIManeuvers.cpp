@@ -1182,7 +1182,7 @@ void CAIBehaviorCtx::ImplementDocking (CShip *pShip, CSpaceObject *pTarget)
 
 	else if (pShip->IsDestinyTime(20))
 		{
-		if (pTarget->RequestDock(pShip))
+		if (pTarget->ObjRequestDock(pShip))
 			SetDockingRequested(true);
 		}
 

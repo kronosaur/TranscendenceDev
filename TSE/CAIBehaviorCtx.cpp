@@ -578,7 +578,7 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 					|| (pObj->GetCategory() == CSpaceObject::catStation
 						&& pObj->GetScale() == scaleStructure
 						&& !pObj->IsIntangible()
-						&& pObj->SupportsDocking()
+						&& pObj->CanObjRequestDock(pShip)
 						&& (pObj->IsFriend(pShip) || !pObj->CanAttack()))))
 			{
 			Metric rDist2 = (pObj->GetPos() - pShip->GetPos()).Length2();

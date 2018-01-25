@@ -94,6 +94,8 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define FIELD_STATUS							CONSTLIT("status")
 #define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
+#define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
+
 #define ORDER_DOCKED							CONSTLIT("docked")
 
 #define PROPERTY_ASCENDED						CONSTLIT("ascended")
@@ -2002,7 +2004,7 @@ void CSpaceObject::FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject
 		}
 	}
 
-bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItem **retpData)
+bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItem **retpData) const
 
 //	FireGetDockScreen
 //
@@ -2015,7 +2017,7 @@ bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, IC
 			&& FindEventHandler(GET_DOCK_SCREEN_EVENT, &Event))
 		{
 		CCodeChainCtx Ctx;
-		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
 
 		bool bResult;
 
@@ -4629,6 +4631,30 @@ bool CSpaceObject::HasBeenHitLately (int iTicks)
 	return false;
 	}
 
+bool CSpaceObject::HasDockScreen (void) const
+
+//	HasDockScreen
+//
+//	Returns TRUE if we have at least one dock screen. This should match ::GetFirstDockScreen()
+
+	{
+	if (GetDefaultDockScreen())
+		return true;
+
+	if (FireGetDockScreen())
+		return true;
+
+	if (g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(const_cast<CSpaceObject *>(this)))
+		return true;
+
+	const COverlayList *pOverlays;
+	if ((pOverlays = GetOverlays()) 
+			&& pOverlays->FireGetDockScreen(const_cast<CSpaceObject *>(this)))
+		return true;
+
+	return false;
+	}
+
 bool CSpaceObject::HasFiredLately (int iTicks)
 
 //	HasFiredHitLately
@@ -5958,6 +5984,52 @@ void CSpaceObject::NotifyOnObjDocked (CSpaceObject *pDockTarget)
 
 	{
 	m_SubscribedObjs.NotifyOnObjDocked(this, pDockTarget);
+	}
+
+bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
+
+//	ObjRequestDock
+//
+//	pObj requests docking services with this object. Returns TRUE if docking 
+//	is engaged.
+
+	{
+	switch (CanObjRequestDock(pObj))
+		{
+		case dockingOK:
+			{
+			CDockingPorts *pPorts = GetDockingPorts();
+			if (pPorts == NULL)
+				{
+				//	Should never happen; we would not return dockingOK in this case.
+
+				ASSERT(false);
+				pObj->SendMessage(this, CONSTLIT("No docking services available"));
+				return false;
+				}
+
+			//	Request dock
+
+			return pPorts->RequestDock(this, pObj, iPort);
+			}
+
+		case dockingNotSupported:
+			pObj->SendMessage(this, CONSTLIT("No docking services available"));
+			return false;
+
+		case dockingDisabled:
+			pObj->SendMessage(this, CONSTLIT("Unable to dock"));
+			return false;
+
+		case dockingDenied:
+			pObj->SendMessage(this, pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, CONSTLIT("Docking request denied")));
+			return false;
+			
+		default:
+			//	Should never happen. This means that we missed a result type.
+			ASSERT(false);
+			return false;
+		}
 	}
 
 void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
@@ -7386,23 +7458,6 @@ void CSpaceObject::SetSovereign (CSovereign *pSovereign)
 		pSystem->FlushEnemyObjectCache();
 	}
 
-bool CSpaceObject::SupportsDocking (bool bPlayer)
-
-//	SupportsDocking
-//
-//	Returns TRUE if this object supports docking.
-
-	{
-	COverlayList *pOverlays;
-
-	return (GetDockingPortCount() > 0) 
-			&& (!bPlayer 
-				|| GetDefaultDockScreen() != NULL 
-				|| FireGetDockScreen()
-				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL)
-				|| ((pOverlays = GetOverlays()) && pOverlays->FireGetDockScreen(this)));
-	}
-
 bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult)
 
 //	Translate
@@ -7542,12 +7597,9 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	//	NOTE: <GetDockScreen> and <GetGlobalDockScreen> must not have side-
 	//	effects, so we assume we cannot be destroyed after the call.
 
-	if (IsDestinyTime(21, 8)
-			&& GetDockingPortCount() > 0)
+	if (IsDestinyTime(21, 8))
 		{
-		m_fHasDockScreenMaybe = (GetDefaultDockScreen() != NULL 
-				|| FireGetDockScreen() 
-				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL));
+		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
 		}
 
 	//	Update the specific object subclass.

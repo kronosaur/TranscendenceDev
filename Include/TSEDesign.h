@@ -1195,7 +1195,7 @@ class CDesignCollection
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
 		void FireGetGlobalAchievements (CGameStats &Stats);
-		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CString *retsScreen, ICCItem **retpData, int *retiPriority = NULL);
+		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CString *retsScreen = NULL, ICCItem **retpData = NULL, int *retiPriority = NULL);
 		bool FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		void FireOnGlobalEndDiagnostics (void);
 		void FireOnGlobalIntroCommand (const CString &sCommand);
