@@ -417,12 +417,6 @@ CSpaceObject::RequestDockResults CStation::CanObjRequestDock (CSpaceObject *pObj
 			|| IsDestroyed())
 		return dockingNotSupported;
 
-	//	If the player wants to dock with us and we don't have any docking 
-	//	screens, then we do not support docking.
-
-	if (pObj && pObj->IsPlayer() && !HasDockScreen())
-		return dockingNotSupported;
-
 	//	If the object requesting docking services is an enemy,
 	//	then deny docking services.
 
@@ -431,6 +425,16 @@ CSpaceObject::RequestDockResults CStation::CanObjRequestDock (CSpaceObject *pObj
 			&& !m_pType->IsEnemyDockingAllowed()
 			&& (IsEnemy(pObj) || IsBlacklisted(pObj)))
 		return dockingDenied;
+
+	//	If the player wants to dock with us and we don't have any docking 
+	//	screens, then we do not support docking.
+	//
+	//	NOTE: We check this AFTER the dockingDenied check above because after
+	//	a station is destroyed, the player will be able to dock (docking IS
+	//	supported) but they're just not allowed to right now.
+
+	if (pObj && pObj->IsPlayer() && !HasDockScreen())
+		return dockingNotSupported;
 
 	//	In some cases, the docking system is temporarily disabled. For example, 
 	//	if we're docked with another object, no one can dock with us.
