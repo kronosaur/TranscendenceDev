@@ -120,6 +120,27 @@ void CDockingPorts::DebugPaint (CG32bitImage &Dest, int x, int y, int iOwnerRota
 		}
 	}
 
+void CDockingPorts::DeleteAll (CSpaceObject *pOwner)
+
+//	DeleteAll
+//
+//	Delete all ports
+
+	{
+	for (int i = 0; i < m_iPortCount; i++)
+		if (m_pPort[i].iStatus == psDocking)
+			{
+			m_pPort[i].pObj->UnfreezeControls();
+			}
+		else if (m_pPort[i].iStatus == psInUse)
+			{
+			m_pPort[i].pObj->UnfreezeControls();
+			m_pPort[i].pObj->OnDockingPortDestroyed();
+			}
+
+	CleanUp();
+	}
+
 void CDockingPorts::DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj)
 
 //	DockAtRandomPort

@@ -838,6 +838,7 @@ class CSpaceObject : public CObject
 		virtual CVector GetDockingPortOffset (int iRotation) { return NullVector; }
 		virtual void OnDocked (CSpaceObject *pObj) { }
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
+		virtual void OnDockingPortDestroyed (void) { }
 
 		//	Docking Ports
 

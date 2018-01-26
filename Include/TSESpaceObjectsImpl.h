@@ -1204,6 +1204,7 @@ class CShip : public CSpaceObject
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) override;
 		virtual void OnDocked (CSpaceObject *pObj) override;
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) override;
+		virtual void OnDockingPortDestroyed (void) override;
 		virtual void OnItemEnhanced (CItemListManipulator &ItemList) override;
 		virtual void OnHitByDeviceDamage (void) override;
 		virtual void OnHitByDeviceDisruptDamage (DWORD dwDuration) override;
@@ -1384,7 +1385,7 @@ class CShip : public CSpaceObject
 		DWORD m_fLRSDisabledByNebula:1;			//	TRUE if LRS is disabled due to environment
 		DWORD m_fShipCompartment:1;				//	TRUE if we're part of another ship (m_pDocked is the root ship)
 		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
-		DWORD m_fSpare8:1;
+		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
 
 		DWORD m_dwSpare:8;
 

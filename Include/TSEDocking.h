@@ -15,6 +15,7 @@ class CDockingPorts
 		CDockingPorts &operator= (const CDockingPorts &Src) { CleanUp(); Copy(Src); return *this; }
 
 		void DebugPaint (CG32bitImage &Dest, int x, int y, int iOwnerRotation, int iScale) const;
+		void DeleteAll (CSpaceObject *pOwner);
 		void DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj);
 		bool DoesPortPaintInFront (CSpaceObject *pOwner, int iPort) const;
 		int FindNearestEmptyPort (CSpaceObject *pOwner, CSpaceObject *pRequestingObj, CVector *retvDistance = NULL, int *retiEmptyPortCount = NULL);
@@ -36,6 +37,7 @@ class CDockingPorts
 		void ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx);
 		void RepairAll (CSpaceObject *pOwner, int iRepairRate);
 		bool RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int iPort = -1);
+		inline void SetMaxDockingDist (int iDist) { m_iMaxDist = iDist; }
 		void Undock (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbWasDocked = NULL);
 		void UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner);
 		void WriteToStream (CSpaceObject *pOwner, IWriteStream *pStream);

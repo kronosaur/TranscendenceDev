@@ -1521,6 +1521,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fLRSDisabledByNebula = false;
 	pShip->m_fShipCompartment = false;
 	pShip->m_fHasShipCompartments = false;
+	pShip->m_fAutoCreatedPorts = false;
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -4907,6 +4908,16 @@ void CShip::OnDockedObjChanged (CSpaceObject *pLocation)
 	m_pController->OnDockedObjChanged(pLocation);
 	}
 
+void CShip::OnDockingPortDestroyed (void)
+
+//	OnDockingPortDestroyed
+//
+//	The port that we're docked with has been destroyed, so we cancel our docking.
+
+	{
+	m_pDocked = NULL;
+	}
+
 CSpaceObject *CShip::OnGetOrderGiver (void)
 
 //	GetOrderGiver
@@ -5529,7 +5540,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	bool bBit01 =				((dwLoad & 0x00000001) ? true : false);
 	m_fRadioactive =			((dwLoad & 0x00000002) ? true : false);
-	//	0x00000004 Unused as of version 155
+	m_fAutoCreatedPorts =		((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 155);
 	m_fDestroyInGate =			((dwLoad & 0x00000008) ? true : false);
 	m_fHalfSpeed =				((dwLoad & 0x00000010) ? true : false);
 	//	0x00000020 Unused as of version 155
@@ -5866,6 +5877,32 @@ void CShip::OnSetEventFlags (void)
 	SetHasOnOrderChangedEvent(FindEventHandler(CONSTLIT("OnOrderChanged")));
 	SetHasOnOrdersCompletedEvent(FindEventHandler(CONSTLIT("OnOrdersCompleted")));
 	SetHasOnSubordinateAttackedEvent(FindEventHandler(CONSTLIT("OnSubordinateAttacked")));
+
+	//	See if we have a handler for dock screens.
+
+	bool bHasGetDockScreen = HasDockScreen();
+
+	//	If we have an event for a dock screen, but we don't have docking ports
+	//	then we create some default ports. This is useful for when overlays or
+	//	event handlers create dock screens.
+
+	if (bHasGetDockScreen && m_DockingPorts.GetPortCount() == 0)
+		{
+		//	LATER: Create docking ports based on image size.
+
+		m_DockingPorts.InitPorts(this, 4, 48.0 * g_KlicksPerPixel);
+		m_DockingPorts.SetMaxDockingDist(3);
+		m_fAutoCreatedPorts = true;
+		}
+
+	//	If we DON'T have dock screens and we auto-created some docking ports,
+	//	then we need to remove them.
+
+	else if (!bHasGetDockScreen && m_fAutoCreatedPorts)
+		{
+		m_DockingPorts.DeleteAll(this);
+		m_fAutoCreatedPorts = false;
+		}
 	}
 
 void CShip::OnStationDestroyed (const SDestroyCtx &Ctx)
@@ -5935,7 +5972,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
     //	Allow docking
 
-    if (m_pClass->HasDockingPorts())
+    if (m_DockingPorts.GetPortCount() > 0)
         m_DockingPorts.UpdateAll(Ctx, this);
 
     //	Initialize
@@ -6408,7 +6445,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	dwSave |= (m_fLRSDisabledByNebula ? 0x00000001 : 0);
 	dwSave |= (m_fRadioactive ?			0x00000002 : 0);
-	//	0x00000004
+	dwSave |= (m_fAutoCreatedPorts ?	0x00000004 : 0);
 	dwSave |= (m_fDestroyInGate ?		0x00000008 : 0);
 	dwSave |= (m_fHalfSpeed ?			0x00000010 : 0);
 	//	0x00000020
