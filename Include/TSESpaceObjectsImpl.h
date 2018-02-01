@@ -1324,8 +1324,10 @@ class CShip : public CSpaceObject
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
-		CAbilitySet m_Abilities;				//	Installed abilities
 		COverlayList m_Overlays;		        //	List of energy fields
+
+		CGenericType *m_pCharacter;				//	Character (may be NULL)
+		CAbilitySet m_Abilities;				//	Installed abilities
 		CDockingPorts m_DockingPorts;			//	Docking ports (optionally)
 		CStationType *m_pEncounterInfo;			//	Pointer back to encounter type (generally NULL)
 		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)

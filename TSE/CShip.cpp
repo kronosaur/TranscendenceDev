@@ -1497,6 +1497,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_pTrade = NULL;
 	pShip->m_pMoney = NULL;
 	pShip->m_pPowerUse = NULL;
+	pShip->m_pCharacter = pClass->GetCharacter();
 
 	pShip->m_fTrackMass = false;
 	pShip->m_fRadioactive = false;
@@ -3171,10 +3172,8 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(CalcMaxCargoSpace());
 
 	else if (strEquals(sName, PROPERTY_CHARACTER))
-		{
-		CGenericType *pCharacter = m_pClass->GetCharacter();
-		return (pCharacter ? CC.CreateInteger(pCharacter->GetUNID()) : CC.CreateNil());
-		}
+		return (m_pCharacter ? CC.CreateInteger(m_pCharacter->GetUNID()) : CC.CreateNil());
+
 	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE) || strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
 		{
 		for (i = 0; i < GetArmorSectionCount(); i++)
@@ -5414,6 +5413,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		field: iLifeLeft
 //	IEffectPainter field: pPainter
 //
+//	DWORD		m_pCharacter
 //	CShipInterior
 //	CDockingPorts
 //	CTradeDesc	m_pTrade
@@ -5685,6 +5685,19 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Energy fields
 
 	m_Overlays.ReadFromStream(Ctx, this);
+
+	//	Character
+
+	if (Ctx.dwVersion >= 156)
+		{
+		Ctx.pStream->Read(dwLoad);
+		if (dwLoad)
+			m_pCharacter = g_pUniverse->FindGenericType(dwLoad);
+		else
+			m_pCharacter = NULL;
+		}
+	else
+		m_pCharacter = m_pClass->GetCharacter();
 
 	//	Ship interior
 
@@ -6514,6 +6527,11 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	//	Energy fields
 
 	m_Overlays.WriteToStream(pStream);
+
+	//	Character
+
+	dwSave = (m_pCharacter ? m_pCharacter->GetUNID() : 0);
+	pStream->Write(dwSave);
 
 	//	Ship interior
 
@@ -7743,6 +7761,24 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		m_fAlwaysLeaveWreck = !pValue->IsNil();
 		return true;
 		}
+	else if (strEquals(sName, PROPERTY_CHARACTER))
+		{
+		if (pValue->IsNil())
+			m_pCharacter = NULL;
+		else
+			{
+			CGenericType *pCharacter = g_pUniverse->FindGenericType((DWORD)pValue->GetIntegerValue());
+			if (pCharacter == NULL)
+				{
+				*retsError = CONSTLIT("Unknown character UNID");
+				return false;
+				}
+
+			m_pCharacter = pCharacter;
+			}
+		return true;
+		}
+
 	else if (strEquals(sName, PROPERTY_DOCKING_ENABLED))
 		{
 		m_fDockingDisabled = pValue->IsNil();
@@ -7804,7 +7840,7 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		{
-		m_pController->SetPlayerWingman(!pValue->IsNil());
+		SetPlayerWingman(!pValue->IsNil());
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_RADIOACTIVE))

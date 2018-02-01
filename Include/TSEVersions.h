@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							40;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					34;
-constexpr DWORD SYSTEM_SAVE_VERSION =					155;
+constexpr DWORD SYSTEM_SAVE_VERSION =					156;
 
 //	Uncomment out the following define when building a stable release
 
@@ -577,3 +577,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					155;
 //
 //	155: 1.8 Alpha 4
 //		Added m_Abilities to CShip
+//
+//	156: 1.8 Beta 1
+//		Added m_pCharacter to CShip
