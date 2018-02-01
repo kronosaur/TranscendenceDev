@@ -1522,6 +1522,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fShipCompartment = false;
 	pShip->m_fHasShipCompartments = false;
 	pShip->m_fAutoCreatedPorts = false;
+	pShip->m_fNameBlanked = false;
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -3046,7 +3047,9 @@ CString CShip::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 //	Returns the name of the ship
 
 	{
-	if (m_sName.IsBlank() || (dwNounPhraseFlags & nounGeneric))
+	if (m_fNameBlanked)
+		return m_pClass->GetNamePattern(dwNounPhraseFlags | nounGeneric, retdwFlags);
+	else if (m_sName.IsBlank() || (dwNounPhraseFlags & nounGeneric))
 		return m_pClass->GetNamePattern(dwNounPhraseFlags, retdwFlags);
 	else
 		{
@@ -5543,7 +5546,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fAutoCreatedPorts =		((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 155);
 	m_fDestroyInGate =			((dwLoad & 0x00000008) ? true : false);
 	m_fHalfSpeed =				((dwLoad & 0x00000010) ? true : false);
-	//	0x00000020 Unused as of version 155
+	m_fNameBlanked =			((dwLoad & 0x00000020) ? true : false) && (Ctx.dwVersion >= 155);
 	bool bTrackFuel =			((dwLoad & 0x00000040) ? true : false);
 	bool bHasMoney =			((dwLoad & 0x00000080) ? true : false) && (Ctx.dwVersion >= 145);
 	//	0x00000100 Unused as of version 155
@@ -6448,7 +6451,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fAutoCreatedPorts ?	0x00000004 : 0);
 	dwSave |= (m_fDestroyInGate ?		0x00000008 : 0);
 	dwSave |= (m_fHalfSpeed ?			0x00000010 : 0);
-	//	0x00000020
+	dwSave |= (m_fNameBlanked ?			0x00000020 : 0);
 	dwSave |= (m_pPowerUse ?			0x00000040 : 0);
 	dwSave |= (m_pMoney ?				0x00000080 : 0);
 	//	0x00000100
@@ -7544,6 +7547,31 @@ void CShip::SetInGate (CSpaceObject *pGate, int iTickCount)
 	m_pExitGate = pGate;
 	m_iExitGateTimer = GATE_ANIMATION_LENGTH + iTickCount;
 	SetCannotBeHit();
+	}
+
+void CShip::SetName (const CString &sName, DWORD dwFlags)
+
+//	SetName
+//
+//	Sets the ship's name
+
+	{
+	//	If we're blanking the ship's name, then we're forcing the generic name
+	//	to appear. We need to set a flag because a blank ship name also means
+	//	that we should use the class name (which is not necessarily generic).
+
+	if (sName.IsBlank())
+		{
+		m_sName = NULL_STR;
+		m_dwNameFlags = 0;
+		m_fNameBlanked = true;
+		}
+	else
+		{
+		m_sName = sName;
+		m_dwNameFlags = dwFlags;
+		m_fNameBlanked = false;
+		}
 	}
 
 void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)

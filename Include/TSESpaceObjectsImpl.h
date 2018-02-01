@@ -1241,7 +1241,7 @@ class CShip : public CSpaceObject
 		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) override { m_pClass->SetGlobalData(sAttribute, sData); }
 		virtual void SetIdentified (bool bIdentified = true) override { m_fIdentified = bIdentified; }
         virtual void SetKnown (bool bKnown = true) override { m_fKnown = bKnown; }
-		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override { m_sName = sName; m_dwNameFlags = dwFlags; }
+		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
 		virtual void Suspend (void) override { Undock(); m_fManualSuspended = true; SetCannotBeHit(); }
 		virtual void Undock (CSpaceObject *pObj) override;
@@ -1387,7 +1387,14 @@ class CShip : public CSpaceObject
 		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
 		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
 
-		DWORD m_dwSpare:8;
+		DWORD m_fNameBlanked:1;					//	TRUE if name has been blanked; show generic name
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
 
 	friend CObjectClass<CShip>;
 	};

@@ -8118,19 +8118,31 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_OBJ_NAME:
 			{
-			//	Third parameter is (optional) flags
+			//	If name is Nil then we clear the name
 
-			DWORD dwFlags;
-			if (pArgs->GetCount() > 2)
-				dwFlags = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
+			if (pArgs->GetElement(1)->IsNil())
+				{
+				pObj->SetName(NULL_STR, 0);
+				}
+
+			//	Otherwise...
+
 			else
-				dwFlags = 0;
+				{
+				//	Third parameter is (optional) flags
 
-			//	Set name
+				DWORD dwFlags;
+				if (pArgs->GetCount() > 2)
+					dwFlags = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
+				else
+					dwFlags = 0;
 
-			pObj->SetName(pArgs->GetElement(1)->GetStringValue(), dwFlags);
+				//	Set name
+
+				pObj->SetName(pArgs->GetElement(1)->GetStringValue(), dwFlags);
+				}
+
 			pArgs->Discard(pCC);
-
 			pResult = pCC->CreateTrue();
 			break;
 			}
