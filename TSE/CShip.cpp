@@ -8197,7 +8197,7 @@ void CShip::UpdateDestroyInGate (void)
 
     //	If we're supposed to ascend on gate, then ascend now
 
-    if (m_pClass->GetCharacter() != NULL
+    if (GetCharacter() != NULL
             || (pAI && pAI->AscendOnGate()))
         {
         ResetMaxSpeed();

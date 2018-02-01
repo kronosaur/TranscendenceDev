@@ -134,6 +134,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
 
+#define SPECIAL_CHARACTER						CONSTLIT("character:")
 #define SPECIAL_DATA							CONSTLIT("data:")
 #define SPECIAL_IS_PLANET						CONSTLIT("isPlanet:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
@@ -4712,6 +4713,19 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 
 	{
 	if (strStartsWith(sAttrib, SPECIAL_DATA))
+		{
+		CString sCharacter = strSubString(sAttrib, SPECIAL_DATA.GetLength());
+		DWORD dwUNID = (DWORD)strToInt(sCharacter, 0);
+		if (dwUNID == 0)
+			return false;
+
+		CDesignType *pCharacter = GetCharacter();
+		if (pCharacter == NULL)
+			return false;
+
+		return (dwUNID == pCharacter->GetUNID());
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_DATA))
 		{
 		CString sDataField = strSubString(sAttrib, SPECIAL_DATA.GetLength());
 		return !m_Data.IsDataNil(sDataField);
