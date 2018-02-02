@@ -6418,6 +6418,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateInteger(iValue);
 					}
 
+				case CTLispConvert::typeNil:
+					return pCC->CreateNil();
+
 				default:
 					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
 				}
@@ -6457,6 +6460,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 					return pCC->CreateInteger(iValue);
 					}
+
+				case CTLispConvert::typeNil:
+					return pCC->CreateNil();
 
 				default:
 					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
