@@ -86,6 +86,7 @@
 #define SPECIAL_EXTENSION						CONSTLIT("extension:")
 #define SPECIAL_INHERIT							CONSTLIT("inherit:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
+#define SPECIAL_SYSTEM_LEVEL					CONSTLIT("systemLevel:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
 #define LANGID_CORE_MAP_DESC                    CONSTLIT("core.mapDesc")
@@ -2153,6 +2154,55 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 			bool bResult = !pValue->IsNil();
 			pValue->Discard(&g_pUniverse->GetCC());
 			return bResult;
+			}
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))
+		{
+		//	Must have a current system.
+
+		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+		if (pSystem == NULL)
+			return false;
+
+		int iSystemLevel = pSystem->GetLevel();
+
+		//	Parse from and to
+
+		CString sParam = strSubString(sAttrib, SPECIAL_SYSTEM_LEVEL.GetLength());
+		char *pPos = sParam.GetASCIIZPointer();
+		bool bFailed;
+		int iFrom = strParseInt(pPos, 0, &pPos, &bFailed);
+		if (bFailed)
+			return false;
+
+		//	Get this type's min/max level
+
+		int iMinLevel, iMaxLevel;
+		GetLevel(&iMinLevel, &iMaxLevel);
+
+		//	If we only have a single value, then we offset from the system level.
+
+		if (*pPos != '-')
+			{
+			int iOffsetLevel = iSystemLevel + iFrom;
+			return ((iMaxLevel >= iOffsetLevel) && (iMinLevel <= iOffsetLevel));
+			}
+
+		//	Otherwise, we have two values.
+
+		else
+			{
+			pPos++;
+			int iTo = strParseInt(pPos, 0, NULL, &bFailed);
+			if (bFailed)
+				return false;
+
+			//	Can't have the lower-bound be less than the upper bound.
+
+			if (iFrom > iTo)
+				return false;
+
+			return ((iMaxLevel >= iSystemLevel + iFrom) && (iMinLevel <= iSystemLevel + iTo));
 			}
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_UNID))
