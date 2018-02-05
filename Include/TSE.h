@@ -1328,6 +1328,11 @@ class CSpaceObject : public CObject
 		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
 		static CString ConvertToID (InstallItemResults iResult);
 
+		//	Wingmen
+
+		virtual bool IsEscortingPlayer (void) const { return false; }
+		virtual bool IsPlayerWingman (void) const { return false; }
+
 		//	Other virtuals to be overridden
 
 		//	...for all objects
@@ -1509,7 +1514,6 @@ class CSpaceObject : public CObject
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
-		virtual bool IsPlayerWingman (void) const { return false; }
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }

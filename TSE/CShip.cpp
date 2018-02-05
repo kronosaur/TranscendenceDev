@@ -4078,6 +4078,29 @@ bool CShip::IsDeviceSlotAvailable (ItemCategories iItemCat, int *retiSlot)
 		}
 	}
 
+bool CShip::IsEscortingPlayer (void) const
+
+//	IsEscortingPlayer
+//
+//	Returns TRUE if we're escorting the player.
+
+	{
+	if (IsPlayerWingman())
+		return true;
+
+	CSpaceObject *pTarget;
+	IShipController::OrderTypes iOrder = GetCurrentOrder(&pTarget);
+	switch (iOrder)
+		{
+		case IShipController::orderEscort:
+		case IShipController::orderFollow:
+			return (pTarget && pTarget->IsPlayer());
+
+		default:
+			return false;
+		}
+	}
+
 bool CShip::IsFuelCompatible (const CItem &Item)
 
 //	IsFuelCompatible

@@ -5893,6 +5893,10 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, 
 				//	(NOTE: we check for sovereign as opposed to IsEnemy because
 				//	it is faster. For our purposes, same sovereign is what we want).
 				&& ((CanHitFriends() && Source.CanHitFriends()) || Source.GetSovereign() != pObj->GetSovereign())
+
+				//	If our source is the player, then we cannot hit player wingmen
+
+				&& (!Source.IsPlayer() || !pObj->IsEscortingPlayer())
 				
 				//	We cannot hit if the object cannot be hit by friends
 				&& (pObj->CanBeHitByFriends() || Source.GetSovereign() != pObj->GetSovereign()));

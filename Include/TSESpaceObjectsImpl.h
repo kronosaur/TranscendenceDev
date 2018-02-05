@@ -969,7 +969,7 @@ class CShip : public CSpaceObject
 
 		//	Orders
 		inline void CancelCurrentOrder (void) { m_pController->CancelCurrentOrder(); }
-		inline IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) { return m_pController->GetCurrentOrderEx(retpTarget, retData); }
+		inline IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const { return m_pController->GetCurrentOrderEx(retpTarget, retData); }
 		inline DWORD GetCurrentOrderData (void) { return m_pController->GetCurrentOrderData(); }
 
 		//	Armor methods
@@ -1181,6 +1181,7 @@ class CShip : public CSpaceObject
 		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
 		virtual bool IsBlind (void) const override { return m_iBlindnessTimer != 0; }
 		virtual bool IsDisarmed (void) override { return m_fDisarmedByOverlay || m_iDisarmedTimer != 0; }
+		virtual bool IsEscortingPlayer (void) const override;
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsIdentified (void) override { return m_fIdentified; }
 		virtual bool IsInactive (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
