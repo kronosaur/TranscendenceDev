@@ -1503,7 +1503,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Initialize the armor from the class
 
-    pShip->m_Armor.Install(pShip, pClass->GetArmorDesc(), true);
+	pShip->m_Armor.Install(pShip, pClass->GetArmorDesc(), true);
 
 	//	Remember if we need to call OnInstall for this item
 	//	(All armor needs this)
