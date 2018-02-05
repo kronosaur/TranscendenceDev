@@ -1495,6 +1495,12 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	if (error = pShip->CreateRandomItems(pClass->GetRandomItemTable(), pSystem))
 		return error;
 
+	//	See if we need to call an OnInstall event. For the player
+	//	we always do it because we track install statistics.
+	//	For other ships, we only call it if an item has OnInstall code
+
+	bool bInstallItemEvent = pController->IsPlayer();
+
 	//	Initialize the armor from the class
 
     pShip->m_Armor.Install(pShip, pClass->GetArmorDesc(), true);
@@ -1514,12 +1520,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	pShip->m_iDeviceCount = Max(Devices.GetCount(), pClass->GetMaxDevices());
 	pShip->m_Devices = new CInstalledDevice [pShip->m_iDeviceCount];
-
-	//	See if we need to call an OnInstall event. For the player
-	//	we always do it because we track install statistics.
-	//	For other ships, we only call it if an item has OnInstall code
-
-	bool bInstallItemEvent = pController->IsPlayer();
 
 	CItemListManipulator ShipItems(pShip->GetItemList());
 	for (i = 0; i < Devices.GetCount(); i++)
