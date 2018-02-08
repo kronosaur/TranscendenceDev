@@ -235,6 +235,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_ADD_TRADE_ORDER		130
 #define FN_OBJ_GET_CHARACTER_DATA	131
 #define FN_OBJ_SET_CHARACTER_DATA	132
+#define FN_OBJ_HAS_SERVICE			133
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1881,15 +1882,19 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
 			"(objGetVisibleDamage obj) -> damage %",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			NULL,	0,	},
 
 		{	"objHasAttribute",				fnObjGetOld,		FN_OBJ_ATTRIBUTE,
 			"(objHasAttribute obj attrib) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			NULL,	0,	},
 
 		{	"objHasItem",					fnObjItem,		FN_OBJ_HAS_ITEM,
 			"(objHasItem obj item [count]) -> number of items (or Nil)",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			NULL,	0,	},
+
+		{	"objHasTradeService",			fnObjGet,		FN_OBJ_HAS_SERVICE,
+			"(objHasTradeService obj service) -> True/Nil",
+			"is",	0,	},
 
 		{	"objIncData",					fnObjData,		FN_OBJ_INCREMENT_DATA,
 			"(objIncData obj attrib [increment]) -> new value",
@@ -6483,6 +6488,17 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			return pCC->CreateString(sGateID);
+			}
+
+		case FN_OBJ_HAS_SERVICE:
+			{
+			//	Get the service
+
+			ETradeServiceTypes iService = CTradingDesc::ParseService(pArgs->GetElement(1)->GetStringValue());
+			if (iService == serviceNone)
+				return pCC->CreateError(CONSTLIT("Unknown service type"), pArgs->GetElement(1));
+
+			return pCC->CreateBool(pObj->HasTradeService(iService));
 			}
 
 		case FN_OBJ_IDENTIFIED:
