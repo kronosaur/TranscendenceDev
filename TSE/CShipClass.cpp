@@ -2324,7 +2324,7 @@ bool CShipClass::FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) co
 	return false;
 	}
 
-void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices)
+void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags)
 
 //	GenerateDevices
 //
@@ -2339,7 +2339,10 @@ void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices)
 		{
 		SDeviceGenerateCtx Ctx;
 		Ctx.iLevel = iLevel;
-		Ctx.pRoot = m_pDevices;
+
+		if (!(dwFlags & GDFLAG_NO_DEVICE_SLOT_SEARCH))
+			Ctx.pRoot = (m_pDeviceSlots ? m_pDeviceSlots : m_pDevices);
+
 		Ctx.pResult = &Devices;
 
 		m_pDevices->AddDevices(Ctx);
@@ -3473,9 +3476,13 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_pWreckType.Bind(Ctx))
 		goto Fail;
 
-	//	Generate an average set of devices
+	//	Generate an average set of devices.
+	//
+	//	NOTE: When generating average devices we skip the part about placing
+	//	the device in a slot. This is because we can't call item criteria
+	//	functions inside Bind (because we're not set up yet).
 
-	GenerateDevices(1, m_AverageDevices);
+	GenerateDevices(1, m_AverageDevices, GDFLAG_NO_DEVICE_SLOT_SEARCH);
 
 	//	Initialize thrust, if necessary
 

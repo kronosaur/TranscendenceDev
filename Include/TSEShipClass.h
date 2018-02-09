@@ -8,6 +8,7 @@
 class CShipClass : public CDesignType
 	{
 	public:
+
 		enum EBalanceTypes
 			{
 			typeUnknown,
@@ -71,7 +72,10 @@ class CShipClass : public CDesignType
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
 		bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) const;
 		bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) const;
-		void GenerateDevices (int iLevel, CDeviceDescList &Devices);
+
+		static const DWORD GDFLAG_NO_DEVICE_SLOT_SEARCH = 0x00000001;
+		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0);
+
 		CString GenerateShipName (DWORD *retdwFlags) const;
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
         inline const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
