@@ -1114,7 +1114,7 @@ class CShip : public CSpaceObject
 		virtual CInstalledArmor *FindArmor (const CItem &Item) override;
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual CInstalledDevice *FindDevice (const CItem &Item) override;
-		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) override { return m_pClass->FindDeviceSlotDesc(Item, retDesc); }
+		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) override { return m_pClass->FindDeviceSlotDesc(this, Item, retDesc); }
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;
 		virtual AbilityStatus GetAbility (Abilities iAbility) const override;
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
@@ -1135,8 +1135,9 @@ class CShip : public CSpaceObject
 		virtual CSpaceObject *GetDestination (void) const override { return m_pController->GetDestination(); }
 		virtual CSpaceObject *GetDockedObj (void) const override { return (m_fShipCompartment ? NULL : m_pDocked); }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
-		virtual CInstalledDevice *GetDevice (int iDev) const override { return &m_Devices[iDev]; }
-		virtual int GetDeviceCount (void) const override { return m_iDeviceCount; }
+		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_Devices.GetDevice(iDev); }
+		virtual int GetDeviceCount (void) const override { return m_Devices.GetCount(); }
+		virtual CDeviceSystem *GetDeviceSystem (void) { return &m_Devices; }
 		virtual CVector GetDockingPortOffset (int iRotation) override { return m_pClass->GetDockingPortOffset(iRotation); }
 		virtual CStationType *GetEncounterInfo (void) override { return m_pEncounterInfo; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
@@ -1151,7 +1152,8 @@ class CShip : public CSpaceObject
 		virtual Metric GetMass (void) const override;
 		virtual int GetMaxPower (void) const override;
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
+		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const override;
+		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
@@ -1319,9 +1321,7 @@ class CShip : public CSpaceObject
 		CString m_sMapLabel;					//	Map label
 
 		CArmorSystem m_Armor;		            //	Array of CInstalledArmor
-		int m_iDeviceCount;						//	Number of devices
-		CInstalledDevice *m_Devices;			//	Array of devices
-		int m_NamedDevices[devNamesCount];
+		CDeviceSystem m_Devices;				//	Array of CInstalledDevice
 		CIntegralRotation m_Rotation;			//	Ship rotation
 		CObjectEffectList m_Effects;			//	List of effects to paint
 		CShipInterior m_Interior;				//	Interior decks and compartments (optionally)
@@ -1497,7 +1497,7 @@ class CStation : public CSpaceObject
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pType->GetDefaultBkgnd(); }
-		virtual CInstalledDevice *GetDevice (int iDev) const override { return &m_pDevices[iDev]; }
+		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_pDevices[iDev]; }
 		virtual int GetDeviceCount (void) const override { return (m_pDevices ? maxDevices : 0); }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual CStationType *GetEncounterInfo (void) override { return m_pType; }

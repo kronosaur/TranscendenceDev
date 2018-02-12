@@ -2302,7 +2302,7 @@ bool CShipClass::FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) con
 	return false;
 	}
 
-bool CShipClass::FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) const
+bool CShipClass::FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDesc *retDesc) const
 
 //	FindDeviceSlotDesc
 //
@@ -2312,12 +2312,12 @@ bool CShipClass::FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) co
 	//	If we have a dedicated device slot object, then use that.
 
 	if (m_pDeviceSlots)
-		return m_pDeviceSlots->FindDefaultDesc(Item, retDesc);
+		return m_pDeviceSlots->FindDefaultDesc(pShip, Item, retDesc);
 
 	//	Otherwise, for backwards compatibility we check the device generator.
 
 	else if (m_pDevices)
-		return m_pDevices->FindDefaultDesc(Item, retDesc);
+		return m_pDevices->FindDefaultDesc(pShip, Item, retDesc);
 
 	//	Otherwise, not found
 

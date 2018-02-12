@@ -508,6 +508,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 //
 //	Read object from stream
 //
+//	CString		m_sID
 //	DWORD		device: class UNID (0xffffffff if not installed)
 //	DWORD		device: m_dwTargetID
 //	DWORD		device: m_dwData
@@ -528,6 +529,11 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	{
 	int i;
 	DWORD dwLoad;
+
+	//	ID
+
+	if (Ctx.dwVersion >= 157)
+		m_sID.ReadFromStream(Ctx.pStream);
 
 	//	Class
 
@@ -909,6 +915,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //
 //	Write object to stream
 //
+//	CString		m_sID
 //	DWORD		device: class UNID (0xffffffff if not installed)
 //	DWORD		device: m_dwTargetID
 //	DWORD		device: m_dwLastShotID
@@ -930,6 +937,8 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	{
 	int i;
 	DWORD dwSave;
+
+	m_sID.WriteToStream(pStream);
 
 	dwSave = (m_pClass ? m_pClass->GetUNID() : 0xffffffff);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));

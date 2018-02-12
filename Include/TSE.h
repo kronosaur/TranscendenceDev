@@ -832,6 +832,10 @@ class CSpaceObject : public CObject
 
 		virtual CDesignType *GetCharacter (void) const { return NULL; }
 
+		//	Devices
+
+		virtual CDeviceSystem *GetDeviceSystem (void) { return NULL; }
+
 		//	Docking
 
 		virtual CSpaceObject *GetDockedObj (void) const { return NULL; }
@@ -1429,7 +1433,7 @@ class CSpaceObject : public CObject
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (void) { return damageGeneric; }
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
-		virtual CInstalledDevice *GetDevice (int iDev) const { return NULL; }
+		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
 		virtual int GetDeviceCount (void) const { return 0; }
 		virtual CStationType *GetEncounterInfo (void) { return NULL; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }
@@ -1439,7 +1443,8 @@ class CSpaceObject : public CObject
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
+		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
+		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
 		virtual int GetPerception (void) { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return NULL; }
 		virtual int GetScore (void) { return 0; }

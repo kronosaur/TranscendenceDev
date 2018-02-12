@@ -71,7 +71,7 @@ class CShipClass : public CDesignType
 		void CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation, int cxWidth, int cyHeight);
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);
 		bool FindDeviceSlotDesc (DeviceNames iDev, SDeviceDesc *retDesc) const;
-		bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) const;
+		bool FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDesc *retDesc) const;
 
 		static const DWORD GDFLAG_NO_DEVICE_SLOT_SEARCH = 0x00000001;
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0);

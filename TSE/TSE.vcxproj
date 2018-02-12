@@ -352,6 +352,7 @@
     <ClCompile Include="CCXMLWrapper.cpp" />
     <ClCompile Include="CDelaunayStargateGenerator.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
+    <ClCompile Include="CDeviceSystem.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

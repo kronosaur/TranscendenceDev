@@ -1198,6 +1198,9 @@
     <ClCompile Include="CRTFText.cpp">
       <Filter>Source Files\Painting</Filter>
     </ClCompile>
+    <ClCompile Include="CDeviceSystem.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">
