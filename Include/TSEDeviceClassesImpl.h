@@ -285,7 +285,7 @@ class CReactorClass : public CDeviceClass
 		virtual bool FindDataField (const CString &sField, CString *retsValue) override;
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatReactor; }
-		virtual int GetPowerOutput (CItemCtx &Ctx) const override;
+		virtual int GetPowerOutput (CItemCtx &Ctx, DWORD dwFlags = 0) const override;
 		virtual bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) override { return GetReactorDesc(Ctx)->IsFuelCompatible(FuelItem); }
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
 
@@ -296,7 +296,7 @@ class CReactorClass : public CDeviceClass
 	private:
 		CReactorClass (void);
 
-		const CReactorDesc *GetReactorDesc (CItemCtx &Ctx) const;
+		const CReactorDesc *GetReactorDesc (CItemCtx &Ctx, DWORD dwFlags = 0) const;
 		int GetMaxPower (CItemCtx &ItemCtx, const CReactorDesc &Desc) const;
         void InitDamagedDesc (void) const;
         void InitEnhancedDesc (void) const;

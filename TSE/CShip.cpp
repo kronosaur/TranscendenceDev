@@ -1112,11 +1112,16 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 				&& pDevice->GetPowerRating(ItemCtx) > GetMaxPower())
 			iResult = insReactorTooWeak;
 
-		//	If this is a reactor, then see if the ship class can support it
+		//	If this is a reactor, then see if the ship class can support it.
+		//
+		//	NOTE: For purposes of installing, we care about the normal output
+		//	of the device, not the current enhanced/damaged output. That is, the
+		//	enhanced power output can exceed the hull reactor limit and we still
+		//	allow installation.
 
 		else if (iCategory == itemcatReactor
 				&& Hull.GetMaxReactorPower() > 0
-				&& pDevice->GetPowerOutput(ItemCtx) > Hull.GetMaxReactorPower())
+				&& pDevice->GetPowerOutput(ItemCtx, CDeviceClass::GPO_FLAG_NORMAL_POWER) > Hull.GetMaxReactorPower())
 			iResult = insReactorIncompatible;
 
 		//	See if we have enough device slots to install or if we have to

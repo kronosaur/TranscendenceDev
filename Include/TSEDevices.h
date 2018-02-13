@@ -223,7 +223,9 @@ class CDeviceClass
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) { return 0.0; }
-		virtual int GetPowerOutput (CItemCtx &Ctx) const { return 0; }
+
+		static const DWORD GPO_FLAG_NORMAL_POWER = 0x00000001;	//	Power when not damage and not enhanced
+		virtual int GetPowerOutput (CItemCtx &Ctx, DWORD dwFlags = 0) const { return 0; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
