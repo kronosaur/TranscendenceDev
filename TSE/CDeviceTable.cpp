@@ -948,16 +948,29 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *r
 	int i;
 
 	ItemCategories Category = CItemType::GetCategoryForNamedDevice(iDev);
+
+	//	Make a list of all slot entries that match the given item category and 
+	//	pick the one with the shortest criteria description.
+
+	TSortMap<int, int> BestEntry;
 	for (i = 0; i < m_SlotDesc.GetCount(); i++)
 		{
-		if (m_SlotDesc[i].Criteria.dwItemCategories & Category)
+		if ((m_SlotDesc[i].Criteria.dwItemCategories & Category)
+				&& !(m_SlotDesc[i].Criteria.dwExcludeCategories & Category))
 			{
-			*retDesc = m_SlotDesc[i].DefaultDesc;
-			return true;
+			BestEntry.Insert(CItem::GenerateCriteria(m_SlotDesc[i].Criteria).GetLength(), i);
 			}
 		}
 
-	return false;
+	//	If nothing matches, then not found
+
+	if (BestEntry.GetCount() == 0)
+		return false;
+
+	//	Otherwise, pick the shortest (first) entry
+
+	*retDesc = m_SlotDesc[BestEntry[0]].DefaultDesc;
+	return true;
 	}
 
 bool CGroupOfDeviceGenerators::FindDefaultDesc (CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const

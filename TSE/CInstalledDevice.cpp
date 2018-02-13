@@ -250,6 +250,8 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 //	Initializes from a desc
 
 	{
+	m_sID = Desc.sID;
+
 	m_fOmniDirectional = Desc.bOmnidirectional;
 	m_iMinFireArc = Desc.iMinFireArc;
 	m_iMaxFireArc = Desc.iMaxFireArc;
@@ -358,6 +360,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 
 		//	Set the device slot properties
 
+		m_sID = Desc.sID;
 		m_iPosAngle = Desc.iPosAngle;
 		m_iPosRadius = Desc.iPosRadius;
 		m_iPosZ = Desc.iPosZ;
@@ -850,6 +853,7 @@ void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &Item
 
 	if (!pObj->SetCursorAtDevice(ItemList, iDevSlot))
 		{
+		m_sID = NULL_STR;
 		m_pItem = NULL;
 		m_pClass.Set(NULL);
 		return;
@@ -862,6 +866,10 @@ void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &Item
 	//	Let the class clean up also
 
 	m_pClass->OnUninstall(this, pObj, ItemList);
+
+	//	We need to clear the ID or else it might get counted when we re-install.
+
+	m_sID = NULL_STR;
 
 	//	Done
 
