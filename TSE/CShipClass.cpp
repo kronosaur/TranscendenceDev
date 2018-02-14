@@ -835,6 +835,96 @@ Metric CShipClass::CalcDefenseRate (void) const
 	return rRate;
 	}
 
+CurrencyValue CShipClass::CalcHullValue (void) const
+
+//	CalcHullValue
+//
+//	Computes the value of the hull based on its properties (in credits).
+
+	{
+	static const Metric PARTIAL_SLOT_FACTOR = 0.5;
+	static const Metric CARGO_PER_POINT = 100.0;
+	static const Metric MAX_CARGO_PER_POINT = 200.0;
+	static const int STD_ARMOR_SEGMENTS = 4;
+	static const Metric POINTS_PER_ARMOR_SEGMENT = 0.5;
+	static const Metric ARMOR_PER_POINT = 6000.0;
+	static const Metric MAX_ARMOR_PER_POINT = 12000.0;
+	static const Metric MIN_SPEED = 15.0;
+	static const Metric SPEED_PER_POINT = 6.0;
+	static const Metric THRUST_RATIO_PER_POINT = 16.0;
+	static const Metric MAX_ROTATION_PER_POINT = 9.0;
+
+	static const Metric PRICE_PER_TENTH_MW = 4.0;
+	static const Metric POINT_BIAS = -10.0;
+	static const Metric POINT_EXP = 1.5;
+	static const Metric UNITS_PER_POINT = 0.2;
+
+	//	We need to have max reactor powe defined, or else we can't compute the
+	//	values.
+
+	if (m_Hull.GetMaxReactorPower() == 0)
+		return 0;
+
+	//	We use a point system to sum of the value of the hull properties.
+
+	Metric rPoints = 0.0;
+
+	//	Start by adding up points for device slots.
+
+	int iFullSlots = Min(m_Hull.GetMaxWeapons(), m_Hull.GetMaxNonWeapons());
+	int iPartialSlots = m_Hull.GetMaxDevices() - iFullSlots;
+
+	rPoints += iFullSlots;
+	rPoints += (iPartialSlots * PARTIAL_SLOT_FACTOR);
+
+	//	Add up points for cargo space
+
+	rPoints += m_Hull.GetCargoSpace() / CARGO_PER_POINT;
+	rPoints += (m_Hull.GetMaxCargoSpace() - m_Hull.GetCargoSpace()) / MAX_CARGO_PER_POINT;
+
+	//	Add points for the number of armor segments and for max armor
+
+	rPoints += (m_Armor.GetCount() - STD_ARMOR_SEGMENTS) * POINTS_PER_ARMOR_SEGMENT;
+	rPoints += m_Hull.GetStdArmorMass() / ARMOR_PER_POINT;
+	rPoints += m_Hull.GetMaxArmorMass() / MAX_ARMOR_PER_POINT;
+
+	//	Points for max speed
+
+	rPoints += Max(0.0, ((100.0 * m_DriveDesc.GetMaxSpeed() / LIGHT_SPEED) - MIN_SPEED)) / SPEED_PER_POINT;
+
+	//	Points for thrust ratio
+
+	Metric rThrustRatio = m_rThrustRatio;
+	if (rThrustRatio <= 0.0)
+		rThrustRatio = CDriveDesc::CalcThrustRatio(m_DriveDesc.GetThrust(), m_Hull.GetMass());
+
+	rPoints += rThrustRatio / THRUST_RATIO_PER_POINT;
+
+	//	Points for maneuverability
+
+	rPoints += m_RotationDesc.GetMaxRotationPerTick() / MAX_ROTATION_PER_POINT;
+
+	//	Add any extra points added manually.
+
+	rPoints += m_Hull.GetExtraPoints();
+
+	//	Compute a price unit based on the maximum reactor power
+
+	Metric rUnitPrice = PRICE_PER_TENTH_MW * m_Hull.GetMaxReactorPower();
+
+	//	Scale points
+
+	Metric rScaledPoints = pow(rPoints + POINT_BIAS, POINT_EXP);
+
+	//	Compute price
+
+	Metric rPrice = rScaledPoints * UNITS_PER_POINT * rUnitPrice;
+
+	//	Done
+
+	return (CurrencyValue)round(rPrice);
+	}
+
 int CShipClass::CalcLevel (void) const
 
 //	CalcLevel
@@ -3994,6 +4084,14 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
         if (error = m_pPlayerSettings->InitFromXML(Ctx, this, pPlayer))
             return ComposeLoadError(Ctx, Ctx.sError);
         }
+
+	//	If we don't have a hull value, compute it now.
+
+	if (m_Hull.GetValue().IsEmpty())
+		{
+		//	Defaults to credits
+		m_Hull.SetValue(CCurrencyAndValue(CalcHullValue()));
+		}
 
 	//	Done
 

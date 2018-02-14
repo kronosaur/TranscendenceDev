@@ -23,6 +23,7 @@
 #define SIZE_ATTRIB								CONSTLIT("size")
 #define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
 #define VALUE_ATTRIB							CONSTLIT("value")
+#define VALUE_ADJ_ATTRIB						CONSTLIT("valueAdj")
 
 ALERROR CHullDesc::Bind (SDesignLoadCtx &Ctx)
 
@@ -281,6 +282,10 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	m_iMaxDevices = pHull->GetAttributeIntegerBounded(MAX_DEVICES_ATTRIB, 0, -1, -1);
 	m_iMaxWeapons = pHull->GetAttributeIntegerBounded(MAX_WEAPONS_ATTRIB, 0, m_iMaxDevices, m_iMaxDevices);
 	m_iMaxNonWeapons = pHull->GetAttributeIntegerBounded(MAX_NON_WEAPONS_ATTRIB, 0, m_iMaxDevices, m_iMaxDevices);
+
+	//	Extra points
+
+	m_rExtraPoints = pHull->GetAttributeDouble(VALUE_ADJ_ATTRIB);
 
 	//	Done
 

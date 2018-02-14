@@ -225,6 +225,7 @@ class CShipClass : public CDesignType
 		Metric CalcDamageRate (int *retiAveWeaponLevel = NULL, int *retiMaxWeaponLevel = NULL) const;
 		Metric CalcDefenseRate (void) const;
 		inline Metric CalcDodgeRate (void) const { return CalcManeuverValue(true); }
+		CurrencyValue CalcHullValue (void) const;
 		int CalcLevel (void) const;
 		Metric CalcManeuverValue (bool bDodge = false) const;
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const;

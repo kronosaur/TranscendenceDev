@@ -492,6 +492,7 @@ class CHullDesc
 		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
 		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
 		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
+		inline Metric GetExtraPoints (void) const { return m_rExtraPoints; }
 		inline int GetMass (void) const { return m_iMass; }
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
@@ -508,6 +509,7 @@ class CHullDesc
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
 		inline void SetSize (int iSize) { m_iSize = iSize; }
 		inline void SetMaxCargoSpace (int iCargoSpace) { m_iMaxCargoSpace = iCargoSpace; }
+		inline void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }
 
 	private:
 		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
@@ -529,6 +531,8 @@ class CHullDesc
 		int m_iMaxDevices = 0;				//	Max number of devices
 		int m_iMaxWeapons = 0;				//	Max number of weapon devices (including launchers)
 		int m_iMaxNonWeapons = 0;			//	Max number of non-weapon devices
+
+		Metric m_rExtraPoints = 0.0;		//	Extra point to calculate hull value
 	};
 
 //  Reactor --------------------------------------------------------------------
