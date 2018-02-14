@@ -102,6 +102,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_COMMS_KEY						CONSTLIT("commsKey")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
+#define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_DAMAGE_DESC					CONSTLIT("damageDesc")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
@@ -4233,6 +4234,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		}
 	else if (strEquals(sName, PROPERTY_CURRENCY))
 		return CC.CreateInteger(GetDefaultEconomy()->GetUNID());
+
+	else if (strEquals(sName, PROPERTY_CURRENCY_NAME))
+		return CC.CreateString(GetDefaultEconomy()->GetSID());
 
 	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
 		return CC.CreateInteger(GetCyberDefenseLevel());

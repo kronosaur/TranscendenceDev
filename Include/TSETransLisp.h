@@ -62,6 +62,7 @@ class CTLispConvert
 
 		static ETypes ArgType (ICCItem *pItem, ETypes iDefaultType, ICCItem **retpValue = NULL);
 		static DWORD AsImageDesc (ICCItem *pItem, RECT *retrcRect);
+		static ICCItemPtr CreateCurrencyValue (CCodeChain &CC, CurrencyValue Value);
 	};
 
 //	CodeChain context

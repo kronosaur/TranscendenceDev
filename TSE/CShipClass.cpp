@@ -178,10 +178,13 @@
 #define ERR_UNKNOWN_EQUIPMENT					CONSTLIT("unknown equipment: %s")
 #define ERR_UNKNOWN_EQUIPMENT_DIRECTIVE			CONSTLIT("unknown equipment directive: %s")
 
+#define PROPERTY_CURRENCY						CONSTLIT("currency")
+#define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
+#define PROPERTY_HULL_VALUE						CONSTLIT("hullValue")
 #define PROPERTY_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_MAX_SPEED_AT_MAX_ARMOR			CONSTLIT("maxSpeedAtMaxArmor")
@@ -4147,7 +4150,7 @@ CString CShipClass::OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const
 	return GetNounPhrase(nounGeneric | nounCapitalize);
     }
 
-ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
 //
@@ -4156,32 +4159,41 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
-		return (m_pDefaultSovereign.GetUNID() ? CC.CreateInteger(m_pDefaultSovereign.GetUNID()) : CC.CreateNil());
+	if (strEquals(sProperty, PROPERTY_CURRENCY))
+		return ICCItemPtr(CC.CreateInteger(GetEconomyType()->GetUNID()));
+		
+	else if (strEquals(sProperty, PROPERTY_CURRENCY_NAME))
+		return ICCItemPtr(CC.CreateString(GetEconomyType()->GetSID()));
+		
+	else if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
+		return (m_pDefaultSovereign.GetUNID() ? ICCItemPtr(CC.CreateInteger(m_pDefaultSovereign.GetUNID())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_HAS_TRADE_DESC))
-		return CC.CreateBool(m_pTrade != NULL);
+		return ICCItemPtr(CC.CreateBool(m_pTrade != NULL));
 
 	else if (strEquals(sProperty, PROPERTY_HAS_VARIANTS))
-		return CC.CreateBool(m_pDevices && m_pDevices->IsVariant());
+		return ICCItemPtr(CC.CreateBool(m_pDevices && m_pDevices->IsVariant()));
+
+	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
+		return CTLispConvert::CreateCurrencyValue(CC, GetEconomyType()->Exchange(m_Hull.GetValue()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_MASS))
-		return (m_Hull.GetMaxArmorMass() > 0 ? CC.CreateInteger(m_Hull.GetMaxArmorMass()) : CC.CreateNil());
+		return (m_Hull.GetMaxArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetMaxArmorMass())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MAX_ARMOR))
-		return (m_Hull.GetMaxArmorSpeedPenalty() != 0 ? CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMaxArmorSpeedPenalty()) : CC.CreateNil());
+		return (m_Hull.GetMaxArmorSpeedPenalty() != 0 ? ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMaxArmorSpeedPenalty())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MIN_ARMOR))
-		return (m_Hull.GetMinArmorSpeedBonus() != 0 ? CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMinArmorSpeedBonus()) : CC.CreateNil());
+		return (m_Hull.GetMinArmorSpeedBonus() != 0 ? ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMinArmorSpeedBonus())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_BY_ARMOR_MASS))
-		return CalcMaxSpeedByArmorMass(Ctx);
+		return ICCItemPtr(CalcMaxSpeedByArmorMass(Ctx));
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
-		return (m_Hull.GetStdArmorMass() > 0 ? CC.CreateInteger(m_Hull.GetStdArmorMass()) : CC.CreateNil());
+		return (m_Hull.GetStdArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetStdArmorMass())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
-		return CC.CreateInteger(GetMaxStructuralHitPoints());
+		return ICCItemPtr(CC.CreateInteger(GetMaxStructuralHitPoints()));
 
 	//	Drive properties
 
@@ -4189,31 +4201,31 @@ ICCItem *CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 		{
 		Metric rMass = CalcMass(m_AverageDevices);
 		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)) + 0.5);
-		return CC.CreateInteger(10 * iRatio);
+		return ICCItemPtr(CC.CreateInteger(10 * iRatio));
 		}
 	else if (strEquals(sProperty, PROPERTY_THRUST_RATIO))
 		{
 		Metric rMass = CalcMass(m_AverageDevices);
 		Metric rRatio = 2.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0);
-		return CC.CreateDouble(mathRound(rRatio * 10.0) / 10.0);
+		return ICCItemPtr(CC.CreateDouble(mathRound(rRatio * 10.0) / 10.0));
 		}
 	else if (strEquals(sProperty, PROPERTY_THRUSTER_POWER))
 		{
 		const CObjectEffectDesc &Effects = GetEffectsDesc();
 		int iThrustersPerSide = Max(1, Effects.GetEffectCount(CObjectEffectDesc::effectThrustLeft));
 		int iThrusterPower = Max(1, mathRound((m_Hull.GetMass() / iThrustersPerSide) * m_RotationDesc.GetRotationAccelPerTick()));
-		return CC.CreateInteger(iThrusterPower);
+		return ICCItemPtr(CC.CreateInteger(iThrusterPower));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DRIVE_POWER)
 			|| strEquals(sProperty, PROPERTY_MAX_SPEED)
 			|| strEquals(sProperty, PROPERTY_THRUST))
-		return CDriveClass::GetDriveProperty(m_Perf.GetDriveDesc(), sProperty);
+		return ICCItemPtr(CDriveClass::GetDriveProperty(m_Perf.GetDriveDesc(), sProperty));
 
 	//	Reactor properties
 
 	else if (CReactorDesc::IsExportedProperty(sProperty))
-		return m_Perf.GetReactorDesc().FindProperty(sProperty);
+		return ICCItemPtr(m_Perf.GetReactorDesc().FindProperty(sProperty));
 
 	else
 		return NULL;

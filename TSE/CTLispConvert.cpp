@@ -91,3 +91,16 @@ DWORD CTLispConvert::AsImageDesc (ICCItem *pItem, RECT *retrcRect)
 
 	return pItem->GetElement(IMAGE_UNID_INDEX)->GetIntegerValue();
 	}
+
+ICCItemPtr CTLispConvert::CreateCurrencyValue (CCodeChain &CC, CurrencyValue Value)
+
+//	CreateCurrencyValue
+//
+//	Creates a currency value
+
+	{
+	if (Value > (CurrencyValue)0x7fffffff)
+		return ICCItemPtr(CC.CreateDouble((double)Value));
+	else
+		return ICCItemPtr(CC.CreateInteger((int)Value));
+	}

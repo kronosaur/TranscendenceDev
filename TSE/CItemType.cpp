@@ -106,6 +106,7 @@
 #define PROPERTY_COMPONENT_PRICE				CONSTLIT("componentPrice")
 #define PROPERTY_COMPONENTS						CONSTLIT("components")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
+#define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_FREQUENCY 						CONSTLIT("frequency")
 #define PROPERTY_KNOWN							CONSTLIT("known")
@@ -519,6 +520,9 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 
 	else if (strEquals(sProperty, PROPERTY_CURRENCY))
 		return CC.CreateInteger(GetCurrencyType()->GetUNID());
+
+	else if (strEquals(sProperty, PROPERTY_CURRENCY_NAME))
+		return CC.CreateString(GetCurrencyType()->GetSID());
 
 	else if (strEquals(sProperty, PROPERTY_DESCRIPTION))
 		return CC.CreateString(GetDesc());
@@ -1730,7 +1734,7 @@ ALERROR CItemType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
     return NOERROR;
     }
 
-ICCItem *CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+ICCItemPtr CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
 //
@@ -1740,7 +1744,7 @@ ICCItem *CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 	CItem Item(const_cast<CItemType *>(this), 1);
 	CItemCtx ItemCtx(Item);
 
-	return Item.GetItemProperty(Ctx, ItemCtx, sProperty);
+	return ICCItemPtr(Item.GetItemProperty(Ctx, ItemCtx, sProperty));
 	}
 
 bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const

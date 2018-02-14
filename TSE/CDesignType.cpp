@@ -1822,11 +1822,12 @@ ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 	ICCItem *pResult;
+	ICCItemPtr pResultPtr;
 
 	//	Let our subclass handle this first
 
-	if (pResult = OnGetProperty(Ctx, sProperty))
-		return pResult;
+	if (pResultPtr = OnGetProperty(Ctx, sProperty))
+		return pResultPtr->Reference();
 
 	//	If not, then see if we handle it.
 

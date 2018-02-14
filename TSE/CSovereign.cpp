@@ -678,7 +678,7 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-ICCItem *CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+ICCItemPtr CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
 //
@@ -688,19 +688,19 @@ ICCItem *CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_NAME))
-		return CC.CreateString(GetNounPhrase());
+		return ICCItemPtr(CC.CreateString(GetNounPhrase()));
 
 	else if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))
-		return CC.CreateInteger((int)GetPlayerThreatLevel());
+		return ICCItemPtr(CC.CreateInteger((int)GetPlayerThreatLevel()));
 
 	else if (strEquals(sProperty, PROPERTY_PLURAL))
-		return CC.CreateBool(m_bPluralForm);
+		return ICCItemPtr(CC.CreateBool(m_bPluralForm));
 
 	else if (strEquals(sProperty, PROPERTY_SHIPS_DESTROYED_BY_PLAYER))
-		return CC.CreateInteger(m_iShipsDestroyedByPlayer);
+		return ICCItemPtr(CC.CreateInteger(m_iShipsDestroyedByPlayer));
 
 	else if (strEquals(sProperty, PROPERTY_STATIONS_DESTROYED_BY_PLAYER))
-		return CC.CreateInteger(m_iStationsDestroyedByPlayer);
+		return ICCItemPtr(CC.CreateInteger(m_iStationsDestroyedByPlayer));
 
 	else
 		return NULL;
