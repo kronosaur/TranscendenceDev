@@ -233,6 +233,9 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_CREATE_REFLECTION	128
 #define FN_OBJ_FIRE_POWER_INVOKE	129
 #define FN_OBJ_ADD_TRADE_ORDER		130
+#define FN_OBJ_GET_CHARACTER_DATA	131
+#define FN_OBJ_SET_CHARACTER_DATA	132
+#define FN_OBJ_HAS_SERVICE			133
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -589,12 +592,15 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FIELD_ROTATION					CONSTLIT("rotation")
 #define FIELD_SLOT_POS_INDEX			CONSTLIT("slotPosIndex")
 #define FIELD_SOURCE_ONLY				CONSTLIT("sourceOnly")
+#define FIELD_TYPE						CONSTLIT("type")
 #define FIELD_WIDTH						CONSTLIT("width")
 #define FIELD_WIDTH_VARIATION			CONSTLIT("widthVariation")
 
 #define SHAPE_ARC						CONSTLIT("arc")
 #define SHAPE_ORBITAL					CONSTLIT("orbital")
 #define SHAPE_SQUARE					CONSTLIT("square")
+
+#define TYPE_SCHEMATIC					CONSTLIT("schematic")
 
 #define UNID_TYPE_ITEM_TYPE				CONSTLIT("itemtype")
 #define UNID_TYPE_SHIP_CLASS			CONSTLIT("shipclass")
@@ -1065,7 +1071,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"shpGetImageDesc",				fnShipClass,	FN_SHIP_GET_IMAGE_DESC,
-			"(shpGetImageDesc class [rotationAngle]) -> imageDesc",
+			"(shpGetImageDesc class [options|rotationAngle]) -> imageDesc",
 			"i*",	0,	},
 
 		{	"shpGetItemDeviceName",			fnShipSetOld,		FN_SHIP_ITEM_DEVICE_NAME,
@@ -1507,6 +1513,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objGetCargoSpaceLeft obj) -> space left in kg",
 			NULL,	0,	},
 
+		{	"objGetCharacterData",			fnObjGet,		FN_OBJ_GET_CHARACTER_DATA,
+			"(objGetCharacterData obj attrib) -> data",
+			"is",	0,	},
+
 		{	"objGetCombatPower",			fnObjGetOld,		FN_OBJ_COMBAT_POWER,
 			"(objGetCombatPower obj) -> 0-100",
 			NULL,	0,	},
@@ -1840,11 +1850,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objGetShipBuyPrice",			fnObjGet,		FN_OBJ_GET_SHIP_BUY_PRICE,	
 			"(objGetShipBuyPrice obj shipObj) -> price (at which obj buys ship)",
-			"ii",		0,	},
+			"iv",		0,	},
 
 		{	"objGetShipSellPrice",			fnObjGet,		FN_OBJ_GET_SHIP_SELL_PRICE,	
 			"(objGetShipSellPrice obj shipObj) -> price (at which obj sells ship)",
-			"ii",		0,	},
+			"iv",		0,	},
 
 		{	"objGetShipwreckType",			fnObjGet,		FN_OBJ_SHIPWRECK_TYPE,
 			"(objGetShipwreckType obj) -> unid",
@@ -1872,15 +1882,19 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objGetVisibleDamage",			fnObjGetOld,		FN_OBJ_VISIBLE_DAMAGE,
 			"(objGetVisibleDamage obj) -> damage %",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			NULL,	0,	},
 
 		{	"objHasAttribute",				fnObjGetOld,		FN_OBJ_ATTRIBUTE,
 			"(objHasAttribute obj attrib) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			NULL,	0,	},
 
 		{	"objHasItem",					fnObjItem,		FN_OBJ_HAS_ITEM,
 			"(objHasItem obj item [count]) -> number of items (or Nil)",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			NULL,	0,	},
+
+		{	"objHasTradeService",			fnObjGet,		FN_OBJ_HAS_SERVICE,
+			"(objHasTradeService obj service) -> True/Nil",
+			"is",	0,	},
 
 		{	"objIncData",					fnObjData,		FN_OBJ_INCREMENT_DATA,
 			"(objIncData obj attrib [increment]) -> new value",
@@ -1986,6 +2000,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objSendMessageTranslate",		fnObjSendMessage,		FN_OBJ_MESSAGE_TRANSLATE,
 			"(objSendMessageTranslate obj sender textID [data]) -> True/Nil",
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objSetCharacterData",			fnObjSet,		FN_OBJ_SET_CHARACTER_DATA,
+			"(objSetCharacterData obj attrib data) -> True/Nil",
+			"isv",	0,	},
 
 		{	"objSetData",					fnObjData,		FN_OBJ_SETDATA,
 			"(objSetData obj attrib data) -> True/Nil",
@@ -6044,6 +6062,18 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 			}
 
+		case FN_OBJ_GET_CHARACTER_DATA:
+			{
+			CDesignType *pCharacter = pObj->GetCharacter();
+			if (pCharacter == NULL)
+				pCharacter = pObj->GetType();
+			if (pCharacter == NULL)
+				return pCC->CreateNil();
+
+			CString sData = pCharacter->GetGlobalData(pArgs->GetElement(1)->GetStringValue());
+			return pCC->Link(sData, 0, NULL);
+			}
+
 		case FN_OBJ_GET_DETECT_RANGE:
 			{
 			CSpaceObject *pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(1));
@@ -6360,32 +6390,88 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_SHIP_BUY_PRICE:
 			{
-			CSpaceObject *pShip = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			if (pShip == NULL)
-				return pCC->CreateError(CONSTLIT("Invalid ship"), pArgs->GetElement(1));
+			ICCItem *pArg;
+			switch (CTLispConvert::ArgType(pArgs->GetElement(1), CTLispConvert::typeSpaceObject, &pArg))
+				{
+				case CTLispConvert::typeShipClass:
+					{
+					CShipClass *pClass = g_pUniverse->FindShipClass(pArg->GetIntegerValue());
+					if (pClass == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship class"), pArg);
 
-			//	Get the value from the station that is selling
+					//	Get the value from the station that is selling
 
-			int iValue;
-			if (!pObj->GetShipBuyPrice(pShip, 0, &iValue) || iValue <= 0)
-				return pCC->CreateNil();
+					int iValue;
+					if (!pObj->GetShipBuyPrice(pClass, 0, &iValue) || iValue <= 0)
+						return pCC->CreateNil();
 
-			return pCC->CreateInteger(iValue);
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeSpaceObject:
+					{
+					CSpaceObject *pShip = CreateObjFromItem(*pCC, pArg);
+					if (pShip == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+
+					//	Get the value from the station that is selling
+
+					int iValue;
+					if (!pObj->GetShipBuyPrice(pShip, 0, &iValue) || iValue <= 0)
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeNil:
+					return pCC->CreateNil();
+
+				default:
+					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+				}
 			}
 
 		case FN_OBJ_GET_SHIP_SELL_PRICE:
 			{
-			CSpaceObject *pShip = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			if (pShip == NULL)
-				return pCC->CreateError(CONSTLIT("Invalid ship"), pArgs->GetElement(1));
+			ICCItem *pArg;
+			switch (CTLispConvert::ArgType(pArgs->GetElement(1), CTLispConvert::typeSpaceObject, &pArg))
+				{
+				case CTLispConvert::typeShipClass:
+					{
+					CShipClass *pClass = g_pUniverse->FindShipClass(pArg->GetIntegerValue());
+					if (pClass == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship class"), pArg);
 
-			//	Get the value from the station that is selling
+					//	Get the value from the station that is selling
 
-			int iValue;
-			if (!pObj->GetShipSellPrice(pShip, 0, &iValue) || iValue <= 0)
-				return pCC->CreateNil();
+					int iValue;
+					if (!pObj->GetShipSellPrice(pClass, 0, &iValue) || iValue <= 0)
+						return pCC->CreateNil();
 
-			return pCC->CreateInteger(iValue);
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeSpaceObject:
+					{
+					CSpaceObject *pShip = CreateObjFromItem(*pCC, pArg);
+					if (pShip == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+
+					//	Get the value from the station that is selling
+
+					int iValue;
+					if (!pObj->GetShipSellPrice(pShip, 0, &iValue) || iValue <= 0)
+						return pCC->CreateNil();
+
+					return pCC->CreateInteger(iValue);
+					}
+
+				case CTLispConvert::typeNil:
+					return pCC->CreateNil();
+
+				default:
+					return pCC->CreateError(CONSTLIT("Invalid ship"), pArg);
+				}
 			}
 
 		case FN_OBJ_GET_STARGATE_ID:
@@ -6402,6 +6488,17 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			return pCC->CreateString(sGateID);
+			}
+
+		case FN_OBJ_HAS_SERVICE:
+			{
+			//	Get the service
+
+			ETradeServiceTypes iService = CTradingDesc::ParseService(pArgs->GetElement(1)->GetStringValue());
+			if (iService == serviceNone)
+				return pCC->CreateError(CONSTLIT("Unknown service type"), pArgs->GetElement(1));
+
+			return pCC->CreateBool(pObj->HasTradeService(iService));
 			}
 
 		case FN_OBJ_IDENTIFIED:
@@ -7799,6 +7896,23 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_SET_CHARACTER_DATA:
+			{
+			CDesignType *pCharacter = pObj->GetCharacter();
+			if (pCharacter == NULL)
+				pCharacter = pObj->GetType();
+			if (pCharacter == NULL)
+				return pCC->CreateNil();
+
+			CString sAttrib = pArgs->GetElement(1)->GetStringValue();
+			if (sAttrib.IsBlank())
+				return pCC->CreateNil();
+
+			CString sData = CreateDataFromItem(*pCC, pArgs->GetElement(2));
+			pCharacter->SetGlobalData(sAttrib, sData);
+			return pCC->CreateTrue();
+			}
+
 		case FN_OBJ_SET_ITEM_CHARGES:
 			{
 			//	Get the item
@@ -8026,19 +8140,31 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_OBJ_NAME:
 			{
-			//	Third parameter is (optional) flags
+			//	If name is Nil then we clear the name
 
-			DWORD dwFlags;
-			if (pArgs->GetCount() > 2)
-				dwFlags = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
+			if (pArgs->GetElement(1)->IsNil())
+				{
+				pObj->SetName(NULL_STR, 0);
+				}
+
+			//	Otherwise...
+
 			else
-				dwFlags = 0;
+				{
+				//	Third parameter is (optional) flags
 
-			//	Set name
+				DWORD dwFlags;
+				if (pArgs->GetCount() > 2)
+					dwFlags = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
+				else
+					dwFlags = 0;
 
-			pObj->SetName(pArgs->GetElement(1)->GetStringValue(), dwFlags);
+				//	Set name
+
+				pObj->SetName(pArgs->GetElement(1)->GetStringValue(), dwFlags);
+				}
+
 			pArgs->Discard(pCC);
-
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -8738,10 +8864,27 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_GET_IMAGE_DESC:
 			{
 			int iRotation = 0;
-			if (pArgs->GetCount() > 1)
-				iRotation = pClass->Angle2Direction(pArgs->GetElement(1)->GetIntegerValue());
+			bool bHeroImage = false;
 
-			pResult = CreateListFromImage(*pCC, pClass->GetImage(), iRotation);
+			if (pArgs->GetCount() > 1)
+				{
+				ICCItem *pOptions = pArgs->GetElement(1);
+				if (pOptions->IsSymbolTable())
+					{
+					iRotation = pOptions->GetIntegerAt(FIELD_ROTATION);
+					CString sType = pOptions->GetStringAt(FIELD_TYPE);
+					if (strEquals(sType, TYPE_SCHEMATIC))
+						bHeroImage = true;
+					}
+				else
+					iRotation = pClass->Angle2Direction(pOptions->GetIntegerValue());
+				}
+
+			if (bHeroImage)
+				pResult = CreateListFromImage(*pCC, pClass->GetHeroImage());
+			else
+				pResult = CreateListFromImage(*pCC, pClass->GetImage(), iRotation);
+
 			break;
 			}
 
@@ -11196,7 +11339,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			TSharedPtr<CItemEnhancementStack> pEnhancements;
 			if (iBonus != 0)
 				{
-				pEnhancements.Set(new CItemEnhancementStack);
+				pEnhancements.TakeHandoff(new CItemEnhancementStack);
 				pEnhancements->InsertHPBonus(iBonus);
 				}
 

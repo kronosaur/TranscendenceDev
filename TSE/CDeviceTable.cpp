@@ -7,6 +7,7 @@
 #define DEVICE_TAG								CONSTLIT("Device")
 #define DEVICES_TAG								CONSTLIT("Devices")
 #define DEVICE_SLOT_TAG							CONSTLIT("DeviceSlot")
+#define DEVICE_SLOTS_TAG						CONSTLIT("DeviceSlots")
 #define GROUP_TAG								CONSTLIT("Group")
 #define ITEM_TAG								CONSTLIT("Item")
 #define ITEMS_TAG								CONSTLIT("Items")
@@ -27,6 +28,7 @@
 #define FIRE_ANGLE_ATTRIB						CONSTLIT("fireAngle")
 #define FIRE_ARC_ATTRIB							CONSTLIT("fireArc")
 #define HP_BONUS_ATTRIB							CONSTLIT("hpBonus")
+#define ID_ATTRIB								CONSTLIT("id")
 #define ITEM_ATTRIB								CONSTLIT("item")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define LEVEL_CURVE_ATTRIB						CONSTLIT("levelCurve")
@@ -45,6 +47,8 @@
 
 class CNullDevice : public IDeviceGenerator
 	{
+	public:
+		virtual bool IsVariant (void) const override { return false; }
 	};
 
 class CSingleDevice : public IDeviceGenerator
@@ -53,10 +57,11 @@ class CSingleDevice : public IDeviceGenerator
 		CSingleDevice (void) : m_pExtraItems(NULL) { }
 		~CSingleDevice (void);
 
-		virtual void AddDevices (SDeviceGenerateCtx &Ctx);
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual bool IsVariant (void) const override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		CItemTypeRef m_pItemType;
@@ -93,12 +98,13 @@ class CLevelTableOfDeviceGenerators : public IDeviceGenerator
 	{
 	public:
 		virtual ~CLevelTableOfDeviceGenerators (void);
-		virtual void AddDevices (SDeviceGenerateCtx &Ctx);
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual IDeviceGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pDevice; }
-		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
+		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
+		virtual bool IsVariant (void) const override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		struct SEntry
@@ -118,12 +124,13 @@ class CTableOfDeviceGenerators : public IDeviceGenerator
 	{
 	public:
 		virtual ~CTableOfDeviceGenerators (void);
-		virtual void AddDevices (SDeviceGenerateCtx &Ctx);
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual IDeviceGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pDevice; }
-		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
+		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
+		virtual bool IsVariant (void) const override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
 		struct SEntry
@@ -141,15 +148,17 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 	{
 	public:
 		virtual ~CGroupOfDeviceGenerators (void);
-		virtual void AddDevices (SDeviceGenerateCtx &Ctx);
-		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		virtual IDeviceGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pDevice; }
-		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
+		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
+		virtual bool IsVariant (void) const override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
-		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc);
-		virtual bool FindDefaultDesc (const CItem &Item, SDeviceDesc *retDesc);
+		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
 
 	private:
 		struct SEntry
@@ -165,7 +174,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 			int iMaxCount;
 			};
 
-		SSlotDesc *FindSlotDesc (const CItem &Item);
+		SSlotDesc *FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const;
 
 		DiceRange m_Count;
 
@@ -187,7 +196,7 @@ ALERROR IDeviceGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		pGenerator = new CSingleDevice;
 	else if (strEquals(pDesc->GetTag(), TABLE_TAG))
 		pGenerator = new CTableOfDeviceGenerators;
-	else if (strEquals(pDesc->GetTag(), GROUP_TAG) || strEquals(pDesc->GetTag(), DEVICES_TAG))
+	else if (strEquals(pDesc->GetTag(), GROUP_TAG) || strEquals(pDesc->GetTag(), DEVICES_TAG) || strEquals(pDesc->GetTag(), DEVICE_SLOTS_TAG))
 		pGenerator = new CGroupOfDeviceGenerators;
 	else if (strEquals(pDesc->GetTag(), LEVEL_TABLE_TAG))
 		pGenerator = new CLevelTableOfDeviceGenerators;
@@ -220,6 +229,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 	{
 	ALERROR error;
 
+	retDesc->sID = pDesc->GetAttribute(ID_ATTRIB);
 	retDesc->iPosAngle = AngleMod(pDesc->GetAttributeInteger(POS_ANGLE_ATTRIB));
 	retDesc->iPosRadius = pDesc->GetAttributeInteger(POS_RADIUS_ATTRIB);
 	if (!(retDesc->b3DPosition = pDesc->FindAttributeInteger(POS_Z_ATTRIB, &retDesc->iPosZ)))
@@ -286,7 +296,8 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 	{
 	int i;
 
-	if (m_pItemType == NULL)
+	ASSERT(Ctx.pResult);
+	if (m_pItemType == NULL || Ctx.pResult == NULL)
 		return;
 
 	int iCount = m_Count.Roll();
@@ -319,7 +330,7 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 		//	Find the default settings for the device slot for this device
 
 		SDeviceDesc SlotDesc;
-		bool bUseSlotDesc = (Ctx.pRoot ? Ctx.pRoot->FindDefaultDesc(Desc.Item, &SlotDesc) : false);
+		bool bUseSlotDesc = (Ctx.pRoot ? Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, Desc.Item, &SlotDesc) : false);
 
 		//	Set the device position appropriately, either from the <Device> element,
 		//	from the slot descriptor at the root, or from defaults.
@@ -417,6 +428,21 @@ void CSingleDevice::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	if (m_pExtraItems)
 		m_pExtraItems->AddTypesUsed(retTypesUsed);
+	}
+
+bool CSingleDevice::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if we the devices we return can vary.
+
+	{
+	if (m_iDamaged != 0 && m_iDamaged != 100)
+		return true;
+	else if (m_Enhanced.IsVariant())
+		return true;
+	else
+		return false;
 	}
 
 ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -651,6 +677,21 @@ void CTableOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
 	}
 
+bool CTableOfDeviceGenerators::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if we can vary.
+
+	{
+	if (m_Table.GetCount() == 0)
+		return false;
+	else if (m_Table.GetCount() == 1)
+		return m_Table[0].pDevice->IsVariant();
+	else
+		return true;
+	}
+
 ALERROR CTableOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	LoadFromXML
@@ -781,6 +822,19 @@ void CLevelTableOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retType
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
 	}
 
+bool CLevelTableOfDeviceGenerators::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if we can vary.
+
+	{
+	if (m_Table.GetCount() == 0)
+		return false;
+	else
+		return true;
+	}
+
 ALERROR CLevelTableOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	LoadFromXML
@@ -882,7 +936,7 @@ void CGroupOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc)
+bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
@@ -894,32 +948,62 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *r
 	int i;
 
 	ItemCategories Category = CItemType::GetCategoryForNamedDevice(iDev);
+
+	//	Make a list of all slot entries that match the given item category and 
+	//	pick the one with the shortest criteria description.
+
+	TSortMap<int, int> BestEntry;
 	for (i = 0; i < m_SlotDesc.GetCount(); i++)
 		{
-		if (m_SlotDesc[i].Criteria.dwItemCategories & Category)
+		if ((m_SlotDesc[i].Criteria.dwItemCategories & Category)
+				&& !(m_SlotDesc[i].Criteria.dwExcludeCategories & Category))
 			{
-			*retDesc = m_SlotDesc[i].DefaultDesc;
-			return true;
+			BestEntry.Insert(CItem::GenerateCriteria(m_SlotDesc[i].Criteria).GetLength(), i);
 			}
 		}
 
-	return false;
+	//	If nothing matches, then not found
+
+	if (BestEntry.GetCount() == 0)
+		return false;
+
+	//	Otherwise, pick the shortest (first) entry
+
+	*retDesc = m_SlotDesc[BestEntry[0]].DefaultDesc;
+	return true;
 	}
 
-bool CGroupOfDeviceGenerators::FindDefaultDesc (const CItem &Item, SDeviceDesc *retDesc)
+bool CGroupOfDeviceGenerators::FindDefaultDesc (CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const
 
 //	FindDefaultDesc
 //
 //	Looks for a slot descriptor that matches the given item and returns it.
 
 	{
-	//	See if the item fits into one of the slots that we've defined. If so, 
-	//	then we take the descriptor from the slot.
+	int i;
 
-	SSlotDesc *pSlotDesc = FindSlotDesc(Item);
-	if (pSlotDesc)
+	//	Look for a matching slot
+
+	for (i = 0; i < m_SlotDesc.GetCount(); i++)
 		{
-		*retDesc = pSlotDesc->DefaultDesc;
+		//	Skip if this slot does not meet criteria
+
+		if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
+			continue;
+
+		//	If this slot has an ID and maximum counts and if we've already 
+		//	exceeded those counts, then skip.
+
+		if (m_SlotDesc[i].iMaxCount != -1 
+				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
+				&& pObj
+				&& pObj->GetDeviceSystem()
+				&& pObj->GetDeviceSystem()->GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+			continue;
+
+		//	If we get this far, then this is a valid slot.
+
+		*retDesc = m_SlotDesc[i].DefaultDesc;
 		return true;
 		}
 
@@ -938,7 +1022,54 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (const CItem &Item, SDeviceDesc *
 	return true;
 	}
 
-CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (const CItem &Item)
+bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const
+
+//	FindDefaultDesc
+//
+//	Looks for a slot descriptor that matches the given item and returns it.
+
+	{
+	int i;
+
+	//	Look for a matching slot
+
+	for (i = 0; i < m_SlotDesc.GetCount(); i++)
+		{
+		//	Skip if this slot does not meet criteria
+
+		if (!Item.MatchesCriteria(m_SlotDesc[i].Criteria))
+			continue;
+
+		//	If this slot has an ID and maximum counts and if we've already 
+		//	exceeded those counts, then skip.
+
+		if (m_SlotDesc[i].iMaxCount != -1 
+				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
+				&& DescList.GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+			continue;
+
+		//	If we get this far, then this is a valid slot.
+
+		*retDesc = m_SlotDesc[i].DefaultDesc;
+		return true;
+		}
+
+	//	Otherwise we go with default (we assume that retDesc is already 
+	//	initialized to default values).
+	//
+	//	For backwards compatibility, however, we place all weapons 20 pixels
+	//	forward.
+
+	ItemCategories iCategory = Item.GetType()->GetCategory();
+	if (iCategory == itemcatWeapon || iCategory == itemcatLauncher)
+		retDesc->iPosRadius = 20;
+
+	//	Done
+
+	return true;
+	}
+
+CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const
 
 //	FindSlotDesc
 //
@@ -953,6 +1084,26 @@ CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (con
 			return &m_SlotDesc[i];
 
 	return NULL;
+	}
+
+bool CGroupOfDeviceGenerators::IsVariant (void) const
+
+//	IsVariant
+//
+//	Returns TRUE if we can vary.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		{
+		if (m_Table[i].iChance != 0 && m_Table[i].iChance != 100)
+			return true;
+		else if (m_Table[i].pDevice->IsVariant())
+			return true;
+		}
+
+	return false;
 	}
 
 ALERROR CGroupOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -985,6 +1136,11 @@ ALERROR CGroupOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 				return error;
 
 			pSlotDesc->iMaxCount = pEntry->GetAttributeIntegerBounded(MAX_COUNT_ATTRIB, 0, -1, -1);
+
+			//	If we've got an ID, max count defaults to 1.
+
+			if (pSlotDesc->iMaxCount == -1 && !pSlotDesc->DefaultDesc.sID.IsBlank())
+				pSlotDesc->iMaxCount = 1;
 			}
 		else
 			{
@@ -1043,6 +1199,23 @@ void CDeviceDescList::AddDeviceDesc (const SDeviceDesc &Desc)
 
 	{
 	m_List.Insert(Desc);
+	}
+
+int CDeviceDescList::GetCountByID (const CString &sID) const
+
+//	GetCountByID
+//
+//	Returns the number of entries with the given ID
+
+	{
+	int i;
+	int iCount = 0;
+
+	for (i = 0; i < GetCount(); i++)
+		if (strEquals(m_List[i].sID, sID))
+			iCount++;
+
+	return iCount;
 	}
 
 const SDeviceDesc *CDeviceDescList::GetDeviceDescByName (DeviceNames iDev) const

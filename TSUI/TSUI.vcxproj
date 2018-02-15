@@ -158,6 +158,7 @@
     <ClCompile Include="CArmorHUDImages.cpp" />
     <ClCompile Include="CArmorHUDRectangular.cpp" />
     <ClCompile Include="CArmorHUDRingSegments.cpp" />
+    <ClCompile Include="CArmorHUDShaped.cpp" />
     <ClCompile Include="CBackgroundProcessor.cpp" />
     <ClCompile Include="CExtensionListMap.cpp" />
     <ClCompile Include="CGalacticMapSystemDetails.cpp" />
@@ -178,7 +179,8 @@
     <ClCompile Include="CReactorHUDDefault.cpp" />
     <ClCompile Include="CShieldHUDDefault.cpp" />
     <ClCompile Include="CSoundtrackManager.cpp" />
-    <ClCompile Include="CStargateEffectPainter.cpp" />
+    <ClCompile Include="CAutomataEffectPainter.cpp" />
+	<ClCompile Include="CStargateEffectPainter.cpp" />
     <ClCompile Include="CTimerRegistry.cpp" />
     <ClCompile Include="CUserSettings.cpp" />
     <ClCompile Include="CVisualPalette.cpp" />

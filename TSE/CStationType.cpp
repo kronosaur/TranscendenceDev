@@ -1629,7 +1629,7 @@ ALERROR CStationType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-ICCItem *CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
 //
@@ -1639,13 +1639,13 @@ ICCItem *CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_SOVEREIGN))
-		return (m_pSovereign ? CC.CreateInteger(m_pSovereign->GetUNID()) : CC.CreateNil());
+		return (m_pSovereign ? ICCItemPtr(CC.CreateInteger(m_pSovereign->GetUNID())) : ICCItemPtr(CC.CreateNil()));
 	else if (strEquals(sProperty, PROPERTY_SOVEREIGN_NAME))
 		{
 		if (m_pSovereign == NULL)
-			return CC.CreateNil();
+			return ICCItemPtr(CC.CreateNil());
 
-		return m_pSovereign->GetProperty(Ctx, PROPERTY_NAME);
+		return ICCItemPtr(m_pSovereign->GetProperty(Ctx, PROPERTY_NAME));
 		}
 	else
 		return NULL;

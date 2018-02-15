@@ -242,7 +242,9 @@ CString CCargoSpaceClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWOR
 			&& (pShip = pObj->AsShip())
 			&& (pClass = pShip->GetClass()))
 		{
-		int iCargoInc = Min(pDesc->GetCargoSpace(), pClass->GetMaxCargoSpace() - pClass->GetHullCargoSpace());
+		const CHullDesc &Hull = pClass->GetHullDesc();
+
+		int iCargoInc = Min(pDesc->GetCargoSpace(), Hull.GetMaxCargoSpace() - Hull.GetCargoSpace());
 		if (iCargoInc > 0)
 			sReference = strPatternSubst(CONSTLIT("+%d ton capacity"), iCargoInc);
 		}

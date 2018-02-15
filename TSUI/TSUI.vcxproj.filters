@@ -135,7 +135,10 @@
     <ClCompile Include="CReactorHUDCircular.cpp">
       <Filter>Source Files\HUD</Filter>
     </ClCompile>
-    <ClCompile Include="CStargateEffectPainter.cpp">
+    <ClCompile Include="CAutomataEffectPainter.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
+	<ClCompile Include="CStargateEffectPainter.cpp">
       <Filter>Source Files\Painters</Filter>
     </ClCompile>
     <ClCompile Include="CMapLegendPainter.cpp">
@@ -151,6 +154,9 @@
       <Filter>Source Files\Painters</Filter>
     </ClCompile>
     <ClCompile Include="CArmorHUDRectangular.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorHUDShaped.cpp">
       <Filter>Source Files\HUD</Filter>
     </ClCompile>
   </ItemGroup>

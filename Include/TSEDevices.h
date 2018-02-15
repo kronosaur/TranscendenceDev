@@ -223,7 +223,9 @@ class CDeviceClass
 		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) { return 0.0; }
-		virtual int GetPowerOutput (CItemCtx &Ctx) const { return 0; }
+
+		static const DWORD GPO_FLAG_NORMAL_POWER = 0x00000001;	//	Power when not damage and not enhanced
+		virtual int GetPowerOutput (CItemCtx &Ctx, DWORD dwFlags = 0) const { return 0; }
 		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
@@ -308,6 +310,7 @@ struct SDeviceDesc
 	{
 	CItem Item;
 
+	CString sID;
 	int iPosAngle = 0;
 	int iPosRadius = 0;
 	int iPosZ = 0;
@@ -336,6 +339,7 @@ class CDeviceDescList
 		void AddDeviceDesc (const SDeviceDesc &Desc);
 		inline void DeleteAll (void) { m_List.DeleteAll(); }
 		inline int GetCount (void) const { return m_List.GetCount(); }
+		int GetCountByID (const CString &sID) const;
 		inline CDeviceClass *GetDeviceClass (int iIndex) const;
 		inline const SDeviceDesc &GetDeviceDesc (int iIndex) const { return m_List[iIndex]; }
 		const SDeviceDesc *GetDeviceDescByName (DeviceNames iDev) const;
@@ -369,11 +373,13 @@ class IDeviceGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual IDeviceGenerator *GetGenerator (int iIndex) { return NULL; }
 		virtual int GetGeneratorCount (void) { return 0; }
+		virtual bool IsVariant (void) const = 0;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
-		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) { return false; }
-		virtual bool FindDefaultDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
+		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (CSpaceObject *pSource, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
+		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const { return false; }
 
 		static ALERROR InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SDeviceDesc *retDesc);
 	};
@@ -410,6 +416,7 @@ class CInstalledDevice
 		inline int GetFireArc (void) const { return (IsOmniDirectional() ? 360 : AngleRange(m_iMinFireArc, m_iMaxFireArc)); }
 		inline int GetFireAngle (void) const { return m_iFireAngle; }
 		int GetHitPointsPercent (CSpaceObject *pSource);
+		inline const CString &GetID (void) const { return m_sID; }
 		inline CItem *GetItem (void) const { return m_pItem; }
 		DWORD GetLinkedFireOptions (void) const;
         inline int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
@@ -448,6 +455,7 @@ class CInstalledDevice
 		inline void SetExternal (bool bValue) { m_fExternal = bValue; }
 		inline void SetFireAngle (int iAngle) { m_iFireAngle = iAngle; }
 		inline void SetFireArc (int iMinFireArc, int iMaxFireArc) { m_iMinFireArc = iMinFireArc; m_iMaxFireArc = iMaxFireArc; }
+		inline void SetID (const CString &sID) { m_sID = sID; }
 		inline void SetLastActivateSuccessful (bool bSuccessful) { m_fLastActivateSuccessful = bSuccessful; }
 		void SetLinkedFireOptions (DWORD dwOptions);
 		inline void SetOmniDirectional (bool bOmnidirectional = true) { m_fOmniDirectional = bOmnidirectional; }
@@ -495,7 +503,7 @@ class CInstalledDevice
 		inline int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const { return m_pClass->GetHitPoints(ItemCtx, retiMaxHP); }
 		CSpaceObject *GetLastShot (CSpaceObject *pSource, int iIndex) const;
 		inline Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
-		inline Metric GetMaxRange (CItemCtx &ItemCtx) { return m_pClass->GetMaxRange(ItemCtx); }
+		inline Metric GetMaxRange (CItemCtx &ItemCtx) const { return m_pClass->GetMaxRange(ItemCtx); }
 		inline CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (CSpaceObject *pSource);
 		CVector GetPosOffset (CSpaceObject *pSource);
@@ -545,6 +553,7 @@ class CInstalledDevice
 	private:
 		inline const CItemEnhancement &GetMods (void) const { return (m_pItem ? m_pItem->GetMods() : CItem::GetNullMod()); }
 
+		CString m_sID;							//	ID for this slot (may match ID in class slot desc)
 		CItem *m_pItem;							//	Item installed in this slot
 		CDeviceClassRef m_pClass;				//	The device class that is installed here
 		COverlay *m_pOverlay;					//	Overlay (if associated)
@@ -590,4 +599,3 @@ class CInstalledDevice
 
 		DWORD m_dwSpare:16;						//	Spare flags
 	};
-

@@ -819,92 +819,10 @@ void CUIHelper::GenerateDockScreenRTF (const CString &sText, CString *retsRTF) c
 //	Converts from plain text to RTF.
 
 	{
-	CMemoryWriteStream Output;
-	if (Output.Create() != NOERROR)
-		return;
+	CRTFText::SAutoRTFOptions Options;
+	Options.rgbQuoteText = g_pHI->GetVisuals().GetColor(colorTextQuote);
 
-	//	If the text already starts with the RTF prefix, then we assume it is
-	//	properly formed RTF.
-
-	if (strStartsWith(sText, CONSTLIT("{/rtf ")))
-		{
-		*retsRTF = sText;
-		return;
-		}
-
-	CG32bitPixel rgbColor = g_pHI->GetVisuals().GetColor(colorTextQuote);
-	CString sCloseQuote = CONSTLIT("”}");
-
-	//	Start with the RTF open
-
-	Output.Write("{/rtf ", 6);
-
-	//	Parse
-
-	bool bInQuotes = false;
-	char *pPos = sText.GetASCIIZPointer();
-	while (*pPos != '\0')
-		{
-		if (*pPos == '\"')
-			{
-			if (bInQuotes)
-				{
-				Output.Write(sCloseQuote.GetPointer(), sCloseQuote.GetLength());
-				bInQuotes = false;
-				}
-			else
-				{
-				CString sQuoteStart = strPatternSubst(CONSTLIT("{/c:#%02x%02x%02x; “"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
-				Output.Write(sQuoteStart.GetASCIIZPointer(), sQuoteStart.GetLength());
-				bInQuotes = true;
-				}
-			}
-		else if (*pPos == '\\')
-			Output.Write("/\\", 2);
-		else if (*pPos == '/')
-			Output.Write("//", 2);
-		else if (*pPos == '{')
-			Output.Write("/{", 2);
-		else if (*pPos == '}')
-			Output.Write("/}", 2);
-		else if (*pPos == '\n')
-			{
-			if (bInQuotes)
-				{
-				//	Look ahead and see if the next paragraph starts with a quote. If it does, then
-				//	we close here.
-
-				char *pScan = pPos + 1;
-				while (*pScan != '\0' && (*pScan == '\n' || *pScan == ' '))
-					pScan++;
-
-				if (*pScan == '\"')
-					{
-					Output.Write("}", 1);
-					bInQuotes = false;
-					}
-				}
-
-			Output.Write("/n", 2);
-			}
-		else
-			Output.Write(pPos, 1);
-
-		pPos++;
-		}
-
-	//	Make sure we always match
-
-	if (bInQuotes)
-		Output.Write("}", 1);
-
-	//	Close
-
-	Output.Write("}", 1);
-
-	//	Done
-
-	*retsRTF = CString(Output.GetPointer(), Output.GetLength());
+	*retsRTF = CRTFText::GenerateRTFText(sText, Options);
 	}
 
 void CUIHelper::PaintDisplayAttributes (CG32bitImage &Dest, TArray<SDisplayAttribute> &Attribs) const

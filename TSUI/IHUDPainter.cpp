@@ -15,6 +15,7 @@
 #define STYLE_DEFAULT							CONSTLIT("default")
 #define STYLE_CIRCULAR							CONSTLIT("circular")
 #define STYLE_RECTANGULAR						CONSTLIT("rectangular")
+#define STYLE_SHAPED							CONSTLIT("shaped")
 
 IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDTypes iType)
 

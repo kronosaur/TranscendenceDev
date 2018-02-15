@@ -89,6 +89,7 @@
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
+#define PROPERTY_MULTI_SHOT						CONSTLIT("multiShot")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
@@ -2456,6 +2457,9 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_MIN_DAMAGE))
 		return CC.CreateDouble(CalcDamagePerShot(pShot, pEnhancements, DamageDesc::flagMinDamage));
+
+	else if (strEquals(sProperty, PROPERTY_MULTI_SHOT))
+		return CC.CreateBool(m_Configuration != ctSingle);
 
 	else if (strEquals(sProperty, PROPERTY_OMNIDIRECTIONAL))
 		{

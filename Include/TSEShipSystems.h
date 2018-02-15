@@ -79,6 +79,51 @@ class CArmorSystem
         int m_iHealerLeft;                          //  HP of healing left (for bioships)
     };
 
+//	Devices --------------------------------------------------------------------
+
+class CDeviceSystem
+	{
+	public:
+		CDeviceSystem (void);
+
+		void AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
+		int CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const;
+		void CleanUp (void);
+		CInstalledDevice *FindDevice (const CItem &Item);
+		int FindFreeSlot (void);
+		int FindNamedIndex (const CItem &Item) const;
+		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1) const;
+		int FindRandomIndex (bool bEnabledOnly) const;
+		inline int GetCount (void) const { return m_Devices.GetCount(); }
+		int GetCountByID (const CString &sID) const;
+		inline CInstalledDevice &GetDevice (int iIndex) { return m_Devices[iIndex]; }
+		inline const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
+		inline CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
+		inline int GetNamedIndex (DeviceNames iDev) const { return m_NamedDevices[iDev]; }
+		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
+		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
+		bool IsSlotAvailable (ItemCategories iItemCat, int *retiSlot = NULL) const;
+		void MarkImages (void);
+		bool OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause, const CDamageSource &Attacker);
+        void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
+		void ReadyFirstMissile (CSpaceObject *pObj);
+		void ReadyFirstWeapon (CSpaceObject *pObj);
+		void ReadyNextMissile (CSpaceObject *pObj, int iDir = 1);
+		void ReadyNextWeapon (CSpaceObject *pObj, int iDir = 1);
+		DeviceNames SelectWeapon (CSpaceObject *pObj, int iIndex, int iVariant);
+		void SetCursorAtDevice (CItemListManipulator &ItemList, int iIndex) const;
+		void SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev) const;
+		bool Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList, ItemCategories *retiCat = NULL);
+        void WriteToStream (IWriteStream *pStream);
+
+	private:
+		DeviceNames GetNamedFromDeviceIndex (int iIndex) const;
+
+		TArray<CInstalledDevice> m_Devices;
+		int m_NamedDevices[devNamesCount];
+	};
+
 //	Ship Structure and Compartments --------------------------------------------
 
 enum ECompartmentTypes
@@ -409,7 +454,8 @@ class CDriveDesc
         inline int GetThrust (void) const { return m_iThrust; }
         inline int GetThrustProperty (void) const { return 2 * m_iThrust; }
         inline DWORD GetUNID (void) const { return m_dwUNID; }
-        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass = false);
+        ALERROR InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, Metric *retrThrustRatio, int *retiMaxSpeed);
+        ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID);
 		void InitThrustFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
         void Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metric rInterpolate = 0.5);
         inline bool IsInertialess (void) const { return (m_fInertialess ? true : false); }
@@ -433,6 +479,60 @@ class CDriveDesc
 
 		DWORD m_fInertialess:1;				//	Inertialess drive
 	    DWORD m_dwSpare:31;
+	};
+
+//	Hull Descriptor ------------------------------------------------------------
+
+class CHullDesc
+	{
+	public:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
+		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
+		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
+		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
+		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
+		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
+		inline Metric GetExtraPoints (void) const { return m_rExtraPoints; }
+		inline int GetMass (void) const { return m_iMass; }
+		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
+		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
+		inline int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
+		inline int GetMaxDevices (void) const { return m_iMaxDevices; }
+		inline int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
+		inline int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
+		inline int GetMaxWeapons (void) const { return m_iMaxWeapons; }
+		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
+		inline int GetSize (void) const { return m_iSize; }
+		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
+		inline const CCurrencyAndValue &GetValue (void) const { return m_Value; }
+		void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
+		inline void SetSize (int iSize) { m_iSize = iSize; }
+		inline void SetMaxCargoSpace (int iCargoSpace) { m_iMaxCargoSpace = iCargoSpace; }
+		inline void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }
+
+	private:
+		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
+
+		int m_iSize = 0;					//	Length of ship in meters
+		int m_iMass = 0;					//	Empty hull mass (tons)
+		CCurrencyAndValue m_Value;			//	Value of hull alone (excluding any devices/armor)
+		int m_iCargoSpace = 0;				//	Default cargo space (tons)
+
+		CItemCriteria m_ArmorCriteria;		//	Allowable armor
+		CItemCriteria m_DeviceCriteria;		//	Allowable devices
+		int m_iStdArmorMass = 0;			//	No penalty at this armor mass
+		int m_iMaxArmorMass = 0;			//	Max mass of single armor segment
+		int m_iMaxArmorSpeedPenalty = 0;	//	Change to speed at max armor mass (1/100th light-speed)
+		int m_iMinArmorSpeedBonus = 0;		//	Change to speed at 1/2 std armor mass
+
+		int m_iMaxCargoSpace = 0;			//	Max amount of cargo space with expansion (tons)
+		int m_iMaxReactorPower = 0;			//	Max compatible reactor power
+		int m_iMaxDevices = 0;				//	Max number of devices
+		int m_iMaxWeapons = 0;				//	Max number of weapon devices (including launchers)
+		int m_iMaxNonWeapons = 0;			//	Max number of non-weapon devices
+
+		Metric m_rExtraPoints = 0.0;		//	Extra point to calculate hull value
 	};
 
 //  Reactor --------------------------------------------------------------------

@@ -65,6 +65,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_ORDER_CHANGED_EVENT					CONSTLIT("OnOrderChanged")
 #define ON_ORDERS_COMPLETED_EVENT				CONSTLIT("OnOrdersCompleted")
 #define ON_OVERRIDE_INIT_EVENT					CONSTLIT("OnEventHandlerInit")
+#define ON_OVERRIDE_TERM_EVENT					CONSTLIT("OnEventHandlerTerm")
 #define ON_MISSION_ACCEPTED_EVENT				CONSTLIT("OnMissionAccepted")
 #define ON_MISSION_COMPLETED_EVENT				CONSTLIT("OnMissionCompleted")
 #define ON_PLAYER_BLACKLISTED_EVENT				CONSTLIT("OnPlayerBlacklisted")
@@ -93,12 +94,15 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define FIELD_STATUS							CONSTLIT("status")
 #define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
+#define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
+
 #define ORDER_DOCKED							CONSTLIT("docked")
 
 #define PROPERTY_ASCENDED						CONSTLIT("ascended")
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_COMMS_KEY						CONSTLIT("commsKey")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
+#define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_DAMAGE_DESC					CONSTLIT("damageDesc")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
@@ -117,6 +121,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL							CONSTLIT("level")
 #define PROPERTY_MASS							CONSTLIT("mass")
+#define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
 #define PROPERTY_RADIOACTIVE					CONSTLIT("radioactive")
@@ -130,6 +135,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
 
+#define SPECIAL_CHARACTER						CONSTLIT("character:")
 #define SPECIAL_DATA							CONSTLIT("data:")
 #define SPECIAL_IS_PLANET						CONSTLIT("isPlanet:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
@@ -2001,7 +2007,7 @@ void CSpaceObject::FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject
 		}
 	}
 
-bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItem **retpData)
+bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItem **retpData) const
 
 //	FireGetDockScreen
 //
@@ -2014,7 +2020,7 @@ bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, IC
 			&& FindEventHandler(GET_DOCK_SCREEN_EVENT, &Event))
 		{
 		CCodeChainCtx Ctx;
-		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
 
 		bool bResult;
 
@@ -4229,6 +4235,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_CURRENCY))
 		return CC.CreateInteger(GetDefaultEconomy()->GetUNID());
 
+	else if (strEquals(sName, PROPERTY_CURRENCY_NAME))
+		return CC.CreateString(GetDefaultEconomy()->GetSID());
+
 	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
 		return CC.CreateInteger(GetCyberDefenseLevel());
 
@@ -4321,6 +4330,15 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_MASS))
 		return CC.CreateInteger((int)GetMass());
+
+    else if (strEquals(sName, PROPERTY_NAME_PATTERN))
+		{
+		ICCItem *pResult = CC.CreateSymbolTable();
+		DWORD dwFlags;
+		pResult->SetStringAt(CC, CONSTLIT("pattern"), GetNamePattern(0, &dwFlags));
+		pResult->SetIntegerAt(CC, CONSTLIT("flags"), dwFlags);
+		return pResult;
+		}
 
 	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
 		return CC.CreateString(GetPaintLayerID(GetPaintLayer()));
@@ -4628,6 +4646,30 @@ bool CSpaceObject::HasBeenHitLately (int iTicks)
 	return false;
 	}
 
+bool CSpaceObject::HasDockScreen (void) const
+
+//	HasDockScreen
+//
+//	Returns TRUE if we have at least one dock screen. This should match ::GetFirstDockScreen()
+
+	{
+	if (GetDefaultDockScreen())
+		return true;
+
+	if (FireGetDockScreen())
+		return true;
+
+	if (g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(const_cast<CSpaceObject *>(this)))
+		return true;
+
+	const COverlayList *pOverlays;
+	if ((pOverlays = GetOverlays()) 
+			&& pOverlays->FireGetDockScreen(const_cast<CSpaceObject *>(this)))
+		return true;
+
+	return false;
+	}
+
 bool CSpaceObject::HasFiredLately (int iTicks)
 
 //	HasFiredHitLately
@@ -4675,6 +4717,19 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 
 	{
 	if (strStartsWith(sAttrib, SPECIAL_DATA))
+		{
+		CString sCharacter = strSubString(sAttrib, SPECIAL_DATA.GetLength());
+		DWORD dwUNID = (DWORD)strToInt(sCharacter, 0);
+		if (dwUNID == 0)
+			return false;
+
+		CDesignType *pCharacter = GetCharacter();
+		if (pCharacter == NULL)
+			return false;
+
+		return (dwUNID == pCharacter->GetUNID());
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_DATA))
 		{
 		CString sDataField = strSubString(sAttrib, SPECIAL_DATA.GetLength());
 		return !m_Data.IsDataNil(sDataField);
@@ -5842,6 +5897,10 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, 
 				//	(NOTE: we check for sovereign as opposed to IsEnemy because
 				//	it is faster. For our purposes, same sovereign is what we want).
 				&& ((CanHitFriends() && Source.CanHitFriends()) || Source.GetSovereign() != pObj->GetSovereign())
+
+				//	If our source is the player, then we cannot hit player wingmen
+
+				&& (!Source.IsPlayer() || !pObj->IsEscortingPlayer())
 				
 				//	We cannot hit if the object cannot be hit by friends
 				&& (pObj->CanBeHitByFriends() || Source.GetSovereign() != pObj->GetSovereign()));
@@ -5957,6 +6016,52 @@ void CSpaceObject::NotifyOnObjDocked (CSpaceObject *pDockTarget)
 
 	{
 	m_SubscribedObjs.NotifyOnObjDocked(this, pDockTarget);
+	}
+
+bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
+
+//	ObjRequestDock
+//
+//	pObj requests docking services with this object. Returns TRUE if docking 
+//	is engaged.
+
+	{
+	switch (CanObjRequestDock(pObj))
+		{
+		case dockingOK:
+			{
+			CDockingPorts *pPorts = GetDockingPorts();
+			if (pPorts == NULL)
+				{
+				//	Should never happen; we would not return dockingOK in this case.
+
+				ASSERT(false);
+				pObj->SendMessage(this, CONSTLIT("No docking services available"));
+				return false;
+				}
+
+			//	Request dock
+
+			return pPorts->RequestDock(this, pObj, iPort);
+			}
+
+		case dockingNotSupported:
+			pObj->SendMessage(this, CONSTLIT("No docking services available"));
+			return false;
+
+		case dockingDisabled:
+			pObj->SendMessage(this, CONSTLIT("Unable to dock"));
+			return false;
+
+		case dockingDenied:
+			pObj->SendMessage(this, pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, CONSTLIT("Docking request denied")));
+			return false;
+			
+		default:
+			//	Should never happen. This means that we missed a result type.
+			ASSERT(false);
+			return false;
+		}
 	}
 
 void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
@@ -7292,6 +7397,26 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 //	Sets the override.
 	
 	{
+	//	Let the previous event handler terminate
+
+	if (m_pOverride)
+		{
+		SEventHandlerDesc Event;
+		if (FindEventHandler(ON_OVERRIDE_TERM_EVENT, &Event))
+			{
+			CCodeChainCtx Ctx;
+
+			Ctx.SaveAndDefineSourceVar(this);
+
+			ICCItem *pResult = Ctx.Run(Event);
+			if (pResult->IsError())
+				ReportEventError(ON_OVERRIDE_TERM_EVENT, pResult);
+			Ctx.Discard(pResult);
+			}
+		}
+
+	//	Set it.
+
 	m_pOverride = pOverride;
 	SetEventFlags();
 
@@ -7363,23 +7488,6 @@ void CSpaceObject::SetSovereign (CSovereign *pSovereign)
 	CSystem *pSystem;
 	if (ClassCanAttack() && (pSystem = GetSystem()))
 		pSystem->FlushEnemyObjectCache();
-	}
-
-bool CSpaceObject::SupportsDocking (bool bPlayer)
-
-//	SupportsDocking
-//
-//	Returns TRUE if this object supports docking.
-
-	{
-	COverlayList *pOverlays;
-
-	return (GetDockingPortCount() > 0) 
-			&& (!bPlayer 
-				|| GetDefaultDockScreen() != NULL 
-				|| FireGetDockScreen()
-				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL)
-				|| ((pOverlays = GetOverlays()) && pOverlays->FireGetDockScreen(this)));
 	}
 
 bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult)
@@ -7521,12 +7629,9 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	//	NOTE: <GetDockScreen> and <GetGlobalDockScreen> must not have side-
 	//	effects, so we assume we cannot be destroyed after the call.
 
-	if (IsDestinyTime(21, 8)
-			&& GetDockingPortCount() > 0)
+	if (IsDestinyTime(21, 8))
 		{
-		m_fHasDockScreenMaybe = (GetDefaultDockScreen() != NULL 
-				|| FireGetDockScreen() 
-				|| g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, NULL, NULL));
+		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
 		}
 
 	//	Update the specific object subclass.

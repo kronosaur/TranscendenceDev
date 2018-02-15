@@ -572,7 +572,7 @@ bool CMissile::HasAttribute (const CString &sAttribute) const
 	return pType->HasLiteralAttribute(sAttribute);
 	}
 
-bool CMissile::IsAngryAt (CSpaceObject *pObj)
+bool CMissile::IsAngryAt (CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -951,7 +951,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&iBonus, sizeof(DWORD));
 		if (iBonus != 0)
 			{
-			m_pEnhancements.Set(new CItemEnhancementStack);
+			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
 			m_pEnhancements->InsertHPBonus(iBonus);
 			}
 		}

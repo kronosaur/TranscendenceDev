@@ -382,7 +382,7 @@ class CAttackDetector
 
 		inline void Blacklist (void) { m_iCounter = -1; }
 		inline void ClearBlacklist (void) { m_iCounter = 0; }
-		inline bool IsBlacklisted (void) { return m_iCounter == -1; }
+		inline bool IsBlacklisted (void) const { return m_iCounter == -1; }
 		bool Hit (int iTick);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void Update (int iTick) { if ((iTick % DECAY_RATE) == 0) OnUpdate(); }
@@ -704,6 +704,15 @@ class CSpaceObject : public CObject
 			checkLineIntersect,
 			};
 
+		enum RequestDockResults
+			{
+			dockingOK,
+
+			dockingNotSupported,				//	No docking ports, or object destroyed
+			dockingDisabled,					//	Docking temporarily unavailable
+			dockingDenied,						//	Docking request denied
+			};
+
 		struct Criteria
 			{
 			CSpaceObject *pSource;				//	Source
@@ -819,18 +828,27 @@ class CSpaceObject : public CObject
 
 		void SetSovereign (CSovereign *pSovereign);
 
+		//	Characters
+
+		virtual CDesignType *GetCharacter (void) const { return NULL; }
+
+		//	Devices
+
+		virtual CDeviceSystem *GetDeviceSystem (void) { return NULL; }
+
 		//	Docking
 
 		virtual CSpaceObject *GetDockedObj (void) const { return NULL; }
 		virtual CVector GetDockingPortOffset (int iRotation) { return NullVector; }
 		virtual void OnDocked (CSpaceObject *pObj) { }
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
+		virtual void OnDockingPortDestroyed (void) { }
 
 		//	Docking Ports
 
+		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const { return dockingNotSupported; }
 		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, const CShipChallengeDesc &ShipsNeeded = CShipChallengeDesc()) { }
 		virtual CDockingPorts *GetDockingPorts (void) { return NULL; }
-		virtual bool RequestDock (CSpaceObject *pObj, int iPort = -1) { return false; }
 		virtual void Undock (CSpaceObject *pObj) { }
 
 		inline int GetDockingPortCount (void) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->GetPortCount(this) : 0); }
@@ -840,14 +858,16 @@ class CSpaceObject : public CObject
 		inline bool IsObjDocked (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDocked(pObj) : false); }
 		inline bool IsObjDockedOrDocking (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDockedOrDocking(pObj) : false); }
 		inline void PlaceAtRandomDockPort (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); if (pPorts) pPorts->DockAtRandomPort(this, pObj); }
-		bool SupportsDocking (bool bPlayer = false);
+		bool ObjRequestDock (CSpaceObject *pObj, int iPort = -1);
 		inline bool SupportsDockingFast (void) const { return (m_fHasDockScreenMaybe ? true : false); }
 
 		//	Dock Screens
 
 		virtual DWORD GetDefaultBkgnd (void) { return 0; }
-		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) { return NULL; }
 		virtual CXMLElement *GetScreen (const CString &sName);
+
+		CDesignType *GetFirstDockScreen (CString *retsScreen, ICCItem **retpData);
+		bool HasDockScreen (void) const;
 
 		//	Freeze controls
 
@@ -949,7 +969,7 @@ class CSpaceObject : public CObject
 		void FireCustomItemEvent (const CString &sEvent, const CItem &Item, ICCItem *pData, ICCItem **retpResult = NULL);
 		void FireCustomOverlayEvent (const CString &sEvent, DWORD dwID, ICCItem *pData, ICCItem **retpResult = NULL);
 		void FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject *pShip, ICCItem **retpResult = NULL);
-		bool FireGetDockScreen (CString *retsScreen = NULL, int *retiPriority = NULL, ICCItem **retpData = NULL);
+		bool FireGetDockScreen (CString *retsScreen = NULL, int *retiPriority = NULL, ICCItem **retpData = NULL) const;
 		void FireGetExplosionType (SExplosionType *retExplosion);
 		bool FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		void FireItemOnAIUpdate (void);
@@ -1011,7 +1031,6 @@ class CSpaceObject : public CObject
 		CSovereign::Disposition GetDispositionTowards (CSpaceObject *pObj);
 		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
-		CDesignType *GetFirstDockScreen (CString *retsScreen, ICCItem **retpData);
 		inline const CString &GetHighlightText (void) const { return m_sHighlightText; }
 		void GetHitRect (CVector *retvUR, CVector *retvLL);
 		Metric GetHitSize (void) const;
@@ -1114,7 +1133,7 @@ class CSpaceObject : public CObject
 		inline bool IsShowingHighlight (void) { return m_fShowHighlight; }
 		bool IsStargateInRange (Metric rMaxRange);
 		inline bool IsSubscribedToEvents (CSpaceObject *pObj) { return m_SubscribedObjs.FindObj(pObj); }
-		inline bool IsTimeStopped (void) { return m_fTimeStop; }
+		inline bool IsTimeStopped (void) const { return m_fTimeStop; }
 		bool IsUnderAttack (void);
 		inline void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void NotifyOnNewSystem (CSystem *pNewSystem);
@@ -1241,6 +1260,7 @@ class CSpaceObject : public CObject
 
 		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL) { if (retdwID) *retdwID = 0; }
 		virtual COverlayList *GetOverlays (void) { return NULL; }
+		virtual const COverlayList *GetOverlays (void) const { return NULL; }
 		virtual void RemoveOverlay (DWORD dwID) { }
 
 		void AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iLifetime, DWORD *retdwID = NULL);
@@ -1283,7 +1303,9 @@ class CSpaceObject : public CObject
 		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL);
 		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
 		int GetSellPrice (const CItem &Item, DWORD dwFlags);
+		bool GetShipBuyPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
 		bool GetShipBuyPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
+		bool GetShipSellPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
 		bool GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
 		int GetTradeMaxLevel (ETradeServiceTypes iService);
 		bool HasTradeService (ETradeServiceTypes iService);
@@ -1309,6 +1331,11 @@ class CSpaceObject : public CObject
 
 		static int ConvertToCompatibleIndex (const CItem &Item, InstallItemResults iResult);
 		static CString ConvertToID (InstallItemResults iResult);
+
+		//	Wingmen
+
+		virtual bool IsEscortingPlayer (void) const { return false; }
+		virtual bool IsPlayerWingman (void) const { return false; }
 
 		//	Other virtuals to be overridden
 
@@ -1406,7 +1433,7 @@ class CSpaceObject : public CObject
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (void) { return damageGeneric; }
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
-		virtual CInstalledDevice *GetDevice (int iDev) const { return NULL; }
+		virtual CInstalledDevice *GetDevice (int iDev) { return NULL; }
 		virtual int GetDeviceCount (void) const { return 0; }
 		virtual CStationType *GetEncounterInfo (void) { return NULL; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const { return NULL; }
@@ -1416,7 +1443,8 @@ class CSpaceObject : public CObject
 		virtual int GetMaxPower (void) const { return 0; }
 		virtual int GetMaxLightDistance (void) { return 0; }
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
-		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
+		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
+		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
 		virtual int GetPerception (void) { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
@@ -1427,7 +1455,7 @@ class CSpaceObject : public CObject
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) { Damage = SVisibleDamage(); }
 		virtual bool HasMapLabel (void) { return false; }
 		virtual bool IsAngry (void) { return false; }
-		virtual bool IsAngryAt (CSpaceObject *pObj) { return IsEnemy(pObj); }
+		virtual bool IsAngryAt (CSpaceObject *pObj) const { return IsEnemy(pObj); }
 		virtual bool IsBlind (void) const { return false; }
 		virtual bool IsDisarmed (void) { return false; }
 		virtual bool IsIdentified (void) { return true; }
@@ -1491,7 +1519,6 @@ class CSpaceObject : public CObject
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
-		virtual bool IsPlayerWingman (void) const { return false; }
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }
@@ -1522,6 +1549,7 @@ class CSpaceObject : public CObject
 		virtual bool CanBlock (CSpaceObject *pObj) { return false; }
 		virtual bool CanBlockShips (void) { return false; }
 		virtual bool CanFireOn (CSpaceObject *pObj) { return true; }
+		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const { return NULL; }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { if (!bAscend) Destroy(removedFromSystem, CDamageSource()); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }

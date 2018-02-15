@@ -250,6 +250,8 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 //	Initializes from a desc
 
 	{
+	m_sID = Desc.sID;
+
 	m_fOmniDirectional = Desc.bOmnidirectional;
 	m_iMinFireArc = Desc.iMinFireArc;
 	m_iMaxFireArc = Desc.iMaxFireArc;
@@ -358,6 +360,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 
 		//	Set the device slot properties
 
+		m_sID = Desc.sID;
 		m_iPosAngle = Desc.iPosAngle;
 		m_iPosRadius = Desc.iPosRadius;
 		m_iPosZ = Desc.iPosZ;
@@ -508,6 +511,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 //
 //	Read object from stream
 //
+//	CString		m_sID
 //	DWORD		device: class UNID (0xffffffff if not installed)
 //	DWORD		device: m_dwTargetID
 //	DWORD		device: m_dwData
@@ -528,6 +532,11 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	{
 	int i;
 	DWORD dwLoad;
+
+	//	ID
+
+	if (Ctx.dwVersion >= 157)
+		m_sID.ReadFromStream(Ctx.pStream);
 
 	//	Class
 
@@ -581,7 +590,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 		int iBonus = (int)LOWORD(dwLoad);
 		if (iBonus != 0)
 			{
-			m_pEnhancements.Set(new CItemEnhancementStack);
+			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
 			m_pEnhancements->InsertHPBonus(iBonus);
 			}
 		m_iSlotPosIndex = -1;
@@ -844,6 +853,7 @@ void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &Item
 
 	if (!pObj->SetCursorAtDevice(ItemList, iDevSlot))
 		{
+		m_sID = NULL_STR;
 		m_pItem = NULL;
 		m_pClass.Set(NULL);
 		return;
@@ -856,6 +866,10 @@ void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &Item
 	//	Let the class clean up also
 
 	m_pClass->OnUninstall(this, pObj, ItemList);
+
+	//	We need to clear the ID or else it might get counted when we re-install.
+
+	m_sID = NULL_STR;
 
 	//	Done
 
@@ -909,6 +923,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //
 //	Write object to stream
 //
+//	CString		m_sID
 //	DWORD		device: class UNID (0xffffffff if not installed)
 //	DWORD		device: m_dwTargetID
 //	DWORD		device: m_dwLastShotID
@@ -930,6 +945,8 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	{
 	int i;
 	DWORD dwSave;
+
+	m_sID.WriteToStream(pStream);
 
 	dwSave = (m_pClass ? m_pClass->GetUNID() : 0xffffffff);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));

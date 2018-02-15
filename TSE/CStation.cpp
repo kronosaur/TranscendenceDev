@@ -401,6 +401,52 @@ bool CStation::CanBlock (CSpaceObject *pObj)
 			|| (pObj->GetCategory() == catStation && !pObj->IsAnchored()));
 	}
 
+CSpaceObject::RequestDockResults CStation::CanObjRequestDock (CSpaceObject *pObj) const
+
+//	CanObjRequestDock
+//
+//	Returns TRUE if pObj can request to dock with us. We return FALSE if we
+//	don't want to give the player the flashing docking port UI. But we return
+//	TRUE if we allow requests, but the request could be denied (e.g., because
+
+	{
+	//	There are various reasons why docking might be impossible with this 
+	//	ship, including no docking ports.
+
+	if (m_DockingPorts.GetPortCount() == 0
+			|| IsDestroyed())
+		return dockingNotSupported;
+
+	//	If the object requesting docking services is an enemy,
+	//	then deny docking services.
+
+	if (pObj
+			&& !IsAbandoned() 
+			&& !m_pType->IsEnemyDockingAllowed()
+			&& (IsEnemy(pObj) || IsBlacklisted(pObj)))
+		return dockingDenied;
+
+	//	If the player wants to dock with us and we don't have any docking 
+	//	screens, then we do not support docking.
+	//
+	//	NOTE: We check this AFTER the dockingDenied check above because after
+	//	a station is destroyed, the player will be able to dock (docking IS
+	//	supported) but they're just not allowed to right now.
+
+	if (pObj && pObj->IsPlayer() && !HasDockScreen())
+		return dockingNotSupported;
+
+	//	In some cases, the docking system is temporarily disabled. For example, 
+	//	if we're docked with another object, no one can dock with us.
+
+	if (IsTimeStopped())
+		return dockingDisabled;
+
+	//	Otherwise, docking is allowed
+
+	return dockingOK;
+	}
+
 bool CStation::ClassCanAttack (void)
 
 //	ClassCanAttack
@@ -480,7 +526,7 @@ void CStation::CreateDestructionEffect (void)
 		TSharedPtr<CItemEnhancementStack> pEnhancements;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements.Set(new CItemEnhancementStack);
+			pEnhancements.TakeHandoff(new CItemEnhancementStack);
 			pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
@@ -1095,7 +1141,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 		TSharedPtr<CItemEnhancementStack> pEnhancements;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements.Set(new CItemEnhancementStack);
+			pEnhancements.TakeHandoff(new CItemEnhancementStack);
 			pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
@@ -1288,7 +1334,7 @@ int CStation::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice 
 		return m_pType->GetHullDesc().CalcDamageEffectiveness(pAttacker, pWeapon);
 	}
 
-CDesignType *CStation::GetDefaultDockScreen (CString *retsName)
+CDesignType *CStation::GetDefaultDockScreen (CString *retsName) const
 
 //	GetDockScreen
 //
@@ -1661,7 +1707,7 @@ bool CStation::ImageInObject (const CVector &vObjPos, const CObjectImageArray &I
 			DestImage, iDestTick, iDestVariant, vObjPos);
 	}
 
-bool CStation::IsBlacklisted (CSpaceObject *pObj)
+bool CStation::IsBlacklisted (CSpaceObject *pObj) const
 
 //	IsBlacklisted
 //
@@ -4120,47 +4166,6 @@ bool CStation::RemoveSubordinate (CSpaceObject *pSubordinate)
 	return m_Subordinates.Delete(pSubordinate);
 	}
 
-bool CStation::RequestDock (CSpaceObject *pObj, int iPort)
-
-//	RequestDock
-//
-//	pObj requests docking services with the station. Returns TRUE
-//	if docking is engaged.
-
-	{
-	//	If time has stopped for this object, then we cannot allow docking
-
-	if (IsTimeStopped())
-		{
-		pObj->SendMessage(this, CONSTLIT("Unable to dock"));
-		return false;
-		}
-
-	//	If the object requesting docking services is an enemy,
-	//	then deny docking services.
-
-	if (!IsAbandoned() 
-			&& !m_pType->IsEnemyDockingAllowed()
-			&& (IsEnemy(pObj) || IsBlacklisted(pObj)))
-		{
-		pObj->SendMessage(this, pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, CONSTLIT("Docking request denied")));
-		return false;
-		}
-
-	//	If we don't have any docking screens then do not let the
-	//	object dock.
-
-	if (!SupportsDocking(pObj->IsPlayer()))
-		{
-		pObj->SendMessage(this, CONSTLIT("No docking services available"));
-		return false;
-		}
-
-	//	Get the nearest free port
-
-	return m_DockingPorts.RequestDock(this, pObj, iPort);
-	}
-
 bool CStation::RequestGate (CSpaceObject *pObj)
 
 //	RequestGate
@@ -4392,7 +4397,7 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 	//	Set the mass
 	//	NOTE: Mass cannot be 0 or else the bouncing routines might fail.
 
-	SetMass(Max(1.0, (Metric)pWreckClass->GetHullMass()));
+	SetMass(Max(1.0, (Metric)pWreckClass->GetHullDesc().GetMass()));
 
 	//	Set hit points for the structure
 

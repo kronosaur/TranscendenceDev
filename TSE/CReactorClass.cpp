@@ -132,7 +132,7 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
-int CReactorClass::GetPowerOutput (CItemCtx &Ctx) const
+int CReactorClass::GetPowerOutput (CItemCtx &Ctx, DWORD dwFlags) const
 
 //	GetPowerOutput
 //
@@ -165,7 +165,7 @@ int CReactorClass::GetMaxPower (CItemCtx &ItemCtx, const CReactorDesc &Desc) con
 	return Max(0, iMaxPower);
 	}
 
-const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx) const
+const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx, DWORD dwFlags) const
 
 //	GetReactorDesc
 //
@@ -173,6 +173,7 @@ const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx) const
 
 	{
     CInstalledDevice *pDevice = Ctx.GetDevice();
+	bool bNormalOnly = ((dwFlags & GPO_FLAG_NORMAL_POWER) ? true : false);
 
     //  Figure out if we want a scaled item
 
@@ -185,7 +186,7 @@ const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx) const
 
     //  If the device is damaged, then return damaged descriptor
 
-    else if (pDevice->IsDamaged() || pDevice->IsDisrupted())
+    else if (!bNormalOnly && (pDevice->IsDamaged() || pDevice->IsDisrupted()))
         {
         InitDamagedDesc();
 		return &m_pDamagedDesc[iIndex];
@@ -193,7 +194,7 @@ const CReactorDesc *CReactorClass::GetReactorDesc (CItemCtx &Ctx) const
 
     //  If enhanced, then return enhanced descriptor
 
-    else if (pDevice->IsEnhanced())
+    else if (!bNormalOnly && pDevice->IsEnhanced())
         {
         InitEnhancedDesc();
 		return &m_pEnhancedDesc[iIndex];

@@ -605,10 +605,10 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 					CSpaceObject *pObj = m_pShip->GetSystem()->GetObject(i);
 
 					if (pObj 
-							&& pObj->SupportsDocking()
 							&& pObj->IsAbandoned()
 							&& !pObj->IsRadioactive()
 							&& !pObj->IsIntangible()
+							&& (pObj->CanObjRequestDock() == CSpaceObject::dockingOK)
 							&& pObj->GetData(SPACE_OBJ_SCAVENGE_DATA).IsBlank())
 						{
 						CVector vRange = pObj->GetPos() - m_pShip->GetPos();
@@ -1510,11 +1510,9 @@ void CStandardShipAI::BehaviorStart (void)
 				CSpaceObject *pObj = m_pShip->GetSystem()->GetObject(i);
 
 				if (pObj
-						&& pObj->SupportsDocking()
 						&& !pObj->IsRadioactive()
-						&& !pObj->IsEnemy(m_pShip)
-						&& !pObj->IsAbandoned()
 						&& !pObj->IsIntangible()
+						&& (pObj->CanObjRequestDock(m_pShip) == CSpaceObject::dockingOK)
 						&& pObj->HasAttribute(CONSTLIT("populated")))
 					{
 					CVector vRange = pObj->GetPos() - m_pShip->GetPos();

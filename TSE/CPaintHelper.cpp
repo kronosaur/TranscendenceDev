@@ -127,6 +127,53 @@ void CPaintHelper::PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirect
 		}
 	}
 
+void CPaintHelper::PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, const RECT &rcSrc, Metric rScale)
+
+//	PaintScaledImage
+//
+//	Paints the given image and scales it to fit into the given destination.
+//	(Or, if rScale is supplied, uses that scale).
+
+	{
+	int cxSrc = RectWidth(rcSrc);
+	int cySrc = RectHeight(rcSrc);
+
+	//	If we have a specific scale, then use it.
+
+	if (rScale != 1.0)
+		{
+		Metric rX = xDest + (cxDest / 2);
+		Metric rY = yDest + (cyDest / 2);
+
+		CGDraw::BltTransformed(Dest, rX, rY, rScale, rScale, 0.0, Src, rcSrc.left, rcSrc.top, cxSrc, cySrc);
+		}
+
+	//	If the image fits, paint it at the normal size.
+
+	else if (cxSrc <= cxDest && cySrc <= cyDest)
+		{
+		Dest.Blt(rcSrc.left,
+			rcSrc.top,
+			cxSrc,
+			cySrc,
+			255,
+			Src,
+			xDest + (cxDest - cxSrc) / 2,
+			yDest + (cyDest - cySrc) / 2);
+		}
+
+	//	Otherwise we need to resize it.
+
+	else
+		{
+		Metric rScale = Min((Metric)cxDest / (Metric)cxSrc, (Metric)cyDest / (Metric)cySrc);
+		Metric rX = xDest + (cxDest / 2);
+		Metric rY = yDest + (cyDest / 2);
+
+		CGDraw::BltTransformed(Dest, rX, rY, rScale, rScale, 0.0, Src, rcSrc.left, rcSrc.top, cxSrc, cySrc);
+		}
+	}
+
 void CPaintHelper::PaintStatusBar (CG32bitImage &Dest, int x, int y, int iTick, CG32bitPixel rgbColor, const CString &sLabel, int iPos, int iMaxPos, int *retcyHeight)
 
 //	PaintStatusBar
