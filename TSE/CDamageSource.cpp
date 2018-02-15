@@ -20,6 +20,43 @@ CDamageSource::CDamageSource (CSpaceObject *pSource, DestructionTypes iCause, CS
 	m_pSecondarySource = (pSecondarySource && !pSecondarySource->IsDestroyed() ? pSecondarySource : NULL);
 	}
 
+bool CDamageSource::CanHit (CSpaceObject *pTarget) const
+
+//	CanHit
+//
+//	Returns TRUE if we can hit our own wingmen. [This is only valid for the
+//	player ship.]
+
+	{
+	//	If we're not the player, then we can always hit our target
+
+	if (!IsPlayer())
+		return true;
+
+	CSpaceObject *pObj = GetObj();
+	if (pObj == NULL)
+		return true;
+
+	//	If this is not a wingman, then we allow the hit
+
+	if (!pTarget->IsEscortingPlayer())
+		return true;
+
+	//	If we don't protect wingmen, then we allow a hit
+
+	if (pObj->GetAbility(ablProtectWingmen) != ablInstalled)
+		return true;
+
+	//	If we're deliberately targeting pTarget, then we allow the hit.
+
+	if (pObj->GetTarget(CItemCtx(), true) == pTarget)
+		return true;
+
+	//	Otherwise, pTarget should not be hit by us.
+
+	return false;
+	}
+
 bool CDamageSource::CanHitFriends (void) const
 
 //	CanHitFriends

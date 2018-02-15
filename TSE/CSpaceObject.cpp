@@ -5900,7 +5900,7 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, 
 
 				//	If our source is the player, then we cannot hit player wingmen
 
-				&& (!Source.IsPlayer() || !pObj->IsEscortingPlayer())
+				&& Source.CanHit(pObj)
 				
 				//	We cannot hit if the object cannot be hit by friends
 				&& (pObj->CanBeHitByFriends() || Source.GetSovereign() != pObj->GetSovereign()));

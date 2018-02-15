@@ -1497,6 +1497,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 		{
 		pShip->SetAbility(ablAutopilot, ablInstall, -1, 0);
 		pShip->SetAbility(ablGalacticMap, ablInstall, -1, 0);
+		pShip->SetAbility(ablProtectWingmen, ablInstall, -1, 0);
 		}
 
 	//	Create items

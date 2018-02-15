@@ -20,10 +20,11 @@ enum Abilities
 	ablExtendedScanner =		4,		//	Extended marks on viewscreen
 	ablTargetingSystem =		5,		//	Targeting computer
 	ablGalacticMap =			6,		//	Galactic map display
-	ablFriendlyFireLock =		7,
+	ablFriendlyFireLock =		7,		//	Can't missile/auto lock on friendlies
 	ablTradingComputer =		8,		//	Trading computer
+	ablProtectWingmen =			9,		//	Do not hit wingmen/autons/etc.
 
-	ablCount =					9,
+	ablCount =					10,
 	};
 
 enum AbilityModifications
