@@ -45,14 +45,32 @@ template <class OBJ> class TSharedPtr
 			return *this;
 			}
 
+		TSharedPtr<OBJ> &operator= (OBJ *pSrc)
+			{
+			if (m_pPtr)
+				m_pPtr->Delete();
+
+			if (pSrc)
+				m_pPtr = pSrc->AddRef();
+			else
+				m_pPtr = NULL;
+
+			return *this;
+			}
+
 		operator OBJ *() const { return m_pPtr; }
 		OBJ * operator->() const { return m_pPtr; }
 
 		explicit operator bool() const { return (m_pPtr != NULL); }
 
-		void Delete (void) { Set(NULL);	}
+		void Delete (void) { if (m_pPtr) m_pPtr->Delete(); m_pPtr = NULL; }
 
-		void Set (OBJ *pPtr)
+		void Set (const TSharedPtr<OBJ> &Src)
+			{
+			*this = Src;
+			}
+
+		void TakeHandoff (OBJ *pPtr)
 			{
 			if (m_pPtr)
 				m_pPtr->Delete();
@@ -60,9 +78,13 @@ template <class OBJ> class TSharedPtr
 			m_pPtr = pPtr;
 			}
 
-		void Set (const TSharedPtr<OBJ> &Src)
+		void TakeHandoff (TSharedPtr<OBJ> &Src)
 			{
-			*this = Src;
+			if (m_pPtr)
+				m_pPtr->Delete();
+
+			m_pPtr = Src.m_pPtr;
+			Src.m_pPtr = NULL;
 			}
 
 	private:
