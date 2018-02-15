@@ -857,10 +857,9 @@ CurrencyValue CShipClass::CalcHullValue (void) const
 	static const Metric THRUST_RATIO_PER_POINT = 16.0;
 	static const Metric MAX_ROTATION_PER_POINT = 9.0;
 
-	static const Metric PRICE_PER_TENTH_MW = 4.0;
+	static const Metric PRICE_PER_TENTH_MW = 0.5;
 	static const Metric POINT_BIAS = -10.0;
 	static const Metric POINT_EXP = 1.5;
-	static const Metric UNITS_PER_POINT = 0.2;
 
 	//	We need to have max reactor powe defined, or else we can't compute the
 	//	values.
@@ -921,7 +920,7 @@ CurrencyValue CShipClass::CalcHullValue (void) const
 
 	//	Compute price
 
-	Metric rPrice = rScaledPoints * UNITS_PER_POINT * rUnitPrice;
+	Metric rPrice = rScaledPoints * rUnitPrice;
 
 	//	Done
 
