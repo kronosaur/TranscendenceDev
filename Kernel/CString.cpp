@@ -1141,32 +1141,11 @@ ALERROR strDelimitEx (const CString &sString,
 			{
 			if (*pPos == '\"')
 				{
-				CString sPart(pPartStart, iPartLength);
-				if (dwFlags & DELIMIT_TRIM_WHITESPACE)
-					sPart = strTrimWhitespace(sPart);
-
-				if ((dwFlags & DELIMIT_ALLOW_BLANK_STRINGS) || !sPart.IsBlank())
-					{
-					retList->Insert(sPart);
-					iPartCount++;
-					}
-
-				//	Skip to the next part
-
-				pPos++;
-				while (*pPos != '\0' && (*pPos != cDelim) && (!bDelimitComma || *pPos != ',') && (!bDelimitSemi || *pPos != ';'))
-					pPos++;
-
-				iPartLength = 0;
-				pPartStart = pPos;
-
 				bInQuotes = false;
 				}
-			else
-				{
-				pPos++;
-				iPartLength++;
-				}
+
+			pPos++;
+			iPartLength++;
 			}
 
 		//	Quotes?
@@ -1174,8 +1153,7 @@ ALERROR strDelimitEx (const CString &sString,
 		else if (bQuoteEscape && *pPos == '\"')
 			{
 			pPos++;
-			iPartLength = 0;
-			pPartStart = pPos;
+			iPartLength++;
 			bInQuotes = true;
 			}
 
@@ -1189,6 +1167,17 @@ ALERROR strDelimitEx (const CString &sString,
 			CString sPart(pPartStart, iPartLength);
 			if (dwFlags & DELIMIT_TRIM_WHITESPACE)
 				sPart = strTrimWhitespace(sPart);
+
+			//	If we have quotes around the whole entry, then remove them
+
+			if (bQuoteEscape && sPart.GetLength() > 2)
+				{
+				char *pPos = sPart.GetASCIIZPointer();
+				if (pPos[0] == '\"' && pPos[sPart.GetLength() - 1] == '\"')
+					sPart = strSubString(sPart, 1, sPart.GetLength() - 2);
+				}
+
+			//	Add
 
 			if ((dwFlags & DELIMIT_ALLOW_BLANK_STRINGS) || !sPart.IsBlank())
 				{
