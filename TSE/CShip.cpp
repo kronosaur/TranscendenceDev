@@ -3711,6 +3711,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 	//	If necessary, remove previous item in a slot
 
+	Metric rOldFuel = -1.0;
 	int iSlotToReplace;
 	CalcDeviceToReplace(ItemList.GetItemAtCursor(), iDeviceSlot, &iSlotToReplace);
 	if (iSlotToReplace != -1)
@@ -3726,7 +3727,6 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 
 		//	If we're upgrading/downgrading a reactor, then remember the old fuel level
 
-		Metric rOldFuel = -1.0;
 		if (iNamedSlot == devReactor)
 			rOldFuel = GetFuelLeft();
 
@@ -3737,13 +3737,6 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 		SetCursorAtDevice(RemoveItem, iSlotToReplace);
 		RemoveItemAsDevice(RemoveItem);
 		ItemList.Refresh(ItemToInstall);
-
-		//	Reset the fuel level (we are effectively transfering the fuel to the
-		//	new reactor. Note that on a downgrade, we will clip the fuel to the
-		//	maximum when we do a CalcDeviceBonus).
-
-		if (rOldFuel != -1.0 && m_pPowerUse && !m_pPowerUse->IsOutOfFuel())
-			m_pPowerUse->SetFuelLeft(rOldFuel);
 		}
 
 	//	Install
@@ -3770,7 +3763,16 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	CalcDeviceBonus();
     CalcPerformance();
 
-    m_pController->OnStatsChanged();
+	//	Reset the fuel level (we are effectively transfering the fuel to the
+	//	new reactor. Note that on a downgrade, we will clip the fuel to the
+	//	maximum when we do a CalcDeviceBonus).
+
+	if (rOldFuel != -1.0 && m_pPowerUse && !m_pPowerUse->IsOutOfFuel())
+		m_pPowerUse->SetFuelLeft(Min(rOldFuel, GetMaxFuel()));
+
+	//	Notify UI
+
+	m_pController->OnStatsChanged();
 	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 	InvalidateItemListState();
 	}
