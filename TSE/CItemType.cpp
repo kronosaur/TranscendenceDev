@@ -721,14 +721,14 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
     return CCurrencyAndValue(iValue, m_iValue.GetCurrencyType());
     }
 
-const CString &CItemType::GetDesc (void) const
+const CString &CItemType::GetDesc (bool bActual) const
 
 //	GetDesc
 //
 //	Get description for the item
 	
 	{
-	if (!IsKnown())
+	if (!IsKnown() && !bActual)
 		return m_pUnknownType->GetDesc();
 
 	return m_sDescription; 

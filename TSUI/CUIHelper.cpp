@@ -106,6 +106,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	bool bNoIcon = ((dwOptions & OPTION_NO_ICON) == OPTION_NO_ICON);
 	bool bTitle = ((dwOptions & OPTION_TITLE) == OPTION_TITLE);
 	bool bNoPadding = ((dwOptions & OPTION_NO_PADDING) == OPTION_NO_PADDING);
+	bool bActual = ((dwOptions & OPTION_KNOWN) == OPTION_KNOWN);
 
 	//	Icons size
 
@@ -136,7 +137,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 			rcDrawRect.left += ITEM_LEFT_PADDING + cxIcon;
 		}
 
-	int iLevel = pType->GetApparentLevel(Ctx);
+	int iLevel = (bActual ? pType->GetLevel(Ctx) : pType->GetApparentLevel(Ctx));
 
 	//	Compute the height of the row
 
@@ -155,7 +156,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	//	Attributes
 
 	TArray<SDisplayAttribute> Attribs;
-	if (Item.GetDisplayAttributes(Ctx, &Attribs))
+	if (Item.GetDisplayAttributes(Ctx, &Attribs, NULL, bActual))
 		{
 		int cyAttribs;
 		FormatDisplayAttributes(Attribs, rcDrawRect, &cyAttribs);
@@ -164,16 +165,17 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	Reference
 
-	CString sReference = Item.GetReference(Ctx);
+	DWORD dwRefFlags = (bActual ? CItemType::FLAG_ACTUAL_ITEM : 0);
+	CString sReference = Item.GetReference(Ctx, CItem(), dwRefFlags);
 
 	//	If this is a weapon, then add room for the weapon damage
 
-	if (Item.GetReferenceDamageType(Ctx, CItem(), 0, NULL, NULL))
+	if (Item.GetReferenceDamageType(Ctx, CItem(), dwRefFlags, NULL, NULL))
 		cyHeight += Medium.GetHeight();
 
 	//	If this is armor or a shield, then add room for damage resistance
 
-	else if (Item.GetReferenceDamageAdj(pSource, 0, NULL, NULL))
+	else if (Item.GetReferenceDamageAdj(pSource, dwRefFlags, NULL, NULL))
 		cyHeight += Medium.GetHeight();
 
 	//	Measure the reference text
@@ -187,7 +189,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	Measure the description
 
-	CString sDesc = Item.GetDesc(Ctx);
+	CString sDesc = Item.GetDesc(Ctx, bActual);
 	iLines = Medium.BreakText(sDesc, RectWidth(rcDrawRect), NULL, 0);
 	cyHeight += iLines * Medium.GetHeight();
 
@@ -905,6 +907,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	bool bTitle = ((dwOptions & OPTION_TITLE) == OPTION_TITLE);
 	bool bNoPadding = ((dwOptions & OPTION_NO_PADDING) == OPTION_NO_PADDING);
 	bool bNoArmorSpeedDisplay = ((dwOptions & OPTION_NO_ARMOR_SPEED_DISPLAY) == OPTION_NO_ARMOR_SPEED_DISPLAY);
+	bool bActual = ((dwOptions & OPTION_KNOWN) == OPTION_KNOWN);
 
 	//	Icons size
 
@@ -942,6 +945,8 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 		dwNounPhraseFlags |= nounTitleCapitalize | nounShort;
 	else
 		dwNounPhraseFlags |= nounCount;
+	if (bActual)
+		dwNounPhraseFlags |= nounActual;
 
 	int cyHeight;
 	RECT rcTitle = rcDrawRect;
@@ -960,7 +965,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	//	Paint the display attributes
 
 	TArray<SDisplayAttribute> Attribs;
-	if (Item.GetDisplayAttributes(Ctx, &Attribs))
+	if (Item.GetDisplayAttributes(Ctx, &Attribs, NULL, bActual))
 		{
 		FormatDisplayAttributes(Attribs, rcDrawRect, &cyHeight);
 		PaintDisplayAttributes(Dest, Attribs);
@@ -970,15 +975,16 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	//	Stats
 
 	CString sStat;
+	DWORD dwRefFlags = (bActual ? CItemType::FLAG_ACTUAL_ITEM : 0);
 
-	int iLevel = pItemType->GetApparentLevel(Ctx);
-	CString sReference = Item.GetReference(Ctx);
+	int iLevel = (bActual ? pItemType->GetLevel(Ctx) : pItemType->GetApparentLevel(Ctx));
+	CString sReference = Item.GetReference(Ctx, CItem(), dwRefFlags);
 	DamageTypes iDamageType;
 	CString sDamageRef;
 	int iDamageAdj[damageCount];
 	int iHP;
 
-	if (Item.GetReferenceDamageType(Ctx, CItem(), 0, &iDamageType, &sDamageRef))
+	if (Item.GetReferenceDamageType(Ctx, CItem(), dwRefFlags, &iDamageType, &sDamageRef))
 		{
 		//	Paint the damage type reference
 
@@ -1006,7 +1012,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 			rcDrawRect.top += cyHeight;
 			}
 		}
-	else if (Item.GetReferenceDamageAdj(pSource, 0, &iHP, iDamageAdj))
+	else if (Item.GetReferenceDamageAdj(pSource, dwRefFlags, &iHP, iDamageAdj))
 		{
 		//	Paint the initial text
 
@@ -1039,7 +1045,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 		CItemCtx BonusCtx(&Item, pBonusSource);
 
 		int iSpeedBonus;
-		if (!bNoArmorSpeedDisplay && Item.GetReferenceSpeedBonus(BonusCtx, 0, &iSpeedBonus))
+		if (!bNoArmorSpeedDisplay && Item.GetReferenceSpeedBonus(BonusCtx, dwRefFlags, &iSpeedBonus))
 			{
 			int cx = rcDrawRect.left;
 			sReference = strPatternSubst(CONSTLIT("%s — "), sReference);
@@ -1093,7 +1099,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 	//	Description
 
-	CString sDesc = Item.GetDesc(Ctx);
+	CString sDesc = Item.GetDesc(Ctx, bActual);
 	Medium.DrawText(Dest,
 			rcDrawRect,
 			(bSelected ? rgbColorDescSel : rgbColorDesc),

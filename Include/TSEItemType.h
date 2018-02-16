@@ -91,7 +91,7 @@ class CItemType : public CDesignType
         CCurrencyAndValue GetCurrencyAndValue (CItemCtx &Ctx, bool bActual = false) const;
 		inline CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
 		inline const CString &GetData (void) const { return m_sData; }
-		const CString &GetDesc (void) const;
+		const CString &GetDesc (bool bActual = false) const;
 		inline CDeviceClass *GetDeviceClass (void) const { return m_pDevice; }
 		inline CObjectImageArray &GetFlotsamImage (void) { if (!m_FlotsamImage.IsLoaded()) CreateFlotsamImage(); return m_FlotsamImage; }
 		inline int GetFrequency (void) const { return m_Frequency; }

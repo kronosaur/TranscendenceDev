@@ -861,13 +861,16 @@ const CItemList &CItem::GetComponents (void) const
 	return m_pItemType->GetComponents();
 	}
 
-CString CItem::GetDesc (CItemCtx &ItemCtx) const
+CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
 
 //	GetDesc
 //
 //	Gets the item description
 	
 	{
+	if (!m_pItemType->IsKnown() && !bActual)
+		return m_pItemType->GetUnknownType()->GetDesc();
+
 	//	If we have code, call it to generate the description
 
 	SEventHandlerDesc Event;
@@ -890,10 +893,10 @@ CString CItem::GetDesc (CItemCtx &ItemCtx) const
 	//	Otherwise, get it from the item
 
 	else
-		return m_pItemType->GetDesc(); 
+		return m_pItemType->GetDesc(bActual); 
 	}
 
-bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const
+bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData, bool bActual) const
 
 //	GetDisplayAttributes
 //
@@ -912,7 +915,7 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 	//	Add additional custom attributes
 
-	if (m_pItemType->IsKnown())
+	if (m_pItemType->IsKnown() || bActual)
 		{
 		g_pUniverse->GetAttributeDesc().AccumulateAttributes(*this, retList);
 
