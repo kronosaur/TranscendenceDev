@@ -1090,6 +1090,32 @@ ALERROR strDelimitEx (const CString &sString,
 	ASSERT(cDelim != '\0');
 	bool bDelimitComma = ((dwFlags & DELIMIT_COMMA) ? true : false);
 	bool bDelimitSemi = ((dwFlags & DELIMIT_SEMI_COLON) ? true : false);
+	bool bQuoteEscape = ((dwFlags & DELIMIT_QUOTE_ESCAPE) ? true : false);
+
+	//	Auto comma means that we check to see if the delimiter is a comma 
+	//	instead of the standard delimiter.
+
+	if (dwFlags & DELIMIT_AUTO_COMMA)
+		{
+		//	See if we use the standard delimiter.
+
+		pPos = sString.GetPointer();
+		bool bDelimOK = false;
+		while (*pPos != '\0')
+			{
+			if (*pPos == cDelim)
+				{
+				bDelimOK = true;
+				break;
+				}
+			pPos++;
+			}
+
+		//	If not, then use comma as a delimiter
+
+		if (!bDelimOK)
+			bDelimitComma = true;
+		}
 
 	//	Initialize string list
 
@@ -1105,12 +1131,58 @@ ALERROR strDelimitEx (const CString &sString,
 	pPartStart = pPos;
 	iPartLength = 0;
 
+	bool bInQuotes = false;
+
 	while (*pPos != '\0')
 		{
+		//	Quote escape
+
+		if (bInQuotes)
+			{
+			if (*pPos == '\"')
+				{
+				CString sPart(pPartStart, iPartLength);
+				if (dwFlags & DELIMIT_TRIM_WHITESPACE)
+					sPart = strTrimWhitespace(sPart);
+
+				if ((dwFlags & DELIMIT_ALLOW_BLANK_STRINGS) || !sPart.IsBlank())
+					{
+					retList->Insert(sPart);
+					iPartCount++;
+					}
+
+				//	Skip to the next part
+
+				pPos++;
+				while (*pPos != '\0' && (*pPos != cDelim) && (!bDelimitComma || *pPos != ',') && (!bDelimitSemi || *pPos != ';'))
+					pPos++;
+
+				iPartLength = 0;
+				pPartStart = pPos;
+
+				bInQuotes = false;
+				}
+			else
+				{
+				pPos++;
+				iPartLength++;
+				}
+			}
+
+		//	Quotes?
+
+		else if (bQuoteEscape && *pPos == '\"')
+			{
+			pPos++;
+			iPartLength = 0;
+			pPartStart = pPos;
+			bInQuotes = true;
+			}
+
 		//	If we've found a delimeter, then flush the string up to now
 		//	to the current part.
 
-		if (*pPos == cDelim
+		else if (*pPos == cDelim
 				|| (bDelimitComma && *pPos == ',')
 				|| (bDelimitSemi && *pPos == ';'))
 			{

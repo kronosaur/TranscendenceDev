@@ -1343,10 +1343,12 @@ CString strConvert (const CString &sText, DWORD dwFromCP, DWORD dwToCP);
 inline CString strANSIToUTF8 (const CString &sText) { return strConvert(sText, CP_ACP, CP_UTF8); }
 inline CString strUTF8ToANSI (const CString &sText) { return strConvert(sText, CP_UTF8, CP_ACP); }
 
-#define DELIMIT_TRIM_WHITESPACE					0x00000001
-#define DELIMIT_ALLOW_BLANK_STRINGS				0x00000002
-#define DELIMIT_COMMA							0x00000004
-#define DELIMIT_SEMI_COLON						0x00000008
+static const DWORD DELIMIT_TRIM_WHITESPACE =		0x00000001;
+static const DWORD DELIMIT_ALLOW_BLANK_STRINGS =	0x00000002;
+static const DWORD DELIMIT_COMMA =					0x00000004;
+static const DWORD DELIMIT_SEMI_COLON =				0x00000008;
+static const DWORD DELIMIT_QUOTE_ESCAPE =			0x00000010;
+static const DWORD DELIMIT_AUTO_COMMA =				0x00000020;
 ALERROR strDelimitEx (const CString &sString, char cDelim, DWORD dwFlags, int iMinParts, TArray<CString> *retList);
 
 inline ALERROR strDelimit (const CString &sString, char cDelim, int iMinParts, TArray<CString> *pStringList)
