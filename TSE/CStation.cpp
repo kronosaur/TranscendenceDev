@@ -1959,7 +1959,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		//	Give events a chance to change the damage
 
 		if (HasOnDamageEvent())
-			FireOnDamage(Ctx);
+			Ctx.iDamage = FireOnDamage(Ctx, Ctx.iDamage);
 
 		//	Take damage
 
@@ -2084,7 +2084,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	Give events a chance to change the damage
 
 	if (HasOnDamageEvent())
-		FireOnDamage(Ctx);
+		Ctx.iDamage = FireOnDamage(Ctx, Ctx.iDamage);
 
 	//	Tell our attacker that we got hit
 

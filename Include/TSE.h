@@ -981,7 +981,7 @@ class CSpaceObject : public CObject
 		void FireOnCreate (void);
 		void FireOnCreate (const SOnCreate &OnCreate);
 		void FireOnCreateOrders (CSpaceObject *pBase, CSpaceObject *pTarget);
-		void FireOnDamage (SDamageCtx &Ctx);
+		int FireOnDamage (SDamageCtx &Ctx, int iDamage);
 		void FireOnDeselected (void);
 		void FireOnDestroy (const SDestroyCtx &Ctx);
 		bool FireOnDockObjAdj (CSpaceObject **retpObj);

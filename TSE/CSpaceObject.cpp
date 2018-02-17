@@ -2384,7 +2384,7 @@ void CSpaceObject::FireOnCreateOrders (CSpaceObject *pBase, CSpaceObject *pTarge
 		}
 	}
 
-void CSpaceObject::FireOnDamage (SDamageCtx &Ctx)
+int CSpaceObject::FireOnDamage (SDamageCtx &Ctx, int iDamage)
 
 //	FireOnDamage
 //
@@ -2398,7 +2398,7 @@ void CSpaceObject::FireOnDamage (SDamageCtx &Ctx)
 		CCodeChainCtx CCCtx;
 
 		CCCtx.SaveAndDefineSourceVar(this);
-		CCCtx.DefineDamageCtx(Ctx, Ctx.iArmorDamage);
+		CCCtx.DefineDamageCtx(Ctx, iDamage);
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())
@@ -2406,9 +2406,11 @@ void CSpaceObject::FireOnDamage (SDamageCtx &Ctx)
 
 		//	Result is the amount of damage
 
-		Ctx.iArmorDamage = pResult->GetIntegerValue();
+		iDamage = pResult->GetIntegerValue();
 		CCCtx.Discard(pResult);
 		}
+
+	return iDamage;
 	}
 
 void CSpaceObject::FireOnDeselected (void)

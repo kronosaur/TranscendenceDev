@@ -303,7 +303,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	if (pSource->HasOnDamageEvent())
 		{
-		pSource->FireOnDamage(Ctx);
+		Ctx.iArmorDamage = pSource->FireOnDamage(Ctx, Ctx.iArmorDamage);
 		if (pSource->IsDestroyed())
 			return damageDestroyed;
 		}
