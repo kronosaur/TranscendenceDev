@@ -2223,20 +2223,86 @@ double strParseDouble (char *pStart, double rNullResult, char **retpEnd, bool *r
 
     //  We copy what we've got to a buffer, because we're going to use atof.
 
-    const int MAX_SIZE = 64;
+    static const int MAX_SIZE = 64;
     char *pSrc = pPos;
     char szBuffer[MAX_SIZE];
     char *pDest = szBuffer;
     char *pDestEnd = szBuffer + MAX_SIZE;
 
-    while (pDest < pDestEnd
-            && ((*pSrc >= '0' && *pSrc <= '9')
-                || *pSrc == '+'
-                || *pSrc == '-'
-                || *pSrc == '.'
-                || *pSrc == 'e'
-                || *pSrc == 'E'))
-        *pDest++ = *pSrc++;
+	//	Parse the integer part
+
+	int iSign = 1;
+	if (*pSrc == '-')
+		{
+		iSign = -1;
+		*pDest++ = *pSrc++;
+		}
+	else if (*pSrc == '+')
+		*pDest++ = *pSrc++;
+
+	char *pInt = pSrc;
+	while (*pSrc >= '0' && *pSrc <= '9' && pDest < pDestEnd)
+		*pDest++ = *pSrc++;
+
+	char *pIntEnd = pSrc;
+	if (pInt == pIntEnd)
+		{
+        if (retbNullValue) *retbNullValue = true;
+        return rNullResult;
+		}
+
+	//	Do we have a fractional part?
+
+	char *pFrac = NULL;
+	char *pFracEnd = pIntEnd;
+	if (*pSrc == '.' && pDest < pDestEnd)
+		{
+		*pDest++ = *pSrc++;
+
+		pFrac = pSrc;
+		while (*pSrc >= '0' && *pSrc <= '9' && pDest < pDestEnd)
+			*pDest++ = *pSrc++;
+
+		pFracEnd = pSrc;
+		if (pFrac == pFracEnd)
+			{
+			if (retbNullValue) *retbNullValue = true;
+			return rNullResult;
+			}
+		}
+
+	//	Do we have an exponential part?
+
+	char *pExp = NULL;
+	char *pExpEnd = pFracEnd;
+	int iExpSign = 1;
+	if ((*pSrc == 'e' || *pSrc == 'E') && pDest < pDestEnd)
+		{
+		*pDest++ = *pSrc++;
+
+		if (pDest == pDestEnd)
+			;
+		else if (*pSrc == '+')
+			*pDest++ = *pSrc++;
+		else if (*pSrc == '-')
+			{
+			iExpSign = -1;
+			*pDest++ = *pSrc++;
+			}
+
+		pExp = pSrc;
+		while (*pSrc >= '0' && *pSrc <= '9' && pDest < pDestEnd)
+			*pDest++ = *pSrc++;
+
+		pExpEnd = pSrc;
+		if (pExp == pExpEnd)
+			{
+			if (retbNullValue) *retbNullValue = true;
+			return rNullResult;
+			}
+		}
+
+	//	Done
 
     if (retpEnd) *retpEnd = pSrc;
 
