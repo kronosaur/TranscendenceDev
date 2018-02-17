@@ -937,7 +937,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"itmMatches",					fnItemGet,		FN_ITEM_MATCHES,
-			"(itmMatches item|type criteria) -> True/Nil"
+			"(itmMatches item|type criteria) -> True/Nil\n\n"
 
 			"criteria as itmGetTypes",
 
@@ -2669,8 +2669,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   +/-unid:xyz;        Include only/exclude objects with UNID 'xyz'\n\n"
 			
 			"Order doesn't matter as long as multi-character items end with semicolons.\n"
-			"If the source is nil, the center of the system is used for position,\n"
-			"and other criteria related to the source are ignored.\n\n",
+			"If the source is nil, the center of the system is used for position, "
+			"and other criteria related to the source are ignored.",
 
 			"is",	0,	},
 
