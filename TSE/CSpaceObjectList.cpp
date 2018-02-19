@@ -256,7 +256,7 @@ void CSpaceObjectList::ResolveObjProc (void *pCtx, DWORD dwObjID, CSpaceObject *
 
 	{
 	CSpaceObjectList *pList = (CSpaceObjectList *)pCtx;
-	if (pObj && dwObjID)
+	if (pObj && dwObjID && !pObj->IsDestroyed())
 		pList->m_List.Insert(pObj);
 	}
 

@@ -908,6 +908,13 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 84)
 		m_fInMissionSystem = true;
 
+	//	If this is a closed non-player mission, then we set the destroyed flag.
+	//	These missions should not be saved, but previous versions did 
+	//	accidentally save them.
+
+	if (IsCompletedNonPlayer())
+		SetDestroyed();
+
 #ifdef DEBUG
 	SetEventFlags();
 #endif

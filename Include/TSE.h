@@ -1615,6 +1615,7 @@ class CSpaceObject : public CObject
 			pPainter->GetBounds(&rcRect);
 			SetBounds(rcRect);
 			}
+		inline void SetDestroyed (bool bValue = true) { m_fDestroyed = bValue; }
 		inline void SetHasGravity (bool bGravity = true) { m_fHasGravity = bGravity; }
 		inline void SetIsBarrier (void) { m_fIsBarrier = true; }
 		inline void SetInDamageCode (void) { m_fInDamage = true; }

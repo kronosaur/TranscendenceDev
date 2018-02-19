@@ -125,13 +125,23 @@ ALERROR CMissionList::WriteToStream (IWriteStream *pStream, CString *retsError)
 	{
 	int i;
 
-	DWORD dwCount = m_List.GetCount();
+	//	Make a list of all non-destroyed missions
+
+	DWORD dwCount = 0;
+	for (i = 0; i < m_List.GetCount(); i++)
+		if (!m_List[i]->IsDestroyed())
+			dwCount++;
+
 	pStream->Write((char *)&dwCount, sizeof(DWORD));
-	for (i = 0; i < (int)dwCount; i++)
+
+	//	Save all non-destroyed missions
+
+	for (i = 0; i < m_List.GetCount(); i++)
 		{
 		try
 			{
-			m_List[i]->WriteToStream(pStream);
+			if (!m_List[i]->IsDestroyed())
+				m_List[i]->WriteToStream(pStream);
 			}
 		catch (...)
 			{
