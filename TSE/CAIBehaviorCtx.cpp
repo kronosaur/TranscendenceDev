@@ -384,7 +384,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 	//	Primary aim range
 
 	Metric rPrimaryRange = pShip->GetWeaponRange(devPrimaryWeapon);
-	Metric rAimRange = (GetFireRangeAdj() * rPrimaryRange) / (100.0 * ((pShip->GetDestiny() % 8) + 4));
+	Metric rAimRange = (GetFireRangeAdj() * rPrimaryRange) / (100.0 + ((pShip->GetDestiny() % 8) + 4));
 	if (rAimRange < 1.5 * MIN_TARGET_DIST)
 		rAimRange = 1.5 * MIN_TARGET_DIST;
 	m_rPrimaryAimRange2 = 4.0 * rAimRange * rAimRange;
