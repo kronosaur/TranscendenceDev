@@ -589,6 +589,7 @@ bool CMission::MatchesCriteria (CSpaceObject *pSource, const SCriteria &Criteria
 	if (!(Criteria.bIncludeActive && IsActive())
 			&& !(Criteria.bIncludeOpen && IsOpen())
 			&& !(Criteria.bIncludeRecorded && IsRecorded())
+			&& !(Criteria.bIncludeCompleted && IsCompleted())
 			&& !(Criteria.bIncludeUnavailable && IsUnavailable()))
 		return false;
 			
@@ -1027,14 +1028,25 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 		switch (*pPos)
 			{
 			case '*':
-				retCriteria->bIncludeOpen = true;
-				retCriteria->bIncludeUnavailable = true;
 				retCriteria->bIncludeActive = true;
+				retCriteria->bIncludeOpen = true;
 				retCriteria->bIncludeRecorded = true;
+				retCriteria->bIncludeUnavailable = true;
 				break;
 
 			case 'a':
 				retCriteria->bIncludeActive = true;
+				break;
+
+			case 'c':
+				//	This includes missions that have been completed (successfully
+				//	or not). These missions may or may not have been debriefed, thus
+				//	some of these missions are Active and some are Recorded.
+				//
+				//	NOTE: We don't include this category in * because * already
+				//	includes all active and all recorded missions.
+
+				retCriteria->bIncludeCompleted = true;
 				break;
 
 			//	This character is used in typFind to return mission objects. For
@@ -1100,13 +1112,14 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 
 	if (!retCriteria->bIncludeUnavailable
 			&& !retCriteria->bIncludeActive
+			&& !retCriteria->bIncludeCompleted
 			&& !retCriteria->bIncludeRecorded
 			&& !retCriteria->bIncludeOpen)
 		{
-		retCriteria->bIncludeUnavailable = true;
 		retCriteria->bIncludeActive = true;
-		retCriteria->bIncludeRecorded = true;
 		retCriteria->bIncludeOpen = true;
+		retCriteria->bIncludeRecorded = true;
+		retCriteria->bIncludeUnavailable = true;
 		}
 
 	return true;

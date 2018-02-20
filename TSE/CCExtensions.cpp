@@ -2273,6 +2273,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   *                  Include all missions states\n"
 			"   a                  Include active player missions\n"
+			"   c                  Include completed missions (not necessarily debriefed)\n"
 			"   o                  Include open missions\n"
 			"   r                  Include already debriefed (recorded) missions\n"
 			"   u                  Include non-player missions\n"

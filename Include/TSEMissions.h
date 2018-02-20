@@ -21,24 +21,15 @@ class CMission : public CSpaceObject
 
 		struct SCriteria
 			{
-			SCriteria (void) :
-					bIncludeOpen(false),
-					bIncludeUnavailable(false),
-					bIncludeActive(false),
-					bIncludeRecorded(false),
-					bOnlySourceOwner(false),
-					bOnlySourceDebriefer(false),
-					bPriorityOnly(false)
-				{ }
+			bool bIncludeOpen = false;			//	Include open missions
+			bool bIncludeUnavailable = false;	//	Include unavailable missions
+			bool bIncludeActive = false;		//	Include active missions
+			bool bIncludeCompleted = false;		//	Include completed (but not necessarily debriefed missions)
+			bool bIncludeRecorded = false;		//	Include recorded missions
 
-			bool bIncludeOpen;					//	Include open missions
-			bool bIncludeUnavailable;			//	Include unavailable missions
-			bool bIncludeActive;				//	Include active missions
-			bool bIncludeRecorded;				//	Include recorded missions
-
-			bool bOnlySourceOwner;				//	Source must be owner
-			bool bOnlySourceDebriefer;			//	Source must be debriefer
-			bool bPriorityOnly;					//	Return highest priority mission
+			bool bOnlySourceOwner = false;		//	Source must be owner
+			bool bOnlySourceDebriefer = false;	//	Source must be debriefer
+			bool bPriorityOnly = false;			//	Return highest priority mission
 
 			TArray<CString> AttribsRequired;	//	Required attributes
 			TArray<CString> AttribsNotAllowed;	//	Exclude objects with these attributes
