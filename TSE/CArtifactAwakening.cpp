@@ -331,8 +331,6 @@ bool CArtifactAwakening::DeployDaimon (CItemType *pType, CArtifactProgram **retp
 //	Deploys a daimon.
 
 	{
-	ASSERT(IsValid());
-
 	//	Make sure we're in a valid state
 
 	if (m_iState == stateStart)
