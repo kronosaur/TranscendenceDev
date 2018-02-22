@@ -1780,6 +1780,20 @@ class CGlobalSpaceObject
 		CSpaceObject *m_pObj;				//	Object pointer (may be NULL)
 	};
 
+class CObjectTrackerCriteria
+	{
+	public:
+		inline const CDesignTypeCriteria &GetTypeCriteria (void) const { return m_TypeCriteria; }
+		bool ParseCriteria (const CString &sCriteria);
+		inline bool SelectsActiveOnly (void) const { return m_bActiveOnly; }
+		inline bool SelectsKilledOnly (void) const { return m_bKilledOnly; }
+		
+	private:
+		CDesignTypeCriteria m_TypeCriteria;
+		bool m_bActiveOnly = false;
+		bool m_bKilledOnly = false;
+	};
+
 class CObjectTracker
 	{
 	public:
@@ -1790,7 +1804,8 @@ class CObjectTracker
                     fShowDestroyed(false),
                     fShowInMap(false),
                     fFriendly(false),
-                    fEnemy(false)
+                    fEnemy(false),
+					fInactive(false)
                 { }
 
 			CTopologyNode *pNode;
@@ -1806,6 +1821,7 @@ class CObjectTracker
             DWORD fShowInMap:1;
             DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
             DWORD fEnemy:1;
+			DWORD fInactive:1;				//	pObj->IsInactive()
 			};
 
         struct SBackgroundObjEntry
@@ -1819,7 +1835,7 @@ class CObjectTracker
 
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
-		bool Find (const CString &sNodeID, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult);
+		bool Find (const CString &sNodeID, const CObjectTrackerCriteria &Criteria, TArray<SObjEntry> *retResult);
         void GetGalacticMapObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
         void GetSystemBackgroundObjects (const CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const;
         void GetSystemStarObjects (const CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const;
@@ -1856,11 +1872,8 @@ class CObjectTracker
 
 		struct SObjExtra
 			{
-            SObjExtra (void)
-                { }
-
 			CString sName;
-			DWORD dwNameFlags;
+			DWORD dwNameFlags = 0;
             CCompositeImageSelector ImageSel;
             CString sNotes;
 			};
@@ -1873,53 +1886,18 @@ class CObjectTracker
                     fShowInMap(false),
                     fFriendly(false),
                     fEnemy(false),
-                    pExtra(NULL)
+					fInactive(false)
                 { }
-
-            SObjBasics (const SObjBasics &Src) { Copy(Src); }
-            ~SObjBasics (void) { CleanUp(); }
-
-            SObjBasics &operator= (const SObjBasics &Src)
-                {
-                CleanUp();
-                Copy(Src);
-                return *this;
-                }
-
-            void CleanUp (void)
-                {
-                DeleteExtra();
-                }
-
-            void Copy (const SObjBasics &Src)
-                {
-                vPos = Src.vPos;
-
-                fKnown = Src.fKnown;
-                fShowDestroyed = Src.fShowDestroyed;
-                fShowInMap = Src.fShowInMap;
-                fFriendly = Src.fFriendly;
-                fEnemy = Src.fEnemy;
-
-                if (Src.pExtra)
-                    pExtra = new SObjExtra(*Src.pExtra);
-                else
-                    pExtra = NULL;
-                }
 
             void DeleteExtra (void)
                 {
-                if (pExtra)
-                    {
-                    delete pExtra;
-                    pExtra = NULL;
-                    }
+				pExtra.Delete();
                 }
 
             SObjExtra &SetExtra (void)
                 {
-                if (pExtra == NULL)
-                    pExtra = new SObjExtra;
+                if (!pExtra)
+                    pExtra.Set(new SObjExtra);
 
                 return *pExtra;
                 }
@@ -1931,13 +1909,13 @@ class CObjectTracker
             DWORD fShowInMap:1;             //  TRUE if we can dock with the obj
             DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
             DWORD fEnemy:1;
-            DWORD fSpare6:1;
+            DWORD fInactive:1;				//	TRUE if pObj->IsInactive()
             DWORD fSpare7:1;
             DWORD fSpare8:1;
 
             DWORD dwSpare:24;
 
-            SObjExtra *pExtra;
+            TUniquePtr<SObjExtra> pExtra;
             };
 
 		struct SObjList
@@ -1954,7 +1932,7 @@ class CObjectTracker
 			TArray<SDelayedCommand> Commands;
             };
 
-		bool AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, DWORD dwFlags, TArray<SObjEntry> *retResult) const;
+		bool AccumulateEntries (TArray<SObjList *> &Table, const CObjectTrackerCriteria &Criteria, DWORD dwFlags, TArray<SObjEntry> *retResult) const;
         void AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, DWORD dwFlags, TArray<SObjEntry> &Results) const;
         bool Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
         bool Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
@@ -2133,7 +2111,7 @@ Metric *GetDestinyToBellCurveArray (void);
 void LoadDamageEffectsFromItem (ICCItem *pItem, SDamageCtx &Ctx);
 EManeuverTypes CalcTurnManeuver (int iDesired, int iCurrent, int iRotationAngle);
 CString ParseCriteriaParam (char **ioPos, bool bExpectColon = true, bool *retbBinaryParam = NULL);
-bool ParseCriteriaParamLevelRange (char **ioPos, int *retiLow, int *retiHigh);
+bool ParseCriteriaParamLevelRange (char **ioPos, int *retiLow = NULL, int *retiHigh = NULL);
 Metric ParseDistance (const CString &sValue, Metric rDefaultScale);
 
 //	CodeChain helper functions (CCUtil.cpp)

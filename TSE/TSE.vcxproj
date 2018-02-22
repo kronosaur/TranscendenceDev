@@ -391,6 +391,7 @@
     <ClCompile Include="CNetworkTopologyCreator.cpp" />
     <ClCompile Include="CObjectJoint.cpp" />
     <ClCompile Include="CObjectJointList.cpp" />
+    <ClCompile Include="CObjectTrackerCriteria.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />

@@ -292,7 +292,7 @@ class CDesignType
 		inline bool IsMerged (void) const { return m_bIsMerged; }
 		inline bool IsModification (void) const { return m_bIsModification; }
 		inline bool IsObsoleteAt (DWORD dwAPIVersion) const { return (m_dwObsoleteVersion > 0 && dwAPIVersion >= m_dwObsoleteVersion); }
-		inline bool IsOptional (void) const { return (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0 || m_dwObsoleteVersion > 0)); }
+		inline bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
 		inline void MarkImages (void) { OnMarkImages(); }
 		inline void SetGlobalData (const CString &sAttrib, const CString &sData) { SetExtra()->GlobalData.SetData(sAttrib, sData); }
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }

@@ -1,6 +1,7 @@
 //	CObjectTracker.cpp
 //
 //	CObjectTracker class
+//	Copyright (c) 2018 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -17,7 +18,7 @@ CObjectTracker::~CObjectTracker (void)
 	DeleteAll();
 	}
 
-bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, DWORD dwFlags, TArray<SObjEntry> *retResult) const
+bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CObjectTrackerCriteria &Criteria, DWORD dwFlags, TArray<SObjEntry> *retResult) const
 
 //	AccumulateEntries
 //
@@ -33,7 +34,7 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesign
 
 		//	If we don't match, then continue
 
-		if (!pList->pType->MatchesCriteria(Criteria))
+		if (!pList->pType->MatchesCriteria(Criteria.GetTypeCriteria()))
 			continue;
 
 		//	If all we care about is whether we have any entries, then we're done.
@@ -45,7 +46,21 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CDesign
 
         retResult->GrowToFit(pList->Objects.GetCount());
 		for (j = 0; j < pList->Objects.GetCount(); j++)
-            AccumulateEntry(*pList, pList->Objects.GetKey(j), pList->Objects[j], dwFlags, *retResult);
+			{
+			const SObjBasics &Basics = pList->Objects[j];
+
+			//	If this object does not match, skip
+
+			if (Criteria.SelectsActiveOnly() && Basics.fInactive && !pList->pType->IsVirtual())
+				continue;
+
+			if (Criteria.SelectsKilledOnly() && (!Basics.fInactive || pList->pType->IsVirtual()))
+				continue;
+
+			//	Otherwise, add
+
+            AccumulateEntry(*pList, pList->Objects.GetKey(j), Basics, dwFlags, *retResult);
+			}
 		}
 
 	//	Done
@@ -69,6 +84,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
     pEntry->fShowInMap = ObjData.fShowInMap;
     pEntry->fFriendly = ObjData.fFriendly;
     pEntry->fEnemy = ObjData.fEnemy;
+	pEntry->fInactive = ObjData.fInactive;
 
 	if (ObjData.pExtra)
 		{
@@ -137,7 +153,7 @@ void CObjectTracker::DeleteAll (void)
 	m_ByNode.DeleteAll();
 	}
 
-bool CObjectTracker::Find (const CString &sNodeID, const CDesignTypeCriteria &Criteria, TArray<SObjEntry> *retResult)
+bool CObjectTracker::Find (const CString &sNodeID, const CObjectTrackerCriteria &Criteria, TArray<SObjEntry> *retResult)
 
 //	Find
 //
@@ -592,11 +608,12 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                         //  Flags
 
                         Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-                        pObjData->fKnown = ((dwLoad & 0x00000002) ? true : false);
-                        pObjData->fShowDestroyed = ((dwLoad & 0x00000004) ? true : false);
-                        pObjData->fShowInMap = ((dwLoad & 0x00000008) ? true : false);
-                        pObjData->fFriendly = ((dwLoad & 0x00000010) ? true : false);
-                        pObjData->fEnemy = ((dwLoad & 0x00000020) ? true : false);
+                        pObjData->fKnown =			((dwLoad & 0x00000002) ? true : false);
+                        pObjData->fShowDestroyed =	((dwLoad & 0x00000004) ? true : false);
+                        pObjData->fShowInMap =		((dwLoad & 0x00000008) ? true : false);
+                        pObjData->fFriendly =		((dwLoad & 0x00000010) ? true : false);
+                        pObjData->fEnemy =			((dwLoad & 0x00000020) ? true : false);
+                        pObjData->fInactive =		((dwLoad & 0x00000040) ? true : false);
 
                         //  Extra, if we've got it
 
@@ -719,11 +736,11 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                     //  Flags
 
                     Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-                    pObjData->fKnown = ((dwLoad & 0x00000002) ? true : false);
-                    pObjData->fShowDestroyed = ((dwLoad & 0x00000004) ? true : false);
-                    pObjData->fShowInMap = ((dwLoad & 0x00000008) ? true : false);
-                    pObjData->fFriendly = ((dwLoad & 0x00000010) ? true : false);
-                    pObjData->fEnemy = ((dwLoad & 0x00000020) ? true : false);
+                    pObjData->fKnown =			((dwLoad & 0x00000002) ? true : false);
+                    pObjData->fShowDestroyed =	((dwLoad & 0x00000004) ? true : false);
+                    pObjData->fShowInMap =		((dwLoad & 0x00000008) ? true : false);
+                    pObjData->fFriendly =		((dwLoad & 0x00000010) ? true : false);
+                    pObjData->fEnemy =			((dwLoad & 0x00000020) ? true : false);
 
                     //  Extra, if we've got it
 
@@ -887,6 +904,7 @@ void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceOb
     pObjData->fKnown = pObj->IsKnown();
     pObjData->fShowDestroyed = pObj->ShowStationDamage();
     pObjData->fShowInMap = pObj->IsShownInGalacticMap();
+	pObjData->fInactive = pObj->IsInactive();
 
     //  Track our disposition relative to the player
 
@@ -1220,6 +1238,7 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
                 dwSave |= (ObjData.fShowInMap       ? 0x00000008 : 0);
                 dwSave |= (ObjData.fFriendly        ? 0x00000010 : 0);
                 dwSave |= (ObjData.fEnemy           ? 0x00000020 : 0);
+                dwSave |= (ObjData.fInactive        ? 0x00000040 : 0);
 			    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
                 //  If we have extra data, save that

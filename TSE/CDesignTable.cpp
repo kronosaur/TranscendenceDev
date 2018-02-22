@@ -182,9 +182,20 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 			//	Otherwise, we do include it.
 			}
 
+		//	If this is an override type, then we add to a special table.
+		//
+		//	NOTE: It is OK if we add multiple types of the same UNID. As long
+		//	as we add them in order, we're OK.
+
+		if (pNewType->IsModification())
+			{
+			Override.AddEntry(pNewType);
+			iSrcPos++;
+			}
+
 		//	If we're at the end of the destination then just insert
 
-		if (iDestPos == m_Table.GetCount())
+		else if (iDestPos == m_Table.GetCount())
 			{
 			m_Table.InsertSorted(pNewType->GetUNID(), pNewType);
 
@@ -204,33 +215,17 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 
 			if (iCompare == 0)
 				{
-				//	If this is an override then we put it on a different table and
-				//	leave the type alone.
-				//
-				//	NOTE: It is OK if we add multiple types of the same UNID. As long
-				//	as we add them in order, we're OK.
+				//	If we have to free our originals, then remember them here.
 
-				if (pNewType->IsModification())
+				if (m_bFreeTypes)
 					{
-					Override.AddEntry(pNewType);
+					CDesignType *pOriginalType = m_Table.GetValue(iDestPos);
+					Replaced.Insert(pOriginalType);
 					}
 
-				//	Otherwise we just replace the type
+				//	Replace
 
-				else
-					{
-					//	If we have to free our originals, then remember them here.
-
-					if (m_bFreeTypes)
-						{
-						CDesignType *pOriginalType = m_Table.GetValue(iDestPos);
-						Replaced.Insert(pOriginalType);
-						}
-
-					//	Replace
-
-					m_Table.GetValue(iDestPos) = pNewType;
-					}
+				m_Table.GetValue(iDestPos) = pNewType;
 
 				//	Advance
 

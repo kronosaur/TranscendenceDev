@@ -13484,9 +13484,9 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Parse the criteria
 
-			CDesignTypeCriteria Criteria;
-			if (CDesignTypeCriteria::ParseCriteria(pArgs->GetElement(iArg++)->GetStringValue(), &Criteria) != NOERROR)
-				return pCC->CreateError(CONSTLIT("Invalid design type criteria"), pArgs->GetElement(0));
+			CObjectTrackerCriteria Criteria;
+			if (!Criteria.ParseCriteria(pArgs->GetElement(iArg++)->GetStringValue()))
+				return pCC->CreateError(CONSTLIT("Invalid criteria"), pArgs->GetElement(0));
 
 			//	Get the list of entries
 
