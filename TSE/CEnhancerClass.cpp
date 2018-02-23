@@ -112,8 +112,8 @@ void CEnhancerClass::ApplyInherited (SScalableStats &Stats, const SInheritedStat
 	if (RootStats.iPowerUse != -1)
 		Stats.iPowerUse = RootStats.iPowerUse;
 
-	if (RootStats.iLevelCheck != -1)
-		Stats.Enhancements.SetLevelCheck(-1, RootStats.iLevelCheck == 1);
+	if (!RootStats.LevelCheck.IsEmpty())
+		Stats.Enhancements.SetLevelCheck(-1, RootStats.LevelCheck);
 	}
 
 int CEnhancerClass::CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource)
@@ -163,7 +163,8 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 		CItem::ParseCriteria(RootStats.sCriteria, &RootStats.Criteria);
 
 	RootStats.iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
-	RootStats.iLevelCheck = pDesc->GetAttributeTriState(LEVEL_CHECK_ATTRIB);
+	if (error = RootStats.LevelCheck.InitFromXML(Ctx, pDesc->GetAttribute(LEVEL_CHECK_ATTRIB)))
+		return error;
 
 	//	If we've got a single <Enhance> element, then we take all data from that.
 

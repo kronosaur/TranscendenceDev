@@ -208,8 +208,8 @@ class CEnhancerClass : public CDeviceClass
 			CString sType;
 			CString sCriteria;
 			CItemCriteria Criteria;
+			CItemLevelCriteria LevelCheck;
 			int iPowerUse;
-			int iLevelCheck;
 			};
 
 		bool AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);

@@ -384,6 +384,7 @@
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CHullDesc.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
+    <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemPriceTracker.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />

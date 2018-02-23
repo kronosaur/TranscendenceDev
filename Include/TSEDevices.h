@@ -63,6 +63,31 @@ class CFailureDesc
 		TProbabilityTable<EFailureTypes> m_FailTable;
 	};
 
+class CItemLevelCriteria
+	{
+	public:
+		enum ETypes
+			{
+			checkNone,							//	Matches everything
+
+			checkLessEqualToLevel,				//	Target item level is <= to our level
+			checkLessThanLevel,					//	Target item level is < than our level
+			checkGreaterEqualToLevel,			//	Target item level is >= to our level
+			checkGreaterThanLevel,				//	Target item level is > than our level
+			checkLessEqualToRepairLevel,		//	Target item repair level is <= to our level
+			checkLessThanRepairLevel,			//	Target item repair level is < to our level
+			checkGreaterEqualToRepairLevel,		//	Target item repair level is >= to our level
+			checkGreaterThanRepairLevel,		//	Target item repair level is > than our level
+			};
+
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
+		inline bool IsEmpty (void) const { return m_iType == checkNone; }
+		bool MatchesCriteria (int iLevel, const CItem &Item) const;
+
+	private:
+		ETypes m_iType = checkNone;
+	};
+
 class CEnhancementDesc
 	{
 	public:
@@ -71,7 +96,7 @@ class CEnhancementDesc
 		inline int GetCount (void) const { return m_Enhancements.GetCount(); }
 		inline const CItemEnhancement &GetEnhancement (int iIndex) const { return m_Enhancements[iIndex].Enhancement; }
 		void SetCriteria (int iEntry, const CItemCriteria &Criteria);
-		void SetLevelCheck (int iEntry, bool bValue = true);
+		void SetLevelCheck (int iEntry, const CItemLevelCriteria &LevelCheck);
 		void SetType (int iEntry, const CString &sType);
 
 	private:
@@ -79,9 +104,8 @@ class CEnhancementDesc
 			{
 			CString sType;						//	Type of enhancement
 			CItemCriteria Criteria;				//	Items that we enhance
+			CItemLevelCriteria LevelCheck;		//	Criteria for item level
 			CItemEnhancement Enhancement;		//	Enhancement confered
-
-			DWORD fLevelCheck:1;				//	Only enhance if target item level is <= ours.
 			};
 
 		ALERROR InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SEnhancerDesc &Enhance);

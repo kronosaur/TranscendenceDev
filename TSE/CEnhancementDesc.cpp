@@ -38,8 +38,7 @@ bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CS
 		//	If we're checking level, then make sure our level is at least as 
 		//	high as the target.
 
-		if (m_Enhancements[i].fLevelCheck
-				&& Ctx.GetItem().GetLevel() < Target.GetLevel())
+		if (!m_Enhancements[i].LevelCheck.MatchesCriteria(Ctx.GetItem().GetLevel(), Target))
 			continue;
 
 		//	Add the enhancement
@@ -107,9 +106,10 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	CItem::ParseCriteria(sCriteria, &Enhance.Criteria);
 
-	//	Flags
+	//	Level check criteria
 
-	Enhance.fLevelCheck = pDesc->GetAttributeBool(LEVEL_CHECK_ATTRIB);
+	if (error = Enhance.LevelCheck.InitFromXML(Ctx, pDesc->GetAttribute(LEVEL_CHECK_ATTRIB)))
+		return error;
 
 	//	Parse the enhancement itself
 
@@ -138,7 +138,7 @@ void CEnhancementDesc::SetCriteria (int iEntry, const CItemCriteria &Criteria)
 		m_Enhancements[iEntry].Criteria = Criteria;
 	}
 
-void CEnhancementDesc::SetLevelCheck (int iEntry, bool bValue)
+void CEnhancementDesc::SetLevelCheck (int iEntry, const CItemLevelCriteria &LevelCheck)
 
 //	SetLevelCheck
 //
@@ -151,10 +151,10 @@ void CEnhancementDesc::SetLevelCheck (int iEntry, bool bValue)
 	if (iEntry == -1)
 		{
 		for (i = 0; i < m_Enhancements.GetCount(); i++)
-			m_Enhancements[i].fLevelCheck = bValue;
+			m_Enhancements[i].LevelCheck = LevelCheck;
 		}
 	else if (iEntry >= 0 && iEntry < m_Enhancements.GetCount())
-		m_Enhancements[iEntry].fLevelCheck = bValue;
+		m_Enhancements[iEntry].LevelCheck = LevelCheck;
 	}
 
 void CEnhancementDesc::SetType (int iEntry, const CString &sType)
