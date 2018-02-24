@@ -339,7 +339,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 
 	//	Now resolve all overrides and inheritance
 
-	if (error = ResolveOverrides(Ctx))
+	if (error = ResolveOverrides(Ctx, TypesUsed))
 		{
 		m_bInBindDesign = false;
 		*retsError = Ctx.sError;
@@ -1572,7 +1572,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	return NOERROR;
 	}
 
-ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx)
+ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed)
 
 //	ResolveOverrides
 //
@@ -1593,7 +1593,17 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx)
 
 		CDesignType *pType = m_AllTypes.FindByUNID(pOverride->GetUNID());
 		if (pType == NULL)
+			{
+			//	In previous versions, we sometimes saved these overrides, so if
+			//	we find it in TypesUsed, then it means we need it.
+
+			if (TypesUsed.Find(pOverride->GetUNID()))
+				{
+				m_AllTypes.AddOrReplaceEntry(pOverride);
+				}
+
 			continue;
+			}
 
 		//	If this type is not already a clone then we need to clone it first
 		//	(Because we never modify the original loaded type).

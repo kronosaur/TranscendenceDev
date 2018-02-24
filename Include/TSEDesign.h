@@ -1245,7 +1245,7 @@ class CDesignCollection
 		void CacheGlobalEvents (CDesignType *pType);
 		ALERROR CreateTemplateTypes (SDesignLoadCtx &Ctx);
 		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType);
-		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx);
+		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed);
 		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx);
 
 		//	Loaded types. These are initialized at load-time and never change.
