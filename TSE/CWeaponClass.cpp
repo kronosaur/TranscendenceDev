@@ -104,9 +104,9 @@ const int MAX_SHOT_COUNT =				100;
 
 const Metric MAX_EXPECTED_PASSTHROUGH = 4.0;
 const Metric EXPECTED_FRAGMENT_HITS =   0.2;                //  Fraction of fragments that hit (for balance purposes)
-const Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.67;        //  Fraction of tracking fragments that hit (for balance purposes)
+const Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.9;			//  Fraction of tracking fragments that hit (for balance purposes)
 const Metric EXPECTED_SHOCKWAVE_HITS =  0.2;                //  Fraction of shockwave that hits (for balance purposes)
-const Metric EXPECTED_RADIUS_DAMAGE =   0.5;                //  Fraction of radius damage (for balance purposes)
+const Metric EXPECTED_RADIUS_DAMAGE =   0.8;                //  Fraction of radius damage (for balance purposes)
 
 const Metric g_DualShotSeparation =		12;					//	Radius of dual shot (pixels)
 const int TEMP_DECREASE =				-1;					//	Decrease in temp per cooling rate
@@ -120,7 +120,7 @@ const Metric STD_FIRE_DELAY_TICKS =     8.0;
 
 const Metric STD_AMMO_BALANCE =         -100.0;             //  Balance adj from having ammo
 const Metric STD_AMMO_MASS =            10.0;               //  Std ammo mass (kg)
-const Metric BALANCE_AMMO_COST_RATIO =  -0.20;              //  Each percent of ammo price above std is
+const Metric BALANCE_AMMO_COST_RATIO =  -0.25;              //  Each percent of ammo price above std is
                                                             //      0.25% balance penalty.
 const Metric BALANCE_AMMO_MASS_RATIO =  -0.25;              //  Heavier ammo is a balance penalty.
 
@@ -129,7 +129,7 @@ const Metric BALANCE_OMNI_FACTOR =      100.0;              //      This functio
                                                             //      arc (0-360) to its effect on weapon
                                                             //      balance: 0 = none; 100.0 = +100%
 
-const Metric BALANCE_TRACKING_BONUS =   50.0;               //  Bonus to balance if weapon has tracking.
+const Metric BALANCE_TRACKING_BONUS =   90.0;               //  Bonus to balance if weapon has tracking.
 const Metric BALANCE_LINKED_FIRE_BONUS = 25.0;              //  Bonus to balance if weapon is linked-fire.
 
 const Metric STD_RANGE =                60.0 * LIGHT_SECOND;//  Standard range
@@ -184,23 +184,23 @@ static CWeaponClass::SStdStats STD_WEAPON_STATS[MAX_ITEM_LEVEL] =
 		{	35,		2000,	     158000.,     120.0,     10,    -300, },
 		{	46,		3000,	     320000.,     180.0,     10,    -300, },
 			
-		{	60,		5000,	     640000.,     240.0,     25,    -300, },
-		{	78,		8000,	    1300000.,     360.0,     25,    -300, },
-		{	101,	12000,	    2700000.,     480.0,     25,    -300, },
-		{	131,	18000,	    5300000.,     600.0,     100,   -300, },
-		{	170,	28000,	   10600000.,     720.0,     100,   -300, },
+		{	60,		5000,	     640000.,     300.0,     25,    -300, },
+		{	78,		8000,	    1300000.,     480.0,     25,    -300, },
+		{	101,	12000,	    2700000.,     720.0,     25,    -300, },
+		{	131,	18000,	    5300000.,    1080.0,     100,   -300, },
+		{	170,	28000,	   10600000.,    1680.0,     100,   -300, },
 			
-		{	221,	40000,	   21300000.,     900.0,     100,   -300, },
-		{	287,	60000,	   42600000.,    1200.0,     200,   -300, },
-		{	373,	90000,	   85200000.,    1500.0,     200,   -300, },
-		{	485,	120000,	  170000000.,    1800.0,     200,   -300, },
-		{	631,	160000,	  341000000.,    2100.0,     200,   -300, },
+		{	221,	40000,	   21300000.,    2400.0,     100,   -300, },
+		{	287,	60000,	   42600000.,    3600.0,     200,   -300, },
+		{	373,	90000,	   85200000.,    5400.0,     200,   -300, },
+		{	485,	120000,	  170000000.,    7200.0,     200,   -300, },
+		{	631,	160000,	  341000000.,    9600.0,     200,   -300, },
 			
-		{	820,	220000,	  682000000.,    2400.0,     200,   -300, },
-		{	1066,	300000,	 1400000000.,    3000.0,     200,   -300, },
-		{	1386,	400000,	 2700000000.,    3600.0,     200,   -300, },
-		{	1802,	500000,	 5500000000.,    4200.0,     200,   -300, },
-		{	2343,	600000,	10900000000.,    4800.0,     200,   -300, },
+		{	820,	220000,	  682000000.,   13200.0,     200,   -300, },
+		{	1066,	300000,	 1400000000.,   18000.0,     200,   -300, },
+		{	1386,	400000,	 2700000000.,   24000.0,     200,   -300, },
+		{	1802,	500000,	 5500000000.,   30000.0,     200,   -300, },
+		{	2343,	600000,	10900000000.,   36000.0,     200,   -300, },
 	};
 
 static char *CACHED_EVENTS[CWeaponClass::evtCount] =
@@ -432,21 +432,25 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
     else
         bUsesAmmo = false;
 
-    //  Omni and swivel weapons are a bonus
-
-    Metric rSwivelRange = CalcRotateRange(ItemCtx) / 360.0;
-    if (rSwivelRange > 0.0)
-        {
-        retBalance.rOmni = BALANCE_OMNI_FACTOR * pow(rSwivelRange, BALANCE_OMNI_POWER);
-        retBalance.rBalance += retBalance.rOmni;
-        }
-
     //  Tracking weapons are a bonus
 
     if (pShot->IsTrackingOrHasTrackingFragments())
         {
         retBalance.rTracking = BALANCE_TRACKING_BONUS;
         retBalance.rBalance += retBalance.rTracking;
+        }
+
+    //  Omni and swivel weapons are a bonus
+
+    Metric rSwivelRange = CalcRotateRange(ItemCtx) / 360.0;
+    if (rSwivelRange > 0.0)
+        {
+		Metric rOmni = BALANCE_OMNI_FACTOR * pow(rSwivelRange, BALANCE_OMNI_POWER);
+
+		//	NOTE: If we have tracking, then omni is less important.
+
+        retBalance.rOmni = Max(0.0, rOmni - retBalance.rTracking);
+        retBalance.rBalance += retBalance.rOmni;
         }
 
     //  Range
