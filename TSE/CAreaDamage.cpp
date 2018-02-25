@@ -25,13 +25,7 @@ CAreaDamage::~CAreaDamage (void)
 		m_pPainter->Delete();
 	}
 
-ALERROR CAreaDamage::Create (CSystem *pSystem,
-							 CWeaponFireDesc *pDesc,
-							 TSharedPtr<CItemEnhancementStack> pEnhancements,
-							 const CDamageSource &Source,
-							 const CVector &vPos,
-							 const CVector &vVel,
-							 CAreaDamage **retpObj)
+ALERROR CAreaDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CAreaDamage **retpObj)
 
 //	Create
 //
@@ -42,7 +36,7 @@ ALERROR CAreaDamage::Create (CSystem *pSystem,
 
 	//	Make sure we have a valid CWeaponFireDesc (otherwise we won't be
 	//	able to save it the area of effect).
-	ASSERT(!pDesc->GetUNID().IsBlank());
+	ASSERT(!Ctx.pDesc->GetUNID().IsBlank());
 
 	//	Create the area
 
@@ -50,30 +44,30 @@ ALERROR CAreaDamage::Create (CSystem *pSystem,
 	if (pArea == NULL)
 		return ERR_MEMORY;
 
-	pArea->Place(vPos, vVel);
+	pArea->Place(Ctx.vPos, Ctx.vVel);
 
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();
 
-	pArea->m_pDesc = pDesc;
-	pArea->m_pEnhancements = pEnhancements;
-	pArea->m_iLifeLeft = pDesc->GetLifetime();
-	pArea->m_Source = Source;
-	pArea->m_iInitialDelay = pDesc->GetInitialDelay();
+	pArea->m_pDesc = Ctx.pDesc;
+	pArea->m_pEnhancements = Ctx.pEnhancements;
+	pArea->m_iLifeLeft = Ctx.pDesc->GetLifetime();
+	pArea->m_Source = Ctx.Source;
+	pArea->m_iInitialDelay = Ctx.pDesc->GetInitialDelay();
 	pArea->m_iTick = 0;
 
 	//	Friendly fire
 
-	if (!pDesc->CanHitFriends())
+	if (!Ctx.pDesc->CanHitFriends())
 		pArea->SetNoFriendlyFire();
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 
-	pArea->m_pSovereign = Source.GetSovereign();
+	pArea->m_pSovereign = Ctx.Source.GetSovereign();
 
 	//	Create a painter instance
 
-	pArea->m_pPainter = pDesc->CreateShockwavePainter();
+	pArea->m_pPainter = Ctx.pDesc->CreateShockwavePainter();
 
 	//	Add to system
 

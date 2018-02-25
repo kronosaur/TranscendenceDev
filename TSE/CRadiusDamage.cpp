@@ -23,14 +23,7 @@ CRadiusDamage::~CRadiusDamage (void)
 		m_pPainter->Delete();
 	}
 
-ALERROR CRadiusDamage::Create (CSystem *pSystem,
-							   CWeaponFireDesc *pDesc,
-							   TSharedPtr<CItemEnhancementStack> pEnhancements,
-							   const CDamageSource &Source,
-							   const CVector &vPos,
-							   const CVector &vVel,
-							   CSpaceObject *pTarget,
-							   CRadiusDamage **retpObj)
+ALERROR CRadiusDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CRadiusDamage **retpObj)
 
 //	Create
 //
@@ -41,7 +34,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 
 	//	Make sure we have a valid CWeaponFireDesc (otherwise we won't be
 	//	able to save the descriptor).
-	ASSERT(!pDesc->GetUNID().IsBlank());
+	ASSERT(!Ctx.pDesc->GetUNID().IsBlank());
 
 	//	Create the area
 
@@ -49,32 +42,32 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem,
 	if (pArea == NULL)
 		return ERR_MEMORY;
 
-	pArea->Place(vPos, vVel);
+	pArea->Place(Ctx.vPos, Ctx.vVel);
 
 	//	Get notifications when other objects are destroyed
 	pArea->SetObjectDestructionHook();
 
-	pArea->m_iLifeLeft = Max(1, pDesc->GetLifetime());
-	pArea->m_pDesc = pDesc;
-	pArea->m_pEnhancements = pEnhancements;
-	pArea->m_Source = Source;
-	pArea->m_pTarget = pTarget;
+	pArea->m_iLifeLeft = Max(1, Ctx.pDesc->GetLifetime());
+	pArea->m_pDesc = Ctx.pDesc;
+	pArea->m_pEnhancements = Ctx.pEnhancements;
+	pArea->m_Source = Ctx.Source;
+	pArea->m_pTarget = Ctx.pTarget;
 	pArea->m_iTick = 0;
 
-	Metric rRadius = pDesc->GetMaxRadius();
+	Metric rRadius = Ctx.pDesc->GetMaxRadius();
 
 	//	Friendly fire
 
-	if (!pDesc->CanHitFriends())
+	if (!Ctx.pDesc->CanHitFriends())
 		pArea->SetNoFriendlyFire();
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 
-	pArea->m_pSovereign = Source.GetSovereign();
+	pArea->m_pSovereign = Ctx.Source.GetSovereign();
 
 	//	Create a painter instance
 
-	pArea->m_pPainter = pDesc->CreateEffectPainter();
+	pArea->m_pPainter = Ctx.pDesc->CreateEffectPainter();
 	if (pArea->m_pPainter)
 		{
 		//	Adjust lifetime of object based on the painter
@@ -403,13 +396,15 @@ void CRadiusDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		if (m_pDesc->HasFragments())
 			{
-			GetSystem()->CreateWeaponFragments(m_pDesc,
-					m_pEnhancements,
-					m_Source,
-					m_pTarget,
-					GetPos(),
-					GetVel(),
-					this);
+			SShotCreateCtx FragCtx;
+			FragCtx.pDesc = m_pDesc;
+			FragCtx.pEnhancements = m_pEnhancements;
+			FragCtx.Source = m_Source;
+			FragCtx.pTarget = m_pTarget;
+			FragCtx.vPos = GetPos();
+			FragCtx.vVel = GetVel();
+
+			GetSystem()->CreateWeaponFragments(FragCtx, this);
 			}
 		}
 

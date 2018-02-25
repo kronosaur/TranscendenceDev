@@ -8,13 +8,7 @@
 class CAreaDamage : public CSpaceObject
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
-				CWeaponFireDesc *pDesc,
-				TSharedPtr<CItemEnhancementStack> pEnhancements,
-				const CDamageSource &Source,
-				const CVector &vPos,
-				const CVector &vVel,
-				CAreaDamage **retpObj);
+		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CAreaDamage **retpObj);
 		~CAreaDamage (void);
 
 		//	CSpaceObject virtuals
@@ -152,15 +146,7 @@ class CBoundaryMarker : public CSpaceObject
 class CContinuousBeam : public CSpaceObject
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
-				CWeaponFireDesc *pDesc,
-				TSharedPtr<CItemEnhancementStack> pEnhancements,
-				const CDamageSource &Source,
-				const CVector &vPos,
-				const CVector &vVel,
-				int iDirection,
-				CSpaceObject *pTarget,
-				CContinuousBeam **retpObj);
+		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinuousBeam **retpObj);
 		~CContinuousBeam (void);
 
 		//	CSpaceObject virtuals
@@ -490,15 +476,7 @@ class CMarker : public CSpaceObject
 class CMissile : public CSpaceObject
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
-				CWeaponFireDesc *pDesc,
-				TSharedPtr<CItemEnhancementStack> pEnhancements,
-				const CDamageSource &Source,
-				const CVector &vPos,
-				const CVector &vVel,
-				int iRotation,
-				CSpaceObject *pTarget,
-				CMissile **retpMissile);
+		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retpMissile);
 		~CMissile (void);
 
 		//	CSpaceObject virtuals
@@ -593,15 +571,7 @@ class CMissile : public CSpaceObject
 class CParticleDamage : public CSpaceObject
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
-				CWeaponFireDesc *pDesc,
-				TSharedPtr<CItemEnhancementStack> pEnhancements,
-				const CDamageSource &Source,
-				const CVector &vPos,
-				const CVector &vVel,
-				int iDirection,
-				CSpaceObject *pTarget,
-				CParticleDamage **retpObj);
+		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CParticleDamage **retpObj);
 		~CParticleDamage (void);
 
 		//	CSpaceObject virtuals
@@ -881,14 +851,7 @@ class CPOVMarker : public CSpaceObject
 class CRadiusDamage : public CSpaceObject
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
-				CWeaponFireDesc *pDesc,
-				TSharedPtr<CItemEnhancementStack> pEnhancements,
-				const CDamageSource &Source,
-				const CVector &vPos,
-				const CVector &vVel,
-				CSpaceObject *pTarget,
-				CRadiusDamage **retpObj);
+		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CRadiusDamage **retpObj);
 		~CRadiusDamage (void);
 
 		//	CSpaceObject virtuals

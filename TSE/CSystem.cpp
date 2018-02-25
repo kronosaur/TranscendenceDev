@@ -1644,16 +1644,7 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 	return NOERROR;
 	}
 
-ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
-								   TSharedPtr<CItemEnhancementStack> pEnhancements,
-								   const CDamageSource &Source,
-								   const CVector &vPos,
-								   const CVector &vVel,
-								   int iDirection,
-								   int iRepeatingCount,
-								   CSpaceObject *pTarget,
-								   DWORD dwFlags,
-								   CSpaceObject **retpShot)
+ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 
 //	CreateWeaponFire
 //
@@ -1662,22 +1653,14 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 	{
 	CSpaceObject *pShot;
 
-	switch (pDesc->GetType())
+	switch (Ctx.pDesc->GetType())
 		{
 		case ftBeam:
 		case ftMissile:
 			{
 			CMissile *pMissile;
 
-			CMissile::Create(this,
-					pDesc,
-					pEnhancements,
-					Source,
-					vPos,
-					vVel,
-					iDirection,
-					pTarget,
-					&pMissile);
+			CMissile::Create(this, Ctx, &pMissile);
 
 			pShot = pMissile;
 			break;
@@ -1687,15 +1670,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			{
 			CContinuousBeam *pBeam;
 
-			CContinuousBeam::Create(this,
-					pDesc,
-					pEnhancements,
-					Source,
-					vPos,
-					vVel,
-					iDirection,
-					pTarget,
-					&pBeam);
+			CContinuousBeam::Create(this, Ctx, &pBeam);
 
 			pShot = pBeam;
 			break;
@@ -1705,13 +1680,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			{
 			CAreaDamage *pArea;
 
-			CAreaDamage::Create(this,
-					pDesc,
-					pEnhancements,
-					Source,
-					vPos,
-					vVel,
-					&pArea);
+			CAreaDamage::Create(this, Ctx, &pArea);
 
 			pShot = pArea;
 			break;
@@ -1721,15 +1690,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			{
 			CParticleDamage *pParticles;
 
-			CParticleDamage::Create(this,
-					pDesc,
-					pEnhancements,
-					Source,
-					vPos,
-					vVel,
-					iDirection,
-					pTarget,
-					&pParticles);
+			CParticleDamage::Create(this, Ctx, &pParticles);
 
 			pShot = pParticles;
 			break;
@@ -1739,14 +1700,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 			{
 			CRadiusDamage *pRadius;
 
-			CRadiusDamage::Create(this,
-					pDesc,
-					pEnhancements,
-					Source,
-					vPos,
-					vVel,
-					pTarget,
-					&pRadius);
+			CRadiusDamage::Create(this, Ctx, &pRadius);
 
 			pShot = pRadius;
 			break;
@@ -1767,11 +1721,11 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 
 	//	Fire OnCreateShot event
 
-	pDesc->FireOnCreateShot(Source, pShot, pTarget);
+	Ctx.pDesc->FireOnCreateShot(Ctx.Source, pShot, Ctx.pTarget);
 
 	//	Fire a system events, if we have any handlers
 
-	FireSystemWeaponEvents(pShot, pDesc, Source, iRepeatingCount, dwFlags);
+	FireSystemWeaponEvents(pShot, Ctx.pDesc, Ctx.Source, Ctx.iRepeatingCount, Ctx.dwFlags);
 
 	//	Done
 
@@ -1781,14 +1735,7 @@ ALERROR CSystem::CreateWeaponFire (CWeaponFireDesc *pDesc,
 	return NOERROR;
 	}
 
-ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
-									    TSharedPtr<CItemEnhancementStack> pEnhancements,
-									    const CDamageSource &Source,
-									    CSpaceObject *pTarget,
-									    const CVector &vPos,
-										const CVector &vVel,
-									    CSpaceObject *pMissileSource,
-                                        int iFraction)
+ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMissileSource, int iFraction)
 
 //	CreateWeaponFragments
 //
@@ -1800,7 +1747,7 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 	ALERROR error;
 	int i;
 
-	CWeaponFireDesc::SFragmentDesc *pFragDesc = pDesc->GetFirstFragment();
+	CWeaponFireDesc::SFragmentDesc *pFragDesc = Ctx.pDesc->GetFirstFragment();
 	while (pFragDesc)
 		{
 		int iFragmentCount = pFragDesc->Count.Roll();
@@ -1818,7 +1765,7 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 				for (i = 0; i < iFragmentCount; i++)
 					{
 					Angles[i] = mathRandom(0, 359);
-					Targets[i] = pTarget;
+					Targets[i] = Ctx.pTarget;
 					}
 				}
 
@@ -1835,7 +1782,7 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 				for (i = 0; i < iFragmentCount; i++)
 					{
 					Angles[i] = AngleMod(iAngleOffset + (iAngleInc * i) + mathRandom(-iAngleVar, iAngleVar));
-					Targets[i] = pTarget;
+					Targets[i] = Ctx.pTarget;
 					}
 				}
 
@@ -1865,7 +1812,7 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 
 							//	Calculate direction to fire in
 
-							CVector vTarget = pTarget->GetPos() - vPos;
+							CVector vTarget = pTarget->GetPos() - Ctx.vPos;
 							Metric rTimeToIntercept = CalcInterceptTime(vTarget, pTarget->GetVel(), rSpeed);
 							CVector vInterceptPoint = vTarget + pTarget->GetVel() * rTimeToIntercept;
 
@@ -1889,7 +1836,7 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 
 					//	If no targets found, an we require a target, then we skip
 
-					else if (pDesc->IsTargetRequired() || pFragDesc->pDesc->IsTargetRequired())
+					else if (Ctx.pDesc->IsTargetRequired() || pFragDesc->pDesc->IsTargetRequired())
 						{
 						pFragDesc = pFragDesc->pNext;
 						continue;
@@ -1902,7 +1849,7 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 
 			CVector vInitVel;
 			if (!pFragDesc->bMIRV)
-				vInitVel = vVel;
+				vInitVel = Ctx.vVel;
 
 			//	If we don't want to create all fragments, we randomly delete 
 			//	some fragments (by setting angle to -1).
@@ -1945,17 +1892,18 @@ ALERROR CSystem::CreateWeaponFragments (CWeaponFireDesc *pDesc,
 
                 //  Create the fragment
 
+				SShotCreateCtx FragCtx;
+				FragCtx.pDesc = pFragDesc->pDesc;
+				FragCtx.pEnhancements = Ctx.pEnhancements;
+				FragCtx.Source = Ctx.Source;
+				FragCtx.vPos = Ctx.vPos + CVector(mathRandom(-10, 10) * g_KlicksPerPixel / 10.0, mathRandom(-10, 10) * g_KlicksPerPixel / 10.0);
+				FragCtx.vVel = vInitVel + PolarToVector(Angles[i], rSpeed);
+				FragCtx.iDirection = Angles[i];
+				FragCtx.pTarget = Targets[i];
+				FragCtx.dwFlags = SShotCreateCtx::CWF_FRAGMENT;
+
 				CSpaceObject *pNewObj;
-				if (error = CreateWeaponFire(pFragDesc->pDesc,
-						pEnhancements,
-						Source,
-						vPos + CVector(mathRandom(-10, 10) * g_KlicksPerPixel / 10.0, mathRandom(-10, 10) * g_KlicksPerPixel / 10.0),
-						vInitVel + PolarToVector(Angles[i], rSpeed),
-						Angles[i],
-						0,
-						Targets[i],
-						CSystem::CWF_FRAGMENT,
-						&pNewObj))
+				if (error = CreateWeaponFire(FragCtx, &pNewObj))
 					return error;
 
 				//	Preserve automated weapon flag
@@ -2188,19 +2136,19 @@ void CSystem::FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDes
 		{
 		//	Skip any fragments
 
-		if (dwFlags & CWF_FRAGMENT)
+		if (dwFlags & SShotCreateCtx::CWF_FRAGMENT)
 			NULL;
 
 		//	If this is an explosion, then fire explosion event
 
-		else if (dwFlags & CWF_EXPLOSION)
+		else if (dwFlags & SShotCreateCtx::CWF_EXPLOSION)
 			{
 			FireOnSystemExplosion(pShot, pDesc, Source);
 			}
 
 		//	If this is weapons fire, we fire that event
 
-		else if (dwFlags & CWF_WEAPON_FIRE)
+		else if (dwFlags & SShotCreateCtx::CWF_WEAPON_FIRE)
 			{
 			if (Source.GetObj() && Source.GetObj()->CanAttack())
 				FireOnSystemWeaponFire(pShot, pDesc, Source, iRepeatingCount);

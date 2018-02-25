@@ -202,15 +202,7 @@ int CMissile::ComputeVaporTrail (void)
 		}
 	}
 
-ALERROR CMissile::Create (CSystem *pSystem,
-						  CWeaponFireDesc *pDesc,
-						  TSharedPtr<CItemEnhancementStack> pEnhancements,
-						  const CDamageSource &Source,
-						  const CVector &vPos,
-						  const CVector &vVel,
-						  int iRotation,
-						  CSpaceObject *pTarget,
-						  CMissile **retpMissile)
+ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retpMissile)
 
 //	Create
 //
@@ -224,15 +216,15 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	if (pMissile == NULL)
 		return ERR_MEMORY;
 
-	pMissile->Place(vPos, vVel);
+	pMissile->Place(Ctx.vPos, Ctx.vVel);
 
 	//	We can't save missiles without an UNID
-	ASSERT(!pDesc->GetUNID().IsBlank());
+	ASSERT(!Ctx.pDesc->GetUNID().IsBlank());
 
 	//	Target must be valid
-	ASSERT(pTarget == NULL || !pTarget->IsDestroyed());
-	if (pTarget && pTarget->IsDestroyed())
-		pTarget = NULL;
+	ASSERT(Ctx.pTarget == NULL || !Ctx.pTarget->IsDestroyed());
+	if (Ctx.pTarget && Ctx.pTarget->IsDestroyed())
+		Ctx.pTarget = NULL;
 
 	//	Don't bother telling others when we are destroyed (Note that
 	//	if we do this then we also need to set the CannotBeHit flag;
@@ -240,7 +232,7 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	//	m_pHit is setup in Move and the object can go away between then
 	//	and our Update event.)
 
-	if (pDesc->GetInteraction() == 0)
+	if (Ctx.pDesc->GetInteraction() == 0)
 		{
 		pMissile->DisableObjectDestructionNotify();
 		pMissile->SetCannotBeHit();
@@ -249,15 +241,15 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	//	Get notifications when other objects are destroyed
 	pMissile->SetObjectDestructionHook();
 
-	pMissile->m_pDesc = pDesc;
-	pMissile->m_pEnhancements = pEnhancements;
-	pMissile->m_iHitPoints = pDesc->GetHitPoints();
-	pMissile->m_iLifeLeft = pDesc->GetLifetime();
+	pMissile->m_pDesc = Ctx.pDesc;
+	pMissile->m_pEnhancements = Ctx.pEnhancements;
+	pMissile->m_iHitPoints = Ctx.pDesc->GetHitPoints();
+	pMissile->m_iLifeLeft = Ctx.pDesc->GetLifetime();
 	pMissile->m_iTick = 0;
-	pMissile->m_Source = Source;
+	pMissile->m_Source = Ctx.Source;
 	pMissile->m_pHit = NULL;
-	pMissile->m_iRotation = iRotation;
-	pMissile->m_pTarget = pTarget;
+	pMissile->m_iRotation = Ctx.iDirection;
+	pMissile->m_pTarget = Ctx.pTarget;
 	pMissile->m_fDestroyOnAnimationDone = false;
 	pMissile->m_fReflection = false;
 	pMissile->m_fDetonate = false;
@@ -268,14 +260,14 @@ ALERROR CMissile::Create (CSystem *pSystem,
 	//	If we've got a detonation interval, then set it up
 
 	int iNext;
-	if (pDesc->HasFragmentInterval(&iNext))
-		pMissile->m_iNextDetonation = Max(pDesc->GetProximityFailsafe(), iNext);
+	if (Ctx.pDesc->HasFragmentInterval(&iNext))
+		pMissile->m_iNextDetonation = Max(Ctx.pDesc->GetProximityFailsafe(), iNext);
 	else
 		pMissile->m_iNextDetonation = -1;
 
 	//	Friendly fire
 
-	if (!pDesc->CanHitFriends())
+	if (!Ctx.pDesc->CanHitFriends())
 		pMissile->SetNoFriendlyFire();
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
@@ -284,16 +276,16 @@ ALERROR CMissile::Create (CSystem *pSystem,
 
 	//	Create a painter instance
 
-	bool bIsTracking = pTarget && pDesc->IsTracking();
-	pMissile->m_pPainter = pDesc->CreateEffectPainter(bIsTracking, true);
+	bool bIsTracking = Ctx.pTarget && Ctx.pDesc->IsTracking();
+	pMissile->m_pPainter = Ctx.pDesc->CreateEffectPainter(bIsTracking, true);
 	if (pMissile->m_pPainter)
 		pMissile->SetBounds(pMissile->m_pPainter);
 
 	//	Create exhaust trail, if necessary
 
-	if (pDesc->GetExhaust().iExhaustRate > 0)
+	if (Ctx.pDesc->GetExhaust().iExhaustRate > 0)
 		{
-		int iCount = (pDesc->GetExhaust().iExhaustLifetime / pDesc->GetExhaust().iExhaustRate) + 1;
+		int iCount = (Ctx.pDesc->GetExhaust().iExhaustLifetime / Ctx.pDesc->GetExhaust().iExhaustRate) + 1;
 		pMissile->m_pExhaust = new TQueue<SExhaustParticle>(iCount);
 		}
 	else
@@ -301,7 +293,7 @@ ALERROR CMissile::Create (CSystem *pSystem,
 
 	//	Create vapor trail, if necessary
 
-	if (pDesc->GetVaporTrail().iVaporTrailWidth)
+	if (Ctx.pDesc->GetVaporTrail().iVaporTrailWidth)
 		pMissile->SetBounds(2048.0 * g_KlicksPerPixel);
 
 	//	Add to system
@@ -356,14 +348,16 @@ void CMissile::CreateFragments (const CVector &vPos)
 	//	(otherwise, fragmentation weapons explode too late to do much damage)
 
 	if (m_pDesc->HasFragments())
-		GetSystem()->CreateWeaponFragments(m_pDesc,
-				m_pEnhancements,
-				m_Source,
-				m_pTarget,
-				vPos,
-				CVector(),
-				this,
-                iFraction);
+		{
+		SShotCreateCtx FragCtx;
+		FragCtx.pDesc = m_pDesc;
+		FragCtx.pEnhancements = m_pEnhancements;
+		FragCtx.Source = m_Source;
+		FragCtx.pTarget = m_pTarget;
+		FragCtx.vPos = vPos;
+
+		GetSystem()->CreateWeaponFragments(FragCtx,	this, iFraction);
+		}
 
 	//	Create the hit effect
 
@@ -395,15 +389,15 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection, CMissile *
 	{
 	CMissile *pReflection;
 
-	Create(GetSystem(),
-			m_pDesc,
-			m_pEnhancements,
-			m_Source,
-			vPos,
-			PolarToVector(iDirection, GetVel().Length()),
-			iDirection,
-			NULL,
-			&pReflection);
+	SShotCreateCtx ReflectCtx;
+	ReflectCtx.pDesc = m_pDesc;
+	ReflectCtx.pEnhancements = m_pEnhancements;
+	ReflectCtx.Source = m_Source;
+	ReflectCtx.vPos = vPos;
+	ReflectCtx.vVel = PolarToVector(iDirection, GetVel().Length());
+	ReflectCtx.iDirection = iDirection;
+
+	Create(GetSystem(), ReflectCtx, &pReflection);
 
 	pReflection->m_fReflection = true;
 	if (retpReflection)

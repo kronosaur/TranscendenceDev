@@ -1547,23 +1547,22 @@ void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
 
 	if (Explosion.pDesc)
 		{
-		TSharedPtr<CItemEnhancementStack> pEnhancements;
+		SShotCreateCtx Ctx;
+
+		Ctx.pDesc = Explosion.pDesc;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			pEnhancements->InsertHPBonus(Explosion.iBonus);
+			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
+			Ctx.pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
-		pShip->GetSystem()->CreateWeaponFire(Explosion.pDesc,
-				pEnhancements,
-				CDamageSource(pShip, Explosion.iCause, pWreck),
-				pShip->GetPos(),
-				pShip->GetVel(),
-				pShip->GetRotation(),
-				0,
-				NULL,
-				CSystem::CWF_EXPLOSION,
-				NULL);
+		Ctx.Source = CDamageSource(pShip, Explosion.iCause, pWreck);
+		Ctx.vPos = pShip->GetPos();
+		Ctx.vVel = pShip->GetVel();
+		Ctx.iDirection = pShip->GetRotation();
+		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
+
+		pShip->GetSystem()->CreateWeaponFire(Ctx);
 		}
 
 	//	Otherwise, if no defined explosion, we create a default one

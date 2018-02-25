@@ -112,15 +112,7 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 	pPseudoSegment->fAlive = false;
 	}
 
-ALERROR CContinuousBeam::Create (CSystem *pSystem,
-								 CWeaponFireDesc *pDesc,
-								 TSharedPtr<CItemEnhancementStack> pEnhancements,
-								 const CDamageSource &Source,
-								 const CVector &vPos,
-								 const CVector &vVel,
-								 int iDirection,
-								 CSpaceObject *pTarget,
-								 CContinuousBeam **retpObj)
+ALERROR CContinuousBeam::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinuousBeam **retpObj)
 
 //	Create
 //
@@ -132,7 +124,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 	//	Make sure we have a valid CWeaponFireDesc (otherwise we won't be
 	//	able to save the object).
 
-	ASSERT(!pDesc->GetUNID().IsBlank());
+	ASSERT(!Ctx.pDesc->GetUNID().IsBlank());
 
 	//	Create the object
 
@@ -140,7 +132,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 	if (pBeam == NULL)
 		return ERR_MEMORY;
 
-	pBeam->Place(vPos, CVector());
+	pBeam->Place(Ctx.vPos, CVector());
 
 	//	Get notifications when other objects are destroyed
 	pBeam->SetObjectDestructionHook();
@@ -149,34 +141,34 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem,
 	//	setting the position and velocity in OnMove
 	pBeam->SetNonLinearMove();
 
-	pBeam->m_pDesc = pDesc;
-	pBeam->m_pTarget = pTarget;
-	pBeam->m_pEnhancements = pEnhancements;
-	pBeam->m_iLifetime = pDesc->GetLifetime();
+	pBeam->m_pDesc = Ctx.pDesc;
+	pBeam->m_pTarget = Ctx.pTarget;
+	pBeam->m_pEnhancements = Ctx.pEnhancements;
+	pBeam->m_iLifetime = Ctx.pDesc->GetLifetime();
 	pBeam->m_iTick = 0;
-	pBeam->m_iLastDirection = iDirection;
-	pBeam->m_Source = Source;
+	pBeam->m_iLastDirection = Ctx.iDirection;
+	pBeam->m_Source = Ctx.Source;
 
 	//	Friendly fire
 
-	if (!pDesc->CanHitFriends())
+	if (!Ctx.pDesc->CanHitFriends())
 		pBeam->SetNoFriendlyFire();
 
 	//	Create the effect painter, if we've got one
 
-	bool bIsTracking = pTarget && pDesc->IsTracking();
-	pBeam->m_pPainter = pDesc->CreateEffectPainter(bIsTracking, true);
+	bool bIsTracking = Ctx.pTarget && Ctx.pDesc->IsTracking();
+	pBeam->m_pPainter = Ctx.pDesc->CreateEffectPainter(bIsTracking, true);
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 
-	if (Source.GetObj())
-		pBeam->m_pSovereign = Source.GetObj()->GetSovereign();
+	if (Ctx.Source.GetObj())
+		pBeam->m_pSovereign = Ctx.Source.GetObj()->GetSovereign();
 	else
 		pBeam->m_pSovereign = NULL;
 
 	//	Add a segment
 
-	pBeam->AddContinuousBeam(vPos, vVel, iDirection);
+	pBeam->AddContinuousBeam(Ctx.vPos, Ctx.vVel, Ctx.iDirection);
 
 	//	Add to system
 

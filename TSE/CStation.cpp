@@ -523,23 +523,19 @@ void CStation::CreateDestructionEffect (void)
 
 	if (Explosion.pDesc)
 		{
-		TSharedPtr<CItemEnhancementStack> pEnhancements;
+		SShotCreateCtx Ctx;
+		Ctx.pDesc = Explosion.pDesc;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			pEnhancements->InsertHPBonus(Explosion.iBonus);
+			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
+			Ctx.pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
-		GetSystem()->CreateWeaponFire(Explosion.pDesc,
-				pEnhancements,
-				CDamageSource(this, Explosion.iCause),
-				GetPos(),
-				GetVel(),
-				0,
-				0,
-				NULL,
-				CSystem::CWF_EXPLOSION,
-				NULL);
+		Ctx.vPos = GetPos();
+		Ctx.vVel = GetVel();
+		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
+
+		GetSystem()->CreateWeaponFire(Ctx);
 		}
 
 	//	Some air leaks
@@ -621,24 +617,18 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 		CWeaponFireDesc *pEjectaType = m_pType->GetEjectaType();
 		for (i = 0; i < iCount; i++)
 			{
-			int iTrajectoryAngle = iDirection 
+			SShotCreateCtx Ctx;
+
+			Ctx.pDesc = pEjectaType;
+			Ctx.Source = CDamageSource(this, killedByEjecta);
+			Ctx.iDirection = AngleMod(iDirection 
 					+ (mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12) + mathRandom(0, 12))
-					+ (360 - 30);
-			iTrajectoryAngle = iTrajectoryAngle % 360;
+					+ (360 - 30));
+			Ctx.vPos = vHitPos;
+			Ctx.vVel = GetVel() + PolarToVector(Ctx.iDirection, pEjectaType->GetInitialSpeed());
+			Ctx.dwFlags = SShotCreateCtx::CWF_EJECTA;
 
-			Metric rSpeed = pEjectaType->GetInitialSpeed();
-			CVector vVel = GetVel() + PolarToVector(iTrajectoryAngle, rSpeed);
-
-			GetSystem()->CreateWeaponFire(pEjectaType,
-					0,
-					CDamageSource(this, killedByEjecta),
-					vHitPos,
-					vVel,
-					iTrajectoryAngle,
-					0,
-					NULL,
-					CSystem::CWF_EJECTA,
-					NULL);
+			GetSystem()->CreateWeaponFire(Ctx);
 			}
 
 		//	Create geyser effect
@@ -1138,23 +1128,20 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 	if (Explosion.pDesc)
 		{
-		TSharedPtr<CItemEnhancementStack> pEnhancements;
+		SShotCreateCtx Ctx;
+		Ctx.pDesc = Explosion.pDesc;
 		if (Explosion.iBonus != 0)
 			{
-			pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			pEnhancements->InsertHPBonus(Explosion.iBonus);
+			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
+			Ctx.pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
-		GetSystem()->CreateWeaponFire(Explosion.pDesc,
-				pEnhancements,
-				CDamageSource(this, Explosion.iCause),
-				GetPos(),
-				GetVel(),
-				0,
-				0,
-				NULL,
-				CSystem::CWF_EXPLOSION,
-				NULL);
+		Ctx.Source = CDamageSource(this, Explosion.iCause);
+		Ctx.vPos = GetPos();
+		Ctx.vVel = GetVel();
+		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
+
+		GetSystem()->CreateWeaponFire(Ctx);
 		}
 	else
 		{

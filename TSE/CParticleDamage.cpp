@@ -29,15 +29,7 @@ CParticleDamage::~CParticleDamage (void)
 		m_pParticlePainter->Delete();
 	}
 
-ALERROR CParticleDamage::Create (CSystem *pSystem,
-								 CWeaponFireDesc *pDesc,
-								 TSharedPtr<CItemEnhancementStack> pEnhancements,
-								 const CDamageSource &Source,
-								 const CVector &vPos,
-								 const CVector &vVel,
-								 int iDirection,
-								 CSpaceObject *pTarget,
-								 CParticleDamage **retpObj)
+ALERROR CParticleDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CParticleDamage **retpObj)
 
 //	Create
 //
@@ -48,7 +40,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 
 	//	We better have a particle description.
 
-	const CParticleSystemDesc *pSystemDesc = pDesc->GetParticleSystemDesc();
+	const CParticleSystemDesc *pSystemDesc = Ctx.pDesc->GetParticleSystemDesc();
 	ASSERT(pSystemDesc);
 	if (pSystemDesc == NULL)
 		return ERR_FAIL;
@@ -56,7 +48,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	//	Make sure we have a valid CWeaponFireDesc (otherwise we won't be
 	//	able to save the object).
 
-	ASSERT(!pDesc->GetUNID().IsBlank());
+	ASSERT(!Ctx.pDesc->GetUNID().IsBlank());
 
 	//	Create the area
 
@@ -64,7 +56,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	if (pParticles == NULL)
 		return ERR_MEMORY;
 
-	pParticles->Place(vPos, vVel);
+	pParticles->Place(Ctx.vPos, Ctx.vVel);
 
 	//	Get notifications when other objects are destroyed
 	pParticles->SetObjectDestructionHook();
@@ -73,21 +65,21 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	//	setting the position and velocity in OnMove
 	pParticles->SetNonLinearMove();
 
-	pParticles->m_pDesc = pDesc;
-	pParticles->m_pTarget = pTarget;
-	pParticles->m_pEnhancements = pEnhancements;
+	pParticles->m_pDesc = Ctx.pDesc;
+	pParticles->m_pTarget = Ctx.pTarget;
+	pParticles->m_pEnhancements = Ctx.pEnhancements;
 	pParticles->m_iEmitTime = Max(1, pSystemDesc->GetEmitLifetime().Roll());
-	pParticles->m_iLifeLeft = pDesc->GetMaxLifetime() + pParticles->m_iEmitTime;
+	pParticles->m_iLifeLeft = Ctx.pDesc->GetMaxLifetime() + pParticles->m_iEmitTime;
 	pParticles->m_iTick = 0;
-	pParticles->m_iRotation = iDirection;
+	pParticles->m_iRotation = Ctx.iDirection;
 
 	pParticles->m_fPainterFade = false;
 
 	//	Keep track of where we emitted particles relative to the source. We
 	//	need this so we can continue to emit from this location later.
 
-	pParticles->m_Source = Source;
-	if (!Source.IsEmpty())
+	pParticles->m_Source = Ctx.Source;
+	if (!Ctx.Source.IsEmpty())
 		{
 		//	Decompose the source position/velocity so that we can continue to
 		//	emit later (after the source has changed).
@@ -95,45 +87,45 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 		//	We start by computing the emission offset relative to the source
 		//	object when it points at 0 degrees.
 
-		int iSourceRotation = Source.GetObj()->GetRotation();
-		CVector vPosOffset = (vPos - Source.GetObj()->GetPos()).Rotate(-iSourceRotation);
+		int iSourceRotation = Ctx.Source.GetObj()->GetRotation();
+		CVector vPosOffset = (Ctx.vPos - Ctx.Source.GetObj()->GetPos()).Rotate(-iSourceRotation);
 
 		//	Remember these values so we can add them to the new source 
 		//	position/velocity.
 
-		pParticles->m_iEmitDirection = iDirection - iSourceRotation;
+		pParticles->m_iEmitDirection = Ctx.iDirection - iSourceRotation;
 		pParticles->m_vEmitSourcePos = vPosOffset;
 		pParticles->m_vEmitSourceVel = CVector();
 		}
 	else
 		{
-		pParticles->m_iEmitDirection = iDirection;
+		pParticles->m_iEmitDirection = Ctx.iDirection;
 		pParticles->m_vEmitSourcePos = CVector();
 		pParticles->m_vEmitSourceVel = CVector();
 		}
 
 	//	Damage
 
-	pParticles->m_iDamage = pDesc->GetDamage().RollDamage();
+	pParticles->m_iDamage = Ctx.pDesc->GetDamage().RollDamage();
 
 	//	Friendly fire
 
-	if (!pDesc->CanHitFriends())
+	if (!Ctx.pDesc->CanHitFriends())
 		pParticles->SetNoFriendlyFire();
 
 	//	Create the effect painter, if we've got one
 
-	bool bIsTracking = pTarget && pDesc->IsTracking();
-	pParticles->m_pEffectPainter = pDesc->CreateSecondaryPainter(bIsTracking, true);
+	bool bIsTracking = Ctx.pTarget && Ctx.pDesc->IsTracking();
+	pParticles->m_pEffectPainter = Ctx.pDesc->CreateSecondaryPainter(bIsTracking, true);
 
 	//	Particle Painter
 
-	pParticles->m_pParticlePainter = pDesc->CreateParticlePainter();
+	pParticles->m_pParticlePainter = Ctx.pDesc->CreateParticlePainter();
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 
-	if (Source.GetObj())
-		pParticles->m_pSovereign = Source.GetObj()->GetSovereign();
+	if (Ctx.Source.GetObj())
+		pParticles->m_pSovereign = Ctx.Source.GetObj()->GetSovereign();
 	else
 		pParticles->m_pSovereign = NULL;
 
@@ -142,17 +134,23 @@ ALERROR CParticleDamage::Create (CSystem *pSystem,
 	int iMaxCount = pParticles->m_iEmitTime * pSystemDesc->GetEmitRate().GetMaxValue();
 	pParticles->m_Particles.Init(iMaxCount);
 
-	//	Create the initial particles.
-	//
 	//	NOTE: We use the source velocity (instead of vVel) because Emit expects
 	//	to add the particle velocity.
+
+	CVector vInitialVel;
+	if (!Ctx.Source.IsEmpty() 
+			&& !pParticles->m_pDesc->IsTracking()
+			&& !(Ctx.dwFlags & SShotCreateCtx::CWF_FRAGMENT))
+		vInitialVel = Ctx.Source.GetObj()->GetVel();
+
+	//	Create the initial particles.
 
 	int iInitCount;
 	pParticles->m_Particles.Emit(*pSystemDesc, 
 			pParticles,
-			vPos - pParticles->GetOrigin(), 
-			((!Source.IsEmpty() && !pParticles->m_pDesc->IsTracking()) ? Source.GetObj()->GetVel() : CVector()), 
-			iDirection, 
+			Ctx.vPos - pParticles->GetOrigin(), 
+			vInitialVel, 
+			Ctx.iDirection, 
 			0, 
 			&iInitCount);
 

@@ -5975,13 +5975,15 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Create fragments
 
 			if (pDesc->HasFragments() && pSystem)
-				pSystem->CreateWeaponFragments(pDesc,
-						0,
-						Ctx.Attacker,
-						(!pObj->IsDestroyed() ? pObj : NULL),
-						vHitPos,
-						CVector(),
-						Ctx.pCause);
+				{
+				SShotCreateCtx FragCtx;
+				FragCtx.pDesc = pDesc;
+				FragCtx.Source = Ctx.Attacker;
+				FragCtx.pTarget = (!pObj->IsDestroyed() ? pObj : NULL);
+				FragCtx.vPos = vHitPos;
+
+				pSystem->CreateWeaponFragments(FragCtx, Ctx.pCause);
+				}
 
 			//	No need to expose the concept of passthrough
 
@@ -11392,17 +11394,18 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Create the weapon shot
 
+			SShotCreateCtx Ctx;
+			Ctx.pDesc = pDesc;
+			Ctx.pEnhancements = pEnhancements;
+			Ctx.Source = Source;
+			Ctx.vPos = vPos;
+			Ctx.vVel = PolarToVector(iDir, rSpeed);
+			Ctx.iDirection = iDir;
+			Ctx.pTarget = pTarget;
+			Ctx.dwFlags = (bDetonateNow ? SShotCreateCtx::CWF_EXPLOSION : SShotCreateCtx::CWF_WEAPON_FIRE);
+
 			CSpaceObject *pObj;
-			if (error = pSystem->CreateWeaponFire(pDesc,
-					pEnhancements,
-					Source,
-					vPos,
-					PolarToVector(iDir, rSpeed),
-					iDir,
-					0,
-					pTarget,
-					(bDetonateNow ? CSystem::CWF_EXPLOSION : CSystem::CWF_WEAPON_FIRE),
-					&pObj))
+			if (error = pSystem->CreateWeaponFire(Ctx, &pObj))
 				return pCC->CreateNil();
 
 			//	Detonate the shot

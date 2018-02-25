@@ -13,6 +13,29 @@
 
 const int MIN_PLANET_SIZE = 1000;			//	Size at which a world is considered planetary size
 
+struct SShotCreateCtx
+	{
+	enum Flags
+		{
+		//	CreateWeaponFire flags
+		CWF_WEAPON_FIRE =				0x00000001,	//	Creating a shot from a weapon
+		CWF_FRAGMENT =					0x00000002,	//	Creating a fragment
+		CWF_EXPLOSION =					0x00000004,	//	Creating an explosion (or fragment of an explosion)
+		CWF_EJECTA =					0x00000008,	//	Creating ejecta (or fragments of ejecta)
+		CWF_REPEAT =					0x00000010,	//	Mixed with CWF_WEAPON_FIRE to indicate this is a repeat
+		};
+
+	CWeaponFireDesc *pDesc = NULL;
+	TSharedPtr<CItemEnhancementStack> pEnhancements;
+	CDamageSource Source;
+	CVector vPos;
+	CVector vVel;
+	int iDirection = 0;
+	int iRepeatingCount = 0;
+	CSpaceObject *pTarget = NULL;
+	DWORD dwFlags = 0;
+	};
+
 //	CNavigationPath
 
 class CNavigationPath : public TSEListNode<CNavigationPath>
@@ -651,13 +674,6 @@ class CSystem
 
 		enum Flags
 			{
-			//	CreateWeaponFire flags
-			CWF_WEAPON_FIRE =				0x00000001,	//	Creating a shot from a weapon
-			CWF_FRAGMENT =					0x00000002,	//	Creating a fragment
-			CWF_EXPLOSION =					0x00000004,	//	Creating an explosion (or fragment of an explosion)
-			CWF_EJECTA =					0x00000008,	//	Creating ejecta (or fragments of ejecta)
-			CWF_REPEAT =					0x00000010,	//	Mixed with CWF_WEAPON_FIRE to indicate this is a repeat
-
 			//	PaintViewport flags
 			VWP_ENHANCED_DISPLAY =			0x00000001,	//	Show enhanced display markers
 			VWP_NO_STAR_FIELD =				0x00000002,	//	Do not paint star field background
@@ -720,24 +736,8 @@ class CSystem
 							   CStationType *pType, 
 							   SObjCreateCtx &CreateCtx,
 							   CSpaceObject **retpStation = NULL);
-		ALERROR CreateWeaponFire (CWeaponFireDesc *pDesc,
-								  TSharedPtr<CItemEnhancementStack> pEnhancements,
-								  const CDamageSource &Source,
-								  const CVector &vPos,
-								  const CVector &vVel,
-								  int iDirection,
-								  int iRepeatingCount,
-								  CSpaceObject *pTarget,
-								  DWORD dwFlags,
-								  CSpaceObject **retpShot);
-		ALERROR CreateWeaponFragments (CWeaponFireDesc *pDesc,
-									   TSharedPtr<CItemEnhancementStack> pEnhancements,
-									   const CDamageSource &Source,
-									   CSpaceObject *pTarget,
-									   const CVector &vPos,
-									   const CVector &vVel,
-									   CSpaceObject *pMissileSource,
-                                       int iFraction = 100);
+		ALERROR CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot = NULL);
+		ALERROR CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMissileSource, int iFraction = 100);
 
 		bool AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, CObjectJoint **retpJoint = NULL);
 		bool AddJoint (CObjectJoint::ETypes iType, CSpaceObject *pFrom, CSpaceObject *pTo, ICCItem *pOptions, DWORD *retdwID = NULL);

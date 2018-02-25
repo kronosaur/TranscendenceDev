@@ -2065,12 +2065,12 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 			DWORD dwFlags = 0;
 			if (i != 0)
-				dwFlags = CSystem::CWF_FRAGMENT;
+				dwFlags = SShotCreateCtx::CWF_FRAGMENT;
 			else
-				dwFlags = CSystem::CWF_WEAPON_FIRE;
+				dwFlags = SShotCreateCtx::CWF_WEAPON_FIRE;
 
 			if (iRepeatingCount != 0)
-				dwFlags |= CSystem::CWF_REPEAT;
+				dwFlags |= SShotCreateCtx::CWF_REPEAT;
 
 			//	If this is a continuous beam, then we need special code.
 
@@ -2091,16 +2091,17 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 			else
 				{
-				pSource->GetSystem()->CreateWeaponFire(pShot,
-						pDevice->GetEnhancementStack(),
-						Source,
-						ShotPos[i],
-						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
-						ShotDir[i],
-						iRepeatingCount,
-						(m_bMIRV ? MIRVTarget[i] : pTarget),
-						dwFlags,
-						&pNewObj);
+				SShotCreateCtx Ctx;
+				Ctx.pDesc = pShot;
+				Ctx.pEnhancements = pDevice->GetEnhancementStack();
+				Ctx.Source = Source;
+				Ctx.vPos = ShotPos[i];
+				Ctx.vVel = pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed);
+				Ctx.iDirection = ShotDir[i];
+				Ctx.iRepeatingCount = iRepeatingCount;
+				Ctx.pTarget = (m_bMIRV ? MIRVTarget[i] : pTarget);
+				Ctx.dwFlags = dwFlags;
+				pSource->GetSystem()->CreateWeaponFire(Ctx, &pNewObj);
 
 				//	If this shot was created by automated weapon fire, then set flag
 
