@@ -27,6 +27,8 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_PRINT_TO					4
 #define FN_API_VERSION				5
 #define FN_DEBUG_IS_ACTIVE			6
+#define FN_DEBUG_GET				7
+#define FN_DEBUG_SET				8
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -623,17 +625,36 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	Debug functions
 		//	---------------
 
-		{	"dbgLog",						fnDebug,		FN_DEBUG_LOG,
-			"(dbgLog [string]*) -> True if in debug mode, else Nil",
-			"*",	PPFLAG_SIDEEFFECTS,	},
+		{	"dbgGet",					fnDebug,		FN_DEBUG_GET,
+			"(dbgGet property) -> value\n\n"
+			
+			"property:\n\n"
+			
+			"   'debugMode\n"
+			"   'showNavPaths\n",
+
+			"s",	0, },
 
 		{	"dbgIsActive",				fnDebug,		FN_DEBUG_IS_ACTIVE,
 			"(dbgIsActive) -> True if in debug mode, else Nil",
 			NULL,	0, },
 
+		{	"dbgLog",						fnDebug,		FN_DEBUG_LOG,
+			"(dbgLog [string]*) -> True if in debug mode, else Nil",
+			"*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"dbgOutput",					fnDebug,		FN_DEBUG_OUTPUT,
 			"(dbgOutput [string]*) -> True if in debug mode, else Nil",
 			"*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"dbgSet",					fnDebug,		FN_DEBUG_SET,
+			"(dbgSet property value) -> True/Nil\n\n"
+			
+			"property:\n\n"
+			
+			"   'showNavPaths True/Nil\n",
+
+			"sv",	PPFLAG_SIDEEFFECTS, },
 
 		{	"getAPIVersion",				fnDebug,		FN_API_VERSION,
 			"(getAPIVersion) -> version",
@@ -3722,8 +3743,33 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_API_VERSION:
 			return pCC->CreateInteger(pCtx->GetAPIVersion());
+
+		case FN_DEBUG_GET:
+			{
+			CString sProperty = pArgs->GetElement(0)->GetStringValue();
+			ICCItemPtr pResult = g_pUniverse->GetDebugProperty(sProperty);
+			return pResult->Reference();
+			}
+
 		case FN_DEBUG_IS_ACTIVE:
 			return g_pUniverse->InDebugMode() ? pCC->CreateTrue() : pCC->CreateNil();
+
+		case FN_DEBUG_SET:
+			{
+			CString sProperty = pArgs->GetElement(0)->GetStringValue();
+			ICCItem *pValue = pArgs->GetElement(1);
+			CString sError;
+			if (!g_pUniverse->SetDebugProperty(sProperty, pValue, &sError))
+				{
+				if (sError.IsBlank())
+					return pCC->CreateError(CONSTLIT("Invalid property"), pValue);
+				else
+					return pCC->CreateError(sError);
+				}
+
+			return pCC->CreateTrue();
+			}
+
 		case FN_DEBUG_OUTPUT:
 		case FN_DEBUG_LOG:
 		case FN_PRINT:

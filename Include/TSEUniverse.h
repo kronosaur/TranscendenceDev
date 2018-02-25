@@ -82,6 +82,19 @@ class CItemPriceTracker
 
 #endif
 
+//	Debug Options --------------------------------------------------------------
+
+class CDebugOptions
+	{
+	public:
+		ICCItemPtr GetProperty (const CString &sProperty) const;
+		inline bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
+		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
+		
+	private:
+		bool m_bShowNavPaths = false;
+	};
+
 //	SFX Options ----------------------------------------------------------------
 
 class CSFXOptions
@@ -281,6 +294,8 @@ class CUniverse
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);
 		inline const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
+		inline const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
+		inline ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
 		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		inline CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		inline CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
@@ -327,6 +342,7 @@ class CUniverse
 		ALERROR SaveToStream (IWriteStream *pStream);
 		void SetCurrentSystem (CSystem *pSystem);
 		inline void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
+		inline bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL) { return m_DebugOptions.SetProperty(sProperty, pValue, retsError); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV);
 		void SetPOV (CSpaceObject *pPOV);
@@ -503,6 +519,7 @@ class CUniverse
 		CG16bitFont m_DefaultFonts[fontCount];
 		TArray<INotifications *> m_Subscribers;
 		CSFXOptions m_SFXOptions;
+		CDebugOptions m_DebugOptions;
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;

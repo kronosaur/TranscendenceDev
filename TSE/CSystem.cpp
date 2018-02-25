@@ -3722,15 +3722,16 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Paint NavPaths
 
-#ifdef DEBUG_NAV_PATH
-	CNavigationPath *pNext = m_NavPaths.GetNext();
-	while (pNext)
+	if (g_pUniverse->GetDebugOptions().IsShowNavPathsEnabled())
 		{
-		pNext->DebugPaintInfo(Dest, 0, 0, Ctx);
+		CNavigationPath *pNext = m_NavPaths.GetNext();
+		while (pNext)
+			{
+			pNext->DebugPaintInfo(Dest, 0, 0, Ctx);
 
-		pNext = pNext->GetNext();
+			pNext = pNext->GetNext();
+			}
 		}
-#endif
 
 	//	Paint the POV
 

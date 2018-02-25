@@ -929,10 +929,8 @@ void CAIBehaviorCtx::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewport
 //	Paint debug info
 
 	{
-#ifdef DEBUG_NAV_PATH
-	if (m_pNavPath)
+	if (m_pNavPath && g_pUniverse->GetDebugOptions().IsShowNavPathsEnabled())
 		m_pNavPath->DebugPaintInfo(Dest, x, y, Ctx.XForm);
-#endif
 	}
 
 bool CAIBehaviorCtx::IsBeingAttacked (int iThreshold) const 

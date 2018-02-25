@@ -78,6 +78,9 @@
     <Filter Include="Source Files\Painting">
       <UniqueIdentifier>{6ce5c7e7-4073-4204-a558-60c3b5b70fdf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Universe">
+      <UniqueIdentifier>{3911c317-993f-4412-8f2d-ca00db69fe82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -304,16 +307,10 @@
     <ClCompile Include="CResourceDb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CUniverse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CUserProfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Damage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XMLLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AIManeuvers.cpp">
@@ -928,9 +925,6 @@
     <ClCompile Include="CSystemSpacePainter.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
-    <ClCompile Include="CSFXOptions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CVolumetricShadowPainter.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -1206,6 +1200,18 @@
     </ClCompile>
     <ClCompile Include="CItemLevelCriteria.cpp">
       <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CUniverse.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="XMLLoader.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CDebugOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CSFXOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
