@@ -34,6 +34,22 @@ void CSpaceObjectList::Add (CSpaceObject *pObj, int *retiIndex)
 	FastAdd(pObj, retiIndex);
 	}
 
+void CSpaceObjectList::Add (const CSpaceObjectList &List)
+
+//	Add
+//
+//	Add objects to the list. If the object is already in the list, we
+//	don't add it.
+
+	{
+	int i;
+
+	for (i = 0; i < List.GetCount(); i++)
+		{
+		Add(List.GetObj(i));
+		}
+	}
+
 bool CSpaceObjectList::Delete (CSpaceObject *pObj)
 
 //	Delete
@@ -68,6 +84,21 @@ void CSpaceObjectList::DeleteSystemObjs (void)
 			Delete(i);
 			i--;
 			}
+		}
+	}
+
+void CSpaceObjectList::FastAdd (const CSpaceObjectList &List)
+
+//	FastAdd
+//
+//	Adds objects to the list without checking to see if they already exist.
+
+	{
+	int i;
+
+	for (i = 0; i < List.GetCount(); i++)
+		{
+		FastAdd(List.GetObj(i));
 		}
 	}
 

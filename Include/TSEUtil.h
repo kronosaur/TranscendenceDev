@@ -867,12 +867,14 @@ class CSpaceObjectList
 		~CSpaceObjectList (void);
 
 		void Add (CSpaceObject *pObj, int *retiIndex = NULL);
+		void Add (const CSpaceObjectList &List);
 		inline void CleanUp (void) { m_List.DeleteAll(); }
 		inline void Delete (int iIndex) { m_List.Delete(iIndex); }
 		bool Delete (CSpaceObject *pObj);
 		void DeleteSystemObjs (void);
 		inline void DeleteAll (void) { m_List.DeleteAll(); }
 		inline void FastAdd (CSpaceObject *pObj, int *retiIndex = NULL) { if (retiIndex) *retiIndex = m_List.GetCount(); m_List.Insert(pObj); }
+		void FastAdd (const CSpaceObjectList &List);
 		inline bool FindObj (CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(pObj, retiIndex); }
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }

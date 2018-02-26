@@ -11598,6 +11598,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	CDesignType *pOverride = NULL;
 	CSpaceObject *pTarget = NULL;
 	CSpaceObject *pBase = NULL;
+	DWORD dwTableFlags = SShipCreateCtx::RETURN_RESULT;
 	if (pArgs->GetCount() > 3)
 		{
 		if (pArgs->GetElement(3)->IsSymbolTable())
@@ -11626,6 +11627,9 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 			if (pArg = pOptions->GetElement(CONSTLIT("target")))
 				pTarget = CreateObjFromItem(*pCC, pArg, CCUTIL_FLAG_CHECK_DESTROYED);
+
+			if (pOptions->GetBooleanAt(CONSTLIT("returnEscorts")))
+				dwTableFlags |= SShipCreateCtx::RETURN_ESCORTS;
 			}
 		else if (pArgs->GetElement(3)->IsIdentifier())
 			pController = g_pUniverse->CreateShipController(pArgs->GetElement(3)->GetStringValue());
@@ -11649,7 +11653,7 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		CreateCtx.pEncounterInfo = NULL;
 		CreateCtx.pOverride = pOverride;
 		CreateCtx.pTarget = pTarget;
-		CreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
+		CreateCtx.dwFlags = dwTableFlags;
 
 		//	Create
 

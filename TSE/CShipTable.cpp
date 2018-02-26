@@ -713,6 +713,16 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 		return;
 		}
 
+	//	Add to result list, if necessary
+
+	if (Ctx.dwFlags & SShipCreateCtx::RETURN_RESULT)
+		Ctx.Result.Add(pShip);
+
+	//	Add encounter info, if necessary
+
+	if (Ctx.pEncounterInfo)
+		pShip->SetEncounterInfo(Ctx.pEncounterInfo);
+
 	//	If this ship has escorts then create them as well
 
 	if (m_pEscorts)
@@ -736,7 +746,22 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 		ECtx.pTarget = Ctx.pTarget;
 		ECtx.pGate = pEscortGate;
 
+		ECtx.dwFlags = 0;
+		if (Ctx.dwFlags & SShipCreateCtx::RETURN_ESCORTS)
+			ECtx.dwFlags |= SShipCreateCtx::RETURN_RESULT | SShipCreateCtx::RETURN_ESCORTS;
+
 		m_pEscorts->CreateShips(ECtx);
+
+		//	Add to the results, if necessary
+
+		if (Ctx.dwFlags & SShipCreateCtx::RETURN_ESCORTS)
+			{
+			//	We can guarantee that these escorts are not already on the list
+			//	(since we just created them), so we can add them without 
+			//	checking.
+
+			Ctx.Result.FastAdd(ECtx.Result);
+			}
 		}
 
 	//	Done
@@ -801,8 +826,6 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx)
 	int iCount = m_Count.Roll();
 	for (i = 0; i < iCount; i++)
 		{
-		CShip *pShip;
-
 		//	Generate a position
 
 		CVector vPos = vCenter + ::PolarToVector(mathRandom(0, 359), Ctx.PosSpread.Roll() * LIGHT_SECOND);
@@ -812,21 +835,7 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx)
 		CreateShip(Ctx,
 				pSovereign,
 				vPos,
-				pGate,
-				&pShip);
-
-		if (pShip)
-			{
-			//	Add to result list, if necessary
-
-			if (Ctx.dwFlags & SShipCreateCtx::RETURN_RESULT)
-				Ctx.Result.Add(pShip);
-
-			//	Add encounter info, if necessary
-
-			if (Ctx.pEncounterInfo)
-				pShip->SetEncounterInfo(Ctx.pEncounterInfo);
-			}
+				pGate);
 		}
 
 	DEBUG_CATCH

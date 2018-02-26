@@ -97,6 +97,7 @@ struct SShipCreateCtx
 		SHIPS_FOR_STATION =			0x00000001,	//	Create ships at station creation time
 		ATTACK_NEAREST_ENEMY =		0x00000002,	//	After all other orders, attack nearest enemy
 		RETURN_RESULT =				0x00000004,	//	Add created ships to Result
+		RETURN_ESCORTS =			0x00000008,	//	Include escorts in result
 		};
 	};
 
