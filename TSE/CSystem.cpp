@@ -1819,7 +1819,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 							//	If fragments can maneuver, then fire angle jitters a bit.
 
 							if (pFragDesc->pDesc->IsTracking())
-								Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-24, 24));
+								Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-45, 45));
 
 							//	If we've got multiple fragments to the same target, then
 							//	jitter a bit.
