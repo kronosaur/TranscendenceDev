@@ -831,16 +831,23 @@ CSpaceObject *CBaseShipAI::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) con
 		return OnGetTarget(bNoAutoTarget);
 	}
 
-void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pOrderGiver)
+void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
 
 //	HandleFriendlyFire
 //
 //	Ship has been hit by friendly fire
 
 	{
+	//	If an NPC attacked us, then we don't count it as a deliberate attack
+	//	unless they were targeting us.
+
+	if (!pAttacker->IsPlayer() 
+			&& pAttacker->GetTarget(CItemCtx()) != m_pShip)
+		NULL;
+
 	//	If the player hit us (and it seems to be on purpose) then raise an event
 
-	if (pOrderGiver->IsPlayer() 
+	else if (pOrderGiver->IsPlayer() 
 			&& m_Blacklist.Hit(m_pShip->GetSystem()->GetTick())
 			&& m_pShip->HasOnAttackedByPlayerEvent())
 		m_pShip->FireOnAttackedByPlayer();
@@ -942,7 +949,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 			//	Also, we ignore damage from automated weapons
 
 			if (!Damage.Damage.IsAutomatedWeapon())
-				HandleFriendlyFire(pOrderGiver);
+				HandleFriendlyFire(pAttacker, pOrderGiver);
 
 			bFriendlyFire = true;
 			}

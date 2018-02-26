@@ -392,7 +392,7 @@ class CBaseShipAI : public IShipController
 		inline bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }
-		void HandleFriendlyFire (CSpaceObject *pOrderGiver);
+		void HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		inline bool IsDockingRequested (void) { return m_AICtx.IsDockingRequested(); }
 		void ResetBehavior (void);
 		void SetCurrentOrderData (const SData &Data);
