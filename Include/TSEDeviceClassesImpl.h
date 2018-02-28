@@ -666,6 +666,7 @@ class CWeaponClass : public CDeviceClass
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL) override;
+		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
 		virtual bool IsAmmoWeapon (void) override;

@@ -258,6 +258,7 @@ class CDeviceClass
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL) { if (retsLabel) *retsLabel = NULL_STR; if (retiAmmoLeft) *retiAmmoLeft = -1; if (retpType) *retpType = NULL; }
+		virtual Metric GetShotSpeed (CItemCtx &Ctx) const { return 0.0; }
 		virtual void GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { *retiStatus = 0; *retiMaxStatus = 0; }
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) { return 0; }
 		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0; }
@@ -537,6 +538,7 @@ class CInstalledDevice
 											int *retiAmmoLeft,
 											CItemType **retpType = NULL)
 			{ m_pClass->GetSelectedVariantInfo(pSource, this, retsLabel, retiAmmoLeft, retpType); }
+		inline Metric GetShotSpeed (CItemCtx &Ctx) const { return m_pClass->GetShotSpeed(Ctx); }
 		inline void GetStatus (CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { m_pClass->GetStatus(this, pSource, retiStatus, retiMaxStatus); }
 		inline CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		inline int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }

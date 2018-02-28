@@ -5378,6 +5378,8 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 //	direction for the given distance
 
 	{
+	static const Metric TOO_CLOSE = 20.0 * g_KlicksPerPixel;
+
 	//	If we can't hit friends, then this whole function is moot
 
 	if (!CanHitFriends() || !pWeapon->CanHitFriends())
@@ -5387,6 +5389,16 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 
 	CVector vSource = pWeapon->GetPos(this);
 	bool bAreaWeapon = pWeapon->IsAreaWeapon(this);
+
+	//	We need to adjust the angle to compensate for the fact that the shot
+	//	will take on the velocity of the ship.
+
+	Metric rShotSpeed = pWeapon->GetShotSpeed(CItemCtx(this, pWeapon));
+	if (rShotSpeed > 0.0)
+		{
+		CVector vShotVel = GetVel() + PolarToVector(iAngle, rShotSpeed);
+		iAngle = VectorToPolar(vShotVel);
+		}
 
 	//	We look for objects in the range of the weapon
 
@@ -5482,7 +5494,12 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 
 			Metric rDist;
 			int iObjAngle = VectorToPolar(vDist, &rDist);
-			if (rDist < g_Epsilon)
+
+			//	If we're inside the object radius, then we would hit it no matter what
+			//	the angle.
+
+			Metric rHalfSize = 0.5 * pObj->GetHitSize();
+			if (rDist < rHalfSize)
 				{
 				if (retpFriend) *retpFriend = pObj;
 				bResult = false;
@@ -5492,7 +5509,9 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 			//	Figure out how big the object is from that distance
 
 			int iHalfAngularSize;
-			if (bAreaWeapon)
+			if (rDist < rHalfSize + TOO_CLOSE)
+				iHalfAngularSize = 90;
+			else if (bAreaWeapon)
 				iHalfAngularSize = 45;
 			else
 				iHalfAngularSize = pObj->GetHitSizeHalfAngle(rDist);
