@@ -631,6 +631,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property:\n\n"
 			
 			"   'debugMode\n"
+			"   'showLineOfFire\n"
 			"   'showNavPaths\n",
 
 			"s",	0, },
@@ -652,6 +653,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'showLineOfFire True/Nil\n"
 			"   'showNavPaths True/Nil\n",
 
 			"sv",	PPFLAG_SIDEEFFECTS, },

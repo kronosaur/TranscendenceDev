@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define PROPERTY_DEBUG_MODE					CONSTLIT("debugMode")
+#define PROPERTY_SHOW_LINE_OF_FIRE			CONSTLIT("showLineOfFire")
 #define PROPERTY_SHOW_NAV_PATHS				CONSTLIT("showNavPaths")
 
 #define ERR_MUST_BE_IN_DEBUG_MODE			CONSTLIT("Must be in debug mode to set a debug property.")
@@ -21,6 +22,9 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 
 	if (strEquals(sProperty, PROPERTY_DEBUG_MODE))
 		return ICCItemPtr(CC.CreateBool(g_pUniverse->InDebugMode()));
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_LINE_OF_FIRE))
+		return ICCItemPtr(CC.CreateBool(m_bShowLineOfFire));
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_NAV_PATHS))
 		return ICCItemPtr(CC.CreateBool(m_bShowNavPaths));
@@ -50,7 +54,10 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 
 	//	Set a property
 
-	if (strEquals(sProperty, PROPERTY_SHOW_NAV_PATHS))
+	if (strEquals(sProperty, PROPERTY_SHOW_LINE_OF_FIRE))
+		m_bShowLineOfFire = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_NAV_PATHS))
 		m_bShowNavPaths = !pValue->IsNil();
 
 	else

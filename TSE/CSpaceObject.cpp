@@ -5369,7 +5369,8 @@ bool CSpaceObject::IsFriend (const CSpaceObject *pObj) const
 bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 									  CSpaceObject *pTarget, 
 									  int iAngle, 
-									  Metric rDistance)
+									  Metric rDistance,
+									  CSpaceObject **retpFriend)
 
 //	IsLineOfFireClear
 //
@@ -5455,6 +5456,7 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 					if (rDistFromTarget2 < 2.0 * vUR.Length2()
 							&& pObj->PointInObject(pObj->GetPos(), vTarget))
 						{
+						if (retpFriend) *retpFriend = pObj;
 						bResult = false;
 						break;
 						}
@@ -5471,6 +5473,7 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 
 			if (bAreaWeapon)
 				{
+				if (retpFriend) *retpFriend = pObj;
 				bResult = false;
 				break;
 				}
@@ -5481,6 +5484,7 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 			int iObjAngle = VectorToPolar(vDist, &rDist);
 			if (rDist < g_Epsilon)
 				{
+				if (retpFriend) *retpFriend = pObj;
 				bResult = false;
 				break;
 				}
@@ -5497,6 +5501,7 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 
 			if (AreAnglesAligned(iAngle, iObjAngle, iHalfAngularSize))
 				{
+				if (retpFriend) *retpFriend = pObj;
 				bResult = false;
 				break;
 				}

@@ -1117,7 +1117,7 @@ class CSpaceObject : public CObject
 		bool IsFriend (const CSpaceObject *pObj) const;
 		inline bool IsHighlighted (void) { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
 		bool IsInDamageCode (void) { return (m_fInDamage ? true : false); }
-		bool IsLineOfFireClear (CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND));
+		bool IsLineOfFireClear (CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL);
 		inline bool IsMarked (void) const { return m_fMarked; }
 		inline bool IsNamed (void) const { return m_fHasName; }
 		inline bool IsOutOfPlaneObj (void) const { return m_fOutOfPlaneObj; }

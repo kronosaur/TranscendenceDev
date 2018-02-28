@@ -88,10 +88,12 @@ class CDebugOptions
 	{
 	public:
 		ICCItemPtr GetProperty (const CString &sProperty) const;
+		inline bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
 		inline bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		
 	private:
+		bool m_bShowLineOfFire = false;
 		bool m_bShowNavPaths = false;
 	};
 
