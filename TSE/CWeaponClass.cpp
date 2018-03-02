@@ -3114,14 +3114,14 @@ Metric CWeaponClass::GetShotSpeed (CItemCtx &Ctx) const
 
 //	GetShotSpeed
 //
-//	Returns the initial speed of the shot.
+//	Returns the average initial speed of the shot.
 
 	{
 	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot == NULL)
 		return 0.0;
 
-	return pShot->GetInitialSpeed();
+	return pShot->GetAveInitialSpeed();
 	}
 
 int CWeaponClass::GetStdDamage (int iLevel)
