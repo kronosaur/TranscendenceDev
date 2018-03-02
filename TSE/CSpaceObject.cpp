@@ -5438,6 +5438,7 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 				&& (pObj->GetScale() == scaleStructure 
 					|| pObj->GetScale() == scaleShip)
 				&& CanFireOn(pObj)
+				&& !pObj->IsImmutable()
 				&& pObj != this
 				&& pObj != pTarget)
 			{
