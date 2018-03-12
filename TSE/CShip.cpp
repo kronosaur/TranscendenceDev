@@ -4611,13 +4611,12 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 				{
 				CFractureEffect *pEffect;
 
-				CFractureEffect::Create(GetSystem(),
+				CFractureEffect::CreateExplosion(GetSystem(),
 						GetPos(),
 						GetVel(),
 						Image,
 						iTick,
 						m_Rotation.GetFrameIndex(),
-						CFractureEffect::styleExplosion,
 						&pEffect);
 
 				if (Ctx.iCause == killedByGravity && Ctx.Attacker.GetObj())

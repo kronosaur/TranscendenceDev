@@ -354,16 +354,24 @@ class CFractureEffect : public CSpaceObject
 		enum Style
 			{
 			styleExplosion,
+			styleLinearSweep,
 			};
 
-		static ALERROR Create (CSystem *pSystem,
+		static ALERROR CreateExplosion (CSystem *pSystem,
 				const CVector &vPos,
 				const CVector &vVel,
 				const CObjectImageArray &Image,
 				int iImageTick,
 				int iImageRotation,
-				int iStyle,
 				CFractureEffect **retpEffect);
+		static ALERROR CreateLinearSweep(CSystem *pSystem,
+			const CVector &vPos,
+			const CVector &vVel,
+			const CObjectImageArray &Image,
+			int iImageTick,
+			int iImageRotation,
+			Metric rSweepDirection,
+			CFractureEffect **retpEffect);
 		virtual ~CFractureEffect (void);
 
 		//	CSpaceObject virtuals
@@ -392,7 +400,7 @@ class CFractureEffect : public CSpaceObject
 			int y;
 			int xV;							//	Velocity in 256th of a pixel
 			int yV;							//	per tick
-			int iTicks;
+			int iSleepTicks;				//	Stay still for this many ticks before moving
 
 			int xSrc;						//	Position in source
 			int ySrc;
@@ -414,6 +422,8 @@ class CFractureEffect : public CSpaceObject
 		SParticle *m_pParticles;
 
 		CSpaceObject *m_pAttractor;
+
+		double m_rSweepDirection;
 
 	friend CObjectClass<CFractureEffect>;
 	};
