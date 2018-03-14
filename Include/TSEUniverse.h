@@ -331,6 +331,7 @@ class CUniverse
 		inline void NotifyOnObjDeselected (CSpaceObject *pObj) { pObj->FireOnDeselected(); }
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
 		inline void NotifyOnObjSelected (CSpaceObject *pObj) { pObj->FireOnSelected(); }
+		void NotifyOnPlayerEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
 		inline ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
 		inline bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
 		inline void LogOutput (const CString &sLine) const { m_pHost->LogOutput(sLine); }

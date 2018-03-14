@@ -4406,7 +4406,14 @@ ALERROR CSystem::StargateCreated (CSpaceObject *pGate, const CString &sStargateI
 	//	Look for the stargate in the topology; if we don't find it, then we need to add it
 
 	if (!m_pTopology->FindStargate(sGateID))
-		m_pTopology->AddStargateAndReturn(sGateID, sDestNodeID, sDestEntryPoint);
+		{
+		CTopologyNode::SStargateDesc GateDesc;
+		GateDesc.sName = sGateID;
+		GateDesc.sDestNode = sDestNodeID;
+		GateDesc.sDestName = sDestEntryPoint;
+
+		m_pTopology->AddStargateAndReturn(GateDesc);
+		}
 
 	//	Add this as a named object (so we can come back here)
 

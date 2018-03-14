@@ -2352,13 +2352,27 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 	m_pExitGate = NULL;
 	m_iExitGateTimer = 0;
 
-	//	Fire event
+	//	Fire events
 
 	FireOnEnteredGate(pDestNode, sDestEntryPoint, pStargate);
+
+	//	Fire global event. This should be before the call to the controller 
+	//	because after that, the player ship will be removed from the system
+	//	(and we want this event to give access to the player ship).
+
+	if (IsPlayer())
+		g_pUniverse->FireOnGlobalPlayerLeftSystem();
 
 	//	Let the controller handle it
 
 	m_pController->OnEnterGate(pDestNode, sDestEntryPoint, pStargate, bAscend);
+
+	//	If this is the player, let the universe know what happened. This lets
+	//	the universe do any appropriate clean up (and thus it is AFTER the call
+	//	to the controller).
+
+	if (IsPlayer())
+		g_pUniverse->NotifyOnPlayerEnteredGate(pDestNode, sDestEntryPoint, pStargate);
 	}
 
 AbilityStatus CShip::GetAbility (Abilities iAbility) const

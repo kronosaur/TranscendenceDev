@@ -1613,6 +1613,31 @@ void CUniverse::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 	m_Design.FireOnGlobalObjDestroyed(Ctx);
 	}
 
+void CUniverse::NotifyOnPlayerEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate)
+
+//	NotifyOnPlayerEnteredGate
+//
+//	Called when the player ship enteres a stargate.
+
+	{
+	//	Clear out these globals so that events don't try to send us
+	//	orders (Otherwise, an event could set a target for the player. If the
+	//	target is destroyed while we are out of the system, we will
+	//	never get an OnObjDestroyed message).
+	//	Note: We need gPlayer for OnGameEnd event
+
+	GetCC().DefineGlobal(STR_G_PLAYER_SHIP, GetCC().CreateNil());
+
+	//	Mark source and destination stargates as charted.
+
+	CTopologyNode *pSourceNode = GetCurrentTopologyNode();
+	if (pSourceNode && pStargate)
+		pSourceNode->SetStargateCharted(pStargate->GetStargateID());
+
+	if (pDestNode)
+		pDestNode->SetStargateCharted(sDestEntryPoint);
+	}
+
 bool CUniverse::IsGlobalResurrectPending (CDesignType **retpType)
 
 //	IsGlobalResurrectPending

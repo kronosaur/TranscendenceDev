@@ -35,9 +35,14 @@
 
 #define PREV_DEST								CONSTLIT("[Prev]")
 
+#define PROPERTY_DEST_GATE_ID					CONSTLIT("destGateID")
+#define PROPERTY_DEST_ID						CONSTLIT("destID")
+#define PROPERTY_GATE_ID						CONSTLIT("gateID")
 #define PROPERTY_LEVEL							CONSTLIT("level")
 #define PROPERTY_NAME							CONSTLIT("name")
+#define PROPERTY_NODE_ID						CONSTLIT("nodeID")
 #define PROPERTY_POS							CONSTLIT("pos")
+#define PROPERTY_UNCHARTED						CONSTLIT("uncharted")
 
 #define SPECIAL_LEVEL							CONSTLIT("level:")
 #define SPECIAL_NODE_ID							CONSTLIT("nodeID:")
@@ -79,35 +84,7 @@ void CTopologyNode::AddAttributes (const CString &sAttribs)
 	m_sAttributes = ::AppendModifiers(m_sAttributes, sAttribs);
 	}
 
-#if 0
-ALERROR CTopologyNode::AddGateInt (const CString &sName, const CString &sDestNode, const CString &sEntryPoint)
-
-//	AddGateInt
-//
-//	Adds a gate to the topology
-
-	{
-	//	Add the gate
-
-	bool bNew;
-	StarGateDesc *pDesc = m_NamedGates.SetAt(sName, &bNew);
-
-	//	If not new, then this is an error
-
-	if (!bNew)
-		return ERR_FAIL;
-
-	//	Initialize
-
-	pDesc->sDestNode = sDestNode;
-	pDesc->sDestEntryPoint = sEntryPoint;
-	pDesc->pDestNode = NULL;
-
-	return NOERROR;
-	}
-#endif
-
-ALERROR CTopologyNode::AddStargate (const CString &sName, const CString &sDestNode, const CString &sDestEntryPoint, const TArray<SPoint> *pMidPoints)
+ALERROR CTopologyNode::AddStargate (const SStargateDesc &GateDesc)
 
 //	AddStargate
 //
@@ -117,7 +94,7 @@ ALERROR CTopologyNode::AddStargate (const CString &sName, const CString &sDestNo
 	//	Add the gate
 
 	bool bNew;
-	StarGateDesc *pDesc = m_NamedGates.SetAt(sName, &bNew);
+	SStargateEntry *pDesc = m_NamedGates.SetAt(GateDesc.sName, &bNew);
 
 	//	If not new, then this is an error
 
@@ -126,16 +103,18 @@ ALERROR CTopologyNode::AddStargate (const CString &sName, const CString &sDestNo
 
 	//	Initialize
 
-	pDesc->sDestNode = sDestNode;
-	pDesc->sDestEntryPoint = sDestEntryPoint;
+	pDesc->sDestNode = GateDesc.sDestNode;
+	pDesc->sDestEntryPoint = GateDesc.sDestName;
 
-	if (pMidPoints)
-		pDesc->MidPoints = *pMidPoints;
+	if (GateDesc.pMidPoints)
+		pDesc->MidPoints = *GateDesc.pMidPoints;
+
+	pDesc->fUncharted = GateDesc.bUncharted;
 
 	return NOERROR;
 	}
 
-ALERROR CTopologyNode::AddStargateAndReturn (const CString &sGateID, const CString &sDestNodeID, const CString &sDestGateID)
+ALERROR CTopologyNode::AddStargateAndReturn (const SStargateDesc &GateDesc)
 
 //	AddStargate
 //
@@ -144,10 +123,10 @@ ALERROR CTopologyNode::AddStargateAndReturn (const CString &sGateID, const CStri
 	{
 	//	Get the destination node
 
-	CTopologyNode *pDestNode = g_pUniverse->FindTopologyNode(sDestNodeID);
+	CTopologyNode *pDestNode = g_pUniverse->FindTopologyNode(GateDesc.sDestNode);
 	if (pDestNode == NULL)
 		{
-		kernelDebugLogPattern("Unable to find destination node: %s", sDestNodeID);
+		kernelDebugLogPattern("Unable to find destination node: %s", GateDesc.sDestNode);
 		return ERR_FAIL;
 		}
 
@@ -155,20 +134,20 @@ ALERROR CTopologyNode::AddStargateAndReturn (const CString &sGateID, const CStri
 
 	CString sReturnNodeID;
 	CString sReturnEntryPoint;
-	if (!pDestNode->FindStargate(sDestGateID, &sReturnNodeID, &sReturnEntryPoint))
+	if (!pDestNode->FindStargate(GateDesc.sDestName, &sReturnNodeID, &sReturnEntryPoint))
 		{
-		kernelDebugLogPattern("Unable to find destination stargate: %s", sDestGateID);
+		kernelDebugLogPattern("Unable to find destination stargate: %s", GateDesc.sDestName);
 		return ERR_FAIL;
 		}
 
 	//	Add the gate
 
-	AddStargate(sGateID, sDestNodeID, sDestGateID);
+	AddStargate(GateDesc);
 
 	//	See if we need to fix up the return gate
 
 	if (strEquals(sReturnNodeID, PREV_DEST))
-		pDestNode->SetStargateDest(sDestGateID, GetID(), sGateID);
+		pDestNode->SetStargateDest(GateDesc.sDestName, GetID(), GateDesc.sName);
 
 	return NOERROR;
 	}
@@ -281,7 +260,7 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 		{
 		CString sName;
 		sName.ReadFromStream(Ctx.pStream);
-		StarGateDesc *pDesc = pNode->m_NamedGates.SetAt(sName);
+		SStargateEntry *pDesc = pNode->m_NamedGates.SetAt(sName);
 
 		pDesc->sDestNode.ReadFromStream(Ctx.pStream);
 		pDesc->sDestEntryPoint.ReadFromStream(Ctx.pStream);
@@ -290,7 +269,8 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 			{
 			DWORD dwFlags;
 			Ctx.pStream->Read((char *)&dwFlags, sizeof(DWORD));
-			bool bCurved = ((dwFlags & 0x00000001) ? true : false);
+			bool bCurved =		((dwFlags & 0x00000001) ? true : false);
+			pDesc->fUncharted = ((dwFlags & 0x00000002) ? true : false);
 
 			if (bCurved)
 				{
@@ -358,7 +338,7 @@ bool CTopologyNode::FindStargate (const CString &sName, CString *retsDestNode, C
 //	Looks for the stargate by name and returns the destination node id and entry point
 
 	{
-	StarGateDesc *pDesc = m_NamedGates.GetAt(sName);
+	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
 	if (pDesc == NULL)
 		return false;
 
@@ -382,7 +362,7 @@ CString CTopologyNode::FindStargateName (const CString &sDestNode, const CString
 
 	for (i = 0; i < m_NamedGates.GetCount(); i++)
 		{
-		StarGateDesc *pDesc = &m_NamedGates[i];
+		SStargateEntry *pDesc = &m_NamedGates[i];
 		if (strEquals(pDesc->sDestNode, sDestNode)
 				&& strEquals(pDesc->sDestEntryPoint, sEntryPoint))
 			return m_NamedGates.GetKey(i);
@@ -403,7 +383,7 @@ bool CTopologyNode::FindStargateTo (const CString &sDestNode, CString *retsName,
 
 	for (i = 0; i < m_NamedGates.GetCount(); i++)
 		{
-		StarGateDesc *pDesc = &m_NamedGates[i];
+		SStargateEntry *pDesc = &m_NamedGates[i];
 		if (strEquals(pDesc->sDestNode, sDestNode))
 			{
 			if (retsName)
@@ -448,7 +428,7 @@ CTopologyNode *CTopologyNode::GetGateDest (const CString &sName, CString *retsEn
 //	Get stargate destination
 
 	{
-	StarGateDesc *pDesc = m_NamedGates.GetAt(sName);
+	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
 	if (pDesc == NULL)
 		return NULL;
 
@@ -563,7 +543,7 @@ CTopologyNode *CTopologyNode::GetStargateDest (int iIndex, CString *retsEntryPoi
 //	Returns the destination node for the given stargate
 
 	{
-	StarGateDesc *pDesc = &m_NamedGates[iIndex];
+	SStargateEntry *pDesc = &m_NamedGates[iIndex];
 	if (retsEntryPoint)
 		*retsEntryPoint = pDesc->sDestEntryPoint;
 
@@ -573,6 +553,38 @@ CTopologyNode *CTopologyNode::GetStargateDest (int iIndex, CString *retsEntryPoi
 	return pDesc->pDestNode;
 	}
 
+ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CString &sProperty) const
+
+//	GetStargateProperty
+//
+//	Returns a property of the given stargate.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
+	if (pDesc == NULL)
+		return ICCItemPtr(CC.CreateNil());
+
+	if (strEquals(sProperty, PROPERTY_DEST_GATE_ID))
+		return ICCItemPtr(CC.CreateString(pDesc->sDestEntryPoint));
+
+	else if (strEquals(sProperty, PROPERTY_DEST_ID))
+		return ICCItemPtr(CC.CreateString(pDesc->sDestNode));
+
+	else if (strEquals(sProperty, PROPERTY_GATE_ID))
+		return ICCItemPtr(CC.CreateString(sName));
+
+	else if (strEquals(sProperty, PROPERTY_NODE_ID))
+		return ICCItemPtr(CC.CreateString(GetID()));
+
+	else if (strEquals(sProperty, PROPERTY_UNCHARTED))
+		return ICCItemPtr(CC.CreateBool(pDesc->fUncharted));
+
+	else
+		return ICCItemPtr(CC.CreateNil());
+	}
+
 void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc)
 
 //	GetStargateRouteDesc
@@ -580,7 +592,7 @@ void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRou
 //	Returns route description
 
 	{
-	StarGateDesc *pDesc = &m_NamedGates[iIndex];
+	SStargateEntry *pDesc = &m_NamedGates[iIndex];
 
 	retRouteDesc->pFromNode = this;
 	retRouteDesc->sFromName = m_NamedGates.GetKey(iIndex);
@@ -591,6 +603,8 @@ void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRou
 	retRouteDesc->pToNode = pDesc->pDestNode;
 	retRouteDesc->sToName = pDesc->sDestEntryPoint;
 	retRouteDesc->MidPoints = pDesc->MidPoints;
+
+	retRouteDesc->bUncharted = pDesc->fUncharted;
 	}
 
 bool CTopologyNode::HasSpecialAttribute (const CString &sAttrib) const
@@ -1104,6 +1118,23 @@ bool CTopologyNode::SetProperty (const CString &sName, ICCItem *pValue, CString 
 		return false;
 	}
 
+void CTopologyNode::SetStargateCharted (const CString &sName, bool bCharted)
+
+//	SetStargateCharted
+//
+//	Sets whether or not the given stargate is charted.
+
+	{
+	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
+	if (pDesc == NULL)
+		{
+		ASSERT(false);
+		return;
+		}
+
+	pDesc->fUncharted = !bCharted;
+	}
+
 void CTopologyNode::SetStargateDest (const CString &sName, const CString &sDestNode, const CString &sEntryPoint)
 
 //	SetStargateDest
@@ -1111,7 +1142,7 @@ void CTopologyNode::SetStargateDest (const CString &sName, const CString &sDestN
 //	Sets the destination information for the given stargate
 
 	{
-	StarGateDesc *pDesc = m_NamedGates.GetAt(sName);
+	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
 	if (pDesc == NULL)
 		{
 		ASSERT(false);
@@ -1178,14 +1209,15 @@ void CTopologyNode::WriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwCount, sizeof(DWORD));
 	for (i = 0; i < (int)dwCount; i++)
 		{
-		StarGateDesc *pDesc = &m_NamedGates[i];
+		SStargateEntry *pDesc = &m_NamedGates[i];
 		CString sName = m_NamedGates.GetKey(i);
 		sName.WriteToStream(pStream);
 		pDesc->sDestNode.WriteToStream(pStream);
 		pDesc->sDestEntryPoint.WriteToStream(pStream);
 
 		DWORD dwFlags = 0;
-		dwFlags |= (pDesc->MidPoints.GetCount() > 0 ? 0x00000001 : 0);
+		dwFlags |= (pDesc->MidPoints.GetCount() > 0 ?	0x00000001 : 0);
+		dwFlags |= (pDesc->fUncharted ?					0x00000002 : 0);
 		pStream->Write((char *)&dwFlags, sizeof(DWORD));
 
 		if (pDesc->MidPoints.GetCount() > 0)

@@ -180,9 +180,12 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, CTopologyNode
 		pNode->GetStargateRouteDesc(i, &RouteDesc);
 
 		if (RouteDesc.pToNode 
+				&& !RouteDesc.bUncharted
 				&& !RouteDesc.pToNode->IsMarked()
 				&& RouteDesc.pToNode->IsKnown())
 			{
+			//	Figure out position of destination node.
+
 			SPoint End;
 			RouteDesc.pToNode->GetDisplayPos(&End.x, &End.y);
 			End = Xform(End);

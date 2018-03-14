@@ -35,13 +35,23 @@ class CTopologyNode
 
 		struct SCriteria
 			{
-			int iChance = 100;							//	Probability 0-100 of matching criteria
-			int iMinStargates = 0;						//	Match if >= this many stargates
-			int iMaxStargates = -1;						//	Match if <= this many stargates
-			int iMinInterNodeDist = 0;					//	Used by <DistributeNodes> (maybe move there)
+			int iChance = 100;						//	Probability 0-100 of matching criteria
+			int iMinStargates = 0;					//	Match if >= this many stargates
+			int iMaxStargates = -1;					//	Match if <= this many stargates
+			int iMinInterNodeDist = 0;				//	Used by <DistributeNodes> (maybe move there)
 			int iMaxInterNodeDist = -1;
 			SAttributeCriteria AttribCriteria;
-			TArray<SDistanceTo> DistanceTo;				//	Matches if node is within the proper distance of another node or nodes
+			TArray<SDistanceTo> DistanceTo;			//	Matches if node is within the proper distance of another node or nodes
+			};
+
+		struct SStargateDesc
+			{
+			CString sName;							//	Name of the gate
+			CString sDestNode;						//	Destination node
+			CString sDestName;						//	Destination entry point
+
+			const TArray<SPoint> *pMidPoints = NULL;	//	Gate line mid-points (optional)
+			bool bUncharted = false;				//	Gate is uncharted
 			};
 
 		struct SStargateRouteDesc
@@ -64,6 +74,7 @@ class CTopologyNode
 
 			TArray<SPoint> MidPoints;
 			bool bOneWay = false;
+			bool bUncharted = false;
 
 			private:
 				mutable Metric m_rDistance = 0.0;
@@ -75,8 +86,8 @@ class CTopologyNode
 		static void CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **retpNode);
 
 		void AddAttributes (const CString &sAttribs);
-		ALERROR AddStargate (const CString &sName, const CString &sDestNode, const CString &sDestEntryPoint, const TArray<SPoint> *pMidPoints = NULL);
-		ALERROR AddStargateAndReturn (const CString &sGateID, const CString &sDestNodeID, const CString &sDestGateID);
+		ALERROR AddStargate (const SStargateDesc &GateDesc);
+		ALERROR AddStargateAndReturn (const SStargateDesc &GateDesc);
 		int CalcMatchStrength (const CAttributeCriteria &Criteria);
 		bool FindStargate (const CString &sName, CString *retsDestNode = NULL, CString *retsEntryPoint = NULL);
 		bool FindStargateTo (const CString &sDestNode, CString *retsName = NULL, CString *retsDestGateID = NULL);
@@ -99,6 +110,7 @@ class CTopologyNode
 		inline int GetStargateCount (void) const { return m_NamedGates.GetCount(); }
 		CString GetStargate (int iIndex);
 		CTopologyNode *GetStargateDest (int iIndex, CString *retsEntryPoint = NULL) const;
+		ICCItemPtr GetStargateProperty (const CString &sName, const CString &sProperty) const;
 		void GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc);
 		inline CSystem *GetSystem (void) { return m_pSystem; }
 		inline DWORD GetSystemID (void) { return m_dwID; }
@@ -131,6 +143,7 @@ class CTopologyNode
 		inline void SetPos (int xPos, int yPos) { m_xPos = xPos; m_yPos = yPos; }
 		inline void SetPositionKnown (bool bKnown = true) { m_bPosKnown = bKnown; }
 		bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
+		void SetStargateCharted (const CString &sName, bool bCharted = true);
 		void SetStargateDest (const CString &sName, const CString &sDestNode, const CString &sEntryPoint);
 		inline void SetSystem (CSystem *pSystem) { m_pSystem = pSystem; }
 		inline void SetSystemID (DWORD dwID) { m_dwID = dwID; }
@@ -149,11 +162,10 @@ class CTopologyNode
 
 	private:
 
-		struct StarGateDesc
+		struct SStargateEntry
 			{
-			StarGateDesc (void) :
-					fMinor(false),
-					pDestNode(NULL)
+			SStargateEntry (void) :
+					fUncharted(false)
 				{ }
 
 			CString sDestNode;
@@ -162,7 +174,7 @@ class CTopologyNode
 			TArray<SPoint> MidPoints;			//	If the stargate line is curved, these are 
 												//	the intermediate points.
 
-			DWORD fMinor:1;						//	If TRUE, this is a minor stargate path
+			DWORD fUncharted:1;					//	If TRUE, this line is only visible if player used it
 
 			DWORD fSpare2:1;
 			DWORD fSpare3:1;
@@ -173,9 +185,8 @@ class CTopologyNode
 			DWORD fSpare8:1;
 			DWORD dwSpare:24;
 
-			CTopologyNode *pDestNode;			//	Cached for efficiency (may be NULL)
+			CTopologyNode *pDestNode = NULL;	//	Cached for efficiency (may be NULL)
 			};
-
 
 		CString m_sID;							//	ID of node
 		CString m_sCreatorID;					//	ID of topology desc, if created by a fragment, etc.
@@ -188,7 +199,7 @@ class CTopologyNode
 		int m_xPos;								//	Position on map (cartessian)
 		int m_yPos;
 
-		TSortMap<CString, StarGateDesc> m_NamedGates;	//	Name to StarGateDesc
+		TSortMap<CString, SStargateEntry> m_NamedGates;	//	Name to StarGateDesc
 
 		CString m_sAttributes;					//	Attributes
 		TArray<CString> m_VariantLabels;		//	Variant labels
