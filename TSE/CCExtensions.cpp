@@ -472,6 +472,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_HIT_TEST					35
 #define FN_SYS_GET_POV					36
 #define FN_SYS_ITEM_BUY_PRICE			37
+#define FN_SYS_STARGATE_PROPERTY		38
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2789,6 +2790,19 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetStargateDestinationNode",	fnSystemGet,	FN_SYS_STARGATE_DESTINATION_NODE,
 			"(sysGetStargateDestinationNode [nodeID] gateID) -> nodeID",
 			"s*",	0,	},
+
+		{	"sysGetStargateProperty",		fnSystemGet,	FN_SYS_STARGATE_PROPERTY,
+			"(sysGetStargateProperty [nodeID] gateID property) -> value\n\n"
+			
+			"property:\n\n"
+			
+			"   'destGateID: Destination gate ID\n"
+			"   'destID: Destination node\n"
+			"   'gateID: ID of this gate\n"
+			"   'nodeID: NodeID of this gate\n"
+			"   'uncharted: True if uncharted\n",
+
+			"ss*",	0,	},
 
 		{	"sysGetStargates",				fnSystemGet,	FN_SYS_STARGATES,
 			"(sysGetStargates [nodeID]) -> list of gateIDs",
@@ -12067,7 +12081,11 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 			if (pNode == NULL)
 				return pCC->CreateError(CONSTLIT("No topology for current system"), NULL);
 
-			if (pNode->AddStargateAndReturn(sStargateName, sDestNode, sDestName) != NOERROR)
+			CTopologyNode::SStargateDesc GateDesc;
+			GateDesc.sName = sStargateName;
+			GateDesc.sDestNode = sDestNode;
+			GateDesc.sDestName = sDestName;
+			if (pNode->AddStargateAndReturn(GateDesc) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Unable to add stargate to topology node"), NULL);
 
 			pDestNode = g_pUniverse->FindTopologyNode(sDestNode);
@@ -12255,14 +12273,15 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pNode == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 
-			CString sGateID = pArgs->GetElement(iArg++)->GetStringValue();
-			CString sDestNodeID = pArgs->GetElement(iArg++)->GetStringValue();
-			CString sDestGateID = pArgs->GetElement(iArg++)->GetStringValue();
+			CTopologyNode::SStargateDesc GateDesc;
+			GateDesc.sName = pArgs->GetElement(iArg++)->GetStringValue();
+			GateDesc.sDestNode = pArgs->GetElement(iArg++)->GetStringValue();
+			GateDesc.sDestName = pArgs->GetElement(iArg++)->GetStringValue();
 
-			if (pNode->FindStargate(sGateID))
+			if (pNode->FindStargate(GateDesc.sName))
 				return pCC->CreateNil();
 
-			if (pNode->AddStargateAndReturn(sGateID, sDestNodeID, sDestGateID) != NOERROR)
+			if (pNode->AddStargateAndReturn(GateDesc) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Unable to add stargate"), pArgs);
 
 			return pCC->CreateTrue();
@@ -13045,6 +13064,31 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pNode->FindStargate(sGateID, &sDestNode);
 
 			return pCC->CreateString(sDestNode);
+			}
+
+		case FN_SYS_STARGATE_PROPERTY:
+			{
+			int iArg = 0;
+
+			CTopologyNode *pNode;
+			if (pArgs->GetCount() > 2)
+				{
+				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+			else
+				{
+				pNode = g_pUniverse->GetCurrentTopologyNode();
+				if (pNode == NULL)
+					return pCC->CreateNil();
+				}
+
+			CString sGateID = pArgs->GetElement(iArg++)->GetStringValue();
+			CString sProperty = pArgs->GetElement(iArg++)->GetStringValue();
+
+			ICCItemPtr pResult = pNode->GetStargateProperty(sGateID, sProperty);
+			return pResult->Reference();
 			}
 
 		case FN_SYS_TOPOLOGY_DISTANCE:
