@@ -1359,6 +1359,12 @@ ALERROR CUniverse::InitAdventure (IPlayerController *pPlayer, CString *retsError
 	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
 	if (pAdventure == NULL)
 		{
+		//	We don't want to free pPlayer, so we need to clear it out before we
+		//	reset.
+
+		m_pPlayer = NULL;
+		SetPlayer(NULL);
+
 		*retsError = CONSTLIT("Must have an adventure.");
 		return ERR_FAIL;
 		}

@@ -572,7 +572,10 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 		//	Find the source node
 
 		if (error = GetOrAddTopologyNode(AddCtx, sSource, &pNode))
+			{
+			Ctx.sError = AddCtx.sError;
 			return error;
+			}
 
 		//	Must return a node
 
@@ -674,7 +677,10 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 	AddCtx.sOtherNodeEntryPoint = GateDesc.sName;
 
 	if (error = GetOrAddTopologyNode(AddCtx, GateDesc.sDestNode, &pDest))
+		{
+		Ctx.sError = AddCtx.sError;
 		return error;
+		}
 
 	//	If we don't have a node, then ignore (this can happen if we point to a node descriptor
 	//	that is empty).
