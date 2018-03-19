@@ -83,7 +83,7 @@ class CShipClass : public CDesignType
 		inline CGenericType *GetCharacter (void) { return m_Character; }
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }
 		inline Metric GetCombatStrength (void) const { return m_rCombatStrength; }
-		inline int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
+		inline int GetCyberDefenseLevel (void) const { return m_Hull.GetCyberDefenseLevel(); }
 		inline DWORD GetDefaultBkgnd (void) const { return m_dwDefaultBkgnd; }
 		inline CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
 		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
@@ -135,7 +135,7 @@ class CShipClass : public CDesignType
 		inline bool IsPlayerShip (void) { return (GetPlayerSettings() != NULL); }
 		inline bool IsShipSection (void) const { return m_fShipCompartment; }
 		inline bool IsShownAtNewGame (void) const { const CPlayerSettings *pPlayerSettings = GetPlayerSettings(); return (pPlayerSettings && pPlayerSettings->IsInitialClass() && !IsVirtual()); }
-		inline bool IsTimeStopImmune (void) { return (m_fTimeStopImmune ? true : false); }
+		inline bool IsTimeStopImmune (void) { return m_Hull.IsTimeStopImmune(); }
 		void MarkImages (bool bMarkDevices);
 		void Paint (CG32bitImage &Dest, 
 					int x, 
@@ -278,7 +278,6 @@ class CShipClass : public CDesignType
 		double m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
 		CDriveDesc m_DriveDesc;					//	Drive descriptor
 		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
-		int m_iCyberDefenseLevel;				//	Cyber defense level
 
         //  Wrecks
 
@@ -350,7 +349,7 @@ class CShipClass : public CDesignType
 
 		DWORD m_fRadioactiveWreck:1;			//	TRUE if wreck is always radioactive
 		DWORD m_fHasDockingPorts:1;				//	TRUE if ship has docking ports
-		DWORD m_fTimeStopImmune:1;				//	TRUE if ship is immune to stop-time
+		DWORD m_fSpare3a:1;						//	Unused
 		DWORD m_fSpare4a:1;						//	Unused
 		DWORD m_fSpare5a:1;						//	Unused
 		DWORD m_fSpare6a:1;						//	Unused
@@ -363,7 +362,7 @@ class CShipClass : public CDesignType
 		DWORD m_fInheritedDevices:1;			//	TRUE if m_pDevices is inherited from another class
 		DWORD m_fInheritedItems:1;				//	TRUE if m_pItems is inherited from another class
 		DWORD m_fInheritedEscorts:1;			//	TRUE if m_pEscorts is inherited from another class
-		DWORD m_fCyberDefenseOverride:1;		//	TRUE if cyberDefenseLevel is specified in XML
+		DWORD m_fSpare7b:1;						//	Unused
 		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 
 		DWORD m_fShipCompartment:1;				//	TRUE if we represent an attached compartment/segment

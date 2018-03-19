@@ -3628,10 +3628,9 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 	if (!m_fLevelOverride)
 		m_iLevel = CalcLevel();
 
-	if (!m_fCyberDefenseOverride)
-		m_iCyberDefenseLevel = m_iLevel;
-
 	m_iLevelType = CalcBalanceType(NULL, &m_rCombatStrength);
+
+	m_Hull.InitCyberDefenseLevel(m_iLevel);
 
 	//	Done
 
@@ -3675,8 +3674,6 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_rThrustRatio = pClass->m_rThrustRatio;
 	m_DriveDesc = pClass->m_DriveDesc;
 	m_ReactorDesc = pClass->m_ReactorDesc;
-	m_iCyberDefenseLevel = pClass->m_iCyberDefenseLevel;
-	m_fCyberDefenseOverride = pClass->m_fCyberDefenseOverride;
 
 	m_iLeavesWreck = pClass->m_iLeavesWreck;
 	m_iStructuralHP = pClass->m_iStructuralHP;
@@ -3750,7 +3747,6 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_Exhaust = pClass->m_Exhaust;
 
 	m_fRadioactiveWreck = pClass->m_fRadioactiveWreck;
-	m_fTimeStopImmune = pClass->m_fTimeStopImmune;
 
 	//	m_fHasOn... are computed during bind
 
@@ -3851,13 +3847,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (error = m_ReactorDesc.InitFromXML(Ctx, pDesc, GetUNID(), true))
 		return error;
-
-	if ((m_fCyberDefenseOverride = pDesc->FindAttributeInteger(CYBER_DEFENSE_LEVEL_ATTRIB, &m_iCyberDefenseLevel)))
-		m_iCyberDefenseLevel = Max(1, m_iCyberDefenseLevel);
-	else
-		m_iCyberDefenseLevel = 0;
-
-	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
 
 	//	Load armor
 

@@ -491,6 +491,7 @@ class CHullDesc
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
 		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
+		inline int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
 		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		inline Metric GetExtraPoints (void) const { return m_rExtraPoints; }
 		inline int GetMass (void) const { return m_iMass; }
@@ -505,8 +506,10 @@ class CHullDesc
 		inline int GetSize (void) const { return m_iSize; }
 		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
 		inline const CCurrencyAndValue &GetValue (void) const { return m_Value; }
+		inline void InitCyberDefenseLevel (int iLevel) { if (m_iCyberDefenseLevel == -1) m_iCyberDefenseLevel = iLevel; }
 		void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
+		inline bool IsTimeStopImmune (void) const { return m_bTimeStopImmune; }
 		inline void SetSize (int iSize) { m_iSize = iSize; }
 		inline void SetMaxCargoSpace (int iCargoSpace) { m_iMaxCargoSpace = iCargoSpace; }
 		inline void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }
@@ -533,6 +536,10 @@ class CHullDesc
 		int m_iMaxNonWeapons = 0;			//	Max number of non-weapon devices
 
 		Metric m_rExtraPoints = 0.0;		//	Extra point to calculate hull value
+
+		int m_iCyberDefenseLevel = -1;		//	-1 = same as ship level
+
+		bool m_bTimeStopImmune = false;		//	If TRUE, we're immune to timestop
 	};
 
 //  Reactor --------------------------------------------------------------------

@@ -9,6 +9,7 @@
 
 #define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
+#define CYBER_DEFENSE_LEVEL_ATTRIB				CONSTLIT("cyberDefenseLevel")
 #define DEVICE_CRITERIA_ATTRIB					CONSTLIT("deviceCriteria")
 #define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
 #define MASS_ATTRIB								CONSTLIT("mass")
@@ -22,6 +23,7 @@
 #define MIN_ARMOR_SPEED_ATTRIB					CONSTLIT("minArmorSpeed")
 #define SIZE_ATTRIB								CONSTLIT("size")
 #define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
+#define TIME_STOP_IMMUNE_ATTRIB					CONSTLIT("timeStopImmune")
 #define VALUE_ATTRIB							CONSTLIT("value")
 #define VALUE_ADJ_ATTRIB						CONSTLIT("valueAdj")
 
@@ -283,9 +285,27 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	m_iMaxWeapons = pHull->GetAttributeIntegerBounded(MAX_WEAPONS_ATTRIB, 0, m_iMaxDevices, m_iMaxDevices);
 	m_iMaxNonWeapons = pHull->GetAttributeIntegerBounded(MAX_NON_WEAPONS_ATTRIB, 0, m_iMaxDevices, m_iMaxDevices);
 
+	//	Miscellaneous defensive systems.
+
+	m_bTimeStopImmune = pHull->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
+	m_iCyberDefenseLevel = pHull->GetAttributeIntegerBounded(CYBER_DEFENSE_LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, -1);
+
 	//	Extra points
 
 	m_rExtraPoints = pHull->GetAttributeDouble(VALUE_ADJ_ATTRIB);
+
+	//	In API 40 we still allow some values to be defined in the header.
+
+	if (pHull != pDesc && Ctx.GetAPIVersion() < 41)
+		{
+		int iValue;
+		if (m_iCyberDefenseLevel == -1 && pDesc->FindAttributeInteger(CYBER_DEFENSE_LEVEL_ATTRIB, &iValue))
+			m_iCyberDefenseLevel = iValue;
+
+		bool bValue;
+		if (!m_bTimeStopImmune && pDesc->FindAttributeBool(TIME_STOP_IMMUNE_ATTRIB, &bValue))
+			m_bTimeStopImmune = bValue;
+		}
 
 	//	Done
 
