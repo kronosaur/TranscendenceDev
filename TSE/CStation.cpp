@@ -1534,10 +1534,10 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateDouble(m_pRotation ? m_pRotation->GetRotationSpeedDegrees(m_pType->GetRotationDesc()) : 0.0);
 
 	else if (strEquals(sName, PROPERTY_SHIP_CONSTRUCTION_ENABLED))
-		return CC.CreateBool(m_fNoConstruction);
+		return CC.CreateBool(!m_fNoConstruction);
 
 	else if (strEquals(sName, PROPERTY_SHIP_REINFORCEMENT_ENABLED))
-		return CC.CreateBool(m_fNoReinforcements);
+		return CC.CreateBool(!m_fNoReinforcements);
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		return CC.CreateBool(m_Scale != scaleStar && m_Scale != scaleWorld && m_pType->ShowsMapIcon() && !m_fNoMapLabel);
