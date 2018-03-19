@@ -5,6 +5,69 @@
 
 #pragma once
 
+//	Hull Descriptor ------------------------------------------------------------
+
+class CHullDesc
+	{
+	public:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
+		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
+		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
+		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
+		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
+		inline int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
+		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
+		inline Metric GetExtraPoints (void) const { return m_rExtraPoints; }
+		inline int GetMass (void) const { return m_iMass; }
+		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
+		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
+		inline int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
+		inline int GetMaxDevices (void) const { return m_iMaxDevices; }
+		inline int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
+		inline int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
+		inline int GetMaxWeapons (void) const { return m_iMaxWeapons; }
+		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
+		inline int GetSize (void) const { return m_iSize; }
+		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
+		inline const CCurrencyAndValue &GetValue (void) const { return m_Value; }
+		inline void InitCyberDefenseLevel (int iLevel) { if (m_iCyberDefenseLevel == -1) m_iCyberDefenseLevel = iLevel; }
+		void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
+		inline bool IsTimeStopImmune (void) const { return m_bTimeStopImmune; }
+		inline void SetSize (int iSize) { m_iSize = iSize; }
+		inline void SetMaxCargoSpace (int iCargoSpace) { m_iMaxCargoSpace = iCargoSpace; }
+		inline void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }
+
+	private:
+		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
+
+		int m_iSize = 0;					//	Length of ship in meters
+		int m_iMass = 0;					//	Empty hull mass (tons)
+		CCurrencyAndValue m_Value;			//	Value of hull alone (excluding any devices/armor)
+		int m_iCargoSpace = 0;				//	Default cargo space (tons)
+
+		CItemCriteria m_ArmorCriteria;		//	Allowable armor
+		CItemCriteria m_DeviceCriteria;		//	Allowable devices
+		int m_iStdArmorMass = 0;			//	No penalty at this armor mass
+		int m_iMaxArmorMass = 0;			//	Max mass of single armor segment
+		int m_iMaxArmorSpeedPenalty = 0;	//	Change to speed at max armor mass (1/100th light-speed)
+		int m_iMinArmorSpeedBonus = 0;		//	Change to speed at 1/2 std armor mass
+
+		int m_iMaxCargoSpace = 0;			//	Max amount of cargo space with expansion (tons)
+		int m_iMaxReactorPower = 0;			//	Max compatible reactor power
+		int m_iMaxDevices = 0;				//	Max number of devices
+		int m_iMaxWeapons = 0;				//	Max number of weapon devices (including launchers)
+		int m_iMaxNonWeapons = 0;			//	Max number of non-weapon devices
+
+		Metric m_rExtraPoints = 0.0;		//	Extra point to calculate hull value
+
+		int m_iCyberDefenseLevel = -1;		//	-1 = same as ship level
+
+		bool m_bTimeStopImmune = false;		//	If TRUE, we're immune to timestop
+	};
+
+//	Ship Class -----------------------------------------------------------------
+
 class CShipClass : public CDesignType
 	{
 	public:
