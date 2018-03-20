@@ -43,6 +43,7 @@ class CMission : public CSpaceObject
 							   CMission **retpMission,
 							   CString *retsError);
 		void FireCustomEvent (const CString &sEvent, ICCItem *pData);
+		inline bool CleanNonPlayer (void) const { return m_pType->CleanNonPlayer(); }
 		inline DWORD GetAcceptedOn (void) const { return m_dwAcceptedOn; }
 		inline int GetPriority (void) const { return m_pType->GetPriority(); }
 		inline bool IsActive (void) const { return (m_iStatus == statusAccepted || (!m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure))); }

@@ -17,6 +17,7 @@
 #define NO_FAILURE_ON_OWNER_DESTROYED_ATTRIB	CONSTLIT("noFailureOnOwnerDestroyed")
 #define NO_STATS_ATTRIB							CONSTLIT("noStats")
 #define PRIORITY_ATTRIB							CONSTLIT("priority")
+#define RECORD_NON_PLAYER_ATTRIB				CONSTLIT("recordNonPlayer")
 
 #define FIELD_LEVEL								CONSTLIT("level")
 #define FIELD_MAX_LEVEL							CONSTLIT("maxLevel")
@@ -70,6 +71,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iPriority = pDesc->GetAttributeIntegerBounded(PRIORITY_ATTRIB, 0, -1, 1);
 	m_iExpireTime = pDesc->GetAttributeIntegerBounded(EXPIRE_TIME_ATTRIB, 1, -1, -1);
 	m_iFailIfOutOfSystem = pDesc->GetAttributeIntegerBounded(FAILURE_AFTER_OUT_OF_SYSTEM_ATTRIB, 0, -1, -1);
+	m_fRecordNonPlayer = pDesc->GetAttributeBool(RECORD_NON_PLAYER_ATTRIB);
 	m_fNoFailureOnOwnerDestroyed = pDesc->GetAttributeBool(NO_FAILURE_ON_OWNER_DESTROYED_ATTRIB);
 	m_fNoDebrief = pDesc->GetAttributeBool(NO_DEBRIEF_ATTRIB);
 	m_fNoDecline = pDesc->GetAttributeBool(NO_DECLINE_ATTRIB);
