@@ -143,6 +143,7 @@ class CObjectImageArray
 
 		bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int iTick, int iRotation, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) const;
 		void CleanUp (void);
+		inline void ClearMark (void) { if (m_pImage) m_pImage->ClearMark(); }
 		void CopyImage (CG32bitImage &Dest, int x, int y, int iFrame, int iRotation) const;
 		inline DWORD GetBitmapUNID (void) const { return m_dwBitmapUNID; }
 		CString GetFilename (void) const;

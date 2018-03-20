@@ -56,14 +56,12 @@
 #define DRIVE_POWER_USE_ATTRIB					CONSTLIT("drivePowerUse")
 #define EQUIPMENT_ATTRIB						CONSTLIT("equipment")
 #define EVENT_HANDLER_ATTRIB					CONSTLIT("eventHandler")
-#define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define MAX_REACTOR_FUEL_ATTRIB					CONSTLIT("fuelCapacity")
 #define HEIGHT_ATTRIB							CONSTLIT("height")
 #define HP_X_ATTRIB								CONSTLIT("hpX")
 #define HP_Y_ATTRIB								CONSTLIT("hpY")
 #define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
 #define INERTIALESS_DRIVE_ATTRIB				CONSTLIT("inertialessDrive")
-#define LEAVES_WRECK_ATTRIB						CONSTLIT("leavesWreck")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
 #define MAX_ARMOR_SPEED_ATTRIB					CONSTLIT("maxArmorSpeed")
@@ -72,7 +70,6 @@
 #define MAX_NON_WEAPONS_ATTRIB					CONSTLIT("maxNonWeapons")
 #define MAX_REACTOR_POWER_ATTRIB				CONSTLIT("maxReactorPower")
 #define MAX_SPEED_ATTRIB						CONSTLIT("maxSpeed")
-#define MAX_STRUCTURAL_HIT_POINTS_ATTRIB		CONSTLIT("maxStructuralHitPoints")
 #define MAX_WEAPONS_ATTRIB						CONSTLIT("maxWeapons")
 #define MIN_ARMOR_SPEED_ATTRIB					CONSTLIT("minArmorSpeed")
 #define NAME_ATTRIB								CONSTLIT("name")
@@ -82,7 +79,6 @@
 #define NAME_Y_ATTRIB							CONSTLIT("nameY")
 #define PERCEPTION_ATTRIB						CONSTLIT("perception")
 #define PLAYER_SHIP_ATTRIB						CONSTLIT("playerShip")
-#define RADIOACTIVE_WRECK_ATTRIB				CONSTLIT("radioactiveWreck")
 #define REACTOR_POWER_ATTRIB					CONSTLIT("reactorPower")
 #define REVERSE_ARTICLE_ATTRIB					CONSTLIT("reverseArticle")
 #define ROTATION_COUNT_ATTRIB					CONSTLIT("rotationCount")
@@ -95,14 +91,12 @@
 #define STARTING_POS_ATTRIB						CONSTLIT("startingPos")
 #define STARTING_SYSTEM_ATTRIB					CONSTLIT("startingSystem")
 #define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
-#define STRUCTURAL_HIT_POINTS_ATTRIB			CONSTLIT("structuralHitPoints")
 #define THRUST_ATTRIB							CONSTLIT("thrust")
 #define THRUST_RATIO_ATTRIB						CONSTLIT("thrustRatio")
 #define TIME_STOP_IMMUNE_ATTRIB					CONSTLIT("timeStopImmune")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define VIRTUAL_ATTRIB							CONSTLIT("virtual")
 #define WIDTH_ATTRIB							CONSTLIT("width")
-#define WRECK_TYPE_ATTRIB						CONSTLIT("wreckType")
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
 
@@ -203,11 +197,6 @@
 
 #define SPECIAL_VALUE_TRUE						CONSTLIT("true")
 
-#define WRECK_IMAGE_VARIANTS					3
-#define DAMAGE_IMAGE_COUNT						10
-#define DAMAGE_IMAGE_WIDTH						24
-#define DAMAGE_IMAGE_HEIGHT						24
-
 #define DEFAULT_POWER_USE						20
 
 static char g_AISettingsTag[] = "AISettings";
@@ -215,9 +204,6 @@ static char g_AISettingsTag[] = "AISettings";
 static char g_ManufacturerAttrib[] = "manufacturer";
 static char g_ClassAttrib[] = "class";
 static char g_TypeAttrib[] = "type";
-
-static CG32bitImage *g_pDamageBitmap = NULL;
-static CStationType *g_pWreckDesc = NULL;
 
 const int DOCK_OFFSET_STD_SIZE =				64;
 
@@ -1880,7 +1866,7 @@ bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 	//	The wreck is radioactive if the ship is radioactive (or if this
 	//	ship class always has radioactive wrecks)
 
-	if (pShip->IsRadioactive() || m_fRadioactiveWreck)
+	if (pShip->IsRadioactive() || m_WreckDesc.IsRadioactive())
 		pWreck->MakeRadioactive();
 
 	//	Done
@@ -1889,106 +1875,6 @@ bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 		*retpWreck = pWreck;
 
 	return true;
-
-	DEBUG_CATCH
-	}
-
-void CShipClass::CreateWreckImage (void)
-
-//	CreateWreckImage
-//
-//	Creates a wreck image randomly
-
-	{
-	DEBUG_TRY
-
-	int i;
-
-	if (!GetImage().IsLoaded())
-		return;
-
-	int cxWidth = RectWidth(GetImage().GetImageRect());
-	int cyHeight = RectHeight(GetImage().GetImageRect());
-
-	//	Get the image for damage
-
-	if (g_pDamageBitmap == NULL)
-		{
-		CObjectImage *pDamageImage = g_pUniverse->FindLibraryImage(g_DamageImageUNID);
-		if (pDamageImage == NULL)
-			return;
-
-		//	Lock the image because we keep it around in a global
-
-		SDesignLoadCtx Ctx;
-		if (pDamageImage->Lock(Ctx) != NOERROR)
-			return;
-
-		//	Get the image
-
-		g_pDamageBitmap = pDamageImage->GetRawImage(strFromInt(GetUNID()));
-		if (g_pDamageBitmap == NULL)
-			return;
-		}
-
-	//	Create the bitmap
-
-	CG32bitImage &SourceImage = GetImage().GetImage(NULL_STR);
-	m_WreckBitmap.Create(cxWidth, cyHeight * WRECK_IMAGE_VARIANTS, SourceImage.GetAlphaType());
-
-	//	Blt the images
-
-	TArray<int> Rotations;
-	Rotations.InsertEmpty(WRECK_IMAGE_VARIANTS);
-
-	for (i = 0; i < WRECK_IMAGE_VARIANTS; i++)
-		{
-		//	Pick a random rotation
-
-		Rotations[i] = mathRandom(0, GetRotationDesc().GetFrameCount() - 1);
-
-		//	Copy the frame
-
-		GetImage().CopyImage(m_WreckBitmap,
-				0,
-				i * cyHeight,
-				0,
-				Rotations[i]);
-
-		//	Add some destruction
-
-		int iCount = cxWidth * 2;
-		for (int j = 0; j < iCount; j++)
-			{
-			m_WreckBitmap.Blt(DAMAGE_IMAGE_WIDTH * mathRandom(0, DAMAGE_IMAGE_COUNT-1),
-					0,
-					DAMAGE_IMAGE_WIDTH,
-					DAMAGE_IMAGE_COUNT,
-					255,
-					*g_pDamageBitmap,
-					mathRandom(0, cxWidth-1) - (DAMAGE_IMAGE_WIDTH / 2),
-					(i * cyHeight) + mathRandom(0, cyHeight-1) - (DAMAGE_IMAGE_HEIGHT / 2));
-			}
-
-		}
-
-	//	Copy the mask back to the image because we blew it away painting
-	//	the damage.
-
-	for (i = 0; i < WRECK_IMAGE_VARIANTS; i++)
-		{
-		RECT rcSrc = GetImage().GetImageRect(0, Rotations[i]);
-		m_WreckBitmap.CopyChannel(channelAlpha, rcSrc.left, rcSrc.top, cxWidth, cyHeight, SourceImage, 0, i * cyHeight);
-		}
-
-	//	Initialize an image
-
-	RECT rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = cxWidth;
-	rcRect.bottom = cyHeight;
-	m_WreckImage.Init(&m_WreckBitmap, rcRect, 0, 0, false);
 
 	DEBUG_CATCH
 	}
@@ -2245,7 +2131,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		*retsValue = strFromInt(m_pItems ? (int)m_pItems->GetAverageValue(GetLevel()) : 0);
 
 	else if (strEquals(sField, FIELD_WRECK_CHANCE))
-		*retsValue = strFromInt(m_iLeavesWreck);
+		*retsValue = strFromInt(m_WreckDesc.GetWreckChance());
 
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE))
 		{
@@ -2587,8 +2473,8 @@ CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const
 	{
 	//	If we've got a defined explosion, then return that
 
-	if (m_pExplosionType)
-		return m_pExplosionType;
+	if (m_WreckDesc.GetExplosionType())
+		return m_WreckDesc.GetExplosionType();
 
 	//	If no defined explosion, come up with an appropriate one.
 	//
@@ -2884,8 +2770,8 @@ int CShipClass::GetMaxStructuralHitPoints (void) const
 	{
 	//	If it is set, return that
 	
-	if (m_iStructuralHP)
-		return m_iStructuralHP;
+	if (m_WreckDesc.GetStructuralHP())
+		return m_WreckDesc.GetStructuralHP();
 
 	//	Otherwise we have to compute it based on level and mass
 
@@ -3104,19 +2990,7 @@ CCurrencyAndValue CShipClass::GetTradePrice (CSpaceObject *pObj, bool bActual) c
 	return Value;
 	}
 
-CStationType *CShipClass::GetWreckDesc (void)
-	{
-	if (m_pWreckType)
-		return m_pWreckType;
-	else
-		{
-		if (g_pWreckDesc == NULL)
-			g_pWreckDesc = g_pUniverse->FindStationType(g_ShipWreckUNID);
-
-		return g_pWreckDesc;
-		}
-	}
-
+#if 0
 void CShipClass::GetWreckImage (CObjectImageArray *retWreckImage)
 
 //	GetWreckImage
@@ -3131,16 +3005,7 @@ void CShipClass::GetWreckImage (CObjectImageArray *retWreckImage)
 	rcRect.bottom = RectHeight(GetImage().GetImageRect());
 	retWreckImage->Init(&m_WreckBitmap, rcRect, 0, 0, false);
 	}
-
-int CShipClass::GetWreckImageVariants (void)
-
-//	GetWreckImageVariants
-//
-//	Returns the number of wreck images
-
-	{
-	return WRECK_IMAGE_VARIANTS;
-	}
+#endif
 
 void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 
@@ -3320,8 +3185,7 @@ void CShipClass::UnbindGlobal (void)
 //	We're unbinding, which means we have to release any resources.
 
 	{
-	g_pDamageBitmap = NULL;
-	g_pWreckDesc = NULL;
+	CShipwreckDesc::UnbindGlobal();
 	m_bDefaultPlayerSettingsBound = false;
 	}
 
@@ -3338,9 +3202,12 @@ void CShipClass::MarkImages (bool bMarkDevices)
 
 	m_Image.MarkImage();
     m_HeroImage.MarkImage();
+	m_WreckDesc.MarkImages();
 
-	if (m_pExplosionType)
-		m_pExplosionType->MarkImages();
+	//	We make sure the wreck image is created (if it is already created, then
+	//	this call just marks it.
+
+	m_WreckDesc.CreateWreckImage(GetUNID(), GetImage());
 
 	//	If necessary mark images for all our installed devices
 
@@ -3352,12 +3219,6 @@ void CShipClass::MarkImages (bool bMarkDevices)
 			pDevice->MarkImages();
 			}
 		}
-
-	//	Wreck images
-
-	if (!m_WreckImage.IsLoaded())
-		CreateWreckImage();
-    m_WreckImage.MarkImage();
 
 	//	Effects
 
@@ -3394,9 +3255,9 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	{
 	retTypesUsed->SetAt(m_pDefaultSovereign.GetUNID(), true);
-	retTypesUsed->SetAt(m_pWreckType.GetUNID(), true);
 
     m_Armor.AddTypesUsed(retTypesUsed);
+	m_WreckDesc.AddTypesUsed(retTypesUsed);
 
 	if (m_pDeviceSlots)
 		m_pDeviceSlots->AddTypesUsed(retTypesUsed);
@@ -3418,8 +3279,6 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_dwDefaultBkgnd, true);
 	retTypesUsed->SetAt(GetImage().GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_HeroImage.GetBitmapUNID(), true);
-	retTypesUsed->SetAt(m_WreckImage.GetBitmapUNID(), true);
-	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 	retTypesUsed->SetAt(m_ExhaustImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_Hull.GetValue().GetCurrencyType()->GetUNID(), true);
 	}
@@ -3497,7 +3356,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
     if (error = m_Armor.Bind(Ctx))
         goto Fail;
 
-	if (error = m_pExplosionType.Bind(Ctx))
+	if (error = m_WreckDesc.Bind(Ctx))
 		goto Fail;
 
 	//	More
@@ -3561,11 +3420,6 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (m_pEscorts)
 		if (error = m_pEscorts->OnDesignLoadComplete(Ctx))
 			return error;
-
-	//	Create the random wreck images
-
-	if (error = m_pWreckType.Bind(Ctx))
-		goto Fail;
 
 	//	Generate an average set of devices.
 	//
@@ -3674,10 +3528,8 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_rThrustRatio = pClass->m_rThrustRatio;
 	m_DriveDesc = pClass->m_DriveDesc;
 	m_ReactorDesc = pClass->m_ReactorDesc;
+	m_WreckDesc = pClass->m_WreckDesc;
 
-	m_iLeavesWreck = pClass->m_iLeavesWreck;
-	m_iStructuralHP = pClass->m_iStructuralHP;
-	m_pWreckType = pClass->m_pWreckType;
 	m_Armor = pClass->m_Armor;
 	m_Interior = pClass->m_Interior;
 
@@ -3742,11 +3594,8 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	//	No need to copy m_WreckImage or m_WreckBitmap because they are just
 	//	caches.
 
-	m_pExplosionType = pClass->m_pExplosionType;
 	m_ExhaustImage = pClass->m_ExhaustImage;
 	m_Exhaust = pClass->m_Exhaust;
-
-	m_fRadioactiveWreck = pClass->m_fRadioactiveWreck;
 
 	//	m_fHasOn... are computed during bind
 
@@ -3831,6 +3680,11 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (m_Hull.GetMaxArmorMass() == 0)
 		m_Hull.InitDefaultArmorLimits(iMaxSpeed, (m_rThrustRatio > 0.0 ? m_rThrustRatio : CDriveDesc::CalcThrustRatio(m_DriveDesc.GetThrust(), m_Hull.GetMass())));
+
+	//	Wreck descriptor
+
+	if (error = m_WreckDesc.InitFromXML(Ctx, pDesc, m_Hull.GetMass()))
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Load effects
 
@@ -4029,37 +3883,11 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_fCommsHandlerInit = false;
 
-	//	Miscellaneous
-
-	if (pDesc->FindAttributeInteger(LEAVES_WRECK_ATTRIB, &m_iLeavesWreck))
-		m_iLeavesWreck = Max(0, m_iLeavesWreck);
-	else
-		{
-		//	Chance of wreck is a function of mass:
-		//
-		//	prob = 5 * MASS^0.45
-
-		m_iLeavesWreck = Max(0, Min((int)(5.0 * pow((Metric)m_Hull.GetMass(), 0.45)), 100));
-		}
-
-	if (error = m_pWreckType.LoadUNID(Ctx, pDesc->GetAttribute(WRECK_TYPE_ATTRIB)))
-		return error;
-
-	m_fRadioactiveWreck = pDesc->GetAttributeBool(RADIOACTIVE_WRECK_ATTRIB);
-	m_iStructuralHP = pDesc->GetAttributeIntegerBounded(STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, -1);
-	if (m_iStructuralHP == -1)
-		m_iStructuralHP = pDesc->GetAttributeIntegerBounded(MAX_STRUCTURAL_HIT_POINTS_ATTRIB, 0, -1, 0);
-
     //  Load initial data, if available
 
     CXMLElement *pInitData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
     if (pInitData)
         m_InitialData.SetFromXML(pInitData);
-
-	//	Explosion
-
-	if (error = m_pExplosionType.LoadUNID(Ctx, pDesc->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
-		return error;
 
 	//	Load player settings
 
@@ -4340,7 +4168,7 @@ void CShipClass::OnReinit (void)
 	DEBUG_TRY
 
 	InitShipNamesIndices();
-	m_WreckImage.CleanUp();
+	m_WreckDesc.CleanUp();
 
     //  If we created the hero image, then free it.
 
@@ -4361,11 +4189,7 @@ void CShipClass::OnSweep (void)
 
     //  Clean up wreck image
 
-    if (!m_WreckImage.IsMarked())
-        {
-        m_WreckImage.CleanUp();
-        m_WreckImage.CleanUp();
-        }
+	m_WreckDesc.SweepImages();
 
     //  If we created the hero image, then we free it.
 

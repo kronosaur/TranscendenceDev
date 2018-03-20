@@ -1213,6 +1213,9 @@
     <ClCompile Include="CSFXOptions.cpp">
       <Filter>Source Files\Universe</Filter>
     </ClCompile>
+    <ClCompile Include="CShipwreckDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

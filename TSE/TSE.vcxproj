@@ -461,6 +461,7 @@
     <ClCompile Include="CShipInteriorDesc.cpp" />
     <ClCompile Include="CShipPerformanceDesc.cpp" />
     <ClCompile Include="CShipTable.cpp" />
+    <ClCompile Include="CShipwreckDesc.cpp" />
     <ClCompile Include="CShockwaveHitTest.cpp" />
     <ClCompile Include="CEnvironmentGrid.cpp" />
     <ClCompile Include="CMusicResource.cpp" />

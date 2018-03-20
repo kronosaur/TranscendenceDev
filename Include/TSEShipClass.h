@@ -66,6 +66,50 @@ class CHullDesc
 		bool m_bTimeStopImmune = false;		//	If TRUE, we're immune to timestop
 	};
 
+//	Wreck Descriptor -----------------------------------------------------------
+
+class CShipwreckDesc
+	{
+	public:
+		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
+		ALERROR Bind (SDesignLoadCtx &Ctx);
+		void CleanUp (void);
+		void ClearMarks (void);
+		void CreateWreckImage (DWORD dwShipClass, const CObjectImageArray &ShipImage);
+		inline CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
+		inline int GetStructuralHP (void) const { return m_iStructuralHP; }
+		inline int GetWreckChance (void) const { return m_iLeavesWreck; }
+		inline CObjectImageArray &GetWreckImage (void) { return m_WreckImage; }
+		inline int GetWreckImageVariants (void) const { return WRECK_IMAGE_VARIANTS; }
+		CStationType *GetWreckType (void) const;
+		inline bool HasWreckImage (void) const { return m_WreckImage.IsLoaded(); }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Metric rHullMass);
+		inline bool IsRadioactive (void) const { return m_bRadioactiveWreck; }
+		void MarkImages (void);
+		void SweepImages (void);
+
+		static void UnbindGlobal (void);
+		
+	private:
+		static constexpr int WRECK_IMAGE_VARIANTS =		3;
+		static constexpr int DAMAGE_IMAGE_COUNT =		10;
+		static constexpr int DAMAGE_IMAGE_WIDTH	=		24;
+		static constexpr int DAMAGE_IMAGE_HEIGHT =		24;
+
+		int m_iLeavesWreck = 0;					//	Chance that it leaves a wreck
+		int m_iStructuralHP = 0;				//	Structual hp of wreck (0 = undefined)
+		CStationTypeRef m_pWreckType;			//	Station type to use as wreck
+		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
+
+		CG32bitImage m_WreckBitmap;				//	Image to use when ship is wrecked
+		CObjectImageArray m_WreckImage;			//	Image to use when ship is wrecked
+
+		bool m_bRadioactiveWreck = false;		//	TRUE if wreck is always radioactive
+
+		static CG32bitImage *m_pDamageBitmap;
+		static CStationType *m_pWreckDesc;
+	};
+
 //	Ship Class -----------------------------------------------------------------
 
 class CShipClass : public CDesignType
@@ -184,10 +228,10 @@ class CShipClass : public CDesignType
 		inline const CString &GetClassName (void) const { return m_sName; }
 		inline const CString &GetManufacturerName (void) const { return m_sManufacturer; }
 		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
-		inline int GetWreckChance (void) { return m_iLeavesWreck; }
-		CObjectImageArray &GetWreckImage (void) { if (!m_WreckImage.IsLoaded()) CreateWreckImage(); return m_WreckImage; }
-		void GetWreckImage (CObjectImageArray *retWreckImage);
-		int GetWreckImageVariants (void);
+		inline int GetWreckChance (void) const { return m_WreckDesc.GetWreckChance(); }
+		inline CObjectImageArray &GetWreckImage (void) { if (!m_WreckDesc.HasWreckImage()) m_WreckDesc.CreateWreckImage(GetUNID(), GetImage()); return m_WreckDesc.GetWreckImage(); }
+//		void GetWreckImage (CObjectImageArray *retWreckImage);
+		inline int GetWreckImageVariants (void) const { return m_WreckDesc.GetWreckImageVariants(); }
 		inline bool HasDockingPorts (void) { return (m_fHasDockingPorts ? true : false); }
 		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
@@ -250,6 +294,7 @@ class CShipClass : public CDesignType
 		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const override;
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual void OnClearMark (void) override { m_WreckDesc.ClearMarks(); }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
@@ -301,12 +346,11 @@ class CShipClass : public CDesignType
 						  int iThrust,
 						  int iManeuver,
 						  bool bPrimaryIsLauncher);
-		void CreateWreckImage (void);
 		void FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpMissile) const;
 		void FindBestMissile (CDeviceClass *pLauncher, const CItemList &Items, CItemType **retpMissile) const;
 		CString GetGenericName (DWORD *retdwFlags = NULL) const;
 		inline int GetManeuverDelay (void) const { return m_Perf.GetRotationDesc().GetManeuverDelay(); }
-		CStationType *GetWreckDesc (void);
+		inline CStationType *GetWreckDesc (void) const { return m_WreckDesc.GetWreckType(); }
 		void InitShipNamesIndices (void);
 		void PaintThrust (CG32bitImage &Dest, 
 						int x, 
@@ -341,12 +385,7 @@ class CShipClass : public CDesignType
 		double m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
 		CDriveDesc m_DriveDesc;					//	Drive descriptor
 		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
-
-        //  Wrecks
-
-		int m_iLeavesWreck;						//	Chance that it leaves a wreck
-		int m_iStructuralHP;					//	Structual hp of wreck
-		CStationTypeRef m_pWreckType;				//	Station type to use as wreck
+		CShipwreckDesc m_WreckDesc;				//	Wreck descriptor
 
         //  Armor, Devices, Equipment, Etc.
 
@@ -394,15 +433,6 @@ class CShipClass : public CDesignType
         CObjectImageArray m_HeroImage;          //  Large image
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
-		//	Wreck image
-
-		CG32bitImage m_WreckBitmap;				//	Image to use when ship is wrecked
-		CObjectImageArray m_WreckImage;			//	Image to use when ship is wrecked
-
-		//	Explosion
-
-		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
-
 		//	Exhaust
 
 		CObjectImageArray m_ExhaustImage;		//	Image of drive exhaust
@@ -410,34 +440,25 @@ class CShipClass : public CDesignType
 
 		//	Misc
 
-		DWORD m_fRadioactiveWreck:1;			//	TRUE if wreck is always radioactive
 		DWORD m_fHasDockingPorts:1;				//	TRUE if ship has docking ports
-		DWORD m_fSpare3a:1;						//	Unused
-		DWORD m_fSpare4a:1;						//	Unused
-		DWORD m_fSpare5a:1;						//	Unused
-		DWORD m_fSpare6a:1;						//	Unused
 		DWORD m_fCommsHandlerInit:1;			//	TRUE if comms handler has been initialized
 		DWORD m_fVirtual:1;						//	TRUE if ship class is virtual (e.g., a base class)
-
 		DWORD m_fOwnPlayerSettings:1;		    //	TRUE if we own m_pPlayerSettings
 		DWORD m_fScoreOverride:1;				//	TRUE if score is specified in XML
 		DWORD m_fLevelOverride:1;				//	TRUE if level is specified in XML
 		DWORD m_fInheritedDevices:1;			//	TRUE if m_pDevices is inherited from another class
 		DWORD m_fInheritedItems:1;				//	TRUE if m_pItems is inherited from another class
-		DWORD m_fInheritedEscorts:1;			//	TRUE if m_pEscorts is inherited from another class
-		DWORD m_fSpare7b:1;						//	Unused
-		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 
+		DWORD m_fInheritedEscorts:1;			//	TRUE if m_pEscorts is inherited from another class
+		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 		DWORD m_fShipCompartment:1;				//	TRUE if we represent an attached compartment/segment
 		DWORD m_fInheritedDeviceSlots:1;		//	TRUE if m_pDeviceSlots is inherited from another class
-		DWORD m_fSpare3:1;
-		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 
-		DWORD m_fSpare:8;
+		DWORD m_fSpare:16;
 
 		static CPlayerSettings m_DefaultPlayerSettings;
 		static bool m_bDefaultPlayerSettingsBound;
