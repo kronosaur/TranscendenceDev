@@ -230,7 +230,6 @@ class CShipClass : public CDesignType
 		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
 		inline int GetWreckChance (void) const { return m_WreckDesc.GetWreckChance(); }
 		inline CObjectImageArray &GetWreckImage (void) { if (!m_WreckDesc.HasWreckImage()) m_WreckDesc.CreateWreckImage(GetUNID(), GetImage()); return m_WreckDesc.GetWreckImage(); }
-//		void GetWreckImage (CObjectImageArray *retWreckImage);
 		inline int GetWreckImageVariants (void) const { return m_WreckDesc.GetWreckImageVariants(); }
 		inline bool HasDockingPorts (void) { return (m_fHasDockingPorts ? true : false); }
 		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }

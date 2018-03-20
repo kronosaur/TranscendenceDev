@@ -2990,23 +2990,6 @@ CCurrencyAndValue CShipClass::GetTradePrice (CSpaceObject *pObj, bool bActual) c
 	return Value;
 	}
 
-#if 0
-void CShipClass::GetWreckImage (CObjectImageArray *retWreckImage)
-
-//	GetWreckImage
-//
-//	Returns wreck image
-
-	{
-	RECT rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = RectWidth(GetImage().GetImageRect());
-	rcRect.bottom = RectHeight(GetImage().GetImageRect());
-	retWreckImage->Init(&m_WreckBitmap, rcRect, 0, 0, false);
-	}
-#endif
-
 void CShipClass::InitEffects (CShip *pShip, CObjectEffectList *retEffects)
 
 //	InitEffects
