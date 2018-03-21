@@ -92,6 +92,47 @@ DWORD CTLispConvert::AsImageDesc (ICCItem *pItem, RECT *retrcRect)
 	return pItem->GetElement(IMAGE_UNID_INDEX)->GetIntegerValue();
 	}
 
+bool CTLispConvert::AsScreen (ICCItem *pItem, CString *retsScreen, ICCItemPtr *retpData, int *retiPriority)
+
+//	AsScreen
+//
+//	Converts pItem into a dock screen call. Returns TRUE if we have a valid dock
+//	screen reference.
+
+	{
+	//	Pre-initialize
+
+	if (retsScreen) *retsScreen = NULL_STR;
+	if (retpData) retpData->Delete();
+	if (retiPriority) *retiPriority = 0;
+
+	if (pItem->IsNil())
+		return false;
+
+	else if (pItem->IsList() && pItem->GetCount() >= 2)
+		{
+		if (retsScreen) *retsScreen = pItem->GetElement(0)->GetStringValue();
+		if (pItem->GetCount() >= 3)
+			{
+			if (retpData) *retpData = ICCItemPtr(pItem->GetElement(1)->Reference());
+			if (retiPriority) *retiPriority = pItem->GetElement(2)->GetIntegerValue();
+			}
+		else
+			{
+			if (retiPriority) *retiPriority = pItem->GetElement(1)->GetIntegerValue();
+			}
+
+		return true;
+		}
+	else if (pItem->GetCount() > 0)
+		{
+		if (retsScreen) *retsScreen = pItem->GetElement(0)->GetStringValue();
+		return true;
+		}
+	else
+		return false;
+	}
+
 ICCItemPtr CTLispConvert::CreateCurrencyValue (CCodeChain &CC, CurrencyValue Value)
 
 //	CreateCurrencyValue

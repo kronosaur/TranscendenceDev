@@ -152,7 +152,7 @@ CString COverlayList::DebugCrashInfo (void) const
 		}
 	}
 
-bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItem **retpData) const
+bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItemPtr *retpData) const
 
 //	FireGetDockScreen
 //
@@ -164,7 +164,7 @@ bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen
 
 	CString sBestScreen;
 	int iBestPriority = -1;
-	ICCItem *pBestData = NULL;
+	ICCItemPtr pBestData;
 
 	COverlay *pField = m_pFirst;
 	while (pField)
@@ -173,7 +173,7 @@ bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen
 			{
 			CString sScreen;
 			int iPriority;
-			ICCItem *pData;
+			ICCItemPtr pData;
 
 			if (pField->FireGetDockScreen(pSource, &sScreen, &iPriority, &pData))
 				{
@@ -181,14 +181,8 @@ bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen
 					{
 					sBestScreen = sScreen;
 					iBestPriority = iPriority;
-
-					if (pBestData)
-						pBestData->Discard(&CC);
-
 					pBestData = pData;
 					}
-				else
-					pData->Discard(&CC);
 				}
 			}
 
@@ -206,8 +200,6 @@ bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen
 
 	if (retpData)
 		*retpData = pBestData;
-	else
-		pBestData->Discard(&CC);
 
 	return true;
 	}

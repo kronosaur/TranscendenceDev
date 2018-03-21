@@ -464,6 +464,27 @@ ICCItem *CCodeChainCtx::Run (const SEventHandlerDesc &Event)
 	DEBUG_CATCH
 	}
 
+ICCItemPtr CCodeChainCtx::RunCode (const SEventHandlerDesc &Event)
+
+//	RunCode
+//
+//	Runs the given event and returns a result. (Which must be discarded by the
+//	caller).
+
+	{
+	DEBUG_TRY
+
+	CExtension *pOldExtension = m_pExtension;
+	m_pExtension = Event.pExtension;
+
+	ICCItemPtr pResult = ICCItemPtr(Run(Event.pCode));
+
+	m_pExtension = pOldExtension;
+	return pResult;
+
+	DEBUG_CATCH
+	}
+
 ICCItem *CCodeChainCtx::RunLambda (ICCItem *pCode)
 
 //	RunLambda

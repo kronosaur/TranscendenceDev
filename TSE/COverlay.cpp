@@ -368,7 +368,7 @@ void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, IC
 		*retpResult = g_pUniverse->GetCC().CreateNil();
 	}
 
-bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItem **retpData) const
+bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItemPtr *retpData) const
 
 //	FireGetDockScreen
 //
@@ -376,57 +376,21 @@ bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, in
 
 	{
 	SEventHandlerDesc Event;
-
-	if (m_pType->FindEventHandler(EVENT_GET_DOCK_SCREEN, &Event))
-		{
-		CCodeChainCtx Ctx;
-		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.SaveAndDefineOverlayID(m_dwID);
-
-		bool bResult;
-
-		ICCItem *pResult = Ctx.Run(Event);
-
-		//	Interpret results
-
-		if (pResult->IsError())
-			{
-			pSource->ReportEventError(EVENT_GET_DOCK_SCREEN, pResult);
-			bResult = false;
-			}
-		else if (pResult->IsNil())
-			bResult = false;
-		else if (pResult->GetCount() >= 3)
-			{
-			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
-			if (retpData) *retpData = pResult->GetElement(1)->Reference();
-			if (retiPriority) *retiPriority = pResult->GetElement(2)->GetIntegerValue();
-			bResult = true;
-			}
-		else if (pResult->GetCount() >= 2)
-			{
-			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
-			if (retiPriority) *retiPriority = pResult->GetElement(1)->GetIntegerValue();
-			if (retpData) *retpData = NULL;
-			bResult = true;
-			}
-		else if (pResult->GetCount() >= 1)
-			{
-			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
-			if (retiPriority) *retiPriority = 0;
-			if (retpData) *retpData = NULL;
-			bResult = true;
-			}
-		else
-			bResult = false;
-
-		//	Done
-
-		Ctx.Discard(pResult);
-		return bResult;
-		}
-	else
+	if (!m_pType->FindEventHandler(EVENT_GET_DOCK_SCREEN, &Event))
 		return false;
+
+	CCodeChainCtx Ctx;
+	Ctx.SaveAndDefineSourceVar(pSource);
+	Ctx.SaveAndDefineOverlayID(m_dwID);
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		{
+		pSource->ReportEventError(EVENT_GET_DOCK_SCREEN, pResult);
+		return false;
+		}
+
+	return CTLispConvert::AsScreen(pResult, retsScreen, retpData, retiPriority);
 	}
 
 void COverlay::FireOnCreate (CSpaceObject *pSource)

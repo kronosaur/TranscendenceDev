@@ -465,7 +465,7 @@ class COverlay
 		void Destroy (CSpaceObject *pSource);
 		inline bool Disarms (CSpaceObject *pSource) const { return m_pType->Disarms(); }
 		void FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, ICCItem *pData, ICCItem **retpResult);
-		bool FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItem **retpData) const;
+		bool FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen = NULL, int *retiPriority = NULL, ICCItemPtr *retpData = NULL) const;
 		void FireOnCreate (CSpaceObject *pSource);
 		bool FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		void FireOnDestroy (CSpaceObject *pSource);
@@ -572,7 +572,7 @@ class COverlayList
 		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
 		bool Damage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		CString DebugCrashInfo (void) const;
-		bool FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen = NULL, int *retiPriority = NULL, ICCItem **retpData = NULL) const;
+		bool FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen = NULL, int *retiPriority = NULL, ICCItemPtr *retpData = NULL) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
 		int GetCountOfType (COverlayType *pType);
@@ -866,7 +866,7 @@ class CSpaceObject : public CObject
 		virtual DWORD GetDefaultBkgnd (void) { return 0; }
 		virtual CXMLElement *GetScreen (const CString &sName);
 
-		CDesignType *GetFirstDockScreen (CString *retsScreen, ICCItem **retpData);
+		CDesignType *GetFirstDockScreen (CString *retsScreen = NULL, ICCItemPtr *retpData = NULL);
 		bool HasDockScreen (void) const;
 
 		//	Freeze controls
@@ -969,7 +969,7 @@ class CSpaceObject : public CObject
 		void FireCustomItemEvent (const CString &sEvent, const CItem &Item, ICCItem *pData, ICCItem **retpResult = NULL);
 		void FireCustomOverlayEvent (const CString &sEvent, DWORD dwID, ICCItem *pData, ICCItem **retpResult = NULL);
 		void FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject *pShip, ICCItem **retpResult = NULL);
-		bool FireGetDockScreen (CString *retsScreen = NULL, int *retiPriority = NULL, ICCItem **retpData = NULL) const;
+		bool FireGetDockScreen (CString *retsScreen = NULL, int *retiPriority = NULL, ICCItemPtr *retpData = NULL) const;
 		void FireGetExplosionType (SExplosionType *retExplosion);
 		bool FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		void FireItemOnAIUpdate (void);

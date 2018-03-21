@@ -62,6 +62,7 @@ class CTLispConvert
 
 		static ETypes ArgType (ICCItem *pItem, ETypes iDefaultType, ICCItem **retpValue = NULL);
 		static DWORD AsImageDesc (ICCItem *pItem, RECT *retrcRect);
+		static bool AsScreen (ICCItem *pItem, CString *retsScreen = NULL, ICCItemPtr *retpData = NULL, int *retiPriority = NULL);
 		static ICCItemPtr CreateCurrencyValue (CCodeChain &CC, CurrencyValue Value);
 	};
 
@@ -120,6 +121,7 @@ class CCodeChainCtx
 		void RestoreVars (void);
 		ICCItem *Run (ICCItem *pCode);
 		ICCItem *Run (const SEventHandlerDesc &Event);
+		ICCItemPtr RunCode (const SEventHandlerDesc &Event);
 		bool RunEvalString (const CString &sString, bool bPlain, CString *retsResult);
 		ICCItem *RunLambda (ICCItem *pCode);
 		void SaveAndDefineDataVar (ICCItem *pData);

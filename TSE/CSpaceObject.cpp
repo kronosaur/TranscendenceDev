@@ -2007,7 +2007,7 @@ void CSpaceObject::FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject
 		}
 	}
 
-bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItem **retpData) const
+bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItemPtr *retpData) const
 
 //	FireGetDockScreen
 //
@@ -2015,57 +2015,21 @@ bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, IC
 
 	{
 	SEventHandlerDesc Event;
-
-	if (HasGetDockScreenEvent() 
-			&& FindEventHandler(GET_DOCK_SCREEN_EVENT, &Event))
-		{
-		CCodeChainCtx Ctx;
-		Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
-
-		bool bResult;
-
-		ICCItem *pResult = Ctx.Run(Event);
-
-		//	Interpret results
-
-		if (pResult->IsError())
-			{
-			ReportEventError(GET_DOCK_SCREEN_EVENT, pResult);
-			bResult = false;
-			}
-		else if (pResult->IsNil())
-			bResult = false;
-		else if (pResult->GetCount() >= 3)
-			{
-			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
-			if (retpData) *retpData = pResult->GetElement(1)->Reference();
-			if (retiPriority) *retiPriority = pResult->GetElement(2)->GetIntegerValue();
-			bResult = true;
-			}
-		else if (pResult->GetCount() >= 2)
-			{
-			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
-			if (retiPriority) *retiPriority = pResult->GetElement(1)->GetIntegerValue();
-			if (retpData) *retpData = NULL;
-			bResult = true;
-			}
-		else if (pResult->GetCount() >= 1)
-			{
-			if (retsScreen) *retsScreen = pResult->GetElement(0)->GetStringValue();
-			if (retiPriority) *retiPriority = 0;
-			if (retpData) *retpData = NULL;
-			bResult = true;
-			}
-		else
-			bResult = false;
-
-		//	Done
-
-		Ctx.Discard(pResult);
-		return bResult;
-		}
-	else
+	if (!HasGetDockScreenEvent() 
+			|| !FindEventHandler(GET_DOCK_SCREEN_EVENT, &Event))
 		return false;
+
+	CCodeChainCtx Ctx;
+	Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		{
+		ReportEventError(GET_DOCK_SCREEN_EVENT, pResult);
+		return false;
+		}
+
+	return CTLispConvert::AsScreen(pResult, retsScreen, retpData, retiPriority);
 	}
 
 void CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion)
@@ -3414,7 +3378,7 @@ CSovereign::Disposition CSpaceObject::GetDispositionTowards (CSpaceObject *pObj)
 		return CSovereign::dispFriend;
 	}
 
-CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **retpData)
+CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *retpData)
 
 //	GetFirstDockScreen
 //
@@ -3430,7 +3394,7 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **re
 
 	CString sScreen;
 	int iPriority;
-	ICCItem *pData = NULL;
+	ICCItemPtr pData;
 	if (!g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, &sScreen, &pData, &iPriority))
 		iPriority = -1;
 
@@ -3441,21 +3405,15 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **re
 		{
 		CString sOverlayScreen;
 		int iOverlayPriority;
-		ICCItem *pOverlayData;
+		ICCItemPtr pOverlayData;
 		if (pOverlays->FireGetDockScreen(this, &sOverlayScreen, &iOverlayPriority, &pOverlayData))
 			{
 			if (iOverlayPriority > iPriority)
 				{
 				sScreen = sOverlayScreen;
 				iPriority = iOverlayPriority;
-
-				if (pData)
-					pData->Discard(&CC);
-
 				pData = pOverlayData;
 				}
-			else
-				pOverlayData->Discard(&CC);
 			}
 		}
 
@@ -3463,21 +3421,15 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **re
 
 	CString sCustomScreen;
 	int iCustomPriority;
-	ICCItem *pCustomData;
+	ICCItemPtr pCustomData;
 	if (FireGetDockScreen(&sCustomScreen, &iCustomPriority, &pCustomData))
 		{
 		if (iCustomPriority > iPriority)
 			{
 			sScreen = sCustomScreen;
 			iPriority = iCustomPriority;
-
-			if (pData)
-				pData->Discard(&CC);
-
 			pData = pCustomData;
 			}
-		else
-			pCustomData->Discard(&CC);
 		}
 
 	//	If an event has overridden the dock screen, then resolve
@@ -3490,26 +3442,12 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItem **re
 			{
 			if (retpData)
 				*retpData = pData;
-			else
-				{
-				if (pData)
-					{
-					pData->Discard(&CC);
-					pData = NULL;
-					}
-				}
 
 			return pScreen;
 			}
 		else
 			{
 			::kernelDebugLogPattern("Unable to resolve screen: %s", sScreen);
-
-			if (pData)
-				{
-				pData->Discard(&CC);
-				pData = NULL;
-				}
 			}
 		}
 

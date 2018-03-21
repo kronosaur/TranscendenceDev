@@ -228,7 +228,7 @@ class CDesignType
 		void FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent = eventNone, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		bool FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, CSpaceObject **retpGate, CVector *retvPos);
 		void FireGetGlobalAchievements (CGameStats &Stats);
-		bool FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CString *retsScreen, ICCItem **retpData, int *retiPriority);
+		bool FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CString *retsScreen = NULL, ICCItemPtr *retpData = NULL, int *retiPriority = NULL);
 		bool FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		int FireGetGlobalResurrectPotential (void);
 		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem **retpResult);
@@ -1195,7 +1195,7 @@ class CDesignCollection
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
 		void FireGetGlobalAchievements (CGameStats &Stats);
-		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CString *retsScreen = NULL, ICCItem **retpData = NULL, int *retiPriority = NULL);
+		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CString *retsScreen = NULL, ICCItemPtr *retpData = NULL, int *retiPriority = NULL);
 		bool FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		void FireOnGlobalEndDiagnostics (void);
 		void FireOnGlobalIntroCommand (const CString &sCommand);

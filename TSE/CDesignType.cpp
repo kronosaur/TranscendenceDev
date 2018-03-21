@@ -898,7 +898,7 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 		}
 	}
 
-bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CString *retsScreen, ICCItem **retpData, int *retiPriority)
+bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CString *retsScreen, ICCItemPtr *retpData, int *retiPriority)
 
 //	FireGetGlobalDockScreen
 //
@@ -916,52 +916,14 @@ bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpac
 
 	//	Run
 
-	ICCItem *pResult = Ctx.Run(Event);
-
-	bool bResult;
-
-	//	Error?
-
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		{
 		ReportEventError(GET_GLOBAL_DOCK_SCREEN_EVENT, pResult);
-		bResult = false;
+		return false;
 		}
 
-	//	Parse the result
-
-	else if (pResult->IsNil())
-		bResult = false;
-
-	else if (pResult->IsList() && pResult->GetCount() >= 2)
-		{
-		*retsScreen = pResult->GetElement(0)->GetStringValue();
-		if (pResult->GetCount() >= 3)
-			{
-			*retpData = pResult->GetElement(1)->Reference();
-			*retiPriority = pResult->GetElement(2)->GetIntegerValue();
-			}
-		else
-			{
-			*retpData = NULL;
-			*retiPriority = pResult->GetElement(1)->GetIntegerValue();
-			}
-		bResult = true;
-		}
-	else if (pResult->GetCount() > 0)
-		{
-		*retsScreen = pResult->GetElement(0)->GetStringValue();
-		*retiPriority = 0;
-		*retpData = NULL;
-		bResult = true;
-		}
-	else
-		bResult = false;
-
-	//	Done
-
-	Ctx.Discard(pResult);
-	return bResult;
+	return CTLispConvert::AsScreen(pResult, retsScreen, retpData, retiPriority);
 	}
 
 bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj)
