@@ -42,6 +42,17 @@ DWORD mathGetSeed (void)
 	return g_Seed;
 	}
 
+DWORD mathMakeSeed (DWORD dwValue)
+	{
+	DWORD a = 1103515245;
+	DWORD c = 12345;
+
+	dwValue = a * dwValue + c;
+	DWORD dwSeed = dwValue ^ (dwValue >> 11) ^ (dwValue << 5) & (dwValue >> 7) ^ (dwValue << 3) ^ (dwValue >> 13);
+
+	return dwSeed;
+	}
+
 int mathNearestPowerOf2 (int x)
 
 //	mathNearestPowerOf2

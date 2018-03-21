@@ -1498,6 +1498,7 @@ bool strRegEx (char *pStart, const CString &sPattern, TArray<SRegExMatch> *retMa
 
 int mathAdjust (int iValue, int iPercent);
 DWORD mathGetSeed (void);
+DWORD mathMakeSeed (DWORD dwValue);
 int mathNearestPowerOf2 (int x);
 int mathPower (int x, int n);
 DWORD mathRandom (void);
