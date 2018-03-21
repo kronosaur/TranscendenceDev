@@ -59,6 +59,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_OBJ_DOCKED_EVENT						CONSTLIT("OnObjDocked")
 #define ON_OBJ_ENTERED_GATE_EVENT				CONSTLIT("OnObjEnteredGate")
 #define ON_OBJ_GATE_EVENT						CONSTLIT("OnObjGate")
+#define ON_OBJ_GATE_CHECK_EVENT					CONSTLIT("OnObjGateCheck")
 #define ON_OBJ_JUMPED_EVENT						CONSTLIT("OnObjJumped")
 #define ON_OBJ_JUMP_POS_ADJ_EVENT				CONSTLIT("OnObjJumpPosAdj")
 #define ON_OBJ_RECONNED_EVENT					CONSTLIT("OnObjReconned")
@@ -1644,6 +1645,14 @@ void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntr
 
 	m_SubscribedObjs.NotifyOnObjEnteredGate(this, pDestNode, sDestEntryPoint, pStargate);
 
+	//	If some object destroyed the player while gating
+
+	if (IsPlayer())
+		{
+		if (IsDestroyed())
+			return;
+		}
+
 	//	Tell all listeners that this object entered a stargate
 
 	for (i = 0; i < m_pSystem->GetObjectCount(); i++)
@@ -2765,6 +2774,40 @@ bool CSpaceObject::FireOnObjGate (CSpaceObject *pObj)
 		}
 
 	return false;
+	}
+
+bool CSpaceObject::FireOnObjGateCheck (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate)
+
+//	FireOnObjGateCheck
+//
+//	Fire OnObjGateCheck event. Returns TRUE if we allow pObj to gate through pStargate.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_OBJ_GATE_CHECK_EVENT, &Event))
+		return true;
+
+	//	Run
+
+	CCodeChainCtx Ctx;
+	Ctx.SaveAndDefineSourceVar(this);
+	Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
+	Ctx.DefineSpaceObject(CONSTLIT("aGateObj"), pStargate);
+	Ctx.DefineString(CONSTLIT("aDestNodeID"), (pDestNode ? pDestNode->GetID() : NULL_STR));
+	Ctx.DefineString(CONSTLIT("aDestEntryPoint"), sDestEntryPoint);
+
+	//	Handle result
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		{
+		ReportEventError(ON_OBJ_ENTERED_GATE_EVENT, pResult);
+		return false;
+		}
+	else if (pResult->IsNil())
+		return false;
+	else
+		return true;
 	}
 
 void CSpaceObject::FireOnObjJumped (CSpaceObject *pObj)
@@ -5981,6 +6024,16 @@ void CSpaceObject::NotifyOnObjDocked (CSpaceObject *pDockTarget)
 
 	{
 	m_SubscribedObjs.NotifyOnObjDocked(this, pDockTarget);
+	}
+
+bool CSpaceObject::NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj)
+
+//	NotifyOnObjGateCheck
+//
+//	Notify subscribers OnObjGateCheck
+
+	{
+	return m_SubscribedObjs.NotifyOnObjGateCheck(pGatingObj, pDestNode, sDestEntryPoint, pGateObj);
 	}
 
 bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)

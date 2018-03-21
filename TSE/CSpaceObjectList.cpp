@@ -177,6 +177,35 @@ void CSpaceObjectList::NotifyOnObjEnteredGate (CSpaceObject *pGatingObj, CTopolo
 		}
 	}
 
+bool CSpaceObjectList::NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj)
+
+//	NotifyOnObjGateCheck
+//
+//	Ask all objects if they allow the given object to gate. We guarantee that
+//	all objects are called.
+
+	{
+	int i;
+	bool bResult = true;
+
+	if (GetCount() > 0)
+		{
+		TArray<CSpaceObject *> List(m_List);
+
+		for (i = 0; i < List.GetCount(); i++)
+			{
+			CSpaceObject *pObj = List[i];
+			if (pObj->IsDestroyed())
+				continue;
+
+			if (!pObj->FireOnObjGateCheck(pGatingObj, pDestNode, sDestEntryPoint, pGateObj))
+				bResult = false;
+			}
+		}
+
+	return bResult;
+	}
+
 void CSpaceObjectList::NotifyOnObjJumped (CSpaceObject *pJumpObj)
 
 //	NotifyOnObjJumped

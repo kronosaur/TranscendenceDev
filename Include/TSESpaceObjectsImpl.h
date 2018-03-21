@@ -1181,10 +1181,11 @@ class CShip : public CSpaceObject
 		virtual void OnDocked (CSpaceObject *pObj) override;
 		virtual void OnDockedObjChanged (CSpaceObject *pLocation) override;
 		virtual void OnDockingPortDestroyed (void) override;
-		virtual void OnItemEnhanced (CItemListManipulator &ItemList) override;
+		virtual bool OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj) override;
 		virtual void OnHitByDeviceDamage (void) override;
 		virtual void OnHitByDeviceDisruptDamage (DWORD dwDuration) override;
 		virtual void OnHitByRadioactiveDamage (SDamageCtx &Ctx) override;
+		virtual void OnItemEnhanced (CItemListManipulator &ItemList) override;
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override { m_pController->OnMissionCompleted(pMission, bSuccess); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnNewSystem (CSystem *pSystem) override;

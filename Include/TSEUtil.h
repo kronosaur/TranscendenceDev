@@ -883,6 +883,7 @@ class CSpaceObjectList
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
 		void NotifyOnObjDocked (CSpaceObject *pDockingObj, CSpaceObject *pDockTarget);
 		void NotifyOnObjEnteredGate (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
+		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		void NotifyOnObjJumped (CSpaceObject *pJumpObj);
 		void NotifyOnObjReconned (CSpaceObject *pReconnedObj);
 		void NotifyOnPlayerBlacklisted (CSpaceObject *pBlacklistingObj);

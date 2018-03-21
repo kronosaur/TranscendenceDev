@@ -5628,6 +5628,11 @@ ICCItem *fnObjGateTo (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	if (pNode == NULL)
 		return pCC->CreateError(strPatternSubst(CONSTLIT("Invalid node: %s"), sNode));
 
+	//	Make sure we're allowed to gate
+
+	if (pObj->IsPlayer() && !pObj->OnGateCheck(pNode, sEntryPoint, NULL))
+		return pCC->CreateNil();
+
 	//	Effect
 
 	if (pEffect)

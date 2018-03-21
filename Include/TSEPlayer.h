@@ -134,6 +134,15 @@ class CPlayerGameStats
 class IPlayerController
 	{
 	public:
+		enum EUIMode
+			{
+			uimodeUnknown,
+
+			uimodeSpace,						//	In normal gameplay mode
+			uimodeDockScreen,					//	A dockscreen is open (but time still passes)
+			uimodeInStargate,					//	Passing through a stargate
+			};
+
 		IPlayerController (void);
 		virtual ~IPlayerController (void) { }
 
@@ -151,6 +160,7 @@ class IPlayerController
 		virtual bool GetPropertyItemList (const CString &sProperty, CItemList *retItemList) { return false; }
 		virtual bool GetPropertyString (const CString &sProperty, CString *retsValue) { return false; }
 		virtual CSovereign *GetSovereign (void) const;
+		virtual EUIMode GetUIMode (void) const { return uimodeUnknown; }
 		virtual void OnMessageFromObj (CSpaceObject *pSender, const CString &sMessage) { }
 		virtual bool SetPropertyInteger (const CString &sProperty, int iValue) { return false; }
 		virtual bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList) { return false; }

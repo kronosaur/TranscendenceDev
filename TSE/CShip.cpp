@@ -2361,7 +2361,14 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 	//	(and we want this event to give access to the player ship).
 
 	if (IsPlayer())
+		{
 		g_pUniverse->FireOnGlobalPlayerLeftSystem();
+
+		//	The player can be destroyed in this event, in which case, we exit
+
+		if (IsDestroyed())
+			return;
+		}
 
 	//	Let the controller handle it
 
@@ -4693,6 +4700,28 @@ void CShip::OnDockingPortDestroyed (void)
 
 	{
 	m_pDocked = NULL;
+	}
+
+bool CShip::OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj)
+
+//	OnGateCheck
+//
+//	Returns TRUE if this ship should pass through the given gate.
+
+	{
+	//	If this is NOT the player, then gating always succeeds
+
+	if (!IsPlayer())
+		return true;
+
+	//	Ask all listeners
+
+	if (!NotifyOnObjGateCheck(this, pDestNode, sDestEntryPoint, pGateObj))
+		return false;
+
+	//	OK to gate
+
+	return true;
 	}
 
 CSpaceObject *CShip::OnGetOrderGiver (void)

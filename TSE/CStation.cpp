@@ -4159,6 +4159,19 @@ bool CStation::RequestGate (CSpaceObject *pObj)
 //	Requests that the given object be transported through the gate
 
 	{
+	//	Get the destination node for this gate
+	//	(If pNode == NULL then it means that we are gating to nowhere;
+	//	This is used by ships that "gate" back into their carrier or their
+	//	station.)
+
+	CTopologyNode *pNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode);
+
+	//	For the player, ask all objects if they want to allow the player to 
+	//	enter a gate.
+
+	if (pObj->IsPlayer() && !pObj->OnGateCheck(pNode, m_sStargateDestEntryPoint, this))
+		return false;
+
 	//	Create gating effect
 
 	if (!pObj->IsVirtual())
@@ -4171,13 +4184,6 @@ bool CStation::RequestGate (CSpaceObject *pObj)
 					GetVel(),
 					0);
 		}
-
-	//	Get the destination node for this gate
-	//	(If pNode == NULL then it means that we are gating to nowhere;
-	//	This is used by ships that "gate" back into their carrier or their
-	//	station.)
-
-	CTopologyNode *pNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode);
 
 	//	Let the object gate itself
 
