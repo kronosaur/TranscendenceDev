@@ -2423,6 +2423,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnGetStaticData missionObj attrib) -> data",
 			NULL,	0,	},
 
+		{	"msnGetTypeData",				fnObjData,		FN_OBJ_GET_GLOBAL_DATA,
+			"(msnGetTypeData obj attrib) -> data",
+			NULL,	0,	},
+
 		{	"msnIncData",					fnObjData,		FN_OBJ_INCREMENT_DATA,
 			"(msnIncData missionObj attrib [increment]) -> new value",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
@@ -2460,6 +2464,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'summary newSummary",
 
 			"isv",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"msnSetTypeData",				fnObjData,		FN_OBJ_SET_GLOBAL_DATA,
+			"(msnSetTypeData obj attrib data)",
+			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnSetUnavailable",			fnMissionSet,		FN_MISSION_CLOSED,
 			"(msnSetUnavailable missionObj)",

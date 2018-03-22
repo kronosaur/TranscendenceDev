@@ -1114,7 +1114,6 @@ class CShip : public CSpaceObject
 		virtual CVector GetDockingPortOffset (int iRotation) override { return m_pClass->GetDockingPortOffset(iRotation); }
 		virtual CStationType *GetEncounterInfo (void) override { return m_pEncounterInfo; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
-		virtual const CString &GetGlobalData (const CString &sAttribute) override { return m_pClass->GetGlobalData(sAttribute); }
         virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pClass->GetHeroImage(); }
 		virtual const CObjectImageArray &GetImage (void) const override { return m_pClass->GetImage(); }
 		virtual CString GetInstallationPhrase (const CItem &Item) const override;
@@ -1215,7 +1214,6 @@ class CShip : public CSpaceObject
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pController->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pController->SetAISettingString(sSetting, sValue); }
 		virtual void SetFireDelay (CInstalledDevice *pWeapon, int iDelay = -1) override;
-		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) override { m_pClass->SetGlobalData(sAttribute, sData); }
 		virtual void SetIdentified (bool bIdentified = true) override { m_fIdentified = bIdentified; }
         virtual void SetKnown (bool bKnown = true) override { m_fKnown = bKnown; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
@@ -1475,7 +1473,6 @@ class CStation : public CSpaceObject
 		virtual int GetDeviceCount (void) const override { return (m_pDevices ? maxDevices : 0); }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual CStationType *GetEncounterInfo (void) override { return m_pType; }
-		virtual const CString &GetGlobalData (const CString &sAttribute) override { return m_pType->GetGlobalData(sAttribute); }
 		virtual Metric GetGravity (Metric *retrRadius) const override;
 		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pType->GetHeroImage(CCompositeImageSelector(), CCompositeImageModifiers()); }
 		virtual const CObjectImageArray &GetImage (void) const override { return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
@@ -1556,7 +1553,6 @@ class CStation : public CSpaceObject
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) override;
 		virtual bool RequestGate (CSpaceObject *pObj) override;
 		virtual void SetExplored (bool bExplored = true) override { m_fExplored = bExplored; }
-		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) override { m_pType->SetGlobalData(sAttribute, sData); }
 		virtual void SetIdentified (bool bIdentified = true) override { m_fKnown = bIdentified; }
 		virtual void SetKnown (bool bKnown = true) override;
 		virtual void SetMapLabelPos (int x, int y) override { m_xMapLabel = x; m_yMapLabel = y; }

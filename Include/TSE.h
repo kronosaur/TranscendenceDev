@@ -826,11 +826,17 @@ class CSpaceObject : public CObject
 
 		//	Basics
 
+		virtual CDesignType *GetType (void) const { return NULL; }
 		void SetSovereign (CSovereign *pSovereign);
 
 		//	Characters
 
 		virtual CDesignType *GetCharacter (void) const { return NULL; }
+
+		//	Data
+
+		const CString &GetGlobalData (const CString &sAttribute) const;
+		void SetGlobalData (const CString &sAttribute, const CString &sData);
 
 		//	Devices
 
@@ -1360,7 +1366,6 @@ class CSpaceObject : public CObject
 		virtual AbilityStatus GetAbility (Abilities iAbility) const { return ablUninstalled; }
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
-		virtual const CString &GetGlobalData (const CString &sAttribute) { return NULL_STR; }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
 		virtual const CObjectImageArray &GetImage (void) const;
@@ -1379,7 +1384,6 @@ class CSpaceObject : public CObject
 		virtual ScaleTypes GetScale (void) const { return scaleFlotsam; }
 		virtual CSovereign *GetSovereign (void) const { return NULL; }
 		virtual Metric GetStellarMass (void) const { return 0.0; }
-		virtual CDesignType *GetType (void) const { return NULL; }
 		virtual CDesignType *GetWreckType (void) const { return NULL; }
 		virtual bool HasAttribute (const CString &sAttribute) const { return sAttribute.IsBlank(); }
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const;
@@ -1405,7 +1409,6 @@ class CSpaceObject : public CObject
 		virtual void RefreshBounds (void) { }
 		virtual bool SetAbility (Abilities iAbility, AbilityModifications iModification, int iDuration, DWORD dwOptions) { return false; }
 		virtual void SetExplored (bool bExplored = true) { }
-		virtual void SetGlobalData (const CString &sAttribute, const CString &sData) { }
 		virtual void SetKnown (bool bKnown = true) { }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) { }
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);

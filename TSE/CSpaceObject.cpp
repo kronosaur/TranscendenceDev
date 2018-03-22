@@ -3502,6 +3502,20 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	return GetDefaultDockScreen(retsScreen);
 	}
 
+const CString &CSpaceObject::GetGlobalData (const CString &sAttribute) const
+
+//	GetGlobalData
+//
+//	Returns data from the type
+
+	{
+	CDesignType *pType = GetType();
+	if (pType == NULL)
+		return NULL_STR;
+
+	return pType->GetGlobalData(sAttribute);
+	}
+
 void CSpaceObject::GetHitRect (CVector *retvUR, CVector *retvLL)
 
 //	GetHitRect
@@ -7237,6 +7251,20 @@ void CSpaceObject::SetEventFlags (void)
 	//	Let subclasses do their bit
 
 	OnSetEventFlags();
+	}
+
+void CSpaceObject::SetGlobalData (const CString &sAttribute, const CString &sData)
+
+//	SetGlobalData
+//
+//	Sets data for the type
+
+	{
+	CDesignType *pType = GetType();
+	if (pType == NULL)
+		return;
+
+	pType->SetGlobalData(sAttribute, sData);
 	}
 
 bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError)
