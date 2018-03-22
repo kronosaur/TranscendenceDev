@@ -1253,6 +1253,7 @@ CSpaceObject::RequestDockResults CShip::CanObjRequestDock (CSpaceObject *pObj) c
 	//	if we're docked with another object, no one can dock with us.
 
 	if (IsTimeStopped()
+			|| !m_pController->CanObjRequestDock()
 			|| m_fDockingDisabled 
 			|| GetDockedObj() != NULL)
 		return dockingDisabled;

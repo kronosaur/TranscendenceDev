@@ -319,6 +319,7 @@ class CBaseShipAI : public IShipController
 
 		//	IShipController virtuals
 		virtual void Behavior (SUpdateCtx &Ctx) override;
+		virtual bool CanObjRequestDock (void) const override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) override;

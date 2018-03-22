@@ -423,6 +423,43 @@ bool CBaseShipAI::CancelOrder (int iIndex)
 		return false;
 	}
 
+bool CBaseShipAI::CanObjRequestDock (void) const
+
+//	CanObjRequestDock
+//
+//	Returns TRUE if another object can request to dock with us (assuming we have
+//	docking ports, etc.).
+
+	{
+	switch (GetCurrentOrder())
+		{
+		//	Certain orders keep us immobile, so we can allow others to dock with
+		//	us.
+
+		case orderDestroyTargetHold:
+		case orderGateOnThreat:
+		case orderGateOnStationDestroyed:
+		case orderHold:
+		case orderHoldAndAttack:
+		case orderHoldCourse:
+		case orderSentry:
+		case orderWait:
+		case orderWaitForEnemy:
+		case orderWaitForPlayer:
+		case orderWaitForTarget:
+		case orderWaitForThreat:
+		case orderWaitForUndock:
+			return true;
+
+		//	Otherwise, if we're immobile, then it doesn't matter what our orders.
+		//	But if we're mobile, then we're maneuvering, so we can't allow 
+		//	docking.
+
+		default:
+			return IsImmobile();
+		}
+	}
+
 bool CBaseShipAI::CheckForEnemiesInRange (CSpaceObject *pCenter, Metric rRange, int iInterval, CSpaceObject **retpTarget)
 
 //	CheckForEnemiesInRange
