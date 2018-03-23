@@ -873,6 +873,7 @@ class CSpaceObject : public CObject
 		virtual CXMLElement *GetScreen (const CString &sName);
 
 		CDesignType *GetFirstDockScreen (CString *retsScreen = NULL, ICCItemPtr *retpData = NULL);
+		inline bool HasDefaultDockScreen (void) const { return (GetDefaultDockScreen() != NULL); }
 		bool HasDockScreen (void) const;
 
 		//	Freeze controls

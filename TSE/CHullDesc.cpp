@@ -187,9 +187,9 @@ void CHullDesc::InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio)
 //	speed, and thrust
 
 	{
-	//	If we're more than 1000 tons, then no limits
+	//	If we're 1000 tons or more, then no limits
 
-	if (m_iMass > 1000)
+	if (m_iMass >= 1000)
 		return;
 
 	//	Compute the heaviest segment of armor we can install.

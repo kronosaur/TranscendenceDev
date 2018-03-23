@@ -10568,7 +10568,7 @@ ICCItem *fnSovereignSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSovereign *pTarget = g_pUniverse->FindSovereign(dwTargetID);
 			if (pTarget == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid sovereign"), pArgs->GetElement(1));
-			
+
 			CSovereign::Disposition iDisp;
 			if (pArgs->GetElement(2)->IsInteger())
 				iDisp = (CSovereign::Disposition)pArgs->GetElement(2)->GetIntegerValue();
