@@ -144,6 +144,7 @@ class CItemType : public CDesignType
 		static ItemCategories GetCategoryForNamedDevice (DeviceNames iDev);
 		static CString GetItemCategory (ItemCategories iCategory);
         static const SStdStats &GetStdStats (int iLevel);
+		static ALERROR ParseFate (SDesignLoadCtx &Ctx, const CString &sDesc, ItemFates *retiFate);
 		static bool ParseItemCategory (const CString &sCategory, ItemCategories *retCategory = NULL);
 
 	protected:

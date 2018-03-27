@@ -29,6 +29,16 @@ enum ItemCategories
 	itemcatCount =			13,				//	Total count
 	};
 
+enum ItemFates
+	{
+	fateNone,							//	Default handling when object is destroyed
+
+	fateSurvives,						//	Item always survives
+	fateDamaged,						//	Item is always damaged
+	fateDestroyed,						//	Item is always destroyed
+	fateComponetized,					//	Item is always reduced to components
+	};
+
 struct CItemCriteria
 	{
 	CItemCriteria (void);

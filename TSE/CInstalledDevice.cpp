@@ -38,7 +38,11 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_fLinkedFireTarget(false),
 		m_fLinkedFireEnemy(false),
 		m_fDuplicate(false),
-		m_fCannotBeEmpty(false)
+		m_fCannotBeEmpty(false),
+		m_fFateDamaged(false),
+		m_fFateDestroyed(false),
+		m_fFateSurvives(false),
+		m_fFateComponetized(false)
 	{
 	}
 
@@ -137,6 +141,25 @@ CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *p
 		return CONSTLIT("+enhanced");
 	else
 		return NULL_STR;
+	}
+
+ItemFates CInstalledDevice::GetFate (void) const
+
+//	GetFate
+//
+//	Returns the current fate option for the device slot.
+
+	{
+	if (m_fFateDamaged)
+		return fateDamaged;
+	else if (m_fFateDestroyed)
+		return fateDestroyed;
+	else if (m_fFateSurvives)
+		return fateSurvives;
+	else if (m_fFateComponetized)
+		return fateComponetized;
+	else
+		return fateNone;
 	}
 
 int CInstalledDevice::GetHitPointsPercent (CSpaceObject *pSource)
@@ -264,6 +287,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 	m_fCannotBeEmpty = Desc.bCannotBeEmpty;
 
 	SetLinkedFireOptions(Desc.dwLinkedFireOptions);
+	SetFate(Desc.iFate);
 
 	m_fSecondaryWeapon = Desc.bSecondary;
 
@@ -366,6 +390,8 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 		m_iPosZ = Desc.iPosZ;
 		m_f3DPosition = Desc.b3DPosition;
 		m_fCannotBeEmpty = Desc.bCannotBeEmpty;
+
+		SetFate(Desc.iFate);
 
 		m_fExternal = (Desc.bExternal || m_pClass->IsExternal());
 
@@ -635,12 +661,12 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_fOmniDirectional =	((dwLoad & 0x00000001) ? true : false);
-	m_f3DPosition =		   (((dwLoad & 0x00000002) ? true : false) && (Ctx.dwVersion >= 73));
-	//	0x00000004 UNUSED as of version 58
+	m_f3DPosition =			(((dwLoad & 0x00000002) ? true : false) && (Ctx.dwVersion >= 73));
+	m_fFateSurvives =		(((dwLoad & 0x00000004) ? true : false) && (Ctx.dwVersion >= 58));
 	m_fOverdrive =			((dwLoad & 0x00000008) ? true : false);
 	m_fOptimized =			((dwLoad & 0x00000010) ? true : false);
 	m_fSecondaryWeapon =	((dwLoad & 0x00000020) ? true : false);
-	//	0x00000040 UNUSED as of version 58
+	m_fFateDamaged =		(((dwLoad & 0x00000040) ? true : false) && (Ctx.dwVersion >= 58));
 	m_fEnabled =			((dwLoad & 0x00000080) ? true : false);
 	m_fWaiting =			((dwLoad & 0x00000100) ? true : false);
 	m_fTriggered =			((dwLoad & 0x00000200) ? true : false);
@@ -653,6 +679,8 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	m_fExternal =			((dwLoad & 0x00008000) ? true : false);
 	m_fDuplicate =			((dwLoad & 0x00010000) ? true : false);
 	m_fCannotBeEmpty =		((dwLoad & 0x00020000) ? true : false);
+	m_fFateDestroyed =		((dwLoad & 0x00040000) ? true : false);
+	m_fFateComponetized =	((dwLoad & 0x00080000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -769,6 +797,46 @@ void CInstalledDevice::SetEnhancements (const TSharedPtr<CItemEnhancementStack> 
 		m_pEnhancements = pStack;
 	else
 		m_pEnhancements.Delete();
+	}
+
+void CInstalledDevice::SetFate (ItemFates iFate)
+
+//	SetFate
+//
+//	Sets the fate of the device when the ship is destroyed.
+
+	{
+	//	Clear out all the flats
+
+	m_fFateDamaged = false;
+	m_fFateDestroyed = false;
+	m_fFateSurvives = false;
+	m_fFateComponetized = false;
+
+	//	Now set the flags appropriately
+
+	switch (iFate)
+		{
+		case fateComponetized:
+			m_fFateComponetized = true;
+			break;
+
+		case fateDamaged:
+			m_fFateDamaged = true;
+			break;
+
+		case fateDestroyed:
+			m_fFateDestroyed = true;
+			break;
+
+		case fateSurvives:
+			m_fFateSurvives = true;
+			break;
+
+		default:
+			//	Default.
+			break;
+		}
 	}
 
 void CInstalledDevice::SetLastShot (CSpaceObject *pObj, int iIndex)
@@ -982,11 +1050,11 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	dwSave |= (m_fOmniDirectional ?		0x00000001 : 0);
 	dwSave |= (m_f3DPosition ?			0x00000002 : 0);
-	//	0x00000004 UNUSED as of version 58
+	dwSave |= (m_fFateSurvives ?		0x00000004 : 0);
 	dwSave |= (m_fOverdrive ?			0x00000008 : 0);
 	dwSave |= (m_fOptimized ?			0x00000010 : 0);
 	dwSave |= (m_fSecondaryWeapon ?		0x00000020 : 0);
-	//	0x00000040 UNUSED as of version 58
+	dwSave |= (m_fFateDamaged ?			0x00000040 : 0);
 	dwSave |= (m_fEnabled ?				0x00000080 : 0);
 	dwSave |= (m_fWaiting ?				0x00000100 : 0);
 	dwSave |= (m_fTriggered ?			0x00000200 : 0);
@@ -998,6 +1066,8 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fExternal ?			0x00008000 : 0);
 	dwSave |= (m_fDuplicate ?			0x00010000 : 0);
 	dwSave |= (m_fCannotBeEmpty ?		0x00020000 : 0);
+	dwSave |= (m_fFateDestroyed ?		0x00040000 : 0);
+	dwSave |= (m_fFateComponetized ?	0x00080000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);

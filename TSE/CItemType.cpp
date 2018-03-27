@@ -184,6 +184,14 @@ static char *CACHED_EVENTS[CItemType::evtCount] =
 		"OnRefuel",
 	};
 
+static TStaticStringTable<TStaticStringEntry<ItemFates>, 5> FATE_TABLE = {
+	"alwaysComponetized",	fateComponetized,
+	"alwaysDamaged",		fateDamaged,
+	"alwaysDestroyed",		fateDestroyed,
+	"alwaysSurvives",		fateSurvives,
+	"default",				fateNone,
+	};
+
 static CStationType *g_pFlotsamStationType = NULL;
 
 CItemType::CItemType (void) : 
@@ -1938,6 +1946,30 @@ void CItemType::OnWriteToStream (IWriteStream *pStream)
 	m_sUnknownName.WriteToStream(pStream);
 
 	m_Components.WriteToStream(pStream);
+	}
+
+ALERROR CItemType::ParseFate (SDesignLoadCtx &Ctx, const CString &sDesc, ItemFates *retiFate)
+
+//	ParseFate
+//
+//	Parses a fate string
+
+	{
+	int iPos;
+
+	if (sDesc.IsBlank())
+		*retiFate = fateNone;
+
+	else if (FATE_TABLE.FindPos(sDesc, &iPos))
+		*retiFate = FATE_TABLE[iPos].Value;
+
+	else
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid fate option: %s"), sDesc);
+		return ERR_FAIL;
+		}
+
+	return NOERROR;
 	}
 
 bool CItemType::ParseItemCategory (const CString &sCategory, ItemCategories *retCategory)

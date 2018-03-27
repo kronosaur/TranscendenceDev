@@ -333,15 +333,17 @@ class CDeviceClass
 
 struct SDeviceDesc
 	{
+	CString sID;
+
 	CItem Item;
 
-	CString sID;
 	int iPosAngle = 0;
 	int iPosRadius = 0;
 	int iPosZ = 0;
 	bool b3DPosition = false;
 	bool bExternal = false;
 	bool bCannotBeEmpty = false;
+	ItemFates iFate = fateNone;
 
 	bool bOmnidirectional = false;
 	int iMinFireArc = 0;
@@ -438,6 +440,7 @@ class CInstalledDevice
 		inline DWORD GetData (void) const { return m_dwData; }
 		inline int GetDeviceSlot (void) const { return m_iDeviceSlot; }
 		inline TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
+		ItemFates GetFate (void) const;
 		inline int GetFireArc (void) const { return (IsOmniDirectional() ? 360 : AngleRange(m_iMinFireArc, m_iMaxFireArc)); }
 		inline int GetFireAngle (void) const { return m_iFireAngle; }
 		int GetHitPointsPercent (CSpaceObject *pSource);
@@ -478,6 +481,7 @@ class CInstalledDevice
 		bool SetEnabled (CSpaceObject *pSource, bool bEnabled);
 		void SetEnhancements (const TSharedPtr<CItemEnhancementStack> &pStack);
 		inline void SetExternal (bool bValue) { m_fExternal = bValue; }
+		void SetFate (ItemFates iFate);
 		inline void SetFireAngle (int iAngle) { m_iFireAngle = iAngle; }
 		inline void SetFireArc (int iMinFireArc, int iMaxFireArc) { m_iMinFireArc = iMinFireArc; m_iMaxFireArc = iMaxFireArc; }
 		inline void SetID (const CString &sID) { m_sID = sID; }
@@ -623,5 +627,14 @@ class CInstalledDevice
 		DWORD m_fDuplicate:1;					//	If TRUE, we have multiple version of the same item type installed
 		DWORD m_fCannotBeEmpty:1;				//	If TRUE, slot must always have a device
 
-		DWORD m_dwSpare:16;						//	Spare flags
+		DWORD m_fFateSurvives:1;				//	Always survives when ship destroyed
+		DWORD m_fFateDamaged:1;					//	Always damaged when ship destroyed
+		DWORD m_fFateDestroyed:1;				//	Always destroyed when ship destroyed
+		DWORD m_fFateComponetized:1;			//	Always break into components when ship destroyed
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:8;
 	};

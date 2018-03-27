@@ -25,6 +25,7 @@
 #define ENHANCED_ATTRIB							CONSTLIT("enhanced")
 #define ENHANCEMENT_ATTRIB						CONSTLIT("enhancement")
 #define EXTERNAL_ATTRIB							CONSTLIT("external")
+#define FATE_ATTRIB								CONSTLIT("fate")
 #define FIRE_ANGLE_ATTRIB						CONSTLIT("fireAngle")
 #define FIRE_ARC_ATTRIB							CONSTLIT("fireArc")
 #define HP_BONUS_ATTRIB							CONSTLIT("hpBonus")
@@ -82,6 +83,8 @@ class CSingleDevice : public IDeviceGenerator
 		int m_iMinFireArc;
 		int m_iMaxFireArc;
 		bool m_bDefaultFireArc;
+
+		ItemFates m_iFate;
 
 		DWORD m_dwLinkedFireOptions;
 		bool m_bDefaultLinkedFire;
@@ -239,6 +242,9 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 	retDesc->bCannotBeEmpty = pDesc->GetAttributeBool(CANNOT_BE_EMPTY_ATTRIB);
 	retDesc->bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
 
+	if (error = CItemType::ParseFate(Ctx, pDesc->GetAttribute(FATE_ATTRIB), &retDesc->iFate))
+		return error;
+
 	//	If we have a fireArc attribute, then we're defining the arc in terms of center angle
 	//	and arc.
 
@@ -363,6 +369,13 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.bCannotBeEmpty = SlotDesc.bCannotBeEmpty;
 		else
 			Desc.bCannotBeEmpty = m_bCannotBeEmpty;
+
+		//	Fate
+
+		if (bUseSlotDesc)
+			Desc.iFate = SlotDesc.iFate;
+		else
+			Desc.iFate = m_iFate;
 
 		//	Set the device fire arc appropriately.
 
@@ -554,6 +567,17 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
 	m_bCannotBeEmpty = pDesc->GetAttributeBool(CANNOT_BE_EMPTY_ATTRIB);
+
+	//	Fate
+
+	CString sFate;
+	if (pDesc->FindAttribute(FATE_ATTRIB, &sFate))
+		{
+		if (error = CItemType::ParseFate(Ctx, sFate, &m_iFate))
+			return error;
+		}
+	else
+		m_iFate = fateNone;
 
 	//	Linked fire options
 

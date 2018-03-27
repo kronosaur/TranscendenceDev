@@ -75,6 +75,8 @@ class CShipwreckDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void CleanUp (void);
 		void ClearMarks (void);
+		bool CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const;
+		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const;
 		void CreateWreckImage (DWORD dwShipClass, const CObjectImageArray &ShipImage);
 		inline CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		inline int GetStructuralHP (void) const { return m_iStructuralHP; }
@@ -91,10 +93,18 @@ class CShipwreckDesc
 		static void UnbindGlobal (void);
 		
 	private:
+		void AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const;
+		int CalcDeviceComponentChance (const CItem &Item, bool bDropDamaged) const;
+		inline int CalcDeviceDestroyChance (void) const { return 100 - Min(GetWreckChance(), 50); }
+		ItemFates CalcDeviceFate (CShip *pSource, const CItem &Item, CSpaceObject *pWreck, bool bDropDamaged) const;
+
 		static constexpr int WRECK_IMAGE_VARIANTS =		3;
 		static constexpr int DAMAGE_IMAGE_COUNT =		10;
 		static constexpr int DAMAGE_IMAGE_WIDTH	=		24;
 		static constexpr int DAMAGE_IMAGE_HEIGHT =		24;
+
+		static constexpr int DEVICE_DAMAGED_CHANCE =	80;
+		static constexpr int DROP_COMPONENTS_CHANCE =	50;
 
 		int m_iLeavesWreck = 0;					//	Chance that it leaves a wreck
 		int m_iStructuralHP = 0;				//	Structual hp of wreck (0 = undefined)

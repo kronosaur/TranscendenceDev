@@ -1480,37 +1480,7 @@ bool CShipClass::CreateEmptyWreck (CSystem *pSystem,
 //	Create an empty wreck of the given ship class
 
 	{
-	DEBUG_TRY
-
-	SSystemCreateCtx Ctx(pSystem);
-
-	SObjCreateCtx CreateCtx(Ctx);
-	CreateCtx.vPos = vPos;
-	CreateCtx.vVel = vVel;
-
-	//	Create the wreck
-
-	CStation *pWreck;
-	if (CStation::CreateFromType(pSystem,
-			GetWreckDesc(),
-			CreateCtx,
-			&pWreck) != NOERROR)
-		return false;
-
-	//	Set properties of the wreck
-
-	pWreck->SetSovereign(pSovereign);
-	pWreck->SetWreckImage(this);
-	pWreck->SetWreckParams(this, pShip);
-
-	//	Done
-
-	if (retpWreck)
-		*retpWreck = pWreck;
-
-	return true;
-
-	DEBUG_CATCH
+	return m_WreckDesc.CreateEmptyWreck(pSystem, this, pShip, vPos, vVel, pSovereign, retpWreck);
 	}
 
 void CShipClass::CreateExplosion (CShip *pShip, CSpaceObject *pWreck)
@@ -1776,107 +1746,7 @@ bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
 //	Creates a wreck for the given ship
 
 	{
-	DEBUG_TRY
-
-	//	Create the wreck
-
-	CStation *pWreck;
-	if (!CreateEmptyWreck(pShip->GetSystem(),
-			pShip,
-			pShip->GetPos(),
-			pShip->GetVel(),
-			pShip->GetSovereign(),
-			&pWreck))
-		return false;
-
-	//	The chance that an installed item survives is related to
-	//	the wreck chance.
-
-	int iDestroyArmorChance = 100 - (GetWreckChance() / 2);
-	int iDestroyDeviceChance = 100 - Min(GetWreckChance(), 50);
-
-	//	Decrease the chance of armor surviving if this ship class
-	//	has lots of armor segments
-
-	iDestroyArmorChance = Min(Max(iDestroyArmorChance, 100 - (100 / (1 + GetHullSectionCount()))), 95);
-
-	//	Add items to the wreck
-
-	CItemListManipulator Source(pShip->GetItemList());
-	CItemListManipulator Dest(pWreck->GetItemList());
-
-	while (Source.MoveCursorForward())
-		{
-		CItem WreckItem = Source.GetItemAtCursor();
-
-		//	Installed items may or may not be damaged.
-
-		if (WreckItem.IsInstalled())
-			{
-			//	Make sure that the armor item reflects the current
-			//	state of the ship's armor.
-
-			if (WreckItem.IsArmor())
-				{
-				//	Most armor is destroyed
-
-				if (mathRandom(1, 100) <= iDestroyArmorChance)
-					continue;
-
-				//	Compute the % damage of the armor.
-
-				CInstalledArmor *pArmor = pShip->GetArmorSection(WreckItem.GetInstalled());
-				int iArmorHP = pArmor->GetHitPoints();
-				int iArmorMaxHP = pArmor->GetMaxHP(pShip);
-				int iArmorIntegrity = (iArmorMaxHP > 0 ? 100 * iArmorHP / iArmorMaxHP : 0);
-
-				//	Add this item to the wreck
-
-				Dest.AddDamagedComponents(WreckItem, 100 - iArmorIntegrity);
-				}
-
-			//	Other installed devices have a chance of being
-			//	damaged or destroyed.
-
-			else
-				{
-				//	Sometimes the device is destroyed
-
-				if (mathRandom(1, 100) <= iDestroyDeviceChance)
-					continue;
-
-				//	The rest of the time, we drop the device with an 80% chance
-				//	of being damaged.
-
-				Dest.AddDamagedComponents(WreckItem, 80);
-				}
-			}
-
-		//	Non-installed virtual items are always lost
-
-		else if (WreckItem.IsVirtual())
-			continue;
-
-		//	Otherwise, if this is just cargo, add to wreck
-
-		else
-			Dest.AddItem(WreckItem);
-		}
-
-	//	The wreck is radioactive if the ship is radioactive (or if this
-	//	ship class always has radioactive wrecks)
-
-	if (pShip->IsRadioactive() || m_WreckDesc.IsRadioactive())
-		pWreck->MakeRadioactive();
-
-	//	Done
-
-	if (retpWreck)
-		*retpWreck = pWreck;
-
-	return true;
-
-	DEBUG_CATCH
+	return m_WreckDesc.CreateWreck(pShip, retpWreck);
 	}
 
 void CShipClass::FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpBestMissile) const
