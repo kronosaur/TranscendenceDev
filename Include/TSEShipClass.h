@@ -144,6 +144,11 @@ class CShipClass : public CDesignType
 			typeWeaponsTooStrong,
 			};
 
+		enum ECategoryFlags
+			{
+			catCapitalShip = 0x00000001,		//	Capital ship (based on mass)
+			};
+
 		enum VitalSections
 			{
 			sectNonCritical	= 0x00000000,		//	Ship is not automatically
@@ -196,6 +201,7 @@ class CShipClass : public CDesignType
 		CString GenerateShipName (DWORD *retdwFlags) const;
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
         inline const CShipArmorDesc &GetArmorDesc (void) const { return m_Armor; }
+		DWORD GetCategoryFlags (void) const;
         const CCargoDesc &GetCargoDesc (const CItem **retpCargoItem = NULL) const;
 		inline CGenericType *GetCharacter (void) { return m_Character; }
 		inline CGenericType *GetCharacterClass (void) { return m_CharacterClass; }

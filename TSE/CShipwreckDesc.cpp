@@ -187,6 +187,7 @@ ItemFates CShipwreckDesc::CalcDeviceFate (CShip *pSource, const CItem &Item, CSp
 //	Calculates the fate of the given intalled device
 
 	{
+	CShipClass *pClass = pSource->GetClass();
 	CInstalledDevice *pDevice = pSource->FindDevice(Item);
 
 	//	Check to see if the device slot has a specified a fate
@@ -198,6 +199,13 @@ ItemFates CShipwreckDesc::CalcDeviceFate (CShip *pSource, const CItem &Item, CSp
 	//	There's a chance that we'll be destroyed outright.
 
 	else if (mathRandom(1, 100) <= CalcDeviceDestroyChance())
+		return fateDestroyed;
+
+	//	If this is a reactor, then we always destroy it (unless it is part of
+	//	a capital ship).
+
+	else if (Item.GetType()->GetCategory() == itemcatReactor
+			&& !(pClass->GetCategoryFlags() & CShipClass::catCapitalShip))
 		return fateDestroyed;
 
 	//	If we have components, we usually drop the components.
