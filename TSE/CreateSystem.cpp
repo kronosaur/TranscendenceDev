@@ -76,6 +76,7 @@
 #define ECCENTRICITY_ATTRIB				CONSTLIT("eccentricity")
 #define ENCOUNTERS_ATTRIB				CONSTLIT("encountersCount")
 #define ERODE_ATTRIB					CONSTLIT("erode")
+#define EVENT_HANDLER_ATTRIB			CONSTLIT("eventHandler")
 #define EXCLUSION_RADIUS_ATTRIB			CONSTLIT("exclusionRadius")
 #define ID_ATTRIB						CONSTLIT("id")
 #define IMAGE_VARIANT_ATTRIB			CONSTLIT("imageVariant")
@@ -4440,6 +4441,12 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	DWORD dwSovereign;
 	if (pDesc->FindAttributeInteger(SOVEREIGN_ATTRIB, (int *)&dwSovereign))
 		CreateCtx.pSovereign = g_pUniverse->FindSovereign(dwSovereign);
+
+	//	Event handler
+
+	DWORD dwEventHandler;
+	if (pDesc->FindAttributeInteger(EVENT_HANDLER_ATTRIB, (int *)&dwEventHandler))
+		CreateCtx.pEventHandler = g_pUniverse->FindDesignType(dwEventHandler);
 
 	//	Create the station
 
