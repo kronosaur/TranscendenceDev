@@ -783,7 +783,7 @@ void CDesignCollection::FireOnGlobalIntroCommand(const CString &sCommand)
 	int i;
 
 	CString sError;
-	for (i = 0; i < m_EventsCache[evtOnGlobalIntroStarted]->GetCount(); i++)
+	for (i = 0; i < m_EventsCache[evtOnGlobalIntroCommand]->GetCount(); i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalIntroCommand]->GetEntry(i, &Event);
