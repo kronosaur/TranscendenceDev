@@ -149,7 +149,9 @@ class CArmorClass
             CCurrencyAndValue RepairCost;
             CCurrencyAndValue InstallCost;
 
-            DWORD fRadiationImmune : 1;
+            DWORD fRadiationImmune:1;
+            DWORD fDisintegrationImmune:1;
+            DWORD fShatterImmune:1;
             };
 
 		CArmorClass (void);
@@ -192,9 +194,8 @@ class CArmorClass
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields
-		DWORD m_fDisintegrationImmune:1;		//	TRUE if immune to disintegration
-		DWORD m_fShatterImmune:1;				//	TRUE if immune to shatter
 		DWORD m_fChargeDecay:1;					//	If TRUE, we decay while we have charges left
+		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;

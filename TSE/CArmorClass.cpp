@@ -21,6 +21,7 @@
 #define ENHANCEMENT_TYPE_ATTRIB					CONSTLIT("enhancementType")
 #define EMP_DAMAGE_ADJ_ATTRIB					CONSTLIT("EMPDamageAdj")
 #define EMP_IMMUNE_ATTRIB						CONSTLIT("EMPImmune")
+#define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define HP_BONUS_PER_CHARGE_ATTRIB				CONSTLIT("hpBonusPerCharge")
 #define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
 #define INSTALL_COST_ATTRIB						CONSTLIT("installCost")
@@ -78,19 +79,15 @@
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 
-static char g_HitPointsAttrib[] = "hitPoints";
-static char g_DamageAdjAttrib[] = "damageAdj";
-static char g_ItemIDAttrib[] = "itemID";
-#define MAX_REFLECTION_CHANCE		95
-
-#define MAX_REFLECTION_CHANCE		95
-
+constexpr int MAX_REFLECTION_CHANCE =			95;
 constexpr int ARMOR_HP_PER_SHIELD_HP =			4;
 
-const int BLIND_IMMUNE_LEVEL =					6;
-const int RADIATION_IMMUNE_LEVEL =				7;
-const int EMP_IMMUNE_LEVEL =					9;
-const int DEVICE_DAMAGE_IMMUNE_LEVEL =			11;
+constexpr int BLIND_IMMUNE_LEVEL =				6;
+constexpr int RADIATION_IMMUNE_LEVEL =			7;
+constexpr int EMP_IMMUNE_LEVEL =				9;
+constexpr int DEVICE_DAMAGE_IMMUNE_LEVEL =		11;
+constexpr int DISINTEGRATION_IMMUNE_LEVEL =		15;
+constexpr int SHATTER_IMMUNE_LEVEL =			19;
 
 const Metric PHOTO_REPAIR_ADJ =					0.6;
 const Metric RADIATION_IMMUNE_BALANCE_BONUS =	25.0;
@@ -102,7 +99,9 @@ const Metric EMP_VULNERABLE_BALANCE_BONUS =		-25.0;
 const Metric DEVICE_DAMAGE_IMMUNE_BALANCE_BONUS =	25.0;
 const Metric DEVICE_DAMAGE_VULNERABLE_BALANCE_BONUS =	-25.0;
 const Metric SHATTER_IMMUNE_BALANCE_BONUS =		20.0;
+const Metric SHATTER_VULNERABLE_BALANCE_BONUS =		-20.0;
 const Metric DISINTEGRATION_IMMUNE_BALANCE_BONUS =	10.0;
+const Metric DISINTEGRATION_VULNERABLE_BALANCE_BONUS =	-20.0;
 const Metric HIGHER_REPAIR_LEVEL_BALANCE_BONUS = -5.0;
 const Metric LOWER_REPAIR_LEVEL_BALANCE_BONUS =	2.5;
 const Metric ARMOR_COMPLETE_BALANCE_ADJ =		-0.20;
@@ -433,13 +432,23 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	//	Disintegration
 
-	if (m_fDisintegrationImmune)
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("disintegration immune")));
+	if (Stats.fDisintegrationImmune)
+		{
+		if (Stats.iLevel < DISINTEGRATION_IMMUNE_LEVEL)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("disintegration immune")));
+		}
+	else if (Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL)
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("disintegration vulnerable")));
 
 	//	Shatter
 
-	if (m_fShatterImmune)
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shatter immune")));
+	if (Stats.fShatterImmune)
+		{
+		if (Stats.iLevel < SHATTER_IMMUNE_LEVEL)
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shatter immune")));
+		}
+	else if (Stats.iLevel >= SHATTER_IMMUNE_LEVEL)
+		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("shatter vulnerable")));
 
 	//	Shield interference
 
@@ -929,15 +938,25 @@ Metric CArmorClass::CalcBalanceDamageEffectAdj (CItemCtx &ItemCtx, const SScalab
 	else if (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL)
 		rBalance += DEVICE_DAMAGE_VULNERABLE_BALANCE_BONUS;
 
-	//	Immune/vulnerable to shatter?
-
-	if (m_fShatterImmune)
-		rBalance += SHATTER_IMMUNE_BALANCE_BONUS;
-
 	//	Immune/vulnerable to disintegration?
 
-	if (m_fDisintegrationImmune)
-		rBalance += DISINTEGRATION_IMMUNE_BALANCE_BONUS;
+	if (Stats.fDisintegrationImmune)
+		{
+		if (Stats.iLevel < DISINTEGRATION_IMMUNE_LEVEL)
+			rBalance += DISINTEGRATION_IMMUNE_BALANCE_BONUS;
+		}
+	else if (Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL)
+		rBalance += DISINTEGRATION_VULNERABLE_BALANCE_BONUS;
+
+	//	Immune/vulnerable to shatter?
+
+	if (Stats.fShatterImmune)
+		{
+		if (Stats.iLevel < SHATTER_IMMUNE_LEVEL)
+			rBalance += SHATTER_IMMUNE_BALANCE_BONUS;
+		}
+	else if (Stats.iLevel >= SHATTER_IMMUNE_LEVEL)
+		rBalance += SHATTER_VULNERABLE_BALANCE_BONUS;
 
 	return rBalance;
 	}
@@ -1297,7 +1316,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 
 	pArmor->m_pItemType = pType;
 	pArmor->m_Stats.iLevel = iLevel;
-	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(CONSTLIT(g_HitPointsAttrib), 0);
+	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0);
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
 
@@ -1408,13 +1427,19 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 				-1, 
 				iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL ? 0 : 100);
 
-	//	Shatter immune
-
-	pArmor->m_fShatterImmune = pDesc->GetAttributeBool(SHATTER_IMMUNE_ATTRIB);
-
 	//	Disintegration immune
 
-	pArmor->m_fDisintegrationImmune = pDesc->GetAttributeBool(DISINTEGRATION_IMMUNE_ATTRIB);
+	if (pDesc->FindAttributeBool(DISINTEGRATION_IMMUNE_ATTRIB, &bValue))
+		pArmor->m_Stats.fDisintegrationImmune = bValue;
+	else
+		pArmor->m_Stats.fDisintegrationImmune = (iLevel >= DISINTEGRATION_IMMUNE_LEVEL ? true : false);
+
+	//	Shatter immune
+
+	if (pDesc->FindAttributeBool(SHATTER_IMMUNE_ATTRIB, &bValue))
+		pArmor->m_Stats.fShatterImmune = bValue;
+	else
+		pArmor->m_Stats.fShatterImmune = (iLevel >= SHATTER_IMMUNE_LEVEL ? true : false);
 
 	pArmor->m_fShieldInterference = pDesc->GetAttributeBool(SHIELD_INTERFERENCE_ATTRIB);
 	pArmor->m_fChargeDecay = pDesc->GetAttributeBool(CHARGE_DECAY_ATTRIB);
@@ -1686,6 +1711,8 @@ void CArmorClass::GenerateScaledStats (void)
 		Stats.fRadiationImmune = m_Stats.fRadiationImmune || (Stats.iLevel >= RADIATION_IMMUNE_LEVEL ? true : false);
 		Stats.iEMPDamageAdj = Min(m_Stats.iEMPDamageAdj, (Stats.iLevel >= EMP_IMMUNE_LEVEL ? 0 : 100));
 		Stats.iDeviceDamageAdj = Min(m_Stats.iDeviceDamageAdj, (Stats.iLevel >= DEVICE_DAMAGE_IMMUNE_LEVEL ? 0 : 100));
+		Stats.fDisintegrationImmune = m_Stats.fDisintegrationImmune || (Stats.iLevel >= DISINTEGRATION_IMMUNE_LEVEL ? true : false);
+		Stats.fShatterImmune = m_Stats.fShatterImmune || (Stats.iLevel >= SHATTER_IMMUNE_LEVEL ? true : false);
 
         //  Regen and decay
 
@@ -2158,8 +2185,10 @@ bool CArmorClass::IsDisintegrationImmune (CItemCtx &ItemCtx)
 //	Returns TRUE if we're immune to disintegration.
 
 	{
+	const SScalableStats &Stats = GetScaledStats(ItemCtx);
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
-	return (m_fDisintegrationImmune || Enhancements.IsDisintegrationImmune());
+
+	return (Stats.fDisintegrationImmune || Enhancements.IsDisintegrationImmune());
 	}
 
 bool CArmorClass::IsEMPDamageImmune (CItemCtx &ItemCtx)
@@ -2195,8 +2224,10 @@ bool CArmorClass::IsShatterImmune (CItemCtx &ItemCtx)
 //	Returns TRUE if we are immune to shatter.
 
 	{
+	const SScalableStats &Stats = GetScaledStats(ItemCtx);
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
-	return (m_fShatterImmune || Enhancements.IsShatterImmune());
+
+	return (Stats.fShatterImmune || Enhancements.IsShatterImmune());
 	}
 
 bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx)
