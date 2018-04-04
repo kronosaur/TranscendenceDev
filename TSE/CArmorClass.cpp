@@ -204,6 +204,8 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 //	Returns damageNoDamage if all the damage was absorbed and no further processing is necessary
 //	Returns damageDestroyed if the source was destroyed
 //	Returns damageArmorHit if source was damage and further processing (destroy check) is needed
+//	Returns damageDisintegrated if source should be disintegrated
+//	Returns damageShattered if source should be shattered
 //
 //	Sets Ctx.iDamage to the amount of hit points left after damage absorption.
 
@@ -249,22 +251,16 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	if (Ctx.bDisintegrate)
 		{
-		if (!pSource->OnDestroyCheck(killedByDisintegration, Ctx.Attacker))
-			return damageNoDamage;
-
-		pSource->Destroy(killedByDisintegration, Ctx);
-		return damageDestroyed;
+		Ctx.Damage.SetCause(killedByDisintegration);
+		return damageDisintegrated;
 		}
 
 	//	If this is a shatter attack, see if the ship is destroyed
 
 	if (Ctx.bShatter)
 		{
-		if (!pSource->OnDestroyCheck(killedByShatter, Ctx.Attacker))
-			return damageNoDamage;
-
-		pSource->Destroy(killedByShatter, Ctx);
-		return damageDestroyed;
+		Ctx.Damage.SetCause(killedByShatter);
+		return damageShattered;
 		}
 
 	//	If this is a paralysis attack and we've gotten past the shields
@@ -1160,7 +1156,16 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Disintegration
 
 	int iDisintegration = Ctx.Damage.GetDisintegrationDamage();
-	Ctx.bDisintegrate = (iDisintegration > 0 && !IsDisintegrationImmune(ItemCtx));
+	if (iDisintegration && !IsDisintegrationImmune(ItemCtx))
+		{
+		//	The chance of being disintegrated is dependent on the rating.
+		//	Since disintegration is from 1 to 7, chance is from 4 to 100.
+
+		int iChance = (2 * iDisintegration * iDisintegration) + 2;
+		Ctx.bDisintegrate = (mathRandom(1, 100) <= iChance);
+		}
+	else
+		Ctx.bDisintegrate = false;
 
 	//	Shatter
 

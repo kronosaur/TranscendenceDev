@@ -176,8 +176,10 @@ enum EDamageResults
 	damagePassthroughDestroyed =	6,	//	Target destroyed, but we pass through
 	damageDestroyedAbandoned =		7,	//	Station was abandoned, but object not destroyed
 	damageNoDamageNoPassthrough =	8,	//	No damage; stop any passthrough
+	damageDisintegrated =			9,
+	damageShattered =				10,
 
-	damageResultCount =				9,
+	damageResultCount =				11,
 	};
 
 struct SDamageCtx

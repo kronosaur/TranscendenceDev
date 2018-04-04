@@ -166,6 +166,8 @@ static char *g_pszDamageResults[damageResultCount] =
 	"passthroughDestroyed",
 	"destroyedAbandoned",
 	"noDamageNoPassthrough",
+	"disintegrated",
+	"shattered",
 	};
 
 static char *g_pszMessageID[] =

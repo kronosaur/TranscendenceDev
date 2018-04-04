@@ -789,9 +789,12 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 
 			//	Get the ordinal
 
-			ASSERT(*pPos == '/');
-			pPos++;
-			int iOrdinal = strParseInt(pPos, 0, &pPos);
+			int iOrdinal = 0;
+			if (*pPos == '/')
+				{
+				pPos++;
+				iOrdinal = strParseInt(pPos, 0, &pPos);
+				}
 
             //  Convert the ordinal to an ammo type
 

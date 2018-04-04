@@ -4502,10 +4502,71 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		{
 		EDamageResults iResult = pArmor->AbsorbDamage(this, Ctx);
 
-		//	If special result, we're done.
+		//	Handle result
 
-		if (iResult != damageArmorHit)
-			return iResult;
+		switch (iResult)
+			{
+			//	On normal damage we continue processing
+
+			case damageArmorHit:
+				break;
+
+			//	Handle disintegration
+
+			case damageDisintegrated:
+				{
+				//	If we have interior hit points then we take normal damage.
+
+				if (!m_Interior.IsEmpty())
+					{
+					//	If armor is not already at 0, then we reduce it down
+					//	to 0.
+
+					if (pArmor->GetHitPoints() > 0)
+						{
+						Ctx.iArmorDamage = pArmor->GetHitPoints();
+						Ctx.iArmorAbsorb = Ctx.iDamage;
+						Ctx.iDamage = 0;
+						pArmor->SetHitPoints(0);
+						}
+
+					//	Otherwise, all the damage passes through to interior damage
+
+					break;
+					}
+
+				//	If something saves us, then we're OK
+
+				else if (!OnDestroyCheck(Ctx.Damage.GetCause(), Ctx.Attacker))
+					return damageNoDamage;
+
+				//	Otherwise we're disintegrated
+
+				else
+					{
+					Destroy(Ctx);
+					return damageDestroyed;
+					}
+				}
+
+			//	Handle shatter
+
+			case damageShattered:
+				{
+				if (!OnDestroyCheck(Ctx.Damage.GetCause(), Ctx.Attacker))
+					return damageNoDamage;
+				else
+					{
+					Destroy(Ctx);
+					return damageDestroyed;
+					}
+				}
+
+			//	Other special results (including no damage) just return
+
+			default:
+				return iResult;
+			}
 		}
 
 	//	Tell our attacker that we got hit

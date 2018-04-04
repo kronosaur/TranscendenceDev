@@ -1633,6 +1633,8 @@ void CWeaponClass::FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 	EDamageResults iResult = pSource->Damage(Ctx);
 
 	if (iResult == damageDestroyed 
+			|| iResult == damageDisintegrated
+			|| iResult == damageShattered
 			|| iResult == damagePassthroughDestroyed)
 		*retbSourceDestroyed = true;
 	}
