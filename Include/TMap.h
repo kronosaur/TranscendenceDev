@@ -611,7 +611,9 @@ template <class KEY, class VALUE> class TSortMap
 template <class ENTRY, size_t N> class TStaticStringTable
 	{
 	public:
-		ENTRY &operator [] (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < N); return m_Array[iIndex]; }
+		ENTRY &operator [] (int iIndex) { ASSERT(iIndex >= 0 && iIndex < N); return m_Array[iIndex]; }
+
+		const ENTRY &operator [] (int iIndex) const { ASSERT(iIndex >= 0 && iIndex < N); return m_Array[iIndex]; }
 		
 		bool FindPos (const CString &sKey, int *retiPos = NULL) const
 			{
