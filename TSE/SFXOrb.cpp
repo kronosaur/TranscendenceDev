@@ -20,6 +20,7 @@
 
 const int DEFAULT_FLARE_COUNT =			5;
 const int FLARE_MULITPLE =				4;
+const int LIGHTNING_MULITPLE =			2;
 const int FLARE_WIDTH_FRACTION =		32;
 const Metric BLOOM_FACTOR =				1.2;
 const int FLARE_ANGLE =					15;
@@ -70,8 +71,9 @@ class COrbEffectPainter : public IEffectPainter
 			styleDiffraction =		6,
 			styleFirecloud =		7,
 			styleBlackHole =		8,
+			styleLightning =		9,
 
-			styleMax =				8,
+			styleMax =				9,
 			};
 
 		struct SFlareDesc
@@ -90,6 +92,7 @@ class COrbEffectPainter : public IEffectPainter
 		void Invalidate (void);
 		void PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
+		void PaintLightning (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
 		inline bool UsesColorTable2 (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke); }
 		inline bool UsesTextures (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke); }
 
@@ -148,6 +151,7 @@ static LPSTR STYLE_TABLE[] =
 		"diffraction",
 		"firecloud",
 		"blackhole",
+		"lightning",
 
 		NULL,
 	};
@@ -571,7 +575,10 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 				CalcSphericalColorTable(m_iStyle, m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[0]);
 
-				m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
+				if (m_iStyle == styleLightning)
+					m_FlareDesc[0].iLength = m_iRadius * LIGHTNING_MULITPLE;
+				else
+					m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
 				m_FlareDesc[0].iWidth = Max(1, m_FlareDesc[0].iLength / FLARE_WIDTH_FRACTION);
 
 				//	For cloud and Fireblast we need a repeating animation
@@ -768,6 +775,7 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 	switch (iStyle)
 		{
 		case styleSmooth:
+		case styleLightning:
 			CPaintHelper::CalcSmoothColorTable(iRadius, iIntensity, rgbPrimary, rgbSecondary, byOpacity, retColorTable);
 			break;
 
@@ -1041,6 +1049,14 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			break;
 		}
 
+	//	Paint flares/spikes/lightning
+
+	if (m_iStyle == styleLightning)
+		{
+		SFlareDesc &Flare = m_FlareDesc[iTick % m_FlareDesc.GetCount()];
+		PaintLightning(Dest, x, y, Flare, Ctx);
+		}
+
 	//	Paint
 
 	switch (m_iStyle)
@@ -1083,6 +1099,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		case styleBlackHole:
 		case styleFlare:
 		case styleSmooth:
+		case styleLightning:
 			{
 			TArray<CG32bitPixel> &Table = m_ColorTable[iTick % m_ColorTable.GetCount()];
 			CGDraw::Circle(Dest, x, y, Table.GetCount(), Table, m_iBlendMode);
@@ -1090,7 +1107,11 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 			}
 		}
 
-	if (HasFlares())
+	//	Paint flares/spikes/lightning
+
+	if (m_iStyle == styleLightning)
+		NULL;
+	else if (HasFlares())
 		{
 		SFlareDesc &Flare = m_FlareDesc[iTick % m_FlareDesc.GetCount()];
 		PaintFlares(Dest, x, y, Flare, Ctx);
@@ -1112,6 +1133,7 @@ void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewp
 		case styleBlackHole:
 		case styleFlare:
 		case styleSmooth:
+		case styleLightning:
 			{
 			TArray<CG32bitPixel> &Table = m_ColorTable[Ctx.iTick % m_ColorTable.GetCount()];
 			CGComposite::Circle(Dest, x, y, Table.GetCount(), Table);
@@ -1122,7 +1144,11 @@ void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewp
 			break;
 		}
 
-	if (HasFlares())
+	if (m_iStyle == styleLightning)
+		{
+		//	LATER
+		}
+	else if (HasFlares())
 		{
 		SFlareDesc &Flare = m_FlareDesc[Ctx.iTick % m_FlareDesc.GetCount()];
 		CompositeFlares(Dest, x, y, Flare, Ctx);
@@ -1168,6 +1194,38 @@ void COrbEffectPainter::PaintFlares (CG32bitImage &Dest, int xCenter, int yCente
 
 	for (i = 0; i < iFlareCount; i++)
 		PaintFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(FLARE_ANGLE + (iAngle * i)), m_iIntensity, Ctx);
+	}
+
+void COrbEffectPainter::PaintLightning (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx)
+
+//	PaintLightning
+//
+//	Paints lightning spikes
+
+	{
+	int i;
+
+	int iFlareCount = m_SpikeCount.Roll();
+	if (iFlareCount <= 0)
+		iFlareCount = 2 * DEFAULT_FLARE_COUNT;
+
+	int iSeparation = 360 / iFlareCount;
+	int iAngle = Ctx.iTick * 3;
+
+	for (i = 0; i < iFlareCount; i++)
+		{
+		int xDest, yDest;
+		IntPolarToVector(iAngle, FlareDesc.iLength, &xDest, &yDest);
+
+		DrawLightning(Dest,
+				xCenter, yCenter,
+				xCenter + xDest, yCenter + yDest,
+				m_rgbPrimaryColor,
+				CG32bitPixel::Null(),
+				0.5);
+
+		iAngle += iSeparation;
+		}
 	}
 
 bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const

@@ -705,7 +705,7 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 		else if (strEquals(sType, GetSpecialDamageName(specialMomentum)))
 			m_MomentumDamage = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialDisintegration)))
-			m_DisintegrationDamage = (DWORD)Min(iCount, MAX_BINARY);
+			m_DisintegrationDamage = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialDeviceDisrupt)))
 			m_DeviceDisruptDamage = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialShieldPenetrator)))
