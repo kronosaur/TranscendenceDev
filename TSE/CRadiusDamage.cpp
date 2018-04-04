@@ -34,6 +34,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CRadiusDam
 
 	//	Make sure we have a valid CWeaponFireDesc (otherwise we won't be
 	//	able to save the descriptor).
+
 	ASSERT(!Ctx.pDesc->GetUNID().IsBlank());
 
 	//	Create the area
@@ -67,7 +68,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CRadiusDam
 
 	//	Create a painter instance
 
-	pArea->m_pPainter = Ctx.pDesc->CreateEffectPainter();
+	pArea->m_pPainter = Ctx.pDesc->CreateEffectPainter(Ctx);
 	if (pArea->m_pPainter)
 		{
 		//	Adjust lifetime of object based on the painter

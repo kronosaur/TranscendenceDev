@@ -276,8 +276,7 @@ ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retp
 
 	//	Create a painter instance
 
-	bool bIsTracking = Ctx.pTarget && Ctx.pDesc->IsTracking();
-	pMissile->m_pPainter = Ctx.pDesc->CreateEffectPainter(bIsTracking, true);
+	pMissile->m_pPainter = Ctx.pDesc->CreateEffectPainter(Ctx);
 	if (pMissile->m_pPainter)
 		pMissile->SetBounds(pMissile->m_pPainter);
 

@@ -156,8 +156,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinu
 
 	//	Create the effect painter, if we've got one
 
-	bool bIsTracking = Ctx.pTarget && Ctx.pDesc->IsTracking();
-	pBeam->m_pPainter = Ctx.pDesc->CreateEffectPainter(bIsTracking, true);
+	pBeam->m_pPainter = Ctx.pDesc->CreateEffectPainter(Ctx);
 
 	//	Remember the sovereign of the source (in case the source is destroyed)
 

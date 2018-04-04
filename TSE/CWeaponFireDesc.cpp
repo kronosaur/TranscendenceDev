@@ -288,7 +288,7 @@ bool CWeaponFireDesc::CanHit (CSpaceObject *pObj) const
 	return true;
 	}
 
-IEffectPainter *CWeaponFireDesc::CreateEffectPainter (bool bTrackingObj, bool bUseObjectCenter)
+IEffectPainter *CWeaponFireDesc::CreateEffectPainter (SShotCreateCtx &CreateCtx)
 
 //	CreateEffectPainter
 //
@@ -298,16 +298,27 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (bool bTrackingObj, bool bU
 //	NOTE: We may return NULL if the weapon has no effect.
 
 	{
-	CCreatePainterCtx Ctx;
-	Ctx.SetWeaponFireDesc(this);
-	Ctx.SetTrackingObject(bTrackingObj);
-	Ctx.SetUseObjectCenter(bUseObjectCenter);
+	CCreatePainterCtx PainterCtx;
+	PainterCtx.SetWeaponFireDesc(this);
+	PainterCtx.SetTrackingObject(CreateCtx.pTarget && IsTracking());
+	PainterCtx.SetUseObjectCenter(true);
+
+	//	If this is an explosion, then we pass the source as an anchor.
+
+	CSpaceObject *pAnchor;
+	if ((CreateCtx.dwFlags | SShotCreateCtx::CWF_EXPLOSION)
+			&& (pAnchor = CreateCtx.Source.GetObj()))
+		{
+		PainterCtx.SetAnchor(pAnchor);
+		}
 
 	//	We set the default lifetime of the effect to whatever the descriptor defines.
 
-	Ctx.SetDefaultParam(LIFETIME_ATTRIB, CEffectParamDesc(m_Lifetime.GetMaxValue()));
+	PainterCtx.SetDefaultParam(LIFETIME_ATTRIB, CEffectParamDesc(m_Lifetime.GetMaxValue()));
 
-	return m_pEffect.CreatePainter(Ctx);
+	//	Create the painter
+
+	return m_pEffect.CreatePainter(PainterCtx);
 	}
 
 void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir)

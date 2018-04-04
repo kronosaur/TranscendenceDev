@@ -6,6 +6,7 @@
 #pragma once
 
 class CParticleSystemDesc;
+class CWeaponFireDesc;
 
 enum SpecialDamageTypes
 	{
@@ -295,6 +296,29 @@ class DamageTypeSet
 		DWORD m_dwSet;
 	};
 
+struct SShotCreateCtx
+	{
+	enum Flags
+		{
+		//	CreateWeaponFire flags
+		CWF_WEAPON_FIRE =				0x00000001,	//	Creating a shot from a weapon
+		CWF_FRAGMENT =					0x00000002,	//	Creating a fragment
+		CWF_EXPLOSION =					0x00000004,	//	Creating an explosion (or fragment of an explosion)
+		CWF_EJECTA =					0x00000008,	//	Creating ejecta (or fragments of ejecta)
+		CWF_REPEAT =					0x00000010,	//	Mixed with CWF_WEAPON_FIRE to indicate this is a repeat
+		};
+
+	CWeaponFireDesc *pDesc = NULL;
+	TSharedPtr<CItemEnhancementStack> pEnhancements;
+	CDamageSource Source;
+	CVector vPos;
+	CVector vVel;
+	int iDirection = 0;
+	int iRepeatingCount = 0;
+	CSpaceObject *pTarget = NULL;
+	DWORD dwFlags = 0;
+	};
+
 //	WeaponFireDesc
 
 enum FireTypes
@@ -393,7 +417,7 @@ class CWeaponFireDesc
         inline bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (CSpaceObject *pObj) const;
 		inline bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
-		IEffectPainter *CreateEffectPainter (bool bTrackingObj = false, bool bUseObjectCenter = false);
+		IEffectPainter *CreateEffectPainter (SShotCreateCtx &CreateCtx);
 		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir);
 		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx);
 		IEffectPainter *CreateParticlePainter (void);
