@@ -103,7 +103,7 @@ CLightningStormEffectCreator::CLightningStormEffectCreator (void) :
 
 CLightningStormEffectCreator::~CLightningStormEffectCreator (void)
 
-//	COrbEffectCreator destructor
+//	CLightningStormEffectCreator destructor
 
 	{
 	if (m_pSingleton)
@@ -206,14 +206,14 @@ CLightningStormEffectPainter::CLightningStormEffectPainter (CEffectCreator *pCre
 		m_iLifetime(0),
 		m_bInitialized(false)
 
-//	COrbEffectCreator constructor
+//	CLightningStormEffectCreator constructor
 
 	{
 	}
 
 CLightningStormEffectPainter::~CLightningStormEffectPainter (void)
 
-//	COrbEffectCreator destructor
+//	CLightningStormEffectCreator destructor
 
 	{
 	//	Clean up temporaries

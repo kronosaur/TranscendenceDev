@@ -32,18 +32,18 @@ class COrbEffectPainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 
-		virtual bool CanPaintComposite (void) { return true; }
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual int GetLifetime (void) { return m_iLifetime; }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
-		virtual bool GetParamList (TArray<CString> *retList) const;
-		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
+		virtual bool CanPaintComposite (void) override { return true; }
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
+		virtual int GetLifetime (void) override { return m_iLifetime; }
+		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
+		virtual bool GetParamList (TArray<CString> *retList) const override;
+		virtual void GetRect (RECT *retRect) const override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		enum EAnimationTypes

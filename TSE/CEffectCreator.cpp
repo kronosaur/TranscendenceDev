@@ -104,7 +104,11 @@ ALERROR CEffectCreator::CreateEffect (CSystem *pSystem,
 
 	//	Create a painter
 
-	IEffectPainter *pPainter = CreatePainter(CCreatePainterCtx());
+	CCreatePainterCtx CreateCtx;
+	CreateCtx.SetAnchor(pAnchor);
+	CreateCtx.SetPos(vPos);
+
+	IEffectPainter *pPainter = CreatePainter(CreateCtx);
 	if (pPainter == NULL)
 		return ERR_CANCEL;
 
@@ -136,6 +140,8 @@ ALERROR CEffectCreator::CreateFromTag (const CString &sTag, CEffectCreator **ret
 
 	if (strEquals(sTag, CImageEffectCreator::GetClassTag()))
 		pCreator = new CImageEffectCreator;
+	else if (strEquals(sTag, CDisintegrateEffectCreator::GetClassTag()))
+		pCreator = new CDisintegrateEffectCreator;
 	else if (strEquals(sTag, CRayEffectCreator::GetClassTag()))
 		pCreator = new CRayEffectCreator;
 	else if (strEquals(sTag, CParticleSystemEffectCreator::GetClassTag())

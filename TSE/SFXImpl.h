@@ -110,6 +110,32 @@ class CBoltEffectCreator : public CEffectCreator,
 		CG32bitPixel m_rgbSecondaryColor;
 	};
 
+class CDisintegrateEffectCreator : public CEffectCreator
+	{
+	public:
+		CDisintegrateEffectCreator (void);
+		~CDisintegrateEffectCreator (void);
+			
+		virtual CString GetTag (void) override { return GetClassTag(); }
+
+		//	CEffectCreator virtuals
+		virtual int GetLifetime (void) override { return 0; }
+
+		static CString GetClassTag (void) { return CONSTLIT("Disintegrate"); }
+
+	protected:
+		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) override;
+		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
+		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
+
+	private:
+		CEffectParamDesc m_Style;			//	Disintegrate style
+		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
+		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
+
+		IEffectPainter *m_pSingleton;
+	};
+
 class CEffectGroupCreator : public CEffectCreator
 	{
 	public:
