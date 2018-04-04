@@ -2094,6 +2094,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 		SDestroyCtx DestroyCtx;
 		DestroyCtx.pObj = this;
+		DestroyCtx.pDesc = Ctx.pDesc;
 		DestroyCtx.Attacker = Ctx.Attacker;
 		DestroyCtx.pWreck = this;
 		DestroyCtx.iCause = Ctx.Damage.GetCause();

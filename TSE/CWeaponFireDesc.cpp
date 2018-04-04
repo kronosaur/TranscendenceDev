@@ -28,6 +28,7 @@
 #define EXHAUST_DRAG_ATTRIB						CONSTLIT("drag")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
 #define EXPANSION_SPEED_ATTRIB					CONSTLIT("expansionSpeed")
+#define EXPLOSION_TYPE_ATTRIB					CONSTLIT("explosionType")
 #define FAILSAFE_ATTRIB							CONSTLIT("failsafe")
 #define FIRE_EFFECT_ATTRIB						CONSTLIT("fireEffect")
 #define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
@@ -165,6 +166,7 @@ void CWeaponFireDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pHitEffect.GetUNID(), true);
 	retTypesUsed->SetAt(m_pFireEffect.GetUNID(), true);
+	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 
 	if (m_pParticleDesc)
 		m_pParticleDesc->AddTypesUsed(retTypesUsed);
@@ -2141,6 +2143,11 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			pDesc->GetAttribute(FIRE_EFFECT_ATTRIB)))
 		return error;
 
+	//	Explosion
+
+	if (error = m_pExplosionType.LoadUNID(Ctx, pDesc->GetAttribute(EXPLOSION_TYPE_ATTRIB)))
+		return error;
+
 	//	Vapor trail
 
     int iVaporTrailWidth;
@@ -2294,6 +2301,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     m_pFireEffect = Src.m_pFireEffect;
     m_FireSound = Src.m_FireSound;
     m_pOldEffects = (Src.m_pOldEffects ? new SOldEffects(*Src.m_pOldEffects) : NULL);
+	m_pExplosionType = Src.m_pExplosionType;
 
     m_Events = Src.m_Events;
 
@@ -2374,6 +2382,9 @@ void CWeaponFireDesc::MarkImages (void)
 	if (m_pFireEffect)
 		m_pFireEffect->MarkImages();
 
+	if (m_pExplosionType)
+		m_pExplosionType->MarkImages();
+
 	m_FireSound.Mark();
 
 	SFragmentDesc *pFragment = m_pFirstFragment;
@@ -2426,6 +2437,9 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	if (m_pParticleDesc)
 		if (error = m_pParticleDesc->Bind(Ctx))
 			return error;
+
+	if (error = m_pExplosionType.Bind(Ctx))
+		return error;
 
 	//	Fragment
 

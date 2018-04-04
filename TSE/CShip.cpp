@@ -1392,6 +1392,133 @@ void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
         }
 	}
 
+void CShip::CreateExplosion (SDestroyCtx &Ctx)
+
+//	CreateExplosion
+//
+//	Creates an explosion for the ship based on the context.
+
+	{
+	DEBUG_TRY
+
+	//	Figure out what explosion to use
+
+	SExplosionType Explosion;
+
+	//	If the weapon defines the explosion, then use that.
+
+	if (Ctx.pDesc && Ctx.pDesc->GetExplosionType())
+		{
+		Explosion.pDesc = Ctx.pDesc->GetExplosionType();
+		Explosion.iCause = killedByExplosion;
+		}
+
+	//	Otherwise, see if we have an event that determines the explosion
+
+	else if (FireGetExplosionType(&Explosion))
+		NULL;
+
+	//	Otherwise, if we died from disintegration, then create that explosion
+
+	else if (Ctx.iCause == killedByDisintegration)
+		Explosion.pDesc = g_pUniverse->FindWeaponFireDesc(strFromInt(UNID_DISINTEGRATION_EXPLOSION, false));
+
+	//	Otherwise, we need the default from the class
+
+	else
+		Explosion.pDesc = m_pClass->GetExplosionType(this);
+
+	//	Explosion
+
+	if (Explosion.pDesc)
+		{
+		SShotCreateCtx ShotCtx;
+
+		ShotCtx.pDesc = Explosion.pDesc;
+		if (Explosion.iBonus != 0)
+			{
+			ShotCtx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
+			ShotCtx.pEnhancements->InsertHPBonus(Explosion.iBonus);
+			}
+
+		ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
+		ShotCtx.vPos = GetPos();
+		ShotCtx.vVel = GetVel();
+		ShotCtx.iDirection = GetRotation();
+		ShotCtx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
+
+		GetSystem()->CreateWeaponFire(ShotCtx);
+		}
+
+	//	Otherwise, if no defined explosion, we create a default one
+
+	else
+		{
+		DWORD dwEffectID;
+
+		//	If this is a large ship, use a large explosion
+
+		if (RectWidth(GetImage().GetImageRect()) > 64)
+			dwEffectID = g_LargeExplosionUNID;
+		else
+			dwEffectID = g_ExplosionUNID;
+
+		CEffectCreator *pEffect = g_pUniverse->FindEffectType(dwEffectID);
+		if (pEffect)
+			pEffect->CreateEffect(GetSystem(),
+					Ctx.pWreck,
+					GetPos(),
+					GetVel(),
+					0);
+
+		//	Particles
+
+		CObjectImageArray Image;
+		RECT rcRect;
+		rcRect.left = 0;
+		rcRect.top = 0;
+		rcRect.right = 4;
+		rcRect.bottom = 4;
+		Image.Init(g_ShipExplosionParticlesUNID,
+				rcRect,
+				8,
+				3);
+
+		CParticleEffect::CreateExplosion(GetSystem(),
+				//pWreck,
+				NULL,
+				GetPos(),
+				GetVel(),
+				mathRandom(1, 50),
+				LIGHT_SPEED * 0.25,
+				0,
+				300,
+				Image,
+				NULL);
+
+		//	HACK: No image means paint smoke particles
+
+		CObjectImageArray Dummy;
+		CParticleEffect::CreateExplosion(GetSystem(),
+				//pWreck,
+				NULL,
+				GetPos(),
+				GetVel(),
+				mathRandom(25, 150),
+				LIGHT_SPEED * 0.1,
+				20 + mathRandom(10, 30),
+				45,
+				Dummy,
+				NULL);
+		}
+
+	//	Always play default sound
+
+	g_pUniverse->PlaySound(this, g_pUniverse->FindSound(g_ShipExplosionSoundUNID));
+
+	DEBUG_CATCH
+	}
+
 ALERROR CShip::CreateFromClass (CSystem *pSystem, 
 								CShipClass *pClass,
 								IShipController *pController,
@@ -4611,16 +4738,6 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 			//	No effect
 			break;
 
-		case killedByDisintegration:
-			CDisintegrationEffect::Create(GetSystem(),
-					GetPos(),
-					GetVel(),
-					m_pClass->GetImage(),
-					0,
-					m_Rotation.GetFrameIndex(),
-					NULL);
-			break;
-
 		case killedByGravity:
 		case killedByShatter:
 			{
@@ -4650,7 +4767,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 			}
 
 		default:
-			m_pClass->CreateExplosion(this, Ctx.pWreck);
+			CreateExplosion(Ctx);
 		}
 
 	DEBUG_CATCH

@@ -1432,6 +1432,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 	SDestroyCtx Ctx;
 	Ctx.pObj = this;
+	Ctx.pDesc = pWeaponDesc;
 	Ctx.iCause = iCause;
 	Ctx.Attacker = Attacker;
 	Ctx.pWreck = NULL;
@@ -2041,7 +2042,7 @@ bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, IC
 	return CTLispConvert::AsScreen(pResult, retsScreen, retpData, retiPriority);
 	}
 
-void CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion)
+bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 
 //	FireGetExplosionType
 //
@@ -2054,7 +2055,7 @@ void CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion)
 		{
 		CCodeChainCtx Ctx;
 
-		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
@@ -2109,12 +2110,16 @@ void CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion)
 		retExplosion->pDesc = (dwUNID ? g_pUniverse->FindWeaponFireDesc(strPatternSubst(CONSTLIT("%d/0"), dwUNID)) : NULL);
 		retExplosion->iBonus = iBonus;
 		retExplosion->iCause = iCause;
+
+		return (retExplosion->pDesc != NULL);
 		}
 	else
 		{
 		retExplosion->pDesc = NULL;
 		retExplosion->iBonus = 0;
 		retExplosion->iCause = killedByExplosion;
+
+		return false;
 		}
 	}
 

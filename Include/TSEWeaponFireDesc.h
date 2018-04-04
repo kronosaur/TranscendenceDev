@@ -261,24 +261,17 @@ struct SDamageCtx
 
 struct SDestroyCtx
 	{
-	SDestroyCtx (void) :
-		pObj(NULL),
-		pWreck(NULL),
-		iCause(removedFromSystem),
-		bResurrectPending(false),
-		bRemovedByOwner(false),
-		pResurrectedObj(NULL) { }
-
 	CSpaceObject *GetOrderGiver (void) const;
 
-	CSpaceObject *pObj;							//	Object destroyed
-	CDamageSource Attacker;						//	Ultimate attacker
-	CSpaceObject *pWreck;						//	Wreck left behind
-	DestructionTypes iCause;					//	Cause of damage
+	CSpaceObject *pObj = NULL;						//	Object destroyed
+	CWeaponFireDesc *pDesc = NULL;					//	WeaponFireDesc
+	CDamageSource Attacker;							//	Ultimate attacker
+	CSpaceObject *pWreck = NULL;					//	Wreck left behind
+	DestructionTypes iCause = removedFromSystem;	//	Cause of damage
 
-	bool bResurrectPending;						//	TRUE if this object will be resurrected
-	bool bRemovedByOwner;						//	TRUE if this is an attached obj removed by its parent
-	CSpaceObject *pResurrectedObj;				//	Pointer to resurrected object
+	bool bResurrectPending = false;					//	TRUE if this object will be resurrected
+	bool bRemovedByOwner = false;					//	TRUE if this is an attached obj removed by its parent
+	CSpaceObject *pResurrectedObj = NULL;			//	Pointer to resurrected object
 	};
 
 class DamageTypeSet
@@ -333,9 +326,9 @@ enum FireTypes
 
 struct SExplosionType
 	{
-	CWeaponFireDesc *pDesc;				//	Explosion type
-	int iBonus;							//	Bonus damage
-	DestructionTypes iCause;			//	Cause
+	CWeaponFireDesc *pDesc = NULL;					//	Explosion type
+	int iBonus = 0;									//	Bonus damage
+	DestructionTypes iCause = killedByExplosion;	//	Cause
 	};
 
 class CWeaponFireDesc
@@ -457,6 +450,7 @@ class CWeaponFireDesc
 		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
         inline const SExhaustDesc &GetExhaust (void) const { return GetOldEffects().Exhaust; }
 		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
+		inline CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
 		inline int GetFireDelay (void) const { return m_iFireRate; }
 		inline FireTypes GetFireType (void) const { return m_iFireType; }
@@ -562,6 +556,7 @@ class CWeaponFireDesc
 		CEffectCreatorRef m_pFireEffect;	//	Effect when we fire (muzzle flash)
 		CSoundRef m_FireSound;				//	Sound when weapon is fired
         SOldEffects *m_pOldEffects;         //  Non-painter effects.
+		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 
 		//	Missile stuff (m_iFireType == ftMissile)
 		int m_iAccelerationFactor;			//	% increase in speed per 10 ticks

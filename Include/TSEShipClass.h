@@ -188,7 +188,6 @@ class CShipClass : public CDesignType
 		Metric CalcMass (const CDeviceDescList &Devices) const;
 		int CalcScore (void);
 		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
-		void CreateExplosion (CShip *pShip, CSpaceObject *pWreck = NULL);
 		void CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metric rScale = 1.0);
 		void CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation, int cxWidth, int cyHeight);
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);

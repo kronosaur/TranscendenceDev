@@ -1263,6 +1263,7 @@ class CShip : public CSpaceObject
 		void CalcOverlayImpact (void);
         void CalcPerformance (void);
 		int CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated = NULL);
+		void CreateExplosion (SDestroyCtx &Ctx);
 		int FindDeviceIndex (CInstalledDevice *pDevice) const;
 		int FindFreeDeviceSlot (void);
 		bool FindInstalledDeviceSlot (const CItem &Item, int *retiDev = NULL);

@@ -977,7 +977,7 @@ class CSpaceObject : public CObject
 		void FireCustomOverlayEvent (const CString &sEvent, DWORD dwID, ICCItem *pData, ICCItem **retpResult = NULL);
 		void FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject *pShip, ICCItem **retpResult = NULL);
 		bool FireGetDockScreen (CString *retsScreen = NULL, int *retiPriority = NULL, ICCItemPtr *retpData = NULL) const;
-		void FireGetExplosionType (SExplosionType *retExplosion);
+		bool FireGetExplosionType (SExplosionType *retExplosion) const;
 		bool FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		void FireItemOnAIUpdate (void);
 		void FireItemOnDocked (CSpaceObject *pDockedAt);
