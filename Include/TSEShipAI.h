@@ -34,13 +34,9 @@ struct SCrewMetrics
 
 struct SPlayerChangedShipsCtx
 	{
-	SPlayerChangedShipsCtx (void) :
-			bOldShipWaits(false),
-			bNoOrderTransfer(false)
-		{ }
-
-	bool bOldShipWaits;				//	If TRUE, old ship waits and orders are set appropriately
-	bool bNoOrderTransfer;			//	If TRUE, do not change orders to point to new ship
+	bool bOldShipWaits = false;				//	If TRUE, old ship waits and orders are set appropriately
+	bool bNoOrderTransfer = false;			//	If TRUE, do not change orders to point to new ship
+	bool bTransferEquipment = false;		//	If TRUE, transfer equipment, such as targeting computer
 	};
 
 //  CAISettings ----------------------------------------------------------------

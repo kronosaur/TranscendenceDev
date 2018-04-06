@@ -998,6 +998,7 @@ class CShip : public CSpaceObject
 		bool IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL, int *retiFacingAngle = NULL);
 
 		//	Settings
+		CAbilitySet &GetNativeAbilities (void) { return m_Abilities; }
 		inline bool HasAutopilot (void) { return (GetAbility(ablAutopilot) == ablInstalled); }
 
 		void ClearBlindness (bool bNoMessage = false);
