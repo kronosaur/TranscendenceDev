@@ -63,6 +63,19 @@ class CLanguage
 			verbPluralize =					0x00000001,	//	Use the plural form of the verb
 			};
 
+		enum ELabelAttribs
+			{
+			specialNone			= 0x00000000,
+			specialAll			= 0xFFFFFFFF,
+
+			specialCancel		= 0x00000001,
+			specialDefault		= 0x00000002,
+			specialNextKey		= 0x00000004,
+			specialPrevKey		= 0x00000008,
+			specialPgDnKey		= 0x00000010,
+			specialPgUpKey		= 0x00000020,
+			};
+
 		struct SNounDesc
 			{
 			SNounDesc (void) :
@@ -80,6 +93,7 @@ class CLanguage
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static DWORD LoadNameFlags (CXMLElement *pDesc);
 		static void ParseItemName (const CString &sName, CString *retsRoot, CString *retsModifiers);
+		static void ParseLabelDesc (const CString &sLabelDesc, CString *retsLabel, CString *retsKey = NULL, int *retiKey = NULL, TArray<ELabelAttribs> *retAttribs = NULL);
 		static DWORD ParseNounFlags (const CString &sValue);
 		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, SNounDesc *retDesc = NULL);
 		static ENumberFormatTypes ParseNumberFormat (const CString &sValue);
@@ -157,4 +171,30 @@ class CNameDesc
 		TArray<CString> m_Names;						//	List of name patterns.
 		DWORD m_dwNameFlags;							//	For backwards compatibility.
 		mutable int m_iNamesGenerated;					//	Number of names generated so far.
+	};
+
+class CVirtualKeyData
+	{
+	public:
+		static constexpr DWORD FLAG_NON_STANDARD =			0x00000001;	//	Not available in keyboard UI
+		static constexpr DWORD FLAG_SPECIAL_KEY =			0x00000002;	//	Custom VK code
+
+		static constexpr DWORD INVALID_VIRT_KEY = 0xFFFFFFFF;
+		static constexpr DWORD VK_NUMPAD_ENTER = 0xE0;
+
+		static DWORD GetKey (const CString &sKey);
+		static DWORD GetKeyFlags (DWORD dwVirtKey);
+		static CString GetKeyID (DWORD dwVirtKey);
+		static CString GetKeyLabel (DWORD dwVirtKey);
+		static DWORD TranslateVirtKey (DWORD dwVirtKey, DWORD dwKeyData);
+
+	private:
+		struct SVirtKeyData
+			{
+			char *pszName;
+			char *pszLabel;
+			DWORD dwFlags;
+			};
+
+		static SVirtKeyData m_VirtKeyData[256];
 	};

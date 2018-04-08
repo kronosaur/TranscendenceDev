@@ -1219,6 +1219,9 @@
     <ClCompile Include="SFXDisintegrate.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
+    <ClCompile Include="CVirtualKeyData.cpp">
+      <Filter>Source Files\Language</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

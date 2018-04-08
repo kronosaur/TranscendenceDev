@@ -273,12 +273,12 @@ ALERROR CCommunicationsHandler::InitFromXML (CXMLElement *pDesc, CString *retsEr
 
 		if (m_Messages[i].InvokeEvent.pCode && m_Messages[i].InvokeEvent.pCode->IsError())
 			sError = strPatternSubst(CONSTLIT("Communications: %s <Invoke>: %s"),
-					m_Messages[i].sMessage,
+					m_Messages[i].sID,
 					m_Messages[i].InvokeEvent.pCode->GetStringValue());
 
 		else if (m_Messages[i].OnShowEvent.pCode && m_Messages[i].OnShowEvent.pCode->IsError())
 			sError = strPatternSubst(CONSTLIT("Communications: %s <OnShow>: %s"),
-					m_Messages[i].sMessage,
+					m_Messages[i].sID,
 					m_Messages[i].OnShowEvent.pCode->GetStringValue());
 		}
 

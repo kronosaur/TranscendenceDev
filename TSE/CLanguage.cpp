@@ -289,6 +289,195 @@ void CLanguage::ParseItemName (const CString &sName, CString *retsRoot, CString 
 		*retsRoot = CString(pStart, (int)(pPosEnd - pStart));
 	}
 
+void CLanguage::ParseLabelDesc (const CString &sLabelDesc, CString *retsLabel, CString *retsKey, int *retiKey, TArray<ELabelAttribs> *retSpecial)
+
+//	ParseLabelDesc
+//
+//	Parses a label descriptor of the following forms:
+//
+//	Action:				This is a normal label
+//	[PageDown] Action:	This is a multi-key accelerator
+//	[A]ction:			A is the special key
+//	[Enter]:			Treated as a normal label because key is > 1 character
+//	*Action:			This is the default action
+//	^Action:			This is the cancel action
+//	>Action:			This is the next key
+//	<Action:			This is the prev key
+
+	{
+	char *pPos = sLabelDesc.GetASCIIZPointer();
+
+	//	Parse any special attribute prefixes
+
+	while (*pPos == '*' || *pPos == '^' || *pPos == '>' || *pPos == '<')
+		{
+		if (retSpecial)
+			{
+			switch (*pPos)
+				{
+				case '*':
+					retSpecial->Insert(specialDefault);
+					break;
+
+				case '^':
+					retSpecial->Insert(specialCancel);
+					break;
+
+				case '>':
+					retSpecial->Insert(specialNextKey);
+					break;
+
+				case '<':
+					retSpecial->Insert(specialPrevKey);
+					break;
+				}
+			}
+
+		pPos++;
+		}
+
+	//	Parse out the label and any accelerator key
+
+	CString sLabel;
+	CString sKey;
+	int iKey = -1;
+
+	//	See if we have a multi-key accelerator label
+
+	char *pStart = NULL;
+	char *pAccelStart = NULL;
+	char *pAccelEnd = NULL;
+	if (*pPos == '[')
+		{
+		pStart = pPos;
+		while (*pStart != '\0' && *pStart != ']')
+			pStart++;
+
+		if (*pStart == ']' && pStart[1] != '\0')
+			{
+			pAccelEnd = pStart;
+
+			pStart++;
+			while (*pStart == ' ')
+				pStart++;
+
+			//	Must be more than 1 character long
+
+			pAccelStart = pPos + 1;
+			if ((int)(pAccelEnd - pAccelStart) <= 1)
+				pStart = NULL;
+			}
+		else
+			pStart = NULL;
+		}
+
+	//	If we found a multi-key accelerator label, use that
+
+	if (pStart)
+		{
+		sLabel = CString(pStart);
+
+		//	Look up this key by name
+
+		CString sKeyName = CString(pAccelStart, (int)(pAccelEnd - pAccelStart));
+		DWORD dwKey = CVirtualKeyData::GetKey(sKeyName);
+		
+		//	If this is a valid key, then we use it as an accelerator 
+		//	and special key.
+
+		if (dwKey != CVirtualKeyData::INVALID_VIRT_KEY)
+			{
+			sKey = CVirtualKeyData::GetKeyLabel(dwKey);
+
+			//	We only support a limited number of keys
+
+			switch (dwKey)
+				{
+				case VK_DOWN:
+				case VK_RIGHT:
+					retSpecial->Insert(specialNextKey);
+					break;
+
+				case VK_ESCAPE:
+					retSpecial->Insert(specialCancel);
+					break;
+
+				case VK_LEFT:
+				case VK_UP:
+					retSpecial->Insert(specialPrevKey);
+					break;
+
+				case VK_NEXT:
+					retSpecial->Insert(specialPgDnKey);
+					break;
+
+				case VK_PRIOR:
+					retSpecial->Insert(specialPgUpKey);
+					break;
+
+				case VK_RETURN:
+					retSpecial->Insert(specialDefault);
+					break;
+				}
+			}
+
+		//	Otherwise, just an accelerator
+
+		else
+			sKey = sKeyName;
+		}
+
+	//	Otherwise, parse for an embedded label using the bracket syntax.
+
+	else
+		{
+		pStart = pPos;
+
+		while (*pPos != '\0')
+			{
+			if (pPos[0] == '[' && pPos[1] != '\0' && pPos[2] == ']')
+				{
+				if (pStart)
+					sLabel.Append(CString(pStart, (int)(pPos - pStart)));
+
+				pPos++;
+				if (*pPos == '\0')
+					break;
+
+				if (*pPos != ']')
+					{
+					iKey = sLabel.GetLength();
+					sKey = CString(pPos, 1);
+					sLabel.Append(sKey);
+					pPos++;
+					}
+
+				if (*pPos == ']')
+					pPos++;
+
+				pStart = pPos;
+				continue;
+				}
+			else
+				pPos++;
+			}
+
+		if (pStart != pPos)
+			sLabel.Append(CString(pStart, (int)(pPos - pStart)));
+		}
+
+	//	Done
+
+	if (retsLabel)
+		*retsLabel = sLabel;
+
+	if (retsKey)
+		*retsKey = sKey;
+
+	if (retiKey)
+		*retiKey = iKey;
+	}
+
 DWORD CLanguage::ParseNounFlags (const CString &sValue)
 
 //	ParseNounFlags

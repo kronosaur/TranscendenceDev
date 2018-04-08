@@ -5240,15 +5240,8 @@ bool CSpaceObject::IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, C
 	ASSERT(pHandler && iIndex < pHandler->GetCount());
 	const CCommunicationsHandler::SMessage &Msg = pHandler->GetMessage(iIndex);
 
-	//	Init name
-
-	if (retsMsg)
-		*retsMsg = Msg.sMessage;
-
-	if (retsKey)
-		*retsKey = Msg.sShortcut;
-
-	//	If we have an OnShow code block then see if it evaluates to TRUE
+	//	If we have an OnShow code block then see if it evaluates to TRUE. If not,
+	//	then we bail.
 
 	if (Msg.OnShowEvent.pCode)
 		{
@@ -5261,22 +5254,54 @@ bool CSpaceObject::IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, C
 
 		//	Execute
 
-		bool bShow;
-
-		ICCItem *pResult = Ctx.Run(Msg.OnShowEvent);
+		ICCItemPtr pResult = Ctx.RunCode(Msg.OnShowEvent);
 
 		if (pResult->IsNil())
-			bShow = false;
+			return false;
 		else if (pResult->IsError())
 			{
 			pSender->SendMessage(this, pResult->GetStringValue());
-			bShow = false;
+			return false;
+			}
+
+		//	<OnShow> returns non-Nil, so we continue.
+		}
+
+	//	If we don't have a message name then use the ID to lookup the name and
+	//	key (shortcut).
+
+	if (Msg.sMessage.IsBlank() && !Msg.sID.IsBlank())
+		{
+		CString sLabelDesc;
+		if (Translate(Msg.sID, NULL, &sLabelDesc))
+			{
+			CLanguage::ParseLabelDesc(sLabelDesc, retsMsg, retsKey);
+
+			//	If no short cut is defined, then use the one provided. [This 
+			//	should not be a common case.]
+
+			if (retsKey && retsKey->IsBlank())
+				*retsKey = Msg.sShortcut;
 			}
 		else
-			bShow = true;
+			{
+			if (retsMsg)
+				*retsMsg = Msg.sID;
 
-		Ctx.Discard(pResult);
-		return bShow;
+			if (retsKey)
+				*retsKey = Msg.sShortcut;
+			}
+		}
+
+	//	Otherwise, we expect a valid name and shortcut
+
+	else
+		{
+		if (retsMsg)
+			*retsMsg = Msg.sMessage;
+
+		if (retsKey)
+			*retsKey = Msg.sShortcut;
 		}
 
 	return true;
@@ -7578,7 +7603,12 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, CString *retsT
 //	Translate a message by ID.
 
 	{
-	//	First we ask the type
+	//	Ask the override
+
+	if (m_pOverride && m_pOverride->TranslateText(this, sID, pData, retsText))
+		return true;
+
+	//	Then the type
 
 	CDesignType *pType = GetType();
 	if (pType && pType->TranslateText(this, sID, pData, retsText))
