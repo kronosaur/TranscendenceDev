@@ -143,16 +143,37 @@ void CImageEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 //	Paint the effect
 
 	{
-	CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector());
+	//	Calculate the tick.
 
 	int iTick = Ctx.iTick;
 	if (m_bRandomStartFrame)
 		iTick += Ctx.iDestiny;
 
-	if (m_bRotateImage)
+	//	If this image has a rotation count, then we get the rotation from the
+	//	context block.
+
+	if (m_Image.IsRotatable() && m_bDirectional)
+		{
+		CCompositeImageModifiers Modifiers;
+		Modifiers.SetRotation(Ctx.iRotation);
+
+		CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector(), Modifiers);
+		Image.PaintImage(Dest, x, y, iTick, 0);
+		}
+
+	//	Otherwise, if we've been asked to rotate the image procedurally, do that.
+
+	else if (m_bRotateImage)
+		{
+		CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector());
 		Image.PaintRotatedImage(Dest, x, y, iTick, Ctx.iRotation);
+		}
+
+	//	Otherwise we assume we have the entire image
+
 	else
 		{
+		CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector());
 		int iFrame = (m_bDirectional ? Angle2Direction(Ctx.iRotation, m_iVariants) : (Ctx.iVariant % m_iVariants));
 
 		Image.PaintImage(Dest, x, y, iTick, iFrame);

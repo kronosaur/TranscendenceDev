@@ -955,8 +955,8 @@ ALERROR CObjectImageArray::Init (CObjectImage *pImage, const RECT &rcImage, int 
 	m_pImage = pImage;
 	m_rcImage = rcImage;
 	m_iFrameCount = iFrameCount;
-	m_iRotationCount = STD_ROTATION_COUNT;
-	m_iFramesPerColumn = m_iRotationCount;
+	m_iRotationCount = 1;
+	m_iFramesPerColumn = 1;
 	m_iFramesPerRow = iFrameCount;
 	m_iTicksPerFrame = iTicksPerFrame;
 	m_iFlashTicks = 0;
@@ -993,6 +993,42 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iF
 	m_pRotationOffset = NULL;
 	m_iBlending = blendNormal;
 	m_iViewportSize = RectWidth(rcImage);
+	m_bDefaultSize = false;
+
+	return NOERROR;
+	}
+
+ALERROR CObjectImageArray::InitFromFrame (const CObjectImageArray &Source, int iTick, int iRotationIndex)
+
+//	InitFromFrame
+//
+//	Initializes from a single frame in the source image.
+
+	{
+	//	NOTE: Only works for global CObjectImage (whose lifetime is managed by
+	//	the Universe).
+
+	if (Source.m_dwBitmapUNID == 0)
+		{
+		ASSERT(false);
+		return ERR_FAIL;
+		}
+
+	CleanUp();
+
+	m_dwBitmapUNID = Source.m_dwBitmapUNID;
+	m_pImage = Source.m_pImage;
+	m_rcImage = Source.GetImageRect(iTick, iRotationIndex);
+	m_iFrameCount = 1;
+	m_iRotationCount = 1;
+	m_iFramesPerColumn = 1;
+	m_iFramesPerRow = 1;
+	m_iTicksPerFrame = 0;
+	m_iFlashTicks = 0;
+	m_iRotationCount = 0;
+	m_pRotationOffset = NULL;
+	m_iBlending = blendNormal;
+	m_iViewportSize = Source.m_iViewportSize;
 	m_bDefaultSize = false;
 
 	return NOERROR;

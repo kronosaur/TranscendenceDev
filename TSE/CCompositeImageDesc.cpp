@@ -153,12 +153,14 @@ class CImageEntry : public IImageEntry
 
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true); }
         virtual IImageEntry *Clone (void) override;
-		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override { *retImage = m_Image; }
+		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override { return m_Image.GetFrameCount() * m_Image.GetTicksPerFrame(); }
         virtual CObjectImageArray &GetSimpleImage (void) override { return m_Image; }
 		virtual int GetVariantCount (void) override { return 1; }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual bool IsConstant (void) override { return true; }
+		virtual bool IsRotatable (void) const override { return (m_Image.GetRotationCount() > 1); }
 		virtual void MarkImage (void) override { m_Image.MarkImage(); }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override { return m_Image.OnDesignLoadComplete(Ctx); }
 
@@ -1334,6 +1336,46 @@ IImageEntry *CImageEntry::Clone (void)
     return pDest;
     }
 
+int CImageEntry::GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const
+
+//	GetActualRotation
+//
+//	Returns the actual rotation given selector and modifiers
+
+	{
+	//	If we have no rotations then its always 0.
+
+	if (m_Image.GetRotationCount() <= 1)
+		return 0;
+
+	//	Otherwise, we pick compute the frame and get back the rotation.
+
+	int iFrame = CIntegralRotationDesc::GetFrameIndex(m_Image.GetRotationCount(), Modifiers.GetRotation());
+	return CIntegralRotationDesc::GetRotationAngle(m_Image.GetRotationCount(), iFrame);
+	}
+
+void CImageEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
+
+//	GetImage
+//
+//	Returns the appropriate image.
+
+	{
+	//	If we have no rotations then we always return the full image.
+
+	if (m_Image.GetRotationCount() <= 1)
+		{
+		*retImage = m_Image;
+		return;
+		}
+
+	//	Otherwise, we use the rotation in the modifiers to compose a new image 
+	//	with just that frame.
+
+	int iFrame = CIntegralRotationDesc::GetFrameIndex(m_Image.GetRotationCount(), Modifiers.GetRotation());
+	retImage->InitFromFrame(m_Image, 0, iFrame);
+	}
+
 ALERROR CImageEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc)
 
 //	InitFromXML
@@ -1674,7 +1716,7 @@ void CRotationTableEntry::GetImage (const CCompositeImageSelector &Selector, con
 	{
 	int i;
 
-	//	Look for the closes rotation to the given one.
+	//	Look for the closest rotation to the given one.
 
 	int iBest = -1;
 	int iBestDiff = 360;

@@ -313,7 +313,6 @@ class CRotationDesc
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
         void Interpolate (const CRotationDesc &From, const CRotationDesc &To, Metric rInterpolate = 0.5);
 
-
 	private:
 		struct SEntry
 			{
@@ -356,6 +355,7 @@ class CIntegralRotationDesc
         void InitFromDesc (const CRotationDesc &Desc);
 		void Init (int iFrameCount, Metric rMaxRotation = 360.0, Metric rAccel = 1.0, Metric rAccelStop = 1.0);
 
+		static int GetFrameIndex (int iCount, int iAngle) { return ((iCount > 0 && iCount <= 360 && m_FacingsData[iCount].bInitialized) ? m_FacingsData[iCount].AngleToFrameIndex[AngleMod(iAngle)] : 0); }
         static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_FacingsData[iCount].bInitialized) ? m_FacingsData[iCount].FrameIndexToAngle[iIndex % iCount] : 0); }
 
     private:
