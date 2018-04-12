@@ -355,8 +355,8 @@ class CIntegralRotationDesc
         void InitFromDesc (const CRotationDesc &Desc);
 		void Init (int iFrameCount, Metric rMaxRotation = 360.0, Metric rAccel = 1.0, Metric rAccelStop = 1.0);
 
-		static int GetFrameIndex (int iCount, int iAngle) { return ((iCount > 0 && iCount <= 360 && m_FacingsData[iCount].bInitialized) ? m_FacingsData[iCount].AngleToFrameIndex[AngleMod(iAngle)] : 0); }
-        static int GetRotationAngle (int iCount, int iIndex) { return ((iCount > 0 && iCount <= 360 && m_FacingsData[iCount].bInitialized) ? m_FacingsData[iCount].FrameIndexToAngle[iIndex % iCount] : 0); }
+		static int GetFrameIndex (int iCount, int iAngle) { return (InitFacingsData(iCount) ? m_FacingsData[iCount].AngleToFrameIndex[AngleMod(iAngle)] : 0); }
+        static int GetRotationAngle (int iCount, int iIndex) { return (InitFacingsData(iCount) ? m_FacingsData[iCount].FrameIndexToAngle[iIndex % iCount] : 0); }
 
     private:
 		struct SFacingsData
@@ -375,6 +375,7 @@ class CIntegralRotationDesc
 		int m_iRotationAccel;				//	Rotation acceleration (in 1/1000ths of a rotation)
 		int m_iRotationAccelStop;			//	Rotation acceleration when stopping rotation (in 1/1000th of a rotation)
 
+		static bool InitFacingsData (int iCount);
 		static SFacingsData m_FacingsData[360 + 1];
     };
 

@@ -80,28 +80,41 @@ void CIntegralRotationDesc::Init (int iFrameCount, Metric rMaxRotation, Metric r
 //	Initialize from constants
 
 	{
-    int i;
-
     m_iCount = iFrameCount;
 	m_iMaxRotationRate = Max(1, mathRound(ROTATION_FRACTION * rMaxRotation * m_iCount / 360.0));
 	m_iRotationAccel = Max(1, mathRound(ROTATION_FRACTION * rAccel * m_iCount / 360.0));
 	m_iRotationAccelStop = Max(1, mathRound(ROTATION_FRACTION * rAccelStop * m_iCount / 360.0));
 
-	if (m_iCount > 0 && m_iCount <= 360 && !m_FacingsData[m_iCount].bInitialized)
-		{
-		//	Initialize constants arrays for this number of rotation facings.
+	InitFacingsData(m_iCount);
+	}
 
-		m_FacingsData[m_iCount].FrameIndexToAngle.InsertEmpty(m_iCount);
-		Metric rFrameAngle = 360.0 / m_iCount;
-		for (i = 0; i < m_iCount; i++)
-			m_FacingsData[m_iCount].FrameIndexToAngle[i] = AngleMod(mathRound(90.0 - i * rFrameAngle));
+bool CIntegralRotationDesc::InitFacingsData (int iCount)
 
-		m_FacingsData[m_iCount].AngleToFrameIndex.InsertEmpty(360);
-		for (i = 0; i < 360; i++)
-			m_FacingsData[m_iCount].AngleToFrameIndex[i] = mathRound(AngleMod(90 - i) * m_iCount / 360.0) % m_iCount;
+//	InitFacingsData
+//
+//	Initializes facings data. Return FALSE if iCount is invalid.
 
-		m_FacingsData[m_iCount].bInitialized = true;
-		}
+	{
+	int i;
+
+	if (iCount <= 0 || iCount > 360)
+		return false;
+		
+	if (m_FacingsData[iCount].bInitialized)
+		return true;
+
+	m_FacingsData[iCount].FrameIndexToAngle.InsertEmpty(iCount);
+	Metric rFrameAngle = 360.0 / iCount;
+	for (i = 0; i < iCount; i++)
+		m_FacingsData[iCount].FrameIndexToAngle[i] = AngleMod(mathRound(90.0 - i * rFrameAngle));
+
+	m_FacingsData[iCount].AngleToFrameIndex.InsertEmpty(360);
+	for (i = 0; i < 360; i++)
+		m_FacingsData[iCount].AngleToFrameIndex[i] = mathRound(AngleMod(90 - i) * iCount / 360.0) % iCount;
+
+	m_FacingsData[iCount].bInitialized = true;
+
+	return true;
 	}
 
 void CIntegralRotationDesc::InitFromDesc (const CRotationDesc &Desc)
