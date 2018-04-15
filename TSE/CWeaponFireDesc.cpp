@@ -213,7 +213,7 @@ Metric CWeaponFireDesc::CalcMaxEffectiveRange (void) const
 		if (m_iManeuverability > 0)
 			rEffectiveLifetime = Ticks2Seconds(iMaxLifetime) * 0.75;
 		else
-			rEffectiveLifetime = Min(Ticks2Seconds(iMaxLifetime), 100.0);
+			rEffectiveLifetime = Min(Ticks2Seconds(iMaxLifetime), 200.0);
 
 		Metric rSpeed = (m_rMissileSpeed + m_rMaxMissileSpeed) / 2;
 		rRange = rSpeed * rEffectiveLifetime;
