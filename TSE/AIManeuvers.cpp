@@ -616,7 +616,25 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 
 	if (iFireDir != -1
 			&& !NoDogfights())
-		ImplementManeuver(pShip, iFireDir, false);
+		{
+		bool bThrustWhileAim = false;
+		int iFacingAngle = pShip->GetRotation();
+
+		if (rTargetDist2 > GetPrimaryAimRange2() / 9)
+			{
+			if (AreAnglesAligned(iFireDir, iFacingAngle, 30))
+				bThrustWhileAim = true;
+			}
+		else 
+			{
+			CVector vTargetVel = pTarget->GetVel() - pShip->GetVel();
+			if (vTargetVel.Length() > pShip->GetMaxSpeed() / 3
+					&& AreAnglesAligned(VectorToPolar(vTargetVel), iFacingAngle, 30))
+				bThrustWhileAim = true;
+			}
+
+		ImplementManeuver(pShip, iFireDir, bThrustWhileAim);
+		}
 
 	DEBUG_CATCH
 	}
