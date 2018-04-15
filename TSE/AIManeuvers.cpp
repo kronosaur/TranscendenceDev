@@ -1340,7 +1340,6 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 	{
 	DEBUG_TRY
 
-	int iFireDir = -1;
 	int iTick = pShip->GetSystem()->GetTick();
 
 #ifdef DEBUG
@@ -1487,11 +1486,6 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 		{
 		DEBUG_COMBAT_OUTPUT("Fire: Weapon NOT aligned");
 
-		//	If the weapon is not aligned, turn to aim
-
-		if (iFacingAngle != -1)
-			iFireDir = iFacingAngle;
-
 #ifdef DEBUG_SHIP
 		if (bDebug)
 			g_pUniverse->DebugOutput("Face target at distance: %d moving at: %d%%c", 
@@ -1500,8 +1494,10 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 #endif
 		}
 
+	//	Turn to aim, even if weapon is already approximately aligned
+
 	if (retiFireDir)
-		*retiFireDir = iFireDir;
+		*retiFireDir = iFacingAngle;
 
 	DEBUG_CATCH
 	}
