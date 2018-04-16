@@ -616,7 +616,25 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 
 	if (iFireDir != -1
 			&& !NoDogfights())
-		ImplementManeuver(pShip, iFireDir, false);
+		{
+		bool bThrustWhileAim = false;
+		int iFacingAngle = pShip->GetRotation();
+
+		if (rTargetDist2 > GetPrimaryAimRange2() / 9)
+			{
+			if (AreAnglesAligned(iFireDir, iFacingAngle, 30))
+				bThrustWhileAim = true;
+			}
+		else 
+			{
+			CVector vTargetVel = pTarget->GetVel() - pShip->GetVel();
+			if (vTargetVel.Length() > pShip->GetMaxSpeed() / 3
+					&& AreAnglesAligned(VectorToPolar(vTargetVel), iFacingAngle, 30))
+				bThrustWhileAim = true;
+			}
+
+		ImplementManeuver(pShip, iFireDir, bThrustWhileAim);
+		}
 
 	DEBUG_CATCH
 	}
@@ -1340,7 +1358,6 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 	{
 	DEBUG_TRY
 
-	int iFireDir = -1;
 	int iTick = pShip->GetSystem()->GetTick();
 
 #ifdef DEBUG
@@ -1487,11 +1504,6 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 		{
 		DEBUG_COMBAT_OUTPUT("Fire: Weapon NOT aligned");
 
-		//	If the weapon is not aligned, turn to aim
-
-		if (iFacingAngle != -1)
-			iFireDir = iFacingAngle;
-
 #ifdef DEBUG_SHIP
 		if (bDebug)
 			g_pUniverse->DebugOutput("Face target at distance: %d moving at: %d%%c", 
@@ -1500,8 +1512,10 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 #endif
 		}
 
+	//	Turn to aim, even if weapon is already approximately aligned
+
 	if (retiFireDir)
-		*retiFireDir = iFireDir;
+		*retiFireDir = iFacingAngle;
 
 	DEBUG_CATCH
 	}

@@ -41,6 +41,7 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 	//	direction).
 
 	int iFrameDiff = ClockDiff(iDesiredFrameIndex, iCurrentFrameIndex, Desc.GetFrameCount());
+	int iDegreeDiff = ClockDiff(iAngle, Desc.GetRotationAngle(iCurrentFrameIndex), 360);
 
 	//	Are we turning right?
 
@@ -97,11 +98,11 @@ EManeuverTypes CIntegralRotation::GetManeuverToFace (const CIntegralRotationDesc
 		iNewRotationFrame += iFrameMax;
 
 	int iNewFrameIndex = GetFrameIndex(Desc.CalcFinalRotationFrame(iNewRotationFrame, iNewRotationSpeed));
-	int iNewFrameDiff = ClockDiff(iDesiredFrameIndex, iNewFrameIndex, Desc.GetFrameCount());
+	int iNewDegreeDiff = ClockDiff(iAngle, Desc.GetRotationAngle(iNewFrameIndex), 360);
 
 	//	If we're closer to the target, then do it.
 
-	if (iNewFrameDiff == iFrameDiff || Absolute(iNewFrameDiff) < Absolute(iFrameDiff))
+	if (iNewFrameIndex == iCurrentFrameIndex || Absolute(iNewDegreeDiff) < Absolute(iDegreeDiff))
 		return (iFrameDiff < 0 ? RotateLeft : RotateRight);
 	else
 		return NoRotation;
