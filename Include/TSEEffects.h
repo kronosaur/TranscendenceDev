@@ -191,6 +191,7 @@ class CCreatePainterCtx
 		inline const CEffectParamDesc *GetDefaultParam (const CString &sParam) const { return (m_pDefaultParams ? m_pDefaultParams->GetParam(sParam) : NULL); }
 		inline int GetLifetime (void) const { return m_iLifetime; }
 		inline DWORD GetLoadVersion (void) const { return m_dwLoadVersion; }
+		inline ICCItemPtr GetParams (void) const { return m_pParams; }
 		inline const CVector &GetPos (void) const { return m_vPos; }
 		inline bool IsRawPainter (void) const { return m_bRaw; }
 		inline bool IsTracking (void) const { return m_bTracking; }
@@ -200,6 +201,7 @@ class CCreatePainterCtx
 		void SetDefaultParam (const CString &sParam, const CEffectParamDesc &Value);
 		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
 		inline void SetLoadVersion (DWORD dwVersion) { m_dwLoadVersion = dwVersion; }
+		inline void SetParams (ICCItem *pParams) { m_pParams = pParams; }
 		inline void SetPos (const CVector &vPos) { m_vPos = vPos; }
 		inline void SetRawPainter (bool bValue = true) { m_bRaw = bValue; }
 		inline void SetTrackingObject (bool bValue = true) { m_bTracking = bValue; }
@@ -231,7 +233,8 @@ class CCreatePainterCtx
 		bool m_bTracking = false;						//	If TRUE, object sets velocity
 		bool m_bRaw = false;							//	We want a raw painter (default parameters).
 
-		ICCItemPtr m_pData;								//	Generated data
+		ICCItemPtr m_pData;								//	Generated data (for <GetParameters> event)
+		ICCItemPtr m_pParams;							//	Parameters (if set by sysCreateEffect).
 	};
 
 class IEffectPainter
@@ -470,6 +473,7 @@ class CEffectCreator : public CDesignType
 									  const CVector &vVel,
 									  int iRotation,
 									  int iVariant = 0,
+									  ICCItem *pData = NULL,
 									  CSpaceObject **retpEffect = NULL);
 		virtual int GetLifetime (void) { return 0; }
 		virtual CEffectCreator *GetSubEffect (int iIndex) { return NULL; }

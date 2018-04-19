@@ -19,6 +19,7 @@ ALERROR CEffectSequencerCreator::CreateEffect (CSystem *pSystem,
 											   const CVector &vVel,
 											   int iRotation,
 											   int iVariant,
+											   ICCItem *pData,
 											   CSpaceObject **retpEffect)
 
 //	CreateEffect

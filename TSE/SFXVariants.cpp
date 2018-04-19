@@ -76,6 +76,7 @@ ALERROR CEffectVariantCreator::CreateEffect (CSystem *pSystem,
 										   const CVector &vVel,
 										   int iRotation,
 										   int iVariant,
+										   ICCItem *pData,
 										   CSpaceObject **retpEffect)
 
 //	CreateEffect
@@ -83,7 +84,7 @@ ALERROR CEffectVariantCreator::CreateEffect (CSystem *pSystem,
 //	Creates an effect object
 
 	{
-	return ChooseVariant(iVariant)->pEffect->CreateEffect(pSystem, pAnchor, vPos, vVel, iRotation, iVariant, retpEffect);
+	return ChooseVariant(iVariant)->pEffect->CreateEffect(pSystem, pAnchor, vPos, vVel, iRotation, iVariant, pData, retpEffect);
 	}
 
 IEffectPainter *CEffectVariantCreator::OnCreatePainter (CCreatePainterCtx &Ctx)

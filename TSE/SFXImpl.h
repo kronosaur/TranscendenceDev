@@ -160,6 +160,7 @@ class CEffectGroupCreator : public CEffectCreator
 									  const CVector &vVel,
 									  int iRotation,
 									  int iVariant = 0,
+									  ICCItem *pData = NULL,
 									  CSpaceObject **retpEffect = NULL) override;
 		virtual int GetLifetime (void) override;
 		virtual CEffectCreator *GetSubEffect (int iIndex) override { if (iIndex < 0 || iIndex >= m_iCount) return NULL; return m_pCreators[iIndex]; }
@@ -211,6 +212,7 @@ class CEffectSequencerCreator : public CEffectCreator
 									  const CVector &vVel,
 									  int iRotation,
 									  int iVariant = 0,
+									  ICCItem *pData = NULL,
 									  CSpaceObject **retpEffect = NULL) override;
 		virtual int GetLifetime (void) override;
 		virtual CEffectCreator *GetSubEffect (int iIndex) override { if (iIndex < 0 || iIndex >= m_Timeline.GetCount()) return NULL; return m_Timeline[iIndex].pCreator; }
@@ -251,6 +253,7 @@ class CEffectVariantCreator : public CEffectCreator
 									  const CVector &vVel,
 									  int iRotation,
 									  int iVariant = 0,
+									  ICCItem *pData = NULL,
 									  CSpaceObject **retpEffect = NULL) override;
 		virtual int GetLifetime (void) override;
 		virtual CEffectCreator *GetSubEffect (int iIndex) override { if (iIndex < 0 || iIndex >= m_Effects.GetCount()) return NULL; return m_Effects[iIndex].pEffect; }
@@ -443,6 +446,7 @@ class CImageFractureEffectCreator : public CEffectCreator
 									  const CVector &vVel,
 									  int iRotation,
 									  int iVariant = 0,
+									  ICCItem *pData = NULL,
 									  CSpaceObject **retpEffect = NULL) override;
 
 	protected:
@@ -702,6 +706,7 @@ class CParticleExplosionEffectCreator : public CEffectCreator
 									  const CVector &vVel,
 									  int iRotation,
 									  int iVariant = 0,
+									  ICCItem *pData = NULL,
 									  CSpaceObject **retpEffect = NULL) override;
 
 	protected:

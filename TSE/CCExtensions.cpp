@@ -2567,8 +2567,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is",	0,	},
 
 		{	"sysCreateEffect",				fnSystemCreateEffect,	0,
-			"(sysCreateEffect effectID anchorObj pos [rotation]) -> True/Nil",
-			"ivv*",	PPFLAG_SIDEEFFECTS,	},
+			"(sysCreateEffect effectID anchorObj pos [rotation] [params]) -> True/Nil",
+			"vvv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateEncounter",			fnSystemCreate,		FN_SYS_CREATE_ENCOUNTER,
 			"(sysCreateEncounter unid [options]) -> True/Nil\n\n"
@@ -11677,7 +11677,7 @@ ICCItem *fnSystemCreateEffect (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwD
 
 //	fnSystemCreateEffect
 //
-//	(sysCreateEffect effectID anchor pos [rotation] [variant])
+//	(sysCreateEffect effectID anchor pos [rotation] [variant] [data])
 
 	{
 	ALERROR error;
@@ -11686,21 +11686,49 @@ ICCItem *fnSystemCreateEffect (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwD
 
 	//	Get the arguments
 
-	DWORD dwUNID = pArgs->GetElement(0)->GetIntegerValue();
-	CSpaceObject *pAnchor = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+	int iArg = 0;
+	ICCItem *pEffectType = pArgs->GetElement(iArg++);
+	CSpaceObject *pAnchor = CreateObjFromItem(*pCC, pArgs->GetElement(iArg++));
 
 	CVector vPos;
-	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(2), &vPos) != NOERROR)
+	if (GetPosOrObject(pEvalCtx, pArgs->GetElement(iArg++), &vPos) != NOERROR)
 		return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(2));
 
-	int iRotation = (pArgs->GetCount() > 3 ? pArgs->GetElement(3)->GetIntegerValue() : 0);
-	int iVariant = (pArgs->GetCount() > 4 ? pArgs->GetElement(4)->GetIntegerValue() : 0);
+	int iRotation = 0;
+	int iVariant = 0;
+	ICCItem *pData = NULL;
 
-	//	Validate
+	if (pArgs->GetCount() > 3)
+		{
+		if (pArgs->GetElement(iArg)->IsSymbolTable())
+			pData = pArgs->GetElement(iArg++);
+		else
+			{
+			iRotation = pArgs->GetElement(iArg++)->GetIntegerValue();
 
-	CEffectCreator *pCreator = g_pUniverse->FindEffectType(dwUNID);
+			if (pArgs->GetCount() > 4)
+				{
+				if (pArgs->GetElement(iArg)->IsSymbolTable())
+					pData = pArgs->GetElement(iArg++);
+				else
+					{
+					iVariant = pArgs->GetElement(iArg++)->GetIntegerValue();
+
+					if (pArgs->GetCount() > 5)
+						{
+						if (pArgs->GetElement(iArg)->IsSymbolTable())
+							pData = pArgs->GetElement(iArg++);
+						}
+					}
+				}
+			}
+		}
+
+	//	Get the effect type
+
+	CEffectCreator *pCreator = g_pUniverse->FindEffectType(pEffectType->GetIntegerValue());
 	if (pCreator == NULL)
-		return pCC->CreateError(CONSTLIT("Unknown effect ID"), pArgs->GetElement(0));
+		return pCC->CreateError(CONSTLIT("Unknown effect type"), pEffectType);
 
 	//	Create
 
@@ -11713,7 +11741,8 @@ ICCItem *fnSystemCreateEffect (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwD
 			vPos,
 			NullVector,
 			iRotation,
-			iVariant))
+			iVariant,
+			pData))
 		return pCC->CreateError(CONSTLIT("Error creating effect"), pCC->CreateInteger(error));
 
 	//	Done

@@ -511,6 +511,7 @@ ALERROR CEffectGroupCreator::CreateEffect (CSystem *pSystem,
 										   const CVector &vVel,
 										   int iRotation,
 										   int iVariant,
+										   ICCItem *pData,
 										   CSpaceObject **retpEffect)
 
 //	CreateEffect
@@ -525,7 +526,7 @@ ALERROR CEffectGroupCreator::CreateEffect (CSystem *pSystem,
 
 	for (int i = 0; i < m_iCount; i++)
 		{
-		if (error = m_pCreators[i]->CreateEffect(pSystem, pAnchor, vPos, vVel, iRotation, iVariant, &pLastEffect))
+		if (error = m_pCreators[i]->CreateEffect(pSystem, pAnchor, vPos, vVel, iRotation, iVariant, pData, &pLastEffect))
 			return error;
 		}
 
