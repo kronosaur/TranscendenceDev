@@ -138,6 +138,13 @@ template <class OBJ> class TUniquePtr
 
 		void Delete (void) { Set(NULL); }
 
+		OBJ *GetHandoff (void)
+			{
+			OBJ *pPtr = m_pPtr;
+			m_pPtr = NULL;
+			return pPtr;
+			}
+
 		void Set (OBJ *pPtr)
 			{
 			if (m_pPtr)

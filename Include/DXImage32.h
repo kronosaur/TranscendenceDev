@@ -554,6 +554,12 @@ class CGImageCache
 		TArray<CG32bitImage *> m_Cache32;
 	};
 
+class CGPNG
+	{
+	public:
+		static bool Load (IReadBlock &Data, CG32bitImage &Image, CString *retsError);
+	};
+
 //	Inlines --------------------------------------------------------------------
 
 inline void CG32bitImage::DrawLine (int x1, int y1, int x2, int y2, int iWidth, CG32bitPixel rgbColor) { CGDraw::Line(*this, x1, y1, x2, y2, iWidth, rgbColor); }

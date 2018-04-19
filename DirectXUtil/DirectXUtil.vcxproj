@@ -269,6 +269,7 @@
     <ClInclude Include="DrawImpl.h" />
     <ClInclude Include="DrawRegionImpl.h" />
     <ClInclude Include="DX3DImpl.h" />
+    <ClInclude Include="lodepng\lodepng.h" />
     <ClInclude Include="NoiseImpl.h" />
     <ClInclude Include="PixelMacros.h" />
     <ClInclude Include="PreComp.h" />
@@ -428,6 +429,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="CGPath.cpp" />
+    <ClCompile Include="CGPNG.cpp" />
     <ClCompile Include="CGRealChannel.cpp" />
     <ClCompile Include="CGRealHSB.cpp" />
     <ClCompile Include="CGRealRGB.cpp" />
@@ -496,6 +498,13 @@
     <ClCompile Include="FilterBlur.cpp" />
     <ClCompile Include="FilterThreshold.cpp" />
     <ClCompile Include="IPropertyAnimator.cpp" />
+    <ClCompile Include="lodepng\lodepng.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="PolygonSimple.cpp" />

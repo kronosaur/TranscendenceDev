@@ -40,6 +40,9 @@
     <Filter Include="Source Files\AG">
       <UniqueIdentifier>{c421fc6d-c6f2-4bd3-b8f0-1be22a8c7bad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\PNG">
+      <UniqueIdentifier>{ae2f7503-cf8c-48ea-bab7-c0f97397a6ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NoiseImpl.h">
@@ -121,6 +124,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\TFill.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lodepng\lodepng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -400,6 +406,12 @@
     </ClCompile>
     <ClCompile Include="CGRealChannel.cpp">
       <Filter>Source Files\Real</Filter>
+    </ClCompile>
+    <ClCompile Include="lodepng\lodepng.cpp">
+      <Filter>Source Files\PNG</Filter>
+    </ClCompile>
+    <ClCompile Include="CGPNG.cpp">
+      <Filter>Source Files\PNG</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
