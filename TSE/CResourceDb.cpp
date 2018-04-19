@@ -611,6 +611,178 @@ ALERROR CResourceDb::LoadImage (const CString &sFolder, const CString &sFilename
 	return NOERROR;
 	}
 
+ALERROR CResourceDb::LoadImageFile (const CString &sImageFilename, const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, bool bPreMult, CString *retsError)
+
+//	LoadImageFile
+//
+//	Loads an image from the database (or file system) and returns it.
+
+	{
+	ALERROR error;
+
+	try
+		{
+		//	Different paths depending on file type. JPEG and BMP files need a
+		//	separate mask file, so we need separate code.
+
+		CString sType = pathGetExtension(sImageFilename);
+		if (strEquals(sType, CONSTLIT("jpg")) || strEquals(sType, CONSTLIT("bmp")))
+			{
+			if (error = LoadImageFileAndMask(sImageFilename, sMaskFilename, pImage, bPreMult, retsError))
+				return error;
+			}
+
+		//	PNG files have a built-in mask.
+
+		else if (strEquals(sType, CONSTLIT("png")))
+			{
+			if (error = LoadPNGFile(sImageFilename, pImage, retsError))
+				return error;
+			}
+
+		//	Otherwise, unknown image type.
+
+		else
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("Unknown image file type: %s."), sImageFilename);
+			return ERR_FAIL;
+			}
+		}
+	catch (...)
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("Crash loading image from resource db: %s."), sImageFilename);
+		return ERR_FAIL;
+		}
+
+	return NOERROR;
+	}
+
+ALERROR CResourceDb::LoadImageFileAndMask (const CString &sImageFilename, const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, bool bPreMult, CString *retsError)
+
+//	LoadImageFileAndMask
+//
+//	Loads an image file and applies a mask to it. Images and mask may be either 
+//	JPEG or Windows BMP.
+
+	{
+	ALERROR error;
+
+	//	Load the images
+
+	HBITMAP hDIB = NULL;
+	HBITMAP hBitmask = NULL;
+	if (!sImageFilename.IsBlank())
+		{
+		if (error = LoadImage(NULL_STR, sImageFilename, &hDIB))
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("Unable to load image: %s."), sImageFilename);
+			return ERR_FAIL;
+			}
+		}
+
+	EBitmapTypes iMaskType = bitmapNone;
+	if (!sMaskFilename.IsBlank())
+		{
+		if (error = LoadImage(NULL_STR, sMaskFilename, &hBitmask, &iMaskType))
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("Unable to load image: %s."), sMaskFilename);
+			return ERR_FAIL;
+			}
+		}
+
+	//	Create a new CG32BitImage
+
+	pImage.Set(new CG32bitImage);
+	if (!pImage)
+		{
+		if (retsError)
+			*retsError = CONSTLIT("Out of memory");
+		return ERR_FAIL;
+		}
+
+	bool bSuccess = pImage->CreateFromBitmap(hDIB, hBitmask, iMaskType, (bPreMult ? CG32bitImage::FLAG_PRE_MULT_ALPHA : 0));
+
+	//	We don't need these bitmaps anymore
+	//	LATER: These should be converted to smart pointers
+
+	if (hDIB)
+		{
+		::DeleteObject(hDIB);
+		hDIB = NULL;
+		}
+
+	if (hBitmask)
+		{
+		::DeleteObject(hBitmask);
+		hBitmask = NULL;
+		}
+
+	//	Check for error
+
+	if (!bSuccess)
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("Unable to create bitmap from image: %s"), sImageFilename);
+		return ERR_FAIL;
+		}
+
+	return NOERROR;
+	}
+
+ALERROR CResourceDb::LoadMaskFile (const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, CString *retsError)
+
+//	LoadMaskFile
+//
+//	Loads a mask file.
+
+	{
+	try
+		{
+		//	Load the mask
+
+		HBITMAP hDIB = NULL;
+		EBitmapTypes iMaskType;
+		if (LoadImage(NULL_STR, sMaskFilename, &hDIB, &iMaskType) != NOERROR)
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to load mask file: %s."), sMaskFilename);
+			return ERR_FAIL;
+			}
+
+		//	Create a new CG32BitImage
+
+		pImage.Set(new CG32bitImage);
+		if (!pImage)
+			{
+			if (retsError) *retsError = CONSTLIT("Out of memory.");
+			return ERR_FAIL;
+			}
+
+		bool bSuccess = pImage->CreateFromBitmap(NULL, hDIB, iMaskType, 0);
+		::DeleteObject(hDIB);
+
+		//	Check for error
+
+		if (!bSuccess)
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to create mask image: %s."), sMaskFilename);
+			return ERR_FAIL;
+			}
+
+		//	Done
+
+		return NOERROR;
+		}
+	catch (...)
+		{
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Crash loading mask image: %s."), sMaskFilename);
+		return ERR_FAIL;
+		}
+	}
+
 ALERROR CResourceDb::LoadModule (const CString &sFolder, const CString &sFilename, CXMLElement **retpData, CString *retsError)
 
 //	LoadModule
@@ -735,6 +907,57 @@ ALERROR CResourceDb::LoadModuleEntities (const CString &sFolder, const CString &
 
     pEntities->SetName(sFilename);
 	*retpEntities = pEntities;
+
+	return NOERROR;
+	}
+
+ALERROR CResourceDb::LoadPNGFile (const CString &sImageFilename, TUniquePtr<CG32bitImage> &pImage, CString *retsError)
+
+//	LoadPNGFile
+//
+//	Loads a PNG image
+
+	{
+	ALERROR error;
+
+	try
+		{
+		if (m_bResourcesInDb && m_pDb)
+			{
+			CString sData;
+			if (error = ReadEntry(sImageFilename, &sData))
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find image file in resources db: %s."), sImageFilename);
+				return error;
+				}
+
+			CBufferReadBlock Data(sData);
+
+			pImage.Set(new CG32bitImage);
+			if (!CGPNG::Load(Data, *pImage, retsError))
+				return ERR_FAIL;
+			}
+		else
+			{
+			CString sFilespec = pathAddComponent(m_sRoot, sImageFilename);
+			CFileReadBlock File(sFilespec);
+
+			if (error = File.Open())
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to open image file: %s."), sFilespec);
+				return error;
+				}
+
+			pImage.Set(new CG32bitImage);
+			if (!CGPNG::Load(File, *pImage, retsError))
+				return ERR_FAIL;
+			}
+		}
+	catch (...)
+		{
+		::kernelDebugLogPattern("Crash loading PNG image from resource db: %s.", sImageFilename);
+		return ERR_FAIL;
+		}
 
 	return NOERROR;
 	}

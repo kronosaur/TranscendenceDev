@@ -266,7 +266,8 @@ CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &
 
 //	GetRawImage
 //
-//	Returns the image, loading it if necessary
+//	Returns the image, loading it if necessary.
+//	NOTE: Callers must free result.
 
 	{
 	ALERROR error;
@@ -279,66 +280,13 @@ CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &
 
 	//	Load the images
 
-	HBITMAP hDIB = NULL;
-	HBITMAP hBitmask = NULL;
-	if (!m_sBitmap.IsBlank())
-		{
-		if (error = ResDb.LoadImage(NULL_STR, m_sBitmap, &hDIB))
-			{
-			if (retsError)
-				*retsError = strPatternSubst(CONSTLIT("Unable to load image: '%s'"), m_sBitmap);
-			return NULL;
-			}
-		}
-
-	EBitmapTypes iMaskType = bitmapNone;
-	if (!m_sBitmask.IsBlank())
-		{
-		if (error = ResDb.LoadImage(NULL_STR, m_sBitmask, &hBitmask, &iMaskType))
-			{
-			if (retsError)
-				*retsError = strPatternSubst(CONSTLIT("Unable to load image: '%s'"), m_sBitmask);
-			return NULL;
-			}
-		}
-
-	//	Create a new CG32BitImage
-
-	CG32bitImage *pBitmap = new CG32bitImage;
-	if (pBitmap == NULL)
-		{
-		if (retsError)
-			*retsError = CONSTLIT("Out of memory");
+	TUniquePtr<CG32bitImage> pBitmap;
+	if (error = ResDb.LoadImageFile(m_sBitmap, m_sBitmask, pBitmap, m_bPreMult, retsError))
 		return NULL;
-		}
 
-	bool bSuccess = pBitmap->CreateFromBitmap(hDIB, hBitmask, iMaskType, (m_bPreMult ? CG32bitImage::FLAG_PRE_MULT_ALPHA : 0));
+	//	Done
 
-	//	We don't need these bitmaps anymore
-
-	if (hDIB)
-		{
-		::DeleteObject(hDIB);
-		hDIB = NULL;
-		}
-
-	if (hBitmask)
-		{
-		::DeleteObject(hBitmask);
-		hBitmask = NULL;
-		}
-
-	//	Check for error
-
-	if (!bSuccess)
-		{
-		delete pBitmap;
-		if (retsError)
-			*retsError = strPatternSubst(CONSTLIT("Unable to create bitmap from image: '%s'"), m_sBitmap);
-		return NULL;
-		}
-
-	return pBitmap;
+	return pBitmap.GetHandoff();
 	}
 
 bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
@@ -350,59 +298,29 @@ bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
 	{
 	CString sError;
 
-	try
+	//	Open the database
+
+	CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
+	ResDb.SetDebugMode(g_pUniverse->InDebugMode());
+	if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
 		{
-		//	Open the database
-
-		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
-		ResDb.SetDebugMode(g_pUniverse->InDebugMode());
-		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
-			{
-			::kernelDebugLogPattern("Unable to load %s: %s", sFilespec, sError);
-			return false;
-			}
-
-		//	Load the mask
-
-		HBITMAP hDIB = NULL;
-		EBitmapTypes iMaskType;
-		if (ResDb.LoadImage(NULL_STR, sFilespec, &hDIB, &iMaskType))
-			{
-			::kernelDebugLogPattern("Unable to load %s.", sFilespec);
-			return false;
-			}
-
-		//	Create a new CG32BitImage
-
-		CG32bitImage *pMask = new CG32bitImage;
-		if (pMask == NULL)
-			{
-			::kernelDebugLogPattern("Out of memory loading mask.");
-			return false;
-			}
-
-		bool bSuccess = pMask->CreateFromBitmap(NULL, hDIB, iMaskType, 0);
-		::DeleteObject(hDIB);
-
-		//	Check for error
-
-		if (!bSuccess)
-			{
-			delete pMask;
-			::kernelDebugLogPattern("Unable to create %s image.", sFilespec);
-			return false;
-			}
-
-		//	Return
-
-		*retpImage = pMask;
-		return true;
-		}
-	catch (...)
-		{
-		::kernelDebugLogPattern("Crash loading %s.", sFilespec);
+		::kernelDebugLogPattern("Unable to load %s: %s", sFilespec, sError);
 		return false;
 		}
+
+	//	Load the mask
+
+	TUniquePtr<CG32bitImage> pImage;
+	if (ResDb.LoadMaskFile(sFilespec, pImage, &sError) != NOERROR)
+		{
+		::kernelDebugLogString(sError);
+		return false;
+		}
+
+	//	Done
+
+	*retpImage = pImage.GetHandoff();
+	return true;
 	}
 
 ALERROR CObjectImage::Lock (SDesignLoadCtx &Ctx)
