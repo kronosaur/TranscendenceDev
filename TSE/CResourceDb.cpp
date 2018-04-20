@@ -624,9 +624,11 @@ ALERROR CResourceDb::LoadImageFile (const CString &sImageFilename, const CString
 		{
 		//	Different paths depending on file type. JPEG and BMP files need a
 		//	separate mask file, so we need separate code.
+		//
+		//	NOTE: If we don't have an image filename, we expect to have a mask.
 
 		CString sType = pathGetExtension(sImageFilename);
-		if (strEquals(sType, CONSTLIT("jpg")) || strEquals(sType, CONSTLIT("bmp")))
+		if (sImageFilename.IsBlank() || strEquals(sType, CONSTLIT("jpg")) || strEquals(sType, CONSTLIT("bmp")))
 			{
 			if (error = LoadImageFileAndMask(sImageFilename, sMaskFilename, pImage, bPreMult, retsError))
 				return error;
