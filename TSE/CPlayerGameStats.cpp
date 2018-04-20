@@ -310,7 +310,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 
 	//	Base stats
 
-	Stats.Insert(CONSTLIT("Genome"), strCapitalize(GetGenomeName(g_pUniverse->GetPlayerGenome())));
+	Stats.Insert(CONSTLIT("Gender"), strCapitalize(GetGenomeName(g_pUniverse->GetPlayerGenome())));
 	Stats.Insert(CONSTLIT("Score"), strFormatInteger(CalcEndGameScore(), -1, FORMAT_THOUSAND_SEPARATOR | FORMAT_UNSIGNED));
 	Stats.Insert(CONSTLIT("Ship class"), pShip->GetNounPhrase(0));
 
