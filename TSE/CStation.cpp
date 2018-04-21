@@ -531,6 +531,7 @@ void CStation::CreateDestructionEffect (void)
 			Ctx.pEnhancements->InsertHPBonus(Explosion.iBonus);
 			}
 
+		Ctx.Source = CDamageSource(this, Explosion.iCause);
 		Ctx.vPos = GetPos();
 		Ctx.vVel = GetVel();
 		Ctx.dwFlags = SShotCreateCtx::CWF_EXPLOSION;
