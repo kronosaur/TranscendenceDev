@@ -35,7 +35,6 @@
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
-#define PROPERTY_IMMUTABLE						CONSTLIT("immutable")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_MAX_STRUCTURAL_HP				CONSTLIT("maxStructuralHP")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
@@ -793,6 +792,8 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	//	Load hit points and armor information
 
 	pStation->m_Hull.Init(pType->GetHullDesc());
+	if (!pStation->m_Hull.CanBeHit())
+		pStation->SetCannotBeHit();
 
 	//	Pick an appropriate image. This call will set the shipwreck image, if
 	//	necessary or the variant (if appropriate).

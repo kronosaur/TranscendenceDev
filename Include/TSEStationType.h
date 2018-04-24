@@ -14,6 +14,7 @@ class CStationHullDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		int CalcDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		Metric CalcHitsToDestroy (int iLevel) const;
+		inline bool CanBeHit (void) const { return !m_bCannotBeHit; }
 		inline bool CanBeWrecked (void) const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
 		bool FindDataField (const CString &sField, CString *retsValue) const;
 		inline CArmorClass *GetArmorClass (void) const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
@@ -41,6 +42,7 @@ class CStationHullDesc
 		
 		bool m_bMultiHull;					//	Must have WMD to damage
 		bool m_bImmutable;					//	Cannot be damaged
+		bool m_bCannotBeHit;				//	Transparent to projectiles
 	};
 
 class CStationHull
@@ -49,6 +51,7 @@ class CStationHull
 		CStationHull (void);
 
 		inline bool CanBeDestroyed (void) const { return (m_iStructuralHP > 0); }
+		inline bool CanBeHit (void) const { return !m_fCannotBeHit; }
 		ICCItem *FindProperty (const CString &sProperty) const;
 		inline int GetArmorLevel (void) const { return m_iArmorLevel; }
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
@@ -87,7 +90,7 @@ class CStationHull
 		
 		DWORD m_fMultiHull:1;				//	Must have WMD to damage
 		DWORD m_fImmutable:1;				//	Cannot be damaged
-		DWORD m_fSpare3:1;
+		DWORD m_fCannotBeHit:1;				//	Cannot be hit
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

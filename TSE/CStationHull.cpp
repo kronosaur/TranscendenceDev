@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define PROPERTY_CANNOT_BE_HIT					CONSTLIT("cannotBeHit")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_IMMUTABLE						CONSTLIT("immutable")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
@@ -36,7 +37,10 @@ ICCItem *CStationHull::FindProperty (const CString &sProperty) const
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sProperty, PROPERTY_HP))
+	if (strEquals(sProperty, PROPERTY_CANNOT_BE_HIT))
+		return CC.CreateBool(!CanBeHit());
+
+	else if (strEquals(sProperty, PROPERTY_HP))
 		return CC.CreateInteger(m_iHitPoints);
 
 	else if (strEquals(sProperty, PROPERTY_IMMUTABLE))
@@ -161,6 +165,7 @@ void CStationHull::Init (const CStationHullDesc &Desc)
 
 	m_fImmutable = Desc.IsImmutable();
 	m_fMultiHull = Desc.IsMultiHull();
+	m_fCannotBeHit = !Desc.CanBeHit();
 	}
 
 void CStationHull::ReadFromStream (SLoadCtx &Ctx)
@@ -180,8 +185,9 @@ void CStationHull::ReadFromStream (SLoadCtx &Ctx)
 	DWORD dwFlags;
 
 	Ctx.pStream->Read(dwFlags);
-	m_fImmutable = ((dwFlags & 0x00000001) ? true : false);
-	m_fMultiHull = ((dwFlags & 0x00000002) ? true : false);
+	m_fImmutable =		((dwFlags & 0x00000001) ? true : false);
+	m_fMultiHull =		((dwFlags & 0x00000002) ? true : false);
+	m_fCannotBeHit =	((dwFlags & 0x00000004) ? true : false);
 
 	Ctx.pStream->Read(m_iArmorLevel);
 	Ctx.pStream->Read(m_iHitPoints);
@@ -200,7 +206,10 @@ bool CStationHull::SetPropertyIfFound (const CString &sProperty, ICCItem *pValue
 //	initialized.
 
 	{
-	if (strEquals(sProperty, PROPERTY_HP))
+	if (strEquals(sProperty, PROPERTY_CANNOT_BE_HIT))
+		m_fCannotBeHit = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_HP))
 		{
 		//	Nil means that we don't want to make a change
 
@@ -298,6 +307,7 @@ void CStationHull::WriteToStream (IWriteStream &Stream, CStation *pStation)
 
 	dwFlags |= (m_fImmutable ?		0x00000001 : 0);
 	dwFlags |= (m_fMultiHull ?		0x00000002 : 0);
+	dwFlags |= (m_fCannotBeHit ?	0x00000004 : 0);
 	Stream.Write(dwFlags);
 
 	Stream.Write(m_iArmorLevel);

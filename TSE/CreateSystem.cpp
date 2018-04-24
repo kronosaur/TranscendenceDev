@@ -1115,10 +1115,21 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 	if (error = GetLocationCriteria(pCtx, pDesc, &Criteria))
 		return error;
 
+	//	If we're placing a single station, then get its type so that we can 
+	//	use it when picking a location. In particular, this allows us to honor 
+	//	the station exclusion radius.
+
+	CStationType *pStationToPlace = NULL;
+	CXMLElement *pChild = pDesc->GetContentElement(0);
+	if (iChildCount == 1 && strEquals(pChild->GetTag(), STATION_TAG))
+		{
+		pStationToPlace = g_pUniverse->FindStationType((DWORD)pChild->GetAttributeInteger(TYPE_ATTRIB));
+		}
+
 	//	Generate a list of all locations that match the given criteria.
 
 	TProbabilityTable<int> Table;
-	if (!pCtx->pSystem->GetEmptyLocations(Criteria, OrbitDesc, NULL, &Table))
+	if (!pCtx->pSystem->GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, &Table))
 		{
 		if (g_pUniverse->InDebugMode())
 			{

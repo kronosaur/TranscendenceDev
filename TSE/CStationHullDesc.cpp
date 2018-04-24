@@ -9,6 +9,7 @@
 
 #define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define ARMOR_LEVEL_ATTRIB						CONSTLIT("armorLevel")
+#define CANNOT_BE_HIT_ATTRIB					CONSTLIT("cannotBeHit")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define IMMUTABLE_ATTRIB						CONSTLIT("immutable")
 #define MAX_HIT_POINTS_ATTRIB					CONSTLIT("maxHitPoints")
@@ -186,6 +187,7 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	//	Load some basic flags.
 
 	m_bImmutable = pDesc->GetAttributeBool(IMMUTABLE_ATTRIB);
+	m_bCannotBeHit = pDesc->GetAttributeBool(CANNOT_BE_HIT_ATTRIB);
 
 	//	Multi-hull defaults to TRUE if you use the <Hull> element.
 
