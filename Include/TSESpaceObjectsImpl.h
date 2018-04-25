@@ -1501,7 +1501,7 @@ class CStation : public CSpaceObject
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CG32bitPixel GetSpaceColor (void) override { return m_pType->GetSpaceColor(); }
 		virtual CString GetStargateID (void) const override;
-		virtual int GetStealth (void) const override { return ((m_fKnown && IsAnchored()) ? stealthMin : m_pType->GetStealth()); }
+		virtual int GetStealth (void) const override;
 		virtual Metric GetStellarMass (void) const override { return (GetScale() == scaleStar ? m_rMass : 0.0); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) override { return m_pTrade; }

@@ -1618,6 +1618,29 @@ CString CStation::GetStargateID (void) const
 	return pNode->FindStargateName(m_sStargateDestNode, m_sStargateDestEntryPoint);
 	}
 
+int CStation::GetStealth (void) const 
+
+//	GetStealth
+//
+//	Returns current stealth
+
+	{
+	//	If we're "ghostly" then we always honor stealth.
+
+	if (!m_Hull.CanBeHit())
+		return m_pType->GetStealth();
+
+	//	Otherwise, if we're known and do not move then we're always visible.
+
+	else if (m_fKnown && IsAnchored())
+		return stealthMin;
+
+	//	Otherwise, honor stealth.
+
+	else
+		return m_pType->GetStealth();
+	}
+
 CSpaceObject *CStation::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
 
 //	GetTarget
@@ -2682,6 +2705,15 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 	Ctx.iRotation = GetRotation();
 	Ctx.iDestiny = GetDestiny();
 
+	//	Calculate visibility
+
+	DWORD byShimmer = CalcSRSVisibility(Ctx);
+
+	//	Known, immobile objects always have a minimum visibility in SRS.
+
+	if (byShimmer && m_fKnown && IsAnchored())
+		byShimmer = Max(byShimmer, (DWORD)60);
+
 	//	Paints overlay background
 
 	m_Overlays.PaintBackground(Dest, x, y, Ctx);
@@ -2721,7 +2753,10 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	//	Paint
 
-	if (m_fRadioactive)
+	if (byShimmer)
+		Image.PaintImageShimmering(Dest, x, y, iTick, iVariant, byShimmer);
+
+	else if (m_fRadioactive)
 		Image.PaintImageWithGlow(Dest, x, y, iTick, iVariant, CG32bitPixel(0, 255, 0));
 
 	else

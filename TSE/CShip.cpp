@@ -5123,30 +5123,16 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	Ctx.iRotation = GetRotation();
 	Ctx.iDestiny = GetDestiny();
 
-	bool bPaintThrust = (m_pController->GetThrust() && !IsParalyzed() && ((Ctx.iTick + GetDestiny()) % 4) != 0);
 	const CObjectImageArray *pImage;
 	pImage = &m_pClass->GetImage();
 
 	//	See if we're invisible in SRS
 
-	DWORD byInvisible;
-	int iRangeIndex = GetDetectionRangeIndex(Ctx.iPerception);
-	if (iRangeIndex >= 6 
-			&& Ctx.pCenter
-			&& Ctx.pCenter != this)
-		{
-		Metric rRange = CPerceptionCalc::GetRange(iRangeIndex);
-		Metric rDist = Ctx.pCenter->GetDistance(this);
-		if (rDist <= rRange)
-			byInvisible = 0;
-		else
-			{
-			byInvisible = 255 - Min(254, (int)((rDist - rRange) / g_KlicksPerPixel) * 2);
-			bPaintThrust = false;
-			}
-		}
-	else
-		byInvisible = 0;
+	DWORD byShimmer = CalcSRSVisibility(Ctx);
+
+	//	Paint thrusters?
+
+	bool bPaintThrust = (m_pController->GetThrust() && !IsParalyzed() && ((Ctx.iTick + GetDestiny()) % 4) != 0 && byShimmer == 0);
 
 	//	Paints overlay background
 
@@ -5154,7 +5140,7 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	//	Paint all effects behind the ship
 
-	if (!byInvisible)
+	if (!byShimmer)
 		{
 		Ctx.bInFront = false;
 		m_Effects.Paint(Ctx, m_pClass->GetEffectsDesc(), dwEffects, Dest, x, y);
@@ -5176,12 +5162,12 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 			Ctx.iTick,
 			bPaintThrust,
 			IsRadioactive(),
-			byInvisible
+			byShimmer
 			);
 
 	//	Paint effects in front of the ship.
 
-	if (!byInvisible)
+	if (!byShimmer)
 		{
 		Ctx.bInFront = true;
 		m_Effects.Paint(Ctx, m_pClass->GetEffectsDesc(), dwEffects, Dest, x, y);

@@ -674,6 +674,28 @@ int CSpaceObject::CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed)
 	return VectorToPolar(vInterceptPoint);
 	}
 
+DWORD CSpaceObject::CalcSRSVisibility (SViewportPaintCtx &Ctx) const
+
+//	CalcSRSVisibility
+//
+//	Calculates the SRS opacity to paint with.
+//
+//	0 = Fully visible.
+//	1-255 = varying degrees of visibility (1 = lowest, 255 = highest).
+
+	{
+	int iRangeIndex = GetDetectionRangeIndex(Ctx.iPerception);
+	if (iRangeIndex < 6 || Ctx.pCenter == NULL || Ctx.pCenter == this)
+		return 0;
+
+	Metric rRange = CPerceptionCalc::GetRange(iRangeIndex);
+	Metric rDist = Ctx.pCenter->GetDistance(const_cast<CSpaceObject *>(this));
+	if (rDist <= rRange)
+		return 0;
+
+	return 255 - Min(254, (int)((rDist - rRange) / g_KlicksPerPixel) * 2);
+	}
+
 CSpaceObject *CSpaceObject::CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)
 
 //	CalcTargetToAttack
