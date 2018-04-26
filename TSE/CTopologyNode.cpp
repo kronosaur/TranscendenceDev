@@ -1128,7 +1128,8 @@ void CTopologyNode::SetStargateCharted (const CString &sName, bool bCharted)
 	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
 	if (pDesc == NULL)
 		{
-		ASSERT(false);
+		if (g_pUniverse->InDebugMode())
+			::kernelDebugLogPattern("SetStargateCharted: Node %s does not have stargate named %s", GetID(), sName);
 		return;
 		}
 
@@ -1145,7 +1146,8 @@ void CTopologyNode::SetStargateDest (const CString &sName, const CString &sDestN
 	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
 	if (pDesc == NULL)
 		{
-		ASSERT(false);
+		if (g_pUniverse->InDebugMode())
+			::kernelDebugLogPattern("SetStargateDest: Node %s does not have stargate named %s", GetID(), sName);
 		return;
 		}
 
