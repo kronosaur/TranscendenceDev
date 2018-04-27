@@ -2480,6 +2480,12 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 	m_pExitGate = NULL;
 	m_iExitGateTimer = 0;
 
+	//	Irradiation source will no longer be valid (since we're going into a
+	//	different system).
+
+	if (m_pIrradiatedBy)
+		m_pIrradiatedBy->OnLeaveSystem();
+
 	//	Fire events
 
 	FireOnEnteredGate(pDestNode, sDestEntryPoint, pStargate);
@@ -4280,6 +4286,11 @@ void CShip::OnAscended (void)
 	m_DockingPorts.OnNewSystem(NULL);
 	m_pDocked = NULL;
 	m_pExitGate = NULL;
+
+	//	Cancel irradiation source (since it will not be valid)
+
+	if (m_pIrradiatedBy)
+		m_pIrradiatedBy->OnLeaveSystem();
 	}
 
 void CShip::OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos)

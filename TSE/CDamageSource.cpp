@@ -364,6 +364,20 @@ bool CDamageSource::IsEqual (CSpaceObject *pSrc) const
 		}
 	}
 
+void CDamageSource::OnLeaveSystem (void)
+
+//	OnLeaveSystem
+//
+//	We need to remove all object pointers.
+
+	{
+	if (m_pSource && !IsObjID())
+		OnObjDestroyed(m_pSource);
+
+	if (m_pSecondarySource)
+		OnObjDestroyed(m_pSecondarySource);
+	}
+
 void CDamageSource::OnObjDestroyed (CSpaceObject *pObjDestroyed)
 
 //	OnObjDestroyed

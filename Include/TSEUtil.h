@@ -657,6 +657,7 @@ class CDamageSource
 		bool IsEqual (const CDamageSource &Src) const;
 		bool IsEqual (CSpaceObject *pSrc) const;
 		inline bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
+		void OnLeaveSystem (void);
 		void OnObjDestroyed (CSpaceObject *pObjDestroyed);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
