@@ -1542,6 +1542,12 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 	if (m_pObjInUpdate == this)
 		m_bObjDestroyed = true;
 
+	//	If resurrection is pending, then clear the destroyed flag. Otherwise, 
+	//	wingmen might leave the player.
+
+	if (Ctx.bResurrectPending && IsPlayer())
+		m_fDestroyed = false;
+
 	DEBUG_CATCH
 	}
 
