@@ -4746,9 +4746,9 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 //	base class if they do not handle the attribute.
 
 	{
-	if (strStartsWith(sAttrib, SPECIAL_DATA))
+	if (strStartsWith(sAttrib, SPECIAL_CHARACTER))
 		{
-		CString sCharacter = strSubString(sAttrib, SPECIAL_DATA.GetLength());
+		CString sCharacter = strSubString(sAttrib, SPECIAL_CHARACTER.GetLength());
 		DWORD dwUNID = (DWORD)strToInt(sCharacter, 0);
 		if (dwUNID == 0)
 			return false;
