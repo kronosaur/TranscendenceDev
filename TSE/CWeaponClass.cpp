@@ -434,7 +434,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Tracking weapons are a bonus
 
-    if (pShot->IsTrackingOrHasTrackingFragments())
+    if (IsTracking(ItemCtx, pShot))
         {
         retBalance.rTracking = BALANCE_TRACKING_BONUS;
         retBalance.rBalance += retBalance.rTracking;
@@ -1945,7 +1945,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	it is somewhat expensive to get the target from the device so
 	//	we only do it if we really need it.
 
-	if (pTarget == NULL && pShot->IsTrackingOrHasTrackingFragments())
+	if (pTarget == NULL && IsTracking(ItemCtx, pShot))
 		pTarget = pDevice->GetTarget(pSource);
 
 	//	Get the fire angle from the device (the AI sets it when it has pre-
@@ -2875,7 +2875,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		//	For large number of fragments, we have a special description
 
-		else if (iFragments >= 8 && !pShot->IsTracking())
+		else if (iFragments >= 8 && !IsTracking(Ctx, pShot))
 			{
 			//	Compute total damage
 
@@ -3681,6 +3681,26 @@ bool CWeaponClass::IsStdDamageType (DamageTypes iDamageType, int iLevel)
 	return (iLevel >= iTierLevel && iLevel < iTierLevel + 3);
 	}
 
+bool CWeaponClass::IsTracking (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const
+
+//	IsTracking
+//
+//	Returns TRUE if we're a tracking weapon.
+
+	{
+	if (pShot == NULL)
+		return false;
+
+	if (pShot->IsTrackingOrHasTrackingFragments())
+		return true;
+
+	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
+	if (pEnhancements && pEnhancements->IsTracking())
+		return true;
+
+	return false;
+	}
+
 bool CWeaponClass::IsTrackingWeapon (CItemCtx &Ctx)
 
 //	IsTrackingWeapon
@@ -3688,11 +3708,7 @@ bool CWeaponClass::IsTrackingWeapon (CItemCtx &Ctx)
 //	Returns TRUE if we're a tracking weapon
 	
 	{
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
-	if (pShot == NULL)
-		return false;
-
-	return pShot->IsTrackingOrHasTrackingFragments();
+	return IsTracking(Ctx, GetWeaponFireDesc(Ctx));
 	}
 
 bool CWeaponClass::IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice)
@@ -3818,7 +3834,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	//	Tracking weapons behave like directional weapons with 120 degree field
 
-	if (!bDirectional && pShot->IsTracking())
+	if (!bDirectional && IsTracking(Ctx, pShot))
 		{
 		iMinFireAngle = 300;
 		iMaxFireAngle = 60;

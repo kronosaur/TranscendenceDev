@@ -315,6 +315,23 @@ int CItemEnhancementStack::GetDamageAdj (const DamageDesc &Damage) const
 	return (int)(rValue + 0.5);
 	}
 
+int CItemEnhancementStack::GetManeuverRate (void) const
+
+//	GetManeuverRate
+//
+//	Returns the tracking maneuver rate.
+
+	{
+	int i;
+
+	int iRate = 0;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		iRate = Max(iRate, m_Stack[i].GetManeuverRate());
+
+	return iRate;
+	}
+
 int CItemEnhancementStack::GetPowerAdj (void) const
 
 //	GetPowerAdj

@@ -547,6 +547,9 @@ class CMissile : public CSpaceObject
 
 		int ComputeVaporTrail (void);
 		void CreateFragments (const CVector &vPos);
+		int GetManeuverRate (void) const;
+		bool IsTracking (void) const;
+		bool IsTrackingTime (int iTick) const;
 		bool SetMissileFade (void);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
@@ -573,7 +576,9 @@ class CMissile : public CSpaceObject
 		DWORD m_fDetonate:1;					//	TRUE if we should detonate on next update
 		DWORD m_fPassthrough:1;					//	TRUE if shot passed through
 		DWORD m_fPainterFade:1;					//	TRUE if we need to paint a fading painter
-		DWORD m_dwSpareFlags:27;				//	Flags
+		DWORD m_fFragment:1;					//	TRUE if we're a fragment
+
+		DWORD m_dwSpareFlags:26;				//	Flags
 
 	friend CObjectClass<CMissile>;
 	};

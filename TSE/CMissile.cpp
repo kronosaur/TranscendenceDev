@@ -61,7 +61,7 @@ int CMissile::ComputeVaporTrail (void)
 
 	//	We handle this differently for maneuverable, vs non-maneuverable missiles
 
-	if (m_pDesc->IsTracking())
+	if (IsTracking())
 		{
 		if (m_iSavedRotationsCount == 0)
 			return 0;
@@ -255,6 +255,7 @@ ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retp
 	pMissile->m_fDetonate = false;
 	pMissile->m_fPassthrough = false;
 	pMissile->m_fPainterFade = false;
+	pMissile->m_fFragment = ((Ctx.dwFlags & SShotCreateCtx::CWF_FRAGMENT) ? true : false);
 	pMissile->m_dwSpareFlags = 0;
 
 	//	If we've got a detonation interval, then set it up
@@ -503,6 +504,21 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	return (m_pDesc->GetFireType() == ftBeam ? catBeam : catMissile);
 	}
 
+int CMissile::GetManeuverRate (void) const
+
+//	GetManeuverRate
+//
+//	Returns maneuver rate (degrees per tick).
+
+	{
+	int iRate = m_pDesc->GetManeuverRate();
+
+	if (m_pEnhancements && !m_fFragment)
+		iRate = Max(iRate, m_pEnhancements->GetManeuverRate());
+
+	return iRate;
+	}
+
 CString CMissile::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
 
 //	GetName
@@ -592,6 +608,28 @@ bool CMissile::IsAngryAt (CSpaceObject *pObj) const
 	//	Otherwise, we're known friends. Do not detonate.
 
 	return false;
+	}
+
+bool CMissile::IsTracking (void) const
+
+//	IsTracking
+//
+//	Returns TRUE if we are a tracking missile.
+
+	{
+	return (m_pDesc->IsTracking()
+			|| (!m_fFragment && m_pEnhancements && m_pEnhancements->IsTracking()));
+	}
+
+bool CMissile::IsTrackingTime (int iTick) const
+
+//	IsTrackingTime
+//
+//	Returns TRUE if we should track this tick.
+
+	{
+	return (m_pDesc->IsTrackingTime(iTick)
+			|| (!m_fFragment && m_pEnhancements && m_pEnhancements->IsTracking()));
 	}
 
 EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
@@ -1012,6 +1050,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 		m_fDetonate =		((dwLoad & 0x00000004) ? true : false);
 		m_fPassthrough =	((dwLoad & 0x00000008) ? true : false);
 		m_fPainterFade =	((dwLoad & 0x00000010) ? true : false);
+		m_fFragment =		((dwLoad & 0x00000020) ? true : false);
 
 		Ctx.pStream->Read((char *)&m_iSavedRotationsCount, sizeof(DWORD));
 		if (m_iSavedRotationsCount > 0)
@@ -1092,7 +1131,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 		//	If this is a tracking missile, change direction to face the target
 
-		if (m_pDesc->IsTrackingTime(iTick)
+		if (IsTrackingTime(iTick)
 				&& m_pTarget)
 			{
 			//	Get the position and velocity of the target
@@ -1126,12 +1165,12 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 				if (iTurn >= 180)
 					{
-					int iTurnAngle = Min((360 - iTurn), m_pDesc->GetManeuverRate());
+					int iTurnAngle = Min((360 - iTurn), GetManeuverRate());
 					m_iRotation = (m_iRotation + 360 - iTurnAngle) % 360;
 					}
 				else
 					{
-					int iTurnAngle = Min(iTurn, m_pDesc->GetManeuverRate());
+					int iTurnAngle = Min(iTurn, GetManeuverRate());
 					m_iRotation = (m_iRotation + iTurnAngle) % 360;
 					}
 				}
@@ -1179,7 +1218,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	If we have a vapor trail and need to save rotation, do it
 
 		if (m_pDesc->GetVaporTrail().iVaporTrailLength 
-				&& m_pDesc->IsTracking())
+				&& IsTracking())
 			{
 			//	Compute the current rotation
 
@@ -1376,6 +1415,7 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fDetonate ?	0x00000004 : 0);
 	dwSave |= (m_fPassthrough ? 0x00000008 : 0);
 	dwSave |= (m_fPainterFade ? 0x00000010 : 0);
+	dwSave |= (m_fFragment ?	0x00000020 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Saved rotations

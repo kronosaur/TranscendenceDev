@@ -54,6 +54,8 @@ enum ItemEnhancementTypes
 	etResistHPBonus =					0x1700,	//	resist damage
 												//		B = damage type
 												//		X = %bonus (if disadvantage, this is decrease)
+	etTracking =						0x1800,	//	weapon gains tracking
+												//		X = maneuver rate
 
 	etData1Mask =						0x000f,	//	4-bits of data (generally for damage adj)
 	etData2Mask =						0x00f0,	//	4-bits of data (generally for damage type)
@@ -120,6 +122,7 @@ class CItemEnhancement
 		inline DWORD GetID (void) const { return m_dwID; }
 		inline int GetLevel (void) const { return (int)(DWORD)(m_dwMods & etData1Mask); }
 		inline int GetLevel2 (void) const { return (int)(DWORD)((m_dwMods & etData2Mask) >> 4); }
+		int GetManeuverRate (void) const;
 		inline DWORD GetModCode (void) const { return m_dwMods; }
 		int GetPowerAdj (void) const;
 		int GetReflectChance (DamageTypes iDamage) const;
@@ -169,6 +172,7 @@ class CItemEnhancement
 		inline void SetModResistMatter (int iAdj) { m_dwMods = Encode12(etResistMatter | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj)); }
 		void SetModSpecialDamage (SpecialDamageTypes iSpecial, int iLevel = 0);
 		void SetModSpeed (int iAdj, int iMinDelay = 0, int iMaxDelay = 0);
+		void SetModTracking (int iManeuverRate);
 		bool UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateCtx, int iTick) const;
 		void WriteToStream (IWriteStream *pStream) const;
 
@@ -220,6 +224,7 @@ class CItemEnhancementStack
 		inline int GetCount (void) const { return m_Stack.GetCount(); }
 		const DamageDesc &GetDamage (void) const;
 		int GetDamageAdj (const DamageDesc &Damage) const;
+		int GetManeuverRate (void) const;
 		int GetPowerAdj (void) const;
 		int GetResistDamageAdj (DamageTypes iDamage) const;
 		int GetResistEnergyAdj (void) const;
@@ -238,6 +243,7 @@ class CItemEnhancementStack
 		bool IsRadiationImmune (void) const;
 		bool IsShatterImmune (void) const;
 		bool IsShieldInterfering (void) const;
+		inline bool IsTracking (void) const { return (GetManeuverRate() > 0); }
 		bool ReflectsDamage (DamageTypes iDamage, int *retiChance = NULL) const;
 		bool RepairOnDamage (DamageTypes iDamage) const;
 		bool UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateCtx, int iTick) const;
