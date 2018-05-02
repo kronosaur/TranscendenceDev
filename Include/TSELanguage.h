@@ -54,6 +54,7 @@ class CLanguage
 
 			numberInteger,					//	1,000,000
 			numberPower,					//	1.1 MW
+			numberReal,						//	100 or 10.0 or 1.0 or 0.00
 			numberRegenRate,				//	1.0 hp/sec
 			numberSpeed,					//	.05c
 			};

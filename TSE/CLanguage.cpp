@@ -121,6 +121,17 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 	{
 	switch (iFormat)
 		{
+		//	Automagically come up with precission
+
+		case numberReal:
+			if (rNumber >= 100.0)
+				return strFromInt((int)mathRound(rNumber));
+			else if (rNumber >= 1.0)
+				return strFromDouble(rNumber, 1);
+			else
+				return strFromDouble(rNumber, 2);
+			break;
+
 		//	For power, we assume the value in in KWs.
 
 		case numberPower:
