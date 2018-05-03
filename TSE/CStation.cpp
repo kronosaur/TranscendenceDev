@@ -35,7 +35,6 @@
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
-#define PROPERTY_IMAGE_SELECTOR					CONSTLIT("imageSelector")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_MAX_STRUCTURAL_HP				CONSTLIT("maxStructuralHP")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
@@ -1523,9 +1522,6 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
 		return CC.CreateBool(!CanBlacklist());
-
-	else if (strEquals(sName, PROPERTY_IMAGE_SELECTOR))
-		return m_ImageSelector.WriteToItem()->Reference();
 
 	else if (strEquals(sName, PROPERTY_OPEN_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(GetOpenDockingPortCount());
@@ -4486,11 +4482,6 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
 		{
 		m_fNoBlacklist = !pValue->IsNil();
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_IMAGE_SELECTOR))
-		{
-		m_ImageSelector.ReadFromItem(ICCItemPtr(pValue->Reference()));
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
