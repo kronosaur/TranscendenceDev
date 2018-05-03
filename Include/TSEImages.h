@@ -334,7 +334,9 @@ class CCompositeImageSelector
 		ETypes GetType (DWORD dwID) const;
 		int GetVariant (DWORD dwID) const;
 		inline bool HasShipwreckImage (DWORD dwID = DEFAULT_SELECTOR_ID) const { return (GetShipwreckClass(dwID) != NULL); }
+		void ReadFromItem (ICCItemPtr pData);
 		void ReadFromStream (SLoadCtx &Ctx);
+		ICCItemPtr WriteToItem (void) const;
 		void WriteToStream (IWriteStream *pStream) const;
 
         inline static const CCompositeImageSelector &Null (void) { return g_NullSelector; }
