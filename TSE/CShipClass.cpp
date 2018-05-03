@@ -1010,7 +1010,7 @@ Metric CShipClass::CalcManeuverValue (bool bDodge) const
 	//	Generate an adjustment based on ship size:
 	//	1 = normal dodge rate; 10 = very low dodge rate
 
-	int cxWidth = RectWidth(m_Image.GetSimpleImage().GetImageRect());
+	int cxWidth = RectWidth(GetImage().GetImageRect());
 	int iSizeAdj = (bDodge ? Max(1, cxWidth / SIZE_FACTOR) : 1);
 
 	//	Adjust dodge rate
@@ -1499,7 +1499,7 @@ void CShipClass::CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metr
 	{
 	int i;
 
-	if (!m_Image.GetSimpleImage().IsLoaded())
+	if (!GetImage().IsLoaded())
 		return;
 
 	//	Start by computing the total size of a normal image (and its origin).
@@ -1529,7 +1529,7 @@ void CShipClass::CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metr
 	//	Get the positions of all attached components
 
 	TArray<CVector> Pos;
-	m_Interior.CalcCompartmentPositions(GetImageViewportSize(), Pos);
+	m_Interior.CalcCompartmentPositions(GetImage().GetImageViewportSize(), Pos);
 
 	//	Scale and rotate accordingly
 
@@ -1552,17 +1552,17 @@ void CShipClass::CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metr
 		int xPos = xCenter + (int)mathRound(vPos.GetX());
 		int yPos = yCenter -(int)mathRound(vPos.GetY());
 
-		int cxScaledSize = (int)mathRound(rScale * pClass->m_Image.GetSimpleImage().GetImageWidth());
+		int cxScaledSize = (int)mathRound(rScale * pClass->GetImage().GetImageWidth());
 		int iDirection = pClass->GetRotationDesc().GetFrameIndex(iRotation);
 
-		m_Image.GetSimpleImage().PaintScaledImage(Dest, xPos, yPos, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
+		pClass->GetImage().PaintScaledImage(Dest, xPos, yPos, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 		}
 
 	//	Blt the main image on top
 
-	int cxScaledSize = (int)mathRound(rScale * m_Image.GetSimpleImage().GetImageWidth());
+	int cxScaledSize = (int)mathRound(rScale * GetImage().GetImageWidth());
 	int iDirection = GetRotationDesc().GetFrameIndex(iRotation);
-	m_Image.GetSimpleImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
+	GetImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 	}
 
 void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation, int cxWidth, int cyHeight)
@@ -1574,7 +1574,7 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 	{
 	int i;
 
-	if (!m_Image.GetSimpleImage().IsLoaded())
+	if (!GetImage().IsLoaded())
 		return;
 
 	//	Create the destination
@@ -1603,7 +1603,7 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 	//	Get the positions of all attached components
 
 	TArray<CVector> Pos;
-	m_Interior.CalcCompartmentPositions(GetImageViewportSize(), Pos);
+	m_Interior.CalcCompartmentPositions(GetImage().GetImageViewportSize(), Pos);
 
 	//	Scale and rotate accordingly
 
@@ -1626,17 +1626,17 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 		int xPos = xCenter + (int)mathRound(vPos.GetX());
 		int yPos = yCenter -(int)mathRound(vPos.GetY());
 
-		int cxScaledSize = (int)mathRound(rScale * pClass->m_Image.GetSimpleImage().GetImageWidth());
+		int cxScaledSize = (int)mathRound(rScale * pClass->GetImage().GetImageWidth());
 		int iDirection = pClass->GetRotationDesc().GetFrameIndex(iRotation);
 
-		pClass->m_Image.GetSimpleImage().PaintScaledImage(Dest, xPos, yPos, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
+		pClass->GetImage().PaintScaledImage(Dest, xPos, yPos, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 		}
 
 	//	Blt the main image on top
 
-	int cxScaledSize = (int)mathRound(rScale * m_Image.GetSimpleImage().GetImageWidth());
+	int cxScaledSize = (int)mathRound(rScale * GetImage().GetImageWidth());
 	int iDirection = GetRotationDesc().GetFrameIndex(iRotation);
-	m_Image.GetSimpleImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
+	GetImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 	}
 
 bool CShipClass::CreateWreck (CShip *pShip, CSpaceObject **retpWreck)
@@ -2206,7 +2206,7 @@ CVector CShipClass::GetDockingPortOffset (int iRotation)
 	{
 	//	For small ships we just go with the ship center.
 
-    int iImageSize = RectWidth(m_Image.GetSimpleImage().GetImageRect());
+    int iImageSize = RectWidth(GetImage().GetImageRect());
 	if (iImageSize <= DOCK_OFFSET_STD_SIZE)
 		return NullVector;
 
@@ -2551,23 +2551,6 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 	return HullValue;
 	}
 
-const CObjectImageArray &CShipClass::GetImage (const CImageFilterStack *pFilters) const
-
-//	GetImage
-//
-//	Returns the image for the class.
-
-	{
-	if (pFilters == NULL)
-		return m_Image.GetSimpleImage();
-	
-	CCompositeImageModifiers Modifiers;
-	Modifiers.SetFullImage();
-	Modifiers.SetFilters(pFilters);
-
-	return m_Image.GetImage(CCompositeImageSelector::Null(), Modifiers);
-	}
-
 int CShipClass::GetMaxStructuralHitPoints (void) const
 
 //	GetMaxStructuralHitPoints
@@ -2719,7 +2702,7 @@ CVector CShipClass::GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPo
 	{
 	if (b3DPos)
 		{
-		int iScale = GetImageViewportSize();
+		int iScale = GetImage().GetImageViewportSize();
 
 		CVector vOffset;
 		C3DConversion::CalcCoord(iScale, 90 + iAngle, iRadius, iPosZ, &vOffset);
@@ -2997,7 +2980,7 @@ void CShipClass::MarkImages (bool bMarkDevices)
 	//	We make sure the wreck image is created (if it is already created, then
 	//	this call just marks it.
 
-	m_WreckDesc.CreateWreckImage(GetUNID(), m_Image.GetSimpleImage());
+	m_WreckDesc.CreateWreckImage(GetUNID(), GetImage());
 
 	//	If necessary mark images for all our installed devices
 
@@ -3048,7 +3031,6 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
     m_Armor.AddTypesUsed(retTypesUsed);
 	m_WreckDesc.AddTypesUsed(retTypesUsed);
-	m_Image.AddTypesUsed(retTypesUsed);
 
 	if (m_pDeviceSlots)
 		m_pDeviceSlots->AddTypesUsed(retTypesUsed);
@@ -3068,6 +3050,7 @@ void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	retTypesUsed->SetAt(strToInt(m_pDefaultScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(m_dwDefaultBkgnd, true);
+	retTypesUsed->SetAt(GetImage().GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_HeroImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_ExhaustImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_Hull.GetValue().GetCurrencyType()->GetUNID(), true);
@@ -3120,7 +3103,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Thruster effects
 
-	if (error = m_Effects.Bind(Ctx, m_Image.GetSimpleImage()))
+	if (error = m_Effects.Bind(Ctx, GetImage()))
 		goto Fail;
 
 	//	Drive images
@@ -3128,7 +3111,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (m_Exhaust.GetCount() > 0)
 		{
 		int iRotationCount = m_RotationDesc.GetFrameCount();
-		int iScale = GetImageViewportSize();
+		int iScale = GetImage().GetImageViewportSize();
 
 		m_ExhaustImage.SetRotationCount(iRotationCount);
 		if (error = m_ExhaustImage.OnDesignLoadComplete(Ctx))
@@ -3185,8 +3168,8 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (m_AISettings.GetMinCombatSeparation() < 0.0)
 		{
-		if (m_Image.GetSimpleImage().IsLoaded())
-			m_AISettings.SetMinCombatSeparation(RectWidth(m_Image.GetSimpleImage().GetImageRect()) * g_KlicksPerPixel);
+		if (GetImage().IsLoaded())
+			m_AISettings.SetMinCombatSeparation(RectWidth(GetImage().GetImageRect()) * g_KlicksPerPixel);
 		else
 			m_AISettings.SetMinCombatSeparation(60.0 * g_KlicksPerPixel);
 		}
@@ -3464,7 +3447,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	If 0 size, come up with a reasonable default based on image size.
 
 	if (m_Hull.GetSize() == 0 && !m_Image.IsEmpty())
-		m_Hull.SetSize(CalcDefaultSize(m_Image.GetSimpleImage()));
+		m_Hull.SetSize(CalcDefaultSize(GetImage()));
 
 	//	If we have no max armor limit, then we compute default values.
 
@@ -3581,7 +3564,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pDriveImages = pDesc->GetContentElementByTag(DRIVE_IMAGES_TAG);
 	if (pDriveImages)
 		{
-		int iScale = GetImageViewportSize();
+		int iScale = GetImage().GetImageViewportSize();
 
 		for (i = 0; i < pDriveImages->GetContentElementCount(); i++)
 			{
@@ -3631,7 +3614,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Initialize docking data
 
-	m_DockingPorts.InitPortsFromXML(NULL, pDesc, GetImageViewportSize());
+	m_DockingPorts.InitPortsFromXML(NULL, pDesc, GetImage().GetImageViewportSize());
 	if (m_DockingPorts.GetPortCount() > 0)
 		{
 		//	Load the default screen
@@ -4104,7 +4087,7 @@ void CShipClass::PaintDevicePositions (CG32bitImage &Dest, int x, int y, const C
 
 	{
 	int i;
-	int iScale = GetImageViewportSize();
+	int iScale = GetImage().GetImageViewportSize();
 
 	for (i = 0; i < Devices.GetCount(); i++)
 		{
@@ -4127,7 +4110,7 @@ void CShipClass::PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int i
 //	Paint docking ports
 
 	{
-	int iScale = GetImageViewportSize();
+	int iScale = GetImage().GetImageViewportSize();
 	m_DockingPorts.DebugPaint(Dest, x, y, iShipRotation, iScale);
 	}
 
@@ -4138,7 +4121,7 @@ void CShipClass::PaintInteriorCompartments (CG32bitImage &Dest, int x, int y, in
 //	Paints outline of interior compartments
 
 	{
-	int iScale = GetImageViewportSize();
+	int iScale = GetImage().GetImageViewportSize();
 	m_Interior.DebugPaint(Dest, x, y, iShipRotation, iScale);
 	}
 
@@ -4156,7 +4139,7 @@ void CShipClass::PaintMap (CMapViewportCtx &Ctx,
 //	Paints the ship class on the map
 
 	{
-	m_Image.GetSimpleImage().PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24, CObjectImageArray::FLAG_CACHED);
+	GetImage().PaintScaledImage(Dest, x, y, iTick, iDirection, 24, 24, CObjectImageArray::FLAG_CACHED);
 	}
 
 void CShipClass::PaintScaled (CG32bitImage &Dest,
@@ -4180,7 +4163,7 @@ void CShipClass::PaintScaled (CG32bitImage &Dest,
 		Dest.Blt(0, 0, Image.GetWidth(), Image.GetHeight(), Image, x - (Image.GetWidth() / 2), y - (Image.GetHeight() / 2));
 		}
 	else
-		m_Image.GetSimpleImage().PaintScaledImage(Dest, x, y, iTick, GetRotationDesc().GetFrameIndex(iRotation), cxWidth, cyHeight, CObjectImageArray::FLAG_CACHED);
+		GetImage().PaintScaledImage(Dest, x, y, iTick, GetRotationDesc().GetFrameIndex(iRotation), cxWidth, cyHeight, CObjectImageArray::FLAG_CACHED);
 	}
 
 void CShipClass::PaintThrust (CG32bitImage &Dest, 

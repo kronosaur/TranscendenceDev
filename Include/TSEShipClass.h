@@ -225,8 +225,7 @@ class CShipClass : public CDesignType
 		inline int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
 		CString GetHullSectionName (int iIndex) const;
 		CCurrencyAndValue GetHullValue (CShip *pShip = NULL) const;
-		const CObjectImageArray &GetImage (const CImageFilterStack *pFilters = NULL) const;
-		inline int GetImageViewportSize (void) const { return m_Image.GetSimpleImage().GetImageViewportSize(); }
+		inline const CObjectImageArray &GetImage (void) const { return m_Image.GetSimpleImage(); }
         inline const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
 		inline const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
 		int GetMaxStructuralHitPoints (void) const;
@@ -286,13 +285,6 @@ class CShipClass : public CDesignType
 					int cyHeight,
 					int iRotation,
 					int iTick);
-		void PaintThrust (CG32bitImage &Dest, 
-						int x, 
-						int y, 
-						const ViewportTransform &Trans, 
-						int iDirection, 
-						int iTick,
-						bool bInFrontOnly);
 
 		//	CDesignType overrides
 		static CShipClass *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designShipClass) ? (CShipClass *)pType : NULL); }
@@ -374,6 +366,13 @@ class CShipClass : public CDesignType
 		inline int GetManeuverDelay (void) const { return m_Perf.GetRotationDesc().GetManeuverDelay(); }
 		inline CStationType *GetWreckDesc (void) const { return m_WreckDesc.GetWreckType(); }
 		void InitShipNamesIndices (void);
+		void PaintThrust (CG32bitImage &Dest, 
+						int x, 
+						int y, 
+						const ViewportTransform &Trans, 
+						int iDirection, 
+						int iTick,
+						bool bInFrontOnly);
 
 		static int CalcDefaultSize (const CObjectImageArray &Image);
 

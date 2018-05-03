@@ -382,7 +382,7 @@ void CShip::CalcBounds (void)
 
 	//	Start with image bounds
 
-	const CObjectImageArray &Image = GetImage();
+	const CObjectImageArray &Image = m_pClass->GetImage();
 	const RECT &rcImageRect = Image.GetImageRect();
 
 	int cxWidth = RectWidth(rcImageRect);
@@ -1666,7 +1666,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Set the bounds for this object
 
-	const CObjectImageArray &Image = pShip->GetImage();
+	const CObjectImageArray &Image = pShip->m_pClass->GetImage();
 	pShip->SetBounds(Image.GetImageRect());
 
 	//	Initialize docking ports (if any)
@@ -2577,7 +2577,7 @@ void CShip::GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const
 	int i;
 
 	const CShipInteriorDesc &Desc = m_pClass->GetInteriorDesc();
-	int iScale = m_pClass->GetImageViewportSize();
+	int iScale = m_pClass->GetImage().GetImageViewportSize();
 
 	Result.DeleteAll();
 
@@ -2809,16 +2809,6 @@ CCurrencyAndValue CShip::GetHullValue (void) const
 
 	{
 	return m_pClass->GetHullValue(const_cast<CShip *>(this));
-	}
-
-const CObjectImageArray &CShip::GetImage (void) const
-
-//	GetImage
-//
-//	Returns the ship image
-
-	{
-	return m_pClass->GetImage(GetSystemFilters());
 	}
 
 CString CShip::GetInstallationPhrase (const CItem &Item) const
@@ -3762,7 +3752,7 @@ bool CShip::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Imag
 			iTick,
 			iRotation, 
 			vImagePos,
-			GetImage(),
+			m_pClass->GetImage(),
 			GetSystem()->GetTick(), 
 			m_Rotation.GetFrameIndex(), 
 			vObjPos);
@@ -4267,7 +4257,7 @@ bool CShip::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const 
 
 	{
 	return pObj2->ImageInObject(vObj2Pos,
-			GetImage(),
+			m_pClass->GetImage(),
 			GetSystem()->GetTick(),
 			m_Rotation.GetFrameIndex(),
 			vObj1Pos);
@@ -5144,7 +5134,8 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	Ctx.iRotation = GetRotation();
 	Ctx.iDestiny = GetDestiny();
 
-	const CObjectImageArray &Image = GetImage();
+	const CObjectImageArray *pImage;
+	pImage = &m_pClass->GetImage();
 
 	//	See if we're invisible in SRS
 
@@ -5162,13 +5153,6 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	if (!byShimmer)
 		{
-		//	If we're facing down paint the thrust first.
-
-		if (bPaintThrust)
-			m_pClass->PaintThrust(Dest, x, y, Ctx.XForm, m_Rotation.GetFrameIndex(), Ctx.iTick, true /* bInFrontOnly */);
-
-		//	Other effects
-
 		Ctx.bInFront = false;
 		m_Effects.Paint(Ctx, m_pClass->GetEffectsDesc(), dwEffects, Dest, x, y);
 		}
@@ -5181,39 +5165,34 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 	//	Paint the ship
 
-	//	Paint the body of the ship
-
-	if (byShimmer)
-		Image.PaintImageShimmering(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex(), byShimmer);
-	else if (IsRadioactive())
-		Image.PaintImageWithGlow(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex(), CG32bitPixel(0, 255, 0));
-	else
-		Image.PaintImage(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex());
+	m_pClass->Paint(Dest, 
+			x, 
+			y, 
+			Ctx.XForm, 
+			m_Rotation.GetFrameIndex(), 
+			Ctx.iTick,
+			bPaintThrust,
+			IsRadioactive(),
+			byShimmer
+			);
 
 	//	Paint effects in front of the ship.
 
 	if (!byShimmer)
 		{
-		//	If we need to paint the thrust (because we didn't earlier) do it now.
-
-		if (bPaintThrust)
-			m_pClass->PaintThrust(Dest, x, y, Ctx.XForm, m_Rotation.GetFrameIndex(), Ctx.iTick, false /* bInFrontOnly */);
-
-		//	Other effects
-
 		Ctx.bInFront = true;
 		m_Effects.Paint(Ctx, m_pClass->GetEffectsDesc(), dwEffects, Dest, x, y);
 		}
 
 	//	Paint energy fields
 
-	m_Overlays.Paint(Dest, m_pClass->GetImageViewportSize(), x, y, Ctx);
+	m_Overlays.Paint(Dest, pImage->GetImageViewportSize(), x, y, Ctx);
 
 	//	If paralyzed, draw energy arcs
 
 	if (ShowParalyzedEffect())
 		{
-		Metric rSize = (Metric)RectWidth(Image.GetImageRect()) / 2;
+		Metric rSize = (Metric)RectWidth(m_pClass->GetImage().GetImageRect()) / 2;
 		for (i = 0; i < PARALYSIS_ARC_COUNT; i++)
 			{
 			//	Compute the beginning of this arc
@@ -6237,7 +6216,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         {
         bool bModified;
 
-        m_Overlays.Update(this, m_pClass->GetImageViewportSize(), GetRotation(), &bModified);
+        m_Overlays.Update(this, m_pClass->GetImage().GetImageViewportSize(), GetRotation(), &bModified);
         if (CSpaceObject::IsDestroyedInUpdate())
             return;
         else if (bModified)
@@ -6622,7 +6601,7 @@ void CShip::PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapView
 	{
 	int i;
 
-	int cxWidth = GetImage().GetImageWidth();
+	int cxWidth = m_pClass->GetImage().GetImageWidth();
 	if (cxWidth == 0)
 		return;
 
@@ -6650,9 +6629,9 @@ void CShip::PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapView
 		int xPos, yPos;
 		Trans.Transform(pShip->GetPos(), &xPos, &yPos);
 
-		int cxSize = (int)mathRound(rScale * pShip->GetImage().GetImageWidth());
+		int cxSize = (int)mathRound(rScale * pShip->GetClass()->GetImage().GetImageWidth());
 
-		pShip->GetImage().PaintScaledImage(Dest, 
+		pShip->GetClass()->GetImage().PaintScaledImage(Dest, 
 				xPos, 
 				yPos, 
 				GetSystem()->GetTick(),
@@ -6720,7 +6699,7 @@ bool CShip::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
 
 	//	Ask the image if the point is inside or not
 
-	return GetImage().PointInImage(x, y, GetSystem()->GetTick(), m_Rotation.GetFrameIndex());
+	return m_pClass->GetImage().PointInImage(x, y, GetSystem()->GetTick(), m_Rotation.GetFrameIndex());
 
 	DEBUG_CATCH
 	}
@@ -6743,7 +6722,7 @@ bool CShip::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const
 
 	//	Ask the image if the point is inside or not
 
-	return GetImage().PointInImage(Ctx, x, y);
+	return m_pClass->GetImage().PointInImage(Ctx, x, y);
 
 	DEBUG_CATCH
 	}
@@ -6755,7 +6734,7 @@ void CShip::PointInObjectInit (SPointInObjectCtx &Ctx)
 //	Initializes context for PointInObject (for improved performance in loops)
 
 	{
-	GetImage().PointInImageInit(Ctx, GetSystem()->GetTick(), m_Rotation.GetFrameIndex());
+	m_pClass->GetImage().PointInImageInit(Ctx, GetSystem()->GetTick(), m_Rotation.GetFrameIndex());
 	}
 
 void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)

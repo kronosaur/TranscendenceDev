@@ -1363,7 +1363,7 @@ void CImageEntry::GetImage (const CCompositeImageSelector &Selector, const CComp
 	{
 	//	If we have no rotations then we always return the full image.
 
-	if (m_Image.GetRotationCount() <= 1 || Modifiers.ReturnFullImage())
+	if (m_Image.GetRotationCount() <= 1)
 		{
 		*retImage = m_Image;
 		return;

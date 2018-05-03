@@ -4525,24 +4525,6 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 		return CG32bitPixel(0, 192, 0);
 	}
 
-const CImageFilterStack *CSpaceObject::GetSystemFilters (void) const
-
-//	GetSystemFilters
-//
-//	Returns the paint filters to apply to this object.
-
-	{
-	CSystem *pSystem = GetSystem();
-	if (pSystem == NULL)
-		return NULL;
-
-	CSystemType *pType = pSystem->GetType();
-	if (pType == NULL)
-		return NULL;
-
-	return &pType->GetImageFilters();
-	}
-
 void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *retList, CSpaceObject *pExcludeObj)
 
 //	GetVisibleEnemies

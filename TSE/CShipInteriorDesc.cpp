@@ -114,7 +114,7 @@ int CShipInteriorDesc::CalcImageSize (CShipClass *pClass, CVector *retvOrigin) c
 	{
 	int i;
 
-	int iScale = pClass->GetImageViewportSize();
+	int iScale = pClass->GetImage().GetImageViewportSize();
 
 	//	Compute the position of all compartments
 

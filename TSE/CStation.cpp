@@ -288,12 +288,6 @@ void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *
 
 	if (retModifiers)
 		{
-		//	System filters
-
-		retModifiers->SetFilters(GetSystemFilters());
-
-		//	Damage
-
 		if (ShowStationDamage())
 			retModifiers->SetStationDamage(true);
 

@@ -942,6 +942,7 @@ class CSpaceObject : public CObject
 		inline bool Blocks (CSpaceObject *pObj) { return (m_fIsBarrier && CanBlock(pObj)); }
 		inline bool BlocksShips (void) { return (m_fIsBarrier && CanBlockShips()); }
 		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
+		DWORD CalcSRSVisibility (SViewportPaintCtx &Ctx) const;
 		CSpaceObject *CalcTargetToAttack (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		inline bool CanBeHit (void) { return (!m_fCannotBeHit && !m_fOutOfPlaneObj); }
 		inline bool CanBeHitByFriends (void) { return !m_fNoFriendlyTarget; }
@@ -949,6 +950,7 @@ class CSpaceObject : public CObject
 		bool CanCommunicateWith (CSpaceObject *pSender);
 		inline bool CanHitFriends (void) { return !m_fNoFriendlyFire; }
 		inline void ClearNoFriendlyTarget (void) { m_fNoFriendlyTarget = false; }
+		inline void ClearPaintNeeded (void) { m_fPaintNeeded = false; }
 		inline void ClearPlayerDestination (void) { m_fPlayerDestination = false; m_fAutoClearDestination = false; m_fAutoClearDestinationOnDock = false; m_fAutoClearDestinationOnDestroy = false; m_fShowDistanceAndBearing = false; m_fShowHighlight = false; }
 		inline void ClearPlayerDocked (void) { m_fPlayerDocked = false; }
 		inline void ClearPlayerTarget (void) { m_fPlayerTarget = false; }
@@ -1131,6 +1133,8 @@ class CSpaceObject : public CObject
 		bool IsLineOfFireClear (CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL);
 		inline bool IsMarked (void) const { return m_fMarked; }
 		inline bool IsNamed (void) const { return m_fHasName; }
+		inline bool IsOutOfPlaneObj (void) const { return m_fOutOfPlaneObj; }
+		inline bool IsPaintNeeded (void) { return m_fPaintNeeded; }
 		bool IsPlayerAttackJustified (void) const;
 		inline bool IsPlayerDestination (void) { return m_fPlayerDestination; }
 		inline bool IsPlayerDocked (void) { return m_fPlayerDocked; }
@@ -1151,6 +1155,10 @@ class CSpaceObject : public CObject
 		bool NotifyOnObjGateCheck (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		inline bool NotifyOthersWhenDestroyed (void) { return (m_fNoObjectDestructionNotify ? false : true); }
 		void OnObjDestroyed (const SDestroyCtx &Ctx);
+		void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight = NULL);
+		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
+		inline void PaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }
 		inline bool PointInHitSizeBox (const CVector &vPos, Metric rRadius = 0.0) const
 			{ 
 			CVector vRelPos = vPos - GetPos();
@@ -1193,6 +1201,8 @@ class CSpaceObject : public CObject
 		inline void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj) { m_Data.SetObjRefData(sAttrib, pObj); }
 		inline void SetOutOfPlaneObj (bool bValue = true) { m_fOutOfPlaneObj = bValue; }
 		void SetOverride (CDesignType *pOverride);
+		inline void SetPainted (void) { m_fPainted = true; }
+		inline void SetPaintNeeded (void) { m_fPaintNeeded = true; }
 		inline void SetPlayerDestination (void) { m_fPlayerDestination = true; }
 		inline void SetPlayerDocked (void) { m_fPlayerDocked = true; }
 		inline void SetPlayerTarget (void) { m_fPlayerTarget = true; }
@@ -1212,6 +1222,7 @@ class CSpaceObject : public CObject
 		void Update (SUpdateCtx &Ctx);
 		void UpdateExtended (const CTimeSpan &ExtraTime);
 		inline void UpdatePlayer (SUpdateCtx &Ctx) { OnUpdatePlayer(Ctx); }
+		inline bool WasPainted (void) const { return m_fPainted; }
 		void WriteToStream (IWriteStream *pStream);
 		inline void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) { GetSystem()->WriteObjRefToStream(pObj, pStream, this); }
 
@@ -1282,25 +1293,6 @@ class CSpaceObject : public CObject
 		inline void SetOverlayPos (DWORD dwID, const CVector &vPos) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetPos(this, dwID, vPos); }
 		inline bool SetOverlayProperty (DWORD dwID, const CString &sName, ICCItem *pValue, CString *retsError) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->SetProperty(this, dwID, sName, pValue) : false); }
 		inline void SetOverlayRotation (DWORD dwID, int iRotation) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->SetRotation(dwID, iRotation); }
-
-		//	Painting
-
-		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerStations; }
-		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
-		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
-
-		DWORD CalcSRSVisibility (SViewportPaintCtx &Ctx) const;
-		inline void ClearPaintNeeded (void) { m_fPaintNeeded = false; }
-		const CImageFilterStack *GetSystemFilters (void) const;
-		inline bool IsOutOfPlaneObj (void) const { return m_fOutOfPlaneObj; }
-		inline bool IsPaintNeeded (void) { return m_fPaintNeeded; }
-		void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight = NULL);
-		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
-		inline void PaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }
-		inline void SetPainted (void) { m_fPainted = true; }
-		inline void SetPaintNeeded (void) { m_fPaintNeeded = true; }
-		inline bool WasPainted (void) const { return m_fPainted; }
 
 		//	Trade
 
@@ -1390,6 +1382,7 @@ class CSpaceObject : public CObject
 		virtual Metric GetMass (void) const { return 0.0; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return LITERAL("unknown object"); }
 		virtual CString GetObjClassName (void) { return CONSTLIT("unknown"); }
+		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerStations; }
 		virtual Metric GetParallaxDist (void) { return 0.0; }
 		virtual EDamageResults GetPassthroughDefault (void) { return damageNoDamage; }
 		virtual int GetPlanetarySize (void) const { return 0; }
@@ -1414,6 +1407,8 @@ class CSpaceObject : public CObject
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) { }
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) { }
 		virtual void OnSystemLoaded (void) { }
+		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) { return false; }
 		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) { return PointInObject(vObjPos, vPointPos); }
 		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) { }

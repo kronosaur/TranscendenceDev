@@ -1121,7 +1121,7 @@ class CShip : public CSpaceObject
 		virtual CStationType *GetEncounterInfo (void) override { return m_pEncounterInfo; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
         virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pClass->GetHeroImage(); }
-		virtual const CObjectImageArray &GetImage (void) const override;
+		virtual const CObjectImageArray &GetImage (void) const override { return m_pClass->GetImage(); }
 		virtual CString GetInstallationPhrase (const CItem &Item) const override;
 		virtual Metric GetInvMass (void) const override;
 		virtual int GetLastFireTime (void) const override { return m_iLastFireTime; }

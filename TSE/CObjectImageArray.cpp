@@ -1861,23 +1861,6 @@ void CObjectImageArray::ReadFromStream (SLoadCtx &Ctx)
 	m_bDefaultSize = false;
 	}
 
-void CObjectImageArray::SetImage (CObjectImage *pImage)
-
-//	SetImage
-//
-//	Sets the image and takes ownership
-
-	{
-	if (m_pImage && m_dwBitmapUNID == 0)
-		{
-		delete m_pImage;
-		m_pImage = NULL;
-		}
-
-	m_pImage = pImage;
-	m_dwBitmapUNID = 0;
-	}
-
 void CObjectImageArray::SetRotationCount (int iRotationCount)
 
 //	SetRotationCount

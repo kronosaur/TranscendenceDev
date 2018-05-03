@@ -16,7 +16,12 @@
 
 #define FIELD_IMAGE_DESC					CONSTLIT("imageDesc")
 
-CObjectImage::CObjectImage (void)
+CObjectImage::CObjectImage (void) : 
+		m_pBitmap(NULL),
+		m_pHitMask(NULL),
+		m_pShadowMask(NULL),
+		m_pFilters(NULL),
+		m_bLoadError(false)
 
 //	CObjectImage constructor
 
@@ -25,9 +30,15 @@ CObjectImage::CObjectImage (void)
 
 CObjectImage::CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap, CG32bitImage *pShadowMask) :
 		m_pBitmap(pBitmap),
+		m_pHitMask(NULL),
 		m_pShadowMask(pShadowMask),
+		m_pFilters(NULL),
+		m_bPreMult(false),
+		m_bLoadOnUse(false),
 		m_bFreeBitmap(bFreeBitmap),
-		m_bLocked(true)
+		m_bMarked(false),
+		m_bLocked(true),
+		m_bLoadError(false)
 
 //	CObjectImage constructor
 
@@ -68,6 +79,7 @@ void CObjectImage::CleanUp (void)
 	m_pBitmap = NULL;
 	m_pHitMask = NULL;
 	m_pShadowMask = NULL;
+	m_pFilters = NULL;
 	m_bLocked = false;
 	}
 
@@ -157,6 +169,20 @@ bool CObjectImage::FindDataField (const CString &sField, CString *retsValue) con
 	return true;
 	}
 
+CSystemType *CObjectImage::GetFilterSource (void) const
+
+//	GetFilterSource
+//
+//	Returns the source of filters (may be NULL).
+
+	{
+	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+	if (pSystem == NULL)
+		return NULL;
+
+	return pSystem->GetType();
+	}
+
 CG32bitImage *CObjectImage::GetHitMask (void)
 
 //	GetHitMask
@@ -182,7 +208,7 @@ CG32bitImage *CObjectImage::GetHitMask (void)
 	return m_pHitMask;
 	}
 
-CG32bitImage *CObjectImage::GetRawImage (const CString &sLoadReason, CString *retsError) const
+CG32bitImage *CObjectImage::GetRawImage (CSystemType *pFilterSource, const CString &sLoadReason, CString *retsError) const
 
 //	GetRawImage
 //
@@ -198,7 +224,7 @@ CG32bitImage *CObjectImage::GetRawImage (const CString &sLoadReason, CString *re
 			//	If this image does not have the proper filters, then we need to 
 			//	reload and apply filters.
 
-			if (!m_bLocked)
+			if (!m_bLocked && pFilterSource != m_pFilters)
 				{
 				if (m_bFreeBitmap)
 					delete m_pBitmap;
@@ -238,6 +264,14 @@ CG32bitImage *CObjectImage::GetRawImage (const CString &sLoadReason, CString *re
 			m_bLoadError = true;
 			if (retsError) *retsError = sError;
 			return NULL;
+			}
+
+		//	Apply filters
+
+		m_pFilters = pFilterSource;
+		if (pFilterSource)
+			{
+			pFilterSource->GetImageFilters().ApplyTo(*m_pBitmap);
 			}
 
 		//	We need to free the bitmap
@@ -356,7 +390,7 @@ ALERROR CObjectImage::Lock (SDesignLoadCtx &Ctx)
 	//	NOTE 2: Locked images never get filter adjustments from the system, 
 	//	since they are likely to be utility images, like damage textures.
 
-	CG32bitImage *pImage = GetRawImage(NULL_STR, &Ctx.sError);
+	CG32bitImage *pImage = GetRawImage(NULL, NULL_STR, &Ctx.sError);
 	if (pImage == NULL)
 		return ERR_FAIL;
 
