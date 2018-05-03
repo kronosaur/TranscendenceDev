@@ -6,7 +6,6 @@
 #pragma once
 
 class CCompositeImageModifiers;
-class CSystemType;
 
 struct SPointInObjectCtx
 	{
@@ -62,54 +61,6 @@ struct SLightingCtx
 	CVector vIncY;
 	};
 
-class CImageFilterDesc
-	{
-	public:
-		enum ETypes
-			{
-			filterNone,
-
-			filterBloom,					//	iData1 = clip point (0-255)
-			filterColorize,					//	iData1 = hue, iData2 = saturation, iData3 = brightness, byOpacity = fade
-			filterHueSaturation,			//	iData1 = hue, iData2 = saturation, iData3 = brightness, byOpactiy = fade
-			filterLevels,					//	iData1 = black point, iData2 = white point, rData1 = gamma
-			};
-
-		CImageFilterDesc (void);
-
-		bool operator== (const CImageFilterDesc &Val) const;
-		bool operator!= (const CImageFilterDesc &Val) const { return (*this == Val ? false : true); }
-
-		void ApplyTo (CG32bitImage &Image) const;
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
-
-	private:
-		void ApplyBloom (CG32bitImage &Dest, int iClipPoint) const;
-		void ApplyColorize (CG32bitImage &Dest, int iHue, int iSaturation, int iBrightness, BYTE byOpacity) const;
-		void ApplyHueSaturation (CG32bitImage &Dest, int iHue, int iSaturation, int iBrightness, BYTE byOpacity) const;
-		void ApplyLevels (CG32bitImage &Dest, int iBlack, int iWhite, Metric rGamma) const;
-
-		ETypes m_iType;
-		int m_iData1;
-		int m_iData2;
-		int m_iData3;
-		Metric m_rData1;
-		BYTE m_byOpacity;
-	};
-
-class CImageFilterStack
-	{
-	public:
-		bool operator== (const CImageFilterStack &Val) const;
-		bool operator!= (const CImageFilterStack &Val) const { return (*this == Val ? false : true); }
-
-		void ApplyTo (CG32bitImage &Image) const;
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
-
-	private:
-		TArray<CImageFilterDesc> m_Stack;
-	};
-
 class CObjectImage : public CDesignType
 	{
 	public:
@@ -122,8 +73,7 @@ class CObjectImage : public CDesignType
 		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
         inline int GetHeight (void) const { return (m_pBitmap ? m_pBitmap->GetHeight() : 0); }
 		CG32bitImage *GetHitMask (void);
-		inline CG32bitImage *GetRawImage (const CString &sLoadReason, CString *retsError = NULL) const { return GetRawImage(GetFilterSource(), sLoadReason, retsError); }
-		CG32bitImage *GetRawImage (CSystemType *pFilterSource, const CString &sLoadReason, CString *retsError = NULL) const;
+		CG32bitImage *GetRawImage (const CString &sLoadReason, CString *retsError = NULL) const;
 		inline CString GetImageFilename (void) { return m_sBitmap; }
 		CG32bitImage *GetShadowMask (void);
         inline int GetWidth (void) const { return (m_pBitmap ? m_pBitmap->GetWidth() : 0); }
@@ -147,9 +97,6 @@ class CObjectImage : public CDesignType
 		virtual void OnUnbindDesign (void);
 
 	private:
-		void ApplyFilters (void) const;
-		void CleanUp (void);
-		CSystemType *GetFilterSource (void) const;
 		CG32bitImage *LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL) const;
 		bool LoadMask(const CString &sFilespec, CG32bitImage **retpImage);
 
@@ -165,7 +112,6 @@ class CObjectImage : public CDesignType
 		mutable CG32bitImage *m_pBitmap;//	Loaded image (NULL if not loaded)
 		CG32bitImage *m_pHitMask;		//	NULL if not loaded
 		CG32bitImage *m_pShadowMask;	//	NULL if not loaded
-		mutable CSystemType *m_pFilters;//	Filters applied to loaded image
 		bool m_bMarked;					//	Marked
 		bool m_bLocked;					//	Image is never unloaded
 		mutable bool m_bLoadError;		//	If TRUE, load failed
