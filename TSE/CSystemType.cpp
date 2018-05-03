@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define IMAGE_FILTERS_TAG						CONSTLIT("ImageFilters")
 #define SYSTEM_GROUP_TAG						CONSTLIT("SystemGroup")
 #define TABLES_TAG								CONSTLIT("Tables")
 
@@ -218,6 +219,15 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	We also need to keep the local tables
 
 	m_pLocalTables = pDesc->GetContentElementByTag(TABLES_TAG);
+
+	//	Image filters
+
+	CXMLElement *pFilters = pDesc->GetContentElementByTag(IMAGE_FILTERS_TAG);
+	if (pFilters)
+		{
+		if (error = m_ImageFilters.InitFromXML(Ctx, *pFilters))
+			return error;
+		}
 
 	return NOERROR;
 	}
