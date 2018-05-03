@@ -42,6 +42,7 @@
 #define SYSTEM_TAG								CONSTLIT("System")
 
 #define ATTRIBUTES_ATTRIB						CONSTLIT("attributes")
+#define DEFER_CREATE_ATTRIB						CONSTLIT("deferCreate")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define NAME_ATTRIB								CONSTLIT("name")
 #define UNID_ATTRIB								CONSTLIT("UNID")
@@ -79,6 +80,9 @@ void CTopologySystemDesc::Apply (CTopology &Topology, CTopologyNode *pNode) cons
 	if (!m_sVariantFromSub.IsBlank())
 		pNode->AddVariantLabel(m_sVariantFromSub);
 
+	if (m_bDeferCreate)
+		pNode->SetDeferCreate();
+
 	//	Apply the generator, if we've got one.
 
 	if (m_pGenerator)
@@ -114,6 +118,10 @@ void CTopologySystemDesc::Apply (CTopology &Topology, CTopologyNode *pNode) cons
 
 			if (pSystemXML->FindAttribute(VARIANT_ATTRIB, &sValue))
 				pNode->AddVariantLabel(sValue);
+
+			bool bValue;
+			if (pSystemXML->FindAttributeBool(DEFER_CREATE_ATTRIB, &bValue))
+				pNode->SetDeferCreate(bValue);
 			}
 		}
 
@@ -154,6 +162,7 @@ ALERROR CTopologySystemDesc::InitFromXML (SDesignLoadCtx &LoadCtx, CXMLElement *
 	m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_SYSTEM_LEVEL, 0);
 	m_sAttributes = pDesc->GetAttribute(ATTRIBUTES_ATTRIB);
 	m_sVariantFromParent = pDesc->GetAttribute(VARIANT_ATTRIB);
+	m_bDeferCreate = pDesc->GetAttributeBool(DEFER_CREATE_ATTRIB);
 
 	//	Now loop over our sub-elements and process them
 

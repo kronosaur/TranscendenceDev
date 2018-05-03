@@ -209,12 +209,11 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_rTimeScale = TIME_SCALE;
 
 	//	We keep the XML around for system definitions.
+	//
+	//	NOTE: OK if this is NULL since we can also create a system procedurally
+	//	with <OnCreate>.
 
-	CXMLElement *pRoot = pDesc->GetContentElementByTag(SYSTEM_GROUP_TAG);
-	if (pRoot == NULL)
-		return ComposeLoadError(Ctx, CONSTLIT("Unable to find <SystemGroup> element."));
-
-	m_pDesc = pRoot;
+	m_pDesc = pDesc->GetContentElementByTag(SYSTEM_GROUP_TAG);
 
 	//	We also need to keep the local tables
 

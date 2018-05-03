@@ -3758,20 +3758,6 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 	pSystem->m_rKlicksPerPixel = pType->GetSpaceScale();
 	pSystem->m_rTimeScale = pType->GetTimeScale();
 
-	//	Get a pointer to the tables element (may be NULL)
-
-	CXMLElement *pTables = pType->GetLocalSystemTables();
-
-	//	Look for the outer-most group tag
-
-	CXMLElement *pPrimary = pType->GetDesc();
-	if (pPrimary == NULL)
-		{
-		if (retsError)
-			*retsError = CONSTLIT("Cannot find root <SystemGroup> element");
-		return ERR_FAIL;
-		}
-
 	//	Store the current system. We need this so that any OnCreate code can
 	//	get the right system.
 
@@ -3782,8 +3768,9 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 	SSystemCreateCtx Ctx(pSystem);
 	Ctx.pStats = pStats;
 
-	//	Add local tables
+	//	Add local tables, if they exist
 
+	CXMLElement *pTables = pType->GetLocalSystemTables();
 	if (pTables)
 		Ctx.LocalTables.Insert(pTables);
 
@@ -3791,27 +3778,32 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 
 	PushDebugStack(&Ctx, strPatternSubst(CONSTLIT("SystemType nodeID=%s unid=%x"), pTopology->GetID(), pType->GetUNID()));
 
-	//	Create
+	//	Create objects defined by <SystemGroup>.
+	//	NOTE: This is optional, since we can create a system procedurally in <OnCreate>
 
-	try
+	CXMLElement *pPrimary = pType->GetDesc();
+	if (pPrimary)
 		{
-		error = CreateSystemObject(&Ctx,
-				pPrimary,
-				COrbit());
-		}
-	catch (...)
-		{
-		Ctx.sError = CONSTLIT("Crash in CreateSystemObject.");
-		error = ERR_FAIL;
-		}
+		try
+			{
+			error = CreateSystemObject(&Ctx,
+					pPrimary,
+					COrbit());
+			}
+		catch (...)
+			{
+			Ctx.sError = CONSTLIT("Crash in CreateSystemObject.");
+			error = ERR_FAIL;
+			}
 
-	if (error)
-		{
-		if (retsError)
-			*retsError = Ctx.sError;
-		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Unable to create system: %s"), Ctx.sError));
-		DumpDebugStack(&Ctx);
-		return error;
+		if (error)
+			{
+			if (retsError)
+				*retsError = Ctx.sError;
+			g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Unable to create system: %s"), Ctx.sError));
+			DumpDebugStack(&Ctx);
+			return error;
+			}
 		}
 
 	//	Invoke OnCreate event

@@ -124,6 +124,7 @@ class CTopologyNode
 		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
 		ALERROR InitFromAttributesXML (CXMLElement *pAttributes, CString *retsError);
 		ALERROR InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError);
+		inline bool IsCreationDeferred (void) const { return m_bDeferCreate; }
 		static bool IsCriteriaAll (const SCriteria &Crit);
 		inline bool IsEndGame (void) const { return (m_SystemUNID == END_GAME_SYSTEM_UNID); }
 		inline bool IsKnown (void) const { return m_bKnown; }
@@ -134,6 +135,7 @@ class CTopologyNode
 		inline void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
 		inline void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
 		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
+		inline void SetDeferCreate (bool bValue = true) { m_bDeferCreate = bValue; }
 		inline void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
 		inline void SetEpitaph (const CString &sEpitaph) { m_sEpitaph = sEpitaph; }
 		inline void SetKnown (bool bKnown = true) { m_bKnown = bKnown; }
@@ -191,13 +193,13 @@ class CTopologyNode
 		CString m_sID;							//	ID of node
 		CString m_sCreatorID;					//	ID of topology desc, if created by a fragment, etc.
 
-		DWORD m_SystemUNID;						//	UNID of system type
+		DWORD m_SystemUNID = 0;					//	UNID of system type
 		CString m_sName;						//	Name of system
-		int m_iLevel;							//	Level of system
+		int m_iLevel = 0;						//	Level of system
 
-		CSystemMap *m_pMap;						//	May be NULL
-		int m_xPos;								//	Position on map (cartessian)
-		int m_yPos;
+		CSystemMap *m_pMap = NULL;				//	May be NULL
+		int m_xPos = 0;							//	Position on map (cartessian)
+		int m_yPos = 0;
 
 		TSortMap<CString, SStargateEntry> m_NamedGates;	//	Name to StarGateDesc
 
@@ -209,14 +211,15 @@ class CTopologyNode
 		CTradingEconomy m_Trading;				//	System trading adjustments
 		CAttributeDataBlock m_Data;				//	Opaque data
 
-		CSystem *m_pSystem;						//	NULL if not yet created
-		DWORD m_dwID;							//	ID of system instance
+		CSystem *m_pSystem = NULL;				//	NULL if not yet created
+		DWORD m_dwID = 0xffffffff;				//	ID of system instance (default = not yet created)
 
-		bool m_bKnown;							//	TRUE if node is visible on galactic map
-		bool m_bPosKnown;						//	TRUE if node is visible, but type/name is unknown
+		bool m_bKnown = false;					//	TRUE if node is visible on galactic map
+		bool m_bPosKnown = false;				//	TRUE if node is visible, but type/name is unknown
+		bool m_bDeferCreate = false;			//	If TRUE, do not create system at game start
 
-		mutable bool m_bMarked;					//	Temp variable used during painting
-		mutable int m_iCalcDistance;			//	Temp variable used during distance calc
+		mutable bool m_bMarked = false;			//	Temp variable used during painting
+		mutable int m_iCalcDistance = 0;		//	Temp variable used during distance calc
 	};
 
 class CTopologyNodeList

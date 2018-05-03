@@ -61,6 +61,8 @@ class CTopologySystemDesc
 
 		TUniquePtr<IElementGenerator> m_pGenerator;
 		CNameDesc m_Names;
+
+		bool m_bDeferCreate = false;		//	Do not create system until later
 	};
 
 class CDelaunayStargateGenerator
