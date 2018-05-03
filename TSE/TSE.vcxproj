@@ -383,8 +383,6 @@
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CHullDesc.cpp" />
-    <ClCompile Include="CImageFilterDesc.cpp" />
-    <ClCompile Include="CImageFilterStack.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemPriceTracker.cpp" />

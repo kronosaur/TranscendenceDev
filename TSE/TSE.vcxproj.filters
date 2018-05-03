@@ -1222,12 +1222,6 @@
     <ClCompile Include="CVirtualKeyData.cpp">
       <Filter>Source Files\Language</Filter>
     </ClCompile>
-    <ClCompile Include="CImageFilterDesc.cpp">
-      <Filter>Source Files\Images</Filter>
-    </ClCompile>
-    <ClCompile Include="CImageFilterStack.cpp">
-      <Filter>Source Files\Images</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">
