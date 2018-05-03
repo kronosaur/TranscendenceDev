@@ -73,6 +73,8 @@ class CG32bitPixel
 		static CG32bitPixel Blend (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, double rFade);
 		static CG32bitPixel Blend3 (CG32bitPixel rgbNegative, CG32bitPixel rgbCenter, CG32bitPixel rgbPositive, double rFade);
 		static CG32bitPixel ChangeHue (CG32bitPixel rgbSource, int iAdj);
+		static CG32bitPixel Colorize (CG32bitPixel rgbSource, Metric rHue, Metric rSaturation = 0.15);
+		static CG32bitPixel Colorize (CG32bitPixel rgbSource, Metric rHue, Metric rSaturation, Metric rBrightnessAdj);
 		static CG32bitPixel Darken (CG32bitPixel rgbSource, BYTE byOpacity);
 		static CG32bitPixel Fade (CG32bitPixel rgbFrom, CG32bitPixel rgbTo, int iPercent);
 		static CG32bitPixel Screen (CG32bitPixel rgbDest, CG32bitPixel rgbSrc);

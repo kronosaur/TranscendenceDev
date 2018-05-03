@@ -63,6 +63,54 @@ CG32bitPixel CG32bitPixel::ChangeHue (CG32bitPixel rgbSource, int iAdj)
 	return CG32bitPixel(TempRGB);
 	}
 
+CG32bitPixel CG32bitPixel::Colorize (CG32bitPixel rgbSource, Metric rHue, Metric rSaturation)
+
+//	Colorize
+//
+//	Colorize pixel to given hue (0-360). Optionally adjusts saturation (0-1)
+//	and brightness (-1 to 1).
+
+	{
+	CGRealHSB TempHSB = CGRealHSB::FromRGB(rgbSource);
+
+	TempHSB.SetHue(rHue);
+	TempHSB.SetSaturation(rSaturation);
+
+	CGRealRGB TempRGB = CGRealRGB::FromHSB(TempHSB);
+	return CG32bitPixel(TempRGB);
+	}
+
+CG32bitPixel CG32bitPixel::Colorize (CG32bitPixel rgbSource, Metric rHue, Metric rSaturation, Metric rBrightnessAdj)
+
+//	Colorize
+//
+//	Colorize pixel to given hue (0-360). Optionally adjusts saturation (0-1)
+//	and brightness (-1 to 1).
+
+	{
+	CGRealHSB TempHSB = CGRealHSB::FromRGB(rgbSource);
+
+	TempHSB.SetHue(rHue);
+	TempHSB.SetSaturation(rSaturation);
+	if (rBrightnessAdj == 0.0)
+		;
+	else if (rBrightnessAdj < 0.0)
+		{
+		Metric rAdj = 1.0 + rBrightnessAdj;
+		TempHSB.SetBrightness(TempHSB.GetBrightness() * rAdj);
+		}
+	else if (rBrightnessAdj < 1.0)
+		{
+		Metric rRange = 1.0 - rBrightnessAdj;
+		TempHSB.SetBrightness(rBrightnessAdj + TempHSB.GetBrightness() * rRange);
+		}
+	else
+		TempHSB.SetBrightness(1.0);
+
+	CGRealRGB TempRGB = CGRealRGB::FromHSB(TempHSB);
+	return CG32bitPixel(TempRGB);
+	}
+
 CG32bitPixel CG32bitPixel::Composite (CG32bitPixel rgbDest, CG32bitPixel rgbSrc)
 
 //	Composite

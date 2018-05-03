@@ -25,7 +25,9 @@ class CGRealHSB
 		inline Metric GetHue (void) const { return m_rH; }
 		inline Metric GetSaturation (void) const { return m_rS; }
 
+		inline void SetBrightness (Metric rBrightness) { m_rB = Max(0.0, Min(rBrightness, 1.0)); }
 		inline void SetHue (Metric rHue) { m_rH = mathAngleModDegrees(rHue); }
+		inline void SetSaturation (Metric rSaturation) { m_rS = Max(0.0, Min(rSaturation, 1.0)); }
 
 		static CGRealHSB FromRGB (const CGRealRGB &rgbColor);
 		static CGRealHSB FromRGB (CG32bitPixel rgbColor);
