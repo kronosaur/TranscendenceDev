@@ -1962,18 +1962,18 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 				break;
 
 			case itemcatWeapon:
-				if (iRoll < 50)
+				if (iRoll < 25)
 					//	Damage + 10%
 					dwMods = 0x0101;
-				else if (iRoll < 80)
+				else if (iRoll < 75)
 					//	Damage + 20%
 					dwMods = 0x0102;
 				else if (iRoll < 95)
 					//	Damage + 30%
 					dwMods = 0x0103;
 				else
-					//	Delay time at 70% of original
-					dwMods = 0x1003;
+					//	Delay time at 80% of original
+					dwMods = 0x1002;
 				break;
 
 			default:
