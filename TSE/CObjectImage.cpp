@@ -194,22 +194,7 @@ CG32bitImage *CObjectImage::GetRawImage (const CString &sLoadReason, CString *re
 		//	If we have the image, we're done
 
 		if (m_pBitmap)
-			{
-			//	If this image does not have the proper filters, then we need to 
-			//	reload and apply filters.
-
-			if (!m_bLocked)
-				{
-				if (m_bFreeBitmap)
-					delete m_pBitmap;
-				m_pBitmap = NULL;
-				}
-
-			//	Otherwise, we're done
-
-			else
-				return m_pBitmap;
-			}
+			return m_pBitmap;
 
 		//	If we have a load error, then don't bother trying again (otherwise we'll 
 		//	constantly be opening files).
