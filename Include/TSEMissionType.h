@@ -11,6 +11,7 @@ class CMissionType : public CDesignType
 		inline bool CanBeDeclined (void) const { return !m_fNoDecline; }
 		inline bool CanBeDeleted (void) const { return m_fAllowDelete; }
 		inline bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iAccepted < m_iMaxAppearing); }
+		inline bool CleanNonPlayer(void) const { return !m_fRecordNonPlayer; }
 		inline bool CloseIfOutOfSystem (void) const { return m_fCloseIfOutOfSystem; }
 		inline bool FailureWhenOwnerDestroyed (void) const { return !m_fNoFailureOnOwnerDestroyed; }
 		inline bool FailureWhenOutOfSystem (void) const { return (m_iFailIfOutOfSystem != -1); }
@@ -68,7 +69,7 @@ class CMissionType : public CDesignType
 		DWORD m_fForceUndockAfterDebrief:1;	//	If TRUE, default mission screen undocks after debrief
 		DWORD m_fAllowDelete:1;				//	If TRUE, player can delete mission
 		DWORD m_fNoDecline:1;				//	If TRUE, mission cannot be declined once offered.
-		DWORD m_fSpare8:1;
+		DWORD m_fRecordNonPlayer:1;			//	If TRUE, non-player missions will not be deleted after completion
 
 		DWORD m_dwSpare:24;
 	};

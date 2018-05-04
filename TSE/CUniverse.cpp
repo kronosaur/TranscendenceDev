@@ -2642,7 +2642,7 @@ void CUniverse::SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV)
 
 		//	If this is a completed non-player mission, then we delete it.
 
-		if (pMission->IsCompletedNonPlayer() || pMission->IsDestroyed())
+		if ((pMission->IsCompletedNonPlayer() && pMission->CleanNonPlayer()) || pMission->IsDestroyed())
 			{
 			m_AllMissions.Delete(i);
 			i--;
