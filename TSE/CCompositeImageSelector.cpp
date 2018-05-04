@@ -224,6 +224,54 @@ int CCompositeImageSelector::GetVariant (DWORD dwID) const
 	return pEntry->iVariant;
 	}
 
+void CCompositeImageSelector::ReadFromItem (ICCItemPtr pData)
+
+//	ReadFromItem
+//
+//	Reads from a stored item.
+
+	{
+	int i;
+
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	m_Sel.DeleteAll();
+	if (pData->IsNil() || pData->GetCount() == 0 || !pData->IsList())
+		return;
+
+	m_Sel.InsertEmpty(pData->GetCount());
+	for (i = 0; i < m_Sel.GetCount(); i++)
+		{
+		ICCItem *pEntry = pData->GetElement(i);
+
+		m_Sel[i].dwID = (DWORD)pEntry->GetIntegerAt(CONSTLIT("id"));
+		m_Sel[i].iVariant = (DWORD)pEntry->GetIntegerAt(CONSTLIT("variant"));
+		m_Sel[i].dwExtra = 0;
+
+		DWORD dwUNID = (DWORD)pEntry->GetIntegerAt(CONSTLIT("itemType"));
+		if (dwUNID)
+			{
+			CItemType *pItemType = g_pUniverse->FindItemType(dwUNID);
+			if (pItemType)
+				m_Sel[i].dwExtra = (DWORD)pItemType;
+			else
+				m_Sel[i].dwExtra = 0;
+			}
+		else
+			{
+			dwUNID = (DWORD)pEntry->GetIntegerAt(CONSTLIT("shipClass"));
+			if (dwUNID)
+				{
+				CShipClass *pShipClass = g_pUniverse->FindShipClass(dwUNID);
+				if (pShipClass)
+					m_Sel[i].dwExtra = (DWORD)pShipClass;
+				else
+					m_Sel[i].dwExtra = 0;
+				}
+			}
+		}
+	}
+
 void CCompositeImageSelector::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream
@@ -260,6 +308,50 @@ void CCompositeImageSelector::ReadFromStream (SLoadCtx &Ctx)
 				m_Sel[i].dwExtra = (DWORD)g_pUniverse->FindShipClass(dwLoad);
 			}
 		}
+	}
+
+ICCItemPtr CCompositeImageSelector::WriteToItem (void) const
+
+//	WriteToItem
+//
+//	Writes to an ICCItem
+
+	{
+	int i;
+
+	CCodeChain &CC = g_pUniverse->GetCC();
+	if (m_Sel.GetCount() == 0)
+		return ICCItemPtr(CC.CreateNil());
+
+	ICCItemPtr pSel(CC.CreateLinkedList());
+	for (i = 0; i < m_Sel.GetCount(); i++)
+		{
+		ICCItemPtr pEntry(CC.CreateSymbolTable());
+		pSel->Append(CC, pEntry);
+
+		pEntry->SetIntegerAt(CC, CONSTLIT("id"), m_Sel[i].dwID);
+		pEntry->SetIntegerAt(CC, CONSTLIT("variant"), m_Sel[i].iVariant);
+
+		ETypes iType = GetEntryType(m_Sel[i]);
+		switch (iType)
+			{
+			case typeItemType:
+				{
+				CItemType *pItemType = (CItemType *)m_Sel[i].dwExtra;
+				pEntry->SetIntegerAt(CC, CONSTLIT("itemType"), pItemType->GetUNID());
+				break;
+				}
+
+			case typeShipClass:
+				{
+				CShipClass *pWreckClass = (CShipClass *)m_Sel[i].dwExtra;
+				pEntry->SetIntegerAt(CC, CONSTLIT("shipClass"), pWreckClass->GetUNID());
+				break;
+				}
+			}
+		}
+
+	return pSel;
 	}
 
 void CCompositeImageSelector::WriteToStream (IWriteStream *pStream) const
