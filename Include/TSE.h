@@ -1603,6 +1603,7 @@ class CSpaceObject : public CObject
 		inline void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
 		inline void ClearInDamageCode (void) { m_fInDamage = false; }
 		inline void ClearInUpdateCode (void) { m_pObjInUpdate = NULL; m_bObjDestroyed = false; }
+		inline void ClearNoFriendlyFire(void) { m_fNoFriendlyFire = false; }
 		inline void ClearObjReferences (void) { m_Data.OnSystemChanged(NULL); }
 		inline void ClearPainted (void) { m_fPainted = false; }
 		inline void DisableObjectDestructionNotify (void) { m_fNoObjectDestructionNotify = true; }
