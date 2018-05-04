@@ -14,9 +14,11 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 
 	{
 	return (m_iRotation == Val.m_iRotation
+			&& m_pFilters == Val.m_pFilters
 			&& m_rgbFadeColor == Val.m_rgbFadeColor
 			&& m_wFadeOpacity == Val.m_wFadeOpacity
-			&& m_fStationDamage == Val.m_fStationDamage);
+			&& m_fStationDamage == Val.m_fStationDamage
+			&& m_fFullImage == Val.m_fFullImage);
 	}
 
 void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
@@ -61,6 +63,20 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 		pNewDest->CopyChannel(channelAlpha, 0, 0, Mask.GetWidth(), Mask.GetHeight(), Mask, 0, 0);
 		}
 
+	//	Filters
+
+	if (m_pFilters)
+		{
+		//	Create a blank bitmap
+
+		if (pNewDest == NULL)
+			pNewDest = CreateCopy(retImage, &rcNewImage);
+
+		//	Apply filters
+
+		m_pFilters->ApplyTo(*pNewDest);
+		}
+
 	//	Apply wash on top
 
 	if (m_wFadeOpacity != 0)
@@ -86,7 +102,10 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	if (pNewDest)
 		{
-		retImage->Init(pNewDest, rcNewImage, 0, 0, true);
+		if (m_fFullImage)
+			retImage->SetImage(new CObjectImage(pNewDest, true));
+		else
+			retImage->Init(pNewDest, rcNewImage, 0, 0, true);
 		}
 	}
 
@@ -97,29 +116,42 @@ CG32bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, R
 //	Creates a copy of the given image. Caller is reponsible for freeing.
 
 	{
-	RECT rcImage = pImage->GetImageRect();
-	int cxWidth = RectWidth(rcImage);
-	int cyHeight = RectHeight(rcImage);
-	CG32bitImage *pNewImage = new CG32bitImage;
-	pNewImage->Create(cxWidth, cyHeight, CG32bitImage::alpha8);
+	if (m_fFullImage)
+		{
+		CG32bitImage *pNewImage = new CG32bitImage(pImage->GetImage(NULL_STR));
 
-	rcImage.left = 0;
-	rcImage.top = 0;
-	rcImage.right = cxWidth;
-	rcImage.bottom = cyHeight;
+		if (retrcNewImage)
+			*retrcNewImage = pImage->GetImageRect();
 
-	//	Start with undamaged image
+		return pNewImage;
+		}
+	else
+		{
+		RECT rcImage = pImage->GetImageRect();
 
-	pImage->CopyImage(*pNewImage,
-			0,
-			0,
-			0,
-			0);
+		int cxWidth = RectWidth(rcImage);
+		int cyHeight = RectHeight(rcImage);
+		CG32bitImage *pNewImage = new CG32bitImage;
+		pNewImage->Create(cxWidth, cyHeight, CG32bitImage::alpha8);
 
-	if (retrcNewImage)
-		*retrcNewImage = rcImage;
+		rcImage.left = 0;
+		rcImage.top = 0;
+		rcImage.right = cxWidth;
+		rcImage.bottom = cyHeight;
 
-	return pNewImage;
+		//	Start with undamaged image
+
+		pImage->CopyImage(*pNewImage,
+				0,
+				0,
+				0,
+				0);
+
+		if (retrcNewImage)
+			*retrcNewImage = rcImage;
+
+		return pNewImage;
+		}
 	}
 
 void CCompositeImageModifiers::InitDamagePainters (void)

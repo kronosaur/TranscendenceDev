@@ -122,8 +122,7 @@ class CObjectImage : public CDesignType
 		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
         inline int GetHeight (void) const { return (m_pBitmap ? m_pBitmap->GetHeight() : 0); }
 		CG32bitImage *GetHitMask (void);
-		inline CG32bitImage *GetRawImage (const CString &sLoadReason, CString *retsError = NULL) const { return GetRawImage(GetFilterSource(), sLoadReason, retsError); }
-		CG32bitImage *GetRawImage (CSystemType *pFilterSource, const CString &sLoadReason, CString *retsError = NULL) const;
+		CG32bitImage *GetRawImage (const CString &sLoadReason, CString *retsError = NULL) const;
 		inline CString GetImageFilename (void) { return m_sBitmap; }
 		CG32bitImage *GetShadowMask (void);
         inline int GetWidth (void) const { return (m_pBitmap ? m_pBitmap->GetWidth() : 0); }
@@ -147,28 +146,25 @@ class CObjectImage : public CDesignType
 		virtual void OnUnbindDesign (void);
 
 	private:
-		void ApplyFilters (void) const;
 		void CleanUp (void);
-		CSystemType *GetFilterSource (void) const;
 		CG32bitImage *LoadImageFromDb (CResourceDb &ResDb, const CString &sLoadReason, CString *retsError = NULL) const;
 		bool LoadMask(const CString &sFilespec, CG32bitImage **retpImage);
 
-		CString m_sResourceDb;			//	Resource db
-		CString m_sBitmap;				//	Bitmap resource within db
-		CString m_sBitmask;				//	Bitmask resource within db
-		CString m_sHitMask;				//	Optional mask to use for hit testing
-		CString m_sShadowMask;			//	Optional mask to use to generate volumetric shadow
-		bool m_bPreMult;				//	If TRUE, image needs to be premultiplied with mask on load.
-		bool m_bLoadOnUse;				//	If TRUE, image is only loaded when needed
-		mutable bool m_bFreeBitmap;		//	If TRUE, we free the bitmap when done
+		CString m_sResourceDb;					//	Resource db
+		CString m_sBitmap;						//	Bitmap resource within db
+		CString m_sBitmask;						//	Bitmask resource within db
+		CString m_sHitMask;						//	Optional mask to use for hit testing
+		CString m_sShadowMask;					//	Optional mask to use to generate volumetric shadow
+		bool m_bPreMult = false;				//	If TRUE, image needs to be premultiplied with mask on load.
+		bool m_bLoadOnUse = false;				//	If TRUE, image is only loaded when needed
+		mutable bool m_bFreeBitmap = false;		//	If TRUE, we free the bitmap when done
 
-		mutable CG32bitImage *m_pBitmap;//	Loaded image (NULL if not loaded)
-		CG32bitImage *m_pHitMask;		//	NULL if not loaded
-		CG32bitImage *m_pShadowMask;	//	NULL if not loaded
-		mutable CSystemType *m_pFilters;//	Filters applied to loaded image
-		bool m_bMarked;					//	Marked
-		bool m_bLocked;					//	Image is never unloaded
-		mutable bool m_bLoadError;		//	If TRUE, load failed
+		mutable CG32bitImage *m_pBitmap = NULL;	//	Loaded image (NULL if not loaded)
+		CG32bitImage *m_pHitMask = NULL;		//	NULL if not loaded
+		CG32bitImage *m_pShadowMask = NULL;		//	NULL if not loaded
+		bool m_bMarked = false;					//	Marked
+		bool m_bLocked = false;					//	Image is never unloaded
+		mutable bool m_bLoadError = false;		//	If TRUE, load failed
 	};
 
 class CObjectImageArray
@@ -251,6 +247,7 @@ class CObjectImageArray
 		bool PointInImage (SPointInObjectCtx &Ctx, int x, int y) const;
 		void PointInImageInit (SPointInObjectCtx &Ctx, int iTick, int iRotation) const;
 		void ReadFromStream (SLoadCtx &Ctx);
+		void SetImage (CObjectImage *pImage);
 		void SetRotationCount (int iRotationCount);
 		void TakeHandoff (CObjectImageArray &Source);
 		void WriteToStream (IWriteStream *pStream) const;
@@ -398,18 +395,20 @@ class CCompositeImageModifiers
 	{
 	public:
 		CCompositeImageModifiers (void) :
-				m_iRotation(0),
-				m_rgbFadeColor(0),
-				m_wFadeOpacity(0),
-				m_fStationDamage(false)
+				m_fStationDamage(false),
+				m_fFullImage(false)
 			{ }
 
 		bool operator== (const CCompositeImageModifiers &Val) const;
 
 		void Apply (CObjectImageArray *retImage) const;
+		inline const CImageFilterStack *GetFilters (void) const { return m_pFilters; }
 		inline int GetRotation (void) const { return m_iRotation; }
-		inline bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_fStationDamage); }
+		inline bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_fStationDamage && m_pFilters == NULL); }
+		inline bool ReturnFullImage (void) const { return (m_fFullImage ? true : false); }
 		inline void SetFadeColor (CG32bitPixel rgbColor, DWORD dwOpacity) { m_rgbFadeColor = rgbColor; m_wFadeOpacity = (WORD)dwOpacity; }
+		inline void SetFilters (const CImageFilterStack *pFilters) { m_pFilters = pFilters; }
+		inline void SetFullImage (bool bValue = true) { m_fFullImage = bValue; }
 		inline void SetRotation (int iRotation) { m_iRotation = AngleMod(iRotation); }
 		inline void SetStationDamage (bool bValue = true) { m_fStationDamage = bValue; }
 
@@ -421,12 +420,14 @@ class CCompositeImageModifiers
 
 		CG32bitImage *CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const;
 
-		int m_iRotation;					//	Rotation
-		CG32bitPixel m_rgbFadeColor;		//	Apply a wash on top of image
-		WORD m_wFadeOpacity;				//		0 = no wash
+		int m_iRotation = 0;				//	Rotation
+		const CImageFilterStack *m_pFilters = NULL;
+		CG32bitPixel m_rgbFadeColor = 0;	//	Apply a wash on top of image
+		WORD m_wFadeOpacity = 0;			//		0 = no wash
 
 		DWORD m_fStationDamage:1;			//	Apply station damage to image
-		DWORD m_dwSpare:31;
+		DWORD m_fFullImage:1;				//	Return full image even if we have rotations
+		DWORD m_dwSpare:30;
 	};
 
 class CCompositeImageDesc

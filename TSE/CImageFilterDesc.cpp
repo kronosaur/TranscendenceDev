@@ -110,6 +110,25 @@ void CImageFilterDesc::ApplyColorize (CG32bitImage &Dest, int iHue, int iSaturat
 //	Colorize the image.
 
 	{
+	Metric rHue = (Metric)iHue;
+	Metric rSaturation = (Metric)iSaturation / 100.0;
+
+	CG32bitPixel *pDestRow = Dest.GetPixelPos(0, 0);
+	CG32bitPixel *pDestRowEnd = Dest.GetPixelPos(0, Dest.GetHeight());
+
+	while (pDestRow < pDestRowEnd)
+		{
+		CG32bitPixel *pDestPos = pDestRow;
+		CG32bitPixel *pDestPosEnd = pDestRow + Dest.GetWidth();
+
+		while (pDestPos < pDestPosEnd)
+			{
+			*pDestPos = CG32bitPixel::Colorize(*pDestPos, rHue, rSaturation);
+			pDestPos++;
+			}
+
+		pDestRow = Dest.NextRow(pDestRow);
+		}
 	}
 
 void CImageFilterDesc::ApplyHueSaturation (CG32bitImage &Dest, int iHue, int iSaturation, int iBrightness, BYTE byOpacity) const
