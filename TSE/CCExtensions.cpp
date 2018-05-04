@@ -9585,6 +9585,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				CString sNewValue = pShip->SetAISettingString(sSetting, (pValue->IsNil() ? NULL_STR : pValue->GetStringValue()));
+				pShip->UpdateNoFriendlyFire();
 				if (sNewValue.IsBlank())
 					return pCC->CreateNil();
 				else

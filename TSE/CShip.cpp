@@ -8216,3 +8216,16 @@ void CShip::UpdateInactive (void)
             }
         }
 	}
+
+void CShip::UpdateNoFriendlyFire(void)
+
+//	UpdateNoFriendlyFire
+//
+//	Updates NoFriendlyFire based on AISettings
+
+{
+	if (m_pController->GetAISettings()->NoFriendlyFire())
+		SetNoFriendlyFire();
+	else
+		ClearNoFriendlyFire();
+}
