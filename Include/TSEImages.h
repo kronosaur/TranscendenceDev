@@ -105,6 +105,7 @@ class CImageFilterStack
 
 		void ApplyTo (CG32bitImage &Image) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		inline bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
 
 	private:
 		TArray<CImageFilterDesc> m_Stack;

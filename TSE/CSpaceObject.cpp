@@ -4540,7 +4540,11 @@ const CImageFilterStack *CSpaceObject::GetSystemFilters (void) const
 	if (pType == NULL)
 		return NULL;
 
-	return &pType->GetImageFilters();
+	const CImageFilterStack *pFilters = &pType->GetImageFilters();
+	if (pFilters->IsEmpty())
+		return NULL;
+
+	return pFilters;
 	}
 
 void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *retList, CSpaceObject *pExcludeObj)
