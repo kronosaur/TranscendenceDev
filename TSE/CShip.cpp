@@ -75,6 +75,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
 #define PROPERTY_OPERATING_SPEED				CONSTLIT("operatingSpeed")
+#define PROPERTY_PLAYER_BLACKLISTED				CONSTLIT("playerBlacklisted")
 #define PROPERTY_PLAYER_WINGMAN					CONSTLIT("playerWingman")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
@@ -3248,6 +3249,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		else
 			return CC.CreateString(SPEED_FULL);
 		}
+
+	else if (strEquals(sName, PROPERTY_PLAYER_BLACKLISTED))
+		return CC.CreateBool(m_pController->IsPlayerBlacklisted());
 
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))
 		return CC.CreateBool(m_pController->IsPlayerWingman());
@@ -7670,6 +7674,11 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 			return false;
 			}
 
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_PLAYER_BLACKLISTED))
+		{
+		m_pController->SetPlayerBlacklisted(!pValue->IsNil());
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_PLAYER_WINGMAN))

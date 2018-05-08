@@ -3768,61 +3768,6 @@ int CSpaceObject::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *ret
 	return iPort;
 	}
 
-CSpaceObject *CSpaceObject::GetNearestEnemy (Metric rMaxRange, bool bIncludeStations)
-
-//	GetNearest
-//
-//	Returns the nearest enemy ship or station
-
-	{
-	DEBUG_TRY
-
-	int i;
-
-	//	Get the sovereign
-
-	CSovereign *pSovereign = GetSovereignToDefend();
-	if (pSovereign == NULL || GetSystem() == NULL)
-		return NULL;
-
-	//	Get the list of enemy objects
-
-	const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(GetSystem());
-
-	//	Start a max range
-
-	Metric rBestDist = rMaxRange * rMaxRange;
-	CSpaceObject *pBestObj = NULL;
-
-	//	Loop for all enemy objects
-
-	int iCount = ObjList.GetCount();
-	for (i = 0; i < iCount; i++)
-		{
-		CSpaceObject *pObj = ObjList.GetObj(i);
-
-		if ((pObj->GetCategory() == catShip
-					|| (bIncludeStations && pObj->GetCategory() == catStation))
-				&& pObj->CanAttack()
-				&& pObj != this)
-			{
-			CVector vDist = GetPos() - pObj->GetPos();
-			Metric rDist = vDist.Length2();
-
-			if (rDist < rBestDist
-					&& !pObj->IsEscortingFriendOf(this))
-				{
-				rBestDist = rDist;
-				pBestObj = pObj;
-				}
-			}
-		}
-
-	return pBestObj;
-
-	DEBUG_CATCH
-	}
-
 CSpaceObject *CSpaceObject::GetNearestEnemyStation (Metric rMaxRange)
 
 //	GetNearestEnemyStation
@@ -3938,15 +3883,9 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 
 	CPerceptionCalc Perception(GetPerception());
 
-	//	Allocate an array large enough
+	//	Allocate sorted array
 
-	struct Entry
-		{
-		CSpaceObject *pObj;
-		Metric rDist2;
-		};
-	Entry *pList = new Entry[iMaxEnemies];
-	int iCount = 0;
+	TSortMap<Metric, CSpaceObject *> Sorted;
 
 	//	If a ship has fired its weapon after this time, then it counts
 	//	as an aggressor
@@ -3978,55 +3917,49 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 					&& pObj->GetLastFireTime() > iAggressorThreshold
 					&& !pObj->IsEscortingFriendOf(this))
 				{
-				int iPos = 0;
+				//	Add the object to the list.
 
-				//	Figure out where to insert (in sorted order
-				//	by ascending distance)
+				Sorted.Insert(rDist2, pObj);
 
-				for (iPos = 0; iPos < iCount; iPos++)
-					if (rDist2 < pList[iPos].rDist2)
-						break;
+				//	If we've already got enough objects, then set a new worst 
+				//	distance.
 
-				//	If we're off the end, then don't insert
-
-				if (iPos >= iMaxEnemies)
-					continue;
-
-				//	Add the entry in sorted order
-
-				for (int j = Min(iCount - 1, iMaxEnemies - 2); j >= iPos; j--)
-					pList[j + 1] = pList[j];
-
-				pList[iPos].rDist2 = rDist2;
-				pList[iPos].pObj = pObj;
-
-				//	Increment count
-
-				if (iCount < iMaxEnemies)
-					iCount++;
-
-				//	Otherwise, we have a new worst distance, since we've filled 
-				//	the list with objects that are at least this close.
-
-				else
-					rWorstDist2 = pList[iCount-1].rDist2;
+				if (Sorted.GetCount() >= iMaxEnemies)
+					rWorstDist2 = Sorted.GetKey(Sorted.GetCount() - 1);
 				}
 			}
+		}
+
+	//	If we're angry at the player, add her to the list.
+	//	(Skip if we're an enemy of the player, since we would have added her 
+	//	above.)
+
+	CSpaceObject *pPlayer = GetPlayerShip();
+	if (pPlayer 
+			&& !IsEnemy(pPlayer)
+			&& IsAngryAt(pPlayer)
+			&& pPlayer != pExcludeObj
+			&& pPlayer->GetLastFireTime() > iAggressorThreshold
+			&& !pPlayer->IsEscortingFriendOf(this))
+		{
+		CVector vDist = GetPos() - pPlayer->GetPos();
+		Metric rDist2 = vDist.Length2();
+		if (rDist2 < rWorstDist2
+				&& Perception.CanBeTargeted(pPlayer, rDist2))
+			Sorted.Insert(rDist2, pPlayer);
 		}
 
 	//	Add each of the entries in the array to the
 	//	output
 
-	for (i = 0; i < iCount; i++)
-		pretList->Insert(pList[i].pObj);
-
-	//	Done with list
-
-	delete [] pList;
+	int iFound = Min(Sorted.GetCount(), iMaxEnemies);
+	pretList->GrowToFit(iFound);
+	for (i = 0; i < iFound; i++)
+		pretList->Insert(Sorted[i]);
 
 	//	Return the number of enemies found
 
-	return iCount;
+	return iFound;
 	}
 
 CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncludeStations, CSpaceObject *pExcludeObj)
@@ -4087,6 +4020,25 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncl
 				rBestDist2 = rDist2;
 				pBestObj = pObj;
 				}
+			}
+		}
+
+	//	If we're angry at the player, add her to the list.
+
+	CSpaceObject *pPlayer = GetPlayerShip();
+	if (pPlayer 
+			&& !IsEnemy(pPlayer) 
+			&& IsAngryAt(pPlayer)
+			&& pPlayer != pExcludeObj
+			&& !pPlayer->IsEscortingFriendOf(this))
+		{
+		CVector vDist = GetPos() - pPlayer->GetPos();
+		Metric rDist2 = vDist.Length2();
+		if (rDist2 < rBestDist2
+				&& Perception.CanBeTargeted(pPlayer, rDist2))
+			{
+			rBestDist2 = rDist2;
+			pBestObj = pPlayer;
 			}
 		}
 

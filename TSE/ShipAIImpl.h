@@ -340,6 +340,7 @@ class CBaseShipAI : public IShipController
 		virtual bool GetThrust (void) override { return m_AICtx.GetThrust(m_pShip); }
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override;
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
+		virtual bool IsPlayerBlacklisted (void) const override { return (m_fPlayerBlacklisted ? true : false); }
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
@@ -362,6 +363,7 @@ class CBaseShipAI : public IShipController
 		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_AICtx.SetManeuver(iManeuver); }
 		virtual void SetShipToControl (CShip *pShip) override;
 		virtual void SetThrust (bool bThrust) override { m_AICtx.SetThrust(bThrust); }
+		virtual void SetPlayerBlacklisted (bool bValue) override { m_fPlayerBlacklisted = bValue; }
 		virtual void SetPlayerWingman (bool bIsWingman) override { m_fIsPlayerWingman = bIsWingman; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
 		virtual void WriteToStream (IWriteStream *pStream) override;
@@ -378,7 +380,6 @@ class CBaseShipAI : public IShipController
 	protected:
 		CSpaceObject *CalcEnemyShipInRange (CSpaceObject *pCenter, Metric rRange, CSpaceObject *pExcludeObj = NULL);
 		Metric CalcShipIntercept (const CVector &vRelPos, const CVector &vAbsVel, Metric rMaxSpeed);
-		int CalcWeaponScore (CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2);
 		void CancelDocking (CSpaceObject *pTarget);
 		bool CheckForEnemiesInRange (CSpaceObject *pCenter, Metric rRange, int iInterval, CSpaceObject **retpTarget);
 		bool CheckOutOfRange (CSpaceObject *pTarget, Metric rRange, int iInterval);
@@ -433,6 +434,7 @@ class CBaseShipAI : public IShipController
 		CAttackDetector m_Blacklist;			//	Player blacklisted
 
 		//	Flags
+
 		DWORD m_fDeviceActivate:1;
 		DWORD m_fInOnOrderChanged:1;
 		DWORD m_fInOnOrdersCompleted:1;
@@ -440,7 +442,9 @@ class CBaseShipAI : public IShipController
 		DWORD m_fAvoidWalls:1;					//	TRUE if we need to avoid walls
 		DWORD m_fIsPlayerWingman:1;				//	TRUE if this is a wingman for the player
 		DWORD m_fOldStyleBehaviors:1;			//	TRUE if we're not using m_pOrderModule
-		DWORD m_fSpare:25;
+		DWORD m_fPlayerBlacklisted:1;			//	TRUE if we've blacklisted the player (for attacking us)
+
+		DWORD m_fSpare:24;
 	};
 
 //	Inlines --------------------------------------------------------------------

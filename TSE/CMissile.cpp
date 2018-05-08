@@ -1127,7 +1127,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	If we can choose new targets, see if we need one now
 
 		if (m_pDesc->CanAutoTarget() && m_pTarget == NULL)
-			m_pTarget = GetNearestEnemy(MAX_TARGET_RANGE, false);
+			m_pTarget = GetNearestVisibleEnemy(MAX_TARGET_RANGE);
 
 		//	If this is a tracking missile, change direction to face the target
 

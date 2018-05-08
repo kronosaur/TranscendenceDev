@@ -317,7 +317,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 		CSpaceObject *pTarget;
 		if (m_fAimReflection
-				&& (pTarget = pShip->GetNearestEnemy(MAX_REFLECTION_TARGET))
+				&& (pTarget = pShip->GetNearestVisibleEnemy(MAX_REFLECTION_TARGET))
 				&& (iDirection = pShip->CalcFireSolution(pTarget, Ctx.pCause->GetMaxSpeed())) != -1)
 			{
 			//	iDirection is set

@@ -54,7 +54,8 @@ CBaseShipAI::CBaseShipAI (void) :
 		m_fCheckedForWalls(false),
 		m_fAvoidWalls(false),
 		m_fIsPlayerWingman(false),
-		m_fOldStyleBehaviors(false)
+		m_fOldStyleBehaviors(false),
+		m_fPlayerBlacklisted(false)
 
 //	CBaseShipAI constructor
 
@@ -775,6 +776,15 @@ void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCt
 		if (pTarget)
 			TargetingCtx.Targets.Insert(pTarget);
 
+		//	If the player is blacklisted, add her to the list.
+
+		if (m_fPlayerBlacklisted)
+			{
+			pTarget = m_pShip->GetPlayerShip();
+			if (pTarget)
+				TargetingCtx.Targets.Insert(pTarget);
+			}
+
 		TargetingCtx.bRecalcTargets = false;
 		}
 
@@ -902,8 +912,17 @@ bool CBaseShipAI::IsAngryAt (CSpaceObject *pObj) const
 //	Returns TRUE if we're angry at the given object
 
 	{
+	//	If we're attacking the object, then we're angry at it.
+
 	if (GetTarget(CItemCtx()) == pObj)
 		return true;
+
+	//	Are we angry at the player?
+
+	if (m_fPlayerBlacklisted && pObj->IsPlayer())
+		return true;
+
+	//	If our base is angry at the object, then we're angry too
 
 	switch (GetCurrentOrder())
 		{
@@ -1507,7 +1526,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_fDeviceActivate =			((dwLoad & 0x00000001) ? true : false);
-	//	0x00000002 unused at 75
+	m_fPlayerBlacklisted =		((dwLoad & 0x00000002) && (Ctx.dwVersion >= 75) ? true : false);
 	//	0x00000004 unused at 75
 	m_fCheckedForWalls =		((dwLoad & 0x00000008) ? true : false);
 	m_fAvoidWalls =				((dwLoad & 0x00000010) ? true : false);
@@ -1895,7 +1914,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 
 	dwSave = 0;
 	dwSave |= (m_fDeviceActivate ?			0x00000001 : 0);
-	//	0x00000002 unused at version 75.
+	dwSave |= (m_fPlayerBlacklisted ?		0x00000002 : 0);
 	//	0x00000004 unused at version 75.
 	dwSave |= (m_fCheckedForWalls ?			0x00000008 : 0);
 	dwSave |= (m_fAvoidWalls ?				0x00000010 : 0);

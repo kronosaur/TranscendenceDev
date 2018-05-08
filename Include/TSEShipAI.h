@@ -288,6 +288,7 @@ class IShipController
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) { }
 		virtual bool IsAngryAt (CSpaceObject *pObj) const { return false; }
 		virtual bool IsPlayer (void) const { return false; }
+		virtual bool IsPlayerBlacklisted (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) { ASSERT(false); }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
@@ -296,6 +297,7 @@ class IShipController
 		virtual void SetManeuver (EManeuverTypes iManeuver) { }
 		virtual void SetShipToControl (CShip *pShip) { }
 		virtual void SetThrust (bool bThrust) { }
+		virtual void SetPlayerBlacklisted (bool bValue) { }
 		virtual void SetPlayerWingman (bool bIsWingman) { }
 		virtual void WriteToStream (IWriteStream *pStream) { ASSERT(false); }
 
