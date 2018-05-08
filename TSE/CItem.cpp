@@ -40,6 +40,7 @@
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
+#define LANGID_CORE_CHARGES						CONSTLIT("core.charges")
 #define LANGID_CORE_REFERENCE					CONSTLIT("core.reference")
 
 CItemEnhancement CItem::m_NullMod;
@@ -957,6 +958,12 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 		if (IsEnhanced())
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
+
+		//	Charges
+
+		CString sNoun;
+		if (m_pItemType->TranslateText(*this, LANGID_CORE_CHARGES, NULL, &sNoun))
+			retList->Insert(SDisplayAttribute(attribNeutral, CLanguage::ComposeNounPhrase(sNoun, GetCharges(), NULL_STR, 0, nounCountAlways)));
 		}
 
 	//	Add various engine-based attributes (these are shown even if the item 
