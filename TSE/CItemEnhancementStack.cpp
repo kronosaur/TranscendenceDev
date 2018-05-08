@@ -14,6 +14,8 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 	{
 	int i;
 
+	CDeviceClass *pClass = Ctx.GetDeviceClass();
+
 	//	Add all damage resistance enhancements
 
 	bool bNoDamageAdj = false;
@@ -87,6 +89,11 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 		retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("-%d%%"), iBonus), true));
 	else if (iBonus > 0)
 		retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+%d%%"), iBonus), true));
+
+	//	Add tracking
+
+	if (IsTracking() && pClass && !pClass->IsTrackingWeapon(CItemCtx()))
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+tracking"), true));
 	}
 
 int CItemEnhancementStack::ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const

@@ -134,6 +134,8 @@ CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *p
 		return CONSTLIT("+fast");
 	else if (iDamageBonus = (m_pEnhancements ? m_pEnhancements->GetBonus() : 0))
 		return (iDamageBonus > 0 ? strPatternSubst(CONSTLIT("+%d%%"), iDamageBonus) : strPatternSubst(CONSTLIT("%d%%"), iDamageBonus));
+	else if (m_pEnhancements && m_pEnhancements->IsTracking() && !m_pClass->IsTrackingWeapon(CItemCtx()))
+		return CONSTLIT("+tracking");
 
 	//	Other enhancements
 
