@@ -130,6 +130,7 @@ class CItemType : public CDesignType
 		inline bool IsUsable (void) const { return GetUseDesc(NULL); }
 		inline void SetKnown (bool bKnown = true) { m_fKnown = bKnown; }
 		inline void SetShowReference (void) { m_fReference = true; }
+		inline bool ShowChargesInUseMenu (void) const { return (m_fShowChargesInUseMenu ? true : false); }
 		inline bool ShowReference (void) const { return (m_fReference ? true : false); }
 
 		//	CDesignType overrides
@@ -235,7 +236,7 @@ class CItemType : public CDesignType
 		DWORD m_fUseAsArmorSet:1;				//	If TRUE, we only show item once for armor set
 		DWORD m_fAmmoCharges:1;					//	If TRUE, charges are ammo
 		DWORD m_fNoSaleIfUsed:1;				//	If TRUE, cannot be sold once it's been used
-		DWORD m_fSpare8:1;
+		DWORD m_fShowChargesInUseMenu:1;		//	If TRUE, the use menu shows charges instead of a count.
 
 		DWORD m_dwSpare:16;
 

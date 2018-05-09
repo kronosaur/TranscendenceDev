@@ -46,6 +46,7 @@
 #define PLURAL_NAME_ATTRIB						CONSTLIT("pluralName")
 #define REVERSE_ARTICLE_ATTRIB					CONSTLIT("reverseArticle")
 #define SECOND_PLURAL_ATTRIB					CONSTLIT("secondPlural")
+#define SHOW_CHARGES_IN_USE_MENU				CONSTLIT("showChargesInUseMenu")
 #define SHOW_REFERENCE_ATTRIB					CONSTLIT("showReference")
 #define SORT_NAME_ATTRIB						CONSTLIT("sortName")
 #define UNID_ATTRIB								CONSTLIT("UNID")
@@ -1534,7 +1535,8 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fUseEnabled = pDesc->GetAttributeBool(USE_ENABLED_ONLY_ATTRIB);
 	m_fUseCompleteArmor = pDesc->GetAttributeBool(USE_COMPLETE_ARMOR_ONLY_ATTRIB);
 	m_fUseAsArmorSet = pDesc->GetAttributeBool(USE_AS_ARMOR_SET_ATTRIB);
-
+	m_fShowChargesInUseMenu = pDesc->GetAttributeBool(SHOW_CHARGES_IN_USE_MENU);
+	
 	//	Process sub-elements
 
 	for (i = 0; i < pDesc->GetContentElementCount(); i++)
