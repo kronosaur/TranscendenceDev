@@ -6789,16 +6789,23 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 
 		case progDisarm:
 			{
-			CInstalledDevice *pWeapon = GetNamedDevice(devPrimaryWeapon);
-			if (pWeapon)
-				{
-				//	The chance of success is 50% plus 10% for every level
-				//	that the program is greater than the primary weapon
+			int iTargetLevel;
+			CInstalledDevice *pWeapon;
 
-				int iSuccess = 50 + 10 * (Program.iAILevel - pWeapon->GetLevel());
-				if (mathRandom(1, 100) <= iSuccess)
-					MakeDisarmed(Program.iAILevel * mathRandom(30, 60));
-				}
+			if (pWeapon = GetNamedDevice(devPrimaryWeapon))
+				iTargetLevel = pWeapon->GetLevel();
+			else if (pWeapon = GetNamedDevice(devMissileWeapon))
+				iTargetLevel = pWeapon->GetLevel();
+			else
+				iTargetLevel = GetCyberDefenseLevel();
+
+			//	The chance of success is 50% plus 10% for every level
+			//	that the program is greater than the primary weapon
+
+			int iSuccess = 50 + 10 * (Program.iAILevel - iTargetLevel);
+			if (mathRandom(1, 100) <= iSuccess)
+				MakeDisarmed(Program.iAILevel * mathRandom(30, 60));
+
 			break;
 			}
 
