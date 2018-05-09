@@ -4,6 +4,11 @@
 
 #include "PreComp.h"
 
+#ifdef DEBUG_ON_CREATE_TIME
+#include <stdio.h>
+static DWORD g_dwTotalTime = 0;
+#endif
+
 #define MAX_DELTA								(2.0 * g_KlicksPerPixel)
 #define MAX_DELTA2								(MAX_DELTA * MAX_DELTA)
 #define MAX_DELTA_VEL							(g_KlicksPerPixel / 2.0)
@@ -1257,6 +1262,7 @@ ALERROR CSpaceObject::CreateRandomItems (IItemGenerator *pItems, CSystem *pSyste
 		CItemListManipulator ItemList(GetItemList());
 		SItemAddCtx Ctx(ItemList);
 		Ctx.pSystem = pSystem;
+		Ctx.pDest = this;
 		Ctx.vPos = GetPos();
 		Ctx.iLevel = (Ctx.pSystem ? Ctx.pSystem->GetLevel() : 1);
 
@@ -2340,6 +2346,10 @@ void CSpaceObject::FireOnCreate (const SOnCreate &OnCreate)
 	if (!m_fOnCreateCalled 
 			&& FindEventHandler(ON_CREATE_EVENT, &Event))
 		{
+#ifdef DEBUG_ON_CREATE_TIME
+		DWORD dwStart = ::GetTickCount();
+#endif
+
 		CCodeChainCtx Ctx;
 		Ctx.SetSystemCreateCtx(OnCreate.pCreateCtx);
 
@@ -2355,6 +2365,11 @@ void CSpaceObject::FireOnCreate (const SOnCreate &OnCreate)
 		if (pResult->IsError())
 			ReportEventError(ON_CREATE_EVENT, pResult);
 		Ctx.Discard(pResult);
+
+#ifdef DEBUG_ON_CREATE_TIME
+		g_dwTotalTime += ::sysGetTicksElapsed(dwStart);
+		printf("[%x] OnCreate: %s (%d)\n", GetID(), (LPSTR)GetNounPhrase(), g_dwTotalTime);
+#endif
 		}
 
 	//	Remember that we already called OnCreate. This is helpful in case we
