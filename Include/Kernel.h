@@ -1406,6 +1406,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs);
 CString strPatternSubst (CString sLine, ...);
 
 constexpr DWORD STRPROC_NO_DOUBLE_QUOTES =			0x00000001;
+constexpr DWORD STRPROC_ESCAPE_DOUBLE_QUOTES =		0x00000002;
 CString strProcess (const CString &sValue, DWORD dwFlags);
 
 CString strRepeat (const CString &sString, int iCount);

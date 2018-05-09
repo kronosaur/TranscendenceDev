@@ -2609,6 +2609,11 @@ CString strProcess (const CString &sValue, DWORD dwFlags)
 			case '\"':
 				if (dwFlags & STRPROC_NO_DOUBLE_QUOTES)
 					*pDest++ = '\'';
+				else if (dwFlags & STRPROC_ESCAPE_DOUBLE_QUOTES)
+					{
+					*pDest++ = '\\';
+					*pDest++ = '\"';
+					}
 				else
 					*pDest++ = *pSrc;
 				pSrc++;
