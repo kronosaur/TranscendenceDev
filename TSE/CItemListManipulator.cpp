@@ -646,7 +646,7 @@ void CItemListManipulator::SetDamagedAtCursor (bool bDamaged, int iCount)
 	MoveItemTo(NewItem, OldItem);
 	}
 
-void CItemListManipulator::SetDataAtCursor (const CString &sAttrib, const CString &sData, int iCount)
+void CItemListManipulator::SetDataAtCursor (const CString &sAttrib, ICCItem *pData, int iCount)
 
 //	SetDataAtCursor
 //
@@ -658,7 +658,7 @@ void CItemListManipulator::SetDataAtCursor (const CString &sAttrib, const CStrin
 	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	if (iCount != -1)
 		NewItem.SetCount(Min(iCount, OldItem.GetCount()));
-	NewItem.SetData(sAttrib, sData);
+	NewItem.SetData(sAttrib, pData);
 
 	MoveItemTo(NewItem, OldItem);
 	}

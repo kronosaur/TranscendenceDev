@@ -862,6 +862,19 @@ const CItemList &CItem::GetComponents (void) const
 	return m_pItemType->GetComponents();
 	}
 
+ICCItemPtr CItem::GetDataAsItem (const CString &sAttrib) const
+
+//	GetDataAsItem
+//
+//	Returns data
+
+	{
+	if (m_pExtra)
+		return m_pExtra->m_Data.GetDataAsItem(sAttrib);
+
+	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	}
+
 CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
 
 //	GetDesc

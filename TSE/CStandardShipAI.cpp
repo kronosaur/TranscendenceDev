@@ -609,7 +609,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 							&& !pObj->IsRadioactive()
 							&& !pObj->IsIntangible()
 							&& (pObj->CanObjRequestDock() == CSpaceObject::dockingOK)
-							&& pObj->GetData(SPACE_OBJ_SCAVENGE_DATA).IsBlank())
+							&& pObj->GetData(SPACE_OBJ_SCAVENGE_DATA)->IsNil())
 						{
 						CVector vRange = pObj->GetPos() - m_pShip->GetPos();
 						Metric rDistance2 = vRange.Dot(vRange);
@@ -684,7 +684,8 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 						{
 						//	Mark so we don't loot this object again
 
-						pDock->SetData(SPACE_OBJ_SCAVENGE_DATA, CONSTLIT("l"));
+						ICCItemPtr pValue(g_pUniverse->GetCC().CreateString(CONSTLIT("l")));
+						pDock->SetData(SPACE_OBJ_SCAVENGE_DATA, pValue);
 
 						//	Undock
 

@@ -564,6 +564,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 	CCodeChain &CC = g_pUniverse->GetCC();
 	CString sValue;
 	ICCItem *pResult;
+	ICCItemPtr pValue;
 
 	if (strEquals(sProperty, PROPERTY_API_VERSION))
 		return CC.CreateInteger(GetAPIVersion());
@@ -615,8 +616,8 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	//	Lastly, see if there is static data
 
-	else if (m_pExtra && (pResult = m_pExtra->StaticData.FindDataAsItem(sProperty)))
-		return pResult;
+	else if (m_pExtra && (m_pExtra->StaticData.FindDataAsItem(sProperty, pValue)))
+		return pValue->Reference();
 
 	//	Not found
 
@@ -740,18 +741,18 @@ bool CDesignType::FindEventHandler (const CString &sEvent, SEventHandlerDesc *re
 	return false;
 	}
 
-bool CDesignType::FindStaticData (const CString &sAttrib, const CString **retpData) const
+bool CDesignType::FindStaticData (const CString &sAttrib, ICCItemPtr &pData) const
 
 //	FindStaticData
 //
 //	Returns static data
 
 	{
-	if (m_pExtra && m_pExtra->StaticData.FindData(sAttrib, retpData))
+	if (m_pExtra && m_pExtra->StaticData.FindDataAsItem(sAttrib, pData))
 		return true;
 
 	if (m_pInheritFrom)
-		return m_pInheritFrom->FindStaticData(sAttrib, retpData);
+		return m_pInheritFrom->FindStaticData(sAttrib, pData);
 
 	return false;
 	}
@@ -1628,6 +1629,19 @@ ICCItem *CDesignType::GetEventHandler (const CString &sEvent) const
 		return NULL;
 	}
 
+ICCItemPtr CDesignType::GetGlobalData (const CString &sAttrib) const
+
+//	GetGlobalData
+//
+//	Returns global data
+
+	{
+	if (m_pExtra)
+		return m_pExtra->GlobalData.GetDataAsItem(sAttrib);
+
+	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	}
+
 SEventHandlerDesc *CDesignType::GetInheritedCachedEvent (ECachedHandlers iEvent) const
 
 //	GetInheritedCachedEvent
@@ -2022,21 +2036,21 @@ CXMLElement *CDesignType::GetScreen (const CString &sUNID)
 	return Screen.GetDesc();
 	}
 
-const CString &CDesignType::GetStaticData (const CString &sAttrib) const
+ICCItemPtr CDesignType::GetStaticData (const CString &sAttrib) const
 
 //	GetStaticData
 //
 //	Returns static data
 	
 	{
-	const CString *pData;
-	if (m_pExtra && m_pExtra->StaticData.FindData(sAttrib, &pData))
-		return *pData;
+	ICCItemPtr pResult;
+	if (m_pExtra && m_pExtra->StaticData.FindDataAsItem(sAttrib, pResult))
+		return pResult;
 
 	if (m_pInheritFrom)
 		return m_pInheritFrom->GetStaticData(sAttrib);
 
-	return NULL_STR;
+	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
 	}
 
 CString CDesignType::GetTypeChar (DesignTypes iType)
@@ -2643,25 +2657,20 @@ bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICC
 	if (GetVersion() > 2)
 		return false;
 
-	CString sData = GetStaticData(CONSTLIT("Language"));
-	if (!sData.IsBlank())
+	ICCItemPtr pValue = GetStaticData(CONSTLIT("Language"));
+	if (!pValue->IsNil())
 		{
 		CCodeChainCtx Ctx;
 
-		ICCItem *pData = Ctx.Link(sData, 0, NULL);
-
-		for (i = 0; i < pData->GetCount(); i++)
+		for (i = 0; i < pValue->GetCount(); i++)
 			{
-			ICCItem *pEntry = pData->GetElement(i);
+			ICCItem *pEntry = pValue->GetElement(i);
 			if (pEntry->GetCount() == 2 && strEquals(sID, pEntry->GetElement(0)->GetStringValue()))
 				{
 				*retpResult = Ctx.Run(pEntry->GetElement(1));	//	LATER:Event
-				Ctx.Discard(pData);
 				return true;
 				}
 			}
-
-		Ctx.Discard(pData);
 		}
 
 	return false;

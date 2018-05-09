@@ -3407,14 +3407,8 @@ int CSpaceObject::GetDataInteger (const CString &sAttrib) const
 //	Get integer value
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
-	CString sData = GetData(sAttrib);
-	ICCItem *pResult = CC.Link(sData, 0, NULL);
-	int iResult = pResult->GetIntegerValue();
-	pResult->Discard(&CC);
-
-	return iResult;
+	ICCItemPtr pValue = GetData(sAttrib);
+	return pValue->GetIntegerValue();
 	}
 
 CString CSpaceObject::GetDesiredCommsKey (void) const
@@ -3550,7 +3544,7 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	return GetDefaultDockScreen(retsScreen);
 	}
 
-const CString &CSpaceObject::GetGlobalData (const CString &sAttribute) const
+ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
 
 //	GetGlobalData
 //
@@ -3559,7 +3553,7 @@ const CString &CSpaceObject::GetGlobalData (const CString &sAttribute) const
 	{
 	CDesignType *pType = GetType();
 	if (pType == NULL)
-		return NULL_STR;
+		return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
 
 	return pType->GetGlobalData(sAttribute);
 	}
@@ -4160,6 +4154,20 @@ CSpaceObject *CSpaceObject::GetOrderGiver (DestructionTypes iCause)
 		return OnGetOrderGiver();
 	}
 
+ICCItemPtr CSpaceObject::GetOverlayData (DWORD dwID, const CString &sAttrib) const
+
+//	GetOverlayData
+//
+//	Returns data for overlay
+
+	{
+	const COverlayList *pOverlays = GetOverlays();
+	if (pOverlays == NULL)
+		return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+
+	return pOverlays->GetData(dwID, sAttrib);
+	}
+
 ICCItem *CSpaceObject::GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, const CString &sName)
 
 //	GetOverlayProperty
@@ -4444,19 +4452,19 @@ CSovereign *CSpaceObject::GetSovereignToDefend (void) const
 		return GetSovereign();
 	}
 
-const CString &CSpaceObject::GetStaticData (const CString &sAttrib)
+ICCItemPtr CSpaceObject::GetStaticData (const CString &sAttrib)
 
 //	GetStaticData
 //
 //	Returns static data
 
 	{
-	const CString *pData;
+	ICCItemPtr pData;
 
 	//	Check our override
 
-	if (m_pOverride && m_pOverride->FindStaticData(sAttrib, &pData))
-		return *pData;
+	if (m_pOverride && m_pOverride->FindStaticData(sAttrib, pData))
+		return pData;
 
 	//	Check our type
 
@@ -4466,7 +4474,7 @@ const CString &CSpaceObject::GetStaticData (const CString &sAttrib)
 	
 	//	Not found
 
-	return NULL_STR;
+	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
 	}
 
 CG32bitPixel CSpaceObject::GetSymbolColor (void)
@@ -7274,12 +7282,8 @@ void CSpaceObject::SetDataInteger (const CString &sAttrib, int iValue)
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
-
-	ICCItem *pValue = CC.CreateInteger(iValue);
-	CString sData = CC.Unlink(pValue);
-	pValue->Discard(&CC);
-
-	SetData(sAttrib, sData);
+	ICCItemPtr pValue = ICCItemPtr(CC.CreateInteger(iValue));
+	SetData(sAttrib, pValue);
 	}
 
 void CSpaceObject::SetEventFlags (void)
@@ -7300,7 +7304,7 @@ void CSpaceObject::SetEventFlags (void)
 	OnSetEventFlags();
 	}
 
-void CSpaceObject::SetGlobalData (const CString &sAttribute, const CString &sData)
+void CSpaceObject::SetGlobalData (const CString &sAttribute, ICCItem *pData)
 
 //	SetGlobalData
 //
@@ -7311,7 +7315,7 @@ void CSpaceObject::SetGlobalData (const CString &sAttribute, const CString &sDat
 	if (pType == NULL)
 		return;
 
-	pType->SetGlobalData(sAttribute, sData);
+	pType->SetGlobalData(sAttribute, pData);
 	}
 
 bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError)

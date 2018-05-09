@@ -79,7 +79,7 @@ void CGaianProcessorAI::Behavior (SUpdateCtx &Ctx)
 							&& pObj->IsAbandoned()
 							&& pObj->CanBeDestroyed()
 							&& !pObj->IsIntangible()
-							&& pObj->GetData(SPACE_OBJ_TAGGED_DATA).IsBlank())
+							&& pObj->GetData(SPACE_OBJ_TAGGED_DATA)->IsNil())
 						{
 						CVector vRange = pObj->GetPos() - m_pShip->GetPos();
 						Metric rDistance2 = vRange.Dot(vRange);
@@ -103,7 +103,8 @@ void CGaianProcessorAI::Behavior (SUpdateCtx &Ctx)
 
 					//	Tag the object so that no one else goes after it
 
-					m_pDest->SetData(SPACE_OBJ_TAGGED_DATA, CONSTLIT("True"));
+					ICCItemPtr pTrue(g_pUniverse->GetCC().CreateTrue());
+					m_pDest->SetData(SPACE_OBJ_TAGGED_DATA, pTrue);
 					}
 
 				//	Otherwise, there is a small chance that we change orbits

@@ -361,7 +361,7 @@ void COverlayList::FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) 
 		}
 	}
 
-const CString &COverlayList::GetData (DWORD dwID, const CString &sAttrib)
+ICCItemPtr COverlayList::GetData (DWORD dwID, const CString &sAttrib) const
 
 //	GetData
 //
@@ -380,7 +380,7 @@ const CString &COverlayList::GetData (DWORD dwID, const CString &sAttrib)
 		pField = pField->GetNext();
 		}
 
-	return NULL_STR;
+	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
 	}
 
 void COverlayList::GetList (TArray<COverlay *> *retList)
@@ -544,7 +544,7 @@ int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 	return iBonus;
 	}
 
-void COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue, ICCItem **retpNewValue)
+ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue)
 
 //  IncData
 //
@@ -555,15 +555,14 @@ void COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue,
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
-			return pField->IncData(sAttrib, pValue, retpNewValue);
+			return pField->IncData(sAttrib, pValue);
 
 		pField = pField->GetNext();
 		}
 
     //  If we get this far, then we couldn't find it, so we just return nil
 
-    if (retpNewValue)
-        *retpNewValue = g_pUniverse->GetCC().CreateNil();
+	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
     }
 
 void COverlayList::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
@@ -751,7 +750,7 @@ void COverlayList::ScrapeHarmfulOverlays (CSpaceObject *pSource, int iMaxRemoved
 		}
 	}
 
-void COverlayList::SetData (DWORD dwID, const CString &sAttrib, const CString &sData)
+void COverlayList::SetData (DWORD dwID, const CString &sAttrib, ICCItem *pData)
 
 //	SetData
 //
@@ -762,7 +761,7 @@ void COverlayList::SetData (DWORD dwID, const CString &sAttrib, const CString &s
 	while (pField)
 		{
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
-			return pField->SetData(sAttrib, sData);
+			return pField->SetData(sAttrib, pData);
 
 		pField = pField->GetNext();
 		}

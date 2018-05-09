@@ -96,7 +96,7 @@ class CTopologyNode
 		inline const CString &GetAttributes (void) const { return m_sAttributes; }
 		inline int GetCalcDistance (void) const { return m_iCalcDistance; }
 		inline const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
-		inline const CString &GetData (const CString &sAttrib) const { return m_Data.GetData(sAttrib); }
+		inline ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
 		inline CSystemMap *GetDisplayPos (int *retxPos = NULL, int *retyPos = NULL) const;
 		inline const CString &GetEndGameReason (void) { return m_sEndGameReason; }
 		inline const CString &GetEpitaph (void) { return m_sEpitaph; }
@@ -120,7 +120,7 @@ class CTopologyNode
 		inline const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
 		inline bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
-		inline void IncData (const CString &sAttrib, ICCItem *pValue = NULL, ICCItem **retpNewValue = NULL) { m_Data.IncData(sAttrib, pValue, retpNewValue); }
+		inline ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
 		ALERROR InitFromAttributesXML (CXMLElement *pAttributes, CString *retsError);
 		ALERROR InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError);
@@ -134,7 +134,7 @@ class CTopologyNode
 		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit);
 		inline void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
 		inline void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
-		inline void SetData (const CString &sAttrib, const CString &sData) { m_Data.SetData(sAttrib, sData); }
+		inline void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
 		inline void SetDeferCreate (bool bValue = true) { m_bDeferCreate = bValue; }
 		inline void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
 		inline void SetEpitaph (const CString &sEpitaph) { m_sEpitaph = sEpitaph; }
