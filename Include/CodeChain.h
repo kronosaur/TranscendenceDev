@@ -110,6 +110,7 @@ class ICCItem : public CObject
 		//	Increment and decrement ref counts
 
 		virtual ICCItem *Clone (CCodeChain *pCC) = 0;
+		virtual ICCItem *CloneContainer (CCodeChain *pCC) = 0;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) { return Clone(pCC); }
 		virtual void Discard (CCodeChain *pCC);
 		inline ICCItem *Reference (void) { m_dwRefCount++; return this; }
@@ -249,6 +250,7 @@ class ICCAtom : public ICCItem
 
 		//	ICCItem virtuals
 
+		virtual ICCItem *CloneContainer (CCodeChain *pCC) override { return Reference(); }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
 		virtual ICCItem *GetElement (int iIndex) override { return (iIndex == 0 ? Reference() : NULL); }
 		virtual int GetCount (void) override { return 1; }
@@ -539,23 +541,24 @@ class CCLinkedList : public ICCList
 		
 		//	ICCItem virtuals
 
-		virtual void Append (CCodeChain &CC, ICCItem *pValue);
-		virtual ICCItem *Clone (CCodeChain *pCC);
-		virtual ICCItem *CloneDeep (CCodeChain *pCC);
-		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode);
-		virtual int GetCount (void) { return m_iCount; }
-		virtual ICCItem *GetElement (int iIndex);
-		virtual bool HasReferenceTo (ICCItem *pSrc);
-		virtual ICCItem *Head (CCodeChain *pCC) { return GetElement(0); }
-		virtual bool IsExpression (void) { return (GetCount() > 0); }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
-		virtual ICCItem *Tail (CCodeChain *pCC);
-		virtual void Reset (void);
+		virtual void Append (CCodeChain &CC, ICCItem *pValue) override;
+		virtual ICCItem *Clone (CCodeChain *pCC) override;
+		virtual ICCItem *CloneContainer (CCodeChain *pCC) override;
+		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
+		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
+		virtual int GetCount (void) override { return m_iCount; }
+		virtual ICCItem *GetElement (int iIndex) override;
+		virtual bool HasReferenceTo (ICCItem *pSrc) override;
+		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
+		virtual bool IsExpression (void) override { return (GetCount() > 0); }
+		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override;
+		virtual ICCItem *Tail (CCodeChain *pCC) override;
+		virtual void Reset (void) override;
 
 	protected:
-		virtual void DestroyItem (CCodeChain *pCC);
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream);
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream);
+		virtual void DestroyItem (CCodeChain *pCC) override;
+		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
+		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream) override;
 
 	private:
 		void QuickSort (int iLeft, int iRight, int iOrder);
@@ -572,37 +575,38 @@ class CCLinkedList : public ICCList
 
 //	This is an array of 32-bit integers
 class CCVectorOld : public ICCList
-{
-public:
-	CCVectorOld (void);
-	CCVectorOld (CCodeChain *pCC);
-	virtual ~CCVectorOld (void);
+	{
+	public:
+		CCVectorOld (void);
+		CCVectorOld (CCodeChain *pCC);
+		virtual ~CCVectorOld (void);
 
-	int *GetArray (void);
-	bool SetElement (int iIndex, int iElement);
-	ICCItem *SetSize (CCodeChain *pCC, int iNewSize);
+		int *GetArray (void);
+		bool SetElement (int iIndex, int iElement);
+		ICCItem *SetSize (CCodeChain *pCC, int iNewSize);
 
-	//	ICCItem virtuals
+		//	ICCItem virtuals
 
-	virtual ICCItem *Clone (CCodeChain *pCC);
-	virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode);
-	virtual int GetCount (void) { return m_iCount; }
-	virtual ICCItem *GetElement (int iIndex);
-	virtual ICCItem *Head (CCodeChain *pCC) { return GetElement(0); }
-	virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
-	virtual ICCItem *Tail (CCodeChain *pCC);
-	virtual void Reset (void);
+		virtual ICCItem *Clone (CCodeChain *pCC) override;
+		virtual ICCItem *CloneContainer (CCodeChain *pCC) override { return Reference(); }	//	LATER
+		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
+		virtual int GetCount (void) override { return m_iCount; }
+		virtual ICCItem *GetElement (int iIndex) override;
+		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
+		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override;
+		virtual ICCItem *Tail (CCodeChain *pCC) override;
+		virtual void Reset (void) override;
 
-protected:
-	virtual void DestroyItem (CCodeChain *pCC);
-	virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream);
-	virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream);
+	protected:
+		virtual void DestroyItem (CCodeChain *pCC) override;
+		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
+		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream);
 
-private:
-	CCodeChain *m_pCC;						//	CodeChain
-	int m_iCount;							//	Number of elements
-	int *m_pData;							//	Array of elements
-};
+	private:
+		CCodeChain *m_pCC;						//	CodeChain
+		int m_iCount;							//	Number of elements
+		int *m_pData;							//	Array of elements
+	};
 
 //	**UNDER CONSTRUCTION**
 //	A vector of Numeral items
@@ -645,23 +649,25 @@ class CCVector : public ICCVector
 
 		//	ICCItem virtuals
 
-		virtual ICCItem *Clone (CCodeChain *pCC);
+		virtual ICCItem *Clone (CCodeChain *pCC) override;
+		virtual ICCItem *CloneContainer (CCodeChain *pCC) override { return Reference(); }
+		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode) override;
+		virtual ICCItem *GetElement(int iIndex) override;
+		virtual ICCItem *Head(CCodeChain *pCC) override { return GetElement(0); }
+		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override;
+		virtual ICCItem *Tail (CCodeChain *pCC) override;
+		virtual void Reset (void) override;
+
 		virtual int GetCount (void) { return m_vData.GetCount(); }
 		virtual int GetShapeCount(void) { return m_vShape.GetCount(); }
 		virtual int GetDimension(void) { return m_vShape.GetCount(); }
-		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode);
-		virtual ICCItem *GetElement(int iIndex);
 		virtual ICCItem *SetElement (int iIndex, double dValue);
 		virtual ICCItem *IndexVector (CCodeChain *pCC, ICCItem *pIndices);
-		virtual ICCItem *Head(CCodeChain *pCC) { return GetElement(0); }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0);
-		virtual ICCItem *Tail (CCodeChain *pCC);
-		virtual void Reset (void);
 
 	protected:
-		virtual void DestroyItem (CCodeChain *pCC);
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream);
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream);
+		virtual void DestroyItem (CCodeChain *pCC) override;
+		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
+		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream) override;
 
 	private:
 		CCodeChain *m_pCC;						//	CodeChain
@@ -716,6 +722,7 @@ class CCSymbolTable : public ICCList
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
+		virtual ICCItem *CloneContainer (CCodeChain *pCC) override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
 		virtual ValueTypes GetValueType (void) override { return SymbolTable; }
 		virtual bool IsIdentifier (void) override { return false; }

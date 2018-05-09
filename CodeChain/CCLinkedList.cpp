@@ -108,6 +108,39 @@ ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
+ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
+
+//	CloneContainer
+//
+//	Returns a copy of the item and any containers it contains
+
+	{
+	ICCItem *pNew;
+	CCLinkedList *pClone;
+	CCons *pCons;
+
+	pNew = pCC->CreateLinkedList();
+	if (pNew->IsError())
+		return pNew;
+
+	pClone = dynamic_cast<CCLinkedList *>(pNew);
+	pClone->CloneItem(this);
+
+	//	Copy all the items
+
+	pCons = m_pFirst;
+	while (pCons)
+		{
+		ICCItem *pItemClone = pCons->m_pItem->CloneContainer(pCC);
+		pClone->Append(*pCC, pItemClone);
+		pItemClone->Discard(pCC);
+
+		pCons = pCons->m_pNext;
+		}
+
+	return pClone;
+	}
+
 ICCItem *CCLinkedList::CloneDeep (CCodeChain *pCC)
 
 //	CloneDeep

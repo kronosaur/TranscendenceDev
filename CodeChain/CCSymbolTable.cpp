@@ -153,6 +153,42 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 	return pNewTable;
 	}
 
+ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
+
+//	CloneContainer
+//
+//	Clone this item
+
+	{
+	int i;
+
+	ICCItem *pNew = pCC->CreateSymbolTable();
+	CCSymbolTable *pNewTable = dynamic_cast<CCSymbolTable *>(pNew);
+	ASSERT(pNewTable);
+
+	//	Add all the items to the table
+
+	for (i = 0; i < m_Symbols.GetCount(); i++)
+		{
+		CString sKey = m_Symbols.GetKey(i);
+		CObject *pValue = m_Symbols.GetValue(i);
+		ICCItem *pItem = (ICCItem *)pValue;
+
+		//	Add to the new table
+
+		CObject *pOldEntry;
+		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneContainer(pCC), true, &pOldEntry) != NOERROR)
+			return pCC->CreateMemoryError();
+
+		//	We better not have a previous entry (this can only happen if the existing symbol
+		//	table has a duplicate entry).
+
+		ASSERT(pOldEntry == NULL);
+		}
+
+	return pNewTable;
+	}
+
 ICCItem *CCSymbolTable::CloneDeep (CCodeChain *pCC)
 
 //	CloneDeep
