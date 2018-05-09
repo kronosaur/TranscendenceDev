@@ -578,16 +578,15 @@ class CItemCtx
 struct SItemAddCtx
 	{
 	SItemAddCtx (CItemListManipulator &theItemList) : 
-			ItemList(theItemList),
-			pSystem(NULL),
-			iLevel(1)
+			ItemList(theItemList)
 		{ }
 
 	CItemListManipulator &ItemList;				//	Item list to add items to
 
-	CSystem *pSystem;							//	System where we're creating items
+	CSystem *pSystem = NULL;					//	System where we're creating items
+	CSpaceObject *pDest = NULL;					//	Object to add to (may be NULL)
 	CVector vPos;								//	Position to use (for LocationCriteriaTable)
-	int iLevel;									//	Level to use for item create (for LevelTable)
+	int iLevel = 1;								//	Level to use for item create (for LevelTable)
 	};
 
 class IItemGenerator

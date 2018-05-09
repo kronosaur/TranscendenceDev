@@ -10,6 +10,10 @@
 
 #include "PreComp.h"
 
+#ifdef DEBUG_AVERAGE_VALUE
+#include <stdio.h>
+#endif
+
 #define AVERAGE_VALUE_TAG						CONSTLIT("AverageValue")
 #define COMPONENTS_TAG							CONSTLIT("Components")
 #define GROUP_TAG								CONSTLIT("Group")
@@ -41,9 +45,12 @@
 #define UNID_ATTRIB								CONSTLIT("unid")
 #define VALUE_ATTRIB							CONSTLIT("value")
 
+#define ATTRIB_NOT_FOR_SALE						CONSTLIT("notForSale")
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 
 #define STR_G_ITEM								CONSTLIT("gItem")
+
+static const Metric NOT_FOR_SALE_DISCOUNT =		0.2;
 
 class CRecursingCheck
 	{
@@ -97,7 +104,8 @@ class CGroupOfGenerators : public IItemGenerator
 			DiceRange Count;
 			};
 
-		void AddItemsInt (SItemAddCtx &Ctx);
+		void AddItemsInt (SItemAddCtx &Ctx) const;
+		void AddItemsScaled (SItemAddCtx &Ctx, Metric rAdj) const;
 		Metric GetCountAdj (int iLevel);
 		inline bool SetsAverageValue (void) const { return m_AverageValue.GetCount() > 0; }
 
@@ -241,6 +249,8 @@ class CSingleItem : public IItemGenerator
 		virtual int GetItemTypeCount (void) { return 1; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
+
+		static CurrencyValue CalcItemValue (CItemType *pType);
 
 	private:
 		CItemTypeRef m_pItemType;
@@ -458,80 +468,42 @@ void CGroupOfGenerators::AddItems (SItemAddCtx &Ctx)
 //	Add items
 
 	{
-	int i, j;
+	int i;
 
 	//	If we need to adjust counts, then do a separate algorithm
 
 	if (SetsAverageValue())
 		{
-		//	Get the count adjustment.
+		//	CountAdj is the number of times we need to loop through our table
+		//	to get the required item value (on average). We convert this to the
+		//	scaling factor to use if we want to loop exactly ten times.
+		//
+		//	This gets us closer to average values (otherwise, if we looped a
+		//	small number of times then we would have a wide variation in 
+		//	results.)
 
+#ifdef DEBUG_AVERAGE_VALUE
+	bool bDebug = (Ctx.pDest && Ctx.pDest->GetType()->GetUNID() == 0x080200C0);
+	if (bDebug)
+		printf("[%d] Level %d\n", Ctx.pDest->GetID(), Ctx.iLevel);
+#endif
+		static const int LOOP_COUNT = 10;
 		Metric rCountAdj = GetCountAdj(Ctx.iLevel);
-		Metric rLoops = floor(rCountAdj);
-		Metric rLastLoopAdj = rCountAdj - rLoops;
+		Metric rScale = rCountAdj / LOOP_COUNT;
 
-		//	Loop if we have extra items
+#ifdef DEBUG_AVERAGE_VALUE
+	if (bDebug)
+		printf("[%d] CountAdj: %.2f\n", Ctx.pDest->GetID(), rCountAdj);
+#endif
 
-		int iFullLoops = (int)rLoops;
-		for (i = 0; i < iFullLoops + 1; i++)
-			{
-			//	For a full loop we just add the items
-
-			if (i < iFullLoops)
-				AddItemsInt(Ctx);
-
-			//	Otherwise we need to add partial items
-
-			else
-				{
-				//	Add the items to a private list.
-
-				CItemList LocalList;
-				CItemListManipulator ItemList(LocalList);
-				SItemAddCtx LocalCtx(ItemList);
-				LocalCtx.iLevel = Ctx.iLevel;
-				AddItemsInt(LocalCtx);
-
-				//	Now loop over the items and adjust the count appropriately.
-
-				for (j = 0; j < LocalList.GetCount(); j++)
-					{
-					const CItem &Item = LocalList.GetItem(j);
-					int iOriginalCount = Item.GetCount();
-
-					//	Adjust the count
-
-					Metric rNewCount = iOriginalCount * rLastLoopAdj;
-					Metric rNewCountInt = floor(rNewCount);
-					int iNewCount = (int)rNewCountInt;
-
-					Metric rExtra = rNewCount - rNewCountInt;
-					int iExtraChance = (int)(100000.0 * rExtra);
-					if (mathRandom(0, 100000) < iExtraChance)
-						iNewCount++;
-
-					//	Add the item with the new count
-
-					if (iNewCount > 0)
-						{
-						if (iNewCount == iOriginalCount)
-							Ctx.ItemList.AddItem(Item);
-						else
-							{
-							CItem NewItem(Item);
-							NewItem.SetCount(iNewCount);
-							Ctx.ItemList.AddItem(NewItem);
-							}
-						}
-					}
-				}
-			}
+		for (i = 0; i < LOOP_COUNT; i++)
+			AddItemsScaled(Ctx, rScale);
 		}
 	else
 		AddItemsInt(Ctx);
 	}
 
-void CGroupOfGenerators::AddItemsInt (SItemAddCtx &Ctx)
+void CGroupOfGenerators::AddItemsInt (SItemAddCtx &Ctx) const
 
 //	AddItemsInt
 //
@@ -548,6 +520,70 @@ void CGroupOfGenerators::AddItemsInt (SItemAddCtx &Ctx)
 
 			for (j = 0; j < iCount; j++)
 				m_Table[i].pItem->AddItems(Ctx);
+			}
+		}
+	}
+
+void CGroupOfGenerators::AddItemsScaled (SItemAddCtx &Ctx, Metric rAdj) const
+
+//	AddItemsScaled
+//
+//	Adds items and then scales by the given adjustment. E.g., if we add one
+//	item and rAdj is 0.5, then we add the item 50% of the time.
+
+	{
+	int i;
+
+#ifdef DEBUG_AVERAGE_VALUE
+	bool bDebug = (Ctx.pDest && Ctx.pDest->GetType()->GetUNID() == 0x080200C0);
+	if (bDebug)
+		printf("[%d] Adjust: %.2f\n", Ctx.pDest->GetID(), rAdj);
+#endif
+
+	//	Add the items to a private list.
+
+	CItemList LocalList;
+	CItemListManipulator ItemList(LocalList);
+	SItemAddCtx LocalCtx(ItemList);
+	LocalCtx.iLevel = Ctx.iLevel;
+	AddItemsInt(LocalCtx);
+
+	//	Now loop over the items and adjust the count appropriately.
+
+	for (i = 0; i < LocalList.GetCount(); i++)
+		{
+		const CItem &Item = LocalList.GetItem(i);
+		int iOriginalCount = Item.GetCount();
+
+		//	Adjust the count
+
+		Metric rNewCount = iOriginalCount * rAdj;
+		Metric rNewCountInt = floor(rNewCount);
+		int iNewCount = (int)rNewCountInt;
+
+		Metric rExtra = rNewCount - rNewCountInt;
+		int iExtraChance = (int)(100000.0 * rExtra);
+		if (mathRandom(0, 100000) < iExtraChance)
+			iNewCount++;
+
+#ifdef DEBUG_AVERAGE_VALUE
+		if (bDebug)
+			{
+			printf("%s: %d -> %.2f = %d\n", (LPSTR)Item.GetNounPhrase(CItemCtx()), iOriginalCount, rNewCount, iNewCount);
+			}
+#endif
+
+		//	Add the item with the new count
+
+		if (iNewCount == iOriginalCount)
+			{
+			Ctx.ItemList.AddItem(Item);
+			}
+		else if (iNewCount > 0)
+			{
+			CItem NewItem(Item);
+			NewItem.SetCount(iNewCount);
+			Ctx.ItemList.AddItem(NewItem);
 			}
 		}
 	}
@@ -761,6 +797,21 @@ void CSingleItem::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 	retTypesUsed->SetAt(m_pItemType.GetUNID(), true);
 	}
 
+CurrencyValue CSingleItem::CalcItemValue (CItemType *pType)
+
+//	CalcItemValue
+//
+//	Computes the value (to the player) of this item.
+
+	{
+	CurrencyValue ItemValue = CEconomyType::ExchangeToCredits(pType->GetCurrencyType(), pType->GetValue(CItemCtx(), true));
+
+	if (pType->HasAttribute(ATTRIB_NOT_FOR_SALE))
+		ItemValue = Max((CurrencyValue)1, (CurrencyValue)(ItemValue * NOT_FOR_SALE_DISCOUNT));
+
+	return ItemValue;
+	}
+
 CurrencyValue CSingleItem::GetAverageValue (int iLevel)
 
 //	GetAverageValue
@@ -768,7 +819,7 @@ CurrencyValue CSingleItem::GetAverageValue (int iLevel)
 //	Returns the average value (in credits)
 
 	{
-	return CEconomyType::ExchangeToCredits(m_pItemType->GetCurrencyType(), m_pItemType->GetValue(CItemCtx(), true));
+	return CalcItemValue(m_pItemType);
 	}
 
 ALERROR CSingleItem::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -1288,11 +1339,29 @@ CurrencyValue CTableOfGenerators::GetAverageValue (int iLevel)
 	if (Check.IsRecursing())
 		return 0;
 
+#ifdef DEBUG_AVERAGE_VALUE
+	TArray<Metric> AverageValues;
+#endif
+
 	//	Average value is proportional to chances.
 
 	Metric rTotal = 0.0;
 	for (i = 0; i < m_Table.GetCount(); i++)
-		rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(iLevel) * (Metric)m_Table[i].iChance / (Metric)m_iTotalChance);
+		{
+		Metric rAverageValue = (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(iLevel) * (Metric)m_Table[i].iChance / (Metric)m_iTotalChance);
+		rTotal += rAverageValue;
+
+#ifdef DEBUG_AVERAGE_VALUE
+		AverageValues.Insert(rAverageValue);
+#endif
+		}
+
+#ifdef DEBUG_AVERAGE_VALUE
+	for (i = 0; i < AverageValues.GetCount(); i++)
+		printf("%.2f ", AverageValues[i]);
+
+	printf("= %.2f\n", rTotal);
+#endif
 
 	return (CurrencyValue)(rTotal + 0.5);
 	}
@@ -1513,7 +1582,7 @@ CurrencyValue CRandomItems::GetAverageValue (int iLevel)
 		for (i = 0; i < m_iCount; i++)
 			{
 			CItemType *pType = m_Table[i].pType;
-			CurrencyValue ItemValue = CEconomyType::ExchangeToCredits(pType->GetCurrencyType(), pType->GetValue(CItemCtx(), true));
+			CurrencyValue ItemValue = CSingleItem::CalcItemValue(pType);
 			rTotal += (pType->GetNumberAppearing().GetAveValueFloat() * (Metric)ItemValue * (Metric)m_Table[i].iProbability / 1000.0);
 			}
 
@@ -1530,7 +1599,7 @@ CurrencyValue CRandomItems::GetAverageValue (int iLevel)
 		for (i = 0; i < m_iCount; i++)
 			{
 			CItemType *pType = m_Table[i].pType;
-			CurrencyValue ItemValue = CEconomyType::ExchangeToCredits(pType->GetCurrencyType(), pType->GetValue(CItemCtx(), true));
+			CurrencyValue ItemValue = CSingleItem::CalcItemValue(pType);
 			rTotal += (pType->GetNumberAppearing().GetAveValueFloat() * (Metric)ItemValue * (Metric)m_Table[i].iProbability / 1000.0);
 			}
 
