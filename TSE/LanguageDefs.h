@@ -7,7 +7,7 @@
 
 //	Convert from a string to NounPhraseFlags
 
-static TStaticStringTable<TStaticStringEntry<DWORD>, 20> NOUN_FLAG_TABLE = {
+static TStaticStringTable<TStaticStringEntry<DWORD>, 21> NOUN_FLAG_TABLE = {
 	"actual",				nounActual,
 	"adjective",			nounAdjective,
 	"article",				nounArticle,
@@ -18,6 +18,7 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 20> NOUN_FLAG_TABLE = {
 	"demonstrative",		nounDemonstrative,
 	"demonym",				nounDemonym,
 	"duplicateModifier",	nounDuplicateModifier,
+	"escapeQuotes",			nounEscapeQuotes,
 	"generic",				nounGeneric,
 	"installedState",		nounInstalledState,
 	"noDeterminer",			nounNoDeterminer,

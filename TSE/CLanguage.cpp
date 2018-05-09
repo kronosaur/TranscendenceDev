@@ -40,8 +40,13 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 
 	//	If we need to strip quotes, do it now
 
-	if ((dwComposeFlags & nounNoQuotes) && NounDesc.bHasQuotes)
-		sNounForm = strProcess(sNounForm, STRPROC_NO_DOUBLE_QUOTES);
+	if (NounDesc.bHasQuotes)
+		{
+		if (dwComposeFlags & nounNoQuotes)
+			sNounForm = strProcess(sNounForm, STRPROC_NO_DOUBLE_QUOTES);
+		else if (dwComposeFlags & nounEscapeQuotes)
+			sNounForm = strProcess(sNounForm, STRPROC_ESCAPE_DOUBLE_QUOTES);
+		}
 
 	//	Get the appropriate article
 

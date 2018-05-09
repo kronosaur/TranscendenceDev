@@ -95,7 +95,23 @@ CString CRTFText::GenerateRTFText (const CString &sText, const SAutoRTFOptions &
 				}
 			}
 		else if (*pPos == '\\')
-			Output.Write("/\\", 2);
+			{
+			switch (pPos[1])
+				{
+				case '\0':
+					break;
+
+				case '\\':
+					pPos++;
+					Output.Write("/\\", 2);
+					break;
+
+				default:
+					pPos++;
+					Output.Write(pPos, 1);
+					break;
+				}
+			}
 		else if (*pPos == '/')
 			Output.Write("//", 2);
 		else if (*pPos == '{')
