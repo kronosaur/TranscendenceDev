@@ -788,7 +788,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   0x0800 'installedState  prefix with 'installed' if necessary\n"
 			"   0x1000 'countAlways     always prefix with count\n"
 			"  0x40000 'noDeterminer    no prefix, but pluralize if necessary\n"
-			"  0x80000 'noQuotes        replace double-quotes with single-quotes",
+			"  0x80000 'noQuotes        replace double-quotes with single-quotes\n"
+			" 0x100000 'escapeQuotes    use for dock screens",
 
 			"v*",	0,	},
 
@@ -1871,6 +1872,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'maxSpeed -> in % c\n"
 			"   'openDockingPortCount\n"
 			"   'operatingSpeed -> 'emergency | 'full | 'half | 'quarter\n"
+			"   'playerBlacklisted\n"
 			"   'playerWingman\n"
 			"   'power -> max reactor output in kW\n"
 			"   'powerUse -> current power draw in kW\n"
@@ -2201,6 +2203,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'commsKey key\n"
 			"   'known True|Nil\n"
 			"   'operatingSpeed 'full|'half|'quarter|'emergency\n"
+			"   'playerBlacklisted True|Nil\n"
 			"   'playerWingman True|Nil\n"
 			"   'rotation angle\n"
 			"   'selectedMissile type|item\n"
