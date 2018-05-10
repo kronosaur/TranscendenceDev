@@ -252,7 +252,7 @@ CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CS
 	//	Figure out whether we need to pluralize or not
 
 	bool bPluralize = (dwComposeFlags & nounPlural)
-			|| (iCount > 1 
+			|| (iCount != 1 
 				&& ((dwComposeFlags & nounCount) 
 					|| (dwComposeFlags & nounCountOnly) 
 					|| (dwComposeFlags & nounDemonstrative) 
