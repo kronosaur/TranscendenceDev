@@ -1282,9 +1282,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(shpOrderImmediate ship order [target] [count]) -> True/Nil",
 			"is*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"shpRechargeShield",			fnShipSetOld,		FN_SHIP_RECHARGE_SHIELD,
-			"(shpRechargeShield ship hpToRecharge) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"shpRechargeShield",			fnShipSet,		FN_SHIP_RECHARGE_SHIELD,
+			"(shpRechargeShield ship [hpToRecharge]) -> shield hp",
+			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpRefuelFromItem",			fnShipSetOld,		FN_SHIP_REFUEL_FROM_ITEM,
 			"(shpRefuelFromItem ship item) -> True/Nil",
@@ -9843,6 +9843,28 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_SHIP_RECHARGE_SHIELD:
+			{
+			CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);
+			if (pShield == NULL)
+				return pCC->CreateNil();
+
+			CItemCtx ItemCtx(pShip, pShield);
+
+			//	If no second argument then we always recharge to full
+
+			int iHPToRecharge;
+			if (pArgs->GetCount() < 2)
+				pShield->GetHitPoints(ItemCtx, &iHPToRecharge);
+			else
+				iHPToRecharge = pArgs->GetElement(1)->GetIntegerValue();
+
+			//	Recharge and return new HPs
+
+			pShield->Recharge(pShip, iHPToRecharge);
+			return pCC->CreateInteger(pShield->GetHitPoints(ItemCtx));
+			}
+
 		case FN_SHIP_REPAIR_ITEM:
 			{
 			CItemListManipulator *pItemList = NULL;
@@ -10335,22 +10357,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				{
 				pShip->EnhanceItem(*pItemList, etBinaryEnhancement);
 				pArgs->Discard(pCC);
-				pResult = pCC->CreateTrue();
-				}
-			break;
-			}
-
-		case FN_SHIP_RECHARGE_SHIELD:
-			{
-			int iHP = pArgs->GetElement(1)->GetIntegerValue();
-			pArgs->Discard(pCC);
-
-			CInstalledDevice *pShield = pShip->GetNamedDevice(devShields);
-			if (pShield == NULL)
-				pResult = pCC->CreateNil();
-			else
-				{
-				pShield->Recharge(pShip, iHP);
 				pResult = pCC->CreateTrue();
 				}
 			break;

@@ -1574,7 +1574,7 @@ void CShieldClass::Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatu
 
 	int iMaxHP = GetMaxHP(Ctx);
 	int iHPLeft = GetHPLeft(Ctx);
-	SetHPLeft(pDevice, pShip, Min(iMaxHP, iHPLeft + iStatus));
+	SetHPLeft(pDevice, pShip, Max(0, Min(iMaxHP, iHPLeft + iStatus)));
 	pShip->OnComponentChanged(comShields);
 	}
 
