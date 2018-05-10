@@ -328,7 +328,7 @@ class CItem
 		inline int GetCount (void) const { return (int)m_dwCount; }
 		const CItemList &GetComponents (void) const;
 		inline CEconomyType *GetCurrencyType (void) const;
-		inline CString GetData (const CString &sAttrib) const { return (m_pExtra ? m_pExtra->m_Data.GetData(sAttrib) : NULL_STR); }
+//		inline CString GetData (const CString &sAttrib) const { return (m_pExtra ? m_pExtra->m_Data.GetData(sAttrib) : NULL_STR); }
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
 		CString GetDesc (CItemCtx &ItemCtx, bool bActual = false) const;
 		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;

@@ -284,11 +284,10 @@ class CAttributeDataBlock
 
 		void Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options);
 		inline void DeleteAll (void) { CleanUp(); }
-		bool FindData (const CString &sAttrib, const CString **retpData = NULL) const;
+//		bool FindData (const CString &sAttrib, const CString **retpData = NULL) const;
 		bool FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const;
 		bool FindObjRefData (CSpaceObject *pObj, CString *retsAttrib = NULL) const;
-		const CString &GetData (const CString &sAttrib) const;
-        inline const CString &GetData (int iIndex) const { return m_Data[iIndex].sData; }
+		ICCItemPtr GetData (int iIndex) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
 		inline const CString &GetDataAttrib (int iIndex) const { return m_Data.GetKey(iIndex); }
 		inline int GetDataCount (void) const { return m_Data.GetCount(); }
@@ -313,7 +312,7 @@ class CAttributeDataBlock
 	private:
         struct SDataEntry
             {
-            CString sData;                  //  Serialized data
+            ICCItemPtr pData;
             };
 
 		struct SObjRefEntry

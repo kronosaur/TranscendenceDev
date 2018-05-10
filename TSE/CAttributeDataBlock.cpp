@@ -106,9 +106,7 @@ void CAttributeDataBlock::Copy (const CAttributeDataBlock &Src, const TSortMap<C
             case transCopy:
 				{
 				SDataEntry *pEntry = m_Data.SetAt(Src.m_Data.GetKey(i));
-				pEntry->sData = Src.m_Data[i].sData;
-
-                //SetData(Src.m_Data.GetKey(i), Src.m_Data[i].sData);
+				pEntry->pData = Src.m_Data[i].pData;
                 break;
 				}
 
@@ -153,6 +151,7 @@ void CAttributeDataBlock::CopyObjRefs (SObjRefEntry *pSrc)
 		}
     }
 
+#if 0
 bool CAttributeDataBlock::FindData (const CString &sAttrib, const CString **retpData) const
 
 //	FindData
@@ -169,6 +168,7 @@ bool CAttributeDataBlock::FindData (const CString &sAttrib, const CString **retp
 
     return !pEntry->sData.IsBlank();
 	}
+#endif
 
 bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pResult) const
 
@@ -183,7 +183,7 @@ bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pR
         return false;
 
 	CCodeChain &CC = g_pUniverse->GetCC();
-	pResult = ICCItemPtr(CC.Link(pEntry->sData));
+	pResult = ICCItemPtr(pEntry->pData->CloneContainer(&CC));
 	return true;
 	}
 
@@ -209,18 +209,17 @@ bool CAttributeDataBlock::FindObjRefData (CSpaceObject *pObj, CString *retsAttri
 	return false;
 	}
 
-const CString &CAttributeDataBlock::GetData (const CString &sAttrib) const
+ICCItemPtr CAttributeDataBlock::GetData (int iIndex) const
 
 //	GetData
 //
 //	Returns string data associated with attribute
 
 	{
-    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
-    if (pEntry == NULL)
-        return NULL_STR;
+	ASSERT(iIndex >= 0 && iIndex < m_Data.GetCount());
 
-    return pEntry->sData;
+    const SDataEntry &Entry = m_Data[iIndex];
+	return Entry.pData;
 	}
 
 ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
@@ -237,7 +236,7 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
     if (pEntry == NULL)
         return ICCItemPtr(CC.CreateNil());
 
-	return ICCItemPtr(CC.Link(pEntry->sData));
+	return ICCItemPtr(pEntry->pData->CloneContainer(&CC));
 	}
 
 CSpaceObject *CAttributeDataBlock::GetObjRefData (const CString &sAttrib) const
@@ -287,26 +286,24 @@ ICCItemPtr CAttributeDataBlock::IncData (const CString &sAttrib, ICCItem *pValue
 
     //  If the entry is currently blank, then we just take the increment.
 
-    if (pEntry->sData.IsBlank())
+    if (!pEntry->pData || pEntry->pData->IsNil())
         pResult = ICCItemPtr(pValue->Reference());
 
     //  Otherwise, we need to get the data value
 
     else
         {
-		ICCItem *pOriginal = CC.Link(pEntry->sData, 0, NULL);
+		ICCItem *pOriginal = pEntry->pData;
 
         if (pOriginal->IsDouble() || pValue->IsDouble())
             pResult = ICCItemPtr(CC.CreateDouble(pOriginal->GetDoubleValue() + pValue->GetDoubleValue()));
         else
             pResult = ICCItemPtr(CC.CreateInteger(pOriginal->GetIntegerValue() + pValue->GetIntegerValue()));
-
-        pOriginal->Discard(&CC);
         }
 
     //  Store
 
-	pEntry->sData = CC.Unlink(pResult);
+	pEntry->pData = pResult;
 
     //  Done
 
@@ -321,19 +318,11 @@ bool CAttributeDataBlock::IsDataNil (const CString &sAttrib) const
 //	Returns TRUE if the given attribute is Nil (or missing)
 
 	{
-    CCodeChain &CC = g_pUniverse->GetCC();
-
     SDataEntry *pEntry = m_Data.GetAt(sAttrib);
-    if (pEntry == NULL || pEntry->sData.IsBlank())
+    if (pEntry == NULL || !pEntry->pData || pEntry->pData->IsNil())
         return true;
 
-	//	We need to link the entry to see if it is Nil.
-
-	ICCItem *pValue = CC.Link(pEntry->sData, 0, NULL);
-	bool bIsNil = pValue->IsNil();
-	pValue->Discard(&CC);
-
-	return bIsNil;
+	return false;
 	}
 
 bool CAttributeDataBlock::IsEqual (const CAttributeDataBlock &Src)
@@ -356,7 +345,7 @@ bool CAttributeDataBlock::IsEqual (const CAttributeDataBlock &Src)
         const SDataEntry &DestEntry = m_Data[i];
         const SDataEntry &SrcEntry = Src.m_Data[i];
 
-		if (!strEquals(DestEntry.sData, SrcEntry.sData))
+		if (ICCItem::Compare(DestEntry.pData, SrcEntry.pData) != 0)
 			return false;
 		}
 
@@ -424,7 +413,7 @@ void CAttributeDataBlock::MergeFrom (const CAttributeDataBlock &Src)
 		{
         const SDataEntry &Entry = Src.m_Data[i];
 		SDataEntry *pDestEntry = m_Data.SetAt(Src.m_Data.GetKey(i));
-		pDestEntry->sData = Entry.sData;
+		pDestEntry->pData = Entry.pData;
 		}
 
 	//	Object reference
@@ -482,6 +471,7 @@ void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
 //  Read the m_Data table.
 
     {
+	CCodeChain &CC = g_pUniverse->GetCC();
     int i;
 
 	//	Load the sentinel string, which is either "ADB" or a flattened table
@@ -505,9 +495,12 @@ void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
             {
             CString sKey;
             sKey.ReadFromStream(pStream);
-            SDataEntry *pEntry = m_Data.SetAt(sKey);
 
-            pEntry->sData.ReadFromStream(pStream);
+			CString sData;
+            sData.ReadFromStream(pStream);
+
+            SDataEntry *pEntry = m_Data.SetAt(sKey);
+			pEntry->pData = ICCItemPtr(CC.Link(sData));
             }
         }
 
@@ -523,7 +516,7 @@ void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
                 {
                 SDataEntry *pEntry = m_Data.SetAt(pData->GetKey(i));
                 CString *pDest = (CString *)pData->GetValue(i);
-                pEntry->sData = *pDest;
+				pEntry->pData = ICCItemPtr(CC.Link(*pDest));
                 }
 
             delete pData;
@@ -641,7 +634,7 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, ICCItem *pItem)
 
 	{
     SDataEntry *pEntry = m_Data.SetAt(sAttrib);
-    pEntry->sData = CreateDataFromItem(g_pUniverse->GetCC(), pItem);
+    pEntry->pData = ICCItemPtr(pItem->CloneContainer(&g_pUniverse->GetCC()));
 	}
 
 void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
@@ -653,6 +646,8 @@ void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
 	{
 	if (pData)
 		{
+		CCodeChain &CC = g_pUniverse->GetCC();
+
 		for (int i = 0; i < pData->GetContentElementCount(); i++)
 			{
 			CXMLElement *pItem = pData->GetContentElement(i);
@@ -681,7 +676,7 @@ void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
 			//	Store
 
 			SDataEntry *pEntry = m_Data.SetAt(sID);
-			pEntry->sData = sData;
+			pEntry->pData = ICCItemPtr(CC.Link(sData));
 			}
 		}
 	}
@@ -732,6 +727,7 @@ void CAttributeDataBlock::WriteToStream (IWriteStream *pStream, CSystem *pSystem
 //	DWORD		ref: pointer (CSpaceObject ref)
 
 	{
+	CCodeChain &CC = g_pUniverse->GetCC();
     int i;
     DWORD dwCount;
 
@@ -756,7 +752,8 @@ void CAttributeDataBlock::WriteToStream (IWriteStream *pStream, CSystem *pSystem
         for (i = 0; i < m_Data.GetCount(); i++)
             {
             m_Data.GetKey(i).WriteToStream(pStream);
-            m_Data[i].sData.WriteToStream(pStream);
+			CString sData = CreateDataFromItem(CC, m_Data[i].pData);
+            sData.WriteToStream(pStream);
             }
         }
 

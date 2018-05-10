@@ -2968,7 +2968,7 @@ IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffec
         //  LATER: We only handle integers for now. Later we should handle any
         //  ICCItem type.
 
-        Ctx.AddDataInteger(m_Data.GetDataAttrib(i), strToInt(m_Data.GetData(i), 0));
+        Ctx.AddDataInteger(m_Data.GetDataAttrib(i), m_Data.GetData(i)->GetIntegerValue());
         }
 
 	//	Create the painter
