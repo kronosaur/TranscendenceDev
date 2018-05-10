@@ -223,6 +223,8 @@ class ICCItem : public CObject
 		ICCItem *GetNextFree() { return (ICCItem *)m_dwRefCount; }
 		void SetNextFree (ICCItem *pNext) { m_dwRefCount = (DWORD)pNext; }
 
+		static int Compare (ICCItem *pFirst, ICCItem *pSecond);
+
 	protected:
 		void CloneItem (ICCItem *pItem);
 

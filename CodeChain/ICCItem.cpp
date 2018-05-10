@@ -93,6 +93,16 @@ void ICCItem::CloneItem (ICCItem *pItem)
 	m_bNoRefCount = pItem->m_bNoRefCount;
 	}
 
+int ICCItem::Compare (ICCItem *pFirst, ICCItem *pSecond)
+
+//	Compare
+//
+//	Uses HelperCompareItems
+
+	{
+	return HelperCompareItems(pFirst, pSecond, HELPER_COMPARE_COERCE_FULL);
+	}
+
 void ICCItem::Discard (CCodeChain *pCC)
 
 //	Discard
